@@ -62,4 +62,12 @@ default_thread_consider_yield() {
 void (*global_thread_yield)() = default_thread_yield;
 void (*global_thread_consider_yield)() = default_thread_consider_yield;
 
+#ifdef HAVE_PYTHON
+static PyThreadState *
+default_thread_state_swap(PyThreadState *state) {
+  return nullptr;
+}
+PyThreadState *(*global_thread_state_swap)(PyThreadState *tstate) = default_thread_state_swap;
+#endif  // HAVE_PYTHON
+
 #endif  // HAVE_THREADS && SIMPLE_THREADS

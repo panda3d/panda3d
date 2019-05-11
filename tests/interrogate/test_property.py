@@ -2,7 +2,11 @@ import sys
 import pytest
 from panda3d import core
 from contextlib import contextmanager
-import collections
+
+if sys.version_info >= (3, 3):
+    import collections.abc as collections_abc
+else:
+    import _abcoll as collections_abc
 
 
 @contextmanager
@@ -52,7 +56,6 @@ def test_property2():
 
 
 # The next tests are for MAKE_SEQ_PROPERTY.
-@pytest.fixture
 def seq_property(*items):
     """ Returns a sequence property initialized with the given items. """
 
@@ -73,11 +76,11 @@ item_c = core.CollisionSphere((0, 0, 0), 3)
 
 def test_seq_property_abc():
     prop = seq_property()
-    assert isinstance(prop, collections.Container)
-    assert isinstance(prop, collections.Sized)
-    assert isinstance(prop, collections.Iterable)
-    assert isinstance(prop, collections.MutableSequence)
-    assert isinstance(prop, collections.Sequence)
+    assert isinstance(prop, collections_abc.Container)
+    assert isinstance(prop, collections_abc.Sized)
+    assert isinstance(prop, collections_abc.Iterable)
+    assert isinstance(prop, collections_abc.MutableSequence)
+    assert isinstance(prop, collections_abc.Sequence)
 
 
 def test_seq_property_empty():
@@ -411,7 +414,6 @@ def test_seq_property_extend():
 
 
 # The next tests are for MAKE_MAP_PROPERTY.
-@pytest.fixture
 def map_property(**items):
     """ Returns a mapping property initialized with the given values. """
 
@@ -425,11 +427,11 @@ def map_property(**items):
 
 def test_map_property_abc():
     prop = map_property()
-    assert isinstance(prop, collections.Container)
-    assert isinstance(prop, collections.Sized)
-    assert isinstance(prop, collections.Iterable)
-    assert isinstance(prop, collections.MutableMapping)
-    assert isinstance(prop, collections.Mapping)
+    assert isinstance(prop, collections_abc.Container)
+    assert isinstance(prop, collections_abc.Sized)
+    assert isinstance(prop, collections_abc.Iterable)
+    assert isinstance(prop, collections_abc.MutableMapping)
+    assert isinstance(prop, collections_abc.Mapping)
 
 
 def test_map_property_empty():
@@ -607,19 +609,19 @@ def test_map_property_update():
 def test_map_property_keys():
     prop = map_property(key='value', key2='value2')
 
-    assert isinstance(prop.keys(), collections.MappingView)
+    assert isinstance(prop.keys(), collections_abc.MappingView)
     assert frozenset(prop.keys()) == frozenset(('key', 'key2'))
 
 
 def test_map_property_values():
     prop = map_property(key='value', key2='value2')
 
-    assert isinstance(prop.values(), collections.ValuesView)
+    assert isinstance(prop.values(), collections_abc.ValuesView)
     assert frozenset(prop.values()) == frozenset(('value', 'value2'))
 
 
 def test_map_property_items():
     prop = map_property(key='value', key2='value2')
 
-    assert isinstance(prop.items(), collections.MappingView)
+    assert isinstance(prop.items(), collections_abc.MappingView)
     assert frozenset(prop.items()) == frozenset((('key', 'value'), ('key2', 'value2')))

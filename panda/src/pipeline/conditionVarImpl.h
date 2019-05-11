@@ -21,32 +21,41 @@
 
 #include "conditionVarDummyImpl.h"
 typedef ConditionVarDummyImpl ConditionVarImpl;
-typedef ConditionVarDummyImpl ConditionVarFullImpl;
 
 #elif defined(THREAD_SIMPLE_IMPL)
 
 #include "conditionVarSimpleImpl.h"
 typedef ConditionVarSimpleImpl ConditionVarImpl;
-typedef ConditionVarSimpleImpl ConditionVarFullImpl;
 
 #elif defined(MUTEX_SPINLOCK)
 
 #include "conditionVarSpinlockImpl.h"
 typedef ConditionVarSpinlockImpl ConditionVarImpl;
-typedef ConditionVarSpinlockImpl ConditionVarFullImpl;
 
 #elif defined(THREAD_WIN32_IMPL)
 
 #include "conditionVarWin32Impl.h"
-#include "conditionVarFullWin32Impl.h"
 typedef ConditionVarWin32Impl ConditionVarImpl;
-typedef ConditionVarFullWin32Impl ConditionVarFullImpl;
 
 #elif defined(THREAD_POSIX_IMPL)
 
 #include "conditionVarPosixImpl.h"
 typedef ConditionVarPosixImpl ConditionVarImpl;
-typedef ConditionVarPosixImpl ConditionVarFullImpl;
+
+#endif
+
+typedef ConditionVarImpl ConditionVarFullImpl;
+
+#if defined(WIN32_VC)
+#include "conditionVarWin32Impl.h"
+typedef ConditionVarWin32Impl TrueConditionVarImpl;
+
+#elif defined(HAVE_POSIX_THREADS)
+#include "conditionVarPosixImpl.h"
+typedef ConditionVarPosixImpl TrueConditionVarImpl;
+
+#else
+// No true threads, sorry.  Better not try to use 'em.
 
 #endif
 

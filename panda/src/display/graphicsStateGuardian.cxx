@@ -24,7 +24,6 @@
 #include "renderBuffer.h"
 #include "light.h"
 #include "planeNode.h"
-#include "ambientLight.h"
 #include "throw_event.h"
 #include "clockObject.h"
 #include "pStatTimer.h"
@@ -60,7 +59,6 @@
 #include "fogAttrib.h"
 #include "config_pstatclient.h"
 
-#include <algorithm>
 #include <limits.h>
 
 using std::string;
@@ -94,7 +92,6 @@ PStatCollector GraphicsStateGuardian::_transform_state_pcollector("State changes
 PStatCollector GraphicsStateGuardian::_texture_state_pcollector("State changes:Textures");
 PStatCollector GraphicsStateGuardian::_draw_primitive_pcollector("Draw:Primitive:Draw");
 PStatCollector GraphicsStateGuardian::_draw_set_state_pcollector("Draw:Set State");
-PStatCollector GraphicsStateGuardian::_clear_pcollector("Draw:Clear");
 PStatCollector GraphicsStateGuardian::_flush_pcollector("Draw:Flush");
 PStatCollector GraphicsStateGuardian::_compute_dispatch_pcollector("Draw:Compute dispatch");
 
@@ -304,9 +301,9 @@ GraphicsStateGuardian::
   // Note that if uniquify-states is false, we can't iterate over all the
   // states, and some GSGs will linger.  Let's hope this isn't a problem.
   LightReMutexHolder holder(*RenderState::_states_lock);
-  size_t size = RenderState::_states->get_num_entries();
+  size_t size = RenderState::_states.get_num_entries();
   for (size_t si = 0; si < size; ++si) {
-    const RenderState *state = RenderState::_states->get_key(si);
+    const RenderState *state = RenderState::_states.get_key(si);
     state->_mungers.remove(_id);
     state->_munged_states.remove(_id);
   }
@@ -746,7 +743,7 @@ issue_timer_query(int pstats_index) {
  */
 void GraphicsStateGuardian::
 dispatch_compute(int num_groups_x, int num_groups_y, int num_groups_z) {
-  nassertv(false /* Compute shaders not supported by GSG */);
+  nassert_raise("Compute shaders not supported by GSG");
 }
 
 /**
@@ -932,12 +929,12 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
   }
   case Shader::SMO_frame_time: {
     PN_stdfloat time = ClockObject::get_global_clock()->get_frame_time();
-    t = LMatrix4(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, time, time, time, time);
+    t.set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, time, time, time, time);
     return &t;
   }
   case Shader::SMO_frame_delta: {
     PN_stdfloat dt = ClockObject::get_global_clock()->get_dt();
-    t = LMatrix4(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, dt, dt, dt, dt);
+    t.set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, dt, dt, dt, dt);
     return &t;
   }
   case Shader::SMO_texpad_x: {
@@ -949,7 +946,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
     double cx = (sx * 0.5) / tex->get_x_size();
     double cy = (sy * 0.5) / tex->get_y_size();
     double cz = (sz * 0.5) / tex->get_z_size();
-    t = LMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,cx,cy,cz,0);
+    t.set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, cx, cy, cz, 0);
     return &t;
   }
   case Shader::SMO_texpix_x: {
@@ -958,7 +955,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
     double px = 1.0 / tex->get_x_size();
     double py = 1.0 / tex->get_y_size();
     double pz = 1.0 / tex->get_z_size();
-    t = LMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,px,py,pz,0);
+    t.set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, px, py, pz, 0);
     return &t;
   }
   case Shader::SMO_attr_material: {
@@ -966,7 +963,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
       _target_rs->get_attrib_def(MaterialAttrib::get_class_slot());
     // Material matrix contains AMBIENT, DIFFUSE, EMISSION, SPECULAR+SHININESS
     if (target_material->is_off()) {
-      t = LMatrix4(1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0);
+      t.set(1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0);
       return &t;
     }
     Material *m = target_material->get_material();
@@ -975,17 +972,17 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
     LVecBase4 const &emm = m->get_emission();
     LVecBase4 spc = m->get_specular();
     spc[3] = m->get_shininess();
-    t = LMatrix4(amb[0],amb[1],amb[2],amb[3],
-                  dif[0],dif[1],dif[2],dif[3],
-                  emm[0],emm[1],emm[2],emm[3],
-                  spc[0],spc[1],spc[2],spc[3]);
+    t.set(amb[0], amb[1], amb[2], amb[3],
+          dif[0], dif[1], dif[2], dif[3],
+          emm[0], emm[1], emm[2], emm[3],
+          spc[0], spc[1], spc[2], spc[3]);
     return &t;
   }
   case Shader::SMO_attr_material2: {
     const MaterialAttrib *target_material = (const MaterialAttrib *)
       _target_rs->get_attrib_def(MaterialAttrib::get_class_slot());
     if (target_material->is_off()) {
-      t = LMatrix4(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1);
+      t.set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1);
       return &t;
     }
     Material *m = target_material->get_material();
@@ -1000,7 +997,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
       return &LMatrix4::ones_mat();
     }
     LVecBase4 c = target_color->get_color();
-    t = LMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,c[0],c[1],c[2],c[3]);
+    t.set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, c[0], c[1], c[2], c[3]);
     return &t;
   }
   case Shader::SMO_attr_colorscale: {
@@ -1010,7 +1007,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
       return &LMatrix4::ones_mat();
     }
     LVecBase4 cs = target_color->get_scale();
-    t = LMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,cs[0],cs[1],cs[2],cs[3]);
+    t.set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, cs[0], cs[1], cs[2], cs[3]);
     return &t;
   }
   case Shader::SMO_attr_fog: {
@@ -1022,7 +1019,8 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
     }
     PN_stdfloat start, end;
     fog->get_linear_range(start, end);
-    t = LMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,fog->get_exp_density(),start,end,1.0f/(end-start));
+    t.set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+          fog->get_exp_density(), start, end, 1.0f / (end - start));
     return &t;
   }
   case Shader::SMO_attr_fogcolor: {
@@ -1033,7 +1031,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
       return &LMatrix4::ones_mat();
     }
     LVecBase4 c = fog->get_color();
-    t = LMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,c[0],c[1],c[2],c[3]);
+    t.set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, c[0], c[1], c[2], c[3]);
     return &t;
   }
   case Shader::SMO_alight_x: {
@@ -1042,7 +1040,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
     AmbientLight *lt;
     DCAST_INTO_R(lt, np.node(), &LMatrix4::zeros_mat());
     LColor const &c = lt->get_color();
-    t = LMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,c[0],c[1],c[2],c[3]);
+    t.set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, c[0], c[1], c[2], c[3]);
     return &t;
   }
   case Shader::SMO_satten_x: {
@@ -1052,7 +1050,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
     DCAST_INTO_R(lt, np.node(), &LMatrix4::ones_mat());
     LVecBase3 const &a = lt->get_attenuation();
     PN_stdfloat x = lt->get_exponent();
-    t = LMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,a[0],a[1],a[2],x);
+    t.set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, a[0], a[1], a[2], x);
     return &t;
   }
   case Shader::SMO_dlight_x: {
@@ -1069,7 +1067,10 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
     d.normalize();
     LVecBase3 h = d + LVecBase3(0,-1,0);
     h.normalize();
-    t = LMatrix4(c[0],c[1],c[2],c[3],s[0],s[1],s[2],c[3],d[0],d[1],d[2],0,h[0],h[1],h[2],0);
+    t.set(c[0], c[1], c[2], c[3],
+          s[0], s[1], s[2], c[3],
+          d[0], d[1], d[2], 0,
+          h[0], h[1], h[2], 0);
     return &t;
   }
   case Shader::SMO_plight_x: {
@@ -1087,7 +1088,10 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
     Lens *lens = lt->get_lens(0);
     PN_stdfloat lnear = lens->get_near();
     PN_stdfloat lfar = lens->get_far();
-    t = LMatrix4(c[0],c[1],c[2],c[3],s[0],s[1],s[2],s[3],p[0],p[1],p[2],lnear,a[0],a[1],a[2],lfar);
+    t.set(c[0], c[1], c[2], c[3],
+          s[0], s[1], s[2], s[3],
+          p[0], p[1], p[2], lnear,
+          a[0], a[1], a[2], lfar);
     return &t;
   }
   case Shader::SMO_slight_x: {
@@ -1105,7 +1109,10 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
       _scene_setup->get_world_transform()->get_mat();
     LVecBase3 p = t.xform_point(lens->get_nodal_point());
     LVecBase3 d = -(t.xform_vec(lens->get_view_vector()));
-    t = LMatrix4(c[0],c[1],c[2],c[3],s[0],s[1],s[2],s[3],p[0],p[1],p[2],0,d[0],d[1],d[2],cutoff);
+    t.set(c[0], c[1], c[2], c[3],
+          s[0], s[1], s[2], s[3],
+          p[0], p[1], p[2], 0,
+          d[0], d[1], d[2], cutoff);
     return &t;
   }
   case Shader::SMO_light_ambient: {
@@ -1149,7 +1156,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
     if (_target_rs->get_attrib(ta) && _target_rs->get_attrib(tma) &&
         index < ta->get_num_on_stages()) {
       LVecBase3 scale = tma->get_transform(ta->get_on_stage(index))->get_scale();
-      t = LMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,scale[0],scale[1],scale[2],0);
+      t.set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, scale[0], scale[1], scale[2], 0);
       return &t;
     } else {
       return &LMatrix4::ident_mat();
@@ -1173,7 +1180,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
         index < ta->get_num_on_stages()) {
       TextureStage *ts = ta->get_on_stage(index);
       PN_stdfloat v = (ta->get_on_texture(ts)->get_format() == Texture::F_alpha);
-      t = LMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,v,v,v,0);
+      t.set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, v, v, v, 0);
       return &t;
     } else {
       return &LMatrix4::zeros_mat();
@@ -1185,7 +1192,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
     const PlaneNode *plane_node;
     DCAST_INTO_R(plane_node, np.node(), &LMatrix4::zeros_mat());
     LPlane p = plane_node->get_plane();
-    t = LMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,p[0],p[1],p[2],p[3]);
+    t.set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, p[0], p[1], p[2], p[3]);
     return &t;
   }
   case Shader::SMO_clipplane_x: {
@@ -1235,10 +1242,10 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
   case Shader::SMO_vec_constant_x: {
     const LVecBase4 &input = _target_shader->get_shader_input_vector(name);
     const PN_stdfloat *data = input.get_data();
-    t = LMatrix4(data[0],data[1],data[2],data[3],
-                 data[0],data[1],data[2],data[3],
-                 data[0],data[1],data[2],data[3],
-                 data[0],data[1],data[2],data[3]);
+    t.set(data[0], data[1], data[2], data[3],
+          data[0], data[1], data[2], data[3],
+          data[0], data[1], data[2], data[3],
+          data[0], data[1], data[2], data[3]);
     return &t;
   }
   case Shader::SMO_world_to_view: {
@@ -1248,7 +1255,8 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
     return &(_scene_setup->get_camera_transform()->get_mat());
   }
   case Shader::SMO_model_to_view: {
-    return &(_inv_cs_transform->compose(_internal_transform)->get_mat());
+    t = _inv_cs_transform->compose(_internal_transform)->get_mat();
+    return &t;
   }
   case Shader::SMO_model_to_apiview: {
     return &(_internal_transform->get_mat());
@@ -1394,10 +1402,10 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
       // There is an input specifying precisely this whole thing, with dot and
       // all.  Support this, even if only for backward compatibility.
       const LVecBase4 &data = _target_shader->get_shader_input_vector(name);
-      t = LMatrix4(data[0],data[1],data[2],data[3],
-                   data[0],data[1],data[2],data[3],
-                   data[0],data[1],data[2],data[3],
-                   data[0],data[1],data[2],data[3]);
+      t.set(data[0], data[1], data[2], data[3],
+            data[0], data[1], data[2], data[3],
+            data[0], data[1], data[2], data[3],
+            data[0], data[1], data[2], data[3]);
       return &t;
     }
 
@@ -1425,12 +1433,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
       // Apply the default OpenGL lights otherwise.
       // Special exception for light 0, which defaults to white.
       string basename = name->get_basename();
-      if (basename == "color" || basename == "diffuse") {
-        t.set_row(3, _light_color_scale);
-        return &t;
-      } else if (basename == "specular") {
-        return &LMatrix4::ones_mat();
-      }
+      return &LMatrix4::ones_mat();
     }
     return fetch_specified_member(NodePath(), name, t);
   }
@@ -1486,7 +1489,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
     } else if (index == 0) {
       // Apply the default OpenGL lights otherwise.
       // Special exception for light 0, which defaults to white.
-      t.set_row(0, _light_color_scale);
+      t.set_row(0, LVecBase4(1, 1, 1, 1));
     }
     return &t;
   }
@@ -1531,7 +1534,6 @@ fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LMatrix4 &t)
     Light *light = node->as_light();
     nassertr(light != nullptr, &LMatrix4::ident_mat());
     LColor c = light->get_color();
-    c.componentwise_mult(_light_color_scale);
     t.set_row(3, c);
     return &t;
 
@@ -1543,7 +1545,6 @@ fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LMatrix4 &t)
     nassertr(light != nullptr, &LMatrix4::ident_mat());
     if (node->is_ambient_light()) {
       LColor c = light->get_color();
-      c.componentwise_mult(_light_color_scale);
       t.set_row(3, c);
     } else {
       // Non-ambient lights don't currently have an ambient color in Panda3D.
@@ -1562,7 +1563,6 @@ fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LMatrix4 &t)
       t.set_row(3, LColor(0.0f, 0.0f, 0.0f, 1.0f));
     } else {
       LColor c = light->get_color();
-      c.componentwise_mult(_light_color_scale);
       t.set_row(3, c);
     }
     return &t;
@@ -1578,11 +1578,11 @@ fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LMatrix4 &t)
 
   } else if (attrib == IN_position) {
     if (np.is_empty()) {
-      t = LMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0);
+      t.set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0);
       return &t;
     } else if (node->is_ambient_light()) {
       // Ambient light has no position.
-      t = LMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
+      t.set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
       return &t;
     } else if (node->is_of_type(DirectionalLight::get_class_type())) {
       DirectionalLight *light;
@@ -1591,7 +1591,7 @@ fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LMatrix4 &t)
       CPT(TransformState) transform = np.get_transform(_scene_setup->get_scene_root().get_parent());
       LVector3 dir = -(light->get_direction() * transform->get_mat());
       dir *= _scene_setup->get_cs_world_transform()->get_mat();
-      t = LMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,dir[0],dir[1],dir[2],0);
+      t.set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, dir[0], dir[1], dir[2], 0);
       return &t;
     } else {
       LightLensNode *light;
@@ -1611,11 +1611,11 @@ fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LMatrix4 &t)
 
   } else if (attrib == IN_halfVector) {
     if (np.is_empty()) {
-      t = LMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0);
+      t.set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0);
       return &t;
     } else if (node->is_ambient_light()) {
       // Ambient light has no half-vector.
-      t = LMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
+      t.set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
       return &t;
     } else if (node->is_of_type(DirectionalLight::get_class_type())) {
       DirectionalLight *light;
@@ -1627,7 +1627,7 @@ fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LMatrix4 &t)
       dir.normalize();
       dir += LVector3(0, 0, 1);
       dir.normalize();
-      t = LMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,dir[0],dir[1],dir[2],1);
+      t.set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, dir[0], dir[1], dir[2], 1);
       return &t;
     } else {
       LightLensNode *light;
@@ -1644,7 +1644,7 @@ fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LMatrix4 &t)
       pos.normalize();
       pos += LVector3(0, 0, 1);
       pos.normalize();
-      t = LMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,pos[0],pos[1],pos[2],1);
+      t.set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, pos[0],pos[1],pos[2], 1);
       return &t;
     }
 
@@ -1899,6 +1899,14 @@ fetch_specified_texture(Shader::ShaderTexSpec &spec, SamplerState &sampler,
 const Shader::ShaderPtrData *GraphicsStateGuardian::
 fetch_ptr_parameter(const Shader::ShaderPtrSpec& spec) {
   return (_target_shader->get_shader_input_ptr(spec._arg));
+}
+
+/**
+ *
+ */
+bool GraphicsStateGuardian::
+fetch_ptr_parameter(const Shader::ShaderPtrSpec& spec, Shader::ShaderPtrData &data) {
+  return _target_shader->get_shader_input_ptr(spec._arg, data);
 }
 
 /**
@@ -2722,7 +2730,7 @@ do_issue_color_scale() {
   }
 
   if (_alpha_scale_via_texture && !_has_scene_graph_color &&
-      target_color_scale->has_alpha_scale()) {
+      _vertex_colors_enabled && target_color_scale->has_alpha_scale()) {
     // This color scale will set a special texture--so again, clear the
     // texture.
     _state_mask.clear_bit(TextureAttrib::get_class_slot());
@@ -2815,6 +2823,12 @@ do_issue_light() {
     }
 
   } else {
+    // Don't forget to still enable lighting if we have only an ambient light.
+    if (!_lighting_enabled) {
+      enable_lighting(true);
+      _lighting_enabled = true;
+    }
+
     set_ambient_light(target_light->get_ambient_contribution());
   }
 
@@ -3166,6 +3180,17 @@ determine_light_color_scale() {
                                 _scene_graph_color[1] * _current_color_scale[1],
                                 _scene_graph_color[2] * _current_color_scale[2],
                                 _scene_graph_color[3] * _current_color_scale[3]);
+    }
+
+  } else if (!_vertex_colors_enabled) {
+    // We don't have a scene graph color, but we don't want to enable vertex
+    // colors either, so we still need to force a white material color in
+    // absence of any other color.
+    _has_material_force_color = true;
+    _material_force_color.set(1.0f, 1.0f, 1.0f, 1.0f);
+    _light_color_scale.set(1.0f, 1.0f, 1.0f, 1.0f);
+    if (!_color_blend_involves_color_scale && _color_scale_enabled) {
+      _material_force_color.componentwise_mult(_current_color_scale);
     }
 
   } else {

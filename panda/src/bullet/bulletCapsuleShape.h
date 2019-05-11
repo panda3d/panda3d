@@ -20,7 +20,7 @@
 #include "bullet_utils.h"
 #include "bulletShape.h"
 
-#include "collisionTube.h"
+#include "collisionCapsule.h"
 
 /**
  *
@@ -35,7 +35,7 @@ PUBLISHED:
   BulletCapsuleShape(const BulletCapsuleShape &copy);
   INLINE ~BulletCapsuleShape();
 
-  static BulletCapsuleShape *make_from_solid(const CollisionTube *solid);
+  static BulletCapsuleShape *make_from_solid(const CollisionCapsule *solid);
 
   INLINE PN_stdfloat get_radius() const;
   INLINE PN_stdfloat get_half_height() const;

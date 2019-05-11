@@ -1,0 +1,2 @@
+pytest==3.2.0
+panda3d

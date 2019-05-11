@@ -54,4 +54,6 @@ try_lock() {
   }
 }
 
+#undef PAUSE
+
 #endif  // MUTEX_SPINLOCK

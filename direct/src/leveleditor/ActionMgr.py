@@ -1,4 +1,4 @@
-from pandac.PandaModules import *
+from panda3d.core import *
 from . import ObjectGlobals as OG
 
 class ActionMgr:

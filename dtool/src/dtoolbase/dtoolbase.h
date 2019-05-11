@@ -63,7 +63,9 @@
 /* Windows likes to define min() and max() macros, which will conflict with
    std::min() and std::max() respectively, unless we do this: */
 #ifdef WIN32
+#ifndef NOMINMAX
 #define NOMINMAX
+#endif
 #endif
 
 #ifndef __has_builtin
@@ -136,12 +138,10 @@
 #endif
 #endif
 
-#ifdef HAVE_PYTHON
 // Instead of including the Python headers, which will implicitly add a linker
 // flag to link in Python, we'll just excerpt the forward declaration of
 // PyObject.
 typedef struct _object PyObject;
-#endif
 
 #ifndef HAVE_EIGEN
 // If we don't have the Eigen library, don't define LINMATH_ALIGN.

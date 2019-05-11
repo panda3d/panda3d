@@ -771,6 +771,7 @@ PUBLISHED:
   void clear_material();
   bool has_material() const;
   PT(Material) get_material() const;
+  void replace_material(Material *mat, Material *new_mat);
 
   void set_fog(Fog *fog, int priority = 0);
   void set_fog_off(int priority = 0);
@@ -815,10 +816,10 @@ PUBLISHED:
   void do_billboard_point_eye(const NodePath &camera, PN_stdfloat offset);
   void do_billboard_point_world(const NodePath &camera, PN_stdfloat offset);
   INLINE void set_billboard_axis(PN_stdfloat offset = 0.0);
-  INLINE void set_billboard_point_eye(PN_stdfloat offset = 0.0);
+  INLINE void set_billboard_point_eye(PN_stdfloat offset = 0.0, bool fixed_depth = false);
   INLINE void set_billboard_point_world(PN_stdfloat offset = 0.0);
   void set_billboard_axis(const NodePath &camera, PN_stdfloat offset);
-  void set_billboard_point_eye(const NodePath &camera, PN_stdfloat offset);
+  void set_billboard_point_eye(const NodePath &camera, PN_stdfloat offset, bool fixed_depth = false);
   void set_billboard_point_world(const NodePath &camera, PN_stdfloat offset);
   void clear_billboard();
   bool has_billboard() const;
@@ -1016,6 +1017,8 @@ private:
                           const GlobPattern &glob) const;
   void r_find_all_materials(PandaNode *node, const RenderState *state,
                            Materials &materials) const;
+  static void r_replace_material(PandaNode *node, Material *mat,
+                                 const MaterialAttrib *new_attrib);
 
   PT(NodePathComponent) _head;
   int _backup_key;

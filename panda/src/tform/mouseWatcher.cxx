@@ -1326,7 +1326,7 @@ do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
     const PointerEventList *this_pointer_events;
     DCAST_INTO_V(this_pointer_events, input.get_data(_pointer_events_input).get_ptr());
     _num_trail_recent = this_pointer_events->get_num_events();
-    for (int i = 0; i < _num_trail_recent; i++) {
+    for (size_t i = 0; i < _num_trail_recent; i++) {
       bool in_win = this_pointer_events->get_in_window(i);
       int xpos = this_pointer_events->get_xpos(i);
       int ypos = this_pointer_events->get_ypos(i);

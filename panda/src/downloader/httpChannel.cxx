@@ -2762,7 +2762,7 @@ bool HTTPChannel::
 server_getline(string &str) {
   nassertr(!_source.is_null(), false);
   int ch = (*_source)->get();
-  while (!(*_source)->eof() && !(*_source)->fail()) {
+  while (ch != EOF && !(*_source)->fail()) {
     switch (ch) {
     case '\n':
       // end-of-line character, we're done.
@@ -2850,7 +2850,7 @@ bool HTTPChannel::
 server_get(string &str, size_t num_bytes) {
   nassertr(!_source.is_null(), false);
   int ch = (*_source)->get();
-  while (!(*_source)->eof() && !(*_source)->fail()) {
+  while (ch != EOF && !(*_source)->fail()) {
     _working_get += (char)ch;
     if (_working_get.length() >= num_bytes) {
       str = _working_get;

@@ -1,0 +1,117 @@
+<Comment> {
+  "egg-texture-cards -o thumb_map.egg -p 32,440 -g -0.04,0.04,-0.55,0.55 -wm clamp thumb_ready.png thumb_click.png thumb_hover.png thumb_disabled.png"
+}
+<Texture> thumb_ready {
+  thumb_ready.png
+  <Scalar> wrap { clamp }
+}
+<Texture> thumb_hover {
+  thumb_hover.png
+  <Scalar> wrap { clamp }
+}
+<Texture> thumb_disabled {
+  thumb_disabled.png
+  <Scalar> wrap { clamp }
+}
+<Texture> thumb_click {
+  thumb_click.png
+  <Scalar> wrap { clamp }
+}
+<Group> {
+  <Switch> { 1 }
+  <Scalar> fps { 2 }
+  <VertexPool> vpool {
+    <Vertex> 0 {
+      -0.04 0.55 0
+      <UV> { 0 1 }
+    }
+    <Vertex> 1 {
+      -0.04 -0.55 0
+      <UV> { 0 0 }
+    }
+    <Vertex> 2 {
+      0.04 -0.55 0
+      <UV> { 1 0 }
+    }
+    <Vertex> 3 {
+      0.04 0.55 0
+      <UV> { 1 1 }
+    }
+    <Vertex> 4 {
+      -0.04 0.55 0
+      <UV> { 0 1 }
+    }
+    <Vertex> 5 {
+      -0.04 -0.55 0
+      <UV> { 0 0 }
+    }
+    <Vertex> 6 {
+      0.04 -0.55 0
+      <UV> { 1 0 }
+    }
+    <Vertex> 7 {
+      0.04 0.55 0
+      <UV> { 1 1 }
+    }
+    <Vertex> 8 {
+      -0.04 0.55 0
+      <UV> { 0 1 }
+    }
+    <Vertex> 9 {
+      -0.04 -0.55 0
+      <UV> { 0 0 }
+    }
+    <Vertex> 10 {
+      0.04 -0.55 0
+      <UV> { 1 0 }
+    }
+    <Vertex> 11 {
+      0.04 0.55 0
+      <UV> { 1 1 }
+    }
+    <Vertex> 12 {
+      -0.04 0.55 0
+      <UV> { 0 1 }
+    }
+    <Vertex> 13 {
+      -0.04 -0.55 0
+      <UV> { 0 0 }
+    }
+    <Vertex> 14 {
+      0.04 -0.55 0
+      <UV> { 1 0 }
+    }
+    <Vertex> 15 {
+      0.04 0.55 0
+      <UV> { 1 1 }
+    }
+  }
+  <Group> thumb_ready {
+    <Polygon> {
+      <RGBA> { 1 1 1 1 }
+      <TRef> { thumb_ready }
+      <VertexRef> { 0 1 2 3 <Ref> { vpool } }
+    }
+  }
+  <Group> thumb_click {
+    <Polygon> {
+      <RGBA> { 1 1 1 1 }
+      <TRef> { thumb_click }
+      <VertexRef> { 4 5 6 7 <Ref> { vpool } }
+    }
+  }
+  <Group> thumb_hover {
+    <Polygon> {
+      <RGBA> { 1 1 1 1 }
+      <TRef> { thumb_hover }
+      <VertexRef> { 8 9 10 11 <Ref> { vpool } }
+    }
+  }
+  <Group> thumb_disabled {
+    <Polygon> {
+      <RGBA> { 1 1 1 1 }
+      <TRef> { thumb_disabled }
+      <VertexRef> { 12 13 14 15 <Ref> { vpool } }
+    }
+  }
+}

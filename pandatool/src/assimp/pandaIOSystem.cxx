@@ -79,7 +79,7 @@ Open(const char *file, const char *mode) {
     return new PandaIOStream(*stream);
 
   } else {
-    nassertr(false, nullptr); // Not implemented on purpose.
+    nassert_raise("write mode not implemented");
     return nullptr;
   }
 }

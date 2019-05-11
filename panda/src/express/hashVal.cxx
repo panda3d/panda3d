@@ -17,7 +17,7 @@
 
 #ifdef HAVE_OPENSSL
 #include "openSSLWrapper.h"  // must be included before any other openssl.
-#include "openssl/md5.h"
+#include <openssl/md5.h>
 #endif  // HAVE_OPENSSL
 
 using std::istream;
@@ -50,7 +50,7 @@ input_hex(istream &in) {
   size_t i = 0;
   int ch = in.get();
 
-  while (!in.eof() && !in.fail() && isxdigit(ch)) {
+  while (ch != EOF && !in.fail() && isxdigit(ch)) {
     if (i < 32) {
       buffer[i] = (char)ch;
     }
@@ -63,7 +63,7 @@ input_hex(istream &in) {
     return;
   }
 
-  if (!in.eof()) {
+  if (ch != EOF) {
     in.putback((char)ch);
   } else {
     in.clear();

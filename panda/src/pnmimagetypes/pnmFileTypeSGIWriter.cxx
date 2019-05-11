@@ -135,7 +135,8 @@ write_header() {
     break;
 
   default:
-    nassertr(false, false);
+    nassert_raise("unexpected channel count");
+    return false;
   }
 
   // For some reason, we have problems with SGI image files whose pixmax value

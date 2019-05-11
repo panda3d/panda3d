@@ -376,8 +376,7 @@ r_prepare_scene(GraphicsStateGuardianBase *gsg, const RenderState *node_state,
     geom = transformer.premunge_geom(geom, munger);
 
     // Prepare each of the vertex arrays in the munged Geom.
-    CPT(GeomVertexData) vdata = geom->get_vertex_data(current_thread);
-    vdata = vdata->animate_vertices(false, current_thread);
+    CPT(GeomVertexData) vdata = geom->get_animated_vertex_data(false, current_thread);
     GeomVertexDataPipelineReader vdata_reader(vdata, current_thread);
     int num_arrays = vdata_reader.get_num_arrays();
     for (int i = 0; i < num_arrays; ++i) {
@@ -474,7 +473,7 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point, bool &found_any,
   for (gi = geoms->begin(); gi != geoms->end(); ++gi) {
     CPT(Geom) geom = (*gi)._geom.get_read_pointer();
     geom->calc_tight_bounds(min_point, max_point, found_any,
-                            geom->get_vertex_data(current_thread)->animate_vertices(true, current_thread),
+                            geom->get_animated_vertex_data(true, current_thread),
                             !next_transform->is_identity(), mat,
                             current_thread);
   }

@@ -95,7 +95,7 @@ PUBLISHED:
   void receive_update_other(PyObject *distobj, DatagramIterator &di) const;
 
   void direct_update(PyObject *distobj, const std::string &field_name,
-                     const std::string &value_blob);
+                     const vector_uchar &value_blob);
   void direct_update(PyObject *distobj, const std::string &field_name,
                      const Datagram &datagram);
   bool pack_required_field(Datagram &datagram, PyObject *distobj,

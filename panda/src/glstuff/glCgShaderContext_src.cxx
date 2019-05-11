@@ -157,6 +157,16 @@ CLP(CgShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderConte
           break;
         case 2:  // gl_Normal
           loc = CA_normal;
+          if (cgGetParameterColumns(p) == 4) {
+            // Don't declare vtx_normal with 4 coordinates; it results in it
+            // reading the w coordinate from random memory.
+            GLCAT.error()
+              << "Cg varying " << cgGetParameterName(p);
+            if (cgGetParameterSemantic(p)) {
+              GLCAT.error(false) << " : " << cgGetParameterSemantic(p);
+            }
+            GLCAT.error(false) << " should be declared as float4, not float3!\n";
+          }
           break;
         case 3:  // gl_Color
           loc = CA_color;
@@ -226,12 +236,14 @@ CLP(CgShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderConte
         if (!resource) {
           resource = "unknown";
         }
-        GLCAT.error()
-          << "Could not find Cg varying " << cgGetParameterName(p);
-        if (attribname) {
-          GLCAT.error(false) << " : " << attribname;
+        if (GLCAT.is_debug()) {
+          GLCAT.debug()
+            << "Could not find Cg varying " << cgGetParameterName(p);
+          if (attribname) {
+            GLCAT.debug(false) << " : " << attribname;
+          }
+          GLCAT.debug(false) << " (" << resource << ") in the compiled GLSL program.\n";
         }
-        GLCAT.error(false) << " (" << resource << ") in the compiled GLSL program.\n";
 
       } else if (loc != 0 && bind._id._name == "vtx_position") {
         // We really have to bind the vertex position to attribute 0, since
@@ -312,10 +324,10 @@ CLP(CgShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderConte
         GLCAT.debug(false)
           << " is bound to a conventional attribute (" << resource << ")\n";
       }
-    }
-    if (loc == CA_unknown) {
-      // Suggest fix to developer.
-      GLCAT.error() << "Try using a different semantic.\n";
+      if (loc == CA_unknown) {
+        // Suggest fix to developer.
+        GLCAT.debug() << "Try using a different semantic.\n";
+      }
     }
 #endif
 

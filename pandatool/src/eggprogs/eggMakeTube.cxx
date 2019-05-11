@@ -29,7 +29,7 @@ EggMakeTube() {
   set_program_description
     ("egg-make-tube generates an egg file representing a \"tube\" model, "
      "a cylinder capped on both ends by hemispheres.  This is similar "
-     "in shape to the CollisionTube object within Panda.\n\n"
+     "in shape to the CollisionCapsule object within Panda.\n\n"
      "This program can also generate spheres if you omit -b; in this "
      "case, you are generating a degenerate tube of length 0.");
 

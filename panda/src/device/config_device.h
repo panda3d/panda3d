@@ -17,6 +17,7 @@
 #include "pandabase.h"
 #include "notifyCategoryProxy.h"
 #include "configVariableBool.h"
+#include "configVariableInt.h"
 
 NotifyCategoryDecl(device, EXPCL_PANDA_DEVICE, EXPTP_PANDA_DEVICE);
 

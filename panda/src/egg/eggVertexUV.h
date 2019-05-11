@@ -45,8 +45,11 @@ PUBLISHED:
   INLINE void set_uvw(const LTexCoord3d &texCoord);
 
   INLINE bool has_tangent() const;
+  INLINE bool has_tangent4() const;
   INLINE const LNormald &get_tangent() const;
+  INLINE LVecBase4d get_tangent4() const;
   INLINE void set_tangent(const LNormald &tangent);
+  INLINE void set_tangent4(const LVecBase4d &tangent);
   INLINE void clear_tangent();
 
   INLINE bool has_binormal() const;
@@ -69,6 +72,10 @@ private:
     F_has_tangent   = 0x001,
     F_has_binormal  = 0x002,
     F_has_w         = 0x004,
+    F_has_tangent4  = 0x008,
+
+    // Only defined temporarily as we can't add a float to this class in 1.10.
+    F_flip_computed_binormal = 0x010,
   };
 
   int _flags;

@@ -20,7 +20,7 @@
 #include "asyncTaskCollection.h"
 #include "typedReferenceCount.h"
 #include "thread.h"
-#include "conditionVarFull.h"
+#include "conditionVar.h"
 #include "pvector.h"
 #include "pdeque.h"
 #include "pStatCollector.h"
@@ -159,7 +159,7 @@ protected:
 
   AsyncTaskManager *_manager;
 
-  ConditionVarFull _cvar;  // signaled when one of the task heaps, _state, or _current_sort changes, or a task finishes.
+  ConditionVar _cvar;  // signaled when one of the task heaps, _state, or _current_sort changes, or a task finishes.
 
   enum State {
     S_initial,     // no threads yet

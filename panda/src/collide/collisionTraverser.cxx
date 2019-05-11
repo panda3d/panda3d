@@ -20,7 +20,7 @@
 #include "collisionVisualizer.h"
 #include "collisionSphere.h"
 #include "collisionBox.h"
-#include "collisionTube.h"
+#include "collisionCapsule.h"
 #include "collisionPolygon.h"
 #include "collisionPlane.h"
 #include "config_collide.h"
@@ -345,7 +345,7 @@ traverse(const NodePath &root) {
   _geom_volume_pcollector.flush_level();
 
   CollisionSphere::flush_level();
-  CollisionTube::flush_level();
+  CollisionCapsule::flush_level();
   CollisionPolygon::flush_level();
   CollisionPlane::flush_level();
   CollisionBox::flush_level();
@@ -1254,7 +1254,7 @@ compare_collider_to_geom(CollisionEntry &entry, const Geom *geom,
 
     if (geom->get_primitive_type() == Geom::PT_polygons) {
       Thread *current_thread = Thread::get_current_thread();
-      CPT(GeomVertexData) data = geom->get_vertex_data()->animate_vertices(true, current_thread);
+      CPT(GeomVertexData) data = geom->get_animated_vertex_data(true, current_thread);
       GeomVertexReader vertex(data, InternalName::get_vertex());
 
       int num_primitives = geom->get_num_primitives();

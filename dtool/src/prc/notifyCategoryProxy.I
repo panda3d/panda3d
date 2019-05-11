@@ -72,12 +72,6 @@ is_spam() {
   // Instruct the compiler to optimize for the usual case.
   return UNLIKELY(get_unsafe_ptr()->is_spam());
 }
-#else
-template<class GetCategory>
-constexpr bool NotifyCategoryProxy<GetCategory>::
-is_spam() {
-  return false;
-}
 #endif
 
 /**
@@ -89,12 +83,6 @@ INLINE bool NotifyCategoryProxy<GetCategory>::
 is_debug() {
   // Instruct the compiler to optimize for the usual case.
   return UNLIKELY(get_unsafe_ptr()->is_debug());
-}
-#else
-template<class GetCategory>
-constexpr bool NotifyCategoryProxy<GetCategory>::
-is_debug() {
-  return false;
 }
 #endif
 

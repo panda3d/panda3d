@@ -24,7 +24,7 @@
 #include "typedReferenceCount.h"
 #include "namable.h"
 #include "pmutex.h"
-#include "conditionVarFull.h"
+#include "conditionVar.h"
 
 class PartBundle;
 class AnimChannelBase;
@@ -39,6 +39,8 @@ class EXPCL_PANDA_CHAN AnimControl : public TypedReferenceCount, public AnimInte
 public:
   AnimControl(const std::string &name, PartBundle *part,
               double frame_rate, int num_frames);
+  AnimControl(const AnimControl &copy) = delete;
+
   void setup_anim(PartBundle *part, AnimBundle *anim, int channel_index,
                   const BitArray &bound_joints);
   void set_bound_joints(const BitArray &bound_joints);
@@ -77,12 +79,12 @@ private:
   bool _pending;
   std::string _pending_done_event;
   Mutex _pending_lock;  // protects the above two.
-  ConditionVarFull _pending_cvar; // signals when _pending goes true.
+  ConditionVar _pending_cvar; // signals when _pending goes true.
 
   // This is a PT(PartGroup) instead of a PT(PartBundle), just because we
   // can't include partBundle.h for circular reasons.  But it actually keeps a
   // pointer to a PartBundle.
-  PT(PartGroup) _part;
+  const PT(PartGroup) _part;
   PT(AnimBundle) _anim;
   int _channel_index;
 

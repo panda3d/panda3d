@@ -1,5 +1,19 @@
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pathFind.cxx
+ * @author Deepak, John, Navin
+ * @date 2009-10-24
+ */
 
 #include "pathFollow.h"
+
+#include "pathFind.h"
 
 PathFollow::PathFollow(AICharacter *ai_ch, float follow_wt) {
     _follow_weight = follow_wt;

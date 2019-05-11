@@ -45,6 +45,9 @@ PUBLISHED:
 
   void record_derivation(TypeHandle child, TypeHandle parent);
   void record_alternate_name(TypeHandle type, const std::string &name);
+#ifdef HAVE_PYTHON
+  void record_python_type(TypeHandle type, PyObject *python_type);
+#endif
 
   TypeHandle find_type(const std::string &name) const;
   TypeHandle find_type_by_id(int id) const;
@@ -98,8 +101,6 @@ private:
   void write_node(std::ostream &out, int indent_level,
                   const TypeRegistryNode *node) const;
 
-  static INLINE void init_lock();
-
   typedef std::vector<TypeRegistryNode *> HandleRegistry;
   HandleRegistry _handle_registry;
 
@@ -111,7 +112,7 @@ private:
 
   bool _derivations_fresh;
 
-  static MutexImpl *_lock;
+  static MutexImpl _lock;
   static TypeRegistry *_global_pointer;
 
   friend class TypeHandle;

@@ -12,10 +12,12 @@
  */
 
 #include "movieTypeRegistry.h"
+
 #include "string_utils.h"
 #include "config_movies.h"
 #include "config_putil.h"
 #include "load_dso.h"
+#include "reMutexHolder.h"
 
 using std::endl;
 using std::string;
@@ -29,6 +31,14 @@ PT(MovieAudio) MovieTypeRegistry::
 make_audio(const Filename &name) {
   string ext = downcase(name.get_extension());
 
+#ifdef HAVE_ZLIB
+  if (ext == "pz" || ext == "gz") {
+    ext = Filename(name.get_basename_wo_extension()).get_extension();
+  }
+#endif
+
+  _audio_lock.lock();
+
   // Make sure that the list of audio types has been read in.
   load_audio_types();
 
@@ -41,6 +51,7 @@ make_audio(const Filename &name) {
   // Explicit extension is preferred over catch-all.
   if (_audio_type_registry.count(ext)) {
     MakeAudioFunc func = _audio_type_registry[ext];
+    _audio_lock.unlock();
     return (*func)(name);
   }
 
@@ -53,12 +64,14 @@ make_audio(const Filename &name) {
 
   if (_audio_type_registry.count("*")) {
     MakeAudioFunc func = _audio_type_registry["*"];
+    _audio_lock.unlock();
     return (*func)(name);
   }
 
   movies_cat.error()
     << "Support for audio files with extension ." << ext << " was not enabled.\n";
 
+  _audio_lock.unlock();
   return new MovieAudio("Load-Failure Stub");
 }
 
@@ -68,6 +81,7 @@ make_audio(const Filename &name) {
  */
 void MovieTypeRegistry::
 register_audio_type(MakeAudioFunc func, const string &extensions) {
+  ReMutexHolder holder(_audio_lock);
   vector_string words;
   extract_words(downcase(extensions), words);
 
@@ -89,6 +103,7 @@ register_audio_type(MakeAudioFunc func, const string &extensions) {
  */
 void MovieTypeRegistry::
 load_audio_types() {
+  ReMutexHolder holder(_audio_lock);
   static bool audio_types_loaded = false;
 
   if (!audio_types_loaded) {
@@ -145,6 +160,14 @@ PT(MovieVideo) MovieTypeRegistry::
 make_video(const Filename &name) {
   string ext = downcase(name.get_extension());
 
+#ifdef HAVE_ZLIB
+  if (ext == "pz" || ext == "gz") {
+    ext = Filename(name.get_basename_wo_extension()).get_extension();
+  }
+#endif
+
+  _video_lock.lock();
+
   // Make sure that the list of video types has been read in.
   load_video_types();
 
@@ -157,6 +180,7 @@ make_video(const Filename &name) {
   // Explicit extension is preferred over catch-all.
   if (_video_type_registry.count(ext)) {
     MakeVideoFunc func = _video_type_registry[ext];
+    _video_lock.unlock();
     return (*func)(name);
   }
 
@@ -169,12 +193,14 @@ make_video(const Filename &name) {
 
   if (_video_type_registry.count("*")) {
     MakeVideoFunc func = _video_type_registry["*"];
+    _video_lock.unlock();
     return (*func)(name);
   }
 
   movies_cat.error()
     << "Support for video files with extension ." << ext << " was not enabled.\n";
 
+  _video_lock.unlock();
   return new MovieVideo("Load-Failure Stub");
 }
 
@@ -184,6 +210,7 @@ make_video(const Filename &name) {
  */
 void MovieTypeRegistry::
 register_video_type(MakeVideoFunc func, const string &extensions) {
+  ReMutexHolder holder(_video_lock);
   vector_string words;
   extract_words(downcase(extensions), words);
 
@@ -205,6 +232,7 @@ register_video_type(MakeVideoFunc func, const string &extensions) {
  */
 void MovieTypeRegistry::
 load_video_types() {
+  ReMutexHolder holder(_video_lock);
   static bool video_types_loaded = false;
 
   if (!video_types_loaded) {
@@ -259,6 +287,7 @@ load_video_types() {
  */
 void MovieTypeRegistry::
 load_movie_library(const string &name) {
+  ReMutexHolder holder(_video_lock);
   Filename dlname = Filename::dso_filename("lib" + name + ".so");
   movies_cat.info()
     << "loading video type module: " << name << endl;

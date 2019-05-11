@@ -287,6 +287,28 @@ make_nonindexed(bool composite_only) {
 }
 
 /**
+ * Returns a GeomVertexData that represents the results of computing the
+ * vertex animation on the CPU for this Geom's vertex data.
+ *
+ * If there is no CPU-defined vertex animation on this object, this just
+ * returns the original object.
+ *
+ * If there is vertex animation, but the VertexTransform values have not
+ * changed since last time, this may return the same pointer it returned
+ * previously.  Even if the VertexTransform values have changed, it may still
+ * return the same pointer, but with its contents modified (this is preferred,
+ * since it allows the graphics backend to update vertex buffers optimally).
+ *
+ * If force is false, this method may return immediately with stale data, if
+ * the vertex data is not completely resident.  If force is true, this method
+ * will never return stale data, but may block until the data is available.
+ */
+CPT(GeomVertexData) Geom::
+get_animated_vertex_data(bool force, Thread *current_thread) const {
+  return get_vertex_data()->animate_vertices(force, current_thread);
+}
+
+/**
  * Replaces the ith GeomPrimitive object stored within the Geom with the new
  * object.
  *
@@ -870,6 +892,8 @@ make_patches_in_place() {
  *
  * Don't call this in a downstream thread unless you don't mind it blowing
  * away other changes you might have recently made in an upstream thread.
+ *
+ * @since 1.10.0
  */
 void Geom::
 make_adjacency_in_place() {
@@ -1311,13 +1335,12 @@ compute_internal_bounds(Geom::CData *cdata, Thread *current_thread) const {
   int num_vertices = 0;
 
   // Get the vertex data, after animation.
-  CPT(GeomVertexData) vertex_data = cdata->_data.get_read_pointer(current_thread);
-  vertex_data = vertex_data->animate_vertices(true, current_thread);
+  CPT(GeomVertexData) vertex_data = get_animated_vertex_data(true, current_thread);
 
   // Now actually compute the bounding volume.  We do this by using
   // calc_tight_bounds to determine our box first.
   LPoint3 pmin, pmax;
-  PN_stdfloat sq_center_dist;
+  PN_stdfloat sq_center_dist = 0.0f;
   bool found_any = false;
   do_calc_tight_bounds(pmin, pmax, sq_center_dist, found_any,
                        vertex_data, false, LMatrix4::ident_mat(),
@@ -1358,7 +1381,7 @@ compute_internal_bounds(Geom::CData *cdata, Thread *current_thread) const {
         LPoint3 aabb_center = (pmin + pmax) * 0.5f;
         PN_stdfloat best_sq_radius = (pmax - aabb_center).length_squared();
 
-        if (btype != BoundingVolume::BT_fastest &&
+        if (btype != BoundingVolume::BT_fastest && best_sq_radius > 0.0f &&
             aabb_center.length_squared() / best_sq_radius >= (0.2f * 0.2f)) {
           // Hmm, this is an off-center model.  Maybe we can do a better job
           // by calculating the bounding sphere from the AABB center.
@@ -1368,7 +1391,8 @@ compute_internal_bounds(Geom::CData *cdata, Thread *current_thread) const {
           do_calc_sphere_radius(aabb_center, better_sq_radius, found_any,
                                 vertex_data, cdata, current_thread);
 
-          if (found_any && better_sq_radius <= best_sq_radius) {
+          if (found_any && better_sq_radius > 0.0f &&
+              better_sq_radius <= best_sq_radius) {
             // Great.  This is as good a sphere as we're going to get.
             if (btype == BoundingVolume::BT_best &&
                 avg_box_area < better_sq_radius * MathNumbers::pi) {
@@ -1388,7 +1412,7 @@ compute_internal_bounds(Geom::CData *cdata, Thread *current_thread) const {
           cdata->_internal_bounds = new BoundingBox(pmin, pmax);
           break;
 
-        } else if (sq_center_dist <= best_sq_radius) {
+        } else if (sq_center_dist >= 0.0f && sq_center_dist <= best_sq_radius) {
           // No, but a sphere centered on the origin is apparently still
           // better than a sphere around the bounding box.
           cdata->_internal_bounds =
@@ -1399,7 +1423,8 @@ compute_internal_bounds(Geom::CData *cdata, Thread *current_thread) const {
           // This is the worst sphere we can make, which is why we will only
           // do it when the user specifically requests a sphere.
           cdata->_internal_bounds =
-            new BoundingSphere(aabb_center, csqrt(best_sq_radius));
+            new BoundingSphere(aabb_center,
+              (best_sq_radius > 0.0f) ? csqrt(best_sq_radius) : 0.0f);
           break;
         }
       }
@@ -1483,7 +1508,7 @@ clear_prepared(PreparedGraphicsObjects *prepared_objects) {
   } else {
     // If this assertion fails, clear_prepared() was given a prepared_objects
     // that the geom didn't know about.
-    nassertv(false);
+    nassert_raise("unknown PreparedGraphicsObjects");
   }
 }
 
@@ -1823,8 +1848,11 @@ check_valid(const GeomVertexDataPipelineReader *data_reader) const {
 bool GeomPipelineReader::
 draw(GraphicsStateGuardianBase *gsg,
      const GeomVertexDataPipelineReader *data_reader, bool force) const {
-  PStatTimer timer(Geom::_draw_primitive_setup_pcollector);
-  bool all_ok = gsg->begin_draw_primitives(this, data_reader, force);
+  bool all_ok;
+  {
+    PStatTimer timer(Geom::_draw_primitive_setup_pcollector);
+    all_ok = gsg->begin_draw_primitives(this, data_reader, force);
+  }
   if (all_ok) {
     Geom::Primitives::const_iterator pi;
     for (pi = _cdata->_primitives.begin();

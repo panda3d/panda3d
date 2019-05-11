@@ -283,15 +283,25 @@ exception() const {
  */
 int PythonTask::
 __setattr__(PyObject *self, PyObject *attr, PyObject *v) {
-  if (PyObject_GenericSetAttr(self, attr, v) == 0) {
-    return 0;
-  }
-
-  if (!PyErr_ExceptionMatches(PyExc_AttributeError)) {
+#if PY_MAJOR_VERSION >= 3
+  if (!PyUnicode_Check(attr)) {
+#else
+  if (!PyString_Check(attr)) {
+#endif
+    PyErr_Format(PyExc_TypeError,
+                 "attribute name must be string, not '%.200s'",
+                 attr->ob_type->tp_name);
     return -1;
   }
 
-  PyErr_Clear();
+  PyObject *descr = _PyType_Lookup(Py_TYPE(self), attr);
+  if (descr != nullptr) {
+    Py_INCREF(descr);
+    descrsetfunc f = descr->ob_type->tp_descr_set;
+    if (f != nullptr) {
+      return f(descr, self, v);
+    }
+  }
 
   if (task_cat.is_debug()) {
     PyObject *str = PyObject_Repr(v);
@@ -352,31 +362,18 @@ __delattr__(PyObject *self, PyObject *attr) {
  * object.
  */
 PyObject *PythonTask::
-__getattr__(PyObject *attr) const {
-  // Note that with the new Interrogate behavior, this method behaves more
-  // like the Python __getattr__ rather than being directly assigned to the
-  // tp_getattro slot (a la __getattribute__). So, we won't get here when the
-  // attribute has already been found via other methods.
-
+__getattribute__(PyObject *self, PyObject *attr) const {
+  // We consult the instance dict first, since the user may have overridden a
+  // method or something.
   PyObject *item = PyDict_GetItem(__dict__, attr);
 
-  if (item == nullptr) {
-    // PyDict_GetItem does not raise an exception.
-#if PY_MAJOR_VERSION < 3
-    PyErr_Format(PyExc_AttributeError,
-                 "'PythonTask' object has no attribute '%.400s'",
-                 PyString_AS_STRING(attr));
-#else
-    PyErr_Format(PyExc_AttributeError,
-                 "'PythonTask' object has no attribute '%U'",
-                 attr);
-#endif
-    return nullptr;
+  if (item != nullptr) {
+    // PyDict_GetItem returns a borrowed reference.
+    Py_INCREF(item);
+    return item;
   }
 
-  // PyDict_GetItem returns a borrowed reference.
-  Py_INCREF(item);
-  return item;
+  return PyObject_GenericGetAttr(self, attr);
 }
 
 /**
@@ -598,7 +595,9 @@ do_python_task() {
             // directly instead of having to do:
             //   await taskMgr.add(Task.pause(1.0))
             AsyncTask *task = (AsyncTask *)fut;
-            _manager->add(task);
+            if (!task->is_alive()) {
+              _manager->add(task);
+            }
           }
           if (fut->add_waiting_task(this)) {
             if (task_cat.is_debug()) {

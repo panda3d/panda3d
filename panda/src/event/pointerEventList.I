@@ -38,99 +38,115 @@ operator = (const PointerEventList &copy) {
 /**
  * Returns the number of events in the list.
  */
-INLINE int PointerEventList::
+INLINE size_t PointerEventList::
 get_num_events() const {
   return _events.size();
+}
+
+/**
+ * Returns true if the list is empty.
+ */
+INLINE bool PointerEventList::
+empty() const {
+  return _events.empty();
+}
+
+/**
+ * Returns the nth event in the list.
+ */
+INLINE const PointerEvent &PointerEventList::
+get_event(size_t n) const {
+  return _events[n];
 }
 
 /**
  * Get the in-window flag of the nth event.
  */
 INLINE bool PointerEventList::
-get_in_window(int evt) const {
-  nassertr((evt >= 0) && (evt < (int)_events.size()), 0);
-  return _events[evt]._in_window;
+get_in_window(size_t n) const {
+  nassertr(n < _events.size(), 0);
+  return _events[n]._in_window;
 }
 
 /**
  * Get the x-coordinate of the nth event.
  */
 INLINE int PointerEventList::
-get_xpos(int evt) const {
-  nassertr((evt >= 0) && (evt < (int)_events.size()), 0);
-  return _events[evt]._xpos;
+get_xpos(size_t n) const {
+  nassertr(n < _events.size(), 0);
+  return _events[n]._xpos;
 }
 
 /**
  * Get the y-coordinate of the nth event.
  */
 INLINE int PointerEventList::
-get_ypos(int evt) const {
-  nassertr((evt >= 0) && (evt < (int)_events.size()), 0);
-  return _events[evt]._ypos;
+get_ypos(size_t n) const {
+  nassertr(n < _events.size(), 0);
+  return _events[n]._ypos;
 }
 
 /**
- * Get the x-coordinate of the nth event.
+ * Get the x-delta of the nth event.
  */
-INLINE int PointerEventList::
-get_dx(int evt) const {
-  nassertr((evt >= 0) && (evt < (int)_events.size()), 0);
-  return _events[evt]._dx;
+INLINE double PointerEventList::
+get_dx(size_t n) const {
+  nassertr(n < _events.size(), 0);
+  return _events[n]._dx;
 }
 
 /**
- * Get the y-coordinate of the nth event.
+ * Get the y-delta of the nth event.
  */
-INLINE int PointerEventList::
-get_dy(int evt) const {
-  nassertr((evt >= 0) && (evt < (int)_events.size()), 0);
-  return _events[evt]._dy;
+INLINE double PointerEventList::
+get_dy(size_t n) const {
+  nassertr(n < _events.size(), 0);
+  return _events[n]._dy;
 }
 
 /**
  * Get the length of the nth event.
  */
 INLINE double PointerEventList::
-get_length(int evt) const {
-  nassertr((evt >= 0) && (evt < (int)_events.size()), 0);
-  return _events[evt]._length;
+get_length(size_t n) const {
+  nassertr(n < _events.size(), 0);
+  return _events[n]._length;
 }
 
 /**
  * Get the direction of the nth event.
  */
 INLINE double PointerEventList::
-get_direction(int evt) const {
-  nassertr((evt >= 0) && (evt < (int)_events.size()), 0);
-  return _events[evt]._direction;
+get_direction(size_t n) const {
+  nassertr(n < _events.size(), 0);
+  return _events[n]._direction;
 }
 
 /**
  * Get the rotation of the nth event.
  */
 INLINE double PointerEventList::
-get_rotation(int evt) const {
-  nassertr((evt >= 0) && (evt < (int)_events.size()), 0);
-  return _events[evt]._rotation;
+get_rotation(size_t n) const {
+  nassertr(n < _events.size(), 0);
+  return _events[n]._rotation;
 }
 
 /**
  * Get the sequence number of the nth event.
  */
 INLINE int PointerEventList::
-get_sequence(int evt) const {
-  nassertr((evt >= 0) && (evt < (int)_events.size()), 0);
-  return _events[evt]._sequence;
+get_sequence(size_t n) const {
+  nassertr(n < _events.size(), 0);
+  return _events[n]._sequence;
 }
 
 /**
  * Get the timestamp of the nth event.
  */
 INLINE double PointerEventList::
-get_time(int evt) const {
-  nassertr((evt >= 0) && (evt < (int)_events.size()), 0);
-  return _events[evt]._time;
+get_time(size_t n) const {
+  nassertr(n < _events.size(), 0);
+  return _events[n]._time;
 }
 
 /**

@@ -19,7 +19,6 @@
 #include "dSearchPath.h"
 #include "coordinateSystem.h"
 #include "dconfig.h"
-#include "config_dconfig.h"
 #include "string_utils.h"
 #include "vector_string.h"
 #include "configVariableInt.h"

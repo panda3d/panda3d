@@ -445,7 +445,7 @@ do_flush() {
     if (data_sent > 0) {
       total_sent += data_sent;
     }
-    double last_report = 0;
+
     while (!okflag && tcp->Active() &&
            (data_sent > 0 || tcp->GetLastError() == LOCAL_BLOCKING_ERROR)) {
       if (data_sent == 0) {
@@ -478,7 +478,8 @@ check_send_error(bool okflag) {
   if (!okflag) {
     static ConfigVariableBool abort_send_error("abort-send-error", false);
     if (abort_send_error) {
-      nassertr(false, false);
+      nassert_raise("send error");
+      return false;
     }
 
     // Assume any error means the connection has been reset; tell our manager

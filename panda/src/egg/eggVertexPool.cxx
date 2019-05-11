@@ -445,7 +445,8 @@ add_vertex(EggVertex *vertex, int index) {
     }
 
     // Oops, you duplicated a vertex index.
-    nassertr(false, nullptr);
+    nassert_raise("duplicate vertex index");
+    return nullptr;
   }
 
   _unique_vertices.insert(vertex);
@@ -677,7 +678,15 @@ transform(const LMatrix4d &mat) {
     typedef pvector<EggVertex *> Verts;
     Verts verts;
     verts.reserve(size());
+
+    // Work around MSVC 2017 compiler bug, see GitHub issue #379
+#ifdef _MSC_VER
+    for (const IndexVertices::value_type &v : _index_vertices) {
+      verts.push_back(v.second);
+    }
+#else
     std::copy(begin(), end(), std::back_inserter(verts));
+#endif
 
     Verts::const_iterator vi;
     for (vi = verts.begin(); vi != verts.end(); ++vi) {

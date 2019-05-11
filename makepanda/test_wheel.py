@@ -17,26 +17,34 @@ from optparse import OptionParser
 def test_wheel(wheel, verbose=False):
     envdir = tempfile.mkdtemp(prefix="venv-")
     print("Setting up virtual environment in {0}".format(envdir))
+    sys.stdout.flush()
 
+    # Make sure pip is up-to-date first.
+    subprocess.call([sys.executable, "-B", "-m", "pip", "install", "-U", "pip"])
+
+    # Create a virtualenv.
     if sys.version_info >= (3, 0):
-        subprocess.call([sys.executable, "-m", "venv", "--clear", envdir])
+        subprocess.call([sys.executable, "-B", "-m", "venv", "--clear", envdir])
     else:
-        subprocess.call([sys.executable, "-m", "virtualenv", "--clear", envdir])
+        subprocess.call([sys.executable, "-B", "-m", "virtualenv", "--clear", envdir])
 
-    # Install pytest into the environment, as well as our wheel.
-    if sys.platform == "win32":
-        pip = os.path.join(envdir, "Scripts", "pip.exe")
-    else:
-        pip = os.path.join(envdir, "bin", "pip")
-    if subprocess.call([pip, "install", "pytest", wheel]) != 0:
-        shutil.rmtree(envdir)
-        sys.exit(1)
-
-    # Run the test suite.
+    # Determine the path to the Python interpreter.
     if sys.platform == "win32":
         python = os.path.join(envdir, "Scripts", "python.exe")
     else:
         python = os.path.join(envdir, "bin", "python")
+
+    # Upgrade pip inside the environment too.
+    if subprocess.call([python, "-m", "pip", "install", "-U", "pip"]) != 0:
+        shutil.rmtree(envdir)
+        sys.exit(1)
+
+    # Install pytest into the environment, as well as our wheel.
+    if subprocess.call([python, "-m", "pip", "install", "pytest", wheel]) != 0:
+        shutil.rmtree(envdir)
+        sys.exit(1)
+
+    # Run the test suite.
     test_cmd = [python, "-m", "pytest", "tests"]
     if verbose:
         test_cmd.append("--verbose")

@@ -23,7 +23,7 @@ class StringDecoder;
 
 /**
  * This class can be used to convert text between multiple representations,
- * e.g.  utf-8 to Unicode.  You may use it as a static class object, passing
+ * e.g.  UTF-8 to UTF-16.  You may use it as a static class object, passing
  * the encoding each time, or you may create an instance and use that object,
  * which will record the current encoding and retain the current string.
  *
@@ -35,11 +35,16 @@ PUBLISHED:
   enum Encoding {
     E_iso8859,
     E_utf8,
-    E_unicode
+    E_utf16be,
+
+    // Deprecated alias for E_utf16be
+    E_unicode = E_utf16be,
   };
 
   INLINE TextEncoder();
   INLINE TextEncoder(const TextEncoder &copy);
+
+  virtual ~TextEncoder() = default;
 
   INLINE void set_encoding(Encoding encoding);
   INLINE Encoding get_encoding() const;
@@ -48,35 +53,46 @@ PUBLISHED:
   INLINE static Encoding get_default_encoding();
   MAKE_PROPERTY(default_encoding, get_default_encoding, set_default_encoding);
 
+#ifdef CPPPARSER
+  EXTEND void set_text(PyObject *text);
+  EXTEND void set_text(PyObject *text, Encoding encoding);
+#else
   INLINE void set_text(const std::string &text);
   INLINE void set_text(const std::string &text, Encoding encoding);
+#endif
   INLINE void clear_text();
   INLINE bool has_text() const;
 
   void make_upper();
   void make_lower();
 
+#ifdef CPPPARSER
+  EXTEND PyObject *get_text() const;
+  EXTEND PyObject *get_text(Encoding encoding) const;
+  EXTEND void append_text(PyObject *text);
+#else
   INLINE std::string get_text() const;
   INLINE std::string get_text(Encoding encoding) const;
   INLINE void append_text(const std::string &text);
-  INLINE void append_unicode_char(int character);
+#endif
+  INLINE void append_unicode_char(char32_t character);
   INLINE size_t get_num_chars() const;
   INLINE int get_unicode_char(size_t index) const;
-  INLINE void set_unicode_char(size_t index, int character);
+  INLINE void set_unicode_char(size_t index, char32_t character);
   INLINE std::string get_encoded_char(size_t index) const;
   INLINE std::string get_encoded_char(size_t index, Encoding encoding) const;
   INLINE std::string get_text_as_ascii() const;
 
   INLINE static std::string reencode_text(const std::string &text, Encoding from, Encoding to);
 
-  INLINE static bool unicode_isalpha(int character);
-  INLINE static bool unicode_isdigit(int character);
-  INLINE static bool unicode_ispunct(int character);
-  INLINE static bool unicode_islower(int character);
-  INLINE static bool unicode_isupper(int character);
-  INLINE static bool unicode_isspace(int character);
-  INLINE static int unicode_toupper(int character);
-  INLINE static int unicode_tolower(int character);
+  INLINE static bool unicode_isalpha(char32_t character);
+  INLINE static bool unicode_isdigit(char32_t character);
+  INLINE static bool unicode_ispunct(char32_t character);
+  INLINE static bool unicode_islower(char32_t character);
+  INLINE static bool unicode_isupper(char32_t character);
+  INLINE static bool unicode_isspace(char32_t character);
+  INLINE static int unicode_toupper(char32_t character);
+  INLINE static int unicode_tolower(char32_t character);
 
   INLINE static std::string upper(const std::string &source);
   INLINE static std::string upper(const std::string &source, Encoding encoding);
@@ -91,11 +107,24 @@ PUBLISHED:
   std::wstring get_wtext_as_ascii() const;
   bool is_wtext() const;
 
-  static std::string encode_wchar(wchar_t ch, Encoding encoding);
+#ifdef CPPPARSER
+  EXTEND static PyObject *encode_wchar(char32_t ch, Encoding encoding);
+  EXTEND INLINE PyObject *encode_wtext(const std::wstring &wtext) const;
+  EXTEND static PyObject *encode_wtext(const std::wstring &wtext, Encoding encoding);
+  EXTEND INLINE PyObject *decode_text(PyObject *text) const;
+  EXTEND static PyObject *decode_text(PyObject *text, Encoding encoding);
+#else
+  static std::string encode_wchar(char32_t ch, Encoding encoding);
   INLINE std::string encode_wtext(const std::wstring &wtext) const;
   static std::string encode_wtext(const std::wstring &wtext, Encoding encoding);
   INLINE std::wstring decode_text(const std::string &text) const;
   static std::wstring decode_text(const std::string &text, Encoding encoding);
+#endif
+
+  MAKE_PROPERTY(text, get_text, set_text);
+
+protected:
+  virtual void text_changed();
 
 private:
   enum Flags {

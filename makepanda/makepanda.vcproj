@@ -1043,7 +1043,7 @@
 				<File RelativePath="..\panda\src\collide\collisionLine.I"></File>
 				<File RelativePath="..\panda\src\collide\collisionHandlerFluidPusher.h"></File>
 				<File RelativePath="..\panda\src\collide\config_collide.h"></File>
-				<File RelativePath="..\panda\src\collide\collisionTube.h"></File>
+				<File RelativePath="..\panda\src\collide\collisionCapsule.h"></File>
 				<File RelativePath="..\panda\src\collide\collisionSegment.cxx"></File>
 				<File RelativePath="..\panda\src\collide\collisionBox.h"></File>
 				<File RelativePath="..\panda\src\collide\collide_composite1.cxx"></File>
@@ -1054,7 +1054,7 @@
 				<File RelativePath="..\panda\src\collide\collisionNode.h"></File>
 				<File RelativePath="..\panda\src\collide\collisionGeom.I"></File>
 				<File RelativePath="..\panda\src\collide\collisionSegment.I"></File>
-				<File RelativePath="..\panda\src\collide\collisionTube.cxx"></File>
+				<File RelativePath="..\panda\src\collide\collisionCapsule.cxx"></File>
 				<File RelativePath="..\panda\src\collide\collisionHandlerQueue.h"></File>
 				<File RelativePath="..\panda\src\collide\collisionParabola.I"></File>
 				<File RelativePath="..\panda\src\collide\collisionPlane.cxx"></File>
@@ -1089,7 +1089,7 @@
 				<File RelativePath="..\panda\src\collide\collisionInvSphere.cxx"></File>
 				<File RelativePath="..\panda\src\collide\collisionLine.cxx"></File>
 				<File RelativePath="..\panda\src\collide\collisionEntry.I"></File>
-				<File RelativePath="..\panda\src\collide\collisionTube.I"></File>
+				<File RelativePath="..\panda\src\collide\collisionCapsule.I"></File>
 				<File RelativePath="..\panda\src\collide\collisionSolid.h"></File>
 				<File RelativePath="..\panda\src\collide\collisionPlane.I"></File>
 				<File RelativePath="..\panda\src\collide\collisionHandlerGravity.cxx"></File>
@@ -1619,7 +1619,6 @@
 				<File RelativePath="..\panda\src\tinydisplay\zmath.cxx"></File>
 				<File RelativePath="..\panda\src\tinydisplay\zdither.cxx"></File>
 				<File RelativePath="..\panda\src\tinydisplay\zbuffer.cxx"></File>
-				<File RelativePath="..\panda\src\tinydisplay\tinyOsxGraphicsPipe.cxx"></File>
 				<File RelativePath="..\panda\src\tinydisplay\tinydisplay_composite2.cxx"></File>
 				<File RelativePath="..\panda\src\tinydisplay\tinySDLGraphicsWindow.I"></File>
 				<File RelativePath="..\panda\src\tinydisplay\tinyOffscreenGraphicsPipe.cxx"></File>
@@ -1627,13 +1626,11 @@
 				<File RelativePath="..\panda\src\tinydisplay\tinyOffscreenGraphicsPipe.I"></File>
 				<File RelativePath="..\panda\src\tinydisplay\tinyWinGraphicsWindow.h"></File>
 				<File RelativePath="..\panda\src\tinydisplay\image_util.cxx"></File>
-				<File RelativePath="..\panda\src\tinydisplay\tinyOsxGraphicsPipe.I"></File>
 				<File RelativePath="..\panda\src\tinydisplay\tinyGeomMunger.h"></File>
 				<File RelativePath="..\panda\src\tinydisplay\tinyGeomMunger.cxx"></File>
 				<File RelativePath="..\panda\src\tinydisplay\tinyWinGraphicsPipe.cxx"></File>
 				<File RelativePath="..\panda\src\tinydisplay\td_texture.cxx"></File>
 				<File RelativePath="..\panda\src\tinydisplay\tinyWinGraphicsWindow.cxx"></File>
-				<File RelativePath="..\panda\src\tinydisplay\tinyOsxGraphicsWindow.h"></File>
 				<File RelativePath="..\panda\src\tinydisplay\config_tinydisplay.cxx"></File>
 				<File RelativePath="..\panda\src\tinydisplay\tinySDLGraphicsPipe.h"></File>
 				<File RelativePath="..\panda\src\tinydisplay\ztriangle_code_3.h"></File>
@@ -1675,12 +1672,10 @@
 				<File RelativePath="..\panda\src\tinydisplay\ztriangle_code_1.h"></File>
 				<File RelativePath="..\panda\src\tinydisplay\tinyXGraphicsWindow.h"></File>
 				<File RelativePath="..\panda\src\tinydisplay\ztriangle_2.cxx"></File>
-				<File RelativePath="..\panda\src\tinydisplay\tinyOsxGraphicsWindow.I"></File>
 				<File RelativePath="..\panda\src\tinydisplay\ztriangle_3.cxx"></File>
 				<File RelativePath="..\panda\src\tinydisplay\init.cxx"></File>
 				<File RelativePath="..\panda\src\tinydisplay\zbuffer.h"></File>
 				<File RelativePath="..\panda\src\tinydisplay\vertex.cxx"></File>
-				<File RelativePath="..\panda\src\tinydisplay\tinyOsxGraphicsPipe.h"></File>
 				<File RelativePath="..\panda\src\tinydisplay\tinyWinGraphicsWindow.I"></File>
 				<File RelativePath="..\panda\src\tinydisplay\tinyGraphicsStateGuardian.cxx"></File>
 				<File RelativePath="..\panda\src\tinydisplay\tinyXGraphicsPipe.h"></File>
@@ -2152,7 +2147,6 @@
 				<File RelativePath="..\panda\src\express\test_types.cxx"></File>
 				<File RelativePath="..\panda\src\express\weakPointerTo.I"></File>
 				<File RelativePath="..\panda\src\express\pta_int.cxx"></File>
-				<File RelativePath="..\panda\src\express\threadSafePointerToBase.I"></File>
 				<File RelativePath="..\panda\src\express\namable.I"></File>
 				<File RelativePath="..\panda\src\express\vector_float.cxx"></File>
 				<File RelativePath="..\panda\src\express\pointerTo.h"></File>
@@ -2179,7 +2173,6 @@
 				<File RelativePath="..\panda\src\express\datagramGenerator.h"></File>
 				<File RelativePath="..\panda\src\express\weakPointerToVoid.h"></File>
 				<File RelativePath="..\panda\src\express\datagram.I"></File>
-				<File RelativePath="..\panda\src\express\threadSafePointerTo.h"></File>
 				<File RelativePath="..\panda\src\express\weakPointerCallback.h"></File>
 				<File RelativePath="..\panda\src\express\datagram.h"></File>
 				<File RelativePath="..\panda\src\express\textEncoder.h"></File>
@@ -2211,7 +2204,6 @@
 				<File RelativePath="..\panda\src\express\typedReferenceCount.h"></File>
 				<File RelativePath="..\panda\src\express\virtualFileMountSystem.I"></File>
 				<File RelativePath="..\panda\src\express\nodePointerTo.I"></File>
-				<File RelativePath="..\panda\src\express\profileTimer.I"></File>
 				<File RelativePath="..\panda\src\express\hashVal.I"></File>
 				<File RelativePath="..\panda\src\express\pta_float.cxx"></File>
 				<File RelativePath="..\panda\src\express\weakPointerTo.h"></File>
@@ -2220,10 +2212,7 @@
 				<File RelativePath="..\panda\src\express\pointerToArrayBase.I"></File>
 				<File RelativePath="..\panda\src\express\datagramIterator.I"></File>
 				<File RelativePath="..\panda\src\express\vector_uchar.h"></File>
-				<File RelativePath="..\panda\src\express\profileTimer.h"></File>
 				<File RelativePath="..\panda\src\express\datagramIterator.h"></File>
-				<File RelativePath="..\panda\src\express\threadSafePointerTo.cxx"></File>
-				<File RelativePath="..\panda\src\express\profileTimer.cxx"></File>
 				<File RelativePath="..\panda\src\express\datagramGenerator.cxx"></File>
 				<File RelativePath="..\panda\src\express\hashGeneratorBase.h"></File>
 				<File RelativePath="..\panda\src\express\patchfile.cxx"></File>
@@ -2267,7 +2256,6 @@
 				<File RelativePath="..\panda\src\express\namable.cxx"></File>
 				<File RelativePath="..\panda\src\express\trueClock.I"></File>
 				<File RelativePath="..\panda\src\express\config_express.cxx"></File>
-				<File RelativePath="..\panda\src\express\threadSafePointerToBase.cxx"></File>
 				<File RelativePath="..\panda\src\express\pointerToVoid.I"></File>
 				<File RelativePath="..\panda\src\express\vector_uchar.cxx"></File>
 				<File RelativePath="..\panda\src\express\vector_float.h"></File>
@@ -2294,7 +2282,6 @@
 				<File RelativePath="..\panda\src\express\datagramGenerator.I"></File>
 				<File RelativePath="..\panda\src\express\compress_string.cxx"></File>
 				<File RelativePath="..\panda\src\express\subStreamBuf.cxx"></File>
-				<File RelativePath="..\panda\src\express\threadSafePointerToBase.h"></File>
 				<File RelativePath="..\panda\src\express\pointerToArrayBase.cxx"></File>
 				<File RelativePath="..\panda\src\express\express_composite.cxx"></File>
 				<File RelativePath="..\panda\src\express\virtualFileComposite.I"></File>
@@ -2302,7 +2289,6 @@
 				<File RelativePath="..\panda\src\express\multifile.I"></File>
 				<File RelativePath="..\panda\src\express\virtualFile.I"></File>
 				<File RelativePath="..\panda\src\express\patchfile.I"></File>
-				<File RelativePath="..\panda\src\express\threadSafePointerTo.I"></File>
 				<File RelativePath="..\panda\src\express\virtualFileList.h"></File>
 			</Filter>
 			<Filter Name="iphonedisplay">
@@ -3506,20 +3492,6 @@
 				<File RelativePath="..\panda\src\physx\physxConvexShapeDesc.I"></File>
 				<File RelativePath="..\panda\src\physx\physxMaterialDesc.h"></File>
 			</Filter>
-			<Filter Name="osxdisplay">
-				<File RelativePath="..\panda\src\osxdisplay\osxGraphicsBuffer.h"></File>
-				<File RelativePath="..\panda\src\osxdisplay\osxGraphicsWindow.I"></File>
-				<File RelativePath="..\panda\src\osxdisplay\osxGraphicsPipe.cxx"></File>
-				<File RelativePath="..\panda\src\osxdisplay\osxGraphicsBuffer.cxx"></File>
-				<File RelativePath="..\panda\src\osxdisplay\config_osxdisplay.h"></File>
-				<File RelativePath="..\panda\src\osxdisplay\resize_box.rgb.c"></File>
-				<File RelativePath="..\panda\src\osxdisplay\osxGraphicsStateGuardian.h"></File>
-				<File RelativePath="..\panda\src\osxdisplay\osxGraphicsWindow.h"></File>
-				<File RelativePath="..\panda\src\osxdisplay\config_osxdisplay.cxx"></File>
-				<File RelativePath="..\panda\src\osxdisplay\osxGraphicsPipe.h"></File>
-				<File RelativePath="..\panda\src\osxdisplay\osxdisplay_composite1.cxx"></File>
-				<File RelativePath="..\panda\src\osxdisplay\osxGraphicsStateGuardian.cxx"></File>
-			</Filter>
 			<Filter Name="net">
 				<File RelativePath="..\panda\src\net\queuedConnectionReader.cxx"></File>
 				<File RelativePath="..\panda\src\net\datagramGeneratorNet.I"></File>
@@ -3577,25 +3549,6 @@
 				<File RelativePath="..\panda\src\net\recentConnectionReader.h"></File>
 				<File RelativePath="..\panda\src\net\datagram_ui.cxx"></File>
 				<File RelativePath="..\panda\src\net\netAddress.cxx"></File>
-			</Filter>
-			<Filter Name="awesomium">
-				<File RelativePath="..\panda\src\awesomium\WebBrowserTexture.cxx"></File>
-				<File RelativePath="..\panda\src\awesomium\awesomium_includes.h"></File>
-				<File RelativePath="..\panda\src\awesomium\pandaawesomium_composite1.cxx"></File>
-				<File RelativePath="..\panda\src\awesomium\awWebViewListener.cxx"></File>
-				<File RelativePath="..\panda\src\awesomium\awWebViewListener.h"></File>
-				<File RelativePath="..\panda\src\awesomium\awWebCore.h"></File>
-				<File RelativePath="..\panda\src\awesomium\WebBrowserTexture.h"></File>
-				<File RelativePath="..\panda\src\awesomium\awWebCore.cxx"></File>
-				<File RelativePath="..\panda\src\awesomium\AwMouseAndKeyboard.h"></File>
-				<File RelativePath="..\panda\src\awesomium\awWebViewListener.I"></File>
-				<File RelativePath="..\panda\src\awesomium\awWebView.h"></File>
-				<File RelativePath="..\panda\src\awesomium\config_awesomium.h"></File>
-				<File RelativePath="..\panda\src\awesomium\awWebCore.I"></File>
-				<File RelativePath="..\panda\src\awesomium\awWebView.I"></File>
-				<File RelativePath="..\panda\src\awesomium\awWebView.cxx"></File>
-				<File RelativePath="..\panda\src\awesomium\AwMouseAndKeyboard.cxx"></File>
-				<File RelativePath="..\panda\src\awesomium\config_awesomium.cxx"></File>
 			</Filter>
 			<Filter Name="movies">
 				<File RelativePath="..\panda\src\movies\ffmpegVideoCursor.h"></File>
@@ -4610,17 +4563,6 @@
 				<File RelativePath="..\pandatool\src\lwoprogs\lwoScan.h"></File>
 				<File RelativePath="..\pandatool\src\lwoprogs\lwoScan.cxx"></File>
 			</Filter>
-			<Filter Name="cvscopy">
-				<File RelativePath="..\pandatool\src\cvscopy\cvscopy_composite1.cxx"></File>
-				<File RelativePath="..\pandatool\src\cvscopy\testCopy.cxx"></File>
-				<File RelativePath="..\pandatool\src\cvscopy\cvsSourceDirectory.h"></File>
-				<File RelativePath="..\pandatool\src\cvscopy\testCopy.h"></File>
-				<File RelativePath="..\pandatool\src\cvscopy\cvsSourceDirectory.cxx"></File>
-				<File RelativePath="..\pandatool\src\cvscopy\cvsCopy.cxx"></File>
-				<File RelativePath="..\pandatool\src\cvscopy\cvsCopy.h"></File>
-				<File RelativePath="..\pandatool\src\cvscopy\cvsSourceTree.cxx"></File>
-				<File RelativePath="..\pandatool\src\cvscopy\cvsSourceTree.h"></File>
-			</Filter>
 			<Filter Name="pandatoolbase">
 				<File RelativePath="..\pandatool\src\pandatoolbase\animationConvert.cxx"></File>
 				<File RelativePath="..\pandatool\src\pandatoolbase\pathReplace.I"></File>
@@ -4770,12 +4712,6 @@
 				<File RelativePath="..\pandatool\src\ptloader\config_ptloader.h"></File>
 				<File RelativePath="..\pandatool\src\ptloader\loaderFileTypePandatool.h"></File>
 			</Filter>
-			<Filter Name="softprogs">
-				<File RelativePath="..\pandatool\src\softprogs\softCVS.cxx"></File>
-				<File RelativePath="..\pandatool\src\softprogs\softFilename.h"></File>
-				<File RelativePath="..\pandatool\src\softprogs\softCVS.h"></File>
-				<File RelativePath="..\pandatool\src\softprogs\softFilename.cxx"></File>
-			</Filter>
 			<Filter Name="imageprogs">
 				<File RelativePath="..\pandatool\src\imageprogs\imageTrans.h"></File>
 				<File RelativePath="..\pandatool\src\imageprogs\imageTransformColors.cxx"></File>
@@ -4794,11 +4730,9 @@
 			<Filter Name="fltprogs">
 				<File RelativePath="..\pandatool\src\fltprogs\fltToEgg.cxx"></File>
 				<File RelativePath="..\pandatool\src\fltprogs\eggToFlt.cxx"></File>
-				<File RelativePath="..\pandatool\src\fltprogs\fltCopy.h"></File>
 				<File RelativePath="..\pandatool\src\fltprogs\fltTrans.h"></File>
 				<File RelativePath="..\pandatool\src\fltprogs\fltInfo.h"></File>
 				<File RelativePath="..\pandatool\src\fltprogs\fltInfo.cxx"></File>
-				<File RelativePath="..\pandatool\src\fltprogs\fltCopy.cxx"></File>
 				<File RelativePath="..\pandatool\src\fltprogs\fltTrans.cxx"></File>
 				<File RelativePath="..\pandatool\src\fltprogs\fltToEgg.h"></File>
 				<File RelativePath="..\pandatool\src\fltprogs\eggToFlt.h"></File>
@@ -4964,11 +4898,9 @@
 				<File RelativePath="..\pandatool\src\mayaprogs\mayaToEgg_client.h"></File>
 				<File RelativePath="..\pandatool\src\mayaprogs\blend_test.cxx"></File>
 				<File RelativePath="..\pandatool\src\mayaprogs\mayaToEgg_server.h"></File>
-				<File RelativePath="..\pandatool\src\mayaprogs\mayaCopy.h"></File>
 				<File RelativePath="..\pandatool\src\mayaprogs\eggToMaya.h"></File>
 				<File RelativePath="..\pandatool\src\mayaprogs\mayaSavePview.h"></File>
 				<File RelativePath="..\pandatool\src\mayaprogs\mayaToEgg_server.cxx"></File>
-				<File RelativePath="..\pandatool\src\mayaprogs\mayaCopy.cxx"></File>
 				<File RelativePath="..\pandatool\src\mayaprogs\eggToMaya.cxx"></File>
 				<File RelativePath="..\pandatool\src\mayaprogs\normal_test.cxx"></File>
 				<File RelativePath="..\pandatool\src\mayaprogs\mayaSavePview.cxx"></File>
@@ -5304,20 +5236,6 @@
 				<File RelativePath="..\pandatool\src\lwo\iffChunk.I"></File>
 				<File RelativePath="..\pandatool\src\lwo\lwoSurfaceBlockImage.h"></File>
 				<File RelativePath="..\pandatool\src\lwo\lwoSurfaceBlockCoordSys.cxx"></File>
-			</Filter>
-			<Filter Name="softegg">
-				<File RelativePath="..\pandatool\src\softegg\soft2Egg.c"></File>
-				<File RelativePath="..\pandatool\src\softegg\softNodeTree.cxx"></File>
-				<File RelativePath="..\pandatool\src\softegg\softNodeDesc.h"></File>
-				<File RelativePath="..\pandatool\src\softegg\softEggGroupUserData.cxx"></File>
-				<File RelativePath="..\pandatool\src\softegg\softEggGroupUserData.I"></File>
-				<File RelativePath="..\pandatool\src\softegg\config_softegg.cxx"></File>
-				<File RelativePath="..\pandatool\src\softegg\softToEggConverter.cxx"></File>
-				<File RelativePath="..\pandatool\src\softegg\softNodeTree.h"></File>
-				<File RelativePath="..\pandatool\src\softegg\config_softegg.h"></File>
-				<File RelativePath="..\pandatool\src\softegg\softNodeDesc.cxx"></File>
-				<File RelativePath="..\pandatool\src\softegg\softToEggConverter.h"></File>
-				<File RelativePath="..\pandatool\src\softegg\softEggGroupUserData.h"></File>
 			</Filter>
 			<Filter Name="xfileprogs">
 				<File RelativePath="..\pandatool\src\xfileprogs\eggToX.cxx"></File>

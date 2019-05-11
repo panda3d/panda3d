@@ -90,6 +90,7 @@ set_text(const std::string &text) {
   if (!has_text() || _text != text) {
     _text = text;
     _flags = (_flags | F_got_text) & ~F_got_wtext;
+    text_changed();
   }
 }
 
@@ -101,7 +102,11 @@ set_text(const std::string &text) {
  */
 INLINE void TextEncoder::
 set_text(const std::string &text, TextEncoder::Encoding encoding) {
-  set_wtext(decode_text(text, encoding));
+  if (encoding == _encoding) {
+    set_text(text);
+  } else {
+    set_wtext(decode_text(text, encoding));
+  }
 }
 
 /**
@@ -112,6 +117,7 @@ clear_text() {
   _text = std::string();
   _wtext = std::wstring();
   _flags |= (F_got_text | F_got_wtext);
+  text_changed();
 }
 
 /**
@@ -151,8 +157,11 @@ get_text(TextEncoder::Encoding encoding) const {
  */
 INLINE void TextEncoder::
 append_text(const std::string &text) {
-  _text = get_text() + text;
-  _flags = (_flags | F_got_text) & ~F_got_wtext;
+  if (!text.empty()) {
+    _text = get_text() + text;
+    _flags = (_flags | F_got_text) & ~F_got_wtext;
+    text_changed();
+  }
 }
 
 /**
@@ -160,9 +169,25 @@ append_text(const std::string &text) {
  * wide character, up to 16 bits in Unicode.
  */
 INLINE void TextEncoder::
-append_unicode_char(int character) {
+append_unicode_char(char32_t character) {
+#if WCHAR_MAX >= 0x10FFFF
+  // wchar_t might be UTF-32.
   _wtext = get_wtext() + std::wstring(1, (wchar_t)character);
+#else
+  if ((character & ~0xffff) == 0) {
+    _wtext = get_wtext() + std::wstring(1, (wchar_t)character);
+  } else {
+    // Encode as a surrogate pair.
+    uint32_t v = (uint32_t)character - 0x10000u;
+    wchar_t wstr[2] = {
+      (wchar_t)((v >> 10u) | 0xd800u),
+      (wchar_t)((v & 0x3ffu) | 0xdc00u),
+    };
+    _wtext = get_wtext() + std::wstring(wstr, 2);
+  }
+#endif
   _flags = (_flags | F_got_wtext) & ~F_got_text;
+  text_changed();
 }
 
 /**
@@ -195,11 +220,12 @@ get_unicode_char(size_t index) const {
  * according to set_encoding().
  */
 INLINE void TextEncoder::
-set_unicode_char(size_t index, int character) {
+set_unicode_char(size_t index, char32_t character) {
   get_wtext();
   if (index < _wtext.length()) {
     _wtext[index] = character;
     _flags &= ~F_got_text;
+    text_changed();
   }
 }
 
@@ -257,7 +283,7 @@ reencode_text(const std::string &text, TextEncoder::Encoding from,
  * otherwise.  This is akin to ctype's isalpha(), extended to Unicode.
  */
 INLINE bool TextEncoder::
-unicode_isalpha(int character) {
+unicode_isalpha(char32_t character) {
   const UnicodeLatinMap::Entry *entry = UnicodeLatinMap::look_up(character);
   if (entry == nullptr) {
     return false;
@@ -271,7 +297,7 @@ unicode_isalpha(int character) {
  * otherwise.  This is akin to ctype's isdigit(), extended to Unicode.
  */
 INLINE bool TextEncoder::
-unicode_isdigit(int character) {
+unicode_isdigit(char32_t character) {
   const UnicodeLatinMap::Entry *entry = UnicodeLatinMap::look_up(character);
   if (entry == nullptr) {
     // The digits aren't actually listed in the map.
@@ -286,11 +312,11 @@ unicode_isdigit(int character) {
  * otherwise.  This is akin to ctype's ispunct(), extended to Unicode.
  */
 INLINE bool TextEncoder::
-unicode_ispunct(int character) {
+unicode_ispunct(char32_t character) {
   const UnicodeLatinMap::Entry *entry = UnicodeLatinMap::look_up(character);
   if (entry == nullptr) {
     // Some punctuation marks aren't listed in the map.
-    return (character >= 0 && character < 128 && ispunct(character));
+    return (character < 128 && ispunct(character));
   }
   return entry->_char_type == UnicodeLatinMap::CT_punct;
 }
@@ -300,7 +326,7 @@ unicode_ispunct(int character) {
  * otherwise.  This is akin to ctype's isupper(), extended to Unicode.
  */
 INLINE bool TextEncoder::
-unicode_isupper(int character) {
+unicode_isupper(char32_t character) {
   const UnicodeLatinMap::Entry *entry = UnicodeLatinMap::look_up(character);
   if (entry == nullptr) {
     return false;
@@ -313,7 +339,7 @@ unicode_isupper(int character) {
  * otherwise.  This is akin to ctype's isspace(), extended to Unicode.
  */
 INLINE bool TextEncoder::
-unicode_isspace(int character) {
+unicode_isspace(char32_t character) {
   switch (character) {
   case ' ':
   case '\t':
@@ -330,7 +356,7 @@ unicode_isspace(int character) {
  * otherwise.  This is akin to ctype's islower(), extended to Unicode.
  */
 INLINE bool TextEncoder::
-unicode_islower(int character) {
+unicode_islower(char32_t character) {
   const UnicodeLatinMap::Entry *entry = UnicodeLatinMap::look_up(character);
   if (entry == nullptr) {
     return false;
@@ -343,7 +369,7 @@ unicode_islower(int character) {
  * akin to ctype's toupper(), extended to Unicode.
  */
 INLINE int TextEncoder::
-unicode_toupper(int character) {
+unicode_toupper(char32_t character) {
   const UnicodeLatinMap::Entry *entry = UnicodeLatinMap::look_up(character);
   if (entry == nullptr) {
     return character;
@@ -356,7 +382,7 @@ unicode_toupper(int character) {
  * akin to ctype's tolower(), extended to Unicode.
  */
 INLINE int TextEncoder::
-unicode_tolower(int character) {
+unicode_tolower(char32_t character) {
   const UnicodeLatinMap::Entry *entry = UnicodeLatinMap::look_up(character);
   if (entry == nullptr) {
     return character;
@@ -418,6 +444,7 @@ set_wtext(const std::wstring &wtext) {
   if (!has_text() || _wtext != wtext) {
     _wtext = wtext;
     _flags = (_flags | F_got_wtext) & ~F_got_text;
+    text_changed();
   }
 }
 
@@ -439,8 +466,11 @@ get_wtext() const {
  */
 INLINE void TextEncoder::
 append_wtext(const std::wstring &wtext) {
-  _wtext = get_wtext() + wtext;
-  _flags = (_flags | F_got_wtext) & ~F_got_text;
+  if (!wtext.empty()) {
+    _wtext = get_wtext() + wtext;
+    _flags = (_flags | F_got_wtext) & ~F_got_text;
+    text_changed();
+  }
 }
 
 /**

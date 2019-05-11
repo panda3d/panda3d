@@ -16,6 +16,13 @@ clunky approach.  - Josh
 """
 
 from .FilterManager import FilterManager
+from .filterBloomI import BLOOM_I
+from .filterBloomX import BLOOM_X
+from .filterBloomY import BLOOM_Y
+from .filterBlurX import BLUR_X
+from .filterBlurY import BLUR_Y
+from .filterCopy import COPY
+from .filterDown4 import DOWN_4
 from panda3d.core import LVecBase4, LPoint2
 from panda3d.core import Filename
 from panda3d.core import AuxBitplaneAttrib
@@ -102,12 +109,6 @@ class CommonFilters:
         self.task = None
         self.cleanup()
 
-    def loadShader(self, name):
-        fn = os.path.join(os.path.abspath(os.path.dirname(__file__)), name)
-        fn = Filename.fromOsSpecific(fn)
-        fn.makeTrueCase()
-        return Shader.load(fn)
-
     def cleanup(self):
         self.manager.cleanup()
         self.textures = {}
@@ -184,28 +185,28 @@ class CommonFilters:
             if ("BlurSharpen" in configuration):
                 blur0=self.textures["blur0"]
                 blur1=self.textures["blur1"]
-                self.blur.append(self.manager.renderQuadInto(colortex=blur0,div=2))
-                self.blur.append(self.manager.renderQuadInto(colortex=blur1))
+                self.blur.append(self.manager.renderQuadInto("filter-blur0", colortex=blur0,div=2))
+                self.blur.append(self.manager.renderQuadInto("filter-blur1", colortex=blur1))
                 self.blur[0].setShaderInput("src", self.textures["color"])
-                self.blur[0].setShader(self.loadShader("filter-blurx.sha"))
+                self.blur[0].setShader(Shader.make(BLUR_X, Shader.SL_Cg))
                 self.blur[1].setShaderInput("src", blur0)
-                self.blur[1].setShader(self.loadShader("filter-blury.sha"))
+                self.blur[1].setShader(Shader.make(BLUR_Y, Shader.SL_Cg))
 
             if ("AmbientOcclusion" in configuration):
                 ssao0=self.textures["ssao0"]
                 ssao1=self.textures["ssao1"]
                 ssao2=self.textures["ssao2"]
-                self.ssao.append(self.manager.renderQuadInto(colortex=ssao0))
-                self.ssao.append(self.manager.renderQuadInto(colortex=ssao1,div=2))
-                self.ssao.append(self.manager.renderQuadInto(colortex=ssao2))
+                self.ssao.append(self.manager.renderQuadInto("filter-ssao0", colortex=ssao0))
+                self.ssao.append(self.manager.renderQuadInto("filter-ssao1", colortex=ssao1,div=2))
+                self.ssao.append(self.manager.renderQuadInto("filter-ssao2", colortex=ssao2))
                 self.ssao[0].setShaderInput("depth", self.textures["depth"])
                 self.ssao[0].setShaderInput("normal", self.textures["aux"])
                 self.ssao[0].setShaderInput("random", loader.loadTexture("maps/random.rgb"))
                 self.ssao[0].setShader(Shader.make(SSAO_BODY % configuration["AmbientOcclusion"].numsamples, Shader.SL_Cg))
                 self.ssao[1].setShaderInput("src", ssao0)
-                self.ssao[1].setShader(self.loadShader("filter-blurx.sha"))
+                self.ssao[1].setShader(Shader.make(BLUR_X, Shader.SL_Cg))
                 self.ssao[2].setShaderInput("src", ssao1)
-                self.ssao[2].setShader(self.loadShader("filter-blury.sha"))
+                self.ssao[2].setShader(Shader.make(BLUR_Y, Shader.SL_Cg))
 
             if ("Bloom" in configuration):
                 bloomconf = configuration["Bloom"]
@@ -215,25 +216,28 @@ class CommonFilters:
                 bloom3=self.textures["bloom3"]
                 if (bloomconf.size == "large"):
                     scale=8
-                    downsampler="filter-down4.sha"
+                    downsamplerName="filter-down4"
+                    downsampler=DOWN_4
                 elif (bloomconf.size == "medium"):
                     scale=4
-                    downsampler="filter-copy.sha"
+                    downsamplerName="filter-copy"
+                    downsampler=COPY
                 else:
                     scale=2
-                    downsampler="filter-copy.sha"
-                self.bloom.append(self.manager.renderQuadInto(colortex=bloom0, div=2,     align=scale))
-                self.bloom.append(self.manager.renderQuadInto(colortex=bloom1, div=scale, align=scale))
-                self.bloom.append(self.manager.renderQuadInto(colortex=bloom2, div=scale, align=scale))
-                self.bloom.append(self.manager.renderQuadInto(colortex=bloom3, div=scale, align=scale))
+                    downsamplerName="filter-copy"
+                    downsampler=COPY
+                self.bloom.append(self.manager.renderQuadInto("filter-bloomi", colortex=bloom0, div=2,     align=scale))
+                self.bloom.append(self.manager.renderQuadInto(downsamplerName, colortex=bloom1, div=scale, align=scale))
+                self.bloom.append(self.manager.renderQuadInto("filter-bloomx", colortex=bloom2, div=scale, align=scale))
+                self.bloom.append(self.manager.renderQuadInto("filter-bloomy", colortex=bloom3, div=scale, align=scale))
                 self.bloom[0].setShaderInput("src", self.textures["color"])
-                self.bloom[0].setShader(self.loadShader("filter-bloomi.sha"))
+                self.bloom[0].setShader(Shader.make(BLOOM_I, Shader.SL_Cg))
                 self.bloom[1].setShaderInput("src", bloom0)
-                self.bloom[1].setShader(self.loadShader(downsampler))
+                self.bloom[1].setShader(Shader.make(downsampler, Shader.SL_Cg))
                 self.bloom[2].setShaderInput("src", bloom1)
-                self.bloom[2].setShader(self.loadShader("filter-bloomx.sha"))
+                self.bloom[2].setShader(Shader.make(BLOOM_X, Shader.SL_Cg))
                 self.bloom[3].setShaderInput("src", bloom2)
-                self.bloom[3].setShader(self.loadShader("filter-bloomy.sha"))
+                self.bloom[3].setShader(Shader.make(BLOOM_Y, Shader.SL_Cg))
 
             texcoords = {}
             texcoordPadding = {}
@@ -558,7 +562,6 @@ class CommonFilters:
     set_cartoon_ink = setCartoonInk
     del_bloom = delBloom
     del_ambient_occlusion = delAmbientOcclusion
-    load_shader = loadShader
     set_blur_sharpen = setBlurSharpen
     del_blur_sharpen = delBlurSharpen
     del_volumetric_lighting = delVolumetricLighting

@@ -37,6 +37,8 @@ public:
   static TypeHandle get_parent_towards(const TypeRegistryNode *child,
                                        const TypeRegistryNode *base);
 
+  INLINE PyObject *get_python_type() const;
+
   void clear_subtree();
   void define_subtree();
 
@@ -46,6 +48,7 @@ public:
   typedef std::vector<TypeRegistryNode *> Classes;
   Classes _parent_classes;
   Classes _child_classes;
+  PyObject *_python_type = nullptr;
 
   AtomicAdjust::Integer _memory_usage[TypeHandle::MC_limit];
 
@@ -76,6 +79,8 @@ private:
 
   void r_build_subtrees(TypeRegistryNode *top,
                         int bit_count, SubtreeMaskType bits);
+
+  PyObject *r_get_python_type() const;
 
   static bool check_derived_from(const TypeRegistryNode *child,
                                  const TypeRegistryNode *base);

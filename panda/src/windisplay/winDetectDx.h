@@ -21,18 +21,6 @@ typedef struct {
 }
 DISPLAY_FORMAT;
 
-typedef union
-{
-  struct
-  {
-    unsigned int day : 8;
-    unsigned int month : 8;
-    unsigned int year : 16;
-  };
-  DWORD whql;
-}
-WHQL;
-
 static DISPLAY_FORMAT display_format_array [ ] = {
   D3DFMT_X8R8G8B8,    32, FALSE,
   D3DFMT_R5G6B5,      16, FALSE,
@@ -320,14 +308,6 @@ static int get_display_information (DisplaySearchParameters &display_search_para
 
           if (debug) {
             printf ("DRIVER VERSION: %d.%d.%d.%d \n", product, version, sub_version, build);
-          }
-
-          WHQL whql;
-
-          whql.whql= d3d_adapter_identifier.WHQLLevel;
-
-          if (debug) {
-            printf ("WHQL: %d %d %d \n", whql.day, whql.day, whql.year);
           }
         }
 

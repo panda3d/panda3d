@@ -82,26 +82,6 @@ is_debug() const {
   // Instruct the compiler to optimize for the usual case.
   return UNLIKELY(is_on(NS_debug));
 }
-#else
-/**
- * When NOTIFY_DEBUG is not defined, the categories are never set to "spam" or
- * "debug" severities, and these methods are redefined to be static to make it
- * more obvious to the compiler.
- */
-constexpr bool NotifyCategory::
-is_spam() {
-  return false;
-}
-
-/**
- * When NOTIFY_DEBUG is not defined, the categories are never set to "spam" or
- * "debug" severities, and these methods are redefined to be static to make it
- * more obvious to the compiler.
- */
-constexpr bool NotifyCategory::
-is_debug() {
-  return false;
-}
 #endif
 
 /**

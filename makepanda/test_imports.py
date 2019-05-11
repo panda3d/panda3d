@@ -62,6 +62,7 @@ import direct.directutil.LargeBlobSenderConsts
 import direct.directutil.Mopath
 import direct.directutil.Verify
 import direct.directutil.WeightedChoice
+import direct.dist.FreezeTool
 import direct.distributed.AsyncRequest
 import direct.distributed.CRCache
 import direct.distributed.CRDataCache
@@ -199,7 +200,6 @@ import direct.showbase.EventManager
 import direct.showbase.EventManagerGlobal
 import direct.showbase.ExceptionVarDump
 import direct.showbase.Factory
-import direct.showbase.FindCtaPaths
 import direct.showbase.Finder
 import direct.showbase.GarbageReport
 import direct.showbase.GarbageReportScheduler
@@ -234,7 +234,6 @@ import direct.showbase.VFSImporter
 import direct.showbase.WxGlobal
 import direct.showutil.BuildGeometry
 import direct.showutil.Effects
-import direct.showutil.FreezeTool
 import direct.showutil.Rope
 import direct.showutil.TexMemWatcher
 import direct.showutil.TexViewer

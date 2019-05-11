@@ -1,11 +1,4 @@
 /**
- * PANDA 3D SOFTWARE
- * Copyright (c) Carnegie Mellon University.  All rights reserved.
- *
- * All use of this software is subject to the terms of the revised BSD
- * license.  You should have received a copy of this license along
- * with this source code in a file named "LICENSE."
- *
  * @file py_panda.cxx
  * @author drose
  * @date 2005-07-04
@@ -18,20 +11,6 @@
 #ifdef HAVE_PYTHON
 
 using std::string;
-
-PyMemberDef standard_type_members[] = {
-  {(char *)"this", (sizeof(void*) == sizeof(int)) ? T_UINT : T_ULONGLONG, offsetof(Dtool_PyInstDef, _ptr_to_object), READONLY, (char *)"C++ 'this' pointer, if any"},
-  {(char *)"this_ownership", T_BOOL, offsetof(Dtool_PyInstDef, _memory_rules), READONLY, (char *)"C++ 'this' ownership rules"},
-  {(char *)"this_const", T_BOOL, offsetof(Dtool_PyInstDef, _is_const), READONLY, (char *)"C++ 'this' const flag"},
-// {(char *)"this_signature", T_INT, offsetof(Dtool_PyInstDef, _signature),
-// READONLY, (char *)"A type check signature"},
-  {(char *)"this_metatype", T_OBJECT, offsetof(Dtool_PyInstDef, _My_Type), READONLY, (char *)"The dtool meta object"},
-  {nullptr}  /* Sentinel */
-};
-
-static RuntimeTypeMap runtime_type_map;
-static RuntimeTypeSet runtime_type_set;
-static NamedTypeMap named_type_map;
 
 /**
 
@@ -235,8 +214,8 @@ PyObject *Dtool_Raise_AttributeError(PyObject *obj, const char *attribute) {
     "'%.100s' object has no attribute '%.200s'",
     Py_TYPE(obj)->tp_name, attribute);
 
-  Py_INCREF(PyExc_TypeError);
-  PyErr_Restore(PyExc_TypeError, message, nullptr);
+  Py_INCREF(PyExc_AttributeError);
+  PyErr_Restore(PyExc_AttributeError, message, nullptr);
   return nullptr;
 }
 
@@ -307,6 +286,43 @@ PyObject *_Dtool_Return(PyObject *value) {
 }
 
 #if PY_VERSION_HEX < 0x03040000
+/**
+ * This function converts an int value to the appropriate enum instance.
+ */
+static PyObject *Dtool_EnumType_New(PyTypeObject *subtype, PyObject *args, PyObject *kwds) {
+  PyObject *arg;
+  if (!Dtool_ExtractArg(&arg, args, kwds, "value")) {
+    return PyErr_Format(PyExc_TypeError,
+                        "%s() missing 1 required argument: 'value'",
+                        subtype->tp_name);
+  }
+
+  if (Py_TYPE(arg) == subtype) {
+    Py_INCREF(arg);
+    return arg;
+  }
+
+  PyObject *value2member = PyDict_GetItemString(subtype->tp_dict, "_value2member_map_");
+  nassertr_always(value2member != nullptr, nullptr);
+
+  PyObject *member = PyDict_GetItem(value2member, arg);
+  if (member != nullptr) {
+    Py_INCREF(member);
+    return member;
+  }
+
+  PyObject *repr = PyObject_Repr(arg);
+  PyErr_Format(PyExc_ValueError, "%s is not a valid %s",
+#if PY_MAJOR_VERSION >= 3
+               PyUnicode_AS_STRING(repr),
+#else
+               PyString_AS_STRING(repr),
+#endif
+               subtype->tp_name);
+  Py_DECREF(repr);
+  return nullptr;
+}
+
 static PyObject *Dtool_EnumType_Str(PyObject *self) {
   PyObject *name = PyObject_GetAttrString(self, "name");
 #if PY_MAJOR_VERSION >= 3
@@ -358,6 +374,7 @@ PyTypeObject *Dtool_EnumType_Create(const char *name, PyObject *names, const cha
   static PyObject *name_sunder_str;
   static PyObject *value_str;
   static PyObject *value_sunder_str;
+  static PyObject *value2member_map_sunder_str;
   // Emulate something vaguely like the enum module.
   if (enum_class == nullptr) {
 #if PY_MAJOR_VERSION >= 3
@@ -365,11 +382,13 @@ PyTypeObject *Dtool_EnumType_Create(const char *name, PyObject *names, const cha
     value_str = PyUnicode_InternFromString("value");
     name_sunder_str = PyUnicode_InternFromString("_name_");
     value_sunder_str = PyUnicode_InternFromString("_value_");
+    value2member_map_sunder_str = PyUnicode_InternFromString("_value2member_map_");
 #else
     name_str = PyString_InternFromString("name");
     value_str = PyString_InternFromString("value");
     name_sunder_str = PyString_InternFromString("_name_");
     value_sunder_str = PyString_InternFromString("_value_");
+    value2member_map_sunder_str = PyString_InternFromString("_value2member_map_");
 #endif
     PyObject *name_value_tuple = PyTuple_New(4);
     PyTuple_SET_ITEM(name_value_tuple, 0, name_str);
@@ -386,27 +405,39 @@ PyTypeObject *Dtool_EnumType_Create(const char *name, PyObject *names, const cha
     enum_class = PyObject_CallFunction((PyObject *)&PyType_Type, (char *)"s()N", "Enum", slots_dict);
     nassertr(enum_class != nullptr, nullptr);
   }
-  PyObject *result = PyObject_CallFunction((PyObject *)&PyType_Type, (char *)"s(O)N", name, enum_class, PyDict_New());
+
+  // Create a subclass of this generic Enum class we just created.
+  PyObject *value2member = PyDict_New();
+  PyObject *dict = PyDict_New();
+  PyDict_SetItem(dict, value2member_map_sunder_str, value2member);
+  PyObject *result = PyObject_CallFunction((PyObject *)&PyType_Type, (char *)"s(O)N", name, enum_class, dict);
   nassertr(result != nullptr, nullptr);
 
+  ((PyTypeObject *)result)->tp_new = Dtool_EnumType_New;
   ((PyTypeObject *)result)->tp_str = Dtool_EnumType_Str;
   ((PyTypeObject *)result)->tp_repr = Dtool_EnumType_Repr;
 
-  // Copy the names as instances of the above to the class dict.
+  PyObject *empty_tuple = PyTuple_New(0);
+
+  // Copy the names as instances of the above to the class dict, and create a
+  // reverse mapping in the _value2member_map_ dict.
   Py_ssize_t size = PyTuple_GET_SIZE(names);
   for (Py_ssize_t i = 0; i < size; ++i) {
     PyObject *item = PyTuple_GET_ITEM(names, i);
     PyObject *name = PyTuple_GET_ITEM(item, 0);
     PyObject *value = PyTuple_GET_ITEM(item, 1);
-    PyObject *member = _PyObject_CallNoArg(result);
+    PyObject *member = PyType_GenericNew((PyTypeObject *)result, empty_tuple, nullptr);
     PyObject_SetAttr(member, name_str, name);
     PyObject_SetAttr(member, name_sunder_str, name);
     PyObject_SetAttr(member, value_str, value);
     PyObject_SetAttr(member, value_sunder_str, value);
     PyObject_SetAttr(result, name, member);
+    PyDict_SetItem(value2member, value, member);
     Py_DECREF(member);
   }
   Py_DECREF(names);
+  Py_DECREF(value2member);
+  Py_DECREF(empty_tuple);
 #endif
 
   if (module != nullptr) {
@@ -431,7 +462,7 @@ PyObject *DTool_CreatePyInstanceTyped(void *local_this_in, Dtool_PyTypedObject &
   // IF the class is possibly a run time typed object
   if (type_index > 0) {
     // get best fit class...
-    Dtool_PyTypedObject *target_class = Dtool_RuntimeTypeDtoolType(type_index);
+    Dtool_PyTypedObject *target_class = (Dtool_PyTypedObject *)TypeHandle::from_index(type_index).get_python_type();
     if (target_class != nullptr) {
       // cast to the type...
       void *new_local_this = target_class->_Dtool_DowncastInterface(local_this_in, &known_class_type);
@@ -484,132 +515,26 @@ PyObject *DTool_CreatePyInstance(void *local_this, Dtool_PyTypedObject &in_class
   return (PyObject *)self;
 }
 
-// Th Finalizer for simple instances..
-int DTool_PyInit_Finalize(PyObject *self, void *local_this, Dtool_PyTypedObject *type, bool memory_rules, bool is_const) {
-  // lets put some code in here that checks to see the memory is properly
-  // configured.. prior to my call ..
-
-  ((Dtool_PyInstDef *)self)->_My_Type = type;
-  ((Dtool_PyInstDef *)self)->_ptr_to_object = local_this;
-  ((Dtool_PyInstDef *)self)->_memory_rules = memory_rules;
-  ((Dtool_PyInstDef *)self)->_is_const = is_const;
-  return 0;
-}
-
-// A helper function to glue method definition together .. that can not be
-// done at code generation time because of multiple generation passes in
-// interrogate..
-void Dtool_Accum_MethDefs(PyMethodDef in[], MethodDefmap &themap) {
-  for (; in->ml_name != nullptr; in++) {
-    if (themap.find(in->ml_name) == themap.end()) {
-      themap[in->ml_name] = in;
-    }
-  }
-}
-
-// ** HACK ** alert.. Need to keep a runtime type dictionary ... that is
-// forward declared of typed object.  We rely on the fact that typed objects
-// are uniquly defined by an integer.
-void
-RegisterNamedClass(const string &name, Dtool_PyTypedObject &otype) {
-  std::pair<NamedTypeMap::iterator, bool> result =
-    named_type_map.insert(NamedTypeMap::value_type(name, &otype));
-
-  if (!result.second) {
-    // There was already a class with this name in the dictionary.
-    interrogatedb_cat.warning()
-      << "Double definition for class " << name << "\n";
-  }
-}
-
-void
-RegisterRuntimeTypedClass(Dtool_PyTypedObject &otype) {
-  int type_index = otype._type.get_index();
-
-  if (type_index == 0) {
-    interrogatedb_cat.warning()
-      << "Class " << otype._PyType.tp_name
-      << " has a zero TypeHandle value; check that init_type() is called.\n";
-
-  } else if (type_index < 0 || type_index >= TypeRegistry::ptr()->get_num_typehandles()) {
-    interrogatedb_cat.warning()
-      << "Class " << otype._PyType.tp_name
-      << " has an illegal TypeHandle value; check that init_type() is called.\n";
-
+/**
+ * Returns a borrowed reference to the global type dictionary.
+ */
+Dtool_TypeMap *Dtool_GetGlobalTypeMap() {
+  PyObject *capsule = PySys_GetObject((char *)"_interrogate_types");
+  if (capsule != nullptr) {
+    return (Dtool_TypeMap *)PyCapsule_GetPointer(capsule, nullptr);
   } else {
-    std::pair<RuntimeTypeMap::iterator, bool> result =
-      runtime_type_map.insert(RuntimeTypeMap::value_type(type_index, &otype));
-    if (!result.second) {
-      // There was already an entry in the dictionary for type_index.
-      Dtool_PyTypedObject *other_type = (*result.first).second;
-      interrogatedb_cat.warning()
-        << "Classes " << otype._PyType.tp_name
-        << " and " << other_type->_PyType.tp_name
-        << " share the same TypeHandle value (" << type_index
-        << "); check class definitions.\n";
-
-    } else {
-      runtime_type_set.insert(type_index);
-    }
+    Dtool_TypeMap *type_map = new Dtool_TypeMap;
+    capsule = PyCapsule_New((void *)type_map, nullptr, nullptr);
+    PySys_SetObject((char *)"_interrogate_types", capsule);
+    Py_DECREF(capsule);
+    return type_map;
   }
-}
-
-Dtool_PyTypedObject *
-LookupNamedClass(const string &name) {
-  NamedTypeMap::const_iterator it;
-  it = named_type_map.find(name);
-
-  if (it == named_type_map.end()) {
-    // Find a type named like this in the type registry.
-    TypeHandle handle = TypeRegistry::ptr()->find_type(name);
-    if (handle.get_index() > 0) {
-      RuntimeTypeMap::const_iterator it2;
-      it2 = runtime_type_map.find(handle.get_index());
-      if (it2 != runtime_type_map.end()) {
-        return it2->second;
-      }
-    }
-
-    interrogatedb_cat.error()
-      << "Attempt to use type " << name << " which has not yet been defined!\n";
-    return nullptr;
-  } else {
-    return it->second;
-  }
-}
-
-Dtool_PyTypedObject *
-LookupRuntimeTypedClass(TypeHandle handle) {
-  RuntimeTypeMap::const_iterator it;
-  it = runtime_type_map.find(handle.get_index());
-
-  if (it == runtime_type_map.end()) {
-    interrogatedb_cat.error()
-      << "Attempt to use type " << handle << " which has not yet been defined!\n";
-    return nullptr;
-  } else {
-    return it->second;
-  }
-}
-
-Dtool_PyTypedObject *Dtool_RuntimeTypeDtoolType(int type) {
-  RuntimeTypeMap::iterator di = runtime_type_map.find(type);
-  if (di != runtime_type_map.end()) {
-    return di->second;
-  } else {
-    int type2 = get_best_parent_from_Set(type, runtime_type_set);
-    di = runtime_type_map.find(type2);
-    if (di != runtime_type_map.end()) {
-      return di->second;
-    }
-  }
-  return nullptr;
 }
 
 #if PY_MAJOR_VERSION >= 3
-PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], PyModuleDef *module_def) {
+PyObject *Dtool_PyModuleInitHelper(const LibraryDef *defs[], PyModuleDef *module_def) {
 #else
-PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], const char *modulename) {
+PyObject *Dtool_PyModuleInitHelper(const LibraryDef *defs[], const char *modulename) {
 #endif
   // Check the version so we can print a helpful error if it doesn't match.
   string version = Py_GetVersion();
@@ -627,55 +552,46 @@ PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], const char *modulename) {
     return nullptr;
   }
 
-  // Initialize the types we define in py_panda.
-  static bool dtool_inited = false;
-  if (!dtool_inited) {
-    dtool_inited = true;
-
-    if (PyType_Ready(&Dtool_SequenceWrapper_Type) < 0) {
-      return Dtool_Raise_TypeError("PyType_Ready(Dtool_SequenceWrapper)");
-    }
-
-    if (PyType_Ready(&Dtool_MutableSequenceWrapper_Type) < 0) {
-      return Dtool_Raise_TypeError("PyType_Ready(Dtool_MutableSequenceWrapper)");
-    }
-
-    if (PyType_Ready(&Dtool_MappingWrapper_Type) < 0) {
-      return Dtool_Raise_TypeError("PyType_Ready(Dtool_MappingWrapper)");
-    }
-
-    if (PyType_Ready(&Dtool_MutableMappingWrapper_Type) < 0) {
-      return Dtool_Raise_TypeError("PyType_Ready(Dtool_MutableMappingWrapper)");
-    }
-
-    if (PyType_Ready(&Dtool_MappingWrapper_Keys_Type) < 0) {
-      return Dtool_Raise_TypeError("PyType_Ready(Dtool_MappingWrapper_Keys)");
-    }
-
-    if (PyType_Ready(&Dtool_MappingWrapper_Values_Type) < 0) {
-      return Dtool_Raise_TypeError("PyType_Ready(Dtool_MappingWrapper_Values)");
-    }
-
-    if (PyType_Ready(&Dtool_MappingWrapper_Items_Type) < 0) {
-      return Dtool_Raise_TypeError("PyType_Ready(Dtool_MappingWrapper_Items)");
-    }
-
-    if (PyType_Ready(&Dtool_GeneratorWrapper_Type) < 0) {
-      return Dtool_Raise_TypeError("PyType_Ready(Dtool_GeneratorWrapper)");
-    }
-
-    if (PyType_Ready(&Dtool_StaticProperty_Type) < 0) {
-      return Dtool_Raise_TypeError("PyType_Ready(Dtool_StaticProperty_Type)");
-    }
-
-    // Initialize the base class of everything.
-    Dtool_PyModuleClassInit_DTOOL_SUPER_BASE(nullptr);
-  }
+  Dtool_TypeMap *type_map = Dtool_GetGlobalTypeMap();
 
   // the module level function inits....
   MethodDefmap functions;
-  for (int xx = 0; defs[xx] != nullptr; xx++) {
-    Dtool_Accum_MethDefs(defs[xx]->_methods, functions);
+  for (size_t i = 0; defs[i] != nullptr; i++) {
+    const LibraryDef &def = *defs[i];
+
+    // Accumulate method definitions.
+    for (PyMethodDef *meth = def._methods; meth->ml_name != nullptr; meth++) {
+      if (functions.find(meth->ml_name) == functions.end()) {
+        functions[meth->ml_name] = meth;
+      }
+    }
+
+    // Define exported types.
+    const Dtool_TypeDef *types = def._types;
+    if (types != nullptr) {
+      while (types->name != nullptr) {
+        (*type_map)[std::string(types->name)] = types->type;
+        ++types;
+      }
+    }
+  }
+
+  // Resolve external types, in a second pass.
+  for (size_t i = 0; defs[i] != nullptr; i++) {
+    const LibraryDef &def = *defs[i];
+
+    Dtool_TypeDef *types = def._external_types;
+    if (types != nullptr) {
+      while (types->name != nullptr) {
+        auto it = type_map->find(std::string(types->name));
+        if (it != type_map->end()) {
+          types->type = it->second;
+        } else {
+          return PyErr_Format(PyExc_NameError, "name '%s' is not defined", types->name);
+        }
+        ++types;
+      }
+    }
   }
 
   PyMethodDef *newdef = new PyMethodDef[functions.size() + 1];
@@ -714,44 +630,54 @@ PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], const char *modulename) {
         << "Python " << version << "\n";
     }
 
-    // Grab the __main__ module.
-    PyObject *main_module = PyImport_ImportModule("__main__");
-    if (main_module == nullptr) {
-      interrogatedb_cat.warning() << "Unable to import __main__\n";
-    }
-
-    // Extract the __file__ attribute, if present.
-    Filename main_dir;
-    PyObject *file_attr = PyObject_GetAttrString(main_module, "__file__");
-    if (file_attr == nullptr) {
-      // Must be running in the interactive interpreter.  Use the CWD.
-      main_dir = ExecutionEnvironment::get_cwd();
-    } else {
+    if (!ExecutionEnvironment::has_environment_variable("MAIN_DIR")) {
+      // Grab the __main__ module.
+      PyObject *main_module = PyImport_ImportModule("__main__");
+      if (main_module == NULL) {
+        interrogatedb_cat.warning() << "Unable to import __main__\n";
+      }
+      
+      // Extract the __file__ attribute, if present.
+      Filename main_dir;
+      PyObject *file_attr = nullptr;
+      if (main_module != nullptr) {
+        file_attr = PyObject_GetAttrString(main_module, "__file__");
+      }
+      if (file_attr == nullptr) {
+        // Must be running in the interactive interpreter.  Use the CWD.
+        main_dir = ExecutionEnvironment::get_cwd();
+      } else {
 #if PY_MAJOR_VERSION >= 3
-      Py_ssize_t length;
-      wchar_t *buffer = PyUnicode_AsWideCharString(file_attr, &length);
-      if (buffer != nullptr) {
-        main_dir = Filename::from_os_specific_w(std::wstring(buffer, length));
-        main_dir.make_absolute();
-        main_dir = main_dir.get_dirname();
-        PyMem_Free(buffer);
-      }
+        Py_ssize_t length;
+        wchar_t *buffer = PyUnicode_AsWideCharString(file_attr, &length);
+        if (buffer != nullptr) {
+          main_dir = Filename::from_os_specific_w(std::wstring(buffer, length));
+          main_dir.make_absolute();
+          main_dir = main_dir.get_dirname();
+          PyMem_Free(buffer);
+        }
 #else
-      char *buffer;
-      Py_ssize_t length;
-      if (PyString_AsStringAndSize(file_attr, &buffer, &length) != -1) {
-        main_dir = Filename::from_os_specific(std::string(buffer, length));
-        main_dir.make_absolute();
-        main_dir = main_dir.get_dirname();
-      }
+        char *buffer;
+        Py_ssize_t length;
+        if (PyString_AsStringAndSize(file_attr, &buffer, &length) != -1) {
+          main_dir = Filename::from_os_specific(std::string(buffer, length));
+          main_dir.make_absolute();
+          main_dir = main_dir.get_dirname();
+        }
 #endif
-      else {
-        interrogatedb_cat.warning() << "Invalid string for __main__.__file__\n";
+        else {
+          interrogatedb_cat.warning() << "Invalid string for __main__.__file__\n";
+        }
       }
+      ExecutionEnvironment::shadow_environment_variable("MAIN_DIR", main_dir.to_os_specific());
+      PyErr_Clear();
     }
-    ExecutionEnvironment::shadow_environment_variable("MAIN_DIR", main_dir.to_os_specific());
-    PyErr_Clear();
     initialized_main_dir = true;
+
+    // Also, while we are at it, initialize the thread swap hook.
+#if defined(HAVE_THREADS) && defined(SIMPLE_THREADS)
+    global_thread_state_swap = PyThreadState_Swap;
+#endif
   }
 
   PyModule_AddIntConstant(module, "Dtool_PyNativeInterface", 1);
@@ -791,7 +717,8 @@ PyObject *Dtool_BorrowThisReference(PyObject *self, PyObject *args) {
 
 // We do expose a dictionay for dtool classes .. this should be removed at
 // some point..
-EXPCL_INTERROGATEDB PyObject *Dtool_AddToDictionary(PyObject *self1, PyObject *args) {
+EXPCL_PYPANDA PyObject *
+Dtool_AddToDictionary(PyObject *self1, PyObject *args) {
   PyObject *self;
   PyObject *subject;
   PyObject *key;

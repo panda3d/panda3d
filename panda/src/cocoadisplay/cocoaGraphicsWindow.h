@@ -23,11 +23,13 @@
 #import <AppKit/NSView.h>
 #import <AppKit/NSWindow.h>
 
+#import <CoreVideo/CoreVideo.h>
+
 /**
  * An interface to the Cocoa system for managing OpenGL windows under Mac OS
  * X.
  */
-class CocoaGraphicsWindow : public GraphicsWindow {
+class EXPCL_PANDA_COCOADISPLAY CocoaGraphicsWindow : public GraphicsWindow {
 public:
   CocoaGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                       const std::string &name,
@@ -89,8 +91,10 @@ private:
   NSUInteger _modifier_keys;
   UInt32 _dead_key_state;
   CGDirectDisplayID _display;
+  PT(GraphicsWindowInputDevice) _input;
   bool _mouse_hidden;
   bool _context_needs_update;
+  bool _vsync_enabled = false;
 
 #if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
   CGDisplayModeRef _fullscreen_mode;

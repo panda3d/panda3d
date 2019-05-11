@@ -1084,6 +1084,8 @@ set_effects(const RenderEffects *effects, Thread *current_thread) {
  */
 void PandaNode::
 set_transform(const TransformState *transform, Thread *current_thread) {
+  nassertv(!transform->is_invalid());
+
   // Need to have this held before we grab any other locks.
   LightMutexHolder holder(_dirty_prev_transforms._lock);
 
@@ -1120,6 +1122,8 @@ set_transform(const TransformState *transform, Thread *current_thread) {
  */
 void PandaNode::
 set_prev_transform(const TransformState *transform, Thread *current_thread) {
+  nassertv(!transform->is_invalid());
+
   // Need to have this held before we grab any other locks.
   LightMutexHolder holder(_dirty_prev_transforms._lock);
 
@@ -2383,7 +2387,8 @@ r_copy_subgraph(PandaNode::InstanceMap &inst_map, Thread *current_thread) const 
       << "Don't know how to copy nodes of type " << get_type() << "\n";
 
     if (no_unsupported_copy) {
-      nassertr(false, nullptr);
+      nassert_raise("unsupported copy");
+      return nullptr;
     }
   }
 
@@ -3509,12 +3514,12 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
             const BoundingVolume **child_begin = &child_volumes[0];
             const BoundingVolume **child_end = child_begin + child_volumes_i;
             ((BoundingVolume *)gbv)->around(child_begin, child_end);
-          }
 
-          // If we have a transform, apply it to the bounding volume we just
-          // computed.
-          if (!transform->is_identity()) {
-            gbv->xform(transform->get_mat());
+            // If we have a transform, apply it to the bounding volume we just
+            // computed.
+            if (!transform->is_identity()) {
+              gbv->xform(transform->get_mat());
+            }
           }
 
           cdataw->_external_bounds = gbv;
@@ -3847,6 +3852,9 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 
   // Mark the bounds stale.
   ++_next_update;
+
+  nassertr(!_transform->is_invalid(), pi);
+  nassertr(!_prev_transform->is_invalid(), pi);
 
   return pi;
 }

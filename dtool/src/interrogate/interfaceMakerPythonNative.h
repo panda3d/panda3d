@@ -11,8 +11,8 @@
 
 #ifndef INTERFACEMAKERPYTHONNATIVE_H
 #define INTERFACEMAKERPYTHONNATIVE_H
-#include "map"
-#include "set"
+#include <map>
+#include <set>
 #include "dtoolbase.h"
 
 #include "interfaceMakerPython.h"
@@ -121,7 +121,7 @@ private:
   public:
     std::string _answer_location;
     WrapperType _wrapper_type;
-    int _min_version;
+    int _min_version = 0;
     std::string _wrapper_name;
     std::set<FunctionRemap*> _remaps;
     bool _keep_method;

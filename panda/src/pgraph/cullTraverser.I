@@ -116,6 +116,8 @@ get_camera_mask() const {
 /**
  * Specifies the bounding volume that corresponds to the view frustum.  Any
  * primitives that fall entirely outside of this volume are not drawn.
+ *
+ * Nowadays, this gets set automatically by set_scene().
  */
 INLINE void CullTraverser::
 set_view_frustum(GeometricBoundingVolume *view_frustum) {

@@ -66,7 +66,7 @@
 #include "config_pgraph.h"
 #include "shaderGenerator.h"
 #ifdef HAVE_CG
-#include "Cg/cgD3D9.h"
+#include <Cg/cgD3D9.h>
 #endif
 
 #include <mmsystem.h>
@@ -140,6 +140,7 @@ DXGraphicsStateGuardian9(GraphicsEngine *engine, GraphicsPipe *pipe) :
 
   _last_fvf = 0;
   _num_bound_streams = 0;
+  _white_vbuffer = nullptr;
 
   _vertex_shader_version_major = 0;
   _vertex_shader_version_minor = 0;
@@ -798,9 +799,9 @@ clear(DrawableRegion *clearable) {
     main_flags |=  D3DCLEAR_TARGET;
   }
 
-  if (clearable->get_clear_depth_active()) {
+  if (clearable->get_clear_depth_active() &&
+      _screen->_presentation_params.EnableAutoDepthStencil) {
     aux_flags |=  D3DCLEAR_ZBUFFER;
-    nassertv(_screen->_presentation_params.EnableAutoDepthStencil);
   }
 
   if (clearable->get_clear_stencil_active()) {
@@ -4545,6 +4546,11 @@ reset_d3d_device(D3DPRESENT_PARAMETERS *presentation_params,
     release_all_vertex_buffers();
     release_all_index_buffers();
 
+    if (_white_vbuffer != nullptr) {
+      _white_vbuffer->Release();
+      _white_vbuffer = nullptr;
+    }
+
     // must be called before reset
     Thread *current_thread = Thread::get_current_thread();
     _prepared_objects->begin_frame(this, current_thread);
@@ -5234,9 +5240,9 @@ calc_fb_properties(DWORD cformat, DWORD dformat,
 #define GAMMA_1 (255.0 * 256.0)
 
 static bool _gamma_table_initialized = false;
-static unsigned short _orignial_gamma_table [256 * 3];
+static unsigned short _original_gamma_table [256 * 3];
 
-void _create_gamma_table (PN_stdfloat gamma, unsigned short *original_red_table, unsigned short *original_green_table, unsigned short *original_blue_table, unsigned short *red_table, unsigned short *green_table, unsigned short *blue_table) {
+void _create_gamma_table_dx9 (PN_stdfloat gamma, unsigned short *original_red_table, unsigned short *original_green_table, unsigned short *original_blue_table, unsigned short *red_table, unsigned short *green_table, unsigned short *blue_table) {
   int i;
   double gamma_correction;
 
@@ -5298,7 +5304,7 @@ get_gamma_table(void) {
     HDC hdc = GetDC(nullptr);
 
     if (hdc) {
-      if (GetDeviceGammaRamp (hdc, (LPVOID) _orignial_gamma_table)) {
+      if (GetDeviceGammaRamp (hdc, (LPVOID) _original_gamma_table)) {
         _gamma_table_initialized = true;
         get = true;
       }
@@ -5323,10 +5329,10 @@ static_set_gamma(bool restore, PN_stdfloat gamma) {
     unsigned short ramp [256 * 3];
 
     if (restore && _gamma_table_initialized) {
-      _create_gamma_table (gamma, &_orignial_gamma_table [0], &_orignial_gamma_table [256], &_orignial_gamma_table [512], &ramp [0], &ramp [256], &ramp [512]);
+      _create_gamma_table_dx9 (gamma, &_original_gamma_table [0], &_original_gamma_table [256], &_original_gamma_table [512], &ramp [0], &ramp [256], &ramp [512]);
     }
     else {
-      _create_gamma_table (gamma, 0, 0, 0, &ramp [0], &ramp [256], &ramp [512]);
+      _create_gamma_table_dx9 (gamma, 0, 0, 0, &ramp [0], &ramp [256], &ramp [512]);
     }
 
     if (SetDeviceGammaRamp (hdc, ramp)) {
@@ -5402,6 +5408,40 @@ set_cg_device(LPDIRECT3DDEVICE9 cg_device) {
     _cg_device = cg_device;
   }
 #endif // HAVE_CG
+}
+
+/**
+ * Returns a vertex buffer containing only a full-white color.
+ */
+LPDIRECT3DVERTEXBUFFER9 DXGraphicsStateGuardian9::
+get_white_vbuffer() {
+  if (_white_vbuffer != nullptr) {
+    return _white_vbuffer;
+  }
+
+  LPDIRECT3DVERTEXBUFFER9 vbuffer;
+  HRESULT hr;
+  hr = _screen->_d3d_device->CreateVertexBuffer(sizeof(D3DCOLOR), D3DUSAGE_WRITEONLY, D3DFVF_DIFFUSE, D3DPOOL_DEFAULT, &vbuffer, nullptr);
+
+  if (FAILED(hr)) {
+    dxgsg9_cat.error()
+      << "CreateVertexBuffer failed" << D3DERRORSTRING(hr);
+    return nullptr;
+  }
+
+  D3DCOLOR *local_pointer;
+  hr = vbuffer->Lock(0, sizeof(D3DCOLOR), (void **) &local_pointer, D3DLOCK_DISCARD);
+  if (FAILED(hr)) {
+    dxgsg9_cat.error()
+      << "VertexBuffer::Lock failed" << D3DERRORSTRING(hr);
+    return false;
+  }
+
+  *local_pointer = D3DCOLOR_ARGB(255, 255, 255, 255);
+
+  vbuffer->Unlock();
+  _white_vbuffer = vbuffer;
+  return vbuffer;
 }
 
 typedef std::string KEY;

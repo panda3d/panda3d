@@ -19,7 +19,6 @@
 #include "interrogate_interface.h"
 #include "interrogate_request.h"
 #include "load_dso.h"
-#include "pystub.h"
 #include "pnotify.h"
 #include "panda_getopt_long.h"
 #include "preprocess_argv.h"
@@ -29,6 +28,9 @@
 
 using std::cerr;
 using std::string;
+
+// This contains a big source string determined at compile time.
+extern const char interrogate_preamble_python_native[];
 
 Filename output_code_filename;
 string module_name;
@@ -286,32 +288,17 @@ int write_python_table_native(std::ostream &out) {
   vector_string::const_iterator ii;
   for (ii = libraries.begin(); ii != libraries.end(); ++ii) {
     printf("Referencing Library %s\n", (*ii).c_str());
-    out << "extern LibraryDef " << *ii << "_moddef;\n";
+    out << "extern const struct LibraryDef " << *ii << "_moddef;\n";
     out << "extern void Dtool_" << *ii << "_RegisterTypes();\n";
-    out << "extern void Dtool_" << *ii << "_ResolveExternals();\n";
     out << "extern void Dtool_" << *ii << "_BuildInstants(PyObject *module);\n";
   }
 
   out.put('\n');
 
-  out << "#if PY_MAJOR_VERSION >= 3 || !defined(NDEBUG)\n"
-      << "#ifdef _WIN32\n"
-      << "extern \"C\" __declspec(dllexport) PyObject *PyInit_" << library_name << "();\n"
-      << "#elif __GNUC__ >= 4\n"
-      << "extern \"C\" __attribute__((visibility(\"default\"))) PyObject *PyInit_" << library_name << "();\n"
+  out << "#if PY_MAJOR_VERSION >= 3\n"
+      << "extern \"C\" EXPORT_CLASS PyObject *PyInit_" << library_name << "();\n"
       << "#else\n"
-      << "extern \"C\" PyObject *PyInit_" << library_name << "();\n"
-      << "#endif\n"
-      << "#endif\n";
-
-  out << "#if PY_MAJOR_VERSION < 3 || !defined(NDEBUG)\n"
-      << "#ifdef _WIN32\n"
-      << "extern \"C\" __declspec(dllexport) void init" << library_name << "();\n"
-      << "#elif __GNUC__ >= 4\n"
-      << "extern \"C\" __attribute__((visibility(\"default\"))) void init" << library_name << "();\n"
-      << "#else\n"
-      << "extern \"C\" void init" << library_name << "();\n"
-      << "#endif\n"
+      << "extern \"C\" EXPORT_CLASS void init" << library_name << "();\n"
       << "#endif\n";
 
   out << "\n"
@@ -339,12 +326,9 @@ int write_python_table_native(std::ostream &out) {
   for (ii = libraries.begin(); ii != libraries.end(); ii++) {
     out << "  Dtool_" << *ii << "_RegisterTypes();\n";
   }
-  for (ii = libraries.begin(); ii != libraries.end(); ii++) {
-    out << "  Dtool_" << *ii << "_ResolveExternals();\n";
-  }
   out << "\n";
 
-  out << "  LibraryDef *defs[] = {";
+  out << "  const LibraryDef *defs[] = {";
   for(ii = libraries.begin(); ii != libraries.end(); ii++) {
     out << "&" << *ii << "_moddef, ";
   }
@@ -363,14 +347,6 @@ int write_python_table_native(std::ostream &out) {
       << "}\n"
       << "\n"
 
-      << "#ifndef NDEBUG\n"
-      << "void init" << library_name << "() {\n"
-      << "  PyErr_SetString(PyExc_ImportError, \"" << module_name << " was "
-      << "compiled for Python \" PY_VERSION \", which is incompatible "
-      << "with Python 2\");\n"
-      << "}\n"
-      << "#endif\n"
-
       << "#else  // Python 2 case\n"
       << "\n"
       << "void init" << library_name << "() {\n";
@@ -386,12 +362,9 @@ int write_python_table_native(std::ostream &out) {
   for (ii = libraries.begin(); ii != libraries.end(); ii++) {
     out << "  Dtool_" << *ii << "_RegisterTypes();\n";
   }
-  for (ii = libraries.begin(); ii != libraries.end(); ii++) {
-    out << "  Dtool_" << *ii << "_ResolveExternals();\n";
-  }
   out << "\n";
 
-  out << "  LibraryDef *defs[] = {";
+  out << "  const LibraryDef *defs[] = {";
   for(ii = libraries.begin(); ii != libraries.end(); ii++) {
     out << "&" << *ii << "_moddef, ";
   }
@@ -407,15 +380,6 @@ int write_python_table_native(std::ostream &out) {
 
   out << "  }\n"
       << "}\n"
-      << "\n"
-      << "#ifndef NDEBUG\n"
-      << "PyObject *PyInit_" << library_name << "() {\n"
-      << "  PyErr_SetString(PyExc_ImportError, \"" << module_name << " was "
-      << "compiled for Python \" PY_VERSION \", which is incompatible "
-      << "with Python 3\");\n"
-      << "  return nullptr;\n"
-      << "}\n"
-      << "#endif\n"
       << "#endif\n"
       << "\n";
 
@@ -545,8 +509,6 @@ int main(int argc, char *argv[]) {
   extern int optind;
   int flag;
 
-  pystub();
-
   preprocess_argv(argc, argv);
   flag = getopt_long_only(argc, argv, short_options, long_options, nullptr);
   while (flag != EOF) {
@@ -642,8 +604,10 @@ int main(int argc, char *argv[]) {
 
       if (build_python_native_wrappers) {
         write_python_table_native(output_code);
-      }
 
+        // Output the support code.
+        output_code << interrogate_preamble_python_native << "\n";
+      }
     }
   }
 

@@ -248,8 +248,8 @@ inline std::ostream &operator <<(std::ostream &out, const PartBundle &bundle) {
   return out;
 }
 
-std::ostream &operator <<(std::ostream &out, PartBundle::BlendType blend_type);
-std::istream &operator >>(std::istream &in, PartBundle::BlendType &blend_type);
+EXPCL_PANDA_CHAN std::ostream &operator <<(std::ostream &out, PartBundle::BlendType blend_type);
+EXPCL_PANDA_CHAN std::istream &operator >>(std::istream &in, PartBundle::BlendType &blend_type);
 
 #include "partBundle.I"
 

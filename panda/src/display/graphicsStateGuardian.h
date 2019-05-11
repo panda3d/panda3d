@@ -339,6 +339,7 @@ public:
   PT(Texture) fetch_specified_texture(Shader::ShaderTexSpec &spec,
                                       SamplerState &sampler, int &view);
   const Shader::ShaderPtrData *fetch_ptr_parameter(const Shader::ShaderPtrSpec& spec);
+  bool fetch_ptr_parameter(const Shader::ShaderPtrSpec &spec, Shader::ShaderPtrData &data);
 
   virtual void prepare_display_region(DisplayRegionPipelineReader *dr);
   virtual void clear_before_callback();
@@ -685,7 +686,6 @@ public:
   static PStatCollector _texture_state_pcollector;
   static PStatCollector _draw_primitive_pcollector;
   static PStatCollector _draw_set_state_pcollector;
-  static PStatCollector _clear_pcollector;
   static PStatCollector _flush_pcollector;
   static PStatCollector _compute_dispatch_pcollector;
   static PStatCollector _wait_occlusion_pcollector;

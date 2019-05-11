@@ -33,7 +33,7 @@ class FrameBufferProperties;
  * This graphics pipe represents the interface for creating OpenGL graphics
  * windows on a Cocoa-based (e.g.  Mac OS X) client.
  */
-class CocoaGraphicsPipe : public GraphicsPipe {
+class EXPCL_PANDA_COCOADISPLAY CocoaGraphicsPipe : public GraphicsPipe {
 public:
   CocoaGraphicsPipe(CGDirectDisplayID display = CGMainDisplayID());
   virtual ~CocoaGraphicsPipe();

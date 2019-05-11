@@ -19,6 +19,7 @@
 #include "configVariableBool.h"
 #include "configVariableEnum.h"
 #include "configVariableInt.h"
+#include "configVariableString.h"
 #include "dconfig.h"
 
 #include "physxEnums.h"

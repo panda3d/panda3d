@@ -4158,7 +4158,7 @@ do_read_dds(CData *cdata, istream &in, const string &filename, bool header_only)
     cdata->_num_mipmap_levels_read = cdata->_ram_images.size();
   }
 
-  if (in.fail() || in.eof()) {
+  if (in.fail()) {
     gobj_cat.error()
       << filename << ": truncated DDS file.\n";
     return false;
@@ -4897,8 +4897,8 @@ do_read_ktx(CData *cdata, istream &in, const string &filename, bool header_only)
             }
             break;
           default:
-            nassertr(false, false);
-            break;
+            nassert_raise("unexpected channel count");
+            return false;
           }
         }
 
@@ -4924,7 +4924,7 @@ do_read_ktx(CData *cdata, istream &in, const string &filename, bool header_only)
     }
   }
 
-  if (in.fail() || in.eof()) {
+  if (in.fail()) {
     gobj_cat.error()
       << filename << ": truncated KTX file.\n";
     return false;
@@ -6591,8 +6591,9 @@ do_reconsider_image_properties(CData *cdata, int x_size, int y_size, int num_com
 
     default:
       // Eh?
-      nassertr(false, false);
+      nassert_raise("unexpected channel count");
       cdata->_format = F_rgb;
+      return false;
     }
   }
 
@@ -7989,7 +7990,8 @@ convert_from_pfm(PTA_uchar &image, size_t page_size, int z,
     break;
 
   default:
-    nassertv(false);
+    nassert_raise("unexpected channel count");
+    return;
   }
 
   nassertv((unsigned char *)p == &image[idx] + page_size);
@@ -8199,7 +8201,8 @@ convert_to_pfm(PfmFile &pfm, int x_size, int y_size,
     break;
 
   default:
-    nassertr(false, false);
+    nassert_raise("unexpected channel count");
+    return false;
   }
 
   nassertr((unsigned char *)p == &image[idx] + page_size, false);

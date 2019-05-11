@@ -138,6 +138,10 @@ PUBLISHED:
   MAKE_SEQ_PROPERTY(child_classes, get_num_child_classes, get_child_class);
 
 public:
+#ifdef HAVE_PYTHON
+  PyObject *get_python_type() const;
+#endif
+
   void *allocate_array(size_t size) RETURNS_ALIGNED(MEMORY_HOOK_ALIGNMENT);
   void *reallocate_array(void *ptr, size_t size) RETURNS_ALIGNED(MEMORY_HOOK_ALIGNMENT);
   void deallocate_array(void *ptr);
@@ -146,9 +150,6 @@ public:
 
 private:
   constexpr TypeHandle(int index);
-
-  // Only kept temporarily for ABI compatibility.
-  static TypeHandle _none;
 
   int _index;
   friend class TypeRegistry;

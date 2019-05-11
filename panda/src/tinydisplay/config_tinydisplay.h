@@ -25,10 +25,6 @@ NotifyCategoryDecl(tinydisplay, EXPCL_TINYDISPLAY, EXPTP_TINYDISPLAY);
 extern EXPCL_TINYDISPLAY void init_libtinydisplay();
 extern "C" EXPCL_TINYDISPLAY int get_pipe_type_p3tinydisplay();
 
-extern ConfigVariableBool show_resize_box;
-extern ConfigVariableBool osx_disable_event_loop;
-extern ConfigVariableInt osx_mouse_wheel_scale;
-
 extern ConfigVariableInt td_texture_ram;
 extern ConfigVariableBool td_ignore_mipmaps;
 extern ConfigVariableBool td_ignore_clamp;

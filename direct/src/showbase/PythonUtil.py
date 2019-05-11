@@ -1652,17 +1652,15 @@ def itype(obj):
     # version of type that gives more complete information about instance types
     global dtoolSuperBase
     t = type(obj)
-    if t is types.InstanceType:
-        return '%s of <class %s>>' % (repr(types.InstanceType)[:-1],
-                                      str(obj.__class__))
+    if sys.version_info < (3, 0) and t is types.InstanceType:
+        return "<type 'instance' of <class %s>>" % (obj.__class__)
     else:
         # C++ object instances appear to be types via type()
         # check if this is a C++ object
         if dtoolSuperBase is None:
             _getDtoolSuperBase()
         if isinstance(obj, dtoolSuperBase):
-            return '%s of %s>' % (repr(types.InstanceType)[:-1],
-                                  str(obj.__class__))
+            return "<type 'instance' of %s>" % (obj.__class__)
         return t
 
 def deeptype(obj, maxLen=100, _visitedIds=None):
@@ -2513,7 +2511,7 @@ class AlphabetCounter:
         index = -1
         while True:
             curChar = self._curCounter[index]
-            if curChar is 'Z':
+            if curChar == 'Z':
                 nextChar = 'A'
                 carry = True
             else:

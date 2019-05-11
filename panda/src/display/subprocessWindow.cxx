@@ -18,6 +18,8 @@
 #include "graphicsEngine.h"
 #include "config_display.h"
 #include "nativeWindowHandle.h"
+#include "mouseButton.h"
+#include "throw_event.h"
 
 using std::string;
 
@@ -37,9 +39,8 @@ SubprocessWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                  GraphicsOutput *host) :
   GraphicsWindow(engine, pipe, name, fb_prop, win_prop, flags, gsg, host)
 {
-  GraphicsWindowInputDevice device =
-    GraphicsWindowInputDevice::pointer_and_keyboard(this, "keyboard/mouse");
-  _input_devices.push_back(device);
+  _input = GraphicsWindowInputDevice::pointer_and_keyboard(this, "keyboard/mouse");
+  _input_devices.push_back(_input.p());
 
   // This will be an offscreen buffer that we use to render the actual
   // contents.
@@ -81,9 +82,9 @@ process_events() {
     while (_swbuffer->get_event(swb_event)) {
       // Deal with this event.
       if (swb_event._flags & SubprocessWindowBuffer::EF_mouse_position) {
-        _input_devices[0].set_pointer_in_window(swb_event._x, swb_event._y);
+        _input->set_pointer_in_window(swb_event._x, swb_event._y);
       } else if ((swb_event._flags & SubprocessWindowBuffer::EF_has_mouse) == 0) {
-        _input_devices[0].set_pointer_out_of_window();
+        _input->set_pointer_out_of_window();
       }
 
       unsigned int diff = swb_event._flags ^ _last_event_flags;
@@ -110,14 +111,14 @@ process_events() {
         int keycode;
         button = translate_key(keycode, swb_event._code, swb_event._flags);
         if (keycode != 0 && swb_event._type != SubprocessWindowBuffer::ET_button_up) {
-          _input_devices[0].keystroke(keycode);
+          _input->keystroke(keycode);
         }
       }
 
       if (swb_event._type == SubprocessWindowBuffer::ET_button_up) {
-        _input_devices[0].button_up(button);
+        _input->button_up(button);
       } else if (swb_event._type == SubprocessWindowBuffer::ET_button_down) {
-        _input_devices[0].button_down(button);
+        _input->button_down(button);
       }
     }
   }
@@ -554,9 +555,9 @@ translate_key(int &keycode, int os_code, unsigned int flags) const {
 void SubprocessWindow::
 transition_button(unsigned int flags, ButtonHandle button) {
   if (flags) {
-    _input_devices[0].button_down(button);
+    _input->button_down(button);
   } else {
-    _input_devices[0].button_up(button);
+    _input->button_up(button);
   }
 }
 

@@ -258,7 +258,12 @@ make_packer() const {
         case 3:
           return new Packer_point_nativefloat_3;
         case 4:
-          return new Packer_point_nativefloat_4;
+          // Reader may assume 16-byte alignment.
+          if ((get_start() & 0xf) == 0) {
+            return new Packer_point_nativefloat_4;
+          } else {
+            return new Packer_point_float32_4;
+          }
         }
       } else {
         switch (get_num_components()) {
@@ -309,7 +314,8 @@ make_packer() const {
         return new Packer_argb_packed;
 
       case NT_float32:
-        if (sizeof(float) == sizeof(PN_float32)) {
+        if (sizeof(float) == sizeof(PN_float32) &&
+            (get_start() & 0xf) == 0) {
           // Use the native float type implementation for a tiny bit more
           // optimization.
           return new Packer_rgba_nativefloat_4;

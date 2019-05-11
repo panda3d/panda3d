@@ -19,10 +19,12 @@
 #include "thread.h"
 #include "urlSpec.h"
 
+#include "android_native_app_glue.h"
+
 #include "config_display.h"
 // #define OPENGLES_1 #include "config_androiddisplay.h"
 
-#include <android_native_app_glue.h>
+#include <fcntl.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 

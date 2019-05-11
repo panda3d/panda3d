@@ -19,7 +19,8 @@
 
 #include "audioSound.h"
 #include "milesAudioManager.h"
-#include "mss.h"
+
+#include <mss.h>
 
 /**
  * The base class for both MilesAudioStream and MilesAudioSample.

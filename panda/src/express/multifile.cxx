@@ -333,7 +333,10 @@ close() {
   if (_owns_stream) {
     // We prefer to delete the IStreamWrapper over the ostream, if possible.
     if (_read != nullptr) {
-      delete _read;
+      // Only delete it if no SubStream is still referencing it.
+      if (!_read->unref()) {
+        delete _read;
+      }
     } else if (_write != nullptr) {
       delete _write;
     }
@@ -1782,8 +1785,7 @@ compare_subfile(int index, const Filename &filename) {
   in2.seekg(0);
   int byte1 = in1->get();
   int byte2 = in2.get();
-  while (!in1->fail() && !in1->eof() &&
-         !in2.fail() && !in2.eof()) {
+  while (!in1->fail() && !in2.fail()) {
     if (byte1 != byte2) {
       close_read_subfile(in1);
       return false;
@@ -2494,7 +2496,7 @@ read_index(istream &read, streampos fpos, Multifile *multifile) {
   StreamReader reader(read);
 
   streampos next_index = multifile->word_to_streampos(reader.get_uint32());
-  if (read.eof() || read.fail()) {
+  if (read.fail()) {
     _flags |= SF_index_invalid;
     return 0;
   }
@@ -2526,7 +2528,7 @@ read_index(istream &read, streampos fpos, Multifile *multifile) {
   }
 
   size_t name_length = reader.get_uint16();
-  if (read.eof() || read.fail()) {
+  if (read.fail()) {
     _flags |= SF_index_invalid;
     return 0;
   }
@@ -2540,7 +2542,7 @@ read_index(istream &read, streampos fpos, Multifile *multifile) {
   _name = string(name_buffer, name_length);
   PANDA_FREE_ARRAY(name_buffer);
 
-  if (read.eof() || read.fail()) {
+  if (read.fail()) {
     _flags |= SF_index_invalid;
     return 0;
   }

@@ -26,9 +26,9 @@
 #endif
 
 #define OPENSSL_NO_KRB5
-#include "openssl/x509.h"
-#include "openssl/pem.h"
-#include "openssl/md5.h"
+#include <openssl/x509.h>
+#include <openssl/pem.h>
+#include <openssl/md5.h>
 
 class P3DInstance;
 class P3DSession;

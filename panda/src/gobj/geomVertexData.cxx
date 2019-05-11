@@ -621,13 +621,26 @@ copy_from(const GeomVertexData *source, bool keep_data_objects,
             const TransformBlend &blend = blend_table->get_blend(from.get_data1i());
             LVecBase4 weights = LVecBase4::zero();
             LVecBase4i indices(0, 0, 0, 0);
-            nassertv(blend.get_num_transforms() <= 4);
 
-            for (size_t i = 0; i < blend.get_num_transforms(); i++) {
-              weights[i] = blend.get_weight(i);
-              indices[i] = add_transform(transform_table, blend.get_transform(i),
-                                         already_added);
+            if (blend.get_num_transforms() <= 4) {
+              for (size_t i = 0; i < blend.get_num_transforms(); i++) {
+                weights[i] = blend.get_weight(i);
+                indices[i] = add_transform(transform_table, blend.get_transform(i),
+                                           already_added);
+              }
+            } else {
+              // Limit the number of blends to the four with highest weights.
+              TransformBlend blend2(blend);
+              blend2.limit_transforms(4);
+              blend2.normalize_weights();
+
+              for (size_t i = 0; i < 4; i++) {
+                weights[i] = blend2.get_weight(i);
+                indices[i] = add_transform(transform_table, blend2.get_transform(i),
+                                           already_added);
+              }
             }
+
             if (weight.has_column()) {
               weight.set_data4(weights);
             }
@@ -673,32 +686,13 @@ copy_from(const GeomVertexData *source, bool keep_data_objects,
 void GeomVertexData::
 copy_row_from(int dest_row, const GeomVertexData *source,
               int source_row, Thread *current_thread) {
-  const GeomVertexFormat *source_format = source->get_format();
-  const GeomVertexFormat *dest_format = get_format();
-  nassertv(source_format == dest_format);
-  nassertv(source_row >= 0 && source_row < source->get_num_rows());
 
-  if (dest_row >= get_num_rows()) {
-    // Implicitly add enough rows to get to the indicated row.
-    set_num_rows(dest_row + 1);
-  }
+  GeomVertexDataPipelineReader reader(source, current_thread);
+  reader.check_array_readers();
 
-  int num_arrays = source_format->get_num_arrays();
-
-  for (int i = 0; i < num_arrays; ++i) {
-    PT(GeomVertexArrayDataHandle) dest_handle = modify_array_handle(i);
-    unsigned char *dest_array_data = dest_handle->get_write_pointer();
-
-    CPT(GeomVertexArrayDataHandle) source_array_handle = source->get_array_handle(i);
-    const unsigned char *source_array_data = source_array_handle->get_read_pointer(true);
-
-    const GeomVertexArrayFormat *array_format = source_format->get_array(i);
-    int stride = array_format->get_stride();
-
-    memcpy(dest_array_data + stride * dest_row,
-           source_array_data + stride * source_row,
-           stride);
-  }
+  GeomVertexDataPipelineWriter writer(this, true, current_thread);
+  writer.check_array_writers();
+  writer.copy_row_from(dest_row, reader, source_row);
 }
 
 /**
@@ -1108,7 +1102,8 @@ do_set_color(GeomVertexData *vdata, const LColor &color) {
   const GeomVertexColumn *column;
   int array_index;
   if (!format->get_array_info(InternalName::get_color(), array_index, column)) {
-    nassertv(false);
+    nassert_raise("no color column");
+    return;
   }
 
   size_t stride = format->get_array(array_index)->get_stride();
@@ -2584,6 +2579,45 @@ set_array(size_t i, const GeomVertexArrayData *array) {
 
   if (_got_array_writers) {
     _array_writers[i] = new GeomVertexArrayDataHandle(_cdata->_arrays[i].get_write_pointer(), _current_thread);
+  }
+}
+
+/**
+ * Copies a single row of the data from the other array into the indicated row
+ * of this array.  In this case, the source format must exactly match the
+ * destination format.
+ *
+ * Don't call this in a downstream thread unless you don't mind it blowing
+ * away other changes you might have recently made in an upstream thread.
+ */
+void GeomVertexDataPipelineWriter::
+copy_row_from(int dest_row, const GeomVertexDataPipelineReader &source,
+              int source_row) {
+  const GeomVertexFormat *source_format = source.get_format();
+  const GeomVertexFormat *dest_format = get_format();
+  nassertv(source_format == dest_format);
+  nassertv(source_row >= 0 && source_row < source.get_num_rows());
+  nassertv(_got_array_writers);
+
+  if (dest_row >= get_num_rows()) {
+    // Implicitly add enough rows to get to the indicated row.
+    set_num_rows(dest_row + 1);
+  }
+
+  size_t num_arrays = source_format->get_num_arrays();
+  for (size_t i = 0; i < num_arrays; ++i) {
+    GeomVertexArrayDataHandle *dest_handle = get_array_writer(i);
+    unsigned char *dest_array_data = dest_handle->get_write_pointer();
+
+    const GeomVertexArrayDataHandle *source_array_handle = source.get_array_reader(i);
+    const unsigned char *source_array_data = source_array_handle->get_read_pointer(true);
+
+    const GeomVertexArrayFormat *array_format = source_format->get_array(i);
+    int stride = array_format->get_stride();
+
+    memcpy(dest_array_data + stride * dest_row,
+           source_array_data + stride * source_row,
+           stride);
   }
 }
 

@@ -8,8 +8,6 @@
 #include "subStream.cxx"
 #include "subStreamBuf.cxx"
 #include "temporaryFile.cxx"
-#include "threadSafePointerTo.cxx"
-#include "threadSafePointerToBase.cxx"
 #include "trueClock.cxx"
 #include "typedReferenceCount.cxx"
 #include "virtualFile.cxx"

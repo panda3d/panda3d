@@ -283,7 +283,8 @@ write_pfm(const PfmFile &pfm) {
     break;
 
   default:
-    nassertr(false, false);
+    nassert_raise("unexpected channel count");
+    return false;
   }
   (*_file) << pfm.get_x_size() << " " << pfm.get_y_size() << "\n";
 

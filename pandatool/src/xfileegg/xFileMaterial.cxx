@@ -18,6 +18,7 @@
 #include "eggTexture.h"
 #include "eggPrimitive.h"
 #include "datagram.h"
+#include "config_xfile.h"
 
 #include <string.h>  // for strcmp, strdup
 

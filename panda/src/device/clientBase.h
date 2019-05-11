@@ -27,7 +27,7 @@
 #include "coordinateSystem.h"
 
 #ifdef OLD_HAVE_IPC
-#include "ipc_thread.h"
+#include <ipc_thread.h>
 #endif
 
 #include "pmap.h"

@@ -30,15 +30,15 @@ using std::min;
 using std::max;
 
 #include <stdio.h>
-#include "Max.h"
-#include "istdplug.h"
-#include "stdmat.h"
-#include "decomp.h"
-#include "shape.h"
-#include "simpobj.h"
-#include "iparamb2.h"
-#include "iskin.h"
-#include "modstack.h"
+#include <Max.h>
+#include <istdplug.h>
+#include <stdmat.h>
+#include <decomp.h>
+#include <shape.h>
+#include <simpobj.h>
+#include <iparamb2.h>
+#include <iskin.h>
+#include <modstack.h>
 
 #include "maxEggLoader.h"
 

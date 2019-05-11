@@ -297,6 +297,7 @@ set_row_unsafe(int row) {
  */
 INLINE void GeomVertexWriter::
 set_row(int row) {
+  nassertv(row >= 0);
   _start_row = row;
   if (has_column()) {
     set_pointer(_start_row);

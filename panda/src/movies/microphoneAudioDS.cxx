@@ -91,7 +91,7 @@ public:
   int _samples_per_buffer;
 
 public:
-  virtual void read_samples(int n, int16_t *data);
+  virtual int read_samples(int n, int16_t *data);
   virtual int ready() const;
 
 public:
@@ -323,7 +323,7 @@ MicrophoneAudioCursorDS::
 /**
  *
  */
-void MicrophoneAudioCursorDS::
+int MicrophoneAudioCursorDS::
 read_samples(int n, int16_t *data) {
   int orign = n;
   if (_handle) {
@@ -373,6 +373,7 @@ read_samples(int n, int16_t *data) {
   if (n > 0) {
     memcpy(data, 0, n*2*_audio_channels);
   }
+  return orign - n;
 }
 
 /**

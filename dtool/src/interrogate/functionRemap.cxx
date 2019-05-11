@@ -397,17 +397,25 @@ get_call_str(const string &container, const vector_string &pexprs) const {
     }
 
     // It's not possible to assign arrays in C++, we have to copy them.
-    CPPArrayType *array_type = _parameters[_first_true_parameter]._remap->get_orig_type()->as_array_type();
+    bool paren_close = false;
+    CPPType *param_type = _parameters[_first_true_parameter]._remap->get_orig_type();
+    CPPArrayType *array_type = param_type->as_array_type();
     if (array_type != nullptr) {
       call << "std::copy(" << expr << ", " << expr << " + " << *array_type->_bounds << ", ";
-    } else {
+      paren_close = true;
+    }
+    else if (TypeManager::is_pointer_to_PyObject(param_type)) {
+      call << "Dtool_Assign_PyObject(" << expr << ", ";
+      paren_close = true;
+    }
+    else {
       call << expr << " = ";
     }
 
     _parameters[_first_true_parameter]._remap->pass_parameter(call,
                     get_parameter_expr(_first_true_parameter, pexprs));
 
-    if (array_type != nullptr) {
+    if (paren_close) {
       call << ')';
     }
 
@@ -772,6 +780,11 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
     _return_value_destructor = builder.get_destructor_for(return_meat_type);
   }
 
+  if (_type == T_getter && TypeManager::is_pointer_to_PyObject(return_type)) {
+    _manage_reference_count = true;
+    _return_value_needs_management = true;
+  }
+
   // Check for a special meaning by name and signature.
   size_t first_param = 0;
   if (_has_this) {
@@ -960,8 +973,13 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
 
     } else if (!_has_this && _parameters.size() > 0 &&
                (_cppfunc->_storage_class & CPPInstance::SC_explicit) == 0) {
-      // A non-explicit non-copy constructor might be eligible for coercion.
-      _flags |= F_coerce_constructor;
+      // A non-explicit non-copy constructor might be eligible for coercion,
+      // as long as it does not require explicit keyword args.
+      if ((_flags & F_explicit_args) == 0 ||
+          _args_type != InterfaceMaker::AT_keyword_args) {
+
+        _flags |= F_coerce_constructor;
+      }
     }
 
     // Constructors always take varargs, and possibly keyword args.

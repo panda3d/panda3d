@@ -20,7 +20,7 @@
 #include "P3DActiveXCtrl.h"
 
 #include <strstream>
-#include "Mshtml.h"
+#include <Mshtml.h>
 
 PPInterface::PPInterface( )
 {

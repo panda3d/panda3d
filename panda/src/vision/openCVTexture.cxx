@@ -22,20 +22,26 @@
 #include "bamCacheRecord.h"
 
 // This symbol is predefined by the Panda3D build system to select whether we
-// are using the OpenCV 2.3 or later interface, or if it is not defined, we
-// are using the original interface.
-#ifdef OPENCV_VER_23
+// are using the OpenCV 3.x or later interface.
+#if defined(OPENCV_VER_3)
+
+#include <opencv2/core.hpp>
+#include <opencv2/videoio/videoio_c.h>
+
+// This checks for 2.3 or later.
+#elif defined(OPENCV_VER_23)
 
 #include <opencv2/core/core.hpp>
-// #include <opencv2videovideo.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
+// If neither of those are predefined, assume 1.x.
 #else
+
 #include <cv.h>
 #include <cxcore.h>
 #include <highgui.h>
 
-#endif  // OPENCV_VER_23
+#endif  // OPENCV_VER_3
 
 TypeHandle OpenCVTexture::_type_handle;
 

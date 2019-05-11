@@ -59,7 +59,8 @@ FlacAudioCursor::
 FlacAudioCursor(FlacAudio *src, std::istream *stream) :
   MovieAudioCursor(src),
   _is_valid(false),
-  _drflac(nullptr)
+  _drflac(nullptr),
+  _stream(stream)
 {
   nassertv(stream != nullptr);
   nassertv(stream->good());
@@ -91,6 +92,9 @@ FlacAudioCursor::
   if (_drflac != nullptr) {
     drflac_close(_drflac);
   }
+  if (_stream != nullptr) {
+    VirtualFileSystem::close_read_file(_stream);
+  }
 }
 
 /**
@@ -114,8 +118,10 @@ seek(double t) {
  * read.  Your buffer must be equal in size to N * channels.  Multiple-channel
  * audio will be interleaved.
  */
-void FlacAudioCursor::
+int FlacAudioCursor::
 read_samples(int n, int16_t *data) {
   int desired = n * _audio_channels;
-  _samples_read += drflac_read_s16(_drflac, desired, data) / _audio_channels;
+  n = drflac_read_s16(_drflac, desired, data) / _audio_channels;
+  _samples_read += n;
+  return n;
 }

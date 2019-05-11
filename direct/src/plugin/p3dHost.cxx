@@ -17,7 +17,7 @@
 #include "mkdir_complete.h"
 #include "wstring_encode.h"
 #include "xml_helpers.h"
-#include "openssl/md5.h"
+#include <openssl/md5.h>
 
 #include <algorithm>
 

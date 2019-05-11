@@ -25,6 +25,8 @@
 #include "configVariableInt.h"
 #include "pStatCollector.h"
 #include "filename.h"
+#include "pmutex.h"
+#include "mutexHolder.h"
 #include <stdint.h>
 
 extern ConfigVariableBool stm_use_hexagonal_layout;
@@ -89,6 +91,16 @@ public:
   virtual void add_for_draw(CullTraverser *trav, CullTraverserData &data);
 
 private:
+  virtual CPT(TransformState)
+    calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
+                      bool &found_any,
+                      const TransformState *transform,
+                      Thread *current_thread = Thread::get_current_thread()) const;
+
+  virtual void compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
+                                       int &internal_vertices,
+                                       int pipeline_stage,
+                                       Thread *current_thread) const;
 
   // Chunk data
   struct Chunk {
@@ -160,6 +172,7 @@ private:
   void do_emit_chunk(Chunk* chunk, TraversalData* data);
   bool do_check_lod_matches(Chunk* chunk, TraversalData* data);
 
+  Mutex _lock;
   Chunk _base_chunk;
   size_t _size;
   size_t _chunk_size;

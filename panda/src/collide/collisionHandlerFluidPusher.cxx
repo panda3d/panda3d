@@ -72,7 +72,7 @@ handle_entries() {
     PosB = collider's current position
     M = movement vector (PosB - PosA)
     BV = bounding sphere that includes collider at PosA and PosB
-    CS = 'collision set', all 'collidables' within BV (collision polys, tubes, etc)
+    CS = 'collision set', all 'collidables' within BV (collision polys, capsules, etc)
 
     VARIABLES
     N = movement vector since most recent collision (or start of frame)

@@ -69,6 +69,23 @@ ConfigVariableBool assimp_flip_winding_order
           "the Assimp loader.  Note that you may need to clear the model-cache "
           "after changing this."));
 
+ConfigVariableBool assimp_gen_normals
+("assimp-gen-normals", false,
+ PRC_DESC("Set this true to generate normals (if absent from file) on import. "
+          "See assimp-smooth-normal-angle for more information. "
+          "Note that you may need to clear the model-cache after "
+          "changing this."));
+
+ConfigVariableDouble assimp_smooth_normal_angle
+("assimp-smooth-normal-angle", 0.0,
+ PRC_DESC("Set this to anything other than 0.0 in degrees (so 180.0 is PI) to "
+          "specify the maximum angle that may be between two face normals at "
+          "the same vertex position that are smoothed together. Sometimes "
+          "referred to as 'crease angle'. Only has effect if "
+          "assimp-gen-normals is set to true and the file does not contain "
+          "normals. Note that you may need to clear the model-cache after "
+          "changing this."));
+
 /**
  * Initializes the library.  This must be called at least once before any of
  * the functions or classes in this library can be used.  Normally it will be

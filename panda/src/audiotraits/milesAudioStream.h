@@ -19,7 +19,8 @@
 
 #include "milesAudioSound.h"
 #include "milesAudioManager.h"
-#include "mss.h"
+
+#include <mss.h>
 
 /**
  * This represents a sound file played by the Miles Sound System, similar to

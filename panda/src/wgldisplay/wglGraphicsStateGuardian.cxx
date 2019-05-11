@@ -609,9 +609,20 @@ make_context(HDC hdc) {
         attrib_list[n++] = gl_version[1];
       }
     }
+    int flags = 0;
     if (gl_debug) {
+      flags |= WGL_CONTEXT_DEBUG_BIT_ARB;
+    }
+    if (gl_forward_compatible) {
+      flags |= WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB;
+      if (gl_version.get_num_words() == 0 || gl_version[0] < 2) {
+        wgldisplay_cat.error()
+          << "gl-forward-compatible requires gl-version >= 3 0\n";
+      }
+    }
+    if (flags != 0) {
       attrib_list[n++] = WGL_CONTEXT_FLAGS_ARB;
-      attrib_list[n++] = WGL_CONTEXT_DEBUG_BIT_ARB;
+      attrib_list[n++] = flags;
     }
 #ifndef SUPPORT_FIXED_FUNCTION
     attrib_list[n++] = WGL_CONTEXT_PROFILE_MASK_ARB;
@@ -778,9 +789,9 @@ register_twindow_class() {
 #define GAMMA_1 (255.0 * 256.0)
 
 static bool _gamma_table_initialized = false;
-static unsigned short _orignial_gamma_table [256 * 3];
+static unsigned short _original_gamma_table [256 * 3];
 
-void _create_gamma_table (PN_stdfloat gamma, unsigned short *original_red_table, unsigned short *original_green_table, unsigned short *original_blue_table, unsigned short *red_table, unsigned short *green_table, unsigned short *blue_table) {
+void _create_gamma_table_wgl (PN_stdfloat gamma, unsigned short *original_red_table, unsigned short *original_green_table, unsigned short *original_blue_table, unsigned short *red_table, unsigned short *green_table, unsigned short *blue_table) {
   int i;
   double gamma_correction;
 
@@ -842,7 +853,7 @@ get_gamma_table(void) {
     HDC hdc = GetDC(nullptr);
 
     if (hdc) {
-      if (GetDeviceGammaRamp (hdc, (LPVOID) _orignial_gamma_table)) {
+      if (GetDeviceGammaRamp (hdc, (LPVOID) _original_gamma_table)) {
         _gamma_table_initialized = true;
         get = true;
       }
@@ -867,10 +878,10 @@ static_set_gamma(bool restore, PN_stdfloat gamma) {
     unsigned short ramp [256 * 3];
 
     if (restore && _gamma_table_initialized) {
-      _create_gamma_table (gamma, &_orignial_gamma_table [0], &_orignial_gamma_table [256], &_orignial_gamma_table [512], &ramp [0], &ramp [256], &ramp [512]);
+      _create_gamma_table_wgl (gamma, &_original_gamma_table [0], &_original_gamma_table [256], &_original_gamma_table [512], &ramp [0], &ramp [256], &ramp [512]);
     }
     else {
-      _create_gamma_table (gamma, 0, 0, 0, &ramp [0], &ramp [256], &ramp [512]);
+      _create_gamma_table_wgl (gamma, 0, 0, 0, &ramp [0], &ramp [256], &ramp [512]);
     }
 
     if (SetDeviceGammaRamp (hdc, ramp)) {

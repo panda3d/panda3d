@@ -130,7 +130,7 @@ get_pointer(int device) const {
     LightMutexHolder holder(_input_lock);
     nassertr(device >= 0 && device < (int)_input_devices.size(), MouseData());
 
-    result = _input_devices[device].get_pointer();
+    result = ((const GraphicsWindowInputDevice *)_input_devices[device].p())->get_pointer();
 
     // We recheck this immediately to get the most up-to-date value.
     POINT cpos;
@@ -138,7 +138,7 @@ get_pointer(int device) const {
       double time = ClockObject::get_global_clock()->get_real_time();
       result._xpos = cpos.x;
       result._ypos = cpos.y;
-      ((GraphicsWindowInputDevice &)_input_devices[0]).set_pointer(result._in_window, result._xpos, result._ypos, time);
+      ((GraphicsWindowInputDevice *)_input_devices[0].p())->set_pointer_in_window(result._xpos, result._ypos, time);
     }
   }
   return result;
@@ -164,7 +164,7 @@ move_pointer(int device, int x, int y) {
   if (device == 0) {
     // Move the system mouse pointer.
     if (!_properties.get_foreground() )
-      // !_input_devices[0].get_pointer().get_in_window())
+      //      !_input->get_pointer().get_in_window())
       {
         // If the window doesn't have input focus, or the mouse isn't
         // currently within the window, forget it.
@@ -175,14 +175,14 @@ move_pointer(int device, int x, int y) {
     get_client_rect_screen(_hWnd, &view_rect);
 
     SetCursorPos(view_rect.left + x, view_rect.top + y);
-    _input_devices[0].set_pointer_in_window(x, y);
+    _input->set_pointer_in_window(x, y);
     return true;
   } else {
     // Move a raw mouse.
     if ((device < 1)||(device >= (int)_input_devices.size())) {
       return false;
     }
-    _input_devices[device].set_pointer_in_window(x, y);
+    //_input_devices[device].set_pointer_in_window(x, y);
     return true;
   }
 }
@@ -281,6 +281,41 @@ set_properties_now(WindowProperties &properties) {
   if (!properties.is_any_specified()) {
     // The base class has already handled this case.
     return;
+  }
+
+  if (properties.has_undecorated() ||
+      properties.has_fixed_size()) {
+    if (properties.has_undecorated()) {
+      _properties.set_undecorated(properties.get_undecorated());
+      properties.clear_undecorated();
+    }
+    if (properties.has_fixed_size()) {
+      _properties.set_fixed_size(properties.get_fixed_size());
+      properties.clear_fixed_size();
+    }
+    // When switching undecorated mode, Windows will keep the window at the
+    // current outer size, whereas we want to keep it with the configured
+    // inner size.  Store the current size and origin.
+    LPoint2i top_left = _properties.get_origin();
+    LPoint2i bottom_right = top_left + _properties.get_size();
+
+    DWORD window_style = make_style(_properties);
+    SetWindowLong(_hWnd, GWL_STYLE, window_style);
+
+    // Now calculate the proper size and origin with the new window style.
+    RECT view_rect;
+    SetRect(&view_rect, top_left[0], top_left[1],
+            bottom_right[0], bottom_right[1]);
+    WINDOWINFO wi;
+    GetWindowInfo(_hWnd, &wi);
+    AdjustWindowRectEx(&view_rect, wi.dwStyle, FALSE, wi.dwExStyle);
+
+    // We need to call this to ensure that the style change takes effect.
+    SetWindowPos(_hWnd, HWND_NOTOPMOST, view_rect.left, view_rect.top,
+                 view_rect.right - view_rect.left,
+                 view_rect.bottom - view_rect.top,
+                 SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED |
+                 SWP_NOSENDCHANGING | SWP_SHOWWINDOW);
   }
 
   if (properties.has_title()) {
@@ -487,7 +522,7 @@ open_window() {
   // CreateWindow() and know which window it is sending events to even before
   // it gives us a handle.  Warning: this is not thread safe!
   _creating_window = this;
-  bool opened = open_graphic_window(is_fullscreen());
+  bool opened = open_graphic_window();
   _creating_window = nullptr;
 
   if (!opened) {
@@ -591,7 +626,6 @@ open_window() {
  * initializes a parallel array, _input_device_handle, with the win32 handle
  * of each raw input device.
  */
-
 void WinGraphicsWindow::
 initialize_input_devices() {
   UINT nInputDevices;
@@ -601,9 +635,10 @@ initialize_input_devices() {
 
   // Clear the handle array, and set up the system keyboardmouse
   memset(_input_device_handle, 0, sizeof(_input_device_handle));
-  GraphicsWindowInputDevice device =
+  PT(GraphicsWindowInputDevice) device =
     GraphicsWindowInputDevice::pointer_and_keyboard(this, "keyboard_mouse");
   add_input_device(device);
+  _input = device;
 
   // Get the number of devices.
   if (GetRawInputDeviceList(nullptr, &nInputDevices, sizeof(RAWINPUTDEVICELIST)) != 0) {
@@ -644,14 +679,15 @@ initialize_input_devices() {
           char *pound3 = pound2 ? strchr(pound2+1,'#') : 0;
           if (pound3) *pound3 = 0;
           for (char *p = psName; *p; p++) {
-            if (((*p<'a')||(*p>'z')) && ((*p<'A')||(*p>'Z')) && ((*p<'0')||(*p>'9'))) {
+            if (!isalnum(*p)) {
               *p = '_';
             }
           }
           if (pound2) *pound2 = '.';
           _input_device_handle[_input_devices.size()] = pRawInputDeviceList[i].hDevice;
-          GraphicsWindowInputDevice device = GraphicsWindowInputDevice::pointer_only(this, psName);
-          device.set_pointer_in_window(0,0);
+
+          PT(GraphicsWindowInputDevice) device = GraphicsWindowInputDevice::pointer_only(this, psName);
+          device->set_pointer_in_window(0, 0);
           add_input_device(device);
         }
       }
@@ -865,7 +901,9 @@ do_fullscreen_switch() {
     return false;
   }
 
-  DWORD window_style = make_style(true);
+  WindowProperties props(_properties);
+  props.set_fullscreen(true);
+  DWORD window_style = make_style(props);
   SetWindowLong(_hWnd, GWL_STYLE, window_style);
 
   WINDOW_METRICS metrics;
@@ -885,7 +923,10 @@ do_fullscreen_switch() {
 bool WinGraphicsWindow::
 do_windowed_switch() {
   do_fullscreen_disable();
-  DWORD window_style = make_style(false);
+
+  WindowProperties props(_properties);
+  props.set_fullscreen(false);
+  DWORD window_style = make_style(props);
   SetWindowLong(_hWnd, GWL_STYLE, window_style);
 
   WINDOW_METRICS metrics;
@@ -928,7 +969,7 @@ support_overlay_window(bool) {
  * Constructs a dwStyle for the specified mode, be it windowed or fullscreen.
  */
 DWORD WinGraphicsWindow::
-make_style(bool fullscreen) {
+make_style(const WindowProperties &properties) {
   // from MSDN: An OpenGL window has its own pixel format.  Because of this,
   // only device contexts retrieved for the client area of an OpenGL window
   // are allowed to draw into the window.  As a result, an OpenGL window
@@ -938,12 +979,12 @@ make_style(bool fullscreen) {
 
   DWORD window_style = WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
 
-  if (fullscreen){
+  if (properties.get_fullscreen()) {
     window_style |= WS_SYSMENU;
-  } else if (!_properties.get_undecorated()) {
+  } else if (!properties.get_undecorated()) {
     window_style |= (WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX);
 
-    if (!_properties.get_fixed_size()) {
+    if (!properties.get_fixed_size()) {
       window_style |= (WS_SIZEBOX | WS_MAXIMIZEBOX);
     } else {
       window_style |= WS_BORDER;
@@ -1015,8 +1056,8 @@ calculate_metrics(bool fullscreen, DWORD window_style, WINDOW_METRICS &metrics,
  * Creates a regular or fullscreen window.
  */
 bool WinGraphicsWindow::
-open_graphic_window(bool fullscreen) {
-  DWORD window_style = make_style(fullscreen);
+open_graphic_window() {
+  DWORD window_style = make_style(_properties);
 
   wstring title;
   if (_properties.has_title()) {
@@ -1507,8 +1548,8 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       resend_lost_keypresses();
     }
     SetCapture(hwnd);
-    _input_devices[0].set_pointer_in_window(translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam)));
-    _input_devices[0].button_down(MouseButton::button(0), get_message_time());
+    _input->set_pointer_in_window(translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam)));
+    _input->button_down(MouseButton::button(0), get_message_time());
 
     // A button-click in the window means to grab the keyboard focus.
     set_focus();
@@ -1519,8 +1560,8 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       resend_lost_keypresses();
     }
     SetCapture(hwnd);
-    _input_devices[0].set_pointer_in_window(translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam)));
-    _input_devices[0].button_down(MouseButton::button(1), get_message_time());
+    _input->set_pointer_in_window(translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam)));
+    _input->button_down(MouseButton::button(1), get_message_time());
     // A button-click in the window means to grab the keyboard focus.
     set_focus();
     return 0;
@@ -1530,8 +1571,8 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       resend_lost_keypresses();
     }
     SetCapture(hwnd);
-    _input_devices[0].set_pointer_in_window(translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam)));
-    _input_devices[0].button_down(MouseButton::button(2), get_message_time());
+    _input->set_pointer_in_window(translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam)));
+    _input->button_down(MouseButton::button(2), get_message_time());
     // A button-click in the window means to grab the keyboard focus.
     set_focus();
     return 0;
@@ -1543,11 +1584,11 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       }
       SetCapture(hwnd);
       int whichButton = GET_XBUTTON_WPARAM(wparam);
-      _input_devices[0].set_pointer_in_window(translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam)));
+      _input->set_pointer_in_window(translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam)));
       if (whichButton == XBUTTON1) {
-        _input_devices[0].button_down(MouseButton::button(3), get_message_time());
+        _input->button_down(MouseButton::button(3), get_message_time());
       } else if (whichButton == XBUTTON2) {
-        _input_devices[0].button_down(MouseButton::button(4), get_message_time());
+        _input->button_down(MouseButton::button(4), get_message_time());
       }
     }
     return 0;
@@ -1557,7 +1598,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       resend_lost_keypresses();
     }
     ReleaseCapture();
-    _input_devices[0].button_up(MouseButton::button(0), get_message_time());
+    _input->button_up(MouseButton::button(0), get_message_time());
     return 0;
 
   case WM_MBUTTONUP:
@@ -1565,7 +1606,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       resend_lost_keypresses();
     }
     ReleaseCapture();
-    _input_devices[0].button_up(MouseButton::button(1), get_message_time());
+    _input->button_up(MouseButton::button(1), get_message_time());
     return 0;
 
   case WM_RBUTTONUP:
@@ -1573,7 +1614,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       resend_lost_keypresses();
     }
     ReleaseCapture();
-    _input_devices[0].button_up(MouseButton::button(2), get_message_time());
+    _input->button_up(MouseButton::button(2), get_message_time());
     return 0;
 
   case WM_XBUTTONUP:
@@ -1584,9 +1625,9 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       ReleaseCapture();
       int whichButton = GET_XBUTTON_WPARAM(wparam);
       if (whichButton == XBUTTON1) {
-        _input_devices[0].button_up(MouseButton::button(3), get_message_time());
+        _input->button_up(MouseButton::button(3), get_message_time());
       } else if (whichButton == XBUTTON2) {
-        _input_devices[0].button_up(MouseButton::button(4), get_message_time());
+        _input->button_up(MouseButton::button(4), get_message_time());
       }
     }
     return 0;
@@ -1706,7 +1747,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
     if (ime_aware) {
       wstring ws;
-      _input_devices[0].candidate(ws, 0, 0, 0);
+      _input->candidate(ws, 0, 0, 0);
     }
 
     break;
@@ -1737,7 +1778,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
                                                ime_buffer, ime_buffer_size_bytes);
         size_t num_chars = result_size / sizeof(wchar_t);
         for (size_t i = 0; i < num_chars; ++i) {
-          _input_devices[0].keystroke(ime_buffer[i]);
+          _input->keystroke(ime_buffer[i]);
         }
       }
 
@@ -1750,10 +1791,10 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         result_size = ImmGetCompositionStringW(hIMC, GCS_COMPSTR, ime_buffer, ime_buffer_size);
         size_t num_chars = result_size / sizeof(wchar_t);
 
-        _input_devices[0].candidate(wstring(ime_buffer, num_chars),
-                                    std::min(cursor_pos, delta_start),
-                                    std::max(cursor_pos, delta_start),
-                                    cursor_pos);
+        _input->candidate(wstring(ime_buffer, num_chars),
+                          std::min(cursor_pos, delta_start),
+                          std::max(cursor_pos, delta_start),
+                          cursor_pos);
       }
       ImmReleaseContext(hwnd, hIMC);
     }
@@ -1771,7 +1812,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     // are using RegisterClassW etc., which means WM_CHAR is absolutely
     // supposed to be utf-16.
     if (!_ime_open) {
-      _input_devices[0].keystroke(wparam);
+      _input->keystroke(wparam);
     }
     break;
 
@@ -1886,7 +1927,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       // Handle Cntrl-V paste from clipboard.  Is there a better way to detect
       // this hotkey?
       if ((wparam=='V') && (GetKeyState(VK_CONTROL) < 0) &&
-          !_input_devices.empty()) {
+          !_input_devices.empty() && paste_emit_keystrokes) {
         HGLOBAL hglb;
         char *lptstr;
 
@@ -1897,8 +1938,8 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             lptstr = (char *) GlobalLock(hglb);
             if (lptstr != nullptr)  {
               char *pChar;
-              for (pChar=lptstr; *pChar; pChar++) {
-                _input_devices[0].keystroke((uchar)*pChar);
+              for (pChar = lptstr; *pChar; pChar++) {
+                _input->keystroke((uchar)*pChar);
               }
               GlobalUnlock(hglb);
             }
@@ -2019,7 +2060,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         << "killfocus\n";
     }
 
-    _input_devices[0].focus_lost(get_message_time());
+    _input->focus_lost(get_message_time());
     properties.set_foreground(false);
     system_changed_properties(properties);
     break;
@@ -2186,12 +2227,12 @@ update_cursor_window(WinGraphicsWindow *to_window) {
     // We are leaving a graphics window; we should restore the Win2000
     // effects.
     if (_got_saved_params) {
-      SystemParametersInfo(SPI_SETMOUSETRAILS, 0,
-                           (PVOID)_saved_mouse_trails, 0);
+      SystemParametersInfo(SPI_SETMOUSETRAILS, _saved_mouse_trails,
+                           0, 0);
       SystemParametersInfo(SPI_SETCURSORSHADOW, 0,
-                           (PVOID)_saved_cursor_shadow, 0);
+                           _saved_cursor_shadow ? (PVOID)1 : nullptr, 0);
       SystemParametersInfo(SPI_SETMOUSEVANISH, 0,
-                           (PVOID)_saved_mouse_vanish, 0);
+                           _saved_mouse_vanish ? (PVOID)1 : nullptr, 0);
       _got_saved_params = false;
     }
 
@@ -2331,9 +2372,9 @@ show_error_message(DWORD message_id) {
  */
 void WinGraphicsWindow::
 handle_keypress(ButtonHandle key, int x, int y, double time) {
-  _input_devices[0].set_pointer_in_window(x, y);
+  _input->set_pointer_in_window(x, y);
   if (key != ButtonHandle::none()) {
-    _input_devices[0].button_down(key, time);
+    _input->button_down(key, time);
   }
 }
 
@@ -2344,7 +2385,7 @@ handle_keypress(ButtonHandle key, int x, int y, double time) {
 void WinGraphicsWindow::
 handle_keyresume(ButtonHandle key, double time) {
   if (key != ButtonHandle::none()) {
-    _input_devices[0].button_resume_down(key, time);
+    _input->button_resume_down(key, time);
   }
 }
 
@@ -2354,7 +2395,7 @@ handle_keyresume(ButtonHandle key, double time) {
 void WinGraphicsWindow::
 handle_keyrelease(ButtonHandle key, double time) {
   if (key != ButtonHandle::none()) {
-    _input_devices[0].button_up(key, time);
+    _input->button_up(key, time);
   }
 }
 
@@ -2364,7 +2405,7 @@ handle_keyrelease(ButtonHandle key, double time) {
 void WinGraphicsWindow::
 handle_raw_keypress(ButtonHandle key, double time) {
   if (key != ButtonHandle::none()) {
-    _input_devices[0].raw_button_down(key, time);
+    _input->raw_button_down(key, time);
   }
 }
 
@@ -2374,7 +2415,7 @@ handle_raw_keypress(ButtonHandle key, double time) {
 void WinGraphicsWindow::
 handle_raw_keyrelease(ButtonHandle key, double time) {
   if (key != ButtonHandle::none()) {
-    _input_devices[0].raw_button_up(key, time);
+    _input->raw_button_up(key, time);
   }
 }
 
@@ -2681,48 +2722,49 @@ handle_raw_input(HRAWINPUT hraw) {
     return;
   }
 
-  for (int i = 1; i < (int)(_input_devices.size()); ++i) {
+  for (size_t i = 1; i < _input_devices.size(); ++i) {
     if (_input_device_handle[i] == raw->header.hDevice) {
+      PT(GraphicsWindowInputDevice) input =
+        DCAST(GraphicsWindowInputDevice, _input_devices[i]);
+
       int adjx = raw->data.mouse.lLastX;
       int adjy = raw->data.mouse.lLastY;
 
       if (raw->data.mouse.usFlags & MOUSE_MOVE_ABSOLUTE) {
-        _input_devices[i].set_pointer_in_window(adjx, adjy);
+        input->set_pointer_in_window(adjx, adjy);
       } else {
-        int oldx = _input_devices[i].get_raw_pointer().get_x();
-        int oldy = _input_devices[i].get_raw_pointer().get_y();
-        _input_devices[i].set_pointer_in_window(oldx + adjx, oldy + adjy);
+        input->pointer_moved(adjx, adjy);
       }
 
       if (raw->data.mouse.usButtonFlags & RI_MOUSE_BUTTON_1_DOWN) {
-        _input_devices[i].button_down(MouseButton::button(0), get_message_time());
+        input->button_down(MouseButton::button(0), get_message_time());
       }
       if (raw->data.mouse.usButtonFlags & RI_MOUSE_BUTTON_1_UP) {
-        _input_devices[i].button_up(MouseButton::button(0), get_message_time());
+        input->button_up(MouseButton::button(0), get_message_time());
       }
       if (raw->data.mouse.usButtonFlags & RI_MOUSE_BUTTON_2_DOWN) {
-        _input_devices[i].button_down(MouseButton::button(2), get_message_time());
+        input->button_down(MouseButton::button(2), get_message_time());
       }
       if (raw->data.mouse.usButtonFlags & RI_MOUSE_BUTTON_2_UP) {
-        _input_devices[i].button_up(MouseButton::button(2), get_message_time());
+        input->button_up(MouseButton::button(2), get_message_time());
       }
       if (raw->data.mouse.usButtonFlags & RI_MOUSE_BUTTON_3_DOWN) {
-        _input_devices[i].button_down(MouseButton::button(1), get_message_time());
+        input->button_down(MouseButton::button(1), get_message_time());
       }
       if (raw->data.mouse.usButtonFlags & RI_MOUSE_BUTTON_3_UP) {
-        _input_devices[i].button_up(MouseButton::button(1), get_message_time());
+        input->button_up(MouseButton::button(1), get_message_time());
       }
       if (raw->data.mouse.usButtonFlags & RI_MOUSE_BUTTON_4_DOWN) {
-        _input_devices[i].button_down(MouseButton::button(3), get_message_time());
+        input->button_down(MouseButton::button(3), get_message_time());
       }
       if (raw->data.mouse.usButtonFlags & RI_MOUSE_BUTTON_4_UP) {
-        _input_devices[i].button_up(MouseButton::button(3), get_message_time());
+        input->button_up(MouseButton::button(3), get_message_time());
       }
       if (raw->data.mouse.usButtonFlags & RI_MOUSE_BUTTON_5_DOWN) {
-        _input_devices[i].button_down(MouseButton::button(4), get_message_time());
+        input->button_down(MouseButton::button(4), get_message_time());
       }
       if (raw->data.mouse.usButtonFlags & RI_MOUSE_BUTTON_5_UP) {
-        _input_devices[i].button_up(MouseButton::button(4), get_message_time());
+        input->button_up(MouseButton::button(4), get_message_time());
       }
     }
   }
@@ -2733,7 +2775,7 @@ handle_raw_input(HRAWINPUT hraw) {
  */
 bool WinGraphicsWindow::
 handle_mouse_motion(int x, int y) {
-  _input_devices[0].set_pointer_in_window(x, y);
+  _input->set_pointer_in_window(x, y);
   return false;
 }
 
@@ -2743,7 +2785,7 @@ handle_mouse_motion(int x, int y) {
 void WinGraphicsWindow::
 handle_mouse_exit() {
   // note: 'mouse_motion' is considered the 'entry' event
-  _input_devices[0].set_pointer_out_of_window();
+  _input->set_pointer_out_of_window();
 }
 
 /**

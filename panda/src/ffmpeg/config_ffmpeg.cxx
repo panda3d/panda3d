@@ -17,13 +17,13 @@
 #include "ffmpegVideoCursor.h"
 #include "ffmpegAudio.h"
 #include "ffmpegAudioCursor.h"
-
 #include "movieTypeRegistry.h"
+#include "pandaSystem.h"
 
 extern "C" {
-  #include "libavcodec/avcodec.h"
-  #include "libavformat/avformat.h"
-  #include "libavutil/avutil.h"
+  #include <libavcodec/avcodec.h>
+  #include <libavformat/avformat.h>
+  #include <libavutil/avutil.h>
 }
 
 #if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_FFMPEG)
@@ -128,6 +128,9 @@ init_libffmpeg() {
 
   FfmpegVideo::register_with_read_factory();
   FfmpegVideoCursor::register_with_read_factory();
+
+  PandaSystem *ps = PandaSystem::get_global_ptr();
+  ps->add_system("FFmpeg");
 
   // Register ffmpeg as catch-all audiovideo type.
   MovieTypeRegistry *reg = MovieTypeRegistry::get_global_ptr();

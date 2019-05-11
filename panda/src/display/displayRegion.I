@@ -524,6 +524,14 @@ get_draw_region_pcollector() {
 }
 
 /**
+ * Returns a unique name used for debugging.
+ */
+INLINE const std::string &DisplayRegion::
+get_debug_name() const {
+  return _debug_name;
+}
+
+/**
  *
  */
 INLINE DisplayRegion::Region::

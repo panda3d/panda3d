@@ -78,6 +78,7 @@ MSVCVERSIONINFO = {
     (12,0): {"vsversion":(12,0), "vsname":"Visual Studio 2013"},
     (14,0): {"vsversion":(14,0), "vsname":"Visual Studio 2015"},
     (14,1): {"vsversion":(15,0), "vsname":"Visual Studio 2017"},
+    (14,2): {"vsversion":(16,0), "vsname":"Visual Studio 2019"},
 }
 
 ########################################################################
@@ -150,7 +151,7 @@ CONFLICTING_FILES=["dtool/src/dtoolutil/pandaVersion.h",
 def WarnConflictingFiles(delete = False):
     for cfile in CONFLICTING_FILES:
         if os.path.exists(cfile):
-            print("%sWARNING:%s file may conflict with build: %s%s%s" % (GetColor("red"), GetColor(), GetColor("green"), cfile, GetColor()))
+            Warn("file may conflict with build:", cfile)
             if delete:
                 os.unlink(cfile)
                 print("Deleted.")
@@ -283,6 +284,20 @@ def exit(msg = ""):
     else:
         print(msg)
         raise "initiate-exit"
+
+def Warn(msg, extra=None):
+    if extra is not None:
+        print("%sWARNING:%s %s %s%s%s" % (GetColor("red"), GetColor(), msg, GetColor("green"), extra, GetColor()))
+    else:
+        print("%sWARNING:%s %s" % (GetColor("red"), GetColor(), msg))
+    sys.stdout.flush()
+
+def Error(msg, extra=None):
+    if extra is not None:
+        print("%sERROR:%s %s %s%s%s" % (GetColor("red"), GetColor(), msg, GetColor("green"), extra, GetColor()))
+    else:
+        print("%sERROR:%s %s" % (GetColor("red"), GetColor(), msg))
+    exit()
 
 ########################################################################
 ##
@@ -550,11 +565,12 @@ def LocateBinary(binary):
         p = os.environ["PATH"]
 
     pathList = p.split(os.pathsep)
+    suffixes = ['']
 
     if GetHost() == 'windows':
-        if not binary.endswith('.exe'):
+        if not binary.lower().endswith('.exe') and not binary.lower().endswith('.bat'):
             # Append .exe if necessary
-            binary += '.exe'
+            suffixes = ['.exe', '.bat']
 
         # On Windows the current directory is always implicitly
         # searched before anything else on PATH.
@@ -562,8 +578,9 @@ def LocateBinary(binary):
 
     for path in pathList:
         binpath = os.path.join(os.path.expanduser(path), binary)
-        if os.access(binpath, os.X_OK):
-            return os.path.abspath(os.path.realpath(binpath))
+        for suffix in suffixes:
+            if os.access(binpath + suffix, os.X_OK):
+                return os.path.abspath(os.path.realpath(binpath + suffix))
     return None
 
 ########################################################################
@@ -572,20 +589,31 @@ def LocateBinary(binary):
 ##
 ########################################################################
 
-def oscmd(cmd, ignoreError = False):
+def oscmd(cmd, ignoreError = False, cwd=None):
     if VERBOSE:
         print(GetColor("blue") + cmd.split(" ", 1)[0] + " " + GetColor("magenta") + cmd.split(" ", 1)[1] + GetColor())
     sys.stdout.flush()
 
     if sys.platform == "win32":
-        exe = cmd.split()[0]
+        if cmd[0] == '"':
+            exe = cmd[1 : cmd.index('"', 1)]
+        else:
+            exe = cmd.split()[0]
         exe_path = LocateBinary(exe)
         if exe_path is None:
             exit("Cannot find "+exe+" on search path")
+
+        if cwd is not None:
+            pwd = os.getcwd()
+            os.chdir(cwd)
+
         res = os.spawnl(os.P_WAIT, exe_path, cmd)
+
+        if cwd is not None:
+            os.chdir(pwd)
     else:
         cmd = cmd.replace(';', '\\;')
-        res = subprocess.call(cmd, shell=True)
+        res = subprocess.call(cmd, cwd=cwd, shell=True)
         sig = res & 0x7F
         if (GetVerbose() and res != 0):
             print(ColorText("red", "Process exited with exit status %d and signal code %d" % ((res & 0xFF00) >> 8, sig)))
@@ -723,7 +751,7 @@ def NeedsBuild(files, others):
                     print("    dependency changed: %s" % (key))
 
         if VERBOSE and frozenset(cached) != frozenset(dates):
-            print("%sWARNING:%s file dependencies changed: %s%s%s" % (GetColor("red"), GetColor(), GetColor("green"), files, GetColor()))
+            Warn("file dependencies changed:", files)
 
     return True
 
@@ -1077,9 +1105,19 @@ def GetOptimizeOption(opts):
 ##
 ########################################################################
 
-def MakeDirectory(path):
-    if os.path.isdir(path): return 0
-    os.mkdir(path)
+def MakeDirectory(path, mode=None, recursive=False):
+    if os.path.isdir(path):
+        return
+
+    if recursive:
+        parent = os.path.dirname(path)
+        if parent and not os.path.isdir(parent):
+            MakeDirectory(parent, mode=mode, recursive=True)
+
+    if mode is not None:
+        os.mkdir(path, mode)
+    else:
+        os.mkdir(path)
 
 def ReadFile(wfile):
     try:
@@ -1298,7 +1336,7 @@ def GetThirdpartyDir():
         THIRDPARTYDIR = GetThirdpartyBase()+"/android-libs-%s/" % (GetTargetArch())
 
     else:
-        print("%s Unsupported platform: %s" % (ColorText("red", "WARNING:"), target))
+        Warn("Unsupported platform:", target)
         return
 
     if (GetVerbose()):
@@ -1744,11 +1782,10 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
     if not custom_loc and pkgconfig is not None and not libs:
         # pkg-config is all we can do, abort if it wasn't found.
         if pkg in PkgListGet():
-            print("%sWARNING:%s Could not locate pkg-config package %s, excluding from build" % (GetColor("red"), GetColor(), pkgconfig))
+            Warn("Could not locate pkg-config package %s, excluding from build" % (pkgconfig))
             PkgDisable(pkg)
         else:
-            print("%sERROR:%s Could not locate pkg-config package %s, aborting build" % (GetColor("red"), GetColor(), pkgconfig))
-            exit()
+            Error("Could not locate pkg-config package %s, aborting build" % (pkgconfig))
 
     else:
         # Okay, our pkg-config attempts failed. Let's try locating the libs by ourselves.
@@ -1812,14 +1849,12 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
 
         if not have_pkg:
             if custom_loc:
-                print("%sERROR:%s Could not locate thirdparty package %s in specified directory, aborting build" % (GetColor("red"), GetColor(), pkg.lower()))
-                exit()
+                Error("Could not locate thirdparty package %s in specified directory, aborting build" % (pkg.lower()))
             elif pkg in PkgListGet():
-                print("%sWARNING:%s Could not locate thirdparty package %s, excluding from build" % (GetColor("red"), GetColor(), pkg.lower()))
+                Warn("Could not locate thirdparty package %s, excluding from build" % (pkg.lower()))
                 PkgDisable(pkg)
             else:
-                print("%sERROR:%s Could not locate thirdparty package %s, aborting build" % (GetColor("red"), GetColor(), pkg.lower()))
-                exit()
+                Error("Could not locate thirdparty package %s, aborting build" % (pkg.lower()))
 
 ########################################################################
 ##
@@ -2100,7 +2135,7 @@ def SdkLocatePython(prefer_thirdparty_python=False):
         os.environ["PYTHONHOME"] = SDK["PYTHON"]
 
         if sys.version[:3] != ver:
-            print("Warning: running makepanda with Python %s, but building Panda3D with Python %s." % (sys.version[:3], ver))
+            Warn("running makepanda with Python %s, but building Panda3D with Python %s." % (sys.version[:3], ver))
 
     elif CrossCompiling() or (prefer_thirdparty_python and os.path.isdir(os.path.join(GetThirdpartyDir(), "python"))):
         tp_python = os.path.join(GetThirdpartyDir(), "python")
@@ -2452,22 +2487,46 @@ def SdkLocateAndroid():
     SDK["ANDROID_TRIPLE"] = ANDROID_TRIPLE
 
     if GetHost() == 'android':
+        # Assume we're compiling from termux.
+        prefix = os.environ.get("PREFIX", "/data/data/com.termux/files/usr")
+        SDK["ANDROID_JAR"] = prefix + "/share/aapt/android.jar"
         return
 
-    # Determine the NDK installation directory.
-    if 'NDK_ROOT' not in os.environ:
-        exit('NDK_ROOT must be set when compiling for Android!')
+    # Find the location of the Android SDK.
+    sdk_root = os.environ.get('ANDROID_HOME')
+    if not sdk_root or not os.path.isdir(sdk_root):
+        sdk_root = os.environ.get('ANDROID_SDK_ROOT')
 
-    ndk_root = os.environ["NDK_ROOT"]
-    if not os.path.isdir(ndk_root):
-        exit("Cannot find %s.  Please install Android NDK and set NDK_ROOT." % (ndk_root))
+        # Try the default installation location on Windows.
+        if not sdk_root and GetHost() == 'windows':
+            sdk_root = os.path.expanduser(os.path.join('~', 'AppData', 'Local', 'Android', 'Sdk'))
+
+        if not sdk_root:
+            exit('ANDROID_SDK_ROOT must be set when compiling for Android!')
+        elif not os.path.isdir(sdk_root):
+            exit('Cannot find %s.  Please install Android SDK and set ANDROID_SDK_ROOT or ANDROID_HOME.' % (sdk_root))
+
+    # Determine the NDK installation directory.
+    if os.environ.get('NDK_ROOT') or os.environ.get('ANDROID_NDK_ROOT'):
+        # We have an explicit setting from an environment variable.
+        ndk_root = os.environ.get('ANDROID_NDK_ROOT')
+        if not ndk_root or not os.path.isdir(ndk_root):
+            ndk_root = os.environ.get('NDK_ROOT')
+            if not ndk_root or not os.path.isdir(ndk_root):
+                exit("Cannot find %s.  Please install Android NDK and set ANDROID_NDK_ROOT." % (ndk_root))
+    else:
+        # Often, it's installed in the ndk-bundle subdirectory of the SDK.
+        ndk_root = os.path.join(sdk_root, 'ndk-bundle')
+
+        if not os.path.isdir(os.path.join(ndk_root, 'toolchains')):
+            exit('Cannot find the Android NDK.  Install it via the SDK manager or set the ANDROID_NDK_ROOT variable if you have installed it in a different location.')
 
     SDK["ANDROID_NDK"] = ndk_root
 
     # Determine the toolchain location.
     prebuilt_dir = os.path.join(ndk_root, 'toolchains', 'llvm', 'prebuilt')
     if not os.path.isdir(prebuilt_dir):
-        exit('Not found: %s' % (prebuilt_dir))
+        exit('Not found: %s (is the Android NDK installed?)' % (prebuilt_dir))
 
     host_tag = GetHost() + '-x86'
     if host_64:
@@ -2516,7 +2575,44 @@ def SdkLocateAndroid():
     # STL that ships with Android.
     support = os.path.join(ndk_root, 'sources', 'android', 'support', 'include')
     IncDirectory("ALWAYS", support.replace('\\', '/'))
-    LibName("ALWAYS", "-landroid_support")
+    if api < 21:
+        LibName("ALWAYS", "-landroid_support")
+
+    # Determine the location of android.jar.
+    SDK["ANDROID_JAR"] = os.path.join(sdk_root, 'platforms', 'android-%s' % (api), 'android.jar')
+    if not os.path.isfile(SDK["ANDROID_JAR"]):
+        exit("Cannot find %s.  Install platform API level %s via the SDK manager or change the targeted API level with --target=android-#" % (SDK["ANDROID_JAR"], api))
+
+    # Which build tools versions do we have?  Pick the latest.
+    versions = []
+    for version in os.listdir(os.path.join(sdk_root, "build-tools")):
+        match = re.match('([0-9]+)\\.([0-9]+)\\.([0-9]+)', version)
+        if match:
+            version_tuple = int(match.group(1)), int(match.group(2)), int(match.group(3))
+            versions.append(version_tuple)
+
+    versions.sort()
+    if versions:
+        version = versions[-1]
+        SDK["ANDROID_BUILD_TOOLS"] = os.path.join(sdk_root, "build-tools", "{0}.{1}.{2}".format(*version))
+
+    # And find the location of the Java compiler.
+    if GetHost() == "windows":
+        jdk_home = os.environ.get("JDK_HOME") or os.environ.get("JAVA_HOME")
+        if not jdk_home:
+            # Try to use the Java shipped with Android Studio.
+            studio_path = GetRegistryKey("SOFTWARE\\Android Studio", "Path", override64=False)
+            if studio_path and os.path.isdir(studio_path):
+                jdk_home = os.path.join(studio_path, "jre")
+
+        if not jdk_home or not os.path.isdir(jdk_home):
+            exit("Cannot find JDK.  Please set JDK_HOME or JAVA_HOME.")
+
+        javac = os.path.join(jdk_home, "bin", "javac.exe")
+        if not os.path.isfile(javac):
+            exit("Cannot find %s.  Install the JDK and set JDK_HOME or JAVA_HOME." % (javac))
+
+        SDK["JDK"] = jdk_home
 
 ########################################################################
 ##
@@ -2701,8 +2797,14 @@ def SetupVisualStudioEnviron():
         elif not win_kit.endswith('\\'):
             win_kit += '\\'
 
-        AddToPathEnv("LIB", win_kit + "Lib\\10.0.10150.0\\ucrt\\" + arch)
-        AddToPathEnv("INCLUDE", win_kit + "Include\\10.0.10150.0\\ucrt")
+        for vnum in 10150, 10240, 10586, 14393, 15063, 16299, 17134, 17763:
+            version = "10.0.{0}.0".format(vnum)
+            if os.path.isfile(win_kit + "Include\\" + version + "\\ucrt\\assert.h"):
+                print("Using Universal CRT %s" % (version))
+                break
+
+        AddToPathEnv("LIB", "%s\\Lib\\%s\\ucrt\\%s" % (win_kit, version, arch))
+        AddToPathEnv("INCLUDE", "%s\\Include\\%s\\ucrt" % (win_kit, version))
 
         # Copy the DLLs to the bin directory.
         CopyAllFiles(GetOutputDir() + "/bin/", win_kit + "Redist\\ucrt\\DLLs\\" + arch + "\\")
@@ -2743,12 +2845,11 @@ def LibName(opt, name):
             WARNINGS.append(name + " not found.  Skipping Package " + opt)
             if (opt in PkgListGet()):
                 if not PkgSkip(opt):
-                    print("%sWARNING:%s Could not locate thirdparty package %s, excluding from build" % (GetColor("red"), GetColor(), opt.lower()))
+                    Warn("Could not locate thirdparty package %s, excluding from build" % (opt.lower()))
                     PkgDisable(opt)
                 return
             else:
-                print("%sERROR:%s Could not locate thirdparty package %s, aborting build" % (GetColor("red"), GetColor(), opt.lower()))
-                exit()
+                Error("Could not locate thirdparty package %s, aborting build" % (opt.lower()))
     LIBNAMES.append((opt, name))
 
 def DefSymbol(opt, sym, val=""):
@@ -2782,6 +2883,13 @@ def SetupBuildEnvironment(compiler):
     # In the case of Android, we have to put the toolchain on the PATH in order to use it.
     if GetTarget() == 'android' and GetHost() != 'android':
         AddToPathEnv("PATH", os.path.join(SDK["ANDROID_TOOLCHAIN"], "bin"))
+
+        if "ANDROID_BUILD_TOOLS" in SDK:
+            AddToPathEnv("PATH", SDK["ANDROID_BUILD_TOOLS"])
+
+        if "JDK" in SDK:
+            AddToPathEnv("PATH", os.path.join(SDK["JDK"], "bin"))
+            os.environ["JAVA_HOME"] = SDK["JDK"]
 
     if compiler == "MSVC":
         # Add the visual studio tools to PATH et al.
@@ -2831,11 +2939,25 @@ def SetupBuildEnvironment(compiler):
 
         returnval = handle.close()
         if returnval != None and returnval != 0:
-            print("%sWARNING:%s %s failed" % (GetColor("red"), GetColor(), cmd))
+            Warn("%s failed" % (cmd))
             SYS_LIB_DIRS += [SDK.get("SYSROOT", "") + "/usr/lib"]
 
+        # The Android toolchain on Windows doesn't actually add this one.
+        if target == 'android' and GetHost() == 'windows':
+            libdir = SDK.get("SYSROOT", "") + "/usr/lib"
+            if GetTargetArch() == 'x86_64':
+                libdir += '64'
+            SYS_LIB_DIRS += [libdir]
+
         # Now extract the preprocessor's include directories.
-        cmd = GetCXX() + sysroot_flag + " -x c++ -v -E /dev/null"
+        cmd = GetCXX() + " -x c++ -v -E " + os.devnull
+        if "ANDROID_NDK" in SDK:
+            ndk_dir = SDK["ANDROID_NDK"].replace('\\', '/')
+            cmd += ' -isystem %s/sysroot/usr/include' % (ndk_dir)
+            cmd += ' -isystem %s/sysroot/usr/include/%s' % (ndk_dir, SDK["ANDROID_TRIPLE"])
+        else:
+            cmd += sysroot_flag
+
         null = open(os.devnull, 'w')
         handle = subprocess.Popen(cmd, stdout=null, stderr=subprocess.PIPE, shell=True)
         scanning = False
@@ -2848,8 +2970,12 @@ def SetupBuildEnvironment(compiler):
                     scanning = True
                 continue
 
-            if not line.startswith(' /'):
-                continue
+            if sys.platform == "win32":
+                if not line.startswith(' '):
+                    continue
+            else:
+                if not line.startswith(' /'):
+                    continue
 
             line = line.strip()
             if line.endswith(" (framework directory)"):
@@ -2860,7 +2986,7 @@ def SetupBuildEnvironment(compiler):
                 print("Ignoring non-existent include directory %s" % (line))
 
         if handle.returncode != 0 or not SYS_INC_DIRS:
-            print("%sWARNING:%s %s failed or did not produce the expected result" % (GetColor("red"), GetColor(), cmd))
+            Warn("%s failed or did not produce the expected result" % (cmd))
             sysroot = SDK.get("SYSROOT", "")
             # Add some sensible directories as a fallback.
             SYS_INC_DIRS = [
@@ -3190,6 +3316,48 @@ def WriteResourceFile(basename, **kwargs):
     ConditionalWriteFile(basename, GenerateResourceFile(**kwargs))
     return basename
 
+
+def WriteEmbeddedStringFile(basename, inputs, string_name=None):
+    if os.path.splitext(basename)[1] not in SUFFIX_INC:
+        basename += '.cxx'
+    target = GetOutputDir() + "/tmp/" + basename
+
+    if string_name is None:
+        string_name = os.path.basename(os.path.splitext(target)[0])
+        string_name = string_name.replace('-', '_')
+
+    data = bytearray()
+    for input in inputs:
+        fp = open(input, 'rb')
+
+        # Insert a #line so that we get meaningful compile/assert errors when
+        # the result is inserted by interrogate_module into generated code.
+        if os.path.splitext(input)[1] in SUFFIX_INC:
+            line = '#line 1 "%s"\n' % (input)
+            data += bytearray(line.encode('ascii', 'replace'))
+
+        data += bytearray(fp.read())
+        fp.close()
+
+    data.append(0)
+
+    output = 'extern const char %s[] = {\n' % (string_name)
+
+    i = 0
+    for byte in data:
+        if i == 0:
+            output += ' '
+
+        output += ' 0x%02x,' % (byte)
+        i += 1
+        if i >= 12:
+            output += '\n'
+            i = 0
+
+    output += '\n};\n'
+    ConditionalWriteFile(target, output)
+    return target
+
 ########################################################################
 ##
 ## FindLocation
@@ -3197,6 +3365,8 @@ def WriteResourceFile(basename, **kwargs):
 ########################################################################
 
 ORIG_EXT = {}
+PYABI_SPECIFIC = set()
+WARNED_FILES = set()
 
 def GetOrigExt(x):
     return ORIG_EXT[x]
@@ -3206,14 +3376,36 @@ def SetOrigExt(x, v):
 
 def GetExtensionSuffix():
     if sys.version_info >= (3, 0):
-        suffix = sysconfig.get_config_var('EXT_SUFFIX')
-        if suffix:
-            return suffix
+        import _imp
+        return _imp.extension_suffixes()[0]
+
     target = GetTarget()
     if target == 'windows':
         return '.pyd'
     else:
         return '.so'
+
+def GetPythonABI():
+    soabi = sysconfig.get_config_var('SOABI')
+    if soabi:
+        return soabi
+
+    soabi = 'cpython-%d%d' % (sys.version_info[:2])
+
+    debug_flag = sysconfig.get_config_var('Py_DEBUG')
+    if (debug_flag is None and hasattr(sys, 'gettotalrefcount')) or debug_flag:
+        soabi += 'd'
+
+    malloc_flag = sysconfig.get_config_var('WITH_PYMALLOC')
+    if malloc_flag is None or malloc_flag:
+        soabi += 'm'
+
+    if sys.version_info < (3, 3):
+        usize = sysconfig.get_config_var('Py_UNICODE_SIZE')
+        if (usize is None and sys.maxunicode == 0x10ffff) or usize == 4:
+            soabi += 'u'
+
+    return soabi
 
 def CalcLocation(fn, ipath):
     if fn.startswith("panda3d/") and fn.endswith(".py"):
@@ -3285,13 +3477,97 @@ def CalcLocation(fn, ipath):
     return fn
 
 
-def FindLocation(fn, ipath):
-    if (GetLinkAllStatic() and fn.endswith(".dll")):
-        fn = fn[:-4] + ".lib"
+def FindLocation(fn, ipath, pyabi=None):
+    if GetLinkAllStatic():
+        if fn.endswith(".dll"):
+            fn = fn[:-4] + ".lib"
+        elif fn.endswith(".pyd"):
+            fn = "libpy.panda3d." \
+               + os.path.splitext(fn[:-4] + GetExtensionSuffix())[0] + ".lib"
+
     loc = CalcLocation(fn, ipath)
     base, ext = os.path.splitext(fn)
+
+    # If this is a target created with PyTargetAdd, we need to make sure it
+    # it put in a Python-version-specific directory.
+    if loc in PYABI_SPECIFIC:
+        if loc.startswith(OUTPUTDIR + "/tmp"):
+            if pyabi is not None:
+                loc = OUTPUTDIR + "/tmp/" + pyabi + loc[len(OUTPUTDIR) + 4:]
+            else:
+                raise RuntimeError("%s is a Python-specific target, use PyTargetAdd instead of TargetAdd" % (fn))
+
+        elif ext != ".pyd" and loc not in WARNED_FILES:
+            WARNED_FILES.add(loc)
+            Warn("file depends on Python but is not in an ABI-specific directory:", loc)
+
     ORIG_EXT[loc] = ext
     return loc
+
+
+########################################################################
+##
+## These files maintain a python_versions.json file in the built/tmp
+## directory that can be used by the other scripts in this directory.
+##
+########################################################################
+
+
+def GetCurrentPythonVersionInfo():
+    if PkgSkip("PYTHON"):
+        return
+
+    from distutils.sysconfig import get_python_lib
+    return {
+        "version": SDK["PYTHONVERSION"][6:9],
+        "soabi": GetPythonABI(),
+        "ext_suffix": GetExtensionSuffix(),
+        "executable": sys.executable,
+        "purelib": get_python_lib(False),
+        "platlib": get_python_lib(True),
+    }
+
+
+def UpdatePythonVersionInfoFile(new_info):
+    import json
+
+    json_file = os.path.join(GetOutputDir(), "tmp", "python_versions.json")
+    json_data = []
+    if os.path.isfile(json_file) and not PkgSkip("PYTHON"):
+        try:
+            json_data = json.load(open(json_file, 'r'))
+        except:
+            json_data = []
+
+        # Prune the list by removing the entries that conflict with our build,
+        # plus the entries that no longer exist
+        for version_info in json_data[:]:
+            core_pyd = os.path.join(GetOutputDir(), "panda3d", "core" + version_info["ext_suffix"])
+            if version_info["ext_suffix"] == new_info["ext_suffix"] or \
+               version_info["soabi"] == new_info["soabi"] or \
+               not os.path.isfile(core_pyd):
+                json_data.remove(version_info)
+
+    if not PkgSkip("PYTHON"):
+        json_data.append(new_info)
+
+    if VERBOSE:
+        print("Writing %s" % (json_file))
+    json.dump(json_data, open(json_file, 'w'), indent=4)
+
+
+def ReadPythonVersionInfoFile():
+    import json
+
+    json_file = os.path.join(GetOutputDir(), "tmp", "python_versions.json")
+    if os.path.isfile(json_file):
+        try:
+            return json.load(open(json_file, 'r'))
+        except:
+            pass
+
+    return []
+
 
 ########################################################################
 ##
@@ -3335,6 +3611,11 @@ def FindLocation(fn, ipath):
 ## be inserted: bison generates an OBJ and a secondary header
 ## file, interrogate generates an IN and a secondary IGATE.OBJ.
 ##
+## PyTargetAdd is a special version for targets that depend on Python.
+## It will create a target for each Python version we are building with,
+## ensuring that builds with different Python versions won't conflict
+## when we build for multiple Python ABIs side-by-side.
+##
 ########################################################################
 
 class Target:
@@ -3343,7 +3624,7 @@ class Target:
 TARGET_LIST = []
 TARGET_TABLE = {}
 
-def TargetAdd(target, dummy=0, opts=[], input=[], dep=[], ipath=None, winrc=None):
+def TargetAdd(target, dummy=0, opts=[], input=[], dep=[], ipath=None, winrc=None, pyabi=None):
     if (dummy != 0):
         exit("Syntax error in TargetAdd "+target)
     if ipath is None: ipath = opts
@@ -3351,11 +3632,10 @@ def TargetAdd(target, dummy=0, opts=[], input=[], dep=[], ipath=None, winrc=None
     if (type(input) == str): input = [input]
     if (type(dep) == str): dep = [dep]
 
-    if os.path.splitext(target)[1] == '.pyd' and PkgSkip("PYTHON"):
-        # It makes no sense to build Python modules with python disabled.
-        return
+    if target.endswith(".pyd") and not pyabi:
+        raise RuntimeError("Use PyTargetAdd to build .pyd targets")
 
-    full = FindLocation(target, [OUTPUTDIR + "/include"])
+    full = FindLocation(target, [OUTPUTDIR + "/include"], pyabi=pyabi)
 
     if (full not in TARGET_TABLE):
         t = Target()
@@ -3374,7 +3654,7 @@ def TargetAdd(target, dummy=0, opts=[], input=[], dep=[], ipath=None, winrc=None
 
     ipath = [OUTPUTDIR + "/tmp"] + GetListOption(ipath, "DIR:") + [OUTPUTDIR+"/include"]
     for x in input:
-        fullinput = FindLocation(x, ipath)
+        fullinput = FindLocation(x, ipath, pyabi=pyabi)
         t.inputs.append(fullinput)
         # Don't re-link a library or binary if just its dependency dlls have been altered.
         # This should work out fine in most cases, and often reduces recompilation time.
@@ -3413,16 +3693,20 @@ def TargetAdd(target, dummy=0, opts=[], input=[], dep=[], ipath=None, winrc=None
                 t.deps[fulln] = 1
 
     for x in dep:
-        fulldep = FindLocation(x, ipath)
+        fulldep = FindLocation(x, ipath, pyabi=pyabi)
         t.deps[fulldep] = 1
 
     if winrc and GetTarget() == 'windows':
         TargetAdd(target, input=WriteResourceFile(target.split("/")[-1].split(".")[0], **winrc))
 
-    if target.endswith(".in"):
+    ext = os.path.splitext(target)[1]
+    if ext == ".in":
         if not CrossCompiling():
             t.deps[FindLocation("interrogate.exe", [])] = 1
         t.deps[FindLocation("dtool_have_python.dat", [])] = 1
+
+    if ext in (".obj", ".tlb", ".res", ".plugin", ".app") or ext in SUFFIX_DLL or ext in SUFFIX_LIB:
+        t.deps[FindLocation("platform.dat", [])] = 1
 
     if target.endswith(".obj") and any(x.endswith(".in") for x in input):
         if not CrossCompiling():
@@ -3430,3 +3714,32 @@ def TargetAdd(target, dummy=0, opts=[], input=[], dep=[], ipath=None, winrc=None
 
     if target.endswith(".pz") and not CrossCompiling():
         t.deps[FindLocation("pzip.exe", [])] = 1
+
+    if target.endswith(".in"):
+        # Also add a target to compile the _igate.cxx file into an _igate.obj.
+        outbase = os.path.basename(target)[:-3]
+        woutc = OUTPUTDIR + "/tmp/" + outbase + "_igate.cxx"
+        CxxDependencyCache[woutc] = []
+        PyTargetAdd(outbase + "_igate.obj", opts=opts+['PYTHON','BIGOBJ'], input=woutc, dep=target)
+
+
+def PyTargetAdd(target, opts=[], **kwargs):
+    if PkgSkip("PYTHON"):
+        return
+
+    if 'PYTHON' not in opts:
+        opts = opts + ['PYTHON']
+
+    abi = GetPythonABI()
+
+    MakeDirectory(OUTPUTDIR + "/tmp/" + abi)
+
+    # Mark this target as being a Python-specific target.
+    orig = CalcLocation(target, [OUTPUTDIR + "/include"])
+    PYABI_SPECIFIC.add(orig)
+
+    if orig.startswith(OUTPUTDIR + "/tmp/") and os.path.exists(orig):
+        print("Removing file %s" % (orig))
+        os.unlink(orig)
+
+    TargetAdd(target, opts=opts, pyabi=abi, **kwargs)

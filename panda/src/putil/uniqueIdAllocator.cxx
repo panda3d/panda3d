@@ -173,6 +173,20 @@ initial_reserve_id(uint32_t id) {
   --_free;
 }
 
+/**
+ * Checks the allocated state of an index. Returns true for
+ * indices that are currently allocated and in use.
+ */
+bool UniqueIdAllocator::
+is_allocated(uint32_t id) {
+  if (id < _min || id > _max) {
+    // This id is out of range, not allocated.
+    return false;
+  }
+
+  uint32_t index = id - _min; // Convert to _table index.
+  return _table[index] == IndexAllocated;
+}
 
 /**
  * Free an allocated index (index must be between _min and _max that were

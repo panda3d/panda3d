@@ -22,6 +22,8 @@
 #include "dSearchPath.h"
 #include "dcast.h"
 #include "config_express.h"
+#include "configVariableList.h"
+#include "configVariableString.h"
 #include "executionEnvironment.h"
 #include "pset.h"
 

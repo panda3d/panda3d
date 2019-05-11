@@ -120,7 +120,7 @@ do_set_mass(PN_stdfloat mass) {
   btScalar bt_mass = mass;
   btVector3 bt_inertia(0.0, 0.0, 0.0);
 
-  if (bt_mass > 0.0) {
+  if (bt_mass > 0.0 && !_shapes.empty()) {
     _rigid->getCollisionShape()->calculateLocalInertia(bt_mass, bt_inertia);
   }
 

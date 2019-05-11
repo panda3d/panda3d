@@ -22,10 +22,15 @@ class CollisionEntrySorter {
 public:
   CollisionEntrySorter(CollisionEntry *entry) {
     _entry = entry;
-    LVector3 vec =
-      entry->get_surface_point(entry->get_from_node_path()) -
-      entry->get_from()->get_collision_origin();
-    _dist2 = vec.length_squared();
+    if (entry->has_surface_point()) {
+      LVector3 vec =
+        entry->get_surface_point(entry->get_from_node_path()) -
+        entry->get_from()->get_collision_origin();
+      _dist2 = vec.length_squared();
+    }
+    else {
+      _dist2 = make_inf((PN_stdfloat)0);
+    }
   }
   bool operator < (const CollisionEntrySorter &other) const {
     return _dist2 < other._dist2;

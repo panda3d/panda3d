@@ -63,7 +63,7 @@ public:
 
   INLINE static void bind_thread(Thread *thread);
   INLINE static bool is_threading_supported();
-  INLINE static bool is_true_threads();
+  static bool is_true_threads();
   INLINE static bool is_simple_threads();
   INLINE static void sleep(double seconds);
   INLINE static void yield();

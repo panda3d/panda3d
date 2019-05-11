@@ -78,7 +78,7 @@ register_slot(TypeHandle type_handle, int sort, RenderAttrib *default_attrib) {
     pgraph_cat->error()
       << "Too many registered RenderAttribs; not registering "
       << type_handle << "\n";
-    nassertr(false, 0);
+    nassert_raise("out of RenderAttrib slots");
     return 0;
   }
 
@@ -91,9 +91,9 @@ register_slot(TypeHandle type_handle, int sort, RenderAttrib *default_attrib) {
 
     if (default_attrib->_saved_entry == -1) {
       // If this attribute was already registered, something odd is going on.
-      nassertr(RenderAttrib::_attribs->find(default_attrib) == -1, 0);
+      nassertr(RenderAttrib::_attribs.find(default_attrib) == -1, 0);
       default_attrib->_saved_entry =
-        RenderAttrib::_attribs->store(default_attrib, nullptr);
+        RenderAttrib::_attribs.store(default_attrib, nullptr);
     }
 
     // It effectively lives forever.  Might as well make it official.

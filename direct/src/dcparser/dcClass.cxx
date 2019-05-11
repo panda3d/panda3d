@@ -587,7 +587,7 @@ receive_update_other(PyObject *distobj, DatagramIterator &di) const {
  */
 void DCClass::
 direct_update(PyObject *distobj, const string &field_name,
-              const string &value_blob) {
+              const vector_uchar &value_blob) {
   DCField *field = get_field_by_name(field_name);
   nassertv_always(field != nullptr);
 
@@ -606,7 +606,14 @@ direct_update(PyObject *distobj, const string &field_name,
 void DCClass::
 direct_update(PyObject *distobj, const string &field_name,
               const Datagram &datagram) {
-  direct_update(distobj, field_name, datagram.get_message());
+  DCField *field = get_field_by_name(field_name);
+  nassertv_always(field != nullptr);
+
+  DCPacker packer;
+  packer.set_unpack_data((const char *)datagram.get_data(), datagram.get_length(), false);
+  packer.begin_unpack(field);
+  field->receive_update(packer, distobj);
+  packer.end_unpack();
 }
 #endif  // HAVE_PYTHON
 
@@ -1240,7 +1247,7 @@ shadow_inherited_field(const string &name) {
   }
 
   // If we get here, the named field wasn't in the list.  Huh.
-  nassertv(false);
+  nassert_raise("named field not in list");
 }
 
 /**

@@ -270,11 +270,11 @@ void PreparedGraphicsObjects::
 release_texture(TextureContext *tc) {
   ReMutexHolder holder(_lock);
 
-  tc->_texture->clear_prepared(tc->get_view(), this);
+  tc->get_texture()->clear_prepared(tc->get_view(), this);
 
   // We have to set the Texture pointer to NULL at this point, since the
   // Texture itself might destruct at any time after it has been released.
-  tc->_texture = nullptr;
+  tc->_object = nullptr;
 
   bool removed = (_prepared_textures.erase(tc) != 0);
   nassertv(removed);
@@ -307,8 +307,8 @@ release_all_textures() {
        tci != _prepared_textures.end();
        ++tci) {
     TextureContext *tc = (*tci);
-    tc->_texture->clear_prepared(tc->get_view(), this);
-    tc->_texture = nullptr;
+    tc->get_texture()->clear_prepared(tc->get_view(), this);
+    tc->_object = nullptr;
 
     _released_textures.insert(tc);
   }
@@ -946,14 +946,14 @@ void PreparedGraphicsObjects::
 release_vertex_buffer(VertexBufferContext *vbc) {
   ReMutexHolder holder(_lock);
 
-  vbc->_data->clear_prepared(this);
+  vbc->get_data()->clear_prepared(this);
 
-  size_t data_size_bytes = vbc->_data->get_data_size_bytes();
-  GeomEnums::UsageHint usage_hint = vbc->_data->get_usage_hint();
+  size_t data_size_bytes = vbc->get_data()->get_data_size_bytes();
+  GeomEnums::UsageHint usage_hint = vbc->get_data()->get_usage_hint();
 
   // We have to set the Data pointer to NULL at this point, since the Data
   // itself might destruct at any time after it has been released.
-  vbc->_data = nullptr;
+  vbc->_object = nullptr;
 
   bool removed = (_prepared_vertex_buffers.erase(vbc) != 0);
   nassertv(removed);
@@ -985,8 +985,8 @@ release_all_vertex_buffers() {
        vbci != _prepared_vertex_buffers.end();
        ++vbci) {
     VertexBufferContext *vbc = (VertexBufferContext *)(*vbci);
-    vbc->_data->clear_prepared(this);
-    vbc->_data = nullptr;
+    vbc->get_data()->clear_prepared(this);
+    vbc->_object = nullptr;
 
     _released_vertex_buffers.insert(vbc);
   }
@@ -1061,7 +1061,7 @@ prepare_vertex_buffer_now(GeomVertexArrayData *data, GraphicsStateGuardianBase *
                       _vertex_buffer_cache, _vertex_buffer_cache_lru,
                       _vertex_buffer_cache_size);
   if (vbc != nullptr) {
-    vbc->_data = data;
+    vbc->_object = data;
 
   } else {
     // Ask the GSG to create a brand new VertexBufferContext.  There might be
@@ -1144,14 +1144,14 @@ void PreparedGraphicsObjects::
 release_index_buffer(IndexBufferContext *ibc) {
   ReMutexHolder holder(_lock);
 
-  ibc->_data->clear_prepared(this);
+  ibc->get_data()->clear_prepared(this);
 
-  size_t data_size_bytes = ibc->_data->get_data_size_bytes();
-  GeomEnums::UsageHint usage_hint = ibc->_data->get_usage_hint();
+  size_t data_size_bytes = ibc->get_data()->get_data_size_bytes();
+  GeomEnums::UsageHint usage_hint = ibc->get_data()->get_usage_hint();
 
   // We have to set the Data pointer to NULL at this point, since the Data
   // itself might destruct at any time after it has been released.
-  ibc->_data = nullptr;
+  ibc->_object = nullptr;
 
   bool removed = (_prepared_index_buffers.erase(ibc) != 0);
   nassertv(removed);
@@ -1183,8 +1183,8 @@ release_all_index_buffers() {
        ibci != _prepared_index_buffers.end();
        ++ibci) {
     IndexBufferContext *ibc = (IndexBufferContext *)(*ibci);
-    ibc->_data->clear_prepared(this);
-    ibc->_data = nullptr;
+    ibc->get_data()->clear_prepared(this);
+    ibc->_object = nullptr;
 
     _released_index_buffers.insert(ibc);
   }
@@ -1258,7 +1258,7 @@ prepare_index_buffer_now(GeomPrimitive *data, GraphicsStateGuardianBase *gsg) {
                       _index_buffer_cache, _index_buffer_cache_lru,
                       _index_buffer_cache_size);
   if (ibc != nullptr) {
-    ibc->_data = data;
+    ibc->_object = data;
 
   } else {
     // Ask the GSG to create a brand new IndexBufferContext.  There might be
@@ -1340,6 +1340,13 @@ is_shader_buffer_prepared(const ShaderBuffer *data) const {
 void PreparedGraphicsObjects::
 release_shader_buffer(BufferContext *bc) {
   ReMutexHolder holder(_lock);
+
+  ShaderBuffer *buffer = (ShaderBuffer *)bc->_object;
+  buffer->clear_prepared(this);
+
+  // We have to set the ShaderBuffer pointer to NULL at this point, since the
+  // buffer itself might destruct at any time after it has been released.
+  bc->_object = nullptr;
 
   bool removed = (_prepared_shader_buffers.erase(bc) != 0);
   nassertv(removed);
@@ -1619,8 +1626,8 @@ begin_frame(GraphicsStateGuardianBase *gsg, Thread *current_thread) {
        ++qsi) {
     Shader *shader = qsi->first;
     ShaderContext *sc = shader->prepare_now(this, gsg);
-    if (qti->second != nullptr) {
-      qti->second->set_result(sc);
+    if (qsi->second != nullptr) {
+      qsi->second->set_result(sc);
     }
   }
 

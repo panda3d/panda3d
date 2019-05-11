@@ -57,7 +57,7 @@ dc_init_parser(istream &in, const string &filename, DCFile &file) {
 }
 
 void
-dc_init_parser_parameter_value(istream &in, const string &filename, 
+dc_init_parser_parameter_value(istream &in, const string &filename,
                                DCPacker &packer) {
   dc_file = nullptr;
   current_packer = &packer;
@@ -89,15 +89,16 @@ dc_cleanup_parser() {
 %token <u.uint64> UNSIGNED_INTEGER
 %token <u.int64> SIGNED_INTEGER
 %token <u.real> REAL
-%token <str> STRING HEX_STRING IDENTIFIER
+%token <str> STRING IDENTIFIER
+%token <bytes> HEX_STRING
 %token <u.keyword> KEYWORD
 
-%token KW_DCLASS 
-%token KW_STRUCT 
-%token KW_FROM 
-%token KW_IMPORT 
-%token KW_TYPEDEF 
-%token KW_KEYWORD 
+%token KW_DCLASS
+%token KW_STRUCT
+%token KW_FROM
+%token KW_IMPORT
+%token KW_TYPEDEF
+%token KW_KEYWORD
 %token KW_SWITCH
 %token KW_CASE
 %token KW_DEFAULT
@@ -224,7 +225,7 @@ import:
 {
   dc_file->add_import_module($2);
 }
-        | KW_FROM import_identifier KW_IMPORT 
+        | KW_FROM import_identifier KW_IMPORT
 {
   dc_file->add_import_module($2);
 }
@@ -255,7 +256,7 @@ typedef_decl:
 {
   if ($2 != nullptr) {
     DCTypedef *dtypedef = new DCTypedef($2);
-    
+
     if (!dc_file->add_typedef(dtypedef)) {
       DCTypedef *old_typedef = dc_file->get_typedef_by_name(dtypedef->get_name());
       if (old_typedef->is_bogus_typedef()) {
@@ -294,7 +295,7 @@ dclass_or_struct:
         ;
 
 dclass:
-        KW_DCLASS optional_name 
+        KW_DCLASS optional_name
 {
   current_class = new DCClass(dc_file, $2, false, false);
 }
@@ -322,7 +323,7 @@ dclass_name:
     if (dclass->is_struct()) {
       yyerror("struct name not allowed");
     }
-  
+
     $$ = dclass;
   }
 }
@@ -398,7 +399,7 @@ dclass_field:
         ;
 
 struct:
-        KW_STRUCT optional_name 
+        KW_STRUCT optional_name
 {
   current_class = new DCClass(dc_file, $2, true, false);
 }
@@ -426,7 +427,7 @@ struct_name:
     if (!dstruct->is_struct()) {
       yyerror("struct name required");
     }
-  
+
     $$ = dstruct;
   }
 }
@@ -538,7 +539,7 @@ unnamed_parameter:
 
 named_parameter_with_default:
         named_parameter
-        | named_parameter '=' 
+        | named_parameter '='
 {
   current_packer = &default_packer;
   current_packer->clear_data();
@@ -553,7 +554,7 @@ named_parameter_with_default:
     is_valid = $1->is_valid();
   }
   if (current_packer->end_pack()) {
-    $1->set_default_value(current_packer->get_string());
+    $1->set_default_value(current_packer->get_bytes());
 
   } else {
     if (is_valid) {
@@ -568,7 +569,7 @@ named_parameter_with_default:
 
 unnamed_parameter_with_default:
         unnamed_parameter
-        | unnamed_parameter '=' 
+        | unnamed_parameter '='
 {
   current_packer = &default_packer;
   current_packer->clear_data();
@@ -583,7 +584,7 @@ unnamed_parameter_with_default:
     is_valid = $1->is_valid();
   }
   if (current_packer->end_pack()) {
-    $1->set_default_value(current_packer->get_string());
+    $1->set_default_value(current_packer->get_bytes());
 
   } else {
     if (is_valid) {
@@ -663,7 +664,7 @@ simple_type_name:
   $$ = simple_param;
 }
         | simple_type_name '%' number
-{ 
+{
   DCSimpleParameter *simple_param = $1->as_simple_parameter();
   nassertr(simple_param != nullptr, 0);
   if (!simple_param->is_numeric_type()) {
@@ -703,10 +704,10 @@ type_name:
           dtypedef = new DCTypedef($1);
         }
       }
-      
+
       dc_file->add_typedef(dtypedef);
     }
-    
+
     $$ = dtypedef->make_new_parameter();
   }
 }
@@ -974,7 +975,7 @@ parameter_value:
 {
   if ($1 != current_packer->get_current_field_name()) {
     ostringstream strm;
-    strm << "Got '" << $1 << "', expected '" 
+    strm << "Got '" << $1 << "', expected '"
          << current_packer->get_current_field_name() << "'";
     yyerror(strm.str());
   }
@@ -1005,7 +1006,7 @@ parameter_actual_value:
 {
   current_packer->pack_literal_value($1);
 }
-        | '{' 
+        | '{'
 {
   current_packer->push();
 }
@@ -1013,7 +1014,7 @@ parameter_actual_value:
 {
   current_packer->pop();
 }
-        | '[' 
+        | '['
 {
   current_packer->push();
 }
@@ -1021,7 +1022,7 @@ parameter_actual_value:
 {
   current_packer->pop();
 }
-        | '(' 
+        | '('
 {
   current_packer->push();
 }
@@ -1223,7 +1224,7 @@ molecular_atom_list:
   if ($3 != nullptr) {
     current_molecular->add_atomic($3);
     if (!$3->is_bogus_field() && !current_molecular->compare_keywords(*$3)) {
-      yyerror("Mismatched keywords in molecule between " + 
+      yyerror("Mismatched keywords in molecule between " +
               current_molecular->get_atomic(0)->get_name() + " and " +
               $3->get_name());
     }
@@ -1283,7 +1284,7 @@ switch_case:
     yyerror("Invalid value for switch parameter");
     current_switch->add_invalid_case();
   } else {
-    int case_index = current_switch->add_case(current_packer->get_string());
+    int case_index = current_switch->add_case(current_packer->get_bytes());
     if (case_index == -1) {
       yyerror("Duplicate case value");
     }

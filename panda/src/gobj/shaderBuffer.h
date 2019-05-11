@@ -27,6 +27,8 @@ class PreparedGraphicsObjects;
 
 /**
  * This is a generic buffer object that lives in graphics memory.
+ *
+ * @since 1.10.0
  */
 class EXPCL_PANDA_GOBJ ShaderBuffer : public TypedWritableReferenceCount, public Namable, public GeomEnums {
 private:
@@ -56,6 +58,9 @@ PUBLISHED:
                              GraphicsStateGuardianBase *gsg);
   bool release(PreparedGraphicsObjects *prepared_objects);
   int release_all();
+
+private:
+  void clear_prepared(PreparedGraphicsObjects *prepared_objects);
 
 private:
   uint64_t _data_size_bytes;
@@ -91,6 +96,8 @@ public:
 
 private:
   static TypeHandle _type_handle;
+
+  friend class PreparedGraphicsObjects;
 };
 
 INLINE std::ostream &operator << (std::ostream &out, const ShaderBuffer &m) {

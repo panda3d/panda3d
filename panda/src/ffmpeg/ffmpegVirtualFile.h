@@ -21,7 +21,7 @@
 
 #include <stdarg.h>
 extern "C" {
-  #include "libavformat/avio.h"
+  #include <libavformat/avio.h>
 }
 
 struct URLContext;

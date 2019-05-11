@@ -19,7 +19,7 @@
 #include "config_downloader.h"
 
 #include "openSSLWrapper.h"  // must be included before any other openssl.
-#include "openssl/ssl.h"
+#include <openssl/ssl.h>
 
 #ifdef _WIN32
 #include <winsock2.h>

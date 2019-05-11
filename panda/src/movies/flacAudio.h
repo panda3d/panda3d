@@ -21,6 +21,8 @@ class FlacAudioCursor;
 
 /**
  * Reads FLAC audio files.  Ogg-encapsulated FLAC files are not supported.
+ *
+ * @since 1.10.0
  */
 class EXPCL_PANDA_MOVIES FlacAudio : public MovieAudio {
 PUBLISHED:

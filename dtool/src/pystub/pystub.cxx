@@ -27,6 +27,8 @@ extern "C" {
   EXPCL_PYSTUB int PyCFunction_New(...);
   EXPCL_PYSTUB int PyCFunction_NewEx(...);
   EXPCL_PYSTUB int PyCallable_Check(...);
+  EXPCL_PYSTUB int PyCapsule_GetPointer(...);
+  EXPCL_PYSTUB int PyCapsule_New(...);
   EXPCL_PYSTUB int PyDict_DelItem(...);
   EXPCL_PYSTUB int PyDict_DelItemString(...);
   EXPCL_PYSTUB int PyDict_GetItem(...);
@@ -133,6 +135,7 @@ extern "C" {
   EXPCL_PYSTUB int PyString_InternInPlace(...);
   EXPCL_PYSTUB int PyString_Size(...);
   EXPCL_PYSTUB int PySys_GetObject(...);
+  EXPCL_PYSTUB int PySys_SetObject(...);
   EXPCL_PYSTUB int PyThreadState_Clear(...);
   EXPCL_PYSTUB int PyThreadState_Delete(...);
   EXPCL_PYSTUB int PyThreadState_Get(...);
@@ -216,6 +219,7 @@ extern "C" {
   EXPCL_PYSTUB extern void *PyExc_ImportError;
   EXPCL_PYSTUB extern void *PyExc_IndexError;
   EXPCL_PYSTUB extern void *PyExc_KeyError;
+  EXPCL_PYSTUB extern void *PyExc_NameError;
   EXPCL_PYSTUB extern void *PyExc_OSError;
   EXPCL_PYSTUB extern void *PyExc_OverflowError;
   EXPCL_PYSTUB extern void *PyExc_RuntimeError;
@@ -257,6 +261,8 @@ int PyBytes_Size(...) { return 0; }
 int PyCFunction_New(...) { return 0; };
 int PyCFunction_NewEx(...) { return 0; };
 int PyCallable_Check(...) { return 0; }
+int PyCapsule_GetPointer(...) { return 0; }
+int PyCapsule_New(...) { return 0; }
 int PyDict_DelItem(...) { return 0; }
 int PyDict_DelItemString(...) { return 0; }
 int PyDict_GetItem(...) { return 0; }
@@ -363,6 +369,7 @@ int PyString_FromStringAndSize(...) { return 0; }
 int PyString_InternFromString(...) { return 0; }
 int PyString_InternInPlace(...) { return 0; }
 int PySys_GetObject(...) { return 0; }
+int PySys_SetObject(...) { return 0; }
 int PyThreadState_Clear(...) { return 0; }
 int PyThreadState_Delete(...) { return 0; }
 int PyThreadState_Get(...) { return 0; }
@@ -452,6 +459,7 @@ void *PyExc_FutureWarning = nullptr;
 void *PyExc_ImportError = nullptr;
 void *PyExc_IndexError = nullptr;
 void *PyExc_KeyError = nullptr;
+void *PyExc_NameError = nullptr;
 void *PyExc_OSError = nullptr;
 void *PyExc_OverflowError = nullptr;
 void *PyExc_RuntimeError = nullptr;

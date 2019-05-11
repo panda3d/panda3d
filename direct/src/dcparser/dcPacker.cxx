@@ -114,12 +114,12 @@ end_pack() {
  * version of begin_unpack() that takes only one parameter.
  */
 void DCPacker::
-set_unpack_data(const string &data) {
+set_unpack_data(const vector_uchar &data) {
   nassertv(_mode == M_idle);
 
-  char *buffer = new char[data.length()];
-  memcpy(buffer, data.data(), data.length());
-  set_unpack_data(buffer, data.length(), true);
+  char *buffer = new char[data.size()];
+  memcpy(buffer, data.data(), data.size());
+  set_unpack_data(buffer, data.size(), true);
 }
 
 /**
@@ -721,11 +721,11 @@ pack_object(PyObject *object) {
       pack_string(string(buffer, length));
     }
   } else if (PyBytes_Check(object)) {
-    char *buffer;
+    const unsigned char *buffer;
     Py_ssize_t length;
-    PyBytes_AsStringAndSize(object, &buffer, &length);
+    PyBytes_AsStringAndSize(object, (char **)&buffer, &length);
     if (buffer) {
-      pack_string(string(buffer, length));
+      pack_blob(vector_uchar(buffer, buffer + length));
     }
 #else
   } else if (PyString_Check(object) || PyUnicode_Check(object)) {
@@ -1118,9 +1118,9 @@ enquote_string(ostream &out, char quote_mark, const string &str) {
  * Outputs the indicated string as a hex constant.
  */
 void DCPacker::
-output_hex_string(ostream &out, const string &str) {
+output_hex_string(ostream &out, const vector_uchar &str) {
   out << '<';
-  for (string::const_iterator pi = str.begin();
+  for (vector_uchar::const_iterator pi = str.begin();
        pi != str.end();
        ++pi) {
     char buffer[10];

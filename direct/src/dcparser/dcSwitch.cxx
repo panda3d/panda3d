@@ -109,7 +109,7 @@ get_num_cases() const {
  * if no case has this value.
  */
 int DCSwitch::
-get_case_by_value(const string &case_value) const {
+get_case_by_value(const vector_uchar &case_value) const {
   CasesByValue::const_iterator vi;
   vi = _cases_by_value.find(case_value);
   if (vi != _cases_by_value.end()) {
@@ -140,9 +140,9 @@ get_default_case() const {
 /**
  * Returns the packed value associated with the indicated case.
  */
-string DCSwitch::
+vector_uchar DCSwitch::
 get_value(int case_index) const {
-  nassertr(case_index >= 0 && case_index < (int)_cases.size(), string());
+  nassertr(case_index >= 0 && case_index < (int)_cases.size(), vector_uchar());
   return _cases[case_index]->_value;
 }
 
@@ -198,7 +198,7 @@ is_field_valid() const {
  * -1. This is normally called only by the parser.
  */
 int DCSwitch::
-add_case(const string &value) {
+add_case(const vector_uchar &value) {
   int case_index = (int)_cases.size();
   if (!_cases_by_value.insert(CasesByValue::value_type(value, case_index)).second) {
     add_invalid_case();
@@ -283,7 +283,8 @@ add_break() {
 const DCPackerInterface *DCSwitch::
 apply_switch(const char *value_data, size_t length) const {
   CasesByValue::const_iterator vi;
-  vi = _cases_by_value.find(string(value_data, length));
+  vi = _cases_by_value.find(vector_uchar((const unsigned char *)value_data,
+                                         (const unsigned char *)value_data + length));
   if (vi != _cases_by_value.end()) {
     return _cases[(*vi).second]->_fields;
   }
@@ -421,7 +422,7 @@ generate_hash(HashGenerator &hashgen) const {
   Cases::const_iterator ci;
   for (ci = _cases.begin(); ci != _cases.end(); ++ci) {
     const SwitchCase *dcase = (*ci);
-    hashgen.add_string(dcase->_value);
+    hashgen.add_blob(dcase->_value);
 
     const SwitchFields *fields = dcase->_fields;
     hashgen.add_int(fields->_fields.size());
@@ -702,7 +703,7 @@ do_check_match(const DCPackerInterface *) const {
  *
  */
 DCSwitch::SwitchCase::
-SwitchCase(const string &value, DCSwitch::SwitchFields *fields) :
+SwitchCase(const vector_uchar &value, DCSwitch::SwitchFields *fields) :
   _value(value),
   _fields(fields)
 {

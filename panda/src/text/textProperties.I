@@ -801,6 +801,8 @@ get_text_scale() const {
 /**
  * Specifies the text direction.  If none is specified, it will be guessed
  * based on the contents of the string.
+ *
+ * @since 1.10.0
  */
 INLINE void TextProperties::
 set_direction(Direction direction) {
@@ -811,6 +813,8 @@ set_direction(Direction direction) {
 /**
  * Clears the text direction setting.  If no text direction is specified, it
  * will be guessed based on the contents of the string.
+ *
+ * @since 1.10.0
  */
 INLINE void TextProperties::
 clear_direction() {
@@ -819,7 +823,7 @@ clear_direction() {
 }
 
 /**
- *
+ * @since 1.10.0
  */
 INLINE bool TextProperties::
 has_direction() const {
@@ -828,6 +832,8 @@ has_direction() const {
 
 /**
  * Returns the direction of the text as specified by set_direction().
+ *
+ * @since 1.10.0
  */
 INLINE TextProperties::Direction TextProperties::
 get_direction() const {

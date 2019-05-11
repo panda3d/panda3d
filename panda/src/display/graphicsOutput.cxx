@@ -77,6 +77,7 @@ GraphicsOutput(GraphicsEngine *engine, GraphicsPipe *pipe,
   _lock("GraphicsOutput"),
   _cull_window_pcollector(_cull_pcollector, name),
   _draw_window_pcollector(_draw_pcollector, name),
+  _clear_window_pcollector(_draw_window_pcollector, "Clear"),
   _size(0, 0)
 {
 #ifdef DO_MEMORY_USAGE
@@ -411,15 +412,39 @@ is_active() const {
     return false;
   }
 
-  CDReader cdata(_cycler);
+  CDLockedReader cdata(_cycler);
+  if (!cdata->_active) {
+    return false;
+  }
+
   if (cdata->_one_shot_frame != -1) {
     // If one_shot is in effect, then we are active only for the one indicated
     // frame.
     if (cdata->_one_shot_frame != ClockObject::get_global_clock()->get_frame_count()) {
       return false;
+    } else {
+      return true;
     }
   }
-  return cdata->_active;
+
+  // If the window has a clear value set, it is active.
+  if (is_any_clear_active()) {
+    return true;
+  }
+
+  // If we triggered a copy operation, it is also active.
+  if (_trigger_copy) {
+    return true;
+  }
+
+  // The window is active if at least one display region is active.
+  if (cdata->_active_display_regions_stale) {
+    CDWriter cdataw(((GraphicsOutput *)this)->_cycler, cdata, false);
+    ((GraphicsOutput *)this)->do_determine_display_regions(cdataw);
+    return !cdataw->_active_display_regions.empty();
+  } else {
+    return !cdata->_active_display_regions.empty();
+  }
 }
 
 /**
@@ -697,9 +722,6 @@ void GraphicsOutput::
 remove_all_display_regions() {
   LightMutexHolder holder(_lock);
 
-  CDWriter cdata(_cycler, true);
-  cdata->_active_display_regions_stale = true;
-
   TotalDisplayRegions::iterator dri;
   for (dri = _total_display_regions.begin();
        dri != _total_display_regions.end();
@@ -713,6 +735,12 @@ remove_all_display_regions() {
   }
   _total_display_regions.clear();
   _total_display_regions.push_back(_overlay_display_region);
+
+  OPEN_ITERATE_ALL_STAGES(_cycler) {
+    CDStageWriter cdata(_cycler, pipeline_stage);
+    cdata->_active_display_regions_stale = true;
+  }
+  CLOSE_ITERATE_ALL_STAGES(_cycler);
 }
 
 /**
@@ -740,13 +768,8 @@ set_overlay_display_region(DisplayRegion *display_region) {
  */
 int GraphicsOutput::
 get_num_display_regions() const {
-  determine_display_regions();
-  int result;
-  {
-    LightMutexHolder holder(_lock);
-    result = _total_display_regions.size();
-  }
-  return result;
+  LightMutexHolder holder(_lock);
+  return _total_display_regions.size();
 }
 
 /**
@@ -1504,13 +1527,15 @@ do_remove_display_region(DisplayRegion *display_region) {
     find(_total_display_regions.begin(), _total_display_regions.end(), drp);
   if (dri != _total_display_regions.end()) {
     // Let's aggressively clean up the display region too.
-    CDWriter cdata(_cycler, true);
     display_region->cleanup();
     display_region->_window = nullptr;
     _total_display_regions.erase(dri);
 
-    cdata->_active_display_regions_stale = true;
-
+    OPEN_ITERATE_ALL_STAGES(_cycler) {
+      CDStageWriter cdata(_cycler, pipeline_stage);
+      cdata->_active_display_regions_stale = true;
+    }
+    CLOSE_ITERATE_ALL_STAGES(_cycler);
     return true;
   }
 
