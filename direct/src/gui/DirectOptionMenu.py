@@ -3,7 +3,7 @@
 __all__ = ['DirectOptionMenu']
 
 from panda3d.core import *
-from . import DirectGuiGlQobals as DGG
+from . import DirectGuiGlobals as DGG
 from .DirectButton import *
 from .DirectLabel import *
 from .DirectFrame import *
