@@ -78,6 +78,13 @@ class DirectOptionMenu(DirectButton):
         # Make sure this is on top of all the other widgets
         self.cancelFrame.setBin('gui-popup', 0)
         self.cancelFrame.bind(DGG.B1PRESS, self.hidePopupMenu)
+        # A label that's shown in the list when there are no items available.
+        self.emptyListLabel = self.createcomponent(
+            'emptyListLabel', (), None,
+            DirectLabel, (self,),
+            text_align = TextNode.ALeft
+        )
+        self.emptyListLabel.hide()
         # Default action on press is to show popup menu
         self.bind(DGG.B1PRESS, self.showPopupMenu)
         # Check if item is highlighted on release and select it if it is
@@ -92,6 +99,9 @@ class DirectOptionMenu(DirectButton):
         self['items'] = itemList
         Create new popup menu to reflect specified set of items
         """
+        # Detach the "empty-list" label, so that destroying the poup menu doesn't destroy it
+        if self.emptyListLabel.getParent() is not None:
+            self.emptyListLabel.detachNode()
         # Remove old component if it exits
         if self.popupMenu != None:
             self.destroycomponent('popupMenu')
@@ -103,64 +113,77 @@ class DirectOptionMenu(DirectButton):
                                               )
         # Make sure it is on top of all the other gui widgets
         self.popupMenu.setBin('gui-popup', 0)
-        if not self['items']:
-            return
-        # Create a new component for each item
-        # Find the maximum extents of all items
-        itemIndex = 0
-        self.minX = self.maxX = self.minZ = self.maxZ = None
-        for item in self['items']:
-            c = self.createcomponent(
-                'item%d' % itemIndex, (), 'item',
-                DirectButton, (self.popupMenu,),
-                text = item, text_align = TextNode.ALeft,
-                command = lambda i = itemIndex: self.set(i))
-            bounds = c.getBounds()
-            if self.minX == None:
-                self.minX = bounds[0]
-            elif bounds[0] < self.minX:
-                self.minX = bounds[0]
-            if self.maxX == None:
-                self.maxX = bounds[1]
-            elif bounds[1] > self.maxX:
-                self.maxX = bounds[1]
-            if self.minZ == None:
-                self.minZ = bounds[2]
-            elif bounds[2] < self.minZ:
-                self.minZ = bounds[2]
-            if self.maxZ == None:
-                self.maxZ = bounds[3]
-            elif bounds[3] > self.maxZ:
-                self.maxZ = bounds[3]
-            itemIndex += 1
-        # Calc max width and height
-        self.maxWidth = self.maxX - self.minX
-        self.maxHeight = self.maxZ - self.minZ
-        # Adjust frame size for each item and bind actions to mouse events
-        for i in range(itemIndex):
-            item = self.component('item%d' %i)
-            # So entire extent of item's slot on popup is reactive to mouse
-            item['frameSize'] = (self.minX, self.maxX, self.minZ, self.maxZ)
-            # Move it to its correct position on the popup
-            item.setPos(-self.minX, 0, -self.maxZ - i * self.maxHeight)
-            item.bind(DGG.B1RELEASE, self.hidePopupMenu)
-            # Highlight background when mouse is in item
-            item.bind(DGG.WITHIN,
-                      lambda x, i=i, item=item:self._highlightItem(item, i))
-            # Restore specified color upon exiting
-            fc = item['frameColor']
-            item.bind(DGG.WITHOUT,
-                      lambda x, item=item, fc=fc: self._unhighlightItem(item, fc))
-        # Set popup menu frame size to encompass all items
-        f = self.component('popupMenu')
-        f['frameSize'] = (0, self.maxWidth, -self.maxHeight * itemIndex, 0)
+        if self['items']:
+            # Create a new component for each item
+            # Find the maximum extents of all items
+            itemIndex = 0
+            self.minX = self.maxX = self.minZ = self.maxZ = None
+            for item in self['items']:
+                c = self.createcomponent(
+                    'item%d' % itemIndex, (), 'item',
+                    DirectButton, (self.popupMenu,),
+                    text = item, text_align = TextNode.ALeft,
+                    command = lambda i = itemIndex: self.set(i))
+                bounds = c.getBounds()
+                if self.minX == None:
+                    self.minX = bounds[0]
+                elif bounds[0] < self.minX:
+                    self.minX = bounds[0]
+                if self.maxX == None:
+                    self.maxX = bounds[1]
+                elif bounds[1] > self.maxX:
+                    self.maxX = bounds[1]
+                if self.minZ == None:
+                    self.minZ = bounds[2]
+                elif bounds[2] < self.minZ:
+                    self.minZ = bounds[2]
+                if self.maxZ == None:
+                    self.maxZ = bounds[3]
+                elif bounds[3] > self.maxZ:
+                    self.maxZ = bounds[3]
+                itemIndex += 1
+            # Calc max width and height
+            self.maxWidth = self.maxX - self.minX
+            self.maxHeight = self.maxZ - self.minZ
+            # Adjust frame size for each item and bind actions to mouse events
+            for i in range(itemIndex):
+                item = self.component('item%d' %i)
+                # So entire extent of item's slot on popup is reactive to mouse
+                item['frameSize'] = (self.minX, self.maxX, self.minZ, self.maxZ)
+                # Move it to its correct position on the popup
+                item.setPos(-self.minX, 0, -self.maxZ - i * self.maxHeight)
+                item.bind(DGG.B1RELEASE, self.hidePopupMenu)
+                # Highlight background when mouse is in item
+                item.bind(DGG.WITHIN,
+                          lambda x, i=i, item=item:self._highlightItem(item, i))
+                # Restore specified color upon exiting
+                fc = item['frameColor']
+                item.bind(DGG.WITHOUT,
+                          lambda x, item=item, fc=fc: self._unhighlightItem(item, fc))
+            # Set popup menu frame size to encompass all items
+            f = self.component('popupMenu')
+            f['frameSize'] = (0, self.maxWidth, -self.maxHeight * itemIndex, 0)
 
-        # Determine what initial item to display and set text accordingly
-        if self['initialitem']:
-            self.set(self['initialitem'], fCommand = 0)
+            # Determine what initial item to display and set text accordingly
+            if self['initialitem']:
+                self.set(self['initialitem'], fCommand = 0)
+            else:
+                # No initial item specified, just use first item
+                self.set(0, fCommand = 0)
         else:
-            # No initial item specified, just use first item
-            self.set(0, fCommand = 0)
+            self.emptyListLabel.show()
+            self.emptyListLabel.reparentTo(self.popupMenu)
+            bounds = self.emptyListLabel.getBounds()
+            self.minX = bounds[0]
+            self.maxX = bounds[1]
+            self.minZ = bounds[2]
+            self.maxZ = bounds[3]
+            self.maxWidth = self.maxX - self.minX
+            self.maxHeight = self.maxZ - self.minZ
+            self.emptyListLabel.setPos(-self.minX, 0, -self.maxZ)
+            f = self.component('popupMenu')
+            f['frameSize'] = (0, self.maxWidth, -self.maxHeight, 0)
+            self["text"] = self.emptyListLabel["text"]
 
         # Position popup Marker to the right of the button
         pm = self.popupMarker
