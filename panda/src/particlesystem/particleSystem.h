@@ -109,8 +109,6 @@ PUBLISHED:
   virtual void write_spawn_templates(std::ostream &out, int indent=0) const;
   virtual void write(std::ostream &out, int indent=0) const;
 
-  void birth_litter();
-
 private:
   #ifdef PSSANITYCHECK
   int sanity_check();
@@ -118,6 +116,7 @@ private:
 
   bool birth_particle();
   void kill_particle(int pool_index);
+  void birth_litter();
   void resize_pool(int size);
 
   pdeque< int > _free_particle_fifo;
