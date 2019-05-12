@@ -44,6 +44,12 @@ public:
   INLINE void set_iteration_count(int iteration_count);
   INLINE int get_iteration_count() const;
 
+  INLINE void set_magic_length(size_t length);
+  INLINE size_t get_magic_length() const;
+
+  virtual std::streampos seekoff(std::streamoff off, ios_seekdir dir, ios_openmode which);
+  virtual std::streampos seekpos(std::streampos pos, ios_openmode which);
+
 protected:
   virtual int overflow(int c);
   virtual int sync();
@@ -71,6 +77,9 @@ private:
 
   EVP_CIPHER_CTX *_write_ctx;
   size_t _write_block_size;
+
+  size_t _magic_length = 0;
+  bool _finished = false;
 };
 
 #include "encryptStreamBuf.I"
