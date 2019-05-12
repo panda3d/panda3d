@@ -22,7 +22,7 @@
  */
 bool IDecryptStream::
 read_magic(const char *magic, size_t size) {
-  char this_magic[size];
+  char *this_magic = (char *)alloca(size);
   read(this_magic, size);
 
   if (!fail() && gcount() == size && memcmp(this_magic, magic, size) == 0) {
