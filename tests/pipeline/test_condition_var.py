@@ -26,13 +26,12 @@ def test_cvar_notify_locked():
     m = Mutex()
     cv = ConditionVarFull(m)
 
-    m.acquire()
-    cv.notify()
-    m.release()
+    with m:
+        cv.notify()
 
-    m.acquire()
-    cv.notify_all()
-    m.release()
+    with m:
+        cv.notify_all()
+
     del cv
 
 
