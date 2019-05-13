@@ -363,6 +363,20 @@ do_transform_changed() {
  *
  */
 void BulletRigidBodyNode::
+parents_changed() {
+
+  if (_motion.sync_disabled()) return;
+
+  if (get_num_parents() > 0) {
+    LightMutexHolder holder(BulletWorld::get_global_lock());
+    do_transform_changed();
+  }
+}
+
+/**
+ *
+ */
+void BulletRigidBodyNode::
 transform_changed() {
 
   if (_motion.sync_disabled()) return;
