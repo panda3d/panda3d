@@ -1,3 +1,40 @@
+------------------------  RELEASE 1.10.3  -----------------------
+
+This is another bugfix release that addresses a variety of issues
+in 1.10.2 and further improves the stability.
+
+* Fix crash when unplugging certain devices on macOS
+* Fix crash on macOS when using RIME input
+* Fix logging issues/crashes in apps deployed with Python 2.7
+* Fix issues when starting in fullscreen on Linux/X11
+* Fix mapping of several gamepads including Trust GXT 24
+* Fix Linux crash when no input devices are present
+* Unbreak support for matrix arrays in vertex data in OpenGL
+* Allow creating multisample FBO in OpenGL with non-MS host window
+* Support playing and looping compressed Ogg and WAV audio files
+* Fix generation of CollisionBox for transformed geometry in .egg
+* Fix Bullet rigid body transform not updating after reparenting
+* Fix sporadic color scales with lighting and custom GLSL shader
+* Prevent faulty shaders from shutting down GSG on some drivers
+* Allow None as either argument to OdeJoint.attach()
+* Fix BufferViewer when main window is not opened right away
+* Properly detect extension of pz/gz compressed video/audio files
+* Fix for invalid behavior of SparseArray methods to clear bits
+* FilterManager now allows overriding framebuffer properties
+* Fix detection of core-only OpenGL profile on some drivers
+* Add gl-forward-compatible config var for OpenGL context creation
+* Add paste-emit-keystrokes variable to disable Ctrl+V on Windows
+* Fix in-place |= operator on Panda types (such as SparseArray)
+* Fix rare FFmpeg "bad src image pointers" errors after seek
+* Fix uses of types.InstanceType in some obscure direct functions
+* Fix capsule-into-sphere collision test in degenerate case
+* KeyboardButton.ascii_key now also accepts a str character
+* Fix errors in various Tkinter DIRECT widgets
+* Expose save_egg_file/save_egg_data functions in Python API
+* Fix assertion error in BoundingBox.set_min_max
+* Fix typo in CollisionTraverser.respect_prev_transform property
+* Properly install Python bindings when building FreeBSD installer
+
 ------------------------  RELEASE 1.10.2  -----------------------
 
 This release fixes several more bugs, including a few regressions
