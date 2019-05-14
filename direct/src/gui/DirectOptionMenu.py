@@ -40,9 +40,6 @@ class DirectOptionMenu(DirectButton):
            )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)
-        # Save the 'item_' keywords--we don't want them to be lost
-        # after the first list-construction.
-        self.itemOptions = {key: val for key, val in self._constructorKeywords.items() if key.startswith('item_')}
         # Initialize superclasses
         DirectButton.__init__(self, parent)
         # Record any user specified frame size
@@ -95,10 +92,6 @@ class DirectOptionMenu(DirectButton):
         self['items'] = itemList
         Create new popup menu to reflect specified set of items
         """
-        # Restore the 'item_' keywords that we've stored,
-        # so that they'll be used in constructing the items
-        # even if this isn't the first set of items given to this menu.
-        self._constructorKeywords.update(self.itemOptions.items())
         # Remove old component if it exits
         if self.popupMenu != None:
             self.destroycomponent('popupMenu')
@@ -304,20 +297,3 @@ class DirectOptionMenu(DirectButton):
         Command is executed in response to selecting menu items
         """
         pass
-
-    def __setitem__(self, key, value):
-        DirectButton.__setitem__(self, key, value)
-
-        if key.startswith('item_'):
-            self.itemOptions[key][0] = value
-
-            # If we don't rebuild the buttons, the new options may be
-            # overridden by such actions as highlighting or unhighlighting.
-            # Furthermore, some of the calculations from "setItems" might
-            # call for being re-run given the new settings.
-            # However, we also save the currently-selected
-            # item, so that it's not lost in rebuilding the list!
-            selectedIndex = self.selectedIndex
-            self['items'] = self['items']
-            self.set(selectedIndex, fCommand = 0)
-
