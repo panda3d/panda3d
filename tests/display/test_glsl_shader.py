@@ -5,6 +5,9 @@ import pytest
 from _pytest.outcomes import Failed
 
 
+SHADERS_DIR = core.Filename.from_os_specific(os.path.dirname(__file__))
+
+
 # This is the template for the compute shader that is used by run_glsl_test.
 # It defines an assert() macro that writes failures to a buffer, indexed by
 # line number.
@@ -347,23 +350,20 @@ def test_glsl_write_extract_image_buffer(gsg):
 
 def test_glsl_compile_error(gsg):
     """Test getting compile errors from bad shaders"""
-    shaders_dir = os.path.dirname(__file__)
-    vert_path = os.path.join(shaders_dir, 'glsl_bad.vert')
-    frag_path = os.path.join(shaders_dir, 'glsl_simple.frag')
+    vert_path = core.Filename(SHADERS_DIR, 'glsl_bad.vert')
+    frag_path = core.Filename(SHADERS_DIR, 'glsl_simple.frag')
     run_glsl_compile_check(gsg, vert_path, frag_path, expect_fail=True)
 
 
 def test_glsl_from_file(gsg):
     """Test compiling GLSL shaders from files"""
-    shaders_dir = os.path.dirname(__file__)
-    vert_path = os.path.join(shaders_dir, 'glsl_simple.vert')
-    frag_path = os.path.join(shaders_dir, 'glsl_simple.frag')
+    vert_path = core.Filename(SHADERS_DIR, 'glsl_simple.vert')
+    frag_path = core.Filename(SHADERS_DIR, 'glsl_simple.frag')
     run_glsl_compile_check(gsg, vert_path, frag_path)
 
 
 def test_glsl_includes(gsg):
     """Test preprocessing includes in GLSL shaders"""
-    shaders_dir = os.path.dirname(__file__)
-    vert_path = os.path.join(shaders_dir, 'glsl_include.vert')
-    frag_path = os.path.join(shaders_dir, 'glsl_simple.frag')
+    vert_path = core.Filename(SHADERS_DIR, 'glsl_include.vert')
+    frag_path = core.Filename(SHADERS_DIR, 'glsl_simple.frag')
     run_glsl_compile_check(gsg, vert_path, frag_path)
