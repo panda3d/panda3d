@@ -95,6 +95,13 @@ class DirectOptionMenu(DirectButton):
         # Remove old component if it exits
         if self.popupMenu != None:
             self.destroycomponent('popupMenu')
+        # Remove any items that may have previously been created
+        index = 0
+        componentName = 'item{0}'.format(index)
+        while (self.hascomponent(componentName)):
+            self.destroycomponent(componentName)
+            index += 1
+            componentName = 'item{0}'.format(index)
         # Create new component
         self.popupMenu = self.createcomponent('popupMenu', (), None,
                                               DirectFrame,
