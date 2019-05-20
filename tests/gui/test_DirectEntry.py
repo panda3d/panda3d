@@ -2,11 +2,11 @@
 from direct.gui.DirectEntry import DirectEntry
 from panda3d.core import NodePath
 import sys
-reload(sys)
-sys.setdefaultencoding('utf-8')
 if sys.version_info >= (3, 0):
     import builtins
 else:
+    reload(sys)
+    sys.setdefaultencoding('utf-8')
     import __builtin__ as builtins
 
 
