@@ -1,6 +1,9 @@
+# coding=utf-8
 from direct.gui.DirectEntry import DirectEntry
 from panda3d.core import NodePath
 import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
 if sys.version_info >= (3, 0):
     import builtins
 else:
@@ -26,3 +29,9 @@ def test_auto_capitalize():
     entry.set('auto capitalize test')
     entry._autoCapitalize()
     assert entry.get() == 'Auto Capitalize Test'
+
+    # Test DirectEntry._autoCapitalize() again, this time with a UTF-8 string.
+    entry.set('àütò çapítalízè ţèsţ')
+    entry._autoCapitalize()
+    print entry.get() == 'Àütò Çapítalízè Ţèsţ'
+    assert entry.get() == 'Àütò Çapítalízè Ţèsţ'
