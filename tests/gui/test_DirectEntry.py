@@ -33,5 +33,4 @@ def test_auto_capitalize():
     # Test DirectEntry._autoCapitalize() again, this time with a UTF-8 string.
     entry.set('àütò çapítalízè ţèsţ')
     entry._autoCapitalize()
-    print entry.get() == 'Àütò Çapítalízè Ţèsţ'
     assert entry.get() == 'Àütò Çapítalízè Ţèsţ'
