@@ -21,7 +21,7 @@
 class EXPCL_PANDA_AUDIO NullAudioManager : public AudioManager {
   // All of these methods are stubbed out to some degree.  If you're looking
   // for a starting place for a new AudioManager, please consider looking at
-  // the milesAudioManager.
+  // the openalAudioManager.
 
 public:
   NullAudioManager();

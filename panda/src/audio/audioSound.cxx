@@ -84,23 +84,6 @@ set_speaker_mix(PN_stdfloat frontleft, PN_stdfloat frontright, PN_stdfloat cente
 }
 
 /**
- * For use only with Miles.
- */
-PN_stdfloat AudioSound::
-get_speaker_level(int index) {
-  // intentionally blank
-  return 0.0;
-}
-
-/**
- * For use only with Miles.
- */
-void AudioSound::
-set_speaker_levels(PN_stdfloat level1, PN_stdfloat level2, PN_stdfloat level3, PN_stdfloat level4, PN_stdfloat level5, PN_stdfloat level6, PN_stdfloat level7, PN_stdfloat level8, PN_stdfloat level9) {
-  // intentionally blank
-}
-
-/**
  * Configure the local DSP filter chain.
  *
  * There is no guarantee that any given configuration will be supported by the

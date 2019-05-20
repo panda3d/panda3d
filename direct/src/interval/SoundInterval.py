@@ -27,8 +27,7 @@ class SoundInterval(Interval.Interval):
     # than explicitly restarting the sound every time around. This
     # prevents a skip in the sound at every repetition (the gap in
     # the sound is caused by the delay between the end of the sound
-    # and the next taskMgr cycle). There still seems to be a skip
-    # in Miles when looping MP3s. =(
+    # and the next taskMgr cycle).
     # RAU 03/01/07 add listenerNode in case we don't want to
     # use base.camera as the listener, node must not be None
     def __init__(self, sound, loop = 0, duration = 0.0, name = None,
@@ -62,23 +61,6 @@ class SoundInterval(Interval.Interval):
             #if (duration == 0):
             #    self.notify.warning('zero length duration!')
 
-            # MPG - hack for Miles bug
-            #duration += 1.5
-
-            # DCR - hack for Miles bug - adding 1.5 seconds caused
-            # problems for MG_neg_buzzer.wav
-
-            # DCR - what this is all about: Miles is under-reporting the
-            # length of MP3 files, and they're getting cut off too early.
-            # This is a temporary hack. We could:
-            # - hack Miles to fix its MP3 length calculation
-            # - complain louder about this to RAD
-            # - precompute MP3 durations and store them in a table
-
-            # drose - ok, I've put in a lower-level workaround in the
-            # MilesAudioManager.  This is no longer necessary up here,
-            # where it pollutes SoundInterval for everyone.
-            #duration += min(duration * 2.4, 1.5)
 
         # Generate unique name if necessary
         if (name == None):
