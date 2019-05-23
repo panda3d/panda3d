@@ -177,6 +177,7 @@ open_read(std::istream *source, bool owns_source, const std::string &password) {
 
   _read_overflow_buffer = new unsigned char[_read_block_size];
   _in_read_overflow_buffer = 0;
+  _finished = false;
   thread_consider_yield();
 }
 
@@ -323,6 +324,57 @@ close_write() {
 }
 
 /**
+ * Implements seeking within the stream.  EncryptStreamBuf only allows seeking
+ * back to the beginning of the stream.
+ */
+std::streampos EncryptStreamBuf::
+seekoff(std::streamoff off, ios_seekdir dir, ios_openmode which) {
+  if (which != std::ios::in) {
+    // We can only do this with the input stream.
+    return -1;
+  }
+
+  if (off != 0 || dir != std::ios::beg) {
+    // We only know how to reposition to the beginning.
+    return -1;
+  }
+
+  size_t n = egptr() - gptr();
+  gbump(n);
+
+  if (_source->rdbuf()->pubseekpos(0, std::ios::in) == (std::streampos)0) {
+    int result = EVP_DecryptInit(_read_ctx, nullptr, nullptr, nullptr);
+    nassertr_always(result > 0, -1);
+
+    _source->clear();
+    _in_read_overflow_buffer = 0;
+    _finished = false;
+
+    // Skip past the header.
+    int iv_length = EVP_CIPHER_CTX_iv_length(_read_ctx);
+    _source->ignore(6 + iv_length);
+
+    // Ignore the magic bytes.
+    size_t magic_length = get_magic_length();
+    char *buffer = (char *)alloca(magic_length);
+    if (read_chars(buffer, magic_length) == magic_length) {
+      return 0;
+    }
+  }
+
+  return -1;
+}
+
+/**
+ * Implements seeking within the stream.  EncryptStreamBuf only allows seeking
+ * back to the beginning of the stream.
+ */
+std::streampos EncryptStreamBuf::
+seekpos(std::streampos pos, ios_openmode which) {
+  return seekoff(pos, std::ios::beg, which);
+}
+
+/**
  * Called by the system ostream implementation when its internal buffer is
  * filled, plus one character.
  */
@@ -423,7 +475,7 @@ read_chars(char *start, size_t length) {
 
   do {
     // Get more bytes from the stream.
-    if (_read_ctx == nullptr) {
+    if (_read_ctx == nullptr || _finished) {
       return 0;
     }
 
@@ -439,8 +491,7 @@ read_chars(char *start, size_t length) {
     } else {
       result =
         EVP_DecryptFinal(_read_ctx, read_buffer, &bytes_read);
-      EVP_CIPHER_CTX_free(_read_ctx);
-      _read_ctx = nullptr;
+      _finished = true;
     }
 
     if (result <= 0) {

@@ -3206,6 +3206,10 @@ glsl_compile_and_link() {
     valid &= glsl_compile_shader(Shader::ST_compute);
   }
 
+  if (!valid) {
+    return false;
+  }
+
   // There might be warnings, so report those.  GLSLShaders::const_iterator
   // it; for (it = _glsl_shaders.begin(); it != _glsl_shaders.end(); ++it) {
   // glsl_report_shader_errors(*it); }
