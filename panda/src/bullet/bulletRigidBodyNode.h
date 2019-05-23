@@ -112,6 +112,7 @@ public:
   void do_sync_b2p();
 
 protected:
+  virtual void parents_changed();
   virtual void transform_changed();
 
 private:

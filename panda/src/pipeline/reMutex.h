@@ -42,6 +42,10 @@ PUBLISHED:
   ~ReMutex() = default;
 
   void operator = (const ReMutex &copy) = delete;
+
+  EXTENSION(bool acquire(bool blocking=true) const);
+  EXTENSION(bool __enter__());
+  EXTENSION(void __exit__(PyObject *, PyObject *, PyObject *));
 };
 
 #include "reMutex.I"

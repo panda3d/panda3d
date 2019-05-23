@@ -39,22 +39,14 @@ PUBLISHED:
   virtual void seek(double offset);
 
 public:
-  virtual void read_samples(int n, int16_t *data);
+  virtual int read_samples(int n, int16_t *data);
 
   bool _is_valid;
 
 protected:
   OggOpusFile *_op;
-
+  std::istream *_stream;
   int _link;
-  double _byte_rate;
-  int _block_align;
-  int _bytes_per_sample;
-  bool _is_float;
-
-  std::streampos _data_start;
-  std::streampos _data_pos;
-  size_t _data_size;
 
 public:
   static TypeHandle get_class_type() {

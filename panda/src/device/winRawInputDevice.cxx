@@ -32,6 +32,12 @@ enum QuirkBits : int {
 
   // Throttle is reversed.
   QB_reversed_throttle = 4,
+
+  // Right stick uses Z and Rz inputs.
+  QB_rstick_from_z = 8,
+
+  // Axes on the right stick are swapped, using x for y and vice versa.
+  QB_right_axes_swapped = 64,
 };
 
 // Some nonstandard gamepads have different button mappings.
@@ -42,12 +48,17 @@ static const struct DeviceMapping {
   int quirks;
   const char *buttons[16];
 } mapping_presets[] = {
-  // SNES-style USB gamepad
+  // SNES-style USB gamepad, or cheap unbranded USB gamepad with no sticks
+  // ABXY are mapped based on their position, not based on their label.
   {0x0810, 0xe501, InputDevice::DeviceClass::gamepad, QB_no_analog_triggers,
-    {"face_x", "face_a", "face_b", "face_y", "lshoulder", "rshoulder", "none", "none", "back", "start"}
+    {"face_y", "face_b", "face_a", "face_x", "lshoulder", "rshoulder", "ltrigger", "rtrigger", "back", "start"}
   },
-  // SPEED Link SL-6535-SBK-01
-  {0x0079, 0x0006, InputDevice::DeviceClass::gamepad, QB_no_analog_triggers,
+  // Unbranded generic cheap USB gamepad
+  {0x0810, 0x0001, InputDevice::DeviceClass::gamepad, QB_rstick_from_z | QB_no_analog_triggers | QB_right_axes_swapped,
+    {"face_y", "face_b", "face_a", "face_x", "lshoulder", "rshoulder", "ltrigger", "rtrigger", "back", "start", "lstick", "rstick"}
+  },
+  // Trust GXT 24 / SPEED Link SL-6535-SBK-01
+  {0x0079, 0x0006, InputDevice::DeviceClass::gamepad, QB_rstick_from_z | QB_no_analog_triggers,
     {"face_y", "face_b", "face_a", "face_x", "lshoulder", "rshoulder", "ltrigger", "rtrigger", "back", "start", "lstick", "rstick"}
   },
   // T.Flight Hotas X
@@ -56,7 +67,7 @@ static const struct DeviceMapping {
   },
   // NVIDIA Shield Controller
   {0x0955, 0x7214, InputDevice::DeviceClass::gamepad, 0,
-    {"face_a", "face_b", "n", "face_x", "face_y", "rshoulder", "lshoulder", "rshoulder", "e", "f", "g", "start", "h", "lstick", "rstick", "i"}
+    {"face_a", "face_b", 0, "face_x", "face_y", "rshoulder", "lshoulder", "rshoulder", 0, 0, 0, "start", 0, "lstick", "rstick", 0}
   },
   {0},
 };
@@ -422,7 +433,14 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
           break;
         case HID_USAGE_GENERIC_Z:
           if (_device_class == DeviceClass::gamepad) {
-            if ((quirks & QB_no_analog_triggers) == 0) {
+            if (quirks & QB_rstick_from_z) {
+              if (quirks & QB_right_axes_swapped) {
+                axis = InputDevice::Axis::right_y;
+                swap(cap.LogicalMin, cap.LogicalMax);
+              } else {
+                axis = InputDevice::Axis::right_x;
+              }
+            } else if ((quirks & QB_no_analog_triggers) == 0) {
               axis = Axis::left_trigger;
             }
           } else if (_device_class == DeviceClass::flight_stick) {
@@ -455,7 +473,14 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
           break;
         case HID_USAGE_GENERIC_RZ:
           if (_device_class == DeviceClass::gamepad) {
-            if ((quirks & QB_no_analog_triggers) == 0) {
+            if (quirks & QB_rstick_from_z) {
+              if (quirks & QB_right_axes_swapped) {
+                axis = InputDevice::Axis::right_x;
+              } else {
+                axis = InputDevice::Axis::right_y;
+                swap(cap.LogicalMin, cap.LogicalMax);
+              }
+            } else if ((quirks & QB_no_analog_triggers) == 0) {
               axis = Axis::right_trigger;
             }
           } else {
@@ -479,6 +504,16 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
           continue;
         }
         break;
+      }
+
+      // If this axis already exists, don't double-map it, but take the first
+      // one.  This is important for the Trust GXT 24 / SL-6535-SBK-01 which
+      // have a weird extra Z axis with DataIndex 2 that should be ignored.
+      for (size_t i = 0; i < _axes.size(); ++i) {
+        if (_axes[i].axis == axis) {
+          axis = Axis::none;
+          break;
+        }
       }
 
       int axis_index;

@@ -124,7 +124,7 @@ class FilterManager(DirectObject):
 
         return winx,winy
 
-    def renderSceneInto(self, depthtex=None, colortex=None, auxtex=None, auxbits=0, textures=None):
+    def renderSceneInto(self, depthtex=None, colortex=None, auxtex=None, auxbits=0, textures=None, fbprops=None):
 
         """ Causes the scene to be rendered into the supplied textures
         instead of into the original window.  Puts a fullscreen quad
@@ -185,7 +185,10 @@ class FilterManager(DirectObject):
         # Choose the size of the offscreen buffer.
 
         (winx, winy) = self.getScaledSize(1,1,1)
-        buffer = self.createBuffer("filter-base", winx, winy, texgroup)
+        if fbprops is not None:
+            buffer = self.createBuffer("filter-base", winx, winy, texgroup, fbprops=fbprops)
+        else:
+            buffer = self.createBuffer("filter-base", winx, winy, texgroup)
 
         if (buffer == None):
             return None
@@ -236,7 +239,7 @@ class FilterManager(DirectObject):
 
         return quad
 
-    def renderQuadInto(self, name="filter-stage", mul=1, div=1, align=1, depthtex=None, colortex=None, auxtex0=None, auxtex1=None):
+    def renderQuadInto(self, name="filter-stage", mul=1, div=1, align=1, depthtex=None, colortex=None, auxtex0=None, auxtex1=None, fbprops=None):
 
         """ Creates an offscreen buffer for an intermediate
         computation. Installs a quad into the buffer.  Returns
@@ -250,7 +253,10 @@ class FilterManager(DirectObject):
 
         depthbits = bool(depthtex != None)
 
-        buffer = self.createBuffer(name, winx, winy, texgroup, depthbits)
+        if fbprops is not None:
+            buffer = self.createBuffer(name, winx, winy, texgroup, depthbits, fbprops=fbprops)
+        else:
+            buffer = self.createBuffer(name, winx, winy, texgroup, depthbits)
 
         if (buffer == None):
             return None
@@ -287,7 +293,7 @@ class FilterManager(DirectObject):
 
         return quad
 
-    def createBuffer(self, name, xsize, ysize, texgroup, depthbits=1):
+    def createBuffer(self, name, xsize, ysize, texgroup, depthbits=1, fbprops=None):
         """ Low-level buffer creation.  Not intended for public use. """
 
         winprops = WindowProperties()
@@ -297,6 +303,9 @@ class FilterManager(DirectObject):
         props.setRgbColor(1)
         props.setDepthBits(depthbits)
         props.setStereo(self.win.isStereo())
+        if fbprops is not None:
+            props.addProperties(fbprops)
+
         depthtex, colortex, auxtex0, auxtex1 = texgroup
         if (auxtex0 != None):
             props.setAuxRgba(1)

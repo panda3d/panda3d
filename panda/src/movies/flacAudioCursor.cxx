@@ -118,8 +118,10 @@ seek(double t) {
  * read.  Your buffer must be equal in size to N * channels.  Multiple-channel
  * audio will be interleaved.
  */
-void FlacAudioCursor::
+int FlacAudioCursor::
 read_samples(int n, int16_t *data) {
   int desired = n * _audio_channels;
-  _samples_read += drflac_read_s16(_drflac, desired, data) / _audio_channels;
+  n = drflac_read_s16(_drflac, desired, data) / _audio_channels;
+  _samples_read += n;
+  return n;
 }
