@@ -27,7 +27,7 @@ class DirectOptionMenu(DirectButton):
             # Amount of padding to place around popup button indicator
             ('popupMarkerBorder', (.1, .1), None),
             # The initial position of the popup marker
-            ('popupMarker_pos', (0, 0, 0), None),
+            ('popupMarker_pos', None, None),
             # Background color to use to highlight popup menu items
             ('highlightColor', (.5, .5, .5, 1), None),
             # Extra scale to use on highlight popup menu items
@@ -44,8 +44,6 @@ class DirectOptionMenu(DirectButton):
         DirectButton.__init__(self, parent)
         # Record any user specified frame size
         self.initFrameSize = self['frameSize']
-        # Record any user specified popup marker position
-        self.initPopupMarkerPos = self['popupMarker_pos']
         # Create a small rectangular marker to distinguish this button
         # as a popup menu button
         self.popupMarker = self.createcomponent(
@@ -54,6 +52,8 @@ class DirectOptionMenu(DirectButton):
             frameSize = (-0.5, 0.5, -0.2, 0.2),
             scale = 0.4,
             relief = DGG.RAISED)
+        # Record any user specified popup marker position
+        self.initPopupMarkerPos = self['popupMarker_pos']
         # This needs to popup the menu too
         self.popupMarker.bind(DGG.B1PRESS, self.showPopupMenu)
         # Check if item is highlighted on release and select it if it is
