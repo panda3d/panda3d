@@ -113,3 +113,4 @@ def test_parabola_into_box():
     entry, np_from, np_into = make_collision(parabola, box)
     assert parabola.get_parabola().calc_point(2) == (-3, -3, -3)
     assert entry.get_surface_point(np_from) == parabola.get_parabola().calc_point(2)
+    assert entry.get_surface_normal(np_from) is not None

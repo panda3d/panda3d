@@ -16,6 +16,7 @@
 #include "collisionRay.h"
 #include "collisionSphere.h"
 #include "collisionSegment.h"
+#include "collisionParabola.h"
 #include "collisionCapsule.h"
 #include "collisionHandler.h"
 #include "collisionEntry.h"
@@ -491,6 +492,68 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
   }
 
   return new_entry;
+}
+
+PT(CollisionEntry) CollisionBox::
+test_intersection_from_parabola(const CollisionEntry &entry) const {
+  const CollisionParabola *parabola;
+  DCAST_INTO_R(parabola, entry.get_from(), nullptr);
+
+  const LMatrix4 &wrt_mat = entry.get_wrt_mat();
+
+  // Convert the parabola into local coordinate space.
+  LParabola local_p(parabola->get_parabola());
+  local_p.xform(wrt_mat);
+
+  PN_stdfloat t = INT_MAX;
+  PN_stdfloat cur_t;
+  PN_stdfloat t1, t2;
+  int intersecting_face = -1;
+  for (int i = 0; i < get_num_planes(); i++){
+    LPlane face = get_plane(i);
+    bool intersects = false;
+    if (!face.intersects_parabola(t1, t2, local_p)){
+      continue;
+    }
+    if (t1 >= parabola->get_t1() && t1 <= parabola->get_t2()){
+      intersects = true;
+      cur_t = t1;
+    }
+    if (t2 >= parabola->get_t1() && t2 <= parabola->get_t2()){
+      if (intersects) {
+        cur_t = std::min(t1, t2);
+      } else {
+        cur_t = t2;
+		intersects = true;
+      }
+    }
+
+    if (intersects && cur_t < t){
+      t = cur_t;
+      intersecting_face = i;
+    }
+
+  }
+
+  if (intersecting_face != -1) {
+    if (collide_cat.is_debug()) {
+      collide_cat.debug()
+        << "intersection detected from " << entry.get_from_node_path()
+        << " into " << entry.get_into_node_path() << "\n";
+    }
+    PT(CollisionEntry) new_entry = new CollisionEntry(entry);
+
+    LPlane face = get_plane(intersecting_face);
+
+    LPoint3 into_intersection_point = local_p.calc_point(t);
+    LVector3 normal = (has_effective_normal() && parabola->get_respect_effective_normal()) ? get_effective_normal() : face.get_normal();
+
+    new_entry->set_surface_point(into_intersection_point);
+    new_entry->set_surface_normal(normal);
+    return new_entry;
+  } else {
+    return nullptr;
+  }
 }
 
 /**
