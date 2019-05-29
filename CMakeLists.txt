@@ -114,4 +114,6 @@ write_basic_package_version_file(
 install(FILES "${PROJECT_BINARY_DIR}/Panda3DConfigVersion.cmake"
   DESTINATION "lib/cmake/Panda3D")
 
-export(PACKAGE Panda3D)
+if(NOT CMAKE_CROSSCOMPILING)
+  export(PACKAGE Panda3D)
+endif()
