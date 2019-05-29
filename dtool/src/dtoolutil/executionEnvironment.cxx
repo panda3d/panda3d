@@ -610,16 +610,16 @@ read_args() {
 #else
     void *self = dlopen(NULL, RTLD_NOW | RTLD_NOLOAD);
 #endif
-    dlinfo(self, RTLD_DI_LINKMAP, &map);
-
-    while (map != nullptr) {
-      const char *tail = strrchr(map->l_name, '/');
-      const char *head = strchr(map->l_name, '/');
-      if (tail && head && (strcmp(tail, "/libp3dtool.so." PANDA_ABI_VERSION_STR) == 0
-                        || strcmp(tail, "/libp3dtool.so") == 0)) {
-        _dtool_name = head;
+    if (dlinfo(self, RTLD_DI_LINKMAP, &map)) {
+      while (map != nullptr) {
+        const char *tail = strrchr(map->l_name, '/');
+        const char *head = strchr(map->l_name, '/');
+        if (tail && head && (strcmp(tail, "/libp3dtool.so." PANDA_ABI_VERSION_STR) == 0
+                          || strcmp(tail, "/libp3dtool.so") == 0)) {
+          _dtool_name = head;
+        }
+        map = map->l_next;
       }
-      map = map->l_next;
     }
   }
 #endif
