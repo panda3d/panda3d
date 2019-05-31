@@ -524,7 +524,7 @@ test_intersection_from_parabola(const CollisionEntry &entry) const {
         cur_t = std::min(t1, t2);
       } else {
         cur_t = t2;
-		intersects = true;
+	intersects = true;
       }
     }
 
