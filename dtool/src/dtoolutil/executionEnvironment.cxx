@@ -85,6 +85,44 @@ extern char **GLOBAL_ARGV;
 extern int GLOBAL_ARGC;
 #endif
 
+// One of the responsibilities of ExecutionEnvironment is to determine the path
+// to the binary file that contains itself (this is useful for making other
+// components able to read files relative to Panda's installation directory).
+// When built statically, this is easy - just use the main executable filename.
+// When built shared, ExecutionEnvironment will introspect the memory map of
+// the running process to look for dynamic library paths matching this list of
+// predetermined filenames (ordered most likely to least likely).
+
+#ifndef LINK_ALL_STATIC
+static const char *const libp3dtool_filenames[] = {
+#if defined(LIBP3DTOOL_FILENAMES)
+
+  // The build system is communicating the expected filename(s) for the
+  // libp3dtool dynamic library - no guesswork needed.
+  LIBP3DTOOL_FILENAMES
+
+#elif defined(WIN32_VC)
+
+#ifdef _DEBUG
+  "libp3dtool_d.dll",
+#else
+  "libp3dtool.dll",
+#endif
+
+#elif defined(__APPLE__)
+
+  "libp3dtool." PANDA_ABI_VERSION_STR ".dylib",
+  "libp3dtool.dylib",
+
+#else
+
+  "libp3dtool.so." PANDA_ABI_VERSION_STR,
+  "libp3dtool.so",
+
+#endif
+};
+#endif /* !LINK_ALL_STATIC */
+
 // Linux with GNU libc does have global argvargc variables, but we can't
 // safely access them at stat init time--at least, not in libc5. (It does seem
 // to work with glibc2, however.)
@@ -546,13 +584,14 @@ read_args() {
   // First, we need to fill in _dtool_name.  This contains the full path to
   // the p3dtool library.
 
-#ifdef WIN32_VC
-#ifdef _DEBUG
-  HMODULE dllhandle = GetModuleHandle("libp3dtool_d.dll");
-#else
-  HMODULE dllhandle = GetModuleHandle("libp3dtool.dll");
-#endif
-  if (dllhandle != 0) {
+#ifndef LINK_ALL_STATIC
+#if defined(WIN32_VC)
+  for (const char *filename : libp3dtool_filenames) {
+    if (!_dtool_name.empty()) break;
+
+    HMODULE dllhandle = GetModuleHandle(filename);
+    if (!dllhandle) continue;
+
     static const DWORD buffer_size = 1024;
     wchar_t buffer[buffer_size];
     DWORD size = GetModuleFileNameW(dllhandle, buffer, buffer_size);
@@ -562,46 +601,44 @@ read_args() {
       _dtool_name = tmp;
     }
   }
-#endif
 
-#if defined(__APPLE__)
+#elif defined(__APPLE__)
   // And on OSX we don't have procselfmaps, but some _dyld_* functions.
 
-  if (_dtool_name.empty()) {
-    uint32_t ic = _dyld_image_count();
-    for (uint32_t i = 0; i < ic; ++i) {
-      const char *buffer = _dyld_get_image_name(i);
-      const char *tail = strrchr(buffer, '/');
-      if (tail && (strcmp(tail, "/libp3dtool." PANDA_ABI_VERSION_STR ".dylib") == 0
-                || strcmp(tail, "/libp3dtool.dylib") == 0)) {
+  uint32_t ic = _dyld_image_count();
+  for (uint32_t i = 0; i < ic; ++i) {
+    if (!_dtool_name.empty()) break;
+
+    const char *buffer = _dyld_get_image_name(i);
+    if (!buffer) continue;
+    const char *tail = strrchr(buffer, '/');
+    if (!tail) continue;
+
+    for (const char *filename : libp3dtool_filenames) {
+      if (strcmp(&tail[1], filename) == 0) {
         _dtool_name = buffer;
+        break;
       }
     }
   }
-#endif
 
-#if defined(RTLD_DI_ORIGIN)
+#elif defined(RTLD_DI_ORIGIN)
   // When building with glibc/uClibc, we typically have access to RTLD_DI_ORIGIN in Unix-like operating systems.
 
   char origin[PATH_MAX + 1];
 
-  if (_dtool_name.empty()) {
-    void *dtool_handle = dlopen("libp3dtool.so." PANDA_ABI_VERSION_STR, RTLD_NOW | RTLD_NOLOAD);
+  for (const char *filename : libp3dtool_filenames) {
+    if (!_dtool_name.empty()) break;
+
+    void *dtool_handle = dlopen(filename, RTLD_NOW | RTLD_NOLOAD);
     if (dtool_handle != nullptr && dlinfo(dtool_handle, RTLD_DI_ORIGIN, origin) != -1) {
       _dtool_name = origin;
-      _dtool_name += "/libp3dtool.so." PANDA_ABI_VERSION_STR;
-    } else {
-      // Try the version of libp3dtool.so without ABI suffix.
-      dtool_handle = dlopen("libp3dtool.so", RTLD_NOW | RTLD_NOLOAD);
-      if (dtool_handle != nullptr && dlinfo(dtool_handle, RTLD_DI_ORIGIN, origin) != -1) {
-        _dtool_name = origin;
-        _dtool_name += "/libp3dtool.so";
-      }
+      _dtool_name += '/';
+      _dtool_name += filename;
     }
   }
-#endif
 
-#if !defined(RTLD_DI_ORIGIN) && defined(RTLD_DI_LINKMAP)
+#elif defined(RTLD_DI_LINKMAP)
   // On platforms without RTLD_DI_ORIGIN, we can use dlinfo with RTLD_DI_LINKMAP to get the origin of a loaded library.
   if (_dtool_name.empty()) {
     struct link_map *map;
@@ -612,12 +649,20 @@ read_args() {
 #endif
     if (dlinfo(self, RTLD_DI_LINKMAP, &map)) {
       while (map != nullptr) {
-        const char *tail = strrchr(map->l_name, '/');
+        if (!_dtool_name.empty()) break;
+
         const char *head = strchr(map->l_name, '/');
-        if (tail && head && (strcmp(tail, "/libp3dtool.so." PANDA_ABI_VERSION_STR) == 0
-                          || strcmp(tail, "/libp3dtool.so") == 0)) {
-          _dtool_name = head;
+        if (!head) continue;
+        const char *tail = strrchr(head, '/');
+        if (!tail) continue;
+
+        for (const char *filename : libp3dtool_filenames) {
+          if (strcmp(&tail[1], filename) == 0) {
+            _dtool_name = head;
+            break;
+          }
         }
+
         map = map->l_next;
       }
     }
@@ -634,19 +679,27 @@ read_args() {
     pifstream maps("/proc/self/maps");
 #endif
     while (!maps.fail() && !maps.eof()) {
+      if (!_dtool_name.empty()) break;
+
       char buffer[PATH_MAX];
       buffer[0] = 0;
       maps.getline(buffer, PATH_MAX);
-      const char *tail = strrchr(buffer, '/');
       const char *head = strchr(buffer, '/');
-      if (tail && head && (strcmp(tail, "/libp3dtool.so." PANDA_ABI_VERSION_STR) == 0
-                        || strcmp(tail, "/libp3dtool.so") == 0)) {
-        _dtool_name = head;
+      if (!head) continue;
+      const char *tail = strrchr(head, '/');
+      if (!tail) continue;
+
+      for (const char *filename : libp3dtool_filenames) {
+        if (strcmp(&tail[1], filename) == 0) {
+          _dtool_name = head;
+          break;
+        }
       }
     }
     maps.close();
   }
 #endif
+#endif /* !LINK_ALL_STATIC */
 
   // Now, we need to fill in _binary_name.  This contains the full path to the
   // currently running executable.
