@@ -209,7 +209,8 @@ function(interrogate_sources target output database language_flags)
   # Get the compiler definition flags. These must be passed to Interrogate
   # in the same way that they are passed to the compiler so that Interrogate
   # will preprocess each file in the same way.
-  set(define_flags "$<JOIN:\t$<SEMICOLON>$<TARGET_PROPERTY:${target},COMPILE_DEFINITIONS>,\t-D>")
+  set(_compile_defs "$<TARGET_PROPERTY:${target},COMPILE_DEFINITIONS>")
+  set(define_flags "$<$<BOOL:${_compile_defs}>:-D'$<JOIN:${_compile_defs},'\t-D'>'>")
 
   # If this is a release build that has NDEBUG defined, we need that too:
   foreach(build_type ${CMAKE_CONFIGURATION_TYPES} ${CMAKE_BUILD_TYPE})
