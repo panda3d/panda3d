@@ -32,7 +32,8 @@ set(P3PNMIMAGE_IGATEEXT
   pfmFile_ext.h
 )
 
-if(HAVE_SSE2)
+if(HAVE_SSE2 AND CMAKE_SIZEOF_VOID_P EQUAL 4 AND CMAKE_SYSTEM_PROCESSOR MATCHES "86")
+  # It's only necessary to do this on 32-bit x86; 64-bit makes SSE2 builtin.
   set_source_files_properties(convert_srgb_sse2.cxx PROPERTIES
     SKIP_COMPOSITING YES
     COMPILE_FLAGS -msse2)
