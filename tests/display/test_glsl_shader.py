@@ -294,6 +294,36 @@ def test_glsl_pta_mat4(gsg):
     run_glsl_test(gsg, code, preamble, {'pta': pta})
 
 
+def test_glsl_param_vec4(gsg):
+    param = core.ParamVecBase4((0, 1, 2, 3))
+
+    preamble = """
+    uniform vec4 param;
+    """
+    code = """
+    assert(param.x == 0.0);
+    assert(param.y == 1.0);
+    assert(param.z == 2.0);
+    assert(param.w == 3.0);
+    """
+    run_glsl_test(gsg, code, preamble, {'param': param})
+
+
+def test_glsl_param_ivec4(gsg):
+    param = core.ParamVecBase4i((0, 1, 2, 3))
+
+    preamble = """
+    uniform ivec4 param;
+    """
+    code = """
+    assert(param.x == 0);
+    assert(param.y == 1);
+    assert(param.z == 2);
+    assert(param.w == 3);
+    """
+    run_glsl_test(gsg, code, preamble, {'param': param})
+
+
 def test_glsl_write_extract_image_buffer(gsg):
     # Tests that we can write to a buffer texture on the GPU, and then extract
     # the data on the CPU.  We test two textures since there was in the past a

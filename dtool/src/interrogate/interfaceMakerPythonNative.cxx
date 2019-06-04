@@ -431,6 +431,12 @@ get_slotted_function_def(Object *obj, Function *func, FunctionRemap *remap,
     return true;
   }
 
+  if (method_name == "operator |=") {
+    def._answer_location = "nb_inplace_or";
+    def._wrapper_type = WT_inplace_binary_operator;
+    return true;
+  }
+
   if (method_name == "__ipow__") {
     def._answer_location = "nb_inplace_power";
     def._wrapper_type = WT_inplace_ternary_operator;
@@ -4946,13 +4952,14 @@ write_function_instance(ostream &out, FunctionRemap *remap,
       expected_params += "NoneType";
 
     } else if (TypeManager::is_char(type)) {
-      indent(out, indent_level) << "char " << param_name << default_expr << ";\n";
+      indent(out, indent_level) << "char *" << param_name << "_str;\n";
+      indent(out, indent_level) << "Py_ssize_t " << param_name << "_len;\n";
 
-      format_specifiers += "c";
-      parameter_list += ", &" + param_name;
+      format_specifiers += "s#";
+      parameter_list += ", &" + param_name + "_str, &" + param_name + "_len";
+      extra_param_check << " && " << param_name << "_len == 1";
 
-      // extra_param_check << " && isascii(" << param_name << ")";
-      pexpr_string = "(char) " + param_name;
+      pexpr_string = param_name + "_str[0]";
       expected_params += "char";
       only_pyobjects = false;
 

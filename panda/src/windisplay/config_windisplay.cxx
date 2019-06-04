@@ -86,6 +86,11 @@ ConfigVariableBool swapbuffer_framelock
 ("swapbuffer-framelock", false,
  PRC_DESC("Set this true to enable HW swapbuffer frame-lock on 3dlabs cards"));
 
+ConfigVariableBool paste_emit_keystrokes
+("paste-emit-keystrokes", true,
+ PRC_DESC("Handle paste events (Ctrl-V) as separate keystroke events for each "
+          "pasted character."));
+
 /**
  * Initializes the library.  This must be called at least once before any of
  * the functions or classes in this library can be used.  Normally it will be

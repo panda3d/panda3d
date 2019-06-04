@@ -596,10 +596,23 @@ def makewheel(version, output_dir, platform=None):
 
     # Write the panda3d tree.  We use a custom empty __init__ since the
     # default one adds the bin directory to the PATH, which we don't have.
-    whl.write_file_data('panda3d/__init__.py', """"Python bindings for the Panda3D libraries"
+    p3d_init = """"Python bindings for the Panda3D libraries"
 
 __version__ = '{0}'
-""".format(version))
+""".format(version)
+
+    if '27' in ABI_TAG:
+        p3d_init += """
+if __debug__:
+    import sys
+    if sys.version_info < (3, 0):
+        sys.stderr.write("WARNING: Python 2.7 will reach EOL after December 31, 2019.\\n")
+        sys.stderr.write("To suppress this warning, upgrade to Python 3.\\n")
+        sys.stderr.flush()
+    del sys
+"""
+
+    whl.write_file_data('panda3d/__init__.py', p3d_init)
 
     # Copy the extension modules from the panda3d directory.
     ext_suffix = GetExtensionSuffix()

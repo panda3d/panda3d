@@ -81,3 +81,21 @@ INLINE int EncryptStreamBuf::
 get_iteration_count() const {
   return _iteration_count;
 }
+
+/**
+ * Sets the amount of the encrypted data at the beginning that are skipped
+ * when seeking back to zero.
+ */
+INLINE void EncryptStreamBuf::
+set_magic_length(size_t length) {
+  _magic_length = length;
+}
+
+/**
+ * Sets the amount of the encrypted data at the beginning that are skipped
+ * when seeking back to zero.
+ */
+INLINE size_t EncryptStreamBuf::
+get_magic_length() const {
+  return _magic_length;
+}

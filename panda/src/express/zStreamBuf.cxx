@@ -202,8 +202,8 @@ seekoff(streamoff off, ios_seekdir dir, ios_openmode which) {
 
   gbump(n);
 
-  _source->seekg(0, ios::beg);
-  if (_source->tellg() == (streampos)0) {
+  if (_source->rdbuf()->pubseekpos(0, ios::in) == (streampos)0) {
+    _source->clear();
     _z_source.next_in = Z_NULL;
     _z_source.avail_in = 0;
     _z_source.next_out = Z_NULL;

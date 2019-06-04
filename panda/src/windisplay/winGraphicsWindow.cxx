@@ -1927,7 +1927,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       // Handle Cntrl-V paste from clipboard.  Is there a better way to detect
       // this hotkey?
       if ((wparam=='V') && (GetKeyState(VK_CONTROL) < 0) &&
-          !_input_devices.empty()) {
+          !_input_devices.empty() && paste_emit_keystrokes) {
         HGLOBAL hglb;
         char *lptstr;
 
