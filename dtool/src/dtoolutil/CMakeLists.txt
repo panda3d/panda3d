@@ -79,7 +79,6 @@ target_link_libraries(p3dtoolutil p3dtoolbase ${CMAKE_DL_LIBS})
 target_interrogate(p3dtoolutil ALL EXTENSIONS ${P3DTOOLUTIL_IGATEEXT})
 
 if(APPLE)
-  set_target_properties(p3dtoolutil PROPERTIES COMPILE_FLAGS "-ObjC++")
   find_library(FOUNDATION_LIBRARY Foundation)
   find_library(APPKIT_LIBRARY AppKit)
   target_link_libraries(p3dtoolutil ${FOUNDATION_LIBRARY} ${APPKIT_LIBRARY})
