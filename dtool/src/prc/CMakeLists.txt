@@ -53,7 +53,6 @@ set(P3PRC_SOURCES
   configVariableManager.cxx
   configVariableSearchPath.cxx
   configVariableString.cxx
-  encryptStreamBuf.cxx encryptStream.cxx
   nativeNumericData.cxx
   notify.cxx
   notifyCategory.cxx
@@ -68,6 +67,10 @@ configure_file(prc_parameters.h.in prc_parameters.h)
 if(ANDROID)
   set(P3PRC_SOURCES ${P3PRC_SOURCES}
     androidLogStream.cxx)
+endif()
+
+if(HAVE_OPENSSL)
+  list(APPEND P3PRC_SOURCES encryptStreamBuf.cxx encryptStream.cxx)
 endif()
 
 set(P3PRC_IGATEEXT
