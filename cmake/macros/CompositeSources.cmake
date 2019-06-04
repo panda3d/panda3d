@@ -12,9 +12,6 @@
 #   composite_sources(my_lib MY_SOURCES)
 #   add_library(my_lib ${MY_SOURCES})
 #
-# TODO: Only supports .cxx files so far, not yet .mm files
-#   It should probably sort the files by extension (.c, .cxx, .mm) first.
-#
 
 
 # Settings for composite builds.  Should be moved to Config.cmake?
@@ -23,8 +20,8 @@ set(COMPOSITE_SOURCE_LIMIT "30" CACHE STRING
 known as SCU (single compilation unit).  A high value will speed up the
 build dramatically but will be more memory intensive than a low value.")
 
-set(COMPOSITE_SOURCE_EXTENSIONS ".cxx;.mm" CACHE STRING
-  "Only files of these extensions will be added to composite files.")
+set(COMPOSITE_SOURCE_EXTENSIONS ".cxx;.mm;.c" CACHE STRING
+  "Only files of these extensions will be composited.")
 
 set(COMPOSITE_SOURCE_EXCLUSIONS "" CACHE STRING
   "A list of targets to skip when compositing sources. This is mainly
@@ -47,57 +44,93 @@ function(composite_sources target sources_var)
     return()
   endif()
 
-  set(composite_files "")
-  set(composite_sources "")
-
-  while(num_sources GREATER 0)
-    # Pop the first element
-    list(GET sources 0 source)
-    list(REMOVE_AT sources 0)
-    list(LENGTH sources num_sources)
-
-    # Check if we can safely add this to a composite file.
+  # Sort each source file into a list.
+  foreach(source ${sources})
+    get_filename_component(extension "${source}" EXT)
     get_source_file_property(generated "${source}" GENERATED)
     get_source_file_property(is_header "${source}" HEADER_FILE_ONLY)
     get_source_file_property(skip_compositing "${source}" SKIP_COMPOSITING)
-    get_filename_component(extension "${source}" EXT)
 
+    # Check if we can safely add this to a composite file.
     if(NOT generated AND NOT is_header AND NOT skip_compositing AND
         ";${COMPOSITE_SOURCE_EXTENSIONS};" MATCHES ";${extension};")
-      # Add it to composite_sources.
-      list(APPEND composite_sources ${source})
-      list(LENGTH composite_sources num_composite_sources)
 
-      if(num_sources EQUAL 0 OR NOT num_composite_sources LESS ${COMPOSITE_SOURCE_LIMIT})
-        # It's pointless to make a composite source from just one file.
-        if(num_composite_sources GREATER 1)
-
-          # Figure out the name of our composite file.
-          list(LENGTH composite_files index)
-          math(EXPR index "1+${index}")
-          set(composite_file "${CMAKE_CURRENT_BINARY_DIR}/${target}_composite${index}.cxx")
-          list(APPEND composite_files "${composite_file}")
-
-          # Set HEADER_FILE_ONLY to prevent it from showing up in the
-          # compiler command, but still show up in the IDE environment.
-          set_source_files_properties(${composite_sources} PROPERTIES HEADER_FILE_ONLY ON)
-
-          # We'll interrogate the composite files, so exclude the original sources.
-          set_source_files_properties(${composite_sources} PROPERTIES WRAP_EXCLUDE YES)
-
-          # Finally, add the target that generates the composite file.
-          add_custom_command(
-            OUTPUT "${composite_file}"
-            COMMAND ${CMAKE_COMMAND}
-              -DCOMPOSITE_FILE="${composite_file}"
-              -DCOMPOSITE_SOURCES="${composite_sources}"
-              -P "${COMPOSITE_GENERATOR}"
-            DEPENDS ${composite_sources})
-
-          # Reset for the next composite file.
-          set(composite_sources "")
-        endif()
+      if(NOT DEFINED sources_${extension})
+        set(sources_${extension})
       endif()
+
+      # Append it to one of the lists.
+      list(APPEND sources_${extension} "${source}")
+    endif()
+  endforeach(source)
+
+  # Now, put it all into one big list!
+  set(sorted_sources)
+  foreach(extension ${COMPOSITE_SOURCE_EXTENSIONS})
+    if(DEFINED sources_${extension})
+      list(APPEND sorted_sources ${sources_${extension}})
+    endif()
+  endforeach(extension)
+
+  set(composite_files)
+  set(composite_sources)
+
+  # Fill in composite_ext so we can kick off the loop.
+  list(GET sorted_sources 0 first_source)
+  get_filename_component(first_source_ext "${first_source}" EXT)
+  set(composite_ext ${first_source_ext})
+
+  while(num_sources GREATER 0)
+    # Pop the first element and adjust the sorted_sources length accordingly.
+    list(GET sorted_sources 0 source)
+    list(REMOVE_AT sorted_sources 0)
+    list(LENGTH sorted_sources num_sources)
+
+    # Add this file to our composite_sources buffer.
+    list(APPEND composite_sources ${source})
+    list(LENGTH composite_sources num_composite_sources)
+
+    # Get the next source file's extension, so we can see if we're done with
+    # this set of source files.
+    if(num_sources GREATER 0)
+      list(GET sorted_sources 0 next_source)
+      get_filename_component(next_extension "${next_source}" EXT)
+    else()
+      set(next_extension "")
+    endif()
+
+    # Check if this is the point where we should cut the file.
+    if(num_sources EQUAL 0 OR NOT num_composite_sources LESS ${COMPOSITE_SOURCE_LIMIT}
+       OR NOT composite_ext STREQUAL next_extension)
+      # It's pointless to make a composite source from just one file.
+      if(num_composite_sources GREATER 1)
+
+        # Figure out the name of our composite file.
+        list(LENGTH composite_files index)
+        math(EXPR index "1+${index}")
+        set(composite_file "${CMAKE_CURRENT_BINARY_DIR}/${target}_composite${index}${composite_ext}")
+        list(APPEND composite_files "${composite_file}")
+
+        # Set HEADER_FILE_ONLY to prevent it from showing up in the
+        # compiler command, but still show up in the IDE environment.
+        set_source_files_properties(${composite_sources} PROPERTIES HEADER_FILE_ONLY ON)
+
+        # We'll interrogate the composite files, so exclude the original sources.
+        set_source_files_properties(${composite_sources} PROPERTIES WRAP_EXCLUDE YES)
+
+        # Finally, add the target that generates the composite file.
+        add_custom_command(
+          OUTPUT "${composite_file}"
+          COMMAND ${CMAKE_COMMAND}
+            -DCOMPOSITE_FILE="${composite_file}"
+            -DCOMPOSITE_SOURCES="${composite_sources}"
+            -P "${COMPOSITE_GENERATOR}"
+          DEPENDS ${composite_sources})
+      endif()
+
+      # Reset for the next composite file.
+      set(composite_sources "")
+      set(composite_ext ${next_extension})
     endif()
   endwhile()
 
