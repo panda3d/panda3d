@@ -117,6 +117,32 @@ foreach(var
 
 endforeach(var)
 
+if(BUILD_SHARED_LIBS)
+  # executionEnvironment.cxx needs to know the name(s) of the library file it
+  # will be linked into
+  if(BUILD_METALIBS)
+    set(library "p3dtool")
+  else()
+    set(library "p3dtoolutil")
+  endif()
+
+  set(filenames)
+  foreach(prop TARGET_FILE_NAME TARGET_SONAME_FILE_NAME TARGET_LINKER_FILE_NAME)
+    list(APPEND filenames "$<${prop}:${library}>")
+
+    if(CMAKE_IMPORT_LIBRARY_SUFFIX)
+      # Only the first property is valid/relevant on DLL platforms; bail out
+      # now and skip the others.
+      # (Yes, CMAKE_IMPORT_LIBRARY_SUFFIX being non-empty is how CMake defines
+      #  a DLL platform where TARGET_SONAME_FILE_NAME is invalid.)
+      break()
+    endif()
+  endforeach(prop)
+
+  target_compile_definitions(p3dtoolutil
+    PRIVATE "LIBP3DTOOL_FILENAMES=\"$<JOIN:${filenames},\"$<COMMA>\">\"")
+endif()
+
 if(NOT BUILD_METALIBS)
   install(TARGETS p3dtoolutil
     EXPORT Core COMPONENT Core
