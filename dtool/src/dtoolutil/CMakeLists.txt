@@ -66,6 +66,8 @@ set(P3DTOOLUTIL_IGATEEXT
   filename_ext.h
   globPattern_ext.cxx
   globPattern_ext.h
+  iostream_ext.cxx
+  iostream_ext.h
   textEncoder_ext.cxx
   textEncoder_ext.h
 )
