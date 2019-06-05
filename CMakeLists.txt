@@ -64,21 +64,32 @@ if(BUILD_CONTRIB)
 endif()
 
 if(BUILD_MODELS)
-  # We don't really "build" the models, just pzip them
-  file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/models/maps/"
-    DESTINATION "${PROJECT_BINARY_DIR}/models/maps")
   run_pzip(models
     "${CMAKE_CURRENT_SOURCE_DIR}/models/"
-    "${PROJECT_BINARY_DIR}/models"
+    "${PROJECT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/models"
     *.egg)
-  file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/dmodels/src/"
-    DESTINATION "${PROJECT_BINARY_DIR}/models"
-    FILES_MATCHING PATTERN *.rgb PATTERN *.png PATTERN *.jpg PATTERN *.wav)
   run_pzip(dmodels
     "${CMAKE_CURRENT_SOURCE_DIR}/dmodels/src/"
-    "${PROJECT_BINARY_DIR}/models"
+    "${PROJECT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/models"
     *.egg)
-  install(DIRECTORY "${PROJECT_BINARY_DIR}/models"
+
+  add_custom_command(TARGET models
+                     POST_BUILD
+                     COMMAND ${CMAKE_COMMAND}
+                             -DSOURCE="${CMAKE_CURRENT_SOURCE_DIR}/models/maps/"
+                             -DDESTINATION="${PROJECT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/models/maps"
+                             -P ${PROJECT_SOURCE_DIR}/cmake/scripts/CopyPattern.cmake
+                     COMMENT "Copying models/maps")
+  add_custom_command(TARGET dmodels
+                     POST_BUILD
+                     COMMAND ${CMAKE_COMMAND}
+                             -DSOURCE="${CMAKE_CURRENT_SOURCE_DIR}/dmodels/src/"
+                             -DDESTINATION="${PROJECT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/models"
+                             -DFILES_MATCHING="PATTERN;*.rgb;PATTERN;*.png;PATTERN;*.jpg;PATTERN;*.wav"
+                             -P ${PROJECT_SOURCE_DIR}/cmake/scripts/CopyPattern.cmake
+                     COMMENT "Copying dmodels' assets")
+
+  install(DIRECTORY "${PROJECT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/models"
     COMPONENT Models DESTINATION share/panda3d)
 endif()
 
