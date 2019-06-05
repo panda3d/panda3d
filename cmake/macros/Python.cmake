@@ -51,7 +51,14 @@ function(add_python_target target)
   target_link_libraries(${target} PKG::PYTHON)
 
   if(BUILD_SHARED_LIBS)
-    set(_outdir "${PROJECT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${slash_namespace}")
+    if(CMAKE_GENERATOR STREQUAL "Xcode")
+      # This is explained in CompilerFlags.cmake
+      set(intdir $<CONFIG>$(EFFECTIVE_PLATFORM_NAME))
+    else()
+      set(intdir ${CMAKE_CFG_INTDIR})
+    endif()
+
+    set(_outdir "${PROJECT_BINARY_DIR}/${intdir}/${slash_namespace}")
 
     set_target_properties(${target} PROPERTIES
       LIBRARY_OUTPUT_DIRECTORY "${_outdir}"

@@ -29,9 +29,19 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 # Set up the output directory structure, mimicking that of makepanda
 set(CMAKE_BINARY_DIR "${CMAKE_BINARY_DIR}/cmake")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/bin")
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib")
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib")
+
+if(CMAKE_GENERATOR STREQUAL "Xcode")
+  # On the Xcode generator, CMake generates a separate make target definition for
+  # every config, so it ends up spamming warnings once we try to build.
+  set(intdir $<CONFIG>$(EFFECTIVE_PLATFORM_NAME))
+else()
+  set(intdir ${CMAKE_CFG_INTDIR})
+endif()
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${intdir}/bin")
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${intdir}/lib")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${intdir}/lib")
+
 set(MODULE_DESTINATION "lib")
 
 # Runtime code assumes that dynamic modules have a "lib" prefix; Windows
