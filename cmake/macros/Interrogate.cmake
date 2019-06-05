@@ -225,8 +225,13 @@ function(interrogate_sources target output database language_flags)
     endif()
   endforeach(build_type)
 
+  get_filename_component(output_directory "${output}" DIRECTORY)
+  get_filename_component(database_directory "${database}" DIRECTORY)
+
   add_custom_command(
     OUTPUT "${output}" "${database}"
+    COMMAND ${CMAKE_COMMAND} -E
+      make_directory "${output_directory}" "${database_directory}"
     COMMAND host_interrogate
       -oc "${output}"
       -od "${database}"
@@ -325,6 +330,8 @@ function(add_python_module module)
 
   add_custom_command(
     OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${module}_module.cxx"
+    COMMAND ${CMAKE_COMMAND} -E
+      make_directory "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}"
     COMMAND host_interrogate_module
       -oc "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${module}_module.cxx"
       -module ${modname} -library ${modname}
