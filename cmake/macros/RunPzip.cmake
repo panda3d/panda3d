@@ -13,17 +13,15 @@ function(run_pzip target_name source destination glob)
   set(dstfiles "")
   foreach(filename ${files})
     string(REGEX REPLACE "^/" "" filename "${filename}")
-    file(RELATIVE_PATH srcfile "${destination}" "${source}/${filename}")
 
     get_filename_component(dstdir "${destination}/${filename}" DIRECTORY)
-    file(MAKE_DIRECTORY "${dstdir}")
 
     set(dstfile "${filename}.pz")
     list(APPEND dstfiles "${destination}/${dstfile}")
 
     add_custom_command(OUTPUT "${destination}/${dstfile}"
-      COMMAND host_pzip -c > "${dstfile}" < "${srcfile}"
-      WORKING_DIRECTORY "${destination}"
+      COMMAND ${CMAKE_COMMAND} -E make_directory "${dstdir}"
+      COMMAND host_pzip -c > "${destination}/${dstfile}" < "${source}/${filename}"
       DEPENDS host_pzip
       COMMENT "")
 
