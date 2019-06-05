@@ -22,13 +22,30 @@ if(CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
   set(IS_FREEBSD 1)
 endif()
 
+if(CMAKE_VERSION VERSION_GREATER "3.8")
+  get_property(IS_MULTICONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+else()
+  message(WARNING "Multi-configuration builds may not work properly when using
+a CMake < 3.9. Making a guess if this is a multi-config generator.")
+  if(DEFINED CMAKE_CONFIGURATION_TYPES)
+    set(IS_MULTICONFIG ON)
+  else()
+    set(IS_MULTICONFIG OFF)
+  endif()
+endif()
 
 # Define the type of build we are setting up.
-if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE RelWithDebInfo)
+if(IS_MULTICONFIG)
+  set(CMAKE_CONFIGURATION_TYPES Release RelWithDebInfo Debug MinSizeRel Distribution)
+else()
+  # CMAKE_BUILD_TYPE can't just be set using the usual set(CACHE) method since
+  # it's an empty string by default.
+  if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE RelWithDebInfo)
+  endif()
+  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
+    Release RelWithDebInfo Debug MinSizeRel Distribution)
 endif()
-set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
-  Release RelWithDebInfo Debug MinSizeRel Distribution)
 
 # Provide convenient boolean expression based on build type
 if(CMAKE_BUILD_TYPE MATCHES "Debug")
