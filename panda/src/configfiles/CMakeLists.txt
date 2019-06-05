@@ -24,5 +24,9 @@ else()
 endif()
 
 configure_file(panda.prc.in "${CMAKE_BINARY_DIR}/etc/20_panda.prc")
+if(IS_MULTICONFIG)
+  file(GENERATE OUTPUT "${PROJECT_BINARY_DIR}/$<CONFIG>/etc/20_panda.prc"
+                INPUT "${PROJECT_BINARY_DIR}/etc/20_panda.prc")
+endif()
 
 install(FILES "${CMAKE_BINARY_DIR}/etc/20_panda.prc" COMPONENT Core DESTINATION etc)
