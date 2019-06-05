@@ -193,7 +193,14 @@ else()
   set(intdir "${CMAKE_BUILD_TYPE}")
 endif()
 
-configure_file(dtool_config.h.in "${PROJECT_BINARY_DIR}/${intdir}/include/dtool_config.h")
+configure_file(dtool_config.h.in "${PROJECT_BINARY_DIR}/include/dtool_config.h")
+
+# TODO: Add the ability to customize dtool_config.h based on configuration.
+if(IS_MULTICONFIG)
+  file(GENERATE OUTPUT "${PROJECT_BINARY_DIR}/$<CONFIG>/include/dtool_config.h"
+                INPUT "${PROJECT_BINARY_DIR}/include/dtool_config.h")
+endif()
+
 install(FILES "${PROJECT_BINARY_DIR}/${intdir}/include/dtool_config.h"
   COMPONENT CoreDevel
   DESTINATION include/panda3d)

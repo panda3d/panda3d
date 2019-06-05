@@ -15,6 +15,12 @@ enable_testing()
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/macros/")
 
+if(CMAKE_VERSION VERSION_GREATER "3.8")
+  # When using the Xcode generator, don't append the platform name to the
+  # intermediate configuration directory.
+  set_property(GLOBAL PROPERTY XCODE_EMIT_EFFECTIVE_PLATFORM_NAME OFF)
+endif()
+
 # Include global modules needed for configure scripts
 include(PackageConfig)      # Defines package_option
 
