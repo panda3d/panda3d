@@ -506,58 +506,46 @@ test_intersection_from_parabola(const CollisionEntry &entry) const {
   local_p.xform(wrt_mat);
 
   PN_stdfloat t = INT_MAX;
-  PN_stdfloat cur_t;
   PN_stdfloat t1, t2;
   int intersecting_face = -1;
   for (int i = 0; i < get_num_planes(); i++) {
     LPlane face = get_plane(i);
-    bool intersects = false;
-
-    if (face.intersects_parabola(t1, t2, local_p)) {
-      // t1 and t2 are both candidates for intersection
-      // if they are not less than t, no need to check them
-      // otherwise, check if they are in our parabola
-      if (t1 < t && t1 >= parabola->get_t1() && t1 <= parabola->get_t2()){
-        intersects = true;
-        cur_t = t1;
-      }
-
-      if (t2 < t && t2 >= parabola->get_t1() && t2 <= parabola->get_t2()){
-        if (intersects) {
-          // both t1 and t2 intersect, take the smaller of the two.
-          cur_t = std::min(t1, t2);
-        } else {
-          cur_t = t2;
-          intersects = true;
-        }
-      }
-
-      if (!intersects) {
-        // the parabola does not intersect this face, skip to next one.
+    if (!face.intersects_parabola(t1, t2, local_p)) {
+      // the parabola does not intersect this face, skip to the next one
+      continue;
+    }
+    PN_stdfloat ts[2] = {t1, t2};
+    // iterate through the t values to see if each of them are within our
+    // parabola and the intersection point is behind all other faces
+    for (int j = 0; j < 2; j++) {
+      PN_stdfloat cur_t = ts[j];
+      if (cur_t > t) {
+        // we are looking for the earliest t value
+        // if this t value is greater, don't bother checking it
         continue;
       }
-
-      bool behind = true;
-      // we now check if the intersection point
-      // is behind all of the other planes.
-      for (int j = 0; j < get_num_planes(); j++) {
-        if (j == i) {
-          // no need to check the intersecting face
-          continue;
+      if (cur_t >= parabola->get_t1() && cur_t <= parabola->get_t2()) {
+        // the parabola does intersect this plane, now we check
+        // if the intersection point is behind all other planes
+        bool behind = true;
+        for (int k = 0; k < get_num_planes(); k++) {
+          if (k == i) {
+            // no need to check the intersecting face
+            continue;
+          }
+          if (get_plane(k).dist_to_plane(local_p.calc_point(cur_t)) > 0.0f) {
+            // our point is in front of this face, turns out the parabola
+            // does not collide with the box at this point
+            behind = false;
+            break;
+          }
         }
-        if (get_plane(j).dist_to_plane(local_p.calc_point(cur_t)) > 0.0f) {
-          // our point is in front of this face, so turns out
-          // it does not collide with the box at this point
-          behind = false;
-          break;
+        if (behind) {
+          // the parabola does indeed collide with the box at this point
+          t = cur_t;
+          intersecting_face = i;
         }
       }
-
-      if (behind) {
-        t = cur_t;
-        intersecting_face = i;
-      }
-
     }
   }
 
@@ -573,14 +561,6 @@ test_intersection_from_parabola(const CollisionEntry &entry) const {
 
     LPoint3 into_intersection_point = local_p.calc_point(t);
     LVector3 normal = (has_effective_normal() && parabola->get_respect_effective_normal()) ? get_effective_normal() : face.get_normal();
-
-    // consider a point just before our intersection point
-    float eps = 1.0e-6f;
-    if (get_plane(intersecting_face).dist_to_plane(local_p.calc_point(t - eps)) < 0.0f) {
-      // the parabola is colliding from within the box,
-      // so the normal should be pointing inwards.
-      normal *= -1;
-    }
 
     new_entry->set_surface_point(into_intersection_point);
     new_entry->set_surface_normal(normal);
