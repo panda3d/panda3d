@@ -16,6 +16,7 @@
 #include "collisionRay.h"
 #include "collisionSphere.h"
 #include "collisionSegment.h"
+#include "collisionParabola.h"
 #include "collisionCapsule.h"
 #include "collisionHandler.h"
 #include "collisionEntry.h"
@@ -491,6 +492,82 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
   }
 
   return new_entry;
+}
+
+PT(CollisionEntry) CollisionBox::
+test_intersection_from_parabola(const CollisionEntry &entry) const {
+  const CollisionParabola *parabola;
+  DCAST_INTO_R(parabola, entry.get_from(), nullptr);
+
+  const LMatrix4 &wrt_mat = entry.get_wrt_mat();
+
+  // Convert the parabola into local coordinate space.
+  LParabola local_p(parabola->get_parabola());
+  local_p.xform(wrt_mat);
+
+  PN_stdfloat t = INT_MAX;
+  PN_stdfloat t1, t2;
+  int intersecting_face = -1;
+  for (int i = 0; i < get_num_planes(); i++) {
+    LPlane face = get_plane(i);
+    if (!face.intersects_parabola(t1, t2, local_p)) {
+      // the parabola does not intersect this face, skip to the next one
+      continue;
+    }
+    PN_stdfloat ts[2] = {t1, t2};
+    // iterate through the t values to see if each of them are within our
+    // parabola and the intersection point is behind all other faces
+    for (int j = 0; j < 2; j++) {
+      PN_stdfloat cur_t = ts[j];
+      if (cur_t > t) {
+        // we are looking for the earliest t value
+        // if this t value is greater, don't bother checking it
+        continue;
+      }
+      if (cur_t >= parabola->get_t1() && cur_t <= parabola->get_t2()) {
+        // the parabola does intersect this plane, now we check
+        // if the intersection point is behind all other planes
+        bool behind = true;
+        for (int k = 0; k < get_num_planes(); k++) {
+          if (k == i) {
+            // no need to check the intersecting face
+            continue;
+          }
+          if (get_plane(k).dist_to_plane(local_p.calc_point(cur_t)) > 0.0f) {
+            // our point is in front of this face, turns out the parabola
+            // does not collide with the box at this point
+            behind = false;
+            break;
+          }
+        }
+        if (behind) {
+          // the parabola does indeed collide with the box at this point
+          t = cur_t;
+          intersecting_face = i;
+        }
+      }
+    }
+  }
+
+  if (intersecting_face != -1) {
+    if (collide_cat.is_debug()) {
+      collide_cat.debug()
+        << "intersection detected from " << entry.get_from_node_path()
+        << " into " << entry.get_into_node_path() << "\n";
+    }
+    PT(CollisionEntry) new_entry = new CollisionEntry(entry);
+
+    LPlane face = get_plane(intersecting_face);
+
+    LPoint3 into_intersection_point = local_p.calc_point(t);
+    LVector3 normal = (has_effective_normal() && parabola->get_respect_effective_normal()) ? get_effective_normal() : face.get_normal();
+
+    new_entry->set_surface_point(into_intersection_point);
+    new_entry->set_surface_normal(normal);
+    return new_entry;
+  } else {
+    return nullptr;
+  }
 }
 
 /**
