@@ -2,6 +2,29 @@
 # ------------ Python ------------
 #
 
+set(THIRDPARTY_DIRECTORY "" CACHE PATH
+  "Optional location of a makepanda-style thirdparty directory. All libraries
+   located here will be prioritized over system libraries. Useful for
+   cross-compiling.")
+# Makes CMake look for modules here first.
+if(THIRDPARTY_DIRECTORY)
+  set(CMAKE_FIND_ROOT_PATH ${CMAKE_FIND_ROOT_PATH} "${THIRDPARTY_DIRECTORY}")
+  set(OpenSSL_ROOT "${THIRDPARTY_DIRECTORY}/openssl")
+  set(JPEG_ROOT "${THIRDPARTY_DIRECTORY}/jpeg")
+  set(PNG_ROOT "${THIRDPARTY_DIRECTORY}/png")
+  set(TIFF_ROOT "${THIRDPARTY_DIRECTORY}/tiff")
+  set(LibSquish_ROOT "${THIRDPARTY_DIRECTORY}/squish")
+  set(FFMPEG_ROOT "${THIRDPARTY_DIRECTORY}/ffmpeg")
+  set(SWScale_ROOT "${THIRDPARTY_DIRECTORY}/ffmpeg")
+  set(SWResample_ROOT "${THIRDPARTY_DIRECTORY}/ffmpeg")
+  set(ODE_ROOT "${THIRDPARTY_DIRECTORY}/ode")
+  set(HarfBuzz_ROOT "${THIRDPARTY_DIRECTORY}/harfbuzz")
+  set(OpusFile_ROOT "${THIRDPARTY_DIRECTORY}/opus")
+  set(VorbisFile_ROOT "${THIRDPARTY_DIRECTORY}/vorbis")
+  set(ARToolKit_ROOT "${THIRDPARTY_DIRECTORY}/artoolkit")
+  set(Bullet_ROOT "${THIRDPARTY_DIRECTORY}/bullet")
+endif()
+
 set(WANT_PYTHON_VERSION ""
   CACHE STRING "Which Python version to seek out for building Panda3D against.")
 
