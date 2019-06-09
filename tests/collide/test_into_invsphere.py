@@ -36,3 +36,10 @@ def test_parabola_into_invsphere():
     assert parabola.get_parabola().calc_point(2) == (5, 0, 0)
     entry, np_from, np_into = make_collision(parabola, invsphere)
     assert entry.get_surface_point(np_from) == (5, 0, 0)
+
+    parabola.set_parabola(
+            LParabola((-1, 0, 0), (-1, 0, 0), (1, 0, 0)))
+    assert parabola.get_parabola().calc_point(2) == (-5, 0, 0)
+    entry, np_from, np_into = make_collision(parabola, invsphere)
+    assert entry.get_surface_point(np_from) == (-5, 0, 0)
+
