@@ -31,6 +31,9 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_BINARY_DIR "${CMAKE_BINARY_DIR}/cmake")
 
 if(CMAKE_GENERATOR STREQUAL "Xcode")
+  set(CMAKE_XCODE_ATTRIBUTE_ENABLE_BITCODE NO) # for now
+  set(CMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED "NO")
+
   # On the Xcode generator, CMake generates a separate make target definition for
   # every config, so it ends up spamming warnings once we try to build.
   set(intdir $<CONFIG>)
