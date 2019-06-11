@@ -10,7 +10,8 @@
 #   OPENGLES2_LIBRARY      - the library to link against for OpenGL ES 2.x
 #
 
-find_path(OPENGLES2_INCLUDE_DIR "GLES2/gl2.h")
+find_path(OPENGLES2_INCLUDE_DIR
+    NAMES "GLES2/gl2.h" "ES2/gl.h")
 
 find_library(OPENGLES2_LIBRARY
   NAMES "GLESv2")
