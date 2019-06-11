@@ -1,6 +1,19 @@
-cmake_minimum_required(VERSION 3.0.2)
+if(CMAKE_SYSTEM_NAME STREQUAL iOS)
+  cmake_minimum_required(VERSION 3.14)
+else()
+  cmake_minimum_required(VERSION 3.0.2)
+endif()
+
 set(CMAKE_DISABLE_SOURCE_CHANGES ON) # Must go before project() below
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON) # Must go before project() below
+
+get_property(IS_MULTICONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+
+if(${CMAKE_VERSION} VERSION_GREATER 3.8.0)
+  # When using the Xcode generator, don't append the platform name to the
+  # intermediate configuration directory.
+  set_property(GLOBAL PROPERTY XCODE_EMIT_EFFECTIVE_PLATFORM_NAME OFF)
+endif()
 
 # Figure out the version
 file(STRINGS "setup.cfg" _version REGEX "^version = ")
@@ -17,11 +30,6 @@ string(REPLACE "$(EFFECTIVE_PLATFORM_NAME)" "" PANDA_CFG_INTDIR "${CMAKE_CFG_INT
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/macros/")
 
-if(CMAKE_VERSION VERSION_GREATER "3.8")
-  # When using the Xcode generator, don't append the platform name to the
-  # intermediate configuration directory.
-  set_property(GLOBAL PROPERTY XCODE_EMIT_EFFECTIVE_PLATFORM_NAME OFF)
-endif()
 
 # Include global modules needed for configure scripts
 include(PackageConfig)      # Defines package_option
