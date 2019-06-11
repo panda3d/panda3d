@@ -1,14 +1,22 @@
 function(run_pzip target_name source destination glob)
   if(NOT TARGET host_pzip)
-    # If pzip isn't built, we just copy instead.
-    file(COPY "${source}"
-      DESTINATION "${destination}"
-      FILES_MATCHING PATTERN "${glob}")
+    if(CMAKE_CROSSCOMPILING AND NOT EXISTS "${HOST_BIN_DIR}/pzip")
+      # If pzip isn't built, we just copy instead.
+      file(COPY "${source}"
+        DESTINATION "${destination}"
+        FILES_MATCHING PATTERN "${glob}")
 
-    return()
+      return()
+    endif()
   endif()
 
   file(GLOB_RECURSE files RELATIVE "${source}" "${source}/${glob}")
+
+  if(CMAKE_CROSSCOMPILING)
+    set(pzip_executable ${HOST_BIN_DIR}/pzip)
+  else()
+    set(pzip_executable host_pzip)
+  endif()
 
   set(dstfiles "")
   foreach(filename ${files})
@@ -21,8 +29,8 @@ function(run_pzip target_name source destination glob)
 
     add_custom_command(OUTPUT "${destination}/${dstfile}"
       COMMAND ${CMAKE_COMMAND} -E make_directory "${dstdir}"
-      COMMAND host_pzip -c > "${destination}/${dstfile}" < "${source}/${filename}"
-      DEPENDS host_pzip
+      COMMAND ${pzip_executable} -c > "${destination}/${dstfile}" < "${source}/${filename}"
+      DEPENDS ${pzip_executable}
       COMMENT "")
 
   endforeach(filename)

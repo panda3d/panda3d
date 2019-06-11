@@ -47,6 +47,11 @@ else()
     Release RelWithDebInfo Debug MinSizeRel Distribution)
 endif()
 
+# If we're crosscompiling, give options to specify host interrogate and pzip.
+if(CMAKE_CROSSCOMPILING)
+  set(HOST_BIN_DIR "" CACHE STRING "The location of the native executables for the machine performing the cross-compile.")
+endif()
+
 # Provide convenient boolean expression based on build type
 if(CMAKE_BUILD_TYPE MATCHES "Debug")
   set(IS_DEBUG_BUILD True)

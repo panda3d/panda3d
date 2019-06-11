@@ -82,6 +82,11 @@ target_link_libraries(interrogate_module p3cppParser p3dtoolconfig p3pystub
 if(NOT CMAKE_CROSSCOMPILING)
   add_executable(host_interrogate ALIAS interrogate)
   add_executable(host_interrogate_module ALIAS interrogate_module)
+else()
+  add_executable(host_interrogate IMPORTED GLOBAL)
+  set_property(TARGET host_interrogate PROPERTY IMPORTED_LOCATION "${HOST_BIN_DIR}/interrogate")
+  add_executable(host_interrogate_module IMPORTED GLOBAL)
+  set_property(TARGET host_interrogate_module PROPERTY IMPORTED_LOCATION "${HOST_BIN_DIR}/interrogate_module")
 endif()
 
 if(WANT_INTERROGATE)
