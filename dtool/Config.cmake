@@ -18,6 +18,9 @@ endif()
 if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
   set(IS_OSX 1)
 endif()
+if(CMAKE_SYSTEM_NAME MATCHES "iOS")
+  set(IS_IOS 1)
+endif()
 if(CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
   set(IS_FREEBSD 1)
 endif()
@@ -386,15 +389,31 @@ mark_as_advanced(DO_MEMORY_USAGE SIMULATE_NETWORK_DELAY
 # This section relates to mobile-device/phone support and options
 #
 
-# iPhone support
-set(BUILD_IPHONE "" CACHE STRING
-  "Panda contains some experimental code to compile for IPhone.  This
-requires the Apple IPhone SDK, which is currently only available
-for OS X platforms.  Set this to either 'iPhoneSimulator' or
-'iPhoneOS'.  Note that this is still *experimental* and incomplete!
-Don't enable this unless you know what you're doing!")
-set_property(CACHE BUILD_IPHONE PROPERTY STRINGS "" iPhoneSimulator iPhoneOS)
+# iOS support
+if(CMAKE_SYSTEM_NAME STREQUAL "iOS")
+  # Check if THIRDPARTY_DIRECTORY is defined, and warn the user if it isn't.
+  if(NOT THIRDPARTY_DIRECTORY)
+    message(WARNING "Since you're building for iOS, you'll probably want to use
+THIRDPARTY_DIRECTORY to point CMake at the correct libraries.")
+  endif()
 
+  # Add options for Simulator and Device, which will automatically set the target
+  # architecture if we're using a single config generator.
+  if(IS_MULTICONFIG)
+    # Xcode will handle what architecture we should use.
+    option(IOS_BUILD_FAT_BINARIES "When this option is selected, build binaries
+that support both Simulator and Device, no matter what platform is selected from
+within Xcode itself." ON)
+
+    if(IOS_BUILD_FAT_BINARIES)
+      set(CMAKE_XCODE_ATTRIBUTE_ONLY_ACTIVE_ARCH OFF CACHE BOOL)
+      set(CMAKE_IOS_INSTALL_COMBINED ON CACHE BOOL)
+    else()
+      set(CMAKE_XCODE_ATTRIBUTE_ONLY_ACTIVE_ARCH ON CACHE BOOL)
+      set(CMAKE_IOS_INSTALL_COMBINED OFF CACHE BOOL)
+    endif()
+  endif()
+endif()
 
 # Android support
 option(BUILD_ANDROID
@@ -504,7 +523,7 @@ else()
 endif()
 
 cmake_dependent_option(HAVE_COCOA "Enable Cocoa. Requires Mac OS X." ON
-  "APPLE" OFF)
+  "IS_OSX" OFF)
 
 #
 # Miscellaneous settings

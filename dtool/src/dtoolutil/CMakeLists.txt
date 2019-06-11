@@ -80,7 +80,11 @@ target_interrogate(p3dtoolutil ALL EXTENSIONS ${P3DTOOLUTIL_IGATEEXT})
 
 if(APPLE)
   find_library(FOUNDATION_LIBRARY Foundation)
-  find_library(APPKIT_LIBRARY AppKit)
+  if(IS_OSX)
+    find_library(APPKIT_LIBRARY AppKit)
+  else()
+    set(APPKIT_LIBRARY "")
+  endif()
   target_link_libraries(p3dtoolutil ${FOUNDATION_LIBRARY} ${APPKIT_LIBRARY})
 endif()
 

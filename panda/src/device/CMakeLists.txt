@@ -63,7 +63,8 @@ target_interrogate(p3device ALL)
 if(WIN32)
   target_link_libraries(p3device Cfgmgr32.lib)
 
-elseif(APPLE)
+# IOKit is a private framework on iOS.
+elseif(IS_OSX)
   find_library(IOKIT_LIBRARY IOKit)
   target_link_libraries(p3device ${IOKIT_LIBRARY})
 

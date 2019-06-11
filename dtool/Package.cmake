@@ -97,10 +97,10 @@ if(HAVE_PYTHON)
     endif()
   endif()
 
-  set(PYTHON_LIB_INSTALL_DIR "${_LIB_DIR}" CACHE STRING
+  set(PYTHON_LIB_INSTALL_DIR "${_LIB_DIR}" CACHE PATH
     "Path to the Python architecture-independent package directory.")
 
-  set(PYTHON_ARCH_INSTALL_DIR "${_ARCH_DIR}" CACHE STRING
+  set(PYTHON_ARCH_INSTALL_DIR "${_ARCH_DIR}" CACHE PATH
     "Path to the Python architecture-dependent package directory.")
 
   set(PYTHON_EXTENSION_SUFFIX "${_EXT_SUFFIX}" CACHE STRING
@@ -465,7 +465,7 @@ package_option(GLES1
 package_status(GLES1 "OpenGL ES 1.x")
 
 # OpenGL ES 2
-if(NOT APPLE) # Apple X11 ships the GLES headers but they're broken
+if(NOT IS_OSX) # Apple X11 ships the GLES headers but they're broken
   find_package(OpenGLES2 QUIET)
 endif()
 
