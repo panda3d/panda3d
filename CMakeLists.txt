@@ -58,6 +58,10 @@ option(BUILD_PANDATOOL "Build the pandatool source tree." ON)
 option(BUILD_CONTRIB "Build the contrib source tree." ON)
 option(BUILD_MODELS "Build/install the built-in models." ON)
 
+if(CMAKE_SYSTEM_NAME STREQUAL iOS)
+  set(BUILD_PANDATOOL OFF)
+endif()
+
 # Include Panda3D packages
 if(BUILD_DTOOL)
   add_subdirectory(dtool "${CMAKE_BINARY_DIR}/dtool")
