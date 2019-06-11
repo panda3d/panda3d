@@ -21,7 +21,7 @@ add_library(p3pandatoolbase STATIC ${P3PANDATOOLBASE_HEADERS} ${P3PANDATOOLBASE_
 target_link_libraries(p3pandatoolbase panda)
 
 # ptloader - a module - may need to link in libraries in this package, so:
-if(MODULE_TYPE STREQUAL "MODULE")
+if(MODULE_TYPE STREQUAL "MODULE" OR MODULE_TYPE STREQUAL "SHARED")
   set_target_properties(p3pandatoolbase PROPERTIES
     POSITION_INDEPENDENT_CODE ON
     INTERFACE_POSITION_INDEPENDENT_CODE ON)

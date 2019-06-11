@@ -145,9 +145,13 @@ check_cxx_compiler_flag(-msse2 HAVE_SSE2)
 # Also set the library type used for "modules" appropriately.
 if(BUILD_SHARED_LIBS)
   set(LINK_ALL_STATIC OFF)
-  set(MODULE_TYPE "MODULE"
-    CACHE INTERNAL "" FORCE)
-
+  if(IOS)
+    set(MODULE_TYPE "SHARED"
+      CACHE INTERNAL "" FORCE)
+  else()
+    set(MODULE_TYPE "MODULE"
+      CACHE INTERNAL "" FORCE)
+  endif()
 else()
   set(LINK_ALL_STATIC ON)
   set(MODULE_TYPE "STATIC"

@@ -37,7 +37,7 @@ add_library(p3rplight STATIC ${P3RPLIGHT_HEADERS} ${P3RPLIGHT_SOURCES})
 target_link_libraries(p3rplight p3contribbase)
 target_interrogate(p3rplight ALL)
 
-if(MODULE_TYPE STREQUAL "MODULE")
+if(MODULE_TYPE STREQUAL "MODULE" OR MODULE_TYPE STREQUAL "SHARED")
   # Because it's STATIC (see above), we need to make it PIC so it can link into
   # a Python module
   set_target_properties(p3rplight PROPERTIES POSITION_INDEPENDENT_CODE ON)
