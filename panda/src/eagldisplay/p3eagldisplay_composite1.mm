@@ -1,0 +1,5 @@
+#include "config_eagldipslay.mm"
+#include "EAGLGraphicsPipe.mm"
+#include "EAGLGraphicsStateGuardian.mm"
+#include "EAGLGraphicsWindow.mm"
+#include "pandaEAGLView.mm"

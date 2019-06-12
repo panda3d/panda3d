@@ -9,8 +9,13 @@
 #define OPENGLES_2
 #include "config_gles2gsg.h"
 
+#ifdef IS_IOS
+#include "config_eagldisplay.h"
+#include "EAGLGraphicsPipe.h"
+#else
 #include "config_egldisplay.h"
 #include "eglGraphicsPipe.h"
+#endif
 
 /**
  * Initializes the library.  This must be called at least once before any of
@@ -21,7 +26,12 @@
 void
 init_libpandagles2() {
   init_libgles2gsg();
+  
+#ifdef IS_IOS
+  init_libeagldisplay();
+#else
   init_libegldisplay();
+#endif
 }
 
 /**
@@ -30,5 +40,9 @@ init_libpandagles2() {
  */
 int
 get_pipe_type_pandagles2() {
+#ifdef IS_IOS
+  return EAGLGraphicsPipe::get_class_type().get_index();
+#else
   return eglGraphicsPipe::get_class_type().get_index();
+#endif
 }
