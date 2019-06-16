@@ -391,6 +391,11 @@ mark_as_advanced(DO_MEMORY_USAGE SIMULATE_NETWORK_DELAY
 
 # iOS support
 if(CMAKE_SYSTEM_NAME STREQUAL "iOS")
+
+  # A bug in CMake (https://gitlab.kitware.com/cmake/cmake/issues/19375) causes
+  # MACOSX_RPATH to not be respected on iOS.
+  set(CMAKE_INSTALL_NAME_DIR "@rpath")
+
   # Check if THIRDPARTY_DIRECTORY is defined, and warn the user if it isn't.
   if(NOT THIRDPARTY_DIRECTORY)
     message(WARNING "Since you're building for iOS, you'll probably want to use
