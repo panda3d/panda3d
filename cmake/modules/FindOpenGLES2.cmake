@@ -14,7 +14,7 @@ find_path(OPENGLES2_INCLUDE_DIR
     NAMES "GLES2/gl2.h" "ES2/gl.h")
 
 find_library(OPENGLES2_LIBRARY
-  NAMES "GLESv2")
+  NAMES "GLESv2" "OpenGLES")
 
 mark_as_advanced(OPENGLES2_INCLUDE_DIR OPENGLES2_LIBRARY)
 
