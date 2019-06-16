@@ -16,7 +16,7 @@
 
 #include "inputDeviceManager.h"
 
-#if defined(__APPLE__) && !defined(CPPPARSER)
+#if defined(IS_OSX) && !defined(CPPPARSER)
 #include <IOKit/hid/IOHIDManager.h>
 
 /**

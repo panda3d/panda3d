@@ -17,7 +17,7 @@
 #include "pandabase.h"
 #include "inputDevice.h"
 
-#if defined(__APPLE__) && !defined(CPPPARSER)
+#if defined(IS_OSX) && !defined(CPPPARSER)
 
 #include <IOKit/hid/IOHIDDevice.h>
 
@@ -50,6 +50,6 @@ private:
   uint64_t _scroll_wheel_timestamp;
 };
 
-#endif  // __APPLE__
+#endif  // IS_OSX
 
 #endif

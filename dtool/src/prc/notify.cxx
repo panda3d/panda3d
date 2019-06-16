@@ -21,7 +21,7 @@
 
 #include <ctype.h>
 
-#ifdef BUILD_IPHONE
+#ifdef IS_IOS
 #include <fcntl.h>
 #endif
 
@@ -445,7 +445,7 @@ config_initialized() {
       } else {
         Filename filename = notify_output;
         filename.set_text();
-#ifdef BUILD_IPHONE
+#ifdef IS_IOS
         // On the iPhone, route everything through cerr, and then send cerr to
         // the log file, since we can't get the cerr output otherwise.
         string os_specific = filename.to_os_specific();
@@ -468,7 +468,7 @@ config_initialized() {
           out->setf(std::ios::unitbuf);
           set_ostream_ptr(out, true);
         }
-#endif  // BUILD_IPHONE
+#endif  // IS_IOS
       }
     }
   }

@@ -11,7 +11,7 @@
  * @date 2000-02-02
  */
 
-#ifdef __APPLE__
+#ifdef IS_OSX
 // We have to include this before we include any Panda libraries, because one
 // of the things we pick up in Panda defines a macro for TCP_NODELAY and
 // friends, causing heartaches for the header files picked up here.

@@ -54,7 +54,7 @@
 #define __glext_h_
 #define ES1_GLEXT_H_GUARD
 
-#ifdef BUILD_IPHONE
+#ifdef IS_IOS
   #include <OpenGLES/ES1/gl.h>
 // #include <OpenGLESES1glext.h>
 #else

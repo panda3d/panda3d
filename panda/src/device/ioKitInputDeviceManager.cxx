@@ -14,7 +14,7 @@
 #include "ioKitInputDeviceManager.h"
 #include "ioKitInputDevice.h"
 
-#if defined(__APPLE__) && !defined(CPPPARSER)
+#if defined(IS_OSX) && !defined(CPPPARSER)
 
 /**
  * Initializes the input device manager by scanning which devices are currently

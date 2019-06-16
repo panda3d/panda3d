@@ -31,7 +31,7 @@
 #define DTOOL_PLATFORM "win_i386"
 
 #elif defined(__APPLE__)
-#if defined(BUILD_IPHONE)
+#if defined(IS_IOS)
 #define DTOOL_PLATFORM "iphone"
 #elif defined(__ppc__)
 #define DTOOL_PLATFORM "osx_ppc"

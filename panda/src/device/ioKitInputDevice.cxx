@@ -13,7 +13,7 @@
 
 #include "ioKitInputDevice.h"
 
-#if defined(__APPLE__) && !defined(CPPPARSER)
+#if defined(IS_OSX) && !defined(CPPPARSER)
 
 #include <IOKit/hid/IOHIDElement.h>
 
@@ -798,4 +798,4 @@ do_poll() {
   }
 }
 
-#endif  // __APPLE__
+#endif  // IS_OSX

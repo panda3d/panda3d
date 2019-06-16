@@ -38,7 +38,7 @@ make_global_ptr() {
 
 #ifdef _WIN32
   _global_ptr = new WinInputDeviceManager;
-#elif defined(__APPLE__)
+#elif defined(IS_OSX)
   _global_ptr = new IOKitInputDeviceManager;
 #elif defined(PHAVE_LINUX_INPUT_H)
   _global_ptr = new LinuxInputDeviceManager;
