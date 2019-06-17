@@ -318,15 +318,17 @@ test_intersection_from_parabola(const CollisionEntry &entry) const {
   }
 
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
-  new_entry->set_surface_point(into_intersection_point);
 
+  LVector3 normal = into_intersection_point - get_center();
+  normal.normalize();
   if (has_effective_normal() && parabola->get_respect_effective_normal()) {
     new_entry->set_surface_normal(get_effective_normal());
   } else {
-    LVector3 normal = into_intersection_point - get_center();
-    normal.normalize();
-    new_entry->set_surface_normal(normal);
+    new_entry->set_surface_normal(-normal);
   }
+
+  LPoint3 surface_point = normal * get_radius() + get_center();
+  new_entry->set_surface_point(surface_point);
 
   return new_entry;
 }
