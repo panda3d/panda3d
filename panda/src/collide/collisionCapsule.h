@@ -75,6 +75,8 @@ protected:
 
 protected:
   virtual PT(CollisionEntry)
+  test_intersection_from_box(const CollisionEntry &entry) const;
+  virtual PT(CollisionEntry)
   test_intersection_from_sphere(const CollisionEntry &entry) const;
   virtual PT(CollisionEntry)
   test_intersection_from_line(const CollisionEntry &entry) const;
