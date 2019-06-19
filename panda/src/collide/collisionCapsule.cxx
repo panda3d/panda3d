@@ -12,6 +12,7 @@
  */
 
 #include "collisionCapsule.h"
+#include "collisionBox.h"
 #include "collisionSphere.h"
 #include "collisionLine.h"
 #include "collisionRay.h"
@@ -140,6 +141,82 @@ compute_internal_bounds() const {
   return bound;
 }
 
+PT(CollisionEntry) CollisionCapsule::
+test_intersection_from_box(const CollisionEntry &entry) const {
+  const CollisionBox *box;
+  DCAST_INTO_R(box, entry.get_from(), nullptr);
+
+  const LMatrix4 wrt_mat = entry.get_wrt_mat();
+  const LMatrix4 inv_wrt_mat = entry.get_inv_wrt_mat();
+
+  // First, we test if the box intersects the cylinder part of the 
+  // capsule. We find the point on the box closest to the center of
+  // the capsule. To do this, convert the capsule to the box's
+  // coordinate space for simpler calculations.
+  LPoint3 box_min = box->get_min();
+  LPoint3 box_max = box->get_max();
+  LPoint3 center = inv_wrt_mat.xform_point((_a + _b)/2);
+  // Find the point on the box closest to the center of the capsule
+  LPoint3 p = center.fmax(box_min).fmin(box_max);
+
+  // Align the capsule to the y axis
+  LPoint3 a = _a * _inv_mat;
+  LPoint3 b = _b * _inv_mat;
+  // Convert point p to the cylinder's coordinate space
+  p *= wrt_mat * _inv_mat;
+  // Start cylinder test
+  LPoint2 p_xz(p[0], p[2]);
+  LPoint2 a_xz(a[0], a[2]);
+
+  if ((p_xz - a_xz).length_squared() <= _radius * _radius) {
+    if (p[1] <= std::max(a[1], b[1]) && std::min(a[1], b[1]) <= p[1]) {
+      // The box intersects the cylinder
+      if (collide_cat.is_debug()) {
+        collide_cat.debug()
+          << "intersection detected from " << entry.get_from_node_path() << " into "
+          << entry.get_into_node_path() << "\n";
+      }
+      PT(CollisionEntry) new_entry = new CollisionEntry(entry);
+      LPoint3 d(a[0], p[1], a[2]);
+      LVector3 normal = (p - d);
+      normal.normalize();
+      LPoint3 surface_point = normal * _radius + d;
+      new_entry->set_surface_point(_mat.xform_point(surface_point));
+      new_entry->set_interior_point(_mat.xform_point(p));
+      new_entry->set_surface_normal(_mat.xform_vec(normal));
+      return new_entry;
+    }
+  }
+
+  // The box doesn't intersect the cylinder, now check both spherical endcaps.
+  // To do this, we convert the endpoints to the box's coordinate space
+  LPoint3 centers[2] = {_a * inv_wrt_mat, _b * inv_wrt_mat};
+  PN_stdfloat radius_sq = inv_wrt_mat.xform_vec(LVector3(0, 0, _radius)).length_squared();
+
+  for (int i = 0; i < 2; i++) {
+    LPoint3 c = centers[i];
+    p = c.fmax(box_min).fmin(box_max);
+    if ((p - c).length_squared() <= radius_sq) {
+      // Box collides with this endcap
+      if (collide_cat.is_debug()) {
+        collide_cat.debug()
+          << "intersection detected from " << entry.get_from_node_path() << " into "
+          << entry.get_into_node_path() << "\n";
+      }
+      PT(CollisionEntry) new_entry = new CollisionEntry(entry);
+      c *= wrt_mat;
+      LPoint3 interior_point = p * wrt_mat;
+      LVector3 normal = (interior_point - c);
+      normal.normalize();
+      new_entry->set_surface_point(normal * _radius + c);
+      new_entry->set_interior_point(interior_point);
+      new_entry->set_surface_normal(normal);
+      return new_entry;
+    }
+  }
+
+  return nullptr;
+}
 /**
  *
  */
