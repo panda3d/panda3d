@@ -113,7 +113,7 @@ function(target_interrogate target)
   # Also store where the build files are kept, so the Interrogate output can go
   # there as well.
   set_target_properties("${target}" PROPERTIES
-    TARGET_BINDIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
+    TARGET_BINDIR "${CMAKE_CURRENT_BINARY_DIR}/${PANDA_CFG_INTDIR}")
 
 endfunction(target_interrogate)
 
@@ -313,7 +313,7 @@ function(add_python_module module)
     get_target_property(workdir_abs "${target}" TARGET_BINDIR)
     if(NOT workdir_abs)
       # No TARGET_BINDIR was set, so we'll just use our current directory:
-      set(workdir_abs "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
+      set(workdir_abs "${CMAKE_CURRENT_BINARY_DIR}/${PANDA_CFG_INTDIR}")
     endif()
     # Keep command lines short
     file(RELATIVE_PATH workdir_rel "${CMAKE_CURRENT_BINARY_DIR}" "${workdir_abs}")
@@ -331,11 +331,11 @@ function(add_python_module module)
   endforeach(target)
 
   add_custom_command(
-    OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${module}_module.cxx"
+    OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${PANDA_CFG_INTDIR}/${module}_module.cxx"
     COMMAND ${CMAKE_COMMAND} -E
-      make_directory "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}"
+      make_directory "${CMAKE_CURRENT_BINARY_DIR}/${PANDA_CFG_INTDIR}"
     COMMAND host_interrogate_module
-      -oc "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${module}_module.cxx"
+      -oc "${CMAKE_CURRENT_BINARY_DIR}/${PANDA_CFG_INTDIR}/${module}_module.cxx"
       -module ${modname} -library ${modname}
       ${import_flags}
       ${INTERROGATE_MODULE_OPTIONS}
@@ -344,7 +344,7 @@ function(add_python_module module)
     COMMENT "Generating module ${module}")
 
   add_python_target(${module} COMPONENT "${component}" EXPORT "${component}"
-    "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${module}_module.cxx"
+    "${CMAKE_CURRENT_BINARY_DIR}/${PANDA_CFG_INTDIR}/${module}_module.cxx"
     ${sources_abs} ${extensions})
   target_link_libraries(${module} ${link_targets})
 

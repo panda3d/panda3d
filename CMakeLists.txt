@@ -10,6 +10,8 @@ unset(_version)
 
 enable_testing()
 
+string(REPLACE "$(EFFECTIVE_PLATFORM_NAME)" "" PANDA_CFG_INTDIR "${CMAKE_CFG_INTDIR}")
+
 # Add generic modules to cmake module path,
 # and add Panda3D specific modules to cmake module path
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
@@ -72,30 +74,30 @@ endif()
 if(BUILD_MODELS)
   run_pzip(models
     "${CMAKE_CURRENT_SOURCE_DIR}/models/"
-    "${PROJECT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/models"
+    "${PROJECT_BINARY_DIR}/${PANDA_CFG_INTDIR}/models"
     *.egg)
   run_pzip(dmodels
     "${CMAKE_CURRENT_SOURCE_DIR}/dmodels/src/"
-    "${PROJECT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/models"
+    "${PROJECT_BINARY_DIR}/${PANDA_CFG_INTDIR}/models"
     *.egg)
 
   add_custom_command(TARGET models
                      POST_BUILD
                      COMMAND ${CMAKE_COMMAND}
                              -DSOURCE="${CMAKE_CURRENT_SOURCE_DIR}/models/maps/"
-                             -DDESTINATION="${PROJECT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/models/maps"
+                             -DDESTINATION="${PROJECT_BINARY_DIR}/${PANDA_CFG_INTDIR}/models/maps"
                              -P ${PROJECT_SOURCE_DIR}/cmake/scripts/CopyPattern.cmake
                      COMMENT "Copying models/maps")
   add_custom_command(TARGET dmodels
                      POST_BUILD
                      COMMAND ${CMAKE_COMMAND}
                              -DSOURCE="${CMAKE_CURRENT_SOURCE_DIR}/dmodels/src/"
-                             -DDESTINATION="${PROJECT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/models"
+                             -DDESTINATION="${PROJECT_BINARY_DIR}/${PANDA_CFG_INTDIR}/models"
                              -DFILES_MATCHING="PATTERN;*.rgb;PATTERN;*.png;PATTERN;*.jpg;PATTERN;*.wav"
                              -P ${PROJECT_SOURCE_DIR}/cmake/scripts/CopyPattern.cmake
                      COMMENT "Copying dmodels' assets")
 
-  install(DIRECTORY "${PROJECT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/models"
+  install(DIRECTORY "${PROJECT_BINARY_DIR}/${PANDA_CFG_INTDIR}/models"
     COMPONENT Models DESTINATION share/panda3d)
 endif()
 
@@ -104,7 +106,7 @@ if(INTERROGATE_PYTHON_INTERFACE)
   # for pytest before adding this test.  If the user doesn't have pytest, we'd
   # like for the tests to fail.
 
-  if(CMAKE_CFG_INTDIR STREQUAL ".")
+  if(PANDA_CFG_INTDIR STREQUAL ".")
     set(_workdir "${PROJECT_BINARY_DIR}")
   else()
     set(_workdir "${PROJECT_BINARY_DIR}/$<CONFIG>")

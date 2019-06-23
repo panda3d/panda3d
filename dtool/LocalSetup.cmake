@@ -185,7 +185,7 @@ message("See dtool_config.h for more details about the specified configuration."
 message("")
 
 # Generate dtool_config.h
-if("${CMAKE_CFG_INTDIR}" STREQUAL ".")
+if("${PANDA_CFG_INTDIR}" STREQUAL ".")
   # Single-configuration generator
   set(intdir ".")
 else()

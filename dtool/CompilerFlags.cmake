@@ -33,9 +33,9 @@ set(CMAKE_BINARY_DIR "${CMAKE_BINARY_DIR}/cmake")
 if(CMAKE_GENERATOR STREQUAL "Xcode")
   # On the Xcode generator, CMake generates a separate make target definition for
   # every config, so it ends up spamming warnings once we try to build.
-  set(intdir $<CONFIG>$(EFFECTIVE_PLATFORM_NAME))
+  set(intdir $<CONFIG>)
 else()
-  set(intdir ${CMAKE_CFG_INTDIR})
+  set(intdir ${PANDA_CFG_INTDIR})
 endif()
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${intdir}/bin")
@@ -54,7 +54,7 @@ if(WIN32)
   set(CMAKE_STATIC_LIBRARY_PREFIX "lib")
 
   # On Windows, modules (DLLs) are located in bin; lib is just for .lib files
-  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/bin")
+  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${PANDA_CFG_INTDIR}/bin")
   if(BUILD_SHARED_LIBS)
     set(MODULE_DESTINATION "bin")
   endif()
