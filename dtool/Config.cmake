@@ -411,12 +411,18 @@ that support both Simulator and Device, no matter what platform is selected from
 within Xcode itself." ON)
 
     if(IOS_BUILD_FAT_BINARIES)
-      set(CMAKE_XCODE_ATTRIBUTE_ONLY_ACTIVE_ARCH OFF CACHE BOOL)
-      set(CMAKE_IOS_INSTALL_COMBINED ON CACHE BOOL)
+      set(CMAKE_XCODE_ATTRIBUTE_ONLY_ACTIVE_ARCH OFF CACHE BOOL "")
+      set(CMAKE_IOS_INSTALL_COMBINED ON CACHE BOOL "")
     else()
-      set(CMAKE_XCODE_ATTRIBUTE_ONLY_ACTIVE_ARCH ON CACHE BOOL)
-      set(CMAKE_IOS_INSTALL_COMBINED OFF CACHE BOOL)
+      set(CMAKE_XCODE_ATTRIBUTE_ONLY_ACTIVE_ARCH ON CACHE BOOL "")
+      set(CMAKE_IOS_INSTALL_COMBINED OFF CACHE BOOL "")
     endif()
+  endif()
+
+  # An explanation for this is found here:
+  # https://github.com/libjpeg-turbo/libjpeg-turbo/commit/c80ddef7a4ce21ace9e3ca0fd190d320cc8cdaeb
+  if(NOT CMAKE_SHARED_LIBRARY_RUNTIME_C_FLAG)
+    set(CMAKE_SHARED_LIBRARY_RUNTIME_C_FLAG "-Wl,-rpath,")
   endif()
 endif()
 
@@ -529,6 +535,12 @@ endif()
 
 cmake_dependent_option(HAVE_COCOA "Enable Cocoa. Requires Mac OS X." ON
   "IS_OSX" OFF)
+
+if(IS_IOS AND HAVE_GLES2)
+  option(HAVE_EAGL "Enable EAGL. Requires iOS." ON)
+else()
+  option(HAVE_EAGL "Enable EAGL. Requires iOS." OFF)
+endif()
 
 #
 # Miscellaneous settings
