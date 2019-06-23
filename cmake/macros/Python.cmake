@@ -53,9 +53,9 @@ function(add_python_target target)
   if(BUILD_SHARED_LIBS)
     if(CMAKE_GENERATOR STREQUAL "Xcode")
       # This is explained in CompilerFlags.cmake
-      set(intdir $<CONFIG>$(EFFECTIVE_PLATFORM_NAME))
+      set(intdir $<CONFIG>)
     else()
-      set(intdir ${CMAKE_CFG_INTDIR})
+      set(intdir ${PANDA_CFG_INTDIR})
     endif()
 
     set(_outdir "${PROJECT_BINARY_DIR}/${intdir}/${slash_namespace}")
@@ -146,7 +146,7 @@ function(install_python_package package_name)
     set(src_path "${CMAKE_SOURCE_DIR}/cmake/templates/win32_python")
   endif()
 
-  set(path "${PROJECT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${package_name}")
+  set(path "${PROJECT_BINARY_DIR}/${PANDA_CFG_INTDIR}/${package_name}")
 
   set(args -D "OUTPUT_DIR=${path}")
   if(src_path)
