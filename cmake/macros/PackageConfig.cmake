@@ -301,10 +301,10 @@ function(export_packages filename)
   set(exports "# Exports for Panda3D PKG:: packages\n")
 
   foreach(pkg ${_ALL_PACKAGE_OPTIONS})
-    string(APPEND exports "\n# Create imported target PKG::${pkg}\n")
-    string(APPEND exports "add_library(PKG::${pkg} INTERFACE IMPORTED)\n\n")
+    set(exports "${exports}\n# Create imported target PKG::${pkg}\n")
+    set(exports "${exports}add_library(PKG::${pkg} INTERFACE IMPORTED)\n\n")
 
-    string(APPEND exports "set_target_properties(PKG::${pkg} PROPERTIES\n")
+    set(exports "${exports}set_target_properties(PKG::${pkg} PROPERTIES\n")
     foreach(prop
         INTERFACE_COMPILE_DEFINITIONS
         INTERFACE_COMPILE_FEATURES
@@ -318,7 +318,7 @@ function(export_packages filename)
         INTERFACE_SOURCES)
 
       set(prop_ex "$<TARGET_PROPERTY:PKG::${pkg},${prop}>")
-      string(APPEND exports "$<$<BOOL:${prop_ex}>:  ${prop} \"${prop_ex}\"\n>")
+      set(exports "${exports}$<$<BOOL:${prop_ex}>:  ${prop} \"${prop_ex}\"\n>")
 
     endforeach(prop)
 
@@ -412,9 +412,9 @@ function(export_packages filename)
       endif()
     endwhile(stack)
 
-    string(APPEND exports "  INTERFACE_LINK_LIBRARIES \"${libraries}\"\n")
+    set(exports "${exports}  INTERFACE_LINK_LIBRARIES \"${libraries}\"\n")
 
-    string(APPEND exports ")\n")
+    set(exports "${exports})\n")
   endforeach(pkg)
 
   file(GENERATE OUTPUT "${filename}" CONTENT "${exports}")
