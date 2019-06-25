@@ -329,15 +329,26 @@ function(export_packages filename)
     set(history)
     while(stack)
       # Remove head item from stack
-      list(GET stack 0 head)
-      list(REMOVE_AT stack 0)
+      unset(head)
+      while(NOT DEFINED head)
+        if(NOT stack)
+          break()
+        endif()
 
-      # Don't visit anything twice
-      list(FIND history "${head}" _index)
-      if(_index GREATER -1)
-        continue()
-      else()
+        list(GET stack 0 head)
+        list(REMOVE_AT stack 0)
+
+        # Don't visit anything twice
+        list(FIND history "${head}" _index)
+        if(_index GREATER -1)
+          unset(head)
+        endif()
+      endwhile()
+
+      if(head)
         list(APPEND history "${head}")
+      else()
+        break()
       endif()
 
       # If head isn't a target, add it to `libraries`, else recurse

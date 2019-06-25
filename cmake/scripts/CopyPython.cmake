@@ -32,16 +32,15 @@ if(DEFINED SOURCE_DIR)
   file(GLOB_RECURSE py_files RELATIVE "${SOURCE_DIR}" "${SOURCE_DIR}/*.py")
   foreach(py_file ${py_files})
     get_filename_component(py_file_parent "${py_file}" DIRECTORY)
-    if(NOT EXISTS "${SOURCE_DIR}/${py_file_parent}/__init__.py")
-      # The source file isn't part of a Python package, even though it is a .py
-      # file. Skip it.
-      continue()
-    endif()
-
     file(TIMESTAMP "${SOURCE_DIR}/${py_file}" src_stamp)
     file(TIMESTAMP "${OUTPUT_DIR}/${py_file}" dst_stamp)
 
-    if(NOT src_stamp STREQUAL dst_stamp)
+    # The file is only copied if:
+    # - there's an __init__.py in its dir (i.e. file belongs to a package), and
+    # - the modification timestamp differs (i.e. file changed or never copied)
+    if(EXISTS "${SOURCE_DIR}/${py_file_parent}/__init__.py"
+        AND NOT src_stamp STREQUAL dst_stamp)
+
       file(COPY "${SOURCE_DIR}/${py_file}" DESTINATION "${OUTPUT_DIR}/${py_file_parent}")
       set(changed YES)
     endif()

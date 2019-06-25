@@ -48,13 +48,17 @@ if(NOT MSVC AND
   list(APPEND _defines "FCOLLADA_DLL")
 endif()
 
-foreach(_config RELEASE DEBUG)
-  # Make sure we have lib/includes for this config
-  if(NOT FCOLLADA_${_config}_LIBRARY OR NOT FCOLLADA_INCLUDE_DIR)
-    continue()
+# Identify the configs which we have available
+set(_configs)
+if(FCOLLADA_INCLUDE_DIR)
+  if(FCOLLADA_RELEASE_LIBRARY)
+    list(APPEND _configs RELEASE)
+  endif()
+  if(FCOLLADA_DEBUG_LIBRARY)
+    list(APPEND _configs DEBUG)
   endif()
 
-  if(NOT _HAS_FCOLLADA_LIBRARY)
+  if(_configs)
     set(_HAS_FCOLLADA_LIBRARY ON)
     add_library(FCollada::FCollada UNKNOWN IMPORTED GLOBAL)
 
@@ -63,7 +67,10 @@ foreach(_config RELEASE DEBUG)
       INTERFACE_INCLUDE_DIRECTORIES "${FCOLLADA_INCLUDE_DIR}")
 
   endif()
-  
+
+endif()
+
+foreach(_config ${_configs})
   set_property(TARGET FCollada::FCollada
     APPEND PROPERTY IMPORTED_CONFIGURATIONS "${_config}")
 
@@ -72,6 +79,7 @@ foreach(_config RELEASE DEBUG)
 
 endforeach(_config)
 unset(_config)
+unset(_configs)
 unset(_defines)
 
 include(FindPackageHandleStandardArgs)
