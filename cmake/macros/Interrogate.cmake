@@ -231,7 +231,9 @@ function(interrogate_sources target output database language_flags)
   add_custom_command(
     OUTPUT "${output}" "${database}"
     COMMAND ${CMAKE_COMMAND} -E
-      make_directory "${output_directory}" "${database_directory}"
+      make_directory "${output_directory}"
+    COMMAND ${CMAKE_COMMAND} -E
+      make_directory "${database_directory}"
     COMMAND host_interrogate
       -oc "${output}"
       -od "${database}"
@@ -342,7 +344,8 @@ function(add_python_module module)
     COMMENT "Generating module ${module}")
 
   add_python_target(${module} COMPONENT "${component}" EXPORT "${component}"
-    "${CMAKE_CFG_INTDIR}/${module}_module.cxx" ${sources_abs} ${extensions})
+    "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${module}_module.cxx"
+    ${sources_abs} ${extensions})
   target_link_libraries(${module} ${link_targets})
 
   if(CMAKE_VERSION VERSION_LESS "3.11")
