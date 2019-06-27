@@ -72,6 +72,7 @@ else()
   set(IS_NOT_DIST_BUILD True)
 endif()
 
+set(PER_CONFIG_OPTIONS)
 
 # Are we building with static or dynamic linking?
 option(BUILD_SHARED_LIBS
@@ -312,12 +313,16 @@ enables you to define the variable 'track-memory-usage' at runtime
 to help track memory leaks, and also report total memory usage on
 PStats.  There is some small overhead for having this ability
 available, even if it is unused." ${IS_DEBUG_BUILD})
+list(APPEND PER_CONFIG_OPTIONS DO_MEMORY_USAGE)
+set(DO_MEMORY_USAGE_Debug ON CACHE BOOL "")
 
 option(SIMULATE_NETWORK_DELAY
   "This option compiles in support for simulating network delay via
 the min-lag and max-lag prc variables.  It adds a tiny bit of
 overhead even when it is not activated, so it is typically enabled
 only in a development build." ${IS_DEBUG_BUILD})
+list(APPEND PER_CONFIG_OPTIONS SIMULATE_NETWORK_DELAY)
+set(SIMULATE_NETWORK_DELAY_Debug ON CACHE BOOL "")
 
 option(SUPPORT_IMMEDIATE_MODE
   "This option compiles in support for immediate-mode OpenGL
@@ -326,11 +331,15 @@ buggy drivers, and since there is a tiny bit of per-primitive
 overhead to have this option available even if it is unused, it is
 by default enabled only in a development build.  This has no effect
 on DirectX rendering." ${IS_DEBUG_BUILD})
+list(APPEND PER_CONFIG_OPTIONS SUPPORT_IMMEDIATE_MODE)
+set(SUPPORT_IMMEDIATE_MODE_Debug ON CACHE BOOL "")
 
 option(NOTIFY_DEBUG
   "Do you want to include the 'debug' and 'spam' Notify messages?
 Normally, these are stripped out when we build for release, but sometimes it's
 useful to keep them around. Turn this setting on to achieve that." ${IS_DEBUG_BUILD})
+list(APPEND PER_CONFIG_OPTIONS NOTIFY_DEBUG)
+set(NOTIFY_DEBUG_Debug ON CACHE BOOL "")
 
 option(SUPPORT_FIXED_FUNCTION
   "This option compiles in support for the fixed-function OpenGL
@@ -423,7 +432,7 @@ if(WIN32 AND IS_DEBUG_BUILD)
 else()
   set(USE_DEBUG_PYTHON OFF)
 endif()
-
+list(APPEND PER_CONFIG_OPTIONS USE_DEBUG_PYTHON)
 
 option(HAVE_VIDEO4LINUX
   "Set this to enable webcam support on Linux." ${IS_LINUX})
@@ -578,6 +587,8 @@ slightly slow down Panda for the single CPU case."
 
 # Configure debug threads
 option(DEBUG_THREADS "If on, enables debugging of thread and sync operations (i.e. mutexes, deadlocks)" ${IS_DEBUG_BUILD})
+list(APPEND PER_CONFIG_OPTIONS DEBUG_THREADS)
+set(DEBUG_THREADS_Debug ON CACHE BOOL "")
 
 option(SIMPLE_THREADS
   "If on, compile with simulated threads.  Threads, by default, use
@@ -587,7 +598,7 @@ On the other hand, compiling in this full OS-provided support can
 impose some substantial runtime overhead, making the application
 run slower on a single-CPU machine. This settings avoid the overhead,
 but still gain some of the basic functionality of threads." OFF)
-
+list(APPEND PER_CONFIG_OPTIONS SIMPLE_THREADS)
 
 option(OS_SIMPLE_THREADS
   "If on, OS threading constructs will be used to perform context switches.
@@ -596,7 +607,7 @@ normal SIMPLE_THREADS optimizations still apply, and the normal
 SIMPLE_THREADS scheduler is used to switch between threads (instead
 of the OS scheduler).  This may be more portable and more reliable,
 but it is a hybrid between user-space threads and os-provided threads." ON)
-
+list(APPEND PER_CONFIG_OPTIONS OS_SIMPLE_THREADS)
 
 ### Configure pipelining ###
 option(DO_PIPELINING "If on, compile with pipelined rendering." ON)
@@ -605,8 +616,9 @@ option(DO_PIPELINING "If on, compile with pipelined rendering." ON)
 option(COMPILE_IN_DEFAULT_FONT
   "If on, compiles in a default font, so that every TextNode will always
 have a font available without requiring the user to specify one.
-When turned off, the generated library will save a few kilobytes."
-  ${IS_NOT_MINSIZE_BUILD})
+When turned off, the generated library will save a few kilobytes." ${IS_NOT_MINSIZE_BUILD})
+list(APPEND PER_CONFIG_OPTIONS COMPILE_IN_DEFAULT_FONT)
+set(COMPILE_IN_DEFAULT_FONT_MinSizeRel OFF CACHE BOOL "")
 
 option(STDFLOAT_DOUBLE
   "Define this true to compile a special version of Panda to use a

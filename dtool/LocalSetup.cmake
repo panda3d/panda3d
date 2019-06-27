@@ -193,12 +193,28 @@ else()
   set(intdir "${CMAKE_BUILD_TYPE}")
 endif()
 
-configure_file(dtool_config.h.in "${PROJECT_BINARY_DIR}/include/dtool_config.h")
-
-# TODO: Add the ability to customize dtool_config.h based on configuration.
 if(IS_MULTICONFIG)
-  file(GENERATE OUTPUT "${PROJECT_BINARY_DIR}/$<CONFIG>/include/dtool_config.h"
-                INPUT "${PROJECT_BINARY_DIR}/include/dtool_config.h")
+  foreach(config ${CMAKE_CONFIGURATION_TYPES})
+    foreach(option ${PER_CONFIG_OPTIONS})
+      # Check for the presence of a config-specific option, and override what's
+      # in the cache if there is.
+      if(DEFINED ${option}_${config})
+        set(${option} ${${option}_${config}})
+      endif()
+    endforeach(option)
+
+    # Generate a dtool_config.h for this specific config
+    configure_file(dtool_config.h.in "${PROJECT_BINARY_DIR}/${config}/include/dtool_config.h")
+
+    # unset() does not unset CACHE variables by default, just normal variables.
+    # By doing this we're reverting back to what was in the cache.
+    foreach(option ${PER_CONFIG_OPTIONS})
+      unset(${option})
+    endforeach(option)
+  endforeach(config)
+else()
+  # Just configure things like normal.
+  configure_file(dtool_config.h.in "${PROJECT_BINARY_DIR}/include/dtool_config.h")
 endif()
 
 install(FILES "${PROJECT_BINARY_DIR}/${intdir}/include/dtool_config.h"
