@@ -491,7 +491,10 @@ package_status(CG "Nvidia Cg Shading Language" "${cg_apis}")
 #
 
 # X11 (and GLX)
-find_package(X11 QUIET)
+
+if(NOT APPLE)
+  find_package(X11 QUIET)
+endif()
 
 if(NOT X11_Xkb_FOUND OR NOT X11_Xutil_FOUND)
   # Panda implicitly requires these supplementary X11 libs; if we can't find
