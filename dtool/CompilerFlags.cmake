@@ -60,6 +60,12 @@ if(WIN32)
   endif()
 endif()
 
+# Though not technically correct, we'll still want MODULE type libraries
+# (used for display and audio plugins) to use a .dylib extension.
+if(APPLE)
+  set(CMAKE_SHARED_MODULE_SUFFIX ".dylib")
+endif()
+
 # Since we're using CMAKE_CFG_INTDIR to put everything in a
 # configuration-specific subdirectory when building on a multi-config
 # generator, we need to suppress the usual configuration name appending
