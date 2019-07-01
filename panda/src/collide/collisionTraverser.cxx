@@ -19,6 +19,7 @@
 #include "collisionRecorder.h"
 #include "collisionVisualizer.h"
 #include "collisionSphere.h"
+#include "collisionHeightfield.h"
 #include "collisionBox.h"
 #include "collisionCapsule.h"
 #include "collisionPolygon.h"
@@ -349,6 +350,7 @@ traverse(const NodePath &root) {
   CollisionPolygon::flush_level();
   CollisionPlane::flush_level();
   CollisionBox::flush_level();
+  CollisionHeightfield::flush_level();
 }
 
 #ifdef DO_COLLISION_RECORDING
