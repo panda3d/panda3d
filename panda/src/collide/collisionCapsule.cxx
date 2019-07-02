@@ -190,11 +190,9 @@ test_intersection_from_box(const CollisionEntry &entry) const {
   point_on_segment[2] = a[2];
   if (closest_point[1] < std::min(a[1], b[1])) {
     point_on_segment[1] = std::min(a[1], b[1]);
-  }
-  else if (closest_point[1] > std::max(a[1], b[1])) {
+  } else if (closest_point[1] > std::max(a[1], b[1])) {
     point_on_segment[1] = std::max(a[1], b[1]);
-  }
-  else {
+  } else {
     point_on_segment[1] = closest_point[1];
   }
 
@@ -204,7 +202,15 @@ test_intersection_from_box(const CollisionEntry &entry) const {
   }
 
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
-  LVector3 normal = (closest_point - point_on_segment);
+  LVector3 normal;
+  if (point_on_segment == closest_point) {
+    // If the box directly intersects the line segment, use
+    // the box's center to determine the surface normal.
+    normal = (box->get_center() * wrt_mat * _inv_mat) - point_on_segment;
+    if (closest_point != a && closest_point != b) normal[1] = 0;
+  } else {
+    normal = (closest_point - point_on_segment);
+  }
   normal.normalize();
   LPoint3 surface_point = point_on_segment + normal * _radius;
   new_entry->set_interior_point(_mat.xform_point(closest_point));
