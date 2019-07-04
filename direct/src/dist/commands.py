@@ -617,6 +617,35 @@ class build_apps(setuptools.Command):
             if filename.endswith('.whl')
         ]
 
+    def create_desktop_entry(self, builddir, appname, use_terminal):
+        """Create .desktop file for Linux"""
+        fname = os.path.join(builddir, '{}.desktop'.format(appname))
+
+        iconobj = self.icon_objects.get(
+            appname,
+            self.icon_objects.get('*', None)
+        )
+        iconname = None
+
+        if iconobj is not None:
+            # Just grab the largest icon for now
+            largest_size = sorted(iconobj.images.keys(), reverse=True)[0]
+            iconpnmi = iconobj.images[largest_size]
+            iconname = '{}.png'.format(appname)
+            icondst = os.path.join(builddir, iconname)
+            iconpnmi.write(icondst)
+
+        with open(fname, 'w') as desktop_file:
+            desktop_file.write('[Desktop Entry]\n')
+            desktop_file.write('Version=1.0\n')
+            desktop_file.write('Type=Application\n')
+            desktop_file.write('Encoding=UTF-8\n')
+            desktop_file.write('Name={}\n'.format(appname.title()))
+            desktop_file.write('Terminal={}\n'.format('true' if use_terminal else 'false'))
+            desktop_file.write('Exec={}\n'.format(appname))
+            if iconobj is not None:
+                desktop_file.write('Icon={}'.format(appname))
+
     def update_pe_resources(self, appname, runtime):
         """Update resources (e.g., icons) in windows PE file"""
 
@@ -1028,6 +1057,10 @@ class build_apps(setuptools.Command):
             for suffix in freezer.mf.suffixes:
                 if suffix[2] == imp.C_EXTENSION:
                     ext_suffixes.add(suffix[0])
+
+            # Create a desktop entry for Linux
+            if 'linux' in platform:
+                self.create_desktop_entry(builddir, appname, use_console)
 
         for appname, scriptname in self.gui_apps.items():
             create_runtime(platform, appname, scriptname, False)
