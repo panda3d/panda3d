@@ -33,6 +33,10 @@ set(CMAKE_BINARY_DIR "${CMAKE_BINARY_DIR}/cmake")
 if(CMAKE_GENERATOR STREQUAL "Xcode")
   set(CMAKE_XCODE_ATTRIBUTE_ENABLE_BITCODE NO) # for now
   set(CMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED "NO")
+  set(CMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED "NO")
+
+  # Xcode complains about codesigning if this option isn't set.
+  set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 
   # On the Xcode generator, CMake generates a separate make target definition for
   # every config, so it ends up spamming warnings once we try to build.

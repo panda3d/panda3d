@@ -6,11 +6,6 @@
 # file based on the user's selected configure variables.
 #
 
-if(CMAKE_SYSTEM_NAME STREQUAL iOS)
-  # Xcode complains about codesigning if this option isn't set.
-  set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
-endif()
-
 include(CheckCXXSourceCompiles)
 include(CheckCSourceRuns)
 include(CheckIncludeFileCXX)
