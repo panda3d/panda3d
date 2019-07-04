@@ -276,7 +276,8 @@ find_package(SWScale QUIET)
 find_package(SWResample QUIET)
 
 package_option(FFMPEG
-  "Enables support for audio- and video-decoding using the FFmpeg library.")
+  "Enables support for audio- and video-decoding using the FFmpeg library."
+  LICENSE LGPL)
 package_option(SWSCALE
   "Enables support for FFmpeg's libswscale for video rescaling.")
 package_option(SWRESAMPLE
@@ -581,7 +582,8 @@ endif()
 find_package(ARToolKit QUIET)
 
 package_option(ARTOOLKIT
-  "Enable support for ARToolKit.  This will be built into the 'vision' package.")
+  "Enable support for ARToolKit.  This will be built into the 'vision' package."
+  LICENSE LGPL)
 
 package_status(ARTOOLKIT "ARToolKit")
 
