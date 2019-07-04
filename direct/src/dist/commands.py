@@ -433,6 +433,19 @@ class build_apps(setuptools.Command):
 
         return wheelpaths
 
+    def create_desktop_entry(self, builddir, appname, use_terminal):
+        """Create .desktop file for Linux"""
+
+        fname = os.path.join(builddir, '{}.desktop'.format(appname))
+
+        with open(fname, 'w') as desktop_file:
+            desktop_file.write('[Desktop Entry]\n')
+            desktop_file.write('Version=1.0\n')
+            desktop_file.write('Type=Application\n')
+            desktop_file.write('Name={}\n'.format(appname.title()))
+            desktop_file.write('Terminal={}\n'.format('true' if use_terminal else 'false'))
+            desktop_file.write('Exec={}'.format(appname))
+
     def bundle_macos_app(self, builddir):
         """Bundle built runtime into a .app for macOS"""
 
@@ -648,6 +661,11 @@ class build_apps(setuptools.Command):
             for suffix in freezer.moduleSuffixes:
                 if suffix[2] == imp.C_EXTENSION:
                     ext_suffixes.add(suffix[0])
+
+            # Create a desktop entry for Linux
+            if 'linux' in platform:
+                self.create_desktop_entry(builddir, appname, use_console)
+
 
         for appname, scriptname in self.gui_apps.items():
             create_runtime(appname, scriptname, False)
