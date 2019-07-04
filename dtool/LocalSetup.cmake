@@ -116,6 +116,12 @@ if(WIN32)
   set(GLOBAL_ARGC __argc)
 endif()
 
+if(APPLE)
+  set(ucontext_header "sys/ucontext.h")
+else()
+  set(ucontext_header "ucontext.h")
+endif()
+
 # Do we have all these header files?
 check_include_file_cxx(io.h PHAVE_IO_H)
 check_include_file_cxx(iostream PHAVE_IOSTREAM)
@@ -134,7 +140,7 @@ check_include_file_cxx(unistd.h PHAVE_UNISTD_H)
 check_include_file_cxx(utime.h PHAVE_UTIME_H)
 check_include_file_cxx(glob.h PHAVE_GLOB_H)
 check_include_file_cxx(dirent.h PHAVE_DIRENT_H)
-check_include_file_cxx(ucontext.h PHAVE_UCONTEXT_H) #TODO doesn't work on OSX, use sys/ucontext.h
+check_include_file_cxx(${ucontext_header} PHAVE_UCONTEXT_H)
 check_include_file_cxx(linux/input.h PHAVE_LINUX_INPUT_H)
 check_include_file_cxx(stdint.h PHAVE_STDINT_H)
 check_include_file_cxx(typeinfo HAVE_RTTI)
