@@ -12,7 +12,7 @@ function(add_library target_name)
   _add_library("${target_name}" ${ARGN})
 
   get_target_property(type "${target_name}" TYPE)
-  if(type STREQUAL "SHARED_LIBRARY")
+  if(type STREQUAL "SHARED_LIBRARY" AND NOT OMIT_VERSION_SUFFIX)
     set_target_properties("${target_name}" PROPERTIES
       VERSION "${PROJECT_VERSION}"
       SOVERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}")
