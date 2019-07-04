@@ -13,6 +13,14 @@ if(HAVE_TINYDISPLAY)
   set(AUX_DISPLAYS "${AUX_DISPLAYS}\naux-display p3tinydisplay")
 endif()
 
+if(HAVE_GLES)
+  set(AUX_DISPLAYS "${AUX_DISPLAYS}\naux-display pandagles")
+endif()
+
+if(HAVE_GLES2)
+  set(AUX_DISPLAYS "${AUX_DISPLAYS}\naux-display pandagles2")
+endif()
+
 if(HAVE_RAD_MSS)
   set(AUDIO_LIBRARY_NAME p3miles_audio)
 elseif(HAVE_OPENAL)
