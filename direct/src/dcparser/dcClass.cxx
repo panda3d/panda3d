@@ -18,6 +18,9 @@
 #include "dcindent.h"
 #include "dcmsgtypes.h"
 
+#include "datagram.h"
+#include "datagramIterator.h"
+
 #include "dcClassParameter.h"
 #include <algorithm>
 

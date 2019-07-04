@@ -17,7 +17,6 @@
 #include "dcbase.h"
 #include "dcField.h"
 #include "dcDeclaration.h"
-#include "dcPython.h"
 
 #ifdef WITHIN_PANDA
 #include "pStatCollector.h"

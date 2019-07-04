@@ -18,6 +18,9 @@
 #include "hashGenerator.h"
 #include "dcmsgtypes.h"
 
+#include "datagram.h"
+#include "datagramIterator.h"
+
 #ifdef HAVE_PYTHON
 #include "py_panda.h"
 #endif

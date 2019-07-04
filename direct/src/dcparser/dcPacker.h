@@ -19,7 +19,6 @@
 #include "dcSubatomicType.h"
 #include "dcPackData.h"
 #include "dcPackerCatalog.h"
-#include "dcPython.h"
 
 class DCClass;
 class DCSwitchParameter;

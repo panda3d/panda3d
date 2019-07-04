@@ -17,7 +17,6 @@
 #include "dcbase.h"
 #include "dcPackerInterface.h"
 #include "dcKeywordList.h"
-#include "dcPython.h"
 
 #ifdef WITHIN_PANDA
 #include "pStatCollector.h"
