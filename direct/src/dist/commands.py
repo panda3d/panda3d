@@ -20,6 +20,7 @@ import distutils.log
 
 from . import FreezeTool
 from . import pefile
+from direct.p3d.DeploymentTools import Icon
 import panda3d.core as p3d
 
 
@@ -224,6 +225,7 @@ class build_apps(setuptools.Command):
         self.exclude_patterns = []
         self.include_modules = {}
         self.exclude_modules = {}
+        self.icons = {}
         self.platforms = [
             'manylinux1_x86_64',
             'macosx_10_6_x86_64',
@@ -298,6 +300,7 @@ class build_apps(setuptools.Command):
             key: _parse_list(value)
             for key, value in _parse_dict(self.exclude_modules).items()
         }
+        self.icons = _parse_dict(self.icons)
         self.platforms = _parse_list(self.platforms)
         self.plugins = _parse_list(self.plugins)
         self.extra_prc_files = _parse_list(self.extra_prc_files)
@@ -356,6 +359,12 @@ class build_apps(setuptools.Command):
         tmp = self.package_data_dirs.copy()
         tmp.update(self.package_data_dirs)
         self.package_data_dirs = tmp
+
+        self.icon_objects = {}
+        for app, iconpath in self.icons.items():
+            iconobj = Icon()
+            iconobj.addImage(iconpath)
+            self.icon_objects[app] = iconobj
 
     def run(self):
         self.announce('Building platforms: {0}'.format(','.join(self.platforms)), distutils.log.INFO)
@@ -438,6 +447,16 @@ class build_apps(setuptools.Command):
 
         fname = os.path.join(builddir, '{}.desktop'.format(appname))
 
+        iconsrc = self.icons.get(
+            appname,
+            self.icons.get('*', None)
+        )
+
+        if iconsrc is not None:
+            icondst = os.path.join(builddir, iconsrc)
+            shutil.copyfile(iconsrc, icondst)
+
+
         with open(fname, 'w') as desktop_file:
             desktop_file.write('[Desktop Entry]\n')
             desktop_file.write('Version=1.0\n')
@@ -445,6 +464,25 @@ class build_apps(setuptools.Command):
             desktop_file.write('Name={}\n'.format(appname.title()))
             desktop_file.write('Terminal={}\n'.format('true' if use_terminal else 'false'))
             desktop_file.write('Exec={}'.format(appname))
+            if iconsrc is not None:
+                desktop_file.write('Icon={}'.format(iconsrc))
+
+    def update_pe_resources(self, appname, runtime):
+        """Update resources (e.g., icons) in windows PE file"""
+
+        icon = self.icon_objects.get(
+            appname,
+            self.icon_objects.get('*', None),
+        )
+
+        # if icon is not None:
+        #     pef = pefile.PEFile()
+        #     pef.open(runtime)
+        #     pef.add_icon(icon)
+        #     pef.add_resource_section()
+        #     pef.write_changes()
+        #     pef.close()
+
 
     def bundle_macos_app(self, builddir):
         """Bundle built runtime into a .app for macOS"""
@@ -477,6 +515,7 @@ class build_apps(setuptools.Command):
                 dst = resdir
             shutil.move(src, dst)
 
+
         # Write out Info.plist
         plist = {
             'CFBundleName': appname,
@@ -487,6 +526,15 @@ class build_apps(setuptools.Command):
             'CFBundleSignature': '', #TODO
             'CFBundleExecutable': self.macos_main_app,
         }
+
+        icon = self.icon_objects.get(
+            self.macos_main_app,
+            self.icon_objects.get('*', None)
+        )
+        if icon is not None:
+            plist['CFBundleIconFile'] = 'iconfile'
+            icon.makeICNS(os.path.join(resdir, 'iconfile.icns'))
+
         with open(os.path.join(contentsdir, 'Info.plist'), 'wb') as f:
             if hasattr(plistlib, 'dump'):
                 plistlib.dump(plist, f)
@@ -665,6 +713,8 @@ class build_apps(setuptools.Command):
             # Create a desktop entry for Linux
             if 'linux' in platform:
                 self.create_desktop_entry(builddir, appname, use_console)
+            elif 'win' in platform:
+                self.update_pe_resources(appname, target_path)
 
 
         for appname, scriptname in self.gui_apps.items():
