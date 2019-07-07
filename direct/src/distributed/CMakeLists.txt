@@ -16,10 +16,10 @@ set(P3DISTRIBUTED_SOURCES
   cDistributedSmoothNodeBase.cxx
 )
 
-add_component_library(p3distributed SYMBOL BUILDING_DIRECT_DISTRIBUTED
-  ${P3DISTRIBUTED_HEADERS} ${P3DISTRIBUTED_SOURCES})
-target_link_libraries(p3distributed p3directbase p3dcparser panda PKG::PYTHON)
-target_interrogate(p3distributed ALL)
+add_component_library(p3distributed NOINIT SYMBOL BUILDING_DIRECT_DISTRIBUTED
+  ${P3DISTRIBUTED_HEADERS})
+target_link_libraries(p3distributed p3directbase p3dcparser panda)
+target_interrogate(p3distributed ALL EXTENSIONS ${P3DISTRIBUTED_SOURCES})
 
 if(NOT BUILD_METALIBS)
   install(TARGETS p3distributed
