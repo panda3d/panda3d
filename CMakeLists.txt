@@ -23,7 +23,14 @@ unset(_version)
 
 enable_testing()
 
+# Create some convenience variables for the build configuration intdir. One uses
+# the build system's representation, while the other uses a generator expression.
 string(REPLACE "$(EFFECTIVE_PLATFORM_NAME)" "" PANDA_CFG_INTDIR "${CMAKE_CFG_INTDIR}")
+if(PANDA_CFG_INTDIR STREQUAL ".")
+  set(PANDA_CFG_INTDIR_GEN ".")
+else()
+  set(PANDA_CFG_INTDIR_GEN "$<CONFIG>")
+endif()
 
 # Add generic modules to cmake module path,
 # and add Panda3D specific modules to cmake module path
@@ -109,7 +116,7 @@ if(BUILD_MODELS)
                              -P ${PROJECT_SOURCE_DIR}/cmake/scripts/CopyPattern.cmake
                      COMMENT "Copying dmodels' assets")
 
-  install(DIRECTORY "${PROJECT_BINARY_DIR}/${PANDA_CFG_INTDIR}/models"
+  install(DIRECTORY "${PROJECT_BINARY_DIR}/${PANDA_CFG_INTDIR_GEN}/models"
     COMPONENT Models DESTINATION share/panda3d)
 endif()
 

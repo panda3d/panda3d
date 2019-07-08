@@ -195,14 +195,6 @@ message("See dtool_config.h for more details about the specified configuration."
 message("")
 
 # Generate dtool_config.h
-if("${PANDA_CFG_INTDIR}" STREQUAL ".")
-  # Single-configuration generator
-  set(intdir ".")
-else()
-  # Multi-configuration generator
-  set(intdir "${CMAKE_BUILD_TYPE}")
-endif()
-
 if(IS_MULTICONFIG)
   foreach(config ${CMAKE_CONFIGURATION_TYPES})
     foreach(option ${PER_CONFIG_OPTIONS})
@@ -227,7 +219,7 @@ else()
   configure_file(dtool_config.h.in "${PROJECT_BINARY_DIR}/include/dtool_config.h")
 endif()
 
-install(FILES "${PROJECT_BINARY_DIR}/${intdir}/include/dtool_config.h"
+install(FILES "${PROJECT_BINARY_DIR}/${PANDA_CFG_INTDIR_GEN}/include/dtool_config.h"
   COMPONENT CoreDevel
   DESTINATION include/panda3d)
 

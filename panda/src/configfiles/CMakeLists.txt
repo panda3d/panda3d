@@ -37,4 +37,4 @@ if(IS_MULTICONFIG)
                 INPUT "${PROJECT_BINARY_DIR}/etc/20_panda.prc")
 endif()
 
-install(FILES "${CMAKE_BINARY_DIR}/etc/20_panda.prc" COMPONENT Core DESTINATION etc)
+install(FILES "${CMAKE_BINARY_DIR}/${PANDA_CFG_INTDIR_GEN}/etc/20_panda.prc" COMPONENT Core DESTINATION etc)

@@ -37,17 +37,11 @@ if(CMAKE_GENERATOR STREQUAL "Xcode")
 
   # Xcode complains about codesigning if this option isn't set.
   set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
-
-  # On the Xcode generator, CMake generates a separate make target definition for
-  # every config, so it ends up spamming warnings once we try to build.
-  set(intdir $<CONFIG>)
-else()
-  set(intdir ${PANDA_CFG_INTDIR})
 endif()
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${intdir}/bin")
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${intdir}/lib")
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${intdir}/lib")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${PANDA_CFG_INTDIR_GEN}/bin")
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${PANDA_CFG_INTDIR_GEN}/lib")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${PANDA_CFG_INTDIR_GEN}/lib")
 
 set(MODULE_DESTINATION "lib")
 
