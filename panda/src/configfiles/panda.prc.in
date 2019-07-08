@@ -5,10 +5,7 @@
 plugin-path $THIS_PRC_DIR/../lib
 model-path $THIS_PRC_DIR/../share/panda3d/models
 
-# Let's set up a default window size of 800x600.  The user can
-# override this in his or her personal prc file.
-win-origin -2 -2
-win-size 800 600
+${WIN_SIZE}
 
 # Define the display types that have been compiled in.  Panda will
 # pick one of these by going through the list in this order until one
