@@ -33,8 +33,13 @@ find_package(Python ${WANT_PYTHON_VERSION} QUIET COMPONENTS Interpreter Developm
 if(Python_FOUND)
   set(PYTHON_FOUND ON)
   set(PYTHON_EXECUTABLE ${Python_EXECUTABLE})
-  set(PYTHON_INCLUDE_DIRS ${Python_INCLUDE_DIRS})
   set(PYTHON_VERSION_STRING ${Python_VERSION})
+
+  if(DEFINED PYTHON_INCLUDE_DIR)
+    set(PYTHON_INCLUDE_DIRS ${PYTHON_INCLUDE_DIR})
+  else()
+    set(PYTHON_INCLUDE_DIRS ${Python_INCLUDE_DIRS})
+  endif()
 
 else()
   find_package(PythonInterp ${WANT_PYTHON_VERSION} QUIET)
