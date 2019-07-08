@@ -364,6 +364,7 @@ class build_apps(setuptools.Command):
         for app, iconpath in self.icons.items():
             iconobj = Icon()
             iconobj.addImage(iconpath)
+            iconobj.generateMissingImages()
             self.icon_objects[app] = iconobj
 
     def run(self):
@@ -475,14 +476,13 @@ class build_apps(setuptools.Command):
             self.icon_objects.get('*', None),
         )
 
-        # if icon is not None:
-        #     pef = pefile.PEFile()
-        #     pef.open(runtime)
-        #     pef.add_icon(icon)
-        #     pef.add_resource_section()
-        #     pef.write_changes()
-        #     pef.close()
-
+        if icon is not None:
+            pef = pefile.PEFile()
+            pef.open(runtime, 'r+')
+            pef.add_icon(icon)
+            pef.add_resource_section()
+            pef.write_changes()
+            pef.close()
 
     def bundle_macos_app(self, builddir):
         """Bundle built runtime into a .app for macOS"""
