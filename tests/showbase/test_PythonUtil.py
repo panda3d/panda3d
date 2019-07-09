@@ -105,6 +105,12 @@ def test_priority_callbacks():
     assert len(l) == 0
 
 def test_weighted_choice():
+    # Test PythonUtil.weightedChoice() with no valid list.
+    item = PythonUtil.weightedChoice([])
+    
+    # Assert that what we got was a NoneType.
+    assert item == None
+    
     # Create a sample choice list.
     # This contains a few tuples containing only a weight
     # and an arbitrary item.
