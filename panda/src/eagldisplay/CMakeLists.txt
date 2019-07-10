@@ -7,6 +7,7 @@ set(P3EAGLDISPLAY_HEADERS
   eaglGraphicsPipe.h eaglGraphicsPipe.I
   eaglGraphicsStateGuardian.h eaglGraphicsStateGuardian.I
   eaglGraphicsWindow.h eaglGraphicsWindow.I
+  eaglGraphicsBuffer.h
   pandaEAGLView.h
   PandaViewController.h
 )
@@ -16,6 +17,7 @@ set(P3EAGLDISPLAY_SOURCES
   eaglGraphicsPipe.mm
   eaglGraphicsStateGuardian.mm
   eaglGraphicsWindow.mm
+  eaglGraphicsBuffer.mm
   pandaEAGLView.mm
   PandaViewController.mm
 )

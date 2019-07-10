@@ -36,15 +36,6 @@ public:
                      GraphicsOutput *host);
   ~EAGLGraphicsWindow();
   
-  PandaEAGLView *_view;
-  
-  GLuint _colorRenderbuffer;
-  GLuint _colorFramebuffer;
-  GLuint _depthRenderbuffer;
-  
-  GLint _backingWidth;
-  GLint _backingHeight;
-  
   virtual bool begin_frame(FrameMode mode, Thread *current_thread);
   virtual void end_frame(FrameMode mode, Thread *current_thread);
   
@@ -56,13 +47,21 @@ public:
 
 private:
   void create_framebuffer(EAGLGraphicsStateGuardian *guardian);
-  void destroy_framebuffer();
+  void destroy_framebuffer(EAGLGraphicsStateGuardian *guardian);
   
 //  virtual void set_properties_now(WindowProperties &properties);
   
 protected:
   virtual void close_window();
   virtual bool open_window();
+
+  PandaEAGLView *_view;
+  
+  GLuint _fbo;
+  GLuint _color_rb;
+  GLuint _depth_stencil_rb;
+
+  PT(GraphicsWindowInputDevice) _emulated_mouse_input;
 
 public:
   static TypeHandle get_class_type() {

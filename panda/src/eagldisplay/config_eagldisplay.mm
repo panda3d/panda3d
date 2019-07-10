@@ -17,6 +17,7 @@
 #include "pandaSystem.h"
 #include "eaglGraphicsPipe.h"
 #include "eaglGraphicsWindow.h"
+#include "eaglGraphicsBuffer.h"
 #include "eaglGraphicsStateGuardian.h"
 #include <dispatch/dispatch.h>
 
@@ -44,6 +45,7 @@ init_libeagldisplay() {
   
   EAGLGraphicsPipe::init_type();
   EAGLGraphicsWindow::init_type();
+  EAGLGraphicsBuffer::init_type();
   EAGLGraphicsStateGuardian::init_type();
   
   GraphicsPipeSelection *selection = GraphicsPipeSelection::get_global_ptr();

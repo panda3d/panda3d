@@ -19,3 +19,19 @@ INLINE const FrameBufferProperties &EAGLGraphicsStateGuardian::
 get_fb_properties() const {
   return _fbprops;
 }
+
+/*
+ *
+ */
+INLINE void EAGLGraphicsStateGuardian::
+lock_context() {
+  _context_lock.lock();
+}
+
+/*
+ *
+ */
+INLINE void EAGLGraphicsStateGuardian::
+unlock_context() {
+  _context_lock.unlock();
+}

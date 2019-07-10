@@ -19,8 +19,8 @@
 #include "configVariableBool.h"
 #include "configVariableInt.h"
 
-NotifyCategoryDecl(eagldisplay, EXPCL_MISC, EXPTP_MISC);
+NotifyCategoryDecl(eagldisplay, EXPORT_CLASS, EXPORT_TEMPL);
 
-extern EXPCL_MISC void init_libeagldisplay();
+extern void init_libeagldisplay();
 
 #endif  // CONFIG_IPHONE_H

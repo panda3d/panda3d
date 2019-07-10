@@ -62,7 +62,6 @@
 - (void)viewWillDisappear:(BOOL)animated {
   PyGILState_STATE gstate = PyGILState_Ensure();
   Py_Finalize();
-  PyGILState_Release(gstate);
 }
 
 - (void)pythonModuleMain {
@@ -78,7 +77,7 @@
   load_prc_file_data("", "notify-level-task debug");
   load_prc_file_data("", "color-bits 8 8 8");
   load_prc_file_data("", "alpha-bits 8");
-  load_prc_file_data("", "depth-bits 8");
+  load_prc_file_data("", "depth-bits 32");
   load_prc_file_data("", "framebuffer-srgb true");
   load_prc_file_data("", "threading-model Cull/Draw");
   load_prc_file_data("", "default-model-extension .egg");

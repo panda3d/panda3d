@@ -29,20 +29,24 @@ class EAGLGraphicsStateGuardian : public GLES2GraphicsStateGuardian {
 public:
   EAGLGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
                             EAGLGraphicsStateGuardian *share_with);
-  virtual ~EAGLGraphicsStateGuardian();
+  // virtual ~EAGLGraphicsStateGuardian();
   
   INLINE const FrameBufferProperties &get_fb_properties() const;
-  void get_properties(FrameBufferProperties &properties);
   void choose_pixel_format(const FrameBufferProperties &properties,
-                           bool need_pbuffer);
-  
+                           CAEAGLLayer *layer);
+
   FrameBufferProperties _fbprops;
   EAGLContext *_context;
-  
-  Mutex _context_lock;
+
+  INLINE void lock_context();
+  INLINE void unlock_context();
   
 protected:
   virtual void *do_get_extension_func(const char *name);
+
+  EAGLGraphicsStateGuardian *_shared_gsg;
+  
+  Mutex _context_lock;
   
 public:
   static TypeHandle get_class_type() {
