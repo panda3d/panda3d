@@ -6393,9 +6393,21 @@ pack_return_value(ostream &out, int indent_level, FunctionRemap *remap,
       TypeManager::is_vector_unsigned_char(type)) {
     // Most types are now handled by the many overloads of Dtool_WrapValue,
     // defined in py_panda.h.
-    indent(out, indent_level)
-      << "return Dtool_WrapValue(" << return_expr << ");\n";
-
+    if (!remap->_has_this && remap->_cppfunc != nullptr &&
+        remap->_cppfunc->get_simple_name() == "encrypt_string" &&
+        return_expr == "return_value") {
+      // Temporary hack to fix #684 to avoid an ABI change.
+      out << "#if PY_MAJOR_VERSION >= 3\n";
+      indent(out, indent_level)
+        << "return PyBytes_FromStringAndSize((char *)return_value.data(), (Py_ssize_t)return_value.size());\n";
+      out << "#else\n";
+      indent(out, indent_level)
+        << "return PyString_FromStringAndSize((char *)return_value.data(), (Py_ssize_t)return_value.size());\n";
+      out << "#endif\n";
+    } else {
+      indent(out, indent_level)
+        << "return Dtool_WrapValue(" << return_expr << ");\n";
+    }
   } else if (TypeManager::is_pointer(type)) {
     bool is_const = TypeManager::is_const_pointer_to_anything(type);
     bool owns_memory = remap->_return_value_needs_management;
