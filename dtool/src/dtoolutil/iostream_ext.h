@@ -31,13 +31,13 @@
 template<>
 class Extension<istream> : public ExtensionBase<istream> {
 public:
-  PyObject *read(int size=-1);
-  PyObject *read1(int size=-1);
+  PyObject *read(Py_ssize_t size=-1);
+  PyObject *read1(Py_ssize_t size=-1);
   PyObject *readall();
   std::streamsize readinto(PyObject *b);
 
-  PyObject *readline(int size=-1);
-  PyObject *readlines(int hint=-1);
+  PyObject *readline(Py_ssize_t size=-1);
+  PyObject *readlines(Py_ssize_t hint=-1);
   PyObject *__iter__(PyObject *self);
 };
 
