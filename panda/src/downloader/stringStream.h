@@ -27,6 +27,7 @@
 class EXPCL_PANDA_DOWNLOADER StringStream : public std::iostream {
 public:
   INLINE StringStream(const std::string &source);
+  INLINE StringStream(vector_uchar source);
 
 PUBLISHED:
   EXTENSION(StringStream(PyObject *source));
