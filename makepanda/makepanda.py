@@ -3738,7 +3738,6 @@ OPTS=['DIR:panda/src/downloader', 'OPENSSL', 'ZLIB']
 IGATEFILES=GetDirectoryContents('panda/src/downloader', ["*.h", "*_composite*.cxx"])
 TargetAdd('libp3downloader.in', opts=OPTS, input=IGATEFILES)
 TargetAdd('libp3downloader.in', opts=['IMOD:panda3d.core', 'ILIB:libp3downloader', 'SRCDIR:panda/src/downloader'])
-PyTargetAdd('p3downloader_stringStream_ext.obj', opts=OPTS, input='stringStream_ext.cxx')
 
 #
 # DIRECTORY: panda/metalibs/pandaexpress/
@@ -4361,7 +4360,6 @@ if (not RUNTIME):
   PyTargetAdd('core.pyd', input='p3prc_ext_composite.obj')
 
   PyTargetAdd('core.pyd', input='libp3downloader_igate.obj')
-  PyTargetAdd('core.pyd', input='p3downloader_stringStream_ext.obj')
   PyTargetAdd('core.pyd', input='p3express_ext_composite.obj')
   PyTargetAdd('core.pyd', input='libp3express_igate.obj')
 
