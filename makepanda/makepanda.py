@@ -967,6 +967,10 @@ if (COMPILER=="GCC"):
         else:
             PkgDisable("OPENCV")
 
+        if GetTarget() == "darwin" and not PkgSkip("OPENAL"):
+            LibName("OPENAL", "-framework AudioToolbox")
+            LibName("OPENAL", "-framework CoreAudio")
+
         if not PkgSkip("ASSIMP") and \
             os.path.isfile(GetThirdpartyDir() + "assimp/lib/libassimp.a"):
             # Also pick up IrrXML, which is needed when linking statically.
