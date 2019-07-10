@@ -18,6 +18,7 @@ set(P3DISTRIBUTED_SOURCES
 
 add_component_library(p3distributed NOINIT SYMBOL BUILDING_DIRECT_DISTRIBUTED
   ${P3DISTRIBUTED_HEADERS})
+set_target_properties(p3distributed PROPERTIES LINKER_LANGUAGE CXX)
 target_link_libraries(p3distributed p3directbase p3dcparser panda)
 target_interrogate(p3distributed ALL EXTENSIONS ${P3DISTRIBUTED_SOURCES})
 
