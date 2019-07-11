@@ -484,13 +484,9 @@ get_col(int col) const {
  */
 INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LMatrix4)::
 get_row3(int row) const {
-#ifdef HAVE_EIGEN
-  return FLOATNAME(LVecBase3)(_m.block<1, 3>(row, 0));
-#else
   return FLOATNAME(LVecBase3)((*this)(row, 0),
                               (*this)(row, 1),
                               (*this)(row, 2));
-#endif  // HAVE_EIGEN
 }
 
 /**
@@ -514,13 +510,9 @@ get_row3(FLOATNAME(LVecBase3) &result_vec,int row) const {
  */
 INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LMatrix4)::
 get_col3(int col) const {
-#ifdef HAVE_EIGEN
-  return FLOATNAME(LVecBase3)(_m.block<1, 3>(0, col));
-#else
   return FLOATNAME(LVecBase3)((*this)(0, col),
                               (*this)(1, col),
                               (*this)(2, col));
-#endif  // HAVE_EIGEN
 }
 
 /**

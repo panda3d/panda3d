@@ -104,7 +104,7 @@ MANYLINUX_LIBS = [
 
     # These are not mentioned in manylinux1 spec but should nonetheless always
     # be excluded.
-    "linux-vdso.so.1", "linux-gate.so.1", "ld-linux.so.2",
+    "linux-vdso.so.1", "linux-gate.so.1", "ld-linux.so.2", "libdrm.so.2",
 ]
 
 # Binaries to never scan for dependencies on non-Windows systems.
@@ -143,6 +143,32 @@ METADATA = {
     },
     "classifiers": GetMetadataValue('classifiers'),
 }
+
+DESCRIPTION = """
+The Panda3D free 3D game engine
+===============================
+
+Panda3D is a powerful 3D engine written in C++, with a complete set of Python
+bindings. Unlike other engines, these bindings are automatically generated,
+meaning that they are always up-to-date and complete: all functions of the
+engine can be controlled from Python. All major Panda3D applications have been
+written in Python, this is the intended way of using the engine.
+
+Panda3D now supports automatic shader generation, which now means you can use
+normal maps, gloss maps, glow maps, HDR, cartoon shading, and the like without
+having to write any shaders.
+
+Panda3D is a modern engine supporting advanced features such as shaders,
+stencil, and render-to-texture. Panda3D is unusual in that it emphasizes a
+short learning curve, rapid development, and extreme stability and robustness.
+Panda3D is free software that runs under Windows, Linux, or macOS.
+
+The Panda3D team is very concerned with making the engine accessible to new
+users. We provide a detailed manual, a complete API reference, and a large
+collection of sample programs to help you get started. We have active forums,
+with many helpful users, and the developers are regularly online to answer
+questions.
+"""
 
 PANDA3D_TOOLS_INIT = """import os, sys
 import panda3d
@@ -544,6 +570,8 @@ def makewheel(version, output_dir, platform=None):
         "Platform: {0}\n".format(platform),
     ] + ["Classifier: {0}\n".format(c) for c in METADATA['classifiers']])
 
+    metadata += '\n' + DESCRIPTION.strip() + '\n'
+
     # Zip it up and name it the right thing
     whl = WheelFile('panda3d', version, platform)
     whl.lib_path = [libs_dir]
@@ -568,10 +596,23 @@ def makewheel(version, output_dir, platform=None):
 
     # Write the panda3d tree.  We use a custom empty __init__ since the
     # default one adds the bin directory to the PATH, which we don't have.
-    whl.write_file_data('panda3d/__init__.py', """"Python bindings for the Panda3D libraries"
+    p3d_init = """"Python bindings for the Panda3D libraries"
 
 __version__ = '{0}'
-""".format(version))
+""".format(version)
+
+    if '27' in ABI_TAG:
+        p3d_init += """
+if __debug__:
+    import sys
+    if sys.version_info < (3, 0):
+        sys.stderr.write("WARNING: Python 2.7 will reach EOL after December 31, 2019.\\n")
+        sys.stderr.write("To suppress this warning, upgrade to Python 3.\\n")
+        sys.stderr.flush()
+    del sys
+"""
+
+    whl.write_file_data('panda3d/__init__.py', p3d_init)
 
     # Copy the extension modules from the panda3d directory.
     ext_suffix = GetExtensionSuffix()

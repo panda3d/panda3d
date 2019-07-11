@@ -12,24 +12,6 @@
  */
 
 /**
- * Creates a new ParamNodePath storing the given node path object.
- */
-INLINE ParamNodePath::
-ParamNodePath(const NodePath &node_path) :
-  _node_path(node_path)
-{
-}
-
-/**
- * Creates a new ParamNodePath storing the given node path object.
- */
-INLINE ParamNodePath::
-ParamNodePath(NodePath &&node_path) noexcept :
-  _node_path(std::move(node_path))
-{
-}
-
-/**
  * Returns NodePath::get_class_type().
  */
 INLINE TypeHandle ParamNodePath::
@@ -40,7 +22,7 @@ get_value_type() const {
 /**
  * Retrieves the NodePath stored in the parameter.
  */
-INLINE const NodePath &ParamNodePath::
+INLINE NodePath ParamNodePath::
 get_value() const {
   return _node_path;
 }

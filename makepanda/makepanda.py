@@ -158,7 +158,7 @@ def usage(problem):
     print("  --everything      (enable every third-party lib)")
     print("  --directx-sdk=X   (specify version of DirectX SDK to use: jun2010, aug2009, mar2009, aug2006)")
     print("  --windows-sdk=X   (specify Windows SDK version, eg. 7.0, 7.1 or 10.  Default is 7.1)")
-    print("  --msvc-version=X  (specify Visual C++ version, eg. 10, 11, 12, 14.  Default is 14)")
+    print("  --msvc-version=X  (specify Visual C++ version, eg. 10, 11, 12, 14, 14.1, 14.2.  Default is 14)")
     print("  --use-icl         (experimental setting to use an intel compiler instead of MSVC on Windows)")
     print("")
     print("The simplest way to compile panda is to just type:")
@@ -556,6 +556,17 @@ if RUNTIME and not HOST_URL:
     # Set this to a nice default.
     HOST_URL = "https://runtime.panda3d.org/"
 
+if not PkgSkip("PYTHON") and SDK["PYTHONVERSION"] == "python2.7":
+    warn_prefix = "%sWARNING:%s " % (GetColor("red"), GetColor())
+    print("=========================================================================")
+    print(warn_prefix + "Python 2.7 will reach EOL after December 31, 2019, and will not")
+    print(warn_prefix + "be supported after that date.  Please ensure you are prepared")
+    print(warn_prefix + "by planning your upgrade to Python 3 now.")
+    print("=========================================================================")
+    sys.stdout.flush()
+    # Give the user some time to contemplate their sins
+    time.sleep(6.0)
+
 ########################################################################
 ##
 ## Choose a Compiler.
@@ -868,13 +879,14 @@ if (COMPILER=="GCC"):
     fcollada_libs = ("FColladaD", "FColladaSD", "FColladaS")
     # WARNING! The order of the ffmpeg libraries matters!
     ffmpeg_libs = ("libavformat", "libavcodec", "libavutil")
+    assimp_libs = ("libassimp", "libassimpd")
 
     #         Name         pkg-config   libs, include(dir)s
     if (not RUNTIME):
         SmartPkgEnable("EIGEN",     "eigen3",    (), ("Eigen/Dense",), target_pkg = 'ALWAYS')
         SmartPkgEnable("ARTOOLKIT", "",          ("AR"), "AR/ar.h")
         SmartPkgEnable("FCOLLADA",  "",          ChooseLib(fcollada_libs, "FCOLLADA"), ("FCollada", "FCollada/FCollada.h"))
-        SmartPkgEnable("ASSIMP",    "assimp",    ("assimp"), "assimp/Importer.hpp")
+        SmartPkgEnable("ASSIMP",    "assimp",    ChooseLib(assimp_libs, "ASSIMP"), "assimp/Importer.hpp")
         SmartPkgEnable("FFMPEG",    ffmpeg_libs, ffmpeg_libs, ("libavformat/avformat.h", "libavcodec/avcodec.h", "libavutil/avutil.h"))
         SmartPkgEnable("SWSCALE",   "libswscale", "libswscale", ("libswscale/swscale.h"), target_pkg = "FFMPEG", thirdparty_dir = "ffmpeg")
         SmartPkgEnable("SWRESAMPLE","libswresample", "libswresample", ("libswresample/swresample.h"), target_pkg = "FFMPEG", thirdparty_dir = "ffmpeg")
@@ -917,6 +929,10 @@ if (COMPILER=="GCC"):
                                ("opencv", "opencv/cv.h", "opencv/cxcore.h", "opencv/highgui.h"))
         else:
             PkgDisable("OPENCV")
+
+        if GetTarget() == "darwin" and not PkgSkip("OPENAL"):
+            LibName("OPENAL", "-framework AudioToolbox")
+            LibName("OPENAL", "-framework CoreAudio")
 
         if not PkgSkip("ASSIMP") and \
             os.path.isfile(GetThirdpartyDir() + "assimp/lib/libassimp.a"):
@@ -1003,11 +1019,25 @@ if (COMPILER=="GCC"):
 
     if GetTarget() == 'darwin':
         LibName("ALWAYS", "-framework AppKit")
+        LibName("IOKIT", "-framework IOKit")
+        LibName("QUARTZ", "-framework Quartz")
         LibName("AGL", "-framework AGL")
         LibName("CARBON", "-framework Carbon")
         LibName("COCOA", "-framework Cocoa")
         # Fix for a bug in OSX Leopard:
         LibName("GL", "-dylib_file /System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib")
+
+        # Temporary exceptions to removal of this flag
+        if not PkgSkip("ROCKET"):
+            LibName("ROCKET", "-undefined dynamic_lookup")
+        if not PkgSkip("FFMPEG"):
+            LibName("FFMPEG", "-undefined dynamic_lookup")
+        if not PkgSkip("ASSIMP"):
+            LibName("ASSIMP", "-undefined dynamic_lookup")
+        if not PkgSkip("OPENEXR"):
+            LibName("OPENEXR", "-undefined dynamic_lookup")
+        if not PkgSkip("VRPN"):
+            LibName("VRPN", "-undefined dynamic_lookup")
 
     if GetTarget() == 'android':
         LibName("ALWAYS", '-llog')
@@ -1134,6 +1164,7 @@ def BracketNameWithQuotes(name):
     # Workaround for OSX bug - compiler doesn't like those flags quoted.
     if (name.startswith("-framework")): return name
     if (name.startswith("-dylib_file")): return name
+    if (name.startswith("-undefined ")): return name
 
     # Don't add quotes when it's not necessary.
     if " " not in name: return name
@@ -1535,7 +1566,7 @@ def CompileIgate(woutd,wsrc,opts):
         # NOTE: this 1600 value is the version number for VC2010.
         cmd += ' -D_MSC_VER=1600 -D"__declspec(param)=" -D__cdecl -D_near -D_far -D__near -D__far -D__stdcall'
     if (COMPILER=="GCC"):
-        cmd += ' -D__attribute__\(x\)='
+        cmd += ' -D__attribute__\\(x\\)='
         target_arch = GetTargetArch()
         if target_arch in ("x86_64", "amd64"):
             cmd += ' -D_LP64'
@@ -1640,9 +1671,9 @@ def CompileLib(lib, obj, opts):
                 cmd += " /MACHINE:" + GetTargetArch().upper()
             cmd += ' /OUT:' + BracketNameWithQuotes(lib)
             for x in obj: cmd += ' ' + BracketNameWithQuotes(x)
-            cmd += ' /LIBPATH:"C:\Program Files (x86)\Intel\Composer XE 2011 SP1\ipp\lib\ia32"'
-            cmd += ' /LIBPATH:"C:\Program Files (x86)\Intel\Composer XE 2011 SP1\TBB\Lib\ia32\vc10"'
-            cmd += ' /LIBPATH:"C:\Program Files (x86)\Intel\Composer XE 2011 SP1\compiler\lib\ia32"'
+            cmd += ' /LIBPATH:"C:\\Program Files (x86)\\Intel\\Composer XE 2011 SP1\\ipp\\lib\\ia32"'
+            cmd += ' /LIBPATH:"C:\\Program Files (x86)\\Intel\\Composer XE 2011 SP1\\TBB\\Lib\\ia32\\vc10"'
+            cmd += ' /LIBPATH:"C:\\Program Files (x86)\\Intel\\Composer XE 2011 SP1\\compiler\\lib\\ia32"'
             oscmd(cmd)
 
     if (COMPILER=="GCC"):
@@ -1748,9 +1779,9 @@ def CompileLink(dll, obj, opts):
                 cmd += " /NOD:MFC90.LIB /NOD:MFC80.LIB /NOD:LIBCMT"
             cmd += " /NOD:LIBCI.LIB /DEBUG"
             cmd += " /nod:libc /nod:libcmtd /nod:atlthunk /nod:atls"
-            cmd += ' /LIBPATH:"C:\Program Files (x86)\Intel\Composer XE 2011 SP1\ipp\lib\ia32"'
-            cmd += ' /LIBPATH:"C:\Program Files (x86)\Intel\Composer XE 2011 SP1\TBB\Lib\ia32\vc10"'
-            cmd += ' /LIBPATH:"C:\Program Files (x86)\Intel\Composer XE 2011 SP1\compiler\lib\ia32"'
+            cmd += ' /LIBPATH:"C:\\Program Files (x86)\\Intel\\Composer XE 2011 SP1\\ipp\\lib\\ia32"'
+            cmd += ' /LIBPATH:"C:\\Program Files (x86)\\Intel\\Composer XE 2011 SP1\\TBB\\Lib\\ia32\\vc10"'
+            cmd += ' /LIBPATH:"C:\\Program Files (x86)\\Intel\\Composer XE 2011 SP1\\compiler\\lib\\ia32"'
             if (GetOrigExt(dll) != ".exe"): cmd += " /DLL"
             optlevel = GetOptimizeOption(opts)
             if (optlevel==1): cmd += " /MAP /MAPINFO:EXPORTS /NOD:MSVCRT.LIB /NOD:MSVCPRT.LIB /NOD:MSVCIRT.LIB"
@@ -1807,9 +1838,11 @@ def CompileLink(dll, obj, opts):
                 cmd += ' -Wl,--allow-shlib-undefined'
         else:
             if (GetTarget() == "darwin"):
-                cmd = cxx + ' -undefined dynamic_lookup'
-                if ("BUNDLE" in opts or GetOrigExt(dll) == ".pyd"):
-                    cmd += ' -bundle '
+                cmd = cxx
+                if GetOrigExt(dll) == ".pyd":
+                    cmd += ' -bundle -undefined dynamic_lookup'
+                elif "BUNDLE" in opts:
+                    cmd += ' -bundle'
                 else:
                     install_name = '@loader_path/../lib/' + os.path.basename(dll)
                     cmd += ' -dynamiclib -install_name ' + install_name
@@ -2319,7 +2352,6 @@ DTOOL_CONFIG=[
     ("COMPILE_IN_DEFAULT_FONT",        '1',                      '1'),
     ("STDFLOAT_DOUBLE",                'UNDEF',                  'UNDEF'),
     ("HAVE_MAYA",                      '1',                      '1'),
-    ("HAVE_SOFTIMAGE",                 'UNDEF',                  'UNDEF'),
     ("REPORT_OPENSSL_ERRORS",          '1',                      '1'),
     ("USE_PANDAFILESTREAM",            '1',                      '1'),
     ("USE_DELETED_CHAIN",              '1',                      '1'),
@@ -2860,6 +2892,14 @@ for basename in del_files:
 p3d_init = """"Python bindings for the Panda3D libraries"
 
 __version__ = '%s'
+
+if __debug__:
+    import sys
+    if sys.version_info < (3, 0):
+        sys.stderr.write("WARNING: Python 2.7 will reach EOL after December 31, 2019.\\n")
+        sys.stderr.write("To suppress this warning, upgrade to Python 3.\\n")
+        sys.stderr.flush()
+    del sys
 """ % (WHLVERSION)
 
 if GetTarget() == 'windows':
@@ -3007,9 +3047,6 @@ else:
 
 if (GetTarget() == 'darwin'):
     configprc = configprc.replace("$XDG_CACHE_HOME/panda3d", "$HOME/Library/Caches/Panda3D-%s" % MAJOR_VERSION)
-
-    # OpenAL is not yet working well on OSX for us, so let's do this for now.
-    configprc = configprc.replace("p3openal_audio", "p3fmod_audio")
 
 if GetTarget() == 'windows':
     # Convert to Windows newlines.
@@ -3659,6 +3696,7 @@ IGATEFILES += [
     "globPattern_ext.h",
     "pandaFileStream.h",
     "lineStream.h",
+    "iostream_ext.h",
 ]
 TargetAdd('libp3dtoolutil.in', opts=OPTS, input=IGATEFILES)
 TargetAdd('libp3dtoolutil.in', opts=['IMOD:panda3d.core', 'ILIB:libp3dtoolutil', 'SRCDIR:dtool/src/dtoolutil'])
@@ -3707,7 +3745,6 @@ OPTS=['DIR:panda/src/downloader', 'OPENSSL', 'ZLIB']
 IGATEFILES=GetDirectoryContents('panda/src/downloader', ["*.h", "*_composite*.cxx"])
 TargetAdd('libp3downloader.in', opts=OPTS, input=IGATEFILES)
 TargetAdd('libp3downloader.in', opts=['IMOD:panda3d.core', 'ILIB:libp3downloader', 'SRCDIR:panda/src/downloader'])
-PyTargetAdd('p3downloader_stringStream_ext.obj', opts=OPTS, input='stringStream_ext.cxx')
 
 #
 # DIRECTORY: panda/metalibs/pandaexpress/
@@ -3990,12 +4027,12 @@ if (not RUNTIME):
 #
 
 if (not RUNTIME):
-  OPTS=['DIR:panda/src/display', 'BUILDING:PANDA']
+  OPTS=['DIR:panda/src/display', 'BUILDING:PANDA', 'X11']
   TargetAdd('p3display_graphicsStateGuardian.obj', opts=OPTS, input='graphicsStateGuardian.cxx')
   TargetAdd('p3display_composite1.obj', opts=OPTS, input='p3display_composite1.cxx')
   TargetAdd('p3display_composite2.obj', opts=OPTS, input='p3display_composite2.cxx')
 
-  OPTS=['DIR:panda/src/display']
+  OPTS=['DIR:panda/src/display', 'X11']
   IGATEFILES=GetDirectoryContents('panda/src/display', ["*.h", "*_composite*.cxx"])
   IGATEFILES.remove("renderBuffer.h")
   TargetAdd('libp3display.in', opts=OPTS, input=IGATEFILES)
@@ -4202,7 +4239,7 @@ if (not RUNTIME):
   OPTS=['DIR:panda/metalibs/panda', 'BUILDING:PANDA', 'JPEG', 'PNG', 'HARFBUZZ',
       'TIFF', 'OPENEXR', 'ZLIB', 'OPENSSL', 'FREETYPE', 'FFTW', 'ADVAPI', 'WINSOCK2',
       'SQUISH', 'NVIDIACG', 'VORBIS', 'OPUS', 'WINUSER', 'WINMM', 'WINGDI', 'IPHLPAPI',
-      'SETUPAPI']
+      'SETUPAPI', 'IOKIT']
 
   TargetAdd('panda_panda.obj', opts=OPTS, input='panda.cxx')
 
@@ -4330,7 +4367,6 @@ if (not RUNTIME):
   PyTargetAdd('core.pyd', input='p3prc_ext_composite.obj')
 
   PyTargetAdd('core.pyd', input='libp3downloader_igate.obj')
-  PyTargetAdd('core.pyd', input='p3downloader_stringStream_ext.obj')
   PyTargetAdd('core.pyd', input='p3express_ext_composite.obj')
   PyTargetAdd('core.pyd', input='libp3express_igate.obj')
 
@@ -4715,7 +4751,7 @@ if not RUNTIME and not PkgSkip("EGG"):
   TargetAdd('p3egg2pg_composite2.obj', opts=OPTS, input='p3egg2pg_composite2.cxx')
 
   OPTS=['DIR:panda/src/egg2pg']
-  IGATEFILES=['load_egg_file.h']
+  IGATEFILES=['load_egg_file.h', 'save_egg_file.h']
   TargetAdd('libp3egg2pg.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3egg2pg.in', opts=['IMOD:panda3d.egg', 'ILIB:libp3egg2pg', 'SRCDIR:panda/src/egg2pg'])
 
@@ -4841,7 +4877,7 @@ if (GetTarget() == 'darwin' and PkgSkip("COCOA")==0 and PkgSkip("GL")==0 and not
   if (PkgSkip('PANDAFX')==0):
     TargetAdd('libpandagl.dll', input='libpandafx.dll')
   TargetAdd('libpandagl.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandagl.dll', opts=['MODULE', 'GL', 'NVIDIACG', 'CGGL', 'COCOA', 'CARBON'])
+  TargetAdd('libpandagl.dll', opts=['MODULE', 'GL', 'NVIDIACG', 'CGGL', 'COCOA', 'CARBON', 'QUARTZ'])
 
 #
 # DIRECTORY: panda/src/wgldisplay/
@@ -5178,7 +5214,7 @@ if (not RUNTIME and GetTarget() == 'android'):
     TargetAdd('libppython.dll', input='libp3framework.dll')
     TargetAdd('libppython.dll', input='libp3android.dll')
     TargetAdd('libppython.dll', input=COMMON_PANDA_LIBS)
-    TargetAdd('libppython.dll', opts=['MODULE', 'ANDROID'])
+    TargetAdd('libppython.dll', opts=['MODULE', 'ANDROID', 'PYTHON'])
 
 #
 # DIRECTORY: panda/src/androiddisplay/
@@ -5203,7 +5239,7 @@ if (GetTarget() == 'android' and PkgSkip("EGL")==0 and PkgSkip("GLES")==0 and no
 #
 
 if (not RUNTIME and (GetTarget() in ('windows', 'darwin') or PkgSkip("X11")==0) and PkgSkip("TINYDISPLAY")==0):
-  OPTS=['DIR:panda/src/tinydisplay', 'BUILDING:TINYDISPLAY']
+  OPTS=['DIR:panda/src/tinydisplay', 'BUILDING:TINYDISPLAY', 'X11']
   TargetAdd('p3tinydisplay_composite1.obj', opts=OPTS, input='p3tinydisplay_composite1.cxx')
   TargetAdd('p3tinydisplay_composite2.obj', opts=OPTS, input='p3tinydisplay_composite2.cxx')
   TargetAdd('p3tinydisplay_ztriangle_1.obj', opts=OPTS, input='ztriangle_1.cxx')
@@ -6565,7 +6601,7 @@ if PkgSkip("PYTHON") == 0:
 
     if GetTarget() == 'linux' or GetTarget() == 'freebsd':
         # Setup rpath so libs can be found in the same directory as the deployed game
-        LibName('DEPLOYSTUB', "-Wl,-rpath,\$ORIGIN")
+        LibName('DEPLOYSTUB', "-Wl,-rpath,\\$ORIGIN")
         LibName('DEPLOYSTUB', "-Wl,-z,origin")
         LibName('DEPLOYSTUB', "-rdynamic")
     PyTargetAdd('deploy-stub.exe', input='deploy-stub.obj')

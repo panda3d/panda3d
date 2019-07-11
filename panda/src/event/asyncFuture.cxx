@@ -14,7 +14,6 @@
 #include "asyncFuture.h"
 #include "asyncTask.h"
 #include "asyncTaskManager.h"
-#include "conditionVarFull.h"
 #include "config_event.h"
 #include "pStatTimer.h"
 #include "throw_event.h"

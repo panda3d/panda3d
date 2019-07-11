@@ -225,6 +225,29 @@ set_shader_input(ShaderInput &&input) const {
 }
 
 /**
+ * Returns a new ShaderAttrib with the given shader inputs set.  This is a
+ * more efficient way to set multiple shader inputs than calling
+ * set_shader_input multiple times.
+ */
+CPT(RenderAttrib) ShaderAttrib::
+set_shader_inputs(const pvector<ShaderInput> &inputs) const {
+  ShaderAttrib *result = new ShaderAttrib(*this);
+
+  size_t num_inputs = inputs.size();
+  for (size_t i = 0; i < num_inputs; i++) {
+    const ShaderInput &input = inputs[i];
+    Inputs::iterator itr = result->_inputs.find(input.get_name());
+    if (itr == result->_inputs.end()) {
+      result->_inputs.insert(Inputs::value_type(input.get_name(), input));
+    } else {
+      itr->second = input;
+    }
+  }
+
+  return return_new(result);
+}
+
+/**
  * Sets the geometry instance count.  Do not confuse this with instanceTo,
  * which is used for animation instancing, and has nothing to do with this.  A
  * value of 0 means not to use instancing at all.
@@ -291,7 +314,7 @@ get_shader_input(const std::string &id) const {
  * Returns the ShaderInput as a nodepath.  Assertion fails if there is none,
  * or if it is not a nodepath.
  */
-const NodePath &ShaderAttrib::
+NodePath ShaderAttrib::
 get_shader_input_nodepath(const InternalName *id) const {
   static NodePath resfail;
   Inputs::const_iterator i = _inputs.find(id);
@@ -396,6 +419,57 @@ get_shader_input_ptr(const InternalName *id) const {
     strm << "Shader input " << id->get_name() << " is not present.\n";
     nassert_raise(strm.str());
     return nullptr;
+  }
+}
+
+/**
+ * Returns the ShaderInput as a ShaderPtrData struct.  Assertion fails if
+ * there is none.  or if it is not a PTA(double/float)
+ */
+bool ShaderAttrib::
+get_shader_input_ptr(const InternalName *id, Shader::ShaderPtrData &data) const {
+  Inputs::const_iterator i = _inputs.find(id);
+  if (i != _inputs.end()) {
+    const ShaderInput &p = (*i).second;
+    if (p.get_value_type() == ShaderInput::M_numeric ||
+        p.get_value_type() == ShaderInput::M_vector) {
+
+      data = p.get_ptr();
+      return (data._ptr != nullptr);
+    }
+    if (p.get_value_type() == ShaderInput::M_param) {
+      // Temporary solution until the new param system
+      TypedWritableReferenceCount *param = p.get_value();
+      if (param != nullptr) {
+        if (param->is_of_type(ParamVecBase4f::get_class_type())) {
+          data._ptr = (void *)((const ParamVecBase4f *)param)->get_value().get_data();
+          data._size = 4;
+          data._type = Shader::SPT_float;
+          return true;
+        }
+        else if (param->is_of_type(ParamVecBase4i::get_class_type())) {
+          data._ptr = (void *)((const ParamVecBase4i *)param)->get_value().get_data();
+          data._size = 4;
+          data._type = Shader::SPT_int;
+          return true;
+        }
+        else if (param->is_of_type(ParamVecBase4d::get_class_type())) {
+          data._ptr = (void *)((const ParamVecBase4d *)param)->get_value().get_data();
+          data._size = 4;
+          data._type = Shader::SPT_float;
+          return true;
+        }
+      }
+    }
+    ostringstream strm;
+    strm << "Shader input " << id->get_name() << " was given an incompatible parameter type.\n";
+    nassert_raise(strm.str());
+    return false;
+  } else {
+    ostringstream strm;
+    strm << "Shader input " << id->get_name() << " is not present.\n";
+    nassert_raise(strm.str());
+    return false;
   }
 }
 

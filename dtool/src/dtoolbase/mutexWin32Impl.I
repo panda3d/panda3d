@@ -16,7 +16,11 @@
  */
 INLINE MutexWin32Impl::
 ~MutexWin32Impl() {
-  DeleteCriticalSection(&_lock);
+  // If the lock has been contended, and we use the Windows XP implementation,
+  // we have a handle to close.  Otherwise, this field will be null.
+  if (_lock[1] != nullptr) {
+    CloseHandle(_lock[1]);
+  }
 }
 
 /**
@@ -24,7 +28,7 @@ INLINE MutexWin32Impl::
  */
 INLINE void MutexWin32Impl::
 lock() {
-  EnterCriticalSection(&_lock);
+  _funcs._lock(_lock);
 }
 
 /**
@@ -32,13 +36,45 @@ lock() {
  */
 INLINE bool MutexWin32Impl::
 try_lock() {
-  return (TryEnterCriticalSection(&_lock) != 0);
+  return (_funcs._try_lock(_lock) != 0);
 }
 
 /**
  *
  */
 INLINE void MutexWin32Impl::
+unlock() {
+  _funcs._unlock(_lock);
+}
+
+/**
+ *
+ */
+INLINE ReMutexWin32Impl::
+~ReMutexWin32Impl() {
+  DeleteCriticalSection(&_lock);
+}
+
+/**
+ *
+ */
+INLINE void ReMutexWin32Impl::
+lock() {
+  EnterCriticalSection(&_lock);
+}
+
+/**
+ *
+ */
+INLINE bool ReMutexWin32Impl::
+try_lock() {
+  return (TryEnterCriticalSection(&_lock) != 0);
+}
+
+/**
+ *
+ */
+INLINE void ReMutexWin32Impl::
 unlock() {
   LeaveCriticalSection(&_lock);
 }

@@ -35,6 +35,8 @@ PUBLISHED:
   virtual int get_num_frames() const;
   INLINE void set_frame_rate(double frame_rate);
 
+  MAKE_PROPERTY(frame_rate, get_frame_rate, set_frame_rate);
+
 public:
   virtual PandaNode *make_copy() const;
   virtual bool safe_to_combine() const;

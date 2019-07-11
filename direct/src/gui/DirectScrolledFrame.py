@@ -100,8 +100,10 @@ class DirectScrolledFrame(DirectFrame):
                 simpleChildGui = self.guiDict.get(parts[-1])
                 if simpleChildGui:
                     simpleChildGui.destroy()
-        self.verticalScroll.destroy()
-        self.horizontalScroll.destroy()
-        del self.verticalScroll
-        del self.horizontalScroll
+        if self.verticalScroll:
+            self.verticalScroll.destroy()
+        if self.horizontalScroll:
+            self.horizontalScroll.destroy()
+        self.verticalScroll = None
+        self.horizontalScroll = None
         DirectFrame.destroy(self)

@@ -37,16 +37,6 @@ ptr() {
 }
 
 /**
- * Ensures the lock pointer has been allocated.
- */
-INLINE void TypeRegistry::
-init_lock() {
-  if (_lock == nullptr) {
-    _lock = new MutexImpl;
-  }
-}
-
-/**
  * Returns the TypeRegistryNode associated with the indicated TypeHandle.  If
  * there is no associated TypeRegistryNode, reports an error condition and
  * returns NULL.

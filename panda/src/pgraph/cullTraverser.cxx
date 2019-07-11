@@ -97,6 +97,8 @@ set_scene(SceneSetup *scene_setup, GraphicsStateGuardianBase *gsg,
   _camera_mask = camera->get_camera_mask();
 
   _effective_incomplete_render = _gsg->get_incomplete_render() && dr_incomplete_render;
+
+  _view_frustum = scene_setup->get_view_frustum();
 }
 
 /**

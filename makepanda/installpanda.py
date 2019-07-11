@@ -62,7 +62,7 @@ def WriteMimeXMLFile(fname, info):
         fhandle.write("\t<mime-type type=\"%s\">\n" % (mime))
         fhandle.write("\t\t<comment xml:lang=\"en\">%s</comment>\n" % (desc))
         fhandle.write("\t\t<glob pattern=\"*.%s\"/>\n" % (ext))
-        fhandle.write("\t</mime-type>\s")
+        fhandle.write("\t</mime-type>\n")
     fhandle.write("</mime-info>\n")
     fhandle.close()
 

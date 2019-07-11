@@ -56,9 +56,9 @@ import os, sys, parser, symbol, token, re
 #
 ########################################################################
 
-SECHEADER = re.compile("^[A-Z][a-z]+\s*:")
-JUNKHEADER = re.compile("^((Function)|(Access))\s*:")
-IMPORTSTAR = re.compile("^from\s+([a-zA-Z0-9_.]+)\s+import\s+[*]\s*$")
+SECHEADER = re.compile("^[A-Z][a-z]+\\s*:")
+JUNKHEADER = re.compile("^((Function)|(Access))\\s*:")
+IMPORTSTAR = re.compile("^from\\s+([a-zA-Z0-9_.]+)\\s+import\\s+[*]\\s*$")
 IDENTIFIER = re.compile("[a-zA-Z0-9_]+")
 FILEHEADER = re.compile(
 r"""^// Filename: [a-zA-Z.]+

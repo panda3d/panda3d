@@ -17,7 +17,6 @@
 #include "config_pipeline.h"
 #include "mutexDebug.h"
 #include "conditionVarDebug.h"
-#include "conditionVarFullDebug.h"
 
 Thread *Thread::_main_thread;
 Thread *Thread::_external_thread;
@@ -52,7 +51,6 @@ Thread(const std::string &name, const std::string &sync_name) :
 #ifdef DEBUG_THREADS
   _blocked_on_mutex = nullptr;
   _waiting_on_cvar = nullptr;
-  _waiting_on_cvar_full = nullptr;
 #endif
 }
 
@@ -63,8 +61,7 @@ Thread::
 ~Thread() {
 #ifdef DEBUG_THREADS
   nassertv(_blocked_on_mutex == nullptr &&
-           _waiting_on_cvar == nullptr &&
-           _waiting_on_cvar_full == nullptr);
+           _waiting_on_cvar == nullptr);
 #endif
 }
 
@@ -145,8 +142,6 @@ output_blocker(std::ostream &out) const {
     _blocked_on_mutex->output_with_holder(out);
   } else if (_waiting_on_cvar != nullptr) {
     out << *_waiting_on_cvar;
-  } else if (_waiting_on_cvar_full != nullptr) {
-    out << *_waiting_on_cvar_full;
   }
 #endif  // DEBUG_THREADS
 }

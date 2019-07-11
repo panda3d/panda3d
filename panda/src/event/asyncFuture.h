@@ -22,7 +22,6 @@
 
 class AsyncTaskManager;
 class AsyncTask;
-class ConditionVarFull;
 
 /**
  * This class represents a thread-safe handle to a promised future result of

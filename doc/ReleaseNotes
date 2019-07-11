@@ -1,7 +1,97 @@
+------------------------  RELEASE 1.10.3  -----------------------
+
+This is another bugfix release that addresses a variety of issues
+in 1.10.2 and further improves the stability.
+
+* Fix crash when unplugging certain devices on macOS
+* Fix crash on macOS when using RIME input
+* Fix logging issues/crashes in apps deployed with Python 2.7
+* Fix issues when starting in fullscreen on Linux/X11
+* Fix mapping of several gamepads including Trust GXT 24
+* Fix Linux crash when no input devices are present
+* Unbreak support for matrix arrays in vertex data in OpenGL
+* Allow creating multisample FBO in OpenGL with non-MS host window
+* Support playing and looping compressed Ogg and WAV audio files
+* Fix generation of CollisionBox for transformed geometry in .egg
+* Fix Bullet rigid body transform not updating after reparenting
+* Fix sporadic color scales with lighting and custom GLSL shader
+* Prevent faulty shaders from shutting down GSG on some drivers
+* Allow None as either argument to OdeJoint.attach()
+* Fix BufferViewer when main window is not opened right away
+* Properly detect extension of pz/gz compressed video/audio files
+* Fix for invalid behavior of SparseArray methods to clear bits
+* FilterManager now allows overriding framebuffer properties
+* Fix detection of core-only OpenGL profile on some drivers
+* Add gl-forward-compatible config var for OpenGL context creation
+* Add paste-emit-keystrokes variable to disable Ctrl+V on Windows
+* Fix in-place |= operator on Panda types (such as SparseArray)
+* Fix rare FFmpeg "bad src image pointers" errors after seek
+* Fix uses of types.InstanceType in some obscure direct functions
+* Fix capsule-into-sphere collision test in degenerate case
+* KeyboardButton.ascii_key now also accepts a str character
+* Fix errors in various Tkinter DIRECT widgets
+* Expose save_egg_file/save_egg_data functions in Python API
+* Fix assertion error in BoundingBox.set_min_max
+* Fix typo in CollisionTraverser.respect_prev_transform property
+* Properly install Python bindings when building FreeBSD installer
+
+------------------------  RELEASE 1.10.2  -----------------------
+
+This release fixes several more bugs, including a few regressions
+in 1.10.1.  Upgrading is highly recommended.
+
+* Fix regression on Windows causing freezes and instability
+* Fix a memory leak issue in Python applications
+* Fix crash reading unaligned float4 column in GeomVertexReader
+* Fixes for switching to fullscreen at runtime on Windows and Linux
+* Fix incorrect display mode listing in some Linux distributions
+* Fix threading crash on Linux when using get_keyboard_map()
+* Support "from __future__ import division" for Panda types
+* Support building with Visual Studio 2019 in makepanda
+* Work around Assimp crash when loading multiple .ply models
+* On Windows, a Python 3-compatible version of Pmw is included
+* Fix ParticlePanel spam when hovering over File menu items
+* TexMemWatcher has been fixed for Python 3
+* Prevent macOS window getting stuck after base.destroy()
+* Fix assertion setting mass before shape with Bullet debug build
+* Don't error if DirectScrolledFrame is destroyed twice
+* Fix reference count corruption accessing task.__dict__
+* Fix writing to SequenceNode frame_rate property
+* Fix collider sort not copied when copying CollisionNode
+* Add OpenCollective backer file
+
 ------------------------  RELEASE 1.10.1  -----------------------
 
+This is a bugfix release intended to fix several issues in 1.10.0.
+
+* Fix crashes when gamepad is plugged in on 32-bit Windows
+* Fix deploy-ng error regarding 'exist_ok' on Python 2
+* Fix Linux install from pip not working with some mesa drivers
+* Fix compatibility issues with upcoming Python 3.8
 * Fix regression with Audio3DManager.setSoundVelocityAuto()
+* Fix issues when awaiting loader.loadModel in Python 3.7
 * Audio3DManager accepts tuple in setSoundVelocity/setListenerVelocity
+* Fix lighting being disabled when only an AmbientLight is active
+* Fix an error saving from Particle Panel in Python 3
+* Depth buffer now defaults to 24-bit on macOS (fixes flickering)
+* Fix no devices being detected on Windows with threading-model
+* Implement collision tests from Capsule and Box into InvSphere
+* Fix odd behavior and occasional crash in QuatInterval
+* Fix SpriteAnim error in particle system
+* Fix ShaderGenerator error when using too many shadowing lights
+* Fix interrogate crash in Python 3 with optional wstring args
+* Fix compilation errors for x86 Android platform
+* Fix permissions of directories created by installpanda
+* Improvements to API reference documentation
+* Fix incorrect features printed out when printing an InputDevice
+* Support cross-compiling for Android platforms in makepanda
+* Work around various bugs when compiling with OS X 10.7's libc++
+* Fix wrong error sometimes being reported when loading plug-in
+* Allow getting NodePath from CullTraverserData object
+* Add config options to Assimp loader for generating normals
+* Fix multisampling in floating-point framebuffers on OpenGL
+* Parse egg files with 4-component tangents (must be 1 or -1)
+* StencilAttrib.make() write_mask argument is now optional
 
 ------------------------  RELEASE 1.10.0  -----------------------
 

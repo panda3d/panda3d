@@ -57,12 +57,14 @@ open() {
  * read.  Your buffer must be equal in size to N * channels.  Multiple-channel
  * audio will be interleaved.
  */
-void UserDataAudio::
+int UserDataAudio::
 read_samples(int n, int16_t *data) {
   int ready = (_data.size() / _desired_channels);
   int desired = n * _desired_channels;
-  int avail = ready * _desired_channels;
-  if (avail > desired) avail = desired;
+  if (n > ready) {
+    n = ready;
+  }
+  int avail = n * _desired_channels;
   for (int i=0; i<avail; i++) {
     data[i] = _data[i];
   }
@@ -72,6 +74,7 @@ read_samples(int n, int16_t *data) {
   for (int i=0; i<avail; i++) {
     _data.pop_front();
   }
+  return n;
 }
 
 /**
@@ -107,11 +110,11 @@ append(DatagramIterator *src, int n) {
  * but it may be convenient to deal with samples in python.
  */
 void UserDataAudio::
-append(const std::string &str) {
+append(const vector_uchar &str) {
   nassertv(!_aborted);
   int samples = str.size() / (2 * _desired_channels);
   int words = samples * _desired_channels;
-  for (int i=0; i<words; i++) {
+  for (int i = 0; i < words; ++i) {
     int c1 = ((unsigned char)str[i*2+0]);
     int c2 = ((unsigned char)str[i*2+1]);
     int16_t n = (c1 | (c2 << 8));

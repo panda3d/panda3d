@@ -43,6 +43,7 @@ PUBLISHED:
   BLOCKING void wait();
   BLOCKING void wait(double timeout);
   void notify();
+  void notify_all();
   virtual void output(std::ostream &out) const;
 
 private:

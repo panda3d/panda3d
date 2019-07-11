@@ -91,18 +91,45 @@ seek(double t) {
   t = std::max(t, 0.0);
 
   // Use ov_time_seek_lap if cross-lapping is enabled.
+  int result;
   if (vorbis_seek_lap) {
-    if (ov_time_seek_lap(&_ov, t) != 0) {
-      movies_cat.error()
-        << "Seek failed.  Ogg Vorbis stream may not be seekable.\n";
-      return;
-    }
+    result = ov_time_seek_lap(&_ov, t);
   } else {
-    if (ov_time_seek(&_ov, t) != 0) {
-      movies_cat.error()
-        << "Seek failed.  Ogg Vorbis stream may not be seekable.\n";
+    result = ov_time_seek(&_ov, t);
+  }
+
+  // Special case for seeking to the beginning; if normal seek fails, we may
+  // be able to explicitly seek to the beginning of the file and call ov_open
+  // again.  This allows looping compressed .ogg files.
+  if (result == OV_ENOSEEK && t == 0.0) {
+    std::istream *stream = (std::istream *)_ov.datasource;
+
+    if (stream->rdbuf()->pubseekpos(0, std::ios::in) == (std::streampos)0) {
+      // Back up the callbacks, then destroy the stream, making sure to first
+      // unset the datasource so that it won't close the file.
+      ov_callbacks callbacks = _ov.callbacks;
+      _ov.datasource = nullptr;
+      ov_clear(&_ov);
+
+      if (ov_open_callbacks((void *)stream, &_ov, nullptr, 0, callbacks) != 0) {
+        movies_cat.error()
+          << "Failed to reopen Ogg Vorbis file to seek to beginning.\n";
+        return;
+      }
+
+      // Reset these fields for good measure, just in case the file changed.
+      vorbis_info *vi = ov_info(&_ov, -1);
+      _audio_channels = vi->channels;
+      _audio_rate = vi->rate;
+
+      _last_seek = 0.0;
+      _samples_read = 0;
       return;
     }
+  }
+  if (result != 0) {
+    movies_cat.error()
+      << "Seek failed.  Ogg Vorbis stream may not be seekable.\n";
   }
 
   _last_seek = ov_time_tell(&_ov);
@@ -114,7 +141,7 @@ seek(double t) {
  * read.  Your buffer must be equal in size to N * channels.  Multiple-channel
  * audio will be interleaved.
  */
-void VorbisAudioCursor::
+int VorbisAudioCursor::
 read_samples(int n, int16_t *data) {
   int desired = n * _audio_channels;
 
@@ -131,6 +158,9 @@ read_samples(int n, int16_t *data) {
       buffer += read_bytes;
       length -= read_bytes;
     } else {
+      if (read_bytes == 0 && _length == 1.0E10) {
+        _length = ov_time_tell(&_ov);
+      }
       break;
     }
 
@@ -159,6 +189,7 @@ read_samples(int n, int16_t *data) {
   }
 
   _samples_read += n;
+  return n;
 }
 
 /**
@@ -199,6 +230,22 @@ cb_seek_func(void *datasource, ogg_int64_t offset, int whence) {
     break;
 
   case SEEK_CUR:
+    // Vorbis uses a seek with offset 0 to determine whether seeking is
+    // supported, but this is not good enough.  We seek to the end and back.
+    if (offset == 0) {
+      std::streambuf *buf = stream->rdbuf();
+      std::streampos pos = buf->pubseekoff(0, std::ios::cur, std::ios::in);
+      if (pos < 0) {
+        return -1;
+      }
+      if (buf->pubseekoff(0, std::ios::end, std::ios::in) >= 0) {
+        // It worked; seek back to the previous location.
+        buf->pubseekpos(pos, std::ios::in);
+        return 0;
+      } else {
+        return -1;
+      }
+    }
     stream->seekg(offset, std::ios::cur);
     break;
 

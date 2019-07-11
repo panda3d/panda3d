@@ -200,7 +200,6 @@ import direct.showbase.EventManager
 import direct.showbase.EventManagerGlobal
 import direct.showbase.ExceptionVarDump
 import direct.showbase.Factory
-import direct.showbase.FindCtaPaths
 import direct.showbase.Finder
 import direct.showbase.GarbageReport
 import direct.showbase.GarbageReportScheduler

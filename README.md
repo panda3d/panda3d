@@ -1,4 +1,6 @@
 [![Build Status](https://travis-ci.org/panda3d/panda3d.svg?branch=master)](https://travis-ci.org/panda3d/panda3d)
+[![OpenCollective](https://opencollective.com/panda3d/backers/badge.svg)](https://opencollective.com/panda3d)
+[![OpenCollective](https://opencollective.com/panda3d/sponsors/badge.svg)](https://opencollective.com/panda3d)
 
 <img src="https://avatars2.githubusercontent.com/u/590956?v=3&s=500" align="right" width="200"/>
 
@@ -22,7 +24,7 @@ Installing Panda3D
 ==================
 
 The latest Panda3D SDK can be downloaded from
-[this page](https://www.panda3d.org/download/sdk-1-10-0/).
+[this page](https://www.panda3d.org/download/sdk-1-10-3/).
 If you are familiar with installing Python packages, you can use
 the following comand:
 
@@ -62,8 +64,8 @@ depending on whether you are on a 32-bit or 64-bit system, or you can
 [click here](https://github.com/rdb/panda3d-thirdparty) for instructions on
 building them from source.
 
-https://www.panda3d.org/download/panda3d-1.10.0/panda3d-1.10.0-tools-win64.zip
-https://www.panda3d.org/download/panda3d-1.10.0/panda3d-1.10.0-tools-win32.zip
+https://www.panda3d.org/download/panda3d-1.10.3/panda3d-1.10.3-tools-win64.zip
+https://www.panda3d.org/download/panda3d-1.10.3/panda3d-1.10.3-tools-win32.zip
 
 After acquiring these dependencies, you may simply build Panda3D from the
 command prompt using the following command.  (Change `14.1` to `14` if you are
@@ -133,7 +135,7 @@ macOS
 -----
 
 On macOS, you will need to download a set of precompiled thirdparty packages in order to
-compile Panda3D, which can be acquired from [here](https://www.panda3d.org/download/panda3d-1.9.4/panda3d-1.9.4-tools-mac.tar.gz).
+compile Panda3D, which can be acquired from [here](https://www.panda3d.org/download/panda3d-1.10.3/panda3d-1.10.3-tools-mac.tar.gz).
 
 After placing the thirdparty directory inside the panda3d source directory,
 you may build Panda3D using a command like the following:
@@ -157,7 +159,7 @@ install the requisite packages using the system package manager.  To install
 the recommended set of dependencies, you can use this command:
 
 ```bash
-pkg install pkgconf png jpeg-turbo tiff freetype2 eigen squish openal opusfile libvorbis libX11 libGL ode bullet assimp openexr
+pkg install pkgconf bison png jpeg-turbo tiff freetype2 harfbuzz eigen squish openal opusfile libvorbis libX11 mesa-libs ode bullet assimp openexr
 ```
 
 You will also need to choose which version of Python you want to use.
@@ -189,7 +191,7 @@ pkg install python-dev termux-tools ndk-stl ndk-sysroot clang libvorbis-dev libo
 Then, you can build and install the .apk right away using these commands:
 
 ```bash
-python makepanda/makepanda.py --everything --target android-21 --installer
+python makepanda/makepanda.py --everything --target android-21 --no-tiff --installer
 xdg-open panda3d.apk
 ```
 
@@ -228,3 +230,25 @@ models that are necessary for the developers to reproduce the issue.
 
 If you're not sure whether you've encountered a bug, feel free to ask about
 it in the forums or the IRC channel first.
+
+Supporting the Project
+======================
+
+If you would like to support the project financially, visit
+[our campaign on OpenCollective](https://opencollective.com/panda3d).  Your
+contributions help us accelerate the development of Panda3D.
+
+For the list of backers, see the [BACKERS.md](BACKERS.md) file or visit the
+[Sponsors page](https://www.panda3d.org/sponsors) on our web site.  Thank you
+to everyone who has donated!
+
+<a href="https://opencollective.com/panda3d" target="_blank">
+  <img src="https://opencollective.com/panda3d/contribute/button@2x.png?color=blue" width=300 />
+</a>
+
+### Gold Sponsors
+[![](https://opencollective.com/panda3d/tiers/gold-sponsor/0/avatar.svg?avatarHeight=128)](https://opencollective.com/panda3d/tiers/gold-sponsor/0/website)
+[![](https://opencollective.com/panda3d/tiers/gold-sponsor/1/avatar.svg?avatarHeight=128)](https://opencollective.com/panda3d/tiers/gold-sponsor/1/website)
+[![](https://opencollective.com/panda3d/tiers/gold-sponsor/2/avatar.svg?avatarHeight=128)](https://opencollective.com/panda3d/tiers/gold-sponsor/2/website)
+[![](https://opencollective.com/panda3d/tiers/gold-sponsor/3/avatar.svg?avatarHeight=128)](https://opencollective.com/panda3d/tiers/gold-sponsor/3/website)
+[![](https://opencollective.com/panda3d/tiers/gold-sponsor/4/avatar.svg?avatarHeight=128)](https://opencollective.com/panda3d/tiers/gold-sponsor/4/website)

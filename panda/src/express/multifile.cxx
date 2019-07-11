@@ -2068,10 +2068,7 @@ open_read_subfile(Subfile *subfile) {
     stream = wrapper;
 
     // Validate the password by confirming that the encryption header matches.
-    char this_header[_encrypt_header_size];
-    stream->read(this_header, _encrypt_header_size);
-    if (stream->fail() || stream->gcount() != (unsigned)_encrypt_header_size ||
-        memcmp(this_header, _encrypt_header, _encrypt_header_size) != 0) {
+    if (!wrapper->read_magic(_encrypt_header, _encrypt_header_size)) {
       express_cat.error()
         << "Unable to decrypt subfile " << subfile->_name << ".\n";
       delete stream;

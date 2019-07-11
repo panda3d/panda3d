@@ -89,6 +89,7 @@ PUBLISHED:
   CPT(RenderAttrib) add_off_stage(TextureStage *stage, int override = 0) const;
   CPT(RenderAttrib) remove_off_stage(TextureStage *stage) const;
   CPT(RenderAttrib) unify_texture_stages(TextureStage *stage) const;
+  CPT(RenderAttrib) replace_texture(Texture *tex, Texture *new_tex) const;
 
 public:
   CPT(TextureAttrib) filter_to_max(int max_texture_stages) const;

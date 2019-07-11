@@ -37,9 +37,6 @@ public:
                                   BamCacheRecord *record) const;
 
 public:
-  AssimpLoader *_loader;
-
-public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }

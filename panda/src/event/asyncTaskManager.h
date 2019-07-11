@@ -23,7 +23,7 @@
 #include "thread.h"
 #include "pmutex.h"
 #include "mutexHolder.h"
-#include "conditionVarFull.h"
+#include "conditionVar.h"
 #include "pvector.h"
 #include "pdeque.h"
 #include "pStatCollector.h"
@@ -130,7 +130,7 @@ protected:
   TasksByName _tasks_by_name;
   PT(ClockObject) _clock;
 
-  ConditionVarFull _frame_cvar;  // Signalled when the clock ticks.
+  ConditionVar _frame_cvar;  // Signalled when the clock ticks.
 
   static AsyncTaskManager* _global_ptr;
 
