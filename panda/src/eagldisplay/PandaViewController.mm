@@ -70,18 +70,14 @@
   // TODO: Load a .prc file from bundle resources instead of hardocoding this.
   const char *model_path_config = [NSString stringWithFormat:@"model-path %@", [_fullModulePath.path stringByDeletingLastPathComponent]].UTF8String;
   
-  load_prc_file_data("", "notify-level-gles2gsg debug");
-  load_prc_file_data("", "notify-level-eagldisplay debug");
-  load_prc_file_data("", "notify-level-thread debug");
-  load_prc_file_data("", "notify-level-pipeline debug");
-  load_prc_file_data("", "notify-level-task debug");
-  load_prc_file_data("", "color-bits 8 8 8");
-  load_prc_file_data("", "alpha-bits 8");
-  load_prc_file_data("", "depth-bits 32");
+//  load_prc_file_data("", "notify-level-gles2gsg debug");
+//  load_prc_file_data("", "notify-level-eagldisplay debug");
+//  load_prc_file_data("", "notify-level-thread debug");
+//  load_prc_file_data("", "notify-level-pipeline debug");
+//  load_prc_file_data("", "notify-level-task debug");
   load_prc_file_data("", "framebuffer-srgb true");
   load_prc_file_data("", "threading-model Cull/Draw");
   load_prc_file_data("", "default-model-extension .egg");
-  load_prc_file_data("", "load-display pandagles2");
   load_prc_file_data("", "assert-abort true");
   load_prc_file_data("", model_path_config);
   

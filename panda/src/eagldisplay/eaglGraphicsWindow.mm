@@ -13,6 +13,7 @@
 
 #include "eaglGraphicsWindow.h"
 #include "eaglGraphicsStateGuardian.h"
+#include "mouseButton.h"
 // #import "iOSNSNotificationHandler.h"
 
 TypeHandle EAGLGraphicsWindow::_type_handle;
@@ -267,4 +268,27 @@ close_window() {
   }
 
   GraphicsWindow::close_window();
+}
+
+void EAGLGraphicsWindow::
+emulated_mouse_move(UITouch *touch) {
+  CGPoint location = [touch locationInView:_view];
+  _emulated_mouse_input->set_pointer_in_window(location.x * _view.layer.contentsScale,
+                                               location.y * _view.layer.contentsScale);
+}
+
+void EAGLGraphicsWindow::
+emulated_mouse_down(UITouch *touch) {
+  CGPoint location = [touch locationInView:_view];
+  _emulated_mouse_input->set_pointer_in_window(location.x * _view.layer.contentsScale,
+                                               location.y * _view.layer.contentsScale);
+  _emulated_mouse_input->button_down(MouseButton::button(0));
+}
+
+void EAGLGraphicsWindow::
+emulated_mouse_up(UITouch *touch) {
+  CGPoint location = [touch locationInView:_view];
+  _emulated_mouse_input->set_pointer_in_window(location.x * _view.layer.contentsScale,
+                                               location.y * _view.layer.contentsScale);
+  _emulated_mouse_input->button_up(MouseButton::button(0));
 }

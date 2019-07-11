@@ -45,6 +45,10 @@ public:
   void app_activated();
   void app_deactivated();
 
+  void emulated_mouse_move(UITouch *touch);
+  void emulated_mouse_down(UITouch *touch);
+  void emulated_mouse_up(UITouch *touch);
+
 private:
   void create_framebuffer(EAGLGraphicsStateGuardian *guardian);
   void destroy_framebuffer(EAGLGraphicsStateGuardian *guardian);
