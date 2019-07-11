@@ -1132,7 +1132,7 @@ def weightedChoice(choiceList, rng=random.random, sum=None):
     weights, pass it in 'sum'."""
     # Throw an IndexError if we got an empty list.
     if not choiceList:
-        raise IndexError('Cannot choose from an empty sequence') from None
+        raise IndexError('Cannot choose from an empty sequence')
 
     # TODO: add support for dicts
     if sum is None:
