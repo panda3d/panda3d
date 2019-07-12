@@ -49,7 +49,6 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     PStatTimer timer(_make_current_pcollector, current_thread);
     eaglgsg->lock_context();
     [EAGLContext setCurrentContext:eaglgsg->_context];
-    eaglgsg->set_current_properties(&get_fb_properties());
   }
 
   return GLES2GraphicsBuffer::begin_frame(mode, current_thread);
@@ -70,4 +69,22 @@ end_frame(FrameMode mode, Thread *current_thread) {
   EAGLGraphicsStateGuardian *eaglgsg;
   DCAST_INTO_V(eaglgsg, _gsg);
   eaglgsg->unlock_context();
+}
+
+/**
+ * We need to be able to override what call we make to allocate the primary
+ * color buffer on certain backends. For this base case, we can just forward the
+ * call on to the GSG like normal.
+ */
+void EAGLGraphicsBuffer::
+gl_color_renderbuffer_storage(GLenum target, GLenum internalformat,
+                              GLsizei width, GLsizei height) {
+  if (_layer) {
+    EAGLGraphicsStateGuardian *eaglgsg = DCAST(EAGLGraphicsStateGuardian, _gsg);
+    [eaglgsg->_context renderbufferStorage:target
+                       fromDrawable:_layer];
+  } else {
+    GLES2GraphicsBuffer::gl_color_renderbuffer_storage(target, internalformat,
+                                                       width, height);
+  }
 }

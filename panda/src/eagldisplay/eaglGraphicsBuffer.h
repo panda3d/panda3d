@@ -24,6 +24,8 @@
  * with Cocoa contexts, so that it can be used without a host window.
  */
 class EAGLGraphicsBuffer : public GLES2GraphicsBuffer {
+friend EAGLGraphicsWindow;
+
 public:
   EAGLGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe,
                       const std::string &name,
@@ -35,6 +37,14 @@ public:
 
   virtual bool begin_frame(FrameMode mode, Thread *current_thread);
   virtual void end_frame(FrameMode mode, Thread *current_thread);
+
+  __weak CAEAGLLayer *_layer;
+
+protected:
+  virtual void gl_color_renderbuffer_storage(GLenum target,
+                                             GLenum internalformat,
+                                             GLsizei width,
+                                             GLsizei height);
 
 public:
   static TypeHandle get_class_type() {

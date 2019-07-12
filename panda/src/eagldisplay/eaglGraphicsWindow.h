@@ -17,6 +17,7 @@
 #import "pandaEAGLView.h"
 #include "pandabase.h"
 #include "eaglGraphicsPipe.h"
+#include "eaglGraphicsBuffer.h"
 
 class EAGLGraphicsStateGuardian;
 
@@ -50,6 +51,8 @@ public:
   void emulated_mouse_up(UITouch *touch);
 
 private:
+  PT(EAGLGraphicsBuffer) _backing_buffer;
+
   void create_framebuffer(EAGLGraphicsStateGuardian *guardian);
   void destroy_framebuffer(EAGLGraphicsStateGuardian *guardian);
   
@@ -60,10 +63,6 @@ protected:
   virtual bool open_window();
 
   PandaEAGLView *_view;
-  
-  GLuint _fbo;
-  GLuint _color_rb;
-  GLuint _depth_stencil_rb;
 
   PT(GraphicsWindowInputDevice) _emulated_mouse_input;
 

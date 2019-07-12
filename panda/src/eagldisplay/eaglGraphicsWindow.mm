@@ -36,6 +36,8 @@ GraphicsWindow(engine, pipe, name, fb_prop, win_prop, flags, gsg, host)
   _emulated_mouse_input =
     GraphicsWindowInputDevice::pointer_only(this, "touch_mouse");
   _input_devices.push_back(_emulated_mouse_input);
+
+  _backing_buffer = new EAGLGraphicsBuffer(engine, pipe, "buffer", fb_prop, win_prop, flags, gsg, host);
 }
 
 /**
@@ -60,11 +62,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   DCAST_INTO_R(eaglgsg, _gsg, false);
   nassertr(_view != nil, false);
   
-  eaglgsg->lock_context();
-  [EAGLContext setCurrentContext:eaglgsg->_context];
-  
-  _gsg->set_current_properties(&get_fb_properties());
-  return _gsg->begin_frame(current_thread);
+  return _backing_buffer->begin_frame(mode, current_thread);
 }
 
 /**
@@ -84,10 +82,7 @@ end_frame(FrameMode mode, Thread *current_thread) {
     copy_to_textures();
   }
   
-  _gsg->end_frame(current_thread);
-  
-  [EAGLContext setCurrentContext:nil];
-  eaglgsg->unlock_context();
+  _backing_buffer->end_frame(mode, current_thread);
   
   if (mode == FM_render) {
     trigger_flip();
@@ -111,9 +106,9 @@ end_flip() {
     eaglgsg->lock_context();
     
     // Presents the primary renderbuffer to the screen.
-    glBindRenderbuffer(GL_RENDERBUFFER, _color_rb);
+    glBindRenderbuffer(GL_RENDERBUFFER, _backing_buffer->_rb[RTP_color]);
     [eaglgsg->_context presentRenderbuffer:GL_RENDERBUFFER];
-    
+
     eaglgsg->unlock_context();
   }
   GraphicsWindow::end_flip();
@@ -134,6 +129,7 @@ open_window() {
     eaglgsg = new EAGLGraphicsStateGuardian(_engine, _pipe, NULL);
     eaglgsg->choose_pixel_format(_fb_properties, (CAEAGLLayer *)_view.layer);
     _gsg = eaglgsg;
+    _backing_buffer->_gsg = _gsg;
   } else {
     // If the old gsg has the wrong pixel format, create a new one that shares
     // with the old gsg.
@@ -142,6 +138,7 @@ open_window() {
       eaglgsg = new EAGLGraphicsStateGuardian(_engine, _pipe, eaglgsg);
       eaglgsg->choose_pixel_format(_fb_properties, (CAEAGLLayer *)_view.layer);
       _gsg = eaglgsg;
+      _backing_buffer->_gsg = _gsg;
     }
   }
   
@@ -152,6 +149,8 @@ open_window() {
     return false;
   }
   
+  // Make sure we grab the lock before we create the view so we can properly
+  // reset the GSG before it tries to use it.
   eaglgsg->lock_context();
   
   // Just create the view. The application developer will have to attach it
@@ -159,6 +158,8 @@ open_window() {
   // TODO: Make this more flexible
   dispatch_sync(dispatch_get_main_queue(), ^{
     _view = [[PandaEAGLView alloc] initWithFrame:UIScreen.mainScreen.bounds graphicsWindow:this];
+    _backing_buffer->_layer = _view.layer;
+    _properties.set_size(_view.bounds.size.width, _view.bounds.size.height);
     [[NSNotificationCenter defaultCenter] postNotificationName:@"ViewCreatedNotification" object:nil userInfo:@{@"view": _view}];
   });
 
@@ -174,10 +175,26 @@ open_window() {
   _properties.set_open(true);
   _properties.set_foreground(true);
   _is_valid = true;
+
+  _backing_buffer->open_buffer();
   
   eaglgsg->unlock_context();
   
   return true;
+}
+
+void EAGLGraphicsWindow::
+close_window() {
+  if (_gsg != (GraphicsStateGuardian *)NULL) {
+    EAGLGraphicsStateGuardian *eaglgsg = DCAST(EAGLGraphicsStateGuardian, _gsg);
+    if (eaglgsg != NULL && eaglgsg->_context != nil) {
+      eaglgsg->lock_context();
+      _backing_buffer->close_buffer();
+      eaglgsg->unlock_context();
+    }
+  }
+
+  GraphicsWindow::close_window();
 }
 
 /**
@@ -190,84 +207,23 @@ screen_size_changed() {
   EAGLGraphicsStateGuardian *eaglgsg;
   DCAST_INTO_V(eaglgsg, _gsg);
   
-  eaglgsg->lock_context();
-  [EAGLContext setCurrentContext:eaglgsg->_context];
-
-  destroy_framebuffer(eaglgsg);
-  create_framebuffer(eaglgsg);
-
-  [EAGLContext setCurrentContext:nil];
-  eaglgsg->unlock_context();
-
   WindowProperties properties;
   properties.set_size(_view.layer.bounds.size.width * _view.layer.contentsScale,
                       _view.layer.bounds.size.height * _view.layer.contentsScale);
   system_changed_properties(properties);
   
+  eaglgsg->lock_context();
+  [EAGLContext setCurrentContext:eaglgsg->_context];
+
+  // destroy_framebuffer(eaglgsg);
+  // create_framebuffer(eaglgsg);
+  _backing_buffer->set_size(properties.get_x_size(), properties.get_y_size());
+  _backing_buffer->rebuild_bitplanes();
+
+  [EAGLContext setCurrentContext:nil];
+  eaglgsg->unlock_context();
+  
   eagldisplay_cat.debug() << "View size changed\n";
-}
-
-/**
- * Creates new buffers using _view's CAEAGLLayer. Assumes a lock on the context is already held.
- */
-void EAGLGraphicsWindow::
-create_framebuffer(EAGLGraphicsStateGuardian *gsg) {
-  gsg->_glGenRenderbuffers(1, &_color_rb);
-  gsg->_glGenFramebuffers(1, &_fbo);
-  
-  gsg->_glBindRenderbuffer(GL_RENDERBUFFER, _color_rb);
-  gsg->_glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
-  
-  // The desired fbprops are already set on the layer itself.
-  [gsg->_context renderbufferStorage:GL_RENDERBUFFER
-                 fromDrawable:(CAEAGLLayer *)_view.layer];
-  gsg->_glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                                  GL_RENDERBUFFER, _color_rb);
-
-  gsg->_glGenRenderbuffers(1, &_depth_stencil_rb);
-  gsg->_glBindRenderbuffer(GL_RENDERBUFFER, _depth_stencil_rb);
-  gsg->_glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8,
-                              _view.layer.bounds.size.width * _view.layer.contentsScale,
-                              _view.layer.bounds.size.height * _view.layer.contentsScale);
-  gsg->_glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-                            GL_RENDERBUFFER, _depth_stencil_rb);
-  
-  gsg->_glBindRenderbuffer(GL_RENDERBUFFER, _color_rb);
-}
-
-/**
- * Destroy any buffers created by create_framebuffer(). Called mostly when
- * _view gets resized. Assumes a lock on the context is already held.
- */
-void EAGLGraphicsWindow::
-destroy_framebuffer(EAGLGraphicsStateGuardian *gsg) {
-  if (_fbo != 0) {
-    gsg->_glDeleteFramebuffers(1, &_fbo);
-    _fbo = 0;
-  }
-  if (_color_rb != 0) {
-    [gsg->_context renderbufferStorage:GL_RENDERBUFFER
-                   fromDrawable:nil];
-    _color_rb = 0;
-  }
-  if (_depth_stencil_rb != 0) {
-    gsg->_glDeleteRenderbuffers(1, &_depth_stencil_rb);
-    _depth_stencil_rb = 0;
-  }
-}
-
-void EAGLGraphicsWindow::
-close_window() {
-  if (_gsg != (GraphicsStateGuardian *)NULL) {
-    EAGLGraphicsStateGuardian *eaglgsg = DCAST(EAGLGraphicsStateGuardian, _gsg);
-    if (eaglgsg != NULL && eaglgsg->_context != nil) {
-      eaglgsg->lock_context();
-      destroy_framebuffer(eaglgsg);
-      eaglgsg->unlock_context();
-    }
-  }
-
-  GraphicsWindow::close_window();
 }
 
 void EAGLGraphicsWindow::
