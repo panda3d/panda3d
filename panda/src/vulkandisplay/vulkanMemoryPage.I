@@ -134,7 +134,7 @@ map() {
     vulkan_error(err, "Failed to map memory");
     ptr._data = nullptr;
   }
-  return std::move(ptr);
+  return ptr;
 }
 
 /**
