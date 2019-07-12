@@ -13,6 +13,7 @@
   NSURL *_fullModulePath;
 }
 - (void)pythonModuleMain;
+- (void)queueForGraphicsWindowAttachmentWithCreation:(BOOL)createWindow;
 @end
 
 @implementation PandaViewController
@@ -46,17 +47,25 @@
 }
 
 - (void)startPandaWithThreadFunction:(SEL)mainSelector {
-  // TODO: Make the notification name a constant
-  NSNotificationCenter *__weak notificationCenter = [NSNotificationCenter defaultCenter];
-  id __block notificationToken = [notificationCenter addObserverForName:@"ViewCreatedNotification" object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification * _Nonnull note) {
-    NSLog(@"Found the view!");
-    self.view = note.userInfo[@"view"];
-    self.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    [notificationCenter removeObserver:notificationToken];
-  }];
+  // When starting up the engine, a GraphicsWindow is created for us, so no need
+  // to do so here.
+  [self queueForGraphicsWindowAttachmentWithCreation:false];
   
   _pandaThread = [[NSThread alloc] initWithTarget:self selector:mainSelector object:nil];
   [_pandaThread start];
+}
+
+- (void)queueForGraphicsWindowAttachmentWithCreation:(BOOL)createWindow {
+  EAGLGraphicsWindow::vc_lock.lock();
+  while (EAGLGraphicsWindow::next_view_controller != nil) {
+    EAGLGraphicsWindow::vc_condition.wait();
+  }
+  EAGLGraphicsWindow::next_view_controller = self;
+  EAGLGraphicsWindow::vc_lock.unlock();
+  if (createWindow) {
+    // unimplemented
+    abort();
+  }
 }
 
 - (void)viewWillDisappear:(BOOL)animated {

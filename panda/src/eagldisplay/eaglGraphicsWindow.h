@@ -18,6 +18,7 @@
 #include "pandabase.h"
 #include "eaglGraphicsPipe.h"
 #include "eaglGraphicsBuffer.h"
+#include "pandaViewController.h"
 
 class EAGLGraphicsStateGuardian;
 
@@ -28,6 +29,10 @@ class EAGLGraphicsStateGuardian;
  */
 class EAGLGraphicsWindow : public GraphicsWindow {
 public:
+  static PandaViewController *next_view_controller;
+  static TrueMutexImpl vc_lock;
+  static TrueConditionVarImpl vc_condition;
+
   EAGLGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                      const std::string &name,
                      const FrameBufferProperties &fb_prop,

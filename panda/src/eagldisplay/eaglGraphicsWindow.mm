@@ -18,6 +18,10 @@
 
 TypeHandle EAGLGraphicsWindow::_type_handle;
 
+PandaViewController *EAGLGraphicsWindow::next_view_controller = nil;
+TrueMutexImpl EAGLGraphicsWindow::vc_lock;
+TrueConditionVarImpl EAGLGraphicsWindow::vc_condition = TrueConditionVarImpl(EAGLGraphicsWindow::vc_lock);
+
 /**
  *
  */
@@ -152,16 +156,24 @@ open_window() {
   // Make sure we grab the lock before we create the view so we can properly
   // reset the GSG before it tries to use it.
   eaglgsg->lock_context();
-  
-  // Just create the view. The application developer will have to attach it
-  // to something themselves.
-  // TODO: Make this more flexible
+
+  // Create the view we're going to render into, and attach it to the supplied
+  // view controller if given.
+  PandaViewController *vc = EAGLGraphicsWindow::next_view_controller;
   dispatch_sync(dispatch_get_main_queue(), ^{
-    _view = [[PandaEAGLView alloc] initWithFrame:UIScreen.mainScreen.bounds graphicsWindow:this];
+    CGRect frame = vc ? vc.view.frame : UIScreen.mainScreen.bounds;
+    _view = [[PandaEAGLView alloc] initWithFrame:frame graphicsWindow:this];
     _backing_buffer->_layer = _view.layer;
-    _properties.set_size(_view.bounds.size.width, _view.bounds.size.height);
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"ViewCreatedNotification" object:nil userInfo:@{@"view": _view}];
+    _properties.set_size(frame.size.width, frame.size.height);
+    if (vc) {
+      vc.view = _view;
+    }
   });
+
+  EAGLGraphicsWindow::next_view_controller = nil;
+  EAGLGraphicsWindow::vc_lock.lock();
+  EAGLGraphicsWindow::vc_condition.notify();
+  EAGLGraphicsWindow::vc_lock.unlock();
 
   [EAGLContext setCurrentContext:eaglgsg->_context];
   
@@ -215,8 +227,6 @@ screen_size_changed() {
   eaglgsg->lock_context();
   [EAGLContext setCurrentContext:eaglgsg->_context];
 
-  // destroy_framebuffer(eaglgsg);
-  // create_framebuffer(eaglgsg);
   _backing_buffer->set_size(properties.get_x_size(), properties.get_y_size());
   _backing_buffer->rebuild_bitplanes();
 
