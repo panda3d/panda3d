@@ -701,6 +701,18 @@ rebuild_bitplanes() {
 }
 
 /**
+ * We need to be able to override what call we make to allocate the primary
+ * color buffer on certain backends. For this base case, we can just forward the
+ * call on to the GSG like normal.
+ */
+void CLP(GraphicsBuffer)::
+gl_color_renderbuffer_storage(GLenum target, GLenum internalformat,
+                              GLsizei width, GLsizei height) {
+  CLP(GraphicsStateGuardian) *glgsg = (CLP(GraphicsStateGuardian) *)_gsg.p();
+  glgsg->_glRenderbufferStorage(target, internalformat, width, height);
+}
+
+/**
  * Attaches either a texture or a renderbuffer to the specified bitplane.
  */
 void CLP(GraphicsBuffer)::
@@ -1053,7 +1065,7 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
 
     } else {
       GLCAT.debug() << "Creating color renderbuffer.\n";
-      glgsg->_glRenderbufferStorage(GL_RENDERBUFFER_EXT, gl_format, _rb_size_x, _rb_size_y);
+      gl_color_renderbuffer_storage(GL_RENDERBUFFER_EXT, gl_format, _rb_size_x, _rb_size_y);
 
       GLint red_size = 0, green_size = 0, blue_size = 0, alpha_size = 0;
       glgsg->_glGetRenderbufferParameteriv(GL_RENDERBUFFER_EXT, GL_RENDERBUFFER_RED_SIZE_EXT, &red_size);

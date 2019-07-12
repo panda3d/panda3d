@@ -96,6 +96,11 @@ protected:
   void rebuild_bitplanes();
   void resolve_multisamples();
 
+  virtual void gl_color_renderbuffer_storage(GLenum target,
+                                             GLenum internalformat,
+                                             GLsizei width,
+                                             GLsizei height);
+
   // We create one FBO for each cube map face we'll be rendering to.  If we
   // aren't rendering to any cube maps, we use only _fbo[0].
   pvector<GLuint> _fbo;
