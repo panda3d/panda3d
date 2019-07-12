@@ -15,7 +15,7 @@
 #include "eaglGraphicsWindow.h"
 
 @interface PandaEAGLView () {
-  EAGLGraphicsWindow *_window;
+  EAGLGraphicsWindow *_graphics_window;
 }
 @end
 
@@ -32,7 +32,7 @@
     eaglLayer.opaque = YES;
     eaglLayer.contentsScale = 3.0;
     
-    _window = window;
+    _graphics_window = window;
   }
   return self;
 }
@@ -41,21 +41,21 @@
  * This is triggered by the OS any time the size of the view changes.
  */
 - (void)layoutSubviews {
-  _window->screen_size_changed();
+  _graphics_window->screen_size_changed();
 }
 
 // TODO: Handle multi-touch.
 
 - (void)touchesMoved:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
-  _window->emulated_mouse_move([touches anyObject]);
+  _graphics_window->emulated_mouse_move([touches anyObject]);
 }
 
 - (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
-  _window->emulated_mouse_down([touches anyObject]);
+  _graphics_window->emulated_mouse_down([touches anyObject]);
 }
 
 - (void)touchesEnded:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
-  _window->emulated_mouse_up([touches anyObject]);
+  _graphics_window->emulated_mouse_up([touches anyObject]);
 }
 
 /**
@@ -64,7 +64,7 @@
  */
 - (void)touchesCancelled:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
   // FIXME: Should there be separate handling for ended vs. cancelled touches?
-  _window->emulated_mouse_up([touches anyObject]);
+  _graphics_window->emulated_mouse_up([touches anyObject]);
 }
 
 
