@@ -94,3 +94,19 @@ get_pipeline(VulkanGraphicsStateGuardian *gsg, const RenderState *state,
     return it->second;
   }
 }
+
+/**
+ * Returns a VkPipeline for running a compute shader.
+ */
+VkPipeline VulkanShaderContext::
+get_compute_pipeline(VulkanGraphicsStateGuardian *gsg) {
+  if (_compute_pipeline != VK_NULL_HANDLE) {
+    return _compute_pipeline;
+  }
+
+  nassertr(_modules[Shader::ST_compute] != VK_NULL_HANDLE, VK_NULL_HANDLE);
+
+  VkPipeline pipeline = gsg->make_compute_pipeline(this);
+  _compute_pipeline = pipeline;
+  return pipeline;
+}

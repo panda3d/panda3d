@@ -17,9 +17,9 @@
  * module array.
  */
 INLINE VulkanShaderContext::
-VulkanShaderContext(Shader *shader) : ShaderContext(shader) {
-  _modules[0] = VK_NULL_HANDLE;
-  _modules[1] = VK_NULL_HANDLE;
+VulkanShaderContext(Shader *shader) :
+  ShaderContext(shader),
+  _modules{VK_NULL_HANDLE} {
 }
 
 /**

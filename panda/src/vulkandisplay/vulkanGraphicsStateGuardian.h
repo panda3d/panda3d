@@ -143,6 +143,7 @@ public:
   VkPipeline make_pipeline(VulkanShaderContext *sc, const RenderState *state,
                            const GeomVertexFormat *format,
                            VkPrimitiveTopology topology);
+  VkPipeline make_compute_pipeline(VulkanShaderContext *sc);
 
   /**
    * Stores whatever is used to key a cached descriptor set into the

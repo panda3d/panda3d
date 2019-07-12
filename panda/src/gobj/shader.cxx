@@ -2635,12 +2635,14 @@ do_read_source(string &into, const Filename &fn, BamCacheRecord *record) {
   _source_files.push_back(vf->get_filename());
 
   // Strip trailing whitespace.
-  while (!into.empty() && isspace(into[into.size() - 1])) {
-    into.resize(into.size() - 1);
-  }
+  if (_language != SL_SPIR_V) {
+    while (!into.empty() && isspace(into[into.size() - 1])) {
+      into.resize(into.size() - 1);
+    }
 
-  // Except add back a newline at the end, which is needed by Intel drivers.
-  into += "\n";
+    // Except add back a newline at the end, which is needed by Intel drivers.
+    into += "\n";
+  }
 
   return true;
 }
@@ -3585,7 +3587,7 @@ load(ShaderLanguage lang, const Filename &vertex,
  */
 PT(Shader) Shader::
 load_compute(ShaderLanguage lang, const Filename &fn) {
-  if (lang != SL_GLSL) {
+  if (lang != SL_GLSL && lang != SL_SPIR_V) {
     shader_cat.error()
       << "Only GLSL compute shaders are currently supported.\n";
     return nullptr;

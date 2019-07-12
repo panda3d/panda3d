@@ -1365,12 +1365,13 @@ prepare_shader(Shader *shader) {
 
   PStatTimer timer(_prepare_shader_pcollector);
 
-  VkResult err;
-  const Shader::ShaderType shader_types[] = {Shader::ST_vertex, Shader::ST_fragment};
   VulkanShaderContext *sc = new VulkanShaderContext(shader);
 
-  for (int i = 0; i < 2; ++i) {
-    std::string code = shader->get_text(shader_types[i]);
+  for (size_t i = Shader::ST_none + 1; i < Shader::ST_COUNT; ++i) {
+    const std::string &code = shader->get_text((Shader::ShaderType)i);
+    if (code.empty()) {
+      continue;
+    }
 
     VkShaderModuleCreateInfo module_info;
     module_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -1379,6 +1380,7 @@ prepare_shader(Shader *shader) {
     module_info.codeSize = code.size();
     module_info.pCode = (const uint32_t *)code.data();
 
+    VkResult err;
     err = vkCreateShaderModule(_device, &module_info, nullptr, &sc->_modules[i]);
     if (err) {
       vulkan_error(err, "Failed to load shader module");
@@ -1405,13 +1407,11 @@ release_shader(ShaderContext *context) {
 
   // According to the Vulkan spec, it is safe to delete a shader module even
   // if pipelines using it are still in use, so let's do it now.
-  if (sc->_modules[0] != VK_NULL_HANDLE) {
-    vkDestroyShaderModule(_device, sc->_modules[0], nullptr);
-    sc->_modules[0] = VK_NULL_HANDLE;
-  }
-  if (sc->_modules[1] != VK_NULL_HANDLE) {
-    vkDestroyShaderModule(_device, sc->_modules[1], nullptr);
-    sc->_modules[1] = VK_NULL_HANDLE;
+  for (size_t i = 0; i < Shader::ST_COUNT; ++i) {
+    if (sc->_modules[i] != VK_NULL_HANDLE) {
+      vkDestroyShaderModule(_device, sc->_modules[i], nullptr);
+      sc->_modules[i] = VK_NULL_HANDLE;
+    }
   }
 
   // Destroy the pipeline states that use these modules.
@@ -1420,6 +1420,11 @@ release_shader(ShaderContext *context) {
     vkDestroyPipeline(_device, item.second, nullptr);
   }
   sc->_pipeline_map.clear();
+
+  if (sc->_compute_pipeline != VK_NULL_HANDLE) {
+    vkDestroyPipeline(_device, sc->_compute_pipeline, nullptr);
+    sc->_compute_pipeline = VK_NULL_HANDLE;
+  }
 
   vkDestroyPipelineLayout(_device, sc->_pipeline_layout, nullptr);
   vkDestroyDescriptorSetLayout(_device, sc->_descriptor_set_layout, nullptr);
@@ -1652,6 +1657,10 @@ void VulkanGraphicsStateGuardian::
 dispatch_compute(int num_groups_x, int num_groups_y, int num_groups_z) {
   //TODO: must actually be outside render pass, and on a queue that supports
   // compute.  Should we have separate pool/queue/buffer for compute?
+  VkPipeline pipeline = _current_shader->get_compute_pipeline(this);
+  nassertv(pipeline != VK_NULL_HANDLE);
+  vkCmdBindPipeline(_cmd, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline);
+
   vkCmdDispatch(_cmd, num_groups_x, num_groups_y, num_groups_z);
 }
 
@@ -1680,11 +1689,17 @@ make_geom_munger(const RenderState *state, Thread *current_thread) {
 void VulkanGraphicsStateGuardian::
 set_state_and_transform(const RenderState *state,
                         const TransformState *trans) {
-  // This does nothing, because we can't make a pipeline state without knowing
-  // the vertex format.
+  // This does not actually set the state just yet, because we can't make a
+  // pipeline state without knowing the vertex format.
   _state_rs = state;
 
   VulkanShaderContext *sc = _default_sc;
+  const ShaderAttrib *sa;
+  if (state->get_attrib(sa) && sa->has_shader()) {
+    Shader *shader = (Shader *)sa->get_shader();
+    DCAST_INTO_V(sc, shader->prepare_now(get_prepared_objects(), this));
+  }
+
   _current_shader = sc;
   nassertv(sc != nullptr);
 
@@ -2652,22 +2667,30 @@ make_pipeline(VulkanShaderContext *sc, const RenderState *state,
       << "Making pipeline for state " << *state << " and format " << *format << "\n";
   }
 
-  VkPipelineShaderStageCreateInfo stages[2];
-  stages[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-  stages[0].pNext = nullptr;
-  stages[0].flags = 0;
-  stages[0].stage = VK_SHADER_STAGE_VERTEX_BIT;
-  stages[0].module = sc->_modules[0];
-  stages[0].pName = "main";
-  stages[0].pSpecializationInfo = nullptr;
+  VkPipelineShaderStageCreateInfo stages[Shader::ST_COUNT];
+  const VkShaderStageFlagBits stage_flags[Shader::ST_COUNT] = {
+    VK_SHADER_STAGE_ALL,
+    VK_SHADER_STAGE_VERTEX_BIT,
+    VK_SHADER_STAGE_FRAGMENT_BIT,
+    VK_SHADER_STAGE_GEOMETRY_BIT,
+    VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT,
+    VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT,
+    VK_SHADER_STAGE_COMPUTE_BIT,
+  };
+  uint32_t num_stages = 0;
 
-  stages[1].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-  stages[1].pNext = nullptr;
-  stages[1].flags = 0;
-  stages[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-  stages[1].module = sc->_modules[1];
-  stages[1].pName = "main";
-  stages[1].pSpecializationInfo = nullptr;
+  for (size_t i = 0; i < Shader::ST_COUNT; ++i) {
+    if (sc->_modules[i] != VK_NULL_HANDLE) {
+      VkPipelineShaderStageCreateInfo &stage = stages[num_stages++];
+      stage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+      stage.pNext = nullptr;
+      stage.flags = 0;
+      stage.stage = stage_flags[i];
+      stage.module = sc->_modules[i];
+      stage.pName = "main";
+      stage.pSpecializationInfo = nullptr;
+    }
+  }
 
   // Describe each vertex input binding (ie. GeomVertexArray).  Leave one
   // extra slot for the "dummy" binding, see below.
@@ -3047,7 +3070,7 @@ make_pipeline(VulkanShaderContext *sc, const RenderState *state,
   pipeline_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
   pipeline_info.pNext = nullptr;
   pipeline_info.flags = 0;
-  pipeline_info.stageCount = 2;
+  pipeline_info.stageCount = num_stages;
   pipeline_info.pStages = stages;
   pipeline_info.pVertexInputState = &vertex_info;
   pipeline_info.pInputAssemblyState = &assembly_info;
@@ -3069,6 +3092,42 @@ make_pipeline(VulkanShaderContext *sc, const RenderState *state,
   err = vkCreateGraphicsPipelines(_device, _pipeline_cache, 1, &pipeline_info, nullptr, &pipeline);
   if (err) {
     vulkan_error(err, "Failed to create graphics pipeline");
+    return VK_NULL_HANDLE;
+  }
+
+  return pipeline;
+}
+
+/**
+ * Creates a pipeline for the given compute shader context.
+ */
+VkPipeline VulkanGraphicsStateGuardian::
+make_compute_pipeline(VulkanShaderContext *sc) {
+  if (vulkandisplay_cat.is_debug()) {
+    vulkandisplay_cat.debug()
+      << "Making compute pipeline for shader " << sc->_shader->get_filename() << "\n";
+  }
+
+  VkComputePipelineCreateInfo pipeline_info;
+  pipeline_info.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
+  pipeline_info.pNext = nullptr;
+  pipeline_info.flags = 0;
+  pipeline_info.stage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+  pipeline_info.stage.pNext = nullptr;
+  pipeline_info.stage.flags = 0;
+  pipeline_info.stage.stage = VK_SHADER_STAGE_COMPUTE_BIT;
+  pipeline_info.stage.module = sc->_modules[Shader::ST_compute];
+  pipeline_info.stage.pName = "main";
+  pipeline_info.stage.pSpecializationInfo = nullptr;
+  pipeline_info.layout = sc->_pipeline_layout;
+  pipeline_info.basePipelineHandle = VK_NULL_HANDLE;
+  pipeline_info.basePipelineIndex = 0;
+
+  VkResult err;
+  VkPipeline pipeline;
+  err = vkCreateComputePipelines(_device, _pipeline_cache, 1, &pipeline_info, nullptr, &pipeline);
+  if (err) {
+    vulkan_error(err, "Failed to create compute pipeline");
     return VK_NULL_HANDLE;
   }
 

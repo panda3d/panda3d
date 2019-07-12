@@ -31,9 +31,10 @@ public:
                           const RenderState *state,
                           const GeomVertexFormat *format,
                           VkPrimitiveTopology topology);
+  VkPipeline get_compute_pipeline(VulkanGraphicsStateGuardian *gsg);
 
 private:
-  VkShaderModule _modules[2];
+  VkShaderModule _modules[Shader::ST_COUNT];
   VkDescriptorSetLayout _descriptor_set_layout;
   VkPipelineLayout _pipeline_layout;
 
@@ -55,6 +56,7 @@ private:
   // which use that shader.
   typedef pmap<PipelineKey, VkPipeline> PipelineMap;
   PipelineMap _pipeline_map;
+  VkPipeline _compute_pipeline = VK_NULL_HANDLE;
 
   friend class VulkanGraphicsStateGuardian;
 
