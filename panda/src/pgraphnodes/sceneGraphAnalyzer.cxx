@@ -425,8 +425,12 @@ collect_statistics(const Geom *geom) {
     CPT(GeomPrimitive) prim = geom->get_primitive(i);
 
     int num_vertices = prim->get_num_vertices();
+    int strip_cut_index = prim->get_strip_cut_index();
     for (int vi = 0; vi < num_vertices; ++vi) {
-      tracker._referenced_vertices.set_bit(prim->get_vertex(vi));
+      int index = prim->get_vertex(vi);
+      if (index != strip_cut_index) {
+        tracker._referenced_vertices.set_bit(index);
+      }
     }
 
     if (prim->is_indexed()) {
