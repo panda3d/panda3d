@@ -129,7 +129,12 @@ get_languages() const {
   };
 }
 
+/**
+ * Compiles the source code from the given input stream, producing a
+ * ShaderModule on success.
+ */
 PT(ShaderModule) ShaderCompilerCg::
-compile_now(ShaderModule::Stage stage, std::istream &in) const {
+compile_now(ShaderModule::Stage stage, std::istream &in,
+            const std::string &filename, BamCacheRecord *record) const {
   return nullptr;
 }

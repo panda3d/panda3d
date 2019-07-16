@@ -33,7 +33,6 @@
 #include "pta_LVecBase2.h"
 #include "epvector.h"
 #include "asyncFuture.h"
-#include "bamCacheRecord.h"
 #include "shaderModule.h"
 
 #ifdef HAVE_CG
@@ -44,6 +43,7 @@ typedef struct _CGprogram   *CGprogram;
 typedef struct _CGparameter *CGparameter;
 #endif
 
+class BamCacheRecord;
 class ShaderModuleGlsl;
 class ShaderCompiler;
 
@@ -570,6 +570,7 @@ public:
 
   typedef pvector<PT(ShaderModule)> Modules;
   Modules _modules;
+  int _module_mask = 0;
 
 protected:
   ShaderFile _filename;
@@ -580,12 +581,6 @@ protected:
 
   typedef pvector<Filename> Filenames;
 
-  // Stores full paths, and includes the fullpaths of the shaders themselves
-  // as well as the includes.
-  Filenames _source_files;
-  time_t _last_modified;
-
-  PT(BamCacheRecord) _record;
   bool _cache_compiled_shader;
   unsigned int _compiled_format;
   std::string _compiled_binary;
@@ -612,18 +607,8 @@ private:
   bool read(const ShaderFile &sfile, BamCacheRecord *record = nullptr);
   bool load(const ShaderFile &sbody, BamCacheRecord *record = nullptr);
   bool do_read_source(ShaderModule::Stage stage, const Filename &fn, BamCacheRecord *record);
+  bool do_read_source(ShaderModule::Stage stage, std::istream &in, BamCacheRecord *record);
   bool do_load_source(ShaderModule::Stage stage, const std::string &source, BamCacheRecord *record);
-  bool r_preprocess_include(ShaderModuleGlsl *module,
-                            std::ostream &out, const Filename &fn,
-                            const Filename &source_dir,
-                            std::set<Filename> &open_files,
-                            BamCacheRecord *record, int depth);
-  bool r_preprocess_source(ShaderModuleGlsl *module,
-                           std::ostream &out, std::istream &in,
-                           const Filename &fn, const Filename &full_fn,
-                           std::set<Filename> &open_files,
-                           BamCacheRecord *record,
-                           int fileno = 0, int depth = 0);
 
   bool check_modified() const;
   ShaderCompiler *get_compiler(ShaderLanguage lang) const;

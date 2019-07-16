@@ -1585,12 +1585,12 @@ set_compiled(unsigned int format, const char *data, size_t length) {
   _compiled_binary.assign(data, length);
 
   // Store the compiled shader in the cache.
-  if (_cache_compiled_shader && !_record.is_null()) {
+  /*if (_cache_compiled_shader && !_record.is_null()) {
     _record->set_data(this);
 
     BamCache *cache = BamCache::get_global_ptr();
     cache->store(_record);
-  }
+  }*/
 }
 
 /**
@@ -2355,7 +2355,6 @@ Shader(ShaderLanguage lang) :
   _parse(0),
   _loaded(false),
   _language(lang),
-  _last_modified(0),
   _mat_deps(0),
   _cache_compiled_shader(false)
 {
@@ -2427,12 +2426,39 @@ read(const ShaderFile &sfile, BamCacheRecord *record) {
     }
     _filename = sfile;
 
-  } else {
-    if (!do_read_source(Stage::unspecified, sfile._shared, record)) {
+  } else if (_language == SL_Cg || _language == SL_none) {
+    // For historical reasons, we have to open up this file early to determine
+    // some things about it.
+    Filename fn = sfile._shared;
+    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+    PT(VirtualFile) vf = vfs->find_file(fn, get_model_path());
+    if (vf == nullptr) {
+      shader_cat.error()
+        << "Could not find shader file: " << fn << "\n";
       return false;
     }
-    _fullpath = _source_files[0];
+
+    ShaderFile sbody;
+    sbody._separate = false;
+    if (!vf->read_file(sbody._shared, true)) {
+      shader_cat.error()
+        << "Could not read shader file: " << fn << "\n";
+      return false;
+    }
+
     _filename = sfile;
+    if (!load(sbody, record)) {
+      return false;
+    }
+
+    for (ShaderModule *module : _modules) {
+      module->set_source_filename(fn);
+    }
+
+  } else {
+    shader_cat.error()
+      << "GLSL shaders must have separate shader bodies!\n";
+    return false;
   }
 
   _loaded = true;
@@ -2481,10 +2507,29 @@ load(const ShaderFile &sbody, BamCacheRecord *record) {
       return false;
     }
 
-  } else {
-    if (!do_load_source(Stage::unspecified, sbody._shared, record)) {
+  } else if (_language == SL_Cg || _language == SL_none) {
+    if (_language == SL_none && !has_cg_header(sbody._shared)) {
+      shader_cat.error()
+        << "Unable to determine shader language of created-shader\n";
       return false;
     }
+    _language = SL_Cg;
+
+    if (!do_load_source(Stage::vertex, sbody._shared, record)) {
+      return false;
+    }
+    if (!do_load_source(Stage::fragment, sbody._shared, record)) {
+      return false;
+    }
+    if (sbody._shared.find("gshader") != string::npos &&
+        !do_load_source(Stage::geometry, sbody._shared, record)) {
+      return false;
+    }
+
+  } else {
+    shader_cat.error()
+      << "GLSL shaders must have separate shader bodies!\n";
+    return false;
   }
 
   _loaded = true;
@@ -2499,7 +2544,6 @@ load(const ShaderFile &sbody, BamCacheRecord *record) {
  */
 bool Shader::
 do_read_source(Stage stage, const Filename &fn, BamCacheRecord *record) {
-  std::string into;
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   PT(VirtualFile) vf = vfs->find_file(fn, get_model_path());
   if (vf == nullptr) {
@@ -2508,26 +2552,76 @@ do_read_source(Stage stage, const Filename &fn, BamCacheRecord *record) {
     return false;
   }
 
-  shader_cat.info() << "Reading shader file: " << fn << "\n";
-
-  if (!vf->read_file(into, true)) {
+  std::istream *in = vf->open_read_file(true);
+  if (in == nullptr) {
     shader_cat.error()
-      << "Could not read shader file: " << fn << "\n";
+      << "Could not open shader file for reading: " << fn << "\n";
     return false;
   }
 
-  do_load_source(stage, into, record);
+  PT(BamCacheRecord) record_pt;
+  if (record == nullptr) {
+    BamCache *cache = BamCache::get_global_ptr();
+    record_pt = cache->lookup(vf->get_filename(), "smo");
+    record = record_pt.p();
+  }
 
   if (record != nullptr) {
     record->add_dependent_file(vf);
   }
 
-  _last_modified = std::max(_last_modified, vf->get_timestamp());
-  _source_files.push_back(vf->get_filename());
+  shader_cat.info() << "Reading shader file: " << fn << "\n";
+  if (!do_read_source(stage, *in, record)) {
+    vf->close_read_file(in);
+    return false;
+  }
+
+  //_last_modified = std::max(_last_modified, vf->get_timestamp());
+  //_source_files.push_back(vf->get_filename());
 
   // Update module source filename, should find a better way to do this...
   PT(ShaderModule) module = _modules.back();
   module->set_source_filename(fn);
+
+  vf->close_read_file(in);
+  return true;
+}
+
+/**
+ * Loads the shader file from the given string into the given string,
+ * performing any pre-processing on it that may be necessary.
+ *
+ * Returns false if there was an error with this shader bad enough to consider
+ * it 'invalid'.
+ */
+bool Shader::
+do_read_source(ShaderModule::Stage stage, std::istream &in, BamCacheRecord *record) {
+  ShaderCompiler *compiler = get_compiler(_language);
+  nassertr(compiler != nullptr, false);
+
+  PT(ShaderModule) module = compiler->compile_now(stage, in, "created-shader", record);
+  if (!module) {
+    return false;
+  }
+
+  if (_language == SL_Cg) {
+#ifdef HAVE_CG
+    ShaderCompilerCg *cg_compiler = DCAST(ShaderCompilerCg, compiler);
+    cg_compiler->get_profile_from_header(_text._shared, _default_caps);
+
+    if (!cg_analyze_shader(_default_caps)) {
+      shader_cat.error()
+        << "Shader encountered an error.\n";
+      return false;
+    }
+#else
+    shader_cat.error()
+      << "Tried to load Cg shader, but no Cg support is enabled.\n";
+#endif
+  }
+
+  _modules.push_back(std::move(module));
+  _module_mask |= (1 << (int)stage);
 
   return true;
 }
@@ -2541,479 +2635,8 @@ do_read_source(Stage stage, const Filename &fn, BamCacheRecord *record) {
  */
 bool Shader::
 do_load_source(ShaderModule::Stage stage, const std::string &source, BamCacheRecord *record) {
-  PT(ShaderModuleGlsl) module = new ShaderModuleGlsl(stage);
-  std::string &into = module->_raw_source;
-
-  if (stage == Stage::unspecified) {
-    // Determine which language the shader is written in.
-    if (_language == SL_none) {
-      if (has_cg_header(source)) {
-        _language = SL_Cg;
-      } else {
-        shader_cat.error()
-          << "Unable to determine shader language of " << source << "\n";
-        return false;
-      }
-    } else if (_language == SL_GLSL) {
-      shader_cat.error()
-        << "GLSL shaders must have separate shader bodies!\n";
-      return false;
-    }
-
-    if (_language != SL_Cg) {
-      shader_cat.error()
-        << "Shader is not in a supported shader-language.\n";
-      return false;
-    }
-
-  }
-
-  if (_language == SL_GLSL && glsl_preprocess) {
-    // Preprocess the GLSL file as we read it.
-    std::set<Filename> open_files;
-    std::ostringstream sstr;
-    std::istringstream in(source);
-    if (!r_preprocess_source(module, sstr, in, Filename("created-shader"), Filename(),
-                             open_files, record)) {
-      return false;
-    }
-    into = sstr.str();
-
-  } else {
-    into = source;
-  }
-
-  if (_language == SL_Cg) {
-#ifdef HAVE_CG
-    ShaderCompilerCg *cg_compiler = DCAST(ShaderCompilerCg, get_compiler(SL_Cg));
-    cg_compiler->get_profile_from_header(into, _default_caps);
-
-    _text._shared = into;
-    if (!cg_analyze_shader(_default_caps)) {
-      shader_cat.error()
-        << "Shader encountered an error.\n";
-      return false;
-    }
-#else
-    shader_cat.error()
-      << "Tried to load Cg shader, but no Cg support is enabled.\n";
-#endif
-  }
-
-  // Strip trailing whitespace.
-  while (!into.empty() && isspace(into[into.size() - 1])) {
-    into.resize(into.size() - 1);
-  }
-
-  // Except add back a newline at the end, which is needed by Intel drivers.
-  into += "\n";
-
-  _modules.push_back(std::move(module));
-
-  return true;
-}
-
-/**
- * Loads a given GLSL file line by line, and processes any #pragma include and
- * once statements, as well as removes any comments.
- *
- * The set keeps track of which files we have already included, for checking
- * recursive includes.
- */
-bool Shader::
-r_preprocess_include(ShaderModuleGlsl *module,
-                     ostream &out, const Filename &fn,
-                     const Filename &source_dir,
-                     std::set<Filename> &once_files,
-                     BamCacheRecord *record, int depth) {
-
-  if (depth > glsl_include_recursion_limit) {
-    shader_cat.error()
-      << "GLSL includes nested too deeply, raise glsl-include-recursion-limit"
-         " if necessary\n";
-    return false;
-  }
-
-  DSearchPath path(get_model_path());
-  if (!source_dir.empty()) {
-    path.prepend_directory(source_dir);
-  }
-
-  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  PT(VirtualFile) vf = vfs->find_file(fn, path);
-  if (vf == nullptr) {
-    shader_cat.error()
-      << "Could not find shader include: " << fn << "\n";
-    return false;
-  }
-
-  Filename full_fn = vf->get_filename();
-  if (once_files.find(full_fn) != once_files.end()) {
-    // If this file had a #pragma once, just move on.
-    return true;
-  }
-
-  istream *source = vf->open_read_file(true);
-  if (source == nullptr) {
-    shader_cat.error()
-      << "Could not open shader include: " << fn << "\n";
-    return false;
-  }
-
-  if (record != nullptr) {
-    record->add_dependent_file(vf);
-  }
-  _last_modified = std::max(_last_modified, vf->get_timestamp());
-  _source_files.push_back(full_fn);
-
-  // We give each file an unique index.  This is so that we can identify a
-  // particular shader in the error output.  We offset them by 2048 so that
-  // they are more recognizable.  GLSL doesn't give us anything more useful
-  // than that, unfortunately.  Don't do this for the top-level file, though.
-  // We don't want anything to get in before a potential #version directive.
-  int fileno = 0;
-  fileno = 2048 + module->_included_files.size();
-
-  // Write it into the vector so that we can substitute it later when we are
-  // parsing the GLSL error log.  Don't store the full filename because it
-  // would just be too long to display.
-  module->_included_files.push_back(fn);
-
-  if (shader_cat.is_debug()) {
-    shader_cat.debug()
-      << "Preprocessing shader include " << fileno << ": " << fn << "\n";
-  }
-
-  bool result = r_preprocess_source(module, out, *source, fn, full_fn, once_files, record, fileno, depth);
-  vf->close_read_file(source);
-  return result;
-}
-
-/**
- * Loads a given GLSL stream line by line, processing any #pragma include and
- * once statements, as well as removing any comments.
- *
- * The set keeps track of which files we have already included, for checking
- * recursive includes.
- */
-bool Shader::
-r_preprocess_source(ShaderModuleGlsl *module,
-                    ostream &out, istream &in, const Filename &fn,
-                    const Filename &full_fn, std::set<Filename> &once_files,
-                    BamCacheRecord *record, int fileno, int depth) {
-
-  // Iterate over the lines for things we may need to preprocess.
-  string line;
-  int ext_google_include = 0; // 1 = warn, 2 = enable
-  int ext_google_line = 0;
-  bool had_include = false;
-  bool had_version = false;
-  int lineno = 0;
-  bool write_line_directive = (fileno != 0);
-
-  while (std::getline(in, line)) {
-    ++lineno;
-
-    if (line.empty()) {
-      // We still write a newline to make sure the line numbering remains
-      // consistent, unless we are about to write a #line directive anyway.
-      if (!write_line_directive) {
-        out.put('\n');
-      }
-      continue;
-    }
-
-    // If the line ends with a backslash, concatenate the following line.
-    // Preprocessor definitions may be broken up into multiple lines.
-    while (line[line.size() - 1] == '\\') {
-      line.resize(line.size() - 1);
-      string line2;
-
-      if (std::getline(in, line2)) {
-        line += line2;
-        if (!write_line_directive) {
-          out.put('\n');
-        }
-        ++lineno;
-      } else {
-        break;
-      }
-    }
-
-    // Look for comments to strip.  This is necessary because comments may
-    // appear in the middle of or around a preprocessor definition.
-    size_t line_comment = line.find("//");
-    size_t block_comment = line.find("/*");
-    if (line_comment < block_comment) {
-      // A line comment - strip off the rest of the line.
-      line.resize(line_comment);
-
-    } else if (block_comment < line_comment) {
-      // A block comment.  Search for closing block.
-      string line2 = line.substr(block_comment + 2);
-
-      // According to the GLSL specification, a block comment is replaced with
-      // a single whitespace character.
-      line.resize(block_comment);
-      line += ' ';
-
-      size_t block_end = line2.find("*/");
-      while (block_end == string::npos) {
-        // Didn't find it - look in the next line.
-        if (std::getline(in, line2)) {
-          if (!write_line_directive) {
-            out.put('\n');
-          }
-          ++lineno;
-          block_end = line2.find("*/");
-        } else {
-          shader_cat.error()
-            << "Expected */ before end of file " << fn << "\n";
-          return false;
-        }
-      }
-
-      line += line2.substr(block_end + 2);
-    }
-
-    // Strip trailing whitespace.
-    while (!line.empty() && isspace(line[line.size() - 1])) {
-      line.resize(line.size() - 1);
-    }
-
-    if (line.empty()) {
-      if (!write_line_directive) {
-        out.put('\n');
-      }
-      continue;
-    }
-
-    // Check if this line contains a #directive.
-    char directive[64];
-    if (line.size() < 8 || sscanf(line.c_str(), " # %63s", directive) != 1) {
-      // Nope.  Just pass the line through unmodified.
-      if (write_line_directive) {
-        out << "#line " << lineno << " " << fileno << " // " << fn << "\n";
-        write_line_directive = false;
-      }
-      out << line << "\n";
-      continue;
-    }
-
-    char pragma[64];
-    size_t nread = 0;
-    // What kind of directive is it?
-    if (strcmp(directive, "pragma") == 0 &&
-        sscanf(line.c_str(), " # pragma %63s", pragma) == 1) {
-      if (strcmp(pragma, "include") == 0) {
-        // Allow both double quotes and angle brackets.
-        Filename incfn, source_dir;
-        {
-          char incfile[2048];
-          if (sscanf(line.c_str(), " # pragma%*[ \t]include \"%2047[^\"]\" %zn", incfile, &nread) == 1
-              && nread == line.size()) {
-            // A regular include, with double quotes.  Probably a local file.
-            source_dir = full_fn.get_dirname();
-            incfn = incfile;
-
-          } else if (sscanf(line.c_str(), " # pragma%*[ \t]include <%2047[^\"]> %zn", incfile, &nread) == 1
-              && nread == line.size()) {
-            // Angled includes are also OK, but we don't search in the directory
-            // of the source file.
-            incfn = incfile;
-
-          } else {
-            // Couldn't parse it.
-            shader_cat.error()
-              << "Malformed #pragma include at line " << lineno
-              << " of file " << fn << ":\n  " << line << "\n";
-            return false;
-          }
-        }
-
-        // OK, great.  Process the include.
-        if (!r_preprocess_include(module, out, incfn, source_dir, once_files, record, depth + 1)) {
-          // An error occurred.  Pass on the failure.
-          shader_cat.error(false) << "included at line "
-            << lineno << " of file " << fn << ":\n  " << line << "\n";
-          return false;
-        }
-
-        // Restore the line counter.
-        write_line_directive = true;
-        had_include = true;
-        continue;
-
-      } else if (strcmp(pragma, "once") == 0) {
-        // Do a stricter syntax check, just to be extra safe.
-        if (sscanf(line.c_str(), " # pragma%*[ \t]once %zn", &nread) != 0 ||
-            nread != line.size()) {
-          shader_cat.error()
-            << "Malformed #pragma once at line " << lineno
-            << " of file " << fn << ":\n  " << line << "\n";
-          return false;
-        }
-
-        if (fileno == 0) {
-          shader_cat.warning()
-            << "#pragma once in main file at line "
-            << lineno << " of file " << fn
-#ifndef NDEBUG
-            << ":\n  " << line
-#endif
-            << "\n";
-        }
-
-        if (!full_fn.empty()) {
-          once_files.insert(full_fn);
-        }
-        continue;
-      }
-      // Otherwise, just pass it through to the driver.
-
-    } else if (strcmp(directive, "endif") == 0) {
-      // Check for an #endif after an include.  We have to restore the line
-      // number in case the include happened under an #if block.
-      if (had_include) {
-        write_line_directive = true;
-      }
-
-    } else if (strcmp(directive, "version") == 0) {
-      had_version = true;
-
-    } else if (strcmp(directive, "extension") == 0) {
-      // Check for special preprocessing extensions.
-      char extension[256];
-      char behavior[9];
-      if (sscanf(line.c_str(), " # extension%*[ \t]%255[^: \t] : %8s", extension, behavior) == 2) {
-        // Parse the behavior string.
-        int mode;
-        if (strcmp(behavior, "require") == 0 || strcmp(behavior, "enable") == 0) {
-          mode = 2;
-        } else if (strcmp(behavior, "warn") == 0) {
-          mode = 1;
-        } else if (strcmp(behavior, "disable") == 0) {
-          mode = 0;
-        } else {
-          shader_cat.error()
-            << "Extension directive specifies invalid behavior at line "
-            << lineno << " of file " << fn << ":\n  " << line << "\n";
-          return false;
-        }
-
-        if (strcmp(extension, "all") == 0) {
-          if (mode == 2) {
-            shader_cat.error()
-              << "Extension directive for 'all' may only specify 'warn' or "
-                 "'disable' at line " << lineno << " of file " << fn
-              << ":\n  " << line << "\n";
-            return false;
-          }
-          ext_google_include = mode;
-          ext_google_line = mode;
-          // Still pass it through to the driver, so it can enable other
-          // extensions.
-
-        } else if (strcmp(extension, "GL_GOOGLE_include_directive") == 0) {
-          // Enable the Google extension support for #include statements.
-          // This also implicitly enables GL_GOOGLE_cpp_style_line_directive.
-          // This matches the behavior of Khronos' glslang reference compiler.
-          ext_google_include = mode;
-          ext_google_line = mode;
-          continue;
-
-        } else if (strcmp(extension, "GL_GOOGLE_cpp_style_line_directive") == 0) {
-          // Enables strings in #line statements.
-          ext_google_line = mode;
-          continue;
-        }
-      } else {
-        shader_cat.error()
-          << "Failed to parse extension directive at line "
-          << lineno << " of file " << fn << ":\n  " << line << "\n";
-        return false;
-      }
-
-    } else if (ext_google_include > 0 && strcmp(directive, "include") == 0) {
-      // Warn about extension use if requested.
-      if (ext_google_include == 1) {
-        shader_cat.warning()
-          << "Extension GL_GOOGLE_include_directive is being used at line "
-          << lineno << " of file " << fn
-#ifndef NDEBUG
-          << ":\n  " << line
-#endif
-          << "\n";
-      }
-
-      // This syntax allows only double quotes, not angle brackets.
-      Filename incfn;
-      {
-        char incfile[2048];
-        if (sscanf(line.c_str(), " # include%*[ \t]\"%2047[^\"]\" %zn", incfile, &nread) != 1
-            || nread != line.size()) {
-          // Couldn't parse it.
-          shader_cat.error()
-            << "Malformed #include at line " << lineno
-            << " of file " << fn << ":\n  " << line << "\n";
-          return false;
-        }
-        incfn = incfile;
-      }
-
-      // OK, great.  Process the include.
-      Filename source_dir = full_fn.get_dirname();
-      if (!r_preprocess_include(module, out, incfn, source_dir, once_files, record, depth + 1)) {
-        // An error occurred.  Pass on the failure.
-        shader_cat.error(false) << "included at line "
-          << lineno << " of file " << fn << ":\n  " << line << "\n";
-        return false;
-      }
-
-      // Restore the line counter.
-      write_line_directive = true;
-      had_include = true;
-      continue;
-
-    } else if (ext_google_line > 0 && strcmp(directive, "line") == 0) {
-      // It's a #line directive.  See if it uses a string instead of number.
-      char filestr[2048];
-      if (sscanf(line.c_str(), " # line%*[ \t]%d%*[ \t]\"%2047[^\"]\" %zn", &lineno, filestr, &nread) == 2
-          && nread == line.size()) {
-        // Warn about extension use if requested.
-        if (ext_google_line == 1) {
-          shader_cat.warning()
-            << "Extension GL_GOOGLE_cpp_style_line_directive is being used at line "
-            << lineno << " of file " << fn
-#ifndef NDEBUG
-            << ":\n  " << line
-#endif
-            << "\n";
-        }
-
-        // Replace the string line number with an integer.  This is something
-        // we can substitute later when parsing the GLSL log from the driver.
-        fileno = 2048 + module->_included_files.size();
-        module->_included_files.push_back(Filename(filestr));
-
-        out << "#line " << lineno << " " << fileno << " // " << filestr << "\n";
-        continue;
-      }
-    }
-
-    if (write_line_directive) {
-      out << "#line " << lineno << " " << fileno << " // " << fn << "\n";
-      write_line_directive = false;
-    }
-    out << line << "\n";
-  }
-
-  if (fileno == 0 && !had_version) {
-    shader_cat.warning()
-      << "GLSL shader " << fn << " does not contain a #version line!\n";
-  }
-
-  return true;
+  std::istringstream in(source);
+  return do_read_source(stage, in, record);
 }
 
 /**
@@ -3022,18 +2645,11 @@ r_preprocess_source(ShaderModuleGlsl *module,
  */
 bool Shader::
 check_modified() const {
-  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-
-  pvector<Filename>::const_iterator it;
-  for (it = _source_files.begin(); it != _source_files.end(); ++it) {
-    const Filename &fn = (*it);
-
-    PT(VirtualFile) vfile = vfs->get_file(fn, true);
-    if (vfile == nullptr || vfile->get_timestamp() > _last_modified) {
+  for (ShaderModule *module : _modules) {
+    if (module->_record != nullptr && !module->_record->dependents_unchanged()) {
       return true;
     }
   }
-
   return false;
 }
 
@@ -3176,18 +2792,20 @@ load_compute(ShaderLanguage lang, const Filename &fn) {
   PT(BamCacheRecord) record = cache->lookup(fullpath, "sho");
   if (record != nullptr) {
     if (record->has_data()) {
-      shader_cat.info()
-        << "Compute shader " << fn << " was found in disk cache.\n";
-
-      return DCAST(Shader, record->get_data());
+      PT(Shader) shader = DCAST(Shader, record->get_data());
+      if (shader->_module_mask == (1 << (int)Stage::compute)) {
+        shader_cat.info()
+          << "Compute shader " << fn << " was found in disk cache.\n";
+        return shader;
+      }
     }
   }
 
   PT(Shader) shader = new Shader(lang);
-
-  if (!shader->read(sfile, record)) {
+  if (!shader->do_read_source(Stage::compute, fullpath, record)) {
     return nullptr;
   }
+
   _load_table[sfile] = shader;
 
   /*if (cache_generated_shaders) {
@@ -3200,9 +2818,9 @@ load_compute(ShaderLanguage lang, const Filename &fn) {
 
   // It makes little sense to cache the shader before compilation, so we keep
   // the record for when we have the compiled the shader.
-  std::swap(shader->_record, record);
+  //shader->_record = std::move(record);
   shader->_cache_compiled_shader = BamCache::get_global_ptr()->get_cache_compiled_shaders();
-  shader->_fullpath = shader->_source_files[0];
+  shader->_fullpath = std::move(fullpath);
   return shader;
 }
 

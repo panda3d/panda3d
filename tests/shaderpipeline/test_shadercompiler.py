@@ -1,6 +1,6 @@
 from panda3d import core
 
-GLSL_VERT_SHADER = ""
+GLSL_VERT_SHADER = "\n"
 
 def test_shadercompiler_glsl(registry):
     compiler = registry.get_compiler_from_language(core.Shader.SL_GLSL)

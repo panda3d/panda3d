@@ -55,8 +55,6 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 std::string ShaderModule::
 format_stage(Stage stage) {
   switch (stage) {
-  case Stage::unspecified:
-    return "unspecified";
   case Stage::vertex:
     return "vertex";
   case Stage::tess_control:

@@ -18,6 +18,8 @@
 
 #include "shaderCompiler.h"
 
+class ShaderModuleGlsl;
+
 /**
  * This defines the compiler interface to read GLSL files and pre-process them
  */
@@ -25,10 +27,24 @@ class EXPCL_PANDA_SHADERPIPELINE ShaderCompilerGlslPreProc : public ShaderCompil
 public:
   ShaderCompilerGlslPreProc();
 
-PUBLISHED:
   virtual std::string get_name() const override;
   virtual ShaderLanguages get_languages() const override;
-  virtual PT(ShaderModule) compile_now(Stage stage, std::istream &in) const override;
+  virtual PT(ShaderModule) compile_now(Stage stage, std::istream &in,
+                                       const std::string &filename = "created-shader",
+                                       BamCacheRecord *record = nullptr) const override;
+
+private:
+  bool r_preprocess_include(ShaderModuleGlsl *module,
+                            std::ostream &out, const std::string &filename,
+                            const Filename &source_dir,
+                            std::set<Filename> &open_files,
+                            BamCacheRecord *record, int depth) const;
+  bool r_preprocess_source(ShaderModuleGlsl *module,
+                           std::ostream &out, std::istream &in,
+                           const std::string &fn, const Filename &full_fn,
+                           std::set<Filename> &open_files,
+                           BamCacheRecord *record,
+                           int fileno = 0, int depth = 0) const;
 
 public:
   static TypeHandle get_class_type() {

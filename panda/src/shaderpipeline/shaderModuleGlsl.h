@@ -26,6 +26,7 @@ public:
 
   virtual std::string get_ir() const override;
 
+  int add_included_file(Filename fn);
   Filename get_filename_from_index(int index) const;
 
 protected:
@@ -35,7 +36,7 @@ protected:
   typedef pvector<Filename> Filenames;
   Filenames _included_files;
 
-  friend class Shader;
+  friend class ShaderCompilerGlslPreProc;
 
 public:
   static TypeHandle get_class_type() {

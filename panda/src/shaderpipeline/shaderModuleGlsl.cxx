@@ -32,6 +32,18 @@ get_ir() const {
 }
 
 /**
+ * Lists the given filename as having been included by this shader.  A unique
+ * number identifying the file is returned that can later be passed to
+ * get_filename_from_index.
+ */
+int ShaderModuleGlsl::
+add_included_file(Filename fn) {
+  int fileno = 2048 + _included_files.size();
+  _included_files.push_back(std::move(fn));
+  return fileno;
+}
+
+/**
  * Returns the filename of the included shader with the given source file
  * index (as recorded in the #line statement in r_preprocess_source).  We use
  * this to associate error messages with included files.

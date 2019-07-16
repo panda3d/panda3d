@@ -38,7 +38,11 @@ public:
 PUBLISHED:
   virtual std::string get_name() const=0;
   virtual ShaderLanguages get_languages() const=0;
-  virtual PT(ShaderModule) compile_now(Stage stage, std::istream &in) const=0;
+  virtual PT(ShaderModule) compile_now(Stage stage, const Filename &path,
+                                       BamCacheRecord *record = nullptr) const;
+  virtual PT(ShaderModule) compile_now(Stage stage, std::istream &in,
+                                       const std::string &filename = "created-shader",
+                                       BamCacheRecord *record = nullptr) const=0;
 
 public:
   static TypeHandle get_class_type() {

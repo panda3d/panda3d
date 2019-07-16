@@ -15,14 +15,16 @@
 #define SHADERMODULE_H
 
 #include "typedWritableReferenceCount.h"
+#include "bamCacheRecord.h"
 
 /**
- * This is the base class for the outputs of shaderCompilers
+ * Represents a single shader module in some intermediate representation for
+ * passing to the driver.  This could contain compiled bytecode, or in some
+ * cases, preprocessed source code to be given directly to the driver.
  */
 class EXPCL_PANDA_SHADERPIPELINE ShaderModule : public TypedWritableReferenceCount {
 PUBLISHED:
   enum class Stage {
-    unspecified,
     vertex,
     tess_control,
     tess_evaluation,
@@ -47,10 +49,14 @@ PUBLISHED:
 
   virtual std::string get_ir() const=0;
 
-private:
-  Stage _stage = Stage::unspecified;
+protected:
+  Stage _stage;
+  PT(BamCacheRecord) _record;
+  //std::pvector<Filename> _source_files;
   Filename _source_filename;
-  time_t _source_modified = 0;
+  //time_t _source_modified = 0;
+
+  friend class Shader;
 
 public:
   virtual void write_datagram(BamWriter *manager, Datagram &dg) override;

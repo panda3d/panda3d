@@ -31,8 +31,9 @@ public:
 PUBLISHED:
   virtual std::string get_name() const override;
   virtual ShaderLanguages get_languages() const override;
-  virtual PT(ShaderModule) compile_now(Stage stage, std::istream &in) const override;
-
+  virtual PT(ShaderModule) compile_now(Stage stage, std::istream &in,
+                                       const std::string &filename = "created-shader",
+                                       BamCacheRecord *record = nullptr) const override;
 
 public:
   static TypeHandle get_class_type() {
