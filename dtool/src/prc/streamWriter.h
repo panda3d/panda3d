@@ -32,7 +32,9 @@ public:
 PUBLISHED:
   INLINE explicit StreamWriter(std::ostream *out, bool owns_stream);
   INLINE StreamWriter(const StreamWriter &copy);
+  INLINE StreamWriter(StreamWriter &&from) noexcept;
   INLINE void operator = (const StreamWriter &copy);
+  INLINE void operator = (StreamWriter &&from) noexcept;
   INLINE ~StreamWriter();
 
   INLINE std::ostream *get_ostream() const;

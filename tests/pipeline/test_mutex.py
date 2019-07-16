@@ -2,6 +2,7 @@ from panda3d.core import Mutex, ReMutex
 from panda3d import core
 from random import random
 import pytest
+import sys
 
 
 def test_mutex_acquire_release():
@@ -32,6 +33,19 @@ def test_mutex_try_acquire():
 
     # Clean up
     m.release()
+
+
+def test_mutex_with():
+    m = Mutex()
+
+    rc = sys.getrefcount(m)
+    with m:
+        assert m.debug_is_locked()
+
+    with m:
+        assert m.debug_is_locked()
+
+    assert rc == sys.getrefcount(m)
 
 
 @pytest.mark.skipif(not core.Thread.is_threading_supported(),
@@ -124,3 +138,15 @@ def test_remutex_try_acquire():
     m.release()
     m.release()
 
+
+def test_remutex_with():
+    m = ReMutex()
+
+    rc = sys.getrefcount(m)
+    with m:
+        assert m.debug_is_locked()
+        with m:
+            assert m.debug_is_locked()
+        assert m.debug_is_locked()
+
+    assert rc == sys.getrefcount(m)

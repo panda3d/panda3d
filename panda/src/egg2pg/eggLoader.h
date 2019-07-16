@@ -164,6 +164,8 @@ private:
                    LPoint3 &center, PN_stdfloat &radius, LColor &color);
 
   bool make_box(EggGroup *start_group, EggGroup::CollideFlags flags,
+                const LMatrix4 &xform, LPoint3 &min_p, LPoint3 &max_p);
+  bool make_box(EggGroup *start_group, EggGroup::CollideFlags flags,
                 LPoint3 &min_p, LPoint3 &max_p, LColor &color);
 
   void make_collision_solids(EggGroup *start_group, EggGroup *egg_group,

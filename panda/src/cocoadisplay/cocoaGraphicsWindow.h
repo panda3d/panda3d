@@ -29,7 +29,7 @@
  * An interface to the Cocoa system for managing OpenGL windows under Mac OS
  * X.
  */
-class CocoaGraphicsWindow : public GraphicsWindow {
+class EXPCL_PANDA_COCOADISPLAY CocoaGraphicsWindow : public GraphicsWindow {
 public:
   CocoaGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                       const std::string &name,

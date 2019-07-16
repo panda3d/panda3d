@@ -47,6 +47,7 @@ static void Dtool_WrapperBase_dealloc(PyObject *self) {
   Dtool_WrapperBase *wrap = (Dtool_WrapperBase *)self;
   nassertv(wrap);
   Py_XDECREF(wrap->_self);
+  Py_TYPE(self)->tp_free(self);
 }
 
 static PyObject *Dtool_WrapperBase_repr(PyObject *self) {

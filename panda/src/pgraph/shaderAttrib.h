@@ -119,6 +119,7 @@ PUBLISHED:
   LVecBase4 get_shader_input_vector(InternalName *id) const;
   Texture *get_shader_input_texture(const InternalName *id, SamplerState *sampler=nullptr) const;
   const Shader::ShaderPtrData *get_shader_input_ptr(const InternalName *id) const;
+  bool get_shader_input_ptr(const InternalName *id, Shader::ShaderPtrData &data) const;
   const LMatrix4 &get_shader_input_matrix(const InternalName *id, LMatrix4 &matrix) const;
   ShaderBuffer *get_shader_input_buffer(const InternalName *id) const;
 

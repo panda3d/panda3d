@@ -149,3 +149,22 @@ def test_nodepath_python_tags():
     rc1 = sys.getrefcount(path.python_tags)
     rc2 = sys.getrefcount(path.python_tags)
     assert rc1 == rc2
+
+
+def test_nodepath_replace_texture():
+    from panda3d.core import NodePath, Texture
+
+    tex1 = Texture()
+    tex2 = Texture()
+
+    path1 = NodePath("node1")
+    path1.set_texture(tex1)
+    path1.replace_texture(tex1, tex2)
+    assert path1.get_texture() == tex2
+
+    path1 = NodePath("node1")
+    path2 = path1.attach_new_node("node2")
+    path2.set_texture(tex1)
+    path1.replace_texture(tex1, tex2)
+    assert not path1.has_texture()
+    assert path2.get_texture() == tex2

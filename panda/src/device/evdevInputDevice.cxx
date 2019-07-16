@@ -62,6 +62,15 @@ enum QuirkBits {
   // We only connect it if it is reporting any events, because when Steam is
   // running, the Steam controller is muted in favour of a dummy Xbox device.
   QB_steam_controller = 32,
+
+  // Axes on the right stick are swapped, using x for y and vice versa.
+  QB_right_axes_swapped = 64,
+
+  // Has no trigger axes.
+  QB_no_analog_triggers = 128,
+
+  // Alternate button mapping.
+  QB_alt_button_mapping = 256,
 };
 
 static const struct DeviceMapping {
@@ -81,11 +90,15 @@ static const struct DeviceMapping {
   // Steam Controller (wireless)
   {0x28de, 0x1142, InputDevice::DeviceClass::unknown, QB_steam_controller},
   // Jess Tech Colour Rumble Pad
-  {0x0f30, 0x0111, InputDevice::DeviceClass::gamepad, 0},
-  // SPEED Link SL-6535-SBK-01
-  {0x0079, 0x0006, InputDevice::DeviceClass::gamepad, 0},
+  {0x0f30, 0x0111, InputDevice::DeviceClass::gamepad, QB_rstick_from_z | QB_right_axes_swapped},
+  // Trust GXT 24
+  {0x0079, 0x0006, InputDevice::DeviceClass::gamepad, QB_no_analog_triggers | QB_alt_button_mapping},
   // 8bitdo N30 Pro Controller
   {0x2dc8, 0x9001, InputDevice::DeviceClass::gamepad, QB_rstick_from_z},
+  // Generic gamepad
+  {0x0810, 0x0001, InputDevice::DeviceClass::gamepad, QB_no_analog_triggers | QB_alt_button_mapping | QB_rstick_from_z | QB_right_axes_swapped},
+  // Generic gamepad without sticks
+  {0x0810, 0xe501, InputDevice::DeviceClass::gamepad, QB_no_analog_triggers | QB_alt_button_mapping},
   // 3Dconnexion Space Traveller 3D Mouse
   {0x046d, 0xc623, InputDevice::DeviceClass::spatial_mouse, 0},
   // 3Dconnexion Space Pilot 3D Mouse
@@ -488,10 +501,16 @@ init_device() {
           break;
         case ABS_Z:
           if (quirks & QB_rstick_from_z) {
-            axis = InputDevice::Axis::right_x;
+            if (quirks & QB_right_axes_swapped) {
+              axis = InputDevice::Axis::right_y;
+            } else {
+              axis = InputDevice::Axis::right_x;
+            }
           } else if (_device_class == DeviceClass::gamepad) {
-            axis = InputDevice::Axis::left_trigger;
-            have_analog_triggers = true;
+            if ((quirks & QB_no_analog_triggers) == 0) {
+              axis = InputDevice::Axis::left_trigger;
+              have_analog_triggers = true;
+            }
           } else if (_device_class == DeviceClass::spatial_mouse) {
             axis = InputDevice::Axis::z;
           } else {
@@ -514,10 +533,19 @@ init_device() {
           break;
         case ABS_RZ:
           if (quirks & QB_rstick_from_z) {
-            axis = InputDevice::Axis::right_y;
+            if (quirks & QB_right_axes_swapped) {
+              axis = InputDevice::Axis::right_x;
+            } else {
+              axis = InputDevice::Axis::right_y;
+            }
           } else if (_device_class == DeviceClass::gamepad) {
-            axis = InputDevice::Axis::right_trigger;
-            have_analog_triggers = true;
+            if ((quirks & QB_no_analog_triggers) == 0) {
+              axis = InputDevice::Axis::right_trigger;
+              have_analog_triggers = true;
+            } else {
+              // Special weird case for Trust GXT 24
+              axis = InputDevice::Axis::right_y;
+            }
           } else {
             axis = InputDevice::Axis::yaw;
           }
@@ -537,8 +565,10 @@ init_device() {
           break;
         case ABS_GAS:
           if (_device_class == DeviceClass::gamepad) {
-            axis = InputDevice::Axis::right_trigger;
-            have_analog_triggers = true;
+            if ((quirks & QB_no_analog_triggers) == 0) {
+              axis = InputDevice::Axis::right_trigger;
+              have_analog_triggers = true;
+            }
           } else {
             axis = InputDevice::Axis::accelerator;
           }
@@ -962,6 +992,26 @@ map_button(int code, DeviceClass device_class, int quirks) {
     if (quirks & QB_steam_controller) {
       // BTN_THUMB and BTN_THUMB2 detect touching the touchpads.
       return ButtonHandle::none();
+
+    } else if (device_class == DeviceClass::gamepad &&
+               (quirks & QB_alt_button_mapping) != 0) {
+      static const ButtonHandle mapping[] = {
+        GamepadButton::face_y(),
+        GamepadButton::face_b(),
+        GamepadButton::face_a(),
+        GamepadButton::face_x(),
+        GamepadButton::lshoulder(),
+        GamepadButton::rshoulder(),
+        GamepadButton::ltrigger(),
+        GamepadButton::rtrigger(),
+        GamepadButton::back(),
+        GamepadButton::start(),
+        GamepadButton::lstick(),
+        GamepadButton::rstick(),
+      };
+      if ((code & 0xf) < 12) {
+        return mapping[code & 0xf];
+      }
 
     } else if (device_class == DeviceClass::gamepad) {
       // Based on "Jess Tech Colour Rumble Pad"

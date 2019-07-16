@@ -620,6 +620,7 @@ PUBLISHED:
   bool has_texture_off(TextureStage *stage) const;
   Texture *get_texture() const;
   Texture *get_texture(TextureStage *stage) const;
+  void replace_texture(Texture *tex, Texture *new_tex);
   const SamplerState &get_texture_sampler() const;
   const SamplerState &get_texture_sampler(TextureStage *stage) const;
 
@@ -1003,6 +1004,7 @@ private:
   Texture *r_find_texture(PandaNode *node, TextureStage *stage) const;
   void r_find_all_textures(PandaNode *node, TextureStage *stage,
                            Textures &textures) const;
+  static void r_replace_texture(PandaNode *node, Texture *tex, Texture *new_tex);
 
   typedef phash_set<TextureStage *, pointer_hash> TextureStages;
   TextureStage *r_find_texture_stage(PandaNode *node, const RenderState *state,

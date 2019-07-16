@@ -251,6 +251,32 @@ unify_texture_stages(TextureStage *stage) const {
 }
 
 /**
+ * Returns a new TextureAttrib, just like this one, but with all references to
+ * the given texture replaced with the new texture.
+ */
+CPT(RenderAttrib) TextureAttrib::
+replace_texture(Texture *tex, Texture *new_tex) const {
+  TextureAttrib *attrib = nullptr;
+
+  for (size_t i = 0; i < _on_stages.size(); ++i) {
+    const StageNode &sn = _on_stages[i];
+    if (sn._texture == tex) {
+      if (attrib == nullptr) {
+        attrib = new TextureAttrib(*this);
+      }
+
+      attrib->_on_stages[i]._texture = new_tex;
+    }
+  }
+
+  if (attrib != nullptr) {
+    return return_new(attrib);
+  } else {
+    return this;
+  }
+}
+
+/**
  * Returns a new TextureAttrib, very much like this one, but with the number
  * of on_stages reduced to be no more than max_texture_stages.  The number of
  * off_stages in the new TextureAttrib is undefined.

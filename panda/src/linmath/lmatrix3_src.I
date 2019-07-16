@@ -98,31 +98,6 @@ ident_mat() {
 /**
  *
  */
-INLINE_LINMATH FLOATNAME(LMatrix3)::
-FLOATNAME(LMatrix3)() {
-}
-
-/**
- *
- */
-INLINE_LINMATH FLOATNAME(LMatrix3)::
-FLOATNAME(LMatrix3)(const FLOATNAME(LMatrix3) &copy) : _m(copy._m) {
-}
-
-/**
- *
- */
-INLINE_LINMATH FLOATNAME(LMatrix3) &FLOATNAME(LMatrix3)::
-operator = (const FLOATNAME(LMatrix3) &copy) {
-  TAU_PROFILE("void LMatrix3::operator = (const LMatrix3 &)", " ", TAU_USER);
-
-  _m = copy._m;
-  return *this;
-}
-
-/**
- *
- */
 INLINE_LINMATH FLOATNAME(LMatrix3) &FLOATNAME(LMatrix3)::
 operator = (FLOATTYPE fill_value) {
   fill(fill_value);

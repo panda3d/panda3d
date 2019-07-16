@@ -388,13 +388,10 @@ class TaskManager:
     def __setupTask(self, funcOrTask, name, priority, sort, extraArgs, taskChain, appendTask, owner, uponDeath):
         if isinstance(funcOrTask, AsyncTask):
             task = funcOrTask
-        elif hasattr(funcOrTask, '__call__'):
-            task = PythonTask(funcOrTask)
-            if name is None:
-                name = getattr(funcOrTask, '__qualname__', None) or \
-                       getattr(funcOrTask, '__name__', None)
-        elif hasattr(funcOrTask, 'cr_await') or type(funcOrTask) == types.GeneratorType:
-            # It's a coroutine, or something emulating one.
+        elif hasattr(funcOrTask, '__call__') or \
+                hasattr(funcOrTask, 'cr_await') or \
+                type(funcOrTask) == types.GeneratorType:
+            # It's a function, coroutine, or something emulating a coroutine.
             task = PythonTask(funcOrTask)
             if name is None:
                 name = getattr(funcOrTask, '__qualname__', None) or \

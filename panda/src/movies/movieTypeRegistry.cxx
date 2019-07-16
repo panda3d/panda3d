@@ -31,6 +31,12 @@ PT(MovieAudio) MovieTypeRegistry::
 make_audio(const Filename &name) {
   string ext = downcase(name.get_extension());
 
+#ifdef HAVE_ZLIB
+  if (ext == "pz" || ext == "gz") {
+    ext = Filename(name.get_basename_wo_extension()).get_extension();
+  }
+#endif
+
   _audio_lock.lock();
 
   // Make sure that the list of audio types has been read in.
@@ -153,6 +159,12 @@ load_audio_types() {
 PT(MovieVideo) MovieTypeRegistry::
 make_video(const Filename &name) {
   string ext = downcase(name.get_extension());
+
+#ifdef HAVE_ZLIB
+  if (ext == "pz" || ext == "gz") {
+    ext = Filename(name.get_basename_wo_extension()).get_extension();
+  }
+#endif
 
   _video_lock.lock();
 

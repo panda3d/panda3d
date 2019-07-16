@@ -36,7 +36,7 @@ lock() {
  */
 INLINE bool MutexWin32Impl::
 try_lock() {
-  return _funcs._try_lock(_lock);
+  return (_funcs._try_lock(_lock) != 0);
 }
 
 /**

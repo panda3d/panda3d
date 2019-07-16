@@ -755,7 +755,9 @@ do_poll() {
       PT(FfmpegBuffer) frame = do_alloc_frame();
       nassertr(frame != nullptr, false);
       _lock.release();
-      advance_to_frame(seek_frame);
+      if (seek_frame != _begin_frame) {
+        advance_to_frame(seek_frame);
+      }
       if (_frame_ready) {
         export_frame(frame);
         _lock.acquire();

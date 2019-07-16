@@ -431,6 +431,12 @@ get_slotted_function_def(Object *obj, Function *func, FunctionRemap *remap,
     return true;
   }
 
+  if (method_name == "operator |=") {
+    def._answer_location = "nb_inplace_or";
+    def._wrapper_type = WT_inplace_binary_operator;
+    return true;
+  }
+
   if (method_name == "__ipow__") {
     def._answer_location = "nb_inplace_power";
     def._wrapper_type = WT_inplace_ternary_operator;
@@ -1690,7 +1696,6 @@ write_module_class(ostream &out, Object *obj) {
             SlottedFunctionDef def;
             def._answer_location = true_key;
             def._wrapper_type = slotted_def._wrapper_type;
-            def._min_version = 0x03000000;
             def._wrapper_name = func->_name + "_" + true_key;
             slots[true_key] = def;
           }
@@ -1886,7 +1891,9 @@ write_module_class(ostream &out, Object *obj) {
             out << "    Py_INCREF(Py_NotImplemented);\n";
             out << "    return Py_NotImplemented;\n";
           } else if (all_nonconst) {
-            out << "  if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_" << ClassName << ", (void **)&local_this)) {\n";
+            out << "  if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_"
+                << ClassName << ", (void **)&local_this, \"" << ClassName
+                << "." << methodNameFromCppName(fname, "", false) << "\")) {\n";
             out << "    return nullptr;\n";
           } else {
             out << "  if (!Dtool_Call_ExtractThisPointer(self, Dtool_" << ClassName << ", (void **)&local_this)) {\n";
@@ -4945,13 +4952,14 @@ write_function_instance(ostream &out, FunctionRemap *remap,
       expected_params += "NoneType";
 
     } else if (TypeManager::is_char(type)) {
-      indent(out, indent_level) << "char " << param_name << default_expr << ";\n";
+      indent(out, indent_level) << "char *" << param_name << "_str;\n";
+      indent(out, indent_level) << "Py_ssize_t " << param_name << "_len;\n";
 
-      format_specifiers += "c";
-      parameter_list += ", &" + param_name;
+      format_specifiers += "s#";
+      parameter_list += ", &" + param_name + "_str, &" + param_name + "_len";
+      extra_param_check << " && " << param_name << "_len == 1";
 
-      // extra_param_check << " && isascii(" << param_name << ")";
-      pexpr_string = "(char) " + param_name;
+      pexpr_string = param_name + "_str[0]";
       expected_params += "char";
       only_pyobjects = false;
 
@@ -5993,7 +6001,11 @@ write_function_instance(ostream &out, FunctionRemap *remap,
       indent(out, indent_level) << "}\n";
     }
 
-    return_expr = manage_return_value(out, indent_level, remap, "return_value");
+    if (TypeManager::is_pointer_to_PyObject(remap->_return_type->get_orig_type())) {
+      indent(out, indent_level) << "Py_XINCREF(return_value);\n";
+    } else {
+      return_expr = manage_return_value(out, indent_level, remap, "return_value");
+    }
     return_expr = remap->_return_type->temporary_to_return(return_expr);
   }
 
