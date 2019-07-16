@@ -109,6 +109,33 @@ make_output(const std::string &name,
     return new EAGLGraphicsWindow(engine, this, name, fb_prop, win_prop,
                                    flags, gsg, host);
   }
+
+  // Second thing to try: a GLGraphicsBuffer.  This requires a context, so if
+  // we don't have a host window, we instead create a EAGLGraphicsBuffer,
+  // which wraps around GLGraphicsBuffer and manages a context.
+  if (retry == 1) {
+    if (!gl_support_fbo ||
+        (flags & (BF_require_parasite | BF_require_window)) != 0) {
+      return NULL;
+    }
+    // Early failure - if we are sure that this buffer WONT meet specs, we can
+    // bail out early.
+    if ((flags & BF_fb_props_optional) == 0) {
+      if (fb_prop.get_indexed_color() ||
+          fb_prop.get_back_buffers() > 0 ||
+          fb_prop.get_accum_bits() > 0) {
+        return NULL;
+      }
+    }
+
+    if (host != NULL) {
+      return new GLES2GraphicsBuffer(engine, this, name, fb_prop, win_prop,
+                                  flags, gsg, host);
+    } else {
+      return new EAGLGraphicsBuffer(engine, this, name, fb_prop, win_prop,
+                                     flags, gsg, host);
+    }
+  }
   
   // Nothing else left to try.
   return NULL;

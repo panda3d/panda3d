@@ -28,14 +28,6 @@ _shared_gsg(share_with) {
 }
 
 /**
- *
- */
-// EAGLGraphicsStateGuardian::
-// ~EAGLGraphicsStateGuardian() {
-  
-// }
-
-/**
  * Creates a GLES context and tries to set the requested properties. When
  * this GSG is associated with a EAGLGraphicsWindow, we set our color to one of
  * the three modes: SRGBA8, RGBA8, and RGB565. Otherwise, we just pass the
