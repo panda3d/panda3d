@@ -177,7 +177,7 @@ set_flag(int flag, bool value) const {
   } else {
     result->_flags &= ~flag;
   }
-  result->_has_flags |= bit;
+  result->_has_flags |= flag;
   return return_new(result);
 }
 
