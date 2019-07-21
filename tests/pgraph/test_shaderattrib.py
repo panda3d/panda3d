@@ -28,7 +28,6 @@ def test_shaderattrib_flags():
     
     # Make sure we have the flags
     shattr = shattr.set_flag(core.ShaderAttrib.F_hardware_skinning | core.ShaderAttrib.F_subsume_alpha_test, True)
-    assert shattr.get_flag(core.ShaderAttrib.F_hardware_skinning & core.ShaderAttrib.F_subsume_alpha_test)
     assert shattr.get_flag(core.ShaderAttrib.F_hardware_skinning | core.ShaderAttrib.F_subsume_alpha_test)
     
     # Make sure we don't have a flag that we didn't set
@@ -38,10 +37,8 @@ def test_shaderattrib_flags():
     
     # Make sure they clear correctly
     shattr = shattr.clear_flag(core.ShaderAttrib.F_hardware_skinning | core.ShaderAttrib.F_subsume_alpha_test)
-    assert not shattr.get_flag(core.ShaderAttrib.F_hardware_skinning & core.ShaderAttrib.F_subsume_alpha_test)
     assert not shattr.get_flag(core.ShaderAttrib.F_hardware_skinning | core.ShaderAttrib.F_subsume_alpha_test)
     
     # Set group to false
     shattr = shattr.set_flag(core.ShaderAttrib.F_hardware_skinning | core.ShaderAttrib.F_subsume_alpha_test, False)
-    assert not shattr.get_flag(core.ShaderAttrib.F_hardware_skinning & core.ShaderAttrib.F_subsume_alpha_test)
     assert not shattr.get_flag(core.ShaderAttrib.F_hardware_skinning | core.ShaderAttrib.F_subsume_alpha_test)
