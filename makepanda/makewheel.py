@@ -1,10 +1,5 @@
 """
 Generates a wheel (.whl) file from the output of makepanda.
-
-Since the wheel requires special linking, this will only work if compiled with
-the `--wheel` parameter.
-
-Please keep this file work with Panda3D 1.9 until that reaches EOL.
 """
 from __future__ import print_function, unicode_literals
 from distutils.util import get_platform
