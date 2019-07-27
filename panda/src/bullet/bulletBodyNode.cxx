@@ -40,6 +40,9 @@ BulletBodyNode(const char *name) : PandaNode(name) {
 
   // Shape
   _shape = new btEmptyShape();
+  // Set the local scaling to default, otherwise we occasionally get
+  // uninitialized data
+  _shape->setLocalScaling(btVector3(1.0, 1.0, 1.0));
 
   // Default collide mask
   set_into_collide_mask(CollideMask::all_on());
@@ -351,11 +354,8 @@ do_add_shape(BulletShape *bullet_shape, const TransformState *ts) {
   // Transform
   btTransform trans = TransformState_to_btTrans(ts);
 
-  // Reset the shape scaling before we add a shape, and remember the current
-  // Scale so we can restore it later...
-  NodePath np = NodePath::any_path((PandaNode *)this);
-  LVector3 scale = np.get_scale();
-  np.set_scale(1.0);
+  // Reset the shape scaling before we add a shape
+  _shape->setLocalScaling(btVector3(1.0,1.0,1.0));
 
   // Root shape
   btCollisionShape *previous = get_object()->getCollisionShape();
@@ -416,8 +416,12 @@ do_add_shape(BulletShape *bullet_shape, const TransformState *ts) {
 
   _shapes.push_back(bullet_shape);
 
-  // Restore the local scaling again
-  np.set_scale(scale);
+  // Restore the node's scaling again
+  NodePath np = NodePath::any_path((PandaNode *)this);
+  LVector3 scale = np.get_scale();
+  if (!scale.almost_equal(LVecBase3(1.0f, 1.0f, 1.0f))) {
+    _shape->setLocalScaling(LVecBase3_to_btVector3(scale));
+  }
 
   do_shape_changed();
 }
