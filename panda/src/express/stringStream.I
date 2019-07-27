@@ -28,6 +28,15 @@ StringStream(const std::string &source) : std::iostream(&_buf) {
 }
 
 /**
+ * This version of the constructor preloads the buffer with the indicated
+ * data.
+ */
+INLINE StringStream::
+StringStream(vector_uchar source) : std::iostream(&_buf) {
+  _buf.swap_data(source);
+}
+
+/**
  * Empties the buffer.
  */
 INLINE void StringStream::

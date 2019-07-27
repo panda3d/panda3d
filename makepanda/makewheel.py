@@ -1,10 +1,5 @@
 """
 Generates a wheel (.whl) file from the output of makepanda.
-
-Since the wheel requires special linking, this will only work if compiled with
-the `--wheel` parameter.
-
-Please keep this file work with Panda3D 1.9 until that reaches EOL.
 """
 from __future__ import print_function, unicode_literals
 from distutils.util import get_platform
@@ -118,6 +113,8 @@ Root-Is-Purelib: false
 Tag: {0}-{1}-{2}
 """
 
+PROJECT_URLS = dict([line.split('=', 1) for line in GetMetadataValue('project_urls').strip().splitlines()])
+
 METADATA = {
     "license": GetMetadataValue('license'),
     "name": GetMetadataValue('name'),
@@ -126,9 +123,7 @@ METADATA = {
     "summary": GetMetadataValue('description'),
     "extensions": {
         "python.details": {
-            "project_urls": {
-                "Home": GetMetadataValue('url'),
-            },
+            "project_urls": dict(PROJECT_URLS, Home=GetMetadataValue('url')),
             "document_names": {
                 "license": "LICENSE.txt"
             },
@@ -565,6 +560,7 @@ def makewheel(version, output_dir, platform=None):
         "Summary: {summary}\n" \
         "License: {license}\n".format(**METADATA),
         "Home-page: {0}\n".format(homepage),
+    ] + ["Project-URL: {0}, {1}\n".format(*url) for url in PROJECT_URLS.items()] + [
         "Author: {0}\n".format(author),
         "Author-email: {0}\n".format(email),
         "Platform: {0}\n".format(platform),

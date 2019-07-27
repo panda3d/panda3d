@@ -24,9 +24,10 @@
  * buffer, which can be retrieved and/or set as a string in Python 2 or a
  * bytes object in Python 3.
  */
-class EXPCL_PANDA_DOWNLOADER StringStream : public std::iostream {
+class EXPCL_PANDA_EXPRESS StringStream : public std::iostream {
 public:
   INLINE StringStream(const std::string &source);
+  INLINE StringStream(vector_uchar source);
 
 PUBLISHED:
   EXTENSION(StringStream(PyObject *source));
