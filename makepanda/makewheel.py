@@ -785,6 +785,11 @@ if __debug__:
 
                 whl.write_file(target_path, source_path)
 
+    if 'ios' in target_info.platform_tag:
+        # Copy over the PandaViewController.h header file.
+        include_dir = join(output_dir, 'include/panda3d')
+        whl.write_file('deploy_libs/include/PandaViewController.h', join(include_dir, 'PandaViewController.h'))
+
     # Add plug-ins.
     for lib in PLUGIN_LIBS:
         plugin_name = 'lib' + lib
