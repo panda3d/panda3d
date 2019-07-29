@@ -424,6 +424,13 @@ within Xcode itself." ON)
   if(NOT CMAKE_SHARED_LIBRARY_RUNTIME_C_FLAG)
     set(CMAKE_SHARED_LIBRARY_RUNTIME_C_FLAG "-Wl,-rpath,")
   endif()
+
+  if(NOT PYTHON_ARCH_INSTALL_DIR)
+    set(PYTHON_ARCH_INSTALL_DIR ${CMAKE_INSTALL_PREFIX})
+  endif()
+  if(NOT PYTHON_LIB_INSTALL_DIR)
+    set(PYTHON_LIB_INSTALL_DIR ${CMAKE_INSTALL_PREFIX})
+  endif()
 endif()
 
 # Android support
