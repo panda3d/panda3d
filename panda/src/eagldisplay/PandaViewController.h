@@ -1,5 +1,6 @@
 #import <UIKit/UIKit.h>
 
+__attribute__((visibility("default")))
 @interface PandaViewController : UIViewController
 
 // Whether this instance is functioning as the main GraphicsWindow.
