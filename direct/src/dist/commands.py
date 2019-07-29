@@ -1,5 +1,7 @@
 from __future__ import print_function
 
+from pathlib import Path
+from ftplib import FTP
 import collections
 import os
 import pip
@@ -14,7 +16,10 @@ import struct
 import imp
 import string
 import time
+import tempfile
+import glob
 
+from packaging import version
 import setuptools
 import distutils.log
 
@@ -242,6 +247,7 @@ class build_apps(setuptools.Command):
         self.pypi_extra_indexes = [
             'https://archive.panda3d.org/thirdparty',
         ]
+        self.pypi_find_links = []
         self.file_handlers = {}
         self.exclude_dependencies = [
             # Windows
@@ -416,6 +422,9 @@ class build_apps(setuptools.Command):
 
         for index in self.pypi_extra_indexes:
             pip_args += ['--extra-index-url', index]
+
+        for link in self.pypi_find_links:
+            pip_args += ['--find-links', link]
 
         subprocess.check_call([sys.executable, '-m', 'pip'] + pip_args)
 
@@ -1399,3 +1408,187 @@ class bdist_apps(setuptools.Command):
 
                 else:
                     self.announce('\tUnknown installer: {}'.format(installer), distutils.log.ERROR)
+
+class make_xcodeproj(setuptools.Command):
+    description = 'Creates an Xcode project that can be used to develop for and \
+        deploy to iOS devices.'
+    user_options = [
+        ('freeze-modules=', None, 'If we should freeze the Python modules or keep \
+            them unfrozen so they can be easily iterated upon.'),
+        ('archs=', None, 'List of architectures to support.')
+    ]
+
+    @property
+    def python_version(self):
+        if not self.abi_tag.startswith('cp'):
+            raise ValueError('The abi_tag must specify CPython ("cp").')
+
+        return self.abi_tag.lstrip('cp').rstrip('mdu')
+
+    def download_panda_wheel(self, platform):
+        """
+        A special routine that downloads the Panda wheels instead of using
+        the usual download_wheels method, since pip is quite picky when it comes
+        to the interpreter the system is running on.
+        """
+        wheel_dst = os.path.join(self.build_cmd.build_base, '__whl_cache__')
+
+        # Infer the version from the abi tag, since pip can't infer it itself.
+        py_version = self.python_version
+
+        if self.panda_version:
+            version_specifier = '==' + self.panda_version
+        else:
+            version_specifier = ''
+
+        pip_args = ['download', 'panda3d' + version_specifier,
+            '-d', wheel_dst,
+            '--platform', platform,
+            '--abi', self.abi_tag,
+            '--python-version', py_version,
+            '--only-binary', ':all:',
+        ]
+        for link in self.build_cmd.pypi_find_links:
+            pip_args += ['--find-links', link]
+
+        try:
+            subprocess.check_call([sys.executable, '-m', 'pip'] + pip_args)
+        except subprocess.CalledProcessError:
+            raise RuntimeError('Failed to download the Panda3D wheel. Please '
+                               'check that the specified abi_tag is correct.')
+
+        # Assemble the name of the wheel we just downloaded. If panda_version
+        # is not specified, use the highest version that we have available.
+        wheel_end = 'cp%s-%s-%s' % (py_version, self.abi_tag, platform)
+
+        highest_ver = '0.0.0'
+        if self.panda_version:
+            highest_ver = self.panda_version
+        else:
+            for wheel in os.listdir(wheel_dst):
+                wheel_stem = Path(wheel).stem
+                if not wheel_stem.startswith('panda3d') or not wheel_stem.endswith(wheel_end):
+                    continue
+
+                wheel_ver = wheel_stem.split('-')[1]
+                if version.parse(wheel_ver) > version.parse(highest_ver):
+                    highest_ver = wheel_ver
+
+        return os.path.join(wheel_dst, 'panda3d-%s-%s.whl'
+                % (highest_ver, wheel_end))
+
+    def extract_wheel_member(self, wheel, src, dst):
+        extract_location = os.path.join(self.tmp_dir, 'extract-' + Path(wheel.filename).stem)
+        if not os.path.isdir(extract_location):
+            wheel.extractall(extract_location)
+
+        abs_src = os.path.join(extract_location, src)
+        if os.path.isdir(abs_src):
+            shutil.copytree(abs_src, dst)
+        else:
+            shutil.copy2(abs_src, dst)
+
+    def initialize_options(self):
+        self.freeze_modules = False
+        self.archs = ['arm64', 'x86_64']
+        self.abi_tag = 'cp36m'
+        self.panda_version = None
+        self.deploy_target = '9.0'
+        self.stdlib = ''
+
+    def finalize_options(self):
+        self.platform_prefix = 'ios_%s' % self.deploy_target.replace('.', '_')
+
+    def run(self):
+        self.build_cmd = self.distribution.get_command_obj('build_apps')
+        self.build_cmd.finalize_options()
+
+        # Download our ios-specifc wheels.
+        wheels = [(arch, self.download_panda_wheel('%s_%s'
+                                                    % (self.platform_prefix,
+                                                       arch)))
+                  for arch in self.archs]
+
+        # Calculate the supported SDKs based on architectures.
+        supported_platforms = []
+        if 'arm64' in self.archs or 'armv7' in self.archs:
+            supported_platforms.append('iphoneos')
+        if 'x86_64' in self.archs:
+            supported_platforms.append('iphonesimulator')
+
+        # Create a temporary working space.
+        self.tmp_dir = tempfile.mkdtemp()
+        py_xcproj_dir = os.path.join(os.path.dirname(__file__), 'py_xcproj')
+
+        panda_app_target_dir = os.path.join(self.tmp_dir, 'panda-app-target')
+        panda_app_template_dir = os.path.join(self.tmp_dir, 'panda-app-template.xcodeproj')
+
+        shutil.copytree(os.path.join(py_xcproj_dir, 'panda-app-target'), panda_app_target_dir)
+        shutil.copytree(os.path.join(py_xcproj_dir, 'panda-app-template.xcodeproj'), panda_app_template_dir)
+
+        game_dir = os.path.abspath(os.path.dirname(self.build_cmd.gui_apps[self.build_cmd.macos_main_app]))
+
+        # A dictionary of substitutions we will be making to each file.
+        substitutions = {
+            'app_name': self.build_cmd.macos_main_app,
+            'py_module_main': os.path.join('main.py'),
+            'deploy_target': self.deploy_target,
+            'supported_platforms': ' '.join(supported_platforms),
+            'sitepackages_dir': os.path.join('python/lib', os.path.basename(self.stdlib), 'site-packages'),
+            'game_dir': game_dir,
+        }
+
+        # Substitute the above dictionary in for each file.
+        files = [file for file in glob.glob('%s/**' % self.tmp_dir, recursive=True) if os.path.isfile(file)]
+        for file in files:
+            with open(file, 'r+') as file_handle:
+                file_contents = file_handle.read()
+                templ = string.Template(file_contents)
+                file_contents = templ.substitute(substitutions)
+
+                file_handle.seek(0)
+                file_handle.write(file_contents)
+                file_handle.truncate()
+
+        # Rename the project's scheme to the name of the project.
+        xcscheme_path = os.path.join(panda_app_template_dir, 'xcshareddata', 'xcschemes', 'panda-app-target.xcscheme')
+        os.rename(xcscheme_path, os.path.join(os.path.dirname(xcscheme_path), '%s.xcscheme' % substitutions['app_name']))
+
+        for arch, wheel_path in wheels:
+            self.announce("Preparing architecture %s..." % arch)
+            # Open up the wheel.
+            with zipfile.ZipFile(wheel_path, 'r') as wheel:
+                # Calculate the current platform.
+                if arch in ('arm64', 'armv7'):
+                    platform = 'iphoneos'
+                elif arch == 'x86_64':
+                    platform = 'iphonesimulator'
+                else:
+                    raise Exception("Unsupported platform %s" % platform)
+
+                # Directory for deployment files.
+                deploy_dir = os.path.join(panda_app_target_dir, 'deploy-%s' % platform)
+
+                # Move over the libpython, the standard libs and PandaViewController.h
+                py_stdlib_dir = os.path.join(deploy_dir, 'python', 'lib')
+                # os.makedirs(py_stdlib_dir)
+                self.extract_wheel_member(wheel, 'deploy_libs', py_stdlib_dir)
+                shutil.move(os.path.join(py_stdlib_dir, 'include'), deploy_dir)
+
+                # TODO: Download the standard .py library files if they don't exist.
+                stdlib_dir = os.path.join(py_stdlib_dir, os.path.basename(self.stdlib))
+                shutil.copytree(self.stdlib, stdlib_dir)
+
+                # Move over Panda3D and direct
+                self.extract_wheel_member(wheel, 'direct', os.path.join(stdlib_dir, 'site-packages', 'direct'))
+                self.extract_wheel_member(wheel, 'panda3d', os.path.join(stdlib_dir, 'site-packages', 'panda3d'))
+
+        # Finally, copy everything over to the destination, renaming project files as appropriate.
+        build_base = os.path.abspath(self.build_cmd.build_base)
+
+        shutil.rmtree(os.path.join(build_base, substitutions['app_name']))
+        shutil.rmtree(os.path.join(build_base, '%s.xcodeproj' % substitutions['app_name']))
+        shutil.copytree(panda_app_target_dir, os.path.join(build_base, substitutions['app_name']))
+        shutil.copytree(panda_app_template_dir, os.path.join(build_base, '%s.xcodeproj' % substitutions['app_name']))
+
+        shutil.rmtree(self.tmp_dir)

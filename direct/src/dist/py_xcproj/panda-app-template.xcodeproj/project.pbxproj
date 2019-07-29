@@ -1,0 +1,295 @@
+// !$$*UTF8*$$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		F1E315CB22DE3C1D009AC9E9 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = F1E315CA22DE3C1D009AC9E9 /* AppDelegate.m */; };
+		F1E315D622DE3C1F009AC9E9 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F1E315D422DE3C1F009AC9E9 /* LaunchScreen.storyboard */; };
+		F1E315D922DE3C1F009AC9E9 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = F1E315D822DE3C1F009AC9E9 /* main.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		F1E315C622DE3C1D009AC9E9 /* ${app_name}.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "${app_name}.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		F1E315C922DE3C1D009AC9E9 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		F1E315CA22DE3C1D009AC9E9 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		F1E315D522DE3C1F009AC9E9 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		F1E315D722DE3C1F009AC9E9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		F1E315D822DE3C1F009AC9E9 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		F1E315C322DE3C1D009AC9E9 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		F1E315BB22DE3B81009AC9E9 = {
+			isa = PBXGroup;
+			children = (
+				F1E315C822DE3C1D009AC9E9 /* ${app_name} */,
+				F1E315C722DE3C1D009AC9E9 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		F1E315C722DE3C1D009AC9E9 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				F1E315C622DE3C1D009AC9E9 /* ${app_name}.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		F1E315C822DE3C1D009AC9E9 /* ${app_name} */ = {
+			isa = PBXGroup;
+			children = (
+				F1E315C922DE3C1D009AC9E9 /* AppDelegate.h */,
+				F1E315CA22DE3C1D009AC9E9 /* AppDelegate.m */,
+				F1E315D422DE3C1F009AC9E9 /* LaunchScreen.storyboard */,
+				F1E315D722DE3C1F009AC9E9 /* Info.plist */,
+				F1E315D822DE3C1F009AC9E9 /* main.m */,
+			);
+			path = "${app_name}";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		F1E315C522DE3C1D009AC9E9 /* ${app_name} */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F1E315DA22DE3C1F009AC9E9 /* Build configuration list for PBXNativeTarget "${app_name}" */;
+			buildPhases = (
+				F1E315C222DE3C1D009AC9E9 /* Sources */,
+				F1E315C322DE3C1D009AC9E9 /* Frameworks */,
+				F1E315C422DE3C1D009AC9E9 /* Resources */,
+				F113D35A22EE18EF00640DC0 /* ShellScript */,
+				F113D38822EE795200640DC0 /* Copy Game Files */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "${app_name}";
+			productName = "${app_name}";
+			productReference = F1E315C622DE3C1D009AC9E9 /* ${app_name}.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		F1E315BC22DE3B81009AC9E9 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1020;
+				TargetAttributes = {
+					F1E315C522DE3C1D009AC9E9 = {
+						CreatedOnToolsVersion = 10.2.1;
+					};
+				};
+			};
+			buildConfigurationList = F1E315BF22DE3B81009AC9E9 /* Build configuration list for PBXProject "panda-app-template" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = F1E315BB22DE3B81009AC9E9;
+			productRefGroup = F1E315C722DE3C1D009AC9E9 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				F1E315C522DE3C1D009AC9E9 /* ${app_name} */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		F1E315C422DE3C1D009AC9E9 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F1E315D622DE3C1F009AC9E9 /* LaunchScreen.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		F1E315C222DE3C1D009AC9E9 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F1E315D922DE3C1F009AC9E9 /* main.m in Sources */,
+				F1E315CB22DE3C1D009AC9E9 /* AppDelegate.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		F1E315D422DE3C1F009AC9E9 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				F1E315D522DE3C1F009AC9E9 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		F113D35A22EE18EF00640DC0 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Copy and Sign Library Files";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "cp -R \"$$PROJECT_DIR/$$PROJECT_NAME/deploy$$EFFECTIVE_PLATFORM_NAME/\" \"$$BUILT_PRODUCTS_DIR/$$FRAMEWORKS_FOLDER_PATH\"\nfor f in `find -s \"$$BUILT_PRODUCTS_DIR/$$FRAMEWORKS_FOLDER_PATH\" -name \"*.so\" -o -name \"*.dylib\"`; do codesign -s \"$$CODE_SIGN_IDENTITY\" $$f; done\n";
+		};
+		F113D38822EE795200640DC0 /* Copy Game Files */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Copy Game Files";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "cp -r \"${game_dir}/\" \"$$BUILT_PRODUCTS_DIR/$$WRAPPER_NAME\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		F1E315C122DE3B81009AC9E9 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Release;
+		};
+		F1E315DC22DE3C1F009AC9E9 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_BITCODE = NO;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				"HEADER_SEARCH_PATHS[sdk=iphoneos*]" = "$$(PROJECT_DIR)/$$(PROJECT_NAME)/deploy-iphoneos/include";
+				"HEADER_SEARCH_PATHS[sdk=iphonesimulator*]" = "$$(PROJECT_DIR)/$$(PROJECT_NAME)/deploy-iphonesimulator/include";
+				INFOPLIST_FILE = "${app_name}/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = ${deploy_target};
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$$(inherited)",
+					"@executable_path/Frameworks",
+					"executable_path/Frameworks/python/lib",
+					"@executable_path/Frameworks/python/lib/python3.6/site-packages/panda3d",
+				);
+				"LIBRARY_SEARCH_PATHS[sdk=iphoneos*]" = (
+					"$$(PROJECT_DIR)/$$(PROJECT_NAME)/deploy-iphoneos/python/lib",
+					"$$(PROJECT_DIR)/$$(PROJECT_NAME)/deploy-iphoneos/${sitepackages_dir}/panda3d",
+				);
+				"LIBRARY_SEARCH_PATHS[sdk=iphonesimulator*]" = (
+					"$$(PROJECT_DIR)/$$(PROJECT_NAME)/deploy-iphonesimulator/python/lib",
+					"$$(PROJECT_DIR)/$$(PROJECT_NAME)/deploy-iphonesimulator/${sitepackages_dir}/panda3d",
+				);
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				OTHER_LDFLAGS = "-lpandagles2 -lpython3.6m";
+				PRODUCT_NAME = "$$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = ${supported_platforms};
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+				VALID_ARCHS = arm64;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		F1E315BF22DE3B81009AC9E9 /* Build configuration list for PBXProject "panda-app-template" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F1E315C122DE3B81009AC9E9 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F1E315DA22DE3C1F009AC9E9 /* Build configuration list for PBXNativeTarget "${app_name}" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F1E315DC22DE3C1F009AC9E9 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = F1E315BC22DE3B81009AC9E9 /* Project object */;
+}
