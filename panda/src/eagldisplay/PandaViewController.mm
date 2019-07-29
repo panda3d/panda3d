@@ -19,16 +19,16 @@
 @implementation PandaViewController
 
 - (void)startPythonApp:(NSString *)modulePath {
-  [self startPythonApp:modulePath pythonRoot:@"Python"]; 
+  [self startPythonApp:modulePath pythonRoot:@"Frameworks/python"];
 }
 
 - (void)startPythonApp:(NSString *)modulePath pythonRoot:(NSString *)pythonRoot {
   nassertv(modulePath != nil);
   nassertv(pythonRoot != nil);
 
-  NSURL *resourceURL = [NSBundle.mainBundle resourceURL];
+  NSURL *url = [NSBundle.mainBundle bundleURL];
 
-  const char *python_home = [NSURL URLWithString:pythonRoot relativeToURL:resourceURL].fileSystemRepresentation;
+  const char *python_home = [NSURL URLWithString:pythonRoot relativeToURL:url].fileSystemRepresentation;
   wchar_t *wpython_home = Py_DecodeLocale(python_home, NULL);
   Py_SetPythonHome(wpython_home);
 
@@ -36,7 +36,7 @@
   NSString *tmp_path = [NSString stringWithFormat:@"TMP=%@", NSTemporaryDirectory(), nil];
   putenv((char *)[tmp_path UTF8String]);
 
-  _fullModulePath = [NSURL URLWithString:modulePath relativeToURL:resourceURL];
+  _fullModulePath = [NSURL URLWithString:modulePath relativeToURL:url];
 
   [self startPandaWithThreadFunction:@selector(pythonModuleMain)];
 }
