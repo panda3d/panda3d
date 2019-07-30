@@ -147,11 +147,27 @@ class Loader(DirectObject):
         Loader.loaderIndex += 1
         self.accept(self.hook, self.__gotAsyncObject)
 
+        if ConfigVariableBool('loader-support-entry-points', True):
+            self._loadPythonFileTypes()
+
     def destroy(self):
         self.ignore(self.hook)
         self.loader.stopThreads()
         del self.base
         del self.loader
+
+    def _loadPythonFileTypes(self):
+        import importlib
+        try:
+            pkg_resources = importlib.import_module('pkg_resources')
+        except ImportError:
+            pkg_resources = None
+
+        if pkg_resources:
+            registry = LoaderFileTypeRegistry.getGlobalPtr()
+
+            for entry_point in pkg_resources.iter_entry_points('panda3d.loaders'):
+                registry.register_deferred_type(entry_point)
 
     # model loading funcs
     def loadModel(self, modelPath, loaderOptions = None, noCache = None,
