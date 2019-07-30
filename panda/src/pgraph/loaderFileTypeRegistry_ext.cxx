@@ -53,6 +53,7 @@ register_deferred_type(PyObject *entry_point) {
     name_str = nullptr;
   }
 #endif
+  Py_DECREF(name);
 
   if (name_str == nullptr) {
     Dtool_Raise_TypeError("entry_point.name is expected to be str");
