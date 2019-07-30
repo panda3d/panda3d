@@ -25,7 +25,7 @@
  * constructed by inheritance and explicitly registered, or it can be created
  * by passing in a pkg_resources.EntryPoint instance.
  */
-class EXPCL_PANDA_PGRAPH PythonLoaderFileType : public LoaderFileType {
+class PythonLoaderFileType : public LoaderFileType {
 public:
   PythonLoaderFileType();
   PythonLoaderFileType(std::string extension, PyObject *entry_point);
