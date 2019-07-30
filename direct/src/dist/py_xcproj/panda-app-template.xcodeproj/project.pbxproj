@@ -247,8 +247,8 @@
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$$(inherited)",
 					"@executable_path/Frameworks",
-					"executable_path/Frameworks/python/lib",
-					"@executable_path/Frameworks/python/lib/python3.6/site-packages/panda3d",
+					"@executable_path/Frameworks/python/lib",
+					"@executable_path/Frameworks/${sitepackages_dir}/panda3d",
 				);
 				"LIBRARY_SEARCH_PATHS[sdk=iphoneos*]" = (
 					"$$(PROJECT_DIR)/$$(PROJECT_NAME)/deploy-iphoneos/python/lib",
@@ -260,13 +260,15 @@
 				);
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
-				OTHER_LDFLAGS = "-lpandagles2 -lpython3.6m";
+				OTHER_LDFLAGS = "-lpandagles2 -lpython${py_ver}m";
 				PRODUCT_NAME = "$$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = ${supported_platforms};
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
-				VALID_ARCHS = arm64;
+				VALID_ARCHS = (
+					${archs_list},
+				);
 			};
 			name = Release;
 		};

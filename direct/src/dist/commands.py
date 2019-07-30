@@ -19,7 +19,8 @@ import time
 import tempfile
 import glob
 
-from packaging import version
+from distutils.version import StrictVersion, LooseVersion
+from wheel import wheelfile, pep425tags
 import setuptools
 import distutils.log
 
@@ -45,6 +46,11 @@ if sys.version_info < (3, 0):
     sys.stdout.flush()
     time.sleep(4.0)
 
+def version_string_from_abi(abi):
+    if not abi.startswith('cp'):
+        raise ValueError('The abi_tag must specify CPython ("cp").')
+
+    return '.'.join(abi.lstrip('cp').rstrip('mdu'))
 
 def _parse_list(input):
     if isinstance(input, basestring):
@@ -1410,20 +1416,19 @@ class bdist_apps(setuptools.Command):
                     self.announce('\tUnknown installer: {}'.format(installer), distutils.log.ERROR)
 
 class make_xcodeproj(setuptools.Command):
-    description = 'Creates an Xcode project that can be used to develop for and \
-        deploy to iOS devices.'
+    description = ('Creates an Xcode project that can be used to develop for and '
+                   'deploy to iOS devices.')
     user_options = [
-        ('freeze-modules=', None, 'If we should freeze the Python modules or keep \
-            them unfrozen so they can be easily iterated upon.'),
-        ('archs=', None, 'List of architectures to support.')
+        ('freeze-modules=', None, 'If we should freeze the Python modules or keep '
+                                  'them unfrozen so they can be easily iterated upon.'),
+        ('archs=', None, 'List of architectures to support.'),
+        ('py-root=', None, 'Custom python installation root. You should '
+                           'specify this if the embedded Python version is '
+                           'different from the system\'s.'),
+        ('abi-tag=', None, 'ABI to pull a wheel for. You should probably '
+                           'specify this if you are specifying a custom '
+                           'py_root.'),
     ]
-
-    @property
-    def python_version(self):
-        if not self.abi_tag.startswith('cp'):
-            raise ValueError('The abi_tag must specify CPython ("cp").')
-
-        return self.abi_tag.lstrip('cp').rstrip('mdu')
 
     def download_panda_wheel(self, platform):
         """
@@ -1434,7 +1439,7 @@ class make_xcodeproj(setuptools.Command):
         wheel_dst = os.path.join(self.build_cmd.build_base, '__whl_cache__')
 
         # Infer the version from the abi tag, since pip can't infer it itself.
-        py_version = self.python_version
+        py_version = version_string_from_abi(self.abi_tag)
 
         if self.panda_version:
             version_specifier = '==' + self.panda_version
@@ -1459,7 +1464,7 @@ class make_xcodeproj(setuptools.Command):
 
         # Assemble the name of the wheel we just downloaded. If panda_version
         # is not specified, use the highest version that we have available.
-        wheel_end = 'cp%s-%s-%s' % (py_version, self.abi_tag, platform)
+        wheel_end = 'cp%s-%s-%s' % (py_version.replace('.', ''), self.abi_tag, platform)
 
         highest_ver = '0.0.0'
         if self.panda_version:
@@ -1471,7 +1476,7 @@ class make_xcodeproj(setuptools.Command):
                     continue
 
                 wheel_ver = wheel_stem.split('-')[1]
-                if version.parse(wheel_ver) > version.parse(highest_ver):
+                if StrictVersion(wheel_ver) > StrictVersion(highest_ver):
                     highest_ver = wheel_ver
 
         return os.path.join(wheel_dst, 'panda3d-%s-%s.whl'
@@ -1491,15 +1496,21 @@ class make_xcodeproj(setuptools.Command):
     def initialize_options(self):
         self.freeze_modules = False
         self.archs = ['arm64', 'x86_64']
-        self.abi_tag = 'cp36m'
         self.panda_version = None
         self.deploy_target = '9.0'
-        self.stdlib = ''
+
+        self.py_root = sys.exec_prefix
+        self.abi_tag = pep425tags.get_abi_tag()
 
     def finalize_options(self):
         self.platform_prefix = 'ios_%s' % self.deploy_target.replace('.', '_')
 
     def run(self):
+        self.announce('Deployment Version: ' + self.deploy_target, distutils.log.INFO)
+        self.announce('ABI Tag: ' + self.abi_tag, distutils.log.INFO)
+        self.announce('Architectures: ' + ','.join(self.archs), distutils.log.INFO)
+        self.announce('Using standard library from ' + self.py_root, distutils.log.INFO)
+
         self.build_cmd = self.distribution.get_command_obj('build_apps')
         self.build_cmd.finalize_options()
 
@@ -1528,13 +1539,17 @@ class make_xcodeproj(setuptools.Command):
 
         game_dir = os.path.abspath(os.path.dirname(self.build_cmd.gui_apps[self.build_cmd.macos_main_app]))
 
+        stdlib_suffix = os.path.join('lib', 'python%s' % version_string_from_abi(self.abi_tag))
+
         # A dictionary of substitutions we will be making to each file.
         substitutions = {
             'app_name': self.build_cmd.macos_main_app,
             'py_module_main': os.path.join('main.py'),
             'deploy_target': self.deploy_target,
+            'archs_list': ',\n'.join(self.archs),
             'supported_platforms': ' '.join(supported_platforms),
-            'sitepackages_dir': os.path.join('python/lib', os.path.basename(self.stdlib), 'site-packages'),
+            'py_ver': version_string_from_abi(self.abi_tag),
+            'sitepackages_dir': os.path.join('python', stdlib_suffix, 'site-packages'),
             'game_dir': game_dir,
         }
 
@@ -1555,7 +1570,17 @@ class make_xcodeproj(setuptools.Command):
         os.rename(xcscheme_path, os.path.join(os.path.dirname(xcscheme_path), '%s.xcscheme' % substitutions['app_name']))
 
         for arch, wheel_path in wheels:
-            self.announce("Preparing architecture %s..." % arch)
+            self.announce('Preparing architecture %s...' % arch, distutils.log.INFO)
+
+            wheel_expr = wheelfile.WHEEL_INFO_RE.match(os.path.basename(wheel_path))
+
+            if self.py_root == sys.exec_prefix:
+                sys_version = StrictVersion('%d.%d' % (sys.version_info[0], sys.version_info[1]))
+                embedded_version = StrictVersion(version_string_from_abi(wheel_expr.group('abi')))
+
+                if sys_version != embedded_version:
+                    self.announce('WARNING: This system is not using the same Python version as the wheel %s. Things may break.' % wheel_path, distutils.log.WARN)
+
             # Open up the wheel.
             with zipfile.ZipFile(wheel_path, 'r') as wheel:
                 # Calculate the current platform.
@@ -1570,19 +1595,22 @@ class make_xcodeproj(setuptools.Command):
                 deploy_dir = os.path.join(panda_app_target_dir, 'deploy-%s' % platform)
 
                 # Move over the libpython, the standard libs and PandaViewController.h
-                py_stdlib_dir = os.path.join(deploy_dir, 'python', 'lib')
+                py_dir = os.path.join(deploy_dir, 'python')
+                py_libdir = os.path.join(py_dir, 'lib')
                 # os.makedirs(py_stdlib_dir)
-                self.extract_wheel_member(wheel, 'deploy_libs', py_stdlib_dir)
-                shutil.move(os.path.join(py_stdlib_dir, 'include'), deploy_dir)
+                self.extract_wheel_member(wheel, 'deploy_libs', py_libdir)
+                shutil.move(os.path.join(py_libdir, 'include'), deploy_dir)
 
-                # TODO: Download the standard .py library files if they don't exist.
-                stdlib_dir = os.path.join(py_stdlib_dir, os.path.basename(self.stdlib))
-                shutil.copytree(self.stdlib, stdlib_dir)
+                # TODO: Traverse the game's modules and copy over only what we need.
+                py_stdlib_dir = os.path.join(py_libdir, 'python%s' % version_string_from_abi(self.abi_tag))
+                shutil.copytree(os.path.join(self.py_root, stdlib_suffix), py_stdlib_dir)
 
                 # Move over Panda3D and direct
-                self.extract_wheel_member(wheel, 'direct', os.path.join(stdlib_dir, 'site-packages', 'direct'))
-                self.extract_wheel_member(wheel, 'panda3d', os.path.join(stdlib_dir, 'site-packages', 'panda3d'))
+                shutil.rmtree(os.path.join(py_stdlib_dir, 'site-packages'))
+                self.extract_wheel_member(wheel, 'direct', os.path.join(py_stdlib_dir, 'site-packages', 'direct'))
+                self.extract_wheel_member(wheel, 'panda3d', os.path.join(py_stdlib_dir, 'site-packages', 'panda3d'))
 
+        self.announce('Copying project files...', distutils.log.INFO)
         # Finally, copy everything over to the destination, renaming project files as appropriate.
         build_base = os.path.abspath(self.build_cmd.build_base)
 

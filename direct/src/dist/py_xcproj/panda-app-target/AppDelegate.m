@@ -9,7 +9,7 @@
   PandaViewController *vc = [[PandaViewController alloc] init];
   self.window.rootViewController = vc;
   
-  [vc startPythonApp:[NSString stringWithFormat:@"${py_module_main}"]];
+  [vc startPythonApp:@"${py_module_main}"];
   
   return YES;
 }
