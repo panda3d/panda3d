@@ -1,7 +1,7 @@
 from __future__ import print_function
 
 from pathlib import Path
-from ftplib import FTP
+from modulefinder import ModuleFinder
 import collections
 import os
 import pip
@@ -1574,49 +1574,86 @@ class make_xcodeproj(setuptools.Command):
 
             wheel_expr = wheelfile.WHEEL_INFO_RE.match(os.path.basename(wheel_path))
 
-            if self.py_root == sys.exec_prefix:
+            if self.py_root != sys.exec_prefix:
                 sys_version = StrictVersion('%d.%d' % (sys.version_info[0], sys.version_info[1]))
                 embedded_version = StrictVersion(version_string_from_abi(wheel_expr.group('abi')))
 
                 if sys_version != embedded_version:
                     self.announce('WARNING: This system is not using the same Python version as the wheel %s. Things may break.' % wheel_path, distutils.log.WARN)
 
-            # Open up the wheel.
-            with zipfile.ZipFile(wheel_path, 'r') as wheel:
-                # Calculate the current platform.
-                if arch in ('arm64', 'armv7'):
-                    platform = 'iphoneos'
-                elif arch == 'x86_64':
-                    platform = 'iphonesimulator'
-                else:
-                    raise Exception("Unsupported platform %s" % platform)
+            # Extract the wheel to the temporary directory.
+            extract_location = os.path.join(self.tmp_dir, 'extract-' + Path(wheel_path).stem)
+            if not os.path.isdir(extract_location):
+                with zipfile.ZipFile(wheel_path, 'r') as wheel:
+                    wheel.extractall(extract_location)
 
-                # Directory for deployment files.
-                deploy_dir = os.path.join(panda_app_target_dir, 'deploy-%s' % platform)
+            # Calculate the current platform.
+            if arch in ('arm64', 'armv7'):
+                platform = 'iphoneos'
+            elif arch == 'x86_64':
+                platform = 'iphonesimulator'
+            else:
+                raise Exception("Unsupported platform %s" % platform)
 
-                # Move over the libpython, the standard libs and PandaViewController.h
-                py_dir = os.path.join(deploy_dir, 'python')
-                py_libdir = os.path.join(py_dir, 'lib')
-                # os.makedirs(py_stdlib_dir)
-                self.extract_wheel_member(wheel, 'deploy_libs', py_libdir)
-                shutil.move(os.path.join(py_libdir, 'include'), deploy_dir)
+            # Calculate some paths.
+            deploy_dir = os.path.join(panda_app_target_dir, 'deploy-%s' % platform)
+            py_dir = os.path.join(deploy_dir, 'python')
+            py_libdir = os.path.join(py_dir, 'lib')
+            py_stdlib_dir = os.path.join(py_libdir, 'python%s' % version_string_from_abi(self.abi_tag))
 
-                # TODO: Traverse the game's modules and copy over only what we need.
-                py_stdlib_dir = os.path.join(py_libdir, 'python%s' % version_string_from_abi(self.abi_tag))
-                shutil.copytree(os.path.join(self.py_root, stdlib_suffix), py_stdlib_dir)
+            # Move over the libpython, the standard libs and PandaViewController.h
+            shutil.copytree(os.path.join(extract_location, 'deploy_libs'), py_libdir)
+            shutil.move(os.path.join(py_libdir, 'include'), deploy_dir)
+            # shutil.copytree(os.path.join(self.py_root, stdlib_suffix), py_stdlib_dir)
 
-                # Move over Panda3D and direct
-                shutil.rmtree(os.path.join(py_stdlib_dir, 'site-packages'))
-                self.extract_wheel_member(wheel, 'direct', os.path.join(py_stdlib_dir, 'site-packages', 'direct'))
-                self.extract_wheel_member(wheel, 'panda3d', os.path.join(py_stdlib_dir, 'site-packages', 'panda3d'))
+            # Determine what parts of the standard library and direct should be copied over.
+            full_stdlib_path = os.path.join(self.py_root, stdlib_suffix)
+
+            # Copy over stuff we know we need to copy.
+            tags = self.abi_tag.replace(self.abi_tag.rstrip('mdu'), '')
+            config_dir_name = 'config-%s%s' % (version_string_from_abi(self.abi_tag), tags)
+            shutil.copytree(os.path.join(full_stdlib_path, 'encodings'), os.path.join(py_stdlib_dir, 'encodings'))
+            shutil.copytree(os.path.join(full_stdlib_path, config_dir_name), os.path.join(py_stdlib_dir, config_dir_name))
+            shutil.copy2(os.path.join(full_stdlib_path, 'site.py'), py_stdlib_dir)
+            shutil.copy2(os.path.join(full_stdlib_path, '_sitebuiltins.py'), py_stdlib_dir)
+            shutil.copy2(os.path.join(full_stdlib_path, 'sysconfig.py'), py_stdlib_dir)
+            shutil.copy2(os.path.join(full_stdlib_path, '_sysconfigdata_%s_ios_.py') % tags, py_stdlib_dir)
+
+            mf = ModuleFinder(path=[full_stdlib_path, extract_location])
+            mf.run_script(self.build_cmd.gui_apps[self.build_cmd.macos_main_app])
+
+            for module in mf.modules.items():
+                modfile = module[1].__file__
+                if modfile and os.path.exists(modfile):
+                    if modfile.startswith(full_stdlib_path):
+                        rel_modfile = os.path.relpath(modfile, full_stdlib_path)
+                    elif modfile.startswith(extract_location):
+                        rel_modfile = os.path.join('site-packages', os.path.relpath(modfile, extract_location))
+                    else:
+                        continue
+                    dst = os.path.dirname(os.path.join(py_stdlib_dir, rel_modfile))
+                    if not os.path.exists(dst):
+                        os.makedirs(dst)
+                    shutil.copy2(modfile, dst)
+
+            # Move over Panda3D libs.
+            p3d_libs = os.path.join(extract_location, 'panda3d')
+            for f in os.listdir(p3d_libs):
+                if f.endswith('.dylib'):
+                    shutil.move(os.path.join(p3d_libs, f), os.path.join(py_stdlib_dir, 'site-packages', 'panda3d'))
 
         self.announce('Copying project files...', distutils.log.INFO)
-        # Finally, copy everything over to the destination, renaming project files as appropriate.
-        build_base = os.path.abspath(self.build_cmd.build_base)
+        # Finally, move everything over to the destination, renaming project files as appropriate.
+        build_base = os.path.join(os.path.abspath(self.build_cmd.build_base), 'xcodeproj')
 
-        shutil.rmtree(os.path.join(build_base, substitutions['app_name']))
-        shutil.rmtree(os.path.join(build_base, '%s.xcodeproj' % substitutions['app_name']))
-        shutil.copytree(panda_app_target_dir, os.path.join(build_base, substitutions['app_name']))
-        shutil.copytree(panda_app_template_dir, os.path.join(build_base, '%s.xcodeproj' % substitutions['app_name']))
+        proj_folder = os.path.join(build_base, substitutions['app_name'])
+        proj_name = os.path.join(build_base, '%s.xcodeproj' % substitutions['app_name'])
+        if os.path.exists(proj_folder):
+            shutil.rmtree(proj_folder)
+        if os.path.exists(proj_name):
+            shutil.rmtree(proj_name)
+
+        shutil.copytree(panda_app_target_dir, proj_folder)
+        shutil.copytree(panda_app_template_dir, proj_name)
 
         shutil.rmtree(self.tmp_dir)
