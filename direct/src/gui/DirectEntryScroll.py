@@ -29,19 +29,27 @@ class DirectEntryScroll(DirectFrame):
            # frameSize = (-0.006, 3.2, -0.015, 0.036),
         # if you need to scale the entry scale it's parent instead
 
-        self.entry = entry
         self.canvas = NodePath(self.guiItem.getCanvasNode())
-        self.entry.reparentTo(self.canvas)
         self.canvas.setPos(0,0,0)
 
-        self.entry.bind(DGG.CURSORMOVE,self.cursorMove)
+        self.entry = None
+        if entry is not None:
+            self.entry = entry
+            self.entry.reparentTo(self.canvas)
+            self.entry.bind(DGG.CURSORMOVE,self.cursorMove)
 
         self.canvas.node().setBounds(OmniBoundingVolume())
         self.canvas.node().setFinal(1)
         self.resetCanvas()
 
+    def setEntry(self, entry):
+        if self.entry is not None:
+            self.entry.destroy()
+            self.entry = None
+        self.entry = entry
+        self.entry.reparentTo(self.canvas)
 
-
+        self.entry.bind(DGG.CURSORMOVE,self.cursorMove)
 
     def cursorMove(self, cursorX, cursorY):
         cursorX = self.entry.guiItem.getCursorX() * self.entry['text_scale'][0]
