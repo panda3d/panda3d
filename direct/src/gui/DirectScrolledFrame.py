@@ -33,7 +33,7 @@ class DirectScrolledFrame(DirectFrame):
             ('canvasSize',     (-1, 1, -1, 1),        self.setCanvasSize),
             ('manageScrollBars', 1,                self.setManageScrollBars),
             ('autoHideScrollBars', 1,              self.setAutoHideScrollBars),
-            ('scrollBarWidth', 0.08,               None),
+            ('scrollBarWidth', 0.08,               self.setScrollBarWidth),
             ('borderWidth',    (0.01, 0.01),       self.setBorderWidth),
             )
 
@@ -71,6 +71,11 @@ class DirectScrolledFrame(DirectFrame):
 
         # Call option initialization functions
         self.initialiseoptions(DirectScrolledFrame)
+
+    def setScrollBarWidth(self):
+        w = self['scrollBarWidth']
+        self.verticalScroll["frameSize"] = (-w / 2.0, w / 2.0, -1, 1)
+        self.horizontalScroll["frameSize"] = (-1, 1, -w / 2.0, w / 2.0)
 
     def setCanvasSize(self):
         f = self['canvasSize']
