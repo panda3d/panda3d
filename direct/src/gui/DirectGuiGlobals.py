@@ -69,6 +69,8 @@ B3PRESS = PGButton.getPressPrefix() + MouseButton.three().getName() + '-'
 B1RELEASE = PGButton.getReleasePrefix() + MouseButton.one().getName() + '-'
 B2RELEASE = PGButton.getReleasePrefix() + MouseButton.two().getName() + '-'
 B3RELEASE = PGButton.getReleasePrefix() + MouseButton.three().getName() + '-'
+MWUP = PGButton.getPressPrefix() + MouseButton.wheel_up().getName() + '-'
+MWDOWN = PGButton.getPressPrefix() + MouseButton.wheel_down().getName() + '-'
 # For DirectEntry widgets
 OVERFLOW = PGEntry.getOverflowPrefix()
 ACCEPT = PGEntry.getAcceptPrefix() + KeyboardButton.enter().getName() + '-'
@@ -79,6 +81,11 @@ CURSORMOVE = PGEntry.getCursormovePrefix()
 # For DirectSlider and DirectScrollBar widgets
 ADJUST = PGSliderBar.getAdjustPrefix()
 
+# Directions
+LEFT = "left"
+RIGHT = "right"
+ABOVE = "above"
+BELOW = "below"
 
 # For setting the sorting order of a widget's visible components
 IMAGE_SORT_INDEX = 10
