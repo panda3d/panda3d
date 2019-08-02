@@ -36,7 +36,7 @@ class DirectSlider(DirectFrame):
             ('extraArgs',      [],                 None),
             )
 
-        if kw.get('orientation') == DGG.VERTICAL:
+        if kw.get('orientation') in (DGG.VERTICAL, DGG.VERTICAL_INVERTED):
             # These are the default options for a vertical layout.
             optiondefs += (
                 ('frameSize',      (-0.08, 0.08, -1, 1),   None),
@@ -108,8 +108,21 @@ class DirectSlider(DirectFrame):
     def setOrientation(self):
         if self['orientation'] == DGG.HORIZONTAL:
             self.guiItem.setAxis(Vec3(1, 0, 0))
+            self['frameSize'] = (-1, 1, -0.08, 0.08)
+            self['frameVisibleScale'] = (1, 0.25)
+            f = self['frameSize']
+            self.thumb['frameSize'] = (f[0]*0.05, f[1]*0.05, f[2], f[3])
         elif self['orientation'] == DGG.VERTICAL:
             self.guiItem.setAxis(Vec3(0, 0, 1))
+            self['frameSize'] = (-0.08, 0.08, -1, 1)
+            self['frameVisibleScale'] = (0.25, 1)
+            f = self['frameSize']
+            self.thumb['frameSize'] = (f[0], f[1], f[2]*0.05, f[3]*0.05)
+        elif self['orientation'] == DGG.VERTICAL_INVERTED:
+            self.guiItem.setAxis(Vec3(0, 0, -1))
+            self['frameVisibleScale'] = (0.25, 1)
+            f = self['frameSize']
+            self.thumb['frameSize'] = (f[0], f[1], f[2]*0.05, f[3]*0.05)
         else:
             raise ValueError('Invalid value for orientation: %s' % (self['orientation']))
 

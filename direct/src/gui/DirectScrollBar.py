@@ -137,10 +137,22 @@ class DirectScrollBar(DirectFrame):
     def setOrientation(self):
         if self['orientation'] == DGG.HORIZONTAL:
             self.guiItem.setAxis(Vec3(1, 0, 0))
+            self['frameSize'] = (-0.5, 0.5, -0.04, 0.04)
+            f = self['frameSize']
+            self.decButton['frameSize'] = (f[0]*0.05, f[1]*0.05, f[2], f[3])
+            self.incButton['frameSize'] = (f[0]*0.05, f[1]*0.05, f[2], f[3])
         elif self['orientation'] == DGG.VERTICAL:
             self.guiItem.setAxis(Vec3(0, 0, -1))
+            self['frameSize'] = (-0.04, 0.04, -0.5, 0.5)
+            f = self['frameSize']
+            self.decButton['frameSize'] = (f[0], f[1], f[2]*0.05, f[3]*0.05)
+            self.incButton['frameSize'] = (f[0], f[1], f[2]*0.05, f[3]*0.05)
         elif self['orientation'] == DGG.VERTICAL_INVERTED:
             self.guiItem.setAxis(Vec3(0, 0, 1))
+            f = self['frameSize']
+            self['frameSize'] = (-0.04, 0.04, -0.5, 0.5)
+            self.decButton['frameSize'] = (f[0], f[1], f[2]*0.05, f[3]*0.05)
+            self.incButton['frameSize'] = (f[0], f[1], f[2]*0.05, f[3]*0.05)
         else:
             raise ValueError('Invalid value for orientation: %s' % (self['orientation']))
 
