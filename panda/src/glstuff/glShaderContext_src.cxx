@@ -3306,7 +3306,7 @@ glsl_compile_and_link() {
   }
 
   _glgsg->report_my_gl_errors();
-  return true;
+  return valid;
 }
 
 #endif  // OPENGLES_1

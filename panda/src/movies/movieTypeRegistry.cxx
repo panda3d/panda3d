@@ -90,7 +90,7 @@ register_audio_type(MakeAudioFunc func, const string &extensions) {
     if (_audio_type_registry.count(*wi)) {
       movies_cat->warning()
         << "Attempt to register multiple audio types with extension " << (*wi) << "\n";
-    } else {
+    } else if (movies_cat->is_debug()) {
       movies_cat->debug()
         << "Registered audio type with extension " << (*wi) << "\n";
     }
@@ -219,7 +219,7 @@ register_video_type(MakeVideoFunc func, const string &extensions) {
     if (_video_type_registry.count(*wi)) {
       movies_cat->warning()
         << "Attempt to register multiple video types with extension " << (*wi) << "\n";
-    } else {
+    } else if (movies_cat->is_debug()) {
       movies_cat->debug()
         << "Registered video type with extension " << (*wi) << "\n";
     }

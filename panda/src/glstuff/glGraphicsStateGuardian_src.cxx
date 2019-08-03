@@ -722,10 +722,12 @@ reset() {
                    || has_extension("GL_KHR_debug")
                    || has_extension("GL_ARB_debug_output");
 
-    if (_supports_debug) {
-      GLCAT.debug() << "gl-debug supported, but NOT enabled.\n";
-    } else {
-      GLCAT.debug() << "gl-debug disabled and unsupported.\n";
+    if (GLCAT.is_debug()) {
+      if (_supports_debug) {
+        GLCAT.debug() << "gl-debug supported, but NOT enabled.\n";
+      } else {
+        GLCAT.debug() << "gl-debug disabled and unsupported.\n";
+      }
     }
   }
 

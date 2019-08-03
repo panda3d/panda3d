@@ -19,6 +19,7 @@
 #include "filename.h"
 #include "config_prc.h"
 
+#include <atomic>
 #include <ctype.h>
 
 #ifdef BUILD_IPHONE
@@ -422,28 +423,29 @@ string_severity(const string &str) {
  */
 void Notify::
 config_initialized() {
-  static bool already_initialized = false;
-  if (already_initialized) {
-    nout << "Notify::config_initialized() called more than once.\n";
-    return;
-  }
-  already_initialized = true;
+  // We allow this to be called more than once to allow the user to specify a
+  // notify-output even after the initial import of Panda3D modules.  However,
+  // it cannot be changed after the first time it is set.
 
   if (_ostream_ptr == &cerr) {
-    ConfigVariableFilename notify_output
+    static ConfigVariableFilename notify_output
       ("notify-output", "",
        "The filename to which to write all the output of notify");
 
-    if (!notify_output.empty()) {
-      if (notify_output == "stdout") {
+    // We use this to ensure that only one thread can initialize the output.
+    static std::atomic_flag initialized = ATOMIC_FLAG_INIT;
+
+    std::string value = notify_output.get_value();
+    if (!value.empty() && !initialized.test_and_set()) {
+      if (value == "stdout") {
         cout.setf(std::ios::unitbuf);
         set_ostream_ptr(&cout, false);
 
-      } else if (notify_output == "stderr") {
+      } else if (value == "stderr") {
         set_ostream_ptr(&cerr, false);
 
       } else {
-        Filename filename = notify_output;
+        Filename filename = value;
         filename.set_text();
 #ifdef BUILD_IPHONE
         // On the iPhone, route everything through cerr, and then send cerr to
