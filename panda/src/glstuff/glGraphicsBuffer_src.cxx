@@ -778,7 +778,9 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
     }
 
     if (attachpoint == GL_DEPTH_ATTACHMENT_EXT) {
-      GLCAT.debug() << "Binding texture " << *tex << " to depth attachment.\n";
+      if (GLCAT.is_debug()) {
+        GLCAT.debug() << "Binding texture " << *tex << " to depth attachment.\n";
+      }
 
       attach_tex(layer, 0, tex, GL_DEPTH_ATTACHMENT_EXT);
 
@@ -789,7 +791,9 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
 #endif
 
       if (slot == RTP_depth_stencil) {
-        GLCAT.debug() << "Binding texture " << *tex << " to stencil attachment.\n";
+        if (GLCAT.is_debug()) {
+          GLCAT.debug() << "Binding texture " << *tex << " to stencil attachment.\n";
+        }
 
         attach_tex(layer, 0, tex, GL_STENCIL_ATTACHMENT_EXT);
 
@@ -801,7 +805,9 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
       }
 
     } else {
-      GLCAT.debug() << "Binding texture " << *tex << " to color attachment.\n";
+      if (GLCAT.is_debug()) {
+        GLCAT.debug() << "Binding texture " << *tex << " to color attachment.\n";
+      }
 
       attach_tex(layer, 0, tex, attachpoint);
 
@@ -988,7 +994,9 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
     glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, _rb[slot]);
 
     if (slot == RTP_depth_stencil) {
-      GLCAT.debug() << "Creating depth stencil renderbuffer.\n";
+      if (GLCAT.is_debug()) {
+        GLCAT.debug() << "Creating depth stencil renderbuffer.\n";
+      }
       // Allocate renderbuffer storage for depth stencil.
       GLint depth_size = 0, stencil_size = 0;
       glgsg->_glRenderbufferStorage(GL_RENDERBUFFER_EXT, gl_format, _rb_size_x, _rb_size_y);
@@ -1014,7 +1022,9 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
       report_my_gl_errors();
 
     } else if (slot == RTP_depth) {
-      GLCAT.debug() << "Creating depth renderbuffer.\n";
+      if (GLCAT.is_debug()) {
+        GLCAT.debug() << "Creating depth renderbuffer.\n";
+      }
       // Allocate renderbuffer storage for regular depth.
       GLint depth_size = 0;
       glgsg->_glRenderbufferStorage(GL_RENDERBUFFER_EXT, gl_format, _rb_size_x, _rb_size_y);
@@ -1052,7 +1062,9 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
       report_my_gl_errors();
 
     } else {
-      GLCAT.debug() << "Creating color renderbuffer.\n";
+      if (GLCAT.is_debug()) {
+        GLCAT.debug() << "Creating color renderbuffer.\n";
+      }
       glgsg->_glRenderbufferStorage(GL_RENDERBUFFER_EXT, gl_format, _rb_size_x, _rb_size_y);
 
       GLint red_size = 0, green_size = 0, blue_size = 0, alpha_size = 0;
