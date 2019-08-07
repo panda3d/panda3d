@@ -1,4 +1,4 @@
-if(NOT HAVE_GLES2)
+if(NOT HAVE_GLES2 OR NOT HAVE_EAGL)
   return()
 endif()
 
