@@ -442,3 +442,21 @@ class BufferViewer(DirectObject):
                     cards[index] = placer
 
         return Task.cont
+
+    # Snake-case aliases, for people who prefer these.
+    advance_card = advanceCard
+    analyze_texture_set = analyzeTextureSet
+    is_enabled = isEnabled
+    is_valid_texture_set = isValidTextureSet
+    maintain_readout = maintainReadout
+    make_frame = makeFrame
+    refresh_readout = refreshReadout
+    select_card = selectCard
+    set_card_size = setCardSize
+    set_exclude = setExclude
+    set_include = setInclude
+    set_layout = setLayout
+    set_position = setPosition
+    set_render_parent = setRenderParent
+    set_sort = setSort
+    toggle_enable = toggleEnable

@@ -179,6 +179,7 @@ build_graph() {
   // And then the meshes.
   _geoms = new PT(Geom)[_scene->mNumMeshes];
   _geom_matindices = new unsigned int[_scene->mNumMeshes];
+  _characters = new PT(Character)[_scene->mNumMeshes];
   for (size_t i = 0; i < _scene->mNumMeshes; ++i) {
     load_mesh(i);
   }
@@ -197,6 +198,7 @@ build_graph() {
   delete[] _mat_states;
   delete[] _geoms;
   delete[] _geom_matindices;
+  delete[] _characters;
 }
 
 /**
@@ -543,8 +545,11 @@ load_mesh(size_t index) {
   // Check if we need to make a Character
   PT(Character) character = nullptr;
   if (mesh.HasBones()) {
-    assimp_cat.debug()
-      << "Creating character for " << mesh.mName.C_Str() << "\n";
+    if (assimp_cat.is_debug()) {
+      assimp_cat.debug()
+        << "Creating character for mesh '" << mesh.mName.C_Str() << "' with "
+        << mesh.mNumBones << " bones\n";
+    }
 
     // Find and add all bone nodes to the bone map
     for (size_t i = 0; i < mesh.mNumBones; ++i) {
@@ -630,8 +635,11 @@ load_mesh(size_t index) {
     assimp_cat.debug()
       << "Checking to see if anim (" << ai_anim.mName.C_Str() << ") matches character (" << mesh.mName.C_Str() << ")\n";
     for (size_t j = 0; j < ai_anim.mNumChannels; ++j) {
-      assimp_cat.debug()
-        << "Searching for " << ai_anim.mChannels[j]->mNodeName.C_Str() << " in bone map" << "\n";
+      if (assimp_cat.is_spam()) {
+        assimp_cat.spam()
+          << "Searching for " << ai_anim.mChannels[j]->mNodeName.C_Str()
+          << " in bone map" << "\n";
+      }
       if (_bonemap.find(ai_anim.mChannels[j]->mNodeName.C_Str()) != _bonemap.end()) {
         convert_anim = true;
         break;
@@ -810,37 +818,103 @@ load_mesh(size_t index) {
   _geom_matindices[index] = mesh.mMaterialIndex;
 
   if (character) {
-    _charmap[mesh.mName.C_Str()] = character;
+    _characters[index] = character;
+
+    PT(GeomNode) gnode = new GeomNode("");
+    gnode->add_geom(geom);
+    gnode->set_state(_mat_states[mesh.mMaterialIndex]);
+    character->add_child(gnode);
   }
 }
 
 /**
- * Converts an aiNode into a PandaNode.
+ * Converts an aiNode into a PandaNode.  Returns true if the node had anything
+ * of interest under it, false otherwise.
  */
-void AssimpLoader::
-load_node(const aiNode &node, PandaNode *parent) {
+bool AssimpLoader::
+load_node(const aiNode &node, PandaNode *parent, bool under_joint) {
   PT(PandaNode) pnode;
-  PT(Character) character;
-
-  // Skip nodes we've converted to joints
-  if (_bonemap.find(node.mName.C_Str()) != _bonemap.end()) {
-      return;
-  }
-
-  // Create the node and give it a name.
   string name (node.mName.data, node.mName.length);
-  if (node.mNumMeshes > 0) {
-    pnode = new GeomNode(name);
-  } else {
-    pnode = new PandaNode(name);
+
+  if (assimp_cat.is_debug()) {
+    assimp_cat.debug()
+      << "Converting node '" << name << "' with " << node.mNumMeshes
+      << " meshes and " << node.mNumChildren << " children\n";
   }
 
-  if (_charmap.find(node.mName.C_Str()) != _charmap.end()) {
-    character = _charmap[node.mName.C_Str()];
-    parent->add_child(character);
-  } else {
-    parent->add_child(pnode);
+  if (!under_joint) {
+    under_joint = (_bonemap.find(node.mName.C_Str()) != _bonemap.end());
   }
+
+  bool prune = false;
+
+  if (node.mNumMeshes == 0) {
+    pnode = new PandaNode(name);
+
+    // Possibly prune this if this is a joint or under a joint.
+    prune = under_joint;
+  }
+  else if (node.mNumMeshes == 1) {
+    size_t meshIndex = node.mMeshes[0];
+
+    Character *character = _characters[meshIndex];
+    if (character != nullptr) {
+      pnode = new PandaNode(name);
+      pnode->add_child(character);
+    } else {
+      const RenderState *state = _mat_states[_geom_matindices[meshIndex]];
+      PT(GeomNode) gnode = new GeomNode(name);
+      gnode->add_geom(_geoms[meshIndex]);
+      if (state != nullptr) {
+        // Only set the state on the GeomNode if there are no child nodes.
+        if (node.mNumChildren == 0) {
+          gnode->set_state(state);
+        } else {
+          gnode->set_geom_state(0, state);
+        }
+      }
+      pnode = gnode;
+    }
+  }
+  else {
+    // Do we have regular meshes or just animated meshes?
+    bool character_only = true;
+
+    // First add all the regular meshes.
+    for (size_t i = 0; i < node.mNumMeshes; ++i) {
+      size_t meshIndex = node.mMeshes[i];
+
+      if (_characters[meshIndex] == nullptr) {
+        character_only = false;
+        break;
+      }
+    }
+
+    PT(GeomNode) gnode;
+    if (character_only) {
+      pnode = new PandaNode(name);
+    } else {
+      gnode = new GeomNode(name);
+      pnode = gnode;
+    }
+
+    for (size_t i = 0; i < node.mNumMeshes; ++i) {
+      size_t meshIndex = node.mMeshes[i];
+
+      Character *character = _characters[meshIndex];
+      if (character != nullptr) {
+        // An animated mesh, which already is converted as Character with an
+        // attached GeomNode.
+        pnode->add_child(character);
+      } else {
+        // A non-animated mesh.
+        gnode->add_geom(_geoms[node.mMeshes[i]],
+          _mat_states[_geom_matindices[meshIndex]]);
+      }
+    }
+  }
+
+  parent->add_child(pnode);
 
   // Load in the transformation matrix.
   const aiMatrix4x4 &t = node.mTransformation;
@@ -853,31 +927,19 @@ load_node(const aiNode &node, PandaNode *parent) {
   }
 
   for (size_t i = 0; i < node.mNumChildren; ++i) {
-    load_node(*node.mChildren[i], pnode);
+    if (load_node(*node.mChildren[i], pnode, under_joint)) {
+      prune = false;
+    }
   }
 
-  if (node.mNumMeshes > 0) {
-    // Remember, we created this as GeomNode earlier.
-    PT(GeomNode) gnode = DCAST(GeomNode, pnode);
-    size_t meshIndex;
-
-    // If there's only mesh, don't bother using a per-geom state.
-    if (node.mNumMeshes == 1) {
-      meshIndex = node.mMeshes[0];
-      gnode->add_geom(_geoms[meshIndex]);
-      gnode->set_state(_mat_states[_geom_matindices[meshIndex]]);
-    } else {
-      for (size_t i = 0; i < node.mNumMeshes; ++i) {
-        meshIndex = node.mMeshes[i];
-        gnode->add_geom(_geoms[node.mMeshes[i]],
-          _mat_states[_geom_matindices[meshIndex]]);
-      }
-    }
-
-    if (character) {
-        assimp_cat.debug() << "Adding char to geom\n";
-      character->add_child(gnode);
-    }
+  if (prune) {
+    // This is an empty node in a hierarchy of joints, prune it.
+    parent->remove_child(pnode);
+    assimp_cat.debug()
+      << "Pruning node '" << name << "'\n";
+    return false;
+  } else {
+    return true;
   }
 }
 

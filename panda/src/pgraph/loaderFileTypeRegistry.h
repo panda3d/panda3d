@@ -36,6 +36,9 @@ public:
   void register_deferred_type(const std::string &extension, const std::string &library);
 
 PUBLISHED:
+  EXTENSION(void register_type(PyObject *type));
+  EXTENSION(void register_deferred_type(PyObject *entry_point));
+
   int get_num_types() const;
   LoaderFileType *get_type(int n) const;
   MAKE_SEQ(get_types, get_num_types, get_type);

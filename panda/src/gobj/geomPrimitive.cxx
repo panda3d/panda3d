@@ -1612,7 +1612,7 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
       // Find the first non-NaN vertex.
       while (!found_any && i < cdata->_num_vertices) {
         reader.set_row(cdata->_first_vertex + i);
-        LPoint3 first_vertex = mat.xform_point(reader.get_data3());
+        LPoint3 first_vertex = mat.xform_point_general(reader.get_data3());
         if (!first_vertex.is_nan()) {
           min_point = first_vertex;
           max_point = first_vertex;
@@ -1624,7 +1624,7 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
 
       for (; i < cdata->_num_vertices; ++i) {
         reader.set_row_unsafe(cdata->_first_vertex + i);
-        LPoint3 vertex = mat.xform_point(reader.get_data3());
+        LPoint3 vertex = mat.xform_point_general(reader.get_data3());
 
         min_point.set(min(min_point[0], vertex[0]),
                       min(min_point[1], vertex[1]),
@@ -1677,7 +1677,7 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
         int ii = index.get_data1i();
         if (ii != strip_cut_index) {
           reader.set_row(ii);
-          LPoint3 first_vertex = mat.xform_point(reader.get_data3());
+          LPoint3 first_vertex = mat.xform_point_general(reader.get_data3());
           if (!first_vertex.is_nan()) {
             min_point = first_vertex;
             max_point = first_vertex;
@@ -1693,7 +1693,7 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
           continue;
         }
         reader.set_row_unsafe(ii);
-        LPoint3 vertex = mat.xform_point(reader.get_data3());
+        LPoint3 vertex = mat.xform_point_general(reader.get_data3());
 
         min_point.set(min(min_point[0], vertex[0]),
                       min(min_point[1], vertex[1]),

@@ -77,6 +77,7 @@ class DirectOptionMenu(DirectButton):
             state = 'normal')
         # Make sure this is on top of all the other widgets
         self.cancelFrame.setBin('gui-popup', 0)
+        self.cancelFrame.node().setBounds(OmniBoundingVolume())
         self.cancelFrame.bind(DGG.B1PRESS, self.hidePopupMenu)
         # Default action on press is to show popup menu
         self.bind(DGG.B1PRESS, self.showPopupMenu)
