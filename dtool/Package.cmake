@@ -1,3 +1,4 @@
+
 #
 # ------------ Python ------------
 #
@@ -471,7 +472,7 @@ package_option(GLES1
 package_status(GLES1 "OpenGL ES 1.x")
 
 # OpenGL ES 2
-if(NOT IS_OSX) # Apple X11 ships the GLES headers but they're broken
+if(NOT CMAKE_SYSTEM_NAME MATCHES "Darwin") # Apple X11 ships the GLES headers but they're broken
   find_package(OpenGLES2 QUIET)
 endif()
 
