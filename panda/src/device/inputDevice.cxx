@@ -149,26 +149,31 @@ add_axis(Axis axis, int minimum, int maximum) {
   return add_axis(axis, minimum, maximum, centered);
 }
 
+PointerData& InputDevice::
+get_pointer(int id) {
+  if (_pointers.count(id) != 0) {
+    return _pointers.at(id);
+  } else {
+    return add_pointer(PointerType::unknown, id);
+  }
+}
+
+
 /**
  * Records that a new pointer was found.
  */
-int InputDevice::
+PointerData& InputDevice::
 add_pointer(PointerType type, int id, bool primary) {
   //nassertr(_lock.debug_is_locked(), -1);
 
-  PointerData data;
-  data._id = id;
-  data._type = type;
-
-  int index = (int)_pointers.size();
-  if (_num_pointers == _pointers.size()) {
-    _pointers.push_back(data);
-  } else {
-    _pointers[index] = data;
+  PointerData data(id, primary, type);
+  // _pointers[id] = data;
+  _pointers.insert(std::pair<int, PointerData>(id, data));
+  if (primary) {
+    _primary_pointer_id = id;
   }
-  ++_num_pointers;
 
-  return index;
+  return _pointers.at(id);
 }
 
 /**
@@ -177,58 +182,29 @@ add_pointer(PointerType type, int id, bool primary) {
  */
 void InputDevice::
 remove_pointer(int id) {
-  nassertv(_lock.debug_is_locked());
+  assert(_lock.debug_is_locked());
 
-  size_t i;
-  for (i = 0; i < _pointers.size(); ++i) {
-    if (_pointers[i]._id == id) {
-      break;
+  PointerData &pointer = _pointers.at(id);
+  if (pointer.get_pressure() != 0.0) {
+    pointer.set_pressure(0.0);
+    if (_enable_pointer_events) {
+      int seq = _event_sequence++;
+      double time = ClockObject::get_global_clock()->get_frame_time();
+      _pointer_events->add_event(pointer, seq, time);
     }
-  }
-
-  if (i < _pointers.size()) {
-    if (_pointers[i]._pressure != 0.0) {
-      _pointers[i]._pressure = 0.0;
-
-      if (_enable_pointer_events) {
-        int seq = _event_sequence++;
-        double time = ClockObject::get_global_clock()->get_frame_time();
-        _pointer_events->add_event(_pointers[i], seq, time);
-      }
-    }
-
-    // Replace it with the last one.
-    if (i != _pointers.size() - 1) {
-      _pointers[i] = _pointers.back();
-    }
-    --_num_pointers;
   }
 }
 
-/**
- * Records that pointer data for a pointer has changed.  This can also be used
- * to add a new pointer.
- */
 void InputDevice::
-update_pointer(PointerData data, double time) {
-  nassertv(_lock.debug_is_locked());
+pointer_moved_absolute(int id, double x, double y, double pressure, double time) {
+  assert(_lock.debug_is_locked());
 
-  PointerData *ptr = nullptr;
-  for (size_t i = 0; i < _pointers.size(); ++i) {
-    if (_pointers[i]._id == data._id) {
-      ptr = &_pointers[i];
-      *ptr = data;
-      break;
-    }
-  }
-  if (ptr == nullptr) {
-    _pointers.push_back(data);
-    ptr = &_pointers.back();
-  }
+  PointerData &pointer = _pointers.at(id);
+  pointer.update(x, y, pressure);
 
   if (_enable_pointer_events) {
     int seq = _event_sequence++;
-    _pointer_events->add_event(*ptr, seq, time);
+    _pointer_events->add_event(pointer, seq, time);
   }
 }
 
@@ -239,28 +215,17 @@ void InputDevice::
 pointer_moved(int id, double x, double y, double time) {
   nassertv(_lock.debug_is_locked());
 
-  PointerData *ptr = nullptr;
-  for (size_t i = 0; i < _pointers.size(); ++i) {
-    if (_pointers[i]._id == id) {
-      ptr = &_pointers[i];
-      _pointers[i]._xpos = x;
-      _pointers[i]._ypos = y;
-      break;
-    }
-  }
-  nassertv_always(ptr != nullptr);
-
   if (device_cat.is_spam() && (x != 0 || y != 0)) {
     device_cat.spam()
       << "Pointer " << id << " moved by " << x << " x " << y << "\n";
   }
 
+  PointerData &pointer = _pointers.at(id);
+  pointer.rel_move(x, y);
+
   if (_enable_pointer_events) {
     int seq = _event_sequence++;
-    _pointer_events->add_event(ptr->_in_window,
-                               ptr->_xpos,
-                               ptr->_ypos,
-                               x, y, seq, time);
+    _pointer_events->add_event(pointer, seq, time);
   }
 }
 

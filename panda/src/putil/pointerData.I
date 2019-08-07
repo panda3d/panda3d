@@ -55,6 +55,11 @@ get_type() const {
   return _type;
 }
 
+INLINE bool PointerData::
+get_primary() const {
+  return _primary;
+}
+
 /**
  * Returns the pressure of the pointer.  For mice, this will be 1.0 if any
  * button is pressed, 0.0 otherwise.
@@ -64,6 +69,28 @@ get_pressure() const {
   return _pressure;
 }
 
+INLINE void PointerData::
+set_pressure(double pressure) {
+  _pressure = pressure;
+}
+
+INLINE void PointerData::
+set_in_window(bool in_window) {
+  _in_window = in_window;
+}
+
+INLINE void PointerData::
+update(double x, double y, double pressure) {
+  _xpos = x;
+  _ypos = y;
+  _pressure = pressure;
+}
+
+INLINE void PointerData::
+rel_move(double rx, double ry) {
+  _xpos += rx;
+  _ypos += ry;
+}
 
 INLINE std::ostream &operator << (std::ostream &out, const PointerData &md) {
   md.output(out);

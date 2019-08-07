@@ -32,6 +32,9 @@
     eaglLayer.opaque = YES;
     eaglLayer.contentsScale = 3.0;
     
+    self.multipleTouchEnabled = YES;
+    self.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+
     _graphics_window = window;
   }
   return self;
@@ -47,15 +50,15 @@
 // TODO: Handle multi-touch.
 
 - (void)touchesMoved:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
-  _graphics_window->emulated_mouse_move([touches anyObject]);
+  _graphics_window->touches_moved(touches);
 }
 
 - (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
-  _graphics_window->emulated_mouse_down([touches anyObject]);
+  _graphics_window->touches_began(touches);
 }
 
 - (void)touchesEnded:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
-  _graphics_window->emulated_mouse_up([touches anyObject]);
+  _graphics_window->touches_ended(touches);
 }
 
 /**
@@ -64,7 +67,7 @@
  */
 - (void)touchesCancelled:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
   // FIXME: Should there be separate handling for ended vs. cancelled touches?
-  _graphics_window->emulated_mouse_up([touches anyObject]);
+  _graphics_window->touches_cancelled(touches);
 }
 
 

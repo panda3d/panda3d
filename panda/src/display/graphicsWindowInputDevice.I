@@ -13,26 +13,31 @@
 
 /**
  * Returns the PointerData associated with the input device's pointer.  This
- * only makes sense if has_pointer() also returns true.
+ * only makes sense if has_pointer() also returns true. If you're using
+ * multitouch, you should use get_primary_pointer() instead.
+ *
+ * @deprecated 1.11
  */
 INLINE PointerData GraphicsWindowInputDevice::
 get_pointer() const {
   LightMutexHolder holder(_lock);
   if (!_pointers.empty()) {
-    return _pointers[0];
+    return _pointers.begin()->second;
   } else {
     return PointerData();
   }
 }
 
-/**
- * To be called by a particular kind of GraphicsWindow to indicate that the
- * pointer data has changed.
- */
-INLINE void GraphicsWindowInputDevice::
-update_pointer(PointerData data, double time) {
+INLINE PointerData& GraphicsWindowInputDevice::
+get_pointer(int id) {
   LightMutexHolder holder(_lock);
-  InputDevice::update_pointer(std::move(data), time);
+  return InputDevice::get_pointer(id);
+}
+
+INLINE PointerData& GraphicsWindowInputDevice::
+add_pointer(PointerType type, int id, bool primary) {
+  LightMutexHolder holder(_lock);
+  return InputDevice::add_pointer(type, id, primary);
 }
 
 /**
@@ -43,6 +48,18 @@ INLINE void GraphicsWindowInputDevice::
 pointer_moved(double x, double y, double time) {
   LightMutexHolder holder(_lock);
   InputDevice::pointer_moved(0, x, y, time);
+}
+
+INLINE void GraphicsWindowInputDevice::
+pointer_moved(int id, double x, double y, double time) {
+  LightMutexHolder holder(_lock);
+  InputDevice::pointer_moved(id, x, y, time);
+}
+
+INLINE void GraphicsWindowInputDevice::
+pointer_moved_absolute(int id, double x, double y, double pressure, double time) {
+  LightMutexHolder holder(_lock);
+  InputDevice::pointer_moved_absolute(id, x, y, pressure, time);
 }
 
 /**

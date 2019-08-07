@@ -13,6 +13,15 @@
 
 #include "pointerData.h"
 
+PointerData::
+PointerData(int id, bool primary, PointerType type) :
+  _id(id),
+  _primary(primary),
+  _type(type)
+{
+
+}
+
 /**
  *
  */

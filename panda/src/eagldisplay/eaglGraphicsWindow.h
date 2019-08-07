@@ -51,9 +51,10 @@ public:
   void app_activated();
   void app_deactivated();
 
-  void emulated_mouse_move(UITouch *touch);
-  void emulated_mouse_down(UITouch *touch);
-  void emulated_mouse_up(UITouch *touch);
+  virtual void touches_began(NSSet<UITouch *> *touch_set);
+  virtual void touches_moved(NSSet<UITouch *> *touch_set);
+  virtual void touches_ended(NSSet<UITouch *> *touch_set);
+  virtual void touches_cancelled(NSSet<UITouch *> *touch_set);
 
 private:
   PT(EAGLGraphicsBuffer) _backing_buffer;
@@ -69,7 +70,10 @@ protected:
 
   PandaEAGLView *_view;
 
-  PT(GraphicsWindowInputDevice) _emulated_mouse_input;
+  NSMutableSet<NSNumber *> *_touchIDPool;
+  UITouch *_primary_touch;
+
+  PT(GraphicsWindowInputDevice) _input;
 
 public:
   static TypeHandle get_class_type() {

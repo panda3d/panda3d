@@ -22,6 +22,20 @@ InputDevice() {
   _pointer_events = new PointerEventList;
 }
 
+INLINE bool InputDevice::
+has_primary_pointer() const {
+  LightMutexHolder holder(_lock);
+  return _has_primary_pointer;
+}
+
+INLINE PointerData& InputDevice::
+get_primary_pointer() {
+  LightMutexHolder holder(_lock);
+  assert(_pointers.size() > 0);
+  assert(_has_primary_pointer);
+  return _pointers.at(_primary_pointer_id);
+}
+
 /**
  * Returns a human-readable name for the device.  Not necessarily unique.
  */

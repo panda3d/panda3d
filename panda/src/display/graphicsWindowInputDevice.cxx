@@ -34,7 +34,7 @@ GraphicsWindowInputDevice(GraphicsWindow *host, const string &name, bool pointer
 {
   if (pointer) {
     enable_feature(Feature::pointer);
-    add_pointer(PointerType::mouse, 0);
+    add_pointer(PointerType::mouse, 0, true);
   }
   if (keyboard) {
     enable_feature(Feature::keyboard);
@@ -165,13 +165,22 @@ raw_button_up(ButtonHandle button, double time) {
 void GraphicsWindowInputDevice::
 set_pointer_in_window(double x, double y, double time) {
   LightMutexHolder holder(_lock);
-  PointerData data = _pointers[0];
-  data._id = 0;
-  data._type = PointerType::mouse;
-  data._xpos = x;
-  data._ypos = y;
-  data._in_window = true;
-  InputDevice::update_pointer(data, time);
+
+  PointerData &pointer = _pointers.size() == 0
+                         ? InputDevice::add_pointer(PointerType::mouse, 0, true)
+                         : InputDevice::get_pointer(0);
+
+  pointer.update(x, y, 1.0);
+  pointer.set_in_window(true);
+
+
+  // PointerData data = _pointers[0];
+  // data._id = 0;
+  // data._type = PointerType::mouse;
+  // data._xpos = x;
+  // data._ypos = y;
+  // data._in_window = true;
+  // InputDevice::update_pointer(data, time);
 }
 
 /**
@@ -185,17 +194,22 @@ set_pointer_out_of_window(double time) {
     return;
   }
 
-  _pointers[0]._in_window = false;
-  _pointers[0]._pressure = 0.0;
+  PointerData &pointer = InputDevice::get_pointer(0);
+
+  pointer.set_pressure(0.0);
+  pointer.set_in_window(false);
+
+  // _pointers[0]._in_window = false;
+  // _pointers[0]._pressure = 0.0;
 
   if (_enable_pointer_events) {
     int seq = _event_sequence++;
     if (_pointer_events.is_null()) {
       _pointer_events = new PointerEventList();
     }
-    _pointer_events->add_event(_pointers[0]._in_window,
-                               _pointers[0]._xpos,
-                               _pointers[0]._ypos,
+    _pointer_events->add_event(pointer.get_in_window(),
+                               pointer.get_x(),
+                               pointer.get_y(),
                                seq, time);
   }
 }

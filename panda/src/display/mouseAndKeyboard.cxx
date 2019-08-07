@@ -89,14 +89,14 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &,
     if (device->has_pointer()) {
       PointerData mdata = device->get_pointer();
 
-      if (mdata._in_window) {
+      if (mdata.get_in_window()) {
         // Get mouse motion in pixels.
-        _pixel_xy->set_value(LPoint2(mdata._xpos, mdata._ypos));
+        _pixel_xy->set_value(LPoint2(mdata.get_x(), mdata.get_y()));
         output.set_data(_pixel_xy_output, EventParameter(_pixel_xy));
 
         // Normalize pixel motion to range [-1,1].
-        PN_stdfloat xf = (PN_stdfloat)(2 * mdata._xpos) / (PN_stdfloat)w - 1.0f;
-        PN_stdfloat yf = 1.0f - (PN_stdfloat)(2 * mdata._ypos) / (PN_stdfloat)h;
+        PN_stdfloat xf = (PN_stdfloat)(2 * mdata.get_x()) / (PN_stdfloat)w - 1.0f;
+        PN_stdfloat yf = 1.0f - (PN_stdfloat)(2 * mdata.get_y()) / (PN_stdfloat)h;
 
         _xy->set_value(LPoint2(xf, yf));
         output.set_data(_xy_output, EventParameter(_xy));

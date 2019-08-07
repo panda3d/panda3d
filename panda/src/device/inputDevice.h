@@ -286,10 +286,12 @@ protected:
   int add_axis(Axis axis, int minimum, int maximum, bool centered);
   int add_axis(Axis axis, int minimum, int maximum);
 
-  int add_pointer(PointerType type, int id, bool primary = false);
+  PointerData& add_pointer(PointerType type, int id, bool primary = false);
   void remove_pointer(int id);
-  void update_pointer(PointerData data, double time);
+
   void pointer_moved(int id, double x, double y, double time);
+  void pointer_moved_absolute(int id, double x, double y, double pressure, double time);
+
   void button_changed(int index, bool down);
   void axis_changed(int index, int value);
   void set_axis_value(int index, double state);
@@ -323,10 +325,11 @@ protected:
   bool _enable_pointer_events = false;
   PT(ButtonEventList) _button_events;
   PT(PointerEventList) _pointer_events;
-
-  size_t _num_pointers = 0;
-  typedef pvector<PointerData> Pointers;
+  typedef pmap<int, PointerData> Pointers;
   Pointers _pointers;
+
+  int _primary_pointer_id;
+  bool _has_primary_pointer;
 
 PUBLISHED:
   typedef pvector<ButtonState> Buttons;
@@ -334,9 +337,13 @@ PUBLISHED:
   Buttons _buttons;
   Axes _axes;
 
-  PointerData _pointer_data;
   BatteryData _battery_data;
   TrackerData _tracker_data;
+
+  PointerData& get_pointer(int id);
+
+  INLINE bool has_primary_pointer() const;
+  INLINE PointerData& get_primary_pointer();
 
 public:
   static TypeHandle get_class_type() {

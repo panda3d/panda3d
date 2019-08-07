@@ -12,6 +12,9 @@
  */
 
 #include "eaglGraphicsWindow.h"
+
+#import <objc/runtime.h>
+
 #include "eaglGraphicsStateGuardian.h"
 #include "mouseButton.h"
 // #import "iOSNSNotificationHandler.h"
@@ -21,6 +24,12 @@ TypeHandle EAGLGraphicsWindow::_type_handle;
 PandaViewController *EAGLGraphicsWindow::next_view_controller = nil;
 TrueMutexImpl EAGLGraphicsWindow::vc_lock;
 TrueConditionVarImpl EAGLGraphicsWindow::vc_condition = TrueConditionVarImpl(EAGLGraphicsWindow::vc_lock);
+
+// See https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/ObjectiveC/Chapters/ocAssociativeReferences.html
+// for what this is doing. Since UITouches don't come with an ID (or any member
+// that can meaningfully be converted to one), we can attach our own using the
+// Objective-C runtime.
+static char touch_id_key;
 
 /**
  *
@@ -37,11 +46,20 @@ GraphicsWindow(engine, pipe, name, fb_prop, win_prop, flags, gsg, host)
 {
   _view = nil;
 
-  _emulated_mouse_input =
-    GraphicsWindowInputDevice::pointer_only(this, "touch_mouse");
-  _input_devices.push_back(_emulated_mouse_input);
+  _input =
+    GraphicsWindowInputDevice::pointer_only(this, "device");
+  _input_devices.push_back(_input);
 
   _backing_buffer = new EAGLGraphicsBuffer(engine, pipe, "buffer", fb_prop, win_prop, flags, gsg, host);
+
+  // Generate a set of identifiers that Panda will use to keep track of touches,
+  // since UITouch does not provide an identifier. 5 is the maximum number of touches
+  // an iPhone or iPad display can handle.
+  int max_touches = 5;
+  _touchIDPool = [NSMutableSet setWithCapacity:max_touches];
+  for (int i = 0; i < max_touches; i++) {
+    [_touchIDPool addObject:[NSNumber numberWithInt:i]];
+  }
 }
 
 /**
@@ -237,24 +255,79 @@ screen_size_changed() {
 }
 
 void EAGLGraphicsWindow::
-emulated_mouse_move(UITouch *touch) {
-  CGPoint location = [touch locationInView:_view];
-  _emulated_mouse_input->set_pointer_in_window(location.x * _view.layer.contentsScale,
-                                               location.y * _view.layer.contentsScale);
+touches_began(NSSet<UITouch *> *touch_set) {
+  [touch_set enumerateObjectsUsingBlock:^(UITouch *touch, BOOL *stop) {
+    NSNumber *next_id = [_touchIDPool anyObject];
+    [_touchIDPool removeObject:next_id];
+
+    objc_setAssociatedObject(touch,
+                             &touch_id_key,
+                             next_id,
+                             OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+
+    CGPoint point = [touch locationInView:_view];
+    NSLog(@"%d, %d", point.x, point.y);
+
+    PointerData &data = _input->add_pointer(PointerType::finger, [next_id intValue], _primary_touch == nil);
+    data.update(point.x, point.y, 1.0);
+
+    // PointerData data;
+    // data._id = [next_id intValue];
+    // data._type = PointerType::finger;
+    // data._xpos = point.x;
+    // data._ypos = point.y;
+    // data._pressure = 1.0;
+    // _input->update_pointer(data);
+    if (_primary_touch != nil) {
+      _primary_touch = touch;
+    }
+
+    printf("Touch %d began at %d, %d\n", [next_id intValue], point.x, point.y);
+  }];
 }
 
 void EAGLGraphicsWindow::
-emulated_mouse_down(UITouch *touch) {
-  CGPoint location = [touch locationInView:_view];
-  _emulated_mouse_input->set_pointer_in_window(location.x * _view.layer.contentsScale,
-                                               location.y * _view.layer.contentsScale);
-  _emulated_mouse_input->button_down(MouseButton::button(0));
+touches_moved(NSSet<UITouch *> *touch_set) {
+  [touch_set enumerateObjectsUsingBlock:^(UITouch *touch, BOOL *stop) {
+    NSNumber *touch_id = (NSNumber *)objc_getAssociatedObject(touch, &touch_id_key);
+
+    CGPoint point = [touch locationInView:_view];
+
+    // PointerData data;
+    // data._id = [touch_id intValue];
+    // data._xpos = point.x;
+    // data._ypos = point.y;
+    // data._pressure = 1.0;
+    _input->get_pointer([touch_id intValue]).update(point.x, point.y, 1.0);
+    //printf("Touch %d moved\n", [touch_id intValue]);
+  }];
 }
 
 void EAGLGraphicsWindow::
-emulated_mouse_up(UITouch *touch) {
-  CGPoint location = [touch locationInView:_view];
-  _emulated_mouse_input->set_pointer_in_window(location.x * _view.layer.contentsScale,
-                                               location.y * _view.layer.contentsScale);
-  _emulated_mouse_input->button_up(MouseButton::button(0));
+touches_ended(NSSet<UITouch *> *touch_set) {
+  [touch_set enumerateObjectsUsingBlock:^(UITouch *touch, BOOL *stop) {
+    NSNumber *touch_id = (NSNumber *)objc_getAssociatedObject(touch, &touch_id_key);
+    [_touchIDPool addObject:touch_id];
+    
+    objc_setAssociatedObject(touch,
+                             &touch_id_key,
+                             nil,
+                             OBJC_ASSOCIATION_ASSIGN);
+
+    PointerData &ptr = _input->get_pointer([touch_id intValue]);
+    int x = ptr.get_x();
+    int y = ptr.get_y();
+
+    _input->remove_pointer([touch_id intValue]);
+    if (_primary_touch == touch) {
+      _primary_touch = nil;
+    }
+
+    printf("Touch %d ended at %d, %d\n", [touch_id intValue], x, y);
+  }];
+}
+
+void EAGLGraphicsWindow::
+touches_cancelled(NSSet<UITouch *> *touch_set) {
+  
 }

@@ -36,15 +36,22 @@ END_PUBLISH
  * as the mouse in the GraphicsWindow.
  */
 class EXPCL_PANDA_PUTIL PointerData {
-PUBLISHED:
+  friend class PointerEvent;
+
+public:
+  PointerData() = default;
+  PointerData(int id, bool primary, PointerType type);
+
   INLINE double get_x() const;
   INLINE double get_y() const;
   INLINE bool get_in_window() const;
-
-public:
+  INLINE bool get_primary() const;
   INLINE int get_id() const;
   INLINE PointerType get_type() const;
   INLINE double get_pressure() const;
+
+  INLINE void set_in_window(bool in_window);
+  INLINE void set_pressure(double pressure);
 
   void output(std::ostream &out) const;
 
@@ -52,11 +59,16 @@ PUBLISHED:
   MAKE_PROPERTY(x, get_x);
   MAKE_PROPERTY(y, get_y);
   MAKE_PROPERTY(type, get_type);
+  MAKE_PROPERTY(primary, get_primary);
   MAKE_PROPERTY(id, get_id);
-  MAKE_PROPERTY(in_window, get_in_window);
-  MAKE_PROPERTY(pressure, get_pressure);
+  MAKE_PROPERTY(in_window, get_in_window, set_in_window);
+  MAKE_PROPERTY(pressure, get_pressure, set_pressure);
 
-public:
+  INLINE void update(double x, double y, double pressure);
+  INLINE void rel_move(double rx, double ry);
+
+protected:
+  bool _primary = false;
   bool _in_window = false;
   double _xpos = 0.0;
   double _ypos = 0.0;
