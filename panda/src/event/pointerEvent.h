@@ -17,38 +17,21 @@
 #include "pandabase.h"
 #include "pointerData.h"
 
-class Datagram;
-class DatagramIterator;
-
 /**
  * Records a pointer movement event.
  */
 class EXPCL_PANDA_EVENT PointerEvent {
 public:
-  PointerEvent() = default;
+  PointerEvent(PointerData data, double time = ClockObject::get_global_clock()->get_frame_time());
 
-  INLINE bool operator == (const PointerEvent &other) const;
-  INLINE bool operator != (const PointerEvent &other) const;
-  INLINE bool operator < (const PointerEvent &other) const;
+  // INLINE bool operator == (const PointerEvent &other) const;
+  // INLINE bool operator != (const PointerEvent &other) const;
+  // INLINE bool operator < (const PointerEvent &other) const;
 
   void output(std::ostream &out) const;
 
-  void write_datagram(Datagram &dg) const;
-  void read_datagram(DatagramIterator &scan);
-
 public:
-  bool _in_window = false;
-  int _id = 0;
-  PointerType _type = PointerType::unknown;
-  double _xpos = 0.0;
-  double _ypos = 0.0;
-  double _dx = 0.0;
-  double _dy = 0.0;
-  double _length = 0.0;
-  double _direction = 0.0;
-  double _pressure = 0.0;
-  double _rotation = 0.0;
-  int _sequence = 0;
+  PointerData _data;
   double _time = 0.0;
 };
 

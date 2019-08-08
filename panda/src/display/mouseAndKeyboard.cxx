@@ -68,13 +68,32 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &,
 
   GraphicsWindowInputDevice *device = (GraphicsWindowInputDevice *)_device.p();
 
+  if (device->has_pointer_event()) {
+    PT(PointerEventList) all_events = device->get_pointer_events();
+    PT(PointerEventList) output_events;
+
+    if (touch_emulates_mouse) {
+      output_events = new PointerEventList;
+      for (int i = 0; i < all_events->get_num_events(); i++) {
+        const PointerEvent &event = all_events->get_event(i);
+        if (event._data.get_type() == PointerType::mouse || event._data.get_primary()) {
+          if (event._data.get_pressure() > 0) {
+            device->button_down(MouseButton::one());
+          } else {
+            device->button_up(MouseButton::one());
+          }
+          output_events->add_event(event);
+        }
+      }
+    } else {
+      output_events = all_events;
+    }
+
+    output.set_data(_pointer_events_output, EventParameter(output_events));
+  }
   if (device->has_button_event()) {
     PT(ButtonEventList) bel = device->get_button_events();
     output.set_data(_button_events_output, EventParameter(bel));
-  }
-  if (device->has_pointer_event()) {
-    PT(PointerEventList) pel = device->get_pointer_events();
-    output.set_data(_pointer_events_output, EventParameter(pel));
   }
 
   // Get the window size.
@@ -89,17 +108,21 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &,
     if (device->has_pointer()) {
       PointerData mdata = device->get_pointer();
 
-      if (mdata.get_in_window()) {
-        // Get mouse motion in pixels.
-        _pixel_xy->set_value(LPoint2(mdata.get_x(), mdata.get_y()));
-        output.set_data(_pixel_xy_output, EventParameter(_pixel_xy));
+      // We're only going to use the pixel_xy and xy wires if the pointer is
+      // a mouse or is emulating a mouse.
+      if (mdata.get_type() == PointerType::mouse || touch_emulates_mouse) {
+        if (mdata.get_in_window()) {
+          // Get mouse motion in pixels.
+          _pixel_xy->set_value(LPoint2(mdata.get_x(), mdata.get_y()));
+          output.set_data(_pixel_xy_output, EventParameter(_pixel_xy));
 
-        // Normalize pixel motion to range [-1,1].
-        PN_stdfloat xf = (PN_stdfloat)(2 * mdata.get_x()) / (PN_stdfloat)w - 1.0f;
-        PN_stdfloat yf = 1.0f - (PN_stdfloat)(2 * mdata.get_y()) / (PN_stdfloat)h;
+          // Normalize pixel motion to range [-1,1].
+          PN_stdfloat xf = (PN_stdfloat)(2 * mdata.get_x()) / (PN_stdfloat)w - 1.0f;
+          PN_stdfloat yf = 1.0f - (PN_stdfloat)(2 * mdata.get_y()) / (PN_stdfloat)h;
 
-        _xy->set_value(LPoint2(xf, yf));
-        output.set_data(_xy_output, EventParameter(_xy));
+          _xy->set_value(LPoint2(xf, yf));
+          output.set_data(_xy_output, EventParameter(_xy));
+        }
       }
     }
   }

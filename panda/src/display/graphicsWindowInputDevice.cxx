@@ -172,15 +172,6 @@ set_pointer_in_window(double x, double y, double time) {
 
   pointer.update(x, y, 1.0);
   pointer.set_in_window(true);
-
-
-  // PointerData data = _pointers[0];
-  // data._id = 0;
-  // data._type = PointerType::mouse;
-  // data._xpos = x;
-  // data._ypos = y;
-  // data._in_window = true;
-  // InputDevice::update_pointer(data, time);
 }
 
 /**
@@ -199,17 +190,12 @@ set_pointer_out_of_window(double time) {
   pointer.set_pressure(0.0);
   pointer.set_in_window(false);
 
-  // _pointers[0]._in_window = false;
-  // _pointers[0]._pressure = 0.0;
-
   if (_enable_pointer_events) {
     int seq = _event_sequence++;
     if (_pointer_events.is_null()) {
       _pointer_events = new PointerEventList();
     }
-    _pointer_events->add_event(pointer.get_in_window(),
-                               pointer.get_x(),
-                               pointer.get_y(),
-                               seq, time);
+
+    _pointer_events->add_event(pointer);
   }
 }

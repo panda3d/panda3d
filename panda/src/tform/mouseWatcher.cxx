@@ -39,6 +39,8 @@ using std::string;
 
 TypeHandle MouseWatcher::_type_handle;
 
+extern ConfigVariableBool touch_emulates_mouse;
+
 /**
  *
  */
@@ -120,9 +122,9 @@ remove_region(MouseWatcherRegion *region) {
     _preferred_button_down_region = nullptr;
   }
 
-  for (auto it = _active_pointers.begin(); it != _active_pointers.end(); ++it) {
-    if (it->second._region == region) {
-      it->second._region = nullptr;
+  for (auto it = _active_regions.begin(); it != _active_regions.end(); ++it) {
+    if (it->second == region) {
+      it->second = nullptr;
     }
   }
 
@@ -912,24 +914,23 @@ throw_event_pattern(const string &pattern, const MouseWatcherRegion *region,
  * Records the indicated pointer as having made contact.
  */
 void MouseWatcher::
-pointer_down(PointerType type, int id, const LPoint2 &pos, double pressure) {
+pointer_down(const PointerData &ptr, const LPoint2 &region_pos) {
   nassertv(_lock.debug_is_locked());
 
   MouseWatcherParameter param;
   param.set_modifier_buttons(_mods);
-  param.set_mouse(pos);
+  param.set_mouse(region_pos);
   param.set_outside(false);
-  param._pressure = pressure;
-  param._pointer_id = id;
+  param._pressure = ptr.get_pressure();
+  param._pointer_id = ptr.get_id();
 
   Regions regions;
-  get_over_regions(regions, pos);
+  get_over_regions(regions, region_pos);
   MouseWatcherRegion *region = get_preferred_region(regions);
 
-  double now = ClockObject::get_global_clock()->get_frame_time();
-  _active_pointers[id] = {region, type, pressure, now};
+  _active_regions[ptr.get_id()] = region;
 
-  if (region != nullptr && type != PointerType::mouse) {
+  if (region != nullptr && ptr.get_type() != PointerType::mouse) {
     param.set_button(MouseButton::touch());
     region->press(param);
   }
@@ -939,20 +940,18 @@ pointer_down(PointerType type, int id, const LPoint2 &pos, double pressure) {
  * Records the indicated pointer as having moved.
  */
 void MouseWatcher::
-pointer_move(int id, const LPoint2 &pos, double pressure) {
+pointer_move(const PointerData &ptr, const LPoint2 &region_pos) {
   nassertv(_lock.debug_is_locked());
-
-  ActivePointer &pointer = _active_pointers[id];
 
   MouseWatcherParameter param;
   param.set_modifier_buttons(_mods);
-  param.set_mouse(pos);
-  param._pressure = pressure;
-  param._pointer_id = id;
+  param.set_mouse(region_pos);
+  param._pressure = ptr.get_pressure();
+  param._pointer_id = ptr.get_id();
 
-  pointer._max_pressure = std::max(pointer._max_pressure, pressure);
+  // pointer._max_pressure = std::max(pointer._max_pressure, pressure);
 
-  MouseWatcherRegion *region = pointer._region;
+  MouseWatcherRegion *region = _active_regions[ptr.get_id()];
   if (region != nullptr) {
     region->move(param);
   }
@@ -962,20 +961,20 @@ pointer_move(int id, const LPoint2 &pos, double pressure) {
  * Records the indicated pointer as no longer making contact.
  */
 void MouseWatcher::
-pointer_up(int id, const LPoint2 &pos) {
+pointer_up(const PointerData &ptr, const LPoint2 &region_pos) {
   nassertv(_lock.debug_is_locked());
 
-  MouseWatcherRegion *region = _active_pointers[id]._region;
-  if (region != nullptr && _active_pointers[id]._type != PointerType::mouse) {
+  MouseWatcherRegion *region = _active_regions[ptr.get_id()];
+  if (region != nullptr && ptr.get_type() != PointerType::mouse) {
     // Generate a release event.
     MouseWatcherParameter param;
     param.set_modifier_buttons(_mods);
-    param.set_mouse(pos);
+    param.set_mouse(region_pos);
     param.set_button(MouseButton::touch());
 
     // Are we still within the same region?
-    PN_stdfloat mx = (pos[0] + 1.0f) * 0.5f * (_frame[1] - _frame[0]) + _frame[0];
-    PN_stdfloat my = (pos[1] + 1.0f) * 0.5f * (_frame[3] - _frame[2]) + _frame[2];
+    PN_stdfloat mx = (region_pos[0] + 1.0f) * 0.5f * (_frame[1] - _frame[0]) + _frame[0];
+    PN_stdfloat my = (region_pos[1] + 1.0f) * 0.5f * (_frame[3] - _frame[2]) + _frame[2];
 
     const LVecBase4 &frame = region->get_frame();
     if (region->get_active() &&
@@ -987,7 +986,7 @@ pointer_up(int id, const LPoint2 &pos) {
       param.set_outside(true);
     }
 
-    param._pointer_id = id;
+    param._pointer_id = ptr.get_id();
     region->release(param);
   }
 }
@@ -1414,45 +1413,41 @@ do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
     }
   }
 
-  // Code for recording the mouse trail.
-  _num_trail_recent = 0;
   if (input.has_data(_pointer_events_input)) {
     const PointerEventList *this_pointer_events;
     DCAST_INTO_V(this_pointer_events, input.get_data(_pointer_events_input).get_ptr());
 
     for (size_t i = 0; i < this_pointer_events->get_num_events(); ++i) {
       const PointerEvent &event = this_pointer_events->get_event(i);
-      auto it = _active_pointers.find(event._id);
+      auto it = _active_regions.find(event._data.get_id());
 
       // Determine the position in the -1..1 range.
       LVecBase2 size = _pixel_size->get_value();
-      LPoint2 pos((PN_stdfloat)(2 * event._xpos) / size[0] - 1.0f,
-                  1.0f - (PN_stdfloat)(2 * event._ypos) / size[1]);
+      LPoint2 pos((PN_stdfloat)(2 * event._data.get_x()) / size[0] - 1.0f,
+                  1.0f - (PN_stdfloat)(2 * event._data.get_y()) / size[1]);
 
-      if (event._pressure > 0.0) {
-        if (it == _active_pointers.end()) {
-          pointer_down(event._type, event._id, pos, event._pressure);
+      if (event._data.get_pressure() > 0.0) {
+        if (it == _active_regions.end()) {
+          pointer_down(event._data, pos);
         } else {
-          pointer_move(event._id, pos, event._pressure);
+          pointer_move(event._data, pos);
         }
-      } else if (it != _active_pointers.end()) {
-        pointer_up(event._id, pos);
-        _active_pointers.erase(it);
+      } else if (it != _active_regions.end()) {
+        pointer_up(event._data, pos);
+        _active_regions.erase(it);
       }
     }
 
+     // Code for recording the mouse trail.
+    _num_trail_recent = 0;
     if (_trail_log_duration > 0.0) {
       _num_trail_recent = this_pointer_events->get_num_events();
       for (size_t i = 0; i < _num_trail_recent; i++) {
-        bool in_win = this_pointer_events->get_in_window(i);
-        int xpos = this_pointer_events->get_xpos(i);
-        int ypos = this_pointer_events->get_ypos(i);
-        int sequence = this_pointer_events->get_sequence(i);
-        double time = this_pointer_events->get_time(i);
-        _trail_log->add_event(in_win, xpos, ypos, sequence, time);
+        _trail_log->add_event(this_pointer_events->get_event(i));
       }
     }
   }
+
   if (_trail_log->get_num_events() > 0) {
     discard_excess_trail_log();
     update_trail_node();

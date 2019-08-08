@@ -76,104 +76,109 @@ write(std::ostream &out, int indent_level) const {
   }
 }
 
+void PointerEventList::
+add_event(const PointerEvent &event) {
+  _events.push_back(event);
+}
+
 /**
  * Adds a new event from the given PointerData object.
  */
 void PointerEventList::
-add_event(const PointerData &data, int seq, double time) {
-  PointerEvent pe;
-  pe._in_window = data._in_window;
-  pe._type = data._type;
-  pe._id = data._id;
-  pe._xpos = data._xpos;
-  pe._ypos = data._ypos;
-  pe._pressure = data._pressure;
-  pe._sequence = seq;
-  pe._time = time;
-  if (_events.size() > 0) {
-    pe._dx = data._xpos - _events.back()._xpos;
-    pe._dy = data._ypos - _events.back()._ypos;
-    double ddx = pe._dx;
-    double ddy = pe._dy;
-    pe._length = csqrt(ddx*ddx + ddy*ddy);
-    if (pe._length > 0.0) {
-      pe._direction = normalize_angle(rad_2_deg(catan2(-ddy,ddx)));
-    } else {
-      pe._direction = _events.back()._direction;
-    }
-    pe._rotation = delta_angle(_events.back()._direction, pe._direction);
-  } else {
-    pe._dx = 0;
-    pe._dy = 0;
-    pe._length = 0.0;
-    pe._direction = 0.0;
-    pe._rotation = 0.0;
-  }
-  _events.push_back(pe);
+add_event(const PointerData &data, double time) {
+  // PointerEvent pe;
+  // pe._in_window = data.get_in_window();
+  // pe._type = data.get_type();
+  // pe._id = data.get_id();
+  // pe._xpos = data.get_x();
+  // pe._ypos = data.get_y();
+  // pe._pressure = data.get_pressure();
+  // pe._sequence = seq;
+  // pe._time = time;
+  // if (_events.size() > 0) {
+  //   pe._dx = data._xpos - _events.back()._xpos;
+  //   pe._dy = data._ypos - _events.back()._ypos;
+  //   double ddx = pe._dx;
+  //   double ddy = pe._dy;
+  //   pe._length = csqrt(ddx*ddx + ddy*ddy);
+  //   if (pe._length > 0.0) {
+  //     pe._direction = normalize_angle(rad_2_deg(catan2(-ddy,ddx)));
+  //   } else {
+  //     pe._direction = _events.back()._direction;
+  //   }
+  //   pe._rotation = delta_angle(_events.back()._direction, pe._direction);
+  // } else {
+  //   pe._dx = 0;
+  //   pe._dy = 0;
+  //   pe._length = 0.0;
+  //   pe._direction = 0.0;
+  //   pe._rotation = 0.0;
+  // }
+  _events.push_back(PointerEvent(data, time));
 }
 
 /**
  * Adds a new event to the end of the list.  Automatically calculates the dx,
  * dy, length, direction, and rotation for all but the first event.
  */
-void PointerEventList::
-add_event(bool in_win, int xpos, int ypos, int seq, double time) {
-  PointerEvent pe;
-  pe._in_window = in_win;
-  pe._xpos = xpos;
-  pe._ypos = ypos;
-  pe._sequence = seq;
-  pe._time = time;
-  if (_events.size() > 0) {
-    pe._dx = xpos - _events.back()._xpos;
-    pe._dy = ypos - _events.back()._ypos;
-    double ddx = pe._dx;
-    double ddy = pe._dy;
-    pe._length = csqrt(ddx*ddx + ddy*ddy);
-    if (pe._length > 0.0) {
-      pe._direction = normalize_angle(rad_2_deg(catan2(-ddy,ddx)));
-    } else {
-      pe._direction = _events.back()._direction;
-    }
-    pe._rotation = delta_angle(_events.back()._direction, pe._direction);
-  } else {
-    pe._dx = 0;
-    pe._dy = 0;
-    pe._length = 0.0;
-    pe._direction = 0.0;
-    pe._rotation = 0.0;
-  }
-  _events.push_back(pe);
-}
+// void PointerEventList::
+// add_event(bool in_win, int xpos, int ypos, int seq, double time) {
+//   PointerEvent pe;
+//   pe._in_window = in_win;
+//   pe._xpos = xpos;
+//   pe._ypos = ypos;
+//   pe._sequence = seq;
+//   pe._time = time;
+//   // if (_events.size() > 0) {
+//   //   pe._dx = xpos - _events.back()._xpos;
+//   //   pe._dy = ypos - _events.back()._ypos;
+//   //   double ddx = pe._dx;
+//   //   double ddy = pe._dy;
+//   //   pe._length = csqrt(ddx*ddx + ddy*ddy);
+//   //   if (pe._length > 0.0) {
+//   //     pe._direction = normalize_angle(rad_2_deg(catan2(-ddy,ddx)));
+//   //   } else {
+//   //     pe._direction = _events.back()._direction;
+//   //   }
+//   //   pe._rotation = delta_angle(_events.back()._direction, pe._direction);
+//   // } else {
+//   //   pe._dx = 0;
+//   //   pe._dy = 0;
+//   //   pe._length = 0.0;
+//   //   pe._direction = 0.0;
+//   //   pe._rotation = 0.0;
+//   // }
+//   _events.push_back(pe);
+// }
 
 /**
  * Adds a new event to the end of the list based on the given mouse movement.
  */
-void PointerEventList::
-add_event(bool in_win, int xpos, int ypos, double xdelta, double ydelta, int seq, double time) {
-  PointerEvent pe;
-  pe._in_window = in_win;
-  pe._xpos = xpos;
-  pe._ypos = ypos;
-  pe._dx = xdelta;
-  pe._dy = ydelta;
-  pe._sequence = seq;
-  pe._time = time;
-  pe._length = csqrt(xdelta*xdelta + ydelta*ydelta);
-  if (pe._length > 0.0) {
-    pe._direction = normalize_angle(rad_2_deg(catan2(-ydelta,xdelta)));
-  } else if (!_events.empty()) {
-    pe._direction = _events.back()._direction;
-  } else {
-    pe._direction = 0.0;
-  }
-  if (!_events.empty()) {
-    pe._rotation = delta_angle(_events.back()._direction, pe._direction);
-  } else {
-    pe._rotation = 0.0;
-  }
-  _events.push_back(pe);
-}
+// void PointerEventList::
+// add_event(bool in_win, int xpos, int ypos, double xdelta, double ydelta, int seq, double time) {
+//   PointerEvent pe;
+//   pe._in_window = in_win;
+//   pe._xpos = xpos;
+//   pe._ypos = ypos;
+//   pe._dx = xdelta;
+//   pe._dy = ydelta;
+//   pe._sequence = seq;
+//   pe._time = time;
+//   pe._length = csqrt(xdelta*xdelta + ydelta*ydelta);
+//   if (pe._length > 0.0) {
+//     pe._direction = normalize_angle(rad_2_deg(catan2(-ydelta,xdelta)));
+//   } else if (!_events.empty()) {
+//     pe._direction = _events.back()._direction;
+//   } else {
+//     pe._direction = 0.0;
+//   }
+//   if (!_events.empty()) {
+//     pe._rotation = delta_angle(_events.back()._direction, pe._direction);
+//   } else {
+//     pe._rotation = 0.0;
+//   }
+//   _events.push_back(pe);
+// }
 
 /**
  * Returns true if the trail loops around the specified point.
@@ -185,13 +190,13 @@ encircles(int x, int y) const {
     return false;
   }
   int last = tot_events-1;
-  double dx = _events[last]._xpos - x;
-  double dy = _events[last]._ypos - y;
+  double dx = _events[last]._data.get_x() - x;
+  double dy = _events[last]._data.get_y() - y;
   double lastang = rad_2_deg(catan2(dy, dx));
   double total = 0.0;
   for (int i=last; (i>=0) && (total < 360.0) && (total > -360.0); i--) {
-    dx = _events[i]._xpos - x;
-    dy = _events[i]._ypos - y;
+    dx = _events[i]._data.get_x() - x;
+    dy = _events[i]._data.get_y() - y;
     if ((dx==0.0)&&(dy==0.0)) {
       continue;
     }
@@ -212,18 +217,18 @@ encircles(int x, int y) const {
  * relatively straight line, a large number means that the trail is zig-
  * zagging or spinning.  The result is in degrees.
  */
-double PointerEventList::
-total_turns(double sec) const {
-  double old = ClockObject::get_global_clock()->get_frame_time() - sec;
-  int pos = _events.size()-1;
-  double tot = 0.0;
-  while ((pos >= 0)&&(_events[pos]._time >= old)) {
-    double rot = _events[pos]._rotation;
-    if (rot < 0.0) rot = -rot;
-    tot += rot;
-  }
-  return tot;
-}
+// double PointerEventList::
+// total_turns(double sec) const {
+//   double old = ClockObject::get_global_clock()->get_frame_time() - sec;
+//   int pos = _events.size()-1;
+//   double tot = 0.0;
+//   while ((pos >= 0)&&(_events[pos]._time >= old)) {
+//     double rot = _events[pos]._rotation;
+//     if (rot < 0.0) rot = -rot;
+//     tot += rot;
+//   }
+//   return tot;
+// }
 
 /**
  * This function is not implemented yet.  It is a work in progress.  The

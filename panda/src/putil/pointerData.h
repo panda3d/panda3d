@@ -36,7 +36,6 @@ END_PUBLISH
  * as the mouse in the GraphicsWindow.
  */
 class EXPCL_PANDA_PUTIL PointerData {
-  friend class PointerEvent;
 
 public:
   PointerData() = default;
@@ -69,7 +68,7 @@ PUBLISHED:
 
 protected:
   bool _primary = false;
-  bool _in_window = false;
+  bool _in_window = true;
   double _xpos = 0.0;
   double _ypos = 0.0;
   double _pressure = 0.0;

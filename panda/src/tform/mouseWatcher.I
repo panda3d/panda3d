@@ -152,7 +152,7 @@ is_button_down(ButtonHandle button) const {
  */
 INLINE bool MouseWatcher::
 is_pointer_down(int id) const {
-  return _active_pointers.find(id) != _active_pointers.end();
+  return _active_regions.find(id) != _active_regions.end();
 }
 
 /**

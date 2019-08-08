@@ -12,30 +12,20 @@
  */
 
 #include "pointerEvent.h"
-#include "datagram.h"
-#include "datagramIterator.h"
+
+PointerEvent::
+PointerEvent(PointerData data, double time) :
+  _data(data),
+  _time(time)
+{
+
+}
 
 /**
  *
  */
 void PointerEvent::
 output(std::ostream &out) const {
-  out << (_in_window ? "In@" : "Out@")
-      << _xpos << "," << _ypos << " ";
-}
-
-/**
- * Writes the event into a datagram.
- */
-void PointerEvent::
-write_datagram(Datagram &dg) const {
-  nassert_raise("This function not implemented yet.");
-}
-
-/**
- * Restores the event from the datagram.
- */
-void PointerEvent::
-read_datagram(DatagramIterator &scan) {
-  nassert_raise("This function not implemented yet.");
+  out << (_data.get_in_window() ? "In@" : "Out@")
+      << _data.get_x() << "," << _data.get_y() << " ";
 }

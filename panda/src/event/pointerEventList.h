@@ -38,23 +38,25 @@ PUBLISHED:
   INLINE bool   get_in_window(size_t n) const;
   INLINE int    get_xpos(size_t n) const;
   INLINE int    get_ypos(size_t n) const;
-  INLINE double get_dx(size_t n) const;
-  INLINE double get_dy(size_t n) const;
-  INLINE int    get_sequence(size_t n) const;
-  INLINE double get_length(size_t n) const;
-  INLINE double get_direction(size_t n) const;
-  INLINE double get_rotation(size_t n) const;
+  // INLINE double get_dx(size_t n) const;
+  // INLINE double get_dy(size_t n) const;
+  // INLINE int    get_sequence(size_t n) const;
+  // INLINE double get_length(size_t n) const;
+  // INLINE double get_direction(size_t n) const;
+  // INLINE double get_rotation(size_t n) const;
   INLINE double get_time(size_t n) const;
 
   INLINE void   clear();
   INLINE void   pop_front();
-  void add_event(const PointerData &data, int seq, double time);
-  void add_event(bool in_win, int xpos, int ypos, int seq, double time);
-  void add_event(bool in_win, int xpos, int ypos, double xdelta, double ydelta,
-                 int seq, double time);
+
+  void add_event(const PointerEvent &event);
+  void add_event(const PointerData &data, double time);
+  // void add_event(bool in_win, int xpos, int ypos, int seq, double time);
+  // void add_event(bool in_win, int xpos, int ypos, double xdelta, double ydelta,
+  //                int seq, double time);
 
   bool   encircles(int x, int y) const;
-  double total_turns(double sec) const;
+  // double total_turns(double sec) const;
   double match_pattern(const std::string &pattern, double rot, double seglen);
 
 public:

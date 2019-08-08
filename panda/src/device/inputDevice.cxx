@@ -188,9 +188,8 @@ remove_pointer(int id) {
   if (pointer.get_pressure() != 0.0) {
     pointer.set_pressure(0.0);
     if (_enable_pointer_events) {
-      int seq = _event_sequence++;
       double time = ClockObject::get_global_clock()->get_frame_time();
-      _pointer_events->add_event(pointer, seq, time);
+      _pointer_events->add_event(pointer, time);
     }
   }
 }
@@ -203,8 +202,7 @@ pointer_moved_absolute(int id, double x, double y, double pressure, double time)
   pointer.update(x, y, pressure);
 
   if (_enable_pointer_events) {
-    int seq = _event_sequence++;
-    _pointer_events->add_event(pointer, seq, time);
+    _pointer_events->add_event(pointer, time);
   }
 }
 
@@ -224,8 +222,7 @@ pointer_moved(int id, double x, double y, double time) {
   pointer.rel_move(x, y);
 
   if (_enable_pointer_events) {
-    int seq = _event_sequence++;
-    _pointer_events->add_event(pointer, seq, time);
+    _pointer_events->add_event(pointer, time);
   }
 }
 

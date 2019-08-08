@@ -267,18 +267,12 @@ touches_began(NSSet<UITouch *> *touch_set) {
 
     CGPoint point = [touch locationInView:_view];
     NSLog(@"%d, %d", point.x, point.y);
+    float scale = _view.layer.contentsScale;
 
     PointerData &data = _input->add_pointer(PointerType::finger, [next_id intValue], _primary_touch == nil);
-    data.update(point.x, point.y, 1.0);
+    data.update(point.x * scale, point.y * scale, 1.0);
 
-    // PointerData data;
-    // data._id = [next_id intValue];
-    // data._type = PointerType::finger;
-    // data._xpos = point.x;
-    // data._ypos = point.y;
-    // data._pressure = 1.0;
-    // _input->update_pointer(data);
-    if (_primary_touch != nil) {
+    if (_primary_touch == nil) {
       _primary_touch = touch;
     }
 
@@ -292,14 +286,9 @@ touches_moved(NSSet<UITouch *> *touch_set) {
     NSNumber *touch_id = (NSNumber *)objc_getAssociatedObject(touch, &touch_id_key);
 
     CGPoint point = [touch locationInView:_view];
+    float scale = _view.layer.contentsScale;
 
-    // PointerData data;
-    // data._id = [touch_id intValue];
-    // data._xpos = point.x;
-    // data._ypos = point.y;
-    // data._pressure = 1.0;
-    _input->get_pointer([touch_id intValue]).update(point.x, point.y, 1.0);
-    //printf("Touch %d moved\n", [touch_id intValue]);
+    _input->pointer_moved_absolute([touch_id intValue], point.x * scale, point.y * scale, 1.0);
   }];
 }
 

@@ -478,6 +478,9 @@ ConfigVariableBool sync_video
           "cheesy estimate of scene complexity.  Some drivers may ignore "
           "this request."));
 
+ConfigVariableBool touch_emulates_mouse
+("touch-emulates-mouse", true);
+
 /**
  * Initializes the library.  This must be called at least once before any of
  * the functions or classes in this library can be used.  Normally it will be
