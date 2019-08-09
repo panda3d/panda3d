@@ -19,6 +19,7 @@
 #include "buttonHandle.h"
 #include "modifierButtons.h"
 #include "textEncoder.h"
+#include "pointerData.h"
 #include "luse.h"
 
 /**
@@ -40,11 +41,11 @@ public:
                             size_t higlight_end,
                             size_t cursor_pos);
   INLINE void set_modifier_buttons(const ModifierButtons &mods);
-  INLINE void set_mouse(const LPoint2 &mouse);
-  INLINE void set_outside(bool flag);
 
-  INLINE int get_pointer_id() const;
-  INLINE int get_pressure() const;
+  INLINE void set_mouse(const LPoint2 &mouse);
+  INLINE void set_pointer(const PointerData &pointer);
+  INLINE void set_region_pos(const LPoint2 &pos);
+  INLINE void set_outside(bool flag);
 
 PUBLISHED:
   INLINE bool has_button() const;
@@ -79,8 +80,6 @@ PUBLISHED:
   MAKE_PROPERTY2(button, has_button, get_button);
   MAKE_PROPERTY(modifier_buttons, get_modifier_buttons);
   MAKE_PROPERTY2(keycode, has_keycode, get_keycode);
-  MAKE_PROPERTY2(pointer_id, has_mouse, get_pointer_id);
-  MAKE_PROPERTY(pressure, get_pressure);
 
 public:
   ButtonHandle _button = ButtonHandle::none();
@@ -91,8 +90,8 @@ public:
   size_t _cursor_pos;
   ModifierButtons _mods;
   LPoint2 _mouse;
-  int _pointer_id = 0;
-  double _pressure = 0.0;
+
+  PointerData _pointer;
 
   enum Flags {
     F_has_button    = 0x001,
@@ -103,6 +102,9 @@ public:
     F_is_keyrepeat  = 0x020,
   };
   int _flags;
+
+protected:
+  bool _has_pointer;
 };
 
 INLINE std::ostream &operator << (std::ostream &out, const MouseWatcherParameter &parm);

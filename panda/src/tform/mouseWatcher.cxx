@@ -921,8 +921,7 @@ pointer_down(const PointerData &ptr, const LPoint2 &region_pos) {
   param.set_modifier_buttons(_mods);
   param.set_mouse(region_pos);
   param.set_outside(false);
-  param._pressure = ptr.get_pressure();
-  param._pointer_id = ptr.get_id();
+  param.set_pointer(ptr);
 
   Regions regions;
   get_over_regions(regions, region_pos);
@@ -931,7 +930,7 @@ pointer_down(const PointerData &ptr, const LPoint2 &region_pos) {
   _active_regions[ptr.get_id()] = region;
 
   if (region != nullptr && ptr.get_type() != PointerType::mouse) {
-    param.set_button(MouseButton::touch());
+    param.set_button(MouseButton::one());
     region->press(param);
   }
 }
@@ -946,8 +945,7 @@ pointer_move(const PointerData &ptr, const LPoint2 &region_pos) {
   MouseWatcherParameter param;
   param.set_modifier_buttons(_mods);
   param.set_mouse(region_pos);
-  param._pressure = ptr.get_pressure();
-  param._pointer_id = ptr.get_id();
+  param.set_pointer(ptr);
 
   // pointer._max_pressure = std::max(pointer._max_pressure, pressure);
 
@@ -970,7 +968,8 @@ pointer_up(const PointerData &ptr, const LPoint2 &region_pos) {
     MouseWatcherParameter param;
     param.set_modifier_buttons(_mods);
     param.set_mouse(region_pos);
-    param.set_button(MouseButton::touch());
+    param.set_button(MouseButton::one());
+    param.set_pointer(ptr);
 
     // Are we still within the same region?
     PN_stdfloat mx = (region_pos[0] + 1.0f) * 0.5f * (_frame[1] - _frame[0]) + _frame[0];
@@ -985,8 +984,7 @@ pointer_up(const PointerData &ptr, const LPoint2 &region_pos) {
     } else {
       param.set_outside(true);
     }
-
-    param._pointer_id = ptr.get_id();
+    
     region->release(param);
   }
 }
@@ -1002,7 +1000,6 @@ move() {
   MouseWatcherParameter param;
   param.set_modifier_buttons(_mods);
   param.set_mouse(_mouse);
-  param._pressure = 1.0;
 
   if (_preferred_button_down_region != nullptr) {
     _preferred_button_down_region->move(param);
@@ -1021,7 +1018,6 @@ press(ButtonHandle button, bool keyrepeat) {
   param.set_keyrepeat(keyrepeat);
   param.set_modifier_buttons(_mods);
   param.set_mouse(_mouse);
-  param._pressure = 1.0;
 
   if (MouseButton::is_mouse_button(button)) {
     // Mouse buttons are inextricably linked to the mouse position.
@@ -1073,7 +1069,6 @@ release(ButtonHandle button) {
   param.set_button(button);
   param.set_modifier_buttons(_mods);
   param.set_mouse(_mouse);
-  param._pressure = 0.0;
 
   if (MouseButton::is_mouse_button(button)) {
     // Button up.  Send the up event associated with the region(s) we were
@@ -1115,7 +1110,6 @@ keystroke(int keycode) {
   param.set_keycode(keycode);
   param.set_modifier_buttons(_mods);
   param.set_mouse(_mouse);
-  param._pressure = 1.0;
 
   // Make sure there are no duplicates in the regions vector.
   if (!_sorted) {

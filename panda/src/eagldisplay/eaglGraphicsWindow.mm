@@ -269,14 +269,12 @@ touches_began(NSSet<UITouch *> *touch_set) {
     NSLog(@"%d, %d", point.x, point.y);
     float scale = _view.layer.contentsScale;
 
-    PointerData &data = _input->add_pointer(PointerType::finger, [next_id intValue], _primary_touch == nil);
-    data.update(point.x * scale, point.y * scale, 1.0);
+    _input->add_pointer(PointerType::finger, [next_id intValue], _primary_touch == nil);
+    _input->update_pointer([next_id intValue], point.x * scale, point.y * scale, 1.0, PointerPhase::began);
 
     if (_primary_touch == nil) {
       _primary_touch = touch;
     }
-
-    printf("Touch %d began at %d, %d\n", [next_id intValue], point.x, point.y);
   }];
 }
 
@@ -288,7 +286,7 @@ touches_moved(NSSet<UITouch *> *touch_set) {
     CGPoint point = [touch locationInView:_view];
     float scale = _view.layer.contentsScale;
 
-    _input->pointer_moved_absolute([touch_id intValue], point.x * scale, point.y * scale, 1.0);
+    _input->update_pointer([touch_id intValue], point.x * scale, point.y * scale, 1.0, PointerPhase::moved);
   }];
 }
 
@@ -304,15 +302,12 @@ touches_ended(NSSet<UITouch *> *touch_set) {
                              OBJC_ASSOCIATION_ASSIGN);
 
     PointerData &ptr = _input->get_pointer([touch_id intValue]);
-    int x = ptr.get_x();
-    int y = ptr.get_y();
+    ptr.set_phase(PointerPhase::ended);
 
     _input->remove_pointer([touch_id intValue]);
     if (_primary_touch == touch) {
       _primary_touch = nil;
     }
-
-    printf("Touch %d ended at %d, %d\n", [touch_id intValue], x, y);
   }];
 }
 

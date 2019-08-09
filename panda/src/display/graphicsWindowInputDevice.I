@@ -56,12 +56,6 @@ pointer_moved(int id, double x, double y, double time) {
   InputDevice::pointer_moved(id, x, y, time);
 }
 
-INLINE void GraphicsWindowInputDevice::
-pointer_moved_absolute(int id, double x, double y, double pressure, double time) {
-  LightMutexHolder holder(_lock);
-  InputDevice::pointer_moved_absolute(id, x, y, pressure, time);
-}
-
 /**
  * To be called by a particular kind of GraphicsWindow to indicate that the
  * pointer no longer exists.
@@ -70,4 +64,16 @@ INLINE void GraphicsWindowInputDevice::
 remove_pointer(int id) {
   LightMutexHolder holder(_lock);
   InputDevice::remove_pointer(id);
+}
+
+INLINE void GraphicsWindowInputDevice::
+update_pointer(int id, double x, double y, double pressure, PointerPhase phase) {
+  LightMutexHolder holder(_lock);
+  InputDevice::update_pointer(id, x, y, pressure, phase);
+}
+
+INLINE bool GraphicsWindowInputDevice::
+get_pointer_in_window() {
+  LightMutexHolder holder(_lock);
+  return _pointers.find(0) != _pointers.end();
 }

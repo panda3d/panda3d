@@ -61,8 +61,10 @@ PUBLISHED:
   INLINE PointerData& add_pointer(PointerType type, int id, bool primary = false);
   INLINE void pointer_moved(double x, double y, double time = ClockObject::get_global_clock()->get_frame_time());
   INLINE void pointer_moved(int id, double x, double y, double time = ClockObject::get_global_clock()->get_frame_time());
-  INLINE void pointer_moved_absolute(int id, double x, double y, double pressure, double time = ClockObject::get_global_clock()->get_frame_time());
+  INLINE void update_pointer(int id, double x, double y, double pressure, PointerPhase phase);
   INLINE void remove_pointer(int id);
+
+  INLINE bool get_pointer_in_window();
 
 private:
   typedef pset<ButtonHandle> ButtonsHeld;

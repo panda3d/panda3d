@@ -22,7 +22,6 @@ ButtonHandle MouseButton::_wheel_up;
 ButtonHandle MouseButton::_wheel_down;
 ButtonHandle MouseButton::_wheel_left;
 ButtonHandle MouseButton::_wheel_right;
-ButtonHandle MouseButton::_touch;
 
 /**
  * Returns the ButtonHandle associated with the particular numbered mouse
@@ -112,15 +111,6 @@ ButtonHandle MouseButton::
 wheel_right() {
   return _wheel_right;
 }
-
-/**
- * Returns the ButtonHandle generated when a finger touches the screen.
- */
-ButtonHandle MouseButton::
-touch() {
-  return _touch;
-}
-
 /**
  * Returns true if the indicated ButtonHandle is a mouse button, false if it
  * is some other kind of button.
@@ -155,5 +145,4 @@ init_mouse_buttons() {
   ButtonRegistry::ptr()->register_button(_wheel_down, "wheel_down");
   ButtonRegistry::ptr()->register_button(_wheel_left, "wheel_left");
   ButtonRegistry::ptr()->register_button(_wheel_right, "wheel_right");
-  ButtonRegistry::ptr()->register_button(_touch, "touch");
 }

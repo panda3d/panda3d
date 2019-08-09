@@ -101,11 +101,11 @@ class DirectButton(DirectFrame):
 
         # Tapping with the finger
         if DGG.TOUCH in self['commandButtons']:
-            self.guiItem.addClickButton(MouseButton.touch())
+            # self.guiItem.addClickButton(MouseButton.touch())
             self.bind(DGG.TOUCHCLICK, self.commandFunc)
         else:
             self.unbind(DGG.TOUCHCLICK)
-            self.guiItem.removeClickButton(MouseButton.touch())
+            # self.guiItem.removeClickButton(MouseButton.touch())
 
     def commandFunc(self, event):
         if self['command']:

@@ -22,14 +22,15 @@ PointerData(int id, bool primary, PointerType type) :
 
 }
 
+PointerData PointerData::
+make_primary_mouse() {
+  return PointerData(0, true, PointerType::mouse);
+}
+
 /**
  *
  */
 void PointerData::
 output(std::ostream &out) const {
-  if (!_in_window) {
-    out << "PointerData: Not in window";
-  } else {
-    out << "PointerData: (" << _xpos << ", " << _ypos << ")";
-  }
+  out << "PointerData: (" << _xpos << ", " << _ypos << ")";
 }

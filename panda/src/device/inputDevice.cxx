@@ -158,6 +158,16 @@ get_pointer(int id) {
   }
 }
 
+/**
+ * Add an event that will eventually be sent down the data graph.
+ */
+void InputDevice::
+throw_event(const PointerData &data) {
+  if (_enable_pointer_events) {
+    double time = ClockObject::get_global_clock()->get_frame_time();
+    _pointer_events->add_event(data, time);
+  }
+}
 
 /**
  * Records that a new pointer was found.
@@ -177,6 +187,18 @@ add_pointer(PointerType type, int id, bool primary) {
 }
 
 /**
+ * Updates a pointer. Use this instead of PointerData::update if you want to
+ * throw an event.
+ */
+void InputDevice::
+update_pointer(int id, double x, double y, double pressure, PointerPhase phase) {
+  PointerData &pointer = _pointers.at(id);
+
+  pointer.update(x, y, pressure, phase);
+  throw_event(pointer);
+}
+
+/**
  * Removes a previously added pointer.  If the current pressure is not zero,
  * it will generate an event doing so.
  */
@@ -185,25 +207,9 @@ remove_pointer(int id) {
   assert(_lock.debug_is_locked());
 
   PointerData &pointer = _pointers.at(id);
-  if (pointer.get_pressure() != 0.0) {
-    pointer.set_pressure(0.0);
-    if (_enable_pointer_events) {
-      double time = ClockObject::get_global_clock()->get_frame_time();
-      _pointer_events->add_event(pointer, time);
-    }
-  }
-}
+  pointer.set_pressure(0.0);
 
-void InputDevice::
-pointer_moved_absolute(int id, double x, double y, double pressure, double time) {
-  assert(_lock.debug_is_locked());
-
-  PointerData &pointer = _pointers.at(id);
-  pointer.update(x, y, pressure);
-
-  if (_enable_pointer_events) {
-    _pointer_events->add_event(pointer, time);
-  }
+  throw_event(pointer);
 }
 
 /**

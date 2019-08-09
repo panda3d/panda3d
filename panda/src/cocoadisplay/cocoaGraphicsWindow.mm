@@ -998,7 +998,7 @@ set_properties_now(WindowProperties &properties) {
 
   if (properties.has_cursor_hidden()) {
     if (properties.get_cursor_hidden() != _properties.get_cursor_hidden()) {
-      if (properties.get_cursor_hidden() && _input->get_pointer().get_in_window()) {
+      if (properties.get_cursor_hidden() && _input->get_pointer_in_window()) {
         [NSCursor hide];
         _mouse_hidden = true;
       } else if (_mouse_hidden) {
@@ -1731,7 +1731,7 @@ handle_mouse_moved_event(bool in_window, double x, double y, bool absolute) {
 
   if (absolute) {
     if (cocoadisplay_cat.is_spam()) {
-      if (in_window != _input->get_pointer().get_in_window()) {
+      if (in_window != _input->get_pointer_in_window()) {
         if (in_window) {
           cocoadisplay_cat.spam() << "Mouse pointer entered window\n";
         } else {

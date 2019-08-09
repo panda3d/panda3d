@@ -29,6 +29,18 @@ enum class PointerType {
   stylus,
   eraser,
 };
+
+/**
+ * The current "phase" of the pointer's lifecycle.
+ */
+enum class PointerPhase {
+  began, // made contact with the screen during the last frame
+  moved, // continued interaction with the screen
+  ended, // contact ended normally by lifting the pointer or leaving the window.
+  cancelled, // contact was interrupted
+  hover, // For pointers that don't make contact with the screen; indicates
+         // the primary button is not being pressed.
+};
 END_PUBLISH
 
 /**
@@ -41,16 +53,19 @@ public:
   PointerData() = default;
   PointerData(int id, bool primary, PointerType type);
 
+  static PointerData make_primary_mouse();
+
   INLINE double get_x() const;
   INLINE double get_y() const;
-  INLINE bool get_in_window() const;
   INLINE bool get_primary() const;
   INLINE int get_id() const;
   INLINE PointerType get_type() const;
   INLINE double get_pressure() const;
+  INLINE PointerPhase get_phase() const;
 
-  INLINE void set_in_window(bool in_window);
+  INLINE void set_type(PointerType type);
   INLINE void set_pressure(double pressure);
+  INLINE void set_phase(PointerPhase phase);
 
   void output(std::ostream &out) const;
 
@@ -60,20 +75,34 @@ PUBLISHED:
   MAKE_PROPERTY(type, get_type);
   MAKE_PROPERTY(primary, get_primary);
   MAKE_PROPERTY(id, get_id);
-  MAKE_PROPERTY(in_window, get_in_window, set_in_window);
   MAKE_PROPERTY(pressure, get_pressure, set_pressure);
 
-  INLINE void update(double x, double y, double pressure);
+  INLINE void update(double x, double y, double pressure, PointerPhase phase);
   INLINE void rel_move(double rx, double ry);
 
 protected:
+  int _id = 0;
+
+  /**
+   * The primary pointer is what interacts with UI elements and emulates the
+   * mouse, if applicable. In the case of touch, this is usually the first
+   * finger that makes contact with the screen.
+   */
   bool _primary = false;
-  bool _in_window = true;
+
+  /**
+   * The pressure of the pointer's contact with the screen. This is really only
+   * meaningful for a touchscreen or graphics tablet. For other types of pointer,
+   * this will only be 0.0 or 1.0 when one of the primary buttons are being
+   * pressed.
+   */
+  double _pressure = 0.0;
+
   double _xpos = 0.0;
   double _ypos = 0.0;
-  double _pressure = 0.0;
+
   PointerType _type = PointerType::unknown;
-  int _id = 0;
+  PointerPhase _phase = PointerPhase::hover;
 };
 
 INLINE std::ostream &operator << (std::ostream &out, const PointerData &md);

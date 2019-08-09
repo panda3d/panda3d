@@ -26,6 +26,5 @@ PointerEvent(PointerData data, double time) :
  */
 void PointerEvent::
 output(std::ostream &out) const {
-  out << (_data.get_in_window() ? "In@" : "Out@")
-      << _data.get_x() << "," << _data.get_y() << " ";
+  out << "In@" << _data.get_x() << "," << _data.get_y() << " ";
 }

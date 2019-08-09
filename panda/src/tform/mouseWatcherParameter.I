@@ -28,7 +28,7 @@ MouseWatcherParameter(const MouseWatcherParameter &copy) :
   _button(copy._button),
   _keycode(copy._keycode),
   _mods(copy._mods),
-  _mouse(copy._mouse),
+  _pointer(copy._pointer),
   _flags(copy._flags)
 {
 }
@@ -41,7 +41,7 @@ operator = (const MouseWatcherParameter &copy) {
   _button = copy._button;
   _keycode = copy._keycode;
   _mods = copy._mods;
-  _mouse = copy._mouse;
+  _pointer = copy._pointer;
   _flags = copy._flags;
 }
 
@@ -50,6 +50,7 @@ operator = (const MouseWatcherParameter &copy) {
  */
 INLINE MouseWatcherParameter::
 ~MouseWatcherParameter() {
+
 }
 
 /**
@@ -107,6 +108,14 @@ set_modifier_buttons(const ModifierButtons &mods) {
   _mods = mods;
 }
 
+INLINE void MouseWatcherParameter::
+set_pointer(const PointerData &pointer) {
+  // _pointer = new PointerData(pointer.get_id(), pointer.get_primary(), pointer.get_type());
+  // _pointer->update(pointer.get_x(), pointer.get_y(), pointer.get_pressure(), pointer.get_phase());
+  _has_pointer = true;
+  _pointer = pointer;
+}
+
 /**
  * Sets the mouse position that was current at the time the event was
  * generated.
@@ -134,19 +143,19 @@ set_outside(bool flag) {
 /**
  * Returns the identifier of the pointer that caused this event.
  */
-INLINE int MouseWatcherParameter::
-get_pointer_id() const {
-  return _pointer_id;
-}
+// INLINE int MouseWatcherParameter::
+// get_pointer_id() const {
+//   return _pointer.get_id();
+// }
 
 /**
  * Returns the pressure with which this button or pointer was pressed down,
  * where 0.0 is the minimum and 1.0 is the maximum amount of pressure.
  */
-INLINE int MouseWatcherParameter::
-get_pressure() const {
-  return _pressure;
-}
+// INLINE int MouseWatcherParameter::
+// get_pressure() const {
+//   return _pointer.get_pressure();
+// }
 
 /**
  * Returns true if this parameter has an associated mouse or keyboard button,

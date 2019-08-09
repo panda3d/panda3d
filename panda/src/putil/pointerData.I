@@ -28,15 +28,6 @@ get_y() const {
 }
 
 /**
- * If this returns false, the pointer is not currently present in the window
- * and the values returned by get_x() and get_y() may not be meaningful.
- */
-INLINE bool PointerData::
-get_in_window() const {
-  return _in_window;
-}
-
-/**
  * Returns a unique identifier for this pointer.  This is for tracking
  * individual fingers.  This value should not be assumed to have a specific
  * meaning other than that there will not be two different pointers active
@@ -69,21 +60,26 @@ get_pressure() const {
   return _pressure;
 }
 
+INLINE PointerPhase PointerData::
+get_phase() const {
+  return _phase;
+}
 INLINE void PointerData::
 set_pressure(double pressure) {
   _pressure = pressure;
 }
 
 INLINE void PointerData::
-set_in_window(bool in_window) {
-  _in_window = in_window;
+set_phase(PointerPhase phase) {
+  _phase = phase;
 }
 
 INLINE void PointerData::
-update(double x, double y, double pressure) {
+update(double x, double y, double pressure, PointerPhase phase) {
   _xpos = x;
   _ypos = y;
   _pressure = pressure;
+  _phase = phase;
 }
 
 INLINE void PointerData::

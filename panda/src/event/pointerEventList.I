@@ -62,11 +62,11 @@ get_event(size_t n) const {
 /**
  * Get the in-window flag of the nth event.
  */
-INLINE bool PointerEventList::
-get_in_window(size_t n) const {
-  nassertr(n < _events.size(), 0);
-  return _events[n]._data.get_in_window();
-}
+// INLINE bool PointerEventList::
+// get_in_window(size_t n) const {
+//   nassertr(n < _events.size(), 0);
+//   return _events[n]._data.get_in_window();
+// }
 
 /**
  * Get the x-coordinate of the nth event.

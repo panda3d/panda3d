@@ -288,9 +288,10 @@ protected:
 
   PointerData& add_pointer(PointerType type, int id, bool primary = false);
   void remove_pointer(int id);
+  void update_pointer(int id, double x, double y, double pressure, PointerPhase phase);
+  void throw_event(const PointerData &data);
 
   void pointer_moved(int id, double x, double y, double time);
-  void pointer_moved_absolute(int id, double x, double y, double pressure, double time);
 
   void button_changed(int index, bool down);
   void axis_changed(int index, int value);

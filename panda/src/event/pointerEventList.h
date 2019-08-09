@@ -35,7 +35,7 @@ PUBLISHED:
   INLINE PointerEventList();
 
   INLINE size_t get_num_events() const;
-  INLINE bool   get_in_window(size_t n) const;
+  // INLINE bool   get_in_window(size_t n) const;
   INLINE int    get_xpos(size_t n) const;
   INLINE int    get_ypos(size_t n) const;
   // INLINE double get_dx(size_t n) const;

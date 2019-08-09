@@ -34,7 +34,6 @@ GraphicsWindowInputDevice(GraphicsWindow *host, const string &name, bool pointer
 {
   if (pointer) {
     enable_feature(Feature::pointer);
-    add_pointer(PointerType::mouse, 0, true);
   }
   if (keyboard) {
     enable_feature(Feature::keyboard);
@@ -76,6 +75,11 @@ button_down(ButtonHandle button, double time) {
   LightMutexHolder holder(_lock);
   _button_events->add_event(ButtonEvent(button, ButtonEvent::T_down, time));
   _buttons_held.insert(button);
+
+  PointerData &data = InputDevice::get_pointer(0);
+  if (button == MouseButton::one() && data.get_type() == PointerType::mouse) {
+    data.set_phase(PointerPhase::began);
+  }
 }
 
 /**
@@ -98,6 +102,11 @@ button_up(ButtonHandle button, double time) {
   LightMutexHolder holder(_lock);
   _button_events->add_event(ButtonEvent(button, ButtonEvent::T_up, time));
   _buttons_held.erase(button);
+
+  PointerData &data = InputDevice::get_pointer(0);
+  if (button == MouseButton::one() && data.get_type() == PointerType::mouse) {
+    data.set_phase(PointerPhase::ended);
+  }
 }
 
 /**
@@ -161,22 +170,35 @@ raw_button_up(ButtonHandle button, double time) {
 /**
  * To be called by a particular kind of GraphicsWindow to indicate that the
  * pointer is within the window, at the given pixel coordinates.
+ *
+ * @deprecated Only used for existing mouse support, use add_pointer() and
+ *             PointerData::update instead.
  */
 void GraphicsWindowInputDevice::
 set_pointer_in_window(double x, double y, double time) {
   LightMutexHolder holder(_lock);
 
-  PointerData &pointer = _pointers.size() == 0
-                         ? InputDevice::add_pointer(PointerType::mouse, 0, true)
-                         : InputDevice::get_pointer(0);
+  double pressure = 0.0;
+  PointerPhase phase = PointerPhase::hover;
 
-  pointer.update(x, y, 1.0);
-  pointer.set_in_window(true);
+  if (_pointers.find(0) == _pointers.end()) {
+    _pointers[0] = PointerData::make_primary_mouse();
+  } else {
+    if (_buttons_held.find(MouseButton::one()) != _buttons_held.end()) {
+      pressure = 1.0;
+      phase = PointerPhase::moved;
+    }
+  }
+
+  InputDevice::update_pointer(_pointers[0].get_id(), x, y, pressure, phase);
 }
 
 /**
  * To be called by a particular kind of GraphicsWindow to indicate that the
  * pointer is no longer within the window.
+ *
+ * @deprecated Only used for existing mouse support, use remove_pointer()
+ *             instead.
  */
 void GraphicsWindowInputDevice::
 set_pointer_out_of_window(double time) {
@@ -185,17 +207,5 @@ set_pointer_out_of_window(double time) {
     return;
   }
 
-  PointerData &pointer = InputDevice::get_pointer(0);
-
-  pointer.set_pressure(0.0);
-  pointer.set_in_window(false);
-
-  if (_enable_pointer_events) {
-    int seq = _event_sequence++;
-    if (_pointer_events.is_null()) {
-      _pointer_events = new PointerEventList();
-    }
-
-    _pointer_events->add_event(pointer);
-  }
+  InputDevice::remove_pointer(0);
 }
