@@ -7,6 +7,8 @@ from .DirectFrame import *
 from .DirectEntry import *
 
 class DirectEntryScroll(DirectFrame):
+    notify = DirectNotifyGlobal.directNotify.newCategory("DirectEntryScroll")
+
     def __init__(self, entry, parent = None, **kw):
         optiondefs = (
             ('pgFunc',         PGVirtualFrame,      None),
@@ -43,13 +45,28 @@ class DirectEntryScroll(DirectFrame):
         self.resetCanvas()
 
     def setEntry(self, entry):
+        """
+        Sets a DirectEntry element for this scroll frame. A DirectEntryScroll
+        can only hold one entry at a time, so make sure to not call this
+        function twice or call clearEntry before to make sure no entry
+        is already set.
+        """
         if self.entry is not None:
-            self.entry.destroy()
-            self.entry = None
+            assert self.notify.error("An entry was already set for this DirectEntryScroll element")
         self.entry = entry
         self.entry.reparentTo(self.canvas)
 
         self.entry.bind(DGG.CURSORMOVE,self.cursorMove)
+
+    def clearEntry(self):
+        """
+        detaches and unbinds the entry from the scroll frame and its
+        events. You'll be responsible for destroying it.
+        """
+        if self.entry is None: return
+        self.entry.unbind(DGG.CURSORMOVE)
+        self.entry.detachNode()
+        self.entry = None
 
     def cursorMove(self, cursorX, cursorY):
         cursorX = self.entry.guiItem.getCursorX() * self.entry['text_scale'][0]
