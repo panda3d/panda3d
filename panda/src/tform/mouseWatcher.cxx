@@ -449,13 +449,37 @@ update_trail_node() {
   double xscale = 2.0 / _pixel_size->get_value().get_x();
   double yscale = 2.0 / _pixel_size->get_value().get_y();
 
-  for (int i=0; i<(int)_trail_log->get_num_events(); i++) {
-    double x = (_trail_log->get_xpos(i) * xscale) - 1.0;
-    double y = (_trail_log->get_ypos(i) * yscale) - 1.0;
-    vertex.add_data3(LVecBase3(x,0.0,-y));
-    lines->add_vertex(i);
+  pvector<pvector<const PointerEvent *>> contact_list;
+  pvector<const PointerEvent *> tmp_vec;
+
+  for (int i = 0; i < _trail_log->get_num_events(); i++) {
+    const PointerEvent &event = _trail_log->get_event(i);
+    if (!event._data.get_primary()) {
+      continue;
+    }
+
+    tmp_vec.push_back(&event);
+
+    if (event._data.get_phase() == PointerPhase::ended
+        || i == _trail_log->get_num_events() - 1) {
+      if (tmp_vec.size() >= 2) {
+        contact_list.push_back(std::move(tmp_vec));
+      }
+      tmp_vec.clear();
+    }
   }
-  lines->close_primitive();
+
+  for (auto contact : contact_list) {
+    for (auto event : contact) {
+      double x = (event->_data.get_x() * xscale) - 1.0;
+      double y = (event->_data.get_y() * yscale) - 1.0;
+
+      int next_row = vertex.get_write_row();
+      vertex.add_data3(LVecBase3(x,0.0,-y));
+      lines->add_vertex(next_row);
+    }
+    lines->close_primitive();
+  }
 
   PT(Geom) l_geom = new Geom(data);
   l_geom->add_primitive(lines);
