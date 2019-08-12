@@ -465,6 +465,23 @@ destroy_message_loop() {
 }
 
 /**
+ * Sends a signal to the thread input thread, asking it to shut itself down.
+ */
+void WinInputDeviceManager::
+stop_thread() {
+#ifdef HAVE_THREADS
+  WinInputDeviceManager *mgr = (WinInputDeviceManager *)_global_ptr;
+  if (mgr != nullptr) {
+    LightMutexHolder holder(mgr->_lock);
+    HWND hwnd = mgr->_message_hwnd;
+    if (hwnd) {
+      PostMessage(hwnd, WM_QUIT, 0, 0);
+    }
+  }
+#endif
+}
+
+/**
  * Implementation of the message loop.
  */
 LRESULT WINAPI WinInputDeviceManager::
