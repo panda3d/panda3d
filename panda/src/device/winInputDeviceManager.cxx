@@ -62,7 +62,9 @@ WinInputDeviceManager() :
   }
 
   // If we have threading enabled, start a thread with a message-only window
-  // loop to listen for input events.
+  // loop to listen for input events.  We can't actually just let this be
+  // handled by the main window loop, because the main window might actually
+  // have been created in a different thread.
 #ifdef HAVE_THREADS
   if (Thread::is_threading_supported()) {
     PT(Thread) thread = new InputThread(this);
@@ -518,10 +520,26 @@ thread_main() {
   }
 
   MSG msg;
+#ifdef SIMPLE_THREADS
+  // In the simple threading case, we can't block the thread waiting for a
+  // message; we yield control back if there are no more messages.
+  while (true) {
+    if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
+      if (msg.message == WM_QUIT) {
+        break;
+      }
+      TranslateMessage(&msg);
+      DispatchMessage(&msg);
+    } else {
+      Thread::force_yield();
+    }
+  }
+#else
   while (GetMessage(&msg, nullptr, 0, 0) > 0) {
     TranslateMessage(&msg);
     DispatchMessage(&msg);
   }
+#endif
 
   if (device_cat.is_debug()) {
     device_cat.debug()
