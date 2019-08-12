@@ -276,6 +276,22 @@ uchar_bgr_to_rgb(unsigned char *dest, const unsigned char *source,
 }
 
 /**
+ * Recopies the given array of pixels, converting from luminance to RGB
+ * arrangement.
+ */
+static void
+uchar_l_to_rgb(unsigned char *dest, const unsigned char *source,
+               int num_pixels) {
+  for (int i = 0; i < num_pixels; i++) {
+    dest[0] = source[0];
+    dest[1] = source[0];
+    dest[2] = source[0];
+    dest += 3;
+    source += 1;
+  }
+}
+
+/**
  * Recopies the given array of pixels, converting from BGRA to RGBA
  * arrangement.
  */
@@ -289,6 +305,23 @@ uchar_bgra_to_rgba(unsigned char *dest, const unsigned char *source,
     dest[3] = source[3];
     dest += 4;
     source += 4;
+  }
+}
+
+/**
+ * Recopies the given array of pixels, converting from luminance-alpha to RGBA
+ * arrangement.
+ */
+static void
+uchar_la_to_rgba(unsigned char *dest, const unsigned char *source,
+                 int num_pixels) {
+  for (int i = 0; i < num_pixels; i++) {
+    dest[0] = source[0];
+    dest[1] = source[0];
+    dest[2] = source[0];
+    dest[3] = source[1];
+    dest += 4;
+    source += 2;
   }
 }
 
@@ -308,6 +341,22 @@ ushort_bgr_to_rgb(unsigned short *dest, const unsigned short *source,
 }
 
 /**
+ * Recopies the given array of pixels, converting from luminance to RGB
+ * arrangement.
+ */
+static void
+ushort_l_to_rgb(unsigned short *dest, const unsigned short *source,
+                int num_pixels) {
+  for (int i = 0; i < num_pixels; i++) {
+    dest[0] = source[0];
+    dest[1] = source[0];
+    dest[2] = source[0];
+    dest += 3;
+    source += 1;
+  }
+}
+
+/**
  * Recopies the given array of pixels, converting from BGRA to RGBA
  * arrangement.
  */
@@ -321,6 +370,23 @@ ushort_bgra_to_rgba(unsigned short *dest, const unsigned short *source,
     dest[3] = source[3];
     dest += 4;
     source += 4;
+  }
+}
+
+/**
+ * Recopies the given array of pixels, converting from luminance-alpha to RGBA
+ * arrangement.
+ */
+static void
+ushort_la_to_rgba(unsigned short *dest, const unsigned short *source,
+                  int num_pixels) {
+  for (int i = 0; i < num_pixels; i++) {
+    dest[0] = source[0];
+    dest[1] = source[0];
+    dest[2] = source[0];
+    dest[3] = source[1];
+    dest += 4;
+    source += 2;
   }
 }
 
@@ -343,6 +409,12 @@ fix_component_ordering(PTA_uchar &new_image,
 
   switch (external_format) {
   case GL_RGB:
+    if (tex->get_num_components() == 1) {
+      new_image = PTA_uchar::empty_array(orig_image_size * 3);
+      uchar_l_to_rgb(new_image, orig_image, orig_image_size);
+      result = new_image;
+      break;
+    }
     switch (tex->get_component_type()) {
     case Texture::T_unsigned_byte:
     case Texture::T_byte:
@@ -366,6 +438,12 @@ fix_component_ordering(PTA_uchar &new_image,
     break;
 
   case GL_RGBA:
+    if (tex->get_num_components() == 2) {
+      new_image = PTA_uchar::empty_array(orig_image_size * 2);
+      uchar_la_to_rgba(new_image, orig_image, orig_image_size / 2);
+      result = new_image;
+      break;
+    }
     switch (tex->get_component_type()) {
     case Texture::T_unsigned_byte:
     case Texture::T_byte:
@@ -9450,7 +9528,6 @@ get_external_image_format(Texture *tex) const {
     return _supports_bgr ? GL_BGRA : GL_RGBA;
 
   case Texture::F_luminance:
-  case Texture::F_sluminance:
 #ifdef OPENGLES
     return GL_LUMINANCE;
 #else
@@ -9458,11 +9535,23 @@ get_external_image_format(Texture *tex) const {
 #endif
   case Texture::F_luminance_alphamask:
   case Texture::F_luminance_alpha:
-  case Texture::F_sluminance_alpha:
 #ifdef OPENGLES
     return GL_LUMINANCE_ALPHA;
 #else
     return _supports_luminance_texture ? GL_LUMINANCE_ALPHA : GL_RG;
+#endif
+
+  case Texture::F_sluminance:
+#ifdef OPENGLES
+    return GL_LUMINANCE;
+#else
+    return _supports_luminance_texture ? GL_LUMINANCE : GL_RGB;
+#endif
+  case Texture::F_sluminance_alpha:
+#ifdef OPENGLES
+    return GL_LUMINANCE_ALPHA;
+#else
+    return _supports_luminance_texture ? GL_LUMINANCE_ALPHA : GL_RGBA;
 #endif
 
 #ifndef OPENGLES_1
@@ -10200,9 +10289,9 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
 #endif
 #ifndef OPENGLES
   case Texture::F_sluminance:
-    return GL_SLUMINANCE8;
+    return _core_profile ? GL_SRGB8 : GL_SLUMINANCE8;
   case Texture::F_sluminance_alpha:
-    return GL_SLUMINANCE8_ALPHA8;
+    return _core_profile ? GL_SRGB8_ALPHA8 : GL_SLUMINANCE8_ALPHA8;
 #endif
 
 #ifndef OPENGLES
