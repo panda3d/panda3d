@@ -19,8 +19,11 @@
 #include "filename.h"
 #include "config_prc.h"
 
-#include <atomic>
 #include <ctype.h>
+
+#ifdef PHAVE_ATOMIC
+#include <atomic>
+#endif
 
 #ifdef BUILD_IPHONE
 #include <fcntl.h>
