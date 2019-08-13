@@ -2918,7 +2918,9 @@ if '__file__' in locals():
 
     bindir = os.path.join(os.path.dirname(__file__), '..', 'bin')
     if os.path.isdir(bindir):
-        if not os.environ.get('PATH'):
+        if hasattr(os, 'add_dll_directory'):
+            os.add_dll_directory(bindir)
+        elif not os.environ.get('PATH'):
             os.environ['PATH'] = bindir
         else:
             os.environ['PATH'] = bindir + os.pathsep + os.environ['PATH']
