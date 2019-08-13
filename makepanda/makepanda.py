@@ -3230,9 +3230,8 @@ if tp_dir is not None:
 
 # Copy over the MSVC runtime.
 if GetTarget() == 'windows' and "VISUALSTUDIO" in SDK:
-    vsver = "%s%s" % SDK["VISUALSTUDIO_VERSION"]
     vcver = "%s%s" % (SDK["MSVC_VERSION"][0], 0)        # ignore minor version.
-    crtname = "Microsoft.VC%s.CRT" % (vsver)
+    crtname = "Microsoft.VC%s.CRT" % (vcver)
     if ("VCTOOLSVERSION" in SDK):
         dir = os.path.join(SDK["VISUALSTUDIO"], "VC", "Redist", "MSVC", SDK["VCTOOLSVERSION"], "onecore", GetTargetArch(), crtname)
     else:
