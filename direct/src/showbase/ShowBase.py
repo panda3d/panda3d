@@ -207,7 +207,10 @@ class ShowBase(DirectObject.DirectObject):
             # Has the clusterSyncFlag been set via a config variable
             self.clusterSyncFlag = self.config.GetBool('cluster-sync', 0)
 
-        self.hidden = NodePath('hidden')
+        # We've already created aspect2d in ShowBaseGlobal, for the
+        # benefit of creating DirectGui elements before ShowBase.
+        from . import ShowBaseGlobal
+        self.hidden = ShowBaseGlobal.hidden
 
         ## The global graphics engine, ie. GraphicsEngine.getGlobalPtr()
         self.graphicsEngine = GraphicsEngine.getGlobalPtr()

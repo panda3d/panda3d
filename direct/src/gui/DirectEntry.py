@@ -4,6 +4,7 @@ text entered using the keyboard."""
 __all__ = ['DirectEntry']
 
 from panda3d.core import *
+from direct.showbase import ShowBaseGlobal
 from . import DirectGuiGlobals as DGG
 from .DirectFrame import *
 from .OnscreenText import OnscreenText
@@ -94,7 +95,7 @@ class DirectEntry(DirectFrame):
         self.onscreenText = self.createcomponent(
             'text', (), None,
             OnscreenText,
-            (), parent = hidden,
+            (), parent = ShowBaseGlobal.hidden,
             # Pass in empty text to avoid extra work, since its really
             # The PGEntry which will use the TextNode to generate geometry
             text = '',

@@ -3,6 +3,7 @@
 __all__ = ['findDialog', 'cleanupDialog', 'DirectDialog', 'OkDialog', 'OkCancelDialog', 'YesNoDialog', 'YesNoCancelDialog', 'RetryCancelDialog']
 
 from panda3d.core import *
+from direct.showbase import ShowBaseGlobal
 from . import DirectGuiGlobals as DGG
 from .DirectFrame import *
 from .DirectButton import *
@@ -207,7 +208,7 @@ class DirectDialog(DirectFrame):
             image = None
         # Get size of text/geom without image (for state 0)
         if image:
-            image.reparentTo(hidden)
+            image.reparentTo(ShowBaseGlobal.hidden)
         bounds = self.stateNodePath[0].getTightBounds()
         if image:
             image.reparentTo(self.stateNodePath[0])
