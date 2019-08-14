@@ -29,6 +29,9 @@ def get_abi_tag():
 
     soabi = 'cp%d%d' % (sys.version_info[:2])
 
+    if sys.version_info >= (3, 8):
+        return soabi
+
     debug_flag = get_config_var('Py_DEBUG')
     if (debug_flag is None and hasattr(sys, 'gettotalrefcount')) or debug_flag:
         soabi += 'd'
