@@ -16,9 +16,12 @@ set(P3DISTRIBUTED_SOURCES
   cDistributedSmoothNodeBase.cxx
 )
 
+# Workaround for Windows which just *insists* on having something to build
+set(P3DISTRIBUTED_EMPTY "${CMAKE_CURRENT_BINARY_DIR}/empty.cxx")
+file(WRITE ${P3DISTRIBUTED_EMPTY} "")
+
 add_component_library(p3distributed NOINIT SYMBOL BUILDING_DIRECT_DISTRIBUTED
-  ${P3DISTRIBUTED_HEADERS})
-set_target_properties(p3distributed PROPERTIES LINKER_LANGUAGE CXX)
+  ${P3DISTRIBUTED_HEADERS} ${P3DISTRIBUTED_EMPTY})
 target_link_libraries(p3distributed p3directbase p3dcparser panda)
 target_interrogate(p3distributed ALL EXTENSIONS ${P3DISTRIBUTED_SOURCES})
 
