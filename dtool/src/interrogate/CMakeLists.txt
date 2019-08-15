@@ -60,7 +60,7 @@ set(INTERROGATE_PREAMBLE_PYTHON_NATIVE
 
 composite_sources(interrogate INTERROGATE_SOURCES)
 add_executable(interrogate ${INTERROGATE_HEADERS} ${INTERROGATE_SOURCES})
-target_link_libraries(interrogate p3cppParser p3dtoolconfig p3pystub
+target_link_libraries(interrogate p3cppParser p3dtoolconfig
   PKG::OPENSSL)
 
 # Python preamble for interrogate_module

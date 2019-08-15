@@ -5,5 +5,5 @@ if(NOT BUILD_PANDATOOL)
 endif()
 
 add_executable(pview pview.cxx)
-target_link_libraries(pview p3framework p3pystub)
+target_link_libraries(pview p3framework)
 install(TARGETS pview EXPORT Tools COMPONENT Tools DESTINATION bin)

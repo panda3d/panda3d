@@ -11,6 +11,7 @@ if(Python_FOUND)
   set(PYTHON_FOUND ON)
   set(PYTHON_EXECUTABLE ${Python_EXECUTABLE})
   set(PYTHON_INCLUDE_DIRS ${Python_INCLUDE_DIRS})
+  set(PYTHON_LIBRARY_DIRS ${Python_LIBRARY_DIRS})
   set(PYTHON_VERSION_STRING ${Python_VERSION})
 
 else()
@@ -27,11 +28,45 @@ else()
 
 endif()
 
+if(CMAKE_VERSION VERSION_LESS "3.15")
+  # CMake versions this old don't provide Python::Module, so we need to hack up
+  # the variables to ensure no explicit linkage against libpython occurs
+
+  if(WIN32)
+    # Nothing needed here; explicit linkage is appropriate
+    set(PYTHON_LIBRARY "${Python_LIBRARY}")
+    set(PYTHON_LIBRARIES ${Python_LIBRARIES})
+
+  elseif(APPLE OR UNIX)
+    # Just unset and let the implicit linkage take over
+    set(PYTHON_LIBRARY "")
+    set(PYTHON_LIBRARIES "")
+
+    if(APPLE)
+      # macOS requires this explicit flag on the linker command line to allow the
+      # references to the Python symbols to resolve at dynamic link time
+      string(APPEND CMAKE_MODULE_LINKER_FLAGS " -undefined dynamic_lookup")
+      # TODO: p3dcparser contains some direct Python references; get rid of
+      # this once that's gone
+      string(APPEND CMAKE_SHARED_LINKER_FLAGS " -undefined dynamic_lookup")
+
+    endif()
+
+  else()
+    # On every other platform, guessing is a bad idea - insist the user upgrade
+    # their CMake instead.
+    message(WARNING "For Python support on this platform, please use CMake >= 3.15!")
+    set(PYTHON_FOUND OFF)
+
+  endif()
+
+endif()
+
 package_option(PYTHON
   DEFAULT ON
   "Enables support for Python.  If INTERROGATE_PYTHON_INTERFACE
 is also enabled, Python bindings will be generated."
-  IMPORTED_AS Python::Python)
+  IMPORTED_AS Python::Module)
 
 # Also detect the optimal install paths:
 if(HAVE_PYTHON)
