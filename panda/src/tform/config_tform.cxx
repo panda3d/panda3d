@@ -70,6 +70,7 @@ ConfigureFn(config_tform) {
   ButtonThrower::init_type();
   MouseInterfaceNode::init_type();
   MouseSubregion::init_type();
+  MouseTrackball::init_type();
   MouseWatcher::init_type();
   MouseWatcherBase::init_type();
   MouseWatcherGroup::init_type();

@@ -25,11 +25,6 @@
 
 TypeHandle Trackball::_type_handle;
 
-// These are used internally.
-#define B1_MASK 0x01
-#define B2_MASK 0x02
-#define B3_MASK 0x04
-
 /**
  *
  */
@@ -37,17 +32,12 @@ Trackball::
 Trackball(const std::string &name) :
   MouseInterfaceNode(name)
 {
-  _pixel_xy_input = define_input("pixel_xy", EventStoreVec2::get_class_type());
-
   _transform_output = define_output("transform", TransformState::get_class_type());
 
   _transform = TransformState::make_identity();
 
   _rotscale = 0.3;
   _fwdscale = 0.3;
-
-  _last_button = 0;
-  _lastx = _lasty = 0.5f;
 
   _rotation = LMatrix4::ident_mat();
   _translation.set(0.0f, 0.0f, 0.0f);
@@ -57,25 +47,7 @@ Trackball(const std::string &name) :
   _cs = get_default_coordinate_system();
   _control_mode = CM_default;
 
-  // We want to track the state of these buttons.
   watch_button(MouseButton::one());
-  watch_button(MouseButton::two());
-  watch_button(MouseButton::three());
-
-  if (trackball_use_alt_keys) {
-    // In OSX mode, we need to use the command and option key in conjunction
-    // with the (one) mouse button.
-    watch_button(KeyboardButton::control());
-    watch_button(KeyboardButton::meta());
-    watch_button(KeyboardButton::alt());
-  }
-}
-
-/**
- *
- */
-Trackball::
-~Trackball() {
 }
 
 /**
@@ -398,80 +370,6 @@ get_trans_mat() const {
   return _mat;
 }
 
-
-/**
- * Applies the operation indicated by the user's mouse motion to the current
- * state.  Returns the matrix indicating the new state.
- */
-void Trackball::
-apply(double x, double y, int button) {
-  if (button && !_rel_to.is_empty()) {
-    // If we have a rel_to node, we must first adjust our rotation and
-    // translation to be in those local coordinates.
-    reextract();
-  }
-
-  if (button == B1_MASK && _control_mode != CM_default) {
-    // We have a control mode set; this may change the meaning of button 1.
-    // Remap button to match the current control mode setting.
-    switch (_control_mode) {
-    case CM_truck:
-      button = B1_MASK;
-      break;
-
-    case CM_pan:
-      button = B2_MASK;
-      break;
-
-    case CM_dolly:
-      button = B3_MASK;
-      break;
-
-    case CM_roll:
-      button = B2_MASK | B3_MASK;
-      break;
-
-    case CM_default:
-      // Not possible due to above logic.
-      nassertv(false);
-    }
-  }
-
-  if (button == B1_MASK) {
-    // Button 1: translate in plane parallel to screen.
-
-    _translation +=
-      x * _fwdscale * LVector3::right(_cs) +
-      y * _fwdscale * LVector3::down(_cs);
-
-  } else if (button == (B2_MASK | B3_MASK)) {
-    // Buttons 2 + 3: rotate about the vector perpendicular to the screen.
-
-    _rotation *=
-      LMatrix4::rotate_mat_normaxis((x - y) * _rotscale,
-                            LVector3::forward(_cs), _cs);
-
-  } else if ((button == B2_MASK) || (button == (B1_MASK | B3_MASK))) {
-    // Button 2, or buttons 1 + 3: rotate about the right and up vectors.  (We
-    // alternately define this as buttons 1 + 3, to support two-button mice.)
-
-    _rotation *=
-      LMatrix4::rotate_mat_normaxis(x * _rotscale, LVector3::up(_cs), _cs) *
-      LMatrix4::rotate_mat_normaxis(y * _rotscale, LVector3::right(_cs), _cs);
-
-  } else if ((button == B3_MASK) || (button == (B1_MASK | B2_MASK))) {
-    // Button 3, or buttons 1 + 2: dolly in and out along the forward vector.
-    // (We alternately define this as buttons 1 + 2, to support two-button
-    // mice.)
-    _translation -= y * _fwdscale * LVector3::forward(_cs);
-  }
-
-  if (button) {
-    recompute();
-  }
-}
-
-
 /**
  * Given a correctly computed _orig matrix, rederive the translation and
  * rotation elements.
@@ -519,60 +417,9 @@ recompute() {
  * index numbers returned by the define_output() calls.
  */
 void Trackball::
-do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
+do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &,
                  DataNodeTransmit &output) {
-  // First, update our modifier buttons.
-  bool required_buttons_match;
-  check_button_events(input, required_buttons_match);
-
-  // Now, check for mouse motion.
-  if (required_buttons_match && input.has_data(_pixel_xy_input)) {
-    const EventStoreVec2 *pixel_xy;
-    DCAST_INTO_V(pixel_xy, input.get_data(_pixel_xy_input).get_ptr());
-    const LVecBase2 &p = pixel_xy->get_value();
-    PN_stdfloat this_x = p[0];
-    PN_stdfloat this_y = p[1];
-    int this_button = 0;
-
-    if (is_down(MouseButton::one())) {
-      if (is_down(KeyboardButton::alt())) {
-        // B1 + alt (option) = B2.
-        this_button |= B2_MASK;
-        if (is_down(KeyboardButton::meta()) || is_down(KeyboardButton::control())) {
-          this_button |= B3_MASK;
-        }
-
-      } else if (is_down(KeyboardButton::meta()) || is_down(KeyboardButton::control())) {
-        // B1 + meta (command) = B3.
-        this_button |= B3_MASK;
-
-      } else {
-        // Without a special key, B1 is B1.
-        this_button |= B1_MASK;
-      }
-    }
-    if (is_down(MouseButton::two())) {
-      this_button |= B2_MASK;
-    }
-    if (is_down(MouseButton::three())) {
-      this_button |= B3_MASK;
-    }
-
-    PN_stdfloat x = this_x - _lastx;
-    PN_stdfloat y = this_y - _lasty;
-
-    if (this_button == _last_button) {
-      apply(x, y, this_button);
-    }
-
-    _last_button = this_button;
-    _lastx = this_x;
-    _lasty = this_y;
-  } else {
-    _last_button = 0;
-  }
-
-  // Now send our matrix down the pipe.
+  // Send our matrix down the pipe.
   _transform = TransformState::make_mat(_mat);
   output.set_data(_transform_output, EventParameter(_transform));
 }

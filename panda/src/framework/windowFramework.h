@@ -20,7 +20,7 @@
 #include "graphicsOutput.h"
 #include "graphicsWindow.h"
 #include "animControlCollection.h"
-#include "trackball.h"
+#include "mouseTrackball.h"
 #include "filename.h"
 #include "frameRateMeter.h"
 #include "sceneGraphAnalyzerMeter.h"

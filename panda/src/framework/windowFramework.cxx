@@ -441,7 +441,7 @@ setup_trackball() {
     NodePath mouse = get_mouse();
     NodePath camera = get_camera_group();
 
-    _trackball = new Trackball("trackball");
+    _trackball = new MouseTrackball("trackball");
     _trackball->set_pos(LVector3::forward() * 50.0);
     mouse.attach_new_node(_trackball);
 

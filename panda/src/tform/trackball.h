@@ -35,7 +35,6 @@
 class EXPCL_PANDA_TFORM Trackball : public MouseInterfaceNode {
 PUBLISHED:
   explicit Trackball(const std::string &name);
-  ~Trackball();
 
   void reset();
 
@@ -101,14 +100,9 @@ PUBLISHED:
   const LMatrix4 &get_trans_mat() const;
 
 
-private:
-  void apply(double x, double y, int button);
-
+protected:
   void reextract();
   void recompute();
-
-  int _last_button;
-  PN_stdfloat _lastx, _lasty;
 
   PN_stdfloat _rotscale;
   PN_stdfloat _fwdscale;
@@ -121,16 +115,12 @@ private:
   CoordinateSystem _cs;
   ControlMode _control_mode;
 
-protected:
   // Inherited from DataNode
-  virtual void do_transmit_data(DataGraphTraverser *trav,
-                                const DataNodeTransmit &input,
-                                DataNodeTransmit &output);
+  void do_transmit_data(DataGraphTraverser *trav,
+                        const DataNodeTransmit &input,
+                        DataNodeTransmit &output) override;
 
 private:
-  // inputs
-  int _pixel_xy_input;
-
   // outputs
   int _transform_output;
 
