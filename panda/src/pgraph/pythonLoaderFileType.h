@@ -24,6 +24,8 @@
  * This defines a Python-based loader plug-in.  An instance of this can be
  * constructed by inheritance and explicitly registered, or it can be created
  * by passing in a pkg_resources.EntryPoint instance.
+ *
+ * @since 1.10.4
  */
 class PythonLoaderFileType : public LoaderFileType {
 public:

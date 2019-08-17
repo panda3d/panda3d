@@ -240,6 +240,8 @@ unify_texture_stages(TextureStage *stage) const {
 /**
  * Returns a new TextureAttrib, just like this one, but with all references to
  * the given texture replaced with the new texture.
+ *
+ * @since 1.10.4
  */
 CPT(RenderAttrib) TextureAttrib::
 replace_texture(Texture *tex, Texture *new_tex) const {
