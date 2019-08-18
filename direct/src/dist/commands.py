@@ -506,6 +506,15 @@ class build_apps(setuptools.Command):
             'CFBundleSignature': '', #TODO
             'CFBundleExecutable': self.macos_main_app,
         }
+
+        icon = self.icon_objects.get(
+            self.macos_main_app,
+            self.icon_objects.get('*', None)
+        )
+        if icon is not None:
+            plist['CFBundleIconFile'] = 'iconfile'
+            icon.makeICNS(os.path.join(resdir, 'iconfile.icns'))
+
         with open(os.path.join(contentsdir, 'Info.plist'), 'wb') as f:
             if hasattr(plistlib, 'dump'):
                 plistlib.dump(plist, f)
