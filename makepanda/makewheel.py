@@ -29,6 +29,9 @@ def get_abi_tag():
 
     soabi = 'cp%d%d' % (sys.version_info[:2])
 
+    if sys.version_info >= (3, 8):
+        return soabi
+
     debug_flag = get_config_var('Py_DEBUG')
     if (debug_flag is None and hasattr(sys, 'gettotalrefcount')) or debug_flag:
         soabi += 'd'
@@ -168,15 +171,18 @@ questions.
 PANDA3D_TOOLS_INIT = """import os, sys
 import panda3d
 
+dir = os.path.dirname(panda3d.__file__)
+del panda3d
+
 if sys.platform in ('win32', 'cygwin'):
     path_var = 'PATH'
+    if hasattr(os, 'add_dll_directory'):
+        os.add_dll_directory(dir)
 elif sys.platform == 'darwin':
     path_var = 'DYLD_LIBRARY_PATH'
 else:
     path_var = 'LD_LIBRARY_PATH'
 
-dir = os.path.dirname(panda3d.__file__)
-del panda3d
 if not os.environ.get(path_var):
     os.environ[path_var] = dir
 else:

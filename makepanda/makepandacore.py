@@ -105,6 +105,7 @@ MAYAVERSIONINFO = [("MAYA6",   "6.0"),
                    ("MAYA20165","2016.5"),
                    ("MAYA2017","2017"),
                    ("MAYA2018","2018"),
+                   ("MAYA2019","2019"),
 ]
 
 MAXVERSIONINFO = [("MAX6", "SOFTWARE\\Autodesk\\3DSMAX\\6.0", "installdir", "maxsdk\\cssdk\\include"),
@@ -2788,7 +2789,7 @@ def SetupVisualStudioEnviron():
 
     # Targeting the 7.1 SDK (which is the only way to have Windows XP support)
     # with Visual Studio 2015 requires use of the Universal CRT.
-    if winsdk_ver == '7.1' and SDK["VISUALSTUDIO_VERSION"] >= (14,0):
+    if winsdk_ver in ('7.1', '7.1A') and SDK["VISUALSTUDIO_VERSION"] >= (14,0):
         win_kit = GetRegistryKey("SOFTWARE\\Microsoft\\Windows Kits\\Installed Roots", "KitsRoot10")
 
         # Fallback in case we can't read the registry.
@@ -3391,6 +3392,9 @@ def GetPythonABI():
         return soabi
 
     soabi = 'cpython-%d%d' % (sys.version_info[:2])
+
+    if sys.version_info >= (3, 8):
+        return soabi
 
     debug_flag = sysconfig.get_config_var('Py_DEBUG')
     if (debug_flag is None and hasattr(sys, 'gettotalrefcount')) or debug_flag:

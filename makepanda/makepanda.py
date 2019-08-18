@@ -2903,7 +2903,9 @@ if '__file__' in locals():
 
     bindir = os.path.join(os.path.dirname(__file__), '..', 'bin')
     if os.path.isdir(bindir):
-        if not os.environ.get('PATH'):
+        if hasattr(os, 'add_dll_directory'):
+            os.add_dll_directory(bindir)
+        elif not os.environ.get('PATH'):
             os.environ['PATH'] = bindir
         else:
             os.environ['PATH'] = bindir + os.pathsep + os.environ['PATH']
@@ -3210,9 +3212,8 @@ if tp_dir is not None:
 
 # Copy over the MSVC runtime.
 if GetTarget() == 'windows' and "VISUALSTUDIO" in SDK:
-    vsver = "%s%s" % SDK["VISUALSTUDIO_VERSION"]
     vcver = "%s%s" % (SDK["MSVC_VERSION"][0], 0)        # ignore minor version.
-    crtname = "Microsoft.VC%s.CRT" % (vsver)
+    crtname = "Microsoft.VC%s.CRT" % (vcver)
     if ("VCTOOLSVERSION" in SDK):
         dir = os.path.join(SDK["VISUALSTUDIO"], "VC", "Redist", "MSVC", SDK["VCTOOLSVERSION"], "onecore", GetTargetArch(), crtname)
     else:

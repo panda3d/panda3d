@@ -14,12 +14,14 @@ import struct
 import imp
 import string
 import time
+import tempfile
 
 import setuptools
 import distutils.log
 
 from . import FreezeTool
 from . import pefile
+from direct.p3d.DeploymentTools import Icon
 import panda3d.core as p3d
 
 
@@ -224,6 +226,7 @@ class build_apps(setuptools.Command):
         self.exclude_patterns = []
         self.include_modules = {}
         self.exclude_modules = {}
+        self.icons = {}
         self.platforms = [
             'manylinux1_x86_64',
             'macosx_10_6_x86_64',
@@ -298,6 +301,7 @@ class build_apps(setuptools.Command):
             key: _parse_list(value)
             for key, value in _parse_dict(self.exclude_modules).items()
         }
+        self.icons = _parse_dict(self.icons)
         self.platforms = _parse_list(self.platforms)
         self.plugins = _parse_list(self.plugins)
         self.extra_prc_files = _parse_list(self.extra_prc_files)
@@ -356,6 +360,18 @@ class build_apps(setuptools.Command):
         tmp = self.package_data_dirs.copy()
         tmp.update(self.package_data_dirs)
         self.package_data_dirs = tmp
+
+        self.icon_objects = {}
+        for app, iconpaths in self.icons.items():
+            if not isinstance(iconpaths, list) and not isinstance(iconpaths, tuple):
+                iconpaths = (iconpaths,)
+
+            iconobj = Icon()
+            for iconpath in iconpaths:
+                iconobj.addImage(iconpath)
+
+            iconobj.generateMissingImages()
+            self.icon_objects[app] = iconobj
 
     def run(self):
         self.announce('Building platforms: {0}'.format(','.join(self.platforms)), distutils.log.INFO)
@@ -433,6 +449,22 @@ class build_apps(setuptools.Command):
 
         return wheelpaths
 
+    def update_pe_resources(self, appname, runtime):
+        """Update resources (e.g., icons) in windows PE file"""
+
+        icon = self.icon_objects.get(
+            appname,
+            self.icon_objects.get('*', None),
+        )
+
+        if icon is not None:
+            pef = pefile.PEFile()
+            pef.open(runtime, 'r+')
+            pef.add_icon(icon)
+            pef.add_resource_section()
+            pef.write_changes()
+            pef.close()
+
     def bundle_macos_app(self, builddir):
         """Bundle built runtime into a .app for macOS"""
 
@@ -474,6 +506,15 @@ class build_apps(setuptools.Command):
             'CFBundleSignature': '', #TODO
             'CFBundleExecutable': self.macos_main_app,
         }
+
+        icon = self.icon_objects.get(
+            self.macos_main_app,
+            self.icon_objects.get('*', None)
+        )
+        if icon is not None:
+            plist['CFBundleIconFile'] = 'iconfile'
+            icon.makeICNS(os.path.join(resdir, 'iconfile.icns'))
+
         with open(os.path.join(contentsdir, 'Info.plist'), 'wb') as f:
             if hasattr(plistlib, 'dump'):
                 plistlib.dump(plist, f)
@@ -618,6 +659,18 @@ class build_apps(setuptools.Command):
                 stub_path = os.path.join(os.path.dirname(dtool_path), '..', 'bin', stub_name)
                 stub_file = open(stub_path, 'rb')
 
+            # Do we need an icon?  On Windows, we need to add this to the stub
+            # before we add the blob.
+            if 'win' in platform:
+                temp_file = tempfile.NamedTemporaryFile(suffix='-icon.exe', delete=False)
+                temp_file.write(stub_file.read())
+                stub_file.close()
+                temp_file.close()
+                self.update_pe_resources(appname, temp_file.name)
+                stub_file = open(temp_file.name, 'rb')
+            else:
+                temp_file = None
+
             freezer.generateRuntimeFromStub(target_path, stub_file, use_console, {
                 'prc_data': prcexport if self.embed_prc_data else None,
                 'default_prc_dir': self.default_prc_dir,
@@ -632,6 +685,9 @@ class build_apps(setuptools.Command):
                 'log_filename': self.expand_path(self.log_filename, platform),
             }, self.log_append)
             stub_file.close()
+
+            if temp_file:
+                os.unlink(temp_file.name)
 
             # Copy the dependencies.
             search_path = [builddir]

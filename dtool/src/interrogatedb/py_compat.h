@@ -139,7 +139,7 @@ typedef long Py_hash_t;
 
 /* Python 3.6 */
 
-#ifndef _PyObject_CallNoArg
+#if PY_VERSION_HEX < 0x03080000 && !defined(_PyObject_CallNoArg)
 INLINE PyObject *_PyObject_CallNoArg(PyObject *func) {
   static PyTupleObject empty_tuple = {PyVarObject_HEAD_INIT(nullptr, 0)};
 #ifdef Py_TRACE_REFS

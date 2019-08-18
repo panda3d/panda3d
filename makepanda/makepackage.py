@@ -562,9 +562,9 @@ def MakeInstallerOSX(version, runtime=False, python_versions=[], **kwargs):
         oscmd("mkdir -p dstroot/pybindings%s/Library/Python/%s/site-packages" % (pyver, pyver))
         WriteFile("dstroot/pybindings%s/Library/Python/%s/site-packages/Panda3D.pth" % (pyver, pyver), "/Developer/Panda3D")
 
-        # Evidently not all Python 3.7 installations read the above path, so do this for now
-        # See GitHub #502
-        if pyver == "3.7":
+        # Somewhere in Python 2.7.13 and 3.7, the above path was removed from
+        # sys.path of the python.org distribution.  See bpo-28440 and GH #502.
+        if pyver not in ("3.0", "3.1", "3.2", "3.3", "3.4", "3.5", "3.6"):
             dir = "dstroot/pybindings%s/Library/Frameworks/Python.framework/Versions/%s/lib/python%s/site-packages" % (pyver, pyver, pyver)
             oscmd("mkdir -p %s" % (dir))
             WriteFile("%s/Panda3D.pth" % (dir), "/Developer/Panda3D")

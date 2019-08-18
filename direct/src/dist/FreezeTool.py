@@ -800,29 +800,36 @@ class Freezer:
                     self.moduleSuffixes[i] = (suffix[0], 'rb', imp.PY_SOURCE)
         else:
             self.moduleSuffixes = [('.py', 'rb', 1), ('.pyc', 'rb', 2)]
+
+            abi_version = '{0}{1}'.format(*sys.version_info)
+            abi_flags = ''
+            if sys.version_info < (3, 8):
+                abi_flags += 'm'
+
             if 'linux' in self.platform:
                 self.moduleSuffixes += [
-                    ('.cpython-{0}{1}m-x86_64-linux-gnu.so'.format(*sys.version_info), 'rb', 3),
-                    ('.cpython-{0}{1}m-i686-linux-gnu.so'.format(*sys.version_info), 'rb', 3),
+                    ('.cpython-{0}{1}-x86_64-linux-gnu.so'.format(abi_version, abi_flags), 'rb', 3),
+                    ('.cpython-{0}{1}-i686-linux-gnu.so'.format(abi_version, abi_flags), 'rb', 3),
                     ('.abi{0}.so'.format(sys.version_info[0]), 'rb', 3),
                     ('.so', 'rb', 3),
                 ]
             elif 'win' in self.platform:
+                # ABI flags are not appended on Windows.
                 self.moduleSuffixes += [
-                    ('.cp{0}{1}-win_amd64.pyd'.format(*sys.version_info), 'rb', 3),
-                    ('.cp{0}{1}-win32.pyd'.format(*sys.version_info), 'rb', 3),
+                    ('.cp{0}-win_amd64.pyd'.format(abi_version), 'rb', 3),
+                    ('.cp{0}-win32.pyd'.format(abi_version), 'rb', 3),
                     ('.pyd', 'rb', 3),
                 ]
             elif 'mac' in self.platform:
                 self.moduleSuffixes += [
-                    ('.cpython-{0}{1}m-darwin.so'.format(*sys.version_info), 'rb', 3),
+                    ('.cpython-{0}{1}-darwin.so'.format(abi_version, abi_flags), 'rb', 3),
                     ('.abi{0}.so'.format(sys.version_info[0]), 'rb', 3),
                     ('.so', 'rb', 3),
                 ]
             else: # FreeBSD et al.
                 self.moduleSuffixes += [
-                    ('.cpython-{0}{1}m.so'.format(*sys.version_info), 'rb', 3),
-                    ('.abi{0}.so'.format(*sys.version_info), 'rb', 3),
+                    ('.cpython-{0}{1}.so'.format(abi_version, abi_flags), 'rb', 3),
+                    ('.abi{0}.so'.format(sys.version_info[0]), 'rb', 3),
                     ('.so', 'rb', 3),
                 ]
 

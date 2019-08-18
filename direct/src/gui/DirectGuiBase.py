@@ -81,7 +81,6 @@ __all__ = ['DirectGuiBase', 'DirectGuiWidget']
 
 from panda3d.core import *
 from direct.showbase import ShowBaseGlobal
-from direct.showbase.ShowBase import ShowBase
 from . import DirectGuiGlobals as DGG
 from .OnscreenText import *
 from .OnscreenGeom import *
@@ -634,7 +633,7 @@ class DirectGuiBase(DirectObject.DirectObject):
         """
         # Need to tack on gui item specific id
         gEvent = event + self.guiId
-        if ShowBase.config.GetBool('debug-directgui-msgs', False):
+        if ShowBaseGlobal.config.GetBool('debug-directgui-msgs', False):
             from direct.showbase.PythonUtil import StackTrace
             print(gEvent)
             print(StackTrace())
@@ -663,7 +662,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
     # Determine the default initial state for inactive (or
     # unclickable) components.  If we are in edit mode, these are
     # actually clickable by default.
-    guiEdit = ShowBase.config.GetBool('direct-gui-edit', False)
+    guiEdit = ShowBaseGlobal.config.GetBool('direct-gui-edit', False)
     if guiEdit:
         inactiveInitState = DGG.NORMAL
     else:
@@ -729,7 +728,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
             guiObjectCollector.addLevel(1)
             guiObjectCollector.flushLevel()
             # track gui items by guiId for tracking down leaks
-            if ShowBase.config.GetBool('track-gui-items', False):
+            if ShowBaseGlobal.config.GetBool('track-gui-items', False):
                 if not hasattr(ShowBase, 'guiItems'):
                     ShowBase.guiItems = {}
                 if self.guiId in ShowBase.guiItems:
