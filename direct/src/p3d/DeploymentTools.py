@@ -336,14 +336,17 @@ class Icon:
         """ Generates image sizes that should be present but aren't by scaling
         from the next higher size. """
 
-        for required_size in (48, 32, 24, 16):
+        for required_size in (256, 128, 48, 32, 16):
             if required_size in self.images:
                 continue
 
             sizes = sorted(self.images.keys())
-            for from_size in sizes:
-                if from_size > required_size:
-                    break
+            if required_size * 2 in sizes:
+                from_size = required_size * 2
+            else:
+                for from_size in sizes:
+                    if from_size > required_size:
+                        break
 
             if from_size > required_size:
                 Icon.notify.warning("Generating %dx%d icon by scaling down %dx%d image" % (required_size, required_size, from_size, from_size))
