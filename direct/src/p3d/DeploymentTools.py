@@ -10,7 +10,7 @@ from direct.directnotify.DirectNotifyGlobal import *
 from direct.showbase.AppRunnerGlobal import appRunner
 from panda3d.core import PandaSystem, HTTPClient, Filename, VirtualFileSystem, Multifile
 from panda3d.core import TiXmlDocument, TiXmlDeclaration, TiXmlElement, readXmlStream
-from panda3d.core import PNMImage, PNMFileTypeRegistry
+from panda3d.core import PNMImage, PNMFileTypeRegistry, StringStream
 from direct.stdpy.file import *
 from direct.p3d.HostInfo import HostInfo
 # This is important for some reason
@@ -544,32 +544,35 @@ class Icon:
             fn = Filename.fromOsSpecific(fn)
         fn.setBinary()
 
-        vfs = VirtualFileSystem.getGlobalPtr()
-        stream = vfs.openWriteFile(fn, False, True)
-        icns = open(stream, 'wb')
+        icns = open(fn, 'wb')
         icns.write(b'icns\0\0\0\0')
 
         icon_types = {16: b'is32', 32: b'il32', 48: b'ih32', 128: b'it32'}
         mask_types = {16: b's8mk', 32: b'l8mk', 48: b'h8mk', 128: b't8mk'}
-        png_types = {256: b'ic08', 512: b'ic09'}
+        png_types = {256: b'ic08', 512: b'ic09', 1024: b'ic10'}
 
         pngtype = PNMFileTypeRegistry.getGlobalPtr().getTypeFromExtension("png")
 
-        for size, image in self.images.items():
-            if size in png_types:
-                if pngtype is None:
-                    continue
-                icns.write(png_types[size])
-                icns.write(b'\0\0\0\0')
-                start = icns.tell()
-
+        for size, image in sorted(self.images.items(), key=lambda item:item[0]):
+            if size in png_types and pngtype is not None:
+                stream = StringStream()
                 image.write(stream, "", pngtype)
-                pngsize = icns.tell() - start
-                icns.seek(start - 4)
-                icns.write(struct.pack('>I', pngsize + 8))
-                icns.seek(start + pngsize)
+                pngdata = stream.data
+
+                icns.write(png_types[size])
+                icns.write(struct.pack('>I', len(pngdata)))
+                icns.write(pngdata)
 
             elif size in icon_types:
+                # If it has an alpha channel, we write out a mask too.
+                if image.hasAlpha():
+                    icns.write(mask_types[size])
+                    icns.write(struct.pack('>I', size * size + 8))
+
+                    for y in xrange(size):
+                        for x in xrange(size):
+                            icns.write(struct.pack('<B', int(image.getAlpha(x, y) * 255)))
+
                 icns.write(icon_types[size])
                 icns.write(struct.pack('>I', size * size * 4 + 8))
 
@@ -577,15 +580,6 @@ class Icon:
                     for x in xrange(size):
                         r, g, b = image.getXel(x, y)
                         icns.write(struct.pack('>BBBB', 0, int(r * 255), int(g * 255), int(b * 255)))
-
-                if not image.hasAlpha():
-                    continue
-                icns.write(mask_types[size])
-                icns.write(struct.pack('>I', size * size + 8))
-
-                for y in xrange(size):
-                    for x in xrange(size):
-                        icns.write(struct.pack('<B', int(image.getAlpha(x, y) * 255)))
 
         length = icns.tell()
         icns.seek(4)
