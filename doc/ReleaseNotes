@@ -6,8 +6,10 @@ fixes various other bugs, and introduces a few minor features.
 * Fix exception trying to create DirectScrolledList
 * Fix flickering in DirectScrolledFrame and other scissor issues (#681)
 * Experimental support for Python 3.8
+* Support adding icons to deployed applications
 * Support non-affine (eg. projective) transforms in calc_tight_bounds
 * Allow setting notify-output after initial import
+* Fix macOS issue locating Panda3D using Python 2.7.13+ from python.org
 * Support for Maya 2019
 * On Windows, pip is now installed by the installer (#690)
 * Fix Actor.makeSubpart on models with pre-bound animations (#647)
@@ -31,6 +33,7 @@ fixes various other bugs, and introduces a few minor features.
 * Support setting DirectEntryScroll entry after initialization (#702)
 * Fix some missing imports in directtools (#698)
 * Fix undefined behavior issue when using musl-libc
+* Update Eigen in Windows thirdparty packages to 3.3.7
 * Update metadata of pip wheels
 
 ------------------------  RELEASE 1.10.3  -----------------------
