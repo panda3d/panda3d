@@ -3,6 +3,11 @@ from direct.gui.DirectEntry import DirectEntry
 import sys
 
 
+def test_entry_destroy():
+    entry = DirectEntry()
+    entry.destroy()
+
+
 def test_entry_get():
     entry = DirectEntry()
     assert isinstance(entry.get(), str)

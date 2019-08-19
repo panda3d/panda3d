@@ -81,6 +81,7 @@ __all__ = ['DirectGuiBase', 'DirectGuiWidget']
 
 from panda3d.core import *
 from direct.showbase import ShowBaseGlobal
+from direct.showbase import ShowBase
 from . import DirectGuiGlobals as DGG
 from .OnscreenText import *
 from .OnscreenGeom import *
