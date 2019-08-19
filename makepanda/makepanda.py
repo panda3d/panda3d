@@ -225,7 +225,7 @@ def parseopts(args):
             elif (option=="--arch"): target_arch = value.strip()
             elif (option=="--nocolor"): DisableColors()
             elif (option=="--version"):
-                match = re.match(r'^\d+\.\d+\.\d+', value)
+                match = re.match(r'^\d+\.\d+(\.\d+)+', value)
                 if not match:
                     usage("version requires three digits")
                 WHLVERSION = value
