@@ -1071,7 +1071,7 @@ if __name__ == "__main__":
             PkgDisable(pkg)
 
     # Parse the version.
-    match = re.match(r'^\d+\.\d+\.\d+', options.version)
+    match = re.match(r'^\d+\.\d+(\.\d+)+', options.version)
     if not match:
         exit("version requires three digits")
 

@@ -222,7 +222,7 @@ def parseopts(args):
             elif (option=="--arch"): target_arch = value.strip()
             elif (option=="--nocolor"): DisableColors()
             elif (option=="--version"):
-                match = re.match(r'^\d+\.\d+\.\d+', value)
+                match = re.match(r'^\d+\.\d+(\.\d+)+', value)
                 if not match:
                     usage("version requires three digits")
                 WHLVERSION = value
@@ -2684,7 +2684,7 @@ PANDAVERSION_H="""
 #define PANDA_SEQUENCE_VERSION $VERSION3
 #define PANDA_VERSION $NVERSION
 #define PANDA_NUMERIC_VERSION $NVERSION
-#define PANDA_VERSION_STR "$VERSION1.$VERSION2.$VERSION3"
+#define PANDA_VERSION_STR "$VERSION"
 #define PANDA_ABI_VERSION_STR "$VERSION1.$VERSION2"
 #define PANDA_DISTRIBUTOR "$DISTRIBUTOR"
 #define PANDA_PACKAGE_VERSION_STR "$RTDIST_VERSION"
@@ -2803,6 +2803,7 @@ def CreatePandaVersionFiles():
     pandaversion_h = pandaversion_h.replace("$VERSION1",str(version1))
     pandaversion_h = pandaversion_h.replace("$VERSION2",str(version2))
     pandaversion_h = pandaversion_h.replace("$VERSION3",str(version3))
+    pandaversion_h = pandaversion_h.replace("$VERSION",VERSION)
     pandaversion_h = pandaversion_h.replace("$NVERSION",str(nversion))
     pandaversion_h = pandaversion_h.replace("$DISTRIBUTOR",DISTRIBUTOR)
     pandaversion_h = pandaversion_h.replace("$RTDIST_VERSION",RTDIST_VERSION)
