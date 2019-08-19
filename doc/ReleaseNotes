@@ -1,3 +1,8 @@
+------------------------  RELEASE 1.10.4.1  ---------------------
+
+This release fixes only one critical regression: calling destroy()
+on a DirectGUI item would cause an exception.
+
 ------------------------  RELEASE 1.10.4  -----------------------
 
 This release fixes a regression with DirectScrolledList in 1.10.3,
