@@ -17,7 +17,7 @@ heightfield() {
   return _heightfield;
 }
 
-INLINE double CollisionHeightfield::
+INLINE PN_stdfloat CollisionHeightfield::
 get_height(int x, int y) const {
   return _heightfield.get_gray(x, y) * _max_height;
 }

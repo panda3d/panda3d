@@ -35,7 +35,7 @@ using std::sort;
  */
 CollisionHeightfield::
 CollisionHeightfield(PNMImage &heightfield,
-                     double max_height, int subdivisions) {
+                     PN_stdfloat max_height, int subdivisions) {
   _heightfield = heightfield;
   _max_height = max_height;
   setup_quadtree(subdivisions);

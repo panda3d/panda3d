@@ -5,8 +5,6 @@
 #include "collisionSolid.h"
 #include "pnmImage.h"
 
-using std::vector;
-
 /*
  * CollisionHeightfield efficiently deals with collisions on uneven
  * terrain given a heightfield image. A quad tree is implemented to
@@ -17,7 +15,7 @@ using std::vector;
 class EXPCL_PANDA_COLLIDE CollisionHeightfield : public CollisionSolid {
 PUBLISHED:
   CollisionHeightfield(PNMImage &heightfield,
-                       double max_height, int subdivisions);
+                       PN_stdfloat max_height, int subdivisions);
   ~CollisionHeightfield() { delete[] _nodes; }
   virtual LPoint3 get_collision_origin() const;
   INLINE PNMImage &heightfield();
@@ -66,21 +64,21 @@ protected:
 
 private:
   PNMImage _heightfield;
-  double _max_height;
+  PN_stdfloat _max_height;
   // Todo: PT(QuadTreeNode) _nodes;
   QuadTreeNode *_nodes;
   int _nodes_count;
   int _leaf_first_index;
   void setup_quadtree(int subdivisions);
-  INLINE double get_height(int x, int y) const;
-  vector<Triangle> get_triangles(int x, int y) const;
+  INLINE PN_stdfloat get_height(int x, int y) const;
+  std::vector<Triangle> get_triangles(int x, int y) const;
 
   // A pointer to a function that tests for intersection between a box and a
   // solid defined by the given IntersectionParams.
   typedef bool (*BoxIntersection)(const LPoint3 &box_min, const LPoint3 &box_max,
                                   IntersectionParams &params);
 
-  vector<QuadTreeIntersection> find_intersections(BoxIntersection intersects_box,
+  std::vector<QuadTreeIntersection> find_intersections(BoxIntersection intersects_box,
                                                   IntersectionParams params) const;
 
 protected:
