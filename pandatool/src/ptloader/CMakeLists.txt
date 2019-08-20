@@ -24,4 +24,8 @@ if(HAVE_FCOLLADA)
   target_compile_definitions(p3ptloader PRIVATE HAVE_FCOLLADA)
 endif()
 
-install(TARGETS p3ptloader EXPORT Tools COMPONENT Tools DESTINATION ${MODULE_DESTINATION})
+if(BUILD_SHARED_LIBS)
+  # We can't install this if we're doing a static build, because it depends on
+  # a bunch of static libraries that aren't installed.
+  install(TARGETS p3ptloader EXPORT Tools COMPONENT Tools DESTINATION ${MODULE_DESTINATION})
+endif()
