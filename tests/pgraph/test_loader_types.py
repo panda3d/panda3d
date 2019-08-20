@@ -11,7 +11,9 @@ def test_filename():
     fp = tempfile.NamedTemporaryFile(suffix='.test', delete=False)
     fp.write(b"test")
     fp.close()
-    yield Filename.from_os_specific(fp.name)
+    filename = Filename.from_os_specific(fp.name)
+    filename.make_true_case()
+    yield filename
     os.unlink(fp.name)
 
 
@@ -21,7 +23,9 @@ def test_pz_filename():
     fp = tempfile.NamedTemporaryFile(suffix='.test.pz', delete=False)
     fp.write(b"test")
     fp.close()
-    yield Filename.from_os_specific(fp.name)
+    filename = Filename.from_os_specific(fp.name)
+    filename.make_true_case()
+    yield filename
     os.unlink(fp.name)
 
 
@@ -100,11 +104,13 @@ def test_loader_extensions(test_filename):
     fp1.write(b"test1")
     fp1.close()
     fn1 = Filename.from_os_specific(fp1.name)
+    fn1.make_true_case()
 
     fp2 = tempfile.NamedTemporaryFile(suffix='.TEST2', delete=False)
     fp2.write(b"test2")
     fp2.close()
     fn2 = Filename.from_os_specific(fp2.name)
+    fn2.make_true_case()
 
     try:
         with registered_type(MultiExtensionLoader):
