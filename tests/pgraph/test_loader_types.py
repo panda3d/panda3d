@@ -1,4 +1,4 @@
-from panda3d.core import LoaderFileTypeRegistry, ModelRoot, Loader, LoaderOptions
+from panda3d.core import LoaderFileTypeRegistry, ModelRoot, Loader, LoaderOptions, Filename
 import pytest
 import tempfile
 import os
@@ -11,7 +11,7 @@ def test_filename():
     fp = tempfile.NamedTemporaryFile(suffix='.test', delete=False)
     fp.write(b"test")
     fp.close()
-    yield fp.name
+    yield Filename.from_os_specific(fp.name)
     os.unlink(fp.name)
 
 
@@ -21,7 +21,7 @@ def test_pz_filename():
     fp = tempfile.NamedTemporaryFile(suffix='.test.pz', delete=False)
     fp.write(b"test")
     fp.close()
-    yield fp.name
+    yield Filename.from_os_specific(fp.name)
     os.unlink(fp.name)
 
 
@@ -99,17 +99,20 @@ def test_loader_extensions(test_filename):
     fp1 = tempfile.NamedTemporaryFile(suffix='.test1', delete=False)
     fp1.write(b"test1")
     fp1.close()
+    fn1 = Filename.from_os_specific(fp1.name)
+
     fp2 = tempfile.NamedTemporaryFile(suffix='.TEST2', delete=False)
     fp2.write(b"test2")
     fp2.close()
+    fn2 = Filename.from_os_specific(fp2.name)
 
     try:
         with registered_type(MultiExtensionLoader):
-            model1 = Loader.get_global_ptr().load_sync(fp1.name, LoaderOptions(LoaderOptions.LF_no_cache))
+            model1 = Loader.get_global_ptr().load_sync(fn1, LoaderOptions(LoaderOptions.LF_no_cache))
             assert model1 is not None
             assert model1.name == "loaded"
 
-            model2 = Loader.get_global_ptr().load_sync(fp2.name, LoaderOptions(LoaderOptions.LF_no_cache))
+            model2 = Loader.get_global_ptr().load_sync(fn2, LoaderOptions(LoaderOptions.LF_no_cache))
             assert model2 is not None
             assert model2.name == "loaded"
     finally:
