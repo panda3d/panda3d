@@ -83,10 +83,27 @@ init(PyObject *loader) {
   // it must occur in the list.
   PyObject *extensions = PyObject_GetAttrString(loader, "extensions");
   if (extensions != nullptr) {
+    if (PyUnicode_Check(extensions)
+#if PY_MAJOR_VERSION < 3
+      || PyString_Check(extensions)
+#endif
+      ) {
+      Dtool_Raise_TypeError("extensions list should be a list or tuple");
+      Py_DECREF(extensions);
+      return false;
+    }
+
     PyObject *sequence = PySequence_Fast(extensions, "extensions must be a sequence");
     PyObject **items = PySequence_Fast_ITEMS(sequence);
     Py_ssize_t num_items = PySequence_Fast_GET_SIZE(sequence);
     Py_DECREF(extensions);
+
+    if (num_items == 0) {
+      PyErr_SetString(PyExc_ValueError, "extensions list may not be empty");
+      Py_DECREF(sequence);
+      return false;
+    }
+
     bool found_extension = false;
 
     for (Py_ssize_t i = 0; i < num_items; ++i) {
