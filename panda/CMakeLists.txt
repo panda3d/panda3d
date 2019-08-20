@@ -81,7 +81,7 @@ add_subdirectory(metalibs/pandaphysics)
 
 # Now add the Python modules:
 set(CORE_MODULE_COMPONENTS
-  p3chan p3char p3collide p3cull p3device p3dgraph p3display p3distort
+  p3chan p3char p3collide p3cull p3device p3dgraph p3display
   p3downloader p3dxml p3event p3express p3gobj p3grutil p3gsgbase p3linmath
   p3mathutil p3movies p3parametrics p3pgraph p3pgraphnodes p3pgui
   p3pipeline p3pnmimage p3pstatclient p3putil p3recorder p3text p3tform
@@ -122,6 +122,7 @@ if(INTERROGATE_PYTHON_INTERFACE)
     export_targets(EggPython NAMESPACE "Panda3D::Python::" COMPONENT EggDevel)
   endif()
 
+  add_python_module(panda3d.fx pandafx IMPORT panda3d.core)
   add_python_module(panda3d.physics p3physics p3particlesystem LINK pandaphysics IMPORT panda3d.core)
 
   if(HAVE_ODE)
