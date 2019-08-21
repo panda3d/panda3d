@@ -34,11 +34,147 @@ using std::sort;
  *
  */
 CollisionHeightfield::
-CollisionHeightfield(PNMImage &heightfield,
+CollisionHeightfield(PNMImage heightfield,
                      PN_stdfloat max_height, int subdivisions) {
   _heightfield = heightfield;
   _max_height = max_height;
-  setup_quadtree(subdivisions);
+  _nodes_count = 0;
+
+  set_subdivisions(subdivisions);
+}
+
+/**
+ * Sets the number of quadtree subdivisions and modifies
+ * the quadtree accordingly. This should be called when a
+ * user wants to modify the number of quadtree subdivisions
+ * or from a constructor to initialize the quadtree.
+ */
+void CollisionHeightfield::
+set_subdivisions(int subdivisions) {
+  // The number of subdivisions should not be negative and
+  // shouldn't exceed 16 as it would cause integer overflow.
+  nassertv(subdivisions >= 0 && subdivisions < 17);
+  _subdivisions = subdivisions;
+
+  // Determine the number of quadtree nodes needed
+  // for the corresponding number of subdivisions.
+  int nodes_count = 0;
+  for (int i = 0; i <= _subdivisions; i++) {
+    nodes_count += pow(4, i);
+  }
+
+  if (nodes_count == _nodes_count) {
+    // No changes to quadtree to be done
+    return;
+  }
+
+  int leaf_first_index = 0;
+  for (int i = 1; i <= _subdivisions - 1; i++) {
+    leaf_first_index += pow(4, i);
+  }
+
+  // Calculate the area of a leaf node in the quadtree
+  int heightfield_area = _heightfield.get_read_x_size() *
+                         _heightfield.get_read_y_size();
+  int num_leafs = nodes_count - leaf_first_index;
+  // If the area is too small (less than 1), then we
+  // retry by decrementing the number of subdivisions.
+  if (heightfield_area / num_leafs == 0) {
+    set_subdivisions(subdivisions - 1);
+    return;
+  }
+
+  if (nodes_count < _nodes_count) {
+    // If the user is decreasing the number of
+    // subdivisions, then we need only to update the
+    // index where the quadtree leaves start.
+    _leaf_first_index = leaf_first_index;
+  } else {
+    // Otherwise we need to build a new quadtree
+    if (_nodes_count != 0) {
+      // There is an existing quadtree, delete it
+      // before building a new one
+      delete[] _nodes;
+      _nodes = nullptr;
+    }
+    QuadTreeNode *nodes = new QuadTreeNode[nodes_count];
+    _nodes = nodes;
+    _nodes_count = nodes_count;
+    _leaf_first_index = leaf_first_index;
+    fill_quadtree_areas();
+    fill_quadtree_heights();
+  }
+}
+
+/**
+ *
+ */
+void CollisionHeightfield::
+fill_quadtree_areas() {
+  _nodes[0].area.min = {0, 0};
+  _nodes[0].area.max = {(float)_heightfield.get_read_x_size(),
+                        (float)_heightfield.get_read_y_size()};
+  _nodes[0].index = 0;
+  QuadTreeNode parent;
+  for (int i = 1; i < _nodes_count; i += 4) {
+    parent = _nodes[(i-1) / 4];
+    LVector2 sub_area = (parent.area.max - parent.area.min) / 2;
+    // SE Quadrant
+    _nodes[i].area.min = parent.area.min;
+    _nodes[i].area.max = parent.area.min + sub_area;
+    _nodes[i].index = i;
+    // SW Quadrant
+    _nodes[i + 1].area.min = {parent.area.min[0] + sub_area[0],
+                              parent.area.min[1]};
+    _nodes[i + 1].area.max = _nodes[i + 1].area.min + sub_area;
+    _nodes[i + 1].index = i + 1;
+    // NE Quadrant
+    _nodes[i + 2].area.min = {parent.area.min[0],
+                              parent.area.min[1] + sub_area[1]};
+    _nodes[i + 2].area.max = _nodes[i + 2].area.min + sub_area;
+    _nodes[i + 2].index = i + 2;
+    // NW Quadrant
+    _nodes[i + 3].area.min = parent.area.min + sub_area;
+    _nodes[i + 3].area.max = parent.area.max;
+    _nodes[i + 3].index = i + 3;
+  }
+}
+
+/**
+ * Processes the heightfield image, setting the height values
+ * of each quadtree node.
+ *
+ * @relates set_max_height
+ * @relates set_heightfield
+ */
+void CollisionHeightfield::
+fill_quadtree_heights() {
+  QuadTreeNode node;
+  QuadTreeNode child;
+  for (int i = _nodes_count - 1; i >= 0; i--) {
+    node = _nodes[i];
+    PN_stdfloat height_min = INT_MAX;
+    PN_stdfloat height_max = INT_MIN;
+    if (i >= _leaf_first_index) {
+      for (int x = node.area.min[0]; x < node.area.max[0]; x++) {
+        for (int y = node.area.min[1]; y < node.area.max[1]; y++) {
+          PN_stdfloat value = _heightfield.get_gray(x,
+            _heightfield.get_read_y_size() - 1 - y) * _max_height;
+
+          height_min = min(value, height_min);
+          height_max = max(value, height_max);
+        }
+      }
+    } else {
+      for (int c = (i * 4) + 1, cmax = c + 4; c < cmax; c++) {
+        child = _nodes[c];
+        height_min = min(child.height_min, height_min);
+        height_max = max(child.height_max, height_max);
+      }
+    }
+    _nodes[i].height_min = height_min;
+    _nodes[i].height_max = height_max;
+  }
 }
 
 /**
@@ -574,87 +710,6 @@ get_triangles(int x, int y) const {
   #undef get_point
 
   return triangles;
-}
-
-/**
- * Processes the given heightfield image and creates a
- * quad tree where each node represents a smaller
- * sub-rectangle of the heightfield. Each quad tree node
- * has a height_min and height_max value, thus representing
- * a box in 3D space.
- */
-void CollisionHeightfield::
-setup_quadtree(int subdivisions) {
-  int nodes_count = 0;
-  for (int i = 0; i <= subdivisions; i++) {
-    nodes_count += pow(4, i);
-  }
-  QuadTreeNode *nodes = new QuadTreeNode[nodes_count];
-  nodes[0].area.min = {0, 0};
-  nodes[0].area.max = {(float)_heightfield.get_read_x_size(),
-                       (float)_heightfield.get_read_y_size()};
-  nodes[0].index = 0;
-  QuadTreeNode parent;
-  for (int i = 1; i < nodes_count; i += 4) {
-    parent = nodes[(i-1) / 4];
-    LVector2 sub_area = (parent.area.max - parent.area.min) / 2;
-    // SE Quadrant
-    nodes[i].area.min = parent.area.min;
-    nodes[i].area.max = parent.area.min + sub_area;
-    nodes[i].index = i;
-    // SW Quadrant
-    nodes[i + 1].area.min = {parent.area.min[0] + sub_area[0],
-                             parent.area.min[1]};
-    nodes[i + 1].area.max = nodes[i + 1].area.min + sub_area;
-    nodes[i + 1].index = i + 1;
-    // NE Quadrant
-    nodes[i + 2].area.min = {parent.area.min[0],
-                             parent.area.min[1] + sub_area[1]};
-    nodes[i + 2].area.max = nodes[i + 2].area.min + sub_area;
-    nodes[i + 2].index = i + 2;
-    // NW Quadrant
-    nodes[i + 3].area.min = parent.area.min + sub_area;
-    nodes[i + 3].area.max = parent.area.max;
-    nodes[i + 3].index = i + 3;
-  }
-
-  // We now process the heightfield image, setting the
-  // height_min and height_max values of each quad tree node
-  // starting from the leaves.
-  int leaf_first_index = 0;
-  for (int i = 1; i <= subdivisions - 1; i++) {
-    leaf_first_index += pow(4, i);
-  }
-
-  QuadTreeNode node;
-  QuadTreeNode child;
-  for (int i = nodes_count - 1; i >= 0; i--) {
-    node = nodes[i];
-    PN_stdfloat height_min = INT_MAX;
-    PN_stdfloat height_max = INT_MIN;
-    if (i >= leaf_first_index) {
-      for (int x = node.area.min[0]; x < node.area.max[0]; x++) {
-        for (int y = node.area.min[1]; y < node.area.max[1]; y++) {
-          PN_stdfloat value = _heightfield.get_gray(x,
-            _heightfield.get_read_y_size() - 1 - y) * _max_height;
-
-          height_min = min(value, height_min);
-          height_max = max(value, height_max);
-        }
-      }
-    } else {
-      for (int c = (i * 4) + 1, cmax = c + 4; c < cmax; c++) {
-        child = nodes[c];
-        height_min = min(child.height_min, height_min);
-        height_max = max(child.height_max, height_max);
-      }
-    }
-    nodes[i].height_min = height_min;
-    nodes[i].height_max = height_max;
-  }
-  _nodes = nodes;
-  _nodes_count = nodes_count;
-  _leaf_first_index = leaf_first_index;
 }
 
 /**

@@ -14,11 +14,21 @@
  * */
 class EXPCL_PANDA_COLLIDE CollisionHeightfield : public CollisionSolid {
 PUBLISHED:
-  CollisionHeightfield(PNMImage &heightfield,
+  CollisionHeightfield(PNMImage heightfield,
                        PN_stdfloat max_height, int subdivisions);
   ~CollisionHeightfield() { delete[] _nodes; }
   virtual LPoint3 get_collision_origin() const;
-  INLINE PNMImage &heightfield();
+
+  INLINE PNMImage get_heightfield();
+  INLINE void set_heightfield(PNMImage heightfield);
+
+  INLINE PN_stdfloat get_max_height();
+  INLINE void set_max_height(PN_stdfloat max_height);
+
+  INLINE int get_subdivisions();
+  void set_subdivisions(int subdivisions);
+
+  INLINE PN_stdfloat get_height(int x, int y) const;
 
 protected:
   struct Rect {
@@ -65,12 +75,13 @@ protected:
 private:
   PNMImage _heightfield;
   PN_stdfloat _max_height;
+  int _subdivisions;
   // Todo: PT(QuadTreeNode) _nodes;
   QuadTreeNode *_nodes;
   int _nodes_count;
   int _leaf_first_index;
-  void setup_quadtree(int subdivisions);
-  INLINE PN_stdfloat get_height(int x, int y) const;
+  void fill_quadtree_areas();
+  void fill_quadtree_heights();
   std::vector<Triangle> get_triangles(int x, int y) const;
 
   // A pointer to a function that tests for intersection between a box and a
