@@ -552,63 +552,25 @@ get_triangles(int x, int y) const {
   Triangle t;
   int y2 = cols - 1 - y;
   bool odd = (x + y2) % 2;
-  #define get_point(dx, dy) LPoint3(x + dx, y - dy, get_height(x + dx, y2 + dy));
+  #define in_bounds(x, y) (x >= 0 && y >= 0 && x < rows && y < cols)
+  #define get_point(dx, dy) LPoint3(x + dx, y - dy, get_height(x + dx, y2 + dy))
   t.p1 = get_point(0, 0);
-  if (x - 1 >= 0 && y2 - 1 >= 0) {
-    if (odd) {
-      t.p2 = get_point(-1, 0);
-      t.p3 = get_point(0, -1);
-      triangles.push_back(t);
-    } else {
-      t.p2 = get_point(-1, -1);
-      t.p3 = get_point(-1, 0);
-      triangles.push_back(t);
-      t.p3 = get_point(0, -1);
-      triangles.push_back(t);
+  for (int dx = -1; dx <= 1; dx += 2) {
+    for (int dy = -1; dy <= 1; dy += 2) {
+      if (!in_bounds(x + dx, y2 + dy)) continue;
+      if (odd) {
+        t.p2 = get_point(dx, 0);
+        t.p3 = get_point(0, dy);
+      } else {
+        t.p2 = get_point(dx, dy);
+        t.p3 = get_point(dx, 0);
+        triangles.push_back(t);
+        t.p3 = get_point(0, dy);
+        triangles.push_back(t);
+      }
     }
   }
-
-  if (x + 1 < rows && y2 + 1 < cols) {
-    if (odd) {
-      t.p2 = get_point(1, 0);
-      t.p3 = get_point(0, 1);
-      triangles.push_back(t);
-    } else {
-      t.p2 = get_point(1, 1);
-      t.p3 = get_point(0, 1);
-      triangles.push_back(t);
-      t.p3 = get_point(1, 0);
-      triangles.push_back(t);
-    }
-  }
-
-  if (x - 1 >= 0 && y2 + 1 < cols) {
-    if (odd) {
-      t.p2 = get_point(0, 1);
-      t.p3 = get_point(0, 1);
-      triangles.push_back(t);
-    } else {
-      t.p2 = get_point(-1, 1);
-      t.p3 = get_point(-1, 0);
-      triangles.push_back(t);
-      t.p3 = get_point(0, 1);
-      triangles.push_back(t);
-    }
-  }
-
-  if (x + 1 < rows && y2 - 1 >= 0) {
-    if (odd) {
-      t.p2 = get_point(0, -1);
-      t.p3 = get_point(1, 0);
-      triangles.push_back(t);
-    } else {
-      t.p2 = get_point(1, -1);
-      t.p3 = get_point(0, -1);
-      triangles.push_back(t);
-      t.p3 = get_point(1, 0);
-      triangles.push_back(t);
-    }
-  }
+  #undef in_bounds
   #undef get_point
 
   return triangles;
