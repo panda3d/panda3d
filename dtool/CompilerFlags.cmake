@@ -155,3 +155,11 @@ if(NOT MSVC)
     add_compile_options("-fvisibility=hidden")
   endif()
 endif()
+
+# These are flags for the custom configurations we add
+# Distribution
+set(CMAKE_C_FLAGS_DISTRIBUTION "")
+set(CMAKE_CXX_FLAGS_DISTRIBUTION "")
+set(CMAKE_SHARED_LINKER_FLAGS_DISTRIBUTION "")
+set(CMAKE_MODULE_LINKER_FLAGS_DISTRIBUTION "")
+set(CMAKE_EXE_LINKER_FLAGS_DISTRIBUTION "")
