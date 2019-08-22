@@ -76,7 +76,7 @@ add_custom_command(
 
 add_executable(interrogate_module interrogate_module.cxx
   ${CMAKE_CURRENT_BINARY_DIR}/interrogate_preamble_python_native.cxx)
-target_link_libraries(interrogate_module p3cppParser p3dtoolconfig p3pystub
+target_link_libraries(interrogate_module p3cppParser p3dtoolconfig
   PKG::OPENSSL)
 
 if(NOT CMAKE_CROSSCOMPILING)
