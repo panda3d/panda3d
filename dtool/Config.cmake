@@ -8,7 +8,7 @@
 
 include(CMakeDependentOption)
 
-# Define the plaform we are building on.
+# Define our target platform.
 # The values "UNIX", "WIN32", "MINGW", "MSYS", and "CYGWIN"
 # are automatically provided by CMAKE.  "APPLE" is also provided by
 # CMAKE but may be True on systems that are not OS X.
