@@ -230,7 +230,7 @@ class Loader(DirectObject):
 
         """
 
-        assert Loader.notify.debug("Loading model: %s" % (modelPath))
+        assert Loader.notify.debug("Loading model: %s" % (modelPath,))
         if loaderOptions is None:
             loaderOptions = LoaderOptions()
         else:
