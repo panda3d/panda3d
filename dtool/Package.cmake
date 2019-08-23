@@ -1,3 +1,106 @@
+set(THIRDPARTY_DIRECTORY "" CACHE PATH
+  "Optional location of a makepanda-style thirdparty directory. All libraries
+   located here will be prioritized over system libraries. Useful for
+   cross-compiling.")
+
+if(THIRDPARTY_DIRECTORY)
+  # This policy is necessary for PackageName_ROOT variables to be respected
+  if(POLICY CMP0074)
+    cmake_policy(GET CMP0074 _policy_cmp0074)
+  endif()
+
+  if(NOT _policy_cmp0074 STREQUAL "NEW")
+    message(FATAL_ERROR
+      "Your version of CMake is too old; please upgrade or unset THIRDPARTY_DIRCTORY to continue.")
+  endif()
+
+  # Dig up the actual "libs" directory
+  if(APPLE)
+    set(_package_dir "${THIRDPARTY_DIRECTORY}/darwin-libs-a")
+
+  elseif(WIN32)
+    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+      set(_package_dir "${THIRDPARTY_DIRECTORY}/win-libs-vc14-x64")
+
+      file(GLOB Python_ROOT "${THIRDPARTY_DIRECTORY}/win-python*-x64")
+    else()
+      set(_package_dir "${THIRDPARTY_DIRECTORY}/win-libs-vc14")
+
+      file(GLOB Python_ROOT "${THIRDPARTY_DIRECTORY}/win-python*")
+    endif()
+
+    list(REVERSE Python_ROOT) # Descending order of version
+
+    set(BISON_ROOT "${THIRDPARTY_DIRECTORY}/win-util")
+    set(FLEX_ROOT "${THIRDPARTY_DIRECTORY}/win-util")
+
+  else()
+    message(FATAL_ERROR
+      "You can't use THIRDPARTY_DIRECTORY on this platform. Unset it to continue.")
+
+  endif()
+
+  if(NOT EXISTS "${_package_dir}")
+    message(FATAL_ERROR
+      "Either your THIRDPARTY_DIRECTORY path does not exist, or it is for the wrong platform.")
+
+  endif()
+
+  foreach(_Package
+    ARToolKit
+    Assimp
+    Bullet
+    Cg
+    Eigen3
+    FCollada
+    FFMPEG
+    FMODEx
+    Freetype
+    HarfBuzz
+    JPEG
+    LibSquish
+    ODE
+    Ogg
+    OpenAL
+    OpenEXR
+    OpenSSL
+    OpusFile
+    PNG
+    SWResample
+    SWScale
+    TIFF
+    VorbisFile
+    VRPN
+    ZLIB
+  )
+
+    string(TOLOWER "${_Package}" _package)
+
+    # Some packages in the thirdparty dir have different subdirectory names from
+    # the name of the CMake package
+    if(_package STREQUAL "cg")
+      set(_package "nvidiacg")
+    elseif(_package STREQUAL "eigen3")
+      set(_package "eigen")
+    elseif(_package STREQUAL "ogg")
+      set(_package "vorbis") # It's in the same install dir here
+    elseif(_package STREQUAL "opusfile")
+      set(_package "opus")
+    elseif(_package STREQUAL "libsquish")
+      set(_package "squish")
+    elseif(_package STREQUAL "swresample" OR _package STREQUAL "swscale")
+      set(_package "ffmpeg") # These are also part of FFmpeg
+    elseif(_package STREQUAL "vorbisfile")
+      set(_package "vorbis")
+    endif()
+
+    # Set search path
+    set(${_Package}_ROOT "${_package_dir}/${_package}")
+
+  endforeach(_Package)
+
+endif()
+
 #
 # ------------ Python ------------
 #
