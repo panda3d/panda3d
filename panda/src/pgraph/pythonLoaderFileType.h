@@ -21,6 +21,8 @@
 #include "loaderFileType.h"
 #include "extension.h"
 
+class LoaderFileTypeRegistry;
+
 /**
  * This defines a Python-based loader plug-in.  An instance of this can be
  * constructed by inheritance and explicitly registered, or it can be created

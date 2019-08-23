@@ -15,8 +15,10 @@
 
 #if defined(__APPLE__) && !defined(CPPPARSER)
 
+#include <IOKit/hid/IOHIDLib.h>
 #include <IOKit/hid/IOHIDElement.h>
 
+#include "inputDeviceManager.h"
 #include "keyboardButton.h"
 #include "gamepadButton.h"
 #include "mouseButton.h"

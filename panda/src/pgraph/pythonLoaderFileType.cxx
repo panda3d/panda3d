@@ -15,6 +15,7 @@
 
 #ifdef HAVE_PYTHON
 
+#include "bamCacheRecord.h"
 #include "modelRoot.h"
 #include "pythonThread.h"
 #include "py_panda.h"
