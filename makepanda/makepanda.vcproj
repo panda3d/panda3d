@@ -361,10 +361,6 @@
 				<File RelativePath="..\dtool\src\dtoolbase\typedObject.h"></File>
 				<File RelativePath="..\dtool\src\dtoolbase\mutexWin32Impl.cxx"></File>
 			</Filter>
-			<Filter Name="pystub">
-				<File RelativePath="..\dtool\src\pystub\pystub.h"></File>
-				<File RelativePath="..\dtool\src\pystub\pystub.cxx"></File>
-			</Filter>
 			<Filter Name="dtoolutil">
 				<File RelativePath="..\dtool\src\dtoolutil\pandaFileStreamBuf.h"></File>
 				<File RelativePath="..\dtool\src\dtoolutil\vector_src.h"></File>
