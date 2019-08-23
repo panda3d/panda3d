@@ -32,7 +32,7 @@ find_path(FMODEX_INCLUDE_DIR
 
 # Find the 32-bit library
 find_library(FMODEX_32_LIBRARY
-  NAMES "fmodex_vc" "fmodex_bc" "fmodex" "fmodexL" "libfmodex" "libfmodexL"
+  NAMES "fmodex_vc" "fmodex_bc" "fmodex" "fmodexL" "libfmodex" "libfmodexL" "fmodex_vc" "fmodexL_vc"
   PATHS "/usr"
         "/usr/local"
         "/usr/X11R6"
@@ -49,7 +49,7 @@ find_library(FMODEX_32_LIBRARY
 
 # Find the 64-bit library
 find_library(FMODEX_64_LIBRARY
-  NAMES "fmodex64" "libfmodex64" "fmodexL64" "libfmodexL64"
+  NAMES "fmodex64" "libfmodex64" "fmodexL64" "libfmodexL64" "fmodex64_vc" "fmodexL64_vc"
   PATHS "/usr"
         "/usr/local"
         "/usr/X11R6"

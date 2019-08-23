@@ -23,6 +23,13 @@
 
 # Find Cg for OpenGL
 macro(find_cggl)
+  if(APPLE)
+    # GL support is built-in on Apple
+    set(CGGL_LIBRARY "${CG_LIBRARY}")
+    set(CGGL_LIBRARY_DIR "${CG_LIBRARY_DIR}")
+    set(CGGL_INCLUDE_DIR "${CG_INCLUDE_DIR}")
+  endif()
+
   if(Cg_FIND_QUIETLY)
     set(CgGL_FIND_QUIETLY TRUE)
   endif()
@@ -114,59 +121,33 @@ endmacro()
 
 # Find base Nvidia Cg
 if(NOT CG_LIBRARY_DIR OR NOT CG_INCLUDE_DIRS)
-  # On OSX default to using the framework version of Cg.
-  if(APPLE)
-    include(${CMAKE_ROOT}/Modules/CMakeFindFrameworks.cmake)
-    set(CG_INCLUDES)
+  # Find the include directory
+  find_path(CG_INCLUDE_DIR
+    NAMES "Cg/cg.h"
+    PATHS "C:/Program Files/Cg"
+          "C:/Program Files/NVIDIA Corporation/Cg/include"
+          "/usr/include"
+          "/usr/local/include"
+          "/opt/Cg"
+          "/opt/nvidia-cg-toolkit/include" # Gentoo
+    PATH_SUFFIXES "" "Cg" "cg"
+    DOC "The path to NvidiaCg's include directory."
+  )
 
-    cmake_find_frameworks(Cg)
-    if(Cg_FRAMEWORKS)
-      foreach(dir ${Cg_FRAMEWORKS})
-        list(APPEND CG_INCLUDES ${dir}/Headers ${dir}/PrivateHeaders)
-      endforeach(dir)
-      unset(Cg_FRAMEWORKS)
-
-      # Find the include dir
-      find_path(CG_INCLUDE_DIR
-        NAMES "cg.h"
-        PATHS ${CG_INCLUDES}
-        DOC "The path to NvidiaCg's include directory."
-      )
-      unset(CG_INCLUDES)
-
-      # Set the library dir (TODO: Check the correctness on Mac OS X)
-      set(CG_LIBRARY_DIR "/Library/Frameworks/Cg.framework" CACHE PATH "The path to NvidiaCg's library directory.")
-    endif()
-
-  else()
-    # Find the include directory
-    find_path(CG_INCLUDE_DIR
-      NAMES "cg.h"
-      PATHS "C:/Program Files/Cg"
-            "C:/Program Files/NVIDIA Corporation/Cg/include"
-            "/usr/include"
-            "/usr/local/include"
-            "/opt/Cg"
-            "/opt/nvidia-cg-toolkit/include" # Gentoo
-      PATH_SUFFIXES "" "Cg" "cg"
-      DOC "The path to NvidiaCg's include directory."
-    )
-
-    # Find the library directory
-    find_library(CG_LIBRARY
-      NAMES "Cg" "libCg"
-      PATHS "C:/Program Files/Cg"
-            "C:/Program Files/NVIDIA Corporation/Cg"
-            "/usr"
-            "/usr/lib/x86_64-linux-gnu"
-            "/usr/local"
-            "/opt/Cg"
-            "/opt/nvidia-cg-toolkit" # Gentoo
-      PATH_SUFFIXES "" "lib" "lib32" "lib64"
-    )
-    get_filename_component(CG_LIBRARY_DIR "${CG_LIBRARY}" PATH)
-    set(CG_LIBRARY_DIR "${CG_LIBRARY_DIR}" CACHE PATH "The path to NvidiaCG's library directory.") # Library path
-  endif()
+  # Find the library directory
+  find_library(CG_LIBRARY
+    NAMES "Cg" "libCg"
+    PATHS "C:/Program Files/Cg"
+          "C:/Program Files/NVIDIA Corporation/Cg"
+          "/usr"
+          "/usr/lib/x86_64-linux-gnu"
+          "/usr/local"
+          "/opt/Cg"
+          "/opt/nvidia-cg-toolkit" # Gentoo
+    PATH_SUFFIXES "" "lib" "lib32" "lib64"
+  )
+  get_filename_component(CG_LIBRARY_DIR "${CG_LIBRARY}" PATH)
+  set(CG_LIBRARY_DIR "${CG_LIBRARY_DIR}" CACHE PATH "The path to NvidiaCG's library directory.") # Library path
 
   string(REGEX REPLACE "/Cg$" "" CG_BASE_INCLUDE_DIR "${CG_INCLUDE_DIR}")
   set(CG_INCLUDE_DIRS ${CG_BASE_INCLUDE_DIR} ${CG_INCLUDE_DIR})
