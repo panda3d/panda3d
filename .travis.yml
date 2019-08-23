@@ -1,6 +1,8 @@
 language: cpp
 sudo: false
 
+cache: ccache
+
 # Build matrix:
 os:
 - linux
