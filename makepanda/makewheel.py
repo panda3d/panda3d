@@ -15,7 +15,7 @@ import tempfile
 import subprocess
 from distutils.sysconfig import get_config_var
 from optparse import OptionParser
-from makepandacore import ColorText, LocateBinary, ParsePandaVersion, GetExtensionSuffix, SetVerbose, GetVerbose, GetMetadataValue
+from makepandacore import ColorText, LocateBinary, GetExtensionSuffix, SetVerbose, GetVerbose, GetMetadataValue
 from base64 import urlsafe_b64encode
 
 
@@ -730,7 +730,7 @@ if __debug__:
 
 
 if __name__ == "__main__":
-    version = ParsePandaVersion("dtool/PandaVersion.pp")
+    version = GetMetadataValue('version')
 
     parser = OptionParser()
     parser.add_option('', '--version', dest = 'version', help = 'Panda3D version number (default: %s)' % (version), default = version)

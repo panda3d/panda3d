@@ -19,6 +19,7 @@
 #ifdef HAVE_PYTHON
 
 #include "loaderFileType.h"
+#include "extension.h"
 
 /**
  * This defines a Python-based loader plug-in.  An instance of this can be
@@ -56,6 +57,8 @@ private:
   PyObject *_load_func = nullptr;
   PyObject *_save_func = nullptr;
   bool _supports_compressed = false;
+
+  friend class Extension<LoaderFileTypeRegistry>;
 
 public:
   static TypeHandle get_class_type() {

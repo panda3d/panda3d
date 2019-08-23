@@ -1039,7 +1039,7 @@ def MakeInstaller(version, **kwargs):
 
 
 if __name__ == "__main__":
-    version = ParsePandaVersion("dtool/PandaVersion.pp")
+    version = GetMetadataValue('version')
 
     parser = OptionParser()
     parser.add_option('', '--version', dest='version', help='Panda3D version number (default: %s)' % (version), default=version)

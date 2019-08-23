@@ -31,6 +31,8 @@ class Extension<LoaderFileTypeRegistry> : public ExtensionBase<LoaderFileTypeReg
 public:
   void register_type(PyObject *type);
   void register_deferred_type(PyObject *entry_point);
+
+  void unregister_type(PyObject *type);
 };
 
 #endif  // HAVE_PYTHON
