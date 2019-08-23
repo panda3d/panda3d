@@ -222,6 +222,8 @@ int BulletWorld::
 do_physics(PN_stdfloat dt, int max_substeps, PN_stdfloat stepsize) {
   LightMutexHolder holder(get_global_lock());
 
+  bullet_contact_added_callback = _contact_added_callback_obj;
+
   _pstat_physics.start();
 
   int num_substeps = clamp(int(dt / stepsize), 1, max_substeps);
@@ -248,6 +250,8 @@ do_physics(PN_stdfloat dt, int max_substeps, PN_stdfloat stepsize) {
   }
 
   _pstat_physics.stop();
+
+  bullet_contact_added_callback.clear();
 
   return n;
 }
@@ -1146,7 +1150,7 @@ set_contact_added_callback(CallbackObject *obj) {
   _world->getSolverInfo().m_solverMode |= SOLVER_USE_2_FRICTION_DIRECTIONS;
   _world->getSolverInfo().m_solverMode |= SOLVER_ENABLE_FRICTION_DIRECTION_CACHING;
 
-  bullet_contact_added_callback = obj;
+  _contact_added_callback_obj = obj;
 }
 
 /**
@@ -1160,7 +1164,7 @@ clear_contact_added_callback() {
   _world->getSolverInfo().m_solverMode &= ~SOLVER_USE_2_FRICTION_DIRECTIONS;
   _world->getSolverInfo().m_solverMode &= ~SOLVER_ENABLE_FRICTION_DIRECTION_CACHING;
 
-  bullet_contact_added_callback = nullptr;
+  _contact_added_callback_obj = nullptr;
 }
 
 /**
