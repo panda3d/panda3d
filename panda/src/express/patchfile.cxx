@@ -575,8 +575,10 @@ internal_read_header(const Filename &patch_file) {
   // get the MD5 of the resultant patched file
   _MD5_ofResult.read_stream(patch_reader);
 
-  express_cat.debug()
-    << "Patchfile::initiate() - valid patchfile" << endl;
+  if (express_cat.is_debug()) {
+    express_cat.debug()
+      << "Patchfile::initiate() - valid patchfile" << endl;
+  }
 
   return EU_success;
 }
