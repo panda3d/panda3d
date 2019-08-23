@@ -5256,11 +5256,11 @@ if (PkgSkip("DIRECT")==0):
 if (PkgSkip("DIRECT")==0):
   OPTS=['DIR:direct/src/dcparser', 'BUILDING:DIRECT_DCPARSER', 'WITHINPANDA', 'BISONPREFIX_dcyy']
   CreateFile(GetOutputDir()+"/include/dcParser.h")
-  PyTargetAdd('p3dcparser_dcParser.obj', opts=OPTS, input='dcParser.yxx')
+  TargetAdd('p3dcparser_dcParser.obj', opts=OPTS, input='dcParser.yxx')
   #TargetAdd('dcParser.h', input='p3dcparser_dcParser.obj', opts=['DEPENDENCYONLY'])
-  PyTargetAdd('p3dcparser_dcLexer.obj', opts=OPTS, input='dcLexer.lxx')
-  PyTargetAdd('p3dcparser_composite1.obj', opts=OPTS, input='p3dcparser_composite1.cxx')
-  PyTargetAdd('p3dcparser_composite2.obj', opts=OPTS, input='p3dcparser_composite2.cxx')
+  TargetAdd('p3dcparser_dcLexer.obj', opts=OPTS, input='dcLexer.lxx')
+  TargetAdd('p3dcparser_composite1.obj', opts=OPTS, input='p3dcparser_composite1.cxx')
+  TargetAdd('p3dcparser_composite2.obj', opts=OPTS, input='p3dcparser_composite2.cxx')
 
   OPTS=['DIR:direct/src/dcparser', 'WITHINPANDA']
   IGATEFILES=GetDirectoryContents('direct/src/dcparser', ["*.h", "*_composite*.cxx"])
@@ -5268,6 +5268,7 @@ if (PkgSkip("DIRECT")==0):
   if "dcmsgtypes.h" in IGATEFILES: IGATEFILES.remove('dcmsgtypes.h')
   TargetAdd('libp3dcparser.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3dcparser.in', opts=['IMOD:panda3d.direct', 'ILIB:libp3dcparser', 'SRCDIR:direct/src/dcparser'])
+  PyTargetAdd('p3dcparser_ext_composite.obj', opts=OPTS, input='p3dcparser_ext_composite.cxx')
 
 #
 # DIRECTORY: direct/src/deadrec/
@@ -5289,13 +5290,13 @@ if (PkgSkip("DIRECT")==0):
 if (PkgSkip("DIRECT")==0):
   OPTS=['DIR:direct/src/distributed', 'DIR:direct/src/dcparser', 'WITHINPANDA', 'BUILDING:DIRECT', 'OPENSSL']
   TargetAdd('p3distributed_config_distributed.obj', opts=OPTS, input='config_distributed.cxx')
-  PyTargetAdd('p3distributed_cConnectionRepository.obj', opts=OPTS, input='cConnectionRepository.cxx')
-  PyTargetAdd('p3distributed_cDistributedSmoothNodeBase.obj', opts=OPTS, input='cDistributedSmoothNodeBase.cxx')
 
   OPTS=['DIR:direct/src/distributed', 'WITHINPANDA', 'OPENSSL']
   IGATEFILES=GetDirectoryContents('direct/src/distributed', ["*.h", "*.cxx"])
   TargetAdd('libp3distributed.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3distributed.in', opts=['IMOD:panda3d.direct', 'ILIB:libp3distributed', 'SRCDIR:direct/src/distributed'])
+  PyTargetAdd('p3distributed_cConnectionRepository.obj', opts=OPTS, input='cConnectionRepository.cxx')
+  PyTargetAdd('p3distributed_cDistributedSmoothNodeBase.obj', opts=OPTS, input='cDistributedSmoothNodeBase.cxx')
 
 #
 # DIRECTORY: direct/src/interval/
@@ -5345,10 +5346,15 @@ if (PkgSkip("DIRECT")==0):
 
 if (PkgSkip("DIRECT")==0):
   TargetAdd('libp3direct.dll', input='p3directbase_directbase.obj')
+  TargetAdd('libp3direct.dll', input='p3dcparser_composite1.obj')
+  TargetAdd('libp3direct.dll', input='p3dcparser_composite2.obj')
+  TargetAdd('libp3direct.dll', input='p3dcparser_dcParser.obj')
+  TargetAdd('libp3direct.dll', input='p3dcparser_dcLexer.obj')
   TargetAdd('libp3direct.dll', input='p3showbase_showBase.obj')
   if GetTarget() == 'darwin':
     TargetAdd('libp3direct.dll', input='p3showbase_showBase_assist.obj')
   TargetAdd('libp3direct.dll', input='p3deadrec_composite1.obj')
+  TargetAdd('libp3direct.dll', input='p3distributed_config_distributed.obj')
   TargetAdd('libp3direct.dll', input='p3interval_composite1.obj')
   TargetAdd('libp3direct.dll', input='p3motiontrail_config_motiontrail.obj')
   TargetAdd('libp3direct.dll', input='p3motiontrail_cMotionTrail.obj')
@@ -5373,11 +5379,7 @@ if (PkgSkip("DIRECT")==0):
   # These are part of direct.pyd, not libp3direct.dll, because they rely on
   # the Python libraries.  If a C++ user needs these modules, we can move them
   # back and filter out the Python-specific code.
-  PyTargetAdd('direct.pyd', input='p3dcparser_composite1.obj')
-  PyTargetAdd('direct.pyd', input='p3dcparser_composite2.obj')
-  PyTargetAdd('direct.pyd', input='p3dcparser_dcParser.obj')
-  PyTargetAdd('direct.pyd', input='p3dcparser_dcLexer.obj')
-  PyTargetAdd('direct.pyd', input='p3distributed_config_distributed.obj')
+  PyTargetAdd('direct.pyd', input='p3dcparser_ext_composite.obj')
   PyTargetAdd('direct.pyd', input='p3distributed_cConnectionRepository.obj')
   PyTargetAdd('direct.pyd', input='p3distributed_cDistributedSmoothNodeBase.obj')
 
@@ -5391,18 +5393,13 @@ if (PkgSkip("DIRECT")==0):
 # DIRECTORY: direct/src/dcparse/
 #
 
-if (PkgSkip("PYTHON")==0 and PkgSkip("DIRECT")==0 and not RTDIST and not RUNTIME):
+if (PkgSkip("DIRECT")==0 and not RTDIST and not RUNTIME):
   OPTS=['DIR:direct/src/dcparse', 'DIR:direct/src/dcparser', 'WITHINPANDA', 'ADVAPI']
-  PyTargetAdd('dcparse_dcparse.obj', opts=OPTS, input='dcparse.cxx')
-  PyTargetAdd('p3dcparse.exe', input='p3dcparser_composite1.obj')
-  PyTargetAdd('p3dcparse.exe', input='p3dcparser_composite2.obj')
-  PyTargetAdd('p3dcparse.exe', input='p3dcparser_dcParser.obj')
-  PyTargetAdd('p3dcparse.exe', input='p3dcparser_dcLexer.obj')
-  PyTargetAdd('p3dcparse.exe', input='dcparse_dcparse.obj')
-  PyTargetAdd('p3dcparse.exe', input='libp3direct.dll')
-  PyTargetAdd('p3dcparse.exe', input=COMMON_PANDA_LIBS)
-  PyTargetAdd('p3dcparse.exe', input='libp3pystub.lib')
-  PyTargetAdd('p3dcparse.exe', opts=['ADVAPI'])
+  TargetAdd('dcparse_dcparse.obj', opts=OPTS, input='dcparse.cxx')
+  TargetAdd('p3dcparse.exe', input='dcparse_dcparse.obj')
+  TargetAdd('p3dcparse.exe', input='libp3direct.dll')
+  TargetAdd('p3dcparse.exe', input=COMMON_PANDA_LIBS)
+  TargetAdd('p3dcparse.exe', opts=['ADVAPI'])
 
 #
 # DIRECTORY: direct/src/plugin/

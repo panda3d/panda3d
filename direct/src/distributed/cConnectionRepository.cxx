@@ -26,6 +26,7 @@
 
 #ifdef HAVE_PYTHON
 #include "py_panda.h"
+#include "dcClass_ext.h"
 #endif
 
 using std::endl;
@@ -736,7 +737,7 @@ handle_update_field() {
       // get into trouble if it tried to delete the object from the doId2do
       // map.
       Py_INCREF(distobj);
-      dclass->receive_update(distobj, _di);
+      invoke_extension(dclass).receive_update(distobj, _di);
       Py_DECREF(distobj);
 
       if (PyErr_Occurred()) {
@@ -820,7 +821,7 @@ handle_update_field_owner() {
         // make a copy of the datagram iterator so that we can use the main
         // iterator for the non-owner update
         DatagramIterator _odi(_di);
-        dclass->receive_update(distobjOV, _odi);
+        invoke_extension(dclass).receive_update(distobjOV, _odi);
         Py_DECREF(distobjOV);
 
         if (PyErr_Occurred()) {
@@ -861,7 +862,7 @@ handle_update_field_owner() {
         // get into trouble if it tried to delete the object from the doId2do
         // map.
         Py_INCREF(distobj);
-        dclass->receive_update(distobj, _di);
+        invoke_extension(dclass).receive_update(distobj, _di);
         Py_DECREF(distobj);
 
         if (PyErr_Occurred()) {
