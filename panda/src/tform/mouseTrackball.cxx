@@ -30,6 +30,7 @@ MouseTrackball(const std::string &name) :
   _lastx = _lasty = 0.5f;
 
   // We want to track the state of these buttons.
+  watch_button(MouseButton::one());
   watch_button(MouseButton::two());
   watch_button(MouseButton::three());
 

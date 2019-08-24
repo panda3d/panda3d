@@ -46,8 +46,6 @@ Trackball(const std::string &name) :
   _invert = true;
   _cs = get_default_coordinate_system();
   _control_mode = CM_default;
-
-  watch_button(MouseButton::one());
 }
 
 /**

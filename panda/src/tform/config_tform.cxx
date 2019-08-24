@@ -16,10 +16,12 @@
 #include "driveInterface.h"
 #include "buttonThrower.h"
 #include "mouseSubregion.h"
+#include "mouseTrackball.h"
 #include "mouseWatcher.h"
 #include "mouseWatcherBase.h"
 #include "mouseWatcherGroup.h"
 #include "mouseWatcherRegion.h"
+#include "touchTrackball.h"
 #include "trackball.h"
 #include "transform2sg.h"
 
@@ -75,6 +77,7 @@ ConfigureFn(config_tform) {
   MouseWatcherBase::init_type();
   MouseWatcherGroup::init_type();
   MouseWatcherRegion::init_type();
+  TouchTrackball::init_type();
   Trackball::init_type();
   Transform2SG::init_type();
 }

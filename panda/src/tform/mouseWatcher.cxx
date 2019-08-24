@@ -58,11 +58,13 @@ MouseWatcher(const string &name) :
   _pixel_size_output = define_output("pixel_size", EventStoreVec2::get_class_type());
   _xy_output = define_output("xy", EventStoreVec2::get_class_type());
   _button_events_output = define_output("button_events", ButtonEventList::get_class_type());
+  _pointer_events_output = define_output("pointer_events", PointerEventList::get_class_type());
 
   _pixel_xy = new EventStoreVec2(LPoint2(0.0f, 0.0f));
   _xy = new EventStoreVec2(LPoint2(0.0f, 0.0f));
   _pixel_size = new EventStoreVec2(LPoint2(0.0f, 0.0f));
   _button_events = new ButtonEventList;
+  _pointer_events = new PointerEventList;
 
   _has_mouse = false;
   _internal_suppress = 0;
@@ -1454,9 +1456,11 @@ do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
         pointer_up(event._data, pos);
         _active_regions.erase(it);
       }
+
+      _recent_pointer_events[event._data.get_id()] = PointerEvent(event);
     }
 
-     // Code for recording the mouse trail.
+    // Code for recording the mouse trail.
     _num_trail_recent = 0;
     if (_trail_log_duration > 0.0) {
       _num_trail_recent = this_pointer_events->get_num_events();
@@ -1662,6 +1666,23 @@ do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
 
   if (_button_events->get_num_events() != 0) {
     output.set_data(_button_events_output, EventParameter(_button_events));
+  }
+
+
+  if (!_recent_pointer_events.empty()) {
+    _pointer_events->clear();
+
+    pmap<int, PointerEvent> next_pointer_events;
+    for (auto id_event_pair : _recent_pointer_events) {
+      _pointer_events->add_event(id_event_pair.second);
+      
+      if (id_event_pair.second._data.get_phase() != PointerPhase::ended) {
+        next_pointer_events[id_event_pair.first] = id_event_pair.second;
+      }
+    }
+
+    _recent_pointer_events = next_pointer_events;
+    output.set_data(_pointer_events_output, EventParameter(_pointer_events));
   }
 }
 

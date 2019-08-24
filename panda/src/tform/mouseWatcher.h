@@ -304,11 +304,15 @@ private:
   int _pixel_size_output;
   int _xy_output;
   int _button_events_output;
+  int _pointer_events_output;
 
   PT(EventStoreVec2) _pixel_xy;
   PT(EventStoreVec2) _xy;
   PT(EventStoreVec2) _pixel_size;
   PT(ButtonEventList) _button_events;
+  PT(PointerEventList) _pointer_events;
+
+  pmap<int, PointerEvent> _recent_pointer_events;
 
 public:
   static TypeHandle get_class_type() {
