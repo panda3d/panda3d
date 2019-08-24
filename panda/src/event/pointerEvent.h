@@ -20,9 +20,10 @@
 /**
  * Records a pointer movement event.
  */
-class EXPCL_PANDA_EVENT PointerEvent {
+class EXPCL_PANDA_EVENT PointerEvent : public TypedWritableReferenceCount {
 public:
-  PointerEvent(PointerData data, double time = ClockObject::get_global_clock()->get_frame_time());
+  PointerEvent() = default;
+  PointerEvent(PointerData data, int sequence, double time = ClockObject::get_global_clock()->get_frame_time());
 
   // INLINE bool operator == (const PointerEvent &other) const;
   // INLINE bool operator != (const PointerEvent &other) const;
@@ -31,8 +32,43 @@ public:
   void output(std::ostream &out) const;
 
 public:
+  /**
+   * Captured copy of the pointer data for this event.
+   */
   PointerData _data;
+  
+  /**
+   * Time in seconds.
+   */
   double _time = 0.0;
+
+  /**
+   * nth touch since the primary pointer touched the screen.
+   */
+  int _sequence = 0;
+  
+  /**
+   * Change in positon since the last PointerEvent with this id. Will be (0,0)
+   * if the _data.get_phase() is PointerPhase::began.
+   */
+  LVecBase2 _pos_change;
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    TypedWritableReferenceCount::init_type();
+    register_type(_type_handle, "PointerEvent",
+                  TypedWritableReferenceCount::get_class_type());
+  }
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+
+private:
+  static TypeHandle _type_handle;
 };
 
 INLINE std::ostream &operator << (std::ostream &out, const PointerEvent &pe) {

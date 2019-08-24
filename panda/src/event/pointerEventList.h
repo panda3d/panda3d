@@ -50,7 +50,7 @@ PUBLISHED:
   INLINE void   pop_front();
 
   void add_event(const PointerEvent &event);
-  void add_event(const PointerData &data, double time);
+  void add_event(const PointerData &data, double time = ClockObject::get_global_clock()->get_frame_time());
   // void add_event(bool in_win, int xpos, int ypos, int seq, double time);
   // void add_event(bool in_win, int xpos, int ypos, double xdelta, double ydelta,
   //                int seq, double time);
@@ -71,8 +71,11 @@ public:
 
 private:
   void parse_pattern(const std::string &ascpat, vector_double &pattern);
+  void do_add_event(const PointerEvent &event);
   typedef pdeque<PointerEvent> Events;
   Events _events;
+
+  int _current_sequence;
 
 public:
   static TypeHandle get_class_type() {

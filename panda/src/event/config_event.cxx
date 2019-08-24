@@ -44,6 +44,7 @@ ConfigureFn(config_event) {
   AsyncTaskPause::init_type();
   AsyncTaskSequence::init_type();
   ButtonEventList::init_type();
+  PointerEvent::init_type();
   PointerEventList::init_type();
   Event::init_type();
   EventHandler::init_type();

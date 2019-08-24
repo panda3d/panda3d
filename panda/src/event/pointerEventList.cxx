@@ -78,7 +78,7 @@ write(std::ostream &out, int indent_level) const {
 
 void PointerEventList::
 add_event(const PointerEvent &event) {
-  _events.push_back(event);
+  do_add_event(event);
 }
 
 /**
@@ -86,35 +86,18 @@ add_event(const PointerEvent &event) {
  */
 void PointerEventList::
 add_event(const PointerData &data, double time) {
-  // PointerEvent pe;
-  // pe._in_window = data.get_in_window();
-  // pe._type = data.get_type();
-  // pe._id = data.get_id();
-  // pe._xpos = data.get_x();
-  // pe._ypos = data.get_y();
-  // pe._pressure = data.get_pressure();
-  // pe._sequence = seq;
-  // pe._time = time;
-  // if (_events.size() > 0) {
-  //   pe._dx = data._xpos - _events.back()._xpos;
-  //   pe._dy = data._ypos - _events.back()._ypos;
-  //   double ddx = pe._dx;
-  //   double ddy = pe._dy;
-  //   pe._length = csqrt(ddx*ddx + ddy*ddy);
-  //   if (pe._length > 0.0) {
-  //     pe._direction = normalize_angle(rad_2_deg(catan2(-ddy,ddx)));
-  //   } else {
-  //     pe._direction = _events.back()._direction;
-  //   }
-  //   pe._rotation = delta_angle(_events.back()._direction, pe._direction);
-  // } else {
-  //   pe._dx = 0;
-  //   pe._dy = 0;
-  //   pe._length = 0.0;
-  //   pe._direction = 0.0;
-  //   pe._rotation = 0.0;
-  // }
-  _events.push_back(PointerEvent(data, time));
+  if (data.get_primary()) {
+    _current_sequence = 0;
+  }
+
+  auto event = PointerEvent(data, _current_sequence++, time);
+  
+  do_add_event(event);
+}
+
+void PointerEventList::
+do_add_event(const PointerEvent &event) {
+  _events.push_back(event);
 }
 
 /**

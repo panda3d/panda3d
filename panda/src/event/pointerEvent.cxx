@@ -13,9 +13,12 @@
 
 #include "pointerEvent.h"
 
+TypeHandle PointerEvent::_type_handle;
+
 PointerEvent::
-PointerEvent(PointerData data, double time) :
+PointerEvent(PointerData data, int sequence, double time) :
   _data(data),
+  _sequence(sequence),
   _time(time)
 {
 
