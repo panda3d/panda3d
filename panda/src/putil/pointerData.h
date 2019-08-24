@@ -31,15 +31,13 @@ enum class PointerType {
 };
 
 /**
- * The current "phase" of the pointer's lifecycle.
+ * The various states that the pointer can be in during a full sequence.
  */
 enum class PointerPhase {
   began, // made contact with the screen during the last frame
   moved, // continued interaction with the screen
   ended, // contact ended normally by lifting the pointer or leaving the window.
   cancelled, // contact was interrupted
-  hover, // For pointers that don't make contact with the screen; indicates
-         // the primary button is not being pressed.
 };
 END_PUBLISH
 
@@ -64,7 +62,7 @@ public:
   INLINE PointerPhase get_phase() const;
 
   INLINE void set_type(PointerType type);
-  INLINE void set_pressure(double pressure);
+  void set_pressure(double pressure);
   INLINE void set_phase(PointerPhase phase);
 
   void output(std::ostream &out) const;
@@ -102,7 +100,14 @@ protected:
   double _ypos = 0.0;
 
   PointerType _type = PointerType::unknown;
-  PointerPhase _phase = PointerPhase::hover;
+
+  /**
+   * A state variable that allows one to determine the "life stage" of the
+   * pointer during this frame. Switches to "began" when the pressure changes
+   * to and from zero. This means it can be used to tell when both hovers and
+   * presses begin and end.
+   */
+  PointerPhase _phase = PointerPhase::began;
 };
 
 INLINE std::ostream &operator << (std::ostream &out, const PointerData &md);

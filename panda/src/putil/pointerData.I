@@ -64,10 +64,6 @@ INLINE PointerPhase PointerData::
 get_phase() const {
   return _phase;
 }
-INLINE void PointerData::
-set_pressure(double pressure) {
-  _pressure = pressure;
-}
 
 INLINE void PointerData::
 set_phase(PointerPhase phase) {

@@ -27,6 +27,16 @@ make_primary_mouse() {
   return PointerData(0, true, PointerType::mouse);
 }
 
+void PointerData::
+set_pressure(double pressure) {
+  // Are we switching between pressing and hovering?
+  if (pressure != _pressure && abs(pressure - _pressure) == _pressure) {
+    _phase = PointerPhase::began;
+  }
+
+  _pressure = pressure;
+}
+
 /**
  *
  */
