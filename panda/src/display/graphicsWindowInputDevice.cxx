@@ -179,7 +179,7 @@ set_pointer_in_window(double x, double y, double time) {
   LightMutexHolder holder(_lock);
 
   double pressure = 0.0;
-  PointerPhase phase = PointerPhase::hover;
+  PointerPhase phase = PointerPhase::began;
 
   if (_pointers.find(0) == _pointers.end()) {
     _pointers[0] = PointerData::make_primary_mouse();
