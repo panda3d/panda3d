@@ -126,6 +126,8 @@ reload_implicit_pages() {
   const BlobInfo *blobinfo = (const BlobInfo *)dlsym(RTLD_MAIN_ONLY, "blobinfo");
 //#elif defined(RTLD_SELF)
 //  const BlobInfo *blobinfo = (const BlobInfo *)dlsym(RTLD_SELF, "blobinfo");
+#elif defined(__EMSCRIPTEN__)
+  const BlobInfo *blobinfo = nullptr;
 #else
   const BlobInfo *blobinfo = (const BlobInfo *)dlsym(dlopen(NULL, RTLD_NOW), "blobinfo");
 #endif
