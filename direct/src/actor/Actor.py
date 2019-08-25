@@ -67,7 +67,7 @@ class Actor(DirectObject, NodePath):
 
         def __init__(self, filename = None, animBundle = None):
             self.filename = filename
-            self.animBundle = None
+            self.animBundle = animBundle
             self.animControl = None
 
         def makeCopy(self):
@@ -1947,6 +1947,7 @@ class Actor(DirectObject, NodePath):
                     animName = acc.getAnimName(i)
 
                     animDef = Actor.AnimDef()
+                    animDef.animBundle = animControl.getAnim()
                     animDef.animControl = animControl
                     self.__animControlDict[lodName][partName][animName] = animDef
 

@@ -31,15 +31,19 @@ TypeHandle OdeJoint::_type_handle;
 OdeJoint::
 OdeJoint() :
   _id(nullptr) {
-  std::ostream &out = odejoint_cat.debug();
-  out << get_type() << "(" << _id  << ")\n";
+  if (odejoint_cat.is_debug()) {
+    std::ostream &out = odejoint_cat.debug();
+    out << get_type() << "(" << _id  << ")\n";
+  }
 }
 
 OdeJoint::
 OdeJoint(dJointID id) :
   _id(id) {
-  std::ostream &out = odejoint_cat.debug();
-  out << get_type() << "(" << _id  << ")\n";
+  if (odejoint_cat.is_debug()) {
+    std::ostream &out = odejoint_cat.debug();
+    out << get_type() << "(" << _id  << ")\n";
+  }
 }
 
 OdeJoint::

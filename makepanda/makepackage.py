@@ -562,9 +562,9 @@ def MakeInstallerOSX(version, runtime=False, python_versions=[], **kwargs):
         oscmd("mkdir -p dstroot/pybindings%s/Library/Python/%s/site-packages" % (pyver, pyver))
         WriteFile("dstroot/pybindings%s/Library/Python/%s/site-packages/Panda3D.pth" % (pyver, pyver), "/Developer/Panda3D")
 
-        # Evidently not all Python 3.7 installations read the above path, so do this for now
-        # See GitHub #502
-        if pyver == "3.7":
+        # Somewhere in Python 2.7.13 and 3.7, the above path was removed from
+        # sys.path of the python.org distribution.  See bpo-28440 and GH #502.
+        if pyver not in ("3.0", "3.1", "3.2", "3.3", "3.4", "3.5", "3.6"):
             dir = "dstroot/pybindings%s/Library/Frameworks/Python.framework/Versions/%s/lib/python%s/site-packages" % (pyver, pyver, pyver)
             oscmd("mkdir -p %s" % (dir))
             WriteFile("%s/Panda3D.pth" % (dir), "/Developer/Panda3D")
@@ -584,8 +584,6 @@ def MakeInstallerOSX(version, runtime=False, python_versions=[], **kwargs):
 
     oscmd("mkdir -p dstroot/headers/Developer/Panda3D/lib")
     oscmd("cp -R %s/include               dstroot/headers/Developer/Panda3D/include" % outputdir)
-    if os.path.isfile(outputdir + "/lib/libp3pystub.a"):
-        oscmd("cp -R -P %s/lib/libp3pystub.a dstroot/headers/Developer/Panda3D/lib/" % outputdir)
 
     if os.path.isdir("samples"):
         oscmd("mkdir -p dstroot/samples/Developer/Examples/Panda3D")
@@ -1039,7 +1037,7 @@ def MakeInstaller(version, **kwargs):
 
 
 if __name__ == "__main__":
-    version = ParsePandaVersion("dtool/PandaVersion.pp")
+    version = GetMetadataValue('version')
 
     parser = OptionParser()
     parser.add_option('', '--version', dest='version', help='Panda3D version number (default: %s)' % (version), default=version)
@@ -1071,7 +1069,7 @@ if __name__ == "__main__":
             PkgDisable(pkg)
 
     # Parse the version.
-    match = re.match(r'^\d+\.\d+\.\d+', options.version)
+    match = re.match(r'^\d+\.\d+(\.\d+)+', options.version)
     if not match:
         exit("version requires three digits")
 

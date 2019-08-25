@@ -55,10 +55,10 @@ PUBLISHED:
     friend class FLOATNAME(LMatrix3);
   };
 
-  INLINE_LINMATH FLOATNAME(LMatrix3)();
-  INLINE_LINMATH FLOATNAME(LMatrix3)(const FLOATNAME(LMatrix3) &other);
+  INLINE_LINMATH FLOATNAME(LMatrix3)() = default;
+  INLINE_LINMATH FLOATNAME(LMatrix3)(const FLOATNAME(LMatrix3) &other) = default;
   INLINE_LINMATH FLOATNAME(LMatrix3) &operator = (
-      const FLOATNAME(LMatrix3) &other);
+      const FLOATNAME(LMatrix3) &other) = default;
   INLINE_LINMATH FLOATNAME(LMatrix3) &operator = (FLOATTYPE fill_value);
   INLINE_LINMATH FLOATNAME(LMatrix3)(FLOATTYPE, FLOATTYPE, FLOATTYPE,
                                      FLOATTYPE, FLOATTYPE, FLOATTYPE,

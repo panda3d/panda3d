@@ -2878,8 +2878,13 @@ write_module_class(ostream &out, Object *obj) {
 
   // destructor tp_dealloc;
   out << "    &Dtool_FreeInstance_" << ClassName << ",\n";
-  // printfunc tp_print;
+
+  out << "#if PY_VERSION_HEX >= 0x03080000\n";
+  out << "    0, // tp_vectorcall_offset\n";
+  out << "#else\n";
   write_function_slot(out, 4, slots, "tp_print");
+  out << "#endif\n";
+
   // getattrfunc tp_getattr;
   write_function_slot(out, 4, slots, "tp_getattr");
   // setattrfunc tp_setattr;
@@ -3069,6 +3074,10 @@ write_module_class(ostream &out, Object *obj) {
   // destructor tp_finalize
   out << "#if PY_VERSION_HEX >= 0x03040000\n";
   out << "    nullptr, // tp_finalize\n";
+  out << "#endif\n";
+  // vectorcallfunc tp_vectorcall
+  out << "#if PY_VERSION_HEX >= 0x03080000\n";
+  out << "    nullptr, // tp_vectorcall\n";
   out << "#endif\n";
   out << "  },\n";
 

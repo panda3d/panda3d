@@ -13,6 +13,8 @@
 
 #include "encryptStream.h"
 
+#ifdef HAVE_OPENSSL
+
 /**
  * Must be called immediately after open_read().  Decrypts the given number of
  * bytes and checks that they match.  The amount of header bytes are added to
@@ -25,10 +27,12 @@ read_magic(const char *magic, size_t size) {
   char *this_magic = (char *)alloca(size);
   read(this_magic, size);
 
-  if (!fail() && gcount() == size && memcmp(this_magic, magic, size) == 0) {
+  if (!fail() && (size_t)gcount() == size && memcmp(this_magic, magic, size) == 0) {
     _buf.set_magic_length(size);
     return true;
   } else {
     return false;
   }
 }
+
+#endif

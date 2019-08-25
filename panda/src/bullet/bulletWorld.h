@@ -272,6 +272,7 @@ private:
   btOverlapFilterCallback *_filter_cb;
 
   PT(CallbackObject) _tick_callback_obj;
+  PT(CallbackObject) _contact_added_callback_obj;
 
   PT(BulletDebugNode) _debug;
 

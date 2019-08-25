@@ -114,6 +114,41 @@ register_deferred_type(const string &extension, const string &library) {
 }
 
 /**
+ * Removes a type previously registered using register_type.
+ */
+void LoaderFileTypeRegistry::
+unregister_type(LoaderFileType *type) {
+  Types::iterator it = find(_types.begin(), _types.end(), type);
+  if (it == _types.end()) {
+    if (loader_cat.is_debug()) {
+      loader_cat.debug()
+        << "Attempt to unregister LoaderFileType " << type->get_name()
+        << " (" << type->get_type() << "), which was not registered.\n";
+    }
+    return;
+  }
+
+  _types.erase(it);
+
+  {
+    std::string dcextension = downcase(type->get_extension());
+    Extensions::iterator ei = _extensions.find(dcextension);
+    if (ei != _extensions.end() && ei->second == type) {
+      _extensions.erase(ei);
+    }
+  }
+
+  vector_string words;
+  extract_words(type->get_additional_extensions(), words);
+  for (const std::string &word : words) {
+    Extensions::iterator ei = _extensions.find(downcase(word));
+    if (ei != _extensions.end() && ei->second == type) {
+      _extensions.erase(ei);
+    }
+  }
+}
+
+/**
  * Returns the total number of types registered.
  */
 int LoaderFileTypeRegistry::

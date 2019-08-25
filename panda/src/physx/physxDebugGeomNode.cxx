@@ -100,7 +100,9 @@ update(NxScene *scenePtr) {
   _prim_lines->close_primitive();
   _prim_triangles->close_primitive();
 
-  physx_cat.spam() << "Updated PhysxDebugGeomNode geometry\n";
+  if (physx_cat.is_spam()) {
+    physx_cat.spam() << "Updated PhysxDebugGeomNode geometry\n";
+  }
 }
 
 /**

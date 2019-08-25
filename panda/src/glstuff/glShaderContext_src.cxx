@@ -890,6 +890,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
 
         // Add it once for each index.
         for (bind._index = 0; bind._index < param_size; ++bind._index) {
+          bind._id._seqno = p + bind._index;
           _shader->_mat_spec.push_back(bind);
         }
         _shader->_mat_deps |= bind._dep[0];
@@ -3305,7 +3306,7 @@ glsl_compile_and_link() {
   }
 
   _glgsg->report_my_gl_errors();
-  return true;
+  return valid;
 }
 
 #endif  // OPENGLES_1

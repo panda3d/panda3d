@@ -1,3 +1,46 @@
+------------------------  RELEASE 1.10.4.1  ---------------------
+
+This release fixes only one critical regression: calling destroy()
+on a DirectGUI item would cause an exception.
+
+------------------------  RELEASE 1.10.4  -----------------------
+
+This release fixes a regression with DirectScrolledList in 1.10.3,
+fixes various other bugs, and introduces a few minor features.
+
+* Fix exception trying to create DirectScrolledList
+* Fix flickering in DirectScrolledFrame and other scissor issues (#681)
+* Experimental support for Python 3.8
+* Support adding icons to deployed applications
+* Support non-affine (eg. projective) transforms in calc_tight_bounds
+* Allow setting notify-output after initial import
+* Fix macOS issue locating Panda3D using Python 2.7.13+ from python.org
+* Support for Maya 2019
+* On Windows, pip is now installed by the installer (#690)
+* Fix Actor.makeSubpart on models with pre-bound animations (#647)
+* Properly interrupt task manager if first task chain raises error (#692)
+* Fix return value of encrypt_string in Python 3 (#684)
+* Support writing loader plug-ins in Python
+* Fix reading multiple p3d_TextureMatrix[] values from GLSL shaders
+* Fix shader error flag not being set if GLSL compilation failed (#622)
+* Add NodePath.replace_texture() convenience method
+* Fix deadlock when building with SIMPLE_THREADS=1 (#704)
+* Fix DirectOptionMenu cancelFrame not working inside scrolled frame (#658)
+* Fix assertion when calling analyze() on geometry with strip cut index
+* Implement fallback in GL renderer when F_sluminance is not supported (#693)
+* Set reasonable limits for sliders in ParticlePanel
+* Fix for DirectEntry autoCapitalize feature on Python 3 (#628)
+* Fix various DirectGUI items not working before ShowBase is instantiated
+* Work around an MSVC compiler bug in the release build
+* PythonUtil.weightedChoice now raises IndexError on empty list
+* Support changing DirectScrollBar width after initialiation (#699)
+* Workaround for Bullet deadlock when adding shape to a scaled body (#689)
+* Support setting DirectEntryScroll entry after initialization (#702)
+* Fix some missing imports in directtools (#698)
+* Fix undefined behavior issue when using musl-libc
+* Update Eigen in Windows thirdparty packages to 3.3.7
+* Update metadata of pip wheels
+
 ------------------------  RELEASE 1.10.3  -----------------------
 
 This is another bugfix release that addresses a variety of issues

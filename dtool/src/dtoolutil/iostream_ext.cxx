@@ -24,12 +24,12 @@ extern struct Dtool_PyTypedObject Dtool_std_istream;
  * If the given size is -1, all bytes are read from the stream.
  */
 PyObject *Extension<istream>::
-read(int size) {
+read(Py_ssize_t size) {
   if (size < 0) {
     return readall();
   }
 
-  char *buffer;
+  char *buffer = nullptr;
   std::streamsize read_bytes = 0;
 
   if (size > 0) {
@@ -62,7 +62,7 @@ read(int size) {
  * will always be greater than 0 until EOF is reached.
  */
 PyObject *Extension<istream>::
-read1(int size) {
+read1(Py_ssize_t size) {
   std::streambuf *buf = _this->rdbuf();
   nassertr(buf != nullptr, nullptr);
 
@@ -171,7 +171,7 @@ readinto(PyObject *b) {
  * Returns empty string when the end of file is reached.
  */
 PyObject *Extension<istream>::
-readline(int size) {
+readline(Py_ssize_t size) {
   std::streambuf *buf = _this->rdbuf();
   nassertr(buf != nullptr, nullptr);
 
@@ -207,7 +207,7 @@ readline(int size) {
  * for readline().
  */
 PyObject *Extension<istream>::
-readlines(int hint) {
+readlines(Py_ssize_t hint) {
   PyObject *lst = PyList_New(0);
   if (lst == nullptr) {
     return nullptr;
@@ -223,7 +223,7 @@ readlines(int hint) {
       py_line = readline(-1);
     }
   } else {
-    size_t totchars = 0;
+    Py_ssize_t totchars = 0;
     while (Py_SIZE(py_line) > 0) {
       totchars += Py_SIZE(py_line);
       PyList_Append(lst, py_line);
