@@ -1130,6 +1130,10 @@ def weightedChoice(choiceList, rng=random.random, sum=None):
     """given a list of (weight, item) pairs, chooses an item based on the
     weights. rng must return 0..1. if you happen to have the sum of the
     weights, pass it in 'sum'."""
+    # Throw an IndexError if we got an empty list.
+    if not choiceList:
+        raise IndexError('Cannot choose from an empty sequence')
+
     # TODO: add support for dicts
     if sum is None:
         sum = 0.
@@ -1138,6 +1142,7 @@ def weightedChoice(choiceList, rng=random.random, sum=None):
 
     rand = rng()
     accum = rand * sum
+    item = None
     for weight, item in choiceList:
         accum -= weight
         if accum <= 0.:
@@ -1652,17 +1657,15 @@ def itype(obj):
     # version of type that gives more complete information about instance types
     global dtoolSuperBase
     t = type(obj)
-    if t is types.InstanceType:
-        return '%s of <class %s>>' % (repr(types.InstanceType)[:-1],
-                                      str(obj.__class__))
+    if sys.version_info < (3, 0) and t is types.InstanceType:
+        return "<type 'instance' of <class %s>>" % (obj.__class__)
     else:
         # C++ object instances appear to be types via type()
         # check if this is a C++ object
         if dtoolSuperBase is None:
             _getDtoolSuperBase()
         if isinstance(obj, dtoolSuperBase):
-            return '%s of %s>' % (repr(types.InstanceType)[:-1],
-                                  str(obj.__class__))
+            return "<type 'instance' of %s>" % (obj.__class__)
         return t
 
 def deeptype(obj, maxLen=100, _visitedIds=None):
@@ -2513,7 +2516,7 @@ class AlphabetCounter:
         index = -1
         while True:
             curChar = self._curCounter[index]
-            if curChar is 'Z':
+            if curChar == 'Z':
                 nextChar = 'A'
                 carry = True
             else:

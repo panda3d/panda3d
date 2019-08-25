@@ -101,7 +101,7 @@ run() {
   int col = 0;
   unsigned int ch;
   ch = in.get();
-  while (!in.fail() && !in.eof()) {
+  while (!in.fail() && ch != EOF) {
     if (col == 0) {
       out << "\n  ";
     } else if (col == col_width) {

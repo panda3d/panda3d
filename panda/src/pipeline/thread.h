@@ -31,7 +31,6 @@ class Mutex;
 class ReMutex;
 class MutexDebug;
 class ConditionVarDebug;
-class ConditionVarFullDebug;
 class AsyncTask;
 
 /**
@@ -156,7 +155,6 @@ private:
 #ifdef DEBUG_THREADS
   MutexDebug *_blocked_on_mutex;
   ConditionVarDebug *_waiting_on_cvar;
-  ConditionVarFullDebug *_waiting_on_cvar_full;
 #endif  // DEBUG_THREADS
 
 private:
@@ -184,7 +182,6 @@ private:
 
   friend class MutexDebug;
   friend class ConditionVarDebug;
-  friend class ConditionVarFullDebug;
 
   friend class ThreadDummyImpl;
   friend class ThreadWin32Impl;

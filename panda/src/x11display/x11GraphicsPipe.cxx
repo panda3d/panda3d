@@ -156,21 +156,55 @@ x11GraphicsPipe(const std::string &display) :
   void *xrandr = dlopen("libXrandr.so.2", RTLD_NOW | RTLD_LOCAL);
   if (xrandr != nullptr) {
     pfn_XRRQueryExtension _XRRQueryExtension = (pfn_XRRQueryExtension)dlsym(xrandr, "XRRQueryExtension");
+    pfn_XRRQueryVersion _XRRQueryVersion = (pfn_XRRQueryVersion)dlsym(xrandr, "XRRQueryVersion");
+
     _XRRSizes = (pfn_XRRSizes)dlsym(xrandr, "XRRSizes");
     _XRRRates = (pfn_XRRRates)dlsym(xrandr, "XRRRates");
     _XRRGetScreenInfo = (pfn_XRRGetScreenInfo)dlsym(xrandr, "XRRGetScreenInfo");
     _XRRConfigCurrentConfiguration = (pfn_XRRConfigCurrentConfiguration)dlsym(xrandr, "XRRConfigCurrentConfiguration");
     _XRRSetScreenConfig = (pfn_XRRSetScreenConfig)dlsym(xrandr, "XRRSetScreenConfig");
 
+    int event, error, major, minor;
     if (_XRRQueryExtension == nullptr || _XRRSizes == nullptr || _XRRRates == nullptr ||
         _XRRGetScreenInfo == nullptr || _XRRConfigCurrentConfiguration == nullptr ||
-        _XRRSetScreenConfig == nullptr) {
+        _XRRSetScreenConfig == nullptr || _XRRQueryVersion == nullptr) {
       _have_xrandr = false;
       x11display_cat.warning()
         << "libXrandr.so.2 does not provide required functions; resolution setting will not work.\n";
+    }
+    else if (_XRRQueryExtension(_display, &event, &error) &&
+             _XRRQueryVersion(_display, &major, &minor)) {
+      _have_xrandr = true;
+      if (x11display_cat.is_debug()) {
+        x11display_cat.debug()
+          << "Found RandR extension " << major << "." << minor << "\n";
+      }
+
+      if (major > 1 || (major == 1 && minor >= 2)) {
+        if (major > 1 || (major == 1 && minor >= 3)) {
+          _XRRGetScreenResourcesCurrent = (pfn_XRRGetScreenResources)
+            dlsym(xrandr, "XRRGetScreenResourcesCurrent");
+        } else {
+          // Fall back to this slower version.
+          _XRRGetScreenResourcesCurrent = (pfn_XRRGetScreenResources)
+            dlsym(xrandr, "XRRGetScreenResources");
+        }
+
+        _XRRFreeScreenResources = (pfn_XRRFreeScreenResources)dlsym(xrandr, "XRRFreeScreenResources");
+        _XRRGetCrtcInfo = (pfn_XRRGetCrtcInfo)dlsym(xrandr, "XRRGetCrtcInfo");
+        _XRRFreeCrtcInfo = (pfn_XRRFreeCrtcInfo)dlsym(xrandr, "XRRFreeCrtcInfo");
+      } else {
+        _XRRGetScreenResourcesCurrent = nullptr;
+        _XRRFreeScreenResources = nullptr;
+        _XRRGetCrtcInfo = nullptr;
+        _XRRFreeCrtcInfo = nullptr;
+      }
     } else {
-      int event, error;
-      _have_xrandr = _XRRQueryExtension(_display, &event, &error);
+      _have_xrandr = false;
+      if (x11display_cat.is_debug()) {
+        x11display_cat.debug()
+          << "RandR extension not supported; resolution setting will not work.\n";
+      }
     }
   } else {
     _have_xrandr = false;
@@ -182,29 +216,61 @@ x11GraphicsPipe(const std::string &display) :
 
   // Use Xrandr to fill in the supported resolution list.
   if (_have_xrandr) {
-    int num_sizes, num_rates;
-    XRRScreenSize *xrrs;
-    xrrs = _XRRSizes(_display, 0, &num_sizes);
-    _display_information->_total_display_modes = 0;
-    for (int i = 0; i < num_sizes; ++i) {
-      _XRRRates(_display, 0, i, &num_rates);
-      _display_information->_total_display_modes += num_rates;
-    }
+    // If we have XRRGetScreenResources, we prefer that.  It seems to be more
+    // reliable than XRRSizes in multi-monitor set-ups.
+    if (auto res = get_screen_resources()) {
+      if (x11display_cat.is_debug()) {
+        x11display_cat.debug()
+          << "Using XRRScreenResources to obtain display modes\n";
+      }
+      _display_information->_total_display_modes = res->nmode;
+      _display_information->_display_mode_array = new DisplayMode[res->nmode];
+      for (int i = 0; i < res->nmode; ++i) {
+        XRRModeInfo &mode = res->modes[i];
 
-    short *rates;
-    short counter = 0;
-    _display_information->_display_mode_array = new DisplayMode[_display_information->_total_display_modes];
-    for (int i = 0; i < num_sizes; ++i) {
-      int num_rates;
-      rates = _XRRRates(_display, 0, i, &num_rates);
-      for (int j = 0; j < num_rates; ++j) {
-        DisplayMode* dm = _display_information->_display_mode_array + counter;
-        dm->width = xrrs[i].width;
-        dm->height = xrrs[i].height;
-        dm->refresh_rate = rates[j];
+        DisplayMode *dm = _display_information->_display_mode_array + i;
+        dm->width = mode.width;
+        dm->height = mode.height;
         dm->bits_per_pixel = -1;
         dm->fullscreen_only = false;
-        ++counter;
+
+        if (mode.hTotal && mode.vTotal) {
+          dm->refresh_rate = (double)mode.dotClock /
+            ((double)mode.hTotal * (double)mode.vTotal);
+        } else {
+          dm->refresh_rate = 0;
+        }
+      }
+    } else {
+      if (x11display_cat.is_debug()) {
+        x11display_cat.debug()
+          << "Using XRRSizes and XRRRates to obtain display modes\n";
+      }
+
+      int num_sizes, num_rates;
+      XRRScreenSize *xrrs;
+      xrrs = _XRRSizes(_display, 0, &num_sizes);
+      _display_information->_total_display_modes = 0;
+      for (int i = 0; i < num_sizes; ++i) {
+        _XRRRates(_display, 0, i, &num_rates);
+        _display_information->_total_display_modes += num_rates;
+      }
+
+      short *rates;
+      short counter = 0;
+      _display_information->_display_mode_array = new DisplayMode[_display_information->_total_display_modes];
+      for (int i = 0; i < num_sizes; ++i) {
+        int num_rates;
+        rates = _XRRRates(_display, 0, i, &num_rates);
+        for (int j = 0; j < num_rates; ++j) {
+          DisplayMode* dm = _display_information->_display_mode_array + counter;
+          dm->width = xrrs[i].width;
+          dm->height = xrrs[i].height;
+          dm->refresh_rate = rates[j];
+          dm->bits_per_pixel = -1;
+          dm->fullscreen_only = false;
+          ++counter;
+        }
       }
     }
   }
@@ -256,6 +322,69 @@ x11GraphicsPipe::
   if (_display) {
     XCloseDisplay(_display);
   }
+}
+
+/**
+ * Returns an XRRScreenResources object, or null if RandR 1.2 is not supported.
+ */
+std::unique_ptr<XRRScreenResources, pfn_XRRFreeScreenResources> x11GraphicsPipe::
+get_screen_resources() const {
+  XRRScreenResources *res = nullptr;
+
+  if (_have_xrandr && _XRRGetScreenResourcesCurrent != nullptr) {
+    res = _XRRGetScreenResourcesCurrent(_display, _root);
+  }
+
+  return std::unique_ptr<XRRScreenResources, pfn_XRRFreeScreenResources>(res, _XRRFreeScreenResources);
+}
+
+/**
+ * Returns an XRRCrtcInfo object, or null if RandR 1.2 is not supported.
+ */
+std::unique_ptr<XRRCrtcInfo, pfn_XRRFreeCrtcInfo> x11GraphicsPipe::
+get_crtc_info(XRRScreenResources *res, RRCrtc crtc) const {
+  XRRCrtcInfo *info = nullptr;
+
+  if (_have_xrandr && _XRRGetCrtcInfo != nullptr) {
+    info = _XRRGetCrtcInfo(_display, res, crtc);
+  }
+
+  return std::unique_ptr<XRRCrtcInfo, pfn_XRRFreeCrtcInfo>(info, _XRRFreeCrtcInfo);
+}
+
+/**
+ * Finds a CRTC for going fullscreen to, at the given origin.  The new CRTC
+ * is returned, along with its x, y, width and height.
+ *
+ * If the required RandR extension is not supported, a value of None will be
+ * returned, but x, y, width and height will still be populated.
+ */
+RRCrtc x11GraphicsPipe::
+find_fullscreen_crtc(const LPoint2i &point,
+                     int &x, int &y, int &width, int &height) {
+  x = 0;
+  y = 0;
+  width = DisplayWidth(_display, _screen);
+  height = DisplayHeight(_display, _screen);
+
+  if (auto res = get_screen_resources()) {
+    for (int i = 0; i < res->ncrtc; ++i) {
+      RRCrtc crtc = res->crtcs[i];
+      if (auto info = get_crtc_info(res.get(), crtc)) {
+        if (point[0] >= info->x && point[0] < info->x + info->width &&
+            point[1] >= info->y && point[1] < info->y + info->height) {
+
+          x = info->x;
+          y = info->y;
+          width = info->width;
+          height = info->height;
+          return crtc;
+        }
+      }
+    }
+  }
+
+  return None;
 }
 
 /**

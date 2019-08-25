@@ -788,18 +788,17 @@ cleanup_task(AsyncTask *task, bool upon_death, bool clean_exit) {
 
   _manager->remove_task_by_name(task);
 
-  if (upon_death && task->set_future_state(clean_exit ? AsyncFuture::FS_finished
-                                                      : AsyncFuture::FS_cancelled)) {
-    task->notify_done(clean_exit);
-  }
-
-  task->_manager = nullptr;
-
   if (upon_death) {
     _manager->_lock.unlock();
+    if (task->set_future_state(clean_exit ? AsyncFuture::FS_finished
+                                          : AsyncFuture::FS_cancelled)) {
+      task->notify_done(clean_exit);
+    }
     task->upon_death(_manager, clean_exit);
     _manager->_lock.lock();
   }
+
+  task->_manager = nullptr;
 }
 
 /**

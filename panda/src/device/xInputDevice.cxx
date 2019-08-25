@@ -99,12 +99,12 @@ typedef struct _XINPUT_CAPABILITIES_EX {
   WORD Unknown2;
 } XINPUT_CAPABILITIES_EX;
 
-typedef DWORD (*pXInputGetState)(DWORD, XINPUT_STATE *);
-typedef DWORD (*pXInputSetState)(DWORD, XINPUT_VIBRATION *);
-typedef DWORD (*pXInputGetCapabilities)(DWORD, DWORD, XINPUT_CAPABILITIES *);
-typedef DWORD (*pXInputGetCapabilitiesEx)(DWORD, DWORD, DWORD, XINPUT_CAPABILITIES_EX *);
-typedef DWORD (*pXInputGetBatteryInformation)(DWORD, BYTE, XINPUT_BATTERY_INFORMATION *);
-typedef DWORD (*pXInputGetBaseBusInformation)(DWORD, XINPUT_BUSINFO *);
+typedef DWORD (WINAPI *pXInputGetState)(DWORD, XINPUT_STATE *);
+typedef DWORD (WINAPI *pXInputSetState)(DWORD, XINPUT_VIBRATION *);
+typedef DWORD (WINAPI *pXInputGetCapabilities)(DWORD, DWORD, XINPUT_CAPABILITIES *);
+typedef DWORD (WINAPI *pXInputGetCapabilitiesEx)(DWORD, DWORD, DWORD, XINPUT_CAPABILITIES_EX *);
+typedef DWORD (WINAPI *pXInputGetBatteryInformation)(DWORD, BYTE, XINPUT_BATTERY_INFORMATION *);
+typedef DWORD (WINAPI *pXInputGetBaseBusInformation)(DWORD, XINPUT_BUSINFO *);
 
 static pXInputGetState get_state = nullptr;
 static pXInputSetState set_state = nullptr;

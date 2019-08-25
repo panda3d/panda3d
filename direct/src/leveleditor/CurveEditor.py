@@ -2,7 +2,7 @@
 This is the module for curve edit
 """
 
-from pandac.PandaModules import *
+from panda3d.core import *
 from direct.wxwidgets.WxPandaShell import *
 from direct.showbase.DirectObject import *
 from direct.directtools.DirectSelection import SelectionRay

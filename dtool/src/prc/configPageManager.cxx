@@ -129,7 +129,12 @@ reload_implicit_pages() {
 #else
   const BlobInfo *blobinfo = (const BlobInfo *)dlsym(dlopen(NULL, RTLD_NOW), "blobinfo");
 #endif
-  if (blobinfo != nullptr && (blobinfo->version == 0 || blobinfo->num_pointers < 10)) {
+  if (blobinfo == nullptr) {
+#ifndef _MSC_VER
+    // Clear the error flag.
+    dlerror();
+#endif
+  } else if (blobinfo->version == 0 || blobinfo->num_pointers < 10) {
     blobinfo = nullptr;
   }
 

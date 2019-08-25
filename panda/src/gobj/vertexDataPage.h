@@ -21,7 +21,6 @@
 #include "vertexDataSaveFile.h"
 #include "pmutex.h"
 #include "conditionVar.h"
-#include "conditionVarFull.h"
 #include "thread.h"
 #include "mutexHolder.h"
 #include "pdeque.h"
@@ -147,7 +146,7 @@ private:
 
     // Signaled when anything new is added to either of the above queues, or
     // when _shutdown is set true.  This wakes up any pending thread.
-    ConditionVarFull _pending_cvar;
+    ConditionVar _pending_cvar;
 
     PageThreads _threads;
     friend class PageThread;

@@ -31,6 +31,12 @@ PT(MovieAudio) MovieTypeRegistry::
 make_audio(const Filename &name) {
   string ext = downcase(name.get_extension());
 
+#ifdef HAVE_ZLIB
+  if (ext == "pz" || ext == "gz") {
+    ext = Filename(name.get_basename_wo_extension()).get_extension();
+  }
+#endif
+
   _audio_lock.lock();
 
   // Make sure that the list of audio types has been read in.
@@ -84,7 +90,7 @@ register_audio_type(MakeAudioFunc func, const string &extensions) {
     if (_audio_type_registry.count(*wi)) {
       movies_cat->warning()
         << "Attempt to register multiple audio types with extension " << (*wi) << "\n";
-    } else {
+    } else if (movies_cat->is_debug()) {
       movies_cat->debug()
         << "Registered audio type with extension " << (*wi) << "\n";
     }
@@ -154,6 +160,12 @@ PT(MovieVideo) MovieTypeRegistry::
 make_video(const Filename &name) {
   string ext = downcase(name.get_extension());
 
+#ifdef HAVE_ZLIB
+  if (ext == "pz" || ext == "gz") {
+    ext = Filename(name.get_basename_wo_extension()).get_extension();
+  }
+#endif
+
   _video_lock.lock();
 
   // Make sure that the list of video types has been read in.
@@ -207,7 +219,7 @@ register_video_type(MakeVideoFunc func, const string &extensions) {
     if (_video_type_registry.count(*wi)) {
       movies_cat->warning()
         << "Attempt to register multiple video types with extension " << (*wi) << "\n";
-    } else {
+    } else if (movies_cat->is_debug()) {
       movies_cat->debug()
         << "Registered video type with extension " << (*wi) << "\n";
     }

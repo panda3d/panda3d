@@ -13,6 +13,8 @@
 
 /**
  * Increases the number of weak references.
+ *
+ * @since 1.10.0
  */
 INLINE void WeakReferenceList::
 ref() const {
@@ -23,6 +25,8 @@ ref() const {
  * Decreases the number of weak references.  Returns true if, after this,
  * there are still any weak or strong references remaining, or false if this
  * structure should be deleted right away.
+ *
+ * @since 1.10.0
  */
 INLINE bool WeakReferenceList::
 unref() const {
@@ -32,6 +36,8 @@ unref() const {
 /**
  * Returns true if the object represented has been deleted, ie. there are only
  * weak references left pointing to the object.
+ *
+ * @since 1.10.0
  */
 INLINE bool WeakReferenceList::
 was_deleted() const {

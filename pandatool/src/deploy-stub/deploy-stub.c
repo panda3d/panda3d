@@ -75,6 +75,10 @@ static struct _inittab extensions[] = {
 #endif
 #endif
 
+#ifdef _WIN32
+static wchar_t *log_pathw = NULL;
+#endif
+
 #if defined(_WIN32) && PY_VERSION_HEX < 0x03060000
 static int supports_code_page(UINT cp) {
   if (cp == 0) {
@@ -225,7 +229,8 @@ static int mkdir_parent(const char *path) {
 static int setup_logging(const char *path, int append) {
 #ifdef _WIN32
   // Does it start with a tilde?  Perform tilde expansion if so.
-  wchar_t pathw[MAX_PATH * 2];
+  wchar_t *pathw = (wchar_t *)malloc(sizeof(wchar_t) * MAX_PATH);
+  pathw[0] = 0;
   size_t offset = 0;
   if (path[0] == '~' && (path[1] == 0 || path[1] == '/' || path[1] == '\\')) {
     // Strip off the tilde.
@@ -233,6 +238,7 @@ static int setup_logging(const char *path, int append) {
 
     // Get the home directory path for the current user.
     if (!SUCCEEDED(SHGetFolderPathW(NULL, CSIDL_PROFILE, NULL, 0, pathw))) {
+      free(pathw);
       return 0;
     }
     offset = wcslen(pathw);
@@ -240,25 +246,29 @@ static int setup_logging(const char *path, int append) {
 
   // We need to convert the rest of the path from UTF-8 to UTF-16.
   if (MultiByteToWideChar(CP_UTF8, 0, path, -1, pathw + offset,
-                          (int)(_countof(pathw) - offset)) == 0) {
+                          (int)(MAX_PATH - offset)) == 0) {
+    free(pathw);
     return 0;
   }
 
   DWORD access = append ? FILE_APPEND_DATA : (GENERIC_READ | GENERIC_WRITE);
   int creation = append ? OPEN_ALWAYS : CREATE_ALWAYS;
-  HANDLE handle = CreateFileW(pathw, access, FILE_SHARE_DELETE | FILE_SHARE_READ,
+  HANDLE handle = CreateFileW(pathw, access, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
                               NULL, creation, FILE_ATTRIBUTE_NORMAL, NULL);
 
   if (handle == INVALID_HANDLE_VALUE) {
     // Make the parent directories first.
     mkdir_parent(pathw);
-    handle = CreateFileW(pathw, access, FILE_SHARE_DELETE | FILE_SHARE_READ,
+    handle = CreateFileW(pathw, access, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
                          NULL, creation, FILE_ATTRIBUTE_NORMAL, NULL);
   }
 
   if (handle == INVALID_HANDLE_VALUE) {
+    free(pathw);
     return 0;
   }
+
+  log_pathw = pathw;
 
   if (append) {
     SetFilePointer(handle, 0, NULL, FILE_END);
@@ -282,7 +292,7 @@ static int setup_logging(const char *path, int append) {
 
   // Now replace the stdout and stderr file descriptors with one pointing to
   // our desired handle.
-  int fd = _open_osfhandle((intptr_t)handle, _O_WRONLY | _O_TEXT | (append ? _O_APPEND : 0));
+  int fd = _open_osfhandle((intptr_t)handle, _O_WRONLY | _O_TEXT | _O_APPEND);
   _dup2(fd, _fileno(stdout));
   _dup2(fd, _fileno(stderr));
   _close(fd);
@@ -421,6 +431,32 @@ int Py_FrozenMain(int argc, char **argv)
 #endif
 
 #if defined(MS_WINDOWS) && PY_VERSION_HEX < 0x03040000
+    /* We can't rely on our overriding of the standard I/O to work on older
+     * versions of Python, since they are compiled with an incompatible CRT.
+     * The best solution I've found was to just replace sys.stdout/stderr with
+     * the log file reopened in append mode (which requires not locking it for
+     * write, and also passing in _O_APPEND above, and disabling buffering).
+     * It's not the most elegant solution, but it's better than crashing. */
+#if PY_MAJOR_VERSION < 3
+    if (log_pathw != NULL) {
+      PyObject *uniobj = PyUnicode_FromWideChar(log_pathw, (Py_ssize_t)wcslen(log_pathw));
+      PyObject *file = PyObject_CallFunction((PyObject*)&PyFile_Type, "Nsi", uniobj, "a", 0);
+
+      if (file != NULL) {
+        PyFile_SetEncodingAndErrors(file, "utf-8", NULL);
+
+        PySys_SetObject("stdout", file);
+        PySys_SetObject("stderr", file);
+        PySys_SetObject("__stdout__", file);
+        PySys_SetObject("__stderr__", file);
+
+        /* Be sure to disable buffering, otherwise we'll get overlap */
+        setbuf(stdout, (char *)NULL);
+        setbuf(stderr, (char *)NULL);
+      }
+    }
+    else
+#endif
     if (!supports_code_page(GetConsoleOutputCP()) ||
         !supports_code_page(GetConsoleCP())) {
       /* Same hack as before except for Python 2.7, which doesn't seem to have

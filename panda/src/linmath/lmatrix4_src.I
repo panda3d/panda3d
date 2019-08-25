@@ -115,32 +115,8 @@ zeros_mat() {
  *
  */
 INLINE_LINMATH FLOATNAME(LMatrix4)::
-FLOATNAME(LMatrix4)() {
-}
-
-/**
- *
- */
-INLINE_LINMATH FLOATNAME(LMatrix4)::
-FLOATNAME(LMatrix4)(const FLOATNAME(LMatrix4) &copy) : _m(copy._m) {
-}
-
-/**
- *
- */
-INLINE_LINMATH FLOATNAME(LMatrix4)::
 FLOATNAME(LMatrix4)(const FLOATNAME(UnalignedLMatrix4) &copy) {
   operator = (copy);
-}
-
-/**
- *
- */
-INLINE_LINMATH FLOATNAME(LMatrix4) &FLOATNAME(LMatrix4)::
-operator = (const FLOATNAME(LMatrix4) &copy) {
-  TAU_PROFILE("void LMatrix4::operator = (const LMatrix4 &)", " ", TAU_USER);
-  _m = copy._m;
-  return *this;
 }
 
 /**
@@ -484,13 +460,9 @@ get_col(int col) const {
  */
 INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LMatrix4)::
 get_row3(int row) const {
-#ifdef HAVE_EIGEN
-  return FLOATNAME(LVecBase3)(_m.block<1, 3>(row, 0));
-#else
   return FLOATNAME(LVecBase3)((*this)(row, 0),
                               (*this)(row, 1),
                               (*this)(row, 2));
-#endif  // HAVE_EIGEN
 }
 
 /**
@@ -514,13 +486,9 @@ get_row3(FLOATNAME(LVecBase3) &result_vec,int row) const {
  */
 INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LMatrix4)::
 get_col3(int col) const {
-#ifdef HAVE_EIGEN
-  return FLOATNAME(LVecBase3)(_m.block<1, 3>(0, col));
-#else
   return FLOATNAME(LVecBase3)((*this)(0, col),
                               (*this)(1, col),
                               (*this)(2, col));
-#endif  // HAVE_EIGEN
 }
 
 /**
@@ -1635,14 +1603,6 @@ invert(const FLOATNAME(LMatrix4) &a) {
   return result;
 }
 
-
-/**
- *
- */
-INLINE_LINMATH FLOATNAME(UnalignedLMatrix4)::
-FLOATNAME(UnalignedLMatrix4)() {
-}
-
 /**
  *
  */
@@ -1654,26 +1614,9 @@ FLOATNAME(UnalignedLMatrix4)(const FLOATNAME(LMatrix4) &copy) {
 /**
  *
  */
-INLINE_LINMATH FLOATNAME(UnalignedLMatrix4)::
-FLOATNAME(UnalignedLMatrix4)(const FLOATNAME(UnalignedLMatrix4) &copy) : _m(copy._m) {
-}
-
-/**
- *
- */
 INLINE_LINMATH FLOATNAME(UnalignedLMatrix4) &FLOATNAME(UnalignedLMatrix4)::
 operator = (const FLOATNAME(LMatrix4) &copy) {
   memcpy(&_m(0, 0), copy.get_data(), sizeof(FLOATTYPE) * num_components);
-  return *this;
-}
-
-/**
- *
- */
-INLINE_LINMATH FLOATNAME(UnalignedLMatrix4) &FLOATNAME(UnalignedLMatrix4)::
-operator = (const FLOATNAME(UnalignedLMatrix4) &copy) {
-  TAU_PROFILE("void UnalignedLMatrix4::operator =(UnalignedLMatrix4 &)", " ", TAU_USER);
-  _m = copy._m;
   return *this;
 }
 

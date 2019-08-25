@@ -21,6 +21,7 @@
 #include "colorAttrib.h"
 #include "cullBinAttrib.h"
 #include "transparencyAttrib.h"
+#include "zStream.h"
 
 PT(TextFont) TextProperties::_default_font;
 bool TextProperties::_loaded_default_font = false;

@@ -27,6 +27,42 @@ class Loader(DirectObject):
         # This indicates that this class behaves like a Future.
         _asyncio_future_blocking = False
 
+        class ResultAwaiter(object):
+            """Reinvents generators because of PEP 479, sigh.  See #513."""
+
+            __slots__ = 'requestList', 'index'
+
+            def __init__(self, requestList):
+                self.requestList = requestList
+                self.index = 0
+
+            def __await__(self):
+                return self
+
+            def __anext__(self):
+                if self.index >= len(self.requestList):
+                    raise StopAsyncIteration
+                return self
+
+            def __iter__(self):
+                return self
+
+            def __next__(self):
+                i = self.index
+                request = self.requestList[i]
+                if not request.done():
+                    return request
+
+                self.index = i + 1
+
+                result = request.result()
+                if isinstance(result, PandaNode):
+                    result = NodePath(result)
+
+                exc = StopIteration(result)
+                exc.value = result
+                raise exc
+
         def __init__(self, loader, numObjects, gotList, callback, extraArgs):
             self._loader = loader
             self.objects = [None] * numObjects
@@ -81,16 +117,14 @@ class Loader(DirectObject):
         def __await__(self):
             """ Returns a generator that raises StopIteration when the loading
             is complete.  This allows this class to be used with 'await'."""
+
             if self.requests:
                 self._asyncio_future_blocking = True
-                yield self
 
-            # This should be a simple return, but older versions of Python
-            # don't allow return statements with arguments.
-            result = self.result()
-            exc = StopIteration(result)
-            exc.value = result
-            raise exc
+            if self.gotList:
+                return self.ResultAwaiter([self])
+            else:
+                return self.ResultAwaiter(self.requestList)
 
         def __aiter__(self):
             """ This allows using `async for` to iterate asynchronously over
@@ -100,19 +134,7 @@ class Loader(DirectObject):
             requestList = self.requestList
             assert requestList is not None, "Request was cancelled."
 
-            class AsyncIter:
-                index = 0
-                def __anext__(self):
-                    if self.index < len(requestList):
-                        i = self.index
-                        self.index = i + 1
-                        return requestList[i]
-                    else:
-                        raise StopAsyncIteration
-
-            iter = AsyncIter()
-            iter.objects = self.objects
-            return iter
+            return self.ResultAwaiter(requestList)
 
     # special methods
     def __init__(self, base):
@@ -125,11 +147,27 @@ class Loader(DirectObject):
         Loader.loaderIndex += 1
         self.accept(self.hook, self.__gotAsyncObject)
 
+        if ConfigVariableBool('loader-support-entry-points', True):
+            self._loadPythonFileTypes()
+
     def destroy(self):
         self.ignore(self.hook)
         self.loader.stopThreads()
         del self.base
         del self.loader
+
+    def _loadPythonFileTypes(self):
+        import importlib
+        try:
+            pkg_resources = importlib.import_module('pkg_resources')
+        except ImportError:
+            pkg_resources = None
+
+        if pkg_resources:
+            registry = LoaderFileTypeRegistry.getGlobalPtr()
+
+            for entry_point in pkg_resources.iter_entry_points('panda3d.loaders'):
+                registry.register_deferred_type(entry_point)
 
     # model loading funcs
     def loadModel(self, modelPath, loaderOptions = None, noCache = None,
@@ -192,7 +230,7 @@ class Loader(DirectObject):
 
         """
 
-        assert Loader.notify.debug("Loading model: %s" % (modelPath))
+        assert Loader.notify.debug("Loading model: %s" % (modelPath,))
         if loaderOptions is None:
             loaderOptions = LoaderOptions()
         else:

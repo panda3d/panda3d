@@ -22,7 +22,6 @@
 #include "lightMutex.h"
 #include "vector_string.h"
 
-class HardwareChannel;
 class GraphicsWindow;
 
 /**

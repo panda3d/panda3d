@@ -579,20 +579,66 @@ set_properties_now(WindowProperties &properties) {
   bool is_fullscreen = _properties.has_fullscreen() && _properties.get_fullscreen();
   bool want_fullscreen = properties.has_fullscreen() ? properties.get_fullscreen() : is_fullscreen;
 
+  if (want_fullscreen && properties.has_origin()) {
+    // If we're fullscreen, reject changes to the origin.
+    properties.clear_origin();
+  }
+
   if (is_fullscreen != want_fullscreen || (is_fullscreen && properties.has_size())) {
     if (want_fullscreen) {
-      if (x11_pipe->_have_xrandr) {
-        XRRScreenConfiguration* conf = _XRRGetScreenInfo(_display, x11_pipe->get_root());
+      // OK, first figure out which CRTC the window is on.  It may be on more
+      // than one, actually, so grab a point in the center in order to figure
+      // out which one it's more-or-less mostly on.
+      LPoint2i center(0, 0);
+      if (_properties.has_origin()) {
+        center = _properties.get_origin();
+        if (_properties.has_size()) {
+          center += _properties.get_size() / 2;
+        }
+      }
+      int x, y, width, height;
+      x11_pipe->find_fullscreen_crtc(center, x, y, width, height);
+
+      // Which size should we go fullscreen in?
+      int reqsizex, reqsizey;
+      if (properties.has_size()) {
+        reqsizex = properties.get_x_size();
+        reqsizey = properties.get_y_size();
+      } else if (_properties.has_size()) {
+        reqsizex = _properties.get_x_size();
+        reqsizey = _properties.get_y_size();
+      } else {
+        reqsizex = width;
+        reqsizey = height;
+      }
+
+      // Are we passing in pipe.display_width/height?  This is actually the
+      // size of the virtual desktop, which may not be a real resolution, so
+      // if that is passed in, we have to assume that the user means to just
+      // fullscreen without changing the screen resolution.
+      if ((reqsizex == x11_pipe->get_display_width() &&
+           reqsizey == x11_pipe->get_display_height())
+          || (width == reqsizex && height == reqsizey)
+          || !x11_pipe->_have_xrandr) {
+
+        // Cover the current CRTC.
+        properties.set_origin(x, y);
+        properties.set_size(width, height);
+
+        if (x11display_cat.is_debug()) {
+          x11display_cat.debug()
+            << "Setting window to fullscreen on CRTC "
+            << width << "x" << height << "+" << x << "+" << y << "\n";
+        }
+      } else {
+        // We may need to change the screen resolution.  The code below is
+        // suboptimal; in the future, we probably want to only touch the CRTC
+        // that the window is on.
+        XRRScreenConfiguration *conf = _XRRGetScreenInfo(_display, _xwindow ? _xwindow : x11_pipe->get_root());
         SizeID old_size_id = x11_pipe->_XRRConfigCurrentConfiguration(conf, &_orig_rotation);
         SizeID new_size_id = (SizeID) -1;
-        int num_sizes = 0, reqsizex, reqsizey;
-        if (properties.has_size()) {
-          reqsizex = properties.get_x_size();
-          reqsizey = properties.get_y_size();
-        } else {
-          reqsizex = _properties.get_x_size();
-          reqsizey = _properties.get_y_size();
-        }
+        int num_sizes = 0;
+
         XRRScreenSize *xrrs;
         xrrs = x11_pipe->_XRRSizes(_display, 0, &num_sizes);
         for (int i = 0; i < num_sizes; ++i) {
@@ -605,21 +651,29 @@ set_properties_now(WindowProperties &properties) {
           x11display_cat.error()
             << "Videocard has no supported display resolutions at specified res ("
             << reqsizex << " x " << reqsizey << ")\n";
-        } else {
-          if (new_size_id != old_size_id) {
 
+          // Just go fullscreen at native resolution, then.
+          properties.set_origin(x, y);
+          properties.set_size(width, height);
+        } else {
+          if (x11display_cat.is_debug()) {
+            x11display_cat.debug()
+              << "Switching to fullscreen with resolution "
+              << reqsizex << "x" << reqsizey << "\n";
+          }
+
+          if (new_size_id != old_size_id) {
             _XRRSetScreenConfig(_display, conf, x11_pipe->get_root(), new_size_id, _orig_rotation, CurrentTime);
             if (_orig_size_id == (SizeID) -1) {
               // Remember the original resolution so we can switch back to it.
               _orig_size_id = old_size_id;
             }
+
+            // Since the above changes the entire screen configuration, we
+            // have to set the origin to 0, 0.
+            properties.set_origin(0, 0);
           }
         }
-      } else {
-        // If we don't have Xrandr support, we fake the fullscreen support by
-        // setting the window size to the desktop size.
-        properties.set_size(x11_pipe->get_display_width(),
-                            x11_pipe->get_display_height());
       }
     } else {
       // Change the resolution back to what it was.  Don't remove the SizeID
@@ -962,34 +1016,6 @@ open_window() {
   // Make sure we are not making X11 calls from other threads.
   LightReMutexHolder holder(x11GraphicsPipe::_x_mutex);
 
-  if (_properties.get_fullscreen() && x11_pipe->_have_xrandr) {
-    XRRScreenConfiguration* conf = _XRRGetScreenInfo(_display, x11_pipe->get_root());
-    if (_orig_size_id == (SizeID) -1) {
-      _orig_size_id = x11_pipe->_XRRConfigCurrentConfiguration(conf, &_orig_rotation);
-    }
-    int num_sizes, new_size_id = -1;
-    XRRScreenSize *xrrs;
-    xrrs = x11_pipe->_XRRSizes(_display, 0, &num_sizes);
-    for (int i = 0; i < num_sizes; ++i) {
-      if (xrrs[i].width == _properties.get_x_size() &&
-          xrrs[i].height == _properties.get_y_size()) {
-        new_size_id = i;
-      }
-    }
-    if (new_size_id == -1) {
-      x11display_cat.error()
-        << "Videocard has no supported display resolutions at specified res ("
-        << _properties.get_x_size() << " x " << _properties.get_y_size() <<")\n";
-      _orig_size_id = -1;
-      return false;
-    }
-    if (new_size_id != _orig_size_id) {
-      _XRRSetScreenConfig(_display, conf, x11_pipe->get_root(), new_size_id, _orig_rotation, CurrentTime);
-    } else {
-      _orig_size_id = -1;
-    }
-  }
-
   X11_Window parent_window = x11_pipe->get_root();
   WindowHandle *window_handle = _properties.get_parent_window();
   if (window_handle != nullptr) {
@@ -1130,13 +1156,8 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
     size_hints_p = XAllocSizeHints();
     if (size_hints_p != nullptr) {
       if (properties.has_origin()) {
-        if (_properties.get_fullscreen()) {
-          size_hints_p->x = 0;
-          size_hints_p->y = 0;
-        } else {
-          size_hints_p->x = properties.get_x_origin();
-          size_hints_p->y = properties.get_y_origin();
-        }
+        size_hints_p->x = properties.get_x_origin();
+        size_hints_p->y = properties.get_y_origin();
         size_hints_p->flags |= USPosition;
       }
       LVecBase2i size = _properties.get_size();
@@ -1975,6 +1996,8 @@ get_keyboard_map() const {
   // NB.  This could be improved by using the Xkb API. XkbDescPtr desc =
   // XkbGetMap(_display, XkbAllMapComponentsMask, XkbUseCoreKbd);
   ButtonMap *map = new ButtonMap;
+
+  LightReMutexHolder holder(x11GraphicsPipe::_x_mutex);
 
   for (int k = 9; k <= 135; ++k) {
     ButtonHandle raw_button = map_raw_button(k);

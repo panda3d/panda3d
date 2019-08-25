@@ -431,6 +431,12 @@ get_slotted_function_def(Object *obj, Function *func, FunctionRemap *remap,
     return true;
   }
 
+  if (method_name == "operator |=") {
+    def._answer_location = "nb_inplace_or";
+    def._wrapper_type = WT_inplace_binary_operator;
+    return true;
+  }
+
   if (method_name == "__ipow__") {
     def._answer_location = "nb_inplace_power";
     def._wrapper_type = WT_inplace_ternary_operator;
@@ -1690,7 +1696,6 @@ write_module_class(ostream &out, Object *obj) {
             SlottedFunctionDef def;
             def._answer_location = true_key;
             def._wrapper_type = slotted_def._wrapper_type;
-            def._min_version = 0x03000000;
             def._wrapper_name = func->_name + "_" + true_key;
             slots[true_key] = def;
           }
@@ -1860,6 +1865,12 @@ write_module_class(ostream &out, Object *obj) {
           } else {
             return_flags |= RF_pyobject;
           }
+          bool all_nonconst = true;
+          for (FunctionRemap *remap : def._remaps) {
+            if (remap->_const_method) {
+              all_nonconst = false;
+            }
+          }
           out << "//////////////////\n";
           out << "// A wrapper function to satisfy Python's internal calling conventions.\n";
           out << "// " << ClassName << " slot " << rfi->second._answer_location << " -> " << fname << "\n";
@@ -1872,9 +1883,18 @@ write_module_class(ostream &out, Object *obj) {
             // This is for things like __sub__, which Python likes to call on
             // the wrong-type objects.
             out << "  DTOOL_Call_ExtractThisPointerForType(self, &Dtool_" << ClassName << ", (void **)&local_this);\n";
-            out << "  if (local_this == nullptr) {\n";
+            if (all_nonconst) {
+              out << "  if (local_this == nullptr || DtoolInstance_IS_CONST(self)) {\n";
+            } else {
+              out << "  if (local_this == nullptr) {\n";
+            }
             out << "    Py_INCREF(Py_NotImplemented);\n";
             out << "    return Py_NotImplemented;\n";
+          } else if (all_nonconst) {
+            out << "  if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_"
+                << ClassName << ", (void **)&local_this, \"" << ClassName
+                << "." << methodNameFromCppName(fname, "", false) << "\")) {\n";
+            out << "    return nullptr;\n";
           } else {
             out << "  if (!Dtool_Call_ExtractThisPointer(self, Dtool_" << ClassName << ", (void **)&local_this)) {\n";
             out << "    return nullptr;\n";
@@ -1883,7 +1903,7 @@ write_module_class(ostream &out, Object *obj) {
 
           string expected_params;
           write_function_forset(out, def._remaps, 1, 1, expected_params, 2, true, true,
-                                AT_single_arg, return_flags, false);
+                                AT_single_arg, return_flags, false, !all_nonconst);
 
           if (rfi->second._wrapper_type != WT_one_param) {
             out << "  Py_INCREF(Py_NotImplemented);\n";
@@ -2858,8 +2878,13 @@ write_module_class(ostream &out, Object *obj) {
 
   // destructor tp_dealloc;
   out << "    &Dtool_FreeInstance_" << ClassName << ",\n";
-  // printfunc tp_print;
+
+  out << "#if PY_VERSION_HEX >= 0x03080000\n";
+  out << "    0, // tp_vectorcall_offset\n";
+  out << "#else\n";
   write_function_slot(out, 4, slots, "tp_print");
+  out << "#endif\n";
+
   // getattrfunc tp_getattr;
   write_function_slot(out, 4, slots, "tp_getattr");
   // setattrfunc tp_setattr;
@@ -3049,6 +3074,10 @@ write_module_class(ostream &out, Object *obj) {
   // destructor tp_finalize
   out << "#if PY_VERSION_HEX >= 0x03040000\n";
   out << "    nullptr, // tp_finalize\n";
+  out << "#endif\n";
+  // vectorcallfunc tp_vectorcall
+  out << "#if PY_VERSION_HEX >= 0x03080000\n";
+  out << "    nullptr, // tp_vectorcall\n";
   out << "#endif\n";
   out << "  },\n";
 
@@ -4701,7 +4730,7 @@ write_function_instance(ostream &out, FunctionRemap *remap,
 
         if (is_optional) {
           extra_convert
-            << "wchar_t *" << param_name << "_str;\n"
+            << "wchar_t *" << param_name << "_str = nullptr;\n"
             << "if (" << param_name << " != nullptr) {\n"
             << "#if PY_VERSION_HEX >= 0x03030000\n"
             << "  " << param_name << "_str = PyUnicode_AsWideCharString(" << param_name << ", nullptr);\n"
@@ -4748,7 +4777,7 @@ write_function_instance(ostream &out, FunctionRemap *remap,
         if (is_optional) {
           extra_convert
             << "Py_ssize_t " << param_name << "_len;\n"
-            << "wchar_t *" << param_name << "_str;\n"
+            << "wchar_t *" << param_name << "_str = nullptr;\n"
             << "std::wstring " << param_name << "_wstr;\n"
             << "if (" << param_name << " != nullptr) {\n"
             << "#if PY_VERSION_HEX >= 0x03030000\n"
@@ -4932,13 +4961,14 @@ write_function_instance(ostream &out, FunctionRemap *remap,
       expected_params += "NoneType";
 
     } else if (TypeManager::is_char(type)) {
-      indent(out, indent_level) << "char " << param_name << default_expr << ";\n";
+      indent(out, indent_level) << "char *" << param_name << "_str;\n";
+      indent(out, indent_level) << "Py_ssize_t " << param_name << "_len;\n";
 
-      format_specifiers += "c";
-      parameter_list += ", &" + param_name;
+      format_specifiers += "s#";
+      parameter_list += ", &" + param_name + "_str, &" + param_name + "_len";
+      extra_param_check << " && " << param_name << "_len == 1";
 
-      // extra_param_check << " && isascii(" << param_name << ")";
-      pexpr_string = "(char) " + param_name;
+      pexpr_string = param_name + "_str[0]";
       expected_params += "char";
       only_pyobjects = false;
 
@@ -5980,7 +6010,11 @@ write_function_instance(ostream &out, FunctionRemap *remap,
       indent(out, indent_level) << "}\n";
     }
 
-    return_expr = manage_return_value(out, indent_level, remap, "return_value");
+    if (TypeManager::is_pointer_to_PyObject(remap->_return_type->get_orig_type())) {
+      indent(out, indent_level) << "Py_XINCREF(return_value);\n";
+    } else {
+      return_expr = manage_return_value(out, indent_level, remap, "return_value");
+    }
     return_expr = remap->_return_type->temporary_to_return(return_expr);
   }
 
@@ -7524,6 +7558,12 @@ is_remap_legal(FunctionRemap *remap) {
     if (param->get_default_value() == nullptr && !is_cpp_type_legal(orig_type)) {
       return false;
     }
+  }
+
+  // Don't export global operators.
+  if (!remap->_has_this &&
+      remap->_cppfunc->get_simple_name().compare(0, 9, "operator ") == 0) {
+    return false;
   }
 
   // ok all looks ok.

@@ -132,8 +132,10 @@ FfmpegAudioCursor(FfmpegAudio *src) :
   // Set up the resample context if necessary.
   if (_audio_ctx->sample_fmt != AV_SAMPLE_FMT_S16) {
 #ifdef HAVE_SWRESAMPLE
-    ffmpeg_cat.debug()
-      << "Codec does not use signed 16-bit sample format.  Setting up swresample context.\n";
+    if (ffmpeg_cat.is_debug()) {
+      ffmpeg_cat.debug()
+        << "Codec does not use signed 16-bit sample format.  Setting up swresample context.\n";
+    }
 
     _resample_ctx = swr_alloc();
     av_opt_set_int(_resample_ctx, "in_channel_count", _audio_channels, 0);
@@ -462,7 +464,7 @@ seek(double t) {
  * read.  Your buffer must be equal in size to N * channels.  Multiple-channel
  * audio will be interleaved.
  */
-void FfmpegAudioCursor::
+int FfmpegAudioCursor::
 read_samples(int n, int16_t *data) {
   int desired = n * _audio_channels;
 
@@ -486,4 +488,5 @@ read_samples(int n, int16_t *data) {
 
   }
   _samples_read += n;
+  return n;
 }

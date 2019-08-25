@@ -16,6 +16,7 @@
 
 #include "pandatoolbase.h"
 #include "configVariableBool.h"
+#include "configVariableDouble.h"
 #include "dconfig.h"
 
 ConfigureDecl(config_assimp, EXPCL_ASSIMP, EXPTP_ASSIMP);
@@ -29,6 +30,8 @@ extern ConfigVariableBool assimp_fix_infacing_normals;
 extern ConfigVariableBool assimp_optimize_meshes;
 extern ConfigVariableBool assimp_optimize_graph;
 extern ConfigVariableBool assimp_flip_winding_order;
+extern ConfigVariableBool assimp_gen_normals;
+extern ConfigVariableDouble assimp_smooth_normal_angle;
 
 extern EXPCL_ASSIMP void init_libassimp();
 

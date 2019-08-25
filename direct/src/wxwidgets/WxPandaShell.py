@@ -202,15 +202,15 @@ class WxPandaShell(WxAppShell):
         """A step in the WX event loop. You can either call this yourself or use as task."""
         while self.evtLoop.Pending():
           self.evtLoop.Dispatch()
-        self.wxApp.ProcessIdle()
+        self.evtLoop.ProcessIdle()
         if task != None: return task.cont
 
     def appInit(self):
         """Overridden from WxAppShell.py."""
         # Create a new event loop (to overide default wxEventLoop)
-        self.evtLoop = wx.EventLoop()
-        self.oldLoop = wx.EventLoop.GetActive()
-        wx.EventLoop.SetActive(self.evtLoop)
+        self.evtLoop = wx.GUIEventLoop()
+        self.oldLoop = wx.GUIEventLoop.GetActive()
+        wx.GUIEventLoop.SetActive(self.evtLoop)
         taskMgr.add(self.wxStep, "evtLoopTask")
 
     def onViewChange(self, evt, viewIdx):

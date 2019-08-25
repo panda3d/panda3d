@@ -844,9 +844,11 @@ create_texture(DXScreenData &scrn) {
   tex->set_anisotropic_degree(aniso_degree);
 
 #ifdef _DEBUG
-  dxgsg9_cat.spam()
-    << "create_texture: setting aniso degree for " << tex->get_name()
-    << " to: " << aniso_degree << endl;
+  if (dxgsg9_cat.is_spam()) {
+    dxgsg9_cat.spam()
+      << "create_texture: setting aniso degree for " << tex->get_name()
+      << " to: " << aniso_degree << endl;
+  }
 #endif
 
   UINT mip_level_count;

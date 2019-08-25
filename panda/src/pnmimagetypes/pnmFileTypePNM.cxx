@@ -193,7 +193,7 @@ pm_getuint(istream * const ifP) {
     'unsigned int'), issue an error message to stderr and abort the
     program.
     -----------------------------------------------------------------------------*/
-  char ch;
+  int ch;
   unsigned int i;
 
   // skip whitespace

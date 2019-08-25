@@ -43,6 +43,7 @@ PUBLISHED:
   BLOCKING INLINE void wait();
   BLOCKING INLINE void wait(double timeout);
   INLINE void notify();
+  INLINE void notify_all();
   void output(std::ostream &out) const;
 
 private:

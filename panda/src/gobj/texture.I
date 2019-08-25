@@ -175,6 +175,8 @@ setup_cube_map(int size, ComponentType component_type, Format format) {
  * is not the same as the z_size.  Follow up with read() or load() to fill the
  * texture properties and image data, or use set_clear_color to let the
  * texture be cleared to a solid color.
+ *
+ * @since 1.10.0
  */
 INLINE void Texture::
 setup_cube_map_array(int num_cube_maps) {
@@ -189,6 +191,8 @@ setup_cube_map_array(int num_cube_maps) {
  *
  * The num_cube_maps given here is multiplied by six to become the z_size of
  * the image.
+ *
+ * @since 1.10.0
  */
 INLINE void Texture::
 setup_cube_map_array(int size, int num_cube_maps, ComponentType component_type, Format format) {

@@ -4158,7 +4158,7 @@ do_read_dds(CData *cdata, istream &in, const string &filename, bool header_only)
     cdata->_num_mipmap_levels_read = cdata->_ram_images.size();
   }
 
-  if (in.fail() || in.eof()) {
+  if (in.fail()) {
     gobj_cat.error()
       << filename << ": truncated DDS file.\n";
     return false;
@@ -4924,7 +4924,7 @@ do_read_ktx(CData *cdata, istream &in, const string &filename, bool header_only)
     }
   }
 
-  if (in.fail() || in.eof()) {
+  if (in.fail()) {
     gobj_cat.error()
       << filename << ": truncated KTX file.\n";
     return false;

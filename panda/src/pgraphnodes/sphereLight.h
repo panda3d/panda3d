@@ -22,6 +22,8 @@
 /**
  * A sphere light is like a point light, except that it represents a sphere
  * with a radius, rather than being an infinitely thin point in space.
+ *
+ * @since 1.10.0
  */
 class EXPCL_PANDA_PGRAPHNODES SphereLight : public PointLight {
 PUBLISHED:

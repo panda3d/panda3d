@@ -24,6 +24,8 @@ class LinuxInputDeviceManager;
  * This is a type of device that uses the Linux /dev/input/event# API to read
  * data from a raw mouse or other input device.  Unlike the joystick API, the
  * evdev API supports sending force feedback (ie. rumble) events.
+ *
+ * @since 1.10.0
  */
 class EXPCL_PANDA_DEVICE EvdevInputDevice : public InputDevice {
 public:

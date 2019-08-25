@@ -5,6 +5,9 @@ from installpanda import *
 import sys
 import os
 import shutil
+import glob
+import re
+import subprocess
 
 
 INSTALLER_DEB_FILE = """
@@ -438,7 +441,8 @@ def MakeInstallerLinux(version, debversion=None, rpmrelease=1, runtime=False,
 
             # Add the binaries in /usr/bin explicitly to the spec file
             for base in os.listdir(outputdir + "/bin"):
-                txt += "/usr/bin/%s\n" % (base)
+                if not base.startswith("deploy-stub"):
+                    txt += "/usr/bin/%s\n" % (base)
 
         # Write out the spec file.
         txt = txt.replace("VERSION", version)
@@ -473,7 +477,7 @@ def MakeInstallerOSX(version, runtime=False, python_versions=[], **kwargs):
 
     dmg_name = "Panda3D-" + version
     if len(python_versions) == 1 and not python_versions[0]["version"].startswith("2."):
-        dmg_name += "-py" + pyver
+        dmg_name += "-py" + python_versions[0]["version"]
     dmg_name += ".dmg"
 
     if (os.path.isfile(dmg_name)): oscmd("rm -f %s" % dmg_name)
@@ -558,9 +562,9 @@ def MakeInstallerOSX(version, runtime=False, python_versions=[], **kwargs):
         oscmd("mkdir -p dstroot/pybindings%s/Library/Python/%s/site-packages" % (pyver, pyver))
         WriteFile("dstroot/pybindings%s/Library/Python/%s/site-packages/Panda3D.pth" % (pyver, pyver), "/Developer/Panda3D")
 
-        # Evidently not all Python 3.7 installations read the above path, so do this for now
-        # See GitHub #502
-        if pyver == "3.7":
+        # Somewhere in Python 2.7.13 and 3.7, the above path was removed from
+        # sys.path of the python.org distribution.  See bpo-28440 and GH #502.
+        if pyver not in ("3.0", "3.1", "3.2", "3.3", "3.4", "3.5", "3.6"):
             dir = "dstroot/pybindings%s/Library/Frameworks/Python.framework/Versions/%s/lib/python%s/site-packages" % (pyver, pyver, pyver)
             oscmd("mkdir -p %s" % (dir))
             WriteFile("%s/Panda3D.pth" % (dir), "/Developer/Panda3D")
@@ -580,8 +584,6 @@ def MakeInstallerOSX(version, runtime=False, python_versions=[], **kwargs):
 
     oscmd("mkdir -p dstroot/headers/Developer/Panda3D/lib")
     oscmd("cp -R %s/include               dstroot/headers/Developer/Panda3D/include" % outputdir)
-    if os.path.isfile(outputdir + "/lib/libp3pystub.a"):
-        oscmd("cp -R -P %s/lib/libp3pystub.a dstroot/headers/Developer/Panda3D/lib/" % outputdir)
 
     if os.path.isdir("samples"):
         oscmd("mkdir -p dstroot/samples/Developer/Examples/Panda3D")
@@ -744,7 +746,7 @@ def MakeInstallerOSX(version, runtime=False, python_versions=[], **kwargs):
     oscmd('rm -f Panda3D-rw.dmg')
 
 
-def MakeInstallerFreeBSD(version, runtime=False, **kwargs):
+def MakeInstallerFreeBSD(version, runtime=False, python_versions=[], **kwargs):
     outputdir = GetOutputDir()
 
     oscmd("rm -rf targetroot +DESC pkg-plist +MANIFEST")
@@ -754,7 +756,7 @@ def MakeInstallerFreeBSD(version, runtime=False, **kwargs):
     if runtime:
         InstallRuntime(destdir="targetroot", prefix="/usr/local", outputdir=outputdir)
     else:
-        InstallPanda(destdir="targetroot", prefix="/usr/local", outputdir=outputdir)
+        InstallPanda(destdir="targetroot", prefix="/usr/local", outputdir=outputdir, python_versions=python_versions)
 
     if not os.path.exists("/usr/sbin/pkg"):
         exit("Cannot create an installer without pkg")
@@ -834,7 +836,8 @@ def MakeInstallerAndroid(version, **kwargs):
     # off any suffix (eg. libfile.so.1.0), as Android does not support them.
     source_dir = os.path.join(outputdir, "lib")
     target_dir = os.path.join("apkroot", "lib", SDK["ANDROID_ABI"])
-    oscmd("mkdir -p %s" % (target_dir))
+    if not os.path.exists(target_dir):
+        os.makedirs(target_dir, mode=0o755)
 
     # Determine the library directories we should look in.
     libpath = [source_dir]
@@ -856,19 +859,26 @@ def MakeInstallerAndroid(version, **kwargs):
             # Already processed.
             return
 
-        oscmd("cp %s %s" % (source, target))
+        shutil.copy(source, target)
 
         # Walk through the library dependencies.
-        oscmd("ldd %s | grep .so > %s/tmp/otool-libs.txt" % (target, outputdir), True)
-        for line in open(outputdir + "/tmp/otool-libs.txt", "r"):
-            line = line.strip()
-            if not line:
+        handle = subprocess.Popen(['readelf', '--dynamic', target], stdout=subprocess.PIPE)
+        for line in handle.communicate()[0].splitlines():
+            # The line will look something like:
+            # 0x0000000000000001 (NEEDED)             Shared library: [libpanda.so]
+            line = line.decode('utf-8', 'replace').strip()
+            if not line or '(NEEDED)' not in line or '[' not in line or ']' not in line:
                 continue
-            if '.so.' in line:
-                dep = line.rpartition('.so.')[0] + '.so'
-                oscmd("patchelf --replace-needed %s %s %s" % (line, dep, target), True)
-            else:
-                dep = line
+
+            # Extract the part between square brackets.
+            idx = line.index('[')
+            dep = line[idx + 1 : line.index(']', idx)]
+
+            # Change .so.1.2 suffix to .so, as needed for loading in .apk
+            if '.so.' in dep:
+                orig_dep = dep
+                dep = dep.rpartition('.so.')[0] + '.so'
+                oscmd("patchelf --replace-needed %s %s %s" % (orig_dep, dep, target), True)
 
             # Find it on the LD_LIBRARY_PATH.
             for dir in libpath:
@@ -957,21 +967,28 @@ def MakeInstallerAndroid(version, **kwargs):
     aapt_cmd += " -F %s" % (apk_unaligned)
     aapt_cmd += " -M apkroot/AndroidManifest.xml"
     aapt_cmd += " -A apkroot/assets -S apkroot/res"
-    aapt_cmd += " -I $PREFIX/share/aapt/android.jar"
+    aapt_cmd += " -I %s" % (SDK["ANDROID_JAR"])
     oscmd(aapt_cmd)
 
     # And add all the libraries to it.
-    oscmd("cd apkroot && aapt add ../%s classes.dex" % (apk_unaligned))
+    oscmd("aapt add %s classes.dex" % (os.path.join('..', apk_unaligned)), cwd="apkroot")
     for path, dirs, files in os.walk('apkroot/lib'):
         if files:
             rel = os.path.relpath(path, 'apkroot')
-            oscmd("cd apkroot && aapt add ../%s %s/*" % (apk_unaligned, rel))
+            rel_files = [os.path.join(rel, file).replace('\\', '/') for file in files]
+            oscmd("aapt add %s %s" % (os.path.join('..', apk_unaligned), ' '.join(rel_files)), cwd="apkroot")
 
     # Now align the .apk, which is necessary for Android to load it.
     oscmd("zipalign -v -p 4 %s %s" % (apk_unaligned, apk_unsigned))
 
     # Finally, sign it using a debug key.  This is generated if it doesn't exist.
-    oscmd("apksigner debug.ks %s panda3d.apk" % (apk_unsigned))
+    if GetHost() == 'android':
+        # Termux version of apksigner automatically generates a debug key.
+        oscmd("apksigner debug.ks %s panda3d.apk" % (apk_unsigned))
+    else:
+        if not os.path.isfile('debug.ks'):
+            oscmd("keytool -genkey -noprompt -dname CN=Panda3D,O=Panda3D,C=US -keystore debug.ks -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 1000")
+        oscmd("apksigner sign --ks debug.ks --ks-pass pass:android --min-sdk-version %s --out panda3d.apk %s" % (SDK["ANDROID_API"], apk_unsigned))
 
     # Clean up.
     oscmd("rm -rf apkroot")
@@ -1020,7 +1037,7 @@ def MakeInstaller(version, **kwargs):
 
 
 if __name__ == "__main__":
-    version = ParsePandaVersion("dtool/PandaVersion.pp")
+    version = GetMetadataValue('version')
 
     parser = OptionParser()
     parser.add_option('', '--version', dest='version', help='Panda3D version number (default: %s)' % (version), default=version)
@@ -1052,7 +1069,7 @@ if __name__ == "__main__":
             PkgDisable(pkg)
 
     # Parse the version.
-    match = re.match(r'^\d+\.\d+\.\d+', options.version)
+    match = re.match(r'^\d+\.\d+(\.\d+)+', options.version)
     if not match:
         exit("version requires three digits")
 

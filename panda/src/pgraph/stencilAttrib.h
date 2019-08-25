@@ -88,7 +88,7 @@ PUBLISHED:
     StencilOperation front_stencil_pass_z_pass_operation,
     unsigned int reference,
     unsigned int read_mask,
-    unsigned int write_mask);
+    unsigned int write_mask=~(unsigned int)0);
 
   static CPT(RenderAttrib) make_2_sided(
     bool front_enable,

@@ -890,6 +890,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
 
         // Add it once for each index.
         for (bind._index = 0; bind._index < param_size; ++bind._index) {
+          bind._id._seqno = p + bind._index;
           _shader->_mat_spec.push_back(bind);
         }
         _shader->_mat_deps |= bind._dep[0];
@@ -2042,10 +2043,6 @@ set_state_and_transform(const RenderState *target_rs,
         target_rs->get_attrib(MaterialAttrib::get_class_slot())) {
       altered |= Shader::SSD_material;
     }
-    if (state_rs->get_attrib(ShaderAttrib::get_class_slot()) !=
-        target_rs->get_attrib(ShaderAttrib::get_class_slot())) {
-      altered |= Shader::SSD_shaderinputs;
-    }
     if (state_rs->get_attrib(FogAttrib::get_class_slot()) !=
         target_rs->get_attrib(FogAttrib::get_class_slot())) {
       altered |= Shader::SSD_fog;
@@ -2067,6 +2064,11 @@ set_state_and_transform(const RenderState *target_rs,
       altered |= Shader::SSD_texture;
     }
     _state_rs = target_rs;
+  }
+
+  if (_shader_attrib.get_orig() != _glgsg->_target_shader || _shader_attrib.was_deleted()) {
+    altered |= Shader::SSD_shaderinputs;
+    _shader_attrib = _glgsg->_target_shader;
   }
 
   // Is this the first time this shader is used this frame?
@@ -2109,8 +2111,8 @@ issue_parameters(int altered) {
     for (int i = 0; i < (int)_shader->_ptr_spec.size(); ++i) {
       Shader::ShaderPtrSpec &spec = _shader->_ptr_spec[i];
 
-      const Shader::ShaderPtrData* ptr_data = _glgsg->fetch_ptr_parameter(spec);
-      if (ptr_data == nullptr) { //the input is not contained in ShaderPtrData
+      Shader::ShaderPtrData ptr_data;
+      if (!_glgsg->fetch_ptr_parameter(spec, ptr_data)) { //the input is not contained in ShaderPtrData
         release_resources();
         return;
       }
@@ -2118,18 +2120,18 @@ issue_parameters(int altered) {
       nassertd(spec._dim[1] > 0) continue;
 
       GLint p = spec._id._seqno;
-      int array_size = min(spec._dim[0], (int)ptr_data->_size / spec._dim[1]);
+      int array_size = min(spec._dim[0], (int)ptr_data._size / spec._dim[1]);
       switch (spec._type) {
       case Shader::SPT_float:
         {
           float *data = nullptr;
 
-          switch (ptr_data->_type) {
+          switch (ptr_data._type) {
           case Shader::SPT_int:
             // Convert int data to float data.
             data = (float*) alloca(sizeof(float) * array_size * spec._dim[1]);
             for (int i = 0; i < (array_size * spec._dim[1]); ++i) {
-              data[i] = (float)(((int*)ptr_data->_ptr)[i]);
+              data[i] = (float)(((int*)ptr_data._ptr)[i]);
             }
             break;
 
@@ -2137,7 +2139,7 @@ issue_parameters(int altered) {
             // Convert unsigned int data to float data.
             data = (float*) alloca(sizeof(float) * array_size * spec._dim[1]);
             for (int i = 0; i < (array_size * spec._dim[1]); ++i) {
-              data[i] = (float)(((unsigned int*)ptr_data->_ptr)[i]);
+              data[i] = (float)(((unsigned int*)ptr_data._ptr)[i]);
             }
             break;
 
@@ -2145,12 +2147,12 @@ issue_parameters(int altered) {
             // Downgrade double data to float data.
             data = (float*) alloca(sizeof(float) * array_size * spec._dim[1]);
             for (int i = 0; i < (array_size * spec._dim[1]); ++i) {
-              data[i] = (float)(((double*)ptr_data->_ptr)[i]);
+              data[i] = (float)(((double*)ptr_data._ptr)[i]);
             }
             break;
 
           case Shader::SPT_float:
-            data = (float*)ptr_data->_ptr;
+            data = (float*)ptr_data._ptr;
             break;
 
           default:
@@ -2170,8 +2172,8 @@ issue_parameters(int altered) {
         break;
 
       case Shader::SPT_int:
-        if (ptr_data->_type != Shader::SPT_int &&
-            ptr_data->_type != Shader::SPT_uint) {
+        if (ptr_data._type != Shader::SPT_int &&
+            ptr_data._type != Shader::SPT_uint) {
           GLCAT.error()
             << "Cannot pass floating-point data to integer shader input '" << spec._id._name << "'\n";
 
@@ -2182,18 +2184,18 @@ issue_parameters(int altered) {
 
         } else {
           switch (spec._dim[1]) {
-          case 1: _glgsg->_glUniform1iv(p, array_size, (int*)ptr_data->_ptr); continue;
-          case 2: _glgsg->_glUniform2iv(p, array_size, (int*)ptr_data->_ptr); continue;
-          case 3: _glgsg->_glUniform3iv(p, array_size, (int*)ptr_data->_ptr); continue;
-          case 4: _glgsg->_glUniform4iv(p, array_size, (int*)ptr_data->_ptr); continue;
+          case 1: _glgsg->_glUniform1iv(p, array_size, (int*)ptr_data._ptr); continue;
+          case 2: _glgsg->_glUniform2iv(p, array_size, (int*)ptr_data._ptr); continue;
+          case 3: _glgsg->_glUniform3iv(p, array_size, (int*)ptr_data._ptr); continue;
+          case 4: _glgsg->_glUniform4iv(p, array_size, (int*)ptr_data._ptr); continue;
           }
           nassertd(false) continue;
         }
         break;
 
       case Shader::SPT_uint:
-        if (ptr_data->_type != Shader::SPT_uint &&
-            ptr_data->_type != Shader::SPT_int) {
+        if (ptr_data._type != Shader::SPT_uint &&
+            ptr_data._type != Shader::SPT_int) {
           GLCAT.error()
             << "Cannot pass floating-point data to integer shader input '" << spec._id._name << "'\n";
 
@@ -2204,10 +2206,10 @@ issue_parameters(int altered) {
 
         } else {
           switch (spec._dim[1]) {
-          case 1: _glgsg->_glUniform1uiv(p, array_size, (GLuint *)ptr_data->_ptr); continue;
-          case 2: _glgsg->_glUniform2uiv(p, array_size, (GLuint *)ptr_data->_ptr); continue;
-          case 3: _glgsg->_glUniform3uiv(p, array_size, (GLuint *)ptr_data->_ptr); continue;
-          case 4: _glgsg->_glUniform4uiv(p, array_size, (GLuint *)ptr_data->_ptr); continue;
+          case 1: _glgsg->_glUniform1uiv(p, array_size, (GLuint *)ptr_data._ptr); continue;
+          case 2: _glgsg->_glUniform2uiv(p, array_size, (GLuint *)ptr_data._ptr); continue;
+          case 3: _glgsg->_glUniform3uiv(p, array_size, (GLuint *)ptr_data._ptr); continue;
+          case 4: _glgsg->_glUniform4uiv(p, array_size, (GLuint *)ptr_data._ptr); continue;
           }
           nassertd(false) continue;
         }
@@ -2461,7 +2463,7 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
       }
 
       GLint p = bind._id._seqno;
-      max_p = max(max_p, p + 1);
+      max_p = max(max_p, p + bind._elements);
 
       // Don't apply vertex colors if they are disabled with a ColorAttrib.
       int num_elements, element_stride, divisor;
@@ -3205,6 +3207,10 @@ glsl_compile_and_link() {
     valid &= glsl_compile_shader(Shader::ST_compute);
   }
 
+  if (!valid) {
+    return false;
+  }
+
   // There might be warnings, so report those.  GLSLShaders::const_iterator
   // it; for (it = _glsl_shaders.begin(); it != _glsl_shaders.end(); ++it) {
   // glsl_report_shader_errors(*it); }
@@ -3304,7 +3310,7 @@ glsl_compile_and_link() {
 #endif  // !__EMSCRIPTEN__
 
   _glgsg->report_my_gl_errors();
-  return true;
+  return valid;
 }
 
 #endif  // OPENGLES_1

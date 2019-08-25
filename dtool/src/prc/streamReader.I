@@ -43,7 +43,18 @@ StreamReader(const StreamReader &copy) :
 }
 
 /**
- * The copy constructor does not copy ownership of the stream.
+ * The move constructor steals ownership of the stream.
+ */
+INLINE StreamReader::
+StreamReader(StreamReader &&from) noexcept :
+  _in(from._in),
+  _owns_stream(from._owns_stream)
+{
+  from._owns_stream = false;
+}
+
+/**
+ * The copy assignment operator does not copy ownership of the stream.
  */
 INLINE void StreamReader::
 operator = (const StreamReader &copy) {
@@ -52,6 +63,19 @@ operator = (const StreamReader &copy) {
   }
   _in = copy._in;
   _owns_stream = false;
+}
+
+/**
+ * The move assignment operator steals ownership of the stream.
+ */
+INLINE void StreamReader::
+operator = (StreamReader &&from) noexcept {
+  if (_owns_stream) {
+    delete _in;
+  }
+  _in = from._in;
+  _owns_stream = from._owns_stream;
+  from._owns_stream = false;
 }
 
 /**

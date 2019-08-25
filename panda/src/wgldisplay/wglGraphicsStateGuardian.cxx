@@ -16,6 +16,7 @@
 #include "wglGraphicsBuffer.h"
 #include "wglGraphicsPipe.h"
 #include "string_utils.h"
+#include <atomic>
 
 TypeHandle wglGraphicsStateGuardian::_type_handle;
 
@@ -49,7 +50,6 @@ wglGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
   _wglCreateContextAttribsARB = nullptr;
 
   get_gamma_table();
-  atexit(atexit_function);
 }
 
 /**
@@ -609,9 +609,20 @@ make_context(HDC hdc) {
         attrib_list[n++] = gl_version[1];
       }
     }
+    int flags = 0;
     if (gl_debug) {
+      flags |= WGL_CONTEXT_DEBUG_BIT_ARB;
+    }
+    if (gl_forward_compatible) {
+      flags |= WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB;
+      if (gl_version.get_num_words() == 0 || gl_version[0] < 2) {
+        wgldisplay_cat.error()
+          << "gl-forward-compatible requires gl-version >= 3 0\n";
+      }
+    }
+    if (flags != 0) {
       attrib_list[n++] = WGL_CONTEXT_FLAGS_ARB;
-      attrib_list[n++] = WGL_CONTEXT_DEBUG_BIT_ARB;
+      attrib_list[n++] = flags;
     }
 #ifndef SUPPORT_FIXED_FUNCTION
     attrib_list[n++] = WGL_CONTEXT_PROFILE_MASK_ARB;
@@ -875,6 +886,12 @@ static_set_gamma(bool restore, PN_stdfloat gamma) {
 
     if (SetDeviceGammaRamp (hdc, ramp)) {
       set = true;
+
+      // Register an atexit handler
+      static std::atomic_flag gamma_modified = ATOMIC_FLAG_INIT;
+      if (!gamma_modified.test_and_set()) {
+        atexit(atexit_function);
+      }
     }
 
     ReleaseDC (nullptr, hdc);

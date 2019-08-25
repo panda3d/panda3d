@@ -47,6 +47,7 @@ static void Dtool_WrapperBase_dealloc(PyObject *self) {
   Dtool_WrapperBase *wrap = (Dtool_WrapperBase *)self;
   nassertv(wrap);
   Py_XDECREF(wrap->_self);
+  Py_TYPE(self)->tp_free(self);
 }
 
 static PyObject *Dtool_WrapperBase_repr(PyObject *self) {
@@ -540,7 +541,7 @@ static PyObject *Dtool_MappingWrapper_keys(PyObject *self, PyObject *) {
     sizeof(Dtool_SequenceWrapper),
     0, // tp_itemsize
     Dtool_WrapperBase_dealloc,
-    nullptr, // tp_print
+    0, // tp_vectorcall_offset
     nullptr, // tp_getattr
     nullptr, // tp_setattr
     nullptr, // tp_compare
@@ -581,6 +582,13 @@ static PyObject *Dtool_MappingWrapper_keys(PyObject *self, PyObject *) {
     nullptr, // tp_subclasses
     nullptr, // tp_weaklist
     nullptr, // tp_del
+    0, // tp_version_tag,
+#if PY_VERSION_HEX >= 0x03040000
+    nullptr, // tp_finalize
+#endif
+#if PY_VERSION_HEX >= 0x03080000
+    nullptr, // tp_vectorcall
+#endif
   };
 
   static bool registered = false;
@@ -674,7 +682,7 @@ static PyObject *Dtool_MappingWrapper_values(PyObject *self, PyObject *) {
     sizeof(Dtool_MappingWrapper),
     0, // tp_itemsize
     Dtool_WrapperBase_dealloc,
-    nullptr, // tp_print
+    0, // tp_vectorcall_offset
     nullptr, // tp_getattr
     nullptr, // tp_setattr
     nullptr, // tp_compare
@@ -715,6 +723,13 @@ static PyObject *Dtool_MappingWrapper_values(PyObject *self, PyObject *) {
     nullptr, // tp_subclasses
     nullptr, // tp_weaklist
     nullptr, // tp_del
+    0, // tp_version_tag,
+#if PY_VERSION_HEX >= 0x03040000
+    nullptr, // tp_finalize
+#endif
+#if PY_VERSION_HEX >= 0x03080000
+    nullptr, // tp_vectorcall
+#endif
   };
 
   static bool registered = false;
@@ -816,7 +831,7 @@ static PyObject *Dtool_MappingWrapper_items(PyObject *self, PyObject *) {
     sizeof(Dtool_MappingWrapper),
     0, // tp_itemsize
     Dtool_WrapperBase_dealloc,
-    nullptr, // tp_print
+    0, // tp_vectorcall_offset
     nullptr, // tp_getattr
     nullptr, // tp_setattr
     nullptr, // tp_compare
@@ -857,6 +872,13 @@ static PyObject *Dtool_MappingWrapper_items(PyObject *self, PyObject *) {
     nullptr, // tp_subclasses
     nullptr, // tp_weaklist
     nullptr, // tp_del
+    0, // tp_version_tag,
+#if PY_VERSION_HEX >= 0x03040000
+    nullptr, // tp_finalize
+#endif
+#if PY_VERSION_HEX >= 0x03080000
+    nullptr, // tp_vectorcall
+#endif
   };
 
   static bool registered = false;
@@ -1091,7 +1113,11 @@ static PyObject *Dtool_GeneratorWrapper_iternext(PyObject *self) {
  */
 static void
 Dtool_StaticProperty_dealloc(PyDescrObject *descr) {
+#if PY_VERSION_HEX >= 0x03080000
+  PyObject_GC_UnTrack(descr);
+#else
   _PyObject_GC_UNTRACK(descr);
+#endif
   Py_XDECREF(descr->d_type);
   Py_XDECREF(descr->d_name);
 //#if PY_MAJOR_VERSION >= 3
@@ -1187,7 +1213,7 @@ Dtool_SequenceWrapper *Dtool_NewSequenceWrapper(PyObject *self, const char *name
     sizeof(Dtool_SequenceWrapper),
     0, // tp_itemsize
     Dtool_WrapperBase_dealloc,
-    nullptr, // tp_print
+    0, // tp_vectorcall_offset
     nullptr, // tp_getattr
     nullptr, // tp_setattr
     nullptr, // tp_compare
@@ -1228,6 +1254,13 @@ Dtool_SequenceWrapper *Dtool_NewSequenceWrapper(PyObject *self, const char *name
     nullptr, // tp_subclasses
     nullptr, // tp_weaklist
     nullptr, // tp_del
+    0, // tp_version_tag,
+#if PY_VERSION_HEX >= 0x03040000
+    nullptr, // tp_finalize
+#endif
+#if PY_VERSION_HEX >= 0x03080000
+    nullptr, // tp_vectorcall
+#endif
   };
 
   static bool registered = false;
@@ -1291,7 +1324,7 @@ Dtool_MutableSequenceWrapper *Dtool_NewMutableSequenceWrapper(PyObject *self, co
     sizeof(Dtool_MutableSequenceWrapper),
     0, // tp_itemsize
     Dtool_WrapperBase_dealloc,
-    nullptr, // tp_print
+    0, // tp_vectorcall_offset
     nullptr, // tp_getattr
     nullptr, // tp_setattr
     nullptr, // tp_compare
@@ -1332,6 +1365,13 @@ Dtool_MutableSequenceWrapper *Dtool_NewMutableSequenceWrapper(PyObject *self, co
     nullptr, // tp_subclasses
     nullptr, // tp_weaklist
     nullptr, // tp_del
+    0, // tp_version_tag,
+#if PY_VERSION_HEX >= 0x03040000
+    nullptr, // tp_finalize
+#endif
+#if PY_VERSION_HEX >= 0x03080000
+    nullptr, // tp_vectorcall
+#endif
   };
 
   static bool registered = false;
@@ -1399,7 +1439,7 @@ Dtool_MappingWrapper *Dtool_NewMappingWrapper(PyObject *self, const char *name) 
     sizeof(Dtool_MappingWrapper),
     0, // tp_itemsize
     Dtool_WrapperBase_dealloc,
-    nullptr, // tp_print
+    0, // tp_vectorcall_offset
     nullptr, // tp_getattr
     nullptr, // tp_setattr
     nullptr, // tp_compare
@@ -1440,6 +1480,13 @@ Dtool_MappingWrapper *Dtool_NewMappingWrapper(PyObject *self, const char *name) 
     nullptr, // tp_subclasses
     nullptr, // tp_weaklist
     nullptr, // tp_del
+    0, // tp_version_tag,
+#if PY_VERSION_HEX >= 0x03040000
+    nullptr, // tp_finalize
+#endif
+#if PY_VERSION_HEX >= 0x03080000
+    nullptr, // tp_vectorcall
+#endif
   };
 
   static bool registered = false;
@@ -1512,7 +1559,7 @@ Dtool_MappingWrapper *Dtool_NewMutableMappingWrapper(PyObject *self, const char 
     sizeof(Dtool_MappingWrapper),
     0, // tp_itemsize
     Dtool_WrapperBase_dealloc,
-    nullptr, // tp_print
+    0, // tp_vectorcall_offset
     nullptr, // tp_getattr
     nullptr, // tp_setattr
     nullptr, // tp_compare
@@ -1553,6 +1600,13 @@ Dtool_MappingWrapper *Dtool_NewMutableMappingWrapper(PyObject *self, const char 
     nullptr, // tp_subclasses
     nullptr, // tp_weaklist
     nullptr, // tp_del
+    0, // tp_version_tag,
+#if PY_VERSION_HEX >= 0x03040000
+    nullptr, // tp_finalize
+#endif
+#if PY_VERSION_HEX >= 0x03080000
+    nullptr, // tp_vectorcall
+#endif
   };
 
   static bool registered = false;
@@ -1589,7 +1643,7 @@ Dtool_NewGenerator(PyObject *self, iternextfunc gen_next) {
     sizeof(Dtool_GeneratorWrapper),
     0, // tp_itemsize
     Dtool_WrapperBase_dealloc,
-    nullptr, // tp_print
+    0, // tp_vectorcall_offset
     nullptr, // tp_getattr
     nullptr, // tp_setattr
     nullptr, // tp_compare
@@ -1630,6 +1684,13 @@ Dtool_NewGenerator(PyObject *self, iternextfunc gen_next) {
     nullptr, // tp_subclasses
     nullptr, // tp_weaklist
     nullptr, // tp_del
+    0, // tp_version_tag,
+#if PY_VERSION_HEX >= 0x03040000
+    nullptr, // tp_finalize
+#endif
+#if PY_VERSION_HEX >= 0x03080000
+    nullptr, // tp_vectorcall
+#endif
   };
 
   if (PyType_Ready(&wrapper_type) < 0) {
@@ -1658,7 +1719,7 @@ Dtool_NewStaticProperty(PyTypeObject *type, const PyGetSetDef *getset) {
     sizeof(PyGetSetDescrObject),
     0, // tp_itemsize
     (destructor)Dtool_StaticProperty_dealloc,
-    nullptr, // tp_print
+    0, // tp_vectorcall_offset
     nullptr, // tp_getattr
     nullptr, // tp_setattr
     nullptr, // tp_reserved
@@ -1691,7 +1752,7 @@ Dtool_NewStaticProperty(PyTypeObject *type, const PyGetSetDef *getset) {
     nullptr, // tp_init
     nullptr, // tp_alloc
     nullptr, // tp_new
-    nullptr, // tp_del
+    nullptr, // tp_free
     nullptr, // tp_is_gc
     nullptr, // tp_bases
     nullptr, // tp_mro
@@ -1699,6 +1760,13 @@ Dtool_NewStaticProperty(PyTypeObject *type, const PyGetSetDef *getset) {
     nullptr, // tp_subclasses
     nullptr, // tp_weaklist
     nullptr, // tp_del
+    0, // tp_version_tag,
+#if PY_VERSION_HEX >= 0x03040000
+    nullptr, // tp_finalize
+#endif
+#if PY_VERSION_HEX >= 0x03080000
+    nullptr, // tp_vectorcall
+#endif
   };
 
   if (PyType_Ready(&wrapper_type) < 0) {

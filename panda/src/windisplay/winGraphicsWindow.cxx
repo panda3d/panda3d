@@ -200,13 +200,17 @@ close_ime() {
   HIMC hIMC = ImmGetContext(_hWnd);
   if (hIMC != 0) {
     if (!ImmSetOpenStatus(hIMC, false)) {
-      windisplay_cat.debug() << "ImmSetOpenStatus failed\n";
+      if (windisplay_cat.is_debug()) {
+        windisplay_cat.debug() << "ImmSetOpenStatus failed\n";
+      }
     }
     ImmReleaseContext(_hWnd, hIMC);
   }
   _ime_open = false;
 
-  windisplay_cat.debug() << "success: closed ime window\n";
+  if (windisplay_cat.is_debug()) {
+    windisplay_cat.debug() << "success: closed ime window\n";
+  }
   return;
 }
 
@@ -979,12 +983,12 @@ make_style(const WindowProperties &properties) {
 
   DWORD window_style = WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
 
-  if (_properties.get_fullscreen()) {
+  if (properties.get_fullscreen()) {
     window_style |= WS_SYSMENU;
-  } else if (!_properties.get_undecorated()) {
+  } else if (!properties.get_undecorated()) {
     window_style |= (WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX);
 
-    if (!_properties.get_fixed_size()) {
+    if (!properties.get_fixed_size()) {
       window_style |= (WS_SIZEBOX | WS_MAXIMIZEBOX);
     } else {
       window_style |= WS_BORDER;
@@ -1663,18 +1667,30 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     if (!ime_hide)
       break;
 
-    windisplay_cat.debug() << "hwnd = " << hwnd << " and GetFocus = " << GetFocus() << endl;
+    if (windisplay_cat.is_debug()) {
+      windisplay_cat.debug() << "hwnd = " << hwnd << " and GetFocus = " << GetFocus() << endl;
+    }
     _ime_hWnd = ImmGetDefaultIMEWnd(hwnd);
-    if (::SendMessage(_ime_hWnd, WM_IME_CONTROL, IMC_CLOSESTATUSWINDOW, 0))
+    if (::SendMessage(_ime_hWnd, WM_IME_CONTROL, IMC_CLOSESTATUSWINDOW, 0)) {
       // if (::SendMessage(hwnd, WM_IME_CONTROL, IMC_CLOSESTATUSWINDOW, 0))
-      windisplay_cat.debug() << "SendMessage failed for " << _ime_hWnd << endl;
-    else
-      windisplay_cat.debug() << "SendMessage Succeeded for " << _ime_hWnd << endl;
+      if (windisplay_cat.is_debug()) {
+        windisplay_cat.debug() << "SendMessage failed for " << _ime_hWnd << endl;
+      }
+    } else {
+      if (windisplay_cat.is_debug()) {
+        windisplay_cat.debug() << "SendMessage succeeded for " << _ime_hWnd << endl;
+      }
+    }
 
-    windisplay_cat.debug() << "wparam is " << wparam << ", lparam is " << lparam << endl;
-    lparam &= ~ISC_SHOWUIALL;
-    if (ImmIsUIMessage(_ime_hWnd, msg, wparam, lparam))
+    if (windisplay_cat.is_debug()) {
       windisplay_cat.debug() << "wparam is " << wparam << ", lparam is " << lparam << endl;
+    }
+    lparam &= ~ISC_SHOWUIALL;
+    if (ImmIsUIMessage(_ime_hWnd, msg, wparam, lparam)) {
+      if (windisplay_cat.is_debug()) {
+        windisplay_cat.debug() << "wparam is " << wparam << ", lparam is " << lparam << endl;
+      }
+    }
 
     break;
 
@@ -1693,16 +1709,18 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         CANDIDATEFORM canf;
         ImmGetCompositionWindow(hIMC, &comf);
         ImmGetCandidateWindow(hIMC, 0, &canf);
-        windisplay_cat.debug() <<
-          "comf style " << comf.dwStyle <<
-          " comf point: x" << comf.ptCurrentPos.x << ",y " << comf.ptCurrentPos.y <<
-          " comf rect: l " << comf.rcArea.left << ",t " << comf.rcArea.top << ",r " <<
-          comf.rcArea.right << ",b " << comf.rcArea.bottom << endl;
-        windisplay_cat.debug() <<
-          "canf style " << canf.dwStyle <<
-          " canf point: x" << canf.ptCurrentPos.x << ",y " << canf.ptCurrentPos.y <<
-          " canf rect: l " << canf.rcArea.left << ",t " << canf.rcArea.top << ",r " <<
+        if (windisplay_cat.is_debug()) {
+          windisplay_cat.debug() <<
+            "comf style " << comf.dwStyle <<
+            " comf point: x" << comf.ptCurrentPos.x << ",y " << comf.ptCurrentPos.y <<
+            " comf rect: l " << comf.rcArea.left << ",t " << comf.rcArea.top << ",r " <<
+            comf.rcArea.right << ",b " << comf.rcArea.bottom << endl;
+          windisplay_cat.debug() <<
+            "canf style " << canf.dwStyle <<
+            " canf point: x" << canf.ptCurrentPos.x << ",y " << canf.ptCurrentPos.y <<
+            " canf rect: l " << canf.rcArea.left << ",t " << canf.rcArea.top << ",r " <<
           canf.rcArea.right << ",b " << canf.rcArea.bottom << endl;
+        }
         comf.dwStyle = CFS_POINT;
         comf.ptCurrentPos.x = 2000;
         comf.ptCurrentPos.y = 2000;
@@ -1723,11 +1741,17 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         comf.rcArea.bottom = 0;
 #endif
 
-        if (ImmSetCompositionWindow(hIMC, &comf))
-          windisplay_cat.debug() << "set composition form: success\n";
+        if (ImmSetCompositionWindow(hIMC, &comf)) {
+          if (windisplay_cat.is_debug()) {
+            windisplay_cat.debug() << "set composition form: success\n";
+          }
+        }
         for (int i=0; i<3; ++i) {
-          if (ImmSetCandidateWindow(hIMC, &canf))
-            windisplay_cat.debug() << "set candidate form: success\n";
+          if (ImmSetCandidateWindow(hIMC, &canf)) {
+            if (windisplay_cat.is_debug()) {
+              windisplay_cat.debug() << "set candidate form: success\n";
+            }
+          }
           canf.dwIndex++;
         }
       }
@@ -1927,7 +1951,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       // Handle Cntrl-V paste from clipboard.  Is there a better way to detect
       // this hotkey?
       if ((wparam=='V') && (GetKeyState(VK_CONTROL) < 0) &&
-          !_input_devices.empty()) {
+          !_input_devices.empty() && paste_emit_keystrokes) {
         HGLOBAL hglb;
         char *lptstr;
 

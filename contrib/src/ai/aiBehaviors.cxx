@@ -13,6 +13,17 @@
 
 #include "aiBehaviors.h"
 
+#include "arrival.h"
+#include "evade.h"
+#include "flee.h"
+#include "flock.h"
+#include "obstacleAvoidance.h"
+#include "pathFind.h"
+#include "pathFollow.h"
+#include "pursue.h"
+#include "seek.h"
+#include "wander.h"
+
 using std::cout;
 using std::endl;
 using std::string;

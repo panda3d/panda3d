@@ -252,7 +252,9 @@ select_audio_device() {
     devices = (const char *)alcGetString(nullptr, ALC_ALL_DEVICES_SPECIFIER);
 
     if (devices) {
-      audio_cat.debug() << "All OpenAL devices:\n";
+      if (audio_cat.is_debug()) {
+        audio_cat.debug() << "All OpenAL devices:\n";
+      }
 
       while (*devices) {
         string device(devices);
@@ -280,7 +282,9 @@ select_audio_device() {
     devices = (const char *)alcGetString(nullptr, ALC_DEVICE_SPECIFIER);
 
     if (devices) {
-      audio_cat.debug() << "OpenAL drivers:\n";
+      if (audio_cat.is_debug()) {
+        audio_cat.debug() << "OpenAL drivers:\n";
+      }
 
       while (*devices) {
         string device(devices);
@@ -442,7 +446,7 @@ get_sound_data(MovieAudio *movie, int mode) {
     int channels = stream->audio_channels();
     int samples = (int)(stream->length() * stream->audio_rate());
     int16_t *data = new int16_t[samples * channels];
-    stream->read_samples(samples, data);
+    samples = stream->read_samples(samples, data);
     alBufferData(sd->_sample,
                  (channels>1) ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16,
                  data, samples * channels * 2, stream->audio_rate());

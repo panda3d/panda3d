@@ -16,8 +16,6 @@
 #include "tinyXGraphicsWindow.h"
 #include "tinyWinGraphicsPipe.h"
 #include "tinyWinGraphicsWindow.h"
-#include "tinyOsxGraphicsPipe.h"
-#include "tinyOsxGraphicsWindow.h"
 #include "tinySDLGraphicsPipe.h"
 #include "tinySDLGraphicsWindow.h"
 #include "tinyOffscreenGraphicsPipe.h"
@@ -39,26 +37,6 @@ NotifyCategoryDef(tinydisplay, "display");
 ConfigureFn(config_tinydisplay) {
   init_libtinydisplay();
 }
-
-ConfigVariableBool show_resize_box
-("show-resize-box", true,
- PRC_DESC("When this variable is true, then resizable OSX Panda windows will "
-          "be rendered with a resize control in the lower-right corner.  "
-          "This is specially handled by Panda, since otherwise the 3-d "
-          "window would completely hide any resize control drawn by the "
-          "OS.  Set this variable false to allow this control to be hidden."));
-
-ConfigVariableBool osx_disable_event_loop
-("osx-disable-event-loop", false,
- PRC_DESC("Set this true to disable the window event loop for the Panda "
-          "windows.  This makes sense only in a publish environment where "
-          "the window event loop is already handled by another part of the "
-          "app."));
-
-ConfigVariableInt osx_mouse_wheel_scale
-("osx-mouse-wheel-scale", 1,
- PRC_DESC("Specify the number of units to spin the Mac mouse wheel to "
-          "represent a single wheel_up or wheel_down message."));
 
 ConfigVariableBool td_ignore_mipmaps
   ("td-ignore-mipmaps", false,
@@ -117,14 +95,6 @@ init_libtinydisplay() {
   ps->set_system_tag("TinyPanda", "native_window_system", "Win");
 #endif
 
-#if defined(IS_OSX) && !defined(BUILD_IPHONE) && defined(HAVE_CARBON) && !__LP64__
-  TinyOsxGraphicsPipe::init_type();
-  TinyOsxGraphicsWindow::init_type();
-  selection->add_pipe_type(TinyOsxGraphicsPipe::get_class_type(),
-                           TinyOsxGraphicsPipe::pipe_constructor);
-  ps->set_system_tag("TinyPanda", "native_window_system", "OSX");
-#endif
-
 #ifdef HAVE_SDL
   TinySDLGraphicsPipe::init_type();
   TinySDLGraphicsWindow::init_type();
@@ -148,10 +118,6 @@ get_pipe_type_p3tinydisplay() {
 
 #ifdef WIN32
   return TinyWinGraphicsPipe::get_class_type().get_index();
-#endif
-
-#if defined(IS_OSX) && !defined(BUILD_IPHONE) && defined(HAVE_CARBON) && !__LP64__
-  return TinyOsxGraphicsPipe::get_class_type().get_index();
 #endif
 
 #ifdef HAVE_X11

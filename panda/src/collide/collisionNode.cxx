@@ -58,6 +58,7 @@ CollisionNode::
 CollisionNode(const CollisionNode &copy) :
   PandaNode(copy),
   _from_collide_mask(copy._from_collide_mask),
+  _collider_sort(copy._collider_sort),
   _solids(copy._solids)
 {
 }

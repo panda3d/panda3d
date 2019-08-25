@@ -30,7 +30,9 @@ RocketFileInterface(VirtualFileSystem *vfs) : _vfs(vfs) {
  */
 Rocket::Core::FileHandle RocketFileInterface::
 Open(const Rocket::Core::String& path) {
-  rocket_cat.debug() << "Opening " << path.CString() << "\n";
+  if (rocket_cat.is_debug()) {
+    rocket_cat.debug() << "Opening " << path.CString() << "\n";
+  }
 
   Filename fn = Filename::from_os_specific(path.CString());
 

@@ -262,8 +262,8 @@ compare_to(const SparseArray &other) const {
       return -1;
     }
 
-    --ai;
-    --bi;
+    ++ai;
+    ++bi;
   }
 
   if (ai != _subranges.rend()) {
@@ -440,9 +440,9 @@ do_remove_range(int begin, int end) {
   if (si == _subranges.end()) {
     if (!_subranges.empty()) {
       si = _subranges.begin() + _subranges.size() - 1;
-      if ((*si)._end >= begin) {
+      if ((*si)._end > begin) {
         // The new range shortens the last element of the array on the right.
-        end = std::min(end, (*si)._begin);
+        end = std::max(begin, (*si)._begin);
         (*si)._end = end;
         // It might also shorten it on the left; fall through.
       } else {
@@ -462,10 +462,10 @@ do_remove_range(int begin, int end) {
     if (si != _subranges.begin()) {
       Subranges::iterator si2 = si;
       --si2;
-      if ((*si2)._end >= begin) {
+      if ((*si2)._end > begin) {
         // The new range shortens an element within the array on the right
         // (but does not intersect the next element).
-        end = std::min(end, (*si2)._begin);
+        end = std::max(begin, (*si2)._begin);
         (*si2)._end = end;
         // It might also shorten it on the left; fall through.
         si = si2;
@@ -488,7 +488,7 @@ do_remove_range(int begin, int end) {
   }
 
   // Check if the new range removes any elements to the left.
-  while (begin <= (*si)._begin) {
+  while (begin <= (*si)._begin || (*si)._begin >= (*si)._end) {
     if (si == _subranges.begin()) {
       _subranges.erase(si);
       return;
@@ -500,6 +500,7 @@ do_remove_range(int begin, int end) {
   }
 
   (*si)._end = std::min((*si)._end, begin);
+  nassertv((*si)._end > (*si)._begin);
 }
 
 /**

@@ -25,8 +25,10 @@ extern "C" {
 class FlacAudio;
 
 /**
- * Interfaces with the libvorbisfile library to implement decoding of Ogg
- * Vorbis audio files.
+ * Implements decoding of FLAC audio files.
+ *
+ * @see FlacAudio
+ * @since 1.10.0
  */
 class EXPCL_PANDA_MOVIES FlacAudioCursor : public MovieAudioCursor {
 PUBLISHED:
@@ -35,7 +37,7 @@ PUBLISHED:
   virtual void seek(double offset);
 
 public:
-  virtual void read_samples(int n, int16_t *data);
+  virtual int read_samples(int n, int16_t *data);
 
   bool _is_valid;
 

@@ -38,6 +38,9 @@ class Filename;
  */
 class XFileNode : public TypedObject, public Namable,
                   virtual public ReferenceCount {
+protected:
+  INLINE XFileNode(XFile *x_file);
+
 public:
   XFileNode(XFile *x_file, const std::string &name);
   virtual ~XFileNode();

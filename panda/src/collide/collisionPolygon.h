@@ -93,6 +93,8 @@ protected:
   virtual PT(CollisionEntry)
   test_intersection_from_parabola(const CollisionEntry &entry) const;
   virtual PT(CollisionEntry)
+  test_intersection_from_capsule(const CollisionEntry &entry) const;
+  virtual PT(CollisionEntry)
   test_intersection_from_box(const CollisionEntry &entry) const;
 
   virtual void fill_viz_geom();
@@ -131,7 +133,6 @@ private:
   INLINE void calc_to_3d_mat(LMatrix4 &to_3d_mat) const;
   INLINE void rederive_to_3d_mat(LMatrix4 &to_3d_mat) const;
   INLINE static LPoint3 to_3d(const LVecBase2 &point2d, const LMatrix4 &to_3d_mat);
-  LPoint3 legacy_to_3d(const LVecBase2 &point2d, int axis) const;
 
   bool clip_polygon(Points &new_points, const Points &source_points,
                     const LPlane &plane) const;

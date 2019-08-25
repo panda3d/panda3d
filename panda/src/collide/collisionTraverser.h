@@ -49,7 +49,7 @@ PUBLISHED:
 
   INLINE void set_respect_prev_transform(bool flag);
   INLINE bool get_respect_prev_transform() const;
-  MAKE_PROPERTY(respect_preV_transform, get_respect_prev_transform,
+  MAKE_PROPERTY(respect_prev_transform, get_respect_prev_transform,
                                         set_respect_prev_transform);
 
   void add_collider(const NodePath &collider, CollisionHandler *handler);

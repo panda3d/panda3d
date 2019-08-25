@@ -43,7 +43,7 @@ class BulletPersistentManifold;
 class BulletShape;
 class BulletSoftBodyWorldInfo;
 
-extern PT(CallbackObject) bullet_contact_added_callback;
+extern EXPCL_PANDABULLET PT(CallbackObject) bullet_contact_added_callback;
 
 /**
  *
@@ -272,6 +272,7 @@ private:
   btOverlapFilterCallback *_filter_cb;
 
   PT(CallbackObject) _tick_callback_obj;
+  PT(CallbackObject) _contact_added_callback_obj;
 
   PT(BulletDebugNode) _debug;
 

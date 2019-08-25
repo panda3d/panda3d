@@ -31,7 +31,7 @@ fullscreen #f
 
 # The framebuffer-hardware flag forces it to use an accelerated driver.
 # The framebuffer-software flag forces it to use a software renderer.
-# If you don't set either, it will use whatever's available.
+# If you set both to false, it will use whatever's available.
 
 framebuffer-hardware #t
 framebuffer-software #f

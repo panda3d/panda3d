@@ -13,8 +13,6 @@
 #include "multiplexStreamBuf.cxx"
 #include "patcher.cxx"
 #include "socketStream.cxx"
-#include "stringStreamBuf.cxx"
-#include "stringStream.cxx"
 #include "urlSpec.cxx"
 #include "virtualFileHTTP.cxx"
 #include "virtualFileMountHTTP.cxx"

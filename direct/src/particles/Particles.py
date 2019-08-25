@@ -22,6 +22,7 @@ from panda3d.physics import RingEmitter
 from panda3d.physics import SphereSurfaceEmitter
 from panda3d.physics import SphereVolumeEmitter
 from panda3d.physics import TangentRingEmitter
+from panda3d.physics import SpriteAnim
 
 from . import SpriteParticleRendererExt
 

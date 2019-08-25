@@ -19,6 +19,8 @@
 
 /**
  * Defines a series of disconnected triangles, with adjacency information.
+ *
+ * @since 1.10.0
  */
 class EXPCL_PANDA_GOBJ GeomTrianglesAdjacency : public GeomPrimitive {
 PUBLISHED:

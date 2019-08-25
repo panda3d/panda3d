@@ -58,9 +58,10 @@ back_to_front_slash(const string &str) {
  */
 DownloadDb::
 DownloadDb(Ramfile &server_file, Filename &client_file) {
-  if (downloader_cat.is_debug())
+  if (downloader_cat.is_debug()) {
     downloader_cat.debug()
       << "DownloadDb constructor called" << endl;
+  }
   _client_db = read_db(client_file, 0);
   _client_db._filename = client_file;
   _server_db = read_db(server_file, 1);
@@ -71,9 +72,10 @@ DownloadDb(Ramfile &server_file, Filename &client_file) {
  */
 DownloadDb::
 DownloadDb(Filename &server_file, Filename &client_file) {
-  if (downloader_cat.is_debug())
+  if (downloader_cat.is_debug()) {
     downloader_cat.debug()
       << "DownloadDb constructor called" << endl;
+  }
   _client_db = read_db(client_file, 0);
   _client_db._filename = client_file;
   _server_db = read_db(server_file, 1);
@@ -94,9 +96,10 @@ DownloadDb() {
  */
 DownloadDb::
 ~DownloadDb() {
-  if (downloader_cat.is_debug())
+  if (downloader_cat.is_debug()) {
     downloader_cat.debug()
       << "DownloadDb destructor called" << endl;
+  }
 }
 
 
@@ -330,8 +333,10 @@ write_db(Filename &file, Db db, bool want_server_info) {
     return false;
   }
 
-  downloader_cat.spam()
-    << "Writing to file: " << file << endl;
+  if (downloader_cat.is_spam()) {
+    downloader_cat.spam()
+      << "Writing to file: " << file << endl;
+  }
 
   StreamWriter sw(write_stream);
 
@@ -594,8 +599,10 @@ parse_header(Datagram dg) {
   // Make sure we have a good header
   DatagramIterator di(dg);
   uint32_t magic_number = di.get_uint32();
-  downloader_cat.debug()
-    << "Parsed magic number: " << magic_number << endl;
+  if (downloader_cat.is_debug()) {
+    downloader_cat.debug()
+      << "Parsed magic number: " << magic_number << endl;
+  }
   // If the magic number is equal to the bogus magic number it signifies that
   // the previous write was interrupted
   if (magic_number == _bogus_magic_number) {
@@ -614,8 +621,10 @@ parse_header(Datagram dg) {
   }
 
   int32_t num_multifiles = di.get_int32();
-  downloader_cat.debug()
-    << "Parsed number of multifiles: " << num_multifiles << endl;
+  if (downloader_cat.is_debug()) {
+    downloader_cat.debug()
+      << "Parsed number of multifiles: " << num_multifiles << endl;
+  }
 
   // If we got all the way here, must be done
   return num_multifiles;
@@ -631,8 +640,10 @@ int DownloadDb::Db::
 parse_record_header(Datagram dg) {
   DatagramIterator di(dg);
   int32_t record_length = di.get_int32();
-  downloader_cat.spam()
-    << "Parsed record header length: " << record_length << endl;
+  if (downloader_cat.is_spam()) {
+    downloader_cat.spam()
+      << "Parsed record header length: " << record_length << endl;
+  }
 
   // If we got all the way here, must be done
   return record_length;
@@ -662,10 +673,12 @@ parse_mfr(Datagram dg) {
   // Read the hash value
   mfr->_hash.read_datagram(di);
 
-  downloader_cat.debug()
-    << "Parsed multifile record: " << mfr->_name << " phase: " << mfr->_phase
-     << " size: " << mfr->_size
-    << " status: " << mfr->_status << " num_files: " << mfr->_num_files << endl;
+  if (downloader_cat.is_debug()) {
+    downloader_cat.debug()
+      << "Parsed multifile record: " << mfr->_name << " phase: " << mfr->_phase
+      << " size: " << mfr->_size << " status: " << mfr->_status
+      << " num_files: " << mfr->_num_files << endl;
+  }
 
   // Return the new MultifileRecord
   return mfr;
@@ -690,8 +703,10 @@ parse_fr(Datagram dg) {
   // convert any old records we might read.
   fr->_name = back_to_front_slash(fr->_name);
 
-  downloader_cat.spam()
-    << "Parsed file record: " << fr->_name << endl;
+  if (downloader_cat.is_spam()) {
+    downloader_cat.spam()
+      << "Parsed file record: " << fr->_name << endl;
+  }
 
   // Return the new MultifileRecord
   return fr;
@@ -1022,16 +1037,21 @@ int DownloadDb::
 get_version(const Filename &name, const HashVal &hash) const {
   VersionMap::const_iterator vmi = _versions.find(name);
   if (vmi == _versions.end()) {
-    downloader_cat.debug()
-      << "DownloadDb::get_version() - can't find: " << name << endl;
+    if (downloader_cat.is_debug()) {
+      downloader_cat.debug()
+        << "DownloadDb::get_version() - can't find: " << name << endl;
+    }
     return -1;
   }
   const VectorHash &vhash = (*vmi).second;
   VectorHash::const_iterator i = find(vhash.begin(), vhash.end(), hash);
-  if (i != vhash.end())
+  if (i != vhash.end()) {
     return (i - vhash.begin() + 1);
-  downloader_cat.debug()
-    << "DownloadDb::get_version() - can't find hash: " << hash << endl;
+  }
+  if (downloader_cat.is_debug()) {
+    downloader_cat.debug()
+      << "DownloadDb::get_version() - can't find hash: " << hash << endl;
+  }
   return -1;
 }
 
@@ -1072,9 +1092,11 @@ write_version_map(StreamWriter &sw) {
   sw.add_int32(_versions.size());
   for (vmi = _versions.begin(); vmi != _versions.end(); ++vmi) {
     name = (*vmi).first;
-    downloader_cat.spam()
-      << "DownloadDb::write_version_map() - writing file: "
-      << name << " of length: " << name.length() << endl;
+    if (downloader_cat.is_spam()) {
+      downloader_cat.spam()
+        << "DownloadDb::write_version_map() - writing file: "
+        << name << " of length: " << name.length() << endl;
+    }
     sw.add_int32(name.length());
     sw.append_data(name);
     sw.add_int32((*vmi).second.size());
@@ -1099,17 +1121,21 @@ read_version_map(StreamReader &sr) {
 
     // Get the file name
     string name = sr.get_string32();
-    downloader_cat.spam()
-      << "DownloadDb::read_version_map() - name: " << name << endl;
+    if (downloader_cat.is_spam()) {
+      downloader_cat.spam()
+        << "DownloadDb::read_version_map() - name: " << name << endl;
+    }
 
     // Get number of hash values for name
     int length = sr.get_int32();
     if (sr.get_istream()->fail()) {
       return false;
     }
-    downloader_cat.spam()
-      << "DownloadDb::read_version_map() - number of values: " << length
-      << endl;
+    if (downloader_cat.is_spam()) {
+      downloader_cat.spam()
+        << "DownloadDb::read_version_map() - number of values: " << length
+        << endl;
+    }
 
     for (int j = 0; j < length; j++) {
       HashVal hash;

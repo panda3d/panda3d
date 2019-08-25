@@ -24,11 +24,6 @@
  * condition variable can be used to "wake up" a thread when some arbitrary
  * condition has changed.
  *
- * The ConditionVar class does not support the full semantics of POSIX
- * condition variables.  In particular, it does not support the broadcast or
- * notify_all function.  See ConditionVarFull for a more complete (but
- * possibly more expensive) API.
- *
  * A condition variable is associated with a single mutex, and several
  * condition variables may share the same mutex.
  *
@@ -51,10 +46,7 @@ PUBLISHED:
   // These methods are inherited from the base class.
   //INLINE void wait();
   //INLINE void notify();
-
-  // The notify_all() method is specifically *not* provided by ConditionVar.
-  // Use ConditionVarFull if you need to call this method.
-  void notify_all() = delete;
+  //INLINE void notify_all();
 
   INLINE Mutex &get_mutex() const;
 };

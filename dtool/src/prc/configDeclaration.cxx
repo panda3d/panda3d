@@ -21,6 +21,8 @@
 
 using std::string;
 
+static MutexImpl this_prc_dir_lock;
+
 /**
  * Use the ConfigPage::make_declaration() interface to create a new
  * declaration.
@@ -139,13 +141,6 @@ set_double_word(size_t n, double value) {
  */
 Filename ConfigDeclaration::
 get_filename_value() const {
-  // Since we are about to set THIS_PRC_DIR globally, we need to ensure that
-  // no two threads call this method at the same time.
-  // NB. MSVC doesn't guarantee that this mutex is initialized in a
-  // thread-safe manner.  But chances are that the first time this is called
-  // is at static init time, when there is no risk of data races.
-  static MutexImpl lock;
-
   string str = _string_value;
 
   // Are there any variables to be expanded?
@@ -153,11 +148,13 @@ get_filename_value() const {
     Filename page_filename(_page->get_name());
     Filename page_dirname = page_filename.get_dirname();
 
-    lock.lock();
+    // Since we are about to set THIS_PRC_DIR globally, we need to ensure that
+    // no two threads call this method at the same time.
+    this_prc_dir_lock.lock();
     ExecutionEnvironment::shadow_environment_variable("THIS_PRC_DIR", page_dirname.to_os_specific());
     str = ExecutionEnvironment::expand_string(str);
     ExecutionEnvironment::clear_shadow("THIS_PRC_DIR");
-    lock.unlock();
+    this_prc_dir_lock.unlock();
   }
 
   Filename fn;

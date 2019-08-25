@@ -65,7 +65,7 @@ class FireflyDemo(ShowBase):
         # doesn't support the necessary OpenGL extensions.
 
         if self.modelbuffer is None or self.lightbuffer is None:
-            self.t = addTitle("Toon Shader: Video driver does not support "
+            self.t = addTitle("Firefly Demo: Video driver does not support "
                               "multiple render targets")
             return
 

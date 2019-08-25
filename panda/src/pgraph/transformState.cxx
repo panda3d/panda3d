@@ -27,7 +27,7 @@
 using std::ostream;
 
 LightReMutex *TransformState::_states_lock = nullptr;
-TransformState::States *TransformState::_states = nullptr;
+TransformState::States TransformState::_states;
 CPT(TransformState) TransformState::_identity_state;
 CPT(TransformState) TransformState::_invalid_state;
 UpdateSeq TransformState::_last_cycle_detect;
@@ -57,7 +57,7 @@ TypeHandle TransformState::_type_handle;
  */
 TransformState::
 TransformState() : _lock("TransformState") {
-  if (_states == nullptr) {
+  if (_states_lock == nullptr) {
     init_states();
   }
   _saved_entry = -1;
@@ -988,11 +988,8 @@ write_composition_cache(ostream &out, int indent_level) const {
  */
 int TransformState::
 get_num_states() {
-  if (_states == nullptr) {
-    return 0;
-  }
   LightReMutexHolder holder(*_states_lock);
-  return _states->get_num_entries();
+  return _states.get_num_entries();
 }
 
 /**
@@ -1010,9 +1007,6 @@ get_num_states() {
  */
 int TransformState::
 get_num_unused_states() {
-  if (_states == nullptr) {
-    return 0;
-  }
   LightReMutexHolder holder(*_states_lock);
 
   // First, we need to count the number of times each TransformState object is
@@ -1021,9 +1015,9 @@ get_num_unused_states() {
   typedef pmap<const TransformState *, int> StateCount;
   StateCount state_count;
 
-  size_t size = _states->get_num_entries();
+  size_t size = _states.get_num_entries();
   for (size_t si = 0; si < size; ++si) {
-    const TransformState *state = _states->get_key(si);
+    const TransformState *state = _states.get_key(si);
 
     size_t i;
     size_t cache_size = state->_composition_cache.get_num_entries();
@@ -1095,13 +1089,10 @@ get_num_unused_states() {
  */
 int TransformState::
 clear_cache() {
-  if (_states == nullptr) {
-    return 0;
-  }
   LightReMutexHolder holder(*_states_lock);
 
   PStatTimer timer(_cache_update_pcollector);
-  int orig_size = _states->get_num_entries();
+  int orig_size = _states.get_num_entries();
 
   // First, we need to copy the entire set of states to a temporary vector,
   // reference-counting each object.  That way we can walk through the copy,
@@ -1112,9 +1103,9 @@ clear_cache() {
     TempStates temp_states;
     temp_states.reserve(orig_size);
 
-    size_t size = _states->get_num_entries();
+    size_t size = _states.get_num_entries();
     for (size_t si = 0; si < size; ++si) {
-      const TransformState *state = _states->get_key(si);
+      const TransformState *state = _states.get_key(si);
       temp_states.push_back(state);
     }
 
@@ -1153,7 +1144,7 @@ clear_cache() {
     // the various objects' caches will go away.
   }
 
-  int new_size = _states->get_num_entries();
+  int new_size = _states.get_num_entries();
   return orig_size - new_size;
 }
 
@@ -1165,14 +1156,14 @@ clear_cache() {
  */
 int TransformState::
 garbage_collect() {
-  if (_states == nullptr || !garbage_collect_states) {
+  if (!garbage_collect_states) {
     return 0;
   }
 
   LightReMutexHolder holder(*_states_lock);
 
   PStatTimer timer(_garbage_collect_pcollector);
-  size_t orig_size = _states->get_num_entries();
+  size_t orig_size = _states.get_num_entries();
 
   // How many elements to process this pass?
   size_t size = orig_size;
@@ -1192,7 +1183,7 @@ garbage_collect() {
   size_t stop_at_element = (si + num_this_pass) % size;
 
   do {
-    TransformState *state = (TransformState *)_states->get_key(si);
+    TransformState *state = (TransformState *)_states.get_key(si);
     if (break_and_uniquify) {
       if (state->get_cache_ref_count() > 0 &&
           state->get_ref_count() == state->get_cache_ref_count()) {
@@ -1229,15 +1220,15 @@ garbage_collect() {
   } while (si != stop_at_element);
   _garbage_index = si;
 
-  nassertr(_states->get_num_entries() == size, 0);
+  nassertr(_states.get_num_entries() == size, 0);
 
 #ifdef _DEBUG
-  nassertr(_states->validate(), 0);
+  nassertr(_states.validate(), 0);
 #endif
 
   // If we just cleaned up a lot of states, see if we can reduce the table in
   // size.  This will help reduce iteration overhead in the future.
-  _states->consider_shrink_table();
+  _states.consider_shrink_table();
 
   return (int)orig_size - (int)size;
 }
@@ -1257,18 +1248,15 @@ garbage_collect() {
  */
 void TransformState::
 list_cycles(ostream &out) {
-  if (_states == nullptr) {
-    return;
-  }
   LightReMutexHolder holder(*_states_lock);
 
   typedef pset<const TransformState *> VisitedStates;
   VisitedStates visited;
   CompositionCycleDesc cycle_desc;
 
-  size_t size = _states->get_num_entries();
+  size_t size = _states.get_num_entries();
   for (size_t si = 0; si < size; ++si) {
-    const TransformState *state = _states->get_key(si);
+    const TransformState *state = _states.get_key(si);
 
     bool inserted = visited.insert(state).second;
     if (inserted) {
@@ -1334,16 +1322,12 @@ list_cycles(ostream &out) {
  */
 void TransformState::
 list_states(ostream &out) {
-  if (_states == nullptr) {
-    out << "0 states:\n";
-    return;
-  }
   LightReMutexHolder holder(*_states_lock);
 
-  size_t size = _states->get_num_entries();
+  size_t size = _states.get_num_entries();
   out << size << " states:\n";
   for (size_t si = 0; si < size; ++si) {
-    const TransformState *state = _states->get_key(si);
+    const TransformState *state = _states.get_key(si);
     state->write(out, 2);
   }
 }
@@ -1356,36 +1340,32 @@ list_states(ostream &out) {
  */
 bool TransformState::
 validate_states() {
-  if (_states == nullptr) {
-    return true;
-  }
-
   PStatTimer timer(_transform_validate_pcollector);
 
   LightReMutexHolder holder(*_states_lock);
-  if (_states->is_empty()) {
+  if (_states.is_empty()) {
     return true;
   }
 
-  if (!_states->validate()) {
+  if (!_states.validate()) {
     pgraph_cat.error()
       << "TransformState::_states cache is invalid!\n";
     return false;
   }
 
-  size_t size = _states->get_num_entries();
+  size_t size = _states.get_num_entries();
   size_t si = 0;
   nassertr(si < size, false);
-  nassertr(_states->get_key(si)->get_ref_count() >= 0, false);
+  nassertr(_states.get_key(si)->get_ref_count() >= 0, false);
   size_t snext = si;
   ++snext;
   while (snext < size) {
-    nassertr(_states->get_key(snext)->get_ref_count() >= 0, false);
-    const TransformState *ssi = _states->get_key(si);
+    nassertr(_states.get_key(snext)->get_ref_count() >= 0, false);
+    const TransformState *ssi = _states.get_key(si);
     if (!ssi->validate_composition_cache()) {
       return false;
     }
-    const TransformState *ssnext = _states->get_key(snext);
+    const TransformState *ssnext = _states.get_key(snext);
     bool c = (*ssi) == (*ssnext);
     bool ci = (*ssnext) == (*ssi);
     if (c != ci) {
@@ -1415,8 +1395,6 @@ validate_states() {
  */
 void TransformState::
 init_states() {
-  _states = new States;
-
   ConfigVariableBool uniquify_matrix
   ("uniquify-matrix", true,
    PRC_DESC("Set this true to look up arbitrary 4x4 transform matrices in "
@@ -1483,7 +1461,7 @@ return_unique(TransformState *state) {
   LightReMutexHolder holder(*_states_lock);
 
   if (state->_saved_entry != -1) {
-    // This state is already in the cache.  nassertr(_states->find(state) ==
+    // This state is already in the cache.  nassertr(_states.find(state) ==
     // state->_saved_entry, state);
     return state;
   }
@@ -1492,10 +1470,10 @@ return_unique(TransformState *state) {
   // of this function if no one else uses it.
   CPT(TransformState) pt_state = state;
 
-  int si = _states->find(state);
+  int si = _states.find(state);
   if (si != -1) {
     // There's an equivalent state already in the set.  Return it.
-    return _states->get_key(si);
+    return _states.get_key(si);
   }
 
   // Not already in the set; add it.
@@ -1505,7 +1483,7 @@ return_unique(TransformState *state) {
     // deleted while it's in it.
     state->cache_ref();
   }
-  si = _states->store(state, nullptr);
+  si = _states.store(state, nullptr);
 
   // Save the index and return the input state.
   state->_saved_entry = si;
@@ -1893,7 +1871,7 @@ release_new() {
 
   if (_saved_entry != -1) {
     _saved_entry = -1;
-    nassertv_always(_states->remove(this));
+    nassertv_always(_states.remove(this));
   }
 }
 

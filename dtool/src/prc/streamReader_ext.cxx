@@ -45,9 +45,9 @@ readline() {
 
   std::string line;
   int ch = in->get();
-  while (!in->eof() && !in->fail()) {
+  while (ch != EOF && !in->fail()) {
     line += ch;
-    if (ch == '\n') {
+    if (ch == '\n' || in->eof()) {
       // Here's the newline character.
       break;
     }

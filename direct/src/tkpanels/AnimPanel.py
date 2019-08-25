@@ -9,13 +9,16 @@ __all__ = ['AnimPanel', 'ActorControl']
 # Import Tkinter, Pmw, and the floater code from this directory tree.
 from direct.tkwidgets.AppShell import *
 from direct.showbase.TkGlobal import *
-import Pmw, sys
+import Pmw, sys, os
 from direct.task import Task
+from panda3d.core import Filename, getModelPath
 
 if sys.version_info >= (3, 0):
     from tkinter.simpledialog import askfloat
+    from tkinter.filedialog import askopenfilename
 else:
     from tkSimpleDialog import askfloat
+    from tkFileDialog import askopenfilename
 
 
 FRAMES = 0
@@ -273,7 +276,7 @@ class AnimPanel(AppShell):
             title = 'Load Animation',
             parent = self.component('hull')
             )
-        if (animFilename == ''):
+        if not animFilename:
             # no file selected, canceled
             return
 
@@ -369,8 +372,9 @@ class AnimPanel(AppShell):
     def destroy(self):
         # First clean up
         taskMgr.remove(self.id + '_UpdateTask')
-        self.destroyCallBack()
-        self.destroyCallBack = None
+        if self.destroyCallBack is not None:
+            self.destroyCallBack()
+            self.destroyCallBack = None
         AppShell.destroy(self)
 
 class ActorControl(Pmw.MegaWidget):

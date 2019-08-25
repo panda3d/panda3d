@@ -659,6 +659,10 @@ rebuild_bitplanes() {
       glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     }
+
+    // Mark the GSG as supporting multisampling, so that it will respect an
+    // AntialiasAttrib with mode M_multisample.
+    glgsg->_supports_multisample = true;
   } else {
     glDisable(GL_MULTISAMPLE);
   }
@@ -774,7 +778,9 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
     }
 
     if (attachpoint == GL_DEPTH_ATTACHMENT_EXT) {
-      GLCAT.debug() << "Binding texture " << *tex << " to depth attachment.\n";
+      if (GLCAT.is_debug()) {
+        GLCAT.debug() << "Binding texture " << *tex << " to depth attachment.\n";
+      }
 
       attach_tex(layer, 0, tex, GL_DEPTH_ATTACHMENT_EXT);
 
@@ -785,7 +791,9 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
 #endif
 
       if (slot == RTP_depth_stencil) {
-        GLCAT.debug() << "Binding texture " << *tex << " to stencil attachment.\n";
+        if (GLCAT.is_debug()) {
+          GLCAT.debug() << "Binding texture " << *tex << " to stencil attachment.\n";
+        }
 
         attach_tex(layer, 0, tex, GL_STENCIL_ATTACHMENT_EXT);
 
@@ -797,7 +805,9 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
       }
 
     } else {
-      GLCAT.debug() << "Binding texture " << *tex << " to color attachment.\n";
+      if (GLCAT.is_debug()) {
+        GLCAT.debug() << "Binding texture " << *tex << " to color attachment.\n";
+      }
 
       attach_tex(layer, 0, tex, attachpoint);
 
@@ -984,7 +994,9 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
     glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, _rb[slot]);
 
     if (slot == RTP_depth_stencil) {
-      GLCAT.debug() << "Creating depth stencil renderbuffer.\n";
+      if (GLCAT.is_debug()) {
+        GLCAT.debug() << "Creating depth stencil renderbuffer.\n";
+      }
       // Allocate renderbuffer storage for depth stencil.
       GLint depth_size = 0, stencil_size = 0;
       glgsg->_glRenderbufferStorage(GL_RENDERBUFFER_EXT, gl_format, _rb_size_x, _rb_size_y);
@@ -1010,7 +1022,9 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
       report_my_gl_errors();
 
     } else if (slot == RTP_depth) {
-      GLCAT.debug() << "Creating depth renderbuffer.\n";
+      if (GLCAT.is_debug()) {
+        GLCAT.debug() << "Creating depth renderbuffer.\n";
+      }
       // Allocate renderbuffer storage for regular depth.
       GLint depth_size = 0;
       glgsg->_glRenderbufferStorage(GL_RENDERBUFFER_EXT, gl_format, _rb_size_x, _rb_size_y);
@@ -1048,7 +1062,9 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
       report_my_gl_errors();
 
     } else {
-      GLCAT.debug() << "Creating color renderbuffer.\n";
+      if (GLCAT.is_debug()) {
+        GLCAT.debug() << "Creating color renderbuffer.\n";
+      }
       glgsg->_glRenderbufferStorage(GL_RENDERBUFFER_EXT, gl_format, _rb_size_x, _rb_size_y);
 
       GLint red_size = 0, green_size = 0, blue_size = 0, alpha_size = 0;
@@ -1162,12 +1178,6 @@ bind_slot_multisample(bool rb_resize, Texture **attach, RenderTexturePlane slot,
     GLuint gl_format = GL_RGBA;
 #ifndef OPENGLES
     switch (slot) {
-      case RTP_aux_rgba_0:
-      case RTP_aux_rgba_1:
-      case RTP_aux_rgba_2:
-      case RTP_aux_rgba_3:
-        gl_format = GL_RGBA;
-        break;
       case RTP_aux_hrgba_0:
       case RTP_aux_hrgba_1:
       case RTP_aux_hrgba_2:
@@ -1180,8 +1190,18 @@ bind_slot_multisample(bool rb_resize, Texture **attach, RenderTexturePlane slot,
       case RTP_aux_float_3:
         gl_format = GL_RGBA32F_ARB;
         break;
+      case RTP_aux_rgba_0:
+      case RTP_aux_rgba_1:
+      case RTP_aux_rgba_2:
+      case RTP_aux_rgba_3:
       default:
-        gl_format = GL_RGBA;
+        if (_fb_properties.get_srgb_color()) {
+          gl_format = GL_SRGB8_ALPHA8;
+        } else if (_fb_properties.get_float_color()) {
+          gl_format = GL_RGBA32F_ARB;
+        } else {
+          gl_format = GL_RGBA;
+        }
         break;
     }
 #endif

@@ -480,6 +480,12 @@ poll() {
   for (unsigned int i = 0; i < _task_chains.size(); ++i) {
     AsyncTaskChain *chain = _task_chains[i];
     chain->do_poll();
+
+    if (chain->_state == AsyncTaskChain::S_interrupted) {
+      // If a task returned DS_interrupt, we need to interrupt the entire
+      // manager, since an exception state may have been set.
+      break;
+    }
   }
 
   // Just in case the clock was ticked explicitly by one of our polling

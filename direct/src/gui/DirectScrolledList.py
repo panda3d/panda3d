@@ -3,6 +3,7 @@
 __all__ = ['DirectScrolledListItem', 'DirectScrolledList']
 
 from panda3d.core import *
+from direct.showbase import ShowBaseGlobal
 from . import DirectGuiGlobals as DGG
 from direct.directnotify import DirectNotifyGlobal
 from direct.task.Task import Task
@@ -369,7 +370,7 @@ class DirectScrolledList(DirectFrame):
                 del self.currentSelected
             self["items"].remove(item)
             if type(item) != type(''):
-                item.reparentTo(hidden)
+                item.reparentTo(ShowBaseGlobal.hidden)
             self.refresh()
             return 1
         else:
@@ -387,7 +388,7 @@ class DirectScrolledList(DirectFrame):
                 item.destroy()
             self["items"].remove(item)
             if type(item) != type(''):
-                item.reparentTo(hidden)
+                item.reparentTo(ShowBaseGlobal.hidden)
             self.refresh()
             return 1
         else:
@@ -410,7 +411,7 @@ class DirectScrolledList(DirectFrame):
             self["items"].remove(item)
             if type(item) != type(''):
                 #RAU possible leak here, let's try to do the right thing
-                #item.reparentTo(hidden)
+                #item.reparentTo(ShowBaseGlobal.hidden)
                 item.removeNode()
             retval = 1
 
@@ -435,7 +436,7 @@ class DirectScrolledList(DirectFrame):
             self["items"].remove(item)
             if type(item) != type(''):
                 #RAU possible leak here, let's try to do the right thing
-                #item.reparentTo(hidden)
+                #item.reparentTo(ShowBaseGlobal.hidden)
                 item.removeNode()
             retval = 1
         if (refresh):

@@ -47,6 +47,8 @@
  * There is the DeviceType enumeration, however, which will (if known) contain
  * identification of the general category of devices this fits in, such as
  * keyboard, mouse, gamepad, or flight stick.
+ *
+ * @since 1.10.0
  */
 class EXPCL_PANDA_DEVICE InputDevice : public TypedReferenceCount {
 PUBLISHED:
