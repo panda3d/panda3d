@@ -88,6 +88,13 @@ public:
     // The method may take keyword arguments, if appropriate in the scripting
     // language.  Implies AT_varargs.
     AT_keyword_args = 0x07,
+
+    // Special fastcall variants.
+    AT_fastcall = 0x13,
+    AT_fastcall_kwnames = 0x17,
+
+    AT_KEYWORDS_BIT = 0x04,
+    AT_FASTCALL_BIT = 0x10,
   };
 
   class Function {

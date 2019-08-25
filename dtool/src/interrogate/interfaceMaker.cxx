@@ -639,6 +639,11 @@ record_function(const InterrogateType &itype, FunctionIndex func_index) {
     }
   }
 
+  // If any overload takes explicit args, it can't use fastcall.
+  if (func->_flags & FunctionRemap::F_explicit_args) {
+    func->_args_type = (ArgsType)(func->_args_type & ~AT_FASTCALL_BIT);
+  }
+
   return func;
 }
 

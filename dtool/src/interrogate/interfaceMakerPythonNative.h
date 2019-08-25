@@ -110,9 +110,6 @@ private:
     RF_err_null = 0x004,
     RF_err_false = 0x008,
 
-    // Decref temporary args object before returning.
-    RF_decref_args = 0x1000,
-
     // This raises a KeyError on falsey (or -1) return value.
     RF_raise_keyerror = 0x4000,
   };

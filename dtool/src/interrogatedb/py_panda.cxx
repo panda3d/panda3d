@@ -220,6 +220,38 @@ PyObject *Dtool_Raise_AttributeError(PyObject *obj, const char *attribute) {
 }
 
 /**
+ * Raises a TypeError of the form: func() takes no keyword arguments
+ */
+PyObject *Dtool_Raise_NoKeywordArgsError(const char *func) {
+#if PY_MAJOR_VERSION >= 3
+  PyObject *message = PyUnicode_FromFormat(
+#else
+  PyObject *message = PyString_FromFormat(
+#endif
+    "%.100s takes no keyword arguments", func);
+
+  Py_INCREF(PyExc_TypeError);
+  PyErr_Restore(PyExc_TypeError, message, nullptr);
+  return nullptr;
+}
+
+/**
+ * Raises a TypeError of the form: func() takes no arguments (%d given)
+ */
+PyObject *Dtool_Raise_NoArgsError(const char *func, int nargs) {
+#if PY_MAJOR_VERSION >= 3
+  PyObject *message = PyUnicode_FromFormat(
+#else
+  PyObject *message = PyString_FromFormat(
+#endif
+    "%.100s takes no arguments (%d given)", func, nargs);
+
+  Py_INCREF(PyExc_TypeError);
+  PyErr_Restore(PyExc_TypeError, message, nullptr);
+  return nullptr;
+}
+
+/**
  * Raises a TypeError of the form: Arguments must match: <list of overloads>
  *
  * However, in release builds, this instead is defined to a function that just
@@ -807,12 +839,53 @@ bool Dtool_ExtractArg(PyObject **result, PyObject *args, PyObject *kwds,
 }
 
 /**
+ * A more efficient version of _PyArg_ParseStackAndKeywords for the special
+ * case where there is only a single PyObject argument.
+ */
+bool Dtool_ExtractArg(PyObject **result, PyObject **vargs, Py_ssize_t nargs,
+                      PyObject *kwnames, const char *keyword) {
+
+  if (nargs == 1) {
+    if (kwnames == nullptr || PyTuple_GET_SIZE(kwnames) == 0) {
+      *result = vargs[0];
+      return true;
+    }
+  } else if (nargs == 0) {
+    if (kwnames != nullptr && PyTuple_GET_SIZE(kwnames) == 1) {
+      PyObject *key = PyTuple_GET_ITEM(kwnames, 0);
+      *result = vargs[0];
+      // We got the item, we just need to make sure that it had the right key.
+#if PY_VERSION_HEX >= 0x03060000
+      return PyUnicode_CheckExact(key) && _PyUnicode_EqualToASCIIString(key, keyword);
+#elif PY_MAJOR_VERSION >= 3
+      return PyUnicode_CheckExact(key) && PyUnicode_CompareWithASCIIString(key, keyword) == 0;
+#else
+      return PyString_CheckExact(key) && strcmp(PyString_AS_STRING(key), keyword) == 0;
+#endif
+    }
+  }
+
+  return false;
+}
+
+/**
  * Variant of Dtool_ExtractArg that does not accept a keyword argument.
  */
 bool Dtool_ExtractArg(PyObject **result, PyObject *args, PyObject *kwds) {
   if (PyTuple_GET_SIZE(args) == 1 &&
       (kwds == nullptr || PyDict_GET_SIZE(kwds) == 0)) {
     *result = PyTuple_GET_ITEM(args, 0);
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Variant of Dtool_ExtractArg that does not accept a keyword argument.
+ */
+bool Dtool_ExtractArg(PyObject **result, PyObject **vargs, Py_ssize_t nargs, PyObject *kwnames) {
+  if (nargs == 1 && (kwnames == nullptr || PyTuple_GET_SIZE(kwnames) == 0)) {
+    *result = vargs[0];
     return true;
   }
   return false;
@@ -858,6 +931,43 @@ bool Dtool_ExtractOptionalArg(PyObject **result, PyObject *args, PyObject *kwds,
 }
 
 /**
+ * A more efficient version of PyArg_ParseTupleAndKeywords for the special
+ * case where there is only a single optional PyObject argument.
+ *
+ * Returns true if valid (including if there were 0 items), false if there was
+ * an error, such as an invalid number of parameters.
+ */
+bool Dtool_ExtractOptionalArg(PyObject **result, PyObject **vargs,
+                              Py_ssize_t nargs, PyObject *kwnames,
+                              const char *keyword) {
+
+  if (nargs == 1) {
+    if (kwnames == nullptr || PyTuple_GET_SIZE(kwnames) == 0) {
+      *result = vargs[0];
+      return true;
+    }
+  } else if (nargs == 0) {
+    if (kwnames != nullptr && PyTuple_GET_SIZE(kwnames) == 1) {
+      PyObject *key = PyTuple_GET_ITEM(kwnames, 0);
+      *result = vargs[0];
+
+      // We got the item, we just need to make sure that it had the right key.
+#if PY_VERSION_HEX >= 0x03060000
+      return PyUnicode_CheckExact(key) && _PyUnicode_EqualToASCIIString(key, keyword);
+#elif PY_MAJOR_VERSION >= 3
+      return PyUnicode_CheckExact(key) && PyUnicode_CompareWithASCIIString(key, keyword) == 0;
+#else
+      return PyString_CheckExact(key) && strcmp(PyString_AS_STRING(key), keyword) == 0;
+#endif
+    } else {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
  * Variant of Dtool_ExtractOptionalArg that does not accept a keyword argument.
  */
 bool Dtool_ExtractOptionalArg(PyObject **result, PyObject *args, PyObject *kwds) {
@@ -869,6 +979,21 @@ bool Dtool_ExtractOptionalArg(PyObject **result, PyObject *args, PyObject *kwds)
     return true;
   }
   return (PyTuple_GET_SIZE(args) == 0);
+}
+
+/**
+ * Variant of Dtool_ExtractOptionalArg that does not accept a keyword argument.
+ */
+bool Dtool_ExtractOptionalArg(PyObject **result, PyObject **vargs,
+                              Py_ssize_t nargs, PyObject *kwnames) {
+  if (kwnames != nullptr && PyTuple_GET_SIZE(kwnames) != 0) {
+    return false;
+  }
+  if (nargs == 1) {
+    *result = vargs[0];
+    return true;
+  }
+  return (nargs == 0);
 }
 
 #endif  // HAVE_PYTHON

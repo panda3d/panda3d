@@ -35,6 +35,12 @@ using namespace std;
 #define IMPORT_THIS extern
 #endif
 
+#if PY_VERSION_HEX >= 0x03070000
+#define _Dtool_METH_FASTCALL (METH_FASTCALL)
+#else
+#define _Dtool_METH_FASTCALL (METH_VARARGS)
+#endif
+
 struct Dtool_PyTypedObject;
 
 // used to stamp dtool instance..
@@ -214,6 +220,8 @@ EXPCL_PYPANDA PyObject *Dtool_Raise_TypeError(const char *message);
 EXPCL_PYPANDA PyObject *Dtool_Raise_ArgTypeError(PyObject *obj, int param, const char *function_name, const char *type_name);
 EXPCL_PYPANDA PyObject *Dtool_Raise_AttributeError(PyObject *obj, const char *attribute);
 
+EXPCL_INTERROGATEDB PyObject *Dtool_Raise_NoKeywordArgsError(const char *func);
+EXPCL_INTERROGATEDB PyObject *Dtool_Raise_NoArgsError(const char *func, int nargs);
 EXPCL_PYPANDA PyObject *_Dtool_Raise_BadArgumentsError();
 #ifdef NDEBUG
 // Define it to a function that just prints a generic message.
@@ -352,12 +360,48 @@ ALWAYS_INLINE bool Dtool_CheckNoArgs(PyObject *args);
 ALWAYS_INLINE bool Dtool_CheckNoArgs(PyObject *args, PyObject *kwds);
 EXPCL_PYPANDA bool Dtool_ExtractArg(PyObject **result, PyObject *args,
                                     PyObject *kwds, const char *keyword);
+EXPCL_PYPANDA bool Dtool_ExtractArg(PyObject **result, PyObject **vargs,
+                                    Py_ssize_t nargs, PyObject *kwnames,
+                                    const char *keyword);
 EXPCL_PYPANDA bool Dtool_ExtractArg(PyObject **result, PyObject *args,
                                     PyObject *kwds);
+EXPCL_PYPANDA bool Dtool_ExtractArg(PyObject **result, PyObject **vargs,
+                                    Py_ssize_t nargs, PyObject *kwnames);
 EXPCL_PYPANDA bool Dtool_ExtractOptionalArg(PyObject **result, PyObject *args,
                                             PyObject *kwds, const char *keyword);
-EXPCL_PYPANDA  bool Dtool_ExtractOptionalArg(PyObject **result, PyObject *args,
-                                             PyObject *kwds);
+EXPCL_PYPANDA bool Dtool_ExtractOptionalArg(PyObject **result, PyObject **vargs,
+                                            Py_ssize_t nargs, PyObject *kwnames,
+                                            const char *keyword);
+EXPCL_PYPANDA bool Dtool_ExtractOptionalArg(PyObject **result, PyObject *args,
+                                           PyObject *kwds);
+EXPCL_PYPANDA bool Dtool_ExtractOptionalArg(PyObject **result, PyObject **vargs,
+                                            Py_ssize_t nargs, PyObject *kwnames);
+
+/**
+ * This is used to temporarily construct a tuple on the stack, for calling a
+ * regular varargs function.
+ */
+template<int N>
+struct Dtool_StackTuple {
+  ALWAYS_INLINE Dtool_StackTuple() {
+    (void)PyObject_INIT_VAR((PyVarObject *)this, &PyTuple_Type, N);
+  }
+
+  ALWAYS_INLINE ~Dtool_StackTuple() {
+    _Py_ForgetReference((PyObject *)this);
+  }
+
+  ALWAYS_INLINE operator PyObject *() {
+    return (PyObject *)this;
+  }
+
+  ALWAYS_INLINE operator PyTupleObject *() {
+    return (PyTupleObject *)this;
+  }
+
+  PyObject_VAR_HEAD
+  PyObject *ob_item[N];
+};
 
 /**
  * These functions convert a C++ value into the corresponding Python object.

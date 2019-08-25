@@ -174,6 +174,24 @@ INLINE PyObject *_PyObject_FastCall(PyObject *func, PyObject **args, Py_ssize_t 
 #  define PyLong_AsLongLongAndOverflow(x) PyLong_AsLongAndOverflow(x)
 #endif
 
+#if PY_VERSION_HEX >= 0x03060000
+#  define _PyUnicode_EqualToASCIIString(left, right) \
+  (PyUnicode_CompareWithASCIIString(left, right) == 0)
+#endif
+
+#if PY_VERSION_HEX < 0x03060000
+typedef struct _PyArg_Parser {
+  const char *format;
+  const char * const *keywords;
+  const char *fname;
+} _PyArg_Parser;
+
+#  define _PyArg_ParseTupleAndKeywordsFast(args, kw, parser, ...) \
+  (PyArg_ParseTupleAndKeywords(args, kw, (parser)->format, (char**)(parser)->keywords, __VA_ARGS__))
+#  define _PyArg_VaParseTupleAndKeywordsFast(args, kw, parser, vargs) \
+  (PyArg_VaParseTupleAndKeywords(args, kw, (parser)->format, (char**)(parser)->keywords, vargs))
+#endif
+
 /* Python 3.7 */
 
 #ifndef PyDict_GET_SIZE
@@ -193,6 +211,13 @@ INLINE PyObject *_PyObject_FastCall(PyObject *func, PyObject **args, Py_ssize_t 
     case Py_GE: if ((val1) >= (val2)) Py_RETURN_TRUE; Py_RETURN_FALSE;  \
     }                                                                   \
   } while (0)
+#endif
+
+#if PY_VERSION_HEX < 0x03070000
+#  define _PyArg_ParseStackAndKeywords _PyArg_ParseStack
+EXPCL_INTERROGATEDB int _PyArg_UnpackStack(PyObject *const *args, Py_ssize_t nargs,
+                                           const char *name,
+                                           Py_ssize_t min, Py_ssize_t max, ...);
 #endif
 
 /* Other Python implementations */

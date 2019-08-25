@@ -1061,15 +1061,14 @@ write_class_details(ostream &out, Object *obj) {
   }
 
   // Write the constructors.
-  std::string fname = "static int Dtool_Init_" + ClassName + "(PyObject *self, PyObject *args, PyObject *kwds)";
   for (Function *func : obj->_constructors) {
     string expected_params;
-    write_function_for_name(out, obj, func->_remaps, fname, expected_params, true, AT_keyword_args, RF_int);
+    write_function_for_name(out, obj, func->_remaps, "Dtool_Init_" + ClassName, expected_params, true, AT_keyword_args, RF_int);
   }
   if (obj->_constructors.size() == 0) {
     // We still need to write a dummy constructor to prevent inheriting the
     // constructor from a base class.
-    out << fname << " {\n"
+    out << "static int Dtool_Init_" << ClassName << "(PyObject *self, PyObject *args, PyObject *kwds) {\n"
       "  Dtool_Raise_TypeError(\"cannot init abstract class\");\n"
       "  return -1;\n"
       "}\n\n";
@@ -1476,6 +1475,16 @@ write_module_support(ostream &out, ostream *out_h, InterrogateModuleDef *def) {
         flags = "METH_O";
         break;
 
+      case AT_fastcall:
+        flags = "_Dtool_METH_FASTCALL";
+        fptr = "(PyCFunction) " + fptr;
+        break;
+
+      case AT_fastcall_kwnames:
+        flags = "_Dtool_METH_FASTCALL | METH_KEYWORDS";
+        fptr = "(PyCFunction) " + fptr;
+        break;
+
       default:
         flags = "METH_NOARGS";
         break;
@@ -1633,6 +1642,16 @@ write_module_class(ostream &out, Object *obj) {
 
     case AT_single_arg:
       flags = "METH_O";
+      break;
+
+    case AT_fastcall:
+      flags = "_Dtool_METH_FASTCALL";
+      fptr = "(PyCFunction) " + fptr;
+      break;
+
+    case AT_fastcall_kwnames:
+      flags = "_Dtool_METH_FASTCALL | METH_KEYWORDS";
+      fptr = "(PyCFunction) " + fptr;
       break;
 
     default:
@@ -1951,12 +1970,23 @@ write_module_class(ostream &out, Object *obj) {
           out << "  if (arg2 != nullptr) { // __setattr__\n";
 
           if (!setattr_remaps.empty()) {
-            out << "    PyObject *args = PyTuple_Pack(2, arg, arg2);\n";
+            out <<
+              "#if PY_VERSION_HEX >= 0x03070000\n"
+              "    PyObject *const vargs[2] = {arg, arg2};\n"
+              "    Py_ssize_t const nargs = 2;\n"
+              "#else\n"
+              "    Dtool_StackTuple<2> args;\n"
+              "    PyTuple_SET_ITEM(args, 0, arg);\n"
+              "    PyTuple_SET_ITEM(args, 1, arg2);\n"
+              "    PyObject *const *const vargs = &PyTuple_GET_ITEM(args, 0);\n"
+              "    Py_ssize_t const nargs = 2;\n"
+              "    (void)nargs; (void)vargs;\n"
+              "#endif\n";
+
             string expected_params;
             write_function_forset(out, setattr_remaps, 2, 2, expected_params, 4,
-                                  true, true, AT_varargs, RF_int | RF_decref_args, true);
+                                  true, true, AT_fastcall, RF_int, true);
 
-            out << "    Py_DECREF(args);\n";
             out << "    if (!_PyErr_OCCURRED()) {\n";
             out << "      Dtool_Raise_BadArgumentsError(\n";
             output_quoted(out, 8, expected_params);
@@ -2165,10 +2195,22 @@ write_module_class(ostream &out, Object *obj) {
 
           string expected_params;
           out << "  if (arg2 != nullptr) { // __setitem__\n";
-          out << "    PyObject *args = PyTuple_Pack(2, arg, arg2);\n";
+          out <<
+            "#if PY_VERSION_HEX >= 0x03070000\n"
+            "    PyObject *const vargs[2] = {arg, arg2};\n"
+            "    Py_ssize_t const nargs = 2;\n"
+            "#else\n"
+            "    Dtool_StackTuple<2> args;\n"
+            "    PyTuple_SET_ITEM(args, 0, arg);\n"
+            "    PyTuple_SET_ITEM(args, 1, arg2);\n"
+            "    PyObject *const *const vargs = &PyTuple_GET_ITEM(args, 0);\n"
+            "    Py_ssize_t const nargs = 2;\n"
+            "    (void)nargs; (void)vargs;\n"
+            "#endif\n";
+
           write_function_forset(out, setitem_remaps, 2, 2, expected_params, 4,
-                                true, true, AT_varargs, RF_int | RF_decref_args, false);
-          out << "    Py_DECREF(args);\n";
+                                true, true, AT_fastcall, RF_int, false);
+
           out << "  } else { // __delitem__\n";
           write_function_forset(out, delitem_remaps, 1, 1, expected_params, 4,
                                 true, true, AT_single_arg, RF_int, false);
@@ -2401,10 +2443,23 @@ write_module_class(ostream &out, Object *obj) {
           string expected_params;
 
           out << "  if (arg2 != nullptr && arg2 != Py_None) {\n";
-          out << "    PyObject *args = PyTuple_Pack(2, arg, arg2);\n";
-          write_function_forset(out, two_param_remaps, 2, 2, expected_params, 4,
-                                true, true, AT_varargs, RF_pyobject | RF_err_null | RF_decref_args, true);
-          out << "    Py_DECREF(args);\n";
+          if (!two_param_remaps.empty()) {
+            out <<
+              "#if PY_VERSION_HEX >= 0x03070000\n"
+              "    PyObject *const vargs[2] = {arg, arg2};\n"
+              "    Py_ssize_t const nargs = 2;\n"
+              "#else\n"
+              "    Dtool_StackTuple<2> args;\n"
+              "    PyTuple_SET_ITEM(args, 0, arg);\n"
+              "    PyTuple_SET_ITEM(args, 1, arg2);\n"
+              "    PyObject *const *const vargs = &PyTuple_GET_ITEM(args, 0);\n"
+              "    Py_ssize_t const nargs = 2;\n"
+              "    (void)nargs; (void)vargs;\n"
+              "#endif\n";
+
+            write_function_forset(out, two_param_remaps, 2, 2, expected_params, 4,
+                                  true, true, AT_fastcall, RF_pyobject | RF_err_null, true);
+          }
           out << "  } else {\n";
           write_function_forset(out, one_param_remaps, 1, 1, expected_params, 4,
                                 true, true, AT_single_arg, RF_pyobject | RF_err_null, true);
@@ -2501,12 +2556,10 @@ write_module_class(ostream &out, Object *obj) {
 
       case WT_none:
         // Nothing special about the wrapper function: just write it normally.
-        string fname = "static PyObject *" + def._wrapper_name + "(PyObject *self, PyObject *args, PyObject *kwds)\n";
-
         std::vector<FunctionRemap *> remaps;
         remaps.insert(remaps.end(), def._remaps.begin(), def._remaps.end());
         string expected_params;
-        write_function_for_name(out, obj, remaps, fname, expected_params, true, AT_keyword_args, RF_pyobject | RF_err_null);
+        write_function_for_name(out, obj, remaps, def._wrapper_name, expected_params, true, AT_keyword_args, RF_pyobject | RF_err_null);
         break;
       }
 
@@ -3467,34 +3520,8 @@ write_function_for_top(ostream &out, InterfaceMaker::Object *obj, InterfaceMaker
     assert(func->_args_type == AT_no_args);
   }
 
-  string prototype = "static PyObject *" + func->_name + "(PyObject *";
-
-  // This will be NULL for static funcs, so prevent code from using it.
-  if (func->_has_this) {
-    prototype += "self";
-  }
-
-  switch (func->_args_type) {
-  case AT_keyword_args:
-    prototype += ", PyObject *args, PyObject *kwds";
-    break;
-
-  case AT_varargs:
-    prototype += ", PyObject *args";
-    break;
-
-  case AT_single_arg:
-    prototype += ", PyObject *arg";
-    break;
-
-  default:
-    prototype += ", PyObject *";
-    break;
-  }
-  prototype += ")";
-
   string expected_params;
-  write_function_for_name(out, obj, func->_remaps, prototype, expected_params, true, func->_args_type, RF_pyobject | RF_err_null);
+  write_function_for_name(out, obj, func->_remaps, func->_name, expected_params, true, func->_args_type, RF_pyobject | RF_err_null);
 
   // Now synthesize a variable for the docstring.
   ostringstream comment;
@@ -3540,6 +3567,7 @@ write_function_for_name(ostream &out, Object *obj,
   int max_required_args = 0;
   bool all_nonconst = true;
   bool has_keywords = false;
+  bool has_self = false;
 
   out << "/**\n * Python function wrapper for:\n";
   for (ri = remaps.begin(); ri != remaps.end(); ++ri) {
@@ -3555,8 +3583,14 @@ write_function_for_name(ostream &out, Object *obj,
         all_nonconst = false;
       }
 
-      if (remap->_args_type == AT_keyword_args) {
+      if (remap->_args_type & AT_KEYWORDS_BIT) {
         has_keywords = true;
+      }
+
+      if (remap->_has_this ||
+          remap->_type == FunctionRemap::T_constructor ||
+          (remap->_flags & FunctionRemap::F_explicit_self) != 0) {
+        has_self = true;
       }
 
       max_required_args = max(max_num_args, max_required_args);
@@ -3580,7 +3614,57 @@ write_function_for_name(ostream &out, Object *obj,
     assert(obj != nullptr);
   }
 
-  out << function_name << " {\n";
+  // Write the function signature.
+  string proto = "static ";
+  if (return_flags & RF_int) {
+    proto += "int ";
+  } else if (return_flags & RF_pyobject) {
+    proto += "PyObject *";
+  } else {
+    proto += "void ";
+  }
+
+  proto += function_name + "(";
+
+  if (has_self) {
+    proto += "PyObject *self";
+  } else {
+    proto += "PyObject *";
+  }
+
+  switch (args_type) {
+  case AT_keyword_args:
+    out << proto << ", PyObject *args, PyObject *kwds) {\n";
+    break;
+
+  case AT_varargs:
+    out << proto << ", PyObject *args) {\n";
+    break;
+
+  case AT_single_arg:
+    out << proto << ", PyObject *arg) {\n";
+    break;
+
+  case AT_fastcall:
+    out << "#if PY_VERSION_HEX >= 0x03070000\n";
+    out << proto << ", PyObject **vargs, Py_ssize_t nargs) {\n";
+    out << "#else\n";
+    out << proto << ", PyObject *args) {\n";
+    out << "#endif\n";
+    break;
+
+  case AT_fastcall_kwnames:
+    out << "#if PY_VERSION_HEX >= 0x03070000\n";
+    out << proto << ", PyObject **vargs, Py_ssize_t nargs, PyObject *kwnames) {\n";
+    out << "#else\n";
+    out << proto << ", PyObject *args, PyObject *kwds) {\n";
+    out << "#endif\n";
+    break;
+
+  default:
+    out << proto << ", PyObject *) {\n";
+    break;
+  }
 
   if (has_this) {
     std::string ClassName = make_safe_name(obj->_itype.get_scoped_name());
@@ -3610,21 +3694,47 @@ write_function_for_name(ostream &out, Object *obj,
     return;
   }
 
-  if (args_type == AT_keyword_args && !has_keywords) {
+  if ((args_type & AT_KEYWORDS_BIT) != 0 && !has_keywords) {
     // We don't actually take keyword arguments.  Make sure we didn't get any.
-    out << "  if (kwds != nullptr && PyDict_Size(kwds) > 0) {\n";
-    out << "#ifdef NDEBUG\n";
-    error_raise_return(out, 4, return_flags, "TypeError", "function takes no keyword arguments");
-    out << "#else\n";
-    error_raise_return(out, 4, return_flags, "TypeError",
-      methodNameFromCppName(remap, "", false) + "() takes no keyword arguments");
-    out << "#endif\n";
+    if ((args_type & AT_FASTCALL_BIT) != 0) {
+      out << "#if PY_VERSION_HEX >= 0x03070000\n";
+      out << "  if (kwnames != nullptr && PyTuple_GET_SIZE(kwnames) > 0) {\n";
+      out << "#else\n";
+      out << "  if (kwds != nullptr && PyDict_GET_SIZE(kwds) > 0) {\n";
+      out << "#endif\n";
+    } else {
+      out << "  if (kwds != nullptr && PyDict_GET_SIZE(kwds) > 0) {\n";
+    }
+
+    if ((return_flags & RF_err_null) != 0 && (return_flags & RF_pyobject) != 0) {
+      out << "    return Dtool_Raise_NoKeywordArgsError(\""
+          << methodNameFromCppName(remap, "", false) << "\");\n";
+
+    } else {
+      out << "    Dtool_Raise_NoKeywordArgsError(\""
+          << methodNameFromCppName(remap, "", false) << "\");\n";
+      error_return(out, 4, return_flags);
+    }
     out << "  }\n";
-    args_type = AT_varargs;
+
+    if ((args_type & AT_FASTCALL_BIT) != 0) {
+      args_type = AT_fastcall;
+    } else {
+      args_type = AT_varargs;
+    }
   }
 
-  if (args_type == AT_keyword_args || args_type == AT_varargs) {
+  if (args_type >= AT_varargs) {
     max_required_args = collapse_default_remaps(map_sets, max_required_args);
+  }
+
+  if (args_type == AT_fastcall) {
+    // Emulate positional fastcall convention in older versions.
+    out << "#if PY_VERSION_HEX < 0x03070000\n";
+    out << "  Py_ssize_t const nargs = PyTuple_GET_SIZE(args);\n";
+    out << "  PyObject *const *const vargs = &PyTuple_GET_ITEM(args, 0);\n";
+    out << "  (void)nargs; (void)vargs;\n";
+    out << "#endif\n";
   }
 
   if (remap->_flags & FunctionRemap::F_explicit_args) {
@@ -3633,11 +3743,11 @@ write_function_for_name(ostream &out, Object *obj,
     write_function_instance(out, remap, 0, 0, expected_params, 2, true, true,
                             args_type, return_flags);
 
-  } else if (map_sets.size() > 1 && (args_type == AT_varargs || args_type == AT_keyword_args)) {
+  } else if (map_sets.size() > 1 && args_type >= AT_varargs) {
     // We have more than one remap.
     switch (args_type) {
     case AT_keyword_args:
-      indent(out, 2) << "int parameter_count = (int)PyTuple_Size(args);\n";
+      indent(out, 2) << "int parameter_count = (int)PyTuple_GET_SIZE(args);\n";
       indent(out, 2) << "if (kwds != nullptr) {\n";
       indent(out, 2) << "  parameter_count += (int)PyDict_Size(kwds);\n";
       indent(out, 2) << "}\n";
@@ -3645,6 +3755,26 @@ write_function_for_name(ostream &out, Object *obj,
 
     case AT_varargs:
       indent(out, 2) << "int parameter_count = (int)PyTuple_Size(args);\n";
+      break;
+
+    case AT_fastcall:
+      indent(out, 2) << "const int parameter_count = (int)nargs;\n";
+      break;
+
+    case AT_fastcall_kwnames:
+      // We can't emulate fastcall conventions in this case, so we just switch
+      // to regular AT_keyword_args in the fallback case.
+      out << "#if PY_VERSION_HEX >= 0x03070000\n";
+      indent(out, 2) << "int parameter_count = (int)nargs;\n";
+      indent(out, 2) << "if (kwnames != nullptr) {\n";
+      indent(out, 2) << "  parameter_count += (int)PyTuple_GET_SIZE(kwnames);\n";
+      indent(out, 2) << "}\n";
+      out << "#else\n";
+      indent(out, 2) << "int parameter_count = (int)PyTuple_GET_SIZE(args);\n";
+      indent(out, 2) << "if (kwds != nullptr) {\n";
+      indent(out, 2) << "  parameter_count += (int)PyDict_Size(kwds);\n";
+      indent(out, 2) << "}\n";
+      out << "#endif\n";
       break;
 
     case AT_single_arg:
@@ -3678,7 +3808,7 @@ write_function_for_name(ostream &out, Object *obj,
 
       // Check whether any remap actually takes keyword arguments.  If not,
       // then we don't have to bother checking that for every remap.
-      if (args_type == AT_keyword_args && max_args > 0) {
+      if ((args_type & AT_KEYWORDS_BIT) != 0 && max_args > 0) {
         strip_keyword_args = true;
 
         std::set<FunctionRemap *>::iterator sii;
@@ -3697,20 +3827,41 @@ write_function_for_name(ostream &out, Object *obj,
       if (strip_keyword_args) {
         // None of the remaps take any keyword arguments, so let's check that
         // we take none.  This saves some checks later on.
-        indent(out, 4) << "if (kwds == nullptr || PyDict_GET_SIZE(kwds) == 0) {\n";
+        if (args_type & AT_FASTCALL_BIT) {
+          out << "#if PY_VERSION_HEX >= 0x03070000\n";
+          indent(out, 4) << "if (kwnames == nullptr || PyTuple_GET_SIZE(kwnames) == 0) {\n";
+          out << "#else\n";
+          indent(out, 4) << "if (kwds == nullptr || PyDict_GET_SIZE(kwds) == 0) {\n";
+          out << "#endif\n";
+        } else {
+          indent(out, 4) << "if (kwds == nullptr || PyDict_GET_SIZE(kwds) == 0) {\n";
+        }
+
         if (min_args == 1 && min_args == 1) {
-          indent(out, 4) << "  PyObject *arg = PyTuple_GET_ITEM(args, 0);\n";
+          if (args_type & AT_FASTCALL_BIT) {
+            out << "#if PY_VERSION_HEX >= 0x03070000\n";
+            indent(out, 4) << "  PyObject *arg = vargs[0];\n";
+            out << "#else\n";
+            indent(out, 4) << "  PyObject *arg = PyTuple_GET_ITEM(args, 0);\n";
+            out << "#endif\n";
+          } else {
+            indent(out, 4) << "  PyObject *arg = PyTuple_GET_ITEM(args, 0);\n";
+          }
           write_function_forset(out, mii->second, min_args, max_args, expected_params, 6,
                 coercion_allowed, true, AT_single_arg, return_flags, true, !all_nonconst);
         } else {
           write_function_forset(out, mii->second, min_args, max_args, expected_params, 6,
                 coercion_allowed, true, AT_varargs, return_flags, true, !all_nonconst);
         }
-      } else if (min_args == 1 && max_args == 1 && args_type == AT_varargs) {
+      } else if (min_args == 1 && max_args == 1 && (args_type & ~AT_FASTCALL_BIT) == AT_varargs) {
         // We already checked that the args tuple has only one argument, so
         // we might as well extract that from the tuple now.
         indent(out, 4) << "{\n";
-        indent(out, 4) << "  PyObject *arg = PyTuple_GET_ITEM(args, 0);\n";
+        if (args_type & AT_FASTCALL_BIT) {
+          indent(out, 4) << "  PyObject *arg = vargs[0];\n";
+        } else {
+          indent(out, 4) << "  PyObject *arg = PyTuple_GET_ITEM(args, 0);\n";
+        }
 
         write_function_forset(out, mii->second, min_args, max_args, expected_params, 6,
                       coercion_allowed, true, AT_single_arg, return_flags, true, !all_nonconst);
@@ -3797,9 +3948,24 @@ write_function_for_name(ostream &out, Object *obj,
         out << "  {\n";
         out << "    const int parameter_count = 1;\n";
         break;
-      case AT_no_args:
+      case AT_fastcall:
+        out << "  const int parameter_count = (int)nargs;\n";
+        out << "  if (nargs != 0) {\n";
         break;
-      case AT_unknown:
+      case AT_fastcall_kwnames:
+        out << "  int parameter_count = (int)nargs;\n";
+        out << "#if PY_VERSION_HEX >= 0x03070000\n";
+        out << "  if (kwnames != nullptr) {\n";
+        out << "    parameter_count += (int)PyTuple_GET_SIZE(kwnames);\n";
+        out << "  }\n";
+        out << "#else\n";
+        out << "  if (kwds != nullptr) {\n";
+        out << "    parameter_count += (int)PyDict_Size(kwds);\n";
+        out << "  }\n";
+        out << "#endif\n";
+        out << "  if (parameter_count > 0) {\n";
+        break;
+      default:
         break;
       }
 
@@ -3812,14 +3978,27 @@ write_function_for_name(ostream &out, Object *obj,
       out << "#endif\n";
       out << "  }\n";
 
-    } else if (args_type == AT_keyword_args && max_required_args == 1 && mii->first == 1) {
+    } else if ((args_type & AT_KEYWORDS_BIT) != 0 && max_required_args == 1 && mii->first == 1) {
       // Check this to be sure, as we handle the case of only 1 keyword arg in
       // write_function_forset (not using ParseTupleAndKeywords).
-      out << "  int parameter_count = (int)PyTuple_Size(args);\n"
-             "  if (kwds != nullptr) {\n"
-             "    parameter_count += (int)PyDict_Size(kwds);\n"
-             "  }\n"
-             "  if (parameter_count != 1) {\n"
+      if (args_type & AT_FASTCALL_BIT) {
+        out << "  int parameter_count = (int)nargs;\n";
+        out << "#if PY_VERSION_HEX >= 0x03070000\n";
+        out << "  if (kwnames != nullptr) {\n";
+        out << "    parameter_count += (int)PyTuple_GET_SIZE(kwnames);\n";
+        out << "  }\n";
+        out << "#else\n";
+        out << "  if (kwds != nullptr) {\n";
+        out << "    parameter_count += (int)PyDict_Size(kwds);\n";
+        out << "  }\n";
+        out << "#endif\n";
+      } else {
+        out << "  int parameter_count = (int)PyTuple_Size(args);\n"
+               "  if (kwds != nullptr) {\n"
+               "    parameter_count += (int)PyDict_Size(kwds);\n"
+               "  }\n";
+      }
+      out << "  if (parameter_count != 1) {\n"
              "#ifdef NDEBUG\n";
       error_raise_return(out, 4, return_flags, "TypeError",
                         "function takes exactly 1 argument");
@@ -4349,7 +4528,7 @@ write_function_forset(ostream &out,
   // extract it from the dictionary, so we don't have to call
   // ParseTupleAndKeywords.
   if (first_pexpr.empty() && min_num_args == 1 && max_num_args == 1 &&
-      args_type == AT_keyword_args) {
+      (args_type & AT_KEYWORDS_BIT) != 0) {
     sii = remapsin.begin();
     remap = (*sii);
     if (remap->_parameters[(int)remap->_has_this]._has_name) {
@@ -4371,7 +4550,15 @@ write_function_forset(ostream &out,
     // Extract it from the dict so we don't have to call
     // ParseTupleAndKeywords.
     indent(out, indent_level) << "PyObject *arg;\n";
-    indent(out, indent_level) << "if (Dtool_ExtractArg(&arg, args, kwds, \"" << first_param_name << "\")) {\n";
+    if (args_type & AT_FASTCALL_BIT) {
+      out << "#if PY_VERSION_HEX >= 0x03070000\n";
+      indent(out, indent_level) << "if (Dtool_ExtractArg(&arg, vargs, nargs, kwnames, \"" << first_param_name << "\")) {\n";
+      out << "#else\n";
+      indent(out, indent_level) << "if (Dtool_ExtractArg(&arg, args, kwds, \"" << first_param_name << "\")) {\n";
+      out << "#endif\n";
+    } else {
+      indent(out, indent_level) << "if (Dtool_ExtractArg(&arg, args, kwds, \"" << first_param_name << "\")) {\n";
+    }
     indent_level += 2;
     args_type = AT_single_arg;
   }
@@ -4694,7 +4881,7 @@ write_function_instance(ostream &out, FunctionRemap *remap,
 
       // We should only ever have to consider optional arguments for functions
       // taking a variable number of arguments.
-      nassertv(args_type == AT_varargs || args_type == AT_keyword_args);
+      nassertv(args_type >= AT_varargs);
     }
 
     string reported_name = remap->_parameters[pn]._name;
@@ -5752,6 +5939,65 @@ write_function_instance(ostream &out, FunctionRemap *remap,
     string method_name = methodNameFromCppName(remap, "", false);
 
     switch (args_type) {
+    case AT_fastcall_kwnames:
+      // Wrapper takes a vargs stack and a kwnames tuple.
+      out << "#if PY_VERSION_HEX >= 0x03070000\n";
+      if (has_keywords) {
+        if (only_pyobjects && max_num_args == 1) {
+          // But we are only expecting one object arg, which is an easy common
+          // case we have implemented ourselves.
+          if (min_num_args == 1) {
+            indent(out, indent_level)
+              << "if (Dtool_ExtractArg(&" << param_name << ", vargs, nargs, kwnames, " << keyword_list << ")) {\n";
+          } else {
+            indent(out, indent_level)
+              << "if (Dtool_ExtractOptionalArg(&" << param_name << ", vargs, nargs, kwnames, " << keyword_list << ")) {\n";
+          }
+        } else {
+          // We have to use the more expensive _PyArg_ParseStackAndKeywords.
+          clear_error = true;
+          indent(out, indent_level)
+            << "static const char *const keyword_list[] = {" << keyword_list << ", nullptr};\n";
+          indent(out, indent_level)
+            << "static _PyArg_Parser parser = {\"" << format_specifiers << "\", keyword_list, \"" << method_name << "\"};\n";
+          indent(out, indent_level)
+            << "if (_PyArg_ParseStackAndKeywords(vargs, nargs, kwnames, &parser"
+            << parameter_list << ")) {\n";
+        }
+
+      } else if (only_pyobjects) {
+        // This function actually has no named parameters, so let's not take
+        // any keyword arguments.
+        if (max_num_args == 1) {
+          if (min_num_args == 1) {
+            indent(out, indent_level)
+              << "if (Dtool_ExtractArg(&" << param_name << ", vargs, nargs, kwnames)) {\n";
+          } else {
+            indent(out, indent_level)
+              << "if (Dtool_ExtractOptionalArg(&" << param_name << ", vargs, nargs, kwnames)) {\n";
+          }
+        } else if (max_num_args == 0) {
+          indent(out, indent_level)
+            << "if (Dtool_CheckNoArgs(vargs, nargs, kwnames)) {\n";
+        } else {
+          clear_error = true;
+          indent(out, indent_level)
+            << "if ((kwnames == nullptr || PyTuple_GET_SIZE(kwnames) == 0) && _PyArg_UnpackStack(vargs, nargs, \""
+            << methodNameFromCppName(remap, "", false)
+            << "\", " << min_num_args << ", " << max_num_args
+            << parameter_list << ")) {\n";
+        }
+
+      } else {
+        clear_error = true;
+        indent(out, indent_level)
+          << "if ((kwnames == nullptr || PyTuple_GET_SIZE(kwnames) == 0) && _PyArg_ParseStack(vargs, nargs, \""
+          << format_specifiers << ":" << method_name
+          << "\"" << parameter_list << ")) {\n";
+      }
+      out << "#else\n";
+      // Fall through
+
     case AT_keyword_args:
       // Wrapper takes a varargs tuple and a keyword args dict.
       if (has_keywords) {
@@ -5807,6 +6053,10 @@ write_function_instance(ostream &out, FunctionRemap *remap,
           << "\"" << parameter_list << ")) {\n";
       }
 
+      if (args_type == AT_fastcall_kwnames) {
+        out << "#endif\n";
+      }
+
       ++open_scopes;
       indent_level += 2;
       break;
@@ -5836,6 +6086,43 @@ write_function_instance(ostream &out, FunctionRemap *remap,
           << "if (PyArg_ParseTuple(args, \""
           << format_specifiers << ":" << method_name
           << "\"" << parameter_list << ")) {\n";
+      }
+      ++open_scopes;
+      indent_level += 2;
+      break;
+
+    case AT_fastcall:
+      // Wrapper takes a vargs stack.
+      if (only_pyobjects) {
+        // All parameters are PyObject*, so we can use the slightly more
+        // efficient PyArg_UnpackTuple function instead.
+        if (min_num_args == 1 && max_num_args == 1) {
+          indent(out, indent_level)
+            << "if (nargs == 1) {\n";
+          indent(out, indent_level + 2)
+            << param_name << " = vargs[0];\n";
+        } else {
+          clear_error = true;
+          indent(out, indent_level)
+            << "if (_PyArg_UnpackStack(vargs, nargs, \""
+            << methodNameFromCppName(remap, "", false)
+            << "\", " << min_num_args << ", " << max_num_args
+            << parameter_list << ")) {\n";
+        }
+
+      } else {
+        clear_error = true;
+        out << "#if PY_VERSION_HEX >= 0x03070000\n";
+        indent(out, indent_level)
+          << "if (_PyArg_ParseStack(vargs, nargs, \""
+          << format_specifiers << ":" << method_name
+          << "\"" << parameter_list << ")) {\n";
+        out << "#else\n";
+        indent(out, indent_level)
+          << "if (PyArg_ParseTuple(args, \""
+          << format_specifiers << ":" << method_name
+          << "\"" << parameter_list << ")) {\n";
+        out << "#endif\n";
       }
       ++open_scopes;
       indent_level += 2;
@@ -6041,11 +6328,6 @@ write_function_instance(ostream &out, FunctionRemap *remap,
   if (check_exceptions && (!may_raise_typeerror || report_errors) &&
       watch_asserts && (return_flags & RF_coerced) == 0) {
 
-    if (return_flags & RF_decref_args) {
-      indent(out, indent_level) << "Py_DECREF(args);\n";
-      return_flags &= ~RF_decref_args;
-    }
-
     // An even specialer special case for functions with void return or bool
     // return.  We have our own functions that do all this in a single
     // function call, so it should reduce the amount of code output while not
@@ -6118,11 +6400,6 @@ write_function_instance(ostream &out, FunctionRemap *remap,
 
       ++open_scopes;
       indent_level += 2;
-    }
-
-    if (return_flags & RF_decref_args) {
-      indent(out, indent_level) << "Py_DECREF(args);\n";
-      return_flags &= ~RF_decref_args;
     }
 
     // Outputs code to check to see if an assertion has failed while the C++
@@ -6306,10 +6583,6 @@ error_return(ostream &out, int indent_level, int return_flags) {
   // if (return_flags & RF_coerced) { indent(out, indent_level) << "coerced =
   // NULL;\n"; }
 
-  if (return_flags & RF_decref_args) {
-    indent(out, indent_level) << "Py_DECREF(args);\n";
-  }
-
   if (return_flags & RF_int) {
     indent(out, indent_level) << "return -1;\n";
 
@@ -6334,11 +6607,6 @@ void InterfaceMakerPythonNative::
 error_raise_return(ostream &out, int indent_level, int return_flags,
                    const string &exc_type, const string &message,
                    const string &format_args) {
-
-  if (return_flags & RF_decref_args) {
-    indent(out, indent_level) << "Py_DECREF(args);\n";
-    return_flags &= ~RF_decref_args;
-  }
 
   if (format_args.empty()) {
     if (exc_type == "TypeError") {
@@ -6505,12 +6773,16 @@ write_make_seq(ostream &out, Object *obj, const std::string &ClassName,
 
   Function *elem_getter = make_seq->_element_getter;
 
-  if ((elem_getter->_args_type & AT_varargs) == AT_varargs) {
-    // Fast way to create a temporary tuple to hold only a single item, under
-    // the assumption that the called method doesn't do anything with this
-    // tuple other than unpack it (which is a fairly safe assumption to make).
-    out << "  PyTupleObject args;\n";
-    out << "  (void)PyObject_INIT_VAR((PyVarObject *)&args, &PyTuple_Type, 1);\n";
+  if (elem_getter->_args_type & AT_FASTCALL_BIT) {
+    out << "#if PY_VERSION_HEX >= 0x03070000\n";
+    out << "  PyObject *vargs[1] = {nullptr};\n";
+    out << "#else\n";
+    out << "  Dtool_StackTuple<1> args;\n";
+    out << "  PyObject **vargs = &PyTuple_GET_ITEM(args, 0);\n";
+    out << "#endif\n";
+
+  } else if ((elem_getter->_args_type & AT_varargs) == AT_varargs) {
+    out << "  Dtool_StackTuple<1> args;\n";
   }
 
   out <<
@@ -6534,6 +6806,24 @@ write_make_seq(ostream &out, Object *obj, const std::string &ClassName,
     out << "    PyObject *value = " << elem_getter->_name << "(self, index);\n";
     break;
 
+  case AT_fastcall:
+    out << "    vargs[0] = index;\n"
+           "#if PY_VERSION_HEX >= 0x03070000\n"
+           "    PyObject *value = " << elem_getter->_name << "(self, vargs, 1);\n"
+           "#else\n"
+           "    PyObject *value = " << elem_getter->_name << "(self, (PyObject *)&args);\n"
+           "#endif\n";
+    break;
+
+  case AT_fastcall_kwnames:
+    out << "    vargs[0] = index;\n"
+           "#if PY_VERSION_HEX >= 0x03070000\n"
+           "    PyObject *value = " << elem_getter->_name << "(self, vargs, 1, nullptr);\n"
+           "#else\n"
+           "    PyObject *value = " << elem_getter->_name << "(self, (PyObject *)&args, nullptr);\n"
+           "#endif\n";
+    break;
+
   default:
     out << "    PyObject *value = " << elem_getter->_name << "(self, nullptr);\n";
     break;
@@ -6543,13 +6833,6 @@ write_make_seq(ostream &out, Object *obj, const std::string &ClassName,
     "    PyTuple_SET_ITEM(tuple, i, value);\n"
     "    Py_DECREF(index);\n"
     "  }\n"
-    "\n";
-
-  if ((elem_getter->_args_type & AT_varargs) == AT_varargs) {
-    out << "  _Py_ForgetReference((PyObject *)&args);\n";
-  }
-
-  out <<
     "  if (Dtool_CheckErrorOccurred()) {\n"
     "    Py_DECREF(tuple);\n"
     "    return nullptr;\n"
@@ -6877,24 +7160,29 @@ write_getset(ostream &out, Object *obj, Property *property) {
       remaps.insert(property->_setter_remaps.begin(),
                     property->_setter_remaps.end());
 
-      // We have to create an args tuple only to unpack it later, ugh.
-      out << "  PyObject *args = PyTuple_New(2);\n"
-          << "  PyTuple_SET_ITEM(args, 0, key);\n"
-          << "  PyTuple_SET_ITEM(args, 1, value);\n"
-          << "  Py_INCREF(key);\n"
-          << "  Py_INCREF(value);\n";
+      out <<
+        "#if PY_VERSION_HEX >= 0x03070000\n"
+        "  PyObject *const vargs[2] = {key, value};\n"
+        "  Py_ssize_t const nargs = 2;\n"
+        "#else\n"
+        "  Dtool_StackTuple<2> args;\n"
+        "  PyTuple_SET_ITEM(args, 0, key);\n"
+        "  PyTuple_SET_ITEM(args, 1, value);\n"
+        "  PyObject *const *const vargs = &PyTuple_GET_ITEM(args, 0);\n"
+        "  Py_ssize_t const nargs = 2;\n"
+        "  (void)nargs; (void)vargs;\n"
+        "#endif\n";
 
       string expected_params;
       write_function_forset(out, remaps, 2, 2,
-                            expected_params, 2, true, true, AT_varargs,
-                            RF_int | RF_decref_args, false, false);
+                            expected_params, 2, true, true, AT_fastcall,
+                            RF_int, false, false);
 
       out << "  if (!_PyErr_OCCURRED()) {\n";
       out << "    Dtool_Raise_BadArgumentsError(\n";
       output_quoted(out, 6, expected_params);
       out << ");\n";
       out << "  }\n";
-      out << "  Py_DECREF(args);\n";
       out << "  return -1;\n";
       out << "}\n\n";
     }
@@ -6969,6 +7257,14 @@ write_getset(ostream &out, Object *obj, Property *property) {
           break;
         case AT_single_arg:
           flags = "METH_O";
+          break;
+        case AT_fastcall:
+          flags = "_Dtool_METH_FASTCALL";
+          fptr = "(PyCFunction) " + fptr;
+          break;
+        case AT_fastcall_kwnames:
+          flags = "_Dtool_METH_FASTCALL | METH_KEYWORDS";
+          fptr = "(PyCFunction) " + fptr;
           break;
         default:
           flags = "METH_NOARGS";

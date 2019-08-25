@@ -938,6 +938,11 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
         }
       }
     }
+    // Finally, if it's not special in any way, it accepts the fastcall
+    // signature supported by Python 3.6 and above.
+    if (_args_type >= InterfaceMaker::AT_varargs && (_flags & F_explicit_args) == 0) {
+      _args_type = (InterfaceMaker::ArgsType)(_args_type | InterfaceMaker::AT_FASTCALL_BIT);
+    }
     break;
 
   case T_assignment_method:
