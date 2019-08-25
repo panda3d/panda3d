@@ -1464,7 +1464,11 @@ def CompileCxx(obj,src,opts):
         # Make sure this is off to avoid GCC/Eigen bug (see GitHub #228)
         cmd += " -fno-unsafe-math-optimizations"
 
-        if (optlevel==1): cmd += " -ggdb -D_DEBUG"
+        if (optlevel==1):
+            if GetTarget() == "emscripten":
+                cmd += " -g -D_DEBUG"
+            else:
+                cmd += " -ggdb -D_DEBUG"
         if (optlevel==2): cmd += " -O1 -D_DEBUG"
         if (optlevel==3): cmd += " -O2"
         if (optlevel==4): cmd += " -O3 -DNDEBUG"
