@@ -430,18 +430,6 @@ package_status(OPUS "Opus")
 # ------------ Audio libraries ------------
 #
 
-# Miles Sound System
-find_package(Miles QUIET)
-
-package_option(RAD_MSS
-  "This enables support for audio output via the Miles Sound System,
-  by RAD Game Tools. This requires a commercial license to use, so you'll know
-  if you need to enable this option."
-  FOUND_AS Miles
-  LICENSE "Miles")
-
-package_status(RAD_MSS "Miles Sound System")
-
 # FMOD Ex
 find_package(FMODEx QUIET)
 

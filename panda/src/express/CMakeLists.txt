@@ -41,6 +41,8 @@ set(P3EXPRESS_HEADERS
   pta_stdfloat.h
   ramfile.I ramfile.h
   referenceCount.I referenceCount.h
+  stringStreamBuf.I stringStreamBuf.h
+  stringStream.I stringStream.h
   subStream.I subStream.h subStreamBuf.h
   subfileInfo.h subfileInfo.I
   temporaryFile.h temporaryFile.I
@@ -96,6 +98,8 @@ set(P3EXPRESS_SOURCES
   pta_uchar.cxx pta_double.cxx pta_float.cxx
   ramfile.cxx
   referenceCount.cxx
+  stringStreamBuf.cxx
+  stringStream.cxx
   subStream.cxx subStreamBuf.cxx
   subfileInfo.cxx
   temporaryFile.cxx
@@ -127,6 +131,8 @@ set(P3EXPRESS_IGATEEXT
   pointerToArray_ext.h
   ramfile_ext.cxx
   ramfile_ext.h
+  stringStream_ext.cxx
+  stringStream_ext.h
   virtualFileSystem_ext.cxx
   virtualFileSystem_ext.h
   virtualFile_ext.cxx

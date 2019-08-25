@@ -24,8 +24,6 @@ set(P3DOWNLOADER_HEADERS
   multiplexStreamBuf.I multiplexStreamBuf.h
   patcher.h patcher.I
   socketStream.h socketStream.I
-  stringStreamBuf.I stringStreamBuf.h
-  stringStream.I stringStream.h
   urlSpec.h urlSpec.I
   virtualFileHTTP.I virtualFileHTTP.h
   virtualFileMountHTTP.I virtualFileMountHTTP.h
@@ -55,23 +53,16 @@ set(P3DOWNLOADER_SOURCES
   multiplexStream.cxx multiplexStreamBuf.cxx
   patcher.cxx
   socketStream.cxx
-  stringStreamBuf.cxx
-  stringStream.cxx
   urlSpec.cxx
   virtualFileHTTP.cxx
   virtualFileMountHTTP.cxx
-)
-
-set(P3DOWNLOADER_IGATEEXT
-  stringStream_ext.cxx
-  stringStream_ext.h
 )
 
 composite_sources(p3downloader P3DOWNLOADER_SOURCES)
 add_component_library(p3downloader SYMBOL BUILDING_PANDA_DOWNLOADER
   ${P3DOWNLOADER_HEADERS} ${P3DOWNLOADER_SOURCES})
 target_link_libraries(p3downloader p3express)
-target_interrogate(p3downloader ALL EXTENSIONS ${P3DOWNLOADER_IGATEEXT})
+target_interrogate(p3downloader ALL)
 
 if(NOT BUILD_METALIBS)
   install(TARGETS p3downloader

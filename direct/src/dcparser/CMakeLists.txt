@@ -21,7 +21,6 @@ set(P3DCPARSER_HEADERS
   dcNumericRange.h dcNumericRange.I
   dcSwitch.h
   dcTypedef.h
-  dcPython.h
   dcbase.h
   dcindent.h
   dcmsgtypes.h
@@ -55,6 +54,12 @@ set(P3DCPARSER_SOURCES
   primeNumberGenerator.cxx
 )
 
+set(P3DCPARSER_IGATEEXT
+  dcClass_ext.cxx dcClass_ext.h
+  dcField_ext.cxx dcField_ext.h
+  dcPacker_ext.cxx dcPacker_ext.h
+)
+
 add_bison_target(dcParser.cxx dcParser.yxx DEFINES dcParser.h PREFIX dcyy)
 add_flex_target(dcLexer.cxx dcLexer.lxx CASE_INSENSITIVE PREFIX dcyy)
 
@@ -67,8 +72,9 @@ composite_sources(p3dcparser P3DCPARSER_SOURCES)
 add_component_library(p3dcparser NOINIT SYMBOL BUILDING_DIRECT_DCPARSER
   ${P3DCPARSER_HEADERS} ${P3DCPARSER_SOURCES} ${P3DCPARSER_PARSER_SOURCES})
 target_compile_definitions(p3dcparser PUBLIC WITHIN_PANDA)
-target_link_libraries(p3dcparser p3directbase panda PKG::PYTHON)
-target_interrogate(p3dcparser ${P3DCPARSER_HEADERS} ${P3DCPARSER_SOURCES})
+target_link_libraries(p3dcparser p3directbase panda)
+target_interrogate(p3dcparser ${P3DCPARSER_HEADERS} ${P3DCPARSER_SOURCES}
+  EXTENSIONS ${P3DCPARSER_IGATEEXT})
 
 if(NOT BUILD_METALIBS)
   install(TARGETS p3dcparser

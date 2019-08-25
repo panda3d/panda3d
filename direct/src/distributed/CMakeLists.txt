@@ -4,26 +4,25 @@ endif()
 
 set(P3DISTRIBUTED_HEADERS
   config_distributed.h
-  cConnectionRepository.I
-  cConnectionRepository.h
-  cDistributedSmoothNodeBase.I
-  cDistributedSmoothNodeBase.h
 )
 
 set(P3DISTRIBUTED_SOURCES
   config_distributed.cxx
-  cConnectionRepository.cxx
-  cDistributedSmoothNodeBase.cxx
 )
 
-# Workaround for Windows which just *insists* on having something to build
-set(P3DISTRIBUTED_EMPTY "${CMAKE_CURRENT_BINARY_DIR}/empty.cxx")
-file(WRITE ${P3DISTRIBUTED_EMPTY} "")
+set(P3DISTRIBUTED_IGATEEXT
+  cConnectionRepository.cxx
+  cConnectionRepository.h
+  cConnectionRepository.I
+  cDistributedSmoothNodeBase.cxx
+  cDistributedSmoothNodeBase.h
+  cDistributedSmoothNodeBase.I
+)
 
 add_component_library(p3distributed NOINIT SYMBOL BUILDING_DIRECT_DISTRIBUTED
-  ${P3DISTRIBUTED_HEADERS} ${P3DISTRIBUTED_EMPTY})
+  ${P3DISTRIBUTED_HEADERS} ${P3DISTRIBUTED_SOURCES})
 target_link_libraries(p3distributed p3directbase p3dcparser panda)
-target_interrogate(p3distributed ALL EXTENSIONS ${P3DISTRIBUTED_SOURCES})
+target_interrogate(p3distributed ALL EXTENSIONS ${P3DISTRIBUTED_IGATEEXT})
 
 if(NOT BUILD_METALIBS)
   install(TARGETS p3distributed

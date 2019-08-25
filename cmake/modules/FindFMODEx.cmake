@@ -10,8 +10,8 @@
 #   FMODEX_LIBRARY_DIR - the FMOD Ex library directory
 #   FMODEX_LIBRARY     - the path to the library binary
 #
-#   FMODEX_32_LIBRARY - the filepath of the Miles SDK 32-bit library
-#   FMOXEX_64_LIBRARY - the filepath of the Miles SDK 64-bit library
+#   FMODEX_32_LIBRARY - the filepath of the FMOD Ex SDK 32-bit library
+#   FMOXEX_64_LIBRARY - the filepath of the FMOD Ex SDK 64-bit library
 #
 
 # Find the include directory

@@ -20,9 +20,6 @@ set(P3DIRECT_COMPONENTS
 )
 if(HAVE_PYTHON)
   list(APPEND P3DIRECT_COMPONENTS p3distributed)
-  get_target_property(_p3distributed_exts p3distributed IGATE_EXTENSIONS)
-  set_source_files_properties(${_p3distributed_exts}
-    PROPERTIES COMPILE_DEFINITIONS BUILDING_DIRECT_DISTRIBUTED)
 endif()
 
 set(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME "DirectDevel")

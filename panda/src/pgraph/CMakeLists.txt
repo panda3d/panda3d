@@ -200,6 +200,8 @@ set(P3PGRAPH_SOURCES
 )
 
 set(P3PGRAPH_IGATEEXT
+  loaderFileTypeRegistry_ext.cxx
+  loaderFileTypeRegistry_ext.h
   nodePathCollection_ext.cxx
   nodePathCollection_ext.h
   nodePath_ext.cxx
@@ -207,6 +209,8 @@ set(P3PGRAPH_IGATEEXT
   nodePath_ext.I
   pandaNode_ext.cxx
   pandaNode_ext.h
+  pythonLoaderFileType.cxx
+  pythonLoaderFileType.h
   renderState_ext.cxx
   renderState_ext.h
   shaderAttrib_ext.cxx

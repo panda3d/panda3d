@@ -9,7 +9,6 @@ add_subdirectory(src/dtoolutil)
 add_subdirectory(src/interrogate)
 add_subdirectory(src/interrogatedb)
 add_subdirectory(src/prc)
-add_subdirectory(src/pystub)
 
 # Include dtool metalibs
 add_subdirectory(metalibs/dtool)
