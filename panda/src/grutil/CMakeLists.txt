@@ -50,6 +50,11 @@ if(HAVE_AUDIO)
 endif()
 target_interrogate(p3grutil ALL)
 
+if(HAVE_EIGEN)
+  # Eigen puts this over the threshold where bigobj is needed on MSVC
+  set_target_properties(p3grutil PROPERTIES MSVC_BIGOBJ ON)
+endif()
+
 if(NOT BUILD_METALIBS)
   install(TARGETS p3grutil
     EXPORT Core COMPONENT Core

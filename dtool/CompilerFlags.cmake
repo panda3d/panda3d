@@ -146,6 +146,11 @@ add_compile_options(
   "$<${cxx_exceptions_property}:${cxx_exceptions_on}>"
   "$<$<NOT:${cxx_exceptions_property}>:${cxx_exceptions_off}>")
 
+if(MSVC)
+  set(msvc_bigobj_property "$<BOOL:$<TARGET_PROPERTY:MSVC_BIGOBJ>>")
+  add_compile_options("$<${msvc_bigobj_property}:/bigobj>")
+endif()
+
 # We should use -fvisibility=hidden everywhere, as it makes sure we think
 # about what symbols really should be exposed externally.  For more info, see:
 # https://gcc.gnu.org/wiki/Visibility

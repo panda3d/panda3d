@@ -100,6 +100,11 @@ target_link_libraries(p3display p3cull p3device p3pgraphnodes
   PKG::X11)
 target_interrogate(p3display ALL EXTENSIONS ${P3DISPLAY_IGATEEXT})
 
+if(HAVE_EIGEN)
+  # Eigen puts this over the threshold where bigobj is needed on MSVC
+  set_target_properties(p3display PROPERTIES MSVC_BIGOBJ ON)
+endif()
+
 if(NOT BUILD_METALIBS)
   install(TARGETS p3display
     EXPORT Core COMPONENT Core
