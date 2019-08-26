@@ -65,7 +65,7 @@ install:
 - >
   if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
     brew install python@3 eigen libtar libsquish zlib ffmpeg freetype \
-    bullet opencv assimp libvorbis openssl || true
+    bullet opencv assimp libvorbis openssl ccache || true
     brew install ode --with-shared
 
     # We can't trust brew to make the right symlinks, so execute commands as modules
@@ -93,12 +93,14 @@ script:
     fi
 
     cmake -DBUILD_METALIBS=$BUILD_METALIBS \
+    -DCMAKE_{C,CXX}_COMPILER_LAUNCHER=ccache \
     -DCOMPOSITE_SOURCE_EXCLUSIONS="$COMPOSITE_SOURCE_EXCLUSIONS" \
     -DCOMPOSITE_SOURCE_LIMIT=$COMPOSITE_SOURCE_LIMIT \
     -DOPENSSL_ROOT_DIR=/usr/local/opt/openssl $PY2_CMAKE_ARGS ..
   else
     cmake -DHAVE_GTK2=NO -DBUILD_METALIBS=$BUILD_METALIBS \
     -DWANT_PYTHON_VERSION=$(python -V 2>&1 | cut -d' ' -f2) \
+    -DCMAKE_{C,CXX}_COMPILER_LAUNCHER=ccache \
     -DCOMPOSITE_SOURCE_EXCLUSIONS="$COMPOSITE_SOURCE_EXCLUSIONS" \
     -DCOMPOSITE_SOURCE_LIMIT=$COMPOSITE_SOURCE_LIMIT ..
   fi
