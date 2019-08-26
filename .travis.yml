@@ -44,7 +44,6 @@ install:
     - $PYTHONV -m pip install pytest
 script:
     - $PYTHONV makepanda/makepanda.py --everything --git-commit $TRAVIS_COMMIT $FLAGS --threads 4
-    - test -n "$SKIP_TESTS" || LD_LIBRARY_PATH=built/lib PYTHONPATH=built $PYTHONV makepanda/test_imports.py
     - test -n "$SKIP_TESTS" || LD_LIBRARY_PATH=built/lib PYTHONPATH=built $PYTHONV -m pytest -v tests
 notifications:
   irc:
