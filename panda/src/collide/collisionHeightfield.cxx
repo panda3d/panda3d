@@ -76,6 +76,7 @@ set_subdivisions(int subdivisions) {
   // Calculate the area of a leaf node in the quadtree
   int heightfield_area = _heightfield.get_read_x_size() *
                          _heightfield.get_read_y_size();
+  nassertv(heightfield_area > 0);
   int num_leafs = nodes_count - leaf_first_index;
   // If the area is too small (less than 1), then we
   // retry by decrementing the number of subdivisions.
