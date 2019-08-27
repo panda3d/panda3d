@@ -48,53 +48,45 @@ CollisionHeightfield(PNMImage heightfield,
  * the quadtree accordingly. This should be called when a
  * user wants to modify the number of quadtree subdivisions
  * or from a constructor to initialize the quadtree.
+ *
+ * If the number of subdivisions is too high, it will
+ * automatically be decremented.
  */
 void CollisionHeightfield::
 set_subdivisions(int subdivisions) {
-  // The number of subdivisions should not be negative and
-  // shouldn't exceed 16 as it would cause integer overflow.
-  nassertv(subdivisions >= 0 && subdivisions < 17);
-  _subdivisions = subdivisions;
-
+  // The number of subdivisions should not be negative
+  nassertv(subdivisions >= 0 && subdivisions <= 10);
   // Determine the number of quadtree nodes needed
   // for the corresponding number of subdivisions.
   int nodes_count = 0;
-  for (int i = 0; i <= _subdivisions; i++) {
+  for (int i = 0; i <= subdivisions; i++) {
     nodes_count += pow(4, i);
   }
-
   if (nodes_count == _nodes_count) {
     // No changes to quadtree to be done
     return;
   }
-
-  int leaf_first_index = 0;
-  for (int i = 1; i <= _subdivisions - 1; i++) {
-    leaf_first_index += pow(4, i);
-  }
-
+  // Calculate the index of the first quad tree leaf node
+  int leaf_first_index = nodes_count - pow(4, subdivisions);
   // Calculate the area of a leaf node in the quadtree
-  int heightfield_area = _heightfield.get_read_x_size() *
-                         _heightfield.get_read_y_size();
+  PN_stdfloat heightfield_area = _heightfield.get_read_x_size() *
+                                 _heightfield.get_read_y_size();
   nassertv(heightfield_area > 0);
-  int num_leafs = nodes_count - leaf_first_index;
+  PN_stdfloat num_leafs = nodes_count - leaf_first_index;
   // If the area is too small (less than 1), then we
   // retry by decrementing the number of subdivisions.
-  if (heightfield_area / num_leafs == 0) {
+  if (heightfield_area / num_leafs < 1) {
     set_subdivisions(subdivisions - 1);
     return;
   }
-
   if (nodes_count < _nodes_count) {
-    // If the user is decreasing the number of
-    // subdivisions, then we need only to update the
-    // index where the quadtree leaves start.
+    // If the user is decreasing the number of subdivisions, then
+    // we need only to update the index where the quadtree leaves start.
     _leaf_first_index = leaf_first_index;
   } else {
     // Otherwise we need to build a new quadtree
     if (_nodes_count != 0) {
-      // There is an existing quadtree, delete it
-      // before building a new one
+      // There is an existing quadtree, delete it first
       delete[] _nodes;
       _nodes = nullptr;
     }
@@ -105,6 +97,7 @@ set_subdivisions(int subdivisions) {
     fill_quadtree_areas();
     fill_quadtree_heights();
   }
+  _subdivisions = subdivisions;
 }
 
 /**
@@ -112,6 +105,9 @@ set_subdivisions(int subdivisions) {
  */
 void CollisionHeightfield::
 fill_quadtree_areas() {
+  nassertv(_heightfield.get_read_x_size() > 0 &&
+           _heightfield.get_read_y_size() > 0);
+
   _nodes[0].area.min = {0, 0};
   _nodes[0].area.max = {(float)_heightfield.get_read_x_size(),
                         (float)_heightfield.get_read_y_size()};

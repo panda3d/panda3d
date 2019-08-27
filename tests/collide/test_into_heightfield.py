@@ -28,10 +28,18 @@ def test_sphere_into_heightfield():
 
     with pytest.raises(AssertionError) as err:
         assert heightfield.set_subdivisions(-1) == err
-        assert heightfield.set_subdivisions(100) == err
+        assert heightfield.set_subdivisions(11) == err
 
-    # Use a larger number of subdivisions, should still work
-    subdivisions = 16
+    # Use a greater number of subdivisions, should still work
+    subdivisions = 10
+    heightfield.set_subdivisions(subdivisions)
+    entry, np_from, np_into = make_collision(sphere, heightfield)
+    assert entry.get_surface_point(np_from) == (1, 510, 10.1)
+    # Using 10 subdivisions is overkill for such a small heightfield,
+    # CollisionHeightfield should've automatically decreased it
+    assert heightfield.get_subdivisions() < subdivisions
+    # Zero subdivisions work too
+    subdivisions = 0
     heightfield.set_subdivisions(subdivisions)
     entry, np_from, np_into = make_collision(sphere, heightfield)
     assert entry.get_surface_point(np_from) == (1, 510, 10.1)
@@ -76,7 +84,7 @@ def test_box_into_heightfield():
     img.set_gray_val(1, 1, 255)
     # Make CollisionHeightfield
     max_height = 10
-    subdivisions = 1
+    subdivisions = 5
     heightfield = CollisionHeightfield(img, max_height, subdivisions)
     # Make box
     box = CollisionBox((1, 5128, 10), 1, 1, 1)

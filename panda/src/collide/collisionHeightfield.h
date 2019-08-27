@@ -76,7 +76,6 @@ private:
   PNMImage _heightfield;
   PN_stdfloat _max_height;
   int _subdivisions;
-  // Todo: PT(QuadTreeNode) _nodes;
   QuadTreeNode *_nodes;
   int _nodes_count;
   int _leaf_first_index;
