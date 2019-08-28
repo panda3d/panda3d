@@ -344,6 +344,7 @@ class Icon:
             if required_size * 2 in sizes:
                 from_size = required_size * 2
             else:
+                from_size = 0
                 for from_size in sizes:
                     if from_size > required_size:
                         break
