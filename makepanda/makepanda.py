@@ -886,7 +886,6 @@ if (COMPILER=="GCC"):
         SmartPkgEnable("SWRESAMPLE","libswresample", "libswresample", ("libswresample/swresample.h"), target_pkg = "FFMPEG", thirdparty_dir = "ffmpeg")
         SmartPkgEnable("FFTW",      "",          ("fftw3"), ("fftw.h"))
         SmartPkgEnable("FMODEX",    "",          ("fmodex"), ("fmodex", "fmodex/fmod.h"))
-        SmartPkgEnable("GL",        "gl",        ("GL"), ("GL/gl.h"), framework = "OpenGL")
         SmartPkgEnable("NVIDIACG",  "",          ("Cg"), "Cg/cg.h", framework = "Cg")
         SmartPkgEnable("ODE",       "",          ("ode"), "ode/ode.h", tool = "ode-config")
         SmartPkgEnable("SQUISH",    "",          ("squish"), "squish.h")
@@ -905,13 +904,27 @@ if (COMPILER=="GCC"):
             SmartPkgEnable("FREETYPE", "freetype2", ("freetype"), ("freetype2", "freetype2/freetype/freetype.h"))
             SmartPkgEnable("HARFBUZZ", "harfbuzz",  ("harfbuzz"), ("harfbuzz", "harfbuzz/hb-ft.h"))
             SmartPkgEnable("PNG",      "libpng",    ("png"), "png.h", tool = "libpng-config")
+            SmartPkgEnable("GL",       "gl",        ("GL"), ("GL/gl.h"), framework = "OpenGL")
             SmartPkgEnable("GLES",     "glesv1_cm", ("GLESv1_CM"), ("GLES/gl.h"), framework = "OpenGLES")
             SmartPkgEnable("GLES2",    "glesv2",    ("GLESv2"), ("GLES2/gl2.h")) #framework = "OpenGLES"?
             SmartPkgEnable("EGL",      "egl",       ("EGL"), ("EGL/egl.h"))
         else:
             PkgDisable("EIGEN")
             PkgDisable("X11")
+            PkgDisable("GL")
             PkgDisable("GLES")
+            PkgDisable("TINYDISPLAY")
+            for pkg, empkg in {
+                'VORBIS': 'VORBIS',
+                'BULLET': 'BULLET',
+                'ZLIB': 'ZLIB',
+                'FREETYPE': 'FREETYPE',
+                'HARFBUZZ': 'HARFBUZZ',
+                'PNG': 'LIBPNG',
+            }.items():
+                if not PkgSkip(pkg):
+                    LinkFlag(pkg, '-s USE_' + empkg + '=1')
+                    CompileFlag(pkg, '-s USE_' + empkg + '=1')
 
         if not PkgSkip("FFMPEG"):
             if GetTarget() == "darwin":
@@ -1335,6 +1348,8 @@ def CompileCxx(obj,src,opts):
             if (opt=="ALWAYS") or (opt in opts): cmd += ' -F' + BracketNameWithQuotes(dir)
         for (opt,var,val) in DEFSYMBOLS:
             if (opt=="ALWAYS") or (opt in opts): cmd += ' -D' + var + '=' + val
+        for (opt,flag) in COMPILEFLAGS:
+            if (opt=="ALWAYS") or (opt in opts): cmd += ' ' + flag
         for x in ipath: cmd += ' -I' + x
 
         if not GetLinkAllStatic() and 'NOHIDDEN' not in opts:
@@ -1413,18 +1428,10 @@ def CompileCxx(obj,src,opts):
         elif GetTarget() == 'emscripten':
             cmd += " -s WARN_ON_UNDEFINED_SYMBOLS=1 -s NO_FILESYSTEM=1"
 
-            if 'VORBIS' in opts and not PkgSkip("VORBIS"):
-                cmd += " -s USE_VORBIS=1"
-            if 'BULLET' in opts and not PkgSkip("BULLET"):
-                cmd += " -s USE_BULLET=1"
-            if 'ZLIB' in opts and not PkgSkip("ZLIB"):
-                cmd += " -s USE_ZLIB=1"
-            if 'FREETYPE' in opts and not PkgSkip("FREETYPE"):
-                cmd += " -s USE_FREETYPE=1"
-            if 'HARFBUZZ' in opts and not PkgSkip("HARFBUZZ"):
-                cmd += " -s USE_HARFBUZZ=1"
-            if 'PNG' in opts and not PkgSkip("PNG"):
-                cmd += " -s USE_LIBPNG=1"
+            if GetOptimize() <= 1:
+                cmd += " -s ASSERTIONS=2"
+            elif GetOptimize() <= 2:
+                cmd += " -s ASSERTIONS=1"
 
         else:
             cmd += " -pthread"
@@ -1928,19 +1935,6 @@ def CompileLink(dll, obj, opts):
             if GetOrigExt(dll) == ".exe":
                 cmd += " --memory-init-file 0"
 
-            if 'VORBIS' in opts and not PkgSkip("VORBIS"):
-                cmd += " -s USE_VORBIS=1"
-            if 'BULLET' in opts and not PkgSkip("BULLET"):
-                cmd += " -s USE_BULLET=1"
-            if 'ZLIB' in opts and not PkgSkip("ZLIB"):
-                cmd += " -s USE_ZLIB=1"
-            if 'FREETYPE' in opts and not PkgSkip("FREETYPE"):
-                cmd += " -s USE_FREETYPE=1"
-            if 'HARFBUZZ' in opts and not PkgSkip("HARFBUZZ"):
-                cmd += " -s USE_HARFBUZZ=1"
-            if 'PNG' in opts and not PkgSkip("PNG"):
-                cmd += " -s USE_LIBPNG=1"
-
         else:
             cmd += " -pthread"
 
@@ -1965,6 +1959,9 @@ def CompileLink(dll, obj, opts):
             for (opt, name) in LIBNAMES:
                 if (opt=="ALWAYS") or (opt in opts):
                     cmd += ' ' + BracketNameWithQuotes(name)
+        for (opt, flag) in LINKFLAGS:
+            if (opt=="ALWAYS") or (opt in opts):
+                cmd += ' ' + flag
 
         if GetTarget() not in ('freebsd', 'emscripten'):
             cmd += " -ldl"
@@ -5224,27 +5221,6 @@ if (PkgSkip("SPEEDTREE")==0):
       TargetAdd('libpandaspeedtree.dll', opts=['DX9',  'NVIDIACG', 'CGDX9'])
 
 #
-# DIRECTORY: panda/src/testbed/
-#
-
-if (not RTDIST and not RUNTIME and PkgSkip("PVIEW")==0):
-  OPTS=['DIR:panda/src/testbed']
-  TargetAdd('pview_pview.obj', opts=OPTS, input='pview.cxx')
-  TargetAdd('pview.exe', input='pview_pview.obj')
-  TargetAdd('pview.exe', input='libp3framework.dll')
-  if not PkgSkip("EGG"):
-    TargetAdd('pview.exe', input='libpandaegg.dll')
-  TargetAdd('pview.exe', input=COMMON_PANDA_LIBS)
-  TargetAdd('pview.exe', opts=['ADVAPI', 'WINSOCK2', 'WINSHELL'])
-
-  if GetTarget() == 'emscripten':
-    # Link in a graphical back-end.
-    TargetAdd('pview.exe', input='libp3webgldisplay.dll')
-    TargetAdd('pview.exe', opts=['OPENSSL', 'HARFBUZZ', 'PNG', 'VORBIS', 'ZLIB'])
-  elif GetLinkAllStatic() and not PkgSkip("GL"):
-    TargetAdd('pview.exe', input='libpandagl.dll')
-
-#
 # DIRECTORY: panda/src/android/
 #
 
@@ -5331,6 +5307,27 @@ if (not RUNTIME and (GetTarget() in ('windows', 'darwin') or PkgSkip("X11")==0) 
   TargetAdd('libp3tinydisplay.dll', input='p3tinydisplay_ztriangle_4.obj')
   TargetAdd('libp3tinydisplay.dll', input='p3tinydisplay_ztriangle_table.obj')
   TargetAdd('libp3tinydisplay.dll', input=COMMON_PANDA_LIBS)
+
+#
+# DIRECTORY: panda/src/testbed/
+#
+
+if (not RTDIST and not RUNTIME and PkgSkip("PVIEW")==0):
+  OPTS=['DIR:panda/src/testbed']
+  TargetAdd('pview_pview.obj', opts=OPTS, input='pview.cxx')
+  TargetAdd('pview.exe', input='pview_pview.obj')
+  TargetAdd('pview.exe', input='libp3framework.dll')
+  if not PkgSkip("EGG"):
+    TargetAdd('pview.exe', input='libpandaegg.dll')
+  TargetAdd('pview.exe', input=COMMON_PANDA_LIBS)
+  TargetAdd('pview.exe', opts=['ADVAPI', 'WINSOCK2', 'WINSHELL'])
+
+  #  TargetAdd('pview.exe', input='libp3webgldisplay.dll')
+  if GetLinkAllStatic():
+    if not PkgSkip("GL"):
+      TargetAdd('pview.exe', input='libpandagl.dll')
+    if GetTarget() == "emscripten" and not PkgSkip("GLES2"):
+      TargetAdd('pview.exe', input='libp3webgldisplay.dll')
 
 #
 # DIRECTORY: direct/src/directbase/
@@ -5445,7 +5442,8 @@ if (PkgSkip("DIRECT")==0):
   if GetTarget() == 'darwin':
     TargetAdd('libp3direct.dll', input='p3showbase_showBase_assist.obj')
   TargetAdd('libp3direct.dll', input='p3deadrec_composite1.obj')
-  TargetAdd('libp3direct.dll', input='p3distributed_config_distributed.obj')
+  if GetTarget() != 'emscripten':
+    TargetAdd('libp3direct.dll', input='p3distributed_config_distributed.obj')
   TargetAdd('libp3direct.dll', input='p3interval_composite1.obj')
   TargetAdd('libp3direct.dll', input='p3motiontrail_config_motiontrail.obj')
   TargetAdd('libp3direct.dll', input='p3motiontrail_cMotionTrail.obj')
@@ -6434,7 +6432,7 @@ if (PkgSkip("PANDATOOL")==0):
 # DIRECTORY: pandatool/src/text-stats/
 #
 
-if (PkgSkip("PANDATOOL")==0):
+if not PkgSkip("PANDATOOL") and GetTarget() != 'emscripten':
     OPTS=['DIR:pandatool/src/text-stats']
     TargetAdd('text-stats_textMonitor.obj', opts=OPTS, input='textMonitor.cxx')
     TargetAdd('text-stats_textStats.obj', opts=OPTS, input='textStats.cxx')

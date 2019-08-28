@@ -2844,6 +2844,8 @@ LIBDIRECTORIES = []
 FRAMEWORKDIRECTORIES = []
 LIBNAMES = []
 DEFSYMBOLS = []
+COMPILEFLAGS = []
+LINKFLAGS = []
 
 def IncDirectory(opt, dir):
     INCDIRECTORIES.append((opt, dir))
@@ -2872,6 +2874,12 @@ def LibName(opt, name):
 
 def DefSymbol(opt, sym, val=""):
     DEFSYMBOLS.append((opt, sym, val))
+
+def CompileFlag(opt, flag):
+    COMPILEFLAGS.append((opt, flag))
+
+def LinkFlag(opt, flag):
+    LINKFLAGS.append((opt, flag))
 
 ########################################################################
 #
@@ -3706,10 +3714,10 @@ def TargetAdd(target, dummy=0, opts=[], input=[], dep=[], ipath=None, winrc=None
         if GetLinkAllStatic() and ORIG_EXT[fullinput] == '.lib' and fullinput in TARGET_TABLE:
             tdep = TARGET_TABLE[fullinput]
             for y in tdep.inputs:
-                if ORIG_EXT[y] == '.lib':
+                if ORIG_EXT[y] == '.lib' and y not in t.inputs:
                     t.inputs.append(y)
 
-            for opt, _ in LIBNAMES + LIBDIRECTORIES + FRAMEWORKDIRECTORIES:
+            for opt, _ in LIBNAMES + LIBDIRECTORIES + FRAMEWORKDIRECTORIES + LINKFLAGS + COMPILEFLAGS:
                 if opt in tdep.opts and opt not in t.opts:
                     t.opts.append(opt)
 
