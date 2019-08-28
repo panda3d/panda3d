@@ -30,17 +30,19 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 # Set up the output directory structure, mimicking that of makepanda
 set(CMAKE_BINARY_DIR "${CMAKE_BINARY_DIR}/cmake")
 
-if(CMAKE_GENERATOR STREQUAL "Xcode")
-  # On the Xcode generator, CMake generates a separate make target definition for
-  # every config, so it ends up spamming warnings once we try to build.
-  set(intdir $<CONFIG>)
+if(CMAKE_CFG_INTDIR STREQUAL ".")
+  # Single-configuration generator; output goes straight in the binary dir
+  set(PANDA_OUTPUT_DIR "${PROJECT_BINARY_DIR}")
+
 else()
-  set(intdir ${PANDA_CFG_INTDIR})
+  # Multi-configuration generator; add a per-configuration path prefix
+  set(PANDA_OUTPUT_DIR "${PROJECT_BINARY_DIR}/$<CONFIG>")
+
 endif()
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${intdir}/bin")
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${intdir}/lib")
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${intdir}/lib")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PANDA_OUTPUT_DIR}/bin")
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PANDA_OUTPUT_DIR}/lib")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PANDA_OUTPUT_DIR}/lib")
 
 set(MODULE_DESTINATION "lib")
 
@@ -54,7 +56,7 @@ if(WIN32)
   set(CMAKE_STATIC_LIBRARY_PREFIX "lib")
 
   # On Windows, modules (DLLs) are located in bin; lib is just for .lib files
-  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${PANDA_CFG_INTDIR}/bin")
+  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PANDA_OUTPUT_DIR}/bin")
   if(BUILD_SHARED_LIBS)
     set(MODULE_DESTINATION "bin")
   endif()
@@ -66,22 +68,20 @@ if(APPLE)
   set(CMAKE_SHARED_MODULE_SUFFIX ".dylib")
 endif()
 
-# Since we're using CMAKE_CFG_INTDIR to put everything in a
-# configuration-specific subdirectory when building on a multi-config
-# generator, we need to suppress the usual configuration name appending
-# behavior of CMake. In CMake 3.4+, it will suppress this behavior
+# We want the output structured like build/CONFIG/bin, not build/bin/CONFIG per
+# the default for multi-configuration generators. In CMake 3.4+, it switches
 # automatically if the *_OUTPUT_DIRECTORY property contains a generator
-# expresssion, but:
-# a) As of this writing we support as early as CMake 3.0.2
-# b) ${CMAKE_CFG_INTDIR} doesn't actually expand to a generator expression
+# expresssion, but as of this writing we support as early as CMake 3.0.2.
 #
-# So, to solve both of these, let's just do this:
-foreach(_type RUNTIME ARCHIVE LIBRARY)
-  foreach(_config ${CMAKE_CONFIGURATION_TYPES})
-    string(TOUPPER "${_config}" _config)
-    set(CMAKE_${_type}_OUTPUT_DIRECTORY_${_config} "${CMAKE_${_type}_OUTPUT_DIRECTORY}")
-  endforeach(_config)
-endforeach(_type)
+# So, let's just do this:
+if(CMAKE_VERSION VERSION_LESS "3.4")
+  foreach(_type RUNTIME ARCHIVE LIBRARY)
+    foreach(_config ${CMAKE_CONFIGURATION_TYPES})
+      string(TOUPPER "${_config}" _config)
+      set(CMAKE_${_type}_OUTPUT_DIRECTORY_${_config} "${CMAKE_${_type}_OUTPUT_DIRECTORY}")
+    endforeach(_config)
+  endforeach(_type)
+endif()
 
 # Set warning levels
 if(MSVC)

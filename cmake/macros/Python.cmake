@@ -51,14 +51,7 @@ function(add_python_target target)
   target_link_libraries(${target} PKG::PYTHON)
 
   if(BUILD_SHARED_LIBS)
-    if(CMAKE_GENERATOR STREQUAL "Xcode")
-      # This is explained in CompilerFlags.cmake
-      set(intdir $<CONFIG>)
-    else()
-      set(intdir ${PANDA_CFG_INTDIR})
-    endif()
-
-    set(_outdir "${PROJECT_BINARY_DIR}/${intdir}/${slash_namespace}")
+    set(_outdir "${PANDA_OUTPUT_DIR}/${slash_namespace}")
 
     set_target_properties(${target} PROPERTIES
       LIBRARY_OUTPUT_DIRECTORY "${_outdir}"
@@ -146,7 +139,7 @@ function(install_python_package package_name)
     set(src_path "${CMAKE_SOURCE_DIR}/cmake/templates/win32_python")
   endif()
 
-  set(path "${PROJECT_BINARY_DIR}/${PANDA_CFG_INTDIR}/${package_name}")
+  set(path "${PANDA_OUTPUT_DIR}/${package_name}")
 
   set(args -D "OUTPUT_DIR=${path}")
   if(src_path)

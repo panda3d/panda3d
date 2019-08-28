@@ -91,19 +91,19 @@ if(BUILD_MODELS)
                      POST_BUILD
                      COMMAND ${CMAKE_COMMAND}
                              -DSOURCE="${CMAKE_CURRENT_SOURCE_DIR}/models/maps/"
-                             -DDESTINATION="${PROJECT_BINARY_DIR}/${PANDA_CFG_INTDIR}/models/maps"
+                             -DDESTINATION="${PANDA_OUTPUT_DIR}/models/maps"
                              -P ${PROJECT_SOURCE_DIR}/cmake/scripts/CopyPattern.cmake
                      COMMENT "Copying models/maps")
   add_custom_command(TARGET dmodels
                      POST_BUILD
                      COMMAND ${CMAKE_COMMAND}
                              -DSOURCE="${CMAKE_CURRENT_SOURCE_DIR}/dmodels/src/"
-                             -DDESTINATION="${PROJECT_BINARY_DIR}/${PANDA_CFG_INTDIR}/models"
+                             -DDESTINATION="${PANDA_OUTPUT_DIR}/models"
                              -DFILES_MATCHING="PATTERN;*.rgb;PATTERN;*.png;PATTERN;*.jpg;PATTERN;*.wav"
                              -P ${PROJECT_SOURCE_DIR}/cmake/scripts/CopyPattern.cmake
                      COMMENT "Copying dmodels' assets")
 
-  install(DIRECTORY "${PROJECT_BINARY_DIR}/${PANDA_CFG_INTDIR}/models"
+  install(DIRECTORY "${PANDA_OUTPUT_DIR}/models"
     COMPONENT Models DESTINATION share/panda3d)
 endif()
 
@@ -112,15 +112,9 @@ if(INTERROGATE_PYTHON_INTERFACE)
   # for pytest before adding this test.  If the user doesn't have pytest, we'd
   # like for the tests to fail.
 
-  if(PANDA_CFG_INTDIR STREQUAL ".")
-    set(_workdir "${PROJECT_BINARY_DIR}")
-  else()
-    set(_workdir "${PROJECT_BINARY_DIR}/$<CONFIG>")
-  endif()
-
   add_test(NAME pytest
     COMMAND "${PYTHON_EXECUTABLE}" -m pytest "${PROJECT_SOURCE_DIR}/tests"
-    WORKING_DIRECTORY "${_workdir}")
+    WORKING_DIRECTORY "${PANDA_OUTPUT_DIR}")
 endif()
 
 # Generate the Panda3DConfig.cmake file so find_package(Panda3D) works, and
