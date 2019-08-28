@@ -68,8 +68,10 @@ PUBLISHED:
   INLINE ~PNMImage();
 
   INLINE xelval clamp_val(int input_value) const;
+  INLINE xel to_val(const LRGBColorf &input_value) const;
   INLINE xelval to_val(float input_value) const;
   INLINE xelval to_alpha_val(float input_value) const;
+  INLINE LRGBColorf from_val(const xel &input_value) const;
   INLINE float from_val(xelval input_value) const;
   INLINE float from_alpha_val(xelval input_value) const;
 
@@ -254,6 +256,7 @@ PUBLISHED:
                                   int xborder = 0, int yborder = 0);
 
   void make_histogram(Histogram &hist);
+  void quantize(size_t max_colors);
   BLOCKING void perlin_noise_fill(float sx, float sy, int table_size = 256,
                                   unsigned long seed = 0);
   void perlin_noise_fill(StackedPerlinNoise2 &perlin);
@@ -345,6 +348,9 @@ private:
 
   void setup_rc();
   void setup_encoding();
+
+  void r_quantize(pmap<xel, xel> &color_map, size_t max_colors,
+                  xel *colors, size_t num_colors);
 
 PUBLISHED:
   PNMImage operator ~() const;
