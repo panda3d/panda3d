@@ -367,7 +367,7 @@ class Icon:
         # XOR mask
         if bpp == 24:
             # Align rows to 4-byte boundary
-            rowalign = '\0' * (-(size * 3) & 3)
+            rowalign = b'\0' * (-(size * 3) & 3)
             for y in xrange(size):
                 for x in xrange(size):
                     r, g, b = image.getXel(x, size - y - 1)
@@ -503,7 +503,7 @@ class Icon:
             if size > 256:
                 continue
             elif size == 256:
-                ico.write('\0\0')
+                ico.write(b'\0\0')
             else:
                 ico.write(struct.pack('<BB', size, size))
 
