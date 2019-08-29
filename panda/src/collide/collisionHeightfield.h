@@ -1,3 +1,16 @@
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file collisionHeightfield.h
+ * @author hecris
+ * @date 2019-07-01
+ */
+
 #ifndef COLLISIONHEIGHTFIELD_H
 #define COLLISIONHEIGHTFIELD_H
 
@@ -15,8 +28,7 @@
 class EXPCL_PANDA_COLLIDE CollisionHeightfield : public CollisionSolid {
 PUBLISHED:
   CollisionHeightfield(PNMImage heightfield,
-                       PN_stdfloat max_height, int subdivisions);
-  ~CollisionHeightfield() { delete[] _nodes; }
+                       PN_stdfloat max_height, int num_subdivisions);
   virtual LPoint3 get_collision_origin() const;
 
   INLINE PNMImage get_heightfield();
@@ -25,8 +37,8 @@ PUBLISHED:
   INLINE PN_stdfloat get_max_height();
   INLINE void set_max_height(PN_stdfloat max_height);
 
-  INLINE int get_subdivisions();
-  void set_subdivisions(int subdivisions);
+  INLINE int get_num_subdivisions();
+  void set_num_subdivisions(int num_subdivisions);
 
   INLINE PN_stdfloat get_height(int x, int y) const;
 
@@ -75,7 +87,7 @@ protected:
 private:
   PNMImage _heightfield;
   PN_stdfloat _max_height;
-  int _subdivisions;
+  int _num_subdivisions;
   QuadTreeNode *_nodes;
   int _nodes_count;
   int _leaf_first_index;
@@ -128,6 +140,7 @@ public:
   virtual PStatCollector &get_test_pcollector();
 
   INLINE static void flush_level();
+  INLINE ~CollisionHeightfield();
 
 protected:
   virtual PT(BoundingVolume) compute_internal_bounds() const;

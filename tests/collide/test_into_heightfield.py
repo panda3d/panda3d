@@ -8,8 +8,8 @@ def test_sphere_into_heightfield():
     img.set_gray_val(1, 1, 255)
     # Make CollisionHeightfield
     max_height = 10
-    subdivisions = 1
-    heightfield = CollisionHeightfield(img, max_height, subdivisions)
+    num_subdivisions = 1
+    heightfield = CollisionHeightfield(img, max_height, num_subdivisions)
     # The coordinate (1, 1) on our heightfield image
     # maps to the coordinate (1, 510, Z) in 3D space
     sphere = CollisionSphere((1, 510, 11), 1)
@@ -27,20 +27,20 @@ def test_sphere_into_heightfield():
     assert entry.get_surface_point(np_from) == (1, 510, 10.1)
 
     with pytest.raises(AssertionError) as err:
-        assert heightfield.set_subdivisions(-1) == err
-        assert heightfield.set_subdivisions(11) == err
+        assert heightfield.set_num_subdivisions(-1) == err
+        assert heightfield.set_num_subdivisions(11) == err
 
     # Use a greater number of subdivisions, should still work
-    subdivisions = 10
-    heightfield.set_subdivisions(subdivisions)
+    num_subdivisions = 10
+    heightfield.set_num_subdivisions(num_subdivisions)
     entry, np_from, np_into = make_collision(sphere, heightfield)
     assert entry.get_surface_point(np_from) == (1, 510, 10.1)
     # Using 10 subdivisions is overkill for such a small heightfield,
     # CollisionHeightfield should've automatically decreased it
-    assert heightfield.get_subdivisions() < subdivisions
-    # Zero subdivisions work too
-    subdivisions = 0
-    heightfield.set_subdivisions(subdivisions)
+    assert heightfield.get_num_subdivisions() < num_subdivisions
+    # Zero subdivisions should work too
+    num_subdivisions = 0
+    heightfield.set_num_subdivisions(num_subdivisions)
     entry, np_from, np_into = make_collision(sphere, heightfield)
     assert entry.get_surface_point(np_from) == (1, 510, 10.1)
     # Modify the heightfield, no longer colliding
@@ -55,8 +55,8 @@ def test_ray_into_heightfield():
     img = PNMImage(127, 127, 1)
     img.fill_val(0)
     max_height = 10
-    subdivisions = 1
-    heightfield = CollisionHeightfield(img, max_height, subdivisions)
+    num_subdivisions = 1
+    heightfield = CollisionHeightfield(img, max_height, num_subdivisions)
     # Make ray
     ray = CollisionRay((100, 100, 100), (-1, -1, -1))
     entry = make_collision(ray, heightfield)[0]
@@ -84,8 +84,8 @@ def test_box_into_heightfield():
     img.set_gray_val(1, 1, 255)
     # Make CollisionHeightfield
     max_height = 10
-    subdivisions = 5
-    heightfield = CollisionHeightfield(img, max_height, subdivisions)
+    num_subdivisions = 5
+    heightfield = CollisionHeightfield(img, max_height, num_subdivisions)
     # Make box
     box = CollisionBox((1, 5128, 10), 1, 1, 1)
     entry = make_collision(box, heightfield)

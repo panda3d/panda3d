@@ -6,7 +6,7 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * @file CollisionHeightfield.cxx
+ * @file collisionHeightfield.cxx
  * @author hecris
  * @date 2019-07-01
  */
@@ -30,17 +30,23 @@ using std::queue;
 using std::vector;
 using std::sort;
 
+PStatCollector CollisionHeightfield::_volume_pcollector(
+      "Collision Volumes:CollisionHeightfield");
+PStatCollector CollisionHeightfield::_test_pcollector(
+      "Collision Tests:CollisionHeightfield");
+TypeHandle CollisionHeightfield::_type_handle;
+
 /**
  *
  */
 CollisionHeightfield::
 CollisionHeightfield(PNMImage heightfield,
-                     PN_stdfloat max_height, int subdivisions) {
+                     PN_stdfloat max_height, int num_subdivisions) {
   _heightfield = heightfield;
   _max_height = max_height;
   _nodes_count = 0;
 
-  set_subdivisions(subdivisions);
+  set_num_subdivisions(num_subdivisions);
 }
 
 /**
@@ -53,30 +59,30 @@ CollisionHeightfield(PNMImage heightfield,
  * automatically be decremented.
  */
 void CollisionHeightfield::
-set_subdivisions(int subdivisions) {
+set_num_subdivisions(int num_subdivisions) {
   // The number of subdivisions should not be negative
-  nassertv(subdivisions >= 0 && subdivisions <= 10);
+  nassertv(num_subdivisions >= 0 && num_subdivisions <= 10);
   // Determine the number of quadtree nodes needed
   // for the corresponding number of subdivisions.
   int nodes_count = 0;
-  for (int i = 0; i <= subdivisions; i++) {
-    nodes_count += pow(4, i);
+  for (int i = 0; i <= num_subdivisions; i++) {
+    nodes_count += 1 << (i * 2);
   }
   if (nodes_count == _nodes_count) {
     // No changes to quadtree to be done
     return;
   }
   // Calculate the index of the first quad tree leaf node
-  int leaf_first_index = nodes_count - pow(4, subdivisions);
+  int leaf_first_index = nodes_count - pow(4, num_subdivisions);
   // Calculate the area of a leaf node in the quadtree
-  PN_stdfloat heightfield_area = _heightfield.get_read_x_size() *
-                                 _heightfield.get_read_y_size();
+  PN_stdfloat heightfield_area = _heightfield.get_x_size() *
+                                 _heightfield.get_y_size();
   nassertv(heightfield_area > 0);
   PN_stdfloat num_leafs = nodes_count - leaf_first_index;
   // If the area is too small (less than 1), then we
   // retry by decrementing the number of subdivisions.
   if (heightfield_area / num_leafs < 1) {
-    set_subdivisions(subdivisions - 1);
+    set_num_subdivisions(num_subdivisions - 1);
     return;
   }
   if (nodes_count < _nodes_count) {
@@ -97,7 +103,7 @@ set_subdivisions(int subdivisions) {
     fill_quadtree_areas();
     fill_quadtree_heights();
   }
-  _subdivisions = subdivisions;
+  _num_subdivisions = num_subdivisions;
 }
 
 /**
@@ -105,12 +111,12 @@ set_subdivisions(int subdivisions) {
  */
 void CollisionHeightfield::
 fill_quadtree_areas() {
-  nassertv(_heightfield.get_read_x_size() > 0 &&
-           _heightfield.get_read_y_size() > 0);
+  nassertv(_heightfield.get_x_size() > 0 &&
+           _heightfield.get_y_size() > 0);
 
   _nodes[0].area.min = {0, 0};
-  _nodes[0].area.max = {(float)_heightfield.get_read_x_size(),
-                        (float)_heightfield.get_read_y_size()};
+  _nodes[0].area.max = {(float)_heightfield.get_x_size(),
+                        (float)_heightfield.get_y_size()};
   _nodes[0].index = 0;
   QuadTreeNode parent;
   for (int i = 1; i < _nodes_count; i += 4) {
@@ -156,7 +162,7 @@ fill_quadtree_heights() {
       for (int x = node.area.min[0]; x < node.area.max[0]; x++) {
         for (int y = node.area.min[1]; y < node.area.max[1]; y++) {
           PN_stdfloat value = _heightfield.get_gray(x,
-            _heightfield.get_read_y_size() - 1 - y) * _max_height;
+            _heightfield.get_y_size() - 1 - y) * _max_height;
 
           height_min = min(value, height_min);
           height_max = max(value, height_max);
@@ -192,7 +198,7 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
   vector<QuadTreeIntersection> intersections;
   intersections = find_intersections(line_intersects_box, params);
 
-  if (intersections.size() == 0) {
+  if (intersections.empty()) {
     return nullptr;
   }
   // Sort intersections by their t1 values so we can return
@@ -200,7 +206,7 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
   sort(intersections.begin(), intersections.end());
 
   double t1, t2;
-  for (unsigned i = 0; i < intersections.size(); i++) {
+  for (size_t i = 0; i < intersections.size(); i++) {
     t1 = intersections[i].tmin;
     t2 = intersections[i].tmax;
 
@@ -282,7 +288,9 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   vector<QuadTreeIntersection> intersections;
   intersections= find_intersections(sphere_intersects_box, params);
 
-  if (intersections.size() == 0) return nullptr;
+  if (intersections.empty()) {
+    return nullptr;
+  }
 
   LPoint3 point;
   LPoint3 closest_point;
@@ -292,7 +300,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   bool intersected = false;
   #define in_box(x, y, node) (x >= node.area.min[0] && y >= node.area.min[1] \
                            && x <= node.area.max[0] && y <= node.area.max[1])
-  for (unsigned i = 0; i < intersections.size(); i++) {
+  for (size_t i = 0; i < intersections.size(); i++) {
     QuadTreeNode node = _nodes[intersections[i].node_index];
     // Iterate through the circle's area and find triangle intersections,
     // find the one closest to the center of the sphere.
@@ -355,13 +363,13 @@ test_intersection_from_box(const CollisionEntry &entry) const {
   vector<QuadTreeIntersection> intersections;
   intersections = find_intersections(box_intersects_box, params);
 
-  if (intersections.size() == 0) {
+  if (intersections.empty()) {
     return nullptr;
   }
 
   bool intersected = false;
   Triangle intersected_tri;
-  for (unsigned i = 0; i < intersections.size(); i++) {
+  for (size_t i = 0; i < intersections.size(); i++) {
     QuadTreeNode node = _nodes[intersections[i].node_index];
     // Find the overlapping rectangle between the two boxes and
     // test the heightfield elements in that area.
@@ -453,14 +461,13 @@ line_intersects_triangle(double &t, const LPoint3 &from,
                          const LPoint3 &delta,
                          const Triangle &triangle) {
   // Implementation of Möller-Trumbore algorithm
-  const PN_stdfloat EPSILON = 1.0e-7;
   PN_stdfloat a,f,u,v;
   LVector3 edge1, edge2, h, s, q;
   edge1 = triangle.p2 - triangle.p1;
   edge2 = triangle.p3 - triangle.p1;
   h = delta.cross(edge2);
   a = dot(edge1, h);
-  if (a > -EPSILON && a < EPSILON) {
+  if (IS_NEARLY_ZERO(a)) {
     // line parallel to triangle
     return false;
   }
@@ -676,8 +683,8 @@ find_intersections(BoxIntersection intersects_box, IntersectionParams params) co
  */
 vector<CollisionHeightfield::Triangle> CollisionHeightfield::
 get_triangles(int x, int y) const {
-  int rows = _heightfield.get_read_x_size();
-  int cols = _heightfield.get_read_y_size();
+  int rows = _heightfield.get_x_size();
+  int cols = _heightfield.get_y_size();
   vector<Triangle> triangles;
   if (x < 0 || y < 0 || x >= rows || y >= cols)
     return triangles;
@@ -765,9 +772,3 @@ void CollisionHeightfield::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_CollisionHeightfield);
 }
-
-PStatCollector CollisionHeightfield::_volume_pcollector(
-      "Collision Volumes:CollisionHeightfield");
-PStatCollector CollisionHeightfield::_test_pcollector(
-      "Collision Tests:CollisionHeightfield");
-TypeHandle CollisionHeightfield::_type_handle;
