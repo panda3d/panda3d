@@ -220,13 +220,30 @@ function(interrogate_sources target output database language_flags)
   endif()
   set(define_flags "$<$<BOOL:${_compile_defs}>:-D${_q}$<JOIN:${_compile_defs},${_q}\t-D${_q}>${_q}>")
 
-  # If this is a release build that has NDEBUG defined, we need that too:
-  foreach(build_type ${CMAKE_CONFIGURATION_TYPES} ${CMAKE_BUILD_TYPE})
-    string(TOUPPER "${build_type}" build_type)
-    if(CMAKE_CXX_FLAGS_${build_type} MATCHES ".*NDEBUG.*")
-      list(APPEND define_flags "$<$<CONFIG:${build_type}>:-DNDEBUG>")
+  # Some of the definitions may be specified using -D flags in the global
+  # CXX_FLAGS variables; parse those out (this also picks up NDEBUG)
+  set(_configs ${CMAKE_CONFIGURATION_TYPES} ${CMAKE_BUILD_TYPE} "<ALL>")
+  list(REMOVE_DUPLICATES _configs)
+  foreach(_config ${_configs})
+    if(_config STREQUAL "<ALL>")
+      set(flags "${CMAKE_CXX_FLAGS}")
+    else()
+      string(TOUPPER "${_config}" _CONFIG)
+      set(flags "${CMAKE_CXX_FLAGS_${_CONFIG}}")
     endif()
-  endforeach(build_type)
+
+    # Convert "/D define1" and "-Ddefine2" flags, interspersed with other
+    # compiler nonsense, into a basic "-Ddefine1 -Ddefine2" string
+    string(REGEX MATCHALL "[/-]D[ \t]*[A-Za-z0-9_]+" igate_flags "${flags}")
+    string(REPLACE ";" " " igate_flags "${igate_flags}")
+    string(REPLACE "/D" "-D" igate_flags "${igate_flags}")
+
+    if(_config STREQUAL "<ALL>")
+      list(APPEND define_flags "${igate_flags}")
+    else()
+      list(APPEND define_flags "$<$<CONFIG:${_config}>:${igate_flags}>")
+    endif()
+  endforeach(_config)
 
   # In case the user (or a distro buildsystem) is throwing NDEBUG in by hand:
   if(CMAKE_CXX_FLAGS MATCHES ".*NDEBUG.*")
