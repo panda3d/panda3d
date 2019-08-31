@@ -55,6 +55,7 @@ install(TARGETS p3framework
   EXPORT Framework COMPONENT Framework
   DESTINATION lib
   RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include/panda3d
   ARCHIVE COMPONENT FrameworkDevel)
 install(FILES ${P3FRAMEWORK_HEADERS} COMPONENT FrameworkDevel DESTINATION include/panda3d)
 

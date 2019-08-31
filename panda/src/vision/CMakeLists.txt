@@ -47,6 +47,7 @@ install(TARGETS p3vision
   EXPORT Vision COMPONENT Vision
   DESTINATION lib
   RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include/panda3d
   ARCHIVE COMPONENT VisionDevel)
 install(FILES ${P3VISION_HEADERS} COMPONENT VisionDevel DESTINATION include/panda3d)
 

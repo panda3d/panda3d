@@ -118,6 +118,7 @@ install(TARGETS p3bullet
   EXPORT Bullet COMPONENT Bullet
   DESTINATION lib
   RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include/panda3d
   ARCHIVE COMPONENT BulletDevel)
 install(FILES ${P3BULLET_HEADERS} COMPONENT BulletDevel DESTINATION include/panda3d)
 

@@ -8,4 +8,5 @@ install(TARGETS pandaphysics
   EXPORT Core COMPONENT Core
   DESTINATION lib
   RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include/panda3d
   ARCHIVE COMPONENT CoreDevel)

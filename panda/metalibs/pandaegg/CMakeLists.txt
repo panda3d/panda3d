@@ -13,6 +13,7 @@ install(TARGETS pandaegg
   EXPORT Egg COMPONENT Egg
   DESTINATION lib
   RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include/panda3d
   ARCHIVE COMPONENT EggDevel)
 
 export_targets(Egg COMPONENT EggDevel)

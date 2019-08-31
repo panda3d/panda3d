@@ -48,6 +48,7 @@ if(NOT BUILD_METALIBS)
     EXPORT Direct COMPONENT Direct
     DESTINATION lib
     RUNTIME DESTINATION bin
+    INCLUDES DESTINATION include/panda3d
     ARCHIVE COMPONENT DirectDevel)
 endif()
 install(FILES ${P3INTERVAL_HEADERS} COMPONENT DirectDevel DESTINATION include/panda3d)

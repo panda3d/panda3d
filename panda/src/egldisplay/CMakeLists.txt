@@ -40,6 +40,7 @@ if(HAVE_GLES1)
       EXPORT GLES COMPONENT GLES
       DESTINATION lib
       RUNTIME DESTINATION bin
+      INCLUDES DESTINATION include/panda3d
       ARCHIVE COMPONENT GLESDevel)
   endif()
 endif()
@@ -57,6 +58,7 @@ if(HAVE_GLES2)
       EXPORT GLES COMPONENT GLES
       DESTINATION lib
       RUNTIME DESTINATION bin
+      INCLUDES DESTINATION include/panda3d
       ARCHIVE COMPONENT GLESDevel)
   endif()
 endif()

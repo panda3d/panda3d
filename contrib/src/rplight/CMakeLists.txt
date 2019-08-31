@@ -47,5 +47,6 @@ install(TARGETS p3rplight
   EXPORT Contrib COMPONENT Contrib
   DESTINATION lib
   RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include/panda3d
   ARCHIVE COMPONENT ContribDevel)
 install(FILES ${P3RPLIGHT_HEADERS} COMPONENT ContribDevel DESTINATION include/panda3d)

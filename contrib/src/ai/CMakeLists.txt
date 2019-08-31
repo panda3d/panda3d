@@ -49,5 +49,6 @@ install(TARGETS p3ai
   EXPORT Contrib COMPONENT Contrib
   DESTINATION lib
   RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include/panda3d
   ARCHIVE COMPONENT ContribDevel)
 install(FILES ${P3AI_HEADERS} COMPONENT ContribDevel DESTINATION include/panda3d)
