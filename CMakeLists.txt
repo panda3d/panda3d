@@ -29,6 +29,9 @@ if(CMAKE_VERSION VERSION_GREATER "3.8")
   set_property(GLOBAL PROPERTY XCODE_EMIT_EFFECTIVE_PLATFORM_NAME OFF)
 endif()
 
+# Include modules builtin to CMake
+include(GNUInstallDirs)     # Defines CMAKE_INSTALL_<dir> variables
+
 # Include global modules needed for configure scripts
 include(PackageConfig)      # Defines package_option
 
@@ -104,7 +107,7 @@ if(BUILD_MODELS)
                      COMMENT "Copying dmodels' assets")
 
   install(DIRECTORY "${PANDA_OUTPUT_DIR}/models"
-    COMPONENT Models DESTINATION share/panda3d)
+    COMPONENT Models DESTINATION ${CMAKE_INSTALL_DATADIR}/panda3d)
 endif()
 
 if(INTERROGATE_PYTHON_INTERFACE)
@@ -123,7 +126,7 @@ endif()
 file(COPY "${PROJECT_SOURCE_DIR}/cmake/install/Panda3DConfig.cmake"
   DESTINATION "${PROJECT_BINARY_DIR}")
 install(FILES "${PROJECT_SOURCE_DIR}/cmake/install/Panda3DConfig.cmake"
-  DESTINATION "lib/cmake/Panda3D")
+  DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/Panda3D")
 
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
@@ -131,7 +134,7 @@ write_basic_package_version_file(
   VERSION "${PROJECT_VERSION}"
   COMPATIBILITY AnyNewerVersion)
 install(FILES "${PROJECT_BINARY_DIR}/Panda3DConfigVersion.cmake"
-  DESTINATION "lib/cmake/Panda3D")
+  DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/Panda3D")
 
 if(NOT CMAKE_CROSSCOMPILING)
   export(PACKAGE Panda3D)

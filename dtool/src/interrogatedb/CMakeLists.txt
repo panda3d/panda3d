@@ -41,13 +41,13 @@ target_link_libraries(p3interrogatedb p3prc p3dconfig p3dtool)
 if(NOT BUILD_METALIBS)
   install(TARGETS p3interrogatedb
     EXPORT Core COMPONENT Core
-    DESTINATION lib
-    RUNTIME DESTINATION bin
-    INCLUDES DESTINATION include/panda3d
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d
     ARCHIVE COMPONENT CoreDevel)
 endif()
-install(FILES ${P3INTERROGATEDB_HEADERS} COMPONENT CoreDevel DESTINATION include/panda3d)
-install(FILES ${P3IGATERUNTIME_HEADERS} COMPONENT CoreDevel DESTINATION include/panda3d)
+install(FILES ${P3INTERROGATEDB_HEADERS} COMPONENT CoreDevel DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d)
+install(FILES ${P3IGATERUNTIME_HEADERS} COMPONENT CoreDevel DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d)
 
 # ALSO: This has an Interrogate binding! Take care of that if we want it.
 # Note we don't use the regular Interrogate macros; this has some custom flags

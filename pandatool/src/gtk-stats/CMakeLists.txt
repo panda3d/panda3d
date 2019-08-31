@@ -38,4 +38,4 @@ else()
   set_target_properties(gtk-stats PROPERTIES OUTPUT_NAME "pstats")
 endif()
 
-install(TARGETS gtk-stats EXPORT Tools COMPONENT Tools DESTINATION bin)
+install(TARGETS gtk-stats EXPORT Tools COMPONENT Tools DESTINATION ${CMAKE_INSTALL_BINDIR})

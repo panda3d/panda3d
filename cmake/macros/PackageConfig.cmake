@@ -457,7 +457,7 @@ function(export_targets set)
     FILE "${PROJECT_BINARY_DIR}/Panda3D${set}Targets.cmake")
   install(EXPORT "${set}" NAMESPACE "${namespace}"
     FILE "Panda3D${set}Targets.cmake"
-    COMPONENT "${component}" DESTINATION lib/cmake/Panda3D)
+    COMPONENT "${component}" DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Panda3D)
 
 endfunction(export_targets)
 

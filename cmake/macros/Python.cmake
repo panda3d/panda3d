@@ -75,7 +75,7 @@ function(add_python_target target)
       OUTPUT_NAME "${basename}"
       PREFIX "libpy.${namespace}.")
 
-    install(TARGETS ${target} EXPORT "${export}" COMPONENT "${component}" DESTINATION lib)
+    install(TARGETS ${target} EXPORT "${export}" COMPONENT "${component}" DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
   endif()
 

@@ -11,4 +11,4 @@ add_library(p3contribbase INTERFACE)
 target_link_libraries(p3contribbase INTERFACE panda)
 
 install(TARGETS p3contribbase EXPORT Contrib COMPONENT Contrib)
-install(FILES ${P3CONTRIBBASE_HEADERS} COMPONENT ContribDevel DESTINATION include/panda3d)
+install(FILES ${P3CONTRIBBASE_HEADERS} COMPONENT ContribDevel DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d)

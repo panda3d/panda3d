@@ -27,4 +27,13 @@ if(IS_MULTICONFIG)
                 INPUT "${PROJECT_BINARY_DIR}/etc/20_panda.prc")
 endif()
 
-install(FILES "${CMAKE_BINARY_DIR}/etc/20_panda.prc" COMPONENT Core DESTINATION etc)
+if(WIN32)
+  set(_confdir "etc")
+
+else()
+  # On Unices, ask the GNUInstallDirs module where /etc is
+  set(_confdir "${CMAKE_INSTALL_FULL_SYSCONFDIR}")
+
+endif()
+
+install(FILES "${CMAKE_BINARY_DIR}/etc/20_panda.prc" COMPONENT Core DESTINATION ${_confdir})

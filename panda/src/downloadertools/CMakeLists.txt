@@ -25,7 +25,7 @@ if(HAVE_OPENSSL)
 
   install(TARGETS apply_patch build_patch show_ddb check_md5 pencrypt pdecrypt
     EXPORT Tools COMPONENT Tools
-    DESTINATION bin)
+    DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()
 
 if(HAVE_ZLIB)
@@ -47,9 +47,9 @@ if(HAVE_ZLIB)
 
   install(TARGETS check_adler check_crc pzip punzip
     EXPORT Tools COMPONENT Tools
-    DESTINATION bin)
+    DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()
 
 add_executable(multify multify.cxx)
 target_link_libraries(multify panda)
-install(TARGETS multify EXPORT Tools COMPONENT Tools DESTINATION bin)
+install(TARGETS multify EXPORT Tools COMPONENT Tools DESTINATION ${CMAKE_INSTALL_BINDIR})

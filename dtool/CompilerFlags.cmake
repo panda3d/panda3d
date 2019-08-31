@@ -44,7 +44,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PANDA_OUTPUT_DIR}/bin")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PANDA_OUTPUT_DIR}/lib")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PANDA_OUTPUT_DIR}/lib")
 
-set(MODULE_DESTINATION "lib")
+set(MODULE_DESTINATION "${CMAKE_INSTALL_LIBDIR}")
 
 # Runtime code assumes that dynamic modules have a "lib" prefix; Windows
 # assumes that debug libraries have a _d suffix.

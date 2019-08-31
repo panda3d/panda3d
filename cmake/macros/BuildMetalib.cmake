@@ -411,7 +411,7 @@ function(add_metalib target_name)
 
     configure_file("${PROJECT_SOURCE_DIR}/cmake/templates/metalib_init.h.in"
       "${init_header_path}")
-    install(FILES "${init_header_path}" DESTINATION include/panda3d)
+    install(FILES "${init_header_path}" DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d)
   endif()
 
   add_library("${target_name}" ${sources})
@@ -421,6 +421,6 @@ function(add_metalib target_name)
   target_link_libraries("${target_name}" ${libs})
   target_include_directories("${target_name}"
     PUBLIC ${includes}
-    INTERFACE "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/include/panda3d>")
+    INTERFACE "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}/panda3d>")
 
 endfunction(add_metalib)

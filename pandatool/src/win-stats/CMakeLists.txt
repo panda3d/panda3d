@@ -34,4 +34,4 @@ target_link_libraries(win-stats p3progbase p3pstatserver)
 # This program is NOT actually called win-stats. It's just pstats.exe
 set_target_properties(win-stats PROPERTIES OUTPUT_NAME "pstats")
 
-install(TARGETS win-stats EXPORT Tools COMPONENT Tools DESTINATION bin)
+install(TARGETS win-stats EXPORT Tools COMPONENT Tools DESTINATION ${CMAKE_INSTALL_BINDIR})

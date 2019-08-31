@@ -211,10 +211,10 @@ endif()
 
 install(FILES "${PANDA_OUTPUT_DIR}/include/dtool_config.h"
   COMPONENT CoreDevel
-  DESTINATION include/panda3d)
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d)
 
 # Generate the package configuration file
 export_packages("${PROJECT_BINARY_DIR}/Panda3DPackages.cmake")
 install(FILES "${PROJECT_BINARY_DIR}/Panda3DPackages.cmake"
   COMPONENT CoreDevel
-  DESTINATION "lib/cmake/Panda3D")
+  DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/Panda3D")

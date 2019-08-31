@@ -85,8 +85,8 @@ if(NOT CMAKE_CROSSCOMPILING)
 endif()
 
 if(WANT_INTERROGATE)
-  install(TARGETS interrogate interrogate_module EXPORT Core COMPONENT CoreDevel DESTINATION bin)
-  install(FILES ${INTERROGATE_HEADERS} COMPONENT CoreDevel DESTINATION include/panda3d)
+  install(TARGETS interrogate interrogate_module EXPORT Core COMPONENT CoreDevel DESTINATION ${CMAKE_INSTALL_BINDIR})
+  install(FILES ${INTERROGATE_HEADERS} COMPONENT CoreDevel DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d)
 
 else()
   set_target_properties(interrogate interrogate_module
