@@ -245,11 +245,6 @@ function(interrogate_sources target output database language_flags)
     endif()
   endforeach(_config)
 
-  # In case the user (or a distro buildsystem) is throwing NDEBUG in by hand:
-  if(CMAKE_CXX_FLAGS MATCHES ".*NDEBUG.*")
-    list(APPEND define_flags "-DNDEBUG")
-  endif()
-
   get_filename_component(output_directory "${output}" DIRECTORY)
   get_filename_component(database_directory "${database}" DIRECTORY)
 
