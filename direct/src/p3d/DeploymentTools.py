@@ -344,6 +344,7 @@ class Icon:
             if required_size * 2 in sizes:
                 from_size = required_size * 2
             else:
+                from_size = 0
                 for from_size in sizes:
                     if from_size > required_size:
                         break
@@ -367,7 +368,7 @@ class Icon:
         # XOR mask
         if bpp == 24:
             # Align rows to 4-byte boundary
-            rowalign = '\0' * (-(size * 3) & 3)
+            rowalign = b'\0' * (-(size * 3) & 3)
             for y in xrange(size):
                 for x in xrange(size):
                     r, g, b = image.getXel(x, size - y - 1)
@@ -383,35 +384,14 @@ class Icon:
         elif bpp == 8:
             # We'll have to generate a palette of 256 colors.
             hist = PNMImage.Histogram()
-            if image.hasAlpha():
-                # Make a copy without alpha channel.
-                image2 = PNMImage(image)
+            image2 = PNMImage(image)
+            if image2.hasAlpha():
                 image2.premultiplyAlpha()
                 image2.removeAlpha()
-            else:
-                image2 = image
+            image2.quantize(256)
             image2.make_histogram(hist)
             colors = list(hist.get_pixels())
-            if len(colors) > 256:
-                # Palette too large; remove infrequent colors.
-                colors.sort(key=hist.get_count, reverse=True)
-
-                # Find the closest color on the palette matching each color
-                # that didn't fit.  This is certainly not the best palette
-                # generation code, but it'll do for now.
-                closest_indices = []
-                for color in colors[256:]:
-                    closest_index = 0
-                    closest_diff = 1025
-                    for i, closest_color in enumerate(colors[:256]):
-                        diff = abs(color.get_red() - closest_color.get_red()) \
-                             + abs(color.get_green() - closest_color.get_green()) \
-                             + abs(color.get_blue() - closest_color.get_blue())
-                        if diff < closest_diff:
-                            closest_index = i
-                            closest_diff = diff
-                    assert closest_diff < 100
-                    closest_indices.append(closest_index)
+            assert len(colors) <= 256
 
             # Write the palette.
             i = 0
@@ -503,7 +483,7 @@ class Icon:
             if size > 256:
                 continue
             elif size == 256:
-                ico.write('\0\0')
+                ico.write(b'\0\0')
             else:
                 ico.write(struct.pack('<BB', size, size))
 
