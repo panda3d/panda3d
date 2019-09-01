@@ -139,6 +139,7 @@ if(INTERROGATE_PYTHON_INTERFACE)
 
   if(HAVE_VRPN)
     add_python_module(panda3d.vrpn p3vrpn IMPORT panda3d.core COMPONENT VRPNPython)
+    set_target_properties(panda3d.vrpn PROPERTIES CXX_EXCEPTIONS ON)
 
     export_targets(VRPNPython NAMESPACE "Panda3D::Python::" COMPONENT VRPNDevel)
   endif()

@@ -35,6 +35,8 @@ set_target_properties(p3vrpn PROPERTIES DEFINE_SYMBOL BUILDING_VRPN)
 target_link_libraries(p3vrpn panda PKG::VRPN)
 target_interrogate(p3vrpn ALL)
 
+set_target_properties(p3vrpn PROPERTIES CXX_EXCEPTIONS ON)
+
 install(TARGETS p3vrpn
   EXPORT VRPN COMPONENT VRPN
   DESTINATION ${CMAKE_INSTALL_LIBDIR}
