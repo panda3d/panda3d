@@ -23,6 +23,7 @@
 #include <ios>
 #include <streambuf>
 #include <ostream>
+#include <Python.h>
 
 // We don't care (much) about the actual definition of the various
 // iostream classes, but we do need to know the classnames that are
