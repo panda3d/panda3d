@@ -997,7 +997,7 @@ class Freezer:
 
             if modules == None:
                 # It's actually a regular module.
-                mdef[newParentName] = self.ModuleDef(
+                mdefs[newParentName] = self.ModuleDef(
                     parentName, implicit = implicit, guess = guess,
                     fromSource = fromSource, text = text)
 
