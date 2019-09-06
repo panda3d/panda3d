@@ -86,7 +86,6 @@
 				<File RelativePath="..\dtool\src\parser-inc\cg.h"></File>
 				<File RelativePath="..\dtool\src\parser-inc\NxCooking.h"></File>
 				<File RelativePath="..\dtool\src\parser-inc\NxPhysics.h"></File>
-				<File RelativePath="..\dtool\src\parser-inc\libtar.h"></File>
 				<File RelativePath="..\dtool\src\parser-inc\tcp.h"></File>
 				<File RelativePath="..\dtool\src\parser-inc\NxStream.h"></File>
 				<File RelativePath="..\dtool\src\parser-inc\cv.h"></File>
