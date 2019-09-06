@@ -7,6 +7,12 @@ from . import Particles
 from . import ForceGroup
 
 from direct.directnotify import DirectNotifyGlobal
+import sys
+
+
+if sys.version_info < (3, 0):
+    FileNotFoundError = IOError
+
 
 class ParticleEffect(NodePath):
     notify = DirectNotifyGlobal.directNotify.newCategory('ParticleEffect')
@@ -200,9 +206,14 @@ class ParticleEffect(NodePath):
               f.write('self.addForceGroup(%s)\n' % target)
 
     def loadConfig(self, filename):
-        data = vfs.readFile(filename, 1)
-        data = data.replace(b'\r', b'')
+        fn = Filename(filename)
+        vfs = VirtualFileSystem.getGlobalPtr()
         try:
+            if not vfs.resolveFilename(fn, getModelPath().value) and not fn.isRegularFile():
+                raise FileNotFoundError("could not find particle file: %s" % (filename))
+
+            data = vfs.readFile(fn, True)
+            data = data.replace(b'\r', b'')
             exec(data)
         except:
             self.notify.warning('loadConfig: failed to load particle file: '+ repr(filename))
