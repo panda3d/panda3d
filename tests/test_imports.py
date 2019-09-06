@@ -21,7 +21,7 @@ def test_imports_panda3d():
     for basename in os.listdir(dir):
         if basename.startswith('lib'):
             # This not a Python module.
-            return
+            continue
 
         module = basename.split('.', 1)[0]
         ext = basename[len(module):]
