@@ -29,5 +29,5 @@ target_link_libraries(p3assimp PUBLIC PKG::ASSIMP)
 if(BUILD_SHARED_LIBS)
   # We can't install this if we're doing a static build, because it depends on
   # a static library that isn't installed.
-  install(TARGETS p3assimp EXPORT Tools COMPONENT Tools DESTINATION ${MODULE_DESTINATION})
+  install(TARGETS p3assimp EXPORT Assimp COMPONENT Assimp DESTINATION ${MODULE_DESTINATION})
 endif()
