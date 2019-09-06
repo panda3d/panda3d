@@ -273,7 +273,8 @@ def processModule(handle, package):
             if "panda3d." + package == module_name:
                 processType(handle, type)
         else:
-            print("Type %s has no module name" % type)
+            typename = interrogate_type_name(type)
+            print("Type %s has no module name" % typename)
 
     for i_func in range(interrogate_number_of_global_functions()):
         func = interrogate_get_global_function(i_func)
