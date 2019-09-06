@@ -183,8 +183,6 @@ def processFunction(handle, function, isConstructor = False):
 
             if interrogate_wrapper_has_return_value(wrapper):
                 print(translated_type_name(interrogate_wrapper_return_type(wrapper)), end=' ', file=handle)
-            else:
-                pass#print >>handle, "void",
 
             print(translateFunctionName(interrogate_function_name(function)) + "(", end=' ', file=handle)
         else:
