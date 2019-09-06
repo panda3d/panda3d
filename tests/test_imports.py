@@ -13,11 +13,16 @@ def test_imports_panda3d():
     import panda3d
     dir = os.path.dirname(panda3d.__file__)
 
+    # Iterate over the things in the panda3d package that look like modules.
     extensions = set()
     for suffix in imp.get_suffixes():
         extensions.add(suffix[0])
 
     for basename in os.listdir(dir):
+        if basename.startswith('lib'):
+            # This not a Python module.
+            return
+
         module = basename.split('.', 1)[0]
         ext = basename[len(module):]
 
