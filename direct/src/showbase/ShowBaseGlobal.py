@@ -47,6 +47,7 @@ if sys.version_info >= (3, 0):
 else:
     import __builtin__ as builtins
 builtins.inspect = inspect
+del sys
 
 # this also appears in AIBaseGlobal
 if (not __debug__) and __dev__:
