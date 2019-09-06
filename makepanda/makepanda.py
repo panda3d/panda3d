@@ -4603,23 +4603,7 @@ if PkgSkip("OPENAL") == 0 and not RUNTIME:
 #
 
 if (PkgSkip("OPENSSL")==0 and not RTDIST and not RUNTIME and PkgSkip("DEPLOYTOOLS")==0):
-  OPTS=['DIR:panda/src/downloadertools', 'OPENSSL', 'ZLIB', 'ADVAPI', 'WINSOCK2', 'WINSHELL', 'WINGDI', 'WINUSER']
-
-  if not PkgSkip("ZLIB"):
-    TargetAdd('check_adler_check_adler.obj', opts=OPTS, input='check_adler.cxx')
-    TargetAdd('check_adler.exe', input=['check_adler_check_adler.obj'])
-    TargetAdd('check_adler.exe', input=COMMON_PANDA_LIBS)
-    TargetAdd('check_adler.exe', opts=OPTS)
-
-    TargetAdd('check_crc_check_crc.obj', opts=OPTS, input='check_crc.cxx')
-    TargetAdd('check_crc.exe', input=['check_crc_check_crc.obj'])
-    TargetAdd('check_crc.exe', input=COMMON_PANDA_LIBS)
-    TargetAdd('check_crc.exe', opts=OPTS)
-
-  TargetAdd('check_md5_check_md5.obj', opts=OPTS, input='check_md5.cxx')
-  TargetAdd('check_md5.exe', input=['check_md5_check_md5.obj'])
-  TargetAdd('check_md5.exe', input=COMMON_PANDA_LIBS)
-  TargetAdd('check_md5.exe', opts=OPTS)
+  OPTS=['DIR:panda/src/downloadertools', 'OPENSSL', 'ADVAPI', 'WINSOCK2', 'WINSHELL', 'WINGDI', 'WINUSER']
 
   TargetAdd('pdecrypt_pdecrypt.obj', opts=OPTS, input='pdecrypt.cxx')
   TargetAdd('pdecrypt.exe', input=['pdecrypt_pdecrypt.obj'])

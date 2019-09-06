@@ -2080,12 +2080,9 @@
 			</Filter>
 			<Filter Name="downloadertools">
 				<File RelativePath="..\panda\src\downloadertools\pencrypt.cxx"></File>
-				<File RelativePath="..\panda\src\downloadertools\check_adler.cxx"></File>
 				<File RelativePath="..\panda\src\downloadertools\pdecrypt.cxx"></File>
 				<File RelativePath="..\panda\src\downloadertools\pzip.cxx"></File>
 				<File RelativePath="..\panda\src\downloadertools\multify.cxx"></File>
-				<File RelativePath="..\panda\src\downloadertools\check_md5.cxx"></File>
-				<File RelativePath="..\panda\src\downloadertools\check_crc.cxx"></File>
 				<File RelativePath="..\panda\src\downloadertools\punzip.cxx"></File>
 			</Filter>
 			<Filter Name="gles2gsg">
