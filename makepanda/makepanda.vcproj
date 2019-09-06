@@ -2079,7 +2079,6 @@
 				<File RelativePath="..\panda\src\pnmimagetypes\colrops.c"></File>
 			</Filter>
 			<Filter Name="downloadertools">
-				<File RelativePath="..\panda\src\downloadertools\show_ddb.cxx"></File>
 				<File RelativePath="..\panda\src\downloadertools\pencrypt.cxx"></File>
 				<File RelativePath="..\panda\src\downloadertools\check_adler.cxx"></File>
 				<File RelativePath="..\panda\src\downloadertools\pdecrypt.cxx"></File>

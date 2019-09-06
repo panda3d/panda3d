@@ -4631,11 +4631,6 @@ if (PkgSkip("OPENSSL")==0 and not RTDIST and not RUNTIME and PkgSkip("DEPLOYTOOL
   TargetAdd('pencrypt.exe', input=COMMON_PANDA_LIBS)
   TargetAdd('pencrypt.exe', opts=OPTS)
 
-  TargetAdd('show_ddb_show_ddb.obj', opts=OPTS, input='show_ddb.cxx')
-  TargetAdd('show_ddb.exe', input=['show_ddb_show_ddb.obj'])
-  TargetAdd('show_ddb.exe', input=COMMON_PANDA_LIBS)
-  TargetAdd('show_ddb.exe', opts=OPTS)
-
 #
 # DIRECTORY: panda/src/downloadertools/
 #
