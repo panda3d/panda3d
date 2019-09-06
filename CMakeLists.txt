@@ -9,10 +9,12 @@ if(CMAKE_VERSION VERSION_GREATER "3.12" OR POLICY CMP0074)
 endif()
 
 # Figure out the version
-file(STRINGS "setup.cfg" _version REGEX "^version = ")
-string(REGEX REPLACE "^.*= " "" _version "${_version}")
+set(_s "[\\t ]*") # CMake doesn't support \s*
+file(STRINGS "setup.cfg" _version REGEX "^version${_s}=${_s}")
+string(REGEX REPLACE "^.*=${_s}" "" _version "${_version}")
 project(Panda3D VERSION ${_version})
 unset(_version)
+unset(_s)
 
 enable_testing()
 
@@ -52,8 +54,8 @@ include(RunPzip)            # Defines run_pzip function
 include(Versioning)         # Hooks 'add_library' to apply VERSION/SOVERSION
 
 # Determine which trees to build.
-option(BUILD_DTOOL  "Build the dtool source tree." ON)
-option(BUILD_PANDA  "Build the panda source tree." ON)
+option(BUILD_DTOOL "Build the dtool source tree." ON)
+option(BUILD_PANDA "Build the panda source tree." ON)
 option(BUILD_DIRECT "Build the direct source tree." ON)
 option(BUILD_PANDATOOL "Build the pandatool source tree." ON)
 option(BUILD_CONTRIB "Build the contrib source tree." ON)

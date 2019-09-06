@@ -106,6 +106,30 @@ endif()
 if(INTERROGATE_PYTHON_INTERFACE)
   add_python_module(panda3d.core ${CORE_MODULE_COMPONENTS} LINK panda)
 
+  # Generate our __init__.py
+  if(WIN32)
+    file(READ "${PROJECT_SOURCE_DIR}/cmake/templates/win32_python/__init__.py" win32_init)
+  else()
+    set(win32_init "")
+  endif()
+
+  file(WRITE "${PROJECT_BINARY_DIR}/panda3d/__init__.py"
+    "\"Python bindings for the Panda3D libraries\"
+
+__version__ = '${PROJECT_VERSION}'
+
+if __debug__:
+    import sys
+    if sys.version_info < (3, 0):
+        sys.stderr.write('''\\
+WARNING: Python 2.7 will reach EOL after December 31, 2019.
+To suppress this warning, upgrade to Python 3.
+''')
+        sys.stdout.flush()
+    del sys
+
+${win32_init}")
+
   if(BUILD_SHARED_LIBS)
     install_python_package(panda3d ARCH)
   endif()

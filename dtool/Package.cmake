@@ -149,9 +149,6 @@ if(CMAKE_VERSION VERSION_LESS "3.15")
       # macOS requires this explicit flag on the linker command line to allow the
       # references to the Python symbols to resolve at dynamic link time
       string(APPEND CMAKE_MODULE_LINKER_FLAGS " -undefined dynamic_lookup")
-      # TODO: p3dcparser contains some direct Python references; get rid of
-      # this once that's gone
-      string(APPEND CMAKE_SHARED_LINKER_FLAGS " -undefined dynamic_lookup")
 
     endif()
 
@@ -263,7 +260,7 @@ package_status(ZLIB "zlib")
 # JPEG
 find_package(JPEG QUIET)
 
-package_option(JPEG DEFAULT ON "Enable support for loading .jpg images.")
+package_option(JPEG "Enable support for loading .jpg images.")
 
 package_status(JPEG "libjpeg")
 
@@ -271,7 +268,6 @@ package_status(JPEG "libjpeg")
 find_package(PNG QUIET)
 
 package_option(PNG
-  DEFAULT ON
   "Enable support for loading .png images."
   IMPORTED_AS PNG::PNG)
 
@@ -344,7 +340,7 @@ package_status(FCOLLADA "FCollada")
 find_package(Eigen3 QUIET)
 
 package_option(EIGEN
-  "Enables experimental support for the Eigen linear algebra library.
+  "Enables use of the Eigen linear algebra library.
 If this is provided, Panda will use this library as the fundamental
 implementation of its own linmath library; otherwise, it will use
 its own internal implementation.  The primary advantage of using

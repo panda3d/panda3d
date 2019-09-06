@@ -254,21 +254,6 @@ mark_as_advanced(DEFAULT_PRC_DIR PRC_DIR_ENVVARS PRC_PATH_ENVVARS
 # remaining variables are of general interest to everyone.
 #
 
-
-option(HAVE_P3D_RTDIST
-  "You may define this to build or develop the Panda3D rtdist,
-the environment packaged up for distribution with the plugin."
-  OFF)
-
-if(HAVE_P3D_RTDIST)
-  set(PANDA_PACKAGE_VERSION "local_dev" CACHE STRING "")
-  set(PANDA_PACKAGE_HOST_URL "http://localhost/" CACHE STRING "")
-endif()
-
-mark_as_advanced(HAVE_P3D_RTDIST PANDA_PACKAGE_VERSION PANDA_PACKAGE_HOST)
-
-
-
 # The following options relate to interrogate, the tool that is
 # used to generate bindings for non-C++ languages.
 

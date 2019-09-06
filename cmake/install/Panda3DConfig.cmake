@@ -80,7 +80,7 @@
 #
 #   FMOD      - Support for FMOD audio output.
 #
-#               Panda3D::OpenAL::p3fmod_audio
+#               Panda3D::FMOD::p3fmod_audio
 #
 #
 #   OpenGL    - Support for OpenGL rendering.

@@ -103,7 +103,7 @@ if(NOT "x${CMAKE_CXX_COMPILER_ID}" STREQUAL "xMSVC")
   set(CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_MINSIZEREL} -Wno-unused-variable")
 
   if(MSVC)
-    # Clang behaving as MSVC`
+    # Clang behaving as MSVC
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-unused-command-line-argument")
     set(CMAKE_CXX_FLAGS
       "${CMAKE_CXX_FLAGS} -Wno-microsoft-template -Wno-unused-command-line-argument")
