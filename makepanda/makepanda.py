@@ -4603,33 +4603,7 @@ if PkgSkip("OPENAL") == 0 and not RUNTIME:
 #
 
 if (PkgSkip("OPENSSL")==0 and not RTDIST and not RUNTIME and PkgSkip("DEPLOYTOOLS")==0):
-  OPTS=['DIR:panda/src/downloadertools', 'OPENSSL', 'ZLIB', 'ADVAPI', 'WINSOCK2', 'WINSHELL', 'WINGDI', 'WINUSER']
-
-  TargetAdd('apply_patch_apply_patch.obj', opts=OPTS, input='apply_patch.cxx')
-  TargetAdd('apply_patch.exe', input=['apply_patch_apply_patch.obj'])
-  TargetAdd('apply_patch.exe', input=COMMON_PANDA_LIBS)
-  TargetAdd('apply_patch.exe', opts=OPTS)
-
-  TargetAdd('build_patch_build_patch.obj', opts=OPTS, input='build_patch.cxx')
-  TargetAdd('build_patch.exe', input=['build_patch_build_patch.obj'])
-  TargetAdd('build_patch.exe', input=COMMON_PANDA_LIBS)
-  TargetAdd('build_patch.exe', opts=OPTS)
-
-  if not PkgSkip("ZLIB"):
-    TargetAdd('check_adler_check_adler.obj', opts=OPTS, input='check_adler.cxx')
-    TargetAdd('check_adler.exe', input=['check_adler_check_adler.obj'])
-    TargetAdd('check_adler.exe', input=COMMON_PANDA_LIBS)
-    TargetAdd('check_adler.exe', opts=OPTS)
-
-    TargetAdd('check_crc_check_crc.obj', opts=OPTS, input='check_crc.cxx')
-    TargetAdd('check_crc.exe', input=['check_crc_check_crc.obj'])
-    TargetAdd('check_crc.exe', input=COMMON_PANDA_LIBS)
-    TargetAdd('check_crc.exe', opts=OPTS)
-
-  TargetAdd('check_md5_check_md5.obj', opts=OPTS, input='check_md5.cxx')
-  TargetAdd('check_md5.exe', input=['check_md5_check_md5.obj'])
-  TargetAdd('check_md5.exe', input=COMMON_PANDA_LIBS)
-  TargetAdd('check_md5.exe', opts=OPTS)
+  OPTS=['DIR:panda/src/downloadertools', 'OPENSSL', 'ADVAPI', 'WINSOCK2', 'WINSHELL', 'WINGDI', 'WINUSER']
 
   TargetAdd('pdecrypt_pdecrypt.obj', opts=OPTS, input='pdecrypt.cxx')
   TargetAdd('pdecrypt.exe', input=['pdecrypt_pdecrypt.obj'])
@@ -4640,11 +4614,6 @@ if (PkgSkip("OPENSSL")==0 and not RTDIST and not RUNTIME and PkgSkip("DEPLOYTOOL
   TargetAdd('pencrypt.exe', input=['pencrypt_pencrypt.obj'])
   TargetAdd('pencrypt.exe', input=COMMON_PANDA_LIBS)
   TargetAdd('pencrypt.exe', opts=OPTS)
-
-  TargetAdd('show_ddb_show_ddb.obj', opts=OPTS, input='show_ddb.cxx')
-  TargetAdd('show_ddb.exe', input=['show_ddb_show_ddb.obj'])
-  TargetAdd('show_ddb.exe', input=COMMON_PANDA_LIBS)
-  TargetAdd('show_ddb.exe', opts=OPTS)
 
 #
 # DIRECTORY: panda/src/downloadertools/

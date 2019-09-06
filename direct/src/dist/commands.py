@@ -66,6 +66,8 @@ def _parse_dict(input):
 
 
 def egg2bam(_build_cmd, srcpath, dstpath):
+    if dstpath.endswith('.gz') or dstpath.endswith('.pz'):
+        dstpath = dstpath[:-3]
     dstpath = dstpath + '.bam'
     try:
         subprocess.check_call([
@@ -895,6 +897,9 @@ class build_apps(setuptools.Command):
                 os.makedirs(dst_dir)
 
             ext = os.path.splitext(src)[1]
+            # If the file ends with .gz/.pz, we strip this off.
+            if ext in ('.gz', '.pz'):
+                ext = os.path.splitext(src[:-3])[1]
             if not ext:
                 ext = os.path.basename(src)
 

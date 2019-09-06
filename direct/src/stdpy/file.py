@@ -83,6 +83,7 @@ def open(file, mode='r', buffering=-1, encoding=None, errors=None, newline=None,
         elif isinstance(file, strType):
             filename = core.Filename.fromOsSpecific(file)
         else:
+            # It's either a Filename object or an os.PathLike.
             # If a Filename is given, make a writable copy anyway.
             filename = core.Filename(file)
 

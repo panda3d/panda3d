@@ -2079,16 +2079,10 @@
 				<File RelativePath="..\panda\src\pnmimagetypes\colrops.c"></File>
 			</Filter>
 			<Filter Name="downloadertools">
-				<File RelativePath="..\panda\src\downloadertools\show_ddb.cxx"></File>
 				<File RelativePath="..\panda\src\downloadertools\pencrypt.cxx"></File>
-				<File RelativePath="..\panda\src\downloadertools\check_adler.cxx"></File>
 				<File RelativePath="..\panda\src\downloadertools\pdecrypt.cxx"></File>
 				<File RelativePath="..\panda\src\downloadertools\pzip.cxx"></File>
 				<File RelativePath="..\panda\src\downloadertools\multify.cxx"></File>
-				<File RelativePath="..\panda\src\downloadertools\check_md5.cxx"></File>
-				<File RelativePath="..\panda\src\downloadertools\check_crc.cxx"></File>
-				<File RelativePath="..\panda\src\downloadertools\apply_patch.cxx"></File>
-				<File RelativePath="..\panda\src\downloadertools\build_patch.cxx"></File>
 				<File RelativePath="..\panda\src\downloadertools\punzip.cxx"></File>
 			</Filter>
 			<Filter Name="gles2gsg">

@@ -99,8 +99,7 @@ run() {
   out << std::hex << std::setfill('0');
   int count = 0;
   int col = 0;
-  unsigned int ch;
-  ch = in.get();
+  int ch = in.get();
   while (!in.fail() && ch != EOF) {
     if (col == 0) {
       out << "\n  ";
@@ -110,7 +109,7 @@ run() {
     } else {
       out << ", ";
     }
-    out << "0x" << std::setw(2) << ch;
+    out << "0x" << std::setw(2) << (unsigned int)ch;
     col++;
     count++;
     ch = in.get();

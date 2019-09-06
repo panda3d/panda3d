@@ -36,14 +36,6 @@ def test_wheel(wheel, verbose=False):
         shutil.rmtree(envdir)
         sys.exit(1)
 
-    # Temp hack to patch issue pypa/pip#6885 in pip 19.2.2 and Python 3.8.
-    if sys.platform == "win32" and "-cp38-cp38-" in wheel and os.path.isdir(os.path.join(envdir, "Lib", "site-packages", "pip-19.2.2.dist-info")):
-        pep425tags = os.path.join(envdir, "Lib", "site-packages", "pip", "_internal", "pep425tags.py")
-        if os.path.isfile(pep425tags):
-            data = open(pep425tags, "r").read()
-            data = data.replace(" m = 'm'\n", " m = ''\n")
-            open(pep425tags, "w").write(data)
-
     # Install pytest into the environment, as well as our wheel.
     if subprocess.call([python, "-m", "pip", "install", "pytest", wheel]) != 0:
         shutil.rmtree(envdir)
