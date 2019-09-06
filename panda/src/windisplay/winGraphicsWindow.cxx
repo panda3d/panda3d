@@ -430,26 +430,8 @@ set_properties_now(WindowProperties &properties) {
         break;
 
       case WindowProperties::M_confined:
-        {
-          RECT clip;
-
-          if (!GetWindowRect(_hWnd, &clip)) {
-            windisplay_cat.warning()
-                << "GetWindowRect() failed in set_properties_now.  Cannot confine cursor.\n";
-          } else {
-            windisplay_cat.info()
-                    << "ClipCursor() to " << clip.left << "," << clip.top << " to "
-                    << clip.right << "," << clip.bottom << endl;
-
-            GetClipCursor(&_mouse_unconfined_cliprect);
-            if (!ClipCursor(&clip)) {
-              windisplay_cat.warning()
-                      << "ClipCursor() failed in set_properties_now.  Ignoring.\n";
-            } else {
-              _properties.set_mouse_mode(WindowProperties::M_confined);
-              windisplay_cat.info() << "Confining cursor to window\n";
-            }
-          }
+        if (confine_cursor()) {
+          _properties.set_mouse_mode(WindowProperties::M_confined);
         }
         break;
       }
@@ -772,6 +754,12 @@ do_reshape_request(int x_origin, int y_origin, bool has_origin,
                  view_rect.bottom - view_rect.top,
                  flags);
 
+    // If we are in confined mode, we must update the clip region.
+    if (_properties.has_mouse_mode() &&
+        _properties.get_mouse_mode() == WindowProperties::M_confined) {
+      confine_cursor();
+    }
+
     handle_reshape();
     return true;
   }
@@ -943,6 +931,12 @@ do_windowed_switch() {
   SetWindowPos(_hWnd, HWND_NOTOPMOST, 0, 0,
                metrics.width, metrics.height,
                SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+
+  // If we had a confined cursor, we must reconfine it now.
+  if (_properties.has_mouse_mode() &&
+      _properties.get_mouse_mode() == WindowProperties::M_confined) {
+    confine_cursor();
+  }
 
   return true;
 }
@@ -1310,6 +1304,31 @@ track_mouse_leaving(HWND hwnd) {
 }
 
 /**
+ * Confines the mouse cursor to the window.
+ */
+bool WinGraphicsWindow::
+confine_cursor() {
+  RECT clip;
+  if (!GetWindowRect(_hWnd, &clip)) {
+    windisplay_cat.warning()
+      << "GetWindowRect() failed, cannot confine cursor.\n";
+    return false;
+  } else {
+    windisplay_cat.info()
+      << "ClipCursor() to " << clip.left << "," << clip.top << " to "
+      << clip.right << "," << clip.bottom << endl;
+
+    if (!ClipCursor(&clip)) {
+      windisplay_cat.warning()
+        << "Failed to confine cursor to window.\n";
+      return false;
+    } else {
+      return true;
+    }
+  }
+}
+
+/**
  * Attempts to set this window as the "focus" window, so that keyboard events
  * come here.
  */
@@ -1482,6 +1501,14 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             SetWindowPos(_hWnd, HWND_TOP, 0,0,0,0, SWP_NOMOVE | SWP_NOSENDCHANGING | SWP_NOSIZE | SWP_NOOWNERZORDER);
             fullscreen_restored(properties);
           }
+
+        // If we had a confined cursor, we must reconfine it upon activation.
+        if (_properties.has_mouse_mode() &&
+            _properties.get_mouse_mode() == WindowProperties::M_confined) {
+          if (!confine_cursor()) {
+            properties.set_mouse_mode(WindowProperties::M_absolute);
+          }
+        }
       }
     else
       {
@@ -1516,7 +1543,16 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     break;
 
   case WM_EXITSIZEMOVE:
-    // handle_reshape();
+    if (windisplay_cat.is_debug()) {
+      windisplay_cat.debug()
+        << "WM_EXITSIZEMOVE: " << hwnd << ", " << wparam << "\n";
+    }
+
+    // If we had a confined cursor, we must reconfine it upon a resize.
+    if (_properties.has_mouse_mode() &&
+        _properties.get_mouse_mode() == WindowProperties::M_confined) {
+      confine_cursor();
+    }
     break;
 
   case WM_WINDOWPOSCHANGED:
