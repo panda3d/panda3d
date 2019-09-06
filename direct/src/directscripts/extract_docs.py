@@ -284,7 +284,8 @@ def processModule(handle, package):
             if "panda3d." + package == module_name:
                 processFunction(handle, func)
         else:
-            print("Function %s has no module name" % func)
+            funcname = translateFunctionName(interrogate_function_name(func))
+            print("Function %s has no module name" % funcname)
 
     print("}", file=handle)
 
