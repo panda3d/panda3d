@@ -4605,16 +4605,6 @@ if PkgSkip("OPENAL") == 0 and not RUNTIME:
 if (PkgSkip("OPENSSL")==0 and not RTDIST and not RUNTIME and PkgSkip("DEPLOYTOOLS")==0):
   OPTS=['DIR:panda/src/downloadertools', 'OPENSSL', 'ZLIB', 'ADVAPI', 'WINSOCK2', 'WINSHELL', 'WINGDI', 'WINUSER']
 
-  TargetAdd('apply_patch_apply_patch.obj', opts=OPTS, input='apply_patch.cxx')
-  TargetAdd('apply_patch.exe', input=['apply_patch_apply_patch.obj'])
-  TargetAdd('apply_patch.exe', input=COMMON_PANDA_LIBS)
-  TargetAdd('apply_patch.exe', opts=OPTS)
-
-  TargetAdd('build_patch_build_patch.obj', opts=OPTS, input='build_patch.cxx')
-  TargetAdd('build_patch.exe', input=['build_patch_build_patch.obj'])
-  TargetAdd('build_patch.exe', input=COMMON_PANDA_LIBS)
-  TargetAdd('build_patch.exe', opts=OPTS)
-
   if not PkgSkip("ZLIB"):
     TargetAdd('check_adler_check_adler.obj', opts=OPTS, input='check_adler.cxx')
     TargetAdd('check_adler.exe', input=['check_adler_check_adler.obj'])
