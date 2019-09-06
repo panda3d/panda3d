@@ -298,19 +298,6 @@ package_status(SQUISH "libsquish")
 
 
 #
-# ------------ Archival formats ------------
-#
-
-# libtar
-find_package(Tar QUIET)
-
-package_option(TAR
-  "This is used to optimize patch generation against tar files.")
-
-package_status(TAR "libtar")
-
-
-#
 # ------------ Asset formats ------------
 #
 

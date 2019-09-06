@@ -64,7 +64,7 @@ before_install:
 install:
 - >
   if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-    brew install python@3 eigen libtar libsquish zlib ffmpeg freetype \
+    brew install python@3 eigen libsquish zlib ffmpeg freetype \
     bullet opencv assimp libvorbis openssl ccache || true
     brew install ode --with-shared
 
