@@ -80,6 +80,8 @@ add_in_pattern(const std::string &in_pattern) {
 /**
  * This method is deprecated; it completely replaces all the in patterns that
  * have previously been set with the indicated pattern.
+ *
+ * @deprecated Use add_in_pattern() instead.
  */
 INLINE void CollisionHandlerEvent::
 set_in_pattern(const std::string &in_pattern) {
@@ -133,6 +135,8 @@ add_again_pattern(const std::string &again_pattern) {
 /**
  * This method is deprecated; it completely replaces all the in patterns that
  * have previously been set with the indicated pattern.
+ *
+ * @deprecated Use add_again_pattern() instead.
  */
 INLINE void CollisionHandlerEvent::
 set_again_pattern(const std::string &again_pattern) {
@@ -184,6 +188,8 @@ add_out_pattern(const std::string &out_pattern) {
 /**
  * This method is deprecated; it completely replaces all the in patterns that
  * have previously been set with the indicated pattern.
+ *
+ * @deprecated Use add_out_pattern() instead.
  */
 INLINE void CollisionHandlerEvent::
 set_out_pattern(const std::string &out_pattern) {

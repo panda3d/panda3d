@@ -109,7 +109,7 @@ get_connected_shading() const {
 /**
  * Replaces the current list of textures with the indicated texture.
  *
- * This method is deprecated and is used in support of single-texturing only.
+ * @deprecated This method is used in support of single-texturing only.
  * Please use the multitexture variant add_texture instead.
  */
 INLINE void EggPrimitive::
@@ -121,7 +121,7 @@ set_texture(EggTexture *texture) {
 /**
  * Returns true if the primitive has any textures specified, false otherwise.
  *
- * This method is deprecated and is used in support of single-texturing only.
+ * @deprecated This method is used in support of single-texturing only.
  * New code should be written to use the multitexture variants instead.
  */
 INLINE bool EggPrimitive::
@@ -143,7 +143,7 @@ has_texture(EggTexture *texture) const {
  * Returns the first texture on the primitive, if any, or NULL if there are no
  * textures on the primitive.
  *
- * This method is deprecated and is used in support of single-texturing only.
+ * @deprecated This method is used in support of single-texturing only.
  * New code should be written to use the multitexture variants instead.
  */
 INLINE EggTexture *EggPrimitive::
