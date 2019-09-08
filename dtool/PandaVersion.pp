@@ -31,21 +31,3 @@
 // build which you will be using to produce a distributable Panda3D
 // package, you should set this string appropriately.
 #define PANDA_PACKAGE_VERSION 
-
-// We also define a version for the Panda3D plugin/runtime,
-// i.e. nppanda3d.dll, p3dactivex.ocx, and panda3d.exe.  This is an
-// independent version number from PANDA_VERSION or
-// PANDA_PACKAGE_VERSION, because it is anticipated that this plugin
-// code, once settled, will need to be updated much less frequently
-// than Panda itself.
-#define P3D_PLUGIN_VERSION
-
-// Finally, there's a separate version number for the Core API.  At
-// first, we didn't believe we needed a Core API version number, but
-// in this belief we were naive.  This version number is a little less
-// strict in its format requirements than P3D_PLUGIN_VERSION, above,
-// and it doesn't necessarily consist of a specific number of
-// integers, but by convention it will consist of four integers, with
-// the first three matching the plugin version, and the fourth integer
-// being incremented with each new Core API revision.
-#define P3D_COREAPI_VERSION
