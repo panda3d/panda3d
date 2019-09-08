@@ -55,10 +55,7 @@ DEBVERSION=None
 WHLVERSION=None
 RPMRELEASE="1"
 GIT_COMMIT=None
-P3DSUFFIX=None
 MAJOR_VERSION=None
-COREAPI_VERSION=None
-PLUGIN_VERSION=None
 OSXTARGET=None
 global STRDXSDKVERSION, BOOUSEINTELCOMPILER
 STRDXSDKVERSION = 'default'
@@ -163,7 +160,7 @@ def usage(problem):
 def parseopts(args):
     global INSTALLER,WHEEL,RUNTESTS,GENMAN,DISTRIBUTOR,VERSION
     global COMPRESSOR,THREADCOUNT,OSXTARGET
-    global DEBVERSION,WHLVERSION,RPMRELEASE,GIT_COMMIT,P3DSUFFIX
+    global DEBVERSION,WHLVERSION,RPMRELEASE,GIT_COMMIT
     global STRDXSDKVERSION, WINDOWS_SDK, MSVC_VERSION, BOOUSEINTELCOMPILER
     global COPY_PYTHON
 
@@ -225,7 +222,6 @@ def parseopts(args):
             elif (option=="--debversion"): DEBVERSION=value
             elif (option=="--rpmrelease"): RPMRELEASE=value
             elif (option=="--git-commit"): GIT_COMMIT=value
-            elif (option=="--p3dsuffix"): P3DSUFFIX=value
             # Backward compatibility, OPENGL was renamed to GL
             elif (option=="--use-opengl"): PkgEnable("GL")
             elif (option=="--no-opengl"): PkgDisable("GL")
@@ -367,9 +363,6 @@ if DEBVERSION is None:
     DEBVERSION = VERSION
 
 MAJOR_VERSION = '.'.join(VERSION.split('.')[:2])
-
-if P3DSUFFIX is None:
-    P3DSUFFIX = MAJOR_VERSION
 
 # Now determine the distutils-style platform tag for the target system.
 target = GetTarget()
@@ -2260,7 +2253,6 @@ DTOOL_CONFIG=[
     ("PRC_SAVE_DESCRIPTIONS",          '1',                      '1'),
 #    ("_SECURE_SCL",                    '0',                      'UNDEF'),
 #    ("_SECURE_SCL_THROWS",             '0',                      'UNDEF'),
-    ("HAVE_P3D_PLUGIN",                'UNDEF',                  'UNDEF'),
 ]
 
 PRC_PARAMETERS=[
@@ -2462,8 +2454,6 @@ PANDAVERSION_H="""
 #define PANDA_VERSION_STR "$VERSION"
 #define PANDA_ABI_VERSION_STR "$VERSION1.$VERSION2"
 #define PANDA_DISTRIBUTOR "$DISTRIBUTOR"
-#define PANDA_PACKAGE_VERSION_STR ""
-#define PANDA_PACKAGE_HOST_URL ""
 """
 
 CHECKPANDAVERSION_CXX="""
@@ -2486,65 +2476,6 @@ template class CheckPandaVersion<void>;
 # endif
 """
 
-P3DACTIVEX_RC="""#include "resource.h"
-#define APSTUDIO_READONLY_SYMBOLS
-#include "afxres.h"
-#undef APSTUDIO_READONLY_SYMBOLS
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
-#ifdef _WIN32
-LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
-#pragma code_page(1252)
-#endif
-#ifdef APSTUDIO_INVOKED
-1 TEXTINCLUDE
-BEGIN
-    "resource.h\\0"
-END
-2 TEXTINCLUDE
-BEGIN
-   "#include ""afxres.h""\\r\\n"
-    "\\0"
-END
-3 TEXTINCLUDE
-BEGIN
-    "1 TYPELIB ""P3DActiveX.tlb""\\r\\n"
-    "\\0"
-END
-#endif
-%s
-IDB_P3DACTIVEX          BITMAP                  "P3DActiveXCtrl.bmp"
-IDD_PROPPAGE_P3DACTIVEX DIALOG  0, 0, 250, 62
-STYLE DS_SETFONT | WS_CHILD
-FONT 8, "MS Sans Serif"
-BEGIN
-    LTEXT           "TODO: Place controls to manipulate properties of P3DActiveX Control on this dialog.",
-                    IDC_STATIC,7,25,229,16
-END
-#ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO
-BEGIN
-    IDD_PROPPAGE_P3DACTIVEX, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 243
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 55
-    END
-END
-#endif
-STRINGTABLE
-BEGIN
-    IDS_P3DACTIVEX          "P3DActiveX Control"
-    IDS_P3DACTIVEX_PPG      "P3DActiveX Property Page"
-END
-STRINGTABLE
-BEGIN
-    IDS_P3DACTIVEX_PPG_CAPTION "General"
-END
-#endif
-#ifndef APSTUDIO_INVOKED
-1 TYPELIB "P3DActiveX.tlb"
-#endif"""
 
 def CreatePandaVersionFiles():
     version1=int(VERSION.split(".")[0])

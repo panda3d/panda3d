@@ -33,8 +33,8 @@ PandaSystem() :
 
   // These are settable via Config.prc, but only in development (!NDEBUG)
   // mode, and only if they are not already defined.
-  _package_version_string = PANDA_PACKAGE_VERSION_STR;
-  _package_host_url = PANDA_PACKAGE_HOST_URL;
+  _package_version_string = "";
+  _package_host_url = "";
 
 #ifdef STDFLOAT_DOUBLE
   add_system("stdfloat-double");
@@ -97,11 +97,12 @@ get_version_string() {
  * This string is set explicitly at compilation time.  Normally, it should be
  * set to a nonempty string only when building a Panda3D package for
  * distribution.
+ * @deprecated Runtime/plugin environment has been removed, this always returns an empty string.
  */
 string PandaSystem::
 get_package_version_string() {
 #ifdef NDEBUG
-  return PANDA_PACKAGE_VERSION_STR;
+  return "";
 #else
   return get_global_ptr()->_package_version_string;
 #endif
@@ -118,11 +119,12 @@ get_package_version_string() {
  * This string is set explicitly at compilation time.  Normally, it should be
  * set to a nonempty string only when building a Panda3D package for
  * distribution.
+ * @deprecated Runtime/plugin environment has been removed, this always returns an empty string.
  */
 string PandaSystem::
 get_package_host_url() {
 #ifdef NDEBUG
-  return PANDA_PACKAGE_HOST_URL;
+  return "";
 #else
   return get_global_ptr()->_package_host_url;
 #endif
@@ -138,14 +140,11 @@ get_package_host_url() {
  * provide a particular Core API, which will be the normal case in a
  * development SDK.  However, you should not use this method to determine
  * whether you are running in a runtime environment or not.
+ * @deprecated Runtime/plugin environment has been removed, this always returns an empty string.
  */
 string PandaSystem::
 get_p3d_coreapi_version_string() {
-#ifndef P3D_COREAPI_VERSION_STR
   return "";
-#else
-  return P3D_COREAPI_VERSION_STR;
-#endif
 }
 
 /**
@@ -468,7 +467,7 @@ reset_system_names() {
  */
 void PandaSystem::
 set_package_version_string(const string &package_version_string) {
-  _package_version_string = PANDA_PACKAGE_VERSION_STR;
+  _package_version_string = "";
   if (_package_version_string.empty()) {
     _package_version_string = package_version_string;
   }
@@ -483,7 +482,7 @@ set_package_version_string(const string &package_version_string) {
  */
 void PandaSystem::
 set_package_host_url(const string &package_host_url) {
-  _package_host_url = PANDA_PACKAGE_HOST_URL;
+  _package_host_url = "";
   if (_package_host_url.empty()) {
     _package_host_url = package_host_url;
   }
