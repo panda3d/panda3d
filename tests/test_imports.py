@@ -71,6 +71,8 @@ def test_imports_direct():
     import direct.directutil.Verify
     import direct.directutil.WeightedChoice
     import direct.dist.FreezeTool
+    import direct.dist.icon
+    import direct.dist.commands
     import direct.distributed.AsyncRequest
     import direct.distributed.CRCache
     import direct.distributed.CRDataCache
@@ -167,21 +169,6 @@ def test_imports_direct():
     import direct.interval.SoundInterval
     import direct.interval.TestInterval
     import direct.motiontrail.MotionTrail
-    import direct.p3d.AppRunner
-    import direct.p3d.DWBPackageInstaller
-    import direct.p3d.DeploymentTools
-    import direct.p3d.FileSpec
-    import direct.p3d.HostInfo
-    import direct.p3d.InstalledHostData
-    import direct.p3d.InstalledPackageData
-    import direct.p3d.JavaScript
-    import direct.p3d.PackageInfo
-    import direct.p3d.PackageInstaller
-    import direct.p3d.PackageMerger
-    import direct.p3d.Packager
-    import direct.p3d.PatchMaker
-    import direct.p3d.ScanDirectoryNode
-    import direct.p3d.SeqValue
     import direct.particles.ForceGroup
     import direct.particles.GlobalForceGroup
     import direct.particles.ParticleEffect
@@ -192,7 +179,6 @@ def test_imports_direct():
     import direct.particles.SpriteParticleRendererExt
     import direct.physics.FallTest
     import direct.physics.RotationTest
-    import direct.showbase.AppRunnerGlobal
     import direct.showbase.Audio3DManager
     import direct.showbase.BufferViewer
     import direct.showbase.BulletinBoard

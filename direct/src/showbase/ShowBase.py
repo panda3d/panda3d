@@ -46,7 +46,6 @@ if __debug__:
     from direct.showbase import GarbageReport
     from direct.directutil import DeltaProfiler
     from . import OnScreenDebug
-from . import AppRunnerGlobal
 
 @atexit.register
 def exitfunc():
@@ -81,7 +80,7 @@ class ShowBase(DirectObject.DirectObject):
         ## This contains the global appRunner instance, as imported from
         ## AppRunnerGlobal.  This will be None if we are not running in the
         ## runtime environment (ie. from a .p3d file).
-        self.appRunner = AppRunnerGlobal.appRunner
+        self.appRunner = None
         self.app_runner = self.appRunner
 
         #debug running multiplier
