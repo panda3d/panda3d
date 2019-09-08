@@ -1004,8 +1004,6 @@ def printStatus(header,warnings):
             else:
                 tkeep = tkeep + x + " "
 
-        print("Makepanda: Regular build")
-
         print("Makepanda: Compiler: %s" % (COMPILER))
         print("Makepanda: Optimize: %d" % (GetOptimize()))
         print("Makepanda: Keep Pkg: %s" % (tkeep))
@@ -1971,66 +1969,6 @@ def FreezePy(target, inputs, opts):
 
 ##########################################################################################
 #
-# Package
-#
-##########################################################################################
-
-def Package(target, inputs, opts):
-    assert len(inputs) == 1
-    # Invoke the ppackage script.
-    command = BracketNameWithQuotes(SDK["PYTHONEXEC"]) + " "
-    if GetOptimizeOption(opts) >= 4:
-        command += "-OO "
-
-    if sys.version_info >= (2, 6):
-        command += "-B "
-
-    command += "direct/src/p3d/ppackage.py"
-
-    # Don't compile Python sources, because we might not running in the same
-    # Python version as the selected host.
-    command += " -N"
-
-    if GetTarget() == "darwin":
-        if SDK.get("MACOSX"):
-            command += " -R \"%s\"" % SDK["MACOSX"]
-
-        arch = GetTargetArch()
-        if arch == "x86_64":
-            arch = "amd64"
-        command += " -P osx_%s" % arch
-
-    command += " -i \"" + GetOutputDir() + "/stage\""
-    if (P3DSUFFIX):
-        command += ' -a "' + P3DSUFFIX + '"'
-
-    command += " " + inputs[0]
-
-    if GetOrigExt(target) == '.p3d':
-        # Build a specific .p3d file.
-        basename = os.path.basename(os.path.splitext(target)[0])
-        command += " " + basename
-        oscmd(command)
-
-        if GetTarget() == 'windows':
-            # Make an .exe that calls this .p3d.
-            objfile = FindLocation('p3dWrapper_' + basename + '.obj', [])
-            CompileCxx(objfile, 'direct/src/p3d/p3dWrapper.c', [])
-
-            exefile = FindLocation(basename + '.exe', [])
-            CompileLink(exefile, [objfile], ['ADVAPI'])
-
-        # Move it to the bin directory.
-        os.rename(GetOutputDir() + '/stage/' + basename + P3DSUFFIX + '.p3d', target)
-
-        if sys.platform != 'win32':
-            oscmd('chmod +x ' + BracketNameWithQuotes(target))
-    else:
-        # This is presumably a package or set of packages.
-        oscmd(command)
-
-##########################################################################################
-#
 # CompileBundle
 #
 ##########################################################################################
@@ -2127,12 +2065,6 @@ def CompileAnything(target, inputs, opts, progress = None):
     elif (infile.endswith(".idl")):
         ProgressOutput(progress, "Compiling MIDL file", infile)
         return CompileMIDL(target, infile, opts)
-    elif (infile.endswith(".pdef")):
-        if origsuffix == '.p3d':
-            ProgressOutput(progress, "Building package", target)
-        else:
-            ProgressOutput(progress, "Building package from pdef file", infile)
-        return Package(target, inputs, opts)
     elif origsuffix in SUFFIX_LIB:
         ProgressOutput(progress, "Linking static library", target)
         return CompileLib(target, inputs, opts)

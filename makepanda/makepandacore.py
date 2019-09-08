@@ -3429,7 +3429,6 @@ def CalcLocation(fn, ipath):
     if (fn.endswith(".py")):  return CxxFindSource(fn, ipath)
     if (fn.endswith(".yxx")): return CxxFindSource(fn, ipath)
     if (fn.endswith(".lxx")): return CxxFindSource(fn, ipath)
-    if (fn.endswith(".pdef")):return CxxFindSource(fn, ipath)
     if (fn.endswith(".xml")): return CxxFindSource(fn, ipath)
     if (fn.endswith(".java")):return CxxFindSource(fn, ipath)
     if (fn.endswith(".egg")): return OUTPUTDIR+"/models/"+fn
