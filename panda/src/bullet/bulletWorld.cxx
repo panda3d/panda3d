@@ -367,7 +367,7 @@ remove(TypedObject *object) {
 }
 
 /**
- * Deprecated!  Please use BulletWorld::attach
+ * @deprecated Please use BulletWorld::attach
  */
 void BulletWorld::
 attach_rigid_body(BulletRigidBodyNode *node) {
@@ -377,7 +377,7 @@ attach_rigid_body(BulletRigidBodyNode *node) {
 }
 
 /**
- * Deprecated.! Please use BulletWorld::remove
+ * @deprecated Please use BulletWorld::remove
  */
 void BulletWorld::
 remove_rigid_body(BulletRigidBodyNode *node) {
@@ -387,7 +387,7 @@ remove_rigid_body(BulletRigidBodyNode *node) {
 }
 
 /**
- * Deprecated!  Please use BulletWorld::attach
+ * @deprecated Please use BulletWorld::attach
  */
 void BulletWorld::
 attach_soft_body(BulletSoftBodyNode *node) {
@@ -397,7 +397,7 @@ attach_soft_body(BulletSoftBodyNode *node) {
 }
 
 /**
- * Deprecated.! Please use BulletWorld::remove
+ * @deprecated Please use BulletWorld::remove
  */
 void BulletWorld::
 remove_soft_body(BulletSoftBodyNode *node) {
@@ -407,7 +407,7 @@ remove_soft_body(BulletSoftBodyNode *node) {
 }
 
 /**
- * Deprecated!  Please use BulletWorld::attach
+ * @deprecated Please use BulletWorld::attach
  */
 void BulletWorld::
 attach_ghost(BulletGhostNode *node) {
@@ -417,7 +417,7 @@ attach_ghost(BulletGhostNode *node) {
 }
 
 /**
- * Deprecated.! Please use BulletWorld::remove
+ * @deprecated Please use BulletWorld::remove
  */
 void BulletWorld::
 remove_ghost(BulletGhostNode *node) {
@@ -427,7 +427,7 @@ remove_ghost(BulletGhostNode *node) {
 }
 
 /**
- * Deprecated!  Please use BulletWorld::attach
+ * @deprecated Please use BulletWorld::attach
  */
 void BulletWorld::
 attach_character(BulletBaseCharacterControllerNode *node) {
@@ -437,7 +437,7 @@ attach_character(BulletBaseCharacterControllerNode *node) {
 }
 
 /**
- * Deprecated.! Please use BulletWorld::remove
+ * @deprecated Please use BulletWorld::remove
  */
 void BulletWorld::
 remove_character(BulletBaseCharacterControllerNode *node) {
@@ -447,7 +447,7 @@ remove_character(BulletBaseCharacterControllerNode *node) {
 }
 
 /**
- * Deprecated!  Please use BulletWorld::attach
+ * @deprecated Please use BulletWorld::attach
  */
 void BulletWorld::
 attach_vehicle(BulletVehicle *vehicle) {
@@ -457,7 +457,7 @@ attach_vehicle(BulletVehicle *vehicle) {
 }
 
 /**
- * Deprecated.! Please use BulletWorld::remove
+ * @deprecated Please use BulletWorld::remove
  */
 void BulletWorld::
 remove_vehicle(BulletVehicle *vehicle) {
@@ -478,7 +478,7 @@ attach_constraint(BulletConstraint *constraint, bool linked_collision) {
 }
 
 /**
- * Deprecated.! Please use BulletWorld::remove
+ * @deprecated Please use BulletWorld::remove
  */
 void BulletWorld::
 remove_constraint(BulletConstraint *constraint) {

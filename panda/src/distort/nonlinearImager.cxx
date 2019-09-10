@@ -49,6 +49,8 @@ NonlinearImager::
 /**
  * This version of this method is deprecated and will soon be removed.  Use
  * the version that takes two parameters instead.
+ *
+ * @deprecated Use the version that takes two parameters instead.
  */
 int NonlinearImager::
 add_screen(ProjectionScreen *screen) {

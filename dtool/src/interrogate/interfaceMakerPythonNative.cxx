@@ -117,6 +117,8 @@ const char *pythonKeywords[] = {
   "and",
   "as",
   "assert",
+  "async",
+  "await",
   "break",
   "class",
   "continue",

@@ -89,8 +89,7 @@ LightAttrib::
  * Constructs a new LightAttrib object that turns on (or off, according to op)
  * the indicated light(s).
  *
- * This method is now deprecated.  Use add_on_light() or add_off_light()
- * instead.
+ * @deprecated Use add_on_light() or add_off_light() instead.
  */
 CPT(RenderAttrib) LightAttrib::
 make(LightAttrib::Operation op, Light *light) {
@@ -124,8 +123,7 @@ make(LightAttrib::Operation op, Light *light) {
  * Constructs a new LightAttrib object that turns on (or off, according to op)
  * the indicate light(s).
  *
- * This method is now deprecated.  Use add_on_light() or add_off_light()
- * instead.
+ * @deprecated Use add_on_light() or add_off_light() instead.
  */
 CPT(RenderAttrib) LightAttrib::
 make(LightAttrib::Operation op, Light *light1, Light *light2) {
@@ -162,8 +160,7 @@ make(LightAttrib::Operation op, Light *light1, Light *light2) {
  * Constructs a new LightAttrib object that turns on (or off, according to op)
  * the indicate light(s).
  *
- * This method is now deprecated.  Use add_on_light() or add_off_light()
- * instead.
+ * @deprecated Use add_on_light() or add_off_light() instead.
  */
 CPT(RenderAttrib) LightAttrib::
 make(LightAttrib::Operation op, Light *light1, Light *light2,
@@ -204,8 +201,7 @@ make(LightAttrib::Operation op, Light *light1, Light *light2,
  * Constructs a new LightAttrib object that turns on (or off, according to op)
  * the indicate light(s).
  *
- * This method is now deprecated.  Use add_on_light() or add_off_light()
- * instead.
+ * @deprecated Use add_on_light() or add_off_light() instead.
  */
 CPT(RenderAttrib) LightAttrib::
 make(LightAttrib::Operation op, Light *light1, Light *light2,
@@ -261,9 +257,9 @@ make_default() {
  * already on, and if O_remove, the lights here are removed from the set of
  * lights that were on.
  *
- * This method is now deprecated.  LightAttribs nowadays have a separate list
- * of on_lights and off_lights, so this method doesn't make sense.  Query the
- * lists independently.
+ * @deprecated LightAttribs nowadays have a separate list of on_lights and
+ * off_lights, so this method no longer makes sense.  Query the lists
+ * independently.
  */
 LightAttrib::Operation LightAttrib::
 get_operation() const {
@@ -284,9 +280,9 @@ get_operation() const {
 /**
  * Returns the number of lights listed in the attribute.
  *
- * This method is now deprecated.  LightAttribs nowadays have a separate list
- * of on_lights and off_lights, so this method doesn't make sense.  Query the
- * lists independently.
+ * @deprecated LightAttribs nowadays have a separate list of on_lights and
+ * off_lights, so this method no longer makes sense.  Query the lists
+ * independently.
  */
 int LightAttrib::
 get_num_lights() const {
@@ -303,9 +299,9 @@ get_num_lights() const {
 /**
  * Returns the nth light listed in the attribute.
  *
- * This method is now deprecated.  LightAttribs nowadays have a separate list
- * of on_lights and off_lights, so this method doesn't make sense.  Query the
- * lists independently.
+ * @deprecated LightAttribs nowadays have a separate list of on_lights and
+ * off_lights, so this method no longer makes sense.  Query the lists
+ * independently.
  */
 Light *LightAttrib::
 get_light(int n) const {
@@ -323,9 +319,9 @@ get_light(int n) const {
  * Returns true if the indicated light is listed in the attrib, false
  * otherwise.
  *
- * This method is now deprecated.  LightAttribs nowadays have a separate list
- * of on_lights and off_lights, so this method doesn't make sense.  Query the
- * lists independently.
+ * @deprecated LightAttribs nowadays have a separate list of on_lights and
+ * off_lights, so this method no longer makes sense.  Query the lists
+ * independently.
  */
 bool LightAttrib::
 has_light(Light *light) const {
@@ -343,8 +339,7 @@ has_light(Light *light) const {
  * Returns a new LightAttrib, just like this one, but with the indicated light
  * added to the list of lights.
  *
- * This method is now deprecated.  Use add_on_light() or add_off_light()
- * instead.
+ * @deprecated Use add_on_light() or add_off_light() instead.
  */
 CPT(RenderAttrib) LightAttrib::
 add_light(Light *light) const {
@@ -362,8 +357,7 @@ add_light(Light *light) const {
  * Returns a new LightAttrib, just like this one, but with the indicated light
  * removed from the list of lights.
  *
- * This method is now deprecated.  Use remove_on_light() or remove_off_light()
- * instead.
+ * @deprecated Use remove_on_light() or remove_off_light() instead.
  */
 CPT(RenderAttrib) LightAttrib::
 remove_light(Light *light) const {
