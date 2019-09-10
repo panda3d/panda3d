@@ -21,7 +21,7 @@ import distutils.log
 
 from . import FreezeTool
 from . import pefile
-from direct.p3d.DeploymentTools import Icon
+from .icon import Icon
 import panda3d.core as p3d
 
 

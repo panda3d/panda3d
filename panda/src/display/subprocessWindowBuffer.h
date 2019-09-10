@@ -25,8 +25,7 @@
  * between processes, as well as appropriate synchronization primitives.
  *
  * It's designed to be compiled outside of Panda, so that code that doesn't
- * link with Panda (in particular, the Panda3D plugin core API) may still link
- * with this and use it.
+ * link with Panda may still link with this and use it.
  *
  * At the moment, and maybe indefinitely, it is only compiled on OSX, and only
  * when we are building support for the plugin; because it is only needed

@@ -3221,32 +3221,6 @@ def ParsePandaVersion(fn):
     except: pass
     return "0.0.0"
 
-def ParsePluginVersion(fn):
-    try:
-        f = open(fn, "r")
-        pattern = re.compile('^[ \t]*[#][ \t]*define[ \t]+P3D_PLUGIN_VERSION[ \t]+([0-9]+)[ \t]+([0-9]+)[ \t]+([0-9]+)')
-        for line in f:
-            match = pattern.match(line,0)
-            if (match):
-                f.close()
-                return match.group(1) + "." + match.group(2) + "." + match.group(3)
-        f.close()
-    except: pass
-    return "0.0.0"
-
-def ParseCoreapiVersion(fn):
-    try:
-        f = open(fn, "r")
-        pattern = re.compile('^[ \t]*[#][ \t]*define[ \t]+P3D_COREAPI_VERSION.*([0-9]+)[ \t]*$')
-        for line in f:
-            match = pattern.match(line,0)
-            if (match):
-                f.close()
-                return match.group(1)
-        f.close()
-    except: pass
-    return "0"
-
 ##########################################################################################
 #
 # Utility function to generate a resource file
@@ -3429,7 +3403,6 @@ def CalcLocation(fn, ipath):
     if (fn.endswith(".py")):  return CxxFindSource(fn, ipath)
     if (fn.endswith(".yxx")): return CxxFindSource(fn, ipath)
     if (fn.endswith(".lxx")): return CxxFindSource(fn, ipath)
-    if (fn.endswith(".pdef")):return CxxFindSource(fn, ipath)
     if (fn.endswith(".xml")): return CxxFindSource(fn, ipath)
     if (fn.endswith(".java")):return CxxFindSource(fn, ipath)
     if (fn.endswith(".egg")): return OUTPUTDIR+"/models/"+fn
