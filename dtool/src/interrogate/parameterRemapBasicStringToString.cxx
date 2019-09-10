@@ -51,7 +51,7 @@ pass_parameter(ostream &out, const string &variable_name) {
 string ParameterRemapBasicStringToString::
 prepare_return_expr(ostream &out, int indent_level, const string &expression) {
   InterfaceMaker::indent(out, indent_level)
-    << "static string string_holder = " << expression << ";\n";
+    << "static std::string string_holder = " << expression << ";\n";
   return "string_holder";
 }
 
@@ -97,7 +97,7 @@ pass_parameter(ostream &out, const string &variable_name) {
 string ParameterRemapBasicWStringToWString::
 prepare_return_expr(ostream &out, int indent_level, const string &expression) {
   InterfaceMaker::indent(out, indent_level)
-    << "static wstring string_holder = " << expression << ";\n";
+    << "static std::wstring string_holder = " << expression << ";\n";
   return "string_holder";
 }
 
