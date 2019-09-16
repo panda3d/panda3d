@@ -12,6 +12,8 @@
  */
 
 #include "pStatClient.h"
+#include "pStatCollector.h"
+#include "pStatThread.h"
 
 #ifdef DO_PSTATS
 // This file only defines anything interesting if DO_PSTATS is defined.
@@ -19,8 +21,6 @@
 #include "pStatClientImpl.h"
 #include "pStatClientControlMessage.h"
 #include "pStatServerControlMessage.h"
-#include "pStatCollector.h"
-#include "pStatThread.h"
 #include "config_pstatclient.h"
 #include "pStatProperties.h"
 #include "thread.h"
@@ -1221,5 +1221,45 @@ InternalThread(const string &name, const string &sync_name) :
   _thread_lock(string("PStatClient::InternalThread ") + name)
 {
 }
+
+#else  // DO_PSTATS
+
+PStatThread PStatClient::
+get_main_thread() const {
+  return PStatThread((PStatClient *)this, 0);
+}
+
+PStatThread PStatClient::
+get_current_thread() const {
+  return get_main_thread();
+}
+
+PStatCollector PStatClient::
+make_collector_with_relname(int parent_index, std::string relname) {
+  return PStatCollector();
+}
+
+PStatClient *PStatClient::
+get_global_pstats() {
+  static PStatClient global_pstats;
+  return &global_pstats;
+}
+
+void PStatClient::
+start(int collector_index, int thread_index) {
+}
+
+void PStatClient::
+start(int collector_index, int thread_index, double as_of) {
+}
+
+void PStatClient::
+stop(int collector_index, int thread_index) {
+}
+
+void PStatClient::
+stop(int collector_index, int thread_index, double as_of) {
+}
+
 
 #endif // DO_PSTATS

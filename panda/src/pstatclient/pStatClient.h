@@ -266,6 +266,12 @@ public:
   ~PStatClient() { }
 
 PUBLISHED:
+  std::string get_collector_name(int index) const { return std::string(); }
+  std::string get_collector_fullname(int index) const { return std::string(); }
+
+  PStatThread get_main_thread() const;
+  PStatThread get_current_thread() const;
+
   INLINE static bool connect(const std::string & = std::string(), int = -1) { return false; }
   INLINE static void disconnect() { }
   INLINE static bool is_connected() { return false; }
@@ -273,6 +279,26 @@ PUBLISHED:
 
   INLINE static void main_tick() { }
   INLINE static void thread_tick(const std::string &) { }
+
+  static PStatClient *get_global_pstats();
+
+private:
+  // These are used by inline PStatCollector methods, so they need to be
+  // stubbed out for ABI compatibility.
+  PStatCollector make_collector_with_relname(int parent_index, std::string relname);
+
+  bool is_active(int collector_index, int thread_index) const { return false; }
+  bool is_started(int collector_index, int thread_index) const { return false; }
+
+  void start(int collector_index, int thread_index);
+  void start(int collector_index, int thread_index, double as_of);
+  void stop(int collector_index, int thread_index);
+  void stop(int collector_index, int thread_index, double as_of);
+
+  void clear_level(int collector_index, int thread_index) { }
+  void set_level(int collector_index, int thread_index, double level) { }
+  void add_level(int collector_index, int thread_index, double increment) { }
+  double get_level(int collector_index, int thread_index) const { return 0.0; }
 };
 
 #endif  // DO_PSTATS
