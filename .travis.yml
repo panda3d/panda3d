@@ -58,7 +58,6 @@ addons:
 
 before_install:
 # clean up remnants of makepanda
-- mv makepanda/test_imports.py .
 - makepanda/selfdestruct.py --yes
 
 install:
@@ -108,7 +107,6 @@ script:
 - make -j4
 
 - export PYTHONPATH=$PWD
-- python ../test_imports.py
 - pytest -v ../tests
 
 notifications:
