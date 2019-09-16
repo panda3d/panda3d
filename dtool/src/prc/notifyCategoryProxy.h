@@ -71,13 +71,8 @@ public:
 
   INLINE bool is_on(NotifySeverity severity);
 
-#if defined(NOTIFY_DEBUG) || defined(CPPPARSER)
   INLINE bool is_spam();
   INLINE bool is_debug();
-#else
-  constexpr static bool is_spam() { return false; }
-  constexpr static bool is_debug() { return false; }
-#endif
   INLINE bool is_info();
   INLINE bool is_warning();
   INLINE bool is_error();
