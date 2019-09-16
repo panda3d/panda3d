@@ -4,6 +4,10 @@ endif()
 
 set(P3DISTRIBUTED_HEADERS
   config_distributed.h
+  cConnectionRepository.h
+  cConnectionRepository.I
+  cDistributedSmoothNodeBase.h
+  cDistributedSmoothNodeBase.I
 )
 
 set(P3DISTRIBUTED_SOURCES
@@ -12,11 +16,7 @@ set(P3DISTRIBUTED_SOURCES
 
 set(P3DISTRIBUTED_IGATEEXT
   cConnectionRepository.cxx
-  cConnectionRepository.h
-  cConnectionRepository.I
   cDistributedSmoothNodeBase.cxx
-  cDistributedSmoothNodeBase.h
-  cDistributedSmoothNodeBase.I
 )
 
 add_component_library(p3distributed NOINIT SYMBOL BUILDING_DIRECT_DISTRIBUTED
