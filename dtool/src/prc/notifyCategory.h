@@ -51,13 +51,8 @@ PUBLISHED:
   // to present a consistent interface to our scripting language, so during
   // the interrogate pass (that is, when CPPPARSER is defined), we still
   // pretend they're nonstatic.
-#if defined(NOTIFY_DEBUG) || defined(CPPPARSER)
   INLINE bool is_spam() const;
   INLINE bool is_debug() const;
-#else
-  constexpr bool is_spam() const { return false; }
-  constexpr bool is_debug() const { return false; }
-#endif
   INLINE bool is_info() const;
   INLINE bool is_warning() const;
   INLINE bool is_error() const;
