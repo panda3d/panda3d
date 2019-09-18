@@ -56,11 +56,12 @@ if(HAVE_PYTHON)
 print(\"Warning: pandac.PandaModules is deprecated, import from panda3d.core instead\")\n")
 
   foreach(module ${ALL_INTERROGATE_MODULES})
+    string(REGEX REPLACE "^.*\\." "" module_name "${module}")
     file(APPEND "${CMAKE_CURRENT_BINARY_DIR}/pandac/PandaModules.py" "
 try:
     from ${module} import *
 except ImportError as err:
-    if not (\"No module named\" in str(err) and \"${module}\" in str(err)):
+    if not (\"No module named\" in str(err) and \"${module_name}\" in str(err)):
         raise
 ")
   endforeach()
