@@ -132,7 +132,6 @@ check_include_file_cxx(dirent.h PHAVE_DIRENT_H)
 check_include_file_cxx(ucontext.h PHAVE_UCONTEXT_H) #TODO doesn't work on OSX, use sys/ucontext.h
 check_include_file_cxx(linux/input.h PHAVE_LINUX_INPUT_H)
 check_include_file_cxx(stdint.h PHAVE_STDINT_H)
-check_include_file_cxx(typeinfo HAVE_RTTI)
 
 # Do we have Posix threads?
 #set(HAVE_POSIX_THREADS ${CMAKE_USE_PTHREADS_INIT})

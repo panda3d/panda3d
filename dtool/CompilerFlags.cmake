@@ -127,6 +127,9 @@ if(MSVC)
   set(cxx_exceptions_on "/EHsc")
   set(cxx_exceptions_off "/D_HAS_EXCEPTIONS=0")
 
+  set(cxx_rtti_on "/GR")
+  set(cxx_rtti_off "/GR-")
+
 else()
   check_cxx_compiler_flag("-fno-exceptions" COMPILER_SUPPORTS_FEXCEPTIONS)
   if(COMPILER_SUPPORTS_FEXCEPTIONS)
@@ -139,12 +142,36 @@ else()
 
   endif()
 
+  check_cxx_compiler_flag("-fno-rtti" COMPILER_SUPPORTS_FRTTI)
+  if(COMPILER_SUPPORTS_FRTTI)
+    set(cxx_rtti_on "-frtti")
+    set(cxx_rtti_off "-fno-rtti")
+
+  else()
+    set(cxx_rtti_on)
+    set(cxx_rtti_off)
+
+  endif()
+
 endif()
 
 set(cxx_exceptions_property "$<BOOL:$<TARGET_PROPERTY:CXX_EXCEPTIONS>>")
 add_compile_options(
   "$<${cxx_exceptions_property}:${cxx_exceptions_on}>"
   "$<$<NOT:${cxx_exceptions_property}>:${cxx_exceptions_off}>")
+
+set(cxx_rtti_property "$<BOOL:$<TARGET_PROPERTY:CXX_RTTI>>")
+if(NOT ANDROID)
+  # Normally, our Debug build defaults RTTI on. This is not the case on
+  # Android, where we don't use it even on Debug, to save space.
+
+  set(cxx_rtti_property "$<OR:$<CONFIG:Debug>,${cxx_rtti_property}>")
+endif()
+add_compile_options(
+  "$<${cxx_rtti_property}:${cxx_rtti_on}>"
+  "$<$<NOT:${cxx_rtti_property}>:${cxx_rtti_off}>")
+set_property(DIRECTORY "${PROJECT_SOURCE_DIR}" APPEND PROPERTY
+  COMPILE_DEFINITIONS "$<${cxx_rtti_property}:HAVE_RTTI>")
 
 if(MSVC)
   set(msvc_bigobj_property "$<BOOL:$<TARGET_PROPERTY:MSVC_BIGOBJ>>")

@@ -227,9 +227,6 @@
 /* Do we have <stdint.h>? */
 #cmakedefine PHAVE_STDINT_H
 
-/* Do we have RTTI (and <typeinfo>)? */
-#cmakedefine HAVE_RTTI
-
 /* Do we have Posix threads? */
 #cmakedefine HAVE_POSIX_THREADS
 
