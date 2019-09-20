@@ -103,13 +103,20 @@ else()
 endif()
 
 if(NOT "x${CMAKE_CXX_COMPILER_ID}" STREQUAL "xMSVC")
-  set(disable_flags "-Wno-unused-function -Wno-unused-parameter")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${disable_flags}")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${disable_flags} -Wno-reorder")
-  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-unused-variable")
-  set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -Wno-unused-variable")
-  set(CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_MINSIZEREL} -Wno-unused-variable")
-  set(CMAKE_CXX_FLAGS_STANDARD "${CMAKE_CXX_FLAGS_STANDARD} -Wno-unused-variable")
+  set(global_flags
+    "-Wno-unused-function -Wno-unused-parameter -fno-strict-aliasing")
+  set(release_flags
+    "-Wno-unused-variable -fno-stack-protector -ffast-math -fno-unsafe-math-optimizations")
+
+  # Allow NaN to occur in the public SDK
+  set(standard_flags "${release_flags} -fno-finite-math-only")
+
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${global_flags}")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${global_flags} -Wno-reorder")
+  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${release_flags}")
+  set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} ${release_flags}")
+  set(CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_MINSIZEREL} ${release_flags}")
+  set(CMAKE_CXX_FLAGS_STANDARD "${CMAKE_CXX_FLAGS_STANDARD} ${standard_flags}")
 
   if(MSVC)
     # Clang behaving as MSVC
