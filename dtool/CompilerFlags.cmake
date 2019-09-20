@@ -8,6 +8,14 @@
 
 include(CheckCXXCompilerFlag)
 
+# These are flags for the custom configurations we add
+# Standard
+set(CMAKE_C_FLAGS_STANDARD "-O3")
+set(CMAKE_CXX_FLAGS_STANDARD "-O3")
+set(CMAKE_SHARED_LINKER_FLAGS_STANDARD "")
+set(CMAKE_MODULE_LINKER_FLAGS_STANDARD "")
+set(CMAKE_EXE_LINKER_FLAGS_STANDARD "")
+
 # Panda3D is now a C++11 project. Newer versions of CMake support this out of
 # the box; for older versions we take a shot in the dark:
 if(CMAKE_VERSION VERSION_LESS "3.1")
@@ -101,6 +109,7 @@ if(NOT "x${CMAKE_CXX_COMPILER_ID}" STREQUAL "xMSVC")
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-unused-variable")
   set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -Wno-unused-variable")
   set(CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_MINSIZEREL} -Wno-unused-variable")
+  set(CMAKE_CXX_FLAGS_STANDARD "${CMAKE_CXX_FLAGS_STANDARD} -Wno-unused-variable")
 
   if(MSVC)
     # Clang behaving as MSVC
@@ -187,11 +196,3 @@ if(NOT MSVC)
     add_compile_options("-fvisibility=hidden")
   endif()
 endif()
-
-# These are flags for the custom configurations we add
-# Distribution
-set(CMAKE_C_FLAGS_DISTRIBUTION "")
-set(CMAKE_CXX_FLAGS_DISTRIBUTION "")
-set(CMAKE_SHARED_LINKER_FLAGS_DISTRIBUTION "")
-set(CMAKE_MODULE_LINKER_FLAGS_DISTRIBUTION "")
-set(CMAKE_EXE_LINKER_FLAGS_DISTRIBUTION "")
