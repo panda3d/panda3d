@@ -36,15 +36,15 @@ endif()
 
 # Define the type of build we are setting up.
 if(IS_MULTICONFIG)
-  set(CMAKE_CONFIGURATION_TYPES Release RelWithDebInfo Debug MinSizeRel Standard)
+  set(CMAKE_CONFIGURATION_TYPES Standard Release RelWithDebInfo Debug MinSizeRel)
 else()
   # CMAKE_BUILD_TYPE can't just be set using the usual set(CACHE) method since
   # it's an empty string by default.
   if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE RelWithDebInfo)
+    set(CMAKE_BUILD_TYPE Standard)
   endif()
   set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
-    Release RelWithDebInfo Debug MinSizeRel Standard)
+    Standard Release RelWithDebInfo Debug MinSizeRel)
 endif()
 
 # Provide convenient boolean expression based on build type
