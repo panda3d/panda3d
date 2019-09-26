@@ -113,8 +113,8 @@ class DirectSpinBox(DirectFrame):
                                                extraArgs = self['extraArgs'],
                                                focusOutCommand = self.focusOutCommand,
                                                )
-        self.valueEntry.bind(DGG.MWUP, self.__mousewheelUp)
-        self.valueEntry.bind(DGG.MWDOWN, self.__mousewheelDown)
+        self.valueEntry.bind(DGG.WHEELUP, self.__mousewheelUp)
+        self.valueEntry.bind(DGG.WHEELDOWN, self.__mousewheelDown)
 
         # try set the initial value
         try:

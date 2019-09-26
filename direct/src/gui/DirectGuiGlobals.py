@@ -69,8 +69,8 @@ B3PRESS = PGButton.getPressPrefix() + MouseButton.three().getName() + '-'
 B1RELEASE = PGButton.getReleasePrefix() + MouseButton.one().getName() + '-'
 B2RELEASE = PGButton.getReleasePrefix() + MouseButton.two().getName() + '-'
 B3RELEASE = PGButton.getReleasePrefix() + MouseButton.three().getName() + '-'
-MWUP = PGButton.getPressPrefix() + MouseButton.wheel_up().getName() + '-'
-MWDOWN = PGButton.getPressPrefix() + MouseButton.wheel_down().getName() + '-'
+WHEELUP = PGButton.getPressPrefix() + MouseButton.wheel_up().getName() + '-'
+WHEELDOWN = PGButton.getPressPrefix() + MouseButton.wheel_down().getName() + '-'
 # For DirectEntry widgets
 OVERFLOW = PGEntry.getOverflowPrefix()
 ACCEPT = PGEntry.getAcceptPrefix() + KeyboardButton.enter().getName() + '-'
