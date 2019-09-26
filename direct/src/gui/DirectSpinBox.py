@@ -104,6 +104,7 @@ class DirectSpinBox(DirectFrame):
         # Initialize superclasses
         DirectFrame.__init__(self, parent)
 
+        # create the textfield that will hold the text value
         self.valueEntry = self.createcomponent('valueEntry', (), None,
                                                DirectEntry, (self,),
                                                #overflow = 1, #DOESN'T WORK WITH RIGHT TEXT ALIGN!!!
@@ -146,9 +147,6 @@ class DirectSpinBox(DirectFrame):
         # Set commands for the Dec Button
         self.decButton.bind(DGG.B1PRESS, self.__decButtonDown)
         self.decButton.bind(DGG.B1RELEASE, self.__buttonUp)
-        self.itemFrame = self.createcomponent('itemFrame', (), None,
-                                              DirectFrame, (self,),
-                                              )
 
         # Set the spiners elements position
         self.resetPosition()
@@ -245,6 +243,10 @@ class DirectSpinBox(DirectFrame):
         self.doStep(-self['stepSize'])
 
     def doStep(self, stepSize):
+        """Adds the value given in stepSize to the current value stored
+        in the spinner.  Pass a negative value to subtract from the
+        current value.
+        """
         assert self.notify.debugStateCall(self)
         #print 'doStep[', stepSize,']'
 
