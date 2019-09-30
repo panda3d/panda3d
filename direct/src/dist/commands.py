@@ -514,7 +514,7 @@ class build_apps(setuptools.Command):
             self.icon_objects.get('*', None)
         )
         if icon is not None:
-            plist['CFBundleIconFile'] = 'iconfile'
+            plist['CFBundleIconFile'] = 'iconfile.icns'
             icon.makeICNS(os.path.join(resdir, 'iconfile.icns'))
 
         with open(os.path.join(contentsdir, 'Info.plist'), 'wb') as f:
