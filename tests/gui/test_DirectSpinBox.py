@@ -5,7 +5,6 @@ from direct.gui import DirectGuiGlobals as DGG
 import pytest
 
 from direct.showbase.Loader import Loader
-import pytest
 import sys
 if sys.version_info >= (3, 0):
     import builtins
@@ -13,10 +12,7 @@ else:
     import __builtin__ as builtins
 builtins.loader = Loader(base=None)
 
-from direct.task.TaskManagerGlobal import taskMgr
-builtins.taskMgr = taskMgr
 from direct.showbase.MessengerGlobal import messenger
-builtins.messenger = messenger
 
 def test_set_value():
     spinner = DirectSpinBox(value=5)
@@ -114,4 +110,4 @@ def test_click():
 
     assert test_value_a
 
-pytest.main()
+#pytest.main()
