@@ -1,5 +1,7 @@
 from direct.directnotify.DirectNotifyGlobal import *
-from panda3d.core import PNMImage, Filename
+from panda3d.core import PNMImage, Filename, PNMFileTypeRegistry, StringStream
+import struct
+
 
 class Icon:
     """ This class is used to create an icon for various platforms. """
@@ -67,15 +69,15 @@ class Icon:
         if bpp == 24:
             # Align rows to 4-byte boundary
             rowalign = b'\0' * (-(size * 3) & 3)
-            for y in xrange(size):
-                for x in xrange(size):
+            for y in range(size):
+                for x in range(size):
                     r, g, b = image.getXel(x, size - y - 1)
                     fp.write(struct.pack('<BBB', int(b * 255), int(g * 255), int(r * 255)))
                 fp.write(rowalign)
 
         elif bpp == 32:
-            for y in xrange(size):
-                for x in xrange(size):
+            for y in range(size):
+                for x in range(size):
                     r, g, b, a = image.getXelA(x, size - y - 1)
                     fp.write(struct.pack('<BBBB', int(b * 255), int(g * 255), int(r * 255), int(a * 255)))
 
@@ -103,8 +105,8 @@ class Icon:
 
             # Write indices.  Align rows to 4-byte boundary.
             rowalign = b'\0' * (-size & 3)
-            for y in xrange(size):
-                for x in xrange(size):
+            for y in range(size):
+                for x in range(size):
                     pixel = image2.get_pixel(x, size - y - 1)
                     index = colors.index(pixel)
                     if index >= 256:
@@ -118,10 +120,10 @@ class Icon:
         # Create an AND mask, aligned to 4-byte boundary
         if image.hasAlpha() and bpp <= 8:
             rowalign = b'\0' * (-((size + 7) >> 3) & 3)
-            for y in xrange(size):
+            for y in range(size):
                 mask = 0
                 num_bits = 7
-                for x in xrange(size):
+                for x in range(size):
                     a = image.get_alpha_val(x, size - y - 1)
                     if a <= 1:
                         mask |= (1 << num_bits)
@@ -247,15 +249,15 @@ class Icon:
                     icns.write(mask_types[size])
                     icns.write(struct.pack('>I', size * size + 8))
 
-                    for y in xrange(size):
-                        for x in xrange(size):
+                    for y in range(size):
+                        for x in range(size):
                             icns.write(struct.pack('<B', int(image.getAlpha(x, y) * 255)))
 
                 icns.write(icon_types[size])
                 icns.write(struct.pack('>I', size * size * 4 + 8))
 
-                for y in xrange(size):
-                    for x in xrange(size):
+                for y in range(size):
+                    for x in range(size):
                         r, g, b = image.getXel(x, y)
                         icns.write(struct.pack('>BBBB', 0, int(r * 255), int(g * 255), int(b * 255)))
 
@@ -265,5 +267,3 @@ class Icon:
         icns.close()
 
         return True
-
-
