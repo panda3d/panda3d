@@ -76,6 +76,9 @@ from .DirectFrame import *
 from .DirectEntry import *
 from .DirectButton import *
 
+from direct.showbase.MessengerGlobal import messenger
+from direct.task.TaskManagerGlobal import taskMgr
+
 class DirectSpinBox(DirectFrame):
     notify = DirectNotifyGlobal.directNotify.newCategory('DirectSpinBox')
 
