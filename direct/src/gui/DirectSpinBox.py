@@ -100,6 +100,9 @@ class DirectSpinBox(DirectFrame):
             ('extraArgs',          [],        None),
             ('incButtonCallback',  None,      self.setIncButtonCallback),
             ('decButtonCallback',  None,      self.setDecButtonCallback),
+            ('buttonOrientation',  DGG.VERTICAL, DGG.INITOPT),
+            # set default border width to 0
+            ('borderWidth',        (0,0),     None),
             )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)
@@ -133,7 +136,7 @@ class DirectSpinBox(DirectFrame):
         # create the up arrow button
         self.incButton = self.createcomponent('incButton', (), None,
                                               DirectButton, (self,),
-                                              text = '5',
+                                              text = '5' if self['buttonOrientation'] == DGG.VERTICAL else '4',
                                               text_font = shuttle_controls_font,
                                               )
         # Set commands for the Inc Button
@@ -143,9 +146,8 @@ class DirectSpinBox(DirectFrame):
         # create the down arrow button
         self.decButton = self.createcomponent('decButton', (), None,
                                               DirectButton, (self,),
-                                              text = '6',
-                                              text_font = shuttle_controls_font,
-                                              pos = (0, 0, -.5)
+                                              text = '6' if self['buttonOrientation'] == DGG.VERTICAL else '3',
+                                              text_font = shuttle_controls_font
                                               )
         # Set commands for the Dec Button
         self.decButton.bind(DGG.B1PRESS, self.__decButtonDown)
@@ -153,8 +155,20 @@ class DirectSpinBox(DirectFrame):
 
         # Set the spiners elements position
         self.resetPosition()
-        # Calculate the spiners frame size
-        self.resetFrameSize()
+        if self['frameSize'] is None:
+            # Calculate the spiners frame size only if we don't have a
+            # custom frameSize
+            self.recalcFrameSize()
+
+        # Here we check for custom values of properties.
+        # We need to do this for all components which have been edited
+        # by code after they have been set up by createcomponent.
+        if self['incButton_pos'] is not None:
+            self.incButton.setPos(self['incButton_pos'])
+        if self['decButton_pos'] is not None:
+            self.decButton.setPos(self['decButton_pos'])
+        if self['valueEntry_pos'] is not None:
+            self.valueEntry.setPos(self['valueEntry_pos'])
 
         self.initialiseoptions(DirectSpinBox)
 
@@ -173,8 +187,12 @@ class DirectSpinBox(DirectFrame):
         incHeight = self.incButton.getHeight()
         incBorderW = self.incButton['borderWidth'][0]
         incBorderH = self.incButton['borderWidth'][1]
-        self.incButton.setPos(-incCenter[0]+incWidth/2+incBorderW, 0, -incCenter[1]+incHeight/2+incBorderH)
-        self.incButton.setX(self.incButton, self.valueEntry.bounds[1])
+        if self['buttonOrientation'] == DGG.VERTICAL:
+            self.incButton.setPos(-incCenter[0]+incWidth/2+incBorderW, 0, -incCenter[1]+incHeight/2+incBorderH)
+            self.incButton.setX(self.incButton, self.valueEntry.bounds[1])
+        else:
+            self.incButton.setPos(-incCenter[0]+incWidth/2+incBorderW, 0, -incCenter[1])
+            self.incButton.setX(self.incButton, self.valueEntry.bounds[1])
 
         # Position the Dec Button
         decCenter = self.decButton.getCenter()
@@ -182,20 +200,32 @@ class DirectSpinBox(DirectFrame):
         decHeight = self.decButton.getHeight()
         decBorderW = self.decButton['borderWidth'][0]
         decBorderH = self.decButton['borderWidth'][1]
-        self.decButton.setPos(-decCenter[0]+decWidth/2+decBorderW, 0, -decCenter[1]-decHeight/2-decBorderH)
-        self.decButton.setX(self.decButton, self.valueEntry.bounds[1])
+        if self['buttonOrientation'] == DGG.VERTICAL:
+            self.decButton.setPos(-decCenter[0]+decWidth/2+decBorderW, 0, -decCenter[1]-decHeight/2-decBorderH)
+            self.decButton.setX(self.decButton, self.valueEntry.bounds[1])
+        else:
+            valWidth = self.valueEntry.getWidth()
+            self.decButton.setPos(-valWidth-decCenter[0]-decWidth/2-decBorderW, 0, -decCenter[1])
+            self.decButton.setX(self.decButton, self.valueEntry.bounds[1])
 
-    def resetFrameSize(self):
+
+    def recalcFrameSize(self):
         '''
         Set the surrounding frame so the spinner will actually look
         like a box and will be able to give correct values for
         functions and properties like getWidth, getCenter and bounds
         '''
         assert self.notify.debugStateCall(self)
-        l = self.valueEntry.bounds[0]
-        r = self.decButton.getX() + self.decButton.bounds[1] + self.decButton['borderWidth'][0]
-        b = self.valueEntry.getZ() + self.valueEntry.bounds[2]
-        t = self.valueEntry.getZ() + self.valueEntry.bounds[3]
+        if self['buttonOrientation'] == DGG.VERTICAL:
+            l = self.valueEntry.bounds[0] - self['borderWidth'][0]
+            r = self.decButton.getX() + self.decButton.bounds[1] + self.decButton['borderWidth'][0] + self['borderWidth'][0]
+            b = self.valueEntry.getZ() + self.valueEntry.bounds[2] - self['borderWidth'][1]
+            t = self.valueEntry.getZ() + self.valueEntry.bounds[3] + self['borderWidth'][1]
+        else:
+            l = self.decButton.getX() + self.decButton.bounds[0] - self.incButton['borderWidth'][0] - self['borderWidth'][0]
+            r = self.incButton.getX() + self.incButton.bounds[1] + self.incButton['borderWidth'][0] + self['borderWidth'][0]
+            b = self.valueEntry.getZ() + self.valueEntry.bounds[2] - self['borderWidth'][1]
+            t = self.valueEntry.getZ() + self.valueEntry.bounds[3] + self['borderWidth'][1]
         self['frameSize'] = (l, r, b, t)
 
     def __repeatStepTask(self, task):
@@ -315,7 +345,10 @@ class DirectSpinBox(DirectFrame):
 from direct.showbase.ShowBase import ShowBase
 base = ShowBase()
 
-spinBox = DirectSpinBox(value=5, minValue=-100, maxValue=100, repeatdelay=0.125)
+spinBox = DirectSpinBox(pos=(0,0,-0.25), value=5, minValue=-100, maxValue=100, repeatdelay=0.125, buttonOrientation=DGG.HORIZONTAL, valueEntry_text_align=TextNode.ACenter, borderWidth=(1,1))
+spinBox.setScale(0.1)
+spinBox["relief"] = 2
+spinBox = DirectSpinBox(pos=(0,0,0.25), valueEntry_width=10, borderWidth=(2,2), frameColor=(1,0,0,1))
 spinBox.setScale(0.1)
 base.run()
 '''
