@@ -1619,6 +1619,28 @@ release_all() {
 }
 
 /**
+ * Schedules the texture for download from texture memory.  In anticipation,
+ * the current RAM image is cleared.
+ *
+ * It is an error to call this if the texture has not yet been prepared on the
+ * GPU.  In that case, the future is cancelled.
+ */
+PT(AsyncFuture) Texture::
+extract(PreparedGraphicsObjects *prepared_objects) {
+  MutexHolder holder(_lock);
+  PreparedViews::iterator pvi;
+  pvi = _prepared_views.find(prepared_objects);
+  if (pvi == _prepared_views.end()) {
+    PT(AsyncFuture) fut = new AsyncFuture;
+    fut->cancel();
+    return fut;
+  }
+
+  clear_ram_image();
+  return prepared_objects->extract_texture(this);
+}
+
+/**
  * Not to be confused with write(Filename), this method simply describes the
  * texture properties.
  */

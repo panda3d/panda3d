@@ -53,6 +53,7 @@ class SceneSetup;
 class PreparedGraphicsObjects;
 class GraphicsOutput;
 class Texture;
+class TransferBufferContext;
 class TextureContext;
 class SamplerContext;
 class SamplerState;
@@ -148,6 +149,8 @@ public:
   virtual bool update_texture(TextureContext *tc, bool force)=0;
   virtual void release_texture(TextureContext *tc)=0;
   virtual bool extract_texture_data(Texture *tex)=0;
+  virtual TransferBufferContext *
+    async_extract_textures(const pvector<PT(Texture)> &textures)=0;
 
   virtual SamplerContext *prepare_sampler(const SamplerState &sampler)=0;
   virtual void release_sampler(SamplerContext *sc)=0;

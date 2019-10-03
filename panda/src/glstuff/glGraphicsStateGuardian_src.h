@@ -334,6 +334,10 @@ public:
   virtual bool update_texture(TextureContext *tc, bool force);
   virtual void release_texture(TextureContext *tc);
   virtual bool extract_texture_data(Texture *tex);
+#ifndef OPENGLES
+  virtual TransferBufferContext *
+    async_extract_textures(const pvector<PT(Texture)> &textures);
+#endif
 
 #ifndef OPENGLES_1
   virtual SamplerContext *prepare_sampler(const SamplerState &sampler);
@@ -617,9 +621,19 @@ protected:
   size_t get_texture_memory_size(CLP(TextureContext) *gtc);
   void check_nonresident_texture(BufferContextChain &chain);
   bool do_extract_texture_data(CLP(TextureContext) *gtc);
-  bool extract_texture_image(PTA_uchar &image, size_t &page_size,
-           Texture *tex, GLenum target, GLenum page_target,
-           Texture::ComponentType type,
+  bool extract_texture_parameters(CLP(TextureContext) *gtc,
+                                  int &width, int &height, int &depth,
+                                  SamplerState &sampler,
+                                  Texture::ComponentType &type,
+                                  Texture::Format &format,
+                                  Texture::CompressionMode &compression);
+#ifndef OPENGLES
+  size_t get_extracted_texture_page_size(
+           Texture *tex, GLenum target, Texture::ComponentType type,
+           Texture::CompressionMode compression, int n);
+#endif
+  bool extract_texture_image(void *pixels, size_t page_size,
+           Texture *tex, GLenum target, Texture::ComponentType type,
            Texture::CompressionMode compression, int n);
 
 #ifdef SUPPORT_FIXED_FUNCTION
@@ -958,6 +972,11 @@ public:
   PFNGLGETQUERYOBJECTUI64VPROC _glGetQueryObjectui64v;
 
   PFNGLGETINTEGER64VPROC _glGetInteger64v;
+
+  bool _supports_fence_sync;
+  PFNGLFENCESYNCPROC _glFenceSync;
+  PFNGLDELETESYNCPROC _glDeleteSync;
+  PFNGLGETSYNCIVPROC _glGetSynciv;
 #endif
 
   PFNGLACTIVESTENCILFACEEXTPROC _glActiveStencilFaceEXT;

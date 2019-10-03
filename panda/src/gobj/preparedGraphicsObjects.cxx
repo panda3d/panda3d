@@ -13,6 +13,7 @@
 
 #include "preparedGraphicsObjects.h"
 #include "textureContext.h"
+#include "transferBufferContext.h"
 #include "vertexBufferContext.h"
 #include "indexBufferContext.h"
 #include "texture.h"
@@ -212,6 +213,20 @@ enqueue_texture_future(Texture *tex) {
   PT(EnqueuedObject) fut = result.first->second;
   nassertr(!fut->cancelled(), fut)
   return fut;
+}
+
+/**
+ * Indicates that a texture would like to be put on the list to be extracted
+ * when the GSG is next ready to do this (presumably at the next frame).
+ */
+PT(AsyncFuture) PreparedGraphicsObjects::
+extract_texture(Texture *tex) {
+  ReMutexHolder holder(_lock);
+  if (_extracted == nullptr) {
+    _extracted = new AsyncFuture;
+  }
+  _extracted_textures.push_back(tex);
+  return _extracted;
 }
 
 /**
@@ -1499,18 +1514,49 @@ cancel() {
 }
 
 /**
- * This is called by the GraphicsStateGuardian to indicate that it is about to
- * begin processing of the frame.
- *
- * Any texture contexts that were previously passed to release_texture() are
- * actually passed to the GSG to be freed at this point; textures that were
- * previously passed to prepare_texture are actually loaded.
+ * Actually processes the queue of pending extractions.  Usually called by
+ * begin_frame.
  */
 void PreparedGraphicsObjects::
-begin_frame(GraphicsStateGuardianBase *gsg, Thread *current_thread) {
+extract_pending_now(GraphicsStateGuardianBase *gsg, Thread *current_thread) {
   ReMutexHolder holder(_lock, current_thread);
 
-  // First, release all the textures, geoms, and buffers awaiting release.
+  // First, check if any extractions in progress were done.
+  while (!_transfer_buffers.empty()) {
+    TransferBufferContext *tbc = _transfer_buffers.front();
+    if (tbc->is_transfer_done()) {
+      tbc->finish_transfer();
+      delete tbc;
+      _transfer_buffers.pop_front();
+    } else {
+      // If the first pending one isn't done, the rest isn't either.
+      break;
+    }
+  }
+
+  // Now, process any pending new extractions.
+  if (!_extracted_textures.empty()) {
+    TransferBufferContext *tbc = gsg->async_extract_textures(_extracted_textures);
+    if (tbc != nullptr) {
+      tbc->_future = std::move(_extracted);
+      _transfer_buffers.push_back(tbc);
+    } else {
+      // It was performed synchronously.
+      _extracted->set_result(nullptr);
+    }
+    _extracted.clear();
+    _extracted_textures.clear();
+  }
+}
+
+/**
+ * Release all the textures, geoms, and buffers awaiting release.
+ * Usually called by begin_frame.
+ */
+void PreparedGraphicsObjects::
+release_pending_now(GraphicsStateGuardianBase *gsg, Thread *current_thread) {
+  ReMutexHolder holder(_lock, current_thread);
+
   if (!_released_textures.empty()) {
     Textures::iterator tci;
     for (tci = _released_textures.begin();
@@ -1574,6 +1620,21 @@ begin_frame(GraphicsStateGuardianBase *gsg, Thread *current_thread) {
   }
 
   _released_index_buffers.clear();
+}
+
+/**
+ * This is called by the GraphicsStateGuardian to indicate that it is about to
+ * begin processing of the frame.
+ *
+ * Any texture contexts that were previously passed to release_texture() are
+ * actually passed to the GSG to be freed at this point; textures that were
+ * previously passed to prepare_texture are actually loaded.
+ */
+void PreparedGraphicsObjects::
+begin_frame(GraphicsStateGuardianBase *gsg, Thread *current_thread) {
+  ReMutexHolder holder(_lock, current_thread);
+  extract_pending_now(gsg, current_thread);
+  release_pending_now(gsg, current_thread);
 
   // Reset the residency trackers.
   _texture_residency.begin_frame(current_thread);

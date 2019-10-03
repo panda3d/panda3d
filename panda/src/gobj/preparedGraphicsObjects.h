@@ -30,8 +30,10 @@
 #include "bufferResidencyTracker.h"
 #include "adaptiveLru.h"
 #include "asyncFuture.h"
+#include "savedContext.h"
 
 class TextureContext;
+class TransferBufferContext;
 class SamplerContext;
 class GeomContext;
 class ShaderContext;
@@ -39,7 +41,6 @@ class VertexBufferContext;
 class IndexBufferContext;
 class BufferContext;
 class GraphicsStateGuardianBase;
-class SavedContext;
 
 /**
  * A table of objects that are saved within the graphics context for reference
@@ -210,6 +211,11 @@ public:
   //PT(EnqueuedObject) enqueue_index_buffer_future(GeomPrimitive *data);
   //PT(EnqueuedObject) enqueue_shader_buffer_future(ShaderBuffer *data);
 
+  PT(AsyncFuture) extract_texture(Texture *tex);
+
+  void extract_pending_now(GraphicsStateGuardianBase *gsg, Thread *current_thread);
+  void release_pending_now(GraphicsStateGuardianBase *gsg, Thread *current_thread);
+
   void begin_frame(GraphicsStateGuardianBase *gsg,
                    Thread *current_thread);
   void end_frame(Thread *current_thread);
@@ -277,6 +283,13 @@ private:
   EnqueuedIndexBuffers _enqueued_index_buffers;
   Buffers _prepared_shader_buffers, _released_shader_buffers;
   EnqueuedShaderBuffers _enqueued_shader_buffers;
+
+  pvector<PT(Texture)> _extracted_textures;
+  pdeque<TransferBufferContext *> _transfer_buffers;
+
+  // This is the future used to signal the next batch of extractions.  The
+  // moment we perform such an extraction, we replace this with a new object.
+  PT(AsyncFuture) _extracted;
 
   BufferCache _vertex_buffer_cache;
   BufferCacheLRU _vertex_buffer_cache_lru;

@@ -530,6 +530,8 @@ PUBLISHED:
   bool get_active(PreparedGraphicsObjects *prepared_objects) const;
   bool get_resident(PreparedGraphicsObjects *prepared_objects) const;
 
+  PT(AsyncFuture) extract(PreparedGraphicsObjects *prepared_objects);
+
   bool release(PreparedGraphicsObjects *prepared_objects);
   int release_all();
 

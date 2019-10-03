@@ -1196,6 +1196,10 @@ dispatch_compute(const LVecBase3i &work_groups, const ShaderAttrib *sattr, Graph
   string draw_name = gsg->get_threading_model().get_draw_name();
   if (draw_name.empty()) {
     // A single-threaded environment.  No problem.
+    Thread *current_thread = Thread::get_current_thread();
+    PreparedGraphicsObjects *pgo = gsg->get_prepared_objects();
+    pgo->extract_pending_now(gsg, current_thread);
+    pgo->release_pending_now(gsg, current_thread);
     gsg->push_group_marker(std::string("Compute ") + shader->get_filename(Shader::ST_compute).get_basename());
     gsg->set_state_and_transform(state, TransformState::make_identity());
     gsg->dispatch_compute(work_groups[0], work_groups[1], work_groups[2]);
@@ -2759,14 +2763,19 @@ thread_main() {
       break;
 
     case TS_do_compute:
-      nassertd(_gsg != nullptr && _state != nullptr) break;
       {
+        GraphicsStateGuardian *gsg = _gsg;
+        nassertd(gsg != nullptr && _state != nullptr) break;
+
         const ShaderAttrib *sattr;
         _state->get_attrib(sattr);
-        _gsg->push_group_marker(std::string("Compute ") + sattr->get_shader()->get_filename(Shader::ST_compute).get_basename());
-        _gsg->set_state_and_transform(_state, TransformState::make_identity());
-        _gsg->dispatch_compute(_work_groups[0], _work_groups[1], _work_groups[2]);
-        _gsg->pop_group_marker();
+        PreparedGraphicsObjects *pgo = gsg->get_prepared_objects();
+        pgo->extract_pending_now(gsg, current_thread);
+        pgo->release_pending_now(gsg, current_thread);
+        gsg->push_group_marker(std::string("Compute ") + sattr->get_shader()->get_filename(Shader::ST_compute).get_basename());
+        gsg->set_state_and_transform(_state, TransformState::make_identity());
+        gsg->dispatch_compute(_work_groups[0], _work_groups[1], _work_groups[2]);
+        gsg->pop_group_marker();
       }
       break;
 

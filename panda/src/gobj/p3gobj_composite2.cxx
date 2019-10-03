@@ -21,6 +21,7 @@
 #include "textureStage.cxx"
 #include "textureStagePool.cxx"
 #include "timerQueryContext.cxx"
+#include "transferBufferContext.cxx"
 #include "transformBlend.cxx"
 #include "transformBlendTable.cxx"
 #include "transformTable.cxx"

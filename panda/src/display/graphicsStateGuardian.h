@@ -294,6 +294,8 @@ public:
   virtual bool update_texture(TextureContext *tc, bool force);
   virtual void release_texture(TextureContext *tc);
   virtual bool extract_texture_data(Texture *tex);
+  virtual TransferBufferContext *
+    async_extract_textures(const pvector<PT(Texture)> &textures);
 
   virtual SamplerContext *prepare_sampler(const SamplerState &sampler);
   virtual void release_sampler(SamplerContext *sc);

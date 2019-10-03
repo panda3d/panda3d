@@ -591,6 +591,24 @@ extract_texture_data(Texture *) {
 }
 
 /**
+ * Schedules an asynchronous extraction into a staging buffer, which is
+ * returned.  The operation may also be done immediately, in which case a
+ * null pointer is returned.
+ *
+ * This function should not be called directly to extract a texture.  Instead,
+ * call Texture::extract().
+ *
+ * The default implementation just extracts the textures synchronously.
+ */
+TransferBufferContext *GraphicsStateGuardian::
+async_extract_textures(const pvector<PT(Texture)> &textures) {
+  for (Texture *texture : textures) {
+    extract_texture_data(texture);
+  }
+  return nullptr;
+}
+
+/**
  * Creates whatever structures the GSG requires to represent the sampler
  * internally, and returns a newly-allocated SamplerContext object with this
  * data.  It is the responsibility of the calling function to later call

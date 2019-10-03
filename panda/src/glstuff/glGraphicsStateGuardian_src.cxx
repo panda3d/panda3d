@@ -2649,6 +2649,27 @@ reset() {
   }
 #endif
 
+#ifndef OPENGLES
+  _supports_fence_sync = false;
+  if (is_at_least_gl_version(3, 2) || has_extension("GL_ARB_sync")) {
+    _glFenceSync = (PFNGLFENCESYNCPROC)
+      get_extension_func("glFenceSync");
+    _glDeleteSync = (PFNGLDELETESYNCPROC)
+      get_extension_func("glDeleteSync");
+    _glGetSynciv = (PFNGLGETSYNCIVPROC)
+      get_extension_func("glGetSynciv");
+
+    if (_glFenceSync != nullptr && _glDeleteSync != nullptr &&
+        _glGetSynciv != nullptr) {
+      _supports_fence_sync = true;
+    } else {
+      GLCAT.warning()
+        << "Sync objects advertised as supported by OpenGL runtime, but "
+           "could not get pointer to extension functions.\n";
+    }
+  }
+#endif
+
 #ifdef OPENGLES_1
   // In OpenGL ES 1, blending is supported via extensions.
   if (has_extension("GL_OES_blend_subtract")) {
@@ -6016,6 +6037,114 @@ extract_texture_data(Texture *tex) {
 
   return success;
 }
+
+#ifndef OPENGLES
+/**
+ * Schedules an asynchronous extraction into a staging buffer, which is
+ * returned.  The operation may also be done immediately, in which case a
+ * null pointer is returned.
+ *
+ * This function should not be called directly to extract a texture.  Instead,
+ * call Texture::extract().
+ */
+TransferBufferContext *CLP(GraphicsStateGuardian)::
+async_extract_textures(const pvector<PT(Texture)> &textures) {
+  if (textures.empty()) {
+    return nullptr;
+  }
+
+  bool needs_barrier = false;
+
+  if (GLCAT.is_debug()) {
+    GLCAT.debug() << "Asynchronously extracting " << textures.size() << " textures\n";
+  }
+
+  CLP(PixelPackBufferContext) *pubc = new CLP(PixelPackBufferContext)(this);
+
+  size_t buffer_size = 0;
+
+  for (Texture *tex : textures) {
+    CLP(PixelPackBufferContext)::ExtractTexture et;
+    et._texture = tex;
+    et._offset = (buffer_size + 255) & ~255; // Align to 256 bytes
+    et._num_views = tex->get_num_views();
+
+    // Prepare view 0; we assume that all views have the same parameters.
+    TextureContext *tc = tex->prepare_now(0, get_prepared_objects(), this);
+    nassertd(tc != nullptr) continue;
+    CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
+
+    // This call also binds the texture, which is necessary for the call below
+    // this one to work.
+    if (!extract_texture_parameters(gtc, et._width, et._height, et._depth,
+                                    et._sampler, et._type, et._format,
+                                    et._compression)) {
+      continue;
+    }
+
+    et._page_size = get_extracted_texture_page_size(tex, gtc->_target, et._type, et._compression, 0);
+
+    if (gtc->needs_barrier(GL_TEXTURE_UPDATE_BARRIER_BIT)) {
+      needs_barrier = true;
+    }
+
+    size_t image_size = et._page_size * et._num_views * et._depth;
+    buffer_size = et._offset + image_size;
+
+    pubc->_textures.push_back(std::move(et));
+  }
+
+  // Make sure any incoherent writes to the texture have been synced.
+  if (needs_barrier) {
+    issue_memory_barrier(GL_TEXTURE_UPDATE_BARRIER_BIT);
+  }
+
+  // Create the PBO.
+  _glGenBuffers(1, &pubc->_index);
+  _glBindBuffer(GL_PIXEL_PACK_BUFFER, pubc->_index);
+
+  if (_supports_buffer_storage) {
+    if (GLCAT.is_spam()) {
+      GLCAT.spam() << "glBufferStorage(GL_PIXEL_PACK_BUFFER, "
+                   << buffer_size << ", nullptr, GL_CLIENT_STORAGE_BIT)\n";
+    }
+    _glBufferStorage(GL_PIXEL_PACK_BUFFER, buffer_size, nullptr, GL_MAP_READ_BIT | GL_CLIENT_STORAGE_BIT);
+  }
+
+  // Now that we have created the buffer, read each texture into the PBO.
+  for (CLP(PixelPackBufferContext)::ExtractTexture &et : pubc->_textures) {
+    TextureContext *tc = et._texture->prepare_now(0, get_prepared_objects(), this);
+    nassertd(tc != nullptr) continue;
+    CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
+
+    if (GLCAT.is_spam()) {
+      GLCAT.spam()
+        << "glBindTexture(0x" << hex << gtc->_target << dec << ", " << gtc->_index << "): " << *et._texture << "\n";
+    }
+    glBindTexture(gtc->_target, gtc->_index);
+
+    extract_texture_image((void *)et._offset, et._page_size, et._texture,
+                          gtc->_target, et._type, et._compression, 0);
+  }
+
+  _glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+
+  // Issue a fence so that we know when the extraction is done.
+  if (_supports_fence_sync) {
+    if (GLCAT.is_spam()) {
+      GLCAT.spam() << "glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE)\n";
+    }
+    pubc->_sync = _glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+  }
+
+  // Flush this operation so that we know it starts right away.  Otherwise, we
+  // have no guarantee that the fence will be signalled eventually.
+  gl_flush();
+
+  report_my_gl_errors();
+  return pubc;
+}
+#endif  // OPENGLES
 
 #ifndef OPENGLES_1
 /**
@@ -13714,6 +13843,11 @@ bool CLP(GraphicsStateGuardian)::
 do_extract_texture_data(CLP(TextureContext) *gtc) {
   report_my_gl_errors();
 
+#ifdef OPENGLES
+  nassert_raise("OpenGL ES does not support extracting texture data");
+  return false;
+#endif
+
   GLenum target = gtc->_target;
   if (target == GL_NONE) {
     return false;
@@ -13726,12 +13860,15 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
   }
 #endif
 
-  Texture *tex = gtc->get_texture();
+  int width, height, depth;
+  SamplerState sampler;
+  Texture::ComponentType type = Texture::T_unsigned_byte;
+  Texture::Format format = Texture::F_rgb;
+  Texture::CompressionMode compression = Texture::CM_off;
 
-  glBindTexture(target, gtc->_index);
-  if (GLCAT.is_spam()) {
-    GLCAT.spam()
-      << "glBindTexture(0x" << hex << target << dec << ", " << gtc->_index << "): " << *tex << "\n";
+  // The below call also binds the texture.
+  if (!extract_texture_parameters(gtc, width, height, depth, sampler, type, format, compression)) {
+    return false;
   }
 
 #ifndef OPENGLES
@@ -13740,18 +13877,96 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
   }
 #endif
 
-  GLint wrap_u, wrap_v, wrap_w;
-  GLint minfilter, magfilter;
-
-#ifndef OPENGLES
-  GLfloat border_color[4];
-#endif
+  // We don't want to call setup_texture() again; that resets too much.
+  // Instead, we'll just set the individual components.
+  Texture *tex = gtc->get_texture();
+  tex->set_x_size(width);
+  tex->set_y_size(height);
+  tex->set_z_size(depth);
+  tex->set_component_type(type);
+  tex->set_format(format);
 
 #ifdef OPENGLES
   if (true) {
 #else
   if (target != GL_TEXTURE_BUFFER) {
 #endif
+    tex->set_default_sampler(sampler);
+  }
+
+#ifndef OPENGLES
+  size_t page_size = get_extracted_texture_page_size(tex, gtc->_target, type, compression, 0);
+#else
+  size_t page_size = 0;
+#endif
+  nassertr(page_size > 0, false);
+  PTA_uchar image = PTA_uchar::empty_array(page_size * depth);
+
+  if (!extract_texture_image(image.p(), page_size, tex, target, type, compression, 0)) {
+    return false;
+  }
+
+  tex->set_ram_image(image, compression, page_size);
+
+  if (gtc->_uses_mipmaps) {
+    // Also get the mipmap levels.
+    GLint num_expected_levels = tex->get_expected_num_mipmap_levels();
+    GLint highest_level = num_expected_levels;
+
+    if (_supports_texture_max_level) {
+      glGetTexParameteriv(target, GL_TEXTURE_MAX_LEVEL, &highest_level);
+      highest_level = min(highest_level, num_expected_levels);
+    }
+    for (int n = 1; n <= highest_level; ++n) {
+#ifndef OPENGLES
+      size_t page_size = get_extracted_texture_page_size(tex, gtc->_target, type, compression, n);
+#else
+      size_t page_size = 0;
+#endif
+      if (!extract_texture_image(image, page_size, tex, target, type, compression, n)) {
+        return false;
+      }
+      tex->set_ram_mipmap_image(n, image, page_size);
+    }
+  }
+
+  return true;
+}
+
+/**
+ * Called from extract_texture_data(), this queries the properties of a texture
+ * to be extracted.
+ */
+bool CLP(GraphicsStateGuardian)::
+extract_texture_parameters(CLP(TextureContext) *gtc, int &width, int &height,
+                           int &depth, SamplerState &sampler,
+                           Texture::ComponentType &type, Texture::Format &format,
+                           Texture::CompressionMode &compression) {
+
+  GLenum target = gtc->_target;
+  if (target == GL_NONE) {
+    return false;
+  }
+
+  glBindTexture(target, gtc->_index);
+  if (GLCAT.is_spam()) {
+    GLCAT.spam()
+      << "glBindTexture(0x" << hex << target << dec << ", " << gtc->_index
+      << "): " << *gtc->get_texture() << "\n";
+  }
+
+#ifdef OPENGLES
+  if (true) {
+#else
+  if (target != GL_TEXTURE_BUFFER) {
+#endif
+    GLint wrap_u, wrap_v, wrap_w;
+    GLint minfilter, magfilter;
+
+#ifndef OPENGLES
+    GLfloat border_color[4];
+#endif
+
     glGetTexParameteriv(target, GL_TEXTURE_WRAP_S, &wrap_u);
     glGetTexParameteriv(target, GL_TEXTURE_WRAP_T, &wrap_v);
     wrap_w = GL_REPEAT;
@@ -13766,6 +13981,17 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
 #ifndef OPENGLES
     glGetTexParameterfv(target, GL_TEXTURE_BORDER_COLOR, border_color);
 #endif
+
+    sampler.set_wrap_u(get_panda_wrap_mode(wrap_u));
+    sampler.set_wrap_v(get_panda_wrap_mode(wrap_v));
+    sampler.set_wrap_w(get_panda_wrap_mode(wrap_w));
+    sampler.set_minfilter(get_panda_filter_type(minfilter));
+    //sampler.set_magfilter(get_panda_filter_type(magfilter));
+
+#ifndef OPENGLES
+    sampler.set_border_color(LColor(border_color[0], border_color[1],
+                                    border_color[2], border_color[3]));
+#endif
   }
 
   GLenum page_target = target;
@@ -13774,7 +14000,9 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     page_target = GL_TEXTURE_CUBE_MAP_POSITIVE_X;
   }
 
-  GLint width = gtc->_width, height = gtc->_height, depth = gtc->_depth;
+  width = gtc->_width;
+  height = gtc->_height;
+  depth = gtc->_depth;
 #ifndef OPENGLES
   glGetTexLevelParameteriv(page_target, 0, GL_TEXTURE_WIDTH, &width);
   if (target != GL_TEXTURE_1D) {
@@ -13792,7 +14020,7 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
   clear_my_gl_errors();
   if (width <= 0 || height <= 0 || depth <= 0) {
     GLCAT.error()
-      << "No texture data for " << tex->get_name() << "\n";
+      << "No texture data for " << gtc->get_texture()->get_name() << "\n";
     return false;
   }
 
@@ -13812,15 +14040,11 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
   GLenum error_code = gl_get_error();
   if (error_code != GL_NO_ERROR) {
     GLCAT.error()
-      << "Unable to query texture parameters for " << tex->get_name()
+      << "Unable to query texture parameters for " << gtc->get_texture()->get_name()
       << " : " << get_error_string(error_code) << "\n";
 
     return false;
   }
-
-  Texture::ComponentType type = Texture::T_unsigned_byte;
-  Texture::Format format = Texture::F_rgb;
-  Texture::CompressionMode compression = Texture::CM_off;
 
   switch (internal_format) {
 #ifndef OPENGLES
@@ -14225,75 +14449,76 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
 #endif
   default:
     GLCAT.warning()
-      << "Unhandled internal format for " << tex->get_name()
+      << "Unhandled internal format for " << gtc->get_texture()->get_name()
       << " : " << hex << "0x" << internal_format << dec << "\n";
     return false;
-  }
-
-  // We don't want to call setup_texture() again; that resets too much.
-  // Instead, we'll just set the individual components.
-  tex->set_x_size(width);
-  tex->set_y_size(height);
-  tex->set_z_size(depth);
-  tex->set_component_type(type);
-  tex->set_format(format);
-
-#ifdef OPENGLES
-  if (true) {
-#else
-  if (target != GL_TEXTURE_BUFFER) {
-#endif
-    tex->set_wrap_u(get_panda_wrap_mode(wrap_u));
-    tex->set_wrap_v(get_panda_wrap_mode(wrap_v));
-    tex->set_wrap_w(get_panda_wrap_mode(wrap_w));
-    tex->set_minfilter(get_panda_filter_type(minfilter));
-    //tex->set_magfilter(get_panda_filter_type(magfilter));
-
-#ifndef OPENGLES
-    tex->set_border_color(LColor(border_color[0], border_color[1],
-                                 border_color[2], border_color[3]));
-#endif
-  }
-
-  PTA_uchar image;
-  size_t page_size = 0;
-
-  if (!extract_texture_image(image, page_size, tex, target, page_target,
-                             type, compression, 0)) {
-    return false;
-  }
-
-  tex->set_ram_image(image, compression, page_size);
-
-  if (gtc->_uses_mipmaps) {
-    // Also get the mipmap levels.
-    GLint num_expected_levels = tex->get_expected_num_mipmap_levels();
-    GLint highest_level = num_expected_levels;
-
-    if (_supports_texture_max_level) {
-      glGetTexParameteriv(target, GL_TEXTURE_MAX_LEVEL, &highest_level);
-      highest_level = min(highest_level, num_expected_levels);
-    }
-    for (int n = 1; n <= highest_level; ++n) {
-      if (!extract_texture_image(image, page_size, tex, target, page_target,
-                                 type, compression, n)) {
-        return false;
-      }
-      tex->set_ram_mipmap_image(n, image, page_size);
-    }
   }
 
   return true;
 }
 
 /**
+ * Called from extract_texture_data(), this returns the size of a texture to
+ * be extracted.
+ *
+ * Requires the texture to be bound to the given target.
+ */
+#ifndef OPENGLES
+size_t CLP(GraphicsStateGuardian)::
+get_extracted_texture_page_size(Texture *tex, GLenum target,
+                                Texture::ComponentType type,
+                                Texture::CompressionMode compression, int n) {
+
+  if (target == GL_TEXTURE_CUBE_MAP) {
+    // A cube map, compressed or uncompressed.  This we must extract one page
+    // at a time.
+
+    // If the cube map is compressed, we assume that all the compressed pages
+    // are exactly the same size.  OpenGL doesn't make this assumption, but it
+    // happens to be true for all currently extant compression schemes, and it
+    // makes things simpler for us.  (It also makes things much simpler for
+    // the graphics hardware, so it's likely to continue to be true for a
+    // while at least.)
+
+    size_t page_size = tex->get_expected_ram_mipmap_page_size(n);
+
+    if (compression != Texture::CM_off) {
+      GLint image_size;
+      glGetTexLevelParameteriv(GL_TEXTURE_CUBE_MAP_POSITIVE_X, n,
+                               GL_TEXTURE_COMPRESSED_IMAGE_SIZE, &image_size);
+      nassertr(image_size <= (int)page_size, 0);
+      return image_size;
+    }
+
+    return page_size;
+
+  } else if (target == GL_TEXTURE_BUFFER) {
+    // In the case of a buffer texture, we need to get it from the buffer.
+    return tex->get_expected_ram_mipmap_page_size(n);
+
+  } else if (compression == Texture::CM_off) {
+    // An uncompressed 1-d, 2-d, or 3-d texture.
+    return tex->get_expected_ram_mipmap_page_size(n);
+
+  } else {
+    // A compressed 1-d, 2-d, or 3-d texture.
+    GLint image_size;
+    glGetTexLevelParameteriv(target, n, GL_TEXTURE_COMPRESSED_IMAGE_SIZE, &image_size);
+    return image_size / tex->get_z_size();
+  }
+}
+#endif
+
+/**
  * Called from extract_texture_data(), this gets just the image array for a
  * particular mipmap level (or for the base image).
+ *
+ * Note that the target pointer may actually be an offset, in case that there
+ * is a PBO bound.
  */
 bool CLP(GraphicsStateGuardian)::
-extract_texture_image(PTA_uchar &image, size_t &page_size,
-                      Texture *tex, GLenum target, GLenum page_target,
-                      Texture::ComponentType type,
+extract_texture_image(void *pixels, size_t page_size, Texture *tex,
+                      GLenum target, Texture::ComponentType type,
                       Texture::CompressionMode compression, int n) {
 #ifdef OPENGLES  // Extracting texture data unsupported in OpenGL ES.
   nassert_raise("OpenGL ES does not support extracting texture data");
@@ -14307,59 +14532,35 @@ extract_texture_image(PTA_uchar &image, size_t &page_size,
   if (target == GL_TEXTURE_CUBE_MAP) {
     // A cube map, compressed or uncompressed.  This we must extract one page
     // at a time.
-
-    // If the cube map is compressed, we assume that all the compressed pages
-    // are exactly the same size.  OpenGL doesn't make this assumption, but it
-    // happens to be true for all currently extant compression schemes, and it
-    // makes things simpler for us.  (It also makes things much simpler for
-    // the graphics hardware, so it's likely to continue to be true for a
-    // while at least.)
-
     GLenum external_format = get_external_image_format(tex);
     GLenum pixel_type = get_component_type(type);
-    page_size = tex->get_expected_ram_mipmap_page_size(n);
-
-    if (compression != Texture::CM_off) {
-      GLint image_size;
-      glGetTexLevelParameteriv(page_target, n,
-                                  GL_TEXTURE_COMPRESSED_IMAGE_SIZE, &image_size);
-      nassertr(image_size <= (int)page_size, false);
-      page_size = image_size;
-    }
-
-    image = PTA_uchar::empty_array(page_size * 6);
 
     for (int z = 0; z < 6; ++z) {
-      page_target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + z;
+      GLenum page_target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + z;
 
       if (compression == Texture::CM_off) {
         glGetTexImage(page_target, n, external_format, pixel_type,
-                         image.p() + z * page_size);
+                      (char *)pixels + z * page_size);
       } else {
-        _glGetCompressedTexImage(page_target, 0, image.p() + z * page_size);
+        _glGetCompressedTexImage(page_target, 0, (char *)pixels + z * page_size);
       }
     }
 
 #ifndef OPENGLES
   } else if (target == GL_TEXTURE_BUFFER) {
     // In the case of a buffer texture, we need to get it from the buffer.
-    image = PTA_uchar::empty_array(tex->get_expected_ram_mipmap_image_size(n));
-    _glGetBufferSubData(target, 0, image.size(), image.p());
+    _glGetBufferSubData(target, 0, page_size, pixels);
 #endif
 
   } else if (compression == Texture::CM_off) {
     // An uncompressed 1-d, 2-d, or 3-d texture.
-    image = PTA_uchar::empty_array(tex->get_expected_ram_mipmap_image_size(n));
     GLenum external_format = get_external_image_format(tex);
     GLenum pixel_type = get_component_type(type);
-    glGetTexImage(target, n, external_format, pixel_type, image.p());
+    glGetTexImage(target, n, external_format, pixel_type, pixels);
 
   } else {
     // A compressed 1-d, 2-d, or 3-d texture.
-    GLint image_size;
-    glGetTexLevelParameteriv(target, n, GL_TEXTURE_COMPRESSED_IMAGE_SIZE, &image_size);
-    page_size = image_size / tex->get_z_size();
-    image = PTA_uchar::empty_array(image_size);
+    size_t image_size = page_size * tex->get_z_size();
 
     // Some drivers (ATI!) seem to try to overstuff more bytes in the array
     // than they asked us to allocate (that is, more bytes than
@@ -14385,7 +14586,7 @@ extract_texture_image(PTA_uchar &image, size_t &page_size,
       memset(buffer + image_size, token, extra_space);
 #endif
       _glGetCompressedTexImage(target, n, buffer);
-      memcpy(image.p(), buffer, image_size);
+      memcpy(pixels, buffer, image_size);
 #ifndef NDEBUG
       int count = extra_space;
       while (count > 0 && buffer[image_size + count - 1] == token) {
@@ -14404,7 +14605,7 @@ extract_texture_image(PTA_uchar &image, size_t &page_size,
       nassertr(count != extra_space, true)
 #endif  // NDEBUG
     } else {
-      _glGetCompressedTexImage(target, n, image.p());
+      _glGetCompressedTexImage(target, n, pixels);
     }
   }
 

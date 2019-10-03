@@ -44,11 +44,12 @@
 #include "queryContext.h"
 #include "sliderTable.h"
 #include "texture.h"
+#include "textureContext.h"
 #include "texturePoolFilter.h"
 #include "textureReloadRequest.h"
 #include "textureStage.h"
-#include "textureContext.h"
 #include "timerQueryContext.h"
+#include "transferBufferContext.h"
 #include "samplerContext.h"
 #include "samplerState.h"
 #include "shader.h"
@@ -594,6 +595,7 @@ ConfigureFn(config_gobj) {
   TextureReloadRequest::init_type();
   TextureStage::init_type();
   TimerQueryContext::init_type();
+  TransferBufferContext::init_type();
   TransformBlend::init_type();
   TransformBlendTable::init_type();
   TransformTable::init_type();
