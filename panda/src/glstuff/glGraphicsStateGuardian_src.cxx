@@ -5850,7 +5850,8 @@ prepare_texture(Texture *tex, int view) {
   report_my_gl_errors();
   // Make sure we'll support this texture when it's rendered.  Don't bother to
   // prepare it if we won't.
-  switch (tex->get_texture_type()) {
+  Texture::TextureType texture_type = tex->get_texture_type();
+  switch (texture_type) {
   case Texture::TT_3d_texture:
     if (!_supports_3d_texture) {
       GLCAT.warning()
@@ -5896,6 +5897,7 @@ prepare_texture(Texture *tex, int view) {
   }
 
   CLP(TextureContext) *gtc = new CLP(TextureContext)(this, _prepared_objects, tex, view);
+  gtc->_target = get_texture_target(texture_type);
   report_my_gl_errors();
 
   return gtc;
