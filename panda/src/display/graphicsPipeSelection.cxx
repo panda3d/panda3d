@@ -397,8 +397,9 @@ load_named_module(const string &name) {
     << "loading display module: " << dlname.to_os_specific() << std::endl;
   void *handle = load_dso(get_plugin_path().get_value(), dlname);
   if (handle == nullptr) {
+    std::string error = load_dso_error();
     display_cat.warning()
-      << "Unable to load: " << load_dso_error() << std::endl;
+      << "Unable to load " << dlname.get_basename() << ": " << error << std::endl;
     return TypeHandle::none();
   }
 

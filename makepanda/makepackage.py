@@ -461,6 +461,11 @@ def MakeInstallerOSX(version, python_versions=[], **kwargs):
             oscmd("mkdir -p %s" % (dir))
             WriteFile("%s/Panda3D.pth" % (dir), "/Developer/Panda3D")
 
+        # Also place it somewhere the Homebrew version of Python can find it.
+        dir = "dstroot/pybindings%s/usr/local/lib/python%s/site-packages" % (pyver, pyver)
+        oscmd("mkdir -p %s" % (dir))
+        WriteFile("%s/Panda3D.pth" % (dir), "/Developer/Panda3D")
+
     if not PkgSkip("FFMPEG"):
         oscmd("mkdir -p dstroot/ffmpeg/Developer/Panda3D/lib")
         oscmd("cp -R %s/lib/libp3ffmpeg.* dstroot/ffmpeg/Developer/Panda3D/lib/" % outputdir)
