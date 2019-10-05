@@ -81,7 +81,7 @@ is_queue_empty() const {
 }
 
 /**
- * This function is deprecated--the queue is never full these days.
+ * @deprecated Always returns false; the queue can never be full.
  */
 bool EventQueue::
 is_queue_full() const {

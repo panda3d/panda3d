@@ -5850,7 +5850,8 @@ prepare_texture(Texture *tex, int view) {
   report_my_gl_errors();
   // Make sure we'll support this texture when it's rendered.  Don't bother to
   // prepare it if we won't.
-  switch (tex->get_texture_type()) {
+  Texture::TextureType texture_type = tex->get_texture_type();
+  switch (texture_type) {
   case Texture::TT_3d_texture:
     if (!_supports_3d_texture) {
       GLCAT.warning()
@@ -5896,6 +5897,7 @@ prepare_texture(Texture *tex, int view) {
   }
 
   CLP(TextureContext) *gtc = new CLP(TextureContext)(this, _prepared_objects, tex, view);
+  gtc->_target = get_texture_target(texture_type);
   report_my_gl_errors();
 
   return gtc;
@@ -5987,6 +5989,48 @@ release_texture(TextureContext *tc) {
   }
 
   delete gtc;
+}
+
+/**
+ * Frees the GL resources previously allocated for the textures.  This function
+ * should never be called directly; instead, call Texture::release() (or
+ * simply let the Texture destruct).
+ */
+void CLP(GraphicsStateGuardian)::
+release_textures(const pvector<TextureContext *> &contexts) {
+  if (contexts.empty()) {
+    return;
+  }
+
+  GLuint *indices = (GLuint *)alloca(sizeof(GLuint) * contexts.size() * 2);
+  GLuint *buffers = indices + contexts.size();
+  size_t num_indices = 0;
+  size_t num_buffers = 0;
+
+  for (TextureContext *tc : contexts) {
+    CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
+
+#ifndef OPENGLES_1
+    _textures_needing_fetch_barrier.erase(gtc);
+    _textures_needing_image_access_barrier.erase(gtc);
+    _textures_needing_update_barrier.erase(gtc);
+    _textures_needing_framebuffer_barrier.erase(gtc);
+#endif
+
+    indices[num_indices++] = gtc->_index;
+
+    if (gtc->_buffer != 0) {
+      buffers[num_buffers++] = gtc->_buffer;
+    }
+
+    delete gtc;
+  }
+
+  glDeleteTextures(num_indices, indices);
+
+  if (num_buffers > 0) {
+    _glDeleteBuffers(num_buffers, buffers);
+  }
 }
 
 /**
@@ -6371,6 +6415,52 @@ release_vertex_buffer(VertexBufferContext *vbc) {
 }
 
 /**
+ * Frees the GL resources previously allocated for the data.  This function
+ * should never be called directly; instead, call Data::release() (or simply
+ * let the Data destruct).
+ */
+void CLP(GraphicsStateGuardian)::
+release_vertex_buffers(const pvector<BufferContext *> &contexts) {
+  if (contexts.empty()) {
+    return;
+  }
+  nassertv(_supports_buffers);
+  bool debug = GLCAT.is_debug() && gl_debug_buffers;
+
+  GLuint *indices = (GLuint *)alloca(sizeof(GLuint) * contexts.size());
+  size_t num_indices = 0;
+
+  for (BufferContext *bc : contexts) {
+    CLP(VertexBufferContext) *gvbc = DCAST(CLP(VertexBufferContext), bc);
+
+    // Make sure the buffer is unbound before we delete it.  Not strictly
+    // necessary according to the OpenGL spec, but it might help out a flaky
+    // driver, and we need to keep our internal state consistent anyway.
+    if (_current_vbuffer_index == gvbc->_index) {
+      if (debug && GLCAT.is_spam()) {
+        GLCAT.spam()
+          << "unbinding vertex buffer " << gvbc->_index << "\n";
+      }
+      _glBindBuffer(GL_ARRAY_BUFFER, 0);
+      _current_vbuffer_index = 0;
+    }
+
+    if (debug) {
+      GLCAT.debug()
+        << "deleting vertex buffer " << gvbc->_index << "\n";
+    }
+
+    indices[num_indices++] = gvbc->_index;
+    gvbc->_index = 0;
+
+    delete gvbc;
+  }
+
+  _glDeleteBuffers(num_indices, indices);
+  report_my_gl_errors();
+}
+
+/**
  * Internal function to bind a buffer object for the indicated data array, if
  * appropriate, or to unbind a buffer object if it should be rendered from
  * client memory.
@@ -6560,6 +6650,52 @@ release_index_buffer(IndexBufferContext *ibc) {
 }
 
 /**
+ * Frees the GL resources previously allocated for the data.  This function
+ * should never be called directly; instead, call Data::release() (or simply
+ * let the Data destruct).
+ */
+void CLP(GraphicsStateGuardian)::
+release_index_buffers(const pvector<BufferContext *> &contexts) {
+  if (contexts.empty()) {
+    return;
+  }
+  nassertv(_supports_buffers);
+  bool debug = GLCAT.is_debug() && gl_debug_buffers;
+
+  GLuint *indices = (GLuint *)alloca(sizeof(GLuint) * contexts.size());
+  size_t num_indices = 0;
+
+  for (BufferContext *bc : contexts) {
+    CLP(IndexBufferContext) *gibc = DCAST(CLP(IndexBufferContext), bc);
+
+    // Make sure the buffer is unbound before we delete it.  Not strictly
+    // necessary according to the OpenGL spec, but it might help out a flaky
+    // driver, and we need to keep our internal state consistent anyway.
+    if (_current_ibuffer_index == gibc->_index) {
+      if (debug && GLCAT.is_spam()) {
+        GLCAT.spam()
+          << "unbinding index buffer " << gibc->_index << "\n";
+      }
+      _glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+      _current_ibuffer_index = 0;
+    }
+
+    if (debug) {
+      GLCAT.debug()
+        << "deleting index buffer " << gibc->_index << "\n";
+    }
+
+    indices[num_indices++] = gibc->_index;
+    gibc->_index = 0;
+
+    delete gibc;
+  }
+
+  _glDeleteBuffers(num_indices, indices);
+  report_my_gl_errors();
+}
+
+/**
  * Internal function to bind a buffer object for the indicated primitive's
  * index list, if appropriate, or to unbind a buffer object if it should be
  * rendered from client memory.
@@ -6723,6 +6859,52 @@ release_shader_buffer(BufferContext *bc) {
   gbc->_index = 0;
 
   delete gbc;
+}
+
+/**
+ * Frees the GL resources previously allocated for the data.  This function
+ * should never be called directly; instead, call Data::release() (or simply
+ * let the Data destruct).
+ */
+void CLP(GraphicsStateGuardian)::
+release_shader_buffers(const pvector<BufferContext *> &contexts) {
+  if (contexts.empty()) {
+    return;
+  }
+  nassertv(_supports_buffers);
+  bool debug = GLCAT.is_debug() && gl_debug_buffers;
+
+  GLuint *indices = (GLuint *)alloca(sizeof(GLuint) * contexts.size());
+  size_t num_indices = 0;
+
+  for (BufferContext *bc : contexts) {
+    CLP(BufferContext) *gbc = DCAST(CLP(BufferContext), bc);
+
+    // Make sure the buffer is unbound before we delete it.  Not strictly
+    // necessary according to the OpenGL spec, but it might help out a flaky
+    // driver, and we need to keep our internal state consistent anyway.
+    if (_current_sbuffer_index == gbc->_index) {
+      if (debug && GLCAT.is_spam()) {
+        GLCAT.spam()
+          << "unbinding shader buffer " << gbc->_index << "\n";
+      }
+      _glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+      _current_sbuffer_index = 0;
+    }
+
+    if (debug) {
+      GLCAT.debug()
+        << "deleting shader buffer " << gbc->_index << "\n";
+    }
+
+    indices[num_indices++] = gbc->_index;
+    gbc->_index = 0;
+
+    delete gbc;
+  }
+
+  _glDeleteBuffers(num_indices, indices);
+  report_my_gl_errors();
 }
 #endif
 
