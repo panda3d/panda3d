@@ -3,6 +3,7 @@
 
 #include "pandabase.h"
 #include "socket_ip.h"
+#include "vector_uchar.h"
 
 /**
  * Base functionality for a TCP connected socket This class is pretty useless
@@ -22,7 +23,7 @@ PUBLISHED:
   inline bool ActiveOpenNonBlocking(const Socket_Address &theaddress);
   inline bool ErrorIs_WouldBlocking(int err);
   inline bool ShutdownSend();
-  inline int SendData(const std::string &str);
+  inline int SendData(const vector_uchar &data);
 // inline int RecvData( std::string &str, int max_len);
 
   std::string RecvData(int max_len);
@@ -217,8 +218,8 @@ DoNotLinger() {
 */
 
 inline int Socket_TCP::
-SendData(const std::string &str) {
-  return SendData(str.data(), str.size());
+SendData(const vector_uchar &data) {
+  return SendData((char *)data.data(), data.size());
 }
 
 #endif //__SOCKET_TCP_H__
