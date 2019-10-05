@@ -303,15 +303,18 @@ send_datagram(const NetDatagram &datagram, int tcp_header_size) {
 
     LightReMutexHolder holder(_write_mutex);
     DatagramUDPHeader header(datagram);
-    std::string data;
-    data += header.get_header();
-    data += datagram.get_message();
+    
+    vector_uchar data;
+    CPTA_uchar header_data = header.get_array();
+    CPTA_uchar message = datagram.get_array();
+    data.insert(data.end(), header_data.begin(), header_data.end());
+    data.insert(data.end(), message.begin(), message.end());
 
     if (net_cat.is_debug()) {
       header.verify_datagram(datagram);
     }
 
-    int bytes_to_send = data.length();
+    int bytes_to_send = data.size();
     Socket_Address addr = datagram.get_address().get_addr();
 
     bool okflag = udp->SendTo(data, addr);
@@ -374,7 +377,9 @@ send_raw_datagram(const NetDatagram &datagram) {
     Socket_UDP *udp;
     DCAST_INTO_R(udp, _socket, false);
 
-    std::string data = datagram.get_message();
+    CPTA_uchar msg = datagram.get_array();
+    vector_uchar data;
+    data.insert(data.end(), msg.begin(), msg.end());
 
     LightReMutexHolder holder(_write_mutex);
     Socket_Address addr = datagram.get_address().get_addr();

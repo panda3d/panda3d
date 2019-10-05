@@ -39,6 +39,7 @@ public:
 
   int get_datagram_size(int header_size) const;
   INLINE std::string get_header() const;
+  INLINE CPTA_uchar get_array() const;
 
   bool verify_datagram(const NetDatagram &datagram, int header_size) const;
 
