@@ -578,6 +578,17 @@ release_texture(TextureContext *) {
 }
 
 /**
+ * Frees the resources previously allocated via a call to prepare_texture(),
+ * including deleting the TextureContext itself, if it is non-NULL.
+ */
+void GraphicsStateGuardian::
+release_textures(const pvector<TextureContext *> &contexts) {
+  for (TextureContext *tc : contexts) {
+    release_texture(tc);
+  }
+}
+
+/**
  * This method should only be called by the GraphicsEngine.  Do not call it
  * directly; call GraphicsEngine::extract_texture_data() instead.
  *
@@ -667,6 +678,17 @@ release_vertex_buffer(VertexBufferContext *) {
 }
 
 /**
+ * Frees the resources previously allocated via a call to prepare_data(),
+ * including deleting the VertexBufferContext itself, if necessary.
+ */
+void GraphicsStateGuardian::
+release_vertex_buffers(const pvector<BufferContext *> &contexts) {
+  for (BufferContext *bc : contexts) {
+    release_vertex_buffer((VertexBufferContext *)bc);
+  }
+}
+
+/**
  * Prepares the indicated buffer for retained-mode rendering.
  */
 IndexBufferContext *GraphicsStateGuardian::
@@ -683,6 +705,17 @@ release_index_buffer(IndexBufferContext *) {
 }
 
 /**
+ * Frees the resources previously allocated via a call to prepare_data(),
+ * including deleting the IndexBufferContext itself, if necessary.
+ */
+void GraphicsStateGuardian::
+release_index_buffers(const pvector<BufferContext *> &contexts) {
+  for (BufferContext *bc : contexts) {
+    release_index_buffer((IndexBufferContext *)bc);
+  }
+}
+
+/**
  * Prepares the indicated buffer for retained-mode rendering.
  */
 BufferContext *GraphicsStateGuardian::
@@ -696,6 +729,17 @@ prepare_shader_buffer(ShaderBuffer *) {
  */
 void GraphicsStateGuardian::
 release_shader_buffer(BufferContext *) {
+}
+
+/**
+ * Frees the resources previously allocated via a call to prepare_data(),
+ * including deleting the BufferContext itself, if necessary.
+ */
+void GraphicsStateGuardian::
+release_shader_buffers(const pvector<BufferContext *> &contexts) {
+  for (BufferContext *bc : contexts) {
+    release_shader_buffer(bc);
+  }
 }
 
 /**
