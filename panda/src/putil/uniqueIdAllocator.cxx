@@ -44,10 +44,6 @@ const uint32_t UniqueIdAllocator::IndexAllocated = (uint32_t)-2;
   #define uniqueIdAllocator_warning(msg) ((void)0)
 #endif //]
 
-#define audio_error(msg) \
-  audio_cat->error() << msg << endl
-
-
 /**
  * Create a free id pool in the range [min:max].
  */

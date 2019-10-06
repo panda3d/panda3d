@@ -59,7 +59,4 @@ extern EXPCL_PANDA_PHYSICS void init_libphysics();
   #define physics_error(msg) ((void)0)
 #endif //]
 
-#define audio_error(msg) \
-  audio_cat->error() << msg << std::endl
-
 #endif // CONFIG_PHYSICS_H
