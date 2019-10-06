@@ -461,7 +461,6 @@ traverse_prepared_textures(GraphicsStateGuardian::TextureCallback *func,
   }
 }
 
-#ifndef NDEBUG
 /**
  * Sets the "flash texture".  This is a debug feature; when enabled, the
  * specified texture will begin flashing in the scene, helping you to find it
@@ -481,31 +480,34 @@ traverse_prepared_textures(GraphicsStateGuardian::TextureCallback *func,
  */
 void GraphicsStateGuardian::
 set_flash_texture(Texture *tex) {
-  _flash_texture = tex;
-}
-#endif  // NDEBUG
-
 #ifndef NDEBUG
+  _flash_texture = tex;
+#endif
+}
+
 /**
  * Resets the "flash texture", so that no textures will flash.  See
  * set_flash_texture().
  */
 void GraphicsStateGuardian::
 clear_flash_texture() {
-  _flash_texture = nullptr;
-}
-#endif  // NDEBUG
-
 #ifndef NDEBUG
+  _flash_texture = nullptr;
+#endif
+}
+
 /**
  * Returns the current "flash texture", if any, or NULL if none.  See
  * set_flash_texture().
  */
 Texture *GraphicsStateGuardian::
 get_flash_texture() const {
+#ifndef NDEBUG
   return _flash_texture;
+#else
+  return nullptr;
+#endif
 }
-#endif  // NDEBUG
 
 /**
  * Sets the SceneSetup object that indicates the initial camera position, etc.
