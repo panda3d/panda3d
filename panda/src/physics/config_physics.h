@@ -28,8 +28,6 @@ extern EXPCL_PANDA_PHYSICS void init_libphysics();
 // value of bar is " << bar);
 #ifndef NDEBUG //[
   // Non-release build:
-  #define PHYSICS_DEBUG
-
   #define physics_spam(msg) \
   if (physics_cat.is_spam()) { \
     physics_cat->spam() << msg << std::endl; \
@@ -50,8 +48,6 @@ extern EXPCL_PANDA_PHYSICS void init_libphysics();
     physics_cat->error() << msg << std::endl
 #else //][
   // Release build:
-  #undef PHYSICS_DEBUG
-
   #define physics_spam(msg) ((void)0)
   #define physics_debug(msg) ((void)0)
   #define physics_info(msg) ((void)0)
