@@ -247,13 +247,13 @@ class StreamIOWrapper(io.IOBase):
         self.__stream.clear()  # clear eof flag
         self.__lastWrite = False
         if size is not None and size >= 0:
-            result = self.__reader.extractBytes(size)
+            return self.__reader.extractBytes(size)
         else:
             # Read to end-of-file.
-            result = b''
+            result = bytearray()
             while not self.__stream.eof():
-                result += self.__reader.extractBytes(512)
-        return result
+                result += self.__reader.extractBytes(4096)
+            return bytes(result)
 
     read1 = read
 
