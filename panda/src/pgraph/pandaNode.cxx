@@ -82,9 +82,6 @@ PandaNode(const string &name) :
     pgraph_cat.debug()
       << "Constructing " << (void *)this << ", " << get_name() << "\n";
   }
-#ifndef NDEBUG
-  _unexpected_change_flags = 0;
-#endif // !NDEBUG
 
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, this);
@@ -135,7 +132,8 @@ PandaNode(const PandaNode &copy) :
   Namable(copy),
   _paths_lock("PandaNode::_paths_lock"),
   _dirty_prev_transform(false),
-  _python_tag_data(copy._python_tag_data)
+  _python_tag_data(copy._python_tag_data),
+  _unexpected_change_flags(0)
 {
   if (pgraph_cat.is_debug()) {
     pgraph_cat.debug()
@@ -144,10 +142,6 @@ PandaNode(const PandaNode &copy) :
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, this);
 #endif
-  // Copying a node does not copy its children.
-#ifndef NDEBUG
-  _unexpected_change_flags = 0;
-#endif // !NDEBUG
 
   // Need to have this held before we grab any other locks.
   LightMutexHolder holder(_dirty_prev_transforms._lock);
