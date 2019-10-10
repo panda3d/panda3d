@@ -17,7 +17,7 @@ if(HAVE_FMODEX)
   )
 
   composite_sources(p3fmod_audio P3FMOD_SOURCES)
-  add_library(p3fmod_audio ${P3FMOD_HEADERS} ${P3FMOD_SOURCES})
+  add_library(p3fmod_audio ${MODULE_TYPE} ${P3FMOD_HEADERS} ${P3FMOD_SOURCES})
   set_target_properties(p3fmod_audio PROPERTIES DEFINE_SYMBOL BUILDING_FMOD_AUDIO)
   target_link_libraries(p3fmod_audio panda PKG::FMODEX)
 
@@ -45,7 +45,7 @@ if(HAVE_OPENAL)
 
 
   composite_sources(p3openal_audio P3OPENAL_SOURCES)
-  add_library(p3openal_audio ${P3OPENAL_HEADERS} ${P3OPENAL_SOURCES})
+  add_library(p3openal_audio ${MODULE_TYPE} ${P3OPENAL_HEADERS} ${P3OPENAL_SOURCES})
   set_target_properties(p3openal_audio PROPERTIES DEFINE_SYMBOL BUILDING_OPENAL_AUDIO)
   target_link_libraries(p3openal_audio panda PKG::OPENAL)
 

@@ -21,7 +21,7 @@ set(P3FFMPEG_SOURCES
 )
 
 composite_sources(p3ffmpeg P3FFMPEG_SOURCES)
-add_library(p3ffmpeg ${P3FFMPEG_HEADERS} ${P3FFMPEG_SOURCES})
+add_library(p3ffmpeg ${MODULE_TYPE} ${P3FFMPEG_HEADERS} ${P3FFMPEG_SOURCES})
 set_target_properties(p3ffmpeg PROPERTIES DEFINE_SYMBOL BUILDING_FFMPEG)
 target_link_libraries(p3ffmpeg panda
   PKG::FFMPEG PKG::SWSCALE PKG::SWRESAMPLE)
