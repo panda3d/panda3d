@@ -11,12 +11,6 @@
  * @date 2000-06-14
  */
 
-#ifndef NDEBUG
-// #define PSDEBUG
-#endif
-
-// #define PSSANITYCHECK
-
 #ifndef PARTICLESYSTEM_H
 #define PARTICLESYSTEM_H
 

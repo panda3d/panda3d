@@ -259,7 +259,7 @@ PUBLISHED:
   typedef bool TextureCallback(TextureContext *tc, void *callback_arg);
   void traverse_prepared_textures(TextureCallback *func, void *callback_arg);
 
-#ifndef NDEBUG
+#if !defined(NDEBUG) || !defined(CPPPARSER)
   void set_flash_texture(Texture *tex);
   void clear_flash_texture();
   Texture *get_flash_texture() const;
@@ -656,6 +656,8 @@ protected:
 
 #ifndef NDEBUG
   PT(Texture) _flash_texture;
+#else
+  PT(Texture) _flash_texture_unused;
 #endif
 
 public:
