@@ -1,4 +1,4 @@
-set(DTOOLCONFIG_LINK_TARGETS p3prc p3interrogatedb)
+set(DTOOLCONFIG_LINK_TARGETS p3prc)
 set(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME "CoreDevel")
 add_metalib(p3dtoolconfig INIT init_libdtoolconfig dtoolconfig.h COMPONENTS ${DTOOLCONFIG_LINK_TARGETS})
 unset(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME)

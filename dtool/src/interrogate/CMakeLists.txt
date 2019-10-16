@@ -60,7 +60,7 @@ set(INTERROGATE_PREAMBLE_PYTHON_NATIVE
 
 composite_sources(interrogate INTERROGATE_SOURCES)
 add_executable(interrogate ${INTERROGATE_HEADERS} ${INTERROGATE_SOURCES})
-target_link_libraries(interrogate p3cppParser p3dtoolconfig
+target_link_libraries(interrogate p3cppParser p3interrogatedb
   PKG::OPENSSL)
 
 # Python preamble for interrogate_module
@@ -76,7 +76,7 @@ add_custom_command(
 
 add_executable(interrogate_module interrogate_module.cxx
   ${CMAKE_CURRENT_BINARY_DIR}/interrogate_preamble_python_native.cxx)
-target_link_libraries(interrogate_module p3cppParser p3dtoolconfig
+target_link_libraries(interrogate_module p3cppParser p3interrogatedb
   PKG::OPENSSL)
 
 if(NOT CMAKE_CROSSCOMPILING)
