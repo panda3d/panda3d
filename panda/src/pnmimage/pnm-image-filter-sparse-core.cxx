@@ -49,10 +49,12 @@ FUNCTION_NAME(IMAGETYPE &dest, const IMAGETYPE &source,
 
   WorkType *filter;
   float filter_width;
+  int actual_width;
 
-  make_filter(scale, width, filter, filter_width);
+  make_filter(scale, width, filter, filter_width, actual_width);
 
   for (b = 0; b < source.BSIZE(); b++) {
+    memset(temp_source, 0, source.ASIZE() * sizeof(StoreType));
     memset(temp_source_weight, 0, source.ASIZE() * sizeof(StoreType));
     for (a = 0; a < source.ASIZE(); a++) {
       if (source.HASVAL(a, b)) {
@@ -64,9 +66,10 @@ FUNCTION_NAME(IMAGETYPE &dest, const IMAGETYPE &source,
     filter_sparse_row(temp_dest, temp_dest_weight, dest.ASIZE(),
                       temp_source, temp_source_weight, source.ASIZE(),
                       scale,
-                      filter, filter_width);
+                      filter, filter_width, actual_width);
 
     for (a = 0; a < dest.ASIZE(); a++) {
+      nassertv(!isnan(temp_dest[a]) && !isnan(temp_dest_weight[a]));
       matrix[a][b] = temp_dest[a];
       matrix_weight[a][b] = temp_dest_weight[a];
     }
@@ -83,17 +86,19 @@ FUNCTION_NAME(IMAGETYPE &dest, const IMAGETYPE &source,
   temp_dest = (StoreType *)PANDA_MALLOC_ARRAY(dest.BSIZE() * sizeof(StoreType));
   temp_dest_weight = (StoreType *)PANDA_MALLOC_ARRAY(dest.BSIZE() * sizeof(StoreType));
 
-  make_filter(scale, width, filter, filter_width);
+  make_filter(scale, width, filter, filter_width, actual_width);
 
   for (a = 0; a < dest.ASIZE(); a++) {
     filter_sparse_row(temp_dest, temp_dest_weight, dest.BSIZE(),
                       matrix[a], matrix_weight[a], source.BSIZE(),
                       scale,
-                      filter, filter_width);
+                      filter, filter_width, actual_width);
 
     for (b = 0; b < dest.BSIZE(); b++) {
+      nassertv(!isnan(temp_dest[b]) && !isnan(temp_dest_weight[b]));
       if (temp_dest_weight[b] != 0) {
-        dest.SETVAL(a, b, channel, (float)temp_dest[b]/(float)source_max);
+        dest.SETVAL(a, b, channel, (float)temp_dest[b]/(float)temp_dest_weight[b]);
+        nassertv(!isnan(dest.GETVAL(a, b, channel)));
       }
     }
   }
