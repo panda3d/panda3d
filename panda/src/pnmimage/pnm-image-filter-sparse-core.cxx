@@ -69,7 +69,6 @@ FUNCTION_NAME(IMAGETYPE &dest, const IMAGETYPE &source,
                       filter, filter_width, actual_width);
 
     for (a = 0; a < dest.ASIZE(); a++) {
-      nassertv(!isnan(temp_dest[a]) && !isnan(temp_dest_weight[a]));
       matrix[a][b] = temp_dest[a];
       matrix_weight[a][b] = temp_dest_weight[a];
     }
@@ -95,10 +94,10 @@ FUNCTION_NAME(IMAGETYPE &dest, const IMAGETYPE &source,
                       filter, filter_width, actual_width);
 
     for (b = 0; b < dest.BSIZE(); b++) {
-      nassertv(!isnan(temp_dest[b]) && !isnan(temp_dest_weight[b]));
       if (temp_dest_weight[b] != 0) {
-        dest.SETVAL(a, b, channel, (float)temp_dest[b]/(float)temp_dest_weight[b]);
-        nassertv(!isnan(dest.GETVAL(a, b, channel)));
+        // The temp_dest array has already been scaled by
+        // temp_dest_weight; we don't scale it again here.
+        dest.SETVAL(a, b, channel, (float)temp_dest[b]/(float)source_max);
       }
     }
   }
