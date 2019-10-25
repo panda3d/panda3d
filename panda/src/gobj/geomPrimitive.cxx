@@ -470,6 +470,9 @@ offset_vertices(int offset) {
  * primitive.  Unlike the other version of offset_vertices, this makes the
  * geometry indexed if it isn't already.
  *
+ * Note that end_row indicates one past the last row that should be offset.
+ * In other words, the number of vertices touched is (end_row - begin_row).
+ *
  * Don't call this in a downstream thread unless you don't mind it blowing
  * away other changes you might have recently made in an upstream thread.
  */
