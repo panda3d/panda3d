@@ -53,8 +53,10 @@ CocoaGraphicsPipe(CGDirectDisplayID display) : _display(display) {
   _display_height = CGDisplayPixelsHigh(_display);
   load_display_information();
 
-  cocoadisplay_cat.debug()
-    << "Creating CocoaGraphicsPipe for display ID " << _display << "\n";
+  if (cocoadisplay_cat.is_debug()) {
+    cocoadisplay_cat.debug()
+      << "Creating CocoaGraphicsPipe for display ID " << _display << "\n";
+  }
 }
 
 /**

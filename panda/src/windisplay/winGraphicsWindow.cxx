@@ -200,13 +200,17 @@ close_ime() {
   HIMC hIMC = ImmGetContext(_hWnd);
   if (hIMC != 0) {
     if (!ImmSetOpenStatus(hIMC, false)) {
-      windisplay_cat.debug() << "ImmSetOpenStatus failed\n";
+      if (windisplay_cat.is_debug()) {
+        windisplay_cat.debug() << "ImmSetOpenStatus failed\n";
+      }
     }
     ImmReleaseContext(_hWnd, hIMC);
   }
   _ime_open = false;
 
-  windisplay_cat.debug() << "success: closed ime window\n";
+  if (windisplay_cat.is_debug()) {
+    windisplay_cat.debug() << "success: closed ime window\n";
+  }
   return;
 }
 
@@ -430,26 +434,8 @@ set_properties_now(WindowProperties &properties) {
         break;
 
       case WindowProperties::M_confined:
-        {
-          RECT clip;
-
-          if (!GetWindowRect(_hWnd, &clip)) {
-            windisplay_cat.warning()
-                << "GetWindowRect() failed in set_properties_now.  Cannot confine cursor.\n";
-          } else {
-            windisplay_cat.info()
-                    << "ClipCursor() to " << clip.left << "," << clip.top << " to "
-                    << clip.right << "," << clip.bottom << endl;
-
-            GetClipCursor(&_mouse_unconfined_cliprect);
-            if (!ClipCursor(&clip)) {
-              windisplay_cat.warning()
-                      << "ClipCursor() failed in set_properties_now.  Ignoring.\n";
-            } else {
-              _properties.set_mouse_mode(WindowProperties::M_confined);
-              windisplay_cat.info() << "Confining cursor to window\n";
-            }
-          }
+        if (confine_cursor()) {
+          _properties.set_mouse_mode(WindowProperties::M_confined);
         }
         break;
       }
@@ -772,6 +758,12 @@ do_reshape_request(int x_origin, int y_origin, bool has_origin,
                  view_rect.bottom - view_rect.top,
                  flags);
 
+    // If we are in confined mode, we must update the clip region.
+    if (_properties.has_mouse_mode() &&
+        _properties.get_mouse_mode() == WindowProperties::M_confined) {
+      confine_cursor();
+    }
+
     handle_reshape();
     return true;
   }
@@ -943,6 +935,12 @@ do_windowed_switch() {
   SetWindowPos(_hWnd, HWND_NOTOPMOST, 0, 0,
                metrics.width, metrics.height,
                SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+
+  // If we had a confined cursor, we must reconfine it now.
+  if (_properties.has_mouse_mode() &&
+      _properties.get_mouse_mode() == WindowProperties::M_confined) {
+    confine_cursor();
+  }
 
   return true;
 }
@@ -1310,6 +1308,31 @@ track_mouse_leaving(HWND hwnd) {
 }
 
 /**
+ * Confines the mouse cursor to the window.
+ */
+bool WinGraphicsWindow::
+confine_cursor() {
+  RECT clip;
+  if (!GetWindowRect(_hWnd, &clip)) {
+    windisplay_cat.warning()
+      << "GetWindowRect() failed, cannot confine cursor.\n";
+    return false;
+  } else {
+    windisplay_cat.info()
+      << "ClipCursor() to " << clip.left << "," << clip.top << " to "
+      << clip.right << "," << clip.bottom << endl;
+
+    if (!ClipCursor(&clip)) {
+      windisplay_cat.warning()
+        << "Failed to confine cursor to window.\n";
+      return false;
+    } else {
+      return true;
+    }
+  }
+}
+
+/**
  * Attempts to set this window as the "focus" window, so that keyboard events
  * come here.
  */
@@ -1482,6 +1505,14 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             SetWindowPos(_hWnd, HWND_TOP, 0,0,0,0, SWP_NOMOVE | SWP_NOSENDCHANGING | SWP_NOSIZE | SWP_NOOWNERZORDER);
             fullscreen_restored(properties);
           }
+
+        // If we had a confined cursor, we must reconfine it upon activation.
+        if (_properties.has_mouse_mode() &&
+            _properties.get_mouse_mode() == WindowProperties::M_confined) {
+          if (!confine_cursor()) {
+            properties.set_mouse_mode(WindowProperties::M_absolute);
+          }
+        }
       }
     else
       {
@@ -1516,7 +1547,16 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     break;
 
   case WM_EXITSIZEMOVE:
-    // handle_reshape();
+    if (windisplay_cat.is_debug()) {
+      windisplay_cat.debug()
+        << "WM_EXITSIZEMOVE: " << hwnd << ", " << wparam << "\n";
+    }
+
+    // If we had a confined cursor, we must reconfine it upon a resize.
+    if (_properties.has_mouse_mode() &&
+        _properties.get_mouse_mode() == WindowProperties::M_confined) {
+      confine_cursor();
+    }
     break;
 
   case WM_WINDOWPOSCHANGED:
@@ -1663,18 +1703,30 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     if (!ime_hide)
       break;
 
-    windisplay_cat.debug() << "hwnd = " << hwnd << " and GetFocus = " << GetFocus() << endl;
+    if (windisplay_cat.is_debug()) {
+      windisplay_cat.debug() << "hwnd = " << hwnd << " and GetFocus = " << GetFocus() << endl;
+    }
     _ime_hWnd = ImmGetDefaultIMEWnd(hwnd);
-    if (::SendMessage(_ime_hWnd, WM_IME_CONTROL, IMC_CLOSESTATUSWINDOW, 0))
+    if (::SendMessage(_ime_hWnd, WM_IME_CONTROL, IMC_CLOSESTATUSWINDOW, 0)) {
       // if (::SendMessage(hwnd, WM_IME_CONTROL, IMC_CLOSESTATUSWINDOW, 0))
-      windisplay_cat.debug() << "SendMessage failed for " << _ime_hWnd << endl;
-    else
-      windisplay_cat.debug() << "SendMessage Succeeded for " << _ime_hWnd << endl;
+      if (windisplay_cat.is_debug()) {
+        windisplay_cat.debug() << "SendMessage failed for " << _ime_hWnd << endl;
+      }
+    } else {
+      if (windisplay_cat.is_debug()) {
+        windisplay_cat.debug() << "SendMessage succeeded for " << _ime_hWnd << endl;
+      }
+    }
 
-    windisplay_cat.debug() << "wparam is " << wparam << ", lparam is " << lparam << endl;
-    lparam &= ~ISC_SHOWUIALL;
-    if (ImmIsUIMessage(_ime_hWnd, msg, wparam, lparam))
+    if (windisplay_cat.is_debug()) {
       windisplay_cat.debug() << "wparam is " << wparam << ", lparam is " << lparam << endl;
+    }
+    lparam &= ~ISC_SHOWUIALL;
+    if (ImmIsUIMessage(_ime_hWnd, msg, wparam, lparam)) {
+      if (windisplay_cat.is_debug()) {
+        windisplay_cat.debug() << "wparam is " << wparam << ", lparam is " << lparam << endl;
+      }
+    }
 
     break;
 
@@ -1693,16 +1745,18 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         CANDIDATEFORM canf;
         ImmGetCompositionWindow(hIMC, &comf);
         ImmGetCandidateWindow(hIMC, 0, &canf);
-        windisplay_cat.debug() <<
-          "comf style " << comf.dwStyle <<
-          " comf point: x" << comf.ptCurrentPos.x << ",y " << comf.ptCurrentPos.y <<
-          " comf rect: l " << comf.rcArea.left << ",t " << comf.rcArea.top << ",r " <<
-          comf.rcArea.right << ",b " << comf.rcArea.bottom << endl;
-        windisplay_cat.debug() <<
-          "canf style " << canf.dwStyle <<
-          " canf point: x" << canf.ptCurrentPos.x << ",y " << canf.ptCurrentPos.y <<
-          " canf rect: l " << canf.rcArea.left << ",t " << canf.rcArea.top << ",r " <<
+        if (windisplay_cat.is_debug()) {
+          windisplay_cat.debug() <<
+            "comf style " << comf.dwStyle <<
+            " comf point: x" << comf.ptCurrentPos.x << ",y " << comf.ptCurrentPos.y <<
+            " comf rect: l " << comf.rcArea.left << ",t " << comf.rcArea.top << ",r " <<
+            comf.rcArea.right << ",b " << comf.rcArea.bottom << endl;
+          windisplay_cat.debug() <<
+            "canf style " << canf.dwStyle <<
+            " canf point: x" << canf.ptCurrentPos.x << ",y " << canf.ptCurrentPos.y <<
+            " canf rect: l " << canf.rcArea.left << ",t " << canf.rcArea.top << ",r " <<
           canf.rcArea.right << ",b " << canf.rcArea.bottom << endl;
+        }
         comf.dwStyle = CFS_POINT;
         comf.ptCurrentPos.x = 2000;
         comf.ptCurrentPos.y = 2000;
@@ -1723,11 +1777,17 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         comf.rcArea.bottom = 0;
 #endif
 
-        if (ImmSetCompositionWindow(hIMC, &comf))
-          windisplay_cat.debug() << "set composition form: success\n";
+        if (ImmSetCompositionWindow(hIMC, &comf)) {
+          if (windisplay_cat.is_debug()) {
+            windisplay_cat.debug() << "set composition form: success\n";
+          }
+        }
         for (int i=0; i<3; ++i) {
-          if (ImmSetCandidateWindow(hIMC, &canf))
-            windisplay_cat.debug() << "set candidate form: success\n";
+          if (ImmSetCandidateWindow(hIMC, &canf)) {
+            if (windisplay_cat.is_debug()) {
+              windisplay_cat.debug() << "set candidate form: success\n";
+            }
+          }
           canf.dwIndex++;
         }
       }

@@ -30,8 +30,10 @@
   // the redrawing since we're doing things our own way.
   self.layerContentsRedrawPolicy = NSViewLayerContentsRedrawNever;
 
-  cocoadisplay_cat.debug()
-    << "Created CocoaPandaView " << self << " for GraphicsWindow " << window << "\n";
+  if (cocoadisplay_cat.is_debug()) {
+    cocoadisplay_cat.debug()
+      << "Created CocoaPandaView " << self << " for GraphicsWindow " << window << "\n";
+  }
   _graphicsWindow = window;
 
   return self;

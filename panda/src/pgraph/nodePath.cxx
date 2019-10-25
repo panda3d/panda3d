@@ -3139,6 +3139,8 @@ get_texture(TextureStage *stage) const {
 /**
  * Recursively searches the scene graph for references to the given texture,
  * and replaces them with the new texture.
+ *
+ * @since 1.10.4
  */
 void NodePath::
 replace_texture(Texture *tex, Texture *new_tex) {

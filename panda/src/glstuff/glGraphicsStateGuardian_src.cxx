@@ -276,6 +276,22 @@ uchar_bgr_to_rgb(unsigned char *dest, const unsigned char *source,
 }
 
 /**
+ * Recopies the given array of pixels, converting from luminance to RGB
+ * arrangement.
+ */
+static void
+uchar_l_to_rgb(unsigned char *dest, const unsigned char *source,
+               int num_pixels) {
+  for (int i = 0; i < num_pixels; i++) {
+    dest[0] = source[0];
+    dest[1] = source[0];
+    dest[2] = source[0];
+    dest += 3;
+    source += 1;
+  }
+}
+
+/**
  * Recopies the given array of pixels, converting from BGRA to RGBA
  * arrangement.
  */
@@ -289,6 +305,23 @@ uchar_bgra_to_rgba(unsigned char *dest, const unsigned char *source,
     dest[3] = source[3];
     dest += 4;
     source += 4;
+  }
+}
+
+/**
+ * Recopies the given array of pixels, converting from luminance-alpha to RGBA
+ * arrangement.
+ */
+static void
+uchar_la_to_rgba(unsigned char *dest, const unsigned char *source,
+                 int num_pixels) {
+  for (int i = 0; i < num_pixels; i++) {
+    dest[0] = source[0];
+    dest[1] = source[0];
+    dest[2] = source[0];
+    dest[3] = source[1];
+    dest += 4;
+    source += 2;
   }
 }
 
@@ -308,6 +341,22 @@ ushort_bgr_to_rgb(unsigned short *dest, const unsigned short *source,
 }
 
 /**
+ * Recopies the given array of pixels, converting from luminance to RGB
+ * arrangement.
+ */
+static void
+ushort_l_to_rgb(unsigned short *dest, const unsigned short *source,
+                int num_pixels) {
+  for (int i = 0; i < num_pixels; i++) {
+    dest[0] = source[0];
+    dest[1] = source[0];
+    dest[2] = source[0];
+    dest += 3;
+    source += 1;
+  }
+}
+
+/**
  * Recopies the given array of pixels, converting from BGRA to RGBA
  * arrangement.
  */
@@ -321,6 +370,23 @@ ushort_bgra_to_rgba(unsigned short *dest, const unsigned short *source,
     dest[3] = source[3];
     dest += 4;
     source += 4;
+  }
+}
+
+/**
+ * Recopies the given array of pixels, converting from luminance-alpha to RGBA
+ * arrangement.
+ */
+static void
+ushort_la_to_rgba(unsigned short *dest, const unsigned short *source,
+                  int num_pixels) {
+  for (int i = 0; i < num_pixels; i++) {
+    dest[0] = source[0];
+    dest[1] = source[0];
+    dest[2] = source[0];
+    dest[3] = source[1];
+    dest += 4;
+    source += 2;
   }
 }
 
@@ -343,6 +409,12 @@ fix_component_ordering(PTA_uchar &new_image,
 
   switch (external_format) {
   case GL_RGB:
+    if (tex->get_num_components() == 1) {
+      new_image = PTA_uchar::empty_array(orig_image_size * 3);
+      uchar_l_to_rgb(new_image, orig_image, orig_image_size);
+      result = new_image;
+      break;
+    }
     switch (tex->get_component_type()) {
     case Texture::T_unsigned_byte:
     case Texture::T_byte:
@@ -366,6 +438,12 @@ fix_component_ordering(PTA_uchar &new_image,
     break;
 
   case GL_RGBA:
+    if (tex->get_num_components() == 2) {
+      new_image = PTA_uchar::empty_array(orig_image_size * 2);
+      uchar_la_to_rgba(new_image, orig_image, orig_image_size / 2);
+      result = new_image;
+      break;
+    }
     switch (tex->get_component_type()) {
     case Texture::T_unsigned_byte:
     case Texture::T_byte:
@@ -722,10 +800,12 @@ reset() {
                    || has_extension("GL_KHR_debug")
                    || has_extension("GL_ARB_debug_output");
 
-    if (_supports_debug) {
-      GLCAT.debug() << "gl-debug supported, but NOT enabled.\n";
-    } else {
-      GLCAT.debug() << "gl-debug disabled and unsupported.\n";
+    if (GLCAT.is_debug()) {
+      if (_supports_debug) {
+        GLCAT.debug() << "gl-debug supported, but NOT enabled.\n";
+      } else {
+        GLCAT.debug() << "gl-debug disabled and unsupported.\n";
+      }
     }
   }
 
@@ -5770,7 +5850,8 @@ prepare_texture(Texture *tex, int view) {
   report_my_gl_errors();
   // Make sure we'll support this texture when it's rendered.  Don't bother to
   // prepare it if we won't.
-  switch (tex->get_texture_type()) {
+  Texture::TextureType texture_type = tex->get_texture_type();
+  switch (texture_type) {
   case Texture::TT_3d_texture:
     if (!_supports_3d_texture) {
       GLCAT.warning()
@@ -5816,6 +5897,7 @@ prepare_texture(Texture *tex, int view) {
   }
 
   CLP(TextureContext) *gtc = new CLP(TextureContext)(this, _prepared_objects, tex, view);
+  gtc->_target = get_texture_target(texture_type);
   report_my_gl_errors();
 
   return gtc;
@@ -5907,6 +5989,48 @@ release_texture(TextureContext *tc) {
   }
 
   delete gtc;
+}
+
+/**
+ * Frees the GL resources previously allocated for the textures.  This function
+ * should never be called directly; instead, call Texture::release() (or
+ * simply let the Texture destruct).
+ */
+void CLP(GraphicsStateGuardian)::
+release_textures(const pvector<TextureContext *> &contexts) {
+  if (contexts.empty()) {
+    return;
+  }
+
+  GLuint *indices = (GLuint *)alloca(sizeof(GLuint) * contexts.size() * 2);
+  GLuint *buffers = indices + contexts.size();
+  size_t num_indices = 0;
+  size_t num_buffers = 0;
+
+  for (TextureContext *tc : contexts) {
+    CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
+
+#ifndef OPENGLES_1
+    _textures_needing_fetch_barrier.erase(gtc);
+    _textures_needing_image_access_barrier.erase(gtc);
+    _textures_needing_update_barrier.erase(gtc);
+    _textures_needing_framebuffer_barrier.erase(gtc);
+#endif
+
+    indices[num_indices++] = gtc->_index;
+
+    if (gtc->_buffer != 0) {
+      buffers[num_buffers++] = gtc->_buffer;
+    }
+
+    delete gtc;
+  }
+
+  glDeleteTextures(num_indices, indices);
+
+  if (num_buffers > 0) {
+    _glDeleteBuffers(num_buffers, buffers);
+  }
 }
 
 /**
@@ -6291,6 +6415,52 @@ release_vertex_buffer(VertexBufferContext *vbc) {
 }
 
 /**
+ * Frees the GL resources previously allocated for the data.  This function
+ * should never be called directly; instead, call Data::release() (or simply
+ * let the Data destruct).
+ */
+void CLP(GraphicsStateGuardian)::
+release_vertex_buffers(const pvector<BufferContext *> &contexts) {
+  if (contexts.empty()) {
+    return;
+  }
+  nassertv(_supports_buffers);
+  bool debug = GLCAT.is_debug() && gl_debug_buffers;
+
+  GLuint *indices = (GLuint *)alloca(sizeof(GLuint) * contexts.size());
+  size_t num_indices = 0;
+
+  for (BufferContext *bc : contexts) {
+    CLP(VertexBufferContext) *gvbc = DCAST(CLP(VertexBufferContext), bc);
+
+    // Make sure the buffer is unbound before we delete it.  Not strictly
+    // necessary according to the OpenGL spec, but it might help out a flaky
+    // driver, and we need to keep our internal state consistent anyway.
+    if (_current_vbuffer_index == gvbc->_index) {
+      if (debug && GLCAT.is_spam()) {
+        GLCAT.spam()
+          << "unbinding vertex buffer " << gvbc->_index << "\n";
+      }
+      _glBindBuffer(GL_ARRAY_BUFFER, 0);
+      _current_vbuffer_index = 0;
+    }
+
+    if (debug) {
+      GLCAT.debug()
+        << "deleting vertex buffer " << gvbc->_index << "\n";
+    }
+
+    indices[num_indices++] = gvbc->_index;
+    gvbc->_index = 0;
+
+    delete gvbc;
+  }
+
+  _glDeleteBuffers(num_indices, indices);
+  report_my_gl_errors();
+}
+
+/**
  * Internal function to bind a buffer object for the indicated data array, if
  * appropriate, or to unbind a buffer object if it should be rendered from
  * client memory.
@@ -6480,6 +6650,52 @@ release_index_buffer(IndexBufferContext *ibc) {
 }
 
 /**
+ * Frees the GL resources previously allocated for the data.  This function
+ * should never be called directly; instead, call Data::release() (or simply
+ * let the Data destruct).
+ */
+void CLP(GraphicsStateGuardian)::
+release_index_buffers(const pvector<BufferContext *> &contexts) {
+  if (contexts.empty()) {
+    return;
+  }
+  nassertv(_supports_buffers);
+  bool debug = GLCAT.is_debug() && gl_debug_buffers;
+
+  GLuint *indices = (GLuint *)alloca(sizeof(GLuint) * contexts.size());
+  size_t num_indices = 0;
+
+  for (BufferContext *bc : contexts) {
+    CLP(IndexBufferContext) *gibc = DCAST(CLP(IndexBufferContext), bc);
+
+    // Make sure the buffer is unbound before we delete it.  Not strictly
+    // necessary according to the OpenGL spec, but it might help out a flaky
+    // driver, and we need to keep our internal state consistent anyway.
+    if (_current_ibuffer_index == gibc->_index) {
+      if (debug && GLCAT.is_spam()) {
+        GLCAT.spam()
+          << "unbinding index buffer " << gibc->_index << "\n";
+      }
+      _glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+      _current_ibuffer_index = 0;
+    }
+
+    if (debug) {
+      GLCAT.debug()
+        << "deleting index buffer " << gibc->_index << "\n";
+    }
+
+    indices[num_indices++] = gibc->_index;
+    gibc->_index = 0;
+
+    delete gibc;
+  }
+
+  _glDeleteBuffers(num_indices, indices);
+  report_my_gl_errors();
+}
+
+/**
  * Internal function to bind a buffer object for the indicated primitive's
  * index list, if appropriate, or to unbind a buffer object if it should be
  * rendered from client memory.
@@ -6643,6 +6859,52 @@ release_shader_buffer(BufferContext *bc) {
   gbc->_index = 0;
 
   delete gbc;
+}
+
+/**
+ * Frees the GL resources previously allocated for the data.  This function
+ * should never be called directly; instead, call Data::release() (or simply
+ * let the Data destruct).
+ */
+void CLP(GraphicsStateGuardian)::
+release_shader_buffers(const pvector<BufferContext *> &contexts) {
+  if (contexts.empty()) {
+    return;
+  }
+  nassertv(_supports_buffers);
+  bool debug = GLCAT.is_debug() && gl_debug_buffers;
+
+  GLuint *indices = (GLuint *)alloca(sizeof(GLuint) * contexts.size());
+  size_t num_indices = 0;
+
+  for (BufferContext *bc : contexts) {
+    CLP(BufferContext) *gbc = DCAST(CLP(BufferContext), bc);
+
+    // Make sure the buffer is unbound before we delete it.  Not strictly
+    // necessary according to the OpenGL spec, but it might help out a flaky
+    // driver, and we need to keep our internal state consistent anyway.
+    if (_current_sbuffer_index == gbc->_index) {
+      if (debug && GLCAT.is_spam()) {
+        GLCAT.spam()
+          << "unbinding shader buffer " << gbc->_index << "\n";
+      }
+      _glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+      _current_sbuffer_index = 0;
+    }
+
+    if (debug) {
+      GLCAT.debug()
+        << "deleting shader buffer " << gbc->_index << "\n";
+    }
+
+    indices[num_indices++] = gbc->_index;
+    gbc->_index = 0;
+
+    delete gbc;
+  }
+
+  _glDeleteBuffers(num_indices, indices);
+  report_my_gl_errors();
 }
 #endif
 
@@ -9448,7 +9710,6 @@ get_external_image_format(Texture *tex) const {
     return _supports_bgr ? GL_BGRA : GL_RGBA;
 
   case Texture::F_luminance:
-  case Texture::F_sluminance:
 #ifdef OPENGLES
     return GL_LUMINANCE;
 #else
@@ -9456,11 +9717,23 @@ get_external_image_format(Texture *tex) const {
 #endif
   case Texture::F_luminance_alphamask:
   case Texture::F_luminance_alpha:
-  case Texture::F_sluminance_alpha:
 #ifdef OPENGLES
     return GL_LUMINANCE_ALPHA;
 #else
     return _supports_luminance_texture ? GL_LUMINANCE_ALPHA : GL_RG;
+#endif
+
+  case Texture::F_sluminance:
+#ifdef OPENGLES
+    return GL_LUMINANCE;
+#else
+    return _supports_luminance_texture ? GL_LUMINANCE : GL_RGB;
+#endif
+  case Texture::F_sluminance_alpha:
+#ifdef OPENGLES
+    return GL_LUMINANCE_ALPHA;
+#else
+    return _supports_luminance_texture ? GL_LUMINANCE_ALPHA : GL_RGBA;
 #endif
 
 #ifndef OPENGLES_1
@@ -10198,9 +10471,9 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
 #endif
 #ifndef OPENGLES
   case Texture::F_sluminance:
-    return GL_SLUMINANCE8;
+    return _core_profile ? GL_SRGB8 : GL_SLUMINANCE8;
   case Texture::F_sluminance_alpha:
-    return GL_SLUMINANCE8_ALPHA8;
+    return _core_profile ? GL_SRGB8_ALPHA8 : GL_SLUMINANCE8_ALPHA8;
 #endif
 
 #ifndef OPENGLES

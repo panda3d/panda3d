@@ -5,6 +5,7 @@ a particular color."""
 __all__ = ['Transitions']
 
 from panda3d.core import *
+from direct.showbase import ShowBaseGlobal
 from direct.gui.DirectGui import DirectFrame
 from direct.gui import DirectGuiGlobals as DGG
 from direct.interval.LerpInterval import LerpColorScaleInterval, LerpColorInterval, LerpScaleInterval, LerpPosInterval
@@ -73,7 +74,7 @@ class Transitions:
             # so that it will also obscure mouse events for objects
             # positioned behind it.
             self.fade = DirectFrame(
-                parent = hidden,
+                parent = ShowBaseGlobal.hidden,
                 guiId = 'fade',
                 relief = None,
                 image = self.fadeModel,

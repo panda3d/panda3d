@@ -25,6 +25,7 @@ pandaSystem = PandaSystem.getGlobalPtr()
 
 # This is defined here so GUI elements can be instantiated before ShowBase.
 aspect2d = NodePath(PGTop("aspect2d"))
+hidden = NodePath("hidden")
 
 # Set direct notify categories now that we have config
 directNotify.setDconfigLevels()
@@ -46,6 +47,7 @@ if sys.version_info >= (3, 0):
 else:
     import __builtin__ as builtins
 builtins.inspect = inspect
+del sys
 
 # this also appears in AIBaseGlobal
 if (not __debug__) and __dev__:

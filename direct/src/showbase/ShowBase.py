@@ -46,7 +46,6 @@ if __debug__:
     from direct.showbase import GarbageReport
     from direct.directutil import DeltaProfiler
     from . import OnScreenDebug
-from . import AppRunnerGlobal
 
 @atexit.register
 def exitfunc():
@@ -81,7 +80,7 @@ class ShowBase(DirectObject.DirectObject):
         ## This contains the global appRunner instance, as imported from
         ## AppRunnerGlobal.  This will be None if we are not running in the
         ## runtime environment (ie. from a .p3d file).
-        self.appRunner = AppRunnerGlobal.appRunner
+        self.appRunner = None
         self.app_runner = self.appRunner
 
         #debug running multiplier
@@ -207,7 +206,10 @@ class ShowBase(DirectObject.DirectObject):
             # Has the clusterSyncFlag been set via a config variable
             self.clusterSyncFlag = self.config.GetBool('cluster-sync', 0)
 
-        self.hidden = NodePath('hidden')
+        # We've already created aspect2d in ShowBaseGlobal, for the
+        # benefit of creating DirectGui elements before ShowBase.
+        from . import ShowBaseGlobal
+        self.hidden = ShowBaseGlobal.hidden
 
         ## The global graphics engine, ie. GraphicsEngine.getGlobalPtr()
         self.graphicsEngine = GraphicsEngine.getGlobalPtr()

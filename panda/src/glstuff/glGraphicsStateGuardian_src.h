@@ -333,6 +333,7 @@ public:
   virtual TextureContext *prepare_texture(Texture *tex, int view);
   virtual bool update_texture(TextureContext *tc, bool force);
   virtual void release_texture(TextureContext *tc);
+  virtual void release_textures(const pvector<TextureContext *> &contexts);
   virtual bool extract_texture_data(Texture *tex);
 
 #ifndef OPENGLES_1
@@ -353,6 +354,7 @@ public:
                             const GeomVertexArrayDataHandle *reader,
                             bool force);
   virtual void release_vertex_buffer(VertexBufferContext *vbc);
+  virtual void release_vertex_buffers(const pvector<BufferContext *> &contexts);
 
   bool setup_array_data(const unsigned char *&client_pointer,
                         const GeomVertexArrayDataHandle *data,
@@ -363,6 +365,7 @@ public:
                           const GeomPrimitivePipelineReader *reader,
                           bool force);
   virtual void release_index_buffer(IndexBufferContext *ibc);
+  virtual void release_index_buffers(const pvector<BufferContext *> &contexts);
   bool setup_primitive(const unsigned char *&client_pointer,
                        const GeomPrimitivePipelineReader *reader,
                        bool force);
@@ -371,6 +374,7 @@ public:
   virtual BufferContext *prepare_shader_buffer(ShaderBuffer *data);
   void apply_shader_buffer(GLuint base, ShaderBuffer *buffer);
   virtual void release_shader_buffer(BufferContext *bc);
+  virtual void release_shader_buffers(const pvector<BufferContext *> &contexts);
 #endif
 
 #ifndef OPENGLES

@@ -1,0 +1,57 @@
+name: Continuous Integration
+on: [push, pull_request]
+jobs:
+  makepanda:
+    strategy:
+      matrix:
+        os: [ubuntu-16.04, windows-2016, macOS-10.14]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install dependencies (Ubuntu)
+      if: matrix.os == 'ubuntu-16.04'
+      run: |
+        sudo apt-get install build-essential bison flex libfreetype6-dev libgl1-mesa-dev libjpeg-dev libode-dev libopenal-dev libpng-dev libssl-dev libvorbis-dev libx11-dev libxcursor-dev libxrandr-dev nvidia-cg-toolkit zlib1g-dev
+    - name: Get thirdparty packages (Windows)
+      if: runner.os == 'Windows'
+      shell: powershell
+      run: |
+        $wc = New-Object System.Net.WebClient
+        $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.4.1/panda3d-1.10.4.1-tools-win64.zip", "thirdparty-tools.zip")
+        Expand-Archive -Path thirdparty-tools.zip
+        Move-Item -Path thirdparty-tools/panda3d-1.10.4.1/thirdparty -Destination .
+    - name: Get thirdparty packages (macOS)
+      if: runner.os == 'macOS'
+      run: |
+        curl -O https://www.panda3d.org/download/panda3d-1.10.4.1/panda3d-1.10.4.1-tools-mac.tar.gz
+        tar -xf panda3d-1.10.4.1-tools-mac.tar.gz
+        mv panda3d-1.10.4.1/thirdparty thirdparty
+        rmdir panda3d-1.10.4.1
+        (cd thirdparty/darwin-libs-a && rm -rf ode openal vrpn openexr assimp rocket)
+    - name: Set up Python 3.7
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.7
+    - name: Build Python 3.7
+      run: |
+        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir=$pythonLocation/include --python-libdir=$pythonLocation/lib --verbose --threads=4
+    - name: Test Python 3.7
+      shell: bash
+      run: |
+        python -m pip install pytest
+        PYTHONPATH=built LD_LIBRARY_PATH=built/lib DYLD_LIBRARY_PATH=built/lib python -m pytest
+    - name: Set up Python 2.7
+      uses: actions/setup-python@v1
+      with:
+        python-version: 2.7
+    - name: Build Python 2.7
+      run: |
+        python makepanda/makepanda.py --no-copy-python --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir=$pythonLocation/include --python-libdir=$pythonLocation/lib --verbose --threads=4
+    - name: Test Python 2.7
+      shell: bash
+      run: |
+        python -m pip install pytest
+        PYTHONPATH=built LD_LIBRARY_PATH=built/lib DYLD_LIBRARY_PATH=built/lib python -m pytest
+    - name: Make installer
+      run: |
+        python makepanda/makepackage.py --verbose --lzma

@@ -532,9 +532,7 @@ private:
   };
   PT(PythonTagData) _python_tag_data;
 
-#ifndef NDEBUG
-  unsigned int _unexpected_change_flags;
-#endif // !NDEBUG
+  unsigned int _unexpected_change_flags = 0;
 
   // This is the data that must be cycled between pipeline stages.
 

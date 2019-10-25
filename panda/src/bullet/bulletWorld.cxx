@@ -222,6 +222,8 @@ int BulletWorld::
 do_physics(PN_stdfloat dt, int max_substeps, PN_stdfloat stepsize) {
   LightMutexHolder holder(get_global_lock());
 
+  bullet_contact_added_callback = _contact_added_callback_obj;
+
   _pstat_physics.start();
 
   int num_substeps = clamp(int(dt / stepsize), 1, max_substeps);
@@ -248,6 +250,8 @@ do_physics(PN_stdfloat dt, int max_substeps, PN_stdfloat stepsize) {
   }
 
   _pstat_physics.stop();
+
+  bullet_contact_added_callback.clear();
 
   return n;
 }
@@ -363,7 +367,7 @@ remove(TypedObject *object) {
 }
 
 /**
- * Deprecated!  Please use BulletWorld::attach
+ * @deprecated Please use BulletWorld::attach
  */
 void BulletWorld::
 attach_rigid_body(BulletRigidBodyNode *node) {
@@ -373,7 +377,7 @@ attach_rigid_body(BulletRigidBodyNode *node) {
 }
 
 /**
- * Deprecated.! Please use BulletWorld::remove
+ * @deprecated Please use BulletWorld::remove
  */
 void BulletWorld::
 remove_rigid_body(BulletRigidBodyNode *node) {
@@ -383,7 +387,7 @@ remove_rigid_body(BulletRigidBodyNode *node) {
 }
 
 /**
- * Deprecated!  Please use BulletWorld::attach
+ * @deprecated Please use BulletWorld::attach
  */
 void BulletWorld::
 attach_soft_body(BulletSoftBodyNode *node) {
@@ -393,7 +397,7 @@ attach_soft_body(BulletSoftBodyNode *node) {
 }
 
 /**
- * Deprecated.! Please use BulletWorld::remove
+ * @deprecated Please use BulletWorld::remove
  */
 void BulletWorld::
 remove_soft_body(BulletSoftBodyNode *node) {
@@ -403,7 +407,7 @@ remove_soft_body(BulletSoftBodyNode *node) {
 }
 
 /**
- * Deprecated!  Please use BulletWorld::attach
+ * @deprecated Please use BulletWorld::attach
  */
 void BulletWorld::
 attach_ghost(BulletGhostNode *node) {
@@ -413,7 +417,7 @@ attach_ghost(BulletGhostNode *node) {
 }
 
 /**
- * Deprecated.! Please use BulletWorld::remove
+ * @deprecated Please use BulletWorld::remove
  */
 void BulletWorld::
 remove_ghost(BulletGhostNode *node) {
@@ -423,7 +427,7 @@ remove_ghost(BulletGhostNode *node) {
 }
 
 /**
- * Deprecated!  Please use BulletWorld::attach
+ * @deprecated Please use BulletWorld::attach
  */
 void BulletWorld::
 attach_character(BulletBaseCharacterControllerNode *node) {
@@ -433,7 +437,7 @@ attach_character(BulletBaseCharacterControllerNode *node) {
 }
 
 /**
- * Deprecated.! Please use BulletWorld::remove
+ * @deprecated Please use BulletWorld::remove
  */
 void BulletWorld::
 remove_character(BulletBaseCharacterControllerNode *node) {
@@ -443,7 +447,7 @@ remove_character(BulletBaseCharacterControllerNode *node) {
 }
 
 /**
- * Deprecated!  Please use BulletWorld::attach
+ * @deprecated Please use BulletWorld::attach
  */
 void BulletWorld::
 attach_vehicle(BulletVehicle *vehicle) {
@@ -453,7 +457,7 @@ attach_vehicle(BulletVehicle *vehicle) {
 }
 
 /**
- * Deprecated.! Please use BulletWorld::remove
+ * @deprecated Please use BulletWorld::remove
  */
 void BulletWorld::
 remove_vehicle(BulletVehicle *vehicle) {
@@ -474,7 +478,7 @@ attach_constraint(BulletConstraint *constraint, bool linked_collision) {
 }
 
 /**
- * Deprecated.! Please use BulletWorld::remove
+ * @deprecated Please use BulletWorld::remove
  */
 void BulletWorld::
 remove_constraint(BulletConstraint *constraint) {
@@ -1146,7 +1150,7 @@ set_contact_added_callback(CallbackObject *obj) {
   _world->getSolverInfo().m_solverMode |= SOLVER_USE_2_FRICTION_DIRECTIONS;
   _world->getSolverInfo().m_solverMode |= SOLVER_ENABLE_FRICTION_DIRECTION_CACHING;
 
-  bullet_contact_added_callback = obj;
+  _contact_added_callback_obj = obj;
 }
 
 /**
@@ -1160,7 +1164,7 @@ clear_contact_added_callback() {
   _world->getSolverInfo().m_solverMode &= ~SOLVER_USE_2_FRICTION_DIRECTIONS;
   _world->getSolverInfo().m_solverMode &= ~SOLVER_ENABLE_FRICTION_DIRECTION_CACHING;
 
-  bullet_contact_added_callback = nullptr;
+  _contact_added_callback_obj = nullptr;
 }
 
 /**

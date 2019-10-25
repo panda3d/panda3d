@@ -17,11 +17,12 @@
 #include "dcbase.h"
 #include "dcField.h"
 #include "dcDeclaration.h"
-#include "dcPython.h"
 
 #ifdef WITHIN_PANDA
 #include "pStatCollector.h"
 #include "configVariableBool.h"
+#include "extension.h"
+#include "datagramIterator.h"
 
 extern ConfigVariableBool dc_multiple_inheritance;
 extern ConfigVariableBool dc_virtual_inheritance;
@@ -80,44 +81,52 @@ PUBLISHED:
 
   virtual void output(std::ostream &out) const;
 
-#ifdef HAVE_PYTHON
-  bool has_class_def() const;
-  void set_class_def(PyObject *class_def);
-  PyObject *get_class_def() const;
-  bool has_owner_class_def() const;
-  void set_owner_class_def(PyObject *owner_class_def);
-  PyObject *get_owner_class_def() const;
+  EXTENSION(bool has_class_def() const);
+  EXTENSION(void set_class_def(PyObject *class_def));
+  EXTENSION(PyObject *get_class_def() const);
+  EXTENSION(bool has_owner_class_def() const);
+  EXTENSION(void set_owner_class_def(PyObject *owner_class_def));
+  EXTENSION(PyObject *get_owner_class_def() const);
 
-  void receive_update(PyObject *distobj, DatagramIterator &di) const;
-  void receive_update_broadcast_required(PyObject *distobj, DatagramIterator &di) const;
-  void receive_update_broadcast_required_owner(PyObject *distobj, DatagramIterator &di) const;
-  void receive_update_all_required(PyObject *distobj, DatagramIterator &di) const;
-  void receive_update_other(PyObject *distobj, DatagramIterator &di) const;
+  EXTENSION(void receive_update(PyObject *distobj, DatagramIterator &di) const);
+  EXTENSION(void receive_update_broadcast_required(PyObject *distobj, DatagramIterator &di) const);
+  EXTENSION(void receive_update_broadcast_required_owner(PyObject *distobj, DatagramIterator &di) const);
+  EXTENSION(void receive_update_all_required(PyObject *distobj, DatagramIterator &di) const);
+  EXTENSION(void receive_update_other(PyObject *distobj, DatagramIterator &di) const);
 
-  void direct_update(PyObject *distobj, const std::string &field_name,
-                     const vector_uchar &value_blob);
-  void direct_update(PyObject *distobj, const std::string &field_name,
-                     const Datagram &datagram);
-  bool pack_required_field(Datagram &datagram, PyObject *distobj,
-                           const DCField *field) const;
-  bool pack_required_field(DCPacker &packer, PyObject *distobj,
-                           const DCField *field) const;
-
+  EXTENSION(void direct_update(PyObject *distobj, const std::string &field_name,
+                               const vector_uchar &value_blob));
+  EXTENSION(void direct_update(PyObject *distobj, const std::string &field_name,
+                               const Datagram &datagram));
+  EXTENSION(bool pack_required_field(Datagram &datagram, PyObject *distobj,
+                                     const DCField *field) const);
+  EXTENSION(bool pack_required_field(DCPacker &packer, PyObject *distobj,
+                                     const DCField *field) const);
 
 
-  Datagram client_format_update(const std::string &field_name,
-                                DOID_TYPE do_id, PyObject *args) const;
-  Datagram ai_format_update(const std::string &field_name, DOID_TYPE do_id,
-                            CHANNEL_TYPE to_id, CHANNEL_TYPE from_id, PyObject *args) const;
-  Datagram ai_format_update_msg_type(const std::string &field_name, DOID_TYPE do_id,
-                            CHANNEL_TYPE to_id, CHANNEL_TYPE from_id, int msg_type, PyObject *args) const;
-  Datagram ai_format_generate(PyObject *distobj, DOID_TYPE do_id, ZONEID_TYPE parent_id, ZONEID_TYPE zone_id,
-                              CHANNEL_TYPE district_channel_id, CHANNEL_TYPE from_channel_id,
-                              PyObject *optional_fields) const;
-  Datagram client_format_generate_CMU(PyObject *distobj, DOID_TYPE do_id,
-                                      ZONEID_TYPE zone_id,                                                           PyObject *optional_fields) const;
 
-#endif
+  EXTENSION(Datagram client_format_update(const std::string &field_name,
+                                          DOID_TYPE do_id, PyObject *args) const);
+  EXTENSION(Datagram ai_format_update(const std::string &field_name,
+                                      DOID_TYPE do_id,
+                                      CHANNEL_TYPE to_id, CHANNEL_TYPE from_id,
+                                      PyObject *args) const);
+  EXTENSION(Datagram ai_format_update_msg_type(const std::string &field_name,
+                                               DOID_TYPE do_id,
+                                               CHANNEL_TYPE to_id,
+                                               CHANNEL_TYPE from_id,
+                                               int msg_type,
+                                               PyObject *args) const);
+  EXTENSION(Datagram ai_format_generate(PyObject *distobj, DOID_TYPE do_id,
+                                        ZONEID_TYPE parent_id,
+                                        ZONEID_TYPE zone_id,
+                                        CHANNEL_TYPE district_channel_id,
+                                        CHANNEL_TYPE from_channel_id,
+                                        PyObject *optional_fields) const);
+  EXTENSION(Datagram client_format_generate_CMU(PyObject *distobj, DOID_TYPE do_id,
+                                                ZONEID_TYPE zone_id,
+                                                PyObject *optional_fields) const);
+
 
 public:
   virtual void output(std::ostream &out, bool brief) const;
@@ -136,8 +145,8 @@ private:
   void shadow_inherited_field(const std::string &name);
 
 #ifdef WITHIN_PANDA
-  PStatCollector _class_update_pcollector;
-  PStatCollector _class_generate_pcollector;
+  mutable PStatCollector _class_update_pcollector;
+  mutable PStatCollector _class_generate_pcollector;
   static PStatCollector _update_pcollector;
   static PStatCollector _generate_pcollector;
 #endif
@@ -163,12 +172,17 @@ private:
   typedef pmap<int, DCField *> FieldsByIndex;
   FieldsByIndex _fields_by_index;
 
-#ifdef HAVE_PYTHON
-  PyObject *_class_def;
-  PyObject *_owner_class_def;
-#endif
+  // See pandaNode.h for an explanation of this trick
+  class PythonClassDefs : public ReferenceCount {
+  public:
+    virtual ~PythonClassDefs() {};
+  };
+  PT(PythonClassDefs) _python_class_defs;
 
   friend class DCField;
+#ifdef WITHIN_PANDA
+  friend class Extension<DCClass>;
+#endif
 };
 
 #include "dcClass.I"

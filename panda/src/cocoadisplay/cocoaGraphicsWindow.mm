@@ -194,8 +194,10 @@ begin_frame(FrameMode mode, Thread *current_thread) {
       _context_needs_update = true;
       [cocoagsg->_context setView:_view];
 
-      cocoadisplay_cat.spam()
-        << "Switching context to view " << _view << "\n";
+      if (cocoadisplay_cat.is_spam()) {
+        cocoadisplay_cat.spam()
+          << "Switching context to view " << _view << "\n";
+      }
     }
   }
 
@@ -918,8 +920,11 @@ set_properties_now(WindowProperties &properties) {
       frame.origin.x = x;
       frame.origin.y = container.size.height - y - frame.size.height;
 
-      cocoadisplay_cat.debug()
-        << "Setting window content origin to " << frame.origin.x << ", " << frame.origin.y << "\n";
+      if (cocoadisplay_cat.is_debug()) {
+        cocoadisplay_cat.debug()
+          << "Setting window content origin to "
+          << frame.origin.x << ", " << frame.origin.y << "\n";
+      }
 
       if (_window != nil) {
         [_window setFrame:[_window frameRectForContentRect:frame] display:NO];
@@ -1472,16 +1477,20 @@ handle_close_request() {
     // and process it directly.
     throw_event(close_request_event);
 
-    cocoadisplay_cat.debug()
-      << "Window requested close.  Rejecting, throwing event "
-      << close_request_event << " instead\n";
+    if (cocoadisplay_cat.is_debug()) {
+      cocoadisplay_cat.debug()
+        << "Window requested close.  Rejecting, throwing event "
+        << close_request_event << " instead\n";
+    }
 
     // Prevent the operating system from closing the window.
     return false;
   }
 
-  cocoadisplay_cat.debug()
-    << "Window requested close, accepting\n";
+  if (cocoadisplay_cat.is_debug()) {
+    cocoadisplay_cat.debug()
+      << "Window requested close, accepting\n";
+  }
 
   // Let the operating system close the window normally.
   return true;
@@ -1492,7 +1501,9 @@ handle_close_request() {
  */
 void CocoaGraphicsWindow::
 handle_close_event() {
-  cocoadisplay_cat.debug() << "Window is about to close\n";
+  if (cocoadisplay_cat.is_debug()) {
+    cocoadisplay_cat.debug() << "Window is about to close\n";
+  }
 
   _window = nil;
 
@@ -1707,17 +1718,17 @@ handle_mouse_button_event(int button, bool down) {
   if (down) {
     _input->button_down(MouseButton::button(button));
 
-#ifndef NDEBUG
-    cocoadisplay_cat.spam()
-      << "Mouse button " << button << " down\n";
-#endif
+    if (cocoadisplay_cat.is_spam()) {
+      cocoadisplay_cat.spam()
+        << "Mouse button " << button << " down\n";
+    }
   } else {
     _input->button_up(MouseButton::button(button));
 
-#ifndef NDEBUG
-    cocoadisplay_cat.spam()
-      << "Mouse button " << button << " up\n";
-#endif
+    if (cocoadisplay_cat.is_spam()) {
+      cocoadisplay_cat.spam()
+        << "Mouse button " << button << " up\n";
+    }
   }
 }
 
@@ -1795,8 +1806,10 @@ handle_mouse_moved_event(bool in_window, double x, double y, bool absolute) {
  */
 void CocoaGraphicsWindow::
 handle_wheel_event(double x, double y) {
-  cocoadisplay_cat.spam()
-    << "Wheel delta " << x << ", " << y << "\n";
+  if (cocoadisplay_cat.is_spam()) {
+    cocoadisplay_cat.spam()
+      << "Wheel delta " << x << ", " << y << "\n";
+  }
 
   if (y > 0.0) {
     _input->button_down(MouseButton::wheel_up());

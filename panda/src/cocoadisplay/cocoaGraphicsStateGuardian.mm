@@ -323,8 +323,10 @@ choose_pixel_format(const FrameBufferProperties &properties,
   }
 
   // For now, I'm just using the first virtual screen.
-  cocoadisplay_cat.debug() <<
-    "Pixel format has " << [format numberOfVirtualScreens] << " virtual screens.\n";
+  if (cocoadisplay_cat.is_debug()) {
+    cocoadisplay_cat.debug() <<
+      "Pixel format has " << [format numberOfVirtualScreens] << " virtual screens.\n";
+  }
   get_properties(_fbprops, format, 0);
 
   // Don't enable sRGB unless it was explicitly requested.
@@ -346,8 +348,10 @@ choose_pixel_format(const FrameBufferProperties &properties,
   GLint swap = 0;
   [_context setValues:&swap forParameter:NSOpenGLCPSwapInterval];
 
-  cocoadisplay_cat.debug()
-    << "Created context " << _context << ": " << _fbprops << "\n";
+  if (cocoadisplay_cat.is_debug()) {
+    cocoadisplay_cat.debug()
+      << "Created context " << _context << ": " << _fbprops << "\n";
+  }
 }
 
 /**
