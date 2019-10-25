@@ -61,6 +61,12 @@ PandaSystem() :
 #else
   set_system_tag("system", "malloc", "malloc");
 #endif
+
+#ifdef _LIBCPP_VERSION
+  set_system_tag("system", "stdlib", "libc++");
+#elif defined(__GLIBCXX__)
+  set_system_tag("system", "stdlib", "libstdc++");
+#endif
 }
 
 /**
