@@ -8,13 +8,19 @@ REM If we can find both, then run 'makepanda'.
 REM
 
 if %PROCESSOR_ARCHITECTURE% == AMD64 (
-  set pythondir=win-python-x64
+  set suffix=-x64
 ) else (
-  set pythondir=win-python
+  set suffix=
 )
 
 set thirdparty=thirdparty
 if defined MAKEPANDA_THIRDPARTY set thirdparty=%MAKEPANDA_THIRDPARTY%
+
+if exist %thirdparty%\win-python3.7%suffix%\python.exe (
+  set pythondir=win-python3.7%suffix%
+) else (
+  set pythondir=win-python%suffix%
+)
 
 if not exist makepanda\makepanda.py goto :missing1
 if not exist %thirdparty%\%pythondir%\python.exe goto :missing2
