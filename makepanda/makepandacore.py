@@ -2321,7 +2321,6 @@ def SdkLocateWindows(version = '7.1'):
                 if not os.path.isdir(os.path.join(platsdk, 'Lib', verstring, 'um')):
                     continue
 
-                print(verstring)
                 vertuple = tuple(map(int, verstring.split('.')))
                 if vertuple > max_version:
                     version = verstring
