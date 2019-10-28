@@ -156,7 +156,6 @@ class demo_arg_cont:
 
 class App:
     def __init__(self):
-        self.dac=demo_arg_cont()
         # for demonstration purposes:
         # get a few colors as "types"
 
@@ -171,9 +170,14 @@ class App:
         # init showvase
         base = ShowBase.ShowBase()
         
+        self.DC=Drag_Container()
+        
+class Drag_Container:
+    def __init__(self):
+        
+        self.dac=demo_arg_cont()
         
         self.grid = TargetColoredGrid((32, 32), (64, 64), self.dac.colors)
-        
         bind_grid_events(self.grid,self.hover_in,self.hover_out)
 
         # helper attributes
@@ -298,7 +302,9 @@ def bind_grid_events(grid,hover_in,hover_out):
     # bind the events
     for key1 in grid.d:
         for key2 in grid.d[key1]:
+            
             ob = grid.d[key1][key2]
+            print(ob)
             ob.bind(DGG.WITHIN , hover_in, [ob])
             ob.bind(DGG.WITHOUT, hover_out)
             print("bound")
@@ -324,6 +330,6 @@ def snap(ob, target):
     print("drop point",lock_pos)
     
 
-
-app = App()
-base.run()
+if __name__=="__main__":
+    app = App()
+    base.run()
