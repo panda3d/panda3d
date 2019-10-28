@@ -137,7 +137,7 @@ class ServerRepository:
 
         # An allocator object that assigns the next doIdBase to each
         # client.
-        self.idAllocator = UniqueIdAllocator(0, 0xffffffff / self.doIdRange)
+        self.idAllocator = UniqueIdAllocator(0, 0xffffffff // self.doIdRange)
 
         self.dcFile = DCFile()
         self.dcSuffix = ''
