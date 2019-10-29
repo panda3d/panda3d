@@ -1,7 +1,6 @@
-
-
 import os
 import time
+
 
 class RotatingLog:
     """
@@ -11,22 +10,23 @@ class RotatingLog:
 
     def __init__(self, path="./log_file", hourInterval=24, megabyteLimit=1024):
         """
-        path is a full or partial path with file name.
-        hourInterval is the number of hours at which to rotate the file.
-        megabyteLimit is the number of megabytes of file size the log
-            may grow to, after which the log is rotated.  Note: The log
-            file may get a bit larger than limit do to writing out whole
-            lines (last line may exceed megabyteLimit or "megabyteGuidline").
+        Args:
+            path: a full or partial path with file name.
+            hourInterval: the number of hours at which to rotate the file.
+            megabyteLimit: the number of megabytes of file size the log may
+                grow to, after which the log is rotated.  Note: The log file
+                may get a bit larger than limit do to writing out whole lines
+                (last line may exceed megabyteLimit or "megabyteGuidline").
         """
-        self.path=path
-        self.timeInterval=None
-        self.timeLimit=None
-        self.sizeLimit=None
+        self.path = path
+        self.timeInterval = None
+        self.timeLimit = None
+        self.sizeLimit = None
         if hourInterval is not None:
-            self.timeInterval=hourInterval*60*60
-            self.timeLimit=time.time()+self.timeInterval
+            self.timeInterval = hourInterval*60*60
+            self.timeLimit = time.time()+self.timeInterval
         if megabyteLimit is not None:
-            self.sizeLimit=megabyteLimit*1024*1024
+            self.sizeLimit = megabyteLimit*1024*1024
 
     def __del__(self):
         self.close()

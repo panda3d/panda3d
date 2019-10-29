@@ -678,6 +678,13 @@ if __debug__:
         if file.endswith('.py'):
             whl.write_file('pandac/' + file, os.path.join(pandac_dir, file))
 
+    # Let's also add the interrogate databases.
+    input_dir = os.path.join(pandac_dir, 'input')
+    if os.path.isdir(input_dir):
+        for file in os.listdir(input_dir):
+            if file.endswith('.in'):
+                whl.write_file('pandac/input/' + file, os.path.join(input_dir, file))
+
     # Add a panda3d-tools directory containing the executables.
     entry_points = '[console_scripts]\n'
     entry_points += 'eggcacher = direct.directscripts.eggcacher:main\n'

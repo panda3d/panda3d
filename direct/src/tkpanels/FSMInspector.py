@@ -1,4 +1,106 @@
-""" Finite State Machine Inspector module """
+"""Defines the `FSMInspector` class, which opens a Tkinter window for
+inspecting :ref:`finite-state-machines`.
+
+Using the Finite State Inspector
+--------------------------------
+
+1) In your Config.prc add::
+
+    want-tk #t
+
+2) Start up the show and create a Finite State Machine::
+
+    from direct.showbase.ShowBaseGlobal import *
+
+    from direct.fsm import ClassicFSM
+    from direct.fsm import State
+
+    def enterState():
+        print('enterState')
+
+    def exitState():
+        print 'exitState'
+
+    fsm = ClassicFSM.ClassicFSM('stopLight',
+              [State.State('red', enterState, exitState, ['green']),
+                State.State('yellow', enterState, exitState, ['red']),
+                State.State('green', enterState, exitState, ['yellow'])],
+              'red',
+              'red')
+
+    import FSMInspector
+
+    inspector = FSMInspector.FSMInspector(fsm, title = fsm.getName())
+
+    # Note, the inspectorPos argument is optional, the inspector will
+    # automagically position states on startup
+    fsm = ClassicFSM.ClassicFSM('stopLight', [
+        State.State('yellow',
+                    enterState,
+                    exitState,
+                    ['red'],
+                    inspectorPos = [95.9, 48.0]),
+        State.State('red',
+                    enterState,
+                    exitState,
+                    ['green'],
+                    inspectorPos = [0.0, 0.0]),
+        State.State('green',
+                    enterState,
+                    exitState,
+                    ['yellow'],
+                    inspectorPos = [0.0, 95.9])],
+            'red',
+            'red')
+
+3) Pop open a viewer::
+
+    import FSMInspector
+    insp = FSMInspector.FSMInspector(fsm)
+
+or if you wish to be fancy::
+
+    insp = FSMInspector.FSMInspector(fsm, title = fsm.getName())
+
+Features:
+
+  - Right mouse button over a state pops up a menu allowing you to
+    request a transition to that state
+  - Middle mouse button will grab the canvas and slide things around if
+    your state machine is bigger than the viewing area
+  - There are some self explanatory menu options up at the top, the most
+    useful being: "print ClassicFSM layout" which will print out Python
+    code which will create an ClassicFSM augmented with layout
+    information for the viewer so everything shows up in the same place
+    the next time you inspect the state machine
+
+Caveat
+------
+
+There is an unexplained problem with using Tk and emacs right now which
+occasionally results in everything locking up.  This procedure seems to
+avoid the problem for me::
+
+   # Start up the show
+   from direct.showbase.ShowBaseGlobal import *
+
+   # You will see the window and a Tk panel pop open
+
+   # Type a number at the emacs prompt
+   >>> 123
+
+   # At this point everything will lock up and you won't get your prompt back
+
+   # Hit a bunch of Control-C's in rapid succession, in most cases
+   # this will break you out of whatever badness you were in and
+   # from that point on everything will behave normally
+
+
+   # This is how you pop up an inspector
+   import FSMInspector
+   inspector = FSMInspector.FSMInspector(fsm, title = fsm.getName())
+
+"""
 
 __all__ = ['FSMInspector', 'StateInspector']
 
@@ -13,6 +115,7 @@ else:
 
 
 DELTA = (5.0 / 360.) * 2.0 * math.pi
+
 
 class FSMInspector(AppShell):
     # Override class variables
@@ -445,104 +548,3 @@ class StateInspector(Pmw.MegaArchetype):
 
     def exitedState(self):
         self._canvas.itemconfigure(self.marker, fill = 'CornflowerBlue')
-
-
-"""
-# USING FINITE STATE INSPECTOR
-
-1)      in your Configrc add:
-
-want-tk #t
-
-2)      start up the show and create a Finite State Machine
-
-from direct.showbase.ShowBaseGlobal import *
-
-from direct.fsm import ClassicFSM
-from direct.fsm import State
-
-def enterState():
-    print 'enterState'
-
-def exitState():
-    print 'exitState'
-
-fsm = ClassicFSM.ClassicFSM('stopLight',
-          [State.State('red', enterState, exitState, ['green']),
-            State.State('yellow', enterState, exitState, ['red']),
-            State.State('green', enterState, exitState, ['yellow'])],
-          'red',
-          'red')
-
-import FSMInspector
-
-inspector = FSMInspector.FSMInspector(fsm, title = fsm.getName())
-
-# Note, the inspectorPos argument is optional, the inspector will
-# automagically position states on startup
-fsm = ClassicFSM.ClassicFSM('stopLight', [
-    State.State('yellow',
-                enterState,
-                exitState,
-                ['red'],
-                inspectorPos = [95.9, 48.0]),
-    State.State('red',
-                enterState,
-                exitState,
-                ['green'],
-                inspectorPos = [0.0, 0.0]),
-    State.State('green',
-                enterState,
-                exitState,
-                ['yellow'],
-                inspectorPos = [0.0, 95.9])],
-        'red',
-        'red')
-
-3)      Pop open a viewer
-
-import FSMInspector
-insp = FSMInspector.FSMInspector(fsm)
-
-or if you wish to be fancy:
-
-insp = FSMInspector.FSMInspector(fsm, title = fsm.getName())
-
-Features:
-   -  Right mouse button over a state pops up a menu allowing you to
-        request a transition to that state
-   -  Middle mouse button will grab the canvas and slide things around
-        if your state machine is bigger than the viewing area
-   -  There are some self explanatory menu options up at the top, the most
-        useful being: "print ClassicFSM layout" which will print out python code
-        which will create an ClassicFSM augmented with layout information for the
-        viewer so everything shows up in the same place the next time you
-        inspect the state machine
-
-CAVEAT:
-
-There is some unexplained problems with using TK and emacs right now which
-occasionally results in everything locking up.  This procedure seems to
-avoid the problem for me:
-
-# Start up the show
-from direct.showbase.ShowBaseGlobal import *
-
-# You will see the window and a Tk panel pop open
-
-# Type a number at the emacs prompt
->>> 123
-
-# At this point everything will lock up and you won't get your prompt back
-
-# Hit a bunch of Control-C's in rapid succession, in most cases
-# this will break you out of whatever badness you were in and
-# from that point on everything will behave normally
-
-
-# This is how you pop up an inspector
-import FSMInspector
-inspector = FSMInspector.FSMInspector(fsm, title = fsm.getName())
-
-"""
-

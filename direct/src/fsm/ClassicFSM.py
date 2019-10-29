@@ -1,9 +1,8 @@
 """Finite State Machine module: contains the ClassicFSM class.
 
-.. note::
-
-   This module and class exist only for backward compatibility with
-   existing code.  New code should use the :mod:`.FSM` module instead.
+Note:
+    This module and class exist only for backward compatibility with
+    existing code.  New code should use the :mod:`.FSM` module instead.
 """
 
 __all__ = ['ClassicFSM']
@@ -14,11 +13,13 @@ import weakref
 
 if __debug__:
     _debugFsms = {}
+
     def printDebugFsmList():
         global _debugFsms
         for k in sorted(_debugFsms.keys()):
             print("%s %s" % (k, _debugFsms[k]()))
     __builtins__['debugFsmList'] = printDebugFsmList
+
 
 class ClassicFSM(DirectObject):
     """
@@ -45,14 +46,14 @@ class ClassicFSM(DirectObject):
         """__init__(self, string, State[], string, string, int)
 
         ClassicFSM constructor: takes name, list of states, initial state and
-        final state as:
+        final state as::
 
-        fsm = ClassicFSM.ClassicFSM('stopLight',
-          [State.State('red', enterRed, exitRed, ['green']),
-            State.State('yellow', enterYellow, exitYellow, ['red']),
-            State.State('green', enterGreen, exitGreen, ['yellow'])],
-          'red',
-          'red')
+            fsm = ClassicFSM.ClassicFSM('stopLight',
+              [State.State('red', enterRed, exitRed, ['green']),
+                State.State('yellow', enterYellow, exitYellow, ['red']),
+                State.State('green', enterGreen, exitGreen, ['yellow'])],
+              'red',
+              'red')
 
         each state's last argument, a list of allowed state transitions,
         is optional; if left out (or explicitly specified to be

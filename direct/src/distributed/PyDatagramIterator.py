@@ -7,6 +7,7 @@ from panda3d.core import *
 from panda3d.direct import *
 # Import the type numbers
 
+
 class PyDatagramIterator(DatagramIterator):
 
     # This is a little helper Dict to replace the huge <if> statement

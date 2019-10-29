@@ -1,4 +1,6 @@
-"""Loader module: contains the Loader class"""
+"""This module contains a high-level interface for loading models, textures,
+sound, music, shaders and fonts from disk.
+"""
 
 __all__ = ['Loader']
 
