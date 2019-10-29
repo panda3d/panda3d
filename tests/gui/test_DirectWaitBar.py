@@ -7,7 +7,3 @@ def test_create_waitbar():
     bar["value"]=0.0
     bar.setRange()
     bar.setValue()
-    #position = (0.0, 0.0, -0.6)
-    #text = "hello"
-    #scale = (0.1, 0.1, 0.1)
-    #label = DirectLabel(text=text,pos=position,scale=scale,textMayChange=1)
