@@ -123,7 +123,7 @@ class TaskManager:
         self.fKeyboardInterrupt = False
         self.interruptCount = 0
 
-        self._frameProfileQueue = Queue()
+        self._frameProfileQueue = []
 
         # this will be set when it's safe to import StateVar
         self._profileFrames = None
@@ -518,7 +518,7 @@ class TaskManager:
             while self.running:
                 try:
                     if len(self._frameProfileQueue):
-                        numFrames, session, callback = self._frameProfileQueue.pop()
+                        numFrames, session, callback = self._frameProfileQueue.pop(0)
                         def _profileFunc(numFrames=numFrames):
                             self._doProfiledFrames(numFrames)
                         session.setFunc(_profileFunc)
@@ -626,7 +626,7 @@ class TaskManager:
             session = self.getProfileSession()
         # make sure the profile session doesn't get destroyed before we're done with it
         session.acquire()
-        self._frameProfileQueue.push((num, session, callback))
+        self._frameProfileQueue.append((num, session, callback))
 
     def _doProfiledFrames(self, numFrames):
         for i in range(numFrames):
