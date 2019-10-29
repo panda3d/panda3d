@@ -113,7 +113,7 @@ class OnscreenGeom(DirectObject, NodePath):
                 self.setColor(color[0], color[1], color[2], color[3])
 
     def getGeom(self):
-        warnings.warn("stop using this function",FutureWarning)
+        warnings.warn("This method is vestigial and will be removed in the future.", FutureWarning)
         return self
 
     def configure(self, option=None, **kw):

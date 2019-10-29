@@ -131,7 +131,7 @@ class OnscreenImage(DirectObject, NodePath):
             self.setTransform(transform)
 
     def getImage(self):
-        warnings.warn("stop using this function",FutureWarning)
+        warnings.warn("This method is vestigial and will be removed in the future.", FutureWarning)
         return self
 
     def configure(self, option=None, **kw):
