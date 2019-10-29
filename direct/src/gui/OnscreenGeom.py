@@ -6,6 +6,8 @@ from panda3d.core import *
 from direct.showbase.DirectObject import DirectObject
 import sys
 
+import warnings
+
 if sys.version_info >= (3, 0):
     stringType = str
 else:
@@ -111,6 +113,7 @@ class OnscreenGeom(DirectObject, NodePath):
                 self.setColor(color[0], color[1], color[2], color[3])
 
     def getGeom(self):
+        warnings.warn("stop using this function",FutureWarning)
         return self
 
     def configure(self, option=None, **kw):
