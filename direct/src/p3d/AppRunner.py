@@ -10,6 +10,10 @@ The global AppRunner instance may be imported as follows::
    from direct.showbase.AppRunnerGlobal import appRunner
 
 This will be None if Panda was not run from the runtime environment.
+
+.. deprecated:: 1.10.0
+   The p3d packaging system has been replaced with the new setuptools-based
+   system.  See the :ref:`distribution` manual section.
 """
 
 __all__ = ["AppRunner", "dummyAppRunner", "ArgumentError"]

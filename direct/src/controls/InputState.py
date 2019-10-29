@@ -135,14 +135,16 @@ class InputState(DirectObject.DirectObject):
 
     def watch(self, name, eventOn, eventOff, startState=False, inputSource=None):
         """
-        This returns a token; hold onto the token and call token.release() when you
-        no longer want to watch for these events.
+        This returns a token; hold onto the token and call token.release() when
+        you no longer want to watch for these events.
 
-        # set up
-        token = inputState.watch('forward', 'w', 'w-up', inputSource=inputState.WASD)
-         ...
-        # tear down
-        token.release()
+        Example::
+
+            # set up
+            token = inputState.watch('forward', 'w', 'w-up', inputSource=inputState.WASD)
+            ...
+            # tear down
+            token.release()
         """
         assert self.debugPrint(
             "watch(name=%s, eventOn=%s, eventOff=%s, startState=%s)"%(
@@ -191,15 +193,16 @@ class InputState(DirectObject.DirectObject):
         """
         Force isSet(name) to return 'value'.
 
-        This returns a token; hold onto the token and call token.release() when you
-        no longer want to force the state.
+        This returns a token; hold onto the token and call token.release() when
+        you no longer want to force the state.
 
-        example:
-        # set up
-        token=inputState.force('forward', True, inputSource='myForwardForcer')
-         ...
-        # tear down
-        token.release()
+        Example::
+
+            # set up
+            token = inputState.force('forward', True, inputSource='myForwardForcer')
+            ...
+            # tear down
+            token.release()
         """
         token = InputStateForceToken(self)
         self._token2forceInfo[token] = (name, inputSource)

@@ -1,6 +1,11 @@
 """ This module is used to build a graphical installer
 or a standalone executable from a p3d file. It will try
-to build for as many platforms as possible. """
+to build for as many platforms as possible.
+
+.. deprecated:: 1.10.0
+   The p3d packaging system has been replaced with the new setuptools-based
+   system.  See the :ref:`distribution` manual section.
+"""
 
 __all__ = ["Standalone", "Installer"]
 

@@ -1,6 +1,10 @@
 """ This module defines some simple classes and instances which are
 useful when writing code that integrates with JavaScript, especially
-code that runs in a browser via the web plugin. """
+code that runs in a browser via the web plugin.
+
+.. deprecated:: 1.10.0
+   The browser plug-in is no longer supported.
+"""
 
 __all__ = ["UndefinedObject", "Undefined", "ConcreteStruct", "BrowserObject", "MethodWrapper"]
 

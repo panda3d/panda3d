@@ -1,5 +1,8 @@
 """The new Finite State Machine module. This replaces the module
 previously called FSM (now called :mod:`.ClassicFSM`).
+
+For more information on FSMs, consult the :ref:`finite-state-machines` section
+of the programming manual.
 """
 
 __all__ = ['FSMException', 'FSM']
@@ -14,11 +17,14 @@ from direct.stdpy.threading import RLock
 class FSMException(Exception):
     pass
 
+
 class AlreadyInTransition(FSMException):
     pass
 
+
 class RequestDenied(FSMException):
     pass
+
 
 class FSM(DirectObject):
     """
@@ -34,25 +40,25 @@ class FSM(DirectObject):
 
     To define specialized behavior when entering or exiting a
     particular state, define a method named enterState() and/or
-    exitState(), where "State" is the name of the state, e.g.:
+    exitState(), where "State" is the name of the state, e.g.::
 
-    def enterRed(self):
-        ... do stuff ...
+        def enterRed(self):
+            ... do stuff ...
 
-    def exitRed(self):
-        ... cleanup stuff ...
+        def exitRed(self):
+            ... cleanup stuff ...
 
-    def enterYellow(self):
-        ... do stuff ...
+        def enterYellow(self):
+            ... do stuff ...
 
-    def exitYellow(self):
-        ... cleanup stuff ...
+        def exitYellow(self):
+            ... cleanup stuff ...
 
-    def enterGreen(self):
-        ... do stuff ...
+        def enterGreen(self):
+            ... do stuff ...
 
-    def exitGreen(self):
-        ... cleanup stuff ...
+        def exitGreen(self):
+            ... cleanup stuff ...
 
     Both functions can access the previous state name as
     self.oldState, and the new state name we are transitioning to as
@@ -70,22 +76,22 @@ class FSM(DirectObject):
     input is always a string and a tuple of optional parameters (which
     is often empty), and the return value should either be None to do
     nothing, or the name of the state to transition into.  For
-    example:
+    example::
 
-    def filterRed(self, request, args):
-        if request in ['Green']:
-            return (request,) + args
-        return None
+        def filterRed(self, request, args):
+            if request in ['Green']:
+                return (request,) + args
+            return None
 
-    def filterYellow(self, request, args):
-        if request in ['Red']:
-            return (request,) + args
-        return None
+        def filterYellow(self, request, args):
+            if request in ['Red']:
+                return (request,) + args
+            return None
 
-    def filterGreen(self, request, args):
-        if request in ['Yellow']:
-            return (request,) + args
-        return None
+        def filterGreen(self, request, args):
+            if request in ['Yellow']:
+                return (request,) + args
+            return None
 
     As above, the filterState() functions are optional.  If any is
     omitted, the defaultFilter() method is called instead.  A standard

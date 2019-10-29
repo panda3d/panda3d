@@ -1,7 +1,12 @@
 """ This module is used to build a "Package", a collection of files
 within a Panda3D Multifile, which can be easily be downloaded and/or
 patched onto a client machine, for the purpose of running a large
-application. """
+application.
+
+.. deprecated:: 1.10.0
+   The p3d packaging system has been replaced with the new setuptools-based
+   system.  See the :ref:`distribution` manual section.
+"""
 
 __all__ = ["Packager", "PackagerError", "OutsideOfPackageError", "ArgumentError"]
 
@@ -3926,21 +3931,22 @@ class metaclass_def(type):
 
         return type.__new__(self, name, bases, dict)
 
+
 # Define these dynamically to stay compatible with Python 2 and 3.
 class_p3d = metaclass_def(str('class_p3d'), (), {})
 class_package = metaclass_def(str('class_package'), (), {})
 class_solo = metaclass_def(str('class_solo'), (), {})
 
-class func_closure:
 
+class func_closure:
     """ This class is used to create a closure on the function name,
-    and also allows the *args, **kw syntax.  In Python, the lambda
+    and also allows the ``*args, **kw`` syntax.  In Python, the lambda
     syntax, used with default parameters, is used more often to create
     a closure (that is, a binding of one or more variables into a
-    callable object), but that syntax doesn't work with **kw.
+    callable object), but that syntax doesn't work with ``**kw``.
     Fortunately, a class method is also a form of a closure, because
     it binds self; and this doesn't have any syntax problems with
-    **kw. """
+    ``**kw``. """
 
     def __init__(self, name):
         self.name = name

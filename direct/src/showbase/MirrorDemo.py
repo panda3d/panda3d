@@ -1,5 +1,5 @@
 """This file demonstrates one way to create a mirror effect in Panda.
-Call setupMirror() to create a mirror in the world that reflects
+Call :func:`setupMirror()` to create a mirror in the world that reflects
 everything in front of it.
 
 The approach taken here is to create an offscreen buffer with its own
