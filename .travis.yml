@@ -52,3 +52,6 @@ notifications:
     on_failure: always
     use_notice: true
     skip_join: true
+
+- name: autopep8
+  uses: peter-evans/autopep8@v1.1.0
