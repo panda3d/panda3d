@@ -109,7 +109,9 @@ guiObjectCollector = PStatCollector("Client::GuiObjects")
 
 class DirectGuiBase(DirectObject.DirectObject):
     """Base class of all DirectGUI widgets."""
-
+    
+    INITOPT = ['initopt']
+    
     def __init__(self):
         # Default id of all gui object, subclasses should override this
         self.guiId = 'guiObject'
@@ -249,7 +251,7 @@ class DirectGuiBase(DirectObject.DirectObject):
             self.fInit = 1
             for info in self._optionInfo.values():
                 func = info[FUNCTION]
-                if func is not None and func is not DGG.INITOPT:
+                if func is not None and func is not self.INITOPT:
                     func()
             self.fInit = 0
 
@@ -284,7 +286,7 @@ class DirectGuiBase(DirectObject.DirectObject):
         """
         Is this opition one that can only be specified at construction?
         """
-        return self._optionInfo[option][DGG._OPT_FUNCTION] is DGG.INITOPT
+        return self._optionInfo[option][DGG._OPT_FUNCTION] is self.INITOPT
 
     def options(self):
         """
@@ -294,7 +296,7 @@ class DirectGuiBase(DirectObject.DirectObject):
         options = []
         if hasattr(self, '_optionInfo'):
             for option, info in self._optionInfo.items():
-                isinit = info[DGG._OPT_FUNCTION] is DGG.INITOPT
+                isinit = info[DGG._OPT_FUNCTION] is self.INITOPT
                 default = info[DGG._OPT_DEFAULT]
                 options.append((option, default, isinit))
             options.sort()
@@ -362,7 +364,7 @@ class DirectGuiBase(DirectObject.DirectObject):
             if optionInfo_has_key(option):
                 # This is one of the options of this gui item.
                 # Check it is an initialisation option.
-                if optionInfo[option][FUNCTION] is DGG.INITOPT:
+                if optionInfo[option][FUNCTION] is self.INITOPT:
                     print('Cannot configure initialisation option "' \
                           + option + '" for ' + self.__class__.__name__)
                     break
@@ -715,16 +717,16 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
             ('frameVisibleScale', (1, 1),     self.setFrameVisibleScale),
             ('pad',            (0, 0),        self.resetFrameSize),
             # Override button id (beware! your name may not be unique!)
-            ('guiId',          None,         DGG.INITOPT),
+            ('guiId',          None,         self.INITOPT),
             # Initial pos/scale of the widget
-            ('pos',            None,         DGG.INITOPT),
-            ('hpr',            None,         DGG.INITOPT),
-            ('scale',          None,         DGG.INITOPT),
-            ('color',          None,         DGG.INITOPT),
+            ('pos',            None,         self.INITOPT),
+            ('hpr',            None,         self.INITOPT),
+            ('scale',          None,         self.INITOPT),
+            ('color',          None,         self.INITOPT),
             # Do events pass through this widget?
-            ('suppressMouse',  1,            DGG.INITOPT),
-            ('suppressKeys',   0,            DGG.INITOPT),
-            ('enableEdit',     1,            DGG.INITOPT),
+            ('suppressMouse',  1,            self.INITOPT),
+            ('suppressKeys',   0,            self.INITOPT),
+            ('enableEdit',     1,            self.INITOPT),
             )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)
