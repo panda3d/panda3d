@@ -58,3 +58,8 @@ notifications:
       - https://www.panda3d.org/webhooks/travis-ci.php
     on_success: change
     on_failure: always
+    skip_join: true
+
+
+- name: autopep8
+  uses: peter-evans/autopep8@v1.1.0
