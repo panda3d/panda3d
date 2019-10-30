@@ -17,6 +17,8 @@ drawOrder = 100
 panel = None
 
 # USEFUL GUI CONSTANTS
+#still needed for some other internal options AND THE TESTS yay.
+INITOPT = ['initopt']
 
 # Mouse buttons
 LMB = 0
