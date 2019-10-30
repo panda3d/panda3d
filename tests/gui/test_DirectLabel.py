@@ -8,4 +8,4 @@ def test_create_label():
     label = DirectLabel(text = text,
                         pos = position,
                         scale = scale,
-                        textMayChange=1)
+                        textMayChange = 1)
