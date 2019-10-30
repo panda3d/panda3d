@@ -664,6 +664,12 @@ def setGuiGridSpacing(spacing):
 
 
 class DirectGuiWidget(DirectGuiBase, NodePath):
+    
+    
+    #: Constant used to indicate that an option can only be set by a call
+    #: to the constructor.
+    INITOPT = ['initopt']
+    
     # Toggle if you wish widget's to snap to grid when draggin
     snapToGrid = 0
     gridSpacing = 0.05

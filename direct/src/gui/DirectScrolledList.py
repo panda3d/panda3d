@@ -80,8 +80,8 @@ class DirectScrolledList(DirectFrame):
         optiondefs = (
             # Define type of DirectGuiWidget
             ('items',              [],        None),
-            ('itemsAlign',  TextNode.ACenter, DGG.INITOPT),
-            ('itemsWordwrap',      None,      DGG.INITOPT),
+            ('itemsAlign',  TextNode.ACenter, self.INITOPT),
+            ('itemsWordwrap',      None,      self.INITOPT),
             ('command',            None,      None),
             ('extraArgs',          [],        None),
             ('itemMakeFunction',   None,      None),

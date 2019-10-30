@@ -23,7 +23,7 @@ class DirectOptionMenu(DirectButton):
             ('items',       [],             self.setItems),
             # Initial item to display on menu button
             # Can be an integer index or the same string as the button
-            ('initialitem', None,           DGG.INITOPT),
+            ('initialitem', None,           self.INITOPT),
             # Amount of padding to place around popup button indicator
             ('popupMarkerBorder', (.1, .1), None),
             # The initial position of the popup marker
@@ -36,7 +36,7 @@ class DirectOptionMenu(DirectButton):
             # Changing this breaks button layout
             ('text_align',  TextNode.ALeft, None),
             # Remove press effect because it looks a bit funny
-            ('pressEffect',     0,          DGG.INITOPT),
+            ('pressEffect',     0,          self.INITOPT),
            )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)

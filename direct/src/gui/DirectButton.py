@@ -40,7 +40,7 @@ class DirectButton(DirectFrame):
             ('clickSound',    DGG.getDefaultClickSound(),    self.setClickSound),
             # Can only be specified at time of widget contruction
             # Do the text/graphics appear to move when the button is clicked
-            ('pressEffect',     1,         DGG.INITOPT),
+            ('pressEffect',     1,         self.INITOPT),
             )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)

@@ -18,10 +18,6 @@ panel = None
 
 # USEFUL GUI CONSTANTS
 
-#: Constant used to indicate that an option can only be set by a call
-#: to the constructor.
-INITOPT = ['initopt']
-
 # Mouse buttons
 LMB = 0
 MMB = 1

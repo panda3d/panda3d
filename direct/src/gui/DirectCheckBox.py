@@ -29,7 +29,7 @@ class DirectCheckBox(DirectButton):
             ('clickSound',    DGG.getDefaultClickSound(),    self.setClickSound),
             # Can only be specified at time of widget contruction
             # Do the text/graphics appear to move when the button is clicked
-            ('pressEffect',     1,         DGG.INITOPT),
+            ('pressEffect',     1,         self.INITOPT),
             ('uncheckedImage',  None,      None),
             ('checkedImage',    None,      None),
             ('isChecked',       False,     None),

@@ -47,7 +47,7 @@ class DirectEntry(DirectFrame):
             ('pgFunc',          PGEntry,          None),
             ('numStates',       3,                None),
             ('state',           DGG.NORMAL,       None),
-            ('entryFont',       None,             DGG.INITOPT),
+            ('entryFont',       None,             self.INITOPT),
             ('width',           10,               self.updateWidth),
             ('numLines',        1,                self.updateNumLines),
             ('focus',           0,                self.setFocus),
@@ -59,7 +59,7 @@ class DirectEntry(DirectFrame):
             ('backgroundFocus', 0,                self.setBackgroundFocus),
             # Text used for the PGEntry text node
             # NOTE: This overrides the DirectFrame text option
-            ('initialText',     '',               DGG.INITOPT),
+            ('initialText',     '',               self.INITOPT),
             # Enable or disable text overflow scrolling
             ('overflow',        0,                self.setOverflowMode),
             # Command to be called on hitting Enter
