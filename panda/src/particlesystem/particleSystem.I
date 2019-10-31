@@ -157,6 +157,15 @@ set_floor_z(PN_stdfloat z) {
 
  */
 INLINE void ParticleSystem::
+set_inital_birth_offset(PN_stdfloat offset) {
+  _inital_birth_offset = offset;
+}
+
+
+/**
+
+ */
+INLINE void ParticleSystem::
 set_active_system_flag(bool a) {
   _active_system_flag = a;
 }
@@ -340,6 +349,14 @@ get_factory() const {
 INLINE PN_stdfloat ParticleSystem::
 get_floor_z() const {
   return _floor_z;
+}
+
+/**
+
+*/
+INLINE PN_stdfloat ParticleSystem::
+get_inital_birth_offset() const {
+  return _inital_birth_offset;
 }
 
 /**

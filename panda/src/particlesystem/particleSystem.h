@@ -60,6 +60,7 @@ PUBLISHED:
   INLINE void set_emitter(BaseParticleEmitter *e);
   INLINE void set_factory(BaseParticleFactory *f);
   INLINE void set_floor_z(PN_stdfloat z);
+  INLINE void set_inital_birth_offset(PN_stdfloat offset);
 
   INLINE void clear_floor_z();
 
@@ -84,6 +85,7 @@ PUBLISHED:
   INLINE BaseParticleFactory *get_factory() const;
   INLINE PN_stdfloat get_floor_z() const;
   INLINE PN_stdfloat get_tics_since_birth() const;
+  INLINE PN_stdfloat get_inital_birth_offset() const;
 
   // particle template vector
 
@@ -118,6 +120,7 @@ private:
 
   int _particle_pool_size;
   int _living_particles;
+  PN_stdfloat _inital_birth_offset;
   PN_stdfloat _cur_birth_rate;
   PN_stdfloat _birth_rate;
   PN_stdfloat _soft_birth_rate;
