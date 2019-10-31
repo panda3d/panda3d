@@ -45,10 +45,11 @@ ParticleSystem::
 ParticleSystem(int pool_size) :
   Physical(pool_size, false)
 {
+  _inital_birth_offset = 0.0f;
   _birth_rate = 0.5f;
   _cur_birth_rate = _birth_rate;
   _soft_birth_rate = HUGE_VAL;
-  _tics_since_birth = 0.0;
+  _tics_since_birth = _inital_birth_offset;
   _litter_size = 1;
   _litter_spread = 0;
   _living_particles = 0;
@@ -90,6 +91,7 @@ ParticleSystem(const ParticleSystem& copy) :
   _system_age(0.0f),
   _template_system_flag(false)
 {
+  _inital_birth_offset = copy._inital_birth_offset;
   _birth_rate = copy._birth_rate;
   _cur_birth_rate = copy._cur_birth_rate;
   _litter_size = copy._litter_size;
@@ -107,7 +109,7 @@ ParticleSystem(const ParticleSystem& copy) :
   _render_node_path = _renderer->get_render_node_path();
   _render_node_path.reparent_to(_render_parent);
 
-  _tics_since_birth = 0.0;
+  _tics_since_birth = _inital_birth_offset;
   _system_lifespan = copy._system_lifespan;
   _living_particles = 0;
 
@@ -723,6 +725,7 @@ write(ostream &out, int indent) const {
   out.width(indent); out<<""; out<<"ParticleSystem:\n";
   out.width(indent+2); out<<""; out<<"_particle_pool_size "<<_particle_pool_size<<"\n";
   out.width(indent+2); out<<""; out<<"_living_particles "<<_living_particles<<"\n";
+  out.width(indent+2); out<<""; out<<"_inital_birth_offset "<<_inital_birth_offset<<"\n";
   out.width(indent+2); out<<""; out<<"_tics_since_birth "<<_tics_since_birth<<"\n";
   out.width(indent+2); out<<""; out<<"_litter_size "<<_litter_size<<"\n";
   out.width(indent+2); out<<""; out<<"_litter_spread "<<_litter_spread<<"\n";

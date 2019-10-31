@@ -83,6 +83,7 @@ PUBLISHED:
   INLINE BaseParticleEmitter *get_emitter() const;
   INLINE BaseParticleFactory *get_factory() const;
   INLINE PN_stdfloat get_floor_z() const;
+  INLINE PN_stdfloat get_tics_since_birth() const;
 
   // particle template vector
 
