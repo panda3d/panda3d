@@ -7,11 +7,13 @@ or be the same type.
 
 Internally the pool is implemented with 2 lists, free items and used items.
 
-Example::
+Example:
 
-   p = Pool([1, 2, 3, 4, 5])
-   x = p.checkout()
-   p.checkin(x)
+    .. code-block:: python
+
+        p = Pool([1, 2, 3, 4, 5])
+        x = p.checkout()
+        p.checkin(x)
 
 """
 
@@ -19,6 +21,7 @@ __all__ = ['Pool']
 
 
 from direct.directnotify import DirectNotifyGlobal
+
 
 class Pool:
 

@@ -1,3 +1,9 @@
+"""Extends setuptools with the ``build_apps`` and ``bdist_apps`` commands.
+
+See the :ref:`distribution` section of the programming manual for information
+on how to use these commands.
+"""
+
 from __future__ import print_function
 
 import collections

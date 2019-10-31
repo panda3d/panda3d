@@ -1,5 +1,5 @@
 """
-TwoDWalker.py is for controling the avatars in a 2D Scroller game environment.
+TwoDWalker.py is for controlling the avatars in a 2D scroller game environment.
 """
 
 from .GravityWalker import *

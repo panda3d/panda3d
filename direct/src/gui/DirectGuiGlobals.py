@@ -17,8 +17,9 @@ drawOrder = 100
 panel = None
 
 # USEFUL GUI CONSTANTS
-# Constant used to indicate that an option can only be set by a call
-# to the constructor.
+
+#: Constant used to indicate that an option can only be set by a call
+#: to the constructor.
 INITOPT = ['initopt']
 
 # Mouse buttons
@@ -158,7 +159,3 @@ def getDefaultPanel():
 def setDefaultPanel(newPanel):
     global panel
     panel = newPanel
-
-#from OnscreenText import *
-#from OnscreenGeom import *
-#from OnscreenImage import *

@@ -39,4 +39,5 @@ del bordercolors
 
 
 def spawnTkLoop():
+    """Alias for :meth:`base.spawnTkLoop() <.ShowBase.spawnTkLoop>`."""
     base.spawnTkLoop()

@@ -1264,6 +1264,7 @@ get_thread(int index) const {
 
 double PStatClient::
 get_real_time() const {
+  return 0.0;
 }
 
 PStatThread PStatClient::

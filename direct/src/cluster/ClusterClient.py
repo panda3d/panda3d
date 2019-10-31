@@ -1,4 +1,4 @@
-"""ClusterClient: Master for mutli-piping or PC clusters.  """
+"""ClusterClient: Master for multi-piping or PC clusters."""
 
 from panda3d.core import *
 from .ClusterMsgs import *
@@ -7,6 +7,7 @@ from direct.directnotify import DirectNotifyGlobal
 from direct.showbase import DirectObject
 from direct.task import Task
 import os
+
 
 class ClusterClient(DirectObject.DirectObject):
     notify = DirectNotifyGlobal.directNotify.newCategory("ClusterClient")
