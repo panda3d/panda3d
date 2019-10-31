@@ -44,7 +44,7 @@ clear_to_initial() {
       kill_particle(i);
     }
   }
-  _tics_since_birth = _inital_birth_offset;
+  _tics_since_birth = _initial_birth_offset;
 }
 
 /**
@@ -55,7 +55,7 @@ soft_start(PN_stdfloat br) {
   if (br > 0.0)
     set_birth_rate(br);
   _cur_birth_rate = _birth_rate;
-  _tics_since_birth = _inital_birth_offset;
+  _tics_since_birth = _initial_birth_offset;
 }
 
 /**
@@ -66,7 +66,7 @@ soft_stop(PN_stdfloat br) {
   if (br > 0.0)
     set_soft_birth_rate(br);
   _cur_birth_rate = _soft_birth_rate;
-  _tics_since_birth = _inital_birth_offset;
+  _tics_since_birth = _initial_birth_offset;
 }
 
 /**
@@ -157,8 +157,9 @@ set_floor_z(PN_stdfloat z) {
 
  */
 INLINE void ParticleSystem::
-set_inital_birth_offset(PN_stdfloat offset) {
-  _inital_birth_offset = offset;
+set_initial_birth_offset(PN_stdfloat offset) {
+  _initial_birth_offset = offset;
+  _tics_since_birth = offset;
 }
 
 
@@ -355,8 +356,8 @@ get_floor_z() const {
 
 */
 INLINE PN_stdfloat ParticleSystem::
-get_inital_birth_offset() const {
-  return _inital_birth_offset;
+get_initial_birth_offset() const {
+  return _initial_birth_offset;
 }
 
 /**
