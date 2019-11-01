@@ -51,11 +51,11 @@ clear_to_initial() {
  * Causes system to use birth rate set by set_birth_rate()
  */
 INLINE void ParticleSystem::
-soft_start(PN_stdfloat br) {
+soft_start(PN_stdfloat br, PN_stdfloat boff) {
   if (br > 0.0)
     set_birth_rate(br);
   _cur_birth_rate = _birth_rate;
-  _tics_since_birth = 0.0f;
+  _tics_since_birth = boff;
 }
 
 /**
@@ -340,6 +340,14 @@ get_factory() const {
 INLINE PN_stdfloat ParticleSystem::
 get_floor_z() const {
   return _floor_z;
+}
+
+/**
+
+*/
+INLINE PN_stdfloat ParticleSystem::
+get_tics_since_birth() const {
+  return _tics_since_birth;
 }
 
 /**
