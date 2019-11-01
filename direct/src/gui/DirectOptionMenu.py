@@ -72,6 +72,10 @@ class DirectOptionMenu(DirectButton):
         self.popupMenu = None
         self.selectedIndex = None
         self.highlightedIndex = None
+        if 'item_text_scale' in kw:
+            self._prevItemTextScale = kw['item_text_scale']
+        else:
+            self._prevItemTextScale = (1,1)
         # A big screen encompassing frame to catch the cancel clicks
         self.cancelFrame = self.createcomponent(
             'cancelframe', (), None,
@@ -247,6 +251,7 @@ class DirectOptionMenu(DirectButton):
 
     def _highlightItem(self, item, index):
         """ Set frame color of highlighted item, record index """
+        self._prevItemTextScale = item['text_scale']
         item['frameColor'] = self['highlightColor']
         item['frameSize'] = (self['highlightScale'][0]*self.minX, self['highlightScale'][0]*self.maxX, self['highlightScale'][1]*self.minZ, self['highlightScale'][1]*self.maxZ)
         item['text_scale'] = self['highlightScale']
@@ -256,7 +261,7 @@ class DirectOptionMenu(DirectButton):
         """ Clear frame color, clear highlightedIndex """
         item['frameColor'] = frameColor
         item['frameSize'] = (self.minX, self.maxX, self.minZ, self.maxZ)
-        item['text_scale'] = (1,1)
+        item['text_scale'] = self._prevItemTextScale
         self.highlightedIndex = None
 
     def selectHighlightedIndex(self, event = None):
