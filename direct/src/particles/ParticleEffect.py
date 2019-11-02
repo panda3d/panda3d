@@ -220,11 +220,11 @@ class ParticleEffect(NodePath):
         for particles in self.getParticlesList():
             particles.softStop()
 
-    def softStart(self, firstBirthOffset = None):
+    def softStart(self, firstBirthOffset=None):
         if self.__isValid():
             for particles in self.getParticlesList():
                 if firstBirthOffset is not None:
-                    particles.softStartOffset(boff = firstBirthOffset)
+                    particles.softStart(br = -1, first_birth_offset_time = firstBirthOffset)
                 else:
                     particles.softStart()
         else:

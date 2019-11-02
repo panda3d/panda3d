@@ -59,12 +59,12 @@ soft_start(PN_stdfloat br) {
 }
 
 /**
- * Causes system to use birth rate set by set_birth_rate()
+ * Causes system to use birth rate set by set_birth_rate(), with the timer for the system's initial birth offset by the value of first_birth_offset_time
  */
 INLINE void ParticleSystem::
-soft_start_offset(PN_stdfloat br, PN_stdfloat boff) {
+soft_start(PN_stdfloat br, PN_stdfloat first_birth_offset_time) {
   soft_start(br);
-  _tics_since_birth = boff;
+  _tics_since_birth = first_birth_offset_time;
 }
 
 /**

@@ -97,7 +97,7 @@ PUBLISHED:
   INLINE void clear_to_initial();
   INLINE void soft_stop(PN_stdfloat br = 0.0);
   INLINE void soft_start(PN_stdfloat br = 0.0);
-  INLINE void soft_start_offset(PN_stdfloat br = 0.0, PN_stdfloat boff = 0.0);
+  INLINE void soft_start(PN_stdfloat br, PN_stdfloat first_birth_offset_time);
   void update(PN_stdfloat dt);
 
   virtual void output(std::ostream &out) const;
