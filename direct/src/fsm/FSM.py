@@ -117,7 +117,7 @@ class FSM(DirectObject):
     at construction time; it is simply in Off already by convention.
     If you need to call code in enterOff() to initialize your FSM
     properly, call it explicitly in the constructor.  Similarly, when
-    cleanup() is called or the FSM is destructed, the FSM transitions
+    `cleanup()` is called or the FSM is destructed, the FSM transitions
     back to 'Off' by convention.  (It does call enterOff() at this
     point, but does not call exitOff().)
 
@@ -261,9 +261,9 @@ class FSM(DirectObject):
     def demand(self, request, *args):
         """Requests a state transition, by code that does not expect
         the request to be denied.  If the request is denied, raises a
-        RequestDenied exception.
+        `RequestDenied` exception.
 
-        Unlike request(), this method allows a new request to be made
+        Unlike `request()`, this method allows a new request to be made
         while the FSM is currently in transition.  In this case, the
         request is queued up and will be executed when the current
         transition finishes.  Multiple requests will queue up in
@@ -290,7 +290,7 @@ class FSM(DirectObject):
         """Requests a state transition (or other behavior).  The
         request may be denied by the FSM's filter function.  If it is
         denied, the filter function may either raise an exception
-        (RequestDenied), or it may simply return None, without
+        (`RequestDenied`), or it may simply return None, without
         changing the FSM's state.
 
         The request parameter should be a string.  The request, along
@@ -305,7 +305,7 @@ class FSM(DirectObject):
 
         If the FSM is currently in transition (i.e. in the middle of
         executing an enterState or exitState function), an
-        AlreadyInTransition exception is raised (but see demand(),
+        `AlreadyInTransition` exception is raised (but see `demand()`,
         which will queue these requests up and apply when the
         transition is complete)."""
 
@@ -401,7 +401,6 @@ class FSM(DirectObject):
             return (request,) + args
         return self.defaultFilter(request, args)
 
-
     def setStateArray(self, stateArray):
         """array of unique states to iterate through"""
         self.fsmLock.acquire()
@@ -409,7 +408,6 @@ class FSM(DirectObject):
             self.stateArray = stateArray
         finally:
             self.fsmLock.release()
-
 
     def requestNext(self, *args):
         """Request the 'next' state in the predefined state array."""
