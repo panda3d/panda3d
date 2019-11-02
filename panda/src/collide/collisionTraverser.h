@@ -72,7 +72,7 @@ PUBLISHED:
   MAKE_PROPERTY2(recorder, has_recorder, get_recorder,
                            set_recorder, clear_recorder);
 
-  CollisionVisualizer *show_collisions(const NodePath &root);
+  PandaNode *show_collisions(const NodePath &root);
   void hide_collisions();
 #endif  // DO_COLLISION_RECORDING
 
