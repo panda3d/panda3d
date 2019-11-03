@@ -68,47 +68,8 @@ class DirectFrame(DirectGuiWidget):
         self.setText()
 
     def setText(self, text=None):
-        if text is not None:
-            self['text'] = text
-
-        # Determine if user passed in single string or a sequence
-        if self['text'] == None:
-            textList = (None,) * self['numStates']
-        elif isinstance(self['text'], stringType):
-            # If just passing in a single string, make a tuple out of it
-            textList = (self['text'],) * self['numStates']
-        else:
-            # Otherwise, hope that the user has passed in a tuple/list
-            textList = self['text']
-        # Create/destroy components
-        for i in range(self['numStates']):
-            component = 'text' + repr(i)
-            # If fewer items specified than numStates,
-            # just repeat last item
-            try:
-                text = textList[i]
-            except IndexError:
-                text = textList[-1]
-
-            if self.hascomponent(component):
-                if text == None:
-                    # Destroy component
-                    self.destroycomponent(component)
-                else:
-                    self[component + '_text'] = text
-            else:
-                if text == None:
-                    return
-                else:
-                    from .OnscreenText import OnscreenText
-                    self.createcomponent(
-                        component, (), 'text',
-                        OnscreenText,
-                        (), parent = self.stateNodePath[i],
-                        text = text, scale = 1, mayChange = self['textMayChange'],
-                        sort = DGG.TEXT_SORT_INDEX,
-                        )
-
+        self.new_set("text",text)
+        
     def clearGeom(self):
         self['geom'] = None
         self.setGeom()
@@ -160,18 +121,6 @@ class DirectFrame(DirectGuiWidget):
             
         object_=self[name]
         
-        #how can it be None anyway. It should not be none.
-        #it can only be none if someone already defined
-        # self[name] and then this set function is called.
-        #it for it to be "set", it should be some value
-        #else it should be called "unset"
-        
-        #if object_ == None: #already taken care of.
-        #    object_list = (None,)*self["numStates"]
-        
-        #types change...
-        #isinstance(arg, Texture) or \
-        #ok so really it decides whether to multiply or not.
         mul_bool = self.long_type_check(name)
         
         if mul_bool  == True:
@@ -187,17 +136,19 @@ class DirectFrame(DirectGuiWidget):
         "text":OnscreenText,}
         
         name_based_constants={
-        "geom":{"geom":object_,
-                "sort":DGG.GEOM_SORT_INDEX,},
-        "imgage":{
-                "image":object_,
-                "sort":DGG.IMAGE_SORT_INDEX},
-                },
-        "text":{
-                "text":object_,
-                "mayChange":self['textMayChange'],
-                "sort":DGG.TEXT_SORT_INDEX
-                },
+            "geom":{
+                    "geom":object_,
+                    "sort":DGG.GEOM_SORT_INDEX,
+                    },
+            "imgage":{
+                    "image":object_,
+                    "sort":DGG.IMAGE_SORT_INDEX
+                    },
+            "text":{
+                    "text":object_,
+                    "mayChange":self['textMayChange'],
+                    "sort":DGG.TEXT_SORT_INDEX
+                    },
                 }
         #Index is probably constant and only used at creation.
         #should be a local variable to the constructor.
@@ -209,11 +160,8 @@ class DirectFrame(DirectGuiWidget):
             comp_input = object_list[c]
             
             if self.hascomponent(component_name):
-                #if object_==None already taken care of.
-                #else this v
                 self[component_name]=object_
             else:
-                #see other comments.
                 self.createcomponent(
                         component_name, 
                         (), 
@@ -224,113 +172,14 @@ class DirectFrame(DirectGuiWidget):
                         scale = 1,
                         **name_based_constants[name], #keywords, order irrelevant
                         )
-
-                
             c+=1
     
     def setGeom(self, geom=None):
-        if geom is not None:
-            self['geom'] = geom
-
-        # Determine argument type
-        geom = self['geom']
-
-        if geom == None:
-            # Passed in None
-            geomList = (None,) * self['numStates']
-        elif isinstance(geom, NodePath) or \
-             isinstance(geom, stringType):
-            # Passed in a single node path, make a tuple out of it
-            geomList = (geom,) * self['numStates']
-        else:
-            # Otherwise, hope that the user has passed in a tuple/list
-            geomList = geom
-
-        # Create/destroy components
-        for i in range(self['numStates']):
-            component = 'geom' + repr(i)
-            # If fewer items specified than numStates,
-            # just repeat last item
-            
-            #by the way, if the previous code is correct,
-            #there should always be exactly as many
-            #objects as numstates.
-            try:
-                geom = geomList[i]
-            except IndexError:
-                geom = geomList[-1]
-            
-            #"hascomponent" is python only, inherited from Base
-            #and basically component in self.components
-            if self.hascomponent(component):
-                if geom == None:
-                    # Destroy component
-                    self.destroycomponent(component)
-                else:
-                    #why a different name here?
-                    self[component + '_geom'] = geom
-            else:
-                if geom == None:
-                    return #what. this is a loop. don't just quit a loop
-                else:
-                    self.createcomponent(
-                        component, (), 'geom',
-                        OnscreenGeom,
-                        (), parent = self.stateNodePath[i],
-                        geom = geom, scale = 1,
-                        sort = DGG.GEOM_SORT_INDEX)
-
+        self.new_set("geom",geom)
+        
     def clearImage(self):
         self['image'] = None
         self.setImage()
 
     def setImage(self, image=None):
-        if image is not None:
-            self['image'] = image
-
-        # Determine argument type
-        arg = self['image']
-        if arg == None:
-            # Passed in None
-            imageList = (None,) * self['numStates']
-        elif isinstance(arg, NodePath) or \
-             isinstance(arg, Texture) or \
-             isinstance(arg, stringType):
-            # Passed in a single node path, make a tuple out of it
-            imageList = (arg,) * self['numStates']
-        else:
-            # Otherwise, hope that the user has passed in a tuple/list
-            if ((len(arg) == 2) and
-                isinstance(arg[0], stringType) and
-                isinstance(arg[1], stringType)):
-                # Its a model/node pair of strings
-                imageList = (arg,) * self['numStates']
-            else:
-                # Assume its a list of node paths
-                imageList = arg
-        # Create/destroy components
-        for i in range(self['numStates']):
-            component = 'image' + repr(i)
-            # If fewer items specified than numStates,
-            # just repeat last item
-            try:
-                image = imageList[i]
-            except IndexError:
-                image = imageList[-1]
-
-            if self.hascomponent(component):
-                if image == None:
-                    # Destroy component
-                    self.destroycomponent(component)
-                else:
-                    self[component + '_image'] = image
-            else:
-                if image == None:
-                    return
-                else:
-                    self.createcomponent(
-                        component, (), 'image',
-                        OnscreenImage,
-                        (), parent = self.stateNodePath[i],
-                        image = image, scale = 1,
-                        sort = DGG.IMAGE_SORT_INDEX)
+        self.new_set("image",image)
