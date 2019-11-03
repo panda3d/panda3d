@@ -528,7 +528,7 @@ class DirectGuiBase(DirectObject.DirectObject):
             self.setPos(*value)
                 
         else:
-            if sys.version_info<3:
+            if sys.version_info[0]<3:
                 super(type(self),self).__setattr__(key, value)
             else:
                 super().__setattr__(key, value)
