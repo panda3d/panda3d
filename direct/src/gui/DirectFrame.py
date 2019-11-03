@@ -58,8 +58,10 @@ class DirectFrame(DirectGuiWidget):
         # Call option initialization functions
         self.initialiseoptions(DirectFrame)
 
-    def destroy(self):
-        DirectGuiWidget.destroy(self)
+    #overloading completely unnecessary?
+    #def destroy(self):
+    #    self.destroy()
+        #DirectGuiWidget.destroy(self)
 
     def clearText(self):
         self['text'] = None
@@ -110,7 +112,122 @@ class DirectFrame(DirectGuiWidget):
     def clearGeom(self):
         self['geom'] = None
         self.setGeom()
+    
+    def unset(name):
+        """what set[Geom,Text,Image] would have done, if no image, text
+        or geom are provided takes 
+        name must be in ["geom","text","image"]"""
+        
+        if name not in ["geom","text","img"]:
+            raise TypeError("name must be in ['geom','text','name']")
+            
+        #max number of states is 4 I think.
+        c=0
+        m=4
+        while c < m:
+            comp_name=name+str(c)
+            if self.hascomponent(comp_name):
+                self.destroycomponent()
+            c+=1
+    
+    def long_type_check(name):
+        """basically an elaborate type check."""
+        object_ = self[name]
+        if name=="image":
+            if (isinstance(arg, NodePath) or 
+                isinstance(arg, Texture) or 
+                isinstance(arg, stringType)):
+                return True
+        elif name=="text":
+            if isinstance(object_, stringType):
+                return True
+        elif name=="geom":
+            if (isinstance(geom, NodePath) or 
+                isinstance(geom, stringType)):
+                return True
+        else:
+            raise TypeError("how did you get here?")
+            
+        return False
+    
+    def new_set(self,name,object_=None):
+        """my new code golf par is 1"""
+        assert name in ["geom","image","text"]
+        if object_ is not None:
+            self[name]=object_
+        else:
+            self.unset(name)
+            
+        object_=self[name]
+        
+        #how can it be None anyway. It should not be none.
+        #it can only be none if someone already defined
+        # self[name] and then this set function is called.
+        #it for it to be "set", it should be some value
+        #else it should be called "unset"
+        
+        #if object_ == None: #already taken care of.
+        #    object_list = (None,)*self["numStates"]
+        
+        #types change...
+        #isinstance(arg, Texture) or \
+        #ok so really it decides whether to multiply or not.
+        mul_bool = self.long_type_check(name)
+        
+        if mul_bool  == True:
+            object_list = (object_,) * self["numStates"]
+        elif mul_bool == False:
+            object_list = object_
+        else:
+            raise ValueError
+                
+        name_based_classes={
+        "geom":OnScreenGeom,
+        "image":OnscreenImage,
+        "text":OnscreenText,}
+        
+        name_based_constants={
+        "geom":{"geom":object_,
+                "sort":DGG.GEOM_SORT_INDEX,},
+        "imgage":{
+                "image":object_,
+                "sort":DGG.IMAGE_SORT_INDEX},
+                },
+        "text":{
+                "text":object_,
+                "mayChange":self['textMayChange'],
+                "sort":DGG.TEXT_SORT_INDEX
+                },
+                }
+        #Index is probably constant and only used at creation.
+        #should be a local variable to the constructor.
+        
+        c=0
+        m=self["numStates"]
+        while c < m:
+            component_name = name+str(c)
+            comp_input = object_list[c]
+            
+            if self.hascomponent(component_name):
+                #if object_==None already taken care of.
+                #else this v
+                self[component_name]=object_
+            else:
+                #see other comments.
+                self.createcomponent(
+                        component_name, 
+                        (), 
+                        name,
+                        name_based_classes[name],#class type, positional
+                        (),
+                        parent = self.stateNodePath[c],
+                        scale = 1,
+                        **name_based_constants[name], #keywords, order irrelevant
+                        )
 
+                
+            c+=1
+    
     def setGeom(self, geom=None):
         if geom is not None:
             self['geom'] = geom
@@ -134,20 +251,27 @@ class DirectFrame(DirectGuiWidget):
             component = 'geom' + repr(i)
             # If fewer items specified than numStates,
             # just repeat last item
+            
+            #by the way, if the previous code is correct,
+            #there should always be exactly as many
+            #objects as numstates.
             try:
                 geom = geomList[i]
             except IndexError:
                 geom = geomList[-1]
-
+            
+            #"hascomponent" is python only, inherited from Base
+            #and basically component in self.components
             if self.hascomponent(component):
                 if geom == None:
                     # Destroy component
                     self.destroycomponent(component)
                 else:
+                    #why a different name here?
                     self[component + '_geom'] = geom
             else:
                 if geom == None:
-                    return
+                    return #what. this is a loop. don't just quit a loop
                 else:
                     self.createcomponent(
                         component, (), 'geom',
