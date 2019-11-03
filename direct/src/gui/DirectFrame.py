@@ -74,7 +74,7 @@ class DirectFrame(DirectGuiWidget):
         self['geom'] = None
         self.setGeom()
     
-    def unset(name):
+    def unset(self,name):
         """what set[Geom,Text,Image] would have done, if no image, text
         or geom are provided takes 
         name must be in ["geom","text","image"]"""
@@ -91,7 +91,7 @@ class DirectFrame(DirectGuiWidget):
                 self.destroycomponent()
             c+=1
     
-    def long_type_check(name):
+    def long_type_check(self,name):
         """basically an elaborate type check."""
         object_ = self[name]
         if name=="image":
