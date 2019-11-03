@@ -440,7 +440,101 @@ class DirectGuiBase(DirectObject.DirectObject):
             func = info[DGG._OPT_FUNCTION]
             if func is not None:
               func()
-
+           
+    def pseudo_set(self,key,value):
+        
+        #to avoid "not defined" errors:
+        element=1
+        
+        #right now the structure for directgui components is
+        #elements like DirectGuiButton have compnents:
+        #where one can be access like this:
+                
+        
+        l = element.components()
+        comp = element.component(l[0])
+        
+        #these components have different properties
+        #like scale, position or the text they display in the case of 
+        #textcomponents.
+        
+        #elements also have different states, which different based on
+        #the type of element, button has 4, label has two.
+        
+        #so this code:
+        l = element.components()
+        comp = element.component(l[3])        
+        #would work for buttons but not labels.
+        
+        #the question is what the "obvious"/"good" way to get and/or set these is.
+        
+        #up for discussion are
+        element.text.value
+        
+        #with  .value being kept consistent across properties,
+        #so this should work as well:
+        element.scale.value
+        
+        #I personally would like something like this
+        element.components["Text"].states["pressed"].pos=value
+        
+        #although changing order to something more as it is now...
+        element.states["pressed"].components["Text"].pos=value
+        #is just as good.
+        
+    #I would prefer inits to look like
+    def pseudo_button_init(self,pos=(1,1,1),text="hello"):
+        
+        #this is probably individual enough for different elements
+        #that it's worth it to do on a per element basis
+        
+        #self.text_component = OnscreenText(pos,text)
+        #self.frame_component = DirectFrame(pos)
+        
+        #or if we want it consistent
+        
+        #self.components["Text"] = OnscreenText(pos,text)
+        #self.components["Frame"] = DirectFrame(pos)
+        
+        #or an iteration over the different states in the construction,
+        #a bit like it is now.
+        
+        #states={}
+        #for state in ["1","2"]:
+        #    states[state]={}
+        #    state as a separate object instead "implied in python"?
+        #    for component in ["text","frame"]:
+        #        states[state][component]=component(**kwargs)
+        
+        a=1
+    
+    
+    #as a transition we can do something like
+    def __setattr__(self,key,value):
+        
+        #where dict access works
+        if key == "text":
+            self["text"] = value
+        
+        #where it has to be done component based
+        elif key == "text_align":
+            l = self.components()
+            for name in l:
+                if "text" in name:
+                    self.component(name).align=value
+        
+        #where it has to be done with setProp
+        elif key == "pos":
+            self.setPos(*value)
+                
+        else:
+            super().__setattr__(key,value)
+    #
+    #def __getattr__(self,key,value):
+    #    super().__getattr__(key,value)
+        
+    
+    
     # Allow index style references
     def __setitem__(self, key, value):
         self.configure(**{key: value})
