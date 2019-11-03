@@ -47,11 +47,9 @@ PUBLISHED:
    * concept) to the seek position within a file.  The value starts at 0.0 (the
    * default) and ends at the value given by the length() method.
    *
-   * The current time position will not change while the sound is playing; you
-   * must call play() again to effect the change.  To play the same sound from
-   * a time offset a second time, explicitly set the time position again.  When
-   * looping, the second and later loops will start from the beginning of the
-   * sound.
+   * In the past, this call did nothing if the sound was currently playing, and
+   * it was necessary to call play() to effect the change.  This is no longer
+   * the case; the time change takes effect immediately.
    *
    * If a sound is playing, calling get_time() repeatedly will return different
    * results over time.  e.g.
