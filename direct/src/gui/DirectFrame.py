@@ -20,6 +20,7 @@ from . import DirectGuiGlobals as DGG
 from .DirectGuiBase import *
 from .OnscreenImage import OnscreenImage
 from .OnscreenGeom import OnscreenGeom
+from .OnscreenText import OnscreenText
 import sys
 
 if sys.version_info >= (3, 0):
