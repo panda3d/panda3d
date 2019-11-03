@@ -79,8 +79,8 @@ class DirectFrame(DirectGuiWidget):
         or geom are provided takes 
         name must be in ["geom","text","image"]"""
         
-        if name not in ["geom","text","img"]:
-            raise TypeError("name must be in ['geom','text','name']")
+        if name not in ["geom","text","image"]:
+            raise TypeError("name must be in ['geom','text','image']")
             
         #max number of states is 4 I think.
         c=0
