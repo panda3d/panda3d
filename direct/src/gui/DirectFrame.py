@@ -131,7 +131,7 @@ class DirectFrame(DirectGuiWidget):
             raise ValueError
                 
         name_based_classes={
-        "geom":OnScreenGeom,
+        "geom":OnscreenGeom,
         "image":OnscreenImage,
         "text":OnscreenText,}
         
