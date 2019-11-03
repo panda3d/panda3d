@@ -521,7 +521,7 @@ class DirectGuiBase(DirectObject.DirectObject):
             l = self.components()
             for name in l:
                 if "text" in name:
-                    self.component(name).align=value
+                    self.component(name).align = value
         
         #where it has to be done with setProp
         elif key == "pos":
@@ -529,14 +529,12 @@ class DirectGuiBase(DirectObject.DirectObject):
                 
         else:
             if sys.version_info[0]<3:
-                super(type(self),self).__setattr__(key, value)
+                super(DirectGuiBase, self).__setattr__(key, value)
             else:
                 super().__setattr__(key, value)
     
     #def __getattr__(self,key,value):
     #    super().__getattr__(key,value)
-        
-    
     
     # Allow index style references
     def __setitem__(self, key, value):
