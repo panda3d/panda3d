@@ -59,11 +59,6 @@ class DirectFrame(DirectGuiWidget):
         # Call option initialization functions
         self.initialiseoptions(DirectFrame)
 
-    #overloading completely unnecessary?
-    #def destroy(self):
-    #    self.destroy()
-        #DirectGuiWidget.destroy(self)
-
     def clearText(self):
         self['text'] = None
         self.setText()
@@ -119,6 +114,7 @@ class DirectFrame(DirectGuiWidget):
             self[name]=object_
         else:
             self.unset(name)
+            return
             
         object_=self[name]
         
