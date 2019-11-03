@@ -26,7 +26,8 @@ cvMgr = ConfigVariableManager.getGlobalPtr()
 pandaSystem = PandaSystem.getGlobalPtr()
 
 # This is defined here so GUI elements can be instantiated before ShowBase.
-aspect2d = NodePath(PGTop("aspect2d"))
+render2d = NodePath("render2d")
+aspect2d = render2d.attachNewNode(PGTop("aspect2d"))
 hidden = NodePath("hidden")
 
 # Set direct notify categories now that we have config

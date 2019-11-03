@@ -544,6 +544,8 @@ class ShowBase(DirectObject.DirectObject):
                 del ShowBaseGlobal.base
 
         self.aspect2d.node().removeAllChildren()
+        self.render2d.node().removeAllChildren()
+        self.aspect2d.reparent_to(self.render2d)
 
         # [gjeon] restore sticky key settings
         if self.config.GetBool('disable-sticky-keys', 0):
@@ -1108,8 +1110,12 @@ class ShowBase(DirectObject.DirectObject):
         2-d objects and gui elements that are superimposed over the
         3-d geometry in the window.
         """
+        # We've already created aspect2d in ShowBaseGlobal, for the
+        # benefit of creating DirectGui elements before ShowBase.
+        from . import ShowBaseGlobal
+
         ## This is the root of the 2-D scene graph.
-        self.render2d = NodePath('render2d')
+        self.render2d = ShowBaseGlobal.render2d
 
         # Set up some overrides to turn off certain properties which
         # we probably won't need for 2-d objects.
@@ -1140,7 +1146,6 @@ class ShowBase(DirectObject.DirectObject):
         ## aspect2d, which scales things back to the right aspect
         ## ratio along the X axis (Z is still from -1 to 1)
         self.aspect2d = ShowBaseGlobal.aspect2d
-        self.aspect2d.reparentTo(self.render2d)
 
         aspectRatio = self.getAspectRatio()
         self.aspect2d.setScale(1.0 / aspectRatio, 1.0, 1.0)
