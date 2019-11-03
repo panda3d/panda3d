@@ -95,16 +95,16 @@ class DirectFrame(DirectGuiWidget):
         """basically an elaborate type check."""
         object_ = self[name]
         if name=="image":
-            if (isinstance(arg, NodePath) or 
-                isinstance(arg, Texture) or 
-                isinstance(arg, stringType)):
+            if (isinstance(object_, NodePath) or 
+                isinstance(object_, Texture) or 
+                isinstance(object_, stringType)):
                 return True
         elif name=="text":
             if isinstance(object_, stringType):
                 return True
         elif name=="geom":
-            if (isinstance(geom, NodePath) or 
-                isinstance(geom, stringType)):
+            if (isinstance(object_, NodePath) or 
+                isinstance(object_, stringType)):
                 return True
         else:
             raise TypeError("how did you get here?")
