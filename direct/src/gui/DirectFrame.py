@@ -135,16 +135,19 @@ class DirectFrame(DirectGuiWidget):
         name_based_constants={
             "geom":{
                     "geom":object_,
+                    "scale":1,
                     "sort":DGG.GEOM_SORT_INDEX,
                     },
             "imgage":{
                     "image":object_,
-                    "sort":DGG.IMAGE_SORT_INDEX
+                    "scale":1,
+                    "sort":DGG.IMAGE_SORT_INDEX,
                     },
             "text":{
                     "text":object_,
+                    "scale":1,
                     "mayChange":self['textMayChange'],
-                    "sort":DGG.TEXT_SORT_INDEX
+                    "sort":DGG.TEXT_SORT_INDEX,
                     },
                 }
         #Index is probably constant and only used at creation.
@@ -155,9 +158,10 @@ class DirectFrame(DirectGuiWidget):
         while c < m:
             component_name = name+str(c)
             comp_input = object_list[c]
+            name_based_constants[name]=comp_input
             
             if self.hascomponent(component_name):
-                self[component_name]=object_
+                self[component_name]=comp_input
             else:
                 self.createcomponent(
                         component_name, 
@@ -166,7 +170,6 @@ class DirectFrame(DirectGuiWidget):
                         name_based_classes[name],#class type, positional
                         (),
                         parent = self.stateNodePath[c],
-                        scale = 1,
                         **name_based_constants[name], #keywords, order irrelevant
                         )
             c+=1
