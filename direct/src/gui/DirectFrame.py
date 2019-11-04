@@ -170,8 +170,9 @@ class DirectFrame(DirectGuiWidget):
                         name_based_classes[name],#class type, positional
                         (),
                         parent = self.stateNodePath[c],
-                        **name_based_constants[name], #keywords, order irrelevant
-                        )
+                        **name_based_constants[name]
+                        ) #keywords, order irrelevant
+                        
             c+=1
     
     def setGeom(self, geom=None):
