@@ -155,6 +155,7 @@ class DirectFrame(DirectGuiWidget):
                 }
         #Index is probably constant and only used at creation.
         #should be a local variable to the constructor.
+        #
         
         c=0
         m=self["numStates"]
