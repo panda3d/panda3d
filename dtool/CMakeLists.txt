@@ -10,6 +10,5 @@ add_subdirectory(src/interrogate)
 add_subdirectory(src/interrogatedb)
 add_subdirectory(src/prc)
 
-# Include dtool metalibs
+# Include dtool metalib
 add_subdirectory(metalibs/dtool)
-add_subdirectory(metalibs/dtoolconfig)

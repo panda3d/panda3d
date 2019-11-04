@@ -81,8 +81,9 @@ set(P3PRC_IGATEEXT
 )
 
 composite_sources(p3prc P3PRC_SOURCES)
-add_component_library(p3prc NOINIT SYMBOL BUILDING_DTOOL_PRC
+add_library(p3prc
   ${P3PRC_HEADERS} ${P3PRC_SOURCES})
+set_target_properties(p3prc PROPERTIES DEFINE_SYMBOL BUILDING_DTOOL_PRC)
 target_include_directories(p3prc PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>)
 target_link_libraries(p3prc p3dtool PKG::OPENSSL)
 target_interrogate(p3prc ALL EXTENSIONS ${P3PRC_IGATEEXT})
@@ -91,12 +92,66 @@ if(ANDROID)
   target_link_libraries(p3prc log)
 endif()
 
-if(NOT BUILD_METALIBS)
-  install(TARGETS p3prc
-    EXPORT Core COMPONENT Core
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d
-    ARCHIVE COMPONENT CoreDevel)
-endif()
+install(TARGETS p3prc
+  EXPORT Core COMPONENT Core
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+  INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d
+  ARCHIVE COMPONENT CoreDevel)
+
 install(FILES ${P3PRC_HEADERS} COMPONENT CoreDevel DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d)
+
+# Also install under the old name "p3dtoolconfig"
+# TODO: Remove this once "p3dtoolconfig" is deprecated
+if(WIN32)
+  # Symlinks aren't pretty under WIN32
+  set(_symlink "copy")
+else()
+  set(_symlink "create_symlink")
+endif()
+
+get_target_property(_type p3prc TYPE)
+if(_type STREQUAL "SHARED_LIBRARY")
+
+  set(_suffix "${CMAKE_SHARED_LIBRARY_SUFFIX}")
+  if(UNIX)
+    get_target_property(_soversion p3prc SOVERSION)
+    if(APPLE)
+      set(_suffix ".${_soversion}${_suffix}")
+    else()
+      set(_suffix "${_suffix}.${_soversion}")
+    endif()
+
+    set(_file_genex "TARGET_SONAME_FILE")
+    set(_install_dir "${CMAKE_INSTALL_LIBDIR}")
+
+  else()
+    # Win32?
+    set(_file_genex "TARGET_FILE")
+    set(_install_dir "${CMAKE_INSTALL_BINDIR}")
+
+  endif()
+
+  set(_soname "${CMAKE_SHARED_LIBRARY_PREFIX}p3dtoolconfig${_suffix}")
+
+  add_custom_command(TARGET p3prc POST_BUILD
+    COMMAND "${CMAKE_COMMAND}" -E chdir "$<${_file_genex}_DIR:p3prc>"
+      "${CMAKE_COMMAND}" -E "${_symlink}"
+      "$<${_file_genex}_NAME:p3prc>" "${_soname}"
+  )
+  install(FILES "$<${_file_genex}_DIR:p3prc>/${_soname}"
+    DESTINATION "${_install_dir}")
+endif()
+
+if(WIN32)
+  set(_libname "${CMAKE_IMPORT_LIBRARY_PREFIX}p3dtoolconfig${CMAKE_IMPORT_LIBRARY_SUFFIX}")
+else()
+  set(_libname "${CMAKE_${_type}_PREFIX}p3dtoolconfig${CMAKE_${_type}_SUFFIX}")
+endif()
+add_custom_command(TARGET p3prc POST_BUILD
+  COMMAND "${CMAKE_COMMAND}" -E chdir "$<TARGET_LINKER_FILE_DIR:p3prc>"
+    "${CMAKE_COMMAND}" -E "${_symlink}"
+    "$<TARGET_LINKER_FILE_NAME:p3prc>" "${_libname}"
+)
+install(FILES "$<TARGET_LINKER_FILE_DIR:p3prc>/${_libname}"
+  DESTINATION "${CMAKE_INSTALL_LIBDIR}")

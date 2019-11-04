@@ -37,7 +37,7 @@ composite_sources(p3interrogatedb P3INTERROGATEDB_SOURCES)
 add_library(p3interrogatedb
   ${P3INTERROGATEDB_HEADERS} ${P3INTERROGATEDB_SOURCES})
 set_target_properties(p3interrogatedb PROPERTIES DEFINE_SYMBOL BUILDING_INTERROGATEDB)
-target_link_libraries(p3interrogatedb p3dconfig p3dtoolconfig)
+target_link_libraries(p3interrogatedb p3dconfig p3prc)
 
 install(TARGETS p3interrogatedb
   EXPORT Core COMPONENT Core
