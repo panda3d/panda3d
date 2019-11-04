@@ -10,8 +10,13 @@ include(CheckCXXCompilerFlag)
 
 # These are flags for the custom configurations we add
 # Standard
-set(CMAKE_C_FLAGS_STANDARD "-O3")
-set(CMAKE_CXX_FLAGS_STANDARD "-O3")
+if(MSVC)
+  set(CMAKE_C_FLAGS_STANDARD "/Ox")
+  set(CMAKE_CXX_FLAGS_STANDARD "/Ox")
+else()
+  set(CMAKE_C_FLAGS_STANDARD "-O3")
+  set(CMAKE_CXX_FLAGS_STANDARD "-O3")
+endif()
 set(CMAKE_SHARED_LINKER_FLAGS_STANDARD "")
 set(CMAKE_MODULE_LINKER_FLAGS_STANDARD "")
 set(CMAKE_EXE_LINKER_FLAGS_STANDARD "")
