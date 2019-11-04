@@ -230,6 +230,11 @@ add_component_library(p3pgraph SYMBOL BUILDING_PANDA_PGRAPH
 target_link_libraries(p3pgraph p3gobj p3event p3gsgbase p3putil p3linmath pandaexpress)
 target_interrogate(p3pgraph ALL EXTENSIONS ${P3PGRAPH_IGATEEXT})
 
+if(HAVE_EIGEN)
+  # Eigen puts this over the threshold where bigobj is needed on MSVC
+  set_target_properties(p3pgraph PROPERTIES MSVC_BIGOBJ ON)
+endif()
+
 if(NOT BUILD_METALIBS)
   install(TARGETS p3pgraph
     EXPORT Core COMPONENT Core
