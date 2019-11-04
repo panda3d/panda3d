@@ -1,4 +1,8 @@
-"""This module defines various dialog windows for the DirectGUI system."""
+"""This module defines various dialog windows for the DirectGUI system.
+
+See the :ref:`directdialog` page in the programming manual for a more
+in-depth explanation and an example of how to use this class.
+"""
 
 __all__ = [
     'findDialog', 'cleanupDialog', 'DirectDialog', 'OkDialog',

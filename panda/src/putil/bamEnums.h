@@ -22,12 +22,13 @@
  */
 class EXPCL_PANDA_PUTIL BamEnums {
 PUBLISHED:
-
-  // This defines an enumerated type used to represent the endianness of
-  // certain numeric values stored in a Bam file.  It really has only two
-  // possible values, either BE_bigendian or BE_littleendian; but through a
-  // preprocessor trick we also add BE_native, which is the same numerically
-  // as whichever value the hardware supports natively.
+  /**
+   * This defines an enumerated type used to represent the endianness of
+   * certain numeric values stored in a Bam file.  It really has only two
+   * possible values, either BE_bigendian or BE_littleendian; but through a
+   * preprocessor trick we also add BE_native, which is the same numerically
+   * as whichever value the hardware supports natively.
+   */
   enum BamEndian {
     BE_bigendian = 0,
     BE_littleendian = 1,
@@ -38,21 +39,25 @@ PUBLISHED:
 #endif
   };
 
-/*
- * This is the code written along with each object.  It is used to control
- * object scoping.  A BOC_push includes an object definition, and will always
- * be eventually paired with a BOC_pop (which does not).  A BOC_adjunct
- * includes an object definition but does not push the level; it is associated
- * with the current level.  BOC_remove lists object ID's that have been
- * deallocated on the sender end.  BOC_file_data may appear at any level and
- * indicates the following datagram contains auxiliary file data that may be
- * referenced by a later object.
- */
+  /**
+   * This is the code written along with each object.  It is used to control
+   * object scoping.
+   */
   enum BamObjectCode {
+    // Indicates an object definition, and will always be eventually paired
+    // with a BOC_pop (which does not).
     BOC_push,
     BOC_pop,
+
+    // Includes an object definition but does not push the level; it is
+    // associated with the current level.
     BOC_adjunct,
+
+    // Lists object IDs that have been deallocated on the sender end.
     BOC_remove,
+
+    // May appear at any level and indicates the following datagram contains
+    // auxiliary file data that may be referenced by a later object.
     BOC_file_data,
   };
 

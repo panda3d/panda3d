@@ -73,8 +73,8 @@ is_deleted_b() const {
  * You should set the ContactPairFlag CPF_notify_forces in order to receive
  * this value.
  *
- * @see PhysxScene::set_actor_pair_flag @see
- * PhysxScene::set_actor_group_pair_flag
+ * @see PhysxScene::set_actor_pair_flag
+ * @see PhysxScene::set_actor_group_pair_flag
  */
 LVector3f PhysxContactPair::
 get_sum_normal_force() const {
@@ -88,8 +88,8 @@ get_sum_normal_force() const {
  * You should set the ContactPairFlag CPF_notify_forces in order to receive
  * this value.
  *
- * @see PhysxScene::set_actor_pair_flag @see
- * PhysxScene::set_actor_group_pair_flag
+ * @see PhysxScene::set_actor_pair_flag
+ * @see PhysxScene::set_actor_group_pair_flag
  */
 LVector3f PhysxContactPair::
 get_sum_friction_force() const {

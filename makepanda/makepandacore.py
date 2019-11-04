@@ -3165,7 +3165,7 @@ def CopyPythonTree(dstdir, srcdir, lib2to3_fixers=[], threads=0):
                 if (NeedsBuild([dstpth], [srcpth])):
                     WriteBinaryFile(dstpth, ReadBinaryFile(srcpth))
 
-                    if ext == '.py' and not entry.endswith('-extensions.py'):
+                    if ext == '.py' and not entry.endswith('-extensions.py') and lib2to3 is not None:
                         refactor.append((dstpth, srcpth))
                         lib2to3_args.append(dstpth)
                     else:

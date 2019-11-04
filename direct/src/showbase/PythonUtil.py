@@ -1172,7 +1172,7 @@ def normalDistrib(a, b, gauss=random.gauss):
     uniformly onto the curve inside [a, b]
 
     ------------------------------------------------------------------------
-    http://www-stat.stanford.edu/~naras/jsm/NormalDensity/NormalDensity.html
+    https://statweb.stanford.edu/~naras/jsm/NormalDensity/NormalDensity.html
 
     The 68-95-99.7% Rule
     ====================

@@ -1,4 +1,8 @@
-"""Implements a pop-up menu containing multiple clickable options."""
+"""Implements a pop-up menu containing multiple clickable options.
+
+See the :ref:`directoptionmenu` page in the programming manual for a more
+in-depth explanation and an example of how to use this class.
+"""
 
 __all__ = ['DirectOptionMenu']
 
