@@ -64,11 +64,24 @@ target_link_libraries(interrogate p3cppParser p3interrogatedb
   PKG::OPENSSL)
 
 # Python preamble for interrogate_module
+set(_preamble_files)
+foreach(_file ${INTERROGATE_PREAMBLE_PYTHON_NATIVE})
+  # Resolve symlinks, use absolute path, and add a `#line 1 ...` directive
+  get_filename_component(_file "${_file}" REALPATH)
+
+  string(SHA1 _hash "${_file}")
+  set(_line_file "${CMAKE_CURRENT_BINARY_DIR}/.${_hash}.h")
+  file(WRITE "${_line_file}" "#line 1 \"${_file}\"\n")
+
+  list(APPEND _preamble_files "${_line_file}")
+  list(APPEND _preamble_files "${_file}")
+endforeach(_file)
+
 add_custom_command(
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/interrogate_preamble_python_native.cxx
   COMMAND ${CMAKE_COMMAND}
     -D OUTPUT_FILE="${CMAKE_CURRENT_BINARY_DIR}/interrogate_preamble_python_native.cxx"
-    -D INPUT_FILES="${INTERROGATE_PREAMBLE_PYTHON_NATIVE}"
+    -D INPUT_FILES="${_preamble_files}"
     -D SYMBOL_NAME="interrogate_preamble_python_native"
     -P ${PROJECT_SOURCE_DIR}/cmake/scripts/ConcatenateToCXX.cmake
   DEPENDS ${INTERROGATE_PREAMBLE_PYTHON_NATIVE}
