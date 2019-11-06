@@ -224,7 +224,7 @@ class ParticleEffect(NodePath):
         if self.__isValid():
             for particles in self.getParticlesList():
                 if firstBirthDelay is not None:
-                    particles.softStart(br = -1, first_birth_delay = firstBirthDelay)
+                    particles.softStart(br=-1, first_birth_delay=firstBirthDelay)
                 else:
                     particles.softStart()
         else:

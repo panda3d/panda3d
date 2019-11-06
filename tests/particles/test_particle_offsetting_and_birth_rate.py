@@ -27,13 +27,13 @@ def test_particle_soft_start():
     # used to.
     effect.softStart()
 
-    assert (system.getBirthRate() == 0.5)
+    assert system.getBirthRate() == 0.5
 
     # Now, check that the pre-existing single-parameter soft-start,
     # which alters the birth-rate, still does so.
     system.softStart(1)
 
-    assert (system.getBirthRate() == 1)
+    assert system.getBirthRate() == 1
 
     # Next, birth-delaying.
 
@@ -41,7 +41,7 @@ def test_particle_soft_start():
     # is zero, as used to be the case on running this command.
     effect.softStart()
 
-    assert (system.getTicsSinceBirth() == 0)
+    assert system.getTicsSinceBirth() == 0
 
     # Run an delayed soft-start via the system, then check
     # that the birth-timer has the assigned value,
@@ -50,18 +50,18 @@ def test_particle_soft_start():
     # (We pass in a birth-rate ("br") of -1 because the related code
     # checks for a birth-rate greater than 0, I believe. This allows
     # us to change the delay without affecting the birth-rate.)
-    system.softStart(br = -1, first_birth_delay = -2)
+    system.softStart(br=-1, first_birth_delay=-2)
 
-    assert (system.getBirthRate() == 1)
-    assert (system.getTicsSinceBirth() == 2)
+    assert system.getBirthRate() == 1
+    assert system.getTicsSinceBirth() == 2
 
     # Now, run a delayed soft-start via the effect, and
     # again check that the birth-timer has changed as intended,
     # and the birth-rate hasn't changed at all.
-    effect.softStart(firstBirthDelay = 0.25)
+    effect.softStart(firstBirthDelay=0.25)
 
-    assert (system.getBirthRate() == 1)
-    assert (system.getTicsSinceBirth() == -0.25)
+    assert system.getBirthRate() == 1
+    assert system.getTicsSinceBirth() == -0.25
 
     # Update the system, advancing it far enough that it should
     # have birthed a particle if not for the delay, but not
@@ -69,14 +69,14 @@ def test_particle_soft_start():
     # the delay. Check thus that no particles have been birthed.
     system.update(1)
 
-    assert (system.getLivingParticles() == 0)
+    assert system.getLivingParticles() == 0
 
     # Update the system again, this time far enough that with the
     # delay it should have birthed just one particle, and
     # then check that this is the case.
     system.update(1)
 
-    assert (system.getLivingParticles() == 1)
+    assert system.getLivingParticles() == 1
 
     # And finally, check that an unaltered system births as
     # expected given a single update:
@@ -85,13 +85,13 @@ def test_particle_soft_start():
     systemControl.setRenderParent(NodePath(PandaNode("test 2")))
     systemControl.setSpawnRenderNodePath(NodePath(PandaNode("test 2")))
 
-    assert (systemControl.getBirthRate() == 0.5)
-    assert (systemControl.getTicsSinceBirth() == 0)
+    assert systemControl.getBirthRate() == 0.5
+    assert systemControl.getTicsSinceBirth() == 0
 
-    assert (systemControl.getLivingParticles() == 0)
+    assert systemControl.getLivingParticles() == 0
 
     systemControl.update(0.6)
 
-    assert (systemControl.getLivingParticles() == 1)
+    assert systemControl.getLivingParticles() == 1
 
     # Done! :D
