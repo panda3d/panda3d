@@ -22,8 +22,8 @@ def test_particle_soft_start():
     # right object.
     system = effect.getParticlesList()[0]
 
-    # First, standard "softStart"--i.e. without changing either
-    # birth-rate or applying an offset. This should work as it
+    # First, standard "softStart"--i.e. without either changing
+    # the birth-rate or applying a delay. This should work as it
     # used to.
     effect.softStart()
 
@@ -35,7 +35,7 @@ def test_particle_soft_start():
 
     assert (system.getBirthRate() == 1)
 
-    # Next, birth-offsetting.
+    # Next, birth-delaying.
 
     # Run a standard soft-start, then check that the birth-timer
     # is zero, as used to be the case on running this command.
@@ -43,36 +43,36 @@ def test_particle_soft_start():
 
     assert (system.getTicsSinceBirth() == 0)
 
-    # Run an offset soft-start via the system, then check
+    # Run an delayed soft-start via the system, then check
     # that the birth-timer has the assigned value,
     # and that the birth-rate is unchanged.
 
     # (We pass in a birth-rate ("br") of -1 because the related code
     # checks for a birth-rate greater than 0, I believe. This allows
-    # us to change the offset-time without affecting the birth-rate.)
-    system.softStart(br = -1, first_birth_offset_time = 2)
+    # us to change the delay without affecting the birth-rate.)
+    system.softStart(br = -1, first_birth_delay = -2)
 
     assert (system.getBirthRate() == 1)
     assert (system.getTicsSinceBirth() == 2)
 
-    # Now, run an offset soft-start via the effect, and
+    # Now, run a delayed soft-start via the effect, and
     # again check that the birth-timer has changed as intended,
     # and the birth-rate hasn't changed at all.
-    effect.softStart(firstBirthOffset = -0.25)
+    effect.softStart(firstBirthDelay = 0.25)
 
     assert (system.getBirthRate() == 1)
     assert (system.getTicsSinceBirth() == -0.25)
 
     # Update the system, advancing it far enough that it should
-    # have birthed a particle if not for the offset, but not
+    # have birthed a particle if not for the delay, but not
     # so far that it should have birthed a particle >with<
-    # the offset. Check thus that no particles have been birthed.
+    # the delay. Check thus that no particles have been birthed.
     system.update(1)
 
     assert (system.getLivingParticles() == 0)
 
     # Update the system again, this time far enough that with the
-    # offset it should have birthed just one particle, and
+    # delay it should have birthed just one particle, and
     # then check that this is the case.
     system.update(1)
 
