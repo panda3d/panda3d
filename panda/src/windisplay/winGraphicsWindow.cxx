@@ -400,6 +400,16 @@ set_properties_now(WindowProperties &properties) {
     properties.clear_minimized();
   }
 
+  if (properties.has_maximized()) {
+    if (properties.get_maximized() != properties.get_maximized()) {
+      if (properties.get_maximized()) {
+        ShowWindow(_hWnd, SW_MAXIMIZE);
+      }
+      _properties.set_maximized(properties.get_maximized());
+    }
+    properties.clear_maximized();
+  }
+
   if (properties.has_fullscreen()) {
     if (properties.get_fullscreen() && !is_fullscreen()) {
       if (do_fullscreen_switch()){
@@ -501,6 +511,7 @@ open_window() {
   }
   bool want_foreground = (!_properties.has_foreground() || _properties.get_foreground());
   bool want_minimized = (_properties.has_minimized() && _properties.get_minimized()) && !want_foreground;
+  bool want_maximized = (_properties.has_maximized() && _properties.get_maximized()) && want_foreground;
 
   HWND old_foreground_window = GetForegroundWindow();
 
@@ -527,6 +538,9 @@ open_window() {
   if (want_minimized) {
     ShowWindow(_hWnd, SW_MINIMIZE);
     ShowWindow(_hWnd, SW_MINIMIZE);
+  } else if (want_maximized) {
+    ShowWindow(_hWnd, SW_MAXIMIZE);
+    ShowWindow(_hWnd, SW_MAXIMIZE);
   } else {
     ShowWindow(_hWnd, SW_SHOWNORMAL);
     ShowWindow(_hWnd, SW_SHOWNORMAL);

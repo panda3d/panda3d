@@ -240,6 +240,9 @@ add_properties(const WindowProperties &other) {
   if (other.has_minimized()) {
     set_minimized(other.get_minimized());
   }
+  if (other.has_maximized()) {
+    set_maximized(other.get_maximized());
+  }
   if (other.has_raw_mice()) {
     set_raw_mice(other.get_raw_mice());
   }
@@ -295,6 +298,9 @@ output(ostream &out) const {
   }
   if (has_minimized()) {
     out << (get_minimized() ? "minimized " : "!minimized ");
+  }
+  if (has_maximized()) {
+    out << (get_maximized() ? "maximized " : "!maximized ");
   }
   if (has_raw_mice()) {
     out << (get_raw_mice() ? "raw_mice " : "!raw_mice ");

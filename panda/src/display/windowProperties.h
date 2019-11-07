@@ -132,6 +132,13 @@ PUBLISHED:
   MAKE_PROPERTY2(minimized, has_minimized, get_minimized,
                             set_minimized, clear_minimized);
 
+  INLINE void set_maximized(bool maximized);
+  INLINE bool get_maximized() const;
+  INLINE bool has_maximized() const;
+  INLINE void clear_maximized();
+  MAKE_PROPERTY2(maximized, has_maximized, get_maximized,
+                            set_maximized, clear_maximized);
+
   INLINE void set_raw_mice(bool raw_mice);
   INLINE bool get_raw_mice() const;
   INLINE bool has_raw_mice() const;
@@ -193,6 +200,7 @@ private:
     S_fullscreen           = 0x00010,
     S_foreground           = 0x00020,
     S_minimized            = 0x00040,
+    S_maximized            = 0x00060,
     S_open                 = 0x00080,
     S_cursor_hidden        = 0x00100,
     S_fixed_size           = 0x00200,
@@ -211,6 +219,7 @@ private:
     F_fullscreen     = S_fullscreen,
     F_foreground     = S_foreground,
     F_minimized      = S_minimized,
+    F_maximized      = S_maximized,
     F_open           = S_open,
     F_cursor_hidden  = S_cursor_hidden,
     F_fixed_size     = S_fixed_size,

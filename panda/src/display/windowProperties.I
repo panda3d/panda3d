@@ -408,6 +408,45 @@ clear_minimized() {
 }
 
 /**
+ * Specifies whether the window should be created maximized (true), or normal
+ * (false).
+ */
+INLINE void WindowProperties::
+set_maximized(bool maximized) {
+  if (maximized) {
+    _flags |= F_maximized;
+  } else {
+    _flags &= ~F_maximized;
+  }
+  _specified |= S_maximized;
+}
+
+/**
+ * Returns true if the window is maximized.
+ */
+INLINE bool WindowProperties::
+get_maximized() const {
+  return (_flags & F_maximized) != 0;
+}
+
+/**
+ * Returns true if set_maximized() has been specified.
+ */
+INLINE bool WindowProperties::
+has_maximized() const {
+  return ((_specified & S_maximized) != 0);
+}
+
+/**
+ * Removes the maximized specification from the properties.
+ */
+INLINE void WindowProperties::
+clear_maximized() {
+  _specified &= ~S_maximized;
+  _flags &= ~F_maximized;
+}
+
+/**
  * Specifies whether the window should read the raw mouse devices.
  */
 INLINE void WindowProperties::

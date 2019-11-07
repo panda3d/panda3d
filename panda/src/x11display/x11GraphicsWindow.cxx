@@ -1212,6 +1212,18 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
   SetAction set_data[max_set_data];
   int next_set_data = 0;
 
+  if (properties.has_maximized()) {
+    if (properties.get_maximized()) {
+      state_data[next_state_data++] = x11_pipe->_net_wm_state_maximized_vert;
+      set_data[next_set_data++] = SetAction(x11_pipe->_net_wm_state_maximized_vert, 1);
+      state_data[next_state_data++] = x11_pipe->_net_wm_state_maximized_horz;
+      set_data[next_set_data++] = SetAction(x11_pipe->_net_wm_state_maximized_horz, 1);
+    } else {
+      set_data[next_set_data++] = SetAction(x11_pipe->_net_wm_state_maximized_vert, 0);
+      set_data[next_set_data++] = SetAction(x11_pipe->_net_wm_state_maximized_horz, 0);
+    }
+  }
+
   if (properties.has_fullscreen()) {
     if (properties.get_fullscreen()) {
       // For a "fullscreen" request, we pass this through, hoping the window
