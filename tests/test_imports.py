@@ -45,7 +45,6 @@ def test_imports_direct():
     import direct.controls.InputState
     import direct.controls.NonPhysicsWalker
     import direct.controls.ObserverWalker
-    import direct.controls.PhysicsRoller
     import direct.controls.PhysicsWalker
     import direct.controls.SwimWalker
     import direct.controls.TwoDWalker

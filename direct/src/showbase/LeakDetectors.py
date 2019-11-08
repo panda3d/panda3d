@@ -1,4 +1,6 @@
-# objects that report different types of leaks to the ContainerLeakDetector
+"""Contains objects that report different types of leaks to the
+ContainerLeakDetector.
+"""
 
 from panda3d.core import *
 from direct.showbase.DirectObject import DirectObject

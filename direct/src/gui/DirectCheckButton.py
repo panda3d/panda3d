@@ -1,6 +1,10 @@
 """A DirectCheckButton is a type of button that toggles between two states
 when clicked.  It also has a separate indicator that can be modified
-separately."""
+separately.
+
+See the :ref:`directcheckbutton` page in the programming manual for a more
+in-depth explanation and an example of how to use this class.
+"""
 
 __all__ = ['DirectCheckButton']
 

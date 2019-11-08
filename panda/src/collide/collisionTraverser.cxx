@@ -399,7 +399,7 @@ set_recorder(CollisionRecorder *recorder) {
  * should be any node in the scene graph; typically, the top node (e.g.
  * render).  The CollisionVisualizer will be attached to this node.
  */
-CollisionVisualizer *CollisionTraverser::
+PandaNode *CollisionTraverser::
 show_collisions(const NodePath &root) {
 #ifdef DO_COLLISION_RECORDING
   hide_collisions();

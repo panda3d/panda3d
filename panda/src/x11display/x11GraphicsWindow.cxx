@@ -886,7 +886,7 @@ set_properties_now(WindowProperties &properties) {
             _input->set_pointer_in_window(event.xbutton.x, event.xbutton.y);
           }
         } else {
-          x11display_cat.info()
+          x11display_cat.warning()
             << "XF86DGA extension not available, cannot enable relative mouse mode\n";
           _dga_mouse_enabled = false;
         }

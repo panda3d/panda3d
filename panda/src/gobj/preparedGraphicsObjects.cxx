@@ -1343,6 +1343,8 @@ release_all_shader_buffers() {
        ++bci) {
 
     BufferContext *bc = (BufferContext *)(*bci);
+    ((ShaderBuffer *)bc->_object)->clear_prepared(this);
+    bc->_object = nullptr;
     _released_shader_buffers.push_back(bc);
   }
 
