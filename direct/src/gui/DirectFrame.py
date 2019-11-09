@@ -88,6 +88,7 @@ class DirectFrame(DirectGuiWidget):
         elif name == "geom":
             if (isinstance(object_, NodePath)):
                 return True
+        return False
 
     def new_set(self, name, object_=None):
         """my new code golf par is 1"""
@@ -127,7 +128,6 @@ class DirectFrame(DirectGuiWidget):
         }
         # constants should be local to or default arguments of constructors
 
-        c = 0
         m = self["numStates"]
         for c in range(self['numStates']):
             component_name = name+str(c)
