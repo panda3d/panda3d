@@ -132,8 +132,10 @@ FfmpegAudioCursor(FfmpegAudio *src) :
   // Set up the resample context if necessary.
   if (_audio_ctx->sample_fmt != AV_SAMPLE_FMT_S16) {
 #ifdef HAVE_SWRESAMPLE
-    ffmpeg_cat.debug()
-      << "Codec does not use signed 16-bit sample format.  Setting up swresample context.\n";
+    if (ffmpeg_cat.is_debug()) {
+      ffmpeg_cat.debug()
+        << "Codec does not use signed 16-bit sample format.  Setting up swresample context.\n";
+    }
 
     _resample_ctx = swr_alloc();
     av_opt_set_int(_resample_ctx, "in_channel_count", _audio_channels, 0);

@@ -44,9 +44,11 @@ RocketRegion(GraphicsOutput *window, const LVecBase4 &dr_dimensions,
   get_pixels(pl, pr, pb, pt);
   Rocket::Core::Vector2i dimensions (pr - pl, pt - pb);
 
-  rocket_cat.debug()
-    << "Setting initial context dimensions to ("
-    << dimensions.x << ", " << dimensions.y << ")\n";
+  if (rocket_cat.is_debug()) {
+    rocket_cat.debug()
+      << "Setting initial context dimensions to ("
+      << dimensions.x << ", " << dimensions.y << ")\n";
+  }
 
   _context = Rocket::Core::CreateContext(context_name.c_str(),
                                          dimensions, &_interface);
@@ -112,8 +114,10 @@ do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
   Rocket::Core::Vector2i dimensions (pr - pl, pt - pb);
 
   if (_context->GetDimensions() != dimensions) {
-    rocket_cat.debug() << "Setting context dimensions to ("
-      << dimensions.x << ", " << dimensions.y << ")\n";
+    if (rocket_cat.is_debug()) {
+      rocket_cat.debug() << "Setting context dimensions to ("
+        << dimensions.x << ", " << dimensions.y << ")\n";
+    }
 
     _context->SetDimensions(dimensions);
 

@@ -41,6 +41,8 @@
 #include "pta_LVecBase2.h"
 #include "stl_compares.h"
 #include "shaderInput.h"
+#include "internalNameCollection.h"
+#include "materialCollection.h"
 #include "textureCollection.h"
 #include "textureStageCollection.h"
 
@@ -49,13 +51,9 @@ class FindApproxPath;
 class FindApproxLevelEntry;
 class Light;
 class PolylightNode;
-class InternalNameCollection;
 class Texture;
 class TextureStage;
-class TextureCollection;
-class TextureStageCollection;
 class Material;
-class MaterialCollection;
 class Fog;
 class GlobPattern;
 class PreparedGraphicsObjects;
@@ -1053,6 +1051,8 @@ private:
 };
 
 INLINE std::ostream &operator << (std::ostream &out, const NodePath &node_path);
+
+#include "nodePathCollection.h"
 
 #include "nodePath.I"
 

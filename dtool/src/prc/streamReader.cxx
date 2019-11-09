@@ -26,14 +26,20 @@ get_string() {
 
   // First, get the length of the string
   size_t size = get_uint16();
+
+  std::string result(size, 0);
   if (size == 0) {
-    return string();
+    return result;
   }
 
-  char *buffer = (char *)alloca(size);
-  _in->read(buffer, size);
+  _in->read(&result[0], size);
   size_t read_bytes = _in->gcount();
-  return string(buffer, read_bytes);
+
+  if (read_bytes == size) {
+    return result;
+  } else {
+    return result.substr(0, read_bytes);
+  }
 }
 
 /**
@@ -82,17 +88,17 @@ string StreamReader::
 get_fixed_string(size_t size) {
   nassertr(!_in->eof() && !_in->fail(), string());
 
+  std::string result(size, 0);
   if (size == 0) {
-    return string();
+    return result;
   }
 
-  char *buffer = (char *)alloca(size);
-  _in->read(buffer, size);
+  _in->read(&result[0], size);
   size_t read_bytes = _in->gcount();
-  string result(buffer, read_bytes);
+  result.resize(read_bytes);
 
   size_t zero_byte = result.find('\0');
-  return result.substr(0, zero_byte);
+  return result.substr(0, std::min(zero_byte, read_bytes));
 }
 
 /**

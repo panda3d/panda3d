@@ -9,4 +9,6 @@ All interval types can be conveniently imported from the
 :mod:`.IntervalGlobal` module::
 
    from direct.interval.IntervalGlobal import *
+
+For more information about intervals, see the :ref:`intervals` manual page.
 """

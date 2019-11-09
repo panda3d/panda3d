@@ -134,7 +134,7 @@ private:
   void initialize_input_devices();
   void handle_raw_input(HRAWINPUT hraw);
   void track_mouse_leaving(HWND hwnd);
-
+  bool confine_cursor();
   void set_focus();
 
   static void process_1_event();

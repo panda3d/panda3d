@@ -32,23 +32,6 @@ Description: Panda3D free 3D engine SDK
 
 """
 
-RUNTIME_INSTALLER_DEB_FILE = """
-Package: panda3d-runtime
-Version: VERSION
-Section: web
-Priority: optional
-Architecture: ARCH
-Essential: no
-Depends: DEPENDS
-Provides: panda3d-runtime
-Maintainer: rdb <me@rdb.name>
-Installed-Size: INSTSIZE
-Description: Runtime binary and browser plugin for the Panda3D Game Engine
- This package contains the runtime distribution and browser plugin of the Panda3D engine. It allows you view webpages that contain Panda3D content and to run games created with Panda3D that are packaged as .p3d file.
-
-"""
-
-
 # We're not putting "python" in the "Requires" field,
 # since the rpm-based distros don't have a common
 # naming for the Python package.
@@ -64,7 +47,7 @@ BuildRoot: PANDASOURCE/targetroot
 Panda3D is a game engine which includes graphics, audio, I/O, collision detection, and other abilities relevant to the creation of 3D games. Panda3D is open source and free software under the revised BSD license, and can be used for both free and commercial game development at no financial cost.
 Panda3D's intended game-development language is Python. The engine itself is written in C++, and utilizes an automatic wrapper-generator to expose the complete functionality of the engine in a Python interface.
 
-This package contains the SDK for development with Panda3D, install panda3d-runtime for the runtime files.
+This package contains the SDK for development with Panda3D.
 %post
 /sbin/ldconfig
 %postun
@@ -84,30 +67,6 @@ INSTALLER_SPEC_FILE_PVIEW = \
 /usr/share/mime-info/panda3d.keys
 /usr/share/mime/packages/panda3d.xml
 /usr/share/application-registry/panda3d.applications
-"""
-
-RUNTIME_INSTALLER_SPEC_FILE = """
-Summary: Runtime binary and browser plugin for the Panda3D Game Engine
-Name: panda3d-runtime
-Version: VERSION
-Release: RPMRELEASE
-License: BSD License
-Group: Productivity/Graphics/Other
-BuildRoot: PANDASOURCE/targetroot
-%description
-This package contains the runtime distribution and browser plugin of the Panda3D engine. It allows you view webpages that contain Panda3D content and to run games created with Panda3D that are packaged as .p3d file.
-%files
-%defattr(-,root,root)
-/usr/bin/panda3d
-/usr/%_lib/nppanda3d.so
-/usr/%_lib/mozilla/plugins/nppanda3d.so
-/usr/%_lib/mozilla-firefox/plugins/nppanda3d.so
-/usr/%_lib/xulrunner-addons/plugins/nppanda3d.so
-/usr/share/mime-info/panda3d-runtime.mime
-/usr/share/mime-info/panda3d-runtime.keys
-/usr/share/mime/packages/panda3d-runtime.xml
-/usr/share/application-registry/panda3d-runtime.applications
-/usr/share/applications/*.desktop
 """
 
 # plist file for Mac OSX
@@ -134,16 +93,7 @@ INSTALLER_PKG_DESCR_FILE = """
 Panda3D is a game engine which includes graphics, audio, I/O, collision detection, and other abilities relevant to the creation of 3D games. Panda3D is open source and free software under the revised BSD license, and can be used for both free and commercial game development at no financial cost.
 Panda3D's intended game-development language is Python. The engine itself is written in C++, and utilizes an automatic wrapper-generator to expose the complete functionality of the engine in a Python interface.
 
-This package contains the SDK for development with Panda3D, install panda3d-runtime for the runtime files.
-
-WWW: https://www.panda3d.org/
-"""
-
-# FreeBSD pkg-descr
-RUNTIME_INSTALLER_PKG_DESCR_FILE = """
-Runtime binary and browser plugin for the Panda3D Game Engine
-
-This package contains the runtime distribution and browser plugin of the Panda3D engine. It allows you view webpages that contain Panda3D content and to run games created with Panda3D that are packaged as .p3d file.
+This package contains the SDK for development with Panda3D.
 
 WWW: https://www.panda3d.org/
 """
@@ -163,7 +113,7 @@ deps: {DEPENDS}
 """
 
 
-def MakeInstallerNSIS(version, file, title, installdir, runtime=False, compressor="lzma", **kwargs):
+def MakeInstallerNSIS(version, file, title, installdir, compressor="lzma", **kwargs):
     outputdir = GetOutputDir()
 
     if os.path.isfile(file):
@@ -175,23 +125,6 @@ def MakeInstallerNSIS(version, file, title, installdir, runtime=False, compresso
         regview = '64'
     else:
         regview = '32'
-
-    if runtime:
-        # Invoke the make_installer script.
-        AddToPathEnv("PATH", outputdir + "\\bin")
-        AddToPathEnv("PATH", outputdir + "\\plugins")
-
-        cmd = sys.executable + " -B -u " + os.path.join("direct", "src", "plugin_installer", "make_installer.py")
-        cmd += " --version %s --regview %s" % (version, regview)
-
-        if GetTargetArch() == 'x64':
-            cmd += " --install \"$PROGRAMFILES64\\Panda3D\" "
-        else:
-            cmd += " --install \"$PROGRAMFILES32\\Panda3D\" "
-
-        oscmd(cmd)
-        shutil.move(os.path.join("direct", "src", "plugin_installer", "p3d-setup.exe"), file)
-        return
 
     print("Building "+title+" installer at %s" % (file))
     if compressor != "lzma":
@@ -260,7 +193,7 @@ def MakeDebugSymbolArchive(zipname, dirname):
     zip.close()
 
 
-def MakeInstallerLinux(version, debversion=None, rpmrelease=1, runtime=False,
+def MakeInstallerLinux(version, debversion=None, rpmrelease=1,
                        python_versions=[], **kwargs):
     outputdir = GetOutputDir()
 
@@ -269,19 +202,18 @@ def MakeInstallerLinux(version, debversion=None, rpmrelease=1, runtime=False,
     python3_ver = None
     install_python_versions = []
 
-    if not runtime:
-        # What's the system version of Python 3?
-        oscmd('python3 -V > "%s/tmp/python3_version.txt"' % (outputdir))
-        sys_python3_ver = '.'.join(ReadFile(outputdir + "/tmp/python3_version.txt").strip().split(' ')[1].split('.')[:2])
+    # What's the system version of Python 3?
+    oscmd('python3 -V > "%s/tmp/python3_version.txt"' % (outputdir))
+    sys_python3_ver = '.'.join(ReadFile(outputdir + "/tmp/python3_version.txt").strip().split(' ')[1].split('.')[:2])
 
-        # Check that we built with support for these.
-        for version_info in python_versions:
-            if version_info["version"] == "2.7":
-                python2_ver = "2.7"
-                install_python_versions.append(version_info)
-            elif version_info["version"] == sys_python3_ver:
-                python3_ver = sys_python3_ver
-                install_python_versions.append(version_info)
+    # Check that we built with support for these.
+    for version_info in python_versions:
+        if version_info["version"] == "2.7":
+            python2_ver = "2.7"
+            install_python_versions.append(version_info)
+        elif version_info["version"] == sys_python3_ver:
+            python3_ver = sys_python3_ver
+            install_python_versions.append(version_info)
 
     major_version = '.'.join(version.split('.')[:2])
     if not debversion:
@@ -304,43 +236,31 @@ def MakeInstallerLinux(version, debversion=None, rpmrelease=1, runtime=False,
     if dpkg_present:
         # Invoke installpanda.py to install it into a temporary dir
         lib_dir = GetDebLibDir()
-        if runtime:
-            InstallRuntime(destdir="targetroot", prefix="/usr",
-                           outputdir=outputdir, libdir=lib_dir)
-        else:
-            InstallPanda(destdir="targetroot", prefix="/usr",
-                         outputdir=outputdir, libdir=lib_dir,
-                         python_versions=install_python_versions)
-            oscmd("chmod -R 755 targetroot/usr/share/panda3d")
-            oscmd("mkdir -m 0755 -p targetroot/usr/share/man/man1")
-            oscmd("install -m 0644 doc/man/*.1 targetroot/usr/share/man/man1/")
+        InstallPanda(destdir="targetroot", prefix="/usr",
+                        outputdir=outputdir, libdir=lib_dir,
+                        python_versions=install_python_versions)
+        oscmd("chmod -R 755 targetroot/usr/share/panda3d")
+        oscmd("mkdir -m 0755 -p targetroot/usr/share/man/man1")
+        oscmd("install -m 0644 doc/man/*.1 targetroot/usr/share/man/man1/")
 
         oscmd("dpkg --print-architecture > "+outputdir+"/tmp/architecture.txt")
         pkg_arch = ReadFile(outputdir+"/tmp/architecture.txt").strip()
-        if runtime:
-            txt = RUNTIME_INSTALLER_DEB_FILE[1:]
-        else:
-            txt = INSTALLER_DEB_FILE[1:]
+        txt = INSTALLER_DEB_FILE[1:]
         txt = txt.replace("VERSION", debversion).replace("ARCH", pkg_arch).replace("MAJOR", major_version)
         txt = txt.replace("INSTSIZE", str(GetDirectorySize("targetroot") // 1024))
 
         oscmd("mkdir -m 0755 -p targetroot/DEBIAN")
         oscmd("cd targetroot && (find usr -type f -exec md5sum {} ;) > DEBIAN/md5sums")
-        if not runtime:
-            oscmd("cd targetroot && (find etc -type f -exec md5sum {} ;) >> DEBIAN/md5sums")
-            WriteFile("targetroot/DEBIAN/conffiles","/etc/Config.prc\n")
+        oscmd("cd targetroot && (find etc -type f -exec md5sum {} ;) >> DEBIAN/md5sums")
+        WriteFile("targetroot/DEBIAN/conffiles","/etc/Config.prc\n")
         WriteFile("targetroot/DEBIAN/postinst","#!/bin/sh\necho running ldconfig\nldconfig\n")
         oscmd("cp targetroot/DEBIAN/postinst targetroot/DEBIAN/postrm")
 
         # Determine the package name and the locations that
         # dpkg-shlibdeps should look in for executables.
         pkg_version = debversion
-        if runtime:
-            pkg_name = "panda3d-runtime"
-            lib_pattern = "debian/%s/usr/%s/*.so" % (pkg_name, lib_dir)
-        else:
-            pkg_name = "panda3d" + major_version
-            lib_pattern = "debian/%s/usr/%s/panda3d/*.so*" % (pkg_name, lib_dir)
+        pkg_name = "panda3d" + major_version
+        lib_pattern = "debian/%s/usr/%s/panda3d/*.so*" % (pkg_name, lib_dir)
         bin_pattern = "debian/%s/usr/bin/*" % (pkg_name)
 
         # dpkg-shlibdeps looks in the debian/{pkg_name}/DEBIAN/shlibs directory
@@ -353,45 +273,38 @@ def MakeInstallerLinux(version, debversion=None, rpmrelease=1, runtime=False,
         if GetVerbose():
             dpkg_shlibdeps += " -v"
 
-        if runtime:
-            # The runtime doesn't export any useful symbols, so just query the dependencies.
-            oscmd("cd targetroot && %(dpkg_shlibdeps)s -x%(pkg_name)s %(lib_pattern)s %(bin_pattern)s*" % locals())
-            depends = ReadFile("targetroot/debian/substvars").replace("shlibs:Depends=", "").strip()
-            recommends = ""
-            provides = "panda3d-runtime"
-        else:
-            pkg_name = "panda3d" + major_version
-            pkg_dir = "debian/panda3d" + major_version
+        pkg_name = "panda3d" + major_version
+        pkg_dir = "debian/panda3d" + major_version
 
-            # Generate a symbols file so that other packages can know which symbols we export.
-            oscmd("cd targetroot && dpkg-gensymbols -q -ODEBIAN/symbols -v%(pkg_version)s -p%(pkg_name)s -e%(lib_pattern)s" % locals())
+        # Generate a symbols file so that other packages can know which symbols we export.
+        oscmd("cd targetroot && dpkg-gensymbols -q -ODEBIAN/symbols -v%(pkg_version)s -p%(pkg_name)s -e%(lib_pattern)s" % locals())
 
-            # Library dependencies are required, binary dependencies are recommended.
-            # We explicitly exclude libphysx-extras since we don't want to depend on PhysX.
-            oscmd("cd targetroot && LD_LIBRARY_PATH=usr/%(lib_dir)s/panda3d %(dpkg_shlibdeps)s -Tdebian/substvars_dep --ignore-missing-info -x%(pkg_name)s -xlibphysx-extras %(lib_pattern)s" % locals())
-            oscmd("cd targetroot && LD_LIBRARY_PATH=usr/%(lib_dir)s/panda3d %(dpkg_shlibdeps)s -Tdebian/substvars_rec --ignore-missing-info -x%(pkg_name)s %(bin_pattern)s" % locals())
+        # Library dependencies are required, binary dependencies are recommended.
+        # We explicitly exclude libphysx-extras since we don't want to depend on PhysX.
+        oscmd("cd targetroot && LD_LIBRARY_PATH=usr/%(lib_dir)s/panda3d %(dpkg_shlibdeps)s -Tdebian/substvars_dep --ignore-missing-info -x%(pkg_name)s -xlibphysx-extras %(lib_pattern)s" % locals())
+        oscmd("cd targetroot && LD_LIBRARY_PATH=usr/%(lib_dir)s/panda3d %(dpkg_shlibdeps)s -Tdebian/substvars_rec --ignore-missing-info -x%(pkg_name)s %(bin_pattern)s" % locals())
 
-            # Parse the substvars files generated by dpkg-shlibdeps.
-            depends = ReadFile("targetroot/debian/substvars_dep").replace("shlibs:Depends=", "").strip()
-            recommends = ReadFile("targetroot/debian/substvars_rec").replace("shlibs:Depends=", "").strip()
-            provides = "panda3d"
+        # Parse the substvars files generated by dpkg-shlibdeps.
+        depends = ReadFile("targetroot/debian/substvars_dep").replace("shlibs:Depends=", "").strip()
+        recommends = ReadFile("targetroot/debian/substvars_rec").replace("shlibs:Depends=", "").strip()
+        provides = "panda3d"
 
-            if python2_ver or python3_ver:
-                recommends += ", python-pmw"
+        if python2_ver or python3_ver:
+            recommends += ", python-pmw"
 
-            if python2_ver:
-                depends += ", python%s" % (python2_ver)
-                recommends += ", python-wxversion"
-                recommends += ", python-tk (>= %s)" % (python2_ver)
-                provides += ", python2-panda3d"
+        if python2_ver:
+            depends += ", python%s" % (python2_ver)
+            recommends += ", python-wxversion"
+            recommends += ", python-tk (>= %s)" % (python2_ver)
+            provides += ", python2-panda3d"
 
-            if python3_ver:
-                depends += ", python%s" % (python3_ver)
-                recommends += ", python3-tk (>= %s)" % (python3_ver)
-                provides += ", python3-panda3d"
+        if python3_ver:
+            depends += ", python%s" % (python3_ver)
+            recommends += ", python3-tk (>= %s)" % (python3_ver)
+            provides += ", python3-panda3d"
 
-            if not PkgSkip("NVIDIACG"):
-                depends += ", nvidia-cg-toolkit"
+        if not PkgSkip("NVIDIACG"):
+            depends += ", nvidia-cg-toolkit"
 
         # Write back the dependencies, and delete the dummy set-up.
         txt = txt.replace("DEPENDS", depends.strip(', '))
@@ -403,46 +316,39 @@ def MakeInstallerLinux(version, debversion=None, rpmrelease=1, runtime=False,
         # Package it all up into a .deb file.
         oscmd("chmod -R 755 targetroot/DEBIAN")
         oscmd("chmod 644 targetroot/DEBIAN/control targetroot/DEBIAN/md5sums")
-        if not runtime:
-            oscmd("chmod 644 targetroot/DEBIAN/conffiles targetroot/DEBIAN/symbols")
+        oscmd("chmod 644 targetroot/DEBIAN/conffiles targetroot/DEBIAN/symbols")
         oscmd("fakeroot dpkg-deb -b targetroot %s_%s_%s.deb" % (pkg_name, pkg_version, pkg_arch))
 
     elif rpmbuild_present:
         # Invoke installpanda.py to install it into a temporary dir
-        if runtime:
-            InstallRuntime(destdir="targetroot", prefix="/usr", outputdir=outputdir, libdir=GetRPMLibDir())
-        else:
-            InstallPanda(destdir="targetroot", prefix="/usr",
-                         outputdir=outputdir, libdir=GetRPMLibDir(),
-                         python_versions=install_python_versions)
-            oscmd("chmod -R 755 targetroot/usr/share/panda3d")
+        InstallPanda(destdir="targetroot", prefix="/usr",
+                        outputdir=outputdir, libdir=GetRPMLibDir(),
+                        python_versions=install_python_versions)
+        oscmd("chmod -R 755 targetroot/usr/share/panda3d")
 
         oscmd("rpm -E '%_target_cpu' > "+outputdir+"/tmp/architecture.txt")
         arch = ReadFile(outputdir+"/tmp/architecture.txt").strip()
         pandasource = os.path.abspath(os.getcwd())
 
-        if runtime:
-            txt = RUNTIME_INSTALLER_SPEC_FILE[1:]
-        else:
-            txt = INSTALLER_SPEC_FILE[1:]
+        txt = INSTALLER_SPEC_FILE[1:]
 
-            # Add the MIME associations if we have pview
-            if not PkgSkip("PVIEW"):
-                txt += INSTALLER_SPEC_FILE_PVIEW
+        # Add the MIME associations if we have pview
+        if not PkgSkip("PVIEW"):
+            txt += INSTALLER_SPEC_FILE_PVIEW
 
-            # Add the platform-specific Python directories.
-            dirs = set()
-            for version_info in install_python_versions:
-                dirs.add(version_info["platlib"])
-                dirs.add(version_info["purelib"])
+        # Add the platform-specific Python directories.
+        dirs = set()
+        for version_info in install_python_versions:
+            dirs.add(version_info["platlib"])
+            dirs.add(version_info["purelib"])
 
-            for dir in dirs:
-                txt += dir + "\n"
+        for dir in dirs:
+            txt += dir + "\n"
 
-            # Add the binaries in /usr/bin explicitly to the spec file
-            for base in os.listdir(outputdir + "/bin"):
-                if not base.startswith("deploy-stub"):
-                    txt += "/usr/bin/%s\n" % (base)
+        # Add the binaries in /usr/bin explicitly to the spec file
+        for base in os.listdir(outputdir + "/bin"):
+            if not base.startswith("deploy-stub"):
+                txt += "/usr/bin/%s\n" % (base)
 
         # Write out the spec file.
         txt = txt.replace("VERSION", version)
@@ -451,29 +357,15 @@ def MakeInstallerLinux(version, debversion=None, rpmrelease=1, runtime=False,
         WriteFile("panda3d.spec", txt)
 
         oscmd("fakeroot rpmbuild --define '_rpmdir "+pandasource+"' --buildroot '"+os.path.abspath("targetroot")+"' -bb panda3d.spec")
-        if runtime:
-            oscmd("mv "+arch+"/panda3d-runtime-"+version+"-"+rpmrelease+"."+arch+".rpm .")
-        else:
-            oscmd("mv "+arch+"/panda3d-"+version+"-"+rpmrelease+"."+arch+".rpm .")
+        oscmd("mv "+arch+"/panda3d-"+version+"-"+rpmrelease+"."+arch+".rpm .")
         oscmd("rm -rf "+arch, True)
 
     else:
         exit("To build an installer, either rpmbuild or dpkg-deb must be present on your system!")
 
 
-def MakeInstallerOSX(version, runtime=False, python_versions=[], **kwargs):
+def MakeInstallerOSX(version, python_versions=[], **kwargs):
     outputdir = GetOutputDir()
-
-    if runtime:
-        # Invoke the make_installer script.
-        AddToPathEnv("DYLD_LIBRARY_PATH", outputdir + "/plugins")
-        cmdstr = sys.executable + " "
-        if sys.version_info >= (2, 6):
-            cmdstr += "-B "
-
-        cmdstr += "direct/src/plugin_installer/make_installer.py --version %s" % version
-        oscmd(cmdstr)
-        return
 
     dmg_name = "Panda3D-" + version
     if len(python_versions) == 1 and not python_versions[0]["version"].startswith("2."):
@@ -562,12 +454,17 @@ def MakeInstallerOSX(version, runtime=False, python_versions=[], **kwargs):
         oscmd("mkdir -p dstroot/pybindings%s/Library/Python/%s/site-packages" % (pyver, pyver))
         WriteFile("dstroot/pybindings%s/Library/Python/%s/site-packages/Panda3D.pth" % (pyver, pyver), "/Developer/Panda3D")
 
-        # Evidently not all Python 3.7 installations read the above path, so do this for now
-        # See GitHub #502
-        if pyver == "3.7":
+        # Somewhere in Python 2.7.13 and 3.7, the above path was removed from
+        # sys.path of the python.org distribution.  See bpo-28440 and GH #502.
+        if pyver not in ("3.0", "3.1", "3.2", "3.3", "3.4", "3.5", "3.6"):
             dir = "dstroot/pybindings%s/Library/Frameworks/Python.framework/Versions/%s/lib/python%s/site-packages" % (pyver, pyver, pyver)
             oscmd("mkdir -p %s" % (dir))
             WriteFile("%s/Panda3D.pth" % (dir), "/Developer/Panda3D")
+
+        # Also place it somewhere the Homebrew version of Python can find it.
+        dir = "dstroot/pybindings%s/usr/local/lib/python%s/site-packages" % (pyver, pyver)
+        oscmd("mkdir -p %s" % (dir))
+        WriteFile("%s/Panda3D.pth" % (dir), "/Developer/Panda3D")
 
     if not PkgSkip("FFMPEG"):
         oscmd("mkdir -p dstroot/ffmpeg/Developer/Panda3D/lib")
@@ -584,8 +481,6 @@ def MakeInstallerOSX(version, runtime=False, python_versions=[], **kwargs):
 
     oscmd("mkdir -p dstroot/headers/Developer/Panda3D/lib")
     oscmd("cp -R %s/include               dstroot/headers/Developer/Panda3D/include" % outputdir)
-    if os.path.isfile(outputdir + "/lib/libp3pystub.a"):
-        oscmd("cp -R -P %s/lib/libp3pystub.a dstroot/headers/Developer/Panda3D/lib/" % outputdir)
 
     if os.path.isdir("samples"):
         oscmd("mkdir -p dstroot/samples/Developer/Examples/Panda3D")
@@ -748,17 +643,14 @@ def MakeInstallerOSX(version, runtime=False, python_versions=[], **kwargs):
     oscmd('rm -f Panda3D-rw.dmg')
 
 
-def MakeInstallerFreeBSD(version, runtime=False, python_versions=[], **kwargs):
+def MakeInstallerFreeBSD(version, python_versions=[], **kwargs):
     outputdir = GetOutputDir()
 
     oscmd("rm -rf targetroot +DESC pkg-plist +MANIFEST")
     oscmd("mkdir targetroot")
 
     # Invoke installpanda.py to install it into a temporary dir
-    if runtime:
-        InstallRuntime(destdir="targetroot", prefix="/usr/local", outputdir=outputdir)
-    else:
-        InstallPanda(destdir="targetroot", prefix="/usr/local", outputdir=outputdir, python_versions=python_versions)
+    InstallPanda(destdir="targetroot", prefix="/usr/local", outputdir=outputdir, python_versions=python_versions)
 
     if not os.path.exists("/usr/sbin/pkg"):
         exit("Cannot create an installer without pkg")
@@ -768,15 +660,14 @@ def MakeInstallerFreeBSD(version, runtime=False, python_versions=[], **kwargs):
         for f in files:
             plist_txt += os.path.join(root, f)[21:] + "\n"
 
-    if not runtime:
-        plist_txt += "@postexec /sbin/ldconfig -m /usr/local/lib/panda3d\n"
-        plist_txt += "@postunexec /sbin/ldconfig -R\n"
+    plist_txt += "@postexec /sbin/ldconfig -m /usr/local/lib/panda3d\n"
+    plist_txt += "@postunexec /sbin/ldconfig -R\n"
 
-        for remdir in ("lib/panda3d", "share/panda3d", "include/panda3d"):
-            for root, dirs, files in os.walk("targetroot/usr/local/" + remdir, False):
-                for d in dirs:
-                    plist_txt += "@dir %s\n" % os.path.join(root, d)[21:]
-            plist_txt += "@dir %s\n" % remdir
+    for remdir in ("lib/panda3d", "share/panda3d", "include/panda3d"):
+        for root, dirs, files in os.walk("targetroot/usr/local/" + remdir, False):
+            for d in dirs:
+                plist_txt += "@dir %s\n" % os.path.join(root, d)[21:]
+        plist_txt += "@dir %s\n" % remdir
 
     oscmd("echo \"`pkg config abi | tr '[:upper:]' '[:lower:]' | cut -d: -f1,2`:*\" > " + outputdir + "/tmp/architecture.txt")
     pkg_arch = ReadFile(outputdir+"/tmp/architecture.txt").strip()
@@ -797,15 +688,15 @@ def MakeInstallerFreeBSD(version, runtime=False, python_versions=[], **kwargs):
             if python_pkg:
                 dependencies += python_pkg
 
-    manifest_txt = INSTALLER_PKG_MANIFEST_FILE[1:].replace("NAME", 'panda3d' if not runtime else 'panda3d-runtime')
+    manifest_txt = INSTALLER_PKG_MANIFEST_FILE[1:].replace("NAME", 'panda3d')
     manifest_txt = manifest_txt.replace("VERSION", version)
     manifest_txt = manifest_txt.replace("ARCH", pkg_arch)
-    manifest_txt = manifest_txt.replace("ORIGIN", 'devel/panda3d' if not runtime else 'graphics/panda3d-runtime')
+    manifest_txt = manifest_txt.replace("ORIGIN", 'devel/panda3d')
     manifest_txt = manifest_txt.replace("DEPENDS", dependencies)
     manifest_txt = manifest_txt.replace("INSTSIZE", str(GetDirectorySize("targetroot") // 1024 // 1024))
 
     WriteFile("pkg-plist", plist_txt)
-    WriteFile("+DESC", INSTALLER_PKG_DESCR_FILE[1:] if not runtime else RUNTIME_INSTALLER_PKG_DESCR_FILE[1:])
+    WriteFile("+DESC", INSTALLER_PKG_DESCR_FILE[1:])
     WriteFile("+MANIFEST", manifest_txt)
     oscmd("pkg create -p pkg-plist -r %s  -m . -o . %s" % (os.path.abspath("targetroot"), "--verbose" if GetVerbose() else "--quiet"))
 
@@ -1004,17 +895,12 @@ def MakeInstaller(version, **kwargs):
         fn = "Panda3D-"
         dir = "Panda3D-" + version
 
-        runtime = kwargs.get('runtime', False)
-        if runtime:
-            fn += "Runtime-"
-            title = "Panda3D " + version
-        else:
-            title = "Panda3D SDK " + version
+        title = "Panda3D SDK " + version
 
         fn += version
 
         python_versions = kwargs.get('python_versions', [])
-        if not runtime and len(python_versions) == 1 and python_versions[0]["version"] != "2.7":
+        if len(python_versions) == 1 and python_versions[0]["version"] != "2.7":
             fn += '-py' + python_versions[0]["version"]
 
         if GetOptimize() <= 2:
@@ -1024,8 +910,7 @@ def MakeInstaller(version, **kwargs):
             dir += '-x64'
 
         MakeInstallerNSIS(version, fn + '.exe', title, 'C:\\' + dir, **kwargs)
-        if not runtime:
-            MakeDebugSymbolArchive(fn + '-pdb.zip', dir)
+        MakeDebugSymbolArchive(fn + '-pdb.zip', dir)
     elif target == 'linux':
         MakeInstallerLinux(version, **kwargs)
     elif target == 'darwin':
@@ -1039,7 +924,7 @@ def MakeInstaller(version, **kwargs):
 
 
 if __name__ == "__main__":
-    version = ParsePandaVersion("dtool/PandaVersion.pp")
+    version = GetMetadataValue('version')
 
     parser = OptionParser()
     parser.add_option('', '--version', dest='version', help='Panda3D version number (default: %s)' % (version), default=version)
@@ -1047,7 +932,6 @@ if __name__ == "__main__":
     parser.add_option('', '--rpmrelease', dest='rpmrelease', help='Release number for .rpm file', default='1')
     parser.add_option('', '--outputdir', dest='outputdir', help='Makepanda\'s output directory (default: built)', default='built')
     parser.add_option('', '--verbose', dest='verbose', help='Enable verbose output', action='store_true', default=False)
-    parser.add_option('', '--runtime', dest='runtime', help='Runtime instead of SDK', action='store_true', default=False)
     parser.add_option('', '--lzma', dest='compressor', help='Use LZMA compression', action='store_const', const='lzma', default='zlib')
     (options, args) = parser.parse_args()
 
@@ -1071,7 +955,7 @@ if __name__ == "__main__":
             PkgDisable(pkg)
 
     # Parse the version.
-    match = re.match(r'^\d+\.\d+\.\d+', options.version)
+    match = re.match(r'^\d+\.\d+(\.\d+)+', options.version)
     if not match:
         exit("version requires three digits")
 
@@ -1081,5 +965,4 @@ if __name__ == "__main__":
                   compressor=options.compressor,
                   debversion=options.debversion,
                   rpmrelease=options.rpmrelease,
-                  runtime=options.runtime,
                   python_versions=ReadPythonVersionInfoFile())

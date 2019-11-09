@@ -46,11 +46,13 @@ queue_event(CPT_Event event) {
   LightMutexHolder holder(_lock);
 
   _queue.push_back(event);
-  if (event_cat.is_spam() || event_cat.is_debug()) {
+  if (event_cat.is_debug()) {
     if (event->get_name() == "NewFrame") {
       // Don't bother us with this particularly spammy event.
-      event_cat.spam()
-        << "Throwing event " << *event << "\n";
+      if (event_cat.is_spam()) {
+        event_cat.spam()
+          << "Throwing event " << *event << "\n";
+      }
     } else {
       event_cat.debug()
         << "Throwing event " << *event << "\n";
@@ -79,7 +81,7 @@ is_queue_empty() const {
 }
 
 /**
- * This function is deprecated--the queue is never full these days.
+ * @deprecated Always returns false; the queue can never be full.
  */
 bool EventQueue::
 is_queue_full() const {

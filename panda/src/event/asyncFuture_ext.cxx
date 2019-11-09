@@ -102,7 +102,7 @@ static PyObject *get_done_result(const AsyncFuture *future) {
           if (value != nullptr) {
             return value;
           }
-          PyErr_Restore(nullptr, nullptr, nullptr);
+          PyErr_Clear();
           Py_DECREF(wrap);
         }
       }
@@ -132,8 +132,7 @@ static PyObject *get_done_result(const AsyncFuture *future) {
                                              nullptr, nullptr);
       }
     }
-    Py_INCREF(exc_type);
-    PyErr_Restore(exc_type, nullptr, nullptr);
+    PyErr_SetNone(exc_type);
     return nullptr;
   }
 }
@@ -154,8 +153,7 @@ static PyObject *gen_next(PyObject *self) {
   } else {
     PyObject *result = get_done_result(future);
     if (result != nullptr) {
-      Py_INCREF(PyExc_StopIteration);
-      PyErr_Restore(PyExc_StopIteration, result, nullptr);
+      PyErr_SetObject(PyExc_StopIteration, result);
     }
     return nullptr;
   }
@@ -225,8 +223,7 @@ result(PyObject *timeout) const {
                                                nullptr, nullptr);
         }
       }
-      Py_INCREF(exc_type);
-      PyErr_Restore(exc_type, nullptr, nullptr);
+      PyErr_SetNone(exc_type);
       return nullptr;
     }
   }

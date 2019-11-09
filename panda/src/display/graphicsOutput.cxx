@@ -375,6 +375,8 @@ add_render_texture(Texture *tex, RenderTextureMode mode,
  * This is a deprecated interface that made sense back when GraphicsOutputs
  * could only render into one texture at a time.  From now on, use
  * clear_render_textures and add_render_texture instead.
+ *
+ * @deprecated Use add_render_texture() instead.
  */
 void GraphicsOutput::
 setup_render_texture(Texture *tex, bool allow_bind, bool to_ram) {

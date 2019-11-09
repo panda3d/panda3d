@@ -157,9 +157,11 @@ auto_callback(void *data, dGeomID o1, dGeomID o2) {
   numc = dCollide(o1, o2, OdeSpace::MAX_CONTACTS, &contact[0].geom, sizeof(dContact));
 
   if (numc) {
-    odespace_cat.debug() << "collision between geoms " << o1 << " and " << o2 << "\n";
-    odespace_cat.debug() << "collision between body " << b1 << " and " << b2 << "\n";
-    odespace_cat.debug() << "surface1= "<< surface1 << " surface2=" << surface2 << "\n";
+    if (odespace_cat.is_debug()) {
+      odespace_cat.debug() << "collision between geoms " << o1 << " and " << o2 << "\n";
+      odespace_cat.debug() << "collision between body " << b1 << " and " << b2 << "\n";
+      odespace_cat.debug() << "surface1= "<< surface1 << " surface2=" << surface2 << "\n";
+    }
 
     PT(OdeCollisionEntry) entry;
     if (!_static_auto_collide_space->_collision_event.empty()) {

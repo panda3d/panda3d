@@ -19,9 +19,6 @@ def test_wheel(wheel, verbose=False):
     print("Setting up virtual environment in {0}".format(envdir))
     sys.stdout.flush()
 
-    # Make sure pip is up-to-date first.
-    subprocess.call([sys.executable, "-B", "-m", "pip", "install", "-U", "pip"])
-
     # Create a virtualenv.
     if sys.version_info >= (3, 0):
         subprocess.call([sys.executable, "-B", "-m", "venv", "--clear", envdir])

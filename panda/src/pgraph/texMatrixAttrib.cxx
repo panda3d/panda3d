@@ -48,6 +48,8 @@ make() {
 /**
  * Constructs a TexMatrixAttrib that applies the indicated matrix to the
  * default texture stage.  This interface is deprecated.
+ *
+ * @deprecated Use the constructor that takes a TextureStage instead.
  */
 CPT(RenderAttrib) TexMatrixAttrib::
 make(const LMatrix4 &mat) {

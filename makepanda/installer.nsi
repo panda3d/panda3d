@@ -84,6 +84,7 @@ LangString DESC_SecTools ${LANG_ENGLISH} "Useful tools and model converters to h
 LangString DESC_SecGroupPython ${LANG_ENGLISH} "Contains modules that provide Python support for Panda3D."
 LangString DESC_SecPyShared ${LANG_ENGLISH} "Contains the common Python code used by the Panda3D Python bindings."
 LangString DESC_SecPython ${LANG_ENGLISH} "Contains a ${REGVIEW}-bit copy of Python ${INCLUDE_PYVER} preconfigured to make use of Panda3D."
+LangString DESC_SecEnsurePip ${LANG_ENGLISH} "Installs the pip package manager into the included Python installation."
 LangString DESC_SecHeadersLibs ${LANG_ENGLISH} "Headers and libraries needed for C++ development with Panda3D."
 LangString DESC_SecSamples ${LANG_ENGLISH} "The sample programs demonstrate how to make Python applications with Panda3D."
 LangString DESC_SecMaxPlugins ${LANG_ENGLISH} "Plug-ins for Autodesk 3ds Max (${REGVIEW}-bit) that can be used to export models to Panda3D."
@@ -477,6 +478,19 @@ Section "Python ${INCLUDE_PYVER}" SecPython
     SkipRegPath:
 
 SectionEnd
+
+Section "Install pip" SecEnsurePip
+    SectionIn 1 2 3
+
+    SetDetailsPrint both
+    DetailPrint "Installing the pip package manager..."
+    SetDetailsPrint listonly
+
+    SetOutPath $INSTDIR
+    nsExec::ExecToLog '"$INSTDIR\python\python.exe" -m ensurepip --default-pip'
+    Pop $0
+    DetailPrint "Command returned exit status $0"
+SectionEnd
 !endif
 
 !macro MaybeEnablePyBindingSection PYVER
@@ -537,6 +551,18 @@ Function .onSelChange
         IntOp $R0 $R0 | ${SF_SELECTED}
         SectionSetFlags ${SecPyShared} $R0
     ${EndIf}
+
+    !ifdef INCLUDE_PYVER
+        ${If} ${SectionIsSelected} ${SecPython}
+            !insertmacro SectionFlagIsSet ${SecEnsurePip} ${SF_RO} 0 SkipSelectEnsurePip
+            !insertmacro SelectSection ${SecEnsurePip}
+            SkipSelectEnsurePip:
+            !insertmacro ClearSectionFlag ${SecEnsurePip} ${SF_RO}
+        ${Else}
+            !insertmacro UnselectSection ${SecEnsurePip}
+            !insertmacro SetSectionFlag ${SecEnsurePip} ${SF_RO}
+        ${EndIf}
+    !endif
 FunctionEnd
 
 !ifdef INCLUDE_PYVER
@@ -917,6 +943,7 @@ SectionEnd
   !endif
   !ifdef INCLUDE_PYVER
     !insertmacro MUI_DESCRIPTION_TEXT ${SecPython} $(DESC_SecPython)
+    !insertmacro MUI_DESCRIPTION_TEXT ${SecEnsurePip} $(DESC_SecEnsurePip)
   !endif
   !insertmacro MUI_DESCRIPTION_TEXT ${SecHeadersLibs} $(DESC_SecHeadersLibs)
   !ifdef HAVE_SAMPLES

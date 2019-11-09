@@ -116,10 +116,6 @@ add_on_stage(TextureStage *stage, Texture *tex, int override) const {
   (*si)._has_sampler = false;
   ++(attrib->_next_implicit_sort);
 
-  // We now need to re-sort the attrib list.
-  attrib->_sort_seq = UpdateSeq::old();
-  attrib->_filtered_seq = UpdateSeq::old();
-
   return return_new(attrib);
 }
 
@@ -140,10 +136,6 @@ add_on_stage(TextureStage *stage, Texture *tex, const SamplerState &sampler, int
   (*si)._has_sampler = true;
   ++(attrib->_next_implicit_sort);
 
-  // We now need to re-sort the attrib list.
-  attrib->_sort_seq = UpdateSeq::old();
-  attrib->_filtered_seq = UpdateSeq::old();
-
   return return_new(attrib);
 }
 
@@ -158,9 +150,6 @@ remove_on_stage(TextureStage *stage) const {
   Stages::iterator si = attrib->_on_stages.find(StageNode(stage));
   if (si != attrib->_on_stages.end()) {
     attrib->_on_stages.erase(si);
-
-    attrib->_sort_seq = UpdateSeq::old();
-    attrib->_filtered_seq = UpdateSeq::old();
   }
 
   return return_new(attrib);
@@ -182,8 +171,6 @@ add_off_stage(TextureStage *stage, int override) const {
     Stages::iterator si = attrib->_on_stages.find(sn);
     if (si != attrib->_on_stages.end()) {
       attrib->_on_stages.erase(si);
-      attrib->_sort_seq = UpdateSeq::old();
-      attrib->_filtered_seq = UpdateSeq::old();
     }
   }
   return return_new(attrib);
@@ -253,6 +240,8 @@ unify_texture_stages(TextureStage *stage) const {
 /**
  * Returns a new TextureAttrib, just like this one, but with all references to
  * the given texture replaced with the new texture.
+ *
+ * @since 1.10.4
  */
 CPT(RenderAttrib) TextureAttrib::
 replace_texture(Texture *tex, Texture *new_tex) const {

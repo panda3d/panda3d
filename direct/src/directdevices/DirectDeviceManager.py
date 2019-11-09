@@ -1,4 +1,4 @@
-""" Class used to create and control vrpn devices """
+"""Class used to create and control VRPN devices."""
 
 from direct.showbase.DirectObject import DirectObject
 from panda3d.core import *

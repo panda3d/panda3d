@@ -28,7 +28,6 @@ TypeHandle MovingPartBase::_type_handle;
 MovingPartBase::
 MovingPartBase(PartGroup *parent, const std::string &name) :
   PartGroup(parent, name),
-  _num_effective_channels(0),
   _effective_control(nullptr)
 {
 }
@@ -38,7 +37,6 @@ MovingPartBase(PartGroup *parent, const std::string &name) :
  */
 MovingPartBase::
 MovingPartBase() :
-  _num_effective_channels(0),
   _effective_control(nullptr)
 {
 }
@@ -305,7 +303,6 @@ void MovingPartBase::
 determine_effective_channels(const CycleData *root_cdata) {
   _effective_control = nullptr;
   _effective_channel = nullptr;
-  _num_effective_channels = 0;
 
   AnimControl *effective_control = nullptr;
   AnimChannelBase *effective_channel = nullptr;
@@ -327,7 +324,6 @@ determine_effective_channels(const CycleData *root_cdata) {
     }
   }
 
-  _num_effective_channels = num_effective_channels;
   if (num_effective_channels == 1) {
     _effective_control = effective_control;
     _effective_channel = effective_channel;

@@ -27,9 +27,9 @@ class EXPCL_PANDA_PSTATCLIENT PStatCollectorForward : public PStatCollectorForwa
 PUBLISHED:
   INLINE PStatCollectorForward(const PStatCollector &col);
 
-#ifdef DO_PSTATS
   virtual void add_level(double level);
 
+#ifdef DO_PSTATS
 private:
   PStatCollector _col;
 #endif

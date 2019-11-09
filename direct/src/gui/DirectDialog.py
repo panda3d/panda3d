@@ -1,16 +1,24 @@
-"""This module defines various dialog windows for the DirectGUI system."""
+"""This module defines various dialog windows for the DirectGUI system.
 
-__all__ = ['findDialog', 'cleanupDialog', 'DirectDialog', 'OkDialog', 'OkCancelDialog', 'YesNoDialog', 'YesNoCancelDialog', 'RetryCancelDialog']
+See the :ref:`directdialog` page in the programming manual for a more
+in-depth explanation and an example of how to use this class.
+"""
+
+__all__ = [
+    'findDialog', 'cleanupDialog', 'DirectDialog', 'OkDialog',
+    'OkCancelDialog', 'YesNoDialog', 'YesNoCancelDialog', 'RetryCancelDialog',
+]
 
 from panda3d.core import *
+from direct.showbase import ShowBaseGlobal
 from . import DirectGuiGlobals as DGG
 from .DirectFrame import *
 from .DirectButton import *
 import types
 
-def findDialog(uniqueName):
-    """findPanel(string uniqueName)
 
+def findDialog(uniqueName):
+    """
     Returns the panel whose uniqueName is given.  This is mainly
     useful for debugging, to get a pointer to the current onscreen
     panel of a particular type.
@@ -18,6 +26,7 @@ def findDialog(uniqueName):
     if uniqueName in DirectDialog.AllDialogs:
         return DirectDialog.AllDialogs[uniqueName]
     return None
+
 
 def cleanupDialog(uniqueName):
     """cleanupPanel(string uniqueName)
@@ -34,52 +43,48 @@ def cleanupDialog(uniqueName):
         # self.cleanup() directly
         DirectDialog.AllDialogs[uniqueName].cleanup()
 
+
 class DirectDialog(DirectFrame):
 
     AllDialogs = {}
     PanelIndex = 0
 
-    def __init__(self, parent = None, **kw):
-        """
-        DirectDialog(kw)
-
-        Creates a popup dialog to alert and/or interact with user.
+    def __init__(self, parent=None, **kw):
+        """Creates a popup dialog to alert and/or interact with user.
         Some of the main keywords that can be used to customize the dialog:
-            Keyword              Definition
-            -------              ----------
-            text                 Text message/query displayed to user
-            geom                 Geometry to be displayed in dialog
-            buttonTextList       List of text to show on each button
-            buttonGeomList       List of geometry to show on each button
-            buttonImageList      List of images to show on each button
-            buttonValueList      List of values sent to dialog command for
-                                 each button.  If value is [] then the
-                                 ordinal rank of the button is used as
-                                 its value
-            buttonHotKeyList     List of hotkeys to bind to each button.
-                                 Typing hotkey is equivalent to pressing
-                                 the corresponding button.
-            suppressKeys         Set to true if you wish to suppress keys
-                                 (i.e. Dialog eats key event), false if
-                                 you wish Dialog to pass along key event
-            buttonSize           4-tuple used to specify custom size for
-                                 each button (to make bigger then geom/text
-                                 for example)
-            pad                  Space between border and interior graphics
-            topPad               Extra space added above text/geom/image
-            midPad               Extra space added between text/buttons
-            sidePad              Extra space added to either side of
-                                 text/buttons
-            buttonPadSF          Scale factor used to expand/contract
-                                 button horizontal spacing
-            command              Callback command used when a button is
-                                 pressed.  Value supplied to command
-                                 depends on values in buttonValueList
 
-         Note: Number of buttons on the dialog depends upon the maximum
-               length of any button[Text|Geom|Image|Value]List specified.
-               Values of None are substituted for lists that are shorter
-               than the max length
+        Parameters:
+            text (str): Text message/query displayed to user
+            geom: Geometry to be displayed in dialog
+            buttonTextList: List of text to show on each button
+            buttonGeomList: List of geometry to show on each button
+            buttonImageList: List of images to show on each button
+            buttonValueList: List of values sent to dialog command for
+                each button.  If value is [] then the ordinal rank of
+                the button is used as its value.
+            buttonHotKeyList: List of hotkeys to bind to each button.
+                Typing the hotkey is equivalent to pressing the
+                corresponding button.
+            suppressKeys: Set to true if you wish to suppress keys
+                (i.e. Dialog eats key event), false if you wish Dialog
+                to pass along key event.
+            buttonSize: 4-tuple used to specify custom size for each
+                button (to make bigger then geom/text for example)
+            pad: Space between border and interior graphics
+            topPad: Extra space added above text/geom/image
+            midPad: Extra space added between text/buttons
+            sidePad: Extra space added to either side of text/buttons
+            buttonPadSF: Scale factor used to expand/contract button
+                horizontal spacing
+            command: Callback command used when a button is pressed.
+                Value supplied to command depends on values in
+                buttonValueList.
+
+        Note:
+            The number of buttons on the dialog depends on the maximum
+            length of any button[Text|Geom|Image|Value]List specified.
+            Values of None are substituted for lists that are shorter
+            than the max length
          """
 
         # Inherits from DirectFrame
@@ -207,7 +212,7 @@ class DirectDialog(DirectFrame):
             image = None
         # Get size of text/geom without image (for state 0)
         if image:
-            image.reparentTo(hidden)
+            image.reparentTo(ShowBaseGlobal.hidden)
         bounds = self.stateNodePath[0].getTightBounds()
         if image:
             image.reparentTo(self.stateNodePath[0])

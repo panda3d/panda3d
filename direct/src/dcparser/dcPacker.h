@@ -19,7 +19,10 @@
 #include "dcSubatomicType.h"
 #include "dcPackData.h"
 #include "dcPackerCatalog.h"
-#include "dcPython.h"
+
+#ifdef WITHIN_PANDA
+#include "extension.h"
+#endif
 
 class DCClass;
 class DCSwitchParameter;
@@ -104,10 +107,8 @@ public:
 
 PUBLISHED:
 
-#ifdef HAVE_PYTHON
-  void pack_object(PyObject *object);
-  PyObject *unpack_object();
-#endif
+  EXTENSION(void pack_object(PyObject *object));
+  EXTENSION(PyObject *unpack_object());
 
   bool parse_and_pack(const std::string &formatted_object);
   bool parse_and_pack(std::istream &in);
@@ -195,14 +196,12 @@ private:
   void clear();
   void clear_stack();
 
-#ifdef HAVE_PYTHON
-  void pack_class_object(const DCClass *dclass, PyObject *object);
-  PyObject *unpack_class_object(const DCClass *dclass);
-  void set_class_element(PyObject *class_def, PyObject *&object,
-                         const DCField *field);
-  void get_class_element(const DCClass *dclass, PyObject *object,
-                         const DCField *field);
-#endif
+  EXTENSION(void pack_class_object(const DCClass *dclass, PyObject *object));
+  EXTENSION(PyObject *unpack_class_object(const DCClass *dclass));
+  EXTENSION(void set_class_element(PyObject *class_def, PyObject *&object,
+                                   const DCField *field));
+  EXTENSION(void get_class_element(const DCClass *dclass, PyObject *object,
+                                   const DCField *field));
 
 private:
   enum Mode {
@@ -223,7 +222,7 @@ private:
   const DCPackerCatalog *_catalog;
   const DCPackerCatalog::LiveCatalog *_live_catalog;
 
-  class StackElement {
+  class EXPCL_DIRECT_DCPARSER StackElement {
   public:
     // As an optimization, we implement operator new and delete here to
     // minimize allocation overhead during push() and pop().
@@ -258,6 +257,10 @@ private:
   bool _parse_error;
   bool _pack_error;
   bool _range_error;
+
+#ifdef WITHIN_PANDA
+  friend class Extension<DCPacker>;
+#endif
 };
 
 #include "dcPacker.I"

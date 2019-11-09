@@ -65,26 +65,30 @@ is_on(NotifySeverity severity) {
 /**
  *
  */
-#ifdef NOTIFY_DEBUG
 template<class GetCategory>
 INLINE bool NotifyCategoryProxy<GetCategory>::
 is_spam() {
+#ifdef NOTIFY_DEBUG
   // Instruct the compiler to optimize for the usual case.
   return UNLIKELY(get_unsafe_ptr()->is_spam());
-}
+#else
+  return false;
 #endif
+}
 
 /**
  *
  */
-#ifdef NOTIFY_DEBUG
 template<class GetCategory>
 INLINE bool NotifyCategoryProxy<GetCategory>::
 is_debug() {
+#ifdef NOTIFY_DEBUG
   // Instruct the compiler to optimize for the usual case.
   return UNLIKELY(get_unsafe_ptr()->is_debug());
-}
+#else
+  return false;
 #endif
+}
 
 /**
  *

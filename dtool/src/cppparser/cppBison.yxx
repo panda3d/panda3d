@@ -1220,6 +1220,35 @@ constructor_prototype:
 
   $$ = new CPPInstance(type, ii, 0, @1.file);
 }
+/* This is a hack to support functions with the identifier enveloped by a
+   pair of parentheses. */
+        | TYPENAME_IDENTIFIER '(' IDENTIFIER ')' '('
+{
+  // Create a scope for this function.
+  CPPScope *scope = new CPPScope($3->get_scope(current_scope, global_scope),
+                                 $3->_names.back(), V_private);
+
+  // It still needs to be able to pick up any template arguments, if this is
+  // a definition for a method template.  Add a fake "using" declaration to
+  // accomplish this.
+  scope->_using.insert(current_scope);
+
+  push_scope(scope);
+}
+        function_parameter_list ')' function_post
+{
+  pop_scope();
+  CPPType *type = $1->find_type(current_scope, global_scope, false, current_lexer);
+  if (type == nullptr) {
+    yyerror(string("internal error resolving type ") + $1->get_fully_scoped_name(), @1);
+  }
+  assert(type != nullptr);
+
+  CPPInstanceIdentifier *ii = new CPPInstanceIdentifier($3);
+  ii->add_func_modifier($7, $9);
+
+  $$ = new CPPInstance(type, ii, 0, @1.file);
+}
         | TYPENAME_IDENTIFIER '('
 {
   // Create a scope for this function.

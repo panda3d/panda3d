@@ -45,27 +45,25 @@ class FourStateAI:
 
     def __init__(self, names, durations = [0, 1, None, 1, 1]):
         """
-        names is a list of state names
-            E.g.
-                ['off', 'opening', 'open', 'closing', 'closed',]
+        Names is a list of state names.  Some examples are::
 
-            e.g. 2:
-                ['off', 'locking', 'locked', 'unlocking', 'unlocked',]
+            ['off', 'opening', 'open', 'closing', 'closed',]
 
-            e.g. 3:
-                ['off', 'deactivating', 'deactive', 'activating', 'activated',]
+            ['off', 'locking', 'locked', 'unlocking', 'unlocked',]
+
+            ['off', 'deactivating', 'deactive', 'activating', 'activated',]
 
         durations is a list of durations in seconds or None values.
-            The list of duration values should be the same length
-            as the list of state names and the lists correspond.
-            For each state, after n seconds, the ClassicFSM will move to
-            the next state.  That does not happen for any duration
-            values of None.
+        The list of duration values should be the same length
+        as the list of state names and the lists correspond.
+        For each state, after n seconds, the ClassicFSM will move to
+        the next state.  That does not happen for any duration
+        values of None.
 
-        More Details
+        .. rubric:: More Details
 
         Here is a diagram showing the where the names from the list
-        are used:
+        are used::
 
             +---------+
             | 0 (off) |----> (any other state and vice versa).

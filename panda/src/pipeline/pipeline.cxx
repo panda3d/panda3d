@@ -86,8 +86,8 @@ Pipeline::
 void Pipeline::
 cycle() {
 #ifdef THREADED_PIPELINE
-  if (pipeline_cat.is_debug()) {
-    pipeline_cat.debug()
+  if (pipeline_cat.is_spam()) {
+    pipeline_cat.spam()
       << "Beginning the pipeline cycle\n";
   }
 
