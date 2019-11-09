@@ -59,19 +59,27 @@ class DirectRadioButton(DirectButton):
         self.defineoptions(kw, optiondefs)
         # Initialize superclasses
         DirectButton.__init__(self, parent)
-        self.indicator = self.createcomponent("indicator", (), None,
-                                              DirectLabel, (self,),
-                                              numStates = 2,
-                                              image = self['boxImage'],
-                                              image_scale = self['boxImageScale'],
-                                              image_color = self['boxImageColor'],
-                                              geom = self['boxGeom'],
-                                              geom_scale = self['boxGeomScale'],
-                                              geom_color = self['boxGeomColor'],
-                                              state = 'disabled',
-                                              text = ('X', 'X'),
-                                              relief = self['boxRelief'],
-                                              )
+        
+        #another label...        
+        name="indicator"
+        componentGroup=None
+        args,kwargs=self.getComponentArgs(name, (), componentGroup,
+                     (self,),
+                      numStates = 2,
+                      image = self['boxImage'],
+                      image_scale = self['boxImageScale'],
+                      image_color = self['boxImageColor'],
+                      geom = self['boxGeom'],
+                      geom_scale = self['boxGeomScale'],
+                      geom_color = self['boxGeomColor'],
+                      state = 'disabled',
+                      text = ('X', 'X'),
+                      relief = self['boxRelief'],
+                      )
+        
+        self.indicator = DirectLabel(*args,**kwargs)
+        self.__componentInfo[name] = (self.indicator,self.indicatorconfigure,
+                DirectLabel.__name__, self.indicator.cget, componentGroup)
 
         # Call option initialization functions
         self.initialiseoptions(DirectRadioButton)

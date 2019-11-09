@@ -58,19 +58,20 @@ class DirectScrollBar(DirectFrame):
 
         # Initialize superclasses
         DirectFrame.__init__(self, parent)
-
-        self.thumb = self.createcomponent(
-            "thumb", (), None,
-            DirectButton, (self,),
-            borderWidth = self['borderWidth'])
-        self.incButton = self.createcomponent(
-            "incButton", (), None,
-            DirectButton, (self,),
-            borderWidth = self['borderWidth'])
-        self.decButton = self.createcomponent(
-            "decButton", (), None,
-            DirectButton, (self,),
-            borderWidth = self['borderWidth'])
+        
+        
+        #again, just some constructors
+        for x in ["thumb","incButton","decButton"]:
+            name=x
+            componentGroup=None
+            args,kwargs = self.getComponentArgs(
+                name, (), componentGroup,
+                 (self,),
+                borderWidth = self['borderWidth'])
+            self.__setattr__(name,DirectButton(*args,**kwargs))
+            self.__componentInfo[name] = (self.thumb, self.thumb.configure,
+                    DirectButton.__name__, self.thumb.cget, componentGroup)    
+        
 
         if self.decButton['frameSize'] == None and \
            self.decButton.bounds == [0.0, 0.0, 0.0, 0.0]:

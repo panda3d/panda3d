@@ -109,7 +109,7 @@ guiObjectCollector = PStatCollector("Client::GuiObjects")
 
 class DirectGuiBase(DirectObject.DirectObject):
     """Base class of all DirectGUI widgets."""
-
+    __componentInfo = {}
     def __init__(self):
         # Default id of all gui object, subclasses should override this
         self.guiId = 'guiObject'
@@ -486,45 +486,20 @@ class DirectGuiBase(DirectObject.DirectObject):
 
     # Allow index style refererences
     __getitem__ = cget
-
-    def createcomponent(self, componentName, componentAliases, componentGroup,
-                        widgetClass, *widgetArgs, **kw):
-        """
-        Create a component (during construction or later) for this widget.
-        """
-        # Check for invalid component name
-        if '_' in componentName:
-            raise ValueError('Component name "%s" must not contain "_"' % componentName)
-
+    
+    def getComponentArgs(self,
+                        componentName,
+                        componentAliases,
+                        componentGroup,
+                        *widgetArgs,
+                        **kw):
+        
         # Get construction keywords
         if hasattr(self, '_constructorKeywords'):
             keywords = self._constructorKeywords
         else:
             keywords = {}
-
-        for alias, component in componentAliases:
-            # Create aliases to the component and its sub-components.
-            index = component.find('_')
-            if index < 0:
-                # Just a shorter name for one of this widget's components
-                self.__componentAliases[alias] = (component, None)
-            else:
-                # An alias for a component of one of this widget's components
-                mainComponent = component[:index]
-                subComponent = component[(index + 1):]
-                self.__componentAliases[alias] = (mainComponent, subComponent)
-
-            # Remove aliases from the constructor keyword arguments by
-            # replacing any keyword arguments that begin with *alias*
-            # with corresponding keys beginning with *component*.
-            alias = alias + '_'
-            aliasLen = len(alias)
-            for option in keywords.copy():
-                if len(option) > aliasLen and option[:aliasLen] == alias:
-                    newkey = component + '_' + option[aliasLen:]
-                    keywords[newkey] = keywords[option]
-                    del keywords[option]
-
+        
         # Find any keyword arguments for this component
         componentPrefix = componentName + '_'
         nameLen = len(componentPrefix)
@@ -559,18 +534,71 @@ class DirectGuiBase(DirectObject.DirectObject):
                 # And delete it from main construction keywords
                 del keywords[option]
 
-        # Return None if no widget class is specified
-        if widgetClass is None:
-            return None
+        
         # Get arguments for widget constructor
         if len(widgetArgs) == 1 and type(widgetArgs[0]) == tuple:
             # Arguments to the constructor can be specified as either
             # multiple trailing arguments to createcomponent() or as a
             # single tuple argument.
+            
+            # ^ that, is *awful*
             widgetArgs = widgetArgs[0]
+        return widgetArgs,kw
+        
+    def createcomponent(self, 
+                        componentName,
+                        componentAliases,
+                        componentGroup,# I think this will always be either text, image or geom?
+                        widgetClass,#this will never be None.
+                        *widgetArgs,
+                        **kw):
+        """
+        Create a component (during construction or later) for this widget.
+        """
+        assert widgetClass != None
+        # Return None if no widget class is specified
+        if widgetClass is None:
+            return None
+        
+        assert componentGroup in ["text","image","geom",'componentGroup',None,"item"]
+        # Check for invalid component name
+        if '_' in componentName:
+            raise ValueError('Component name "%s" must not contain "_"' % componentName)
+
+        
+        assert len(componentAliases)==0
+        # so this bit below will NEVER execute... huh...
+        for alias, component in componentAliases:
+            # Create aliases to the component and its sub-components.
+            index = component.find('_')
+            if index < 0:
+                # Just a shorter name for one of this widget's components
+                self.__componentAliases[alias] = (component, None)
+            else:
+                # An alias for a component of one of this widget's components
+                mainComponent = component[:index]
+                subComponent = component[(index + 1):]
+                self.__componentAliases[alias] = (mainComponent, subComponent)
+
+            # Remove aliases from the constructor keyword arguments by
+            # replacing any keyword arguments that begin with *alias*
+            # with corresponding keys beginning with *component*.
+            alias = alias + '_'
+            aliasLen = len(alias)
+            for option in keywords.copy():
+                if len(option) > aliasLen and option[:aliasLen] == alias:
+                    newkey = component + '_' + option[aliasLen:]
+                    keywords[newkey] = keywords[option]
+                    del keywords[option]
+        
+        
+        widgetArgs,kw=self.getComponentArgs(componentName,componentAliases,componentGroup,*widgetArgs,**kw)
         # Create the widget
         widget = widgetClass(*widgetArgs, **kw)
+        
         componentClass = widget.__class__.__name__
+        #so... the second and forth index will ALWAYS be cget and configure.
+        #nonsense
         self.__componentInfo[componentName] = (widget, widget.configure,
                 componentClass, widget.cget, componentGroup)
         return widget
@@ -678,7 +706,8 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         inactiveInitState = DGG.DISABLED
 
     guiDict = {}
-
+    __componentInfo = {}
+    
     def __init__(self, parent = None, **kw):
         # Direct gui widgets are node paths
         # Direct gui widgets have:
