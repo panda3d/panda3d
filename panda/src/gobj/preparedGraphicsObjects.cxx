@@ -1674,10 +1674,7 @@ cache_unprepared_buffer(BufferContext *buffer, size_t data_size_bytes,
            (int)buffer_cache_size > released_buffer_cache_size) {
       BufferContext *released_buffer = buffer_list.back();
       buffer_list.pop_back();
-      if (released_buffer->_object != nullptr) {
-        released_buffer->_object = nullptr;
-        released_buffers.push_back(released_buffer);
-      }
+      released_buffers.push_back(released_buffer);
       buffer_cache_size -= release_key._data_size_bytes;
     }
 
