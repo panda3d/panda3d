@@ -63,8 +63,8 @@ class DirectSlider(DirectFrame):
         componentGroup=None
         args,kwargs = self.getComponentArgs(name, (), componentGroup, (self,),borderWidth = self['borderWidth'])
         self.incButton = DirectButton(*args,*kwargs)
-        self.__componentInfo[name]=(self.incButton, self.incButton.configure,
-                    DirectButton.__name__, self.incButton.cget, componentGroup) 
+        self.__componentInfo[name]=self.incButton
+        self.incButton.group=componentGroup
         
         if self.thumb['frameSize'] == None and \
            self.thumb.bounds == [0.0, 0.0, 0.0, 0.0]:

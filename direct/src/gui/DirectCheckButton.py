@@ -64,8 +64,8 @@ class DirectCheckButton(DirectButton):
         self.indicator=DirectLabel(self,*args,**kwargs)
         #this is something createcomponent did, not sure why, 
         #let's keep it in place for now.
-        self.__componentInfo[name] = (self.indicator, self.indicator.configure,
-                DirectLabel.__name__, self.indicator.cget, componentGroup)
+        self.__componentInfo[name] = self.indicator
+        self.indicator.group=componentGroup
 
         # Call option initialization functions
         self.initialiseoptions(DirectCheckButton)

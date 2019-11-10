@@ -78,8 +78,8 @@ class DirectRadioButton(DirectButton):
                       )
         
         self.indicator = DirectLabel(*args,**kwargs)
-        self.__componentInfo[name] = (self.indicator,self.indicatorconfigure,
-                DirectLabel.__name__, self.indicator.cget, componentGroup)
+        self.__componentInfo[name] = self.indicator
+        self.indicator.group=componentGroup
 
         # Call option initialization functions
         self.initialiseoptions(DirectRadioButton)

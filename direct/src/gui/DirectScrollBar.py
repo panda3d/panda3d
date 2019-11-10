@@ -69,8 +69,8 @@ class DirectScrollBar(DirectFrame):
                  (self,),
                 borderWidth = self['borderWidth'])
             self.__setattr__(name,DirectButton(*args,**kwargs))
-            self.__componentInfo[name] = (self.thumb, self.thumb.configure,
-                    DirectButton.__name__, self.thumb.cget, componentGroup)    
+            self.__componentInfo[name] = self.thumb
+            self.thumb.group=componentGroup  
         
 
         if self.decButton['frameSize'] == None and \

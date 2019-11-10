@@ -185,9 +185,8 @@ class DirectDialog(DirectFrame):
                 )
                 
             button=DirectButton(self,*args,**kwagrs)
-            
-            self.__componentInfo[name] = (button, button.configure,
-                DirectButton.__name__, button.cget, componentGroup)
+            self.__componentInfo[name] = button
+            button.group=componentGroup
             
             self.buttonList.append(button)
 

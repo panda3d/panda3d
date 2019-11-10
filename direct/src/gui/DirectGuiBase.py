@@ -338,8 +338,7 @@ class DirectGuiBase(DirectObject.DirectObject):
         # optimizations:
         optionInfo = self._optionInfo
         optionInfo_has_key = optionInfo.__contains__
-        componentInfo = self.__componentInfo
-        componentInfo_has_key = componentInfo.__contains__
+                
         componentAliases = self.__componentAliases
         componentAliases_has_key = componentAliases.__contains__
         VALUE = DGG._OPT_VALUE
@@ -393,27 +392,25 @@ class DirectGuiBase(DirectObject.DirectObject):
                         # Expand option string to write on error
                         # option = entryField_entry_width
                         option = component + '_' + componentOption
-
+                    
+                    component_name=component
+                    componentConfigFuncs=[]
                     # Does this component exist
-                    if componentInfo_has_key(component):
-                        # Get the configure func for the named component
-                        # component = entryField
-                        componentConfigFuncs = [componentInfo[component][1]]
+                    if component_name in self.__componentInfo:
+                        componentConfigFuncs.append(self.__componentInfo[component_name].configure)
                     else:
-                        # Check if this is a group name and configure all
-                        # components in the group.
-                        componentConfigFuncs = []
-                        # For each component
-                        for info in componentInfo.values():
-                            # Check if it is a member of this group
-                            if info[4] == component:
-                                # Yes, append its config func
-                                componentConfigFuncs.append(info[1])
-
+                        for key in self.__componentInfo:
+                            if self.__componentInfo[key].group == component_name:
+                                componentConfigFuncs.append(self.__componentInfo[key].configure)
+                        
                         if len(componentConfigFuncs) == 0 and \
                                 component not in self._dynamicGroups:
                             raise KeyError('Unknown option "' + option + \
-                                    '" for ' + self.__class__.__name__)
+                                    '" for ' + self.__class__.__name__ +"args\n"+
+                                    str(self.__componentInfo[key].group)+"\n"+
+                                    str(self.__componentInfo[key])+"\n"+
+                                    str(self.__componentInfo)+"\n"+
+                                    str(key))
 
                     # Add the configure method(s) (may be more than
                     # one if this is configuring a component group)
@@ -470,14 +467,14 @@ class DirectGuiBase(DirectObject.DirectObject):
 
                 if component in self.__componentInfo:
                     # Call cget on the component.
-                    componentCget = self.__componentInfo[component][3]
+                    componentCget = self.__componentInfo[component].cget
                     return componentCget(componentOption)
                 else:
                     # If this is a group name, call cget for one of
                     # the components in the group.
-                    for info in self.__componentInfo.values():
-                        if info[4] == component:
-                            componentCget = info[3]
+                    for component_name in self.__componentInfo:
+                        if self.__componentInfo[component_name].group == component:
+                            componentCget = self.__componentInfo[component_name].cget
                             return componentCget(componentOption)
 
         # Option not found
@@ -591,16 +588,13 @@ class DirectGuiBase(DirectObject.DirectObject):
                     keywords[newkey] = keywords[option]
                     del keywords[option]
         
-        
         widgetArgs,kw=self.getComponentArgs(componentName,componentAliases,componentGroup,*widgetArgs,**kw)
         # Create the widget
         widget = widgetClass(*widgetArgs, **kw)
-        
-        componentClass = widget.__class__.__name__
-        #so... the second and forth index will ALWAYS be cget and configure.
-        #nonsense
-        self.__componentInfo[componentName] = (widget, widget.configure,
-                componentClass, widget.cget, componentGroup)
+        self.__componentInfo[componentName] = widget
+        widget.group=componentGroup
+        if componentGroup=="text":
+            assert widget.group=="text"
         return widget
 
     def component(self, name):
@@ -631,7 +625,7 @@ class DirectGuiBase(DirectObject.DirectObject):
                     remainingComponents = subComponent + '_' \
                             + remainingComponents
         # Get the component from __componentInfo dictionary
-        widget = self.__componentInfo[component][0]
+        widget = self.__componentInfo[component]
         if remainingComponents is None:
             # Not looking for subcomponent
             return widget
@@ -645,19 +639,20 @@ class DirectGuiBase(DirectObject.DirectObject):
         names.sort()
         return names
 
-    def hascomponent(self, component):
-        return component in self.__componentInfo
+    def hascomponent(self, component_name):
+        return component_name in self.__componentInfo
 
     def destroycomponent(self, name):
         # Remove a megawidget component.
         # This command is for use by megawidget designers to destroy a
         # megawidget component.
-        self.__componentInfo[name][0].destroy()
+        self.__componentInfo[name].destroy()
         del self.__componentInfo[name]
 
     def destroy(self):
         # Clean out any hooks
         self.ignoreAll()
+        #do we need this?
         del self._optionInfo
         del self.__componentInfo
         del self.postInitialiseFuncList

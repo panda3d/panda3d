@@ -65,8 +65,8 @@ class DirectScrolledFrame(DirectFrame):
             frameSize = (-w / 2.0, w / 2.0, -1, 1),
             orientation = DGG.VERTICAL)
         self.verticalScroll=DirectScrollBar(args,**kwargs)
-        self.__componentInfo[name]=(self.verticalScroll, self.verticalScroll.configure,
-                    DirectScrollBar.__name__, self.verticalScroll.cget, componentGroup)    
+        self.__componentInfo[name]=self.verticalScroll
+        self.verticalScroll.group=componentGroup 
         
         name="horizontalScroll"
         componentGroup=None
@@ -76,9 +76,10 @@ class DirectScrolledFrame(DirectFrame):
             borderWidth = self['borderWidth'],
             frameSize = (-1, 1, -w / 2.0, w / 2.0),
             orientation = DGG.HORIZONTAL)
+            
         self.verticalScroll=DirectScrollBar(args,**kwargs)
-        self.__componentInfo[name]=(self.verticalScroll, self.verticalScroll.configure,
-                    DirectScrollBar.__name__, self.verticalScroll.cget, componentGroup)  
+        self.__componentInfo[name]=self.verticalScroll
+        self.verticalScroll.group=componentGroup
 
         
         self.guiItem.setVerticalSlider(self.verticalScroll.guiItem)
