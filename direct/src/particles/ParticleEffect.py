@@ -221,10 +221,13 @@ class ParticleEffect(NodePath):
         for particles in self.getParticlesList():
             particles.softStop()
 
-    def softStart(self):
+    def softStart(self, firstBirthDelay=None):
         if self.__isValid():
             for particles in self.getParticlesList():
-                particles.softStart()
+                if firstBirthDelay is not None:
+                    particles.softStart(br=-1, first_birth_delay=firstBirthDelay)
+                else:
+                    particles.softStart()
         else:
             # Not asserting here since we want to crash live clients for more expedient bugfix
             # (Sorry, live clients)
