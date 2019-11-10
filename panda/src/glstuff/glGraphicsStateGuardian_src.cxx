@@ -7196,15 +7196,21 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
     z_size = 1;
   }
 
+  int num_views = tex->get_num_views();
   if (tex->get_x_size() != w || tex->get_y_size() != h ||
       tex->get_z_size() != z_size ||
       tex->get_component_type() != component_type ||
       tex->get_format() != format ||
-      tex->get_texture_type() != texture_type) {
+      tex->get_texture_type() != texture_type ||
+      view >= num_views) {
 
-    // Re-setup the texture; its properties have changed.
-    tex->setup_texture(texture_type, w, h, z_size,
-                       component_type, format);
+    tex->setup_texture(texture_type, w, h, z_size, component_type, format);
+
+    // The above resets the number of views to 1, so set this back.
+    num_views = std::max(view + 1, num_views);
+    if (num_views > 1) {
+      tex->set_num_views(num_views);
+    }
   }
 
   nassertr(z < tex->get_z_size(), false);
@@ -7276,6 +7282,7 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
     }
     if (view > 0) {
       image_ptr += (view * tex->get_z_size()) * image_size;
+      nassertr(view < tex->get_num_views(), false);
     }
   }
 
