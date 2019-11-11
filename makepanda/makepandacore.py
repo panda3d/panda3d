@@ -3039,7 +3039,7 @@ def SetupBuildEnvironment(compiler):
         if GetHost() == 'darwin':
             for i in dyldpath[:]:
                 if i.startswith("/Applications/Panda3D") or \
-                   i.startswith("/Developer/Panda3D"):
+                   i.startswith("/Library/Developer/Panda3D"):
                     dyldpath.remove(i)
 
         # Add built/lib/ to (DY)LD_LIBRARY_PATH
