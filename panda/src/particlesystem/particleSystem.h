@@ -83,6 +83,7 @@ PUBLISHED:
   INLINE BaseParticleEmitter *get_emitter() const;
   INLINE BaseParticleFactory *get_factory() const;
   INLINE PN_stdfloat get_floor_z() const;
+  INLINE PN_stdfloat get_tics_since_birth() const;
 
   // particle template vector
 
@@ -96,6 +97,7 @@ PUBLISHED:
   INLINE void clear_to_initial();
   INLINE void soft_stop(PN_stdfloat br = 0.0);
   INLINE void soft_start(PN_stdfloat br = 0.0);
+  INLINE void soft_start(PN_stdfloat br, PN_stdfloat first_birth_delay);
   void update(PN_stdfloat dt);
 
   virtual void output(std::ostream &out) const;

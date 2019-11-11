@@ -600,3 +600,17 @@ class Particles(ParticleSystem):
                 base.physicsMgr.doPhysics(remainder,self)
 
             self.render()
+
+    # Snake-case aliases.
+    is_enabled = isEnabled
+    set_factory = setFactory
+    set_renderer = setRenderer
+    set_emitter = setEmitter
+    add_force = addForce
+    remove_force = removeForce
+    set_render_node_path = setRenderNodePath
+    get_factory = getFactory
+    get_emitter = getEmitter
+    get_renderer = getRenderer
+    print_params = printParams
+    get_pool_size_ranges = getPoolSizeRanges

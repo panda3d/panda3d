@@ -20,7 +20,13 @@ TypeHandle IndexBufferContext::_type_handle;
  */
 void IndexBufferContext::
 output(std::ostream &out) const {
-  out << *get_data() << ", " << get_data_size_bytes();
+  GeomPrimitive *prim = get_data();
+  if (prim != nullptr) {
+    out << *prim;
+  } else {
+    out << "NULL";
+  }
+  out << ", " << get_data_size_bytes();
 }
 
 /**
