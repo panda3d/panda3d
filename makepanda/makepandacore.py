@@ -1756,7 +1756,7 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
         prefix = SDK["MACOSX"]
         if (os.path.isdir(prefix + "/Library/Frameworks/%s.framework" % framework) or
             os.path.isdir(prefix + "/System/Library/Frameworks/%s.framework" % framework) or
-            os.path.isdir(prefix + "/Developer/Library/Frameworks/%s.framework" % framework) or
+            os.path.isdir(prefix + "/Library/Developer/CommandLineTools/Library/Frameworks/%s.framework" % framework) or
             os.path.isdir(prefix + "/Users/%s/System/Library/Frameworks/%s.framework" % (getpass.getuser(), framework))):
             LibName(target_pkg, "-framework " + framework)
             for d, v in defs.values():
@@ -2383,20 +2383,20 @@ def SdkLocateMacOSX(osxtarget = None):
     if (GetHost() != "darwin"): return
     if (osxtarget != None):
         sdkname = "MacOSX%d.%d" % osxtarget
-        if (os.path.exists("/Developer/SDKs/%su.sdk" % sdkname)):
-            SDK["MACOSX"] = "/Developer/SDKs/%su.sdk" % sdkname
-        elif (os.path.exists("/Developer/SDKs/%s.sdk" % sdkname)):
-            SDK["MACOSX"] = "/Developer/SDKs/%s.sdk" % sdkname
-        elif (os.path.exists("/Developer/SDKs/%s.0.sdk" % sdkname)):
-            SDK["MACOSX"] = "/Developer/SDKs/%s.0.sdk" % sdkname
+        if (os.path.exists("/Library/Developer/CommandLineTools/SDKs/%su.sdk" % sdkname)):
+            SDK["MACOSX"] = "/Library/Developer/CommandLineTools/SDKs/%su.sdk" % sdkname
+        elif (os.path.exists("/Library/Developer/CommandLineTools/SDKs/%s.sdk" % sdkname)):
+            SDK["MACOSX"] = "/Library/Developer/CommandLineTools/SDKs/%s.sdk" % sdkname
+        elif (os.path.exists("/Library/Developer/CommandLineTools/SDKs/%s.0.sdk" % sdkname)):
+            SDK["MACOSX"] = "/Library/Developer/CommandLineTools/SDKs/%s.0.sdk" % sdkname
         elif (os.path.exists("/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/%s.sdk" % sdkname)):
             SDK["MACOSX"] = "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/%s.sdk" % sdkname
         else:
             handle = os.popen("xcode-select -print-path")
             result = handle.read().strip().rstrip('/')
             handle.close()
-            if (os.path.exists("%s/Platforms/MacOSX.platform/Developer/SDKs/%s.sdk" % (result, sdkname))):
-                SDK["MACOSX"] = "%s/Platforms/MacOSX.platform/Developer/SDKs/%s.sdk" % (result, sdkname)
+            if (os.path.exists("%s/SDKs/%s.sdk" % (result, sdkname))):
+                SDK["MACOSX"] = "%s/SDKs/%s.sdk" % (result, sdkname)
             else:
                 exit("Couldn't find any MacOSX SDK for OSX version %s!" % sdkname)
     else:

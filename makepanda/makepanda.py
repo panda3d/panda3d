@@ -1878,7 +1878,7 @@ def CompileRsrc(target, src, opts):
     if os.path.isfile("/usr/bin/Rez"):
         cmd = "Rez -useDF"
     else:
-        cmd = "/Developer/Tools/Rez -useDF"
+        cmd = "/Library/Developer/CommandLineTools/usr/bin/Rez -useDF"
     cmd += " -o " + BracketNameWithQuotes(target)
     for x in ipath:
         cmd += " -i " + x
