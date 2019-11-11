@@ -365,7 +365,7 @@ class build_apps(setuptools.Command):
         tmp.update(self.file_handlers)
         self.file_handlers = tmp
 
-        tmp = self.package_data_dirs.copy()
+        tmp = PACKAGE_DATA_DIRS.copy()
         tmp.update(self.package_data_dirs)
         self.package_data_dirs = tmp
 
