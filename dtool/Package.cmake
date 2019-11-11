@@ -22,14 +22,17 @@ if(THIRDPARTY_DIRECTORY)
     if(CMAKE_SIZEOF_VOID_P EQUAL 8)
       set(_package_dir "${THIRDPARTY_DIRECTORY}/win-libs-vc14-x64")
 
-      file(GLOB Python_ROOT "${THIRDPARTY_DIRECTORY}/win-python*-x64")
+      file(GLOB _python_dirs "${THIRDPARTY_DIRECTORY}/win-python*-x64")
     else()
       set(_package_dir "${THIRDPARTY_DIRECTORY}/win-libs-vc14")
 
-      file(GLOB Python_ROOT "${THIRDPARTY_DIRECTORY}/win-python*")
+      file(GLOB _python_dirs "${THIRDPARTY_DIRECTORY}/win-python*")
     endif()
 
-    list(REVERSE Python_ROOT) # Descending order of version
+    list(REVERSE _python_dirs) # Descending order of version
+    if(NOT DEFINED Python_ROOT)
+      set(Python_ROOT "${_python_dirs}")
+    endif()
 
     set(BISON_ROOT "${THIRDPARTY_DIRECTORY}/win-util")
     set(FLEX_ROOT "${THIRDPARTY_DIRECTORY}/win-util")
