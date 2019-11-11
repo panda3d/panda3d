@@ -120,7 +120,7 @@ if(Python_FOUND)
   set(PYTHON_LIBRARY_DIRS ${Python_LIBRARY_DIRS})
   set(PYTHON_VERSION_STRING ${Python_VERSION})
 
-else()
+elseif(CMAKE_VERSION VERSION_LESS "3.12")
   find_package(PythonInterp ${WANT_PYTHON_VERSION} QUIET)
   find_package(PythonLibs ${PYTHON_VERSION_STRING} QUIET)
 
