@@ -11,7 +11,7 @@ if(THIRDPARTY_DIRECTORY)
 
   if(NOT _policy_cmp0074 STREQUAL "NEW")
     message(FATAL_ERROR
-      "Your version of CMake is too old; please upgrade or unset THIRDPARTY_DIRCTORY to continue.")
+      "Your version of CMake is too old; please upgrade or unset THIRDPARTY_DIRECTORY to continue.")
   endif()
 
   # Dig up the actual "libs" directory
