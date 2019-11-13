@@ -1,4 +1,4 @@
-if(NOT HAVE_EGL OR NOT HAVE_X11)
+if(NOT HAVE_EGL AND NOT HAVE_X11)
   return()
 endif()
 
