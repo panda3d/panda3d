@@ -95,6 +95,26 @@ target_link_libraries(interrogate_module p3cppParser p3interrogatedb
 if(NOT CMAKE_CROSSCOMPILING)
   add_executable(host_interrogate ALIAS interrogate)
   add_executable(host_interrogate_module ALIAS interrogate_module)
+
+else()
+  # When cross-compiling, we must find the host Interrogate.
+  # TODO: We should also try to find_package(Panda3D ...) before falling back
+  # to searching manually.
+  find_program(HOST_PATH_INTERROGATE interrogate)
+  find_program(HOST_PATH_INTERROGATE_MODULE interrogate_module)
+
+  add_executable(host_interrogate IMPORTED GLOBAL)
+  if(HOST_PATH_INTERROGATE)
+    set_target_properties(host_interrogate PROPERTIES
+      IMPORTED_LOCATION "${HOST_PATH_INTERROGATE}")
+  endif()
+
+  add_executable(host_interrogate_module IMPORTED GLOBAL)
+  if(HOST_PATH_INTERROGATE_MODULE)
+    set_target_properties(host_interrogate_module PROPERTIES
+      IMPORTED_LOCATION "${HOST_PATH_INTERROGATE_MODULE}")
+  endif()
+
 endif()
 
 if(WANT_INTERROGATE)

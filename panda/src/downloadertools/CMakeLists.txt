@@ -22,6 +22,15 @@ if(HAVE_ZLIB)
 
   if(NOT CMAKE_CROSSCOMPILING)
     add_executable(host_pzip ALIAS pzip)
+  else()
+    find_program(HOST_PATH_PZIP pzip)
+
+    add_executable(host_pzip IMPORTED GLOBAL)
+    if(HOST_PATH_PZIP)
+      set_target_properties(host_pzip PROPERTIES
+        IMPORTED_LOCATION "${HOST_PATH_PZIP}")
+    endif()
+
   endif()
 
   add_executable(punzip punzip.cxx)
