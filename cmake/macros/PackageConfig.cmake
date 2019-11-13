@@ -417,6 +417,11 @@ function(export_packages filename)
     set(exports "${exports})\n")
   endforeach(pkg)
 
+  # file(GENERATE) does not like $<LINK_ONLY:...> (and it's meant to be
+  # consumed by our importer) so we escape it
+  set(_bling "$<1:$>") # genex-escaped $
+  string(REPLACE "$<LINK_ONLY:" "${_bling}<LINK_ONLY:" exports "${exports}")
+
   file(GENERATE OUTPUT "${filename}" CONTENT "${exports}")
 endfunction(export_packages)
 
