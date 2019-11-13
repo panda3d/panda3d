@@ -233,7 +233,7 @@ PN_stdfloat BulletWheel::
 get_steering() const {
   LightMutexHolder holder(BulletWorld::get_global_lock());
 
-  return (PN_stdfloat)_info.m_steering;
+  return rad_2_deg((PN_stdfloat)_info.m_steering);
 }
 
 /**
