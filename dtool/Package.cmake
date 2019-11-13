@@ -3,6 +3,8 @@ set(THIRDPARTY_DIRECTORY "" CACHE PATH
    located here will be prioritized over system libraries. Useful for
    cross-compiling.")
 
+set(THIRDPARTY_DLLS)
+
 if(THIRDPARTY_DIRECTORY)
   # This policy is necessary for PackageName_ROOT variables to be respected
   if(POLICY CMP0074)
@@ -78,6 +80,7 @@ if(THIRDPARTY_DIRECTORY)
   )
 
     string(TOLOWER "${_Package}" _package)
+    string(TOUPPER "${_Package}" _PACKAGE)
 
     # Some packages in the thirdparty dir have different subdirectory names from
     # the name of the CMake package
@@ -100,9 +103,43 @@ if(THIRDPARTY_DIRECTORY)
     # Set search path
     set(${_Package}_ROOT "${_package_dir}/${_package}")
 
+    # Set up copying DLLs, if necessary
+    file(GLOB _dlls "${${_Package}_ROOT}/bin/*.dll")
+    if(_dlls)
+      set(_havevar "HAVE_${_PACKAGE}")
+      set(THIRDPARTY_DLLS_${_havevar} "${_dlls}")
+      list(APPEND THIRDPARTY_DLLS "${_havevar}")
+
+    endif()
+
   endforeach(_Package)
 
 endif()
+
+# This is used to copy the DLLs alongside the output of `package`
+function(thirdparty_copy_alongside package)
+  set(_dlls)
+
+  foreach(_havevar ${THIRDPARTY_DLLS})
+    if(${_havevar})
+      list(APPEND _dlls ${THIRDPARTY_DLLS_${_havevar}})
+    endif()
+  endforeach(_havevar)
+
+  if(NOT _dlls)
+    # Don't try to copy/install nothingness
+    return()
+  endif()
+
+  add_custom_command(TARGET ${package} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+      ${_dlls} $<TARGET_FILE_DIR:${package}>
+  )
+
+  # Also install the DLLs
+  install(FILES ${_dlls} DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+endfunction(thirdparty_copy_alongside)
 
 #
 # ------------ Python ------------

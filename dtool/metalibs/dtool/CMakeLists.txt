@@ -8,3 +8,6 @@ install(TARGETS p3dtool
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
   INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d
   ARCHIVE COMPONENT CoreDevel)
+
+# Also handle thirdparty DLLs
+thirdparty_copy_alongside(p3dtool)
