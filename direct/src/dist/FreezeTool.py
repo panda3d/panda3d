@@ -785,7 +785,7 @@ class Freezer:
         # already-imported modules.  (Some of them might do their own
         # special path mangling.)
         for moduleName, module in list(sys.modules.items()):
-            if module and hasattr(module, '__path__'):
+            if module and getattr(module, '__path__', None) is not None:
                 path = list(getattr(module, '__path__'))
                 if path:
                     modulefinder.AddPackagePath(moduleName, path[0])
