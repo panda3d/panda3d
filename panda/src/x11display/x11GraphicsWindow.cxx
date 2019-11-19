@@ -538,6 +538,29 @@ process_events() {
       }
   }
 
+  // Check if this window is maximized or not
+  bool is_maximized = false;
+  Atom wmState = XInternAtom(_display, "_NET_WM_STATE", True);
+  Atom type;
+  int format;
+  unsigned long nItem, bytesAfter;
+  unsigned char *new_window_properties = NULL;
+  XGetWindowProperty(_display, _xwindow, wmState, 0, LONG_MAX, false, AnyPropertyType, &type, &format, &nItem, &bytesAfter, &new_window_properties);
+  if (nItem > 0) {
+    x11GraphicsPipe *x11_pipe;
+    DCAST_INTO_V(x11_pipe, _pipe);
+    for (unsigned long iItem = 0; iItem < nItem; ++iItem) {
+      unsigned long item = reinterpret_cast<unsigned long *>(new_window_properties)[iItem];
+      if (item == x11_pipe->_net_wm_state_maximized_horz ||
+          item == x11_pipe->_net_wm_state_maximized_vert) {
+        is_maximized = true;
+      }
+    }
+  }
+  std::cout << "set maximized to = " << is_maximized << std::endl;
+  properties.set_maximized(is_maximized);
+  if (is_maximized) changed_properties = true;
+
   if (changed_properties) {
     system_changed_properties(properties);
   }

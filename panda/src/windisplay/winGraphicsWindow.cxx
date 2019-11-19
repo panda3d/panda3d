@@ -401,9 +401,11 @@ set_properties_now(WindowProperties &properties) {
   }
 
   if (properties.has_maximized()) {
-    if (properties.get_maximized() != properties.get_maximized()) {
+    if (_properties.get_maximized() != properties.get_maximized()) {
       if (properties.get_maximized()) {
         ShowWindow(_hWnd, SW_MAXIMIZE);
+      } else {
+        ShowWindow(_hWnd, SW_RESTORE);
       }
       _properties.set_maximized(properties.get_maximized());
     }
