@@ -20,6 +20,9 @@ if(THIRDPARTY_DIRECTORY)
   if(APPLE)
     set(_package_dir "${THIRDPARTY_DIRECTORY}/darwin-libs-a")
 
+    # Make sure thirdparty has the first shot, not system frameworks
+    set(CMAKE_FIND_FRAMEWORK LAST)
+
   elseif(WIN32)
     if(CMAKE_SIZEOF_VOID_P EQUAL 8)
       set(_package_dir "${THIRDPARTY_DIRECTORY}/win-libs-vc14-x64")
