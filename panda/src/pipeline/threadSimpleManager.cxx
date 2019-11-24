@@ -19,7 +19,7 @@
 #include "blockerSimple.h"
 #include "mainThread.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN 1
 #endif
@@ -355,7 +355,7 @@ remove_thread(ThreadSimpleImpl *thread) {
  */
 void ThreadSimpleManager::
 system_sleep(double seconds) {
-#ifdef WIN32
+#ifdef _WIN32
   Sleep((int)(seconds * 1000 + 0.5));
 
 #else
@@ -372,7 +372,7 @@ system_sleep(double seconds) {
   tv.tv_sec = time_t(seconds);
   tv.tv_usec = long((seconds - (double)tv.tv_sec) * 1000000.0 + 0.5);
   select(0, nullptr, nullptr, nullptr, &tv);
-#endif  // WIN32
+#endif  // _WIN32
 }
 
 /**

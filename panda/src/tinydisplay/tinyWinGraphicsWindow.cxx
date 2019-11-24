@@ -13,7 +13,7 @@
 
 #include "pandabase.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 
 #include "tinyWinGraphicsWindow.h"
 #include "config_tinydisplay.h"
@@ -276,4 +276,4 @@ setup_bitmap_info() {
   _bitmap_info.bmiHeader.biClrImportant = 0;
 }
 
-#endif  // WIN32
+#endif  // _WIN32

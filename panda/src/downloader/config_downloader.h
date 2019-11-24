@@ -24,6 +24,18 @@
 #include "configVariableFilename.h"
 #include "configVariableList.h"
 
+/**
+ * For some reason in msys those two macros are not defined correctly in the
+ * header file ws2tcpip.h
+ */
+#ifndef AI_ADDRCONFIG
+#define AI_ADDRCONFIG 0x00000400
+#endif
+
+#ifndef AI_V4MAPPED
+#define AI_V4MAPPED 0x00000800
+#endif
+
 ConfigureDecl(config_downloader, EXPCL_PANDA_DOWNLOADER, EXPTP_PANDA_DOWNLOADER);
 NotifyCategoryDecl(downloader, EXPCL_PANDA_DOWNLOADER, EXPTP_PANDA_DOWNLOADER);
 

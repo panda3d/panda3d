@@ -1631,7 +1631,7 @@ close_read_subfile(istream *stream) {
     // stream pointer does not call the appropriate global delete function;
     // instead apparently calling the system delete function.  So we call the
     // delete function by hand instead.
-#if !defined(WIN32_VC) && !defined(USE_MEMORY_NOWRAPPERS) && defined(REDEFINE_GLOBAL_OPERATOR_NEW)
+#if !defined(_WIN32) && !defined(USE_MEMORY_NOWRAPPERS) && defined(REDEFINE_GLOBAL_OPERATOR_NEW)
     stream->~istream();
     (*global_operator_delete)(stream);
 #else

@@ -16,7 +16,7 @@
 
 #include "pandabase.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 
 #include "winGraphicsPipe.h"
 #include "tinyGraphicsStateGuardian.h"
@@ -64,6 +64,6 @@ private:
 
 #include "tinyWinGraphicsPipe.I"
 
-#endif  // WIN32
+#endif  // _WIN32
 
 #endif

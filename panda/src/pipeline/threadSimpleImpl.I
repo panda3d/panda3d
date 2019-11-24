@@ -29,7 +29,7 @@ is_same_system_thread() const {
 #ifdef HAVE_POSIX_THREADS
   return pthread_equal(_posix_system_thread_id, pthread_self());
 #endif
-#ifdef WIN32
+#ifdef _WIN32
   return (_win32_system_thread_id == GetCurrentThreadId());
 #endif
   return true;

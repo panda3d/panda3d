@@ -16,6 +16,9 @@ vgcore.*
 *.save.1
 *.sublime-workspace
 .vscode/
+.cproject
+.project
+.settings
 
 # Temporary build files
 /_vfsimporter.*

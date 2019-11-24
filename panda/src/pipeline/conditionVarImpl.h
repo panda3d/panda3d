@@ -46,7 +46,7 @@ typedef ConditionVarPosixImpl ConditionVarImpl;
 
 typedef ConditionVarImpl ConditionVarFullImpl;
 
-#if defined(WIN32_VC)
+#ifdef _WIN32
 #include "conditionVarWin32Impl.h"
 typedef ConditionVarWin32Impl TrueConditionVarImpl;
 

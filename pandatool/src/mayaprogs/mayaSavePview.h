@@ -71,7 +71,7 @@ public:
 // Since we don't include any of the Panda headers (other than
 // dtool_config.h), we have to define this macro ourselves, to tell Windows to
 // export the following functions from the DLL.
-#ifdef WIN32_VC
+#ifdef _WIN32
   #define EXPCL_MISC __declspec(dllexport)
 #else
   #define EXPCL_MISC

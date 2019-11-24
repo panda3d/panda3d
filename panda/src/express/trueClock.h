@@ -64,7 +64,7 @@ protected:
 
   static TrueClock *_global_ptr;
 
-#ifdef WIN32
+#ifdef _WIN32
   double correct_time(double time);
   void set_time_scale(double time, double new_time_scale);
 
@@ -100,7 +100,7 @@ protected:
   };
   ChaseClock _chase_clock;
   MutexImpl _lock;
-#endif  // WIN32
+#endif  // _WIN32
 };
 
 #include "trueClock.I"

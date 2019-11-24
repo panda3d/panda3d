@@ -22,7 +22,7 @@ TypeHandle NativeWindowHandle::SubprocessHandle::_type_handle;
 #if defined(HAVE_X11) && !defined(CPPPARSER)
 TypeHandle NativeWindowHandle::X11Handle::_type_handle;
 #endif
-#if defined(WIN32) && !defined(CPPPARSER)
+#if defined(_WIN32) && !defined(CPPPARSER)
 TypeHandle NativeWindowHandle::WinHandle::_type_handle;
 #endif
 
@@ -60,7 +60,7 @@ make_x11(X11_Window window) {
 }
 #endif  // HAVE_X11
 
-#if defined(WIN32) && !defined(CPPPARSER)
+#if defined(_WIN32) && !defined(CPPPARSER)
 /**
  * Constructs a new WindowHandle that references a window on Windows.
  */
@@ -68,7 +68,7 @@ PT(WindowHandle) NativeWindowHandle::
 make_win(HWND window) {
   return new WindowHandle(new WinHandle(window));
 }
-#endif  // WIN32
+#endif  // _WIN32
 
 /**
  * Returns the OS-specific handle converted to an integer, if this is possible

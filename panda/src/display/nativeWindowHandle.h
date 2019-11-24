@@ -19,7 +19,7 @@
 #include "windowHandle.h"
 #include "get_x11.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN 1
 #endif
@@ -47,9 +47,9 @@ public:
   static PT(WindowHandle) make_x11(X11_Window window);
 #endif  // HAVE_X11
 
-#if defined(WIN32) && !defined(CPPPARSER)
+#if defined(_WIN32) && !defined(CPPPARSER)
   static PT(WindowHandle) make_win(HWND window);
-#endif  // WIN32
+#endif  // _WIN32
 
 public:
   class EXPCL_PANDA_DISPLAY IntHandle : public OSHandle {
@@ -141,7 +141,7 @@ public:
 #endif  // HAVE_X11
 
 
-#if defined(WIN32) && !defined(CPPPARSER)
+#if defined(_WIN32) && !defined(CPPPARSER)
   class EXPCL_PANDA_DISPLAY WinHandle : public OSHandle {
   public:
     INLINE WinHandle(HWND handle);
@@ -170,7 +170,7 @@ public:
   private:
     static TypeHandle _type_handle;
   };
-#endif  // WIN32
+#endif  // _WIN32
 
 public:
   static TypeHandle get_class_type() {
@@ -186,7 +186,7 @@ public:
 #if defined(HAVE_X11) && !defined(CPPPARSER)
     X11Handle::init_type();
 #endif
-#if defined(WIN32) && !defined(CPPPARSER)
+#if defined(_WIN32) && !defined(CPPPARSER)
     WinHandle::init_type();
 #endif
   }

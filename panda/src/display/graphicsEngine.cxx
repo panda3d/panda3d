@@ -54,7 +54,7 @@
 #include "winInputDeviceManager.h"
 #endif
 
-#if defined(WIN32)
+#ifdef _WIN32
   #define WINDOWS_LEAN_AND_MEAN
   #include <WinSock2.h>
   #include <wtypes.h>

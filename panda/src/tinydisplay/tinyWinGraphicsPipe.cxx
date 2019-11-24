@@ -13,7 +13,7 @@
 
 #include "pandabase.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 
 #include "tinyWinGraphicsPipe.h"
 #include "config_tinydisplay.h"
@@ -118,4 +118,4 @@ make_output(const std::string &name,
   return nullptr;
 }
 
-#endif  // WIN32
+#endif  // _WIN32

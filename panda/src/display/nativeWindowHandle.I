@@ -60,16 +60,16 @@ get_handle() const {
 }
 #endif  // HAVE_X11
 
-#if defined(WIN32) && !defined(CPPPARSER)
+#if defined(_WIN32) && !defined(CPPPARSER)
 /**
  *
  */
 INLINE NativeWindowHandle::WinHandle::
 WinHandle(HWND handle) : _handle(handle) {
 }
-#endif  // WIN32
+#endif  // _WIN32
 
-#if defined(WIN32) && !defined(CPPPARSER)
+#if defined(_WIN32) && !defined(CPPPARSER)
 /**
  *
  */
@@ -77,4 +77,4 @@ INLINE HWND NativeWindowHandle::WinHandle::
 get_handle() const {
   return _handle;
 }
-#endif  // WIN32
+#endif  // _WIN32

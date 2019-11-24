@@ -30,7 +30,7 @@ TypeHandle VirtualFileMountSystem::_type_handle;
 bool VirtualFileMountSystem::
 has_file(const Filename &file) const {
   Filename pathname(_physical_filename, file);
-#ifdef WIN32
+#ifdef _WIN32
   if (VirtualFileSystem::get_global_ptr()->vfs_case_sensitive) {
     Filename case_pathname = pathname;
     if (!case_pathname.make_true_case()) {
@@ -43,7 +43,7 @@ has_file(const Filename &file) const {
       return false;
     }
   }
-#endif  // WIN32
+#endif  // _WIN32
   return pathname.exists();
 }
 
@@ -115,14 +115,14 @@ make_directory(const Filename &file) {
  */
 bool VirtualFileMountSystem::
 is_directory(const Filename &file) const {
-#ifdef WIN32
+#ifdef _WIN32
   // First ensure that the file exists to validate its case.
   if (VirtualFileSystem::get_global_ptr()->vfs_case_sensitive) {
     if (!has_file(file)) {
       return false;
     }
   }
-#endif  // WIN32
+#endif  // _WIN32
   Filename pathname(_physical_filename, file);
   return pathname.is_directory();
 }
@@ -133,14 +133,14 @@ is_directory(const Filename &file) const {
  */
 bool VirtualFileMountSystem::
 is_regular_file(const Filename &file) const {
-#ifdef WIN32
+#ifdef _WIN32
   // First ensure that the file exists to validate its case.
   if (VirtualFileSystem::get_global_ptr()->vfs_case_sensitive) {
     if (!has_file(file)) {
       return false;
     }
   }
-#endif  // WIN32
+#endif  // _WIN32
   Filename pathname(_physical_filename, file);
   return pathname.is_regular_file();
 }
@@ -151,14 +151,14 @@ is_regular_file(const Filename &file) const {
  */
 bool VirtualFileMountSystem::
 is_writable(const Filename &file) const {
-#ifdef WIN32
+#ifdef _WIN32
   // First ensure that the file exists to validate its case.
   if (VirtualFileSystem::get_global_ptr()->vfs_case_sensitive) {
     if (!has_file(file)) {
       return false;
     }
   }
-#endif  // WIN32
+#endif  // _WIN32
   Filename pathname(_physical_filename, file);
   return pathname.is_writable();
 }
@@ -170,14 +170,14 @@ is_writable(const Filename &file) const {
  */
 istream *VirtualFileMountSystem::
 open_read_file(const Filename &file) const {
-#ifdef WIN32
+#ifdef _WIN32
   // First ensure that the file exists to validate its case.
   if (VirtualFileSystem::get_global_ptr()->vfs_case_sensitive) {
     if (!has_file(file)) {
       return nullptr;
     }
   }
-#endif  // WIN32
+#endif  // _WIN32
   Filename pathname(_physical_filename, file);
   pifstream *stream = new pifstream;
   if (!pathname.open_read(*stream)) {
@@ -196,14 +196,14 @@ open_read_file(const Filename &file) const {
  */
 ostream *VirtualFileMountSystem::
 open_write_file(const Filename &file, bool truncate) {
-#ifdef WIN32
+#ifdef _WIN32
   // First ensure that the file exists to validate its case.
   if (VirtualFileSystem::get_global_ptr()->vfs_case_sensitive) {
     if (!has_file(file)) {
       return nullptr;
     }
   }
-#endif  // WIN32
+#endif  // _WIN32
   Filename pathname(_physical_filename, file);
   pofstream *stream = new pofstream;
   if (!pathname.open_write(*stream, truncate)) {
@@ -222,14 +222,14 @@ open_write_file(const Filename &file, bool truncate) {
  */
 ostream *VirtualFileMountSystem::
 open_append_file(const Filename &file) {
-#ifdef WIN32
+#ifdef _WIN32
   // First ensure that the file exists to validate its case.
   if (VirtualFileSystem::get_global_ptr()->vfs_case_sensitive) {
     if (!has_file(file)) {
       return nullptr;
     }
   }
-#endif  // WIN32
+#endif  // _WIN32
   Filename pathname(_physical_filename, file);
   pofstream *stream = new pofstream;
   if (!pathname.open_append(*stream)) {
@@ -248,14 +248,14 @@ open_append_file(const Filename &file) {
  */
 iostream *VirtualFileMountSystem::
 open_read_write_file(const Filename &file, bool truncate) {
-#ifdef WIN32
+#ifdef _WIN32
   // First ensure that the file exists to validate its case.
   if (VirtualFileSystem::get_global_ptr()->vfs_case_sensitive) {
     if (!has_file(file)) {
       return nullptr;
     }
   }
-#endif  // WIN32
+#endif  // _WIN32
   Filename pathname(_physical_filename, file);
   pfstream *stream = new pfstream;
   if (!pathname.open_read_write(*stream, truncate)) {
@@ -274,14 +274,14 @@ open_read_write_file(const Filename &file, bool truncate) {
  */
 iostream *VirtualFileMountSystem::
 open_read_append_file(const Filename &file) {
-#ifdef WIN32
+#ifdef _WIN32
   // First ensure that the file exists to validate its case.
   if (VirtualFileSystem::get_global_ptr()->vfs_case_sensitive) {
     if (!has_file(file)) {
       return nullptr;
     }
   }
-#endif  // WIN32
+#endif  // _WIN32
   Filename pathname(_physical_filename, file);
   pfstream *stream = new pfstream;
   if (!pathname.open_read_append(*stream)) {
@@ -368,14 +368,14 @@ get_system_info(const Filename &file, SubfileInfo &info) {
  */
 bool VirtualFileMountSystem::
 scan_directory(vector_string &contents, const Filename &dir) const {
-#ifdef WIN32
+#ifdef _WIN32
   // First ensure that the file exists to validate its case.
   if (VirtualFileSystem::get_global_ptr()->vfs_case_sensitive) {
     if (!has_file(dir)) {
       return false;
     }
   }
-#endif  // WIN32
+#endif  // _WIN32
   Filename pathname(_physical_filename, dir);
   return pathname.scan_directory(contents);
 }
@@ -388,14 +388,14 @@ bool VirtualFileMountSystem::
 atomic_compare_and_exchange_contents(const Filename &file, string &orig_contents,
                                      const string &old_contents,
                                      const string &new_contents) {
-#ifdef WIN32
+#ifdef _WIN32
   // First ensure that the file exists to validate its case.
   if (VirtualFileSystem::get_global_ptr()->vfs_case_sensitive) {
     if (!has_file(file)) {
       return false;
     }
   }
-#endif  // WIN32
+#endif  // _WIN32
   Filename pathname(_physical_filename, file);
   return pathname.atomic_compare_and_exchange_contents(orig_contents, old_contents, new_contents);
 }
@@ -405,14 +405,14 @@ atomic_compare_and_exchange_contents(const Filename &file, string &orig_contents
  */
 bool VirtualFileMountSystem::
 atomic_read_contents(const Filename &file, string &contents) const {
-#ifdef WIN32
+#ifdef _WIN32
   // First ensure that the file exists to validate its case.
   if (VirtualFileSystem::get_global_ptr()->vfs_case_sensitive) {
     if (!has_file(file)) {
       return false;
     }
   }
-#endif  // WIN32
+#endif  // _WIN32
   Filename pathname(_physical_filename, file);
   return pathname.atomic_read_contents(contents);
 }

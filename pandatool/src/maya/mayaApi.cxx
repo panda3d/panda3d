@@ -25,7 +25,7 @@
 #include <maya/MFnAnimCurve.h>
 #include "post_maya_include.h"
 
-#ifdef WIN32_VC
+#ifdef _WIN32
 #include <direct.h>  // for chdir()
 #endif
 
@@ -226,7 +226,7 @@ is_valid() const {
   return _is_valid;
 }
 
-#ifdef WIN32
+#ifdef _WIN32
 static string
 back_to_front_slash(const string &str) {
   string result = str;
@@ -239,7 +239,7 @@ back_to_front_slash(const string &str) {
 
   return result;
 }
-#endif  // WIN32
+#endif  // _WIN32
 
 /**
  * Reads the indicated maya file into the global model space.  Returns true if

@@ -29,7 +29,7 @@
 #ifdef HAVE_POSIX_THREADS
 #include <pthread.h>  // for pthread_t, below
 #endif
-#ifdef WIN32
+#ifdef _WIN32
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN 1
 #endif
