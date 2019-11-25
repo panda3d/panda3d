@@ -21,6 +21,17 @@ else()
   set(AUDIO_LIBRARY_NAME none)
 endif()
 
+if(WIN32)
+  set(BAM_CACHE_DIR
+    "$USER_APPDATA/Panda3D-${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}")
+elseif(APPLE)
+  set(BAM_CACHE_DIR
+    "$HOME/Library/Caches/Panda3D-${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}")
+else()
+  set(BAM_CACHE_DIR
+    "$XDG_CACHE_HOME/panda3d")
+endif()
+
 configure_file(panda.prc.in "${CMAKE_BINARY_DIR}/etc/20_panda.prc")
 if(IS_MULTICONFIG)
   file(GENERATE OUTPUT "${PROJECT_BINARY_DIR}/$<CONFIG>/etc/20_panda.prc"

@@ -35,7 +35,7 @@ load-file-type egg pandaegg
 default-model-extension .egg
 
 # Enable the model-cache, but only for models, not textures.
-model-cache-dir $XDG_CACHE_HOME/panda3d
+model-cache-dir ${BAM_CACHE_DIR}
 model-cache-textures #f
 
 
