@@ -295,7 +295,7 @@ public:
     }
 
   private:
-    static TypeHandle _type_handle;
+    static EXPCL_PANDA_GOBJ TypeHandle _type_handle;
   };
   typedef pmap<const CacheKey *, PT(CacheEntry), IndirectLess<CacheKey> > Cache;
 

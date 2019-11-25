@@ -68,10 +68,12 @@
 #define BATTERY_LEVEL_FULL 0x03
 #endif
 
+#ifdef _MSV_VER
 typedef struct _XINPUT_BATTERY_INFORMATION {
   BYTE BatteryType;
   BYTE BatteryLevel;
 } XINPUT_BATTERY_INFORMATION;
+#endif
 
 // Undocumented, I figured out how this looks by trial and error.
 typedef struct _XINPUT_BUSINFO {

@@ -61,7 +61,7 @@
 
 #include "pointerToArrayBase.h"
 
-#if defined(_WIN32) && !defined(__INTEL_COMPILER)
+#if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
 // disable mysterious MSVC warning for static inline PTA::empty_array method
 // need to chk if vc 7.0 still has this problem, would like to keep it enabled
 #pragma warning (disable : 4506)
