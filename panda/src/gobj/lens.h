@@ -399,7 +399,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-EXPCL_PANDA_GOBJ INLINE std::ostream &operator << (std::ostream &out, const Lens &lens);
+std::ostream &operator << (std::ostream &out, const Lens &lens);
 
 #include "lens.I"
 
