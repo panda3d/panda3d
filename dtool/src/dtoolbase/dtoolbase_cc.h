@@ -103,7 +103,7 @@ typedef std::ios::seekdir ios_seekdir;
 #define ALWAYS_INLINE inline
 #endif
 
-#ifdef _WIN32
+#ifdef _MSC_VER
 // If FORCE_INLINING is defined, we use the keyword __forceinline, which tells
 // MS VC++ to override its internal benefit heuristic and inline the fn if it
 // is technically possible to do so.
