@@ -17,7 +17,7 @@
 #include <errno.h>
 #include <stdio.h>
 
-#if defined(WIN32_VC) || defined(WIN64_VC)
+#ifdef _WIN32
   #include <winsock2.h>
 #endif
 
