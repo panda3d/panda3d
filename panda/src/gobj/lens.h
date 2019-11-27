@@ -399,7 +399,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-std::ostream &operator << (std::ostream &out, const Lens &lens);
+INLINE std::ostream &operator << (std::ostream &out, const Lens &lens);
 
 #include "lens.I"
 
