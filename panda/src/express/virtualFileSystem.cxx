@@ -187,7 +187,7 @@ mount_loop(const Filename &virtual_filename, const Filename &mount_point,
 
 /**
  * Adds the given VirtualFileMount object to the mount list.  This is a lower-
- * level function that the other flavors of mount(); it requires you to create
+ * level function than the other flavors of mount(); it requires you to create
  * a VirtualFileMount object specifically.
  */
 bool VirtualFileSystem::

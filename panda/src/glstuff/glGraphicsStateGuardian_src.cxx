@@ -7378,15 +7378,21 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
     z_size = 1;
   }
 
+  int num_views = tex->get_num_views();
   if (tex->get_x_size() != w || tex->get_y_size() != h ||
       tex->get_z_size() != z_size ||
       tex->get_component_type() != component_type ||
       tex->get_format() != format ||
-      tex->get_texture_type() != texture_type) {
+      tex->get_texture_type() != texture_type ||
+      view >= num_views) {
 
-    // Re-setup the texture; its properties have changed.
-    tex->setup_texture(texture_type, w, h, z_size,
-                       component_type, format);
+    tex->setup_texture(texture_type, w, h, z_size, component_type, format);
+
+    // The above resets the number of views to 1, so set this back.
+    num_views = std::max(view + 1, num_views);
+    if (num_views > 1) {
+      tex->set_num_views(num_views);
+    }
   }
 
   nassertr(z < tex->get_z_size(), false);
@@ -7458,6 +7464,7 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
     }
     if (view > 0) {
       image_ptr += (view * tex->get_z_size()) * image_size;
+      nassertr(view < tex->get_num_views(), false);
     }
   }
 
@@ -14445,7 +14452,17 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     return false;
   }
 
-  tex->set_ram_image(image, compression, page_size);
+  int num_views = tex->get_num_views();
+  if (num_views == 1) {
+    // Replace the entire image, since we are modifying the only view.
+    tex->set_ram_image(image, compression, page_size);
+  } else {
+    // We're only modifying a single view, so we can't stomp all over the
+    // existing content.
+    PTA_uchar ram_image = tex->modify_ram_image();
+    nassertr(ram_image.size() == image.size() * num_views, false);
+    memcpy(ram_image.p() + image.size() * gtc->get_view(), image.p(), image.size());
+  }
 
   if (gtc->_uses_mipmaps) {
     // Also get the mipmap levels.
@@ -14461,7 +14478,12 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
                                  type, compression, n)) {
         return false;
       }
-      tex->set_ram_mipmap_image(n, image, page_size);
+      if (num_views == 1) {
+        tex->set_ram_mipmap_image(n, image, page_size);
+      } else {
+        PTA_uchar ram_mipmap_image = tex->modify_ram_mipmap_image(n);
+        memcpy(ram_mipmap_image.p() + image.size() * gtc->get_view(), image.p(), image.size());
+      }
     }
   }
 
@@ -14525,13 +14547,13 @@ extract_texture_image(PTA_uchar &image, size_t &page_size,
 #ifndef OPENGLES
   } else if (target == GL_TEXTURE_BUFFER) {
     // In the case of a buffer texture, we need to get it from the buffer.
-    image = PTA_uchar::empty_array(tex->get_expected_ram_mipmap_image_size(n));
+    image = PTA_uchar::empty_array(tex->get_expected_ram_mipmap_view_size(n));
     _glGetBufferSubData(target, 0, image.size(), image.p());
 #endif
 
   } else if (compression == Texture::CM_off) {
     // An uncompressed 1-d, 2-d, or 3-d texture.
-    image = PTA_uchar::empty_array(tex->get_expected_ram_mipmap_image_size(n));
+    image = PTA_uchar::empty_array(tex->get_expected_ram_mipmap_view_size(n));
     GLenum external_format = get_external_image_format(tex);
     GLenum pixel_type = get_component_type(type);
     glGetTexImage(target, n, external_format, pixel_type, image.p());
