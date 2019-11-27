@@ -140,6 +140,7 @@ private:
 
   static Encoding _default_encoding;
 };
+
 EXPCL_DTOOL_DTOOLUTIL std::ostream &
 operator << (std::ostream &out, TextEncoder::Encoding encoding);
 EXPCL_DTOOL_DTOOLUTIL std::istream &
