@@ -273,6 +273,13 @@ def parseopts(args):
             assert OSXTARGET[0] == 10
         except:
             usage("Invalid setting for OSXTARGET")
+
+        if OSXTARGET < (10, 9):
+            print("=========================================================================")
+            print("WARNING: Support for macOS versions before 10.9 has been discontinued.")
+            print("WARNING: For more information, or any questions, please visit:")
+            print("  https://github.com/panda3d/panda3d/issues/300")
+            print("=========================================================================")
     else:
         OSXTARGET = None
 
@@ -378,6 +385,8 @@ elif target == 'darwin':
     else:
         maj, min = platform.mac_ver()[0].split('.')[:2]
         osxver = int(maj), int(min)
+        if osxver < (10, 9):
+            osxver = (10, 9)
 
     arch_tag = GetTargetArch()
     PLATFORM = 'macosx-{0}.{1}-{2}'.format(osxver[0], osxver[1], arch_tag)
