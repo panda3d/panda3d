@@ -14,6 +14,14 @@
 #include "socket_address.h"
 #include "config_downloader.h"
 
+// For some reason in msys those two macros are not defined correctly in the
+// header file ws2tcpip.h
+// Also, those lines will be removed when the engine change
+// _WIN32_WINNT to 0x0600
+#ifndef AI_ADDRCONFIG
+#define AI_ADDRCONFIG 0x00000400
+#endif
+
 /**
  * This function will take a port and string-based TCP address and initialize
  * the address with this information.  Returns true on success; on failure, it
@@ -29,11 +37,6 @@ set_host(const std::string &hostname, unsigned short port) {
   struct addrinfo hints, *res = nullptr;
   memset(&hints, 0, sizeof(hints));
 
-// For some reason in msys this macro are not defined correctly in the
-// header file ws2tcpip.h
-#ifndef AI_ADDRCONFIG
-#define AI_ADDRCONFIG 0x00000400
-#endif
 
   hints.ai_flags = AI_ADDRCONFIG;
   hints.ai_family = support_ipv6 ? AF_UNSPEC : AF_INET;
