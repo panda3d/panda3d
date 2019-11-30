@@ -68,15 +68,26 @@ class DirectFrame(DirectGuiWidget):
         self.setText()
 
     def setText(self, text=None):
-        
+        if text is not None:
+            self["text"] = text
+
+        text = self["text"]
         component_class = OnscreenText
-        
         component_kwargs ={
                 "scale": 1,
                 "mayChange": self['textMayChange'],
                 "sort": DGG.TEXT_SORT_INDEX, # this is "30"
         }
-        self.new_set("text", text, component_kwargs, component_class)
+        
+        if text is None:
+            text_list = (None,) * self['numStates']
+        else:
+            if self.inputTypeValidation(name, text):
+                text_list = (text,) * self['numStates']
+            else:
+                text_list = text
+        
+        self.reinitComponent("text", text_list, component_kwargs, component_class)
 
     def clearGeom(self):
         self['geom'] = None
@@ -98,23 +109,15 @@ class DirectFrame(DirectGuiWidget):
                 return True
         return False
 
-    def new_set(self, name, object_, component_kwargs,component_class):
+    def reinitComponent(self, name, object_list, component_kwargs,component_class):
         """set function common code"""
         assert name in ("geom", "image", "text")
-        if object_ is not None:
-            self[name] = object_
-
-        object_ = self[name]
+        
         
         #object list from here...        
-        if object_ is None:
-            object_list = (None,) * self['numStates']
-        else:
-            if self.inputTypeValidation(name, object_):
-                object_list = (object_,) * self['numStates']
-            else:
-                object_list = object_
-
+        
+        if len(object_list) != self['numStates']:
+            raise ValueError
         
         # constants should be local to or default arguments of constructors
 
@@ -144,14 +147,24 @@ class DirectFrame(DirectGuiWidget):
             #c += 1
 
     def setGeom(self, geom=None):
-        
+        if geom is not None:
+            self["geom"] = geom
+
+        geom = self["name"]
         component_class = OnscreenGeom
-        
         component_kwargs = {
                 "scale": 1,
                 "sort": DGG.GEOM_SORT_INDEX, # this is "20"
             }
-        self.new_set("geom", geom, component_kwargs, component_class)
+        
+        if geom is None:
+            geom_list = (None,) * self['numStates']
+        else:
+            if self.inputTypeValidation(name, geom):
+                geom_list = (geom,) * self['numStates']
+            else:
+                geom_list = geom
+        self.reinitComponent("geom", geom_list, component_kwargs, component_class)
 
     def clearImage(self):
         self['image'] = None
@@ -159,11 +172,22 @@ class DirectFrame(DirectGuiWidget):
 
     def setImage(self, image=None):
         
+        if image is not None:
+            self["image"] = image
+
+        image = self["image"]
         component_class=OnscreenImage,
-        
         component_kwargs = {
                 "scale": 1,
                 "sort": DGG.IMAGE_SORT_INDEX, # this is "10"
             }
             
-        self.new_set("image", image, component_kwargs, component_class)
+        if image is None:
+            image_list = (None,) * self['numStates']
+        else:
+            if self.inputTypeValidation(name, image):
+                image_list = (image,) * self['numStates']
+            else:
+                image_list = image
+                
+        self.reinitComponent("image", image_list, component_kwargs, component_class)
