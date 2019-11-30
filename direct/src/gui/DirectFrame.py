@@ -68,13 +68,21 @@ class DirectFrame(DirectGuiWidget):
         self.setText()
 
     def setText(self, text=None):
-        self.new_set("text", text)
+        
+        component_class = OnscreenText
+        
+        component_kwargs ={
+                "scale": 1,
+                "mayChange": self['textMayChange'],
+                "sort": DGG.TEXT_SORT_INDEX, # this is "30"
+        }
+        self.new_set("text", text, component_kwargs, component_class)
 
     def clearGeom(self):
         self['geom'] = None
         self.setGeom()
 
-    def long_type_check(self, name, object_):
+    def inputTypeValidation(self, name, object_):
         if isinstance(object_, stringType):
             return True
         if name == "image":
@@ -90,75 +98,72 @@ class DirectFrame(DirectGuiWidget):
                 return True
         return False
 
-    def new_set(self, name, object_=None):
-        """my new code golf par is 1"""
-        assert name in ["geom", "image", "text"]
+    def new_set(self, name, object_, component_kwargs,component_class):
+        """set function common code"""
+        assert name in ("geom", "image", "text")
         if object_ is not None:
             self[name] = object_
 
         object_ = self[name]
-
-        if object_ == None:
+        
+        #object list from here...        
+        if object_ is None:
             object_list = (None,) * self['numStates']
         else:
-            if self.long_type_check(name, object_):
+            if self.inputTypeValidation(name, object_):
                 object_list = (object_,) * self['numStates']
             else:
                 object_list = object_
 
-        name_based_classes = {
-            "geom": OnscreenGeom,
-            "image": OnscreenImage,
-            "text": OnscreenText, }
-
-        name_based_constants = {
-            "geom": {
-                "scale": 1,
-                "sort": DGG.GEOM_SORT_INDEX, # this is "20"
-            },
-            "image": {
-                "scale": 1,
-                "sort": DGG.IMAGE_SORT_INDEX, # this is "10"
-            },
-            "text": {
-                "scale": 1,
-                "mayChange": self['textMayChange'],
-                "sort": DGG.TEXT_SORT_INDEX, # this is "30"
-            },
-        }
+        
         # constants should be local to or default arguments of constructors
 
-        m = self["numStates"]
         for c in range(self['numStates']):
-            component_name = name+str(c)
-            comp_input = object_list[c]
+            component_name = name + str(c)
+            comp_input = object_list[c]#...is only used here.
             name_based_constants[name][name] = comp_input
 
             if self.hascomponent(component_name):
-                if comp_input == None:
+                if comp_input is None:
                     self.destroycomponent(component_name)
                 else:
                     self[component_name+"_"+name] = comp_input
             else:
-                if comp_input == None:
+                if comp_input is None:
                     return
+                    
                 self.createcomponent(
                     component_name,
                     (),
                     name,
-                    name_based_classes[name],  # class type, positional
+                    component_class,  # class type, positional
                     (),
                     parent=self.stateNodePath[c],
-                    **name_based_constants[name]
+                    **component_kwargs
                 )  # keywords, order irrelevant
-            c += 1
+            #c += 1
 
     def setGeom(self, geom=None):
-        self.new_set("geom", geom)
+        
+        component_class = OnscreenGeom
+        
+        component_kwargs = {
+                "scale": 1,
+                "sort": DGG.GEOM_SORT_INDEX, # this is "20"
+            }
+        self.new_set("geom", geom, component_kwargs, component_class)
 
     def clearImage(self):
         self['image'] = None
         self.setImage()
 
     def setImage(self, image=None):
-        self.new_set("image", image)
+        
+        component_class=OnscreenImage,
+        
+        component_kwargs = {
+                "scale": 1,
+                "sort": DGG.IMAGE_SORT_INDEX, # this is "10"
+            }
+            
+        self.new_set("image", image, component_kwargs, component_class)
