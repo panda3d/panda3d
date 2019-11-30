@@ -68,10 +68,8 @@
 #define BATTERY_LEVEL_FULL 0x03
 #endif
 
-/**
- * With MingW32 this raises the error:
- * redefinition of * '_XINPUT_BATTERY_INFORMATION'
- */
+// With MingW32 this raises the error:
+// Redefinition of '_XINPUT_BATTERY_INFORMATION'
 #ifdef _MSC_VER
 typedef struct _XINPUT_BATTERY_INFORMATION {
   BYTE BatteryType;

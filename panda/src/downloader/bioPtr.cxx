@@ -95,6 +95,17 @@ BioPtr(const URLSpec &url) : _connecting(false) {
     // These hints tell getaddrinfo what kind of address to return.
     struct addrinfo hints, *res = nullptr;
     memset(&hints, 0, sizeof(hints));
+
+// For some reason in msys those two macros are not defined correctly in the
+// header file ws2tcpip.h
+#ifndef AI_ADDRCONFIG
+#define AI_ADDRCONFIG 0x00000400
+#endif
+
+#ifndef AI_V4MAPPED
+#define AI_V4MAPPED 0x00000800
+#endif
+
     hints.ai_flags = AI_V4MAPPED | AI_ADDRCONFIG;
     hints.ai_family = support_ipv6 ? AF_UNSPEC : AF_INET;
     hints.ai_socktype = SOCK_STREAM;
