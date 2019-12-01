@@ -115,6 +115,7 @@ class DirectFrame(DirectGuiWidget):
                 if comp_input is None:
                     return
                     
+                component_kwargs[name] = comp_input    
                 self.createcomponent(
                     component_name,
                     (),
