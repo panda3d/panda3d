@@ -82,7 +82,7 @@ class DirectFrame(DirectGuiWidget):
         if text is None:
             text_list = (None,) * self['numStates']
         else:
-            if self.inputTypeValidation(name, text):
+            if self.inputTypeValidation("text", text):#used by button and directmenu
                 text_list = (text,) * self['numStates']
             else:
                 text_list = text
@@ -113,19 +113,14 @@ class DirectFrame(DirectGuiWidget):
         """set function common code"""
         assert name in ("geom", "image", "text")
         
-        
-        #object list from here...        
-        
         if len(object_list) != self['numStates']:
             raise ValueError
         
         # constants should be local to or default arguments of constructors
-
         for c in range(self['numStates']):
             component_name = name + str(c)
-            comp_input = object_list[c]#...is only used here.
-            name_based_constants[name][name] = comp_input
-
+            comp_input = object_list[c]
+                        
             if self.hascomponent(component_name):
                 if comp_input is None:
                     self.destroycomponent(component_name)
@@ -139,18 +134,17 @@ class DirectFrame(DirectGuiWidget):
                     component_name,
                     (),
                     name,
-                    component_class,  # class type, positional
+                    component_class,
                     (),
                     parent=self.stateNodePath[c],
                     **component_kwargs
-                )  # keywords, order irrelevant
-            #c += 1
+                )
 
     def setGeom(self, geom=None):
         if geom is not None:
             self["geom"] = geom
 
-        geom = self["name"]
+        geom = self["geom"]
         component_class = OnscreenGeom
         component_kwargs = {
                 "scale": 1,
@@ -185,7 +179,7 @@ class DirectFrame(DirectGuiWidget):
         if image is None:
             image_list = (None,) * self['numStates']
         else:
-            if self.inputTypeValidation(name, image):
+            if self.inputTypeValidation("image", image):#used by button and directmenu
                 image_list = (image,) * self['numStates']
             else:
                 image_list = image
