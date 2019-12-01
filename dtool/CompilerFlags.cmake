@@ -108,14 +108,22 @@ else()
 
 endif()
 
-if(NOT "x${CMAKE_CXX_COMPILER_ID}" STREQUAL "xMSVC")
+if(CMAKE_CXX_COMPILER_ID MATCHES "(GNU|Clang)")
   set(global_flags
     "-Wno-unused-function -Wno-unused-parameter -fno-strict-aliasing")
-  set(release_flags
-    "-Wno-unused-variable -fno-stack-protector -ffast-math -fno-unsafe-math-optimizations")
+  set(release_flags "-Wno-unused-variable")
 
-  # Allow NaN to occur in the public SDK
-  set(standard_flags "${release_flags} -fno-finite-math-only")
+  if(NOT MSVC)
+    # These flags upset Clang when it's in MSVC mode
+    set(release_flags "${release_flags} -fno-stack-protector -ffast-math -fno-unsafe-math-optimizations")
+
+    # Allow NaN to occur in the public SDK
+    set(standard_flags "${release_flags} -fno-finite-math-only")
+
+  else()
+    set(standard_flags "${release_flags}")
+
+  endif()
 
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${global_flags}")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${global_flags} -Wno-reorder")
