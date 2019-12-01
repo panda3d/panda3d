@@ -68,6 +68,7 @@ class DirectFrame(DirectGuiWidget):
         self.setText()
 
     def setText(self, text=None):
+        #TODO remove type checks
         if text is not None:
             self["text"] = text
 
@@ -82,34 +83,18 @@ class DirectFrame(DirectGuiWidget):
         if text is None:
             text_list = (None,) * self['numStates']
         else:
-            if self.inputTypeValidation("text", text):#used by button and directmenu
+            if isinstance(text, stringType):#used by button and directmenu
                 text_list = (text,) * self['numStates']
             else:
                 text_list = text
         
-        self.reinitComponent("text", text_list, component_kwargs, component_class)
+        self.__reinitComponent("text", text_list, component_kwargs, component_class)
 
     def clearGeom(self):
         self['geom'] = None
         self.setGeom()
 
-    def inputTypeValidation(self, name, object_):
-        if isinstance(object_, stringType):
-            return True
-        if name == "image":
-            if ((isinstance(object_, NodePath) or
-                isinstance(object_, Texture)) 
-                or
-                ((len(object_) == 2) and# Its a model/node pair of strings
-                isinstance(object_[0], stringType) and
-                isinstance(object_[1], stringType))):
-                return True
-        elif name == "geom":
-            if (isinstance(object_, NodePath)):
-                return True
-        return False
-
-    def reinitComponent(self, name, object_list, component_kwargs,component_class):
+    def __reinitComponent(self, name, object_list, component_kwargs,component_class):
         """set function common code"""
         assert name in ("geom", "image", "text")
         
@@ -141,6 +126,7 @@ class DirectFrame(DirectGuiWidget):
                 )
 
     def setGeom(self, geom=None):
+        #TODO remove type checks
         if geom is not None:
             self["geom"] = geom
 
@@ -154,18 +140,18 @@ class DirectFrame(DirectGuiWidget):
         if geom is None:
             geom_list = (None,) * self['numStates']
         else:
-            if self.inputTypeValidation(name, geom):
+            if isinstance(object_, NodePath):
                 geom_list = (geom,) * self['numStates']
             else:
                 geom_list = geom
-        self.reinitComponent("geom", geom_list, component_kwargs, component_class)
+        self.__reinitComponent("geom", geom_list, component_kwargs, component_class)
 
     def clearImage(self):
         self['image'] = None
         self.setImage()
 
     def setImage(self, image=None):
-        
+        #TODO remove type checks
         if image is not None:
             self["image"] = image
 
@@ -179,9 +165,17 @@ class DirectFrame(DirectGuiWidget):
         if image is None:
             image_list = (None,) * self['numStates']
         else:
-            if self.inputTypeValidation("image", image):#used by button and directmenu
+            if (
+                isinstance(image, NodePath) or
+                isinstance(image, Texture)  or
+				( # Its a model/node pair of strings
+					(len(image) == 2) and
+					isinstance(image[0], stringType) and
+					isinstance(image[1], stringType)
+				)
+                ):
                 image_list = (image,) * self['numStates']
             else:
                 image_list = image
                 
-        self.reinitComponent("image", image_list, component_kwargs, component_class)
+        self.__reinitComponent("image", image_list, component_kwargs, component_class)
