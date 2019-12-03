@@ -287,7 +287,7 @@ convert_executable_pathname(const string &unix_style_pathname) {
 
   return convert_pathname(unix_style_pathname);
 }
-#endif //WIN32
+#endif // _WIN32
 
 /**
  * This constructor composes the filename out of a directory part and a
@@ -376,12 +376,12 @@ from_os_specific(const string &os_specific, Filename::Type type) {
   Filename filename(result);
   filename.set_type(type);
   return filename;
-#else  // WIN32
+#else  // _WIN32
   // Generic Unix-style filenames--no conversion necessary.
   Filename filename(os_specific);
   filename.set_type(type);
   return filename;
-#endif  // WIN32
+#endif  // _WIN32
 }
 
 /**
@@ -511,7 +511,7 @@ get_home_directory() {
 #else
       // Posix case: check etcpasswd?
 
-#endif  // WIN32
+#endif  // _WIN32
     }
 
     if (home_directory.empty()) {
@@ -560,7 +560,7 @@ get_temp_directory() {
 #else
     // Posix case.
     temp_directory = "/tmp";
-#endif  // WIN32
+#endif  // _WIN32
 
     if (temp_directory.empty()) {
       // Fallback case.
@@ -617,7 +617,7 @@ get_user_appdata_directory() {
       user_appdata_directory = Filename(get_home_directory(), ".local/share");
     }
 
-#endif  // WIN32
+#endif  // _WIN32
 
     if (user_appdata_directory.empty()) {
       // Fallback case.
@@ -667,7 +667,7 @@ get_common_appdata_directory() {
     common_appdata_directory = "/usr/local/share";
 #else
     common_appdata_directory = "/usr/share";
-#endif  // WIN32
+#endif  // _WIN32
 
     if (common_appdata_directory.empty()) {
       // Fallback case.
@@ -1103,9 +1103,9 @@ make_true_case() {
   (*this) = true_case;
   return true;
 
-#else  // WIN32
+#else  // _WIN32
   return true;
-#endif  // WIN32
+#endif  // _WIN32
 }
 
 /**
@@ -1149,9 +1149,9 @@ to_os_specific() const {
   default:
     return convert_pathname(standard.get_fullpath());
   }
-#else // WIN32
+#else // _WIN32
   return standard.c_str();
-#endif // WIN32
+#endif // _WIN32
 }
 
 /**
@@ -1220,9 +1220,9 @@ to_os_short_name() const {
   encoder.set_wtext(short_name);
   return encoder.get_text();
 
-#else // WIN32
+#else // _WIN32
   return to_os_specific();
-#endif // WIN32
+#endif // _WIN32
 }
 
 /**
@@ -1251,9 +1251,9 @@ to_os_long_name() const {
   encoder.set_wtext(long_name);
   return encoder.get_text();
 
-#else // WIN32
+#else // _WIN32
   return to_os_specific();
-#endif // WIN32
+#endif // _WIN32
 }
 
 /**
@@ -1273,7 +1273,7 @@ exists() const {
     exists = true;
   }
 
-#else  // WIN32_VC
+#else  // _WIN32
   string os_specific = get_filename_index(0).to_os_specific();
 
   struct stat this_buf;
@@ -1303,7 +1303,7 @@ is_regular_file() const {
     isreg = ((results & (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_DEVICE)) == 0);
   }
 
-#else  // WIN32_VC
+#else  // _WIN32
   string os_specific = get_filename_index(0).to_os_specific();
 
   struct stat this_buf;
@@ -1338,7 +1338,7 @@ is_writable() const {
       writable = true;
     }
   }
-#else  // WIN32_VC
+#else  // _WIN32
   string os_specific = get_filename_index(0).to_os_specific();
 
   if (access(os_specific.c_str(), W_OK) == 0) {
@@ -1364,7 +1364,7 @@ is_directory() const {
   if (results != -1) {
     isdir = (results & FILE_ATTRIBUTE_DIRECTORY) != 0;
   }
-#else  // WIN32_VC
+#else  // _WIN32
   string os_specific = get_filename_index(0).to_os_specific();
 
   struct stat this_buf;
@@ -1391,12 +1391,12 @@ is_executable() const {
     return exists();
   }
 
-#else /* WIN32_VC */
+#else // _WIN32
   string os_specific = get_filename_index(0).to_os_specific();
   if (access(os_specific.c_str(), X_OK) == 0) {
     return true;
   }
-#endif /* WIN32_VC */
+#endif // _WIN32
 
   return false;
 }
@@ -1432,7 +1432,7 @@ compare_timestamps(const Filename &other,
   if (_wstat(other_os_specific.c_str(), &other_buf) == 0) {
     other_exists = true;
   }
-#else  // WIN32_VC
+#else  // _WIN32
   string os_specific = get_filename_index(0).to_os_specific();
   string other_os_specific = other.get_filename_index(0).to_os_specific();
 
@@ -1501,7 +1501,7 @@ get_timestamp() const {
   if (_wstat(os_specific.c_str(), &this_buf) == 0) {
     return this_buf.st_mtime;
   }
-#else  // WIN32_VC
+#else  // _WIN32
   string os_specific = get_filename_index(0).to_os_specific();
 
   struct stat this_buf;
@@ -1529,7 +1529,7 @@ get_access_timestamp() const {
   if (_wstat(os_specific.c_str(), &this_buf) == 0) {
     return this_buf.st_atime;
   }
-#else  // WIN32_VC
+#else  // _WIN32
   string os_specific = get_filename_index(0).to_os_specific();
 
   struct stat this_buf;
@@ -1557,7 +1557,7 @@ get_file_size() const {
   if (_wstati64(os_specific.c_str(), &this_buf) == 0) {
     return this_buf.st_size;
   }
-#else  // WIN32_VC
+#else  // _WIN32
   string os_specific = get_filename_index(0).to_os_specific();
 
   struct stat this_buf;
@@ -1878,7 +1878,7 @@ open_read(std::ifstream &stream) const {
 #else
   string os_specific = to_os_specific();
   stream.open(os_specific.c_str(), open_mode);
-#endif  // WIN32_VC
+#endif  // _WIN32
 
   return (!stream.fail());
 }
@@ -1926,7 +1926,7 @@ open_write(std::ofstream &stream, bool truncate) const {
   wstring os_specific = to_os_specific_w();
 #else
   string os_specific = to_os_specific();
-#endif  // WIN32_VC
+#endif  // _WIN32
   stream.open(os_specific.c_str(), open_mode);
 
   return (!stream.fail());
@@ -1958,7 +1958,7 @@ open_append(std::ofstream &stream) const {
   wstring os_specific = to_os_specific_w();
 #else
   string os_specific = to_os_specific();
-#endif  // WIN32_VC
+#endif  // _WIN32
   stream.open(os_specific.c_str(), open_mode);
 
   return (!stream.fail());
@@ -2000,7 +2000,7 @@ open_read_write(std::fstream &stream, bool truncate) const {
   wstring os_specific = to_os_specific_w();
 #else
   string os_specific = to_os_specific();
-#endif  // WIN32_VC
+#endif  // _WIN32
   stream.open(os_specific.c_str(), open_mode);
 
   return (!stream.fail());
@@ -2032,7 +2032,7 @@ open_read_append(std::fstream &stream) const {
   wstring os_specific = to_os_specific_w();
 #else
   string os_specific = to_os_specific();
-#endif  // WIN32_VC
+#endif  // _WIN32
   stream.open(os_specific.c_str(), open_mode);
 
   return (!stream.fail());
@@ -2283,14 +2283,14 @@ touch() const {
     return false;
   }
   return true;
-#else  // WIN32, PHAVE_UTIME_H
+#else  // _WIN32, PHAVE_UTIME_H
   // Other systems may not have an explicit control over the modification
   // time.  For these systems, we'll just temporarily open the file in append
   // mode, then close it again (it gets closed when the pfstream goes out of
   // scope).
   pfstream file;
   return open_append(file);
-#endif  // WIN32, PHAVE_UTIME_H
+#endif  // _WIN32, PHAVE_UTIME_H
 }
 
 /**
@@ -2305,7 +2305,7 @@ chdir() const {
 #else
   string os_specific = to_os_specific();
   return (::chdir(os_specific.c_str()) >= 0);
-#endif  // WIN32_VC
+#endif  // _WIN32
 }
 
 /**
@@ -2324,7 +2324,7 @@ unlink() const {
 #else
   string os_specific = to_os_specific();
   return (::unlink(os_specific.c_str()) == 0);
-#endif  // WIN32_VC
+#endif  // _WIN32
 }
 
 
@@ -2381,7 +2381,7 @@ rename_to(const Filename &other) const {
     unlink();
     return true;
   }
-#else  // WIN32_VC
+#else  // _WIN32
   string os_specific = to_os_specific();
   string other_os_specific = other.to_os_specific();
 
@@ -2420,7 +2420,7 @@ rename_to(const Filename &other) const {
     unlink();
     return true;
   }
-#endif  // WIN32_VC
+#endif  // _WIN32
 
   // Failed.
   temp.unlink();
@@ -2564,10 +2564,10 @@ rmdir() const {
     result = _wrmdir(os_specific.c_str());
   }
 
-#else  // WIN32_VC
+#else  // _WIN32
   string os_specific = to_os_specific();
   int result = ::rmdir(os_specific.c_str());
-#endif  // WIN32_VC
+#endif  // _WIN32
 
   return (result == 0);
 }
@@ -3058,7 +3058,7 @@ r_make_canonical(const Filename &cwd) {
     }
     return true;
   }
-#else  // WIN32_VC
+#else  // _WIN32
   // First, try to cd to the filename directly.
   string os_specific = to_os_specific();
   if (::chdir(os_specific.c_str()) >= 0) {
@@ -3072,7 +3072,7 @@ r_make_canonical(const Filename &cwd) {
     }
     return true;
   }
-#endif  // WIN32_VC
+#endif  // _WIN32
 
   // That didn't work; maybe it's not a directory.  Recursively go to the
   // directory above.

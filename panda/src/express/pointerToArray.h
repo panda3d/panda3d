@@ -179,7 +179,7 @@ public:
   INLINE void erase(iterator position);
   INLINE void erase(iterator first, iterator last);
 
-#ifndef _WIN32
+#ifndef _MSC_VER
   INLINE reference operator [](size_type n) const;
   INLINE reference operator [](int n) const;
 #endif
@@ -285,7 +285,7 @@ PUBLISHED:
   typedef typename pvector<Element>::const_reference const_reference;
   typedef typename pvector<Element>::const_iterator iterator;
   typedef typename pvector<Element>::const_iterator const_iterator;
-#ifdef _WIN32
+#ifdef _MSC_VER
   // VC++ seems to break the const_reverse_iterator definition somehow.
   typedef typename pvector<Element>::reverse_iterator reverse_iterator;
 #else
@@ -323,7 +323,7 @@ PUBLISHED:
   INLINE reference front() const;
   INLINE reference back() const;
 
-#ifndef _WIN32
+#ifndef _MSC_VER
   INLINE reference operator [](size_type n) const;
   INLINE reference operator [](int n) const;
 #endif

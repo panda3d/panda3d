@@ -421,4 +421,4 @@ ReMutexWin32Impl() {
   InitializeCriticalSectionAndSpinCount(&_lock, spin_count);
 }
 
-#endif  // WIN32_VC
+#endif  // _WIN32

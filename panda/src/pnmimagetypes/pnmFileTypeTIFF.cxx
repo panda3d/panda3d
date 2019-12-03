@@ -1215,7 +1215,7 @@ void PNMFileTypeTIFF::
 tiff_warning(const char *, const char *format, va_list ap) {
   static const int buffer_size = 1024;
   char buffer[buffer_size];
-#if defined(WIN32_VC) || defined(WIN64_VC)
+#ifdef _WIN32
   vsprintf(buffer, format, ap);
 #else
   vsnprintf(buffer, buffer_size, format, ap);
@@ -1234,7 +1234,7 @@ void PNMFileTypeTIFF::
 tiff_error(const char *module, const char *format, va_list ap) {
   static const int buffer_size = 1024;
   char buffer[buffer_size];
-#if defined(WIN32_VC) || defined(WIN64_VC)
+#ifdef _WIN32
   vsprintf(buffer, format, ap);
 #else
   vsnprintf(buffer, buffer_size, format, ap);

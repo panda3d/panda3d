@@ -483,7 +483,7 @@ set_time_scale(double time, double new_time_scale) {
   _time_scale = new_time_scale;
 }
 
-#else  // !WIN32_VC
+#else  // !_WIN32
 
 // The Posix implementation.
 

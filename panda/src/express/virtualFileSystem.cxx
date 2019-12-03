@@ -870,7 +870,7 @@ close_read_file(istream *stream) {
     // stream pointer does not call the appropriate global delete function;
     // instead apparently calling the system delete function.  So we call the
     // delete function by hand instead.
-#if !defined(_WIN32) && !defined(USE_MEMORY_NOWRAPPERS) && defined(REDEFINE_GLOBAL_OPERATOR_NEW)
+#if defined(__GNUC__) && !defined(USE_MEMORY_NOWRAPPERS) && defined(REDEFINE_GLOBAL_OPERATOR_NEW)
     stream->~istream();
     (*global_operator_delete)(stream);
 #else
@@ -929,7 +929,7 @@ open_append_file(const Filename &filename) {
 void VirtualFileSystem::
 close_write_file(ostream *stream) {
   if (stream != nullptr) {
-#if !defined(_WIN32) && !defined(USE_MEMORY_NOWRAPPERS) && defined(REDEFINE_GLOBAL_OPERATOR_NEW)
+#if defined(__GNUC__) && !defined(USE_MEMORY_NOWRAPPERS) && defined(REDEFINE_GLOBAL_OPERATOR_NEW)
     stream->~ostream();
     (*global_operator_delete)(stream);
 #else
@@ -985,7 +985,7 @@ open_read_append_file(const Filename &filename) {
 void VirtualFileSystem::
 close_read_write_file(iostream *stream) {
   if (stream != nullptr) {
-#if !defined(_WIN32) && !defined(USE_MEMORY_NOWRAPPERS) && defined(REDEFINE_GLOBAL_OPERATOR_NEW)
+#if defined(__GNUC__) && !defined(USE_MEMORY_NOWRAPPERS) && defined(REDEFINE_GLOBAL_OPERATOR_NEW)
     stream->~iostream();
     (*global_operator_delete)(stream);
 #else

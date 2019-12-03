@@ -578,7 +578,7 @@ scan_interfaces() {
 
   freeifaddrs(ifa);
 
-#endif // WIN32_VC
+#endif // _WIN32
 }
 
 /**

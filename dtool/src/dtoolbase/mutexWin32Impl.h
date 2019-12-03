@@ -98,6 +98,6 @@ private:
 
 #include "mutexWin32Impl.I"
 
-#endif  // WIN32_VC
+#endif  // _WIN32
 
 #endif

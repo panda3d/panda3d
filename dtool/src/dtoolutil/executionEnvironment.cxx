@@ -223,7 +223,7 @@ get_cwd() {
   Filename cwd = Filename::from_os_specific_w(buffer);
   cwd.make_true_case();
   return cwd;
-#else  // WIN32_VC
+#else  // _WIN32
   // getcwd() requires us to allocate a dynamic buffer and grow it on demand.
   static size_t bufsize = 1024;
   static char *buffer = nullptr;
@@ -246,7 +246,7 @@ get_cwd() {
   Filename cwd = Filename::from_os_specific(buffer);
   cwd.make_true_case();
   return cwd;
-#endif  // WIN32_VC
+#endif  // _WIN32
 }
 
 /**

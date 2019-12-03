@@ -29,11 +29,11 @@
 
 #include "openSSLWrapper.h"
 
-#if defined(WIN32_VC) || defined(WIN64_VC)
+#ifdef _WIN32
   #include <WinSock2.h>
   #include <windows.h>  // for select()
   #undef X509_NAME
-#endif  // WIN32_VC
+#endif  // _WIN32
 
 using std::istream;
 using std::min;

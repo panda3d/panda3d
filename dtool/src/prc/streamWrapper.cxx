@@ -190,7 +190,7 @@ seek_write(streamsize pos, const char *buffer, streamsize num_bytes,
     // true.
     _ostream->clear();
   }
-#endif // WIN32_VC
+#endif // _WIN32
 
   _ostream->write(buffer, num_bytes);
   fail = _ostream->fail();
@@ -214,7 +214,7 @@ seek_eof_write(const char *buffer, streamsize num_bytes, bool &fail) {
     // true.
     _ostream->clear();
   }
-#endif // WIN32_VC
+#endif // _WIN32
 
   _ostream->write(buffer, num_bytes);
   fail = _ostream->fail();
@@ -240,7 +240,7 @@ seek_ppos_eof() {
     release();
     return 0;
   }
-#endif // WIN32_VC
+#endif // _WIN32
 
   pos = _ostream->tellp();
   release();

@@ -1103,7 +1103,7 @@ def CompileCxx(obj,src,opts):
             if ("BIGOBJ" in opts) or GetTargetArch() == 'x64':
                 cmd += " /bigobj"
 
-            cmd += " /Zm300 /DWIN32_VC /DWIN32"
+            cmd += " /Zm300 /D_WIN32"
             if 'EXCEPTIONS' in opts:
                 cmd += " /EHsc"
             else:
@@ -1199,7 +1199,7 @@ def CompileCxx(obj,src,opts):
                 cmd += " /Qopt-report:2 /Qopt-report-phase:hlo /Qopt-report-phase:hpo"    # some optimization reports
             else:
                 cmd += " /W1 "
-            cmd += " /EHa /Zm300 /DWIN32_VC /DWIN32"
+            cmd += " /EHa /Zm300 /D_WIN32"
             if GetTargetArch() == 'x64':
                 cmd += " /DWIN64_VC /DWIN64"
             cmd += " " + BracketNameWithQuotes(src)
@@ -1440,7 +1440,7 @@ def CompileIgate(woutd,wsrc,opts):
     cmd += ' -srcdir %s -I%s' % (srcdir, srcdir)
     cmd += ' -DCPPPARSER -D__STDC__=1 -D__cplusplus=201103L'
     if (COMPILER=="MSVC"):
-        cmd += ' -DWIN32_VC -DWIN32 -D_WIN32'
+        cmd += ' -D_WIN32'
         if GetTargetArch() == 'x64':
             cmd += ' -DWIN64_VC -DWIN64 -D_WIN64 -D_M_X64 -D_M_AMD64'
         else:

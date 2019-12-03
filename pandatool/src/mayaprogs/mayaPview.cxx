@@ -47,7 +47,7 @@
 #include <windows.h>
 #include <process.h>
 #define SEPARATE_PVIEW 1
-#endif  // WIN32_VC
+#endif  // _WIN32
 
 /**
  *

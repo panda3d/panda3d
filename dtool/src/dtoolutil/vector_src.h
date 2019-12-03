@@ -45,9 +45,7 @@ EXPORT_TEMPLATE_CLASS(EXPCL, EXPTP, VV_BASE)
   #endif
 
 // Now we can export the vector class.
-#ifdef _MSC_VER
 #pragma warning (disable : 4231)
-#endif
 
 #ifndef USE_STL_ALLOCATOR
 EXPORT_TEMPLATE_CLASS(EXPCL, EXPTP, std::vector<TYPE>)

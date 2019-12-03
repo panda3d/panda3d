@@ -78,7 +78,7 @@ doIt(const MArgList &args) {
     return MS::kFailure;
   }
 
-#else  // WIN32_VC
+#else  // _WIN32
   // On non-Windows (e.g.  Unix), we just use the system function, which runs
   // synchronously.  We could fork a process, but no one's asked for this yet.
   MString command = MString("pview " + pview_args + MString(" \"") + filename + MString("\""));
@@ -87,7 +87,7 @@ doIt(const MArgList &args) {
   if (command_result != 0) {
     return MS::kFailure;
   }
-#endif // WIN32_VC
+#endif // _WIN32
 
   return MS::kSuccess;
 }
