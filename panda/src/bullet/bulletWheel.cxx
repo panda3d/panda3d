@@ -223,7 +223,7 @@ void BulletWheel::
 set_steering(PN_stdfloat value) {
   LightMutexHolder holder(BulletWorld::get_global_lock());
 
-  _info.m_steering = (btScalar)value;
+  _info.m_steering = (btScalar)deg_2_rad(value);
 }
 
 /**

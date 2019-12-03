@@ -22,6 +22,6 @@ def test_get_steering():
     world.attachVehicle(vehicle)
     # Wheel
     wheel = vehicle.createWheel()
-    wheel.setSteering(0.5235988)  # radians
+    wheel.setSteering(30.0)
     # Returns the steering angle in degrees.
     assert wheel.getSteering() == approx(30.0)
