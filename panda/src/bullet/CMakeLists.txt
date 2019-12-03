@@ -114,6 +114,11 @@ set_target_properties(p3bullet PROPERTIES DEFINE_SYMBOL BUILDING_PANDABULLET)
 target_link_libraries(p3bullet panda PKG::BULLET)
 target_interrogate(p3bullet ALL)
 
+if(MSVC AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  # Clang emulating MSVC; it has builtin defines for __m128 + __m128 and co.
+  target_compile_definitions(p3bullet PUBLIC BT_NO_SIMD_OPERATOR_OVERLOADS)
+endif()
+
 install(TARGETS p3bullet
   EXPORT Bullet COMPONENT Bullet
   DESTINATION ${CMAKE_INSTALL_LIBDIR}
