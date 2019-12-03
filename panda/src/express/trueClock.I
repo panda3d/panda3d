@@ -11,7 +11,7 @@
  * @date 2000-07-04
  */
 
-#if defined(WIN32_VC) || defined(WIN64_VC)
+#ifdef _WIN32
 
 /**
  *

@@ -530,16 +530,11 @@ MAX_RELEASE_CHECK_RATE   default: 4095 unless not HAVE_MMAP
 #define DLMALLOC_EXPORT extern
 #endif
 
-#ifndef WIN32
-#ifdef _WIN32
-#define WIN32 1
-#endif  /* _WIN32 */
 #ifdef _WIN32_WCE
 #define LACKS_FCNTL_H
-#define WIN32 1
 #endif /* _WIN32_WCE */
-#endif  /* WIN32 */
-#ifdef WIN32
+
+#ifdef _WIN32
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN 1
 #endif
@@ -676,7 +671,7 @@ MAX_RELEASE_CHECK_RATE   default: 4095 unless not HAVE_MMAP
 #endif  /* MORECORE_CONTIGUOUS */
 #endif  /* HAVE_MORECORE */
 #ifndef DEFAULT_GRANULARITY
-#if (MORECORE_CONTIGUOUS || defined(WIN32))
+#if (MORECORE_CONTIGUOUS || defined(_WIN32))
 #define DEFAULT_GRANULARITY (0)  /* 0 means to compute in init_mparams */
 #else   /* MORECORE_CONTIGUOUS */
 #define DEFAULT_GRANULARITY ((size_t)64U * (size_t)1024U)
@@ -1464,7 +1459,7 @@ DLMALLOC_EXPORT int mspace_mallopt(int, int);
 #endif
 #define DEBUG 0
 #endif /* DEBUG */
-#if !defined(WIN32) && !defined(LACKS_TIME_H)
+#if !defined(_WIN32) && !defined(LACKS_TIME_H)
 #include <time.h>        /* for magic initialization */
 #endif /* WIN32 */
 #ifndef LACKS_STDLIB_H
@@ -1558,7 +1553,7 @@ unsigned char _BitScanReverse(unsigned long *index, unsigned long mask);
 #endif /* BitScanForward */
 #endif /* defined(_MSC_VER) && _MSC_VER>=1300 */
 
-#ifndef WIN32
+#ifndef _WIN32
 #ifndef malloc_getpagesize
 #  ifdef _SC_PAGESIZE         /* some SVR4 systems omit an underscore */
 #    ifndef _SC_PAGE_SIZE
@@ -1648,7 +1643,7 @@ unsigned char _BitScanReverse(unsigned long *index, unsigned long mask);
 
 #if HAVE_MMAP
 
-#ifndef WIN32
+#ifndef _WIN32
 #define MUNMAP_DEFAULT(a, s)  munmap((a), (s))
 #define MMAP_PROT            (PROT_READ|PROT_WRITE)
 #if !defined(MAP_ANONYMOUS) && defined(MAP_ANON)
@@ -2687,7 +2682,7 @@ static struct malloc_state _gm_;
 
 
 /* For mmap, use granularity alignment on windows, else page-align */
-#ifdef WIN32
+#ifdef _WIN32
 #define mmap_align(S) granularity_align(S)
 #else
 #define mmap_align(S) page_align(S)
@@ -3119,7 +3114,7 @@ static int init_mparams(void) {
     size_t psize;
     size_t gsize;
 
-#ifndef WIN32
+#ifndef _WIN32
     psize = malloc_getpagesize;
     gsize = ((DEFAULT_GRANULARITY != 0)? DEFAULT_GRANULARITY : psize);
 #else /* WIN32 */
@@ -3178,7 +3173,7 @@ static int init_mparams(void) {
       }
       else
 #endif /* USE_DEV_RANDOM */
-#ifdef WIN32
+#ifdef _WIN32
       magic = (size_t)(GetTickCount() ^ (size_t)0x55555555U);
 #elif defined(LACKS_TIME_H)
       magic = (size_t)&magic ^ (size_t)0x55555555U;

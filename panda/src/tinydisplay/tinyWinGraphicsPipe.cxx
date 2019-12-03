@@ -13,7 +13,7 @@
 
 #include "pandabase.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 
 #include "tinyWinGraphicsPipe.h"
 #include "config_tinydisplay.h"

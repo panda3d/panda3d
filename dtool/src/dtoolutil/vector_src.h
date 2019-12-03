@@ -34,7 +34,7 @@
 
 #include "pvector.h"
 
-#if defined(WIN32_VC) && !defined(CPPPARSER)
+#if defined(_MSC_VER) && !defined(CPPPARSER)
 
   #ifdef HAVE_DINKUM
 // With the Dinkum library, we must first export the base class, _Vector_val.
@@ -45,7 +45,9 @@ EXPORT_TEMPLATE_CLASS(EXPCL, EXPTP, VV_BASE)
   #endif
 
 // Now we can export the vector class.
+#ifdef _MSC_VER
 #pragma warning (disable : 4231)
+#endif
 
 #ifndef USE_STL_ALLOCATOR
 EXPORT_TEMPLATE_CLASS(EXPCL, EXPTP, std::vector<TYPE>)

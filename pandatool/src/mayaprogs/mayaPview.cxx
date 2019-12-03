@@ -43,7 +43,7 @@
 
 // On Windows, we have code to fork pview as a separate process, which seems
 // to be better for Maya.
-#ifdef WIN32_VC
+#ifdef _WIN32
 #include <windows.h>
 #include <process.h>
 #define SEPARATE_PVIEW 1

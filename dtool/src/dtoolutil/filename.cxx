@@ -70,15 +70,13 @@ TypeHandle Filename::_type_handle;
 string Filename::_internal_data_dir;
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 /* begin Win32-specific code */
 
-#ifdef WIN32_VC
 #include <direct.h>
 #include <windows.h>
 #include <shlobj.h>
 #include <io.h>
-#endif
 
 // The MSVC 6.0 Win32 SDK lacks the following definitions, so we define them
 // here for compatibility.
@@ -326,7 +324,7 @@ Filename(const Filename &dirname, const Filename &basename) {
  */
 Filename Filename::
 from_os_specific(const string &os_specific, Filename::Type type) {
-#ifdef WIN32
+#ifdef _WIN32
   string result = back_to_front_slash(os_specific);
   const string &panda_root = get_panda_root();
 
@@ -487,7 +485,7 @@ get_home_directory() {
     }
 
     if (home_directory.empty()) {
-#ifdef WIN32
+#ifdef _WIN32
       wchar_t buffer[MAX_PATH];
 
       // On Windows, fall back to the "My Documents" folder.
@@ -540,7 +538,7 @@ get_temp_directory() {
   if (AtomicAdjust::get_ptr(_temp_directory) == nullptr) {
     Filename temp_directory;
 
-#ifdef WIN32
+#ifdef _WIN32
     static const size_t buffer_size = 4096;
     wchar_t buffer[buffer_size];
     if (GetTempPathW(buffer_size, buffer) != 0) {
@@ -590,7 +588,7 @@ get_user_appdata_directory() {
   if (AtomicAdjust::get_ptr(_user_appdata_directory) == nullptr) {
     Filename user_appdata_directory;
 
-#ifdef WIN32
+#ifdef _WIN32
     wchar_t buffer[MAX_PATH];
 
     if (SHGetSpecialFolderPathW(nullptr, buffer, CSIDL_LOCAL_APPDATA, true)) {
@@ -646,7 +644,7 @@ get_common_appdata_directory() {
   if (AtomicAdjust::get_ptr(_common_appdata_directory) == nullptr) {
     Filename common_appdata_directory;
 
-#ifdef WIN32
+#ifdef _WIN32
     wchar_t buffer[MAX_PATH];
 
     if (SHGetSpecialFolderPathW(nullptr, buffer, CSIDL_COMMON_APPDATA, true)) {
@@ -1019,7 +1017,7 @@ make_canonical() {
     return true;
   }
 
-#ifndef WIN32
+#ifndef _WIN32
   // Use realpath in order to resolve symlinks properly
   char newpath [PATH_MAX + 1];
   if (realpath(c_str(), newpath) != nullptr) {
@@ -1057,7 +1055,7 @@ make_true_case() {
     return true;
   }
 
-#ifdef WIN32
+#ifdef _WIN32
   wstring os_specific = to_os_specific_w();
 
   // First, we have to convert it to its short name, then back to its long
@@ -1142,7 +1140,7 @@ to_os_specific() const {
   }
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
   switch (get_type()) {
   case T_dso:
     return convert_dso_pathname(standard.get_fullpath());
@@ -1182,11 +1180,11 @@ string Filename::
 to_os_generic() const {
   assert(!get_pattern());
 
-#ifdef WIN32
+#ifdef _WIN32
   return back_to_front_slash(to_os_specific());
-#else // WIN32
+#else // _WIN32
   return to_os_specific();
-#endif // WIN32
+#endif // _WIN32
 }
 
 /**
@@ -1202,7 +1200,7 @@ string Filename::
 to_os_short_name() const {
   assert(!get_pattern());
 
-#ifdef WIN32
+#ifdef _WIN32
   wstring os_specific = to_os_specific_w();
 
   wchar_t short_name[MAX_PATH + 1];
@@ -1236,7 +1234,7 @@ string Filename::
 to_os_long_name() const {
   assert(!get_pattern());
 
-#ifdef WIN32
+#ifdef _WIN32
   wstring os_specific = to_os_specific_w();
 
   wchar_t long_name[MAX_PATH + 1];
@@ -1265,7 +1263,7 @@ to_os_long_name() const {
  */
 bool Filename::
 exists() const {
-#ifdef WIN32_VC
+#ifdef _WIN32
   wstring os_specific = get_filename_index(0).to_os_specific_w();
 
   bool exists = false;
@@ -1295,7 +1293,7 @@ exists() const {
  */
 bool Filename::
 is_regular_file() const {
-#ifdef WIN32_VC
+#ifdef _WIN32
   wstring os_specific = get_filename_index(0).to_os_specific_w();
 
   bool isreg = false;
@@ -1327,7 +1325,7 @@ bool Filename::
 is_writable() const {
   bool writable = false;
 
-#ifdef WIN32_VC
+#ifdef _WIN32
   wstring os_specific = get_filename_index(0).to_os_specific_w();
 
   DWORD results = GetFileAttributesW(os_specific.c_str());
@@ -1357,7 +1355,7 @@ is_writable() const {
  */
 bool Filename::
 is_directory() const {
-#ifdef WIN32_VC
+#ifdef _WIN32
   wstring os_specific = get_filename_index(0).to_os_specific_w();
 
   bool isdir = false;
@@ -1385,7 +1383,7 @@ is_directory() const {
  */
 bool Filename::
 is_executable() const {
-#ifdef WIN32_VC
+#ifdef _WIN32
   // no access() in windows, but to our advantage executables can only end in
   // .exe or .com
   string extension = get_extension();
@@ -1417,7 +1415,7 @@ int Filename::
 compare_timestamps(const Filename &other,
                    bool this_missing_is_old,
                    bool other_missing_is_old) const {
-#ifdef WIN32_VC
+#ifdef _WIN32
   wstring os_specific = get_filename_index(0).to_os_specific_w();
   wstring other_os_specific = other.get_filename_index(0).to_os_specific_w();
 
@@ -1495,7 +1493,7 @@ compare_timestamps(const Filename &other,
  */
 time_t Filename::
 get_timestamp() const {
-#ifdef WIN32_VC
+#ifdef _WIN32
   wstring os_specific = get_filename_index(0).to_os_specific_w();
 
   struct _stat this_buf;
@@ -1523,7 +1521,7 @@ get_timestamp() const {
  */
 time_t Filename::
 get_access_timestamp() const {
-#ifdef WIN32_VC
+#ifdef _WIN32
   wstring os_specific = get_filename_index(0).to_os_specific_w();
 
   struct _stat this_buf;
@@ -1549,7 +1547,7 @@ get_access_timestamp() const {
  */
 std::streamsize Filename::
 get_file_size() const {
-#ifdef WIN32_VC
+#ifdef _WIN32
   wstring os_specific = get_filename_index(0).to_os_specific_w();
 
   struct _stat64 this_buf;
@@ -1718,7 +1716,7 @@ bool Filename::
 scan_directory(vector_string &contents) const {
   assert(!get_pattern());
 
-#if defined(WIN32_VC)
+#if defined(_WIN32)
   // Use Windows' FindFirstFile()  FindNextFile() to walk through the list of
   // files in a directory.
   size_t orig_size = contents.size();
@@ -1874,7 +1872,7 @@ open_read(std::ifstream &stream) const {
 #endif
 
   stream.clear();
-#ifdef WIN32_VC
+#ifdef _WIN32
   wstring os_specific = to_os_specific_w();
   stream.open(os_specific.c_str(), open_mode);
 #else
@@ -1924,7 +1922,7 @@ open_write(std::ofstream &stream, bool truncate) const {
 #endif
 
   stream.clear();
-#ifdef WIN32_VC
+#ifdef _WIN32
   wstring os_specific = to_os_specific_w();
 #else
   string os_specific = to_os_specific();
@@ -1956,7 +1954,7 @@ open_append(std::ofstream &stream) const {
 #endif
 
   stream.clear();
-#ifdef WIN32_VC
+#ifdef _WIN32
   wstring os_specific = to_os_specific_w();
 #else
   string os_specific = to_os_specific();
@@ -1998,7 +1996,7 @@ open_read_write(std::fstream &stream, bool truncate) const {
 #endif
 
   stream.clear();
-#ifdef WIN32_VC
+#ifdef _WIN32
   wstring os_specific = to_os_specific_w();
 #else
   string os_specific = to_os_specific();
@@ -2030,7 +2028,7 @@ open_read_append(std::fstream &stream) const {
 #endif
 
   stream.clear();
-#ifdef WIN32_VC
+#ifdef _WIN32
   wstring os_specific = to_os_specific_w();
 #else
   string os_specific = to_os_specific();
@@ -2224,7 +2222,7 @@ open_read_append(pfstream &stream) const {
 bool Filename::
 touch() const {
   assert(!get_pattern());
-#ifdef WIN32_VC
+#ifdef _WIN32
   // In Windows, we have to use the Windows API to do this reliably.
 
   // First, guarantee the file exists (and also get its handle).
@@ -2301,7 +2299,7 @@ touch() const {
  */
 bool Filename::
 chdir() const {
-#ifdef WIN32_VC
+#ifdef _WIN32
   wstring os_specific = to_os_specific_w();
   return (_wchdir(os_specific.c_str()) >= 0);
 #else
@@ -2318,7 +2316,7 @@ chdir() const {
 bool Filename::
 unlink() const {
   assert(!get_pattern());
-#ifdef WIN32_VC
+#ifdef _WIN32
   // Windows can't delete a file if it's read-only.  Weird.
   wstring os_specific = to_os_specific_w();
   _wchmod(os_specific.c_str(), 0644);
@@ -2344,7 +2342,7 @@ rename_to(const Filename &other) const {
     return true;
   }
 
-#ifdef WIN32_VC
+#ifdef _WIN32
   wstring os_specific = to_os_specific_w();
   wstring other_os_specific = other.to_os_specific_w();
 
@@ -2555,7 +2553,7 @@ mkdir() const {
  */
 bool Filename::
 rmdir() const {
-#ifdef WIN32_VC
+#ifdef _WIN32
   wstring os_specific = to_os_specific_w();
 
   int result = _wrmdir(os_specific.c_str());
@@ -3046,7 +3044,7 @@ r_make_canonical(const Filename &cwd) {
     return false;
   }
 
-#ifdef WIN32_VC
+#ifdef _WIN32
   // First, try to cd to the filename directly.
   wstring os_specific = to_os_specific_w();
   if (_wchdir(os_specific.c_str()) >= 0) {

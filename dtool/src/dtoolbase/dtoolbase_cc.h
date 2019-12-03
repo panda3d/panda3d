@@ -251,7 +251,7 @@ INLINE void thread_consider_yield() {
 
 #endif  // HAVE_THREADS && SIMPLE_THREADS
 
-#if defined(USE_TAU) && defined(WIN32)
+#if defined(USE_TAU) && defined(_WIN32)
 // Hack around tau's lack of DLL export declarations for Profiler class.
 extern EXPCL_DTOOL_DTOOLBASE bool __tau_shutdown;
 class EXPCL_DTOOL_DTOOLBASE TauProfile {

@@ -32,7 +32,7 @@ static Filename resolve_dso(const DSearchPath &path, const Filename &filename) {
   }
 }
 
-#if defined(WIN32)
+#if defined(_WIN32)
 /* begin Win32-specific code */
 
 #define WINDOWS_LEAN_AND_MEAN

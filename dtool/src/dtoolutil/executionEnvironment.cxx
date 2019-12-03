@@ -101,7 +101,7 @@ static const char *const libp3dtool_filenames[] = {
   // libp3dtool dynamic library - no guesswork needed.
   LIBP3DTOOL_FILENAMES
 
-#elif defined(WIN32_VC)
+#elif defined(_WIN32)
 
 #ifdef _DEBUG
   "libp3dtool_d.dll",
@@ -585,7 +585,7 @@ read_args() {
   // the p3dtool library.
 
 #ifndef LINK_ALL_STATIC
-#if defined(WIN32_VC)
+#if defined(_WIN32)
   for (const char *filename : libp3dtool_filenames) {
     if (!_dtool_name.empty()) break;
 
@@ -704,7 +704,7 @@ read_args() {
   // Now, we need to fill in _binary_name.  This contains the full path to the
   // currently running executable.
 
-#ifdef WIN32_VC
+#ifdef _WIN32
   if (_binary_name.empty()) {
     static const DWORD buffer_size = 1024;
     wchar_t buffer[buffer_size];
@@ -766,7 +766,7 @@ read_args() {
   // Next we need to fill in _args, which is a vector containing the command-
   // line arguments that the executable was invoked with.
 
-#if defined(WIN32_VC)
+#if defined(_WIN32)
 
   // We cannot rely on __argv when Python is linked in Unicode mode.  Instead,
   // let's use GetCommandLine.

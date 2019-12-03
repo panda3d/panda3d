@@ -22,7 +22,7 @@
 
 #include <stdlib.h>
 
-#ifdef WIN32_VC
+#ifdef _WIN32
 #include <process.h>
 #endif
 
@@ -69,7 +69,7 @@ doIt(const MArgList &args) {
     pview_args = "-cla";
   }
 
-#ifdef WIN32_VC
+#ifdef _WIN32
   // On Windows, we use the spawn function to run pview asynchronously.
   MString quoted = MString("\"") + filename + MString("\"");
   intptr_t retval = _spawnlp(_P_DETACH, "pview",

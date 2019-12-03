@@ -70,7 +70,7 @@ PUBLISHED:
   // limited add_childremove_child or inserterase interface.  The following
   // implements this.
 public:
-#if defined(WIN32_VC) || defined(WIN64_VC)
+#ifdef _WIN32
   typedef const PT(EggNode) *pointer;
   typedef const PT(EggNode) *const_pointer;
 #else
