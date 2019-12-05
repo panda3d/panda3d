@@ -21,6 +21,33 @@ set(CMAKE_SHARED_LINKER_FLAGS_STANDARD "")
 set(CMAKE_MODULE_LINKER_FLAGS_STANDARD "")
 set(CMAKE_EXE_LINKER_FLAGS_STANDARD "")
 
+# Coverage (when we know how to support it)
+if(CMAKE_CXX_COMPILER_ID MATCHES "(AppleClang|Clang)")
+  set(CMAKE_C_FLAGS_COVERAGE
+    "${CMAKE_C_FLAGS_DEBUG} -fprofile-instr-generate -fcoverage-mapping")
+  set(CMAKE_CXX_FLAGS_COVERAGE
+    "${CMAKE_CXX_FLAGS_DEBUG} -fprofile-instr-generate -fcoverage-mapping")
+
+  set(CMAKE_SHARED_LINKER_FLAGS_COVERAGE
+    "${CMAKE_SHARED_LINKER_FLAGS_DEBUG} -fprofile-instr-generate")
+  set(CMAKE_MODULE_LINKER_FLAGS_COVERAGE
+    "${CMAKE_MODULE_LINKER_FLAGS_DEBUG} -fprofile-instr-generate")
+  set(CMAKE_EXE_LINKER_FLAGS_COVERAGE
+    "${CMAKE_EXE_LINKER_FLAGS_DEBUG} -fprofile-instr-generate")
+
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GCC")
+  set(CMAKE_C_FLAGS_COVERAGE "${CMAKE_C_FLAGS_DEBUG} --coverage")
+  set(CMAKE_CXX_FLAGS_COVERAGE "${CMAKE_CXX_FLAGS_DEBUG} --coverage")
+
+  set(CMAKE_SHARED_LINKER_FLAGS_COVERAGE
+    "${CMAKE_SHARED_LINKER_FLAGS_DEBUG} --coverage")
+  set(CMAKE_MODULE_LINKER_FLAGS_COVERAGE
+    "${CMAKE_MODULE_LINKER_FLAGS_DEBUG} --coverage")
+  set(CMAKE_EXE_LINKER_FLAGS_COVERAGE
+    "${CMAKE_EXE_LINKER_FLAGS_DEBUG} --coverage")
+
+endif()
+
 # Panda3D is now a C++11 project. Newer versions of CMake support this out of
 # the box; for older versions we take a shot in the dark:
 if(CMAKE_VERSION VERSION_LESS "3.1")

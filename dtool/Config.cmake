@@ -35,16 +35,21 @@ a CMake < 3.9. Making a guess if this is a multi-config generator.")
 endif()
 
 # Define the type of build we are setting up.
+
+set(_configs Standard Release RelWithDebInfo Debug MinSizeRel)
+if(DEFINED CMAKE_CXX_FLAGS_COVERAGE)
+  list(APPEND _configs Coverage)
+endif()
+
 if(IS_MULTICONFIG)
-  set(CMAKE_CONFIGURATION_TYPES Standard Release RelWithDebInfo Debug MinSizeRel)
+  set(CMAKE_CONFIGURATION_TYPES ${_configs})
 else()
   # CMAKE_BUILD_TYPE can't just be set using the usual set(CACHE) method since
   # it's an empty string by default.
   if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Standard)
   endif()
-  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
-    Standard Release RelWithDebInfo Debug MinSizeRel)
+  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS ${_configs})
 endif()
 
 # Provide convenient boolean expression based on build type

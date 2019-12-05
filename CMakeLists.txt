@@ -117,8 +117,11 @@ if(INTERROGATE_PYTHON_INTERFACE)
   # for pytest before adding this test.  If the user doesn't have pytest, we'd
   # like for the tests to fail.
 
+  # In the Coverage configuration, we also require pytest-cov
+
   add_test(NAME pytest
     COMMAND "${PYTHON_EXECUTABLE}" -m pytest "${PROJECT_SOURCE_DIR}/tests"
+    $<$<CONFIG:Coverage>:--cov=.>
     WORKING_DIRECTORY "${PANDA_OUTPUT_DIR}")
 endif()
 
