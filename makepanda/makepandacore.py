@@ -2479,6 +2479,8 @@ def SdkLocateAndroid():
         return
 
     # Allow ANDROID_API/ANDROID_ABI to be used in makepanda.py.
+    if ANDROID_API is None:
+        SetTarget('android')
     api = ANDROID_API
     SDK["ANDROID_API"] = api
 
