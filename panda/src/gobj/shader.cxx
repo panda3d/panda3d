@@ -2479,6 +2479,8 @@ read(const ShaderFile &sfile, BamCacheRecord *record) {
     }
   }
 
+  _prepare_shader_pcollector = PStatCollector(std::string("Draw:Prepare:Shader:") + _debug_name);
+
   _loaded = true;
   return true;
 }
@@ -2569,6 +2571,9 @@ load(const ShaderFile &sbody, BamCacheRecord *record) {
     }
   }
 
+  _debug_name = "created-shader";
+  _prepare_shader_pcollector = PStatCollector("Draw:Prepare:Shader:created-shader");
+
   _loaded = true;
   return true;
 }
@@ -2589,6 +2594,8 @@ do_read_source(string &into, const Filename &fn, BamCacheRecord *record) {
     return false;
   }
 
+  Filename fullpath = vf->get_filename();
+
   if (_language == SL_GLSL && glsl_preprocess) {
     istream *source = vf->open_read_file(true);
     if (source == nullptr) {
@@ -2603,7 +2610,7 @@ do_read_source(string &into, const Filename &fn, BamCacheRecord *record) {
 
     std::set<Filename> open_files;
     ostringstream sstr;
-    if (!r_preprocess_source(sstr, *source, fn, vf->get_filename(), open_files, record)) {
+    if (!r_preprocess_source(sstr, *source, fn, fullpath, open_files, record)) {
       vf->close_read_file(source);
       return false;
     }
@@ -2625,7 +2632,7 @@ do_read_source(string &into, const Filename &fn, BamCacheRecord *record) {
   }
 
   _last_modified = std::max(_last_modified, vf->get_timestamp());
-  _source_files.push_back(vf->get_filename());
+  _source_files.push_back(fullpath);
 
   // Strip trailing whitespace.
   while (!into.empty() && isspace(into[into.size() - 1])) {
@@ -2634,6 +2641,11 @@ do_read_source(string &into, const Filename &fn, BamCacheRecord *record) {
 
   // Except add back a newline at the end, which is needed by Intel drivers.
   into += "\n";
+
+  if (!_debug_name.empty()) {
+    _debug_name += '/';
+  }
+  _debug_name += fullpath.get_basename();
 
   return true;
 }
