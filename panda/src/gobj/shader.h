@@ -18,6 +18,7 @@
 
 #include "pandabase.h"
 #include "config_gobj.h"
+
 #include "typedWritableReferenceCount.h"
 #include "namable.h"
 #include "graphicsStateGuardianBase.h"
@@ -31,6 +32,7 @@
 #include "pta_LVecBase4.h"
 #include "pta_LVecBase3.h"
 #include "pta_LVecBase2.h"
+#include "pStatCollector.h"
 #include "epvector.h"
 #include "asyncFuture.h"
 #include "bamCacheRecord.h"
