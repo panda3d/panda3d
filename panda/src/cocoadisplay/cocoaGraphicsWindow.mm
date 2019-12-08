@@ -551,6 +551,11 @@ open_window() {
     _parent_window_handle->attach_child(_window_handle);
   }
 
+  // Always disable application HiDPI support, Cocoa will do the eventual upscaling for us.
+  // Note: setWantsBestResolutionOpenGLSurface method is supported from MacOS 10.7 onwards
+  if ([_view respondsToSelector:@selector(setWantsBestResolutionOpenGLSurface:)]) {
+    [_view setWantsBestResolutionOpenGLSurface:NO];
+  }
   if (_properties.has_icon_filename()) {
     NSImage *image = load_image(_properties.get_icon_filename());
     if (image != nil) {

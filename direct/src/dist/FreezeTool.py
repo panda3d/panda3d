@@ -2372,6 +2372,17 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
 
             path = self.path
 
+            if fullname == 'distutils' and hasattr(sys, 'real_prefix'):
+                # The PyPI version of virtualenv inserts a special version of
+                # distutils that does some bizarre stuff that won't work in our
+                # deployed application.  Force it to find the regular one.
+                try:
+                    fp, fn, stuff = self.find_module('opcode')
+                    if fn:
+                        path = [os.path.dirname(fn)] + path
+                except ImportError:
+                    pass
+
         # Look for the module on the search path.
         for dir_path in path:
             basename = os.path.join(dir_path, name.split('.')[-1])
