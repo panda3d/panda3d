@@ -45,7 +45,11 @@ def test_wheel(wheel, verbose=False):
             open(pep425tags, "w").write(data)
 
     # Install pytest into the environment, as well as our wheel.
-    if subprocess.call([python, "-m", "pip", "install", "pytest", wheel]) != 0:
+    packages = ["pytest", wheel]
+    if sys.version_info[0:2] == (3, 4):
+        packages += ["colorama==0.4.1"]
+
+    if subprocess.call([python, "-m", "pip", "install"] + packages) != 0:
         shutil.rmtree(envdir)
         sys.exit(1)
 
