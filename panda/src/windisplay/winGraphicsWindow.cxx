@@ -258,10 +258,12 @@ process_events() {
 
   MSG msg;
 
-  // Handle all the messages on the queue in a row.  Some of these might be
-  // for another window, but they will get dispatched appropriately.
-  while (PeekMessage(&msg, nullptr, 0, 0, PM_NOREMOVE)) {
-    process_1_event();
+  if (!disable_message_loop) {
+    // Handle all the messages on the queue in a row.  Some of these might be
+    // for another window, but they will get dispatched appropriately.
+    while (PeekMessage(&msg, nullptr, 0, 0, PM_NOREMOVE)) {
+      process_1_event();
+    }
   }
 }
 

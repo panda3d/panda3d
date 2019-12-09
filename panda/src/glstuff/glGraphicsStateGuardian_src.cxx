@@ -6206,7 +6206,7 @@ release_geom(GeomContext *gc) {
  */
 ShaderContext *CLP(GraphicsStateGuardian)::
 prepare_shader(Shader *se) {
-  PStatGPUTimer timer(this, _prepare_shader_pcollector);
+  PStatGPUTimer timer(this, se->get_prepare_shader_pcollector());
 
 #ifndef OPENGLES_1
   ShaderContext *result = nullptr;
@@ -6214,7 +6214,9 @@ prepare_shader(Shader *se) {
   switch (se->get_language()) {
   case Shader::SL_GLSL:
     if (_supports_glsl) {
+      push_group_marker(std::string("Prepare Shader ") + se->get_debug_name());
       result = new CLP(ShaderContext)(this, se);
+      pop_group_marker();
       break;
     } else {
       GLCAT.error()
@@ -6225,7 +6227,9 @@ prepare_shader(Shader *se) {
   case Shader::SL_Cg:
 #if defined(HAVE_CG) && !defined(OPENGLES)
     if (_supports_basic_shaders) {
+      push_group_marker(std::string("Prepare Shader ") + se->get_debug_name());
       result = new CLP(CgShaderContext)(this, se);
+      pop_group_marker();
       break;
     } else {
       GLCAT.error()
