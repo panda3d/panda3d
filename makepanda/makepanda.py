@@ -1107,7 +1107,7 @@ if (COMPILER=="GCC"):
             LibName("PHYSX", "-lNxCharacter")
 
 DefSymbol("WITHINPANDA", "WITHIN_PANDA", "1")
-if GetLinkAllStatic():
+if GetLinkAllStatic() or GetTarget() == 'emscripten':
     DefSymbol("ALWAYS", "LINK_ALL_STATIC")
 if GetTarget() == 'android':
     DefSymbol("ALWAYS", "ANDROID")
@@ -2604,7 +2604,6 @@ def WriteConfigSettings():
         dtool_config["IS_LINUX"] = 'UNDEF'
         dtool_config["HAVE_VIDEO4LINUX"] = 'UNDEF'
         dtool_config["HAVE_NET"] = 'UNDEF'
-        dtool_config["LINK_ALL_STATIC"] = '1'
         dtool_config["PHAVE_LINUX_INPUT_H"] = 'UNDEF'
         dtool_config["HAVE_X11"] = 'UNDEF'
         dtool_config["HAVE_GLX"] = 'UNDEF'
