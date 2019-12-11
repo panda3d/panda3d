@@ -35,7 +35,7 @@ public:
   INLINE const XFileDataDef *get_data_def() const;
 
   virtual bool is_complex_object() const;
-  virtual std::string get_type_name() const;
+  virtual std::string (get_type_name)() const;
 
   INLINE void operator = (int int_value);
   INLINE void operator = (double double_value);

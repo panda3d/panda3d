@@ -112,3 +112,44 @@ register_dynamic_type(const std::string &name,
   registry->record_derivation(type_handle, parent4);
   return type_handle;
 }
+
+/**
+ * This is a helper that returns the type name for any given type.
+ */
+template<class T>
+INLINE std::basic_string<char>
+_get_type_name() {
+#if defined(__clang__)
+  static const size_t entire_size = sizeof(__PRETTY_FUNCTION__) - 1;
+  static const size_t prefix_size = sizeof("std::basic_string<char> _get_type_name() [T = ") - 1;
+  static const size_t suffix_size = sizeof("]") - 1;
+  return std::string(__PRETTY_FUNCTION__ + prefix_size, entire_size - prefix_size - suffix_size);
+#elif defined(__GNUC__)
+  // NB. Since GCC will otherwise include the definition of std::string, we are
+  // declaring this function as returning std::basic_string<char> instead.
+  static const size_t entire_size = sizeof(__PRETTY_FUNCTION__) - 1;
+#ifdef _GLIBCXX_USE_CXX11_ABI
+  static const size_t prefix_size = sizeof("std::__cxx11::basic_string<char> _get_type_name() [with T = ") - 1;
+#else
+  static const size_t prefix_size = sizeof("std::basic_string<char> _get_type_name() [with T = ") - 1;
+#endif
+  static const size_t suffix_size = sizeof("]") - 1;
+  return std::string(__PRETTY_FUNCTION__ + prefix_size, entire_size - prefix_size - suffix_size);
+#elif defined(_MSC_VER)
+  // MSVC allows us to use RTTI to get the type name without having it enabled.
+  // However, we do have to strip the "class" or "struct" prefix.
+  std::string type_name = typeid(T).name();
+  size_t space = type_name.find(' ');
+  if (space != std::string::npos) {
+    return type_name.substr(space + 1);
+  } else {
+    return type_name;
+  }
+#elif defined(HAVE_RTTI) && !defined(__EDG__)
+  // If we have RTTI, we can use it to determine the name of the base type.
+  // MSVC allows us to use this with RTTI disabled as well.
+  return typeid(T).name();
+#else
+  return "unknown";
+#endif
+}

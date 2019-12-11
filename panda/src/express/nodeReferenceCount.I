@@ -213,13 +213,7 @@ NodeRefCountObj(const Base &copy) : Base(copy) {
 template<class Base>
 void NodeRefCountObj<Base>::
 init_type() {
-#if defined(HAVE_RTTI) && !defined(__EDG__)
-  // If we have RTTI, we can determine the name of the base type.
-  std::string base_name = typeid(Base).name();
-#else
-  std::string base_name = "unknown";
-#endif
-
+  std::string base_name = get_type_name(Base);
   TypeHandle base_type = register_dynamic_type(base_name);
 
   ReferenceCount::init_type();

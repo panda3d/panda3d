@@ -19,6 +19,10 @@
 #include "typeHandle.h"
 #include "typeRegistry.h"
 
+#if defined(HAVE_RTTI) && !defined(__clang__) && !defined(__GNUC__)
+#include <typeinfo>
+#endif
+
 /**
  * This inline function is just a convenient way to call
  * TypeRegistry::register_type(), along with zero to four
@@ -73,6 +77,18 @@ INLINE TypeHandle
 register_dynamic_type(const std::string &name,
                       TypeHandle parent1, TypeHandle parent2,
                       TypeHandle parent3, TypeHandle parent4);
+
+
+/**
+ * This is a helper that returns the type name for any given type.
+ */
+template<class T>
+INLINE std::basic_string<char>
+_get_type_name();
+
+// The macro get_type_name(type) is defined to make getting the type name
+// associated with a particular type a bit cleaner.
+#define get_type_name(type) _get_type_name<type>()
 
 
 // A few system-wide TypeHandles are defined for some basic types.

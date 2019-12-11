@@ -128,13 +128,7 @@ make_cow_copy() {
 template<class Base>
 void CopyOnWriteObj<Base>::
 init_type() {
-#if defined(HAVE_RTTI) && !defined(__EDG__)
-  // If we have RTTI, we can determine the name of the base type.
-  std::string base_name = typeid(Base).name();
-#else
-  std::string base_name = "unknown";
-#endif
-
+  std::string base_name = get_type_name(Base);
   TypeHandle base_type = register_dynamic_type(base_name);
 
   CopyOnWriteObject::init_type();
@@ -188,13 +182,7 @@ make_cow_copy() {
 template<class Base, class Param1>
 void CopyOnWriteObj1<Base, Param1>::
 init_type() {
-#if defined(HAVE_RTTI) && !defined(__EDG__)
-  // If we have RTTI, we can determine the name of the base type.
-  std::string base_name = typeid(Base).name();
-#else
-  std::string base_name = "unknown";
-#endif
-
+  std::string base_name = get_type_name(Base);
   TypeHandle base_type = register_dynamic_type(base_name);
 
   CopyOnWriteObject::init_type();

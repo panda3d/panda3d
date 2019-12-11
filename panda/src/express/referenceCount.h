@@ -26,10 +26,6 @@
 
 #include <stdlib.h>
 
-#ifdef HAVE_RTTI
-#include <typeinfo>
-#endif
-
 /**
  * A base class for all things that want to be reference-counted.
  * ReferenceCount works in conjunction with PointerTo to automatically delete

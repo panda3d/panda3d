@@ -59,7 +59,7 @@ is_standard_object(const std::string &template_name) const {
  * Returns a string that represents the type of object this data object
  * represents.
  */
-std::string XFileDataNode::
-get_type_name() const {
+std::string (XFileDataNode::
+get_type_name)() const {
   return _template->get_name();
 }

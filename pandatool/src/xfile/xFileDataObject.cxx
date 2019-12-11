@@ -45,8 +45,8 @@ is_complex_object() const {
  * Returns a string that represents the type of object this data object
  * represents.
  */
-string XFileDataObject::
-get_type_name() const {
+string (XFileDataObject::
+get_type_name)() const {
   return get_type().get_name();
 }
 
@@ -189,7 +189,7 @@ write_data(std::ostream &out, int indent_level, const char *) const {
 void XFileDataObject::
 set_int_value(int int_value) {
   xfile_cat.error()
-    << get_type_name() << " does not support integer values.\n";
+    << (get_type_name)() << " does not support integer values.\n";
 }
 
 /**
@@ -198,7 +198,7 @@ set_int_value(int int_value) {
 void XFileDataObject::
 set_double_value(double double_value) {
   xfile_cat.error()
-    << get_type_name() << " does not support floating-point values.\n";
+    << (get_type_name)() << " does not support floating-point values.\n";
 }
 
 /**
@@ -207,7 +207,7 @@ set_double_value(double double_value) {
 void XFileDataObject::
 set_string_value(const string &string_value) {
   xfile_cat.error()
-    << get_type_name() << " does not support string values.\n";
+    << (get_type_name)() << " does not support string values.\n";
 }
 
 /**
@@ -219,7 +219,7 @@ void XFileDataObject::
 store_double_array(int num_elements, const double *values) {
   if (get_num_elements() != num_elements) {
     xfile_cat.error()
-      << get_type_name() << " does not accept "
+      << (get_type_name)() << " does not accept "
       << num_elements << " values.\n";
     return;
   }
@@ -263,7 +263,7 @@ void XFileDataObject::
 get_double_array(int num_elements, double *values) const {
   if (get_num_elements() != num_elements) {
     xfile_cat.error()
-      << get_type_name() << " does not contain "
+      << (get_type_name)() << " does not contain "
       << num_elements << " values.\n";
     return;
   }
@@ -289,7 +289,7 @@ XFileDataObject *XFileDataObject::
 get_element(int n) {
   xfile_cat.warning()
     << "Looking for [" << n << "] within data object of type "
-    << get_type_name() << ", does not support nested objects.\n";
+    << (get_type_name)() << ", does not support nested objects.\n";
   return nullptr;
 }
 
@@ -301,6 +301,6 @@ XFileDataObject *XFileDataObject::
 get_element(const string &name) {
   xfile_cat.warning()
     << "Looking for [\"" << name << "\"] within data object of type "
-    << get_type_name() << ", does not support nested objects.\n";
+    << (get_type_name)() << ", does not support nested objects.\n";
   return nullptr;
 }

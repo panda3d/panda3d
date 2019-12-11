@@ -1309,9 +1309,8 @@ def CompileCxx(obj,src,opts):
 
             target = GetTarget()
             if 'RTTI' not in opts and target != "darwin":
-                # We always disable RTTI on Android for memory usage reasons.
-                if optlevel >= 4 or target == "android":
-                    cmd += " -fno-rtti"
+                # We always disable RTTI nowadays.
+                cmd += " -fno-rtti"
 
         if ('SSE2' in opts or not PkgSkip("SSE2")) and not arch.startswith("arm") and arch != 'aarch64':
             cmd += " -msse2"

@@ -37,7 +37,7 @@ public:
 
   virtual bool is_object() const;
   virtual bool is_standard_object(const std::string &template_name) const;
-  virtual std::string get_type_name() const;
+  virtual std::string (get_type_name)() const;
 
   INLINE const XFileDataNode &get_data_child(int n) const;
 

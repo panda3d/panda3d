@@ -47,7 +47,7 @@ PUBLISHED:
   MAKE_SEQ(get_typed_pointers, get_num_pointers, get_typed_pointer);
 
   TypeHandle get_type(size_t n) const;
-  std::string get_type_name(size_t n) const;
+  std::string (get_type_name)(size_t n) const;
   double get_age(size_t n) const;
 
 #ifdef DO_MEMORY_USAGE

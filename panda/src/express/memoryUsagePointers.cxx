@@ -111,8 +111,8 @@ get_type(size_t n) const {
 /**
  * Returns the type name of the nth pointer, if it is known.
  */
-std::string MemoryUsagePointers::
-get_type_name(size_t n) const {
+std::string (MemoryUsagePointers::
+get_type_name)(size_t n) const {
 #ifdef DO_MEMORY_USAGE
   nassertr(n < get_num_pointers(), "");
   return get_type(n).get_name();
