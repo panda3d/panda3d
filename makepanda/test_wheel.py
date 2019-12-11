@@ -46,7 +46,7 @@ def test_wheel(wheel, verbose=False):
 
     # Install pytest into the environment, as well as our wheel.
     packages = ["pytest", wheel]
-    if sys.version_info[0:2] == (3, 4):
+    if sys.version_info[0:2] == (3, 4) and sys.platform == "win32":
         packages += ["colorama==0.4.1"]
 
     if subprocess.call([python, "-m", "pip", "install"] + packages) != 0:
