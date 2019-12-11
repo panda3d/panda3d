@@ -172,13 +172,12 @@ clear_shader() const {
 CPT(RenderAttrib) ShaderAttrib::
 set_flag(int flag, bool value) const {
   ShaderAttrib *result = new ShaderAttrib(*this);
-  int bit = 1<<flag;
   if (value) {
-    result->_flags |= bit;
+    result->_flags |= flag;
   } else {
-    result->_flags &= ~bit;
+    result->_flags &= ~flag;
   }
-  result->_has_flags |= bit;
+  result->_has_flags |= flag;
   return return_new(result);
 }
 
@@ -188,9 +187,8 @@ set_flag(int flag, bool value) const {
 CPT(RenderAttrib) ShaderAttrib::
 clear_flag(int flag) const {
   ShaderAttrib *result = new ShaderAttrib(*this);
-  int bit = 1<<flag;
-  result->_flags &= ~bit;
-  result->_has_flags &= ~bit;
+  result->_flags &= ~flag;
+  result->_has_flags &= ~flag;
   return return_new(result);
 }
 

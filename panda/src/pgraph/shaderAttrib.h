@@ -47,10 +47,10 @@ PUBLISHED:
   static CPT(RenderAttrib) make_default();
 
   enum {
-    F_disable_alpha_write = 0,  // Suppress writes to color buffer alpha channel.
-    F_subsume_alpha_test  = 1,  // Shader promises to subsume the alpha test using TEXKILL
-    F_hardware_skinning   = 2,  // Shader needs pre-animated vertices
-    F_shader_point_size   = 3,  // Shader provides point size, not RenderModeAttrib
+    F_disable_alpha_write = 1 << 0,  // Suppress writes to color buffer alpha channel.
+    F_subsume_alpha_test  = 1 << 1,  // Shader promises to subsume the alpha test using TEXKILL
+    F_hardware_skinning   = 1 << 2,  // Shader needs pre-animated vertices
+    F_shader_point_size   = 1 << 3,  // Shader provides point size, not RenderModeAttrib
   };
 
   INLINE bool               has_shader() const;
