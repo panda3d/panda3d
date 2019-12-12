@@ -309,7 +309,7 @@ x11GraphicsPipe(const std::string &display) :
   _net_wm_state_remove = XInternAtom(_display, "_NET_WM_STATE_REMOVE", false);
   _net_wm_bypass_compositor = XInternAtom(_display, "_NET_WM_BYPASS_COMPOSITOR", false);
   _net_wm_state_maximized_vert = XInternAtom(_display, "_NET_WM_STATE_MAXIMIZED_VERT", false);
-  _net_wm_state_maximized_horz = XInternAtom(_display, "_NET_WM_STATE_MAXIMIZED_HORZ", false);;
+  _net_wm_state_maximized_horz = XInternAtom(_display, "_NET_WM_STATE_MAXIMIZED_HORZ", false);
 }
 
 /**

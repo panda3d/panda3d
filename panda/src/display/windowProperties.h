@@ -200,7 +200,6 @@ private:
     S_fullscreen           = 0x00010,
     S_foreground           = 0x00020,
     S_minimized            = 0x00040,
-    S_maximized            = 0x00060,
     S_open                 = 0x00080,
     S_cursor_hidden        = 0x00100,
     S_fixed_size           = 0x00200,
@@ -210,6 +209,7 @@ private:
     S_mouse_mode           = 0x02000,
     S_parent_window        = 0x04000,
     S_raw_mice             = 0x08000,
+    S_maximized            = 0x10000,
   };
 
   // This bitmask represents the truefalse settings for various boolean flags
