@@ -29,14 +29,7 @@ class ParticleEffect(NodePath):
             self.addParticles(particles)
         self.renderParent = None
 
-    def prepareForBurstEmission(self, parent, renderParent):
-        self.reparentTo(parent)
-        self.renderParent = renderParent
-        if not self.isEnabled():
-            self.enable()
-            self.softStop()
-
-    def emitBurst(self):
+    def forceLitterBirth(self):
         for p in self.particlesDict.values():
             p.birth_litter()
 
@@ -243,3 +236,5 @@ class ParticleEffect(NodePath):
     def __isValid(self):
         return hasattr(self, 'forceGroupDict') and \
                hasattr(self, 'particlesDict')
+
+    force_litter_birth = forceLitterBirth
