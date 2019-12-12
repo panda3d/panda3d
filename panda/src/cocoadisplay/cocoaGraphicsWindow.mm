@@ -597,7 +597,7 @@ open_window() {
       [_window makeKeyAndOrderFront:nil];
       [_window miniaturize:nil];
     } else if (_properties.get_maximized()) {
-      [_window zoom:nil]
+      [_window zoom:nil];
     } else if (_properties.get_foreground()) {
       [_window makeKeyAndOrderFront:nil];
     } else {
