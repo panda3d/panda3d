@@ -41,5 +41,4 @@ def test_particle_burst_emission():
 
     assert system.getLivingParticles() == 2
 
-    print ("Done")
     # Done! :D
