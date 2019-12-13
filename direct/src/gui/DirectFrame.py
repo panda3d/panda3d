@@ -67,13 +67,14 @@ class DirectFrame(DirectGuiWidget):
         """Recreates the given component using the given keyword args."""
         assert name in ("geom", "image", "text")
 
-        if len(states) != self['numStates']:
-            raise ValueError
-
         # constants should be local to or default arguments of constructors
         for c in range(self['numStates']):
             component_name = name + str(c)
-            state = states[c]
+
+            try:
+                state = states[c]
+            except IndexError:
+                state = states[-1]
 
             if self.hascomponent(component_name):
                 if state is None:
