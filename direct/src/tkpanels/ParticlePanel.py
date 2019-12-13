@@ -1274,11 +1274,14 @@ class ParticlePanel(AppShell):
             parent = self.parent)
         if particleFilename:
             # Delete existing particles and forces
-            self.particleEffect.loadConfig(
-                Filename.fromOsSpecific(particleFilename))
-            self.selectEffectNamed(self.particleEffect.getName())
-            # Enable effect
-            self.particleEffect.enable()
+            try:
+                self.particleEffect.loadConfig(
+                    Filename.fromOsSpecific(particleFilename))
+                self.selectEffectNamed(self.particleEffect.getName())
+                # Enable effect
+                self.particleEffect.enable()
+            except OSError as e:
+                print(e)
 
     def saveParticleEffectToFile(self):
         # Find path to particle directory
