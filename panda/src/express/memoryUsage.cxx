@@ -18,7 +18,7 @@
 #include "mutexImpl.h"
 #include "interrogate_request.h"
 
-#if defined(_WIN32) && defined(_DEBUG)
+#if defined(_MSC_VER) && defined(__cplusplus) && defined(_DEBUG)
 #include <crtdbg.h>
 #endif
 
