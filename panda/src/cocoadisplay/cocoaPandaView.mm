@@ -22,9 +22,7 @@
   self = [super initWithFrame: frameRect];
 
   _context = context;
-#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
   [self setCanDrawConcurrently:YES];
-#endif
 
   // If a layer ends up becoming attached to the view, tell AppKit we'll manage
   // the redrawing since we're doing things our own way.

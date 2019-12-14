@@ -116,12 +116,14 @@ IOKitInputDevice(IOHIDDeviceRef device) :
   }
 
   CFArrayRef elements = IOHIDDeviceCopyMatchingElements(device, nullptr, 0);
-  CFIndex count = CFArrayGetCount(elements);
-  for (CFIndex i = 0; i < count; ++i) {
-    IOHIDElementRef element = (IOHIDElementRef)CFArrayGetValueAtIndex(elements, i);
-    parse_element(element);
+  if (elements) {
+    CFIndex count = CFArrayGetCount(elements);
+    for (CFIndex i = 0; i < count; ++i) {
+      IOHIDElementRef element = (IOHIDElementRef)CFArrayGetValueAtIndex(elements, i);
+      parse_element(element);
+    }
+    CFRelease(elements);
   }
-  CFRelease(elements);
 
   if (_hat_element != nullptr) {
     _hat_left_button = (int)_buttons.size();

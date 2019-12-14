@@ -18,6 +18,7 @@
 
 #include "pandabase.h"
 #include "config_gobj.h"
+
 #include "typedWritableReferenceCount.h"
 #include "namable.h"
 #include "graphicsStateGuardianBase.h"
@@ -31,6 +32,7 @@
 #include "pta_LVecBase4.h"
 #include "pta_LVecBase3.h"
 #include "pta_LVecBase2.h"
+#include "pStatCollector.h"
 #include "epvector.h"
 #include "asyncFuture.h"
 #include "bamCacheRecord.h"
@@ -529,6 +531,9 @@ public:
 
   static void set_default_caps(const ShaderCaps &caps);
 
+  INLINE PStatCollector &get_prepare_shader_pcollector();
+  INLINE const std::string &get_debug_name() const;
+
 private:
 #ifdef HAVE_CG
   ShaderArgClass cg_parameter_class(CGparameter p);
@@ -611,6 +616,9 @@ protected:
 
   typedef pmap <PreparedGraphicsObjects *, ShaderContext *> Contexts;
   Contexts _contexts;
+
+  PStatCollector _prepare_shader_pcollector;
+  std::string _debug_name;
 
 private:
   void clear_prepared(PreparedGraphicsObjects *prepared_objects);

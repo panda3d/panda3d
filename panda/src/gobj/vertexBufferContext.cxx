@@ -21,7 +21,13 @@ TypeHandle VertexBufferContext::_type_handle;
  */
 void VertexBufferContext::
 output(std::ostream &out) const {
-  out << *get_data() << ", " << get_data_size_bytes();
+  GeomVertexArrayData *data = get_data();
+  if (data != nullptr) {
+    out << *data;
+  } else {
+    out << "NULL";
+  }
+  out << ", " << get_data_size_bytes();
 }
 
 /**

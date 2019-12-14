@@ -785,7 +785,7 @@ class Freezer:
         # already-imported modules.  (Some of them might do their own
         # special path mangling.)
         for moduleName, module in list(sys.modules.items()):
-            if module and hasattr(module, '__path__'):
+            if module and getattr(module, '__path__', None) is not None:
                 path = list(getattr(module, '__path__'))
                 if path:
                     modulefinder.AddPackagePath(moduleName, path[0])
@@ -2221,6 +2221,10 @@ class Freezer:
 
         return True
 
+
+_PKG_NAMESPACE_DIRECTORY = object()
+
+
 class PandaModuleFinder(modulefinder.ModuleFinder):
 
     def __init__(self, *args, **kw):
@@ -2279,6 +2283,44 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
 
         return None
 
+    def _dir_exists(self, path):
+        """Returns True if the given directory exists, either on disk or inside
+        a wheel."""
+
+        if os.path.isdir(path):
+            return True
+
+        # Is there a zip file along the path?
+        dir, dirname = os.path.split(path.rstrip(os.path.sep + '/'))
+        fn = dirname
+        while dirname:
+            if os.path.isfile(dir):
+                # Okay, this is actually a file.  Is it a zip file?
+                if dir in self._zip_files:
+                    # Yes, and we've previously opened this.
+                    zip = self._zip_files[dir]
+                elif zipfile.is_zipfile(dir):
+                    zip = zipfile.ZipFile(dir)
+                    self._zip_files[dir] = zip
+                else:
+                    # It's a different kind of file.  Stop looking.
+                    return None
+
+                # (Most) zip files do not store directories; check instead for a
+                # file whose path starts with this directory name.
+                prefix = fn.replace(os.path.sep, '/') + '/'
+                for name in zip.namelist():
+                    if name.startswith(prefix):
+                        return True
+
+                return False
+
+            # Look at the parent directory.
+            dir, dirname = os.path.split(dir)
+            fn = os.path.join(dirname, fn)
+
+        return False
+
     def load_module(self, fqname, fp, pathname, file_info):
         """Copied from ModuleFinder.load_module with fixes to handle sending bytes
         to compile() for PY_SOURCE types. Sending bytes to compile allows it to
@@ -2289,6 +2331,12 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
         if type == imp.PKG_DIRECTORY:
             m = self.load_package(fqname, pathname)
             self.msgout(2, "load_module ->", m)
+            return m
+
+        if type is _PKG_NAMESPACE_DIRECTORY:
+            m = self.add_module(fqname)
+            m.__code__ = compile('', '', 'exec')
+            m.__path__ = pathname
             return m
 
         if type == imp.PY_SOURCE:
@@ -2372,7 +2420,20 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
 
             path = self.path
 
+            if fullname == 'distutils' and hasattr(sys, 'real_prefix'):
+                # The PyPI version of virtualenv inserts a special version of
+                # distutils that does some bizarre stuff that won't work in our
+                # deployed application.  Force it to find the regular one.
+                try:
+                    fp, fn, stuff = self.find_module('opcode')
+                    if fn:
+                        path = [os.path.dirname(fn)] + path
+                except ImportError:
+                    pass
+
         # Look for the module on the search path.
+        ns_dirs = []
+
         for dir_path in path:
             basename = os.path.join(dir_path, name.split('.')[-1])
 
@@ -2389,6 +2450,10 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
                 if self._open_file(init, mode):
                     return (None, basename, ('', '', imp.PKG_DIRECTORY))
 
+            # This may be a namespace package.
+            if self._dir_exists(basename):
+                ns_dirs.append(basename)
+
         # It wasn't found through the normal channels.  Maybe it's one of
         # ours, or maybe it's frozen?
         if not path:
@@ -2396,6 +2461,11 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
             if p3extend_frozen and p3extend_frozen.is_frozen_module(name):
                 # It's a frozen module.
                 return (None, name, ('', '', imp.PY_FROZEN))
+
+        # If we found folders on the path with this module name without an
+        # __init__.py file, we should consider this a namespace package.
+        if ns_dirs and sys.version_info >= (3, 3):
+            return (None, ns_dirs, ('', '', _PKG_NAMESPACE_DIRECTORY))
 
         raise ImportError(name)
 

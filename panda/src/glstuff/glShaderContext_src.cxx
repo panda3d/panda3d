@@ -3142,7 +3142,7 @@ glsl_compile_and_link() {
   }
 
   if (_glgsg->_use_object_labels) {
-    string name = _shader->get_filename();
+    const std::string &name = _shader->get_debug_name();
     _glgsg->_glObjectLabel(GL_PROGRAM, _glsl_program, name.size(), name.data());
   }
 

@@ -273,6 +273,13 @@ def parseopts(args):
             assert OSXTARGET[0] == 10
         except:
             usage("Invalid setting for OSXTARGET")
+
+        if OSXTARGET < (10, 9):
+            print("=========================================================================")
+            print("WARNING: Support for macOS versions before 10.9 has been discontinued.")
+            print("WARNING: For more information, or any questions, please visit:")
+            print("  https://github.com/panda3d/panda3d/issues/300")
+            print("=========================================================================")
     else:
         OSXTARGET = None
 
@@ -378,6 +385,8 @@ elif target == 'darwin':
     else:
         maj, min = platform.mac_ver()[0].split('.')[:2]
         osxver = int(maj), int(min)
+        if osxver < (10, 9):
+            osxver = (10, 9)
 
     arch_tag = GetTargetArch()
     PLATFORM = 'macosx-{0}.{1}-{2}'.format(osxver[0], osxver[1], arch_tag)
@@ -605,8 +614,11 @@ if (COMPILER == "MSVC"):
             suffix = "-2_2"
         elif os.path.isfile(GetThirdpartyDir() + "openexr/lib/IlmImf-2_3.lib"):
             suffix = "-2_3"
+        elif os.path.isfile(GetThirdpartyDir() + "openexr/lib/IlmImf-2_4.lib"):
+            suffix = "-2_4"
+            LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/Imath" + suffix + ".lib")
         if os.path.isfile(GetThirdpartyDir() + "openexr/lib/IlmImf" + suffix + "_s.lib"):
-            suffix += "_s"
+            suffix += "_s"  # _s suffix observed for OpenEXR 2.3 only so far
         LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/IlmImf" + suffix + ".lib")
         LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/IlmThread" + suffix + ".lib")
         LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/Iex" + suffix + ".lib")
@@ -798,6 +810,13 @@ if (COMPILER=="GCC"):
     SmartPkgEnable("OPUS",      "opusfile",  ("opusfile", "opus", "ogg"), ("ogg/ogg.h", "opus/opusfile.h", "opus"))
     SmartPkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
     SmartPkgEnable("PNG",       "libpng",    ("png"), "png.h", tool = "libpng-config")
+
+    # Copy freetype libraries to be specified after harfbuzz libraries as well,
+    # because there's a circular dependency between the two libraries.
+    if not PkgSkip("FREETYPE") and not PkgSkip("HARFBUZZ"):
+        for (opt, name) in LIBNAMES:
+            if opt == "FREETYPE":
+                LibName("HARFBUZZ", name)
 
     if not PkgSkip("FFMPEG"):
         if GetTarget() == "darwin":

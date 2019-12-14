@@ -38,7 +38,7 @@
 #include <algorithm>
 #include <ctype.h>
 
-#ifndef _MSC_VER
+#ifndef _WIN32
 #include <dlfcn.h>
 #endif
 
@@ -120,7 +120,7 @@ reload_implicit_pages() {
     const char *main_dir;
     const char *log_filename;
   };
-#ifdef _MSC_VER
+#ifdef _WIN32
   const BlobInfo *blobinfo = (const BlobInfo *)GetProcAddress(GetModuleHandle(NULL), "blobinfo");
 #elif defined(RTLD_MAIN_ONLY)
   const BlobInfo *blobinfo = (const BlobInfo *)dlsym(RTLD_MAIN_ONLY, "blobinfo");
@@ -130,7 +130,7 @@ reload_implicit_pages() {
   const BlobInfo *blobinfo = (const BlobInfo *)dlsym(dlopen(NULL, RTLD_NOW), "blobinfo");
 #endif
   if (blobinfo == nullptr) {
-#ifndef _MSC_VER
+#ifndef _WIN32
     // Clear the error flag.
     dlerror();
 #endif

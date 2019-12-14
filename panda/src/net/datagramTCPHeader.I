@@ -19,3 +19,8 @@ INLINE std::string DatagramTCPHeader::
 get_header() const {
   return _header.get_message();
 }
+
+INLINE CPTA_uchar DatagramTCPHeader::
+get_array() const {
+  return _header.get_array();
+}
