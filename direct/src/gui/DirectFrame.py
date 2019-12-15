@@ -83,17 +83,16 @@ class DirectFrame(DirectGuiWidget):
             else:
                 if state is None:
                     return
-
+                
                 kwargs[name] = state
-                self.createcomponent(
-                    component_name,
-                    (),
-                    name,
-                    component_class,
-                    (),
-                    parent=self.stateNodePath[c],
-                    **kwargs
-                )
+                
+                args,kwargs = self.getcomponentargs(component_name,(),None,
+                parent=self.stateNodePath[c],
+                    **kwargs)
+                
+                new_component=component_class(*args,**kwargs)
+                self.__componentInfo[component_name] = new_component
+                new_component.group=None
 
     def clearText(self):
         self['text'] = None
