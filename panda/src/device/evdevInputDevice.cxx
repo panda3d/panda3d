@@ -364,7 +364,7 @@ init_device() {
 
   // Try to detect which type of device we have here
   if (_device_class == DeviceClass::unknown) {
-    int device_scores[(size_t)DeviceClass::spatial_mouse] = {0};
+    int device_scores[(size_t)DeviceClass::digitizer + 1] = {0};
 
     // Test for specific keys
     if (test_bit(BTN_GAMEPAD, keys) && test_bit(ABS_X, axes) && test_bit(ABS_RX, axes)) {
@@ -384,6 +384,9 @@ init_device() {
     }
     if (test_bit(BTN_MOUSE, keys) && test_bit(EV_REL, evtypes)) {
       device_scores[(size_t)DeviceClass::mouse] += 20;
+    }
+    if (test_bit(BTN_DIGI, keys) && test_bit(EV_ABS, evtypes)) {
+      device_scores[(size_t)DeviceClass::digitizer] += 20;
     }
     uint8_t unknown_keys[] = {KEY_POWER};
     for (int i = 0; i < 1; i++) {
@@ -424,7 +427,7 @@ init_device() {
 
     // Check which device type got the most points
     int highest_score = 0;
-    for (size_t i = 0; i < (size_t)DeviceClass::spatial_mouse; i++) {
+    for (size_t i = 0; i <= (size_t)DeviceClass::digitizer; i++) {
       if (device_scores[i] > highest_score) {
         highest_score = device_scores[i];
         _device_class = (DeviceClass)i;
@@ -618,6 +621,9 @@ init_device() {
             axis = InputDevice::Axis::left_trigger;
             have_analog_triggers = true;
           }
+          break;
+        case ABS_PRESSURE:
+          axis = InputDevice::Axis::pressure;
           break;
         }
 
