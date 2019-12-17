@@ -304,6 +304,7 @@ class StreamIOWrapper(io.IOBase):
         self.__stream.clear()  # clear eof flag
         self.__write(b)
         self.__lastWrite = True
+        return len(b)
 
     def writelines(self, lines):
         if not self.__writer:
