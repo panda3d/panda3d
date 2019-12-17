@@ -441,7 +441,8 @@ class build_apps(setuptools.Command):
         for index in self.pypi_extra_indexes:
             pip_args += ['--extra-index-url', index]
 
-        subprocess.check_call([sys.executable, '-m', 'pip'] + pip_args)
+        pip_wrapper = os.path.join(os.path.dirname(__file__), 'pip_wrapper.py')
+        subprocess.check_call([sys.executable, pip_wrapper] + pip_args)
 
         # Now figure out which of the downloaded wheels are relevant to us.
         tags = pep425tags.get_supported(platform=platform, abi=abi_tag)
