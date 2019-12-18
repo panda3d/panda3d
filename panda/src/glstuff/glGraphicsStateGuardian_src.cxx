@@ -8960,7 +8960,7 @@ do_get_extension_func(const char *) {
  */
 void CLP(GraphicsStateGuardian)::
 set_draw_buffer(int rbtype) {
-#ifndef OPENGLES  // Draw buffers not supported by OpenGL ES. (TODO!)
+#ifndef OPENGLES_1  // Draw buffers not supported by OpenGL ES 1.
   if (_current_fbo) {
     GLuint buffers[16];
     int nbuffers = 0;
@@ -8995,9 +8995,14 @@ set_draw_buffer(int rbtype) {
       }
       ++index;
     }
-    _glDrawBuffers(nbuffers, buffers);
+    if (_glDrawBuffers != nullptr) {
+      _glDrawBuffers(nbuffers, buffers);
+    } else {
+      nassertv(nbuffers == 1 && buffers[0] == GL_COLOR_ATTACHMENT0_EXT);
+    }
 
   } else {
+#ifndef OPENGLES
     switch (rbtype & RenderBuffer::T_color) {
     case RenderBuffer::T_front:
       glDrawBuffer(GL_FRONT);
@@ -9038,8 +9043,9 @@ set_draw_buffer(int rbtype) {
     default:
       break;
     }
-  }
 #endif  // OPENGLES
+  }
+#endif  // OPENGLES_1
 
   // Also ensure that any global color channels are masked out.
   set_color_write_mask(_color_write_mask);
