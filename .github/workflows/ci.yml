@@ -23,11 +23,11 @@ jobs:
     - name: Get thirdparty packages (macOS)
       if: runner.os == 'macOS'
       run: |
-        curl -O https://www.panda3d.org/download/panda3d-1.10.4.1/panda3d-1.10.4.1-tools-mac.tar.gz
-        tar -xf panda3d-1.10.4.1-tools-mac.tar.gz
-        mv panda3d-1.10.4.1/thirdparty thirdparty
-        rmdir panda3d-1.10.4.1
-        (cd thirdparty/darwin-libs-a && rm -rf ode openal vrpn openexr assimp rocket)
+        curl -O https://www.panda3d.org/download/panda3d-1.10.5/panda3d-1.10.5-tools-mac.tar.gz
+        tar -xf panda3d-1.10.5-tools-mac.tar.gz
+        mv panda3d-1.10.5/thirdparty thirdparty
+        rmdir panda3d-1.10.5
+        (cd thirdparty/darwin-libs-a && rm -rf rocket)
     - name: Set up Python 3.7
       uses: actions/setup-python@v1
       with:
