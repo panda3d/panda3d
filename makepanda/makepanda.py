@@ -978,6 +978,7 @@ if (COMPILER=="GCC"):
             PkgDisable("OPENCV")
 
         if GetTarget() == "darwin" and not PkgSkip("OPENAL"):
+            LibName("OPENAL", "-framework AudioUnit")
             LibName("OPENAL", "-framework AudioToolbox")
             LibName("OPENAL", "-framework CoreAudio")
 
