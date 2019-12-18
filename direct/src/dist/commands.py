@@ -237,12 +237,9 @@ class build_apps(setuptools.Command):
         self.icons = {}
         self.platforms = [
             'manylinux1_x86_64',
-            'macosx_10_6_x86_64',
+            'macosx_10_9_x86_64',
             'win_amd64',
         ]
-        if sys.version_info >= (3, 8):
-            # This version of Python is only available for 10.9+.
-            self.platforms[1] = 'macosx_10_9_x86_64'
         self.plugins = []
         self.embed_prc_data = True
         self.extra_prc_files = []
