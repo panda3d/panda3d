@@ -1,9 +1,9 @@
-import pytest
-from copy import copy
-from panda3d import core
+from math import floor, ceil
+
+from panda3d.core import Vec3
 
 
-original_vector = core.Vector3f(2.3, 2.6, 3.5)
+original_vector = Vec3(2.3, 2.6, 3.5)
 
 def test_round():
     rounded_vector = round(original_vector)

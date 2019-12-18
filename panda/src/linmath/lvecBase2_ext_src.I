@@ -221,64 +221,46 @@ __ipow__(PyObject *self, FLOATTYPE exponent) {
 /**
  *
  */
-INLINE_LINMATH FLOATNAME(LVecBase2) Extension<FLOATNAME(LVecBase2)>::
-__round__() const {
-  return FLOATNAME(LVecBase2)(
-    round(_this->_v(0)),
-    round(_this->_v(1)));
+INLINE_LINMATH PyObject *Extension<FLOATNAME(LVecBase2)>::
+__round__(PyObject *self) const {
+#ifndef CPPPARSER
+  extern struct Dtool_PyTypedObject FLOATNAME(Dtool_LVecBase2);
+#endif
+
+  FLOATNAME(LVecBase2) *vec = new FLOATNAME(LVecBase2);
+  vec->_v(0) = round(_this->_v(0));
+  vec->_v(1) = round(_this->_v(1));
+  return DTool_CreatePyInstance((void *)vec, FLOATNAME(Dtool_LVecBase2), true, false);
 }
 
 /**
  *
  */
 INLINE_LINMATH PyObject *Extension<FLOATNAME(LVecBase2)>::
-__iround__(PyObject *self, FLOATTYPE exponent) {
-  _this->_v(0) = round(_this->_v(0));
-  _this->_v(1) = round(_this->_v(1));
-  Py_INCREF(self);
-  return self;
-}
+__floor__(PyObject *self) const {
+#ifndef CPPPARSER
+  extern struct Dtool_PyTypedObject FLOATNAME(Dtool_LVecBase2);
+#endif
 
-/**
- *
- */
-INLINE_LINMATH FLOATNAME(LVecBase2) Extension<FLOATNAME(LVecBase2)>::
-__floor__() const {
-  return FLOATNAME(LVecBase2)(
-    floor(_this->_v(0)),
-    floor(_this->_v(1)));
+  FLOATNAME(LVecBase2) *vec = new FLOATNAME(LVecBase2);
+  vec->_v(0) = floor(_this->_v(0));
+  vec->_v(1) = floor(_this->_v(1));
+  return DTool_CreatePyInstance((void *)vec, FLOATNAME(Dtool_LVecBase2), true, false);
 }
 
 /**
  *
  */
 INLINE_LINMATH PyObject *Extension<FLOATNAME(LVecBase2)>::
-__ifloor__(PyObject *self, FLOATTYPE exponent) {
-  _this->_v(0) = floor(_this->_v(0));
-  _this->_v(1) = floor(_this->_v(1));
-  Py_INCREF(self);
-  return self;
-}
+__ceil__(PyObject *self) const {
+#ifndef CPPPARSER
+  extern struct Dtool_PyTypedObject FLOATNAME(Dtool_LVecBase2);
+#endif
 
-/**
- *
- */
-INLINE_LINMATH FLOATNAME(LVecBase2) Extension<FLOATNAME(LVecBase2)>::
-__ceil__() const {
-  return FLOATNAME(LVecBase2)(
-    ceil(_this->_v(0)),
-    ceil(_this->_v(1)));
-}
-
-/**
- *
- */
-INLINE_LINMATH PyObject *Extension<FLOATNAME(LVecBase2)>::
-__iceil__(PyObject *self, FLOATTYPE exponent) {
-  _this->_v(0) = ceil(_this->_v(0));
-  _this->_v(1) = ceil(_this->_v(1));
-  Py_INCREF(self);
-  return self;
+  FLOATNAME(LVecBase2) *vec = new FLOATNAME(LVecBase2);
+  vec->_v(0) = ceil(_this->_v(0));
+  vec->_v(1) = ceil(_this->_v(1));
+  return DTool_CreatePyInstance((void *)vec, FLOATNAME(Dtool_LVecBase2), true, false);
 }
 
 #undef PYNUMBER_FLOATTYPE
