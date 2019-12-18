@@ -229,5 +229,80 @@ __ipow__(PyObject *self, FLOATTYPE exponent) {
   return self;
 }
 
+/**
+ *
+ */
+INLINE_LINMATH FLOATNAME(LVecBase4) Extension<FLOATNAME(LVecBase4)>::
+__round__() const {
+  return FLOATNAME(LVecBase2)(
+    round(_this->_v(0)),
+    round(_this->_v(1)),
+    round(_this->_v(2)),
+    round(_this->_v(3)));
+}
+
+/**
+ *
+ */
+INLINE_LINMATH PyObject *Extension<FLOATNAME(LVecBase4)>::
+__iround__(PyObject *self, FLOATTYPE exponent) {
+  _this->_v(0) = round(_this->_v(0));
+  _this->_v(1) = round(_this->_v(1));
+  _this->_v(2) = round(_this->_v(2));
+  _this->_v(3) = round(_this->_v(3));
+  Py_INCREF(self);
+  return self;
+}
+
+/**
+ *
+ */
+INLINE_LINMATH FLOATNAME(LVecBase4) Extension<FLOATNAME(LVecBase4)>::
+__floor__() const {
+  return FLOATNAME(LVecBase2)(
+    floor(_this->_v(0)),
+    floor(_this->_v(1)),
+    floor(_this->_v(2)),
+    floor(_this->_v(3)));
+}
+
+/**
+ *
+ */
+INLINE_LINMATH PyObject *Extension<FLOATNAME(LVecBase4)>::
+__ifloor__(PyObject *self, FLOATTYPE exponent) {
+  _this->_v(0) = floor(_this->_v(0));
+  _this->_v(1) = floor(_this->_v(1));
+  _this->_v(1) = floor(_this->_v(2));
+  _this->_v(1) = floor(_this->_v(3));
+  Py_INCREF(self);
+  return self;
+}
+
+/**
+ *
+ */
+INLINE_LINMATH FLOATNAME(LVecBase4) Extension<FLOATNAME(LVecBase4)>::
+__ceil__() const {
+  return FLOATNAME(LVecBase2)(
+    ceil(_this->_v(0)),
+    ceil(_this->_v(1)),
+    ceil(_this->_v(2)),
+    ceil(_this->_v(3)));
+}
+
+/**
+ *
+ */
+INLINE_LINMATH PyObject *Extension<FLOATNAME(LVecBase4)>::
+__iceil__(PyObject *self, FLOATTYPE exponent) {
+  _this->_v(0) = ceil(_this->_v(0));
+  _this->_v(1) = ceil(_this->_v(1));
+  _this->_v(2) = ceil(_this->_v(2));
+  _this->_v(3) = ceil(_this->_v(3));
+  Py_INCREF(self);
+  return self;
+}
+
 #undef PYNUMBER_FLOATTYPE
 #undef PY_AS_FLOATTYPE

@@ -136,6 +136,15 @@ PUBLISHED:
   EXTENSION(INLINE_LINMATH FLOATNAME(LVecBase2) __pow__(FLOATTYPE exponent) const);
   EXTENSION(INLINE_LINMATH PyObject *__ipow__(PyObject *self, FLOATTYPE exponent));
 
+  EXTENSION(INLINE_LINMATH FLOATNAME(LVecBase2) __round__() const);
+  EXTENSION(INLINE_LINMATH PyObject *__iround__(PyObject *self));
+
+  EXTENSION(INLINE_LINMATH FLOATNAME(LVecBase2) __floor__() const);
+  EXTENSION(INLINE_LINMATH PyObject *__ifloor__(PyObject *self));
+
+  EXTENSION(INLINE_LINMATH FLOATNAME(LVecBase2) __ceil__() const);
+  EXTENSION(INLINE_LINMATH PyObject *__iceil__(PyObject *self));
+
   INLINE_LINMATH FLOATNAME(LVecBase2) fmax(const FLOATNAME(LVecBase2) &other) const;
   INLINE_LINMATH FLOATNAME(LVecBase2) fmin(const FLOATNAME(LVecBase2) &other) const;
 

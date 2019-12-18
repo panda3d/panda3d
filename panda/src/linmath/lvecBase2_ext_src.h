@@ -25,6 +25,15 @@ public:
 
   INLINE_LINMATH FLOATNAME(LVecBase2) __pow__(FLOATTYPE exponent) const;
   INLINE_LINMATH PyObject *__ipow__(PyObject *self, FLOATTYPE exponent);
+
+  INLINE_LINMATH FLOATNAME(LVecBase2) __round__() const;
+  INLINE_LINMATH PyObject *__iround__(PyObject *self);
+
+  INLINE_LINMATH FLOATNAME(LVecBase2) __floor__() const;
+  INLINE_LINMATH PyObject *__ifloor__(PyObject *self);
+
+  INLINE_LINMATH FLOATNAME(LVecBase2) __ceil__() const;
+  INLINE_LINMATH PyObject *__iceil__(PyObject *self);
 };
 
 #include "lvecBase2_ext_src.I"
