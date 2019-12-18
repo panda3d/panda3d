@@ -1690,18 +1690,20 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
             LibName(target_pkg, "-framework " + framework)
             return
 
-        if os.path.isdir(os.path.join(pkg_dir, "include")):
-            IncDirectory(target_pkg, os.path.join(pkg_dir, "include"))
+        inc_dir = os.path.join(pkg_dir, "include")
+        if os.path.isdir(inc_dir):
+            IncDirectory(target_pkg, inc_dir)
 
             # Handle cases like freetype2 where the include dir is a subdir under "include"
             for i in incs:
-                if os.path.isdir(os.path.join(pkg_dir, "include", i)):
-                    IncDirectory(target_pkg, os.path.join(pkg_dir, "include", i))
+                if os.path.isdir(os.path.join(inc_dir, i)):
+                    IncDirectory(target_pkg, os.path.join(inc_dir, i))
 
-        lpath = [os.path.join(pkg_dir, "lib")]
+        lib_dir = os.path.join(pkg_dir, "lib")
+        lpath = [lib_dir]
 
         if not PkgSkip("PYTHON"):
-            py_lib_dir = os.path.join(pkg_dir, "lib", SDK["PYTHONVERSION"])
+            py_lib_dir = os.path.join(lib_dir, SDK["PYTHONVERSION"])
             if os.path.isdir(py_lib_dir):
                 lpath.append(py_lib_dir)
 
@@ -2383,7 +2385,9 @@ def SdkLocateMacOSX(osxtarget = None):
     if (GetHost() != "darwin"): return
     if (osxtarget != None):
         sdkname = "MacOSX%d.%d" % osxtarget
-        if (os.path.exists("/Developer/SDKs/%su.sdk" % sdkname)):
+        if (os.path.exists("/Library/Developer/CommandLineTools/SDKs/%s.sdk" % sdkname)):
+            SDK["MACOSX"] = "/Library/Developer/CommandLineTools/SDKs/%s.sdk" % sdkname
+        elif (os.path.exists("/Developer/SDKs/%su.sdk" % sdkname)):
             SDK["MACOSX"] = "/Developer/SDKs/%su.sdk" % sdkname
         elif (os.path.exists("/Developer/SDKs/%s.sdk" % sdkname)):
             SDK["MACOSX"] = "/Developer/SDKs/%s.sdk" % sdkname

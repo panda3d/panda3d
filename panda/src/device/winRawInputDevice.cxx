@@ -199,6 +199,11 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
                info.hid.usUsage == HID_USAGE_GENERIC_KEYBOARD) {
       _device_class = DeviceClass::keyboard;
 
+    // Digitizers
+    } else if (info.hid.usUsagePage == HID_USAGE_PAGE_DIGITIZER &&
+               info.hid.usUsage == 1) {
+      _device_class = DeviceClass::digitizer;
+
     // 3Dconnexion SpaceNavigator and friends.
     } else if (_vendor_id == 0x046d &&
         (_product_id == 0xc623 ||
@@ -502,6 +507,14 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
           _hat_data_index = data_index;
           _hat_data_minimum = cap.LogicalMin;
           continue;
+        }
+        break;
+
+      case HID_USAGE_PAGE_DIGITIZER:
+        switch (usage) {
+        case 0x30:
+          axis = Axis::pressure;
+          break;
         }
         break;
       }

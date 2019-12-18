@@ -837,6 +837,7 @@ if (COMPILER=="GCC"):
         PkgDisable("OPENCV")
 
     if GetTarget() == "darwin" and not PkgSkip("OPENAL"):
+        LibName("OPENAL", "-framework AudioUnit")
         LibName("OPENAL", "-framework AudioToolbox")
         LibName("OPENAL", "-framework CoreAudio")
 
@@ -1896,6 +1897,8 @@ def CompileRsrc(target, src, opts):
     ipath = GetListOption(opts, "DIR:")
     if os.path.isfile("/usr/bin/Rez"):
         cmd = "Rez -useDF"
+    elif os.path.isfile("/Library/Developer/CommandLineTools/usr/bin/Rez"):
+        cmd = "/Library/Developer/CommandLineTools/usr/bin/Rez -useDF"
     else:
         cmd = "/Developer/Tools/Rez -useDF"
     cmd += " -o " + BracketNameWithQuotes(target)
