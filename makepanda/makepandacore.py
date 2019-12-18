@@ -1345,6 +1345,52 @@ def GetThirdpartyDir():
 
     return THIRDPARTYDIR
 
+def GetThirdpartyLibDir(pkg):
+    pkg_dir = os.path.join(GetThirdpartyDir(), pkg.lower())
+    lib_dir = os.path.join(pkg_dir, "lib")
+
+    if GetTarget() != 'darwin':
+        return lib_dir
+
+    osxtarget = SDK["OSXTARGET"]
+    if osxtarget >= (10, 9):
+        return lib_dir
+    elif osxtarget >= (10, 8) and os.path.isdir(lib_dir + "-10.8"):
+        return lib_dir + "-10.8"
+    elif osxtarget >= (10, 7) and os.path.isdir(lib_dir + "-10.7"):
+        return lib_dir + "-10.7"
+    elif os.path.isdir(lib_dir + "-10.6"):
+        return lib_dir + "-10.6"
+    else:
+        return lib_dir
+
+def GetThirdpartyIncDir(pkg):
+    pkg_dir = os.path.join(GetThirdpartyDir(), pkg.lower())
+    inc_dir = os.path.join(pkg_dir, "include")
+
+    if GetTarget() != 'darwin':
+        return inc_dir
+
+    osxtarget = SDK["OSXTARGET"]
+    lib_dir = os.path.join(pkg_dir, "lib")
+    if osxtarget >= (10, 9):
+        return inc_dir
+    elif osxtarget >= (10, 8) and os.path.isdir(lib_dir + "-10.8"):
+        suffix = "-10.8"
+    elif osxtarget >= (10, 7) and os.path.isdir(lib_dir + "-10.7"):
+        suffix = "-10.7"
+    elif os.path.isdir(lib_dir + "-10.6"):
+        suffix = "-10.6"
+    else:
+        suffix = ""
+
+    # Make sure we pick the include dir matching the lib dir we picked, or fall
+    # back to a generic include dir.
+    if os.path.isdir(inc_dir + suffix):
+        return inc_dir + suffix
+    else:
+        return inc_dir
+
 ########################################################################
 ##
 ## Gets or sets the output directory, by default "built".
@@ -1633,7 +1679,7 @@ def ChooseLib(libs, thirdparty=None):
 
     lpath = []
     if thirdparty is not None:
-        lpath.append(os.path.join(GetThirdpartyDir(), thirdparty.lower(), "lib"))
+        lpath.append(GetThirdpartyLibDir(thirdparty))
     lpath += SYS_LIB_DIRS
 
     for l in libs:
@@ -1690,18 +1736,20 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
             LibName(target_pkg, "-framework " + framework)
             return
 
-        if os.path.isdir(os.path.join(pkg_dir, "include")):
-            IncDirectory(target_pkg, os.path.join(pkg_dir, "include"))
+        inc_dir = GetThirdpartyIncDir(thirdparty_dir)
+        if os.path.isdir(inc_dir):
+            IncDirectory(target_pkg, inc_dir)
 
             # Handle cases like freetype2 where the include dir is a subdir under "include"
             for i in incs:
-                if os.path.isdir(os.path.join(pkg_dir, "include", i)):
-                    IncDirectory(target_pkg, os.path.join(pkg_dir, "include", i))
+                if os.path.isdir(os.path.join(inc_dir, i)):
+                    IncDirectory(target_pkg, os.path.join(inc_dir, i))
 
-        lpath = [os.path.join(pkg_dir, "lib")]
+        lib_dir = GetThirdpartyLibDir(thirdparty_dir)
+        lpath = [lib_dir]
 
         if not PkgSkip("PYTHON"):
-            py_lib_dir = os.path.join(pkg_dir, "lib", SDK["PYTHONVERSION"])
+            py_lib_dir = os.path.join(lib_dir, SDK["PYTHONVERSION"])
             if os.path.isdir(py_lib_dir):
                 lpath.append(py_lib_dir)
 
@@ -2401,8 +2449,11 @@ def SdkLocateMacOSX(osxtarget = None):
                 SDK["MACOSX"] = "%s/Platforms/MacOSX.platform/Developer/SDKs/%s.sdk" % (result, sdkname)
             else:
                 exit("Couldn't find any MacOSX SDK for OSX version %s!" % sdkname)
+        SDK["OSXTARGET"] = osxtarget
     else:
         SDK["MACOSX"] = ""
+        maj, min = platform.mac_ver()[0].split('.')[:2]
+        SDK["OSXTARGET"] = int(maj), int(min)
 
 # Latest first
 PHYSXVERSIONINFO = [
