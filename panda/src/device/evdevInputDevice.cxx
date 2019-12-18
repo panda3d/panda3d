@@ -636,7 +636,8 @@ init_device() {
           // Also T.Flight Hotas X throttle is reversed and can go backwards.
           if (axis == Axis::yaw || axis == Axis::rudder || axis == Axis::left_y || axis == Axis::right_y ||
               (axis == Axis::throttle && (quirks & QB_reversed_throttle) != 0) ||
-              (_device_class == DeviceClass::spatial_mouse && (axis == Axis::y || axis == Axis::z || axis == Axis::roll))) {
+              (_device_class == DeviceClass::spatial_mouse && (axis == Axis::y || axis == Axis::z || axis == Axis::roll)) ||
+              (_device_class == DeviceClass::digitizer && axis == Axis::y)) {
             std::swap(absinfo.maximum, absinfo.minimum);
           }
           if (axis == Axis::throttle && (quirks & QB_centered_throttle) != 0) {
