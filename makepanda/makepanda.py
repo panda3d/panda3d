@@ -275,11 +275,15 @@ def parseopts(args):
             usage("Invalid setting for OSXTARGET")
 
         if OSXTARGET < (10, 9):
+            warn_prefix = "%sERROR:%s " % (GetColor("red"), GetColor())
             print("=========================================================================")
-            print("WARNING: Support for macOS versions before 10.9 has been discontinued.")
-            print("WARNING: For more information, or any questions, please visit:")
+            print(warn_prefix + "Support for macOS versions before 10.9 has been discontinued.")
+            print(warn_prefix + "For more information, or any questions, please visit:")
             print("  https://github.com/panda3d/panda3d/issues/300")
             print("=========================================================================")
+            sys.stdout.flush()
+            time.sleep(1.0)
+            sys.exit(1)
     else:
         OSXTARGET = None
 
