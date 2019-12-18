@@ -2383,7 +2383,9 @@ def SdkLocateMacOSX(osxtarget = None):
     if (GetHost() != "darwin"): return
     if (osxtarget != None):
         sdkname = "MacOSX%d.%d" % osxtarget
-        if (os.path.exists("/Developer/SDKs/%su.sdk" % sdkname)):
+        if (os.path.exists("/Library/Developer/CommandLineTools/SDKs/%s.sdk" % sdkname)):
+            SDK["MACOSX"] = "/Library/Developer/CommandLineTools/SDKs/%s.sdk" % sdkname
+        elif (os.path.exists("/Developer/SDKs/%su.sdk" % sdkname)):
             SDK["MACOSX"] = "/Developer/SDKs/%su.sdk" % sdkname
         elif (os.path.exists("/Developer/SDKs/%s.sdk" % sdkname)):
             SDK["MACOSX"] = "/Developer/SDKs/%s.sdk" % sdkname

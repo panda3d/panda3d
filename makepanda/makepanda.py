@@ -2044,6 +2044,8 @@ def CompileRsrc(target, src, opts):
     ipath = GetListOption(opts, "DIR:")
     if os.path.isfile("/usr/bin/Rez"):
         cmd = "Rez -useDF"
+    elif os.path.isfile("/Library/Developer/CommandLineTools/usr/bin/Rez"):
+        cmd = "/Library/Developer/CommandLineTools/usr/bin/Rez -useDF"
     else:
         cmd = "/Developer/Tools/Rez -useDF"
     cmd += " -o " + BracketNameWithQuotes(target)
