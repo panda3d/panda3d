@@ -728,6 +728,20 @@ def MakeInstallerAndroid(version, **kwargs):
             dir = os.path.realpath(dir)
             if not dir.startswith("/system") and not dir.startswith("/vendor"):
                 libpath.append(dir)
+    # Also load in the search paths that aren't specified in LD_LIBRARY_PATH.
+    handle = subprocess.Popen(['ld', '--verbose'], stdout=subprocess.PIPE)
+    globalLDDirs = []
+    for line in handle.communicate()[0].splitlines():
+        line = line.decode('utf-8')
+        if "SEARCH_DIR" in line:
+            globalLDDirs += re.findall('SEARCH_DIR\("([^"]+)"\); ?', line)
+    for dir in globalLDDirs:
+        dir = os.path.expandvars(dir)
+        dir = os.path.expanduser(dir)
+        if os.path.isdir(dir):
+            dir = os.path.realpath(dir)
+            if not dir.startswith("/system") and not dir.startswith("/vendor"):
+                libpath.append(dir)
 
     def copy_library(source, base):
         # Copy file to destination, stripping version suffix.
@@ -740,6 +754,8 @@ def MakeInstallerAndroid(version, **kwargs):
             return
 
         shutil.copy(source, target)
+        # Update the library's SONAME to match its new file name.
+        subprocess.call(['patchelf', '--set-soname', os.path.basename(target), target])
 
         # Walk through the library dependencies.
         handle = subprocess.Popen(['readelf', '--dynamic', target], stdout=subprocess.PIPE)
