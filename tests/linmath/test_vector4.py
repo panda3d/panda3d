@@ -22,8 +22,8 @@ def test_floor():
 
 
 def test_ceil():
-    rounded_vector2 = ceil(original_vector)
+    rounded_vector = ceil(original_vector)
     assert rounded_vector.x == 3
     assert rounded_vector.y == 3
-    assert rounded_vector.y == 4
+    assert rounded_vector.z == 4
     assert rounded_vector.w == 1
