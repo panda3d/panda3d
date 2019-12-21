@@ -240,10 +240,10 @@ __round__(PyObject *self) const {
 
   FLOATNAME(LVecBase4) *vec = new FLOATNAME(LVecBase4);
 
-  vec->_v(0) = round(_this->_v(0));
-  vec->_v(1) = round(_this->_v(1));
-  vec->_v(2) = round(_this->_v(2));
-  vec->_v(3) = round(_this->_v(3));
+  vec->_v(0) = (float) round(_this->_v(0));
+  vec->_v(1) = (float) round(_this->_v(1));
+  vec->_v(2) = (float) round(_this->_v(2));
+  vec->_v(3) = (float) round(_this->_v(3));
 
   return DTool_CreatePyInstance((void *)vec, FLOATNAME(Dtool_LVecBase4), true, false);
 }
@@ -259,10 +259,10 @@ __floor__(PyObject *self) const {
 
   FLOATNAME(LVecBase4) *vec = new FLOATNAME(LVecBase4);
 
-  vec->_v(0) = floor(_this->_v(0));
-  vec->_v(1) = floor(_this->_v(1));
-  vec->_v(2) = floor(_this->_v(2));
-  vec->_v(3) = floor(_this->_v(3));
+  vec->_v(0) = (float) floor(_this->_v(0));
+  vec->_v(1) = (float) floor(_this->_v(1));
+  vec->_v(2) = (float) floor(_this->_v(2));
+  vec->_v(3) = (float) floor(_this->_v(3));
 
   return DTool_CreatePyInstance((void *)vec, FLOATNAME(Dtool_LVecBase4), true, false);
 }
@@ -278,10 +278,10 @@ __ceil__(PyObject *self) const {
 
   FLOATNAME(LVecBase4) *vec = new FLOATNAME(LVecBase4);
 
-  vec->_v(0) = ceil(_this->_v(0));
-  vec->_v(1) = ceil(_this->_v(1));
-  vec->_v(2) = ceil(_this->_v(2));
-  vec->_v(3) = ceil(_this->_v(3));
+  vec->_v(0) = (float) ceil(_this->_v(0));
+  vec->_v(1) = (float) ceil(_this->_v(1));
+  vec->_v(2) = (float) ceil(_this->_v(2));
+  vec->_v(3) = (float) ceil(_this->_v(3));
 
   return DTool_CreatePyInstance((void *)vec, FLOATNAME(Dtool_LVecBase4), true, false);
 }
