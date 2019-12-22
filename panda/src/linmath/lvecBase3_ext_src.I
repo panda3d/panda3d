@@ -229,14 +229,16 @@ __round__(PyObject *self) const {
 #ifndef CPPPARSER
   extern struct Dtool_PyTypedObject FLOATNAME(Dtool_LVecBase3);
 #endif
+  PyObject *py_vec = _PyObject_CallNoArg((PyObject *)DtoolInstance_TYPE(self));
+  if (py_vec != nullptr) {
+    FLOATNAME(LVecBase3) *vec = (FLOATNAME(LVecBase3) *) DtoolInstance_UPCAST(py_vec, FLOATNAME(Dtool_LVecBase3));
+    nassertr(vec != nullptr, nullptr);
 
-  FLOATNAME(LVecBase3) *vec = new FLOATNAME(LVecBase3);
-
-  vec->_v(0) = round(_this->_v(0));
-  vec->_v(1) = round(_this->_v(1));
-  vec->_v(2) = round(_this->_v(2));
-
-  return DTool_CreatePyInstance((void *)vec, FLOATNAME(Dtool_LVecBase3), true, false);
+    vec->_v(0) = round(_this->_v(0));
+    vec->_v(1) = round(_this->_v(1));
+    vec->_v(2) = round(_this->_v(2));
+  }
+  return py_vec;
 }
 
 /**
@@ -247,14 +249,16 @@ __floor__(PyObject *self) const {
 #ifndef CPPPARSER
   extern struct Dtool_PyTypedObject FLOATNAME(Dtool_LVecBase3);
 #endif
+  PyObject *py_vec = _PyObject_CallNoArg((PyObject *)DtoolInstance_TYPE(self));
+  if (py_vec != nullptr) {
+    FLOATNAME(LVecBase3) *vec = (FLOATNAME(LVecBase3) *) DtoolInstance_UPCAST(py_vec, FLOATNAME(Dtool_LVecBase3));
+    nassertr(vec != nullptr, nullptr);
 
-  FLOATNAME(LVecBase3) *vec = new FLOATNAME(LVecBase3);
-
-  vec->_v(0) = floor(_this->_v(0));
-  vec->_v(1) = floor(_this->_v(1));
-  vec->_v(2) = floor(_this->_v(2));
-
-  return DTool_CreatePyInstance((void *)vec, FLOATNAME(Dtool_LVecBase3), true, false);
+    vec->_v(0) = floor(_this->_v(0));
+    vec->_v(1) = floor(_this->_v(1));
+    vec->_v(2) = floor(_this->_v(2));
+  }
+  return py_vec;
 }
 
 /**
@@ -265,14 +269,16 @@ __ceil__(PyObject *self) const {
 #ifndef CPPPARSER
   extern struct Dtool_PyTypedObject FLOATNAME(Dtool_LVecBase3);
 #endif
+  PyObject *py_vec = _PyObject_CallNoArg((PyObject *)DtoolInstance_TYPE(self));
+  if (py_vec != nullptr) {
+    FLOATNAME(LVecBase3) *vec = (FLOATNAME(LVecBase3) *) DtoolInstance_UPCAST(py_vec, FLOATNAME(Dtool_LVecBase3));
+    nassertr(vec != nullptr, nullptr);
 
-  FLOATNAME(LVecBase3) *vec = new FLOATNAME(LVecBase3);
-
-  vec->_v(0) = ceil(_this->_v(0));
-  vec->_v(1) = ceil(_this->_v(1));
-  vec->_v(2) = ceil(_this->_v(2));
-
-  return DTool_CreatePyInstance((void *)vec, FLOATNAME(Dtool_LVecBase3), true, false);
+    vec->_v(0) = ceil(_this->_v(0));
+    vec->_v(1) = ceil(_this->_v(1));
+    vec->_v(2) = ceil(_this->_v(2));
+  }
+  return py_vec;
 }
 
 #undef PYNUMBER_FLOATTYPE
