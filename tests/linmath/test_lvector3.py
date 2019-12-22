@@ -8,8 +8,8 @@ from panda3d.core import Vec3
 
 original_vector = Vec3(2.3, 2.6, 3.5)
 
-reason = '''Rounding in python 2.7 expects to return a float value, since it returns a Vector it
-does not work. When python 2.7 gets desprected, remove this check.'''
+reason = '''Rounding in Python 2.7 expects to return a float value, since it returns a Vector it
+does not work. When Python 2.7 gets deprecated, remove this check.'''
 
 @pytest.mark.skipif(sys.version_info < (3, 5), reason=reason)
 def test_round():
