@@ -234,18 +234,11 @@ __ipow__(PyObject *self, FLOATTYPE exponent) {
  */
 INLINE_LINMATH PyObject *Extension<FLOATNAME(LVecBase4)>::
 __round__(PyObject *self) const {
-#ifndef CPPPARSER
-  extern struct Dtool_PyTypedObject FLOATNAME(Dtool_LVecBase4);
-#endif
-
-  FLOATNAME(LVecBase4) *vec = new FLOATNAME(LVecBase4);
-
-  vec->_v(0) = round(_this->_v(0));
-  vec->_v(1) = round(_this->_v(1));
-  vec->_v(2) = round(_this->_v(2));
-  vec->_v(3) = round(_this->_v(3));
-
-  return DTool_CreatePyInstance((void *)vec, FLOATNAME(Dtool_LVecBase4), true, false);
+  return PyObject_Call(Py_TYPE(self),
+    round(_this->_v(0)),
+    round(_this->_v(1)),
+    round(_this->_v(2)),
+    round(_this->_v(3)));
 }
 
 /**
@@ -253,18 +246,11 @@ __round__(PyObject *self) const {
  */
 INLINE_LINMATH PyObject *Extension<FLOATNAME(LVecBase4)>::
 __floor__(PyObject *self) const {
-#ifndef CPPPARSER
-  extern struct Dtool_PyTypedObject FLOATNAME(Dtool_LVecBase4);
-#endif
-
-  FLOATNAME(LVecBase4) *vec = new FLOATNAME(LVecBase4);
-
-  vec->_v(0) = floor(_this->_v(0));
-  vec->_v(1) = floor(_this->_v(1));
-  vec->_v(2) = floor(_this->_v(2));
-  vec->_v(3) = floor(_this->_v(3));
-
-  return DTool_CreatePyInstance((void *)vec, FLOATNAME(Dtool_LVecBase4), true, false);
+  return PyObject_Call(Py_TYPE(self),
+    floor(_this->_v(0)),
+    floor(_this->_v(1)),
+    floor(_this->_v(2)),
+    floor(_this->_v(3)));
 }
 
 /**
@@ -272,18 +258,11 @@ __floor__(PyObject *self) const {
  */
 INLINE_LINMATH PyObject *Extension<FLOATNAME(LVecBase4)>::
 __ceil__(PyObject *self) const {
-#ifndef CPPPARSER
-  extern struct Dtool_PyTypedObject FLOATNAME(Dtool_LVecBase4);
-#endif
-
-  FLOATNAME(LVecBase4) *vec = new FLOATNAME(LVecBase4);
-
-  vec->_v(0) = ceil(_this->_v(0));
-  vec->_v(1) = ceil(_this->_v(1));
-  vec->_v(2) = ceil(_this->_v(2));
-  vec->_v(3) = ceil(_this->_v(3));
-
-  return DTool_CreatePyInstance((void *)vec, FLOATNAME(Dtool_LVecBase4), true, false);
+  return PyObject_Call(Py_TYPE(self),
+    ceil(_this->_v(0)),
+    ceil(_this->_v(1)),
+    ceil(_this->_v(2)),
+    ceil(_this->_v(3)));
 }
 
 #undef PYNUMBER_FLOATTYPE

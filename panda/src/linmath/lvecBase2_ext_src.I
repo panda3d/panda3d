@@ -223,16 +223,9 @@ __ipow__(PyObject *self, FLOATTYPE exponent) {
  */
 INLINE_LINMATH PyObject *Extension<FLOATNAME(LVecBase2)>::
 __round__(PyObject *self) const {
-#ifndef CPPPARSER
-  extern struct Dtool_PyTypedObject FLOATNAME(Dtool_LVecBase2);
-#endif
-
-  FLOATNAME(LVecBase2) *vec = new FLOATNAME(LVecBase2);
-
-  vec->_v(0) = round(_this->_v(0));
-  vec->_v(1) = round(_this->_v(1));
-
-  return DTool_CreatePyInstance((void *)vec, FLOATNAME(Dtool_LVecBase2), true, false);
+  return PyObject_Call(Py_TYPE(self),
+    round(_this->_v(0)),
+    round(_this->_v(1)));
 }
 
 /**
@@ -240,16 +233,9 @@ __round__(PyObject *self) const {
  */
 INLINE_LINMATH PyObject *Extension<FLOATNAME(LVecBase2)>::
 __floor__(PyObject *self) const {
-#ifndef CPPPARSER
-  extern struct Dtool_PyTypedObject FLOATNAME(Dtool_LVecBase2);
-#endif
-
-  FLOATNAME(LVecBase2) *vec = new FLOATNAME(LVecBase2);
-
-  vec->_v(0) = floor(_this->_v(0));
-  vec->_v(1) = floor(_this->_v(1));
-
-  return DTool_CreatePyInstance((void *)vec, FLOATNAME(Dtool_LVecBase2), true, false);
+  return PyObject_Call(Py_TYPE(self),
+    floor(_this->_v(0)),
+    floor(_this->_v(1)));
 }
 
 /**
@@ -257,16 +243,9 @@ __floor__(PyObject *self) const {
  */
 INLINE_LINMATH PyObject *Extension<FLOATNAME(LVecBase2)>::
 __ceil__(PyObject *self) const {
-#ifndef CPPPARSER
-  extern struct Dtool_PyTypedObject FLOATNAME(Dtool_LVecBase2);
-#endif
-
-  FLOATNAME(LVecBase2) *vec = new FLOATNAME(LVecBase2);
-
-  vec->_v(0) = ceil(_this->_v(0));
-  vec->_v(1) = ceil(_this->_v(1));
-
-  return DTool_CreatePyInstance((void *)vec, FLOATNAME(Dtool_LVecBase2), true, false);
+  return PyObject_Call(Py_TYPE(self),
+    ceil(_this->_v(0)),
+    ceil(_this->_v(1)));
 }
 
 #undef PYNUMBER_FLOATTYPE
