@@ -231,8 +231,8 @@ __round__(PyObject *self) const {
     FLOATNAME(LVecBase2) *vec = (FLOATNAME(LVecBase2) *) DtoolInstance_UPCAST(py_vec, FLOATNAME(Dtool_LVecBase2));
     nassertr(vec != nullptr, nullptr);
 
-    vec->_v(0) = round(_this->_v(0));
-    vec->_v(1) = round(_this->_v(1));
+    vec->_v(0) = std::round(_this->_v(0));
+    vec->_v(1) = std::round(_this->_v(1));
   }
   return py_vec;
 }
@@ -251,8 +251,8 @@ __floor__(PyObject *self) const {
     FLOATNAME(LVecBase2) *vec = (FLOATNAME(LVecBase2) *) DtoolInstance_UPCAST(py_vec, FLOATNAME(Dtool_LVecBase2));
     nassertr(vec != nullptr, nullptr);
 
-    vec->_v(0) = floor(_this->_v(0));
-    vec->_v(1) = floor(_this->_v(1));
+    vec->_v(0) = std::floor(_this->_v(0));
+    vec->_v(1) = std::floor(_this->_v(1));
   }
   return py_vec;
 }
@@ -270,8 +270,8 @@ __ceil__(PyObject *self) const {
     FLOATNAME(LVecBase2) *vec = (FLOATNAME(LVecBase2) *) DtoolInstance_UPCAST(py_vec, FLOATNAME(Dtool_LVecBase2));
     nassertr(vec != nullptr, nullptr);
 
-    vec->_v(0) = ceil(_this->_v(0));
-    vec->_v(1) = ceil(_this->_v(1));
+    vec->_v(0) = std::ceil(_this->_v(0));
+    vec->_v(1) = std::ceil(_this->_v(1));
   }
   return py_vec;
 }
