@@ -151,6 +151,27 @@ endfunction(thirdparty_copy_alongside)
 set(WANT_PYTHON_VERSION ""
   CACHE STRING "Which Python version to seek out for building Panda3D against.")
 
+if(DEFINED _PREV_WANT_PYTHON_VERSION
+    AND NOT _PREV_WANT_PYTHON_VERSION STREQUAL WANT_PYTHON_VERSION)
+  # The user changed WANT_PYTHON_VERSION. We need to force FindPython to start
+  # anew, deleting any variable that was autodetected last time
+  foreach(_prev_var ${_PREV_PYTHON_VALUES})
+    string(REPLACE "=" ";" _prev_var "${_prev_var}")
+    list(GET _prev_var 0 _prev_var_name)
+    list(GET _prev_var 1 _prev_var_sha1)
+    string(SHA1 _current_var_sha1 "${${_prev_var_name}}")
+
+    if(_prev_var_sha1 STREQUAL _current_var_sha1)
+      unset(${_prev_var_name} CACHE)
+    endif()
+
+  endforeach(_prev_var)
+
+  unset(_PREV_PYTHON_VALUES CACHE)
+
+endif()
+
+get_directory_property(_old_cache_vars CACHE_VARIABLES)
 find_package(Python ${WANT_PYTHON_VERSION} QUIET COMPONENTS Interpreter Development)
 
 if(Python_FOUND)
@@ -262,6 +283,23 @@ if(HAVE_PYTHON)
     "Suffix for Python binary extension modules.")
 
 endif()
+
+if(NOT DEFINED _PREV_PYTHON_VALUES)
+  # We need to make note of all auto-defined Python variables
+  set(_prev_python_values)
+
+  get_directory_property(_new_cache_vars CACHE_VARIABLES)
+  foreach(_cache_var ${_new_cache_vars})
+    if(_cache_var MATCHES "^(Python|PYTHON)_" AND NOT _old_cache_vars MATCHES ";${_cache_var};")
+      string(SHA1 _cache_var_sha1 "${${_cache_var}}")
+      list(APPEND _prev_python_values "${_cache_var}=${_cache_var_sha1}")
+    endif()
+  endforeach(_cache_var)
+
+  set(_PREV_PYTHON_VALUES "${_prev_python_values}" CACHE INTERNAL "Internal." FORCE)
+endif()
+
+set(_PREV_WANT_PYTHON_VERSION "${WANT_PYTHON_VERSION}" CACHE INTERNAL "Internal." FORCE)
 
 
 #
