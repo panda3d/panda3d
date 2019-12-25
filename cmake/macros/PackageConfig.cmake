@@ -483,24 +483,28 @@ endfunction(export_targets)
 #
 # find_package
 #
-# This override is necessary because CMake's default behavior is to run
-# find_package in MODULE mode, *then* in CONFIG mode.  This is silly!  CONFIG
-# mode makes more sense to be done first, since any system config file will
-# know vastly more about the package's configuration than a module can hope to
-# guess.
+# This override implements CMAKE_FIND_PACKAGE_PREFER_CONFIG on versions of
+# CMake too old to include it.
 #
-macro(find_package name)
-  if(";${ARGN};" MATCHES ";(CONFIG|MODULE|NO_MODULE);")
-    # Caller explicitly asking for a certain mode; so be it.
-    _find_package(${ARGV})
+if(CMAKE_VERSION VERSION_LESS "3.15")
+  macro(find_package name)
+    if(";${ARGN};" MATCHES ";(CONFIG|MODULE|NO_MODULE);")
+      # Caller explicitly asking for a certain mode; so be it.
+      _find_package(${ARGV})
 
-  else()
-    # Try CONFIG
-    _find_package("${name}" CONFIG ${ARGN})
+    elseif(CMAKE_FIND_PACKAGE_PREFER_CONFIG)
+      # Try CONFIG
+      _find_package("${name}" CONFIG ${ARGN})
 
-    if(NOT ${name}_FOUND)
-      # CONFIG didn't work, fall back to MODULE
-      _find_package("${name}" MODULE ${ARGN})
+      if(NOT ${name}_FOUND)
+        # CONFIG didn't work, fall back to MODULE
+        _find_package("${name}" MODULE ${ARGN})
+      endif()
+
+    else()
+      # Default behavior
+      _find_package(${ARGV})
+
     endif()
-  endif()
-endmacro(find_package)
+  endmacro(find_package)
+endif()
