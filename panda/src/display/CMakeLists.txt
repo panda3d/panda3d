@@ -91,7 +91,7 @@ if(APPLE)
 endif()
 
 # This is a large file; let's build it separately
-set_source_files_properties(graphicsStateGuardian.cxx PROPERTIES SKIP_COMPOSITING YES)
+set_source_files_properties(graphicsStateGuardian.cxx PROPERTIES SKIP_UNITY_BUILD_INCLUSION YES)
 
 composite_sources(p3display P3DISPLAY_SOURCES)
 add_component_library(p3display SYMBOL BUILDING_PANDA_DISPLAY

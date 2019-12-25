@@ -39,7 +39,7 @@ set(P3GRUTIL_SOURCES
 )
 
 # This is a large file; let's build it separately
-set_source_files_properties(multitexReducer.cxx PROPERTIES SKIP_COMPOSITING YES)
+set_source_files_properties(multitexReducer.cxx PROPERTIES SKIP_UNITY_BUILD_INCLUSION YES)
 
 composite_sources(p3grutil P3GRUTIL_SOURCES)
 add_component_library(p3grutil SYMBOL BUILDING_PANDA_GRUTIL

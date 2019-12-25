@@ -34,7 +34,7 @@ if(APPLE)
   set_source_files_properties(
     filename_assist.mm filename_assist.h PROPERTIES
     WRAP_EXCLUDE YES
-    SKIP_COMPOSITING YES)
+    SKIP_UNITY_BUILD_INCLUSION YES)
 endif()
 
 set(P3DTOOLUTIL_SOURCES

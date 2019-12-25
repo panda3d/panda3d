@@ -49,7 +49,7 @@ function(composite_sources target sources_var)
     get_filename_component(extension "${source}" EXT)
     get_source_file_property(generated "${source}" GENERATED)
     get_source_file_property(is_header "${source}" HEADER_FILE_ONLY)
-    get_source_file_property(skip_compositing "${source}" SKIP_COMPOSITING)
+    get_source_file_property(skip_compositing "${source}" SKIP_UNITY_BUILD_INCLUSION)
 
     # Check if we can safely add this to a composite file.
     if(NOT generated AND NOT is_header AND NOT skip_compositing AND

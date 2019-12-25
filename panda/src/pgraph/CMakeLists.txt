@@ -222,7 +222,7 @@ set(P3PGRAPH_IGATEEXT
 )
 
 # This is a large file; let's build it separately
-set_source_files_properties(nodePath.cxx PROPERTIES SKIP_COMPOSITING YES)
+set_source_files_properties(nodePath.cxx PROPERTIES SKIP_UNITY_BUILD_INCLUSION YES)
 
 composite_sources(p3pgraph P3PGRAPH_SOURCES)
 add_component_library(p3pgraph SYMBOL BUILDING_PANDA_PGRAPH
