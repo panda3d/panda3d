@@ -253,8 +253,9 @@ do_unpack_int64(const char *buffer) {
                     ((uint64_t)(unsigned char)buffer[4] << 32) |
                     ((uint64_t)(unsigned char)buffer[5] << 40) |
                     ((uint64_t)(unsigned char)buffer[6] << 48) |
-                    ((int64_t)(signed char)buffer[7] << 54));
+                    ((int64_t)(signed char)buffer[7] << 56));
 }
+
 /**
  *
  */
@@ -295,9 +296,8 @@ do_unpack_uint64(const char *buffer) {
           ((uint64_t)(unsigned char)buffer[4] << 32) |
           ((uint64_t)(unsigned char)buffer[5] << 40) |
           ((uint64_t)(unsigned char)buffer[6] << 48) |
-          ((int64_t)(signed char)buffer[7] << 54));
+          ((uint64_t)(unsigned char)buffer[7] << 56));
 }
-
 
 /**
  *
