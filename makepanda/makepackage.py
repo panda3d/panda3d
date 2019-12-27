@@ -162,6 +162,18 @@ flatsize: INSTSIZEMB
 deps: {DEPENDS}
 """
 
+# Since we're adding a bunch of install scripts to the macOS intaller, we'll
+# put the platform-checking code in some variables to reduce repetition.
+MACOS_SCRIPT_PREFIX = \
+"""#!/bin/bash
+IFS=.
+read -a version_info <<< "`sw_vers -productVersion`'"
+if (( ${version_info[1]} < 15 )); then
+"""
+
+MACOS_SCRIPT_POSTFIX = \
+"""fi
+"""
 
 def MakeInstallerNSIS(version, file, title, installdir, runtime=False, compressor="lzma", **kwargs):
     outputdir = GetOutputDir()
@@ -461,7 +473,7 @@ def MakeInstallerLinux(version, debversion=None, rpmrelease=1, runtime=False,
         exit("To build an installer, either rpmbuild or dpkg-deb must be present on your system!")
 
 
-def MakeInstallerOSX(version, runtime=False, python_versions=[], **kwargs):
+def MakeInstallerOSX(version, runtime=False, python_versions=[], mac_install_location="/Library/Developer/Panda3D", **kwargs):
     outputdir = GetOutputDir()
 
     if runtime:
@@ -484,38 +496,38 @@ def MakeInstallerOSX(version, runtime=False, python_versions=[], **kwargs):
     if (os.path.exists("dstroot")): oscmd("rm -rf dstroot")
     if (os.path.exists("Panda3D-rw.dmg")): oscmd('rm -f Panda3D-rw.dmg')
 
-    oscmd("mkdir -p dstroot/base/Library/Developer/Panda3D/lib")
-    oscmd("mkdir -p dstroot/base/Library/Developer/Panda3D/etc")
-    oscmd("cp %s/etc/Config.prc           dstroot/base/Library/Developer/Panda3D/etc/Config.prc" % outputdir)
-    oscmd("cp %s/etc/Confauto.prc         dstroot/base/Library/Developer/Panda3D/etc/Confauto.prc" % outputdir)
-    oscmd("cp -R %s/models                dstroot/base/Library/Developer/Panda3D/models" % outputdir)
-    oscmd("cp -R doc/LICENSE              dstroot/base/Library/Developer/Panda3D/LICENSE")
-    oscmd("cp -R doc/ReleaseNotes         dstroot/base/Library/Developer/Panda3D/ReleaseNotes")
-    oscmd("cp -R %s/Frameworks            dstroot/base/Library/Developer/Panda3D/Frameworks" % outputdir)
+    oscmd("mkdir -p                       dstroot/base/%s/lib" % mac_install_location)
+    oscmd("mkdir -p                       dstroot/base/%s/etc" % mac_install_location)
+    oscmd("cp %s/etc/Config.prc           dstroot/base/%s/etc/Config.prc" % (outputdir, mac_install_location))
+    oscmd("cp %s/etc/Confauto.prc         dstroot/base/%s/etc/Confauto.prc" % (outputdir, mac_install_location))
+    oscmd("cp -R %s/models                dstroot/base/%s/models" % (outputdir, mac_install_location))
+    oscmd("cp -R doc/LICENSE              dstroot/base/%s/LICENSE" % mac_install_location)
+    oscmd("cp -R doc/ReleaseNotes         dstroot/base/%s/ReleaseNotes" % mac_install_location)
+    oscmd("cp -R %s/Frameworks            dstroot/base/%s/Frameworks" % (outputdir, mac_install_location))
     if os.path.isdir(outputdir+"/plugins"):
-        oscmd("cp -R %s/plugins           dstroot/base/Library/Developer/Panda3D/plugins" % outputdir)
+        oscmd("cp -R %s/plugins           dstroot/base/%s/plugins" % (outputdir, mac_install_location))
 
     # Libraries that shouldn't be in base, but are instead in other modules.
     no_base_libs = ['libp3ffmpeg', 'libp3fmod_audio', 'libfmodex', 'libfmodexL']
 
     for base in os.listdir(outputdir+"/lib"):
         if not base.endswith(".a") and base.split('.')[0] not in no_base_libs:
-            libname = "dstroot/base/Library/Developer/Panda3D/lib/" + base
+            libname = ("dstroot/base/%s/lib/" % mac_install_location) + base
             # We really need to specify -R in order not to follow symlinks
             # On OSX, just specifying -P is not enough to do that.
             oscmd("cp -R -P " + outputdir + "/lib/" + base + " " + libname)
 
-    oscmd("mkdir -p dstroot/tools/Library/Developer/Panda3D/bin")
+    oscmd("mkdir -p dstroot/tools/%s/bin" % mac_install_location)
     oscmd("mkdir -p dstroot/tools/etc/paths.d")
     # Trailing newline is important, works around a bug in OSX
-    WriteFile("dstroot/tools/etc/paths.d/Panda3D", "/Library/Developer/Panda3D/bin\n")
+    WriteFile("dstroot/tools/etc/paths.d/Panda3D", "/%s/bin\n" % mac_install_location)
 
     oscmd("mkdir -m 0755 -p dstroot/tools/usr/local/share/man/man1")
     oscmd("install -m 0644 doc/man/*.1 dstroot/tools/usr/local/share/man/man1/")
 
     for base in os.listdir(outputdir+"/bin"):
         if not base.startswith("deploy-stub"):
-            binname = "dstroot/tools/Library/Developer/Panda3D/bin/" + base
+            binname = ("dstroot/tools/%s/bin/" % mac_install_location) + base
             # OSX needs the -R argument to copy symbolic links correctly, it doesn't have -d. How weird.
             oscmd("cp -R " + outputdir + "/bin/" + base + " " + binname)
 
@@ -525,74 +537,74 @@ def MakeInstallerOSX(version, runtime=False, python_versions=[], **kwargs):
             oscmd("mkdir -p dstroot/pythoncode/usr/local/bin")
             oscmd("ln -s %s dstroot/pythoncode/usr/local/bin/ppython" % (python_versions[0]["executable"]))
 
-        oscmd("mkdir -p dstroot/pythoncode/Library/Developer/Panda3D/panda3d")
-        oscmd("cp -R %s/pandac                dstroot/pythoncode/Library/Developer/Panda3D/pandac" % outputdir)
-        oscmd("cp -R %s/direct                dstroot/pythoncode/Library/Developer/Panda3D/direct" % outputdir)
-        oscmd("cp -R %s/*.so                  dstroot/pythoncode/Library/Developer/Panda3D/" % outputdir, True)
-        oscmd("cp -R %s/*.py                  dstroot/pythoncode/Library/Developer/Panda3D/" % outputdir, True)
+        oscmd("mkdir -p dstroot/pythoncode/%s/panda3d" % mac_install_location)
+        oscmd("cp -R %s/pandac                dstroot/pythoncode/%s/pandac" % (outputdir, mac_install_location))
+        oscmd("cp -R %s/direct                dstroot/pythoncode/%s/direct" % (outputdir, mac_install_location))
+        oscmd("cp -R %s/*.so                  dstroot/pythoncode/%s/" % (outputdir, mac_install_location), True)
+        oscmd("cp -R %s/*.py                  dstroot/pythoncode/%s/" % (outputdir, mac_install_location), True)
         if os.path.isdir(outputdir+"/Pmw"):
-            oscmd("cp -R %s/Pmw               dstroot/pythoncode/Library/Developer/Panda3D/Pmw" % outputdir)
+            oscmd("cp -R %s/Pmw               dstroot/pythoncode/%s/Pmw" % (outputdir, mac_install_location))
 
         # Copy over panda3d.dist-info directory.
         if os.path.isdir(outputdir + "/panda3d.dist-info"):
-            oscmd("cp -R %s/panda3d.dist-info dstroot/pythoncode/Library/Developer/Panda3D/panda3d.dist-info" % (outputdir))
+            oscmd("cp -R %s/panda3d.dist-info dstroot/pythoncode/%s/panda3d.dist-info" % (outputdir, mac_install_location))
 
         for base in os.listdir(outputdir+"/panda3d"):
             if base.endswith('.py'):
-                libname = "dstroot/pythoncode/Library/Developer/Panda3D/panda3d/" + base
+                libname = ("dstroot/pythoncode/%s/panda3d/" % mac_install_location) + base
                 oscmd("cp -R " + outputdir + "/panda3d/" + base + " " + libname)
 
     for version_info in python_versions:
         pyver = version_info["version"]
         oscmd("mkdir -p dstroot/pybindings%s/Library/Python/%s/site-packages" % (pyver, pyver))
-        oscmd("mkdir -p dstroot/pybindings%s/Library/Developer/Panda3D/panda3d" % (pyver))
+        oscmd("mkdir -p dstroot/pybindings%s/%s/panda3d" % (pyver, mac_install_location))
 
         # Copy over extension modules.
         suffix = version_info["ext_suffix"]
         for base in os.listdir(outputdir+"/panda3d"):
             if base.endswith(suffix) and '.' not in base[:-len(suffix)]:
-                libname = "dstroot/pybindings%s/Library/Developer/Panda3D/panda3d/%s" % (pyver, base)
+                libname = "dstroot/pybindings%s/%s/panda3d/%s" % (pyver, mac_install_location, base)
                 # We really need to specify -R in order not to follow symlinks
                 # On OSX, just specifying -P is not enough to do that.
                 oscmd("cp -R -P " + outputdir + "/panda3d/" + base + " " + libname)
 
         # Write a .pth file.
         oscmd("mkdir -p dstroot/pybindings%s/Library/Python/%s/site-packages" % (pyver, pyver))
-        WriteFile("dstroot/pybindings%s/Library/Python/%s/site-packages/Panda3D.pth" % (pyver, pyver), "/Library/Developer/Panda3D")
+        WriteFile("dstroot/pybindings%s/Library/Python/%s/site-packages/Panda3D.pth" % (pyver, pyver), mac_install_location)
 
         # Somewhere in Python 2.7.13 and 3.7, the above path was removed from
         # sys.path of the python.org distribution.  See bpo-28440 and GH #502.
         if pyver not in ("3.0", "3.1", "3.2", "3.3", "3.4", "3.5", "3.6"):
             dir = "dstroot/pybindings%s/Library/Frameworks/Python.framework/Versions/%s/lib/python%s/site-packages" % (pyver, pyver, pyver)
             oscmd("mkdir -p %s" % (dir))
-            WriteFile("%s/Panda3D.pth" % (dir), "/Library/Developer/Panda3D")
+            WriteFile("%s/Panda3D.pth" % (dir), mac_install_location)
 
         # Also place it somewhere the Homebrew version of Python can find it.
         dir = "dstroot/pybindings%s/usr/local/lib/python%s/site-packages" % (pyver, pyver)
         oscmd("mkdir -p %s" % (dir))
-        WriteFile("%s/Panda3D.pth" % (dir), "/Library/Developer/Panda3D")
+        WriteFile("%s/Panda3D.pth" % (dir), mac_install_location)
 
     if not PkgSkip("FFMPEG"):
-        oscmd("mkdir -p dstroot/ffmpeg/Library/Developer/Panda3D/lib")
-        oscmd("cp -R %s/lib/libp3ffmpeg.* dstroot/ffmpeg/Library/Developer/Panda3D/lib/" % outputdir)
+        oscmd("mkdir -p dstroot/ffmpeg/%s/lib" % mac_install_location)
+        oscmd("cp -R %s/lib/libp3ffmpeg.* dstroot/ffmpeg/%s/lib/" % (outputdir, mac_install_location))
 
     #if not PkgSkip("OPENAL"):
     #    oscmd("mkdir -p dstroot/openal/Developer/Panda3D/lib")
     #    oscmd("cp -R %s/lib/libp3openal_audio.* dstroot/openal/Developer/Panda3D/lib/" % outputdir)
 
     if not PkgSkip("FMODEX"):
-        oscmd("mkdir -p dstroot/fmodex/Library/Developer/Panda3D/lib")
-        oscmd("cp -R %s/lib/libp3fmod_audio.* dstroot/fmodex/Library/Developer/Panda3D/lib/" % outputdir)
-        oscmd("cp -R %s/lib/libfmodex* dstroot/fmodex/Library/Developer/Panda3D/lib/" % outputdir)
+        oscmd("mkdir -p dstroot/fmodex/%s/lib" % mac_install_location)
+        oscmd("cp -R %s/lib/libp3fmod_audio.* dstroot/fmodex/%s/lib/" % (outputdir, mac_install_location))
+        oscmd("cp -R %s/lib/libfmodex* dstroot/fmodex/%s/lib/" % (outputdir, mac_install_location))
 
-    oscmd("mkdir -p dstroot/headers/Library/Developer/Panda3D/lib")
-    oscmd("cp -R %s/include               dstroot/headers/Library/Developer/Panda3D/include" % outputdir)
+    oscmd("mkdir -p dstroot/headers/%s/lib" % mac_install_location)
+    oscmd("cp -R %s/include               dstroot/headers/%s/include" % (outputdir, mac_install_location))
     if os.path.isfile(outputdir + "/lib/libp3pystub.a"):
-        oscmd("cp -R -P %s/lib/libp3pystub.a dstroot/headers/Library/Developer/Panda3D/lib/" % outputdir)
+        oscmd("cp -R -P %s/lib/libp3pystub.a dstroot/headers/%s/lib/" % (outputdir, mac_install_location))
 
     if os.path.isdir("samples"):
-        oscmd("mkdir -p dstroot/samples/Library/Developer/Panda3D/samples")
-        oscmd("cp -R samples/* dstroot/samples/Library/Developer/Panda3D/samples")
+        oscmd("mkdir -p dstroot/samples/%s/samples" % mac_install_location)
+        oscmd("cp -R samples/* dstroot/samples/%s/samples" % mac_install_location)
 
     DeleteVCS("dstroot")
     DeleteBuildFiles("dstroot")
@@ -600,11 +612,11 @@ def MakeInstallerOSX(version, runtime=False, python_versions=[], **kwargs):
     # Compile Python files.  Do this *after* the DeleteVCS step, above, which
     # deletes __pycache__ directories.
     for version_info in python_versions:
-        if os.path.isdir("dstroot/pythoncode/Library/Developer/Panda3D/Pmw"):
-            oscmd("%s -m compileall -q -f -d /Library/Developer/Panda3D/Pmw dstroot/pythoncode/Library/Developer/Panda3D/Pmw" % (version_info["executable"]), True)
-        oscmd("%s -m compileall -q -f -d /Library/Developer/Panda3D/direct dstroot/pythoncode/Library/Developer/Panda3D/direct" % (version_info["executable"]))
-        oscmd("%s -m compileall -q -f -d /Library/Developer/Panda3D/pandac dstroot/pythoncode/Library/Developer/Panda3D/pandac" % (version_info["executable"]))
-        oscmd("%s -m compileall -q -f -d /Library/Developer/Panda3D/panda3d dstroot/pythoncode/Library/Developer/Panda3D/panda3d" % (version_info["executable"]))
+        if os.path.isdir("dstroot/pythoncode/%s/Pmw" % mac_install_location):
+            oscmd("%s -m compileall -q -f -d %s/Pmw dstroot/pythoncode/%s/Pmw" % (version_info["executable"], mac_install_location, mac_install_location), True)
+        oscmd("%s -m compileall -q -f -d %s/direct dstroot/pythoncode/%s/direct" % (version_info["executable"], mac_install_location, mac_install_location))
+        oscmd("%s -m compileall -q -f -d %s/pandac dstroot/pythoncode/%s/pandac" % (version_info["executable"], mac_install_location, mac_install_location))
+        oscmd("%s -m compileall -q -f -d %s/panda3d dstroot/pythoncode/%s/panda3d" % (version_info["executable"], mac_install_location, mac_install_location))
 
     oscmd("chmod -R 0775 dstroot/*")
     # We need to be root to perform a chown. Bleh.
@@ -616,48 +628,51 @@ def MakeInstallerOSX(version, runtime=False, python_versions=[], **kwargs):
 
     pkgs = ["base", "tools", "headers"]
 
-    # Starting with 1.10.5, Panda3D is installed in
+    # Starting with 1.10.5, Panda3D is installed by default in
     # /Library/Developer/Panda3D instead of /Developer/Panda3D. To keep
     # compatibility for those who rely on the old location, we add a symlink
-    # if they're running macOS 10.14 or less.
-    oscmd("mkdir -p dstroot/scripts/base")
-    ln_script = open("dstroot/scripts/base/postinstall", "w")
-    ln_script.write("#!/bin/bash\n")
-    ln_script.write("IFS=.\n")
-    ln_script.write("read -a version_info <<< \"`sw_vers -productVersion`'\"\n")
-    ln_script.write("if (( ${version_info[1]} < 15 )); then\n")
-    ln_script.write("    mkdir -p /Developer\n")
-    ln_script.write("    ln -s /Library/Developer/Panda3D /Developer/Panda3D\n")
-    ln_script.write("fi\n")
-    ln_script.close()
-    oscmd("chmod +x dstroot/scripts/base/postinstall")
+    # if they're running macOS 10.14 or less. We also remove the old
+    # installation.
+    script_components = set()
+    def write_script(component, phase, contents):
+        script_components.add(component)
+        oscmd("mkdir -p dstroot/scripts/%s" % component)
+        ln_script = open("dstroot/scripts/%s/%s" % (component, phase), "w")
+        ln_script.write(MACOS_SCRIPT_PREFIX)
+        ln_script.write(contents)
+        ln_script.write(MACOS_SCRIPT_POSTFIX)
+        ln_script.close()
+        oscmd("chmod +x dstroot/scripts/%s/%s" % (component, phase))
 
-    oscmd("mkdir -p dstroot/scripts/tools")
-    ln_script = open("dstroot/scripts/tools/postinstall", "w")
-    ln_script.write("#!/bin/bash\n")
-    ln_script.write("IFS=.\n")
-    ln_script.write("read -a version_info <<< \"`sw_vers -productVersion`'\"\n")
-    ln_script.write("if (( ${version_info[1]} < 15 )); then\n")
-    ln_script.write("    mkdir -p /Developer/Tools\n")
-    ln_script.write("    ln -s /Library/Developer/Panda3D/bin /Developer/Tools/Panda3D\n")
-    ln_script.write("fi\n")
-    ln_script.close()
-    oscmd("chmod +x dstroot/scripts/tools/postinstall")
+    write_script('base', 'postinstall', """
+        pkgutil --pkg-info org.panda3d.panda3d.base.pkg
+        if [ $? = 0 ]; then
+            rm -rf /Developer/Panda3D
+        fi
+        mkdir -p /Developer
+        ln -s %s /Developer/Panda3D
+    """ % mac_install_location)
+    # We don't specify rm -r since /Developer/Panda3D/Tools is a symlink
+    write_script('tools', 'postinstall', """
+        pkgutil --pkg-info org.panda3d.panda3d.tools.pkg
+        if [ $? = 0 ]; then
+            rm -f /Developer/Tools/Panda3D
+        fi
+        mkdir -p /Developer/Tools
+        ln -s %s/bin /Developer/Tools/Panda3D
+    """ % mac_install_location)
 
     if os.path.isdir("samples"):
         pkgs.append("samples")
 
-        oscmd("mkdir -p dstroot/scripts/samples")
-        ln_script = open("dstroot/scripts/samples/postinstall", "w")
-        ln_script.write("#!/bin/bash\n")
-        ln_script.write("IFS=.\n")
-        ln_script.write("read -a version_info <<< \"`sw_vers -productVersion`'\"\n")
-        ln_script.write("if (( ${version_info[1]} < 15 )); then\n")
-        ln_script.write("    mkdir -p /Developer/Examples\n")
-        ln_script.write("    ln -s /Library/Developer/Panda3D/samples /Developer/Examples/Panda3D\n")
-        ln_script.write("fi\n")
-        ln_script.close()
-        oscmd("chmod +x dstroot/scripts/samples/postinstall")
+        write_script('samples', 'postinstall', """
+            pkgutil --pkg-info org.panda3d.panda3d.samples.pkg
+            if [ $? = 0 ]; then
+                rm -f /Developer/Examples/Panda3D
+            fi
+            mkdir -p /Developer/Examples
+            ln -s %s/samples /Developer/Examples/Panda3D
+        """ % mac_install_location)
 
     if python_versions:
         pkgs.append("pythoncode")
@@ -676,7 +691,7 @@ def MakeInstallerOSX(version, runtime=False, python_versions=[], **kwargs):
         if not os.path.isdir("dstroot/" + pkg):
             os.makedirs("dstroot/" + pkg)
 
-        if pkg in ['base', 'tools', 'samples']:
+        if pkg in script_components:
             pkg_scripts = ' --scripts ' + scripts_path
         else:
             pkg_scripts = ''
@@ -736,15 +751,15 @@ def MakeInstallerOSX(version, runtime=False, python_versions=[], **kwargs):
         dist.write('        <line choice="fmodex"/>\n')
     dist.write('        <line choice="headers"/>\n')
     dist.write('    </choices-outline>\n')
-    dist.write('    <choice id="base" title="Panda3D Base Installation" description="This package contains the Panda3D libraries, configuration files and models/textures that are needed to use Panda3D.&#10;&#10;Location: /Library/Developer/Panda3D/" start_enabled="false">\n')
+    dist.write('    <choice id="base" title="Panda3D Base Installation" description="This package contains the Panda3D libraries, configuration files and models/textures that are needed to use Panda3D.&#10;&#10;Location: %s/" start_enabled="false">\n' % mac_install_location)
     dist.write('        <pkg-ref id="org.panda3d.panda3d.base.pkg"/>\n')
     dist.write('    </choice>\n')
-    dist.write('    <choice id="tools" title="Tools" tooltip="Useful tools and model converters to help with Panda3D development" description="This package contains the various utilities that ship with Panda3D, including packaging tools, model converters, and many more.&#10;&#10;Location: /Library/Developer/Panda3D/bin/">\n')
+    dist.write('    <choice id="tools" title="Tools" tooltip="Useful tools and model converters to help with Panda3D development" description="This package contains the various utilities that ship with Panda3D, including packaging tools, model converters, and many more.&#10;&#10;Location: %s/bin/">\n' % mac_install_location)
     dist.write('        <pkg-ref id="org.panda3d.panda3d.tools.pkg"/>\n')
     dist.write('    </choice>\n')
 
     if python_versions:
-        dist.write('    <choice id="pythoncode" title="Python Support" tooltip="Python bindings for the Panda3D libraries" description="This package contains the \'direct\', \'pandac\' and \'panda3d\' python packages that are needed to do Python development with Panda3D.&#10;&#10;Location: /Library/Developer/Panda3D/">\n')
+        dist.write('    <choice id="pythoncode" title="Python Support" tooltip="Python bindings for the Panda3D libraries" description="This package contains the \'direct\', \'pandac\' and \'panda3d\' python packages that are needed to do Python development with Panda3D.&#10;&#10;Location: %s/">\n' % mac_install_location)
         dist.write('        <pkg-ref id="org.panda3d.panda3d.pythoncode.pkg"/>\n')
         dist.write('    </choice>\n')
 
@@ -783,11 +798,11 @@ def MakeInstallerOSX(version, runtime=False, python_versions=[], **kwargs):
         dist.write('    </choice>\n')
 
     if os.path.isdir("samples"):
-        dist.write('    <choice id="samples" title="Sample Programs" tooltip="Python sample programs that use Panda3D" description="This package contains the Python sample programs that can help you with learning how to use Panda3D.&#10;&#10;Location: /Library/Developer/Examples/Panda3D/">\n')
+        dist.write('    <choice id="samples" title="Sample Programs" tooltip="Python sample programs that use Panda3D" description="This package contains the Python sample programs that can help you with learning how to use Panda3D.&#10;&#10;Location: %s/samples">\n' % mac_install_location)
         dist.write('        <pkg-ref id="org.panda3d.panda3d.samples.pkg"/>\n')
         dist.write('    </choice>\n')
 
-    dist.write('    <choice id="headers" title="C++ Header Files" tooltip="Header files for C++ development with Panda3D" description="This package contains the C++ header files that are needed in order to do C++ development with Panda3D. You don\'t need this if you want to develop in Python.&#10;&#10;Location: /Library/Developer/Panda3D/include/" start_selected="false">\n')
+    dist.write('    <choice id="headers" title="C++ Header Files" tooltip="Header files for C++ development with Panda3D" description="This package contains the C++ header files that are needed in order to do C++ development with Panda3D. You don\'t need this if you want to develop in Python.&#10;&#10;Location: %s/include/" start_selected="false">\n' % mac_install_location)
     dist.write('        <pkg-ref id="org.panda3d.panda3d.headers.pkg"/>\n')
     dist.write('    </choice>\n')
     for pkg in pkgs:
@@ -1102,6 +1117,7 @@ if __name__ == "__main__":
     parser.add_option('', '--verbose', dest='verbose', help='Enable verbose output', action='store_true', default=False)
     parser.add_option('', '--runtime', dest='runtime', help='Runtime instead of SDK', action='store_true', default=False)
     parser.add_option('', '--lzma', dest='compressor', help='Use LZMA compression', action='store_const', const='lzma', default='zlib')
+    parser.add_option('', '--macinstalllocation', dest='mac_install_location', help='Where the macOS package should install itself', default='/Library/Developer/Panda3D')
     (options, args) = parser.parse_args()
 
     SetVerbose(options.verbose)
@@ -1135,4 +1151,5 @@ if __name__ == "__main__":
                   debversion=options.debversion,
                   rpmrelease=options.rpmrelease,
                   runtime=options.runtime,
-                  python_versions=ReadPythonVersionInfoFile())
+                  python_versions=ReadPythonVersionInfoFile(),
+                  mac_install_location=options.mac_install_location)
