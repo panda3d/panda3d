@@ -306,12 +306,14 @@ def parseopts(args):
         if target_arch:
             exit("--universal is incompatible with --arch")
 
-        OSX_ARCHS.append("i386")
         if OSXTARGET:
             osxver = OSXTARGET
         else:
             maj, min = platform.mac_ver()[0].split('.')[:2]
             osxver = int(maj), int(min)
+
+        if osxver[1] < 15:
+            OSX_ARCHS.append("i386")
 
         if osxver[1] < 6:
             OSX_ARCHS.append("ppc")
