@@ -107,6 +107,7 @@ struct MayaVerInfo maya_versions[] = {
   { "MAYA2017", "2017"},
   { "MAYA2018", "2018"},
   { "MAYA2019", "2019"},
+  { "MAYA2020", "2020"},
   { 0, 0 },
 };
 
