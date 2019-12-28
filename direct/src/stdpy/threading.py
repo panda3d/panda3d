@@ -87,7 +87,7 @@ class Thread(ThreadBase):
     object.  The wrapper is designed to emulate Python's own
     threading.Thread object. """
 
-    def __init__(self, group=None, target=None, name=None, args=(), kwargs={}):
+    def __init__(self, group=None, target=None, name=None, args=(), kwargs={}, daemon=None):
         ThreadBase.__init__(self)
 
         assert group is None
@@ -99,7 +99,10 @@ class Thread(ThreadBase):
             name = _newname()
 
         current = current_thread()
-        self.__dict__['daemon'] = current.daemon
+        if daemon is not None:
+            self.__dict__['daemon'] = daemon
+        else:
+            self.__dict__['daemon'] = current.daemon
         self.__dict__['name'] = name
 
         def call_run():

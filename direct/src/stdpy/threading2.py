@@ -396,7 +396,7 @@ class Thread(_Verbose):
     __exc_info = _sys.exc_info
 
     def __init__(self, group=None, target=None, name=None,
-                 args=(), kwargs=None, verbose=None):
+                 args=(), kwargs=None, verbose=None, daemon=None):
         assert group is None, "group argument must be None for now"
         _Verbose.__init__(self, verbose)
         if kwargs is None:
@@ -405,7 +405,10 @@ class Thread(_Verbose):
         self.__name = str(name or _newname())
         self.__args = args
         self.__kwargs = kwargs
-        self.__daemonic = self._set_daemon()
+        if daemon is not None:
+            self.__daemonic = daemon
+        else:
+            self.__daemonic = self._set_daemon()
         self.__started = False
         self.__stopped = False
         self.__block = Condition(Lock())
@@ -670,7 +673,7 @@ class _MainThread(Thread):
 class _DummyThread(Thread):
 
     def __init__(self):
-        Thread.__init__(self, name=_newname("Dummy-%d"))
+        Thread.__init__(self, name=_newname("Dummy-%d"), daemon=True)
 
         # Thread.__block consumes an OS-level locking primitive, which
         # can never be used by a _DummyThread.  Since a _DummyThread
