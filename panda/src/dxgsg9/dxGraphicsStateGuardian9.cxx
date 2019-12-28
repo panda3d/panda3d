@@ -5269,6 +5269,7 @@ calc_fb_properties(DWORD cformat, DWORD dformat,
 #define GAMMA_1 (255.0 * 256.0)
 
 static bool _gamma_table_initialized = false;
+static bool _gamma_changed = false;
 static unsigned short _original_gamma_table [256 * 3];
 
 void _create_gamma_table_dx9 (PN_stdfloat gamma, unsigned short *original_red_table, unsigned short *original_green_table, unsigned short *original_blue_table, unsigned short *red_table, unsigned short *green_table, unsigned short *blue_table) {
@@ -5366,6 +5367,7 @@ static_set_gamma(bool restore, PN_stdfloat gamma) {
 
     if (SetDeviceGammaRamp (hdc, ramp)) {
       set = true;
+      _gamma_changed = !restore;
     }
 
     ReleaseDC (nullptr, hdc);
@@ -5403,7 +5405,9 @@ restore_gamma() {
 void DXGraphicsStateGuardian9::
 atexit_function(void) {
   set_cg_device(nullptr);
-  static_set_gamma(true, 1.0f);
+  if (_gamma_changed) {
+    static_set_gamma(true, 1.0f);
+  }
 }
 
 /**
