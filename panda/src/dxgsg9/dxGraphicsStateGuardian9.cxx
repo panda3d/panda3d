@@ -496,6 +496,7 @@ prepare_vertex_buffer(GeomVertexArrayData *data) {
     }
     #endif
 
+    dvbc->update_data_size_bytes(num_bytes);
     return dvbc;
   } else {
     dxgsg9_cat.error()
@@ -533,14 +534,42 @@ apply_vertex_buffer(VertexBufferContext *vbc,
         return false;
       }
 
-      PStatTimer timer(_load_vertex_buffer_pcollector, reader->get_current_thread());
 
-      #if 0
       if (dvbc->changed_size(reader)) {
-        // We have to destroy the old vertex buffer and create a new one.
-        dvbc->create_vbuffer(*_screen, reader);
+        // Destroy and recreate the buffer.
+        if (dvbc->_vbuffer != nullptr) {
+          dvbc->_vbuffer->Release();
+          dvbc->_vbuffer = nullptr;
+        }
+
+        DWORD usage;
+        D3DPOOL pool;
+        if (_screen->_managed_vertex_buffers) {
+          pool = D3DPOOL_MANAGED;
+          usage = D3DUSAGE_WRITEONLY;
+        } else {
+          pool = D3DPOOL_DEFAULT;
+          usage = D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC;
+        }
+
+        PStatTimer timer(_create_vertex_buffer_pcollector, Thread::get_current_thread());
+
+        HRESULT hr;
+        int attempts = 0;
+        do {
+          hr = _screen->_d3d_device->CreateVertexBuffer(num_bytes, usage, dvbc->_fvf, pool, &dvbc->_vbuffer, nullptr);
+          attempts++;
+        } while (check_dx_allocation(hr, num_bytes, attempts));
+
+        if (FAILED(hr)) {
+          dvbc->_vbuffer = nullptr;
+          dxgsg9_cat.error()
+            << "CreateVertexBuffer failed" << D3DERRORSTRING(hr);
+          return false;
+        }
       }
-      #endif
+
+      PStatTimer timer(_load_vertex_buffer_pcollector, reader->get_current_thread());
 
       HRESULT hr;
       BYTE *local_pointer;
