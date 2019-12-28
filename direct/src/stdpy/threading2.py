@@ -602,6 +602,9 @@ class Thread(_Verbose):
         assert not self.__started, "cannot set daemon status of active thread"
         self.__daemonic = daemonic
 
+    name = property(getName, setName)
+    daemon = property(isDaemon, setDaemon)
+
 # The timer class was contributed by Itamar Shtull-Trauring
 
 def Timer(*args, **kwargs):
