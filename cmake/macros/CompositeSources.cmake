@@ -15,10 +15,13 @@
 
 
 # Settings for composite builds.  Should be moved to Config.cmake?
-set(COMPOSITE_SOURCE_LIMIT "30" CACHE STRING
-  "Setting this to a value higher than 1 will enable unity builds, also
-known as SCU (single compilation unit).  A high value will speed up the
-build dramatically but will be more memory intensive than a low value.")
+set(CMAKE_UNITY_BUILD "ON" CACHE BOOL
+  "Enable unity builds; Panda defaults this to on.")
+
+set(CMAKE_UNITY_BUILD_BATCH_SIZE "30" CACHE STRING
+  "How many source files to build at a time through the unity build mechanism.
+  A high value will speed up the build dramatically but will be more memory
+  intensive than a low value.")
 
 set(COMPOSITE_SOURCE_EXTENSIONS ".cxx;.mm;.c" CACHE STRING
   "Only files of these extensions will be composited.")
@@ -32,6 +35,16 @@ set(COMPOSITE_GENERATOR "${CMAKE_SOURCE_DIR}/cmake/scripts/MakeComposite.cmake")
 
 # Define composite_sources()
 function(composite_sources target sources_var)
+  if(NOT CMAKE_VERSION VERSION_LESS "3.16")
+    # CMake 3.16+ implements CMAKE_UNITY_BUILD* natively; no need to continue!
+    return()
+  endif()
+
+  if(NOT CMAKE_UNITY_BUILD)
+    # We've been turned off
+    return()
+  endif()
+
   # How many sources were specified?
   set(orig_sources ${${sources_var}})
   set(sources ${orig_sources})
@@ -40,7 +53,7 @@ function(composite_sources target sources_var)
   # Don't composite if in the list of exclusions, and don't bother compositing
   # with too few sources
   list (FIND COMPOSITE_SOURCE_EXCLUSIONS ${target} _index)
-  if(num_sources LESS 2 OR ${COMPOSITE_SOURCE_LIMIT} LESS 2 OR ${_index} GREATER -1)
+  if(num_sources LESS 2 OR ${CMAKE_UNITY_BUILD_BATCH_SIZE} LESS 2 OR ${_index} GREATER -1)
     return()
   endif()
 
@@ -100,7 +113,7 @@ function(composite_sources target sources_var)
     endif()
 
     # Check if this is the point where we should cut the file.
-    if(num_sources EQUAL 0 OR NOT num_composite_sources LESS ${COMPOSITE_SOURCE_LIMIT}
+    if(num_sources EQUAL 0 OR NOT num_composite_sources LESS ${CMAKE_UNITY_BUILD_BATCH_SIZE}
        OR NOT composite_ext STREQUAL next_extension)
       # It's pointless to make a composite source from just one file.
       if(num_composite_sources GREATER 1)
