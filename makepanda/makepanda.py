@@ -2949,7 +2949,13 @@ if not PkgSkip("PYTHON"):
     ConditionalWriteFile(GetOutputDir() + '/panda3d/__init__.py', p3d_init)
 
     # Also add this file, for backward compatibility.
-    ConditionalWriteFile(GetOutputDir() + '/panda3d/dtoolconfig.py', """
+    ConditionalWriteFile(GetOutputDir() + '/panda3d/dtoolconfig.py', """\
+'''Alias of :mod:`panda3d.interrogatedb`.
+
+.. deprecated:: 1.10.0
+   This module has been renamed to :mod:`panda3d.interrogatedb`.
+'''
+
 if __debug__:
     print("Warning: panda3d.dtoolconfig is deprecated, use panda3d.interrogatedb instead.")
 from .interrogatedb import *
