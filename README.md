@@ -186,15 +186,18 @@ from the Play Store.  Many of the dependencies can be installed by running the
 following command in the Termux shell:
 
 ```bash
-pkg install python-dev termux-tools ndk-stl ndk-sysroot clang libvorbis-dev libopus-dev opusfile-dev openal-soft-dev freetype-dev harfbuzz-dev libpng-dev ecj4.6 dx patchelf aapt apksigner libcrypt-dev
+pkg install python ndk-sysroot clang bison freetype harfbuzz libpng eigen openal-soft opusfile libvorbis assimp libopus ecj dx patchelf aapt apksigner libcrypt openssl pkg-config
 ```
 
-Then, you can build and install the .apk right away using these commands:
+Then, you can build the .apk using this command:
 
 ```bash
 python makepanda/makepanda.py --everything --target android-21 --no-tiff --installer
-xdg-open panda3d.apk
 ```
+
+You can install the generated panda3d.apk by browsing to the panda3d folder
+using a file manager.  You may need to copy it to `/sdcard` to be able to
+access it from other apps.
 
 To launch a Python program from Termux, you can use the `run_python.sh` script
 inside the `panda/src/android` directory.  It will launch Python in a separate
