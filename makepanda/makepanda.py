@@ -1106,7 +1106,8 @@ if (COMPILER=="GCC"):
             LibName(pkg, "-lDependEngine")
             LibName(pkg, "-lCommandEngine")
             LibName(pkg, "-lFoundation")
-            LibName(pkg, "-lIMFbase")
+            if pkg != "MAYA2020":
+                LibName(pkg, "-lIMFbase")
             if GetTarget() != 'darwin':
                 LibName(pkg, "-lOpenMayalib")
             else:
