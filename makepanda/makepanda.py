@@ -1083,7 +1083,7 @@ if (COMPILER=="GCC"):
     for pkg in MAYAVERSIONS:
         if (PkgSkip(pkg)==0 and (pkg in SDK)):
             if GetTarget() == 'darwin':
-                LibName(pkg, "-Wl,-rpath," + SDK[pkg] + "/Maya.app/Contents/MacOS")
+                LibName(pkg, "-Wl,-rpath,/Applications/Autodesk/" + pkg.lower() + "/Maya.app/Contents/MacOS")
             else:
                 LibName(pkg, "-Wl,-rpath," + SDK[pkg] + "/lib")
             LibName(pkg, "-lOpenMaya")
