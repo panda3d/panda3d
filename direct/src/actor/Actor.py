@@ -5,6 +5,7 @@ __all__ = ['Actor']
 from panda3d.core import *
 from panda3d.core import Loader as PandaLoader
 from direct.showbase.DirectObject import DirectObject
+from direct.showbase.Loader import Loader
 from direct.directnotify import DirectNotifyGlobal
 
 
@@ -1885,6 +1886,9 @@ class Actor(DirectObject, NodePath):
                     loaderOptions.setFlags(loaderOptions.getFlags() & ~LoaderOptions.LFReportErrors)
                 else:
                     loaderOptions.setFlags(loaderOptions.getFlags() | LoaderOptions.LFReportErrors)
+
+            # Ensure that custom Python loader hooks are initialized.
+            Loader._loadPythonFileTypes()
 
             # Pass loaderOptions to specify that we want to
             # get the skeleton model.  This only matters to model

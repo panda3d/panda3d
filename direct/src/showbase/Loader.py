@@ -22,6 +22,8 @@ class Loader(DirectObject):
     notify = directNotify.newCategory("Loader")
     loaderIndex = 0
 
+    _loadedPythonFileTypes = False
+
     class Callback:
         """Returned by loadModel when used asynchronously.  This class is
         modelled after Future, and can be awaited."""
@@ -149,8 +151,7 @@ class Loader(DirectObject):
         Loader.loaderIndex += 1
         self.accept(self.hook, self.__gotAsyncObject)
 
-        if ConfigVariableBool('loader-support-entry-points', True):
-            self._loadPythonFileTypes()
+        self._loadPythonFileTypes()
 
     def destroy(self):
         self.ignore(self.hook)
@@ -158,7 +159,14 @@ class Loader(DirectObject):
         del self.base
         del self.loader
 
-    def _loadPythonFileTypes(self):
+    @classmethod
+    def _loadPythonFileTypes(cls):
+        if cls._loadedPythonFileTypes:
+            return
+
+        if not ConfigVariableBool('loader-support-entry-points', True):
+            return
+
         import importlib
         try:
             pkg_resources = importlib.import_module('pkg_resources')
@@ -170,6 +178,8 @@ class Loader(DirectObject):
 
             for entry_point in pkg_resources.iter_entry_points('panda3d.loaders'):
                 registry.register_deferred_type(entry_point)
+
+            cls._loadedPythonFileTypes = True
 
     # model loading funcs
     def loadModel(self, modelPath, loaderOptions = None, noCache = None,
