@@ -1088,6 +1088,7 @@ if (COMPILER=="GCC"):
                 LibName(pkg, "-Wl,-rpath," + SDK[pkg] + "/lib")
             LibName(pkg, "-lOpenMaya")
             LibName(pkg, "-lOpenMayaAnim")
+            LibName(pkg, "-lOpenMayaUI")
             LibName(pkg, "-lAnimSlice")
             LibName(pkg, "-lDeformSlice")
             LibName(pkg, "-lModifiers")
