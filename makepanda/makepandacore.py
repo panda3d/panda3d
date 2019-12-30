@@ -106,6 +106,7 @@ MAYAVERSIONINFO = [("MAYA6",   "6.0"),
                    ("MAYA2017","2017"),
                    ("MAYA2018","2018"),
                    ("MAYA2019","2019"),
+                   ("MAYA2020","2020"),
 ]
 
 MAXVERSIONINFO = [("MAX6", "SOFTWARE\\Autodesk\\3DSMAX\\6.0", "installdir", "maxsdk\\cssdk\\include"),
@@ -2803,7 +2804,7 @@ def SetupVisualStudioEnviron():
         elif not win_kit.endswith('\\'):
             win_kit += '\\'
 
-        for vnum in 10150, 10240, 10586, 14393, 15063, 16299, 17134, 17763:
+        for vnum in 10150, 10240, 10586, 14393, 15063, 16299, 17134, 17763, 18362:
             version = "10.0.{0}.0".format(vnum)
             if os.path.isfile(win_kit + "Include\\" + version + "\\ucrt\\assert.h"):
                 print("Using Universal CRT %s" % (version))

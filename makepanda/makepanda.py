@@ -944,11 +944,12 @@ if (COMPILER=="GCC"):
     for pkg in MAYAVERSIONS:
         if (PkgSkip(pkg)==0 and (pkg in SDK)):
             if GetTarget() == 'darwin':
-                LibName(pkg, "-Wl,-rpath," + SDK[pkg] + "/Maya.app/Contents/MacOS")
+                LibName(pkg, "-Wl,-rpath,/Applications/Autodesk/" + pkg.lower() + "/Maya.app/Contents/MacOS")
             else:
                 LibName(pkg, "-Wl,-rpath," + SDK[pkg] + "/lib")
             LibName(pkg, "-lOpenMaya")
             LibName(pkg, "-lOpenMayaAnim")
+            LibName(pkg, "-lOpenMayaUI")
             LibName(pkg, "-lAnimSlice")
             LibName(pkg, "-lDeformSlice")
             LibName(pkg, "-lModifiers")
@@ -967,7 +968,8 @@ if (COMPILER=="GCC"):
             LibName(pkg, "-lDependEngine")
             LibName(pkg, "-lCommandEngine")
             LibName(pkg, "-lFoundation")
-            LibName(pkg, "-lIMFbase")
+            if pkg != "MAYA2020":
+                LibName(pkg, "-lIMFbase")
             if GetTarget() != 'darwin':
                 LibName(pkg, "-lOpenMayalib")
             else:
@@ -2612,7 +2614,13 @@ if not PkgSkip("PYTHON"):
     ConditionalWriteFile(GetOutputDir() + '/panda3d/__init__.py', p3d_init)
 
     # Also add this file, for backward compatibility.
-    ConditionalWriteFile(GetOutputDir() + '/panda3d/dtoolconfig.py', """
+    ConditionalWriteFile(GetOutputDir() + '/panda3d/dtoolconfig.py', """\
+'''Alias of :mod:`panda3d.interrogatedb`.
+
+.. deprecated:: 1.10.0
+   This module has been renamed to :mod:`panda3d.interrogatedb`.
+'''
+
 if __debug__:
     print("Warning: panda3d.dtoolconfig is deprecated, use panda3d.interrogatedb instead.")
 from .interrogatedb import *
