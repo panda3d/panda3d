@@ -76,6 +76,8 @@ function(package_option name)
   set(license "")
   set(cache_string)
 
+  string(TOUPPER "${name}" name)
+
   foreach(arg ${ARGN})
     if(command STREQUAL "DEFAULT")
       set(default "${arg}")
@@ -207,16 +209,26 @@ function(package_option name)
     endforeach(implib)
 
     if(use_variables)
-      if(${found_as}_INCLUDE_DIRS)
+      string(TOUPPER "${found_as}" FOUND_AS)
+
+      if(DEFINED ${found_as}_INCLUDE_DIRS)
         set(includes ${${found_as}_INCLUDE_DIRS})
-      else()
+      elseif(DEFINED ${found_as}_INCLUDE_DIR)
         set(includes "${${found_as}_INCLUDE_DIR}")
+      elseif(DEFINED ${FOUND_AS}_INCLUDE_DIRS)
+        set(includes ${${FOUND_AS}_INCLUDE_DIRS})
+      else()
+        set(includes "${${FOUND_AS}_INCLUDE_DIR}")
       endif()
 
-      if(${found_as}_LIBRARIES)
+      if(DEFINED ${found_as}_LIBRARIES)
         set(libs ${${found_as}_LIBRARIES})
-      else()
+      elseif(DEFINED ${found_as}_LIBRARY)
         set(libs "${${found_as}_LIBRARY}")
+      elseif(DEFINED ${FOUND_AS}_LIBRARIES)
+        set(libs ${${FOUND_AS}_LIBRARIES})
+      else()
+        set(libs "${${FOUND_AS}_LIBRARY}")
       endif()
 
       target_link_libraries(PKG::${name} INTERFACE ${libs})
@@ -238,6 +250,8 @@ function(package_status name desc)
   foreach(arg ${ARGN})
     set(note "${arg}")
   endforeach()
+
+  string(TOUPPER "${name}" name)
 
   if(NOT ";${_ALL_PACKAGE_OPTIONS};" MATCHES ";${name};")
     message(SEND_ERROR "package_status(${name}) was called before package_option(${name}).
@@ -481,18 +495,12 @@ macro(find_package name)
     _find_package(${ARGV})
 
   else()
-    string(TOUPPER "${name}" __pkgname_upper)
-
     # Try CONFIG
     _find_package("${name}" CONFIG ${ARGN})
+
     if(NOT ${name}_FOUND)
       # CONFIG didn't work, fall back to MODULE
       _find_package("${name}" MODULE ${ARGN})
-
-    else()
-      # Case-sensitivity
-      set(${__pkgname_upper}_FOUND 1)
-
     endif()
   endif()
 endmacro(find_package)

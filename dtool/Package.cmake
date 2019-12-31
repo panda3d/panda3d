@@ -226,7 +226,7 @@ if(CMAKE_VERSION VERSION_LESS "3.15")
 
 endif()
 
-package_option(PYTHON
+package_option(Python
   DEFAULT ON
   "Enables support for Python.  If INTERROGATE_PYTHON_INTERFACE
 is also enabled, Python bindings will be generated."
@@ -309,7 +309,7 @@ set(_PREV_WANT_PYTHON_VERSION "${WANT_PYTHON_VERSION}" CACHE INTERNAL "Internal.
 # OpenSSL
 find_package(OpenSSL COMPONENTS SSL Crypto QUIET)
 
-package_option(OPENSSL
+package_option(OpenSSL
   DEFAULT ON
   "Enable OpenSSL support"
   IMPORTED_AS OpenSSL::SSL OpenSSL::Crypto)
@@ -319,9 +319,9 @@ option(REPORT_OPENSSL_ERRORS
 error messages when they occur." ${IS_DEBUG_BUILD})
 
 if(REPORT_OPENSSL_ERRORS)
-  package_status(OPENSSL "OpenSSL" "with verbose error reporting")
+  package_status(OpenSSL "OpenSSL" "with verbose error reporting")
 else()
-  package_status(OPENSSL "OpenSSL")
+  package_status(OpenSSL "OpenSSL")
 endif()
 
 # zlib
@@ -364,16 +364,16 @@ package_status(TIFF "libtiff")
 # OpenEXR
 find_package(OpenEXR QUIET)
 
-package_option(OPENEXR "Enable support for loading .exr images.")
+package_option(OpenEXR "Enable support for loading .exr images.")
 
-package_status(OPENEXR "OpenEXR")
+package_status(OpenEXR "OpenEXR")
 
 # libsquish
 find_package(LibSquish QUIET)
 
 package_option(SQUISH
   "Enables support for automatic compression of DXT textures."
-  FOUND_AS LIBSQUISH)
+  FOUND_AS LibSquish)
 
 package_status(SQUISH "libsquish")
 
@@ -385,19 +385,19 @@ package_status(SQUISH "libsquish")
 # Assimp
 find_package(Assimp QUIET)
 
-package_option(ASSIMP
+package_option(Assimp
   "Build pandatool with support for loading 3D assets supported by Assimp.")
 
-package_status(ASSIMP "Assimp")
+package_status(Assimp "Assimp")
 
 # FCollada
 find_package(FCollada QUIET)
 
-package_option(FCOLLADA
+package_option(FCollada
   "Build pandatool with support for loading Collada files using FCollada."
   IMPORTED_AS FCollada::FCollada)
 
-package_status(FCOLLADA "FCollada")
+package_status(FCollada "FCollada")
 
 
 #
@@ -414,7 +414,7 @@ implementation of its own linmath library; otherwise, it will use
 its own internal implementation.  The primary advantage of using
 Eigen is SSE2 support, which is only activated if LINMATH_ALIGN
 is also enabled."
-  FOUND_AS EIGEN3
+  FOUND_AS Eigen3
   LICENSE "MPL-2")
 
 option(LINMATH_ALIGN
@@ -456,9 +456,9 @@ find_package(SWResample QUIET)
 
 package_option(FFMPEG
   "Enables support for audio- and video-decoding using the FFmpeg library.")
-package_option(SWSCALE
+package_option(SWScale
   "Enables support for FFmpeg's libswscale for video rescaling.")
-package_option(SWRESAMPLE
+package_option(SWResample
   "Enables support for FFmpeg's libresample for audio resampling.")
 
 if(HAVE_SWSCALE AND HAVE_SWRESAMPLE)
@@ -476,7 +476,7 @@ package_status(FFMPEG "FFmpeg" "${ffmpeg_features}")
 find_package(VorbisFile QUIET)
 
 package_option(VORBIS
-  FOUND_AS VORBISFILE
+  FOUND_AS VorbisFile
   "Enables support for decoding Vorbis-encoded .ogg audio files via libvorbisfile.")
 
 package_status(VORBIS "Vorbis")
@@ -485,7 +485,7 @@ package_status(VORBIS "Vorbis")
 find_package(OpusFile QUIET)
 
 package_option(OPUS
-  FOUND_AS OPUSFILE
+  FOUND_AS OpusFile
   "Enables support for decoding .opus audio files via libopusfile.")
 
 package_status(OPUS "Opus")
@@ -497,27 +497,27 @@ package_status(OPUS "Opus")
 # FMOD Ex
 find_package(FMODEx QUIET)
 
-package_option(FMODEX
+package_option(FMODEx
   "This enables support for the FMOD Ex sound library,
   from Firelight Technologies. This audio library is free for non-commercial
   use."
   LICENSE "FMOD")
 
-package_status(FMODEX "FMOD Ex sound library")
+package_status(FMODEx "FMOD Ex sound library")
 
 # OpenAL
 find_package(OpenAL QUIET)
 
-package_option(OPENAL
+package_option(OpenAL
   "This enables support for audio output via OpenAL. Some platforms, such as
   macOS, provide their own OpenAL implementation, which Panda3D can use. But,
   on most platforms this will imply OpenAL Soft, which is LGPL licensed."
   IMPORTED_AS OpenAL::OpenAL
   LICENSE "LGPL")
 
-package_status(OPENAL "OpenAL sound library")
+package_status(OpenAL "OpenAL sound library")
 
-if(OPENAL_FOUND AND APPLE)
+if(OpenAL_FOUND AND APPLE OR OPENAL_FOUND AND APPLE)
   set(HAVE_OPENAL_FRAMEWORK YES)
 endif()
 
@@ -530,12 +530,12 @@ endif()
 
 find_package(Freetype QUIET)
 
-package_option(FREETYPE
+package_option(Freetype
   "This enables support for the FreeType font-rendering library.  If disabled,
   Panda3D will only be able to read fonts specially made with egg-mkfont."
   IMPORTED_AS freetype)
 
-package_status(FREETYPE "FreeType")
+package_status(Freetype "FreeType")
 
 # HarfBuzz
 
@@ -543,11 +543,11 @@ package_status(FREETYPE "FreeType")
 # force MODULE mode here.
 find_package(HarfBuzz MODULE QUIET)
 
-package_option(HARFBUZZ
+package_option(HarfBuzz
   "This enables support for the HarfBuzz text shaping library."
   IMPORTED_AS harfbuzz::harfbuzz)
 
-package_status(HARFBUZZ "HarfBuzz")
+package_status(HarfBuzz "HarfBuzz")
 
 # GTK2
 
@@ -567,10 +567,10 @@ package_status(GTK2 "gtk+-2")
 # Bullet
 find_package(Bullet MODULE QUIET)
 
-package_option(BULLET
+package_option(Bullet
   "Enable this option to support game dynamics with the Bullet physics library.")
 
-package_status(BULLET "Bullet physics")
+package_status(Bullet "Bullet physics")
 
 # ODE
 find_package(ODE QUIET)
@@ -585,11 +585,11 @@ package_status(ODE "Open Dynamics Engine")
 # PhysX
 find_package(PhysX QUIET)
 
-package_option(PHYSX
+package_option(PhysX
   "Enable this option to support game dynamics with Nvidia PhysX."
   LICENSE "Nvidia")
 
-package_status(PHYSX "Nvidia PhysX")
+package_status(PhysX "Nvidia PhysX")
 
 
 #
@@ -599,11 +599,11 @@ package_status(PHYSX "Nvidia PhysX")
 # SpeedTree
 find_package(SpeedTree QUIET)
 
-package_option(SPEEDTREE
+package_option(SpeedTree
   "Enable this option to include scenegraph support for SpeedTree trees."
   LICENSE "SpeedTree")
 
-package_status(SPEEDTREE "SpeedTree")
+package_status(SpeedTree "SpeedTree")
 
 
 #
@@ -647,7 +647,7 @@ find_package(Direct3D9 QUIET COMPONENTS dxguid dxerr d3dx9)
 
 package_option(DX9
   "Enable support for DirectX 9.  This is typically only viable on Windows."
-  FOUND_AS DIRECT3D9)
+  FOUND_AS Direct3D9)
 
 package_status(DX9 "Direct3D 9.x")
 
@@ -728,11 +728,11 @@ package_status(EGL "EGL")
 # OpenCV
 find_package(OpenCV QUIET COMPONENTS core highgui OPTIONAL_COMPONENTS videoio)
 
-package_option(OPENCV
+package_option(OpenCV
   "Enable support for OpenCV.  This will be built into the 'vision' package."
   FOUND_AS OpenCV)
 
-package_status(OPENCV "OpenCV")
+package_status(OpenCV "OpenCV")
 
 # CMake <3.7 doesn't support GREATER_EQUAL, so this uses NOT LESS instead.
 if(NOT OpenCV_VERSION_MAJOR LESS 3)
@@ -747,10 +747,10 @@ endif()
 # ARToolKit
 find_package(ARToolKit QUIET)
 
-package_option(ARTOOLKIT
+package_option(ARToolKit
   "Enable support for ARToolKit.  This will be built into the 'vision' package.")
 
-package_status(ARTOOLKIT "ARToolKit")
+package_status(ARToolKit "ARToolKit")
 
 
 #
