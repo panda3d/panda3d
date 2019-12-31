@@ -179,7 +179,7 @@ public:
   INLINE void erase(iterator position);
   INLINE void erase(iterator first, iterator last);
 
-#ifndef _MSC_VER
+#ifndef _WIN32
   INLINE reference operator [](size_type n) const;
   INLINE reference operator [](int n) const;
 #endif
@@ -323,7 +323,7 @@ PUBLISHED:
   INLINE reference front() const;
   INLINE reference back() const;
 
-#ifndef _MSC_VER
+#ifndef _WIN32
   INLINE reference operator [](size_type n) const;
   INLINE reference operator [](int n) const;
 #endif
