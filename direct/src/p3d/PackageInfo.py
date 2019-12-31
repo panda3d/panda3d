@@ -1,3 +1,8 @@
+"""
+.. deprecated:: 1.10.0
+   The p3d packaging system has been replaced with the new setuptools-based
+   system.  See the :ref:`distribution` manual section.
+"""
 __all__ = ["PackageInfo"]
 
 from panda3d.core import Filename, DocumentSpec, Multifile, Decompressor, EUOk, EUSuccess, VirtualFileSystem, Thread, getModelPath, ExecutionEnvironment, PStatCollector, TiXmlDocument, TiXmlDeclaration, TiXmlElement
