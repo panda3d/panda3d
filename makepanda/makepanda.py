@@ -1081,11 +1081,8 @@ def CompileCxx(obj,src,opts):
                 cmd += "/favor:blend "
             cmd += "/wd4996 /wd4275 /wd4273 "
 
-            # We still target Windows XP.
-            cmd += "/DWINVER=0x501 "
-            # Work around a WinXP/2003 bug when using VS 2015+.
-            if SDK.get("VISUALSTUDIO_VERSION") >= (14,0):
-                cmd += "/Zc:threadSafeInit- "
+            # Set the minimum version to Windows Vista.
+            cmd += "/DWINVER=0x600 "
 
             cmd += "/Fo" + obj + " /nologo /c"
             if GetTargetArch() != 'x64' and (not PkgSkip("SSE2") or 'SSE2' in opts):
@@ -1136,7 +1133,7 @@ def CompileCxx(obj,src,opts):
             if GetTargetArch() == 'x64':
                 cmd += "/favor:blend "
             cmd += "/wd4996 /wd4275 /wd4267 /wd4101 /wd4273 "
-            cmd += "/DWINVER=0x501 "
+            cmd += "/DWINVER=0x600 "
             cmd += "/Fo" + obj + " /c"
             for x in ipath: cmd += " /I" + x
             for (opt,dir) in INCDIRECTORIES:
@@ -1622,9 +1619,9 @@ def CompileLink(dll, obj, opts):
             subsystem = GetValueOption(opts, "SUBSYSTEM:") or "CONSOLE"
             cmd += " /SUBSYSTEM:" + subsystem
             if GetTargetArch() == 'x64':
-                cmd += ",5.02"
+                cmd += ",6.00"
             else:
-                cmd += ",5.01"
+                cmd += ",6.00"
 
             if dll.endswith(".dll") or dll.endswith(".pyd"):
                 cmd += ' /IMPLIB:' + GetOutputDir() + '/lib/' + os.path.splitext(os.path.basename(dll))[0] + ".lib"
