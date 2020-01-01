@@ -99,7 +99,7 @@ draw_to(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
  * Creates a new GeomNode that will render the series of line segments and
  * points described via calls to move_to() and draw_to().  The lines and
  * points are created with the color and thickness established by calls to
- * set_color() and set_thick().
+ * set_color() and set_thickness().
  *
  * If dynamic is true, the line segments will be created with the dynamic Geom
  * setting, optimizing them for runtime vertex animation.
