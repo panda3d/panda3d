@@ -363,6 +363,15 @@ function(add_python_module module)
     DEPENDS host_interrogate_module ${infiles_abs}
     COMMENT "Generating module ${module}")
 
+  # CMake chokes on ${CMAKE_CFG_INTDIR} in source paths when unity builds are
+  # enabled. The easiest way out of this is to skip unity for those paths.
+  # Since generated Interrogate .cxx files are pretty big already, this doesn't
+  # really inconvenience us at all.
+  set_source_files_properties(
+    "${CMAKE_CURRENT_BINARY_DIR}/${PANDA_CFG_INTDIR}/${module}_module.cxx"
+    ${sources_abs} PROPERTIES
+    SKIP_UNITY_BUILD_INCLUSION YES)
+
   add_python_target(${module} COMPONENT "${component}" EXPORT "${component}"
     "${CMAKE_CURRENT_BINARY_DIR}/${PANDA_CFG_INTDIR}/${module}_module.cxx"
     ${sources_abs} ${extensions})
