@@ -58,7 +58,7 @@ PUBLISHED:
   void set_gravity(PN_stdfloat gx, PN_stdfloat gy, PN_stdfloat gz);
   const LVector3 get_gravity() const;
 
-  int do_physics(PN_stdfloat dt, int max_substeps=1, PN_stdfloat stepsize=1.0f/60.0f);
+  BLOCKING int do_physics(PN_stdfloat dt, int max_substeps=1, PN_stdfloat stepsize=1.0f/60.0f);
 
   BulletSoftBodyWorldInfo get_world_info();
 
@@ -272,6 +272,7 @@ private:
   btOverlapFilterCallback *_filter_cb;
 
   PT(CallbackObject) _tick_callback_obj;
+  PT(CallbackObject) _contact_added_callback_obj;
 
   PT(BulletDebugNode) _debug;
 

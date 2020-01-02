@@ -11,12 +11,6 @@
  * @date 2000-06-14
  */
 
-#ifndef NDEBUG
-// #define PSDEBUG
-#endif
-
-// #define PSSANITYCHECK
-
 #ifndef PARTICLESYSTEM_H
 #define PARTICLESYSTEM_H
 
@@ -89,6 +83,7 @@ PUBLISHED:
   INLINE BaseParticleEmitter *get_emitter() const;
   INLINE BaseParticleFactory *get_factory() const;
   INLINE PN_stdfloat get_floor_z() const;
+  INLINE PN_stdfloat get_tics_since_birth() const;
 
   // particle template vector
 
@@ -101,7 +96,7 @@ PUBLISHED:
   INLINE void induce_labor();
   INLINE void clear_to_initial();
   INLINE void soft_stop(PN_stdfloat br = 0.0);
-  INLINE void soft_start(PN_stdfloat br = 0.0);
+  INLINE void soft_start(PN_stdfloat br = 0.0, PN_stdfloat first_birth_delay = 0.0);
   void update(PN_stdfloat dt);
 
   virtual void output(std::ostream &out) const;

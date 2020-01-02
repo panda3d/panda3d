@@ -25,7 +25,7 @@ using std::string;
 #include <sys/param.h>  // for realpath
 #endif  // __APPLE__
 
-#ifdef WIN32_VC
+#ifdef _WIN32
 // Windows requires this for getcwd().
 #include <direct.h>
 #define getcwd _getcwd
@@ -80,7 +80,7 @@ extern char **environ;
 // GLOBAL_ARGCGLOBAL_ARGV that we can read at static init time to determine
 // our command-line arguments.
 
-#if !defined(WIN32_VC) && defined(HAVE_GLOBAL_ARGV) && defined(PROTOTYPE_GLOBAL_ARGV)
+#if !defined(_WIN32) && defined(HAVE_GLOBAL_ARGV) && defined(PROTOTYPE_GLOBAL_ARGV)
 extern char **GLOBAL_ARGV;
 extern int GLOBAL_ARGC;
 #endif
@@ -200,7 +200,7 @@ expand_string(const string &str) {
  */
 Filename ExecutionEnvironment::
 get_cwd() {
-#ifdef WIN32_VC
+#ifdef _WIN32
   // getcwd() requires us to allocate a dynamic buffer and grow it on demand.
   static size_t bufsize = 1024;
   static wchar_t *buffer = nullptr;

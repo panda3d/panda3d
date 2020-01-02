@@ -132,11 +132,6 @@ FLOATNAME(LMatrix3)(const FLOATNAME(LVecBase3) &row0,
                     const FLOATNAME(LVecBase3) &row2) {
   TAU_PROFILE("LMatrix3::LMatrix3(const LVecBase3 &, ...)", " ", TAU_USER);
 
-#ifdef HAVE_EIGEN
-  _m.row(0) = row0._v;
-  _m.row(1) = row1._v;
-  _m.row(2) = row2._v;
-#else
   _m(0, 0) = row0._v(0);
   _m(0, 1) = row0._v(1);
   _m(0, 2) = row0._v(2);
@@ -146,7 +141,6 @@ FLOATNAME(LMatrix3)(const FLOATNAME(LVecBase3) &row0,
   _m(2, 0) = row2._v(0);
   _m(2, 1) = row2._v(1);
   _m(2, 2) = row2._v(2);
-#endif  // HAVE_EIGEN
 }
 
 /**

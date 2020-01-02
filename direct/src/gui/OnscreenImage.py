@@ -1,4 +1,8 @@
-"""OnscreenImage module: contains the OnscreenImage class"""
+"""OnscreenImage module: contains the OnscreenImage class.
+
+See the :ref:`onscreenimage` page in the programming manual for explanation of
+this class.
+"""
 
 __all__ = ['OnscreenImage']
 
@@ -21,14 +25,15 @@ class OnscreenImage(DirectObject, NodePath):
                  parent = None,
                  sort = 0):
         """
-        Make a image node from string or a node path,
-        put it into the 2d sg and set it up with all the indicated parameters.
+        Make a image node from string or a `~panda3d.core.NodePath`, put
+        it into the 2-D scene graph and set it up with all the indicated
+        parameters.
 
-        The parameters are as follows:
+        Parameters:
 
           image: the actual geometry to display or a file name.
-                This may be omitted and specified later via setImage()
-                if you don't have it available.
+                 This may be omitted and specified later via setImage()
+                 if you don't have it available.
 
           pos: the x, y, z position of the geometry on the screen.
                This maybe a 3-tuple of floats or a vector.

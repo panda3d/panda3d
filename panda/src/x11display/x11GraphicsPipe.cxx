@@ -371,13 +371,13 @@ find_fullscreen_crtc(const LPoint2i &point,
     for (int i = 0; i < res->ncrtc; ++i) {
       RRCrtc crtc = res->crtcs[i];
       if (auto info = get_crtc_info(res.get(), crtc)) {
-        if (point[0] >= info->x && point[0] < info->x + info->width &&
-            point[1] >= info->y && point[1] < info->y + info->height) {
+        if (point[0] >= info->x && point[0] < info->x + (int)info->width &&
+            point[1] >= info->y && point[1] < info->y + (int)info->height) {
 
           x = info->x;
           y = info->y;
-          width = info->width;
-          height = info->height;
+          width = (int)info->width;
+          height = (int)info->height;
           return crtc;
         }
       }

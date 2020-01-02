@@ -384,8 +384,9 @@ drawTriangle(const btVector3 &v0, const btVector3 &v1, const btVector3 &v2, cons
  */
 void BulletDebugNode::DebugDraw::
 drawTriangle(const btVector3 &v0, const btVector3 &v1, const btVector3 &v2, const btVector3 &n0, const btVector3 &n1, const btVector3 &n2, const btVector3 &color, btScalar alpha) {
-
-  bullet_cat.debug() << "drawTriangle(2) - not yet implemented!" << std::endl;
+  if (bullet_cat.is_debug()) {
+    bullet_cat.debug() << "drawTriangle(2) - not yet implemented!" << std::endl;
+  }
 }
 
 /**
@@ -405,8 +406,9 @@ drawContactPoint(const btVector3 &point, const btVector3 &normal, btScalar dista
  */
 void BulletDebugNode::DebugDraw::
 draw3dText(const btVector3 &location, const char *text) {
-
-  bullet_cat.debug() << "draw3dText - not yet implemented!" << std::endl;
+  if (bullet_cat.is_debug()) {
+    bullet_cat.debug() << "draw3dText - not yet implemented!" << std::endl;
+  }
 }
 
 /**

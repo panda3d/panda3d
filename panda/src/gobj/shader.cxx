@@ -2461,6 +2461,8 @@ read(const ShaderFile &sfile, BamCacheRecord *record) {
     return false;
   }
 
+  _prepare_shader_pcollector = PStatCollector(std::string("Draw:Prepare:Shader:") + _debug_name);
+
   _loaded = true;
   return true;
 }
@@ -2532,6 +2534,9 @@ load(const ShaderFile &sbody, BamCacheRecord *record) {
     return false;
   }
 
+  _debug_name = "created-shader";
+  _prepare_shader_pcollector = PStatCollector("Draw:Prepare:Shader:created-shader");
+
   _loaded = true;
   return true;
 }
@@ -2559,10 +2564,12 @@ do_read_source(Stage stage, const Filename &fn, BamCacheRecord *record) {
     return false;
   }
 
+  Filename fullpath = vf->get_filename();
+
   PT(BamCacheRecord) record_pt;
   if (record == nullptr) {
     BamCache *cache = BamCache::get_global_ptr();
-    record_pt = cache->lookup(vf->get_filename(), "smo");
+    record_pt = cache->lookup(fullpath, "smo");
     record = record_pt.p();
   }
 
@@ -2577,13 +2584,19 @@ do_read_source(Stage stage, const Filename &fn, BamCacheRecord *record) {
   }
 
   //_last_modified = std::max(_last_modified, vf->get_timestamp());
-  //_source_files.push_back(vf->get_filename());
+  //_source_files.push_back(fullpath);
 
   // Update module source filename, should find a better way to do this...
   PT(ShaderModule) module = _modules.back();
   module->set_source_filename(fn);
 
   vf->close_read_file(in);
+
+  if (!_debug_name.empty()) {
+    _debug_name += '/';
+  }
+  _debug_name += fullpath.get_basename();
+
   return true;
 }
 
@@ -2691,8 +2704,10 @@ load(const Filename &file, ShaderLanguage lang) {
       shader_cat.info()
         << "Shader " << file << " was modified on disk, reloading.\n";
     } else {
-      shader_cat.debug()
-        << "Shader " << file << " was found in shader cache.\n";
+      if (shader_cat.is_debug()) {
+        shader_cat.debug()
+          << "Shader " << file << " was found in shader cache.\n";
+      }
       return i->second;
     }
   }
@@ -2729,8 +2744,10 @@ load(ShaderLanguage lang, const Filename &vertex,
       shader_cat.info()
         << "Shader was modified on disk, reloading.\n";
     } else {
-      shader_cat.debug()
-        << "Shader was found in shader cache.\n";
+      if (shader_cat.is_debug()) {
+        shader_cat.debug()
+          << "Shader was found in shader cache.\n";
+      }
       return i->second;
     }
   }
@@ -2782,8 +2799,10 @@ load_compute(ShaderLanguage lang, const Filename &fn) {
       shader_cat.info()
         << "Compute shader " << fn << " was modified on disk, reloading.\n";
     } else {
-      shader_cat.debug()
-        << "Compute shader " << fn << " was found in shader cache.\n";
+      if (shader_cat.is_debug()) {
+        shader_cat.debug()
+          << "Compute shader " << fn << " was found in shader cache.\n";
+      }
       return i->second;
     }
   }

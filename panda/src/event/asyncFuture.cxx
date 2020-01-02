@@ -29,6 +29,20 @@ AsyncFuture::
   // If this triggers, the future destroyed before it was cancelled, which is
   // not valid.  Unless we should simply call cancel() here?
   nassertv(_waiting.empty());
+
+  // This is an attempt to work around what appears to be a compiler bug in
+  // MSVC when compiling with optimizations and having an EventStoreInt stored
+  // in this field.  It crashes when we delete via the ReferenceCount base
+  // instead of via the TypedObject.  I haven't been able to find out why;
+  // just that it doesn't happen with ParamString. ~rdb
+  ReferenceCount *result_ref = _result_ref.p();
+  if (result_ref != nullptr) {
+    _result_ref.cheat() = nullptr;
+    if (!result_ref->unref()) {
+      delete _result;
+    }
+    _result = nullptr;
+  }
 }
 
 /**

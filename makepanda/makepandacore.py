@@ -105,6 +105,8 @@ MAYAVERSIONINFO = [("MAYA6",   "6.0"),
                    ("MAYA20165","2016.5"),
                    ("MAYA2017","2017"),
                    ("MAYA2018","2018"),
+                   ("MAYA2019","2019"),
+                   ("MAYA2020","2020"),
 ]
 
 MAXVERSIONINFO = [("MAX6", "SOFTWARE\\Autodesk\\3DSMAX\\6.0", "installdir", "maxsdk\\cssdk\\include"),
@@ -1689,18 +1691,20 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
             LibName(target_pkg, "-framework " + framework)
             return
 
-        if os.path.isdir(os.path.join(pkg_dir, "include")):
-            IncDirectory(target_pkg, os.path.join(pkg_dir, "include"))
+        inc_dir = os.path.join(pkg_dir, "include")
+        if os.path.isdir(inc_dir):
+            IncDirectory(target_pkg, inc_dir)
 
             # Handle cases like freetype2 where the include dir is a subdir under "include"
             for i in incs:
-                if os.path.isdir(os.path.join(pkg_dir, "include", i)):
-                    IncDirectory(target_pkg, os.path.join(pkg_dir, "include", i))
+                if os.path.isdir(os.path.join(inc_dir, i)):
+                    IncDirectory(target_pkg, os.path.join(inc_dir, i))
 
-        lpath = [os.path.join(pkg_dir, "lib")]
+        lib_dir = os.path.join(pkg_dir, "lib")
+        lpath = [lib_dir]
 
         if not PkgSkip("PYTHON"):
-            py_lib_dir = os.path.join(pkg_dir, "lib", SDK["PYTHONVERSION"])
+            py_lib_dir = os.path.join(lib_dir, SDK["PYTHONVERSION"])
             if os.path.isdir(py_lib_dir):
                 lpath.append(py_lib_dir)
 
@@ -2158,7 +2162,7 @@ def SdkLocatePython(prefer_thirdparty_python=False):
         SDK["PYTHONEXEC"] = tp_python + "/bin/" + SDK["PYTHONVERSION"]
         SDK["PYTHON"] = tp_python + "/include/" + SDK["PYTHONVERSION"]
 
-    elif GetTarget() == 'darwin':
+    elif GetTarget() == 'darwin' and not PkgHasCustomLocation("PYTHON"):
         # On macOS, search for the Python framework directory matching the
         # version number of our current Python version.
         sysroot = SDK.get("MACOSX", "")
@@ -2320,7 +2324,6 @@ def SdkLocateWindows(version = '7.1'):
                 if not os.path.isdir(os.path.join(platsdk, 'Lib', verstring, 'um')):
                     continue
 
-                print(verstring)
                 vertuple = tuple(map(int, verstring.split('.')))
                 if vertuple > max_version:
                     version = verstring
@@ -2383,7 +2386,9 @@ def SdkLocateMacOSX(osxtarget = None):
     if (GetHost() != "darwin"): return
     if (osxtarget != None):
         sdkname = "MacOSX%d.%d" % osxtarget
-        if (os.path.exists("/Developer/SDKs/%su.sdk" % sdkname)):
+        if (os.path.exists("/Library/Developer/CommandLineTools/SDKs/%s.sdk" % sdkname)):
+            SDK["MACOSX"] = "/Library/Developer/CommandLineTools/SDKs/%s.sdk" % sdkname
+        elif (os.path.exists("/Developer/SDKs/%su.sdk" % sdkname)):
             SDK["MACOSX"] = "/Developer/SDKs/%su.sdk" % sdkname
         elif (os.path.exists("/Developer/SDKs/%s.sdk" % sdkname)):
             SDK["MACOSX"] = "/Developer/SDKs/%s.sdk" % sdkname
@@ -2479,6 +2484,8 @@ def SdkLocateAndroid():
         return
 
     # Allow ANDROID_API/ANDROID_ABI to be used in makepanda.py.
+    if ANDROID_API is None:
+        SetTarget('android')
     api = ANDROID_API
     SDK["ANDROID_API"] = api
 
@@ -2788,7 +2795,7 @@ def SetupVisualStudioEnviron():
 
     # Targeting the 7.1 SDK (which is the only way to have Windows XP support)
     # with Visual Studio 2015 requires use of the Universal CRT.
-    if winsdk_ver == '7.1' and SDK["VISUALSTUDIO_VERSION"] >= (14,0):
+    if winsdk_ver in ('7.1', '7.1A') and SDK["VISUALSTUDIO_VERSION"] >= (14,0):
         win_kit = GetRegistryKey("SOFTWARE\\Microsoft\\Windows Kits\\Installed Roots", "KitsRoot10")
 
         # Fallback in case we can't read the registry.
@@ -2797,7 +2804,7 @@ def SetupVisualStudioEnviron():
         elif not win_kit.endswith('\\'):
             win_kit += '\\'
 
-        for vnum in 10150, 10240, 10586, 14393, 15063, 16299, 17134, 17763:
+        for vnum in 10150, 10240, 10586, 14393, 15063, 16299, 17134, 17763, 18362:
             version = "10.0.{0}.0".format(vnum)
             if os.path.isfile(win_kit + "Include\\" + version + "\\ucrt\\assert.h"):
                 print("Using Universal CRT %s" % (version))
@@ -3165,7 +3172,7 @@ def CopyPythonTree(dstdir, srcdir, lib2to3_fixers=[], threads=0):
                 if (NeedsBuild([dstpth], [srcpth])):
                     WriteBinaryFile(dstpth, ReadBinaryFile(srcpth))
 
-                    if ext == '.py' and not entry.endswith('-extensions.py'):
+                    if ext == '.py' and not entry.endswith('-extensions.py') and lib2to3 is not None:
                         refactor.append((dstpth, srcpth))
                         lib2to3_args.append(dstpth)
                     else:
@@ -3219,32 +3226,6 @@ def ParsePandaVersion(fn):
         f.close()
     except: pass
     return "0.0.0"
-
-def ParsePluginVersion(fn):
-    try:
-        f = open(fn, "r")
-        pattern = re.compile('^[ \t]*[#][ \t]*define[ \t]+P3D_PLUGIN_VERSION[ \t]+([0-9]+)[ \t]+([0-9]+)[ \t]+([0-9]+)')
-        for line in f:
-            match = pattern.match(line,0)
-            if (match):
-                f.close()
-                return match.group(1) + "." + match.group(2) + "." + match.group(3)
-        f.close()
-    except: pass
-    return "0.0.0"
-
-def ParseCoreapiVersion(fn):
-    try:
-        f = open(fn, "r")
-        pattern = re.compile('^[ \t]*[#][ \t]*define[ \t]+P3D_COREAPI_VERSION.*([0-9]+)[ \t]*$')
-        for line in f:
-            match = pattern.match(line,0)
-            if (match):
-                f.close()
-                return match.group(1)
-        f.close()
-    except: pass
-    return "0"
 
 ##########################################################################################
 #
@@ -3392,6 +3373,9 @@ def GetPythonABI():
 
     soabi = 'cpython-%d%d' % (sys.version_info[:2])
 
+    if sys.version_info >= (3, 8):
+        return soabi
+
     debug_flag = sysconfig.get_config_var('Py_DEBUG')
     if (debug_flag is None and hasattr(sys, 'gettotalrefcount')) or debug_flag:
         soabi += 'd'
@@ -3425,7 +3409,6 @@ def CalcLocation(fn, ipath):
     if (fn.endswith(".py")):  return CxxFindSource(fn, ipath)
     if (fn.endswith(".yxx")): return CxxFindSource(fn, ipath)
     if (fn.endswith(".lxx")): return CxxFindSource(fn, ipath)
-    if (fn.endswith(".pdef")):return CxxFindSource(fn, ipath)
     if (fn.endswith(".xml")): return CxxFindSource(fn, ipath)
     if (fn.endswith(".java")):return CxxFindSource(fn, ipath)
     if (fn.endswith(".egg")): return OUTPUTDIR+"/models/"+fn

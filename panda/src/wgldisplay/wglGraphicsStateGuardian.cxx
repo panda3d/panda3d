@@ -16,6 +16,7 @@
 #include "wglGraphicsBuffer.h"
 #include "wglGraphicsPipe.h"
 #include "string_utils.h"
+#include <atomic>
 
 TypeHandle wglGraphicsStateGuardian::_type_handle;
 
@@ -49,7 +50,6 @@ wglGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
   _wglCreateContextAttribsARB = nullptr;
 
   get_gamma_table();
-  atexit(atexit_function);
 }
 
 /**
@@ -886,6 +886,12 @@ static_set_gamma(bool restore, PN_stdfloat gamma) {
 
     if (SetDeviceGammaRamp (hdc, ramp)) {
       set = true;
+
+      // Register an atexit handler
+      static std::atomic_flag gamma_modified = ATOMIC_FLAG_INIT;
+      if (!gamma_modified.test_and_set()) {
+        atexit(atexit_function);
+      }
     }
 
     ReleaseDC (nullptr, hdc);

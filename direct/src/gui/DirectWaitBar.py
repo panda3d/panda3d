@@ -1,4 +1,8 @@
-"""Contains the DirectWaitBar class, a progress bar widget."""
+"""Contains the DirectWaitBar class, a progress bar widget.
+
+See the :ref:`directwaitbar` page in the programming manual for a more
+in-depth explanation and an example of how to use this class.
+"""
 
 __all__ = ['DirectWaitBar']
 

@@ -191,7 +191,7 @@ write_function_instance(ostream &out, InterfaceMaker::Function *func,
   out << "/*\n"
       << " * C wrapper for\n"
       << " * ";
-  remap->write_orig_prototype(out, 0);
+  remap->write_orig_prototype(out, 0, false, remap->_num_default_parameters);
   out << "\n"
       << " */\n";
 

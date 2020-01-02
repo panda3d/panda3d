@@ -1,49 +1,57 @@
 """
-Base class for all Direct Gui items.  Handles composite widgets and
+Base class for all DirectGui items.  Handles composite widgets and
 command line argument parsing.
 
-Code Overview:
+Code overview:
 
-1   Each widget defines a set of options (optiondefs) as a list of tuples
-    of the form ('name', defaultValue, handler).
+1)  Each widget defines a set of options (optiondefs) as a list of tuples
+    of the form ``('name', defaultValue, handler)``.
     'name' is the name of the option (used during construction of configure)
-    handler can be: None, method, or INITOPT.  If a method is specified,
-    it will be called during widget construction (via initialiseoptions),
-    if the Handler is specified as an INITOPT, this is an option that can
-    only be set during widget construction.
+    handler can be: None, method, or INITOPT.  If a method is specified, it
+    will be called during widget construction (via initialiseoptions), if the
+    Handler is specified as an INITOPT, this is an option that can only be set
+    during widget construction.
 
-2)  DirectGuiBase.defineoptions is called.  defineoption creates:
+2)  :func:`~DirectGuiBase.defineoptions` is called.  defineoption creates:
 
     self._constructorKeywords = { keyword: [value, useFlag] }
-    a dictionary of the keyword options specified as part of the constructor
-    keywords can be of the form 'component_option', where component is
-    the name of a widget's component, a component group or a component alias
+        A dictionary of the keyword options specified as part of the
+        constructor keywords can be of the form 'component_option', where
+        component is the name of a widget's component, a component group or a
+        component alias.
 
-    self._dynamicGroups, a list of group names for which it is permissible
-    to specify options before components of that group are created.
-    If a widget is a derived class the order of execution would be:
-    foo.optiondefs = {}
-    foo.defineoptions()
-      fooParent()
-         fooParent.optiondefs = {}
-         fooParent.defineoptions()
+    self._dynamicGroups
+        A list of group names for which it is permissible to specify options
+        before components of that group are created.
+        If a widget is a derived class the order of execution would be::
 
-3)  addoptions is called.  This combines options specified as keywords to
-    the widget constructor (stored in self._constuctorKeywords)
-    with the default options (stored in optiondefs).  Results are stored in
-    self._optionInfo = { keyword: [default, current, handler] }
+          foo.optiondefs = {}
+          foo.defineoptions()
+            fooParent()
+               fooParent.optiondefs = {}
+               fooParent.defineoptions()
+
+3)  :func:`~DirectGuiBase.addoptions` is called.  This combines options
+    specified as keywords to the widget constructor (stored in
+    self._constructorKeywords) with the default options (stored in optiondefs).
+    Results are stored in
+    ``self._optionInfo = { keyword: [default, current, handler] }``.
     If a keyword is of the form 'component_option' it is left in the
     self._constructorKeywords dictionary (for use by component constructors),
     otherwise it is 'used', and deleted from self._constructorKeywords.
-    Notes: - constructor keywords override the defaults.
-           - derived class default values override parent class defaults
-           - derived class handler functions override parent class functions
+
+    Notes:
+
+    - constructor keywords override the defaults.
+    - derived class default values override parent class defaults
+    - derived class handler functions override parent class functions
 
 4)  Superclass initialization methods are called (resulting in nested calls
     to define options (see 2 above)
 
-5)  Widget components are created via calls to self.createcomponent.
-    User can specify aliases and groups for each component created.
+5)  Widget components are created via calls to
+    :func:`~DirectGuiBase.createcomponent`.  User can specify aliases and groups
+    for each component created.
 
     Aliases are alternate names for components, e.g. a widget may have a
     component with a name 'entryField', which itself may have a component
@@ -55,8 +63,8 @@ Code Overview:
     Groups allow option specifications that apply to all members of the group.
     If a widget has components: 'text1', 'text2', and 'text3' which all belong
     to the 'text' group, they can be all configured with keywords of the form:
-    'text_keyword' (e.g. text_font = 'comic.rgb').  A component's group
-    is stored as the fourth element of its entry in self.__componentInfo
+    'text_keyword' (e.g. ``text_font='comic.rgb'``).  A component's group
+    is stored as the fourth element of its entry in self.__componentInfo.
 
     Note: the widget constructors have access to all remaining keywords in
     _constructorKeywords (those not transferred to _optionInfo by
@@ -71,9 +79,9 @@ Code Overview:
     component.  If any constructor keywords remain at the end of component
     construction (and initialisation), an error is raised.
 
-5)  initialiseoptions is called.  This method calls any option handlers to
-    respond to any keyword/default values, then checks to see if any keywords
-    are left unused.  If so, an error is raised.
+5)  :func:`~DirectGuiBase.initialiseoptions` is called.  This method calls any
+    option handlers to respond to any keyword/default values, then checks to
+    see if any keywords are left unused.  If so, an error is raised.
 """
 
 __all__ = ['DirectGuiBase', 'DirectGuiWidget']
@@ -634,7 +642,7 @@ class DirectGuiBase(DirectObject.DirectObject):
         """
         # Need to tack on gui item specific id
         gEvent = event + self.guiId
-        if ShowBase.config.GetBool('debug-directgui-msgs', False):
+        if ShowBaseGlobal.config.GetBool('debug-directgui-msgs', False):
             from direct.showbase.PythonUtil import StackTrace
             print(gEvent)
             print(StackTrace())
@@ -663,7 +671,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
     # Determine the default initial state for inactive (or
     # unclickable) components.  If we are in edit mode, these are
     # actually clickable by default.
-    guiEdit = ShowBase.config.GetBool('direct-gui-edit', False)
+    guiEdit = ShowBaseGlobal.config.GetBool('direct-gui-edit', False)
     if guiEdit:
         inactiveInitState = DGG.NORMAL
     else:
@@ -729,7 +737,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
             guiObjectCollector.addLevel(1)
             guiObjectCollector.flushLevel()
             # track gui items by guiId for tracking down leaks
-            if ShowBase.config.GetBool('track-gui-items', False):
+            if ShowBaseGlobal.config.GetBool('track-gui-items', False):
                 if not hasattr(ShowBase, 'guiItems'):
                     ShowBase.guiItems = {}
                 if self.guiId in ShowBase.guiItems:

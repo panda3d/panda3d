@@ -44,25 +44,22 @@ class FourState:
 
     def __init__(self, names, durations = [0, 1, None, 1, 1]):
         """
-        names is a list of state names
+        Names is a list of state names.  Some examples are::
 
-        E.g.
             ['off', 'opening', 'open', 'closing', 'closed',]
 
-        e.g. 2:
             ['off', 'locking', 'locked', 'unlocking', 'unlocked',]
 
-        e.g. 3:
             ['off', 'deactivating', 'deactive', 'activating', 'activated',]
 
         durations is a list of time values (floats) or None values.
 
         Each list must have five entries.
 
-        More Details
+        .. rubric:: More Details
 
         Here is a diagram showing the where the names from the list
-        are used:
+        are used::
 
             +---------+
             | 0 (off) |----> (any other state and vice versa).

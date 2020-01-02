@@ -32,6 +32,7 @@ extern ConfigVariableBool request_dxdisplay_information;
 extern ConfigVariableBool dpi_aware;
 extern ConfigVariableBool dpi_window_resize;
 extern ConfigVariableBool paste_emit_keystrokes;
+extern ConfigVariableBool disable_message_loop;
 
 extern EXPCL_PANDAWIN ConfigVariableBool swapbuffer_framelock;
 

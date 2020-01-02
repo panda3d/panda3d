@@ -155,7 +155,7 @@ private:
   int _start_row;
   bool _force;
 
-#ifndef NDEBUG
+#ifdef _DEBUG
   // This is defined just for the benefit of having something non-NULL to
   // return from a nassertr() call.
   static const unsigned char empty_buffer[100];

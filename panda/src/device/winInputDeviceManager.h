@@ -44,6 +44,8 @@ public:
   HWND setup_message_loop();
   void destroy_message_loop();
 
+  static void stop_thread();
+
 private:
   // There are always exactly four of these in existence.
   XInputDevice _xinput_device0;

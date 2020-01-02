@@ -2507,25 +2507,25 @@ make_dir() const {
   size_t slash = dirname.find('/');
   while (slash != string::npos) {
     Filename component(dirname.substr(0, slash));
-#ifdef WIN32_VC
+#ifdef _WIN32
     wstring os_specific = component.to_os_specific_w();
     _wmkdir(os_specific.c_str());
 #else
     string os_specific = component.to_os_specific();
     ::mkdir(os_specific.c_str(), 0777);
-#endif  // WIN32_VC
+#endif  // _WIN32
     slash = dirname.find('/', slash + 1);
   }
 
   // Now make the last one, and check the return value.
   Filename component(dirname);
-#ifdef WIN32_VC
+#ifdef _WIN32
   wstring os_specific = component.to_os_specific_w();
   int result = _wmkdir(os_specific.c_str());
 #else
   string os_specific = component.to_os_specific();
   int result = ::mkdir(os_specific.c_str(), 0777);
-#endif  // WIN32_VC
+#endif  // _WIN32
 
   return (result == 0);
 }
@@ -2538,13 +2538,13 @@ make_dir() const {
  */
 bool Filename::
 mkdir() const {
-#ifdef WIN32_VC
+#ifdef _WIN32
   wstring os_specific = to_os_specific_w();
   int result = _wmkdir(os_specific.c_str());
 #else
   string os_specific = to_os_specific();
   int result = ::mkdir(os_specific.c_str(), 0777);
-#endif  // WIN32_VC
+#endif  // _WIN32
 
   return (result == 0);
 }
@@ -2642,7 +2642,7 @@ bool Filename::
 atomic_compare_and_exchange_contents(string &orig_contents,
                                      const string &old_contents,
                                      const string &new_contents) const {
-#ifdef WIN32_VC
+#ifdef _WIN32
   wstring os_specific = to_os_specific_w();
   HANDLE hfile = CreateFileW(os_specific.c_str(), GENERIC_READ | GENERIC_WRITE,
                              0, nullptr, OPEN_ALWAYS,
@@ -2708,7 +2708,7 @@ atomic_compare_and_exchange_contents(string &orig_contents,
   CloseHandle(hfile);
   return match;
 
-#else  // WIN32_VC
+#else  // _WIN32
   string os_specific = to_os_specific();
   int fd = open(os_specific.c_str(), O_RDWR | O_CREAT, 0666);
   if (fd < 0) {
@@ -2761,7 +2761,7 @@ atomic_compare_and_exchange_contents(string &orig_contents,
   }
 
   return match;
-#endif  // WIN32_VC
+#endif  // _WIN32
 }
 
 /**
@@ -2778,7 +2778,7 @@ atomic_compare_and_exchange_contents(string &orig_contents,
  */
 bool Filename::
 atomic_read_contents(string &contents) const {
-#ifdef WIN32_VC
+#ifdef _WIN32
   wstring os_specific = to_os_specific_w();
   HANDLE hfile = CreateFileW(os_specific.c_str(), GENERIC_READ,
                              FILE_SHARE_READ, nullptr, OPEN_ALWAYS,
@@ -2824,7 +2824,7 @@ atomic_read_contents(string &contents) const {
   CloseHandle(hfile);
   return true;
 
-#else  // WIN32_VC
+#else  // _WIN32
   string os_specific = to_os_specific();
   int fd = open(os_specific.c_str(), O_RDWR | O_CREAT, 0666);
   if (fd < 0) {
@@ -2861,7 +2861,7 @@ atomic_read_contents(string &contents) const {
 
   close(fd);
   return true;
-#endif  // WIN32_VC
+#endif  // _WIN32
 }
 
 /**

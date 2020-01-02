@@ -24,7 +24,7 @@ Installing Panda3D
 ==================
 
 The latest Panda3D SDK can be downloaded from
-[this page](https://www.panda3d.org/download/sdk-1-10-3/).
+[this page](https://www.panda3d.org/download/sdk-1-10-4-1/).
 If you are familiar with installing Python packages, you can use
 the following comand:
 
@@ -64,8 +64,8 @@ depending on whether you are on a 32-bit or 64-bit system, or you can
 [click here](https://github.com/rdb/panda3d-thirdparty) for instructions on
 building them from source.
 
-https://www.panda3d.org/download/panda3d-1.10.3/panda3d-1.10.3-tools-win64.zip
-https://www.panda3d.org/download/panda3d-1.10.3/panda3d-1.10.3-tools-win32.zip
+https://www.panda3d.org/download/panda3d-1.10.4.1/panda3d-1.10.4.1-tools-win64.zip
+https://www.panda3d.org/download/panda3d-1.10.4.1/panda3d-1.10.4.1-tools-win32.zip
 
 After acquiring these dependencies, you may simply build Panda3D from the
 command prompt using the following command.  (Change `14.1` to `14` if you are
@@ -135,7 +135,7 @@ macOS
 -----
 
 On macOS, you will need to download a set of precompiled thirdparty packages in order to
-compile Panda3D, which can be acquired from [here](https://www.panda3d.org/download/panda3d-1.10.3/panda3d-1.10.3-tools-mac.tar.gz).
+compile Panda3D, which can be acquired from [here](https://www.panda3d.org/download/panda3d-1.10.5/panda3d-1.10.5-tools-mac.tar.gz).
 
 After placing the thirdparty directory inside the panda3d source directory,
 you may build Panda3D using a command like the following:
@@ -185,15 +185,18 @@ from the Play Store.  Many of the dependencies can be installed by running the
 following command in the Termux shell:
 
 ```bash
-pkg install python-dev termux-tools ndk-stl ndk-sysroot clang libvorbis-dev libopus-dev opusfile-dev openal-soft-dev freetype-dev harfbuzz-dev libpng-dev ecj4.6 dx patchelf aapt apksigner libcrypt-dev
+pkg install python ndk-sysroot clang bison freetype harfbuzz libpng eigen openal-soft opusfile libvorbis assimp libopus ecj dx patchelf aapt apksigner libcrypt openssl pkg-config
 ```
 
-Then, you can build and install the .apk right away using these commands:
+Then, you can build the .apk using this command:
 
 ```bash
 python makepanda/makepanda.py --everything --target android-21 --no-tiff --installer
-xdg-open panda3d.apk
 ```
+
+You can install the generated panda3d.apk by browsing to the panda3d folder
+using a file manager.  You may need to copy it to `/sdcard` to be able to
+access it from other apps.
 
 To launch a Python program from Termux, you can use the `run_python.sh` script
 inside the `panda/src/android` directory.  It will launch Python in a separate

@@ -179,6 +179,7 @@ def _excepthookDumpVars(eType, eValue, tb):
     oldExcepthook(eType, eValue, origTb)
 
 def install(log, upload):
+    """Installs the exception hook."""
     global oldExcepthook
     global wantStackDumpLog
     global wantStackDumpUpload

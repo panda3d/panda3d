@@ -64,14 +64,17 @@ is_on(NotifySeverity severity) const {
   return (int)severity >= (int)get_severity();
 }
 
-#if defined(NOTIFY_DEBUG) || defined(CPPPARSER)
 /**
  * A shorthand way to write is_on(NS_spam).
  */
 INLINE bool NotifyCategory::
 is_spam() const {
+#if defined(NOTIFY_DEBUG) || defined(CPPPARSER)
   // Instruct the compiler to optimize for the usual case.
   return UNLIKELY(is_on(NS_spam));
+#else
+  return false;
+#endif
 }
 
 /**
@@ -79,10 +82,13 @@ is_spam() const {
  */
 INLINE bool NotifyCategory::
 is_debug() const {
+#if defined(NOTIFY_DEBUG) || defined(CPPPARSER)
   // Instruct the compiler to optimize for the usual case.
   return UNLIKELY(is_on(NS_debug));
-}
+#else
+  return false;
 #endif
+}
 
 /**
  * A shorthand way to write is_on(NS_info).

@@ -58,7 +58,7 @@ public:
                       GraphicsOutput *host);
   virtual ~CLP(GraphicsBuffer)();
 
-#ifndef OPENGLES
+#ifndef OPENGLES_1
   virtual void clear(Thread *current_thread);
 #endif
   virtual bool begin_frame(FrameMode mode, Thread *current_thread);

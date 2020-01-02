@@ -1,10 +1,5 @@
 """
 Generates a wheel (.whl) file from the output of makepanda.
-
-Since the wheel requires special linking, this will only work if compiled with
-the `--wheel` parameter.
-
-Please keep this file work with Panda3D 1.9 until that reaches EOL.
 """
 from __future__ import print_function, unicode_literals
 from distutils.util import get_platform
@@ -20,7 +15,7 @@ import tempfile
 import subprocess
 from distutils.sysconfig import get_config_var
 from optparse import OptionParser
-from makepandacore import ColorText, LocateBinary, ParsePandaVersion, GetExtensionSuffix, SetVerbose, GetVerbose, GetMetadataValue
+from makepandacore import ColorText, LocateBinary, GetExtensionSuffix, SetVerbose, GetVerbose, GetMetadataValue
 from base64 import urlsafe_b64encode
 
 
@@ -33,6 +28,9 @@ def get_abi_tag():
             return soabi.replace('.', '_').replace('-', '_')
 
     soabi = 'cp%d%d' % (sys.version_info[:2])
+
+    if sys.version_info >= (3, 8):
+        return soabi
 
     debug_flag = get_config_var('Py_DEBUG')
     if (debug_flag is None and hasattr(sys, 'gettotalrefcount')) or debug_flag:
@@ -118,6 +116,8 @@ Root-Is-Purelib: false
 Tag: {0}-{1}-{2}
 """
 
+PROJECT_URLS = dict([line.split('=', 1) for line in GetMetadataValue('project_urls').strip().splitlines()])
+
 METADATA = {
     "license": GetMetadataValue('license'),
     "name": GetMetadataValue('name'),
@@ -126,9 +126,7 @@ METADATA = {
     "summary": GetMetadataValue('description'),
     "extensions": {
         "python.details": {
-            "project_urls": {
-                "Home": GetMetadataValue('url'),
-            },
+            "project_urls": dict(PROJECT_URLS, Home=GetMetadataValue('url')),
             "document_names": {
                 "license": "LICENSE.txt"
             },
@@ -173,15 +171,18 @@ questions.
 PANDA3D_TOOLS_INIT = """import os, sys
 import panda3d
 
+dir = os.path.dirname(panda3d.__file__)
+del panda3d
+
 if sys.platform in ('win32', 'cygwin'):
     path_var = 'PATH'
+    if hasattr(os, 'add_dll_directory'):
+        os.add_dll_directory(dir)
 elif sys.platform == 'darwin':
     path_var = 'DYLD_LIBRARY_PATH'
 else:
     path_var = 'LD_LIBRARY_PATH'
 
-dir = os.path.dirname(panda3d.__file__)
-del panda3d
 if not os.environ.get(path_var):
     os.environ[path_var] = dir
 else:
@@ -565,6 +566,7 @@ def makewheel(version, output_dir, platform=None):
         "Summary: {summary}\n" \
         "License: {license}\n".format(**METADATA),
         "Home-page: {0}\n".format(homepage),
+    ] + ["Project-URL: {0}, {1}\n".format(*url) for url in PROJECT_URLS.items()] + [
         "Author: {0}\n".format(author),
         "Author-email: {0}\n".format(email),
         "Platform: {0}\n".format(platform),
@@ -676,6 +678,13 @@ if __debug__:
         if file.endswith('.py'):
             whl.write_file('pandac/' + file, os.path.join(pandac_dir, file))
 
+    # Let's also add the interrogate databases.
+    input_dir = os.path.join(pandac_dir, 'input')
+    if os.path.isdir(input_dir):
+        for file in os.listdir(input_dir):
+            if file.endswith('.in'):
+                whl.write_file('pandac/input/' + file, os.path.join(input_dir, file))
+
     # Add a panda3d-tools directory containing the executables.
     entry_points = '[console_scripts]\n'
     entry_points += 'eggcacher = direct.directscripts.eggcacher:main\n'
@@ -692,10 +701,15 @@ if __debug__:
             # Put the .exe files inside the panda3d-tools directory.
             whl.write_file('panda3d_tools/' + file, source_path)
 
+            if basename.endswith('_bin'):
+                # These tools won't be invoked by the user directly.
+                continue
+
             # Tell pip to create a wrapper script.
             funcname = basename.replace('-', '_')
             entry_points += '{0} = panda3d_tools:{1}\n'.format(basename, funcname)
             tools_init += '{0} = lambda: _exec_tool({1!r})\n'.format(funcname, file)
+
     entry_points += '[distutils.commands]\n'
     entry_points += 'build_apps = direct.dist.commands:build_apps\n'
     entry_points += 'bdist_apps = direct.dist.commands:bdist_apps\n'
@@ -728,7 +742,7 @@ if __debug__:
 
 
 if __name__ == "__main__":
-    version = ParsePandaVersion("dtool/PandaVersion.pp")
+    version = GetMetadataValue('version')
 
     parser = OptionParser()
     parser.add_option('', '--version', dest = 'version', help = 'Panda3D version number (default: %s)' % (version), default = version)

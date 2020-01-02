@@ -243,7 +243,7 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point, bool &found_any,
  * pointer within this node will be replaced with the new_bundle pointer, and
  * all geometry within this node will be updated to reference new_bundle.
  *
- * This method is deprecated.  Use the newer version of this method, below.
+ * @deprecated Use the newer version of this method, below.
  */
 void Character::
 merge_bundles(PartBundle *old_bundle, PartBundle *new_bundle) {
@@ -417,7 +417,7 @@ write_part_values(std::ostream &out) const {
  * character's position to the current frame, regardless of whether the
  * character is currently onscreen and animating.
  *
- * This method is deprecated.  Call update() instead.
+ * @deprecated Call update() instead.
  */
 void Character::
 update_to_now() {

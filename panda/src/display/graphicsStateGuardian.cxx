@@ -461,7 +461,6 @@ traverse_prepared_textures(GraphicsStateGuardian::TextureCallback *func,
   }
 }
 
-#ifndef NDEBUG
 /**
  * Sets the "flash texture".  This is a debug feature; when enabled, the
  * specified texture will begin flashing in the scene, helping you to find it
@@ -481,31 +480,34 @@ traverse_prepared_textures(GraphicsStateGuardian::TextureCallback *func,
  */
 void GraphicsStateGuardian::
 set_flash_texture(Texture *tex) {
-  _flash_texture = tex;
-}
-#endif  // NDEBUG
-
 #ifndef NDEBUG
+  _flash_texture = tex;
+#endif
+}
+
 /**
  * Resets the "flash texture", so that no textures will flash.  See
  * set_flash_texture().
  */
 void GraphicsStateGuardian::
 clear_flash_texture() {
-  _flash_texture = nullptr;
-}
-#endif  // NDEBUG
-
 #ifndef NDEBUG
+  _flash_texture = nullptr;
+#endif
+}
+
 /**
  * Returns the current "flash texture", if any, or NULL if none.  See
  * set_flash_texture().
  */
 Texture *GraphicsStateGuardian::
 get_flash_texture() const {
+#ifndef NDEBUG
   return _flash_texture;
+#else
+  return nullptr;
+#endif
 }
-#endif  // NDEBUG
 
 /**
  * Sets the SceneSetup object that indicates the initial camera position, etc.
@@ -575,6 +577,17 @@ update_texture(TextureContext *, bool) {
  */
 void GraphicsStateGuardian::
 release_texture(TextureContext *) {
+}
+
+/**
+ * Frees the resources previously allocated via a call to prepare_texture(),
+ * including deleting the TextureContext itself, if it is non-NULL.
+ */
+void GraphicsStateGuardian::
+release_textures(const pvector<TextureContext *> &contexts) {
+  for (TextureContext *tc : contexts) {
+    release_texture(tc);
+  }
 }
 
 /**
@@ -667,6 +680,17 @@ release_vertex_buffer(VertexBufferContext *) {
 }
 
 /**
+ * Frees the resources previously allocated via a call to prepare_data(),
+ * including deleting the VertexBufferContext itself, if necessary.
+ */
+void GraphicsStateGuardian::
+release_vertex_buffers(const pvector<BufferContext *> &contexts) {
+  for (BufferContext *bc : contexts) {
+    release_vertex_buffer((VertexBufferContext *)bc);
+  }
+}
+
+/**
  * Prepares the indicated buffer for retained-mode rendering.
  */
 IndexBufferContext *GraphicsStateGuardian::
@@ -683,6 +707,17 @@ release_index_buffer(IndexBufferContext *) {
 }
 
 /**
+ * Frees the resources previously allocated via a call to prepare_data(),
+ * including deleting the IndexBufferContext itself, if necessary.
+ */
+void GraphicsStateGuardian::
+release_index_buffers(const pvector<BufferContext *> &contexts) {
+  for (BufferContext *bc : contexts) {
+    release_index_buffer((IndexBufferContext *)bc);
+  }
+}
+
+/**
  * Prepares the indicated buffer for retained-mode rendering.
  */
 BufferContext *GraphicsStateGuardian::
@@ -696,6 +731,17 @@ prepare_shader_buffer(ShaderBuffer *) {
  */
 void GraphicsStateGuardian::
 release_shader_buffer(BufferContext *) {
+}
+
+/**
+ * Frees the resources previously allocated via a call to prepare_data(),
+ * including deleting the BufferContext itself, if necessary.
+ */
+void GraphicsStateGuardian::
+release_shader_buffers(const pvector<BufferContext *> &contexts) {
+  for (BufferContext *bc : contexts) {
+    release_shader_buffer(bc);
+  }
 }
 
 /**
