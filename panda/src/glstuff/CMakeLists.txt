@@ -37,6 +37,12 @@ composite_sources(p3glstuff P3GLSTUFF_SOURCES)
 add_component_library(p3glstuff NOINIT ${P3GLSTUFF_HEADERS} ${P3GLSTUFF_SOURCES})
 target_link_libraries(p3glstuff panda)
 
+if(APPLE)
+  # We acknowledge Apple's hostility to open standards so that the SDK won't
+  # bother our users about it.
+  target_compile_definitions(p3glstuff PUBLIC GL_SILENCE_DEPRECATION)
+endif()
+
 if(NOT BUILD_METALIBS)
   install(TARGETS p3glstuff
     EXPORT OpenGL COMPONENT OpenGL
