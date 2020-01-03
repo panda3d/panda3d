@@ -491,16 +491,16 @@ operator < (const ShaderInput &other) const {
 
   case M_vector:
     if (_stored_vector[0] != other._stored_vector[0]) {
-      return (_stored_vector[0] < other._stored_vector[0]) ? -1 : 1;
+      return _stored_vector[0] < other._stored_vector[0];
     }
     if (_stored_vector[1] != other._stored_vector[1]) {
-      return (_stored_vector[1] < other._stored_vector[1]) ? -1 : 1;
+      return _stored_vector[1] < other._stored_vector[1];
     }
     if (_stored_vector[2] != other._stored_vector[2]) {
-      return (_stored_vector[2] < other._stored_vector[2]) ? -1 : 1;
+      return _stored_vector[2] < other._stored_vector[2];
     }
     if (_stored_vector[3] != other._stored_vector[3]) {
-      return (_stored_vector[3] < other._stored_vector[3]) ? -1 : 1;
+      return _stored_vector[3] < other._stored_vector[3];
     }
     return 0;
 
