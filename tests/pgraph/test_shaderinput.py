@@ -30,15 +30,3 @@ def test_shaderinput_vector_compare():
     assert i1 < i2
     assert i2 < i3
     assert i1 < i3
-
-    assert not i0 > i0
-    assert not i1 > i1
-    assert not i2 > i2
-    assert not i3 > i3
-
-    assert i3 > i1
-    assert i2 > i1
-    assert i3 > i2
-    assert i1 > i0
-    assert i2 > i0
-    assert i3 > i0
