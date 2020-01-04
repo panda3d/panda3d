@@ -8,6 +8,7 @@ This is a recommended bugfix release, especially for macOS users.
 * macOS thirdparty packages are now linked with libc++ (#584)
 * Homebrew Python should now locate Panda libraries correctly (#755)
 * Work around Tk bug cancelling Load Params in Particle Panel on macOS (#811)
+* Fix NaN assertions when particles get very large positions (#822)
 * Add support for Autodesk Maya 2020
 * Fix maya2egg erroring when running from a pip installation (#709)
 * Support .pz and .gz compressed models in deployment system
