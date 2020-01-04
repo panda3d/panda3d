@@ -473,8 +473,11 @@ def MakeInstallerLinux(version, debversion=None, rpmrelease=1, runtime=False,
         exit("To build an installer, either rpmbuild or dpkg-deb must be present on your system!")
 
 
-def MakeInstallerOSX(version, runtime=False, python_versions=[], installdir="/Library/Developer/Panda3D", **kwargs):
+def MakeInstallerOSX(version, runtime=False, python_versions=[], installdir=None, **kwargs):
     outputdir = GetOutputDir()
+
+    if installdir is None:
+        installdir = "/Library/Developer/Panda3D"
 
     if runtime:
         # Invoke the make_installer script.
