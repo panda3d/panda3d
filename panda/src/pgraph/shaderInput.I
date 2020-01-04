@@ -502,7 +502,7 @@ operator < (const ShaderInput &other) const {
     if (_stored_vector[3] != other._stored_vector[3]) {
       return _stored_vector[3] < other._stored_vector[3];
     }
-    return 0;
+    return false;
 
   case M_numeric:
     return _stored_ptr._ptr < other._stored_ptr._ptr;
