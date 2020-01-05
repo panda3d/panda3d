@@ -595,11 +595,11 @@ if RUNTIME and not HOST_URL:
 
 if not PkgSkip("PYTHON") and SDK["PYTHONVERSION"] == "python2.7":
     warn_prefix = "%sWARNING:%s " % (GetColor("red"), GetColor())
-    print("=========================================================================")
-    print(warn_prefix + "Python 2.7 will reach EOL after December 31, 2019, and will not")
-    print(warn_prefix + "be supported after that date.  Please ensure you are prepared")
-    print(warn_prefix + "by planning your upgrade to Python 3 now.")
-    print("=========================================================================")
+    print("==========================================================================")
+    print(warn_prefix + "Python 2.7 has reached EOL as of January 1, 2020 and is no longer")
+    print(warn_prefix + "maintained.  Panda3D will soon cease to work with this version.")
+    print(warn_prefix + "Please upgrade to Python 3 now.")
+    print("==========================================================================")
     sys.stdout.flush()
     # Give the user some time to contemplate their sins
     time.sleep(6.0)
