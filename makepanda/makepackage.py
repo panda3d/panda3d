@@ -1074,12 +1074,11 @@ def MakeInstallerAndroid(version, **kwargs):
 def MakeInstaller(version, **kwargs):
     target = GetTarget()
     if target == 'windows':
-        if kwargs.get('installdir') is None:
+        dir = kwargs.pop('installdir', None)
+        if dir is None:
             dir = "C:\\Panda3D-" + version
             if GetTargetArch() == 'x64':
                 dir += '-x64'
-        else:
-            dir = kwargs['installdir']
 
         fn = "Panda3D-"
 
