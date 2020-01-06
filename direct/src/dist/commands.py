@@ -41,9 +41,8 @@ if sys.version_info < (3, 0):
 
     # Warn the user.  They might be using Python 2 by accident.
     print("=================================================================")
-    print("WARNING: You are using Python 2, which will soon be discontinued.")
-    print("WARNING: Please use Python 3 for best results and continued")
-    print("WARNING: support after the EOL date of December 31st, 2019.")
+    print("WARNING: You are using Python 2, which has reached the end of its")
+    print("WARNING: life as of January 1, 2020.  Please upgrade to Python 3.")
     print("=================================================================")
     sys.stdout.flush()
     time.sleep(4.0)
