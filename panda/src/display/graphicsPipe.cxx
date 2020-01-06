@@ -56,25 +56,6 @@ union cpuid_info {
 };
 
 /**
- * Returns the highest cpuid leaf that is supported by the CPU.
- */
-static inline uint32_t get_cpuid_max(uint32_t leaf) {
-#if defined(__GNUC__) && !defined(__APPLE__)
-  return __get_cpuid_max(leaf, nullptr);
-#elif defined(_MSC_VER)
-  uint32_t p[4] = {0};
-  __cpuid((int *)p, leaf);
-  return p[0];
-#else
-  unsigned int eax = 0;
-  __asm__ ("cpuid\n\t"
-           : "=a" (eax)
-           : "0" (leaf));
-  return eax;
-#endif
-}
-
-/**
  * Gets cpuid info for the given leaf.
  */
 static inline void get_cpuid(uint32_t leaf, cpuid_info &info) {
@@ -86,6 +67,19 @@ static inline void get_cpuid(uint32_t leaf, cpuid_info &info) {
   __asm__ ("cpuid\n\t"
            : "=a" (info.eax), "=b" (info.ebx), "=c" (info.ecx), "=d" (info.edx)
            : "0" (leaf));
+#endif
+}
+
+/**
+ * Returns the highest cpuid leaf that is supported by the CPU.
+ */
+static inline uint32_t get_cpuid_max(uint32_t leaf) {
+#if defined(__GNUC__) && !defined(__APPLE__)
+  return __get_cpuid_max(leaf, nullptr);
+#else
+  cpuid_info info;
+  get_cpuid(leaf, info);
+  return info.eax;
 #endif
 }
 #endif
