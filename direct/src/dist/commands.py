@@ -834,7 +834,7 @@ class build_apps(setuptools.Command):
                 whlfile = self._get_zip_file(whl)
                 filenames = whlfile.namelist()
                 for source_pattern, target_dir, flags in datadesc:
-                    srcglob = p3d.GlobPattern(source_pattern)
+                    srcglob = p3d.GlobPattern(source_pattern.lower())
                     source_dir = os.path.dirname(source_pattern)
                     # Relocate the target dir to the build directory.
                     target_dir = target_dir.replace('/', os.sep)
