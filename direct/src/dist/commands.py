@@ -1181,18 +1181,20 @@ class build_apps(setuptools.Command):
                     dylib = dylib.replace('@loader_path/../Frameworks/', '')
                 elif dylib.startswith('@executable_path/../Frameworks/'):
                     dylib = dylib.replace('@executable_path/../Frameworks/', '')
-                elif dylib.startswith('@loader_path/'):
-                    dylib = dylib.replace('@loader_path/', '')
+                else:
+                    for prefix in ('@loader_path/', '@rpath/'):
+                        if dylib.startswith(prefix):
+                            dylib = dylib.replace(prefix, '')
 
-                    # Do we need to flatten the relative reference?
-                    if '/' in dylib and flatten:
-                        new_dylib = '@loader_path/' + os.path.basename(dylib)
-                        str_size = len(cmd_data) - 16
-                        if len(new_dylib) < str_size:
-                            fp.seek(-str_size, os.SEEK_CUR)
-                            fp.write(new_dylib.encode('ascii').ljust(str_size, b'\0'))
-                        else:
-                            self.warn('Unable to rewrite dependency {}'.format(orig))
+                            # Do we need to flatten the relative reference?
+                            if '/' in dylib and flatten:
+                                new_dylib = prefix + os.path.basename(dylib)
+                                str_size = len(cmd_data) - 16
+                                if len(new_dylib) < str_size:
+                                    fp.seek(-str_size, os.SEEK_CUR)
+                                    fp.write(new_dylib.encode('ascii').ljust(str_size, b'\0'))
+                                else:
+                                    self.warn('Unable to rewrite dependency {}'.format(orig))
 
                 load_dylibs.append(dylib)
 
