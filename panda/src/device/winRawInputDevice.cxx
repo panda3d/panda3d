@@ -69,13 +69,13 @@ static const struct DeviceMapping {
   {0x0955, 0x7214, InputDevice::DeviceClass::gamepad, 0,
     {"face_a", "face_b", 0, "face_x", "face_y", "rshoulder", "lshoulder", "rshoulder", 0, 0, 0, "start", 0, "lstick", "rstick", 0}
   },
-  // Dualshock
+  // Dualshock (PS4) 
   {0x054c, 0x05c4, InputDevice::DeviceClass::gamepad, 0,
-    {"face_x", "face_a", "face_b", "face_y", "lshoulder", "rshoulder", "ltrigger", "rtrigger", "back", "start", "lstick", "rstick", "home", "touchpad"}
+    {"face_x", "face_a", "face_b", "face_y", "lshoulder", "rshoulder", "ltrigger", "rtrigger", "back", "start", "lstick", "rstick", "home", 0}
   },
-  // Dualshock 2nd Gen
+  // Dualshock 2nd Gen (PS4 Slim)
   {0x054c, 0x09cc, InputDevice::DeviceClass::gamepad, 0,
-    {"face_x", "face_a", "face_b", "face_y", "lshoulder", "rshoulder", "ltrigger", "rtrigger", "back", "start", "lstick", "rstick", "home", "touchpad"}
+    {"face_x", "face_a", "face_b", "face_y", "lshoulder", "rshoulder", "ltrigger", "rtrigger", "back", "start", "lstick", "rstick", "home", 0}
   },
   {0},
 };
