@@ -122,7 +122,7 @@ if __debug__:
     import sys
     if sys.version_info < (3, 0):
         sys.stderr.write('''\\
-WARNING: Python 2.7 will reach EOL after December 31, 2019.
+WARNING: Python 2.7 has reached EOL as of January 1, 2020.
 To suppress this warning, upgrade to Python 3.
 ''')
         sys.stdout.flush()
