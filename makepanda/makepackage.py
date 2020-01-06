@@ -650,9 +650,9 @@ def MakeInstallerOSX(version, python_versions=[], installdir=None, **kwargs):
 
     for version_info in python_versions:
         pyver = version_info["version"]
-        if pyver == "2.7":
-            # Always install Python 2.7 by default; it's included on macOS.
-            cond = "true"
+        if pyver in ("2.7", "3.4"):
+            # Don't install these EOL versions of Python by default.
+            cond = "false"
         else:
             cond = "isPythonVersionInstalled('%s')" % (pyver)
         dist.write('    <choice id="pybindings%s" start_selected="%s" title="Python %s Bindings" tooltip="Python bindings for the Panda3D libraries" description="Support for Python %s.">\n' % (pyver, cond, pyver, pyver))
@@ -963,7 +963,7 @@ def MakeInstaller(version, **kwargs):
         fn += version
 
         python_versions = kwargs.get('python_versions', [])
-        if len(python_versions) == 1 and python_versions[0]["version"] != "2.7":
+        if len(python_versions) == 1:
             fn += '-py' + python_versions[0]["version"]
 
         if GetOptimize() <= 2:

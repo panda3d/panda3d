@@ -136,12 +136,8 @@ var MANPAGE
         !if "${PYVER}" == "${INCLUDE_PYVER}"
             SectionIn 1 2 3
         !else
-            !if "${PYVER}" == "2.7"
-                SectionIn 1 2
-            !else
-                ; See .onInit function where this is dynamically enabled.
-                SectionIn 2
-            !endif
+            ; See .onInit function where this is dynamically enabled.
+            SectionIn 2
         !endif
 
         SetDetailsPrint both
@@ -528,7 +524,7 @@ Function .onInit
     SetRegView ${REGVIEW}
     !endif
 
-    ; We never check for 2.7; it is always enabled in Auto mode
+    ; We never check for 2.7; it is always disabled in Auto mode
     !if "${REGVIEW}" == "32"
         !insertmacro MaybeEnablePyBindingSection 3.5-32
         !insertmacro MaybeEnablePyBindingSection 3.6-32
