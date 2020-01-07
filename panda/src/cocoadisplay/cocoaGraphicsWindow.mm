@@ -1143,13 +1143,14 @@ find_display_mode(int width, int height) {
   int refresh_rate;
   mode = CGDisplayCopyDisplayMode(_display);
 
-#if __MAC_OS_X_VERSION_MAX_ALLOWED < 1080
   // First check if the current mode is adequate.
-  if (CGDisplayModeGetWidth(mode) == width &&
+  // This test not done for macOS 10.15 and above as the mode resolution is
+  // not enough to identify a mode.
+  if (floor(NSAppKitVersionNumber) <= NSAppKitVersionNumber10_14 &&
+      CGDisplayModeGetWidth(mode) == width &&
       CGDisplayModeGetHeight(mode) == height) {
     return mode;
   }
-#endif
 
   current_pixel_encoding = CGDisplayModeCopyPixelEncoding(mode);
   refresh_rate = CGDisplayModeGetRefreshRate(mode);
