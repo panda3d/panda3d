@@ -12,6 +12,10 @@ model-path $THIS_PRC_DIR/${MODELS_PARENT_PATH}/models
 win-origin -2 -2
 win-size 800 600
 
+# For debugging, it's nice to have notify-level at the default setting of
+# "info", but everywhere else we turn the verbosity down to "warning"
+$<$<CONFIG:Debug>:#>notify-level warning
+
 # Define the display types that have been compiled in.  Panda will
 # pick one of these by going through the list in this order until one
 # is found that works, unless the user specifically requests a
