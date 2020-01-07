@@ -79,7 +79,6 @@ LangString DESC_SecFFMpeg ${LANG_ENGLISH} "Support for decoding video and audio 
 LangString DESC_SecBullet ${LANG_ENGLISH} "Support for the Bullet physics engine."
 LangString DESC_SecODE ${LANG_ENGLISH} "Support for the Open Dynamics Engine to implement physics."
 LangString DESC_SecPhysX ${LANG_ENGLISH} "Support for NVIDIA PhysX to implement physics."
-LangString DESC_SecRocket ${LANG_ENGLISH} "Support for the libRocket GUI library.  This is an optional library that offers an HTML/CSS-like approach to creating user interfaces."
 LangString DESC_SecTools ${LANG_ENGLISH} "Useful tools and model converters to help with Panda3D development.  Recommended."
 LangString DESC_SecGroupPython ${LANG_ENGLISH} "Contains modules that provide Python support for Panda3D."
 LangString DESC_SecPyShared ${LANG_ENGLISH} "Contains the common Python code used by the Panda3D Python bindings."
@@ -116,7 +115,6 @@ var MANPAGE
 !insertmacro !defineifexist HAVE_BULLET "${BUILT}\bin\libpandabullet.dll"
 !insertmacro !defineifexist HAVE_ODE "${BUILT}\bin\libpandaode.dll"
 !insertmacro !defineifexist HAVE_PHYSX "${BUILT}\bin\libpandaphysx.dll"
-!insertmacro !defineifexist HAVE_ROCKET "${BUILT}\bin\libp3rocket.dll"
 !insertmacro !defineifexist HAVE_SAMPLES "${SOURCE}\samples"
 !insertmacro !defineifexist HAVE_MAX_PLUGINS "${BUILT}\plugins\*.dlo"
 !insertmacro !defineifexist HAVE_MAYA_PLUGINS "${BUILT}\plugins\*.mll"
@@ -180,14 +178,6 @@ var MANPAGE
             StrCmp $R0 ${SF_SELECTED} 0 SkipPhysXPyd
             File /nonfatal /r "${BUILT}\panda3d\physx${EXT_SUFFIX}"
             SkipPhysXPyd:
-        !endif
-
-        !ifdef HAVE_ROCKET
-            SectionGetFlags ${SecRocket} $R0
-            IntOp $R0 $R0 & ${SF_SELECTED}
-            StrCmp $R0 ${SF_SELECTED} 0 SkipRocketPyd
-            File /nonfatal /r "${BUILT}\panda3d\rocket${EXT_SUFFIX}"
-            SkipRocketPyd:
         !endif
 
         SetOutPath $INSTDIR\pandac\input
@@ -340,18 +330,6 @@ SectionGroup "Panda3D Libraries"
         File /nonfatal /r "${BUILT}\bin\PhysX*.dll"
         File /nonfatal /r "${BUILT}\bin\NxCharacter*.dll"
         File /nonfatal /r "${BUILT}\bin\cudart*.dll"
-    SectionEnd
-    !endif
-
-    !ifdef HAVE_ROCKET
-    Section "libRocket GUI" SecRocket
-        SectionIn 1 2
-
-        SetOutPath "$INSTDIR\bin"
-        File "${BUILT}\bin\libp3rocket.dll"
-        File /nonfatal /r "${BUILT}\bin\Rocket*.dll"
-        File /nonfatal /r "${BUILT}\bin\_rocket*.pyd"
-        File /nonfatal /r "${BUILT}\bin\boost_python*.dll"
     SectionEnd
     !endif
 SectionGroupEnd
@@ -916,9 +894,6 @@ SectionEnd
   !endif
   !ifdef HAVE_PHYSX
     !insertmacro MUI_DESCRIPTION_TEXT ${SecPhysX} $(DESC_SecPhysX)
-  !endif
-  !ifdef HAVE_ROCKET
-    !insertmacro MUI_DESCRIPTION_TEXT ${SecRocket} $(DESC_SecRocket)
   !endif
   !insertmacro MUI_DESCRIPTION_TEXT ${SecTools} $(DESC_SecTools)
   !insertmacro MUI_DESCRIPTION_TEXT ${SecGroupPython} $(DESC_SecGroupPython)

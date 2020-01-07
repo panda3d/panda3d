@@ -85,7 +85,6 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "ARTOOLKIT", "OPENCV", "DIRECTCAM", "VISION",        # Augmented Reality
   "GTK2",                                              # GTK2 is used for PStats on Unix
   "MFC", "WX", "FLTK",                                 # Used for web plug-in only
-  "ROCKET",                                            # GUI libraries
   "COCOA",                                             # Mac OS X toolkits
   "X11",                                               # Unix platform support
   "PANDATOOL", "PVIEW", "DEPLOYTOOLS",                 # Toolchain
@@ -667,13 +666,6 @@ if (COMPILER == "MSVC"):
             LibName("SQUISH",   GetThirdpartyDir() + "squish/lib/squishd.lib")
         else:
             LibName("SQUISH",   GetThirdpartyDir() + "squish/lib/squish.lib")
-    if (PkgSkip("ROCKET")==0):
-        LibName("ROCKET", GetThirdpartyDir() + "rocket/lib/RocketCore.lib")
-        LibName("ROCKET", GetThirdpartyDir() + "rocket/lib/RocketControls.lib")
-        if (PkgSkip("PYTHON")==0):
-            LibName("ROCKET", GetThirdpartyDir() + "rocket/lib/" + SDK["PYTHONVERSION"] + "/boost_python-vc100-mt-1_54.lib")
-        if (GetOptimize() <= 3):
-            LibName("ROCKET", GetThirdpartyDir() + "rocket/lib/RocketDebugger.lib")
     if (PkgSkip("OPENAL")==0):
         LibName("OPENAL", GetThirdpartyDir() + "openal/lib/OpenAL32.lib")
         if not os.path.isfile(GetThirdpartyDir() + "openal/bin/OpenAL32.dll"):
@@ -852,12 +844,6 @@ if (COMPILER=="GCC"):
         if os.path.isfile(irrxml):
             LibName("ASSIMP", irrxml)
 
-    rocket_libs = ("RocketCore", "RocketControls")
-    if (GetOptimize() <= 3):
-        rocket_libs += ("RocketDebugger",)
-    rocket_libs += ("boost_python",)
-    SmartPkgEnable("ROCKET",    "",          rocket_libs, "Rocket/Core.h")
-
     if not PkgSkip("PYTHON"):
         python_lib = SDK["PYTHONVERSION"]
         SmartPkgEnable("PYTHON", "", python_lib, (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"))
@@ -925,8 +911,6 @@ if (COMPILER=="GCC"):
         LibName("GL", "-dylib_file /System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib")
 
         # Temporary exceptions to removal of this flag
-        if not PkgSkip("ROCKET"):
-            LibName("ROCKET", "-undefined dynamic_lookup")
         if not PkgSkip("FFMPEG"):
             LibName("FFMPEG", "-undefined dynamic_lookup")
         if not PkgSkip("ASSIMP"):
@@ -2275,8 +2259,6 @@ DTOOL_CONFIG=[
     ("HAVE_SQUISH",                    'UNDEF',                  'UNDEF'),
     ("HAVE_COCOA",                     'UNDEF',                  'UNDEF'),
     ("HAVE_OPENAL_FRAMEWORK",          'UNDEF',                  'UNDEF'),
-    ("HAVE_ROCKET_PYTHON",             '1',                      '1'),
-    ("HAVE_ROCKET_DEBUGGER",           'UNDEF',                  'UNDEF'),
     ("USE_TAU",                        'UNDEF',                  'UNDEF'),
     ("PRC_SAVE_DESCRIPTIONS",          '1',                      '1'),
 #    ("_SECURE_SCL",                    '0',                      'UNDEF'),
@@ -2370,14 +2352,6 @@ def WriteConfigSettings():
 
     if (GetOptimize() <= 2 and GetTarget() == "windows"):
         dtool_config["USE_DEBUG_PYTHON"] = '1'
-
-    # This should probably be more sophisticated, such as based
-    # on whether the libRocket Python modules are available.
-    if (PkgSkip("PYTHON") != 0):
-        dtool_config["HAVE_ROCKET_PYTHON"] = 'UNDEF'
-
-    if (GetOptimize() <= 3):
-        dtool_config["HAVE_ROCKET_DEBUGGER"] = '1'
 
     if (GetOptimize() <= 3):
         if (dtool_config["HAVE_NET"] != 'UNDEF'):
@@ -3024,8 +2998,6 @@ CopyAllHeaders('panda/src/parametrics')
 CopyAllHeaders('panda/src/pgui')
 CopyAllHeaders('panda/src/pnmimagetypes')
 CopyAllHeaders('panda/src/recorder')
-if (PkgSkip("ROCKET")==0):
-    CopyAllHeaders('panda/src/rocket')
 if (PkgSkip("VRPN")==0):
     CopyAllHeaders('panda/src/vrpn')
 CopyAllHeaders('panda/src/wgldisplay')
@@ -4097,38 +4069,6 @@ if (PkgSkip("VISION") == 0):
   PyTargetAdd('vision.pyd', input='libp3vision.dll')
   PyTargetAdd('vision.pyd', input='libp3interrogatedb.dll')
   PyTargetAdd('vision.pyd', input=COMMON_PANDA_LIBS)
-
-#
-# DIRECTORY: panda/src/rocket/
-#
-
-if (PkgSkip("ROCKET") == 0):
-  OPTS=['DIR:panda/src/rocket', 'BUILDING:ROCKET', 'ROCKET', 'PYTHON']
-  TargetAdd('p3rocket_composite1.obj', opts=OPTS, input='p3rocket_composite1.cxx')
-
-  TargetAdd('libp3rocket.dll', input='p3rocket_composite1.obj')
-  TargetAdd('libp3rocket.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libp3rocket.dll', opts=OPTS)
-
-  OPTS=['DIR:panda/src/rocket', 'ROCKET', 'RTTI', 'EXCEPTIONS']
-  IGATEFILES=GetDirectoryContents('panda/src/rocket', ["rocketInputHandler.h",
-    "rocketInputHandler.cxx", "rocketRegion.h", "rocketRegion.cxx", "rocketRegion_ext.h"])
-  TargetAdd('libp3rocket.in', opts=OPTS, input=IGATEFILES)
-  TargetAdd('libp3rocket.in', opts=['IMOD:panda3d.rocket', 'ILIB:libp3rocket', 'SRCDIR:panda/src/rocket'])
-
-  PyTargetAdd('p3rocket_rocketRegion_ext.obj', opts=OPTS, input='rocketRegion_ext.cxx')
-
-  PyTargetAdd('rocket_module.obj', input='libp3rocket.in')
-  PyTargetAdd('rocket_module.obj', opts=OPTS)
-  PyTargetAdd('rocket_module.obj', opts=['IMOD:panda3d.rocket', 'ILIB:rocket', 'IMPORT:panda3d.core'])
-
-  PyTargetAdd('rocket.pyd', input='rocket_module.obj')
-  PyTargetAdd('rocket.pyd', input='libp3rocket_igate.obj')
-  PyTargetAdd('rocket.pyd', input='p3rocket_rocketRegion_ext.obj')
-  PyTargetAdd('rocket.pyd', input='libp3rocket.dll')
-  PyTargetAdd('rocket.pyd', input='libp3interrogatedb.dll')
-  PyTargetAdd('rocket.pyd', input=COMMON_PANDA_LIBS)
-  PyTargetAdd('rocket.pyd', opts=['ROCKET'])
 
 #
 # DIRECTORY: panda/src/p3skel
