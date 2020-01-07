@@ -3,10 +3,12 @@
 
 # Some paths first...
 plugin-path $THIS_PRC_DIR/../lib
-model-path $THIS_PRC_DIR/../share/panda3d/models
+model-path $MAIN_DIR
+model-path $THIS_PRC_DIR/${MODELS_PARENT_PATH}
+model-path $THIS_PRC_DIR/${MODELS_PARENT_PATH}/models
 
 # Let's set up a default window size of 800x600.  The user can
-# override this in his or her personal prc file.
+# override this in a separate, personal prc file.
 win-origin -2 -2
 win-size 800 600
 

@@ -32,19 +32,43 @@ else()
     "$XDG_CACHE_HOME/panda3d")
 endif()
 
-configure_file(panda.prc.in "${CMAKE_BINARY_DIR}/etc/20_panda.prc")
 if(IS_MULTICONFIG)
-  file(GENERATE OUTPUT "${PROJECT_BINARY_DIR}/$<CONFIG>/etc/20_panda.prc"
-                INPUT "${PROJECT_BINARY_DIR}/etc/20_panda.prc")
+  set(_out_path "${PROJECT_BINARY_DIR}/$<CONFIG>/etc")
+else()
+  set(_out_path "${PROJECT_BINARY_DIR}/etc")
 endif()
 
 if(WIN32)
   set(_confdir "etc")
-
 else()
   # On Unices, ask the GNUInstallDirs module where /etc is
   set(_confdir "${CMAKE_INSTALL_FULL_SYSCONFDIR}")
-
 endif()
 
-install(FILES "${CMAKE_BINARY_DIR}/etc/20_panda.prc" COMPONENT Core DESTINATION ${_confdir})
+# Path from the directory containing *.prc to the *parent of* models/
+# In the build tree, reckoning this is pretty easy
+set(MODELS_PARENT_PATH "..")
+configure_file(panda.prc.in "${CMAKE_CURRENT_BINARY_DIR}/20_panda.prc")
+
+# For the install tree, we need to introspect our paths
+if(_confdir MATCHES "^/")
+  set(_abs_confdir "${_confdir}")
+else()
+  set(_abs_confdir "${CMAKE_INSTALL_PREFIX}/${_confdir}")
+endif()
+if(CMAKE_INSTALL_DATADIR MATCHES "^/")
+  set(_abs_datadir "${CMAKE_INSTALL_DATADIR}")
+else()
+  set(_abs_datadir "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}")
+endif()
+file(RELATIVE_PATH MODELS_PARENT_PATH
+  "${_abs_confdir}" "${_abs_datadir}/panda3d")
+configure_file(panda.prc.in "${CMAKE_CURRENT_BINARY_DIR}/20_panda.prc.install")
+
+file(GENERATE OUTPUT "${_out_path}/20_panda.prc"
+              INPUT "${CMAKE_CURRENT_BINARY_DIR}/20_panda.prc")
+file(GENERATE OUTPUT "${_out_path}/20_panda.prc.install"
+              INPUT "${CMAKE_CURRENT_BINARY_DIR}/20_panda.prc.install")
+
+install(FILES "${_out_path}/20_panda.prc.install" RENAME "20_panda.prc"
+  COMPONENT Core DESTINATION ${_confdir})
