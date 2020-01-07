@@ -2407,50 +2407,6 @@ def SdkLocateMacOSX(osxtarget = None):
     else:
         SDK["MACOSX"] = ""
 
-# Latest first
-PHYSXVERSIONINFO = [
-    ("PHYSX284", "v2.8.4"),
-    ("PHYSX283", "v2.8.3"),
-    ("PHYSX281", "v2.8.1"),
-]
-
-def SdkLocatePhysX():
-    # First check for a physx directory in sdks.
-    dir = GetSdkDir("physx")
-    if (dir and os.path.isdir(dir)):
-        SDK["PHYSX"] = dir
-        SDK["PHYSXLIBS"] = dir + "/lib"
-        return
-
-    if CrossCompiling():
-        return
-
-    # Try to find a PhysX installation on the system.
-    for (ver, key) in PHYSXVERSIONINFO:
-        if (GetHost() == "windows"):
-            folders = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Installer\\Folders"
-            for folder in ListRegistryValues(folders):
-                if folder.endswith("NVIDIA PhysX SDK\\%s\\SDKs\\" % key) or \
-                   folder.endswith("NVIDIA PhysX SDK\\%s_win\\SDKs\\" % key):
-
-                    SDK["PHYSX"] = folder
-                    if GetTargetArch() == 'x64':
-                        SDK["PHYSXLIBS"] = folder + "/lib/win64"
-                        AddToPathEnv("PATH", folder + "/../Bin/win64/")
-                    else:
-                        SDK["PHYSXLIBS"] = folder + "/lib/win32"
-                        AddToPathEnv("PATH", folder + "/../Bin/win32/")
-
-                    return
-
-        elif (GetHost() == "linux"):
-            incpath = "/usr/include/PhysX/%s/SDKs" % key
-            libpath = "/usr/lib/PhysX/%s" % key
-            if (os.path.isdir(incpath) and os.path.isdir(libpath)):
-                SDK["PHYSX"] = incpath
-                SDK["PHYSXLIBS"] = libpath
-                return
-
 def SdkLocateSpeedTree():
     # Look for all of the SpeedTree SDK directories within the
     # sdks/win32/speedtree dir, and pick the highest-numbered one.
@@ -2660,12 +2616,6 @@ def SdkAutoDisableMax():
                     WARNINGS.append("The registry does not appear to contain a pointer to "+version)
                 WARNINGS.append("I have automatically added this command-line option: --no-"+version.lower())
             PkgDisable(version)
-
-def SdkAutoDisablePhysX():
-    if ("PHYSX" not in SDK) and (PkgSkip("PHYSX")==0):
-        PkgDisable("PHYSX")
-        WARNINGS.append("I cannot locate SDK for PhysX")
-        WARNINGS.append("I have automatically added this command-line option: --no-physx")
 
 def SdkAutoDisableSpeedTree():
     if ("SPEEDTREE" not in SDK) and (PkgSkip("SPEEDTREE")==0):

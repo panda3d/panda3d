@@ -75,7 +75,7 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "EIGEN",                                             # Linear algebra acceleration
   "OPENAL", "FMODEX",                                  # Audio playback
   "VORBIS", "OPUS", "FFMPEG", "SWSCALE", "SWRESAMPLE", # Audio decoding
-  "ODE", "PHYSX", "BULLET", "PANDAPHYSICS",            # Physics
+  "ODE", "BULLET", "PANDAPHYSICS",                     # Physics
   "SPEEDTREE",                                         # SpeedTree
   "ZLIB", "PNG", "JPEG", "TIFF", "OPENEXR", "SQUISH",  # 2D Formats support
   ] + MAYAVERSIONS + MAXVERSIONS + [ "FCOLLADA", "ASSIMP", "EGG", # 3D Formats support
@@ -464,14 +464,12 @@ SdkLocateMax()
 SdkLocateMacOSX(OSXTARGET)
 SdkLocatePython(False)
 SdkLocateWindows(WINDOWS_SDK)
-SdkLocatePhysX()
 SdkLocateSpeedTree()
 SdkLocateAndroid()
 
 SdkAutoDisableDirectX()
 SdkAutoDisableMaya()
 SdkAutoDisableMax()
-SdkAutoDisablePhysX()
 SdkAutoDisableSpeedTree()
 
 if not PkgSkip("PYTHON") and SDK["PYTHONVERSION"] == "python2.7":
@@ -707,20 +705,6 @@ if (COMPILER == "MSVC"):
             LibName(pkg, SDK[pkg] +  '/lib/mesh.lib')
             LibName(pkg, SDK[pkg] +  '/lib/maxutil.lib')
             LibName(pkg, SDK[pkg] +  '/lib/paramblk2.lib')
-    if (PkgSkip("PHYSX")==0):
-        if GetTargetArch() == 'x64':
-            LibName("PHYSX",  SDK["PHYSXLIBS"] + "/PhysXLoader64.lib")
-            LibName("PHYSX",  SDK["PHYSXLIBS"] + "/NxCharacter64.lib")
-        else:
-            LibName("PHYSX",  SDK["PHYSXLIBS"] + "/PhysXLoader.lib")
-            LibName("PHYSX",  SDK["PHYSXLIBS"] + "/NxCharacter.lib")
-
-        IncDirectory("PHYSX", SDK["PHYSX"] + "/Physics/include")
-        IncDirectory("PHYSX", SDK["PHYSX"] + "/PhysXLoader/include")
-        IncDirectory("PHYSX", SDK["PHYSX"] + "/NxCharacter/include")
-        IncDirectory("PHYSX", SDK["PHYSX"] + "/NxExtensions/include")
-        IncDirectory("PHYSX", SDK["PHYSX"] + "/Foundation/include")
-        IncDirectory("PHYSX", SDK["PHYSX"] + "/Cooking/include")
 
     if (PkgSkip("SPEEDTREE")==0):
         if GetTargetArch() == 'x64':
@@ -958,21 +942,6 @@ if (COMPILER=="GCC"):
                 LibName(pkg, "-lOpenMayalib")
             else:
                 LibName(pkg, "-dylib_file /System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib")
-
-    if (PkgSkip("PHYSX")==0):
-        IncDirectory("PHYSX", SDK["PHYSX"] + "/Physics/include")
-        IncDirectory("PHYSX", SDK["PHYSX"] + "/PhysXLoader/include")
-        IncDirectory("PHYSX", SDK["PHYSX"] + "/NxCharacter/include")
-        IncDirectory("PHYSX", SDK["PHYSX"] + "/NxExtensions/include")
-        IncDirectory("PHYSX", SDK["PHYSX"] + "/Foundation/include")
-        IncDirectory("PHYSX", SDK["PHYSX"] + "/Cooking/include")
-        LibDirectory("PHYSX", SDK["PHYSXLIBS"])
-        if (GetHost() == "darwin"):
-            LibName("PHYSX", SDK["PHYSXLIBS"] + "/osxstatic/PhysXCooking.a")
-            LibName("PHYSX", SDK["PHYSXLIBS"] + "/osxstatic/PhysXCore.a")
-        else:
-            LibName("PHYSX", "-lPhysXLoader")
-            LibName("PHYSX", "-lNxCharacter")
 
 DefSymbol("WITHINPANDA", "WITHIN_PANDA", "1")
 if GetLinkAllStatic():
@@ -3045,10 +3014,6 @@ CopyAllHeaders('panda/metalibs/pandagles2')
 CopyAllHeaders('panda/metalibs/pandaphysics')
 CopyAllHeaders('panda/src/testbed')
 
-if (PkgSkip("PHYSX")==0):
-    CopyAllHeaders('panda/src/physx')
-    CopyAllHeaders('panda/metalibs/pandaphysx')
-
 if (PkgSkip("BULLET")==0):
     CopyAllHeaders('panda/src/bullet')
     CopyAllHeaders('panda/metalibs/pandabullet')
@@ -4561,44 +4526,6 @@ if (PkgSkip("BULLET")==0):
   PyTargetAdd('bullet.pyd', input='libp3interrogatedb.dll')
   PyTargetAdd('bullet.pyd', input=COMMON_PANDA_LIBS)
   PyTargetAdd('bullet.pyd', opts=['WINUSER', 'BULLET'])
-
-#
-# DIRECTORY: panda/src/physx/
-#
-
-if (PkgSkip("PHYSX")==0):
-  OPTS=['DIR:panda/src/physx', 'BUILDING:PANDAPHYSX', 'PHYSX']
-  TargetAdd('p3physx_composite.obj', opts=OPTS, input='p3physx_composite.cxx')
-
-  OPTS=['DIR:panda/src/physx', 'PHYSX']
-  IGATEFILES=GetDirectoryContents('panda/src/physx', ["*.h", "*_composite*.cxx"])
-  TargetAdd('libpandaphysx.in', opts=OPTS, input=IGATEFILES)
-  TargetAdd('libpandaphysx.in', opts=['IMOD:panda3d.physx', 'ILIB:libpandaphysx', 'SRCDIR:panda/src/physx'])
-
-#
-# DIRECTORY: panda/metalibs/pandaphysx/
-#
-
-if (PkgSkip("PHYSX")==0):
-  OPTS=['DIR:panda/metalibs/pandaphysx', 'BUILDING:PANDAPHYSX', 'PHYSX', 'PYTHON']
-  TargetAdd('pandaphysx_pandaphysx.obj', opts=OPTS, input='pandaphysx.cxx')
-
-  TargetAdd('libpandaphysx.dll', input='pandaphysx_pandaphysx.obj')
-  TargetAdd('libpandaphysx.dll', input='p3physx_composite.obj')
-  TargetAdd('libpandaphysx.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandaphysx.dll', opts=['WINUSER', 'PHYSX', 'PYTHON'])
-
-  OPTS=['DIR:panda/metalibs/pandaphysx', 'PHYSX']
-  PyTargetAdd('physx_module.obj', input='libpandaphysx.in')
-  PyTargetAdd('physx_module.obj', opts=OPTS)
-  PyTargetAdd('physx_module.obj', opts=['IMOD:panda3d.physx', 'ILIB:physx', 'IMPORT:panda3d.core'])
-
-  PyTargetAdd('physx.pyd', input='physx_module.obj')
-  PyTargetAdd('physx.pyd', input='libpandaphysx_igate.obj')
-  PyTargetAdd('physx.pyd', input='libpandaphysx.dll')
-  PyTargetAdd('physx.pyd', input='libp3interrogatedb.dll')
-  PyTargetAdd('physx.pyd', input=COMMON_PANDA_LIBS)
-  PyTargetAdd('physx.pyd', opts=['WINUSER', 'PHYSX'])
 
 #
 # DIRECTORY: panda/src/physics/
