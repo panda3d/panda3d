@@ -1,4 +1,4 @@
-if(NOT HAVE_EGG)
+if(NOT HAVE_EGG OR NOT HAVE_FREETYPE)
   return()
 endif()
 
