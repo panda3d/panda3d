@@ -14,7 +14,7 @@ jobs:
         - ubuntu-bionic-coverage-ninja
         - macos-eigen-coverage-unity-xcode
         - macos-nometa-standard-makefile
-        - windows-standard-unity-msvc
+#       - windows-standard-unity-msvc # FIXME when GH Actions runners upgrade CMake to >=3.16.1
         - windows-nopython-nometa-standard-msvc
 
         include:
@@ -61,7 +61,7 @@ jobs:
         - profile: windows-standard-unity-msvc
           os: windows-2019
           config: Standard
-          unity: NO # FIXME when GH Actions runners upgrade CMake to >=3.16.1
+          unity: YES
           generator: Visual Studio 16 2019
           compiler: Default
           metalibs: YES
