@@ -121,7 +121,12 @@ endif()
 # tree starting at the location of libpandaexpress.dll for any
 # directories called 'etc'.
 
-set(DEFAULT_PRC_DIR "<auto>etc" CACHE STRING
+if(UNIX)
+  set(_default_prc "<auto>etc/panda3d")
+else()
+  set(_default_prc "<auto>etc")
+endif()
+set(DEFAULT_PRC_DIR "${_default_prc}" CACHE STRING
   "The compiled-in default directory to look for the Config.prc file,
 in the absence of the PRC_DIR environment variable set, and in
 the absence of anything specified via the configpath directive.")

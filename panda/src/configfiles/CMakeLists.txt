@@ -32,17 +32,22 @@ else()
     "$XDG_CACHE_HOME/panda3d")
 endif()
 
-if(IS_MULTICONFIG)
-  set(_out_path "${PROJECT_BINARY_DIR}/$<CONFIG>/etc")
+if(UNIX)
+  # On Unices, ask the GNUInstallDirs module where /etc is -- and then install
+  # ourselves into /etc/panda3d
+  set(_confdir "${CMAKE_INSTALL_FULL_SYSCONFDIR}/panda3d")
+  set(_out_path "etc/panda3d")
+  set(ETC_PARENT_PATH "../..")
 else()
-  set(_out_path "${PROJECT_BINARY_DIR}/etc")
+  set(_confdir "etc")
+  set(_out_path "etc")
+  set(ETC_PARENT_PATH "..")
 endif()
 
-if(WIN32)
-  set(_confdir "etc")
+if(IS_MULTICONFIG)
+  set(_out_path "${PROJECT_BINARY_DIR}/$<CONFIG>/${_out_path}")
 else()
-  # On Unices, ask the GNUInstallDirs module where /etc is
-  set(_confdir "${CMAKE_INSTALL_FULL_SYSCONFDIR}")
+  set(_out_path "${PROJECT_BINARY_DIR}/${_out_path}")
 endif()
 
 # Path from the directory containing *.prc to the *parent of* models/
