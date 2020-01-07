@@ -8,7 +8,6 @@ from __future__ import print_function
 
 import collections
 import os
-import pip
 import plistlib
 import sys
 import subprocess
@@ -395,6 +394,8 @@ class build_apps(setuptools.Command):
         wheels. These are special wheels that are expected to contain a deploy_libs
         directory containing the Python runtime libraries, which will be added
         to sys.path."""
+
+        import pip
 
         self.announce('Gathering wheels for platform: {}'.format(platform), distutils.log.INFO)
 
