@@ -70,16 +70,16 @@ static const struct DeviceMapping {
     {"face_a", "face_b", 0, "face_x", "face_y", "rshoulder", "lshoulder", "rshoulder", 0, 0, 0, "start", 0, "lstick", "rstick", 0}
   },
   // Dualshock (PS4)
-  {0x054c, 0x05c4, InputDevice::DeviceClass::gamepad, 0,
-    {"face_x", "face_a", "face_b", "face_y", "lshoulder", "rshoulder", "ltrigger", "rtrigger", "back", "start", "lstick", "rstick", "guide", 0}
+  {0x054c, 0x05c4, InputDevice::DeviceClass::gamepad, QB_rstick_from_z,
+    {"face_x", "face_a", "face_b", "face_y", 0, 0, "ltrigger", "rtrigger", "back", "start", "lstick", "rstick", "guide", 0}
   },
   // Dualshock 2nd Gen (PS4 Slim)
-  {0x054c, 0x09cc, InputDevice::DeviceClass::gamepad, 0,
-    {"face_x", "face_a", "face_b", "face_y", "lshoulder", "rshoulder", "ltrigger", "rtrigger", "back", "start", "lstick", "rstick", "guide", 0}
+  {0x054c, 0x09cc, InputDevice::DeviceClass::gamepad, QB_rstick_from_z,
+    {"face_x", "face_a", "face_b", "face_y", 0, 0, "ltrigger", "rtrigger", "back", "start", "lstick", "rstick", "guide", 0}
   },
   // Dualshock 2nd Gen (PS4 wireless adapter)
-  {0x054c, 0x0ba0, InputDevice::DeviceClass::gamepad, 0,
-    {"face_x", "face_a", "face_b", "face_y", "lshoulder", "rshoulder", "ltrigger", "rtrigger", "back", "start", "lstick", "rstick", "guide", 0}
+  {0x054c, 0x0ba0, InputDevice::DeviceClass::gamepad, QB_rstick_from_z,
+    {"face_x", "face_a", "face_b", "face_y", 0, 0, "ltrigger", "rtrigger", "back", "start", "lstick", "rstick", "guide", 0}
   },
   {0},
 };
@@ -475,14 +475,26 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
           break;
         case HID_USAGE_GENERIC_RX:
           if (_device_class == DeviceClass::gamepad) {
-            axis = Axis::right_x;
+            if (quirks & QB_rstick_from_z) {
+              if ((quirks & QB_no_analog_triggers) == 0) {
+                axis = Axis::left_trigger;
+              }
+            } else {
+              axis = Axis::right_x;
+            }
           } else {
             axis = Axis::pitch;
           }
           break;
         case HID_USAGE_GENERIC_RY:
           if (_device_class == DeviceClass::gamepad) {
-            axis = Axis::right_y;
+            if (quirks & QB_rstick_from_z) {
+              if ((quirks & QB_no_analog_triggers) == 0) {
+                axis = Axis::right_trigger;
+              }
+            } else {
+              axis = Axis::right_y;
+            }
           } else {
             axis = Axis::roll;
           }
