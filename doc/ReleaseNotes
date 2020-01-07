@@ -11,8 +11,11 @@ This is a recommended bugfix release, especially for macOS users.
 * Fix NaN assertions when particles get very large positions (#822)
 * Add support for Autodesk Maya 2020
 * Fix maya2egg erroring when running from a pip installation (#709)
+* Support DualShock 4 (2nd gen) controller on Windows
 * Support .pz and .gz compressed models in deployment system
 * Support implicit namespace packages in deployment system (#778)
+* Fix issues when using CEF Python on macOS with deployment system
+* Fix deployment system issues reading .pyc files in some Python versions
 * Fix error with distutils package when deploying in a "virtualenv" env (#747)
 * Fix "NameError: name 'mdef' is not defined" error when deploying (#721)
 * Deployment system now strips weird -psn_* argument passed to macOS GUI apps
