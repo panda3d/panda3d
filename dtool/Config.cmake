@@ -437,10 +437,10 @@ pointers.")
 
 
 # Should build tinydisplay?
-option(HAVE_TINYDISPLAY
-  "Builds TinyDisplay, a light software renderer based on TinyGL,
-that is built into Panda. TinyDisplay is not as full-featured as Mesa
-but is many times faster." ${IS_NOT_MINSIZE_BUILD})
+#option(HAVE_TINYDISPLAY
+#  "Builds TinyDisplay, a light software renderer based on TinyGL,
+#that is built into Panda. TinyDisplay is not as full-featured as Mesa
+#but is many times faster." ${IS_NOT_MINSIZE_BUILD})
 
 
 # Is SDL installed, and where?
