@@ -71,15 +71,15 @@ static const struct DeviceMapping {
   },
   // Dualshock (PS4)
   {0x054c, 0x05c4, InputDevice::DeviceClass::gamepad, QB_rstick_from_z,
-    {"face_x", "face_a", "face_b", "face_y", 0, 0, "ltrigger", "rtrigger", "back", "start", "lstick", "rstick", "guide", 0}
+    {"face_x", "face_a", "face_b", "face_y", "lshoulder", "rshoulder", 0, 0, "back", "start", "lstick", "rstick", "guide", 0}
   },
   // Dualshock 2nd Gen (PS4 Slim)
   {0x054c, 0x09cc, InputDevice::DeviceClass::gamepad, QB_rstick_from_z,
-    {"face_x", "face_a", "face_b", "face_y", 0, 0, "ltrigger", "rtrigger", "back", "start", "lstick", "rstick", "guide", 0}
+    {"face_x", "face_a", "face_b", "face_y", "lshoulder", "rshoulder", 0, 0, "back", "start", "lstick", "rstick", "guide", 0}
   },
   // Dualshock 2nd Gen (PS4 wireless adapter)
   {0x054c, 0x0ba0, InputDevice::DeviceClass::gamepad, QB_rstick_from_z,
-    {"face_x", "face_a", "face_b", "face_y", 0, 0, "ltrigger", "rtrigger", "back", "start", "lstick", "rstick", "guide", 0}
+    {"face_x", "face_a", "face_b", "face_y", "lshoulder", "rshoulder", 0, 0, "back", "start", "lstick", "rstick", "guide", 0}
   },
   {0},
 };
@@ -494,11 +494,12 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
               }
             } else {
               axis = Axis::right_y;
+              swap(cap.LogicalMin, cap.LogicalMax);
             }
           } else {
             axis = Axis::roll;
+            swap(cap.LogicalMin, cap.LogicalMax);
           }
-          swap(cap.LogicalMin, cap.LogicalMax);
           break;
         case HID_USAGE_GENERIC_RZ:
           if (_device_class == DeviceClass::gamepad) {
