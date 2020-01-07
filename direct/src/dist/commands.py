@@ -642,6 +642,28 @@ class build_apps(setuptools.Command):
         freezer_modules = set()
         freezer_modpaths = set()
         ext_suffixes = set()
+
+        def get_search_path_for(source_path):
+            search_path = [os.path.dirname(source_path)]
+            if use_wheels:
+                search_path.append(os.path.join(p3dwhlfn, 'deploy_libs'))
+
+                # If the .whl containing this file has a .libs directory, add
+                # it to the path.  This is an auditwheel/numpy convention.
+                if '.whl' + os.sep in source_path:
+                    whl, wf = source_path.split('.whl' + os.path.sep)
+                    whl += '.whl'
+                    rootdir = wf.split(os.path.sep, 1)[0]
+                    search_path.append(os.path.join(whl, rootdir, '.libs'))
+
+                    # Also look for more specific per-package cases, defined in
+                    # PACKAGE_LIB_DIRS at the top of this file.
+                    whl_name = os.path.basename(whl).split('-', 1)[0]
+                    extra_dirs = PACKAGE_LIB_DIRS.get(whl_name, [])
+                    for extra_dir in extra_dirs:
+                        search_path.append(os.path.join(whl, extra_dir.replace('/', os.path.sep)))
+            return search_path
+
         def create_runtime(appname, mainscript, use_console):
             freezer = FreezeTool.Freezer(platform=platform, path=path)
             freezer.addModule('__main__', filename=mainscript)
@@ -784,26 +806,8 @@ class build_apps(setuptools.Command):
                     continue
 
             # If this is a dynamic library, search for dependencies.
-            search_path = [os.path.dirname(source_path)]
-            if use_wheels:
-                search_path.append(os.path.join(p3dwhlfn, 'deploy_libs'))
-
-                # If the .whl containing this file has a .libs directory, add
-                # it to the path.  This is an auditwheel/numpy convention.
-                if '.whl' + os.sep in source_path:
-                    whl, wf = source_path.split('.whl' + os.path.sep)
-                    whl += '.whl'
-                    rootdir = wf.split(os.path.sep, 1)[0]
-                    search_path.append(os.path.join(whl, rootdir, '.libs'))
-
-                    # Also look for more specific per-package cases, defined in
-                    # PACKAGE_LIB_DIRS at the top of this file.
-                    whl_name = os.path.basename(whl).split('-', 1)[0]
-                    extra_dirs = PACKAGE_LIB_DIRS.get(whl_name, [])
-                    for extra_dir in extra_dirs:
-                        search_path.append(os.path.join(whl, extra_dir.replace('/', os.path.sep)))
-
             target_path = os.path.join(builddir, basename)
+            search_path = get_search_path_for(source_path)
             self.copy_with_dependencies(source_path, target_path, search_path)
 
         # Copy over the tcl directory.
@@ -849,12 +853,15 @@ class build_apps(setuptools.Command):
                             relpath = wf[len(source_dir) + 1:]
                             source_path = os.path.join(whl, wf)
                             target_path = os.path.join(target_dir, relpath)
-                            self.copy(source_path, target_path)
 
                             if 'PKG_DATA_MAKE_EXECUTABLE' in flags:
+                                search_path = get_search_path_for(source_path)
+                                self.copy_with_dependencies(source_path, target_path, search_path)
                                 mode = os.stat(target_path).st_mode
                                 mode |= stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
                                 os.chmod(target_path, mode)
+                            else:
+                                self.copy(source_path, target_path)
 
         # Copy Game Files
         self.announce('Copying game files for platform: {}'.format(platform), distutils.log.INFO)
