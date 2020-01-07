@@ -10,7 +10,7 @@ from panda3d.core import *
 from . import DirectGuiGlobals as DGG
 from .DirectFrame import *
 from .DirectButton import *
-from math import isfinite
+from math import isnan
 
 """
 import DirectSlider
@@ -91,14 +91,14 @@ class DirectSlider(DirectFrame):
         # This is the internal function that is called when
         # self['value'] is directly assigned.
         value = self['value']
-        assert isfinite(value)
+        assert not isnan(value)
         self.guiItem.setValue(value)
 
     def setValue(self, value):
         # This is the public function that is meant to be called by a
         # user that doesn't like to use (or doesn't understand) the
         # preferred interface of self['value'].
-        assert isfinite(value)
+        assert not isnan(value)
         self['value'] = value
 
     def getValue(self):
