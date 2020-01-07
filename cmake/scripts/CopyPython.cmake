@@ -70,7 +70,7 @@ if(changed AND DEFINED PYTHON_EXECUTABLES)
       WORKING_DIRECTORY "${OUTPUT_DIR}")
 
     execute_process(
-      COMMAND "${interp}" -OO -m compileall .
+      COMMAND "${interp}" -O -m compileall .
       OUTPUT_QUIET
       WORKING_DIRECTORY "${OUTPUT_DIR}")
 
