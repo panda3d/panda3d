@@ -94,6 +94,8 @@ jobs:
         curl -O https://www.panda3d.org/download/panda3d-1.10.5/panda3d-1.10.5-tools-mac.tar.gz
         tar -xf panda3d-1.10.5-tools-mac.tar.gz
 
+        brew install ccache
+
         echo "##[set-env name=thirdpartyOption;]-D THIRDPARTY_DIRECTORY=../panda3d-1.10.5/thirdparty" -DHAVE_CG=OFF
 
     - name: Install dependencies (Ubuntu)
@@ -102,7 +104,7 @@ jobs:
         sudo apt-get update
 
         sudo apt-get install
-        build-essential ninja-build clang llvm
+        build-essential ninja-build clang llvm ccache
         bison flex
         libeigen3-dev libfreetype6-dev libgl1-mesa-dev libjpeg-dev libode-dev
         libopenal-dev libpng-dev libssl-dev libvorbis-dev libx11-dev
@@ -130,6 +132,13 @@ jobs:
 
         echo "##[set-env name=thirdpartyOption;]-D THIRDPARTY_DIRECTORY=../thirdparty-tools/panda3d-1.10.5/thirdparty"
 
+    - name: ccache (non-Windows)
+      if: runner.os != 'Windows'
+      uses: actions/cache@v1
+      with:
+        path: ccache
+        key: ci-cmake-ccache-${{ matrix.profile }}
+
     - name: Configure
       shell: bash
       env:
@@ -149,7 +158,13 @@ jobs:
           fi
         fi
 
+        if ${{ runner.os != 'Windows' }}; then
+          compilerLauncher=$(echo -DCMAKE_C{,XX}_COMPILER_LAUNCHER=ccache)
+          echo "##[set-env name=CCACHE_DIR;]$(dirname $PWD)/ccache"
+        fi
+
         cmake
+        ${compilerLauncher:-}
         -D CMAKE_UNITY_BUILD=${{ matrix.unity }}
         -D CMAKE_BUILD_TYPE="${{ matrix.config }}"
         -D BUILD_METALIBS=${{ matrix.metalibs }}
