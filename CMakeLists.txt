@@ -2,6 +2,12 @@ cmake_minimum_required(VERSION 3.0.2)
 set(CMAKE_DISABLE_SOURCE_CHANGES ON) # Must go before project() below
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON) # Must go before project() below
 
+if(CMAKE_VERSION VERSION_GREATER "3.11" OR POLICY CMP0072)
+  # Prefer GLVND over libGL when available; this will be enabled by default
+  # once the minimum CMake version is at least 3.11.
+  cmake_policy(SET CMP0072 NEW)
+endif()
+
 if(CMAKE_VERSION VERSION_GREATER "3.12" OR POLICY CMP0074)
   # Needed for THIRDPARTY_DIRECTORY support; this will be enabled by default
   # once the minimum CMake version is at least 3.12.
