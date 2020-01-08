@@ -162,7 +162,7 @@ jobs:
       if: contains(matrix.python, 'NO')
       # BEGIN A
       working-directory: build
-      run: cmake --build . --config ${{ matrix.config }}
+      run: cmake --build . --config ${{ matrix.config }} --parallel 4
       # END A
 
     - name: Setup Python (Python 2.7)
@@ -181,7 +181,7 @@ jobs:
       if: contains(matrix.python, 'YES')
       # BEGIN A
       working-directory: build
-      run: cmake --build . --config ${{ matrix.config }}
+      run: cmake --build . --config ${{ matrix.config }} --parallel 4
       # END A
     - name: Test (Python 2.7)
       # BEGIN B
@@ -211,7 +211,7 @@ jobs:
       if: contains(matrix.python, 'YES')
       # BEGIN A
       working-directory: build
-      run: cmake --build . --config ${{ matrix.config }}
+      run: cmake --build . --config ${{ matrix.config }} --parallel 4
       # END A
     - name: Test (Python 3.5)
       # BEGIN B
@@ -241,7 +241,7 @@ jobs:
       if: contains(matrix.python, 'YES')
       # BEGIN A
       working-directory: build
-      run: cmake --build . --config ${{ matrix.config }}
+      run: cmake --build . --config ${{ matrix.config }} --parallel 4
       # END A
     - name: Test (Python 3.6)
       # BEGIN B
@@ -271,7 +271,7 @@ jobs:
       if: contains(matrix.python, 'YES')
       # BEGIN A
       working-directory: build
-      run: cmake --build . --config ${{ matrix.config }}
+      run: cmake --build . --config ${{ matrix.config }} --parallel 4
       # END A
     - name: Test (Python 3.7)
       # BEGIN B
@@ -301,7 +301,7 @@ jobs:
       if: contains(matrix.python, 'YES')
       # BEGIN A
       working-directory: build
-      run: cmake --build . --config ${{ matrix.config }}
+      run: cmake --build . --config ${{ matrix.config }} --parallel 4
       # END A
     - name: Test (Python 3.8)
       # BEGIN B
