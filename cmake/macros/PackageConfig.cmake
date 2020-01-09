@@ -149,7 +149,8 @@ function(package_option name)
   endif()
 
   # If it was set by the user but not found, display an error.
-  if(HAVE_${name} AND NOT ${found_as}_FOUND)
+  string(TOUPPER "${found_as}" FOUND_AS)
+  if(HAVE_${name} AND NOT ${found_as}_FOUND AND NOT ${FOUND_AS}_FOUND)
     message(SEND_ERROR "NOT FOUND: ${name}.  Disable HAVE_${name} to continue.")
   endif()
 
@@ -209,8 +210,6 @@ function(package_option name)
     endforeach(implib)
 
     if(use_variables)
-      string(TOUPPER "${found_as}" FOUND_AS)
-
       if(DEFINED ${found_as}_INCLUDE_DIRS)
         set(includes ${${found_as}_INCLUDE_DIRS})
       elseif(DEFINED ${found_as}_INCLUDE_DIR)
