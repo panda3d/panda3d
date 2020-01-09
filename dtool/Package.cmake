@@ -171,6 +171,11 @@ if(DEFINED _PREV_WANT_PYTHON_VERSION
 
 endif()
 
+if(WANT_PYTHON_VERSION)
+  # A specific version is requested; ensure we get that specific version
+  list(APPEND WANT_PYTHON_VERSION "EXACT")
+endif()
+
 get_directory_property(_old_cache_vars CACHE_VARIABLES)
 find_package(Python ${WANT_PYTHON_VERSION} QUIET COMPONENTS Interpreter Development)
 
