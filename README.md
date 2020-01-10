@@ -52,11 +52,11 @@ Building Panda3D
 Windows
 -------
 
-You can build Panda3D with the Microsoft Visual C++ 2015 or 2017 compiler,
+You can build Panda3D with the Microsoft Visual C++ 2015, 2017 or 2019 compiler,
 which can be downloaded for free from the [Visual Studio site](https://visualstudio.microsoft.com/downloads/).
 You will also need to install the [Windows 10 SDK](https://developer.microsoft.com/en-us/windows/downloads/windows-10-sdk),
-and if you intend to target Windows XP, you will also need the
-[Windows 7.1 SDK](https://www.microsoft.com/en-us/download/details.aspx?id=8279).
+and if you intend to target Windows XP, you will also need the Windows 7.1A
+SDK (which can be installed from the Visual Studio Installer).
 
 You will also need to have the third-party dependency libraries available for
 the build scripts to use.  These are available from one of these two URLs,
@@ -64,16 +64,17 @@ depending on whether you are on a 32-bit or 64-bit system, or you can
 [click here](https://github.com/rdb/panda3d-thirdparty) for instructions on
 building them from source.
 
-https://www.panda3d.org/download/panda3d-1.10.4.1/panda3d-1.10.4.1-tools-win64.zip
-https://www.panda3d.org/download/panda3d-1.10.4.1/panda3d-1.10.4.1-tools-win32.zip
+- https://www.panda3d.org/download/panda3d-1.10.5/panda3d-1.10.5-tools-win64.zip
+- https://www.panda3d.org/download/panda3d-1.10.5/panda3d-1.10.5-tools-win32.zip
 
-After acquiring these dependencies, you may simply build Panda3D from the
-command prompt using the following command.  (Change `14.1` to `14` if you are
-using Visual C++ 2015 instead of 2017.  Add the `--windows-sdk=10` option if
-you don't need to support Windows XP and did not install the Windows 7.1 SDK.)
+After acquiring these dependencies, you can build Panda3D from the command
+prompt using the following command.  Change the `--msvc-version` option based
+on your version of Visual C++; 2019 is 14.2, 2017 is 14.1, and 2015 is 14.
+Remove the `--windows-sdk=10` option if you need to support Windows XP, which
+requires the Windows 7.1A SDK.
 
 ```bash
-makepanda\makepanda.bat --everything --installer --msvc-version=14.1 --no-eigen --threads=2
+makepanda\makepanda.bat --everything --installer --msvc-version=14.2 --windows-sdk=10 --no-eigen --threads=2
 ```
 
 When the build succeeds, it will produce an .exe file that you can use to

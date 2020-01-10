@@ -8,7 +8,6 @@ from __future__ import print_function
 
 import collections
 import os
-import pip
 import plistlib
 import sys
 import subprocess
@@ -41,9 +40,8 @@ if sys.version_info < (3, 0):
 
     # Warn the user.  They might be using Python 2 by accident.
     print("=================================================================")
-    print("WARNING: You are using Python 2, which will soon be discontinued.")
-    print("WARNING: Please use Python 3 for best results and continued")
-    print("WARNING: support after the EOL date of December 31st, 2019.")
+    print("WARNING: You are using Python 2, which has reached the end of its")
+    print("WARNING: life as of January 1, 2020.  Please upgrade to Python 3.")
     print("=================================================================")
     sys.stdout.flush()
     time.sleep(4.0)
@@ -113,6 +111,7 @@ PACKAGE_DATA_DIRS = {
         ('cefpython3/subprocess*', '', {'PKG_DATA_MAKE_EXECUTABLE'}),
         ('cefpython3/locals/*', 'locals', {}),
         ('cefpython3/Chromium Embedded Framework.framework/Resources', 'Chromium Embedded Framework.framework/Resources', {}),
+        ('cefpython3/Chromium Embedded Framework.framework/Chromium Embedded Framework', '', {'PKG_DATA_MAKE_EXECUTABLE'}),
     ],
 }
 
@@ -393,6 +392,8 @@ class build_apps(setuptools.Command):
         directory containing the Python runtime libraries, which will be added
         to sys.path."""
 
+        import pip
+
         self.announce('Gathering wheels for platform: {}'.format(platform), distutils.log.INFO)
 
         whldir = os.path.join(self.build_base, '__whl_cache__')
@@ -639,6 +640,28 @@ class build_apps(setuptools.Command):
         freezer_modules = set()
         freezer_modpaths = set()
         ext_suffixes = set()
+
+        def get_search_path_for(source_path):
+            search_path = [os.path.dirname(source_path)]
+            if use_wheels:
+                search_path.append(os.path.join(p3dwhlfn, 'deploy_libs'))
+
+                # If the .whl containing this file has a .libs directory, add
+                # it to the path.  This is an auditwheel/numpy convention.
+                if '.whl' + os.sep in source_path:
+                    whl, wf = source_path.split('.whl' + os.path.sep)
+                    whl += '.whl'
+                    rootdir = wf.split(os.path.sep, 1)[0]
+                    search_path.append(os.path.join(whl, rootdir, '.libs'))
+
+                    # Also look for more specific per-package cases, defined in
+                    # PACKAGE_LIB_DIRS at the top of this file.
+                    whl_name = os.path.basename(whl).split('-', 1)[0]
+                    extra_dirs = PACKAGE_LIB_DIRS.get(whl_name, [])
+                    for extra_dir in extra_dirs:
+                        search_path.append(os.path.join(whl, extra_dir.replace('/', os.path.sep)))
+            return search_path
+
         def create_runtime(appname, mainscript, use_console):
             freezer = FreezeTool.Freezer(platform=platform, path=path)
             freezer.addModule('__main__', filename=mainscript)
@@ -781,26 +804,8 @@ class build_apps(setuptools.Command):
                     continue
 
             # If this is a dynamic library, search for dependencies.
-            search_path = [os.path.dirname(source_path)]
-            if use_wheels:
-                search_path.append(os.path.join(p3dwhlfn, 'deploy_libs'))
-
-                # If the .whl containing this file has a .libs directory, add
-                # it to the path.  This is an auditwheel/numpy convention.
-                if '.whl' + os.sep in source_path:
-                    whl, wf = source_path.split('.whl' + os.path.sep)
-                    whl += '.whl'
-                    rootdir = wf.split(os.path.sep, 1)[0]
-                    search_path.append(os.path.join(whl, rootdir, '.libs'))
-
-                    # Also look for more specific per-package cases, defined in
-                    # PACKAGE_LIB_DIRS at the top of this file.
-                    whl_name = os.path.basename(whl).split('-', 1)[0]
-                    extra_dirs = PACKAGE_LIB_DIRS.get(whl_name, [])
-                    for extra_dir in extra_dirs:
-                        search_path.append(os.path.join(whl, extra_dir.replace('/', os.path.sep)))
-
             target_path = os.path.join(builddir, basename)
+            search_path = get_search_path_for(source_path)
             self.copy_with_dependencies(source_path, target_path, search_path)
 
         # Copy over the tcl directory.
@@ -832,7 +837,7 @@ class build_apps(setuptools.Command):
                 whlfile = self._get_zip_file(whl)
                 filenames = whlfile.namelist()
                 for source_pattern, target_dir, flags in datadesc:
-                    srcglob = p3d.GlobPattern(source_pattern)
+                    srcglob = p3d.GlobPattern(source_pattern.lower())
                     source_dir = os.path.dirname(source_pattern)
                     # Relocate the target dir to the build directory.
                     target_dir = target_dir.replace('/', os.sep)
@@ -846,12 +851,15 @@ class build_apps(setuptools.Command):
                             relpath = wf[len(source_dir) + 1:]
                             source_path = os.path.join(whl, wf)
                             target_path = os.path.join(target_dir, relpath)
-                            self.copy(source_path, target_path)
 
                             if 'PKG_DATA_MAKE_EXECUTABLE' in flags:
+                                search_path = get_search_path_for(source_path)
+                                self.copy_with_dependencies(source_path, target_path, search_path)
                                 mode = os.stat(target_path).st_mode
                                 mode |= stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
                                 os.chmod(target_path, mode)
+                            else:
+                                self.copy(source_path, target_path)
 
         # Copy Game Files
         self.announce('Copying game files for platform: {}'.format(platform), distutils.log.INFO)
@@ -1179,18 +1187,20 @@ class build_apps(setuptools.Command):
                     dylib = dylib.replace('@loader_path/../Frameworks/', '')
                 elif dylib.startswith('@executable_path/../Frameworks/'):
                     dylib = dylib.replace('@executable_path/../Frameworks/', '')
-                elif dylib.startswith('@loader_path/'):
-                    dylib = dylib.replace('@loader_path/', '')
+                else:
+                    for prefix in ('@loader_path/', '@rpath/'):
+                        if dylib.startswith(prefix):
+                            dylib = dylib.replace(prefix, '')
 
-                    # Do we need to flatten the relative reference?
-                    if '/' in dylib and flatten:
-                        new_dylib = '@loader_path/' + os.path.basename(dylib)
-                        str_size = len(cmd_data) - 16
-                        if len(new_dylib) < str_size:
-                            fp.seek(-str_size, os.SEEK_CUR)
-                            fp.write(new_dylib.encode('ascii').ljust(str_size, b'\0'))
-                        else:
-                            self.warn('Unable to rewrite dependency {}'.format(orig))
+                            # Do we need to flatten the relative reference?
+                            if '/' in dylib and flatten:
+                                new_dylib = prefix + os.path.basename(dylib)
+                                str_size = len(cmd_data) - 16
+                                if len(new_dylib) < str_size:
+                                    fp.seek(-str_size, os.SEEK_CUR)
+                                    fp.write(new_dylib.encode('ascii').ljust(str_size, b'\0'))
+                                else:
+                                    self.warn('Unable to rewrite dependency {}'.format(orig))
 
                 load_dylibs.append(dylib)
 

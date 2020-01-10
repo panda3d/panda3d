@@ -615,8 +615,10 @@ release_vertex_buffer(VertexBufferContext *vbc) {
   }
   #endif
 
-  dvbc->_vbuffer->Release();
-  dvbc->_vbuffer = nullptr;
+  if (dvbc->_vbuffer != nullptr) {
+    dvbc->_vbuffer->Release();
+    dvbc->_vbuffer = nullptr;
+  }
 
   delete dvbc;
 }

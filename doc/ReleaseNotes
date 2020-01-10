@@ -1,3 +1,67 @@
+------------------------  RELEASE 1.10.5  -----------------------
+
+This is a recommended bugfix release, especially for macOS users.
+
+* Fix DPI scaling issue in macOS 10.15 "Catalina" (#794)
+* Fix crash on macOS Catalina without "Input Monitoring" permission (#795)
+* macOS installer now installs to /Library/Developer/Panda3D (#760)
+* macOS thirdparty packages are now linked with libc++ (#584)
+* Homebrew Python should now locate Panda libraries correctly (#755)
+* Work around Tk bug cancelling Load Params in Particle Panel on macOS (#811)
+* Fix NaN assertions when particles get very large positions (#822)
+* Add support for Autodesk Maya 2020
+* Fix maya2egg erroring when running from a pip installation (#709)
+* Support DualShock 4 (2nd gen) controller on Windows
+* Support .pz and .gz compressed models in deployment system
+* Support implicit namespace packages in deployment system (#778)
+* Fix issues when using CEF Python on macOS with deployment system
+* Fix deployment system issues reading .pyc files in some Python versions
+* Fix error with distutils package when deploying in a "virtualenv" env (#747)
+* Fix "NameError: name 'mdef' is not defined" error when deploying (#721)
+* Deployment system now strips weird -psn_* argument passed to macOS GUI apps
+* Fix custom loader hooks sometimes not working with Actor (#750)
+* Fix defaults for package_data_dirs in deployment system (#779)
+* Fix issues with adding icons to deployed executable (#718)
+* Add PNMImage.quantize() that palettizes using median cut algorithm
+* Fix stereo and MRT FBO rendering in OpenGL ES (#815)
+* RTM_copy_ram mode is now fixed for multiview textures in OpenGL
+* Fix OpenGL multisample FBO issue with 16-bit float buffer (#756)
+* Fix DirectX 9 crash when resizing vertex buffer in certain ways (#824)
+* Workaround for infinite loop in Triangulator for certain polygons (#737)
+* Fix dcparser issue with unpacking uint64 and int64 (#751)
+* Fix ability to compile dcparser outside of the Panda3D codebase (#759)
+* Fix all direct.stdpy.threading2 threads behaving daemonically (#758)
+* direct.stdpy.threading2.Thread instances provide daemon and name properties
+* Workaround for Tkinter crash on Windows when resizing window (#586)
+* Fix possible stack overflow when reading many bytes from a stream (#754)
+* Fix mouse confinement region on Windows not updating on window resize (#727)
+* Fix mouse confinement being lost on Windows when window loses focus (#729)
+* Support adjusting particle birth offset time (#769)
+* Support building against OpenEXR 2.4 on Windows (#799)
+* Fix ability to pass a tuple to loader.loadModel
+* Fix an issue in interrogate with generating C bindings (#722)
+* Fix a variety of ABI compatibility issues with NDEBUG builds
+* Fix static linking of harfbuzz and freetype in makepanda
+* Fix ability to specify --python-incdir and -libdir to makepanda on macOS
+* `ls()` and `bam-info -ls` now list included animations
+* Fix white ambient color when loading PBR materials from .bam/cache (#828)
+* Fix inconsistent behavior when passing small values to shader inputs (#827)
+* Fix very rare NVIDIA driver crash when mixing GLSL and Cg shaders
+* Fix issue passing unicode to DirectScrolledList (#752)
+* Fix interrogate parser issue with function-like macro expansion
+* Interrogate now finds types nested in explicitly specialized template class
+* Improve performance reading all data from a file with direct.stdpy.file
+* PandaSystem now records whether libc++ or libstdc++ was used on macOS
+* makepanda.bat now builds against Python 3.7 by default
+* Many improvements to API documentation
+* pandac/input/*.in interrogatedb files are now included in .whl builds
+* Fix division exception in ServerRepository (#762)
+* Fix ShaderBuffer contexts not being cleared at GSG destruction
+* Fix DirectOptionMenu item text scale reset on item unhighlight (#768)
+* Python particle classes now have snake-case aliases
+* Fix crash printing out cached buffer contexts
+* Rudimentary, experimental, low-level handling of digitizer input devices
+
 ------------------------  RELEASE 1.10.4.1  ---------------------
 
 This release fixes only one critical regression: calling destroy()

@@ -1116,7 +1116,9 @@ find_display_mode(int width, int height) {
   }
 #endif
   CFArrayRef modes = CGDisplayCopyAllDisplayModes(_display, options);
-  CFRelease(options);
+  if (options != NULL) {
+    CFRelease(options);
+  }
 
   size_t num_modes = CFArrayGetCount(modes);
   CGDisplayModeRef mode;
@@ -1126,13 +1128,14 @@ find_display_mode(int width, int height) {
   int refresh_rate;
   mode = CGDisplayCopyDisplayMode(_display);
 
-#if __MAC_OS_X_VERSION_MAX_ALLOWED < 1080
   // First check if the current mode is adequate.
-  if (CGDisplayModeGetWidth(mode) == width &&
+  // This test not done for macOS 10.15 and above as the mode resolution is
+  // not enough to identify a mode.
+  if (floor(NSAppKitVersionNumber) <= NSAppKitVersionNumber10_14 &&
+      CGDisplayModeGetWidth(mode) == width &&
       CGDisplayModeGetHeight(mode) == height) {
     return mode;
   }
-#endif
 
   current_pixel_encoding = CGDisplayModeCopyPixelEncoding(mode);
   refresh_rate = CGDisplayModeGetRefreshRate(mode);
@@ -1151,12 +1154,12 @@ find_display_mode(int width, int height) {
 
     // As explained above, we want to select the fullscreen display mode using
     // the same scaling factor, but only for MacOS 10.15+ To do this we check
-    // the mode width and heightbut also actual pixel widh and height.
+    // the mode width and height but also actual pixel widh and height.
     if (CGDisplayModeGetWidth(mode) == width &&
         CGDisplayModeGetHeight(mode) == height &&
         CGDisplayModeGetRefreshRate(mode) == refresh_rate &&
 #if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1080
-        (floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_14 ||
+        (floor(NSAppKitVersionNumber) <= NSAppKitVersionNumber10_14 ||
         (CGDisplayModeGetPixelWidth(mode) == expected_pixel_width &&
          CGDisplayModeGetPixelHeight(mode) == expected_pixel_height)) &&
 #endif

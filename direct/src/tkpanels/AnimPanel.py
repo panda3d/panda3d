@@ -276,7 +276,7 @@ class AnimPanel(AppShell):
             title = 'Load Animation',
             parent = self.component('hull')
             )
-        if not animFilename:
+        if not animFilename or animFilename == 'None':
             # no file selected, canceled
             return
 

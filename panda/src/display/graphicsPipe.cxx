@@ -38,7 +38,7 @@
 // CPUID is only available on i386 and x86-64 architectures.
 #if defined(__i386) || defined(__x86_64__) || defined(_M_IX86) || defined(_M_X64)
 
-#if defined(__GNUC__) && !defined(__APPLE__)
+#ifdef __GNUC__
 // GCC and Clang offer a useful cpuid.h header.
 #include <cpuid.h>
 #endif
@@ -56,36 +56,28 @@ union cpuid_info {
 };
 
 /**
- * Returns the highest cpuid leaf that is supported by the CPU.
+ * Gets cpuid info for the given leaf.
  */
-static inline uint32_t get_cpuid_max(uint32_t leaf) {
-#if defined(__GNUC__) && !defined(__APPLE__)
-  return __get_cpuid_max(leaf, nullptr);
+static inline void get_cpuid(uint32_t leaf, cpuid_info &info) {
+#if defined(__GNUC__)
+  __get_cpuid(leaf, &info.eax, &info.ebx, &info.ecx, &info.edx);
 #elif defined(_MSC_VER)
-  uint32_t p[4] = {0};
-  __cpuid((int *)p, leaf);
-  return p[0];
+  __cpuid((int *)info.str, leaf);
 #else
-  unsigned int eax = 0;
-  __asm__ ("cpuid\n\t"
-           : "=a" (eax)
-           : "0" (leaf));
-  return eax;
+#  error No CPUID intrinsic is known for this compiler!
 #endif
 }
 
 /**
- * Gets cpuid info for the given leaf.
+ * Returns the highest cpuid leaf that is supported by the CPU.
  */
-static inline void get_cpuid(uint32_t leaf, cpuid_info &info) {
-#if defined(__GNUC__) && !defined(__APPLE__)
-  __cpuid(leaf, info.eax, info.ebx, info.ecx, info.edx);
-#elif defined(_MSC_VER)
-  __cpuid((int *)info.str, leaf);
+static inline uint32_t get_cpuid_max(uint32_t leaf) {
+#if defined(__GNUC__)
+  return __get_cpuid_max(leaf, nullptr);
 #else
-  __asm__ ("cpuid\n\t"
-           : "=a" (info.eax), "=b" (info.ebx), "=c" (info.ecx), "=d" (info.edx)
-           : "0" (leaf));
+  cpuid_info info;
+  get_cpuid(leaf, info);
+  return info.eax;
 #endif
 }
 #endif

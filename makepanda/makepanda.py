@@ -75,7 +75,7 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "EIGEN",                                             # Linear algebra acceleration
   "OPENAL", "FMODEX",                                  # Audio playback
   "VORBIS", "OPUS", "FFMPEG", "SWSCALE", "SWRESAMPLE", # Audio decoding
-  "ODE", "PHYSX", "BULLET", "PANDAPHYSICS",            # Physics
+  "ODE", "BULLET", "PANDAPHYSICS",                     # Physics
   "SPEEDTREE",                                         # SpeedTree
   "ZLIB", "PNG", "JPEG", "TIFF", "OPENEXR", "SQUISH",  # 2D Formats support
   ] + MAYAVERSIONS + MAXVERSIONS + [ "FCOLLADA", "ASSIMP", "EGG", # 3D Formats support
@@ -85,7 +85,6 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "ARTOOLKIT", "OPENCV", "DIRECTCAM", "VISION",        # Augmented Reality
   "GTK2",                                              # GTK2 is used for PStats on Unix
   "MFC", "WX", "FLTK",                                 # Used for web plug-in only
-  "ROCKET",                                            # GUI libraries
   "COCOA",                                             # Mac OS X toolkits
   "X11",                                               # Unix platform support
   "PANDATOOL", "PVIEW", "DEPLOYTOOLS",                 # Toolchain
@@ -167,7 +166,7 @@ def parseopts(args):
     # Options for which to display a deprecation warning.
     removedopts = [
         "use-touchinput", "no-touchinput", "no-awesomium", "no-directscripts",
-        "no-carbon", "universal",
+        "no-carbon", "universal", "no-physx", "no-rocket"
         ]
 
     # All recognized options.
@@ -465,23 +464,21 @@ SdkLocateMax()
 SdkLocateMacOSX(OSXTARGET)
 SdkLocatePython(False)
 SdkLocateWindows(WINDOWS_SDK)
-SdkLocatePhysX()
 SdkLocateSpeedTree()
 SdkLocateAndroid()
 
 SdkAutoDisableDirectX()
 SdkAutoDisableMaya()
 SdkAutoDisableMax()
-SdkAutoDisablePhysX()
 SdkAutoDisableSpeedTree()
 
 if not PkgSkip("PYTHON") and SDK["PYTHONVERSION"] == "python2.7":
     warn_prefix = "%sWARNING:%s " % (GetColor("red"), GetColor())
-    print("=========================================================================")
-    print(warn_prefix + "Python 2.7 will reach EOL after December 31, 2019, and will not")
-    print(warn_prefix + "be supported after that date.  Please ensure you are prepared")
-    print(warn_prefix + "by planning your upgrade to Python 3 now.")
-    print("=========================================================================")
+    print("==========================================================================")
+    print(warn_prefix + "Python 2.7 has reached EOL as of January 1, 2020 and is no longer")
+    print(warn_prefix + "maintained.  Panda3D will soon cease to work with this version.")
+    print(warn_prefix + "Please upgrade to Python 3 now.")
+    print("==========================================================================")
     sys.stdout.flush()
     # Give the user some time to contemplate their sins
     time.sleep(6.0)
@@ -667,13 +664,6 @@ if (COMPILER == "MSVC"):
             LibName("SQUISH",   GetThirdpartyDir() + "squish/lib/squishd.lib")
         else:
             LibName("SQUISH",   GetThirdpartyDir() + "squish/lib/squish.lib")
-    if (PkgSkip("ROCKET")==0):
-        LibName("ROCKET", GetThirdpartyDir() + "rocket/lib/RocketCore.lib")
-        LibName("ROCKET", GetThirdpartyDir() + "rocket/lib/RocketControls.lib")
-        if (PkgSkip("PYTHON")==0):
-            LibName("ROCKET", GetThirdpartyDir() + "rocket/lib/" + SDK["PYTHONVERSION"] + "/boost_python-vc100-mt-1_54.lib")
-        if (GetOptimize() <= 3):
-            LibName("ROCKET", GetThirdpartyDir() + "rocket/lib/RocketDebugger.lib")
     if (PkgSkip("OPENAL")==0):
         LibName("OPENAL", GetThirdpartyDir() + "openal/lib/OpenAL32.lib")
         if not os.path.isfile(GetThirdpartyDir() + "openal/bin/OpenAL32.dll"):
@@ -715,20 +705,6 @@ if (COMPILER == "MSVC"):
             LibName(pkg, SDK[pkg] +  '/lib/mesh.lib')
             LibName(pkg, SDK[pkg] +  '/lib/maxutil.lib')
             LibName(pkg, SDK[pkg] +  '/lib/paramblk2.lib')
-    if (PkgSkip("PHYSX")==0):
-        if GetTargetArch() == 'x64':
-            LibName("PHYSX",  SDK["PHYSXLIBS"] + "/PhysXLoader64.lib")
-            LibName("PHYSX",  SDK["PHYSXLIBS"] + "/NxCharacter64.lib")
-        else:
-            LibName("PHYSX",  SDK["PHYSXLIBS"] + "/PhysXLoader.lib")
-            LibName("PHYSX",  SDK["PHYSXLIBS"] + "/NxCharacter.lib")
-
-        IncDirectory("PHYSX", SDK["PHYSX"] + "/Physics/include")
-        IncDirectory("PHYSX", SDK["PHYSX"] + "/PhysXLoader/include")
-        IncDirectory("PHYSX", SDK["PHYSX"] + "/NxCharacter/include")
-        IncDirectory("PHYSX", SDK["PHYSX"] + "/NxExtensions/include")
-        IncDirectory("PHYSX", SDK["PHYSX"] + "/Foundation/include")
-        IncDirectory("PHYSX", SDK["PHYSX"] + "/Cooking/include")
 
     if (PkgSkip("SPEEDTREE")==0):
         if GetTargetArch() == 'x64':
@@ -852,12 +828,6 @@ if (COMPILER=="GCC"):
         if os.path.isfile(irrxml):
             LibName("ASSIMP", irrxml)
 
-    rocket_libs = ("RocketCore", "RocketControls")
-    if (GetOptimize() <= 3):
-        rocket_libs += ("RocketDebugger",)
-    rocket_libs += ("boost_python",)
-    SmartPkgEnable("ROCKET",    "",          rocket_libs, "Rocket/Core.h")
-
     if not PkgSkip("PYTHON"):
         python_lib = SDK["PYTHONVERSION"]
         SmartPkgEnable("PYTHON", "", python_lib, (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"))
@@ -925,8 +895,6 @@ if (COMPILER=="GCC"):
         LibName("GL", "-dylib_file /System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib")
 
         # Temporary exceptions to removal of this flag
-        if not PkgSkip("ROCKET"):
-            LibName("ROCKET", "-undefined dynamic_lookup")
         if not PkgSkip("FFMPEG"):
             LibName("FFMPEG", "-undefined dynamic_lookup")
         if not PkgSkip("ASSIMP"):
@@ -974,21 +942,6 @@ if (COMPILER=="GCC"):
                 LibName(pkg, "-lOpenMayalib")
             else:
                 LibName(pkg, "-dylib_file /System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib")
-
-    if (PkgSkip("PHYSX")==0):
-        IncDirectory("PHYSX", SDK["PHYSX"] + "/Physics/include")
-        IncDirectory("PHYSX", SDK["PHYSX"] + "/PhysXLoader/include")
-        IncDirectory("PHYSX", SDK["PHYSX"] + "/NxCharacter/include")
-        IncDirectory("PHYSX", SDK["PHYSX"] + "/NxExtensions/include")
-        IncDirectory("PHYSX", SDK["PHYSX"] + "/Foundation/include")
-        IncDirectory("PHYSX", SDK["PHYSX"] + "/Cooking/include")
-        LibDirectory("PHYSX", SDK["PHYSXLIBS"])
-        if (GetHost() == "darwin"):
-            LibName("PHYSX", SDK["PHYSXLIBS"] + "/osxstatic/PhysXCooking.a")
-            LibName("PHYSX", SDK["PHYSXLIBS"] + "/osxstatic/PhysXCore.a")
-        else:
-            LibName("PHYSX", "-lPhysXLoader")
-            LibName("PHYSX", "-lNxCharacter")
 
 DefSymbol("WITHINPANDA", "WITHIN_PANDA", "1")
 if GetLinkAllStatic():
@@ -2275,8 +2228,6 @@ DTOOL_CONFIG=[
     ("HAVE_SQUISH",                    'UNDEF',                  'UNDEF'),
     ("HAVE_COCOA",                     'UNDEF',                  'UNDEF'),
     ("HAVE_OPENAL_FRAMEWORK",          'UNDEF',                  'UNDEF'),
-    ("HAVE_ROCKET_PYTHON",             '1',                      '1'),
-    ("HAVE_ROCKET_DEBUGGER",           'UNDEF',                  'UNDEF'),
     ("USE_TAU",                        'UNDEF',                  'UNDEF'),
     ("PRC_SAVE_DESCRIPTIONS",          '1',                      '1'),
 #    ("_SECURE_SCL",                    '0',                      'UNDEF'),
@@ -2370,14 +2321,6 @@ def WriteConfigSettings():
 
     if (GetOptimize() <= 2 and GetTarget() == "windows"):
         dtool_config["USE_DEBUG_PYTHON"] = '1'
-
-    # This should probably be more sophisticated, such as based
-    # on whether the libRocket Python modules are available.
-    if (PkgSkip("PYTHON") != 0):
-        dtool_config["HAVE_ROCKET_PYTHON"] = 'UNDEF'
-
-    if (GetOptimize() <= 3):
-        dtool_config["HAVE_ROCKET_DEBUGGER"] = '1'
 
     if (GetOptimize() <= 3):
         if (dtool_config["HAVE_NET"] != 'UNDEF'):
@@ -2588,7 +2531,7 @@ __version__ = '%s'
 if __debug__:
     import sys
     if sys.version_info < (3, 0):
-        sys.stderr.write("WARNING: Python 2.7 will reach EOL after December 31, 2019.\\n")
+        sys.stderr.write("WARNING: Python 2.7 has reached EOL as of January 1, 2020.\\n")
         sys.stderr.write("To suppress this warning, upgrade to Python 3.\\n")
         sys.stderr.flush()
     del sys
@@ -3024,8 +2967,6 @@ CopyAllHeaders('panda/src/parametrics')
 CopyAllHeaders('panda/src/pgui')
 CopyAllHeaders('panda/src/pnmimagetypes')
 CopyAllHeaders('panda/src/recorder')
-if (PkgSkip("ROCKET")==0):
-    CopyAllHeaders('panda/src/rocket')
 if (PkgSkip("VRPN")==0):
     CopyAllHeaders('panda/src/vrpn')
 CopyAllHeaders('panda/src/wgldisplay')
@@ -3072,10 +3013,6 @@ CopyAllHeaders('panda/metalibs/pandagles2')
 
 CopyAllHeaders('panda/metalibs/pandaphysics')
 CopyAllHeaders('panda/src/testbed')
-
-if (PkgSkip("PHYSX")==0):
-    CopyAllHeaders('panda/src/physx')
-    CopyAllHeaders('panda/metalibs/pandaphysx')
 
 if (PkgSkip("BULLET")==0):
     CopyAllHeaders('panda/src/bullet')
@@ -4099,38 +4036,6 @@ if (PkgSkip("VISION") == 0):
   PyTargetAdd('vision.pyd', input=COMMON_PANDA_LIBS)
 
 #
-# DIRECTORY: panda/src/rocket/
-#
-
-if (PkgSkip("ROCKET") == 0):
-  OPTS=['DIR:panda/src/rocket', 'BUILDING:ROCKET', 'ROCKET', 'PYTHON']
-  TargetAdd('p3rocket_composite1.obj', opts=OPTS, input='p3rocket_composite1.cxx')
-
-  TargetAdd('libp3rocket.dll', input='p3rocket_composite1.obj')
-  TargetAdd('libp3rocket.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libp3rocket.dll', opts=OPTS)
-
-  OPTS=['DIR:panda/src/rocket', 'ROCKET', 'RTTI', 'EXCEPTIONS']
-  IGATEFILES=GetDirectoryContents('panda/src/rocket', ["rocketInputHandler.h",
-    "rocketInputHandler.cxx", "rocketRegion.h", "rocketRegion.cxx", "rocketRegion_ext.h"])
-  TargetAdd('libp3rocket.in', opts=OPTS, input=IGATEFILES)
-  TargetAdd('libp3rocket.in', opts=['IMOD:panda3d.rocket', 'ILIB:libp3rocket', 'SRCDIR:panda/src/rocket'])
-
-  PyTargetAdd('p3rocket_rocketRegion_ext.obj', opts=OPTS, input='rocketRegion_ext.cxx')
-
-  PyTargetAdd('rocket_module.obj', input='libp3rocket.in')
-  PyTargetAdd('rocket_module.obj', opts=OPTS)
-  PyTargetAdd('rocket_module.obj', opts=['IMOD:panda3d.rocket', 'ILIB:rocket', 'IMPORT:panda3d.core'])
-
-  PyTargetAdd('rocket.pyd', input='rocket_module.obj')
-  PyTargetAdd('rocket.pyd', input='libp3rocket_igate.obj')
-  PyTargetAdd('rocket.pyd', input='p3rocket_rocketRegion_ext.obj')
-  PyTargetAdd('rocket.pyd', input='libp3rocket.dll')
-  PyTargetAdd('rocket.pyd', input='libp3interrogatedb.dll')
-  PyTargetAdd('rocket.pyd', input=COMMON_PANDA_LIBS)
-  PyTargetAdd('rocket.pyd', opts=['ROCKET'])
-
-#
 # DIRECTORY: panda/src/p3skel
 #
 
@@ -4621,44 +4526,6 @@ if (PkgSkip("BULLET")==0):
   PyTargetAdd('bullet.pyd', input='libp3interrogatedb.dll')
   PyTargetAdd('bullet.pyd', input=COMMON_PANDA_LIBS)
   PyTargetAdd('bullet.pyd', opts=['WINUSER', 'BULLET'])
-
-#
-# DIRECTORY: panda/src/physx/
-#
-
-if (PkgSkip("PHYSX")==0):
-  OPTS=['DIR:panda/src/physx', 'BUILDING:PANDAPHYSX', 'PHYSX']
-  TargetAdd('p3physx_composite.obj', opts=OPTS, input='p3physx_composite.cxx')
-
-  OPTS=['DIR:panda/src/physx', 'PHYSX']
-  IGATEFILES=GetDirectoryContents('panda/src/physx', ["*.h", "*_composite*.cxx"])
-  TargetAdd('libpandaphysx.in', opts=OPTS, input=IGATEFILES)
-  TargetAdd('libpandaphysx.in', opts=['IMOD:panda3d.physx', 'ILIB:libpandaphysx', 'SRCDIR:panda/src/physx'])
-
-#
-# DIRECTORY: panda/metalibs/pandaphysx/
-#
-
-if (PkgSkip("PHYSX")==0):
-  OPTS=['DIR:panda/metalibs/pandaphysx', 'BUILDING:PANDAPHYSX', 'PHYSX', 'PYTHON']
-  TargetAdd('pandaphysx_pandaphysx.obj', opts=OPTS, input='pandaphysx.cxx')
-
-  TargetAdd('libpandaphysx.dll', input='pandaphysx_pandaphysx.obj')
-  TargetAdd('libpandaphysx.dll', input='p3physx_composite.obj')
-  TargetAdd('libpandaphysx.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandaphysx.dll', opts=['WINUSER', 'PHYSX', 'PYTHON'])
-
-  OPTS=['DIR:panda/metalibs/pandaphysx', 'PHYSX']
-  PyTargetAdd('physx_module.obj', input='libpandaphysx.in')
-  PyTargetAdd('physx_module.obj', opts=OPTS)
-  PyTargetAdd('physx_module.obj', opts=['IMOD:panda3d.physx', 'ILIB:physx', 'IMPORT:panda3d.core'])
-
-  PyTargetAdd('physx.pyd', input='physx_module.obj')
-  PyTargetAdd('physx.pyd', input='libpandaphysx_igate.obj')
-  PyTargetAdd('physx.pyd', input='libpandaphysx.dll')
-  PyTargetAdd('physx.pyd', input='libp3interrogatedb.dll')
-  PyTargetAdd('physx.pyd', input=COMMON_PANDA_LIBS)
-  PyTargetAdd('physx.pyd', opts=['WINUSER', 'PHYSX'])
 
 #
 # DIRECTORY: panda/src/physics/
