@@ -37,6 +37,17 @@ set(COMPOSITE_GENERATOR "${CMAKE_SOURCE_DIR}/cmake/scripts/MakeComposite.cmake")
 function(composite_sources target sources_var)
   if(NOT CMAKE_VERSION VERSION_LESS "3.16")
     # CMake 3.16+ implements CMAKE_UNITY_BUILD* natively; no need to continue!
+
+    # Actually - <=3.16.2 has difficulty with multi-language support, so only
+    # allow .cxx in. Hopefully this can be removed soon.
+    foreach(_source ${${sources_var}})
+      get_filename_component(_source_ext "${_source}" EXT)
+      if(NOT _source_ext STREQUAL ".cxx")
+        set_source_files_properties(${_source} PROPERTIES
+          SKIP_UNITY_BUILD_INCLUSION YES)
+      endif()
+    endforeach(_source)
+
     return()
   endif()
 
