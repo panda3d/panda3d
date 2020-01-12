@@ -592,15 +592,6 @@ package_option(ODE
 
 package_status(ODE "Open Dynamics Engine")
 
-# PhysX
-find_package(PhysX QUIET)
-
-package_option(PhysX
-  "Enable this option to support game dynamics with Nvidia PhysX."
-  LICENSE "Nvidia")
-
-package_status(PhysX "Nvidia PhysX")
-
 
 #
 # ------------ SpeedTree ------------
