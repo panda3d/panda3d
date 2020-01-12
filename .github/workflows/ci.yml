@@ -39,7 +39,7 @@ jobs:
           eigen: NO
 
         - profile: macos-eigen-coverage-unity-xcode
-          os: macOS-10.14
+          os: macOS-latest
           config: Coverage
           unity: YES
           generator: Xcode
@@ -49,7 +49,7 @@ jobs:
           eigen: YES
 
         - profile: macos-nometa-standard-makefile
-          os: macOS-10.14
+          os: macOS-latest
           config: Standard
           unity: NO
           generator: Unix Makefiles
