@@ -1,4 +1,9 @@
-set(THIRDPARTY_DIRECTORY "" CACHE PATH
+set(_thirdparty_dir_default "${PROJECT_SOURCE_DIR}/thirdparty")
+if(NOT (APPLE OR WIN32) OR NOT IS_DIRECTORY "${_thirdparty_dir_default}")
+  set(_thirdparty_dir_default "")
+endif()
+
+set(THIRDPARTY_DIRECTORY "${_thirdparty_dir_default}" CACHE PATH
   "Optional location of a makepanda-style thirdparty directory. All libraries
    located here will be prioritized over system libraries. Useful for
    cross-compiling.")
