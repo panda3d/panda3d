@@ -35,45 +35,45 @@ endif()
 if(UNIX)
   # On Unices, ask the GNUInstallDirs module where /etc is -- and then install
   # ourselves into /etc/panda3d
-  set(_confdir "${CMAKE_INSTALL_FULL_SYSCONFDIR}/panda3d")
-  set(_out_path "etc/panda3d")
-  set(ETC_PARENT_PATH "../..")
+  set(prc_install_path "${CMAKE_INSTALL_FULL_SYSCONFDIR}/panda3d")
+  set(prc_build_path "${PANDA_OUTPUT_DIR}/etc/panda3d")
 else()
-  set(_confdir "etc")
-  set(_out_path "etc")
-  set(ETC_PARENT_PATH "..")
+  set(prc_install_path "etc")
+  set(prc_build_path "${PANDA_OUTPUT_DIR}/etc")
 endif()
 
-if(IS_MULTICONFIG)
-  set(_out_path "${PROJECT_BINARY_DIR}/$<CONFIG>/${_out_path}")
-else()
-  set(_out_path "${PROJECT_BINARY_DIR}/${_out_path}")
-endif()
+# Path from the directory containing *.prc to the directory containing plugins
+file(RELATIVE_PATH PLUGINS_PATH
+  "${prc_build_path}" "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
 
 # Path from the directory containing *.prc to the *parent of* models/
 # In the build tree, reckoning this is pretty easy
-set(MODELS_PARENT_PATH "..")
+file(RELATIVE_PATH MODELS_PARENT_PATH "${prc_build_path}" "${PANDA_OUTPUT_DIR}")
 configure_file(panda.prc.in "${CMAKE_CURRENT_BINARY_DIR}/20_panda.prc")
 
 # For the install tree, we need to introspect our paths
-if(_confdir MATCHES "^/")
-  set(_abs_confdir "${_confdir}")
-else()
-  set(_abs_confdir "${CMAKE_INSTALL_PREFIX}/${_confdir}")
+set(abs_prc_install_path "${prc_install_path}")
+set(abs_datadir "${CMAKE_INSTALL_DATADIR}")
+set(abs_plugindir "${MODULE_DESTINATION}")
+if(NOT IS_ABSOLUTE "${abs_prc_install_path}")
+  set(abs_prc_install_path "${CMAKE_INSTALL_PREFIX}/${abs_prc_install_path}")
 endif()
-if(CMAKE_INSTALL_DATADIR MATCHES "^/")
-  set(_abs_datadir "${CMAKE_INSTALL_DATADIR}")
-else()
-  set(_abs_datadir "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}")
+if(NOT IS_ABSOLUTE "${abs_datadir}")
+  set(abs_datadir "${CMAKE_INSTALL_PREFIX}/${abs_datadir}")
 endif()
+if(NOT IS_ABSOLUTE "${abs_plugindir}")
+  set(abs_plugindir "${CMAKE_INSTALL_PREFIX}/${abs_plugindir}")
+endif()
+file(RELATIVE_PATH PLUGINS_PATH
+  "${abs_prc_install_path}" "${abs_plugindir}")
 file(RELATIVE_PATH MODELS_PARENT_PATH
-  "${_abs_confdir}" "${_abs_datadir}/panda3d")
+  "${abs_prc_install_path}" "${abs_datadir}/panda3d")
 configure_file(panda.prc.in "${CMAKE_CURRENT_BINARY_DIR}/20_panda.prc.install")
 
-file(GENERATE OUTPUT "${_out_path}/20_panda.prc"
+file(GENERATE OUTPUT "${prc_build_path}/20_panda.prc"
               INPUT "${CMAKE_CURRENT_BINARY_DIR}/20_panda.prc")
-file(GENERATE OUTPUT "${_out_path}/20_panda.prc.install"
+file(GENERATE OUTPUT "${prc_build_path}/20_panda.prc.install"
               INPUT "${CMAKE_CURRENT_BINARY_DIR}/20_panda.prc.install")
 
-install(FILES "${_out_path}/20_panda.prc.install" RENAME "20_panda.prc"
-  COMPONENT Core DESTINATION ${_confdir})
+install(FILES "${prc_build_path}/20_panda.prc.install" RENAME "20_panda.prc"
+  COMPONENT Core DESTINATION ${prc_install_path})

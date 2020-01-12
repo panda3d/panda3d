@@ -2,7 +2,7 @@
 ################################# DO NOT EDIT ###########################
 
 # Some paths first...
-plugin-path $THIS_PRC_DIR/${ETC_PARENT_PATH}/lib
+plugin-path $THIS_PRC_DIR/${PLUGINS_PATH}
 model-path $MAIN_DIR
 model-path $THIS_PRC_DIR/${MODELS_PARENT_PATH}
 model-path $THIS_PRC_DIR/${MODELS_PARENT_PATH}/models
