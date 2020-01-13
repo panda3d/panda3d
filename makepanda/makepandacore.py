@@ -2289,16 +2289,17 @@ def SdkLocateVisualStudio(version=(10,0)):
 
     print("Using MSVC %s" % version_str)
 
-def SdkLocateWindows(version = '7.1'):
+def SdkLocateWindows(version=None):
     if GetTarget() != "windows" or GetHost() != "windows":
         return
 
-    version = version.upper()
+    if version:
+        version = version.upper()
 
     if version == '10':
         version = '10.0'
 
-    if version.startswith('10.') and version.count('.') == 1:
+    if version and version.startswith('10.') and version.count('.') == 1:
         # Choose the latest version of the Windows 10 SDK.
         platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\Windows Kits\\Installed Roots", "KitsRoot10")
 
@@ -2333,7 +2334,7 @@ def SdkLocateWindows(version = '7.1'):
                 # No suitable version found.
                 platsdk = None
 
-    elif version.startswith('10.'):
+    elif version and version.startswith('10.'):
         # We chose a specific version of the Windows 10 SDK.  Verify it exists.
         platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\Windows Kits\\Installed Roots", "KitsRoot10")
 
@@ -2347,18 +2348,26 @@ def SdkLocateWindows(version = '7.1'):
         if platsdk and not os.path.isdir(os.path.join(platsdk, 'Include', version)):
             platsdk = None
 
-    elif version == '8.1':
+    elif version == '8.1' or not version:
         platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\Windows Kits\\Installed Roots", "KitsRoot81")
 
         # Fallback in case we can't read the registry.
         if not platsdk or not os.path.isdir(platsdk):
             platsdk = "C:\\Program Files (x86)\\Windows Kits\\8.1\\"
 
+        if not version:
+            if not os.path.isdir(platsdk):
+                # Fall back to 7.1 SDK.
+                return SdkLocateWindows("7.1")
+            version = '8.1'
+
     elif version == '8.0':
         platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\Windows Kits\\Installed Roots", "KitsRoot")
 
     else:
         platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows\\v" + version, "InstallationFolder")
+
+        DefSymbol("ALWAYS", "_USING_V110_SDK71_")
 
         if not platsdk or not os.path.isdir(platsdk):
             # Most common location.  Worth a try.

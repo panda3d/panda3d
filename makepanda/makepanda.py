@@ -146,7 +146,7 @@ def usage(problem):
     print("  --nothing         (disable every third-party lib)")
     print("  --everything      (enable every third-party lib)")
     print("  --directx-sdk=X   (specify version of DirectX SDK to use: jun2010, aug2009, mar2009, aug2006)")
-    print("  --windows-sdk=X   (specify Windows SDK version, eg. 7.0, 7.1 or 10.  Default is 7.1)")
+    print("  --windows-sdk=X   (specify Windows SDK version, eg. 7.1, 8.1 or 10.  Default is 8.1)")
     print("  --msvc-version=X  (specify Visual C++ version, eg. 10, 11, 12, 14, 14.1, 14.2.  Default is 14)")
     print("  --use-icl         (experimental setting to use an intel compiler instead of MSVC on Windows)")
     print("")
@@ -320,10 +320,6 @@ def parseopts(args):
             sys.stdout.flush()
             time.sleep(1.0)
             sys.exit(1)
-
-        if not WINDOWS_SDK:
-            print("No Windows SDK version specified. Defaulting to '7.1'.")
-            WINDOWS_SDK = '7.1'
 
     if clean_build and os.path.isdir(GetOutputDir()):
         print("Deleting %s" % (GetOutputDir()))
@@ -1074,10 +1070,6 @@ def CompileCxx(obj,src,opts):
 
             if GetTargetArch() == 'x64':
                 cmd += " /DWIN64_VC /DWIN64"
-
-            if WINDOWS_SDK.startswith('7.') and MSVC_VERSION > (10,):
-                # To preserve Windows XP compatibility.
-                cmd += " /D_USING_V110_SDK71_"
 
             cmd += " /W3 " + BracketNameWithQuotes(src)
             oscmd(cmd)
