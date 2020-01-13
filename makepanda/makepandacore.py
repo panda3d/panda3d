@@ -1927,42 +1927,30 @@ def SdkLocateDirectX( strMode = 'default' ):
             if (dir != 0):
                 print("Using DirectX SDK June 2010")
                 SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
-                SDK["GENERIC_DXERR_LIBRARY"] = 1;
         if ("DX9" not in SDK):
             dir = GetRegistryKey("SOFTWARE\\Microsoft\\DirectX\\Microsoft DirectX SDK (June 2010)", "InstallPath")
             if (dir != 0):
                 print("Using DirectX SDK June 2010")
                 SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
-                SDK["GENERIC_DXERR_LIBRARY"] = 1;
         if ("DX9" not in SDK):
             dir = "C:/Program Files (x86)/Microsoft DirectX SDK (June 2010)"
             if os.path.isdir(dir):
                 print("Using DirectX SDK June 2010")
                 SDK["DX9"] = dir
-                SDK["GENERIC_DXERR_LIBRARY"] = 1
         if ("DX9" not in SDK):
             dir = "C:/Program Files/Microsoft DirectX SDK (June 2010)"
             if os.path.isdir(dir):
                 print("Using DirectX SDK June 2010")
                 SDK["DX9"] = dir
-                SDK["GENERIC_DXERR_LIBRARY"] = 1
         if ("DX9" not in SDK):
             dir = GetRegistryKey("SOFTWARE\\Wow6432Node\\Microsoft\\DirectX\\Microsoft DirectX SDK (August 2009)", "InstallPath")
             if (dir != 0):
                 print("Using DirectX SDK Aug 2009")
                 SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
-                SDK["GENERIC_DXERR_LIBRARY"] = 1;
         if ("DX9" not in SDK):
             dir = GetRegistryKey("SOFTWARE\\Microsoft\\DirectX\\Microsoft DirectX SDK (August 2009)", "InstallPath")
             if (dir != 0):
                 print("Using DirectX SDK Aug 2009")
-                SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
-                SDK["GENERIC_DXERR_LIBRARY"] = 1;
-        if ("DX9" not in SDK):
-            ## Try to locate the key within the "new" March 2009 location in the registry (yecch):
-            dir = GetRegistryKey("SOFTWARE\\Microsoft\\DirectX\\Microsoft DirectX SDK (March 2009)", "InstallPath")
-            if (dir != 0):
-                print("Using DirectX SDK March 2009")
                 SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
         archStr = GetTargetArch()
         if ("DX9" not in SDK):
@@ -1986,22 +1974,18 @@ def SdkLocateDirectX( strMode = 'default' ):
             dir = GetRegistryKey("SOFTWARE\\Wow6432Node\\Microsoft\\DirectX\\Microsoft DirectX SDK (June 2010)", "InstallPath")
             if (dir != 0):
                 SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
-                SDK["GENERIC_DXERR_LIBRARY"] = 1;
         if ("DX9" not in SDK):
             dir = GetRegistryKey("SOFTWARE\\Microsoft\\DirectX\\Microsoft DirectX SDK (June 2010)", "InstallPath")
             if (dir != 0):
                 SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
-                SDK["GENERIC_DXERR_LIBRARY"] = 1;
         if ("DX9" not in SDK):
             dir = "C:/Program Files (x86)/Microsoft DirectX SDK (June 2010)"
             if os.path.isdir(dir):
                 SDK["DX9"] = dir
-                SDK["GENERIC_DXERR_LIBRARY"] = 1
         if ("DX9" not in SDK):
             dir = "C:/Program Files/Microsoft DirectX SDK (June 2010)"
             if os.path.isdir(dir):
                 SDK["DX9"] = dir
-                SDK["GENERIC_DXERR_LIBRARY"] = 1
         if ("DX9" not in SDK):
             exit("Couldn't find DirectX June2010 SDK")
         else:
@@ -2012,41 +1996,13 @@ def SdkLocateDirectX( strMode = 'default' ):
             if (dir != 0):
                 print("Found DirectX SDK Aug 2009")
                 SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
-                SDK["GENERIC_DXERR_LIBRARY"] = 1;
         if ("DX9" not in SDK):
             dir = GetRegistryKey("SOFTWARE\\Microsoft\\DirectX\\Microsoft DirectX SDK (August 2009)", "InstallPath")
             if (dir != 0):
                 print("Found DirectX SDK Aug 2009")
                 SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
-                SDK["GENERIC_DXERR_LIBRARY"] = 1;
         if ("DX9" not in SDK):
             exit("Couldn't find DirectX Aug 2009 SDK")
-    elif strMode == 'mar2009':
-        if ("DX9" not in SDK):
-            ## Try to locate the key within the "new" March 2009 location in the registry (yecch):
-            dir = GetRegistryKey("SOFTWARE\\Microsoft\\DirectX\\Microsoft DirectX SDK (March 2009)", "InstallPath")
-            if (dir != 0):
-                print("Found DirectX SDK March 2009")
-                SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
-        if ("DX9" not in SDK):
-            exit("Couldn't find DirectX March 2009 SDK")
-    elif strMode == 'aug2006':
-        archStr = GetTargetArch()
-        if ("DX9" not in SDK):
-            uninstaller = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall"
-            for subdir in ListRegistryKeys(uninstaller):
-                if (subdir[0]=="{"):
-                    dir = GetRegistryKey(uninstaller+"\\"+subdir, "InstallLocation")
-                    if (dir != 0):
-                        if (("DX9" not in SDK) and
-                            (os.path.isfile(dir+"\\Include\\d3d9.h")) and
-                            (os.path.isfile(dir+"\\Include\\d3dx9.h")) and
-                            (os.path.isfile(dir+"\\Include\\dxsdkver.h")) and
-                            (os.path.isfile(dir+"\\Lib\\" + archStr + "\\d3d9.lib")) and
-                            (os.path.isfile(dir+"\\Lib\\" + archStr + "\\d3dx9.lib"))):
-                            SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
-        if ("DX9" not in SDK):
-            exit("Couldn't find a DirectX Aug 2006 SDK")
     if ("DX9" in SDK):
         SDK["DIRECTCAM"] = SDK["DX9"]
 

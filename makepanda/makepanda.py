@@ -145,7 +145,7 @@ def usage(problem):
     print("")
     print("  --nothing         (disable every third-party lib)")
     print("  --everything      (enable every third-party lib)")
-    print("  --directx-sdk=X   (specify version of DirectX SDK to use: jun2010, aug2009, mar2009, aug2006)")
+    print("  --directx-sdk=X   (specify version of DirectX SDK to use: jun2010, aug2009)")
     print("  --windows-sdk=X   (specify Windows SDK version, eg. 7.1, 8.1 or 10.  Default is 8.1)")
     print("  --msvc-version=X  (specify Visual C++ version, eg. 10, 11, 12, 14, 14.1, 14.2.  Default is 14)")
     print("  --use-icl         (experimental setting to use an intel compiler instead of MSVC on Windows)")
@@ -547,10 +547,7 @@ if (COMPILER == "MSVC"):
 
             LibName(pkg, 'd3dVNUM.lib'.replace("VNUM", vnum))
             LibName(pkg, 'd3dxVNUM.lib'.replace("VNUM", vnum))
-            if int(vnum) >= 9 and "GENERIC_DXERR_LIBRARY" in SDK:
-                LibName(pkg, 'dxerr.lib')
-            else:
-                LibName(pkg, 'dxerrVNUM.lib'.replace("VNUM", vnum))
+            LibName(pkg, 'dxerr.lib')
             #LibName(pkg, 'ddraw.lib')
             LibName(pkg, 'dxguid.lib')
 
@@ -2339,12 +2336,6 @@ def WriteConfigSettings():
     # longer need to disable it for this platform.
 ##     if GetTarget() == 'windows' and GetTargetArch() == 'x64':
 ##         dtool_config["SIMPLE_THREADS"] = 'UNDEF'
-
-
-    if ("GENERIC_DXERR_LIBRARY" in SDK):
-        dtool_config["USE_GENERIC_DXERR_LIBRARY"] = "1"
-    else:
-        dtool_config["USE_GENERIC_DXERR_LIBRARY"] = "UNDEF"
 
     if (PkgSkip("SPEEDTREE")==0):
         speedtree_parameters["SPEEDTREE_OPENGL"] = "UNDEF"
