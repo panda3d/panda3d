@@ -3144,7 +3144,7 @@ def CopyPythonTree(dstdir, srcdir, lib2to3_fixers=[], threads=0):
 
 ########################################################################
 ##
-## Parse PandaVersion.pp to extract the version number.
+## Parse setup.cfg to extract the version number.
 ##
 ########################################################################
 
