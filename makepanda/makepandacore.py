@@ -2843,8 +2843,8 @@ def SetupVisualStudioEnviron():
             exit("Could not locate 64-bits libraries in Windows SDK directory!\nUsing directory: %s" % SDK["MSPLATFORM"])
 
     # Targeting the 7.1 SDK (which is the only way to have Windows XP support)
-    # with Visual Studio 2015 requires use of the Universal CRT.
-    if winsdk_ver in ('7.1', '7.1A') and SDK["VISUALSTUDIO_VERSION"] >= (14,0):
+    # with Visual Studio 2015+ requires use of the Universal CRT.
+    if winsdk_ver in ('7.1', '7.1A', '8.0', '8.1') and SDK["VISUALSTUDIO_VERSION"] >= (14,0):
         win_kit = GetRegistryKey("SOFTWARE\\Microsoft\\Windows Kits\\Installed Roots", "KitsRoot10")
 
         # Fallback in case we can't read the registry.
