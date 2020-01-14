@@ -721,6 +721,45 @@ get_triangles(int x, int y) const {
  */
 void CollisionHeightfield::
 fill_viz_geom() {
+  PT(GeomVertexData) vdata = new GeomVertexData
+    ("collision", GeomVertexFormat::get_v3(),
+     Geom::UH_static);
+
+  GeomVertexWriter vertex(vdata, InternalName::get_vertex());
+
+  PT(GeomTriangles) tris = new GeomTriangles(Geom::UH_static);
+
+  int rows = _heightfield.get_x_size();
+  int cols = _heightfield.get_y_size();
+
+  for (int x = 0; x < rows; x++) {
+    for (int y = 0; y < cols; y++) {
+      // a point (x, y, z) in 3D space maps to
+      // (x, heightfield_y) on the heightfield
+      int heightfield_y = cols - y - 1;
+      vertex.add_data3(x, y, get_height(x, heightfield_y));
+    }
+  }
+
+  for (int x = 0; x < rows - 1; x++) {
+    for (int y = 0; y < cols - 1; y++) {
+      int pos = x * cols + y;
+      if (pos & 1) { // odd
+        tris->add_vertices(pos, pos + cols, pos + 1);
+        tris->add_vertices(pos + 1, pos + cols, pos + cols + 1);
+      }
+      else { // even
+        tris->add_vertices(pos, pos + cols, pos + cols + 1);
+        tris->add_vertices(pos, pos + cols + 1, pos + 1);
+      }
+    }
+  }
+
+  PT(Geom) geom = new Geom(vdata);
+  geom->add_primitive(tris);
+
+  _viz_geom->add_geom(geom, get_solid_viz_state());
+  _bounds_viz_geom->add_geom(geom, get_solid_bounds_viz_state());
 }
 
 CollisionSolid *CollisionHeightfield::
