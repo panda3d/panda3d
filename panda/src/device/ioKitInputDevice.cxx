@@ -21,15 +21,6 @@
 #include "gamepadButton.h"
 #include "mouseButton.h"
 
-static void removal_callback(void *ctx, IOReturn result, void *sender) {
-  // We need to hold a reference to this because it may otherwise be destroyed
-  // during the call to on_remove().
-  PT(IOKitInputDevice) input_device = (IOKitInputDevice *)ctx;
-  nassertv(input_device != nullptr);
-  nassertv(input_device->test_ref_count_integrity());
-  input_device->on_remove();
-}
-
 /**
  * Protected constructor.
  */
@@ -137,7 +128,6 @@ IOKitInputDevice(IOHIDDeviceRef device) :
   }
 
   _is_connected = true;
-  IOHIDDeviceRegisterRemovalCallback(device, removal_callback, this);
 }
 
 /**

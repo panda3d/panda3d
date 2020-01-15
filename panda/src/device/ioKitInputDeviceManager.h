@@ -19,6 +19,8 @@
 #if defined(__APPLE__) && !defined(CPPPARSER)
 #include <IOKit/hid/IOHIDManager.h>
 
+class IOKitInputDevice;
+
 /**
  * The macOS implementation of InputDeviceManager.
  */
@@ -30,7 +32,13 @@ protected:
 protected:
   IOHIDManagerRef _hid_manager;
 
+  // The device removal callback method we need to use requires us to remember
+  // which IOKitInputDevice corresponds to which IOHIDDeviceRef. This is the
+  // same strategy used by winInputDevice and friends.
+  pmap<IOHIDDeviceRef, PT(IOKitInputDevice)> _devices_by_hidref;
+
   static void on_match_device(void *ctx, IOReturn result, void *sender, IOHIDDeviceRef device);
+  static void on_remove_device(void *ctx, IOReturn result, void *sender, IOHIDDeviceRef device);
 
   friend class InputDeviceManager;
 };
