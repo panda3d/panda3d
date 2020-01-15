@@ -729,21 +729,21 @@ fill_viz_geom() {
 
   PT(GeomTriangles) tris = new GeomTriangles(Geom::UH_static);
 
-  int rows = _heightfield.get_x_size();
-  int cols = _heightfield.get_y_size();
+  int cols = _heightfield.get_x_size();
+  int rows = _heightfield.get_y_size();
 
-  for (int x = 0; x < rows; x++) {
-    for (int y = 0; y < cols; y++) {
-      // a point (x, y, z) in 3D space maps to
-      // (x, heightfield_y) on the heightfield
-      int heightfield_y = cols - y - 1;
-      vertex.add_data3(x, y, get_height(x, heightfield_y));
+  for (int y = 0; y < rows; y++) {
+    for (int x = 0; x < cols; x++) {
+      // a point (x, y) in the heightfield image
+      // maps to (x, y2, height_at(x, y)) in 3D space
+      int y2 = rows - y - 1;
+      vertex.add_data3(x, y2, get_height(x, y));
     }
   }
 
-  for (int x = 0; x < rows - 1; x++) {
-    for (int y = 0; y < cols - 1; y++) {
-      int pos = x * cols + y;
+  for (int i = 0; i < rows - 1; i++) {
+    for (int j = 0; j < cols - 1; j++) {
+      int pos = i * cols + j;
       if (pos & 1) { // odd
         tris->add_vertices(pos, pos + cols, pos + 1);
         tris->add_vertices(pos + 1, pos + cols, pos + cols + 1);
