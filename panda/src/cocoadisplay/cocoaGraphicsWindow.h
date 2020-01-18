@@ -74,6 +74,7 @@ protected:
   virtual void mouse_mode_relative();
 
 private:
+  NSData *load_image_data(const Filename &filename);
   NSImage *load_image(const Filename &filename);
 
   void handle_modifier(NSUInteger modifierFlags, NSUInteger mask, ButtonHandle button);
@@ -94,7 +95,7 @@ private:
   CGDisplayModeRef _fullscreen_mode;
   CGDisplayModeRef _windowed_mode;
 
-  typedef pmap<Filename, NSImage*> IconImages;
+  typedef pmap<Filename, NSData*> IconImages;
   IconImages _images;
 
 public:

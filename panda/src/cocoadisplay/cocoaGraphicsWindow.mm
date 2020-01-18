@@ -568,13 +568,36 @@ open_window() {
   }
 
   if (_properties.has_cursor_filename()) {
-    NSImage *image = load_image(_properties.get_cursor_filename());
+    NSData *image_data = load_image_data(_properties.get_cursor_filename());
+
+    // Read the metadata from the image, which should contain hotspotX and
+    // hotspotY properties.
+    CGImageSourceRef cg_image = CGImageSourceCreateWithData((CFDataRef)image_data, nullptr);
+    NSDictionary *image_props = (NSDictionary *)CGImageSourceCopyPropertiesAtIndex(cg_image, 0, nil);
+
+    CGFloat hotspot_x = 0.0f;
+    CGFloat hotspot_y = 0.0f;
+    if (image_props[@"hotspotX"] != nil) {
+      hotspot_x = [(NSNumber *)image_props[@"hotspotX"] floatValue];
+    }
+    if (image_props[@"hotspotY"] != nil) {
+      hotspot_y = [(NSNumber *)image_props[@"hotspotY"] floatValue];
+    }
+
+    NSImage *image = [[NSImage alloc] initWithData:image_data];
+
     NSCursor *cursor = nil;
-    // TODO: allow setting the hotspot, read it from file when loading .cur.
     if (image != nil) {
-      cursor = [[NSCursor alloc] initWithImage:image hotSpot:NSMakePoint(0, 0)];
+      // Apple recognizes that hotspots are usually specified from a .cur
+      // file, whose origin is in the top-left, so there's no need to flip
+      // it like most other Cocoa coordinates.
+      cursor = [[NSCursor alloc] initWithImage:image
+                                 hotSpot:NSMakePoint(hotspot_x, hotspot_y)];
     }
     if (cursor != nil) {
+      if (_cursor != nil) {
+        [_cursor release];
+      }
       _cursor = cursor;
     } else {
       _properties.clear_cursor_filename();
@@ -582,6 +605,8 @@ open_window() {
     // This will ensure that NSView's resetCursorRects gets called, which sets
     // the appropriate cursor rects.
     [[_view window] invalidateCursorRectsForView:_view];
+
+    [image release];
   }
 
   // Set the properties
@@ -1031,10 +1056,31 @@ set_properties_now(WindowProperties &properties) {
       properties.set_cursor_filename(cursor_filename);
       properties.clear_cursor_filename();
     } else {
-      NSImage *image = load_image(cursor_filename);
+      NSData *image_data = load_image_data(cursor_filename);
+
+      // Read the metadata from the image, which should contain hotspotX and
+      // hotspotY properties.
+      CGImageSourceRef cg_image = CGImageSourceCreateWithData((CFDataRef)image_data, nullptr);
+      NSDictionary *image_props = (NSDictionary *)CGImageSourceCopyPropertiesAtIndex(cg_image, 0, nil);
+
+      CGFloat hotspot_x = 0.0f;
+      CGFloat hotspot_y = 0.0f;
+      if (image_props[@"hotspotX"] != nil) {
+        hotspot_x = [(NSNumber *)image_props[@"hotspotX"] floatValue];
+      }
+      if (image_props[@"hotspotY"] != nil) {
+        hotspot_y = [(NSNumber *)image_props[@"hotspotY"] floatValue];
+      }
+
+      NSImage *image = [[NSImage alloc] initWithData:image_data];
+
       if (image != nil) {
         NSCursor *cursor;
-        cursor = [[NSCursor alloc] initWithImage:image hotSpot:NSMakePoint(0, 0)];
+        // Apple recognizes that hotspots are usually specified from a .cur
+        // file, whose origin is in the top-left, so there's no need to flip
+        // it like most other Cocoa coordinates.
+        cursor = [[NSCursor alloc] initWithImage:image
+                                   hotSpot:NSMakePoint(hotspot_x, hotspot_y)];
         if (cursor != nil) {
           // Replace the existing cursor.
           if (_cursor != nil) {
@@ -1045,6 +1091,8 @@ set_properties_now(WindowProperties &properties) {
           properties.clear_cursor_filename();
         }
       }
+
+      [image release];
     }
     // This will ensure that NSView's resetCursorRects gets called, which sets
     // the appropriate cursor rects.
@@ -1235,11 +1283,12 @@ do_switch_fullscreen(CGDisplayModeRef mode) {
 }
 
 /**
- * Loads the indicated filename and returns an NSImage pointer, or NULL on
- * failure.  Must be called from the window thread.
+ * Loads the indicated filename and returns an NSData pointer (which can then
+ * be used to create a CGImageSource or NSImage), or NULL on failure.  Must be
+ * called from the window thread.
  */
-NSImage *CocoaGraphicsWindow::
-load_image(const Filename &filename) {
+NSData *CocoaGraphicsWindow::
+load_image_data(const Filename &filename) {
   if (filename.empty()) {
     return nil;
   }
@@ -1259,7 +1308,6 @@ load_image(const Filename &filename) {
   }
 
   // Look in our index.
-  NSImage *image = nil;
   IconImages::const_iterator it = _images.find(resolved);
   if (it != _images.end()) {
     // Found it.
@@ -1287,18 +1335,24 @@ load_image(const Filename &filename) {
 
   NSData *data = [NSData dataWithBytesNoCopy:buffer length:size];
   if (data == nil) {
+    cocoadisplay_cat.error()
+      << "Could not load image data from file " << filename << "\n";
     return nil;
   }
 
-  image = [[NSImage alloc] initWithData:data];
-  [data release];
+  _images[resolved] = data;
+  return data;
+}
+
+NSImage *CocoaGraphicsWindow::
+load_image(const Filename &filename) {
+  NSData *image_data = load_image_data(filename);
+  NSImage *image = [[[NSImage alloc] initWithData:image_data] autorelease];
   if (image == nil) {
     cocoadisplay_cat.error()
       << "Could not load image from file " << filename << "\n";
     return nil;
   }
-
-  _images[resolved] = image;
   return image;
 }
 
