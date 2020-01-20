@@ -568,32 +568,8 @@ open_window() {
   }
 
   if (_properties.has_cursor_filename()) {
-    NSData *image_data = load_image_data(_properties.get_cursor_filename());
+    NSCursor *cursor = load_cursor(_properties.get_cursor_filename());
 
-    // Read the metadata from the image, which should contain hotspotX and
-    // hotspotY properties.
-    CGImageSourceRef cg_image = CGImageSourceCreateWithData((CFDataRef)image_data, nullptr);
-    NSDictionary *image_props = (NSDictionary *)CGImageSourceCopyPropertiesAtIndex(cg_image, 0, nil);
-
-    CGFloat hotspot_x = 0.0f;
-    CGFloat hotspot_y = 0.0f;
-    if (image_props[@"hotspotX"] != nil) {
-      hotspot_x = [(NSNumber *)image_props[@"hotspotX"] floatValue];
-    }
-    if (image_props[@"hotspotY"] != nil) {
-      hotspot_y = [(NSNumber *)image_props[@"hotspotY"] floatValue];
-    }
-
-    NSImage *image = [[NSImage alloc] initWithData:image_data];
-
-    NSCursor *cursor = nil;
-    if (image != nil) {
-      // Apple recognizes that hotspots are usually specified from a .cur
-      // file, whose origin is in the top-left, so there's no need to flip
-      // it like most other Cocoa coordinates.
-      cursor = [[NSCursor alloc] initWithImage:image
-                                 hotSpot:NSMakePoint(hotspot_x, hotspot_y)];
-    }
     if (cursor != nil) {
       if (_cursor != nil) {
         [_cursor release];
@@ -602,11 +578,10 @@ open_window() {
     } else {
       _properties.clear_cursor_filename();
     }
+
     // This will ensure that NSView's resetCursorRects gets called, which sets
     // the appropriate cursor rects.
     [[_view window] invalidateCursorRectsForView:_view];
-
-    [image release];
   }
 
   // Set the properties
@@ -1056,43 +1031,16 @@ set_properties_now(WindowProperties &properties) {
       properties.set_cursor_filename(cursor_filename);
       properties.clear_cursor_filename();
     } else {
-      NSData *image_data = load_image_data(cursor_filename);
-
-      // Read the metadata from the image, which should contain hotspotX and
-      // hotspotY properties.
-      CGImageSourceRef cg_image = CGImageSourceCreateWithData((CFDataRef)image_data, nullptr);
-      NSDictionary *image_props = (NSDictionary *)CGImageSourceCopyPropertiesAtIndex(cg_image, 0, nil);
-
-      CGFloat hotspot_x = 0.0f;
-      CGFloat hotspot_y = 0.0f;
-      if (image_props[@"hotspotX"] != nil) {
-        hotspot_x = [(NSNumber *)image_props[@"hotspotX"] floatValue];
-      }
-      if (image_props[@"hotspotY"] != nil) {
-        hotspot_y = [(NSNumber *)image_props[@"hotspotY"] floatValue];
-      }
-
-      NSImage *image = [[NSImage alloc] initWithData:image_data];
-
-      if (image != nil) {
-        NSCursor *cursor;
-        // Apple recognizes that hotspots are usually specified from a .cur
-        // file, whose origin is in the top-left, so there's no need to flip
-        // it like most other Cocoa coordinates.
-        cursor = [[NSCursor alloc] initWithImage:image
-                                   hotSpot:NSMakePoint(hotspot_x, hotspot_y)];
-        if (cursor != nil) {
-          // Replace the existing cursor.
-          if (_cursor != nil) {
-            [_cursor release];
-          }
-          _cursor = cursor;
-          _properties.set_cursor_filename(cursor_filename);
-          properties.clear_cursor_filename();
+      NSCursor *cursor = load_cursor(cursor_filename);
+      if (cursor != nil) {
+        // Replace the existing cursor.
+        if (_cursor != nil) {
+          [_cursor release];
         }
+        _cursor = cursor;
+        _properties.set_cursor_filename(cursor_filename);
+        properties.clear_cursor_filename();
       }
-
-      [image release];
     }
     // This will ensure that NSView's resetCursorRects gets called, which sets
     // the appropriate cursor rects.
@@ -1285,7 +1233,7 @@ do_switch_fullscreen(CGDisplayModeRef mode) {
 /**
  * Loads the indicated filename and returns an NSData pointer (which can then
  * be used to create a CGImageSource or NSImage), or NULL on failure.  Must be
- * called from the window thread.
+ * called from the window thread. May return nil.
  */
 NSData *CocoaGraphicsWindow::
 load_image_data(const Filename &filename) {
@@ -1344,6 +1292,10 @@ load_image_data(const Filename &filename) {
   return data;
 }
 
+/**
+ * Wraps image data loaded by load_image_data with an NSImage. The returned
+ * pointer is autoreleased. May return nil.
+ */
 NSImage *CocoaGraphicsWindow::
 load_image(const Filename &filename) {
   NSData *image_data = load_image_data(filename);
@@ -1354,6 +1306,56 @@ load_image(const Filename &filename) {
     return nil;
   }
   return image;
+}
+
+/**
+ * Returns a cursor with the proper hotspot if a .cur filename is passed in.
+ * You must release the returned pointer. May return nil.
+ */
+NSCursor *CocoaGraphicsWindow::
+load_cursor(const Filename &filename) {
+  NSData *image_data = load_image_data(cursor_filename);
+  if (image_data == nil) {
+    return nil;
+  }
+
+  // Read the metadata from the image, which should contain hotspotX and
+  // hotspotY properties.
+  CGImageSourceRef cg_image = CGImageSourceCreateWithData((CFDataRef)image_data, nullptr);
+  if (cg_image == NULL) {
+    return nil;
+  }
+
+  NSDictionary *image_props = (NSDictionary *)CGImageSourceCopyPropertiesAtIndex(cg_image, 0, nil);
+  CFRelease(cg_image);
+
+  if (image_props == nil) {
+    return nil;
+  }
+
+  CGFloat hotspot_x = 0.0f;
+  CGFloat hotspot_y = 0.0f;
+  if (image_props[@"hotspotX"] != nil) {
+    hotspot_x = [(NSNumber *)image_props[@"hotspotX"] floatValue];
+  }
+  if (image_props[@"hotspotY"] != nil) {
+    hotspot_y = [(NSNumber *)image_props[@"hotspotY"] floatValue];
+  }
+  [image_props release];
+
+  NSImage *image = [[NSImage alloc] initWithData:image_data];
+
+  NSCursor *cursor;
+  if (image != nil) {
+    // Apple recognizes that hotspots are usually specified from a .cur
+    // file, whose origin is in the top-left, so there's no need to flip
+    // it like most other Cocoa coordinates.
+    cursor = [[NSCursor alloc] initWithImage:image
+                               hotSpot:NSMakePoint(hotspot_x, hotspot_y)];
+    [image release];
+  }
+
+  return cursor;
 }
 
 /**

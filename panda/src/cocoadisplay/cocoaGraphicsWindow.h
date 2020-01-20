@@ -77,6 +77,8 @@ private:
   NSData *load_image_data(const Filename &filename);
   NSImage *load_image(const Filename &filename);
 
+  NSCursor *load_cursor(const Filename &filename);
+
   void handle_modifier(NSUInteger modifierFlags, NSUInteger mask, ButtonHandle button);
   ButtonHandle map_key(unsigned short c) const;
   ButtonHandle map_raw_key(unsigned short keycode) const;
