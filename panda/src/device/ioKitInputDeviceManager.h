@@ -35,7 +35,10 @@ protected:
   // The device removal callback method we need to use requires us to remember
   // which IOKitInputDevice corresponds to which IOHIDDeviceRef. This is the
   // same strategy used by winInputDevice and friends.
-  pmap<IOHIDDeviceRef, PT(IOKitInputDevice)> _devices_by_hidref;
+  //
+  // We can make this a mapping to raw pointers since we know _devices will be
+  // holding a reference until remove_device is called.
+  pmap<IOHIDDeviceRef, IOKitInputDevice *> _devices_by_hidref;
 
   static void on_match_device(void *ctx, IOReturn result, void *sender, IOHIDDeviceRef device);
   static void on_remove_device(void *ctx, IOReturn result, void *sender, IOHIDDeviceRef device);

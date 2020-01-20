@@ -83,7 +83,7 @@ on_match_device(void *ctx, IOReturn result, void *sender, IOHIDDeviceRef device)
   nassertv(mgr != nullptr);
   nassertv(device);
 
-  PT(IOKitInputDevice) input_device = new IOKitInputDevice(device);
+  IOKitInputDevice *input_device = new IOKitInputDevice(device);
   if (device_cat.is_debug()) {
     device_cat.debug()
       << "Discovered input device " << *input_device << "\n";
@@ -101,11 +101,21 @@ on_remove_device(void *ctx, IOReturn result, void *sender, IOHIDDeviceRef device
   nassertv(mgr != nullptr);
   nassertv(device);
 
-  nassertv(mgr->_devices_by_hidref.find(device) != mgr->_devices_by_hidref.end());
-  PT(IOKitInputDevice) input_device = mgr->_devices_by_hidref[device];
-  nassertv(input_device->test_ref_count_integrity());
+  auto it = mgr->_devices_by_hidref.find(device);
+  nassertv(it != mgr->_devices_by_hidref.end());
+  IOKitInputDevice *input_device = it->second;
 
-  input_device->on_remove();
+  input_device->set_connected(false);
+
   mgr->_devices_by_hidref.erase(device);
+
+  IOHIDDeviceClose(device, kIOHIDOptionsTypeNone);
+
+  if (device_cat.is_debug()) {
+    device_cat.debug()
+      << "Removed input device " << *input_device << "\n";
+  }
+
+  mgr->remove_device(input_device);
 }
 #endif

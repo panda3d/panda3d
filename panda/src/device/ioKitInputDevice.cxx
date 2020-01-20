@@ -138,31 +138,6 @@ IOKitInputDevice::
 }
 
 /**
- * The nonstatic version of on_remove_device.
- */
-void IOKitInputDevice::
-on_remove() {
-  {
-    LightMutexHolder holder(_lock);
-    if (!_is_connected) {
-      return;
-    }
-    _is_connected = false;
-  }
-
-  if (device_cat.is_debug()) {
-    device_cat.debug()
-      << "Removed input device " << *this << "\n";
-  }
-
-  IOHIDDeviceClose(_device, kIOHIDOptionsTypeNone);
-
-  InputDeviceManager *mgr = InputDeviceManager::get_global_ptr();
-  nassertv(mgr != nullptr);
-  mgr->remove_device(this);
-}
-
-/**
  *
  */
 void IOKitInputDevice::
