@@ -3848,7 +3848,6 @@
 				<File RelativePath="..\panda\src\nativenet\buffered_datagramconnection.h"></File>
 				<File RelativePath="..\panda\src\nativenet\socket_tcp_listen.cxx"></File>
 				<File RelativePath="..\panda\src\nativenet\buffered_datagramreader.i"></File>
-				<File RelativePath="..\panda\src\nativenet\socket_tcp_ssl.h"></File>
 				<File RelativePath="..\panda\src\nativenet\ringbuffer.i"></File>
 				<File RelativePath="..\panda\src\nativenet\membuffer.h"></File>
 				<File RelativePath="..\panda\src\nativenet\time_accumulator.h"></File>
@@ -3859,7 +3858,6 @@
 				<File RelativePath="..\panda\src\nativenet\config_nativenet.h"></File>
 				<File RelativePath="..\panda\src\nativenet\socket_udp.cxx"></File>
 				<File RelativePath="..\panda\src\nativenet\ringbuffer.h"></File>
-				<File RelativePath="..\panda\src\nativenet\socket_tcp_ssl.cxx"></File>
 				<File RelativePath="..\panda\src\nativenet\time_out.h"></File>
 			</Filter>
 			<Filter Name="physics">

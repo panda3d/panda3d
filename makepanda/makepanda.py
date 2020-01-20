@@ -3478,10 +3478,10 @@ PyTargetAdd('p3pnmimage_pfmFile_ext.obj', opts=OPTS, input='pfmFile_ext.cxx')
 # DIRECTORY: panda/src/nativenet/
 #
 
-OPTS=['DIR:panda/src/nativenet', 'OPENSSL', 'BUILDING:PANDA']
+OPTS=['DIR:panda/src/nativenet', 'BUILDING:PANDA']
 TargetAdd('p3nativenet_composite1.obj', opts=OPTS, input='p3nativenet_composite1.cxx')
 
-OPTS=['DIR:panda/src/nativenet', 'OPENSSL']
+OPTS=['DIR:panda/src/nativenet']
 IGATEFILES=GetDirectoryContents('panda/src/nativenet', ["*.h", "*_composite*.cxx"])
 TargetAdd('libp3nativenet.in', opts=OPTS, input=IGATEFILES)
 TargetAdd('libp3nativenet.in', opts=['IMOD:panda3d.core', 'ILIB:libp3nativenet', 'SRCDIR:panda/src/nativenet'])
@@ -3794,7 +3794,7 @@ TargetAdd('libp3dxml.in', opts=['IMOD:panda3d.core', 'ILIB:libp3dxml', 'SRCDIR:p
 #
 
 OPTS=['DIR:panda/metalibs/panda', 'BUILDING:PANDA', 'JPEG', 'PNG', 'HARFBUZZ',
-    'TIFF', 'OPENEXR', 'ZLIB', 'OPENSSL', 'FREETYPE', 'FFTW', 'ADVAPI', 'WINSOCK2',
+    'TIFF', 'OPENEXR', 'ZLIB', 'FREETYPE', 'FFTW', 'ADVAPI', 'WINSOCK2',
     'SQUISH', 'NVIDIACG', 'VORBIS', 'OPUS', 'WINUSER', 'WINMM', 'WINGDI', 'IPHLPAPI',
     'SETUPAPI', 'IOKIT']
 
