@@ -12,7 +12,9 @@
  */
 
 #include "pandaSystem.h"
+
 #include "pandaVersion.h"
+#include "memoryHook.h"
 #include "dtool_platform.h"
 
 using std::string;

@@ -11,5 +11,4 @@
  * @date 2002-08-08
  */
 
-#include "selectThreadImpl.h"
 #include "mutexDummyImpl.h"

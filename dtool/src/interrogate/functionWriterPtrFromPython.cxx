@@ -12,11 +12,16 @@
  */
 
 #include "functionWriterPtrFromPython.h"
+
+#include "dtoolbase.h"
+
 #include "typeManager.h"
 #include "interrogateBuilder.h"
 #include "interrogate.h"
 
+#include "cppParser.h"
 #include "cppPointerType.h"
+#include "cppType.h"
 
 /**
  *

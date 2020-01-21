@@ -14,12 +14,11 @@
 #ifndef ATOMICADJUSTI386IMPL_H
 #define ATOMICADJUSTI386IMPL_H
 
-#include "dtoolbase.h"
-#include "selectThreadImpl.h"
-
 #if (defined(__i386__) || defined(_M_IX86)) && !defined(__APPLE__) && !defined(__ANDROID__)
 
-#include "numeric_types.h"
+#include "dtoolbase.h"
+
+#include "selectThreadImpl.h"
 
 /**
  * Uses assembly-language calls to atomically increment and decrement.

@@ -15,8 +15,12 @@
 #define CONFIGVARIABLEFILENAME_H
 
 #include "dtoolbase.h"
+
+#include "atomicAdjust.h"
+#include "configDeclaration.h"
 #include "configVariable.h"
 #include "filename.h"
+
 /**
  * This is a convenience class to specialize ConfigVariable as a Filename
  * type.  It is almost the same thing as ConfigVariableString, except it

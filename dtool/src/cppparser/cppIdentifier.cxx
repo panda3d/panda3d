@@ -12,10 +12,12 @@
  */
 
 #include "cppIdentifier.h"
+
+#include "cppFunctionGroup.h"
 #include "cppScope.h"
-#include "cppTemplateScope.h"
 #include "cppPreprocessor.h"
 #include "cppTemplateParameterList.h"
+#include "cppType.h"
 #include "cppTBDType.h"
 #include "cppStructType.h"
 

@@ -17,8 +17,7 @@
 #include "dtoolbase.h"
 
 #include "interfaceMaker.h"
-
-class FunctionRemap;
+#include "interrogate_request.h"
 
 /**
  * The base class for InteraceMakerPythonSimple and InterfaceMakerPythonObj,

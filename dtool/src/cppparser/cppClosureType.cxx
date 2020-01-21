@@ -12,6 +12,8 @@
  */
 
 #include "cppClosureType.h"
+
+#include "cppType.h"
 #include "cppParameterList.h"
 #include "cppExpression.h"
 

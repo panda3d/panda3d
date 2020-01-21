@@ -12,6 +12,8 @@
  */
 
 #include "cppPointerType.h"
+
+#include "cppFile.h"
 #include "cppFunctionType.h"
 #include "cppIdentifier.h"
 #include "cppArrayType.h"

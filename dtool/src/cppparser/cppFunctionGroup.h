@@ -18,7 +18,11 @@
 
 #include "cppDeclaration.h"
 
+#include <vector>
+
 class CPPInstance;
+class CPPScope;
+class CPPType;
 
 /**
  * This class is simply a container for one or more CPPInstances for functions

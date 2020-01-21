@@ -13,13 +13,10 @@
 
 #include "parameterRemapHandleToInt.h"
 #include "interrogate.h"
-#include "interrogateBuilder.h"
 #include "typeManager.h"
 
 #include "cppType.h"
-#include "cppDeclaration.h"
-#include "cppConstType.h"
-#include "cppPointerType.h"
+#include "cppParser.h"
 
 /**
  *

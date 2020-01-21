@@ -18,8 +18,6 @@
 #include "indent.h"
 #include "numeric_types.h"
 
-#include <algorithm>
-
 using std::cerr;
 using std::ostream;
 using std::ostringstream;

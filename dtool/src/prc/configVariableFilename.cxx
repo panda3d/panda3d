@@ -12,8 +12,9 @@
  */
 
 #include "configVariableFilename.h"
-#include "executionEnvironment.h"
+
 #include "mutexImpl.h"
+#include "pnotify.h"
 
 static MutexImpl filename_lock;
 

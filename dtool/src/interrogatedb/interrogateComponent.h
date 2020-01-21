@@ -16,12 +16,9 @@
 
 #include "dtoolbase.h"
 
-#include "interrogate_interface.h"
 #include "interrogate_request.h"
 
 #include <vector>
-
-class IndexRemapper;
 
 /**
  * The base class for things that are part of the interrogate database.  This

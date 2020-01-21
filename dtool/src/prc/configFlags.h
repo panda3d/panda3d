@@ -15,7 +15,6 @@
 #define CONFIGFLAGS_H
 
 #include "dtoolbase.h"
-#include "numeric_types.h"
 #include "atomicAdjust.h"
 
 /**

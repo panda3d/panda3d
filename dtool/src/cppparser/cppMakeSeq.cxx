@@ -13,6 +13,9 @@
 
 #include "cppMakeSeq.h"
 
+#include "cppFunctionGroup.h"
+#include "cppIdentifier.h"
+
 /**
  *
  */

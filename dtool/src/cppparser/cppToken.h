@@ -17,6 +17,7 @@
 #include "dtoolbase.h"
 
 #include "cppBisonDefs.h"
+#include "cppFile.h"
 
 /**
  *

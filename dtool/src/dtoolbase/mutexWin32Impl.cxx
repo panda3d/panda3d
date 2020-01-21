@@ -11,7 +11,7 @@
  * @date 2006-02-07
  */
 
-#include "selectThreadImpl.h"
+#include "dtoolbase.h"
 
 #ifdef WIN32_VC
 

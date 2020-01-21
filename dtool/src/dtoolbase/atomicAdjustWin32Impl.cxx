@@ -11,8 +11,6 @@
  * @date 2006-02-07
  */
 
-#include "selectThreadImpl.h"
-
 #ifdef WIN32_VC
 
 #include "atomicAdjustWin32Impl.h"

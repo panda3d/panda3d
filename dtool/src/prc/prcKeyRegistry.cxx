@@ -19,6 +19,7 @@
 
 #ifdef HAVE_OPENSSL
 
+#include <openssl/bio.h>
 #include <openssl/evp.h>
 #include <openssl/pem.h>
 

@@ -12,9 +12,16 @@
  */
 
 #include "interrogateDatabase.h"
+
 #include "config_interrogatedb.h"
+
+#include "configVariableSearchPath.h"
+#include "dSearchPath.h"
+#include "filename.h"
 #include "indexRemapper.h"
+#include "interrogateFunction.h"
 #include "interrogate_datafile.h"
+#include "pandaFileStream.h"
 
 using std::map;
 using std::string;

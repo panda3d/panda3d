@@ -12,7 +12,10 @@
  */
 
 #include "streamReader.h"
+
 #include "memoryHook.h"
+
+#include <cstdio> // for EOF
 
 using std::string;
 

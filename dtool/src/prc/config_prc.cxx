@@ -12,9 +12,8 @@
  */
 
 #include "config_prc.h"
+
 #include "configVariableBool.h"
-#include "configVariableEnum.h"
-#include "pandaFileStreamBuf.h"
 
 #if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_DTOOL_PRC)
   #error Buildsystem error: BUILDING_DTOOL_PRC not defined

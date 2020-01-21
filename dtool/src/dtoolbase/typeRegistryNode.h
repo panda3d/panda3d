@@ -16,10 +16,9 @@
 
 #include "dtoolbase.h"
 
+#include "atomicAdjust.h"
 #include "typeHandle.h"
-#include "numeric_types.h"
 
-#include <assert.h>
 #include <vector>
 
 /**

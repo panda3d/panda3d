@@ -12,10 +12,11 @@
  */
 
 #include "parameterRemapPTToPointer.h"
+
 #include "interrogate.h"
-#include "interrogateBuilder.h"
 #include "typeManager.h"
 
+#include "cppParser.h"
 #include "cppType.h"
 #include "cppStructType.h"
 #include "cppDeclaration.h"

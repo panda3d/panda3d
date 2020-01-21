@@ -14,10 +14,13 @@
 #include "parameterRemapEnumToInt.h"
 #include "interrogate.h"
 
+#include "cppDeclaration.h"
 #include "cppSimpleType.h"
 #include "cppConstType.h"
+#include "cppParser.h"
 #include "cppPointerType.h"
 #include "cppReferenceType.h"
+#include "cppType.h"
 
 /**
  *

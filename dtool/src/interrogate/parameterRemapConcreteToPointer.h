@@ -16,7 +16,10 @@
 
 #include "dtoolbase.h"
 
+#include "interrogate_interface.h"
 #include "parameterRemap.h"
+
+class CPPType;
 
 /**
  * A ParameterRemap class that handles remapping a concrete structure or class

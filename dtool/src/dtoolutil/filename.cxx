@@ -21,7 +21,6 @@
 #include <stdio.h>  // For rename() and tempnam()
 #include <time.h>   // for clock() and time()
 #include <sys/stat.h>
-#include <algorithm>
 
 #ifdef PHAVE_UTIME_H
 #include <utime.h>
@@ -40,12 +39,6 @@
 
 #ifdef PHAVE_DIRENT_H
 #include <dirent.h>
-#endif
-
-// It's true that dtoolbase.h includes this already, but we include this again
-// in case we are building this file within ppremake.
-#ifdef PHAVE_UNISTD_H
-#include <unistd.h>
 #endif
 
 #if defined(__ANDROID__) && !defined(PHAVE_LOCKF)

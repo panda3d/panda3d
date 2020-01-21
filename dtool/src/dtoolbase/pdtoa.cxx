@@ -24,10 +24,6 @@ THE SOFTWARE.
 #include "pdtoa.h"
 #include "cmath.h"
 
-#include <assert.h>
-#include <math.h>
-#include <stdint.h>
-
 #if defined(_MSC_VER)
 #include <intrin.h>
 #include <float.h>

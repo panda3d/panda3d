@@ -17,7 +17,11 @@
 #include "dtoolbase.h"
 
 #include "cppDeclaration.h"
-#include "cppIdentifier.h"
+
+class CPPFile;
+class CPPFunctionGroup;
+class CPPIdentifier;
+class CPPScope;
 
 /**
  * This is a MAKE_PROPERTY() declaration appearing within a class body.  It

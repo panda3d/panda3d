@@ -14,6 +14,8 @@
 #ifndef __PFSTREAM_H__
 #define __PFSTREAM_H__
 
+#include "dtoolbase.h"
+
 #include "pfstreamBuf.h"
 
 class EXPCL_DTOOL_DTOOLUTIL IPipeStream : public std::istream {

@@ -12,10 +12,12 @@
  */
 
 #include "cppPreprocessor.h"
+
 #include "cppExpressionParser.h"
 #include "cppExpression.h"
 #include "cppScope.h"
 #include "cppIdentifier.h"
+#include "cppInstance.h"
 #include "cppTemplateScope.h"
 #include "cppTemplateParameterList.h"
 #include "cppClassTemplateParameter.h"

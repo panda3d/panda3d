@@ -17,14 +17,13 @@
 #include "dtoolbase.h"
 
 #include "interfaceMakerPython.h"
-#include "interrogate_interface.h"
+#include "interrogate_request.h"
 
 #include <map>
 
-class InterrogateType;
-class InterrogateFunction;
+class CPPType;
 class FunctionRemap;
-class CPPInstance;
+class FunctionWriter;
 class FunctionWriterPtrFromPython;
 class FunctionWriterPtrToPython;
 

@@ -15,10 +15,19 @@
 #define CPPTYPEDEFTYPE_H
 
 #include "dtoolbase.h"
+
+#include "cppDeclaration.h"
 #include "cppType.h"
 
+#include <vector>
+
+class CPPFile;
 class CPPIdentifier;
 class CPPInstanceIdentifier;
+class CPPPreprocessor;
+class CPPScope;
+class CPPTemplateParameterList;
+class CPPTypeProxy;
 
 /**
  * A type alias created by a C++ typedef or using declaration.  These aren't

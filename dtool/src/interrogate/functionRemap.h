@@ -19,15 +19,11 @@
 #include "interrogate_interface.h"
 #include "vector_string.h"
 
-#include <vector>
-
-class InterrogateBuilder;
 class InterrogateType;
 class InterrogateFunction;
 class ParameterRemap;
 class CPPType;
 class CPPInstance;
-class CPPStructType;
 class CPPScope;
 class CPPFunctionType;
 class InterfaceMaker;

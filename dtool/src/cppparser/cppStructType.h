@@ -16,15 +16,21 @@
 
 #include "dtoolbase.h"
 
-#include "cppIdentifier.h"
+#include "cppDeclaration.h"
 #include "cppExtensionType.h"
-#include "cppFunctionGroup.h"
 #include "cppVisibility.h"
 
 #include <vector>
 #include <list>
 
+class CPPFile;
+class CPPFunctionGroup;
+class CPPIdentifier;
+class CPPInstance;
+class CPPPreprocessor;
 class CPPScope;
+class CPPTemplateParameterList;
+class CPPType;
 class CPPTypeProxy;
 
 /**

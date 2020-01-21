@@ -15,6 +15,9 @@
 #define CONFIGVARIABLESTRING_H
 
 #include "dtoolbase.h"
+
+#include "atomicAdjust.h"
+#include "configDeclaration.h"
 #include "configVariable.h"
 
 /**

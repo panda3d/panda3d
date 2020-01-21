@@ -12,9 +12,12 @@
  */
 
 #include "cppTypedefType.h"
+
+#include "cppFile.h"
 #include "cppIdentifier.h"
 #include "cppInstanceIdentifier.h"
 #include "cppTemplateScope.h"
+#include "cppTemplateParameterList.h"
 #include "indent.h"
 
 using std::string;

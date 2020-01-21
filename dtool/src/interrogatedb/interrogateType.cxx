@@ -12,11 +12,9 @@
  */
 
 #include "interrogateType.h"
+
 #include "indexRemapper.h"
 #include "interrogate_datafile.h"
-#include "interrogateDatabase.h"
-
-#include <algorithm>
 
 using std::istream;
 using std::ostream;

@@ -12,8 +12,11 @@
  */
 
 #include "globPattern.h"
+
 #include "string_utils.h"
+
 #include <ctype.h>
+#include <iterator> // for std::distance
 
 using std::string;
 

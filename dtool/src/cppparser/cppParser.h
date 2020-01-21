@@ -20,7 +20,8 @@
 #include "cppPreprocessor.h"
 #include "filename.h"
 
-#include <set>
+class CPPExpression;
+class CPPType;
 
 /**
  *

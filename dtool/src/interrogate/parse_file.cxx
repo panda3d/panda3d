@@ -12,6 +12,7 @@
  */
 
 #include "cppParser.h"
+#include "cppInstance.h"
 #include "cppManifest.h"
 #include "cppStructType.h"
 #include "cppFunctionGroup.h"

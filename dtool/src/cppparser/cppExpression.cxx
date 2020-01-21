@@ -12,15 +12,16 @@
  */
 
 #include "cppExpression.h"
-#include "cppToken.h"
+
+#include "cppFile.h"
 #include "cppIdentifier.h"
 #include "cppType.h"
 #include "cppSimpleType.h"
 #include "cppPointerType.h"
+#include "cppExtensionType.h"
 #include "cppEnumType.h"
 #include "cppConstType.h"
 #include "cppArrayType.h"
-#include "cppPreprocessor.h"
 #include "cppInstance.h"
 #include "cppFunctionGroup.h"
 #include "cppFunctionType.h"
@@ -28,9 +29,11 @@
 #include "cppReferenceType.h"
 #include "cppStructType.h"
 #include "cppBison.h"
+#include "cppVisibility.h"
 #include "pdtoa.h"
 
-#include <assert.h>
+#include <ctype.h>
+#include <vector>
 
 using std::cerr;
 using std::string;

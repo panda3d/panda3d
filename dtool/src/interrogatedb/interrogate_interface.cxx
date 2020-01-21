@@ -12,10 +12,19 @@
  */
 
 #include "interrogate_interface.h"
+
+#include "config_interrogatedb.h"
+
 #include "interrogateDatabase.h"
+#include "interrogateElement.h"
+#include "interrogateFunctionWrapper.h"
+#include "interrogateMakeSeq.h"
+#include "interrogateManifest.h"
 #include "interrogateType.h"
 #include "interrogateFunction.h"
-#include "config_interrogatedb.h"
+
+#include "configVariableSearchPath.h"
+#include "filename.h"
 
 using std::string;
 

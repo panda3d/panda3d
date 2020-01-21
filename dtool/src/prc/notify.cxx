@@ -12,12 +12,13 @@
  */
 
 #include "pnotify.h"
-#include "notifyCategory.h"
-#include "configPageManager.h"
+
+#include "config_prc.h"
+
 #include "configVariableFilename.h"
 #include "configVariableBool.h"
 #include "filename.h"
-#include "config_prc.h"
+#include "pandaFileStream.h"
 
 #include <ctype.h>
 

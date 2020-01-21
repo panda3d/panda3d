@@ -16,7 +16,11 @@
 
 #include "dtoolbase.h"
 
+#include "cppDeclaration.h"
 #include "cppInstance.h"
+
+class CPPScope;
+class CPPType;
 
 /**
  * A CPPTypeDeclaration is a special declaration that represents the top-level

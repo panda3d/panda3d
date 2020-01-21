@@ -12,6 +12,8 @@
  */
 
 #include "cppInstanceIdentifier.h"
+
+#include "cppType.h"
 #include "cppPointerType.h"
 #include "cppReferenceType.h"
 #include "cppArrayType.h"

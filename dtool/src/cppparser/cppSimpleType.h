@@ -16,7 +16,10 @@
 
 #include "dtoolbase.h"
 
+#include "cppDeclaration.h"
 #include "cppType.h"
+
+class CPPScope;
 
 /**
  * Represents a C++ fundamental type.

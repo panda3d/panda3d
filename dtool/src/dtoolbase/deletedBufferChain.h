@@ -15,12 +15,10 @@
 #define DELETEDBUFFERCHAIN_H
 
 #include "dtoolbase.h"
-#include "neverFreeMemory.h"
+
 #include "mutexImpl.h"
 #include "atomicAdjust.h"
-#include "numeric_types.h"
 #include "typeHandle.h"
-#include <assert.h>
 
 // Though it's tempting, it doesn't seem to be possible to implement
 // DeletedBufferChain via the atomic exchange operation.  Specifically, a

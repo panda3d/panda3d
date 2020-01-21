@@ -15,13 +15,11 @@
 #define CONFIGDECLARATION_H
 
 #include "dtoolbase.h"
+
 #include "configFlags.h"
 #include "configPage.h"
 #include "vector_string.h"
-#include "numeric_types.h"
 #include "filename.h"
-
-#include <vector>
 
 class ConfigVariableCore;
 

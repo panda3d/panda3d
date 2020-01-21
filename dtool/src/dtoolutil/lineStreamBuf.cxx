@@ -13,6 +13,8 @@
 
 #include "lineStreamBuf.h"
 
+#include <cstdio> // for EOF
+
 using std::string;
 
 /**

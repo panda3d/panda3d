@@ -18,8 +18,12 @@
 
 #include "interfaceMaker.h"
 #include "interrogate_interface.h"
+#include "interrogate_request.h"
 
+class CPPType;
 class FunctionRemap;
+class InterrogateFunction;
+class ParameterRemap;
 
 /**
  * An InteraceMaker suitable for generating a series of C-calling-convention

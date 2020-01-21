@@ -12,19 +12,20 @@
  */
 
 #include "cppInstance.h"
+
+#include "cppFile.h"
 #include "cppInstanceIdentifier.h"
 #include "cppIdentifier.h"
+#include "cppScope.h"
 #include "cppTemplateScope.h"
+#include "cppType.h"
 #include "cppFunctionType.h"
 #include "cppSimpleType.h"
 #include "cppExpression.h"
 #include "cppPreprocessor.h"
 #include "cppParameterList.h"
 #include "cppReferenceType.h"
-#include "cppConstType.h"
 #include "indent.h"
-
-#include <algorithm>
 
 using std::string;
 

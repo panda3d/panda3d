@@ -6,8 +6,13 @@
 
 %{
 
+#include "dtoolbase.h"
+
 #include "cppBisonDefs.h"
+#include "cppDeclaration.h"
+#include "cppPreprocessor.h"
 #include "cppParser.h"
+#include "cppType.h"
 #include "cppClosureType.h"
 #include "cppExpression.h"
 #include "cppSimpleType.h"
@@ -16,12 +21,13 @@
 #include "cppEnumType.h"
 #include "cppFunctionType.h"
 #include "cppTBDType.h"
+#include "cppToken.h"
 #include "cppMakeProperty.h"
 #include "cppMakeSeq.h"
+#include "cppNameComponent.h"
 #include "cppParameterList.h"
 #include "cppInstance.h"
 #include "cppClassTemplateParameter.h"
-#include "cppTemplateParameterList.h"
 #include "cppInstanceIdentifier.h"
 #include "cppTypedefType.h"
 #include "cppTypeDeclaration.h"
@@ -31,6 +37,8 @@
 #include "cppTemplateScope.h"
 #include "cppNamespace.h"
 #include "cppUsing.h"
+
+#include <vector>
 
 using std::stringstream;
 using std::string;

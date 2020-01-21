@@ -12,6 +12,9 @@
  */
 
 #include "cppExpressionParser.h"
+
+#include "cppBisonDefs.h"
+#include "cppDeclaration.h"
 #include "cppExpression.h"
 
 /**

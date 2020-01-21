@@ -13,6 +13,8 @@
 
 #include "cppTypeDeclaration.h"
 
+#include "cppType.h"
+
 /**
  * Constructs a new CPPTypeDeclaration object for the given type.
  */

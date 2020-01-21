@@ -12,16 +12,16 @@
  */
 
 #include "interfaceMakerPythonSimple.h"
-#include "interrogateBuilder.h"
-#include "interrogate.h"
-#include "functionRemap.h"
-#include "parameterRemapUnchanged.h"
-#include "typeManager.h"
 
-#include "interrogateDatabase.h"
-#include "interrogateType.h"
+#include "cppParser.h"
+#include "cppType.h"
+#include "functionRemap.h"
+#include "interfaceMaker.h"
+#include "interrogate.h"
 #include "interrogateFunction.h"
-#include "cppFunctionType.h"
+#include "parameterRemap.h"
+#include "typeManager.h"
+#include "vector_string.h"
 
 using std::ostream;
 using std::string;

@@ -15,8 +15,10 @@
 #define CONFIGVARIABLE_H
 
 #include "dtoolbase.h"
+
+#include "configDeclaration.h"
 #include "configVariableBase.h"
-#include "numeric_types.h"
+#include "pnotify.h"
 
 /**
  * This is a generic, untyped ConfigVariable.  It is also the base class for

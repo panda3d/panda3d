@@ -15,7 +15,6 @@
 #define ANIMPRELOADTABLE_H
 
 #include "pandabase.h"
-#include "typedWritableReferenceCount.h"
 #include "ordered_vector.h"
 #include "copyOnWriteObject.h"
 

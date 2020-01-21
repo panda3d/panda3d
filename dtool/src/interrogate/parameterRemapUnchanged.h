@@ -14,9 +14,9 @@
 #ifndef PARAMETERREMAPUNCHANGED_H
 #define PARAMETERREMAPUNCHANGED_H
 
-#include "dtoolbase.h"
-
 #include "parameterRemap.h"
+
+class CPPType;
 
 /**
  * A ParameterRemap class that represents no change to the parameter: the

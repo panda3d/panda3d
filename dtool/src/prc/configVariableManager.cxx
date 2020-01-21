@@ -12,10 +12,12 @@
  */
 
 #include "configVariableManager.h"
+
+#include "config_prc.h"
+
 #include "configVariableCore.h"
 #include "configDeclaration.h"
 #include "configPage.h"
-#include "config_prc.h"
 
 using std::string;
 

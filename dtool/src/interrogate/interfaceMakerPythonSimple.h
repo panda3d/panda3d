@@ -18,8 +18,10 @@
 
 #include "interfaceMakerPython.h"
 #include "interrogate_interface.h"
+#include "interrogate_request.h"
 
 class FunctionRemap;
+class InterrogateFunction;
 
 /**
  * An InterfaceMaker for generating simple Python function wrappers around C++

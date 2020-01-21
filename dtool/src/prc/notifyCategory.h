@@ -16,10 +16,11 @@
 
 #include "dtoolbase.h"
 
-#include "notifySeverity.h"
-#include "configVariableEnum.h"
+#include "atomicAdjust.h"
 #include "configFlags.h"
+#include "configVariableEnum.h"
 #include "memoryBase.h"
+#include "notifySeverity.h"
 
 #include <vector>
 

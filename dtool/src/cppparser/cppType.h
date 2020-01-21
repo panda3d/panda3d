@@ -18,8 +18,12 @@
 
 #include "cppDeclaration.h"
 
+#include <map>
 #include <set>
+#include <vector>
 
+class CPPFile;
+class CPPScope;
 class CPPType;
 class CPPTypedefType;
 class CPPTypeDeclaration;

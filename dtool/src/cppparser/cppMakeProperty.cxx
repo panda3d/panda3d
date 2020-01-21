@@ -12,7 +12,9 @@
  */
 
 #include "cppMakeProperty.h"
+
 #include "cppFunctionGroup.h"
+#include "cppIdentifier.h"
 
 /**
  *

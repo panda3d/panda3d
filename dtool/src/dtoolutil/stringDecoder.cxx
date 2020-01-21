@@ -12,7 +12,6 @@
  */
 
 #include "stringDecoder.h"
-#include "config_dtoolutil.h"
 
 std::ostream *StringDecoder::_notify_ptr = &std::cerr;
 

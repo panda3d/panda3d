@@ -16,6 +16,7 @@
 
 #include "dtoolbase.h"
 
+#include "cppDeclaration.h"
 #include "cppVisibility.h"
 #include "cppTemplateParameterList.h"
 #include "cppNameComponent.h"
@@ -26,7 +27,6 @@
 #include <string>
 
 class CPPType;
-class CPPDeclaration;
 class CPPExtensionType;
 class CPPStructType;
 class CPPNamespace;
@@ -35,9 +35,7 @@ class CPPTypedefType;
 class CPPInstance;
 class CPPFunctionGroup;
 class CPPTemplateScope;
-class CPPTemplateParameterList;
 class CPPPreprocessor;
-class CPPNameComponent;
 struct cppyyltype;
 
 /**

@@ -12,6 +12,8 @@
  */
 
 #include "cppClassTemplateParameter.h"
+
+#include "cppFile.h"
 #include "cppIdentifier.h"
 
 /**

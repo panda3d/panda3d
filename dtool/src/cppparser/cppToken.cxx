@@ -12,9 +12,11 @@
  */
 
 #include "cppToken.h"
+
+#include "cppDeclaration.h"
+#include "cppBison.h"
 #include "cppExpression.h"
 #include "cppIdentifier.h"
-#include "cppBison.h"
 
 #include <ctype.h>
 

@@ -12,7 +12,12 @@
  */
 
 #include "parameterRemapBasicStringPtrToString.h"
+
 #include "interrogate.h"
+
+#include "cppParser.h"
+
+class CPPType;
 
 using std::string;
 

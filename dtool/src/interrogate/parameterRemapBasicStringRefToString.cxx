@@ -12,7 +12,10 @@
  */
 
 #include "parameterRemapBasicStringRefToString.h"
+
 #include "interrogate.h"
+
+#include "cppParser.h"
 
 using std::string;
 

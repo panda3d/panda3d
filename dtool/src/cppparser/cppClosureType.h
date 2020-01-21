@@ -16,7 +16,13 @@
 
 #include "dtoolbase.h"
 
+#include "cppDeclaration.h"
 #include "cppFunctionType.h"
+
+#include <vector>
+
+class CPPExpression;
+class CPPScope;
 
 /**
  * The type of a lambda expression.  This is like a function, but with
