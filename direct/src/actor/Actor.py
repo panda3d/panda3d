@@ -500,7 +500,12 @@ class Actor(DirectObject, NodePath):
 
     def cleanup(self):
         """
-        Actor cleanup function
+        This method should be called when intending to destroy the Actor, and
+        cleans up any additional resources stored on the Actor class before
+        removing the underlying node using `removeNode()`.
+
+        Note that `removeNode()` itself is not sufficient to destroy actors,
+        which is why this method exists.
         """
         self.stop(None)
         self.clearPythonData()
@@ -512,6 +517,11 @@ class Actor(DirectObject, NodePath):
             self.removeNode()
 
     def removeNode(self):
+        """
+        You should call `cleanup()` for Actor objects instead, since
+        :meth:`~panda3d.core.NodePath.removeNode()` is not sufficient for
+        completely destroying Actor objects.
+        """
         if self.__geomNode and (self.__geomNode.getNumChildren() > 0):
             assert self.notify.warning("called actor.removeNode() on %s without calling cleanup()" % self.getName())
         NodePath.removeNode(self)
@@ -525,7 +535,7 @@ class Actor(DirectObject, NodePath):
 
     def flush(self):
         """
-        Actor flush function
+        Actor flush function.  Used by `cleanup()`.
         """
         self.clearPythonData()
 

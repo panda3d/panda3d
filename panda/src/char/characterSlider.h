@@ -32,6 +32,7 @@ protected:
 
 PUBLISHED:
   explicit CharacterSlider(PartGroup *parent, const std::string &name);
+  explicit CharacterSlider(PartGroup *parent, const std::string &name, const PN_stdfloat &default_value);
   virtual ~CharacterSlider();
 
 public:

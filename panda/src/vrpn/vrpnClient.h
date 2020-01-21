@@ -38,8 +38,8 @@ PUBLISHED:
   ~VrpnClient();
 
   INLINE const std::string &get_server_name() const;
-  INLINE bool is_valid() const;
-  INLINE bool is_connected() const;
+  bool is_valid() const;
+  bool is_connected() const;
 
   void write(std::ostream &out, int indent_level = 0) const;
 

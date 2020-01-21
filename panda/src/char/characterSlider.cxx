@@ -48,6 +48,14 @@ CharacterSlider(PartGroup *parent, const std::string &name)
  *
  */
 CharacterSlider::
+CharacterSlider(PartGroup *parent, const std::string &name, const PN_stdfloat &default_value)
+  : MovingPartScalar(parent, name, default_value) {
+}
+
+/**
+ *
+ */
+CharacterSlider::
 ~CharacterSlider() {
   nassertv(_vertex_sliders.empty());
 }
