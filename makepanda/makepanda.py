@@ -1070,7 +1070,7 @@ if (COMPILER=="GCC"):
     SmartPkgEnable("ZLIB",      "zlib",      ("z"), "zlib.h")
     SmartPkgEnable("GTK2",      "gtk+-2.0")
 
-    if not PkgSkip("OPENSSL"):
+    if not PkgSkip("OPENSSL") and GetTarget() != "darwin":
         LibName("OPENSSL", "-Wl,--exclude-libs,libssl.a")
         LibName("OPENSSL", "-Wl,--exclude-libs,libcrypto.a")
 
