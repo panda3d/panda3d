@@ -968,6 +968,60 @@ if (COMPILER=="GCC"):
                 # Needed when linking ffmpeg statically on Linux.
                 LibName("FFMPEG", "-Wl,-Bsymbolic")
 
+            # Don't export ffmpeg symbols from libp3ffmpeg when linking statically.
+            for ffmpeg_lib in ffmpeg_libs:
+                LibName("FFMPEG", "-Wl,--exclude-libs,%s.a" % (ffmpeg_lib))
+
+        for fcollada_lib in fcollada_libs:
+            LibName("FCOLLADA", "-Wl,--exclude-libs,lib%s.a" % (fcollada_lib))
+
+        if not PkgSkip("SWSCALE"):
+            LibName("SWSCALE", "-Wl,--exclude-libs,libswscale.a")
+
+        if not PkgSkip("SWRESAMPLE"):
+            LibName("SWRESAMPLE", "-Wl,--exclude-libs,libswresample.a")
+
+        if not PkgSkip("JPEG"):
+            LibName("JPEG", "-Wl,--exclude-libs,libjpeg.a")
+
+        if not PkgSkip("TIFF"):
+            LibName("TIFF", "-Wl,--exclude-libs,libtiff.a")
+
+        if not PkgSkip("PNG"):
+            LibName("PNG", "-Wl,--exclude-libs,libpng.a")
+            LibName("PNG", "-Wl,--exclude-libs,libpng16.a")
+
+        if not PkgSkip("SQUISH"):
+            LibName("SQUISH", "-Wl,--exclude-libs,libsquish.a")
+
+        if not PkgSkip("OPENEXR"):
+            LibName("OPENEXR", "-Wl,--exclude-libs,libHalf.a")
+            LibName("OPENEXR", "-Wl,--exclude-libs,libIex.a")
+            LibName("OPENEXR", "-Wl,--exclude-libs,libIexMath.a")
+            LibName("OPENEXR", "-Wl,--exclude-libs,libIlmImf.a")
+            LibName("OPENEXR", "-Wl,--exclude-libs,libIlmImfUtil.a")
+            LibName("OPENEXR", "-Wl,--exclude-libs,libIlmThread.a")
+            LibName("OPENEXR", "-Wl,--exclude-libs,libImath.a")
+
+        if not PkgSkip("VORBIS"):
+            LibName("VORBIS", "-Wl,--exclude-libs,libogg.a")
+            LibName("VORBIS", "-Wl,--exclude-libs,libvorbis.a")
+            LibName("VORBIS", "-Wl,--exclude-libs,libvorbisenc.a")
+            LibName("VORBIS", "-Wl,--exclude-libs,libvorbisfile.a")
+
+        if not PkgSkip("OPUS"):
+            LibName("OPUS", "-Wl,--exclude-libs,libogg.a")
+            LibName("OPUS", "-Wl,--exclude-libs,libopus.a")
+            LibName("OPUS", "-Wl,--exclude-libs,libopusfile.a")
+
+        if not PkgSkip("VRPN"):
+            LibName("VRPN", "-Wl,--exclude-libs,libvrpn.a")
+            LibName("VRPN", "-Wl,--exclude-libs,libquat.a")
+
+        if not PkgSkip("ARTOOLKIT"):
+            LibName("ARTOOLKIT", "-Wl,--exclude-libs,libAR.a")
+            LibName("ARTOOLKIT", "-Wl,--exclude-libs,libARMulti.a")
+
         if PkgSkip("FFMPEG") or GetTarget() == "darwin":
             cv_lib = ChooseLib(("opencv_core", "cv"), "OPENCV")
             if cv_lib == "opencv_core":
@@ -979,17 +1033,21 @@ if (COMPILER=="GCC"):
         else:
             PkgDisable("OPENCV")
 
-        if GetTarget() == "darwin" and not PkgSkip("OPENAL"):
-            LibName("OPENAL", "-framework AudioUnit")
-            LibName("OPENAL", "-framework AudioToolbox")
-            LibName("OPENAL", "-framework CoreAudio")
+        if not PkgSkip("OPENAL"):
+            LibName("OPENAL", "-Wl,--exclude-libs,libopenal.a")
+            if GetTarget() == "darwin":
+                LibName("OPENAL", "-framework AudioUnit")
+                LibName("OPENAL", "-framework AudioToolbox")
+                LibName("OPENAL", "-framework CoreAudio")
 
         if not PkgSkip("ASSIMP") and \
             os.path.isfile(GetThirdpartyDir() + "assimp/lib/libassimp.a"):
+            LibName("ASSIMP", "-Wl,--exclude-libs,libassimp.a")
             # Also pick up IrrXML, which is needed when linking statically.
             irrxml = GetThirdpartyDir() + "assimp/lib/libIrrXML.a"
             if os.path.isfile(irrxml):
                 LibName("ASSIMP", irrxml)
+                LibName("ASSIMP", "-Wl,--exclude-libs,libIrrXML.a")
 
         rocket_libs = ("RocketCore", "RocketControls")
         if (GetOptimize() <= 3):
@@ -1008,6 +1066,10 @@ if (COMPILER=="GCC"):
     SmartPkgEnable("OPENSSL",   "openssl",   ("ssl", "crypto"), ("openssl/ssl.h", "openssl/crypto.h"))
     SmartPkgEnable("ZLIB",      "zlib",      ("z"), "zlib.h")
     SmartPkgEnable("GTK2",      "gtk+-2.0")
+
+    if not PkgSkip("OPENSSL"):
+        LibName("OPENSSL", "-Wl,--exclude-libs,libssl.a")
+        LibName("OPENSSL", "-Wl,--exclude-libs,libcrypto.a")
 
     if (RTDIST):
         SmartPkgEnable("WX", tool = "wx-config")
