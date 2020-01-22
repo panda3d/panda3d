@@ -2281,7 +2281,7 @@ class Actor(DirectObject, NodePath):
                             # our handle on them go. This is especially
                             # important if the anim control was blending
                             # animations.
-                            animDef.animControl.getPart().clearControlEffects()
+                            animDef.animControl.getPart().setControlEffect(animDef.animControl, 0.0)
                             animDef.animControl = None
 
 

@@ -2720,13 +2720,27 @@ else:
     # otherwise, disable it.
     confautoprc = confautoprc.replace('#st#', '#')
 
-if PkgSkip("ASSIMP"):
+confautoprc = confautoprc.replace('\r\n', '\n')
+
+if PkgSkip("ASSIMP") or GetLinkAllStatic():
     confautoprc = confautoprc.replace("load-file-type p3assimp", "#load-file-type p3assimp")
+
+if PkgSkip("EGG") or GetLinkAllStatic():
+    confautoprc = confautoprc.replace("load-file-type egg pandaegg", "#load-file-type egg pandaegg")
+
+if PkgSkip("PANDATOOL") or PkgSkip("EGG") or GetLinkAllStatic():
+    confautoprc = confautoprc.replace("load-file-type p3ptloader", "#load-file-type p3ptloader")
+
+if PkgSkip("FFMPEG") or GetLinkAllStatic():
+    confautoprc = confautoprc.replace("load-audio-type * p3ffmpeg", "#load-audio-type * p3ffmpeg")
+    confautoprc = confautoprc.replace("load-video-type * p3ffmpeg", "#load-video-type * p3ffmpeg")
 
 if (os.path.isfile("makepanda/myconfig.in")):
     configprc = ReadFile("makepanda/myconfig.in")
 else:
     configprc = ReadFile("makepanda/config.in")
+
+configprc = configprc.replace('\r\n', '\n')
 
 if (GetTarget() == 'windows'):
     configprc = configprc.replace("$XDG_CACHE_HOME/panda3d", "$USER_APPDATA/Panda3D-%s" % MAJOR_VERSION)
@@ -2735,6 +2749,21 @@ else:
 
 if (GetTarget() == 'darwin'):
     configprc = configprc.replace("$XDG_CACHE_HOME/panda3d", "$HOME/Library/Caches/Panda3D-%s" % MAJOR_VERSION)
+
+if PkgSkip("GL") or GetLinkAllStatic():
+    configprc = configprc.replace("\nload-display pandagl", "\n#load-display pandagl")
+
+if PkgSkip("GLES") or GetLinkAllStatic():
+    configprc = configprc.replace("\n#load-display pandagles", "")
+
+if PkgSkip("DX9") or GetLinkAllStatic():
+    configprc = configprc.replace("\n#load-display pandadx9", "")
+
+if PkgSkip("TINYDISPLAY") or GetLinkAllStatic():
+    configprc = configprc.replace("\n#load-display p3tinydisplay", "")
+
+if PkgSkip("OPENAL") or GetLinkAllStatic():
+    configprc = configprc.replace("audio-library-name p3openal_audio", "#audio-library-name p3openal_audio")
 
 if GetTarget() == 'windows':
     # Convert to Windows newlines.
