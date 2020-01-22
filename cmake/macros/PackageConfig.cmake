@@ -139,9 +139,6 @@ function(package_option name)
 
       endif()
 
-    elseif(IS_MINSIZE_BUILD)
-      set(default OFF)
-
     else()
       set(default "${${found_as}_FOUND}")
 

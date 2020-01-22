@@ -52,15 +52,6 @@ else()
   set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS ${_configs})
 endif()
 
-# Provide convenient boolean expression based on build type
-if(CMAKE_BUILD_TYPE MATCHES "MinSizeRel")
-  set(IS_MINSIZE_BUILD True)
-  set(IS_NOT_MINSIZE_BUILD False)
-else()
-  set(IS_MINSIZE_BUILD False)
-  set(IS_NOT_MINSIZE_BUILD True)
-endif()
-
 set(PER_CONFIG_OPTIONS)
 
 # Are we building with static or dynamic linking?
@@ -437,7 +428,9 @@ pointers.")
 #option(HAVE_TINYDISPLAY
 #  "Builds TinyDisplay, a light software renderer based on TinyGL,
 #that is built into Panda. TinyDisplay is not as full-featured as Mesa
-#but is many times faster." ${IS_NOT_MINSIZE_BUILD})
+#but is many times faster." ON)
+#option(HAVE_TINYDISPLAY_MinSizeRel "" OFF)
+#list(APPEND PER_CONFIG_OPTIONS HAVE_TINYDISPLAY)
 
 
 # Is SDL installed, and where?
@@ -511,23 +504,22 @@ option(USE_PANDAFILESTREAM
 # These image formats don't require the assistance of a third-party
 # library to read and write, so there's normally no reason to disable
 # them int he build, unless you are looking to reduce the memory footprint.
-option(HAVE_SGI_RGB "Enable support for loading SGI RGB images."
-  ${IS_NOT_MINSIZE_BUILD})
-option(HAVE_TGA "Enable support for loading TGA images."
-  ${IS_NOT_MINSIZE_BUILD})
-option(HAVE_IMG "Enable support for loading IMG images."
-  ${IS_NOT_MINSIZE_BUILD})
-option(HAVE_SOFTIMAGE_PIC
-  "Enable support for loading SOFTIMAGE PIC images."
-  ${IS_NOT_MINSIZE_BUILD})
-option(HAVE_BMP "Enable support for loading BMP images."
-  ${IS_NOT_MINSIZE_BUILD})
-option(HAVE_PNM "Enable support for loading PNM images."
-  ${IS_NOT_MINSIZE_BUILD})
+option(HAVE_SGI_RGB "Enable support for loading SGI RGB images." ON)
+option(HAVE_TGA "Enable support for loading TGA images." ON)
+option(HAVE_IMG "Enable support for loading IMG images." ON)
+option(HAVE_SOFTIMAGE_PIC "Enable support for loading SOFTIMAGE PIC images." ON)
+option(HAVE_BMP "Enable support for loading BMP images." ON)
+option(HAVE_PNM "Enable support for loading PNM images." ON)
 
-mark_as_advanced(HAVE_SGI_RGB HAVE_TGA
-  HAVE_IMG HAVE_SOFTIMAGE_PIC HAVE_BMP HAVE_PNM)
+foreach(adv_image_format
+  HAVE_SGI_RGB HAVE_TGA HAVE_IMG HAVE_SOFTIMAGE_PIC HAVE_BMP HAVE_PNM)
 
+  option(${adv_image_format}_MinSizeRel "" OFF)
+  list(APPEND PER_CONFIG_OPTIONS ${adv_image_format})
+
+  mark_as_advanced(${adv_image_format} ${adv_image_format}_MinSizeRel)
+
+endforeach(adv_image_format)
 
 # How to invoke bison and flex.  Panda takes advantage of some
 # bison/flex features, and therefore specifically requires bison and
@@ -595,7 +587,7 @@ option(DO_PIPELINING "If on, compile with pipelined rendering." ON)
 option(COMPILE_IN_DEFAULT_FONT
   "If on, compiles in a default font, so that every TextNode will always
 have a font available without requiring the user to specify one.
-When turned off, the generated library will save a few kilobytes." ${IS_NOT_MINSIZE_BUILD})
+When turned off, the generated library will save a few kilobytes." ON)
 list(APPEND PER_CONFIG_OPTIONS COMPILE_IN_DEFAULT_FONT)
 set(COMPILE_IN_DEFAULT_FONT_MinSizeRel OFF CACHE BOOL "")
 
