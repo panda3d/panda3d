@@ -326,13 +326,10 @@ package_option(OpenSSL
 
 option(REPORT_OPENSSL_ERRORS
   "Define this true to include the OpenSSL code to report verbose
-error messages when they occur." ${IS_DEBUG_BUILD})
+error messages when they occur." OFF)
+option(REPORT_OPENSSL_ERRORS_Debug "" ON)
 
-if(REPORT_OPENSSL_ERRORS)
-  package_status(OpenSSL "OpenSSL" "with verbose error reporting")
-else()
-  package_status(OpenSSL "OpenSSL")
-endif()
+package_status(OpenSSL "OpenSSL")
 
 # zlib
 find_package(ZLIB QUIET)

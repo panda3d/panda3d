@@ -53,14 +53,6 @@ else()
 endif()
 
 # Provide convenient boolean expression based on build type
-if(CMAKE_BUILD_TYPE MATCHES "Debug")
-  set(IS_DEBUG_BUILD True)
-  set(IS_NOT_DEBUG_BUILD False)
-else()
-  set(IS_DEBUG_BUILD False)
-  set(IS_NOT_DEBUG_BUILD True)
-endif()
-
 if(CMAKE_BUILD_TYPE MATCHES "MinSizeRel")
   set(IS_MINSIZE_BUILD True)
   set(IS_NOT_MINSIZE_BUILD False)
@@ -299,7 +291,7 @@ option(DO_MEMORY_USAGE
 enables you to define the variable 'track-memory-usage' at runtime
 to help track memory leaks, and also report total memory usage on
 PStats.  There is some small overhead for having this ability
-available, even if it is unused." ${IS_DEBUG_BUILD})
+available, even if it is unused." OFF)
 list(APPEND PER_CONFIG_OPTIONS DO_MEMORY_USAGE)
 set(DO_MEMORY_USAGE_Debug ON CACHE BOOL "")
 
@@ -307,7 +299,7 @@ option(SIMULATE_NETWORK_DELAY
   "This option compiles in support for simulating network delay via
 the min-lag and max-lag prc variables.  It adds a tiny bit of
 overhead even when it is not activated, so it is typically enabled
-only in a development build." ${IS_DEBUG_BUILD})
+only in a development build." OFF)
 list(APPEND PER_CONFIG_OPTIONS SIMULATE_NETWORK_DELAY)
 set(SIMULATE_NETWORK_DELAY_Debug ON CACHE BOOL "")
 
@@ -317,14 +309,14 @@ rendering.  Since this is normally useful only for researching
 buggy drivers, and since there is a tiny bit of per-primitive
 overhead to have this option available even if it is unused, it is
 by default enabled only in a development build.  This has no effect
-on DirectX rendering." ${IS_DEBUG_BUILD})
+on DirectX rendering." OFF)
 list(APPEND PER_CONFIG_OPTIONS SUPPORT_IMMEDIATE_MODE)
 set(SUPPORT_IMMEDIATE_MODE_Debug ON CACHE BOOL "")
 
 option(NOTIFY_DEBUG
   "Do you want to include the 'debug' and 'spam' Notify messages?
 Normally, these are stripped out when we build for release, but sometimes it's
-useful to keep them around. Turn this setting on to achieve that." ${IS_DEBUG_BUILD})
+useful to keep them around. Turn this setting on to achieve that." OFF)
 list(APPEND PER_CONFIG_OPTIONS NOTIFY_DEBUG)
 set(NOTIFY_DEBUG_Debug ON CACHE BOOL "")
 
@@ -414,10 +406,9 @@ mark_as_advanced(ANDROID_NDK_HOME ANDROID_ABI ANDROID_STL
 
 # By default, we'll assume the user only wants to run with Debug
 # python if he has to--that is, on Windows when building a debug build.
-if(WIN32 AND IS_DEBUG_BUILD)
-  set(USE_DEBUG_PYTHON ON)
-else()
-  set(USE_DEBUG_PYTHON OFF)
+set(USE_DEBUG_PYTHON OFF)
+if(WIN32)
+  set(USE_DEBUG_PYTHON_Debug ON)
 endif()
 list(APPEND PER_CONFIG_OPTIONS USE_DEBUG_PYTHON)
 
@@ -574,7 +565,7 @@ slightly slow down Panda for the single CPU case."
   IMPORTED_AS Threads::Threads)
 
 # Configure debug threads
-option(DEBUG_THREADS "If on, enables debugging of thread and sync operations (i.e. mutexes, deadlocks)" ${IS_DEBUG_BUILD})
+option(DEBUG_THREADS "If on, enables debugging of thread and sync operations (i.e. mutexes, deadlocks)" OFF)
 list(APPEND PER_CONFIG_OPTIONS DEBUG_THREADS)
 set(DEBUG_THREADS_Debug ON CACHE BOOL "")
 
