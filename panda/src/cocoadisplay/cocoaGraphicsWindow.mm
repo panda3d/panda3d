@@ -1421,17 +1421,17 @@ load_cursor(const Filename &filename) {
 
   CGFloat hotspot_x = 0.0f;
   CGFloat hotspot_y = 0.0f;
-  if (image_props[@"hotspotX"] != nil) {
-    hotspot_x = [(NSNumber *)image_props[@"hotspotX"] floatValue];
+  if (NSNumber *number = [image_props objectForKey:@"hotspotX"]) {
+    hotspot_x = [number floatValue];
   }
-  if (image_props[@"hotspotY"] != nil) {
-    hotspot_y = [(NSNumber *)image_props[@"hotspotY"] floatValue];
+  if (NSNumber *number = [image_props objectForKey:@"hotspotY"]) {
+    hotspot_y = [number floatValue];
   }
   [image_props release];
 
   NSImage *image = [[NSImage alloc] initWithData:image_data];
 
-  NSCursor *cursor;
+  NSCursor *cursor = nil;
   if (image != nil) {
     // Apple recognizes that hotspots are usually specified from a .cur
     // file, whose origin is in the top-left, so there's no need to flip
