@@ -218,7 +218,10 @@ function(interrogate_sources target output database language_flags)
     # that's fine, it also ignores '"'
     set(_q "'")
   endif()
-  set(define_flags "$<$<BOOL:${_compile_defs}>:-D${_q}$<JOIN:${_compile_defs},${_q}\t-D${_q}>${_q}>")
+  set(_compile_defs_flags "-D${_q}$<JOIN:${_compile_defs},${_q}\t-D${_q}>${_q}")
+  # We may have just ended up with -D'' if there are no flags; filter that
+  set(define_flags
+    "$<$<NOT:$<STREQUAL:${_compile_defs_flags},-D${_q}${_q}>>:${_compile_defs_flags}>")
 
   # Some of the definitions may be specified using -D flags in the global
   # CXX_FLAGS variables; parse those out (this also picks up NDEBUG)
