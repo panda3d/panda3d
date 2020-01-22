@@ -7,7 +7,7 @@ set(P3NATIVENET_HEADERS
   buffered_datagramconnection.h
   buffered_datagramreader.h buffered_datagramreader.I
   ringbuffer.h ringbuffer.I socket_ip.h
-  socket_tcp.h socket_tcp_listen.h socket_tcp_ssl.h
+  socket_tcp.h socket_tcp_listen.h
   time_accumulator.h time_out.h
   socket_address.I socket_address.h
   socket_portable.h  time_base.h time_span.h buffered_datagramwriter.h
@@ -25,7 +25,6 @@ set(P3NATIVENET_SOURCES
   socket_ip.cxx
   socket_tcp.cxx
   socket_tcp_listen.cxx
-  socket_tcp_ssl.cxx
   socket_udp.cxx
   socket_udp_incoming.cxx
   socket_udp_outgoing.cxx
