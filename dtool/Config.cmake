@@ -421,8 +421,9 @@ else()
 endif()
 list(APPEND PER_CONFIG_OPTIONS USE_DEBUG_PYTHON)
 
-option(HAVE_VIDEO4LINUX
-  "Set this to enable webcam support on Linux." ${IS_LINUX})
+cmake_dependent_option(HAVE_VIDEO4LINUX
+  "Set this to enable webcam support on Linux." ON
+  "IS_LINUX" OFF)
 
 
 # If you are having trouble linking in OpenGL extension functions at
