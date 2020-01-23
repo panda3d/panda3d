@@ -401,6 +401,10 @@ class build_apps(setuptools.Command):
 
         whldir = os.path.join(self.build_base, '__whl_cache__')
 
+        pip_version = [int(i) for i in pip.__version__.split('.')][0]
+        if pip_version < 9:
+            raise RuntimeError("pip 9.0 or greater is required, but found {}".format(pip.__version__))
+
         #TODO find a better way to get abi tag than from internal/private pip APIs
         if hasattr(pip, 'pep425tags'):
             pep425tags = pip.pep425tags
@@ -408,7 +412,11 @@ class build_apps(setuptools.Command):
         else:
             from pip._internal import pep425tags, wheel
 
-        abi_tag = pep425tags.get_abi_tag()
+        if pip_version >= 20:
+            from pip._vendor.packaging.tags import cpython_tags
+            abi_tag = list(cpython_tags())[0].abi
+        else:
+            abi_tag = pep425tags.get_abi_tag()
 
         if 'u' in abi_tag and (platform.startswith('win') or platform.startswith('macosx')):
             abi_tag = abi_tag.replace('u', '')
@@ -417,9 +425,6 @@ class build_apps(setuptools.Command):
         if abi_tag in ('cp26m', 'cp27m', 'cp32m') and not platform.startswith('win') and not platform.startswith('macosx'):
             abi_tag += 'u'
 
-        pip_version = pip.__version__.split('.')
-        if int(pip_version[0]) < 9:
-            raise RuntimeError("pip 9.0 or greater is required, but found {}".format(pip.__version__))
 
         # Remove any .zip files. These are built from a VCS and block for an
         # interactive prompt on subsequent downloads.
@@ -449,6 +454,11 @@ class build_apps(setuptools.Command):
 
         # Now figure out which of the downloaded wheels are relevant to us.
         tags = pep425tags.get_supported(platform=platform, abi=abi_tag)
+        if pip_version >= 20:
+            tags = [
+                tuple(str(i).split('-'))
+                for i in tags
+            ]
         wheelpaths = []
         for filename in os.listdir(whldir):
             try:
