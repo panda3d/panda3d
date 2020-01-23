@@ -30,8 +30,6 @@ public:
   IOKitInputDevice(IOHIDDeviceRef device);
   ~IOKitInputDevice();
 
-  void on_remove();
-
 private:
   void parse_element(IOHIDElementRef element);
 

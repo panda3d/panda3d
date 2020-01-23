@@ -11,6 +11,7 @@ import struct
 import io
 import distutils.sysconfig as sysconf
 import zipfile
+import importlib
 
 from . import pefile
 
@@ -2349,12 +2350,36 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
             code += b'\n' if isinstance(code, bytes) else '\n'
             co = compile(code, pathname, 'exec')
         elif type == imp.PY_COMPILED:
-            try:
-                marshal_data = importlib._bootstrap_external._validate_bytecode_header(fp.read())
-            except ImportError as exc:
-                self.msgout(2, "raise ImportError: " + str(exc), pathname)
-                raise
-            co = marshal.loads(marshal_data)
+            if sys.version_info >= (3, 7):
+                try:
+                    data = fp.read()
+                    importlib._bootstrap_external._classify_pyc(data, fqname, {})
+                except ImportError as exc:
+                    self.msgout(2, "raise ImportError: " + str(exc), pathname)
+                    raise
+
+                co = marshal.loads(memoryview(data)[16:])
+            elif sys.version_info >= (3, 4):
+                try:
+                    if sys.version_info >= (3, 5):
+                        marshal_data = importlib._bootstrap_external._validate_bytecode_header(fp.read())
+                    else:
+                        marshal_data = importlib._bootstrap._validate_bytecode_header(fp.read())
+                except ImportError as exc:
+                    self.msgout(2, "raise ImportError: " + str(exc), pathname)
+                    raise
+
+                co = marshal.loads(marshal_data)
+            else:
+                if fp.read(4) != imp.get_magic():
+                    self.msgout(2, "raise ImportError: Bad magic number", pathname)
+                    raise ImportError("Bad magic number in %s" % pathname)
+
+                fp.read(4)
+                if sys.version_info >= (3, 3):
+                    fp.read(4)
+
+                co = marshal.load(fp)
         else:
             co = None
 

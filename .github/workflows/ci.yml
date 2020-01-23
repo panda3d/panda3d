@@ -1,13 +1,277 @@
 name: Continuous Integration
 on: [push, pull_request]
+
 jobs:
+  cmake:
+    name: CMake Buildsystem
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-18.04, ubuntu-16.04, windows-2019, macOS-10.14]
+        generator: ['Unix Makefiles', 'Ninja', 'Visual Studio 16 2019', 'Xcode']
+        compiler: [Default, Clang]
+
+        composite_limit: [0, 30]
+        config: [Coverage,]
+        metalibs: ['BUILD_METALIBS=YES',]
+
+        python: ['HAVE_PYTHON=YES',]
+        eigen: ['HAVE_EIGEN=YES',]
+
+        exclude:
+          # Currently turning off metalibs causes pnmimagetypes not to be
+          # linked, except when using Clang
+        - compiler: 'Default'
+          metalibs: 'BUILD_METALIBS=NO'
+
+          # This runs out of memory in GitHub Actions
+        - os: 'windows-2019'
+          compiler: 'Clang'
+          metalibs: 'BUILD_METALIBS=YES'
+          composite_limit: 0
+
+          # LLVM bug #44205
+        - os: 'windows-2019'
+          compiler: 'Clang'
+
+          # Generators not supported on certain platforms:
+        - os: 'windows-2019'
+          generator: 'Xcode'
+        - os: 'ubuntu-16.04'
+          generator: 'Xcode'
+        - os: 'ubuntu-18.04'
+          generator: 'Xcode'
+
+        - os: 'macOS-10.14'
+          generator: 'Visual Studio 16 2019'
+        - os: 'ubuntu-16.04'
+          generator: 'Visual Studio 16 2019'
+        - os: 'ubuntu-18.04'
+          generator: 'Visual Studio 16 2019'
+
+        - os: 'windows-2019'
+          generator: 'Ninja'
+        - os: 'macOS-10.14'
+          generator: 'Ninja'
+
+        - os: 'windows-2019'
+          generator: 'Unix Makefiles'
+
+          # Require Clang and Python for coverage
+        - config: Coverage
+          compiler: Default
+        - config: Coverage
+          python: 'HAVE_PYTHON=NO'
+
+          # Ubuntu 16.04 ships with too old of an LLVM version for Coverage
+        - config: Coverage
+          os: 'ubuntu-16.04'
+
+          # Combinations that are largely redundant, but could be enabled if we
+          # want to be exhaustive:
+        - config: Coverage
+          metalibs: 'BUILD_METALIBS=NO'
+
+        - config: Coverage
+          composite_limit: 0
+
+        - config: Standard
+          eigen: 'HAVE_EIGEN=YES'
+
+        - python: 'HAVE_PYTHON=NO'
+          composite_limit: 0
+
+        - python: 'HAVE_PYTHON=NO'
+          metalibs: 'BUILD_METALIBS=NO'
+
+        - composite_limit: 0
+          metalibs: 'BUILD_METALIBS=NO'
+
+        - python: 'HAVE_PYTHON=NO'
+          eigen: 'HAVE_EIGEN=YES'
+
+        - python: 'HAVE_PYTHON=YES'
+          generator: 'Unix Makefiles'
+
+          # Default compiler on macOS *is* Clang
+        - os: 'macOS-10.14'
+          compiler: 'Default'
+
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
+
+    - name: Self-destruct makepanda
+      run: python makepanda/selfdestruct.py --yes
+
+    - name: Install dependencies (macOS)
+      if: runner.os == 'macOS'
+      run: |
+        curl -O https://www.panda3d.org/download/panda3d-1.10.5/panda3d-1.10.5-tools-mac.tar.gz
+        tar -xf panda3d-1.10.5-tools-mac.tar.gz
+
+        echo "##[set-env name=thirdpartyOption;]-D THIRDPARTY_DIRECTORY=../panda3d-1.10.5/thirdparty" -DHAVE_{OPENEXR,VRPN,ASSIMP,ODE,CG,FFMPEG}=OFF
+
+    - name: Install dependencies (Ubuntu)
+      if: startsWith(matrix.os, 'ubuntu')
+      run: >
+        sudo apt-get update
+
+        sudo apt-get install
+        build-essential ninja-build clang llvm
+        bison flex
+        libeigen3-dev libfreetype6-dev libgl1-mesa-dev libjpeg-dev libode-dev
+        libopenal-dev libpng-dev libssl-dev libvorbis-dev libx11-dev
+        libxcursor-dev libxrandr-dev nvidia-cg-toolkit zlib1g-dev
+
+        # Workaround for CMake 3.12 finding this first:
+
+        sudo rm /usr/bin/x86_64-linux-gnu-python2.7-config
+
+    - name: Cache dependencies (Windows)
+      if: runner.os == 'Windows'
+      uses: actions/cache@v1
+      with:
+        path: thirdparty-tools
+        key: ci-cmake-${{ runner.OS }}-thirdparty-v1.10.5-r1
+    - name: Install dependencies (Windows)
+      if: runner.os == 'Windows'
+      shell: powershell
+      run: |
+        if (!(Test-Path thirdparty-tools/panda3d-1.10.5)) {
+          $wc = New-Object System.Net.WebClient
+          $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.4.1/panda3d-1.10.4.1-tools-win64.zip", "thirdparty-tools.zip")
+          Expand-Archive -Path thirdparty-tools.zip
+        }
+
+        echo "##[set-env name=thirdpartyOption;]-D THIRDPARTY_DIRECTORY=../thirdparty-tools/panda3d-1.10.4.1/thirdparty"
+
+    - name: Configure
+      shell: bash
+      env:
+        CMAKE_GENERATOR: "${{ matrix.generator }}"
+      run: >
+        mkdir build
+
+        cd build
+
+        if ${{ matrix.compiler == 'Clang' }}; then
+          if [[ "$CMAKE_GENERATOR" == *Studio*2019* ]]; then
+            export CMAKE_GENERATOR_TOOLSET=ClangCL thirdpartyOption="$thirdpartyOption -DHAVE_HARFBUZZ=NO"
+          elif [[ "$CMAKE_GENERATOR" == *Studio* ]]; then
+            export CMAKE_GENERATOR_TOOLSET=LLVM thirdpartyOption="$thirdpartyOption -DHAVE_HARFBUZZ=NO"
+          else
+            export CC=clang CXX=clang++
+          fi
+        fi
+
+        cmake
+        -D COMPOSITE_SOURCE_LIMIT=${{ matrix.composite_limit }}
+        -D CMAKE_BUILD_TYPE="${{ matrix.config }}"
+        -D ${{ matrix.metalibs }}
+        -D ${{ matrix.python }}
+        -D ${{ matrix.eigen }}
+        ${thirdpartyOption:-}
+        ..
+
+    - name: Build (no Python)
+      if: contains(matrix.python, 'NO')
+      # BEGIN A
+      working-directory: build
+      run: cmake --build . --config ${{ matrix.config }}
+      # END A
+
+    - name: Setup Python (Python 2.7)
+      if: contains(matrix.python, 'YES')
+      uses: actions/setup-python@v1
+      with:
+        python-version: 2.7
+    - name: Configure (Python 2.7)
+      if: contains(matrix.python, 'YES')
+      working-directory: build
+      shell: bash
+      run: >
+        cmake -DWANT_PYTHON_VERSION=2.7
+        -DPython_FIND_REGISTRY=NEVER -DPython_ROOT=$pythonLocation .
+    - name: Build (Python 2.7)
+      if: contains(matrix.python, 'YES')
+      # BEGIN A
+      working-directory: build
+      run: cmake --build . --config ${{ matrix.config }}
+      # END A
+    - name: Test (Python 2.7)
+      # BEGIN B
+      if: contains(matrix.python, 'YES')
+      working-directory: build
+      shell: bash
+      run: |
+        PYTHON_EXECUTABLE=$(grep 'Python_EXECUTABLE:FILEPATH' CMakeCache.txt | sed 's/.*=//')
+        $PYTHON_EXECUTABLE -m pip install pytest pytest-cov
+        export COVERAGE_FILE=.coverage.$RANDOM LLVM_PROFILE_FILE=$PWD/pid-%p.profraw
+        ctest -V -C ${{ matrix.config }}
+      # END B
+
+    - name: Setup Python (Python 3.7)
+      if: contains(matrix.python, 'YES')
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.7
+    - name: Configure (Python 3.7)
+      if: contains(matrix.python, 'YES')
+      working-directory: build
+      shell: bash
+      run: >
+        cmake -DWANT_PYTHON_VERSION=3.7
+        -DPython_FIND_REGISTRY=NEVER -DPython_ROOT=$pythonLocation .
+    - name: Build (Python 3.7)
+      if: contains(matrix.python, 'YES')
+      # BEGIN A
+      working-directory: build
+      run: cmake --build . --config ${{ matrix.config }}
+      # END A
+    - name: Test (Python 3.7)
+      # BEGIN B
+      if: contains(matrix.python, 'YES')
+      working-directory: build
+      shell: bash
+      run: |
+        PYTHON_EXECUTABLE=$(grep 'Python_EXECUTABLE:FILEPATH' CMakeCache.txt | sed 's/.*=//')
+        $PYTHON_EXECUTABLE -m pip install pytest pytest-cov
+        export COVERAGE_FILE=.coverage.$RANDOM LLVM_PROFILE_FILE=$PWD/pid-%p.profraw
+        ctest -V -C ${{ matrix.config }}
+      # END B
+
+    - name: Upload coverage reports
+      if: always() && matrix.config == 'Coverage'
+      working-directory: build
+      shell: bash
+      env:
+        CODECOV_TOKEN: d74b5f94-f4c1-4ee0-b186-26064d853ae3 # TODO secret
+      run: |
+        shopt -s expand_aliases
+        if ${{ runner.os == 'macOS' }}; then alias llvm-profdata='xcrun llvm-profdata' llvm-cov='xcrun llvm-cov'; fi
+
+        python -m coverage combine $(find . -name '.coverage.*')
+
+        llvm-profdata merge pid-*.profraw -o coverage.profdata
+        llvm-cov show $(grep -Rl LLVM_PROFILE_FILE . | sed 's/^/-object /') -instr-profile=coverage.profdata > coverage.txt
+        bash <(curl -s https://codecov.io/bash)
+
   makepanda:
+    if: 1 == 0
     strategy:
       matrix:
-        os: [ubuntu-16.04, windows-2016, macOS-10.14]
+        os: [ubuntu-16.04, windows-2016, macOS-latest]
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
     - name: Install dependencies (Ubuntu)
       if: matrix.os == 'ubuntu-16.04'
       run: |
@@ -23,11 +287,11 @@ jobs:
     - name: Get thirdparty packages (macOS)
       if: runner.os == 'macOS'
       run: |
-        curl -O https://www.panda3d.org/download/panda3d-1.10.4.1/panda3d-1.10.4.1-tools-mac.tar.gz
-        tar -xf panda3d-1.10.4.1-tools-mac.tar.gz
-        mv panda3d-1.10.4.1/thirdparty thirdparty
-        rmdir panda3d-1.10.4.1
-        (cd thirdparty/darwin-libs-a && rm -rf ode openal vrpn openexr assimp rocket)
+        curl -O https://www.panda3d.org/download/panda3d-1.10.5/panda3d-1.10.5-tools-mac.tar.gz
+        tar -xf panda3d-1.10.5-tools-mac.tar.gz
+        mv panda3d-1.10.5/thirdparty thirdparty
+        rmdir panda3d-1.10.5
+        (cd thirdparty/darwin-libs-a && rm -rf rocket)
     - name: Set up Python 3.7
       uses: actions/setup-python@v1
       with:

@@ -164,7 +164,7 @@ get_current_position() {
  * Appends to an existing GeomNode a new Geom that will render the series of
  * line segments and points described via calls to move_to() and draw_to().
  * The lines and points are created with the color and thickness established
- * by calls to set_color() and set_thick().
+ * by calls to set_color() and set_thickness().
  *
  * If dynamic is true, the line segments will be created with the dynamic Geom
  * setting, optimizing them for runtime vertex animation.

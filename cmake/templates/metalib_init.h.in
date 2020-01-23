@@ -1,0 +1,9 @@
+#ifndef _METALIB_INIT_@target_name@
+#define _METALIB_INIT_@target_name@
+
+#include "dtoolbase.h"
+
+IMPORT_CLASS void @init_func@();
+@export_declarations@
+
+#endif

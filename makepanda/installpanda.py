@@ -277,3 +277,8 @@ if (__name__ == "__main__"):
                  outputdir=options.outputdir,
                  python_versions=ReadPythonVersionInfoFile())
     print("Installation finished!")
+
+    if not destdir:
+        warn_prefix = "%sNote:%s " % (GetColor("red"), GetColor())
+        print(warn_prefix + "You may need to call this command to update the library cache:")
+        print("  sudo ldconfig")

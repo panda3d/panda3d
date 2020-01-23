@@ -1215,11 +1215,7 @@ void PNMFileTypeTIFF::
 tiff_warning(const char *, const char *format, va_list ap) {
   static const int buffer_size = 1024;
   char buffer[buffer_size];
-#ifdef _WIN32
-  vsprintf(buffer, format, ap);
-#else
   vsnprintf(buffer, buffer_size, format, ap);
-#endif
 
   // We ignore the module.  It seems generally useless to us.
   pnmimage_tiff_cat.warning()

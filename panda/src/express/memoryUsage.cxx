@@ -18,7 +18,7 @@
 #include "mutexImpl.h"
 #include "interrogate_request.h"
 
-#if defined(_MSC_VER) && defined(__cplusplus) && defined(_DEBUG)
+#if defined(_MSC_VER) && defined(_DEBUG)
 #include <crtdbg.h>
 #endif
 
@@ -520,7 +520,7 @@ MemoryUsage(const MemoryHook &copy) :
 #error Cannot compile MemoryUsage without malloc wrappers!
 #endif
 
-#ifdef _WIN32
+#ifdef _MSC_VER
   // On a debug Windows build, we can set this malloc hook which allows
   // tracking every malloc call, even from subordinate libraries.
   _CrtSetAllocHook(&win32_malloc_hook);

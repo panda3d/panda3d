@@ -92,6 +92,7 @@ typedef void (APIENTRYP PFNGLGENBUFFERSPROC) (GLsizei n, GLuint *buffers);
 typedef void (APIENTRYP PFNGLBINDBUFFERPROC) (GLenum target, GLuint buffer);
 typedef void (APIENTRYP PFNGLBUFFERSUBDATAPROC) (GLenum target, GLintptr offset, GLsizeiptr size, const GLvoid *data);
 typedef void (APIENTRYP PFNGLDRAWBUFFERSPROC) (GLsizei n, const GLenum *bufs);
+typedef void (APIENTRYP PFNGLREADBUFFERPROC) (GLenum src);
 typedef void (APIENTRYP PFNGLCLEARBUFFERFVPROC) (GLenum buffer, GLint drawbuffer, const GLfloat *value);
 typedef void (APIENTRYP PFNGLBUFFERDATAPROC) (GLenum target, GLsizeiptr size, const GLvoid *data, GLenum usage);
 typedef void (APIENTRYP PFNGLDELETEBUFFERSPROC) (GLsizei n, const GLuint *buffers);
@@ -938,6 +939,10 @@ public:
   INLINE bool get_supports_framebuffer_blit();
   PFNGLBLITFRAMEBUFFEREXTPROC _glBlitFramebuffer;
   PFNGLDRAWBUFFERSPROC _glDrawBuffers;
+
+#if defined(OPENGLES) && !defined(OPENGLES_1)
+  PFNGLREADBUFFERPROC _glReadBuffer;
+#endif
 
 #ifndef OPENGLES_1
   PFNGLCLEARBUFFERFVPROC _glClearBufferfv;

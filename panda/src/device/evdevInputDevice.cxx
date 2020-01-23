@@ -364,7 +364,7 @@ init_device() {
 
   // Try to detect which type of device we have here
   if (_device_class == DeviceClass::unknown) {
-    int device_scores[(size_t)DeviceClass::spatial_mouse] = {0};
+    int device_scores[(size_t)DeviceClass::digitizer + 1] = {0};
 
     // Test for specific keys
     if (test_bit(BTN_GAMEPAD, keys) && test_bit(ABS_X, axes) && test_bit(ABS_RX, axes)) {
@@ -384,6 +384,9 @@ init_device() {
     }
     if (test_bit(BTN_MOUSE, keys) && test_bit(EV_REL, evtypes)) {
       device_scores[(size_t)DeviceClass::mouse] += 20;
+    }
+    if (test_bit(BTN_DIGI, keys) && test_bit(EV_ABS, evtypes)) {
+      device_scores[(size_t)DeviceClass::digitizer] += 20;
     }
     uint8_t unknown_keys[] = {KEY_POWER};
     for (int i = 0; i < 1; i++) {
@@ -424,7 +427,7 @@ init_device() {
 
     // Check which device type got the most points
     int highest_score = 0;
-    for (size_t i = 0; i < (size_t)DeviceClass::spatial_mouse; i++) {
+    for (size_t i = 0; i <= (size_t)DeviceClass::digitizer; i++) {
       if (device_scores[i] > highest_score) {
         highest_score = device_scores[i];
         _device_class = (DeviceClass)i;
@@ -619,6 +622,9 @@ init_device() {
             have_analog_triggers = true;
           }
           break;
+        case ABS_PRESSURE:
+          axis = InputDevice::Axis::pressure;
+          break;
         }
 
         // Check the initial value and ranges.
@@ -630,7 +636,8 @@ init_device() {
           // Also T.Flight Hotas X throttle is reversed and can go backwards.
           if (axis == Axis::yaw || axis == Axis::rudder || axis == Axis::left_y || axis == Axis::right_y ||
               (axis == Axis::throttle && (quirks & QB_reversed_throttle) != 0) ||
-              (_device_class == DeviceClass::spatial_mouse && (axis == Axis::y || axis == Axis::z || axis == Axis::roll))) {
+              (_device_class == DeviceClass::spatial_mouse && (axis == Axis::y || axis == Axis::z || axis == Axis::roll)) ||
+              (_device_class == DeviceClass::digitizer && axis == Axis::y)) {
             std::swap(absinfo.maximum, absinfo.minimum);
           }
           if (axis == Axis::throttle && (quirks & QB_centered_throttle) != 0) {

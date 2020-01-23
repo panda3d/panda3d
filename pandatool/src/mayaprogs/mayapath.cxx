@@ -107,6 +107,7 @@ struct MayaVerInfo maya_versions[] = {
   { "MAYA2017", "2017"},
   { "MAYA2018", "2018"},
   { "MAYA2019", "2019"},
+  { "MAYA2020", "2020"},
   { 0, 0 },
 };
 
@@ -194,26 +195,22 @@ int
 main(int argc, char *argv[]) {
   // First, get the command line and append _bin, so we will actually run
   // maya2egg_bin.exe, egg2maya_bin.exe, etc.
-  Filename command = Filename::from_os_specific(argv[0]);
-  if (!command.is_fully_qualified()) {
-    DSearchPath path;
-    path.append_path(ExecutionEnvironment::get_environment_variable("PATH"));
-#ifdef _WIN32
-    command.set_extension("exe");
-#endif
-    command.resolve_filename(path);
+  Filename command = ExecutionEnvironment::get_binary_name();
+
+  if (command.empty() || command == "unknown" || !command.exists()) {
+    command = Filename::from_os_specific(argv[0]);
+
+    if (!command.is_fully_qualified()) {
+      DSearchPath path;
+      path.append_path(ExecutionEnvironment::get_environment_variable("PATH"));
+  #ifdef _WIN32
+      command.set_extension("exe");
+  #endif
+      command.resolve_filename(path);
+    }
   }
 
-#ifdef _WIN32
-  if (command.get_extension() == "exe") {
-    command.set_extension("");
-  }
-#endif
-
-  command = command.get_fullpath() + string("_bin");
-#ifdef _WIN32
-  command.set_extension("exe");
-#endif
+  command.set_basename_wo_extension(command.get_basename_wo_extension() + "_bin");
   string os_command = command.to_os_specific();
 
   // First start with $PANDA_MAYA_LOCATION.  If it is set, it overrides

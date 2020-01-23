@@ -237,7 +237,7 @@ class build_apps(setuptools.Command):
         self.icons = {}
         self.platforms = [
             'manylinux1_x86_64',
-            'macosx_10_6_x86_64',
+            'macosx_10_9_x86_64',
             'win_amd64',
         ]
         self.plugins = []

@@ -32,6 +32,7 @@
 #include "pvector.h"
 #include "pmap.h"
 #include "pset.h"
+#include "vector_uchar.h"
 
 #else  // WITHIN_PANDA
 
@@ -81,6 +82,7 @@
 #define nassertr_always(condition, return_value) assert(condition)
 #define nassertv(condition) assert(condition)
 #define nassertv_always(condition) assert(condition)
+#define nassert_raise(message) {std::cerr << message << std::endl; abort();}
 
 // Panda defines a special Filename class.  We'll use an ordinary string
 // instead.
@@ -97,8 +99,10 @@ typedef std::string Filename;
 #define pvector std::vector
 #define pmap std::map
 #define pset std::set
+#define vector_uchar std::vector<unsigned char>
 
 #include <stdint.h>
+#include <string.h>
 
 typedef std::ifstream pifstream;
 typedef std::ofstream pofstream;
