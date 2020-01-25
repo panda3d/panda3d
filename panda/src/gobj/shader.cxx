@@ -384,7 +384,7 @@ cp_dependency(ShaderMatInput inp) {
   if (inp == SMO_attr_material || inp == SMO_attr_material2) {
     dep |= SSD_material | SSD_frame;
   }
-  if (inp == SMO_attr_color) {
+  if (inp == SMO_attr_color || inp == SMO_attr_material2) {
     dep |= SSD_color;
   }
   if (inp == SMO_attr_colorscale) {
@@ -422,6 +422,7 @@ cp_dependency(ShaderMatInput inp) {
       (inp == SMO_slight_x) ||
       (inp == SMO_satten_x) ||
       (inp == SMO_mat_constant_x) ||
+      (inp == SMO_mat_constant_x_attrib) ||
       (inp == SMO_vec_constant_x) ||
       (inp == SMO_vec_constant_x_attrib) ||
       (inp == SMO_view_x_to_view) ||
@@ -441,6 +442,8 @@ cp_dependency(ShaderMatInput inp) {
         (inp == SMO_plight_x) ||
         (inp == SMO_slight_x) ||
         (inp == SMO_satten_x) ||
+        (inp == SMO_mat_constant_x) ||
+        (inp == SMO_mat_constant_x_attrib) ||
         (inp == SMO_vec_constant_x_attrib) ||
         (inp == SMO_view_x_to_view) ||
         (inp == SMO_view_to_view_x) ||
@@ -459,10 +462,13 @@ cp_dependency(ShaderMatInput inp) {
       (inp == SMO_light_source_i_attrib) ||
       (inp == SMO_light_source_i_packed)) {
     dep |= SSD_light | SSD_frame;
-    if (inp == SMO_light_source_i_attrib ||
-        inp == SMO_light_source_i_packed) {
-      dep |= SSD_view_transform;
-    }
+  }
+  if (inp == SMO_light_source_i_attrib ||
+      inp == SMO_light_source_i_packed ||
+      inp == SMO_mat_constant_x_attrib ||
+      inp == SMO_vec_constant_x_attrib) {
+    // Some light attribs (eg. position) need to be transformed to view space.
+    dep |= SSD_view_transform;
   }
   if ((inp == SMO_light_product_i_ambient) ||
       (inp == SMO_light_product_i_diffuse) ||
@@ -499,14 +505,10 @@ cp_dependency(ShaderMatInput inp) {
 }
 
 /**
- * Analyzes a ShaderMatSpec and decides what it should use its cache for.  It
- * can cache the results of any one opcode, or, it can cache the entire
- * result.  This routine needs to be smart enough to know which data items can
- * be correctly cached, and which cannot.
+ * Adds the given ShaderMatSpec to the shader's mat spec table.
  */
 void Shader::
-cp_optimize_mat_spec(ShaderMatSpec &spec) {
-
+cp_add_mat_spec(ShaderMatSpec &spec) {
   // If we're composing with identity, simplify.
 
   if (spec._func == SMF_first) {
@@ -563,10 +565,93 @@ cp_optimize_mat_spec(ShaderMatSpec &spec) {
     }
   }
 
-  // Calculate state and transform dependencies.
+  // Determine which part is an array, for determining which one the count and
+  // index refer to.  (It can't be the case that both parts are arrays.)
+  int begin[2] = {0, 0};
+  int end[2] = {1, 1};
+  if (spec._index > 0) {
+    for (int i = 0; i < 2; ++i) {
+      if (spec._part[i] == SMO_texmat_i ||
+          spec._part[i] == SMO_inv_texmat_i ||
+          spec._part[i] == SMO_light_source_i_attrib ||
+          spec._part[i] == SMO_light_product_i_ambient ||
+          spec._part[i] == SMO_light_product_i_diffuse ||
+          spec._part[i] == SMO_light_product_i_specular ||
+          spec._part[i] == SMO_apiview_clipplane_i ||
+          spec._part[i] == SMO_tex_is_alpha_i ||
+          spec._part[i] == SMO_transform_i ||
+          spec._part[i] == SMO_slider_i ||
+          spec._part[i] == SMO_light_source_i_packed ||
+          spec._part[i] == SMO_texscale_i ||
+          spec._part[i] == SMO_texcolor_i) {
+        begin[i] = spec._index;
+        end[i] = spec._index + 1;
+      }
+    }
+    nassertv(end[0] == 1 || end[1] == 1);
+  }
 
-  spec._dep[0] = cp_dependency(spec._part[0]);
-  spec._dep[1] = cp_dependency(spec._part[1]);
+  // Make sure that we have a place in the part cache for both parts.
+  int num_parts = (spec._func != SMF_first) ? 2 : 1;
+
+  for (int p = 0; p < num_parts; ++p) {
+    int dep = cp_dependency(spec._part[p]);
+    spec._dep |= dep;
+
+    // Do we already have a spot in the cache for this part?
+    size_t i;
+    size_t offset = 0;
+    for (i = 0; i < _mat_parts.size(); ++i) {
+      ShaderMatPart &part = _mat_parts[i];
+      if (part._part == spec._part[p] && part._arg == spec._arg[p]) {
+        int diff = end[p] - part._count;
+        if (diff <= 0) {
+          // The existing cache entry is big enough.
+          break;
+        } else {
+          // It's not big enough.  Enlarge it, which means we have to change the
+          // offset of some of the other spec entries.
+          for (ShaderMatSpec &spec : _mat_spec) {
+            if (spec._cache_offset[0] >= offset + part._count) {
+              spec._cache_offset[0] += diff;
+            }
+            if (spec._cache_offset[1] >= offset + part._count) {
+              spec._cache_offset[1] += diff;
+            }
+          }
+          part._count = end[p];
+          break;
+        }
+      }
+      offset += part._count;
+    }
+    if (i == _mat_parts.size()) {
+      // Didn't find this part yet, create a new one.
+      ShaderMatPart part;
+      part._part = spec._part[p];
+      part._count = end[p];
+      part._arg = spec._arg[p];
+      part._dep = dep;
+      _mat_parts.push_back(std::move(part));
+    }
+    spec._cache_offset[p] = offset + begin[p];
+  }
+
+  _mat_spec.push_back(spec);
+  _mat_deps |= spec._dep;
+}
+
+/**
+ * Returns the total size of the matrix part cache.
+ */
+size_t Shader::
+cp_get_mat_cache_size() const {
+  size_t size = 0;
+  for (const ShaderMatPart &part : _mat_parts) {
+    size += part._count;
+  }
+  std::cerr << "mat cache size is " << size << "\n";
+  return size;
 }
 
 #ifdef HAVE_CG
@@ -776,9 +861,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     bind._arg[0] = nullptr;
     bind._index = atoi(pieces[2].c_str());
 
-    cp_optimize_mat_spec(bind);
-    _mat_spec.push_back(bind);
-    _mat_deps |= bind._dep[0] | bind._dep[1];
+    cp_add_mat_spec(bind);
     return true;
   }
 
@@ -931,9 +1014,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     if (!cp_parse_eol(p, pieces, next)) {
       return false;
     }
-    cp_optimize_mat_spec(bind);
-    _mat_spec.push_back(bind);
-    _mat_deps |= bind._dep[0] | bind._dep[1];
+    cp_add_mat_spec(bind);
     return true;
   }
 
@@ -1041,9 +1122,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
       return false;
     }
 
-    cp_optimize_mat_spec(bind);
-    _mat_spec.push_back(bind);
-    _mat_deps |= bind._dep[0] | bind._dep[1];
+    cp_add_mat_spec(bind);
     return true;
   }
 
@@ -1055,9 +1134,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     }
     ShaderMatSpec bind;
 
-    cp_optimize_mat_spec(bind);
-    _mat_spec.push_back(bind);
-    _mat_deps |= bind._dep[0] | bind._dep[1];
+    cp_add_mat_spec(bind);
     return true;
   }
 
@@ -1079,9 +1156,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     bind._part[1] = SMO_identity;
     bind._arg[1] = nullptr;
 
-    cp_optimize_mat_spec(bind);
-    _mat_spec.push_back(bind);
-    _mat_deps |= bind._dep[0] | bind._dep[1];
+    cp_add_mat_spec(bind);
     return true;
   }
 
@@ -1101,9 +1176,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     bind._part[1] = SMO_identity;
     bind._arg[1] = nullptr;
 
-    cp_optimize_mat_spec(bind);
-    _mat_spec.push_back(bind);
-    _mat_deps |= bind._dep[0] | bind._dep[1];
+    cp_add_mat_spec(bind);
     return true;
   }
 
@@ -1143,9 +1216,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     if (!cp_parse_eol(p, pieces, next)) {
       return false;
     }
-    cp_optimize_mat_spec(bind);
-    _mat_spec.push_back(bind);
-    _mat_deps |= bind._dep[0] | bind._dep[1];
+    cp_add_mat_spec(bind);
     return true;
   }
 
@@ -1166,9 +1237,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     bind._arg[1] = nullptr;
     bind._index = atoi(pieces[1].c_str());
 
-    cp_optimize_mat_spec(bind);
-    _mat_spec.push_back(bind);
-    _mat_deps |= bind._dep[0] | bind._dep[1];
+    cp_add_mat_spec(bind);
     return true;
   }
 
@@ -1189,9 +1258,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     bind._arg[1] = nullptr;
     bind._index = atoi(pieces[1].c_str());
 
-    cp_optimize_mat_spec(bind);
-    _mat_spec.push_back(bind);
-    _mat_deps |= bind._dep[0] | bind._dep[1];
+    cp_add_mat_spec(bind);
     return true;
   }
 
@@ -1212,9 +1279,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     bind._arg[1] = nullptr;
     bind._index = atoi(pieces[1].c_str());
 
-    cp_optimize_mat_spec(bind);
-    _mat_spec.push_back(bind);
-    _mat_deps |= bind._dep[0] | bind._dep[1];
+    cp_add_mat_spec(bind);
     return true;
   }
 
@@ -1234,9 +1299,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     bind._part[1] = SMO_identity;
     bind._arg[1] = nullptr;
 
-    cp_optimize_mat_spec(bind);
-    _mat_spec.push_back(bind);
-    _mat_deps |= bind._dep[0] | bind._dep[1];
+    cp_add_mat_spec(bind);
     return true;
   }
 
@@ -1256,9 +1319,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     bind._part[1] = SMO_identity;
     bind._arg[1] = nullptr;
 
-    cp_optimize_mat_spec(bind);
-    _mat_spec.push_back(bind);
-    _mat_deps |= bind._dep[0] | bind._dep[1];
+    cp_add_mat_spec(bind);
     return true;
   }
 
@@ -1303,9 +1364,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
       return false;
     }
 
-    cp_optimize_mat_spec(bind);
-    _mat_spec.push_back(bind);
-    _mat_deps |= bind._dep[0] | bind._dep[1];
+    cp_add_mat_spec(bind);
     return true;
   }
 
@@ -1388,9 +1447,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     bind._arg[0] = InternalName::make(pieces[1]);
     bind._part[1] = SMO_identity;
     bind._arg[1] = nullptr;
-    cp_optimize_mat_spec(bind);
-    _mat_spec.push_back(bind);
-    _mat_deps |= bind._dep[0] | bind._dep[1];
+    cp_add_mat_spec(bind);
     return true;
   }
 
@@ -1409,9 +1466,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     bind._arg[0] = InternalName::make(pieces[1]);
     bind._part[1] = SMO_identity;
     bind._arg[1] = nullptr;
-    cp_optimize_mat_spec(bind);
-    _mat_spec.push_back(bind);
-    _mat_deps |= bind._dep[0] | bind._dep[1];
+    cp_add_mat_spec(bind);
     return true;
   }
 
@@ -2362,7 +2417,6 @@ Shader(ShaderLanguage lang) :
   _loaded(false),
   _language(lang),
   _last_modified(0),
-  _mat_deps(0),
   _cache_compiled_shader(false)
 {
 #ifdef HAVE_CG
