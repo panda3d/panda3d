@@ -7,104 +7,83 @@ jobs:
 
     strategy:
       fail-fast: false
+
       matrix:
-        os: [ubuntu-18.04, ubuntu-16.04, windows-2019, macOS-10.14]
-        generator: ['Unix Makefiles', 'Ninja', 'Visual Studio 16 2019', 'Xcode']
-        compiler: [Default, Clang]
+        profile:
+        - ubuntu-xenial-standard-unity-makefile
+        - ubuntu-bionic-coverage-ninja
+        - macos-eigen-coverage-unity-xcode
+        - macos-nometa-standard-makefile
+#       - windows-standard-unity-msvc # FIXME when GH Actions runners upgrade CMake to >=3.16.1
+        - windows-nopython-nometa-standard-msvc
 
-        composite_limit: [0, 30]
-        config: [Coverage,]
-        metalibs: ['BUILD_METALIBS=YES',]
-
-        python: ['HAVE_PYTHON=YES',]
-        eigen: ['HAVE_EIGEN=YES',]
-
-        exclude:
-          # Currently turning off metalibs causes pnmimagetypes not to be
-          # linked, except when using Clang
-        - compiler: 'Default'
-          metalibs: 'BUILD_METALIBS=NO'
-
-          # This runs out of memory in GitHub Actions
-        - os: 'windows-2019'
-          compiler: 'Clang'
-          metalibs: 'BUILD_METALIBS=YES'
-          composite_limit: 0
-
-          # LLVM bug #44205
-        - os: 'windows-2019'
-          compiler: 'Clang'
-
-          # Generators not supported on certain platforms:
-        - os: 'windows-2019'
-          generator: 'Xcode'
-        - os: 'ubuntu-16.04'
-          generator: 'Xcode'
-        - os: 'ubuntu-18.04'
-          generator: 'Xcode'
-
-        - os: 'macOS-10.14'
-          generator: 'Visual Studio 16 2019'
-        - os: 'ubuntu-16.04'
-          generator: 'Visual Studio 16 2019'
-        - os: 'ubuntu-18.04'
-          generator: 'Visual Studio 16 2019'
-
-        - os: 'windows-2019'
-          generator: 'Ninja'
-        - os: 'macOS-10.14'
-          generator: 'Ninja'
-
-        - os: 'windows-2019'
-          generator: 'Unix Makefiles'
-
-          # Require Clang and Python for coverage
-        - config: Coverage
+        include:
+        - profile: ubuntu-xenial-standard-unity-makefile
+          os: ubuntu-16.04
+          config: Standard
+          unity: YES
+          generator: Unix Makefiles
           compiler: Default
-        - config: Coverage
-          python: 'HAVE_PYTHON=NO'
+          metalibs: YES
+          python: YES
+          eigen: NO
 
-          # Ubuntu 16.04 ships with too old of an LLVM version for Coverage
-        - config: Coverage
-          os: 'ubuntu-16.04'
+        - profile: ubuntu-bionic-coverage-ninja
+          os: ubuntu-18.04
+          config: Coverage
+          unity: NO
+          generator: Ninja
+          compiler: Clang
+          metalibs: YES
+          python: YES
+          eigen: NO
 
-          # Combinations that are largely redundant, but could be enabled if we
-          # want to be exhaustive:
-        - config: Coverage
-          metalibs: 'BUILD_METALIBS=NO'
+        - profile: macos-eigen-coverage-unity-xcode
+          os: macOS-latest
+          config: Coverage
+          unity: YES
+          generator: Xcode
+          compiler: Default
+          metalibs: YES
+          python: YES
+          eigen: YES
 
-        - config: Coverage
-          composite_limit: 0
+        - profile: macos-nometa-standard-makefile
+          os: macOS-latest
+          config: Standard
+          unity: NO
+          generator: Unix Makefiles
+          compiler: Default
+          metalibs: NO
+          python: YES
+          eigen: NO
 
-        - config: Standard
-          eigen: 'HAVE_EIGEN=YES'
+        - profile: windows-standard-unity-msvc
+          os: windows-2019
+          config: Standard
+          unity: YES
+          generator: Visual Studio 16 2019
+          compiler: Default
+          metalibs: YES
+          python: YES
+          eigen: NO
 
-        - python: 'HAVE_PYTHON=NO'
-          composite_limit: 0
-
-        - python: 'HAVE_PYTHON=NO'
-          metalibs: 'BUILD_METALIBS=NO'
-
-        - composite_limit: 0
-          metalibs: 'BUILD_METALIBS=NO'
-
-        - python: 'HAVE_PYTHON=NO'
-          eigen: 'HAVE_EIGEN=YES'
-
-        - python: 'HAVE_PYTHON=YES'
-          generator: 'Unix Makefiles'
-
-          # Default compiler on macOS *is* Clang
-        - os: 'macOS-10.14'
-          compiler: 'Default'
-
+        - profile: windows-nopython-nometa-standard-msvc
+          os: windows-2019
+          config: Standard
+          unity: NO
+          generator: Visual Studio 16 2019
+          compiler: Default
+          metalibs: NO
+          python: NO
+          eigen: NO
 
     runs-on: ${{ matrix.os }}
 
     steps:
     - uses: actions/checkout@v1
       with:
-        fetch-depth: 1
+        fetch-depth: 10
 
     - name: Self-destruct makepanda
       run: python makepanda/selfdestruct.py --yes
@@ -114,25 +93,20 @@ jobs:
       run: |
         curl -O https://www.panda3d.org/download/panda3d-1.10.5/panda3d-1.10.5-tools-mac.tar.gz
         tar -xf panda3d-1.10.5-tools-mac.tar.gz
-
-        echo "##[set-env name=thirdpartyOption;]-D THIRDPARTY_DIRECTORY=../panda3d-1.10.5/thirdparty" -DHAVE_{OPENEXR,VRPN,ASSIMP,ODE,CG,FFMPEG}=OFF
-
+        brew install ccache
+        echo "##[set-env name=thirdpartyOption;]-D THIRDPARTY_DIRECTORY=../panda3d-1.10.5/thirdparty" -DHAVE_CG=OFF
     - name: Install dependencies (Ubuntu)
       if: startsWith(matrix.os, 'ubuntu')
       run: >
         sudo apt-get update
-
         sudo apt-get install
-        build-essential ninja-build clang llvm
+        build-essential ninja-build clang llvm ccache
         bison flex
         libeigen3-dev libfreetype6-dev libgl1-mesa-dev libjpeg-dev libode-dev
         libopenal-dev libpng-dev libssl-dev libvorbis-dev libx11-dev
         libxcursor-dev libxrandr-dev nvidia-cg-toolkit zlib1g-dev
-
         # Workaround for CMake 3.12 finding this first:
-
         sudo rm /usr/bin/x86_64-linux-gnu-python2.7-config
-
     - name: Cache dependencies (Windows)
       if: runner.os == 'Windows'
       uses: actions/cache@v1
@@ -145,11 +119,16 @@ jobs:
       run: |
         if (!(Test-Path thirdparty-tools/panda3d-1.10.5)) {
           $wc = New-Object System.Net.WebClient
-          $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.4.1/panda3d-1.10.4.1-tools-win64.zip", "thirdparty-tools.zip")
+          $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.5/panda3d-1.10.5-tools-win64.zip", "thirdparty-tools.zip")
           Expand-Archive -Path thirdparty-tools.zip
         }
-
-        echo "##[set-env name=thirdpartyOption;]-D THIRDPARTY_DIRECTORY=../thirdparty-tools/panda3d-1.10.4.1/thirdparty"
+        echo "##[set-env name=thirdpartyOption;]-D THIRDPARTY_DIRECTORY=../thirdparty-tools/panda3d-1.10.5/thirdparty"
+    - name: ccache (non-Windows)
+      if: runner.os != 'Windows'
+      uses: actions/cache@v1
+      with:
+        path: ccache
+        key: ci-cmake-ccache-${{ matrix.profile }}
 
     - name: Configure
       shell: bash
@@ -157,9 +136,7 @@ jobs:
         CMAKE_GENERATOR: "${{ matrix.generator }}"
       run: >
         mkdir build
-
         cd build
-
         if ${{ matrix.compiler == 'Clang' }}; then
           if [[ "$CMAKE_GENERATOR" == *Studio*2019* ]]; then
             export CMAKE_GENERATOR_TOOLSET=ClangCL thirdpartyOption="$thirdpartyOption -DHAVE_HARFBUZZ=NO"
@@ -169,21 +146,24 @@ jobs:
             export CC=clang CXX=clang++
           fi
         fi
-
+        if ${{ runner.os != 'Windows' }}; then
+          compilerLauncher=$(echo -DCMAKE_C{,XX}_COMPILER_LAUNCHER=ccache)
+          echo "##[set-env name=CCACHE_DIR;]$(dirname $PWD)/ccache"
+        fi
         cmake
-        -D COMPOSITE_SOURCE_LIMIT=${{ matrix.composite_limit }}
+        ${compilerLauncher:-}
+        -D CMAKE_UNITY_BUILD=${{ matrix.unity }}
         -D CMAKE_BUILD_TYPE="${{ matrix.config }}"
-        -D ${{ matrix.metalibs }}
-        -D ${{ matrix.python }}
-        -D ${{ matrix.eigen }}
+        -D BUILD_METALIBS=${{ matrix.metalibs }}
+        -D HAVE_PYTHON=${{ matrix.python }}
+        -D HAVE_EIGEN=${{ matrix.eigen }}
         ${thirdpartyOption:-}
         ..
-
     - name: Build (no Python)
       if: contains(matrix.python, 'NO')
       # BEGIN A
       working-directory: build
-      run: cmake --build . --config ${{ matrix.config }}
+      run: cmake --build . --config ${{ matrix.config }} --parallel 4
       # END A
 
     - name: Setup Python (Python 2.7)
@@ -202,9 +182,69 @@ jobs:
       if: contains(matrix.python, 'YES')
       # BEGIN A
       working-directory: build
-      run: cmake --build . --config ${{ matrix.config }}
+      run: cmake --build . --config ${{ matrix.config }} --parallel 4
       # END A
     - name: Test (Python 2.7)
+      # BEGIN B
+      if: contains(matrix.python, 'YES')
+      working-directory: build
+      shell: bash
+      run: |
+        PYTHON_EXECUTABLE=$(grep 'Python_EXECUTABLE:FILEPATH' CMakeCache.txt | sed 's/.*=//')
+        $PYTHON_EXECUTABLE -m pip install pytest pytest-cov
+        export COVERAGE_FILE=.coverage.$RANDOM LLVM_PROFILE_FILE=$PWD/pid-%p.profraw
+        ctest -V -C ${{ matrix.config }}
+      # END B
+
+    - name: Setup Python (Python 3.5)
+      if: contains(matrix.python, 'YES')
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.5
+    - name: Configure (Python 3.5)
+      if: contains(matrix.python, 'YES')
+      working-directory: build
+      shell: bash
+      run: >
+        cmake -DWANT_PYTHON_VERSION=3.5
+        -DPython_FIND_REGISTRY=NEVER -DPython_ROOT=$pythonLocation .
+    - name: Build (Python 3.5)
+      if: contains(matrix.python, 'YES')
+      # BEGIN A
+      working-directory: build
+      run: cmake --build . --config ${{ matrix.config }} --parallel 4
+      # END A
+    - name: Test (Python 3.5)
+      # BEGIN B
+      if: contains(matrix.python, 'YES')
+      working-directory: build
+      shell: bash
+      run: |
+        PYTHON_EXECUTABLE=$(grep 'Python_EXECUTABLE:FILEPATH' CMakeCache.txt | sed 's/.*=//')
+        $PYTHON_EXECUTABLE -m pip install pytest pytest-cov
+        export COVERAGE_FILE=.coverage.$RANDOM LLVM_PROFILE_FILE=$PWD/pid-%p.profraw
+        ctest -V -C ${{ matrix.config }}
+      # END B
+
+    - name: Setup Python (Python 3.6)
+      if: contains(matrix.python, 'YES')
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.6
+    - name: Configure (Python 3.6)
+      if: contains(matrix.python, 'YES')
+      working-directory: build
+      shell: bash
+      run: >
+        cmake -DWANT_PYTHON_VERSION=3.6
+        -DPython_FIND_REGISTRY=NEVER -DPython_ROOT=$pythonLocation .
+    - name: Build (Python 3.6)
+      if: contains(matrix.python, 'YES')
+      # BEGIN A
+      working-directory: build
+      run: cmake --build . --config ${{ matrix.config }} --parallel 4
+      # END A
+    - name: Test (Python 3.6)
       # BEGIN B
       if: contains(matrix.python, 'YES')
       working-directory: build
@@ -232,9 +272,39 @@ jobs:
       if: contains(matrix.python, 'YES')
       # BEGIN A
       working-directory: build
-      run: cmake --build . --config ${{ matrix.config }}
+      run: cmake --build . --config ${{ matrix.config }} --parallel 4
       # END A
     - name: Test (Python 3.7)
+      # BEGIN B
+      if: contains(matrix.python, 'YES')
+      working-directory: build
+      shell: bash
+      run: |
+        PYTHON_EXECUTABLE=$(grep 'Python_EXECUTABLE:FILEPATH' CMakeCache.txt | sed 's/.*=//')
+        $PYTHON_EXECUTABLE -m pip install pytest pytest-cov
+        export COVERAGE_FILE=.coverage.$RANDOM LLVM_PROFILE_FILE=$PWD/pid-%p.profraw
+        ctest -V -C ${{ matrix.config }}
+      # END B
+
+    - name: Setup Python (Python 3.8)
+      if: contains(matrix.python, 'YES')
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.8
+    - name: Configure (Python 3.8)
+      if: contains(matrix.python, 'YES')
+      working-directory: build
+      shell: bash
+      run: >
+        cmake -DWANT_PYTHON_VERSION=3.8
+        -DPython_FIND_REGISTRY=NEVER -DPython_ROOT=$pythonLocation .
+    - name: Build (Python 3.8)
+      if: contains(matrix.python, 'YES')
+      # BEGIN A
+      working-directory: build
+      run: cmake --build . --config ${{ matrix.config }} --parallel 4
+      # END A
+    - name: Test (Python 3.8)
       # BEGIN B
       if: contains(matrix.python, 'YES')
       working-directory: build
@@ -251,27 +321,21 @@ jobs:
       working-directory: build
       shell: bash
       env:
-        CODECOV_TOKEN: d74b5f94-f4c1-4ee0-b186-26064d853ae3 # TODO secret
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       run: |
         shopt -s expand_aliases
         if ${{ runner.os == 'macOS' }}; then alias llvm-profdata='xcrun llvm-profdata' llvm-cov='xcrun llvm-cov'; fi
-
         python -m coverage combine $(find . -name '.coverage.*')
-
         llvm-profdata merge pid-*.profraw -o coverage.profdata
         llvm-cov show $(grep -Rl LLVM_PROFILE_FILE . | sed 's/^/-object /') -instr-profile=coverage.profdata > coverage.txt
         bash <(curl -s https://codecov.io/bash)
-
   makepanda:
-    if: 1 == 0
     strategy:
       matrix:
         os: [ubuntu-16.04, windows-2016, macOS-latest]
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v1
-      with:
-        fetch-depth: 1
     - name: Install dependencies (Ubuntu)
       if: matrix.os == 'ubuntu-16.04'
       run: |
@@ -281,9 +345,9 @@ jobs:
       shell: powershell
       run: |
         $wc = New-Object System.Net.WebClient
-        $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.4.1/panda3d-1.10.4.1-tools-win64.zip", "thirdparty-tools.zip")
+        $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.5/panda3d-1.10.5-tools-win64.zip", "thirdparty-tools.zip")
         Expand-Archive -Path thirdparty-tools.zip
-        Move-Item -Path thirdparty-tools/panda3d-1.10.4.1/thirdparty -Destination .
+        Move-Item -Path thirdparty-tools/panda3d-1.10.5/thirdparty -Destination .
     - name: Get thirdparty packages (macOS)
       if: runner.os == 'macOS'
       run: |
@@ -292,6 +356,18 @@ jobs:
         mv panda3d-1.10.5/thirdparty thirdparty
         rmdir panda3d-1.10.5
         (cd thirdparty/darwin-libs-a && rm -rf rocket)
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.8
+    - name: Build Python 3.8
+      run: |
+        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir=$pythonLocation/include --python-libdir=$pythonLocation/lib --verbose --threads=4
+    - name: Test Python 3.8
+      shell: bash
+      run: |
+        python -m pip install pytest
+        PYTHONPATH=built LD_LIBRARY_PATH=built/lib DYLD_LIBRARY_PATH=built/lib python -m pytest
     - name: Set up Python 3.7
       uses: actions/setup-python@v1
       with:
