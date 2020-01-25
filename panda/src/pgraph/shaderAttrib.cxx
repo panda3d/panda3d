@@ -530,7 +530,8 @@ get_shader_input_matrix(const InternalName *id, LMatrix4 &matrix) const {
     if (p.get_value_type() == ShaderInput::M_nodepath) {
       const NodePath &np = p.get_nodepath();
       nassertr(!np.is_empty(), LMatrix4::ident_mat());
-      return np.get_transform()->get_mat();
+      matrix = np.get_transform()->get_mat();
+      return matrix;
 
     } else if (p.get_value_type() == ShaderInput::M_numeric &&
                p.get_ptr()._size >= 16 && (p.get_ptr()._size & 15) == 0) {
