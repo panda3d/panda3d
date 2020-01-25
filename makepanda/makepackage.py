@@ -54,8 +54,7 @@ This package contains the SDK for development with Panda3D.
 /sbin/ldconfig
 %files
 %defattr(-,root,root)
-/etc/Confauto.prc
-/etc/Config.prc
+/etc/panda3d/20_panda.prc
 /usr/share/panda3d
 /etc/ld.so.conf.d/panda3d.conf
 /usr/%_lib/panda3d
@@ -128,7 +127,11 @@ fi
 
 
 def MakeInstallerNSIS(version, file, title, installdir, compressor="lzma", **kwargs):
-    outputdir = GetOutputDir()
+    # Multi-config build
+    outputdir = os.path.join(
+        kwargs['outputdir'],
+        ReadCMakeVar(kwargs['outputdir'], 'CMAKE_BUILD_TYPE')
+    )
 
     if os.path.isfile(file):
         os.remove(file)
@@ -145,7 +148,6 @@ def MakeInstallerNSIS(version, file, title, installdir, compressor="lzma", **kwa
         print("Note: you are using zlib, which is faster, but lzma gives better compression.")
     if os.path.exists("nsis-output.exe"):
         os.remove("nsis-output.exe")
-    WriteFile(outputdir + "/tmp/__init__.py", "")
 
     nsis_defs = {
         'COMPRESSOR': compressor,
@@ -280,18 +282,17 @@ def MakeInstallerLinux(version, debversion=None, rpmversion=None, rpmrelease=1,
 
     if dpkg_present:
         # Invoke installpanda.py to install it into a temporary dir
-        lib_dir = GetDebLibDir()
         InstallPanda(
             destdir="targetroot",
             prefix="/usr",
             outputdir=outputdir,
-            libdir=lib_dir,
-            python_versions=install_python_versions,
         )
+        lib_dir = ReadCMakeVar(outputdir, 'CMAKE_INSTALL_LIBDIR')
         oscmd("chmod -R 755 targetroot/usr/share/panda3d")
         oscmd("mkdir -m 0755 -p targetroot/usr/share/man/man1")
         oscmd("install -m 0644 doc/man/*.1 targetroot/usr/share/man/man1/")
 
+        os.makedirs(os.path.join(outputdir, 'tmp'), exist_ok=True)
         oscmd("dpkg --print-architecture > " + outputdir + "/tmp/architecture.txt")
         pkg_arch = ReadFile(outputdir + "/tmp/architecture.txt").strip()
         txt = INSTALLER_DEB_FILE[1:]
@@ -302,10 +303,12 @@ def MakeInstallerLinux(version, debversion=None, rpmversion=None, rpmrelease=1,
         )
         txt = txt.replace("INSTSIZE", str(GetDirectorySize("targetroot") // 1024))
 
+        oscmd("mv targetroot/usr/etc targetroot/etc")
+
         oscmd("mkdir -m 0755 -p targetroot/DEBIAN")
         oscmd("cd targetroot && (find usr -type f -exec md5sum {} ;) > DEBIAN/md5sums")
         oscmd("cd targetroot && (find etc -type f -exec md5sum {} ;) >> DEBIAN/md5sums")
-        WriteFile("targetroot/DEBIAN/conffiles", "/etc/Config.prc\n")
+        WriteFile("targetroot/DEBIAN/conffiles", "/etc/panda3d/20_panda.prc\n")
         WriteFile("targetroot/DEBIAN/postinst", "#!/bin/sh\necho running ldconfig\nldconfig\n")
         oscmd("cp targetroot/DEBIAN/postinst targetroot/DEBIAN/postrm")
 
@@ -374,10 +377,10 @@ def MakeInstallerLinux(version, debversion=None, rpmversion=None, rpmrelease=1,
             prefix="/usr",
             outputdir=outputdir,
             libdir=GetRPMLibDir(),
-            python_versions=install_python_versions,
         )
         oscmd("chmod -R 755 targetroot/usr/share/panda3d")
 
+        os.makedirs(os.path.join(outputdir, 'tmp'), exist_ok=True)
         oscmd("rpm -E '%_target_cpu' > " + outputdir + "/tmp/architecture.txt")
         arch = ReadFile(outputdir + "/tmp/architecture.txt").strip()
         pandasource = os.path.abspath(os.getcwd())
@@ -417,7 +420,11 @@ def MakeInstallerLinux(version, debversion=None, rpmversion=None, rpmrelease=1,
 
 
 def MakeInstallerOSX(version, python_versions=[], installdir=None, **kwargs):
-    outputdir = GetOutputDir()
+    # Multi-config build
+    outputdir = os.path.join(
+        kwargs['outputdir'],
+        ReadCMakeVar(kwargs['outputdir'], 'CMAKE_BUILD_TYPE')
+    )
 
     if installdir is None:
         installdir = "/Library/Developer/Panda3D"
@@ -436,8 +443,7 @@ def MakeInstallerOSX(version, python_versions=[], installdir=None, **kwargs):
 
     oscmd("mkdir -p                       dstroot/base/%s/lib" % installdir)
     oscmd("mkdir -p                       dstroot/base/%s/etc" % installdir)
-    oscmd("cp %s/etc/Config.prc           dstroot/base/%s/etc/Config.prc" % (outputdir, installdir))
-    oscmd("cp %s/etc/Confauto.prc         dstroot/base/%s/etc/Confauto.prc" % (outputdir, installdir))
+    oscmd("cp %s/etc/20_panda.prc.install          dstroot/base/%s/etc/20_panda.prc" % (outputdir, installdir))
     oscmd("cp -R %s/models                dstroot/base/%s/models" % (outputdir, installdir))
     oscmd("cp -R doc/LICENSE              dstroot/base/%s/LICENSE" % installdir)
     oscmd("cp -R doc/ReleaseNotes         dstroot/base/%s/ReleaseNotes" % installdir)
@@ -761,7 +767,6 @@ def MakeInstallerFreeBSD(version, python_versions=[], **kwargs):
         destdir="targetroot",
         prefix="/usr/local",
         outputdir=outputdir,
-        python_versions=python_versions,
     )
 
     if not os.path.exists("/usr/sbin/pkg"):
@@ -1109,17 +1114,28 @@ if __name__ == "__main__":
     SetOutputDir(options.outputdir)
 
     # Read out the optimize option.
-    opt = ReadFile(os.path.join(options.outputdir, "tmp", "optimize.dat"))
-    SetOptimize(int(opt.strip()))
+    build_type = ReadCMakeVar(options.outputdir, 'CMAKE_BUILD_TYPE')
+    opt = 2
+    if build_type == 'Release':
+        opt = 4
+    elif build_type == 'Standard':
+        opt = 3
+    SetOptimize(opt)
 
     # Read out whether we should set PkgSkip("PYTHON") and some others.
     # Temporary hack; needs better solution.
     pkg_list = "PYTHON", "NVIDIACG", "FFMPEG", "OPENAL", "FMODEX", "PVIEW", "NVIDIACG", "VORBIS", "OPUS"
     PkgListSet(pkg_list)
     for pkg in pkg_list:
-        dat_path = "dtool_have_%s.dat" % (pkg.lower())
-        content = ReadFile(os.path.join(options.outputdir, "tmp", dat_path))
-        if int(content.strip()):
+        cmake_pkg = pkg
+        cmake_prefix = 'HAVE'
+        if pkg == 'NVIDIACG':
+            cmake_pkg = 'CG'
+        if pkg == 'PVIEW':
+            cmake_prefix = 'BUILD'
+            cmake_pkg = 'PANDATOOL'
+        enable_pkg = ReadCMakeVar(options.outputdir, f'{cmake_prefix}_{cmake_pkg}')
+        if enable_pkg:
             PkgEnable(pkg)
         else:
             PkgDisable(pkg)

@@ -1,6 +1,0 @@
-#include "config_pandatoolbase.cxx"
-#include "pathStore.cxx"
-#include "pathReplace.cxx"
-#include "animationConvert.cxx"
-#include "distanceUnit.cxx"
-#include "pandatoolbase.cxx"

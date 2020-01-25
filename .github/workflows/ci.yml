@@ -86,9 +86,6 @@ jobs:
       with:
         fetch-depth: 10
 
-    - name: Self-destruct makepanda
-      run: python3 makepanda/selfdestruct.py --yes
-
     - name: Install dependencies (macOS)
       if: runner.os == 'macOS'
       run: |

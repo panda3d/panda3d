@@ -1,6 +1,0 @@
-#include "config_androiddisplay.cxx"
-//#include "androidGraphicsBuffer.cxx"
-#include "androidGraphicsPipe.cxx"
-//#include "androidGraphicsPixmap.cxx"
-#include "androidGraphicsStateGuardian.cxx"
-#include "androidGraphicsWindow.cxx"

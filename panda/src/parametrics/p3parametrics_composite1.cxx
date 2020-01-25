@@ -1,5 +1,0 @@
-#include "nurbsCurve.cxx"
-#include "cubicCurveseg.cxx"
-#include "curveFitter.cxx"
-#include "hermiteCurve.cxx"
-#include "nurbsCurveInterface.cxx"
