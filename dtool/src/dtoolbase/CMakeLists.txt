@@ -83,7 +83,7 @@ set(P3DTOOLBASE_IGATEEXT
   typeHandle_ext.h
 )
 
-set_source_files_properties(indent.cxx PROPERTIES SKIP_COMPOSITING YES)
+set_source_files_properties(indent.cxx PROPERTIES SKIP_UNITY_BUILD_INCLUSION YES)
 
 composite_sources(p3dtoolbase P3DTOOLBASE_SOURCES)
 add_component_library(p3dtoolbase NOINIT SYMBOL BUILDING_DTOOL_DTOOLBASE

@@ -93,20 +93,27 @@ jobs:
       run: |
         curl -O https://www.panda3d.org/download/panda3d-1.10.5/panda3d-1.10.5-tools-mac.tar.gz
         tar -xf panda3d-1.10.5-tools-mac.tar.gz
+
         brew install ccache
+
         echo "##[set-env name=thirdpartyOption;]-D THIRDPARTY_DIRECTORY=../panda3d-1.10.5/thirdparty" -DHAVE_CG=OFF
+
     - name: Install dependencies (Ubuntu)
       if: startsWith(matrix.os, 'ubuntu')
       run: >
         sudo apt-get update
+
         sudo apt-get install
         build-essential ninja-build clang llvm ccache
         bison flex
         libeigen3-dev libfreetype6-dev libgl1-mesa-dev libjpeg-dev libode-dev
         libopenal-dev libpng-dev libssl-dev libvorbis-dev libx11-dev
         libxcursor-dev libxrandr-dev nvidia-cg-toolkit zlib1g-dev
+
         # Workaround for CMake 3.12 finding this first:
+
         sudo rm /usr/bin/x86_64-linux-gnu-python2.7-config
+
     - name: Cache dependencies (Windows)
       if: runner.os == 'Windows'
       uses: actions/cache@v1
@@ -122,7 +129,9 @@ jobs:
           $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.5/panda3d-1.10.5-tools-win64.zip", "thirdparty-tools.zip")
           Expand-Archive -Path thirdparty-tools.zip
         }
+
         echo "##[set-env name=thirdpartyOption;]-D THIRDPARTY_DIRECTORY=../thirdparty-tools/panda3d-1.10.5/thirdparty"
+
     - name: ccache (non-Windows)
       if: runner.os != 'Windows'
       uses: actions/cache@v1
@@ -136,7 +145,9 @@ jobs:
         CMAKE_GENERATOR: "${{ matrix.generator }}"
       run: >
         mkdir build
+
         cd build
+
         if ${{ matrix.compiler == 'Clang' }}; then
           if [[ "$CMAKE_GENERATOR" == *Studio*2019* ]]; then
             export CMAKE_GENERATOR_TOOLSET=ClangCL thirdpartyOption="$thirdpartyOption -DHAVE_HARFBUZZ=NO"
@@ -146,10 +157,12 @@ jobs:
             export CC=clang CXX=clang++
           fi
         fi
+
         if ${{ runner.os != 'Windows' }}; then
           compilerLauncher=$(echo -DCMAKE_C{,XX}_COMPILER_LAUNCHER=ccache)
           echo "##[set-env name=CCACHE_DIR;]$(dirname $PWD)/ccache"
         fi
+
         cmake
         ${compilerLauncher:-}
         -D CMAKE_UNITY_BUILD=${{ matrix.unity }}
@@ -159,6 +172,7 @@ jobs:
         -D HAVE_EIGEN=${{ matrix.eigen }}
         ${thirdpartyOption:-}
         ..
+
     - name: Build (no Python)
       if: contains(matrix.python, 'NO')
       # BEGIN A
@@ -325,10 +339,13 @@ jobs:
       run: |
         shopt -s expand_aliases
         if ${{ runner.os == 'macOS' }}; then alias llvm-profdata='xcrun llvm-profdata' llvm-cov='xcrun llvm-cov'; fi
+
         python -m coverage combine $(find . -name '.coverage.*')
+
         llvm-profdata merge pid-*.profraw -o coverage.profdata
         llvm-cov show $(grep -Rl LLVM_PROFILE_FILE . | sed 's/^/-object /') -instr-profile=coverage.profdata > coverage.txt
         bash <(curl -s https://codecov.io/bash)
+
   makepanda:
     strategy:
       matrix:

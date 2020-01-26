@@ -93,10 +93,14 @@
 #               Panda3D::DX9::pandadx9
 #
 #
-#   GLES      - Support for OpenGL ES rendering.
+#   OpenGLES1 - Support for OpenGL ES 1.x rendering.
 #
-#               Panda3D::GLES::pandagles
-#               Panda3D::GLES::pandagles2
+#               Panda3D::OpenGLES1::pandagles
+#
+#
+#   OpenGLES2 - Support for OpenGL ES 2.x+ rendering.
+#
+#               Panda3D::OpenGLES2::pandagles2
 #
 #
 #   Vision    - Support for vision processing.
@@ -122,7 +126,7 @@ set(_panda_components
   Bullet ODE
   FFmpeg
   OpenAL FMOD
-  OpenGL DX9 GLES
+  OpenGL DX9 OpenGLES1 OpenGLES2
   Vision VRPN
 )
 

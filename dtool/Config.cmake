@@ -52,23 +52,6 @@ else()
   set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS ${_configs})
 endif()
 
-# Provide convenient boolean expression based on build type
-if(CMAKE_BUILD_TYPE MATCHES "Debug")
-  set(IS_DEBUG_BUILD True)
-  set(IS_NOT_DEBUG_BUILD False)
-else()
-  set(IS_DEBUG_BUILD False)
-  set(IS_NOT_DEBUG_BUILD True)
-endif()
-
-if(CMAKE_BUILD_TYPE MATCHES "MinSizeRel")
-  set(IS_MINSIZE_BUILD True)
-  set(IS_NOT_MINSIZE_BUILD False)
-else()
-  set(IS_MINSIZE_BUILD False)
-  set(IS_NOT_MINSIZE_BUILD True)
-endif()
-
 set(PER_CONFIG_OPTIONS)
 
 # Are we building with static or dynamic linking?
@@ -121,7 +104,12 @@ endif()
 # tree starting at the location of libpandaexpress.dll for any
 # directories called 'etc'.
 
-set(DEFAULT_PRC_DIR "<auto>etc" CACHE STRING
+if(UNIX)
+  set(_default_prc "<auto>etc/panda3d")
+else()
+  set(_default_prc "<auto>etc")
+endif()
+set(DEFAULT_PRC_DIR "${_default_prc}" CACHE STRING
   "The compiled-in default directory to look for the Config.prc file,
 in the absence of the PRC_DIR environment variable set, and in
 the absence of anything specified via the configpath directive.")
@@ -294,7 +282,7 @@ option(DO_MEMORY_USAGE
 enables you to define the variable 'track-memory-usage' at runtime
 to help track memory leaks, and also report total memory usage on
 PStats.  There is some small overhead for having this ability
-available, even if it is unused." ${IS_DEBUG_BUILD})
+available, even if it is unused." OFF)
 list(APPEND PER_CONFIG_OPTIONS DO_MEMORY_USAGE)
 set(DO_MEMORY_USAGE_Debug ON CACHE BOOL "")
 
@@ -302,7 +290,7 @@ option(SIMULATE_NETWORK_DELAY
   "This option compiles in support for simulating network delay via
 the min-lag and max-lag prc variables.  It adds a tiny bit of
 overhead even when it is not activated, so it is typically enabled
-only in a development build." ${IS_DEBUG_BUILD})
+only in a development build." OFF)
 list(APPEND PER_CONFIG_OPTIONS SIMULATE_NETWORK_DELAY)
 set(SIMULATE_NETWORK_DELAY_Debug ON CACHE BOOL "")
 
@@ -312,14 +300,14 @@ rendering.  Since this is normally useful only for researching
 buggy drivers, and since there is a tiny bit of per-primitive
 overhead to have this option available even if it is unused, it is
 by default enabled only in a development build.  This has no effect
-on DirectX rendering." ${IS_DEBUG_BUILD})
+on DirectX rendering." OFF)
 list(APPEND PER_CONFIG_OPTIONS SUPPORT_IMMEDIATE_MODE)
 set(SUPPORT_IMMEDIATE_MODE_Debug ON CACHE BOOL "")
 
 option(NOTIFY_DEBUG
   "Do you want to include the 'debug' and 'spam' Notify messages?
 Normally, these are stripped out when we build for release, but sometimes it's
-useful to keep them around. Turn this setting on to achieve that." ${IS_DEBUG_BUILD})
+useful to keep them around. Turn this setting on to achieve that." OFF)
 list(APPEND PER_CONFIG_OPTIONS NOTIFY_DEBUG)
 set(NOTIFY_DEBUG_Debug ON CACHE BOOL "")
 
@@ -409,15 +397,15 @@ mark_as_advanced(ANDROID_NDK_HOME ANDROID_ABI ANDROID_STL
 
 # By default, we'll assume the user only wants to run with Debug
 # python if he has to--that is, on Windows when building a debug build.
-if(WIN32 AND IS_DEBUG_BUILD)
-  set(USE_DEBUG_PYTHON ON)
-else()
-  set(USE_DEBUG_PYTHON OFF)
+set(USE_DEBUG_PYTHON OFF)
+if(WIN32)
+  set(USE_DEBUG_PYTHON_Debug ON)
 endif()
 list(APPEND PER_CONFIG_OPTIONS USE_DEBUG_PYTHON)
 
-option(HAVE_VIDEO4LINUX
-  "Set this to enable webcam support on Linux." ${IS_LINUX})
+cmake_dependent_option(HAVE_VIDEO4LINUX
+  "Set this to enable webcam support on Linux." ON
+  "IS_LINUX" OFF)
 
 
 # If you are having trouble linking in OpenGL extension functions at
@@ -437,10 +425,12 @@ pointers.")
 
 
 # Should build tinydisplay?
-option(HAVE_TINYDISPLAY
-  "Builds TinyDisplay, a light software renderer based on TinyGL,
-that is built into Panda. TinyDisplay is not as full-featured as Mesa
-but is many times faster." ${IS_NOT_MINSIZE_BUILD})
+#option(HAVE_TINYDISPLAY
+#  "Builds TinyDisplay, a light software renderer based on TinyGL,
+#that is built into Panda. TinyDisplay is not as full-featured as Mesa
+#but is many times faster." ON)
+#option(HAVE_TINYDISPLAY_MinSizeRel "" OFF)
+#list(APPEND PER_CONFIG_OPTIONS HAVE_TINYDISPLAY)
 
 
 # Is SDL installed, and where?
@@ -514,23 +504,22 @@ option(USE_PANDAFILESTREAM
 # These image formats don't require the assistance of a third-party
 # library to read and write, so there's normally no reason to disable
 # them int he build, unless you are looking to reduce the memory footprint.
-option(HAVE_SGI_RGB "Enable support for loading SGI RGB images."
-  ${IS_NOT_MINSIZE_BUILD})
-option(HAVE_TGA "Enable support for loading TGA images."
-  ${IS_NOT_MINSIZE_BUILD})
-option(HAVE_IMG "Enable support for loading IMG images."
-  ${IS_NOT_MINSIZE_BUILD})
-option(HAVE_SOFTIMAGE_PIC
-  "Enable support for loading SOFTIMAGE PIC images."
-  ${IS_NOT_MINSIZE_BUILD})
-option(HAVE_BMP "Enable support for loading BMP images."
-  ${IS_NOT_MINSIZE_BUILD})
-option(HAVE_PNM "Enable support for loading PNM images."
-  ${IS_NOT_MINSIZE_BUILD})
+option(HAVE_SGI_RGB "Enable support for loading SGI RGB images." ON)
+option(HAVE_TGA "Enable support for loading TGA images." ON)
+option(HAVE_IMG "Enable support for loading IMG images." ON)
+option(HAVE_SOFTIMAGE_PIC "Enable support for loading SOFTIMAGE PIC images." ON)
+option(HAVE_BMP "Enable support for loading BMP images." ON)
+option(HAVE_PNM "Enable support for loading PNM images." ON)
 
-mark_as_advanced(HAVE_SGI_RGB HAVE_TGA
-  HAVE_IMG HAVE_SOFTIMAGE_PIC HAVE_BMP HAVE_PNM)
+foreach(adv_image_format
+  HAVE_SGI_RGB HAVE_TGA HAVE_IMG HAVE_SOFTIMAGE_PIC HAVE_BMP HAVE_PNM)
 
+  option(${adv_image_format}_MinSizeRel "" OFF)
+  list(APPEND PER_CONFIG_OPTIONS ${adv_image_format})
+
+  mark_as_advanced(${adv_image_format} ${adv_image_format}_MinSizeRel)
+
+endforeach(adv_image_format)
 
 # How to invoke bison and flex.  Panda takes advantage of some
 # bison/flex features, and therefore specifically requires bison and
@@ -568,7 +557,7 @@ slightly slow down Panda for the single CPU case."
   IMPORTED_AS Threads::Threads)
 
 # Configure debug threads
-option(DEBUG_THREADS "If on, enables debugging of thread and sync operations (i.e. mutexes, deadlocks)" ${IS_DEBUG_BUILD})
+option(DEBUG_THREADS "If on, enables debugging of thread and sync operations (i.e. mutexes, deadlocks)" OFF)
 list(APPEND PER_CONFIG_OPTIONS DEBUG_THREADS)
 set(DEBUG_THREADS_Debug ON CACHE BOOL "")
 
@@ -598,7 +587,7 @@ option(DO_PIPELINING "If on, compile with pipelined rendering." ON)
 option(COMPILE_IN_DEFAULT_FONT
   "If on, compiles in a default font, so that every TextNode will always
 have a font available without requiring the user to specify one.
-When turned off, the generated library will save a few kilobytes." ${IS_NOT_MINSIZE_BUILD})
+When turned off, the generated library will save a few kilobytes." ON)
 list(APPEND PER_CONFIG_OPTIONS COMPILE_IN_DEFAULT_FONT)
 set(COMPILE_IN_DEFAULT_FONT_MinSizeRel OFF CACHE BOOL "")
 

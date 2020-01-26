@@ -76,6 +76,8 @@ function(package_option name)
   set(license "")
   set(cache_string)
 
+  string(TOUPPER "${name}" name)
+
   foreach(arg ${ARGN})
     if(command STREQUAL "DEFAULT")
       set(default "${arg}")
@@ -137,9 +139,6 @@ function(package_option name)
 
       endif()
 
-    elseif(IS_MINSIZE_BUILD)
-      set(default OFF)
-
     else()
       set(default "${${found_as}_FOUND}")
 
@@ -147,7 +146,8 @@ function(package_option name)
   endif()
 
   # If it was set by the user but not found, display an error.
-  if(HAVE_${name} AND NOT ${found_as}_FOUND)
+  string(TOUPPER "${found_as}" FOUND_AS)
+  if(HAVE_${name} AND NOT ${found_as}_FOUND AND NOT ${FOUND_AS}_FOUND)
     message(SEND_ERROR "NOT FOUND: ${name}.  Disable HAVE_${name} to continue.")
   endif()
 
@@ -207,16 +207,24 @@ function(package_option name)
     endforeach(implib)
 
     if(use_variables)
-      if(${found_as}_INCLUDE_DIRS)
+      if(DEFINED ${found_as}_INCLUDE_DIRS)
         set(includes ${${found_as}_INCLUDE_DIRS})
-      else()
+      elseif(DEFINED ${found_as}_INCLUDE_DIR)
         set(includes "${${found_as}_INCLUDE_DIR}")
+      elseif(DEFINED ${FOUND_AS}_INCLUDE_DIRS)
+        set(includes ${${FOUND_AS}_INCLUDE_DIRS})
+      else()
+        set(includes "${${FOUND_AS}_INCLUDE_DIR}")
       endif()
 
-      if(${found_as}_LIBRARIES)
+      if(DEFINED ${found_as}_LIBRARIES)
         set(libs ${${found_as}_LIBRARIES})
-      else()
+      elseif(DEFINED ${found_as}_LIBRARY)
         set(libs "${${found_as}_LIBRARY}")
+      elseif(DEFINED ${FOUND_AS}_LIBRARIES)
+        set(libs ${${FOUND_AS}_LIBRARIES})
+      else()
+        set(libs "${${FOUND_AS}_LIBRARY}")
       endif()
 
       target_link_libraries(PKG::${name} INTERFACE ${libs})
@@ -238,6 +246,8 @@ function(package_status name desc)
   foreach(arg ${ARGN})
     set(note "${arg}")
   endforeach()
+
+  string(TOUPPER "${name}" name)
 
   if(NOT ";${_ALL_PACKAGE_OPTIONS};" MATCHES ";${name};")
     message(SEND_ERROR "package_status(${name}) was called before package_option(${name}).
@@ -469,30 +479,28 @@ endfunction(export_targets)
 #
 # find_package
 #
-# This override is necessary because CMake's default behavior is to run
-# find_package in MODULE mode, *then* in CONFIG mode.  This is silly!  CONFIG
-# mode makes more sense to be done first, since any system config file will
-# know vastly more about the package's configuration than a module can hope to
-# guess.
+# This override implements CMAKE_FIND_PACKAGE_PREFER_CONFIG on versions of
+# CMake too old to include it.
 #
-macro(find_package name)
-  if(";${ARGN};" MATCHES ";(CONFIG|MODULE|NO_MODULE);")
-    # Caller explicitly asking for a certain mode; so be it.
-    _find_package(${ARGV})
+if(CMAKE_VERSION VERSION_LESS "3.15")
+  macro(find_package name)
+    if(";${ARGN};" MATCHES ";(CONFIG|MODULE|NO_MODULE);")
+      # Caller explicitly asking for a certain mode; so be it.
+      _find_package(${ARGV})
 
-  else()
-    string(TOUPPER "${name}" __pkgname_upper)
+    elseif(CMAKE_FIND_PACKAGE_PREFER_CONFIG)
+      # Try CONFIG
+      _find_package("${name}" CONFIG ${ARGN})
 
-    # Try CONFIG
-    _find_package("${name}" CONFIG ${ARGN})
-    if(NOT ${name}_FOUND)
-      # CONFIG didn't work, fall back to MODULE
-      _find_package("${name}" MODULE ${ARGN})
+      if(NOT ${name}_FOUND)
+        # CONFIG didn't work, fall back to MODULE
+        _find_package("${name}" MODULE ${ARGN})
+      endif()
 
     else()
-      # Case-sensitivity
-      set(${__pkgname_upper}_FOUND 1)
+      # Default behavior
+      _find_package(${ARGV})
 
     endif()
-  endif()
-endmacro(find_package)
+  endmacro(find_package)
+endif()

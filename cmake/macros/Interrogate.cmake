@@ -31,7 +31,7 @@ set(INTERROGATE_EXCLUDE_REGEXES
 )
 
 if(WIN32)
-  list(APPEND IGATE_FLAGS -D_X86_ -D__STDC__=1 -D "_declspec(param)=" -D "__declspec(param)=" -D_near -D_far -D__near -D__far -D_WIN32 -D__stdcall)
+  list(APPEND IGATE_FLAGS -D_X86_ -D__STDC__=1 -DWIN32_VC -D "_declspec(param)=" -D "__declspec(param)=" -D_near -D_far -D__near -D__far -D_WIN32 -D__stdcall -DWIN32)
 endif()
 if(MSVC_VERSION)
   list(APPEND IGATE_FLAGS "-D_MSC_VER=${MSVC_VERSION}")
@@ -218,7 +218,10 @@ function(interrogate_sources target output database language_flags)
     # that's fine, it also ignores '"'
     set(_q "'")
   endif()
-  set(define_flags "$<$<BOOL:${_compile_defs}>:-D${_q}$<JOIN:${_compile_defs},${_q}\t-D${_q}>${_q}>")
+  set(_compile_defs_flags "-D${_q}$<JOIN:${_compile_defs},${_q}\t-D${_q}>${_q}")
+  # We may have just ended up with -D'' if there are no flags; filter that
+  set(define_flags
+    "$<$<NOT:$<STREQUAL:${_compile_defs_flags},-D${_q}${_q}>>:${_compile_defs_flags}>")
 
   # Some of the definitions may be specified using -D flags in the global
   # CXX_FLAGS variables; parse those out (this also picks up NDEBUG)
@@ -362,6 +365,15 @@ function(add_python_module module)
       ${IMOD_FLAGS} ${infiles_rel}
     DEPENDS host_interrogate_module ${infiles_abs}
     COMMENT "Generating module ${module}")
+
+  # CMake chokes on ${CMAKE_CFG_INTDIR} in source paths when unity builds are
+  # enabled. The easiest way out of this is to skip unity for those paths.
+  # Since generated Interrogate .cxx files are pretty big already, this doesn't
+  # really inconvenience us at all.
+  set_source_files_properties(
+    "${CMAKE_CURRENT_BINARY_DIR}/${PANDA_CFG_INTDIR}/${module}_module.cxx"
+    ${sources_abs} PROPERTIES
+    SKIP_UNITY_BUILD_INCLUSION YES)
 
   add_python_target(${module} COMPONENT "${component}" EXPORT "${component}"
     "${CMAKE_CURRENT_BINARY_DIR}/${PANDA_CFG_INTDIR}/${module}_module.cxx"

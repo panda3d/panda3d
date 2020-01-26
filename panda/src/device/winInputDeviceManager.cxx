@@ -54,7 +54,7 @@ WinInputDeviceManager() :
   _xinput_device2.local_object();
   _xinput_device3.local_object();
 
-  // This function is only available in Vista and later, so we use a wrapper.
+  // This function is not available in the 7.1A SDK, so we use a wrapper.
   HMODULE module = LoadLibraryA("cfgmgr32.dll");
   if (module) {
     _CM_Get_DevNode_PropertyW = (pCM_Get_DevNode_Property)GetProcAddress(module, "CM_Get_DevNode_PropertyW");

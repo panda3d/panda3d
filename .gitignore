@@ -66,6 +66,3 @@ __pycache__/
 /.settings/
 /.cproject
 /.project
-/installed/
-/run_tests.ps1
-/.pydevproject

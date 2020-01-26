@@ -85,6 +85,31 @@ if(FFMPEG_LIBAVUTIL)
   list(APPEND FFMPEG_LIBRARIES "${FFMPEG_LIBAVUTIL}")
 endif()
 
+if(APPLE)
+  # When statically built for Apple, FFMPEG may have dependencies on these
+  # additional frameworks and libraries.
+
+  find_library(APPLE_COREVIDEO_LIBRARY CoreVideo)
+  if(APPLE_COREVIDEO_LIBRARY)
+    list(APPEND FFMPEG_LIBRARIES "${APPLE_COREVIDEO_LIBRARY}")
+  endif()
+
+  find_library(APPLE_VDA_LIBRARY VideoDecodeAcceleration)
+  if(APPLE_VDA_LIBRARY)
+    list(APPEND FFMPEG_LIBRARIES "${APPLE_VDA_LIBRARY}")
+  endif()
+
+  find_library(APPLE_ICONV_LIBRARY iconv)
+  if(APPLE_ICONV_LIBRARY)
+    list(APPEND FFMPEG_LIBRARIES "${APPLE_ICONV_LIBRARY}")
+  endif()
+
+  find_library(APPLE_BZ2_LIBRARY bz2)
+  if(APPLE_BZ2_LIBRARY)
+    list(APPEND FFMPEG_LIBRARIES "${APPLE_BZ2_LIBRARY}")
+  endif()
+endif()
+
 mark_as_advanced(FFMPEG_LIBRARY_DIR)
 
 include(FindPackageHandleStandardArgs)

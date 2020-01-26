@@ -1,8 +1,39 @@
+from math import floor, ceil
 import sys
 
+from panda3d.core import Vec2, Vec3, Vec4, Vec2F, Vec2D
 import pytest
 
-from panda3d.core import Vec2, Vec3, Vec4
+
+reason = '''Rounding in Python 2.7 expects to return a float value, since it returns a Vector it
+does not work. When Python 2.7 gets deprecated, remove this check.'''
+
+
+@pytest.mark.skipif(sys.version_info < (3, 5), reason=reason)
+def test_round():
+    original_vector = Vec2(2.3, -2.6)
+
+    rounded_vector = round(original_vector)
+    assert rounded_vector.x == 2
+    assert rounded_vector.y == -3
+
+
+@pytest.mark.skipif(sys.version_info < (3, 5), reason=reason)
+def test_floor():
+    original_vector = Vec2(2.3, -2.6)
+
+    rounded_vector = floor(original_vector)
+    assert rounded_vector.x == 2
+    assert rounded_vector.y == -3
+
+
+@pytest.mark.skipif(sys.version_info < (3, 5), reason=reason)
+def test_ceil():
+    original_vector = Vec2(2.3, -2.6)
+
+    rounded_vector = ceil(original_vector)
+    assert rounded_vector.x == 3
+    assert rounded_vector.y == -2
 
 
 def test_vec2_creation():
@@ -54,5 +85,6 @@ def test_vec2_swizzle_mask():
     assert original_vector.xy == original_vector
 
 
-def test_vec2_repr():
-    assert str(Vec2(2, 3)) == "LVector2f(2, 3)"
+def test_vec2_str():
+    assert str(Vec2F(2, 3)) == "LVector2f(2, 3)"
+    assert str(Vec2D(2, 3)) == "LVector2d(2, 3)"
