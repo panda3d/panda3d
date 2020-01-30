@@ -53,12 +53,8 @@ pm_error(const char *format, ...) {
 
   static const size_t buffer_size = 1024;
   char buffer[buffer_size];
-#ifdef _WIN32
-  // Windows doesn't define vsnprintf().  Hope we don't overflow.
-  vsprintf(buffer, format, ap);
-#else
+
   vsnprintf(buffer, buffer_size, format, ap);
-#endif
   nassertv(strlen(buffer) < buffer_size);
 
   pnmimage_cat.error() << buffer << "\n";
