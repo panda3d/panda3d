@@ -888,7 +888,17 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
 
         // Add it once for each index.
         for (bind._index = 0; bind._index < param_size; ++bind._index) {
+          // It was discovered in #846, that GLSL 4.10 and lower don't seem to
+          // guarantee that matrices occupy successive locations, and on macOS
+          // they indeed occupy four locations per element.
+          // As a big fat hack, we multiply by four on macOS, because this is
+          // hard to fix on the 1.10 branch.  We'll have a proper fix on the
+          // master branch.
+#ifdef __APPLE__
+          bind._id._seqno = p + bind._index * 4;
+#else
           bind._id._seqno = p + bind._index;
+#endif
           _shader->cp_add_mat_spec(bind);
         }
         return;
