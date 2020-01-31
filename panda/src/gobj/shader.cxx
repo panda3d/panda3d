@@ -2461,9 +2461,10 @@ read(const ShaderFile &sfile, BamCacheRecord *record) {
     // Determine which language the shader is written in.
     if (_language == SL_Cg) {
 #ifdef HAVE_CG
-      cg_get_profile_from_header(_default_caps);
+      ShaderCaps caps = _default_caps;
+      cg_get_profile_from_header(caps);
 
-      if (!cg_analyze_shader(_default_caps)) {
+      if (!cg_analyze_shader(caps)) {
         shader_cat.error()
           << "Shader encountered an error.\n";
         return false;
@@ -2551,9 +2552,10 @@ load(const ShaderFile &sbody, BamCacheRecord *record) {
     // Determine which language the shader is written in.
     if (_language == SL_Cg) {
 #ifdef HAVE_CG
-      cg_get_profile_from_header(_default_caps);
+      ShaderCaps caps = _default_caps;
+      cg_get_profile_from_header(caps);
 
-      if (!cg_analyze_shader(_default_caps)) {
+      if (!cg_analyze_shader(caps)) {
         shader_cat.error()
           << "Shader encountered an error.\n";
         return false;
