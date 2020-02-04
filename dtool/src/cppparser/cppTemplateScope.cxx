@@ -12,10 +12,15 @@
  */
 
 #include "cppTemplateScope.h"
+
+#include "cppDeclaration.h"
 #include "cppExtensionType.h"
 #include "cppClassTemplateParameter.h"
+#include "cppNameComponent.h"
 #include "cppIdentifier.h"
+#include "cppInstance.h"
 #include "cppTypedefType.h"
+#include "cppVisibility.h"
 
 using std::string;
 

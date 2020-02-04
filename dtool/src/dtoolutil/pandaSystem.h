@@ -15,8 +15,11 @@
 #define PANDASYSTEM_H
 
 #include "dtoolbase.h"
+
 #include "pmap.h"
 #include "pvector.h"
+#include "register_type.h"
+#include "typeHandle.h"
 
 /**
  * This class is used as a namespace to group several global properties of

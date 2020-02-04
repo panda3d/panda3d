@@ -12,12 +12,8 @@
  */
 
 #include "parameterRemapThis.h"
-#include "typeManager.h"
 
-#include "cppType.h"
-#include "cppSimpleType.h"
-#include "cppPointerType.h"
-#include "cppConstType.h"
+#include "typeManager.h"
 
 /**
  *

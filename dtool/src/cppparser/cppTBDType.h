@@ -16,9 +16,11 @@
 
 #include "dtoolbase.h"
 
+#include "cppDeclaration.h"
 #include "cppType.h"
 
 class CPPIdentifier;
+class CPPScope;
 
 /**
  * This represents a type whose exact meaning is still to-be-determined.  It

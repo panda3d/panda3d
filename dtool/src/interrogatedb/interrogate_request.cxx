@@ -14,8 +14,6 @@
 #include "interrogate_request.h"
 #include "interrogateDatabase.h"
 
-#include <string.h>  // for strdup
-
 void
 interrogate_request_database(const char *database_filename) {
   InterrogateModuleDef *def = new InterrogateModuleDef;

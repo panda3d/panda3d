@@ -12,12 +12,14 @@
  */
 
 #include "cppParser.h"
-#include "cppFile.h"
-#include "cppTypeParser.h"
+
 #include "cppBisonDefs.h"
+#include "cppFile.h"
+#include "cppNameComponent.h"
+#include "cppTypeParser.h"
+#include "cppVisibility.h"
 
 #include <set>
-#include <assert.h>
 
 bool cppparser_output_class_keyword = false;
 

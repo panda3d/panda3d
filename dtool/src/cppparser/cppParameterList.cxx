@@ -12,7 +12,11 @@
  */
 
 #include "cppParameterList.h"
+
 #include "cppInstance.h"
+#include "cppType.h"
+
+class CPPExpression;
 
 /**
  *

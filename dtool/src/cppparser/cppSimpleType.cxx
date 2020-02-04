@@ -12,6 +12,8 @@
  */
 
 #include "cppSimpleType.h"
+
+#include "cppFile.h"
 #include "cppGlobals.h"
 
 /**

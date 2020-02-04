@@ -15,8 +15,10 @@
 #define CONFIGPAGEMANAGER_H
 
 #include "dtoolbase.h"
+
 #include "configFlags.h"
 #include "dSearchPath.h"
+#include "filename.h"
 #include "globPattern.h"
 #include "pnotify.h"
 

@@ -12,9 +12,8 @@
  */
 
 #include "parameterRemapConstToNonConst.h"
-#include "typeManager.h"
 
-#include "cppConstType.h"
+#include "typeManager.h"
 
 /**
  *

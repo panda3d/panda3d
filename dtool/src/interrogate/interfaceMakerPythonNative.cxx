@@ -10,34 +10,42 @@
  */
 
 #include "interfaceMakerPythonNative.h"
+
 #include "interrogateBuilder.h"
 #include "interrogate.h"
 #include "functionRemap.h"
-#include "parameterRemapUnchanged.h"
+#include "parameterRemap.h"
 #include "typeManager.h"
 
 #include "pnotify.h" // For nout
 #include "interrogateDatabase.h"
-#include "interrogateType.h"
+#include "interrogateElement.h"
 #include "interrogateFunction.h"
+#include "interrogateMakeSeq.h"
+#include "interrogateManifest.h"
+#include "interrogateType.h"
 #include "cppArrayType.h"
 #include "cppConstType.h"
+#include "cppDeclaration.h"
 #include "cppEnumType.h"
 #include "cppFunctionType.h"
 #include "cppFunctionGroup.h"
+#include "cppInstance.h"
+#include "cppParser.h"
 #include "cppPointerType.h"
-#include "cppTypeDeclaration.h"
 #include "cppTypedefType.h"
+#include "cppScope.h"
 #include "cppSimpleType.h"
 #include "cppStructType.h"
+#include "cppType.h"
 #include "cppExpression.h"
 #include "cppParameterList.h"
 #include "lineStream.h"
+#include "vector_string.h"
 
-#include <algorithm>
-#include <map>
-#include <set>
-#include <vector>
+#include <cstdio> // for printf
+#include <ctype.h>
+#include <iterator>
 
 using std::dec;
 using std::hex;

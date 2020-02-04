@@ -11,7 +11,7 @@
  * @date 2006-02-10
  */
 
-#include "selectThreadImpl.h"
+#include "dtoolbase.h"
 
 #ifdef HAVE_POSIX_THREADS
 

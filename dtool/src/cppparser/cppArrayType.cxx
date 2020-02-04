@@ -12,8 +12,11 @@
  */
 
 #include "cppArrayType.h"
+
 #include "cppExpression.h"
-#include "cppPointerType.h"
+#include "cppFile.h"
+
+#include <map>
 
 /**
  *

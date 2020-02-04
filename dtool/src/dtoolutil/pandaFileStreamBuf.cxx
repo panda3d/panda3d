@@ -12,15 +12,16 @@
  */
 
 #include "pandaFileStreamBuf.h"
-#include "memoryHook.h"
-#include "filename.h"
-#include "textEncoder.h"
 
 #ifdef USE_PANDAFILESTREAM
 
+#include "filename.h"
+#include "memoryHook.h"
+#include "textEncoder.h"
+
+#include <cstdio> // for EOF
+
 #ifndef _WIN32
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
 #endif  // _WIN32

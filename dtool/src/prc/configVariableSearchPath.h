@@ -15,8 +15,13 @@
 #define CONFIGVARIABLESEARCHPATH_H
 
 #include "dtoolbase.h"
+
+#include "atomicAdjust.h"
 #include "configVariableBase.h"
 #include "dSearchPath.h"
+#include "filename.h"
+#include "mutexImpl.h"
+#include "pnotify.h"
 
 /**
  * This is similar to a ConfigVariableList, but it returns its list as a

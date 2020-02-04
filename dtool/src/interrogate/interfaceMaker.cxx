@@ -12,16 +12,15 @@
  */
 
 #include "interfaceMaker.h"
+
 #include "interrogateBuilder.h"
 #include "typeManager.h"
 #include "interrogate.h"
 #include "functionRemap.h"
 #include "parameterRemap.h"
-#include "parameterRemapThis.h"
 #include "parameterRemapUnchanged.h"
 #include "parameterRemapReferenceToPointer.h"
 #include "parameterRemapConcreteToPointer.h"
-#include "parameterRemapEnumToInt.h"
 #include "parameterRemapConstToNonConst.h"
 #include "parameterRemapReferenceToConcrete.h"
 #include "parameterRemapCharStarToString.h"
@@ -31,13 +30,19 @@
 #include "parameterRemapPTToPointer.h"
 
 #include "interrogateDatabase.h"
-#include "interrogateManifest.h"
 #include "interrogateElement.h"
+#include "interrogateFunction.h"
+#include "interrogateMakeSeq.h"
+#include "interrogateManifest.h"
+#include "interrogateType.h"
 #include "cppFunctionType.h"
+#include "cppInstance.h"
 #include "cppParameterList.h"
-#include "cppMakeSeq.h"
-#include "cppStructType.h"
+#include "cppParser.h"
+#include "cppType.h"
 #include "pnotify.h"
+
+#include <cstdio> // printf
 
 using std::ostream;
 using std::ostringstream;

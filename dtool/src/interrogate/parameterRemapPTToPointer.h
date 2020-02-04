@@ -19,7 +19,6 @@
 #include "parameterRemap.h"
 
 class CPPType;
-class CPPStructType;
 
 /**
  * A ParameterRemap class that handles remapping a PT(Type) or PointerTo<Type>

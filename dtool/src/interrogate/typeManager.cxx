@@ -16,19 +16,26 @@
 
 #include "cppArrayType.h"
 #include "cppConstType.h"
+#include "cppDeclaration.h"
 #include "cppEnumType.h"
+#include "cppExtensionType.h"
+#include "cppFile.h"
 #include "cppFunctionGroup.h"
 #include "cppFunctionType.h"
 #include "cppIdentifier.h"
+#include "cppInstance.h"
 #include "cppParameterList.h"
+#include "cppParser.h"
 #include "cppPointerType.h"
 #include "cppReferenceType.h"
+#include "cppScope.h"
 #include "cppSimpleType.h"
 #include "cppStructType.h"
-#include "cppTemplateScope.h"
+#include "cppTemplateParameterList.h"
+#include "cppType.h"
 #include "cppTypeDeclaration.h"
 #include "cppTypedefType.h"
-#include "pnotify.h"
+#include "cppVisibility.h"
 
 using std::string;
 

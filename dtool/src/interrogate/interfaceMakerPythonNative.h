@@ -11,15 +11,22 @@
 
 #ifndef INTERFACEMAKERPYTHONNATIVE_H
 #define INTERFACEMAKERPYTHONNATIVE_H
-#include <map>
-#include <set>
+
 #include "dtoolbase.h"
 
+#include "interfaceMaker.h"
 #include "interfaceMakerPython.h"
+#include "interrogateType.h"
 #include "interrogate_interface.h"
-#include "cppStructType.h"
+#include "interrogate_request.h"
 
+#include <map>
+#include <set>
+
+class CPPStructType;
+class CPPType;
 class FunctionRemap;
+class InterrogateFunction;
 
 /**
  * An InterfaceMaker for generating complex Python function wrappers around

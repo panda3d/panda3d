@@ -12,12 +12,16 @@
  */
 
 #include "configDeclaration.h"
-#include "configVariableCore.h"
+
 #include "config_prc.h"
+
+#include "configVariableCore.h"
 #include "pstrtod.h"
 #include "string_utils.h"
 #include "executionEnvironment.h"
 #include "mutexImpl.h"
+
+#include <ctype.h>
 
 using std::string;
 

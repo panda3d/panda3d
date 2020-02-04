@@ -12,8 +12,11 @@
  */
 
 #include "parameterRemapBasicStringToString.h"
+
 #include "interfaceMaker.h"
 #include "interrogate.h"
+
+#include "cppParser.h"
 
 using std::ostream;
 using std::string;

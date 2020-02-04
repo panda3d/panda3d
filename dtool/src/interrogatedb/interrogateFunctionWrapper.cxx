@@ -15,8 +15,6 @@
 #include "indexRemapper.h"
 #include "interrogate_datafile.h"
 
-#include <algorithm>
-
 using std::istream;
 using std::ostream;
 

@@ -16,8 +16,6 @@
 
 #include "dtoolbase.h"
 
-#include <string.h>  // for memcpy()
-
 // The maximum size of any numeric data type.  At present, this is int64 and
 // float64.
 static const int max_numeric_size = 8;

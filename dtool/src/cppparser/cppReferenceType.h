@@ -16,7 +16,10 @@
 
 #include "dtoolbase.h"
 
+#include "cppDeclaration.h"
 #include "cppType.h"
+
+class CPPScope;
 
 /**
  * Either an lvalue- or rvalue-reference.

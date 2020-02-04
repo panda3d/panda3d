@@ -15,8 +15,10 @@
 #define CONFIGVARIABLEINT64_H
 
 #include "dtoolbase.h"
+
+#include "atomicAdjust.h"
+#include "configDeclaration.h"
 #include "configVariable.h"
-#include "numeric_types.h"
 
 /**
  * This is a convenience class to specialize ConfigVariable as a 64-bit

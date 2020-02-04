@@ -12,12 +12,16 @@
  */
 
 #include "functionWriterPtrToPython.h"
-#include "typeManager.h"
-#include "interrogateBuilder.h"
-#include "interrogate.h"
-#include "interfaceMakerPythonObj.h"
 
+#include "dtoolbase.h"
+
+#include "cppParser.h"
 #include "cppPointerType.h"
+#include "cppType.h"
+#include "interrogate.h"
+#include "interrogateBuilder.h"
+#include "interfaceMakerPythonObj.h"
+#include "typeManager.h"
 
 /**
  *

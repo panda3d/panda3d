@@ -12,6 +12,8 @@
  */
 
 #include "cppFunctionType.h"
+
+#include "cppFile.h"
 #include "cppParameterList.h"
 #include "cppSimpleType.h"
 #include "cppInstance.h"

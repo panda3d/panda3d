@@ -16,20 +16,10 @@
 
 #include "dtoolbase.h"
 
-class CPPFunctionGroup;
 class CPPInstance;
 class CPPType;
-class CPPSimpleType;
-class CPPPointerType;
-class CPPConstType;
-class CPPExtensionType;
 class CPPStructType;
-class CPPEnumType;
-class CPPFunctionType;
 class CPPScope;
-class CPPIdentifier;
-class CPPNameComponent;
-class CPPManifest;
 
 /**
  * This is just a collection of static methods that perform useful operations

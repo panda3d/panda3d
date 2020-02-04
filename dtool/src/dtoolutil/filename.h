@@ -15,13 +15,12 @@
 #define FILENAME_H
 
 #include "dtoolbase.h"
+#include "atomicAdjust.h"
 #include "pandaFileStream.h"
 #include "typeHandle.h"
 #include "register_type.h"
 #include "vector_string.h"
 #include "textEncoder.h"
-
-#include <assert.h>
 
 class DSearchPath;
 

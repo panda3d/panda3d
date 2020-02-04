@@ -39,11 +39,6 @@ on 1 byte), but shoehorning those bytes into integers efficiently is messy.
 
 #include "lookup3.h"
 
-#include <stdio.h>
-#include <stddef.h>
-#include <stdlib.h>
-#include <time.h>
-
 #ifdef WORDS_BIGENDIAN
 # define HASH_LITTLE_ENDIAN 0
 # define HASH_BIG_ENDIAN 1

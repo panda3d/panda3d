@@ -12,12 +12,16 @@
  */
 
 #include "cppEnumType.h"
-#include "cppTypedefType.h"
+
+#include "cppCommentBlock.h"
 #include "cppExpression.h"
 #include "cppSimpleType.h"
 #include "cppConstType.h"
 #include "cppScope.h"
 #include "cppParser.h"
+#include "cppPreprocessor.h"
+#include "cppType.h"
+#include "cppInstance.h"
 #include "cppIdentifier.h"
 #include "indent.h"
 

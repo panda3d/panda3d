@@ -16,10 +16,12 @@
 
 #include "dtoolbase.h"
 
+#include "cppDeclaration.h"
 #include "cppType.h"
 
 class CPPParameterList;
 class CPPIdentifier;
+class CPPScope;
 
 /**
  *

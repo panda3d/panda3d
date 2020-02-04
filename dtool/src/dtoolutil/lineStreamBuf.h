@@ -16,8 +16,6 @@
 
 #include "dtoolbase.h"
 
-#include <string>
-
 /**
  * Used by LineStream to implement an ostream that writes to a memory buffer,
  * whose contents can be continuously extracted as a sequence of lines of

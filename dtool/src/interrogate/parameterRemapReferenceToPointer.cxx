@@ -12,13 +12,8 @@
  */
 
 #include "parameterRemapReferenceToPointer.h"
-#include "typeManager.h"
 
-#include "cppType.h"
-#include "cppDeclaration.h"
-#include "cppConstType.h"
-#include "cppPointerType.h"
-#include "cppReferenceType.h"
+#include "typeManager.h"
 
 /**
  *

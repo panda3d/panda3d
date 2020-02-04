@@ -15,7 +15,6 @@
 #define __PFSTREAMBUF_H__
 
 #include "dtoolbase.h"
-#include <string>
 #include <stdio.h>
 
 // By default, we'll use the Windows flavor of pipe functions if we're

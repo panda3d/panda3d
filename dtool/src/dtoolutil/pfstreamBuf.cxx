@@ -12,7 +12,6 @@
  */
 
 #include "pfstreamBuf.h"
-#include <assert.h>
 
 using std::cerr;
 using std::endl;

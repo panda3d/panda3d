@@ -13,6 +13,10 @@
 
 #include "cppConstType.h"
 
+#include "cppFile.h"
+
+#include <map>
+
 /**
  *
  */

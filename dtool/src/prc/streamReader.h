@@ -15,10 +15,11 @@
 #define STREAMREADER_H
 
 #include "dtoolbase.h"
-#include "pnotify.h"
-#include "numeric_types.h"
-#include "littleEndian.h"
+
 #include "bigEndian.h"
+#include "littleEndian.h"
+#include "numeric_types.h"
+#include "pnotify.h"
 #include "vector_uchar.h"
 
 /**

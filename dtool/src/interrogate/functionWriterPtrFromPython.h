@@ -16,6 +16,8 @@
 
 #include "functionWriter.h"
 
+#include <iosfwd>
+
 class CPPType;
 
 /**

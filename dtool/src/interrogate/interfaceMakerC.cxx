@@ -12,17 +12,16 @@
  */
 
 #include "interfaceMakerC.h"
-#include "interrogateBuilder.h"
+
+#include "cppParser.h"
+#include "cppType.h"
 #include "interrogate.h"
 #include "functionRemap.h"
+#include "parameterRemap.h"
 #include "parameterRemapHandleToInt.h"
-#include "parameterRemapUnchanged.h"
 #include "typeManager.h"
 
-#include "interrogateDatabase.h"
-#include "interrogateType.h"
 #include "interrogateFunction.h"
-#include "cppFunctionType.h"
 
 using std::ostream;
 

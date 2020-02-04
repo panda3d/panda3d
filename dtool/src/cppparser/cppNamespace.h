@@ -18,6 +18,7 @@
 
 #include "cppDeclaration.h"
 
+class CPPFile;
 class CPPIdentifier;
 class CPPScope;
 

@@ -19,8 +19,6 @@
 
 #ifdef HAVE_POSIX_THREADS
 
-#include "numeric_types.h"
-
 #include <pthread.h>
 
 /**

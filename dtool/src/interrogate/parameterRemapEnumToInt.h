@@ -18,6 +18,8 @@
 
 #include "parameterRemap.h"
 
+class CPPType;
+
 /**
  * A ParameterRemap class that handles remapping an enumerated type to an
  * integer parameter.

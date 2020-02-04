@@ -12,9 +12,9 @@
  */
 
 #include "interrogateFunction.h"
+
 #include "indexRemapper.h"
 #include "interrogate_datafile.h"
-#include "interrogateDatabase.h"
 
 /**
  *

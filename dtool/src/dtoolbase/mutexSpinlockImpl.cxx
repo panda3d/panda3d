@@ -11,7 +11,7 @@
  * @date 2006-04-11
  */
 
-#include "selectThreadImpl.h"
+#include "dtoolbase.h"
 
 #ifdef MUTEX_SPINLOCK
 

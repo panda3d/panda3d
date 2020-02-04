@@ -14,6 +14,7 @@
 #include "typeHandle.h"
 #include "typeRegistryNode.h"
 #include "atomicAdjust.h"
+#include "memoryHook.h"
 
 /**
  * Returns the total allocated memory used by objects of this type, for the

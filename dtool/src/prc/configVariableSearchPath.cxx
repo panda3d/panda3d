@@ -12,7 +12,8 @@
  */
 
 #include "configVariableSearchPath.h"
-#include "executionEnvironment.h"
+
+#include "configDeclaration.h"
 
 /**
  * Recopies the config variable into the search path for returning its value.

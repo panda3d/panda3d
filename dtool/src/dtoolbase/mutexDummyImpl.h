@@ -15,7 +15,6 @@
 #define MUTEXDUMMYIMPL_H
 
 #include "dtoolbase.h"
-#include "selectThreadImpl.h"
 
 /**
  * A fake mutex implementation for single-threaded applications that don't

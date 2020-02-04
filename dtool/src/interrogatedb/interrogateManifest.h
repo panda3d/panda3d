@@ -17,6 +17,8 @@
 #include "dtoolbase.h"
 
 #include "interrogateComponent.h"
+#include "interrogate_interface.h"
+#include "interrogate_request.h"
 
 class IndexRemapper;
 

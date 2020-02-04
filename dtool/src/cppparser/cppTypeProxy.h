@@ -16,7 +16,21 @@
 
 #include "dtoolbase.h"
 
+#include "cppDeclaration.h"
 #include "cppType.h"
+
+class CPPArrayType;
+class CPPConstType;
+class CPPEnumType;
+class CPPExtensionType;
+class CPPFunctionType;
+class CPPPointerType;
+class CPPReferenceType;
+class CPPScope;
+class CPPSimpleType;
+class CPPStructType;
+class CPPTBDType;
+class CPPTypedefType;
 
 /**
  * This is a special kind of type that is a placeholder for some type,

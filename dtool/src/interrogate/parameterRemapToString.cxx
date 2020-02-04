@@ -12,8 +12,11 @@
  */
 
 #include "parameterRemapToString.h"
+
 #include "interrogate.h"
 #include "typeManager.h"
+
+#include "cppParser.h"
 
 using std::string;
 

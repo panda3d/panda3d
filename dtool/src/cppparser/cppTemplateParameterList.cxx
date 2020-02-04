@@ -12,9 +12,11 @@
  */
 
 #include "cppTemplateParameterList.h"
+
 #include "cppClassTemplateParameter.h"
-#include "cppInstance.h"
 #include "cppExpression.h"
+#include "cppInstance.h"
+#include "cppType.h"
 
 /**
  *

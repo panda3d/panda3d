@@ -12,7 +12,8 @@
  */
 
 #include "deletedBufferChain.h"
-#include "memoryHook.h"
+
+#include "neverFreeMemory.h"
 
 /**
  * Use the global MemoryHook to get a new DeletedBufferChain of the

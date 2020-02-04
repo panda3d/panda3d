@@ -12,7 +12,7 @@
  */
 
 #include "config_interrogatedb.h"
-#include "interrogate_request.h"
+
 #include "configVariableBool.h"
 #include "configVariableSearchPath.h"
 #include "dconfig.h"

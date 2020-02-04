@@ -16,9 +16,11 @@
 
 #include "dtoolbase.h"
 
+#include "cppDeclaration.h"
 #include "cppType.h"
-#include "cppInstance.h"
 
+class CPPExpression;
+class CPPFile;
 class CPPScope;
 class CPPIdentifier;
 

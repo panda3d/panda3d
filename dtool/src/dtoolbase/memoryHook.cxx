@@ -13,8 +13,6 @@
 
 #include "memoryHook.h"
 #include "deletedBufferChain.h"
-#include <stdlib.h>
-#include "typeRegistry.h"
 
 #ifdef WIN32
 
@@ -27,9 +25,8 @@
 #else
 
 // Posix case.
-#include <unistd.h>
-#include <sys/types.h>
 #include <sys/mman.h>
+#include <cstdio> // for perror
 
 #ifndef MAP_ANON
 #define MAP_ANON 0x1000

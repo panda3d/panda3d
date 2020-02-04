@@ -18,7 +18,6 @@
 
 #include "interrogate_interface.h"
 #include "interrogateType.h"
-#include "interrogateFunction.h"
 #include "interrogateFunctionWrapper.h"
 #include "interrogateManifest.h"
 #include "interrogateElement.h"
@@ -26,8 +25,10 @@
 #include "interrogate_request.h"
 
 #include <map>
+#include <vector>
 
 class IndexRemapper;
+class InterrogateFunction;
 
 /**
  * This stores all of the interrogate data and handles reading the data from a

@@ -18,6 +18,8 @@
 
 #include "parameterRemapToString.h"
 
+class CPPType;
+
 /**
  * Maps a const pointer to a basic_string<char> to an atomic string.
  */

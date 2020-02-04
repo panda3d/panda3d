@@ -15,7 +15,6 @@
 #define CPPNAMECOMPONENT_H
 
 #include "dtoolbase.h"
-#include "cppBisonDefs.h"
 
 #include <string>
 

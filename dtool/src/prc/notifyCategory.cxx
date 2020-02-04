@@ -12,18 +12,16 @@
  */
 
 #include "notifyCategory.h"
-#include "pnotify.h"
-#include "configPageManager.h"
-#include "configVariableString.h"
-#include "configVariableBool.h"
+
 #include "config_prc.h"
+
+#include "configVariableBool.h"
 
 #ifdef ANDROID
 #include "androidLogStream.h"
 #endif
 
 #include <time.h>  // for strftime().
-#include <assert.h>
 
 long NotifyCategory::_server_delta = 0;
 

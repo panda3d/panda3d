@@ -18,6 +18,8 @@
 
 #include "parameterRemap.h"
 
+class CPPType;
+
 /**
  * A ParameterRemap class that handles remapping a simple const parameter
  * (like const int) to an ordinary parameter (like int).  It doesn't apply to

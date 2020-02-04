@@ -17,14 +17,18 @@
 #include "dtoolbase.h"
 
 #include "cppBisonDefs.h"
+#include "cppDeclaration.h"
 #include "cppExtensionType.h"
 
 #include <vector>
 
+class CPPFile;
 class CPPExpression;
+class CPPIdentifier;
 class CPPInstance;
+class CPPPreprocessor;
 class CPPScope;
-
+class CPPType;
 
 /**
  *

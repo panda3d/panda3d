@@ -12,9 +12,9 @@
  */
 
 #include "dSearchPath.h"
+
 #include "filename.h"
 
-#include <algorithm>
 #include <iterator>
 
 using std::ostream;

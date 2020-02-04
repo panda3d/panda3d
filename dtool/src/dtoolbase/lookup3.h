@@ -15,7 +15,6 @@
 #define LOOKUP3_H
 
 #include "dtoolbase.h"
-#include "numeric_types.h"
 
 #ifdef __cplusplus
 extern "C" {

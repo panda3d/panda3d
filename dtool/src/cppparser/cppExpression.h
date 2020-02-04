@@ -18,10 +18,13 @@
 
 #include "cppDeclaration.h"
 
-class CPPIdentifier;
-class CPPType;
-class CPPPreprocessor;
+class CPPClosureType;
 class CPPFunctionGroup;
+class CPPIdentifier;
+class CPPInstance;
+class CPPPreprocessor;
+class CPPScope;
+class CPPType;
 
 /**
  *

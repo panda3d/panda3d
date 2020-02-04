@@ -12,8 +12,11 @@
  */
 
 #include "cppFunctionGroup.h"
+
+#include "cppFile.h"
 #include "cppFunctionType.h"
 #include "cppInstance.h"
+#include "cppType.h"
 #include "indent.h"
 
 /**

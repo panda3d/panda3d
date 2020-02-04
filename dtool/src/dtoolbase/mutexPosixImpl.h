@@ -15,13 +15,11 @@
 #define MUTEXPOSIXIMPL_H
 
 #include "dtoolbase.h"
-#include "selectThreadImpl.h"
 
 #ifdef HAVE_POSIX_THREADS
 
-#include <pthread.h>
 #include <errno.h>
-#include <assert.h>
+#include <pthread.h>
 
 /**
  * Uses Posix threads to implement a mutex.

@@ -27,7 +27,6 @@
 class CPPScope;
 class CPPType;
 class CPPPreprocessor;
-class CPPTemplateParameterList;
 
 /**
  *

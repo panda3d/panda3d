@@ -16,7 +16,6 @@
 
 #include "dtoolbase.h"
 
-#include "cppFile.h"
 #include "cppVisibility.h"
 #include "cppBisonDefs.h"
 

@@ -17,8 +17,6 @@
 #include "dtoolbase.h"
 #include "selectThreadImpl.h"
 
-#include "numeric_types.h"
-
 /**
  * A trivial implementation for atomic adjustments for systems that don't
  * require multiprogramming, and therefore don't require special atomic

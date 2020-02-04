@@ -17,7 +17,6 @@
 #include "dtoolbase.h"
 
 #include <vector>
-#include <string>
 
 class CPPIdentifier;
 class CPPParameterList;

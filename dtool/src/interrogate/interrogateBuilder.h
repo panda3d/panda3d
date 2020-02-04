@@ -34,17 +34,12 @@ class CPPStructType;
 class CPPEnumType;
 class CPPTypedefType;
 class CPPArrayType;
-class CPPFunctionType;
 class CPPScope;
-class CPPIdentifier;
-class CPPNameComponent;
 class CPPManifest;
 class CPPMakeProperty;
 class CPPMakeSeq;
 class InterrogateType;
-class InterrogateFunction;
 class FunctionRemap;
-class InterfaceMaker;
 
 /**
  * This class builds up the InterrogateDatabase based on the data indicated by

@@ -15,11 +15,11 @@
 #define CONFIGVARIABLEBASE_H
 
 #include "dtoolbase.h"
+
 #include "configFlags.h"
 #include "configVariableCore.h"
-#include "configDeclaration.h"
 #include "configVariableManager.h"
-#include "vector_string.h"
+#include "pnotify.h"
 #include "pset.h"
 
 // Use this macro to wrap around a description passed to a ConfigVariable

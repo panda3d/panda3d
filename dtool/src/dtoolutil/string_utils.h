@@ -16,7 +16,7 @@
 
 #include "dtoolbase.h"
 
-#include <string>
+#include "numeric_types.h"
 #include "vector_string.h"
 #include "pdtoa.h"
 

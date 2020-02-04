@@ -19,6 +19,15 @@
 #include "cppScope.h"
 #include "cppTemplateParameterList.h"
 
+class CPPDeclaration;
+class CPPExtensionType;
+class CPPInstance;
+class CPPNamespace;
+class CPPPreprocessor;
+class CPPTypedefType;
+class CPPUsing;
+struct cppyyltype;
+
 /**
  * This is an implicit scope that is created following the appearance of a
  * "template<class x, class y>" or some such line in a C++ file.  It simply

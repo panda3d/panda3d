@@ -17,12 +17,16 @@
 #include "dtoolbase.h"
 
 #include "cppDeclaration.h"
-#include "cppType.h"
 #include "cppTemplateParameterList.h"
 
+#include <map>
+
+class CPPFile;
 class CPPInstanceIdentifier;
 class CPPIdentifier;
 class CPPParameterList;
+class CPPPreprocessor;
+class CPPType;
 class CPPScope;
 class CPPExpression;
 

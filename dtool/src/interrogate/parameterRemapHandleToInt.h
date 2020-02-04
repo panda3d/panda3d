@@ -18,6 +18,8 @@
 
 #include "parameterRemap.h"
 
+class CPPType;
+
 /**
  * A ParameterRemap class that handles remapping a Handle parameter to an
  * integer.  This makes it easier to set up a dynamic typing system on the

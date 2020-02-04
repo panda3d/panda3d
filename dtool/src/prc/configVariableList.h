@@ -15,7 +15,10 @@
 #define CONFIGVARIABLELIST_H
 
 #include "dtoolbase.h"
+
+#include "configDeclaration.h"
 #include "configVariableBase.h"
+#include "pnotify.h"
 
 /**
  * This class is similar to ConfigVariable, but it reports its value as a list

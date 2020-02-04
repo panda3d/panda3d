@@ -17,8 +17,11 @@
 #include "dtoolbase.h"
 
 #include "cppDeclaration.h"
-#include "cppIdentifier.h"
-#include "cppFunctionGroup.h"
+
+class CPPFile;
+class CPPFunctionGroup;
+class CPPIdentifier;
+class CPPScope;
 
 /**
  * This is a MAKE_SEQ() declaration appearing within a class body.  It means

@@ -12,9 +12,11 @@
  */
 
 #include "executionEnvironment.h"
+
+#include "pandaFileStream.h"
 #include "pandaVersion.h"
 
-#include <assert.h>
+#include <ctype.h>
 #include <errno.h>
 #include <stdio.h>  // for perror
 

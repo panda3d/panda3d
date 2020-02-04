@@ -12,10 +12,12 @@
  */
 
 #include "cppExtensionType.h"
+
 #include "cppTypedefType.h"
 #include "cppIdentifier.h"
 #include "cppParser.h"
-#include "indent.h"
+
+#include <map>
 
 /**
  *

@@ -12,6 +12,9 @@
  */
 
 #include "cppTypeParser.h"
+
+#include "cppBisonDefs.h"
+#include "cppDeclaration.h"
 #include "cppType.h"
 
 /**

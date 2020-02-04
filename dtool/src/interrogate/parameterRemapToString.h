@@ -18,6 +18,8 @@
 
 #include "parameterRemap.h"
 
+class CPPType;
+
 /**
  * A base class for several different remapping types that convert to an
  * atomic string class.

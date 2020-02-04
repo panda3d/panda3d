@@ -18,13 +18,11 @@
 
 #include "cppVisibility.h"
 #include "cppFile.h"
-#include "cppCommentBlock.h"
 
-#include <string>
-#include <vector>
 #include <map>
 #include <set>
 
+class CPPCommentBlock;
 class CPPInstance;
 class CPPTemplateParameterList;
 class CPPTypedefType;

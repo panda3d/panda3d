@@ -16,8 +16,6 @@
 
 #include "dtoolbase.h"
 
-#include "cppMakeSeq.h"
-
 #include "interrogate_interface.h"
 #include "interrogate_request.h"
 #include "functionWriters.h"
@@ -29,7 +27,6 @@ class FunctionRemap;
 class ParameterRemap;
 class CPPType;
 class CPPInstance;
-class InterrogateBuilder;
 class InterrogateElement;
 class InterrogateFunction;
 class InterrogateMakeSeq;

@@ -18,6 +18,8 @@
 
 #include "parameterRemap.h"
 
+class CPPType;
+
 /**
  * A ParameterRemap class that handles remapping a reference (or a const
  * reference) parameter to a pointer (or const pointer) parameter.

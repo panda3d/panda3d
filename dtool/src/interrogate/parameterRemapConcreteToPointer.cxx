@@ -12,14 +12,12 @@
  */
 
 #include "parameterRemapConcreteToPointer.h"
+
+#include "cppParser.h"
+#include "cppType.h"
 #include "interrogate.h"
 #include "interrogateBuilder.h"
 #include "typeManager.h"
-
-#include "cppType.h"
-#include "cppDeclaration.h"
-#include "cppConstType.h"
-#include "cppPointerType.h"
 
 /**
  *

@@ -12,7 +12,8 @@
  */
 
 #include "cppReferenceType.h"
-#include "cppTypedefType.h"
+
+#include "cppFile.h"
 #include "cppStructType.h"
 
 /**

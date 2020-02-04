@@ -12,25 +12,32 @@
  */
 
 #include "interrogateBuilder.h"
+
 #include "interrogate.h"
-#include "parameterRemap.h"
 #include "typeManager.h"
-#include "functionWriters.h"
+#include "interfaceMaker.h"
 #include "interfaceMakerC.h"
 #include "interfaceMakerPythonObj.h"
 #include "interfaceMakerPythonSimple.h"
 #include "interfaceMakerPythonNative.h"
 #include "functionRemap.h"
 
-#include "interrogateType.h"
 #include "interrogateDatabase.h"
+#include "interrogateElement.h"
+#include "interrogateFunction.h"
+#include "interrogateMakeSeq.h"
+#include "interrogateManifest.h"
+#include "interrogateType.h"
 #include "indexRemapper.h"
 #include "cppParser.h"
+#include "cppPreprocessor.h"
 #include "cppDeclaration.h"
+#include "cppFile.h"
 #include "cppFunctionGroup.h"
 #include "cppFunctionType.h"
 #include "cppParameterList.h"
 #include "cppInstance.h"
+#include "cppIdentifier.h"
 #include "cppSimpleType.h"
 #include "cppPointerType.h"
 #include "cppReferenceType.h"
@@ -39,16 +46,20 @@
 #include "cppExtensionType.h"
 #include "cppStructType.h"
 #include "cppExpression.h"
+#include "cppType.h"
 #include "cppTypedefType.h"
 #include "cppTypeDeclaration.h"
 #include "cppEnumType.h"
 #include "cppCommentBlock.h"
 #include "cppMakeProperty.h"
 #include "cppMakeSeq.h"
+#include "cppManifest.h"
+#include "cppScope.h"
+#include "cppVisibility.h"
+#include "filename.h"
 #include "pnotify.h"
 
 #include <ctype.h>
-#include <algorithm>
 
 using std::cerr;
 using std::istream;

@@ -16,6 +16,7 @@
 
 #include "pandabase.h"
 #include "globPattern.h"
+#include "pvector.h"
 
 /**
  * This class is used to define a subset of part names to apply to the

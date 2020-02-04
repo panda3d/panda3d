@@ -11,5 +11,4 @@
  * @date 2002-08-09
  */
 
-#include "selectThreadImpl.h"
 #include "atomicAdjustDummyImpl.h"
