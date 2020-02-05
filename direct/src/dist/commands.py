@@ -399,7 +399,7 @@ class build_apps(setuptools.Command):
 
         self.announce('Gathering wheels for platform: {}'.format(platform), distutils.log.INFO)
 
-        whldir = os.path.join(self.build_base, '__whl_cache__')
+        whlcache = os.path.join(self.build_base, '__whl_cache__')
 
         pip_version = int(pip.__version__.split('.')[0])
         if pip_version < 9:
@@ -408,9 +408,8 @@ class build_apps(setuptools.Command):
         #TODO find a better way to get abi tag than from internal/private pip APIs
         if hasattr(pip, 'pep425tags'):
             pep425tags = pip.pep425tags
-            wheel = pip.wheel
         else:
-            from pip._internal import pep425tags, wheel
+            from pip._internal import pep425tags
 
         if pip_version >= 20:
             from pip._vendor.packaging.tags import cpython_tags
@@ -425,6 +424,8 @@ class build_apps(setuptools.Command):
         if abi_tag in ('cp26m', 'cp27m', 'cp32m') and not platform.startswith('win') and not platform.startswith('macosx'):
             abi_tag += 'u'
 
+        whldir = os.path.join(whlcache, '_'.join((platform, abi_tag)))
+        os.makedirs(whldir, exist_ok=True)
 
         # Remove any .zip files. These are built from a VCS and block for an
         # interactive prompt on subsequent downloads.
@@ -452,24 +453,12 @@ class build_apps(setuptools.Command):
 
         subprocess.check_call([sys.executable, '-m', 'pip'] + pip_args)
 
-        # Now figure out which of the downloaded wheels are relevant to us.
-        tags = pep425tags.get_supported(platform=platform, abi=abi_tag)
-        if pip_version >= 20:
-            tags = [
-                tuple(str(i).split('-'))
-                for i in tags
-            ]
-        wheelpaths = []
-        for filename in os.listdir(whldir):
-            try:
-                whl = wheel.Wheel(filename)
-            except wheel.InvalidWheelFilename:
-                continue
-
-            if whl.supported(tags):
-                wheelpaths.append(os.path.join(whldir, filename))
-
-        return wheelpaths
+        # Return a list of paths to the downloaded whls
+        return [
+            os.path.join(whldir, filename)
+            for filename in os.listdir(whldir)
+            if filename.endswith('.whl')
+        ]
 
     def update_pe_resources(self, appname, runtime):
         """Update resources (e.g., icons) in windows PE file"""
