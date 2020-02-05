@@ -1121,7 +1121,7 @@ def CompileCxx(obj,src,opts):
             if ("BIGOBJ" in opts) or GetTargetArch() == 'x64':
                 cmd += " /bigobj"
 
-            cmd += " /Zm300 /D_WIN32"
+            cmd += " /Zm300"
             if 'EXCEPTIONS' in opts:
                 cmd += " /EHsc"
             else:
