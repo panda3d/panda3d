@@ -1130,9 +1130,6 @@ def CompileCxx(obj,src,opts):
             if 'RTTI' not in opts:
                  cmd += " /GR-"
 
-            if GetTargetArch() == 'x64':
-                cmd += " /D_WIN32 /D_WIN64"
-
             cmd += " /W3 " + BracketNameWithQuotes(src)
             oscmd(cmd)
         else:
@@ -1213,9 +1210,7 @@ def CompileCxx(obj,src,opts):
                 cmd += " /Qopt-report:2 /Qopt-report-phase:hlo /Qopt-report-phase:hpo"    # some optimization reports
             else:
                 cmd += " /W1 "
-            cmd += " /EHa /Zm300 /D_WIN32"
-            if GetTargetArch() == 'x64':
-                cmd += " /D_WIN32"
+            cmd += " /EHa /Zm300"
             cmd += " " + BracketNameWithQuotes(src)
 
             oscmd(cmd)
