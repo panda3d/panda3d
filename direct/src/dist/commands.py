@@ -401,7 +401,7 @@ class build_apps(setuptools.Command):
 
         whldir = os.path.join(self.build_base, '__whl_cache__')
 
-        pip_version = [int(i) for i in pip.__version__.split('.')][0]
+        pip_version = int(pip.__version__.split('.')[0])
         if pip_version < 9:
             raise RuntimeError("pip 9.0 or greater is required, but found {}".format(pip.__version__))
 
