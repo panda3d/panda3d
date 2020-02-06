@@ -162,7 +162,7 @@ reload_implicit_pages() {
     _prc_patterns.reserve(pat_list.size());
     for (size_t i = 0; i < pat_list.size(); ++i) {
       GlobPattern glob(pat_list[i]);
-#ifdef WIN32
+#ifdef _WIN32
       // On windows, the file system is case-insensitive, so the pattern
       // should be too.
       glob.set_case_sensitive(false);
@@ -184,7 +184,7 @@ reload_implicit_pages() {
     _prc_encrypted_patterns.reserve(pat_list.size());
     for (size_t i = 0; i < pat_list.size(); ++i) {
       GlobPattern glob(pat_list[i]);
-#ifdef WIN32
+#ifdef _WIN32
       glob.set_case_sensitive(false);
 #endif  // WIN32
       _prc_encrypted_patterns.push_back(glob);
@@ -204,7 +204,7 @@ reload_implicit_pages() {
     _prc_executable_patterns.reserve(pat_list.size());
     for (size_t i = 0; i < pat_list.size(); ++i) {
       GlobPattern glob(pat_list[i]);
-#ifdef WIN32
+#ifdef _WIN32
       glob.set_case_sensitive(false);
 #endif  // WIN32
       _prc_executable_patterns.push_back(glob);
@@ -481,7 +481,7 @@ reload_implicit_pages() {
   PandaFileStreamBuf::_newline_mode = newline_mode;
 #endif  // USE_PANDAFILESTREAM
 
-#ifdef WIN32
+#ifdef _WIN32
   // We don't necessarily want an error dialog when we fail to load a .dll
   // file.  But sometimes it is useful for debugging.
   ConfigVariableBool show_dll_error_dialog

@@ -13,7 +13,7 @@
 
 #include "selectThreadImpl.h"
 
-#ifdef WIN32_VC
+#if defined(_WIN32) && !defined(CPPPARSER)
 
 #include "mutexWin32Impl.h"
 
@@ -28,4 +28,4 @@ ReMutexWin32Impl() {
   InitializeCriticalSectionAndSpinCount(&_lock, spin_count);
 }
 
-#endif  // WIN32_VC
+#endif  // _WIN32

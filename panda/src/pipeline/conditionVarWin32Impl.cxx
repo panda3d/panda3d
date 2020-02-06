@@ -13,8 +13,8 @@
 
 #include "selectThreadImpl.h"
 
-#if defined(WIN32_VC) || defined(WIN64_VC)
+#ifdef _WIN32
 
 #include "conditionVarWin32Impl.h"
 
-#endif  // WIN32_VC
+#endif  // _WIN32

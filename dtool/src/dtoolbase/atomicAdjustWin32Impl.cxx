@@ -13,8 +13,8 @@
 
 #include "selectThreadImpl.h"
 
-#ifdef WIN32_VC
+#ifdef _WIN32
 
 #include "atomicAdjustWin32Impl.h"
 
-#endif  // WIN32_VC
+#endif  // _WIN32

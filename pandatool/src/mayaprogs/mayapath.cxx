@@ -347,7 +347,7 @@ main(int argc, char *argv[]) {
     putenv(putenv_cstr);
   }
 
-#ifdef WIN32
+#ifdef _WIN32
   string sep = ";";
 #else
   string sep = ":";

@@ -14,7 +14,7 @@
  * returning the current system time ?? So use time functions that grab the
  * current system time sparingly ??
  */
-#ifdef WIN32
+#ifdef _WIN32
 #include <winsock2.h>
 #include <wtypes.h>
 #include <sys/types.h>
@@ -64,7 +64,7 @@ inline void TimeAdd(const struct timeval &start, const struct timeval &delta, st
     NormalizeTime(answer);
 }
 
-#ifdef WIN32
+#ifdef _WIN32
 // Lets make Windows think it is a unix machine :)
 
 /**

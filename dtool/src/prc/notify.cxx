@@ -355,7 +355,7 @@ assert_failure(const char *expression, int line,
     // Make sure the error message has been flushed to the output.
     nout.flush();
 
-#ifdef WIN32
+#ifdef _MSC_VER
     // How to trigger an exception in VC++ that offers to take us into the
     // debugger?  abort() doesn't do it.  We used to be able to assert(false),
     // but in VC++ 7 that just throws an exception, and an uncaught exception
@@ -373,9 +373,9 @@ assert_failure(const char *expression, int line,
     int *ptr = nullptr;
     *ptr = 1;
 
-#else  // WIN32
+#else  // _MSC_VER
     abort();
-#endif  // WIN32
+#endif  // _MSC_VER
   }
 
   return true;
