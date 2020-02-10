@@ -238,36 +238,6 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point, bool &found_any,
 }
 
 /**
- * Merges old_bundle with new_bundle.  old_bundle must be one of the
- * PartBundles within this node.  At the end of this call, the old_bundle
- * pointer within this node will be replaced with the new_bundle pointer, and
- * all geometry within this node will be updated to reference new_bundle.
- *
- * @deprecated Use the newer version of this method, below.
- */
-void Character::
-merge_bundles(PartBundle *old_bundle, PartBundle *new_bundle) {
-  if (old_bundle == new_bundle) {
-    // Trivially return.
-    return;
-  }
-
-  // Find the PartBundleHandle of old_bundle.
-  PT(PartBundleHandle) old_bundle_handle;
-  Bundles::const_iterator bi;
-  for (bi = _bundles.begin(); bi != _bundles.end(); ++bi) {
-    if ((*bi)->get_bundle() == old_bundle) {
-      old_bundle_handle = (*bi);
-      break;
-    }
-  }
-  nassertv(!old_bundle_handle.is_null());
-
-  PT(PartBundleHandle) new_bundle_handle = new PartBundleHandle(new_bundle);
-  merge_bundles(old_bundle_handle, new_bundle_handle);
-}
-
-/**
  * Merges old_bundle_handle->get_bundle() with new_bundle.  old_bundle_handle
  * must be one of the PartBundleHandle within this node.  At the end of this
  * call, the bundle pointer within the old_bundle_handle will be replaced with
