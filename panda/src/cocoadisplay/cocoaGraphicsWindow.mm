@@ -1265,7 +1265,7 @@ load_image_data(const Filename &filename) {
   cocoadisplay_cat.info()
     << "Loading NSImage from file " << resolved << "\n";
 
-  PT(VirtualFile) vfile = vfs->get_file(filename);
+  PT(VirtualFile) vfile = vfs->get_file(resolved);
   if (vfile == NULL) {
     return nil;
   }
