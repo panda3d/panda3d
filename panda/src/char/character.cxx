@@ -44,29 +44,29 @@ Character(const Character &copy, bool copy_bundles) :
   _lod_delay_factor(copy._lod_delay_factor),
   _do_lod_animation(copy._do_lod_animation),
   _joints_pcollector(copy._joints_pcollector),
-  _skinning_pcollector(copy._skinning_pcollector)
+  _skinning_pcollector(copy._skinning_pcollector),
+  _last_auto_update(-1.0),
+  _view_frame(-1),
+  _view_distance2(0.0f)
 {
   set_cull_callback();
 
+  LightMutexHolder holder(copy._lock);
+
   if (copy_bundles) {
     // Copy the bundle(s).
-    int num_bundles = copy.get_num_bundles();
-    for (int i = 0; i < num_bundles; ++i) {
-      PartBundle *orig_bundle = copy.get_bundle(i);
+    for (PartBundleHandle *handle : copy._bundles) {
+      PartBundle *orig_bundle = handle->get_bundle();
       PT(PartBundle) new_bundle = DCAST(PartBundle, orig_bundle->copy_subgraph());
-      add_bundle(new_bundle);
+      do_add_bundle_handle(new PartBundleHandle(new_bundle));
     }
   } else {
     // Share the bundles.
-    int num_bundles = copy.get_num_bundles();
-    for (int i = 0; i < num_bundles; ++i) {
-      PartBundle *orig_bundle = copy.get_bundle(i);
-      add_bundle(orig_bundle);
+    for (PartBundleHandle *handle : copy._bundles) {
+      PartBundle *orig_bundle = handle->get_bundle();
+      do_add_bundle_handle(new PartBundleHandle(orig_bundle));
     }
   }
-  _last_auto_update = -1.0;
-  _view_frame = -1;
-  _view_distance2 = 0.0f;
 }
 
 /**
@@ -76,13 +76,13 @@ Character::
 Character(const std::string &name) :
   PartBundleNode(name, new CharacterJointBundle(name)),
   _joints_pcollector(PStatCollector(_animation_pcollector, name), "Joints"),
-  _skinning_pcollector(PStatCollector(_animation_pcollector, name), "Vertices")
+  _skinning_pcollector(PStatCollector(_animation_pcollector, name), "Vertices"),
+  _last_auto_update(-1.0),
+  _view_frame(-1),
+  _view_distance2(0.0f)
 {
   set_cull_callback();
   clear_lod_animation();
-  _last_auto_update = -1.0;
-  _view_frame = -1;
-  _view_distance2 = 0.0f;
 }
 
 /**
@@ -90,9 +90,9 @@ Character(const std::string &name) :
  */
 Character::
 ~Character() {
-  int num_bundles = get_num_bundles();
-  for (int i = 0; i < num_bundles; ++i) {
-    r_clear_joint_characters(get_bundle(i));
+  LightMutexHolder holder(_lock);
+  for (PartBundleHandle *handle : _bundles) {
+    r_clear_joint_characters(handle->get_bundle());
   }
 }
 
@@ -263,6 +263,7 @@ merge_bundles(PartBundleHandle *old_bundle_handle,
   PartBundle *new_bundle = new_bundle_handle->get_bundle();
   new_bundle->merge_anim_preloads(old_bundle);
 
+  LightMutexHolder holder(_lock);
   update_bundle(old_bundle_handle, new_bundle);
 }
 
@@ -326,11 +327,11 @@ clear_lod_animation() {
  */
 CharacterJoint *Character::
 find_joint(const std::string &name) const {
-  int num_bundles = get_num_bundles();
-  for (int i = 0; i < num_bundles; ++i) {
-    PartGroup *part = get_bundle(i)->find_child(name);
+  LightMutexHolder holder(_lock);
+  for (PartBundleHandle *handle : _bundles) {
+    PartGroup *part = handle->get_bundle()->find_child(name);
     if (part != nullptr && part->is_character_joint()) {
-      return DCAST(CharacterJoint, part);
+      return (CharacterJoint *)part;
     }
   }
 
@@ -344,12 +345,12 @@ find_joint(const std::string &name) const {
  */
 CharacterSlider *Character::
 find_slider(const std::string &name) const {
-  int num_bundles = get_num_bundles();
-  for (int i = 0; i < num_bundles; ++i) {
-    PartGroup *part = get_bundle(i)->find_child(name);
+  LightMutexHolder holder(_lock);
+  for (PartBundleHandle *handle : _bundles) {
+    PartGroup *part = handle->get_bundle()->find_child(name);
     if (part != nullptr &&
         part->is_of_type(CharacterSlider::get_class_type())) {
-      return DCAST(CharacterSlider, part);
+      return (CharacterSlider *)part;
     }
   }
 
@@ -362,9 +363,9 @@ find_slider(const std::string &name) const {
  */
 void Character::
 write_parts(std::ostream &out) const {
-  int num_bundles = get_num_bundles();
-  for (int i = 0; i < num_bundles; ++i) {
-    get_bundle(i)->write(out, 0);
+  LightMutexHolder holder(_lock);
+  for (PartBundleHandle *handle : _bundles) {
+    handle->get_bundle()->write(out, 0);
   }
 }
 
@@ -375,9 +376,9 @@ write_parts(std::ostream &out) const {
  */
 void Character::
 write_part_values(std::ostream &out) const {
-  int num_bundles = get_num_bundles();
-  for (int i = 0; i < num_bundles; ++i) {
-    get_bundle(i)->write_with_value(out, 0);
+  LightMutexHolder holder(_lock);
+  for (PartBundleHandle *handle : _bundles) {
+    handle->get_bundle()->write_with_value(out, 0);
   }
 }
 
@@ -401,6 +402,7 @@ update_to_now() {
  */
 void Character::
 update() {
+  LightMutexHolder holder(_lock);
   double now = ClockObject::get_global_clock()->get_frame_time();
   if (now != _last_auto_update) {
     _last_auto_update = now;
@@ -421,13 +423,14 @@ update() {
  */
 void Character::
 force_update() {
+  LightMutexHolder holder(_lock);
+
   // Statistics
   PStatTimer timer(_joints_pcollector);
 
   // Update all the joints and sliders.
-  int num_bundles = get_num_bundles();
-  for (int i = 0; i < num_bundles; ++i) {
-    get_bundle(i)->force_update();
+  for (PartBundleHandle *handle : _bundles) {
+    handle->get_bundle()->force_update();
   }
 }
 
@@ -456,11 +459,13 @@ r_copy_children(const PandaNode *from, PandaNode::InstanceMap &inst_map,
   NodeMap node_map;
   JointMap joint_map;
 
-  int num_bundles = get_num_bundles();
-  nassertv(from_char->get_num_bundles() == num_bundles);
-  int i;
-  for (i = 0; i < num_bundles; ++i) {
-    fill_joint_map(joint_map, get_bundle(i), from_char->get_bundle(i));
+  LightMutexHolder from_holder(from_char->_lock);
+  LightMutexHolder holder(_lock);
+
+  size_t num_bundles = _bundles.size();
+  nassertv(from_char->_bundles.size() == num_bundles);
+  for (size_t i = 0; i < num_bundles; ++i) {
+    fill_joint_map(joint_map, _bundles[i]->get_bundle(), from_char->_bundles[i]->get_bundle());
   }
 
   GeomVertexMap gvmap;
@@ -469,14 +474,16 @@ r_copy_children(const PandaNode *from, PandaNode::InstanceMap &inst_map,
   r_copy_char(this, from_char, from_char, node_map, joint_map,
               gvmap, gjmap, gsmap);
 
-  for (i = 0; i < num_bundles; ++i) {
-    copy_node_pointers(node_map, get_bundle(i), from_char->get_bundle(i));
+  for (size_t i = 0; i < num_bundles; ++i) {
+    copy_node_pointers(node_map, _bundles[i]->get_bundle(), from_char->_bundles[i]->get_bundle());
   }
 }
 
 /**
  * Replaces the contents of the indicated PartBundleHandle (presumably stored
  * within this node) with new_bundle.
+ *
+ * Assumes the lock is held.
  */
 void Character::
 update_bundle(PartBundleHandle *old_bundle_handle, PartBundle *new_bundle) {
@@ -530,20 +537,18 @@ get_rel_transform(CullTraverser *trav, CullTraverserData &data) {
 
 /**
  * The actual implementation of update().  Assumes the appropriate
- * PStatCollector has already been started.
+ * PStatCollector has already been started, and that the lock is held.
  */
 void Character::
 do_update() {
   // Update all the joints and sliders.
   if (even_animation) {
-    int num_bundles = get_num_bundles();
-    for (int i = 0; i < num_bundles; ++i) {
-      get_bundle(i)->force_update();
+    for (PartBundleHandle *handle : _bundles) {
+      handle->get_bundle()->force_update();
     }
   } else {
-    int num_bundles = get_num_bundles();
-    for (int i = 0; i < num_bundles; ++i) {
-      get_bundle(i)->update();
+    for (PartBundleHandle *handle : _bundles) {
+      handle->get_bundle()->update();
     }
   }
 }
@@ -554,9 +559,9 @@ do_update() {
  */
 void Character::
 set_lod_current_delay(double delay) {
-  int num_bundles = get_num_bundles();
-  for (int i = 0; i < num_bundles; ++i) {
-    get_bundle(i)->set_update_delay(delay);
+  LightMutexHolder holder(_lock);
+  for (PartBundleHandle *handle : _bundles) {
+    handle->get_bundle()->set_update_delay(delay);
   }
 }
 
@@ -564,6 +569,8 @@ set_lod_current_delay(double delay) {
  * After the joint hierarchy has already been copied from the indicated
  * hierarchy, this recursively walks through the joints and builds up a
  * mapping from old to new.
+ *
+ * Assumes the lock is held.
  */
 void Character::
 fill_joint_map(Character::JointMap &joint_map,
@@ -594,6 +601,8 @@ fill_joint_map(Character::JointMap &joint_map,
  * Recursively checks the two bundles for a matching hierarchy, and adds nodes
  * as necessary to "new_group" where they are not already present.  Also fills
  * joint_map in the same manner as fill_joint_map().
+ *
+ * Assumes the lock is held.
  */
 void Character::
 r_merge_bundles(Character::JointMap &joint_map,
@@ -700,11 +709,12 @@ r_merge_bundles(Character::JointMap &joint_map,
   new_group->_children.swap(new_children);
 }
 
-
 /**
  * Recursively walks the scene graph hierarchy below the Character node,
  * duplicating it while noting the orig:copy node mappings, and also updates
  * any GeomNodes found.
+ *
+ * Assumes the lock is held.
  */
 void Character::
 r_copy_char(PandaNode *dest, const PandaNode *source,
