@@ -5421,7 +5421,7 @@ if (PkgSkip("DIRECT")==0):
   CreateFile(GetOutputDir()+"/include/dcParser.h")
   PyTargetAdd('p3dcparser_dcParser.obj', opts=OPTS, input='dcParser.yxx')
   #TargetAdd('dcParser.h', input='p3dcparser_dcParser.obj', opts=['DEPENDENCYONLY'])
-  PyTargetAdd('p3dcparser_dcLexer.obj', opts=OPTS, input='dcLexer.lxx')
+  PyTargetAdd('p3dcparser_dcLexer.obj', opts=OPTS, input='dcLexer.lxx', dep='p3dcparser_dcParser.obj')
   PyTargetAdd('p3dcparser_composite1.obj', opts=OPTS, input='p3dcparser_composite1.cxx')
   PyTargetAdd('p3dcparser_composite2.obj', opts=OPTS, input='p3dcparser_composite2.cxx')
 
