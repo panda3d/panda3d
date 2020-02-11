@@ -19,7 +19,7 @@
 #ifdef HAVE_OPENSSL
 
 #ifdef _WIN32
-  #include <WinSock2.h>
+  #include <winsock2.h>
   #include <windows.h>  // for WSAGetLastError()
   #undef X509_NAME
 #endif  // _WIN32
