@@ -25,7 +25,7 @@
 #if defined(CPPPARSER)
 #elif defined(_WIN32)
 #include <winsock2.h>  // For gethostname()
-#include <Iphlpapi.h> // For GetAdaptersAddresses()
+#include <iphlpapi.h> // For GetAdaptersAddresses()
 #elif defined(__ANDROID__)
 #include <net/if.h>
 #else
