@@ -92,7 +92,7 @@ EXCLUDE_EXT = [".pyc", ".pyo", ".N", ".prebuilt", ".xcf", ".plist", ".vcproj", "
 # Plug-ins to install.
 PLUGIN_LIBS = ["pandagl", "pandagles", "pandagles2", "pandadx9", "p3tinydisplay", "p3ptloader", "p3assimp", "p3ffmpeg", "p3openal_audio", "p3fmod_audio"]
 
-# Libraries included in manylinux ABI that should be ignored.  See PEP 513/571.
+# Libraries included in manylinux ABI that should be ignored.  See PEP 513/571/599.
 MANYLINUX_LIBS = [
     "libgcc_s.so.1", "libstdc++.so.6", "libm.so.6", "libdl.so.2", "librt.so.1",
     "libcrypt.so.1", "libc.so.6", "libnsl.so.1", "libutil.so.1",
@@ -530,10 +530,14 @@ def makewheel(version, output_dir, platform=None):
         else:
             print("Could not find platform.dat in build directory")
             platform = get_platform()
-            if platform.startswith("linux-"):
-                # Is this manylinux1?
-                if os.path.isfile("/lib/libc-2.5.so") and os.path.isdir("/opt/python"):
+            if platform.startswith("linux-") and os.path.isdir("/opt/python"):
+                # Is this manylinux?
+                if os.path.isfile("/lib/libc-2.5.so") or os.path.isfile("/lib64/libc-2.5.so"):
                     platform = platform.replace("linux", "manylinux1")
+                elif os.path.isfile("/lib/libc-2.12.so") or os.path.isfile("/lib64/libc-2.12.so"):
+                    platform = platform.replace("linux", "manylinux2010")
+                elif os.path.isfile("/lib/libc-2.17.so") or os.path.isfile("/lib64/libc-2.17.so"):
+                    platform = platform.replace("linux", "manylinux2014")
 
     platform = platform.replace('-', '_').replace('.', '_')
 
