@@ -32,7 +32,11 @@ def test_wheel(wheel, verbose=False):
         python = os.path.join(envdir, "bin", "python")
 
     # Upgrade pip inside the environment too.
-    if subprocess.call([python, "-m", "pip", "install", "-U", "pip"]) != 0:
+    pip_pkg = "pip"
+    if sys.version_info[0:2] == (3, 4):
+        pip_pkg = "pip<19.2"
+
+    if subprocess.call([python, "-m", "pip", "install", "-U", pip_pkg]) != 0:
         shutil.rmtree(envdir)
         sys.exit(1)
 
