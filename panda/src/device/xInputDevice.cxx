@@ -19,8 +19,8 @@
 #include "inputDeviceManager.h"
 #include "string_utils.h"
 
-#include <XInput.h>
-#include <CfgMgr32.h>
+#include <xinput.h>
+#include <cfgmgr32.h>
 
 #ifndef XUSER_MAX_COUNT
 #define XUSER_MAX_COUNT 4

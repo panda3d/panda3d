@@ -30,7 +30,7 @@
 #include "openSSLWrapper.h"
 
 #if defined(WIN32_VC) || defined(WIN64_VC)
-  #include <WinSock2.h>
+  #include <winsock2.h>
   #include <windows.h>  // for select()
   #undef X509_NAME
 #endif  // WIN32_VC
