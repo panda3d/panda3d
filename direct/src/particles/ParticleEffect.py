@@ -36,6 +36,10 @@ class ParticleEffect(NodePath):
             self.addParticles(particles)
         self.renderParent = None
 
+    def birthLitter(self):
+        for p in self.particlesDict.values():
+            p.birthLitter()
+
     def cleanup(self):
         self.removeNode()
         self.disable()
@@ -269,3 +273,4 @@ class ParticleEffect(NodePath):
     clear_to_initial = clearToInitial
     soft_stop = softStop
     soft_start = softStart
+    birth_litter = birthLitter
