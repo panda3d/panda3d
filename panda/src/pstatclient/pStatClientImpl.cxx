@@ -28,7 +28,7 @@
 #include <algorithm>
 
 #ifdef _WIN32
-#include <Winsock2.h>
+#include <winsock2.h>
 #include <windows.h>
 #endif
 

@@ -2038,6 +2038,13 @@ get_keyboard_map() const {
   LightReMutexHolder holder(x11GraphicsPipe::_x_mutex);
 
   for (int k = 9; k <= 135; ++k) {
+    if (k >= 78 && k <= 91) {
+      // Ignore numpad keys for now.  These are not mapped to separate button
+      // handles in Panda, so we don't want their mappings to conflict with
+      // the regular numeric keys.
+      continue;
+    }
+
     ButtonHandle raw_button = map_raw_button(k);
     if (raw_button == ButtonHandle::none()) {
       continue;
@@ -2045,11 +2052,31 @@ get_keyboard_map() const {
 
     KeySym sym = XkbKeycodeToKeysym(_display, k, 0, 0);
     ButtonHandle button = map_button(sym);
-    if (button == ButtonHandle::none()) {
+    std::string label;
+
+    // Compose a label for some keys; I have not yet been able to find an API
+    // that does this effectively.
+    if (sym >= XK_a && sym <= XK_z) {
+      label = toupper((char)sym);
+    }
+    else if (sym >= XK_F1 && sym <= XK_F35) {
+      label = "F" + format_string(sym - XK_F1 + 1);
+    }
+    else if (sym >= XK_exclamdown && sym <= XK_ydiaeresis) {
+      // A latin-1 symbol.  Translate this to the label.
+      char buffer[255];
+      int nbytes = XkbTranslateKeySym(_display, &sym, 0, buffer, 255, 0);
+      if (nbytes > 0) {
+        label.assign(buffer, nbytes);
+      }
+    }
+
+    if (button == ButtonHandle::none() && label.empty()) {
+      // No label and no mapping; this is useless.
       continue;
     }
 
-    map->map_button(raw_button, button);
+    map->map_button(raw_button, button, label);
   }
 
   return map;

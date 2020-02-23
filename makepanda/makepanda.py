@@ -397,6 +397,20 @@ elif target == 'linux' and (os.path.isfile("/lib/libc-2.5.so") or os.path.isfile
     else:
         PLATFORM = 'manylinux1-i686'
 
+elif target == 'linux' and (os.path.isfile("/lib/libc-2.12.so") or os.path.isfile("/lib64/libc-2.12.so")) and os.path.isdir("/opt/python"):
+    # Same sloppy check for manylinux2010.
+    if GetTargetArch() in ('x86_64', 'amd64'):
+        PLATFORM = 'manylinux2010-x86_64'
+    else:
+        PLATFORM = 'manylinux2010-i686'
+
+elif target == 'linux' and (os.path.isfile("/lib/libc-2.17.so") or os.path.isfile("/lib64/libc-2.17.so")) and os.path.isdir("/opt/python"):
+    # Same sloppy check for manylinux2014.
+    if GetTargetArch() in ('x86_64', 'amd64'):
+        PLATFORM = 'manylinux2014-x86_64'
+    else:
+        PLATFORM = 'manylinux2014-i686'
+
 elif not CrossCompiling():
     if HasTargetArch():
         # Replace the architecture in the platform string.
