@@ -61,7 +61,7 @@ target_link_libraries(p3device p3dgraph)
 target_interrogate(p3device ALL)
 
 if(WIN32)
-  target_link_libraries(p3device Cfgmgr32.lib)
+  target_link_libraries(p3device cfgmgr32.lib)
 
 elseif(APPLE)
   find_library(IOKIT_LIBRARY IOKit)

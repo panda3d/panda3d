@@ -37,7 +37,7 @@ target_link_libraries(p3net p3nativenet p3pipeline p3pandabase pandaexpress)
 target_interrogate(p3net ALL)
 
 if(WIN32)
-  target_link_libraries(p3net Iphlpapi.lib)
+  target_link_libraries(p3net iphlpapi.lib)
 endif()
 
 if(NOT BUILD_METALIBS)
