@@ -2000,6 +2000,13 @@ get_keyboard_map() const {
   LightReMutexHolder holder(x11GraphicsPipe::_x_mutex);
 
   for (int k = 9; k <= 135; ++k) {
+    if (k >= 78 && k <= 91) {
+      // Ignore numpad keys for now.  These are not mapped to separate button
+      // handles in Panda, so we don't want their mappings to conflict with
+      // the regular numeric keys.
+      continue;
+    }
+
     ButtonHandle raw_button = map_raw_button(k);
     if (raw_button == ButtonHandle::none()) {
       continue;
