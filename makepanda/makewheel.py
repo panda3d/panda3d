@@ -726,7 +726,12 @@ __version__ = '{0}'
         pylib_path = os.path.join(get_config_var('LIBDIR'), pylib_name)
     else:
         pylib_name = get_config_var('LDLIBRARY')
-        pylib_path = os.path.join(get_config_var('LIBDIR'), pylib_name)
+        pylib_arch = get_config_var('MULTIARCH')
+        libdir = get_config_var('LIBDIR')
+        if pylib_arch and os.path.exists(os.path.join(libdir, pylib_arch, pylib_name)):
+            pylib_path = os.path.join(libdir, pylib_arch, pylib_name)
+        else:
+            pylib_path = os.path.join(libdir, pylib_name)
     whl.write_file('deploy_libs/' + pylib_name, pylib_path)
 
     whl.close()
