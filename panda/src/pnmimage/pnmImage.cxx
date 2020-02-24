@@ -1929,6 +1929,51 @@ make_histogram(PNMImage::Histogram &histogram) {
 }
 
 /**
+ * Reduces the number of unique colors in the image to (at most) the given
+ * count.  Fewer colors than requested may be left in the image after this
+ * operation, but never more.
+ *
+ * At present, this is only supported on images without an alpha channel.
+ *
+ * @since 1.10.5
+ */
+void PNMImage::
+quantize(size_t max_colors) {
+  nassertv(_array != nullptr);
+  nassertv(!has_alpha());
+  size_t array_size = _x_size * _y_size;
+
+  // Get all the unique colors in this image.
+  pmap<xel, xel> color_map;
+  for (size_t i = 0; i < array_size; ++i) {
+    color_map[_array[i]];
+  }
+
+  size_t num_colors = color_map.size();
+  if (num_colors <= max_colors) {
+    // We are already down to the requested number of colors.
+    return;
+  }
+
+  // Collect all the colors into a contiguous array.
+  xel *colors = (xel *)alloca(num_colors * sizeof(xel));
+  size_t i = 0;
+  for (pmap<xel, xel>::const_iterator it = color_map.begin();
+       it != color_map.end(); ++it) {
+    colors[i++] = it->first;
+  }
+  nassertv(i == num_colors);
+
+  // Apply the median cut algorithm, which will give us a color map.
+  r_quantize(color_map, max_colors, colors, num_colors);
+
+  // Replace all the existing colors with the corresponding bucket average.
+  for (size_t i = 0; i < array_size; ++i) {
+    _array[i] = color_map[_array[i]];
+  }
+}
+
+/**
  * Fills the image with a grayscale perlin noise pattern based on the
  * indicated parameters.  Uses set_xel to set the grayscale values.  The sx
  * and sy parameters are in multiples of the size of this image.  See also the
@@ -2159,6 +2204,92 @@ setup_encoding() {
       break;
     }
   }
+}
+
+/**
+ * Recursive implementation of quantize() using the median cut algorithm.
+ */
+void PNMImage::
+r_quantize(pmap<xel, xel> &color_map, size_t max_colors,
+           xel *colors, size_t num_colors) {
+  if (num_colors <= max_colors) {
+    // All points in this bucket can be preserved 1:1.
+    for (size_t i = 0; i < num_colors; ++i) {
+      const xel &col = colors[i];
+      color_map[col] = col;
+    }
+    return;
+  }
+  else if (max_colors == 1) {
+    // We've reached the target.  Calculate the average, in linear space.
+    LRGBColorf avg(0);
+    for (size_t i = 0; i < num_colors; ++i) {
+      avg += from_val(colors[i]);
+    }
+    avg *= 1.0f / num_colors;
+    xel avg_val = to_val(avg);
+
+    // Map all colors in this bucket to the avg.
+    for (size_t i = 0; i < num_colors; ++i) {
+      color_map[colors[i]] = avg_val;
+    }
+    return;
+  }
+  else if (max_colors == 0) {
+    // Not sure how this happens, but we can't preserve any color here.
+    return;
+  }
+
+  // Find the minimum/maximum RGB values.  We should probably do this in
+  // linear space, but eh.
+  xelval min_r = _maxval;
+  xelval min_g = _maxval;
+  xelval min_b = _maxval;
+  xelval max_r = 0, max_g = 0, max_b = 0;
+  for (size_t i = 0; i < num_colors; ++i) {
+    const xel &col = colors[i];
+    min_r = std::min(min_r, col.r);
+    max_r = std::max(max_r, col.r);
+    min_g = std::min(min_g, col.g);
+    max_g = std::max(max_g, col.g);
+    min_b = std::min(min_b, col.b);
+    max_b = std::max(max_b, col.b);
+  }
+
+  int diff_r = max_r - min_r;
+  int diff_g = max_g - min_g;
+  int diff_b = max_b - min_b;
+
+  auto sort_by_red = [](const xel &c1, const xel &c2) {
+    return c1.r < c2.r;
+  };
+  auto sort_by_green = [](const xel &c1, const xel &c2) {
+    return c1.g < c2.g;
+  };
+  auto sort_by_blue = [](const xel &c1, const xel &c2) {
+    return c1.b < c2.b;
+  };
+
+  // Sort by the component with the most variation.
+  if (diff_g >= diff_r) {
+    if (diff_g >= diff_b) {
+      std::sort(colors, colors + num_colors, sort_by_green);
+    } else {
+      std::sort(colors, colors + num_colors, sort_by_blue);
+    }
+  } else if (diff_r >= diff_b) {
+    std::sort(colors, colors + num_colors, sort_by_red);
+  } else {
+    std::sort(colors, colors + num_colors, sort_by_blue);
+  }
+
+  // Subdivide the sorted colors into two buckets, and recurse.
+  size_t max_colors_1 = max_colors / 2;
+  size_t max_colors_2 = max_colors - max_colors_1;
+  size_t num_colors_1 = num_colors / 2;
+  size_t num_colors_2 = num_colors - num_colors_1;
+  r_quantize(color_map, max_colors_1, colors, num_colors_1);
+  r_quantize(color_map, max_colors_2, colors + num_colors_1, num_colors_2);
 }
 
 /**

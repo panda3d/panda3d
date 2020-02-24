@@ -53,11 +53,11 @@ PUBLISHED:
     friend class FLOATNAME(LMatrix4);
   };
 
-  INLINE_LINMATH FLOATNAME(LMatrix4)();
-  INLINE_LINMATH FLOATNAME(LMatrix4)(const FLOATNAME(LMatrix4) &other);
+  INLINE_LINMATH FLOATNAME(LMatrix4)() = default;
+  INLINE_LINMATH FLOATNAME(LMatrix4)(const FLOATNAME(LMatrix4) &other) = default;
   INLINE_LINMATH FLOATNAME(LMatrix4)(const FLOATNAME(UnalignedLMatrix4) &other);
   INLINE_LINMATH FLOATNAME(LMatrix4) &operator = (
-      const FLOATNAME(LMatrix4) &other);
+      const FLOATNAME(LMatrix4) &other) = default;
   INLINE_LINMATH FLOATNAME(LMatrix4) &operator = (
       const FLOATNAME(UnalignedLMatrix4) &other);
   INLINE_LINMATH FLOATNAME(LMatrix4) &operator = (FLOATTYPE fill_value);
@@ -330,11 +330,11 @@ PUBLISHED:
     num_components = 16
   };
 
-  INLINE_LINMATH FLOATNAME(UnalignedLMatrix4)();
+  INLINE_LINMATH FLOATNAME(UnalignedLMatrix4)() = default;
   INLINE_LINMATH FLOATNAME(UnalignedLMatrix4)(const FLOATNAME(LMatrix4) &copy);
-  INLINE_LINMATH FLOATNAME(UnalignedLMatrix4)(const FLOATNAME(UnalignedLMatrix4) &copy);
+  INLINE_LINMATH FLOATNAME(UnalignedLMatrix4)(const FLOATNAME(UnalignedLMatrix4) &copy) = default;
   INLINE_LINMATH FLOATNAME(UnalignedLMatrix4) &operator = (const FLOATNAME(LMatrix4) &copy);
-  INLINE_LINMATH FLOATNAME(UnalignedLMatrix4) &operator = (const FLOATNAME(UnalignedLMatrix4) &copy);
+  INLINE_LINMATH FLOATNAME(UnalignedLMatrix4) &operator = (const FLOATNAME(UnalignedLMatrix4) &copy) = default;
   INLINE_LINMATH FLOATNAME(UnalignedLMatrix4)(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02, FLOATTYPE e03,
                                               FLOATTYPE e10, FLOATTYPE e11, FLOATTYPE e12, FLOATTYPE e13,
                                               FLOATTYPE e20, FLOATTYPE e21, FLOATTYPE e22, FLOATTYPE e23,

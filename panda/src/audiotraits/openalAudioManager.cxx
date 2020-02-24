@@ -252,7 +252,9 @@ select_audio_device() {
     devices = (const char *)alcGetString(nullptr, ALC_ALL_DEVICES_SPECIFIER);
 
     if (devices) {
-      audio_cat.debug() << "All OpenAL devices:\n";
+      if (audio_cat.is_debug()) {
+        audio_cat.debug() << "All OpenAL devices:\n";
+      }
 
       while (*devices) {
         string device(devices);
@@ -280,7 +282,9 @@ select_audio_device() {
     devices = (const char *)alcGetString(nullptr, ALC_DEVICE_SPECIFIER);
 
     if (devices) {
-      audio_cat.debug() << "OpenAL drivers:\n";
+      if (audio_cat.is_debug()) {
+        audio_cat.debug() << "OpenAL drivers:\n";
+      }
 
       while (*devices) {
         string device(devices);

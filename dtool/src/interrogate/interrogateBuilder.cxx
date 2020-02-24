@@ -388,9 +388,6 @@ write_code(ostream &out_code,ostream * out_include, InterrogateModuleDef *def) {
   declaration_bodies << "#include <sstream>\n";
 
   if (build_python_native) {
-    if (library_name.size() > 1) {
-      declaration_bodies << "#define PANDA_LIBRARY_NAME_" << library_name << "\n";
-    }
     declaration_bodies << "#include \"py_panda.h\"\n";
     declaration_bodies << "#include \"extension.h\"\n";
     declaration_bodies << "#include \"dcast.h\"\n";
@@ -2038,33 +2035,11 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CP
     iproperty._length_function = length_function;
   }
 
-  if (make_property->_type == CPPMakeProperty::T_normal) {
-    if (getter != nullptr) {
-      iproperty._flags |= InterrogateElement::F_has_getter;
-      iproperty._getter = get_function(getter, "", struct_type,
-                                      struct_type->get_scope(), 0);
-      nassertr(iproperty._getter, 0);
-    }
-  } else {
-    // We could have a mixed sequence/mapping property, so synthesize a
-    // getitem function.  We don't really care what's in here; we just use
-    // this to store the remaps.
-    if (!iproperty.has_getter()) {
-      iproperty._flags |= InterrogateElement::F_has_getter;
-      iproperty._getter = InterrogateDatabase::get_ptr()->get_next_index();
-      InterrogateFunction *ifunction = new InterrogateFunction;
-      ifunction->_instances = new InterrogateFunction::Instances;
-      InterrogateDatabase::get_ptr()->add_function(iproperty._getter, ifunction);
-    }
-
-    // Add our getter to the generated getitem function.
-    string signature = TypeManager::get_function_signature(getter);
-    InterrogateFunction &ifunction =
-      InterrogateDatabase::get_ptr()->update_function(iproperty._getter);
-    if (ifunction._instances == nullptr) {
-      ifunction._instances = new InterrogateFunction::Instances;
-    }
-    ifunction._instances->insert(InterrogateFunction::Instances::value_type(signature, getter));
+  if (getter != nullptr) {
+    iproperty._flags |= InterrogateElement::F_has_getter;
+    iproperty._getter = get_function(getter, "", struct_type,
+                                    struct_type->get_scope(), 0);
+    nassertr(iproperty._getter, 0);
   }
 
   if (hasser != nullptr) {

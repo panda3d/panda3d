@@ -25,9 +25,9 @@ TypeHandle PartBundleNode::_type_handle;
  */
 PartBundleNode::
 ~PartBundleNode() {
-  Bundles::iterator bi;
-  for (bi = _bundles.begin(); bi != _bundles.end(); ++bi) {
-    (*bi)->get_bundle()->remove_node(this);
+  LightMutexHolder holder(_lock);
+  for (PartBundleHandle *handle : _bundles) {
+    handle->get_bundle()->remove_node(this);
   }
 }
 
@@ -44,9 +44,8 @@ void PartBundleNode::
 apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
                           GeomTransformer &transformer) {
   if ((attrib_types & SceneGraphReducer::TT_transform) != 0) {
-    Bundles::iterator bi;
-    for (bi = _bundles.begin(); bi != _bundles.end(); ++bi) {
-      PT(PartBundleHandle) handle = (*bi);
+    LightMutexHolder holder(_lock);
+    for (PT(PartBundleHandle) handle : _bundles) {
       PartBundle *bundle = handle->get_bundle();
       PT(PartBundle) new_bundle = bundle->apply_transform(attribs._transform);
       update_bundle(handle, new_bundle);
@@ -71,9 +70,8 @@ xform(const LMatrix4 &mat) {
     return;
   }
 
-  Bundles::iterator bi;
-  for (bi = _bundles.begin(); bi != _bundles.end(); ++bi) {
-    PT(PartBundleHandle) handle = (*bi);
+  LightMutexHolder holder(_lock);
+  for (PT(PartBundleHandle) handle : _bundles) {
     PartBundle *bundle = handle->get_bundle();
     if (bundle->get_num_nodes() > 1) {
       PT(PartBundle) new_bundle = DCAST(PartBundle, bundle->copy_subgraph());
@@ -90,14 +88,15 @@ xform(const LMatrix4 &mat) {
 void PartBundleNode::
 add_bundle(PartBundle *bundle) {
   PT(PartBundleHandle) handle = new PartBundleHandle(bundle);
-  add_bundle_handle(handle);
+  LightMutexHolder holder(_lock);
+  do_add_bundle_handle(handle);
 }
 
 /**
- *
+ * Assumes the lock is held.
  */
 void PartBundleNode::
-add_bundle_handle(PartBundleHandle *handle) {
+do_add_bundle_handle(PartBundleHandle *handle) {
   Bundles::iterator bi = find(_bundles.begin(), _bundles.end(), handle);
   if (bi != _bundles.end()) {
     // This handle is already within the node.
@@ -117,11 +116,15 @@ steal_bundles(PartBundleNode *other) {
     return;
   }
 
-  Bundles::iterator bi;
-  for (bi = other->_bundles.begin(); bi != other->_bundles.end(); ++bi) {
-    PartBundleHandle *handle = (*bi);
+  LightMutexHolder other_holder(other->_lock);
+  if (other->_bundles.empty()) {
+    return;
+  }
+
+  LightMutexHolder holder(_lock);
+  for (PartBundleHandle *handle : other->_bundles) {
     handle->get_bundle()->remove_node(other);
-    add_bundle_handle(handle);
+    do_add_bundle_handle(handle);
   }
   other->_bundles.clear();
 }
@@ -129,6 +132,8 @@ steal_bundles(PartBundleNode *other) {
 /**
  * Replaces the contents of the indicated PartBundleHandle (presumably stored
  * within this node) with new_bundle.
+ *
+ * Assumes the lock is held.
  */
 void PartBundleNode::
 update_bundle(PartBundleHandle *old_bundle_handle, PartBundle *new_bundle) {
@@ -146,10 +151,10 @@ void PartBundleNode::
 write_datagram(BamWriter *manager, Datagram &dg) {
   PandaNode::write_datagram(manager, dg);
 
+  LightMutexHolder holder(_lock);
   dg.add_uint16(_bundles.size());
-  Bundles::iterator bi;
-  for (bi = _bundles.begin(); bi != _bundles.end(); ++bi) {
-    manager->write_pointer(dg, (*bi)->get_bundle());
+  for (PartBundleHandle *handle : _bundles) {
+    manager->write_pointer(dg, handle->get_bundle());
   }
 }
 
@@ -161,11 +166,11 @@ int PartBundleNode::
 complete_pointers(TypedWritable **p_list, BamReader* manager) {
   int pi = PandaNode::complete_pointers(p_list, manager);
 
-  Bundles::iterator bi;
-  for (bi = _bundles.begin(); bi != _bundles.end(); ++bi) {
+  LightMutexHolder holder(_lock);
+  for (PT(PartBundleHandle) &handle : _bundles) {
     PT(PartBundle) bundle = DCAST(PartBundle, p_list[pi++]);
     bundle->add_node(this);
-    (*bi) = new PartBundleHandle(bundle);
+    handle = new PartBundleHandle(bundle);
   }
 
   return pi;

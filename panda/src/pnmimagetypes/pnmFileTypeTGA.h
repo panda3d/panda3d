@@ -26,11 +26,10 @@
 
 struct ImageHeader;
 
-
 /**
  * For reading and writing Targa image files.
  */
-class EXPCL_PANDA_PNMIMAGETYPES PNMFileTypeTGA : public PNMFileType {
+class PNMFileTypeTGA : public PNMFileType {
 public:
   PNMFileTypeTGA();
 

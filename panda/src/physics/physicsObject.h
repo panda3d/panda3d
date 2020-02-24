@@ -87,14 +87,14 @@ PUBLISHED:
   virtual LMatrix4 get_lcs() const;
   virtual PhysicsObject *make_copy() const;
 
-  #ifndef NDEBUG
-    void set_name(const std::string &name) {
-      _name = name;
-    }
-    const std::string& get_name() {
-      return _name;
-    }
-  #endif
+#if !defined(NDEBUG) || !defined(CPPPARSER)
+  void set_name(const std::string &name) {
+    _name = name;
+  }
+  const std::string &get_name() {
+    return _name;
+  }
+#endif
 
   virtual void output(std::ostream &out) const;
   virtual void write(std::ostream &out, int indent=0) const;
@@ -115,9 +115,7 @@ private:
   bool _process_me;
   bool _oriented;
 
-  #ifndef NDEBUG
-    std::string _name;
-  #endif
+  std::string _name;
 
 public:
   static TypeHandle get_class_type() {

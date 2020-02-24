@@ -1,23 +1,26 @@
 
 from .ClusterClient import *
 
-# A dictionary of information for various cluster configurations.
-# Dictionary is keyed on cluster-config string
-# Each dictionary contains a list of display configurations, one for
-# each display in the cluster
-# Information that can be specified for each display:
-#      display name: Name of display (used in Configrc to specify server)
-#      display type: Used to flag client vs. server
-#      pos:   positional offset of display's camera from main cluster group
-#      hpr:   orientation offset of display's camera from main cluster group
-#      focal length: display's focal length (in mm)
-#      film size: display's film size (in inches)
-#      film offset: offset of film back (in inches)
-# Note: Note, this overrides offsets specified in DirectCamConfig.py
-# For now we only specify frustum for first display region of configuration
-# TODO: Need to handle multiple display regions per cluster node and to
-# generalize to non cluster situations
-
+#: A dictionary of information for various cluster configurations.
+#: Dictionary is keyed on cluster-config string
+#: Each dictionary contains a list of display configurations, one for
+#: each display in the cluster
+#:
+#: Information that can be specified for each display:
+#:
+#: - display name: Name of display (used in Configrc to specify server)
+#: - display type: Used to flag client vs. server
+#: - pos: positional offset of display's camera from main cluster group
+#: - hpr: orientation offset of display's camera from main cluster group
+#: - focal length: display's focal length (in mm)
+#: - film size: display's film size (in inches)
+#: - film offset: offset of film back (in inches)
+#:
+#: Note: this overrides offsets specified in DirectCamConfig.py
+#: For now we only specify frustum for first display region of configuration
+#:
+#: TODO: Need to handle multiple display regions per cluster node and to
+#: generalize to non cluster situations
 ClientConfigs = {
     'single-server':       [{'display name': 'display0',
                               'display mode': 'client',

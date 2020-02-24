@@ -227,10 +227,12 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
     }
   }
 
-  pnmimage_png_cat.debug()
-    << "width = " << width << " height = " << height << " bit_depth = "
-    << bit_depth << " color_type = " << color_type
-    << " color_space = " << _color_space << "\n";
+  if (pnmimage_png_cat.is_debug()) {
+    pnmimage_png_cat.debug()
+      << "width = " << width << " height = " << height << " bit_depth = "
+      << bit_depth << " color_type = " << color_type
+      << " color_space = " << _color_space << "\n";
+  }
 
   _x_size = width;
   _y_size = height;
@@ -242,32 +244,42 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
 
   switch (color_type) {
   case PNG_COLOR_TYPE_GRAY:
-    pnmimage_png_cat.debug()
-      << "PNG_COLOR_TYPE_GRAY\n";
+    if (pnmimage_png_cat.is_debug()) {
+      pnmimage_png_cat.debug()
+        << "PNG_COLOR_TYPE_GRAY\n";
+    }
     _num_channels = 1;
     break;
 
   case PNG_COLOR_TYPE_GRAY_ALPHA:
-    pnmimage_png_cat.debug()
-      << "PNG_COLOR_TYPE_GRAY_ALPHA\n";
+    if (pnmimage_png_cat.is_debug()) {
+      pnmimage_png_cat.debug()
+        << "PNG_COLOR_TYPE_GRAY_ALPHA\n";
+    }
     _num_channels = 2;
     break;
 
   case PNG_COLOR_TYPE_RGB:
-    pnmimage_png_cat.debug()
-      << "PNG_COLOR_TYPE_RGB\n";
+    if (pnmimage_png_cat.is_debug()) {
+      pnmimage_png_cat.debug()
+        << "PNG_COLOR_TYPE_RGB\n";
+    }
     _num_channels = 3;
     break;
 
   case PNG_COLOR_TYPE_RGB_ALPHA:
-    pnmimage_png_cat.debug()
-      << "PNG_COLOR_TYPE_RGB_ALPHA\n";
+    if (pnmimage_png_cat.is_debug()) {
+      pnmimage_png_cat.debug()
+        << "PNG_COLOR_TYPE_RGB_ALPHA\n";
+    }
     _num_channels = 4;
     break;
 
   case PNG_COLOR_TYPE_PALETTE:
-    pnmimage_png_cat.debug()
-      << "PNG_COLOR_TYPE_PALETTE\n";
+    if (pnmimage_png_cat.is_debug()) {
+      pnmimage_png_cat.debug()
+        << "PNG_COLOR_TYPE_PALETTE\n";
+    }
     png_set_palette_to_rgb(_png);
     _maxval = 255;
     _num_channels = 3;
@@ -566,8 +578,10 @@ write_data(xel *array, xelval *alpha_data) {
   if (png_palette) {
     if (png_bit_depth <= 8) {
       if (compute_palette(palette, array, alpha_data, png_max_palette)) {
-        pnmimage_png_cat.debug()
-          << palette.size() << " colors found.\n";
+        if (pnmimage_png_cat.is_debug()) {
+          pnmimage_png_cat.debug()
+            << palette.size() << " colors found.\n";
+        }
 
         int palette_bit_depth = make_png_bit_depth(pm_maxvaltobits(palette.size() - 1));
 
@@ -581,10 +595,12 @@ write_data(xel *array, xelval *alpha_data) {
 
         if (palette_bit_depth < total_bits ||
             _maxval != (1 << true_bit_depth) - 1) {
-          pnmimage_png_cat.debug()
-            << "palette bit depth of " << palette_bit_depth
-            << " improves on bit depth of " << total_bits
-            << "; making a palette image.\n";
+          if (pnmimage_png_cat.is_debug()) {
+            pnmimage_png_cat.debug()
+              << "palette bit depth of " << palette_bit_depth
+              << " improves on bit depth of " << total_bits
+              << "; making a palette image.\n";
+          }
 
           color_type = PNG_COLOR_TYPE_PALETTE;
 
@@ -611,36 +627,40 @@ write_data(xel *array, xelval *alpha_data) {
 
           png_set_PLTE(_png, _info, png_palette_table, palette.size());
           if (has_alpha()) {
-            pnmimage_png_cat.debug()
-              << "palette contains " << num_alpha << " transparent entries.\n";
+            if (pnmimage_png_cat.is_debug()) {
+              pnmimage_png_cat.debug()
+                << "palette contains " << num_alpha << " transparent entries.\n";
+            }
             png_set_tRNS(_png, _info, png_trans, num_alpha, nullptr);
           }
-        } else {
+        } else if (pnmimage_png_cat.is_debug()) {
           pnmimage_png_cat.debug()
             << "palette bit depth of " << palette_bit_depth
             << " does not improve on bit depth of " << total_bits
             << "; not making a palette image.\n";
         }
 
-      } else {
+      } else if (pnmimage_png_cat.is_debug()) {
         pnmimage_png_cat.debug()
           << "more than " << png_max_palette
           << " colors found; not making a palette image.\n";
       }
-    } else {
+    } else if (pnmimage_png_cat.is_debug()) {
       pnmimage_png_cat.debug()
         << "maxval exceeds 255; not making a palette image.\n";
     }
-  } else {
+  } else if (pnmimage_png_cat.is_debug()) {
     pnmimage_png_cat.debug()
       << "palette images are not enabled.\n";
   }
 
-  pnmimage_png_cat.debug()
-    << "width = " << _x_size << " height = " << _y_size
-    << " maxval = " << _maxval << " bit_depth = "
-    << png_bit_depth << " color_type = " << color_type
-    << " color_space = " << _color_space << "\n";
+  if (pnmimage_png_cat.is_debug()) {
+    pnmimage_png_cat.debug()
+      << "width = " << _x_size << " height = " << _y_size
+      << " maxval = " << _maxval << " bit_depth = "
+      << png_bit_depth << " color_type = " << color_type
+      << " color_space = " << _color_space << "\n";
+  }
 
   png_set_IHDR(_png, _info, _x_size, _y_size, png_bit_depth,
                color_type, PNG_INTERLACE_NONE,

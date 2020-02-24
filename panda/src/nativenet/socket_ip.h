@@ -56,7 +56,6 @@ private:
   friend class Socket_TCP_Listen;
   friend class Socket_UDP_Incoming;
   friend class Socket_UDP_Outgoing;
-  friend class Socket_TCP_SSL;
 
 public:
   static TypeHandle get_class_type() {

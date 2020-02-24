@@ -574,6 +574,8 @@ main(int argc, char **argv) {
     the_output_include = &output_include;
   }
 
+  int status = 0;
+
   // Now output all of the wrapper functions.
   if (!output_code_filename.empty())
   {
@@ -595,6 +597,7 @@ main(int argc, char **argv) {
 
     if (output_code.fail()) {
       nout << "Unable to write to " << output_code_filename << "\n";
+      status = -1;
     } else {
       builder.write_code(output_code,the_output_include, def);
     }
@@ -609,13 +612,13 @@ main(int argc, char **argv) {
     pofstream output_data;
     output_data_filename.open_write(output_data);
 
-    if (output_data.fail())
-    {
+    if (output_data.fail()) {
       nout << "Unable to write to " << output_data_filename << "\n";
+      status = -1;
     } else {
       InterrogateDatabase::get_ptr()->write(output_data, def);
     }
   }
 
-  return (0);
+  return status;
 }

@@ -201,7 +201,6 @@ clear_control_effects() {
   if (!cdata->_blend.empty()) {
     CDWriter cdataw(_cycler, cdata);
     cdataw->_blend.clear();
-    cdataw->_net_blend = 0.0f;
     cdataw->_anim_changed = true;
     determine_effective_channels(cdataw);
   }
@@ -556,7 +555,6 @@ control_removed(AnimControl *control) {
     CDStageWriter cdata(_cycler, pipeline_stage);
     ChannelBlend::iterator cbi = cdata->_blend.find(control);
     if (cbi != cdata->_blend.end()) {
-      cdata->_net_blend -= cbi->second;
       cdata->_blend.erase(cbi);
       cdata->_anim_changed = true;
 
@@ -678,7 +676,7 @@ do_set_control_effect(AnimControl *control, PN_stdfloat effect, CData *cdata) {
     cdata->_last_control_set = control;
   }
 
-  recompute_net_blend(cdata);
+  determine_effective_channels(cdata);
 }
 
 /**
@@ -697,23 +695,6 @@ do_get_control_effect(AnimControl *control, const CData *cdata) const {
   }
 }
 
-
-/**
- * Recomputes the total blending amount after a control effect has been
- * adjusted.  This value must be kept up-to-date so we can normalize the
- * blending amounts.
- */
-void PartBundle::
-recompute_net_blend(CData *cdata) {
-  cdata->_net_blend = 0.0f;
-
-  ChannelBlend::const_iterator bti;
-  for (bti = cdata->_blend.begin(); bti != cdata->_blend.end(); ++bti) {
-    cdata->_net_blend += (*bti).second;
-  }
-  determine_effective_channels(cdata);
-}
-
 /**
  * Removes and stops all the currently activated AnimControls that animate
  * some joints also animated by the indicated AnimControl.  This is a special
@@ -722,7 +703,6 @@ recompute_net_blend(CData *cdata) {
  */
 void PartBundle::
 clear_and_stop_intersecting(AnimControl *control, CData *cdata) {
-  double new_net_blend = 0.0f;
   ChannelBlend new_blend;
   bool any_changed = false;
 
@@ -734,7 +714,6 @@ clear_and_stop_intersecting(AnimControl *control, CData *cdata) {
       // Save this control--it's either the target control, or it has no
       // joints in common with the target control.
       new_blend.insert(new_blend.end(), (*cbi));
-      new_net_blend += (*cbi).second;
     } else {
       // Remove and stop this control.
       ac->stop();
@@ -743,7 +722,6 @@ clear_and_stop_intersecting(AnimControl *control, CData *cdata) {
   }
 
   if (any_changed) {
-    cdata->_net_blend = new_net_blend;
     cdata->_blend.swap(new_blend);
     cdata->_anim_changed = true;
     determine_effective_channels(cdata);
@@ -840,7 +818,6 @@ CData() {
   _frame_blend_flag = interpolate_frames;
   _root_xform = LMatrix4::ident_mat();
   _last_control_set = nullptr;
-  _net_blend = 0.0f;
   _anim_changed = false;
   _last_update = 0.0;
 }
@@ -856,7 +833,6 @@ CData(const PartBundle::CData &copy) :
   _root_xform(copy._root_xform),
   _last_control_set(copy._last_control_set),
   _blend(copy._blend),
-  _net_blend(copy._net_blend),
   _anim_changed(copy._anim_changed),
   _last_update(copy._last_update)
 {

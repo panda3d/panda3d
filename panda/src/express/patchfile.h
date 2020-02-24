@@ -108,35 +108,6 @@ private:
   bool compute_mf_patches(std::ostream &write_stream,
                           uint32_t offset_orig, uint32_t offset_new,
                           std::istream &stream_orig, std::istream &stream_new);
-#ifdef HAVE_TAR
-  class TarSubfile {
-  public:
-    inline bool operator < (const TarSubfile &other) const {
-      return _name < other._name;
-    }
-    std::string _name;
-    std::streampos _header_start;
-    std::streampos _data_start;
-    std::streampos _data_end;
-    std::streampos _end;
-  };
-  typedef ov_set<TarSubfile> TarDef;
-
-  bool read_tar(TarDef &tar, std::istream &stream);
-  bool compute_tar_patches(std::ostream &write_stream,
-                           uint32_t offset_orig, uint32_t offset_new,
-                           std::istream &stream_orig, std::istream &stream_new,
-                           TarDef &tar_orig, TarDef &tar_new);
-
-  // Because this is static, we can only call read_tar() one at a time--no
-  // threads, please.
-  static std::istream *_tar_istream;
-
-  static int tar_openfunc(const char *filename, int oflags, ...);
-  static int tar_closefunc(int fd);
-  static ssize_t tar_readfunc(int fd, void *buffer, size_t nbytes);
-  static ssize_t tar_writefunc(int fd, const void *buffer, size_t nbytes);
-#endif  // HAVE_TAR
 
   bool do_compute_patches(const Filename &file_orig, const Filename &file_new,
                           std::ostream &write_stream,

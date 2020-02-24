@@ -218,5 +218,63 @@ __ipow__(PyObject *self, FLOATTYPE exponent) {
   return self;
 }
 
+/**
+ *
+ */
+INLINE_LINMATH PyObject *Extension<FLOATNAME(LVecBase2)>::
+__round__(PyObject *self) const {
+#ifndef CPPPARSER
+  extern struct Dtool_PyTypedObject FLOATNAME(Dtool_LVecBase2);
+#endif
+  PyObject *py_vec = _PyObject_CallNoArg((PyObject *)DtoolInstance_TYPE(self));
+  if (py_vec != nullptr) {
+    FLOATNAME(LVecBase2) *vec = (FLOATNAME(LVecBase2) *)DtoolInstance_UPCAST(py_vec, FLOATNAME(Dtool_LVecBase2));
+    nassertr(vec != nullptr, nullptr);
+
+    vec->_v(0) = std::round(_this->_v(0));
+    vec->_v(1) = std::round(_this->_v(1));
+  }
+  return py_vec;
+}
+
+/**
+ *
+ */
+INLINE_LINMATH PyObject *Extension<FLOATNAME(LVecBase2)>::
+__floor__(PyObject *self) const {
+#ifndef CPPPARSER
+  extern struct Dtool_PyTypedObject FLOATNAME(Dtool_LVecBase2);
+#endif
+
+  PyObject *py_vec = _PyObject_CallNoArg((PyObject *)DtoolInstance_TYPE(self));
+  if (py_vec != nullptr) {
+    FLOATNAME(LVecBase2) *vec = (FLOATNAME(LVecBase2) *)DtoolInstance_UPCAST(py_vec, FLOATNAME(Dtool_LVecBase2));
+    nassertr(vec != nullptr, nullptr);
+
+    vec->_v(0) = std::floor(_this->_v(0));
+    vec->_v(1) = std::floor(_this->_v(1));
+  }
+  return py_vec;
+}
+
+/**
+ *
+ */
+INLINE_LINMATH PyObject *Extension<FLOATNAME(LVecBase2)>::
+__ceil__(PyObject *self) const {
+#ifndef CPPPARSER
+  extern struct Dtool_PyTypedObject FLOATNAME(Dtool_LVecBase2);
+#endif
+  PyObject *py_vec = _PyObject_CallNoArg((PyObject *)DtoolInstance_TYPE(self));
+  if (py_vec != nullptr) {
+    FLOATNAME(LVecBase2) *vec = (FLOATNAME(LVecBase2) *)DtoolInstance_UPCAST(py_vec, FLOATNAME(Dtool_LVecBase2));
+    nassertr(vec != nullptr, nullptr);
+
+    vec->_v(0) = std::ceil(_this->_v(0));
+    vec->_v(1) = std::ceil(_this->_v(1));
+  }
+  return py_vec;
+}
+
 #undef PYNUMBER_FLOATTYPE
 #undef PY_AS_FLOATTYPE

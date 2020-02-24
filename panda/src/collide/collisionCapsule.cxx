@@ -12,6 +12,7 @@
  */
 
 #include "collisionCapsule.h"
+#include "collisionBox.h"
 #include "collisionSphere.h"
 #include "collisionLine.h"
 #include "collisionRay.h"
@@ -138,6 +139,87 @@ compute_internal_bounds() const {
   }
 
   return bound;
+}
+
+/**
+ *
+ */
+PT(CollisionEntry) CollisionCapsule::
+test_intersection_from_box(const CollisionEntry &entry) const {
+  const CollisionBox *box;
+  DCAST_INTO_R(box, entry.get_from(), nullptr);
+
+  const LMatrix4 wrt_mat = entry.get_wrt_mat();
+  const LMatrix4 inv_wrt_mat = entry.get_inv_wrt_mat();
+
+  // We find the closest point on the box to the line
+  // segment defined by the endpoints of the capsule. To do
+  // this, convert the capsule into the box's coordinate space.
+  LPoint3 box_min = box->get_min();
+  LPoint3 box_max = box->get_max();
+  LPoint3 a = _a * inv_wrt_mat;
+  LPoint3 b = _b * inv_wrt_mat;
+  LVector3 delta = b - a;
+
+  double min_dist = DBL_MAX;
+  PN_stdfloat t;
+  LPoint3 closest_point;
+  // Iterate through the 6 planes of the box
+  for (int i = 0; i < 6; i++) {
+    if (!box->get_plane(i).intersects_line(t, a, delta)) {
+      continue;
+    }
+    if (t > 1.0) t = 1.0;
+    if (t < 0.0) t = 0.0;
+    if (t == min_dist) continue;
+    LPoint3 intersection_point = a + delta * t;
+    // Find the closest point on the box to the intersection point
+    LPoint3 p = intersection_point.fmax(box_min).fmin(box_max);
+    double dist = (p - intersection_point).length_squared();
+    if (dist < min_dist) {
+      min_dist = dist;
+      closest_point = p;
+    }
+  }
+  // Convert the closest point to the capsule's coordinate
+  // space where the capsule is aligned with the y axis.
+  closest_point = closest_point * wrt_mat * _inv_mat;
+  a = _a * _inv_mat;
+  b = _b * _inv_mat;
+
+  // Find the closest point on the line segment
+  LPoint3 point_on_segment;
+  point_on_segment[0] = a[0];
+  point_on_segment[2] = a[2];
+  if (closest_point[1] < std::min(a[1], b[1])) {
+    point_on_segment[1] = std::min(a[1], b[1]);
+  } else if (closest_point[1] > std::max(a[1], b[1])) {
+    point_on_segment[1] = std::max(a[1], b[1]);
+  } else {
+    point_on_segment[1] = closest_point[1];
+  }
+
+  if ((closest_point - point_on_segment).length_squared() > _radius * _radius) {
+    // No intersection.
+    return nullptr;
+  }
+
+  PT(CollisionEntry) new_entry = new CollisionEntry(entry);
+  LVector3 normal;
+  if (point_on_segment == closest_point) {
+    // If the box directly intersects the line segment, use
+    // the box's center to determine the surface normal.
+    normal = (box->get_center() * wrt_mat * _inv_mat) - point_on_segment;
+    if (closest_point != a && closest_point != b) normal[1] = 0;
+  } else {
+    normal = (closest_point - point_on_segment);
+  }
+  normal.normalize();
+  LPoint3 surface_point = point_on_segment + normal * _radius;
+  new_entry->set_interior_point(_mat.xform_point(closest_point));
+  new_entry->set_surface_point(_mat.xform_point(surface_point));
+  new_entry->set_surface_normal(_mat.xform_vec(normal));
+  return new_entry;
 }
 
 /**

@@ -117,6 +117,8 @@ const char *pythonKeywords[] = {
   "and",
   "as",
   "assert",
+  "async",
+  "await",
   "break",
   "class",
   "continue",
@@ -2872,14 +2874,19 @@ write_module_class(ostream &out, Object *obj) {
   // const char *tp_name;
   out << "    \"" << _def->module_name << "." << export_class_name << "\",\n";
   // Py_ssize_t tp_basicsize;
-  out << "    sizeof(Dtool_PyInstDef),\n";
+  out << "    0, // tp_basicsize\n"; // inherited from tp_base
   // Py_ssize_t tp_itemsize;
   out << "    0, // tp_itemsize\n";
 
   // destructor tp_dealloc;
   out << "    &Dtool_FreeInstance_" << ClassName << ",\n";
-  // printfunc tp_print;
+
+  out << "#if PY_VERSION_HEX >= 0x03080000\n";
+  out << "    0, // tp_vectorcall_offset\n";
+  out << "#else\n";
   write_function_slot(out, 4, slots, "tp_print");
+  out << "#endif\n";
+
   // getattrfunc tp_getattr;
   write_function_slot(out, 4, slots, "tp_getattr");
   // setattrfunc tp_setattr;
@@ -3070,6 +3077,10 @@ write_module_class(ostream &out, Object *obj) {
   out << "#if PY_VERSION_HEX >= 0x03040000\n";
   out << "    nullptr, // tp_finalize\n";
   out << "#endif\n";
+  // vectorcallfunc tp_vectorcall
+  out << "#if PY_VERSION_HEX >= 0x03080000\n";
+  out << "    nullptr, // tp_vectorcall\n";
+  out << "#endif\n";
   out << "  },\n";
 
   // It's tempting to initialize the type handle here, but this causes static
@@ -3126,9 +3137,8 @@ write_module_class(ostream &out, Object *obj) {
     }
 
     out << "    Dtool_" << ClassName << "._PyType.tp_bases = PyTuple_Pack(" << bases.size() << baseargs << ");\n";
-  } else {
-    out << "    Dtool_" << ClassName << "._PyType.tp_base = (PyTypeObject *)Dtool_GetSuperBase();\n";
   }
+  out << "    Dtool_" << ClassName << "._PyType.tp_base = (PyTypeObject *)Dtool_GetSuperBase();\n";
 
   int num_nested = obj->_itype.number_of_nested_types();
   int num_dict_items = 1;

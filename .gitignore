@@ -4,11 +4,12 @@
 /targetroot/
 /dstroot/
 
-# Core dumps
+# Core dumps and traces
 core
 core.*
 vgcore.*
 *.core
+*.trace
 
 # Editor files/directories
 *.save
@@ -26,6 +27,7 @@ vgcore.*
 /+DESC
 /+MANIFEST
 /pkg-plist
+/debug.ks
 
 # Produced installer/executables
 /*.exe
@@ -36,6 +38,7 @@ vgcore.*
 /*.dmg
 /*.whl
 /*.txz
+/*.apk
 
 # CMake
 /build/
@@ -60,3 +63,6 @@ __pycache__/
 .tox/
 .cache/
 .pytest_cache/
+/.settings/
+/.cproject
+/.project

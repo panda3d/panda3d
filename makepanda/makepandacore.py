@@ -105,6 +105,8 @@ MAYAVERSIONINFO = [("MAYA6",   "6.0"),
                    ("MAYA20165","2016.5"),
                    ("MAYA2017","2017"),
                    ("MAYA2018","2018"),
+                   ("MAYA2019","2019"),
+                   ("MAYA2020","2020"),
 ]
 
 MAXVERSIONINFO = [("MAX6", "SOFTWARE\\Autodesk\\3DSMAX\\6.0", "installdir", "maxsdk\\cssdk\\include"),
@@ -1689,18 +1691,20 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
             LibName(target_pkg, "-framework " + framework)
             return
 
-        if os.path.isdir(os.path.join(pkg_dir, "include")):
-            IncDirectory(target_pkg, os.path.join(pkg_dir, "include"))
+        inc_dir = os.path.join(pkg_dir, "include")
+        if os.path.isdir(inc_dir):
+            IncDirectory(target_pkg, inc_dir)
 
             # Handle cases like freetype2 where the include dir is a subdir under "include"
             for i in incs:
-                if os.path.isdir(os.path.join(pkg_dir, "include", i)):
-                    IncDirectory(target_pkg, os.path.join(pkg_dir, "include", i))
+                if os.path.isdir(os.path.join(inc_dir, i)):
+                    IncDirectory(target_pkg, os.path.join(inc_dir, i))
 
-        lpath = [os.path.join(pkg_dir, "lib")]
+        lib_dir = os.path.join(pkg_dir, "lib")
+        lpath = [lib_dir]
 
         if not PkgSkip("PYTHON"):
-            py_lib_dir = os.path.join(pkg_dir, "lib", SDK["PYTHONVERSION"])
+            py_lib_dir = os.path.join(lib_dir, SDK["PYTHONVERSION"])
             if os.path.isdir(py_lib_dir):
                 lpath.append(py_lib_dir)
 
@@ -1923,42 +1927,30 @@ def SdkLocateDirectX( strMode = 'default' ):
             if (dir != 0):
                 print("Using DirectX SDK June 2010")
                 SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
-                SDK["GENERIC_DXERR_LIBRARY"] = 1;
         if ("DX9" not in SDK):
             dir = GetRegistryKey("SOFTWARE\\Microsoft\\DirectX\\Microsoft DirectX SDK (June 2010)", "InstallPath")
             if (dir != 0):
                 print("Using DirectX SDK June 2010")
                 SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
-                SDK["GENERIC_DXERR_LIBRARY"] = 1;
         if ("DX9" not in SDK):
             dir = "C:/Program Files (x86)/Microsoft DirectX SDK (June 2010)"
             if os.path.isdir(dir):
                 print("Using DirectX SDK June 2010")
                 SDK["DX9"] = dir
-                SDK["GENERIC_DXERR_LIBRARY"] = 1
         if ("DX9" not in SDK):
             dir = "C:/Program Files/Microsoft DirectX SDK (June 2010)"
             if os.path.isdir(dir):
                 print("Using DirectX SDK June 2010")
                 SDK["DX9"] = dir
-                SDK["GENERIC_DXERR_LIBRARY"] = 1
         if ("DX9" not in SDK):
             dir = GetRegistryKey("SOFTWARE\\Wow6432Node\\Microsoft\\DirectX\\Microsoft DirectX SDK (August 2009)", "InstallPath")
             if (dir != 0):
                 print("Using DirectX SDK Aug 2009")
                 SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
-                SDK["GENERIC_DXERR_LIBRARY"] = 1;
         if ("DX9" not in SDK):
             dir = GetRegistryKey("SOFTWARE\\Microsoft\\DirectX\\Microsoft DirectX SDK (August 2009)", "InstallPath")
             if (dir != 0):
                 print("Using DirectX SDK Aug 2009")
-                SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
-                SDK["GENERIC_DXERR_LIBRARY"] = 1;
-        if ("DX9" not in SDK):
-            ## Try to locate the key within the "new" March 2009 location in the registry (yecch):
-            dir = GetRegistryKey("SOFTWARE\\Microsoft\\DirectX\\Microsoft DirectX SDK (March 2009)", "InstallPath")
-            if (dir != 0):
-                print("Using DirectX SDK March 2009")
                 SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
         archStr = GetTargetArch()
         if ("DX9" not in SDK):
@@ -1982,22 +1974,18 @@ def SdkLocateDirectX( strMode = 'default' ):
             dir = GetRegistryKey("SOFTWARE\\Wow6432Node\\Microsoft\\DirectX\\Microsoft DirectX SDK (June 2010)", "InstallPath")
             if (dir != 0):
                 SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
-                SDK["GENERIC_DXERR_LIBRARY"] = 1;
         if ("DX9" not in SDK):
             dir = GetRegistryKey("SOFTWARE\\Microsoft\\DirectX\\Microsoft DirectX SDK (June 2010)", "InstallPath")
             if (dir != 0):
                 SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
-                SDK["GENERIC_DXERR_LIBRARY"] = 1;
         if ("DX9" not in SDK):
             dir = "C:/Program Files (x86)/Microsoft DirectX SDK (June 2010)"
             if os.path.isdir(dir):
                 SDK["DX9"] = dir
-                SDK["GENERIC_DXERR_LIBRARY"] = 1
         if ("DX9" not in SDK):
             dir = "C:/Program Files/Microsoft DirectX SDK (June 2010)"
             if os.path.isdir(dir):
                 SDK["DX9"] = dir
-                SDK["GENERIC_DXERR_LIBRARY"] = 1
         if ("DX9" not in SDK):
             exit("Couldn't find DirectX June2010 SDK")
         else:
@@ -2008,41 +1996,13 @@ def SdkLocateDirectX( strMode = 'default' ):
             if (dir != 0):
                 print("Found DirectX SDK Aug 2009")
                 SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
-                SDK["GENERIC_DXERR_LIBRARY"] = 1;
         if ("DX9" not in SDK):
             dir = GetRegistryKey("SOFTWARE\\Microsoft\\DirectX\\Microsoft DirectX SDK (August 2009)", "InstallPath")
             if (dir != 0):
                 print("Found DirectX SDK Aug 2009")
                 SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
-                SDK["GENERIC_DXERR_LIBRARY"] = 1;
         if ("DX9" not in SDK):
             exit("Couldn't find DirectX Aug 2009 SDK")
-    elif strMode == 'mar2009':
-        if ("DX9" not in SDK):
-            ## Try to locate the key within the "new" March 2009 location in the registry (yecch):
-            dir = GetRegistryKey("SOFTWARE\\Microsoft\\DirectX\\Microsoft DirectX SDK (March 2009)", "InstallPath")
-            if (dir != 0):
-                print("Found DirectX SDK March 2009")
-                SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
-        if ("DX9" not in SDK):
-            exit("Couldn't find DirectX March 2009 SDK")
-    elif strMode == 'aug2006':
-        archStr = GetTargetArch()
-        if ("DX9" not in SDK):
-            uninstaller = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall"
-            for subdir in ListRegistryKeys(uninstaller):
-                if (subdir[0]=="{"):
-                    dir = GetRegistryKey(uninstaller+"\\"+subdir, "InstallLocation")
-                    if (dir != 0):
-                        if (("DX9" not in SDK) and
-                            (os.path.isfile(dir+"\\Include\\d3d9.h")) and
-                            (os.path.isfile(dir+"\\Include\\d3dx9.h")) and
-                            (os.path.isfile(dir+"\\Include\\dxsdkver.h")) and
-                            (os.path.isfile(dir+"\\Lib\\" + archStr + "\\d3d9.lib")) and
-                            (os.path.isfile(dir+"\\Lib\\" + archStr + "\\d3dx9.lib"))):
-                            SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
-        if ("DX9" not in SDK):
-            exit("Couldn't find a DirectX Aug 2006 SDK")
     if ("DX9" in SDK):
         SDK["DIRECTCAM"] = SDK["DX9"]
 
@@ -2158,7 +2118,7 @@ def SdkLocatePython(prefer_thirdparty_python=False):
         SDK["PYTHONEXEC"] = tp_python + "/bin/" + SDK["PYTHONVERSION"]
         SDK["PYTHON"] = tp_python + "/include/" + SDK["PYTHONVERSION"]
 
-    elif GetTarget() == 'darwin':
+    elif GetTarget() == 'darwin' and not PkgHasCustomLocation("PYTHON"):
         # On macOS, search for the Python framework directory matching the
         # version number of our current Python version.
         sysroot = SDK.get("MACOSX", "")
@@ -2285,16 +2245,17 @@ def SdkLocateVisualStudio(version=(10,0)):
 
     print("Using MSVC %s" % version_str)
 
-def SdkLocateWindows(version = '7.1'):
+def SdkLocateWindows(version=None):
     if GetTarget() != "windows" or GetHost() != "windows":
         return
 
-    version = version.upper()
+    if version:
+        version = version.upper()
 
     if version == '10':
         version = '10.0'
 
-    if version.startswith('10.') and version.count('.') == 1:
+    if version and version.startswith('10.') and version.count('.') == 1:
         # Choose the latest version of the Windows 10 SDK.
         platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\Windows Kits\\Installed Roots", "KitsRoot10")
 
@@ -2320,7 +2281,6 @@ def SdkLocateWindows(version = '7.1'):
                 if not os.path.isdir(os.path.join(platsdk, 'Lib', verstring, 'um')):
                     continue
 
-                print(verstring)
                 vertuple = tuple(map(int, verstring.split('.')))
                 if vertuple > max_version:
                     version = verstring
@@ -2330,7 +2290,7 @@ def SdkLocateWindows(version = '7.1'):
                 # No suitable version found.
                 platsdk = None
 
-    elif version.startswith('10.'):
+    elif version and version.startswith('10.'):
         # We chose a specific version of the Windows 10 SDK.  Verify it exists.
         platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\Windows Kits\\Installed Roots", "KitsRoot10")
 
@@ -2344,18 +2304,26 @@ def SdkLocateWindows(version = '7.1'):
         if platsdk and not os.path.isdir(os.path.join(platsdk, 'Include', version)):
             platsdk = None
 
-    elif version == '8.1':
+    elif version == '8.1' or not version:
         platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\Windows Kits\\Installed Roots", "KitsRoot81")
 
         # Fallback in case we can't read the registry.
         if not platsdk or not os.path.isdir(platsdk):
             platsdk = "C:\\Program Files (x86)\\Windows Kits\\8.1\\"
 
+        if not version:
+            if not os.path.isdir(platsdk):
+                # Fall back to 7.1 SDK.
+                return SdkLocateWindows("7.1")
+            version = '8.1'
+
     elif version == '8.0':
         platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\Windows Kits\\Installed Roots", "KitsRoot")
 
     else:
         platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows\\v" + version, "InstallationFolder")
+
+        DefSymbol("ALWAYS", "_USING_V110_SDK71_")
 
         if not platsdk or not os.path.isdir(platsdk):
             # Most common location.  Worth a try.
@@ -2383,7 +2351,9 @@ def SdkLocateMacOSX(osxtarget = None):
     if (GetHost() != "darwin"): return
     if (osxtarget != None):
         sdkname = "MacOSX%d.%d" % osxtarget
-        if (os.path.exists("/Developer/SDKs/%su.sdk" % sdkname)):
+        if (os.path.exists("/Library/Developer/CommandLineTools/SDKs/%s.sdk" % sdkname)):
+            SDK["MACOSX"] = "/Library/Developer/CommandLineTools/SDKs/%s.sdk" % sdkname
+        elif (os.path.exists("/Developer/SDKs/%su.sdk" % sdkname)):
             SDK["MACOSX"] = "/Developer/SDKs/%su.sdk" % sdkname
         elif (os.path.exists("/Developer/SDKs/%s.sdk" % sdkname)):
             SDK["MACOSX"] = "/Developer/SDKs/%s.sdk" % sdkname
@@ -2401,50 +2371,6 @@ def SdkLocateMacOSX(osxtarget = None):
                 exit("Couldn't find any MacOSX SDK for OSX version %s!" % sdkname)
     else:
         SDK["MACOSX"] = ""
-
-# Latest first
-PHYSXVERSIONINFO = [
-    ("PHYSX284", "v2.8.4"),
-    ("PHYSX283", "v2.8.3"),
-    ("PHYSX281", "v2.8.1"),
-]
-
-def SdkLocatePhysX():
-    # First check for a physx directory in sdks.
-    dir = GetSdkDir("physx")
-    if (dir and os.path.isdir(dir)):
-        SDK["PHYSX"] = dir
-        SDK["PHYSXLIBS"] = dir + "/lib"
-        return
-
-    if CrossCompiling():
-        return
-
-    # Try to find a PhysX installation on the system.
-    for (ver, key) in PHYSXVERSIONINFO:
-        if (GetHost() == "windows"):
-            folders = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Installer\\Folders"
-            for folder in ListRegistryValues(folders):
-                if folder.endswith("NVIDIA PhysX SDK\\%s\\SDKs\\" % key) or \
-                   folder.endswith("NVIDIA PhysX SDK\\%s_win\\SDKs\\" % key):
-
-                    SDK["PHYSX"] = folder
-                    if GetTargetArch() == 'x64':
-                        SDK["PHYSXLIBS"] = folder + "/lib/win64"
-                        AddToPathEnv("PATH", folder + "/../Bin/win64/")
-                    else:
-                        SDK["PHYSXLIBS"] = folder + "/lib/win32"
-                        AddToPathEnv("PATH", folder + "/../Bin/win32/")
-
-                    return
-
-        elif (GetHost() == "linux"):
-            incpath = "/usr/include/PhysX/%s/SDKs" % key
-            libpath = "/usr/lib/PhysX/%s" % key
-            if (os.path.isdir(incpath) and os.path.isdir(libpath)):
-                SDK["PHYSX"] = incpath
-                SDK["PHYSXLIBS"] = libpath
-                return
 
 def SdkLocateSpeedTree():
     # Look for all of the SpeedTree SDK directories within the
@@ -2479,6 +2405,8 @@ def SdkLocateAndroid():
         return
 
     # Allow ANDROID_API/ANDROID_ABI to be used in makepanda.py.
+    if ANDROID_API is None:
+        SetTarget('android')
     api = ANDROID_API
     SDK["ANDROID_API"] = api
 
@@ -2654,12 +2582,6 @@ def SdkAutoDisableMax():
                 WARNINGS.append("I have automatically added this command-line option: --no-"+version.lower())
             PkgDisable(version)
 
-def SdkAutoDisablePhysX():
-    if ("PHYSX" not in SDK) and (PkgSkip("PHYSX")==0):
-        PkgDisable("PHYSX")
-        WARNINGS.append("I cannot locate SDK for PhysX")
-        WARNINGS.append("I have automatically added this command-line option: --no-physx")
-
 def SdkAutoDisableSpeedTree():
     if ("SPEEDTREE" not in SDK) and (PkgSkip("SPEEDTREE")==0):
         PkgDisable("SPEEDTREE")
@@ -2787,8 +2709,8 @@ def SetupVisualStudioEnviron():
             exit("Could not locate 64-bits libraries in Windows SDK directory!\nUsing directory: %s" % SDK["MSPLATFORM"])
 
     # Targeting the 7.1 SDK (which is the only way to have Windows XP support)
-    # with Visual Studio 2015 requires use of the Universal CRT.
-    if winsdk_ver == '7.1' and SDK["VISUALSTUDIO_VERSION"] >= (14,0):
+    # with Visual Studio 2015+ requires use of the Universal CRT.
+    if winsdk_ver in ('7.1', '7.1A', '8.0', '8.1') and SDK["VISUALSTUDIO_VERSION"] >= (14,0):
         win_kit = GetRegistryKey("SOFTWARE\\Microsoft\\Windows Kits\\Installed Roots", "KitsRoot10")
 
         # Fallback in case we can't read the registry.
@@ -2797,7 +2719,7 @@ def SetupVisualStudioEnviron():
         elif not win_kit.endswith('\\'):
             win_kit += '\\'
 
-        for vnum in 10150, 10240, 10586, 14393, 15063, 16299, 17134, 17763:
+        for vnum in 10150, 10240, 10586, 14393, 15063, 16299, 17134, 17763, 18362:
             version = "10.0.{0}.0".format(vnum)
             if os.path.isfile(win_kit + "Include\\" + version + "\\ucrt\\assert.h"):
                 print("Using Universal CRT %s" % (version))
@@ -3133,29 +3055,13 @@ def CopyTree(dstdir, srcdir, omitVCS=True):
         if omitVCS:
             DeleteVCS(dstdir)
 
-def CopyPythonTree(dstdir, srcdir, lib2to3_fixers=[], threads=0):
+def CopyPythonTree(dstdir, srcdir, threads=0):
     if (not os.path.isdir(dstdir)):
         os.mkdir(dstdir)
-
-    lib2to3 = None
-    lib2to3_args = ['-w', '-n', '--no-diffs']
-
-    if len(lib2to3_fixers) > 0 and sys.version_info >= (3, 0):
-        from lib2to3.main import main as lib2to3
-
-        if lib2to3_fixers == ['all']:
-            lib2to3_args += ['-x', 'buffer', '-x', 'idioms', '-x', 'set_literal', '-x', 'ws_comma']
-        else:
-            for fixer in lib2to3_fixers:
-                lib2to3_args += ['-f', fixer]
-
-    if threads:
-        lib2to3_args += ['-j', str(threads)]
 
     exclude_files = set(VCS_FILES)
     exclude_files.add('panda3d.py')
 
-    refactor = []
     for entry in os.listdir(srcdir):
         srcpth = os.path.join(srcdir, entry)
         dstpth = os.path.join(dstdir, entry)
@@ -3164,30 +3070,14 @@ def CopyPythonTree(dstdir, srcdir, lib2to3_fixers=[], threads=0):
             if entry not in exclude_files and ext not in SUFFIX_INC + ['.pyc', '.pyo']:
                 if (NeedsBuild([dstpth], [srcpth])):
                     WriteBinaryFile(dstpth, ReadBinaryFile(srcpth))
-
-                    if ext == '.py' and not entry.endswith('-extensions.py'):
-                        refactor.append((dstpth, srcpth))
-                        lib2to3_args.append(dstpth)
-                    else:
-                        JustBuilt([dstpth], [srcpth])
+                    JustBuilt([dstpth], [srcpth])
 
         elif entry not in VCS_DIRS:
-            CopyPythonTree(dstpth, srcpth, lib2to3_fixers, threads=threads)
-
-    if refactor and lib2to3 is not None:
-        ret = lib2to3("lib2to3.fixes", lib2to3_args)
-
-        if ret != 0:
-            for dstpth, srcpth in refactor:
-                os.remove(dstpth)
-                exit("Error in lib2to3.")
-        else:
-            for dstpth, srcpth in refactor:
-                JustBuilt([dstpth], [srcpth])
+            CopyPythonTree(dstpth, srcpth, threads=threads)
 
 ########################################################################
 ##
-## Parse PandaVersion.pp to extract the version number.
+## Parse setup.cfg to extract the version number.
 ##
 ########################################################################
 
@@ -3219,32 +3109,6 @@ def ParsePandaVersion(fn):
         f.close()
     except: pass
     return "0.0.0"
-
-def ParsePluginVersion(fn):
-    try:
-        f = open(fn, "r")
-        pattern = re.compile('^[ \t]*[#][ \t]*define[ \t]+P3D_PLUGIN_VERSION[ \t]+([0-9]+)[ \t]+([0-9]+)[ \t]+([0-9]+)')
-        for line in f:
-            match = pattern.match(line,0)
-            if (match):
-                f.close()
-                return match.group(1) + "." + match.group(2) + "." + match.group(3)
-        f.close()
-    except: pass
-    return "0.0.0"
-
-def ParseCoreapiVersion(fn):
-    try:
-        f = open(fn, "r")
-        pattern = re.compile('^[ \t]*[#][ \t]*define[ \t]+P3D_COREAPI_VERSION.*([0-9]+)[ \t]*$')
-        for line in f:
-            match = pattern.match(line,0)
-            if (match):
-                f.close()
-                return match.group(1)
-        f.close()
-    except: pass
-    return "0"
 
 ##########################################################################################
 #
@@ -3392,6 +3256,9 @@ def GetPythonABI():
 
     soabi = 'cpython-%d%d' % (sys.version_info[:2])
 
+    if sys.version_info >= (3, 8):
+        return soabi
+
     debug_flag = sysconfig.get_config_var('Py_DEBUG')
     if (debug_flag is None and hasattr(sys, 'gettotalrefcount')) or debug_flag:
         soabi += 'd'
@@ -3425,7 +3292,6 @@ def CalcLocation(fn, ipath):
     if (fn.endswith(".py")):  return CxxFindSource(fn, ipath)
     if (fn.endswith(".yxx")): return CxxFindSource(fn, ipath)
     if (fn.endswith(".lxx")): return CxxFindSource(fn, ipath)
-    if (fn.endswith(".pdef")):return CxxFindSource(fn, ipath)
     if (fn.endswith(".xml")): return CxxFindSource(fn, ipath)
     if (fn.endswith(".java")):return CxxFindSource(fn, ipath)
     if (fn.endswith(".egg")): return OUTPUTDIR+"/models/"+fn

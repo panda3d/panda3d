@@ -30,7 +30,7 @@
 /**
  * For reading and writing TIFF files.
  */
-class EXPCL_PANDA_PNMIMAGETYPES PNMFileTypeTIFF : public PNMFileType {
+class PNMFileTypeTIFF : public PNMFileType {
 public:
   PNMFileTypeTIFF();
 

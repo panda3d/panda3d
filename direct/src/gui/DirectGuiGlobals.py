@@ -17,8 +17,9 @@ drawOrder = 100
 panel = None
 
 # USEFUL GUI CONSTANTS
-# Constant used to indicate that an option can only be set by a call
-# to the constructor.
+
+#: Constant used to indicate that an option can only be set by a call
+#: to the constructor.
 INITOPT = ['initopt']
 
 # Mouse buttons
@@ -69,6 +70,8 @@ B3PRESS = PGButton.getPressPrefix() + MouseButton.three().getName() + '-'
 B1RELEASE = PGButton.getReleasePrefix() + MouseButton.one().getName() + '-'
 B2RELEASE = PGButton.getReleasePrefix() + MouseButton.two().getName() + '-'
 B3RELEASE = PGButton.getReleasePrefix() + MouseButton.three().getName() + '-'
+WHEELUP = PGButton.getReleasePrefix() + MouseButton.wheelUp().getName() + '-'
+WHEELDOWN = PGButton.getReleasePrefix() + MouseButton.wheelDown().getName() + '-'
 # For DirectEntry widgets
 OVERFLOW = PGEntry.getOverflowPrefix()
 ACCEPT = PGEntry.getAcceptPrefix() + KeyboardButton.enter().getName() + '-'
@@ -158,7 +161,3 @@ def getDefaultPanel():
 def setDefaultPanel(newPanel):
     global panel
     panel = newPanel
-
-#from OnscreenText import *
-#from OnscreenGeom import *
-#from OnscreenImage import *

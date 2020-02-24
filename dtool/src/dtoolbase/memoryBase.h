@@ -23,8 +23,6 @@
 // MemoryBase; this macro is provided to resolve problems with multiple
 // inheritance or some such.
 
-#ifndef USE_MEMORY_NOWRAPPERS
-
 #define ALLOC_MEMORY_BASE                                    \
   inline void *operator new(size_t size) RETURNS_ALIGNED(MEMORY_HOOK_ALIGNMENT) { \
     return PANDA_MALLOC_SINGLE(size);                        \
@@ -50,12 +48,6 @@
   }                                                          \
   inline void operator delete[](void *, void *) {            \
   }
-
-#else   // USE_MEMORY_NOWRAPPERS
-
-#define ALLOC_MEMORY_BASE
-
-#endif  // USE_MEMORY_NOWRAPPERS
 
 /**
  * This class is intended to be the base class of all objects in Panda that

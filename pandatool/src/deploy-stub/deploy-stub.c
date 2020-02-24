@@ -650,6 +650,15 @@ int main(int argc, char *argv[]) {
   void *blob = NULL;
   log_filename = NULL;
 
+#ifdef __APPLE__
+  // Strip a -psn_xxx argument passed in by macOS when run from an .app bundle.
+  if (argc > 1 && strncmp(argv[1], "-psn_", 5) == 0) {
+    argv[1] = argv[0];
+    ++argv;
+    --argc;
+  }
+#endif
+
   /*
   printf("blob_offset: %d\n", (int)blobinfo.blob_offset);
   printf("blob_size: %d\n", (int)blobinfo.blob_size);

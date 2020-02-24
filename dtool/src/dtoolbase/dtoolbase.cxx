@@ -18,7 +18,7 @@
   #error Buildsystem error: BUILDING_DTOOL_DTOOLBASE not defined
 #endif
 
-#if defined(USE_TAU) && defined(WIN32)
+#if defined(USE_TAU) && defined(_WIN32)
 // Hack around tau's lack of DLL export declarations for Profiler class.
 bool __tau_shutdown = false;
 #endif

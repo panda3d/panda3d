@@ -25,7 +25,7 @@
 /**
  * For reading and SoftImage native image files.
  */
-class EXPCL_PANDA_PNMIMAGETYPES PNMFileTypeSoftImage : public PNMFileType {
+class PNMFileTypeSoftImage : public PNMFileType {
 public:
   PNMFileTypeSoftImage();
 

@@ -21,7 +21,7 @@
 #include "config_putil.h"
 #include "load_dso.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <windows.h>  // For GetSystemDirectory()
 #endif
 
@@ -285,7 +285,7 @@ get_dls_pathname() {
     return dls_filename;
   }
 
-#ifdef WIN32
+#ifdef _WIN32
   Filename pathname;
 
   // Get the registry key from DirectMusic
@@ -324,12 +324,4 @@ output(std::ostream &out) const {
 void AudioManager::
 write(std::ostream &out) const {
   out << (*this) << "\n";
-}
-
-/**
- * For use only with Miles.
- */
-void AudioManager::
-set_speaker_configuration(LVecBase3 *speaker1, LVecBase3 *speaker2, LVecBase3 *speaker3, LVecBase3 *speaker4, LVecBase3 *speaker5, LVecBase3 *speaker6, LVecBase3 *speaker7, LVecBase3 *speaker8, LVecBase3 *speaker9) {
-  // intentionally blank
 }

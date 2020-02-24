@@ -14,6 +14,7 @@
 #include "winInputDeviceManager.h"
 #include "winRawInputDevice.h"
 #include "throw_event.h"
+#include "phidsdi.h"
 
 #if defined(_WIN32) && !defined(CPPPARSER)
 
@@ -53,7 +54,7 @@ WinInputDeviceManager() :
   _xinput_device2.local_object();
   _xinput_device3.local_object();
 
-  // This function is only available in Vista and later, so we use a wrapper.
+  // This function is not available in the 7.1A SDK, so we use a wrapper.
   HMODULE module = LoadLibraryA("cfgmgr32.dll");
   if (module) {
     _CM_Get_DevNode_PropertyW = (pCM_Get_DevNode_Property)GetProcAddress(module, "CM_Get_DevNode_PropertyW");
@@ -62,7 +63,9 @@ WinInputDeviceManager() :
   }
 
   // If we have threading enabled, start a thread with a message-only window
-  // loop to listen for input events.
+  // loop to listen for input events.  We can't actually just let this be
+  // handled by the main window loop, because the main window might actually
+  // have been created in a different thread.
 #ifdef HAVE_THREADS
   if (Thread::is_threading_supported()) {
     PT(Thread) thread = new InputThread(this);
@@ -383,7 +386,7 @@ setup_message_loop() {
   }
 
   // Now listen for raw input devices using the created message loop.
-  RAWINPUTDEVICE rid[3];
+  RAWINPUTDEVICE rid[4];
   rid[0].usUsagePage = 1;
   rid[0].usUsage = 4; // Joysticks
   rid[0].dwFlags = RIDEV_DEVNOTIFY | RIDEV_INPUTSINK;
@@ -396,7 +399,11 @@ setup_message_loop() {
   rid[2].usUsage = 8; // Multi-axis controllers (including 3D mice)
   rid[2].dwFlags = RIDEV_DEVNOTIFY | RIDEV_INPUTSINK;
   rid[2].hwndTarget = _message_hwnd;
-  if (!RegisterRawInputDevices(rid, 3, sizeof(RAWINPUTDEVICE))) {
+  rid[3].usUsagePage = HID_USAGE_PAGE_DIGITIZER;
+  rid[3].usUsage = 1; // Digitizers
+  rid[3].dwFlags = RIDEV_DEVNOTIFY | RIDEV_INPUTSINK;
+  rid[3].hwndTarget = _message_hwnd;
+  if (!RegisterRawInputDevices(rid, 4, sizeof(RAWINPUTDEVICE))) {
     device_cat.warning()
       << "Failed to register raw input devices.\n";
   }
@@ -463,6 +470,23 @@ destroy_message_loop() {
 }
 
 /**
+ * Sends a signal to the thread input thread, asking it to shut itself down.
+ */
+void WinInputDeviceManager::
+stop_thread() {
+#ifdef HAVE_THREADS
+  WinInputDeviceManager *mgr = (WinInputDeviceManager *)_global_ptr;
+  if (mgr != nullptr) {
+    LightMutexHolder holder(mgr->_lock);
+    HWND hwnd = mgr->_message_hwnd;
+    if (hwnd) {
+      PostMessage(hwnd, WM_QUIT, 0, 0);
+    }
+  }
+#endif
+}
+
+/**
  * Implementation of the message loop.
  */
 LRESULT WINAPI WinInputDeviceManager::
@@ -518,10 +542,26 @@ thread_main() {
   }
 
   MSG msg;
+#ifdef SIMPLE_THREADS
+  // In the simple threading case, we can't block the thread waiting for a
+  // message; we yield control back if there are no more messages.
+  while (true) {
+    if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
+      if (msg.message == WM_QUIT) {
+        break;
+      }
+      TranslateMessage(&msg);
+      DispatchMessage(&msg);
+    } else {
+      Thread::force_yield();
+    }
+  }
+#else
   while (GetMessage(&msg, nullptr, 0, 0) > 0) {
     TranslateMessage(&msg);
     DispatchMessage(&msg);
   }
+#endif
 
   if (device_cat.is_debug()) {
     device_cat.debug()

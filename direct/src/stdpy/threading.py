@@ -87,7 +87,7 @@ class Thread(ThreadBase):
     object.  The wrapper is designed to emulate Python's own
     threading.Thread object. """
 
-    def __init__(self, group=None, target=None, name=None, args=(), kwargs={}):
+    def __init__(self, group=None, target=None, name=None, args=(), kwargs={}, daemon=None):
         ThreadBase.__init__(self)
 
         assert group is None
@@ -99,7 +99,10 @@ class Thread(ThreadBase):
             name = _newname()
 
         current = current_thread()
-        self.__dict__['daemon'] = current.daemon
+        if daemon is not None:
+            self.__dict__['daemon'] = daemon
+        else:
+            self.__dict__['daemon'] = current.daemon
         self.__dict__['name'] = name
 
         def call_run():
@@ -201,17 +204,6 @@ class Lock(core.Mutex):
     def __init__(self, name = "PythonLock"):
         core.Mutex.__init__(self, name)
 
-    def acquire(self, blocking = True):
-        if blocking:
-            core.Mutex.acquire(self)
-            return True
-        else:
-            return core.Mutex.tryAcquire(self)
-
-    __enter__ = acquire
-
-    def __exit__(self, t, v, tb):
-        self.release()
 
 class RLock(core.ReMutex):
     """ This class provides a wrapper around Panda's ReMutex object.
@@ -220,18 +212,6 @@ class RLock(core.ReMutex):
 
     def __init__(self, name = "PythonRLock"):
         core.ReMutex.__init__(self, name)
-
-    def acquire(self, blocking = True):
-        if blocking:
-            core.ReMutex.acquire(self)
-            return True
-        else:
-            return core.ReMutex.tryAcquire(self)
-
-    __enter__ = acquire
-
-    def __exit__(self, t, v, tb):
-        self.release()
 
 
 class Condition(core.ConditionVarFull):

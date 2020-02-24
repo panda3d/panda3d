@@ -239,7 +239,7 @@ class FilterManager(DirectObject):
 
         return quad
 
-    def renderQuadInto(self, name="filter-stage", mul=1, div=1, align=1, depthtex=None, colortex=None, auxtex0=None, auxtex1=None):
+    def renderQuadInto(self, name="filter-stage", mul=1, div=1, align=1, depthtex=None, colortex=None, auxtex0=None, auxtex1=None, fbprops=None):
 
         """ Creates an offscreen buffer for an intermediate
         computation. Installs a quad into the buffer.  Returns
@@ -253,7 +253,10 @@ class FilterManager(DirectObject):
 
         depthbits = bool(depthtex != None)
 
-        buffer = self.createBuffer(name, winx, winy, texgroup, depthbits)
+        if fbprops is not None:
+            buffer = self.createBuffer(name, winx, winy, texgroup, depthbits, fbprops=fbprops)
+        else:
+            buffer = self.createBuffer(name, winx, winy, texgroup, depthbits)
 
         if (buffer == None):
             return None

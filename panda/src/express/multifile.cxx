@@ -1631,7 +1631,7 @@ close_read_subfile(istream *stream) {
     // stream pointer does not call the appropriate global delete function;
     // instead apparently calling the system delete function.  So we call the
     // delete function by hand instead.
-#if !defined(WIN32_VC) && !defined(USE_MEMORY_NOWRAPPERS) && defined(REDEFINE_GLOBAL_OPERATOR_NEW)
+#if defined(__GNUC__) && !defined(USE_MEMORY_NOWRAPPERS) && defined(REDEFINE_GLOBAL_OPERATOR_NEW)
     stream->~istream();
     (*global_operator_delete)(stream);
 #else
@@ -2068,10 +2068,7 @@ open_read_subfile(Subfile *subfile) {
     stream = wrapper;
 
     // Validate the password by confirming that the encryption header matches.
-    char this_header[_encrypt_header_size];
-    stream->read(this_header, _encrypt_header_size);
-    if (stream->fail() || stream->gcount() != (unsigned)_encrypt_header_size ||
-        memcmp(this_header, _encrypt_header, _encrypt_header_size) != 0) {
+    if (!wrapper->read_magic(_encrypt_header, _encrypt_header_size)) {
       express_cat.error()
         << "Unable to decrypt subfile " << subfile->_name << ".\n";
       delete stream;

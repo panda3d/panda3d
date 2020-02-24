@@ -124,7 +124,7 @@ INLINE OStreamWrapper::
 OStreamWrapper(std::ostream *stream, bool owns_pointer, bool stringstream_hack) :
   _ostream(stream),
   _owns_pointer(owns_pointer)
-#ifdef WIN32_VC
+#ifdef _MSC_VER
 , _stringstream_hack(stringstream_hack)
 #endif
 {
@@ -137,7 +137,7 @@ INLINE OStreamWrapper::
 OStreamWrapper(std::ostream &stream) :
   _ostream(&stream),
   _owns_pointer(false)
-#ifdef WIN32_VC
+#ifdef _MSC_VER
 , _stringstream_hack(false)
 #endif
 {

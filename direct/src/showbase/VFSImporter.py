@@ -1,3 +1,10 @@
+"""The VFS importer allows importing Python modules from Panda3D's virtual
+file system, through Python's standard import mechanism.
+
+Calling the :func:`register()` function to register the import hooks should be
+sufficient to enable this functionality.
+"""
+
 __all__ = ['register', 'sharedPackages',
            'reloadSharedPackage', 'reloadSharedPackages']
 
@@ -8,19 +15,18 @@ import marshal
 import imp
 import types
 
-# The sharedPackages dictionary lists all of the "shared packages",
-# special Python packages that automatically span multiple directories
-# via magic in the VFSImporter.  You can make a package "shared"
-# simply by adding its name into this dictionary (and then calling
-# reloadSharedPackages() if it's already been imported).
-
-# When a package name is in this dictionary at import time, *all*
-# instances of the package are located along sys.path, and merged into
-# a single Python module with a __path__ setting that represents the
-# union.  Thus, you can have a direct.showbase.foo in your own
-# application, and loading it won't shadow the system
-# direct.showbase.ShowBase which is in a different directory on disk.
-
+#: The sharedPackages dictionary lists all of the "shared packages",
+#: special Python packages that automatically span multiple directories
+#: via magic in the VFSImporter.  You can make a package "shared"
+#: simply by adding its name into this dictionary (and then calling
+#: reloadSharedPackages() if it's already been imported).
+#:
+#: When a package name is in this dictionary at import time, *all*
+#: instances of the package are located along sys.path, and merged into
+#: a single Python module with a __path__ setting that represents the
+#: union.  Thus, you can have a direct.showbase.foo in your own
+#: application, and loading it won't shadow the system
+#: direct.showbase.ShowBase which is in a different directory on disk.
 sharedPackages = {}
 
 vfs = VirtualFileSystem.getGlobalPtr()
@@ -30,6 +36,7 @@ if not __debug__:
     # In optimized mode, we prefer loading .pyo files over .pyc files.
     # We implement that by reversing the extension names.
     compiledExtensions = [ 'pyo', 'pyc' ]
+
 
 class VFSImporter:
     """ This class serves as a Python importer to support loading
@@ -326,6 +333,7 @@ class VFSLoader:
 
         return code
 
+
 class VFSSharedImporter:
     """ This is a special importer that is added onto the meta_path
     list, so that it is called before sys.path is traversed.  It uses
@@ -418,6 +426,7 @@ class VFSSharedImporter:
         # Couldn't figure it out.
         return None
 
+
 class VFSSharedLoader:
     """ The second part of VFSSharedImporter, this imports a list of
     packages and combines them. """
@@ -470,6 +479,7 @@ class VFSSharedLoader:
 
         return mod
 
+
 _registered = False
 def register():
     """ Register the VFSImporter on the path_hooks, if it has not
@@ -487,6 +497,7 @@ def register():
         # VFSImporter for every folder in the future, even those
         # folders that previously were loaded directly.
         sys.path_importer_cache = {}
+
 
 def reloadSharedPackage(mod):
     """ Reloads the specific module as a shared package, adding any
@@ -515,6 +526,7 @@ def reloadSharedPackage(mod):
                 sharedPackages[childname] = True
                 reloadSharedPackage(child)
 
+
 def reloadSharedPackages():
     """ Walks through the sharedPackages list, and forces a reload of
     any modules on that list that have already been loaded.  This
@@ -530,4 +542,3 @@ def reloadSharedPackages():
             continue
 
         reloadSharedPackage(mod)
-
