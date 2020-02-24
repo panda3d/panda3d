@@ -789,3 +789,19 @@ operator < (const Shader::ShaderFile &other) const {
   }
   return false;
 }
+
+/**
+ * Returns a PStatCollector for timing the preparation of just this shader.
+ */
+INLINE PStatCollector &Shader::
+get_prepare_shader_pcollector() {
+  return _prepare_shader_pcollector;
+}
+
+/**
+ * Returns a name for the shader that is used for debugging.
+ */
+INLINE const std::string &Shader::
+get_debug_name() const {
+  return _debug_name;
+}

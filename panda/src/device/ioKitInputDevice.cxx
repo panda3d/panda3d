@@ -15,20 +15,13 @@
 
 #if defined(__APPLE__) && !defined(CPPPARSER)
 
+#include <IOKit/hid/IOHIDLib.h>
 #include <IOKit/hid/IOHIDElement.h>
 
+#include "inputDeviceManager.h"
 #include "keyboardButton.h"
 #include "gamepadButton.h"
 #include "mouseButton.h"
-
-static void removal_callback(void *ctx, IOReturn result, void *sender) {
-  // We need to hold a reference to this because it may otherwise be destroyed
-  // during the call to on_remove().
-  PT(IOKitInputDevice) input_device = (IOKitInputDevice *)ctx;
-  nassertv(input_device != nullptr);
-  nassertv(input_device->test_ref_count_integrity());
-  input_device->on_remove();
-}
 
 /**
  * Protected constructor.
@@ -114,12 +107,14 @@ IOKitInputDevice(IOHIDDeviceRef device) :
   }
 
   CFArrayRef elements = IOHIDDeviceCopyMatchingElements(device, nullptr, 0);
-  CFIndex count = CFArrayGetCount(elements);
-  for (CFIndex i = 0; i < count; ++i) {
-    IOHIDElementRef element = (IOHIDElementRef)CFArrayGetValueAtIndex(elements, i);
-    parse_element(element);
+  if (elements) {
+    CFIndex count = CFArrayGetCount(elements);
+    for (CFIndex i = 0; i < count; ++i) {
+      IOHIDElementRef element = (IOHIDElementRef)CFArrayGetValueAtIndex(elements, i);
+      parse_element(element);
+    }
+    CFRelease(elements);
   }
-  CFRelease(elements);
 
   if (_hat_element != nullptr) {
     _hat_left_button = (int)_buttons.size();
@@ -135,7 +130,6 @@ IOKitInputDevice(IOHIDDeviceRef device) :
   }
 
   _is_connected = true;
-  IOHIDDeviceRegisterRemovalCallback(device, removal_callback, this);
 }
 
 /**
@@ -143,31 +137,6 @@ IOKitInputDevice(IOHIDDeviceRef device) :
  */
 IOKitInputDevice::
 ~IOKitInputDevice() {
-}
-
-/**
- * The nonstatic version of on_remove_device.
- */
-void IOKitInputDevice::
-on_remove() {
-  {
-    LightMutexHolder holder(_lock);
-    if (!_is_connected) {
-      return;
-    }
-    _is_connected = false;
-  }
-
-  if (device_cat.is_debug()) {
-    device_cat.debug()
-      << "Removed input device " << *this << "\n";
-  }
-
-  IOHIDDeviceClose(_device, kIOHIDOptionsTypeNone);
-
-  InputDeviceManager *mgr = InputDeviceManager::get_global_ptr();
-  nassertv(mgr != nullptr);
-  mgr->remove_device(this);
 }
 
 /**

@@ -2,6 +2,7 @@
 #define __SOCKET_UDP_OUTGOING_H__
 
 #include "config_nativenet.h"
+#include "vector_uchar.h"
 #include "socket_ip.h"
 
 /**
@@ -16,13 +17,13 @@ PUBLISHED:
 public:
   inline bool Send(const char *data, int len);
 PUBLISHED:
-  inline bool Send(const std::string &data);
+  inline bool Send(const vector_uchar &data);
   // use this interface for a none tagreted UDP connection
   inline bool InitNoAddress();
 public:
   inline bool SendTo(const char *data, int len, const Socket_Address &address);
 PUBLISHED:
-  inline bool SendTo(const std::string &data, const Socket_Address &address);
+  inline bool SendTo(const vector_uchar &data, const Socket_Address &address);
   inline bool SetToBroadCast();
 
 public:
@@ -98,8 +99,8 @@ Send(const char *data, int len) {
  * Send data to connected address
  */
 inline bool Socket_UDP_Outgoing::
-Send(const std::string &data) {
-  return Send(data.data(), data.size());
+Send(const vector_uchar &data) {
+  return Send((char *)data.data(), data.size());
 }
 
 /**
@@ -114,8 +115,8 @@ SendTo(const char *data, int len, const Socket_Address &address) {
  * Send data to specified address
  */
 inline bool Socket_UDP_Outgoing::
-SendTo(const std::string &data, const Socket_Address &address) {
-  return SendTo(data.data(), data.size(), address);
+SendTo(const vector_uchar &data, const Socket_Address &address) {
+  return SendTo((char *)data.data(), data.size(), address);
 }
 
 #endif //__SOCKET_UDP_OUTGOING_H__

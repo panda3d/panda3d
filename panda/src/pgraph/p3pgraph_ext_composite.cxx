@@ -1,6 +1,8 @@
+#include "loaderFileTypeRegistry_ext.cxx"
 #include "nodePath_ext.cxx"
 #include "nodePathCollection_ext.cxx"
 #include "pandaNode_ext.cxx"
+#include "pythonLoaderFileType.cxx"
 #include "renderState_ext.cxx"
 #include "shaderAttrib_ext.cxx"
 #include "shaderInput_ext.cxx"

@@ -539,7 +539,7 @@ do_python_task() {
         result = Py_None;
         Py_INCREF(result);
 #endif
-        PyErr_Restore(nullptr, nullptr, nullptr);
+        PyErr_Clear();
 
         // If we passed a coroutine into the task, eg. something like:
         //   taskMgr.add(my_async_function())

@@ -1,4 +1,8 @@
-"""ActorInterval module: contains the ActorInterval class"""
+"""ActorInterval module: contains the ActorInterval class.
+
+See the :ref:`actor-intervals` page in the programming manual for explanation
+of this class.
+"""
 
 __all__ = ['ActorInterval', 'LerpAnimInterval']
 

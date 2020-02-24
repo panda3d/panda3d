@@ -69,6 +69,19 @@ find_anim_bundle(PandaNode *root) {
 }
 
 /**
+ *
+ */
+void AnimBundleNode::
+output(std::ostream &out) const {
+  PandaNode::output(out);
+  if (_bundle != nullptr) {
+    out << " (";
+    _bundle->output(out);
+    out << ")";
+  }
+}
+
+/**
  * Tells the BamReader how to create objects of type AnimBundleNode.
  */
 void AnimBundleNode::

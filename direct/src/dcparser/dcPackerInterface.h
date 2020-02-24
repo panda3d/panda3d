@@ -16,7 +16,6 @@
 
 #include "dcbase.h"
 #include "dcSubatomicType.h"
-#include "vector_uchar.h"
 
 class DCFile;
 class DCField;

@@ -214,23 +214,23 @@ class ParticlePanel(AppShell):
             ('System', 'Pool Size',
              'Max number of simultaneous particles',
              self.setSystemPoolSize,
-             1.0, 1.0),
+             1.0, 2000000, 1.0),
             ('System', 'Birth Rate',
              'Seconds between particle births',
              self.setSystemBirthRate,
-             0.0, None),
+             0.0, None, None),
             ('System', 'Litter Size',
              'Number of particle created at each birth',
              self.setSystemLitterSize,
-             1.0, 1.0),
+             1.0, 0x7fffffff, 1.0),
             ('System', 'Litter Spread',
              'Variation in litter size',
              self.setSystemLitterSpread,
-             0.0, 1.0),
+             0.0, 0x7fffffff, 1.0),
             ('System', 'Lifespan',
              'Age in seconds at which the system (vs. particles) should die',
              self.setSystemLifespan,
-             0.0, None)
+             0.0, None, None)
             )
         self.createFloaters(systemPage, systemFloaterDefs)
 
@@ -269,27 +269,27 @@ class ParticlePanel(AppShell):
             ('Factory', 'Life Span',
              'Average particle lifespan in seconds',
              self.setFactoryLifeSpan,
-             0.0, None),
+             0.0, None, None),
             ('Factory', 'Life Span Spread',
              'Variation in lifespan',
              self.setFactoryLifeSpanSpread,
-             0.0, None),
+             0.0, None, None),
             ('Factory', 'Mass',
              'Average particle mass',
              self.setFactoryParticleMass,
-             0.001, None),
+             0.001, None, None),
             ('Factory', 'Mass Spread',
              'Variation in particle mass',
              self.setFactoryParticleMassSpread,
-             0.0, None),
+             0.0, None, None),
             ('Factory', 'Terminal Velocity',
              'Cap on average particle velocity',
              self.setFactoryTerminalVelocity,
-             0.0, None),
+             0.0, None, None),
             ('Factory', 'Terminal Vel. Spread',
              'Variation in terminal velocity',
              self.setFactoryTerminalVelocitySpread,
-             0.0, None),
+             0.0, None, None),
         )
         self.createFloaters(factoryPage, factoryWidgets)
 
@@ -966,19 +966,29 @@ class ParticlePanel(AppShell):
 
     def createFloaters(self, parent, widgetDefinitions):
         widgets = []
-        for category, label, balloonHelp, command, min, resolution in widgetDefinitions:
+        for category, label, balloonHelp, command, min, max, resolution in widgetDefinitions:
             widgets.append(
                 self.createFloater(parent, category, label, balloonHelp,
-                                   command, min, resolution)
+                                   command, min, max, resolution)
                 )
         return widgets
 
     def createFloater(self, parent, category, text, balloonHelp,
-                      command = None, min = 0.0, resolution = None,
-                      numDigits = 3, **kw):
+                      command = None, min = 0.0, max = None, resolution = None,
+                      numDigits = None, **kw):
         kw['text'] = text
         kw['min'] = min
+        if max is not None:
+            kw['max'] = max
         kw['resolution'] = resolution
+        if numDigits is None:
+            # If this is apparently an integer setting, show no decimals.
+            if resolution is not None and int(resolution) == resolution and \
+                (min is None or int(min) == min) and \
+                (max is None or int(max) == max):
+                numDigits = 0
+            else:
+                numDigits = 3
         kw['numDigits'] = numDigits
         widget = Floater.Floater(parent, **kw)
         # Do this after the widget so command isn't called on creation
@@ -1262,7 +1272,7 @@ class ParticlePanel(AppShell):
             initialdir = path,
             title = 'Load Particle Effect',
             parent = self.parent)
-        if particleFilename:
+        if particleFilename and particleFilename != 'None':
             # Delete existing particles and forces
             self.particleEffect.loadConfig(
                 Filename.fromOsSpecific(particleFilename))

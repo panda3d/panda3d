@@ -15,7 +15,7 @@
 #define CONFIG_PTLOADER_H
 
 #include "pandatoolbase.h"
-
+#include "notifyCategoryProxy.h"
 #include "dconfig.h"
 #include "distanceUnit.h"
 #include "configVariableEnum.h"

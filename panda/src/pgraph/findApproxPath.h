@@ -59,7 +59,7 @@ public:
   void output(std::ostream &out) const;
   INLINE void output_component(std::ostream &out, int index) const;
 
-#if !defined(WIN32_VC) && !defined(WIN64_VC)
+#ifndef _MSC_VER
 // Visual C++ won't let us define the ostream operator functions for these
 // guys if they're private--even though we declare them friends.
 private:

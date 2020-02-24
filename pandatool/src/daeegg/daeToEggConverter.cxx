@@ -175,7 +175,9 @@ convert_file(const Filename &filename) {
 
         if (mesh != nullptr) {
           PT(DaeMaterials) materials = new DaeMaterials(character->_instance);
-          daeegg_cat.spam() << "Processing mesh for controller\n";
+          if (daeegg_cat.is_spam()) {
+            daeegg_cat.spam() << "Processing mesh for controller\n";
+          }
           process_mesh(character->_node_group, mesh, materials, character);
         }
       }
@@ -373,7 +375,9 @@ void DAEToEggConverter::
 process_node(EggGroupNode *parent, const FCDSceneNode* node, bool forced) {
   nassertv(node != nullptr);
   string node_id = FROM_FSTRING(node->GetDaeId());
-  daeegg_cat.spam() << "Processing node with ID '" << node_id << "'" << endl;
+  if (daeegg_cat.is_spam()) {
+    daeegg_cat.spam() << "Processing node with ID '" << node_id << "'" << endl;
+  }
 
   // Create an egg group for this node
   PT(EggGroup) node_group = new EggGroup(FROM_FSTRING(node->GetDaeId()));
@@ -470,7 +474,9 @@ process_mesh(EggGroup *parent, const FCDGeometryMesh* mesh,
              DaeMaterials *materials, DaeCharacter *character) {
 
   nassertv(mesh != nullptr);
-  daeegg_cat.debug() << "Processing mesh with id " << FROM_FSTRING(mesh->GetDaeId()) << endl;
+  if (daeegg_cat.is_debug()) {
+    daeegg_cat.debug() << "Processing mesh with id " << FROM_FSTRING(mesh->GetDaeId()) << endl;
+  }
 
   // Create the egg stuff to hold this mesh
   PT(EggGroup) mesh_group = new EggGroup(FROM_FSTRING(mesh->GetDaeId()));
@@ -480,17 +486,23 @@ process_mesh(EggGroup *parent, const FCDGeometryMesh* mesh,
 
   // First retrieve the vertex source
   if (mesh->GetSourceCount() == 0) {
-    daeegg_cat.debug() << "Mesh with id " << FROM_FSTRING(mesh->GetDaeId()) << " has no sources" << endl;
+    if (daeegg_cat.is_debug()) {
+      daeegg_cat.debug() << "Mesh with id " << FROM_FSTRING(mesh->GetDaeId()) << " has no sources" << endl;
+    }
     return;
   }
   const FCDGeometrySource* vsource = mesh->FindSourceByType(FUDaeGeometryInput::POSITION);
   if (vsource == nullptr) {
-    daeegg_cat.debug() << "Mesh with id " << FROM_FSTRING(mesh->GetDaeId()) << " has no source for POSITION data" << endl;
+    if (daeegg_cat.is_debug()) {
+      daeegg_cat.debug() << "Mesh with id " << FROM_FSTRING(mesh->GetDaeId()) << " has no source for POSITION data" << endl;
+    }
     return;
   }
 
   // Loop through the polygon groups and add them
-  daeegg_cat.spam() << "Mesh with id " << FROM_FSTRING(mesh->GetDaeId()) << " has " << mesh->GetPolygonsCount() << " polygon groups" << endl;
+  if (daeegg_cat.is_spam()) {
+    daeegg_cat.spam() << "Mesh with id " << FROM_FSTRING(mesh->GetDaeId()) << " has " << mesh->GetPolygonsCount() << " polygon groups" << endl;
+  }
   if (mesh->GetPolygonsCount() == 0) return;
 
   // This is an array of pointers, I know.  But since they are refcounted, I
@@ -734,7 +746,9 @@ process_controller(EggGroup *parent, const FCDControllerInstance *instance) {
     const FCDGeometryMesh *mesh = controller->GetBaseGeometry()->GetMesh();
     if (mesh != nullptr) {
       PT(DaeMaterials) materials = new DaeMaterials(instance);
-      daeegg_cat.spam() << "Processing mesh for controller\n";
+      if (daeegg_cat.is_spam()) {
+        daeegg_cat.spam() << "Processing mesh for controller\n";
+      }
       process_mesh(parent, mesh, materials);
     }
   } else {

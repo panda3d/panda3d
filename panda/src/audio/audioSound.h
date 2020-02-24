@@ -42,17 +42,21 @@ PUBLISHED:
   virtual void set_loop_count(unsigned long loop_count=1) = 0;
   virtual unsigned long get_loop_count() const = 0;
 
-/*
- * Control time position within the sound.  This is similar (in concept) to
- * the seek position within a file.  time in seconds: 0 = beginning; length()
- * = end.  inits to 0.0. - The current time position will not change while the
- * sound is playing; you must call play() again to effect the change.  To play
- * the same sound from a time offset a second time, explicitly set the time
- * position again.  When looping, the second and later loops will start from
- * the beginning of the sound.  - If a sound is playing, calling get_time()
- * repeatedly will return different results over time.  e.g.: PN_stdfloat
- * percent_complete = s.get_time()  s.length();
- */
+  /**
+   * Control time position within the sound, in seconds.  This is similar (in
+   * concept) to the seek position within a file.  The value starts at 0.0 (the
+   * default) and ends at the value given by the length() method.
+   *
+   * In the past, this call did nothing if the sound was currently playing, and
+   * it was necessary to call play() to effect the change.  This is no longer
+   * the case; the time change takes effect immediately.
+   *
+   * If a sound is playing, calling get_time() repeatedly will return different
+   * results over time.  e.g.
+   * @code
+   * PN_stdfloat percent_complete = s.get_time() / s.length();
+   * @endcode
+   */
   virtual void set_time(PN_stdfloat start_time=0.0) = 0;
   virtual PN_stdfloat get_time() const = 0;
 
@@ -104,16 +108,9 @@ PUBLISHED:
   virtual void set_3d_max_distance(PN_stdfloat dist);
   virtual PN_stdfloat get_3d_max_distance() const;
 
-  // *_speaker_mix and *_speaker_level(s) serve the same purpose.
-  // *_speaker_mix is for use with FMOD. *_speaker_level(s) is for use with
-  // Miles.  Both interfaces exist because of a significant difference in the
-  // two APIs.  Hopefully the difference can be reconciled into a single
-  // interface at some point.
+  // *_speaker_mix is for use with FMOD.
   virtual PN_stdfloat get_speaker_mix(int speaker);
   virtual void set_speaker_mix(PN_stdfloat frontleft, PN_stdfloat frontright, PN_stdfloat center, PN_stdfloat sub, PN_stdfloat backleft, PN_stdfloat backright, PN_stdfloat sideleft, PN_stdfloat  sideright);
-
-  virtual PN_stdfloat get_speaker_level(int index);
-  virtual void set_speaker_levels(PN_stdfloat level1, PN_stdfloat level2=-1.0f, PN_stdfloat level3=-1.0f, PN_stdfloat level4=-1.0f, PN_stdfloat level5=-1.0f, PN_stdfloat level6=-1.0f, PN_stdfloat level7=-1.0f, PN_stdfloat level8=-1.0f, PN_stdfloat level9=-1.0f);
 
   virtual int get_priority();
   virtual void set_priority(int priority);

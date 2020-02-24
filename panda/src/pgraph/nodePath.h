@@ -41,6 +41,8 @@
 #include "pta_LVecBase2.h"
 #include "stl_compares.h"
 #include "shaderInput.h"
+#include "internalNameCollection.h"
+#include "materialCollection.h"
 #include "textureCollection.h"
 #include "textureStageCollection.h"
 
@@ -49,13 +51,9 @@ class FindApproxPath;
 class FindApproxLevelEntry;
 class Light;
 class PolylightNode;
-class InternalNameCollection;
 class Texture;
 class TextureStage;
-class TextureCollection;
-class TextureStageCollection;
 class Material;
-class MaterialCollection;
 class Fog;
 class GlobPattern;
 class PreparedGraphicsObjects;
@@ -620,6 +618,7 @@ PUBLISHED:
   bool has_texture_off(TextureStage *stage) const;
   Texture *get_texture() const;
   Texture *get_texture(TextureStage *stage) const;
+  void replace_texture(Texture *tex, Texture *new_tex);
   const SamplerState &get_texture_sampler() const;
   const SamplerState &get_texture_sampler(TextureStage *stage) const;
 
@@ -1003,6 +1002,7 @@ private:
   Texture *r_find_texture(PandaNode *node, TextureStage *stage) const;
   void r_find_all_textures(PandaNode *node, TextureStage *stage,
                            Textures &textures) const;
+  static void r_replace_texture(PandaNode *node, Texture *tex, Texture *new_tex);
 
   typedef phash_set<TextureStage *, pointer_hash> TextureStages;
   TextureStage *r_find_texture_stage(PandaNode *node, const RenderState *state,
@@ -1051,6 +1051,8 @@ private:
 };
 
 INLINE std::ostream &operator << (std::ostream &out, const NodePath &node_path);
+
+#include "nodePathCollection.h"
 
 #include "nodePath.I"
 

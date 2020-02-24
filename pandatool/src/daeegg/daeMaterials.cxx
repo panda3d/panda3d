@@ -73,12 +73,16 @@ void DaeMaterials::add_material_instance(const FCDMaterialInstance* instance) {
   }
 
   // Handle the material stuff
-  daeegg_cat.spam() << "Trying to process material with semantic " << semantic << endl;
+  if (daeegg_cat.is_spam()) {
+    daeegg_cat.spam() << "Trying to process material with semantic " << semantic << endl;
+  }
   PT_EggMaterial egg_material = new EggMaterial(semantic);
   pvector<PT_EggTexture> egg_textures;
   const FCDEffect* effect = instance->GetMaterial()->GetEffect();
   if (effect == nullptr) {
-    daeegg_cat.debug() << "Ignoring material (semantic: " << semantic << ") without assigned effect" << endl;
+    if (daeegg_cat.is_debug()) {
+      daeegg_cat.debug() << "Ignoring material (semantic: " << semantic << ") without assigned effect" << endl;
+    }
   } else {
     // Grab the common profile effect
     const FCDEffectStandard* effect_common = (FCDEffectStandard *)effect->FindProfile(FUDaeProfileType::COMMON);
@@ -86,7 +90,9 @@ void DaeMaterials::add_material_instance(const FCDMaterialInstance* instance) {
       daeegg_cat.info() << "Ignoring effect referenced by material with semantic " << semantic
                          << " because it has no common profile" << endl;
     } else {
-      daeegg_cat.spam() << "Processing effect, material semantic is " << semantic << endl;
+      if (daeegg_cat.is_spam()) {
+        daeegg_cat.spam() << "Processing effect, material semantic is " << semantic << endl;
+      }
       // Set the material parameters
       egg_material->set_amb(TO_COLOR(effect_common->GetAmbientColor()));
       // We already process transparency using blend modes LVecBase4 diffuse =
@@ -115,7 +121,9 @@ void DaeMaterials::add_material_instance(const FCDMaterialInstance* instance) {
     // Find an <extra> tag to support some extra stuff from extensions
     process_extra(semantic, effect->GetExtra());
   }
-  daeegg_cat.spam() << "Found " << egg_textures.size() << " textures in material" << endl;
+  if (daeegg_cat.is_spam()) {
+    daeegg_cat.spam() << "Found " << egg_textures.size() << " textures in material" << endl;
+  }
   _materials[semantic]->_egg_material = egg_material;
 }
 
@@ -140,7 +148,9 @@ process_texture_bucket(const string semantic, const FCDEffectStandard* effect_co
         texpath = Filename::from_os_specific(FROM_FSTRING(image->GetFilename()));
         texpath.make_canonical();
         texpath.make_relative_to(docpath.get_dirname(), true);
-        daeegg_cat.debug() << "Found texture with path " << texpath << endl;
+        if (daeegg_cat.is_debug()) {
+          daeegg_cat.debug() << "Found texture with path " << texpath << endl;
+        }
       } else {
         // Never mind.
         texpath = Filename::from_os_specific(FROM_FSTRING(image->GetFilename()));
@@ -149,7 +159,9 @@ process_texture_bucket(const string semantic, const FCDEffectStandard* effect_co
       // Find a set of UV coordinates
       const FCDEffectParameterInt* uvset = effect_common->GetTexture(bucket, tx)->GetSet();
       if (uvset != nullptr) {
-        daeegg_cat.debug() << "Texture has uv name '" << FROM_FSTRING(uvset->GetSemantic()) << "'\n";
+        if (daeegg_cat.is_debug()) {
+          daeegg_cat.debug() << "Texture has uv name '" << FROM_FSTRING(uvset->GetSemantic()) << "'\n";
+        }
         string uvset_semantic (FROM_FSTRING(uvset->GetSemantic()));
 
         // Only set the UV name if this UV set actually exists.
@@ -216,7 +228,9 @@ apply_to_primitive(const string semantic, const PT(EggPrimitive) to) {
   if (_materials.count(semantic) > 0) {
     to->set_material(_materials[semantic]->_egg_material);
     for (pvector<PT_EggTexture>::iterator it = _materials[semantic]->_egg_textures.begin(); it != _materials[semantic]->_egg_textures.end(); ++it) {
-      daeegg_cat.spam() << "Applying texture " << (*it)->get_name() << " from material with semantic " << semantic << endl;
+      if (daeegg_cat.is_spam()) {
+        daeegg_cat.spam() << "Applying texture " << (*it)->get_name() << " from material with semantic " << semantic << endl;
+      }
       to->add_texture(*it);
     }
     to->set_bface_flag(_materials[semantic]->_double_sided);
@@ -271,11 +285,15 @@ get_uvset_name(const string semantic, FUDaeGeometryInput::Semantic input_semanti
       // semantic TEXCOORD.
       for (size_t i = 0; i < _materials[semantic]->_uvsets.size(); ++i) {
         if (_materials[semantic]->_uvsets[i]->_input_set == input_set) {
-          daeegg_cat.debug() << "Using uv set with non-matching input semantic " << _materials[semantic]->_uvsets[i]->_semantic << "\n";
+          if (daeegg_cat.is_debug()) {
+            daeegg_cat.debug() << "Using uv set with non-matching input semantic " << _materials[semantic]->_uvsets[i]->_semantic << "\n";
+          }
           return _materials[semantic]->_uvsets[i]->_semantic;
         }
       }
-      daeegg_cat.debug() << "No uv set binding found for input set " << input_set << "\n";
+      if (daeegg_cat.is_debug()) {
+        daeegg_cat.debug() << "No uv set binding found for input set " << input_set << "\n";
+      }
     }
   }
   return "";

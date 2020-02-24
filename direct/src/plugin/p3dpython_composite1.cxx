@@ -1,6 +1,0 @@
-#include "binaryXml.cxx"
-#include "handleStream.cxx"
-#include "handleStreamBuf.cxx"
-#include "p3dCInstance.cxx"
-#include "p3dPythonRun.cxx"
-#include "run_p3dpython.cxx"

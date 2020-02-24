@@ -27,10 +27,13 @@
  */
 class EXPCL_PANDA_EXPRESS PStatCollectorForwardBase : public ReferenceCount {
 PUBLISHED:
-#ifdef DO_PSTATS
   virtual ~PStatCollectorForwardBase();
+
+#ifdef DO_PSTATS
   virtual void add_level(double level)=0;
 #else
+  // We still need to declare a virtual destructor for ABI compatibility, so
+  // that a vtable is created.
   INLINE void add_level(double level) { }
 #endif
 };

@@ -1,5 +1,6 @@
 """This defines the Messenger class, which is responsible for most of the
-event handling that happens on the Python side."""
+event handling that happens on the Python side.
+"""
 
 __all__ = ['Messenger']
 
@@ -10,26 +11,28 @@ import types
 
 from direct.stdpy.threading import Lock
 
+
 class Messenger:
 
     notify = DirectNotifyGlobal.directNotify.newCategory("Messenger")
 
     def __init__(self):
         """
-        One is keyed off the event name. It has the following structure:
+        One is keyed off the event name. It has the following structure::
+
             {event1: {object1: [method, extraArgs, persistent],
                        object2: [method, extraArgs, persistent]},
              event2: {object1: [method, extraArgs, persistent],
                        object2: [method, extraArgs, persistent]}}
 
-        This dictionary allow for efficient callbacks when the messenger
-        hears an event.
+        This dictionary allows for efficient callbacks when the
+        messenger hears an event.
 
         A second dictionary remembers which objects are accepting which
         events. This allows for efficient ignoreAll commands.
 
+        Or, for an example with more real data::
 
-        Or, for an example with more real data:
             {'mouseDown': {avatar: [avatar.jump, [2.0], 1]}}
         """
         # eventName->objMsgrId->callbackInfo
@@ -281,20 +284,20 @@ class Messenger:
         """
         return (not self.isAccepting(event, object))
 
-    def send(self, event, sentArgs=[], taskChain = None):
+    def send(self, event, sentArgs=[], taskChain=None):
         """
-        Send this event, optionally passing in arguments
+        Send this event, optionally passing in arguments.
 
-        event is usually a string.
-        sentArgs is a list of any data that you want passed along to the
-            handlers listening to this event.
-
-        If taskChain is not None, it is the name of the task chain
-        which should receive the event.  If taskChain is None, the
-        event is handled immediately.  Setting a non-None taskChain
-        will defer the event (possibly till next frame or even later)
-        and create a new, temporary task within the named taskChain,
-        but this is the only way to send an event across threads.
+        Args:
+            event (str): The name of the event.
+            sentArgs (list): A list of arguments to be passed along to the
+                handlers listening to this event.
+            taskChain (str, optional): If not None, the name of the task chain
+                which should receive the event.  If None, then the event is
+                handled immediately. Setting a non-None taskChain will defer
+                the event (possibly till next frame or even later) and create a
+                new, temporary task within the named taskChain, but this is the
+                only way to send an event across threads.
         """
         if Messenger.notify.getDebug() and not self.quieting.get(event):
             assert Messenger.notify.debug(
@@ -485,7 +488,7 @@ class Messenger:
             This is intended for debugging use only.
             This function is not defined if python is ran with -O (optimize).
 
-            See Also: unwatch
+            See Also: `unwatch`
             """
             if not self.__watching.get(needle):
                 self.__isWatching += 1
@@ -499,7 +502,7 @@ class Messenger:
             This is intended for debugging use only.
             This function is not defined if python is ran with -O (optimize).
 
-            See Also: watch
+            See Also: `watch`
             """
             if self.__watching.get(needle):
                 self.__isWatching -= 1
@@ -514,7 +517,7 @@ class Messenger:
             This is intended for debugging use only.
             This function is not defined if python is ran with -O (optimize).
 
-            See Also: unquiet
+            See Also: `unquiet`
             """
             if not self.quieting.get(message):
                 self.quieting[message]=1
@@ -528,7 +531,7 @@ class Messenger:
             This is intended for debugging use only.
             This function is not defined if python is ran with -O (optimize).
 
-            See Also: quiet
+            See Also: `quiet`
             """
             if self.quieting.get(message):
                 del self.quieting[message]
@@ -658,4 +661,3 @@ class Messenger:
     detailed_repr = detailedRepr
     get_all_accepting = getAllAccepting
     toggle_verbose = toggleVerbose
-

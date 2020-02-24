@@ -4,6 +4,7 @@ __all__ = ['MopathRecorder']
 
 # Import Tkinter, Pmw, and the dial code from this directory tree.
 from panda3d.core import *
+from direct.showbase import ShowBaseGlobal
 from direct.showbase.DirectObject import DirectObject
 from direct.showbase.TkGlobal import *
 from direct.tkwidgets.AppShell import *
@@ -852,7 +853,7 @@ class MopathRecorder(AppShell, DirectObject):
         if self.getVariable('Style', 'Marker').get():
             self.playbackMarker.reparentTo(self.recorderNodePath)
         else:
-            self.playbackMarker.reparentTo(hidden)
+            self.playbackMarker.reparentTo(ShowBaseGlobal.hidden)
 
     def setNumSegs(self, value):
         self.numSegs = int(value)
@@ -1637,7 +1638,7 @@ class MopathRecorder(AppShell, DirectObject):
             initialdir = path,
             title = 'Load Nurbs Curve',
             parent = self.parent)
-        if mopathFilename:
+        if mopathFilename and mopathFilename != 'None':
             self.reset()
             nodePath = loader.loadModel(
                 Filename.fromOsSpecific(mopathFilename))

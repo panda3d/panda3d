@@ -23,6 +23,7 @@
 #include <ios>
 #include <streambuf>
 #include <ostream>
+#include <Python.h>
 
 // We don't care (much) about the actual definition of the various
 // iostream classes, but we do need to know the classnames that are
@@ -50,13 +51,13 @@ namespace std {
   __published:
     istream(const istream&) = delete;
 
-    __extension PyObject *read(int size=-1);
-    __extension PyObject *read1(int size=-1);
+    __extension PyObject *read(Py_ssize_t size=-1);
+    __extension PyObject *read1(Py_ssize_t size=-1);
     __extension PyObject *readall();
     __extension std::streamsize readinto(PyObject *b);
 
-    __extension PyObject *readline(int size=-1);
-    __extension PyObject *readlines(int hint=-1);
+    __extension PyObject *readline(Py_ssize_t size=-1);
+    __extension PyObject *readlines(Py_ssize_t hint=-1);
     __extension PyObject *__iter__(PyObject *self);
 
     int get();

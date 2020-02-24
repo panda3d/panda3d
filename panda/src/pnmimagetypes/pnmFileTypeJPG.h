@@ -55,7 +55,7 @@ extern "C" {
 /**
  * For reading and writing Jpeg files.
  */
-class EXPCL_PANDA_PNMIMAGETYPES PNMFileTypeJPG : public PNMFileType {
+class PNMFileTypeJPG : public PNMFileType {
 public:
   PNMFileTypeJPG();
 

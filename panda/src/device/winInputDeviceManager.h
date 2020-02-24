@@ -20,7 +20,7 @@
 
 #include "xInputDevice.h"
 
-#include <CfgMgr32.h>
+#include <cfgmgr32.h>
 #include <devpkey.h>
 
 class WinRawInputDevice;
@@ -43,6 +43,8 @@ public:
 
   HWND setup_message_loop();
   void destroy_message_loop();
+
+  static void stop_thread();
 
 private:
   // There are always exactly four of these in existence.

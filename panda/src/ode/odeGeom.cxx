@@ -33,12 +33,16 @@ TypeHandle OdeGeom::_type_handle;
 OdeGeom::
 OdeGeom(dGeomID id) :
   _id(id) {
-  odegeom_cat.debug() << get_type() << "(" << _id << ")\n";
+  if (odegeom_cat.is_debug()) {
+    odegeom_cat.debug() << get_type() << "(" << _id << ")\n";
+  }
 }
 
 OdeGeom::
 ~OdeGeom() {
-  odegeom_cat.debug() << "~" << get_type() << "(" << _id << ")\n";
+  if (odegeom_cat.is_debug()) {
+    odegeom_cat.debug() << "~" << get_type() << "(" << _id << ")\n";
+  }
   /*
   GeomSurfaceMap::iterator iter = _geom_surface_map.find(this->get_id());
   if (iter != _geom_surface_map.end()) {
