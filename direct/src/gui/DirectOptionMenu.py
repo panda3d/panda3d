@@ -47,9 +47,9 @@ class DirectOptionMenu(DirectButton):
         # Record any user specified popup marker position
         self.initPopupMarkerPos = self['popupMarker_pos']
         if 'text' in kw:
-            self.textWasSet = True
+            self.__textWasSet = True
         else:
-            self.textWasSet = False
+            self.__textWasSet = False
         # Create a small rectangular marker to distinguish this button
         # as a popup menu button
         self.popupMarker = self.createcomponent(
@@ -187,7 +187,7 @@ class DirectOptionMenu(DirectButton):
         # frame size
         bounds[1] += pmw
         # If the text was set, then we presumably don't want to resize the frame!
-        if not self.textWasSet:
+        if not self.__textWasSet:
             self['frameSize'] = (bounds[0], bounds[1], bounds[2], bounds[3])
         # Set initial state
         self.hidePopupMenu()
@@ -216,7 +216,7 @@ class DirectOptionMenu(DirectButton):
         xPos = (b[1] - b[0])/2.0 - fb[0]
         self.popupMenu.setX(self, xPos)
         # Try to set height to line up selected item with button
-        if self.textWasSet:
+        if self.__textWasSet:
             self.popupMenu.setZ(b[2])
         else:
             self.popupMenu.setZ(
@@ -291,7 +291,7 @@ class DirectOptionMenu(DirectButton):
         if newIndex is not None:
             self.selectedIndex = newIndex
             item = self['items'][self.selectedIndex]
-            if not self.textWasSet:
+            if not self.__textWasSet:
                 self['text'] = item
             if fCommand and self['command']:
                 # Pass any extra args to command
