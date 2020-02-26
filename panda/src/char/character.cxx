@@ -797,6 +797,8 @@ r_update_geom(PandaNode *node, const Character::JointMap &joint_map,
  * Makes a new copy of the Geom with the dynamic vertex arrays replaced to
  * reference this Character instead of the other one.  If no arrays have
  * changed, simply returns the same Geom.
+ *
+ * Assumes the lock is held.
  */
 PT(Geom) Character::
 copy_geom(const Geom *source, const Character::JointMap &joint_map,
@@ -1036,9 +1038,14 @@ redirect_slider(const VertexSlider *vs, Character::GeomSliderMap &gsmap) {
 
   if (vs->is_of_type(CharacterVertexSlider::get_class_type())) {
     const CharacterVertexSlider *cvs = DCAST(CharacterVertexSlider, vs);
-    CharacterSlider *slider = find_slider(cvs->get_char_slider()->get_name());
-    if (slider != nullptr) {
-      new_cvs = new CharacterVertexSlider(slider);
+    const std::string &name = cvs->get_char_slider()->get_name();
+    for (PartBundleHandle *handle : _bundles) {
+      PartGroup *part = handle->get_bundle()->find_child(name);
+      if (part != nullptr &&
+          part->is_of_type(CharacterSlider::get_class_type())) {
+        new_cvs = new CharacterVertexSlider((CharacterSlider *)part);
+        break;
+      }
     }
   }
 
