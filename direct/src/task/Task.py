@@ -17,9 +17,13 @@ from direct.showbase.MessengerGlobal import messenger
 import types
 import random
 import importlib
+import sys
 
 try:
-    import signal
+    if sys.version_info >= (3, 0):
+        import _signal as signal
+    else:
+        import signal
 except ImportError:
     signal = None
 
