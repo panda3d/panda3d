@@ -278,8 +278,13 @@ x11GraphicsPipe(const std::string &display) :
   // Connect to an input method for supporting international text entry.
   _im = XOpenIM(_display, nullptr, nullptr, nullptr);
   if (_im == (XIM)nullptr) {
-    x11display_cat.warning()
-      << "Couldn't open input method.\n";
+    // Fall back to internal input method.
+    XSetLocaleModifiers("@im=none");
+    _im = XOpenIM(_display, nullptr, nullptr, nullptr);
+    if (_im == (XIM)nullptr) {
+      x11display_cat.warning()
+        << "Couldn't open input method.\n";
+    }
   }
 
   // What styles does the current input method support?
