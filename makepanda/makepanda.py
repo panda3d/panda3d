@@ -188,6 +188,7 @@ def parseopts(args):
         "static","host=","debversion=","rpmrelease=","p3dsuffix=","rtdist-version=",
         "directx-sdk=", "windows-sdk=", "msvc-version=", "clean", "use-icl",
         "universal", "target=", "arch=", "git-commit=", "no-copy-python",
+        "cggl-incdir=", "cggl-libdir=",
         ] + removedopts
 
     anything = 0
@@ -257,7 +258,7 @@ def parseopts(args):
             elif (option[2:] in removedopts):
                 Warn("Ignoring removed option %s" % (option))
             else:
-                for pkg in PkgListGet():
+                for pkg in PkgListGet() + ['CGGL']:
                     if option == "--use-" + pkg.lower():
                         PkgEnable(pkg)
                         break
