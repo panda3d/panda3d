@@ -497,8 +497,7 @@ make_directory_full(const Filename &filename) {
   // Now make the last one, and check the return value.
   PT(VirtualFile) result = do_get_file(filename, OF_make_directory);
   _lock.unlock();
-  nassertr_always(result != nullptr, false);
-  return result->is_directory();
+  return (result != nullptr) ? result->is_directory() : false;
 }
 
 /**
