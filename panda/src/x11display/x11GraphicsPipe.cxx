@@ -49,6 +49,13 @@ x11GraphicsPipe(const std::string &display) :
     display_spec = ":0.0";
   }
 
+  // Store the current locale, so that we can restore it later.
+  std::string saved_locale;
+  char *saved_locale_p = setlocale(LC_ALL, nullptr);
+  if (saved_locale_p != nullptr) {
+    saved_locale = saved_locale_p;
+  }
+
   // The X docs say we should do this to get international character support
   // from the keyboard.
   setlocale(LC_ALL, "");
@@ -337,6 +344,11 @@ x11GraphicsPipe(const std::string &display) :
 
   XFree(im_supported_styles);
   */
+
+  // Restore the previous locale.
+  if (!saved_locale.empty()) {
+    setlocale(LC_ALL, saved_locale.c_str());
+  }
 
   // Get some X atom numbers.
   _wm_delete_window = XInternAtom(_display, "WM_DELETE_WINDOW", false);
