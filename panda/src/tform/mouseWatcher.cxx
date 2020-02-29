@@ -726,6 +726,9 @@ clear_current_regions() {
       MouseWatcherRegion *old_region = (*old_ri);
       old_region->exit_region(param);
       throw_event_pattern(_leave_pattern, old_region, ButtonHandle::none());
+      if (_preferred_region == old_region) {
+        _preferred_region = nullptr;
+      }
       ++old_ri;
     }
 
