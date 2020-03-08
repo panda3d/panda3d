@@ -720,7 +720,7 @@ scan_up_from(Filename &result, const Filename &dir,
  */
 void ConfigPageManager::
 config_initialized() {
-  Notify::ptr()->config_initialized();
+  Notify::config_initialized();
 
 #ifndef NDEBUG
   ConfigVariableString panda_package_version
