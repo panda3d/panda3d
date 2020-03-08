@@ -745,7 +745,10 @@ if __debug__:
             pylib_path = os.path.join(libdir, pylib_arch, pylib_name)
         else:
             pylib_path = os.path.join(libdir, pylib_name)
-    whl.write_file('deploy_libs/' + pylib_name, pylib_path)
+
+    # If Python was linked statically, we don't need to include this.
+    if not pylib_name.endswith('.a'):
+        whl.write_file('deploy_libs/' + pylib_name, pylib_path)
 
     whl.close()
 
