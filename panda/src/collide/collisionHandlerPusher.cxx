@@ -173,8 +173,8 @@ handle_entries() {
                   const CollisionSolid *s2 = sd2._entry->get_into();
                   if (s1 != nullptr &&
                       s2 != nullptr &&
-                      s1->is_exact_type(CollisionPolygon::get_class_type()) &&
-                      s2->is_exact_type(CollisionPolygon::get_class_type()) &&
+                      s1->is_of_type(CollisionPolygon::get_class_type()) &&
+                      s2->is_of_type(CollisionPolygon::get_class_type()) &&
                       sd._entry->get_into_node_path() ==
                       sd2._entry->get_into_node_path()) {
                     const CollisionPolygon *p1 = DCAST(CollisionPolygon, s1);
