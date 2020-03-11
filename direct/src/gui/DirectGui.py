@@ -1,4 +1,4 @@
-""" Imports all of the DirectGUI classes. """
+"""Imports all of the :ref:`directgui` classes."""
 
 from . import DirectGuiGlobals as DGG
 from .OnscreenText import *

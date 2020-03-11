@@ -1,5 +1,8 @@
 """The new Finite State Machine module. This replaces the module
 previously called FSM (now called :mod:`.ClassicFSM`).
+
+For more information on FSMs, consult the :ref:`finite-state-machines` section
+of the programming manual.
 """
 
 __all__ = ['FSMException', 'FSM']
@@ -14,11 +17,14 @@ from direct.stdpy.threading import RLock
 class FSMException(Exception):
     pass
 
+
 class AlreadyInTransition(FSMException):
     pass
 
+
 class RequestDenied(FSMException):
     pass
+
 
 class FSM(DirectObject):
     """
@@ -34,25 +40,25 @@ class FSM(DirectObject):
 
     To define specialized behavior when entering or exiting a
     particular state, define a method named enterState() and/or
-    exitState(), where "State" is the name of the state, e.g.:
+    exitState(), where "State" is the name of the state, e.g.::
 
-    def enterRed(self):
-        ... do stuff ...
+        def enterRed(self):
+            ... do stuff ...
 
-    def exitRed(self):
-        ... cleanup stuff ...
+        def exitRed(self):
+            ... cleanup stuff ...
 
-    def enterYellow(self):
-        ... do stuff ...
+        def enterYellow(self):
+            ... do stuff ...
 
-    def exitYellow(self):
-        ... cleanup stuff ...
+        def exitYellow(self):
+            ... cleanup stuff ...
 
-    def enterGreen(self):
-        ... do stuff ...
+        def enterGreen(self):
+            ... do stuff ...
 
-    def exitGreen(self):
-        ... cleanup stuff ...
+        def exitGreen(self):
+            ... cleanup stuff ...
 
     Both functions can access the previous state name as
     self.oldState, and the new state name we are transitioning to as
@@ -70,22 +76,22 @@ class FSM(DirectObject):
     input is always a string and a tuple of optional parameters (which
     is often empty), and the return value should either be None to do
     nothing, or the name of the state to transition into.  For
-    example:
+    example::
 
-    def filterRed(self, request, args):
-        if request in ['Green']:
-            return (request,) + args
-        return None
+        def filterRed(self, request, args):
+            if request in ['Green']:
+                return (request,) + args
+            return None
 
-    def filterYellow(self, request, args):
-        if request in ['Red']:
-            return (request,) + args
-        return None
+        def filterYellow(self, request, args):
+            if request in ['Red']:
+                return (request,) + args
+            return None
 
-    def filterGreen(self, request, args):
-        if request in ['Yellow']:
-            return (request,) + args
-        return None
+        def filterGreen(self, request, args):
+            if request in ['Yellow']:
+                return (request,) + args
+            return None
 
     As above, the filterState() functions are optional.  If any is
     omitted, the defaultFilter() method is called instead.  A standard
@@ -111,7 +117,7 @@ class FSM(DirectObject):
     at construction time; it is simply in Off already by convention.
     If you need to call code in enterOff() to initialize your FSM
     properly, call it explicitly in the constructor.  Similarly, when
-    cleanup() is called or the FSM is destructed, the FSM transitions
+    `cleanup()` is called or the FSM is destructed, the FSM transitions
     back to 'Off' by convention.  (It does call enterOff() at this
     point, but does not call exitOff().)
 
@@ -146,6 +152,12 @@ class FSM(DirectObject):
     # map, no transitions are implicitly allowed--all transitions
     # must be approved by some filter function.
     defaultTransitions = None
+
+    # An enum class for special states like the DEFAULT or ANY state,
+    # that should be treatened by the FSM in a special way
+    class EnumStates():
+        ANY = 1
+        DEFAULT = 2
 
     def __init__(self, name):
         self.fsmLock = RLock()
@@ -255,9 +267,9 @@ class FSM(DirectObject):
     def demand(self, request, *args):
         """Requests a state transition, by code that does not expect
         the request to be denied.  If the request is denied, raises a
-        RequestDenied exception.
+        `RequestDenied` exception.
 
-        Unlike request(), this method allows a new request to be made
+        Unlike `request()`, this method allows a new request to be made
         while the FSM is currently in transition.  In this case, the
         request is queued up and will be executed when the current
         transition finishes.  Multiple requests will queue up in
@@ -284,7 +296,7 @@ class FSM(DirectObject):
         """Requests a state transition (or other behavior).  The
         request may be denied by the FSM's filter function.  If it is
         denied, the filter function may either raise an exception
-        (RequestDenied), or it may simply return None, without
+        (`RequestDenied`), or it may simply return None, without
         changing the FSM's state.
 
         The request parameter should be a string.  The request, along
@@ -299,7 +311,7 @@ class FSM(DirectObject):
 
         If the FSM is currently in transition (i.e. in the middle of
         executing an enterState or exitState function), an
-        AlreadyInTransition exception is raised (but see demand(),
+        `AlreadyInTransition` exception is raised (but see `demand()`,
         which will queue these requests up and apply when the
         transition is complete)."""
 
@@ -376,6 +388,27 @@ class FSM(DirectObject):
                 # accept it.
                 return (request,) + args
 
+            elif FSM.EnumStates.ANY in self.defaultTransitions.get(self.state, []):
+                # Whenever we have a '*' as our to transition, we allow
+                # to transit to any other state
+                return (request,) + args
+
+            elif request in self.defaultTransitions.get(FSM.EnumStates.ANY, []):
+                # If the requested state is in the default transitions
+                # from any state list, we also alow to transit to the
+                # new state
+                return (request,) + args
+
+            elif FSM.EnumStates.ANY in self.defaultTransitions.get(FSM.EnumStates.ANY, []):
+                # This is like we had set the defaultTransitions to None.
+                # Any state can transit to any other state
+                return (request,) + args
+
+            elif request in self.defaultTransitions.get(FSM.EnumStates.DEFAULT, []):
+                # This is the fallback state that we use whenever no
+                # other trnasition was possible
+                return (request,) + args
+
             # If self.defaultTransitions is not None, it is an error
             # to request a direct state transition (capital letter
             # request) not listed in defaultTransitions and not
@@ -395,7 +428,6 @@ class FSM(DirectObject):
             return (request,) + args
         return self.defaultFilter(request, args)
 
-
     def setStateArray(self, stateArray):
         """array of unique states to iterate through"""
         self.fsmLock.acquire()
@@ -403,7 +435,6 @@ class FSM(DirectObject):
             self.stateArray = stateArray
         finally:
             self.fsmLock.release()
-
 
     def requestNext(self, *args):
         """Request the 'next' state in the predefined state array."""

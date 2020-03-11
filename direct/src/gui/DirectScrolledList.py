@@ -1,4 +1,8 @@
-"""Contains the DirectScrolledList class."""
+"""Contains the DirectScrolledList class.
+
+See the :ref:`directscrolledlist` page in the programming manual for a more
+in-depth explanation and an example of how to use this class.
+"""
 
 __all__ = ['DirectScrolledListItem', 'DirectScrolledList']
 
@@ -9,6 +13,12 @@ from direct.directnotify import DirectNotifyGlobal
 from direct.task.Task import Task
 from .DirectFrame import *
 from .DirectButton import *
+import sys
+
+if sys.version_info >= (3,0):
+    stringType = str
+else:
+    stringType = basestring
 
 
 class DirectScrolledListItem(DirectButton):
@@ -61,7 +71,7 @@ class DirectScrolledList(DirectFrame):
         # so we can modify it without mangling the user's list
         if 'items' in kw:
             for item in kw['items']:
-                if type(item) != type(''):
+                if not isinstance(item, stringType):
                     break
             else:
                 # we get here if every item in 'items' is a string
@@ -106,7 +116,7 @@ class DirectScrolledList(DirectFrame):
                                               DirectFrame, (self,),
                                               )
         for item in self["items"]:
-            if item.__class__.__name__ != 'str':
+            if not isinstance(item, stringType):
                 item.reparentTo(self.itemFrame)
 
         self.initialiseoptions(DirectScrolledList)
@@ -124,7 +134,7 @@ class DirectScrolledList(DirectFrame):
         else:
             self.maxHeight = 0.0
             for item in self["items"]:
-                if item.__class__.__name__ != 'str':
+                if not isinstance(item, stringType):
                     self.maxHeight = max(self.maxHeight, item.getHeight())
 
     def setScrollSpeed(self):
@@ -172,7 +182,7 @@ class DirectScrolledList(DirectFrame):
         if len(self["items"]) == 0:
             return 0
 
-        if type(self["items"][0]) == type(''):
+        if isinstance(self["items"][0], stringType):
             self.notify.warning("getItemIndexForItemID: cant find itemID for non-class list items!")
             return 0
 
@@ -238,7 +248,7 @@ class DirectScrolledList(DirectFrame):
 
         # Hide them all
         for item in self["items"]:
-            if item.__class__.__name__ != 'str':
+            if not isinstance(item, stringType):
                 item.hide()
 
         # Then show the ones in range, and stack their positions
@@ -248,7 +258,7 @@ class DirectScrolledList(DirectFrame):
             #print "stacking buttontext[", i,"]", self["items"][i]["text"]
             # If the item is a 'str', then it has not been created (scrolled list is 'as needed')
             #  Therefore, use the the function given to make it or just make it a frame
-            if item.__class__.__name__ == 'str':
+            if isinstance(item, stringType):
                 if self['itemMakeFunction']:
                     # If there is a function to create the item
                     item = self['itemMakeFunction'](item, i, self['itemMakeExtraArgs'])
@@ -280,7 +290,7 @@ class DirectScrolledList(DirectFrame):
             # Therefore, use the the function given to make it or
             # just make it a frame
             #print "Making " + str(item)
-            if item.__class__.__name__ == 'str':
+            if isinstance(item, stringType):
                 if self['itemMakeFunction']:
                     # If there is a function to create the item
                     item = self['itemMakeFunction'](item, i, self['itemMakeExtraArgs'])
@@ -345,16 +355,16 @@ class DirectScrolledList(DirectFrame):
         Add this string and extraArg to the list
         """
         assert self.notify.debugStateCall(self)
-        if type(item) != type(''):
+        if not isinstance(item, stringType):
             # cant add attribs to non-classes (like strings & ints)
             item.itemID = self.nextItemID
             self.nextItemID += 1
         self['items'].append(item)
-        if type(item) != type(''):
+        if not isinstance(item, stringType):
             item.reparentTo(self.itemFrame)
         if refresh:
             self.refresh()
-        if type(item) != type(''):
+        if not isinstance(item, stringType):
             return item.itemID  # to pass to scrollToItemID
 
     def removeItem(self, item, refresh=1):
@@ -369,7 +379,7 @@ class DirectScrolledList(DirectFrame):
             if hasattr(self, "currentSelected") and self.currentSelected is item:
                 del self.currentSelected
             self["items"].remove(item)
-            if type(item) != type(''):
+            if not isinstance(item, stringType):
                 item.reparentTo(ShowBaseGlobal.hidden)
             self.refresh()
             return 1
@@ -387,7 +397,7 @@ class DirectScrolledList(DirectFrame):
             if (hasattr(item, 'destroy') and hasattr(item.destroy, '__call__')):
                 item.destroy()
             self["items"].remove(item)
-            if type(item) != type(''):
+            if not isinstance(item, stringType):
                 item.reparentTo(ShowBaseGlobal.hidden)
             self.refresh()
             return 1
@@ -409,7 +419,7 @@ class DirectScrolledList(DirectFrame):
             if hasattr(self, "currentSelected") and self.currentSelected is item:
                 del self.currentSelected
             self["items"].remove(item)
-            if type(item) != type(''):
+            if not isinstance(item, stringType):
                 #RAU possible leak here, let's try to do the right thing
                 #item.reparentTo(ShowBaseGlobal.hidden)
                 item.removeNode()
@@ -434,7 +444,7 @@ class DirectScrolledList(DirectFrame):
             if (hasattr(item, 'destroy') and hasattr(item.destroy, '__call__')):
                 item.destroy()
             self["items"].remove(item)
-            if type(item) != type(''):
+            if not isinstance(item, stringType):
                 #RAU possible leak here, let's try to do the right thing
                 #item.reparentTo(ShowBaseGlobal.hidden)
                 item.removeNode()
@@ -459,7 +469,7 @@ class DirectScrolledList(DirectFrame):
 
     def getSelectedText(self):
         assert self.notify.debugStateCall(self)
-        if self['items'][self.index].__class__.__name__ == 'str':
+        if isinstance(self['items'][self.index], stringType):
           return self['items'][self.index]
         else:
           return self['items'][self.index]['text']

@@ -1,5 +1,6 @@
-"""This module serves as a container to hold the global ShowBase instance, as
-an alternative to using the builtin scope.
+"""This module serves as a container to hold the global
+:class:`~.ShowBase.ShowBase` instance, as an alternative to using the builtin
+scope.
 
 Note that you cannot directly import `base` from this module since ShowBase
 may not have been created yet; instead, ShowBase dynamically adds itself to
@@ -16,6 +17,7 @@ from . import DConfig as config
 
 __dev__ = config.GetBool('want-dev', __debug__)
 
+#: The global instance of the :class:`panda3d.core.VirtualFileSystem`.
 vfs = VirtualFileSystem.getGlobalPtr()
 ostream = Notify.out()
 globalClock = ClockObject.getGlobalClock()
@@ -24,22 +26,29 @@ cvMgr = ConfigVariableManager.getGlobalPtr()
 pandaSystem = PandaSystem.getGlobalPtr()
 
 # This is defined here so GUI elements can be instantiated before ShowBase.
-aspect2d = NodePath(PGTop("aspect2d"))
+render2d = NodePath("render2d")
+aspect2d = render2d.attachNewNode(PGTop("aspect2d"))
 hidden = NodePath("hidden")
 
 # Set direct notify categories now that we have config
 directNotify.setDconfigLevels()
 
+
 def run():
+    """Deprecated alias for :meth:`base.run() <.ShowBase.run>`."""
     assert ShowBase.notify.warning("run() is deprecated, use base.run() instead")
     base.run()
 
+
 def inspect(anObject):
+    """Opens up a :mod:`direct.tkpanels.Inspector` GUI panel for inspecting an
+    object."""
     # Don't use a regular import, to prevent ModuleFinder from picking
     # it up as a dependency when building a .p3d package.
     import importlib
     Inspector = importlib.import_module('direct.tkpanels.Inspector')
     return Inspector.inspect(anObject)
+
 
 import sys
 if sys.version_info >= (3, 0):

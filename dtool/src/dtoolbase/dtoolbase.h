@@ -21,19 +21,7 @@
 
 #include "dtool_config.h"
 
-/* Make sure WIN32 and WIN32_VC are defined when using MSVC */
-#if defined(_WIN32) || defined(_WIN64)
-#ifndef WIN32
-#define WIN32
-#endif
 #ifdef _MSC_VER
-#ifndef WIN32_VC
-#define WIN32_VC
-#endif
-#endif
-#endif
-
-#ifdef WIN32_VC
 /* These warning pragmas must appear before anything else for VC++ to
    respect them.  Sheesh. */
 
@@ -58,11 +46,11 @@
 #pragma warning (disable : 4267)
 /* C4577: 'noexcept' used with no exception handling mode specified */
 #pragma warning (disable : 4577)
-#endif  /* WIN32_VC */
+#endif  /* _MSC_VER */
 
 /* Windows likes to define min() and max() macros, which will conflict with
    std::min() and std::max() respectively, unless we do this: */
-#ifdef WIN32
+#ifdef _WIN32
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
@@ -118,7 +106,7 @@
 #ifdef _WIN32_WINNT
 #undef _WIN32_WINNT
 #endif
-#define _WIN32_WINNT 0x0502
+#define _WIN32_WINNT 0x0600
 
 #ifdef __cplusplus
 #ifndef __STDC_LIMIT_MACROS
@@ -485,7 +473,7 @@ typedef struct _object PyObject;
 #endif
 
 /* These symbols are used in dtoolsymbols.h and pandasymbols.h. */
-#if defined(WIN32_VC) && !defined(CPPPARSER) && !defined(LINK_ALL_STATIC)
+#if defined(_WIN32) && !defined(CPPPARSER) && !defined(LINK_ALL_STATIC)
 #define EXPORT_CLASS __declspec(dllexport)
 #define IMPORT_CLASS __declspec(dllimport)
 #elif __GNUC__ >= 4 && !defined(CPPPARSER) && !defined(LINK_ALL_STATIC)

@@ -1224,6 +1224,49 @@ InternalThread(const string &name, const string &sync_name) :
 
 #else  // DO_PSTATS
 
+void PStatClient::
+set_client_name(const std::string &name) {
+}
+
+std::string PStatClient::
+get_client_name() const {
+  return std::string();
+}
+
+void PStatClient::
+set_max_rate(double rate) {
+}
+
+double PStatClient::
+get_max_rate() const {
+  return 0.0;
+}
+
+PStatCollector PStatClient::
+get_collector(int index) const {
+  return PStatCollector();
+}
+
+std::string PStatClient::
+get_collector_name(int index) const {
+  return std::string();
+}
+
+std::string PStatClient::
+get_collector_fullname(int index) const {
+  return std::string();
+}
+
+PStatThread PStatClient::
+get_thread(int index) const {
+  return PStatThread((PStatClient *)this, 0);
+}
+
+double PStatClient::
+get_real_time() const {
+  return 0.0;
+}
+
 PStatThread PStatClient::
 get_main_thread() const {
   return PStatThread((PStatClient *)this, 0);
@@ -1239,10 +1282,61 @@ make_collector_with_relname(int parent_index, std::string relname) {
   return PStatCollector();
 }
 
+PStatThread PStatClient::
+make_thread(Thread *thread) {
+  return PStatThread((PStatClient *)this, 0);
+}
+
+void PStatClient::
+main_tick() {
+}
+
+void PStatClient::
+thread_tick(const std::string &) {
+}
+
+void PStatClient::
+client_main_tick() {
+}
+
+void PStatClient::
+client_thread_tick(const std::string &sync_name) {
+}
+
+bool PStatClient::
+client_connect(std::string hostname, int port) {
+  return false;
+}
+
+void PStatClient::
+client_disconnect() {
+  return;
+}
+
+bool PStatClient::
+client_is_connected() const {
+  return false;
+}
+
+void PStatClient::
+client_resume_after_pause() {
+  return;
+}
+
 PStatClient *PStatClient::
 get_global_pstats() {
   static PStatClient global_pstats;
   return &global_pstats;
+}
+
+bool PStatClient::
+is_active(int collector_index, int thread_index) const {
+  return false;
+}
+
+bool PStatClient::
+is_started(int collector_index, int thread_index) const {
+  return false;
 }
 
 void PStatClient::
@@ -1261,5 +1355,21 @@ void PStatClient::
 stop(int collector_index, int thread_index, double as_of) {
 }
 
+void PStatClient::
+clear_level(int collector_index, int thread_index) {
+}
+
+void PStatClient::
+set_level(int collector_index, int thread_index, double level) {
+}
+
+void PStatClient::
+add_level(int collector_index, int thread_index, double increment) {
+}
+
+double PStatClient::
+get_level(int collector_index, int thread_index) const {
+  return 0.0;
+}
 
 #endif // DO_PSTATS

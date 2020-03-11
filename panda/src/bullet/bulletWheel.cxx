@@ -218,22 +218,28 @@ get_wheel_radius() const {
 
 /**
  * Sets the steering angle.
+ *
+ * @warning
+ * As of 1.11, this method uses degrees.  Previous versions used radians.
  */
 void BulletWheel::
 set_steering(PN_stdfloat value) {
   LightMutexHolder holder(BulletWorld::get_global_lock());
 
-  _info.m_steering = (btScalar)value;
+  _info.m_steering = (btScalar)deg_2_rad(value);
 }
 
 /**
  * Returns the steering angle in degrees.
+ *
+ * @warning
+ * As of 1.11, this method uses degrees.  Previous versions used radians.
  */
 PN_stdfloat BulletWheel::
 get_steering() const {
   LightMutexHolder holder(BulletWorld::get_global_lock());
 
-  return (PN_stdfloat)_info.m_steering;
+  return rad_2_deg((PN_stdfloat)_info.m_steering);
 }
 
 /**

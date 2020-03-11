@@ -117,6 +117,7 @@ x11GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
 
   _awaiting_configure = false;
   _dga_mouse_enabled = false;
+  _raw_mouse_enabled = false;
   _override_redirect = False;
   _wm_delete_window = x11_pipe->_wm_delete_window;
 
@@ -154,8 +155,8 @@ get_pointer(int device) const {
 
     // We recheck this immediately to get the most up-to-date value, but we
     // won't bother waiting for the lock if we can't.
-    if (device == 0 && !_dga_mouse_enabled && result._in_window &&
-        x11GraphicsPipe::_x_mutex.try_lock()) {
+    if (device == 0 && !_dga_mouse_enabled && !_raw_mouse_enabled &&
+        result._in_window && x11GraphicsPipe::_x_mutex.try_lock()) {
       XEvent event;
       if (_xwindow != None &&
           XQueryPointer(_display, _xwindow, &event.xbutton.root,
@@ -329,7 +330,7 @@ process_events() {
 
         // We thought about not generating the keypress event, but we need
         // that repeat for backspace.  Rethink later.
-        handle_keypress(event.xkey);
+        handle_keyrepeat(event.xkey);
         continue;
 
       } else {
@@ -355,7 +356,7 @@ process_events() {
     case ButtonPress:
       // This refers to the mouse buttons.
       button = get_mouse_button(event.xbutton);
-      if (!_dga_mouse_enabled) {
+      if (_properties.get_mouse_mode() != WindowProperties::M_relative) {
         _input->set_pointer_in_window(event.xbutton.x, event.xbutton.y);
       }
       _input->button_down(button);
@@ -363,18 +364,49 @@ process_events() {
 
     case ButtonRelease:
       button = get_mouse_button(event.xbutton);
-      if (!_dga_mouse_enabled) {
+      if (_properties.get_mouse_mode() != WindowProperties::M_relative) {
         _input->set_pointer_in_window(event.xbutton.x, event.xbutton.y);
       }
       _input->button_up(button);
       break;
 
     case MotionNotify:
-      if (_dga_mouse_enabled) {
-        PointerData md = _input->get_pointer();
-        _input->set_pointer_in_window(md.get_x() + event.xmotion.x_root, md.get_y() + event.xmotion.y_root);
-      } else {
-        _input->set_pointer_in_window(event.xmotion.x, event.xmotion.y);
+      if (!_raw_mouse_enabled) {
+        if (_dga_mouse_enabled) {
+          PointerData md = _input->get_pointer();
+          _input->set_pointer_in_window(md.get_x() + event.xmotion.x_root, md.get_y() + event.xmotion.y_root);
+        } else {
+          _input->set_pointer_in_window(event.xmotion.x, event.xmotion.y);
+        }
+      }
+      break;
+
+    case GenericEvent:
+      if (_raw_mouse_enabled) {
+        XGenericEventCookie *cookie = &event.xcookie;
+        XGetEventData(_display, cookie);
+
+        x11GraphicsPipe *x11_pipe;
+        DCAST_INTO_V(x11_pipe, _pipe);
+
+        if (cookie->evtype == XI_RawMotion &&
+            cookie->extension == x11_pipe->_xi_opcode) {
+          const XIRawEvent *raw_event = (const XIRawEvent *)cookie->data;
+          const double *values = raw_event->raw_values;
+
+          double x = 0, y = 0;
+          if (XIMaskIsSet(raw_event->valuators.mask, 0)) {
+            x = values[0];
+          }
+          if (XIMaskIsSet(raw_event->valuators.mask, 1)) {
+            y = values[1];
+          }
+
+          PointerData md = _input->get_pointer();
+          _input->set_pointer_in_window(md.get_x() + x, md.get_y() + y);
+        }
+
+        XFreeEventData(_display, cookie);
       }
       break;
 
@@ -392,7 +424,7 @@ process_events() {
       break;
 
     case EnterNotify:
-      if (_dga_mouse_enabled) {
+      if (_properties.get_mouse_mode() == WindowProperties::M_relative) {
         PointerData md = _input->get_pointer();
         _input->set_pointer_in_window(md.get_x(), md.get_y());
       } else {
@@ -508,9 +540,8 @@ process_events() {
     changed_properties = true;
   }
 
-  if (properties.has_foreground() && (
-        _properties.get_mouse_mode() == WindowProperties::M_confined ||
-        _dga_mouse_enabled)) {
+  if (properties.has_foreground() &&
+      (_properties.get_mouse_mode() != WindowProperties::M_absolute)) {
        x11GraphicsPipe *x11_pipe;
        DCAST_INTO_V(x11_pipe, _pipe);
 
@@ -525,13 +556,13 @@ process_events() {
         XGrabPointer(_display, _xwindow, True, 0, GrabModeAsync, GrabModeAsync,
                     _xwindow, cursor, CurrentTime);
         if (_dga_mouse_enabled) {
-          x11_pipe->enable_relative_mouse();
+          x11_pipe->enable_dga_mouse();
         }
       }
       else {
         // window is leaving the foreground, ungrab the pointer
         if (_dga_mouse_enabled) {
-          x11_pipe->disable_relative_mouse();
+          x11_pipe->disable_dga_mouse();
         } else if (_properties.get_mouse_mode() == WindowProperties::M_confined) {
           XUngrabPointer(_display, CurrentTime);
         }
@@ -850,8 +881,12 @@ set_properties_now(WindowProperties &properties) {
     case WindowProperties::M_absolute:
       XUngrabPointer(_display, CurrentTime);
       if (_dga_mouse_enabled) {
-        x11_pipe->disable_relative_mouse();
+        x11_pipe->disable_dga_mouse();
         _dga_mouse_enabled = false;
+      }
+      if (_raw_mouse_enabled) {
+        x11_pipe->disable_raw_mouse();
+        _raw_mouse_enabled = false;
       }
       _properties.set_mouse_mode(WindowProperties::M_absolute);
       properties.clear_mouse_mode();
@@ -871,13 +906,16 @@ set_properties_now(WindowProperties &properties) {
               GrabModeAsync, _xwindow, cursor, CurrentTime) != GrabSuccess) {
             x11display_cat.error() << "Failed to grab pointer!\n";
           } else {
-            x11_pipe->enable_relative_mouse();
+            if (x11_pipe->enable_dga_mouse()) {
+              _dga_mouse_enabled = true;
+            } else {
+              _raw_mouse_enabled = _raw_mouse_enabled || x11_pipe->enable_raw_mouse();
+            }
 
             _properties.set_mouse_mode(WindowProperties::M_relative);
             properties.clear_mouse_mode();
-            _dga_mouse_enabled = true;
 
-            // Get the real mouse position, so we can addsubtract our relative
+            // Get the real mouse position, so we can add/subtract our relative
             // coordinates later.
             XEvent event;
             XQueryPointer(_display, _xwindow, &event.xbutton.root,
@@ -885,10 +923,6 @@ set_properties_now(WindowProperties &properties) {
               &event.xbutton.x, &event.xbutton.y, &event.xbutton.state);
             _input->set_pointer_in_window(event.xbutton.x, event.xbutton.y);
           }
-        } else {
-          x11display_cat.info()
-            << "XF86DGA extension not available, cannot enable relative mouse mode\n";
-          _dga_mouse_enabled = false;
         }
       }
       break;
@@ -899,8 +933,12 @@ set_properties_now(WindowProperties &properties) {
         DCAST_INTO_V(x11_pipe, _pipe);
 
         if (_dga_mouse_enabled) {
-          x11_pipe->disable_relative_mouse();
+          x11_pipe->disable_dga_mouse();
           _dga_mouse_enabled = false;
+        }
+        if (_raw_mouse_enabled) {
+          x11_pipe->disable_raw_mouse();
+          _raw_mouse_enabled = false;
         }
         X11_Cursor cursor = None;
         if (_properties.get_cursor_hidden()) {
@@ -1081,10 +1119,8 @@ open_window() {
   XIM im = x11_pipe->get_im();
   _ic = nullptr;
   if (im) {
-    _ic = XCreateIC
-      (im,
-       XNInputStyle, XIMPreeditNothing | XIMStatusNothing,
-       nullptr);
+    _ic = XCreateIC(im, XNInputStyle, XIMPreeditNothing | XIMStatusNothing,
+                    XNClientWindow, _xwindow, nullptr);
     if (_ic == (XIC)nullptr) {
       x11display_cat.warning()
         << "Couldn't create input context.\n";
@@ -1436,7 +1472,7 @@ open_raw_mice() {
  */
 void x11GraphicsWindow::
 handle_keystroke(XKeyEvent &event) {
-  if (!_dga_mouse_enabled) {
+  if (_properties.get_mouse_mode() != WindowProperties::M_relative) {
     _input->set_pointer_in_window(event.x, event.y);
   }
 
@@ -1471,7 +1507,7 @@ handle_keystroke(XKeyEvent &event) {
  */
 void x11GraphicsWindow::
 handle_keypress(XKeyEvent &event) {
-  if (!_dga_mouse_enabled) {
+  if (_properties.get_mouse_mode() != WindowProperties::M_relative) {
     _input->set_pointer_in_window(event.x, event.y);
   }
 
@@ -1502,11 +1538,39 @@ handle_keypress(XKeyEvent &event) {
 }
 
 /**
+ * Generates a keyrepeat corresponding to the indicated X KeyPress event.
+ */
+void x11GraphicsWindow::
+handle_keyrepeat(XKeyEvent &event) {
+  if (_properties.get_mouse_mode() != WindowProperties::M_relative) {
+    _input->set_pointer_in_window(event.x, event.y);
+  }
+
+  // Now get the raw unshifted button.
+  ButtonHandle button = get_button(event, false);
+  if (button != ButtonHandle::none()) {
+    if (button == KeyboardButton::lcontrol() || button == KeyboardButton::rcontrol()) {
+      _input->button_down(KeyboardButton::control());
+    }
+    if (button == KeyboardButton::lshift() || button == KeyboardButton::rshift()) {
+      _input->button_down(KeyboardButton::shift());
+    }
+    if (button == KeyboardButton::lalt() || button == KeyboardButton::ralt()) {
+      _input->button_down(KeyboardButton::alt());
+    }
+    if (button == KeyboardButton::lmeta() || button == KeyboardButton::rmeta()) {
+      _input->button_down(KeyboardButton::meta());
+    }
+    _input->button_down(button);
+  }
+}
+
+/**
  * Generates a keyrelease corresponding to the indicated X KeyRelease event.
  */
 void x11GraphicsWindow::
 handle_keyrelease(XKeyEvent &event) {
-  if (!_dga_mouse_enabled) {
+  if (_properties.get_mouse_mode() != WindowProperties::M_relative) {
     _input->set_pointer_in_window(event.x, event.y);
   }
 
@@ -2000,6 +2064,13 @@ get_keyboard_map() const {
   LightReMutexHolder holder(x11GraphicsPipe::_x_mutex);
 
   for (int k = 9; k <= 135; ++k) {
+    if (k >= 78 && k <= 91) {
+      // Ignore numpad keys for now.  These are not mapped to separate button
+      // handles in Panda, so we don't want their mappings to conflict with
+      // the regular numeric keys.
+      continue;
+    }
+
     ButtonHandle raw_button = map_raw_button(k);
     if (raw_button == ButtonHandle::none()) {
       continue;
@@ -2007,11 +2078,31 @@ get_keyboard_map() const {
 
     KeySym sym = XkbKeycodeToKeysym(_display, k, 0, 0);
     ButtonHandle button = map_button(sym);
-    if (button == ButtonHandle::none()) {
+    std::string label;
+
+    // Compose a label for some keys; I have not yet been able to find an API
+    // that does this effectively.
+    if (sym >= XK_a && sym <= XK_z) {
+      label = toupper((char)sym);
+    }
+    else if (sym >= XK_F1 && sym <= XK_F35) {
+      label = "F" + format_string(sym - XK_F1 + 1);
+    }
+    else if (sym >= XK_exclamdown && sym <= XK_ydiaeresis) {
+      // A latin-1 symbol.  Translate this to the label.
+      char buffer[255];
+      int nbytes = XkbTranslateKeySym(_display, &sym, 0, buffer, 255, 0);
+      if (nbytes > 0) {
+        label.assign(buffer, nbytes);
+      }
+    }
+
+    if (button == ButtonHandle::none() && label.empty()) {
+      // No label and no mapping; this is useless.
       continue;
     }
 
-    map->map_button(raw_button, button);
+    map->map_button(raw_button, button, label);
   }
 
   return map;
@@ -2025,8 +2116,10 @@ Bool x11GraphicsWindow::
 check_event(X11_Display *display, XEvent *event, char *arg) {
   const x11GraphicsWindow *self = (x11GraphicsWindow *)arg;
 
-  // We accept any event that is sent to our window.
-  return (event->xany.window == self->_xwindow);
+  // We accept any event that is sent to our window.  However, we have to let
+  // raw mouse events through, since they're not associated with any window.
+  return (event->xany.window == self->_xwindow ||
+    (event->type == GenericEvent && self->_raw_mouse_enabled));
 }
 
 /**

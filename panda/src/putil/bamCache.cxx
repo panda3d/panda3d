@@ -133,10 +133,16 @@ set_root(const Filename &root) {
   delete _index;
   _index = new BamCacheIndex;
   _index_stale_since = 0;
+
+  if (!vfs->is_directory(_root)) {
+    util_cat.error()
+      << "Unable to make directory " << _root << ", caching disabled.\n";
+    _active = false;
+    return;
+  }
+
   read_index();
   check_cache_size();
-
-  nassertv(vfs->is_directory(_root));
 }
 
 /**

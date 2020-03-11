@@ -87,7 +87,7 @@ init_libtinydisplay() {
   ps->set_system_tag("TinyPanda", "native_window_system", "X11");
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
   TinyWinGraphicsPipe::init_type();
   TinyWinGraphicsWindow::init_type();
   selection->add_pipe_type(TinyWinGraphicsPipe::get_class_type(),
@@ -116,7 +116,7 @@ init_libtinydisplay() {
 int
 get_pipe_type_p3tinydisplay() {
 
-#ifdef WIN32
+#ifdef _WIN32
   return TinyWinGraphicsPipe::get_class_type().get_index();
 #endif
 

@@ -13,12 +13,12 @@
 
 #include "pStatCollectorForward.h"
 
-#ifdef DO_PSTATS
 /**
  *
  */
 void PStatCollectorForward::
 add_level(double increment) {
+#ifdef DO_PSTATS
   _col.add_level_now(increment);
-}
 #endif  // DO_PSTATS
+}

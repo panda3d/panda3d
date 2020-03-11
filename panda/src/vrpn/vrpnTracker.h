@@ -45,7 +45,7 @@ public:
   void mark(VrpnTrackerDevice *device);
   void unmark(VrpnTrackerDevice *device);
 
-  INLINE void poll();
+  void poll();
 
   void output(std::ostream &out) const;
   void write(std::ostream &out, int indent_level = 0) const;

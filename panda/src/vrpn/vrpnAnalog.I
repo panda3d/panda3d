@@ -28,12 +28,3 @@ INLINE bool VrpnAnalog::
 is_empty() const {
   return _devices.empty();
 }
-
-/**
- * Polls the connected device.  Normally you should not call this directly;
- * this will be called by the VrpnClient.
- */
-INLINE void VrpnAnalog::
-poll() {
-  _analog->mainloop();
-}

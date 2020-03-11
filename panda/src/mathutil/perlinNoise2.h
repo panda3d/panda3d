@@ -20,7 +20,7 @@
 /**
  * This class provides an implementation of Perlin noise for 2 variables.
  * This code is loosely based on the reference implementation at
- * http://mrl.nyu.edu/~perlin/noise/ .
+ * https://mrl.nyu.edu/~perlin/noise/ .
  */
 class EXPCL_PANDA_MATHUTIL PerlinNoise2 : public PerlinNoise {
 PUBLISHED:

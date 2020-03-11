@@ -25,7 +25,7 @@
 /**
  * For reading and writing Windows BMP files.
  */
-class EXPCL_PANDA_PNMIMAGETYPES PNMFileTypeBMP : public PNMFileType {
+class PNMFileTypeBMP : public PNMFileType {
 public:
   PNMFileTypeBMP();
 

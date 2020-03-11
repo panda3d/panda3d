@@ -110,7 +110,7 @@ private:
   // until some data has been written to the stream.  When this flag is set
   // true, we know we have a possibly-empty stringstream, so we allow seekp(0)
   // to fail silently, knowing that there's no harm in this case.
-#ifdef WIN32_VC
+#ifdef _MSC_VER
   bool _stringstream_hack;
 #endif
 };

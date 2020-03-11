@@ -64,7 +64,7 @@ PUBLISHED:
 
   void traverse(const NodePath &root);
 
-#ifdef DO_COLLISION_RECORDING
+#if defined(DO_COLLISION_RECORDING) || !defined(CPPPARSER)
   void set_recorder(CollisionRecorder *recorder);
   INLINE bool has_recorder() const;
   INLINE CollisionRecorder *get_recorder() const;
@@ -72,7 +72,7 @@ PUBLISHED:
   MAKE_PROPERTY2(recorder, has_recorder, get_recorder,
                            set_recorder, clear_recorder);
 
-  CollisionVisualizer *show_collisions(const NodePath &root);
+  PandaNode *show_collisions(const NodePath &root);
   void hide_collisions();
 #endif  // DO_COLLISION_RECORDING
 
@@ -132,6 +132,9 @@ private:
 #ifdef DO_COLLISION_RECORDING
   CollisionRecorder *_recorder;
   NodePath _collision_visualizer_np;
+#else
+  CollisionRecorder *_recorder_disabled = nullptr;
+  NodePath _collision_visualizer_np_disabled;
 #endif  // DO_COLLISION_RECORDING
 
   // Statistics

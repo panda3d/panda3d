@@ -65,7 +65,7 @@ private:
   class File;
   class Directory;
 
-  class FileBase : public TypedReferenceCount {
+  class EXPCL_PANDA_EXPRESS FileBase : public TypedReferenceCount {
   public:
     INLINE FileBase(const std::string &basename);
     virtual ~FileBase();
@@ -94,7 +94,7 @@ private:
     static TypeHandle _type_handle;
   };
 
-  class File : public FileBase {
+  class EXPCL_PANDA_EXPRESS File : public FileBase {
   public:
     INLINE File(const std::string &basename);
 
@@ -121,7 +121,7 @@ private:
 
   typedef pset<PT(FileBase), indirect_less<FileBase *> > Files;
 
-  class Directory : public FileBase {
+  class EXPCL_PANDA_EXPRESS Directory : public FileBase {
   public:
     INLINE Directory(const std::string &basename);
 

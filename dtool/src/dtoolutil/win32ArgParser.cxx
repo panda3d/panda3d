@@ -22,7 +22,7 @@
 #include "executionEnvironment.h"
 
 #include <windows.h>
-#include <Tlhelp32.h>
+#include <tlhelp32.h>
 
 using std::string;
 

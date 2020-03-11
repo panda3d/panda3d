@@ -1,4 +1,8 @@
-"""Defines the DirectSlider class."""
+"""Defines the DirectSlider class.
+
+See the :ref:`directslider` page in the programming manual for a more
+in-depth explanation and an example of how to use this class.
+"""
 
 __all__ = ['DirectSlider']
 
@@ -6,6 +10,7 @@ from panda3d.core import *
 from . import DirectGuiGlobals as DGG
 from .DirectFrame import *
 from .DirectButton import *
+from math import isnan
 
 """
 import DirectSlider
@@ -36,7 +41,7 @@ class DirectSlider(DirectFrame):
             ('extraArgs',      [],                 None),
             )
 
-        if kw.get('orientation') == DGG.VERTICAL:
+        if kw.get('orientation') in (DGG.VERTICAL, DGG.VERTICAL_INVERTED):
             # These are the default options for a vertical layout.
             optiondefs += (
                 ('frameSize',      (-0.08, 0.08, -1, 1),   None),
@@ -67,6 +72,8 @@ class DirectSlider(DirectFrame):
             else:
                 self.thumb['frameSize'] = (f[0], f[1], f[2]*0.05, f[3]*0.05)
 
+        self._lastOrientation = self['orientation']
+
         self.guiItem.setThumbButton(self.thumb.guiItem)
 
         # Bind command function
@@ -85,12 +92,15 @@ class DirectSlider(DirectFrame):
     def __setValue(self):
         # This is the internal function that is called when
         # self['value'] is directly assigned.
-        self.guiItem.setValue(self['value'])
+        value = self['value']
+        assert not isnan(value)
+        self.guiItem.setValue(value)
 
     def setValue(self, value):
         # This is the public function that is meant to be called by a
         # user that doesn't like to use (or doesn't understand) the
         # preferred interface of self['value'].
+        assert not isnan(value)
         self['value'] = value
 
     def getValue(self):
@@ -107,11 +117,35 @@ class DirectSlider(DirectFrame):
 
     def setOrientation(self):
         if self['orientation'] == DGG.HORIZONTAL:
+            if self._lastOrientation in (DGG.VERTICAL, DGG.VERTICAL_INVERTED):
+                fpre = self['frameSize']
+                # swap frameSize width and height to keep custom frameSizes
+                self['frameSize'] = (fpre[2], fpre[3], fpre[0], fpre[1])
+                tf = self.thumb['frameSize']
+                self.thumb['frameSize'] = (tf[2], tf[3], tf[0], tf[1])
             self.guiItem.setAxis(Vec3(1, 0, 0))
+            self['frameVisibleScale'] = (1, 0.25)
         elif self['orientation'] == DGG.VERTICAL:
+            if self._lastOrientation == DGG.HORIZONTAL:
+                fpre = self['frameSize']
+                # swap frameSize width and height to keep custom frameSizes
+                self['frameSize'] = (fpre[2], fpre[3], fpre[0], fpre[1])
+                tf = self.thumb['frameSize']
+                self.thumb['frameSize'] = (tf[2], tf[3], tf[0], tf[1])
             self.guiItem.setAxis(Vec3(0, 0, 1))
+            self['frameVisibleScale'] = (0.25, 1)
+        elif self['orientation'] == DGG.VERTICAL_INVERTED:
+            if self._lastOrientation == DGG.HORIZONTAL:
+                fpre = self['frameSize']
+                # swap frameSize width and height to keep custom frameSizes
+                self['frameSize'] = (fpre[2], fpre[3], fpre[0], fpre[1])
+                tf = self.thumb['frameSize']
+                self.thumb['frameSize'] = (tf[2], tf[3], tf[0], tf[1])
+            self.guiItem.setAxis(Vec3(0, 0, -1))
+            self['frameVisibleScale'] = (0.25, 1)
         else:
             raise ValueError('Invalid value for orientation: %s' % (self['orientation']))
+        self._lastOrientation = self['orientation']
 
     def destroy(self):
         if (hasattr(self, 'thumb')):

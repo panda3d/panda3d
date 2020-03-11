@@ -59,6 +59,7 @@ protected:
   virtual void setup_colormap(XVisualInfo *visual);
   void handle_keystroke(XKeyEvent &event);
   void handle_keypress(XKeyEvent &event);
+  void handle_keyrepeat(XKeyEvent &event);
   void handle_keyrelease(XKeyEvent &event);
 
   ButtonHandle get_button(XKeyEvent &key_event, bool allow_shift);
@@ -92,6 +93,7 @@ protected:
   long _event_mask;
   bool _awaiting_configure;
   bool _dga_mouse_enabled;
+  bool _raw_mouse_enabled;
   Bool _override_redirect;
   Atom _wm_delete_window;
 

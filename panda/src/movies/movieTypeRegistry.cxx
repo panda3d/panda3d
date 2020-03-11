@@ -123,9 +123,10 @@ load_audio_types() {
           << "loading audio type module: " << name << endl;
         void *tmp = load_dso(get_plugin_path().get_value(), dlname);
         if (tmp == nullptr) {
+          std::string error = load_dso_error();
           movies_cat.warning()
             << "Unable to load " << dlname.to_os_specific()
-            << ": " << load_dso_error() << endl;
+            << ": " << error << endl;
         } else if (movies_cat.is_debug()) {
           movies_cat.debug()
             << "done loading audio type module: " << name << endl;
@@ -252,9 +253,10 @@ load_video_types() {
           << "loading video type module: " << name << endl;
         void *tmp = load_dso(get_plugin_path().get_value(), dlname);
         if (tmp == nullptr) {
+          std::string error = load_dso_error();
           movies_cat.warning()
             << "Unable to load " << dlname.to_os_specific()
-            << ": " << load_dso_error() << endl;
+            << ": " << error << endl;
         } else if (movies_cat.is_debug()) {
           movies_cat.debug()
             << "done loading video type module: " << name << endl;
@@ -294,9 +296,10 @@ load_movie_library(const string &name) {
   void *tmp = load_dso(get_plugin_path().get_value(), dlname);
 
   if (tmp == nullptr) {
+    std::string error = load_dso_error();
     movies_cat.warning()
       << "Unable to load " << dlname.to_os_specific()
-      << ": " << load_dso_error() << endl;
+      << ": " << error << endl;
   } else if (movies_cat.is_debug()) {
     movies_cat.debug()
       << "done loading video type module: " << name << endl;

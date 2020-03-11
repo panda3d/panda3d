@@ -15,7 +15,7 @@ if __debug__:
 
 class AsyncRequest(DirectObject):
     """
-    This class is used to make asynchronos reads and creates to a database.
+    This class is used to make asynchronous reads and creates to a database.
 
     You can create a list of self.neededObjects and then ask for each to be
     read or created, or if you only have one object that you need you can

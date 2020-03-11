@@ -140,7 +140,7 @@ PUBLISHED:
   // through the limited add_vertexremove_vertex or inserterase interface.
   // The following implements this.
 public:
-#if defined(WIN32_VC) || defined(WIN64_VC)
+#ifdef _WIN32
   typedef PT_EggVertex *pointer;
   typedef PT_EggVertex *const_pointer;
 #else

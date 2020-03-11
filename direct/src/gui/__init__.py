@@ -1,5 +1,5 @@
 """
-This package contains the DirectGui system, a set of classes
+This package contains the :ref:`directgui` system, a set of classes
 responsible for drawing graphical widgets to the 2-D scene graph.
 
 It is based on the lower-level PGui system, which is implemented in

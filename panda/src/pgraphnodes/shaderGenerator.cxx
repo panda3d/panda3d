@@ -1241,12 +1241,23 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       const ShaderKey::TextureInfo &tex = key._textures[i];
       if (tex._flags & ShaderKey::TF_map_normal) {
         if (is_first) {
-          text << "\t float3 tsnormal = normalize((tex" << i << ".xyz * 2) - 1);\n";
+          if (tex._flags & ShaderKey::TF_has_texscale) {
+            text << "\t float3 tsnormal = normalize(((tex" << i << ".xyz * 2) - 1) * texscale_" << i << ");\n";
+          } else if (tex._flags & ShaderKey::TF_has_texmat) {
+            text << "\t float3 tsnormal = normalize(mul(texmat_" << i << ", float4((tex" << i << ".xyz * 2) - 1, 0)).xyz);\n";
+          } else {
+            text << "\t float3 tsnormal = normalize((tex" << i << ".xyz * 2) - 1);\n";
+          }
           is_first = false;
           continue;
         }
         text << "\t tsnormal.z += 1;\n";
         text << "\t float3 tmp" << i << " = tex" << i << ".xyz * float3(-2, -2, 2) + float3(1, 1, -1);\n";
+        if (tex._flags & ShaderKey::TF_has_texscale) {
+          text << "\t tmp" << i << " *= texscale_" << i << ";\n";
+        } else if (tex._flags & ShaderKey::TF_has_texmat) {
+          text << "\t tmp" << i << " = mul(texmat_" << i << ", float4(tmp" << i << ", 0)).xyz;\n";
+        }
         text << "\t tsnormal = normalize(tsnormal * dot(tsnormal, tmp" << i << ") - tmp" << i << " * tsnormal.z);\n";
       }
     }

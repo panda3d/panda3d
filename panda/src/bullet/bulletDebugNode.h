@@ -74,7 +74,7 @@ private:
     UnalignedLVecBase4 _color;
   };
 
-  class DebugDraw : public btIDebugDraw {
+  class EXPCL_PANDABULLET DebugDraw : public btIDebugDraw {
 
   public:
     DebugDraw() {};

@@ -22,7 +22,7 @@
 #include "configVariableString.h"
 #include "configVariableFilename.h"
 
-#if defined(WIN32_VC) || defined(WIN64_VC)
+#ifdef _MVC_VER
 #pragma warning (disable : 4231)
 #endif
 

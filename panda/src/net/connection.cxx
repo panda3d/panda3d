@@ -303,15 +303,18 @@ send_datagram(const NetDatagram &datagram, int tcp_header_size) {
 
     LightReMutexHolder holder(_write_mutex);
     DatagramUDPHeader header(datagram);
-    std::string data;
-    data += header.get_header();
-    data += datagram.get_message();
+
+    vector_uchar data;
+    CPTA_uchar header_data = header.get_array();
+    CPTA_uchar message = datagram.get_array();
+    data.insert(data.end(), header_data.begin(), header_data.end());
+    data.insert(data.end(), message.begin(), message.end());
 
     if (net_cat.is_debug()) {
       header.verify_datagram(datagram);
     }
 
-    int bytes_to_send = data.length();
+    int bytes_to_send = data.size();
     Socket_Address addr = datagram.get_address().get_addr();
 
     bool okflag = udp->SendTo(data, addr);
@@ -344,8 +347,10 @@ send_datagram(const NetDatagram &datagram, int tcp_header_size) {
   DatagramTCPHeader header(datagram, tcp_header_size);
 
   LightReMutexHolder holder(_write_mutex);
-  _queued_data += header.get_header();
-  _queued_data += datagram.get_message();
+  CPTA_uchar header_data = header.get_array();
+  CPTA_uchar message = datagram.get_array();
+  _queued_data.insert(_queued_data.end(), header_data.begin(), header_data.end());
+  _queued_data.insert(_queued_data.end(), message.begin(), message.end());
   _queued_count++;
 
   if (net_cat.is_debug()) {
@@ -374,7 +379,9 @@ send_raw_datagram(const NetDatagram &datagram) {
     Socket_UDP *udp;
     DCAST_INTO_R(udp, _socket, false);
 
-    std::string data = datagram.get_message();
+    CPTA_uchar msg = datagram.get_array();
+    vector_uchar data;
+    data.insert(data.end(), msg.begin(), msg.end());
 
     LightReMutexHolder holder(_write_mutex);
     Socket_Address addr = datagram.get_address().get_addr();
@@ -398,7 +405,8 @@ send_raw_datagram(const NetDatagram &datagram) {
 
   // We might queue up TCP packets for later sending.
   LightReMutexHolder holder(_write_mutex);
-  _queued_data += datagram.get_message();
+  CPTA_uchar msg = datagram.get_array();
+  _queued_data.insert(_queued_data.end(), msg.begin(), msg.end());
   _queued_count++;
 
   if (!_collect_tcp ||
@@ -424,13 +432,13 @@ do_flush() {
   if (net_cat.is_spam()) {
     net_cat.spam()
       << "Sending " << _queued_count << " TCP datagram(s) with "
-      << _queued_data.length() << " total bytes to " << (void *)this << "\n";
+      << _queued_data.size() << " total bytes to " << (void *)this << "\n";
   }
 
   Socket_TCP *tcp;
   DCAST_INTO_R(tcp, _socket, false);
 
-  std::string sending_data;
+  vector_uchar sending_data;
   _queued_data.swap(sending_data);
 
   _queued_count = 0;
@@ -438,7 +446,7 @@ do_flush() {
 
 #if defined(HAVE_THREADS) && defined(SIMPLE_THREADS)
   int max_send = net_max_write_per_epoch;
-  int data_sent = tcp->SendData(sending_data.data(), std::min((size_t)max_send, sending_data.size()));
+  int data_sent = tcp->SendData((char *)sending_data.data(), std::min((size_t)max_send, sending_data.size()));
   bool okflag = (data_sent == (int)sending_data.size());
   if (!okflag) {
     int total_sent = 0;
@@ -453,7 +461,7 @@ do_flush() {
       } else {
         Thread::consider_yield();
       }
-      data_sent = tcp->SendData(sending_data.data() + total_sent, std::min((size_t)max_send, sending_data.size() - total_sent));
+      data_sent = tcp->SendData((char *)sending_data.data() + total_sent, std::min((size_t)max_send, sending_data.size() - total_sent));
       if (data_sent > 0) {
         total_sent += data_sent;
       }

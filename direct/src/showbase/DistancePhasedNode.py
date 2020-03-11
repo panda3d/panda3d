@@ -3,16 +3,18 @@ from direct.directnotify.DirectNotifyGlobal import directNotify
 from panda3d.core import *
 from .PhasedObject import PhasedObject
 
+
 class DistancePhasedNode(PhasedObject, DirectObject, NodePath):
     """
-    This class defines a PhasedObject,NodePath object that will handle the phasing
-    of an object in the scene graph according to its distance from some
-    other collider object(such as an avatar).
+    This class defines a PhasedObject,NodePath object that will handle
+    the phasing of an object in the scene graph according to its
+    distance from some other collider object(such as an avatar).
 
     Since it's a NodePath, you can parent it to another object in the
     scene graph, or even inherit from this class to get its functionality.
 
     What you will need to define to use this class:
+
      - The distances at which you want the phases to load/unload
      - Whether you want the object to clean itself up or not when
        exitting the largest distance sphere
@@ -22,14 +24,14 @@ class DistancePhasedNode(PhasedObject, DirectObject, NodePath):
      - (Optional) A 'from' collision node to collide into our 'into' spheres
 
     You specify the distances and function names by the phaseParamMap
-    parameter to __init__().  For example:
+    parameter to `__init__()`.  For example::
 
-    phaseParamMap = {'Alias': distance, ...}
-    ...
-    def loadPhaseAlias(self):
-        pass
-    def unloadPhaseAlias(self):
-        pass
+        phaseParamMap = {'Alias': distance, ...}
+        ...
+        def loadPhaseAlias(self):
+            pass
+        def unloadPhaseAlias(self):
+            pass
 
     If the 'fromCollideNode' is supplied, we will set up our own
     traverser and only traverse below this node.  It will send out
@@ -40,14 +42,15 @@ class DistancePhasedNode(PhasedObject, DirectObject, NodePath):
     Most of the time, it will be reacting to events from the main
     collision traverser.
 
-    IMPORTANT!: The following only applies when autoCleanup == True:
-                If you unload the last phase, by either calling
-                cleanup() or by exitting the last phase's distance,
-                you will need to explicitly call reset() to get the
-                distance phasing to work again. This was done so if
-                either this node or the collider is removed from the
-                scene graph(eg. avatar teleport), the phased object
-                will clean itself up automatically.
+    IMPORTANT:
+
+        The following only applies when ``autoCleanup is True``:
+        If you unload the last phase, by either calling `cleanup()` or
+        by exiting the last phase's distance, you will need to
+        explicitly call `reset()` to get the distance phasing to work
+        again. This was done so if either this node or the collider is
+        removed from the scene graph (e.g. avatar teleport), the phased
+        object will clean itself up automatically.
     """
 
     notify = directNotify.newCategory("DistancePhasedObject")
@@ -117,7 +120,6 @@ class DistancePhasedNode(PhasedObject, DirectObject, NodePath):
 
     def __str__(self):
         return '%s in phase \'%s\'' % (NodePath.__str__(self), self.getPhase())
-
 
     def cleanup(self):
         """
@@ -262,9 +264,9 @@ class BufferedDistancePhasedNode(DistancePhasedNode):
     border.
 
     You specify the buffer amount in the bufferParamMap parameter
-    to __init__().  It has this format:
+    to :meth:`__init__()`.  It has this format::
 
-    bufferParamMap = {'alias':(distance, bufferAmount), ...}
+        bufferParamMap = {'alias':(distance, bufferAmount), ...}
     """
     notify = directNotify.newCategory("BufferedDistancePhasedObject")
 

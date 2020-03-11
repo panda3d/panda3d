@@ -108,7 +108,7 @@ SpeedTreeNode(const string &name) :
 
   _os_shaders_dir = shaders_dir.to_os_specific();
   // Ensure the path ends with a terminal slash; SpeedTree requires this.
-#if defined(WIN32) || defined(WIN64)
+#ifdef _WIN32
   if (!_os_shaders_dir.empty() && _os_shaders_dir[_os_shaders_dir.length() - 1] != '\\') {
     _os_shaders_dir += "\\";
   }
@@ -1560,7 +1560,7 @@ setup_for_render(GraphicsStateGuardian *gsg) {
         os_textures_dir = speedtree_textures_dir.get_value().to_os_specific();
         // Ensure the path ends with a terminal slash; SpeedTree requires
         // this.
-#if defined(WIN32) || defined(WIN64)
+#ifdef _WIN32
         if (!os_textures_dir.empty() && os_textures_dir[os_textures_dir.length() - 1] != '\\') {
           os_textures_dir += "\\";
         }

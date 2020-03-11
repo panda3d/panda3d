@@ -1334,8 +1334,10 @@ event_window_event(const Event *event, void *data) {
     // Is this a window we've heard about?
     int window_index = self->find_window(win);
     if (window_index == -1) {
-      framework_cat.debug()
-        << "Ignoring message from unknown window.\n";
+      if (framework_cat.is_debug()) {
+        framework_cat.debug()
+          << "Ignoring message from unknown window.\n";
+      }
 
     } else {
       if (!win->is_valid()) {

@@ -15,7 +15,9 @@ from direct.directnotify import DirectNotifyGlobal
 from direct.task import Task
 from panda3d.core import ConfigVariableBool
 
-CollisionHandlerRayStart = 4000.0 # This is a hack, it may be better to use a line instead of a ray.
+# This is a hack, it may be better to use a line instead of a ray.
+CollisionHandlerRayStart = 4000.0
+
 
 class ControlManager:
     notify = DirectNotifyGlobal.directNotify.newCategory("ControlManager")
@@ -52,14 +54,14 @@ class ControlManager:
         return 'ControlManager: using \'%s\'' % self.currentControlsName
 
     def add(self, controls, name="basic"):
-        """
-        controls is an avatar control system.
-        name is any key that you want to use to refer to the
-            the controls later (e.g. using the use(<name>) call).
+        """Add a control instance to the list of available control systems.
 
-        Add a control instance to the list of available control systems.
+        Args:
+            controls: an avatar control system.
+            name (str): any key that you want to use to refer to the controls
+                later (e.g. using the use(<name>) call).
 
-        See also: use().
+        See also: :meth:`use()`.
         """
         assert self.notify.debugCall(id(self))
         assert controls is not None
@@ -77,15 +79,14 @@ class ControlManager:
         return self.controls.get(name)
 
     def remove(self, name):
-        """
-        name is any key that was used to refer to the
-            the controls when they were added (e.g.
-            using the add(<controls>, <name>) call).
+        """Remove a control instance from the list of available control
+        systems.
 
-        Remove a control instance from the list of
-        available control systems.
+        Args:
+            name: any key that was used to refer to the controls when they were
+                added (e.g. using the add(<controls>, <name>) call).
 
-        See also: add().
+        See also: :meth:`add()`.
         """
         assert self.notify.debugCall(id(self))
         oldControls = self.controls.pop(name,None)
@@ -108,7 +109,7 @@ class ControlManager:
 
         Use a previously added control system.
 
-        See also: add().
+        See also: :meth:`add()`.
         """
         assert self.notify.debugCall(id(self))
         if __debug__ and hasattr(self, "ignoreUse"):

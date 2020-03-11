@@ -1,5 +1,9 @@
 """Contains the DirectEntry class, a type of DirectGUI widget that accepts
-text entered using the keyboard."""
+text entered using the keyboard.
+
+See the :ref:`directentry` page in the programming manual for a more in-depth
+explanation and an example of how to use this class.
+"""
 
 __all__ = ['DirectEntry']
 
