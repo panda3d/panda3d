@@ -84,7 +84,7 @@ class DirectSpinBox(DirectFrame):
 
     def __init__(self, parent = None, **kw):
         assert self.notify.debugStateCall(self)
-
+        self.__valueChangeCallback = None
         # Inherits from DirectFrame
         optiondefs = (
             # Define type of DirectGuiWidget
@@ -100,6 +100,7 @@ class DirectSpinBox(DirectFrame):
             ('extraArgs',          [],        None),
             ('incButtonCallback',  None,      self.setIncButtonCallback),
             ('decButtonCallback',  None,      self.setDecButtonCallback),
+            ('valueChangeCallback',None,      self.setValueChangeCallback),
             ('buttonOrientation',  DGG.VERTICAL, DGG.INITOPT),
             # set default border width to 0
             ('borderWidth',        (0,0),     None),
@@ -327,6 +328,10 @@ class DirectSpinBox(DirectFrame):
 
         self.valueEntry.enterText(self['textFormat'].format(value))
         self['value'] = value
+
+        if self.__valueChangeCallback:
+            self.__valueChangeCallback()
+
         return True
 
     def focusOutCommand(self):
@@ -340,6 +345,10 @@ class DirectSpinBox(DirectFrame):
     def setDecButtonCallback(self):
         assert self.notify.debugStateCall(self)
         self.__decButtonCallback = self['decButtonCallback']
+
+    def setValueChangeCallback(self):
+        assert self.notify.debugStateCall(self)
+        self.__valueChangeCallback = self['valueChangeCallback']
 
 '''
 from direct.showbase.ShowBase import ShowBase
