@@ -64,6 +64,16 @@ Options available for this Widget are:
     first pressed.  It won't be called when the button is held down and
     the value is changed repeatedly.
 
+*   valueChangeCallback
+    A callback function which will be called whenever the value in the
+    spinner gets changed.  This is repeatedly called on every change.
+    The new value and any arguments passed to extraArgs are passed to
+    the given callback method.
+
+*   buttonOrientation
+    Dependent on this value, the buttons are placed vertically in a row
+    next to the entry box or if set horizontally, left and right of the
+    box.  Vertical is set by default.
 '''
 
 __all__ = ['DirectSpinBox']
@@ -330,7 +340,7 @@ class DirectSpinBox(DirectFrame):
         self['value'] = value
 
         if self.__valueChangeCallback:
-            self.__valueChangeCallback()
+            self.__valueChangeCallback(*([self['value']] + self['extraArgs']))
 
         return True
 
