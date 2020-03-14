@@ -934,7 +934,7 @@ garbage_collect() {
       }
     }
 
-    if (state->unref_if_one()) {
+    if (!state->unref_if_one()) {
       // This state has recently been unreffed to 1 (the one we added when
       // we stored it in the cache).  Now it's time to delete it.  This is
       // safe, because we're holding the _states_lock, so it's not possible

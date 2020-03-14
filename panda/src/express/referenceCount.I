@@ -321,7 +321,7 @@ ref_if_nonzero() const {
  * Atomically decreases the reference count of this object if it is one.
  * Do not use this.  This exists only to implement a special case with the
  * state cache.
- * @return true if the reference count was decremented to zero.
+ * @return false if the reference count was decremented to zero.
  */
 INLINE bool ReferenceCount::
 unref_if_one() const {
@@ -329,7 +329,7 @@ unref_if_one() const {
   nassertr(test_ref_count_integrity(), 0);
   nassertr(_ref_count > 0, 0);
 #endif
-  return (AtomicAdjust::compare_and_exchange(_ref_count, 1, 0) == 1);
+  return (AtomicAdjust::compare_and_exchange(_ref_count, 1, 0) != 1);
 }
 
 /**

@@ -215,7 +215,7 @@ garbage_collect() {
 
   do {
     RenderAttrib *attrib = (RenderAttrib *)_attribs->get_key(si);
-    if (attrib->unref_if_one()) {
+    if (!attrib->unref_if_one()) {
       // This attrib has recently been unreffed to 1 (the one we added when
       // we stored it in the cache).  Now it's time to delete it.  This is
       // safe, because we're holding the _attribs_lock, so it's not possible
