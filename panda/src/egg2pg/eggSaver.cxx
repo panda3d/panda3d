@@ -345,18 +345,61 @@ convert_anim_node(AnimBundleNode *node, const WorkingNodePath &node_path,
  */
 void EggSaver::
 convert_character_bundle(PartGroup *bundleNode, EggGroupNode *egg_parent, CharacterJointMap *joint_map) {
+  convert_character_bundle(bundleNode, egg_parent, joint_map, nullptr);
+}
+
+/**
+ * Converts the indicated Character Bundle to the corresponding Egg joints
+ * structure.
+ */
+void EggSaver::
+convert_character_bundle(PartGroup *bundleNode, EggGroupNode *egg_parent,
+                         CharacterJointMap *joint_map, const CharacterJoint *parent_joint) {
   int num_children = bundleNode->get_num_children();
+
+  const CharacterJoint *character_joint = nullptr;
 
   EggGroupNode *joint_group = egg_parent;
   if (bundleNode->is_of_type(CharacterJoint::get_class_type())) {
-    CharacterJoint *character_joint = DCAST(CharacterJoint, bundleNode);
+    character_joint = DCAST(CharacterJoint, bundleNode);
 
-    LMatrix4 transformf;
-    character_joint->get_transform(transformf);
-    LMatrix4d transformd(LCAST(double, transformf));
     EggGroup *joint = new EggGroup(bundleNode->get_name());
-    joint->add_matrix4(transformd);
     joint->set_group_type(EggGroup::GT_joint);
+
+    // The default_value originally passed to the CharacterJoint is what is used
+    // for skinning.  However, the _default_value can be changed after joint
+    // construction (such as via a <DefaultPose>), so we can't just pull the
+    // current _default_value.
+    //
+    // We have to instead work back from the _initial_net_transform_inverse,
+    // which is computed at construction time from the original default_value:
+    //
+    //   _net_transform = default_value * parent_joint->_net_transform;
+    //   _initial_net_transform_inverse = invert(_net_transform);
+    //
+    // So we should be able to reconstruct the original default_value like so:
+    //
+    //   default_value = invert(_initial_net_transform_inverse)
+    //                 * parent_joint->_initial_net_transform_inverse;
+    //
+    LMatrix4d net_transform = invert(LCAST(double, character_joint->_initial_net_transform_inverse));
+    if (parent_joint != nullptr) {
+      if (parent_joint->_initial_net_transform_inverse != character_joint->_initial_net_transform_inverse) {
+        LMatrix4d parent_inverse = LCAST(double, parent_joint->_initial_net_transform_inverse);
+        joint->add_matrix4(net_transform * parent_inverse);
+      }
+    } else if (!net_transform.is_identity()) {
+      joint->add_matrix4(net_transform);
+    }
+
+    // The joint's _default_value, if different, goes into a <DefaultPose>.
+    LMatrix4d default_pose = LCAST(double, character_joint->_default_value);
+    if (default_pose != joint->get_transform3d()) {
+      EggTransform transform;
+      transform.add_matrix4(LCAST(double, default_pose));
+      joint->set_default_pose(transform);
+    }
+
     joint_group = joint;
     egg_parent->add_child(joint_group);
     if (joint_map != nullptr) {
@@ -373,7 +416,7 @@ convert_character_bundle(PartGroup *bundleNode, EggGroupNode *egg_parent, Charac
 
   for (int i = 0; i < num_children ; i++) {
     PartGroup *partGroup= bundleNode->get_child(i);
-    convert_character_bundle(partGroup, joint_group, joint_map);
+    convert_character_bundle(partGroup, joint_group, joint_map, character_joint);
   }
 
 }
