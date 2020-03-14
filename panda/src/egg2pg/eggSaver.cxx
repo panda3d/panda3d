@@ -750,6 +750,7 @@ convert_primitive(const GeomVertexData *vertex_data,
                   const LMatrix4 &net_mat, EggGroupNode *egg_parent,
                   CharacterJointMap *joint_map) {
   GeomVertexReader reader(vertex_data);
+  const GeomVertexFormat *format = vertex_data->get_format();
 
   // Make a zygote that will be duplicated for each primitive.
   PT(EggPrimitive) egg_prim;
@@ -808,14 +809,14 @@ convert_primitive(const GeomVertexData *vertex_data,
   // Check for a texture.
   const TextureAttrib *ta;
   if (net_state->get_attrib(ta)) {
-    EggTexture *egg_tex = get_egg_texture(ta->get_texture());
+    for (size_t i = 0; i < ta->get_num_on_stages(); ++i) {
+      TextureStage *tex_stage = ta->get_on_stage(i);
 
-    if (egg_tex != nullptr) {
-      TextureStage *tex_stage = ta->get_on_stage(0);
-      if (tex_stage != nullptr) {
+      EggTexture *egg_tex = get_egg_texture(ta->get_on_texture(tex_stage));
+      if (egg_tex != nullptr) {
         switch (tex_stage->get_mode()) {
         case TextureStage::M_modulate:
-          if (has_color_off == true) {
+          if (has_color_off == true && i == 0) {
             egg_tex->set_env_type(EggTexture::ET_replace);
           } else {
             egg_tex->set_env_type(EggTexture::ET_modulate);
@@ -836,12 +837,44 @@ convert_primitive(const GeomVertexData *vertex_data,
         case TextureStage::M_blend_color_scale:
           egg_tex->set_env_type(EggTexture::ET_blend_color_scale);
           break;
+        case TextureStage::M_modulate_glow:
+          egg_tex->set_env_type(EggTexture::ET_modulate_glow);
+          break;
+        case TextureStage::M_modulate_gloss:
+          egg_tex->set_env_type(EggTexture::ET_modulate_gloss);
+          break;
+        case TextureStage::M_normal:
+          egg_tex->set_env_type(EggTexture::ET_normal);
+          break;
+        case TextureStage::M_normal_height:
+          egg_tex->set_env_type(EggTexture::ET_normal_height);
+          break;
+        case TextureStage::M_glow:
+          egg_tex->set_env_type(EggTexture::ET_glow);
+          break;
+        case TextureStage::M_gloss:
+          egg_tex->set_env_type(EggTexture::ET_gloss);
+          break;
+        case TextureStage::M_height:
+          egg_tex->set_env_type(EggTexture::ET_height);
+          break;
+        case TextureStage::M_selector:
+          egg_tex->set_env_type(EggTexture::ET_selector);
+          break;
+        case TextureStage::M_normal_gloss:
+          egg_tex->set_env_type(EggTexture::ET_normal_gloss);
+          break;
         default:
           break;
         }
-      }
 
-      egg_prim->set_texture(egg_tex);
+        const InternalName *name = tex_stage->get_texcoord_name();
+        if (name != nullptr && name != InternalName::get_texcoord()) {
+          egg_tex->set_uv_name(name->get_basename());
+        }
+
+        egg_prim->add_texture(egg_tex);
+      }
     }
   }
 
@@ -906,10 +939,15 @@ convert_primitive(const GeomVertexData *vertex_data,
                                   color[3] * color_scale[3]));
       }
 
-      if (vertex_data->has_column(InternalName::get_texcoord())) {
-        reader.set_column(InternalName::get_texcoord());
+      for (size_t ti = 0; ti < format->get_num_texcoords(); ++ti) {
+        const InternalName *texcoord_name = format->get_texcoord(ti);
+        reader.set_column(texcoord_name);
         LTexCoord uv = reader.get_data2();
-        egg_vert.set_uv(LCAST(double, uv));
+        if (texcoord_name == InternalName::get_texcoord()) {
+          egg_vert.set_uv(LCAST(double, uv));
+        } else {
+          egg_vert.set_uv(texcoord_name->get_basename(), LCAST(double, uv));
+        }
       }
 
       EggVertex *new_egg_vert = _vpool->create_unique_vertex(egg_vert);
