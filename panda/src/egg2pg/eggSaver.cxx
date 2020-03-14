@@ -344,15 +344,6 @@ convert_anim_node(AnimBundleNode *node, const WorkingNodePath &node_path,
  * structure.
  */
 void EggSaver::
-convert_character_bundle(PartGroup *bundleNode, EggGroupNode *egg_parent, CharacterJointMap *joint_map) {
-  convert_character_bundle(bundleNode, egg_parent, joint_map, nullptr);
-}
-
-/**
- * Converts the indicated Character Bundle to the corresponding Egg joints
- * structure.
- */
-void EggSaver::
 convert_character_bundle(PartGroup *bundleNode, EggGroupNode *egg_parent,
                          CharacterJointMap *joint_map, const CharacterJoint *parent_joint) {
   int num_children = bundleNode->get_num_children();
