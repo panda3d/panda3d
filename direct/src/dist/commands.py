@@ -425,12 +425,13 @@ class build_apps(setuptools.Command):
                     os.remove(os.path.join(whldir, whl))
 
         pip_args = [
+            '--disable-pip-version-check',
             'download',
             '-d', whldir,
             '-r', self.requirements_path,
             '--only-binary', ':all:',
             '--platform', platform,
-            '--abi', abi_tag
+            '--abi', abi_tag,
         ]
 
         if self.use_optimized_wheels:
