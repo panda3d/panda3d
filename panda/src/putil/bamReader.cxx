@@ -107,7 +107,7 @@ init() {
   // can't safely load the file.
   if (_file_major != _bam_major_ver ||
       _file_minor < _bam_first_minor_ver ||
-      _file_minor > _bam_minor_ver) {
+      _file_minor > _bam_last_minor_ver) {
     bam_cat.error()
       << "Bam file is version " << _file_major << "." << _file_minor
       << ".\n";
@@ -120,7 +120,7 @@ init() {
       bam_cat.error()
         << "This program can only load version "
         << _bam_major_ver << "." << _bam_first_minor_ver << " through "
-        << _bam_major_ver << "." << _bam_minor_ver << " bams.\n";
+        << _bam_major_ver << "." << _bam_last_minor_ver << " bams.\n";
     }
 
     return false;

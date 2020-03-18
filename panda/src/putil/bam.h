@@ -32,6 +32,7 @@ static const unsigned short _bam_major_ver = 6;
 // Bumped to major version 6 on 2006-02-11 to factor out PandaNode::CData.
 
 static const unsigned short _bam_first_minor_ver = 14;
+static const unsigned short _bam_last_minor_ver = 44;
 static const unsigned short _bam_minor_ver = 44;
 // Bumped to minor version 14 on 2007-12-19 to change default ColorAttrib.
 // Bumped to minor version 15 on 2008-04-09 to add TextureAttrib::_implicit_sort.
