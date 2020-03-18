@@ -9951,9 +9951,11 @@ do_write_datagram_header(CData *cdata, BamWriter *manager, Datagram &me, bool &h
       << "Unsupported bam-texture-mode: " << (int)file_texture_mode << "\n";
   }
 
-  if (filename.empty() && do_has_bam_rawdata(cdata)) {
-    // If we don't have a filename, we have to store rawdata anyway.
-    has_rawdata = true;
+  if (filename.empty()) {
+    if (do_has_bam_rawdata(cdata) || cdata->_has_clear_color) {
+      // If we don't have a filename, we have to store rawdata anyway.
+      has_rawdata = true;
+    }
   }
 
   me.add_string(get_name());
