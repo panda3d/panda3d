@@ -990,9 +990,6 @@ release(ButtonHandle button) {
     // Button up.  Send the up event associated with the region(s) we were
     // over when the button went down.
 
-    // There is some danger of losing button-up events here.  If more than one
-    // button goes down together, we won't detect both of the button-up events
-    // properly.
     if (_preferred_button_down_region != nullptr) {
       param.set_outside(_preferred_button_down_region != _preferred_region);
       _preferred_button_down_region->release(param);
@@ -1000,8 +997,22 @@ release(ButtonHandle button) {
                           _preferred_button_down_region, button);
     }
 
-    _button_down = false;
-    _preferred_button_down_region = nullptr;
+    // Do not stop capturing until the last mouse button has gone up.  This is
+    // needed to prevent stopping the capture until the capturing region has
+    // finished processing all the releases.
+    bool has_button = false;
+    for (size_t i = 0; i < MouseButton::num_mouse_buttons; ++i) {
+      if (MouseButton::_buttons[i] != button &&
+          _current_buttons_down.get_bit(MouseButton::_buttons[i].get_index())) {
+        has_button = true;
+      }
+    }
+
+    if (!has_button) {
+      // The last mouse button went up.
+      _button_down = false;
+      _preferred_button_down_region = nullptr;
+    }
 
   } else {
     // It's a keyboard button; therefore, send the event to every region that
