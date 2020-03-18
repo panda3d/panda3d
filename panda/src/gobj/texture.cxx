@@ -10023,6 +10023,13 @@ do_write_datagram_body(CData *cdata, BamWriter *manager, Datagram &me) {
     me.add_uint32(cdata->_simple_ram_image._image.size());
     me.append_data(cdata->_simple_ram_image._image, cdata->_simple_ram_image._image.size());
   }
+
+  if (manager->get_file_minor_ver() >= 45) {
+    me.add_bool(cdata->_has_clear_color);
+    if (cdata->_has_clear_color) {
+      cdata->_clear_color.write_datagram(me);
+    }
+  }
 }
 
 /**
@@ -10267,6 +10274,13 @@ do_fillin_body(CData *cdata, DatagramIterator &scan, BamReader *manager) {
     cdata->_simple_ram_image._image = image;
     cdata->_simple_ram_image._page_size = u_size;
     cdata->inc_simple_image_modified();
+  }
+
+  if (manager->get_file_minor_ver() >= 45) {
+    cdata->_has_clear_color = scan.get_bool();
+    if (cdata->_has_clear_color) {
+      cdata->_clear_color.read_datagram(scan);
+    }
   }
 }
 
