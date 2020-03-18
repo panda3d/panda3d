@@ -26,7 +26,7 @@ Installing Panda3D
 The latest Panda3D SDK can be downloaded from
 [this page](https://www.panda3d.org/download/sdk-1-10-5/).
 If you are familiar with installing Python packages, you can use
-the following comand:
+the following command:
 
 ```bash
 pip install panda3d
@@ -117,7 +117,7 @@ sudo apt-get install build-essential pkg-config fakeroot python-dev libpng-dev l
 ```
 
 Once Panda3D has built, you can either install the .deb or .rpm package that
-it produced, depending on which Linux distribution you are using.  For example,
+is produced, depending on which Linux distribution you are using.  For example,
 to install the package on Debian or Ubuntu, use this:
 
 ```bash
@@ -212,7 +212,7 @@ Running Tests
 
 Install [PyTest](https://docs.pytest.org/en/latest/getting-started.html#installation)
 and run the `pytest` command.  If you have not installed Panda3D, you will
-need to configure your enviroment by pointing the `PYTHONPATH` variable at
+need to configure your environment by pointing the `PYTHONPATH` variable at
 the `built` directory.  On Linux, you will also need to point the
 `LD_LIBRARY_PATH` variable at the `built/lib` directory.
 
