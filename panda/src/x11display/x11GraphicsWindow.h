@@ -59,7 +59,6 @@ protected:
   virtual void setup_colormap(XVisualInfo *visual);
   void handle_keystroke(XKeyEvent &event);
   void handle_keypress(XKeyEvent &event);
-  void handle_keyrepeat(XKeyEvent &event);
   void handle_keyrelease(XKeyEvent &event);
 
   ButtonHandle get_button(XKeyEvent &key_event, bool allow_shift);
