@@ -206,6 +206,7 @@ bool ShaderTerrainMesh::do_check_heightfield() {
 void ShaderTerrainMesh::do_init_data_texture() {
   _data_texture = new Texture("TerrainDataTexture");
   _data_texture->setup_2d_texture(stm_max_chunk_count, stm_max_views, Texture::T_float, Texture::F_rgba32);
+  _data_texture->set_compression(Texture::CM_off);
   _data_texture->set_clear_color(LVector4(0));
   _data_texture->clear_image();
 }
