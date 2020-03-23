@@ -204,9 +204,8 @@ jobs:
       working-directory: build
       shell: bash
       run: |
-        PYTHON_EXECUTABLE=$(grep 'Python_EXECUTABLE:FILEPATH' CMakeCache.txt | sed 's/.*=//')
-        $PYTHON_EXECUTABLE -m pip install pytest pytest-cov
-        export COVERAGE_FILE=.coverage.$RANDOM LLVM_PROFILE_FILE=$PWD/pid-%p.profraw
+        PYTHON_EXECUTABLE=$(grep '_Python_EXECUTABLE:INTERNAL' CMakeCache.txt | sed 's/.*=//')
+        $PYTHON_EXECUTABLE -m pip install pytest
         ctest -V -C ${{ matrix.config }}
       # END B
 
@@ -234,9 +233,8 @@ jobs:
       working-directory: build
       shell: bash
       run: |
-        PYTHON_EXECUTABLE=$(grep 'Python_EXECUTABLE:FILEPATH' CMakeCache.txt | sed 's/.*=//')
-        $PYTHON_EXECUTABLE -m pip install pytest pytest-cov
-        export COVERAGE_FILE=.coverage.$RANDOM LLVM_PROFILE_FILE=$PWD/pid-%p.profraw
+        PYTHON_EXECUTABLE=$(grep '_Python_EXECUTABLE:INTERNAL' CMakeCache.txt | sed 's/.*=//')
+        $PYTHON_EXECUTABLE -m pip install pytest
         ctest -V -C ${{ matrix.config }}
       # END B
 
@@ -264,7 +262,7 @@ jobs:
       working-directory: build
       shell: bash
       run: |
-        PYTHON_EXECUTABLE=$(grep 'Python_EXECUTABLE:FILEPATH' CMakeCache.txt | sed 's/.*=//')
+        PYTHON_EXECUTABLE=$(grep '_Python_EXECUTABLE:INTERNAL' CMakeCache.txt | sed 's/.*=//')
         $PYTHON_EXECUTABLE -m pip install pytest pytest-cov
         export COVERAGE_FILE=.coverage.$RANDOM LLVM_PROFILE_FILE=$PWD/pid-%p.profraw
         ctest -V -C ${{ matrix.config }}
@@ -294,7 +292,7 @@ jobs:
       working-directory: build
       shell: bash
       run: |
-        PYTHON_EXECUTABLE=$(grep 'Python_EXECUTABLE:FILEPATH' CMakeCache.txt | sed 's/.*=//')
+        PYTHON_EXECUTABLE=$(grep '_Python_EXECUTABLE:INTERNAL' CMakeCache.txt | sed 's/.*=//')
         $PYTHON_EXECUTABLE -m pip install pytest pytest-cov
         export COVERAGE_FILE=.coverage.$RANDOM LLVM_PROFILE_FILE=$PWD/pid-%p.profraw
         ctest -V -C ${{ matrix.config }}
@@ -324,7 +322,7 @@ jobs:
       working-directory: build
       shell: bash
       run: |
-        PYTHON_EXECUTABLE=$(grep 'Python_EXECUTABLE:FILEPATH' CMakeCache.txt | sed 's/.*=//')
+        PYTHON_EXECUTABLE=$(grep '_Python_EXECUTABLE:INTERNAL' CMakeCache.txt | sed 's/.*=//')
         $PYTHON_EXECUTABLE -m pip install pytest pytest-cov
         export COVERAGE_FILE=.coverage.$RANDOM LLVM_PROFILE_FILE=$PWD/pid-%p.profraw
         ctest -V -C ${{ matrix.config }}

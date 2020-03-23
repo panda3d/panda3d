@@ -64,6 +64,7 @@ public:
   INLINE void weak_unref();
 
   INLINE bool ref_if_nonzero() const;
+  INLINE bool unref_if_one() const;
 
 protected:
   bool do_test_ref_count_integrity() const;

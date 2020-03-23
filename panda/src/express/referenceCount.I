@@ -318,6 +318,21 @@ ref_if_nonzero() const {
 }
 
 /**
+ * Atomically decreases the reference count of this object if it is one.
+ * Do not use this.  This exists only to implement a special case with the
+ * state cache.
+ * @return false if the reference count was decremented to zero.
+ */
+INLINE bool ReferenceCount::
+unref_if_one() const {
+#ifdef _DEBUG
+  nassertr(test_ref_count_integrity(), 0);
+  nassertr(_ref_count > 0, 0);
+#endif
+  return (AtomicAdjust::compare_and_exchange(_ref_count, 1, 0) != 1);
+}
+
+/**
  * This global helper function will unref the given ReferenceCount object, and
  * if the reference count reaches zero, automatically delete it.  It can't be
  * a member function because it's usually a bad idea to delete an object from

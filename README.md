@@ -24,9 +24,9 @@ Installing Panda3D
 ==================
 
 The latest Panda3D SDK can be downloaded from
-[this page](https://www.panda3d.org/download/sdk-1-10-5/).
+[this page](https://www.panda3d.org/download/sdk-1-10-6/).
 If you are familiar with installing Python packages, you can use
-the following comand:
+the following command:
 
 ```bash
 pip install panda3d
@@ -64,8 +64,8 @@ depending on whether you are on a 32-bit or 64-bit system, or you can
 [click here](https://github.com/rdb/panda3d-thirdparty) for instructions on
 building them from source.
 
-- https://www.panda3d.org/download/panda3d-1.10.5/panda3d-1.10.5-tools-win64.zip
-- https://www.panda3d.org/download/panda3d-1.10.5/panda3d-1.10.5-tools-win32.zip
+- https://www.panda3d.org/download/panda3d-1.10.6/panda3d-1.10.6-tools-win64.zip
+- https://www.panda3d.org/download/panda3d-1.10.6/panda3d-1.10.6-tools-win32.zip
 
 After acquiring these dependencies, you can build Panda3D from the command
 prompt using the following command.  Change the `--msvc-version` option based
@@ -117,7 +117,7 @@ sudo apt-get install build-essential pkg-config fakeroot python-dev libpng-dev l
 ```
 
 Once Panda3D has built, you can either install the .deb or .rpm package that
-it produced, depending on which Linux distribution you are using.  For example,
+is produced, depending on which Linux distribution you are using.  For example,
 to install the package on Debian or Ubuntu, use this:
 
 ```bash
@@ -136,7 +136,7 @@ macOS
 -----
 
 On macOS, you will need to download a set of precompiled thirdparty packages in order to
-compile Panda3D, which can be acquired from [here](https://www.panda3d.org/download/panda3d-1.10.5/panda3d-1.10.5-tools-mac.tar.gz).
+compile Panda3D, which can be acquired from [here](https://www.panda3d.org/download/panda3d-1.10.6/panda3d-1.10.6-tools-mac.tar.gz).
 
 After placing the thirdparty directory inside the panda3d source directory,
 you may build Panda3D using a command like the following:
@@ -212,7 +212,7 @@ Running Tests
 
 Install [PyTest](https://docs.pytest.org/en/latest/getting-started.html#installation)
 and run the `pytest` command.  If you have not installed Panda3D, you will
-need to configure your enviroment by pointing the `PYTHONPATH` variable at
+need to configure your environment by pointing the `PYTHONPATH` variable at
 the `built` directory.  On Linux, you will also need to point the
 `LD_LIBRARY_PATH` variable at the `built/lib` directory.
 

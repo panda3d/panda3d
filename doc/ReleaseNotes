@@ -1,3 +1,57 @@
+------------------------  RELEASE 1.10.6  -----------------------
+
+This is a recommended bugfix release that adds additional stability fixes.
+
+Stability
+* Fix deployment system to work properly with pip 20
+* Fix multithreading crash when garbage collecting render states (#499)
+* Fix crashes when hotplugging USB device on macOS Catalina (#847)
+* Fix crash when using Python OpenSSL module with wheel build of Panda3D (#851)
+* Fix a memory leak in task system in Python 3 (#873)
+* Fix detection for convex angles in visible geometry in collision system (#879)
+* Fix regression in 1.10.4 when overriding verticalScroll_frameSize (#864)
+* Fix DirectScrolledList scrollTo error in Python 3 (#880)
+
+Shaders
+* Fix OpenGL shaders not being properly applied across multiple buffers
+* Proper handling of texture rotations applied to normal maps (#808)
+* "//Cg profile" no longer affects subsequent shader loads (#863)
+* Add support for custom vertex columns when munging points to quads (#870)
+* Workaround for GLSL p3d_TextureMatrix[] input giving GL error on macOS (#846)
+* Fix ShaderTerrainMesh disappearing when enabling compressed-textures
+
+Input
+* Fix MouseWatcherRegion leave event sometimes being fired twice (#858)
+* Fix odd behavior when pressing multiple mouse buttons during capture (#843)
+* Fix support for dead key input on some X11 servers
+* Fix raw key events being sent down repeatedly when holding key on X11 (#874)
+* Numpad keys are no longer included in get_keyboard_map() on X11
+* Add labels to some keys in get_keyboard_map() on X11
+* Properly use cursor hotspot when loading custom cursor on macOS (#845)
+* Loading custom cursor on macOS now properly resolves against model-path
+
+Animation
+* unloadAnims no longer removes all control effects, only for given anims (#853)
+* AnimChannelScalarTable (for morph animations) is now exposed to Python
+* It's now possible to create a CharacterSlider with default value
+
+Pipeline
+* Fix assertion errors when model-cache-dir cannot be created (#790)
+* Textures with clear colors are no longer stripped from bam files (#844)
+* Support texture clear colors in bam files (requires "bam-version 6 45" in PRC)
+* Fix bam2egg skinning bug for models with default poses on joints
+* bam2egg supports multitexturing and multiple UV sets
+
+Build system
+* Add missing --cggl-incdir and --cggl-libdir options in makepanda
+* Reduce library size by not exporting symbols of linked static libraries
+* Wheels no longer unnecessarily include libpythonX.Y.a (#839)
+* makepanda now auto-disables plug-ins in Config.prc that were not compiled in
+* Fix refcounting of returned ReferenceCount-like objects in interrogate
+* Fix inability to build a .whl on Ubuntu
+* Fix erratic build failure in dcParser code
+* Fix compilation using Windows 8.1 SDK
+
 ------------------------  RELEASE 1.10.5  -----------------------
 
 This is a recommended bugfix release, especially for macOS users.
