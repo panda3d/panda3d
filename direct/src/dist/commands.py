@@ -123,42 +123,6 @@ PACKAGE_LIB_DIRS = {
     'scipy':  ['scipy/extra-dll'],
 }
 
-# site.py for Python 2.
-SITE_PY2 = u"""
-import sys
-
-sys.frozen = True
-
-# Override __import__ to set __file__ for frozen modules.
-prev_import = __import__
-def __import__(*args, **kwargs):
-    mod = prev_import(*args, **kwargs)
-    if mod:
-        mod.__file__ = sys.executable
-    return mod
-
-# Add our custom __import__ version to the global scope, as well as a builtin
-# definition for __file__ so that it is available in the module itself.
-import __builtin__
-__builtin__.__import__ = __import__
-__builtin__.__file__ = sys.executable
-del __builtin__
-
-# Set the TCL_LIBRARY directory to the location of the Tcl/Tk/Tix files.
-import os
-tcl_dir = os.path.join(os.path.dirname(sys.executable), 'tcl')
-if os.path.isdir(tcl_dir):
-    for dir in os.listdir(tcl_dir):
-        sub_dir = os.path.join(tcl_dir, dir)
-        if os.path.isdir(sub_dir):
-            if dir.startswith('tcl'):
-                os.environ['TCL_LIBRARY'] = sub_dir
-            if dir.startswith('tk'):
-                os.environ['TK_LIBRARY'] = sub_dir
-            if dir.startswith('tix'):
-                os.environ['TIX_LIBRARY'] = sub_dir
-del os
-"""
 
 # site.py for Python 3.
 SITE_PY3 = u"""
@@ -209,8 +173,7 @@ if os.path.isdir(tcl_dir):
 del os
 """
 
-SITE_PY = SITE_PY3 if sys.version_info >= (3,) else SITE_PY2
-
+SITE_PY = SITE_PY3 if sys.version_info >= (3,) 
 
 class build_apps(setuptools.Command):
     description = 'build Panda3D applications'

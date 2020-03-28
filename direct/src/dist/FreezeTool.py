@@ -41,9 +41,6 @@ startupModules = [
 if sys.version_info >= (3, 0):
     # Modules specific to Python 3
     startupModules += ['io', 'marshal', 'importlib.machinery', 'importlib.util']
-else:
-    # Modules specific to Python 2
-    startupModules += []
 
 # These are some special init functions for some built-in Python modules that
 # deviate from the standard naming convention.  A value of None means that a
