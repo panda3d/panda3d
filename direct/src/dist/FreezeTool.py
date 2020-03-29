@@ -38,9 +38,7 @@ isDebugBuild = (python.lower().endswith('_d'))
 startupModules = [
     'imp', 'encodings', 'encodings.*',
 ]
-if sys.version_info >= (3, 0):
-    # Modules specific to Python 3
-    startupModules += ['io', 'marshal', 'importlib.machinery', 'importlib.util']
+startupModules += ['io', 'marshal', 'importlib.machinery', 'importlib.util']
 
 # These are some special init functions for some built-in Python modules that
 # deviate from the standard naming convention.  A value of None means that a

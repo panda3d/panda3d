@@ -173,7 +173,7 @@ if os.path.isdir(tcl_dir):
 del os
 """
 
-SITE_PY = SITE_PY3 if sys.version_info >= (3,) 
+SITE_PY = SITE_PY3 if sys.version_info >= (3,) else SITE_PY
 
 class build_apps(setuptools.Command):
     description = 'build Panda3D applications'
