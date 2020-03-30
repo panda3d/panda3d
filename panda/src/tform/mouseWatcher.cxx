@@ -742,7 +742,6 @@ clear_current_regions() {
   }
 }
 
-#ifndef NDEBUG
 /**
  * The protected implementation of show_regions().  This assumes the lock is
  * already held.
@@ -750,6 +749,7 @@ clear_current_regions() {
 void MouseWatcher::
 do_show_regions(const NodePath &render2d, const string &bin_name,
                 int draw_order) {
+#ifndef NDEBUG
   MouseWatcherBase::do_show_regions(render2d, bin_name, draw_order);
   _show_regions_render2d = render2d;
   _show_regions_bin_name = bin_name;
@@ -758,16 +758,16 @@ do_show_regions(const NodePath &render2d, const string &bin_name,
   for (MouseWatcherGroup *group : _groups) {
     group->show_regions(render2d, bin_name, draw_order);
   }
-}
 #endif  // NDEBUG
+}
 
-#ifndef NDEBUG
 /**
  * The protected implementation of hide_regions().  This assumes the lock is
  * already held.
  */
 void MouseWatcher::
 do_hide_regions() {
+#ifndef NDEBUG
   MouseWatcherBase::do_hide_regions();
   _show_regions_render2d = NodePath();
   _show_regions_bin_name = string();
@@ -776,8 +776,8 @@ do_hide_regions() {
   for (MouseWatcherGroup *group : _groups) {
     group->hide_regions();
   }
-}
 #endif  // NDEBUG
+}
 
 /**
  * Computes the list of regions that are in both regions_a and regions_b, as
