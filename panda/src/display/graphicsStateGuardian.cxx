@@ -1017,7 +1017,8 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
       _target_rs->get_attrib_def(FogAttrib::get_class_slot());
     Fog *fog = target_fog->get_fog();
     if (fog == nullptr) {
-      return &LMatrix4::ones_mat();
+      t.set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1);
+      return &t;
     }
     PN_stdfloat start, end;
     fog->get_linear_range(start, end);
