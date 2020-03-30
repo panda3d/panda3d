@@ -430,62 +430,6 @@ int Py_FrozenMain(int argc, char **argv)
     PyWinFreeze_ExeInit();
 #endif
 
-#if defined(MS_WINDOWS) && PY_VERSION_HEX < 0x03040000
-    /* We can't rely on our overriding of the standard I/O to work on older
-     * versions of Python, since they are compiled with an incompatible CRT.
-     * The best solution I've found was to just replace sys.stdout/stderr with
-     * the log file reopened in append mode (which requires not locking it for
-     * write, and also passing in _O_APPEND above, and disabling buffering).
-     * It's not the most elegant solution, but it's better than crashing. */
-#if PY_MAJOR_VERSION < 3
-    if (log_pathw != NULL) {
-      PyObject *uniobj = PyUnicode_FromWideChar(log_pathw, (Py_ssize_t)wcslen(log_pathw));
-      PyObject *file = PyObject_CallFunction((PyObject*)&PyFile_Type, "Nsi", uniobj, "a", 0);
-
-      if (file != NULL) {
-        PyFile_SetEncodingAndErrors(file, "utf-8", NULL);
-
-        PySys_SetObject("stdout", file);
-        PySys_SetObject("stderr", file);
-        PySys_SetObject("__stdout__", file);
-        PySys_SetObject("__stderr__", file);
-
-        /* Be sure to disable buffering, otherwise we'll get overlap */
-        setbuf(stdout, (char *)NULL);
-        setbuf(stderr, (char *)NULL);
-      }
-    }
-    else
-#endif
-    if (!supports_code_page(GetConsoleOutputCP()) ||
-        !supports_code_page(GetConsoleCP())) {
-      /* Same hack as before except for Python 2.7, which doesn't seem to have
-       * a way to set the encoding ahead of time, and setting PYTHONIOENCODING
-       * doesn't seem to work.  Fortunately, Python 2.7 doesn't usually start
-       * causing codec errors until the first print statement. */
-      PyObject *sys_stream;
-      UINT acp = GetACP();
-      SetConsoleCP(acp);
-      SetConsoleOutputCP(acp);
-
-      sys_stream = PySys_GetObject("stdin");
-      if (sys_stream && PyFile_Check(sys_stream)) {
-        PyFile_SetEncodingAndErrors(sys_stream, "mbcs", NULL);
-      }
-      sys_stream = PySys_GetObject("stdout");
-      if (sys_stream && PyFile_Check(sys_stream)) {
-        PyFile_SetEncodingAndErrors(sys_stream, "mbcs", NULL);
-      }
-      sys_stream = PySys_GetObject("stderr");
-      if (sys_stream && PyFile_Check(sys_stream)) {
-        PyFile_SetEncodingAndErrors(sys_stream, "mbcs", NULL);
-      }
-    }
-#endif
-
-    if (Py_VerboseFlag)
-        fprintf(stderr, "Python %s\n%s\n",
-            Py_GetVersion(), Py_GetCopyright());
 
 #if PY_MAJOR_VERSION >= 3 && !defined(WIN_UNICODE)
     PySys_SetArgv(argc, argv_copy);
