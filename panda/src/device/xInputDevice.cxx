@@ -19,8 +19,8 @@
 #include "inputDeviceManager.h"
 #include "string_utils.h"
 
-#include <XInput.h>
-#include <CfgMgr32.h>
+#include <xinput.h>
+#include <cfgmgr32.h>
 
 #ifndef XUSER_MAX_COUNT
 #define XUSER_MAX_COUNT 4
@@ -68,10 +68,14 @@
 #define BATTERY_LEVEL_FULL 0x03
 #endif
 
+// With MingW32 this raises the error:
+// Redefinition of '_XINPUT_BATTERY_INFORMATION'
+#ifdef _MSC_VER
 typedef struct _XINPUT_BATTERY_INFORMATION {
   BYTE BatteryType;
   BYTE BatteryLevel;
 } XINPUT_BATTERY_INFORMATION;
+#endif
 
 // Undocumented, I figured out how this looks by trial and error.
 typedef struct _XINPUT_BUSINFO {

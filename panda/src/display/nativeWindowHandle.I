@@ -60,7 +60,7 @@ get_handle() const {
 }
 #endif  // HAVE_X11
 
-#if defined(WIN32) && !defined(CPPPARSER)
+#if defined(_WIN32) && !defined(CPPPARSER)
 /**
  *
  */
@@ -69,7 +69,7 @@ WinHandle(HWND handle) : _handle(handle) {
 }
 #endif  // WIN32
 
-#if defined(WIN32) && !defined(CPPPARSER)
+#if defined(_WIN32) && !defined(CPPPARSER)
 /**
  *
  */

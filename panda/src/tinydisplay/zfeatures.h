@@ -7,7 +7,7 @@
 #define BIG_ENDIAN     4321
 
 #if (defined(__i386__) || defined(__i386)) || \
-     defined(__ia64__) || defined(WIN32) || \
+     defined(__ia64__) || defined(_WIN32) || \
     (defined(__alpha__) || defined(__alpha)) || \
      defined(__arm__) || \
     (defined(__mips__) && defined(__MIPSEL__)) || \

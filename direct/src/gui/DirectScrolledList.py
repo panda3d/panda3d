@@ -1,4 +1,8 @@
-"""Contains the DirectScrolledList class."""
+"""Contains the DirectScrolledList class.
+
+See the :ref:`directscrolledlist` page in the programming manual for a more
+in-depth explanation and an example of how to use this class.
+"""
 
 __all__ = ['DirectScrolledListItem', 'DirectScrolledList']
 
@@ -206,7 +210,7 @@ class DirectScrolledList(DirectFrame):
         numItemsVisible = self["numItemsVisible"]
         numItemsTotal = len(self["items"])
         if(centered):
-            self.index = index - (numItemsVisible/2)
+            self.index = index - (numItemsVisible // 2)
         else:
             self.index = index
 

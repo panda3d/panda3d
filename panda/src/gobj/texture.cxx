@@ -9951,9 +9951,11 @@ do_write_datagram_header(CData *cdata, BamWriter *manager, Datagram &me, bool &h
       << "Unsupported bam-texture-mode: " << (int)file_texture_mode << "\n";
   }
 
-  if (filename.empty() && do_has_bam_rawdata(cdata)) {
-    // If we don't have a filename, we have to store rawdata anyway.
-    has_rawdata = true;
+  if (filename.empty()) {
+    if (do_has_bam_rawdata(cdata) || cdata->_has_clear_color) {
+      // If we don't have a filename, we have to store rawdata anyway.
+      has_rawdata = true;
+    }
   }
 
   me.add_string(get_name());
@@ -10023,6 +10025,13 @@ do_write_datagram_body(CData *cdata, BamWriter *manager, Datagram &me) {
     me.add_uint32(cdata->_simple_ram_image._image.size());
     me.append_data(cdata->_simple_ram_image._image, cdata->_simple_ram_image._image.size());
   }
+
+  if (manager->get_file_minor_ver() >= 45) {
+    me.add_bool(cdata->_has_clear_color);
+    if (cdata->_has_clear_color) {
+      cdata->_clear_color.write_datagram(me);
+    }
+  }
 }
 
 /**
@@ -10046,11 +10055,31 @@ do_write_datagram_rawdata(CData *cdata, BamWriter *manager, Datagram &me) {
   me.add_uint8(cdata->_component_type);
   me.add_uint8(cdata->_component_width);
   me.add_uint8(cdata->_ram_image_compression);
-  me.add_uint8(cdata->_ram_images.size());
-  for (size_t n = 0; n < cdata->_ram_images.size(); ++n) {
-    me.add_uint32(cdata->_ram_images[n]._page_size);
-    me.add_uint32(cdata->_ram_images[n]._image.size());
-    me.append_data(cdata->_ram_images[n]._image, cdata->_ram_images[n]._image.size());
+
+  if (cdata->_ram_images.empty() && cdata->_has_clear_color &&
+      manager->get_file_minor_ver() < 45) {
+    // For older .bam versions that don't support clear colors, make up a RAM
+    // image.
+    int image_size = do_get_expected_ram_image_size(cdata);
+    me.add_uint8(1);
+    me.add_uint32(do_get_expected_ram_page_size(cdata));
+    me.add_uint32(image_size);
+
+    // Fill the image with the clear color.
+    unsigned char pixel[16];
+    const int pixel_size = do_get_clear_data(cdata, pixel);
+    nassertv(pixel_size > 0);
+
+    for (int i = 0; i < image_size; i += pixel_size) {
+      me.append_data(pixel, pixel_size);
+    }
+  } else {
+    me.add_uint8(cdata->_ram_images.size());
+    for (size_t n = 0; n < cdata->_ram_images.size(); ++n) {
+      me.add_uint32(cdata->_ram_images[n]._page_size);
+      me.add_uint32(cdata->_ram_images[n]._image.size());
+      me.append_data(cdata->_ram_images[n]._image, cdata->_ram_images[n]._image.size());
+    }
   }
 }
 
@@ -10267,6 +10296,13 @@ do_fillin_body(CData *cdata, DatagramIterator &scan, BamReader *manager) {
     cdata->_simple_ram_image._image = image;
     cdata->_simple_ram_image._page_size = u_size;
     cdata->inc_simple_image_modified();
+  }
+
+  if (manager->get_file_minor_ver() >= 45) {
+    cdata->_has_clear_color = scan.get_bool();
+    if (cdata->_has_clear_color) {
+      cdata->_clear_color.read_datagram(scan);
+    }
   }
 }
 

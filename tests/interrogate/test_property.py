@@ -149,7 +149,7 @@ def test_seq_property_getitem():
         prop[i]
 
     # Make sure it preserves refcount of invalid indices
-    i = "nonsense"
+    i = "nonsense195641"
     with constant_refcount(i):
         try:
             prop[i]
@@ -250,7 +250,7 @@ def test_seq_property_index():
         except ValueError:
             pass
 
-    nonsense = "nonsense"
+    nonsense = "nonsense854371"
     with constant_refcount(nonsense):
         try:
             prop.index(nonsense)
@@ -271,7 +271,7 @@ def test_seq_property_count():
     with constant_refcount(item_b):
         prop.count(item_b)
 
-    nonsense = "nonsense"
+    nonsense = "nonsense219449"
     with constant_refcount(nonsense):
         prop.count(nonsense)
 
@@ -447,8 +447,8 @@ def test_map_property_empty():
 
 
 def test_map_property_getitem():
-    key = 'key'
-    value = 'value'
+    key = 'key162732'
+    value = 'value162732'
     prop = map_property(**{key: value})
 
     with constant_refcount(key):
@@ -462,8 +462,8 @@ def test_map_property_getitem():
 
 
 def test_map_property_setitem():
-    key = 'key'
-    value = 'value'
+    key = 'key559075'
+    value = 'value559075'
     prop = map_property()
 
     # Setting new key
@@ -490,8 +490,8 @@ def test_map_property_setitem():
 
 
 def test_map_property_delitem():
-    key = 'key'
-    value = 'value'
+    key = 'key731691'
+    value = 'value731691'
     prop = map_property(**{key: value})
 
     with constant_refcount(key):
@@ -519,11 +519,11 @@ def test_map_property_contains():
 
 
 def test_map_property_get():
-    key = 'key'
-    value = 'value'
+    key = 'key861801'
+    value = 'value861801'
     prop = map_property(**{key: value})
 
-    default = 'default'
+    default = 'default861801'
     with constant_refcount(key):
         with constant_refcount(default):
             assert prop.get(key) == value

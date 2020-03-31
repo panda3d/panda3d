@@ -30,7 +30,7 @@ private:
   typedef pset<PaletteGroup *> Groups;
 
 public:
-#ifndef WIN32_VC
+#ifndef _WIN32
   typedef Groups::const_pointer pointer;
   typedef Groups::const_pointer const_pointer;
 #endif

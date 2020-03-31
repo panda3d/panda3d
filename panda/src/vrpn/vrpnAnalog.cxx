@@ -71,6 +71,15 @@ unmark(VrpnAnalogDevice *device) {
 }
 
 /**
+ * Polls the connected device.  Normally you should not call this directly;
+ * this will be called by the VrpnClient.
+ */
+void VrpnAnalog::
+poll() {
+  _analog->mainloop();
+}
+
+/**
  *
  */
 void VrpnAnalog::

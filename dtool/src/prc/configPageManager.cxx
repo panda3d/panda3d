@@ -38,7 +38,7 @@
 #include <algorithm>
 #include <ctype.h>
 
-#ifndef _MSC_VER
+#ifndef _WIN32
 #include <dlfcn.h>
 #endif
 
@@ -120,7 +120,7 @@ reload_implicit_pages() {
     const char *main_dir;
     const char *log_filename;
   };
-#ifdef _MSC_VER
+#ifdef _WIN32
   const BlobInfo *blobinfo = (const BlobInfo *)GetProcAddress(GetModuleHandle(NULL), "blobinfo");
 #elif defined(RTLD_MAIN_ONLY)
   const BlobInfo *blobinfo = (const BlobInfo *)dlsym(RTLD_MAIN_ONLY, "blobinfo");
@@ -130,7 +130,7 @@ reload_implicit_pages() {
   const BlobInfo *blobinfo = (const BlobInfo *)dlsym(dlopen(NULL, RTLD_NOW), "blobinfo");
 #endif
   if (blobinfo == nullptr) {
-#ifndef _MSC_VER
+#ifndef _WIN32
     // Clear the error flag.
     dlerror();
 #endif
@@ -162,7 +162,7 @@ reload_implicit_pages() {
     _prc_patterns.reserve(pat_list.size());
     for (size_t i = 0; i < pat_list.size(); ++i) {
       GlobPattern glob(pat_list[i]);
-#ifdef WIN32
+#ifdef _WIN32
       // On windows, the file system is case-insensitive, so the pattern
       // should be too.
       glob.set_case_sensitive(false);
@@ -184,7 +184,7 @@ reload_implicit_pages() {
     _prc_encrypted_patterns.reserve(pat_list.size());
     for (size_t i = 0; i < pat_list.size(); ++i) {
       GlobPattern glob(pat_list[i]);
-#ifdef WIN32
+#ifdef _WIN32
       glob.set_case_sensitive(false);
 #endif  // WIN32
       _prc_encrypted_patterns.push_back(glob);
@@ -204,7 +204,7 @@ reload_implicit_pages() {
     _prc_executable_patterns.reserve(pat_list.size());
     for (size_t i = 0; i < pat_list.size(); ++i) {
       GlobPattern glob(pat_list[i]);
-#ifdef WIN32
+#ifdef _WIN32
       glob.set_case_sensitive(false);
 #endif  // WIN32
       _prc_executable_patterns.push_back(glob);
@@ -481,7 +481,7 @@ reload_implicit_pages() {
   PandaFileStreamBuf::_newline_mode = newline_mode;
 #endif  // USE_PANDAFILESTREAM
 
-#ifdef WIN32
+#ifdef _WIN32
   // We don't necessarily want an error dialog when we fail to load a .dll
   // file.  But sometimes it is useful for debugging.
   ConfigVariableBool show_dll_error_dialog
@@ -720,7 +720,7 @@ scan_up_from(Filename &result, const Filename &dir,
  */
 void ConfigPageManager::
 config_initialized() {
-  Notify::ptr()->config_initialized();
+  Notify::config_initialized();
 
 #ifndef NDEBUG
   ConfigVariableString panda_package_version

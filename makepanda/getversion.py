@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# This script parses the version number in dtool/PandaVersion.pp
+# This script parses the version number in setup.cfg
 # and returns it on the command-line.  This is useful for the
 # automated scripts that build the Panda3D releases.
 

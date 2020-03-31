@@ -31,7 +31,7 @@ protected:
 
 public:
   INLINE MovingPartScalar(PartGroup *parent, const std::string &name,
-                          const PN_stdfloat &default_value = 0);
+                          PN_stdfloat default_value = 0);
   virtual ~MovingPartScalar();
 
   virtual void get_blend_value(const PartBundle *root);

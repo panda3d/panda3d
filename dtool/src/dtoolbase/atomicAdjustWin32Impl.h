@@ -17,7 +17,7 @@
 #include "dtoolbase.h"
 #include "selectThreadImpl.h"
 
-#ifdef WIN32_VC
+#ifdef _WIN32
 
 #include "numeric_types.h"
 
@@ -62,6 +62,6 @@ public:
 
 #include "atomicAdjustWin32Impl.I"
 
-#endif  // WIN32_VC
+#endif  // _WIN32
 
 #endif

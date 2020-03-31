@@ -19,7 +19,7 @@
 
 #if defined(_WIN32) && !defined(CPPPARSER)
 
-#include <CfgMgr32.h>
+#include <cfgmgr32.h>
 #include <devpkey.h>
 #include "phidsdi.h"
 
@@ -68,6 +68,18 @@ static const struct DeviceMapping {
   // NVIDIA Shield Controller
   {0x0955, 0x7214, InputDevice::DeviceClass::gamepad, 0,
     {"face_a", "face_b", 0, "face_x", "face_y", "rshoulder", "lshoulder", "rshoulder", 0, 0, 0, "start", 0, "lstick", "rstick", 0}
+  },
+  // Dualshock (PS4)
+  {0x054c, 0x05c4, InputDevice::DeviceClass::gamepad, QB_rstick_from_z,
+    {"face_x", "face_a", "face_b", "face_y", "lshoulder", "rshoulder", 0, 0, "back", "start", "lstick", "rstick", "guide", 0}
+  },
+  // Dualshock 2nd Gen (PS4 Slim)
+  {0x054c, 0x09cc, InputDevice::DeviceClass::gamepad, QB_rstick_from_z,
+    {"face_x", "face_a", "face_b", "face_y", "lshoulder", "rshoulder", 0, 0, "back", "start", "lstick", "rstick", "guide", 0}
+  },
+  // Dualshock 2nd Gen (PS4 wireless adapter)
+  {0x054c, 0x0ba0, InputDevice::DeviceClass::gamepad, QB_rstick_from_z,
+    {"face_x", "face_a", "face_b", "face_y", "lshoulder", "rshoulder", 0, 0, "back", "start", "lstick", "rstick", "guide", 0}
   },
   {0},
 };
@@ -198,6 +210,11 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
     } else if (info.hid.usUsagePage == HID_USAGE_PAGE_GENERIC &&
                info.hid.usUsage == HID_USAGE_GENERIC_KEYBOARD) {
       _device_class = DeviceClass::keyboard;
+
+    // Digitizers
+    } else if (info.hid.usUsagePage == HID_USAGE_PAGE_DIGITIZER &&
+               info.hid.usUsage == 1) {
+      _device_class = DeviceClass::digitizer;
 
     // 3Dconnexion SpaceNavigator and friends.
     } else if (_vendor_id == 0x046d &&
@@ -458,18 +475,31 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
           break;
         case HID_USAGE_GENERIC_RX:
           if (_device_class == DeviceClass::gamepad) {
-            axis = Axis::right_x;
+            if (quirks & QB_rstick_from_z) {
+              if ((quirks & QB_no_analog_triggers) == 0) {
+                axis = Axis::left_trigger;
+              }
+            } else {
+              axis = Axis::right_x;
+            }
           } else {
             axis = Axis::pitch;
           }
           break;
         case HID_USAGE_GENERIC_RY:
           if (_device_class == DeviceClass::gamepad) {
-            axis = Axis::right_y;
+            if (quirks & QB_rstick_from_z) {
+              if ((quirks & QB_no_analog_triggers) == 0) {
+                axis = Axis::right_trigger;
+              }
+            } else {
+              axis = Axis::right_y;
+              swap(cap.LogicalMin, cap.LogicalMax);
+            }
           } else {
             axis = Axis::roll;
+            swap(cap.LogicalMin, cap.LogicalMax);
           }
-          swap(cap.LogicalMin, cap.LogicalMax);
           break;
         case HID_USAGE_GENERIC_RZ:
           if (_device_class == DeviceClass::gamepad) {
@@ -502,6 +532,14 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
           _hat_data_index = data_index;
           _hat_data_minimum = cap.LogicalMin;
           continue;
+        }
+        break;
+
+      case HID_USAGE_PAGE_DIGITIZER:
+        switch (usage) {
+        case 0x30:
+          axis = Axis::pressure;
+          break;
         }
         break;
       }

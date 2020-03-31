@@ -84,7 +84,7 @@ CLP(GraphicsBuffer)::
   }
 }
 
-#ifndef OPENGLES
+#ifndef OPENGLES_1
 /**
  * Clears the entire framebuffer before rendering, according to the settings
  * of get_color_clear_active() and get_depth_clear_active() (inherited from
@@ -587,7 +587,6 @@ rebuild_bitplanes() {
       _have_any_color = true;
     }
 
-#ifndef OPENGLES_1
     for (int i=0; i<_fb_properties.get_aux_rgba(); i++) {
       bind_slot(layer, rb_resize, attach, (RenderTexturePlane)(RTP_aux_rgba_0+i), next++);
       _have_any_color = true;
@@ -600,7 +599,6 @@ rebuild_bitplanes() {
       bind_slot(layer, rb_resize, attach, (RenderTexturePlane)(RTP_aux_float_0+i), next++);
       _have_any_color = true;
     }
-#endif  // OPENGLES
 
     if (_have_any_color || have_any_depth) {
       // Clear if the fbo was just created, regardless of the clear settings per
@@ -1198,7 +1196,11 @@ bind_slot_multisample(bool rb_resize, Texture **attach, RenderTexturePlane slot,
         if (_fb_properties.get_srgb_color()) {
           gl_format = GL_SRGB8_ALPHA8;
         } else if (_fb_properties.get_float_color()) {
-          gl_format = GL_RGBA32F_ARB;
+          if (_fb_properties.get_color_bits() > 16 * 3) {
+            gl_format = GL_RGBA32F_ARB;
+          } else {
+            gl_format = GL_RGBA16F_ARB;
+          }
         } else {
           gl_format = GL_RGBA;
         }

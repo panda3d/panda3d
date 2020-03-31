@@ -32,15 +32,16 @@
 #include "pvector.h"
 #include "pmap.h"
 #include "pset.h"
+#include "vector_uchar.h"
 
 #else  // WITHIN_PANDA
 
-#ifdef WIN32
+#ifdef _MSC_VER
 /* C4786: 255 char debug symbols */
 #pragma warning (disable : 4786)
 /* C4503: decorated name length exceeded */
 #pragma warning (disable : 4503)
-#endif  /* WIN32_VC */
+#endif  /* _MSC_VER */
 
 #include <iostream>
 #include <fstream>
@@ -53,7 +54,7 @@
 // These header files are needed to compile dcLexer.cxx, the output from flex.
 // flex doesn't create a perfectly windows-friendly source file right out of
 // the box.
-#ifdef WIN32
+#ifdef _WIN32
 #include <io.h>
 #include <malloc.h>
 #else
@@ -81,6 +82,7 @@
 #define nassertr_always(condition, return_value) assert(condition)
 #define nassertv(condition) assert(condition)
 #define nassertv_always(condition) assert(condition)
+#define nassert_raise(message) {std::cerr << message << std::endl; abort();}
 
 // Panda defines a special Filename class.  We'll use an ordinary string
 // instead.
@@ -97,8 +99,10 @@ typedef std::string Filename;
 #define pvector std::vector
 #define pmap std::map
 #define pset std::set
+#define vector_uchar std::vector<unsigned char>
 
 #include <stdint.h>
+#include <string.h>
 
 typedef std::ifstream pifstream;
 typedef std::ofstream pofstream;

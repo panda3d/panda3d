@@ -1,4 +1,8 @@
-"""OnscreenText module: contains the OnscreenText class"""
+"""OnscreenText module: contains the OnscreenText class.
+
+See the :ref:`onscreentext` page in the programming manual for explanation of
+this class.
+"""
 
 __all__ = ['OnscreenText', 'Plain', 'ScreenTitle', 'ScreenPrompt', 'NameConfirm', 'BlackOnWhite']
 
@@ -41,7 +45,7 @@ class OnscreenText(NodePath):
         Make a text node from string, put it into the 2d sg and set it
         up with all the indicated parameters.
 
-        The parameters are as follows:
+        Parameters:
 
           text: the actual text to display.  This may be omitted and
               specified later via setText() if you don't have it

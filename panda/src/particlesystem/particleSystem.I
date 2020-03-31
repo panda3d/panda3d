@@ -48,14 +48,19 @@ clear_to_initial() {
 }
 
 /**
- * Causes system to use birth rate set by set_birth_rate()
+ * Causes system to use birth rate set by set_birth_rate().
+ * If first_birth_delay is specified, it specifies the number of seconds to wait
+ * in addition to the birth rate before the first particle is birthed.  It is
+ * legal for this to be a negative value, which causes the first birth to happen
+ * sooner rather than later.
  */
 INLINE void ParticleSystem::
-soft_start(PN_stdfloat br) {
-  if (br > 0.0)
+soft_start(PN_stdfloat br, PN_stdfloat first_birth_delay) {
+  if (br > 0.0) {
     set_birth_rate(br);
+  }
   _cur_birth_rate = _birth_rate;
-  _tics_since_birth = 0.0f;
+  _tics_since_birth = -first_birth_delay;
 }
 
 /**
@@ -340,6 +345,14 @@ get_factory() const {
 INLINE PN_stdfloat ParticleSystem::
 get_floor_z() const {
   return _floor_z;
+}
+
+/**
+
+*/
+INLINE PN_stdfloat ParticleSystem::
+get_tics_since_birth() const {
+  return _tics_since_birth;
 }
 
 /**

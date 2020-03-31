@@ -17,11 +17,7 @@
 
 class CocoaGraphicsWindow;
 
-#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
 @interface CocoaPandaWindowDelegate : NSObject<NSWindowDelegate> {
-#else
-@interface CocoaPandaWindowDelegate : NSObject {
-#endif
   @private
     CocoaGraphicsWindow *_graphicsWindow;
 }

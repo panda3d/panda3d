@@ -1,6 +1,10 @@
 """ This module defines a Python-level wrapper around the C++
-AsyncTaskManager interface.  It replaces the old full-Python
-implementation of the Task system. """
+:class:`~panda3d.core.AsyncTaskManager` interface.  It replaces the old
+full-Python implementation of the Task system.
+
+For more information about the task system, consult the
+:ref:`tasks-and-event-handling` page in the programming manual.
+"""
 
 __all__ = ['Task', 'TaskManager',
            'cont', 'done', 'again', 'pickup', 'exit',
@@ -13,9 +17,13 @@ from direct.showbase.MessengerGlobal import messenger
 import types
 import random
 import importlib
+import sys
 
 try:
-    import signal
+    if sys.version_info >= (3, 0):
+        import _signal as signal
+    else:
+        import signal
 except ImportError:
     signal = None
 
@@ -68,7 +76,7 @@ again = AsyncTask.DSAgain
 pickup = AsyncTask.DSPickup
 exit = AsyncTask.DSExit
 
-# Alias PythonTask to Task for historical purposes.
+#: Task aliases to :class:`panda3d.core.PythonTask` for historical purposes.
 Task = PythonTask
 
 # Copy the module-level enums above into the class level.  This funny
@@ -123,7 +131,7 @@ class TaskManager:
         self.fKeyboardInterrupt = False
         self.interruptCount = 0
 
-        self._frameProfileQueue = Queue()
+        self._frameProfileQueue = []
 
         # this will be set when it's safe to import StateVar
         self._profileFrames = None
@@ -274,7 +282,7 @@ class TaskManager:
     def getTasksMatching(self, taskPattern):
         """Returns a list of all tasks, active or sleeping, with a
         name that matches the pattern, which can include standard
-        shell globbing characters like *, ?, and []. """
+        shell globbing characters like \\*, ?, and []. """
 
         return self.__makeTaskList(self.mgr.findTasksMatching(GlobPattern(taskPattern)))
 
@@ -302,7 +310,7 @@ class TaskManager:
                       uponDeath = None, appendTask = False, owner = None):
 
         """Adds a task to be performed at some time in the future.
-        This is identical to add(), except that the specified
+        This is identical to `add()`, except that the specified
         delayTime is applied to the Task object first, which means
         that the task will not begin executing until at least the
         indicated delayTime (in seconds) has elapsed.
@@ -326,59 +334,61 @@ class TaskManager:
     def add(self, funcOrTask, name = None, sort = None, extraArgs = None,
             priority = None, uponDeath = None, appendTask = False,
             taskChain = None, owner = None):
-
         """
         Add a new task to the taskMgr.  The task will begin executing
         immediately, or next frame if its sort value has already
         passed this frame.
 
-        The parameters are:
+        Parameters:
+            funcOrTask: either an existing Task object (not already
+                added to the task manager), or a callable function
+                object. If this is a function, a new Task object will be
+                created and returned. You may also pass in a coroutine
+                object.
 
-        funcOrTask - either an existing Task object (not already added
-        to the task manager), or a callable function object.  If this
-        is a function, a new Task object will be created and returned.
-        You may also pass in a coroutine object.
+            name (str): the name to assign to the Task.  Required,
+                unless you are passing in a Task object that already has
+                a name.
 
-        name - the name to assign to the Task.  Required, unless you
-        are passing in a Task object that already has a name.
+            extraArgs (list): the list of arguments to pass to the task
+                function.  If this is omitted, the list is just the task
+                object itself.
 
-        extraArgs - the list of arguments to pass to the task
-        function.  If this is omitted, the list is just the task
-        object itself.
+            appendTask (bool): If this is true, then the task object
+                itself will be appended to the end of the extraArgs list
+                before calling the function.
 
-        appendTask - a boolean flag.  If this is true, then the task
-        object itself will be appended to the end of the extraArgs
-        list before calling the function.
+            sort (int): the sort value to assign the task.  The default
+                sort is 0.  Within a particular task chain, it is
+                guaranteed that the tasks with a lower sort value will
+                all run before tasks with a higher sort value run.
 
-        sort - the sort value to assign the task.  The default sort is
-        0.  Within a particular task chain, it is guaranteed that the
-        tasks with a lower sort value will all run before tasks with a
-        higher sort value run.
+            priority (int): the priority at which to run the task.  The
+                default priority is 0.  Higher priority tasks are run
+                sooner, and/or more often.  For historical purposes, if
+                you specify a priority without also specifying a sort,
+                the priority value is understood to actually be a sort
+                value. (Previously, there was no priority value, only a
+                sort value, and it was called "priority".)
 
-        priority - the priority at which to run the task.  The default
-        priority is 0.  Higher priority tasks are run sooner, and/or
-        more often.  For historical purposes, if you specify a
-        priority without also specifying a sort, the priority value is
-        understood to actually be a sort value.  (Previously, there
-        was no priority value, only a sort value, and it was called
-        "priority".)
+            uponDeath (bool): a function to call when the task
+                terminates, either because it has run to completion, or
+                because it has been explicitly removed.
 
-        uponDeath - a function to call when the task terminates,
-        either because it has run to completion, or because it has
-        been explicitly removed.
+            taskChain (str): the name of the task chain to assign the
+                task to.
 
-        taskChain - the name of the task chain to assign the task to.
+            owner: an optional Python object that is declared as the
+                "owner" of this task for maintenance purposes.  The
+                owner must have two methods:
+                ``owner._addTask(self, task)``, which is called when the
+                task begins, and ``owner._clearTask(self, task)``, which
+                is called when the task terminates.  This is all the
+                ownermeans.
 
-        owner - an optional Python object that is declared as the
-        "owner" of this task for maintenance purposes.  The owner must
-        have two methods: owner._addTask(self, task), which is called
-        when the task begins, and owner._clearTask(self, task), which
-        is called when the task terminates.  This is all the owner
-        means.
-
-        The return value of add() is the new Task object that has been
-        added, or the original Task object that was passed in.
-
+        Returns:
+            The new Task object that has been added, or the original
+            Task object that was passed in.
         """
 
         task = self.__setupTask(funcOrTask, name, priority, sort, extraArgs, taskChain, appendTask, owner, uponDeath)
@@ -455,8 +465,8 @@ class TaskManager:
 
     def removeTasksMatching(self, taskPattern):
         """Removes all tasks whose names match the pattern, which can
-        include standard shell globbing characters like *, ?, and [].
-        See also remove().
+        include standard shell globbing characters like \\*, ?, and [].
+        See also :meth:`remove()`.
 
         Returns the number of tasks removed.
         """
@@ -515,7 +525,7 @@ class TaskManager:
             while self.running:
                 try:
                     if len(self._frameProfileQueue):
-                        numFrames, session, callback = self._frameProfileQueue.pop()
+                        numFrames, session, callback = self._frameProfileQueue.pop(0)
                         def _profileFunc(numFrames=numFrames):
                             self._doProfiledFrames(numFrames)
                         session.setFunc(_profileFunc)
@@ -623,7 +633,7 @@ class TaskManager:
             session = self.getProfileSession()
         # make sure the profile session doesn't get destroyed before we're done with it
         session.acquire()
-        self._frameProfileQueue.push((num, session, callback))
+        self._frameProfileQueue.append((num, session, callback))
 
     def _doProfiledFrames(self, numFrames):
         for i in range(numFrames):

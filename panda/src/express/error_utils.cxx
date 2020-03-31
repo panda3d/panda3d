@@ -17,7 +17,7 @@
 #include <errno.h>
 #include <stdio.h>
 
-#if defined(WIN32_VC) || defined(WIN64_VC)
+#ifdef _WIN32
   #include <winsock2.h>
 #endif
 
@@ -153,7 +153,7 @@ string error_to_text(ErrorUtilCode err) {
  */
 int
 get_write_error() {
-#if !defined(WIN32) && !defined(WIN64)
+#ifndef _WIN32
   return EU_error_abort;
 #else
   switch (errno) {
@@ -189,7 +189,7 @@ get_write_error() {
  *
  */
 string handle_socket_error() {
-#if !defined(WIN32) && !defined(WIN64)
+#ifndef _WIN32
   return string(strerror(errno));
 #else
   int err = WSAGetLastError();
@@ -248,7 +248,7 @@ string handle_socket_error() {
  */
 int
 get_network_error() {
-#if !defined(WIN32) && !defined(WIN64)
+#ifndef _WIN32
   return EU_error_abort;
 #else
   int err = WSAGetLastError();

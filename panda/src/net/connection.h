@@ -18,6 +18,7 @@
 #include "referenceCount.h"
 #include "netAddress.h"
 #include "lightReMutex.h"
+#include "vector_uchar.h"
 
 class Socket_IP;
 class ConnectionManager;
@@ -68,7 +69,7 @@ private:
   bool _collect_tcp;
   double _collect_tcp_interval;
   double _queued_data_start;
-  std::string _queued_data;
+  vector_uchar _queued_data;
   int _queued_count;
 
   friend class ConnectionWriter;

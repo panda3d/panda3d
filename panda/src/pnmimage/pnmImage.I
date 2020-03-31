@@ -210,7 +210,7 @@ from_val(xelval input_value) const {
   switch (_xel_encoding) {
   case XE_generic:
   case XE_generic_alpha:
-    return (float)input_value * _inv_maxval;
+    return std::min((float)input_value * _inv_maxval, 1.0f);
 
   case XE_generic_sRGB:
   case XE_generic_sRGB_alpha:

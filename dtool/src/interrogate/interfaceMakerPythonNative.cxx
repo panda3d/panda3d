@@ -2874,7 +2874,7 @@ write_module_class(ostream &out, Object *obj) {
   // const char *tp_name;
   out << "    \"" << _def->module_name << "." << export_class_name << "\",\n";
   // Py_ssize_t tp_basicsize;
-  out << "    sizeof(Dtool_PyInstDef),\n";
+  out << "    0, // tp_basicsize\n"; // inherited from tp_base
   // Py_ssize_t tp_itemsize;
   out << "    0, // tp_itemsize\n";
 
@@ -3137,9 +3137,8 @@ write_module_class(ostream &out, Object *obj) {
     }
 
     out << "    Dtool_" << ClassName << "._PyType.tp_bases = PyTuple_Pack(" << bases.size() << baseargs << ");\n";
-  } else {
-    out << "    Dtool_" << ClassName << "._PyType.tp_base = (PyTypeObject *)Dtool_GetSuperBase();\n";
   }
+  out << "    Dtool_" << ClassName << "._PyType.tp_base = (PyTypeObject *)Dtool_GetSuperBase();\n";
 
   int num_nested = obj->_itype.number_of_nested_types();
   int num_dict_items = 1;

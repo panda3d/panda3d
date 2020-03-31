@@ -114,6 +114,8 @@ private:
   };
   pvector<ImageInput> _glsl_img_inputs;
 
+  LMatrix4 *_mat_part_cache = nullptr;
+
   CLP(GraphicsStateGuardian) *_glgsg;
 
   bool _uses_standard_vertex_arrays;

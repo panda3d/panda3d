@@ -1195,15 +1195,16 @@ garbage_collect() {
       }
     }
 
-    if (state->get_ref_count() == 1) {
+    if (!state->unref_if_one()) {
       // This state has recently been unreffed to 1 (the one we added when
       // we stored it in the cache).  Now it's time to delete it.  This is
       // safe, because we're holding the _states_lock, so it's not possible
       // for some other thread to find the state in the cache and ref it
-      // while we're doing this.
+      // while we're doing this.  Also, we've just made sure to unref it to 0,
+      // to ensure that another thread can't get it via a weak pointer.
       state->release_new();
       state->remove_cache_pointers();
-      state->cache_unref();
+      state->cache_unref_only();
       delete state;
 
       // When we removed it from the hash map, it swapped the last element

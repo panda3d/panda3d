@@ -184,11 +184,11 @@ update_severity_cache() {
 
       // Take this opportunity to have Notify check whether the notify-output
       // variable changed.
-      Notify::ptr()->config_initialized();
+      Notify::config_initialized();
     }
   } else {
     _severity_cache = _severity;
-    Notify::ptr()->config_initialized();
+    Notify::config_initialized();
   }
 
   mark_cache_valid(_local_modified);

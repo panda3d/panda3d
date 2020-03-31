@@ -141,16 +141,13 @@ typedef long Py_hash_t;
 
 #if PY_VERSION_HEX < 0x03080000 && !defined(_PyObject_CallNoArg)
 INLINE PyObject *_PyObject_CallNoArg(PyObject *func) {
-  static PyTupleObject empty_tuple = {PyVarObject_HEAD_INIT(nullptr, 0)};
-#ifdef Py_TRACE_REFS
-  _Py_AddToAllObjects((PyObject *)&empty_tuple, 0);
-#endif
-  return PyObject_Call(func, (PyObject *)&empty_tuple, nullptr);
+  static PyObject *empty_tuple = PyTuple_New(0);
+  return PyObject_Call(func, empty_tuple, nullptr);
 }
 #  define _PyObject_CallNoArg _PyObject_CallNoArg
 #endif
 
-#ifndef _PyObject_FastCall
+#if PY_VERSION_HEX < 0x03080000 && !defined(_PyObject_FastCall)
 INLINE PyObject *_PyObject_FastCall(PyObject *func, PyObject **args, Py_ssize_t nargs) {
   PyObject *tuple = PyTuple_New(nargs);
   for (Py_ssize_t i = 0; i < nargs; ++i) {

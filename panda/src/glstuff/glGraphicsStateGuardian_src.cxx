@@ -1776,9 +1776,9 @@ reset() {
         _shader_caps._active_gprofile = (int)CG_PROFILE_GLSLG;
       }
     }
-    _shader_caps._ultimate_vprofile = (int)CG_PROFILE_VP40;
-    _shader_caps._ultimate_fprofile = (int)CG_PROFILE_FP40;
-    _shader_caps._ultimate_gprofile = (int)CG_PROFILE_GPU_GP;
+    _shader_caps._ultimate_vprofile = (int)CG_PROFILE_GLSLV;
+    _shader_caps._ultimate_fprofile = (int)CG_PROFILE_GLSLF;
+    _shader_caps._ultimate_gprofile = (int)CG_PROFILE_GLSLG;
 
     // Bug workaround for radeons.
     if (_shader_caps._active_fprofile == CG_PROFILE_ARBFP1) {
@@ -2520,6 +2520,20 @@ reset() {
 
   } else {
     _glDrawBuffers = nullptr;
+  }
+#endif
+
+#if defined(OPENGLES) && !defined(OPENGLES_1)
+  if (is_at_least_gles_version(3, 0)) {
+    _glReadBuffer = (PFNGLREADBUFFERPROC)
+      get_extension_func("glReadBuffer");
+
+  } else if (has_extension("GL_NV_read_buffer")) {
+    _glReadBuffer = (PFNGLREADBUFFERPROC)
+      get_extension_func("glReadBufferNV");
+
+  } else {
+    _glReadBuffer = nullptr;
   }
 #endif
 
@@ -4134,6 +4148,7 @@ end_frame(Thread *current_thread) {
     _current_shader = nullptr;
     _current_shader_context = nullptr;
   }
+  _state_shader = nullptr;
 #endif
 
   // Respecify the active texture next frame, for good measure.
@@ -6206,7 +6221,7 @@ release_geom(GeomContext *gc) {
  */
 ShaderContext *CLP(GraphicsStateGuardian)::
 prepare_shader(Shader *se) {
-  PStatGPUTimer timer(this, _prepare_shader_pcollector);
+  PStatGPUTimer timer(this, se->get_prepare_shader_pcollector());
 
 #ifndef OPENGLES_1
   ShaderContext *result = nullptr;
@@ -6214,7 +6229,9 @@ prepare_shader(Shader *se) {
   switch (se->get_language()) {
   case Shader::SL_GLSL:
     if (_supports_glsl) {
+      push_group_marker(std::string("Prepare Shader ") + se->get_debug_name());
       result = new CLP(ShaderContext)(this, se);
+      pop_group_marker();
       break;
     } else {
       GLCAT.error()
@@ -6225,7 +6242,9 @@ prepare_shader(Shader *se) {
   case Shader::SL_Cg:
 #if defined(HAVE_CG) && !defined(OPENGLES)
     if (_supports_basic_shaders) {
+      push_group_marker(std::string("Prepare Shader ") + se->get_debug_name());
       result = new CLP(CgShaderContext)(this, se);
+      pop_group_marker();
       break;
     } else {
       GLCAT.error()
@@ -7378,15 +7397,21 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
     z_size = 1;
   }
 
+  int num_views = tex->get_num_views();
   if (tex->get_x_size() != w || tex->get_y_size() != h ||
       tex->get_z_size() != z_size ||
       tex->get_component_type() != component_type ||
       tex->get_format() != format ||
-      tex->get_texture_type() != texture_type) {
+      tex->get_texture_type() != texture_type ||
+      view >= num_views) {
 
-    // Re-setup the texture; its properties have changed.
-    tex->setup_texture(texture_type, w, h, z_size,
-                       component_type, format);
+    tex->setup_texture(texture_type, w, h, z_size, component_type, format);
+
+    // The above resets the number of views to 1, so set this back.
+    num_views = std::max(view + 1, num_views);
+    if (num_views > 1) {
+      tex->set_num_views(num_views);
+    }
   }
 
   nassertr(z < tex->get_z_size(), false);
@@ -7458,6 +7483,7 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
     }
     if (view > 0) {
       image_ptr += (view * tex->get_z_size()) * image_size;
+      nassertr(view < tex->get_num_views(), false);
     }
   }
 
@@ -8949,7 +8975,7 @@ do_get_extension_func(const char *) {
  */
 void CLP(GraphicsStateGuardian)::
 set_draw_buffer(int rbtype) {
-#ifndef OPENGLES  // Draw buffers not supported by OpenGL ES. (TODO!)
+#ifndef OPENGLES_1  // Draw buffers not supported by OpenGL ES 1.
   if (_current_fbo) {
     GLuint buffers[16];
     int nbuffers = 0;
@@ -8984,9 +9010,14 @@ set_draw_buffer(int rbtype) {
       }
       ++index;
     }
-    _glDrawBuffers(nbuffers, buffers);
+    if (_glDrawBuffers != nullptr) {
+      _glDrawBuffers(nbuffers, buffers);
+    } else {
+      nassertv(nbuffers == 1 && buffers[0] == GL_COLOR_ATTACHMENT0_EXT);
+    }
 
   } else {
+#ifndef OPENGLES
     switch (rbtype & RenderBuffer::T_color) {
     case RenderBuffer::T_front:
       glDrawBuffer(GL_FRONT);
@@ -9027,8 +9058,9 @@ set_draw_buffer(int rbtype) {
     default:
       break;
     }
-  }
 #endif  // OPENGLES
+  }
+#endif  // OPENGLES_1
 
   // Also ensure that any global color channels are masked out.
   set_color_write_mask(_color_write_mask);
@@ -9043,7 +9075,7 @@ set_draw_buffer(int rbtype) {
  */
 void CLP(GraphicsStateGuardian)::
 set_read_buffer(int rbtype) {
-#ifndef OPENGLES  // Draw buffers not supported by OpenGL ES. (TODO!)
+#ifndef OPENGLES_1  // Draw buffers not supported by OpenGL ES 1.
   if (rbtype & (RenderBuffer::T_depth | RenderBuffer::T_stencil)) {
     // Special case: don't have to call ReadBuffer for these.
     return;
@@ -9076,10 +9108,14 @@ set_read_buffer(int rbtype) {
       }
       ++index;
     }
+#ifdef OPENGLES
+    _glReadBuffer(buffer);
+#else
     glReadBuffer(buffer);
+#endif
 
   } else {
-
+#ifndef OPENGLES
     switch (rbtype & RenderBuffer::T_color) {
     case RenderBuffer::T_front:
       glReadBuffer(GL_FRONT);
@@ -9116,10 +9152,11 @@ set_read_buffer(int rbtype) {
     default:
       break;
     }
+#endif  // OPENGLES
   }
 
   report_my_gl_errors();
-#endif  // OPENGLES
+#endif  // OPENGLES_1
 }
 
 /**
@@ -14445,7 +14482,17 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     return false;
   }
 
-  tex->set_ram_image(image, compression, page_size);
+  int num_views = tex->get_num_views();
+  if (num_views == 1) {
+    // Replace the entire image, since we are modifying the only view.
+    tex->set_ram_image(image, compression, page_size);
+  } else {
+    // We're only modifying a single view, so we can't stomp all over the
+    // existing content.
+    PTA_uchar ram_image = tex->modify_ram_image();
+    nassertr(ram_image.size() == image.size() * num_views, false);
+    memcpy(ram_image.p() + image.size() * gtc->get_view(), image.p(), image.size());
+  }
 
   if (gtc->_uses_mipmaps) {
     // Also get the mipmap levels.
@@ -14461,7 +14508,12 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
                                  type, compression, n)) {
         return false;
       }
-      tex->set_ram_mipmap_image(n, image, page_size);
+      if (num_views == 1) {
+        tex->set_ram_mipmap_image(n, image, page_size);
+      } else {
+        PTA_uchar ram_mipmap_image = tex->modify_ram_mipmap_image(n);
+        memcpy(ram_mipmap_image.p() + image.size() * gtc->get_view(), image.p(), image.size());
+      }
     }
   }
 
@@ -14525,13 +14577,13 @@ extract_texture_image(PTA_uchar &image, size_t &page_size,
 #ifndef OPENGLES
   } else if (target == GL_TEXTURE_BUFFER) {
     // In the case of a buffer texture, we need to get it from the buffer.
-    image = PTA_uchar::empty_array(tex->get_expected_ram_mipmap_image_size(n));
+    image = PTA_uchar::empty_array(tex->get_expected_ram_mipmap_view_size(n));
     _glGetBufferSubData(target, 0, image.size(), image.p());
 #endif
 
   } else if (compression == Texture::CM_off) {
     // An uncompressed 1-d, 2-d, or 3-d texture.
-    image = PTA_uchar::empty_array(tex->get_expected_ram_mipmap_image_size(n));
+    image = PTA_uchar::empty_array(tex->get_expected_ram_mipmap_view_size(n));
     GLenum external_format = get_external_image_format(tex);
     GLenum pixel_type = get_component_type(type);
     glGetTexImage(target, n, external_format, pixel_type, image.p());
