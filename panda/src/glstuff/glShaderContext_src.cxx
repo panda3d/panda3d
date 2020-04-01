@@ -1258,29 +1258,32 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
         // A member of a p3d_LightSource struct.
         string member_name(name_buffer);
         if (member_name == "shadowMap") {
+          Shader::ShaderTexSpec bind;
+          bind._id = arg_id;
+          bind._part = Shader::STO_light_i_shadow_map;
+          bind._name = 0;
+          bind._stage = index;
+
           switch (param_type) {
-          case GL_SAMPLER_CUBE_SHADOW:
           case GL_SAMPLER_2D:
           case GL_SAMPLER_2D_SHADOW:
+            bind._desired_type = Texture::TT_2d_texture;
+            break;
           case GL_SAMPLER_CUBE:
-            {
-              Shader::ShaderTexSpec bind;
-              bind._id = arg_id;
-              bind._part = Shader::STO_light_i_shadow_map;
-              bind._name = 0;
-              bind._desired_type = Texture::TT_2d_texture;
-              bind._stage = index;
-              if (get_sampler_texture_type(bind._desired_type, param_type)) {
-                _glgsg->_glUniform1i(p, _shader->_tex_spec.size());
-                _shader->_tex_spec.push_back(bind);
-              }
-              return;
-            }
+          case GL_SAMPLER_CUBE_SHADOW:
+            bind._desired_type = Texture::TT_cube_map;
+            break;
           default:
             GLCAT.error()
               << "Invalid type for p3d_LightSource[].shadowMap input!\n";
             return;
           }
+
+          if (get_sampler_texture_type(bind._desired_type, param_type)) {
+            _glgsg->_glUniform1i(p, _shader->_tex_spec.size());
+            _shader->_tex_spec.push_back(bind);
+          }
+          return;
         } else {
           // A non-sampler attribute of a numbered light source.
           Shader::ShaderMatSpec bind;

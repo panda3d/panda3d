@@ -1861,6 +1861,8 @@ fetch_specified_texture(Shader::ShaderTexSpec &spec, SamplerState &sampler,
   case Shader::STO_light_i_shadow_map:
     {
       const LightAttrib *target_light;
+      Texture::TextureType desired_type = (Texture::TextureType)spec._desired_type;
+      PT(Texture) tex = nullptr;
       _target_rs->get_attrib_def(target_light);
 
       // We don't count ambient lights, which would be pretty silly to handle
@@ -1868,23 +1870,24 @@ fetch_specified_texture(Shader::ShaderTexSpec &spec, SamplerState &sampler,
       size_t num_lights = target_light->get_num_non_ambient_lights();
       if (spec._stage >= 0 && (size_t)spec._stage < num_lights) {
         NodePath light = target_light->get_on_light((size_t)spec._stage);
+        bool is_point = light.node()->is_of_type(PointLight::get_class_type());
         nassertr(!light.is_empty(), nullptr);
         Light *light_obj = light.node()->as_light();
         nassertr(light_obj != nullptr, nullptr);
 
-        PT(Texture) tex = get_shadow_map(light);
-        if (tex != nullptr) {
-          sampler = tex->get_default_sampler();
+        if ((is_point && desired_type == Texture::TT_cube_map) ||
+            (!is_point && desired_type == Texture::TT_2d_texture)) {
+          tex = get_shadow_map(light);
         }
-        return tex;
-      } else {
-        // There is no such light assigned.  Bind a dummy shadow map.
-        PT(Texture) tex = get_dummy_shadow_map((Texture::TextureType)spec._desired_type);
-        if (tex != nullptr) {
-          sampler = tex->get_default_sampler();
-        }
-        return tex;
       }
+      if (tex == nullptr) {
+        // There is no such light assigned.  Bind a dummy shadow map.
+        tex = get_dummy_shadow_map(desired_type);
+      }
+      if (tex != nullptr) {
+        sampler = tex->get_default_sampler();
+      }
+      return tex;
     }
     break;
 
