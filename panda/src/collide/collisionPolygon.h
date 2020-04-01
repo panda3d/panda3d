@@ -51,9 +51,8 @@ PUBLISHED:
 
 
   INLINE static bool verify_points(const LPoint3 &a, const LPoint3 &b,
-                                   const LPoint3 &c);
-  INLINE static bool verify_points(const LPoint3 &a, const LPoint3 &b,
                                    const LPoint3 &c, const LPoint3 &d);
+  static bool verify_points(const LPoint3 &a, const LPoint3 &b, const LPoint3 &c);
   static bool verify_points(const LPoint3 *begin, const LPoint3 *end);
 
   bool is_valid() const;
