@@ -522,6 +522,10 @@ int Py_FrozenMain(int argc, char **argv)
     // for ConfigPageManager to read out and assign to MAIN_DIR.
     sprintf(buffer, "%s/../Resources", dir);
     set_main_dir(buffer);
+
+    // Finally, chdir to it, so that regular Python files are read from the
+    // right location.
+    chdir(buffer);
 #endif
 
     n = PyImport_ImportFrozenModule("__main__");

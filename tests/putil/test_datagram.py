@@ -101,6 +101,16 @@ def test_datagram_get_message():
     assert dg.get_message() == b'abc\x00\xff123'
 
 
+def test_datagram_pickle():
+    import pickle
+
+    dg = core.Datagram()
+    assert pickle.loads(pickle.dumps(dg, -1)) == dg
+
+    dg = core.Datagram(b'abc\x00')
+    assert pickle.loads(pickle.dumps(dg, -1)) == dg
+
+
 def test_iterator(datagram_small):
     """This tests Datagram/DatagramIterator, and sort of serves as a self-check
     of the test fixtures too."""
