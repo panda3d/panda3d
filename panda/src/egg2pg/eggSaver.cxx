@@ -344,19 +344,53 @@ convert_anim_node(AnimBundleNode *node, const WorkingNodePath &node_path,
  * structure.
  */
 void EggSaver::
-convert_character_bundle(PartGroup *bundleNode, EggGroupNode *egg_parent, CharacterJointMap *joint_map) {
+convert_character_bundle(PartGroup *bundleNode, EggGroupNode *egg_parent,
+                         CharacterJointMap *joint_map, const CharacterJoint *parent_joint) {
   int num_children = bundleNode->get_num_children();
+
+  const CharacterJoint *character_joint = nullptr;
 
   EggGroupNode *joint_group = egg_parent;
   if (bundleNode->is_of_type(CharacterJoint::get_class_type())) {
-    CharacterJoint *character_joint = DCAST(CharacterJoint, bundleNode);
+    character_joint = DCAST(CharacterJoint, bundleNode);
 
-    LMatrix4 transformf;
-    character_joint->get_transform(transformf);
-    LMatrix4d transformd(LCAST(double, transformf));
     EggGroup *joint = new EggGroup(bundleNode->get_name());
-    joint->add_matrix4(transformd);
     joint->set_group_type(EggGroup::GT_joint);
+
+    // The default_value originally passed to the CharacterJoint is what is used
+    // for skinning.  However, the _default_value can be changed after joint
+    // construction (such as via a <DefaultPose>), so we can't just pull the
+    // current _default_value.
+    //
+    // We have to instead work back from the _initial_net_transform_inverse,
+    // which is computed at construction time from the original default_value:
+    //
+    //   _net_transform = default_value * parent_joint->_net_transform;
+    //   _initial_net_transform_inverse = invert(_net_transform);
+    //
+    // So we should be able to reconstruct the original default_value like so:
+    //
+    //   default_value = invert(_initial_net_transform_inverse)
+    //                 * parent_joint->_initial_net_transform_inverse;
+    //
+    LMatrix4d net_transform = invert(LCAST(double, character_joint->_initial_net_transform_inverse));
+    if (parent_joint != nullptr) {
+      if (parent_joint->_initial_net_transform_inverse != character_joint->_initial_net_transform_inverse) {
+        LMatrix4d parent_inverse = LCAST(double, parent_joint->_initial_net_transform_inverse);
+        joint->add_matrix4(net_transform * parent_inverse);
+      }
+    } else if (!net_transform.is_identity()) {
+      joint->add_matrix4(net_transform);
+    }
+
+    // The joint's _default_value, if different, goes into a <DefaultPose>.
+    LMatrix4d default_pose = LCAST(double, character_joint->_default_value);
+    if (default_pose != joint->get_transform3d()) {
+      EggTransform transform;
+      transform.add_matrix4(LCAST(double, default_pose));
+      joint->set_default_pose(transform);
+    }
+
     joint_group = joint;
     egg_parent->add_child(joint_group);
     if (joint_map != nullptr) {
@@ -373,7 +407,7 @@ convert_character_bundle(PartGroup *bundleNode, EggGroupNode *egg_parent, Charac
 
   for (int i = 0; i < num_children ; i++) {
     PartGroup *partGroup= bundleNode->get_child(i);
-    convert_character_bundle(partGroup, joint_group, joint_map);
+    convert_character_bundle(partGroup, joint_group, joint_map, character_joint);
   }
 
 }
@@ -707,6 +741,7 @@ convert_primitive(const GeomVertexData *vertex_data,
                   const LMatrix4 &net_mat, EggGroupNode *egg_parent,
                   CharacterJointMap *joint_map) {
   GeomVertexReader reader(vertex_data);
+  const GeomVertexFormat *format = vertex_data->get_format();
 
   // Make a zygote that will be duplicated for each primitive.
   PT(EggPrimitive) egg_prim;
@@ -765,14 +800,14 @@ convert_primitive(const GeomVertexData *vertex_data,
   // Check for a texture.
   const TextureAttrib *ta;
   if (net_state->get_attrib(ta)) {
-    EggTexture *egg_tex = get_egg_texture(ta->get_texture());
+    for (size_t i = 0; i < ta->get_num_on_stages(); ++i) {
+      TextureStage *tex_stage = ta->get_on_stage(i);
 
-    if (egg_tex != nullptr) {
-      TextureStage *tex_stage = ta->get_on_stage(0);
-      if (tex_stage != nullptr) {
+      EggTexture *egg_tex = get_egg_texture(ta->get_on_texture(tex_stage));
+      if (egg_tex != nullptr) {
         switch (tex_stage->get_mode()) {
         case TextureStage::M_modulate:
-          if (has_color_off == true) {
+          if (has_color_off == true && i == 0) {
             egg_tex->set_env_type(EggTexture::ET_replace);
           } else {
             egg_tex->set_env_type(EggTexture::ET_modulate);
@@ -793,12 +828,44 @@ convert_primitive(const GeomVertexData *vertex_data,
         case TextureStage::M_blend_color_scale:
           egg_tex->set_env_type(EggTexture::ET_blend_color_scale);
           break;
+        case TextureStage::M_modulate_glow:
+          egg_tex->set_env_type(EggTexture::ET_modulate_glow);
+          break;
+        case TextureStage::M_modulate_gloss:
+          egg_tex->set_env_type(EggTexture::ET_modulate_gloss);
+          break;
+        case TextureStage::M_normal:
+          egg_tex->set_env_type(EggTexture::ET_normal);
+          break;
+        case TextureStage::M_normal_height:
+          egg_tex->set_env_type(EggTexture::ET_normal_height);
+          break;
+        case TextureStage::M_glow:
+          egg_tex->set_env_type(EggTexture::ET_glow);
+          break;
+        case TextureStage::M_gloss:
+          egg_tex->set_env_type(EggTexture::ET_gloss);
+          break;
+        case TextureStage::M_height:
+          egg_tex->set_env_type(EggTexture::ET_height);
+          break;
+        case TextureStage::M_selector:
+          egg_tex->set_env_type(EggTexture::ET_selector);
+          break;
+        case TextureStage::M_normal_gloss:
+          egg_tex->set_env_type(EggTexture::ET_normal_gloss);
+          break;
         default:
           break;
         }
-      }
 
-      egg_prim->set_texture(egg_tex);
+        const InternalName *name = tex_stage->get_texcoord_name();
+        if (name != nullptr && name != InternalName::get_texcoord()) {
+          egg_tex->set_uv_name(name->get_basename());
+        }
+
+        egg_prim->add_texture(egg_tex);
+      }
     }
   }
 
@@ -863,10 +930,15 @@ convert_primitive(const GeomVertexData *vertex_data,
                                   color[3] * color_scale[3]));
       }
 
-      if (vertex_data->has_column(InternalName::get_texcoord())) {
-        reader.set_column(InternalName::get_texcoord());
+      for (size_t ti = 0; ti < format->get_num_texcoords(); ++ti) {
+        const InternalName *texcoord_name = format->get_texcoord(ti);
+        reader.set_column(texcoord_name);
         LTexCoord uv = reader.get_data2();
-        egg_vert.set_uv(LCAST(double, uv));
+        if (texcoord_name == InternalName::get_texcoord()) {
+          egg_vert.set_uv(LCAST(double, uv));
+        } else {
+          egg_vert.set_uv(texcoord_name->get_basename(), LCAST(double, uv));
+        }
       }
 
       EggVertex *new_egg_vert = _vpool->create_unique_vertex(egg_vert);

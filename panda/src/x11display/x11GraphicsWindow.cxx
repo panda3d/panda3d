@@ -310,10 +310,6 @@ process_events() {
   bool changed_properties = false;
 
   while (XCheckIfEvent(_display, &event, check_event, (char *)this)) {
-    if (XFilterEvent(&event, None)) {
-      continue;
-    }
-
     if (got_keyrelease_event) {
       // If a keyrelease event is immediately followed by a matching keypress
       // event, that's just key repeat and we should treat the two events
@@ -324,20 +320,40 @@ process_events() {
       if (event.type == KeyPress &&
           event.xkey.keycode == keyrelease_event.keycode &&
           (event.xkey.time - keyrelease_event.time <= 1)) {
-        // In particular, we only generate down messages for the repeated
-        // keys, not down-and-up messages.
-        handle_keystroke(event.xkey);
+        if (!XFilterEvent(&event, None)) {
+          // In particular, we only generate down messages for the repeated
+          // keys, not down-and-up messages.
+          handle_keystroke(event.xkey);
 
-        // We thought about not generating the keypress event, but we need
-        // that repeat for backspace.  Rethink later.
-        handle_keypress(event.xkey);
+          // We thought about not generating the keypress event, but we need
+          // that repeat for backspace.  Rethink later.
+          handle_keypress(event.xkey);
+        }
         continue;
 
       } else {
         // This keyrelease event is not immediately followed by a matching
         // keypress event, so it's a genuine release.
+        ButtonHandle raw_button = map_raw_button(keyrelease_event.keycode);
+        if (raw_button != ButtonHandle::none()) {
+          _input->raw_button_up(raw_button);
+        }
+
         handle_keyrelease(keyrelease_event);
       }
+    }
+
+    // Send out a raw key press event before we do XFilterEvent, which will
+    // filter out dead keys and such.
+    if (event.type == KeyPress) {
+      ButtonHandle raw_button = map_raw_button(event.xkey.keycode);
+      if (raw_button != ButtonHandle::none()) {
+        _input->raw_button_down(raw_button);
+      }
+    }
+
+    if (XFilterEvent(&event, None)) {
+      continue;
     }
 
     ButtonHandle button;
@@ -576,6 +592,11 @@ process_events() {
   if (got_keyrelease_event) {
     // This keyrelease event is not immediately followed by a matching
     // keypress event, so it's a genuine release.
+    ButtonHandle raw_button = map_raw_button(keyrelease_event.keycode);
+    if (raw_button != ButtonHandle::none()) {
+      _input->raw_button_up(raw_button);
+    }
+
     handle_keyrelease(keyrelease_event);
   }
 }
@@ -1119,10 +1140,8 @@ open_window() {
   XIM im = x11_pipe->get_im();
   _ic = nullptr;
   if (im) {
-    _ic = XCreateIC
-      (im,
-       XNInputStyle, XIMPreeditNothing | XIMStatusNothing,
-       nullptr);
+    _ic = XCreateIC(im, XNInputStyle, XIMPreeditNothing | XIMStatusNothing,
+                    XNClientWindow, _xwindow, nullptr);
     if (_ic == (XIC)nullptr) {
       x11display_cat.warning()
         << "Couldn't create input context.\n";
@@ -1530,13 +1549,6 @@ handle_keypress(XKeyEvent &event) {
     }
     _input->button_down(button);
   }
-
-  if (event.keycode >= 9 && event.keycode <= 135) {
-    ButtonHandle raw_button = map_raw_button(event.keycode);
-    if (raw_button != ButtonHandle::none()) {
-      _input->raw_button_down(raw_button);
-    }
-  }
 }
 
 /**
@@ -1564,13 +1576,6 @@ handle_keyrelease(XKeyEvent &event) {
       _input->button_up(KeyboardButton::meta());
     }
     _input->button_up(button);
-  }
-
-  if (event.keycode >= 9 && event.keycode <= 135) {
-    ButtonHandle raw_button = map_raw_button(event.keycode);
-    if (raw_button != ButtonHandle::none()) {
-      _input->raw_button_up(raw_button);
-    }
   }
 }
 
@@ -1998,7 +2003,7 @@ map_raw_button(KeyCode key) const {
   // In any case, this means we can use the same mapping as our raw
   // input code, which uses evdev directly.
   int index = key - 8;
-  if (index >= 0) {
+  if (index > 0 && index < 128) {
     return EvdevInputDevice::map_button(index);
   }
 #endif

@@ -430,7 +430,7 @@ config_initialized() {
   // notify-output even after the initial import of Panda3D modules.  However,
   // it cannot be changed after the first time it is set.
 
-  if (_ostream_ptr == &cerr) {
+  if (_global_ptr == nullptr || _global_ptr->_ostream_ptr == &cerr) {
     static ConfigVariableFilename notify_output
       ("notify-output", "",
        "The filename to which to write all the output of notify");
@@ -440,12 +440,14 @@ config_initialized() {
 
     std::string value = notify_output.get_value();
     if (!value.empty() && !initialized.test_and_set()) {
+      Notify *ptr = Notify::ptr();
+
       if (value == "stdout") {
         cout.setf(std::ios::unitbuf);
-        set_ostream_ptr(&cout, false);
+        ptr->set_ostream_ptr(&cout, false);
 
       } else if (value == "stderr") {
-        set_ostream_ptr(&cerr, false);
+        ptr->set_ostream_ptr(&cerr, false);
 
       } else {
         Filename filename = value;
@@ -462,7 +464,7 @@ config_initialized() {
           dup2(logfile_fd, STDERR_FILENO);
           close(logfile_fd);
 
-          set_ostream_ptr(&cerr, false);
+          ptr->set_ostream_ptr(&cerr, false);
         }
 #else
         pofstream *out = new pofstream;
@@ -471,7 +473,7 @@ config_initialized() {
           delete out;
         } else {
           out->setf(std::ios::unitbuf);
-          set_ostream_ptr(out, true);
+          ptr->set_ostream_ptr(out, true);
         }
 #endif  // BUILD_IPHONE
       }
