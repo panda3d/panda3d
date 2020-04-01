@@ -1,6 +1,33 @@
 """ This module contains ShowBase, an application framework responsible
 for opening a graphical display, setting up input devices and creating
-the scene graph. """
+the scene graph.
+
+The simplest way to open a ShowBase instance is to execute this code:
+
+.. code-block:: python
+
+   from direct.showbase.ShowBase import ShowBase
+
+   base = ShowBase()
+   base.run()
+
+A common approach is to create your own subclass inheriting from ShowBase.
+
+Built-in global variables
+-------------------------
+
+Some key variables used in all Panda3D scripts are actually attributes of the
+ShowBase instance.  When creating an instance of this class, it will write many
+of these variables to the built-in scope of the Python interpreter, so that
+they are accessible to any Python module.
+
+While these are handy for prototyping, we do not recommend using them in bigger
+projects, as it can make the code confusing to read to other Python developers,
+to whom it may not be obvious where these variables are originating.
+
+Some of these built-in variables are documented further in the
+:mod:`~direct.showbase.ShowBaseGlobal` module.
+"""
 
 __all__ = ['ShowBase', 'WindowControls']
 
@@ -1110,8 +1137,8 @@ class ShowBase(DirectObject.DirectObject):
         2-d objects and gui elements that are superimposed over the
         3-d geometry in the window.
         """
-        # We've already created aspect2d in ShowBaseGlobal, for the
-        # benefit of creating DirectGui elements before ShowBase.
+        # We've already created render2d and aspect2d in ShowBaseGlobal,
+        # for the benefit of creating DirectGui elements before ShowBase.
         from . import ShowBaseGlobal
 
         ## This is the root of the 2-D scene graph.
@@ -1134,10 +1161,6 @@ class ShowBase(DirectObject.DirectObject):
         self.render2d.setDepthWrite(0)
         self.render2d.setMaterialOff(1)
         self.render2d.setTwoSided(1)
-
-        # We've already created aspect2d in ShowBaseGlobal, for the
-        # benefit of creating DirectGui elements before ShowBase.
-        from . import ShowBaseGlobal
 
         ## The normal 2-d DisplayRegion has an aspect ratio that
         ## matches the window, but its coordinate system is square.
