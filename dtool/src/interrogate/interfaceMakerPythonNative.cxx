@@ -104,6 +104,7 @@ RenameSet methodRenameDictionary[] = {
   { "operator >>="  , "__irshift__",            1 },
   { "operator typecast bool", "__nonzero__",    0 },
   { "__nonzero__"   , "__nonzero__",            0 },
+  { "__int__"       , "__int__",                0 },
   { "__reduce__"    , "__reduce__",             0 },
   { "__reduce_persist__", "__reduce_persist__", 0 },
   { "__copy__"      , "__copy__",               0 },
@@ -554,6 +555,12 @@ get_slotted_function_def(Object *obj, Function *func, FunctionRemap *remap,
     // nb_bool.
     def._answer_location = "nb_bool";
     def._wrapper_type = WT_inquiry;
+    return true;
+  }
+
+  if (method_name == "__int__") {
+    def._answer_location = "nb_int";
+    def._wrapper_type = WT_no_params;
     return true;
   }
 
