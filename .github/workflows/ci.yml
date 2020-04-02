@@ -203,10 +203,12 @@ jobs:
       if: contains(matrix.python, 'YES')
       working-directory: build
       shell: bash
+      env:
+        PYTHONPATH: ${{ matrix.config }}
       run: |
-        PYTHON_EXECUTABLE=$(grep '_Python_EXECUTABLE:INTERNAL' CMakeCache.txt | sed 's/.*=//')
+        PYTHON_EXECUTABLE=$(grep 'Python_EXECUTABLE:' CMakeCache.txt | sed 's/.*=//')
         $PYTHON_EXECUTABLE -m pip install pytest
-        ctest -V -C ${{ matrix.config }}
+        $PYTHON_EXECUTABLE -m pytest ../tests
       # END B
 
     - name: Setup Python (Python 3.5)
@@ -232,10 +234,12 @@ jobs:
       if: contains(matrix.python, 'YES')
       working-directory: build
       shell: bash
+      env:
+        PYTHONPATH: ${{ matrix.config }}
       run: |
-        PYTHON_EXECUTABLE=$(grep '_Python_EXECUTABLE:INTERNAL' CMakeCache.txt | sed 's/.*=//')
+        PYTHON_EXECUTABLE=$(grep 'Python_EXECUTABLE:' CMakeCache.txt | sed 's/.*=//')
         $PYTHON_EXECUTABLE -m pip install pytest
-        ctest -V -C ${{ matrix.config }}
+        $PYTHON_EXECUTABLE -m pytest ../tests
       # END B
 
     - name: Setup Python (Python 3.6)
@@ -261,11 +265,13 @@ jobs:
       if: contains(matrix.python, 'YES')
       working-directory: build
       shell: bash
+      env:
+        PYTHONPATH: ${{ matrix.config }}
       run: |
-        PYTHON_EXECUTABLE=$(grep '_Python_EXECUTABLE:INTERNAL' CMakeCache.txt | sed 's/.*=//')
+        PYTHON_EXECUTABLE=$(grep 'Python_EXECUTABLE:' CMakeCache.txt | sed 's/.*=//')
         $PYTHON_EXECUTABLE -m pip install pytest pytest-cov
         export COVERAGE_FILE=.coverage.$RANDOM LLVM_PROFILE_FILE=$PWD/pid-%p.profraw
-        ctest -V -C ${{ matrix.config }}
+        $PYTHON_EXECUTABLE -m pytest ../tests --cov=.
       # END B
 
     - name: Setup Python (Python 3.7)
@@ -291,11 +297,13 @@ jobs:
       if: contains(matrix.python, 'YES')
       working-directory: build
       shell: bash
+      env:
+        PYTHONPATH: ${{ matrix.config }}
       run: |
-        PYTHON_EXECUTABLE=$(grep '_Python_EXECUTABLE:INTERNAL' CMakeCache.txt | sed 's/.*=//')
+        PYTHON_EXECUTABLE=$(grep 'Python_EXECUTABLE:' CMakeCache.txt | sed 's/.*=//')
         $PYTHON_EXECUTABLE -m pip install pytest pytest-cov
         export COVERAGE_FILE=.coverage.$RANDOM LLVM_PROFILE_FILE=$PWD/pid-%p.profraw
-        ctest -V -C ${{ matrix.config }}
+        $PYTHON_EXECUTABLE -m pytest ../tests --cov=.
       # END B
 
     - name: Setup Python (Python 3.8)
@@ -321,11 +329,13 @@ jobs:
       if: contains(matrix.python, 'YES')
       working-directory: build
       shell: bash
+      env:
+        PYTHONPATH: ${{ matrix.config }}
       run: |
-        PYTHON_EXECUTABLE=$(grep '_Python_EXECUTABLE:INTERNAL' CMakeCache.txt | sed 's/.*=//')
+        PYTHON_EXECUTABLE=$(grep 'Python_EXECUTABLE:' CMakeCache.txt | sed 's/.*=//')
         $PYTHON_EXECUTABLE -m pip install pytest pytest-cov
         export COVERAGE_FILE=.coverage.$RANDOM LLVM_PROFILE_FILE=$PWD/pid-%p.profraw
-        ctest -V -C ${{ matrix.config }}
+        $PYTHON_EXECUTABLE -m pytest ../tests --cov=.
       # END B
 
     - name: Upload coverage reports
@@ -338,6 +348,7 @@ jobs:
         shopt -s expand_aliases
         if ${{ runner.os == 'macOS' }}; then alias llvm-profdata='xcrun llvm-profdata' llvm-cov='xcrun llvm-cov'; fi
 
+        python -m pip install coverage
         python -m coverage combine $(find . -name '.coverage.*')
 
         llvm-profdata merge pid-*.profraw -o coverage.profdata

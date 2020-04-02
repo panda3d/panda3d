@@ -97,6 +97,7 @@ public:
 PUBLISHED:
   EXTENSION(INLINE PyObject *get_message() const);
   EXTENSION(INLINE PyObject *__bytes__() const);
+  EXTENSION(PyObject *__reduce__() const);
 
   INLINE size_t get_length() const;
 

@@ -104,10 +104,13 @@ RenameSet methodRenameDictionary[] = {
   { "operator >>="  , "__irshift__",            1 },
   { "operator typecast bool", "__nonzero__",    0 },
   { "__nonzero__"   , "__nonzero__",            0 },
+  { "__int__"       , "__int__",                0 },
   { "__reduce__"    , "__reduce__",             0 },
   { "__reduce_persist__", "__reduce_persist__", 0 },
   { "__copy__"      , "__copy__",               0 },
   { "__deepcopy__"  , "__deepcopy__",           0 },
+  { "__getstate__"  , "__getstate__",           0 },
+  { "__setstate__"  , "__setstate__",           0 },
   { "print"         , "Cprint",                 0 },
   { "CInterval.set_t", "_priv__cSetT",          0 },
   { nullptr, nullptr, -1 }
@@ -554,6 +557,12 @@ get_slotted_function_def(Object *obj, Function *func, FunctionRemap *remap,
     // nb_bool.
     def._answer_location = "nb_bool";
     def._wrapper_type = WT_inquiry;
+    return true;
+  }
+
+  if (method_name == "__int__") {
+    def._answer_location = "nb_int";
+    def._wrapper_type = WT_no_params;
     return true;
   }
 
@@ -3588,17 +3597,28 @@ write_function_for_name(ostream &out, Object *obj,
     std::string cClassName = obj->_itype.get_true_name();
     // string class_name = remap->_cpptype->get_simple_name();
 
-    // Extract pointer from 'self' parameter.
-    out << "  " << cClassName << " *local_this = nullptr;\n";
-
-    if (all_nonconst) {
+    // If this is a non-static __setstate__, we run the default constructor.
+    if (remap->_cppfunc->get_local_name() == "__setstate__") {
+      out << "  if (DtoolInstance_VOID_PTR(self) != nullptr) {\n"
+          << "    Dtool_Raise_TypeError(\"C++ object is already constructed.\");\n";
+      error_return(out, 4, return_flags);
+      out << "  }\n"
+          << "  " << cClassName << " *local_this = new " << cClassName << ";\n"
+          << "  DTool_PyInit_Finalize(self, local_this, &Dtool_" << ClassName
+          << ", false, false);\n"
+          << "  if (local_this == nullptr) {\n"
+          << "    PyErr_NoMemory();\n";
+    }
+    else if (all_nonconst) {
       // All remaps are non-const.  Also check that this object isn't const.
-      out << "  if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_" << ClassName << ", "
+      out << "  " << cClassName << " *local_this = nullptr;\n"
+          << "  if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_" << ClassName << ", "
           << "(void **)&local_this, \"" << classNameFromCppName(cClassName, false)
           << "." << methodNameFromCppName(remap, cClassName, false) << "\")) {\n";
-
-    } else {
-      out << "  if (!DtoolInstance_GetPointer(self, local_this, Dtool_" << ClassName << ")) {\n";
+    }
+    else {
+      out << "  " << cClassName << " *local_this = nullptr;\n"
+          << "  if (!DtoolInstance_GetPointer(self, local_this, Dtool_" << ClassName << ")) {\n";
     }
 
     error_return(out, 4, return_flags);

@@ -1338,7 +1338,7 @@ append_vdata(const GeomVertexData *vdata, int vertex_offset) {
     // The TransformBlendTable.  This one is the easiest, because we can
     // modify it directly, and it will uniquify blend objects for us.
 
-    // We have few special optimizations to handle the TransformBlendTable,
+    // We have a few special optimizations to handle the TransformBlendTable,
     // since it's a very common case and therefore worth spending a bit of
     // effort to optimize deeply.
 

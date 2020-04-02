@@ -270,6 +270,7 @@ class build_apps(setuptools.Command):
             'libbz2.so.*', 'libz.so.*', 'liblzma.so.*', 'librt.so.*', 'libutil.so.*',
 
             # macOS
+            '/usr/lib/libc++.1.dylib',
             '/usr/lib/libstdc++.*.dylib',
             '/usr/lib/libz.*.dylib',
             '/usr/lib/libobjc.*.dylib',
