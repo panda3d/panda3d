@@ -11,8 +11,8 @@
  * @date 2010-11-19
  */
 
-#ifndef __BULLET_RIGID_BODY_NODE_H__
-#define __BULLET_RIGID_BODY_NODE_H__
+#ifndef BULLET_RIGID_BODY_NODE_H
+#define BULLET_RIGID_BODY_NODE_H
 
 #include "pandabase.h"
 
@@ -182,4 +182,4 @@ private:
 
 #include "bulletRigidBodyNode.I"
 
-#endif // __BULLET_RIGID_BODY_NODE_H__
+#endif // BULLET_RIGID_BODY_NODE_H

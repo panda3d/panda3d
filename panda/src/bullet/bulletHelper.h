@@ -11,8 +11,8 @@
  * @date 2011-01-19
  */
 
-#ifndef __BULLET_HELPER_H__
-#define __BULLET_HELPER_H__
+#ifndef BULLET_HELPER_H
+#define BULLET_HELPER_H
 
 #include "pandabase.h"
 
@@ -70,4 +70,4 @@ private:
 
 #include "bulletHelper.I"
 
-#endif // __BULLET_HELPER_H__
+#endif // BULLET_HELPER_H

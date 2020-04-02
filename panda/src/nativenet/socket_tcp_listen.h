@@ -1,5 +1,5 @@
-#ifndef __SOCKET_TCP_LISTEN_H__
-#define __SOCKET_TCP_LISTEN_H__
+#ifndef SOCKET_TCP_LISTEN_H
+#define SOCKET_TCP_LISTEN_H
 
 #include "pandabase.h"
 #include "socket_ip.h"
@@ -114,4 +114,4 @@ GetIncomingConnection(Socket_TCP &newsession, Socket_Address &address) {
   return true;
 }
 
-#endif //__SOCKET_TCP_LISTEN_H__
+#endif //SOCKET_TCP_LISTEN_H

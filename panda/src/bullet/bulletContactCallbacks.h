@@ -11,8 +11,8 @@
  * @date 2010-04-10
  */
 
-#ifndef __BULLET_CONTACT_CALLBACKS_H__
-#define __BULLET_CONTACT_CALLBACKS_H__
+#ifndef BULLET_CONTACT_CALLBACKS_H
+#define BULLET_CONTACT_CALLBACKS_H
 
 #include "pandabase.h"
 
@@ -147,4 +147,4 @@ contact_destroyed_callback(void *userPersistentData) {
   return false;
 }
 
-#endif // __BULLET_CONTACT_CALLBACKS_H__
+#endif // BULLET_CONTACT_CALLBACKS_H

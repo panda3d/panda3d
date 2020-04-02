@@ -11,8 +11,8 @@
  * @date 2010-11-21
  */
 
-#ifndef __BULLET_BASE_CHARACTER_CONTROLLER_NODE_H__
-#define __BULLET_BASE_CHARACTER_CONTROLLER_NODE_H__
+#ifndef BULLET_BASE_CHARACTER_CONTROLLER_NODE_H
+#define BULLET_BASE_CHARACTER_CONTROLLER_NODE_H
 
 #include "pandabase.h"
 
@@ -69,4 +69,4 @@ private:
 
 #include "bulletBaseCharacterControllerNode.I"
 
-#endif // __BULLET_BASE_CHARACTER_CONTROLLER_NODE_H__
+#endif // BULLET_BASE_CHARACTER_CONTROLLER_NODE_H

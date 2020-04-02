@@ -11,8 +11,8 @@
  * @date 2010-03-07
  */
 
-#ifndef __BULLET_PERSISTENT_MANIFOLD_H__
-#define __BULLET_PERSISTENT_MANIFOLD_H__
+#ifndef BULLET_PERSISTENT_MANIFOLD_H
+#define BULLET_PERSISTENT_MANIFOLD_H
 
 #include "pandabase.h"
 
@@ -57,4 +57,4 @@ private:
 
 #include "bulletPersistentManifold.I"
 
-#endif // __BULLET_PERSISTENT_MANIFOLD_H__
+#endif // BULLET_PERSISTENT_MANIFOLD_H

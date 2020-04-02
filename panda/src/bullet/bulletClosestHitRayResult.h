@@ -11,8 +11,8 @@
  * @date 2010-02-21
  */
 
-#ifndef __BULLET_CLOSEST_HIT_RAY_RESULT_H__
-#define __BULLET_CLOSEST_HIT_RAY_RESULT_H__
+#ifndef BULLET_CLOSEST_HIT_RAY_RESULT_H
+#define BULLET_CLOSEST_HIT_RAY_RESULT_H
 
 #include "pandabase.h"
 
@@ -70,4 +70,4 @@ private:
 
 #include "bulletClosestHitRayResult.I"
 
-#endif // __BULLET_CLOSEST_HIT_RAY_RESULT_H__
+#endif // BULLET_CLOSEST_HIT_RAY_RESULT_H

@@ -11,8 +11,8 @@
  * @date 2012-11-22
  */
 
-#ifndef __BULLET_CONTACT_CALLBACK_DATA_H__
-#define __BULLET_CONTACT_CALLBACK_DATA_H__
+#ifndef BULLET_CONTACT_CALLBACK_DATA_H
+#define BULLET_CONTACT_CALLBACK_DATA_H
 
 #include "pandabase.h"
 #include "callbackData.h"
@@ -81,4 +81,4 @@ private:
 
 #include "bulletContactCallbackData.I"
 
-#endif // __BULLET_CONTACT_CALLBACK_DATA_H__
+#endif // BULLET_CONTACT_CALLBACK_DATA_H

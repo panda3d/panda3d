@@ -11,8 +11,8 @@
  * @date 2010-03-04
  */
 
-#ifndef __BULLET_SOFT_BODY_CONTROL_H__
-#define __BULLET_SOFT_BODY_CONTROL_H__
+#ifndef BULLET_SOFT_BODY_CONTROL_H
+#define BULLET_SOFT_BODY_CONTROL_H
 
 #include "pandabase.h"
 
@@ -60,4 +60,4 @@ private:
 
 #include "bulletSoftBodyControl.I"
 
-#endif // __BULLET_SOFT_BODY_CONTROL_H__
+#endif // BULLET_SOFT_BODY_CONTROL_H

@@ -11,8 +11,8 @@
  * @date 2010-01-24
  */
 
-#ifndef __BULLET_BOX_SHAPE_H__
-#define __BULLET_BOX_SHAPE_H__
+#ifndef BULLET_BOX_SHAPE_H
+#define BULLET_BOX_SHAPE_H
 
 #include "pandabase.h"
 
@@ -82,4 +82,4 @@ private:
 
 #include "bulletBoxShape.I"
 
-#endif // __BULLET_BOX_SHAPE_H__
+#endif // BULLET_BOX_SHAPE_H

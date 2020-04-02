@@ -1,5 +1,5 @@
-#ifndef __SOCKET_PORTABLE_H__
-#define __SOCKET_PORTABLE_H__
+#ifndef SOCKET_PORTABLE_H
+#define SOCKET_PORTABLE_H
 // Lots of stuff to make network socket-based io transparent across multiple
 // platforms
 
@@ -315,4 +315,4 @@ No Host Type defined !!
 #error  Fatal
 #endif
 
-#endif //__SOCKET_PORTABLE_H__
+#endif //SOCKET_PORTABLE_H

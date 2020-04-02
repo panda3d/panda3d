@@ -11,8 +11,8 @@
  * @date 2013-08-15
  */
 
-#ifndef __BULLET_MINKOWSKI_SUM_SHAPE_H__
-#define __BULLET_MINKOWSKI_SUM_SHAPE_H__
+#ifndef BULLET_MINKOWSKI_SUM_SHAPE_H
+#define BULLET_MINKOWSKI_SUM_SHAPE_H
 
 #include "pandabase.h"
 
@@ -94,4 +94,4 @@ private:
 
 #include "bulletMinkowskiSumShape.I"
 
-#endif // __BULLET_MINKOWSKI_SUM_SHAPE_H__
+#endif // BULLET_MINKOWSKI_SUM_SHAPE_H

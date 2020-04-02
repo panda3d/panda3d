@@ -11,8 +11,8 @@
  * @date 2013-03-03
  */
 
-#ifndef __BULLET_TRANSLATIONAL_LIMIT_MOTOR_H__
-#define __BULLET_TRANSLATIONAL_LIMIT_MOTOR_H__
+#ifndef BULLET_TRANSLATIONAL_LIMIT_MOTOR_H
+#define BULLET_TRANSLATIONAL_LIMIT_MOTOR_H
 
 #include "pandabase.h"
 
@@ -62,4 +62,4 @@ private:
 
 #include "bulletTranslationalLimitMotor.I"
 
-#endif // __BULLET_TRANSLATIONAL_LIMIT_MOTOR_H__
+#endif // BULLET_TRANSLATIONAL_LIMIT_MOTOR_H

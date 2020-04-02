@@ -11,8 +11,8 @@
  * @date 2012-11-26
  */
 
-#ifndef __BULLET_TICK_CALLBACK_DATA_H__
-#define __BULLET_TICK_CALLBACK_DATA_H__
+#ifndef BULLET_TICK_CALLBACK_DATA_H
+#define BULLET_TICK_CALLBACK_DATA_H
 
 #include "pandabase.h"
 #include "callbackData.h"
@@ -58,4 +58,4 @@ private:
 
 #include "bulletTickCallbackData.I"
 
-#endif // __BULLET_TICK_CALLBACK_DATA_H__
+#endif // BULLET_TICK_CALLBACK_DATA_H

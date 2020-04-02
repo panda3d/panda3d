@@ -1,5 +1,5 @@
-#ifndef __TIME_ACCUMULATOR_H__
-#define __TIME_ACCUMULATOR_H__
+#ifndef TIME_ACCUMULATOR_H
+#define TIME_ACCUMULATOR_H
 // Think of this as a stopwatch that can be restarted.
 class Time_Accumulator
 {
@@ -93,4 +93,4 @@ inline Time_Span  Time_Accumulator::Report()
     return answer;
 }
 
-#endif //__TIME_ACCUMULATOR_H__
+#endif //TIME_ACCUMULATOR_H
