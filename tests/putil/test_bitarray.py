@@ -42,8 +42,8 @@ def test_bitarray_getstate():
     assert BitArray(100).__getstate__() == 100
     assert BitArray(9870000000000000000).__getstate__() == 9870000000000000000
     assert BitArray.all_on().__getstate__() == -1
-    assert ~BitArray(100).__getstate__() == ~100
-    assert ~BitArray(812000000000000000).__getstate__() == ~812000000000000000
+    assert (~BitArray(100).__getstate__()) == ~100
+    assert (~BitArray(812000000000000000).__getstate__()) == ~812000000000000000
 
 
 def test_bitarray_pickle():
@@ -57,4 +57,7 @@ def test_bitarray_pickle():
     assert ba == pickle.loads(pickle.dumps(ba, -1))
 
     ba = BitArray(94187049178237918273981729127381723)
+    assert ba == pickle.loads(pickle.dumps(ba, -1))
+
+    ba = ~BitArray(94187049178237918273981729127381723)
     assert ba == pickle.loads(pickle.dumps(ba, -1))

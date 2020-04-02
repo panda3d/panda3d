@@ -88,3 +88,12 @@ def test_vec2_swizzle_mask():
 def test_vec2_str():
     assert str(Vec2F(2, 3)) == "LVector2f(2, 3)"
     assert str(Vec2D(2, 3)) == "LVector2d(2, 3)"
+
+
+def test_vec2_compare():
+    assert Vec2(1, 2).compare_to(Vec2(1, 2)) == 0
+
+    assert Vec2(1, 0).compare_to(Vec2(1, 0)) == 0
+    assert Vec2(1, 0).compare_to(Vec2(0, 1)) == 1
+    assert Vec2(0, 1).compare_to(Vec2(1, 0)) == -1
+    assert Vec2(0, 1).compare_to(Vec2(0, 1)) == 0
