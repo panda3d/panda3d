@@ -125,7 +125,9 @@ PUBLISHED:
 
   INLINE int get_key() const;
 
-  INLINE bool __nonzero__() const;
+  EXTENSION(bool __bool__() const);
+  EXTENSION(PyObject *__int__() const);
+  EXTENSION(PyObject *__reduce__(PyObject *self) const);
 
 public:
   INLINE void generate_hash(ChecksumHashGenerator &hashgen) const;

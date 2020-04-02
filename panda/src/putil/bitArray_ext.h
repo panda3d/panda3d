@@ -6,34 +6,39 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * @file internalName_ext.h
+ * @file bitArray_ext.h
  * @author rdb
- * @date 2014-09-28
+ * @date 2020-03-21
  */
 
-#ifndef INTERNALNAME_EXT_H
-#define INTERNALNAME_EXT_H
+#ifndef BITARRAY_EXT_H
+#define BITARRAY_EXT_H
 
 #include "dtoolbase.h"
 
 #ifdef HAVE_PYTHON
 
 #include "extension.h"
-#include "internalName.h"
+#include "bitArray.h"
 #include "py_panda.h"
 
 /**
- * This class defines the extension methods for InternalName, which are called
+ * This class defines the extension methods for BitArray, which are called
  * instead of any C++ methods with the same prototype.
  */
 template<>
-class Extension<InternalName> : public ExtensionBase<InternalName> {
+class Extension<BitArray> : public ExtensionBase<BitArray> {
 public:
-  static PT(InternalName) make(PyObject *str);
+  void __init__(PyObject *init_value);
 
-  PyObject *__reduce__() const;
+  INLINE bool __bool__() const;
+
+  PyObject *__getstate__() const;
+  void __setstate__(PyObject *state);
 };
+
+#include "bitArray_ext.I"
 
 #endif  // HAVE_PYTHON
 
-#endif  // INTERNALNAME_EXT_H
+#endif  // BITARRAY_EXT_H

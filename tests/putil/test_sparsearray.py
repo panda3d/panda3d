@@ -1,4 +1,5 @@
 from panda3d import core
+import pickle
 
 
 def test_sparse_array_set_bit_to():
@@ -232,3 +233,65 @@ def test_sparse_array_augm_assignment():
     u = core.SparseArray()
     t ^= u
     assert s is t
+
+
+def test_sparse_array_nonzero():
+    sa = core.SparseArray()
+    assert not sa
+    sa.set_bit(0)
+    assert sa
+
+    sa = core.SparseArray.all_on()
+    assert sa
+    sa.clear_range(0, 100)
+    assert sa
+
+
+def test_sparse_array_getstate():
+    sa = core.SparseArray()
+    assert sa.__getstate__() == ()
+
+    sa = core.SparseArray()
+    sa.invert_in_place()
+    assert sa.__getstate__() == (0,)
+
+    sa = core.SparseArray()
+    sa.set_range(0, 2)
+    sa.set_range(4, 4)
+    assert sa.__getstate__() == (0, 2, 4, 8)
+
+    sa = core.SparseArray()
+    sa.invert_in_place()
+    sa.clear_range(2, 4)
+    assert sa.__getstate__() == (0, 2, 6)
+
+    sa = core.SparseArray()
+    sa.invert_in_place()
+    sa.clear_range(0, 2)
+    sa.clear_range(4, 4)
+    assert sa.__getstate__() == (2, 4, 8)
+
+
+def test_sparse_array_pickle():
+    sa = core.SparseArray()
+    assert sa == pickle.loads(pickle.dumps(sa, -1))
+
+    sa = core.SparseArray()
+    sa.invert_in_place()
+    assert sa == pickle.loads(pickle.dumps(sa, -1))
+
+    sa = core.SparseArray()
+    sa.set_range(0, 2)
+    sa.set_range(4, 4)
+    assert sa == pickle.loads(pickle.dumps(sa, -1))
+
+    sa = core.SparseArray()
+    sa.invert_in_place()
+    sa.clear_range(2, 4)
+    assert sa == pickle.loads(pickle.dumps(sa, -1))
+
+    sa = core.SparseArray()
+    sa.invert_in_place()
+    sa.clear_range(0, 2)
+    sa.clear_range(4, 4)
+    assert sa == pickle.loads(pickle.dumps(sa, -1))
