@@ -623,6 +623,13 @@ class build_apps(setuptools.Command):
                 if var == 'model-cache-dir' and value:
                     value = value.replace('/panda3d', '/{}'.format(self.distribution.get_name()))
 
+                if var == 'audio-library-name':
+                    # We have the default set to p3fmod_audio on macOS in 1.10,
+                    # but this can be unexpected as other platforms use OpenAL
+                    # by default.  Switch it up if FMOD is not included.
+                    if value not in self.plugins and value == 'p3fmod_audio' and 'p3openal_audio' in self.plugins:
+                        self.warn("Missing audio plugin p3fmod_audio referenced in PRC data, replacing with p3openal_audio")
+
                 for plugin in check_plugins:
                     if plugin in value and plugin not in self.plugins:
                         useline = False
