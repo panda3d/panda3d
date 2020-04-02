@@ -1611,11 +1611,17 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
     // Apply the default OpenGL lights otherwise.
     // Special exception for light 0, which defaults to white.
     if (i == 0) {
-      into[0].set_row(0, LVecBase4(1, 1, 1, 1));
+      into[0].set(1, 1, 1, 1,
+                  1, 0, 0, 0,
+                  0, 0, 0, 0,
+                  0, 0, 0, 0);
       ++i;
     }
     for (; i < (size_t)count; ++i) {
-      fetch_specified_member(NodePath(), name, into[i]);
+      into[i].set(0, 0, 0, 0,
+                  1, 0, 0, 0,
+                  0, 0, 0, 0,
+                  0, 0, 0, 0);
     }
     return;
   }
