@@ -1656,47 +1656,51 @@ fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LMatrix4 &t)
   if (attrib == IN_color) {
     if (node == nullptr) {
       t = LMatrix4::ident_mat();
+    } else {
+      Light *light = node->as_light();
+      nassertv(light != nullptr);
+      LColor c = light->get_color();
+      t.set_row(3, c);
     }
-    Light *light = node->as_light();
-    nassertv(light != nullptr);
-    LColor c = light->get_color();
-    t.set_row(3, c);
 
   } else if (attrib == IN_ambient) {
     if (node == nullptr) {
       t = LMatrix4::ident_mat();
-    }
-    Light *light = node->as_light();
-    nassertv(light != nullptr);
-    if (node->is_ambient_light()) {
-      LColor c = light->get_color();
-      t.set_row(3, c);
     } else {
-      // Non-ambient lights don't currently have an ambient color in Panda3D.
-      t.set_row(3, LColor(0.0f, 0.0f, 0.0f, 1.0f));
+      Light *light = node->as_light();
+      nassertv(light != nullptr);
+      if (node->is_ambient_light()) {
+        LColor c = light->get_color();
+        t.set_row(3, c);
+      } else {
+        // Non-ambient lights don't currently have an ambient color in Panda3D.
+        t.set_row(3, LColor(0.0f, 0.0f, 0.0f, 1.0f));
+      }
     }
 
   } else if (attrib == IN_diffuse) {
     if (node == nullptr) {
       t = LMatrix4::ident_mat();
-    }
-    Light *light = node->as_light();
-    nassertv(light != nullptr);
-    if (node->is_ambient_light()) {
-      // Ambient light has no diffuse color.
-      t.set_row(3, LColor(0.0f, 0.0f, 0.0f, 1.0f));
     } else {
-      LColor c = light->get_color();
-      t.set_row(3, c);
+      Light *light = node->as_light();
+      nassertv(light != nullptr);
+      if (node->is_ambient_light()) {
+        // Ambient light has no diffuse color.
+        t.set_row(3, LColor(0.0f, 0.0f, 0.0f, 1.0f));
+      } else {
+        LColor c = light->get_color();
+        t.set_row(3, c);
+      }
     }
 
   } else if (attrib == IN_specular) {
     if (node == nullptr) {
       t = LMatrix4::ident_mat();
+    } else {
+      Light *light = node->as_light();
+      nassertv(light != nullptr);
+      t.set_row(3, light->get_specular_color());
     }
-    Light *light = node->as_light();
-    nassertv(light != nullptr);
-    t.set_row(3, light->get_specular_color());
 
   } else if (attrib == IN_position) {
     if (np.is_empty()) {
