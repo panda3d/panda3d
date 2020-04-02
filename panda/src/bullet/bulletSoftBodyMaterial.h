@@ -11,8 +11,8 @@
  * @date 2011-03-19
  */
 
-#ifndef BULLET_SOFT_BODY_MATERIAL_H
-#define BULLET_SOFT_BODY_MATERIAL_H
+#ifndef BULLETSOFTBODYMATERIAL_H
+#define BULLETSOFTBODYMATERIAL_H
 
 #include "pandabase.h"
 
@@ -53,4 +53,4 @@ private:
 
 #include "bulletSoftBodyMaterial.I"
 
-#endif // BULLET_SOFT_BODY_MATERIAL_H
+#endif // BULLETSOFTBODYMATERIAL_H

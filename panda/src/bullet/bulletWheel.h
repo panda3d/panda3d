@@ -11,8 +11,8 @@
  * @date 2010-02-17
  */
 
-#ifndef BULLET_WHEEL_H
-#define BULLET_WHEEL_H
+#ifndef BULLETWHEEL_H
+#define BULLETWHEEL_H
 
 #include "pandabase.h"
 
@@ -151,4 +151,4 @@ private:
 
 #include "bulletWheel.I"
 
-#endif // BULLET_WHEEL_H
+#endif // BULLETWHEEL_H

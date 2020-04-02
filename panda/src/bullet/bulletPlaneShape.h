@@ -11,8 +11,8 @@
  * @date 2010-01-23
  */
 
-#ifndef BULLET_PLANE_SHAPE_H
-#define BULLET_PLANE_SHAPE_H
+#ifndef BULLETPLANESHAPE_H
+#define BULLETPLANESHAPE_H
 
 #include "pandabase.h"
 
@@ -84,4 +84,4 @@ private:
 
 #include "bulletPlaneShape.I"
 
-#endif // BULLET_PLANE_SHAPE_H
+#endif // BULLETPLANESHAPE_H

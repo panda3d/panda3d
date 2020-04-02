@@ -11,8 +11,8 @@
  * @date 2010-02-21
  */
 
-#ifndef BULLET_ALL_HITS_RAY_RESULT_H
-#define BULLET_ALL_HITS_RAY_RESULT_H
+#ifndef BULLETALLHITSRAYRESULT_H
+#define BULLETALLHITSRAYRESULT_H
 
 #include "pandabase.h"
 
@@ -98,4 +98,4 @@ private:
 
 #include "bulletAllHitsRayResult.I"
 
-#endif // BULLET_ALL_HITS_RAY_RESULT_H
+#endif // BULLETALLHITSRAYRESULT_H

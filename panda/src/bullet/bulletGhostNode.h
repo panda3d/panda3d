@@ -11,8 +11,8 @@
  * @date 2010-11-19
  */
 
-#ifndef BULLET_GHOST_NODE_H
-#define BULLET_GHOST_NODE_H
+#ifndef BULLETGHOSTNODE_H
+#define BULLETGHOSTNODE_H
 
 #include "pandabase.h"
 
@@ -82,4 +82,4 @@ private:
 
 #include "bulletGhostNode.I"
 
-#endif // BULLET_GHOST_NODE_H
+#endif // BULLETGHOSTNODE_H

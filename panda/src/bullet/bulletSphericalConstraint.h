@@ -11,8 +11,8 @@
  * @date 2010-03-01
  */
 
-#ifndef BULLET_SPHERICAL_CONSTRAINT_H
-#define BULLET_SPHERICAL_CONSTRAINT_H
+#ifndef BULLETSPHERICALCONSTRAINT_H
+#define BULLETSPHERICALCONSTRAINT_H
 
 #include "pandabase.h"
 
@@ -79,4 +79,4 @@ private:
 
 #include "bulletSphericalConstraint.I"
 
-#endif // BULLET_SPHERICAL_CONSTRAINT_H
+#endif // BULLETSPHERICALCONSTRAINT_H

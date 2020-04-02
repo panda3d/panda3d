@@ -11,8 +11,8 @@
  * @date 2010-02-16
  */
 
-#ifndef BULLET_VEHICLE_H
-#define BULLET_VEHICLE_H
+#ifndef BULLETVEHICLE_H
+#define BULLETVEHICLE_H
 
 #include "pandabase.h"
 
@@ -137,4 +137,4 @@ private:
 
 #include "bulletVehicle.I"
 
-#endif // BULLET_VEHICLE_H
+#endif // BULLETVEHICLE_H

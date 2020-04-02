@@ -11,8 +11,8 @@
  * @date 2010-03-07
  */
 
-#ifndef BULLET_MANIFOLD_POINT_H
-#define BULLET_MANIFOLD_POINT_H
+#ifndef BULLETMANIFOLDPOINT_H
+#define BULLETMANIFOLDPOINT_H
 
 #include "pandabase.h"
 
@@ -104,4 +104,4 @@ private:
 
 #include "bulletManifoldPoint.I"
 
-#endif // BULLET_MANIFOLD_POINT_H
+#endif // BULLETMANIFOLDPOINT_H

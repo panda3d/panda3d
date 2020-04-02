@@ -11,8 +11,8 @@
  * @date 2010-01-24
  */
 
-#ifndef BULLET_CONE_SHAPE_H
-#define BULLET_CONE_SHAPE_H
+#ifndef BULLETCONESHAPE_H
+#define BULLETCONESHAPE_H
 
 #include "pandabase.h"
 
@@ -79,4 +79,4 @@ private:
 
 #include "bulletConeShape.I"
 
-#endif // BULLET_CONE_SHAPE_H
+#endif // BULLETCONESHAPE_H

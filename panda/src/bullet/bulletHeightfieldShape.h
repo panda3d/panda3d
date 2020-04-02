@@ -11,8 +11,8 @@
  * @date 2010-02-05
  */
 
-#ifndef BULLET_HEIGHTFIELD_SHAPE_H
-#define BULLET_HEIGHTFIELD_SHAPE_H
+#ifndef BULLETHEIGHTFIELDSHAPE_H
+#define BULLETHEIGHTFIELDSHAPE_H
 
 #include "pandabase.h"
 
@@ -81,4 +81,4 @@ private:
 
 #include "bulletHeightfieldShape.I"
 
-#endif // BULLET_HEIGHTFIELD_SHAPE_H
+#endif // BULLETHEIGHTFIELDSHAPE_H

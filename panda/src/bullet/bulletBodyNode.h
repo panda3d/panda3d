@@ -11,8 +11,8 @@
  * @date 2010-11-19
  */
 
-#ifndef BULLET_BODY_NODE_H
-#define BULLET_BODY_NODE_H
+#ifndef BULLETBODYNODE_H
+#define BULLETBODYNODE_H
 
 #include "pandabase.h"
 
@@ -201,4 +201,4 @@ private:
 
 #include "bulletBodyNode.I"
 
-#endif // BULLET_BODY_NODE_H
+#endif // BULLETBODYNODE_H

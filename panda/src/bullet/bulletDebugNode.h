@@ -11,8 +11,8 @@
  * @date 2010-01-23
  */
 
-#ifndef BULLET_DEBUG_NODE_H
-#define BULLET_DEBUG_NODE_H
+#ifndef BULLETDEBUGNODE_H
+#define BULLETDEBUGNODE_H
 
 #include "pandabase.h"
 
@@ -151,4 +151,4 @@ private:
 
 #include "bulletDebugNode.I"
 
-#endif // BULLET_DEBUG_NODE_H
+#endif // BULLETDEBUGNODE_H

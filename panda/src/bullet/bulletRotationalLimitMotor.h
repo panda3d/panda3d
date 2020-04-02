@@ -11,8 +11,8 @@
  * @date 2013-03-03
  */
 
-#ifndef BULLET_ROTATIONAL_LIMIT_MOTOR_H
-#define BULLET_ROTATIONAL_LIMIT_MOTOR_H
+#ifndef BULLETROTATIONALLIMITMOTOR_H
+#define BULLETROTATIONALLIMITMOTOR_H
 
 #include "pandabase.h"
 
@@ -66,4 +66,4 @@ private:
 
 #include "bulletRotationalLimitMotor.I"
 
-#endif // BULLET_ROTATIONAL_LIMIT_MOTOR_H
+#endif // BULLETROTATIONALLIMITMOTOR_H

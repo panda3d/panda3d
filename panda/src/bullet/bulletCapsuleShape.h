@@ -11,8 +11,8 @@
  * @date 2010-01-27
  */
 
-#ifndef BULLET_CAPSULE_SHAPE_H
-#define BULLET_CAPSULE_SHAPE_H
+#ifndef BULLETCAPSULESHAPE_H
+#define BULLETCAPSULESHAPE_H
 
 #include "pandabase.h"
 
@@ -86,4 +86,4 @@ private:
 
 #include "bulletCapsuleShape.I"
 
-#endif // BULLET_CAPSULE_SHAPE_H
+#endif // BULLETCAPSULESHAPE_H

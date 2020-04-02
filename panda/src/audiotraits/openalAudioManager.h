@@ -10,8 +10,8 @@
  * @author Ben Buchwald <bb2@alumni.cmu.edu>
  */
 
-#ifndef OPENAL_AUDIO_MANAGER_H
-#define OPENAL_AUDIO_MANAGER_H
+#ifndef OPENALAUDIOMANAGER_H
+#define OPENALAUDIOMANAGER_H
 
 #include "pandabase.h"
 
@@ -242,4 +242,4 @@ private:
 
 EXPCL_OPENAL_AUDIO AudioManager *Create_OpenALAudioManager();
 
-#endif /* OPENAL_AUDIO_MANAGER_H */
+#endif /* OPENALAUDIOMANAGER_H */

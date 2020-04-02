@@ -11,8 +11,8 @@
  * @date 2010-03-08
  */
 
-#ifndef BULLET_CONTACT_RESULT_H
-#define BULLET_CONTACT_RESULT_H
+#ifndef BULLETCONTACTRESULT_H
+#define BULLETCONTACTRESULT_H
 
 #include "pandabase.h"
 
@@ -110,4 +110,4 @@ private:
 
 #include "bulletContactResult.I"
 
-#endif // BULLET_CONTACT_RESULT_H
+#endif // BULLETCONTACTRESULT_H

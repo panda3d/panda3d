@@ -1,5 +1,5 @@
-#ifndef RINGBUFFER_GM_H
-#define RINGBUFFER_GM_H
+#ifndef RINGBUFFERGM_H
+#define RINGBUFFERGM_H
 
 #include "membuffer.h"
 
@@ -30,4 +30,4 @@ public:
 
 #include "ringbuffer.I"
 
-#endif //RINGBUFFER_GM_H
+#endif //RINGBUFFERGM_H
