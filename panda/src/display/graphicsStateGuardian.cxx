@@ -1656,6 +1656,7 @@ fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LMatrix4 &t)
   if (attrib == IN_color) {
     if (node == nullptr) {
       t = LMatrix4::ident_mat();
+      return;
     }
     Light *light = node->as_light();
     nassertv(light != nullptr);
@@ -1665,6 +1666,7 @@ fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LMatrix4 &t)
   } else if (attrib == IN_ambient) {
     if (node == nullptr) {
       t = LMatrix4::ident_mat();
+      return;
     }
     Light *light = node->as_light();
     nassertv(light != nullptr);
@@ -1679,6 +1681,7 @@ fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LMatrix4 &t)
   } else if (attrib == IN_diffuse) {
     if (node == nullptr) {
       t = LMatrix4::ident_mat();
+      return;
     }
     Light *light = node->as_light();
     nassertv(light != nullptr);
@@ -1693,6 +1696,7 @@ fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LMatrix4 &t)
   } else if (attrib == IN_specular) {
     if (node == nullptr) {
       t = LMatrix4::ident_mat();
+      return;
     }
     Light *light = node->as_light();
     nassertv(light != nullptr);
