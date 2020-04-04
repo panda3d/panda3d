@@ -66,3 +66,6 @@ __pycache__/
 /.settings/
 /.cproject
 /.project
+
+# Mac OS
+*.DS_Store
