@@ -135,7 +135,6 @@ CONFLICTING_FILES=["dtool/src/dtoolutil/pandaVersion.h",
                    "dtool/src/dtoolutil/checkPandaVersion.h",
                    "dtool/src/dtoolutil/checkPandaVersion.cxx",
                    "dtool/src/prc/prc_parameters.h",
-                   "panda/src/speedtree/speedtree_parameters.h",
                    "direct/src/plugin/p3d_plugin_config.h",
                    "direct/src/plugin_activex/P3DActiveX.rc",
                    "direct/src/plugin_npapi/nppanda3d.rc",
@@ -2351,29 +2350,6 @@ def SdkLocateMacOSX(osxtarget = None):
     else:
         SDK["MACOSX"] = ""
 
-def SdkLocateSpeedTree():
-    # Look for all of the SpeedTree SDK directories within the
-    # sdks/win32/speedtree dir, and pick the highest-numbered one.
-    dir = GetSdkDir("speedtree")
-    if not os.path.exists(dir):
-        return
-
-    speedtrees = []
-    for dirname in os.listdir(dir):
-        if dirname.startswith('SpeedTree SDK v'):
-            version = dirname[15:].split()[0]
-            version = tuple(map(int, version.split('.')))
-            speedtrees.append((version, dirname))
-    if not speedtrees:
-        # No installed SpeedTree SDK.
-        return
-
-    speedtrees.sort()
-    version, dirname = speedtrees[-1]
-    SDK["SPEEDTREE"] = os.path.join(dir, dirname)
-    SDK["SPEEDTREEAPI"] = "OpenGL"
-    SDK["SPEEDTREEVERSION"] = '%s.%s' % (version[0], version[1])
-
 def SdkLocateAndroid():
     """This actually locates the Android NDK, not the Android SDK.
     NDK_ROOT must be set to its root directory."""
@@ -2560,12 +2536,6 @@ def SdkAutoDisableMax():
                     WARNINGS.append("The registry does not appear to contain a pointer to "+version)
                 WARNINGS.append("I have automatically added this command-line option: --no-"+version.lower())
             PkgDisable(version)
-
-def SdkAutoDisableSpeedTree():
-    if ("SPEEDTREE" not in SDK) and (PkgSkip("SPEEDTREE")==0):
-        PkgDisable("SPEEDTREE")
-        WARNINGS.append("I cannot locate SDK for SpeedTree")
-        WARNINGS.append("I have automatically added this command-line option: --no-speedtree")
 
 ########################################################################
 ##

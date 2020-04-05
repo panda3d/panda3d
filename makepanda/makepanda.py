@@ -78,7 +78,6 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "OPENAL", "FMODEX",                                  # Audio playback
   "VORBIS", "OPUS", "FFMPEG", "SWSCALE", "SWRESAMPLE", # Audio decoding
   "ODE", "BULLET", "PANDAPHYSICS",                     # Physics
-  "SPEEDTREE",                                         # SpeedTree
   "ZLIB", "PNG", "JPEG", "TIFF", "OPENEXR", "SQUISH",  # 2D Formats support
   ] + MAYAVERSIONS + MAXVERSIONS + [ "FCOLLADA", "ASSIMP", "EGG", # 3D Formats support
   "FREETYPE", "HARFBUZZ",                              # Text rendering
@@ -477,13 +476,11 @@ SdkLocateMax()
 SdkLocateMacOSX(OSXTARGET)
 SdkLocatePython(False)
 SdkLocateWindows(WINDOWS_SDK)
-SdkLocateSpeedTree()
 SdkLocateAndroid()
 
 SdkAutoDisableDirectX()
 SdkAutoDisableMaya()
 SdkAutoDisableMax()
-SdkAutoDisableSpeedTree()
 
 if not PkgSkip("PYTHON") and SDK["PYTHONVERSION"] == "python2.7":
     pref = "%sERROR:%s " % (GetColor("red"), GetColor())
@@ -714,26 +711,6 @@ if (COMPILER == "MSVC"):
             LibName(pkg, SDK[pkg] +  '/lib/maxutil.lib')
             LibName(pkg, SDK[pkg] +  '/lib/paramblk2.lib')
 
-    if (PkgSkip("SPEEDTREE")==0):
-        if GetTargetArch() == 'x64':
-            libdir = SDK["SPEEDTREE"] + "/Lib/Windows/VC10.x64/"
-            p64ext = '64'
-        else:
-            libdir = SDK["SPEEDTREE"] + "/Lib/Windows/VC10/"
-            p64ext = ''
-
-        debugext = ''
-        if (GetOptimize() <= 2): debugext = "_d"
-        libsuffix = "_v%s_VC100MT%s_Static%s.lib" % (
-            SDK["SPEEDTREEVERSION"], p64ext, debugext)
-        LibName("SPEEDTREE", "%sSpeedTreeCore%s" % (libdir, libsuffix))
-        LibName("SPEEDTREE", "%sSpeedTreeForest%s" % (libdir, libsuffix))
-        LibName("SPEEDTREE", "%sSpeedTree%sRenderer%s" % (libdir, SDK["SPEEDTREEAPI"], libsuffix))
-        LibName("SPEEDTREE", "%sSpeedTreeRenderInterface%s" % (libdir, libsuffix))
-        if (SDK["SPEEDTREEAPI"] == "OpenGL"):
-            LibName("SPEEDTREE",  "%sglew32.lib" % (libdir))
-            LibName("SPEEDTREE",  "glu32.lib")
-        IncDirectory("SPEEDTREE", SDK["SPEEDTREE"] + "/Include")
     if (PkgSkip("BULLET")==0):
         suffix = '.lib'
         if GetTargetArch() == 'x64' and os.path.isfile(GetThirdpartyDir() + "bullet/lib/BulletCollision_x64.lib"):
@@ -2313,7 +2290,6 @@ PRC_PARAMETERS=[
 def WriteConfigSettings():
     dtool_config={}
     prc_parameters={}
-    speedtree_parameters={}
 
     if (GetTarget() == 'windows'):
         for key,win,unix in DTOOL_CONFIG:
@@ -2414,16 +2390,6 @@ def WriteConfigSettings():
 ##     if GetTarget() == 'windows' and GetTargetArch() == 'x64':
 ##         dtool_config["SIMPLE_THREADS"] = 'UNDEF'
 
-    if (PkgSkip("SPEEDTREE")==0):
-        speedtree_parameters["SPEEDTREE_OPENGL"] = "UNDEF"
-        speedtree_parameters["SPEEDTREE_DIRECTX9"] = "UNDEF"
-        if SDK["SPEEDTREEAPI"] == "OpenGL":
-            speedtree_parameters["SPEEDTREE_OPENGL"] = "1"
-        elif SDK["SPEEDTREEAPI"] == "DirectX9":
-            speedtree_parameters["SPEEDTREE_DIRECTX9"] = "1"
-
-        speedtree_parameters["SPEEDTREE_BIN_DIR"] = (SDK["SPEEDTREE"] + "/Bin")
-
     conf = "/* prc_parameters.h.  Generated automatically by makepanda.py */\n"
     for key in sorted(prc_parameters.keys()):
         if ((key == "DEFAULT_PRC_DIR") or (key[:4]=="PRC_")):
@@ -2438,14 +2404,6 @@ def WriteConfigSettings():
         if (val == 'UNDEF'): conf = conf + "#undef " + key + "\n"
         else:                conf = conf + "#define " + key + " " + val + "\n"
     ConditionalWriteFile(GetOutputDir() + '/include/dtool_config.h', conf)
-
-    if (PkgSkip("SPEEDTREE")==0):
-        conf = "/* speedtree_parameters.h.  Generated automatically by makepanda.py */\n"
-        for key in sorted(speedtree_parameters.keys()):
-            val = OverrideValue(key, speedtree_parameters[key])
-            if (val == 'UNDEF'): conf = conf + "#undef " + key + "\n"
-            else:                conf = conf + "#define " + key + " \"" + val.replace("\\", "\\\\") + "\"\n"
-        ConditionalWriteFile(GetOutputDir() + '/include/speedtree_parameters.h', conf)
 
     for x in PkgListGet():
         if (PkgSkip(x)): ConditionalWriteFile(GetOutputDir() + '/tmp/dtool_have_'+x.lower()+'.dat', "0\n")
@@ -2721,12 +2679,6 @@ if not PkgSkip("DIRECT"):
 ##########################################################################################
 
 confautoprc = ReadFile("makepanda/confauto.in")
-if (PkgSkip("SPEEDTREE")==0):
-    # If SpeedTree is available, enable it in the config file
-    confautoprc = confautoprc.replace('#st#', '')
-else:
-    # otherwise, disable it.
-    confautoprc = confautoprc.replace('#st#', '#')
 
 confautoprc = confautoprc.replace('\r\n', '\n')
 
@@ -3099,9 +3051,6 @@ CopyAllHeaders('panda/src/testbed')
 if (PkgSkip("BULLET")==0):
     CopyAllHeaders('panda/src/bullet')
     CopyAllHeaders('panda/metalibs/pandabullet')
-
-if (PkgSkip("SPEEDTREE")==0):
-    CopyAllHeaders('panda/src/speedtree')
 
 if (PkgSkip("DIRECT")==0):
     CopyAllHeaders('direct/src/directbase')
@@ -4694,30 +4643,6 @@ if (PkgSkip("PANDAPHYSICS")==0):
   PyTargetAdd('physics.pyd', input='libpandaphysics.dll')
   PyTargetAdd('physics.pyd', input='libp3interrogatedb.dll')
   PyTargetAdd('physics.pyd', input=COMMON_PANDA_LIBS)
-
-#
-# DIRECTORY: panda/src/speedtree/
-#
-
-if (PkgSkip("SPEEDTREE")==0):
-  OPTS=['DIR:panda/src/speedtree', 'BUILDING:PANDASPEEDTREE', 'SPEEDTREE']
-  TargetAdd('pandaspeedtree_composite1.obj', opts=OPTS, input='pandaspeedtree_composite1.cxx')
-  IGATEFILES=GetDirectoryContents('panda/src/speedtree', ["*.h", "*_composite*.cxx"])
-  TargetAdd('libpandaspeedtree.in', opts=OPTS, input=IGATEFILES)
-  TargetAdd('libpandaspeedtree.in', opts=['IMOD:libpandaspeedtree', 'ILIB:libpandaspeedtree', 'SRCDIR:panda/src/speedtree'])
-
-  PyTargetAdd('libpandaspeedtree_module.obj', input='libpandaspeedtree.in')
-  PyTargetAdd('libpandaspeedtree_module.obj', opts=OPTS)
-  PyTargetAdd('libpandaspeedtree_module.obj', opts=['IMOD:libpandaspeedtree', 'ILIB:libpandaspeedtree'])
-  TargetAdd('libpandaspeedtree.dll', input='pandaspeedtree_composite1.obj')
-  PyTargetAdd('libpandaspeedtree.dll', input='libpandaspeedtree_igate.obj')
-  TargetAdd('libpandaspeedtree.dll', input='libpandaspeedtree_module.obj')
-  TargetAdd('libpandaspeedtree.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandaspeedtree.dll', opts=['SPEEDTREE'])
-  if SDK["SPEEDTREEAPI"] == 'OpenGL':
-      TargetAdd('libpandaspeedtree.dll', opts=['GL', 'NVIDIACG', 'CGGL'])
-  elif SDK["SPEEDTREEAPI"] == 'DirectX9':
-      TargetAdd('libpandaspeedtree.dll', opts=['DX9',  'NVIDIACG', 'CGDX9'])
 
 #
 # DIRECTORY: panda/src/testbed/

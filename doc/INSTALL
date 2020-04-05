@@ -148,7 +148,6 @@ it will show you the available command-line options:
   --use-ode         --no-ode       (enable/disable use of ODE)
   --use-bullet      --no-bullet    (enable/disable use of BULLET)
   --use-pandaphysics   --no-pandaphysics (enable/disable use of PANDAPHYSICS)
-  --use-speedtree   --no-speedtree (enable/disable use of SPEEDTREE)
   --use-zlib        --no-zlib      (enable/disable use of ZLIB)
   --use-png         --no-png       (enable/disable use of PNG)
   --use-jpeg        --no-jpeg      (enable/disable use of JPEG)
