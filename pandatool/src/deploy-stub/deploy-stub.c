@@ -429,7 +429,10 @@ int Py_FrozenMain(int argc, char **argv)
 #ifdef MS_WINDOWS
     PyWinFreeze_ExeInit();
 #endif
-
+    
+      if (Py_VerboseFlag)
+        fprintf(stderr, "Python %s\n%s\n",
+            Py_GetVersion(), Py_GetCopyright());
 
 #if PY_MAJOR_VERSION >= 3 && !defined(WIN_UNICODE)
     PySys_SetArgv(argc, argv_copy);
