@@ -84,6 +84,7 @@ def test_vec3_power():
 def test_vec3_len():
     assert len(Vec3(2, -3, 10)) == 3
 
+
 def test_vec3_swizzle_mask():
     original_vector = Vec3(3, 5, 1)
 
@@ -94,3 +95,17 @@ def test_vec3_swizzle_mask():
 def test_vec3_str():
     assert str(Vec3F(2, 3, 1)) == "LVector3f(2, 3, 1)"
     assert str(Vec3D(2, 3, 1)) == "LVector3d(2, 3, 1)"
+
+
+def test_vec3_compare():
+    assert Vec3(1, 2, 3).compare_to(Vec3(1, 2, 3)) == 0
+
+    assert Vec3(1, 0, 0).compare_to(Vec3(1, 0, 0)) == 0
+    assert Vec3(1, 0, 0).compare_to(Vec3(0, 1, 0)) == 1
+    assert Vec3(1, 0, 0).compare_to(Vec3(0, 0, 1)) == 1
+    assert Vec3(0, 1, 0).compare_to(Vec3(1, 0, 0)) == -1
+    assert Vec3(0, 1, 0).compare_to(Vec3(0, 1, 0)) == 0
+    assert Vec3(0, 1, 0).compare_to(Vec3(0, 0, 1)) == 1
+    assert Vec3(0, 0, 1).compare_to(Vec3(1, 0, 0)) == -1
+    assert Vec3(0, 0, 1).compare_to(Vec3(0, 1, 0)) == -1
+    assert Vec3(0, 0, 1).compare_to(Vec3(0, 0, 1)) == 0

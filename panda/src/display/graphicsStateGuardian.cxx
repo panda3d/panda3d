@@ -1075,7 +1075,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
       _target_rs->get_attrib_def(FogAttrib::get_class_slot());
     Fog *fog = target_fog->get_fog();
     if (fog == nullptr) {
-      into[0] = LMatrix4::ones_mat();
+      into[0].set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1);
       return;
     }
     PN_stdfloat start, end;
@@ -1611,11 +1611,17 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
     // Apply the default OpenGL lights otherwise.
     // Special exception for light 0, which defaults to white.
     if (i == 0) {
-      into[0].set_row(0, LVecBase4(1, 1, 1, 1));
+      into[0].set(1, 1, 1, 1,
+                  1, 0, 0, 0,
+                  0, 0, 0, 0,
+                  0, 0, 0, 0);
       ++i;
     }
     for (; i < (size_t)count; ++i) {
-      fetch_specified_member(NodePath(), name, into[i]);
+      into[i].set(0, 0, 0, 0,
+                  1, 0, 0, 0,
+                  0, 0, 0, 0,
+                  0, 0, 0, 0);
     }
     return;
   }
@@ -1656,6 +1662,7 @@ fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LMatrix4 &t)
   if (attrib == IN_color) {
     if (node == nullptr) {
       t = LMatrix4::ident_mat();
+      return;
     }
     Light *light = node->as_light();
     nassertv(light != nullptr);
@@ -1665,6 +1672,7 @@ fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LMatrix4 &t)
   } else if (attrib == IN_ambient) {
     if (node == nullptr) {
       t = LMatrix4::ident_mat();
+      return;
     }
     Light *light = node->as_light();
     nassertv(light != nullptr);
@@ -1679,6 +1687,7 @@ fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LMatrix4 &t)
   } else if (attrib == IN_diffuse) {
     if (node == nullptr) {
       t = LMatrix4::ident_mat();
+      return;
     }
     Light *light = node->as_light();
     nassertv(light != nullptr);
@@ -1693,6 +1702,7 @@ fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LMatrix4 &t)
   } else if (attrib == IN_specular) {
     if (node == nullptr) {
       t = LMatrix4::ident_mat();
+      return;
     }
     Light *light = node->as_light();
     nassertv(light != nullptr);

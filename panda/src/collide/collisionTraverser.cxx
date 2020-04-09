@@ -1289,15 +1289,15 @@ compare_collider_to_geom(CollisionEntry &entry, const Geom *geom,
             if (CollisionPolygon::verify_points(v[0], v[1], v[2])) {
               bool within_solid_bounds = true;
               if (from_node_gbv != nullptr) {
-                PT(BoundingSphere) sphere = new BoundingSphere;
-                sphere->around(v, v + 3);
-                within_solid_bounds = (sphere->contains(from_node_gbv) != 0);
+                BoundingSphere sphere;
+                sphere.around(v, v + 3);
+                within_solid_bounds = (sphere.contains(from_node_gbv) != 0);
 #ifdef DO_PSTATS
                 CollisionGeom::_volume_pcollector.add_level(1);
 #endif  // DO_PSTATS
               }
               if (within_solid_bounds) {
-                PT(CollisionGeom) cgeom = new CollisionGeom(LVecBase3(v[0]), LVecBase3(v[1]), LVecBase3(v[2]));
+                PT(CollisionGeom) cgeom = new CollisionGeom(v[0], v[1], v[2]);
                 entry._into = cgeom;
                 entry.test_intersection((*ci).second, this);
               }
@@ -1319,15 +1319,15 @@ compare_collider_to_geom(CollisionEntry &entry, const Geom *geom,
             if (CollisionPolygon::verify_points(v[0], v[1], v[2])) {
               bool within_solid_bounds = true;
               if (from_node_gbv != nullptr) {
-                PT(BoundingSphere) sphere = new BoundingSphere;
-                sphere->around(v, v + 3);
-                within_solid_bounds = (sphere->contains(from_node_gbv) != 0);
+                BoundingSphere sphere;
+                sphere.around(v, v + 3);
+                within_solid_bounds = (sphere.contains(from_node_gbv) != 0);
 #ifdef DO_PSTATS
                 CollisionGeom::_volume_pcollector.add_level(1);
 #endif  // DO_PSTATS
               }
               if (within_solid_bounds) {
-                PT(CollisionGeom) cgeom = new CollisionGeom(LVecBase3(v[0]), LVecBase3(v[1]), LVecBase3(v[2]));
+                PT(CollisionGeom) cgeom = new CollisionGeom(v[0], v[1], v[2]);
                 entry._into = cgeom;
                 entry.test_intersection((*ci).second, this);
               }

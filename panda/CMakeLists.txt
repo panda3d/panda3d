@@ -113,8 +113,7 @@ if(INTERROGATE_PYTHON_INTERFACE)
     set(win32_init "")
   endif()
 
-  file(WRITE "${PROJECT_BINARY_DIR}/panda3d/__init__.py"
-    "\"Python bindings for the Panda3D libraries\"
+  set(init_file "\"Python bindings for the Panda3D libraries\"
 
 __version__ = '${PROJECT_VERSION}'
 
@@ -130,8 +129,26 @@ To suppress this warning, upgrade to Python 3.
 
 ${win32_init}")
 
-  if(BUILD_SHARED_LIBS)
-    install_python_package(panda3d ARCH)
+  set(dtoolconfig_file "'''Alias of :mod:`panda3d.interrogatedb`.
+
+.. deprecated:: 1.10.0
+   This module has been renamed to :mod:`panda3d.interrogatedb`.
+'''
+
+if __debug__:
+    print(\"Warning: panda3d.dtoolconfig is deprecated, use panda3d.interrogatedb instead.\")
+from .interrogatedb import *
+")
+
+  if(IS_MULTICONFIG)
+    foreach(config ${CMAKE_CONFIGURATION_TYPES})
+      # Generate an __init__.py in the per-configuration directory.
+      file(WRITE "${PROJECT_BINARY_DIR}/${config}/panda3d/__init__.py" ${init_file})
+      file(WRITE "${PROJECT_BINARY_DIR}/${config}/panda3d/dtoolconfig.py" ${dtoolconfig_file})
+    endforeach(config)
+  else()
+    file(WRITE "${PROJECT_BINARY_DIR}/panda3d/__init__.py" ${init_file})
+    file(WRITE "${PROJECT_BINARY_DIR}/panda3d/dtoolconfig.py" ${dtoolconfig_file})
   endif()
 
   if(HAVE_BULLET)

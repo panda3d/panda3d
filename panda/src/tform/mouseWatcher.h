@@ -157,11 +157,9 @@ protected:
   void set_current_regions(Regions &regions);
   void clear_current_regions();
 
-#ifndef NDEBUG
   virtual void do_show_regions(const NodePath &render2d,
                                const std::string &bin_name, int draw_order);
   virtual void do_hide_regions();
-#endif  // NDEBUG
 
   static void intersect_regions(Regions &only_a,
                                 Regions &only_b,
@@ -260,11 +258,9 @@ private:
   };
   InactivityState _inactivity_state;
 
-#ifndef NDEBUG
   NodePath _show_regions_render2d;
   std::string _show_regions_bin_name;
   int _show_regions_draw_order;
-#endif
 
 protected:
   // Inherited from DataNode

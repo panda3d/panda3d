@@ -104,3 +104,24 @@ def test_vec4_swizzle_mask():
 def test_vec4_str():
     assert str(Vec4F(2, 3, 1, 9)) == "LVector4f(2, 3, 1, 9)"
     assert str(Vec4D(2, 3, 1, 9)) == "LVector4d(2, 3, 1, 9)"
+
+
+def test_vec4_compare():
+    assert Vec4(1, 2, 3, 4).compare_to(Vec4(1, 2, 3, 4)) == 0
+
+    assert Vec4(1, 0, 0, 0).compare_to(Vec4(1, 0, 0, 0)) == 0
+    assert Vec4(1, 0, 0, 0).compare_to(Vec4(0, 1, 0, 0)) == 1
+    assert Vec4(1, 0, 0, 0).compare_to(Vec4(0, 0, 1, 0)) == 1
+    assert Vec4(1, 0, 0, 0).compare_to(Vec4(0, 0, 0, 1)) == 1
+    assert Vec4(0, 1, 0, 0).compare_to(Vec4(1, 0, 0, 0)) == -1
+    assert Vec4(0, 1, 0, 0).compare_to(Vec4(0, 1, 0, 0)) == 0
+    assert Vec4(0, 1, 0, 0).compare_to(Vec4(0, 0, 1, 0)) == 1
+    assert Vec4(0, 1, 0, 0).compare_to(Vec4(0, 0, 0, 1)) == 1
+    assert Vec4(0, 0, 1, 0).compare_to(Vec4(1, 0, 0, 0)) == -1
+    assert Vec4(0, 0, 1, 0).compare_to(Vec4(0, 1, 0, 0)) == -1
+    assert Vec4(0, 0, 1, 0).compare_to(Vec4(0, 0, 1, 0)) == 0
+    assert Vec4(0, 0, 1, 0).compare_to(Vec4(0, 0, 0, 1)) == 1
+    assert Vec4(0, 0, 0, 1).compare_to(Vec4(1, 0, 0, 0)) == -1
+    assert Vec4(0, 0, 0, 1).compare_to(Vec4(0, 1, 0, 0)) == -1
+    assert Vec4(0, 0, 0, 1).compare_to(Vec4(0, 0, 1, 0)) == -1
+    assert Vec4(0, 0, 0, 1).compare_to(Vec4(0, 0, 0, 1)) == 0

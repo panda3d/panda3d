@@ -6,34 +6,36 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * @file internalName_ext.h
+ * @file bitMask_ext.h
  * @author rdb
- * @date 2014-09-28
+ * @date 2020-03-22
  */
 
-#ifndef INTERNALNAME_EXT_H
-#define INTERNALNAME_EXT_H
+#ifndef BITMASK_EXT_H
+#define BITMASK_EXT_H
 
 #include "dtoolbase.h"
 
 #ifdef HAVE_PYTHON
 
 #include "extension.h"
-#include "internalName.h"
+#include "bitMask.h"
 #include "py_panda.h"
 
 /**
- * This class defines the extension methods for InternalName, which are called
+ * This class defines the extension methods for BitMask, which are called
  * instead of any C++ methods with the same prototype.
  */
-template<>
-class Extension<InternalName> : public ExtensionBase<InternalName> {
+template<class WType, int nbits>
+class Extension<BitMask<WType, nbits> > : public ExtensionBase<BitMask<WType, nbits> > {
 public:
-  static PT(InternalName) make(PyObject *str);
-
-  PyObject *__reduce__() const;
+  INLINE bool __bool__() const;
+  INLINE PyObject *__int__() const;
+  INLINE PyObject *__reduce__(PyObject *self) const;
 };
+
+#include "bitMask_ext.I"
 
 #endif  // HAVE_PYTHON
 
-#endif  // INTERNALNAME_EXT_H
+#endif  // BITMASK_EXT_H
