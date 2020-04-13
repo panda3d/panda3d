@@ -26,6 +26,7 @@ class EXPCL_DTOOL_PRC StreamWrapperBase {
 protected:
   INLINE StreamWrapperBase();
   INLINE StreamWrapperBase(const StreamWrapperBase &copy) = delete;
+  virtual ~StreamWrapperBase() {}
 
 PUBLISHED:
   INLINE void acquire();
