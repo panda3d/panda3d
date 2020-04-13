@@ -415,7 +415,11 @@ ns_set_environment_variable(const string &var, const string &value) {
   // putenv() requires us to malloc a new C-style string.
   char *put = (char *)malloc(putstr.length() + 1);
   strcpy(put, putstr.c_str());
+#ifdef _MSC_VER
+  _putenv(put);
+#else
   putenv(put);
+#endif
 }
 
 /**
