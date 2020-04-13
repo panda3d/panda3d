@@ -310,6 +310,7 @@ Normally, these are stripped out when we build for release, but sometimes it's
 useful to keep them around. Turn this setting on to achieve that." OFF)
 list(APPEND PER_CONFIG_OPTIONS NOTIFY_DEBUG)
 set(NOTIFY_DEBUG_Debug ON CACHE BOOL "")
+set(NOTIFY_DEBUG_Standard ON CACHE BOOL "")
 
 option(SUPPORT_FIXED_FUNCTION
   "This option compiles in support for the fixed-function OpenGL
