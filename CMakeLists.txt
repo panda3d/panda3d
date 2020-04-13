@@ -14,6 +14,11 @@ if(CMAKE_VERSION VERSION_GREATER "3.12" OR POLICY CMP0074)
   cmake_policy(SET CMP0074 NEW)
 endif()
 
+if(POLICY CMP0091)
+  # Needed for CMake to pass /MD flag properly with non-VC generators.
+  cmake_policy(SET CMP0091 NEW)
+endif()
+
 # Figure out the version
 set(_s "[\\t ]*") # CMake doesn't support \s*
 file(STRINGS "setup.cfg" _version REGEX "^version${_s}=${_s}")
