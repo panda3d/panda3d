@@ -521,7 +521,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   default:
     break;
   }
-  return DefWindowProcW(hwnd, msg, wparam, lparam);
+  return DefWindowProc(hwnd, msg, wparam, lparam);
 }
 
 #ifdef HAVE_THREADS
