@@ -22,36 +22,6 @@ if(CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
   set(IS_FREEBSD 1)
 endif()
 
-if(CMAKE_VERSION VERSION_GREATER "3.8")
-  get_property(IS_MULTICONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
-else()
-  message(WARNING "Multi-configuration builds may not work properly when using
-a CMake < 3.9. Making a guess if this is a multi-config generator.")
-  if(DEFINED CMAKE_CONFIGURATION_TYPES)
-    set(IS_MULTICONFIG ON)
-  else()
-    set(IS_MULTICONFIG OFF)
-  endif()
-endif()
-
-# Define the type of build we are setting up.
-
-set(_configs Standard Release RelWithDebInfo Debug MinSizeRel)
-if(DEFINED CMAKE_CXX_FLAGS_COVERAGE)
-  list(APPEND _configs Coverage)
-endif()
-
-if(IS_MULTICONFIG)
-  set(CMAKE_CONFIGURATION_TYPES ${_configs})
-else()
-  # CMAKE_BUILD_TYPE can't just be set using the usual set(CACHE) method since
-  # it's an empty string by default.
-  if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Standard)
-  endif()
-  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS ${_configs})
-endif()
-
 set(PER_CONFIG_OPTIONS)
 
 # Are we building with static or dynamic linking?
