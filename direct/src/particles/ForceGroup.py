@@ -6,13 +6,14 @@ from direct.showbase.PhysicsManagerGlobal import *
 from direct.directnotify import DirectNotifyGlobal
 import sys
 
+
 class ForceGroup(DirectObject):
 
     notify = DirectNotifyGlobal.directNotify.newCategory('ForceGroup')
     id = 1
 
     def __init__(self, name=None):
-        if (name == None):
+        if name is None:
             self.name = 'ForceGroup-%d' % ForceGroup.id
             ForceGroup.id += 1
         else:
@@ -60,9 +61,12 @@ class ForceGroup(DirectObject):
 
     # Get/set
     def getName(self):
+        """Deprecated: access .name directly instead."""
         return self.name
+
     def getNode(self):
         return self.node
+
     def getNodePath(self):
         return self.nodePath
 
@@ -124,3 +128,9 @@ class ForceGroup(DirectObject):
                     file.write(fname + ' = AngularVectorForce(Quat(%.4f, %.4f, %.4f))\n' % (vec[0], vec[1], vec[2], vec[3]))
             file.write(fname + '.setActive(%d)\n' % f.getActive())
             file.write(targ + '.addForce(%s)\n' % fname)
+
+    is_enabled = isEnabled
+    get_node = getNode
+    get_node_path = getNodePath
+    as_list = asList
+    print_params = printParams

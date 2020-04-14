@@ -46,6 +46,8 @@ PUBLISHED:
 
   virtual void output(std::ostream &out) const;
 
+  MAKE_PROPERTY(joint, get_joint);
+
 private:
   PT(CharacterJoint) _joint;
 

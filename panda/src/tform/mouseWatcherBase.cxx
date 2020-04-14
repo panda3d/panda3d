@@ -185,7 +185,7 @@ write(std::ostream &out, int indent_level) const {
   }
 }
 
-#ifndef NDEBUG
+#if !defined(NDEBUG) || !defined(CPPPARSER)
 /**
  * Enables the visualization of all of the regions handled by this
  * MouseWatcherBase.  The supplied NodePath should be the root of the 2-d
@@ -193,44 +193,52 @@ write(std::ostream &out, int indent_level) const {
  */
 void MouseWatcherBase::
 show_regions(const NodePath &render2d, const std::string &bin_name, int draw_order) {
+#ifndef NDEBUG
   LightMutexHolder holder(_lock);
   do_show_regions(render2d, bin_name, draw_order);
+#endif
 }
 #endif  // NDEBUG
 
-#ifndef NDEBUG
+#if !defined(NDEBUG) || !defined(CPPPARSER)
 /**
  * Specifies the color used to draw the region rectangles for the regions
  * visualized by show_regions().
  */
 void MouseWatcherBase::
 set_color(const LColor &color) {
+#ifndef NDEBUG
   LightMutexHolder holder(_lock);
 
   _color = color;
   do_update_regions();
+#endif
 }
 #endif  // NDEBUG
 
-#ifndef NDEBUG
+#if !defined(NDEBUG) || !defined(CPPPARSER)
 /**
  * Stops the visualization created by a previous call to show_regions().
  */
 void MouseWatcherBase::
 hide_regions() {
+#ifndef NDEBUG
   LightMutexHolder holder(_lock);
   do_hide_regions();
+#endif
 }
 #endif  // NDEBUG
 
-#ifndef NDEBUG
+#if !defined(NDEBUG) || !defined(CPPPARSER)
 /**
  * Refreshes the visualization created by show_regions().
  */
 void MouseWatcherBase::
 update_regions() {
+#ifndef NDEBUG
   LightMutexHolder holder(_lock);
   do_update_regions();
+#endif
 }
 #endif  // NDEBUG
 

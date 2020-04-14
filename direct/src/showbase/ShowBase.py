@@ -1,6 +1,33 @@
 """ This module contains ShowBase, an application framework responsible
 for opening a graphical display, setting up input devices and creating
-the scene graph. """
+the scene graph.
+
+The simplest way to open a ShowBase instance is to execute this code:
+
+.. code-block:: python
+
+   from direct.showbase.ShowBase import ShowBase
+
+   base = ShowBase()
+   base.run()
+
+A common approach is to create your own subclass inheriting from ShowBase.
+
+Built-in global variables
+-------------------------
+
+Some key variables used in all Panda3D scripts are actually attributes of the
+ShowBase instance.  When creating an instance of this class, it will write many
+of these variables to the built-in scope of the Python interpreter, so that
+they are accessible to any Python module.
+
+While these are handy for prototyping, we do not recommend using them in bigger
+projects, as it can make the code confusing to read to other Python developers,
+to whom it may not be obvious where these variables are originating.
+
+Some of these built-in variables are documented further in the
+:mod:`~direct.showbase.ShowBaseGlobal` module.
+"""
 
 __all__ = ['ShowBase', 'WindowControls']
 
@@ -46,7 +73,6 @@ if __debug__:
     from direct.showbase import GarbageReport
     from direct.directutil import DeltaProfiler
     from . import OnScreenDebug
-from . import AppRunnerGlobal
 
 @atexit.register
 def exitfunc():
@@ -61,7 +87,19 @@ class ShowBase(DirectObject.DirectObject):
     config = DConfig
     notify = directNotify.newCategory("ShowBase")
 
-    def __init__(self, fStartDirect = True, windowType = None):
+    def __init__(self, fStartDirect=True, windowType=None):
+        """Opens a window, sets up a 3-D and several 2-D scene graphs, and
+        everything else needed to render the scene graph to the window.
+
+        To prevent a window from being opened, set windowType to the string
+        'none' (or 'offscreen' to create an offscreen buffer).  If this is not
+        specified, the default value is taken from the 'window-type'
+        configuration variable.
+
+        This constructor will add various things to the Python builtins scope,
+        including this instance itself (under the name ``base``).
+        """
+
         self.__dev__ = self.config.GetBool('want-dev', __debug__)
         builtins.__dev__ = self.__dev__
 
@@ -81,7 +119,7 @@ class ShowBase(DirectObject.DirectObject):
         ## This contains the global appRunner instance, as imported from
         ## AppRunnerGlobal.  This will be None if we are not running in the
         ## runtime environment (ie. from a .p3d file).
-        self.appRunner = AppRunnerGlobal.appRunner
+        self.appRunner = None
         self.app_runner = self.appRunner
 
         #debug running multiplier
@@ -384,7 +422,6 @@ class ShowBase(DirectObject.DirectObject):
         builtins.cpMgr = ConfigPageManager.getGlobalPtr()
         builtins.cvMgr = ConfigVariableManager.getGlobalPtr()
         builtins.pandaSystem = PandaSystem.getGlobalPtr()
-        builtins.wantUberdog = self.config.GetBool('want-uberdog', 1)
         if __debug__:
             builtins.deltaProfiler = DeltaProfiler.DeltaProfiler("ShowBase")
             self.onScreenDebug = OnScreenDebug.OnScreenDebug()
@@ -532,6 +569,8 @@ class ShowBase(DirectObject.DirectObject):
                 del ShowBaseGlobal.base
 
         self.aspect2d.node().removeAllChildren()
+        self.render2d.node().removeAllChildren()
+        self.aspect2d.reparent_to(self.render2d)
 
         # [gjeon] restore sticky key settings
         if self.config.GetBool('disable-sticky-keys', 0):
@@ -1096,8 +1135,12 @@ class ShowBase(DirectObject.DirectObject):
         2-d objects and gui elements that are superimposed over the
         3-d geometry in the window.
         """
+        # We've already created render2d and aspect2d in ShowBaseGlobal,
+        # for the benefit of creating DirectGui elements before ShowBase.
+        from . import ShowBaseGlobal
+
         ## This is the root of the 2-D scene graph.
-        self.render2d = NodePath('render2d')
+        self.render2d = ShowBaseGlobal.render2d
 
         # Set up some overrides to turn off certain properties which
         # we probably won't need for 2-d objects.
@@ -1117,10 +1160,6 @@ class ShowBase(DirectObject.DirectObject):
         self.render2d.setMaterialOff(1)
         self.render2d.setTwoSided(1)
 
-        # We've already created aspect2d in ShowBaseGlobal, for the
-        # benefit of creating DirectGui elements before ShowBase.
-        from . import ShowBaseGlobal
-
         ## The normal 2-d DisplayRegion has an aspect ratio that
         ## matches the window, but its coordinate system is square.
         ## This means anything we parent to render2d gets stretched.
@@ -1128,7 +1167,6 @@ class ShowBase(DirectObject.DirectObject):
         ## aspect2d, which scales things back to the right aspect
         ## ratio along the X axis (Z is still from -1 to 1)
         self.aspect2d = ShowBaseGlobal.aspect2d
-        self.aspect2d.reparentTo(self.render2d)
 
         aspectRatio = self.getAspectRatio()
         self.aspect2d.setScale(1.0 / aspectRatio, 1.0, 1.0)
@@ -1854,6 +1892,7 @@ class ShowBase(DirectObject.DirectObject):
             self.notify.debug("Disabling music")
 
     def SetAllSfxEnables(self, bEnabled):
+        """Calls ``setActive(bEnabled)`` on all valid SFX managers."""
         for i in range(len(self.sfxManagerList)):
             if (self.sfxManagerIsValidList[i]):
                 self.sfxManagerList[i].setActive(bEnabled)
@@ -2587,9 +2626,9 @@ class ShowBase(DirectObject.DirectObject):
                     sourceLens = None):
 
         """
-        Similar to screenshot(), this sets up a temporary cube map
-        Texture which it uses to take a series of six snapshots of the
-        current scene, one in each of the six cube map directions.
+        Similar to :meth:`screenshot()`, this sets up a temporary cube
+        map Texture which it uses to take a series of six snapshots of
+        the current scene, one in each of the six cube map directions.
         This requires rendering a new frame.
 
         Unlike screenshot(), source may only be a GraphicsWindow,
@@ -2651,19 +2690,19 @@ class ShowBase(DirectObject.DirectObject):
                       cameraMask = PandaNode.getAllCameraMask(),
                       numVertices = 1000, sourceLens = None):
         """
-        This works much like saveCubeMap(), and uses the graphics
-        API's hardware cube-mapping ability to get a 360-degree view
-        of the world.  But then it converts the six cube map faces
-        into a single fisheye texture, suitable for applying as a
-        static environment map (sphere map).
+        This works much like :meth:`saveCubeMap()`, and uses the
+        graphics API's hardware cube-mapping ability to get a 360-degree
+        view of the world.  But then it converts the six cube map faces
+        into a single fisheye texture, suitable for applying as a static
+        environment map (sphere map).
 
-        For eye-relative static environment maps, sphere maps are
-        often preferable to cube maps because they require only a
-        single texture and because they are supported on a broader
-        range of hardware.
+        For eye-relative static environment maps, sphere maps are often
+        preferable to cube maps because they require only a single
+        texture and because they are supported on a broader range of
+        hardware.
 
-        The return value is the filename if successful, or None if
-        there is a problem.
+        The return value is the filename if successful, or None if there
+        is a problem.
         """
         if source == None:
             source = self.win
@@ -2740,17 +2779,22 @@ class ShowBase(DirectObject.DirectObject):
               format = 'png', sd = 4, source = None):
         """
         Spawn a task to capture a movie using the screenshot function.
-        - namePrefix will be used to form output file names (can include
-          path information (e.g. '/i/beta/frames/myMovie')
-        - duration is the length of the movie in seconds
-        - fps is the frame rate of the resulting movie
-        - format specifies output file format (e.g. png, bmp)
-        - sd specifies number of significant digits for frame count in the
-          output file name (e.g. if sd = 4, movie_0001.png)
-        - source is the Window, Buffer, DisplayRegion, or Texture from which
-          to save the resulting images.  The default is the main window.
 
-        The task is returned, so that it can be awaited.
+        Args:
+            namePrefix (str): used to form output file names (can
+                include path information (e.g. '/i/beta/frames/myMovie')
+            duration (float): the length of the movie in seconds
+            fps (float): the frame rate of the resulting movie
+            format (str): specifies output file format (e.g. png, bmp)
+            sd (int): specifies number of significant digits for frame
+                count in the output file name (e.g. if sd = 4, the name
+                will be something like movie_0001.png)
+            source: the Window, Buffer, DisplayRegion, or Texture from
+                which to save the resulting images.  The default is the
+                main window.
+
+        Returns:
+            A `~direct.task.Task` that can be awaited.
         """
         globalClock.setMode(ClockObject.MNonRealTime)
         globalClock.setDt(1.0/float(fps))
@@ -3027,6 +3071,10 @@ class ShowBase(DirectObject.DirectObject):
 
         init_app_for_gui()
 
+        # Disable the Windows message loop, since Tcl wants to handle this all
+        # on its own.
+        ConfigVariableBool('disable-message-loop', False).value = True
+
         if ConfigVariableBool('tk-main-loop', True):
             # Put Tkinter in charge of the main loop.  It really
             # seems to like this better; the GUI otherwise becomes
@@ -3113,11 +3161,12 @@ class ShowBase(DirectObject.DirectObject):
         self.startDirect(fWantDirect = fDirect, fWantTk = fTk, fWantWx = fWx)
 
     def run(self):
-        """ This method runs the TaskManager when self.appRunner is
-        None, which is to say, when we are not running from within a
-        p3d file.  When we *are* within a p3d file, the Panda
-        runtime has to be responsible for running the main loop, so
-        we can't allow the application to do it. """
+        """This method runs the :class:`~direct.task.Task.TaskManager`
+        when ``self.appRunner is None``, which is to say, when we are
+        not running from within a p3d file.  When we *are* within a p3d
+        file, the Panda3D runtime has to be responsible for running the
+        main loop, so we can't allow the application to do it.
+        """
 
         if self.appRunner is None or self.appRunner.dummy or \
            (self.appRunner.interactiveConsole and not self.appRunner.initialAppImport):

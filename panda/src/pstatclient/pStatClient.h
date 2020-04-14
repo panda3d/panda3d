@@ -265,14 +265,64 @@ public:
   PStatClient() { }
   ~PStatClient() { }
 
+  void set_client_name(const std::string &name);
+  std::string get_client_name() const;
+  void set_max_rate(double rate);
+  double get_max_rate() const;
+
+  PStatCollector get_collector(int index) const;
+  std::string get_collector_name(int index) const;
+  std::string get_collector_fullname(int index) const;
+
+  INLINE int get_num_threads() const { return 0; }
+  PStatThread get_thread(int index) const;
+  INLINE std::string get_thread_name(int index) const { return ""; }
+  INLINE std::string get_thread_sync_name(int index) const { return ""; }
+  INLINE PT(Thread) get_thread_object(int index) const { return nullptr; }
+
+  PStatThread get_main_thread() const;
+  PStatThread get_current_thread() const;
+
+  double get_real_time() const;
+
 PUBLISHED:
   INLINE static bool connect(const std::string & = std::string(), int = -1) { return false; }
   INLINE static void disconnect() { }
   INLINE static bool is_connected() { return false; }
   INLINE static void resume_after_pause() { }
 
-  INLINE static void main_tick() { }
-  INLINE static void thread_tick(const std::string &) { }
+  static void main_tick();
+  static void thread_tick(const std::string &);
+
+public:
+  void client_main_tick();
+  void client_thread_tick(const std::string &sync_name);
+  bool client_connect(std::string hostname, int port);
+  void client_disconnect();
+  bool client_is_connected() const;
+
+  void client_resume_after_pause();
+
+  static PStatClient *get_global_pstats();
+
+private:
+  // These are used by inline PStatCollector methods, so they need to be
+  // stubbed out for ABI compatibility.
+  PStatCollector make_collector_with_relname(int parent_index, std::string relname);
+  PStatThread make_thread(Thread *thread);
+
+  bool is_active(int collector_index, int thread_index) const;
+  bool is_started(int collector_index, int thread_index) const;
+
+  void start(int collector_index, int thread_index);
+  void start(int collector_index, int thread_index, double as_of);
+  void stop(int collector_index, int thread_index);
+  void stop(int collector_index, int thread_index, double as_of);
+
+  void clear_level(int collector_index, int thread_index);
+  void set_level(int collector_index, int thread_index, double level);
+  void add_level(int collector_index, int thread_index, double increment);
+  double get_level(int collector_index, int thread_index) const;
 };
 
 #endif  // DO_PSTATS

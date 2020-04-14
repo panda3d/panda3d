@@ -28,6 +28,7 @@ typedef USHORT USAGE, *PUSAGE;
 #define HID_USAGE_PAGE_KEYBOARD        ((USAGE) 0x07)
 #define HID_USAGE_PAGE_LED             ((USAGE) 0x08)
 #define HID_USAGE_PAGE_BUTTON          ((USAGE) 0x09)
+#define HID_USAGE_PAGE_DIGITIZER       ((USAGE) 0x0d)
 
 #define HID_USAGE_GENERIC_POINTER      ((USAGE) 0x01)
 #define HID_USAGE_GENERIC_MOUSE        ((USAGE) 0x02)

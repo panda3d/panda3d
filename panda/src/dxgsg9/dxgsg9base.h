@@ -34,19 +34,7 @@
 #undef Configure
 #include <d3d9.h>
 #include <d3dx9.h>
-
-// This symbol is defined (or not defined) in Config.pp.  #define
-// USE_GENERIC_DXERR_LIBRARY 1
-
-#ifdef USE_GENERIC_DXERR_LIBRARY
 #include <dxerr.h>
-#define DX_GET_ERROR_STRING_FUNC DXGetErrorString
-#define DX_GET_ERROR_DESCRIPTION_FUNC DXGetErrorDescription
-#else
-#include <dxerr9.h>
-#define DX_GET_ERROR_STRING_FUNC DXGetErrorString9
-#define DX_GET_ERROR_DESCRIPTION_FUNC DXGetErrorDescription9
-#endif
 
 #undef WIN32_LEAN_AND_MEAN
 
@@ -56,9 +44,9 @@
 
 #ifndef D3DERRORSTRING
 #ifdef NDEBUG
-#define D3DERRORSTRING(HRESULT) " at (" << __FILE__ << ":" << __LINE__ << "), hr=" <<  DX_GET_ERROR_STRING_FUNC(HRESULT) << std::endl  // leave out descriptions to shrink release build
+#define D3DERRORSTRING(HRESULT) " at (" << __FILE__ << ":" << __LINE__ << "), hr=" <<  DXGetErrorString(HRESULT) << std::endl  // leave out descriptions to shrink release build
 #else
-#define D3DERRORSTRING(HRESULT) " at (" << __FILE__ << ":" << __LINE__ << "), hr=" <<  DX_GET_ERROR_STRING_FUNC(HRESULT) << ": " << DX_GET_ERROR_DESCRIPTION_FUNC(HRESULT) << std::endl
+#define D3DERRORSTRING(HRESULT) " at (" << __FILE__ << ":" << __LINE__ << "), hr=" <<  DXGetErrorString(HRESULT) << ": " << DXGetErrorDescription(HRESULT) << std::endl
 #endif
 #endif
 

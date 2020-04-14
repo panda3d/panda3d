@@ -4,8 +4,16 @@ runp3d.py or via the Panda3D plugin or standalone executable.
 
 This is needed for apps that start themselves by importing
 DirectStart; it provides a place for these apps to look for
-the AppRunner at startup. """
+the AppRunner at startup.
 
-#: Contains the global AppRunner instance, or None if this application
-#: was not run from the runtime environment.
+.. deprecated:: 1.10.0
+   The p3d packaging system has been replaced with the new setuptools-based
+   system.  See the :ref:`distribution` manual section.
+"""
+
+if __debug__:
+    print('AppRunner has been removed and AppRunnerGlobal has been deprecated')
+
+#: Contains the global :class:`~.AppRunner.AppRunner` instance, or None
+#: if this application was not run from the runtime environment.
 appRunner = None

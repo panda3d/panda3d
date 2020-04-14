@@ -131,6 +131,7 @@ CLP(CgShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderConte
   // glVertexPointer).
   size_t nvarying = _shader->_var_spec.size();
   _attributes.resize(nvarying);
+  _used_generic_attribs.clear();
 
   for (size_t i = 0; i < nvarying; ++i) {
     const Shader::ShaderVarSpec &bind = _shader->_var_spec[i];
@@ -332,7 +333,12 @@ CLP(CgShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderConte
 #endif
 
     _attributes[i] = loc;
+    if (loc >= 0) {
+      _used_generic_attribs.set_bit(loc);
+    }
   }
+
+  _mat_part_cache = new LMatrix4[_shader->cp_get_mat_cache_size()];
 
   _glgsg->report_my_gl_errors();
 }
@@ -343,6 +349,7 @@ CLP(CgShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderConte
 CLP(CgShaderContext)::
 ~CLP(CgShaderContext)() {
   // Don't call release_resources; we may not have an active context.
+  delete[] _mat_part_cache;
 }
 
 /**
@@ -686,14 +693,14 @@ issue_parameters(int altered) {
   }
 
   if (altered & _shader->_mat_deps) {
-    for (int i = 0; i < (int)_shader->_mat_spec.size(); ++i) {
-      Shader::ShaderMatSpec &spec = _shader->_mat_spec[i];
+    _glgsg->update_shader_matrix_cache(_shader, _mat_part_cache, altered);
 
-      if ((altered & (spec._dep[0] | spec._dep[1])) == 0) {
+    for (Shader::ShaderMatSpec &spec : _shader->_mat_spec) {
+      if ((altered & spec._dep) == 0) {
         continue;
       }
 
-      const LMatrix4 *val = _glgsg->fetch_specified_value(spec, altered);
+      const LMatrix4 *val = _glgsg->fetch_specified_value(spec, _mat_part_cache, altered);
       if (!val) continue;
       const PN_stdfloat *data = val->get_data();
 
@@ -857,8 +864,6 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
     int start, stride, num_values;
     size_t nvarying = _shader->_var_spec.size();
 
-    GLuint max_p = 0;
-
     for (size_t i = 0; i < nvarying; ++i) {
       const Shader::ShaderVarSpec &bind = _shader->_var_spec[i];
       InternalName *name = bind._name;
@@ -893,8 +898,6 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
         // limited in the options we can set.
         GLenum type = _glgsg->get_numeric_type(numeric_type);
         if (p >= 0) {
-          max_p = std::max(max_p, (GLuint)p + 1);
-
           _glgsg->enable_vertex_attrib_array(p);
 
           if (numeric_type == GeomEnums::NT_packed_dabc) {
@@ -1018,10 +1021,14 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
       }
     }
 
-    // Disable attribute arrays we don't use.
-    GLint highest_p = _glgsg->_enabled_vertex_attrib_arrays.get_highest_on_bit() + 1;
-    for (GLint p = max_p; p < highest_p; ++p) {
-      _glgsg->disable_vertex_attrib_array(p);
+    // Disable enabled attribute arrays that we don't use.
+    BitMask32 disable = _glgsg->_enabled_vertex_attrib_arrays & ~_used_generic_attribs;
+    if (!disable.is_zero()) {
+      for (GLuint p = (GLuint)disable.get_lowest_on_bit(); p <= (GLuint)disable.get_highest_on_bit(); ++p) {
+        if (disable.get_bit(p)) {
+          _glgsg->disable_vertex_attrib_array(p);
+        }
+      }
     }
   }
 

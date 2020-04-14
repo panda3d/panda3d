@@ -726,6 +726,8 @@ make_nurbs_curve(EggNurbsCurve *egg_curve, PandaNode *parent,
  * This deprecated interface creates a NurbsCurve object for the EggNurbsCurve
  * entry.  It will eventually be removed in favor of the above, which creates
  * a RopeNode.
+ *
+ * @deprecated See make_nurbs_curve.
  */
 void EggLoader::
 make_old_nurbs_curve(EggNurbsCurve *egg_curve, PandaNode *parent,

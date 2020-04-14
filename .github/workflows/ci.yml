@@ -1,0 +1,423 @@
+name: Continuous Integration
+on: [push, pull_request]
+
+jobs:
+  cmake:
+    name: CMake Buildsystem
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        profile:
+        - ubuntu-xenial-standard-unity-makefile
+        - ubuntu-bionic-coverage-ninja
+        - macos-eigen-coverage-unity-xcode
+        - macos-nometa-standard-makefile
+#       - windows-standard-unity-msvc # FIXME when GH Actions runners upgrade CMake to >=3.16.1
+        - windows-nopython-nometa-standard-msvc
+
+        include:
+        - profile: ubuntu-xenial-standard-unity-makefile
+          os: ubuntu-16.04
+          config: Standard
+          unity: YES
+          generator: Unix Makefiles
+          compiler: Default
+          metalibs: YES
+          python: YES
+          eigen: NO
+
+        - profile: ubuntu-bionic-coverage-ninja
+          os: ubuntu-18.04
+          config: Coverage
+          unity: NO
+          generator: Ninja
+          compiler: Clang
+          metalibs: YES
+          python: YES
+          eigen: NO
+
+        - profile: macos-eigen-coverage-unity-xcode
+          os: macOS-latest
+          config: Coverage
+          unity: YES
+          generator: Xcode
+          compiler: Default
+          metalibs: YES
+          python: YES
+          eigen: YES
+
+        - profile: macos-nometa-standard-makefile
+          os: macOS-latest
+          config: Standard
+          unity: NO
+          generator: Unix Makefiles
+          compiler: Default
+          metalibs: NO
+          python: YES
+          eigen: NO
+
+        - profile: windows-standard-unity-msvc
+          os: windows-2019
+          config: Standard
+          unity: YES
+          generator: Visual Studio 16 2019
+          compiler: Default
+          metalibs: YES
+          python: YES
+          eigen: NO
+
+        - profile: windows-nopython-nometa-standard-msvc
+          os: windows-2019
+          config: Standard
+          unity: NO
+          generator: Visual Studio 16 2019
+          compiler: Default
+          metalibs: NO
+          python: NO
+          eigen: NO
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 10
+
+    - name: Self-destruct makepanda
+      run: python makepanda/selfdestruct.py --yes
+
+    - name: Install dependencies (macOS)
+      if: runner.os == 'macOS'
+      run: |
+        curl -O https://www.panda3d.org/download/panda3d-1.10.5/panda3d-1.10.5-tools-mac.tar.gz
+        tar -xf panda3d-1.10.5-tools-mac.tar.gz
+
+        brew install ccache
+
+        echo "##[set-env name=thirdpartyOption;]-D THIRDPARTY_DIRECTORY=../panda3d-1.10.5/thirdparty" -DHAVE_CG=OFF
+
+    - name: Install dependencies (Ubuntu)
+      if: startsWith(matrix.os, 'ubuntu')
+      run: >
+        sudo apt-get update
+
+        sudo apt-get install
+        build-essential ninja-build clang llvm ccache
+        bison flex
+        libeigen3-dev libfreetype6-dev libgl1-mesa-dev libjpeg-dev libode-dev
+        libopenal-dev libpng-dev libssl-dev libvorbis-dev libx11-dev
+        libxcursor-dev libxrandr-dev nvidia-cg-toolkit zlib1g-dev
+
+        # Workaround for CMake 3.12 finding this first:
+
+        sudo rm /usr/bin/x86_64-linux-gnu-python2.7-config
+
+    - name: Cache dependencies (Windows)
+      if: runner.os == 'Windows'
+      uses: actions/cache@v1
+      with:
+        path: thirdparty-tools
+        key: ci-cmake-${{ runner.OS }}-thirdparty-v1.10.5-r1
+    - name: Install dependencies (Windows)
+      if: runner.os == 'Windows'
+      shell: powershell
+      run: |
+        if (!(Test-Path thirdparty-tools/panda3d-1.10.5)) {
+          $wc = New-Object System.Net.WebClient
+          $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.5/panda3d-1.10.5-tools-win64.zip", "thirdparty-tools.zip")
+          Expand-Archive -Path thirdparty-tools.zip
+        }
+
+        echo "##[set-env name=thirdpartyOption;]-D THIRDPARTY_DIRECTORY=../thirdparty-tools/panda3d-1.10.5/thirdparty"
+
+    - name: ccache (non-Windows)
+      if: runner.os != 'Windows'
+      uses: actions/cache@v1
+      with:
+        path: ccache
+        key: ci-cmake-ccache-${{ matrix.profile }}
+
+    - name: Configure
+      shell: bash
+      env:
+        CMAKE_GENERATOR: "${{ matrix.generator }}"
+      run: >
+        mkdir build
+
+        cd build
+
+        if ${{ matrix.compiler == 'Clang' }}; then
+          if [[ "$CMAKE_GENERATOR" == *Studio*2019* ]]; then
+            export CMAKE_GENERATOR_TOOLSET=ClangCL thirdpartyOption="$thirdpartyOption -DHAVE_HARFBUZZ=NO"
+          elif [[ "$CMAKE_GENERATOR" == *Studio* ]]; then
+            export CMAKE_GENERATOR_TOOLSET=LLVM thirdpartyOption="$thirdpartyOption -DHAVE_HARFBUZZ=NO"
+          else
+            export CC=clang CXX=clang++
+          fi
+        fi
+
+        if ${{ runner.os != 'Windows' }}; then
+          compilerLauncher=$(echo -DCMAKE_C{,XX}_COMPILER_LAUNCHER=ccache)
+          echo "##[set-env name=CCACHE_DIR;]$(dirname $PWD)/ccache"
+        fi
+
+        cmake
+        ${compilerLauncher:-}
+        -D CMAKE_UNITY_BUILD=${{ matrix.unity }}
+        -D CMAKE_BUILD_TYPE="${{ matrix.config }}"
+        -D BUILD_METALIBS=${{ matrix.metalibs }}
+        -D HAVE_PYTHON=${{ matrix.python }}
+        -D HAVE_EIGEN=${{ matrix.eigen }}
+        ${thirdpartyOption:-}
+        ..
+
+    - name: Build (no Python)
+      if: contains(matrix.python, 'NO')
+      # BEGIN A
+      working-directory: build
+      run: cmake --build . --config ${{ matrix.config }} --parallel 4
+      # END A
+
+    - name: Setup Python (Python 2.7)
+      if: contains(matrix.python, 'YES')
+      uses: actions/setup-python@v1
+      with:
+        python-version: 2.7
+    - name: Configure (Python 2.7)
+      if: contains(matrix.python, 'YES')
+      working-directory: build
+      shell: bash
+      run: >
+        cmake -DWANT_PYTHON_VERSION=2.7
+        -DPython_FIND_REGISTRY=NEVER -DPython_ROOT=$pythonLocation .
+    - name: Build (Python 2.7)
+      if: contains(matrix.python, 'YES')
+      # BEGIN A
+      working-directory: build
+      run: cmake --build . --config ${{ matrix.config }} --parallel 4
+      # END A
+    - name: Test (Python 2.7)
+      # BEGIN B
+      if: contains(matrix.python, 'YES')
+      working-directory: build
+      shell: bash
+      env:
+        PYTHONPATH: ${{ matrix.config }}
+      run: |
+        PYTHON_EXECUTABLE=$(grep 'Python_EXECUTABLE:' CMakeCache.txt | sed 's/.*=//')
+        $PYTHON_EXECUTABLE -m pip install pytest
+        $PYTHON_EXECUTABLE -m pytest ../tests
+      # END B
+
+    - name: Setup Python (Python 3.5)
+      if: contains(matrix.python, 'YES')
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.5
+    - name: Configure (Python 3.5)
+      if: contains(matrix.python, 'YES')
+      working-directory: build
+      shell: bash
+      run: >
+        cmake -DWANT_PYTHON_VERSION=3.5
+        -DPython_FIND_REGISTRY=NEVER -DPython_ROOT=$pythonLocation .
+    - name: Build (Python 3.5)
+      if: contains(matrix.python, 'YES')
+      # BEGIN A
+      working-directory: build
+      run: cmake --build . --config ${{ matrix.config }} --parallel 4
+      # END A
+    - name: Test (Python 3.5)
+      # BEGIN B
+      if: contains(matrix.python, 'YES')
+      working-directory: build
+      shell: bash
+      env:
+        PYTHONPATH: ${{ matrix.config }}
+      run: |
+        PYTHON_EXECUTABLE=$(grep 'Python_EXECUTABLE:' CMakeCache.txt | sed 's/.*=//')
+        $PYTHON_EXECUTABLE -m pip install pytest
+        $PYTHON_EXECUTABLE -m pytest ../tests
+      # END B
+
+    - name: Setup Python (Python 3.6)
+      if: contains(matrix.python, 'YES')
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.6
+    - name: Configure (Python 3.6)
+      if: contains(matrix.python, 'YES')
+      working-directory: build
+      shell: bash
+      run: >
+        cmake -DWANT_PYTHON_VERSION=3.6
+        -DPython_FIND_REGISTRY=NEVER -DPython_ROOT=$pythonLocation .
+    - name: Build (Python 3.6)
+      if: contains(matrix.python, 'YES')
+      # BEGIN A
+      working-directory: build
+      run: cmake --build . --config ${{ matrix.config }} --parallel 4
+      # END A
+    - name: Test (Python 3.6)
+      # BEGIN B
+      if: contains(matrix.python, 'YES')
+      working-directory: build
+      shell: bash
+      env:
+        PYTHONPATH: ${{ matrix.config }}
+      run: |
+        PYTHON_EXECUTABLE=$(grep 'Python_EXECUTABLE:' CMakeCache.txt | sed 's/.*=//')
+        $PYTHON_EXECUTABLE -m pip install pytest pytest-cov
+        export COVERAGE_FILE=.coverage.$RANDOM LLVM_PROFILE_FILE=$PWD/pid-%p.profraw
+        $PYTHON_EXECUTABLE -m pytest ../tests --cov=.
+      # END B
+
+    - name: Setup Python (Python 3.7)
+      if: contains(matrix.python, 'YES')
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.7
+    - name: Configure (Python 3.7)
+      if: contains(matrix.python, 'YES')
+      working-directory: build
+      shell: bash
+      run: >
+        cmake -DWANT_PYTHON_VERSION=3.7
+        -DPython_FIND_REGISTRY=NEVER -DPython_ROOT=$pythonLocation .
+    - name: Build (Python 3.7)
+      if: contains(matrix.python, 'YES')
+      # BEGIN A
+      working-directory: build
+      run: cmake --build . --config ${{ matrix.config }} --parallel 4
+      # END A
+    - name: Test (Python 3.7)
+      # BEGIN B
+      if: contains(matrix.python, 'YES')
+      working-directory: build
+      shell: bash
+      env:
+        PYTHONPATH: ${{ matrix.config }}
+      run: |
+        PYTHON_EXECUTABLE=$(grep 'Python_EXECUTABLE:' CMakeCache.txt | sed 's/.*=//')
+        $PYTHON_EXECUTABLE -m pip install pytest pytest-cov
+        export COVERAGE_FILE=.coverage.$RANDOM LLVM_PROFILE_FILE=$PWD/pid-%p.profraw
+        $PYTHON_EXECUTABLE -m pytest ../tests --cov=.
+      # END B
+
+    - name: Setup Python (Python 3.8)
+      if: contains(matrix.python, 'YES')
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.8
+    - name: Configure (Python 3.8)
+      if: contains(matrix.python, 'YES')
+      working-directory: build
+      shell: bash
+      run: >
+        cmake -DWANT_PYTHON_VERSION=3.8
+        -DPython_FIND_REGISTRY=NEVER -DPython_ROOT=$pythonLocation .
+    - name: Build (Python 3.8)
+      if: contains(matrix.python, 'YES')
+      # BEGIN A
+      working-directory: build
+      run: cmake --build . --config ${{ matrix.config }} --parallel 4
+      # END A
+    - name: Test (Python 3.8)
+      # BEGIN B
+      if: contains(matrix.python, 'YES')
+      working-directory: build
+      shell: bash
+      env:
+        PYTHONPATH: ${{ matrix.config }}
+      run: |
+        PYTHON_EXECUTABLE=$(grep 'Python_EXECUTABLE:' CMakeCache.txt | sed 's/.*=//')
+        $PYTHON_EXECUTABLE -m pip install pytest pytest-cov
+        export COVERAGE_FILE=.coverage.$RANDOM LLVM_PROFILE_FILE=$PWD/pid-%p.profraw
+        $PYTHON_EXECUTABLE -m pytest ../tests --cov=.
+      # END B
+
+    - name: Upload coverage reports
+      if: always() && matrix.config == 'Coverage'
+      working-directory: build
+      shell: bash
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      run: |
+        shopt -s expand_aliases
+        if ${{ runner.os == 'macOS' }}; then alias llvm-profdata='xcrun llvm-profdata' llvm-cov='xcrun llvm-cov'; fi
+
+        python -m pip install coverage
+        python -m coverage combine $(find . -name '.coverage.*')
+
+        llvm-profdata merge pid-*.profraw -o coverage.profdata
+        llvm-cov show $(grep -Rl LLVM_PROFILE_FILE . | sed 's/^/-object /') -instr-profile=coverage.profdata > coverage.txt
+        bash <(curl -s https://codecov.io/bash)
+
+  makepanda:
+    strategy:
+      matrix:
+        os: [ubuntu-16.04, windows-2016, macOS-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install dependencies (Ubuntu)
+      if: matrix.os == 'ubuntu-16.04'
+      run: |
+        sudo apt-get install build-essential bison flex libfreetype6-dev libgl1-mesa-dev libjpeg-dev libode-dev libopenal-dev libpng-dev libssl-dev libvorbis-dev libx11-dev libxcursor-dev libxrandr-dev nvidia-cg-toolkit zlib1g-dev
+    - name: Get thirdparty packages (Windows)
+      if: runner.os == 'Windows'
+      shell: powershell
+      run: |
+        $wc = New-Object System.Net.WebClient
+        $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.5/panda3d-1.10.5-tools-win64.zip", "thirdparty-tools.zip")
+        Expand-Archive -Path thirdparty-tools.zip
+        Move-Item -Path thirdparty-tools/panda3d-1.10.5/thirdparty -Destination .
+    - name: Get thirdparty packages (macOS)
+      if: runner.os == 'macOS'
+      run: |
+        curl -O https://www.panda3d.org/download/panda3d-1.10.5/panda3d-1.10.5-tools-mac.tar.gz
+        tar -xf panda3d-1.10.5-tools-mac.tar.gz
+        mv panda3d-1.10.5/thirdparty thirdparty
+        rmdir panda3d-1.10.5
+        (cd thirdparty/darwin-libs-a && rm -rf rocket)
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.8
+    - name: Build Python 3.8
+      run: |
+        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir=$pythonLocation/include --python-libdir=$pythonLocation/lib --verbose --threads=4
+    - name: Test Python 3.8
+      shell: bash
+      run: |
+        python -m pip install pytest
+        PYTHONPATH=built LD_LIBRARY_PATH=built/lib DYLD_LIBRARY_PATH=built/lib python -m pytest
+    - name: Set up Python 3.7
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.7
+    - name: Build Python 3.7
+      run: |
+        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir=$pythonLocation/include --python-libdir=$pythonLocation/lib --verbose --threads=4
+    - name: Test Python 3.7
+      shell: bash
+      run: |
+        python -m pip install pytest
+        PYTHONPATH=built LD_LIBRARY_PATH=built/lib DYLD_LIBRARY_PATH=built/lib python -m pytest
+    - name: Set up Python 2.7
+      uses: actions/setup-python@v1
+      with:
+        python-version: 2.7
+    - name: Build Python 2.7
+      run: |
+        python makepanda/makepanda.py --no-copy-python --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir=$pythonLocation/include --python-libdir=$pythonLocation/lib --verbose --threads=4
+    - name: Test Python 2.7
+      shell: bash
+      run: |
+        python -m pip install pytest
+        PYTHONPATH=built LD_LIBRARY_PATH=built/lib DYLD_LIBRARY_PATH=built/lib python -m pytest
+    - name: Make installer
+      run: |
+        python makepanda/makepackage.py --verbose --lzma

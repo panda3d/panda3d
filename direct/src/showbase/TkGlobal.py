@@ -12,6 +12,9 @@ else:
 if '_Pmw' in sys.modules:
     sys.modules['_Pmw'].__name__ = '_Pmw'
 
+# Don't export this from the module.
+del sys
+
 # Hack to workaround broken Pmw.NoteBook in Python 3
 def bordercolors(root, colorName):
     lightRGB = []
@@ -36,4 +39,5 @@ del bordercolors
 
 
 def spawnTkLoop():
+    """Alias for :meth:`base.spawnTkLoop() <.ShowBase.spawnTkLoop>`."""
     base.spawnTkLoop()

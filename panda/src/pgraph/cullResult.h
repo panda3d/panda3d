@@ -85,9 +85,7 @@ private:
   typedef pvector< PT(CullBin) > Bins;
   Bins _bins;
 
-#ifndef NDEBUG
-  bool _show_transparency;
-#endif
+  bool _show_transparency = false;
 
 public:
   static TypeHandle get_class_type() {

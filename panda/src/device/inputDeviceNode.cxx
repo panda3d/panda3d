@@ -54,7 +54,7 @@ void InputDeviceNode::
 do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &,
                  DataNodeTransmit &output) {
 
-  if (_device == nullptr && !_device->is_connected()) {
+  if (_device == nullptr || !_device->is_connected()) {
     return;
   }
 

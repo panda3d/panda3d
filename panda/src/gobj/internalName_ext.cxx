@@ -17,6 +17,8 @@ using std::string;
 
 #ifdef HAVE_PYTHON
 
+extern struct Dtool_PyTypedObject Dtool_InternalName;
+
 /**
  * This extension method serves to allow coercion of Python interned strings
  * to InternalName objects more efficiently by storing a mapping between
@@ -88,7 +90,17 @@ make(PyObject *str) {
     InternalName::_py_intern_table.insert(std::make_pair((PyObject *)str, iname.p()));
     return iname;
   }
+}
 
+/**
+ * This special Python method is implemented to provide support for the pickle
+ * module.
+ */
+PyObject *Extension<InternalName>::
+__reduce__() const {
+  std::string name = _this->get_name();
+  return Py_BuildValue("(N(s#))",
+    PyObject_GetAttrString((PyObject *)&Dtool_InternalName._PyType, "make"), name.c_str(), name.size());
 }
 
 #endif  // HAVE_PYTHON

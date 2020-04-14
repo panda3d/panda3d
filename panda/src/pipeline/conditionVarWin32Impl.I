@@ -21,24 +21,9 @@ ConditionVarWin32Impl(MutexWin32Impl &mutex) : _mutex(mutex) {
 /**
  *
  */
-INLINE ConditionVarWin32Impl::
-~ConditionVarWin32Impl() {
-  // These fields are only set in the Windows XP implementation, when these
-  // both contain events.
-  if (_cvar[1] != nullptr) {
-    CloseHandle(_cvar[1]);
-  }
-  if (_cvar[2] != nullptr) {
-    CloseHandle(_cvar[2]);
-  }
-}
-
-/**
- *
- */
 INLINE void ConditionVarWin32Impl::
 wait() {
-  MutexWin32Impl::_funcs._cvar_wait(_cvar, _mutex._lock, INFINITE, 0);
+  SleepConditionVariableSRW(&_cvar, &_mutex._lock, INFINITE, 0);
 }
 
 /**
@@ -46,7 +31,7 @@ wait() {
  */
 INLINE void ConditionVarWin32Impl::
 wait(double timeout) {
-  MutexWin32Impl::_funcs._cvar_wait(_cvar, _mutex._lock, (DWORD)(timeout * 1000.0), 0);
+  SleepConditionVariableSRW(&_cvar, &_mutex._lock, (DWORD)(timeout * 1000.0), 0);
 }
 
 /**
@@ -54,7 +39,7 @@ wait(double timeout) {
  */
 INLINE void ConditionVarWin32Impl::
 notify() {
-  MutexWin32Impl::_funcs._cvar_notify_one(_cvar);
+  WakeConditionVariable(&_cvar);
 }
 
 /**
@@ -62,5 +47,5 @@ notify() {
  */
 INLINE void ConditionVarWin32Impl::
 notify_all() {
-  MutexWin32Impl::_funcs._cvar_notify_all(_cvar);
+  WakeAllConditionVariable(&_cvar);
 }

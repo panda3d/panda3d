@@ -25,7 +25,7 @@
  * For reading and writing PFM files using the basic PNMImage interface, as if
  * they were basic RGB files.
  */
-class EXPCL_PANDA_PNMIMAGETYPES PNMFileTypePfm : public PNMFileType {
+class PNMFileTypePfm : public PNMFileType {
 public:
   PNMFileTypePfm();
 

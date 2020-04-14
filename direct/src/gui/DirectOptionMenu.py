@@ -1,12 +1,18 @@
-"""Implements a pop-up menu containing multiple clickable options."""
+"""Implements a pop-up menu containing multiple clickable options.
+
+See the :ref:`directoptionmenu` page in the programming manual for a more
+in-depth explanation and an example of how to use this class.
+"""
 
 __all__ = ['DirectOptionMenu']
 
 from panda3d.core import *
+from direct.showbase import ShowBaseGlobal
 from . import DirectGuiGlobals as DGG
 from .DirectButton import *
 from .DirectLabel import *
 from .DirectFrame import *
+
 
 class DirectOptionMenu(DirectButton):
     """
@@ -68,6 +74,10 @@ class DirectOptionMenu(DirectButton):
         self.popupMenu = None
         self.selectedIndex = None
         self.highlightedIndex = None
+        if 'item_text_scale' in kw:
+            self._prevItemTextScale = kw['item_text_scale']
+        else:
+            self._prevItemTextScale = (1,1)
         # A big screen encompassing frame to catch the cancel clicks
         self.cancelFrame = self.createcomponent(
             'cancelframe', (), None,
@@ -214,27 +224,27 @@ class DirectOptionMenu(DirectButton):
         self.popupMenu.setZ(
             self, self.minZ + (self.selectedIndex + 1)*self.maxHeight)
         # Make sure the whole popup menu is visible
-        pos = self.popupMenu.getPos(render2d)
-        scale = self.popupMenu.getScale(render2d)
+        pos = self.popupMenu.getPos(ShowBaseGlobal.render2d)
+        scale = self.popupMenu.getScale(ShowBaseGlobal.render2d)
         # How are we doing relative to the right side of the screen
         maxX = pos[0] + fb[1] * scale[0]
         if maxX > 1.0:
             # Need to move menu to the left
-            self.popupMenu.setX(render2d, pos[0] + (1.0 - maxX))
+            self.popupMenu.setX(ShowBaseGlobal.render2d, pos[0] + (1.0 - maxX))
         # How about up and down?
         minZ = pos[2] + fb[2] * scale[2]
         maxZ = pos[2] + fb[3] * scale[2]
         if minZ < -1.0:
             # Menu too low, move it up
-            self.popupMenu.setZ(render2d, pos[2] + (-1.0 - minZ))
+            self.popupMenu.setZ(ShowBaseGlobal.render2d, pos[2] + (-1.0 - minZ))
         elif maxZ > 1.0:
             # Menu too high, move it down
-            self.popupMenu.setZ(render2d, pos[2] + (1.0 - maxZ))
+            self.popupMenu.setZ(ShowBaseGlobal.render2d, pos[2] + (1.0 - maxZ))
         # Also display cancel frame to catch clicks outside of the popup
         self.cancelFrame.show()
         # Position and scale cancel frame to fill entire window
-        self.cancelFrame.setPos(render2d, 0, 0, 0)
-        self.cancelFrame.setScale(render2d, 1, 1, 1)
+        self.cancelFrame.setPos(ShowBaseGlobal.render2d, 0, 0, 0)
+        self.cancelFrame.setScale(ShowBaseGlobal.render2d, 1, 1, 1)
 
     def hidePopupMenu(self, event = None):
         """ Put away popup and cancel frame """
@@ -243,6 +253,7 @@ class DirectOptionMenu(DirectButton):
 
     def _highlightItem(self, item, index):
         """ Set frame color of highlighted item, record index """
+        self._prevItemTextScale = item['text_scale']
         item['frameColor'] = self['highlightColor']
         item['frameSize'] = (self['highlightScale'][0]*self.minX, self['highlightScale'][0]*self.maxX, self['highlightScale'][1]*self.minZ, self['highlightScale'][1]*self.maxZ)
         item['text_scale'] = self['highlightScale']
@@ -252,7 +263,7 @@ class DirectOptionMenu(DirectButton):
         """ Clear frame color, clear highlightedIndex """
         item['frameColor'] = frameColor
         item['frameSize'] = (self.minX, self.maxX, self.minZ, self.maxZ)
-        item['text_scale'] = (1,1)
+        item['text_scale'] = self._prevItemTextScale
         self.highlightedIndex = None
 
     def selectHighlightedIndex(self, event = None):

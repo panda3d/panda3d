@@ -15,7 +15,7 @@
 #include "config_express.h"
 #include "textEncoder.h"
 
-#if defined(WIN32_VC)
+#if defined(_WIN32)
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN 1
 #endif

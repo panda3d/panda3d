@@ -11,7 +11,7 @@
  * @date 2000-07-04
  */
 
-#if defined(WIN32_VC) || defined(WIN64_VC)
+#ifdef _WIN32
 
 /**
  *
@@ -36,7 +36,7 @@ get_short_time() {
   return time;
 }
 
-#else  // WIN32_VC
+#else  // _WIN32
 
 /**
  *
@@ -46,7 +46,7 @@ get_short_time() {
   return get_short_raw_time();
 }
 
-#endif  // WIN32_VC
+#endif  // _WIN32
 
 
 /**

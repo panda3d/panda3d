@@ -93,8 +93,8 @@ get_instance_count() const {
  *
  */
 INLINE bool ShaderAttrib::
-get_flag(int index) const {
-  return (_flags & (1<<index)) ? true:false;
+get_flag(int flag) const {
+  return (_flags & flag) != 0;
 }
 
 /**

@@ -111,7 +111,7 @@ get_verify_ssl() const {
  * Specifies the set of ciphers that are to be made available for SSL
  * connections.  This is a string as described in the ciphers(1) man page of
  * the OpenSSL documentation (or see
- * http://www.openssl.org/docs/apps/ciphers.html ).  If this is not specified,
+ * https://www.openssl.org/docs/apps/ciphers.html ).  If this isn't specified,
  * the default is provided by the Config file.  You may also specify "DEFAULT"
  * to use the built-in OpenSSL default value.
  */

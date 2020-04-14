@@ -522,6 +522,10 @@ int Py_FrozenMain(int argc, char **argv)
     // for ConfigPageManager to read out and assign to MAIN_DIR.
     sprintf(buffer, "%s/../Resources", dir);
     set_main_dir(buffer);
+
+    // Finally, chdir to it, so that regular Python files are read from the
+    // right location.
+    chdir(buffer);
 #endif
 
     n = PyImport_ImportFrozenModule("__main__");
@@ -649,6 +653,15 @@ int main(int argc, char *argv[]) {
   const char *log_filename;
   void *blob = NULL;
   log_filename = NULL;
+
+#ifdef __APPLE__
+  // Strip a -psn_xxx argument passed in by macOS when run from an .app bundle.
+  if (argc > 1 && strncmp(argv[1], "-psn_", 5) == 0) {
+    argv[1] = argv[0];
+    ++argv;
+    --argc;
+  }
+#endif
 
   /*
   printf("blob_offset: %d\n", (int)blobinfo.blob_offset);

@@ -1638,7 +1638,7 @@ class MopathRecorder(AppShell, DirectObject):
             initialdir = path,
             title = 'Load Nurbs Curve',
             parent = self.parent)
-        if mopathFilename:
+        if mopathFilename and mopathFilename != 'None':
             self.reset()
             nodePath = loader.loadModel(
                 Filename.fromOsSpecific(mopathFilename))

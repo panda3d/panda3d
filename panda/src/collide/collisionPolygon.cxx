@@ -73,6 +73,23 @@ make_copy() {
  * Verifies that the indicated set of points will define a valid
  * CollisionPolygon: that is, at least three non-collinear points, with no
  * points repeated.
+ */
+bool CollisionPolygon::
+verify_points(const LPoint3 &a, const LPoint3 &b, const LPoint3 &c) {
+  // First, check for repeated or invalid points.
+  if (a.is_nan() || b.is_nan() || c.is_nan() || a == b || b == c || a == c) {
+    return false;
+  }
+
+  // Check that the vectors ab and ac are not colinear.
+  LVector3 normal = ::cross(b - a, c - a);
+  return normal.length_squared() != (PN_stdfloat)0.0f;
+}
+
+/**
+ * Verifies that the indicated set of points will define a valid
+ * CollisionPolygon: that is, at least three non-collinear points, with no
+ * points repeated.
  *
  * This does not check that the polygon defined is convex; that check is made
  * later, once we have projected the points to 2-d space where the decision is
@@ -442,10 +459,12 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   LVector3 normal = (has_effective_normal() && sphere->get_respect_effective_normal()) ? get_effective_normal() : get_normal();
 #ifndef NDEBUG
   if (!IS_THRESHOLD_EQUAL(normal.length_squared(), 1.0f, 0.001)) {
-    collide_cat.info()
-      << "polygon within " << entry.get_into_node_path()
-      << " has normal " << normal << " of length " << normal.length()
-      << "\n";
+    if (collide_cat.is_info()) {
+      collide_cat.info()
+        << "polygon within " << entry.get_into_node_path()
+        << " has normal " << normal << " of length " << normal.length()
+        << "\n";
+    }
     normal.normalize();
   }
 #endif

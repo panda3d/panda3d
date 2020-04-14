@@ -15,6 +15,7 @@
 #define CONFIG_ASSIMP_H
 
 #include "pandatoolbase.h"
+#include "notifyCategoryProxy.h"
 #include "configVariableBool.h"
 #include "configVariableDouble.h"
 #include "dconfig.h"

@@ -19,7 +19,7 @@
 
 #if defined(_WIN32) && !defined(CPPPARSER)
 
-#include <CfgMgr32.h>
+#include <cfgmgr32.h>
 
 class InputDeviceManager;
 

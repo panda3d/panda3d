@@ -8,6 +8,7 @@ from panda3d.core import ConfigVariableBool, NotifyCategory, StreamWriter, Notif
 import time
 import sys
 
+
 class Notifier:
     serverDelta = 0
 
@@ -23,12 +24,11 @@ class Notifier:
 
     def __init__(self, name, logger=None):
         """
-        name is a string
-        logger is a Logger
-
-        Create a new instance of the Notifier class with a given name
-        and an optional Logger class for piping output to. If no logger
-        specified, use the global default
+        Parameters:
+            name (str): a string name given to this Notifier instance.
+            logger (Logger, optional): an optional Logger object for
+                piping output to.  If none is specified, the global
+                :data:`~.LoggerGlobal.defaultLogger` is used.
         """
         self.__name = name
 
