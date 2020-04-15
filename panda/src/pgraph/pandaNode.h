@@ -197,6 +197,9 @@ PUBLISHED:
                       Thread *current_thread = Thread::get_current_thread()) const;
   void clear_tag(const std::string &key,
                  Thread *current_thread = Thread::get_current_thread());
+				 
+  INLINE void set_user_data(TypedReferenceCount *data, Thread *current_thread = Thread::get_current_thread());
+  INLINE TypedReferenceCount *get_user_data(Thread *current_thread = Thread::get_current_thread()) const;
 
 public:
   void get_tag_keys(vector_string &keys) const;
@@ -569,6 +572,8 @@ private:
     CPT(RenderEffects) _effects;
 
     TagData _tag_data;
+	
+	PT(TypedReferenceCount) _user_data;
 
     // These two together determine the per-camera visibility of this node.
     // See adjust_draw_mask() for details.

@@ -3667,6 +3667,7 @@ CData() :
   _prev_transform(TransformState::make_identity()),
 
   _effects(RenderEffects::make_empty()),
+  _user_data(nullptr),
   _draw_control_mask(DrawMask::all_off()),
   _draw_show_mask(DrawMask::all_on()),
   _into_collide_mask(CollideMask::all_off()),
@@ -3698,6 +3699,7 @@ CData(const PandaNode::CData &copy) :
 
   _effects(copy._effects),
   _tag_data(copy._tag_data),
+  _user_data(copy._user_data),
   _draw_control_mask(copy._draw_control_mask),
   _draw_show_mask(copy._draw_show_mask),
   _into_collide_mask(copy._into_collide_mask),
