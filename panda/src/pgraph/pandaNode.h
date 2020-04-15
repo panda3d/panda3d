@@ -572,8 +572,8 @@ private:
     CPT(RenderEffects) _effects;
 
     TagData _tag_data;
-	
-	PT(TypedReferenceCount) _user_data;
+
+    PT(TypedReferenceCount) _user_data;
 
     // These two together determine the per-camera visibility of this node.
     // See adjust_draw_mask() for details.
