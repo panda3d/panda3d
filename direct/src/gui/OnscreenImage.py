@@ -10,6 +10,8 @@ from panda3d.core import *
 from direct.showbase.DirectObject import DirectObject
 import sys
 
+import warnings
+
 if sys.version_info >= (3, 0):
     stringType = str
 else:
@@ -134,6 +136,7 @@ class OnscreenImage(DirectObject, NodePath):
             self.setTransform(transform)
 
     def getImage(self):
+        warnings.warn("This method is vestigial and will be removed in the future.", FutureWarning)
         return self
 
     def configure(self, option=None, **kw):
