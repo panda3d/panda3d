@@ -424,6 +424,15 @@ class WheelFile(object):
                             continue
                         new_dep = os.path.join(deps_path, os.path.relpath(target_dep, os.path.dirname(target_path)))
 
+                    elif '@rpath' in dep:
+                        # Unlike makepanda, CMake uses @rpath instead of
+                        # @loader_path. This means we can just search for the
+                        # dependencies like normal.
+                        dep_path = dep.replace('@rpath', '.')
+                        target_dep = os.path.dirname(target_path) + '/' + os.path.basename(dep)
+                        self.consider_add_dependency(target_dep, dep_path)
+                        continue
+
                     elif dep.startswith('/Library/Frameworks/Python.framework/'):
                         # Add this dependency if it's in the Python directory.
                         target_dep = os.path.dirname(target_path) + '/' + os.path.basename(dep)
