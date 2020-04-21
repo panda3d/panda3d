@@ -5945,7 +5945,7 @@ if not PkgSkip("CONTRIB") and not PkgSkip("PYTHON"):
 #
 # DIRECTORY: pandatool/src/deploy-stub
 #
-if PkgSkip("PYTHON") == 0:
+if (PkgSkip("PYTHON") == 0) and (GetTarget() != 'emscripten'):
     OPTS=['DIR:pandatool/src/deploy-stub', 'BUILDING:DEPLOYSTUB']
     PyTargetAdd('deploy-stub.obj', opts=OPTS, input='deploy-stub.c')
     if GetTarget() == 'windows':
