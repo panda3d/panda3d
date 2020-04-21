@@ -535,7 +535,7 @@ on_mouse_event(int type, const EmscriptenMouseEvent *event, void *user_data) {
   device = (GraphicsWindowInputDevice *)user_data;
   nassertr(device != nullptr, false);
 
-  double time = event->timestamp * 0.001;
+  double time = 0; //event->timestamp * 0.001;
 
   switch (type) {
   case EMSCRIPTEN_EVENT_MOUSEDOWN:
@@ -592,7 +592,7 @@ on_wheel_event(int type, const EmscriptenWheelEvent *event, void *user_data) {
   device = (GraphicsWindowInputDevice *)user_data;
   nassertr(device != nullptr, false);
 
-  double time = event->mouse.timestamp * 0.001;
+  double time = 0; //event->timestamp * 0.001;
 
   if (type == EMSCRIPTEN_EVENT_WHEEL) {
     if (event->deltaY < 0) {

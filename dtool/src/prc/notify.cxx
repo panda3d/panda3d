@@ -464,36 +464,7 @@ config_initialized() {
   // notify-output even after the initial import of Panda3D modules.  However,
   // it cannot be changed after the first time it is set.
 
-#if defined(ANDROID)
-  // Android redirects stdio and stderr to /dev/null,
-  // but does provide its own logging system.  We use a special
-  // type of stream that redirects it to Android's log system.
-
-  for (int i = 0; i <= NS_fatal; ++i) {
-    int priority = ANDROID_LOG_UNKNOWN;
-    if (severity != NS_unspecified) {
-      priority = i + 1;
-    }
-    _log_streams[i] = new AndroidLogStream(priority);
-  }
-
-#elif defined(__EMSCRIPTEN__)
-  // We have no writable filesystem in JavaScript.  Instead, we set up a
-  // special stream that logs straight into the Javascript console.
-
-  EmscriptenLogStream *error_stream = new EmscriptenLogStream(EM_LOG_CONSOLE | EM_LOG_ERROR);
-  EmscriptenLogStream *warn_stream = new EmscriptenLogStream(EM_LOG_CONSOLE | EM_LOG_WARN);
-  EmscriptenLogStream *info_stream = new EmscriptenLogStream(EM_LOG_CONSOLE);
-
-  _log_streams[NS_unspecified] = info_stream;
-  _log_streams[NS_spam] = info_stream;
-  _log_streams[NS_debug] = info_stream;
-  _log_streams[NS_info] = info_stream;
-  _log_streams[NS_warning] = warn_stream;
-  _log_streams[NS_error] = error_stream;
-  _log_streams[NS_fatal] = error_stream;
-
-#else
+#if 1
   if (_global_ptr == nullptr || _global_ptr->_ostream_ptr == &cerr) {
     static ConfigVariableFilename notify_output
       ("notify-output", "",

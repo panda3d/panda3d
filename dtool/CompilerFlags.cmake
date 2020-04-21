@@ -143,8 +143,13 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "(GNU|Clang)")
 
   if(NOT MSVC)
     # These flags upset Clang when it's in MSVC mode
-    set(release_flags "${release_flags} -fno-stack-protector -ffast-math -fno-unsafe-math-optimizations")
-
+    if (EMSCRIPTEN)
+        # -fno-unsafe-math-optimizations could crash clang 11
+        # but when removing -fno-unsafe-math-optimizations remove -ffast-math too (rdb)
+        set(release_flags "${release_flags} -fno-stack-protector")
+    else()
+        set(release_flags "${release_flags} -fno-stack-protector -ffast-math -fno-unsafe-math-optimizations")
+    endif()
     # Allow NaN to occur in the public SDK
     set(standard_flags "${release_flags} -fno-finite-math-only")
 

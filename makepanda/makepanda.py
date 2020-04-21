@@ -837,55 +837,60 @@ if (COMPILER=="GCC"):
                 LibName("FFMPEG", "-Wl,--exclude-libs,%s.a" % (ffmpeg_lib))
 
     if GetTarget() != "darwin":
+        if GetTarget() == "emscripten":
+            excludelibs = ''
+        else:
+            excludelibs = '--exclude-libs,'
+
         for fcollada_lib in fcollada_libs:
-            LibName("FCOLLADA", "-Wl,--exclude-libs,lib%s.a" % (fcollada_lib))
+            LibName("FCOLLADA", f"-Wl,{excludelibs}lib%s.a" % (fcollada_lib))
 
         if not PkgSkip("SWSCALE"):
-            LibName("SWSCALE", "-Wl,--exclude-libs,libswscale.a")
+            LibName("SWSCALE", f"-Wl,{excludelibs}libswscale.a")
 
         if not PkgSkip("SWRESAMPLE"):
-            LibName("SWRESAMPLE", "-Wl,--exclude-libs,libswresample.a")
+            LibName("SWRESAMPLE", f"-Wl,{excludelibs}libswresample.a")
 
         if not PkgSkip("JPEG"):
-            LibName("JPEG", "-Wl,--exclude-libs,libjpeg.a")
+            LibName("JPEG", f"-Wl,{excludelibs}libjpeg.a")
 
         if not PkgSkip("TIFF"):
-            LibName("TIFF", "-Wl,--exclude-libs,libtiff.a")
+            LibName("TIFF", f"-Wl,{excludelibs}libtiff.a")
 
         if not PkgSkip("PNG"):
-            LibName("PNG", "-Wl,--exclude-libs,libpng.a")
-            LibName("PNG", "-Wl,--exclude-libs,libpng16.a")
+            LibName("PNG", f"-Wl,{excludelibs}libpng.a")
+            LibName("PNG", f"-Wl,{excludelibs}libpng16.a")
 
         if not PkgSkip("SQUISH"):
-            LibName("SQUISH", "-Wl,--exclude-libs,libsquish.a")
+            LibName("SQUISH", f"-Wl,{excludelibs}libsquish.a")
 
         if not PkgSkip("OPENEXR"):
-            LibName("OPENEXR", "-Wl,--exclude-libs,libHalf.a")
-            LibName("OPENEXR", "-Wl,--exclude-libs,libIex.a")
-            LibName("OPENEXR", "-Wl,--exclude-libs,libIexMath.a")
-            LibName("OPENEXR", "-Wl,--exclude-libs,libIlmImf.a")
-            LibName("OPENEXR", "-Wl,--exclude-libs,libIlmImfUtil.a")
-            LibName("OPENEXR", "-Wl,--exclude-libs,libIlmThread.a")
-            LibName("OPENEXR", "-Wl,--exclude-libs,libImath.a")
+            LibName("OPENEXR", f"-Wl,{excludelibs}libHalf.a")
+            LibName("OPENEXR", f"-Wl,{excludelibs}libIex.a")
+            LibName("OPENEXR", f"-Wl,{excludelibs}libIexMath.a")
+            LibName("OPENEXR", f"-Wl,{excludelibs}libIlmImf.a")
+            LibName("OPENEXR", f"-Wl,{excludelibs}libIlmImfUtil.a")
+            LibName("OPENEXR", f"-Wl,{excludelibs}libIlmThread.a")
+            LibName("OPENEXR", f"-Wl,{excludelibs}libImath.a")
 
         if not PkgSkip("VORBIS"):
-            LibName("VORBIS", "-Wl,--exclude-libs,libogg.a")
-            LibName("VORBIS", "-Wl,--exclude-libs,libvorbis.a")
-            LibName("VORBIS", "-Wl,--exclude-libs,libvorbisenc.a")
-            LibName("VORBIS", "-Wl,--exclude-libs,libvorbisfile.a")
+            LibName("VORBIS", f"-Wl,{excludelibs}libogg.a")
+            LibName("VORBIS", f"-Wl,{excludelibs}libvorbis.a")
+            LibName("VORBIS", f"-Wl,{excludelibs}libvorbisenc.a")
+            LibName("VORBIS", f"-Wl,{excludelibs}libvorbisfile.a")
 
         if not PkgSkip("OPUS"):
-            LibName("OPUS", "-Wl,--exclude-libs,libogg.a")
-            LibName("OPUS", "-Wl,--exclude-libs,libopus.a")
-            LibName("OPUS", "-Wl,--exclude-libs,libopusfile.a")
+            LibName("OPUS", f"-Wl,{excludelibs}libogg.a")
+            LibName("OPUS", f"-Wl,{excludelibs}libopus.a")
+            LibName("OPUS", f"-Wl,{excludelibs}libopusfile.a")
 
         if not PkgSkip("VRPN"):
-            LibName("VRPN", "-Wl,--exclude-libs,libvrpn.a")
-            LibName("VRPN", "-Wl,--exclude-libs,libquat.a")
+            LibName("VRPN", f"-Wl,{excludelibs}libvrpn.a")
+            LibName("VRPN", f"-Wl,{excludelibs}libquat.a")
 
         if not PkgSkip("ARTOOLKIT"):
-            LibName("ARTOOLKIT", "-Wl,--exclude-libs,libAR.a")
-            LibName("ARTOOLKIT", "-Wl,--exclude-libs,libARMulti.a")
+            LibName("ARTOOLKIT", f"-Wl,{excludelibs}libAR.a")
+            LibName("ARTOOLKIT", f"-Wl,{excludelibs}libARMulti.a")
 
     if PkgSkip("FFMPEG") or GetTarget() == "darwin":
         cv_lib = ChooseLib(("opencv_core", "cv"), "OPENCV")
@@ -1406,6 +1411,13 @@ def CompileCxx(obj,src,opts):
             cmd += ' ' + CFLAGS
         else:
             cmd += ' ' + CXXFLAGS
+
+        # temporary workaround for clang11+wasm backend
+        if GetTarget() == "emscripten":
+            Warn("makepanda.py@1412 : temporary workaround for clang11+wasm backend")
+            cmd = cmd.replace(' -ffast-math','')
+            cmd = cmd.replace(' -fno-unsafe-math-optimizations','')
+
         cmd = cmd.rstrip()
 
         building = GetValueOption(opts, "BUILDING:")
