@@ -838,7 +838,7 @@ if (COMPILER=="GCC"):
 
     if GetTarget() != "darwin":
         if GetTarget() == "emscripten":
-            excludelibs = ''
+            excludelibs = f"{os.environ.get('EM_CACHE')}/wasm/"
         else:
             excludelibs = '--exclude-libs,'
 
