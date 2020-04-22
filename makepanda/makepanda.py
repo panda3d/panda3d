@@ -929,6 +929,10 @@ if (COMPILER=="GCC"):
         if GetTarget() == "linux":
             LibName("PYTHON", "-lutil")
             LibName("PYTHON", "-lrt")
+    elif GetTarget() == 'emscripten':
+        Warn("FORCING PYTHON SUPPORT FOR WASM TARGET")
+        python_lib = SDK["PYTHONVERSION"]
+        SmartPkgEnable("PYTHON", "", python_lib, (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"))
 
     SmartPkgEnable("OPENSSL",   "openssl",   ("ssl", "crypto"), ("openssl/ssl.h", "openssl/crypto.h"))
     SmartPkgEnable("GTK2",      "gtk+-2.0")
@@ -2177,6 +2181,9 @@ def CompileAnything(target, inputs, opts, progress = None):
         return CompileLib(target, inputs, opts)
     elif origsuffix in SUFFIX_DLL or (origsuffix==".plugin" and GetTarget() != "darwin"):
         if (origsuffix==".exe"):
+            if GetTarget() == "emscripten":
+              Warn("WASM : skipping ",target)
+              return
             ProgressOutput(progress, "Linking executable", target)
         else:
             ProgressOutput(progress, "Linking dynamic library", target)

@@ -1352,7 +1352,7 @@ def GetThirdpartyDir():
         THIRDPARTYDIR = GetThirdpartyBase()+"/android-libs-%s/" % (GetTargetArch())
 
     elif (target == 'emscripten'):
-        THIRDPARTYDIR = base + "/emscripten-libs/"
+        THIRDPARTYDIR = GetOutputDir() + '/' + base + "/emscripten-libs/"
 
     else:
         Warn("Unsupported platform:", target)
@@ -2064,10 +2064,17 @@ def SdkLocateMax():
                             SDK[version+"CS"] = top + subdir
 
 def SdkLocatePython(prefer_thirdparty_python=False):
+    if GetTarget() == 'emscripten':
+        prefer_thirdparty_python = True
+        Warn("searching wasm *thirdparty* libpython first !")
+
     if PkgSkip("PYTHON"):
         # We're not compiling with Python support.  We still need to set this
         # in case we want to run any scripts that use Python, though.
         SDK["PYTHONEXEC"] = os.path.realpath(sys.executable)
+        if GetTarget() == 'emscripten':
+            Warn("Need --use-python !")
+            raise SystemExit
         return
 
     abiflags = getattr(sys, 'abiflags', '')
@@ -2116,6 +2123,9 @@ def SdkLocatePython(prefer_thirdparty_python=False):
 
     elif CrossCompiling() or (prefer_thirdparty_python and os.path.isdir(os.path.join(GetThirdpartyDir(), "python"))):
         tp_python = os.path.join(GetThirdpartyDir(), "python")
+
+        if GetTarget() == 'emscripten':
+            Warn(f"searching libpython in {tp_python}/lib/ !")
 
         if GetTarget() == 'darwin':
             py_libs = glob.glob(tp_python + "/lib/libpython[0-9].[0-9].dylib")
@@ -3273,12 +3283,12 @@ def GetExtensionSuffix():
     target = GetTarget()
     if target == 'windows':
         return '.pyd'
-    elif target == 'emscripten':
-        return '.bc'
     else:
         return '.so'
 
 def GetPythonABI():
+    if GetTarget() == 'emscripten':
+        return 'wasm'
     soabi = sysconfig.get_config_var('SOABI')
     if soabi:
         return soabi
