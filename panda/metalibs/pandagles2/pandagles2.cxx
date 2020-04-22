@@ -9,8 +9,32 @@
 #define OPENGLES_2
 #include "config_gles2gsg.h"
 
-#include "config_egldisplay.h"
-#include "eglGraphicsPipe.h"
+
+#if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
+    #if __EMSCRIPTEN__
+        #include "config_webgldisplay.h"
+        #include "webGLGraphicsPipe.h"
+
+        #define init_libviewdisplay init_libwebgldisplay
+        #define viewGraphicsPipe WebGLGraphicsPipe
+    #endif //__EMSCRIPTEN__
+
+    #if __ANDROID__
+        #include "config_androiddisplay.h"
+        #include "viewGraphicsPipe.h"
+        #define init_libviewdisplay init_libandroiddisplay
+        #define viewGraphicsPipe AndroidGraphicsPipe
+    #endif //__ANDROID__
+#else
+    #include "config_egldisplay.h"
+    #include "eglGraphicsPipe.h"
+
+    #define init_libviewdisplay init_libegldisplay
+    #define viewGraphicsPipe eglGraphicsPipe
+#endif //defined(__ANDROID__) || defined(__EMSCRIPTEN__)
+
+
+extern void init_libviewdisplay();
 
 /**
  * Initializes the library.  This must be called at least once before any of
@@ -18,10 +42,14 @@
  * called by the static initializers and need not be called explicitly, but
  * special cases exist.
  */
+
+#if __EMSCRIPTEN__
+static
+#endif
 void
 init_libpandagles2() {
   init_libgles2gsg();
-  init_libegldisplay();
+  init_libviewdisplay();
 }
 
 /**
@@ -30,5 +58,7 @@ init_libpandagles2() {
  */
 int
 get_pipe_type_pandagles2() {
-  return eglGraphicsPipe::get_class_type().get_index();
+  return viewGraphicsPipe::get_class_type().get_index();
 }
+
+
