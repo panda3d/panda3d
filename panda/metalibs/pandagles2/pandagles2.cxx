@@ -43,9 +43,6 @@ extern void init_libviewdisplay();
  * special cases exist.
  */
 
-#if __EMSCRIPTEN__
-static
-#endif
 void
 init_libpandagles2() {
   init_libgles2gsg();
