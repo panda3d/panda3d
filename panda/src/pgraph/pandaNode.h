@@ -198,8 +198,8 @@ PUBLISHED:
   void clear_tag(const std::string &key,
                  Thread *current_thread = Thread::get_current_thread());
 				 
-  INLINE void set_user_data(TypedReferenceCount *data, Thread *current_thread = Thread::get_current_thread());
-  INLINE TypedReferenceCount *get_user_data(Thread *current_thread = Thread::get_current_thread()) const;
+  INLINE void set_user_data(TypedReferenceCount *data);
+  INLINE TypedReferenceCount *get_user_data() const;
 
 public:
   void get_tag_keys(vector_string &keys) const;

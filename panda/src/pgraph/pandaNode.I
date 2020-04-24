@@ -410,8 +410,8 @@ has_tags() const {
  * Stores on the node a pointer to some data that is meaningful to the user.
  */
 INLINE void PandaNode::
-set_user_data(TypedReferenceCount *data, Thread *current_thread) {
-  CDWriter cdata(_cycler, current_thread);
+set_user_data(TypedReferenceCount *data) {
+  CDWriter cdata(_cycler);
   cdata->_user_data = data;
 }
 
@@ -419,8 +419,8 @@ set_user_data(TypedReferenceCount *data, Thread *current_thread) {
  * Returns the user data pointer that was stored on the node.
  */
 INLINE TypedReferenceCount *PandaNode::
-get_user_data(Thread *current_thread) const {
-  CDReader cdata(_cycler, current_thread);
+get_user_data() const {
+  CDReader cdata(_cycler);
   return cdata->_user_data;
 }
 

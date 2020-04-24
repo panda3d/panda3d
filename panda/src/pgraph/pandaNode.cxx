@@ -159,6 +159,7 @@ PandaNode(const PandaNode &copy) :
 
     cdata->_effects = copy_cdata->_effects;
     cdata->_tag_data = copy_cdata->_tag_data;
+    cdata->_user_data = copy_cdata->_user_data;
     cdata->_draw_control_mask = copy_cdata->_draw_control_mask;
     cdata->_draw_show_mask = copy_cdata->_draw_show_mask;
     cdata->_into_collide_mask = copy_cdata->_into_collide_mask;
@@ -1390,6 +1391,7 @@ copy_all_properties(PandaNode *other) {
     cdataw->_prev_transform = cdatar->_prev_transform;
     cdataw->_state = cdatar->_state;
     cdataw->_effects = cdatar->_effects;
+    cdataw->_user_data = cdatar->_user_data;
     cdataw->_draw_control_mask = cdatar->_draw_control_mask;
     cdataw->_draw_show_mask = cdatar->_draw_show_mask;
 
