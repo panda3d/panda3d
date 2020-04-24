@@ -2153,7 +2153,9 @@ class Freezer:
                     symoff += nlist_size
                     name = strings[strx : strings.find(b'\0', strx)]
 
-                    if name == b'_' + symbol_name:
+                    # If the entry's type has any bits at 0xe0 set, it's a debug
+                    # symbol, and will point us to the wrong place.
+                    if name == b'_' + symbol_name and type & 0xe0 == 0:
                         # Find out in which segment this is.
                         for vmaddr, vmsize, fileoff in segments:
                             # Is it defined in this segment?
