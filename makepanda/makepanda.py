@@ -840,7 +840,7 @@ if (COMPILER=="GCC"):
     if GetTarget() != "darwin":
         if GetTarget() == "emscripten":
             Warn("makepanda@841 : if using pic and MAIN_MODULE>0 change /wasm/ to /wasm-pic/")
-            excludelibs = f"{os.environ.get('EM_CACHE')}/wasm/"
+            excludelibs = f"{os.environ.get('EM_CACHE')}/wasm-pic/"
         else:
             excludelibs = '--exclude-libs,'
 
@@ -4647,7 +4647,8 @@ if (PkgSkip("EGL")==0 and PkgSkip("GLES2")==0 and PkgSkip("X11")==0):
 # DIRECTORY: panda/src/webgldisplay/
 #
 
-if GetTarget() == 'emscripten' and not PkgSkip("GLES2"):
+# -s MAIN_MODULE=1 will export "int get_pipe_type_pandagles2()"
+if GetTarget() == 'emscripten-dyld' and not PkgSkip("GLES2"):
     DefSymbol('GLES2', 'OPENGLES_2', '')
 
     OPTS=['DIR:panda/src/webgldisplay', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGLES2',  'GLES2', 'WEBGL']
@@ -4665,6 +4666,16 @@ if GetTarget() == 'emscripten' and not PkgSkip("GLES2"):
     TargetAdd('libpandagles2.dll', input=COMMON_PANDA_LIBS)
     TargetAdd('libpandagles2.dll', opts=['MODULE', 'GLES2', 'WEBGL'])
 
+# static
+if GetTarget() == 'emscripten' and not PkgSkip("GLES2"):
+  DefSymbol('GLES2', 'OPENGLES_2', '')
+  OPTS=['DIR:panda/src/webgldisplay', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGLES2',  'GLES2', 'WEBGL']
+  TargetAdd('p3webgldisplay_webgldisplay_composite1.obj', opts=OPTS, input='p3webgldisplay_composite1.cxx')
+  TargetAdd('libp3webgldisplay.dll', input='p3gles2gsg_config_gles2gsg.obj')
+  TargetAdd('libp3webgldisplay.dll', input='p3gles2gsg_gles2gsg.obj')
+  TargetAdd('libp3webgldisplay.dll', input='p3webgldisplay_webgldisplay_composite1.obj')
+  TargetAdd('libp3webgldisplay.dll', input=COMMON_PANDA_LIBS)
+  TargetAdd('libp3webgldisplay.dll', opts=['MODULE', 'GLES2', 'WEBGL'])
 
 
 

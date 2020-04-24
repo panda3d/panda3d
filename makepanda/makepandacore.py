@@ -1349,10 +1349,10 @@ def GetThirdpartyDir():
             THIRDPARTYDIR = base + "/freebsd-libs-a/"
 
     elif (target == 'android'):
-        THIRDPARTYDIR = GetThirdpartyBase()+"/android-libs-%s/" % (GetTargetArch())
+        THIRDPARTYDIR = base + "/android-libs-%s/" % (GetTargetArch())
 
     elif (target == 'emscripten'):
-        THIRDPARTYDIR = GetOutputDir() + '/' + base + "/emscripten-libs/"
+        THIRDPARTYDIR =  base + "/emscripten-libs/"
 
     else:
         Warn("Unsupported platform:", target)

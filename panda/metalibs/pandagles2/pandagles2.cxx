@@ -55,7 +55,7 @@ init_libpandagles2() {
  */
 int
 get_pipe_type_pandagles2() {
-  return viewGraphicsPipe::get_class_type().get_index();
+    return viewGraphicsPipe::get_class_type().get_index();
 }
 
 

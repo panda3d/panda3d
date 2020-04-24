@@ -82,7 +82,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     return false;
   }
 
-  WebGLGraphicsStateGuardian *webgl_gsg;
+  WebGLGraphicsStateGuardian *webgl_gsg = nullptr;
   DCAST_INTO_R(webgl_gsg, _gsg, false);
 
   if (emscripten_is_webgl_context_lost(0)) {
@@ -169,7 +169,7 @@ set_properties_now(WindowProperties &properties) {
   GraphicsWindow::set_properties_now(properties);
 
   if (properties.has_size()) {
-    emscripten_set_canvas_size(properties.get_x_size(), properties.get_y_size());
+    emscripten_set_canvas_element_size(view, properties.get_x_size(), properties.get_y_size());
     _properties.set_size(properties.get_size());
     properties.clear_size();
     set_size_and_recalc(_properties.get_x_size(), _properties.get_y_size());
@@ -249,28 +249,42 @@ close_window() {
   }
 
   // Clear the assigned callbacks.
-  const char *target = nullptr;
-  emscripten_set_fullscreenchange_callback(target, nullptr, false, nullptr);
-  emscripten_set_pointerlockchange_callback(target, nullptr, false, nullptr);
+
+  emscripten_set_fullscreenchange_callback(view, nullptr, false, nullptr);
+  emscripten_set_pointerlockchange_callback(view, nullptr, false, nullptr);
   emscripten_set_visibilitychange_callback(nullptr, false, nullptr);
 
-  emscripten_set_focus_callback(target, nullptr, false, nullptr);
-  emscripten_set_blur_callback(target, nullptr, false, nullptr);
+  emscripten_set_focus_callback(view, nullptr, false, nullptr);
+  emscripten_set_blur_callback(view, nullptr, false, nullptr);
 
-  emscripten_set_keypress_callback(target, nullptr, false, nullptr);
-  emscripten_set_keydown_callback(target, nullptr, false, nullptr);
-  emscripten_set_keyup_callback(target, nullptr, false, nullptr);
+  emscripten_set_keypress_callback(view, nullptr, false, nullptr);
+  emscripten_set_keydown_callback(view, nullptr, false, nullptr);
+  emscripten_set_keyup_callback(view, nullptr, false, nullptr);
 
-  //emscripten_set_click_callback(target, nullptr, false, nullptr);
-  emscripten_set_mousedown_callback(target, nullptr, false, nullptr);
-  emscripten_set_mouseup_callback(target, nullptr, false, nullptr);
-  emscripten_set_mousemove_callback(target, nullptr, false, nullptr);
-  emscripten_set_mouseenter_callback(target, nullptr, false, nullptr);
-  emscripten_set_mouseleave_callback(target, nullptr, false, nullptr);
+  //emscripten_set_click_callback(view, nullptr, false, nullptr);
+  emscripten_set_mousedown_callback(view, nullptr, false, nullptr);
+  emscripten_set_mouseup_callback(view, nullptr, false, nullptr);
+  emscripten_set_mousemove_callback(view, nullptr, false, nullptr);
+  emscripten_set_mouseenter_callback(view, nullptr, false, nullptr);
+  emscripten_set_mouseleave_callback(view, nullptr, false, nullptr);
 
-  emscripten_set_wheel_callback(target, nullptr, false, nullptr);
+  emscripten_set_wheel_callback(view, nullptr, false, nullptr);
 
   GraphicsWindow::close_window();
+}
+
+int
+is_fullscreen() {
+    int fs=0;
+    EmscriptenFullscreenChangeEvent e;
+    EMSCRIPTEN_RESULT r = emscripten_get_fullscreen_status(&e);
+    if (r != EMSCRIPTEN_RESULT_SUCCESS) { /* handle error */
+        webgldisplay_cat.error()
+          << "Failed to read fullscreen status.\n";
+
+    } else
+        fs = e.isFullscreen;
+    return fs;
 }
 
 /**
@@ -282,30 +296,29 @@ open_window() {
   //WebGLGraphicsPipe *webgl_pipe;
   //DCAST_INTO_R(webgl_pipe, _pipe, false);
 
-  const char *target = nullptr;
-
   // GSG Creation/Initialization
-  WebGLGraphicsStateGuardian *webgl_gsg;
+  WebGLGraphicsStateGuardian *webgl_gsg = nullptr;
   if (_gsg == nullptr) {
     // There is no old gsg.  Create a new one.
     webgl_gsg = new WebGLGraphicsStateGuardian(_engine, _pipe);
-    webgl_gsg->choose_pixel_format(_fb_properties, target);
+    webgl_gsg->choose_pixel_format(_fb_properties, view);
     _gsg = webgl_gsg;
   } else {
     // If the old gsg has the wrong pixel format, create a new one.
     //DCAST_INTO_R(webgl_gsg, _gsg, false);
     //if (!webgl_gsg->_fb_properties.subsumes(_fb_properties)) {
     //  webgl_gsg = new WebGLGraphicsStateGuardian(_engine, _pipe);
-    //  webgl_gsg->choose_pixel_format(_fb_properties, target);
+    //  webgl_gsg->choose_pixel_format(_fb_properties, view);
     //  _gsg = webgl_gsg;
     //}
   }
 
   if (_properties.has_size() && _properties.get_size() != LVecBase2i(1, 1)) {
-    emscripten_set_canvas_size(_properties.get_x_size(), _properties.get_y_size());
+    emscripten_set_canvas_element_size(view, _properties.get_x_size(), _properties.get_y_size());
   } else {
     int width, height, fullscreen;
-    emscripten_get_canvas_size(&width, &height, &fullscreen);
+    emscripten_get_canvas_element_size(view, &width, &height);
+    fullscreen = is_fullscreen();
     _properties.set_size(width, height);
     _properties.set_fullscreen(fullscreen > 0);
   }
@@ -339,27 +352,27 @@ open_window() {
   _fb_properties.set_stencil_bits(stencil_bits);
 
   // Set callbacks.
-  emscripten_set_fullscreenchange_callback(target, (void *)this, false, &on_fullscreen_event);
-  emscripten_set_pointerlockchange_callback(target, (void *)this, false, &on_pointerlock_event);
+  emscripten_set_fullscreenchange_callback(view, (void *)this, false, &on_fullscreen_event);
+  emscripten_set_pointerlockchange_callback(view, (void *)this, false, &on_pointerlock_event);
   emscripten_set_visibilitychange_callback((void *)this, false, &on_visibility_event);
 
-  emscripten_set_focus_callback(target, (void *)this, false, &on_focus_event);
-  emscripten_set_blur_callback(target, (void *)this, false, &on_focus_event);
+  emscripten_set_focus_callback(view, (void *)this, false, &on_focus_event);
+  emscripten_set_blur_callback(view, (void *)this, false, &on_focus_event);
 
   void *user_data = (void *)&_input_devices[0];
 
-  emscripten_set_keypress_callback(target, user_data, false, &on_keyboard_event);
-  emscripten_set_keydown_callback(target, user_data, false, &on_keyboard_event);
-  emscripten_set_keyup_callback(target, user_data, false, &on_keyboard_event);
+  emscripten_set_keypress_callback(view, user_data, false, &on_keyboard_event);
+  emscripten_set_keydown_callback(view, user_data, false, &on_keyboard_event);
+  emscripten_set_keyup_callback(view, user_data, false, &on_keyboard_event);
 
-  //emscripten_set_click_callback(target, user_data, false, &on_mouse_event);
-  emscripten_set_mousedown_callback(target, user_data, false, &on_mouse_event);
-  emscripten_set_mouseup_callback(target, user_data, false, &on_mouse_event);
-  emscripten_set_mousemove_callback(target, user_data, false, &on_mouse_event);
-  emscripten_set_mouseenter_callback(target, user_data, false, &on_mouse_event);
-  emscripten_set_mouseleave_callback(target, user_data, false, &on_mouse_event);
+  //emscripten_set_click_callback(view, user_data, false, &on_mouse_event);
+  emscripten_set_mousedown_callback(view, user_data, false, &on_mouse_event);
+  emscripten_set_mouseup_callback(view, user_data, false, &on_mouse_event);
+  emscripten_set_mousemove_callback(view, user_data, false, &on_mouse_event);
+  emscripten_set_mouseenter_callback(view, user_data, false, &on_mouse_event);
+  emscripten_set_mouseleave_callback(view, user_data, false, &on_mouse_event);
 
-  emscripten_set_wheel_callback(target, user_data, false, &on_wheel_event);
+  emscripten_set_wheel_callback(view, user_data, false, &on_wheel_event);
 
   return true;
 }
@@ -541,8 +554,8 @@ on_mouse_event(int type, const EmscriptenMouseEvent *event, void *user_data) {
   case EMSCRIPTEN_EVENT_MOUSEDOWN:
     // Don't register out-of-bounds mouse downs.
     if (event->canvasX >= 0 && event->canvasY >= 0) {
-      int w, h, f;
-      emscripten_get_canvas_size(&w, &h, &f);
+      int w, h; //, f;
+      emscripten_get_canvas_element_size(view, &w, &h); //, &f);
       if (event->canvasX < w && event->canvasY < h) {
         device->button_down(MouseButton::button(event->button), time);
         return true;

@@ -14,6 +14,8 @@
 #ifndef CONFIG_WEBGLDISPLAY_H
 #define CONFIG_WEBGLDISPLAY_H
 
+static const char *view = "#canvas";
+
 #include "pandabase.h"
 #include "notifyCategoryProxy.h"
 #include "configVariableString.h"

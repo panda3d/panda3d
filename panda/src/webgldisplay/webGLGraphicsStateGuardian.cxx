@@ -37,9 +37,8 @@ WebGLGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe) :
 WebGLGraphicsStateGuardian::
 ~WebGLGraphicsStateGuardian() {
   if (_context != 0) {
-    const char *target = NULL;
-    emscripten_set_webglcontextlost_callback(target, NULL, false, NULL);
-    emscripten_set_webglcontextrestored_callback(target, NULL, false, NULL);
+    emscripten_set_webglcontextlost_callback(view, NULL, false, NULL);
+    emscripten_set_webglcontextrestored_callback(view, NULL, false, NULL);
 
     if (emscripten_webgl_destroy_context(_context) != EMSCRIPTEN_RESULT_SUCCESS) {
       webgldisplay_cat.error() << "Failed to destroy WebGL context!\n";
@@ -47,6 +46,7 @@ WebGLGraphicsStateGuardian::
     _context = 0;
   }
 }
+
 
 /**
  * Selects a visual or fbconfig for all the windows and buffers that use this
@@ -58,22 +58,44 @@ choose_pixel_format(const FrameBufferProperties &properties,
 
   nassertv(_context == 0);
 
-  EmscriptenWebGLContextAttributes attribs;
-  emscripten_webgl_init_context_attributes(&attribs);
+  webgldisplay_cat.error() << "Context is bound to ["<< target <<"] .\n";
 
-  attribs.alpha = (properties.get_alpha_bits() > 0);
-  attribs.depth = (properties.get_depth_bits() > 0);
-  attribs.stencil = (properties.get_stencil_bits() > 0);
-  attribs.majorVersion = 1;
-  attribs.minorVersion = 0;
-  attribs.enableExtensionsByDefault = false;
+#pragma message "#TODO: fallback for webgl1 ?"
 
-  EMSCRIPTEN_WEBGL_CONTEXT_HANDLE result;
-  result = emscripten_webgl_create_context(target, &attribs);
+  EmscriptenWebGLContextAttributes attr;
+  emscripten_webgl_init_context_attributes(&attr);
 
-  if (result > 0) {
-    _context = result;
+//    attr.explicitSwapControl = EM_FALSE;
+    attr.majorVersion = 2;
+    attr.minorVersion = 0;
+    attr.alpha = attr.depth = attr.stencil = attr.antialias = attr.preserveDrawingBuffer =
+    attr.failIfMajorPerformanceCaveat = 0;
+    attr.premultipliedAlpha = 0;
+    //attr.enableExtensionsByDefault = 1;
+
+    attr.alpha = (properties.get_alpha_bits() > 0);
+    attr.depth = (properties.get_depth_bits() > 0);
+    attr.stencil = (properties.get_stencil_bits() > 0);
+    attr.enableExtensionsByDefault = false;
+
+//  EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx = emscripten_webgl_get_current_context();
+    EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx = emscripten_webgl_create_context(target, &attr);
+
+  if (ctx > 0) {
+    _context = ctx;
     _have_context = true;
+
+#if 0
+    emscripten_webgl_make_context_current(ctx);
+    glClearColor(0.5, 0.5, 0.5, 1.0);
+    // Clear the color buffer with specified clear color
+    glClear(GL_COLOR_BUFFER_BIT);
+#endif
+
+    if ( emscripten_webgl_get_current_context() != ctx )
+        webgldisplay_cat.error() << "Context IS NOT CURRENT.\n";
+    //glViewport( 0, 0, 640, 480 );
+
 
     // We may lose the WebGL context at any time, at which time we have to be
     // prepared to drop all resources.

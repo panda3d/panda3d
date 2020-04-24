@@ -268,7 +268,8 @@ get_category(const string &fullname) {
  */
 ostream &Notify::
 out(NotifySeverity severity) {
-#if defined(ANDROID) || defined(__EMSCRIPTEN__)
+#if defined(__ANDROID__)
+//|| defined(__EMSCRIPTEN__)
   // Android and JavaScript have dedicated log systems.
   return *(ptr()->_log_streams[severity]);
 #else
