@@ -1810,8 +1810,8 @@ class Freezer:
 
         # Also determine the total blob size now.  Add padding to the end.
         blob_size = pool_offset + len(pool)
-        if blob_size & 31 != 0:
-            pad = (32 - (blob_size & 31))
+        if blob_size & (blob_align - 1) != 0:
+            pad = (blob_align - (blob_size & (blob_align - 1)))
             blob_size += pad
 
         # Calculate the offsets for the variables.  These are pointers,
