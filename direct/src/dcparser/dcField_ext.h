@@ -27,7 +27,7 @@
  * instead of any C++ methods with the same prototype.
  */
 template<>
-class Extension<DCField> : public ExtensionBase<DCField> {
+class EXPCL_DIRECT_DCPARSER Extension<DCField> : public ExtensionBase<DCField> {
 public:
   bool pack_args(DCPacker &packer, PyObject *sequence) const;
   PyObject *unpack_args(DCPacker &packer) const;

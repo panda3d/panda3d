@@ -27,7 +27,7 @@
  * instead of any C++ methods with the same prototype.
  */
 template<>
-class Extension<DCPacker> : public ExtensionBase<DCPacker> {
+class EXPCL_DIRECT_DCPARSER Extension<DCPacker> : public ExtensionBase<DCPacker> {
 public:
   void pack_object(PyObject *object);
   PyObject *unpack_object();

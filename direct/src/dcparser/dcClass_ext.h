@@ -27,7 +27,7 @@
  * instead of any C++ methods with the same prototype.
  */
 template<>
-class Extension<DCClass> : public ExtensionBase<DCClass> {
+class EXPCL_DIRECT_DCPARSER Extension<DCClass> : public ExtensionBase<DCClass> {
 public:
   bool has_class_def() const;
   void set_class_def(PyObject *class_def);
