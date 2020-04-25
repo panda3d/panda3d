@@ -58,27 +58,27 @@ choose_pixel_format(const FrameBufferProperties &properties,
 
   nassertv(_context == 0);
 
-  webgldisplay_cat.error() << "Context is bound to ["<< target <<"] .\n";
+  webgldisplay_cat.warning() << "Context is bound to ["<< target <<"] .\n";
 
 #pragma message "#TODO: fallback for webgl1 ?"
 
   EmscriptenWebGLContextAttributes attr;
   emscripten_webgl_init_context_attributes(&attr);
 
-//    attr.explicitSwapControl = EM_FALSE;
+    attr.explicitSwapControl = EM_FALSE;
     attr.majorVersion = 2;
     attr.minorVersion = 0;
-    attr.alpha = attr.depth = attr.stencil = attr.antialias = attr.preserveDrawingBuffer =
-    attr.failIfMajorPerformanceCaveat = 0;
-    attr.premultipliedAlpha = 0;
-    //attr.enableExtensionsByDefault = 1;
+/*
+    attr.antialias = attr.preserveDrawingBuffer = attr.failIfMajorPerformanceCaveat = 0;
 
     attr.alpha = (properties.get_alpha_bits() > 0);
     attr.depth = (properties.get_depth_bits() > 0);
     attr.stencil = (properties.get_stencil_bits() > 0);
-    attr.enableExtensionsByDefault = false;
 
-//  EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx = emscripten_webgl_get_current_context();
+    attr.premultipliedAlpha = 0;
+    attr.enableExtensionsByDefault = 1;
+*/
+
     EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx = emscripten_webgl_create_context(target, &attr);
 
   if (ctx > 0) {
@@ -87,14 +87,16 @@ choose_pixel_format(const FrameBufferProperties &properties,
 
 #if 0
     emscripten_webgl_make_context_current(ctx);
-    glClearColor(0.5, 0.5, 0.5, 1.0);
+    glViewport( 0, 0, 800, 600 );
+    glClearColor(1, 0, 0, 1.0);
     // Clear the color buffer with specified clear color
     glClear(GL_COLOR_BUFFER_BIT);
-#endif
 
     if ( emscripten_webgl_get_current_context() != ctx )
         webgldisplay_cat.error() << "Context IS NOT CURRENT.\n";
-    //glViewport( 0, 0, 640, 480 );
+
+    emscripten_force_exit(0);
+#endif
 
 
     // We may lose the WebGL context at any time, at which time we have to be
