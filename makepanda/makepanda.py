@@ -840,7 +840,7 @@ if (COMPILER=="GCC"):
     if GetTarget() != "darwin":
         if GetTarget() == "emscripten":
             Warn("makepanda@841 : if using pic and MAIN_MODULE>0 change /wasm/ to /wasm-pic/")
-            excludelibs = f"{os.environ.get('EM_CACHE')}/wasm-pic/"
+            excludelibs = f"{os.environ.get('EM_CACHE')}/wasm/"
         else:
             excludelibs = '--exclude-libs,'
 

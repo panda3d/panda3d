@@ -68,7 +68,7 @@ choose_pixel_format(const FrameBufferProperties &properties,
     attr.explicitSwapControl = EM_FALSE;
     attr.majorVersion = 2;
     attr.minorVersion = 0;
-/*
+
     attr.antialias = attr.preserveDrawingBuffer = attr.failIfMajorPerformanceCaveat = 0;
 
     attr.alpha = (properties.get_alpha_bits() > 0);
@@ -76,8 +76,7 @@ choose_pixel_format(const FrameBufferProperties &properties,
     attr.stencil = (properties.get_stencil_bits() > 0);
 
     attr.premultipliedAlpha = 0;
-    attr.enableExtensionsByDefault = 1;
-*/
+    attr.enableExtensionsByDefault = false;
 
     EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx = emscripten_webgl_create_context(target, &attr);
 
@@ -85,7 +84,9 @@ choose_pixel_format(const FrameBufferProperties &properties,
     _context = ctx;
     _have_context = true;
 
+// if in need to test gl canvas.
 #if 0
+
     emscripten_webgl_make_context_current(ctx);
     glViewport( 0, 0, 800, 600 );
     glClearColor(1, 0, 0, 1.0);

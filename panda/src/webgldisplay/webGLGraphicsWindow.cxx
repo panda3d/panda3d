@@ -84,12 +84,12 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 
   WebGLGraphicsStateGuardian *webgl_gsg = nullptr;
   DCAST_INTO_R(webgl_gsg, _gsg, false);
-
+/*
   if (emscripten_is_webgl_context_lost(0)) {
     // The context was lost, and any GL calls we make will fail.
     return false;
   }
-
+*/
   if (emscripten_webgl_make_context_current(webgl_gsg->_context) != EMSCRIPTEN_RESULT_SUCCESS) {
     webgldisplay_cat.error()
       << "Failed to make context current.\n";
@@ -359,7 +359,8 @@ open_window() {
   emscripten_set_focus_callback(view, (void *)this, false, &on_focus_event);
   emscripten_set_blur_callback(view, (void *)this, false, &on_focus_event);
 
-  void *user_data = (void *)&_input_devices[0];
+  //CHANGE void *user_data = (void *)&_input_devices[0];
+     void *user_data = _input;
 
   emscripten_set_keypress_callback(view, user_data, false, &on_keyboard_event);
   emscripten_set_keydown_callback(view, user_data, false, &on_keyboard_event);
@@ -548,8 +549,6 @@ on_mouse_event(int type, const EmscriptenMouseEvent *event, void *user_data) {
   device = (GraphicsWindowInputDevice *)user_data;
   nassertr(device != nullptr, false);
 
-  double time = 0; //event->timestamp * 0.001;
-
   switch (type) {
   case EMSCRIPTEN_EVENT_MOUSEDOWN:
     // Don't register out-of-bounds mouse downs.
@@ -557,14 +556,14 @@ on_mouse_event(int type, const EmscriptenMouseEvent *event, void *user_data) {
       int w, h; //, f;
       emscripten_get_canvas_element_size(view, &w, &h); //, &f);
       if (event->canvasX < w && event->canvasY < h) {
-        device->button_down(MouseButton::button(event->button), time);
+        device->button_down(MouseButton::button(event->button));
         return true;
       }
     }
     return false;
 
   case EMSCRIPTEN_EVENT_MOUSEUP:
-    device->button_up(MouseButton::button(event->button), time);
+    device->button_up(MouseButton::button(event->button));
     return true;
 
   case EMSCRIPTEN_EVENT_MOUSEMOVE:
@@ -574,11 +573,12 @@ on_mouse_event(int type, const EmscriptenMouseEvent *event, void *user_data) {
 
       if (ev.isActive) {
         MouseData md = device->get_pointer();
-        device->set_pointer_in_window(md.get_x() + event->movementX,
-                                      md.get_y() + event->movementY, time);
+        device->set_pointer_in_window(md.get_x() + event->movementX, md.get_y() + event->movementY);
       } else {
-        device->set_pointer_in_window(event->canvasX, event->canvasY, time);
+        device->set_pointer_in_window(event->canvasX, event->canvasY);
       }
+        webgldisplay_cat.warning()    << event->movementX << " : " << event->movementY ;
+
     }
     return true;
 
@@ -586,7 +586,7 @@ on_mouse_event(int type, const EmscriptenMouseEvent *event, void *user_data) {
     break;
 
   case EMSCRIPTEN_EVENT_MOUSELEAVE:
-    device->set_pointer_out_of_window(time);
+    device->set_pointer_out_of_window();
     return true;
 
   default:
@@ -605,16 +605,15 @@ on_wheel_event(int type, const EmscriptenWheelEvent *event, void *user_data) {
   device = (GraphicsWindowInputDevice *)user_data;
   nassertr(device != nullptr, false);
 
-  double time = 0; //event->timestamp * 0.001;
-
   if (type == EMSCRIPTEN_EVENT_WHEEL) {
     if (event->deltaY < 0) {
-      device->button_down(MouseButton::wheel_up(), time);
-      device->button_up(MouseButton::wheel_up(), time);
+      device->button_down(MouseButton::wheel_up());
+      device->button_up(MouseButton::wheel_up());
+
     }
     if (event->deltaY > 0) {
-      device->button_down(MouseButton::wheel_down(), time);
-      device->button_up(MouseButton::wheel_down(), time);
+      device->button_down(MouseButton::wheel_down());
+      device->button_up(MouseButton::wheel_down());
     }
     return true;
   }
