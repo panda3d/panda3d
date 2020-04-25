@@ -111,6 +111,17 @@ def test_datagram_pickle():
     assert pickle.loads(pickle.dumps(dg, -1)) == dg
 
 
+def test_datagram_cow():
+    dg1 = core.Datagram()
+    dg1.append_data(b'1234')
+
+    dg2 = core.Datagram(dg1)
+    dg2.append_data(b'5678')
+
+    assert dg1.get_message() == b'1234'
+    assert dg2.get_message() == b'12345678'
+
+
 def test_iterator(datagram_small):
     """This tests Datagram/DatagramIterator, and sort of serves as a self-check
     of the test fixtures too."""

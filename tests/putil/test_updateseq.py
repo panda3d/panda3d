@@ -103,3 +103,10 @@ def test_updateseq_old():
     assert not (seq != old)
     assert not (seq > old)
     assert not (seq < old)
+
+
+def test_updateseq_clear():
+    seq = UpdateSeq(UpdateSeq.fresh())
+    seq.clear()
+    assert seq == UpdateSeq.initial()
+    assert seq.is_initial()
