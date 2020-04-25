@@ -571,15 +571,19 @@ class build_apps(setuptools.Command):
             libdir = os.path.dirname(dtool_fn.to_os_specific())
             etcdir = os.path.join(libdir, '..', 'etc')
 
-            for fn in os.listdir(etcdir):
+            etcfiles = os.listdir(etcdir)
+            etcfiles.sort(reverse=True)
+            for fn in etcfiles:
                 if fn.lower().endswith('.prc'):
                     with open(os.path.join(etcdir, fn)) as f:
                         prcstring += f.read()
         else:
             etcfiles = [i for i in p3dwhl.namelist() if i.endswith('.prc')]
+            etcfiles.sort(reverse=True)
             for fn in etcfiles:
                 with p3dwhl.open(fn) as f:
                     prcstring += f.read().decode('utf8')
+
         user_prcstring = self.extra_prc_data
         for fn in self.extra_prc_files:
             with open(fn) as f:
@@ -598,12 +602,33 @@ class build_apps(setuptools.Command):
             for ln in prcstr.split('\n'):
                 ln = ln.strip()
                 useline = True
+
                 if ln.startswith('#') or not ln:
                     continue
-                if 'model-cache-dir' in ln:
-                    ln = ln.replace('/panda3d', '/{}'.format(self.distribution.get_name()))
+
+                words = ln.split(None, 1)
+                if not words:
+                    continue
+                var = words[0]
+                value = words[1] if len(words) > 1 else ''
+
+                # Strip comment after value.
+                c = value.find(' #')
+                if c > 0:
+                    value = value[:c].rstrip()
+
+                if var == 'model-cache-dir' and value:
+                    value = value.replace('/panda3d', '/{}'.format(self.distribution.get_name()))
+
+                if var == 'audio-library-name':
+                    # We have the default set to p3fmod_audio on macOS in 1.10,
+                    # but this can be unexpected as other platforms use OpenAL
+                    # by default.  Switch it up if FMOD is not included.
+                    if value not in self.plugins and value == 'p3fmod_audio' and 'p3openal_audio' in self.plugins:
+                        self.warn("Missing audio plugin p3fmod_audio referenced in PRC data, replacing with p3openal_audio")
+
                 for plugin in check_plugins:
-                    if plugin in ln and plugin not in self.plugins:
+                    if plugin in value and plugin not in self.plugins:
                         useline = False
                         if warn_on_missing_plugin:
                             self.warn(
@@ -611,7 +636,10 @@ class build_apps(setuptools.Command):
                             )
                         break
                 if useline:
-                    out.append(ln)
+                    if value:
+                        out.append(var + ' ' + value)
+                    else:
+                        out.append(var)
             return out
         prcexport = parse_prc(prcstring, 0) + parse_prc(user_prcstring, 1)
 
