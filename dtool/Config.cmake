@@ -22,6 +22,17 @@ if(CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
   set(IS_FREEBSD 1)
 endif()
 
+# Define the type of build we are setting up.
+
+set(_configs Standard Release RelWithDebInfo Debug MinSizeRel)
+if(DEFINED CMAKE_CXX_FLAGS_COVERAGE)
+  list(APPEND _configs Coverage)
+endif()
+
+if(IS_MULTICONFIG)
+  set(CMAKE_CONFIGURATION_TYPES ${_configs})
+endif()
+
 set(PER_CONFIG_OPTIONS)
 
 # Are we building with static or dynamic linking?
