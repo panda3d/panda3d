@@ -365,6 +365,7 @@ jobs:
     - name: Install dependencies (Ubuntu)
       if: matrix.os == 'ubuntu-16.04'
       run: |
+        sudo apt-get update
         sudo apt-get install build-essential bison flex libfreetype6-dev libgl1-mesa-dev libjpeg-dev libode-dev libopenal-dev libpng-dev libssl-dev libvorbis-dev libx11-dev libxcursor-dev libxrandr-dev nvidia-cg-toolkit zlib1g-dev
     - name: Get thirdparty packages (Windows)
       if: runner.os == 'Windows'
