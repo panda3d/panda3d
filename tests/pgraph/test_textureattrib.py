@@ -88,7 +88,50 @@ def test_textureattrib_compare():
     assert tattr2.compare_to(tattr1) != 0
     assert tattr2.compare_to(tattr1) == -tattr1.compare_to(tattr2)
 
-    # If both have the same texture, they are equal
+    # Empty stage is not the same as a single off stage
+    tattr1 = core.TextureAttrib.make()
+    tattr2 = core.TextureAttrib.make()
+    tattr2 = tattr2.add_off_stage(stage1)
+    assert tattr1.compare_to(tattr2) != 0
+    assert tattr2.compare_to(tattr1) != 0
+    assert tattr2.compare_to(tattr1) == -tattr1.compare_to(tattr2)
+
+    # All-off stage is not the same as a single off stage
+    tattr1 = core.TextureAttrib.make_all_off()
+    tattr2 = core.TextureAttrib.make()
+    tattr2 = tattr2.add_off_stage(stage1)
+    assert tattr1.compare_to(tattr2) != 0
+    assert tattr2.compare_to(tattr1) != 0
+    assert tattr2.compare_to(tattr1) == -tattr1.compare_to(tattr2)
+
+    # Different off stages are non-equal
+    tattr1 = core.TextureAttrib.make_all_off()
+    tattr1 = tattr2.add_off_stage(stage1)
+    tattr2 = core.TextureAttrib.make()
+    tattr2 = tattr2.add_off_stage(stage2)
+    assert tattr1.compare_to(tattr2) != 0
+    assert tattr2.compare_to(tattr1) != 0
+    assert tattr2.compare_to(tattr1) == -tattr1.compare_to(tattr2)
+
+    # If both have a different texture, but same stage, they are not equal
+    tattr1 = core.TextureAttrib.make()
+    tattr1 = tattr1.add_on_stage(stage1, tex1)
+    tattr2 = core.TextureAttrib.make()
+    tattr2 = tattr2.add_on_stage(stage1, tex2)
+    assert tattr1.compare_to(tattr2) != 0
+    assert tattr2.compare_to(tattr1) != 0
+    assert tattr2.compare_to(tattr1) == -tattr1.compare_to(tattr2)
+
+    # If both have the same texture, but different stage, they are not equal
+    tattr1 = core.TextureAttrib.make()
+    tattr1 = tattr1.add_on_stage(stage1, tex1)
+    tattr2 = core.TextureAttrib.make()
+    tattr2 = tattr2.add_on_stage(stage2, tex2)
+    assert tattr1.compare_to(tattr2) != 0
+    assert tattr2.compare_to(tattr1) != 0
+    assert tattr2.compare_to(tattr1) == -tattr1.compare_to(tattr2)
+
+    # If both have the same texture and stage, they are equal
     tattr1 = core.TextureAttrib.make()
     tattr1 = tattr1.add_on_stage(stage1, tex1)
     tattr2 = core.TextureAttrib.make()
