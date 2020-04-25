@@ -169,6 +169,11 @@ public:
   INLINE void get_attrib_def(CPT(AttribType) &attrib) const;
 #endif  // CPPPARSER
 
+  INLINE void cache_ref_only() const;
+
+protected:
+  INLINE void cache_unref_only() const;
+
 private:
   INLINE void check_hash() const;
   bool validate_filled_slots() const;
