@@ -3245,8 +3245,8 @@ def SetOrigExt(x, v):
     ORIG_EXT[x] = v
 
 def GetExtensionSuffix():
-    if target == 'emscripten':
-        return '.bc'
+    if GetTarget() == 'emscripten':
+        return '.so'
 
     import _imp
     return _imp.extension_suffixes()[0]
