@@ -17,18 +17,6 @@
 template<class BMType>
 INLINE void Extension<DoubleBitMask<BMType> >::
 __init__(PyObject *init_value) {
-#if PY_MAJOR_VERSION < 3
-  if (PyInt_Check(init_value)) {
-    long value = PyInt_AS_LONG(init_value);
-    if (value >= 0) {
-      this->_this->store((typename BMType::WordType)value, 0, sizeof(long) * 8 - 1);
-    } else {
-      PyErr_SetString(PyExc_ValueError, "DoubleBitMask constructor requires a positive integer");
-    }
-    return;
-  }
-#endif
-
   if (!PyLong_Check(init_value) || Py_SIZE(init_value) < 0) {
     PyErr_SetString(PyExc_ValueError, "DoubleBitMask constructor requires a positive integer");
     return;

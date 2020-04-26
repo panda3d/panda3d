@@ -209,8 +209,7 @@ def MakeInstallerLinux(version, debversion=None, rpmrelease=1,
                        python_versions=[], **kwargs):
     outputdir = GetOutputDir()
 
-    # We pack Python 2 and Python 3, if we built with support for it.
-    python2_ver = None
+    # We pack the default Python 3 version that ships with Ubuntu.
     python3_ver = None
     install_python_versions = []
 
@@ -218,12 +217,9 @@ def MakeInstallerLinux(version, debversion=None, rpmrelease=1,
     oscmd('python3 -V > "%s/tmp/python3_version.txt"' % (outputdir))
     sys_python3_ver = '.'.join(ReadFile(outputdir + "/tmp/python3_version.txt").strip().split(' ')[1].split('.')[:2])
 
-    # Check that we built with support for these.
+    # Check that we built with support for it.
     for version_info in python_versions:
-        if version_info["version"] == "2.7":
-            python2_ver = "2.7"
-            install_python_versions.append(version_info)
-        elif version_info["version"] == sys_python3_ver:
+        if version_info["version"] == sys_python3_ver:
             python3_ver = sys_python3_ver
             install_python_versions.append(version_info)
 
@@ -301,18 +297,9 @@ def MakeInstallerLinux(version, debversion=None, rpmrelease=1,
         recommends = ReadFile("targetroot/debian/substvars_rec").replace("shlibs:Depends=", "").strip()
         provides = "panda3d"
 
-        if python2_ver or python3_ver:
-            recommends += ", python-pmw"
-
-        if python2_ver:
-            depends += ", python%s" % (python2_ver)
-            recommends += ", python-wxversion"
-            recommends += ", python-tk (>= %s)" % (python2_ver)
-            provides += ", python2-panda3d"
-
         if python3_ver:
             depends += ", python%s" % (python3_ver)
-            recommends += ", python3-tk (>= %s)" % (python3_ver)
+            recommends += ", python-pmw, python3-tk (>= %s)" % (python3_ver)
             provides += ", python3-panda3d"
 
         if not PkgSkip("NVIDIACG"):
@@ -654,11 +641,7 @@ def MakeInstallerOSX(version, python_versions=[], installdir=None, **kwargs):
 
     for version_info in python_versions:
         pyver = version_info["version"]
-        if pyver in ("2.7", "3.4"):
-            # Don't install these EOL versions of Python by default.
-            cond = "false"
-        else:
-            cond = "isPythonVersionInstalled('%s')" % (pyver)
+        cond = "isPythonVersionInstalled('%s')" % (pyver)
         dist.write('    <choice id="pybindings%s" start_selected="%s" title="Python %s Bindings" tooltip="Python bindings for the Panda3D libraries" description="Support for Python %s.">\n' % (pyver, cond, pyver, pyver))
         dist.write('        <pkg-ref id="org.panda3d.panda3d.pybindings%s.pkg"/>\n' % (pyver))
         dist.write('    </choice>\n')

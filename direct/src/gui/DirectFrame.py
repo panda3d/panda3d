@@ -24,12 +24,6 @@ from .DirectGuiBase import *
 from .OnscreenImage import OnscreenImage
 from .OnscreenGeom import OnscreenGeom
 from .OnscreenText import OnscreenText
-import sys
-
-if sys.version_info >= (3, 0):
-    stringType = str
-else:
-    stringType = basestring
 
 
 class DirectFrame(DirectGuiWidget):
@@ -105,7 +99,7 @@ class DirectFrame(DirectGuiWidget):
             self["text"] = text
 
         text = self["text"]
-        if text is None or isinstance(text, stringType):
+        if text is None or isinstance(text, str):
             text_list = (text,) * self['numStates']
         else:
             text_list = text
@@ -126,7 +120,7 @@ class DirectFrame(DirectGuiWidget):
         geom = self["geom"]
         if geom is None or \
            isinstance(geom, NodePath) or \
-           isinstance(geom, stringType):
+           isinstance(geom, str):
             geom_list = (geom,) * self['numStates']
         else:
             geom_list = geom
@@ -147,11 +141,11 @@ class DirectFrame(DirectGuiWidget):
         if image is None or \
            isinstance(image, NodePath) or \
            isinstance(image, Texture) or \
-           isinstance(image, stringType) or \
+           isinstance(image, str) or \
            isinstance(image, Filename) or \
            (len(image) == 2 and \
-            isinstance(image[0], stringType) and \
-            isinstance(image[1], stringType)):
+            isinstance(image[0], str) and \
+            isinstance(image[1], str)):
             image_list = (image,) * self['numStates']
         else:
             image_list = image

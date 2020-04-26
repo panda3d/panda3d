@@ -7,12 +7,6 @@ from . import Particles
 from . import ForceGroup
 
 from direct.directnotify import DirectNotifyGlobal
-import sys
-
-
-if sys.version_info < (3, 0):
-    FileNotFoundError = IOError
-
 
 
 class ParticleEffect(NodePath):

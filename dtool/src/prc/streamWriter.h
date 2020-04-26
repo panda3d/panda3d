@@ -83,12 +83,6 @@ public:
 private:
   std::ostream *_out;
   bool _owns_stream;
-
-#ifdef HAVE_PYTHON
-PUBLISHED:
-  // Python 2 needs this for printing to work correctly.
-  int softspace;
-#endif
 };
 
 #include "streamWriter.I"
