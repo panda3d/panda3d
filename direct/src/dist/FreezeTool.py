@@ -50,7 +50,6 @@ else:
 # dummy entry should be written to the inittab.
 builtinInitFuncs = {
     'builtins': None,
-    '__builtin__': None,
     'sys': None,
     'exceptions': None,
     '_warnings': '_PyWarnings_Init',

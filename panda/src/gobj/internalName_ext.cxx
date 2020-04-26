@@ -24,7 +24,6 @@ extern struct Dtool_PyTypedObject Dtool_InternalName;
  * to InternalName objects more efficiently by storing a mapping between
  * Python and Panda interned strings.
  */
-#if PY_MAJOR_VERSION >= 3
 PT(InternalName) Extension<InternalName>::
 make(PyObject *str) {
   if (!PyUnicode_Check(str)) {
@@ -54,31 +53,6 @@ make(PyObject *str) {
     Py_ssize_t len = 0;
     const char *c_str = PyUnicode_AsUTF8AndSize((PyObject *)str, &len);
     string name(c_str, len);
-
-#else
-PT(InternalName) Extension<InternalName>::
-make(PyObject *str) {
-  if (!PyString_Check(str)) {
-    Dtool_Raise_ArgTypeError(str, 0, "InternalName.make", "str");
-    return nullptr;
-  }
-
-  if (!PyString_CHECK_INTERNED(str)) {
-    // Not an interned string; don't bother.
-    string name(PyString_AS_STRING(str), PyString_GET_SIZE(str));
-    return InternalName::make(name);
-  }
-
-  InternalName::PyInternTable::const_iterator it;
-  it = InternalName::_py_intern_table.find((PyObject*)str);
-
-  if (it != InternalName::_py_intern_table.end()) {
-    return (*it).second;
-
-  } else {
-    string name(PyString_AS_STRING(str), PyString_GET_SIZE(str));
-
-#endif  // PY_MAJOR_VERSION
 
     PT(InternalName) iname = InternalName::make(name);
 

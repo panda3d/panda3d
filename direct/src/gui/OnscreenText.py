@@ -8,7 +8,6 @@ __all__ = ['OnscreenText', 'Plain', 'ScreenTitle', 'ScreenPrompt', 'NameConfirm'
 
 from panda3d.core import *
 from . import DirectGuiGlobals as DGG
-import sys
 
 ## These are the styles of text we might commonly see.  They set the
 ## overall appearance of the text according to one of a number of
@@ -281,34 +280,15 @@ class OnscreenText(NodePath):
         self.textNode.clearText()
 
     def setText(self, text):
-        if sys.version_info >= (3, 0):
-            assert not isinstance(text, bytes)
-            self.unicodeText = True
-        else:
-            self.unicodeText = isinstance(text, unicode)
-
-        if self.unicodeText:
-            self.textNode.setWtext(text)
-        else:
-            self.textNode.setText(text)
+        assert not isinstance(text, bytes)
+        self.textNode.setWtext(text)
 
     def appendText(self, text):
-        if sys.version_info >= (3, 0):
-            assert not isinstance(text, bytes)
-            self.unicodeText = True
-        else:
-            self.unicodeText = isinstance(text, unicode)
-
-        if self.unicodeText:
-            self.textNode.appendWtext(text)
-        else:
-            self.textNode.appendText(text)
+        assert not isinstance(text, bytes)
+        self.textNode.appendWtext(text)
 
     def getText(self):
-        if self.unicodeText:
-            return self.textNode.getWtext()
-        else:
-            return self.textNode.getText()
+        return self.textNode.getWtext()
 
     text = property(getText, setText)
 

@@ -8,15 +8,9 @@
 import sys,os,time,stat,string,re,getopt,fnmatch,threading,signal,shutil,platform,glob,getpass,signal
 import subprocess
 from distutils import sysconfig
-
-if sys.version_info >= (3, 0):
-    import pickle
-    import _thread as thread
-    import configparser
-else:
-    import cPickle as pickle
-    import thread
-    import ConfigParser as configparser
+import pickle
+import _thread as thread
+import configparser
 
 SUFFIX_INC = [".cxx",".cpp",".c",".h",".I",".yxx",".lxx",".mm",".rc",".r"]
 SUFFIX_DLL = [".dll",".dlo",".dle",".dli",".dlm",".mll",".exe",".pyd",".ocx"]
@@ -49,10 +43,7 @@ if sys.platform == 'darwin':
     # On OSX, platform.architecture reports '64bit' even if it is
     # currently running in 32-bit mode.  But sys.maxint is a reliable
     # indicator.
-    if sys.version_info >= (3, 0):
-        host_64 = (sys.maxsize > 0x100000000)
-    else:
-        host_64 = (sys.maxint > 0x100000000)
+    host_64 = (sys.maxsize > 0x100000000)
 else:
     # On Windows (and Linux?) sys.maxint reports 0x7fffffff even on a
     # 64-bit build.  So we stick with platform.architecture in that
@@ -215,10 +206,7 @@ def GetColor(color = None):
     else:
         token = curses.tparm(curses.tigetstr("sgr0"))
 
-    if sys.version_info >= (3, 0):
-        return token.decode('ascii')
-    else:
-        return token
+    return token.decode('ascii')
 
 def ColorText(color, text, reset=True):
     if reset is True:
@@ -1000,10 +988,7 @@ def JavaCalcDependencies(srcfile, clspath):
 
 if sys.platform == "win32":
     # Note: not supported on cygwin.
-    if sys.version_info >= (3, 0):
-        import winreg
-    else:
-        import _winreg as winreg
+    import winreg
 
 def TryRegistryKey(path):
     try:
@@ -1148,10 +1133,7 @@ def WriteFile(wfile, data, newline=None):
         data = data.replace('\n', newline)
 
     try:
-        if sys.version_info >= (3, 0):
-            dsthandle = open(wfile, "w", newline='')
-        else:
-            dsthandle = open(wfile, "w")
+        dsthandle = open(wfile, "w", newline='')
         dsthandle.write(data)
         dsthandle.close()
     except:
@@ -2057,10 +2039,7 @@ def SdkLocatePython(prefer_thirdparty_python=False):
 
     if GetTarget() == 'windows':
         sdkdir = GetThirdpartyBase() + "/win-python"
-
-        if sys.version_info >= (3, 0):
-            # Python 3 build...
-            sdkdir += "%d.%d" % sys.version_info[:2]
+        sdkdir += "%d.%d" % sys.version_info[:2]
 
         if GetOptimize() <= 2:
             sdkdir += "-dbg"
@@ -3239,15 +3218,8 @@ def SetOrigExt(x, v):
     ORIG_EXT[x] = v
 
 def GetExtensionSuffix():
-    if sys.version_info >= (3, 0):
-        import _imp
-        return _imp.extension_suffixes()[0]
-
-    target = GetTarget()
-    if target == 'windows':
-        return '.pyd'
-    else:
-        return '.so'
+    import _imp
+    return _imp.extension_suffixes()[0]
 
 def GetPythonABI():
     soabi = sysconfig.get_config_var('SOABI')
@@ -3266,11 +3238,6 @@ def GetPythonABI():
     malloc_flag = sysconfig.get_config_var('WITH_PYMALLOC')
     if malloc_flag is None or malloc_flag:
         soabi += 'm'
-
-    if sys.version_info < (3, 3):
-        usize = sysconfig.get_config_var('Py_UNICODE_SIZE')
-        if (usize is None and sys.maxunicode == 0x10ffff) or usize == 4:
-            soabi += 'u'
 
     return soabi
 
@@ -3406,12 +3373,14 @@ def UpdatePythonVersionInfoFile(new_info):
             json_data = []
 
         # Prune the list by removing the entries that conflict with our build,
-        # plus the entries that no longer exist
+        # plus the entries that no longer exist, and the EOL Python versions
         for version_info in json_data[:]:
             core_pyd = os.path.join(GetOutputDir(), "panda3d", "core" + version_info["ext_suffix"])
             if version_info["ext_suffix"] == new_info["ext_suffix"] or \
                version_info["soabi"] == new_info["soabi"] or \
-               not os.path.isfile(core_pyd):
+               not os.path.isfile(core_pyd) or \
+               version_info["version"].split(".", 1)[0] == "2" or \
+               version_info["version"] in ("3.0", "3.1", "3.2", "3.3", "3.4"):
                 json_data.remove(version_info)
 
     if not PkgSkip("PYTHON"):
@@ -3428,9 +3397,16 @@ def ReadPythonVersionInfoFile():
     json_file = os.path.join(GetOutputDir(), "tmp", "python_versions.json")
     if os.path.isfile(json_file):
         try:
-            return json.load(open(json_file, 'r'))
+            json_data = json.load(open(json_file, 'r'))
         except:
             pass
+
+        # Don't include unsupported versions of Python.
+        for version_info in json_data[:]:
+            if version_info["version"] in ("2.6", "2.7", "3.0", "3.1", "3.2", "3.3", "3.4"):
+                json_data.remove(version_info)
+
+        return json_data
 
     return []
 

@@ -285,13 +285,11 @@ gather(PyObject *args) {
         futures.push_back(fut);
         continue;
       }
-#if PY_VERSION_HEX >= 0x03050000
     } else if (PyCoro_CheckExact(item)) {
       // We allow passing in a coroutine instead of a future.  This causes it
       // to be scheduled as a task.
       futures.push_back(new PythonTask(item));
       continue;
-#endif
     }
     return Dtool_Raise_ArgTypeError(item, i, "gather", "coroutine, task or future");
   }

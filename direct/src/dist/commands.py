@@ -30,10 +30,6 @@ from .icon import Icon
 import panda3d.core as p3d
 
 
-if 'basestring' not in globals():
-    basestring = str
-
-
 if sys.version_info < (3, 0):
     # Python 3 defines these subtypes of IOError, but Python 2 doesn't.
     FileNotFoundError = IOError
@@ -48,7 +44,7 @@ if sys.version_info < (3, 0):
 
 
 def _parse_list(input):
-    if isinstance(input, basestring):
+    if isinstance(input, str):
         input = input.strip().replace(',', '\n')
         if input:
             return [item.strip() for item in input.split('\n') if item.strip()]
@@ -406,10 +402,6 @@ class build_apps(setuptools.Command):
         abi_tag = 'cp%d%d' % (sys.version_info[:2])
         if sys.version_info < (3, 8):
             abi_tag += 'm'
-
-        # For these distributions, we need to append 'u' on Linux
-        if abi_tag in ('cp26m', 'cp27m', 'cp32m') and not platform.startswith('win') and not platform.startswith('macosx'):
-            abi_tag += 'u'
 
         whldir = os.path.join(whlcache, '_'.join((platform, abi_tag)))
         os.makedirs(whldir, exist_ok=True)

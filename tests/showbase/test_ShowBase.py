@@ -1,10 +1,5 @@
 from direct.showbase.ShowBase import ShowBase
-import sys
-
-if sys.version_info >= (3, 0):
-    import builtins
-else:
-    import __builtin__ as builtins
+import builtins
 
 
 def test_showbase_create_destroy():

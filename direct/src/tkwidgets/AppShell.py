@@ -16,11 +16,7 @@ from . import Slider
 from . import EntryScale
 from . import VectorWidgets
 from . import ProgressBar
-
-if sys.version_info >= (3, 0):
-    from tkinter.filedialog import *
-else:
-    from tkFileDialog import *
+from tkinter.filedialog import *
 
 
 """

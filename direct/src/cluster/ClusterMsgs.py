@@ -31,18 +31,16 @@ CLUSTER_DAEMON_PORT = 8001
 CLUSTER_SERVER_PORT = 1970
 
 # Precede command string with ! to tell server to execute command string
-# NOTE: Had to stick with the import __builtin__ scheme, at startup,
-# __builtins__ is a module, not a dictionary, like it is inside of a module
 # Note, this startup string obviates the need to set any cluster related
 # config variables in the client Configrc files
 SERVER_STARTUP_STRING = (
     '!bash ppython -c ' +
-    '"import __builtin__; ' +
-    '__builtin__.clusterMode = \'server\';' +
-    '__builtin__.clusterServerPort = %s;' +
-    '__builtin__.clusterSyncFlag = %d;' +
-    '__builtin__.clusterDaemonClient = \'%s\';' +
-    '__builtin__.clusterDaemonPort = %d;'
+    '"import builtins; ' +
+    'builtins.clusterMode = \'server\';' +
+    'builtins.clusterServerPort = %s;' +
+    'builtins.clusterSyncFlag = %d;' +
+    'builtins.clusterDaemonClient = \'%s\';' +
+    'builtins.clusterDaemonPort = %d;'
     'from direct.directbase.DirectStart import *; run()"')
 
 class ClusterMsgHandler:
