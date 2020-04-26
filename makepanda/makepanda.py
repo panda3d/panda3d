@@ -1422,6 +1422,8 @@ def CompileCxx(obj,src,opts):
         if GetTarget() == "emscripten":
             Warn("makepanda.py@1412 : temporary workaround for clang11+wasm backend")
             cmd = cmd.replace(' -ffast-math','')
+            cmd = cmd.replace(' -fPIC','')
+            cmd = cmd.replace(' -fpic','')
             cmd = cmd.replace(' -fno-unsafe-math-optimizations','')
 
         cmd = cmd.rstrip()

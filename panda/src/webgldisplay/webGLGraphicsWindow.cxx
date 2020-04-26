@@ -84,12 +84,12 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 
   WebGLGraphicsStateGuardian *webgl_gsg = nullptr;
   DCAST_INTO_R(webgl_gsg, _gsg, false);
-/*
-  if (emscripten_is_webgl_context_lost(0)) {
+
+  if (emscripten_is_webgl_context_lost(webgl_gsg->_context)) {
     // The context was lost, and any GL calls we make will fail.
     return false;
   }
-*/
+
   if (emscripten_webgl_make_context_current(webgl_gsg->_context) != EMSCRIPTEN_RESULT_SUCCESS) {
     webgldisplay_cat.error()
       << "Failed to make context current.\n";

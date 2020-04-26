@@ -120,25 +120,25 @@ reload_implicit_pages() {
     const char *main_dir;
     const char *log_filename;
   };
-#ifdef _WIN32
-  const BlobInfo *blobinfo = (const BlobInfo *)GetProcAddress(GetModuleHandle(NULL), "blobinfo");
-#elif defined(RTLD_MAIN_ONLY)
-  const BlobInfo *blobinfo = (const BlobInfo *)dlsym(RTLD_MAIN_ONLY, "blobinfo");
-//#elif defined(RTLD_SELF)
-//  const BlobInfo *blobinfo = (const BlobInfo *)dlsym(RTLD_SELF, "blobinfo");
-#elif defined(__EMSCRIPTEN__)
-  const BlobInfo *blobinfo = nullptr;
+#if defined(__EMSCRIPTEN__)
+    const BlobInfo *blobinfo = nullptr;
 #else
-  const BlobInfo *blobinfo = (const BlobInfo *)dlsym(dlopen(NULL, RTLD_NOW), "blobinfo");
-#endif
-  if (blobinfo == nullptr) {
-#ifndef _WIN32
-    // Clear the error flag.
-    dlerror();
-#endif
+    #ifdef _WIN32
+      const BlobInfo *blobinfo = (const BlobInfo *)GetProcAddress(GetModuleHandle(NULL), "blobinfo");
+    #elif defined(RTLD_MAIN_ONLY)
+      const BlobInfo *blobinfo = (const BlobInfo *)dlsym(RTLD_MAIN_ONLY, "blobinfo");
+    #else
+      const BlobInfo *blobinfo = (const BlobInfo *)dlsym(dlopen(NULL, RTLD_NOW), "blobinfo");
+    #endif
+      if (blobinfo == nullptr) {
+    #ifndef _WIN32
+        // Clear the error flag.
+        dlerror();
+    #endif
   } else if (blobinfo->version == 0 || blobinfo->num_pointers < 10) {
     blobinfo = nullptr;
   }
+#endif
 
   if (blobinfo != nullptr) {
     if (blobinfo->num_pointers >= 11 && blobinfo->main_dir != nullptr) {

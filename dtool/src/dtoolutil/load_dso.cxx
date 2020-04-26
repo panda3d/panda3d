@@ -119,6 +119,9 @@ get_dso_symbol(void *handle, const string &name) {
 void *
 load_dso(const DSearchPath &path, const Filename &filename) {
   Filename abspath = resolve_dso(path, filename);
+#if defined(__EMSCRIPTEN__)
+    return nullptr;
+#else
   if (!abspath.is_regular_file()) {
     // Make sure the error flag is cleared, to prevent a subsequent call to
     // load_dso_error() from returning a previously stored error.
@@ -127,6 +130,7 @@ load_dso(const DSearchPath &path, const Filename &filename) {
   }
   string os_specific = abspath.to_os_specific();
   return dlopen(os_specific.c_str(), RTLD_NOW | RTLD_GLOBAL);
+#endif
 }
 
 bool
@@ -136,10 +140,12 @@ unload_dso(void *dso_handle) {
 
 string
 load_dso_error() {
+#if !defined(__EMSCRIPTEN__)
    const char *message = dlerror();
    if (message != nullptr) {
     return std::string(message);
   }
+#endif
   return "No error.";
 }
 
