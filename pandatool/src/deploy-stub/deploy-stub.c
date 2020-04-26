@@ -22,13 +22,7 @@
 #include <stdint.h>
 #include <fcntl.h>
 
-#if PY_MAJOR_VERSION >= 3
-#  include <locale.h>
-
-#  if PY_MINOR_VERSION < 5
-#    define Py_DecodeLocale _Py_char2wchar
-#  endif
-#endif
+#include <locale.h>
 
 /* Leave room for future expansion.  We only read pointer 0, but there are
    other pointers that are being read by configPageManager.cxx. */
@@ -70,9 +64,7 @@ static struct _inittab extensions[] = {
     {0, 0},
 };
 
-#if PY_MAJOR_VERSION >= 3
 #  define WIN_UNICODE
-#endif
 #endif
 
 #ifdef _WIN32
@@ -356,7 +348,7 @@ int Py_FrozenMain(int argc, char **argv)
     int inspect = 0;
     int unbuffered = 0;
 
-#if PY_MAJOR_VERSION >= 3 && !defined(WIN_UNICODE)
+#ifndef WIN_UNICODE
     int i;
     char *oldloc;
     wchar_t **argv_copy = NULL;
@@ -397,7 +389,7 @@ int Py_FrozenMain(int argc, char **argv)
         setbuf(stderr, (char *)NULL);
     }
 
-#if PY_MAJOR_VERSION >= 3 && !defined(WIN_UNICODE)
+#ifndef WIN_UNICODE
     oldloc = setlocale(LC_ALL, NULL);
     setlocale(LC_ALL, "");
     for (i = 0; i < argc; i++) {
@@ -418,7 +410,7 @@ int Py_FrozenMain(int argc, char **argv)
 #endif /* MS_WINDOWS */
 
     if (argc >= 1) {
-#if PY_MAJOR_VERSION >= 3 && !defined(WIN_UNICODE)
+#ifndef WIN_UNICODE
         Py_SetProgramName(argv_copy[0]);
 #else
         Py_SetProgramName(argv[0]);
@@ -430,64 +422,11 @@ int Py_FrozenMain(int argc, char **argv)
     PyWinFreeze_ExeInit();
 #endif
 
-#if defined(MS_WINDOWS) && PY_VERSION_HEX < 0x03040000
-    /* We can't rely on our overriding of the standard I/O to work on older
-     * versions of Python, since they are compiled with an incompatible CRT.
-     * The best solution I've found was to just replace sys.stdout/stderr with
-     * the log file reopened in append mode (which requires not locking it for
-     * write, and also passing in _O_APPEND above, and disabling buffering).
-     * It's not the most elegant solution, but it's better than crashing. */
-#if PY_MAJOR_VERSION < 3
-    if (log_pathw != NULL) {
-      PyObject *uniobj = PyUnicode_FromWideChar(log_pathw, (Py_ssize_t)wcslen(log_pathw));
-      PyObject *file = PyObject_CallFunction((PyObject*)&PyFile_Type, "Nsi", uniobj, "a", 0);
-
-      if (file != NULL) {
-        PyFile_SetEncodingAndErrors(file, "utf-8", NULL);
-
-        PySys_SetObject("stdout", file);
-        PySys_SetObject("stderr", file);
-        PySys_SetObject("__stdout__", file);
-        PySys_SetObject("__stderr__", file);
-
-        /* Be sure to disable buffering, otherwise we'll get overlap */
-        setbuf(stdout, (char *)NULL);
-        setbuf(stderr, (char *)NULL);
-      }
-    }
-    else
-#endif
-    if (!supports_code_page(GetConsoleOutputCP()) ||
-        !supports_code_page(GetConsoleCP())) {
-      /* Same hack as before except for Python 2.7, which doesn't seem to have
-       * a way to set the encoding ahead of time, and setting PYTHONIOENCODING
-       * doesn't seem to work.  Fortunately, Python 2.7 doesn't usually start
-       * causing codec errors until the first print statement. */
-      PyObject *sys_stream;
-      UINT acp = GetACP();
-      SetConsoleCP(acp);
-      SetConsoleOutputCP(acp);
-
-      sys_stream = PySys_GetObject("stdin");
-      if (sys_stream && PyFile_Check(sys_stream)) {
-        PyFile_SetEncodingAndErrors(sys_stream, "mbcs", NULL);
-      }
-      sys_stream = PySys_GetObject("stdout");
-      if (sys_stream && PyFile_Check(sys_stream)) {
-        PyFile_SetEncodingAndErrors(sys_stream, "mbcs", NULL);
-      }
-      sys_stream = PySys_GetObject("stderr");
-      if (sys_stream && PyFile_Check(sys_stream)) {
-        PyFile_SetEncodingAndErrors(sys_stream, "mbcs", NULL);
-      }
-    }
-#endif
-
     if (Py_VerboseFlag)
         fprintf(stderr, "Python %s\n%s\n",
             Py_GetVersion(), Py_GetCopyright());
 
-#if PY_MAJOR_VERSION >= 3 && !defined(WIN_UNICODE)
+#ifndef WIN_UNICODE
     PySys_SetArgv(argc, argv_copy);
 #else
     PySys_SetArgv(argc, argv);
@@ -510,11 +449,7 @@ int Py_FrozenMain(int argc, char **argv)
     sprintf(buffer, "%s/../Frameworks", dir);
 
     PyObject *sys_path = PyList_New(1);
-  #if PY_MAJOR_VERSION >= 3
     PyList_SET_ITEM(sys_path, 0, PyUnicode_FromString(buffer));
-  #else
-    PyList_SET_ITEM(sys_path, 0, PyString_FromString(buffer));
-  #endif
     PySys_SetObject("path", sys_path);
     Py_DECREF(sys_path);
 
@@ -546,15 +481,11 @@ int Py_FrozenMain(int argc, char **argv)
 #endif
     Py_Finalize();
 
-#if PY_MAJOR_VERSION >= 3 && !defined(WIN_UNICODE)
+#ifndef WIN_UNICODE
 error:
     if (argv_copy2) {
         for (i = 0; i < argc; i++) {
-#if PY_MINOR_VERSION >= 4
             PyMem_RawFree(argv_copy2[i]);
-#else
-            PyMem_Free(argv_copy2[i]);
-#endif
         }
     }
 #endif
@@ -643,7 +574,7 @@ static void unmap_blob(void *blob) {
 /**
  * Main entry point to deploy-stub.
  */
-#if defined(_WIN32) && PY_MAJOR_VERSION >= 3
+#ifdef _WIN32
 int wmain(int argc, wchar_t *argv[]) {
 #else
 int main(int argc, char *argv[]) {
