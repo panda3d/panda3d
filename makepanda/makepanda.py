@@ -833,10 +833,11 @@ if (COMPILER=="GCC"):
             # Needed when linking ffmpeg statically on Linux.
             LibName("FFMPEG", "-Wl,-Bsymbolic")
             # Don't export ffmpeg symbols from libp3ffmpeg when linking statically.
-            for ffmpeg_lib in ffmpeg_libs:
-                LibName("FFMPEG", "-Wl,--exclude-libs,%s.a" % (ffmpeg_lib))
+            if GetTarget() != "emscripten":
+                for ffmpeg_lib in ffmpeg_libs:
+                    LibName("FFMPEG", "-Wl,--exclude-libs,%s.a" % (ffmpeg_lib))
 
-    if GetTarget() != "darwin":
+    if GetTarget() not in ("darwin", "emscripten"):
         for fcollada_lib in fcollada_libs:
             LibName("FCOLLADA", "-Wl,--exclude-libs,lib%s.a" % (fcollada_lib))
 
@@ -903,7 +904,7 @@ if (COMPILER=="GCC"):
             LibName("OPENAL", "-framework AudioUnit")
             LibName("OPENAL", "-framework AudioToolbox")
             LibName("OPENAL", "-framework CoreAudio")
-        else:
+        elif GetTarget() != "emscripten":
             LibName("OPENAL", "-Wl,--exclude-libs,libopenal.a")
 
     if not PkgSkip("ASSIMP") and \
@@ -913,7 +914,7 @@ if (COMPILER=="GCC"):
         if os.path.isfile(irrxml):
             LibName("ASSIMP", irrxml)
 
-            if GetTarget() != "darwin":
+            if GetTarget() not in ("darwin", "emscripten"):
                 LibName("ASSIMP", "-Wl,--exclude-libs,libassimp.a")
                 LibName("ASSIMP", "-Wl,--exclude-libs,libIrrXML.a")
 
@@ -930,7 +931,7 @@ if (COMPILER=="GCC"):
     if GetTarget() != 'emscripten':
        SmartPkgEnable("ZLIB",      "zlib",      ("z"), "zlib.h")
 
-    if not PkgSkip("OPENSSL") and GetTarget() != "darwin":
+    if not PkgSkip("OPENSSL") and GetTarget() not in ("darwin", "emscripten"):
         LibName("OPENSSL", "-Wl,--exclude-libs,libssl.a")
         LibName("OPENSSL", "-Wl,--exclude-libs,libcrypto.a")
 
