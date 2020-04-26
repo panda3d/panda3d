@@ -31,12 +31,8 @@ consider_yield = core.Thread.consider_yield
 
 forceYield = force_yield
 considerYield = consider_yield
+error = RuntimeError
 
-if sys.version_info >= (3, 3):
-    error = RuntimeError
-else:
-    class error(Exception):
-        pass
 
 class LockType:
     """ Implements a mutex lock.  Instead of directly subclassing

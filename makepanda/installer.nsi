@@ -14,7 +14,7 @@
 ;
 ;   BUILT         - location of panda install tree.
 ;   SOURCE        - location of the panda source-tree if available, OR location of panda install tree.
-;   INCLUDE_PYVER - version of Python that Panda was built with (eg. "2.7", "3.5-32")
+;   INCLUDE_PYVER - version of Python that Panda was built with (eg. "3.8", "3.7-32")
 ;   REGVIEW       - either 32 or 64, depending on the build architecture.
 ;
 
@@ -367,7 +367,6 @@ SectionGroup "Python modules" SecGroupPython
         File /r "${BUILT}\panda3d\*.py"
     SectionEnd
 
-    !insertmacro PyBindingSection 2.7 .pyd
     !if "${REGVIEW}" == "32"
         !insertmacro PyBindingSection 3.5-32 .cp35-win32.pyd
         !insertmacro PyBindingSection 3.6-32 .cp36-win32.pyd
@@ -479,7 +478,6 @@ Function .onInit
     SetRegView ${REGVIEW}
     !endif
 
-    ; We never check for 2.7; it is always disabled in Auto mode
     !if "${REGVIEW}" == "32"
         !insertmacro MaybeEnablePyBindingSection 3.5-32
         !insertmacro MaybeEnablePyBindingSection 3.6-32
@@ -872,7 +870,6 @@ SectionEnd
   !insertmacro MUI_DESCRIPTION_TEXT ${SecTools} $(DESC_SecTools)
   !insertmacro MUI_DESCRIPTION_TEXT ${SecGroupPython} $(DESC_SecGroupPython)
   !insertmacro MUI_DESCRIPTION_TEXT ${SecPyShared} $(DESC_SecPyShared)
-  !insertmacro MUI_DESCRIPTION_TEXT ${SecPyBindings2.7} $(DESC_SecPyBindings2.7)
   !if "${REGVIEW}" == "32"
     !insertmacro MUI_DESCRIPTION_TEXT ${SecPyBindings3.5-32} $(DESC_SecPyBindings3.5-32)
     !insertmacro MUI_DESCRIPTION_TEXT ${SecPyBindings3.6-32} $(DESC_SecPyBindings3.6-32)

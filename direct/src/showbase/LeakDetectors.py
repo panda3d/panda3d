@@ -5,12 +5,8 @@ ContainerLeakDetector.
 from panda3d.core import *
 from direct.showbase.DirectObject import DirectObject
 from direct.showbase.Job import Job
-import gc, sys
-
-if sys.version_info >= (3, 0):
-    import builtins
-else:
-    import __builtin__ as builtins
+import gc
+import builtins
 
 
 class LeakDetector:

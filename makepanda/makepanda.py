@@ -7,14 +7,16 @@
 # panda3d.
 #
 ########################################################################
+
+import sys
+if sys.version_info < (3, 5):
+    print("This version of Python is not supported, use version 3.5 or higher.")
+    exit(1)
+
 try:
-    import sys, os, platform, time, stat, re, getopt, threading, signal, shutil
-    if sys.platform == "darwin" or sys.version_info >= (2, 6):
-        import plistlib
-    if sys.version_info >= (3, 0):
-        import queue
-    else:
-        import Queue as queue
+    import os, platform, time, stat, re, getopt, threading, signal, shutil
+    import plistlib
+    import queue
 except KeyboardInterrupt:
     raise
 except:
@@ -484,15 +486,13 @@ SdkAutoDisableMax()
 SdkAutoDisableSpeedTree()
 
 if not PkgSkip("PYTHON") and SDK["PYTHONVERSION"] == "python2.7":
-    warn_prefix = "%sWARNING:%s " % (GetColor("red"), GetColor())
-    print("==========================================================================")
-    print(warn_prefix + "Python 2.7 has reached EOL as of January 1, 2020 and is no longer")
-    print(warn_prefix + "maintained.  Panda3D will soon cease to work with this version.")
-    print(warn_prefix + "Please upgrade to Python 3 now.")
-    print("==========================================================================")
+    pref = "%sERROR:%s " % (GetColor("red"), GetColor())
+    print("========================================================================")
+    print(pref + "Python 2.7 has reached EOL as of January 1, 2020 and is no longer")
+    print(pref + "supported.  Please upgrade to Python 3.5 or later.")
+    print("========================================================================")
     sys.stdout.flush()
-    # Give the user some time to contemplate their sins
-    time.sleep(6.0)
+    sys.exit(1)
 
 ########################################################################
 ##
@@ -834,9 +834,11 @@ if (COMPILER=="GCC"):
             # Needed when linking ffmpeg statically on Linux.
             LibName("FFMPEG", "-Wl,-Bsymbolic")
             # Don't export ffmpeg symbols from libp3ffmpeg when linking statically.
-            for ffmpeg_lib in ffmpeg_libs:
-                LibName("FFMPEG", "-Wl,--exclude-libs,%s.a" % (ffmpeg_lib))
+            if GetTarget() != "emscripten":
+                for ffmpeg_lib in ffmpeg_libs:
+                    LibName("FFMPEG", "-Wl,--exclude-libs,%s.a" % (ffmpeg_lib))
 
+<<<<<<< HEAD
     if GetTarget() != "darwin":
         if GetTarget() == "emscripten":
             Warn("makepanda@841 : if using pic and MAIN_MODULE>0 change /wasm/ to /wasm-pic/")
@@ -844,6 +846,9 @@ if (COMPILER=="GCC"):
         else:
             excludelibs = '--exclude-libs,'
 
+=======
+    if GetTarget() not in ("darwin", "emscripten"):
+>>>>>>> upstream/webgl-port
         for fcollada_lib in fcollada_libs:
             LibName("FCOLLADA", f"-Wl,{excludelibs}lib%s.a" % (fcollada_lib))
 
@@ -910,7 +915,7 @@ if (COMPILER=="GCC"):
             LibName("OPENAL", "-framework AudioUnit")
             LibName("OPENAL", "-framework AudioToolbox")
             LibName("OPENAL", "-framework CoreAudio")
-        else:
+        elif GetTarget() != "emscripten":
             LibName("OPENAL", "-Wl,--exclude-libs,libopenal.a")
 
     if not PkgSkip("ASSIMP") and \
@@ -920,7 +925,7 @@ if (COMPILER=="GCC"):
         if os.path.isfile(irrxml):
             LibName("ASSIMP", irrxml)
 
-            if GetTarget() != "darwin":
+            if GetTarget() not in ("darwin", "emscripten"):
                 LibName("ASSIMP", "-Wl,--exclude-libs,libassimp.a")
                 LibName("ASSIMP", "-Wl,--exclude-libs,libIrrXML.a")
 
@@ -941,7 +946,7 @@ if (COMPILER=="GCC"):
     if GetTarget() != 'emscripten':
        SmartPkgEnable("ZLIB",      "zlib",      ("z"), "zlib.h")
 
-    if not PkgSkip("OPENSSL") and GetTarget() != "darwin":
+    if not PkgSkip("OPENSSL") and GetTarget() not in ("darwin", "emscripten"):
         LibName("OPENSSL", "-Wl,--exclude-libs,libssl.a")
         LibName("OPENSSL", "-Wl,--exclude-libs,libcrypto.a")
 
@@ -2049,8 +2054,7 @@ def FreezePy(target, inputs, opts):
     assert len(inputs) > 0
 
     cmdstr = BracketNameWithQuotes(SDK["PYTHONEXEC"].replace('\\', '/')) + " "
-    if sys.version_info >= (2, 6):
-        cmdstr += "-B "
+    cmdstr += "-B "
 
     cmdstr += os.path.join(GetOutputDir(), "direct", "dist", "pfreeze.py")
 
@@ -2686,12 +2690,8 @@ p3d_init = """"Python bindings for the Panda3D libraries"
 __version__ = '%s'
 
 if __debug__:
-    import sys
-    if sys.version_info < (3, 0):
-        sys.stderr.write("WARNING: Python 2.7 has reached EOL as of January 1, 2020.\\n")
-        sys.stderr.write("To suppress this warning, upgrade to Python 3.\\n")
-        sys.stderr.flush()
-    del sys
+    if 1 / 2 == 0:
+        raise ImportError("Python 2 is not supported.")
 """ % (WHLVERSION)
 
 if GetTarget() == 'windows':
@@ -6191,9 +6191,7 @@ finally:
 # Run the test suite.
 if RUNTESTS:
     cmdstr = BracketNameWithQuotes(SDK["PYTHONEXEC"].replace('\\', '/'))
-    if sys.version_info >= (2, 6):
-        cmdstr += " -B"
-    cmdstr += " -m pytest tests"
+    cmdstr += " -B -m pytest tests"
     if GetVerbose():
         cmdstr += " --verbose"
     oscmd(cmdstr)

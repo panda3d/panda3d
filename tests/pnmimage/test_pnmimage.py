@@ -70,3 +70,40 @@ def test_pnmimage_quantize():
             assert col.b in (0, 1)
 
     assert max_dist < 0.1 ** 2
+
+def test_pnmimage_add_sub_image():
+    dst = PNMImage(2, 2)
+    dst.fill(0.5, 0, 0)   #adding color to dst
+    #dst_color will store rgb values at each pixel of dst
+    dst_color = ((dst.get_xel(0, 0), dst.get_xel(0, 1)), (dst.get_xel(1, 0), dst.get_xel(1, 1)))
+
+    src = PNMImage(1, 1)
+    src.fill(0, 0.7, 0)   #adding color to src
+    #src_color will store rgb values at each pixel of src
+    src_color = src.get_xel(0, 0)
+
+    dst.add_sub_image(src, 1, 1, 0, 0, 1, 1)
+    final_color = ((dst.get_xel(0, 0), dst.get_xel(0, 1)), (dst.get_xel(1, 0), dst.get_xel(1, 1)))
+    assert final_color[0][0] == dst_color[0][0]
+    assert final_color[0][1] == dst_color[0][1]
+    assert final_color[1][0] == dst_color[1][0]
+    assert final_color[1][1] == dst_color[1][1] + src_color
+
+
+def test_pnmimage_mult_sub_image():
+    dst = PNMImage(2, 2)
+    dst.fill(0.5, 0, 0)   #adding color to dst
+    #dst_color will store rgb values at each pixel of dst
+    dst_color = ((dst.get_xel(0, 0), dst.get_xel(0, 1)), (dst.get_xel(1, 0), dst.get_xel(1, 1)))
+
+    src = PNMImage(1, 1)
+    src.fill(0, 0.7, 0)   #adding color to src
+    #src_color will store rgb values at each pixel of src
+    src_color = src.get_xel(0, 0)
+
+    dst.mult_sub_image(src, 1, 1, 0, 0, 1, 1)
+    final_color = ((dst.get_xel(0, 0), dst.get_xel(0, 1)), (dst.get_xel(1, 0), dst.get_xel(1, 1)))
+    assert final_color[0][0] == dst_color[0][0]
+    assert final_color[0][1] == dst_color[0][1]
+    assert final_color[1][0] == dst_color[1][0]
+    assert final_color[1][1][0] == dst_color[1][1][0] * src_color[0] and final_color[1][1][1] == dst_color[1][1][1] * src_color[1] and final_color[1][1][2] == dst_color[1][1][2] * src_color[2]

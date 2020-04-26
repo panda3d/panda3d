@@ -12,7 +12,6 @@ from direct.showbase import ShowBaseGlobal
 from . import DirectGuiGlobals as DGG
 from .DirectFrame import *
 from .OnscreenText import OnscreenText
-import sys
 # import this to make sure it gets pulled into the publish
 import encodings.utf_8
 from direct.showbase.DirectObject import DirectObject
@@ -274,16 +273,9 @@ class DirectEntry(DirectFrame):
         does not change the current cursor position.  Also see
         enterText(). """
 
-        if sys.version_info >= (3, 0):
-            assert not isinstance(text, bytes)
-            self.unicodeText = True
-            self.guiItem.setWtext(text)
-        else:
-            self.unicodeText = isinstance(text, unicode)
-            if self.unicodeText:
-                self.guiItem.setWtext(text)
-            else:
-                self.guiItem.setText(text)
+        assert not isinstance(text, bytes)
+        self.unicodeText = True
+        self.guiItem.setWtext(text)
 
     def get(self, plain = False):
         """ Returns the text currently showing in the typable region.

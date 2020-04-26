@@ -1,6 +1,5 @@
 # coding=utf-8
 from direct.gui.DirectEntry import DirectEntry
-import sys
 
 
 def test_entry_destroy():
@@ -34,10 +33,3 @@ def test_entry_auto_capitalize():
     assert entry.get() == u'àütò çapítalízè ţèsţ'
     entry._autoCapitalize()
     assert entry.get() == u'Àütò Çapítalízè Ţèsţ'
-
-    # Also test it with a UTF-8 encoded byte string in Python 2.
-    if sys.version_info < (3, 0):
-        entry.set(u'àütò çapítalízè ţèsţ'.encode('utf-8'))
-        assert entry.get() == u'àütò çapítalízè ţèsţ'
-        entry._autoCapitalize()
-        assert entry.get() == u'Àütò Çapítalízè Ţèsţ'

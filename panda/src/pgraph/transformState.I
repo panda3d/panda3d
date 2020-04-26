@@ -754,6 +754,34 @@ flush_level() {
 }
 
 /**
+ * Overrides this method to update PStats appropriately.
+ */
+INLINE void TransformState::
+cache_ref_only() const {
+#ifdef DO_PSTATS
+  int old_referenced_bits = get_referenced_bits();
+  NodeCachedReferenceCount::cache_ref_only();
+  consider_update_pstats(old_referenced_bits);
+#else  // DO_PSTATS
+  NodeCachedReferenceCount::cache_ref_only();
+#endif  // DO_PSTATS
+}
+
+/**
+ * Overrides this method to update PStats appropriately.
+ */
+INLINE void TransformState::
+cache_unref_only() const {
+#ifdef DO_PSTATS
+  int old_referenced_bits = get_referenced_bits();
+  NodeCachedReferenceCount::cache_unref_only();
+  consider_update_pstats(old_referenced_bits);
+#else  // DO_PSTATS
+  NodeCachedReferenceCount::cache_unref_only();
+#endif  // DO_PSTATS
+}
+
+/**
  * Reimplements NodeReferenceCount::node_unref().  We do this because we have
  * a non-virtual unref() method.
  */
@@ -769,7 +797,7 @@ do_node_unref() const {
  */
 INLINE bool TransformState::
 do_cache_unref() const {
-  cache_unref_only();
+  NodeCachedReferenceCount::cache_unref_only();
   return unref();
 }
 

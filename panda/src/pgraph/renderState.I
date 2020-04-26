@@ -481,6 +481,34 @@ flush_level() {
   _cache_counter.flush_level();
 }
 
+/**
+ * Overrides this method to update PStats appropriately.
+ */
+INLINE void RenderState::
+cache_ref_only() const {
+#ifdef DO_PSTATS
+  int old_referenced_bits = get_referenced_bits();
+  NodeCachedReferenceCount::cache_ref_only();
+  consider_update_pstats(old_referenced_bits);
+#else  // DO_PSTATS
+  NodeCachedReferenceCount::cache_ref_only();
+#endif  // DO_PSTATS
+}
+
+/**
+ * Overrides this method to update PStats appropriately.
+ */
+INLINE void RenderState::
+cache_unref_only() const {
+#ifdef DO_PSTATS
+  int old_referenced_bits = get_referenced_bits();
+  NodeCachedReferenceCount::cache_unref_only();
+  consider_update_pstats(old_referenced_bits);
+#else  // DO_PSTATS
+  NodeCachedReferenceCount::cache_unref_only();
+#endif  // DO_PSTATS
+}
+
 #ifndef CPPPARSER
 /**
  * Handy templated version of get_attrib that casts to the right type.
@@ -533,7 +561,7 @@ check_hash() const {
  */
 INLINE bool RenderState::
 do_cache_unref() const {
-  cache_unref_only();
+  NodeCachedReferenceCount::cache_unref_only();
   return unref();
 }
 

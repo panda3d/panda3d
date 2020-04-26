@@ -4,14 +4,9 @@ __all__ = ['TaskManagerPanel', 'TaskManagerWidget']
 
 from direct.tkwidgets.AppShell import *
 from direct.showbase.DirectObject import DirectObject
-import Pmw, sys
-
-if sys.version_info >= (3, 0):
-    from tkinter import *
-    from tkinter.messagebox import askokcancel
-else:
-    from Tkinter import *
-    from tkMessageBox import askokcancel
+import Pmw
+from tkinter import *
+from tkinter.messagebox import askokcancel
 
 
 class TaskManagerPanel(AppShell):

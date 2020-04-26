@@ -3,27 +3,14 @@ from direct.showbase.PythonUtil import makeFlywheelGen
 from direct.showbase.PythonUtil import itype, serialNum, safeRepr, fastRepr
 from direct.showbase.Job import Job
 import types, weakref, random, sys
+import builtins
 
-if sys.version_info >= (3, 0):
-    import builtins as __builtin__
-
-    intTypes = (int,)
-    deadEndTypes = (bool, types.BuiltinFunctionType,
-                    types.BuiltinMethodType, complex,
-                    float, int,
-                    type(None), type(NotImplemented),
-                    type, types.CodeType, types.FunctionType,
-                    bytes, str, tuple)
-else:
-    import __builtin__
-
-    intTypes = (int, long)
-    deadEndTypes = (types.BooleanType, types.BuiltinFunctionType,
-                    types.BuiltinMethodType, types.ComplexType,
-                    types.FloatType, types.IntType, types.LongType,
-                    types.NoneType, types.NotImplementedType,
-                    types.TypeType, types.CodeType, types.FunctionType,
-                    types.StringType, types.UnicodeType, types.TupleType)
+deadEndTypes = (bool, types.BuiltinFunctionType,
+                types.BuiltinMethodType, complex,
+                float, int,
+                type(None), type(NotImplemented),
+                type, types.CodeType, types.FunctionType,
+                bytes, str, tuple)
 
 
 def _createContainerLeak():
@@ -136,7 +123,7 @@ class Indirection:
     def dereferenceDictKey(self, parentDict):
         # look ourselves up in parentDict
         key = self._getNonWeakDictKey()
-        # objects in __builtin__ will have parentDict==None
+        # objects in builtins will have parentDict==None
         if parentDict is None:
             return key
         return parentDict[key]
@@ -185,7 +172,7 @@ class ObjectRef:
 
         # make sure we're not storing a reference to the actual object,
         # that could cause a memory leak
-        assert type(objId) in intTypes
+        assert type(objId) is int
         # prevent cycles (i.e. base.loader.base.loader)
         assert not self.goesThrough(objId=objId)
 
@@ -206,7 +193,7 @@ class ObjectRef:
 
     def goesThroughGen(self, obj=None, objId=None):
         if obj is None:
-            assert type(objId) in intTypes
+            assert type(objId) is int
         else:
             objId = id(obj)
         o = None
@@ -253,9 +240,9 @@ class ObjectRef:
             # eval('curObj.foo.bar.someDict')
             evalStr = 'curObj%s' % evalStr
         else:
-            # this eval is not based off of curObj, use the global__builtin__ namespace
-            # put __builtin__ at the start if it's not already there
-            bis = '__builtin__'
+            # this eval is not based off of curObj, use the globalbuiltins namespace
+            # put builtins at the start if it's not already there
+            bis = 'builtins'
             if evalStr[:len(bis)] != bis:
                 evalStr = '%s.%s' % (bis, evalStr)
         try:
@@ -369,17 +356,17 @@ class FindContainers(Job):
         ContainerLeakDetector.addPrivateObj(self.__dict__)
 
         # set up the base containers, the ones that hold most objects
-        ref = ObjectRef(Indirection(evalStr='__builtin__.__dict__'), id(__builtin__.__dict__))
-        self._id2baseStartRef[id(__builtin__.__dict__)] = ref
+        ref = ObjectRef(Indirection(evalStr='builtins.__dict__'), id(builtins.__dict__))
+        self._id2baseStartRef[id(builtins.__dict__)] = ref
         # container for objects that want to make sure they are found by
         # the object exploration algorithm, including objects that exist
         # just to measure things such as C++ memory usage, scene graph size,
         # framerate, etc. See LeakDetectors.py
-        if not hasattr(__builtin__, "leakDetectors"):
-            __builtin__.leakDetectors = {}
+        if not hasattr(builtins, "leakDetectors"):
+            builtins.leakDetectors = {}
         ref = ObjectRef(Indirection(evalStr='leakDetectors'), id(leakDetectors))
         self._id2baseStartRef[id(leakDetectors)] = ref
-        for i in self._addContainerGen(__builtin__.__dict__, ref):
+        for i in self._addContainerGen(builtins.__dict__, ref):
             pass
         try:
             base
@@ -457,7 +444,7 @@ class FindContainers(Job):
         objId = id(obj)
         if objId in self._id2discoveredStartRef:
             existingRef = self._id2discoveredStartRef[objId]
-            if type(existingRef) not in intTypes:
+            if type(existingRef) is not int:
                 if (existingRef.getNumIndirections() >=
                     ref.getNumIndirections()):
                     # the ref that we already have is more concise than the new ref
@@ -522,11 +509,11 @@ class FindContainers(Job):
                             startRefWorkingList.refGen = fw
                     if curObjRef is None:
                         # this ref set is empty, choose another
-                        # the base set should never be empty (__builtin__ etc.)
+                        # the base set should never be empty (builtins etc.)
                         continue
                     # do we need to go look up the object in _id2ref? sometimes we do that
                     # to avoid storing multiple redundant refs to a single item
-                    if type(curObjRef) in intTypes:
+                    if type(curObjRef) is int:
                         startId = curObjRef
                         curObjRef = None
                         try:
@@ -605,7 +592,7 @@ class FindContainers(Job):
                                 # don't yield, container might lose this element
                                 pass
                             if not goesThrough:
-                                if curObj is __builtin__.__dict__:
+                                if curObj is builtins.__dict__:
                                     objRef = ObjectRef(Indirection(evalStr='%s' % key),
                                                        id(curObj[key]))
                                 else:

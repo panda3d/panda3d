@@ -359,12 +359,19 @@ open_window() {
   emscripten_set_focus_callback(view, (void *)this, false, &on_focus_event);
   emscripten_set_blur_callback(view, (void *)this, false, &on_focus_event);
 
+<<<<<<< HEAD
   //CHANGE void *user_data = (void *)&_input_devices[0];
      void *user_data = _input;
 
   emscripten_set_keypress_callback(view, user_data, false, &on_keyboard_event);
   emscripten_set_keydown_callback(view, user_data, false, &on_keyboard_event);
   emscripten_set_keyup_callback(view, user_data, false, &on_keyboard_event);
+=======
+  void *user_data = _input;
+  emscripten_set_keypress_callback(target, user_data, false, &on_keyboard_event);
+  emscripten_set_keydown_callback(target, user_data, false, &on_keyboard_event);
+  emscripten_set_keyup_callback(target, user_data, false, &on_keyboard_event);
+>>>>>>> upstream/webgl-port
 
   //emscripten_set_click_callback(view, user_data, false, &on_mouse_event);
   emscripten_set_mousedown_callback(view, user_data, false, &on_mouse_event);
@@ -573,7 +580,12 @@ on_mouse_event(int type, const EmscriptenMouseEvent *event, void *user_data) {
 
       if (ev.isActive) {
         MouseData md = device->get_pointer();
+<<<<<<< HEAD
         device->set_pointer_in_window(md.get_x() + event->movementX, md.get_y() + event->movementY);
+=======
+        device->set_pointer_in_window(md.get_x() + event->movementX,
+                                      md.get_y() + event->movementY);
+>>>>>>> upstream/webgl-port
       } else {
         device->set_pointer_in_window(event->canvasX, event->canvasY);
       }
@@ -609,7 +621,10 @@ on_wheel_event(int type, const EmscriptenWheelEvent *event, void *user_data) {
     if (event->deltaY < 0) {
       device->button_down(MouseButton::wheel_up());
       device->button_up(MouseButton::wheel_up());
+<<<<<<< HEAD
 
+=======
+>>>>>>> upstream/webgl-port
     }
     if (event->deltaY > 0) {
       device->button_down(MouseButton::wheel_down());

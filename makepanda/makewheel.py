@@ -20,12 +20,11 @@ from base64 import urlsafe_b64encode
 
 
 def get_abi_tag():
-    if sys.version_info >= (3, 0):
-        soabi = get_config_var('SOABI')
-        if soabi and soabi.startswith('cpython-'):
-            return 'cp' + soabi.split('-')[1]
-        elif soabi:
-            return soabi.replace('.', '_').replace('-', '_')
+    soabi = get_config_var('SOABI')
+    if soabi and soabi.startswith('cpython-'):
+        return 'cp' + soabi.split('-')[1]
+    elif soabi:
+        return soabi.replace('.', '_').replace('-', '_')
 
     soabi = 'cp%d%d' % (sys.version_info[:2])
 
@@ -39,11 +38,6 @@ def get_abi_tag():
     malloc_flag = get_config_var('WITH_PYMALLOC')
     if malloc_flag is None or malloc_flag:
         soabi += 'm'
-
-    if sys.version_info < (3, 3):
-        usize = get_config_var('Py_UNICODE_SIZE')
-        if (usize is None and sys.maxunicode == 0x10ffff) or usize == 4:
-            soabi += 'u'
 
     return soabi
 
@@ -424,6 +418,15 @@ class WheelFile(object):
                             continue
                         new_dep = os.path.join(deps_path, os.path.relpath(target_dep, os.path.dirname(target_path)))
 
+                    elif '@rpath' in dep:
+                        # Unlike makepanda, CMake uses @rpath instead of
+                        # @loader_path. This means we can just search for the
+                        # dependencies like normal.
+                        dep_path = dep.replace('@rpath', '.')
+                        target_dep = os.path.dirname(target_path) + '/' + os.path.basename(dep)
+                        self.consider_add_dependency(target_dep, dep_path)
+                        continue
+
                     elif dep.startswith('/Library/Frameworks/Python.framework/'):
                         # Add this dependency if it's in the Python directory.
                         target_dep = os.path.dirname(target_path) + '/' + os.path.basename(dep)
@@ -528,6 +531,9 @@ def makewheel(version, output_dir, platform=None):
         if not LocateBinary("patchelf"):
             raise Exception("patchelf is required when building a Linux wheel.")
 
+    if sys.version_info < (3, 5):
+        raise Exception("Python 3.5 is required to produce a wheel.")
+
     if platform is None:
         # Determine the platform from the build.
         platform_dat = os.path.join(output_dir, 'tmp', 'platform.dat')
@@ -616,12 +622,8 @@ __version__ = '{0}'
     if '27' in ABI_TAG:
         p3d_init += """
 if __debug__:
-    import sys
-    if sys.version_info < (3, 0):
-        sys.stderr.write("WARNING: Python 2.7 will reach EOL after December 31, 2019.\\n")
-        sys.stderr.write("To suppress this warning, upgrade to Python 3.\\n")
-        sys.stderr.flush()
-    del sys
+    if 1 / 2 == 0:
+        raise ImportError(\"Python 2 is not supported.\")
 """
 
     whl.write_file_data('panda3d/__init__.py', p3d_init)

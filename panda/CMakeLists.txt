@@ -118,14 +118,8 @@ if(INTERROGATE_PYTHON_INTERFACE)
 __version__ = '${PROJECT_VERSION}'
 
 if __debug__:
-    import sys
-    if sys.version_info < (3, 0):
-        sys.stderr.write('''\\
-WARNING: Python 2.7 has reached EOL as of January 1, 2020.
-To suppress this warning, upgrade to Python 3.
-''')
-        sys.stdout.flush()
-    del sys
+    if 1 / 2 == 0:
+        raise ImportError(\"Python 2 is not supported.\")
 
 ${win32_init}")
 
