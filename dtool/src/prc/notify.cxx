@@ -469,12 +469,14 @@ config_initialized() {
   // but does provide its own logging system.  We use a special
   // type of stream that redirects it to Android's log system.
 
+  Notify *ptr = Notify::ptr();
+
   for (int i = 0; i <= NS_fatal; ++i) {
     int priority = ANDROID_LOG_UNKNOWN;
     if (severity != NS_unspecified) {
       priority = i + 1;
     }
-    _log_streams[i] = new AndroidLogStream(priority);
+    ptr->_log_streams[i] = new AndroidLogStream(priority);
   }
 
 #elif defined(__EMSCRIPTEN__)
@@ -485,13 +487,14 @@ config_initialized() {
   EmscriptenLogStream *warn_stream = new EmscriptenLogStream(EM_LOG_CONSOLE | EM_LOG_WARN);
   EmscriptenLogStream *info_stream = new EmscriptenLogStream(EM_LOG_CONSOLE);
 
-  _log_streams[NS_unspecified] = info_stream;
-  _log_streams[NS_spam] = info_stream;
-  _log_streams[NS_debug] = info_stream;
-  _log_streams[NS_info] = info_stream;
-  _log_streams[NS_warning] = warn_stream;
-  _log_streams[NS_error] = error_stream;
-  _log_streams[NS_fatal] = error_stream;
+  Notify *ptr = Notify::ptr();
+  ptr->_log_streams[NS_unspecified] = info_stream;
+  ptr->_log_streams[NS_spam] = info_stream;
+  ptr->_log_streams[NS_debug] = info_stream;
+  ptr->_log_streams[NS_info] = info_stream;
+  ptr->_log_streams[NS_warning] = warn_stream;
+  ptr->_log_streams[NS_error] = error_stream;
+  ptr->_log_streams[NS_fatal] = error_stream;
 
 #else
   if (_global_ptr == nullptr || _global_ptr->_ostream_ptr == &cerr) {
