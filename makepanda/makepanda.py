@@ -838,17 +838,16 @@ if (COMPILER=="GCC"):
                 for ffmpeg_lib in ffmpeg_libs:
                     LibName("FFMPEG", "-Wl,--exclude-libs,%s.a" % (ffmpeg_lib))
 
-<<<<<<< HEAD
     if GetTarget() != "darwin":
         if GetTarget() == "emscripten":
             Warn("makepanda@841 : if using pic and MAIN_MODULE>0 change /wasm/ to /wasm-pic/")
-            excludelibs = f"{os.environ.get('EM_CACHE')}/wasm/"
+            if '-fpic' in os.environ.get('EMCC_FLAGS','').lower():
+                excludelibs = f"{os.environ.get('EM_CACHE')}/wasm-pic/"
+            else:
+                excludelibs = f"{os.environ.get('EM_CACHE')}/wasm/"
         else:
             excludelibs = '--exclude-libs,'
 
-=======
-    if GetTarget() not in ("darwin", "emscripten"):
->>>>>>> upstream/webgl-port
         for fcollada_lib in fcollada_libs:
             LibName("FCOLLADA", f"-Wl,{excludelibs}lib%s.a" % (fcollada_lib))
 
@@ -3180,6 +3179,7 @@ CopyAllHeaders('panda/src/glstuff')
 CopyAllHeaders('panda/src/glgsg')
 CopyAllHeaders('panda/src/glesgsg')
 CopyAllHeaders('panda/src/gles2gsg')
+
 if not PkgSkip("EGG"):
     CopyAllHeaders('panda/metalibs/pandaegg')
 if GetTarget() == 'windows':
@@ -3194,6 +3194,7 @@ elif GetTarget() == 'android':
 else:
     CopyAllHeaders('panda/src/x11display')
     CopyAllHeaders('panda/src/glxdisplay')
+
 CopyAllHeaders('panda/src/egldisplay')
 CopyAllHeaders('panda/metalibs/pandagl')
 CopyAllHeaders('panda/metalibs/pandagles')
@@ -4649,8 +4650,8 @@ if (PkgSkip("EGL")==0 and PkgSkip("GLES2")==0 and PkgSkip("X11")==0):
 # DIRECTORY: panda/src/webgldisplay/
 #
 
-# -s MAIN_MODULE=1 will export "int get_pipe_type_pandagles2()"
-if GetTarget() == 'emscripten-dyld' and not PkgSkip("GLES2"):
+# -s SIDE_MODULE=1 will export "int get_pipe_type_pandagles2()"
+if GetTarget() == 'emscripten' and not PkgSkip("GLES2"):
     DefSymbol('GLES2', 'OPENGLES_2', '')
 
     OPTS=['DIR:panda/src/webgldisplay', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGLES2',  'GLES2', 'WEBGL']
@@ -4669,7 +4670,7 @@ if GetTarget() == 'emscripten-dyld' and not PkgSkip("GLES2"):
     TargetAdd('libpandagles2.dll', opts=['MODULE', 'GLES2', 'WEBGL'])
 
 # static
-if GetTarget() == 'emscripten' and not PkgSkip("GLES2"):
+if GetTarget() == 'emscripten-static' and not PkgSkip("GLES2"):
   DefSymbol('GLES2', 'OPENGLES_2', '')
   OPTS=['DIR:panda/src/webgldisplay', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGLES2',  'GLES2', 'WEBGL']
   TargetAdd('p3webgldisplay_webgldisplay_composite1.obj', opts=OPTS, input='p3webgldisplay_composite1.cxx')

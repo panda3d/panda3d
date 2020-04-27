@@ -3255,27 +3255,25 @@ def SetOrigExt(x, v):
     ORIG_EXT[x] = v
 
 def GetExtensionSuffix():
-<<<<<<< HEAD
+    target = GetTarget()
+    import _imp
+
+    if target == 'emscripten':
+        return _imp.extension_suffixes()[0].replace('-x86_64-linux-gnu','-wasm')
+
     if sys.version_info >= (3, 0):
-        import _imp
+
         return _imp.extension_suffixes()[0]
 
-    target = GetTarget()
     if target == 'windows':
         return '.pyd'
     else:
         return '.so'
-=======
-    if target == 'emscripten':
-        return '.bc'
-
-    import _imp
-    return _imp.extension_suffixes()[0]
->>>>>>> upstream/webgl-port
 
 def GetPythonABI():
     if GetTarget() == 'emscripten':
         return 'wasm'
+
     soabi = sysconfig.get_config_var('SOABI')
     if soabi:
         return soabi
