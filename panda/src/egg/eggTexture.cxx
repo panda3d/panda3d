@@ -505,6 +505,7 @@ has_alpha_channel(int num_components) const {
   case F_blue:
   case F_luminance:
   case F_rgb:
+  case F_srgb:
   case F_rgb12:
   case F_rgb8:
   case F_rgb5:
@@ -520,6 +521,7 @@ has_alpha_channel(int num_components) const {
   case F_luminance_alpha:
   case F_luminance_alphamask:
   case F_rgba:
+  case F_srgb_alpha:
   case F_rgbm:
   case F_rgba12:
   case F_rgba8:
@@ -690,6 +692,8 @@ EggTexture::Format EggTexture::
 string_format(const string &string) {
   if (cmp_nocase_uh(string, "rgba") == 0) {
     return F_rgba;
+  } else if (cmp_nocase_uh(string, "srgb_alpha") == 0) {
+    return F_srgb_alpha;
   } else if (cmp_nocase_uh(string, "rgbm") == 0) {
     return F_rgbm;
   } else if (cmp_nocase_uh(string, "rgba12") == 0) {
@@ -701,6 +705,8 @@ string_format(const string &string) {
 
   } else if (cmp_nocase_uh(string, "rgb") == 0) {
     return F_rgb;
+  } else if (cmp_nocase_uh(string, "srgb") == 0) {
+    return F_srgb;
   } else if (cmp_nocase_uh(string, "rgb12") == 0) {
     return F_rgb12;
   } else if (cmp_nocase_uh(string, "rgb8") == 0) {
@@ -1150,6 +1156,10 @@ ostream &operator << (ostream &out, EggTexture::Format format) {
     return out << "rgba5";
   case EggTexture::F_rgb332:
     return out << "rgb332";
+  case EggTexture::F_srgb:
+    return out << "srgb";
+  case EggTexture::F_srgb_alpha:
+    return out << "srgb_alpha";
 
   case EggTexture::F_red:
     return out << "red";

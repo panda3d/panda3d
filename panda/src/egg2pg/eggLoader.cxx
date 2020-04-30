@@ -896,6 +896,7 @@ load_texture(TextureDef &def, EggTexture *egg_tex) {
     break;
 
   case EggTexture::F_rgb:
+  case EggTexture::F_srgb:
   case EggTexture::F_rgb12:
   case EggTexture::F_rgb8:
   case EggTexture::F_rgb5:
@@ -905,6 +906,7 @@ load_texture(TextureDef &def, EggTexture *egg_tex) {
     break;
 
   case EggTexture::F_rgba:
+  case EggTexture::F_srgb_alpha:
   case EggTexture::F_rgbm:
   case EggTexture::F_rgba12:
   case EggTexture::F_rgba8:
@@ -1237,6 +1239,9 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
     case EggTexture::F_rgb:
       tex->set_format(Texture::F_rgb);
       break;
+    case EggTexture::F_srgb:
+      tex->set_format(Texture::F_srgb);
+      break;
     case EggTexture::F_rgb12:
       if (tex->get_component_width() >= 2) {
         // Only do this if the component width supports it.
@@ -1273,6 +1278,9 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
     switch (egg_tex->get_format()) {
     case EggTexture::F_rgba:
       tex->set_format(Texture::F_rgba);
+      break;
+    case EggTexture::F_srgb_alpha:
+      tex->set_format(Texture::F_srgb_alpha);
       break;
     case EggTexture::F_rgbm:
       tex->set_format(Texture::F_rgbm);
