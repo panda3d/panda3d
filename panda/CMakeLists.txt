@@ -145,6 +145,16 @@ from .interrogatedb import *
     file(WRITE "${PROJECT_BINARY_DIR}/panda3d/dtoolconfig.py" ${dtoolconfig_file})
   endif()
 
+  # Also generate a panda3d.dist-info directory.
+  set(entry_points_file "[distutils.commands]
+build_apps = direct.dist.commands:build_apps
+bdist_apps = direct.dist.commands:bdist_apps
+")
+
+  configure_file("${PROJECT_SOURCE_DIR}/cmake/templates/METADATA.in"
+                 "${PROJECT_BINARY_DIR}/panda3d.dist-info/METADATA")
+  file(WRITE "${PROJECT_BINARY_DIR}/panda3d.dist-info/entry_points.txt" ${entry_points_file})
+
   if(HAVE_BULLET)
     add_python_module(panda3d.bullet p3bullet IMPORT panda3d.core COMPONENT BulletPython)
 
