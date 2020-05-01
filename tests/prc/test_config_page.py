@@ -10,3 +10,16 @@ def test_load_unload_page():
 
     assert core.unload_prc_file(page)
     assert var.value == 1
+
+def test_ini_syntax():
+    page = core.load_prc_file_data("test_ini_syntax", "test-var=true\ntest-var2 = foo")
+    assert page
+
+    for decl in page.declarations:
+        print(decl.variable)
+
+    var = core.ConfigVariableBool("test-var", False)
+    assert var.value == True
+
+    var = core.ConfigVariableString("test-var2", "")
+    assert var.value == "foo"

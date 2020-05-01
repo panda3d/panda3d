@@ -397,7 +397,7 @@ read_prc_line(const string &line) {
   EVP_VerifyUpdate((EVP_MD_CTX *)_md_ctx, line.data(), line.size());
 #endif  // HAVE_OPENSSL
 
-  // Separate the line into a variable and a value.
+  // Parse leading whitespace
   size_t p = 0;
   while (p < line.length() && isspace((unsigned char)line[p])) {
     p++;
@@ -408,14 +408,22 @@ read_prc_line(const string &line) {
     return;
   }
 
+  // Separate the line into a variable and a value (ASCII 61 is "=")
   size_t variable_begin = p;
-  while (p < line.length() && !isspace((unsigned char)line[p])) {
+  while (p < line.length() && !(isspace((unsigned char)line[p]) || line[p] == 61)) {
     p++;
   }
   size_t variable_end = p;
 
   while (p < line.length() && isspace((unsigned char)line[p])) {
     p++;
+  }
+  if (line[p] == 61) {
+    // if we stopped on an =, consume it and keep grabbing whitespace
+    p++;
+    while (p < line.length() && isspace((unsigned char)line[p])) {
+      p++;
+    }
   }
   size_t value_begin = p;
 
