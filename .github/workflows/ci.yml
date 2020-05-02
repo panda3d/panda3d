@@ -323,7 +323,7 @@ jobs:
 
         llvm-profdata merge pid-*.profraw -o coverage.profdata
         llvm-cov show $(grep -Rl LLVM_PROFILE_FILE . | sed 's/^/-object /') -instr-profile=coverage.profdata > coverage.txt
-        bash <(curl -s https://codecov.io/bash)
+        bash <(curl -s https://codecov.io/bash) -y ../.github/codecov.yml
 
   makepanda:
     strategy:
