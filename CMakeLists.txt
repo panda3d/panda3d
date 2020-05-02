@@ -79,6 +79,7 @@ include(GNUInstallDirs)     # Defines CMAKE_INSTALL_<dir> variables
 
 # Include global modules needed for configure scripts
 include(PackageConfig)      # Defines package_option
+include(PerConfigOption)    # Defines per_config_option
 
 # Configure Panda3D
 include(dtool/CompilerFlags.cmake)

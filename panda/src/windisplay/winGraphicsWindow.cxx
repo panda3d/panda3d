@@ -426,18 +426,22 @@ set_properties_now(WindowProperties &properties) {
     if (properties.get_mouse_mode() != _properties.get_mouse_mode()) {
       switch (properties.get_mouse_mode()) {
       case WindowProperties::M_absolute:
-      case WindowProperties::M_relative:    // not implemented, treat as absolute
-
-        if (_properties.get_mouse_mode() == WindowProperties::M_confined) {
+        if (_properties.get_mouse_mode() != WindowProperties::M_absolute) {
           ClipCursor(nullptr);
           windisplay_cat.info() << "Unconfining cursor from window\n";
         }
         _properties.set_mouse_mode(WindowProperties::M_absolute);
         break;
 
+      case WindowProperties::M_relative:
+        if (!enable_raw_input()) {
+          break;
+        }
+        // Fall through
+
       case WindowProperties::M_confined:
         if (confine_cursor()) {
-          _properties.set_mouse_mode(WindowProperties::M_confined);
+          _properties.set_mouse_mode(properties.get_mouse_mode());
         }
         break;
       }
@@ -564,13 +568,8 @@ open_window() {
   }
 
   // Registers to receive the WM_INPUT messages
-  if (_input_devices.size() > 1) {
-    RAWINPUTDEVICE Rid;
-    Rid.usUsagePage = 0x01;
-    Rid.usUsage = 0x02;
-    Rid.dwFlags = 0;// RIDEV_NOLEGACY;   // adds HID mouse and also ignores legacy mouse messages
-    Rid.hwndTarget = _hWnd;
-    RegisterRawInputDevices(&Rid, 1, sizeof (Rid));
+  if (_input_devices.size() > 1 || _properties.get_mouse_mode() == WindowProperties::M_relative) {
+    enable_raw_input();
   }
 
   // Create a WindowHandle for ourselves
@@ -680,6 +679,32 @@ initialize_input_devices() {
         }
       }
     }
+  }
+}
+
+/**
+ * Enables raw mouse input for this window.  Returns true on success.
+ */
+bool WinGraphicsWindow::
+enable_raw_input() {
+  if (_raw_input_enabled) {
+    return true;
+  }
+
+  RAWINPUTDEVICE rid;
+  rid.usUsagePage = 0x01;
+  rid.usUsage = 0x02;
+  rid.dwFlags = 0;
+  rid.hwndTarget = _hWnd;
+  if (RegisterRawInputDevices(&rid, 1, sizeof(rid))) {
+    windisplay_cat.info()
+      << "Enabled raw mouse input.\n";
+    _raw_input_enabled = true;
+    return true;
+  } else {
+    windisplay_cat.warning()
+      << "Failed to enable raw mouse input.\n";
+    return false;
   }
 }
 
@@ -1315,22 +1340,18 @@ track_mouse_leaving(HWND hwnd) {
 bool WinGraphicsWindow::
 confine_cursor() {
   RECT clip;
-  if (!GetWindowRect(_hWnd, &clip)) {
+  get_client_rect_screen(_hWnd, &clip);
+
+  windisplay_cat.info()
+    << "ClipCursor() to " << clip.left << "," << clip.top << " to "
+    << clip.right << "," << clip.bottom << endl;
+
+  if (!ClipCursor(&clip)) {
     windisplay_cat.warning()
-      << "GetWindowRect() failed, cannot confine cursor.\n";
+      << "Failed to confine cursor to window.\n";
     return false;
   } else {
-    windisplay_cat.info()
-      << "ClipCursor() to " << clip.left << "," << clip.top << " to "
-      << clip.right << "," << clip.bottom << endl;
-
-    if (!ClipCursor(&clip)) {
-      windisplay_cat.warning()
-        << "Failed to confine cursor to window.\n";
-      return false;
-    } else {
-      return true;
-    }
+    return true;
   }
 }
 
@@ -1590,7 +1611,9 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       resend_lost_keypresses();
     }
     SetCapture(hwnd);
-    _input->set_pointer_in_window(translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam)));
+    if (_properties.get_mouse_mode() != WindowProperties::M_relative) {
+      _input->set_pointer_in_window(translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam)));
+    }
     _input->button_down(MouseButton::button(0), get_message_time());
 
     // A button-click in the window means to grab the keyboard focus.
@@ -1602,7 +1625,9 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       resend_lost_keypresses();
     }
     SetCapture(hwnd);
-    _input->set_pointer_in_window(translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam)));
+    if (_properties.get_mouse_mode() != WindowProperties::M_relative) {
+      _input->set_pointer_in_window(translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam)));
+    }
     _input->button_down(MouseButton::button(1), get_message_time());
     // A button-click in the window means to grab the keyboard focus.
     set_focus();
@@ -1613,7 +1638,9 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       resend_lost_keypresses();
     }
     SetCapture(hwnd);
-    _input->set_pointer_in_window(translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam)));
+    if (_properties.get_mouse_mode() != WindowProperties::M_relative) {
+      _input->set_pointer_in_window(translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam)));
+    }
     _input->button_down(MouseButton::button(2), get_message_time());
     // A button-click in the window means to grab the keyboard focus.
     set_focus();
@@ -1626,7 +1653,9 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       }
       SetCapture(hwnd);
       int whichButton = GET_XBUTTON_WPARAM(wparam);
-      _input->set_pointer_in_window(translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam)));
+      if (_properties.get_mouse_mode() != WindowProperties::M_relative) {
+        _input->set_pointer_in_window(translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam)));
+      }
       if (whichButton == XBUTTON1) {
         _input->button_down(MouseButton::button(3), get_message_time());
       } else if (whichButton == XBUTTON2) {
@@ -2434,7 +2463,9 @@ show_error_message(DWORD message_id) {
  */
 void WinGraphicsWindow::
 handle_keypress(ButtonHandle key, int x, int y, double time) {
-  _input->set_pointer_in_window(x, y);
+  if (_properties.get_mouse_mode() != WindowProperties::M_relative) {
+    _input->set_pointer_in_window(x, y);
+  }
   if (key != ButtonHandle::none()) {
     _input->button_down(key, time);
   }
@@ -2780,6 +2811,15 @@ handle_raw_input(HRAWINPUT hraw) {
   }
 
   RAWINPUT *raw = (RAWINPUT *)lpb;
+  if (_properties.get_mouse_mode() == WindowProperties::M_relative &&
+      raw->header.dwType == RIM_TYPEMOUSE &&
+      (raw->data.mouse.usFlags & MOUSE_MOVE_ABSOLUTE) == 0) {
+    double x = raw->data.mouse.lLastX;
+    double y = raw->data.mouse.lLastY;
+    PointerData md = _input->get_pointer();
+    _input->set_pointer_in_window(md.get_x() + x, md.get_y() + y);
+  }
+
   if (raw->header.hDevice == 0) {
     return;
   }
@@ -2837,7 +2877,9 @@ handle_raw_input(HRAWINPUT hraw) {
  */
 bool WinGraphicsWindow::
 handle_mouse_motion(int x, int y) {
-  _input->set_pointer_in_window(x, y);
+  if (_properties.get_mouse_mode() != WindowProperties::M_relative) {
+    _input->set_pointer_in_window(x, y);
+  }
   return false;
 }
 
