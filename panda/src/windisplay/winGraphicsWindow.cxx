@@ -1315,22 +1315,18 @@ track_mouse_leaving(HWND hwnd) {
 bool WinGraphicsWindow::
 confine_cursor() {
   RECT clip;
-  if (!GetWindowRect(_hWnd, &clip)) {
+  get_client_rect_screen(_hWnd, &clip);
+
+  windisplay_cat.info()
+    << "ClipCursor() to " << clip.left << "," << clip.top << " to "
+    << clip.right << "," << clip.bottom << endl;
+
+  if (!ClipCursor(&clip)) {
     windisplay_cat.warning()
-      << "GetWindowRect() failed, cannot confine cursor.\n";
+      << "Failed to confine cursor to window.\n";
     return false;
   } else {
-    windisplay_cat.info()
-      << "ClipCursor() to " << clip.left << "," << clip.top << " to "
-      << clip.right << "," << clip.bottom << endl;
-
-    if (!ClipCursor(&clip)) {
-      windisplay_cat.warning()
-        << "Failed to confine cursor to window.\n";
-      return false;
-    } else {
-      return true;
-    }
+    return true;
   }
 }
 
