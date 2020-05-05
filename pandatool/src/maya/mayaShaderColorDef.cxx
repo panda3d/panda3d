@@ -131,9 +131,7 @@ MayaShaderColorDef(MayaShaderColorDef &copy) {
  */
 MayaShaderColorDef::
 ~MayaShaderColorDef() {
-  if (_color_object != nullptr) {
-    delete _color_object;
-  }
+  delete _color_object;
 }
 
 /**

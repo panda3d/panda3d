@@ -60,9 +60,7 @@ DCPackerInterface(const DCPackerInterface &copy) :
  */
 DCPackerInterface::
 ~DCPackerInterface() {
-  if (_catalog != nullptr) {
-    delete _catalog;
-  }
+  delete _catalog;
 }
 
 /**
