@@ -779,6 +779,12 @@ void PythonTask::
 upon_death(AsyncTaskManager *manager, bool clean_exit) {
   AsyncTask::upon_death(manager, clean_exit);
 
+  // If we were polling something when we were removed, get rid of it.
+  if (_future_done != nullptr) {
+    Py_DECREF(_future_done);
+    _future_done = nullptr;
+  }
+
   if (_upon_death != Py_None) {
 #if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
     // Use PyGILState to protect this asynchronous call.
