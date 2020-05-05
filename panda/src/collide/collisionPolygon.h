@@ -32,12 +32,12 @@ PUBLISHED:
                           const LVecBase3 &c);
   INLINE CollisionPolygon(const LVecBase3 &a, const LVecBase3 &b,
                           const LVecBase3 &c, const LVecBase3 &d);
-  INLINE CollisionPolygon(const LPoint3 *begin, const LPoint3 *end);
 
 private:
   INLINE CollisionPolygon();
 
 public:
+  INLINE CollisionPolygon(const LPoint3 *begin, const LPoint3 *end);
   CollisionPolygon(const CollisionPolygon &copy);
 
   virtual CollisionSolid *make_copy();
