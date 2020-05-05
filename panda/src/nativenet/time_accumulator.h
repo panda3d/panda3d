@@ -58,9 +58,7 @@ Time_Accumulator() :
  */
 inline Time_Accumulator::
 ~Time_Accumulator() {
-  if (_accum_start != nullptr) {
-    delete _accum_start;
-  }
+  delete _accum_start;
 }
 
 /**
