@@ -196,16 +196,26 @@ result(PyObject *timeout) const {
       static PyObject *exc_type = nullptr;
       if (exc_type == nullptr) {
         // Get the TimeoutError that asyncio uses, too.
+#if PY_VERSION_HEX >= 0x03080000
+        PyObject *module = PyImport_ImportModule("asyncio.exceptions");
+#else
         PyObject *module = PyImport_ImportModule("concurrent.futures._base");
+#endif
         if (module != nullptr) {
           exc_type = PyObject_GetAttrString(module, "TimeoutError");
           Py_DECREF(module);
         }
         // If we can't get that, we should pretend and make our own.
         if (exc_type == nullptr) {
+#if PY_VERSION_HEX >= 0x03080000
+          exc_type = PyErr_NewExceptionWithDoc((char*)"asyncio.exceptions.TimeoutError",
+                                               (char*)"The operation exceeded the given deadline.",
+                                               nullptr, nullptr);
+#else
           exc_type = PyErr_NewExceptionWithDoc((char*)"concurrent.futures._base.TimeoutError",
                                                (char*)"The operation exceeded the given deadline.",
                                                nullptr, nullptr);
+#endif
         }
       }
       PyErr_SetNone(exc_type);
