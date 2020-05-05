@@ -369,7 +369,7 @@ package_option(TIFF "Enable support for loading .tif images.")
 package_status(TIFF "libtiff")
 
 # OpenEXR
-find_package(OpenEXR QUIET)
+find_package(OpenEXR QUIET MODULE)
 
 package_option(OpenEXR "Enable support for loading .exr images.")
 
