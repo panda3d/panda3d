@@ -508,8 +508,8 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
     max_dist = csqrt(max_dist_2);
   }
 
-  if (dist > max_dist) {
-    // There's no intersection: the sphere is hanging off the edge.
+  if (dist > max_dist || -dist > max_dist) {
+    // There's no intersection: the sphere is hanging above or under the edge.
     return nullptr;
   }
 
