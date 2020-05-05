@@ -20,6 +20,7 @@
 
 #include "pythonThread.h"
 #include "asyncTaskManager.h"
+#include "asyncFuture_ext.h"
 
 TypeHandle PythonTask::_type_handle;
 
@@ -392,6 +393,51 @@ __clear__() {
 }
 
 /**
+ * Cancels this task.  This is equivalent to remove(), except for coroutines,
+ * for which it will throw an exception into any currently pending await.
+ */
+bool PythonTask::
+cancel() {
+  AsyncTaskManager *manager = _manager;
+  if (manager != nullptr) {
+    nassertr(_chain->_manager == manager, false);
+    if (task_cat.is_debug()) {
+      task_cat.debug()
+        << "Cancelling " << *this << "\n";
+    }
+
+    MutexHolder holder(manager->_lock);
+    if (_state == S_awaiting) {
+      // Reactivate it so that it can receive a CancelledException.
+      _must_cancel = true;
+      _state = AsyncTask::S_active;
+      _chain->_active.push_back(this);
+      --_chain->_num_awaiting_tasks;
+      return true;
+    }
+    else if (_future_done != nullptr) {
+      // We are polling, waiting for a non-Panda future to be done.
+      Py_DECREF(_future_done);
+      _future_done = nullptr;
+      _must_cancel = true;
+      return true;
+    }
+    else if (_chain->do_remove(this, true)) {
+      return true;
+    }
+    else {
+      if (task_cat.is_debug()) {
+        task_cat.debug()
+          << "  (unable to cancel " << *this << ")\n";
+      }
+      return false;
+    }
+  }
+
+  return false;
+}
+
+/**
  * Override this function to return true if the task can be successfully
  * executed, false if it cannot.  Mainly intended as a sanity check when
  * attempting to add the task to a task manager.
@@ -492,12 +538,22 @@ do_python_task() {
   }
 
   if (_generator != nullptr) {
-    // We are calling a generator.  Use "send" rather than PyIter_Next since
-    // we need to be able to read the value from a StopIteration exception.
-    PyObject *func = PyObject_GetAttrString(_generator, "send");
-    nassertr(func != nullptr, DS_interrupt);
-    result = PyObject_CallFunctionObjArgs(func, Py_None, nullptr);
-    Py_DECREF(func);
+    if (!_must_cancel) {
+      // We are calling a generator.  Use "send" rather than PyIter_Next since
+      // we need to be able to read the value from a StopIteration exception.
+      PyObject *func = PyObject_GetAttrString(_generator, "send");
+      nassertr(func != nullptr, DS_interrupt);
+      result = PyObject_CallFunctionObjArgs(func, Py_None, nullptr);
+      Py_DECREF(func);
+    } else {
+      // Throw a CancelledError into the generator.
+      _must_cancel = false;
+      PyObject *exc = _PyObject_CallNoArg(Extension<AsyncFuture>::get_cancelled_error_type());
+      PyObject *func = PyObject_GetAttrString(_generator, "throw");
+      result = PyObject_CallFunctionObjArgs(func, exc, nullptr);
+      Py_DECREF(func);
+      Py_DECREF(exc);
+    }
 
     if (result == nullptr) {
       // An error happened.  If StopIteration, that indicates the task has
@@ -508,6 +564,12 @@ do_python_task() {
 
       if (_PyGen_FetchStopIterationValue(&result) == 0) {
         PyErr_Clear();
+
+        if (_must_cancel) {
+          // Task was cancelled right before finishing.  Make sure it is not
+          // getting rerun or marked as successfully completed.
+          _state = S_servicing_removed;
+        }
 
         // If we passed a coroutine into the task, eg. something like:
         //   taskMgr.add(my_async_function())
@@ -524,6 +586,18 @@ do_python_task() {
           _exc_value = result;
           return DS_done;
         }
+
+      } else if (PyErr_ExceptionMatches(Extension<AsyncFuture>::get_cancelled_error_type())) {
+        // Someone cancelled the coroutine, and it did not bother to handle it,
+        // so we should consider it cancelled.
+        if (task_cat.is_debug()) {
+          task_cat.debug()
+            << *this << " was cancelled and did not catch CancelledError.\n";
+        }
+        _state = S_servicing_removed;
+        PyErr_Clear();
+        return DS_done;
+
       } else if (_function == nullptr) {
         // We got an exception.  If this is a scheduled coroutine, we will
         // keep it and instead throw it into whatever 'awaits' this task.

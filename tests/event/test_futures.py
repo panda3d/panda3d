@@ -1,7 +1,12 @@
 from panda3d import core
 import pytest
 import time
-from concurrent.futures._base import TimeoutError, CancelledError
+import sys
+
+if sys.version_info >= (3, 8):
+    from asyncio.exceptions import TimeoutError, CancelledError
+else:
+    from concurrent.futures._base import TimeoutError, CancelledError
 
 
 def test_future_cancelled():
