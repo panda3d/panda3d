@@ -10,11 +10,7 @@ from collections import namedtuple
 from array import array
 import time
 from io import BytesIO
-import sys
 
-if sys.version_info >= (3, 0):
-    unicode = str
-    unichr = chr
 
 # Define some internally used structures.
 RVASize = namedtuple('RVASize', ('addr', 'size'))
@@ -38,7 +34,7 @@ def _unpack_wstring(mem, offs=0):
     name = ""
     for i in range(name_len):
         offs += 2
-        name += unichr(*unpack('<H', mem[offs:offs+2]))
+        name += chr(*unpack('<H', mem[offs:offs+2]))
     return name
 
 def _padded(n, boundary):
@@ -208,7 +204,7 @@ class VersionInfoResource(object):
         if isinstance(value, dict):
             type = 1
             value_length = 0
-        elif isinstance(value, bytes) or isinstance(value, unicode):
+        elif isinstance(value, bytes) or isinstance(value, str):
             type = 1
             value_length = len(value) * 2 + 2
         else:
@@ -227,7 +223,7 @@ class VersionInfoResource(object):
         if isinstance(value, dict):
             for key2, value2 in sorted(value.items(), key=lambda x:x[0]):
                 self._pack_info(data, key2, value2)
-        elif isinstance(value, bytes) or isinstance(value, unicode):
+        elif isinstance(value, bytes) or isinstance(value, str):
             for c in value:
                 data += pack('<H', ord(c))
             data += b'\x00\x00'
@@ -294,7 +290,7 @@ class VersionInfoResource(object):
         c, = unpack('<H', data[offset:offset+2])
         offset += 2
         while c:
-            key += unichr(c)
+            key += chr(c)
             c, = unpack('<H', data[offset:offset+2])
             offset += 2
 
@@ -309,7 +305,7 @@ class VersionInfoResource(object):
                 c, = unpack('<H', data[offset:offset+2])
                 offset += 2
                 while c:
-                    value += unichr(c)
+                    value += chr(c)
                     c, = unpack('<H', data[offset:offset+2])
                     offset += 2
             else:
@@ -705,7 +701,7 @@ class PEFile(object):
 
         Returns the newly created Section object. """
 
-        if isinstance(name, unicode):
+        if isinstance(name, str):
             name = name.encode('ascii')
 
         section = Section()

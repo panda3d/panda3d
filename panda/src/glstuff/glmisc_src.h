@@ -87,7 +87,7 @@ extern ConfigVariableEnum<CoordinateSystem> gl_coordinate_system;
 extern EXPCL_GL void CLP(init_classes)();
 
 
-#if !defined(WIN32) && defined(GSG_VERBOSE)
+#if !defined(_WIN32) && defined(GSG_VERBOSE)
 std::ostream &output_gl_enum(std::ostream &out, GLenum v);
 INLINE std::ostream &operator << (std::ostream &out, GLenum v) {
   return output_gl_enum(out, v);

@@ -31,11 +31,6 @@ PandaSystem() :
 {
   _system_names_dirty = false;
 
-  // These are settable via Config.prc, but only in development (!NDEBUG)
-  // mode, and only if they are not already defined.
-  _package_version_string = "";
-  _package_host_url = "";
-
 #ifdef STDFLOAT_DOUBLE
   add_system("stdfloat-double");
 #endif
@@ -84,75 +79,6 @@ PandaSystem::
 string PandaSystem::
 get_version_string() {
   return PANDA_VERSION_STR;
-}
-
-/**
- * Returns the version of the Panda3D distributable package that provides this
- * build of Panda.
- *
- * When the currently-executing version of Panda was loaded from a
- * distributable package, such as via the browser plugin, then this string
- * will be nonempty and will contain the corresponding version string.  You
- * can build applications that use this particular version of Panda by
- * requesting it in the pdef file, using "panda3d", this version string, and
- * the download host provided by get_package_host_url().
- *
- * If this string is empty, then the currently-executing Panda was built
- * independently, and is not part of a distributable package.
- *
- * @deprecated Runtime/plugin environment has been removed, this now always
- * returns an empty string.
- */
-string PandaSystem::
-get_package_version_string() {
-#ifdef NDEBUG
-  return "";
-#else
-  return get_global_ptr()->_package_version_string;
-#endif
-}
-
-/**
- * Returns the URL of the download server that provides the Panda3D
- * distributable package currently running.  This can be used, along with the
- * get_package_version_string(), to uniquely identify the running version of
- * Panda among distributable Panda versions.
- *
- * See get_package_version_string() for more information.
- *
- * This string is set explicitly at compilation time.  Normally, it should be
- * set to a nonempty string only when building a Panda3D package for
- * distribution.
- *
- * @deprecated Runtime/plugin environment has been removed, this now always
- * returns an empty string.
- */
-string PandaSystem::
-get_package_host_url() {
-#ifdef NDEBUG
-  return "";
-#else
-  return get_global_ptr()->_package_host_url;
-#endif
-}
-
-/**
- * Returns the current version of Panda's Core API, expressed as a string of
- * dot-delimited integers.  There are usually four integers in this version,
- * but this is not guaranteed.
- *
- * The Core API is used during the runtime (plugin) environment only.  This
- * may be the empty string if the current version of Panda is not built to
- * provide a particular Core API, which will be the normal case in a
- * development SDK.  However, you should not use this method to determine
- * whether you are running in a runtime environment or not.
- *
- * @deprecated Runtime/plugin environment has been removed, this now always
- * returns an empty string.
- */
-string PandaSystem::
-get_p3d_coreapi_version_string() {
-  return "";
 }
 
 /**
@@ -464,34 +390,4 @@ reset_system_names() {
   }
 
   _system_names_dirty = false;
-}
-
-/**
- * Loads the value returned by get_package_version_string().  This is intended
- * to be called by ConfigPageManager to preload the value from the panda-
- * package-version config variable, for developer's convenience.  This has no
- * effect if the PANDA_PACKAGE_VERSION_STR configure variable is defined at
- * compilation time.  This also has no effect in NDEBUG mode.
- */
-void PandaSystem::
-set_package_version_string(const string &package_version_string) {
-  _package_version_string = "";
-  if (_package_version_string.empty()) {
-    _package_version_string = package_version_string;
-  }
-}
-
-/**
- * Loads the value returned by get_package_host_url().  This is intended to be
- * called by ConfigPageManager to preload the value from the panda-package-
- * host-url config variable, for developer's convenience.  This has no effect
- * if the PANDA_PACKAGE_HOST_URL configure variable is defined at compilation
- * time.  This also has no effect in NDEBUG mode.
- */
-void PandaSystem::
-set_package_host_url(const string &package_host_url) {
-  _package_host_url = "";
-  if (_package_host_url.empty()) {
-    _package_host_url = package_host_url;
-  }
 }

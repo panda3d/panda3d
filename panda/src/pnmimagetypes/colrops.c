@@ -1,5 +1,5 @@
 /* Filename: colrops.c
- * Created by:  
+ * Created by:
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
@@ -23,7 +23,7 @@
 #endif
 
 #define bmalloc malloc
-#if !defined(WIN32_VC) && !defined(WIN64_VC)
+#ifndef _WIN32
 extern char     *bmalloc(int);
 #else
 #include <malloc.h>
@@ -37,7 +37,7 @@ static BYTE     *g_mant = NULL, *g_nexp = NULL;
 static BYTE     (*g_bval)[256] = NULL;
 
 #ifndef pow
-#if !defined(WIN32_VC) && !defined(WIN64_VC)
+#ifndef _WIN32
 extern double   pow(double, double);
 #endif
 #endif

@@ -12,13 +12,8 @@
  */
 
 #ifdef FLOATTYPE_IS_INT
-#if PY_MAJOR_VERSION >= 3
 #define PYNUMBER_FLOATTYPE PyNumber_Long
 #define PY_AS_FLOATTYPE PyLong_AS_LONG
-#else
-#define PYNUMBER_FLOATTYPE PyNumber_Int
-#define PY_AS_FLOATTYPE PyInt_AS_LONG
-#endif
 #else
 #define PYNUMBER_FLOATTYPE PyNumber_Float
 #define PY_AS_FLOATTYPE (FLOATTYPE)PyFloat_AsDouble

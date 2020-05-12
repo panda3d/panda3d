@@ -20,6 +20,7 @@
 #define WINDOWS_H
 
 #include <wtypes.h>
+#include <synchapi.h>
 
 #ifdef _WIN64
 typedef int HALF_PTR;

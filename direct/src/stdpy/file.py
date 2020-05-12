@@ -11,26 +11,12 @@ __all__ = [
     ]
 
 from panda3d import core
-import sys
 import os
 import io
 import encodings
 from posixpath import join
 
 _vfs = core.VirtualFileSystem.getGlobalPtr()
-
-if sys.version_info < (3, 0):
-    # Python 3 defines these subtypes of IOError, but Python 2 doesn't.
-    FileNotFoundError = IOError
-    IsADirectoryError = IOError
-    FileExistsError = IOError
-    PermissionError = IOError
-
-    unicodeType = unicode
-    strType = str
-else:
-    unicodeType = str
-    strType = ()
 
 
 def open(file, mode='r', buffering=-1, encoding=None, errors=None, newline=None, closefd=True):
@@ -39,12 +25,9 @@ def open(file, mode='r', buffering=-1, encoding=None, errors=None, newline=None,
     arguments as Python's built-in open() function.
     """
 
-    if sys.version_info >= (3, 0):
-        # Python 3 is much stricter than Python 2, which lets
-        # unknown flags fall through.
-        for ch in mode:
-            if ch not in 'rwxabt+U':
-                raise ValueError("invalid mode: '%s'" % (mode))
+    for ch in mode:
+        if ch not in 'rwxabt+U':
+            raise ValueError("invalid mode: '%s'" % (mode))
 
     creating = 'x' in mode
     writing = 'w' in mode
@@ -81,21 +64,16 @@ def open(file, mode='r', buffering=-1, encoding=None, errors=None, newline=None,
             # We can also "open" a VirtualFile object for reading.
             vfile = file
             filename = vfile.getFilename()
-        elif isinstance(file, unicodeType):
+        elif isinstance(file, str):
             # If a raw string is given, assume it's an os-specific
             # filename.
             filename = core.Filename.fromOsSpecificW(file)
-        elif isinstance(file, strType):
-            filename = core.Filename.fromOsSpecific(file)
         else:
             # It's either a Filename object or an os.PathLike.
             # If a Filename is given, make a writable copy anyway.
             filename = core.Filename(file)
 
-        if binary or sys.version_info >= (3, 0):
-            filename.setBinary()
-        else:
-            filename.setText()
+        filename.setBinary()
 
         if not vfile:
             vfile = _vfs.getFile(filename)
@@ -156,10 +134,6 @@ def open(file, mode='r', buffering=-1, encoding=None, errors=None, newline=None,
     if binary:
         return raw
 
-    # If we're in Python 2, we don't decode unicode strings by default.
-    if not encoding and sys.version_info < (3, 0):
-        return raw
-
     line_buffering = False
     if buffering == 1:
         line_buffering = True
@@ -170,12 +144,6 @@ def open(file, mode='r', buffering=-1, encoding=None, errors=None, newline=None,
     wrapper = io.TextIOWrapper(raw, encoding, errors, newline, line_buffering)
     wrapper.mode = mode
     return wrapper
-
-
-if sys.version_info < (3, 0):
-    # Python 2 had an alias for open() called file().
-    __all__.append('file')
-    file = open
 
 
 class StreamIOWrapper(io.IOBase):
@@ -197,13 +165,7 @@ class StreamIOWrapper(io.IOBase):
         if isinstance(stream, core.Ostream):
             self.__writer = core.StreamWriter(stream, False)
             self.__lastWrite = True
-            if sys.version_info >= (3, 0):
-                # In Python 3, we use appendData, which only accepts bytes.
-                self.__write = self.__writer.appendData
-            else:
-                # In Python 2.7, we also accept unicode objects, which are
-                # implicitly converted to C++ strings.
-                self.__write = self.__writer.write
+            self.__write = self.__writer.appendData
 
     def __repr__(self):
         s = "<direct.stdpy.file.StreamIOWrapper"

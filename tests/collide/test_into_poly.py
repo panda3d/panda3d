@@ -31,7 +31,7 @@ def test_sphere_into_poly():
 
     # Colliding just on the edge
     entry, np_from, np_into = make_collision(CollisionSphere(0, 0, 3, 2), poly)
-    assert entry.get_surface_point(np_from) == Point3(0, 0, 3)
+    assert entry.get_surface_point(np_from) == Point3(0, 0, 1)
     assert entry.get_surface_normal(np_into) == Vec3(-1, 0, 0)  # Testing surface normal
 
     # No collision

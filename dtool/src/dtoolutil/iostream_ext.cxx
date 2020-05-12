@@ -49,11 +49,7 @@ read(Py_ssize_t size) {
 #endif
   }
 
-#if PY_MAJOR_VERSION >= 3
   return PyBytes_FromStringAndSize(buffer, read_bytes);
-#else
-  return PyString_FromStringAndSize(buffer, read_bytes);
-#endif
 }
 
 /**
@@ -92,11 +88,7 @@ read1(Py_ssize_t size) {
   Py_BLOCK_THREADS
 #endif
 
-#if PY_MAJOR_VERSION >= 3
   return PyBytes_FromStringAndSize(buffer, read_bytes);
-#else
-  return PyString_FromStringAndSize(buffer, read_bytes);
-#endif
 }
 
 /**
@@ -128,11 +120,7 @@ readall() {
   Py_BLOCK_THREADS
 #endif
 
-#if PY_MAJOR_VERSION >= 3
   return PyBytes_FromStringAndSize((char *)result.data(), result.size());
-#else
-  return PyString_FromStringAndSize((char *)result.data(), result.size());
-#endif
 }
 
 /**
@@ -195,11 +183,7 @@ readline(Py_ssize_t size) {
   Py_BLOCK_THREADS
 #endif
 
-#if PY_MAJOR_VERSION >= 3
   return PyBytes_FromStringAndSize(line.data(), line.size());
-#else
-  return PyString_FromStringAndSize(line.data(), line.size());
-#endif
 }
 
 /**

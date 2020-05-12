@@ -42,10 +42,8 @@ FltRecordReader(std::istream &in) :
  */
 FltRecordReader::
 ~FltRecordReader() {
-  if (_iterator != nullptr) {
-    delete _iterator;
-    _iterator = nullptr;
-  }
+  delete _iterator;
+  _iterator = nullptr;
 }
 
 /**

@@ -80,21 +80,6 @@ get_point(size_t n) const {
  */
 INLINE bool CollisionPolygon::
 verify_points(const LPoint3 &a, const LPoint3 &b,
-              const LPoint3 &c) {
-  LPoint3 array[3];
-  array[0] = a;
-  array[1] = b;
-  array[2] = c;
-  return verify_points(array, array + 3);
-}
-
-/**
- * Verifies that the indicated set of points will define a valid
- * CollisionPolygon: that is, at least three non-collinear points, with no
- * points repeated.
- */
-INLINE bool CollisionPolygon::
-verify_points(const LPoint3 &a, const LPoint3 &b,
               const LPoint3 &c, const LPoint3 &d) {
   LPoint3 array[4];
   array[0] = a;

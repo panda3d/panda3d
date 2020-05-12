@@ -37,11 +37,6 @@ remove_python_event_handler(PyObject* name){
     if (PyObject_RichCompareBool(pgwp->get_name(), name, Py_EQ) == 1) {
       toRemove.push_back(pgwp);
     }
-#if PY_MAJOR_VERSION < 3
-    else if (PyObject_Compare(pgwp->get_name(), name) == 0) {
-      toRemove.push_back(pgwp);
-    }
-#endif
   }
   std::list<PythonGraphicsWindowProc*>::iterator iter2;
   for (iter2 = toRemove.begin(); iter2 != toRemove.end(); ++iter2) {

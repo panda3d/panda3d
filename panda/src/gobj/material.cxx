@@ -544,6 +544,11 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     }
     _refractive_index = scan.get_stdfloat();
 
+    if ((_flags & (F_base_color | F_metallic)) == (F_base_color | F_metallic)) {
+      // Compute the ambient, diffuse and specular settings.
+      set_base_color(_base_color);
+    }
+
   } else {
     _ambient.read_datagram(scan);
     _diffuse.read_datagram(scan);

@@ -12,17 +12,13 @@ from direct.directtools.DirectGlobals import *
 from direct.directtools.DirectUtil import *
 from direct.directtools.DirectGeometry import *
 from direct.directtools.DirectSelection import *
-import Pmw, os, sys
+import Pmw, os
 from direct.tkwidgets import Dial
 from direct.tkwidgets import Floater
 from direct.tkwidgets import Slider
 from direct.tkwidgets import EntryScale
 from direct.tkwidgets import VectorWidgets
-
-if sys.version_info >= (3, 0):
-    from tkinter.filedialog import *
-else:
-    from tkFileDialog import *
+from tkinter.filedialog import *
 
 
 PRF_UTILITIES = [
@@ -1638,7 +1634,7 @@ class MopathRecorder(AppShell, DirectObject):
             initialdir = path,
             title = 'Load Nurbs Curve',
             parent = self.parent)
-        if mopathFilename:
+        if mopathFilename and mopathFilename != 'None':
             self.reset()
             nodePath = loader.loadModel(
                 Filename.fromOsSpecific(mopathFilename))

@@ -1,0 +1,21 @@
+/* Filename: checkPandaVersion.cxx
+ * Created by:  drose (26Jan05)
+ *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+/*******************************************************************
+ *  Generated automatically by CMake.
+ ***************************** DO NOT EDIT *************************/
+
+#include "dtoolbase.h"
+
+EXPCL_DTOOL_DTOOLBASE int @PANDA_VERSION_SYMBOL@ = 0;

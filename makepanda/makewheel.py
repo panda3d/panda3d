@@ -20,12 +20,11 @@ from base64 import urlsafe_b64encode
 
 
 def get_abi_tag():
-    if sys.version_info >= (3, 0):
-        soabi = get_config_var('SOABI')
-        if soabi and soabi.startswith('cpython-'):
-            return 'cp' + soabi.split('-')[1]
-        elif soabi:
-            return soabi.replace('.', '_').replace('-', '_')
+    soabi = get_config_var('SOABI')
+    if soabi and soabi.startswith('cpython-'):
+        return 'cp' + soabi.split('-')[1]
+    elif soabi:
+        return soabi.replace('.', '_').replace('-', '_')
 
     soabi = 'cp%d%d' % (sys.version_info[:2])
 
@@ -39,11 +38,6 @@ def get_abi_tag():
     malloc_flag = get_config_var('WITH_PYMALLOC')
     if malloc_flag is None or malloc_flag:
         soabi += 'm'
-
-    if sys.version_info < (3, 3):
-        usize = get_config_var('Py_UNICODE_SIZE')
-        if (usize is None and sys.maxunicode == 0x10ffff) or usize == 4:
-            soabi += 'u'
 
     return soabi
 
@@ -92,7 +86,7 @@ EXCLUDE_EXT = [".pyc", ".pyo", ".N", ".prebuilt", ".xcf", ".plist", ".vcproj", "
 # Plug-ins to install.
 PLUGIN_LIBS = ["pandagl", "pandagles", "pandagles2", "pandadx9", "p3tinydisplay", "p3ptloader", "p3assimp", "p3ffmpeg", "p3openal_audio", "p3fmod_audio"]
 
-# Libraries included in manylinux ABI that should be ignored.  See PEP 513/571.
+# Libraries included in manylinux ABI that should be ignored.  See PEP 513/571/599.
 MANYLINUX_LIBS = [
     "libgcc_s.so.1", "libstdc++.so.6", "libm.so.6", "libdl.so.2", "librt.so.1",
     "libcrypt.so.1", "libc.so.6", "libnsl.so.1", "libutil.so.1",
@@ -407,6 +401,7 @@ class WheelFile(object):
                     deps_path = '@executable_path/../Frameworks'
                 else:
                     deps_path = '@loader_path'
+                remove_signature = False
                 loader_path = [os.path.dirname(source_path)]
                 for dep in deps:
                     if dep.endswith('/Python'):
@@ -422,6 +417,15 @@ class WheelFile(object):
                             # It won't be included, so no use adjusting the path.
                             continue
                         new_dep = os.path.join(deps_path, os.path.relpath(target_dep, os.path.dirname(target_path)))
+
+                    elif '@rpath' in dep:
+                        # Unlike makepanda, CMake uses @rpath instead of
+                        # @loader_path. This means we can just search for the
+                        # dependencies like normal.
+                        dep_path = dep.replace('@rpath', '.')
+                        target_dep = os.path.dirname(target_path) + '/' + os.path.basename(dep)
+                        self.consider_add_dependency(target_dep, dep_path)
+                        continue
 
                     elif dep.startswith('/Library/Frameworks/Python.framework/'):
                         # Add this dependency if it's in the Python directory.
@@ -439,6 +443,11 @@ class WheelFile(object):
                         continue
 
                     subprocess.call(["install_name_tool", "-change", dep, new_dep, temp.name])
+                    remove_signature = True
+
+                # Remove the codesign signature if we modified the library.
+                if remove_signature:
+                    subprocess.call(["codesign", "--remove-signature", temp.name])
             else:
                 # On other unixes, we just add dependencies normally.
                 for dep in deps:
@@ -522,6 +531,9 @@ def makewheel(version, output_dir, platform=None):
         if not LocateBinary("patchelf"):
             raise Exception("patchelf is required when building a Linux wheel.")
 
+    if sys.version_info < (3, 5):
+        raise Exception("Python 3.5 is required to produce a wheel.")
+
     if platform is None:
         # Determine the platform from the build.
         platform_dat = os.path.join(output_dir, 'tmp', 'platform.dat')
@@ -530,10 +542,14 @@ def makewheel(version, output_dir, platform=None):
         else:
             print("Could not find platform.dat in build directory")
             platform = get_platform()
-            if platform.startswith("linux-"):
-                # Is this manylinux1?
-                if os.path.isfile("/lib/libc-2.5.so") and os.path.isdir("/opt/python"):
+            if platform.startswith("linux-") and os.path.isdir("/opt/python"):
+                # Is this manylinux?
+                if os.path.isfile("/lib/libc-2.5.so") or os.path.isfile("/lib64/libc-2.5.so"):
                     platform = platform.replace("linux", "manylinux1")
+                elif os.path.isfile("/lib/libc-2.12.so") or os.path.isfile("/lib64/libc-2.12.so"):
+                    platform = platform.replace("linux", "manylinux2010")
+                elif os.path.isfile("/lib/libc-2.17.so") or os.path.isfile("/lib64/libc-2.17.so"):
+                    platform = platform.replace("linux", "manylinux2014")
 
     platform = platform.replace('-', '_').replace('.', '_')
 
@@ -606,12 +622,8 @@ __version__ = '{0}'
     if '27' in ABI_TAG:
         p3d_init += """
 if __debug__:
-    import sys
-    if sys.version_info < (3, 0):
-        sys.stderr.write("WARNING: Python 2.7 will reach EOL after December 31, 2019.\\n")
-        sys.stderr.write("To suppress this warning, upgrade to Python 3.\\n")
-        sys.stderr.flush()
-    del sys
+    if 1 / 2 == 0:
+        raise ImportError(\"Python 2 is not supported.\")
 """
 
     whl.write_file_data('panda3d/__init__.py', p3d_init)
@@ -735,8 +747,16 @@ if __debug__:
         pylib_path = os.path.join(get_config_var('LIBDIR'), pylib_name)
     else:
         pylib_name = get_config_var('LDLIBRARY')
-        pylib_path = os.path.join(get_config_var('LIBDIR'), pylib_name)
-    whl.write_file('deploy_libs/' + pylib_name, pylib_path)
+        pylib_arch = get_config_var('MULTIARCH')
+        libdir = get_config_var('LIBDIR')
+        if pylib_arch and os.path.exists(os.path.join(libdir, pylib_arch, pylib_name)):
+            pylib_path = os.path.join(libdir, pylib_arch, pylib_name)
+        else:
+            pylib_path = os.path.join(libdir, pylib_name)
+
+    # If Python was linked statically, we don't need to include this.
+    if not pylib_name.endswith('.a'):
+        whl.write_file('deploy_libs/' + pylib_name, pylib_path)
 
     whl.close()
 

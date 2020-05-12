@@ -615,8 +615,10 @@ release_vertex_buffer(VertexBufferContext *vbc) {
   }
   #endif
 
-  dvbc->_vbuffer->Release();
-  dvbc->_vbuffer = nullptr;
+  if (dvbc->_vbuffer != nullptr) {
+    dvbc->_vbuffer->Release();
+    dvbc->_vbuffer = nullptr;
+  }
 
   delete dvbc;
 }
@@ -999,8 +1001,10 @@ begin_frame(Thread *current_thread) {
   GraphicsStateGuardian::begin_frame(current_thread);
 
   if (_d3d_device == nullptr) {
-    dxgsg9_cat.debug()
-      << this << "::begin_frame(): no device.\n";
+    if (dxgsg9_cat.is_debug()) {
+      dxgsg9_cat.debug()
+        << this << "::begin_frame(): no device.\n";
+    }
     return false;
   }
 
@@ -1953,9 +1957,11 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
                                 tex_level_0, &src_rect,
                                 filter);
   if (FAILED(hr)) {
-    dxgsg9_cat.debug()
-      << "StretchRect failed in framebuffer_copy_to_texture"
-      << D3DERRORSTRING(hr);
+    if (dxgsg9_cat.is_debug()) {
+      dxgsg9_cat.debug()
+        << "StretchRect failed in framebuffer_copy_to_texture"
+        << D3DERRORSTRING(hr);
+    }
     okflag = false;
   }
 
@@ -2397,7 +2403,7 @@ reset() {
   hr = _d3d_device->CreateQuery(D3DQUERYTYPE_OCCLUSION, nullptr);
   _supports_occlusion_query = !FAILED(hr);
 
-  if (dxgsg9_cat.is_error()) {
+  if (dxgsg9_cat.is_debug()) {
     dxgsg9_cat.debug()
       << "\nHwTransformAndLight = " << ((d3d_caps.DevCaps & D3DDEVCAPS_HWTRANSFORMANDLIGHT) != 0)
       << "\nMaxTextureWidth = " << d3d_caps.MaxTextureWidth
@@ -4626,8 +4632,10 @@ reset_d3d_device(D3DPRESENT_PARAMETERS *presentation_params,
   // release the old swapchain and create a new one
   if (_screen && _screen->_swap_chain) {
     _screen->_swap_chain->Release();
-    wdxdisplay9_cat.debug()
-      << "swap chain " << _screen->_swap_chain << " is released\n";
+    if (wdxdisplay9_cat.is_debug()) {
+      wdxdisplay9_cat.debug()
+        << "swap chain " << _screen->_swap_chain << " is released\n";
+    }
     _screen->_swap_chain = nullptr;
     hr = _d3d_device->CreateAdditionalSwapChain(presentation_params, &_screen->_swap_chain);
   }
@@ -4747,7 +4755,10 @@ create_swap_chain(DXScreenData *new_context) {
   HRESULT hr;
   hr = new_context->_d3d_device->CreateAdditionalSwapChain(&new_context->_presentation_params, &new_context->_swap_chain);
   if (FAILED(hr)) {
-    wdxdisplay9_cat.debug() << "Swapchain creation failed :"<<D3DERRORSTRING(hr)<<"\n";
+    if (wdxdisplay9_cat.is_debug()) {
+      wdxdisplay9_cat.debug()
+        << "Swapchain creation failed :" << D3DERRORSTRING(hr) << "\n";
+    }
     return false;
   }
   return true;
@@ -4762,7 +4773,10 @@ release_swap_chain(DXScreenData *new_context) {
   if (new_context->_swap_chain) {
     hr = new_context->_swap_chain->Release();
     if (FAILED(hr)) {
-      wdxdisplay9_cat.debug() << "Swapchain release failed:" << D3DERRORSTRING(hr) << "\n";
+      if (wdxdisplay9_cat.is_debug()) {
+        wdxdisplay9_cat.debug()
+          << "Swapchain release failed:" << D3DERRORSTRING(hr) << "\n";
+      }
       return false;
     }
   }

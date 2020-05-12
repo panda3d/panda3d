@@ -18,7 +18,7 @@
 #include "mutexImpl.h"
 #include "interrogate_request.h"
 
-#if (defined(WIN32_VC) || defined (WIN64_VC)) && defined(_DEBUG)
+#if defined(_MSC_VER) && defined(_DEBUG)
 #include <crtdbg.h>
 #endif
 
@@ -426,7 +426,7 @@ mark_pointer(void *ptr, size_t size, ReferenceCount *ref_ptr) {
 #endif
 }
 
-#if (defined(WIN32_VC) || defined (WIN64_VC))&& defined(_DEBUG)
+#if defined(_WIN32) && defined(_DEBUG)
 /**
  * This callback is attached to the Win32 debug malloc system to be called
  * whenever a pointer is allocated, reallocated, or freed.  It's used to track
@@ -455,7 +455,7 @@ win32_malloc_hook(int alloc_type, void *ptr,
   mu->_total_size += increment;
   return true;
 }
-#endif  // WIN32_VC && _DEBUG
+#endif  // _WIN32 && _DEBUG
 
 
 
@@ -520,7 +520,7 @@ MemoryUsage(const MemoryHook &copy) :
 #error Cannot compile MemoryUsage without malloc wrappers!
 #endif
 
-#if (defined(WIN32_VC) || defined(WIN64_VC)) && defined(_DEBUG)
+#ifdef _MSC_VER
   // On a debug Windows build, we can set this malloc hook which allows
   // tracking every malloc call, even from subordinate libraries.
   _CrtSetAllocHook(&win32_malloc_hook);

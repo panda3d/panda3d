@@ -23,7 +23,7 @@
    using OS-provided threading constructs.  This is via either Windows
    or Posix threads. */
 
-#if defined(WIN32) && defined(OS_SIMPLE_THREADS)
+#if defined(_WIN32) && defined(OS_SIMPLE_THREADS)
 
 #include "contextSwitch_windows_src.c"
 

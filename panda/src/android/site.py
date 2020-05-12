@@ -4,10 +4,7 @@ import os
 from importlib.abc import Loader, MetaPathFinder
 from importlib.machinery import ModuleSpec
 
-if sys.version_info >= (3, 5):
-    from importlib import _bootstrap_external
-else:
-    from importlib import _bootstrap as _bootstrap_external
+from importlib import _bootstrap_external
 
 sys.platform = "android"
 

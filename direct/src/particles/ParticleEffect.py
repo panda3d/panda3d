@@ -7,12 +7,6 @@ from . import Particles
 from . import ForceGroup
 
 from direct.directnotify import DirectNotifyGlobal
-import sys
-
-
-if sys.version_info < (3, 0):
-    FileNotFoundError = IOError
-
 
 
 class ParticleEffect(NodePath):
@@ -35,6 +29,10 @@ class ParticleEffect(NodePath):
         if particles is not None:
             self.addParticles(particles)
         self.renderParent = None
+
+    def birthLitter(self):
+        for p in self.particlesDict.values():
+            p.birthLitter()
 
     def cleanup(self):
         self.removeNode()
@@ -269,3 +267,4 @@ class ParticleEffect(NodePath):
     clear_to_initial = clearToInitial
     soft_stop = softStop
     soft_start = softStart
+    birth_litter = birthLitter

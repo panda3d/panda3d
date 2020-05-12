@@ -1800,9 +1800,9 @@ reset() {
         _shader_caps._active_gprofile = (int)CG_PROFILE_GLSLG;
       }
     }
-    _shader_caps._ultimate_vprofile = (int)CG_PROFILE_VP40;
-    _shader_caps._ultimate_fprofile = (int)CG_PROFILE_FP40;
-    _shader_caps._ultimate_gprofile = (int)CG_PROFILE_GPU_GP;
+    _shader_caps._ultimate_vprofile = (int)CG_PROFILE_GLSLV;
+    _shader_caps._ultimate_fprofile = (int)CG_PROFILE_GLSLF;
+    _shader_caps._ultimate_gprofile = (int)CG_PROFILE_GLSLG;
 
     // Bug workaround for radeons.
     if (_shader_caps._active_fprofile == CG_PROFILE_ARBFP1) {
@@ -4202,6 +4202,7 @@ end_frame(Thread *current_thread) {
     _current_shader = nullptr;
     _current_shader_context = nullptr;
   }
+  _state_shader = nullptr;
 #endif
 
   // Respecify the active texture next frame, for good measure.
@@ -8540,6 +8541,10 @@ make_shadow_buffer(LightLensNode *light, Texture *tex, GraphicsOutput *host) {
   int flags = GraphicsPipe::BF_refuse_window;
   if (is_point) {
     flags |= GraphicsPipe::BF_size_square;
+  }
+
+  if (host != nullptr) {
+    host = host->get_host();
   }
 
   CLP(GraphicsBuffer) *sbuffer = new CLP(GraphicsBuffer)(get_engine(), get_pipe(), light->get_name(), fbp, props, flags, this, host);

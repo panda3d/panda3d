@@ -11,7 +11,7 @@
  * @date 2009-11-09
  */
 
-#if defined(WIN32_VC) || defined(WIN64_VC)
+#ifdef _WIN32
 #include <direct.h>  // for chdir
 #endif
 #include "mayaToEgg_server.h"
@@ -424,7 +424,7 @@ poll() {
         buffers.push_back(buffer);
       }
       // Change to the client's current dir
-#ifdef WIN64_VC
+#ifdef _WIN64
       _chdir(cwd.c_str());
 #else
       chdir(cwd.c_str());

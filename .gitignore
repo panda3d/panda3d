@@ -54,6 +54,9 @@ CTestTestfile.cmake
 Thumbs.db
 ehthumbs.db
 
+# macOS
+.DS_Store
+
 # Python
 __pycache__/
 *.pyc

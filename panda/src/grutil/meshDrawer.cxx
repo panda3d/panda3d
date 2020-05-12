@@ -104,10 +104,10 @@ void MeshDrawer::begin(NodePath camera, NodePath render) {
   _b4 = - _right + _up;
 
   // recreate our rewriters
-  if (_vertex != nullptr) delete _vertex;
-  if (_normal != nullptr) delete _normal;
-  if (_uv != nullptr)     delete _uv;
-  if (_color != nullptr)  delete _color;
+  delete _vertex;
+  delete _normal;
+  delete _uv;
+  delete _color;
 
   if (_vdata == nullptr) {
     generator(_budget);

@@ -16,9 +16,6 @@
  */
 INLINE StreamWriter::
 StreamWriter(std::ostream &out) :
-#ifdef HAVE_PYTHON
-  softspace(0),
-#endif
   _out(&out),
   _owns_stream(false)
 {
@@ -29,9 +26,6 @@ StreamWriter(std::ostream &out) :
  */
 INLINE StreamWriter::
 StreamWriter(std::ostream *out, bool owns_stream) :
-#ifdef HAVE_PYTHON
-  softspace(0),
-#endif
   _out(out),
   _owns_stream(owns_stream)
 {
@@ -42,9 +36,6 @@ StreamWriter(std::ostream *out, bool owns_stream) :
  */
 INLINE StreamWriter::
 StreamWriter(const StreamWriter &copy) :
-#ifdef HAVE_PYTHON
-  softspace(0),
-#endif
   _out(copy._out),
   _owns_stream(false)
 {
@@ -55,9 +46,6 @@ StreamWriter(const StreamWriter &copy) :
  */
 INLINE StreamWriter::
 StreamWriter(StreamWriter &&from) noexcept :
-#ifdef HAVE_PYTHON
-  softspace(0),
-#endif
   _out(from._out),
   _owns_stream(from._owns_stream)
 {

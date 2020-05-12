@@ -146,9 +146,7 @@ CLwoSurface(LwoToEggConverter *converter, const LwoSurface *surface) :
  */
 CLwoSurface::
 ~CLwoSurface() {
-  if (_block != nullptr) {
-    delete _block;
-  }
+  delete _block;
 }
 
 /**

@@ -192,6 +192,22 @@ INLINE PyObject *_PyObject_FastCall(PyObject *func, PyObject **args, Py_ssize_t 
   } while (0)
 #endif
 
+/* Python 3.8 */
+#if PY_VERSION_HEX < 0x03080000
+INLINE PyObject *_PyLong_Rshift(PyObject *a, size_t shiftby) {
+  PyObject *b = PyLong_FromLong(shiftby);
+  PyObject *result = PyNumber_Rshift(a, b);
+  Py_DECREF(b);
+  return result;
+}
+INLINE PyObject *_PyLong_Lshift(PyObject *a, size_t shiftby) {
+  PyObject *b = PyLong_FromLong(shiftby);
+  PyObject *result = PyNumber_Lshift(a, b);
+  Py_DECREF(b);
+  return result;
+}
+#endif
+
 /* Other Python implementations */
 
 // _PyErr_OCCURRED is an undocumented macro version of PyErr_Occurred.

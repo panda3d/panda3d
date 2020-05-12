@@ -409,15 +409,30 @@ public:
     INLINE void read_datagram(DatagramIterator &source);
   };
 
+  /**
+   * Describes a matrix making up a single part of the ShaderMatInput cache.
+   * The cache is made up of a continuous array of matrices, as described by
+   * a successive list of ShaderMatPart (each of which takes up _count matrices)
+   */
+  struct ShaderMatPart {
+    ShaderMatInput _part;
+    CPT(InternalName) _arg;
+    int _count = 1;
+    int _dep = SSD_NONE;
+  };
+
+  /**
+   * Describes a shader input that is sourced from the render state.
+   */
   struct ShaderMatSpec {
-    LMatrix4          _cache[2];
-    LMatrix4          _value;
+    size_t _cache_offset[2];
     ShaderArgId       _id;
     ShaderMatFunc     _func;
     ShaderMatInput    _part[2];
     CPT(InternalName) _arg[2];
-    int               _dep[2];
-    int               _index;
+    LMatrix4          _value;
+    int               _dep = SSD_NONE;
+    int               _index = 0;
     ShaderMatPiece    _piece;
   };
 
@@ -519,7 +534,8 @@ public:
                           vector_string &pieces, int &next,
                           ShaderMatSpec &spec, bool fromflag);
   int cp_dependency(ShaderMatInput inp);
-  void cp_optimize_mat_spec(ShaderMatSpec &spec);
+  void cp_add_mat_spec(ShaderMatSpec &spec);
+  size_t cp_get_mat_cache_size() const;
 
 #ifdef HAVE_CG
   void cg_recurse_parameters(CGparameter parameter,
@@ -577,7 +593,9 @@ public:
   pvector<ShaderTexSpec> _tex_spec;
   pvector<ShaderImgSpec> _img_spec;
   pvector<ShaderVarSpec> _var_spec;
-  int _mat_deps;
+  pvector<ShaderMatPart> _mat_parts;
+  int _mat_deps = 0;
+  int _mat_cache_size = 0;
 
   bool _error_flag;
   ShaderFile _text;

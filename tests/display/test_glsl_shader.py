@@ -261,6 +261,54 @@ def test_glsl_bool(gsg):
     run_glsl_test(gsg, code, preamble, flags)
 
 
+def test_glsl_mat3(gsg):
+    param1 = core.LMatrix4(core.LMatrix3(1, 2, 3, 4, 5, 6, 7, 8, 9))
+
+    param2 = core.NodePath("param2")
+    param2.set_mat(core.LMatrix3(10, 11, 12, 13, 14, 15, 16, 17, 18))
+
+    preamble = """
+    uniform mat3 param1;
+    uniform mat3 param2;
+    """
+    code = """
+    assert(param1[0] == vec3(1, 2, 3));
+    assert(param1[1] == vec3(4, 5, 6));
+    assert(param1[2] == vec3(7, 8, 9));
+    assert(param2[0] == vec3(10, 11, 12));
+    assert(param2[1] == vec3(13, 14, 15));
+    assert(param2[2] == vec3(16, 17, 18));
+    """
+    run_glsl_test(gsg, code, preamble, {'param1': param1, 'param2': param2})
+
+
+def test_glsl_mat4(gsg):
+    param1 = core.LMatrix4(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
+
+    param2 = core.NodePath("param2")
+    param2.set_mat(core.LMatrix4(
+        17, 18, 19, 20,
+        21, 22, 23, 24,
+        25, 26, 27, 28,
+        29, 30, 31, 32))
+
+    preamble = """
+    uniform mat4 param1;
+    uniform mat4 param2;
+    """
+    code = """
+    assert(param1[0] == vec4(1, 2, 3, 4));
+    assert(param1[1] == vec4(5, 6, 7, 8));
+    assert(param1[2] == vec4(9, 10, 11, 12));
+    assert(param1[3] == vec4(13, 14, 15, 16));
+    assert(param2[0] == vec4(17, 18, 19, 20));
+    assert(param2[1] == vec4(21, 22, 23, 24));
+    assert(param2[2] == vec4(25, 26, 27, 28));
+    assert(param2[3] == vec4(29, 30, 31, 32));
+    """
+    run_glsl_test(gsg, code, preamble, {'param1': param1, 'param2': param2})
+
+
 def test_glsl_pta_int(gsg):
     pta = core.PTA_int((0, 1, 2, 3))
 

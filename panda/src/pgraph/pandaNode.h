@@ -566,11 +566,6 @@ private:
 
     INLINE void set_fancy_bit(int bits, bool value);
 
-#ifdef HAVE_PYTHON
-    void inc_py_refs();
-    void dec_py_refs();
-#endif
-
     CPT(RenderEffects) _effects;
 
     TagData _tag_data;
