@@ -342,7 +342,7 @@ get_shader_input_nodepath(const InternalName *id) const {
  * if it is not a vector.
  */
 LVecBase4 ShaderAttrib::
-get_shader_input_vector(InternalName *id) const {
+get_shader_input_vector(const InternalName *id) const {
   static LVecBase4 resfail(0,0,0,0);
   Inputs::const_iterator i = _inputs.find(id);
   if (i != _inputs.end()) {

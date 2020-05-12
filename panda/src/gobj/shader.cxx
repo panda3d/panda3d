@@ -2400,6 +2400,7 @@ read(const ShaderFile &sfile, BamCacheRecord *record) {
       return false;
     }
 
+    // Read the various stages in order.
     if (!sfile._vertex.empty() &&
         !do_read_source(Stage::vertex, sfile._vertex, record)) {
       return false;
@@ -2451,13 +2452,18 @@ read(const ShaderFile &sfile, BamCacheRecord *record) {
       return false;
     }
 
-    for (ShaderModule *module : _modules) {
-      module->set_source_filename(fn);
-    }
+    //FIXME
+    //for (ShaderModule *module : _modules) {
+    //  module->set_source_filename(fn);
+    //}
 
   } else {
     shader_cat.error()
       << "GLSL shaders must have separate shader bodies!\n";
+    return false;
+  }
+
+  if (!link()) {
     return false;
   }
 
@@ -2534,6 +2540,10 @@ load(const ShaderFile &sbody, BamCacheRecord *record) {
     return false;
   }
 
+  if (!link()) {
+    return false;
+  }
+
   _debug_name = "created-shader";
   _prepare_shader_pcollector = PStatCollector("Draw:Prepare:Shader:created-shader");
 
@@ -2578,17 +2588,13 @@ do_read_source(Stage stage, const Filename &fn, BamCacheRecord *record) {
   }
 
   shader_cat.info() << "Reading shader file: " << fn << "\n";
-  if (!do_read_source(stage, *in, record)) {
+  if (!do_read_source(stage, *in, fn, record)) {
     vf->close_read_file(in);
     return false;
   }
 
   //_last_modified = std::max(_last_modified, vf->get_timestamp());
   //_source_files.push_back(fullpath);
-
-  // Update module source filename, should find a better way to do this...
-  PT(ShaderModule) module = _modules.back();
-  module->set_source_filename(fn);
 
   vf->close_read_file(in);
 
@@ -2608,11 +2614,12 @@ do_read_source(Stage stage, const Filename &fn, BamCacheRecord *record) {
  * it 'invalid'.
  */
 bool Shader::
-do_read_source(ShaderModule::Stage stage, std::istream &in, BamCacheRecord *record) {
+do_read_source(ShaderModule::Stage stage, std::istream &in,
+               const Filename &source_filename, BamCacheRecord *record) {
   ShaderCompiler *compiler = get_compiler(_language);
   nassertr(compiler != nullptr, false);
 
-  PT(ShaderModule) module = compiler->compile_now(stage, in, "created-shader", record);
+  PT(ShaderModule) module = compiler->compile_now(stage, in, source_filename, record);
   if (!module) {
     return false;
   }
@@ -2633,6 +2640,33 @@ do_read_source(ShaderModule::Stage stage, std::istream &in, BamCacheRecord *reco
 #endif
   }
 
+  if (!source_filename.empty()) {
+    module->set_source_filename(source_filename);
+  }
+
+  // Link its inputs up with the previous stage.
+  if (!_modules.empty()) {
+    if (!module->link_inputs(_modules.back().get_read_pointer())) {
+      shader_cat.error()
+        << "Unable to match shader module interfaces.\n";
+      return false;
+    }
+  }
+  else if (stage == Stage::vertex) {
+    // Bind vertex inputs right away.
+    bool success = true;
+    for (const ShaderModule::Variable &var : module->_inputs) {
+      if (!bind_vertex_input(var.name, var.type, var.get_location())) {
+        success = false;
+      }
+    }
+    if (!success) {
+      shader_cat.error()
+        << "Failed to bind vertex inputs.\n";
+      return false;
+    }
+  }
+
   _modules.push_back(std::move(module));
   _module_mask |= (1 << (int)stage);
 
@@ -2649,7 +2683,370 @@ do_read_source(ShaderModule::Stage stage, std::istream &in, BamCacheRecord *reco
 bool Shader::
 do_load_source(ShaderModule::Stage stage, const std::string &source, BamCacheRecord *record) {
   std::istringstream in(source);
-  return do_read_source(stage, in, record);
+  return do_read_source(stage, in, Filename("created-shader"), record);
+}
+
+/**
+ * Completes the binding between the different shader stages.
+ */
+bool Shader::
+link() {
+  // Go through all the modules to fetch the parameters.
+  pmap<CPT_InternalName, const ShaderModule::Variable *> parameters;
+  BitArray used_locations;
+
+  for (COWPT(ShaderModule) &cow_module : _modules) {
+    const ShaderModule *module = cow_module.get_read_pointer();
+    pmap<int, int> remap;
+
+    for (const ShaderModule::Variable &var : module->_parameters) {
+      const auto result = parameters.insert({var.name, &var});
+      const auto &it = result.first;
+
+      if (!result.second) {
+        // A variable by this name was already added by another stage.  Check
+        // that it has the same type and location.
+        const ShaderModule::Variable &other = *(it->second);
+        if (other.type != var.type) {
+          shader_cat.error()
+            << "Parameter " << var.name << " in module " << *module
+            << " is declared in another stage with a mismatching type!\n";
+          return false;
+        }
+
+        if (it->second->get_location() != var.get_location()) {
+          // Different location; need to remap this.
+          remap[var.get_location()] = it->second->get_location();
+        }
+      } else if (var.has_location()) {
+        if (used_locations.get_bit(var.get_location())) {
+          // This location is already used.
+          int location = used_locations.get_lowest_off_bit();
+          used_locations.set_bit(location);
+          remap[var.get_location()] = location;
+        } else {
+          used_locations.set_bit(var.get_location());
+        }
+      }
+    }
+
+    if (!remap.empty()) {
+      PT(ShaderModule) module = cow_module.get_write_pointer();
+      if (shader_cat.is_debug()) {
+        shader_cat.debug()
+          << "Remapping " << remap.size() << " locations for module " << *module << "\n";
+      }
+      module->remap_parameter_locations(remap);
+    }
+  }
+
+  // Now bind all of the parameters.
+  bool success = true;
+  for (const auto &pair : parameters) {
+    const ShaderModule::Variable &var = *pair.second;
+
+    if (!bind_parameter(var.name, var.type, var.get_location())) {
+      success = false;
+    }
+  }
+
+  return success;
+}
+
+/**
+ * Binds a vertex input parameter with the given type.
+ */
+bool Shader::
+bind_vertex_input(const InternalName *name, const ::ShaderType *type, int location) {
+  std::string name_str = name->get_name();
+
+  Shader::ShaderVarSpec bind;
+  bind._id._name = name_str;
+  bind._id._seqno = location;
+  bind._name = nullptr;
+  bind._append_uv = -1;
+  bind._elements = 1;
+  bind._numeric_type = SPT_float;
+
+  // Check if it has a p3d_ prefix - if so, assign special meaning.
+  if (name_str.compare(0, 4, "p3d_") == 0) {
+    if (name_str == "p3d_Vertex") {
+      bind._name = InternalName::get_vertex();
+
+    } else if (name_str == "p3d_Normal") {
+      bind._name = InternalName::get_normal();
+
+    } else if (name_str == "p3d_Color") {
+      bind._name = InternalName::get_color();
+
+    } else if (name_str.compare(4, 7, "Tangent") == 0) {
+      bind._name = InternalName::get_tangent();
+      if (name_str.size() > 7) {
+        bind._append_uv = atoi(name_str.substr(7).c_str());
+      }
+
+    } else if (name_str.compare(4, 8, "Binormal") == 0) {
+      bind._name = InternalName::get_binormal();
+      if (name_str.size() > 8) {
+        bind._append_uv = atoi(name_str.substr(8).c_str());
+      }
+
+    } else if (name_str.compare(4, 13, "MultiTexCoord") == 0) {
+      bind._name = InternalName::get_texcoord();
+      bind._append_uv = atoi(name_str.substr(13).c_str());
+
+    } else {
+      shader_cat.error()
+        << "Unrecognized built-in vertex input name '" << name_str << "'!\n";
+      return false;
+    }
+  } else {
+    // Arbitrarily named attribute.
+    bind._name = InternalName::make(name_str);
+  }
+
+  _var_spec.push_back(bind);
+  return true;
+}
+
+/**
+ * Binds a uniform parameter with the given type.
+ */
+bool Shader::
+bind_parameter(const InternalName *name, const ::ShaderType *type, int location) {
+  std::string name_str = name->get_name();
+
+  Shader::ShaderArgId arg_id;
+  arg_id._name = name_str;
+  arg_id._seqno = location;
+
+  // Check if it has a p3d_ prefix - if so, assign special meaning.
+  if (name_str.compare(0, 4, "p3d_") == 0) {
+    if (name_str == "p3d_ModelViewProjectionMatrix") {
+      Shader::ShaderMatSpec bind;
+      bind._id = arg_id;
+      bind._func = SMF_compose;
+      bind._piece = SMP_whole;
+      bind._arg[0] = nullptr;
+      bind._arg[1] = nullptr;
+      bind._part[0] = SMO_model_to_apiview;
+      bind._part[1] = SMO_apiview_to_apiclip;
+
+      cp_optimize_mat_spec(bind);
+      _mat_spec.push_back(bind);
+      _mat_deps |= bind._dep[0] | bind._dep[1];
+      return true;
+    }
+    if (name_str.compare(4, 7, "Texture") == 0) {
+      ShaderTexSpec bind;
+      bind._id = arg_id;
+      bind._part = STO_stage_i;
+      bind._name = 0;
+      bind._desired_type = Texture::TT_2d_texture;
+
+      string tail;
+      bind._stage = string_to_int(name_str.substr(11), tail);
+      if (!tail.empty()) {
+        shader_cat.error()
+          << "Error parsing shader input name: unexpected '"
+          << tail << "' in '" << name_str << "'\n";
+        return false;
+      }
+
+      _tex_spec.push_back(bind);
+      return true;
+    }
+    if (name_str == "p3d_ColorScale") {
+      ShaderMatSpec bind;
+      bind._id = arg_id;
+      bind._func = SMF_first;
+      bind._part[0] = SMO_attr_colorscale;
+      bind._arg[0] = nullptr;
+      bind._dep[0] = SSD_general | SSD_colorscale;
+      bind._part[1] = SMO_identity;
+      bind._arg[1] = nullptr;
+      bind._dep[1] = SSD_NONE;
+      bind._piece = SMP_row3;
+      _mat_spec.push_back(bind);
+      _mat_deps |= bind._dep[0];
+      return true;
+    }
+    if (name_str == "p3d_TexAlphaOnly") {
+      ShaderMatSpec bind;
+      bind._id = arg_id;
+      bind._func = SMF_first;
+      bind._index = 0;
+      bind._part[0] = SMO_tex_is_alpha_i;
+      bind._arg[0] = nullptr;
+      bind._dep[0] = SSD_general | SSD_texture | SSD_frame;
+      bind._part[1] = SMO_identity;
+      bind._arg[1] = nullptr;
+      bind._dep[1] = SSD_NONE;
+      bind._piece = SMP_row3;
+      _mat_spec.push_back(bind);
+      _mat_deps |= bind._dep[0] | bind._dep[1];
+      return true;
+    }
+
+    shader_cat.error() << "Unrecognized uniform name '" << name_str << "'!\n";
+    return false;
+  }
+
+  if (const ::ShaderType::Array *array = type->as_array()) {
+    // A uniform array.
+    const ::ShaderType *element_type = array->get_element_type();
+
+    Shader::ShaderPtrSpec bind;
+    bind._id = arg_id;
+
+    if (const ::ShaderType::Matrix *matrix = element_type->as_matrix()) {
+      size_t num_rows = matrix->get_num_rows();
+      if (matrix->get_num_columns() != num_rows) {
+        shader_cat.error()
+          << "Uniform parameter '" << name_str << "' has unsupported non-square matrix type\n";
+        return false;
+      }
+
+      bind._dim[1] = num_rows * num_rows;
+      bind._type = SPT_float;
+    }
+    else if (const ::ShaderType::Vector *vector = element_type->as_vector()) {
+      bind._dim[1] = 4;
+      bind._type = SPT_float;
+    }
+    else if (const ::ShaderType::Scalar *scalar = element_type->as_scalar()) {
+      bind._dim[1] = 1;
+      bind._type = SPT_float;
+    }
+
+    bind._arg = name;
+    bind._dim[0] = array->get_num_elements();
+    bind._dep[0] = SSD_general | SSD_shaderinputs | SSD_frame;
+    bind._dep[1] = SSD_NONE;
+    _ptr_spec.push_back(bind);
+    return true;
+  }
+  else if (const ::ShaderType::SampledImage *sampler = type->as_sampled_image()) {
+    ShaderTexSpec bind;
+    bind._id = arg_id;
+    bind._part = STO_named_input;
+    bind._name = name;
+    bind._desired_type = sampler->get_texture_type();
+    bind._stage = 0;
+    _tex_spec.push_back(bind);
+    return true;
+  }
+  else if (const ::ShaderType::Image *image = type->as_image()) {
+    ShaderImgSpec bind;
+    bind._id = arg_id;
+    bind._name = name;
+    bind._desired_type = image->get_texture_type();
+    bind._writable = image->is_writable();
+    _img_spec.push_back(bind);
+    return true;
+  }
+  else if (const ::ShaderType::Matrix *matrix = type->as_matrix()) {
+    if (matrix->get_num_columns() == 3 && matrix->get_num_rows() == 3) {
+      ShaderMatSpec bind;
+      bind._id = arg_id;
+      bind._piece = SMP_upper3x3;
+      bind._func = SMF_first;
+      bind._part[0] = SMO_mat_constant_x;
+      bind._arg[0] = name;
+      bind._dep[0] = SSD_general | SSD_shaderinputs | SSD_frame;
+      bind._part[1] = SMO_identity;
+      bind._arg[1] = nullptr;
+      bind._dep[1] = SSD_NONE;
+      _mat_spec.push_back(bind);
+      _mat_deps |= bind._dep[0];
+      return true;
+    }
+    else if (matrix->get_num_columns() == 4 && matrix->get_num_rows() == 4) {
+      ShaderMatSpec bind;
+      bind._id = arg_id;
+      bind._piece = SMP_whole;
+      bind._func = SMF_first;
+      bind._part[1] = SMO_identity;
+      bind._arg[1] = nullptr;
+      bind._dep[1] = SSD_NONE;
+
+      if (name->get_parent() != InternalName::get_root()) {
+        // It might be something like an attribute of a shader input, like a
+        // light parameter.  It might also just be a custom struct
+        // parameter.  We can't know yet, sadly.
+        if (name->get_basename() == "shadowMatrix") {
+          // Special exception for shadowMatrix, which is deprecated,
+          // because it includes the model transformation.  It is far more
+          // efficient to do that in the shader instead.
+          static bool warned = false;
+          if (!warned) {
+            warned = true;
+            shader_cat.warning()
+              << "light.shadowMatrix inputs are deprecated; use "
+                 "shadowViewMatrix instead, which transforms from view "
+                 "space instead of model space.\n";
+          }
+          bind._func = SMF_compose;
+          bind._part[0] = SMO_model_to_apiview;
+          bind._arg[0] = nullptr;
+          bind._dep[0] = SSD_general | SSD_transform;
+          bind._part[1] = SMO_mat_constant_x_attrib;
+          bind._arg[1] = name->get_parent()->append("shadowViewMatrix");
+          bind._dep[1] = SSD_general | SSD_shaderinputs | SSD_frame | SSD_view_transform;
+        } else {
+          bind._part[0] = SMO_mat_constant_x_attrib;
+          bind._arg[0] = name;
+          bind._dep[0] = SSD_general | SSD_shaderinputs | SSD_frame | SSD_view_transform;
+        }
+      } else {
+        bind._part[0] = SMO_mat_constant_x;
+        bind._arg[0] = name;
+        bind._dep[0] = SSD_general | SSD_shaderinputs | SSD_frame;
+      }
+      _mat_spec.push_back(bind);
+      _mat_deps |= bind._dep[0];
+      return true;
+    }
+  }
+  else if (type == ::ShaderType::float_type) {
+    if (name->get_parent() != InternalName::get_root()) {
+      // It might be something like an attribute of a shader input, like a
+      // light parameter.  It might also just be a custom struct
+      // parameter.  We can't know yet, sadly.
+      ShaderMatSpec bind;
+      bind._id = arg_id;
+      bind._piece = SMP_row3x1;
+      bind._func = SMF_first;
+      bind._part[0] = SMO_vec_constant_x_attrib;
+      bind._arg[0] = name;
+      // We need SSD_view_transform since some attributes (eg. light
+      // position) have to be transformed to view space.
+      bind._dep[0] = SSD_general | SSD_shaderinputs | SSD_frame | SSD_view_transform;
+      bind._part[1] = SMO_identity;
+      bind._arg[1] = nullptr;
+      bind._dep[1] = SSD_NONE;
+      _mat_spec.push_back(bind);
+      _mat_deps |= bind._dep[0];
+      return true;
+    }
+    else {
+      ShaderPtrSpec bind;
+      bind._id = arg_id;
+      bind._arg = name;
+      bind._dim[0] = 1;
+      bind._dim[1] = 1;
+      bind._dep[0] = SSD_general | SSD_shaderinputs | SSD_frame;
+      bind._dep[1] = SSD_NONE;
+      bind._type = SPT_float;
+      _ptr_spec.push_back(bind);
+      return true;
+    }
+  }
+
+  shader_cat.error()
+    << "Uniform parameter '" << name_str << "' has unsupported type "
+    << *type << "\n";
+  return false;
 }
 
 /**
@@ -2658,7 +3055,9 @@ do_load_source(ShaderModule::Stage stage, const std::string &source, BamCacheRec
  */
 bool Shader::
 check_modified() const {
-  for (ShaderModule *module : _modules) {
+  for (COWPT(ShaderModule) const &cow_module : _modules) {
+    const ShaderModule *module = cow_module.get_read_pointer();
+
     if (module->_record != nullptr && !module->_record->dependents_unchanged()) {
       return true;
     }

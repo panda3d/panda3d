@@ -14,15 +14,20 @@
 #ifndef SHADERMODULE_H
 #define SHADERMODULE_H
 
-#include "typedWritableReferenceCount.h"
+#include "copyOnWriteObject.h"
 #include "bamCacheRecord.h"
+#include "shaderType.h"
 
 /**
  * Represents a single shader module in some intermediate representation for
  * passing to the driver.  This could contain compiled bytecode, or in some
  * cases, preprocessed source code to be given directly to the driver.
+ *
+ * This class inherits from CopyOnWriteObject so that modules can safely be
+ * shared between multiple Shader objects, with a unique copy automatically
+ * being created if the Shader needs to manipulate the module.
  */
-class EXPCL_PANDA_SHADERPIPELINE ShaderModule : public TypedWritableReferenceCount {
+class EXPCL_PANDA_SHADERPIPELINE ShaderModule : public CopyOnWriteObject {
 PUBLISHED:
   enum class Stage {
     vertex,
@@ -31,6 +36,24 @@ PUBLISHED:
     geometry,
     fragment,
     compute,
+  };
+
+  /**
+   * Defines an interface variable.
+   */
+  struct Variable {
+  public:
+    int has_location() const { return _location >= 0; }
+    int get_location() const { return _location; }
+
+  PUBLISHED:
+    const ShaderType *type;
+    CPT_InternalName name;
+
+    MAKE_PROPERTY2(location, has_location, get_location);
+
+  public:
+    int _location;
   };
 
 public:
@@ -42,12 +65,40 @@ public:
   INLINE const Filename &get_source_filename() const;
   INLINE void set_source_filename(const Filename &);
 
-  static std::string format_stage(Stage stage);
+  size_t get_num_inputs() const;
+  const Variable &get_input(size_t i) const;
+  int find_input(CPT_InternalName name) const;
+
+  size_t get_num_outputs() const;
+  const Variable &get_output(size_t i) const;
+  int find_output(CPT_InternalName name) const;
+
+  size_t get_num_parameters() const;
+  const Variable &get_parameter(size_t i) const;
+  int find_parameter(CPT_InternalName name) const;
+
+public:
+  typedef pmap<CPT_InternalName, Variable *> VariablesByName;
+
+  virtual bool link_inputs(const ShaderModule *previous);
+  virtual void remap_parameter_locations(pmap<int, int> &remap);
 
 PUBLISHED:
   MAKE_PROPERTY(stage, get_stage);
+  MAKE_SEQ_PROPERTY(inputs, get_num_inputs, get_input);
+  MAKE_SEQ_PROPERTY(outputs, get_num_outputs, get_output);
 
   virtual std::string get_ir() const=0;
+
+public:
+  static std::string format_stage(Stage stage);
+
+  virtual void output(std::ostream &out) const;
+
+  virtual void write_datagram(BamWriter *manager, Datagram &dg) override;
+
+protected:
+  void fillin(DatagramIterator &scan, BamReader *manager) override;
 
 protected:
   Stage _stage;
@@ -56,13 +107,12 @@ protected:
   Filename _source_filename;
   //time_t _source_modified = 0;
 
+  typedef pvector<Variable> Variables;
+  Variables _inputs;
+  Variables _outputs;
+  Variables _parameters;
+
   friend class Shader;
-
-public:
-  virtual void write_datagram(BamWriter *manager, Datagram &dg) override;
-
-protected:
-  void fillin(DatagramIterator &scan, BamReader *manager) override;
 
 public:
   static TypeHandle get_class_type() {
@@ -84,6 +134,11 @@ public:
 private:
   static TypeHandle _type_handle;
 };
+
+INLINE std::ostream &operator << (std::ostream &out, const ShaderModule &module) {
+  module.output(out);
+  return out;
+}
 
 INLINE std::ostream &operator << (std::ostream &out, ShaderModule::Stage stage) {
   return out << ShaderModule::format_stage(stage);

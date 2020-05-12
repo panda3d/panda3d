@@ -24,6 +24,8 @@ public:
   ShaderModuleGlsl(Stage stage);
   virtual ~ShaderModuleGlsl();
 
+  virtual PT(CopyOnWriteObject) make_cow_copy() override;
+
   virtual std::string get_ir() const override;
 
   int add_included_file(Filename fn);

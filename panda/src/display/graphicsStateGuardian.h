@@ -337,7 +337,7 @@ public:
   virtual void clear(DrawableRegion *clearable);
 
   const LMatrix4 *fetch_specified_value(Shader::ShaderMatSpec &spec, int altered);
-  const LMatrix4 *fetch_specified_part(Shader::ShaderMatInput input, InternalName *name,
+  const LMatrix4 *fetch_specified_part(Shader::ShaderMatInput input, const InternalName *name,
                                        LMatrix4 &t, int index);
   const LMatrix4 *fetch_specified_member(const NodePath &np, CPT_InternalName member, LMatrix4 &t);
   PT(Texture) fetch_specified_texture(Shader::ShaderTexSpec &spec,
@@ -623,6 +623,7 @@ protected:
   bool _supports_compute_shaders;
   bool _supports_glsl;
   bool _supports_hlsl;
+  bool _supports_spir_v;
   bool _supports_framebuffer_multisample;
   bool _supports_framebuffer_blit;
 

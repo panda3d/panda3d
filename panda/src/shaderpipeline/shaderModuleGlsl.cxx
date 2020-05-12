@@ -26,6 +26,14 @@ ShaderModuleGlsl::
 ~ShaderModuleGlsl() {
 }
 
+/**
+ * Required to implement CopyOnWriteObject.
+ */
+PT(CopyOnWriteObject) ShaderModuleGlsl::
+make_cow_copy() {
+  return new ShaderModuleGlsl(*this);
+}
+
 std::string ShaderModuleGlsl::
 get_ir() const {
   return this->_raw_source;

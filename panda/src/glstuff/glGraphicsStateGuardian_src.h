@@ -166,6 +166,7 @@ typedef void (APIENTRYP PFNGLGETSHADERINFOLOGPROC) (GLuint shader, GLsizei bufSi
 typedef GLint (APIENTRYP PFNGLGETUNIFORMLOCATIONPROC) (GLuint program, const GLchar *name);
 typedef void (APIENTRYP PFNGLLINKPROGRAMPROC) (GLuint program);
 typedef void (APIENTRYP PFNGLSHADERSOURCEPROC_P) (GLuint shader, GLsizei count, const GLchar* const *string, const GLint *length);
+typedef void (APIENTRYP PFNGLSPECIALIZESHADERARBPROC) (GLuint shader, const GLchar *, GLuint, const GLuint *, const GLuint *);
 typedef void (APIENTRYP PFNGLUSEPROGRAMPROC) (GLuint program);
 typedef void (APIENTRYP PFNGLUNIFORM4FPROC) (GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3);
 typedef void (APIENTRYP PFNGLUNIFORM1IPROC) (GLint location, GLint v0);
@@ -993,8 +994,13 @@ public:
   PFNGLGETSHADERINFOLOGPROC _glGetShaderInfoLog;
   PFNGLGETUNIFORMLOCATIONPROC _glGetUniformLocation;
   PFNGLLINKPROGRAMPROC _glLinkProgram;
+  PFNGLSPECIALIZESHADERARBPROC _glSpecializeShader;
+  PFNGLSHADERBINARYPROC _glShaderBinary;
   PFNGLSHADERSOURCEPROC_P _glShaderSource;
   PFNGLUSEPROGRAMPROC  _glUseProgram;
+#ifndef OPENGLES
+  PFNGLPROGRAMUNIFORM1IPROC _glProgramUniform1i;
+#endif
   PFNGLUNIFORM4FPROC _glUniform4f;
   PFNGLUNIFORM1IPROC _glUniform1i;
   PFNGLUNIFORM1FVPROC _glUniform1fv;

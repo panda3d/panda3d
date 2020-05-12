@@ -246,6 +246,7 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   _supports_compute_shaders = false;
   _supports_glsl = false;
   _supports_hlsl = false;
+  _supports_spir_v = false;
 
   _supports_stencil = false;
   _supports_stencil_wrap = false;
@@ -961,7 +962,7 @@ fetch_specified_value(Shader::ShaderMatSpec &spec, int altered) {
  * See fetch_specified_value
  */
 const LMatrix4 *GraphicsStateGuardian::
-fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
+fetch_specified_part(Shader::ShaderMatInput part, const InternalName *name,
                      LMatrix4 &t, int index) {
   switch (part) {
   case Shader::SMO_identity: {

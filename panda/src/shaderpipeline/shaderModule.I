@@ -36,3 +36,90 @@ INLINE void ShaderModule::
 set_source_filename(const Filename &filename) {
   _source_filename = filename;
 }
+
+/**
+ * Returns the number of input variables in this shader stage.
+ */
+INLINE size_t ShaderModule::
+get_num_inputs() const {
+  return _inputs.size();
+}
+
+/**
+ * Returns the nth input variable in this shader stage.
+ */
+INLINE const ShaderModule::Variable &ShaderModule::
+get_input(size_t i) const {
+  return _inputs[i];
+}
+
+/**
+ * Returns the index of the input variable with the given name.
+ */
+INLINE int ShaderModule::
+find_input(CPT_InternalName name) const {
+  for (size_t i = 0; i < _inputs.size(); ++i) {
+    if (_inputs[i].name == name) {
+      return (int)i;
+    }
+  }
+  return -1;
+}
+
+/**
+ * Returns the number of output variables in this shader stage.
+ */
+INLINE size_t ShaderModule::
+get_num_outputs() const {
+  return _outputs.size();
+}
+
+/**
+ * Returns the nth output variable in this shader stage.
+ */
+INLINE const ShaderModule::Variable &ShaderModule::
+get_output(size_t i) const {
+  return _outputs[i];
+}
+
+/**
+ * Returns the index of the output variable with the given name.
+ */
+INLINE int ShaderModule::
+find_output(CPT_InternalName name) const {
+  for (size_t i = 0; i < _outputs.size(); ++i) {
+    if (_outputs[i].name == name) {
+      return (int)i;
+    }
+  }
+  return -1;
+}
+
+/**
+ * Returns the number of parameter variables in this shader stage.
+ */
+INLINE size_t ShaderModule::
+get_num_parameters() const {
+  return _parameters.size();
+}
+
+/**
+ * Returns the nth parameter variable in this shader stage.
+ */
+INLINE const ShaderModule::Variable &ShaderModule::
+get_parameter(size_t i) const {
+  return _parameters[i];
+}
+
+/**
+ * Returns the index of the parameter variable with the given name.
+ */
+INLINE int ShaderModule::
+find_parameter(CPT_InternalName name) const {
+  for (size_t i = 0; i < _parameters.size(); ++i) {
+    if (_parameters[i].name == name) {
+      return (int)i;
+    }
+  }
+  return -1;
+}

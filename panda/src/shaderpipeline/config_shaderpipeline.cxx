@@ -14,8 +14,13 @@
 #include "config_shaderpipeline.h"
 
 #include "shaderCompilerRegistry.h"
+#include "shaderCompilerGlslang.h"
 #include "shaderCompilerGlslPreProc.h"
 #include "shaderCompilerCg.h"
+
+#include "shaderModule.h"
+#include "shaderModuleGlsl.h"
+#include "shaderModuleSpirV.h"
 
 #include "dconfig.h"
 
@@ -41,7 +46,12 @@ init_libshaderpipeline() {
   }
   initialized = true;
 
+  ShaderModule::init_type();
+  ShaderModuleSpirV::init_type();
+  ShaderModuleGlsl::init_type();
+
   ShaderCompilerRegistry *reg = ShaderCompilerRegistry::get_global_ptr();
+  reg->register_compiler(new ShaderCompilerGlslang());
   reg->register_compiler(new ShaderCompilerGlslPreProc());
   reg->register_compiler(new ShaderCompilerCg());
 }

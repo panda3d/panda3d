@@ -27,6 +27,7 @@
 #include "clipPlaneAttrib.h"
 #include "bamCache.h"
 #include "shaderModuleGlsl.h"
+#include "shaderModuleSpirV.h"
 
 using std::dec;
 using std::hex;
@@ -276,9 +277,96 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
 
   // We compile and analyze the shader here, instead of in shader.cxx, to
   // avoid gobj getting a dependency on GL stuff.
-  if (!glsl_compile_and_link()) {
+  if (!compile_and_link()) {
     release_resources();
     s->_error_flag = true;
+    return;
+  }
+
+  // Is this a SPIR-V shader?  If so, we've already done the reflection.
+  if (true) {//s->get_language() != Shader::SL_GLSL) {
+    // Do we have unbound inputs?  Ask the driver for their locations.
+    size_t num_inputs = s->_mat_spec.size();
+    for (size_t i = 0; i < num_inputs;) {
+      Shader::ShaderMatSpec &spec = s->_mat_spec[i];
+
+      if (spec._id._seqno < 0) {
+        GLint p = _glgsg->_glGetUniformLocation(_glsl_program, spec._id._name.c_str());
+        if (p < 0) {
+          if (GLCAT.is_debug()) {
+            GLCAT.debug()
+              << "Unused uniform " << spec._id._name << " is removed\n";
+          }
+
+          // If p is still -1, then the driver says that the input is actually
+          // unused.  Remove it.
+          s->_mat_spec.erase(s->_mat_spec.begin() + i);
+          --num_inputs;
+          continue;
+        }
+
+        spec._id._seqno = p;
+
+        if (GLCAT.is_debug()) {
+          GLCAT.debug()
+            << "Active uniform " << spec._id._name << " is bound to location " << p << "\n";
+        }
+      }
+      ++i;
+    }
+
+    // Rebind the texture and image inputs.
+    size_t num_textures = s->_tex_spec.size();
+    for (size_t i = 0; i < num_textures;) {
+      const Shader::ShaderTexSpec &spec = s->_tex_spec[i];
+      nassertd(spec._id._seqno >= 0) continue;
+
+#ifndef OPENGLES
+      _glgsg->_glProgramUniform1i(_glsl_program, spec._id._seqno, (int)i);
+#endif
+      ++i;
+    }
+
+    size_t num_images = min(s->_img_spec.size(), (size_t)glgsg->_max_image_units);
+    for (size_t i = 0; i < num_images;) {
+      const Shader::ShaderImgSpec &spec = s->_img_spec[i];
+      nassertd(spec._id._seqno >= 0) continue;
+
+      if (GLCAT.is_debug()) {
+        GLCAT.debug()
+          << "Active uniform " << spec._id._name << " is bound to location " << spec._id._seqno << " (image binding " << i << ")\n";
+      }
+      ImageInput input = {spec._name, nullptr, spec._writable};
+      _glsl_img_inputs.push_back(std::move(input));
+
+#ifndef OPENGLES
+      _glgsg->_glProgramUniform1i(_glsl_program, spec._id._seqno, (int)i);
+#endif
+      ++i;
+    }
+
+    // Do we have a p3d_Color attribute?
+    for (auto it = s->_var_spec.begin(); it != s->_var_spec.end(); ++it) {
+      Shader::ShaderVarSpec &spec = *it;
+      if (spec._id._name == "p3d_Color") {
+        _color_attrib_index = spec._id._seqno;
+        break;
+      }
+    }
+
+    // Temporary hacks until array inputs are integrated into the rest of
+    // the shader input system.
+    //_transform_table_index = _shader->_transform_table_index;
+    //_transform_table_size = _shader->_transform_table_size;
+    //_slider_table_index = _shader->_slider_table_index;
+    //_slider_table_size = _shader->_slider_table_size;
+
+    if (_transform_table_size > 0 && _transform_table_index == -1) {
+      _transform_table_index = _glgsg->_glGetUniformLocation(_glsl_program, "p3d_TransformTable");
+    }
+    if (_slider_table_size > 0 && _slider_table_index == -1) {
+      _slider_table_index = _glgsg->_glGetUniformLocation(_glsl_program, "p3d_SliderTable");
+    }
     return;
   }
 
@@ -1926,20 +2014,18 @@ release_resources() {
     return;
   }
   if (_glsl_program != 0) {
-    GLSLShaders::const_iterator it;
-    for (it = _glsl_shaders.begin(); it != _glsl_shaders.end(); ++it) {
-      _glgsg->_glDetachShader(_glsl_program, *it);
+    for (Module &module : _modules) {
+      _glgsg->_glDetachShader(_glsl_program, module._handle);
     }
     _glgsg->_glDeleteProgram(_glsl_program);
     _glsl_program = 0;
   }
 
-  GLSLShaders::const_iterator it;
-  for (it = _glsl_shaders.begin(); it != _glsl_shaders.end(); ++it) {
-    _glgsg->_glDeleteShader(*it);
+  for (Module &module : _modules) {
+    _glgsg->_glDeleteShader(module._handle);
   }
 
-  _glsl_shaders.clear();
+  _modules.clear();
 
   _glgsg->report_my_gl_errors();
 }
@@ -1966,7 +2052,7 @@ void CLP(ShaderContext)::
 bind() {
   if (!_validated) {
     _glgsg->_glValidateProgram(_glsl_program);
-    glsl_report_program_errors(_glsl_program, false);
+    report_program_errors(_glsl_program, false);
     _validated = true;
   }
 
@@ -2951,21 +3037,27 @@ update_shader_buffer_bindings(ShaderContext *prev) {
  * This subroutine prints the infolog for a shader.
  */
 void CLP(ShaderContext)::
-glsl_report_shader_errors(GLuint shader, const ShaderModuleGlsl *module, bool fatal) {
+report_shader_errors(const Module &module, bool fatal) {
   char *info_log;
   GLint length = 0;
   GLint num_chars  = 0;
 
-  _glgsg->_glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
+  _glgsg->_glGetShaderiv(module._handle, GL_INFO_LOG_LENGTH, &length);
 
   if (length <= 1) {
     return;
   }
 
   info_log = (char *) alloca(length);
-  _glgsg->_glGetShaderInfoLog(shader, length, &num_chars, info_log);
+  _glgsg->_glGetShaderInfoLog(module._handle, length, &num_chars, info_log);
   if (strcmp(info_log, "Success.\n") == 0 ||
       strcmp(info_log, "No errors.\n") == 0) {
+    return;
+  }
+
+  const ShaderModuleGlsl *glsl_module = DCAST(ShaderModuleGlsl, module._module);
+  if (glsl_module == nullptr) {
+    GLCAT.error(false) << info_log;
     return;
   }
 
@@ -2981,14 +3073,14 @@ glsl_report_shader_errors(GLuint shader, const ShaderModuleGlsl *module, bool fa
     if (sscanf(line.c_str(), "ERROR: %d:%d: %n", &fileno, &lineno, &prefixlen) == 2
         && prefixlen > 0) {
 
-      Filename fn = module->get_filename_from_index(fileno);
+      Filename fn = glsl_module->get_filename_from_index(fileno);
       GLCAT.error(false)
         << "ERROR: " << fn << ":" << lineno << ": " << (line.c_str() + prefixlen) << "\n";
 
     } else if (sscanf(line.c_str(), "WARNING: %d:%d: %n", &fileno, &lineno, &prefixlen) == 2
                && prefixlen > 0) {
 
-      Filename fn = module->get_filename_from_index(fileno);
+      Filename fn = glsl_module->get_filename_from_index(fileno);
       GLCAT.warning(false)
         << "WARNING: " << fn << ":" << lineno << ": " << (line.c_str() + prefixlen) << "\n";
 
@@ -2996,7 +3088,7 @@ glsl_report_shader_errors(GLuint shader, const ShaderModuleGlsl *module, bool fa
                && prefixlen > 0) {
 
       // This is the format NVIDIA uses.
-      Filename fn = module->get_filename_from_index(fileno);
+      Filename fn = glsl_module->get_filename_from_index(fileno);
       GLCAT.error(false)
         << fn << "(" << lineno << ") : " << (line.c_str() + prefixlen) << "\n";
 
@@ -3004,7 +3096,7 @@ glsl_report_shader_errors(GLuint shader, const ShaderModuleGlsl *module, bool fa
                && prefixlen > 0) {
 
       // This is the format for Mesa's OpenGL ES 2 implementation.
-      Filename fn = module->get_filename_from_index(fileno);
+      Filename fn = glsl_module->get_filename_from_index(fileno);
       GLCAT.error(false)
         << fn << ":" << lineno << "(" << colno << "): " << (line.c_str() + prefixlen) << "\n";
 
@@ -3021,7 +3113,7 @@ glsl_report_shader_errors(GLuint shader, const ShaderModuleGlsl *module, bool fa
  * This subroutine prints the infolog for a program.
  */
 void CLP(ShaderContext)::
-glsl_report_program_errors(GLuint program, bool fatal) {
+report_program_errors(GLuint program, bool fatal) {
   char *info_log;
   GLint length = 0;
   GLint num_chars  = 0;
@@ -3050,16 +3142,8 @@ glsl_report_program_errors(GLuint program, bool fatal) {
  * Compiles the given ShaderModuleGlsl and attaches it to the program.
  */
 bool CLP(ShaderContext)::
-glsl_compile_shader(const ShaderModule *module) {
+attach_shader(const ShaderModule *module) {
   ShaderModule::Stage stage = module->get_stage();
-  if (GLCAT.is_debug()) {
-    GLCAT.debug()
-      << "Compiling GLSL " << stage << " shader "
-      << module->get_source_filename() << "\n";
-  }
-
-  const ShaderModuleGlsl *glsl_module;
-  DCAST_INTO_R(glsl_module, module, false);
 
   GLuint handle = 0;
   switch (stage) {
@@ -3106,28 +3190,45 @@ glsl_compile_shader(const ShaderModule *module) {
     _glgsg->_glObjectLabel(GL_SHADER, handle, name.size(), name.data());
   }
 
-  string text_str = module->get_ir();
-  const char* text = text_str.c_str();
-  _glgsg->_glShaderSource(handle, 1, &text, nullptr);
-  _glgsg->_glCompileShader(handle);
-  GLint status;
-  _glgsg->_glGetShaderiv(handle, GL_COMPILE_STATUS, &status);
+#ifndef OPENGLES
+  if (module->is_of_type(ShaderModuleSpirV::get_class_type())) {
+    // Load a SPIR-V binary.
+    if (GLCAT.is_debug()) {
+      GLCAT.debug()
+        << "Attaching SPIR-V " << stage << " shader binary "
+        << module->get_source_filename() << "\n";
+    }
+    ShaderModuleSpirV *spv = (ShaderModuleSpirV *)module;
+    _glgsg->_glShaderBinary(1, &handle, GL_SHADER_BINARY_FORMAT_SPIR_V_ARB,
+                            (const char *)spv->get_data(),
+                            spv->get_data_size() * sizeof(uint32_t));
+    _glgsg->_glSpecializeShader(handle, "main", 0, nullptr, nullptr);
+  } else
+#endif
+  if (module->is_of_type(ShaderModuleGlsl::get_class_type())) {
+    // Legacy preprocessed GLSL.
+    if (GLCAT.is_debug()) {
+      GLCAT.debug()
+        << "Compiling GLSL " << stage << " shader "
+        << module->get_source_filename() << "\n";
+    }
 
-  if (status != GL_TRUE) {
+    ShaderModuleGlsl *glsl_module = (ShaderModuleGlsl *)module;
+    std::string text = glsl_module->get_ir();
+    const char *text_str = text.c_str();
+    _glgsg->_glShaderSource(handle, 1, &text_str, nullptr);
+  } else {
     GLCAT.error()
-      << "An error occurred while compiling GLSL " << stage
-      << " shader " << module->get_source_filename() << ":\n";
-    glsl_report_shader_errors(handle, glsl_module, true);
-    _glgsg->_glDeleteShader(handle);
-    _glgsg->report_my_gl_errors();
+      << "Unsupported shader module type " << module->get_type() << "!\n";
     return false;
   }
 
+  // Don't check compile status yet, which would force the compile to complete
+  // synchronously.
   _glgsg->_glAttachShader(_glsl_program, handle);
-  _glsl_shaders.push_back(handle);
 
-  // There might be warnings, so report those.
-  glsl_report_shader_errors(handle, glsl_module, false);
+  Module moddef = {module, handle};
+  _modules.push_back(std::move(moddef));
 
   return true;
 }
@@ -3136,8 +3237,8 @@ glsl_compile_shader(const ShaderModule *module) {
  * This subroutine compiles a GLSL shader.
  */
 bool CLP(ShaderContext)::
-glsl_compile_and_link() {
-  _glsl_shaders.clear();
+compile_and_link() {
+  _modules.clear();
   _glsl_program = _glgsg->_glCreateProgram();
   if (!_glsl_program) {
     return false;
@@ -3174,17 +3275,25 @@ glsl_compile_and_link() {
 
   bool valid = true;
 
-  for (const ShaderModule *module : _shader->_modules) {
-    valid &= glsl_compile_shader(module);
+  for (COWPT(ShaderModule) const &cow_module : _shader->_modules) {
+    valid &= attach_shader(cow_module.get_read_pointer());
   }
 
   if (!valid) {
     return false;
   }
 
+  // Now compile the individual shaders.  NVIDIA drivers seem to cope better
+  // when we compile them all in one go.
+  for (Module &module : _modules) {
+    if (module._module->is_of_type(ShaderModuleGlsl::get_class_type())) {
+      _glgsg->_glCompileShader(module._handle);
+    }
+  }
+
   // There might be warnings, so report those.  GLSLShaders::const_iterator
-  // it; for (it = _glsl_shaders.begin(); it != _glsl_shaders.end(); ++it) {
-  // glsl_report_shader_errors(*it); }
+  // it; for (it = _modules.begin(); it != _modules.end(); ++it) {
+  // report_shader_errors(*it); }
 
   // Under OpenGL's compatibility profile, we have to make sure that we bind
   // something to attribute 0.  Make sure that this is the position array.
@@ -3228,22 +3337,51 @@ glsl_compile_and_link() {
 
   if (GLCAT.is_debug()) {
     GLCAT.debug()
-      << "Linking GLSL shader " << _shader->get_filename() << "\n";
+      << "Linking shader " << _shader->get_filename() << "\n";
   }
 
   _glgsg->_glLinkProgram(_glsl_program);
 
-  GLint status;
+  // Query the link status.  This will cause the application to wait for the
+  // link to be finished.
+  GLint status = GL_FALSE;
   _glgsg->_glGetProgramiv(_glsl_program, GL_LINK_STATUS, &status);
   if (status != GL_TRUE) {
-    GLCAT.error() << "An error occurred while linking GLSL shader "
+    // The link failed.  Is it because one of the shaders failed to compile?
+    bool any_failed = false;
+    for (Module &module : _modules) {
+      _glgsg->_glGetShaderiv(module._handle, GL_COMPILE_STATUS, &status);
+
+      if (status != GL_TRUE) {
+        GLCAT.error()
+          << "An error occurred while compiling shader module "
+          << module._module->get_source_filename() << ":\n";
+        report_shader_errors(module, true);
+        any_failed = true;
+      } else {
+        // Report any warnings.
+        report_shader_errors(module, false);
+      }
+
+      // Delete the shader, we don't need it any more.
+      _glgsg->_glDeleteShader(module._handle);
+    }
+    _modules.clear();
+
+    if (any_failed) {
+      // One or more of the shaders failed to compile, which would explain the
+      // link failure.  We know enough.
+      return false;
+    }
+
+    GLCAT.error() << "An error occurred while linking shader "
                   << _shader->get_filename() << "\n";
-    glsl_report_program_errors(_glsl_program, true);
+    report_program_errors(_glsl_program, true);
     return false;
   }
 
   // Report any warnings.
-  glsl_report_program_errors(_glsl_program, false);
+  report_program_errors(_glsl_program, false);
 
   if (retrieve_binary) {
     GLint length = 0;

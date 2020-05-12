@@ -8,6 +8,7 @@
 #include "shaderBuffer.cxx"
 #include "shaderContext.cxx"
 #include "shader.cxx"
+#include "shaderType.cxx"
 #include "simpleAllocator.cxx"
 #include "simpleLru.cxx"
 #include "sliderTable.cxx"

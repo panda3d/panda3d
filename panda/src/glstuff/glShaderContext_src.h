@@ -68,8 +68,12 @@ public:
 private:
   bool _validated;
   GLuint _glsl_program;
-  typedef pvector<GLuint> GLSLShaders;
-  GLSLShaders _glsl_shaders;
+  struct Module {
+    const ShaderModule *_module;
+    GLuint _handle;
+  };
+  typedef pvector<Module> Modules;
+  Modules _modules;
 
   WCPT(RenderState) _state_rs;
   CPT(TransformState) _modelview_transform;
@@ -118,10 +122,10 @@ private:
 
   bool _uses_standard_vertex_arrays;
 
-  void glsl_report_shader_errors(GLuint shader, const ShaderModuleGlsl *module, bool fatal);
-  void glsl_report_program_errors(GLuint program, bool fatal);
-  bool glsl_compile_shader(const ShaderModule *module);
-  bool glsl_compile_and_link();
+  void report_shader_errors(const Module &module, bool fatal);
+  void report_program_errors(GLuint program, bool fatal);
+  bool attach_shader(const ShaderModule *module);
+  bool compile_and_link();
   bool parse_and_set_short_hand_shader_vars(Shader::ShaderArgId &arg_id, GLenum param_type, GLint param_size, Shader *s);
   void release_resources();
 

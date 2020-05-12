@@ -30,6 +30,35 @@ ShaderModule::
 }
 
 /**
+ * Adjusts any input bindings necessary to be able to link up with the given
+ * previous stage.  Should return false to indicate that the link is not
+ * possible.
+ */
+bool ShaderModule::
+link_inputs(const ShaderModule *previous) {
+  // By default we need to do nothing special to link it up, as long as the
+  // modules have the same type.
+  return get_stage() > previous->get_stage()
+      && get_type() == previous->get_type();
+}
+
+/**
+ * Remaps parameters with a given location to a given other location.  Locations
+ * not included in the map remain untouched.
+ */
+void ShaderModule::
+remap_parameter_locations(pmap<int, int> &locations) {
+}
+
+/**
+ *
+ */
+void ShaderModule::
+output(std::ostream &out) const {
+  out << get_type() << " " << get_stage();
+}
+
+/**
  * Writes the contents of this object to the datagram for shipping out to a
  * Bam file.
  */

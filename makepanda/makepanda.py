@@ -814,6 +814,7 @@ if (COMPILER=="GCC"):
     SmartPkgEnable("OPUS",      "opusfile",  ("opusfile", "opus", "ogg"), ("ogg/ogg.h", "opus/opusfile.h", "opus"))
     SmartPkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
     SmartPkgEnable("PNG",       "libpng",    ("png"), "png.h", tool = "libpng-config")
+    SmartPkgEnable("GLSLANG",   "",          ("glslang", "SPIRV"), "glslang/Public/ShaderLang.h")
 
     # Copy freetype libraries to be specified after harfbuzz libraries as well,
     # because there's a circular dependency between the two libraries.
@@ -3702,7 +3703,7 @@ PyTargetAdd('p3display_ext_composite.obj', opts=OPTS, input='p3display_ext_compo
 # DIRECTORY: panda/src/shaderpipeline/
 #
 
-OPTS=['DIR:panda/src/shaderpipeline', 'BUILDING:PANDA']
+OPTS=['DIR:panda/src/shaderpipeline', 'BUILDING:PANDA', 'GLSLANG']
 TargetAdd('p3shaderpipeline_composite1.obj', opts=OPTS, input='p3shaderpipeline_composite1.cxx')
 
 OPTS=['DIR:panda/src/shaderpipeline']
@@ -3892,7 +3893,7 @@ TargetAdd('libp3dxml.in', opts=['IMOD:panda3d.core', 'ILIB:libp3dxml', 'SRCDIR:p
 OPTS=['DIR:panda/metalibs/panda', 'BUILDING:PANDA', 'JPEG', 'PNG', 'HARFBUZZ',
     'TIFF', 'OPENEXR', 'ZLIB', 'OPENSSL', 'FREETYPE', 'FFTW', 'ADVAPI', 'WINSOCK2',
     'SQUISH', 'NVIDIACG', 'VORBIS', 'OPUS', 'WINUSER', 'WINMM', 'WINGDI', 'IPHLPAPI',
-    'SETUPAPI', 'IOKIT']
+    'SETUPAPI', 'IOKIT', 'GLSLANG']
 
 TargetAdd('panda_panda.obj', opts=OPTS, input='panda.cxx')
 
@@ -4029,6 +4030,7 @@ PyTargetAdd('core.pyd', input='libp3recorder_igate.obj')
 PyTargetAdd('core.pyd', input='libp3pgraphnodes_igate.obj')
 PyTargetAdd('core.pyd', input='libp3pgraph_igate.obj')
 PyTargetAdd('core.pyd', input='libp3movies_igate.obj')
+PyTargetAdd('core.pyd', input='libp3shaderpipeline_igate.obj')
 PyTargetAdd('core.pyd', input='libp3grutil_igate.obj')
 PyTargetAdd('core.pyd', input='libp3chan_igate.obj')
 PyTargetAdd('core.pyd', input='libp3pstatclient_igate.obj')

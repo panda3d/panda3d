@@ -39,6 +39,7 @@ get_name() const {
  */
 ShaderLanguages ShaderCompilerGlslPreProc::
 get_languages() const {
+  //return ShaderLanguages();
   return {
     Shader::SL_GLSL
   };

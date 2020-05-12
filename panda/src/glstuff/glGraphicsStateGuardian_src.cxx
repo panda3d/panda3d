@@ -1726,6 +1726,30 @@ reset() {
 #endif
   _shader_caps._supports_glsl = _supports_glsl;
 
+  // Check for SPIR-V support.
+#ifndef OPENGLES
+  _supports_spir_v = has_extension("GL_ARB_gl_spirv");
+  if (_supports_spir_v) {
+    _glShaderBinary = (PFNGLSHADERBINARYPROC)
+      get_extension_func("glShaderBinary");
+    _glSpecializeShader = (PFNGLSPECIALIZESHADERARBPROC)
+      get_extension_func("glSpecializeShaderARB");
+
+    if (is_at_least_gl_version(4, 1) || has_extension("GL_ARB_separate_shader_objects")) {
+      _glProgramUniform1i = (PFNGLPROGRAMUNIFORM1IPROC)
+        get_extension_func("glProgramUniform1i");
+
+    } else if (has_extension("GL_EXT_separate_shader_objects") ||
+               has_extension("GL_EXT_direct_state_access")) {
+      _glProgramUniform1i = (PFNGLPROGRAMUNIFORM1IPROC)
+        get_extension_func("glProgramUniform1iEXT");
+
+    } else {
+      _supports_spir_v = false;
+    }
+  }
+#endif
+
   // Check for support for other types of shaders that can be used by Cg.
   _supports_basic_shaders = false;
 #if defined(HAVE_CG) && !defined(OPENGLES)
@@ -3438,6 +3462,36 @@ reset() {
       GLCAT.debug(false) << "\n";
     } else {
       GLCAT.debug() << "No program binary formats supported.\n";
+    }
+
+    // Also show supported shader binary formats.
+#ifdef OPENGLES
+    if (true) {
+#else
+    if (is_at_least_gl_version(4, 1) || has_extension("GL_ARB_ES2_compatibility")) {
+#endif
+      GLint num_binary_formats = 0;
+      glGetIntegerv(GL_NUM_SHADER_BINARY_FORMATS, &num_binary_formats);
+
+      if (num_binary_formats >= 0) {
+        GLCAT.debug()
+          << "Supported shader binary formats:\n";
+        GLCAT.debug() << " ";
+
+        GLenum *binary_formats = (GLenum *)alloca(sizeof(GLenum) * num_binary_formats);
+        glGetIntegerv(GL_SHADER_BINARY_FORMATS, (GLint *)binary_formats);
+
+        for (int i = 0; i < num_binary_formats; ++i) {
+          char number[16];
+          sprintf(number, "0x%04X", binary_formats[i]);
+          GLCAT.debug(false) << " " << number << "";
+        }
+        GLCAT.debug(false) << "\n";
+      } else {
+        GLCAT.debug() << "No program binary formats supported.\n";
+      }
+    } else {
+      GLCAT.debug() << "Shader binary loading not supported.\n";
     }
   }
 #endif

@@ -36,6 +36,7 @@
 #include "epvector.h"
 #include "asyncFuture.h"
 #include "shaderModule.h"
+#include "copyOnWritePointer.h"
 
 #ifdef HAVE_CG
 // I don't want to include the Cg header file into panda as a whole.  Instead,
@@ -414,7 +415,7 @@ public:
     ShaderArgId       _id;
     ShaderMatFunc     _func;
     ShaderMatInput    _part[2];
-    PT(InternalName)  _arg[2];
+    CPT(InternalName) _arg[2];
     int               _dep[2];
     int               _index;
     ShaderMatPiece    _piece;
@@ -422,11 +423,18 @@ public:
 
   struct ShaderTexSpec {
     ShaderArgId       _id;
-    PT(InternalName)  _name;
+    CPT(InternalName) _name;
     ShaderTexInput    _part;
     int               _stage;
     int               _desired_type;
     PT(InternalName)  _suffix;
+  };
+
+  struct ShaderImgSpec {
+    ShaderArgId       _id;
+    CPT(InternalName) _name;
+    int               _desired_type;
+    bool              _writable;
   };
 
   struct ShaderVarSpec {
@@ -441,7 +449,7 @@ public:
     ShaderArgId       _id;
     int               _dim[3]; //n_elements,rows,cols
     int               _dep[2];
-    PT(InternalName)  _arg;
+    CPT(InternalName) _arg;
     ShaderArgInfo     _info;
     ShaderPtrType     _type;
   };
@@ -567,13 +575,14 @@ public:
   pvector<ShaderPtrSpec> _ptr_spec;
   epvector<ShaderMatSpec> _mat_spec;
   pvector<ShaderTexSpec> _tex_spec;
+  pvector<ShaderImgSpec> _img_spec;
   pvector<ShaderVarSpec> _var_spec;
   int _mat_deps;
 
   bool _error_flag;
   ShaderFile _text;
 
-  typedef pvector<PT(ShaderModule)> Modules;
+  typedef pvector<COWPT(ShaderModule)> Modules;
   Modules _modules;
   int _module_mask = 0;
 
@@ -615,8 +624,13 @@ private:
   bool read(const ShaderFile &sfile, BamCacheRecord *record = nullptr);
   bool load(const ShaderFile &sbody, BamCacheRecord *record = nullptr);
   bool do_read_source(ShaderModule::Stage stage, const Filename &fn, BamCacheRecord *record);
-  bool do_read_source(ShaderModule::Stage stage, std::istream &in, BamCacheRecord *record);
+  bool do_read_source(ShaderModule::Stage stage, std::istream &in,
+                      const Filename &source_filename, BamCacheRecord *record);
   bool do_load_source(ShaderModule::Stage stage, const std::string &source, BamCacheRecord *record);
+
+  bool link();
+  bool bind_vertex_input(const InternalName *name, const ::ShaderType *type, int location);
+  bool bind_parameter(const InternalName *name, const ::ShaderType *type, int location);
 
   bool check_modified() const;
   ShaderCompiler *get_compiler(ShaderLanguage lang) const;
