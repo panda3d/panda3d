@@ -282,7 +282,7 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
   }
 
   // Is this a SPIR-V shader?  If so, we've already done the reflection.
-  if (true) {//s->get_language() != Shader::SL_GLSL) {
+  if (!_needs_reflection) {
     // Do we have unbound inputs?  Ask the driver for their locations.
     size_t num_inputs = s->_mat_spec.size();
     for (size_t i = 0; i < num_inputs;) {
@@ -3135,7 +3135,7 @@ attach_shader(const ShaderModule *module) {
   }
 
 #ifndef OPENGLES
-  if (module->is_of_type(ShaderModuleSpirV::get_class_type())) {
+  if (module->is_of_type(ShaderModuleSpirV::get_class_type()) && _glgsg->_supports_spir_v) {
     // Load a SPIR-V binary.
     if (GLCAT.is_debug()) {
       GLCAT.debug()
@@ -3161,6 +3161,8 @@ attach_shader(const ShaderModule *module) {
     std::string text = glsl_module->get_ir();
     const char *text_str = text.c_str();
     _glgsg->_glShaderSource(handle, 1, &text_str, nullptr);
+
+    _needs_reflection = true;
   } else {
     GLCAT.error()
       << "Unsupported shader module type " << module->get_type() << "!\n";

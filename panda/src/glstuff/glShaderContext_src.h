@@ -74,6 +74,7 @@ private:
   };
   typedef pvector<Module> Modules;
   Modules _modules;
+  bool _needs_reflection = false;
 
   WCPT(RenderState) _state_rs;
   CPT(TransformState) _modelview_transform;
