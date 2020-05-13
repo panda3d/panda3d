@@ -798,7 +798,7 @@ if (COMPILER=="GCC"):
     SmartPkgEnable("OPUS",      "opusfile",  ("opusfile", "opus", "ogg"), ("ogg/ogg.h", "opus/opusfile.h", "opus"))
     SmartPkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
     SmartPkgEnable("PNG",       "libpng",    ("png"), "png.h", tool = "libpng-config")
-    SmartPkgEnable("GLSLANG",   "",          ("glslang", "SPIRV"), "glslang/Public/ShaderLang.h")
+    SmartPkgEnable("GLSLANG",   "",          ("glslang", "SPIRV", "OSDependent", "OGLCompiler", "HLSL"), "glslang/Public/ShaderLang.h")
 
     # Copy freetype libraries to be specified after harfbuzz libraries as well,
     # because there's a circular dependency between the two libraries.
