@@ -58,7 +58,6 @@ bool CLP(ShaderContext)::
 parse_and_set_short_hand_shader_vars(Shader::ShaderArgId &arg_id, GLenum param_type, GLint param_size, Shader *objShader) {
   Shader::ShaderArgInfo p;
   p._id = arg_id;
-  p._cat = GLCAT;
 
   string basename(arg_id._name);
 
@@ -283,36 +282,6 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
 
   // Is this a SPIR-V shader?  If so, we've already done the reflection.
   if (!_needs_reflection) {
-    // Do we have unbound inputs?  Ask the driver for their locations.
-    size_t num_inputs = s->_mat_spec.size();
-    for (size_t i = 0; i < num_inputs;) {
-      Shader::ShaderMatSpec &spec = s->_mat_spec[i];
-
-      if (spec._id._seqno < 0) {
-        GLint p = _glgsg->_glGetUniformLocation(_glsl_program, spec._id._name.c_str());
-        if (p < 0) {
-          if (GLCAT.is_debug()) {
-            GLCAT.debug()
-              << "Unused uniform " << spec._id._name << " is removed\n";
-          }
-
-          // If p is still -1, then the driver says that the input is actually
-          // unused.  Remove it.
-          s->_mat_spec.erase(s->_mat_spec.begin() + i);
-          --num_inputs;
-          continue;
-        }
-
-        spec._id._seqno = p;
-
-        if (GLCAT.is_debug()) {
-          GLCAT.debug()
-            << "Active uniform " << spec._id._name << " is bound to location " << p << "\n";
-        }
-      }
-      ++i;
-    }
-
     // Rebind the texture and image inputs.
     size_t num_textures = s->_tex_spec.size();
     for (size_t i = 0; i < num_textures;) {
@@ -506,140 +475,14 @@ reflect_attribute(int i, char *name_buffer, GLsizei name_buflen) {
     return;
   }
 
-  Shader::ShaderArgId arg_id;
-  arg_id._name = name_buffer;
-  arg_id._seqno = p;
-
-  Shader::ShaderVarSpec bind;
-  bind._id = arg_id;
-  bind._name = nullptr;
-  bind._append_uv = -1;
-  bind._elements = 1;
-
-  // Check if this is an integer input- if so, we have to bind it differently.
-  switch (param_type) {
-  case GL_INT:
-  case GL_INT_VEC2:
-  case GL_INT_VEC3:
-  case GL_INT_VEC4:
-    bind._numeric_type = Shader::SPT_int;
-    break;
-  case GL_BOOL:
-  case GL_BOOL_VEC2:
-  case GL_BOOL_VEC3:
-  case GL_BOOL_VEC4:
-  case GL_UNSIGNED_INT:
-  case GL_UNSIGNED_INT_VEC2:
-  case GL_UNSIGNED_INT_VEC3:
-  case GL_UNSIGNED_INT_VEC4:
-    bind._numeric_type = Shader::SPT_uint;
-    break;
-#ifndef OPENGLES
-  case GL_DOUBLE:
-  case GL_DOUBLE_VEC2:
-  case GL_DOUBLE_VEC3:
-  case GL_DOUBLE_VEC4:
-    bind._numeric_type = Shader::SPT_double;
-    break;
-#endif
-  default:
-    bind._numeric_type = Shader::SPT_float;
+  if (strcmp(name_buffer, "p3d_Color") == 0) {
+    // Save the index, so we can apply special handling to this attrib.
+    _color_attrib_index = p;
   }
 
-  // Check if it has a p3d_ prefix - if so, assign special meaning.
-  if (strncmp(name_buffer, "p3d_", 4) == 0) {
-    string noprefix(name_buffer + 4);
-
-    if (noprefix == "Vertex") {
-      bind._name = InternalName::get_vertex();
-
-    } else if (noprefix == "Normal") {
-      bind._name = InternalName::get_normal();
-
-    } else if (noprefix == "Color") {
-      bind._name = InternalName::get_color();
-
-      // Save the index, so we can apply special handling to this attrib.
-      _color_attrib_index = p;
-
-    } else if (noprefix.substr(0, 7) == "Tangent") {
-      bind._name = InternalName::get_tangent();
-      if (noprefix.size() > 7) {
-        bind._append_uv = atoi(noprefix.substr(7).c_str());
-      }
-
-    } else if (noprefix.substr(0, 8) == "Binormal") {
-      bind._name = InternalName::get_binormal();
-      if (noprefix.size() > 8) {
-        bind._append_uv = atoi(noprefix.substr(8).c_str());
-      }
-
-    } else if (noprefix.substr(0, 13) == "MultiTexCoord") {
-      bind._name = InternalName::get_texcoord();
-      bind._append_uv = atoi(noprefix.substr(13).c_str());
-
-    } else {
-      GLCAT.error() << "Unrecognized vertex attrib '" << name_buffer << "'!\n";
-      return;
-    }
-  } else {
-    // Arbitrarily named attribute.
-    bind._name = InternalName::make(name_buffer);
-  }
-
-  // Get the number of bind points for arrays and matrices.
-  switch (param_type) {
-  case GL_FLOAT_MAT3:
-#ifndef OPENGLES
-  case GL_DOUBLE_MAT3:
-#endif
-    bind._elements = 3 * param_size;
-    break;
-
-  case GL_FLOAT_MAT4:
-#ifndef OPENGLES
-  case GL_DOUBLE_MAT4:
-#endif
-    bind._elements = 4 * param_size;
-    break;
-
-  default:
-    bind._elements = param_size;
-    break;
-  }
-
-  // Experimental feature.
-  if (gl_fixed_vertex_attrib_locations) {
-    GLint loc;
-    if (bind._name == InternalName::get_vertex()) {
-      loc = 0;
-    } else if (bind._name == InternalName::get_transform_weight()) {
-      loc = 1;
-    } else if (bind._name == InternalName::get_normal()) {
-      loc = 2;
-    } else if (bind._name == InternalName::get_color()) {
-      loc = 3;
-    } else if (bind._name == InternalName::get_transform_index()) {
-      loc = 7;
-    } else if (bind._name == InternalName::get_texcoord() &&
-               bind._append_uv >= 0 && bind._append_uv < 8) {
-      loc = 8 + bind._append_uv;
-    } else {
-      GLCAT.error()
-        << "Vertex attrib '" << name_buffer << "' not yet supported with "
-           "gl-fixed-vertex-attrib-locations!\n";
-      return;
-    }
-    if (loc != p) {
-      GLCAT.error()
-        << "Vertex attrib '" << name_buffer << "' was bound to the wrong slot!\n";
-      return;
-    }
-    // _glgsg->_glBindAttribLocation(_glsl_program, loc, name_buffer);
-    _enabled_attribs.set_range(loc, bind._elements);
-  }
-
-  _shader->_var_spec.push_back(bind);
+  CPT(InternalName) name = InternalName::make(name_buffer);
+  _shader->bind_vertex_input(name, get_param_type(param_type), p);
+  //FIXME matrices
 }
 
 /**
@@ -1804,6 +1647,181 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       GLCAT.warning() << "Ignoring unrecognized GLSL parameter array type!\n";
     }
   }
+}
+
+/**
+ * Converts an OpenGL type enum to a ShaderType.
+ */
+const ShaderType *CLP(ShaderContext)::
+get_param_type(GLenum param_type) {
+  switch (param_type) {
+  case GL_FLOAT:
+    return ShaderType::float_type;
+
+  case GL_FLOAT_VEC2:
+    return ShaderType::register_type(ShaderType::Vector(ShaderType::float_type, 2));
+
+  case GL_FLOAT_VEC3:
+    return ShaderType::register_type(ShaderType::Vector(ShaderType::float_type, 3));
+
+  case GL_FLOAT_VEC4:
+    return ShaderType::register_type(ShaderType::Vector(ShaderType::float_type, 4));
+
+  case GL_FLOAT_MAT2:
+    return ShaderType::register_type(ShaderType::Matrix(ShaderType::float_type, 2, 2));
+
+  case GL_FLOAT_MAT3:
+    return ShaderType::register_type(ShaderType::Matrix(ShaderType::float_type, 3, 3));
+
+  case GL_FLOAT_MAT4:
+    return ShaderType::register_type(ShaderType::Matrix(ShaderType::float_type, 4, 4));
+
+  case GL_FLOAT_MAT2x3:
+    return ShaderType::register_type(ShaderType::Matrix(ShaderType::float_type, 2, 3));
+
+  case GL_FLOAT_MAT2x4:
+    return ShaderType::register_type(ShaderType::Matrix(ShaderType::float_type, 2, 4));
+
+  case GL_FLOAT_MAT3x2:
+    return ShaderType::register_type(ShaderType::Matrix(ShaderType::float_type, 3, 2));
+
+  case GL_FLOAT_MAT3x4:
+    return ShaderType::register_type(ShaderType::Matrix(ShaderType::float_type, 3, 4));
+
+  case GL_FLOAT_MAT4x2:
+    return ShaderType::register_type(ShaderType::Matrix(ShaderType::float_type, 4, 2));
+
+  case GL_FLOAT_MAT4x3:
+    return ShaderType::register_type(ShaderType::Matrix(ShaderType::float_type, 4, 3));
+
+  case GL_INT:
+    return ShaderType::int_type;
+
+  case GL_INT_VEC2:
+    return ShaderType::register_type(ShaderType::Vector(ShaderType::int_type, 2));
+
+  case GL_INT_VEC3:
+    return ShaderType::register_type(ShaderType::Vector(ShaderType::int_type, 3));
+
+  case GL_INT_VEC4:
+    return ShaderType::register_type(ShaderType::Vector(ShaderType::int_type, 4));
+
+  case GL_BOOL:
+    return ShaderType::bool_type;
+
+  case GL_BOOL_VEC2:
+    return ShaderType::register_type(ShaderType::Vector(ShaderType::bool_type, 2));
+
+  case GL_BOOL_VEC3:
+    return ShaderType::register_type(ShaderType::Vector(ShaderType::bool_type, 3));
+
+  case GL_BOOL_VEC4:
+    return ShaderType::register_type(ShaderType::Vector(ShaderType::bool_type, 4));
+
+  case GL_UNSIGNED_INT:
+    return ShaderType::uint_type;
+
+  case GL_UNSIGNED_INT_VEC2:
+    return ShaderType::register_type(ShaderType::Vector(ShaderType::uint_type, 2));
+
+  case GL_UNSIGNED_INT_VEC3:
+    return ShaderType::register_type(ShaderType::Vector(ShaderType::uint_type, 3));
+
+  case GL_UNSIGNED_INT_VEC4:
+    return ShaderType::register_type(ShaderType::Vector(ShaderType::uint_type, 4));
+
+#ifndef OPENGLES
+  case GL_DOUBLE:
+    return ShaderType::double_type;
+
+  case GL_DOUBLE_VEC2:
+    return ShaderType::register_type(ShaderType::Vector(ShaderType::double_type, 2));
+
+  case GL_DOUBLE_VEC3:
+    return ShaderType::register_type(ShaderType::Vector(ShaderType::double_type, 3));
+
+  case GL_DOUBLE_VEC4:
+    return ShaderType::register_type(ShaderType::Vector(ShaderType::double_type, 4));
+
+  case GL_DOUBLE_MAT2:
+    return ShaderType::register_type(ShaderType::Matrix(ShaderType::double_type, 2, 2));
+
+  case GL_DOUBLE_MAT3:
+    return ShaderType::register_type(ShaderType::Matrix(ShaderType::double_type, 3, 3));
+
+  case GL_DOUBLE_MAT4:
+    return ShaderType::register_type(ShaderType::Matrix(ShaderType::double_type, 4, 4));
+
+  case GL_DOUBLE_MAT2x3:
+    return ShaderType::register_type(ShaderType::Matrix(ShaderType::double_type, 2, 3));
+
+  case GL_DOUBLE_MAT2x4:
+    return ShaderType::register_type(ShaderType::Matrix(ShaderType::double_type, 2, 4));
+
+  case GL_DOUBLE_MAT3x2:
+    return ShaderType::register_type(ShaderType::Matrix(ShaderType::double_type, 3, 2));
+
+  case GL_DOUBLE_MAT3x4:
+    return ShaderType::register_type(ShaderType::Matrix(ShaderType::double_type, 3, 4));
+
+  case GL_DOUBLE_MAT4x2:
+    return ShaderType::register_type(ShaderType::Matrix(ShaderType::double_type, 4, 2));
+
+  case GL_DOUBLE_MAT4x3:
+    return ShaderType::register_type(ShaderType::Matrix(ShaderType::double_type, 4, 3));
+#endif
+
+#ifndef OPENGLES
+  case GL_INT_SAMPLER_1D:
+  case GL_UNSIGNED_INT_SAMPLER_1D:
+  case GL_SAMPLER_1D:
+  case GL_SAMPLER_1D_SHADOW:
+    return ShaderType::register_type(ShaderType::SampledImage(Texture::TT_1d_texture));
+
+  case GL_INT_SAMPLER_1D_ARRAY:
+  case GL_UNSIGNED_INT_SAMPLER_1D_ARRAY:
+  case GL_SAMPLER_1D_ARRAY:
+    return ShaderType::register_type(ShaderType::SampledImage(Texture::TT_1d_texture_array));
+#endif
+
+  case GL_INT_SAMPLER_2D:
+  case GL_UNSIGNED_INT_SAMPLER_2D:
+  case GL_SAMPLER_2D:
+  case GL_SAMPLER_2D_SHADOW:
+    return ShaderType::register_type(ShaderType::SampledImage(Texture::TT_2d_texture));
+
+  case GL_INT_SAMPLER_3D:
+  case GL_UNSIGNED_INT_SAMPLER_3D:
+  case GL_SAMPLER_3D:
+    return ShaderType::register_type(ShaderType::SampledImage(Texture::TT_3d_texture));
+
+  case GL_INT_SAMPLER_CUBE:
+  case GL_UNSIGNED_INT_SAMPLER_CUBE:
+  case GL_SAMPLER_CUBE:
+  case GL_SAMPLER_CUBE_SHADOW:
+    return ShaderType::register_type(ShaderType::SampledImage(Texture::TT_cube_map));
+
+  case GL_INT_SAMPLER_2D_ARRAY:
+  case GL_UNSIGNED_INT_SAMPLER_2D_ARRAY:
+  case GL_SAMPLER_2D_ARRAY:
+  case GL_SAMPLER_2D_ARRAY_SHADOW:
+    return ShaderType::register_type(ShaderType::SampledImage(Texture::TT_2d_texture_array));
+
+#ifndef OPENGLES
+  case GL_INT_SAMPLER_CUBE_MAP_ARRAY:
+  case GL_UNSIGNED_INT_SAMPLER_CUBE_MAP_ARRAY:
+  case GL_SAMPLER_CUBE_MAP_ARRAY:
+  case GL_SAMPLER_CUBE_MAP_ARRAY_SHADOW:
+    return ShaderType::register_type(ShaderType::SampledImage(Texture::TT_cube_map_array));
+
+  case GL_INT_SAMPLER_BUFFER:
+  case GL_UNSIGNED_INT_SAMPLER_BUFFER:
+  case GL_SAMPLER_BUFFER:
+    return ShaderType::register_type(ShaderType::SampledImage(Texture::TT_buffer_texture));
+#endif  // !OPENGLES
+  }
+
+  return nullptr;
 }
 
 /**

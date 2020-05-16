@@ -116,6 +116,10 @@ PUBLISHED:
   INLINE bool has_fullpath() const;
   INLINE const Filename &get_fullpath() const;
 
+  INLINE bool has_stage(Stage stage) const;
+  INLINE CPT(ShaderModule) get_module(Stage stage) const;
+  INLINE PT(ShaderModule) modify_module(Stage stage);
+
   INLINE bool get_cache_compiled_shader() const;
   INLINE void set_cache_compiled_shader(bool flag);
 
@@ -236,54 +240,6 @@ public:
     STO_light_i_shadow_map,
   };
 
-  enum ShaderArgClass {
-    SAC_scalar,
-    SAC_vector,
-    SAC_matrix,
-    SAC_sampler,
-    SAC_array,
-    SAC_unknown,
-  };
-
-  enum ShaderArgType {
-    SAT_scalar,
-    SAT_vec1,
-    SAT_vec2,
-    SAT_vec3,
-    SAT_vec4,
-    SAT_mat1x1,
-    SAT_mat1x2,
-    SAT_mat1x3,
-    SAT_mat1x4,
-    SAT_mat2x1,
-    SAT_mat2x2,
-    SAT_mat2x3,
-    SAT_mat2x4,
-    SAT_mat3x1,
-    SAT_mat3x2,
-    SAT_mat3x3,
-    SAT_mat3x4,
-    SAT_mat4x1,
-    SAT_mat4x2,
-    SAT_mat4x3,
-    SAT_mat4x4,
-    SAT_sampler1d,
-    SAT_sampler2d,
-    SAT_sampler3d,
-    SAT_sampler2d_array,
-    SAT_sampler_cube,
-    SAT_sampler_buffer,
-    SAT_sampler_cube_array,
-    SAT_unknown
-};
-
-  enum ShaderArgDir {
-    SAD_in,
-    SAD_out,
-    SAD_inout,
-    SAD_unknown,
-  };
-
   enum ShaderMatPiece {
     SMP_whole,
     SMP_transpose,
@@ -351,13 +307,8 @@ public:
 
   struct ShaderArgInfo {
     ShaderArgId       _id;
-    ShaderArgClass    _class;
-    ShaderArgClass    _subclass;
-    ShaderArgType     _type;
-    ShaderArgDir      _direction;
-    bool              _varying;
+    const ::ShaderType *_type;
     ShaderPtrType     _numeric_type;
-    NotifyCategory   *_cat;
   };
 
   // Container structure for data of parameters ShaderPtrSpec.
@@ -519,12 +470,7 @@ public:
 public:
   void cp_report_error(ShaderArgInfo &arg, const std::string &msg);
   bool cp_errchk_parameter_words(ShaderArgInfo &arg, int len);
-  bool cp_errchk_parameter_in(ShaderArgInfo &arg);
-  bool cp_errchk_parameter_ptr(ShaderArgInfo &p);
-  bool cp_errchk_parameter_varying(ShaderArgInfo &arg);
-  bool cp_errchk_parameter_uniform(ShaderArgInfo &arg);
   bool cp_errchk_parameter_float(ShaderArgInfo &arg, int lo, int hi);
-  bool cp_errchk_parameter_sampler(ShaderArgInfo &arg);
   bool cp_parse_eol(ShaderArgInfo &arg,
                     vector_string &pieces, int &next);
   bool cp_parse_delimiter(ShaderArgInfo &arg,
@@ -537,13 +483,7 @@ public:
   void cp_add_mat_spec(ShaderMatSpec &spec);
   size_t cp_get_mat_cache_size() const;
 
-#ifdef HAVE_CG
-  void cg_recurse_parameters(CGparameter parameter,
-                          const ShaderType &type,
-                          bool &success);
-#endif
-
-  bool compile_parameter(ShaderArgInfo &p, int *arg_dim);
+  bool compile_parameter(ShaderArgInfo &p);
 
   void clear_parameters();
 
@@ -557,9 +497,8 @@ public:
 
 private:
 #ifdef HAVE_CG
-  ShaderArgClass cg_parameter_class(CGparameter p);
-  ShaderArgType cg_parameter_type(CGparameter p);
-  ShaderArgDir cg_parameter_dir(CGparameter p);
+  const ::ShaderType *cg_scalar_type(int type);
+  const ::ShaderType *cg_parameter_type(CGparameter p);
 
   CGprogram cg_compile_entry_point(const char *entry, const ShaderCaps &caps,
                                    CGcontext context, ShaderType type);
@@ -602,7 +541,7 @@ public:
 
   typedef pvector<COWPT(ShaderModule)> Modules;
   Modules _modules;
-  int _module_mask = 0;
+  uint32_t _module_mask = 0;
 
 protected:
   ShaderFile _filename;
@@ -646,6 +585,7 @@ private:
                       const Filename &source_filename, BamCacheRecord *record);
   bool do_load_source(ShaderModule::Stage stage, const std::string &source, BamCacheRecord *record);
 
+public:
   bool link();
   bool bind_vertex_input(const InternalName *name, const ::ShaderType *type, int location);
   bool bind_parameter(const InternalName *name, const ::ShaderType *type, int location);
@@ -653,7 +593,6 @@ private:
   bool check_modified() const;
   ShaderCompiler *get_compiler(ShaderLanguage lang) const;
 
-public:
   ~Shader();
 
 public:

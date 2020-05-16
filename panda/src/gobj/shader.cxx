@@ -63,68 +63,8 @@ static bool has_cg_header(const std::string &shader_text) {
  */
 void Shader::
 cp_report_error(ShaderArgInfo &p, const string &msg) {
-
-  string vstr;
-  if (p._varying) {
-    vstr = "varying ";
-  } else {
-    vstr = "uniform ";
-  }
-
-  string dstr = "unknown ";
-  if (p._direction == SAD_in) {
-    dstr = "in ";
-  } else if (p._direction == SAD_out) {
-    dstr = "out ";
-  } else if (p._direction == SAD_inout) {
-    dstr = "inout ";
-  }
-
-  string tstr = "invalid ";
-  switch (p._type) {
-  case SAT_scalar:    tstr = "scalar "; break;
-  case SAT_vec1:      tstr = "vec1 "; break;
-  case SAT_vec2:      tstr = "vec2 "; break;
-  case SAT_vec3:      tstr = "vec3 "; break;
-  case SAT_vec4:      tstr = "vec4 "; break;
-  case SAT_mat1x1:    tstr = "mat1x1 "; break;
-  case SAT_mat1x2:    tstr = "mat1x2 "; break;
-  case SAT_mat1x3:    tstr = "mat1x3 "; break;
-  case SAT_mat1x4:    tstr = "mat1x4 "; break;
-  case SAT_mat2x1:    tstr = "mat2x1 "; break;
-  case SAT_mat2x2:    tstr = "mat2x2 "; break;
-  case SAT_mat2x3:    tstr = "mat2x3 "; break;
-  case SAT_mat2x4:    tstr = "mat2x4 "; break;
-  case SAT_mat3x1:    tstr = "mat3x1 "; break;
-  case SAT_mat3x2:    tstr = "mat3x2 "; break;
-  case SAT_mat3x3:    tstr = "mat3x3 "; break;
-  case SAT_mat3x4:    tstr = "mat3x4 "; break;
-  case SAT_mat4x1:    tstr = "mat4x1 "; break;
-  case SAT_mat4x2:    tstr = "mat4x2 "; break;
-  case SAT_mat4x3:    tstr = "mat4x3 "; break;
-  case SAT_mat4x4:    tstr = "mat4x4 "; break;
-  case SAT_sampler1d: tstr = "sampler1D "; break;
-  case SAT_sampler2d: tstr = "sampler2D "; break;
-  case SAT_sampler3d: tstr = "sampler3D "; break;
-  case SAT_sampler2d_array:   tstr = "sampler2DArray "; break;
-  case SAT_sampler_cube:      tstr = "samplerCUBE "; break;
-  case SAT_sampler_buffer:    tstr = "samplerBUF "; break;
-  case SAT_sampler_cube_array:tstr = "samplerCUBEARRAY "; break;
-  default:                    tstr = "unknown "; break;
-  }
-
-  string cstr = "invalid";
-  switch (p._class) {
-  case SAC_scalar:  cstr = "scalar ";  break;
-  case SAC_vector:  cstr = "vector ";  break;
-  case SAC_matrix:  cstr = "matrix ";  break;
-  case SAC_sampler: cstr = "sampler "; break;
-  case SAC_array:   cstr = "array ";   break;
-  default:          cstr = "unknown "; break;
-  }
-
   Filename fn = get_filename(p._id._type);
-  p._cat->error() << fn << ": " << vstr << dstr << tstr <<
+  shader_cat.error() << fn << ": " << *p._type << ' ' <<
     p._id._name << ": " << msg << "\n";
 }
 
@@ -145,48 +85,6 @@ cp_errchk_parameter_words(ShaderArgInfo &p, int len)
 }
 
 /**
- * Make sure the provided parameter has the 'in' direction.  If not, print
- * error message and return false.
- */
-bool Shader::
-cp_errchk_parameter_in(ShaderArgInfo &p)
-{
-  if (p._direction != SAD_in) {
-    cp_report_error(p, "parameter should be declared 'in'");
-    return false;
-  }
-  return true;
-}
-
-/**
- * Make sure the provided parameter has the correct variance.  If not, print
- * error message and return false.
- */
-bool Shader::
-cp_errchk_parameter_varying(ShaderArgInfo &p)
-{
-  if (!p._varying) {
-    cp_report_error(p, "parameter should be declared 'varying'");
-    return false;
-  }
-  return true;
-}
-
-/**
- * Make sure the provided parameter has the correct variance.  If not, print
- * error message and return false.
- */
-bool Shader::
-cp_errchk_parameter_uniform(ShaderArgInfo &p)
-{
-  if (p._varying) {
-    cp_report_error(p, "parameter should be declared 'uniform'");
-    return false;
-  }
-  return true;
-}
-
-/**
  * Make sure the provided parameter has a floating point type.  If not, print
  * error message and return false.
  */
@@ -194,64 +92,21 @@ bool Shader::
 cp_errchk_parameter_float(ShaderArgInfo &p, int lo, int hi)
 {
   int nfloat;
-  switch (p._type) {
-  case SAT_scalar: nfloat = 1; break;
-  case SAT_vec2: nfloat = 2; break;
-  case SAT_vec3: nfloat = 3; break;
-  case SAT_vec4: nfloat = 4; break;
-  case SAT_mat3x3: nfloat = 9; break;
-  case SAT_mat4x4: nfloat = 16; break;
-  default: nfloat = 0; break;
+  if (p._type->as_scalar()) {
+    nfloat = 1;
   }
-  if ((nfloat < lo)||(nfloat > hi)) {
+  else if (const ::ShaderType::Vector *vector = p._type->as_vector()) {
+    nfloat = vector->get_num_elements();
+  }
+  else if (const ::ShaderType::Matrix *matrix = p._type->as_matrix()) {
+    nfloat = matrix->get_num_rows() * matrix->get_num_columns();
+  }
+  else {
+    nfloat = 0;
+  }
+  if (nfloat < lo || nfloat > hi) {
     string msg = "wrong type for parameter:";
     cp_report_error(p, msg);
-    return false;
-  }
-  return true;
-}
-
-/**
- *
- */
-bool Shader::
-cp_errchk_parameter_ptr(ShaderArgInfo &p) {
-  switch (p._class) {
-  case SAC_scalar: return true;
-  case SAC_vector: return true;
-  case SAC_matrix: return true;
-  case SAC_array:
-    switch (p._subclass) {
-    case SAC_scalar: return true;
-    case SAC_vector: return true;
-    case SAC_matrix: return true;
-    default:
-      string msg = "unsupported array subclass.";
-      cp_report_error(p, msg);
-      return false;
-    }
-  default:
-    string msg = "unsupported class.";
-    cp_report_error(p,msg);
-    return false;
-  }
-}
-
-/**
- * Make sure the provided parameter has a texture type.  If not, print error
- * message and return false.
- */
-bool Shader::
-cp_errchk_parameter_sampler(ShaderArgInfo &p)
-{
-  if ((p._type!=SAT_sampler1d)&&
-      (p._type!=SAT_sampler2d)&&
-      (p._type!=SAT_sampler3d)&&
-      (p._type!=SAT_sampler2d_array)&&
-      (p._type!=SAT_sampler_cube)&&
-      (p._type!=SAT_sampler_buffer)&&
-      (p._type!=SAT_sampler_cube_array)) {
-    cp_report_error(p, "parameter should have a 'sampler' type");
     return false;
   }
   return true;
@@ -667,93 +522,6 @@ cp_get_mat_cache_size() const {
   return size;
 }
 
-#ifdef HAVE_CG
-/**
- *
- */
-void Shader::
-cg_recurse_parameters(CGparameter parameter, const ShaderType &type,
-                      bool &success) {
-
-  if (parameter == 0) {
-    return;
-  }
-
-  do {
-    if (cgIsParameterReferenced(parameter)) {
-      int                arg_dim[]    = {1,0,0};
-      ShaderArgDir       arg_dir      = cg_parameter_dir(parameter);
-      ShaderArgType      arg_type     = cg_parameter_type(parameter);
-      ShaderArgClass     arg_class    = cg_parameter_class(parameter);
-      ShaderArgClass     arg_subclass = arg_class;
-
-      CGenum vbl = cgGetParameterVariability(parameter);
-      CGtype base_type = cgGetParameterBaseType(parameter);
-
-      if ((vbl==CG_VARYING)||(vbl==CG_UNIFORM)) {
-        switch (cgGetParameterType(parameter)) {
-          case CG_STRUCT:
-            cg_recurse_parameters(
-              cgGetFirstStructParameter(parameter), type, success);
-            break;
-
-          case CG_ARRAY:
-            arg_type = cg_parameter_type(cgGetArrayParameter(parameter, 0));
-            arg_subclass = cg_parameter_class(cgGetArrayParameter(parameter, 0));
-
-            arg_dim[0]  = cgGetArraySize(parameter, 0);
-
-            // Fall through
-          default: {
-            arg_dim[1] = cgGetParameterRows(parameter);
-            arg_dim[2] = cgGetParameterColumns(parameter);
-
-            ShaderArgInfo p;
-            p._id._name   = cgGetParameterName(parameter);
-            p._id._type   = type;
-            p._id._seqno  = -1;
-            p._class      = arg_class;
-            p._subclass   = arg_subclass;
-            p._type       = arg_type;
-            p._direction  = arg_dir;
-            p._varying    = (vbl == CG_VARYING);
-            p._cat        = shader_cat.get_safe_ptr();
-
-            //NB. Cg does have a CG_DOUBLE type, but at least for the ARB
-            // profiles and GLSL profiles it just maps to float.
-            switch (base_type) {
-            case CG_UINT:
-            case CG_ULONG:
-            case CG_USHORT:
-            case CG_UCHAR:
-            case CG_BOOL:
-              p._numeric_type = SPT_uint;
-              break;
-            case CG_INT:
-            case CG_LONG:
-            case CG_SHORT:
-            case CG_CHAR:
-              p._numeric_type = SPT_int;
-              break;
-            default:
-              p._numeric_type = SPT_float;
-              break;
-            }
-
-            success &= compile_parameter(p, arg_dim);
-            break;
-          }
-        }
-      }
-    } else if (shader_cat.is_debug()) {
-      shader_cat.debug()
-        << "Parameter " << cgGetParameterName(parameter)
-        << " is unreferenced within shader " << get_filename(type) << "\n";
-    }
-  } while((parameter = cgGetNextParameter(parameter))!= 0);
-}
-#endif  // HAVE_CG
-
 /**
  * Analyzes a parameter and decides how to bind the parameter to some part of
  * panda's internal state.  Updates one of the bind arrays to cause the
@@ -763,7 +531,7 @@ cg_recurse_parameters(CGparameter parameter, const ShaderType &type,
  * error messages.
  */
 bool Shader::
-compile_parameter(ShaderArgInfo &p, int *arg_dim) {
+compile_parameter(ShaderArgInfo &p) {
   if (p._id._name.size() == 0) return true;
   if (p._id._name[0] == '$') return true;
 
@@ -786,81 +554,8 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     return true;
   }
 
-  // Implement vtx parameters - the varying kind.
-  if (pieces[0] == "vtx") {
-    if ((!cp_errchk_parameter_in(p)) ||
-        (!cp_errchk_parameter_varying(p)) ||
-        (!cp_errchk_parameter_float(p, 1, 4))) {
-      return false;
-    }
-    ShaderVarSpec bind;
-    bind._id = p._id;
-    bind._append_uv = -1;
-    bind._numeric_type = p._numeric_type;
-
-    if (pieces.size() == 2) {
-      if (pieces[1] == "position") {
-        bind._name = InternalName::get_vertex();
-        bind._append_uv = -1;
-        _var_spec.push_back(bind);
-        return true;
-      }
-      if (pieces[1].substr(0, 8) == "texcoord") {
-        bind._name = InternalName::get_texcoord();
-        if (pieces[1].size() > 8) {
-          bind._append_uv = atoi(pieces[1].c_str() + 8);
-        }
-        _var_spec.push_back(bind);
-        return true;
-      }
-      if (pieces[1].substr(0, 7) == "tangent") {
-        bind._name = InternalName::get_tangent();
-        if (pieces[1].size() > 7) {
-          bind._append_uv = atoi(pieces[1].c_str() + 7);
-        }
-        _var_spec.push_back(bind);
-        return true;
-      }
-      if (pieces[1].substr(0, 8) == "binormal") {
-        bind._name = InternalName::get_binormal();
-        if (pieces[1].size() > 8) {
-          bind._append_uv = atoi(pieces[1].c_str() + 8);
-        }
-        _var_spec.push_back(bind);
-        return true;
-      }
-    } else if (pieces.size() == 3) {
-      if (pieces[1] == "transform") {
-        if (pieces[2] == "blend") {
-          bind._name = InternalName::get_transform_blend();
-          _var_spec.push_back(bind);
-          return true;
-        }
-        if (pieces[2] == "index") {
-          bind._name = InternalName::get_transform_index();
-          _var_spec.push_back(bind);
-          return true;
-        }
-        if (pieces[2] == "weight") {
-          bind._name = InternalName::get_transform_weight();
-          _var_spec.push_back(bind);
-          return true;
-        }
-      }
-    }
-
-    bind._name = InternalName::get_root();
-    for (size_t i = 1; i < pieces.size(); ++i) {
-      bind._name = bind._name->append(pieces[i]);
-    }
-    _var_spec.push_back(bind);
-    return true;
-  }
-
   if (pieces[0] == "mat" && pieces[1] == "shadow") {
     if ((!cp_errchk_parameter_words(p,3))||
-        (!cp_errchk_parameter_in(p)) ||
-        (!cp_errchk_parameter_uniform(p))||
         (!cp_errchk_parameter_float(p,16,16))) {
       return false;
     }
@@ -971,10 +666,6 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
       (pieces[0]=="col2")||
       (pieces[0]=="col3")) {
 
-    if ((!cp_errchk_parameter_in(p)) ||
-        (!cp_errchk_parameter_uniform(p)))
-      return false;
-
     ShaderMatSpec bind;
     bind._id = p._id;
     bind._piece = SMP_whole;
@@ -999,14 +690,17 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     else if (pieces[0]=="col1")    bind._piece = SMP_col1;
     else if (pieces[0]=="col2")    bind._piece = SMP_col2;
     else if (pieces[0]=="col3")    bind._piece = SMP_col3;
-    if ((bind._piece == SMP_whole)||(bind._piece == SMP_transpose)) {
-      if (p._type == SAT_mat3x3) {
-        if (!cp_errchk_parameter_float(p, 9, 9)) return false;
-
-        if (bind._piece == SMP_transpose) {
-          bind._piece = SMP_transpose3x3;
+    if (bind._piece == SMP_whole || bind._piece == SMP_transpose) {
+      if (const ::ShaderType::Matrix *matrix = p._type->as_matrix()) {
+        if (matrix->get_num_rows() == 3 && matrix->get_num_columns() == 3) {
+          if (bind._piece == SMP_transpose) {
+            bind._piece = SMP_transpose3x3;
+          } else {
+            bind._piece = SMP_upper3x3;
+          }
         } else {
-          bind._piece = SMP_upper3x3;
+          cp_errchk_parameter_float(p, 9, 9);
+          return false;
         }
       } else if (!cp_errchk_parameter_float(p, 16, 16)) {
         return false;
@@ -1034,9 +728,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
   // Special parameter: attr_material or attr_color
 
   if (pieces[0] == "attr") {
-    if ((!cp_errchk_parameter_words(p,2)) ||
-        (!cp_errchk_parameter_in(p)) ||
-        (!cp_errchk_parameter_uniform(p))) {
+    if (!cp_errchk_parameter_words(p, 2)) {
       return false;
     }
     ShaderMatSpec bind;
@@ -1140,9 +832,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
   }
 
   if (pieces[0] == "color") {
-    if ((!cp_errchk_parameter_words(p,1)) ||
-        (!cp_errchk_parameter_in(p)) ||
-        (!cp_errchk_parameter_uniform(p))) {
+    if (!cp_errchk_parameter_words(p, 1)) {
       return false;
     }
     ShaderMatSpec bind;
@@ -1155,8 +845,6 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
 
   if (pieces[0] == "alight") {
     if ((!cp_errchk_parameter_words(p,2))||
-        (!cp_errchk_parameter_in(p)) ||
-        (!cp_errchk_parameter_uniform(p))||
         (!cp_errchk_parameter_float(p,3,4))) {
       return false;
     }
@@ -1175,8 +863,6 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
 
   if (pieces[0] == "satten") {
     if ((!cp_errchk_parameter_words(p,2))||
-        (!cp_errchk_parameter_in(p)) ||
-        (!cp_errchk_parameter_uniform(p))||
         (!cp_errchk_parameter_float(p,4,4))) {
       return false;
     }
@@ -1194,9 +880,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
   }
 
   if ((pieces[0]=="dlight")||(pieces[0]=="plight")||(pieces[0]=="slight")) {
-    if ((!cp_errchk_parameter_in(p)) ||
-        (!cp_errchk_parameter_uniform(p))||
-        (!cp_errchk_parameter_float(p,16,16))) {
+    if (!cp_errchk_parameter_float(p,16,16)) {
       return false;
     }
     ShaderMatSpec bind;
@@ -1235,8 +919,6 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
 
   if (pieces[0] == "texmat") {
     if ((!cp_errchk_parameter_words(p,2))||
-        (!cp_errchk_parameter_in(p)) ||
-        (!cp_errchk_parameter_uniform(p))||
         (!cp_errchk_parameter_float(p,16,16))) {
       return false;
     }
@@ -1256,8 +938,6 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
 
   if (pieces[0] == "texscale") {
     if ((!cp_errchk_parameter_words(p,2))||
-        (!cp_errchk_parameter_in(p)) ||
-        (!cp_errchk_parameter_uniform(p))||
         (!cp_errchk_parameter_float(p,3,4))) {
       return false;
     }
@@ -1277,8 +957,6 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
 
   if (pieces[0] == "texcolor") {
     if ((!cp_errchk_parameter_words(p,2))||
-        (!cp_errchk_parameter_in(p)) ||
-        (!cp_errchk_parameter_uniform(p))||
         (!cp_errchk_parameter_float(p,3,4))) {
       return false;
     }
@@ -1298,8 +976,6 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
 
   if (pieces[0] == "plane") {
     if ((!cp_errchk_parameter_words(p,2))||
-        (!cp_errchk_parameter_in(p)) ||
-        (!cp_errchk_parameter_uniform(p))||
         (!cp_errchk_parameter_float(p,4,4))) {
       return false;
     }
@@ -1318,8 +994,6 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
 
   if (pieces[0] == "clipplane") {
     if ((!cp_errchk_parameter_words(p,2))||
-        (!cp_errchk_parameter_in(p)) ||
-        (!cp_errchk_parameter_uniform(p))||
         (!cp_errchk_parameter_float(p,4,4))) {
       return false;
     }
@@ -1339,9 +1013,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
   // Keywords to access unusual parameters.
 
   if (pieces[0] == "sys") {
-    if ((!cp_errchk_parameter_words(p, 2)) ||
-        (!cp_errchk_parameter_in(p)) ||
-        (!cp_errchk_parameter_uniform(p))) {
+    if (!cp_errchk_parameter_words(p, 2)) {
       return false;
     }
     ShaderMatSpec bind;
@@ -1384,11 +1056,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
   // Keywords to access textures.
 
   if (pieces[0] == "tex") {
-    if ((!cp_errchk_parameter_in(p)) ||
-        (!cp_errchk_parameter_uniform(p)) ||
-        (!cp_errchk_parameter_sampler(p)))
-      return false;
-    if ((pieces.size() != 2)&&(pieces.size() != 3)) {
+    if (pieces.size() != 2 && pieces.size() != 3) {
       cp_report_error(p, "Invalid parameter name");
       return false;
     }
@@ -1397,15 +1065,11 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     bind._name = nullptr;
     bind._stage = atoi(pieces[1].c_str());
     bind._part = STO_stage_i;
-    switch (p._type) {
-    case SAT_sampler1d:      bind._desired_type = Texture::TT_1d_texture; break;
-    case SAT_sampler2d:      bind._desired_type = Texture::TT_2d_texture; break;
-    case SAT_sampler3d:      bind._desired_type = Texture::TT_3d_texture; break;
-    case SAT_sampler2d_array:bind._desired_type = Texture::TT_2d_texture_array; break;
-    case SAT_sampler_cube:   bind._desired_type = Texture::TT_cube_map; break;
-    case SAT_sampler_buffer: bind._desired_type = Texture::TT_buffer_texture; break;
-    case SAT_sampler_cube_array:bind._desired_type = Texture::TT_cube_map_array; break;
-    default:
+
+    if (const ::ShaderType::SampledImage *image = p._type->as_sampled_image()) {
+      bind._desired_type = image->get_texture_type();
+    }
+    else {
       cp_report_error(p, "Invalid type for a tex-parameter");
       return false;
     }
@@ -1419,10 +1083,6 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
   }
 
   if (pieces[0] == "shadow") {
-    if ((!cp_errchk_parameter_in(p)) ||
-        (!cp_errchk_parameter_uniform(p)) ||
-        (!cp_errchk_parameter_sampler(p)))
-      return false;
     if (pieces.size() != 2) {
       cp_report_error(p, "Invalid parameter name");
       return false;
@@ -1432,10 +1092,11 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     bind._name = nullptr;
     bind._stage = atoi(pieces[1].c_str());
     bind._part = STO_light_i_shadow_map;
-    switch (p._type) {
-    case SAT_sampler2d:      bind._desired_type = Texture::TT_2d_texture; break;
-    case SAT_sampler_cube:   bind._desired_type = Texture::TT_cube_map; break;
-    default:
+
+    if (const ::ShaderType::SampledImage *image = p._type->as_sampled_image()) {
+      bind._desired_type = image->get_texture_type();
+    }
+    else {
       cp_report_error(p, "Invalid type for a shadow-parameter");
       return false;
     }
@@ -1447,8 +1108,6 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
 
   if (pieces[0] == "texpad") {
     if ((!cp_errchk_parameter_words(p,2)) ||
-        (!cp_errchk_parameter_in(p)) ||
-        (!cp_errchk_parameter_uniform(p))||
         (!cp_errchk_parameter_float(p,3,4))) {
       return false;
     }
@@ -1466,8 +1125,6 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
 
   if (pieces[0] == "texpix") {
     if ((!cp_errchk_parameter_words(p,2)) ||
-        (!cp_errchk_parameter_in(p)) ||
-        (!cp_errchk_parameter_uniform(p))||
         (!cp_errchk_parameter_float(p,2,4))) {
       return false;
     }
@@ -1488,23 +1145,8 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     return true;
   }
 
-  if (pieces[0] == "l") {
-    // IMPLEMENT THE ERROR CHECKING
-    return true; // Cg handles this automatically.
-  }
-
-  if (pieces[0] == "o") {
-    // IMPLEMENT THE ERROR CHECKING
-    return true; // Cg handles this automatically.
-  }
-
   // Fetch uniform parameters without prefix
-
-  if ((!cp_errchk_parameter_in(p)) ||
-      (!cp_errchk_parameter_uniform(p))) {
-    return false;
-  }
-  bool k_prefix  = false;
+  bool k_prefix = false;
 
   // solve backward compatibility issue
   if (pieces[0] == "k") {
@@ -1514,18 +1156,37 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
 
   PT(InternalName) kinputname = InternalName::make(struct_name + basename);
 
-  switch (p._class) {
-  case SAC_vector:
-  case SAC_matrix:
-  case SAC_scalar:
-  case SAC_array: {
-    if (!cp_errchk_parameter_ptr(p))
-      return false;
+  if (const ::ShaderType::SampledImage *image = p._type->as_sampled_image()) {
+    ShaderTexSpec bind;
+    bind._id = p._id;
+    bind._name = kinputname;
+    bind._part = STO_named_input;
+    bind._desired_type = Texture::TT_cube_map_array;
+    _tex_spec.push_back(bind);
+    return true;
+  }
 
+  int arg_dim[3] = {1, 1, 1};
+  const ::ShaderType *base_type = p._type;
+  if (const ::ShaderType::Array *array = base_type->as_array()) {
+    arg_dim[0] = array->get_num_elements();
+    base_type = array->get_element_type();
+  }
+  if (const ::ShaderType::Matrix *matrix = base_type->as_matrix()) {
+    arg_dim[1] = matrix->get_num_rows();
+    arg_dim[2] = matrix->get_num_columns();
+    base_type = matrix->get_base_type();
+  }
+  else if (const ::ShaderType::Vector *vector = base_type->as_vector()) {
+    arg_dim[2] = vector->get_num_elements();
+    base_type = matrix->get_base_type();
+  }
+
+  if (base_type->as_scalar() != nullptr) {
     ShaderPtrSpec bind;
-    bind._id      = p._id;
-    bind._arg     = kinputname;
-    bind._info    = p;
+    bind._id = p._id;
+    bind._arg = kinputname;
+    bind._info = p;
 
     // We specify SSD_frame because a PTA may be modified by the app from
     // frame to frame, and we have no way to know.  So, we must respecify a
@@ -1533,87 +1194,12 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     bind._dep[0]  = SSD_general | SSD_shaderinputs | SSD_frame;
     bind._dep[1]  = SSD_NONE;
 
-    memcpy(bind._dim,arg_dim,sizeof(int)*3);
+    memcpy(bind._dim, arg_dim, sizeof(int)*3);
 
     // if dim[0] = -1,  glShaderContext will not check the param size
     if (k_prefix) bind._dim[0] = -1;
     _ptr_spec.push_back(bind);
     return true;
-  }
-
-  case SAC_sampler: {
-    switch (p._type) {
-    case SAT_sampler1d: {
-      ShaderTexSpec bind;
-      bind._id = p._id;
-      bind._name = kinputname;
-      bind._part = STO_named_input;
-      bind._desired_type = Texture::TT_1d_texture;
-      _tex_spec.push_back(bind);
-      return true;
-    }
-    case SAT_sampler2d: {
-      ShaderTexSpec bind;
-      bind._id = p._id;
-      bind._name = kinputname;
-      bind._part = STO_named_input;
-      bind._desired_type = Texture::TT_2d_texture;
-      _tex_spec.push_back(bind);
-      return true;
-    }
-    case SAT_sampler3d: {
-      ShaderTexSpec bind;
-      bind._id = p._id;
-      bind._name = kinputname;
-      bind._part = STO_named_input;
-      bind._desired_type = Texture::TT_3d_texture;
-      _tex_spec.push_back(bind);
-      return true;
-    }
-    case SAT_sampler2d_array: {
-      ShaderTexSpec bind;
-      bind._id = p._id;
-      bind._name = kinputname;
-      bind._part = STO_named_input;
-      bind._desired_type = Texture::TT_2d_texture_array;
-      _tex_spec.push_back(bind);
-      return true;
-    }
-    case SAT_sampler_cube: {
-      ShaderTexSpec bind;
-      bind._id = p._id;
-      bind._name = kinputname;
-      bind._part = STO_named_input;
-      bind._desired_type = Texture::TT_cube_map;
-      _tex_spec.push_back(bind);
-      return true;
-    }
-    case SAT_sampler_buffer: {
-      ShaderTexSpec bind;
-      bind._id = p._id;
-      bind._name = kinputname;
-      bind._part = STO_named_input;
-      bind._desired_type = Texture::TT_buffer_texture;
-      _tex_spec.push_back(bind);
-      return true;
-    }
-    case SAT_sampler_cube_array: {
-      ShaderTexSpec bind;
-      bind._id = p._id;
-      bind._name = kinputname;
-      bind._part = STO_named_input;
-      bind._desired_type = Texture::TT_cube_map_array;
-      _tex_spec.push_back(bind);
-      return true;
-    }
-    default:
-      cp_report_error(p, "invalid type for non-prefix parameter");
-      return false;
-    }
-  }
-  default:
-    cp_report_error(p, "invalid class for non-prefix parameter");
-    return false;
   }
 
   cp_report_error(p, "unrecognized parameter name");
@@ -1670,99 +1256,107 @@ set_default_caps(const ShaderCaps &caps) {
 /**
  *
  */
-Shader::ShaderArgType Shader::
+const ::ShaderType *Shader::
+cg_scalar_type(int type) {
+  switch (type) {
+  case CG_UINT:
+  case CG_ULONG:
+  case CG_USHORT:
+  case CG_UCHAR:
+    return ::ShaderType::uint_type;
+
+  case CG_BOOL:
+    return ::ShaderType::bool_type;
+
+  case CG_INT:
+  case CG_LONG:
+  case CG_SHORT:
+  case CG_CHAR:
+    return ::ShaderType::int_type;
+
+  default:
+    return ::ShaderType::float_type;
+  }
+  return nullptr;
+}
+
+/**
+ *
+ */
+const ::ShaderType *Shader::
 cg_parameter_type(CGparameter p) {
   switch (cgGetParameterClass(p)) {
-  case CG_PARAMETERCLASS_SCALAR: return SAT_scalar;
+  case CG_PARAMETERCLASS_SCALAR:
+    return cg_scalar_type(cgGetParameterType(p));
+
   case CG_PARAMETERCLASS_VECTOR:
-    switch (cgGetParameterColumns(p)) {
-    case 1:  return SAT_vec1;
-    case 2:  return SAT_vec2;
-    case 3:  return SAT_vec3;
-    case 4:  return SAT_vec4;
-    default: return SAT_unknown;
-    }
+    return ::ShaderType::register_type(::ShaderType::Vector(
+      cg_scalar_type(cgGetParameterBaseType(p)),
+      cgGetParameterColumns(p)));
+
   case CG_PARAMETERCLASS_MATRIX:
-    switch (cgGetParameterRows(p)) {
-    case 1:
-      switch (cgGetParameterColumns(p)) {
-      case 1:  return SAT_mat1x1;
-      case 2:  return SAT_mat1x2;
-      case 3:  return SAT_mat1x3;
-      case 4:  return SAT_mat1x4;
-      default: return SAT_unknown;
+    return ::ShaderType::register_type(::ShaderType::Matrix(
+      cg_scalar_type(cgGetParameterBaseType(p)),
+      cgGetParameterRows(p),
+      cgGetParameterColumns(p)));
+
+  case CG_PARAMETERCLASS_STRUCT:
+    {
+      ::ShaderType::Struct type;
+      CGparameter member = cgGetFirstStructParameter(p);
+      while (member) {
+        type.add_member(
+          cg_parameter_type(member),
+          InternalName::make(cgGetParameterName(p))
+        );
+        member = cgGetNextParameter(member);
       }
-    case 2:
-      switch (cgGetParameterColumns(p)) {
-      case 1:  return SAT_mat2x1;
-      case 2:  return SAT_mat2x2;
-      case 3:  return SAT_mat2x3;
-      case 4:  return SAT_mat2x4;
-      default: return SAT_unknown;
-      }
-    case 3:
-      switch (cgGetParameterColumns(p)) {
-      case 1:  return SAT_mat3x1;
-      case 2:  return SAT_mat3x2;
-      case 3:  return SAT_mat3x3;
-      case 4:  return SAT_mat3x4;
-      default: return SAT_unknown;
-      }
-    case 4:
-      switch (cgGetParameterColumns(p)) {
-      case 1:  return SAT_mat4x1;
-      case 2:  return SAT_mat4x2;
-      case 3:  return SAT_mat4x3;
-      case 4:  return SAT_mat4x4;
-      default: return SAT_unknown;
-      }
-    default: return SAT_unknown;
+      return ::ShaderType::register_type(std::move(type));
     }
+
+  case CG_PARAMETERCLASS_ARRAY:
+    return ::ShaderType::register_type(::ShaderType::Array(
+      cg_parameter_type(cgGetArrayParameter(p, 0)),
+      cgGetArraySize(p, 0)));
+
   case CG_PARAMETERCLASS_SAMPLER:
-    switch (cgGetParameterType(p)) {
-    case CG_SAMPLER1D:      return Shader::SAT_sampler1d;
-    case CG_SAMPLER2D:      return Shader::SAT_sampler2d;
-    case CG_SAMPLER3D:      return Shader::SAT_sampler3d;
-    case CG_SAMPLER2DARRAY: return Shader::SAT_sampler2d_array;
-    case CG_SAMPLERCUBE:    return Shader::SAT_sampler_cube;
-    case CG_SAMPLERBUF:     return Shader::SAT_sampler_buffer;
-    case CG_SAMPLERCUBEARRAY:return Shader::SAT_sampler_cube_array;
-    // CG_SAMPLER1DSHADOW and CG_SAMPLER2DSHADOW
-    case 1313:              return Shader::SAT_sampler1d;
-    case 1314:              return Shader::SAT_sampler2d;
-    default: return SAT_unknown;
+    {
+      Texture::TextureType texture_type;
+      switch (cgGetParameterType(p)) {
+      case CG_SAMPLER1D:
+      case 1313: // CG_SAMPLER1DSHADOW
+        texture_type = Texture::TT_1d_texture;
+        break;
+      case CG_SAMPLER2D:
+      case 1314: // CG_SAMPLER2DSHADOW
+        texture_type = Texture::TT_2d_texture;
+        break;
+      case CG_SAMPLER3D:
+        texture_type = Texture::TT_3d_texture;
+        break;
+      case CG_SAMPLER2DARRAY:
+        texture_type = Texture::TT_2d_texture_array;
+        break;
+      case CG_SAMPLERCUBE:
+        texture_type = Texture::TT_cube_map;
+        break;
+      case CG_SAMPLERBUF:
+        texture_type = Texture::TT_buffer_texture;
+        break;
+      case CG_SAMPLERCUBEARRAY:
+        texture_type = Texture::TT_cube_map_array;
+        break;
+      default:
+        return nullptr;
+      }
+      return ::ShaderType::register_type(::ShaderType::SampledImage(texture_type));
     }
-  case CG_PARAMETERCLASS_ARRAY: return SAT_unknown;
+
   default:
-    return SAT_unknown;
+    break;
   }
-}
 
-/**
- *
- */
-Shader::ShaderArgClass Shader::cg_parameter_class(CGparameter p) {
-  switch (cgGetParameterClass(p)) {
-  case CG_PARAMETERCLASS_SCALAR:  return Shader::SAC_scalar;
-  case CG_PARAMETERCLASS_VECTOR:  return Shader::SAC_vector;
-  case CG_PARAMETERCLASS_MATRIX:  return Shader::SAC_matrix;
-  case CG_PARAMETERCLASS_SAMPLER: return Shader::SAC_sampler;
-  case CG_PARAMETERCLASS_ARRAY:   return Shader::SAC_array;
-  default:                        return Shader::SAC_unknown;
-  }
-}
-
-/**
- *
- */
-Shader::ShaderArgDir Shader::
-cg_parameter_dir(CGparameter p) {
-  switch (cgGetParameterDirection(p)) {
-  case CG_IN:    return Shader::SAD_in;
-  case CG_OUT:   return Shader::SAD_out;
-  case CG_INOUT: return Shader::SAD_inout;
-  default:       return Shader::SAD_unknown;
-  }
+  return nullptr;
 }
 
 /**
@@ -2069,7 +1663,59 @@ bool Shader::
 cg_analyze_entry_point(CGprogram prog, ShaderType type) {
   bool success = true;
 
-  cg_recurse_parameters(cgGetFirstParameter(prog, CG_PROGRAM), type, success);
+  CGparameter parameter = cgGetFirstParameter(prog, CG_PROGRAM);
+  while (parameter) {
+    if (cgIsParameterReferenced(parameter)) {
+      const ::ShaderType *arg_type = cg_parameter_type(parameter);
+
+      CGenum vbl = cgGetParameterVariability(parameter);
+      CGtype base_type = cgGetParameterBaseType(parameter);
+
+      if (cgGetParameterDirection(parameter) == CG_IN) {
+        CPT(InternalName) name = InternalName::make(cgGetParameterName(parameter));
+
+        if (vbl == CG_VARYING && type == ST_vertex) {
+          success &= bind_vertex_input(name, arg_type, -1);
+        }
+        else if (vbl == CG_UNIFORM) {
+          ShaderArgInfo p;
+          p._id._name   = cgGetParameterName(parameter);
+          p._id._type   = type;
+          p._id._seqno  = -1;
+          p._type       = arg_type;
+
+          //NB. Cg does have a CG_DOUBLE type, but at least for the ARB
+          // profiles and GLSL profiles it just maps to float.
+          switch (base_type) {
+          case CG_UINT:
+          case CG_ULONG:
+          case CG_USHORT:
+          case CG_UCHAR:
+          case CG_BOOL:
+            p._numeric_type = SPT_uint;
+            break;
+          case CG_INT:
+          case CG_LONG:
+          case CG_SHORT:
+          case CG_CHAR:
+            p._numeric_type = SPT_int;
+            break;
+          default:
+            p._numeric_type = SPT_float;
+            break;
+          }
+          success &= compile_parameter(p);
+        }
+      }
+    } else if (shader_cat.is_debug()) {
+      shader_cat.debug()
+        << "Parameter " << cgGetParameterName(parameter)
+        << " is unreferenced within shader " << get_filename(type) << "\n";
+    }
+
+    parameter = cgGetNextParameter(parameter);
+  }
+
   return success;
 }
 
@@ -2595,6 +2241,8 @@ load(const ShaderFile &sbody, BamCacheRecord *record) {
   }
 
   if (!link()) {
+    shader_cat.error()
+      << "Failed to link shader.\n";
     return false;
   }
 
@@ -2699,6 +2347,18 @@ do_read_source(ShaderModule::Stage stage, std::istream &in,
     module->set_source_filename(source_filename);
   }
 
+  if (has_stage(stage)) {
+    shader_cat.error()
+      << "Shader already has a module with stage " << stage << ".\n";
+    return false;
+  }
+
+  if (_module_mask > (1u << (uint32_t)stage)) {
+    shader_cat.error()
+      << "Shader modules must be loaded in increasing stage order.\n";
+    return false;
+  }
+
   // Link its inputs up with the previous stage.
   if (!_modules.empty()) {
     if (!module->link_inputs(_modules.back().get_read_pointer())) {
@@ -2723,7 +2383,7 @@ do_read_source(ShaderModule::Stage stage, std::istream &in,
   }
 
   _modules.push_back(std::move(module));
-  _module_mask |= (1 << (int)stage);
+  _module_mask |= (1u << (uint32_t)stage);
 
   return true;
 }
@@ -2820,42 +2480,80 @@ bind_vertex_input(const InternalName *name, const ::ShaderType *type, int locati
   bind._id._seqno = location;
   bind._name = nullptr;
   bind._append_uv = -1;
+
+  //FIXME: other types, matrices
   bind._elements = 1;
   bind._numeric_type = SPT_float;
 
+  if (shader_cat.is_debug()) {
+    shader_cat.debug()
+      << "Binding vertex input " << name_str << " with type " << *type
+      << " and location " << location << "\n";
+  }
+
   // Check if it has a p3d_ prefix - if so, assign special meaning.
-  if (name_str.compare(0, 4, "p3d_") == 0) {
+  if (_language == Shader::SL_GLSL && name_str.compare(0, 4, "p3d_") == 0) {
+    // GLSL-style vertex input.
     if (name_str == "p3d_Vertex") {
       bind._name = InternalName::get_vertex();
-
-    } else if (name_str == "p3d_Normal") {
+    }
+    else if (name_str == "p3d_Normal") {
       bind._name = InternalName::get_normal();
-
-    } else if (name_str == "p3d_Color") {
+    }
+    else if (name_str == "p3d_Color") {
       bind._name = InternalName::get_color();
-
-    } else if (name_str.compare(4, 7, "Tangent") == 0) {
+    }
+    else if (name_str.compare(4, 7, "Tangent") == 0) {
       bind._name = InternalName::get_tangent();
-      if (name_str.size() > 7) {
-        bind._append_uv = atoi(name_str.substr(7).c_str());
+      if (name_str.size() > 11) {
+        bind._append_uv = atoi(name_str.substr(11).c_str());
       }
-
-    } else if (name_str.compare(4, 8, "Binormal") == 0) {
+    }
+    else if (name_str.compare(4, 8, "Binormal") == 0) {
       bind._name = InternalName::get_binormal();
-      if (name_str.size() > 8) {
-        bind._append_uv = atoi(name_str.substr(8).c_str());
+      if (name_str.size() > 12) {
+        bind._append_uv = atoi(name_str.substr(12).c_str());
       }
-
-    } else if (name_str.compare(4, 13, "MultiTexCoord") == 0) {
+    }
+    else if (name_str.compare(4, 13, "MultiTexCoord") == 0 && name_str.size() > 17) {
       bind._name = InternalName::get_texcoord();
-      bind._append_uv = atoi(name_str.substr(13).c_str());
-
-    } else {
+      bind._append_uv = atoi(name_str.substr(17).c_str());
+    }
+    else {
       shader_cat.error()
         << "Unrecognized built-in vertex input name '" << name_str << "'!\n";
       return false;
     }
-  } else {
+  }
+  else if (_language == Shader::SL_Cg && name_str.compare(0, 4, "vtx_") == 0) {
+    // Cg-style vertex input.
+    if (name_str == "vtx_position") {
+      bind._name = InternalName::get_vertex();
+      bind._append_uv = -1;
+    }
+    else if (name_str.substr(4, 8) == "texcoord") {
+      bind._name = InternalName::get_texcoord();
+      if (name_str.size() > 12) {
+        bind._append_uv = atoi(name_str.c_str() + 12);
+      }
+    }
+    else if (name_str.substr(4, 7) == "tangent") {
+      bind._name = InternalName::get_tangent();
+      if (name_str.size() > 11) {
+        bind._append_uv = atoi(name_str.c_str() + 11);
+      }
+    }
+    else if (name_str.substr(4, 8) == "binormal") {
+      bind._name = InternalName::get_binormal();
+      if (name_str.size() > 11) {
+        bind._append_uv = atoi(name_str.c_str() + 11);
+      }
+    }
+    else {
+      bind._name = InternalName::make(name_str.substr(4));
+    }
+  }
+  else {
     // Arbitrarily named attribute.
     bind._name = InternalName::make(name_str);
   }
@@ -2871,14 +2569,19 @@ bool Shader::
 bind_parameter(const InternalName *name, const ::ShaderType *type, int location) {
   std::string name_str = name->get_name();
 
-  Shader::ShaderArgId arg_id;
+  ShaderArgId arg_id;
   arg_id._name = name_str;
   arg_id._seqno = location;
 
+  // Split it at the underscores.
+  vector_string pieces;
+  tokenize(name_str, pieces, "_");
+  nassertr(!pieces.empty(), false);
+
   // Check if it has a p3d_ prefix - if so, assign special meaning.
-  if (name_str.compare(0, 4, "p3d_") == 0) {
-    if (name_str == "p3d_ModelViewProjectionMatrix") {
-      Shader::ShaderMatSpec bind;
+  if (pieces[0] == "p3d" && _language == SL_GLSL) {
+    if (pieces[1] == "ModelViewProjectionMatrix") {
+      ShaderMatSpec bind;
       bind._id = arg_id;
       bind._func = SMF_compose;
       bind._piece = SMP_whole;
@@ -2889,7 +2592,7 @@ bind_parameter(const InternalName *name, const ::ShaderType *type, int location)
       cp_add_mat_spec(bind);
       return true;
     }
-    if (name_str.compare(4, 7, "Texture") == 0) {
+    if (pieces[1].compare(0, 7, "Texture") == 0) {
       ShaderTexSpec bind;
       bind._id = arg_id;
       bind._part = STO_stage_i;
@@ -2897,7 +2600,7 @@ bind_parameter(const InternalName *name, const ::ShaderType *type, int location)
       bind._desired_type = Texture::TT_2d_texture;
 
       string tail;
-      bind._stage = string_to_int(name_str.substr(11), tail);
+      bind._stage = string_to_int(name_str.substr(7), tail);
       if (!tail.empty()) {
         shader_cat.error()
           << "Error parsing shader input name: unexpected '"
@@ -2908,7 +2611,7 @@ bind_parameter(const InternalName *name, const ::ShaderType *type, int location)
       _tex_spec.push_back(bind);
       return true;
     }
-    if (name_str == "p3d_ColorScale") {
+    if (pieces[1] == "ColorScale") {
       ShaderMatSpec bind;
       bind._id = arg_id;
       bind._func = SMF_first;
@@ -2920,7 +2623,7 @@ bind_parameter(const InternalName *name, const ::ShaderType *type, int location)
       cp_add_mat_spec(bind);
       return true;
     }
-    if (name_str == "p3d_TexAlphaOnly") {
+    if (pieces[1] == "TexAlphaOnly") {
       ShaderMatSpec bind;
       bind._id = arg_id;
       bind._func = SMF_first;
@@ -2938,11 +2641,128 @@ bind_parameter(const InternalName *name, const ::ShaderType *type, int location)
     return false;
   }
 
+  // Check for mstrans, wstrans, vstrans, cstrans, mspos, wspos, vspos, cspos
+  if (pieces[0].compare(1, std::string::npos, "strans") == 0 ||
+      pieces[0].compare(1, std::string::npos, "spos") == 0) {
+    pieces.push_back("to");
+
+    switch (pieces[0][0]) {
+    case 'm':
+      pieces.push_back("model");
+      break;
+    case 'w':
+      pieces.push_back("world");
+      break;
+    case 'v':
+      pieces.push_back("view");
+      break;
+    case 'c':
+      pieces.push_back("clip");
+      break;
+    default:
+      return false;
+    }
+    if (pieces[0].compare(1, std::string::npos, "strans") == 0) {
+      pieces[0] = "trans";
+    } else {
+      pieces[0] = "row3";
+    }
+  }
+  else if (pieces[0].size() == 3 && // mat_modelproj et al
+           (pieces[0] == "mat" || pieces[0] == "inv" ||
+            pieces[0] == "tps" || pieces[0] == "itp")) {
+    std::string trans = pieces[0];
+    std::string matrix = pieces[1];
+    pieces.clear();
+    if (matrix == "modelview") {
+      tokenize("trans_model_to_apiview", pieces, "_");
+    } else if (matrix == "projection") {
+      tokenize("trans_apiview_to_apiclip", pieces, "_");
+    } else if (matrix == "modelproj") {
+      tokenize("trans_model_to_apiclip", pieces, "_");
+    } else {
+      shader_cat.error()
+        << "Unrecognized matrix name " << name_str << "\n";
+      return false;
+    }
+    if (trans == "mat") {
+      pieces[0] = "trans";
+    } else if (trans == "inv") {
+      string t = pieces[1];
+      pieces[1] = pieces[3];
+      pieces[3] = t;
+    } else if (trans == "tps") {
+      pieces[0] = "tpose";
+    } else if (trans == "itp") {
+      string t = pieces[1];
+      pieces[1] = pieces[3];
+      pieces[3] = t;
+      pieces[0] = "tpose";
+    }
+  }
+
+  // Implement the Cg-style transform-matrix generator.
+  if (pieces[0] == "trans" ||
+      pieces[0] == "tpose" ||
+      pieces[0] == "row0" ||
+      pieces[0] == "row1" ||
+      pieces[0] == "row2" ||
+      pieces[0] == "row3" ||
+      pieces[0] == "col0" ||
+      pieces[0] == "col1" ||
+      pieces[0] == "col2" ||
+      pieces[0] == "col3") {
+
+    ShaderMatSpec bind;
+    bind._id = arg_id;
+    bind._func = SMF_compose;
+
+    //int next = 1;
+    pieces.push_back("");
+
+    if (pieces[0] == "trans" || pieces[0] == "tpose") {
+      if (const ::ShaderType::Matrix *matrix = type->as_matrix()) {
+        if (matrix->get_num_columns() >= 4 || matrix->get_num_columns() >= 4) {
+          bind._piece = (pieces[0][2] == 'p') ? SMP_transpose : SMP_whole;
+        } else {
+          bind._piece = (pieces[0][2] == 'p') ? SMP_transpose3x3 : SMP_upper3x3;
+        }
+      } else {
+        shader_cat.error()
+          << "Shader input " << name_str << " should be a matrix type\n";
+        return false;
+      }
+    }
+
+    //if (!cp_parse_coord_sys(p, pieces, next, bind, true)) {
+    //  return false;
+    //}
+    //if (!cp_parse_delimiter(p, pieces, next)) {
+    //  return false;
+    //}
+    //if (!cp_parse_coord_sys(p, pieces, next, bind, false)) {
+    //  return false;
+    //}
+    //if (!cp_parse_eol(p, pieces, next)) {
+    //  return false;
+    //}
+
+    cp_add_mat_spec(bind);
+    return true;
+  }
+
+  if (_language == SL_Cg && pieces[0] == "k") {
+    name_str = name_str.substr(2);
+    name = InternalName::make(name_str);
+  }
+
+  // If we get here, it's not a specially recognized input, but just a regular
+  // user-defined input.
   if (const ::ShaderType::Array *array = type->as_array()) {
     // A uniform array.
     const ::ShaderType *element_type = array->get_element_type();
 
-    Shader::ShaderPtrSpec bind;
+    ShaderPtrSpec bind;
     bind._id = arg_id;
 
     if (const ::ShaderType::Matrix *matrix = element_type->as_matrix()) {

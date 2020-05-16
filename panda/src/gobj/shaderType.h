@@ -53,6 +53,7 @@ PUBLISHED:
   static const ShaderType::Scalar *int_type;
   static const ShaderType::Scalar *uint_type;
   static const ShaderType::Scalar *float_type;
+  static const ShaderType::Scalar *double_type;
 
 public:
   virtual const Scalar *as_scalar() const { return nullptr; }
@@ -126,6 +127,7 @@ public:
   Vector(const Vector &copy) = default;
 
   INLINE const ShaderType *get_base_type() const;
+  INLINE size_t get_num_elements() const;
 
   virtual void output(std::ostream &out) const override;
   virtual int compare_to_impl(const ShaderType &other) const override;
@@ -193,8 +195,9 @@ class EXPCL_PANDA_GOBJ ShaderType::Struct final : public ShaderType {
 public:
   struct Member;
 
-  size_t get_num_members() const;
-  const Member &get_member() const;
+  INLINE size_t get_num_members() const;
+  INLINE const Member &get_member(size_t i) const;
+  INLINE void add_member(const ShaderType *type, CPT(InternalName) name);
 
   virtual void output(std::ostream &out) const override;
   virtual int compare_to_impl(const ShaderType &other) const override;
@@ -231,6 +234,8 @@ private:
  */
 class EXPCL_PANDA_GOBJ ShaderType::Array final : public ShaderType {
 public:
+  INLINE Array(const ShaderType *element_type, size_t num_elements);
+
   INLINE const ShaderType *get_element_type() const;
   INLINE size_t get_num_elements() const;
 

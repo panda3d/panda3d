@@ -31,6 +31,7 @@ const ShaderType::Scalar *ShaderType::bool_type;
 const ShaderType::Scalar *ShaderType::int_type;
 const ShaderType::Scalar *ShaderType::uint_type;
 const ShaderType::Scalar *ShaderType::float_type;
+const ShaderType::Scalar *ShaderType::double_type;
 
 /**
  *
@@ -58,6 +59,7 @@ init_type() {
   int_type = ShaderType::register_type(ShaderType::Scalar(GeomEnums::NT_int32));
   uint_type = ShaderType::register_type(ShaderType::Scalar(GeomEnums::NT_uint32));
   float_type = ShaderType::register_type(ShaderType::Scalar(GeomEnums::NT_float32));
+  double_type = ShaderType::register_type(ShaderType::Scalar(GeomEnums::NT_float64));
 }
 
 #ifndef CPPPARSER
@@ -135,6 +137,26 @@ compare_to_impl(const ShaderType &other) const {
   }
   return (_num_columns > other_matrix._num_columns)
        - (_num_columns < other_matrix._num_columns);
+}
+
+/**
+ *
+ */
+void ShaderType::Struct::
+output(std::ostream &out) const {
+  out << "struct";
+}
+
+/**
+ * Private implementation of compare_to, only called for types with the same
+ * TypeHandle.
+ */
+int ShaderType::Struct::
+compare_to_impl(const ShaderType &other) const {
+  const Struct &other_struct = (const Struct &)other;
+  //FIXME
+  return (_members.size() > other_struct._members.size())
+       - (_members.size() < other_struct._members.size());
 }
 
 /**

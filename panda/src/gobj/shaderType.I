@@ -77,6 +77,14 @@ get_base_type() const {
 }
 
 /**
+ * Returns the number of elements in this vector.
+ */
+INLINE size_t ShaderType::Vector::
+get_num_elements() const {
+  return _num_elements;
+}
+
+/**
  * Constructs a matrix type from a scalar type, a number of rows and columns.
  */
 INLINE ShaderType::Matrix::
@@ -108,6 +116,42 @@ get_num_rows() const {
 INLINE size_t ShaderType::Matrix::
 get_num_columns() const {
   return _num_columns;
+}
+
+/**
+ * Returns the number of members in this struct.
+ */
+INLINE size_t ShaderType::Struct::
+get_num_members() const {
+  return _members.size();
+}
+
+/**
+ * Returns the nth member of this struct.
+ */
+INLINE const ShaderType::Struct::Member &ShaderType::Struct::
+get_member(size_t i) const {
+  return _members[i];
+}
+
+/**
+ * Adds a member to this struct.
+ */
+INLINE void ShaderType::Struct::
+add_member(const ShaderType *type, CPT(InternalName) name) {
+  Member member;
+  member.type = type;
+  member.name = std::move(name);
+  _members.push_back(std::move(member));
+}
+
+/**
+ * Constructs an array type from a base type and number of elements.
+ */
+INLINE ShaderType::Array::
+Array(const ShaderType *element_type, size_t num_elements) :
+  _element_type(element_type),
+  _num_elements(num_elements) {
 }
 
 /**

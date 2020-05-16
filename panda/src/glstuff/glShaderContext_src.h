@@ -39,6 +39,7 @@ public:
                              char *name_buffer, GLsizei name_buflen);
   void reflect_uniform(int i, char *name_buffer, GLsizei name_buflen);
   bool get_sampler_texture_type(int &out, GLenum param_type);
+  const ShaderType *get_param_type(GLenum type);
 
   bool valid(void) override;
   void bind() override;
