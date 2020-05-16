@@ -129,7 +129,87 @@ const TBuiltInResource resource_limits = {
       /* .generalConstantMatrixVectorIndexing = */ 1,
   }
 };
-#endif
+
+/**
+ * Interface for processing includes via the VirtualFileSystem.
+ */
+class Includer : public glslang::TShader::Includer {
+public:
+  using glslang::TShader::Includer::IncludeResult;
+
+  Includer(BamCacheRecord *record) : _record(record) {}
+
+  virtual IncludeResult *includeSystem(const char *header_name, const char *includer_name, size_t depth) override {
+    if (shader_cat.is_spam()) {
+      shader_cat.spam()
+        << "Resolving #include <" << header_name << "> from "
+        << includer_name << "\n";
+    }
+
+    Filename fn = header_name;
+    DSearchPath path(get_model_path());
+
+    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+    PT(VirtualFile) vf = vfs->find_file(fn, path);
+    if (vf == nullptr) {
+      static const std::string error_msg("failed to find file");
+      return new IncludeResult("", error_msg.data(), error_msg.size(), nullptr);
+    }
+
+    vector_uchar *data = new vector_uchar;
+    if (!vf->read_file(*data, true)) {
+      static const std::string error_msg("failed to find file");
+      return new IncludeResult("", error_msg.data(), error_msg.size(), nullptr);
+    }
+
+    if (_record != nullptr) {
+      _record->add_dependent_file(vf);
+    }
+
+    return new IncludeResult(vf->get_filename(), (const char *)data->data(), data->size(), data);
+  }
+
+  virtual IncludeResult *includeLocal(const char *header_name, const char *includer_name, size_t depth) override {
+    if (shader_cat.is_spam()) {
+      shader_cat.spam()
+        << "Resolving #include \"" << header_name << "\" from "
+        << includer_name << "\n";
+    }
+
+    Filename includer = includer_name;
+    Filename fn(includer.get_dirname(), header_name);
+
+    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+    PT(VirtualFile) vf = vfs->get_file(fn);
+    if (vf == nullptr) {
+      // Will try includeSystem instead.
+      return nullptr;
+    }
+
+    vector_uchar *data = new vector_uchar;
+    if (!vf->read_file(*data, true)) {
+      static const std::string error_msg("failed to find file");
+      return new IncludeResult("", error_msg.data(), error_msg.size(), nullptr);
+    }
+
+    if (_record != nullptr) {
+      _record->add_dependent_file(vf);
+    }
+
+    return new IncludeResult(vf->get_filename(), (const char *)data->data(), data->size(), data);
+  }
+
+  virtual void releaseInclude(IncludeResult *result) override {
+    if (result != nullptr) {
+      delete (vector_uchar *)result->userData;
+      delete result;
+    }
+  }
+
+private:
+  BamCacheRecord *_record = nullptr;
+};
+#endif  // CPPPARSER
 
 TypeHandle ShaderCompilerGlslang::_type_handle;
 
@@ -199,7 +279,7 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
   shader->setAutoMapBindings(true);
   shader->setAutoMapLocations(true);
 
-  glslang::TShader::ForbidIncluder includer;
+  Includer includer(record);
   if (!shader->parse(&resource_limits, 110, false, (EShMessages)(EShMsgDefault | EShMsgDebugInfo), includer)) {
     std::cerr << "failed to parse " << filename << ":\n";
     std::cerr << shader->getInfoLog() << "\n";

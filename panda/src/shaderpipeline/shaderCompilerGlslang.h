@@ -32,19 +32,6 @@ public:
                                        const std::string &filename = "created-shader",
                                        BamCacheRecord *record = nullptr) const override;
 
-private:
-  bool r_preprocess_include(ShaderModuleGlsl *module,
-                            std::ostream &out, const std::string &filename,
-                            const Filename &source_dir,
-                            std::set<Filename> &open_files,
-                            BamCacheRecord *record, int depth) const;
-  bool r_preprocess_source(ShaderModuleGlsl *module,
-                           std::ostream &out, std::istream &in,
-                           const std::string &fn, const Filename &full_fn,
-                           std::set<Filename> &open_files,
-                           BamCacheRecord *record,
-                           int fileno = 0, int depth = 0) const;
-
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
