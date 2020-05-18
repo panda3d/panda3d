@@ -51,6 +51,7 @@ protected:
     DT_type,
     DT_type_pointer,
     DT_variable,
+    DT_constant,
   };
 
   /**
@@ -63,13 +64,19 @@ protected:
     const ShaderType *_type = nullptr;
     int _location = -1;
     SpvBuiltIn _builtin = SpvBuiltInMax;
+    uint32_t _constant = 0;
+    vector_string _member_names;
 
     // Only defined for DT_variable.
     SpvStorageClass _storage_class;
 
+    void set_name(const char *name);
+    void set_member_name(uint32_t i, const char *name);
+
     void set_type(const ShaderType *type);
     void set_type_pointer(SpvStorageClass storage_class, const ShaderType *type);
     void set_variable(const ShaderType *type, SpvStorageClass storage_class);
+    void set_constant(const ShaderType *type, const uint32_t *words, uint32_t nwords);
   };
   typedef pvector<Definition> Definitions;
 

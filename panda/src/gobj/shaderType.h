@@ -34,6 +34,8 @@ public:
 
   virtual void output(std::ostream &out) const=0;
 
+  virtual int get_num_parameter_locations() const { return 1; }
+
 private:
   typedef pset<const ShaderType *, indirect_compare_to<const ShaderType *> > Registry;
   static Registry *_registered_types;
@@ -202,6 +204,8 @@ public:
   virtual void output(std::ostream &out) const override;
   virtual int compare_to_impl(const ShaderType &other) const override;
 
+  virtual int get_num_parameter_locations() const override;
+
   const Struct *as_struct() const override { return this; }
 
 PUBLISHED:
@@ -241,6 +245,8 @@ public:
 
   virtual void output(std::ostream &out) const override;
   virtual int compare_to_impl(const ShaderType &other) const override;
+
+  virtual int get_num_parameter_locations() const override;
 
   const Array *as_array() const override { return this; }
 

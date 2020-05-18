@@ -2434,13 +2434,23 @@ link() {
           remap[var.get_location()] = it->second->get_location();
         }
       } else if (var.has_location()) {
-        if (used_locations.get_bit(var.get_location())) {
-          // This location is already used.
+        // Check whether the locations occupied by this variable are already in
+        // use by another stage.
+        int num_locations = var.type->get_num_parameter_locations();
+        if (used_locations.has_any_of(var.get_location(), num_locations)) {
+          // This location is already used.  Find another free location.
           int location = used_locations.get_lowest_off_bit();
-          used_locations.set_bit(location);
+          while (num_locations > 1 && used_locations.has_any_of(location, num_locations)) {
+            // This free space isn't big enough to fit all the needed locations.
+            int next_bit = used_locations.get_next_higher_different_bit(location);
+            nassertr(next_bit > location, false);
+            location = used_locations.get_next_higher_different_bit(next_bit);
+            nassertr(location > next_bit, false);
+          }
+          used_locations.set_range(location, num_locations);
           remap[var.get_location()] = location;
         } else {
-          used_locations.set_bit(var.get_location());
+          used_locations.set_range(var.get_location(), num_locations);
         }
       }
     }
@@ -2580,15 +2590,143 @@ bind_parameter(const InternalName *name, const ::ShaderType *type, int location)
 
   // Check if it has a p3d_ prefix - if so, assign special meaning.
   if (pieces[0] == "p3d" && _language == SL_GLSL) {
-    if (pieces[1] == "ModelViewProjectionMatrix") {
+    // Check for matrix inputs.
+    bool transpose = false;
+    bool inverse = false;
+    string matrix_name = pieces[1];
+
+    // Check for and chop off any "Transpose" or "Inverse" suffix.
+    if (matrix_name.size() > 6 + 9 &&
+        matrix_name.compare(matrix_name.size() - 9, 9, "Transpose") == 0) {
+      transpose = true;
+      matrix_name = matrix_name.substr(0, matrix_name.size() - 9);
+    }
+    if (matrix_name.size() > 6 + 7 &&
+        matrix_name.compare(matrix_name.size() - 7, 7, "Inverse") == 0) {
+      inverse = true;
+      matrix_name = matrix_name.substr(0, matrix_name.size() - 7);
+    }
+
+    // Now if the suffix that is left over is "Matrix", we know that it is
+    // supposed to be a matrix input.
+    if (matrix_name.size() > 6 &&
+        matrix_name.compare(matrix_name.size() - 6, 6, "Matrix") == 0) {
+
       ShaderMatSpec bind;
       bind._id = arg_id;
       bind._func = SMF_compose;
-      bind._piece = SMP_whole;
       bind._arg[0] = nullptr;
       bind._arg[1] = nullptr;
-      bind._part[0] = SMO_model_to_apiview;
-      bind._part[1] = SMO_apiview_to_apiclip;
+
+      const ::ShaderType::Matrix *matrix = type->as_matrix();
+      if (matrix != nullptr) {
+        if (matrix->get_num_rows() >= 4) {
+          bind._piece = transpose ? SMP_transpose : SMP_whole;
+        } else {
+          bind._piece = transpose ? SMP_upper3x3 : SMP_transpose3x3;
+        }
+      } else {
+        shader_cat.error()
+          << "Matrix input " << name_str << " should be mat3 or mat4\n";
+        return false;
+      }
+
+      if (matrix_name == "ModelViewProjectionMatrix") {
+        if (inverse) {
+          bind._part[0] = SMO_apiclip_to_apiview;
+          bind._part[1] = SMO_apiview_to_model;
+        } else {
+          bind._part[0] = SMO_model_to_apiview;
+          bind._part[1] = SMO_apiview_to_apiclip;
+        }
+
+      } else if (matrix_name == "ModelViewMatrix") {
+        bind._func = SMF_first;
+        bind._part[0] = inverse ? SMO_apiview_to_model
+                                : SMO_model_to_apiview;
+        bind._part[1] = SMO_identity;
+
+      } else if (matrix_name == "ProjectionMatrix") {
+        bind._func = SMF_first;
+        bind._part[0] = inverse ? SMO_apiclip_to_apiview
+                                : SMO_apiview_to_apiclip;
+        bind._part[1] = SMO_identity;
+
+      } else if (matrix_name == "NormalMatrix") {
+        // This is really the upper 3x3 of the ModelViewMatrixInverseTranspose.
+        bind._func = SMF_first;
+        bind._part[0] = inverse ? SMO_model_to_apiview
+                                : SMO_apiview_to_model;
+        bind._part[1] = SMO_identity;
+
+        if (matrix->get_num_rows() != 3 || matrix->get_num_columns() != 3) {
+          shader_cat.warning()
+            << "p3d_NormalMatrix input should be mat3!\n";
+          return false;
+        }
+
+      } else if (matrix_name == "ModelMatrix") {
+        if (inverse) {
+          bind._part[0] = SMO_world_to_view;
+          bind._part[1] = SMO_view_to_model;
+        } else {
+          bind._part[0] = SMO_model_to_view;
+          bind._part[1] = SMO_view_to_world;
+        }
+
+      } else if (matrix_name == "ViewMatrix") {
+        if (inverse) {
+          bind._part[0] = SMO_apiview_to_view;
+          bind._part[1] = SMO_view_to_world;
+        } else {
+          bind._part[0] = SMO_world_to_view;
+          bind._part[1] = SMO_view_to_apiview;
+        }
+
+      } else if (matrix_name == "ViewProjectionMatrix") {
+        if (inverse) {
+          bind._part[0] = SMO_apiclip_to_view;
+          bind._part[1] = SMO_view_to_world;
+        } else {
+          bind._part[0] = SMO_world_to_view;
+          bind._part[1] = SMO_view_to_apiclip;
+        }
+
+      } else if (matrix_name == "TextureMatrix") {
+        // We may support 2-D texmats later, but let's make sure that people
+        // don't think they can just use a mat3 to get the 2-D version.
+        if (matrix->get_num_rows() != 4 || matrix->get_num_columns() != 4) {
+          shader_cat.error() << "p3d_TextureMatrix should be mat4[]!\n";
+          return false;
+        }
+
+        bind._func = SMF_first;
+        bind._part[0] = inverse ? SMO_inv_texmat_i
+                                : SMO_texmat_i;
+        bind._part[1] = SMO_identity;
+
+        // Add it once for each index.
+//        for (bind._index = 0; bind._index < param_size; ++bind._index) {
+//          // It was discovered in #846, that GLSL 4.10 and lower don't seem to
+//          // guarantee that matrices occupy successive locations, and on macOS
+//          // they indeed occupy four locations per element.
+//          // As a big fat hack, we multiply by four on macOS, because this is
+//          // hard to fix on the 1.10 branch.  We'll have a proper fix on the
+//          // master branch.
+//#ifdef __APPLE__
+//          bind._id._seqno = p + bind._index * 4;
+//#else
+//          bind._id._seqno = p + bind._index;
+//#endif
+//          cp_add_mat_spec(bind);
+//        }
+        return true;
+
+      } else {
+        shader_cat.error() << "Unrecognized uniform matrix name '" << matrix_name << "'!\n";
+        return false;
+      }
+
       cp_add_mat_spec(bind);
       return true;
     }
@@ -2599,8 +2737,8 @@ bind_parameter(const InternalName *name, const ::ShaderType *type, int location)
       bind._name = 0;
       bind._desired_type = Texture::TT_2d_texture;
 
-      string tail;
-      bind._stage = string_to_int(name_str.substr(7), tail);
+      std::string tail;
+      bind._stage = string_to_int(pieces[1].substr(7), tail);
       if (!tail.empty()) {
         shader_cat.error()
           << "Error parsing shader input name: unexpected '"

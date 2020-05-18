@@ -144,7 +144,14 @@ compare_to_impl(const ShaderType &other) const {
  */
 void ShaderType::Struct::
 output(std::ostream &out) const {
-  out << "struct";
+  out << "struct { ";
+  for (const Member &member : _members) {
+    if (member.type != nullptr) {
+      out << *member.type << ' ';
+    }
+    out << *member.name << "; ";
+  }
+  out << '}';
 }
 
 /**
@@ -154,9 +161,36 @@ output(std::ostream &out) const {
 int ShaderType::Struct::
 compare_to_impl(const ShaderType &other) const {
   const Struct &other_struct = (const Struct &)other;
-  //FIXME
-  return (_members.size() > other_struct._members.size())
-       - (_members.size() < other_struct._members.size());
+  if (_members.size() != other_struct._members.size()) {
+    return (_members.size() > other_struct._members.size())
+         - (_members.size() < other_struct._members.size());
+  }
+
+  for (size_t i = 0; i < _members.size(); ++i) {
+    if (_members[i].type != other_struct._members[i].type) {
+      return (_members[i].type > other_struct._members[i].type)
+           - (_members[i].type < other_struct._members[i].type);
+    }
+    if (_members[i].name != other_struct._members[i].name) {
+      return (_members[i].name > other_struct._members[i].name)
+           - (_members[i].name < other_struct._members[i].name);
+    }
+  }
+
+  return 0;
+}
+
+/**
+ * Returns the number of uniform locations taken up by uniform variables having
+ * this type.
+ */
+int ShaderType::Struct::
+get_num_parameter_locations() const {
+  int total = 0;
+  for (const Member &member : _members) {
+    total += member.type->get_num_parameter_locations();
+  }
+  return total;
 }
 
 /**
@@ -179,6 +213,15 @@ compare_to_impl(const ShaderType &other) const {
   }
   return (_num_elements > other_array._num_elements)
        - (_num_elements < other_array._num_elements);
+}
+
+/**
+ * Returns the number of uniform locations taken up by uniform variables having
+ * this type.
+ */
+int ShaderType::Array::
+get_num_parameter_locations() const {
+  return _element_type->get_num_parameter_locations() * _num_elements;
 }
 
 /**

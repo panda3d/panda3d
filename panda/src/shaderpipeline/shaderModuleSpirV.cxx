@@ -236,7 +236,11 @@ parse_instruction(Definitions &defs, SpvOp opcode, const uint32_t *args, size_t 
     break;
 
   case SpvOpName:
-    defs[args[0]]._name = std::string((const char *)&args[1]);
+    defs[args[0]].set_name((const char *)&args[1]);
+    break;
+
+  case SpvOpMemberName:
+    defs[args[0]].set_member_name(args[1], (const char *)&args[2]);
     break;
 
   case SpvOpTypeVoid:
@@ -374,6 +378,30 @@ parse_instruction(Definitions &defs, SpvOp opcode, const uint32_t *args, size_t 
     }
     break;
 
+  case SpvOpTypeArray:
+    if (defs[args[1]]._type != nullptr) {
+      defs[args[0]].set_type(ShaderType::register_type(
+        ShaderType::Array(defs[args[1]]._type, defs[args[2]]._constant)));
+    }
+    break;
+
+  case SpvOpTypeStruct:
+    {
+      ShaderType::Struct type;
+      for (size_t i = 0; i < nargs - 1; ++i) {
+        type.add_member(
+          defs[args[i + 1]]._type,
+          InternalName::make(defs[args[0]]._member_names[i])
+        );
+      }
+      defs[args[0]].set_type(ShaderType::register_type(std::move(type)));
+    }
+    break;
+
+  case SpvOpConstant:
+    defs[args[1]].set_constant(defs[args[0]]._type, args + 2, nargs - 2);
+    break;
+
   case SpvOpVariable:
     {
       const Definition &ptr = defs[args[0]];
@@ -434,7 +462,7 @@ assign_locations(Definitions &defs) {
         output_locations.set_bit(def._location);
       }
       else if (def._storage_class == SpvStorageClassUniformConstant) {
-        uniform_locations.set_bit(def._location);
+        uniform_locations.set_range(def._location, def._type ? def._type->get_num_parameter_locations() : 1);
       }
     }
   }
@@ -484,7 +512,8 @@ assign_locations(Definitions &defs) {
       int location;
       if (def._storage_class == SpvStorageClassInput) {
         if (get_stage() == Stage::vertex && !input_locations.get_bit(0)) {
-          if (def._name == "vertex" || def._name == "p3d_Vertex") {
+          if (def._name == "vertex" || def._name == "p3d_Vertex" ||
+              def._name == "vtx_position") {
             // Prefer assigning the vertex column to location 0.
             location = 0;
           } else if (!input_locations.get_bit(1)) {
@@ -512,12 +541,26 @@ assign_locations(Definitions &defs) {
         }
       }
       else if (def._storage_class == SpvStorageClassUniformConstant) {
+        int num_locations = def._type->get_num_parameter_locations();
         location = uniform_locations.get_lowest_off_bit();
+        while (num_locations > 1 && uniform_locations.has_any_of(location, num_locations)) {
+          // Not enough bits free, try the next open range.
+          int next_bit = uniform_locations.get_next_higher_different_bit(location);
+          assert(next_bit > location);
+          location = uniform_locations.get_next_higher_different_bit(next_bit);
+          assert(location >= 0);
+        }
         uniform_locations.set_bit(location);
 
         if (shader_cat.is_debug()) {
-          shader_cat.debug()
-            << "Assigning " << def._name << " to uniform location " << location << "\n";
+          if (num_locations == 1) {
+            shader_cat.debug()
+              << "Assigning " << def._name << " to uniform location " << location << "\n";
+          } else {
+            shader_cat.debug()
+              << "Assigning " << def._name << " to uniform locations " << location
+              << ".." << (location + num_locations - 1) << "\n";
+          }
         }
       }
       else {
@@ -620,6 +663,25 @@ strip() {
 }
 
 /**
+ * Called when an OpName is encountered in the SPIR-V instruction stream.
+ */
+void ShaderModuleSpirV::Definition::
+set_name(const char *name) {
+  _name.assign(name);
+}
+
+/**
+ * Called when an OpMemberName is encountered in the SPIR-V instruction stream.
+ */
+void ShaderModuleSpirV::Definition::
+set_member_name(uint32_t i, const char *name) {
+  if (i >= _member_names.size()) {
+    _member_names.resize(i + 1);
+  }
+  _member_names[i].assign(name);
+}
+
+/**
  * Called when an OpType is encountered in the SPIR-V instruction stream.
  */
 void ShaderModuleSpirV::Definition::
@@ -656,9 +718,9 @@ set_variable(const ShaderType *type, SpvStorageClass storage_class) {
   _type = type;
   _storage_class = storage_class;
 
-  if (shader_cat.is_debug()) {
+  if (shader_cat.is_debug() && storage_class == SpvStorageClassUniformConstant) {
     shader_cat.debug()
-      << "Defined variable " << _name;
+      << "Defined uniform " << _name;
 
     if (_location >= 0) {
       shader_cat.debug(false) << " (location " << _location << ")";
@@ -694,5 +756,19 @@ set_variable(const ShaderType *type, SpvStorageClass storage_class) {
   case SpvStorageClassAtomicCounter:
   case SpvStorageClassImage:
     break;
+  }
+}
+
+/**
+ * Called when an OpConstant is encountered in the SPIR-V instruction stream.
+ */
+void ShaderModuleSpirV::Definition::
+set_constant(const ShaderType *type, const uint32_t *words, uint32_t nwords) {
+  _dtype = DT_constant;
+  _type = type;
+  if (nwords > 0) {
+    _constant = words[0];
+  } else {
+    _constant = 0;
   }
 }
