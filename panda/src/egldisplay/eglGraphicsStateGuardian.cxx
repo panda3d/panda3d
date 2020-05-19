@@ -33,11 +33,7 @@ eglGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
 {
   _share_context=0;
   _context=0;
-  _display=0;
   _egl_display=0;
-  _screen=0;
-  _visual=0;
-  _visuals=0;
   _fbconfig=0;
 
   if (share_with != nullptr) {
@@ -51,9 +47,6 @@ eglGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
  */
 eglGraphicsStateGuardian::
 ~eglGraphicsStateGuardian() {
-  if (_visuals != nullptr) {
-    XFree(_visuals);
-  }
   if (_context != (EGLContext)nullptr) {
     if (!eglDestroyContext(_egl_display, _context)) {
       egldisplay_cat.error() << "Failed to destroy EGL context: "
@@ -108,11 +101,6 @@ get_properties(FrameBufferProperties &properties,
     slow = true;
   }
 
-  if ((surface_type & EGL_WINDOW_BIT)==0) {
-    // We insist on having a context that will support an onscreen window.
-    return;
-  }
-
   properties.set_back_buffers(1);
   properties.set_rgb_color(1);
   properties.set_rgba_bits(red_size, green_size, blue_size, alpha_size);
@@ -131,16 +119,12 @@ get_properties(FrameBufferProperties &properties,
  */
 void eglGraphicsStateGuardian::
 choose_pixel_format(const FrameBufferProperties &properties,
-        X11_Display *display,
-        int screen, bool need_pbuffer, bool need_pixmap) {
+                    eglGraphicsPipe *egl_pipe, bool need_window,
+                    bool need_pbuffer, bool need_pixmap) {
 
-  _display = display;
-  _egl_display = eglGetDisplay((NativeDisplayType) display);
-  _screen = screen;
+  _egl_display = egl_pipe->get_egl_display();
   _context = 0;
   _fbconfig = 0;
-  _visual = 0;
-  _visuals = 0;
   _fbprops.clear();
 
   int attrib_list[] = {
@@ -150,7 +134,7 @@ choose_pixel_format(const FrameBufferProperties &properties,
 #ifdef OPENGLES_2
     EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
 #endif
-    EGL_SURFACE_TYPE, EGL_DONT_CARE,
+    EGL_SURFACE_TYPE, need_window ? EGL_WINDOW_BIT : EGL_DONT_CARE,
     EGL_NONE
   };
 
@@ -206,9 +190,15 @@ choose_pixel_format(const FrameBufferProperties &properties,
       best_props = fbprops;
     }
   }
-  int depth = DefaultDepth(_display, _screen);
-  _visual = new XVisualInfo;
-  XMatchVisualInfo(_display, _screen, depth, TrueColor, _visual);
+#ifdef HAVE_X11
+  X11_Display *display = egl_pipe->get_display();
+  if (display) {
+    int screen = egl_pipe->get_screen();
+    int depth = DefaultDepth(display, screen);
+    _visual = new XVisualInfo;
+    XMatchVisualInfo(display, screen, depth, TrueColor, _visual);
+  }
+#endif
 
   if (best_quality > 0) {
     egldisplay_cat.debug()
@@ -222,7 +212,10 @@ choose_pixel_format(const FrameBufferProperties &properties,
 #endif
     int err = eglGetError();
     if (_context && err == EGL_SUCCESS) {
-      if (_visual) {
+#ifdef HAVE_X11
+      if (!display || _visual)
+#endif
+      {
         _fbprops = best_props;
         delete[] configs;
         return;
@@ -234,8 +227,9 @@ choose_pixel_format(const FrameBufferProperties &properties,
       << get_egl_error_string(err) << "\n";
     _fbconfig = 0;
     _context = 0;
+#ifdef HAVE_X11
     _visual = 0;
-    _visuals = 0;
+#endif
   }
 
   egldisplay_cat.error() <<
@@ -255,12 +249,7 @@ reset() {
   GLESGraphicsStateGuardian::reset();
 #endif
 
-  // If "Mesa" is present, assume software.  However, if "Mesa DRI" is found,
-  // it's actually a Mesa-based OpenGL layer running over a hardware driver.
-  if (_gl_renderer == "Software Rasterizer" ||
-      (_gl_renderer.find("Mesa") != std::string::npos &&
-       _gl_renderer.find("Mesa DRI") == std::string::npos)) {
-    // It's Mesa, therefore probably a software context.
+  if (_gl_renderer == "Software Rasterizer") {
     _fbprops.set_force_software(1);
     _fbprops.set_force_hardware(0);
   } else {
@@ -289,8 +278,10 @@ egl_is_at_least_version(int major_version, int minor_version) const {
  */
 void eglGraphicsStateGuardian::
 gl_flush() const {
+#ifdef HAVE_X11
   // This call requires synchronization with X.
   LightReMutexHolder holder(eglGraphicsPipe::_x_mutex);
+#endif
 #ifdef OPENGLES_2
   GLES2GraphicsStateGuardian::gl_flush();
 #else
@@ -303,8 +294,10 @@ gl_flush() const {
  */
 GLenum eglGraphicsStateGuardian::
 gl_get_error() const {
+#ifdef HAVE_X11
   // This call requires synchronization with X.
   LightReMutexHolder holder(eglGraphicsPipe::_x_mutex);
+#endif
 #ifdef OPENGLES_2
   return GLES2GraphicsStateGuardian::gl_get_error();
 #else

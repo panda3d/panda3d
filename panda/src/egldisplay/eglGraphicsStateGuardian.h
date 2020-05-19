@@ -16,7 +16,10 @@
 
 #include "pandabase.h"
 #include "eglGraphicsPipe.h"
+
+#ifdef HAVE_X11
 #include "get_x11.h"
+#endif
 
 /**
  * A tiny specialization on GLESGraphicsStateGuardian to add some egl-specific
@@ -33,9 +36,8 @@ public:
              bool &pbuffer_supported, bool &pixmap_supported,
                                bool &slow, EGLConfig config);
   void choose_pixel_format(const FrameBufferProperties &properties,
-         X11_Display *_display,
-         int _screen,
-         bool need_pbuffer, bool need_pixmap);
+                           eglGraphicsPipe *egl_pipe, bool need_window,
+                           bool need_pbuffer, bool need_pixmap);
 
   eglGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
          eglGraphicsStateGuardian *share_with);
@@ -49,10 +51,9 @@ public:
   EGLContext _share_context;
   EGLContext _context;
   EGLDisplay _egl_display;
-  X11_Display *_display;
-  int _screen;
-  XVisualInfo *_visual;
-  XVisualInfo *_visuals;
+#ifdef HAVE_X11
+  XVisualInfo *_visual = nullptr;
+#endif
   EGLConfig _fbconfig;
   FrameBufferProperties _fbprops;
 

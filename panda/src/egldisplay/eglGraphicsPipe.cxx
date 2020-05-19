@@ -25,19 +25,32 @@ TypeHandle eglGraphicsPipe::_type_handle;
  *
  */
 eglGraphicsPipe::
-eglGraphicsPipe(const std::string &display) : x11GraphicsPipe(display) {
+eglGraphicsPipe() {
+  //NB. if the X11 display failed to open, _display will be 0, which is a valid
+  // input to eglGetDisplay - it means to open the default display.
+#ifdef HAVE_X11
   _egl_display = eglGetDisplay((NativeDisplayType) _display);
+#else
+  _egl_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+#endif
   if (!eglInitialize(_egl_display, nullptr, nullptr)) {
     egldisplay_cat.error()
       << "Couldn't initialize the EGL display: "
       << get_egl_error_string(eglGetError()) << "\n";
+    _is_valid = false;
+    return;
   }
 
   if (!eglBindAPI(EGL_OPENGL_ES_API)) {
     egldisplay_cat.error()
       << "Couldn't bind EGL to the OpenGL ES API: "
       << get_egl_error_string(eglGetError()) << "\n";
+    _is_valid = false;
+    return;
   }
+
+  // Even if we don't have an X11 display, we can still render headless.
+  _is_valid = true;
 }
 
 /**
@@ -110,6 +123,10 @@ make_output(const std::string &name,
   // First thing to try: an eglGraphicsWindow
 
   if (retry == 0) {
+#ifdef HAVE_X11
+    if (!_display) {
+      return nullptr;
+    }
     if (((flags&BF_require_parasite)!=0)||
         ((flags&BF_refuse_window)!=0)||
         ((flags&BF_resizeable)!=0)||
@@ -121,6 +138,9 @@ make_output(const std::string &name,
     }
     return new eglGraphicsWindow(engine, this, name, fb_prop, win_prop,
                                  flags, gsg, host);
+#else
+    return nullptr;
+#endif
   }
 
   // Second thing to try: a GLES(2)GraphicsBuffer
@@ -184,6 +204,10 @@ make_output(const std::string &name,
 
   // Fourth thing to try: an eglGraphicsPixmap.
   if (retry == 3) {
+#ifdef HAVE_X11
+    if (!_display) {
+      return nullptr;
+    }
     if (((flags&BF_require_parasite)!=0)||
         ((flags&BF_require_window)!=0)||
         ((flags&BF_resizeable)!=0)||
@@ -198,6 +222,9 @@ make_output(const std::string &name,
 
     return new eglGraphicsPixmap(engine, this, name, fb_prop, win_prop,
                                  flags, gsg, host);
+#else
+    return nullptr;
+#endif
   }
 
   // Nothing else left to try.

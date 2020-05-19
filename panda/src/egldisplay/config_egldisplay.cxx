@@ -45,7 +45,9 @@ init_libegldisplay() {
   initialized = true;
 
   eglGraphicsPipe::init_type();
+#ifdef HAVE_X11
   eglGraphicsWindow::init_type();
+#endif
   eglGraphicsStateGuardian::init_type();
 
   GraphicsPipeSelection *selection = GraphicsPipeSelection::get_global_ptr();
