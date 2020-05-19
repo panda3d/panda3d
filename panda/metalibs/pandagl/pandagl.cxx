@@ -26,8 +26,13 @@
 #include "glxGraphicsPipe.h"
 #endif
 
-#if !defined(HAVE_WGL) && !defined(HAVE_COCOA) && !defined(HAVE_CARBON) && !defined(HAVE_GLX)
-#error One of HAVE_WGL, HAVE_COCOA, HAVE_CARBON or HAVE_GLX must be defined when compiling pandagl!
+#if defined(HAVE_EGL) && !defined(HAVE_X11)
+#include "config_egldisplay.h"
+#include "eglGraphicsPipe.h"
+#endif
+
+#if !defined(HAVE_WGL) && !defined(HAVE_COCOA) && !defined(HAVE_CARBON) && !defined(HAVE_GLX) && !defined(HAVE_EGL)
+#error One of HAVE_WGL, HAVE_COCOA, HAVE_CARBON, HAVE_GLX or HAVE_EGL must be defined when compiling pandagl!
 #endif
 
 /**
@@ -50,8 +55,12 @@ init_libpandagl() {
   init_libosxdisplay();
 #endif
 
-#ifdef IS_LINUX
+#ifdef HAVE_GLX
   init_libglxdisplay();
+#endif
+
+#if defined(HAVE_EGL) && !defined(HAVE_X11)
+  init_libegldisplay();
 #endif
 }
 
@@ -73,6 +82,10 @@ get_pipe_type_pandagl() {
 
 #ifdef HAVE_GLX
   return glxGraphicsPipe::get_class_type().get_index();
+#endif
+
+#if defined(HAVE_EGL) && !defined(HAVE_X11)
+  return eglGraphicsPipe::get_class_type().get_index();
 #endif
 
   return 0;
