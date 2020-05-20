@@ -21,15 +21,19 @@
 #include "get_x11.h"
 #endif
 
+#ifdef OPENGLES_2
+typedef GLES2GraphicsStateGuardian BaseGraphicsStateGuardian;
+#elif defined(OPENGLES_1)
+typedef GLESGraphicsStateGuardian BaseGraphicsStateGuardian;
+#else
+typedef GLGraphicsStateGuardian BaseGraphicsStateGuardian;
+#endif
+
 /**
  * A tiny specialization on GLESGraphicsStateGuardian to add some egl-specific
  * information.
  */
-#ifdef OPENGLES_2
-class eglGraphicsStateGuardian : public GLES2GraphicsStateGuardian {
-#else
-class eglGraphicsStateGuardian : public GLESGraphicsStateGuardian {
-#endif
+class eglGraphicsStateGuardian : public BaseGraphicsStateGuardian {
 public:
   INLINE const FrameBufferProperties &get_fb_properties() const;
   void get_properties(FrameBufferProperties &properties,
@@ -73,15 +77,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-#ifdef OPENGLES_2
-    GLES2GraphicsStateGuardian::init_type();
+    BaseGraphicsStateGuardian::init_type();
     register_type(_type_handle, "eglGraphicsStateGuardian",
-                  GLES2GraphicsStateGuardian::get_class_type());
-#else
-    GLESGraphicsStateGuardian::init_type();
-    register_type(_type_handle, "eglGraphicsStateGuardian",
-                  GLESGraphicsStateGuardian::get_class_type());
-#endif
+                  BaseGraphicsStateGuardian::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

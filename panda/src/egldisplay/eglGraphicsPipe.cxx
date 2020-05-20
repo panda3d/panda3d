@@ -41,10 +41,17 @@ eglGraphicsPipe() {
     return;
   }
 
+#if defined(OPENGLES_1) || defined(OPENGLES_2)
   if (!eglBindAPI(EGL_OPENGL_ES_API)) {
     egldisplay_cat.error()
       << "Couldn't bind EGL to the OpenGL ES API: "
       << get_egl_error_string(eglGetError()) << "\n";
+#else
+  if (!eglBindAPI(EGL_OPENGL_API)) {
+    egldisplay_cat.error()
+      << "Couldn't bind EGL to the OpenGL API: "
+      << get_egl_error_string(eglGetError()) << "\n";
+#endif
     _is_valid = false;
     return;
   }
@@ -74,7 +81,11 @@ eglGraphicsPipe::
  */
 std::string eglGraphicsPipe::
 get_interface_name() const {
+#if defined(OPENGLES_1) || defined(OPENGLES_2)
   return "OpenGL ES";
+#else
+  return "OpenGL";
+#endif
 }
 
 /**
@@ -143,7 +154,7 @@ make_output(const std::string &name,
 #endif
   }
 
-  // Second thing to try: a GLES(2)GraphicsBuffer
+  // Second thing to try: a GL(ES(2))GraphicsBuffer
   if (retry == 1) {
     if ((host==0)||
   // (!gl_support_fbo)||
@@ -174,9 +185,12 @@ make_output(const std::string &name,
 #ifdef OPENGLES_2
     return new GLES2GraphicsBuffer(engine, this, name, fb_prop, win_prop,
                                   flags, gsg, host);
-#else
+#elif defined(OPENGLES_1)
     return new GLESGraphicsBuffer(engine, this, name, fb_prop, win_prop,
                                   flags, gsg, host);
+#else
+    return new GLGraphicsBuffer(engine, this, name, fb_prop, win_prop,
+                                flags, gsg, host);
 #endif
   }
 

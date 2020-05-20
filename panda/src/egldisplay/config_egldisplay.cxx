@@ -19,8 +19,8 @@
 #include "dconfig.h"
 #include "pandaSystem.h"
 
-#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDAGLES) && !defined(BUILDING_PANDAGLES2)
-  #error Buildsystem error: BUILDING_PANDAGLES(2) not defined
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDAGLES) && !defined(BUILDING_PANDAGLES2) && !defined(BUILDING_PANDAGL)
+  #error Buildsystem error: BUILDING_PANDAGL(ES(2)) not defined
 #endif
 
 Configure(config_egldisplay);
@@ -57,8 +57,10 @@ init_libegldisplay() {
   PandaSystem *ps = PandaSystem::get_global_ptr();
 #ifdef OPENGLES_2
   ps->set_system_tag("OpenGL ES 2", "window_system", "EGL");
-#else
+#elif defined(OPENGLES_1)
   ps->set_system_tag("OpenGL ES", "window_system", "EGL");
+#else
+  ps->set_system_tag("OpenGL", "window_system", "EGL");
 #endif
 }
 

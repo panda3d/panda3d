@@ -32,10 +32,15 @@ typedef GraphicsPipe BaseGraphicsPipe;
   #define NativeDisplayType EGLNativeDisplayType
   #define NativePixmapType EGLNativePixmapType
   #define NativeWindowType EGLNativeWindowType
-#else
+#elif defined(OPENGLES_1)
   #include "glesgsg.h"
   #include "pre_x11_include.h"
   #include <GLES/egl.h>
+  #include "post_x11_include.h"
+#else
+  #include "glgsg.h"
+  #include "pre_x11_include.h"
+  #include <EGL/egl.h>
   #include "post_x11_include.h"
 #endif
 

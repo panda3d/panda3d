@@ -25,11 +25,7 @@ TypeHandle eglGraphicsStateGuardian::_type_handle;
 eglGraphicsStateGuardian::
 eglGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
        eglGraphicsStateGuardian *share_with) :
-#ifdef OPENGLES_2
-  GLES2GraphicsStateGuardian(engine, pipe)
-#else
-  GLESGraphicsStateGuardian(engine, pipe)
-#endif
+  BaseGraphicsStateGuardian(engine, pipe)
 {
   _share_context=0;
   _context=0;
@@ -128,11 +124,12 @@ choose_pixel_format(const FrameBufferProperties &properties,
   _fbprops.clear();
 
   int attrib_list[] = {
-#ifdef OPENGLES_1
+#if defined(OPENGLES_1)
     EGL_RENDERABLE_TYPE, EGL_OPENGL_ES_BIT,
-#endif
-#ifdef OPENGLES_2
+#elif defined(OPENGLES_2)
     EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+#else
+    EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT,
 #endif
     EGL_SURFACE_TYPE, need_window ? EGL_WINDOW_BIT : EGL_DONT_CARE,
     EGL_NONE
@@ -204,12 +201,36 @@ choose_pixel_format(const FrameBufferProperties &properties,
     egldisplay_cat.debug()
       << "Chosen config " << best_result << ": " << best_props << "\n";
     _fbconfig = configs[best_result];
+
+    EGLint attribs[32];
+    int n = 0;
+
 #ifdef OPENGLES_2
-    EGLint context_attribs[] = {EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE};
-    _context = eglCreateContext(_egl_display, _fbconfig, _share_context, context_attribs);
-#else
-    _context = eglCreateContext(_egl_display, _fbconfig, _share_context, nullptr);
+    attribs[n++] = EGL_CONTEXT_CLIENT_VERSION;
+    attribs[n++] = 2;
+#elif defined(OPENGLES_1)
+#else  // Regular OpenGL
+    if (gl_version.get_num_words() > 0) {
+      attribs[n++] = EGL_CONTEXT_MAJOR_VERSION;
+      attribs[n++] = gl_version[0];
+      if (gl_version.get_num_words() > 1) {
+        attribs[n++] = EGL_CONTEXT_MINOR_VERSION;
+        attribs[n++] = gl_version[1];
+      }
+    }
+    if (gl_debug) {
+      attribs[n++] = EGL_CONTEXT_OPENGL_DEBUG;
+      attribs[n++] = EGL_TRUE;
+    }
+    if (gl_forward_compatible) {
+      attribs[n++] = EGL_CONTEXT_OPENGL_FORWARD_COMPATIBLE;
+      attribs[n++] = EGL_TRUE;
+    }
 #endif
+    attribs[n] = EGL_NONE;
+
+    _context = eglCreateContext(_egl_display, _fbconfig, _share_context, (n > 0) ? attribs : nullptr);
+
     int err = eglGetError();
     if (_context && err == EGL_SUCCESS) {
 #ifdef HAVE_X11
@@ -243,11 +264,7 @@ choose_pixel_format(const FrameBufferProperties &properties,
  */
 void eglGraphicsStateGuardian::
 reset() {
-#ifdef OPENGLES_2
-  GLES2GraphicsStateGuardian::reset();
-#else
-  GLESGraphicsStateGuardian::reset();
-#endif
+  BaseGraphicsStateGuardian::reset();
 
   if (_gl_renderer == "Software Rasterizer") {
     _fbprops.set_force_software(1);
@@ -282,11 +299,7 @@ gl_flush() const {
   // This call requires synchronization with X.
   LightReMutexHolder holder(eglGraphicsPipe::_x_mutex);
 #endif
-#ifdef OPENGLES_2
-  GLES2GraphicsStateGuardian::gl_flush();
-#else
-  GLESGraphicsStateGuardian::gl_flush();
-#endif
+  BaseGraphicsStateGuardian::gl_flush();
 }
 
 /**
@@ -298,11 +311,7 @@ gl_get_error() const {
   // This call requires synchronization with X.
   LightReMutexHolder holder(eglGraphicsPipe::_x_mutex);
 #endif
-#ifdef OPENGLES_2
-  return GLES2GraphicsStateGuardian::gl_get_error();
-#else
-  return GLESGraphicsStateGuardian::gl_get_error();
-#endif
+  return BaseGraphicsStateGuardian::gl_get_error();
 }
 
 /**
@@ -310,11 +319,7 @@ gl_get_error() const {
  */
 void eglGraphicsStateGuardian::
 query_gl_version() {
-#ifdef OPENGLES_2
-  GLES2GraphicsStateGuardian::query_gl_version();
-#else
-  GLESGraphicsStateGuardian::query_gl_version();
-#endif
+  BaseGraphicsStateGuardian::query_gl_version();
 
   // Calling eglInitialize on an already-initialized display will just provide
   // us the version numbers.
@@ -329,9 +334,12 @@ query_gl_version() {
 #ifdef OPENGLES_2
   if (gles2gsg_cat.is_debug()) {
     gles2gsg_cat.debug()
-#else
+#elif defined(OPENGLES_1)
   if (glesgsg_cat.is_debug()) {
     glesgsg_cat.debug()
+#else
+  if (glgsg_cat.is_debug()) {
+    glgsg_cat.debug()
 #endif
       << "EGL_VERSION = " << _egl_version_major << "." << _egl_version_minor
       << "\n";
