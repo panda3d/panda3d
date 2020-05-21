@@ -166,6 +166,7 @@ class RoamingRalphDemo(ShowBase):
 
         # Uncomment this line to see the collision rays
         #self.ralphColNp.show()
+        #self.ralphGroundColNp.show()
         #self.camGroundColNp.show()
 
         # Uncomment this line to show a visual representation of the
