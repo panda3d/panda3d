@@ -148,22 +148,16 @@ class RoamingRalphDemo(ShowBase):
         # start above ralph's head, and the other will start above the camera.
         # A ray may hit the terrain, or it may hit a rock or a tree.  If it
         # hits the terrain, we can detect the height.
-        self.ralphGroundRay = CollisionRay()
-        self.ralphGroundRay.setOrigin(0, 0, 9)
-        self.ralphGroundRay.setDirection(0, 0, -1)
         self.ralphGroundCol = CollisionNode('ralphRay')
-        self.ralphGroundCol.addSolid(self.ralphGroundRay)
+        self.ralphGroundCol.addSolid(CollisionRay(origin=(0, 0, 9), direction=(0, 0, -1)))
         self.ralphGroundCol.setFromCollideMask(CollideMask.bit(0))
         self.ralphGroundCol.setIntoCollideMask(CollideMask.allOff())
         self.ralphGroundColNp = self.ralph.attachNewNode(self.ralphGroundCol)
         self.ralphGroundHandler = CollisionHandlerQueue()
         self.cTrav.addCollider(self.ralphGroundColNp, self.ralphGroundHandler)
 
-        self.camGroundRay = CollisionRay()
-        self.camGroundRay.setOrigin(0, 0, 9)
-        self.camGroundRay.setDirection(0, 0, -1)
         self.camGroundCol = CollisionNode('camRay')
-        self.camGroundCol.addSolid(self.camGroundRay)
+        self.camGroundCol.addSolid(CollisionRay(origin=(0, 0, 9), direction=(0, 0, -1)))
         self.camGroundCol.setFromCollideMask(CollideMask.bit(0))
         self.camGroundCol.setIntoCollideMask(CollideMask.allOff())
         self.camGroundColNp = self.camera.attachNewNode(self.camGroundCol)
