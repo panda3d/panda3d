@@ -161,10 +161,8 @@ handle_entries() {
           adjust = std::max(adjust, -max_adjust);
         }
 
-        CPT(TransformState) trans = def._target.get_transform();
-        LVecBase3 pos = trans->get_pos();
-        pos[2] += adjust;
-        def._target.set_transform(trans->set_pos(pos));
+        LVecBase3 adjustvec = LVecBase3(0, 0, adjust);
+        def._target.set_pos(def._target, adjustvec);
         def.updated_transform();
       } else {
         if (collide_cat.is_spam()) {
