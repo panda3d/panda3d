@@ -240,7 +240,6 @@ class RoamingRalphDemo(ShowBase):
             if currentAnim is not None:
                 self.ralph.stop()
                 self.ralph.pose("walk", 5)
-                self.isMoving = False
 
         # If the camera is too far from ralph, move it closer.
         # If the camera is too close to ralph, move it farther.
