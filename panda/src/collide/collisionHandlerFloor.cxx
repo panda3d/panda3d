@@ -102,24 +102,12 @@ set_highest_collision(const NodePath &target_node_path, const NodePath &from_nod
     max_height = min_height;
     highest = lowest;
   }
-  // #*#_has_contact = got_max;
 
-  #if 0
-    cout<<"\ncolliding with:\n";
-    for (Colliding::const_iterator i = _current_colliding.begin(); i != _current_colliding.end(); ++i) {
-      (**i).write(cout, 2);
-    }
-    cout<<"\nhighest:\n";
-    highest->write(cout, 2);
-    cout<<endl;
-  #endif
-  #if 1
   // We only collide with things we are impacting with.  Remove the
   // collisions:
   _current_colliding.clear();
   // Add only the one that we're impacting with:
   add_entry(highest);
-  #endif
 
   return max_height;
 }
@@ -157,71 +145,31 @@ handle_entries() {
       okflag = false;
     } else {
       ColliderDef &def = (*ci).second;
-      {
-        #if 0
-        // Get the maximum height for all collisions with this node.
-        bool got_max = false;
-        PN_stdfloat max_height = 0.0f;
-        CollisionEntry *max_entry = nullptr;
+      PN_stdfloat max_height = set_highest_collision(def._target, from_node_path, entries);
 
-        Entries::const_iterator ei;
-        for (ei = entries.begin(); ei != entries.end(); ++ei) {
-          CollisionEntry *entry = (*ei);
-          nassertr(entry != nullptr, false);
-          nassertr(from_node_path == entry->get_from_node_path(), false);
-
-          if (entry->has_surface_point()) {
-            LPoint3 point = entry->get_surface_point(def._target);
-            if (collide_cat.is_debug()) {
-              collide_cat.debug()
-                << "Intersection point detected at " << point << "\n";
-            }
-
-            PN_stdfloat height = point[2];
-            if (!got_max || height > max_height) {
-              got_max = true;
-              max_height = height;
-              max_entry = entry;
-            }
-          }
+      // Now set our height accordingly.
+      PN_stdfloat adjust = max_height + _offset;
+      if (!IS_THRESHOLD_ZERO(adjust, 0.001)) {
+        if (collide_cat.is_debug()) {
+          collide_cat.debug()
+            << "Adjusting height by " << adjust << "\n";
         }
 
-        // Record a collision with the topmost element for the
-        // CollisionHandlerEvent base class.
-        _current_colliding.insert(max_entry);
+        if (adjust < 0.0f && _max_velocity != 0.0f) {
+          PN_stdfloat max_adjust =
+            _max_velocity * ClockObject::get_global_clock()->get_dt();
+          adjust = std::max(adjust, -max_adjust);
+        }
 
-        // Now set our height accordingly.
-        PN_stdfloat adjust = max_height + _offset;
-        #else
-        PN_stdfloat max_height = set_highest_collision(def._target, from_node_path, entries);
-
-        // Now set our height accordingly.
-        PN_stdfloat adjust = max_height + _offset;
-        #endif
-        if (!IS_THRESHOLD_ZERO(adjust, 0.001)) {
-          if (collide_cat.is_debug()) {
-            collide_cat.debug()
-              << "Adjusting height by " << adjust << "\n";
-          }
-
-          if (adjust < 0.0f && _max_velocity != 0.0f) {
-            PN_stdfloat max_adjust =
-              _max_velocity * ClockObject::get_global_clock()->get_dt();
-            adjust = std::max(adjust, -max_adjust);
-          }
-
-          CPT(TransformState) trans = def._target.get_transform();
-          LVecBase3 pos = trans->get_pos();
-          pos[2] += adjust;
-          def._target.set_transform(trans->set_pos(pos));
-          def.updated_transform();
-
-          apply_linear_force(def, LVector3(0.0f, 0.0f, adjust));
-        } else {
-          if (collide_cat.is_spam()) {
-            collide_cat.spam()
-              << "Leaving height unchanged.\n";
-          }
+        CPT(TransformState) trans = def._target.get_transform();
+        LVecBase3 pos = trans->get_pos();
+        pos[2] += adjust;
+        def._target.set_transform(trans->set_pos(pos));
+        def.updated_transform();
+      } else {
+        if (collide_cat.is_spam()) {
+          collide_cat.spam()
+            << "Leaving height unchanged.\n";
         }
       }
     }
