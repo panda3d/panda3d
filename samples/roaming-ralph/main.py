@@ -13,6 +13,7 @@ from direct.showbase.ShowBase import ShowBase
 from panda3d.core import CollisionTraverser, CollisionNode
 from panda3d.core import CollisionHandlerQueue, CollisionRay
 from panda3d.core import CollisionHandlerPusher, CollisionSphere
+from panda3d.core import CollisionHandlerFloor
 from panda3d.core import Filename, AmbientLight, DirectionalLight
 from panda3d.core import PandaNode, NodePath, Camera, TextNode
 from panda3d.core import CollideMask
@@ -153,7 +154,12 @@ class RoamingRalphDemo(ShowBase):
         self.ralphGroundCol.setFromCollideMask(CollideMask.bit(0))
         self.ralphGroundCol.setIntoCollideMask(CollideMask.allOff())
         self.ralphGroundColNp = self.ralph.attachNewNode(self.ralphGroundCol)
-        self.ralphGroundHandler = CollisionHandlerQueue()
+        self.ralphGroundHandler = CollisionHandlerFloor()
+
+        # Note that we need to add ralph both to the handler and to the
+        # traverser; the handler needs to know which node to push back when a
+        # collision occurs!
+        self.ralphGroundHandler.addCollider(self.ralphGroundColNp, self.ralph)
         self.cTrav.addCollider(self.ralphGroundColNp, self.ralphGroundHandler)
 
         self.camGroundCol = CollisionNode('camRay')
@@ -254,16 +260,6 @@ class RoamingRalphDemo(ShowBase):
         # However, the class ShowBase that we inherit from has a task to do
         # this for us, if we assign a CollisionTraverser to self.cTrav.
         #self.cTrav.traverse(render)
-
-        # Adjust ralph's Z coordinate.  If ralph's ray hit terrain,
-        # update his Z
-
-        entries = list(self.ralphGroundHandler.entries)
-        entries.sort(key=lambda x: x.getSurfacePoint(render).getZ())
-
-        for entry in entries:
-            if entry.getIntoNode().getName() == "terrain":
-                self.ralph.setZ(entry.getSurfacePoint(render).getZ())
 
         # Keep the camera at one unit above the terrain,
         # or two units above ralph, whichever is greater.
