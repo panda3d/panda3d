@@ -60,7 +60,7 @@ set_budget(int total_budget) {
 }
 
 /**
- * Gets the total triangle budget of the drawer
+ * Gets the total triangle budget of the drawer.
  */
 INLINE int MeshDrawer2D::
 get_budget() {
@@ -79,7 +79,7 @@ set_clip(PN_stdfloat x, PN_stdfloat y, PN_stdfloat w, PN_stdfloat h) {
 }
 
 /**
- * Draws a 2d rectangle.  Ignores the cliping rectangle
+ * Draws a 2D rectangle.  Ignores the clipping rectangle
  */
 INLINE void MeshDrawer2D::
 quad_raw(const LVector3 &v1, const LVector4 &c1, const LVector2 &uv1,
@@ -125,7 +125,7 @@ rectangle_raw(PN_stdfloat x, PN_stdfloat y, PN_stdfloat w, PN_stdfloat h,
 }
 
 /**
- * Draws a 2d rectangle, that can be cliped
+ * Draws a 2D rectangle which can be clipped.
  */
 INLINE void MeshDrawer2D::
 rectangle(PN_stdfloat x, PN_stdfloat y, PN_stdfloat w, PN_stdfloat h,
