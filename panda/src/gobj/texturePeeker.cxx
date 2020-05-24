@@ -304,19 +304,48 @@ TexturePeeker(Texture *tex, Texture::CData *cdata) {
  */
 void TexturePeeker::
 lookup(LColor &color, PN_stdfloat u, PN_stdfloat v) const {
-  int x = int((u - cfloor(u)) * (PN_stdfloat)_x_size) % _x_size;
-  int y = int((v - cfloor(v)) * (PN_stdfloat)_y_size) % _y_size;
-  fetch_pixel(color, x, y);
+  lookup(color, u, v, 0);
 }
 
 /**
- *  Works like TexturePeeker::lookup(), but instead uv-coordinates integer
+ * Fills "color" with the RGBA color of the texel at point (u, v, w).
+ *
+ * The texel color is determined via nearest-point sampling (no filtering of
+ * adjacent pixels), regardless of the filter type associated with the
+ * texture.  u, v, and w will wrap around regardless of the texture's wrap
+ * mode.
+ */
+
+void TexturePeeker::
+lookup(LColor &color, PN_stdfloat u, PN_stdfloat v, PN_stdfloat w) const {
+  int x = int((u - cfloor(u)) * (PN_stdfloat)_x_size) % _x_size;
+  int y = int((v - cfloor(v)) * (PN_stdfloat)_y_size) % _y_size;
+  int z = int((w - cfloor(w)) * (PN_stdfloat)_z_size) % _z_size;
+
+  fetch_pixel(color, x, y, z);
+}
+
+/**
+ *  Works like TexturePeeker::lookup(), but instead of uv-coordinates integer
  *  coordinates are used.
  */
 void TexturePeeker::
 fetch_pixel(LColor& color, int x, int y) const {
-  nassertv(x >= 0 && x < _x_size && y >= 0 && y < _y_size);
-  const unsigned char *p = _image.p() + (y * _x_size + x) * _pixel_width;
+  fetch_pixel(color, x, y, 0);
+}
+
+/**
+ *  Works like TexturePeeker::lookup(), but instead of uvw-coordinates integer
+ *  coordinates are used.
+ */
+void TexturePeeker::
+fetch_pixel(LColor& color, int x, int y, int z) const {
+  nassertv(
+    x >= 0 && x < _x_size &&
+    y >= 0 && y < _y_size &&
+    z >= 0 && z < _z_size
+  );
+  const unsigned char *p = _image.p() + (z * _x_size * _y_size + y * _x_size + x) * _pixel_width;
   (*_get_texel)(color, p, _get_component);
 }
 
@@ -368,27 +397,6 @@ lookup_bilinear(LColor &color, PN_stdfloat u, PN_stdfloat v) const {
 
   color = (p00 * w00 + p01 * w01 + p10 * w10 + p11 * w11) / net_w;
   return true;
-}
-
-/**
- * Fills "color" with the RGBA color of the texel at point (u, v, w).
- *
- * The texel color is determined via nearest-point sampling (no filtering of
- * adjacent pixels), regardless of the filter type associated with the
- * texture.  u, v, and w will wrap around regardless of the texture's wrap
- * mode.
- */
-void TexturePeeker::
-lookup(LColor &color, PN_stdfloat u, PN_stdfloat v, PN_stdfloat w) const {
-  int x = int((u - cfloor(u)) * (PN_stdfloat)_x_size) % _x_size;
-  int y = int((v - cfloor(v)) * (PN_stdfloat)_y_size) % _y_size;
-  int z = int((w - cfloor(w)) * (PN_stdfloat)_z_size) % _z_size;
-
-  nassertv(x >= 0 && x < _x_size && y >= 0 && y < _y_size &&
-           z >= 0 && z < _z_size);
-  const unsigned char *p = _image.p() + (z * _x_size * _y_size + y * _x_size + x) * _pixel_width;
-
-  (*_get_texel)(color, p, _get_component);
 }
 
 /**

@@ -40,6 +40,7 @@ PUBLISHED:
   void lookup(LColor &color, PN_stdfloat u, PN_stdfloat v) const;
   void lookup(LColor &color, PN_stdfloat u, PN_stdfloat v, PN_stdfloat w) const;
   void fetch_pixel(LColor &color, int x, int y) const;
+  void fetch_pixel(LColor &color, int x, int y, int z) const;
   bool lookup_bilinear(LColor &color, PN_stdfloat u, PN_stdfloat v) const;
   void filter_rect(LColor &color,
                    PN_stdfloat min_u, PN_stdfloat min_v,
