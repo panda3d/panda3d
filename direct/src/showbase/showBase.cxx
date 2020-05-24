@@ -27,7 +27,7 @@ extern "C" { void CPSEnableForegroundOperation(ProcessSerialNumber* psn); }
 #include "camera.h"
 #include "graphicsPipeSelection.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <windows.h>  // For SystemParametersInfo()
 STICKYKEYS g_StartupStickyKeys = {sizeof(STICKYKEYS), 0};
 TOGGLEKEYS g_StartupToggleKeys = {sizeof(TOGGLEKEYS), 0};
@@ -131,7 +131,7 @@ query_fullscreen_testresult(int xsize, int ysize) {
 
 void
 store_accessibility_shortcut_keys() {
-#ifdef WIN32
+#ifdef _WIN32
   SystemParametersInfo(SPI_GETSTICKYKEYS, sizeof(STICKYKEYS), &g_StartupStickyKeys, 0);
   SystemParametersInfo(SPI_GETTOGGLEKEYS, sizeof(TOGGLEKEYS), &g_StartupToggleKeys, 0);
   SystemParametersInfo(SPI_GETFILTERKEYS, sizeof(FILTERKEYS), &g_StartupFilterKeys, 0);
@@ -140,7 +140,7 @@ store_accessibility_shortcut_keys() {
 
 void
 allow_accessibility_shortcut_keys(bool allowKeys) {
-#ifdef WIN32
+#ifdef _WIN32
   if( allowKeys )
   {
     // Restore StickyKeysetc to original state and enable Windows key

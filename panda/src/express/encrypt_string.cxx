@@ -17,6 +17,7 @@
 #include "encryptStream.h"
 #include "virtualFileSystem.h"
 #include "config_express.h"
+#include "stringStream.h"
 
 using std::istream;
 using std::istringstream;
@@ -26,12 +27,12 @@ using std::string;
 
 /**
  * Encrypts the indicated source string using the given password, and the
- * algorithm specified by encryption-algorithm.  Returns the encrypted string.
+ * algorithm specified by encryption-algorithm.  Returns the encrypted data.
  */
-string
+vector_uchar
 encrypt_string(const string &source, const string &password,
                const string &algorithm, int key_length, int iteration_count) {
-  ostringstream dest;
+  StringStream dest;
 
   {
     OEncryptStream encrypt;
@@ -48,11 +49,13 @@ encrypt_string(const string &source, const string &password,
     encrypt.write(source.data(), source.length());
 
     if (encrypt.fail()) {
-      return string();
+      return vector_uchar();
     }
   }
 
-  return dest.str();
+  vector_uchar result;
+  dest.swap_data(result);
+  return result;
 }
 
 /**
@@ -64,8 +67,8 @@ encrypt_string(const string &source, const string &password,
  * easily be detected, and the return value may simply be a garbage string.
  */
 string
-decrypt_string(const string &source, const string &password) {
-  istringstream source_stream(source);
+decrypt_string(const vector_uchar &source, const string &password) {
+  StringStream source_stream(source);
   ostringstream dest_stream;
 
   if (!decrypt_stream(source_stream, dest_stream, password)) {

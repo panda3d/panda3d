@@ -253,7 +253,7 @@ private:
                                BufferCacheLRU &buffer_cache_lru,
                                size_t &buffer_cache_size,
                                int released_buffer_cache_size,
-                               Buffers &released_buffers);
+                               pvector<BufferContext *> &released_buffers);
   BufferContext *get_cached_buffer(size_t data_size_bytes,
                                    GeomEnums::UsageHint usage_hint,
                                    BufferCache &buffer_cache,
@@ -262,7 +262,8 @@ private:
 
   ReMutex _lock;
   std::string _name;
-  Textures _prepared_textures, _released_textures;
+  Textures _prepared_textures;
+  pvector<TextureContext *> _released_textures;
   EnqueuedTextures _enqueued_textures;
   PreparedSamplers _prepared_samplers;
   ReleasedSamplers _released_samplers;
@@ -271,11 +272,14 @@ private:
   EnqueuedGeoms _enqueued_geoms;
   Shaders _prepared_shaders, _released_shaders;
   EnqueuedShaders _enqueued_shaders;
-  Buffers _prepared_vertex_buffers, _released_vertex_buffers;
+  Buffers _prepared_vertex_buffers;
+  pvector<BufferContext *> _released_vertex_buffers;
   EnqueuedVertexBuffers _enqueued_vertex_buffers;
-  Buffers _prepared_index_buffers, _released_index_buffers;
+  Buffers _prepared_index_buffers;
+  pvector<BufferContext *> _released_index_buffers;
   EnqueuedIndexBuffers _enqueued_index_buffers;
-  Buffers _prepared_shader_buffers, _released_shader_buffers;
+  Buffers _prepared_shader_buffers;
+  pvector<BufferContext *> _released_shader_buffers;
   EnqueuedShaderBuffers _enqueued_shader_buffers;
 
   BufferCache _vertex_buffer_cache;

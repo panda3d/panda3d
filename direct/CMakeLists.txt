@@ -20,9 +20,6 @@ set(P3DIRECT_COMPONENTS
 )
 if(HAVE_PYTHON)
   list(APPEND P3DIRECT_COMPONENTS p3distributed)
-  get_target_property(_p3distributed_exts p3distributed IGATE_EXTENSIONS)
-  set_source_files_properties(${_p3distributed_exts}
-    PROPERTIES COMPILE_DEFINITIONS BUILDING_DIRECT_DISTRIBUTED)
 endif()
 
 set(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME "DirectDevel")
@@ -33,8 +30,8 @@ set_property(TARGET p3direct PROPERTY LINKER_LANGUAGE "CXX")
 # Installation:
 install(TARGETS p3direct
   EXPORT Direct COMPONENT Direct
-  DESTINATION lib
-  RUNTIME DESTINATION bin
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
   ARCHIVE COMPONENT DirectDevel)
 
 if(HAVE_PYTHON)
@@ -59,11 +56,12 @@ if(HAVE_PYTHON)
 print(\"Warning: pandac.PandaModules is deprecated, import from panda3d.core instead\")\n")
 
   foreach(module ${ALL_INTERROGATE_MODULES})
+    string(REGEX REPLACE "^.*\\." "" module_name "${module}")
     file(APPEND "${CMAKE_CURRENT_BINARY_DIR}/pandac/PandaModules.py" "
 try:
     from ${module} import *
 except ImportError as err:
-    if not (\"No module named\" in str(err) and \"${module}\" in str(err)):
+    if not (\"No module named\" in str(err) and \"${module_name}\" in str(err)):
         raise
 ")
   endforeach()

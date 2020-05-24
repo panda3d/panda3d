@@ -82,7 +82,7 @@ add_subdirectory(metalibs/pandaphysics)
 
 # Now add the Python modules:
 set(CORE_MODULE_COMPONENTS
-  p3chan p3char p3collide p3cull p3device p3dgraph p3display p3distort
+  p3chan p3char p3collide p3cull p3device p3dgraph p3display
   p3downloader p3dxml p3event p3express p3gobj p3grutil p3gsgbase p3linmath
   p3mathutil p3movies p3parametrics p3pgraph p3pgraphnodes p3pgui
   p3pipeline p3pnmimage p3pstatclient p3putil p3recorder p3text p3tform
@@ -107,9 +107,54 @@ endif()
 if(INTERROGATE_PYTHON_INTERFACE)
   add_python_module(panda3d.core ${CORE_MODULE_COMPONENTS} LINK panda)
 
-  if(BUILD_SHARED_LIBS)
-    install_python_package(panda3d ARCH)
+  # Generate our __init__.py
+  if(WIN32)
+    file(READ "${PROJECT_SOURCE_DIR}/cmake/templates/win32_python/__init__.py" win32_init)
+  else()
+    set(win32_init "")
   endif()
+
+  set(init_file "\"Python bindings for the Panda3D libraries\"
+
+__version__ = '${PROJECT_VERSION}'
+
+if __debug__:
+    if 1 / 2 == 0:
+        raise ImportError(\"Python 2 is not supported.\")
+
+${win32_init}")
+
+  set(dtoolconfig_file "'''Alias of :mod:`panda3d.interrogatedb`.
+
+.. deprecated:: 1.10.0
+   This module has been renamed to :mod:`panda3d.interrogatedb`.
+'''
+
+if __debug__:
+    print(\"Warning: panda3d.dtoolconfig is deprecated, use panda3d.interrogatedb instead.\")
+from .interrogatedb import *
+")
+
+  if(IS_MULTICONFIG)
+    foreach(config ${CMAKE_CONFIGURATION_TYPES})
+      # Generate an __init__.py in the per-configuration directory.
+      file(WRITE "${PROJECT_BINARY_DIR}/${config}/panda3d/__init__.py" ${init_file})
+      file(WRITE "${PROJECT_BINARY_DIR}/${config}/panda3d/dtoolconfig.py" ${dtoolconfig_file})
+    endforeach(config)
+  else()
+    file(WRITE "${PROJECT_BINARY_DIR}/panda3d/__init__.py" ${init_file})
+    file(WRITE "${PROJECT_BINARY_DIR}/panda3d/dtoolconfig.py" ${dtoolconfig_file})
+  endif()
+
+  # Also generate a panda3d.dist-info directory.
+  set(entry_points_file "[distutils.commands]
+build_apps = direct.dist.commands:build_apps
+bdist_apps = direct.dist.commands:bdist_apps
+")
+
+  configure_file("${PROJECT_SOURCE_DIR}/cmake/templates/METADATA.in"
+                 "${PROJECT_BINARY_DIR}/panda3d.dist-info/METADATA")
+  file(WRITE "${PROJECT_BINARY_DIR}/panda3d.dist-info/entry_points.txt" ${entry_points_file})
 
   if(HAVE_BULLET)
     add_python_module(panda3d.bullet p3bullet IMPORT panda3d.core COMPONENT BulletPython)
@@ -123,6 +168,7 @@ if(INTERROGATE_PYTHON_INTERFACE)
     export_targets(EggPython NAMESPACE "Panda3D::Python::" COMPONENT EggDevel)
   endif()
 
+  add_python_module(panda3d.fx pandafx IMPORT panda3d.core)
   add_python_module(panda3d.physics p3physics p3particlesystem LINK pandaphysics IMPORT panda3d.core)
 
   if(HAVE_ODE)
@@ -139,6 +185,7 @@ if(INTERROGATE_PYTHON_INTERFACE)
 
   if(HAVE_VRPN)
     add_python_module(panda3d.vrpn p3vrpn IMPORT panda3d.core COMPONENT VRPNPython)
+    set_target_properties(panda3d.vrpn PROPERTIES CXX_EXCEPTIONS ON)
 
     export_targets(VRPNPython NAMESPACE "Panda3D::Python::" COMPONENT VRPNDevel)
   endif()

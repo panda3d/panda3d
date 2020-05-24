@@ -18,7 +18,7 @@ set(P3WINDISPLAY_SOURCES
 composite_sources(p3windisplay P3WINDISPLAY_SOURCES)
 add_component_library(p3windisplay SYMBOL BUILDING_PANDAWIN
   ${P3WINDISPLAY_HEADERS} ${P3WINDISPLAY_SOURCES})
-target_link_libraries(p3windisplay panda User32.lib Imm32.lib)
+target_link_libraries(p3windisplay panda user32.lib imm32.lib)
 
 if(HAVE_DX9)
   target_compile_definitions(p3windisplay PRIVATE HAVE_DX9)
@@ -27,7 +27,7 @@ endif()
 if(NOT BUILD_METALIBS)
   install(TARGETS p3windisplay
     EXPORT Core COMPONENT Core
-    DESTINATION lib
-    RUNTIME DESTINATION bin
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     ARCHIVE COMPONENT CoreDevel)
 endif()

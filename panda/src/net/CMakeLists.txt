@@ -37,14 +37,15 @@ target_link_libraries(p3net p3nativenet p3pipeline p3pandabase pandaexpress)
 target_interrogate(p3net ALL)
 
 if(WIN32)
-  target_link_libraries(p3net Iphlpapi.lib)
+  target_link_libraries(p3net iphlpapi.lib)
 endif()
 
 if(NOT BUILD_METALIBS)
   install(TARGETS p3net
     EXPORT Core COMPONENT Core
-    DESTINATION lib
-    RUNTIME DESTINATION bin
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d
     ARCHIVE COMPONENT CoreDevel)
 endif()
-install(FILES ${P3NET_HEADERS} COMPONENT CoreDevel DESTINATION include/panda3d)
+install(FILES ${P3NET_HEADERS} COMPONENT CoreDevel DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d)

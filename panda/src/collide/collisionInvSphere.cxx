@@ -16,6 +16,7 @@
 #include "collisionSphere.h"
 #include "collisionCapsule.h"
 #include "collisionLine.h"
+#include "collisionParabola.h"
 #include "collisionRay.h"
 #include "collisionSegment.h"
 #include "collisionHandler.h"
@@ -288,6 +289,118 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
   }
 
   return new_entry;
+}
+
+
+PT(CollisionEntry) CollisionInvSphere::
+test_intersection_from_parabola(const CollisionEntry &entry) const {
+  const CollisionParabola *parabola;
+  DCAST_INTO_R(parabola, entry.get_from(), nullptr);
+
+  const LMatrix4 &wrt_mat = entry.get_wrt_mat();
+
+  // Convert the parabola into local coordinate space
+  LParabola local_p(parabola->get_parabola());
+  local_p.xform(wrt_mat);
+
+  double t;
+  LPoint3 into_intersection_point;
+  if (!intersects_parabola(t, local_p, parabola->get_t1(), parabola->get_t2(),
+                           local_p.calc_point(parabola->get_t1()),
+                           local_p.calc_point(parabola->get_t2()), into_intersection_point)) {
+    // No intersection.
+    return nullptr;
+  }
+
+  if (collide_cat.is_debug()) {
+    collide_cat.debug()
+      << "intersection detected from " << entry.get_from_node_path()
+      << " into " << entry.get_into_node_path() << "\n";
+  }
+
+  PT(CollisionEntry) new_entry = new CollisionEntry(entry);
+
+  LVector3 normal = into_intersection_point - get_center();
+  normal.normalize();
+  if (has_effective_normal() && parabola->get_respect_effective_normal()) {
+    new_entry->set_surface_normal(get_effective_normal());
+  } else {
+    new_entry->set_surface_normal(-normal);
+  }
+
+  LPoint3 surface_point = normal * get_radius() + get_center();
+  new_entry->set_surface_point(surface_point);
+
+  return new_entry;
+}
+
+
+bool CollisionInvSphere::
+intersects_parabola(double &t, const LParabola &parabola,
+                    double t1, double t2,
+                    const LPoint3 &p1, const LPoint3 &p2, LPoint3 &into_intersection_point) const {
+
+  /* The method is pretty much identical to CollisionSphere::intersects_parabola:
+   * recursively divide the parabola into "close enough" line segments, and test
+   * their intersection with the sphere using tests similar to
+   * CollisionInvSphere::test_intersection_from_segment. Returns the
+   * point of intersection via pass-by-reference.
+   */
+
+  if (t1 == t2) {
+    // Special case: a single point.
+    if ((p1 - get_center()).length_squared() < get_radius() * get_radius()) {
+      // No intersection.
+      return false;
+    }
+    t = t1;
+    return true;
+  }
+
+  double tmid = (t1 + t2) * 0.5;
+  if (tmid != t1 && tmid != t2) {
+    LPoint3 pmid = parabola.calc_point(tmid);
+    LPoint3 pmid2 = (p1 + p2) * 0.5f;
+
+    if ((pmid - pmid2).length_squared() > 0.001f) {
+      if (intersects_parabola(t, parabola, t1, tmid, p1, pmid, into_intersection_point)) {
+        return true;
+      }
+      return intersects_parabola(t, parabola, tmid, t2, pmid, p2, into_intersection_point);
+    }
+  }
+
+  // Line segment is close enough to parabola. Test for intersections
+  double t1a, t2a;
+  if (!intersects_line(t1a, t2a, p1, p2 - p1, 0.0f)) {
+    // segment is somewhere outside the sphere, so
+    // we have an intersection, simply return the first point
+    t = 0.0;
+  }
+  else {
+    if (t2a <= 0.0) {
+      // segment completely below sphere
+      t = 0.0;
+    }
+    else if (t1a >= 1.0) {
+      // segment acompletely bove sphere
+      t = 1.0;
+    }
+    else if (t2a <= 1.0) {
+      // bottom edge intersects sphere
+      t = t2a;
+    }
+    else if (t1a >= 0.0) {
+      // top edge intersects sphere
+      t = t1a;
+    }
+    else {
+      // completely inside sphere, no intersection
+      return false;
+    }
+  }
+  into_intersection_point = p1 + t * (p2 - p1);
+  return true;
 }
 
 /**

@@ -37,11 +37,18 @@ composite_sources(p3glstuff P3GLSTUFF_SOURCES)
 add_component_library(p3glstuff NOINIT ${P3GLSTUFF_HEADERS} ${P3GLSTUFF_SOURCES})
 target_link_libraries(p3glstuff panda)
 
+if(APPLE)
+  # We acknowledge Apple's hostility to open standards so that the SDK won't
+  # bother our users about it.
+  target_compile_definitions(p3glstuff PUBLIC GL_SILENCE_DEPRECATION)
+endif()
+
 if(NOT BUILD_METALIBS)
   install(TARGETS p3glstuff
     EXPORT OpenGL COMPONENT OpenGL
-    DESTINATION lib
-    RUNTIME DESTINATION bin
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d
     ARCHIVE COMPONENT OpenGLDevel)
 endif()
-install(FILES ${P3GLSTUFF_HEADERS} COMPONENT OpenGLDevel DESTINATION include/panda3d)
+install(FILES ${P3GLSTUFF_HEADERS} COMPONENT OpenGLDevel DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d)

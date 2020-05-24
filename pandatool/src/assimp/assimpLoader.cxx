@@ -179,6 +179,7 @@ build_graph() {
   // And then the meshes.
   _geoms = new PT(Geom)[_scene->mNumMeshes];
   _geom_matindices = new unsigned int[_scene->mNumMeshes];
+  _characters = new PT(Character)[_scene->mNumMeshes];
   for (size_t i = 0; i < _scene->mNumMeshes; ++i) {
     load_mesh(i);
   }
@@ -197,6 +198,7 @@ build_graph() {
   delete[] _mat_states;
   delete[] _geoms;
   delete[] _geom_matindices;
+  delete[] _characters;
 }
 
 /**
@@ -231,8 +233,11 @@ load_texture(size_t index) {
 
   if (tex.mHeight == 0) {
     // Compressed texture.
-    assimp_cat.debug()
-      << "Reading embedded compressed texture with format " << tex.achFormatHint << " and size " << tex.mWidth << "\n";
+    if (assimp_cat.is_debug()) {
+      assimp_cat.debug()
+        << "Reading embedded compressed texture with format "
+        << tex.achFormatHint << " and size " << tex.mWidth << "\n";
+    }
     stringstream str;
     str.write((char*) tex.pcData, tex.mWidth);
 
@@ -258,8 +263,10 @@ load_texture(size_t index) {
       }
     }
   } else {
-    assimp_cat.debug()
-      << "Reading embedded raw texture with size " << tex.mWidth << "x" << tex.mHeight << "\n";
+    if (assimp_cat.is_debug()) {
+      assimp_cat.debug()
+        << "Reading embedded raw texture with size " << tex.mWidth << "x" << tex.mHeight << "\n";
+    }
 
     ptex->setup_2d_texture(tex.mWidth, tex.mHeight, Texture::T_unsigned_byte, Texture::F_rgba);
     PTA_uchar data = ptex->modify_ram_image();
@@ -445,8 +452,10 @@ create_joint(Character *character, CharacterJointBundle *bundle, PartGroup *pare
                 t.a4, t.b4, t.c4, t.d4);
   PT(CharacterJoint) joint = new CharacterJoint(character, bundle, parent, node.mName.C_Str(), mat);
 
-  assimp_cat.debug()
-    << "Creating joint for: " << node.mName.C_Str() << "\n";
+  if (assimp_cat.is_debug()) {
+    assimp_cat.debug()
+      << "Creating joint for: " << node.mName.C_Str() << "\n";
+  }
 
   for (size_t i = 0; i < node.mNumChildren; ++i) {
     if (_bonemap.find(node.mChildren[i]->mName.C_Str()) != _bonemap.end()) {
@@ -471,8 +480,10 @@ create_anim_channel(const aiAnimation &anim, AnimBundle *bundle, AnimGroup *pare
   }
 
   if (node_anim) {
-    assimp_cat.debug()
-      << "Found channel for node: " << node.mName.C_Str() << "\n";
+    if (assimp_cat.is_debug()) {
+      assimp_cat.debug()
+        << "Found channel for node: " << node.mName.C_Str() << "\n";
+    }
     // assimp_cat.debug() << "Num Position Keys " <<
     // node_anim->mNumPositionKeys << "\n"; assimp_cat.debug() << "Num
     // Rotation Keys " << node_anim->mNumRotationKeys << "\n";
@@ -520,7 +531,7 @@ create_anim_channel(const aiAnimation &anim, AnimBundle *bundle, AnimGroup *pare
     group->set_table('j', tablej);
     group->set_table('k', tablek);
   }
-  else {
+  else if (assimp_cat.is_debug()) {
     assimp_cat.debug()
       << "No channel found for node: " << node.mName.C_Str() << "\n";
   }
@@ -543,8 +554,11 @@ load_mesh(size_t index) {
   // Check if we need to make a Character
   PT(Character) character = nullptr;
   if (mesh.HasBones()) {
-    assimp_cat.debug()
-      << "Creating character for " << mesh.mName.C_Str() << "\n";
+    if (assimp_cat.is_debug()) {
+      assimp_cat.debug()
+        << "Creating character for mesh '" << mesh.mName.C_Str() << "' with "
+        << mesh.mNumBones << " bones\n";
+    }
 
     // Find and add all bone nodes to the bone map
     for (size_t i = 0; i < mesh.mNumBones; ++i) {
@@ -584,8 +598,10 @@ load_mesh(size_t index) {
       const aiBone &bone = *mesh.mBones[i];
       CharacterJoint *joint = character->find_joint(bone.mName.C_Str());
       if (joint == nullptr) {
-        assimp_cat.debug()
-          << "Could not find joint for bone: " << bone.mName.C_Str() << "\n";
+        if (assimp_cat.is_debug()) {
+          assimp_cat.debug()
+            << "Could not find joint for bone: " << bone.mName.C_Str() << "\n";
+        }
         continue;
       }
 
@@ -627,11 +643,17 @@ load_mesh(size_t index) {
     aiAnimation &ai_anim = *_scene->mAnimations[i];
     bool convert_anim = false;
 
-    assimp_cat.debug()
-      << "Checking to see if anim (" << ai_anim.mName.C_Str() << ") matches character (" << mesh.mName.C_Str() << ")\n";
-    for (size_t j = 0; j < ai_anim.mNumChannels; ++j) {
+    if (assimp_cat.is_debug()) {
       assimp_cat.debug()
-        << "Searching for " << ai_anim.mChannels[j]->mNodeName.C_Str() << " in bone map" << "\n";
+        << "Checking to see if anim (" << ai_anim.mName.C_Str()
+        << ") matches character (" << mesh.mName.C_Str() << ")\n";
+    }
+    for (size_t j = 0; j < ai_anim.mNumChannels; ++j) {
+      if (assimp_cat.is_spam()) {
+        assimp_cat.spam()
+          << "Searching for " << ai_anim.mChannels[j]->mNodeName.C_Str()
+          << " in bone map" << "\n";
+      }
       if (_bonemap.find(ai_anim.mChannels[j]->mNodeName.C_Str()) != _bonemap.end()) {
         convert_anim = true;
         break;
@@ -639,8 +661,11 @@ load_mesh(size_t index) {
     }
 
     if (convert_anim) {
-      assimp_cat.debug()
-        << "Found animation (" << ai_anim.mName.C_Str() << ") for character (" << mesh.mName.C_Str() << ")\n";
+      if (assimp_cat.is_debug()) {
+        assimp_cat.debug()
+          << "Found animation (" << ai_anim.mName.C_Str()
+          << ") for character (" << mesh.mName.C_Str() << ")\n";
+      }
 
       // Now create the animation
       unsigned int frames = 0;
@@ -656,10 +681,12 @@ load_mesh(size_t index) {
         }
       }
       PN_stdfloat fps = frames / (ai_anim.mTicksPerSecond * ai_anim.mDuration);
-      assimp_cat.debug()
-        << "FPS " << fps << "\n";
-      assimp_cat.debug()
-        << "Frames " << frames << "\n";
+      if (assimp_cat.is_debug()) {
+        assimp_cat.debug()
+          << "FPS " << fps << "\n";
+        assimp_cat.debug()
+          << "Frames " << frames << "\n";
+      }
 
       PT(AnimBundle) bundle = new AnimBundle(mesh.mName.C_Str(), fps, frames);
       PT(AnimGroup) skeleton = new AnimGroup(bundle, "<skeleton>");
@@ -810,37 +837,103 @@ load_mesh(size_t index) {
   _geom_matindices[index] = mesh.mMaterialIndex;
 
   if (character) {
-    _charmap[mesh.mName.C_Str()] = character;
+    _characters[index] = character;
+
+    PT(GeomNode) gnode = new GeomNode("");
+    gnode->add_geom(geom);
+    gnode->set_state(_mat_states[mesh.mMaterialIndex]);
+    character->add_child(gnode);
   }
 }
 
 /**
- * Converts an aiNode into a PandaNode.
+ * Converts an aiNode into a PandaNode.  Returns true if the node had anything
+ * of interest under it, false otherwise.
  */
-void AssimpLoader::
-load_node(const aiNode &node, PandaNode *parent) {
+bool AssimpLoader::
+load_node(const aiNode &node, PandaNode *parent, bool under_joint) {
   PT(PandaNode) pnode;
-  PT(Character) character;
-
-  // Skip nodes we've converted to joints
-  if (_bonemap.find(node.mName.C_Str()) != _bonemap.end()) {
-      return;
-  }
-
-  // Create the node and give it a name.
   string name (node.mName.data, node.mName.length);
-  if (node.mNumMeshes > 0) {
-    pnode = new GeomNode(name);
-  } else {
-    pnode = new PandaNode(name);
+
+  if (assimp_cat.is_debug()) {
+    assimp_cat.debug()
+      << "Converting node '" << name << "' with " << node.mNumMeshes
+      << " meshes and " << node.mNumChildren << " children\n";
   }
 
-  if (_charmap.find(node.mName.C_Str()) != _charmap.end()) {
-    character = _charmap[node.mName.C_Str()];
-    parent->add_child(character);
-  } else {
-    parent->add_child(pnode);
+  if (!under_joint) {
+    under_joint = (_bonemap.find(node.mName.C_Str()) != _bonemap.end());
   }
+
+  bool prune = false;
+
+  if (node.mNumMeshes == 0) {
+    pnode = new PandaNode(name);
+
+    // Possibly prune this if this is a joint or under a joint.
+    prune = under_joint;
+  }
+  else if (node.mNumMeshes == 1) {
+    size_t meshIndex = node.mMeshes[0];
+
+    Character *character = _characters[meshIndex];
+    if (character != nullptr) {
+      pnode = new PandaNode(name);
+      pnode->add_child(character);
+    } else {
+      const RenderState *state = _mat_states[_geom_matindices[meshIndex]];
+      PT(GeomNode) gnode = new GeomNode(name);
+      gnode->add_geom(_geoms[meshIndex]);
+      if (state != nullptr) {
+        // Only set the state on the GeomNode if there are no child nodes.
+        if (node.mNumChildren == 0) {
+          gnode->set_state(state);
+        } else {
+          gnode->set_geom_state(0, state);
+        }
+      }
+      pnode = gnode;
+    }
+  }
+  else {
+    // Do we have regular meshes or just animated meshes?
+    bool character_only = true;
+
+    // First add all the regular meshes.
+    for (size_t i = 0; i < node.mNumMeshes; ++i) {
+      size_t meshIndex = node.mMeshes[i];
+
+      if (_characters[meshIndex] == nullptr) {
+        character_only = false;
+        break;
+      }
+    }
+
+    PT(GeomNode) gnode;
+    if (character_only) {
+      pnode = new PandaNode(name);
+    } else {
+      gnode = new GeomNode(name);
+      pnode = gnode;
+    }
+
+    for (size_t i = 0; i < node.mNumMeshes; ++i) {
+      size_t meshIndex = node.mMeshes[i];
+
+      Character *character = _characters[meshIndex];
+      if (character != nullptr) {
+        // An animated mesh, which already is converted as Character with an
+        // attached GeomNode.
+        pnode->add_child(character);
+      } else {
+        // A non-animated mesh.
+        gnode->add_geom(_geoms[node.mMeshes[i]],
+          _mat_states[_geom_matindices[meshIndex]]);
+      }
+    }
+  }
+
+  parent->add_child(pnode);
 
   // Load in the transformation matrix.
   const aiMatrix4x4 &t = node.mTransformation;
@@ -853,31 +946,21 @@ load_node(const aiNode &node, PandaNode *parent) {
   }
 
   for (size_t i = 0; i < node.mNumChildren; ++i) {
-    load_node(*node.mChildren[i], pnode);
+    if (load_node(*node.mChildren[i], pnode, under_joint)) {
+      prune = false;
+    }
   }
 
-  if (node.mNumMeshes > 0) {
-    // Remember, we created this as GeomNode earlier.
-    PT(GeomNode) gnode = DCAST(GeomNode, pnode);
-    size_t meshIndex;
-
-    // If there's only mesh, don't bother using a per-geom state.
-    if (node.mNumMeshes == 1) {
-      meshIndex = node.mMeshes[0];
-      gnode->add_geom(_geoms[meshIndex]);
-      gnode->set_state(_mat_states[_geom_matindices[meshIndex]]);
-    } else {
-      for (size_t i = 0; i < node.mNumMeshes; ++i) {
-        meshIndex = node.mMeshes[i];
-        gnode->add_geom(_geoms[node.mMeshes[i]],
-          _mat_states[_geom_matindices[meshIndex]]);
-      }
+  if (prune) {
+    // This is an empty node in a hierarchy of joints, prune it.
+    parent->remove_child(pnode);
+    if (assimp_cat.is_debug()) {
+      assimp_cat.debug()
+        << "Pruning node '" << name << "'\n";
     }
-
-    if (character) {
-        assimp_cat.debug() << "Adding char to geom\n";
-      character->add_child(gnode);
-    }
+    return false;
+  } else {
+    return true;
   }
 }
 
@@ -887,7 +970,9 @@ load_node(const aiNode &node, PandaNode *parent) {
 void AssimpLoader::
 load_light(const aiLight &light) {
   string name (light.mName.data, light.mName.length);
-  assimp_cat.debug() << "Found light '" << name << "'\n";
+  if (assimp_cat.is_debug()) {
+    assimp_cat.debug() << "Found light '" << name << "'\n";
+  }
 
   aiColor3D col;
   aiVector3D vec;

@@ -18,6 +18,10 @@
 #include "dcmsgtypes.h"
 #include "config_distributed.h"
 
+#ifdef HAVE_PYTHON
+#include "py_panda.h"
+#endif
+
 static const PN_stdfloat smooth_node_epsilon = 0.01;
 static const double network_time_precision = 100.0;  // Matches ClockDelta.py
 

@@ -1,5 +1,7 @@
 
 from .DirectGlobals import *
+from panda3d.core import VBase4
+from direct.task.Task import Task
 
 # Routines to adjust values
 def ROUND_TO(value, divisor):

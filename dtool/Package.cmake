@@ -1,3 +1,153 @@
+set(_thirdparty_dir_default "${PROJECT_SOURCE_DIR}/thirdparty")
+if(NOT (APPLE OR WIN32) OR NOT IS_DIRECTORY "${_thirdparty_dir_default}")
+  set(_thirdparty_dir_default "")
+endif()
+
+set(THIRDPARTY_DIRECTORY "${_thirdparty_dir_default}" CACHE PATH
+  "Optional location of a makepanda-style thirdparty directory. All libraries
+   located here will be prioritized over system libraries. Useful for
+   cross-compiling.")
+
+set(THIRDPARTY_DLLS)
+
+if(THIRDPARTY_DIRECTORY)
+  # This policy is necessary for PackageName_ROOT variables to be respected
+  if(POLICY CMP0074)
+    cmake_policy(GET CMP0074 _policy_cmp0074)
+  endif()
+
+  if(NOT _policy_cmp0074 STREQUAL "NEW")
+    message(FATAL_ERROR
+      "Your version of CMake is too old; please upgrade or unset THIRDPARTY_DIRECTORY to continue.")
+  endif()
+
+  # Dig up the actual "libs" directory
+  if(APPLE)
+    set(_package_dir "${THIRDPARTY_DIRECTORY}/darwin-libs-a")
+
+    # Make sure thirdparty has the first shot, not system frameworks
+    set(CMAKE_FIND_FRAMEWORK LAST)
+
+  elseif(WIN32)
+    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+      set(_package_dir "${THIRDPARTY_DIRECTORY}/win-libs-vc14-x64")
+
+      file(GLOB _python_dirs "${THIRDPARTY_DIRECTORY}/win-python*-x64")
+    else()
+      set(_package_dir "${THIRDPARTY_DIRECTORY}/win-libs-vc14")
+
+      file(GLOB _python_dirs "${THIRDPARTY_DIRECTORY}/win-python*")
+    endif()
+
+    list(REVERSE _python_dirs) # Descending order of version
+    if(NOT DEFINED Python_ROOT)
+      set(Python_ROOT "${_python_dirs}")
+    endif()
+
+    set(BISON_ROOT "${THIRDPARTY_DIRECTORY}/win-util")
+    set(FLEX_ROOT "${THIRDPARTY_DIRECTORY}/win-util")
+
+  else()
+    message(FATAL_ERROR
+      "You can't use THIRDPARTY_DIRECTORY on this platform. Unset it to continue.")
+
+  endif()
+
+  if(NOT EXISTS "${_package_dir}")
+    message(FATAL_ERROR
+      "Either your THIRDPARTY_DIRECTORY path does not exist, or it is for the wrong platform.")
+
+  endif()
+
+  foreach(_Package
+    ARToolKit
+    Assimp
+    Bullet
+    Cg
+    Eigen3
+    FCollada
+    FFMPEG
+    FMODEx
+    Freetype
+    HarfBuzz
+    JPEG
+    LibSquish
+    ODE
+    Ogg
+    OpenAL
+    OpenEXR
+    OpenSSL
+    OpusFile
+    PNG
+    SWResample
+    SWScale
+    TIFF
+    VorbisFile
+    VRPN
+    ZLIB
+  )
+
+    string(TOLOWER "${_Package}" _package)
+    string(TOUPPER "${_Package}" _PACKAGE)
+
+    # Some packages in the thirdparty dir have different subdirectory names from
+    # the name of the CMake package
+    if(_package STREQUAL "cg")
+      set(_package "nvidiacg")
+    elseif(_package STREQUAL "eigen3")
+      set(_package "eigen")
+    elseif(_package STREQUAL "ogg")
+      set(_package "vorbis") # It's in the same install dir here
+    elseif(_package STREQUAL "opusfile")
+      set(_package "opus")
+    elseif(_package STREQUAL "libsquish")
+      set(_package "squish")
+    elseif(_package STREQUAL "swresample" OR _package STREQUAL "swscale")
+      set(_package "ffmpeg") # These are also part of FFmpeg
+    elseif(_package STREQUAL "vorbisfile")
+      set(_package "vorbis")
+    endif()
+
+    # Set search path
+    set(${_Package}_ROOT "${_package_dir}/${_package}")
+
+    # Set up copying DLLs, if necessary
+    file(GLOB _dlls "${${_Package}_ROOT}/bin/*.dll")
+    if(_dlls)
+      set(_havevar "HAVE_${_PACKAGE}")
+      set(THIRDPARTY_DLLS_${_havevar} "${_dlls}")
+      list(APPEND THIRDPARTY_DLLS "${_havevar}")
+
+    endif()
+
+  endforeach(_Package)
+
+endif()
+
+# This is used to copy the DLLs alongside the output of `package`
+function(thirdparty_copy_alongside package)
+  set(_dlls)
+
+  foreach(_havevar ${THIRDPARTY_DLLS})
+    if(${_havevar})
+      list(APPEND _dlls ${THIRDPARTY_DLLS_${_havevar}})
+    endif()
+  endforeach(_havevar)
+
+  if(NOT _dlls)
+    # Don't try to copy/install nothingness
+    return()
+  endif()
+
+  add_custom_command(TARGET ${package} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+      ${_dlls} $<TARGET_FILE_DIR:${package}>
+  )
+
+  # Also install the DLLs
+  install(FILES ${_dlls} DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+endfunction(thirdparty_copy_alongside)
 
 #
 # ------------ Python ------------
@@ -29,20 +179,42 @@ endif()
 set(WANT_PYTHON_VERSION ""
   CACHE STRING "Which Python version to seek out for building Panda3D against.")
 
+if(DEFINED _PREV_WANT_PYTHON_VERSION
+    AND NOT _PREV_WANT_PYTHON_VERSION STREQUAL WANT_PYTHON_VERSION)
+  # The user changed WANT_PYTHON_VERSION. We need to force FindPython to start
+  # anew, deleting any variable that was autodetected last time
+  foreach(_prev_var ${_PREV_PYTHON_VALUES})
+    string(REPLACE "=" ";" _prev_var "${_prev_var}")
+    list(GET _prev_var 0 _prev_var_name)
+    list(GET _prev_var 1 _prev_var_sha1)
+    string(SHA1 _current_var_sha1 "${${_prev_var_name}}")
+
+    if(_prev_var_sha1 STREQUAL _current_var_sha1)
+      unset(${_prev_var_name} CACHE)
+    endif()
+
+  endforeach(_prev_var)
+
+  unset(_PREV_PYTHON_VALUES CACHE)
+
+endif()
+
+if(WANT_PYTHON_VERSION)
+  # A specific version is requested; ensure we get that specific version
+  list(APPEND WANT_PYTHON_VERSION "EXACT")
+endif()
+
+get_directory_property(_old_cache_vars CACHE_VARIABLES)
 find_package(Python ${WANT_PYTHON_VERSION} QUIET COMPONENTS Interpreter Development)
 
 if(Python_FOUND)
   set(PYTHON_FOUND ON)
   set(PYTHON_EXECUTABLE ${Python_EXECUTABLE})
+  set(PYTHON_INCLUDE_DIRS ${Python_INCLUDE_DIRS})
+  set(PYTHON_LIBRARY_DIRS ${Python_LIBRARY_DIRS})
   set(PYTHON_VERSION_STRING ${Python_VERSION})
 
-  if(DEFINED PYTHON_INCLUDE_DIR)
-    set(PYTHON_INCLUDE_DIRS ${PYTHON_INCLUDE_DIR})
-  else()
-    set(PYTHON_INCLUDE_DIRS ${Python_INCLUDE_DIRS})
-  endif()
-
-else()
+elseif(CMAKE_VERSION VERSION_LESS "3.12")
   find_package(PythonInterp ${WANT_PYTHON_VERSION} QUIET)
   find_package(PythonLibs ${PYTHON_VERSION_STRING} QUIET)
 
@@ -56,11 +228,42 @@ else()
 
 endif()
 
-package_option(PYTHON
+if(CMAKE_VERSION VERSION_LESS "3.15")
+  # CMake versions this old don't provide Python::Module, so we need to hack up
+  # the variables to ensure no explicit linkage against libpython occurs
+
+  if(WIN32)
+    # Nothing needed here; explicit linkage is appropriate
+    set(PYTHON_LIBRARY "${Python_LIBRARY}")
+    set(PYTHON_LIBRARIES ${Python_LIBRARIES})
+
+  elseif(APPLE OR UNIX)
+    # Just unset and let the implicit linkage take over
+    set(PYTHON_LIBRARY "")
+    set(PYTHON_LIBRARIES "")
+
+    if(APPLE)
+      # macOS requires this explicit flag on the linker command line to allow the
+      # references to the Python symbols to resolve at dynamic link time
+      string(APPEND CMAKE_MODULE_LINKER_FLAGS " -undefined dynamic_lookup")
+
+    endif()
+
+  else()
+    # On every other platform, guessing is a bad idea - insist the user upgrade
+    # their CMake instead.
+    message(WARNING "For Python support on this platform, please use CMake >= 3.15!")
+    set(PYTHON_FOUND OFF)
+
+  endif()
+
+endif()
+
+package_option(Python
   DEFAULT ON
   "Enables support for Python.  If INTERROGATE_PYTHON_INTERFACE
 is also enabled, Python bindings will be generated."
-  IMPORTED_AS Python::Python)
+  IMPORTED_AS Python::Module)
 
 # Also detect the optimal install paths:
 if(HAVE_PYTHON)
@@ -114,6 +317,23 @@ if(HAVE_PYTHON)
 
 endif()
 
+if(NOT DEFINED _PREV_PYTHON_VALUES)
+  # We need to make note of all auto-defined Python variables
+  set(_prev_python_values)
+
+  get_directory_property(_new_cache_vars CACHE_VARIABLES)
+  foreach(_cache_var ${_new_cache_vars})
+    if(_cache_var MATCHES "^(Python|PYTHON)_" AND NOT _old_cache_vars MATCHES ";${_cache_var};")
+      string(SHA1 _cache_var_sha1 "${${_cache_var}}")
+      list(APPEND _prev_python_values "${_cache_var}=${_cache_var_sha1}")
+    endif()
+  endforeach(_cache_var)
+
+  set(_PREV_PYTHON_VALUES "${_prev_python_values}" CACHE INTERNAL "Internal." FORCE)
+endif()
+
+set(_PREV_WANT_PYTHON_VERSION "${WANT_PYTHON_VERSION}" CACHE INTERNAL "Internal." FORCE)
+
 
 #
 # ------------ Data handling libraries ------------
@@ -122,20 +342,17 @@ endif()
 # OpenSSL
 find_package(OpenSSL COMPONENTS SSL Crypto QUIET)
 
-package_option(OPENSSL
+package_option(OpenSSL
   DEFAULT ON
   "Enable OpenSSL support"
   IMPORTED_AS OpenSSL::SSL OpenSSL::Crypto)
 
 option(REPORT_OPENSSL_ERRORS
   "Define this true to include the OpenSSL code to report verbose
-error messages when they occur." ${IS_DEBUG_BUILD})
+error messages when they occur." OFF)
+option(REPORT_OPENSSL_ERRORS_Debug "" ON)
 
-if(REPORT_OPENSSL_ERRORS)
-  package_status(OPENSSL "OpenSSL" "with verbose error reporting")
-else()
-  package_status(OPENSSL "OpenSSL")
-endif()
+package_status(OpenSSL "OpenSSL")
 
 # zlib
 find_package(ZLIB QUIET)
@@ -154,7 +371,7 @@ package_status(ZLIB "zlib")
 # JPEG
 find_package(JPEG QUIET)
 
-package_option(JPEG DEFAULT ON "Enable support for loading .jpg images.")
+package_option(JPEG "Enable support for loading .jpg images.")
 
 package_status(JPEG "libjpeg")
 
@@ -162,7 +379,6 @@ package_status(JPEG "libjpeg")
 find_package(PNG QUIET)
 
 package_option(PNG
-  DEFAULT ON
   "Enable support for loading .png images."
   IMPORTED_AS PNG::PNG)
 
@@ -176,33 +392,20 @@ package_option(TIFF "Enable support for loading .tif images.")
 package_status(TIFF "libtiff")
 
 # OpenEXR
-find_package(OpenEXR QUIET)
+find_package(OpenEXR QUIET MODULE)
 
-package_option(OPENEXR "Enable support for loading .exr images.")
+package_option(OpenEXR "Enable support for loading .exr images.")
 
-package_status(OPENEXR "OpenEXR")
+package_status(OpenEXR "OpenEXR")
 
 # libsquish
 find_package(LibSquish QUIET)
 
 package_option(SQUISH
   "Enables support for automatic compression of DXT textures."
-  FOUND_AS LIBSQUISH)
+  FOUND_AS LibSquish)
 
 package_status(SQUISH "libsquish")
-
-
-#
-# ------------ Archival formats ------------
-#
-
-# libtar
-find_package(Tar QUIET)
-
-package_option(TAR
-  "This is used to optimize patch generation against tar files.")
-
-package_status(TAR "libtar")
 
 
 #
@@ -212,19 +415,19 @@ package_status(TAR "libtar")
 # Assimp
 find_package(Assimp QUIET)
 
-package_option(ASSIMP
+package_option(Assimp
   "Build pandatool with support for loading 3D assets supported by Assimp.")
 
-package_status(ASSIMP "Assimp")
+package_status(Assimp "Assimp")
 
 # FCollada
 find_package(FCollada QUIET)
 
-package_option(FCOLLADA
+package_option(FCollada
   "Build pandatool with support for loading Collada files using FCollada."
   IMPORTED_AS FCollada::FCollada)
 
-package_status(FCOLLADA "FCollada")
+package_status(FCollada "FCollada")
 
 
 #
@@ -235,13 +438,13 @@ package_status(FCOLLADA "FCollada")
 find_package(Eigen3 QUIET)
 
 package_option(EIGEN
-  "Enables experimental support for the Eigen linear algebra library.
+  "Enables use of the Eigen linear algebra library.
 If this is provided, Panda will use this library as the fundamental
 implementation of its own linmath library; otherwise, it will use
 its own internal implementation.  The primary advantage of using
 Eigen is SSE2 support, which is only activated if LINMATH_ALIGN
 is also enabled."
-  FOUND_AS EIGEN3
+  FOUND_AS Eigen3
   LICENSE "MPL-2")
 
 option(LINMATH_ALIGN
@@ -282,11 +485,10 @@ find_package(SWScale QUIET)
 find_package(SWResample QUIET)
 
 package_option(FFMPEG
-  "Enables support for audio- and video-decoding using the FFmpeg library."
-  LICENSE LGPL)
-package_option(SWSCALE
+  "Enables support for audio- and video-decoding using the FFmpeg library.")
+package_option(SWScale
   "Enables support for FFmpeg's libswscale for video rescaling.")
-package_option(SWRESAMPLE
+package_option(SWResample
   "Enables support for FFmpeg's libresample for audio resampling.")
 
 if(HAVE_SWSCALE AND HAVE_SWRESAMPLE)
@@ -304,7 +506,7 @@ package_status(FFMPEG "FFmpeg" "${ffmpeg_features}")
 find_package(VorbisFile QUIET)
 
 package_option(VORBIS
-  FOUND_AS VORBISFILE
+  FOUND_AS VorbisFile
   "Enables support for decoding Vorbis-encoded .ogg audio files via libvorbisfile.")
 
 package_status(VORBIS "Vorbis")
@@ -313,7 +515,7 @@ package_status(VORBIS "Vorbis")
 find_package(OpusFile QUIET)
 
 package_option(OPUS
-  FOUND_AS OPUSFILE
+  FOUND_AS OpusFile
   "Enables support for decoding .opus audio files via libopusfile.")
 
 package_status(OPUS "Opus")
@@ -322,42 +524,30 @@ package_status(OPUS "Opus")
 # ------------ Audio libraries ------------
 #
 
-# Miles Sound System
-find_package(Miles QUIET)
-
-package_option(RAD_MSS
-  "This enables support for audio output via the Miles Sound System,
-  by RAD Game Tools. This requires a commercial license to use, so you'll know
-  if you need to enable this option."
-  FOUND_AS Miles
-  LICENSE "Miles")
-
-package_status(RAD_MSS "Miles Sound System")
-
 # FMOD Ex
 find_package(FMODEx QUIET)
 
-package_option(FMODEX
+package_option(FMODEx
   "This enables support for the FMOD Ex sound library,
   from Firelight Technologies. This audio library is free for non-commercial
   use."
   LICENSE "FMOD")
 
-package_status(FMODEX "FMOD Ex sound library")
+package_status(FMODEx "FMOD Ex sound library")
 
 # OpenAL
 find_package(OpenAL QUIET)
 
-package_option(OPENAL
+package_option(OpenAL
   "This enables support for audio output via OpenAL. Some platforms, such as
   macOS, provide their own OpenAL implementation, which Panda3D can use. But,
   on most platforms this will imply OpenAL Soft, which is LGPL licensed."
   IMPORTED_AS OpenAL::OpenAL
   LICENSE "LGPL")
 
-package_status(OPENAL "OpenAL sound library")
+package_status(OpenAL "OpenAL sound library")
 
-if(OPENAL_FOUND AND APPLE)
+if(OpenAL_FOUND AND APPLE OR OPENAL_FOUND AND APPLE)
   set(HAVE_OPENAL_FRAMEWORK YES)
 endif()
 
@@ -370,12 +560,12 @@ endif()
 
 find_package(Freetype QUIET)
 
-package_option(FREETYPE
+package_option(Freetype
   "This enables support for the FreeType font-rendering library.  If disabled,
   Panda3D will only be able to read fonts specially made with egg-mkfont."
   IMPORTED_AS freetype)
 
-package_status(FREETYPE "FreeType")
+package_status(Freetype "FreeType")
 
 # HarfBuzz
 
@@ -383,11 +573,11 @@ package_status(FREETYPE "FreeType")
 # force MODULE mode here.
 find_package(HarfBuzz MODULE QUIET)
 
-package_option(HARFBUZZ
+package_option(HarfBuzz
   "This enables support for the HarfBuzz text shaping library."
   IMPORTED_AS harfbuzz::harfbuzz)
 
-package_status(HARFBUZZ "HarfBuzz")
+package_status(HarfBuzz "HarfBuzz")
 
 # GTK2
 
@@ -407,10 +597,10 @@ package_status(GTK2 "gtk+-2")
 # Bullet
 find_package(Bullet MODULE QUIET)
 
-package_option(BULLET
+package_option(Bullet
   "Enable this option to support game dynamics with the Bullet physics library.")
 
-package_status(BULLET "Bullet physics")
+package_status(Bullet "Bullet physics")
 
 # ODE
 find_package(ODE QUIET)
@@ -422,15 +612,6 @@ package_option(ODE
 
 package_status(ODE "Open Dynamics Engine")
 
-# PhysX
-find_package(PhysX QUIET)
-
-package_option(PHYSX
-  "Enable this option to support game dynamics with Nvidia PhysX."
-  LICENSE "Nvidia")
-
-package_status(PHYSX "Nvidia PhysX")
-
 
 #
 # ------------ SpeedTree ------------
@@ -439,11 +620,11 @@ package_status(PHYSX "Nvidia PhysX")
 # SpeedTree
 find_package(SpeedTree QUIET)
 
-package_option(SPEEDTREE
+package_option(SpeedTree
   "Enable this option to include scenegraph support for SpeedTree trees."
   LICENSE "SpeedTree")
 
-package_status(SPEEDTREE "SpeedTree")
+package_status(SpeedTree "SpeedTree")
 
 
 #
@@ -487,7 +668,7 @@ find_package(Direct3D9 QUIET COMPONENTS dxguid dxerr d3dx9)
 
 package_option(DX9
   "Enable support for DirectX 9.  This is typically only viable on Windows."
-  FOUND_AS DIRECT3D9)
+  FOUND_AS Direct3D9)
 
 package_status(DX9 "Direct3D 9.x")
 
@@ -568,11 +749,11 @@ package_status(EGL "EGL")
 # OpenCV
 find_package(OpenCV QUIET COMPONENTS core highgui OPTIONAL_COMPONENTS videoio)
 
-package_option(OPENCV
+package_option(OpenCV
   "Enable support for OpenCV.  This will be built into the 'vision' package."
   FOUND_AS OpenCV)
 
-package_status(OPENCV "OpenCV")
+package_status(OpenCV "OpenCV")
 
 # CMake <3.7 doesn't support GREATER_EQUAL, so this uses NOT LESS instead.
 if(NOT OpenCV_VERSION_MAJOR LESS 3)
@@ -587,11 +768,10 @@ endif()
 # ARToolKit
 find_package(ARToolKit QUIET)
 
-package_option(ARTOOLKIT
-  "Enable support for ARToolKit.  This will be built into the 'vision' package."
-  LICENSE LGPL)
+package_option(ARToolKit
+  "Enable support for ARToolKit.  This will be built into the 'vision' package.")
 
-package_status(ARTOOLKIT "ARToolKit")
+package_status(ARToolKit "ARToolKit")
 
 
 #

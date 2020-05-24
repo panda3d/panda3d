@@ -53,7 +53,7 @@ PUBLISHED:
   void output(std::ostream &out) const;
   void write(std::ostream &out, int indent_level = 0) const;
 
-#ifndef NDEBUG
+#if !defined(NDEBUG) || !defined(CPPPARSER)
   void show_regions(const NodePath &render2d,
                     const std::string &bin_name, int draw_order);
   void set_color(const LColor &color);
@@ -84,15 +84,20 @@ protected:
   LightMutex _lock;
 
 private:
+  typedef pvector< PT(PandaNode) > Vizzes;
+
 #ifndef NDEBUG
   PandaNode *make_viz_region(MouseWatcherRegion *region);
 
-  typedef pvector< PT(PandaNode) > Vizzes;
   Vizzes _vizzes;
-
   bool _show_regions;
   NodePath _show_regions_root;
   LColor _color;
+#else
+  Vizzes _vizzes_disabled;
+  bool _show_regions_disabled = false;
+  NodePath _show_regions_root_disabled;
+  LColor _color_disabled;
 #endif  // NDEBUG
 
 public:

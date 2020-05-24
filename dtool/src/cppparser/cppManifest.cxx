@@ -127,9 +127,7 @@ CPPManifest(const string &macro, const string &definition) :
  */
 CPPManifest::
 ~CPPManifest() {
-  if (_expr != nullptr) {
-    delete _expr;
-  }
+  delete _expr;
 }
 
 /**

@@ -52,10 +52,7 @@ of the slider to change settings.  Click on:
 
 You can pack multiple sliders into a single panel:
 
-if sys.version_info >= (3, 0):
-    from tkinter import *
-else:
-    from Tkinter import *
+from tkinter import *
 
 def func1(x):
    print '1:', x

@@ -93,18 +93,10 @@ operator = (const EggTransform::Component &copy) {
  */
 INLINE EggTransform::Component::
 ~Component() {
-  if (_vec2 != nullptr) {
-    delete _vec2;
-  }
-  if (_vec3 != nullptr) {
-    delete _vec3;
-  }
-  if (_mat3 != nullptr) {
-    delete _mat3;
-  }
-  if (_mat4 != nullptr) {
-    delete _mat4;
-  }
+  delete _vec2;
+  delete _vec3;
+  delete _mat3;
+  delete _mat4;
 }
 
 /**

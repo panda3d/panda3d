@@ -14,20 +14,17 @@ mechanism for sharing context between different objects written to the
 same pickle stream, so each NodePath has to write itself without
 knowing about the other NodePaths that will also be writing to the
 same stream.  This replacement module solves this problem by defining
-a __reduce_persist__() replacement method for __reduce__(), which
-accepts a pointer to the Pickler object itself, allowing for shared
-context between all objects written by that Pickler.
+a ``__reduce_persist__()`` replacement method for ``__reduce__()``,
+which accepts a pointer to the Pickler object itself, allowing for
+shared context between all objects written by that Pickler.
 
 Unfortunately, cPickle cannot be supported, because it does not
 support extensions of this nature. """
 
 import sys
 from panda3d.core import BamWriter, BamReader
+from copyreg import dispatch_table
 
-if sys.version_info >= (3, 0):
-    from copyreg import dispatch_table
-else:
-    from copy_reg import dispatch_table
 
 # A funny replacement for "import pickle" so we don't get confused
 # with the local pickle.py.

@@ -11,10 +11,13 @@ def _fixup_dlls():
     if not os.path.isdir(dll_path):
         return
 
-    os_path = os.environ.get('PATH', '')
-    os_path = os_path.split(os.pathsep) if os_path else []
-    os_path.insert(0, dll_path)
-    os.environ['PATH'] = os.pathsep.join(os_path)
+    if hasattr(os, 'add_dll_directory'):
+        os.add_dll_directory(dll_path)
+    else:
+        os_path = os.environ.get('PATH', '')
+        os_path = os_path.split(os.pathsep) if os_path else []
+        os_path.insert(0, dll_path)
+        os.environ['PATH'] = os.pathsep.join(os_path)
 
 _fixup_dlls()
 del _fixup_dlls

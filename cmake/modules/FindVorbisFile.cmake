@@ -16,8 +16,8 @@ find_package(Ogg QUIET)
 # Find Vorbis
 find_path(VORBIS_INCLUDE_DIR NAMES "vorbis/vorbisfile.h")
 
-find_library(VORBIS_vorbis_LIBRARY NAMES "vorbis")
-find_library(VORBIS_vorbisfile_LIBRARY NAMES "vorbisfile")
+find_library(VORBIS_vorbis_LIBRARY NAMES "vorbis" "libvorbis_static")
+find_library(VORBIS_vorbisfile_LIBRARY NAMES "vorbisfile" "libvorbisfile_static")
 
 mark_as_advanced(VORBIS_INCLUDE_DIR VORBIS_vorbis_LIBRARY VORBIS_vorbisfile_LIBRARY)
 

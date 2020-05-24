@@ -12,7 +12,7 @@ else()
 
 endif()
 
-set(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME "GLESDevel")
+set(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME "OpenGLES1Devel")
 add_metalib(pandagles ${MODULE_TYPE}
   INCLUDE "${GLES1_PIPE_INCLUDE}"
   INIT init_libpandagles pandagles.h
@@ -21,11 +21,8 @@ add_metalib(pandagles ${MODULE_TYPE}
 unset(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME)
 
 install(TARGETS pandagles
-  EXPORT GLES COMPONENT GLES
+  EXPORT OpenGLES1 COMPONENT OpenGLES1
   DESTINATION ${MODULE_DESTINATION}
-  ARCHIVE COMPONENT GLESDevel)
+  ARCHIVE COMPONENT OpenGLES1Devel)
 
-if(NOT HAVE_GLES2)
-  # If GLES2 won't export this, we should do so here.
-  export_targets(GLES COMPONENT GLESDevel)
-endif()
+export_targets(OpenGLES1 COMPONENT OpenGLES1Devel)

@@ -36,7 +36,7 @@ class ImfStdIstream;
 /**
  * For reading and writing EXR floating-point or integer files.
  */
-class EXPCL_PANDA_PNMIMAGETYPES PNMFileTypeEXR : public PNMFileType {
+class PNMFileTypeEXR : public PNMFileType {
 public:
   PNMFileTypeEXR();
 

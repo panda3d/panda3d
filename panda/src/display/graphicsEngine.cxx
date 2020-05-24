@@ -50,9 +50,13 @@
 #include "depthTestAttrib.h"
 #include "unionBoundingVolume.h"
 
-#if defined(WIN32)
+#if defined(_WIN32) && defined(HAVE_THREADS) && defined(SIMPLE_THREADS)
+#include "winInputDeviceManager.h"
+#endif
+
+#if defined(_WIN32)
   #define WINDOWS_LEAN_AND_MEAN
-  #include <WinSock2.h>
+  #include <winsock2.h>
   #include <wtypes.h>
   #undef WINDOWS_LEAN_AND_MEAN
 #else
@@ -636,6 +640,12 @@ remove_all_windows() {
 
 #ifdef DO_PSTATS
   PStatClient::get_global_pstats()->disconnect();
+#endif
+
+#if defined(_WIN32) && defined(HAVE_THREADS) && defined(SIMPLE_THREADS)
+  // Send a message to the input message pump asking it to shut itself down.
+  // If we don't do that, the next call will deadlock.
+  WinInputDeviceManager::stop_thread();
 #endif
 
   // Well, and why not clean up all threads here?

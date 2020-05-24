@@ -2,10 +2,16 @@
 ################################# DO NOT EDIT ###########################
 
 # Some paths first...
-plugin-path $THIS_PRC_DIR/../lib
-model-path $THIS_PRC_DIR/../share/panda3d/models
+plugin-path $THIS_PRC_DIR/${PLUGINS_PATH}
+model-path $MAIN_DIR
+model-path $THIS_PRC_DIR/${MODELS_PARENT_PATH}
+model-path $THIS_PRC_DIR/${MODELS_PARENT_PATH}/models
 
 ${WIN_SIZE}
+
+# For debugging, it's nice to have notify-level at the default setting of
+# "info", but everywhere else we turn the verbosity down to "warning"
+$<$<CONFIG:Debug>:#>notify-level warning
 
 # Define the display types that have been compiled in.  Panda will
 # pick one of these by going through the list in this order until one
@@ -32,7 +38,7 @@ load-file-type egg pandaegg
 default-model-extension .egg
 
 # Enable the model-cache, but only for models, not textures.
-model-cache-dir $XDG_CACHE_HOME/panda3d
+model-cache-dir ${BAM_CACHE_DIR}
 model-cache-textures #f
 
 

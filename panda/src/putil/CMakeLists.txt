@@ -125,9 +125,19 @@ set(P3PUTIL_SOURCES
 set(P3PUTIL_IGATEEXT
   bamReader_ext.cxx
   bamReader_ext.h
+  bitArray_ext.cxx
+  bitArray_ext.h
+  bitArray_ext.I
+  bitMask_ext.h
+  bitMask_ext.I
   callbackObject_ext.h
+  doubleBitMask_ext.h
+  doubleBitMask_ext.I
   pythonCallbackObject.cxx
   pythonCallbackObject.h
+  sparseArray_ext.cxx
+  sparseArray_ext.h
+  sparseArray_ext.I
   typedWritable_ext.cxx
   typedWritable_ext.h
 )
@@ -141,9 +151,10 @@ target_interrogate(p3putil ALL EXTENSIONS ${P3PUTIL_IGATEEXT})
 if(NOT BUILD_METALIBS)
   install(TARGETS p3putil
     EXPORT Core COMPONENT Core
-    DESTINATION lib
-    RUNTIME DESTINATION bin
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d
     ARCHIVE COMPONENT CoreDevel)
 endif()
-install(FILES ${P3PUTIL_HEADERS} COMPONENT CoreDevel DESTINATION include/panda3d)
-install(FILES config_util.h COMPONENT CoreDevel DESTINATION include/panda3d)
+install(FILES ${P3PUTIL_HEADERS} COMPONENT CoreDevel DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d)
+install(FILES config_util.h COMPONENT CoreDevel DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d)

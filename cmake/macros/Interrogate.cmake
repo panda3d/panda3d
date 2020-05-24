@@ -31,7 +31,10 @@ set(INTERROGATE_EXCLUDE_REGEXES
 )
 
 if(WIN32)
-  list(APPEND IGATE_FLAGS -D_X86_ -D__STDC__=1 -DWIN32_VC -D "_declspec(param)=" -D "__declspec(param)=" -D_near -D_far -D__near -D__far -D_WIN32 -D__stdcall -DWIN32)
+  list(APPEND IGATE_FLAGS -D_X86_ -D__STDC__=1 -D "_declspec(param)=" -D "__declspec(param)=" -D_near -D_far -D__near -D__far -D_WIN32 -D__stdcall)
+endif()
+if(MSVC_VERSION)
+  list(APPEND IGATE_FLAGS "-D_MSC_VER=${MSVC_VERSION}")
 endif()
 if(INTERROGATE_VERBOSE)
   list(APPEND IGATE_FLAGS "-v")
@@ -215,15 +218,35 @@ function(interrogate_sources target output database language_flags)
     # that's fine, it also ignores '"'
     set(_q "'")
   endif()
-  set(define_flags "$<$<BOOL:${_compile_defs}>:-D${_q}$<JOIN:${_compile_defs},${_q}\t-D${_q}>${_q}>")
+  set(_compile_defs_flags "-D${_q}$<JOIN:${_compile_defs},${_q}\t-D${_q}>${_q}")
+  # We may have just ended up with -D'' if there are no flags; filter that
+  set(define_flags
+    "$<$<NOT:$<STREQUAL:${_compile_defs_flags},-D${_q}${_q}>>:${_compile_defs_flags}>")
 
-  # If this is a release build that has NDEBUG defined, we need that too:
-  foreach(build_type ${CMAKE_CONFIGURATION_TYPES} ${CMAKE_BUILD_TYPE})
-    string(TOUPPER "${build_type}" build_type)
-    if(CMAKE_CXX_FLAGS_${build_type} MATCHES ".*NDEBUG.*")
-      list(APPEND define_flags "$<$<CONFIG:${build_type}>:-DNDEBUG>")
+  # Some of the definitions may be specified using -D flags in the global
+  # CXX_FLAGS variables; parse those out (this also picks up NDEBUG)
+  set(_configs ${CMAKE_CONFIGURATION_TYPES} ${CMAKE_BUILD_TYPE} "<ALL>")
+  list(REMOVE_DUPLICATES _configs)
+  foreach(_config ${_configs})
+    if(_config STREQUAL "<ALL>")
+      set(flags "${CMAKE_CXX_FLAGS}")
+    else()
+      string(TOUPPER "${_config}" _CONFIG)
+      set(flags "${CMAKE_CXX_FLAGS_${_CONFIG}}")
     endif()
-  endforeach(build_type)
+
+    # Convert "/D define1" and "-Ddefine2" flags, interspersed with other
+    # compiler nonsense, into a basic "-Ddefine1 -Ddefine2" string
+    string(REGEX MATCHALL "[/-]D[ \t]*[A-Za-z0-9_]+" igate_flags "${flags}")
+    string(REPLACE ";" " " igate_flags "${igate_flags}")
+    string(REPLACE "/D" "-D" igate_flags "${igate_flags}")
+
+    if(_config STREQUAL "<ALL>")
+      list(APPEND define_flags "${igate_flags}")
+    else()
+      list(APPEND define_flags "$<$<CONFIG:${_config}>:${igate_flags}>")
+    endif()
+  endforeach(_config)
 
   get_filename_component(output_directory "${output}" DIRECTORY)
   get_filename_component(database_directory "${database}" DIRECTORY)
@@ -342,6 +365,15 @@ function(add_python_module module)
       ${IMOD_FLAGS} ${infiles_rel}
     DEPENDS host_interrogate_module ${infiles_abs}
     COMMENT "Generating module ${module}")
+
+  # CMake chokes on ${CMAKE_CFG_INTDIR} in source paths when unity builds are
+  # enabled. The easiest way out of this is to skip unity for those paths.
+  # Since generated Interrogate .cxx files are pretty big already, this doesn't
+  # really inconvenience us at all.
+  set_source_files_properties(
+    "${CMAKE_CURRENT_BINARY_DIR}/${PANDA_CFG_INTDIR}/${module}_module.cxx"
+    ${sources_abs} PROPERTIES
+    SKIP_UNITY_BUILD_INCLUSION YES)
 
   add_python_target(${module} COMPONENT "${component}" EXPORT "${component}"
     "${CMAKE_CURRENT_BINARY_DIR}/${PANDA_CFG_INTDIR}/${module}_module.cxx"

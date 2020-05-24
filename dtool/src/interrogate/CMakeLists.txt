@@ -60,15 +60,28 @@ set(INTERROGATE_PREAMBLE_PYTHON_NATIVE
 
 composite_sources(interrogate INTERROGATE_SOURCES)
 add_executable(interrogate ${INTERROGATE_HEADERS} ${INTERROGATE_SOURCES})
-target_link_libraries(interrogate p3cppParser p3dtoolconfig p3pystub
+target_link_libraries(interrogate p3cppParser p3interrogatedb
   PKG::OPENSSL)
 
 # Python preamble for interrogate_module
+set(_preamble_files)
+foreach(_file ${INTERROGATE_PREAMBLE_PYTHON_NATIVE})
+  # Resolve symlinks, use absolute path, and add a `#line 1 ...` directive
+  get_filename_component(_file "${_file}" REALPATH)
+
+  string(SHA1 _hash "${_file}")
+  set(_line_file "${CMAKE_CURRENT_BINARY_DIR}/.${_hash}.h")
+  file(WRITE "${_line_file}" "#line 1 \"${_file}\"\n")
+
+  list(APPEND _preamble_files "${_line_file}")
+  list(APPEND _preamble_files "${_file}")
+endforeach(_file)
+
 add_custom_command(
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/interrogate_preamble_python_native.cxx
   COMMAND ${CMAKE_COMMAND}
     -D OUTPUT_FILE="${CMAKE_CURRENT_BINARY_DIR}/interrogate_preamble_python_native.cxx"
-    -D INPUT_FILES="${INTERROGATE_PREAMBLE_PYTHON_NATIVE}"
+    -D INPUT_FILES="${_preamble_files}"
     -D SYMBOL_NAME="interrogate_preamble_python_native"
     -P ${PROJECT_SOURCE_DIR}/cmake/scripts/ConcatenateToCXX.cmake
   DEPENDS ${INTERROGATE_PREAMBLE_PYTHON_NATIVE}
@@ -76,22 +89,35 @@ add_custom_command(
 
 add_executable(interrogate_module interrogate_module.cxx
   ${CMAKE_CURRENT_BINARY_DIR}/interrogate_preamble_python_native.cxx)
-target_link_libraries(interrogate_module p3cppParser p3dtoolconfig p3pystub
+target_link_libraries(interrogate_module p3cppParser p3interrogatedb
   PKG::OPENSSL)
 
 if(NOT CMAKE_CROSSCOMPILING)
   add_executable(host_interrogate ALIAS interrogate)
   add_executable(host_interrogate_module ALIAS interrogate_module)
 else()
+  # When cross-compiling, we must find the host Interrogate.
+  # TODO: We should also try to find_package(Panda3D ...) before falling back
+  # to searching manually.
+  find_program(HOST_PATH_INTERROGATE interrogate)
+  find_program(HOST_PATH_INTERROGATE_MODULE interrogate_module)
+
   add_executable(host_interrogate IMPORTED GLOBAL)
-  set_property(TARGET host_interrogate PROPERTY IMPORTED_LOCATION "${HOST_BIN_DIR}/interrogate")
+  if(HOST_PATH_INTERROGATE)
+    set_target_properties(host_interrogate PROPERTIES
+      IMPORTED_LOCATION "${HOST_PATH_INTERROGATE}")
+  endif()
+
   add_executable(host_interrogate_module IMPORTED GLOBAL)
-  set_property(TARGET host_interrogate_module PROPERTY IMPORTED_LOCATION "${HOST_BIN_DIR}/interrogate_module")
+  if(HOST_PATH_INTERROGATE_MODULE)
+    set_target_properties(host_interrogate_module PROPERTIES
+      IMPORTED_LOCATION "${HOST_PATH_INTERROGATE_MODULE}")
+  endif()
 endif()
 
 if(WANT_INTERROGATE)
-  install(TARGETS interrogate interrogate_module EXPORT Core COMPONENT CoreDevel DESTINATION bin)
-  install(FILES ${INTERROGATE_HEADERS} COMPONENT CoreDevel DESTINATION include/panda3d)
+  install(TARGETS interrogate interrogate_module EXPORT Core COMPONENT CoreDevel DESTINATION ${CMAKE_INSTALL_BINDIR})
+  install(FILES ${INTERROGATE_HEADERS} COMPONENT CoreDevel DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d)
 
 else()
   set_target_properties(interrogate interrogate_module

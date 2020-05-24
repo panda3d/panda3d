@@ -546,6 +546,9 @@ format_device_class(DeviceClass dc) {
 
   case InputDevice::DeviceClass::spatial_mouse:
     return "spatial_mouse";
+
+  case InputDevice::DeviceClass::digitizer:
+    return "digitizer";
   }
   return "**invalid**";
 }
@@ -612,6 +615,9 @@ format_axis(Axis axis) {
 
   case InputDevice::Axis::brake:
     return "brake";
+
+  case InputDevice::Axis::pressure:
+    return "pressure";
   }
   return "**invalid**";
 }

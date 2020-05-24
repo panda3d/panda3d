@@ -17,5 +17,5 @@ add_component_library(p3x11display SYMBOL BUILDING_PANDAX11
 target_link_libraries(p3x11display panda PKG::X11)
 
 if(NOT BUILD_METALIBS)
-  install(TARGETS p3x11display EXPORT Core COMPONENT Core DESTINATION lib)
+  install(TARGETS p3x11display EXPORT Core COMPONENT Core DESTINATION ${CMAKE_INSTALL_LIBDIR})
 endif()

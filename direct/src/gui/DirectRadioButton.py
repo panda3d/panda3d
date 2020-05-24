@@ -1,7 +1,11 @@
 """A DirectRadioButton is a type of button that, similar to a
 DirectCheckButton, has a separate indicator and can be toggled between
 two states.  However, only one DirectRadioButton in a group can be enabled
-at a particular time."""
+at a particular time.
+
+See the :ref:`directradiobutton` page in the programming manual for a more
+in-depth explanation and an example of how to use this class.
+"""
 
 __all__ = ['DirectRadioButton']
 

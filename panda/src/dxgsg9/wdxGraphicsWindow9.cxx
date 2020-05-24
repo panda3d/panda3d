@@ -280,13 +280,17 @@ open_window() {
     _properties.add_properties(resized_props);
   }
 
-  wdxdisplay9_cat.debug() << "_wcontext._window is " << _wcontext._window << "\n";
+  if (wdxdisplay9_cat.is_debug()) {
+    wdxdisplay9_cat.debug() << "_wcontext._window is " << _wcontext._window << "\n";
+  }
   if (!WinGraphicsWindow::open_window()) {
     return false;
   }
   _wcontext._window = _hWnd;
 
-  wdxdisplay9_cat.debug() << "_wcontext._window is " << _wcontext._window << "\n";
+  if (wdxdisplay9_cat.is_debug()) {
+    wdxdisplay9_cat.debug() << "_wcontext._window is " << _wcontext._window << "\n";
+  }
 
   // Here check if a device already exists.  If so, then this open_window call
   // may be an extension to create multiple windows on same device In that
@@ -294,14 +298,18 @@ open_window() {
 
   while (true) {
     if (_dxgsg->get_pipe()->get_device() == nullptr || discard_device) {
-      wdxdisplay9_cat.debug() << "device is null or fullscreen\n";
+      if (wdxdisplay9_cat.is_debug()) {
+        wdxdisplay9_cat.debug() << "device is null or fullscreen\n";
+      }
 
       // If device exists, free it
       if (_dxgsg->get_pipe()->get_device()) {
         _dxgsg->dx_cleanup();
       }
 
-      wdxdisplay9_cat.debug() << "device width " << _wcontext._display_mode.Width << "\n";
+      if (wdxdisplay9_cat.is_debug()) {
+        wdxdisplay9_cat.debug() << "device width " << _wcontext._display_mode.Width << "\n";
+      }
       if (!create_screen_buffers_and_device(_wcontext, dx_force_16bpp_zbuffer)) {
         wdxdisplay9_cat.error() << "Unable to create window with specified parameters.\n";
         close_window();
@@ -315,7 +323,9 @@ open_window() {
     } else {
       // fill in the DXScreenData from dxdevice here and change the reference
       // to _window.
-      wdxdisplay9_cat.debug() << "device is not null\n";
+      if (wdxdisplay9_cat.is_debug()) {
+        wdxdisplay9_cat.debug() << "device is not null\n";
+      }
 
       dxdev = (DXGraphicsDevice9*)_dxgsg->get_pipe()->get_device();
       memcpy(&_wcontext, &dxdev->_Scrn, sizeof(DXScreenData));
@@ -325,7 +335,9 @@ open_window() {
       _wcontext._presentation_params.BackBufferWidth = _wcontext._display_mode.Width = _properties.get_x_size();
       _wcontext._presentation_params.BackBufferHeight = _wcontext._display_mode.Height = _properties.get_y_size();
 
-      wdxdisplay9_cat.debug() << "device width " << _wcontext._presentation_params.BackBufferWidth << "\n";
+      if (wdxdisplay9_cat.is_debug()) {
+        wdxdisplay9_cat.debug() << "device width " << _wcontext._presentation_params.BackBufferWidth << "\n";
+      }
       if (!_dxgsg->create_swap_chain(&_wcontext)) {
         discard_device = true;
         continue; // try again
@@ -334,7 +346,9 @@ open_window() {
       break;
     }
   }
-  wdxdisplay9_cat.debug() << "swapchain is " << _wcontext._swap_chain << "\n";
+  if (wdxdisplay9_cat.is_debug()) {
+    wdxdisplay9_cat.debug() << "swapchain is " << _wcontext._swap_chain << "\n";
+  }
   return true;
 }
 
@@ -349,13 +363,17 @@ reset_window(bool swapchain) {
   if (swapchain) {
     if (_wcontext._swap_chain) {
       _dxgsg->create_swap_chain(&_wcontext);
-      wdxdisplay9_cat.debug() << "created swapchain " << _wcontext._swap_chain << "\n";
+      if (wdxdisplay9_cat.is_debug()) {
+        wdxdisplay9_cat.debug() << "created swapchain " << _wcontext._swap_chain << "\n";
+      }
     }
   }
   else {
     if (_wcontext._swap_chain) {
       _dxgsg->release_swap_chain(&_wcontext);
-      wdxdisplay9_cat.debug() << "released swapchain " << _wcontext._swap_chain << "\n";
+      if (wdxdisplay9_cat.is_debug()) {
+        wdxdisplay9_cat.debug() << "released swapchain " << _wcontext._swap_chain << "\n";
+      }
     }
   }
 }
@@ -532,7 +550,9 @@ create_screen_buffers_and_device(DXScreenData &display, bool force_16bpp_zbuffer
     }
   }
 
-  wdxdisplay9_cat.debug() << "Display Width " << dwRenderWidth << " and PresParam Width " << _wcontext._presentation_params.BackBufferWidth << "\n";
+  if (wdxdisplay9_cat.is_debug()) {
+    wdxdisplay9_cat.debug() << "Display Width " << dwRenderWidth << " and PresParam Width " << _wcontext._presentation_params.BackBufferWidth << "\n";
+  }
 
   // BUGBUG: need to change panda to put frame buffer properties with
   // GraphicsWindow, not GSG!! Update: Did I fix the bug?  - Josh
@@ -1164,7 +1184,9 @@ reset_device_resize_window(UINT new_xsize, UINT new_ysize) {
   if (screen) {
     _wcontext._swap_chain = screen->_swap_chain;
   }
-  wdxdisplay9_cat.debug() << "swapchain is " << _wcontext._swap_chain << "\n";
+  if (wdxdisplay9_cat.is_debug()) {
+    wdxdisplay9_cat.debug() << "swapchain is " << _wcontext._swap_chain << "\n";
+  }
   _gsg->mark_new();
   init_resized_window();
   return retval;
@@ -1275,8 +1297,10 @@ D3DFMT_to_DepthBits(D3DFORMAT fmt) {
     return 15;
 
   default:
-    wdxdisplay9_cat.debug()
-      << "D3DFMT_DepthBits: unhandled D3DFMT!\n";
+    if (wdxdisplay9_cat.is_debug()) {
+      wdxdisplay9_cat.debug()
+        << "D3DFMT_DepthBits: unhandled D3DFMT!\n";
+    }
     return 0;
   }
 }

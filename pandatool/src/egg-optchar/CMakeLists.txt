@@ -20,4 +20,4 @@ composite_sources(egg-optchar P3EGG_OPTCHAR_SOURCES)
 add_executable(egg-optchar ${P3EGG_OPTCHAR_HEADERS} ${P3EGG_OPTCHAR_SOURCES})
 target_link_libraries(egg-optchar p3eggcharbase)
 
-install(TARGETS egg-optchar EXPORT Tools COMPONENT Tools DESTINATION bin)
+install(TARGETS egg-optchar EXPORT Tools COMPONENT Tools DESTINATION ${CMAKE_INSTALL_BINDIR})

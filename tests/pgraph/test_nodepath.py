@@ -109,6 +109,49 @@ def test_nodepath_transform_composition():
     assert np1.get_transform(np2) == relative_transform
 
 
+def test_nodepath_comparison():
+    from panda3d.core import NodePath, PandaNode
+
+    path = NodePath("node")
+
+    # Empty NodePath equals itself
+    assert NodePath() == NodePath()
+    assert not (NodePath() != NodePath())
+    assert not (NodePath() > NodePath())
+    assert not (NodePath() < NodePath())
+    assert NodePath().compare_to(NodePath()) == 0
+
+    # Empty NodePath does not equal non-empty NodePath
+    assert NodePath() != path
+    assert not (NodePath() == path)
+    assert NodePath().compare_to(path) != 0
+    assert path != NodePath()
+    assert not (path == NodePath())
+    assert path.compare_to(NodePath()) != 0
+
+    # Copy of NodePath equals original
+    path2 = NodePath(path)
+    assert path == path2
+    assert path2 == path
+    assert not (path != path2)
+    assert not (path2 != path)
+    assert not (path > path2)
+    assert not (path < path2)
+    assert path.compare_to(path2) == 0
+    assert path2.compare_to(path) == 0
+
+    # NodePath pointing to copy of node is not the same
+    path2 = NodePath(path.node().make_copy())
+    assert path != path2
+    assert path2 != path
+    assert not (path == path2)
+    assert not (path2 == path)
+    assert (path2 > path) or (path > path2)
+    assert (path2 < path) or (path < path2)
+    assert path.compare_to(path2) != 0
+    assert path2.compare_to(path) != 0
+
+
 def test_weak_nodepath_comparison():
     from panda3d.core import NodePath, WeakNodePath
 
@@ -149,3 +192,22 @@ def test_nodepath_python_tags():
     rc1 = sys.getrefcount(path.python_tags)
     rc2 = sys.getrefcount(path.python_tags)
     assert rc1 == rc2
+
+
+def test_nodepath_replace_texture():
+    from panda3d.core import NodePath, Texture
+
+    tex1 = Texture()
+    tex2 = Texture()
+
+    path1 = NodePath("node1")
+    path1.set_texture(tex1)
+    path1.replace_texture(tex1, tex2)
+    assert path1.get_texture() == tex2
+
+    path1 = NodePath("node1")
+    path2 = path1.attach_new_node("node2")
+    path2.set_texture(tex1)
+    path1.replace_texture(tex1, tex2)
+    assert not path1.has_texture()
+    assert path2.get_texture() == tex2

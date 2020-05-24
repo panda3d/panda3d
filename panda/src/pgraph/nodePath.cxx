@@ -3137,6 +3137,21 @@ get_texture(TextureStage *stage) const {
 }
 
 /**
+ * Recursively searches the scene graph for references to the given texture,
+ * and replaces them with the new texture.
+ *
+ * @since 1.10.4
+ */
+void NodePath::
+replace_texture(Texture *tex, Texture *new_tex) {
+  nassertv_always(!is_empty());
+  nassertv(tex != nullptr);
+  nassertv(new_tex != nullptr);
+
+  r_replace_texture(node(), tex, new_tex);
+}
+
+/**
  * Returns the sampler state that has been given for the base-level texture
  * that has been set on this particular node.  If no sampler state was given,
  * this returns the texture's default sampler settings.
@@ -6422,6 +6437,53 @@ r_find_all_textures(PandaNode *node, TextureStage *stage,
   for (int i = 0; i < num_children; i++) {
     PandaNode *child = cr.get_child(i);
     r_find_all_textures(child, stage, textures);
+  }
+}
+
+/**
+ * Recursively replaces references to the given texture on this section of the
+ * scene graph with the given other texture.
+ */
+void NodePath::
+r_replace_texture(PandaNode *node, Texture *tex, Texture *new_tex) {
+  // Consider the state of the node itself.
+  {
+    CPT(RenderState) node_state = node->get_state();
+    const TextureAttrib *ta;
+    if (node_state->get_attrib(ta)) {
+      CPT(RenderAttrib) new_ta = ta->replace_texture(tex, new_tex);
+      if (new_ta != ta) {
+        node->set_state(node_state->set_attrib(new_ta));
+      }
+    }
+  }
+
+  // If this is a GeomNode, consider the state of any of its Geoms.
+  if (node->is_geom_node()) {
+    GeomNode *gnode;
+    DCAST_INTO_V(gnode, node);
+
+    int num_geoms = gnode->get_num_geoms();
+    for (int i = 0; i < num_geoms; i++) {
+      CPT(RenderState) geom_state = gnode->get_geom_state(i);
+
+      // Look for a TextureAttrib on the state.
+      const TextureAttrib *ta;
+      if (geom_state->get_attrib(ta)) {
+        CPT(RenderAttrib) new_ta = ta->replace_texture(tex, new_tex);
+        if (new_ta != ta) {
+          gnode->set_geom_state(i, geom_state->set_attrib(new_ta));
+        }
+      }
+    }
+  }
+
+  // Now consider children.
+  PandaNode::Children cr = node->get_children();
+  size_t num_children = cr.get_num_children();
+  for (size_t i = 0; i < num_children; ++i) {
+    PandaNode *child = cr.get_child(i);
+    r_replace_texture(child, tex, new_tex);
   }
 }
 

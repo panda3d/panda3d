@@ -26,4 +26,8 @@ set_target_properties(p3assimp PROPERTIES DEFINE_SYMBOL BUILDING_ASSIMP)
 target_link_libraries(p3assimp PRIVATE p3pandatoolbase)
 target_link_libraries(p3assimp PUBLIC PKG::ASSIMP)
 
-install(TARGETS p3assimp EXPORT Tools COMPONENT Tools DESTINATION ${MODULE_DESTINATION})
+if(BUILD_SHARED_LIBS)
+  # We can't install this if we're doing a static build, because it depends on
+  # a static library that isn't installed.
+  install(TARGETS p3assimp EXPORT Assimp COMPONENT Assimp DESTINATION ${MODULE_DESTINATION})
+endif()

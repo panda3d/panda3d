@@ -61,7 +61,7 @@ target_link_libraries(p3device p3dgraph)
 target_interrogate(p3device ALL)
 
 if(WIN32)
-  target_link_libraries(p3device Cfgmgr32.lib)
+  target_link_libraries(p3device cfgmgr32.lib)
 
 # IOKit is a private framework on iOS.
 elseif(IS_OSX)
@@ -73,8 +73,9 @@ endif()
 if(NOT BUILD_METALIBS)
   install(TARGETS p3device
     EXPORT Core COMPONENT Core
-    DESTINATION lib
-    RUNTIME DESTINATION bin
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d
     ARCHIVE COMPONENT CoreDevel)
 endif()
-install(FILES ${P3DEVICE_HEADERS} COMPONENT CoreDevel DESTINATION include/panda3d)
+install(FILES ${P3DEVICE_HEADERS} COMPONENT CoreDevel DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d)

@@ -1,36 +1,35 @@
 """Contains miscellaneous utility functions and classes."""
 
-__all__ = ['indent',
-'doc', 'adjust', 'difference', 'intersection', 'union',
-'sameElements', 'makeList', 'makeTuple', 'list2dict', 'invertDict',
-'invertDictLossless', 'uniqueElements', 'disjoint', 'contains',
-'replace', 'reduceAngle', 'fitSrcAngle2Dest', 'fitDestAngle2Src',
-'closestDestAngle2', 'closestDestAngle', 'getSetterName',
-'getSetter', 'Functor', 'Stack', 'Queue',
-'bound', 'clamp', 'lerp', 'average', 'addListsByValue',
-'boolEqual', 'lineupPos', 'formatElapsedSeconds', 'solveQuadratic',
-'findPythonModule', 'mostDerivedLast',
-'clampScalar', 'weightedChoice', 'randFloat', 'normalDistrib',
-'weightedRand', 'randUint31', 'randInt32',
-'SerialNumGen', 'serialNum', 'uniqueName', 'Enum', 'Singleton',
-'SingletonError', 'printListEnum', 'safeRepr',
-'fastRepr', 'isDefaultValue',
-'ScratchPad', 'Sync', 'itype', 'getNumberedTypedString',
-'getNumberedTypedSortedString',
-'printNumberedTyped', 'DelayedCall', 'DelayedFunctor',
-'FrameDelayedCall', 'SubframeCall', 'getBase', 'GoldenRatio',
-'GoldenRectangle', 'rad90', 'rad180', 'rad270', 'rad360',
-'nullGen', 'loopGen', 'makeFlywheelGen', 'flywheel',
-'listToIndex2item', 'listToItem2index',
-'formatTimeCompact','deeptype','StdoutCapture','StdoutPassthrough',
-'Averager', 'getRepository', 'formatTimeExact', 'startSuperLog', 'endSuperLog',
-'typeName', 'safeTypeName', 'histogramDict', 'unescapeHtmlString']
+__all__ = [
+
+    'indent', 'doc', 'adjust', 'difference', 'intersection', 'union',
+    'sameElements', 'makeList', 'makeTuple', 'list2dict', 'invertDict',
+    'invertDictLossless', 'uniqueElements', 'disjoint', 'contains', 'replace',
+    'reduceAngle', 'fitSrcAngle2Dest', 'fitDestAngle2Src', 'closestDestAngle2',
+    'closestDestAngle', 'getSetterName', 'getSetter', 'Functor', 'Stack',
+    'Queue', 'bound', 'clamp', 'lerp', 'average', 'addListsByValue',
+    'boolEqual', 'lineupPos', 'formatElapsedSeconds', 'solveQuadratic',
+    'findPythonModule', 'mostDerivedLast', 'clampScalar', 'weightedChoice',
+    'randFloat', 'normalDistrib', 'weightedRand', 'randUint31', 'randInt32',
+    'SerialNumGen', 'serialNum', 'uniqueName', 'Enum', 'Singleton',
+    'SingletonError', 'printListEnum', 'safeRepr', 'fastRepr',
+    'isDefaultValue', 'ScratchPad', 'Sync', 'itype', 'getNumberedTypedString',
+    'getNumberedTypedSortedString', 'printNumberedTyped', 'DelayedCall',
+    'DelayedFunctor', 'FrameDelayedCall', 'SubframeCall', 'getBase',
+    'GoldenRatio', 'GoldenRectangle', 'rad90', 'rad180', 'rad270', 'rad360',
+    'nullGen', 'loopGen', 'makeFlywheelGen', 'flywheel', 'listToIndex2item',
+    'listToItem2index', 'formatTimeCompact', 'deeptype', 'StdoutCapture',
+    'StdoutPassthrough', 'Averager', 'getRepository', 'formatTimeExact',
+    'startSuperLog', 'endSuperLog', 'typeName', 'safeTypeName',
+    'histogramDict', 'unescapeHtmlString',
+]
 
 if __debug__:
-    __all__ += ['StackTrace', 'traceFunctionCall', 'traceParentCall', 'printThisCall',
-                'stackEntryInfo', 'lineInfo', 'callerInfo', 'lineTag',
-                'profileFunc', 'profiled', 'startProfile', 'printProfile',
-                'getProfileResultString', 'printStack', 'printReverseStack']
+    __all__ += ['StackTrace', 'traceFunctionCall', 'traceParentCall',
+                'printThisCall', 'stackEntryInfo', 'lineInfo', 'callerInfo',
+                'lineTag', 'profileFunc', 'profiled', 'startProfile',
+                'printProfile', 'getProfileResultString', 'printStack',
+                'printReverseStack']
 
 import types
 import math
@@ -38,16 +37,12 @@ import os
 import sys
 import random
 import time
+import builtins
+import importlib
 
 __report_indent = 3
 
 from panda3d.core import ConfigVariableBool
-
-if sys.version_info >= (3, 0):
-    import builtins
-    xrange = range
-else:
-    import __builtin__ as builtins
 
 
 """
@@ -59,41 +54,6 @@ def Functor(function, *args, **kArgs):
         return function(*(argsCopy + cArgs), **kArgs)
     return functor
 """
-
-try:
-    import importlib
-except ImportError:
-    # Backward compatibility for Python 2.6.
-    def _resolve_name(name, package, level):
-        if not hasattr(package, 'rindex'):
-            raise ValueError("'package' not set to a string")
-        dot = len(package)
-        for x in xrange(level, 1, -1):
-            try:
-                dot = package.rindex('.', 0, dot)
-            except ValueError:
-                raise ValueError("attempted relative import beyond top-level "
-                                  "package")
-        return "%s.%s" % (package[:dot], name)
-
-    def import_module(name, package=None):
-        if name.startswith('.'):
-            if not package:
-                raise TypeError("relative imports require the 'package' argument")
-            level = 0
-            for character in name:
-                if character != '.':
-                    break
-                level += 1
-            name = _resolve_name(name[level:], package, level)
-        __import__(name)
-        return sys.modules[name]
-
-    imp = import_module('imp')
-    importlib = imp.new_module("importlib")
-    importlib._resolve_name = _resolve_name
-    importlib.import_module = import_module
-    sys.modules['importlib'] = importlib
 
 
 class Functor:
@@ -507,7 +467,7 @@ def replace(list, old, new, all=0):
         return 1
     else:
         numReplaced = 0
-        for i in xrange(len(list)):
+        for i in range(len(list)):
             if list[i] == old:
                 numReplaced += 1
                 list[i] = new
@@ -652,13 +612,15 @@ if __debug__:
         """ decorator for profiling functions
         turn categories on and off via "want-profile-categoryName 1"
 
-        e.g.
+        e.g.::
 
-        @profiled('particles')
-        def loadParticles():
-            ...
+            @profiled('particles')
+            def loadParticles():
+                ...
 
-        want-profile-particles 1
+        ::
+
+            want-profile-particles 1
         """
         assert type(category) in (str, type(None)), "must provide a category name for @profiled"
 
@@ -1130,6 +1092,10 @@ def weightedChoice(choiceList, rng=random.random, sum=None):
     """given a list of (weight, item) pairs, chooses an item based on the
     weights. rng must return 0..1. if you happen to have the sum of the
     weights, pass it in 'sum'."""
+    # Throw an IndexError if we got an empty list.
+    if not choiceList:
+        raise IndexError('Cannot choose from an empty sequence')
+
     # TODO: add support for dicts
     if sum is None:
         sum = 0.
@@ -1138,6 +1104,7 @@ def weightedChoice(choiceList, rng=random.random, sum=None):
 
     rand = rng()
     accum = rand * sum
+    item = None
     for weight, item in choiceList:
         accum -= weight
         if accum <= 0.:
@@ -1166,7 +1133,7 @@ def normalDistrib(a, b, gauss=random.gauss):
     uniformly onto the curve inside [a, b]
 
     ------------------------------------------------------------------------
-    http://www-stat.stanford.edu/~naras/jsm/NormalDensity/NormalDensity.html
+    https://statweb.stanford.edu/~naras/jsm/NormalDensity/NormalDensity.html
 
     The 68-95-99.7% Rule
     ====================
@@ -1190,13 +1157,14 @@ def normalDistrib(a, b, gauss=random.gauss):
 
 def weightedRand(valDict, rng=random.random):
     """
-    pass in a dictionary with a selection -> weight mapping.  Eg.
-    {"Choice 1": 10,
-     "Choice 2": 30,
-     "bear":     100}
+    pass in a dictionary with a selection -> weight mapping.  E.g.::
 
-    -Weights need not add up to any particular value.
-    -The actual selection will be returned.
+        {"Choice 1": 10,
+         "Choice 2": 30,
+         "bear":     100}
+
+    - Weights need not add up to any particular value.
+    - The actual selection will be returned.
     """
     selections = list(valDict.keys())
     weights = list(valDict.values())
@@ -1652,16 +1620,13 @@ def itype(obj):
     # version of type that gives more complete information about instance types
     global dtoolSuperBase
     t = type(obj)
-    if sys.version_info < (3, 0) and t is types.InstanceType:
-        return "<type 'instance' of <class %s>>" % (obj.__class__)
-    else:
-        # C++ object instances appear to be types via type()
-        # check if this is a C++ object
-        if dtoolSuperBase is None:
-            _getDtoolSuperBase()
-        if isinstance(obj, dtoolSuperBase):
-            return "<type 'instance' of %s>" % (obj.__class__)
-        return t
+    # C++ object instances appear to be types via type()
+    # check if this is a C++ object
+    if dtoolSuperBase is None:
+        _getDtoolSuperBase()
+    if isinstance(obj, dtoolSuperBase):
+        return "<type 'instance' of %s>" % (obj.__class__)
+    return t
 
 def deeptype(obj, maxLen=100, _visitedIds=None):
     if _visitedIds is None:
@@ -1721,7 +1686,7 @@ def getNumberedTypedString(items, maxLen=5000, numPrefix=''):
     first = True
     s = ''
     snip = '<SNIP>'
-    for i in xrange(len(items)):
+    for i in range(len(items)):
         if not first:
             s += '\n'
         first = False
@@ -1752,7 +1717,7 @@ def getNumberedTypedSortedString(items, maxLen=5000, numPrefix=''):
     first = True
     s = ''
     strs.sort()
-    for i in xrange(len(strs)):
+    for i in range(len(strs)):
         if not first:
             s += '\n'
         first = False
@@ -1770,7 +1735,7 @@ def printNumberedTyped(items, maxLen=5000):
         n //= 10
     digits = digits
     format = '%0' + '%s' % digits + 'i:%s \t%s'
-    for i in xrange(len(items)):
+    for i in range(len(items)):
         objStr = fastRepr(items[i])
         if len(objStr) > maxLen:
             snip = '<SNIP>'
@@ -1785,7 +1750,7 @@ def printNumberedTypesGen(items, maxLen=5000):
         n //= 10
     digits = digits
     format = '%0' + '%s' % digits + 'i:%s'
-    for i in xrange(len(items)):
+    for i in range(len(items)):
         print(format % (i, itype(items[i])))
         yield None
 
@@ -1992,42 +1957,42 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
     has no effect and no wrapping/transform occurs.  So in production,
     it's as if the report has been asserted out.
 
-    Parameters::
-    types : A subset list of ['timeStamp', 'frameCount', 'avLocation']
-            This allows you to specify certain useful bits of info.
+    Parameters:
+        types: A subset list of ['timeStamp', 'frameCount', 'avLocation']
+            This allows you to specify certain useful bits of info:
 
-            module:     Prints the module that this report statement
-                        can be found in.
-            args:       Prints the arguments as they were passed to
-                        this function.
-            timeStamp:  Adds the current frame time to the output.
-            deltaStamp: Adds the current AI synched frame time to
-                        the output
-            frameCount: Adds the current frame count to the output.
-                        Usually cleaner than the timeStamp output.
-            avLocation: Adds the localAvatar's network location
-                        to the output.  Useful for interest debugging.
-            interests:  Prints the current interest state after the
-                        report.
-            stackTrace: Prints a stack trace after the report.
+              - *module*: Prints the module that this report statement
+                can be found in.
+              - *args*: Prints the arguments as they were passed to this
+                function.
+              - *timeStamp*: Adds the current frame time to the output.
+              - *deltaStamp*: Adds the current AI synched frame time to
+                the output
+              - *frameCount*: Adds the current frame count to the output.
+                Usually cleaner than the timeStamp output.
+              - *avLocation*: Adds the localAvatar's network location to
+                the output.  Useful for interest debugging.
+              - *interests*: Prints the current interest state after the
+                report.
+              - *stackTrace*: Prints a stack trace after the report.
 
-    prefix: Optional string to prepend to output, just before the function.
-            Allows for easy grepping and is useful when merging AI/Client
-            reports into a single file.
+        prefix: Optional string to prepend to output, just before the
+            function.  Allows for easy grepping and is useful when
+            merging AI/Client reports into a single file.
 
-    xform:  Optional callback that accepts a single parameter: argument 0 to
-            the decorated function. (assumed to be 'self')
-            It should return a value to be inserted into the report output string.
+        xform:  Optional callback that accepts a single parameter:
+            argument 0 to the decorated function. (assumed to be 'self')
+            It should return a value to be inserted into the report
+            output string.
 
-    notifyFunc: A notify function such as info, debug, warning, etc.
-                By default the report will be printed to stdout. This
-                will allow you send the report to a designated 'notify'
-                output.
+        notifyFunc: A notify function such as info, debug, warning, etc.
+            By default the report will be printed to stdout. This will
+            allow you send the report to a designated 'notify' output.
 
-    dConfigParam: A list of Config.prc string variables.
-                  By default the report will always print.  If you
-                  specify this param, it will only print if one of the
-                  specified config strings resolve to True.
+        dConfigParam: A list of Config.prc string variables.
+            By default the report will always print.  If you specify
+            this param, it will only print if one of the specified
+            config strings resolve to True.
     """
 
 
@@ -2280,14 +2245,14 @@ def makeFlywheelGen(objects, countList=None, countFunc=None, scale=None):
             countList.append(countFunc(object))
     if scale is not None:
         # scale the counts if we've got a scale factor
-        for i in xrange(len(countList)):
+        for i in range(len(countList)):
             yield None
             if countList[i] > 0:
                 countList[i] = max(1, int(countList[i] * scale))
     # create a dict for the flywheel to use during its iteration to efficiently select
     # the objects for the sequence
     index2objectAndCount = {}
-    for i in xrange(len(countList)):
+    for i in range(len(countList)):
         yield None
         index2objectAndCount[i] = [objects[i], countList[i]]
     # create the flywheel generator
@@ -2533,7 +2498,7 @@ if __debug__ and __name__ == '__main__':
     def testAlphabetCounter():
         tempList = []
         ac = AlphabetCounter()
-        for i in xrange(26*3):
+        for i in range(26*3):
             tempList.append(ac.next())
         assert tempList == [ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
                             'AA','AB','AC','AD','AE','AF','AG','AH','AI','AJ','AK','AL','AM','AN','AO','AP','AQ','AR','AS','AT','AU','AV','AW','AX','AY','AZ',
@@ -2544,7 +2509,7 @@ if __debug__ and __name__ == '__main__':
         num += 26 # AAZ
         num += 1 # ABA
         num += 2 # ABC
-        for i in xrange(num):
+        for i in range(num):
             x = ac.next()
         assert x == 'ABC'
     testAlphabetCounter()

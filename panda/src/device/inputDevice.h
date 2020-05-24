@@ -80,6 +80,9 @@ PUBLISHED:
 
     // 3D mouse, such as produced by 3Dconnexion.
     spatial_mouse,
+
+    // A graphics tablet with stylus/pen.
+    digitizer,
   };
 
   enum class Feature {
@@ -128,6 +131,9 @@ PUBLISHED:
     wheel,
     accelerator,
     brake,
+
+    // Pen pressure
+    pressure,
   };
 
   enum State {

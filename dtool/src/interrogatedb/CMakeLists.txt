@@ -34,19 +34,19 @@ set(P3IGATERUNTIME_HEADERS
 )
 
 composite_sources(p3interrogatedb P3INTERROGATEDB_SOURCES)
-add_component_library(p3interrogatedb NOINIT SYMBOL BUILDING_INTERROGATEDB
+add_library(p3interrogatedb
   ${P3INTERROGATEDB_HEADERS} ${P3INTERROGATEDB_SOURCES})
-target_link_libraries(p3interrogatedb p3prc p3dconfig p3dtool)
+set_target_properties(p3interrogatedb PROPERTIES DEFINE_SYMBOL BUILDING_INTERROGATEDB)
+target_link_libraries(p3interrogatedb p3dconfig p3prc)
 
-if(NOT BUILD_METALIBS)
-  install(TARGETS p3interrogatedb
-    EXPORT Core COMPONENT Core
-    DESTINATION lib
-    RUNTIME DESTINATION bin
-    ARCHIVE COMPONENT CoreDevel)
-endif()
-install(FILES ${P3INTERROGATEDB_HEADERS} COMPONENT CoreDevel DESTINATION include/panda3d)
-install(FILES ${P3IGATERUNTIME_HEADERS} COMPONENT CoreDevel DESTINATION include/panda3d)
+install(TARGETS p3interrogatedb
+  EXPORT Core COMPONENT Core
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+  INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d
+  ARCHIVE COMPONENT CoreDevel)
+install(FILES ${P3INTERROGATEDB_HEADERS} COMPONENT CoreDevel DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d)
+install(FILES ${P3IGATERUNTIME_HEADERS} COMPONENT CoreDevel DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d)
 
 # ALSO: This has an Interrogate binding! Take care of that if we want it.
 # Note we don't use the regular Interrogate macros; this has some custom flags
@@ -73,4 +73,4 @@ add_custom_command(
 
 add_python_target(panda3d.interrogatedb
   "${CMAKE_CURRENT_BINARY_DIR}/interrogatedb_module.cxx")
-target_link_libraries(panda3d.interrogatedb p3dtoolconfig)
+target_link_libraries(panda3d.interrogatedb p3interrogatedb)

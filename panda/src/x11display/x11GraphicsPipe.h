@@ -87,6 +87,45 @@ typedef struct _XRRCrtcInfo {
 typedef void (*pfn_XRRFreeScreenResources)(XRRScreenResources *resources);
 typedef void (*pfn_XRRFreeCrtcInfo)(XRRCrtcInfo *crtcInfo);
 
+typedef struct {
+  int deviceid;
+  int mask_len;
+  unsigned char *mask;
+} XIEventMask;
+
+typedef struct {
+  int mask_len;
+  unsigned char *mask;
+  double *values;
+} XIValuatorState;
+
+typedef struct {
+  int type;
+  unsigned long serial;
+  Bool send_event;
+  X11_Display *display;
+  int extension;
+  int evtype;
+  Time time;
+  int deviceid;
+  int sourceid;
+  int detail;
+  int flags;
+  XIValuatorState valuators;
+  double *raw_values;
+} XIRawEvent;
+
+#define XI_RawMotion 17
+#define XI_RawMotionMask (1 << XI_RawMotion)
+
+#define XISetMask(ptr, event) (((unsigned char*)(ptr))[(event)>>3] |=  (1 << ((event) & 7)))
+#define XIClearMask(ptr, event) (((unsigned char*)(ptr))[(event)>>3] &= ~(1 << ((event) & 7)))
+#define XIMaskIsSet(ptr, event) (((unsigned char*)(ptr))[(event)>>3] &   (1 << ((event) & 7)))
+#define XIMaskLen(event) (((event) >> 3) + 1)
+
+#define XIAllDevices 0
+#define XIAllMasterDevices 1
+
 class FrameBufferProperties;
 
 /**
@@ -106,8 +145,10 @@ public:
   INLINE X11_Cursor get_hidden_cursor();
 
   INLINE bool supports_relative_mouse() const;
-  INLINE bool enable_relative_mouse();
-  INLINE void disable_relative_mouse();
+  INLINE bool enable_dga_mouse();
+  INLINE void disable_dga_mouse();
+  INLINE bool enable_raw_mouse();
+  INLINE void disable_raw_mouse();
 
   static INLINE int disable_x_error_messages();
   static INLINE int enable_x_error_messages();
@@ -170,6 +211,8 @@ public:
   pfn_XRRConfigCurrentConfiguration _XRRConfigCurrentConfiguration;
   pfn_XRRSetScreenConfig _XRRSetScreenConfig;
 
+  int _xi_opcode;
+
 protected:
   X11_Display *_display;
   int _screen;
@@ -189,6 +232,11 @@ protected:
   pfn_XRRFreeScreenResources _XRRFreeScreenResources;
   pfn_XRRGetCrtcInfo _XRRGetCrtcInfo;
   pfn_XRRFreeCrtcInfo _XRRFreeCrtcInfo;
+
+  typedef Status (*pfn_XIQueryVersion)(X11_Display *, int*, int*);
+  typedef Status (*pfn_XISelectEvents)(X11_Display *, X11_Window, XIEventMask *, int);
+  pfn_XISelectEvents _XISelectEvents = nullptr;
+  int _num_raw_mouse_windows = 0;
 
 private:
   void make_hidden_cursor();

@@ -59,6 +59,7 @@ IOKitInputDeviceManager() {
   CFRelease(match);
 
   IOHIDManagerRegisterDeviceMatchingCallback(_hid_manager, on_match_device, this);
+  IOHIDManagerRegisterDeviceRemovalCallback(_hid_manager, on_remove_device, this);
   IOHIDManagerScheduleWithRunLoop(_hid_manager, CFRunLoopGetMain(), kCFRunLoopCommonModes);
   IOHIDManagerOpen(_hid_manager, kIOHIDOptionsTypeNone);
 }
@@ -78,16 +79,43 @@ IOKitInputDeviceManager::
  */
 void IOKitInputDeviceManager::
 on_match_device(void *ctx, IOReturn result, void *sender, IOHIDDeviceRef device) {
-  InputDeviceManager *mgr = (InputDeviceManager *)ctx;
+  IOKitInputDeviceManager *mgr = (IOKitInputDeviceManager *)ctx;
   nassertv(mgr != nullptr);
   nassertv(device);
 
-  PT(InputDevice) input_device = new IOKitInputDevice(device);
+  IOKitInputDevice *input_device = new IOKitInputDevice(device);
   if (device_cat.is_debug()) {
     device_cat.debug()
       << "Discovered input device " << *input_device << "\n";
   }
   mgr->add_device(input_device);
+  mgr->_devices_by_hidref[device] = input_device;
 }
 
+/**
+ * Called by IOKit when an input device has disappeared.
+ */
+void IOKitInputDeviceManager::
+on_remove_device(void *ctx, IOReturn result, void *sender, IOHIDDeviceRef device) {
+  IOKitInputDeviceManager *mgr = (IOKitInputDeviceManager *)ctx;
+  nassertv(mgr != nullptr);
+  nassertv(device);
+
+  auto it = mgr->_devices_by_hidref.find(device);
+  nassertv(it != mgr->_devices_by_hidref.end());
+  IOKitInputDevice *input_device = it->second;
+
+  input_device->set_connected(false);
+
+  mgr->_devices_by_hidref.erase(device);
+
+  IOHIDDeviceClose(device, kIOHIDOptionsTypeNone);
+
+  if (device_cat.is_debug()) {
+    device_cat.debug()
+      << "Removed input device " << *input_device << "\n";
+  }
+
+  mgr->remove_device(input_device);
+}
 #endif

@@ -49,6 +49,13 @@ x11GraphicsPipe(const std::string &display) :
     display_spec = ":0.0";
   }
 
+  // Store the current locale, so that we can restore it later.
+  std::string saved_locale;
+  char *saved_locale_p = setlocale(LC_ALL, nullptr);
+  if (saved_locale_p != nullptr) {
+    saved_locale = saved_locale_p;
+  }
+
   // The X docs say we should do this to get international character support
   // from the keyboard.
   setlocale(LC_ALL, "");
@@ -107,7 +114,7 @@ x11GraphicsPipe(const std::string &display) :
     int major_ver, minor_ver;
     if (_XF86DGAQueryVersion == nullptr || _XF86DGADirectVideo == nullptr) {
       x11display_cat.warning()
-        << "libXxf86dga.so.1 does not provide required functions; relative mouse mode will not work.\n";
+        << "libXxf86dga.so.1 does not provide required functions; relative mouse mode may not work.\n";
 
     } else if (!_XF86DGAQueryVersion(_display, &major_ver, &minor_ver)) {
       _XF86DGADirectVideo = nullptr;
@@ -116,7 +123,7 @@ x11GraphicsPipe(const std::string &display) :
     _XF86DGADirectVideo = nullptr;
     if (x11display_cat.is_debug()) {
       x11display_cat.debug()
-        << "cannot dlopen libXxf86dga.so.1; cursor changing will not work.\n";
+        << "cannot dlopen libXxf86dga.so.1; relative mouse mode may not work.\n";
     }
   }
 
@@ -214,6 +221,44 @@ x11GraphicsPipe(const std::string &display) :
     }
   }
 
+  // Dynamically load the XInput2 extension.
+  int ev, err;
+  if (XQueryExtension(_display, "XInputExtension", &_xi_opcode, &ev, &err)) {
+    void *xi = dlopen("libXi.so.6", RTLD_NOW | RTLD_LOCAL);
+    if (xi != nullptr) {
+      pfn_XIQueryVersion _XIQueryVersion = (pfn_XIQueryVersion)dlsym(xi, "XIQueryVersion");
+      _XISelectEvents = (pfn_XISelectEvents)dlsym(xi, "XISelectEvents");
+
+      int major_ver = 2, minor_ver = 0;
+      if (_XIQueryVersion == nullptr || _XISelectEvents == nullptr) {
+        x11display_cat.warning()
+          << "libXi.so.6 does not provide required functions; relative mouse mode will not work.\n";
+        _XISelectEvents = nullptr;
+        dlclose(xi);
+
+      } else if (_XIQueryVersion(_display, &major_ver, &minor_ver) == Success) {
+        if (x11display_cat.is_debug()) {
+          x11display_cat.debug()
+            << "Found XInput extension " << major_ver << "." << minor_ver << "\n";
+        }
+
+      } else {
+        if (x11display_cat.is_debug()) {
+          x11display_cat.debug()
+            << "XInput2 extension not supported; relative mouse mode will not work.\n";
+        }
+        _XISelectEvents = nullptr;
+        dlclose(xi);
+      }
+    } else {
+      _XISelectEvents = nullptr;
+      if (x11display_cat.is_debug()) {
+        x11display_cat.debug()
+          << "cannot dlopen libXi.so.1; relative mouse mode will not work.\n";
+      }
+    }
+  }
+
   // Use Xrandr to fill in the supported resolution list.
   if (_have_xrandr) {
     // If we have XRRGetScreenResources, we prefer that.  It seems to be more
@@ -278,8 +323,13 @@ x11GraphicsPipe(const std::string &display) :
   // Connect to an input method for supporting international text entry.
   _im = XOpenIM(_display, nullptr, nullptr, nullptr);
   if (_im == (XIM)nullptr) {
-    x11display_cat.warning()
-      << "Couldn't open input method.\n";
+    // Fall back to internal input method.
+    XSetLocaleModifiers("@im=none");
+    _im = XOpenIM(_display, nullptr, nullptr, nullptr);
+    if (_im == (XIM)nullptr) {
+      x11display_cat.warning()
+        << "Couldn't open input method.\n";
+    }
   }
 
   // What styles does the current input method support?
@@ -294,6 +344,11 @@ x11GraphicsPipe(const std::string &display) :
 
   XFree(im_supported_styles);
   */
+
+  // Restore the previous locale.
+  if (!saved_locale.empty()) {
+    setlocale(LC_ALL, saved_locale.c_str());
+  }
 
   // Get some X atom numbers.
   _wm_delete_window = XInternAtom(_display, "WM_DELETE_WINDOW", false);
@@ -321,6 +376,59 @@ x11GraphicsPipe::
   }
   if (_display) {
     XCloseDisplay(_display);
+  }
+}
+
+/**
+ * Enables raw mouse mode for this display.  Returns false if unsupported.
+ */
+INLINE bool x11GraphicsPipe::
+enable_raw_mouse() {
+  if (_num_raw_mouse_windows > 0) {
+    // Already enabled by another window.
+    ++_num_raw_mouse_windows;
+    return true;
+  }
+  if (_XISelectEvents != nullptr) {
+    XIEventMask event_mask;
+    unsigned char mask[XIMaskLen(XI_RawMotion)] = {0};
+
+    event_mask.deviceid = XIAllMasterDevices;
+    event_mask.mask_len = sizeof(mask);
+    event_mask.mask = mask;
+    XISetMask(mask, XI_RawMotion);
+
+    if (_XISelectEvents(_display, _root, &event_mask, 1) == Success) {
+      if (x11display_cat.info()) {
+        x11display_cat.info()
+          << "Enabled raw mouse events using XInput2 extension\n";
+      }
+      ++_num_raw_mouse_windows;
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Disables raw mouse mode for this display.
+ */
+void x11GraphicsPipe::
+disable_raw_mouse() {
+  if (--_num_raw_mouse_windows == 0) {
+    if (x11display_cat.is_debug()) {
+      x11display_cat.debug()
+        << "Disabling raw mouse events using XInput2 extension\n";
+    }
+
+    XIEventMask event_mask;
+    unsigned char mask[] = {0};
+
+    event_mask.deviceid = XIAllMasterDevices;
+    event_mask.mask_len = sizeof(mask);
+    event_mask.mask = mask;
+
+    _XISelectEvents(_display, _root, &event_mask, 1);
   }
 }
 
@@ -371,13 +479,13 @@ find_fullscreen_crtc(const LPoint2i &point,
     for (int i = 0; i < res->ncrtc; ++i) {
       RRCrtc crtc = res->crtcs[i];
       if (auto info = get_crtc_info(res.get(), crtc)) {
-        if (point[0] >= info->x && point[0] < info->x + info->width &&
-            point[1] >= info->y && point[1] < info->y + info->height) {
+        if (point[0] >= info->x && point[0] < info->x + (int)info->width &&
+            point[1] >= info->y && point[1] < info->y + (int)info->height) {
 
           x = info->x;
           y = info->y;
-          width = info->width;
-          height = info->height;
+          width = (int)info->width;
+          height = (int)info->height;
           return crtc;
         }
       }

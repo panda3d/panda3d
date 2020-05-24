@@ -151,8 +151,7 @@ operator >> (std::istream &in, TextEncoder::Encoding &encoding);
 
 // This function is declared inline to minimize the risk of link conflicts
 // should another third-party module also define the same output operator.
-INLINE EXPCL_DTOOL_DTOOLUTIL std::ostream &
-operator << (std::ostream &out, const std::wstring &str);
+INLINE std::ostream & operator << (std::ostream &out, const std::wstring &str);
 
 #include "textEncoder.I"
 

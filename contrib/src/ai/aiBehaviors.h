@@ -28,6 +28,9 @@ class PathFollow;
 class PathFind;
 class ObstacleAvoidance;
 
+#include "flee.h"
+#include "evade.h"
+
 typedef std::list<Flee, std::allocator<Flee> > ListFlee;
 typedef std::list<Evade, std::allocator<Evade> > ListEvade;
 

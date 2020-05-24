@@ -51,7 +51,7 @@ function(add_python_target target)
   target_link_libraries(${target} PKG::PYTHON)
 
   if(BUILD_SHARED_LIBS)
-    set(_outdir "${PROJECT_BINARY_DIR}/${PANDA_CFG_INTDIR_GEN}/${slash_namespace}")
+    set(_outdir "${PANDA_OUTPUT_DIR}/${slash_namespace}")
 
     set_target_properties(${target} PROPERTIES
       LIBRARY_OUTPUT_DIRECTORY "${_outdir}"
@@ -75,7 +75,7 @@ function(add_python_target target)
       OUTPUT_NAME "${basename}"
       PREFIX "libpy.${namespace}.")
 
-    install(TARGETS ${target} EXPORT "${export}" COMPONENT "${component}" DESTINATION lib)
+    install(TARGETS ${target} EXPORT "${export}" COMPONENT "${component}" DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
   endif()
 
@@ -139,7 +139,7 @@ function(install_python_package package_name)
     set(src_path "${CMAKE_SOURCE_DIR}/cmake/templates/win32_python")
   endif()
 
-  set(path "${PROJECT_BINARY_DIR}/${PANDA_CFG_INTDIR}/${package_name}")
+  set(path "${PANDA_OUTPUT_DIR}/${package_name}")
 
   set(args -D "OUTPUT_DIR=${path}")
   if(src_path)

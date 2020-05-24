@@ -1,4 +1,8 @@
-"""Defines the DirectScrollBar class."""
+"""Defines the DirectScrollBar class.
+
+See the :ref:`directscrollbar` page in the programming manual for a more
+in-depth explanation and an example of how to use this class.
+"""
 
 __all__ = ['DirectScrollBar']
 
@@ -84,6 +88,8 @@ class DirectScrollBar(DirectFrame):
             else:
                 self.incButton['frameSize'] = (f[0], f[1], f[2]*0.05, f[3]*0.05)
 
+        self._lastOrientation = self['orientation']
+
         self.guiItem.setThumbButton(self.thumb.guiItem)
         self.guiItem.setLeftButton(self.decButton.guiItem)
         self.guiItem.setRightButton(self.incButton.guiItem)
@@ -136,13 +142,38 @@ class DirectScrollBar(DirectFrame):
 
     def setOrientation(self):
         if self['orientation'] == DGG.HORIZONTAL:
+            if self._lastOrientation in (DGG.VERTICAL, DGG.VERTICAL_INVERTED):
+                fpre = self['frameSize']
+                # swap frameSize width and height to keep custom frameSizes
+                self['frameSize'] = (fpre[2], fpre[3], fpre[0], fpre[1])
+                f = self.decButton['frameSize']
+                self.decButton['frameSize'] = (f[2], f[3], f[0], f[1])
+                f = self.incButton['frameSize']
+                self.incButton['frameSize'] = (f[2], f[3], f[0], f[1])
             self.guiItem.setAxis(Vec3(1, 0, 0))
         elif self['orientation'] == DGG.VERTICAL:
+            if self._lastOrientation == DGG.HORIZONTAL:
+                fpre = self['frameSize']
+                # swap frameSize width and height to keep custom frameSizes
+                self['frameSize'] = (fpre[2], fpre[3], fpre[0], fpre[1])
+                f = self.decButton['frameSize']
+                self.decButton['frameSize'] = (f[2], f[3], f[0], f[1])
+                f = self.incButton['frameSize']
+                self.incButton['frameSize'] = (f[2], f[3], f[0], f[1])
             self.guiItem.setAxis(Vec3(0, 0, -1))
         elif self['orientation'] == DGG.VERTICAL_INVERTED:
+            if self._lastOrientation == DGG.HORIZONTAL:
+                fpre = self['frameSize']
+                # swap frameSize width and height to keep custom frameSizes
+                self['frameSize'] = (fpre[2], fpre[3], fpre[0], fpre[1])
+                f = self.decButton['frameSize']
+                self.decButton['frameSize'] = (f[2], f[3], f[0], f[1])
+                f = self.incButton['frameSize']
+                self.incButton['frameSize'] = (f[2], f[3], f[0], f[1])
             self.guiItem.setAxis(Vec3(0, 0, 1))
         else:
             raise ValueError('Invalid value for orientation: %s' % (self['orientation']))
+        self._lastOrientation = self['orientation']
 
     def setManageButtons(self):
         self.guiItem.setManagePieces(self['manageButtons'])

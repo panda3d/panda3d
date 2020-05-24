@@ -12,9 +12,6 @@
 /* Define if we have Python as a framework (Mac OS X).  */
 #cmakedefine PYTHON_FRAMEWORK
 
-/* Define if we have RAD game tools, Miles Sound System installed.  */
-#cmakedefine HAVE_RAD_MSS
-
 /* Define if we have OpenAL installed as a framework. */
 #cmakedefine HAVE_OPENAL_FRAMEWORK
 
@@ -64,9 +61,6 @@
 #cmakedefine HAVE_SOFTIMAGE_PIC
 #cmakedefine HAVE_BMP
 #cmakedefine HAVE_PNM
-
-/* Define if we have libtar installed.  */
-#cmakedefine HAVE_TAR
 
 /* Define if we have CG installed.  */
 #cmakedefine HAVE_CG
@@ -232,9 +226,6 @@
 
 /* Do we have <stdint.h>? */
 #cmakedefine PHAVE_STDINT_H
-
-/* Do we have RTTI (and <typeinfo>)? */
-#cmakedefine HAVE_RTTI
 
 /* Do we have Posix threads? */
 #cmakedefine HAVE_POSIX_THREADS

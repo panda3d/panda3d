@@ -68,6 +68,9 @@ AsyncTask::
  * Removes the task from its active manager, if any, and makes the state
  * S_inactive (or possible S_servicing_removed).  This is a no-op if the state
  * is already S_inactive.
+ *
+ * If the task is a coroutine that is currently awaiting a future, this will
+ * fail, but see also cancel().
  */
 bool AsyncTask::
 remove() {
@@ -457,7 +460,8 @@ unlock_and_do_task() {
 }
 
 /**
- * Cancels this task.  This is equivalent to remove().
+ * Cancels this task.  This is equivalent to remove(), except for coroutines,
+ * for which it will throw an exception into any currently pending await.
  */
 bool AsyncTask::
 cancel() {

@@ -7,7 +7,7 @@ set(P3NATIVENET_HEADERS
   buffered_datagramconnection.h
   buffered_datagramreader.h buffered_datagramreader.I
   ringbuffer.h ringbuffer.I socket_ip.h
-  socket_tcp.h socket_tcp_listen.h socket_tcp_ssl.h
+  socket_tcp.h socket_tcp_listen.h
   time_accumulator.h time_out.h
   socket_address.I socket_address.h
   socket_portable.h  time_base.h time_span.h buffered_datagramwriter.h
@@ -25,7 +25,6 @@ set(P3NATIVENET_SOURCES
   socket_ip.cxx
   socket_tcp.cxx
   socket_tcp_listen.cxx
-  socket_tcp_ssl.cxx
   socket_udp.cxx
   socket_udp_incoming.cxx
   socket_udp_outgoing.cxx
@@ -40,8 +39,9 @@ target_interrogate(p3nativenet ALL)
 if(NOT BUILD_METALIBS)
   install(TARGETS p3nativenet
     EXPORT Core COMPONENT Core
-    DESTINATION lib
-    RUNTIME DESTINATION bin
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d
     ARCHIVE COMPONENT CoreDevel)
 endif()
-install(FILES ${P3NATIVENET_HEADERS} COMPONENT CoreDevel DESTINATION include/panda3d)
+install(FILES ${P3NATIVENET_HEADERS} COMPONENT CoreDevel DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d)

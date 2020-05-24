@@ -12,13 +12,8 @@
  */
 
 #ifdef FLOATTYPE_IS_INT
-#if PY_MAJOR_VERSION >= 3
 #define PYNUMBER_FLOATTYPE PyNumber_Long
 #define PY_AS_FLOATTYPE PyLong_AS_LONG
-#else
-#define PYNUMBER_FLOATTYPE PyNumber_Int
-#define PY_AS_FLOATTYPE PyInt_AS_LONG
-#endif
 #else
 #define PYNUMBER_FLOATTYPE PyNumber_Float
 #define PY_AS_FLOATTYPE (FLOATTYPE)PyFloat_AsDouble
@@ -216,6 +211,64 @@ __ipow__(PyObject *self, FLOATTYPE exponent) {
   _this->_v(1) = cpow(_this->_v(1), exponent);
   Py_INCREF(self);
   return self;
+}
+
+/**
+ *
+ */
+INLINE_LINMATH PyObject *Extension<FLOATNAME(LVecBase2)>::
+__round__(PyObject *self) const {
+#ifndef CPPPARSER
+  extern struct Dtool_PyTypedObject FLOATNAME(Dtool_LVecBase2);
+#endif
+  PyObject *py_vec = _PyObject_CallNoArg((PyObject *)DtoolInstance_TYPE(self));
+  if (py_vec != nullptr) {
+    FLOATNAME(LVecBase2) *vec = (FLOATNAME(LVecBase2) *)DtoolInstance_UPCAST(py_vec, FLOATNAME(Dtool_LVecBase2));
+    nassertr(vec != nullptr, nullptr);
+
+    vec->_v(0) = std::round(_this->_v(0));
+    vec->_v(1) = std::round(_this->_v(1));
+  }
+  return py_vec;
+}
+
+/**
+ *
+ */
+INLINE_LINMATH PyObject *Extension<FLOATNAME(LVecBase2)>::
+__floor__(PyObject *self) const {
+#ifndef CPPPARSER
+  extern struct Dtool_PyTypedObject FLOATNAME(Dtool_LVecBase2);
+#endif
+
+  PyObject *py_vec = _PyObject_CallNoArg((PyObject *)DtoolInstance_TYPE(self));
+  if (py_vec != nullptr) {
+    FLOATNAME(LVecBase2) *vec = (FLOATNAME(LVecBase2) *)DtoolInstance_UPCAST(py_vec, FLOATNAME(Dtool_LVecBase2));
+    nassertr(vec != nullptr, nullptr);
+
+    vec->_v(0) = std::floor(_this->_v(0));
+    vec->_v(1) = std::floor(_this->_v(1));
+  }
+  return py_vec;
+}
+
+/**
+ *
+ */
+INLINE_LINMATH PyObject *Extension<FLOATNAME(LVecBase2)>::
+__ceil__(PyObject *self) const {
+#ifndef CPPPARSER
+  extern struct Dtool_PyTypedObject FLOATNAME(Dtool_LVecBase2);
+#endif
+  PyObject *py_vec = _PyObject_CallNoArg((PyObject *)DtoolInstance_TYPE(self));
+  if (py_vec != nullptr) {
+    FLOATNAME(LVecBase2) *vec = (FLOATNAME(LVecBase2) *)DtoolInstance_UPCAST(py_vec, FLOATNAME(Dtool_LVecBase2));
+    nassertr(vec != nullptr, nullptr);
+
+    vec->_v(0) = std::ceil(_this->_v(0));
+    vec->_v(1) = std::ceil(_this->_v(1));
+  }
+  return py_vec;
 }
 
 #undef PYNUMBER_FLOATTYPE

@@ -35,7 +35,7 @@ class Audio3DManager:
     def setDistanceFactor(self, factor):
         """
         Control the scale that sets the distance units for 3D spacialized audio.
-        Default is 1.0 which is adjust in panda to be feet.
+        Default is 1.0 which is adjust in panda to be meters.
         When you change this, don't forget that this effects the scale of setSoundMinDistance
         """
         self.audio_manager.audio3dSetDistanceFactor(factor)
@@ -43,7 +43,7 @@ class Audio3DManager:
     def getDistanceFactor(self):
         """
         Control the scale that sets the distance units for 3D spacialized audio.
-        Default is 1.0 which is adjust in panda to be feet.
+        Default is 1.0 which is adjust in panda to be meters.
         """
         return self.audio_manager.audio3dGetDistanceFactor()
 

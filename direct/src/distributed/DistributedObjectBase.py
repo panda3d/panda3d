@@ -1,11 +1,12 @@
 from direct.showbase.DirectObject import DirectObject
 from direct.directnotify.DirectNotifyGlobal import directNotify
 
+
 class DistributedObjectBase(DirectObject):
     """
     The Distributed Object class is the base class for all network based
     (i.e. distributed) objects.  These will usually (always?) have a
-    dclass entry in a *.dc file.
+    dclass entry in a \\*.dc file.
     """
     notify = directNotify.newCategory("DistributedObjectBase")
 

@@ -85,7 +85,7 @@ PUBLISHED:
   void offset_vertices(const GeomVertexData *data, int offset);
   int make_nonindexed(bool composite_only);
 
-  CPT(GeomVertexData) get_animated_vertex_data(bool force, Thread *current_thread) const;
+  CPT(GeomVertexData) get_animated_vertex_data(bool force, Thread *current_thread = Thread::get_current_thread()) const;
 
   INLINE bool is_empty() const;
 
@@ -295,7 +295,7 @@ public:
     }
 
   private:
-    static TypeHandle _type_handle;
+    static EXPCL_PANDA_GOBJ TypeHandle _type_handle;
   };
   typedef pmap<const CacheKey *, PT(CacheEntry), IndirectLess<CacheKey> > Cache;
 

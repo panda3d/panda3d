@@ -114,11 +114,17 @@ set_target_properties(p3bullet PROPERTIES DEFINE_SYMBOL BUILDING_PANDABULLET)
 target_link_libraries(p3bullet panda PKG::BULLET)
 target_interrogate(p3bullet ALL)
 
+if(MSVC AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  # Clang emulating MSVC; it has builtin defines for __m128 + __m128 and co.
+  target_compile_definitions(p3bullet PUBLIC BT_NO_SIMD_OPERATOR_OVERLOADS)
+endif()
+
 install(TARGETS p3bullet
   EXPORT Bullet COMPONENT Bullet
-  DESTINATION lib
-  RUNTIME DESTINATION bin
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+  INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d
   ARCHIVE COMPONENT BulletDevel)
-install(FILES ${P3BULLET_HEADERS} COMPONENT BulletDevel DESTINATION include/panda3d)
+install(FILES ${P3BULLET_HEADERS} COMPONENT BulletDevel DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d)
 
 export_targets(Bullet COMPONENT BulletDevel)

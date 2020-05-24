@@ -36,10 +36,11 @@ if(DEFINED SOURCE_DIR)
     file(TIMESTAMP "${OUTPUT_DIR}/${py_file}" dst_stamp)
 
     # The file is only copied if:
-    # - there's an __init__.py in its dir (i.e. file belongs to a package), and
+    # - there's an __init__.py in its dir (or file is in the root) (i.e. file belongs to a package), and
     # - the modification timestamp differs (i.e. file changed or never copied)
-    if(EXISTS "${SOURCE_DIR}/${py_file_parent}/__init__.py"
-        AND NOT src_stamp STREQUAL dst_stamp)
+    if((py_file_parent STREQUAL "." OR NOT py_file_parent
+        OR EXISTS "${SOURCE_DIR}/${py_file_parent}/__init__.py")
+       AND NOT src_stamp STREQUAL dst_stamp)
 
       file(COPY "${SOURCE_DIR}/${py_file}" DESTINATION "${OUTPUT_DIR}/${py_file_parent}")
       set(changed YES)
@@ -69,7 +70,7 @@ if(changed AND DEFINED PYTHON_EXECUTABLES)
       WORKING_DIRECTORY "${OUTPUT_DIR}")
 
     execute_process(
-      COMMAND "${interp}" -OO -m compileall .
+      COMMAND "${interp}" -O -m compileall .
       OUTPUT_QUIET
       WORKING_DIRECTORY "${OUTPUT_DIR}")
 

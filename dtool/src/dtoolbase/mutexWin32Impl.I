@@ -14,21 +14,9 @@
 /**
  *
  */
-INLINE MutexWin32Impl::
-~MutexWin32Impl() {
-  // If the lock has been contended, and we use the Windows XP implementation,
-  // we have a handle to close.  Otherwise, this field will be null.
-  if (_lock[1] != nullptr) {
-    CloseHandle(_lock[1]);
-  }
-}
-
-/**
- *
- */
 INLINE void MutexWin32Impl::
 lock() {
-  _funcs._lock(_lock);
+  AcquireSRWLockExclusive(&_lock);
 }
 
 /**
@@ -36,7 +24,7 @@ lock() {
  */
 INLINE bool MutexWin32Impl::
 try_lock() {
-  return (_funcs._try_lock(_lock) != 0);
+  return (TryAcquireSRWLockExclusive(&_lock) != 0);
 }
 
 /**
@@ -44,7 +32,7 @@ try_lock() {
  */
 INLINE void MutexWin32Impl::
 unlock() {
-  _funcs._unlock(_lock);
+  ReleaseSRWLockExclusive(&_lock);
 }
 
 /**

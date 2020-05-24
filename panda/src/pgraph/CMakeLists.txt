@@ -200,6 +200,8 @@ set(P3PGRAPH_SOURCES
 )
 
 set(P3PGRAPH_IGATEEXT
+  loaderFileTypeRegistry_ext.cxx
+  loaderFileTypeRegistry_ext.h
   nodePathCollection_ext.cxx
   nodePathCollection_ext.h
   nodePath_ext.cxx
@@ -207,6 +209,8 @@ set(P3PGRAPH_IGATEEXT
   nodePath_ext.I
   pandaNode_ext.cxx
   pandaNode_ext.h
+  pythonLoaderFileType.cxx
+  pythonLoaderFileType.h
   renderState_ext.cxx
   renderState_ext.h
   shaderAttrib_ext.cxx
@@ -218,7 +222,7 @@ set(P3PGRAPH_IGATEEXT
 )
 
 # This is a large file; let's build it separately
-set_source_files_properties(nodePath.cxx PROPERTIES SKIP_COMPOSITING YES)
+set_source_files_properties(nodePath.cxx PROPERTIES SKIP_UNITY_BUILD_INCLUSION YES)
 
 composite_sources(p3pgraph P3PGRAPH_SOURCES)
 add_component_library(p3pgraph SYMBOL BUILDING_PANDA_PGRAPH
@@ -226,11 +230,17 @@ add_component_library(p3pgraph SYMBOL BUILDING_PANDA_PGRAPH
 target_link_libraries(p3pgraph p3gobj p3event p3gsgbase p3putil p3linmath pandaexpress)
 target_interrogate(p3pgraph ALL EXTENSIONS ${P3PGRAPH_IGATEEXT})
 
+if(HAVE_EIGEN)
+  # Eigen puts this over the threshold where bigobj is needed on MSVC
+  set_target_properties(p3pgraph PROPERTIES MSVC_BIGOBJ ON)
+endif()
+
 if(NOT BUILD_METALIBS)
   install(TARGETS p3pgraph
     EXPORT Core COMPONENT Core
-    DESTINATION lib
-    RUNTIME DESTINATION bin
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d
     ARCHIVE COMPONENT CoreDevel)
 endif()
-install(FILES ${P3PGRAPH_HEADERS} COMPONENT CoreDevel DESTINATION include/panda3d)
+install(FILES ${P3PGRAPH_HEADERS} COMPONENT CoreDevel DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d)

@@ -5,14 +5,9 @@ EntryScale Class: Scale with a label, and a linked and validated entry
 __all__ = ['EntryScale', 'EntryScaleGroup']
 
 from direct.showbase.TkGlobal import *
-import Pmw, sys
-
-if sys.version_info >= (3, 0):
-    from tkinter.simpledialog import *
-    from tkinter.colorchooser import askcolor
-else:
-    from tkSimpleDialog import *
-    from tkColorChooser import askcolor
+import Pmw
+from tkinter.simpledialog import *
+from tkinter.colorchooser import askcolor
 
 """
 Change Min/Max buttons to labels, add highlight binding

@@ -91,7 +91,7 @@ if(APPLE)
 endif()
 
 # This is a large file; let's build it separately
-set_source_files_properties(graphicsStateGuardian.cxx PROPERTIES SKIP_COMPOSITING YES)
+set_source_files_properties(graphicsStateGuardian.cxx PROPERTIES SKIP_UNITY_BUILD_INCLUSION YES)
 
 composite_sources(p3display P3DISPLAY_SOURCES)
 add_component_library(p3display SYMBOL BUILDING_PANDA_DISPLAY
@@ -100,11 +100,17 @@ target_link_libraries(p3display p3cull p3device p3pgraphnodes
   PKG::X11)
 target_interrogate(p3display ALL EXTENSIONS ${P3DISPLAY_IGATEEXT})
 
+if(HAVE_EIGEN)
+  # Eigen puts this over the threshold where bigobj is needed on MSVC
+  set_target_properties(p3display PROPERTIES MSVC_BIGOBJ ON)
+endif()
+
 if(NOT BUILD_METALIBS)
   install(TARGETS p3display
     EXPORT Core COMPONENT Core
-    DESTINATION lib
-    RUNTIME DESTINATION bin
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d
     ARCHIVE COMPONENT CoreDevel)
 endif()
-install(FILES ${P3DISPLAY_HEADERS} COMPONENT CoreDevel DESTINATION include/panda3d)
+install(FILES ${P3DISPLAY_HEADERS} COMPONENT CoreDevel DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d)

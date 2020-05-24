@@ -19,9 +19,6 @@ def test_wheel(wheel, verbose=False):
     print("Setting up virtual environment in {0}".format(envdir))
     sys.stdout.flush()
 
-    # Make sure pip is up-to-date first.
-    subprocess.call([sys.executable, "-B", "-m", "pip", "install", "-U", "pip"])
-
     # Create a virtualenv.
     if sys.version_info >= (3, 0):
         subprocess.call([sys.executable, "-B", "-m", "venv", "--clear", envdir])
@@ -40,7 +37,11 @@ def test_wheel(wheel, verbose=False):
         sys.exit(1)
 
     # Install pytest into the environment, as well as our wheel.
-    if subprocess.call([python, "-m", "pip", "install", "pytest", wheel]) != 0:
+    packages = ["pytest", wheel]
+    if sys.version_info[0:2] == (3, 4) and sys.platform == "win32":
+        packages += ["colorama==0.4.1"]
+
+    if subprocess.call([python, "-m", "pip", "install"] + packages) != 0:
         shutil.rmtree(envdir)
         sys.exit(1)
 

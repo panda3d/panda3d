@@ -15,7 +15,7 @@
  *
  */
 constexpr MutexPosixImpl::
-MutexPosixImpl() noexcept : _lock(PTHREAD_MUTEX_INITIALIZER) {
+MutexPosixImpl() noexcept {
 }
 
 /**

@@ -47,4 +47,4 @@ endif()
 mark_as_advanced(SWSCALE_LIBRARY_DIR)
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(SWSCALE DEFAULT_MSG SWSCALE_LIBRARY SWSCALE_INCLUDE_DIR SWSCALE_LIBRARY_DIR)
+find_package_handle_standard_args(SWScale DEFAULT_MSG SWSCALE_LIBRARY SWSCALE_INCLUDE_DIR SWSCALE_LIBRARY_DIR)

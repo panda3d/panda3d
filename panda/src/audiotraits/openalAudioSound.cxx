@@ -564,13 +564,18 @@ push_fresh_buffers() {
 }
 
 /**
- * The next time you call play, the sound will start from the specified
- * offset.
+ * Sets the offset within the sound.  If the sound is currently playing, its
+ * position is updated immediately.
  */
 void OpenALAudioSound::
 set_time(PN_stdfloat time) {
   ReMutexHolder holder(OpenALAudioManager::_lock);
   _start_time = time;
+
+  if (is_playing()) {
+    // Ensure that the position is updated immediately.
+    play();
+  }
 }
 
 /**

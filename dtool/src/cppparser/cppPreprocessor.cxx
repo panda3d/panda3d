@@ -1942,7 +1942,22 @@ get_identifier(int c) {
   // Is it a manifest?
   Manifests::const_iterator mi = _manifests.find(name);
   if (mi != _manifests.end() && !should_ignore_manifest((*mi).second)) {
-    return expand_manifest((*mi).second);
+    // If the manifest is expecting arguments, we don't expand it unless the
+    // the next token is an open-parenthesis.
+    CPPManifest *manifest = (*mi).second;
+    if (manifest->_has_parameters) {
+      while (c != EOF && isspace(c)) {
+        get();
+        c = peek();
+      }
+      if (c == '(') {
+        // It is followed by a parenthesis, so we can expand this.
+        return expand_manifest(manifest);
+      }
+    } else {
+      // Non-function-like macros are always expanded.
+      return expand_manifest(manifest);
+    }
   }
   if (name == "__FILE__") {
     return get_literal(SIMPLE_STRING, loc, loc.file._filename_as_referenced);

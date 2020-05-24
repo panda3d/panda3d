@@ -582,7 +582,7 @@ main(int argc, char **argv) {
       Filename pathname = Filename::dso_filename(argv[i]);
       cerr << "Loading " << pathname << "\n";
 
-#ifdef WIN32
+#ifdef _WIN32
       // test_interrogate always wants to show an error dialog.
       SetErrorMode(0);
 #endif
