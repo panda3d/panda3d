@@ -1972,6 +1972,10 @@ def CompileLink(dll, obj, opts):
             if GetOrigExt(x) != ".dat":
                 cmd += ' ' + x
 
+        pyenv_prefix = GetPyenvPrefix()
+        if pyenv_prefix is not None:
+            cmd += ' -L' + os.path.join(pyenv_prefix, 'lib')
+
         if (GetOrigExt(dll) == ".exe" and GetTarget() == 'windows' and "NOICON" not in opts):
             cmd += " " + GetOutputDir() + "/tmp/pandaIcon.res"
 
