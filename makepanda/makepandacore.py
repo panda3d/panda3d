@@ -548,6 +548,24 @@ def GetFlex():
 
     return FLEX
 
+def GetPyenvPrefix():
+    pyenv_prefix = None
+    try:
+        pyenv_prefix = subprocess.check_output(['pyenv', 'virtualenv-prefix'])
+    except subprocess.CalledProcessError:
+        pass
+
+    try:
+        if pyenv_prefix is None:
+            pyenv_prefix = subprocess.check_output(['pyenv', 'prefix'])
+    except subprocess.CalledProcessError:
+        pass
+
+    if pyenv_prefix is not None:
+        pyenv_prefix = pyenv_prefix.decode('utf8').strip()
+    return pyenv_prefix
+
+
 ########################################################################
 ##
 ## LocateBinary
@@ -3064,6 +3082,12 @@ def SetupBuildEnvironment(compiler):
             print("System include search path:")
             for dir in SYS_INC_DIRS:
                 print("  " + dir)
+
+    # Check to see if pyenv is being used and update SYS dirs accordingly
+    pyenv_prefix = GetPyenvPrefix()
+    if pyenv_prefix is not None:
+        SYS_LIB_DIRS.insert(0, os.path.join(pyenv_prefix, 'lib'))
+        SYS_INC_DIRS.insert(0, os.path.join(pyenv_prefix, 'include'))
 
     # If we're cross-compiling, no point in putting our output dirs on the path.
     if CrossCompiling():
