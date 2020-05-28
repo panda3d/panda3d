@@ -95,7 +95,6 @@ def test_texture_peek_srgba():
     # We allow some imprecision.
     assert col.almost_equal((0.5, 0.5, 0.5, 188 / 255.0), 1 / 255.0)
 
-
 def test_texture_peek_ubyte_i():
     maxval = 255
     data = array('B', (2, 1, 0, maxval))
@@ -158,3 +157,45 @@ def test_texture_peek_int_i():
     col = LColor()
     peeker.fetch_pixel(col, 0, 0)
     assert col == (minval, -1, 0, maxval)
+
+
+def test_texture_peek_cube():
+    maxval = 255
+    data = array('B', (
+        2, 1, 0, maxval,
+        2, 1, 1, maxval,
+        2, 1, 2, maxval,
+        2, 1, 3, maxval,
+        2, 1, 4, maxval,
+        2, 1, 5, maxval,
+    ))
+    tex = Texture("")
+    tex.setup_cube_map(1, Texture.T_unsigned_byte, Texture.F_rgba)
+    tex.set_ram_image(data)
+    peeker = tex.peek()
+    assert peeker.has_pixel(0, 0)
+
+    # If no z is specified, face 0 is used by default
+    col = LColor()
+    peeker.fetch_pixel(col, 0, 0)
+    col *= maxval
+    assert col == (0, 1, 2, maxval)
+
+    # Now try each face
+    for faceidx in range(6):
+        col = LColor()
+        peeker.fetch_pixel(col, 0, 0, faceidx)
+        col *= maxval
+        assert col == (faceidx, 1, 2, maxval)
+
+    # Try some vector lookups (might not be interesting with 1px faces)
+    def lookup(*vec):
+        col = LColor()
+        peeker.lookup(col, *vec)
+        return col
+    assert lookup(1, 0, 0) * maxval == (0, 1, 2, maxval)
+    assert lookup(-1, 0, 0) * maxval == (1, 1, 2, maxval)
+    assert lookup(0, 1, 0) * maxval == (2, 1, 2, maxval)
+    assert lookup(0, -1, 0) * maxval == (3, 1, 2, maxval)
+    assert lookup(0, 0, 1) * maxval == (4, 1, 2, maxval)
+    assert lookup(0, 0, -1) * maxval == (5, 1, 2, maxval)

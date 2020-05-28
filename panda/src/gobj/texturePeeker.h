@@ -71,6 +71,7 @@ private:
   typedef double GetComponentFunc(const unsigned char *&p);
   typedef void GetTexelFunc(LColor &color, const unsigned char *&p,
                             GetComponentFunc *get_component);
+  typedef void GetTexelLocFunc(int &x, int &y, int &z, int x_size, int y_size, int z_size, PN_stdfloat u, PN_stdfloat v, PN_stdfloat w);
 
   static void get_texel_r(LColor &color, const unsigned char *&p, GetComponentFunc *get_component);
   static void get_texel_g(LColor &color, const unsigned char *&p, GetComponentFunc *get_component);
@@ -83,6 +84,8 @@ private:
   static void get_texel_rgba(LColor &color, const unsigned char *&p, GetComponentFunc *get_component);
   static void get_texel_srgb(LColor &color, const unsigned char *&p, GetComponentFunc *get_component);
   static void get_texel_srgba(LColor &color, const unsigned char *&p, GetComponentFunc *get_component);
+  static void get_texel_loc_standard(int &x, int &y, int &z, int x_size, int y_size, int z_size, PN_stdfloat u, PN_stdfloat v, PN_stdfloat w);
+  static void get_texel_loc_cube(int &x, int &y, int &z, int x_size, int y_size, int z_size, PN_stdfloat u, PN_stdfloat v, PN_stdfloat w);
 
   int _x_size;
   int _y_size;
@@ -96,6 +99,7 @@ private:
 
   GetComponentFunc *_get_component;
   GetTexelFunc *_get_texel;
+  GetTexelLocFunc *_get_texel_loc;
 
   friend class Texture;
 };

@@ -74,50 +74,40 @@ static double get_signed_int_i(const unsigned char *&p) {
  */
 TexturePeeker::
 TexturePeeker(Texture *tex, Texture::CData *cdata) {
-  if (cdata->_texture_type == Texture::TT_cube_map) {
-    // Cube map texture.  We'll need to map from (u, v, w) to (u, v) within
-    // the appropriate page, where w indicates the page.
+  // Simple ram images are possible if it is a 2-d texture.
+  if (tex->do_has_ram_image(cdata) && cdata->_ram_image_compression == Texture::CM_off) {
+    // Get the regular RAM image if it is available.
+    _image = tex->do_get_ram_image(cdata);
+    _x_size = cdata->_x_size;
+    _y_size = cdata->_y_size;
+    _z_size = cdata->_z_size;
+    _component_width = cdata->_component_width;
+    _num_components = cdata->_num_components;
+    _format = cdata->_format;
+    _component_type = cdata->_component_type;
 
-    // TODO: handle cube maps.
-    return;
+  } else if (!cdata->_simple_ram_image._image.empty()) {
+    // Get the simple RAM image if *that* is available.
+    _image = cdata->_simple_ram_image._image;
+    _x_size = cdata->_simple_x_size;
+    _y_size = cdata->_simple_y_size;
+    _z_size = 1;
+
+    _component_width = 1;
+    _num_components = 4;
+    _format = Texture::F_rgba;
+    _component_type = Texture::T_unsigned_byte;
 
   } else {
-    // Regular 1-d, 2-d, or 3-d texture.  The coordinates map directly.
-    // Simple ram images are possible if it is a 2-d texture.
-    if (tex->do_has_ram_image(cdata) && cdata->_ram_image_compression == Texture::CM_off) {
-      // Get the regular RAM image if it is available.
-      _image = tex->do_get_ram_image(cdata);
-      _x_size = cdata->_x_size;
-      _y_size = cdata->_y_size;
-      _z_size = cdata->_z_size;
-      _component_width = cdata->_component_width;
-      _num_components = cdata->_num_components;
-      _format = cdata->_format;
-      _component_type = cdata->_component_type;
-
-    } else if (!cdata->_simple_ram_image._image.empty()) {
-      // Get the simple RAM image if *that* is available.
-      _image = cdata->_simple_ram_image._image;
-      _x_size = cdata->_simple_x_size;
-      _y_size = cdata->_simple_y_size;
-      _z_size = 1;
-
-      _component_width = 1;
-      _num_components = 4;
-      _format = Texture::F_rgba;
-      _component_type = Texture::T_unsigned_byte;
-
-    } else {
-      // Failing that, reload and get the uncompressed RAM image.
-      _image = tex->do_get_uncompressed_ram_image(cdata);
-      _x_size = cdata->_x_size;
-      _y_size = cdata->_y_size;
-      _z_size = cdata->_z_size;
-      _component_width = cdata->_component_width;
-      _num_components = cdata->_num_components;
-      _format = cdata->_format;
-      _component_type = cdata->_component_type;
-    }
+    // Failing that, reload and get the uncompressed RAM image.
+    _image = tex->do_get_uncompressed_ram_image(cdata);
+    _x_size = cdata->_x_size;
+    _y_size = cdata->_y_size;
+    _z_size = cdata->_z_size;
+    _component_width = cdata->_component_width;
+    _num_components = cdata->_num_components;
+    _format = cdata->_format;
+    _component_type = cdata->_component_type;
   }
 
   if (_image.is_null()) {
@@ -291,6 +281,15 @@ TexturePeeker(Texture *tex, Texture::CData *cdata) {
     _image.clear();
     return;
   }
+
+  switch (cdata->_texture_type) {
+    case Texture::TT_cube_map:
+      _get_texel_loc = get_texel_loc_cube;
+      break;
+    default:
+      _get_texel_loc = get_texel_loc_standard;
+      break;
+  }
 }
 
 
@@ -318,10 +317,8 @@ lookup(LColor &color, PN_stdfloat u, PN_stdfloat v) const {
 
 void TexturePeeker::
 lookup(LColor &color, PN_stdfloat u, PN_stdfloat v, PN_stdfloat w) const {
-  int x = int((u - cfloor(u)) * (PN_stdfloat)_x_size) % _x_size;
-  int y = int((v - cfloor(v)) * (PN_stdfloat)_y_size) % _y_size;
-  int z = int((w - cfloor(w)) * (PN_stdfloat)_z_size) % _z_size;
-
+  int x, y, z;
+  _get_texel_loc(x, y, z, _x_size, _y_size, _z_size, u, v, w);
   fetch_pixel(color, x, y, z);
 }
 
@@ -751,4 +748,50 @@ get_texel_srgba(LColor &color, const unsigned char *&p, GetComponentFunc *get_co
   color[1] = decode_sRGB_float(*p++);
   color[0] = decode_sRGB_float(*p++);
   color[3] = (*get_component)(p);
+}
+
+/**
+ * Gets the texel location for the vector v for regular textures
+ */
+void TexturePeeker::
+get_texel_loc_standard(int &x, int &y, int &z, int x_size, int y_size, int z_size, PN_stdfloat u, PN_stdfloat v, PN_stdfloat w) {
+  x = int((u - cfloor(u)) * (PN_stdfloat)x_size) % x_size;
+  y = int((v - cfloor(v)) * (PN_stdfloat)y_size) % y_size;
+  z = int((w - cfloor(w)) * (PN_stdfloat)z_size) % z_size;
+}
+
+/**
+ * Gets the texel location for the vector v for cube textures
+ */
+void TexturePeeker::
+get_texel_loc_cube(int &x, int &y, int &z, int x_size, int y_size, int z_size, PN_stdfloat u, PN_stdfloat v, PN_stdfloat w) {
+  PN_stdfloat absu = fabs(u),
+              absv = fabs(v),
+              absw = fabs(w);
+  PN_stdfloat magnitude;
+  PN_stdfloat u2d, v2d;
+  int tmpz;
+
+  // The following was pulled from:
+  // https://www.gamedev.net/forums/topic/687535-implementing-a-cube-map-lookup-function/
+  if (absw >= absu && absw >= absv) {
+    z = w < 0.0 ? 5 : 4;
+    magnitude = 0.5 / absw;
+    u2d = w < 0.0 ? -u : u;
+    v2d = -v;
+  } else if (absv >= absu) {
+    z = v < 0.0 ? 3 : 2;
+    magnitude = 0.5 / absv;
+    u2d = u;
+    v2d = v < 0.0 ? -z : z;
+  } else {
+    z = u < 0.0 ? 1 : 0;
+    magnitude = 0.5 / absu;
+    u2d = u < 0.0 ? w : -w;
+    v2d = -v;
+  }
+  u2d = u2d * magnitude + 0.5;
+  v2d = v2d * magnitude + 0.5;
+
+  get_texel_loc_standard(x, y, tmpz, x_size, y_size, z_size, u2d, v2d, 0);
 }
