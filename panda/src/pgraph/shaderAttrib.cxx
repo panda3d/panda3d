@@ -367,10 +367,16 @@ get_shader_input_vector(const InternalName *id) const {
           memcpy(&vectord[0], ptr._ptr, sizeof(double) * ptr._size);
           return LCAST(PN_stdfloat, vectord);
         }
+      case ShaderType::ST_int:
+        {
+          LVector4i vectori;
+          memcpy(&vectori[0], ptr._ptr, sizeof(int) * ptr._size);
+          return LCAST(PN_stdfloat, vectori);
+        }
       default:
        {
           ostringstream strm;
-          strm << "Shader input " << id->get_name() << " does not contain floating-point data.\n";
+          strm << "Shader input " << id->get_name() << " does not contain numeric data.\n";
           nassert_raise(strm.str());
           return resfail;
         }
