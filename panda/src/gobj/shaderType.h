@@ -145,11 +145,11 @@ private:
  */
 class EXPCL_PANDA_GOBJ ShaderType::Vector final : public ShaderType {
 public:
-  INLINE Vector(ScalarType scalar_type, uint32_t num_elements);
+  INLINE Vector(ScalarType scalar_type, uint32_t num_components);
   Vector(const Vector &copy) = default;
 
   INLINE ScalarType get_scalar_type() const;
-  INLINE uint32_t get_num_elements() const;
+  INLINE uint32_t get_num_components() const;
 
   virtual bool as_scalar_type(ScalarType &type, uint32_t &num_elements,
                               uint32_t &num_rows, uint32_t &num_columns) const override;
@@ -162,7 +162,7 @@ private:
   virtual int compare_to_impl(const ShaderType &other) const override;
 
   const ScalarType _scalar_type;
-  const uint32_t _num_elements;
+  const uint32_t _num_components;
 
 public:
   static TypeHandle get_class_type() {

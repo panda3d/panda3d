@@ -98,7 +98,7 @@ expect_float_vector(const InternalName *name, const ::ShaderType *type, int lo, 
     scalar_type = scalar->get_scalar_type();
   }
   else if (const ::ShaderType::Vector *vector = type->as_vector()) {
-    nfloat = vector->get_num_elements();
+    nfloat = vector->get_num_components();
     scalar_type = vector->get_scalar_type();
   }
   else {
@@ -2225,7 +2225,7 @@ bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
         bind._part[1] = SMO_identity;
         bind._arg[1] = nullptr;
 
-        if (member.type->as_vector()->get_num_elements() == 3) {
+        if (member.type->as_vector()->get_num_components() == 3) {
           bind._piece = SMP_row3x3;
         } else {
           bind._piece = SMP_row3;
@@ -2280,13 +2280,13 @@ bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
               return false;
             }
             const ::ShaderType::Vector *vector = member.type->as_vector();
-            if (vector == nullptr || vector->get_num_elements() == 1) {
+            if (vector == nullptr || vector->get_num_components() == 1) {
               bind._piece = SMP_row3x1;
             }
-            else if (vector->get_num_elements() == 2) {
+            else if (vector->get_num_components() == 2) {
               bind._piece = SMP_row3x2;
             }
-            else if (vector->get_num_elements() == 3) {
+            else if (vector->get_num_components() == 3) {
               bind._piece = SMP_row3x3;
             }
             else {

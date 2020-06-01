@@ -63,9 +63,9 @@ get_scalar_type() const {
  * Constructs a vector from a scalar type and number of elements.
  */
 INLINE ShaderType::Vector::
-Vector(ScalarType scalar_type, uint32_t num_elements) :
+Vector(ScalarType scalar_type, uint32_t num_components) :
   _scalar_type(scalar_type),
-  _num_elements(num_elements) {
+  _num_components(num_components) {
 }
 
 /**
@@ -77,11 +77,11 @@ get_scalar_type() const {
 }
 
 /**
- * Returns the number of elements in this vector.
+ * Returns the number of components in this vector.
  */
 INLINE uint32_t ShaderType::Vector::
-get_num_elements() const {
-  return _num_elements;
+get_num_components() const {
+  return _num_components;
 }
 
 /**

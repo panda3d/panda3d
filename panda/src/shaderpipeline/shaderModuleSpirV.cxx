@@ -285,7 +285,7 @@ parse_instruction(Definitions &defs, SpvOp opcode, const uint32_t *args, size_t 
       DCAST_INTO_R(column_type, defs[args[1]]._type, false);
       uint32_t num_rows = args[2];
       defs[args[0]].set_type(ShaderType::register_type(
-        ShaderType::Matrix(column_type->get_scalar_type(), column_type->get_num_elements(), num_rows)));
+        ShaderType::Matrix(column_type->get_scalar_type(), num_rows, column_type->get_num_components())));
     }
     break;
 

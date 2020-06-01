@@ -124,7 +124,7 @@ as_scalar_type(ScalarType &type, uint32_t &num_elements,
   type = _scalar_type;
   num_elements = 1;
   num_rows = 1;
-  num_columns = _num_elements;
+  num_columns = _num_components;
   return true;
 }
 
@@ -133,7 +133,7 @@ as_scalar_type(ScalarType &type, uint32_t &num_elements,
  */
 void ShaderType::Vector::
 output(std::ostream &out) const {
-  out << _scalar_type << _num_elements;
+  out << _scalar_type << _num_components;
 }
 
 /**
@@ -146,8 +146,8 @@ compare_to_impl(const ShaderType &other) const {
   if (_scalar_type != other_vector._scalar_type) {
     return _scalar_type < other_vector._scalar_type ? -1 : 1;
   }
-  return (_num_elements > other_vector._num_elements)
-       - (_num_elements < other_vector._num_elements);
+  return (_num_components > other_vector._num_components)
+       - (_num_components < other_vector._num_components);
 }
 
 /**
