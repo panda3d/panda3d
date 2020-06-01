@@ -2950,6 +2950,36 @@ bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
 
     return success;
   }
+  else if (const ::ShaderType::Array *array_type = type->as_array()) {
+    // Check if this is an array of structs.
+    if (const ::ShaderType::Struct *struct_type = array_type->get_element_type()->as_struct()) {
+      bool success = true;
+
+      // Generate names like structname[0].membername for every array element.
+      // This is how GLSL has historically exposed these variables.
+      size_t basename_size = name->get_basename().size();
+      char *buffer = (char *)alloca(basename_size + 14);
+      memcpy(buffer, name->get_basename().c_str(), basename_size);
+
+      for (uint32_t ai = 0; ai < array_type->get_num_elements(); ++ai) {
+        sprintf(buffer + basename_size, "[%d]", (int)ai);
+
+        PT(InternalName) elemname = name->get_parent()->append(buffer);
+
+        for (size_t mi = 0; mi < struct_type->get_num_members(); ++mi) {
+          const ::ShaderType::Struct::Member &member = struct_type->get_member(mi);
+
+          // Recurse.
+          PT(InternalName) fqname = elemname->append(member.name);
+          if (!bind_parameter(fqname, member.type, location++)) {
+            success = false;
+          }
+        }
+      }
+      return success;
+    }
+  }
+
   ShaderPtrSpec bind;
   if (type->as_scalar_type(bind._type, bind._dim[0], bind._dim[1], bind._dim[2])) {
     bind._id = arg_id;
