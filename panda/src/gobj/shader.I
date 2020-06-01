@@ -244,7 +244,7 @@ operator == (const ShaderCaps &other) const {
 INLINE Shader::ShaderPtrData::
 ShaderPtrData() :
   _ptr(nullptr),
-  _type(SPT_unknown),
+  _type(ScalarType::ST_unknown),
   _updated(true),
   _size(0)
 {
@@ -257,7 +257,7 @@ INLINE Shader::ShaderPtrData::
 ShaderPtrData(const PTA_float &ptr):
   _pta(ptr.v0()),
   _ptr(ptr.p()),
-  _type(SPT_float),
+  _type(ScalarType::ST_float),
   _updated(true),
   _size(ptr.size())
 {
@@ -270,7 +270,7 @@ INLINE Shader::ShaderPtrData::
 ShaderPtrData(const PTA_LMatrix4f &ptr):
   _pta(ptr.v0()),
   _ptr(ptr.p()),
-  _type(SPT_float),
+  _type(ScalarType::ST_float),
   _updated(true),
   _size(ptr.size() * 16)
 {
@@ -283,7 +283,7 @@ INLINE Shader::ShaderPtrData::
 ShaderPtrData(const PTA_LMatrix3f &ptr):
   _pta(ptr.v0()),
   _ptr(ptr.p()),
-  _type(SPT_float),
+  _type(ScalarType::ST_float),
   _updated(true),
   _size(ptr.size() * 9)
 {
@@ -296,7 +296,7 @@ INLINE Shader::ShaderPtrData::
 ShaderPtrData(const PTA_LVecBase4f &ptr):
   _pta(ptr.v0()),
   _ptr(ptr.p()),
-  _type(SPT_float),
+  _type(ScalarType::ST_float),
   _updated(true),
   _size(ptr.size() * 4)
 {
@@ -309,7 +309,7 @@ INLINE Shader::ShaderPtrData::
 ShaderPtrData(const PTA_LVecBase3f &ptr):
   _pta(ptr.v0()),
   _ptr(ptr.p()),
-  _type(SPT_float),
+  _type(ScalarType::ST_float),
   _updated(true),
   _size(ptr.size() * 3)
 {
@@ -322,7 +322,7 @@ INLINE Shader::ShaderPtrData::
 ShaderPtrData(const PTA_LVecBase2f &ptr):
   _pta(ptr.v0()),
   _ptr(ptr.p()),
-  _type(SPT_float),
+  _type(ScalarType::ST_float),
   _updated(true),
   _size(ptr.size() * 2)
 {
@@ -333,7 +333,7 @@ ShaderPtrData(const PTA_LVecBase2f &ptr):
  */
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const LVecBase4f &vec) :
-  _type(SPT_float),
+  _type(ScalarType::ST_float),
   _updated(true),
   _size(4)
 {
@@ -349,7 +349,7 @@ ShaderPtrData(const LVecBase4f &vec) :
  */
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const LVecBase3f &vec) :
-  _type(SPT_float),
+  _type(ScalarType::ST_float),
   _updated(true),
   _size(3)
 {
@@ -365,7 +365,7 @@ ShaderPtrData(const LVecBase3f &vec) :
  */
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const LVecBase2f &vec) :
-  _type(SPT_float),
+  _type(ScalarType::ST_float),
   _updated(true),
   _size(2)
 {
@@ -381,7 +381,7 @@ ShaderPtrData(const LVecBase2f &vec) :
  */
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const LMatrix4f &mat) :
-  _type(SPT_float),
+  _type(ScalarType::ST_float),
   _updated(true),
   _size(16)
 {
@@ -397,7 +397,7 @@ ShaderPtrData(const LMatrix4f &mat) :
  */
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const LMatrix3f &mat) :
-  _type(SPT_float),
+  _type(ScalarType::ST_float),
   _updated(true),
   _size(9)
 {
@@ -415,7 +415,7 @@ INLINE Shader::ShaderPtrData::
 ShaderPtrData(const PTA_double &ptr):
   _pta(ptr.v0()),
   _ptr(ptr.p()),
-  _type(SPT_double),
+  _type(ScalarType::ST_double),
   _updated(true),
   _size(ptr.size())
 {
@@ -428,7 +428,7 @@ INLINE Shader::ShaderPtrData::
 ShaderPtrData(const PTA_LMatrix4d &ptr):
   _pta(ptr.v0()),
   _ptr(ptr.p()),
-  _type(SPT_double),
+  _type(ScalarType::ST_double),
   _updated(true),
   _size(ptr.size() * 16)
 {
@@ -441,7 +441,7 @@ INLINE Shader::ShaderPtrData::
 ShaderPtrData(const PTA_LMatrix3d &ptr):
   _pta(ptr.v0()),
   _ptr(ptr.p()),
-  _type(SPT_double),
+  _type(ScalarType::ST_double),
   _updated(true),
   _size(ptr.size() * 9)
 {
@@ -454,7 +454,7 @@ INLINE Shader::ShaderPtrData::
 ShaderPtrData(const PTA_LVecBase4d &ptr):
   _pta(ptr.v0()),
   _ptr(ptr.p()),
-  _type(SPT_double),
+  _type(ScalarType::ST_double),
   _updated(true),
   _size(ptr.size() * 4)
 {
@@ -467,7 +467,7 @@ INLINE Shader::ShaderPtrData::
 ShaderPtrData(const PTA_LVecBase3d &ptr):
   _pta(ptr.v0()),
   _ptr(ptr.p()),
-  _type(SPT_double),
+  _type(ScalarType::ST_double),
   _updated(true),
   _size(ptr.size() * 3)
 {
@@ -480,7 +480,7 @@ INLINE Shader::ShaderPtrData::
 ShaderPtrData(const PTA_LVecBase2d &ptr):
   _pta(ptr.v0()),
   _ptr(ptr.p()),
-  _type(SPT_double),
+  _type(ScalarType::ST_double),
   _updated(true),
   _size(ptr.size() * 2)
 {
@@ -491,7 +491,7 @@ ShaderPtrData(const PTA_LVecBase2d &ptr):
  */
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const LVecBase4d &vec) :
-  _type(SPT_double),
+  _type(ScalarType::ST_double),
   _updated(true),
   _size(4)
 {
@@ -507,7 +507,7 @@ ShaderPtrData(const LVecBase4d &vec) :
  */
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const LVecBase3d &vec) :
-  _type(SPT_double),
+  _type(ScalarType::ST_double),
   _updated(true),
   _size(3)
 {
@@ -523,7 +523,7 @@ ShaderPtrData(const LVecBase3d &vec) :
  */
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const LVecBase2d &vec) :
-  _type(SPT_double),
+  _type(ScalarType::ST_double),
   _updated(true),
   _size(2)
 {
@@ -539,7 +539,7 @@ ShaderPtrData(const LVecBase2d &vec) :
  */
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const LMatrix4d &mat) :
-  _type(SPT_double),
+  _type(ScalarType::ST_double),
   _updated(true),
   _size(16)
 {
@@ -555,7 +555,7 @@ ShaderPtrData(const LMatrix4d &mat) :
  */
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const LMatrix3d &mat) :
-  _type(SPT_double),
+  _type(ScalarType::ST_double),
   _updated(true),
   _size(9)
 {
@@ -573,7 +573,7 @@ INLINE Shader::ShaderPtrData::
 ShaderPtrData(const PTA_int &ptr):
   _pta(ptr.v0()),
   _ptr(ptr.p()),
-  _type(SPT_int),
+  _type(ScalarType::ST_int),
   _updated(true),
   _size(ptr.size())
 {
@@ -586,7 +586,7 @@ INLINE Shader::ShaderPtrData::
 ShaderPtrData(const PTA_LVecBase4i &ptr):
   _pta(ptr.v0()),
   _ptr(ptr.p()),
-  _type(SPT_int),
+  _type(ScalarType::ST_int),
   _updated(true),
   _size(ptr.size() * 4)
 {
@@ -599,7 +599,7 @@ INLINE Shader::ShaderPtrData::
 ShaderPtrData(const PTA_LVecBase3i &ptr):
   _pta(ptr.v0()),
   _ptr(ptr.p()),
-  _type(SPT_int),
+  _type(ScalarType::ST_int),
   _updated(true),
   _size(ptr.size() * 3)
 {
@@ -612,7 +612,7 @@ INLINE Shader::ShaderPtrData::
 ShaderPtrData(const PTA_LVecBase2i &ptr):
   _pta(ptr.v0()),
   _ptr(ptr.p()),
-  _type(SPT_int),
+  _type(ScalarType::ST_int),
   _updated(true),
   _size(ptr.size() * 2)
 {
@@ -623,7 +623,7 @@ ShaderPtrData(const PTA_LVecBase2i &ptr):
  */
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const LVecBase4i &vec) :
-  _type(SPT_int),
+  _type(ScalarType::ST_int),
   _updated(true),
   _size(4)
 {
@@ -639,7 +639,7 @@ ShaderPtrData(const LVecBase4i &vec) :
  */
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const LVecBase3i &vec) :
-  _type(SPT_int),
+  _type(ScalarType::ST_int),
   _updated(true),
   _size(3)
 {
@@ -655,7 +655,7 @@ ShaderPtrData(const LVecBase3i &vec) :
  */
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const LVecBase2i &vec) :
-  _type(SPT_int),
+  _type(ScalarType::ST_int),
   _updated(true),
   _size(2)
 {
@@ -675,18 +675,19 @@ write_datagram(Datagram &dg) const {
   dg.add_uint8(_type);
   dg.add_uint32((uint32_t)_size);
 
-  if (_type == SPT_double) {
+  if (_type == ScalarType::ST_double) {
     const double *data = (const double *) _ptr;
     for (size_t i = 0; i < _size; ++i) {
       dg.add_float64(data[i]);
     }
-
-  } else if (_type == SPT_float) {
+  }
+  else if (_type == ScalarType::ST_float) {
     const float *data = (const float *) _ptr;
     for (size_t i = 0; i < _size; ++i) {
       dg.add_float32(data[i]);
     }
-  } else if (_type == SPT_int) {
+  }
+  else if (_type == ScalarType::ST_int) {
     const int *data = (const int *) _ptr;
     for (size_t i = 0; i < _size; ++i) {
       dg.add_int32(data[i]);
@@ -699,10 +700,10 @@ write_datagram(Datagram &dg) const {
  */
 INLINE void Shader::ShaderPtrData::
 read_datagram(DatagramIterator &scan) {
-  _type = (ShaderPtrType) scan.get_uint8();
+  _type = (::ShaderType::ScalarType) scan.get_uint8();
   _size = scan.get_uint32();
 
-  if (_type == SPT_double) {
+  if (_type == ScalarType::ST_double) {
     PTA_double pta = PTA_double::empty_array(_size);
     for (size_t i = 0; i < _size; ++i) {
       pta[i] = scan.get_float64();
@@ -710,7 +711,7 @@ read_datagram(DatagramIterator &scan) {
     _pta = pta.v0();
     _ptr = pta.p();
 
-  } else if (_type == SPT_float) {
+  } else if (_type == ScalarType::ST_float) {
     PTA_float pta = PTA_float::empty_array(_size);
     for (size_t i = 0; i < _size; ++i) {
       pta[i] = scan.get_float32();
@@ -718,7 +719,7 @@ read_datagram(DatagramIterator &scan) {
     _pta = pta.v0();
     _ptr = pta.p();
 
-  } else if (_type == SPT_int) {
+  } else if (_type == ScalarType::ST_int) {
     PTA_int pta = PTA_int::empty_array(_size);
     for (size_t i = 0; i < _size; ++i) {
       pta[i] = scan.get_int32();

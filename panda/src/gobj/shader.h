@@ -56,6 +56,7 @@ class ShaderCompiler;
 class EXPCL_PANDA_GOBJ Shader : public TypedWritableReferenceCount {
 PUBLISHED:
   using Stage = ShaderModule::Stage;
+  using ScalarType = ShaderType::ScalarType;
 
   enum ShaderLanguage {
     SL_none,
@@ -298,17 +299,16 @@ public:
   };
 
   enum ShaderPtrType {
-    SPT_float,
-    SPT_double,
-    SPT_int,
-    SPT_uint,
-    SPT_unknown
+    SPT_float = ScalarType::ST_float,
+    SPT_double = ScalarType::ST_double,
+    SPT_int = ScalarType::ST_int,
+    SPT_uint = ScalarType::ST_uint,
+    SPT_unknown = ScalarType::ST_unknown,
   };
 
   struct ShaderArgInfo {
-    ShaderArgId       _id;
+    ShaderArgId _id;
     const ::ShaderType *_type;
-    ShaderPtrType     _numeric_type;
   };
 
   // Container structure for data of parameters ShaderPtrSpec.
@@ -318,7 +318,7 @@ public:
 
   public:
     void *_ptr;
-    ShaderPtrType _type;
+    ScalarType _type;
     bool _updated;
     size_t _size; //number of elements vec3[4]=12
 
@@ -408,16 +408,16 @@ public:
     PT(InternalName)  _name;
     int               _append_uv;
     int               _elements;
-    ShaderPtrType     _numeric_type;
+    ScalarType        _scalar_type;
   };
 
   struct ShaderPtrSpec {
     ShaderArgId       _id;
-    int               _dim[3]; //n_elements,rows,cols
+    uint32_t          _dim[3]; //n_elements,rows,cols
     int               _dep[2];
     CPT(InternalName) _arg;
     ShaderArgInfo     _info;
-    ShaderPtrType     _type;
+    ScalarType        _type;
   };
 
   class EXPCL_PANDA_GOBJ ShaderCaps {
@@ -467,23 +467,21 @@ public:
     std::string _compute;
   };
 
-public:
-  void cp_report_error(ShaderArgInfo &arg, const std::string &msg);
-  bool cp_errchk_parameter_words(ShaderArgInfo &arg, int len);
-  bool cp_errchk_parameter_float(ShaderArgInfo &arg, int lo, int hi);
-  bool cp_parse_eol(ShaderArgInfo &arg,
-                    vector_string &pieces, int &next);
-  bool cp_parse_delimiter(ShaderArgInfo &arg,
-                          vector_string &pieces, int &next);
-  std::string cp_parse_non_delimiter(vector_string &pieces, int &next);
-  bool cp_parse_coord_sys(ShaderArgInfo &arg,
-                          vector_string &pieces, int &next,
-                          ShaderMatSpec &spec, bool fromflag);
+protected:
+  bool report_parameter_error(const InternalName *name, const ::ShaderType *type, const char *msg);
+  bool expect_num_words(const InternalName *name, const ::ShaderType *type, size_t len);
+  bool expect_float_vector(const InternalName *name, const ::ShaderType *type, int lo, int hi);
+  bool expect_float_matrix(const InternalName *name, const ::ShaderType *type, int lo, int hi);
+  bool expect_coordinate_system(const InternalName *name, const ::ShaderType *type,
+                                vector_string &pieces, int &next,
+                                ShaderMatSpec &spec, bool fromflag);
   int cp_dependency(ShaderMatInput inp);
+
+public:
   void cp_add_mat_spec(ShaderMatSpec &spec);
   size_t cp_get_mat_cache_size() const;
 
-  bool compile_parameter(ShaderArgInfo &p);
+  bool compile_parameter(ShaderArgId &p);
 
   void clear_parameters();
 
@@ -497,7 +495,7 @@ public:
 
 private:
 #ifdef HAVE_CG
-  const ::ShaderType *cg_scalar_type(int type);
+  ScalarType cg_scalar_type(int type);
   const ::ShaderType *cg_parameter_type(CGparameter p);
 
   CGprogram cg_compile_entry_point(const char *entry, const ShaderCaps &caps,
@@ -588,7 +586,7 @@ private:
 public:
   bool link();
   bool bind_vertex_input(const InternalName *name, const ::ShaderType *type, int location);
-  bool bind_parameter(const InternalName *name, const ::ShaderType *type, int location);
+  bool bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location);
 
   bool check_modified() const;
   ShaderCompiler *get_compiler(ShaderLanguage lang) const;

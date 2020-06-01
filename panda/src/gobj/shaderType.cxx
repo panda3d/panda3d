@@ -25,6 +25,7 @@ TypeHandle ShaderType::Matrix::_type_handle;
 TypeHandle ShaderType::Struct::_type_handle;
 TypeHandle ShaderType::Array::_type_handle;
 TypeHandle ShaderType::Image::_type_handle;
+TypeHandle ShaderType::Sampler::_type_handle;
 TypeHandle ShaderType::SampledImage::_type_handle;
 
 const ShaderType::Scalar *ShaderType::bool_type;
@@ -32,6 +33,7 @@ const ShaderType::Scalar *ShaderType::int_type;
 const ShaderType::Scalar *ShaderType::uint_type;
 const ShaderType::Scalar *ShaderType::float_type;
 const ShaderType::Scalar *ShaderType::double_type;
+const ShaderType::Sampler *ShaderType::sampler_type;
 
 /**
  *
@@ -52,33 +54,53 @@ init_type() {
   ::register_type(Struct::_type_handle, "ShaderType::Struct", _type_handle);
   ::register_type(Array::_type_handle, "ShaderType::Array", _type_handle);
   ::register_type(Image::_type_handle, "ShaderType::Image", _type_handle);
+  ::register_type(Sampler::_type_handle, "ShaderType::Sampler", _type_handle);
   ::register_type(SampledImage::_type_handle, "ShaderType::SampledImage", _type_handle);
-  //::register_type(Sampler::_type_handle, "ShaderType::Sampler", _type_handle);
 
-  bool_type = nullptr;
-  int_type = ShaderType::register_type(ShaderType::Scalar(GeomEnums::NT_int32));
-  uint_type = ShaderType::register_type(ShaderType::Scalar(GeomEnums::NT_uint32));
-  float_type = ShaderType::register_type(ShaderType::Scalar(GeomEnums::NT_float32));
-  double_type = ShaderType::register_type(ShaderType::Scalar(GeomEnums::NT_float64));
+  bool_type = ShaderType::register_type(ShaderType::Scalar(ST_bool));
+  int_type = ShaderType::register_type(ShaderType::Scalar(ST_int));
+  uint_type = ShaderType::register_type(ShaderType::Scalar(ST_uint));
+  float_type = ShaderType::register_type(ShaderType::Scalar(ST_float));
+  double_type = ShaderType::register_type(ShaderType::Scalar(ST_double));
+
+  sampler_type = ShaderType::register_type(ShaderType::Sampler());
+}
+
+/**
+ * Outputs a string description of the ScalarType to the stream.
+ */
+std::ostream &operator << (std::ostream &out, ShaderType::ScalarType scalar_type) {
+  static const char *names[] = {"unknown", "float", "double", "int", "uint", "bool"};
+  const char *name;
+  if ((size_t)scalar_type < sizeof(names) / sizeof(names[0])) {
+    name = names[(size_t)scalar_type];
+  } else {
+    name = "**invalid**";
+  }
+  return out << name;
 }
 
 #ifndef CPPPARSER
+/**
+ * If this is an array, vector or matrix of a scalar type, extracts the
+ * dimensions.
+ */
+bool ShaderType::Scalar::
+as_scalar_type(ScalarType &type, uint32_t &num_elements,
+               uint32_t &num_rows, uint32_t &num_columns) const {
+  type = _scalar_type;
+  num_elements = 1;
+  num_rows = 1;
+  num_columns = 1;
+  return true;
+}
+
 /**
  *
  */
 void ShaderType::Scalar::
 output(std::ostream &out) const {
-  if (this == bool_type) {
-    out << "bool";
-  } else if (this == int_type) {
-    out << "int";
-  } else if (this == uint_type) {
-    out << "uint";
-  } else if (this == float_type) {
-    out << "float";
-  } else {
-    out << "unknown";
-  }
+  out << _scalar_type;
 }
 
 /**
@@ -88,8 +110,22 @@ output(std::ostream &out) const {
 int ShaderType::Scalar::
 compare_to_impl(const ShaderType &other) const {
   const Scalar &other_scalar = (const Scalar &)other;
-  return (_numeric_type > other_scalar._numeric_type)
-       - (_numeric_type < other_scalar._numeric_type);
+  return (_scalar_type > other_scalar._scalar_type)
+       - (_scalar_type < other_scalar._scalar_type);
+}
+
+/**
+ * If this is an array, vector or matrix of a scalar type, extracts the
+ * dimensions.
+ */
+bool ShaderType::Vector::
+as_scalar_type(ScalarType &type, uint32_t &num_elements,
+               uint32_t &num_rows, uint32_t &num_columns) const {
+  type = _scalar_type;
+  num_elements = 1;
+  num_rows = 1;
+  num_columns = _num_elements;
+  return true;
 }
 
 /**
@@ -97,7 +133,7 @@ compare_to_impl(const ShaderType &other) const {
  */
 void ShaderType::Vector::
 output(std::ostream &out) const {
-  out << *_base_type << _num_elements;
+  out << _scalar_type << _num_elements;
 }
 
 /**
@@ -107,11 +143,25 @@ output(std::ostream &out) const {
 int ShaderType::Vector::
 compare_to_impl(const ShaderType &other) const {
   const Vector &other_vector = (const Vector &)other;
-  if (_base_type != other_vector._base_type) {
-    return _base_type < other_vector._base_type ? -1 : 1;
+  if (_scalar_type != other_vector._scalar_type) {
+    return _scalar_type < other_vector._scalar_type ? -1 : 1;
   }
   return (_num_elements > other_vector._num_elements)
        - (_num_elements < other_vector._num_elements);
+}
+
+/**
+ * If this is an array, vector or matrix of a scalar type, extracts the
+ * dimensions.
+ */
+bool ShaderType::Matrix::
+as_scalar_type(ScalarType &type, uint32_t &num_elements,
+               uint32_t &num_rows, uint32_t &num_columns) const {
+  type = _scalar_type;
+  num_elements = 1;
+  num_rows = _num_rows;
+  num_columns = _num_columns;
+  return true;
 }
 
 /**
@@ -119,7 +169,7 @@ compare_to_impl(const ShaderType &other) const {
  */
 void ShaderType::Matrix::
 output(std::ostream &out) const {
-  out << *_base_type << _num_rows << "x" << _num_columns;
+  out << _scalar_type << _num_rows << "x" << _num_columns;
 }
 
 /**
@@ -129,8 +179,8 @@ output(std::ostream &out) const {
 int ShaderType::Matrix::
 compare_to_impl(const ShaderType &other) const {
   const Matrix &other_matrix = (const Matrix &)other;
-  if (_base_type != other_matrix._base_type) {
-    return _base_type < other_matrix._base_type ? -1 : 1;
+  if (_scalar_type != other_matrix._scalar_type) {
+    return _scalar_type < other_matrix._scalar_type ? -1 : 1;
   }
   if (_num_rows != other_matrix._num_rows) {
     return _num_rows < other_matrix._num_rows ? -1 : 1;
@@ -149,7 +199,7 @@ output(std::ostream &out) const {
     if (member.type != nullptr) {
       out << *member.type << ' ';
     }
-    out << *member.name << "; ";
+    out << member.name << "; ";
   }
   out << '}';
 }
@@ -191,6 +241,22 @@ get_num_parameter_locations() const {
     total += member.type->get_num_parameter_locations();
   }
   return total;
+}
+
+/**
+ * If this is an array, vector or matrix of a scalar type, extracts the
+ * dimensions.
+ */
+bool ShaderType::Array::
+as_scalar_type(ScalarType &type, uint32_t &num_elements,
+               uint32_t &num_rows, uint32_t &num_columns) const {
+  if (_element_type != nullptr &&
+      _element_type->as_scalar_type(type, num_elements, num_rows, num_columns) &&
+      num_elements == 1) {
+    num_elements = _num_elements;
+    return true;
+  }
+  return false;
 }
 
 /**
@@ -241,6 +307,24 @@ compare_to_impl(const ShaderType &other) const {
   const Image &other_image = (const Image &)other;
   return (_texture_type > other_image._texture_type)
        - (_texture_type < other_image._texture_type);
+}
+
+/**
+ *
+ */
+void ShaderType::Sampler::
+output(std::ostream &out) const {
+  out << "sampler";
+}
+
+/**
+ * Private implementation of compare_to, only called for types with the same
+ * TypeHandle.
+ */
+int ShaderType::Sampler::
+compare_to_impl(const ShaderType &other) const {
+  // All samplers are the same type.
+  return true;
 }
 
 /**

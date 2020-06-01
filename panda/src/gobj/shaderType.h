@@ -36,6 +36,15 @@ public:
 
   virtual int get_num_parameter_locations() const { return 1; }
 
+  enum ScalarType {
+    ST_unknown,
+    ST_float,
+    ST_double,
+    ST_int,
+    ST_uint,
+    ST_bool,
+  };
+
 private:
   typedef pset<const ShaderType *, indirect_compare_to<const ShaderType *> > Registry;
   static Registry *_registered_types;
@@ -56,8 +65,14 @@ PUBLISHED:
   static const ShaderType::Scalar *uint_type;
   static const ShaderType::Scalar *float_type;
   static const ShaderType::Scalar *double_type;
+  static const ShaderType::Sampler *sampler_type;
 
 public:
+  virtual bool as_scalar_type(ScalarType &type,
+                              uint32_t &num_elements,
+                              uint32_t &num_rows,
+                              uint32_t &num_columns) const { return false; }
+
   virtual const Scalar *as_scalar() const { return nullptr; }
   virtual const Vector *as_vector() const { return nullptr; }
   virtual const Matrix *as_matrix() const { return nullptr; }
@@ -84,6 +99,8 @@ private:
   static TypeHandle _type_handle;
 };
 
+std::ostream &operator << (std::ostream &out, ShaderType::ScalarType scalar_type);
+
 INLINE std::ostream &operator << (std::ostream &out, const ShaderType &stype) {
   stype.output(out);
   return out;
@@ -93,18 +110,21 @@ INLINE std::ostream &operator << (std::ostream &out, const ShaderType &stype) {
  * A numeric scalar type, like int or float.
  */
 class EXPCL_PANDA_GOBJ ShaderType::Scalar final : public ShaderType {
-private:
-  INLINE Scalar(GeomEnums::NumericType numeric_type);
+public:
+  INLINE Scalar(ScalarType scalar_type);
 
-  INLINE GeomEnums::NumericType get_numeric_type() const;
-
-  virtual void output(std::ostream &out) const override;
-  virtual int compare_to_impl(const ShaderType &other) const override;
+  INLINE ScalarType get_scalar_type() const;
+  virtual bool as_scalar_type(ScalarType &type, uint32_t &num_elements,
+                              uint32_t &num_rows, uint32_t &num_columns) const override;
 
   const Scalar *as_scalar() const override { return this; }
 
+  virtual void output(std::ostream &out) const override;
+
 private:
-  GeomEnums::NumericType _numeric_type;
+  virtual int compare_to_impl(const ShaderType &other) const override;
+
+  const ScalarType _scalar_type;
 
 public:
   static TypeHandle get_class_type() {
@@ -125,21 +145,24 @@ private:
  */
 class EXPCL_PANDA_GOBJ ShaderType::Vector final : public ShaderType {
 public:
-  INLINE Vector(const ShaderType *base_type, size_t num_elements);
+  INLINE Vector(ScalarType scalar_type, uint32_t num_elements);
   Vector(const Vector &copy) = default;
 
-  INLINE const ShaderType *get_base_type() const;
-  INLINE size_t get_num_elements() const;
+  INLINE ScalarType get_scalar_type() const;
+  INLINE uint32_t get_num_elements() const;
 
-  virtual void output(std::ostream &out) const override;
-  virtual int compare_to_impl(const ShaderType &other) const override;
+  virtual bool as_scalar_type(ScalarType &type, uint32_t &num_elements,
+                              uint32_t &num_rows, uint32_t &num_columns) const override;
 
-public:
   const Vector *as_vector() const override { return this; }
 
+  virtual void output(std::ostream &out) const override;
+
 private:
-  const ShaderType *_base_type;
-  size_t _num_elements;
+  virtual int compare_to_impl(const ShaderType &other) const override;
+
+  const ScalarType _scalar_type;
+  const uint32_t _num_elements;
 
 public:
   static TypeHandle get_class_type() {
@@ -160,21 +183,25 @@ private:
  */
 class EXPCL_PANDA_GOBJ ShaderType::Matrix final : public ShaderType {
 public:
-  INLINE Matrix(const ShaderType *base_type, size_t num_rows, size_t num_columns);
+  INLINE Matrix(ScalarType scalar_type, uint32_t num_rows, uint32_t num_columns);
 
-  INLINE const ShaderType *get_base_type() const;
-  INLINE size_t get_num_rows() const;
-  INLINE size_t get_num_columns() const;
+  INLINE ScalarType get_scalar_type() const;
+  INLINE uint32_t get_num_rows() const;
+  INLINE uint32_t get_num_columns() const;
 
-  virtual void output(std::ostream &out) const override;
-  virtual int compare_to_impl(const ShaderType &other) const override;
+  virtual bool as_scalar_type(ScalarType &type, uint32_t &num_elements,
+                              uint32_t &num_rows, uint32_t &num_columns) const override;
 
   const Matrix *as_matrix() const override { return this; }
 
+  virtual void output(std::ostream &out) const override;
+
 private:
-  const ShaderType *_base_type;
-  size_t _num_rows;
-  size_t _num_columns;
+  virtual int compare_to_impl(const ShaderType &other) const override;
+
+  const ScalarType _scalar_type;
+  const uint32_t _num_rows;
+  const uint32_t _num_columns;
 
 public:
   static TypeHandle get_class_type() {
@@ -199,7 +226,7 @@ public:
 
   INLINE size_t get_num_members() const;
   INLINE const Member &get_member(size_t i) const;
-  INLINE void add_member(const ShaderType *type, CPT(InternalName) name);
+  INLINE void add_member(const ShaderType *type, std::string name);
 
   virtual void output(std::ostream &out) const override;
   virtual int compare_to_impl(const ShaderType &other) const override;
@@ -213,7 +240,7 @@ PUBLISHED:
 
   struct Member {
     const ShaderType *type;
-    CPT(InternalName) name;
+    std::string name;
   };
 
 private:
@@ -238,10 +265,13 @@ private:
  */
 class EXPCL_PANDA_GOBJ ShaderType::Array final : public ShaderType {
 public:
-  INLINE Array(const ShaderType *element_type, size_t num_elements);
+  INLINE Array(const ShaderType *element_type, uint32_t num_elements);
 
   INLINE const ShaderType *get_element_type() const;
-  INLINE size_t get_num_elements() const;
+  INLINE uint32_t get_num_elements() const;
+
+  virtual bool as_scalar_type(ScalarType &type, uint32_t &num_elements,
+                              uint32_t &num_rows, uint32_t &num_columns) const override;
 
   virtual void output(std::ostream &out) const override;
   virtual int compare_to_impl(const ShaderType &other) const override;
@@ -256,7 +286,7 @@ PUBLISHED:
 
 private:
   const ShaderType *_element_type;
-  size_t _num_elements;
+  uint32_t _num_elements;
 
 public:
   static TypeHandle get_class_type() {
@@ -304,6 +334,33 @@ PUBLISHED:
 private:
   Texture::TextureType _texture_type;
   Access _access;
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  virtual TypeHandle get_type() const override {
+    return get_class_type();
+  }
+
+private:
+  static TypeHandle _type_handle;
+
+  friend class ShaderType;
+};
+
+/**
+ * Sampler state.
+ */
+class EXPCL_PANDA_GOBJ ShaderType::Sampler final : public ShaderType {
+private:
+  Sampler() = default;
+
+public:
+  virtual void output(std::ostream &out) const override;
+  virtual int compare_to_impl(const ShaderType &other) const override;
+
+  const Sampler *as_sampler() const override { return this; }
 
 public:
   static TypeHandle get_class_type() {

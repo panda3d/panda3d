@@ -48,38 +48,38 @@ compare_to(const ShaderType &other) const {
  * Constructs a scalar type.
  */
 INLINE ShaderType::Scalar::
-Scalar(GeomEnums::NumericType numeric_type) : _numeric_type(numeric_type) {
+Scalar(ScalarType scalar_type) : _scalar_type(scalar_type) {
 }
 
 /**
  * Returns the base numeric type.
  */
-INLINE GeomEnums::NumericType ShaderType::Scalar::
-get_numeric_type() const {
-  return _numeric_type;
+INLINE ShaderType::ScalarType ShaderType::Scalar::
+get_scalar_type() const {
+  return _scalar_type;
 }
 
 /**
  * Constructs a vector from a scalar type and number of elements.
  */
 INLINE ShaderType::Vector::
-Vector(const ShaderType *base_type, size_t num_elements) :
-  _base_type(base_type),
+Vector(ScalarType scalar_type, uint32_t num_elements) :
+  _scalar_type(scalar_type),
   _num_elements(num_elements) {
 }
 
 /**
  * Returns the scalar type that this vector consists of.
  */
-INLINE const ShaderType *ShaderType::Vector::
-get_base_type() const {
-  return _base_type;
+INLINE ShaderType::ScalarType ShaderType::Vector::
+get_scalar_type() const {
+  return _scalar_type;
 }
 
 /**
  * Returns the number of elements in this vector.
  */
-INLINE size_t ShaderType::Vector::
+INLINE uint32_t ShaderType::Vector::
 get_num_elements() const {
   return _num_elements;
 }
@@ -88,8 +88,8 @@ get_num_elements() const {
  * Constructs a matrix type from a scalar type, a number of rows and columns.
  */
 INLINE ShaderType::Matrix::
-Matrix(const ShaderType *base_type, size_t num_rows, size_t num_columns) :
-  _base_type(base_type),
+Matrix(ScalarType scalar_type, uint32_t num_rows, uint32_t num_columns) :
+  _scalar_type(scalar_type),
   _num_rows(num_rows),
   _num_columns(num_columns) {
 }
@@ -97,15 +97,15 @@ Matrix(const ShaderType *base_type, size_t num_rows, size_t num_columns) :
 /**
  * Returns the scalar type that this matrix consists of.
  */
-INLINE const ShaderType *ShaderType::Matrix::
-get_base_type() const {
-  return _base_type;
+INLINE ShaderType::ScalarType ShaderType::Matrix::
+get_scalar_type() const {
+  return _scalar_type;
 }
 
 /**
  * Returns the number of rows in this matrix type.
  */
-INLINE size_t ShaderType::Matrix::
+INLINE uint32_t ShaderType::Matrix::
 get_num_rows() const {
   return _num_rows;
 }
@@ -113,7 +113,7 @@ get_num_rows() const {
 /**
  * Returns the number of columns in this matrix type.
  */
-INLINE size_t ShaderType::Matrix::
+INLINE uint32_t ShaderType::Matrix::
 get_num_columns() const {
   return _num_columns;
 }
@@ -138,7 +138,7 @@ get_member(size_t i) const {
  * Adds a member to this struct.
  */
 INLINE void ShaderType::Struct::
-add_member(const ShaderType *type, CPT(InternalName) name) {
+add_member(const ShaderType *type, std::string name) {
   Member member;
   member.type = type;
   member.name = std::move(name);
@@ -149,7 +149,7 @@ add_member(const ShaderType *type, CPT(InternalName) name) {
  * Constructs an array type from a base type and number of elements.
  */
 INLINE ShaderType::Array::
-Array(const ShaderType *element_type, size_t num_elements) :
+Array(const ShaderType *element_type, uint32_t num_elements) :
   _element_type(element_type),
   _num_elements(num_elements) {
 }
@@ -165,7 +165,7 @@ get_element_type() const {
 /**
  * Returns the number of elements in this array.
  */
-INLINE size_t ShaderType::Array::
+INLINE uint32_t ShaderType::Array::
 get_num_elements() const {
   return _num_elements;
 }

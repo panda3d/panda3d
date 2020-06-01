@@ -558,7 +558,7 @@ issue_parameters(int altered) {
       void *data = ptr_data->_ptr;
 
       switch (ptr_data->_type) {
-      case Shader::SPT_float:
+      case ShaderType::ST_float:
         if (spec._info._type->as_array() != nullptr) {
           switch (spec._dim[1]) {
           case 1: cgGLSetParameterArray1f(p, 0, spec._dim[0], (float *)data); continue;
@@ -582,7 +582,7 @@ issue_parameters(int altered) {
         }
         break;
 
-      case Shader::SPT_double:
+      case ShaderType::ST_double:
         if (spec._info._type->as_array() != nullptr) {
           switch (spec._dim[1]) {
           case 1: cgGLSetParameterArray1d(p, 0, spec._dim[0], (double *)data); continue;
@@ -606,8 +606,8 @@ issue_parameters(int altered) {
         }
         break;
 
-      case Shader::SPT_int:
-      case Shader::SPT_uint:
+      case ShaderType::ST_int:
+      case ShaderType::ST_uint:
         switch (spec._dim[1]) {
         case 1: cgSetParameter1iv(p, (int *)data); continue;
         case 2: cgSetParameter2iv(p, (int *)data); continue;
@@ -838,11 +838,11 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
             // It requires us to pass GL_TRUE for normalized.
             _glgsg->_glVertexAttribPointer(p, GL_BGRA, GL_UNSIGNED_BYTE,
                                            GL_TRUE, stride, client_pointer);
-          } else if (bind._numeric_type == Shader::SPT_float ||
+          } else if (bind._scalar_type == ShaderType::ST_float ||
                      numeric_type == GeomEnums::NT_float32) {
             _glgsg->_glVertexAttribPointer(p, num_values, type,
                                            normalized, stride, client_pointer);
-          } else if (bind._numeric_type == Shader::SPT_double) {
+          } else if (bind._scalar_type == ShaderType::ST_double) {
             _glgsg->_glVertexAttribLPointer(p, num_values, type,
                                             stride, client_pointer);
           } else {
@@ -904,9 +904,9 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
           // So, we work around this by just binding something silly to 0.
           // This breaks flat colors, but it's better than invisible objects?
           _glgsg->enable_vertex_attrib_array(0);
-          if (bind._numeric_type == Shader::SPT_float) {
+          if (bind._scalar_type == ShaderType::ST_float) {
             _glgsg->_glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
-          } else if (bind._numeric_type == Shader::SPT_double) {
+          } else if (bind._scalar_type == ShaderType::ST_double) {
             _glgsg->_glVertexAttribLPointer(0, 4, GL_DOUBLE, 0, 0);
           } else {
             _glgsg->_glVertexAttribIPointer(0, 4, GL_INT, 0, 0);

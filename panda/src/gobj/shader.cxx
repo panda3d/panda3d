@@ -59,13 +59,14 @@ static bool has_cg_header(const std::string &shader_text) {
 
 /**
  * Generate an error message including a description of the specified
- * parameter.
+ * parameter.  Always returns false.
  */
-void Shader::
-cp_report_error(ShaderArgInfo &p, const string &msg) {
-  Filename fn = get_filename(p._id._type);
-  shader_cat.error() << fn << ": " << *p._type << ' ' <<
-    p._id._name << ": " << msg << "\n";
+bool Shader::
+report_parameter_error(const InternalName *name, const ::ShaderType *type, const char *msg) {
+  Filename fn = get_filename();
+  shader_cat.error()
+    << fn << ": " << *type << ' ' << *name << ": " << msg << "\n";
+  return false;
 }
 
 /**
@@ -73,82 +74,61 @@ cp_report_error(ShaderArgInfo &p, const string &msg) {
  * If not, print error message and return false.
  */
 bool Shader::
-cp_errchk_parameter_words(ShaderArgInfo &p, int len)
-{
-  vector_string words;
-  tokenize(p._id._name, words, "_");
-  if ((int)words.size() != len) {
-    cp_report_error(p, "parameter name has wrong number of words");
-    return false;
+expect_num_words(const InternalName *name, const ::ShaderType *type, size_t len) {
+  const std::string &name_str = name->get_basename();
+  size_t n = std::count(name_str.begin(), name_str.end(), '_');
+  if (n + 1 != len) {
+    std::string msg = "parameter name has wrong number of words, expected ";
+    msg += format_string(len);
+    return report_parameter_error(name, type, msg.c_str());
   }
   return true;
 }
 
 /**
- * Make sure the provided parameter has a floating point type.  If not, print
- * error message and return false.
+ * Make sure the provided parameter has a floating point vector type.  If not,
+ * print error message and return false.
  */
 bool Shader::
-cp_errchk_parameter_float(ShaderArgInfo &p, int lo, int hi)
-{
+expect_float_vector(const InternalName *name, const ::ShaderType *type, int lo, int hi) {
   int nfloat;
-  if (p._type->as_scalar()) {
+  ScalarType scalar_type = ScalarType::ST_unknown;
+  if (const ::ShaderType::Scalar *scalar = type->as_scalar()) {
     nfloat = 1;
+    scalar_type = scalar->get_scalar_type();
   }
-  else if (const ::ShaderType::Vector *vector = p._type->as_vector()) {
+  else if (const ::ShaderType::Vector *vector = type->as_vector()) {
     nfloat = vector->get_num_elements();
-  }
-  else if (const ::ShaderType::Matrix *matrix = p._type->as_matrix()) {
-    nfloat = matrix->get_num_rows() * matrix->get_num_columns();
+    scalar_type = vector->get_scalar_type();
   }
   else {
     nfloat = 0;
   }
-  if (nfloat < lo || nfloat > hi) {
-    string msg = "wrong type for parameter:";
-    cp_report_error(p, msg);
-    return false;
+  if (scalar_type != ScalarType::ST_float || nfloat < lo || nfloat > hi) {
+    return report_parameter_error(name, type, "expected floating-point vector");
   }
   return true;
 }
 
 /**
- * Make sure the next thing on the word list is EOL
+ * Make sure the provided parameter has a square floating-point matrix type.
+ * Otherwise, prints an error message and returns false.
  */
 bool Shader::
-cp_parse_eol(ShaderArgInfo &p, vector_string &words, int &next) {
-  if (words[next] != "") {
-    cp_report_error(p, "Too many words in parameter");
-    return false;
+expect_float_matrix(const InternalName *name, const ::ShaderType *type, int lo, int hi) {
+  ScalarType scalar_type = ScalarType::ST_unknown;
+  uint32_t num_rows;
+  uint32_t num_columns;
+  if (const ::ShaderType::Matrix *matrix = type->as_matrix()) {
+    num_rows = matrix->get_num_rows();
+    num_columns = matrix->get_num_columns();
+    scalar_type = matrix->get_scalar_type();
+  }
+  if (scalar_type != ScalarType::ST_float || num_rows != num_columns ||
+      num_rows < lo || num_rows > hi) {
+    return report_parameter_error(name, type, "expected square floating-point matrix");
   }
   return true;
-}
-
-/**
- * Pop a delimiter ('to' or 'rel') from the word list.
- */
-bool Shader::
-cp_parse_delimiter(ShaderArgInfo &p, vector_string &words, int &next) {
-  if ((words[next] != "to")&&(words[next] != "rel")) {
-    cp_report_error(p, "Keyword 'to' or 'rel' expected");
-    return false;
-  }
-  next += 1;
-  return true;
-}
-
-/**
- * Pop a non-delimiter word from the word list.  Delimiters are 'to' and
- * 'rel.'
- */
-string Shader::
-cp_parse_non_delimiter(vector_string &words, int &next) {
-  const string &nword = words[next];
-  if ((nword == "")||(nword == "to")||(nword == "rel")) {
-    return "";
-  }
-  next += 1;
-  return nword;
 }
 
 /**
@@ -156,53 +136,65 @@ cp_parse_non_delimiter(vector_string &words, int &next) {
  * ShaderMatSpec.
  */
 bool Shader::
-cp_parse_coord_sys(ShaderArgInfo &p,
-                   vector_string &pieces, int &next,
-                   ShaderMatSpec &bind, bool fromflag) {
+expect_coordinate_system(const InternalName *name, const ::ShaderType *type,
+                         vector_string &pieces, int &next,
+                         ShaderMatSpec &bind, bool fromflag) {
 
-  string word1 = cp_parse_non_delimiter(pieces, next);
-  if (pieces[next] == "of") next++;
-  string word2 = cp_parse_non_delimiter(pieces, next);
+  if (pieces[next] == "" || pieces[next] == "to" || pieces[next] == "rel") {
+    return report_parameter_error(name, type, "invalid coordinate system name");
+  }
+
+  string word1 = pieces[next++];
+  if (pieces[next] == "of") {
+    next++;
+  }
+  string word2;
+  if (pieces[next] != "" && pieces[next] != "to" && pieces[next] != "rel") {
+    word2 = pieces[next++];
+  }
 
   ShaderMatInput from_single;
   ShaderMatInput from_double;
   ShaderMatInput to_single;
   ShaderMatInput to_double;
 
-  if (word1 == "") {
-    cp_report_error(p, "Could not parse coordinate system name");
-    return false;
-  } else if (word1 == "world") {
+  if (word1 == "world") {
     from_single = SMO_world_to_view;
     from_double = SMO_INVALID;
     to_single   = SMO_view_to_world;
     to_double   = SMO_INVALID;
-  } else if (word1 == "model") {
+  }
+  else if (word1 == "model") {
     from_single = SMO_model_to_view;
     from_double = SMO_view_x_to_view;
     to_single   = SMO_view_to_model;
     to_double   = SMO_view_to_view_x;
-  } else if (word1 == "clip") {
+  }
+  else if (word1 == "clip") {
     from_single = SMO_clip_to_view;
     from_double = SMO_clip_x_to_view;
     to_single   = SMO_view_to_clip;
     to_double   = SMO_view_to_clip_x;
-  } else if (word1 == "view") {
+  }
+  else if (word1 == "view") {
     from_single = SMO_identity;
     from_double = SMO_view_x_to_view;
     to_single   = SMO_identity;
     to_double   = SMO_view_to_view_x;
-  } else if (word1 == "apiview") {
+  }
+  else if (word1 == "apiview") {
     from_single = SMO_apiview_to_view;
     from_double = SMO_apiview_x_to_view;
     to_single   = SMO_view_to_apiview;
     to_double   = SMO_view_to_apiview_x;
-  } else if (word1 == "apiclip") {
+  }
+  else if (word1 == "apiclip") {
     from_single = SMO_apiclip_to_view;
     from_double = SMO_apiclip_x_to_view;
     to_single   = SMO_view_to_apiclip;
     to_double   = SMO_view_to_apiclip_x;
-  } else {
+  }
+  else {
     from_single = SMO_view_x_to_view;
     from_double = SMO_view_x_to_view;
     to_single   = SMO_view_to_view_x;
@@ -216,8 +208,7 @@ cp_parse_coord_sys(ShaderArgInfo &p,
       bind._arg[0] = nullptr;
     } else {
       if (from_double == SMO_INVALID) {
-        cp_report_error(p, "Could not parse coordinate system name");
-        return false;
+        return report_parameter_error(name, type, "invalid coordinate system name");
       }
       bind._part[0] = from_double;
       bind._arg[0] = InternalName::make(word2);
@@ -228,8 +219,7 @@ cp_parse_coord_sys(ShaderArgInfo &p,
       bind._arg[1] = nullptr;
     } else {
       if (to_double == SMO_INVALID) {
-        cp_report_error(p, "Could not parse coordinate system name");
-        return false;
+        return report_parameter_error(name, type, "invalid coordinate system name");
       }
       bind._part[1] = to_double;
       bind._arg[1] = InternalName::make(word2);
@@ -434,6 +424,18 @@ cp_add_mat_spec(ShaderMatSpec &spec) {
     }
   }
 
+  // If we're compiling a Cg shader, transpose the matrices, to account for the
+  // differing matrix convention.
+  if (_language == SL_Cg) {
+    switch (spec._piece) {
+    case SMP_whole: spec._piece = SMP_transpose; break;
+    case SMP_transpose: spec._piece = SMP_whole; break;
+    case SMP_upper3x3: spec._piece = SMP_transpose3x3; break;
+    case SMP_transpose3x3: spec._piece = SMP_upper3x3; break;
+    default: break;
+    }
+  }
+
   // Determine which part is an array, for determining which one the count and
   // index refer to.  (It can't be the case that both parts are arrays.)
   int begin[2] = {0, 0};
@@ -523,690 +525,6 @@ cp_get_mat_cache_size() const {
 }
 
 /**
- * Analyzes a parameter and decides how to bind the parameter to some part of
- * panda's internal state.  Updates one of the bind arrays to cause the
- * binding to occur.
- *
- * If there is an error, this routine will append an error message onto the
- * error messages.
- */
-bool Shader::
-compile_parameter(ShaderArgInfo &p) {
-  if (p._id._name.size() == 0) return true;
-  if (p._id._name[0] == '$') return true;
-
-  // It could be inside a struct, strip off everything before the last dot.
-  size_t loc = p._id._name.find_last_of('.');
-
-  string basename (p._id._name);
-  string struct_name  ("");
-
-  if (loc < string::npos) {
-    basename = p._id._name.substr(loc + 1);
-    struct_name =  p._id._name.substr(0,loc+1);
-  }
-
-  // Split it at the underscores.
-  vector_string pieces;
-  tokenize(basename, pieces, "_");
-
-  if (basename.size() >= 2 && basename.substr(0, 2) == "__") {
-    return true;
-  }
-
-  if (pieces[0] == "mat" && pieces[1] == "shadow") {
-    if ((!cp_errchk_parameter_words(p,3))||
-        (!cp_errchk_parameter_float(p,16,16))) {
-      return false;
-    }
-    ShaderMatSpec bind;
-    bind._id = p._id;
-    bind._piece = SMP_whole;
-    bind._func = SMF_compose;
-    bind._part[1] = SMO_light_source_i_attrib;
-    bind._arg[1] = InternalName::make("shadowViewMatrix");
-    bind._part[0] = SMO_view_to_apiview;
-    bind._arg[0] = nullptr;
-    bind._index = atoi(pieces[2].c_str());
-
-    cp_add_mat_spec(bind);
-    return true;
-  }
-
-  // Implement some macros.  Macros work by altering the contents of the
-  // 'pieces' array, and then falling through.
-
-  if (pieces[0] == "mstrans") {
-    pieces[0] = "trans";
-    pieces.push_back("to");
-    pieces.push_back("model");
-  }
-  if (pieces[0] == "wstrans") {
-    pieces[0] = "trans";
-    pieces.push_back("to");
-    pieces.push_back("world");
-  }
-  if (pieces[0] == "vstrans") {
-    pieces[0] = "trans";
-    pieces.push_back("to");
-    pieces.push_back("view");
-  }
-  if (pieces[0] == "cstrans") {
-    pieces[0] = "trans";
-    pieces.push_back("to");
-    pieces.push_back("clip");
-  }
-  if (pieces[0] == "mspos") {
-    pieces[0] = "row3";
-    pieces.push_back("to");
-    pieces.push_back("model");
-  }
-  if (pieces[0] == "wspos") {
-    pieces[0] = "row3";
-    pieces.push_back("to");
-    pieces.push_back("world");
-  }
-  if (pieces[0] == "vspos") {
-    pieces[0] = "row3";
-    pieces.push_back("to");
-    pieces.push_back("view");
-  }
-  if (pieces[0] == "cspos") {
-    pieces[0] = "row3";
-    pieces.push_back("to");
-    pieces.push_back("clip");
-  }
-
-  // Implement the modelview macros.
-
-  if ((pieces[0] == "mat")||(pieces[0] == "inv")||
-      (pieces[0] == "tps")||(pieces[0] == "itp")) {
-    if (!cp_errchk_parameter_words(p, 2)) {
-      return false;
-    }
-    string trans = pieces[0];
-    string matrix = pieces[1];
-    pieces.clear();
-    if (matrix == "modelview") {
-      tokenize("trans_model_to_apiview", pieces, "_");
-    } else if (matrix == "projection") {
-      tokenize("trans_apiview_to_apiclip", pieces, "_");
-    } else if (matrix == "modelproj") {
-      tokenize("trans_model_to_apiclip", pieces, "_");
-    } else {
-      cp_report_error(p,"unrecognized matrix name");
-      return false;
-    }
-    if (trans=="mat") {
-      pieces[0] = "trans";
-    } else if (trans=="inv") {
-      string t = pieces[1];
-      pieces[1] = pieces[3];
-      pieces[3] = t;
-    } else if (trans=="tps") {
-      pieces[0] = "tpose";
-    } else if (trans=="itp") {
-      string t = pieces[1];
-      pieces[1] = pieces[3];
-      pieces[3] = t;
-      pieces[0] = "tpose";
-    }
-  }
-
-  // Implement the transform-matrix generator.
-
-  if ((pieces[0]=="trans")||
-      (pieces[0]=="tpose")||
-      (pieces[0]=="row0")||
-      (pieces[0]=="row1")||
-      (pieces[0]=="row2")||
-      (pieces[0]=="row3")||
-      (pieces[0]=="col0")||
-      (pieces[0]=="col1")||
-      (pieces[0]=="col2")||
-      (pieces[0]=="col3")) {
-
-    ShaderMatSpec bind;
-    bind._id = p._id;
-    bind._piece = SMP_whole;
-    bind._func = SMF_compose;
-    bind._part[1] = SMO_light_source_i_attrib;
-    bind._arg[1] = InternalName::make("shadowViewMatrix");
-    bind._part[0] = SMO_view_to_apiview;
-    bind._arg[0] = nullptr;
-    bind._index = atoi(pieces[2].c_str());
-
-    int next = 1;
-    pieces.push_back("");
-
-    // Decide whether this is a matrix or vector.
-    if      (pieces[0]=="trans")   bind._piece = SMP_whole;
-    else if (pieces[0]=="tpose")   bind._piece = SMP_transpose;
-    else if (pieces[0]=="row0")    bind._piece = SMP_row0;
-    else if (pieces[0]=="row1")    bind._piece = SMP_row1;
-    else if (pieces[0]=="row2")    bind._piece = SMP_row2;
-    else if (pieces[0]=="row3")    bind._piece = SMP_row3;
-    else if (pieces[0]=="col0")    bind._piece = SMP_col0;
-    else if (pieces[0]=="col1")    bind._piece = SMP_col1;
-    else if (pieces[0]=="col2")    bind._piece = SMP_col2;
-    else if (pieces[0]=="col3")    bind._piece = SMP_col3;
-    if (bind._piece == SMP_whole || bind._piece == SMP_transpose) {
-      if (const ::ShaderType::Matrix *matrix = p._type->as_matrix()) {
-        if (matrix->get_num_rows() == 3 && matrix->get_num_columns() == 3) {
-          if (bind._piece == SMP_transpose) {
-            bind._piece = SMP_transpose3x3;
-          } else {
-            bind._piece = SMP_upper3x3;
-          }
-        } else {
-          cp_errchk_parameter_float(p, 9, 9);
-          return false;
-        }
-      } else if (!cp_errchk_parameter_float(p, 16, 16)) {
-        return false;
-      }
-    } else {
-      if (!cp_errchk_parameter_float(p, 4, 4)) return false;
-    }
-
-    if (!cp_parse_coord_sys(p, pieces, next, bind, true)) {
-      return false;
-    }
-    if (!cp_parse_delimiter(p, pieces, next)) {
-      return false;
-    }
-    if (!cp_parse_coord_sys(p, pieces, next, bind, false)) {
-      return false;
-    }
-    if (!cp_parse_eol(p, pieces, next)) {
-      return false;
-    }
-    cp_add_mat_spec(bind);
-    return true;
-  }
-
-  // Special parameter: attr_material or attr_color
-
-  if (pieces[0] == "attr") {
-    if (!cp_errchk_parameter_words(p, 2)) {
-      return false;
-    }
-    ShaderMatSpec bind;
-    if (pieces[1] == "material") {
-      if (!cp_errchk_parameter_float(p,16,16)) {
-        return false;
-      }
-      bind._id = p._id;
-      bind._piece = SMP_transpose;
-      bind._func = SMF_first;
-      bind._part[0] = SMO_attr_material;
-      bind._arg[0] = nullptr;
-      bind._part[1] = SMO_identity;
-      bind._arg[1] = nullptr;
-    } else if (pieces[1] == "color") {
-      if (!cp_errchk_parameter_float(p,3,4)) {
-        return false;
-      }
-      bind._id = p._id;
-      bind._piece = SMP_row3;
-      bind._func = SMF_first;
-      bind._part[0] = SMO_attr_color;
-      bind._arg[0] = nullptr;
-      bind._part[1] = SMO_identity;
-      bind._arg[1] = nullptr;
-    } else if (pieces[1] == "colorscale") {
-      if (!cp_errchk_parameter_float(p,3,4)) {
-        return false;
-      }
-      bind._id = p._id;
-      bind._piece = SMP_row3;
-      bind._func = SMF_first;
-      bind._part[0] = SMO_attr_colorscale;
-      bind._arg[0] = nullptr;
-      bind._part[1] = SMO_identity;
-      bind._arg[1] = nullptr;
-    } else if (pieces[1] == "fog") {
-      if (!cp_errchk_parameter_float(p,3,4)) {
-        return false;
-      }
-      bind._id = p._id;
-      bind._piece = SMP_row3;
-      bind._func = SMF_first;
-      bind._part[0] = SMO_attr_fog;
-      bind._arg[0] = nullptr;
-      bind._part[1] = SMO_identity;
-      bind._arg[1] = nullptr;
-    } else if (pieces[1] == "fogcolor") {
-      if (!cp_errchk_parameter_float(p,3,4)) {
-        return false;
-      }
-      bind._id = p._id;
-      bind._piece = SMP_row3;
-      bind._func = SMF_first;
-      bind._part[0] = SMO_attr_fogcolor;
-      bind._arg[0] = nullptr;
-      bind._part[1] = SMO_identity;
-      bind._arg[1] = nullptr;
-    } else if (pieces[1] == "ambient") {
-      if (!cp_errchk_parameter_float(p,3,4)) {
-        return false;
-      }
-      bind._id = p._id;
-      bind._piece = SMP_row3;
-      bind._func = SMF_first;
-      bind._part[0] = SMO_light_ambient;
-      bind._arg[0] = nullptr;
-      bind._part[1] = SMO_identity;
-      bind._arg[1] = nullptr;
-    } else if (pieces[1].compare(0, 5, "light") == 0) {
-      if (!cp_errchk_parameter_float(p,16,16)) {
-        return false;
-      }
-      bind._id = p._id;
-      bind._piece = SMP_transpose;
-      bind._func = SMF_first;
-      bind._part[0] = SMO_light_source_i_packed;
-      bind._arg[0] = nullptr;
-      bind._part[1] = SMO_identity;
-      bind._arg[1] = nullptr;
-      bind._index = atoi(pieces[1].c_str() + 5);
-    } else if (pieces[1].compare(0, 5, "lspec") == 0) {
-      if (!cp_errchk_parameter_float(p,3,4)) {
-        return false;
-      }
-      bind._id = p._id;
-      bind._piece = SMP_row3;
-      bind._func = SMF_first;
-      bind._part[0] = SMO_light_source_i_attrib;
-      bind._arg[0] = InternalName::make("specular");
-      bind._part[1] = SMO_identity;
-      bind._arg[1] = nullptr;
-      bind._index = atoi(pieces[1].c_str() + 5);
-    } else {
-      cp_report_error(p,"Unknown attr parameter.");
-      return false;
-    }
-
-    cp_add_mat_spec(bind);
-    return true;
-  }
-
-  if (pieces[0] == "color") {
-    if (!cp_errchk_parameter_words(p, 1)) {
-      return false;
-    }
-    ShaderMatSpec bind;
-
-    cp_add_mat_spec(bind);
-    return true;
-  }
-
-  // Keywords to access light properties.
-
-  if (pieces[0] == "alight") {
-    if ((!cp_errchk_parameter_words(p,2))||
-        (!cp_errchk_parameter_float(p,3,4))) {
-      return false;
-    }
-    ShaderMatSpec bind;
-    bind._id = p._id;
-    bind._piece = SMP_row3;
-    bind._func = SMF_first;
-    bind._part[0] = SMO_alight_x;
-    bind._arg[0] = InternalName::make(pieces[1]);
-    bind._part[1] = SMO_identity;
-    bind._arg[1] = nullptr;
-
-    cp_add_mat_spec(bind);
-    return true;
-  }
-
-  if (pieces[0] == "satten") {
-    if ((!cp_errchk_parameter_words(p,2))||
-        (!cp_errchk_parameter_float(p,4,4))) {
-      return false;
-    }
-    ShaderMatSpec bind;
-    bind._id = p._id;
-    bind._piece = SMP_row3;
-    bind._func = SMF_first;
-    bind._part[0] = SMO_satten_x;
-    bind._arg[0] = InternalName::make(pieces[1]);
-    bind._part[1] = SMO_identity;
-    bind._arg[1] = nullptr;
-
-    cp_add_mat_spec(bind);
-    return true;
-  }
-
-  if ((pieces[0]=="dlight")||(pieces[0]=="plight")||(pieces[0]=="slight")) {
-    if (!cp_errchk_parameter_float(p,16,16)) {
-      return false;
-    }
-    ShaderMatSpec bind;
-    bind._id = p._id;
-    bind._piece = SMP_transpose;
-    int next = 1;
-    pieces.push_back("");
-    if (pieces[next] == "") {
-      cp_report_error(p, "Light name expected");
-      return false;
-    }
-    if (pieces[0] == "dlight") {
-      bind._func = SMF_transform_dlight;
-      bind._part[0] = SMO_dlight_x;
-    } else if (pieces[0] == "plight") {
-      bind._func = SMF_transform_plight;
-      bind._part[0] = SMO_plight_x;
-    } else if (pieces[0] == "slight") {
-      bind._func = SMF_transform_slight;
-      bind._part[0] = SMO_slight_x;
-    }
-    bind._arg[0] = InternalName::make(pieces[next]);
-    next += 1;
-    if (!cp_parse_delimiter(p, pieces, next)) {
-      return false;
-    }
-    if (!cp_parse_coord_sys(p, pieces, next, bind, false)) {
-      return false;
-    }
-    if (!cp_parse_eol(p, pieces, next)) {
-      return false;
-    }
-    cp_add_mat_spec(bind);
-    return true;
-  }
-
-  if (pieces[0] == "texmat") {
-    if ((!cp_errchk_parameter_words(p,2))||
-        (!cp_errchk_parameter_float(p,16,16))) {
-      return false;
-    }
-    ShaderMatSpec bind;
-    bind._id = p._id;
-    bind._piece = SMP_whole;
-    bind._func = SMF_first;
-    bind._part[0] = SMO_texmat_i;
-    bind._arg[0] = nullptr;
-    bind._part[1] = SMO_identity;
-    bind._arg[1] = nullptr;
-    bind._index = atoi(pieces[1].c_str());
-
-    cp_add_mat_spec(bind);
-    return true;
-  }
-
-  if (pieces[0] == "texscale") {
-    if ((!cp_errchk_parameter_words(p,2))||
-        (!cp_errchk_parameter_float(p,3,4))) {
-      return false;
-    }
-    ShaderMatSpec bind;
-    bind._id = p._id;
-    bind._piece = SMP_row3;
-    bind._func = SMF_first;
-    bind._part[0] = SMO_texscale_i;
-    bind._arg[0] = nullptr;
-    bind._part[1] = SMO_identity;
-    bind._arg[1] = nullptr;
-    bind._index = atoi(pieces[1].c_str());
-
-    cp_add_mat_spec(bind);
-    return true;
-  }
-
-  if (pieces[0] == "texcolor") {
-    if ((!cp_errchk_parameter_words(p,2))||
-        (!cp_errchk_parameter_float(p,3,4))) {
-      return false;
-    }
-    ShaderMatSpec bind;
-    bind._id = p._id;
-    bind._piece = SMP_row3;
-    bind._func = SMF_first;
-    bind._part[0] = SMO_texcolor_i;
-    bind._arg[0] = nullptr;
-    bind._part[1] = SMO_identity;
-    bind._arg[1] = nullptr;
-    bind._index = atoi(pieces[1].c_str());
-
-    cp_add_mat_spec(bind);
-    return true;
-  }
-
-  if (pieces[0] == "plane") {
-    if ((!cp_errchk_parameter_words(p,2))||
-        (!cp_errchk_parameter_float(p,4,4))) {
-      return false;
-    }
-    ShaderMatSpec bind;
-    bind._id = p._id;
-    bind._piece = SMP_row3;
-    bind._func = SMF_first;
-    bind._part[0] = SMO_plane_x;
-    bind._arg[0] = InternalName::make(pieces[1]);
-    bind._part[1] = SMO_identity;
-    bind._arg[1] = nullptr;
-
-    cp_add_mat_spec(bind);
-    return true;
-  }
-
-  if (pieces[0] == "clipplane") {
-    if ((!cp_errchk_parameter_words(p,2))||
-        (!cp_errchk_parameter_float(p,4,4))) {
-      return false;
-    }
-    ShaderMatSpec bind;
-    bind._id = p._id;
-    bind._piece = SMP_row3;
-    bind._func = SMF_first;
-    bind._part[0] = SMO_clipplane_x;
-    bind._arg[0] = InternalName::make(pieces[1]);
-    bind._part[1] = SMO_identity;
-    bind._arg[1] = nullptr;
-
-    cp_add_mat_spec(bind);
-    return true;
-  }
-
-  // Keywords to access unusual parameters.
-
-  if (pieces[0] == "sys") {
-    if (!cp_errchk_parameter_words(p, 2)) {
-      return false;
-    }
-    ShaderMatSpec bind;
-    bind._id = p._id;
-    bind._piece = SMP_row3;
-    bind._func = SMF_first;
-    bind._part[1] = SMO_identity;
-    bind._arg[1] = nullptr;
-    if (pieces[1] == "pixelsize") {
-      if (!cp_errchk_parameter_float(p, 2, 2)) {
-        return false;
-      }
-      bind._part[0] = SMO_pixel_size;
-      bind._arg[0] = nullptr;
-
-    } else if (pieces[1] == "windowsize") {
-      if (!cp_errchk_parameter_float(p, 2, 2)) {
-        return false;
-      }
-      bind._part[0] = SMO_window_size;
-      bind._arg[0] = nullptr;
-
-    } else if (pieces[1] == "time") {
-      if (!cp_errchk_parameter_float(p, 1, 1)) {
-        return false;
-      }
-      bind._piece = SMP_row3x1;
-      bind._part[0] = SMO_frame_time;
-      bind._arg[0] = nullptr;
-
-    } else {
-      cp_report_error(p, "unknown system parameter");
-      return false;
-    }
-
-    cp_add_mat_spec(bind);
-    return true;
-  }
-
-  // Keywords to access textures.
-
-  if (pieces[0] == "tex") {
-    if (pieces.size() != 2 && pieces.size() != 3) {
-      cp_report_error(p, "Invalid parameter name");
-      return false;
-    }
-    ShaderTexSpec bind;
-    bind._id = p._id;
-    bind._name = nullptr;
-    bind._stage = atoi(pieces[1].c_str());
-    bind._part = STO_stage_i;
-
-    if (const ::ShaderType::SampledImage *image = p._type->as_sampled_image()) {
-      bind._desired_type = image->get_texture_type();
-    }
-    else {
-      cp_report_error(p, "Invalid type for a tex-parameter");
-      return false;
-    }
-    if (pieces.size() == 3) {
-      bind._suffix = InternalName::make(((string)"-") + pieces[2]);
-      shader_cat.warning()
-        << "Parameter " << p._id._name << ": use of a texture suffix is deprecated.\n";
-    }
-    _tex_spec.push_back(bind);
-    return true;
-  }
-
-  if (pieces[0] == "shadow") {
-    if (pieces.size() != 2) {
-      cp_report_error(p, "Invalid parameter name");
-      return false;
-    }
-    ShaderTexSpec bind;
-    bind._id = p._id;
-    bind._name = nullptr;
-    bind._stage = atoi(pieces[1].c_str());
-    bind._part = STO_light_i_shadow_map;
-
-    if (const ::ShaderType::SampledImage *image = p._type->as_sampled_image()) {
-      bind._desired_type = image->get_texture_type();
-    }
-    else {
-      cp_report_error(p, "Invalid type for a shadow-parameter");
-      return false;
-    }
-    _tex_spec.push_back(bind);
-    return true;
-  }
-
-  // Keywords to fetch texture parameter data.
-
-  if (pieces[0] == "texpad") {
-    if ((!cp_errchk_parameter_words(p,2)) ||
-        (!cp_errchk_parameter_float(p,3,4))) {
-      return false;
-    }
-    ShaderMatSpec bind;
-    bind._id = p._id;
-    bind._piece = SMP_row3;
-    bind._func = SMF_first;
-    bind._part[0] = SMO_texpad_x;
-    bind._arg[0] = InternalName::make(pieces[1]);
-    bind._part[1] = SMO_identity;
-    bind._arg[1] = nullptr;
-    cp_add_mat_spec(bind);
-    return true;
-  }
-
-  if (pieces[0] == "texpix") {
-    if ((!cp_errchk_parameter_words(p,2)) ||
-        (!cp_errchk_parameter_float(p,2,4))) {
-      return false;
-    }
-    ShaderMatSpec bind;
-    bind._id = p._id;
-    bind._piece = SMP_row3;
-    bind._func = SMF_first;
-    bind._part[0] = SMO_texpix_x;
-    bind._arg[0] = InternalName::make(pieces[1]);
-    bind._part[1] = SMO_identity;
-    bind._arg[1] = nullptr;
-    cp_add_mat_spec(bind);
-    return true;
-  }
-
-  if (pieces[0] == "tbl") {
-    // Handled elsewhere.
-    return true;
-  }
-
-  // Fetch uniform parameters without prefix
-  bool k_prefix = false;
-
-  // solve backward compatibility issue
-  if (pieces[0] == "k") {
-    k_prefix = true;
-    basename = basename.substr(2);
-  }
-
-  PT(InternalName) kinputname = InternalName::make(struct_name + basename);
-
-  if (const ::ShaderType::SampledImage *image = p._type->as_sampled_image()) {
-    ShaderTexSpec bind;
-    bind._id = p._id;
-    bind._name = kinputname;
-    bind._part = STO_named_input;
-    bind._desired_type = Texture::TT_cube_map_array;
-    _tex_spec.push_back(bind);
-    return true;
-  }
-
-  int arg_dim[3] = {1, 1, 1};
-  const ::ShaderType *base_type = p._type;
-  if (const ::ShaderType::Array *array = base_type->as_array()) {
-    arg_dim[0] = array->get_num_elements();
-    base_type = array->get_element_type();
-  }
-  if (const ::ShaderType::Matrix *matrix = base_type->as_matrix()) {
-    arg_dim[1] = matrix->get_num_rows();
-    arg_dim[2] = matrix->get_num_columns();
-    base_type = matrix->get_base_type();
-  }
-  else if (const ::ShaderType::Vector *vector = base_type->as_vector()) {
-    arg_dim[2] = vector->get_num_elements();
-    base_type = matrix->get_base_type();
-  }
-
-  if (base_type->as_scalar() != nullptr) {
-    ShaderPtrSpec bind;
-    bind._id = p._id;
-    bind._arg = kinputname;
-    bind._info = p;
-
-    // We specify SSD_frame because a PTA may be modified by the app from
-    // frame to frame, and we have no way to know.  So, we must respecify a
-    // PTA at least once every frame.
-    bind._dep[0]  = SSD_general | SSD_shaderinputs | SSD_frame;
-    bind._dep[1]  = SSD_NONE;
-
-    memcpy(bind._dim, arg_dim, sizeof(int)*3);
-
-    // if dim[0] = -1,  glShaderContext will not check the param size
-    if (k_prefix) bind._dim[0] = -1;
-    _ptr_spec.push_back(bind);
-    return true;
-  }
-
-  cp_report_error(p, "unrecognized parameter name");
-  return false;
-}
-
-/**
  *
  */
 void Shader::
@@ -1256,28 +574,28 @@ set_default_caps(const ShaderCaps &caps) {
 /**
  *
  */
-const ::ShaderType *Shader::
+::ShaderType::ScalarType Shader::
 cg_scalar_type(int type) {
   switch (type) {
   case CG_UINT:
   case CG_ULONG:
   case CG_USHORT:
   case CG_UCHAR:
-    return ::ShaderType::uint_type;
+    return ScalarType::ST_uint;
 
   case CG_BOOL:
-    return ::ShaderType::bool_type;
+    return ScalarType::ST_bool;
 
   case CG_INT:
   case CG_LONG:
   case CG_SHORT:
   case CG_CHAR:
-    return ::ShaderType::int_type;
+    return ScalarType::ST_int;
 
   default:
-    return ::ShaderType::float_type;
+    return ScalarType::ST_float;
   }
-  return nullptr;
+  return ScalarType::ST_unknown;
 }
 
 /**
@@ -1287,7 +605,8 @@ const ::ShaderType *Shader::
 cg_parameter_type(CGparameter p) {
   switch (cgGetParameterClass(p)) {
   case CG_PARAMETERCLASS_SCALAR:
-    return cg_scalar_type(cgGetParameterType(p));
+    return ::ShaderType::register_type(::ShaderType::Scalar(
+      cg_scalar_type(cgGetParameterBaseType(p))));
 
   case CG_PARAMETERCLASS_VECTOR:
     return ::ShaderType::register_type(::ShaderType::Vector(
@@ -1307,7 +626,7 @@ cg_parameter_type(CGparameter p) {
       while (member) {
         type.add_member(
           cg_parameter_type(member),
-          InternalName::make(cgGetParameterName(p))
+          cgGetParameterName(p)
         );
         member = cgGetNextParameter(member);
       }
@@ -1669,7 +988,6 @@ cg_analyze_entry_point(CGprogram prog, ShaderType type) {
       const ::ShaderType *arg_type = cg_parameter_type(parameter);
 
       CGenum vbl = cgGetParameterVariability(parameter);
-      CGtype base_type = cgGetParameterBaseType(parameter);
 
       if (cgGetParameterDirection(parameter) == CG_IN) {
         CPT(InternalName) name = InternalName::make(cgGetParameterName(parameter));
@@ -1678,33 +996,7 @@ cg_analyze_entry_point(CGprogram prog, ShaderType type) {
           success &= bind_vertex_input(name, arg_type, -1);
         }
         else if (vbl == CG_UNIFORM) {
-          ShaderArgInfo p;
-          p._id._name   = cgGetParameterName(parameter);
-          p._id._type   = type;
-          p._id._seqno  = -1;
-          p._type       = arg_type;
-
-          //NB. Cg does have a CG_DOUBLE type, but at least for the ARB
-          // profiles and GLSL profiles it just maps to float.
-          switch (base_type) {
-          case CG_UINT:
-          case CG_ULONG:
-          case CG_USHORT:
-          case CG_UCHAR:
-          case CG_BOOL:
-            p._numeric_type = SPT_uint;
-            break;
-          case CG_INT:
-          case CG_LONG:
-          case CG_SHORT:
-          case CG_CHAR:
-            p._numeric_type = SPT_int;
-            break;
-          default:
-            p._numeric_type = SPT_float;
-            break;
-          }
-          success &= compile_parameter(p);
+          success &= bind_parameter(name, arg_type, -1);
         }
       }
     } else if (shader_cat.is_debug()) {
@@ -2147,8 +1439,22 @@ read(const ShaderFile &sfile, BamCacheRecord *record) {
       return false;
     }
 
+    if (_language == SL_none && !has_cg_header(sbody._shared)) {
+      shader_cat.error()
+        << "Unable to determine shader language of " << fn << "\n";
+      return false;
+    }
+    _language = SL_Cg;
     _filename = sfile;
-    if (!load(sbody, record)) {
+
+    if (!do_read_source(Stage::vertex, sfile._shared, record)) {
+      return false;
+    }
+    if (!do_read_source(Stage::fragment, sfile._shared, record)) {
+      return false;
+    }
+    if (sbody._shared.find("gshader") != string::npos &&
+        !do_read_source(Stage::geometry, sfile._shared, record)) {
       return false;
     }
 
@@ -2326,22 +1632,22 @@ do_read_source(ShaderModule::Stage stage, std::istream &in,
     return false;
   }
 
-  if (_language == SL_Cg) {
-#ifdef HAVE_CG
-    ShaderCompilerCg *cg_compiler = DCAST(ShaderCompilerCg, compiler);
-    cg_compiler->get_profile_from_header(_text._shared, _default_caps);
-
-    if (!cg_analyze_shader(_default_caps)) {
-      shader_cat.error()
-        << "Shader encountered an error.\n";
-      return false;
-    }
-#else
-    shader_cat.error()
-      << "Tried to load Cg shader, but no Cg support is enabled.\n";
-    return false;
-#endif
-  }
+//  if (_language == SL_Cg) {
+//#ifdef HAVE_CG
+//    ShaderCompilerCg *cg_compiler = DCAST(ShaderCompilerCg, compiler);
+//    cg_compiler->get_profile_from_header(_text._shared, _default_caps);
+//
+//    if (!cg_analyze_shader(_default_caps)) {
+//      shader_cat.error()
+//        << "Shader encountered an error.\n";
+//      return false;
+//    }
+//#else
+//    shader_cat.error()
+//      << "Tried to load Cg shader, but no Cg support is enabled.\n";
+//    return false;
+//#endif
+//  }
 
   if (!source_filename.empty()) {
     module->set_source_filename(source_filename);
@@ -2456,10 +1762,18 @@ link() {
     }
 
     if (!remap.empty()) {
+      // We need to remap some locations.  Grab a writable pointer.  This will
+      // make a unique copy of the module if it's also used by other shaders.
       PT(ShaderModule) module = cow_module.get_write_pointer();
       if (shader_cat.is_debug()) {
-        shader_cat.debug()
-          << "Remapping " << remap.size() << " locations for module " << *module << "\n";
+        std::ostream &out = shader_cat.debug()
+          << "Remapping locations for module " << *module << ":";
+
+        pmap<int, int>::const_iterator it;
+        for (it = remap.begin(); it != remap.end(); ++it) {
+          out << ' ' << it->first << "->" << it->second;
+        }
+        out << "\n";
       }
       module->remap_parameter_locations(remap);
     }
@@ -2493,7 +1807,7 @@ bind_vertex_input(const InternalName *name, const ::ShaderType *type, int locati
 
   //FIXME: other types, matrices
   bind._elements = 1;
-  bind._numeric_type = SPT_float;
+  bind._scalar_type = ScalarType::ST_float;
 
   if (shader_cat.is_debug()) {
     shader_cat.debug()
@@ -2576,8 +1890,30 @@ bind_vertex_input(const InternalName *name, const ::ShaderType *type, int locati
  * Binds a uniform parameter with the given type.
  */
 bool Shader::
-bind_parameter(const InternalName *name, const ::ShaderType *type, int location) {
+bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
   std::string name_str = name->get_name();
+
+  // If this is an empty struct, we bind the individual members.
+  const ::ShaderType::Struct *struct_type = type->as_struct();
+  if (struct_type != nullptr && name_str.empty()) {
+    bool success = true;
+
+    for (size_t i = 0; i < struct_type->get_num_members(); ++i) {
+      const ::ShaderType::Struct::Member &member = struct_type->get_member(i);
+
+      // Recurse.
+      if (!bind_parameter(InternalName::make(member.name), member.type, location + i)) {
+        success = false;
+      }
+    }
+
+    return success;
+  }
+
+  if (shader_cat.is_debug()) {
+    shader_cat.debug()
+      << "Binding parameter " << name_str << " with type " << *type << "\n";
+  }
 
   ShaderArgId arg_id;
   arg_id._name = name_str;
@@ -2618,17 +1954,14 @@ bind_parameter(const InternalName *name, const ::ShaderType *type, int location)
       bind._arg[0] = nullptr;
       bind._arg[1] = nullptr;
 
-      const ::ShaderType::Matrix *matrix = type->as_matrix();
-      if (matrix != nullptr) {
-        if (matrix->get_num_rows() >= 4) {
-          bind._piece = transpose ? SMP_transpose : SMP_whole;
-        } else {
-          bind._piece = transpose ? SMP_upper3x3 : SMP_transpose3x3;
-        }
-      } else {
-        shader_cat.error()
-          << "Matrix input " << name_str << " should be mat3 or mat4\n";
+      if (!expect_float_matrix(name, type, 3, 4)) {
         return false;
+      }
+
+      if (type->as_matrix()->get_num_rows() >= 4) {
+        bind._piece = transpose ? SMP_transpose : SMP_whole;
+      } else {
+        bind._piece = transpose ? SMP_upper3x3 : SMP_transpose3x3;
       }
 
       if (matrix_name == "ModelViewProjectionMatrix") {
@@ -2639,33 +1972,31 @@ bind_parameter(const InternalName *name, const ::ShaderType *type, int location)
           bind._part[0] = SMO_model_to_apiview;
           bind._part[1] = SMO_apiview_to_apiclip;
         }
-
-      } else if (matrix_name == "ModelViewMatrix") {
+      }
+      else if (matrix_name == "ModelViewMatrix") {
         bind._func = SMF_first;
         bind._part[0] = inverse ? SMO_apiview_to_model
                                 : SMO_model_to_apiview;
         bind._part[1] = SMO_identity;
-
-      } else if (matrix_name == "ProjectionMatrix") {
+      }
+      else if (matrix_name == "ProjectionMatrix") {
         bind._func = SMF_first;
         bind._part[0] = inverse ? SMO_apiclip_to_apiview
                                 : SMO_apiview_to_apiclip;
         bind._part[1] = SMO_identity;
-
-      } else if (matrix_name == "NormalMatrix") {
+      }
+      else if (matrix_name == "NormalMatrix") {
         // This is really the upper 3x3 of the ModelViewMatrixInverseTranspose.
         bind._func = SMF_first;
         bind._part[0] = inverse ? SMO_model_to_apiview
                                 : SMO_apiview_to_model;
         bind._part[1] = SMO_identity;
 
-        if (matrix->get_num_rows() != 3 || matrix->get_num_columns() != 3) {
-          shader_cat.warning()
-            << "p3d_NormalMatrix input should be mat3!\n";
+        if (!expect_float_matrix(name, type, 3, 3)) {
           return false;
         }
-
-      } else if (matrix_name == "ModelMatrix") {
+      }
+      else if (matrix_name == "ModelMatrix") {
         if (inverse) {
           bind._part[0] = SMO_world_to_view;
           bind._part[1] = SMO_view_to_model;
@@ -2673,8 +2004,8 @@ bind_parameter(const InternalName *name, const ::ShaderType *type, int location)
           bind._part[0] = SMO_model_to_view;
           bind._part[1] = SMO_view_to_world;
         }
-
-      } else if (matrix_name == "ViewMatrix") {
+      }
+      else if (matrix_name == "ViewMatrix") {
         if (inverse) {
           bind._part[0] = SMO_apiview_to_view;
           bind._part[1] = SMO_view_to_world;
@@ -2682,8 +2013,8 @@ bind_parameter(const InternalName *name, const ::ShaderType *type, int location)
           bind._part[0] = SMO_world_to_view;
           bind._part[1] = SMO_view_to_apiview;
         }
-
-      } else if (matrix_name == "ViewProjectionMatrix") {
+      }
+      else if (matrix_name == "ViewProjectionMatrix") {
         if (inverse) {
           bind._part[0] = SMO_apiclip_to_view;
           bind._part[1] = SMO_view_to_world;
@@ -2691,12 +2022,11 @@ bind_parameter(const InternalName *name, const ::ShaderType *type, int location)
           bind._part[0] = SMO_world_to_view;
           bind._part[1] = SMO_view_to_apiclip;
         }
-
-      } else if (matrix_name == "TextureMatrix") {
+      }
+      else if (matrix_name == "TextureMatrix") {
         // We may support 2-D texmats later, but let's make sure that people
         // don't think they can just use a mat3 to get the 2-D version.
-        if (matrix->get_num_rows() != 4 || matrix->get_num_columns() != 4) {
-          shader_cat.error() << "p3d_TextureMatrix should be mat4[]!\n";
+        if (!expect_float_matrix(name, type, 4, 4)) {
           return false;
         }
 
@@ -2721,10 +2051,9 @@ bind_parameter(const InternalName *name, const ::ShaderType *type, int location)
 //          cp_add_mat_spec(bind);
 //        }
         return true;
-
-      } else {
-        shader_cat.error() << "Unrecognized uniform matrix name '" << matrix_name << "'!\n";
-        return false;
+      }
+      else {
+        return report_parameter_error(name, type, "unrecognized matrix name");
       }
 
       cp_add_mat_spec(bind);
@@ -2740,16 +2069,113 @@ bind_parameter(const InternalName *name, const ::ShaderType *type, int location)
       std::string tail;
       bind._stage = string_to_int(pieces[1].substr(7), tail);
       if (!tail.empty()) {
-        shader_cat.error()
-          << "Error parsing shader input name: unexpected '"
-          << tail << "' in '" << name_str << "'\n";
-        return false;
+        string msg = "unexpected '" + tail + "'";
+        return report_parameter_error(name, type, msg.c_str());
       }
 
       _tex_spec.push_back(bind);
       return true;
     }
+    if (pieces[1] == "Material") {
+      ShaderMatSpec bind;
+      bind._id = arg_id;
+      bind._func = SMF_first;
+      bind._part[0] = SMO_attr_material;
+      bind._arg[0] = nullptr;
+      bind._part[1] = SMO_identity;
+      bind._arg[1] = nullptr;
+
+      const ::ShaderType::Struct *struct_type = type->as_struct();
+      if (struct_type == nullptr) {
+        return report_parameter_error(name, type, "expected struct");
+      }
+
+      bool success = true;
+      for (size_t i = 0; i < struct_type->get_num_members(); ++i) {
+        const ::ShaderType::Struct::Member &member = struct_type->get_member(i);
+
+        CPT(InternalName) fqname = ((InternalName *)name.p())->append(member.name);
+        bind._id._seqno = arg_id._seqno + i;
+        bind._id._name = fqname->get_name();
+
+        if (member.name == "baseColor") {
+          if (expect_float_vector(fqname, member.type, 4, 4)) {
+            bind._part[0] = SMO_attr_material2;
+            bind._piece = SMP_row0;
+            cp_add_mat_spec(bind);
+            continue;
+          }
+        } else if (member.name == "ambient") {
+          if (expect_float_vector(fqname, member.type, 4, 4)) {
+            bind._part[0] = SMO_attr_material;
+            bind._piece = SMP_row0;
+            cp_add_mat_spec(bind);
+            continue;
+          }
+        } else if (member.name == "diffuse") {
+          if (expect_float_vector(fqname, member.type, 4, 4)) {
+            bind._part[0] = SMO_attr_material;
+            bind._piece = SMP_row1;
+            cp_add_mat_spec(bind);
+            continue;
+          }
+        } else if (member.name == "emission") {
+          if (expect_float_vector(fqname, member.type, 4, 4)) {
+            bind._part[0] = SMO_attr_material;
+            bind._piece = SMP_row2;
+            cp_add_mat_spec(bind);
+            continue;
+          }
+        } else if (member.name == "specular") {
+          if (expect_float_vector(fqname, member.type, 3, 3)) {
+            bind._part[0] = SMO_attr_material;
+            bind._piece = SMP_row3x3;
+            cp_add_mat_spec(bind);
+            continue;
+          }
+        } else if (member.name == "shininess") {
+          if (expect_float_vector(fqname, member.type, 1, 1)) {
+            bind._part[0] = SMO_attr_material;
+            bind._piece = SMP_cell15;
+            cp_add_mat_spec(bind);
+            continue;
+          }
+        } else if (member.name == "roughness") {
+          if (expect_float_vector(fqname, member.type, 1, 1)) {
+            bind._part[0] = SMO_attr_material2;
+            bind._piece = SMP_cell15;
+            cp_add_mat_spec(bind);
+            continue;
+          }
+        } else if (member.name == "metallic") {
+          if (member.type == ::ShaderType::bool_type &&
+              member.type == ::ShaderType::float_type) {
+            bind._part[0] = SMO_attr_material2;
+            bind._piece = SMP_row3x1;
+            cp_add_mat_spec(bind);
+            continue;
+          } else {
+            report_parameter_error(fqname, member.type, "expected bool or float");
+          }
+        } else if (member.name == "refractiveIndex") {
+          if (expect_float_vector(fqname, member.type, 1, 1)) {
+            bind._part[0] = SMO_attr_material2;
+            bind._piece = SMP_cell13;
+            cp_add_mat_spec(bind);
+            continue;
+          }
+        } else {
+          report_parameter_error(fqname, member.type, "unrecognized material attribute");
+        }
+        success = false;
+      }
+
+      return success;
+    }
     if (pieces[1] == "ColorScale") {
+      if (!expect_float_vector(name, type, 3, 4)) {
+        return false;
+      }
       ShaderMatSpec bind;
       bind._id = arg_id;
       bind._func = SMF_first;
@@ -2774,14 +2200,122 @@ bind_parameter(const InternalName *name, const ::ShaderType *type, int location)
       cp_add_mat_spec(bind);
       return true;
     }
+    if (pieces[1] == "LightModel") {
+      const ::ShaderType::Struct *struct_type = type->as_struct();
+      if (struct_type == nullptr || struct_type->get_num_members() > 1) {
+        return report_parameter_error(name, type, "expected struct with 1 member");
+      }
 
-    shader_cat.error() << "Unrecognized uniform name '" << name_str << "'!\n";
-    return false;
+      if (struct_type->get_num_members() > 0) {
+        const ::ShaderType::Struct::Member &member = struct_type->get_member(0);
+        if (member.name != "ambient") {
+          return report_parameter_error(name, type, "expected 'ambient' member");
+        }
+
+        CPT(InternalName) fqname = ((InternalName *)name.p())->append(member.name);
+        if (!expect_float_vector(fqname, member.type, 3, 4)) {
+          return false;
+        }
+
+        ShaderMatSpec bind;
+        bind._id = arg_id;
+        bind._func = SMF_first;
+        bind._part[0] = SMO_light_ambient;
+        bind._arg[0] = nullptr;
+        bind._part[1] = SMO_identity;
+        bind._arg[1] = nullptr;
+
+        if (member.type->as_vector()->get_num_elements() == 3) {
+          bind._piece = SMP_row3x3;
+        } else {
+          bind._piece = SMP_row3;
+        }
+        cp_add_mat_spec(bind);
+      }
+
+      return true;
+    }
+    if (pieces[1] == "LightSource") {
+      const ::ShaderType::Array *array = type->as_array();
+      if (array == nullptr) {
+        return report_parameter_error(name, type, "expected array of structs");
+      }
+
+      const ::ShaderType::Struct *struct_type = array->get_element_type()->as_struct();
+      if (struct_type == nullptr) {
+        return report_parameter_error(name, type, "expected array of structs");
+      }
+
+      size_t num_members = struct_type->get_num_members();
+      for (size_t i = 0; i < num_members; ++i) {
+        const ::ShaderType::Struct::Member &member = struct_type->get_member(i);
+
+        CPT(InternalName) fqname = ((InternalName *)name.p())->append(member.name);
+
+        if (member.name == "shadowMap") {
+          if (member.type->as_sampled_image() == nullptr) {
+            return report_parameter_error(name, type, "expected sampler2D");
+          }
+          ShaderTexSpec bind;
+          bind._id = arg_id;
+          bind._id._name = fqname->get_name();
+          bind._part = STO_light_i_shadow_map;
+          bind._desired_type = Texture::TT_2d_texture;
+          for (bind._stage = 0; bind._stage < array->get_num_elements(); ++bind._stage) {
+            _tex_spec.push_back(bind);
+            bind._id._seqno += num_members;
+          }
+        } else {
+          ShaderMatSpec bind;
+          bind._id = arg_id;
+          bind._id._name = fqname->get_name();
+          bind._func = SMF_first;
+          if (member.name == "shadowViewMatrix" || member.name == "shadowViewMatrixInverse") {
+            if (!expect_float_matrix(fqname, member.type, 4, 4)) {
+              return false;
+            }
+            bind._piece = SMP_whole;
+          } else {
+            if (!expect_float_vector(fqname, member.type, 1, 4)) {
+              return false;
+            }
+            const ::ShaderType::Vector *vector = member.type->as_vector();
+            if (vector == nullptr || vector->get_num_elements() == 1) {
+              bind._piece = SMP_row3x1;
+            }
+            else if (vector->get_num_elements() == 2) {
+              bind._piece = SMP_row3x2;
+            }
+            else if (vector->get_num_elements() == 3) {
+              bind._piece = SMP_row3x3;
+            }
+            else {
+              bind._piece = SMP_row3;
+            }
+          }
+          bind._part[0] = SMO_light_source_i_attrib;
+          bind._arg[0] = InternalName::make(member.name);
+          bind._part[1] = SMO_identity;
+          bind._arg[1] = nullptr;
+          for (bind._index = 0; bind._index < array->get_num_elements(); ++bind._index) {
+            cp_add_mat_spec(bind);
+            bind._id._seqno += num_members;
+          }
+        }
+
+        arg_id._seqno += 1;
+      }
+
+      return true;
+    }
+
+    return report_parameter_error(name, type, "unrecognized parameter name");
   }
 
   // Check for mstrans, wstrans, vstrans, cstrans, mspos, wspos, vspos, cspos
-  if (pieces[0].compare(1, std::string::npos, "strans") == 0 ||
-      pieces[0].compare(1, std::string::npos, "spos") == 0) {
+  if (pieces[0].size() >= 5 &&
+      (pieces[0].compare(1, std::string::npos, "strans") == 0 ||
+       pieces[0].compare(1, std::string::npos, "spos") == 0)) {
     pieces.push_back("to");
 
     switch (pieces[0][0]) {
@@ -2814,14 +2348,33 @@ bind_parameter(const InternalName *name, const ::ShaderType *type, int location)
     pieces.clear();
     if (matrix == "modelview") {
       tokenize("trans_model_to_apiview", pieces, "_");
-    } else if (matrix == "projection") {
+    }
+    else if (matrix == "projection") {
       tokenize("trans_apiview_to_apiclip", pieces, "_");
-    } else if (matrix == "modelproj") {
+    }
+    else if (matrix == "modelproj") {
       tokenize("trans_model_to_apiclip", pieces, "_");
-    } else {
-      shader_cat.error()
-        << "Unrecognized matrix name " << name_str << "\n";
-      return false;
+    }
+    else if (_language == SL_Cg && matrix == "shadow") {
+      if (!expect_num_words(name, type, 3) ||
+          !expect_float_matrix(name, type, 4, 4)) {
+        return false;
+      }
+      ShaderMatSpec bind;
+      bind._id = arg_id;
+      bind._piece = SMP_whole;
+      bind._func = SMF_compose;
+      bind._part[1] = SMO_light_source_i_attrib;
+      bind._arg[1] = InternalName::make("shadowViewMatrix");
+      bind._part[0] = SMO_view_to_apiview;
+      bind._arg[0] = nullptr;
+      bind._index = atoi(pieces[2].c_str());
+
+      cp_add_mat_spec(bind);
+      return true;
+    }
+    else {
+      return report_parameter_error(name, type, "unrecognized matrix name");
     }
     if (trans == "mat") {
       pieces[0] = "trans";
@@ -2855,82 +2408,488 @@ bind_parameter(const InternalName *name, const ::ShaderType *type, int location)
     bind._id = arg_id;
     bind._func = SMF_compose;
 
-    //int next = 1;
-    pieces.push_back("");
-
     if (pieces[0] == "trans" || pieces[0] == "tpose") {
-      if (const ::ShaderType::Matrix *matrix = type->as_matrix()) {
-        if (matrix->get_num_columns() >= 4 || matrix->get_num_columns() >= 4) {
-          bind._piece = (pieces[0][2] == 'p') ? SMP_transpose : SMP_whole;
-        } else {
-          bind._piece = (pieces[0][2] == 'p') ? SMP_transpose3x3 : SMP_upper3x3;
-        }
+      const ::ShaderType::Matrix *matrix = type->as_matrix();
+      if (matrix == nullptr) {
+        return report_parameter_error(name, type, "expected matrix type");
+      }
+      if (matrix->get_num_columns() >= 4 || matrix->get_num_columns() >= 4) {
+        bind._piece = (pieces[0][2] == 'p') ? SMP_transpose : SMP_whole;
       } else {
-        shader_cat.error()
-          << "Shader input " << name_str << " should be a matrix type\n";
-        return false;
+        bind._piece = (pieces[0][2] == 'p') ? SMP_transpose3x3 : SMP_upper3x3;
+      }
+    } else {
+      const ::ShaderType::Vector *vector = type->as_vector();
+      if (vector == nullptr) {
+        return report_parameter_error(name, type, "expected vector type");
+      }
+      if (pieces[0][0] == 'r') {
+        bind._piece = (ShaderMatPiece)(SMP_row0 + (pieces[0][3] - '0'));
+      }
+      else if (pieces[0][0] == 'c') {
+        bind._piece = (ShaderMatPiece)(SMP_col0 + (pieces[0][3] - '0'));
+      }
+      else {
+        nassertr(false, false);
       }
     }
 
-    //if (!cp_parse_coord_sys(p, pieces, next, bind, true)) {
-    //  return false;
-    //}
-    //if (!cp_parse_delimiter(p, pieces, next)) {
-    //  return false;
-    //}
-    //if (!cp_parse_coord_sys(p, pieces, next, bind, false)) {
-    //  return false;
-    //}
-    //if (!cp_parse_eol(p, pieces, next)) {
-    //  return false;
-    //}
+    int next = 1;
+    pieces.push_back("");
+    if (!expect_coordinate_system(name, type, pieces, next, bind, true)) {
+      return false;
+    }
+    if (pieces[next] != "to" && pieces[next] != "rel") {
+      return report_parameter_error(name, type, "expected 'to' or 'rel'");
+    }
+    ++next;
+    if (!expect_coordinate_system(name, type, pieces, next, bind, false)) {
+      return false;
+    }
+    if (pieces.size() > next + 1) {
+      return report_parameter_error(name, type,
+        "unexpected extra words after parameter name");
+    }
+
+    // clip == apiclip in OpenGL, and the apiclip matrices are cached.
+    if (bind._part[0] == Shader::SMO_view_to_clip) {
+      bind._part[0] = Shader::SMO_view_to_apiclip;
+    } else if (bind._part[0] == Shader::SMO_clip_to_view) {
+      bind._part[0] = Shader::SMO_apiclip_to_view;
+    }
+    if (bind._part[1] == Shader::SMO_view_to_clip) {
+      bind._part[1] = Shader::SMO_view_to_apiclip;
+    } else if (bind._part[1] == Shader::SMO_clip_to_view) {
+      bind._part[1] = Shader::SMO_apiclip_to_view;
+    }
 
     cp_add_mat_spec(bind);
     return true;
   }
 
-  if (_language == SL_Cg && pieces[0] == "k") {
-    name_str = name_str.substr(2);
-    name = InternalName::make(name_str);
+  // Other Cg-specific inputs.
+  bool k_prefix = false;
+  if (_language == SL_Cg) {
+    if (name_str.size() >= 2 && name_str.substr(0, 2) == "__") {
+      return true;
+    }
+
+    // Special parameter: attr_material or attr_color
+    if (pieces[0] == "attr") {
+      if (!expect_num_words(name, type,  2)) {
+        return false;
+      }
+      ShaderMatSpec bind;
+      bind._id = arg_id;
+      if (pieces[1] == "material") {
+        if (!expect_float_matrix(name, type, 4, 4)) {
+          return false;
+        }
+        bind._piece = SMP_transpose;
+        bind._func = SMF_first;
+        bind._part[0] = SMO_attr_material;
+        bind._arg[0] = nullptr;
+        bind._part[1] = SMO_identity;
+        bind._arg[1] = nullptr;
+      }
+      else if (pieces[1] == "color") {
+        if (!expect_float_vector(name, type, 3, 4)) {
+          return false;
+        }
+        bind._piece = SMP_row3;
+        bind._func = SMF_first;
+        bind._part[0] = SMO_attr_color;
+        bind._arg[0] = nullptr;
+        bind._part[1] = SMO_identity;
+        bind._arg[1] = nullptr;
+      }
+      else if (pieces[1] == "colorscale") {
+        if (!expect_float_vector(name, type, 3, 4)) {
+          return false;
+        }
+        bind._piece = SMP_row3;
+        bind._func = SMF_first;
+        bind._part[0] = SMO_attr_colorscale;
+        bind._arg[0] = nullptr;
+        bind._part[1] = SMO_identity;
+        bind._arg[1] = nullptr;
+      }
+      else if (pieces[1] == "fog") {
+        if (!expect_float_vector(name, type, 3, 4)) {
+          return false;
+        }
+        bind._piece = SMP_row3;
+        bind._func = SMF_first;
+        bind._part[0] = SMO_attr_fog;
+        bind._arg[0] = nullptr;
+        bind._part[1] = SMO_identity;
+        bind._arg[1] = nullptr;
+      }
+      else if (pieces[1] == "fogcolor") {
+        if (!expect_float_vector(name, type, 3, 4)) {
+          return false;
+        }
+        bind._piece = SMP_row3;
+        bind._func = SMF_first;
+        bind._part[0] = SMO_attr_fogcolor;
+        bind._arg[0] = nullptr;
+        bind._part[1] = SMO_identity;
+        bind._arg[1] = nullptr;
+      }
+      else if (pieces[1] == "ambient") {
+        if (!expect_float_vector(name, type, 3, 4)) {
+          return false;
+        }
+        bind._piece = SMP_row3;
+        bind._func = SMF_first;
+        bind._part[0] = SMO_light_ambient;
+        bind._arg[0] = nullptr;
+        bind._part[1] = SMO_identity;
+        bind._arg[1] = nullptr;
+      }
+      else if (pieces[1].compare(0, 5, "light") == 0) {
+        if (!expect_float_matrix(name, type, 4, 4)) {
+          return false;
+        }
+        bind._piece = SMP_transpose;
+        bind._func = SMF_first;
+        bind._part[0] = SMO_light_source_i_packed;
+        bind._arg[0] = nullptr;
+        bind._part[1] = SMO_identity;
+        bind._arg[1] = nullptr;
+        bind._index = atoi(pieces[1].c_str() + 5);
+      }
+      else if (pieces[1].compare(0, 5, "lspec") == 0) {
+        if (!expect_float_vector(name, type, 3, 4)) {
+          return false;
+        }
+        bind._piece = SMP_row3;
+        bind._func = SMF_first;
+        bind._part[0] = SMO_light_source_i_attrib;
+        bind._arg[0] = InternalName::make("specular");
+        bind._part[1] = SMO_identity;
+        bind._arg[1] = nullptr;
+        bind._index = atoi(pieces[1].c_str() + 5);
+      }
+      else {
+        return report_parameter_error(name, type, "unrecognized parameter name");
+      }
+
+      cp_add_mat_spec(bind);
+      return true;
+    }
+
+    // Keywords to access light properties.
+    if (pieces[0] == "alight") {
+      if (!expect_num_words(name, type, 2) ||
+          !expect_float_vector(name, type, 3, 4)) {
+        return false;
+      }
+      ShaderMatSpec bind;
+      bind._id = arg_id;
+      bind._piece = SMP_row3;
+      bind._func = SMF_first;
+      bind._part[0] = SMO_alight_x;
+      bind._arg[0] = InternalName::make(pieces[1]);
+      bind._part[1] = SMO_identity;
+      bind._arg[1] = nullptr;
+
+      cp_add_mat_spec(bind);
+      return true;
+    }
+
+    if (pieces[0] == "satten") {
+      if (!expect_num_words(name, type, 2)||
+          !expect_float_vector(name, type, 4, 4)) {
+        return false;
+      }
+      ShaderMatSpec bind;
+      bind._id = arg_id;
+      bind._piece = SMP_row3;
+      bind._func = SMF_first;
+      bind._part[0] = SMO_satten_x;
+      bind._arg[0] = InternalName::make(pieces[1]);
+      bind._part[1] = SMO_identity;
+      bind._arg[1] = nullptr;
+
+      cp_add_mat_spec(bind);
+      return true;
+    }
+
+    if (pieces[0] == "dlight" || pieces[0] == "plight" || pieces[0] == "slight") {
+      if (!expect_float_matrix(name, type, 4, 4)) {
+        return false;
+      }
+      ShaderMatSpec bind;
+      bind._id = arg_id;
+      bind._piece = SMP_transpose;
+      int next = 1;
+      pieces.push_back("");
+      if (pieces[next] == "") {
+        return report_parameter_error(name, type, "expected light input name");
+      }
+      if (pieces[0] == "dlight") {
+        bind._func = SMF_transform_dlight;
+        bind._part[0] = SMO_dlight_x;
+      }
+      else if (pieces[0] == "plight") {
+        bind._func = SMF_transform_plight;
+        bind._part[0] = SMO_plight_x;
+      }
+      else if (pieces[0] == "slight") {
+        bind._func = SMF_transform_slight;
+        bind._part[0] = SMO_slight_x;
+      }
+      bind._arg[0] = InternalName::make(pieces[next]);
+      next += 1;
+      if (pieces[next] != "to" && pieces[next] != "rel") {
+        return report_parameter_error(name, type, "expected 'to' or 'rel'");
+      }
+      if (!expect_coordinate_system(name, type, pieces, next, bind, false)) {
+        return false;
+      }
+      if (pieces.size() > next) {
+        return report_parameter_error(name, type,
+          "unexpected extra words after parameter name");
+      }
+      cp_add_mat_spec(bind);
+      return true;
+    }
+
+    if (pieces[0] == "texmat") {
+      if (!expect_num_words(name, type, 2) ||
+          !expect_float_matrix(name, type, 4, 4)) {
+        return false;
+      }
+      ShaderMatSpec bind;
+      bind._id = arg_id;
+      bind._piece = SMP_whole;
+      bind._func = SMF_first;
+      bind._part[0] = SMO_texmat_i;
+      bind._arg[0] = nullptr;
+      bind._part[1] = SMO_identity;
+      bind._arg[1] = nullptr;
+      bind._index = atoi(pieces[1].c_str());
+
+      cp_add_mat_spec(bind);
+      return true;
+    }
+
+    if (pieces[0] == "texscale") {
+      if (!expect_num_words(name, type, 2) ||
+          !expect_float_vector(name, type, 3, 4)) {
+        return false;
+      }
+      ShaderMatSpec bind;
+      bind._id = arg_id;
+      bind._piece = SMP_row3;
+      bind._func = SMF_first;
+      bind._part[0] = SMO_texscale_i;
+      bind._arg[0] = nullptr;
+      bind._part[1] = SMO_identity;
+      bind._arg[1] = nullptr;
+      bind._index = atoi(pieces[1].c_str());
+
+      cp_add_mat_spec(bind);
+      return true;
+    }
+
+    if (pieces[0] == "texcolor") {
+      if (!expect_num_words(name, type, 2) ||
+          !expect_float_vector(name, type, 3, 4)) {
+        return false;
+      }
+      ShaderMatSpec bind;
+      bind._id = arg_id;
+      bind._piece = SMP_row3;
+      bind._func = SMF_first;
+      bind._part[0] = SMO_texcolor_i;
+      bind._arg[0] = nullptr;
+      bind._part[1] = SMO_identity;
+      bind._arg[1] = nullptr;
+      bind._index = atoi(pieces[1].c_str());
+
+      cp_add_mat_spec(bind);
+      return true;
+    }
+
+    if (pieces[0] == "plane") {
+      if (!expect_num_words(name, type, 2) ||
+          !expect_float_vector(name, type, 4, 4)) {
+        return false;
+      }
+      ShaderMatSpec bind;
+      bind._id = arg_id;
+      bind._piece = SMP_row3;
+      bind._func = SMF_first;
+      bind._part[0] = SMO_plane_x;
+      bind._arg[0] = InternalName::make(pieces[1]);
+      bind._part[1] = SMO_identity;
+      bind._arg[1] = nullptr;
+
+      cp_add_mat_spec(bind);
+      return true;
+    }
+
+    if (pieces[0] == "clipplane") {
+      if (!expect_num_words(name, type, 2) ||
+          !expect_float_vector(name, type,  4, 4)) {
+        return false;
+      }
+      ShaderMatSpec bind;
+      bind._id = arg_id;
+      bind._piece = SMP_row3;
+      bind._func = SMF_first;
+      bind._part[0] = SMO_clipplane_x;
+      bind._arg[0] = InternalName::make(pieces[1]);
+      bind._part[1] = SMO_identity;
+      bind._arg[1] = nullptr;
+
+      cp_add_mat_spec(bind);
+      return true;
+    }
+
+    // Keywords to access unusual parameters.
+    if (pieces[0] == "sys") {
+      if (!expect_num_words(name, type, 2)) {
+        return false;
+      }
+      ShaderMatSpec bind;
+      bind._id = arg_id;
+      bind._piece = SMP_row3;
+      bind._func = SMF_first;
+      bind._part[1] = SMO_identity;
+      bind._arg[1] = nullptr;
+      if (pieces[1] == "pixelsize") {
+        if (!expect_float_vector(name, type, 2, 2)) {
+          return false;
+        }
+        bind._part[0] = SMO_pixel_size;
+        bind._arg[0] = nullptr;
+
+      } else if (pieces[1] == "windowsize") {
+        if (!expect_float_vector(name, type, 2, 2)) {
+          return false;
+        }
+        bind._part[0] = SMO_window_size;
+        bind._arg[0] = nullptr;
+
+      } else if (pieces[1] == "time") {
+        if (!expect_float_vector(name, type, 1, 1)) {
+          return false;
+        }
+        bind._piece = SMP_row3x1;
+        bind._part[0] = SMO_frame_time;
+        bind._arg[0] = nullptr;
+
+      } else {
+        return report_parameter_error(name, type, "unrecognized parameter name");
+      }
+
+      cp_add_mat_spec(bind);
+      return true;
+    }
+
+    // Keywords to access textures.
+
+    if (pieces[0] == "tex") {
+      if (pieces.size() != 2 && pieces.size() != 3) {
+        return report_parameter_error(name, type, "unrecognized parameter name");
+      }
+      ShaderTexSpec bind;
+      bind._id = arg_id;
+      bind._name = nullptr;
+      bind._stage = atoi(pieces[1].c_str());
+      bind._part = STO_stage_i;
+
+      if (const ::ShaderType::SampledImage *image = type->as_sampled_image()) {
+        bind._desired_type = image->get_texture_type();
+      }
+      else {
+        return report_parameter_error(name, type, "expected sampler type");
+      }
+      if (pieces.size() == 3) {
+        bind._suffix = InternalName::make(((string)"-") + pieces[2]);
+        shader_cat.warning()
+          << "Parameter " << name_str << ": use of a texture suffix is deprecated.\n";
+      }
+      _tex_spec.push_back(bind);
+      return true;
+    }
+
+    if (pieces[0] == "shadow") {
+      if (pieces.size() != 2) {
+        return report_parameter_error(name, type, "unrecognized parameter name");
+      }
+      ShaderTexSpec bind;
+      bind._id = arg_id;
+      bind._name = nullptr;
+      bind._stage = atoi(pieces[1].c_str());
+      bind._part = STO_light_i_shadow_map;
+
+      if (const ::ShaderType::SampledImage *image = type->as_sampled_image()) {
+        bind._desired_type = image->get_texture_type();
+      }
+      else {
+        return report_parameter_error(name, type, "expected sampler type");
+      }
+      _tex_spec.push_back(bind);
+      return true;
+    }
+
+    // Keywords to fetch texture parameter data.
+
+    if (pieces[0] == "texpad") {
+      if (!expect_num_words(name, type, 2) ||
+          !expect_float_vector(name, type, 3, 4)) {
+        return false;
+      }
+      ShaderMatSpec bind;
+      bind._id = arg_id;
+      bind._piece = SMP_row3;
+      bind._func = SMF_first;
+      bind._part[0] = SMO_texpad_x;
+      bind._arg[0] = InternalName::make(pieces[1]);
+      bind._part[1] = SMO_identity;
+      bind._arg[1] = nullptr;
+      cp_add_mat_spec(bind);
+      return true;
+    }
+
+    if (pieces[0] == "texpix") {
+      if (!expect_num_words(name, type, 2) ||
+          !expect_float_vector(name, type, 2, 4)) {
+        return false;
+      }
+      ShaderMatSpec bind;
+      bind._id = arg_id;
+      bind._piece = SMP_row3;
+      bind._func = SMF_first;
+      bind._part[0] = SMO_texpix_x;
+      bind._arg[0] = InternalName::make(pieces[1]);
+      bind._part[1] = SMO_identity;
+      bind._arg[1] = nullptr;
+      cp_add_mat_spec(bind);
+      return true;
+    }
+
+    if (pieces[0] == "tbl") {
+      // Handled elsewhere.
+      return true;
+    }
+
+    // Previously, custom shader inputs needed the k_ prefix, so we have to
+    // strip it now.
+    if (pieces[0] == "k") {
+      k_prefix = true;
+      name_str = name_str.substr(2);
+      name = InternalName::make(name_str);
+    }
   }
 
   // If we get here, it's not a specially recognized input, but just a regular
   // user-defined input.
-  if (const ::ShaderType::Array *array = type->as_array()) {
-    // A uniform array.
-    const ::ShaderType *element_type = array->get_element_type();
-
-    ShaderPtrSpec bind;
-    bind._id = arg_id;
-
-    if (const ::ShaderType::Matrix *matrix = element_type->as_matrix()) {
-      size_t num_rows = matrix->get_num_rows();
-      if (matrix->get_num_columns() != num_rows) {
-        shader_cat.error()
-          << "Uniform parameter '" << name_str << "' has unsupported non-square matrix type\n";
-        return false;
-      }
-
-      bind._dim[1] = num_rows * num_rows;
-      bind._type = SPT_float;
-    }
-    else if (const ::ShaderType::Vector *vector = element_type->as_vector()) {
-      bind._dim[1] = 4;
-      bind._type = SPT_float;
-    }
-    else if (const ::ShaderType::Scalar *scalar = element_type->as_scalar()) {
-      bind._dim[1] = 1;
-      bind._type = SPT_float;
-    }
-
-    bind._arg = name;
-    bind._dim[0] = array->get_num_elements();
-    bind._dep[0] = SSD_general | SSD_shaderinputs | SSD_frame;
-    bind._dep[1] = SSD_NONE;
-    _ptr_spec.push_back(bind);
-    return true;
-  }
-  else if (const ::ShaderType::SampledImage *sampler = type->as_sampled_image()) {
+  if (const ::ShaderType::SampledImage *sampler = type->as_sampled_image()) {
     ShaderTexSpec bind;
     bind._id = arg_id;
     bind._part = STO_named_input;
@@ -2967,70 +2926,48 @@ bind_parameter(const InternalName *name, const ::ShaderType *type, int location)
       bind._id = arg_id;
       bind._piece = SMP_whole;
       bind._func = SMF_first;
+      bind._part[0] = SMO_mat_constant_x;
+      bind._arg[0] = name;
       bind._part[1] = SMO_identity;
       bind._arg[1] = nullptr;
-
-      if (name->get_parent() != InternalName::get_root()) {
-        // It might be something like an attribute of a shader input, like a
-        // light parameter.  It might also just be a custom struct
-        // parameter.  We can't know yet, sadly.
-        if (name->get_basename() == "shadowMatrix") {
-          // Special exception for shadowMatrix, which is deprecated,
-          // because it includes the model transformation.  It is far more
-          // efficient to do that in the shader instead.
-          static bool warned = false;
-          if (!warned) {
-            warned = true;
-            shader_cat.warning()
-              << "light.shadowMatrix inputs are deprecated; use "
-                 "shadowViewMatrix instead, which transforms from view "
-                 "space instead of model space.\n";
-          }
-          bind._func = SMF_compose;
-          bind._part[0] = SMO_model_to_apiview;
-          bind._arg[0] = nullptr;
-          bind._part[1] = SMO_mat_constant_x_attrib;
-          bind._arg[1] = name->get_parent()->append("shadowViewMatrix");
-        } else {
-          bind._part[0] = SMO_mat_constant_x_attrib;
-          bind._arg[0] = name;
-        }
-      } else {
-        bind._part[0] = SMO_mat_constant_x;
-        bind._arg[0] = name;
-      }
       cp_add_mat_spec(bind);
       return true;
     }
   }
-  else if (type == ::ShaderType::float_type) {
-    if (name->get_parent() != InternalName::get_root()) {
-      // It might be something like an attribute of a shader input, like a
-      // light parameter.  It might also just be a custom struct
-      // parameter.  We can't know yet, sadly.
-      ShaderMatSpec bind;
-      bind._id = arg_id;
-      bind._piece = SMP_row3x1;
-      bind._func = SMF_first;
-      bind._part[0] = SMO_vec_constant_x_attrib;
-      bind._arg[0] = name;
-      // We need SSD_view_transform since some attributes (eg. light
-      // position) have to be transformed to view space.
-      bind._part[1] = SMO_identity;
-      bind._arg[1] = nullptr;
-      cp_add_mat_spec(bind);
-      return true;
+  else if (const ::ShaderType::Struct *struct_type = type->as_struct()) {
+    // Is this a struct?  If so, bind the individual members.
+    bool success = true;
+
+    for (size_t i = 0; i < struct_type->get_num_members(); ++i) {
+      const ::ShaderType::Struct::Member &member = struct_type->get_member(i);
+
+      // Recurse.
+      PT(InternalName) fqname = ((InternalName *)name.p())->append(member.name);
+      if (!bind_parameter(fqname, member.type, location + i)) {
+        success = false;
+      }
     }
-    else {
-      ShaderPtrSpec bind;
-      bind._id = arg_id;
-      bind._arg = name;
-      bind._dim[0] = 1;
-      bind._dim[1] = 1;
-      bind._type = SPT_float;
-      _ptr_spec.push_back(bind);
-      return true;
-    }
+
+    return success;
+  }
+  ShaderPtrSpec bind;
+  if (type->as_scalar_type(bind._type, bind._dim[0], bind._dim[1], bind._dim[2])) {
+    bind._id = arg_id;
+    bind._arg = std::move(name);
+
+    // We specify SSD_frame because a PTA may be modified by the app from
+    // frame to frame, and we have no way to know.  So, we must respecify a
+    // PTA at least once every frame.
+    bind._dep[0] = SSD_general | SSD_shaderinputs | SSD_frame;
+    bind._dep[1] = SSD_NONE;
+
+    //if (k_prefix) {
+    //  // Backward compatibility, disables certain checks.
+    //  bind._dim[0] = -1;
+    //}
+
+    _ptr_spec.push_back(bind);
+    return true;
   }
 
   shader_cat.error()

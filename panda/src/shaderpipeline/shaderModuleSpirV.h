@@ -31,12 +31,8 @@ public:
 
   virtual PT(CopyOnWriteObject) make_cow_copy() override;
 
-  const uint32_t *get_data() const {
-    return &_words[0];
-  }
-  size_t get_data_size() const {
-    return _words.size();
-  }
+  INLINE const uint32_t *get_data() const;
+  INLINE size_t get_data_size() const;
 
   virtual bool link_inputs(const ShaderModule *previous) override;
   virtual void remap_parameter_locations(pmap<int, int> &remap) override;
@@ -44,7 +40,59 @@ public:
   virtual std::string get_ir() const override;
 
 protected:
-  pvector<uint32_t> _words;
+  class InstructionStream;
+
+  struct Instruction {
+    const SpvOp opcode;
+    const uint32_t nargs;
+    uint32_t *args;
+  };
+
+  class InstructionIterator {
+  public:
+    constexpr InstructionIterator() = default;
+
+    INLINE Instruction operator *();
+    INLINE InstructionIterator &operator ++();
+    INLINE bool operator ==(const InstructionIterator &other) const;
+    INLINE bool operator !=(const InstructionIterator &other) const;
+
+  private:
+    INLINE InstructionIterator(uint32_t *words);
+
+    uint32_t *_words = nullptr;
+
+    friend class InstructionStream;
+  };
+
+  /**
+   * A container that allows conveniently iterating over the instructions.
+   */
+  class InstructionStream {
+  public:
+    typedef InstructionIterator iterator;
+
+    INLINE InstructionStream(const uint32_t *words, size_t size);
+
+    InstructionStream strip() const;
+
+    INLINE iterator begin();
+    INLINE iterator end();
+    INLINE iterator insert(iterator &it, SpvOp opcode, std::initializer_list<uint32_t > args);
+    INLINE iterator insert(iterator &it, SpvOp opcode, const uint32_t *args, uint16_t nargs);
+    INLINE iterator erase(iterator &it);
+    INLINE iterator erase_arg(iterator &it, uint16_t arg);
+
+    INLINE const uint32_t *get_data() const;
+    INLINE size_t get_data_size() const;
+
+    INLINE uint32_t allocate_id();
+
+  private:
+    pvector<uint32_t> _words;
+  };
+
+  InstructionStream _instructions;
 
   enum DefinitionType {
     DT_none,
@@ -88,6 +136,7 @@ private:
   void assign_locations(Definitions &defs);
   void remap_locations(SpvStorageClass storage_class, const pmap<int, int> &locations);
 
+  void unwrap_uniform_block(Definitions &defs, uint32_t type_id);
   void strip();
 
 public:
@@ -110,5 +159,7 @@ public:
 private:
   static TypeHandle _type_handle;
 };
+
+#include "shaderModuleSpirV.I"
 
 #endif

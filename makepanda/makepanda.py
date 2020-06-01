@@ -799,6 +799,7 @@ if (COMPILER=="GCC"):
     SmartPkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
     SmartPkgEnable("PNG",       "libpng",    ("png"), "png.h", tool = "libpng-config")
     SmartPkgEnable("GLSLANG",   "",          ("glslang", "SPIRV", "OSDependent", "OGLCompiler", "HLSL"), "glslang/Public/ShaderLang.h")
+    SmartPkgEnable("SPIRV-TOOLS", "",        ("SPIRV-Tools-opt"), "spirv-tools/optimizer.hpp")
 
     # Copy freetype libraries to be specified after harfbuzz libraries as well,
     # because there's a circular dependency between the two libraries.
@@ -3719,7 +3720,7 @@ PyTargetAdd('p3display_ext_composite.obj', opts=OPTS, input='p3display_ext_compo
 # DIRECTORY: panda/src/shaderpipeline/
 #
 
-OPTS=['DIR:panda/src/shaderpipeline', 'BUILDING:PANDA', 'GLSLANG']
+OPTS=['DIR:panda/src/shaderpipeline', 'BUILDING:PANDA', 'GLSLANG', 'SPIRV-TOOLS']
 TargetAdd('p3shaderpipeline_composite1.obj', opts=OPTS, input='p3shaderpipeline_composite1.cxx')
 
 OPTS=['DIR:panda/src/shaderpipeline']
@@ -3909,7 +3910,7 @@ TargetAdd('libp3dxml.in', opts=['IMOD:panda3d.core', 'ILIB:libp3dxml', 'SRCDIR:p
 OPTS=['DIR:panda/metalibs/panda', 'BUILDING:PANDA', 'JPEG', 'PNG', 'HARFBUZZ',
     'TIFF', 'OPENEXR', 'ZLIB', 'FREETYPE', 'FFTW', 'ADVAPI', 'WINSOCK2',
     'SQUISH', 'NVIDIACG', 'VORBIS', 'OPUS', 'WINUSER', 'WINMM', 'WINGDI', 'IPHLPAPI',
-    'SETUPAPI', 'IOKIT', 'GLSLANG']
+    'SETUPAPI', 'IOKIT', 'GLSLANG', 'SPIRV-TOOLS']
 
 TargetAdd('panda_panda.obj', opts=OPTS, input='panda.cxx')
 

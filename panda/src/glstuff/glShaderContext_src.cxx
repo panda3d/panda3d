@@ -56,7 +56,7 @@ TypeHandle CLP(ShaderContext)::_type_handle;
  */
 bool CLP(ShaderContext)::
 parse_and_set_short_hand_shader_vars(Shader::ShaderArgId &arg_id, GLenum param_type, GLint param_size, Shader *objShader) {
-  Shader::ShaderArgInfo p;
+  /*Shader::ShaderArgInfo p;
   p._id = arg_id;
 
   string basename(arg_id._name);
@@ -250,7 +250,7 @@ parse_and_set_short_hand_shader_vars(Shader::ShaderArgId &arg_id, GLenum param_t
     }
 
     return true;
-  }
+  }*/
   return false;
 }
 
@@ -269,8 +269,6 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
   _frame_number_loc = -1;
   _frame_number = -1;
   _validated = !gl_validate_shaders;
-
-  nassertv(s->get_language() == Shader::SL_GLSL);
 
   // We compile and analyze the shader here, instead of in shader.cxx, to
   // avoid gobj getting a dependency on GL stuff.
@@ -315,7 +313,7 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
     // Do we have a p3d_Color attribute?
     for (auto it = s->_var_spec.begin(); it != s->_var_spec.end(); ++it) {
       Shader::ShaderVarSpec &spec = *it;
-      if (spec._id._name == "p3d_Color") {
+      if (spec._name == InternalName::get_color()) {
         _color_attrib_index = spec._id._seqno;
         break;
       }
@@ -1472,25 +1470,33 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       case GL_UNSIGNED_INT_VEC4: {
         Shader::ShaderPtrSpec bind;
         bind._id = arg_id;
+        bind._dim[0] = 1;
+        bind._dim[1] = 1;
         switch (param_type) {
           case GL_BOOL:
           case GL_INT:
           case GL_UNSIGNED_INT:
-          case GL_FLOAT:      bind._dim[1] = 1; break;
+          case GL_FLOAT:      bind._dim[2] = 1; break;
           case GL_BOOL_VEC2:
           case GL_INT_VEC2:
           case GL_UNSIGNED_INT_VEC2:
-          case GL_FLOAT_VEC2: bind._dim[1] = 2; break;
+          case GL_FLOAT_VEC2: bind._dim[2] = 2; break;
           case GL_BOOL_VEC3:
           case GL_INT_VEC3:
           case GL_UNSIGNED_INT_VEC3:
-          case GL_FLOAT_VEC3: bind._dim[1] = 3; break;
+          case GL_FLOAT_VEC3: bind._dim[2] = 3; break;
           case GL_BOOL_VEC4:
           case GL_INT_VEC4:
           case GL_UNSIGNED_INT_VEC4:
-          case GL_FLOAT_VEC4: bind._dim[1] = 4; break;
-          case GL_FLOAT_MAT3: bind._dim[1] = 9; break;
-          case GL_FLOAT_MAT4: bind._dim[1] = 16; break;
+          case GL_FLOAT_VEC4: bind._dim[2] = 4; break;
+          case GL_FLOAT_MAT3:
+            bind._dim[1] = 3;
+            bind._dim[2] = 3;
+            break;
+          case GL_FLOAT_MAT4:
+            bind._dim[1] = 4;
+            bind._dim[2] = 4;
+            break;
         }
         switch (param_type) {
         case GL_BOOL:
@@ -1501,13 +1507,13 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
         case GL_UNSIGNED_INT_VEC2:
         case GL_UNSIGNED_INT_VEC3:
         case GL_UNSIGNED_INT_VEC4:
-          bind._type = Shader::SPT_uint;
+          bind._type = ShaderType::ST_uint;
           break;
         case GL_INT:
         case GL_INT_VEC2:
         case GL_INT_VEC3:
         case GL_INT_VEC4:
-          bind._type = Shader::SPT_int;
+          bind._type = ShaderType::ST_int;
           break;
         case GL_FLOAT:
         case GL_FLOAT_VEC2:
@@ -1515,11 +1521,10 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
         case GL_FLOAT_VEC4:
         case GL_FLOAT_MAT3:
         case GL_FLOAT_MAT4:
-          bind._type = Shader::SPT_float;
+          bind._type = ShaderType::ST_float;
           break;
         }
         bind._arg = InternalName::make(param_name);
-        bind._dim[0] = 1;
         bind._dep[0] = Shader::SSD_general | Shader::SSD_shaderinputs | Shader::SSD_frame;
         bind._dep[1] = Shader::SSD_NONE;
         _shader->_ptr_spec.push_back(bind);
@@ -1594,21 +1599,33 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
     case GL_FLOAT_MAT4: {
       Shader::ShaderPtrSpec bind;
       bind._id = arg_id;
+      bind._dim[0] = param_size;
+      bind._dim[1] = 1;
       switch (param_type) {
         case GL_BOOL:
         case GL_INT:
-        case GL_FLOAT:      bind._dim[1] = 1; break;
+        case GL_UNSIGNED_INT:
+        case GL_FLOAT:      bind._dim[2] = 1; break;
         case GL_BOOL_VEC2:
         case GL_INT_VEC2:
-        case GL_FLOAT_VEC2: bind._dim[1] = 2; break;
+        case GL_UNSIGNED_INT_VEC2:
+        case GL_FLOAT_VEC2: bind._dim[2] = 2; break;
         case GL_BOOL_VEC3:
         case GL_INT_VEC3:
-        case GL_FLOAT_VEC3: bind._dim[1] = 3; break;
+        case GL_UNSIGNED_INT_VEC3:
+        case GL_FLOAT_VEC3: bind._dim[2] = 3; break;
         case GL_BOOL_VEC4:
         case GL_INT_VEC4:
-        case GL_FLOAT_VEC4: bind._dim[1] = 4; break;
-        case GL_FLOAT_MAT3: bind._dim[1] = 9; break;
-        case GL_FLOAT_MAT4: bind._dim[1] = 16; break;
+        case GL_UNSIGNED_INT_VEC4:
+        case GL_FLOAT_VEC4: bind._dim[2] = 4; break;
+        case GL_FLOAT_MAT3:
+          bind._dim[1] = 3;
+          bind._dim[2] = 3;
+          break;
+        case GL_FLOAT_MAT4:
+          bind._dim[1] = 4;
+          bind._dim[2] = 4;
+          break;
       }
       switch (param_type) {
       case GL_BOOL:
@@ -1619,13 +1636,13 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       case GL_UNSIGNED_INT_VEC2:
       case GL_UNSIGNED_INT_VEC3:
       case GL_UNSIGNED_INT_VEC4:
-        bind._type = Shader::SPT_uint;
+        bind._type = ShaderType::ST_uint;
         break;
       case GL_INT:
       case GL_INT_VEC2:
       case GL_INT_VEC3:
       case GL_INT_VEC4:
-        bind._type = Shader::SPT_int;
+        bind._type = ShaderType::ST_int;
         break;
       case GL_FLOAT:
       case GL_FLOAT_VEC2:
@@ -1633,11 +1650,10 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       case GL_FLOAT_VEC4:
       case GL_FLOAT_MAT3:
       case GL_FLOAT_MAT4:
-        bind._type = Shader::SPT_float;
+        bind._type = ShaderType::ST_float;
         break;
       }
       bind._arg = InternalName::make(param_name);
-      bind._dim[0] = param_size;
       bind._dep[0] = Shader::SSD_general | Shader::SSD_shaderinputs | Shader::SSD_frame;
       bind._dep[1] = Shader::SSD_NONE;
       _shader->_ptr_spec.push_back(bind);
@@ -1659,116 +1675,116 @@ get_param_type(GLenum param_type) {
     return ShaderType::float_type;
 
   case GL_FLOAT_VEC2:
-    return ShaderType::register_type(ShaderType::Vector(ShaderType::float_type, 2));
+    return ShaderType::register_type(ShaderType::Vector(ShaderType::ST_float, 2));
 
   case GL_FLOAT_VEC3:
-    return ShaderType::register_type(ShaderType::Vector(ShaderType::float_type, 3));
+    return ShaderType::register_type(ShaderType::Vector(ShaderType::ST_float, 3));
 
   case GL_FLOAT_VEC4:
-    return ShaderType::register_type(ShaderType::Vector(ShaderType::float_type, 4));
+    return ShaderType::register_type(ShaderType::Vector(ShaderType::ST_float, 4));
 
   case GL_FLOAT_MAT2:
-    return ShaderType::register_type(ShaderType::Matrix(ShaderType::float_type, 2, 2));
+    return ShaderType::register_type(ShaderType::Matrix(ShaderType::ST_float, 2, 2));
 
   case GL_FLOAT_MAT3:
-    return ShaderType::register_type(ShaderType::Matrix(ShaderType::float_type, 3, 3));
+    return ShaderType::register_type(ShaderType::Matrix(ShaderType::ST_float, 3, 3));
 
   case GL_FLOAT_MAT4:
-    return ShaderType::register_type(ShaderType::Matrix(ShaderType::float_type, 4, 4));
+    return ShaderType::register_type(ShaderType::Matrix(ShaderType::ST_float, 4, 4));
 
   case GL_FLOAT_MAT2x3:
-    return ShaderType::register_type(ShaderType::Matrix(ShaderType::float_type, 2, 3));
+    return ShaderType::register_type(ShaderType::Matrix(ShaderType::ST_float, 2, 3));
 
   case GL_FLOAT_MAT2x4:
-    return ShaderType::register_type(ShaderType::Matrix(ShaderType::float_type, 2, 4));
+    return ShaderType::register_type(ShaderType::Matrix(ShaderType::ST_float, 2, 4));
 
   case GL_FLOAT_MAT3x2:
-    return ShaderType::register_type(ShaderType::Matrix(ShaderType::float_type, 3, 2));
+    return ShaderType::register_type(ShaderType::Matrix(ShaderType::ST_float, 3, 2));
 
   case GL_FLOAT_MAT3x4:
-    return ShaderType::register_type(ShaderType::Matrix(ShaderType::float_type, 3, 4));
+    return ShaderType::register_type(ShaderType::Matrix(ShaderType::ST_float, 3, 4));
 
   case GL_FLOAT_MAT4x2:
-    return ShaderType::register_type(ShaderType::Matrix(ShaderType::float_type, 4, 2));
+    return ShaderType::register_type(ShaderType::Matrix(ShaderType::ST_float, 4, 2));
 
   case GL_FLOAT_MAT4x3:
-    return ShaderType::register_type(ShaderType::Matrix(ShaderType::float_type, 4, 3));
+    return ShaderType::register_type(ShaderType::Matrix(ShaderType::ST_float, 4, 3));
 
   case GL_INT:
     return ShaderType::int_type;
 
   case GL_INT_VEC2:
-    return ShaderType::register_type(ShaderType::Vector(ShaderType::int_type, 2));
+    return ShaderType::register_type(ShaderType::Vector(ShaderType::ST_int, 2));
 
   case GL_INT_VEC3:
-    return ShaderType::register_type(ShaderType::Vector(ShaderType::int_type, 3));
+    return ShaderType::register_type(ShaderType::Vector(ShaderType::ST_int, 3));
 
   case GL_INT_VEC4:
-    return ShaderType::register_type(ShaderType::Vector(ShaderType::int_type, 4));
+    return ShaderType::register_type(ShaderType::Vector(ShaderType::ST_int, 4));
 
   case GL_BOOL:
     return ShaderType::bool_type;
 
   case GL_BOOL_VEC2:
-    return ShaderType::register_type(ShaderType::Vector(ShaderType::bool_type, 2));
+    return ShaderType::register_type(ShaderType::Vector(ShaderType::ST_bool, 2));
 
   case GL_BOOL_VEC3:
-    return ShaderType::register_type(ShaderType::Vector(ShaderType::bool_type, 3));
+    return ShaderType::register_type(ShaderType::Vector(ShaderType::ST_bool, 3));
 
   case GL_BOOL_VEC4:
-    return ShaderType::register_type(ShaderType::Vector(ShaderType::bool_type, 4));
+    return ShaderType::register_type(ShaderType::Vector(ShaderType::ST_bool, 4));
 
   case GL_UNSIGNED_INT:
     return ShaderType::uint_type;
 
   case GL_UNSIGNED_INT_VEC2:
-    return ShaderType::register_type(ShaderType::Vector(ShaderType::uint_type, 2));
+    return ShaderType::register_type(ShaderType::Vector(ShaderType::ST_uint, 2));
 
   case GL_UNSIGNED_INT_VEC3:
-    return ShaderType::register_type(ShaderType::Vector(ShaderType::uint_type, 3));
+    return ShaderType::register_type(ShaderType::Vector(ShaderType::ST_uint, 3));
 
   case GL_UNSIGNED_INT_VEC4:
-    return ShaderType::register_type(ShaderType::Vector(ShaderType::uint_type, 4));
+    return ShaderType::register_type(ShaderType::Vector(ShaderType::ST_uint, 4));
 
 #ifndef OPENGLES
   case GL_DOUBLE:
     return ShaderType::double_type;
 
   case GL_DOUBLE_VEC2:
-    return ShaderType::register_type(ShaderType::Vector(ShaderType::double_type, 2));
+    return ShaderType::register_type(ShaderType::Vector(ShaderType::ST_double, 2));
 
   case GL_DOUBLE_VEC3:
-    return ShaderType::register_type(ShaderType::Vector(ShaderType::double_type, 3));
+    return ShaderType::register_type(ShaderType::Vector(ShaderType::ST_double, 3));
 
   case GL_DOUBLE_VEC4:
-    return ShaderType::register_type(ShaderType::Vector(ShaderType::double_type, 4));
+    return ShaderType::register_type(ShaderType::Vector(ShaderType::ST_double, 4));
 
   case GL_DOUBLE_MAT2:
-    return ShaderType::register_type(ShaderType::Matrix(ShaderType::double_type, 2, 2));
+    return ShaderType::register_type(ShaderType::Matrix(ShaderType::ST_double, 2, 2));
 
   case GL_DOUBLE_MAT3:
-    return ShaderType::register_type(ShaderType::Matrix(ShaderType::double_type, 3, 3));
+    return ShaderType::register_type(ShaderType::Matrix(ShaderType::ST_double, 3, 3));
 
   case GL_DOUBLE_MAT4:
-    return ShaderType::register_type(ShaderType::Matrix(ShaderType::double_type, 4, 4));
+    return ShaderType::register_type(ShaderType::Matrix(ShaderType::ST_double, 4, 4));
 
   case GL_DOUBLE_MAT2x3:
-    return ShaderType::register_type(ShaderType::Matrix(ShaderType::double_type, 2, 3));
+    return ShaderType::register_type(ShaderType::Matrix(ShaderType::ST_double, 2, 3));
 
   case GL_DOUBLE_MAT2x4:
-    return ShaderType::register_type(ShaderType::Matrix(ShaderType::double_type, 2, 4));
+    return ShaderType::register_type(ShaderType::Matrix(ShaderType::ST_double, 2, 4));
 
   case GL_DOUBLE_MAT3x2:
-    return ShaderType::register_type(ShaderType::Matrix(ShaderType::double_type, 3, 2));
+    return ShaderType::register_type(ShaderType::Matrix(ShaderType::ST_double, 3, 2));
 
   case GL_DOUBLE_MAT3x4:
-    return ShaderType::register_type(ShaderType::Matrix(ShaderType::double_type, 3, 4));
+    return ShaderType::register_type(ShaderType::Matrix(ShaderType::ST_double, 3, 4));
 
   case GL_DOUBLE_MAT4x2:
-    return ShaderType::register_type(ShaderType::Matrix(ShaderType::double_type, 4, 2));
+    return ShaderType::register_type(ShaderType::Matrix(ShaderType::ST_double, 4, 2));
 
   case GL_DOUBLE_MAT4x3:
-    return ShaderType::register_type(ShaderType::Matrix(ShaderType::double_type, 4, 3));
+    return ShaderType::register_type(ShaderType::Matrix(ShaderType::ST_double, 4, 3));
 #endif
 
 #ifndef OPENGLES
@@ -2168,39 +2184,41 @@ issue_parameters(int altered) {
 
       nassertd(spec._dim[1] > 0) continue;
 
+      uint32_t dim = spec._dim[1] * spec._dim[2];
       GLint p = spec._id._seqno;
-      int array_size = min(spec._dim[0], (int)ptr_data._size / spec._dim[1]);
+      int array_size = min(spec._dim[0], (uint32_t)(ptr_data._size / dim));
       switch (spec._type) {
-      case Shader::SPT_float:
+      case ShaderType::ST_bool:
+      case ShaderType::ST_float:
         {
           float *data = nullptr;
 
           switch (ptr_data._type) {
-          case Shader::SPT_int:
+          case ShaderType::ST_int:
             // Convert int data to float data.
-            data = (float*) alloca(sizeof(float) * array_size * spec._dim[1]);
-            for (int i = 0; i < (array_size * spec._dim[1]); ++i) {
+            data = (float*) alloca(sizeof(float) * array_size * dim);
+            for (int i = 0; i < (array_size * dim); ++i) {
               data[i] = (float)(((int*)ptr_data._ptr)[i]);
             }
             break;
 
-          case Shader::SPT_uint:
+          case ShaderType::ST_uint:
             // Convert unsigned int data to float data.
-            data = (float*) alloca(sizeof(float) * array_size * spec._dim[1]);
-            for (int i = 0; i < (array_size * spec._dim[1]); ++i) {
+            data = (float*) alloca(sizeof(float) * array_size * dim);
+            for (int i = 0; i < (array_size * dim); ++i) {
               data[i] = (float)(((unsigned int*)ptr_data._ptr)[i]);
             }
             break;
 
-          case Shader::SPT_double:
+          case ShaderType::ST_double:
             // Downgrade double data to float data.
-            data = (float*) alloca(sizeof(float) * array_size * spec._dim[1]);
-            for (int i = 0; i < (array_size * spec._dim[1]); ++i) {
+            data = (float*) alloca(sizeof(float) * array_size * dim);
+            for (int i = 0; i < (array_size * dim); ++i) {
               data[i] = (float)(((double*)ptr_data._ptr)[i]);
             }
             break;
 
-          case Shader::SPT_float:
+          case ShaderType::ST_float:
             data = (float*)ptr_data._ptr;
             break;
 
@@ -2208,7 +2226,7 @@ issue_parameters(int altered) {
             nassertd(false) continue;
           }
 
-          switch (spec._dim[1]) {
+          switch (dim) {
           case 1: _glgsg->_glUniform1fv(p, array_size, (float*)data); continue;
           case 2: _glgsg->_glUniform2fv(p, array_size, (float*)data); continue;
           case 3: _glgsg->_glUniform3fv(p, array_size, (float*)data); continue;
@@ -2220,9 +2238,9 @@ issue_parameters(int altered) {
         }
         break;
 
-      case Shader::SPT_int:
-        if (ptr_data._type != Shader::SPT_int &&
-            ptr_data._type != Shader::SPT_uint) {
+      case ShaderType::ST_int:
+        if (ptr_data._type != ShaderType::ST_int &&
+            ptr_data._type != ShaderType::ST_uint) {
           GLCAT.error()
             << "Cannot pass floating-point data to integer shader input '" << spec._id._name << "'\n";
 
@@ -2232,7 +2250,7 @@ issue_parameters(int altered) {
           spec._dep[1] = 0;
 
         } else {
-          switch (spec._dim[1]) {
+          switch (spec._dim[1] * spec._dim[2]) {
           case 1: _glgsg->_glUniform1iv(p, array_size, (int*)ptr_data._ptr); continue;
           case 2: _glgsg->_glUniform2iv(p, array_size, (int*)ptr_data._ptr); continue;
           case 3: _glgsg->_glUniform3iv(p, array_size, (int*)ptr_data._ptr); continue;
@@ -2242,9 +2260,9 @@ issue_parameters(int altered) {
         }
         break;
 
-      case Shader::SPT_uint:
-        if (ptr_data._type != Shader::SPT_uint &&
-            ptr_data._type != Shader::SPT_int) {
+      case ShaderType::ST_uint:
+        if (ptr_data._type != ShaderType::ST_uint &&
+            ptr_data._type != ShaderType::ST_int) {
           GLCAT.error()
             << "Cannot pass floating-point data to integer shader input '" << spec._id._name << "'\n";
 
@@ -2254,7 +2272,7 @@ issue_parameters(int altered) {
           spec._dep[1] = 0;
 
         } else {
-          switch (spec._dim[1]) {
+          switch (spec._dim[1] * spec._dim[2]) {
           case 1: _glgsg->_glUniform1uiv(p, array_size, (GLuint *)ptr_data._ptr); continue;
           case 2: _glgsg->_glUniform2uiv(p, array_size, (GLuint *)ptr_data._ptr); continue;
           case 3: _glgsg->_glUniform3uiv(p, array_size, (GLuint *)ptr_data._ptr); continue;
@@ -2264,7 +2282,7 @@ issue_parameters(int altered) {
         }
         break;
 
-      case Shader::SPT_double:
+      case ShaderType::ST_double:
         GLCAT.error() << "Passing double-precision shader inputs to GLSL shaders is not currently supported\n";
 
         // Deactivate it to make sure the user doesn't get flooded with this
@@ -2537,11 +2555,11 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
             // It requires us to pass GL_TRUE for normalized.
             _glgsg->_glVertexAttribPointer(p, GL_BGRA, GL_UNSIGNED_BYTE,
                                            GL_TRUE, stride, client_pointer);
-          } else if (bind._numeric_type == Shader::SPT_float ||
+          } else if (bind._scalar_type == ShaderType::ST_float ||
                      numeric_type == GeomEnums::NT_float32) {
             _glgsg->_glVertexAttribPointer(p, num_values, type,
                                            normalized, stride, client_pointer);
-          } else if (bind._numeric_type == Shader::SPT_double) {
+          } else if (bind._scalar_type == ShaderType::ST_double) {
             _glgsg->_glVertexAttribLPointer(p, num_values, type,
                                             stride, client_pointer);
           } else {

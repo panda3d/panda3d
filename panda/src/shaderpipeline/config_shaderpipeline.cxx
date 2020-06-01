@@ -46,6 +46,7 @@ init_libshaderpipeline() {
   }
   initialized = true;
 
+  ShaderCompilerGlslang::init_type();
   ShaderModule::init_type();
   ShaderModuleSpirV::init_type();
   ShaderModuleGlsl::init_type();
@@ -53,5 +54,5 @@ init_libshaderpipeline() {
   ShaderCompilerRegistry *reg = ShaderCompilerRegistry::get_global_ptr();
   reg->register_compiler(new ShaderCompilerGlslang());
   reg->register_compiler(new ShaderCompilerGlslPreProc());
-  reg->register_compiler(new ShaderCompilerCg());
+  //reg->register_compiler(new ShaderCompilerCg());
 }

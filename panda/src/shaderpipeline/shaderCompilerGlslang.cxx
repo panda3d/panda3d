@@ -16,13 +16,13 @@
 #include "config_shaderpipeline.h"
 #include "virtualFile.h"
 
+#ifndef CPPPARSER
 #include <glslang/Public/ShaderLang.h>
 #include <glslang/Include/ResourceLimits.h>
 #include <glslang/SPIRV/GlslangToSpv.h>
 
-#include "dcast.h"
+#include <spirv-tools/optimizer.hpp>
 
-#ifndef CPPPARSER
 const TBuiltInResource resource_limits = {
   /* .MaxLights = */ 32,
   /* .MaxClipPlanes = */ 6,
@@ -116,6 +116,7 @@ const TBuiltInResource resource_limits = {
   /* .maxTaskWorkGroupSizeY_NV = */ 1,
   /* .maxTaskWorkGroupSizeZ_NV = */ 1,
   /* .maxMeshViewCountNV = */ 4,
+  /* .maxDualSourceDrawBuffersEXT = */ 1,
 
   /* .limits = */ {
       /* .nonInductiveForLoops = */ 1,
@@ -209,6 +210,34 @@ public:
 private:
   BamCacheRecord *_record = nullptr;
 };
+
+/**
+ * Message consumer for SPIRV-Tools.
+ */
+static void
+log_message(spv_message_level_t level, const char *, const spv_position_t &, const char *msg) {
+  NotifySeverity severity;
+  switch (level) {
+  case SPV_MSG_FATAL:
+  case SPV_MSG_INTERNAL_ERROR:
+    severity = NS_fatal;
+    break;
+  case SPV_MSG_ERROR:
+    severity = NS_error;
+    break;
+  case SPV_MSG_WARNING:
+    severity = NS_warning;
+    break;
+  case SPV_MSG_INFO:
+    severity = NS_info;
+    break;
+  case SPV_MSG_DEBUG:
+    severity = NS_debug;
+    break;
+  }
+  shader_cat.out(severity) << msg << std::endl;
+}
+
 #endif  // CPPPARSER
 
 TypeHandle ShaderCompilerGlslang::_type_handle;
@@ -234,7 +263,8 @@ get_name() const {
 ShaderLanguages ShaderCompilerGlslang::
 get_languages() const {
   return {
-    Shader::SL_GLSL
+    Shader::SL_GLSL,
+    Shader::SL_Cg,
   };
 }
 
@@ -261,12 +291,39 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
   const int length = (int)code.size();
   const char *fname = filename.c_str();
 
+  EShMessages messages = (EShMessages)(EShMsgDefault | EShMsgDebugInfo);
+
   glslang::TShader *shader = new glslang::TShader((EShLanguage)stage);
   shader->setStringsWithLengthsAndNames(&string, &length, &fname, 1);
-  //shader->setEntryPoint("main");
-  //shader->setSourceEntryPoint("main");
+  shader->setEntryPoint("main");
+
+  // If it's marked as a Cg shader, we compile it with the HLSL front-end.
+  bool is_hlsl = false;
+  if (code.size() >= 5 && strncmp((const char *)&code[0], "//Cg\n", 5) == 0) {
+    shader->setEnvInput(glslang::EShSource::EShSourceHlsl, (EShLanguage)stage, glslang::EShClient::EShClientOpenGL, 120);
+    switch (stage) {
+    case ShaderModule::Stage::vertex:
+      shader->setSourceEntryPoint("vshader");
+      break;
+    case ShaderModule::Stage::geometry:
+      shader->setSourceEntryPoint("gshader");
+      break;
+    case ShaderModule::Stage::fragment:
+      shader->setSourceEntryPoint("fshader");
+      break;
+    }
+
+    shader->setPreamble(
+      "#define f1tex2D(x, y) (tex2D(x, y).r)\n"
+      "#define sampler2DShadow sampler2D\n"
+      "#define shadow2D(s, tc) (float4(tex2D(s, tc) > tc.z))\n"
+      "#define shadow2DProj(s, tc) (float4(tex2Dproj(s, tc) > tc.z / tc.w))\n"
+    );
+    is_hlsl = true;
+    messages = (EShMessages)(messages | EShMsgHlslDX9Compatible | EShMsgHlslLegalization);
+  }
   //shader->setEnvInput(glslang::EShSource::EShSourceGlsl, (EShLanguage)stage, glslang::EShClient::EShClientVulkan, 430);
-  //shader->setEnvClient(glslang::EShClient::EShClientVulkan, glslang::EShTargetVulkan_1_1);
+  shader->setEnvClient(glslang::EShClient::EShClientOpenGL, glslang::EShTargetOpenGL_450);
   shader->setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_0);
 
   // Have the compilers assign bindings to everything--even if we will end up
@@ -280,7 +337,7 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
   shader->setAutoMapLocations(true);
 
   Includer includer(record);
-  if (!shader->parse(&resource_limits, 110, false, (EShMessages)(EShMsgDefault | EShMsgDebugInfo), includer)) {
+  if (!shader->parse(&resource_limits, 110, false, messages, includer)) {
     std::cerr << "failed to parse " << filename << ":\n";
     std::cerr << shader->getInfoLog() << "\n";
     std::cerr << shader->getInfoDebugLog() << "\n";
@@ -310,5 +367,18 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
       glslang::OutputSpvBin(spirv, GetBinaryName((EShLanguage)stage));
   }*/
 
-  return new ShaderModuleSpirV(stage, spirv.data(), spirv.size());
+  spvtools::Optimizer opt(SPV_ENV_UNIVERSAL_1_0);
+  opt.SetMessageConsumer(log_message);
+  opt.RegisterPerformancePasses();
+
+  if (is_hlsl) {
+    opt.RegisterLegalizationPasses();
+  }
+
+  std::vector<uint32_t> optimized;
+  if (!opt.Run(spirv.data(), spirv.size(), &optimized)) {
+    return nullptr;
+  }
+
+  return new ShaderModuleSpirV(stage, optimized.data(), optimized.size());
 }

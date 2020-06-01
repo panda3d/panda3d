@@ -6278,54 +6278,20 @@ prepare_shader(Shader *se) {
   PStatGPUTimer timer(this, se->get_prepare_shader_pcollector());
 
 #ifndef OPENGLES_1
-  ShaderContext *result = nullptr;
+  if (_supports_glsl) {
+    push_group_marker(std::string("Prepare Shader ") + se->get_debug_name());
+    ShaderContext *result = new CLP(ShaderContext)(this, se);
+    pop_group_marker();
 
-  switch (se->get_language()) {
-  case Shader::SL_GLSL:
-    if (_supports_glsl) {
-      push_group_marker(std::string("Prepare Shader ") + se->get_debug_name());
-      result = new CLP(ShaderContext)(this, se);
-      pop_group_marker();
-      break;
-    } else {
-      GLCAT.error()
-        << "Tried to load GLSL shader, but GLSL shaders not supported.\n";
-      return nullptr;
+    if (result->valid()) {
+      return result;
     }
 
-  case Shader::SL_Cg:
-#if defined(HAVE_CG) && !defined(OPENGLES)
-    if (_supports_basic_shaders) {
-      push_group_marker(std::string("Prepare Shader ") + se->get_debug_name());
-      result = new CLP(CgShaderContext)(this, se);
-      pop_group_marker();
-      break;
-    } else {
-      GLCAT.error()
-        << "Tried to load Cg shader, but basic shaders not supported.\n";
-      return nullptr;
-    }
-#elif defined(OPENGLES)
+    delete result;
+  } else {
     GLCAT.error()
-      << "Tried to load Cg shader, but Cg support is not available for OpenGL ES.\n";
-    return nullptr;
-#else
-    GLCAT.error()
-      << "Tried to load Cg shader, but Cg support not compiled in.\n";
-    return nullptr;
-#endif
-
-  default:
-    GLCAT.error()
-      << "Tried to load shader with unsupported shader language!\n";
-    return nullptr;
+      << "Tried to load shader, but shaders are not supported.\n";
   }
-
-  if (result->valid()) {
-    return result;
-  }
-
-  delete result;
 #endif  // OPENGLES_1
 
   return nullptr;
