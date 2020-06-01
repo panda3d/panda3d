@@ -11,8 +11,10 @@
 #include "dcParser.h"
 #include "dcFile.h"
 #include "dcindent.h"
-#include "pstrtod.h"
 
+#ifdef WITHIN_PANDA
+#include "pstrtod.h"
+#endif
 
 static int yyinput(void);        // declared by flex.
 extern "C" int dcyywrap();

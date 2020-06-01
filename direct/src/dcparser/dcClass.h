@@ -172,15 +172,16 @@ private:
   typedef pmap<int, DCField *> FieldsByIndex;
   FieldsByIndex _fields_by_index;
 
+  friend class DCField;
+
+#ifdef WITHIN_PANDA
   // See pandaNode.h for an explanation of this trick
   class PythonClassDefs : public ReferenceCount {
   public:
     virtual ~PythonClassDefs() {};
   };
   PT(PythonClassDefs) _python_class_defs;
-
-  friend class DCField;
-#ifdef WITHIN_PANDA
+  
   friend class Extension<DCClass>;
 #endif
 };
