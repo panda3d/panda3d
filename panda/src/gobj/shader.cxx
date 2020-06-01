@@ -2941,8 +2941,74 @@ bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
     for (size_t i = 0; i < struct_type->get_num_members(); ++i) {
       const ::ShaderType::Struct::Member &member = struct_type->get_member(i);
 
-      // Recurse.
       PT(InternalName) fqname = ((InternalName *)name.p())->append(member.name);
+
+      // Numeric struct members under GLSL may need a special treatment.
+      ScalarType scalar_type;
+      uint32_t dim[3];
+      if (_language == SL_GLSL &&
+          member.type->as_scalar_type(scalar_type, dim[0], dim[1], dim[2]) &&
+          scalar_type == ScalarType::ST_float &&
+          dim[0] == 1) {
+        // It might be something like an attribute of a shader input, like a
+        // light parameter.  It might also just be a custom struct parameter.
+        // We can't know yet, so we always have to handle it specially.
+        ShaderMatSpec bind;
+        bind._id = arg_id;
+        bind._id._seqno += i;
+        if (member.name == "shadowMatrix" && dim[1] == 4 && dim[2] == 4) {
+          // Special exception for shadowMatrix, which is deprecated because it
+          // includes the model transformation.  It is far more efficient to do
+          // that in the shader instead.
+          static bool warned = false;
+          if (!warned) {
+            warned = true;
+            shader_cat.warning()
+              << "light.shadowMatrix inputs are deprecated; use "
+                 "shadowViewMatrix instead, which transforms from view "
+                 "space instead of model space.\n";
+          }
+          bind._piece = SMP_whole;
+          bind._func = SMF_compose;
+          bind._part[0] = SMO_model_to_apiview;
+          bind._arg[0] = nullptr;
+          bind._part[1] = SMO_mat_constant_x_attrib;
+          bind._arg[1] = ((InternalName *)name.p())->append("shadowViewMatrix");
+        }
+        else {
+          bind._func = SMF_first;
+          if (dim[1] == 4) {
+            bind._piece = SMP_whole;
+            bind._part[0] = SMO_mat_constant_x_attrib;
+          }
+          else if (dim[1] == 3) {
+            bind._piece = SMP_upper3x3;
+            bind._part[0] = SMO_mat_constant_x_attrib;
+          }
+          else {
+            bind._part[0] = SMO_vec_constant_x_attrib;
+            if (dim[2] == 1) {
+              bind._piece = SMP_row3x1;
+            }
+            else if (dim[2] == 2) {
+              bind._piece = SMP_row3x2;
+            }
+            else if (dim[2] == 3) {
+              bind._piece = SMP_row3x3;
+            }
+            else {
+              bind._piece = SMP_row3;
+            }
+          }
+          bind._arg[0] = fqname;
+          bind._part[1] = SMO_identity;
+          bind._arg[1] = nullptr;
+        }
+        cp_add_mat_spec(bind);
+        continue;
+      }
+
+      // Otherwise, recurse.
       if (!bind_parameter(fqname, member.type, location + i)) {
         success = false;
       }

@@ -461,6 +461,50 @@ def test_glsl_struct_array(gsg):
     })
 
 
+def test_glsl_light(gsg):
+    preamble = """
+    uniform struct p3d_LightSourceParameters {
+        vec4 color;
+        vec3 ambient;
+        vec4 diffuse;
+        vec4 specular;
+        vec3 position;
+        vec4 halfVector;
+        vec4 spotDirection;
+        float spotCutoff;
+        float spotCosCutoff;
+        float spotExponent;
+        vec3 attenuation;
+        float constantAttenuation;
+        float linearAttenuation;
+        float quadraticAttenuation;
+    } plight;
+    """
+    code = """
+    assert(plight.color == vec4(1, 2, 3, 4));
+    assert(plight.ambient == vec3(0, 0, 0));
+    assert(plight.diffuse == vec4(1, 2, 3, 4));
+    assert(plight.specular == vec4(5, 6, 7, 8));
+    assert(plight.position == vec3(9, 10, 11));
+    assert(plight.spotCutoff == 180);
+    assert(plight.spotCosCutoff == -1);
+    assert(plight.spotExponent == 0);
+    assert(plight.attenuation == vec3(12, 13, 14));
+    assert(plight.constantAttenuation == 12);
+    assert(plight.linearAttenuation == 13);
+    assert(plight.quadraticAttenuation == 14);
+    """
+    plight = core.PointLight("plight")
+    plight.color = (1, 2, 3, 4)
+    plight.specular_color = (5, 6, 7, 8)
+    plight.transform = core.TransformState.make_pos((9, 10, 11))
+    plight.attenuation = (12, 13, 14)
+
+    run_glsl_test(gsg, code, preamble, {
+        'plight': core.NodePath(plight),
+    })
+
+
 def test_glsl_write_extract_image_buffer(gsg):
     # Tests that we can write to a buffer texture on the GPU, and then extract
     # the data on the CPU.  We test two textures since there was in the past a
