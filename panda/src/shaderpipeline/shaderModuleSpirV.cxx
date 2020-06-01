@@ -802,6 +802,7 @@ strip() const {
   InstructionStream copy(words, 5);
 
   // Copy all non-debug instructions to the new vector.
+  words += 5;
   while (words < end) {
     uint16_t wcount = words[0] >> SpvWordCountShift;
     SpvOp opcode = (SpvOp)(words[0] & SpvOpCodeMask);
