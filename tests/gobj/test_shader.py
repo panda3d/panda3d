@@ -62,7 +62,7 @@ def test_shader_load_compute(vfs, ramdir):
     comp_file = Filename(ramdir, "shader.glsl")
 
     # Now write some actual content to the shader file.
-    vfs.write_file(comp_file, b"#version 100\nvoid main() {}\n", False)
+    vfs.write_file(comp_file, b"#version 420\nvoid main() {}\n", False)
 
     shad1 = Shader.load_compute(Shader.SL_GLSL, comp_file)
     assert shad1 is not None
@@ -76,7 +76,7 @@ def test_shader_load_compute(vfs, ramdir):
     # After waiting a second to make the timestamp different, modify the
     # shader and load again, it should result in a different object now
     time.sleep(1.0)
-    vfs.write_file(comp_file, b"#version 110\nvoid main() {}\n", False)
+    vfs.write_file(comp_file, b"#version 420\nuniform int a;void main() {}\n", False)
 
     shad2 = Shader.load_compute(Shader.SL_GLSL, comp_file)
 

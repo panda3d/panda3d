@@ -42,7 +42,7 @@ void main() {{
 """
 
 
-def run_glsl_test(gsg, body, preamble="", inputs={}, version=150, exts=set()):
+def run_glsl_test(gsg, body, preamble="", inputs={}, version=420, exts=set()):
     """ Runs a GLSL test on the given GSG.  The given body is executed in the
     main function and should call assert().  The preamble should contain all
     of the shader inputs. """
@@ -69,7 +69,8 @@ def run_glsl_test(gsg, body, preamble="", inputs={}, version=150, exts=set()):
     code = GLSL_COMPUTE_TEMPLATE.format(version=version, extensions=extensions, preamble=preamble, body=body)
     line_offset = code[:code.find(body)].count('\n') + 1
     shader = core.Shader.make_compute(core.Shader.SL_GLSL, code)
-    assert shader, code
+    if not shader:
+        pytest.fail("error compiling shader:\n" + code)
 
     # Create a buffer to hold the results of the assertion.  We use one byte
     # per line of shader code, so we can show which lines triggered.
@@ -109,6 +110,10 @@ def run_glsl_test(gsg, body, preamble="", inputs={}, version=150, exts=set()):
 def run_glsl_compile_check(gsg, vert_path, frag_path, expect_fail=False):
     """Compile supplied GLSL shader paths and check for errors"""
     shader = core.Shader.load(core.Shader.SL_GLSL, vert_path, frag_path)
+    if expect_fail:
+        assert shader is None
+        return
+
     assert shader is not None
 
     shader.prepare_now(gsg.prepared_objects, gsg)
@@ -192,9 +197,7 @@ def test_glsl_ssbo(gsg):
     assert(value2 == -1234567);
     """
     run_glsl_test(gsg, code, preamble, {'buffer1': buffer1, 'buffer2': buffer2},
-                  exts={'GL_ARB_shader_storage_buffer_object',
-                        'GL_ARB_uniform_buffer_object',
-                        'GL_ARB_shading_language_420pack'})
+                  version=430)
 
 
 def test_glsl_int(gsg):
@@ -387,6 +390,30 @@ def test_glsl_param_ivec4(gsg):
     assert(param.w == 3);
     """
     run_glsl_test(gsg, code, preamble, {'param': param})
+
+
+def test_glsl_struct(gsg):
+    preamble = """
+    uniform struct TestStruct {
+        vec3 a;
+        float b;
+        sampler2D c;
+        vec2 d;
+        sampler2D e;
+    } test;
+    """
+    code = """
+    assert(test.a == vec3(1, 2, 3));
+    assert(test.b == 4);
+    assert(test.d == vec2(5, 6));
+    """
+    run_glsl_test(gsg, code, preamble, {
+        'test.a': (1, 2, 3),
+        'test.b': 4,
+        'test.c': core.Texture(),
+        'test.d': (5, 6),
+        'test.e': core.Texture(),
+    })
 
 
 def test_glsl_write_extract_image_buffer(gsg):
