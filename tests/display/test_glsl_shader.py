@@ -398,6 +398,7 @@ def test_glsl_struct(gsg):
         vec3 a;
         float b;
         sampler2D c;
+        float unused;
         vec2 d;
         sampler2D e;
     } test;
@@ -405,14 +406,58 @@ def test_glsl_struct(gsg):
     code = """
     assert(test.a == vec3(1, 2, 3));
     assert(test.b == 4);
-    assert(test.d == vec2(5, 6));
+    assert(texture(test.c, vec2(0, 0)).r == 5);
+    assert(test.d == vec2(6, 7));
+    assert(texture(test.e, vec2(0, 0)).r == 8);
     """
+    tex_c = core.Texture()
+    tex_c.setup_2d_texture(1, 1, core.Texture.T_float, core.Texture.F_r32)
+    tex_c.set_clear_color((5, 0, 0, 0))
+    tex_d = core.Texture()
+    tex_d.setup_2d_texture(1, 1, core.Texture.T_float, core.Texture.F_r32)
+    tex_d.set_clear_color((8, 0, 0, 0))
     run_glsl_test(gsg, code, preamble, {
+        'test.unused': 0,
         'test.a': (1, 2, 3),
         'test.b': 4,
-        'test.c': core.Texture(),
-        'test.d': (5, 6),
-        'test.e': core.Texture(),
+        'test.c': tex_c,
+        'test.d': (6, 7),
+        'test.e': tex_d,
+    })
+
+
+def test_glsl_struct_array(gsg):
+    preamble = """
+    uniform struct TestStruct {
+        vec3 a;
+        sampler2D b;
+        float unused;
+        float c;
+    } test[2];
+    """
+    code = """
+    assert(test[0].a == vec3(1, 2, 3));
+    assert(texture(test[0].b, vec2(0, 0)).r == 4);
+    assert(test[0].c == 5);
+    assert(test[1].a == vec3(6, 7, 8));
+    assert(texture(test[1].b, vec2(0, 0)).r == 9);
+    assert(test[1].c == 10);
+    """
+    tex_0_b = core.Texture()
+    tex_0_b.setup_2d_texture(1, 1, core.Texture.T_float, core.Texture.F_r32)
+    tex_0_b.set_clear_color((4, 0, 0, 0))
+    tex_1_b = core.Texture()
+    tex_1_b.setup_2d_texture(1, 1, core.Texture.T_float, core.Texture.F_r32)
+    tex_1_b.set_clear_color((9, 0, 0, 0))
+    run_glsl_test(gsg, code, preamble, {
+        'test[0].unused': 0,
+        'test[0].a': (1, 2, 3),
+        'test[0].b': tex_0_b,
+        'test[0].c': 5,
+        'test[1].unused': 0,
+        'test[1].a': (6, 7, 8),
+        'test[1].b': tex_1_b,
+        'test[1].c': 10,
     })
 
 
