@@ -151,6 +151,35 @@ def test_nodepath_python_tags():
     assert rc1 == rc2
 
 
+def test_nodepath_clear_python_tag():
+    from panda3d.core import NodePath
+
+    path = NodePath("node")
+    assert not path.has_python_tag("a")
+    assert not path.has_python_tag("b")
+    assert not path.node().has_tags()
+
+    path.set_python_tag("a", "value")
+    assert path.has_python_tag("a")
+    assert not path.has_python_tag("b")
+    assert path.node().has_tags()
+
+    path.set_python_tag("b", "value")
+    assert path.has_python_tag("a")
+    assert path.has_python_tag("b")
+    assert path.node().has_tags()
+
+    path.clear_python_tag("a")
+    assert not path.has_python_tag("a")
+    assert path.has_python_tag("b")
+    assert path.node().has_tags()
+
+    path.clear_python_tag("b")
+    assert not path.has_python_tag("a")
+    assert not path.has_python_tag("b")
+    assert not path.node().has_tags()
+
+
 def test_nodepath_replace_texture():
     from panda3d.core import NodePath, Texture
 
