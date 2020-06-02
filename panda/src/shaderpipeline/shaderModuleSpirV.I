@@ -92,6 +92,34 @@ begin() {
 }
 
 /**
+ * Returns an iterator to the beginning of the annotations block.
+ */
+INLINE ShaderModuleSpirV::InstructionIterator ShaderModuleSpirV::InstructionStream::
+begin_annotations() {
+  iterator it;
+  for (it = begin(); it != end(); ++it) {
+    SpvOp opcode = (*it).opcode;
+    if (opcode != SpvOpNop &&
+        opcode != SpvOpCapability &&
+        opcode != SpvOpExtension &&
+        opcode != SpvOpExtInstImport &&
+        opcode != SpvOpMemoryModel &&
+        opcode != SpvOpEntryPoint &&
+        opcode != SpvOpExecutionMode &&
+        opcode != SpvOpString &&
+        opcode != SpvOpSourceExtension &&
+        opcode != SpvOpSource &&
+        opcode != SpvOpSourceContinued &&
+        opcode != SpvOpName &&
+        opcode != SpvOpMemberName &&
+        opcode != SpvOpModuleProcessed) {
+      break;
+    }
+  }
+  return it;
+}
+
+/**
  * Returns an iterator past the end of the instruction stream.
  */
 INLINE ShaderModuleSpirV::InstructionIterator ShaderModuleSpirV::InstructionStream::

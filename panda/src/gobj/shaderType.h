@@ -68,6 +68,7 @@ PUBLISHED:
   static const ShaderType::Sampler *sampler_type;
 
 public:
+  virtual bool is_aggregate_type() const { return false; }
   virtual bool as_scalar_type(ScalarType &type,
                               uint32_t &num_elements,
                               uint32_t &num_rows,
@@ -233,6 +234,7 @@ public:
 
   virtual int get_num_parameter_locations() const override;
 
+  bool is_aggregate_type() const override { return true; }
   const Struct *as_struct() const override { return this; }
 
 PUBLISHED:
@@ -278,6 +280,7 @@ public:
 
   virtual int get_num_parameter_locations() const override;
 
+  bool is_aggregate_type() const override { return true; }
   const Array *as_array() const override { return this; }
 
 PUBLISHED:

@@ -43,7 +43,7 @@ ShaderModuleSpirV(Stage stage, const uint32_t *words, size_t size) :
   for (uint32_t id = 0; id < defs.size(); ++id) {
     Definition &def = defs[id];
     if (def._dtype == DT_type && def._name == "$Global") {
-      unwrap_uniform_block(defs, id);
+      flatten_struct(defs, id);
     }
   }
 
@@ -480,35 +480,9 @@ assign_locations(Definitions &defs) {
     return;
   }
 
-  // Find the end of the annotation block, so that we know where to insert the
-  // new locations.
-  InstructionIterator it;
-  for (it = _instructions.begin(); it != _instructions.end(); ++it) {
-    SpvOp opcode = (*it).opcode;
-    if (opcode != SpvOpNop &&
-        opcode != SpvOpCapability &&
-        opcode != SpvOpExtension &&
-        opcode != SpvOpExtInstImport &&
-        opcode != SpvOpMemoryModel &&
-        opcode != SpvOpEntryPoint &&
-        opcode != SpvOpExecutionMode &&
-        opcode != SpvOpString &&
-        opcode != SpvOpSourceExtension &&
-        opcode != SpvOpSource &&
-        opcode != SpvOpSourceContinued &&
-        opcode != SpvOpName &&
-        opcode != SpvOpMemberName &&
-        opcode != SpvOpModuleProcessed &&
-        opcode != SpvOpDecorate &&
-        opcode != SpvOpMemberDecorate &&
-        opcode != SpvOpGroupDecorate &&
-        opcode != SpvOpGroupMemberDecorate &&
-        opcode != SpvOpDecorationGroup) {
-      break;
-    }
-  }
-
-  // Now insert decorations for every unassigned variable.
+  // Insert decorations for every unassigned variable at the beginning of the
+  // annotations block.
+  InstructionIterator it = _instructions.begin_annotations();
   for (uint32_t id = 0; id < defs.size(); ++id) {
     Definition &def = defs[id];
     if (def._dtype == DT_variable &&
@@ -613,11 +587,11 @@ remap_locations(SpvStorageClass storage_class, const pmap<int, int> &locations) 
 }
 
 /**
- * Converts the variables in the uniform block with the given ID to regular
+ * Converts the members of the struct type with the given ID to regular
  * variables.
  */
 void ShaderModuleSpirV::
-unwrap_uniform_block(Definitions &defs, uint32_t type_id) {
+flatten_struct(Definitions &defs, uint32_t type_id) {
   const ShaderType::Struct *struct_type;
   DCAST_INTO_V(struct_type, defs[type_id]._type);
 
@@ -645,6 +619,7 @@ unwrap_uniform_block(Definitions &defs, uint32_t type_id) {
     case SpvOpTypeStruct:
       // Delete the struct definition itself.
       if (op.nargs >= 1 && op.args[0] == type_id) {
+        defs[type_id].clear();
         it = _instructions.erase(it);
         continue;
       }
@@ -654,13 +629,7 @@ unwrap_uniform_block(Definitions &defs, uint32_t type_id) {
       if (op.nargs >= 3 && op.args[2] == type_id) {
         // Remember this pointer.
         deleted_ids.insert(op.args[0]);
-
-        //if ((SpvStorageClass)op.args[1] == SpvStorageClassUniform) {
-        //  // Change storage class to UniformConstant.
-        //  op.args[1] = SpvStorageClassUniformConstant;
-        //  defs[op.args[0]]._storage_class = SpvStorageClassUniformConstant;
-        //}
-
+        defs[op.args[0]].clear();
         it = _instructions.erase(it);
         continue;
       }
@@ -670,8 +639,13 @@ unwrap_uniform_block(Definitions &defs, uint32_t type_id) {
       if (op.nargs >= 3 && deleted_ids.count(op.args[0])) {
         // Delete this variable entirely, and replace it instead with individual
         // variable definitions for all its members.
-        deleted_ids.insert(op.args[1]);
+        uint32_t struct_var_id = op.args[1];
+        int struct_location = defs[struct_var_id]._location;
+        deleted_ids.insert(struct_var_id);
         it = _instructions.erase(it);
+
+        std::string struct_var_name = std::move(defs[struct_var_id]._name);
+        defs[struct_var_id].clear();
 
         for (size_t mi = 0; mi < struct_type->get_num_members(); ++mi) {
           const ShaderType::Struct::Member &member = struct_type->get_member(mi);
@@ -710,7 +684,16 @@ unwrap_uniform_block(Definitions &defs, uint32_t type_id) {
           ++it;
 
           defs.push_back(Definition());
-          defs[variable_id]._name = member.name;
+          if (struct_var_name.empty()) {
+            defs[variable_id]._name = member.name;
+          } else {
+            defs[variable_id]._name = struct_var_name + "." + member.name;
+          }
+          if (struct_location >= 0) {
+            // Assign decorations to the individual members.
+            int location = struct_location + mi;
+            defs[variable_id]._location = location;
+          }
           defs[variable_id].set_variable(member.type, SpvStorageClassUniformConstant);
 
           member_ids[mi] = variable_id;
@@ -737,7 +720,8 @@ unwrap_uniform_block(Definitions &defs, uint32_t type_id) {
       break;
 
     case SpvOpLoad:
-      // Shouldn't be loading the struct directly.
+      // If this triggers, the struct is being loaded into another variable,
+      // which means we can't unwrap this (for now).
       nassertv(!deleted_ids.count(op.args[2]));
 
       if (deleted_access_chains.count(op.args[2])) {
@@ -759,6 +743,16 @@ unwrap_uniform_block(Definitions &defs, uint32_t type_id) {
     }
 
     ++it;
+  }
+
+  // Insert decorations for the individual members.
+  it = _instructions.begin_annotations();
+  for (uint32_t var_id : member_ids) {
+    int location = defs[var_id]._location;
+    if (location >= 0) {
+      it = _instructions.insert(it,
+        SpvOpDecorate, {var_id, SpvDecorationLocation, (uint32_t)location});
+    }
   }
 
   // Go over it again now that we know the deleted IDs, to remove any
@@ -936,4 +930,18 @@ set_constant(const ShaderType *type, const uint32_t *words, uint32_t nwords) {
   } else {
     _constant = 0;
   }
+}
+
+/**
+ * Clears this definition, in case it has just been removed.
+ */
+void ShaderModuleSpirV::Definition::
+clear() {
+  _dtype = DT_none;
+  _name.clear();
+  _type = nullptr;
+  _location = -1;
+  _builtin = SpvBuiltInMax;
+  _constant = 0;
+  _member_names.clear();
 }

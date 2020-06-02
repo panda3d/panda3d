@@ -77,6 +77,7 @@ protected:
     InstructionStream strip() const;
 
     INLINE iterator begin();
+    INLINE iterator begin_annotations();
     INLINE iterator end();
     INLINE iterator insert(iterator &it, SpvOp opcode, std::initializer_list<uint32_t > args);
     INLINE iterator insert(iterator &it, SpvOp opcode, const uint32_t *args, uint16_t nargs);
@@ -125,6 +126,8 @@ protected:
     void set_type_pointer(SpvStorageClass storage_class, const ShaderType *type);
     void set_variable(const ShaderType *type, SpvStorageClass storage_class);
     void set_constant(const ShaderType *type, const uint32_t *words, uint32_t nwords);
+
+    void clear();
   };
   typedef pvector<Definition> Definitions;
 
@@ -136,8 +139,10 @@ private:
   void assign_locations(Definitions &defs);
   void remap_locations(SpvStorageClass storage_class, const pmap<int, int> &locations);
 
-  void unwrap_uniform_block(Definitions &defs, uint32_t type_id);
+  void flatten_struct(Definitions &defs, uint32_t type_id);
   void strip();
+
+  int _index;
 
 public:
   static TypeHandle get_class_type() {

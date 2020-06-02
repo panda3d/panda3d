@@ -1713,7 +1713,8 @@ do_load_source(ShaderModule::Stage stage, const std::string &source, BamCacheRec
 bool Shader::
 link() {
   // Go through all the modules to fetch the parameters.
-  pmap<CPT_InternalName, const ShaderModule::Variable *> parameters;
+  pmap<CPT_InternalName, const ShaderModule::Variable *> parameters_by_name;
+  pvector<const ShaderModule::Variable *> parameters;
   BitArray used_locations;
 
   for (COWPT(ShaderModule) &cow_module : _modules) {
@@ -1721,7 +1722,7 @@ link() {
     pmap<int, int> remap;
 
     for (const ShaderModule::Variable &var : module->_parameters) {
-      const auto result = parameters.insert({var.name, &var});
+      const auto result = parameters_by_name.insert({var.name, &var});
       const auto &it = result.first;
 
       if (!result.second) {
@@ -1730,16 +1731,23 @@ link() {
         const ShaderModule::Variable &other = *(it->second);
         if (other.type != var.type) {
           shader_cat.error()
-            << "Parameter " << var.name << " in module " << *module
+            << "Parameter " << *var.name << " in module " << *module
             << " is declared in another stage with a mismatching type!\n";
           return false;
         }
 
-        if (it->second->get_location() != var.get_location()) {
-          // Different location; need to remap this.
-          remap[var.get_location()] = it->second->get_location();
+        // Aggregate types don't seem to work properly when sharing uniforms
+        // between shader stages.  Needs revisiting.
+        if (!var.type->is_aggregate_type()) {
+          if (it->second->get_location() != var.get_location()) {
+            // Different location; need to remap this.
+            remap[var.get_location()] = it->second->get_location();
+          }
+          continue;
         }
-      } else if (var.has_location()) {
+      }
+
+      if (var.has_location()) {
         // Check whether the locations occupied by this variable are already in
         // use by another stage.
         int num_locations = var.type->get_num_parameter_locations();
@@ -1759,6 +1767,7 @@ link() {
           used_locations.set_range(var.get_location(), num_locations);
         }
       }
+      parameters.push_back(&var);
     }
 
     if (!remap.empty()) {
@@ -1781,10 +1790,8 @@ link() {
 
   // Now bind all of the parameters.
   bool success = true;
-  for (const auto &pair : parameters) {
-    const ShaderModule::Variable &var = *pair.second;
-
-    if (!bind_parameter(var.name, var.type, var.get_location())) {
+  for (const ShaderModule::Variable *var : parameters) {
+    if (!bind_parameter(var->name, var->type, var->get_location())) {
       success = false;
     }
   }
