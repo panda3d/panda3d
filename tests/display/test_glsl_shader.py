@@ -42,7 +42,8 @@ void main() {{
 """
 
 
-def run_glsl_test(gsg, body, preamble="", inputs={}, version=420, exts=set()):
+def run_glsl_test(gsg, body, preamble="", inputs={}, version=420, exts=set(),
+                  state=core.RenderState.make_empty()):
     """ Runs a GLSL test on the given GSG.  The given body is executed in the
     main function and should call assert().  The preamble should contain all
     of the shader inputs. """
@@ -84,11 +85,12 @@ def run_glsl_test(gsg, body, preamble="", inputs={}, version=420, exts=set()):
     for name, value in inputs.items():
         attrib = attrib.set_shader_input(name, value)
     attrib = attrib.set_shader_input('_triggered', result)
+    state = state.set_attrib(attrib)
 
     # Run the compute shader.
     engine = core.GraphicsEngine.get_global_ptr()
     try:
-        engine.dispatch_compute((1, 1, 1), attrib, gsg)
+        engine.dispatch_compute((1, 1, 1), state, gsg)
     except AssertionError as exc:
         assert False, "Error executing compute shader:\n" + code
 
@@ -177,6 +179,7 @@ def test_glsl_image(gsg):
     run_glsl_test(gsg, code, preamble, {'tex1': tex1, 'tex2': tex2})
 
 
+@pytest.mark.xfail(reason="not yet implemented")
 def test_glsl_ssbo(gsg):
     from struct import pack
     num1 = pack('<i', 1234567)
@@ -236,6 +239,7 @@ def test_glsl_uint(gsg):
     run_glsl_test(gsg, code, preamble, inputs)
 
 
+@pytest.mark.xfail(reason="https://github.com/KhronosGroup/SPIRV-Tools/issues/3387")
 def test_glsl_bool(gsg):
     flags = dict(
         flag1=False,
@@ -503,6 +507,75 @@ def test_glsl_light(gsg):
     run_glsl_test(gsg, code, preamble, {
         'plight': core.NodePath(plight),
     })
+
+
+def test_glsl_state_light(gsg):
+    preamble = """
+    uniform struct p3d_LightSourceParameters {
+        vec4 color;
+        vec3 ambient;
+        vec4 diffuse;
+        vec4 specular;
+        vec4 position;
+        vec4 halfVector;
+        vec4 spotDirection;
+        float spotCutoff;
+        float spotCosCutoff;
+        float spotExponent;
+        vec3 attenuation;
+        float constantAttenuation;
+        float linearAttenuation;
+        float quadraticAttenuation;
+    } p3d_LightSource[2];
+    """
+    code = """
+    assert(p3d_LightSource[0].color == vec4(1, 2, 3, 4));
+    assert(p3d_LightSource[0].ambient == vec3(0, 0, 0));
+    assert(p3d_LightSource[0].diffuse == vec4(1, 2, 3, 4));
+    assert(p3d_LightSource[0].specular == vec4(5, 6, 7, 8));
+    assert(p3d_LightSource[0].position == vec4(9, 10, 11, 1));
+    assert(p3d_LightSource[0].spotCutoff == 180);
+    assert(p3d_LightSource[0].spotCosCutoff == -1);
+    assert(p3d_LightSource[0].spotExponent == 0);
+    assert(p3d_LightSource[0].attenuation == vec3(12, 13, 14));
+    assert(p3d_LightSource[0].constantAttenuation == 12);
+    assert(p3d_LightSource[0].linearAttenuation == 13);
+    assert(p3d_LightSource[0].quadraticAttenuation == 14);
+    assert(p3d_LightSource[1].color == vec4(15, 16, 17, 18));
+    assert(p3d_LightSource[1].ambient == vec3(0, 0, 0));
+    assert(p3d_LightSource[1].diffuse == vec4(15, 16, 17, 18));
+    assert(p3d_LightSource[1].specular == vec4(19, 20, 21, 22));
+    assert(p3d_LightSource[1].position == vec4(0, 1, 0, 0));
+    assert(p3d_LightSource[1].spotCutoff == 180);
+    assert(p3d_LightSource[1].spotCosCutoff == -1);
+    assert(p3d_LightSource[1].spotExponent == 0);
+    assert(p3d_LightSource[1].attenuation == vec3(1, 0, 0));
+    assert(p3d_LightSource[1].constantAttenuation == 1);
+    assert(p3d_LightSource[1].linearAttenuation == 0);
+    assert(p3d_LightSource[1].quadraticAttenuation == 0);
+    """
+    plight = core.PointLight("plight")
+    plight.priority = 0
+    plight.color = (1, 2, 3, 4)
+    plight.specular_color = (5, 6, 7, 8)
+    plight.transform = core.TransformState.make_pos((9, 10, 11))
+    plight.attenuation = (12, 13, 14)
+    plight_path = core.NodePath(plight)
+
+    dlight = core.DirectionalLight("dlight")
+    dlight.priority = -1
+    dlight.direction = (0, -1, 0)
+    dlight.color = (15, 16, 17, 18)
+    dlight.specular_color = (19, 20, 21, 22)
+    dlight.transform = core.TransformState.make_pos((23, 24, 25))
+    dlight_path = core.NodePath(dlight)
+
+    lattr = core.LightAttrib.make()
+    lattr = lattr.add_on_light(plight_path)
+    lattr = lattr.add_on_light(dlight_path)
+    state = core.RenderState.make(lattr)
+
+    run_glsl_test(gsg, code, preamble, state=state)
 
 
 def test_glsl_write_extract_image_buffer(gsg):
