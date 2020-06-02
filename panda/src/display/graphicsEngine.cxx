@@ -1184,14 +1184,14 @@ extract_texture_data(Texture *tex, GraphicsStateGuardian *gsg) {
  * The return value is true if the operation is successful, false otherwise.
  */
 void GraphicsEngine::
-dispatch_compute(const LVecBase3i &work_groups, const ShaderAttrib *sattr, GraphicsStateGuardian *gsg) {
+dispatch_compute(const LVecBase3i &work_groups, const RenderState *state, GraphicsStateGuardian *gsg) {
+  const ShaderAttrib *sattr;
+  state->get_attrib_def(sattr);
   const Shader *shader = sattr->get_shader();
   nassertv(shader != nullptr);
   nassertv(gsg != nullptr);
 
   ReMutexHolder holder(_lock);
-
-  CPT(RenderState) state = RenderState::make(sattr);
 
   string draw_name = gsg->get_threading_model().get_draw_name();
   if (draw_name.empty()) {
@@ -1219,7 +1219,7 @@ dispatch_compute(const LVecBase3i &work_groups, const ShaderAttrib *sattr, Graph
 
     // Now that the draw thread is idle, signal it to do the compute task.
     thread->_gsg = gsg;
-    thread->_state = state.p();
+    thread->_state = state;
     thread->_work_groups = work_groups;
     thread->_thread_state = TS_do_compute;
     thread->_cv_start.notify();
