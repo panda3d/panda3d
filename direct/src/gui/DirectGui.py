@@ -24,5 +24,6 @@ from .DirectSlider import *
 from .DirectScrollBar import *
 from .DirectScrolledFrame import *
 from .DirectCheckButton import *
+from .DirectCheckBox import *
 from .DirectOptionMenu import *
 from .DirectRadioButton import *
