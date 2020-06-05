@@ -266,7 +266,7 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
   _color_attrib_index = -1;
   _transform_table_index = -1;
   _slider_table_index = -1;
-  _frame_number_loc = -1;
+  _frame_number_loc = s->_frame_number_loc;
   _frame_number = -1;
   _validated = !gl_validate_shaders;
 

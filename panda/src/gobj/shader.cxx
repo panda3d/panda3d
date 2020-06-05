@@ -2155,7 +2155,7 @@ bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
             continue;
           }
         } else if (member.name == "metallic") {
-          if (member.type == ::ShaderType::bool_type &&
+          if (member.type == ::ShaderType::bool_type ||
               member.type == ::ShaderType::float_type) {
             bind._part[0] = SMO_attr_material2;
             bind._piece = SMP_row3x1;
@@ -2317,6 +2317,57 @@ bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
     }
 
     return report_parameter_error(name, type, "unrecognized parameter name");
+  }
+  else if (pieces[0] == "osg" && _language == SL_GLSL) {
+    if (!expect_num_words(name, type, 2)) {
+      return false;
+    }
+
+    // These inputs are supported by OpenSceneGraph.  We can support them as
+    // well, to increase compatibility.
+    ShaderMatSpec bind;
+    bind._id = arg_id;
+    bind._arg[0] = nullptr;
+    bind._arg[1] = nullptr;
+
+    if (pieces[1] == "ViewMatrix") {
+      bind._piece = SMP_whole;
+      bind._func = SMF_compose;
+      bind._part[0] = SMO_world_to_view;
+      bind._part[1] = SMO_view_to_apiview;
+    }
+    else if (pieces[1] == "InverseViewMatrix" || pieces[1] == "ViewMatrixInverse") {
+      bind._piece = SMP_whole;
+      bind._func = SMF_compose;
+      bind._part[0] = SMO_apiview_to_view;
+      bind._part[1] = SMO_view_to_world;
+    }
+    else if (pieces[1] == "FrameTime") {
+      bind._piece = SMP_row3x1;
+      bind._func = SMF_first;
+      bind._part[0] = SMO_frame_time;
+      bind._part[1] = SMO_identity;
+    }
+    else if (pieces[1] == "DeltaFrameTime") {
+      bind._piece = SMP_row3x1;
+      bind._func = SMF_first;
+      bind._part[0] = SMO_frame_delta;
+      bind._part[1] = SMO_identity;
+    }
+    else if (pieces[1] == "FrameNumber") {
+      if (type == ::ShaderType::int_type) {
+        _frame_number_loc = location;
+        return true;
+      } else {
+        return report_parameter_error(name, type, "expected int");
+      }
+    }
+    else {
+      return report_parameter_error(name, type, "unrecognized parameter name");
+    }
+
+    cp_add_mat_spec(bind);
+    return true;
   }
 
   // Check for mstrans, wstrans, vstrans, cstrans, mspos, wspos, vspos, cspos

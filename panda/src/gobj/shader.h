@@ -533,6 +533,7 @@ public:
   pvector<ShaderMatPart> _mat_parts;
   int _mat_deps = 0;
   int _mat_cache_size = 0;
+  int _frame_number_loc = -1;
 
   bool _error_flag;
   ShaderFile _text;
