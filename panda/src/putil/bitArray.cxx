@@ -114,6 +114,11 @@ has_any_of(int low_bit, int size) const {
   ++w;
 
   while (size > 0) {
+    if ((size_t)w >= get_num_words()) {
+      // Now we're up to the highest bits.
+      return (_highest_bits != 0);
+    }
+
     if (size <= num_bits_per_word) {
       // The remainder fits within one word of the array.
       return _array[w].has_any_of(0, size);
@@ -125,11 +130,6 @@ has_any_of(int low_bit, int size) const {
     }
     size -= num_bits_per_word;
     ++w;
-
-    if (w >= (int)get_num_words()) {
-      // Now we're up to the highest bits.
-      return (_highest_bits != 0);
-    }
   }
 
   return false;
