@@ -1919,7 +1919,8 @@ bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
 
   if (shader_cat.is_debug()) {
     shader_cat.debug()
-      << "Binding parameter " << name_str << " with type " << *type << "\n";
+      << "Binding parameter " << name_str << " with type " << *type
+      << " (location=" << location << ")\n";
   }
 
   ShaderArgId arg_id;
@@ -2277,12 +2278,40 @@ bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
           bind._id = arg_id;
           bind._id._name = fqname->get_name();
           bind._func = SMF_first;
+          bind._part[0] = SMO_light_source_i_attrib;
+          bind._arg[0] = InternalName::make(member.name);
+          bind._part[1] = SMO_identity;
+          bind._arg[1] = nullptr;
           if (member.name == "shadowViewMatrix" || member.name == "shadowViewMatrixInverse") {
             if (!expect_float_matrix(fqname, member.type, 4, 4)) {
               return false;
             }
             bind._piece = SMP_whole;
-          } else {
+          }
+          else if (member.name == "shadowMatrix") {
+            // Only supported for backward compatibility: includes the model
+            // matrix.  Not very efficient to do this.
+            if (!expect_float_matrix(fqname, member.type, 4, 4)) {
+              return false;
+            }
+
+            bind._func = SMF_compose;
+            bind._piece = SMP_whole;
+            bind._part[0] = SMO_model_to_apiview;
+            bind._arg[0] = nullptr;
+            bind._part[1] = SMO_light_source_i_attrib;
+            bind._arg[1] = InternalName::make("shadowViewMatrix");
+
+            static bool warned = false;
+            if (!warned) {
+              warned = true;
+              shader_cat.warning()
+                << "p3d_LightSource[].shadowMatrix is deprecated; use "
+                   "shadowViewMatrix instead, which transforms from view space "
+                   "instead of model space.\n";
+            }
+          }
+          else {
             if (!expect_float_vector(fqname, member.type, 1, 4)) {
               return false;
             }
@@ -2299,11 +2328,11 @@ bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
             else {
               bind._piece = SMP_row3;
             }
+            bind._part[0] = SMO_light_source_i_attrib;
+            bind._arg[0] = InternalName::make(member.name);
+            bind._part[1] = SMO_identity;
+            bind._arg[1] = nullptr;
           }
-          bind._part[0] = SMO_light_source_i_attrib;
-          bind._arg[0] = InternalName::make(member.name);
-          bind._part[1] = SMO_identity;
-          bind._arg[1] = nullptr;
           for (bind._index = 0; bind._index < array->get_num_elements(); ++bind._index) {
             cp_add_mat_spec(bind);
             bind._id._seqno += num_members;
@@ -2467,19 +2496,39 @@ bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
     bind._func = SMF_compose;
 
     if (pieces[0] == "trans" || pieces[0] == "tpose") {
-      const ::ShaderType::Matrix *matrix = type->as_matrix();
-      if (matrix == nullptr) {
-        return report_parameter_error(name, type, "expected matrix type");
+      if (!expect_float_matrix(name, type, 4, 4)) {
+        return false;
       }
-      if (matrix->get_num_columns() >= 4 || matrix->get_num_columns() >= 4) {
+      const ::ShaderType::Matrix *matrix = type->as_matrix();
+      if (matrix->get_num_rows() == 4) {
         bind._piece = (pieces[0][2] == 'p') ? SMP_transpose : SMP_whole;
-      } else {
+      }
+      else {
         bind._piece = (pieces[0][2] == 'p') ? SMP_transpose3x3 : SMP_upper3x3;
       }
-    } else {
+    }
+    else if (pieces[0] == "row3") {
+      // We can exceptionally support row3 to have any number of components.
+      if (!expect_float_vector(name, type, 1, 4)) {
+        return false;
+      }
       const ::ShaderType::Vector *vector = type->as_vector();
-      if (vector == nullptr) {
-        return report_parameter_error(name, type, "expected vector type");
+      if (vector == nullptr || vector->get_num_components() == 1) {
+        bind._piece = SMP_row3x1;
+      }
+      else if (vector->get_num_components() == 2) {
+        bind._piece = SMP_row3x2;
+      }
+      else if (vector->get_num_components() == 3) {
+        bind._piece = SMP_row3x3;
+      }
+      else {
+        bind._piece = SMP_row3;
+      }
+    }
+    else {
+      if (!expect_float_vector(name, type, 4, 4)) {
+        return false;
       }
       if (pieces[0][0] == 'r') {
         bind._piece = (ShaderMatPiece)(SMP_row0 + (pieces[0][3] - '0'));
