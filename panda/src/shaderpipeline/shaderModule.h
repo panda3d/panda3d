@@ -77,7 +77,6 @@ public:
   const Variable &get_parameter(size_t i) const;
   int find_parameter(CPT_InternalName name) const;
 
-public:
   typedef pmap<CPT_InternalName, Variable *> VariablesByName;
 
   virtual bool link_inputs(const ShaderModule *previous);

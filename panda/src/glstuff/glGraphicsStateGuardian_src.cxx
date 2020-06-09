@@ -159,11 +159,7 @@ null_glBlendColor(GLclampf, GLclampf, GLclampf, GLclampf) {
 // drawing GUIs and such.
 static const string default_vshader =
 #ifndef OPENGLES
-#ifdef __APPLE__ // Apple's GL 3.2 contexts require at least GLSL 1.50.
   "#version 150\n"
-#else
-  "#version 130\n"
-#endif
   "in vec4 p3d_Vertex;\n"
   "in vec4 p3d_Color;\n"
   "in vec2 p3d_MultiTexCoord0;\n"
@@ -188,11 +184,7 @@ static const string default_vshader =
 #ifndef OPENGLES
 // This version of the shader is used if vertices-float64 is enabled.
 static const string default_vshader_fp64 =
-#ifdef __APPLE__
   "#version 150\n"
-#else
-  "#version 130\n"
-#endif
   "#extension GL_ARB_vertex_attrib_64bit : require\n"
   "#extension GL_ARB_gpu_shader_fp64 : require\n"
   "in dvec3 p3d_Vertex;\n"
@@ -229,11 +221,7 @@ static const string default_vshader_fp64_gl41 =
 
 static const string default_fshader =
 #ifndef OPENGLES
-#ifdef __APPLE__  // Apple's GL 3.2 contexts require at least GLSL 1.50.
   "#version 150\n"
-#else
-  "#version 130\n"
-#endif
   "in vec2 texcoord;\n"
   "in vec4 color;\n"
   "out vec4 p3d_FragColor;\n"

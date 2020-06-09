@@ -12,7 +12,6 @@
  */
 
 #include "shaderCompilerGlslang.h"
-#include "shaderModuleSpirV.h"
 #include "config_shaderpipeline.h"
 #include "virtualFile.h"
 
@@ -281,6 +280,18 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
     return nullptr;
   }
 
+  bool is_cg = false;
+  bool add_include_directive = false;
+  int glsl_version = 110;
+
+  // Is this a Cg shader or a GLSL shader?
+  if (code.size() >= 5 && strncmp((const char *)&code[0], "//Cg\n", 5) == 0) {
+    is_cg = true;
+  }
+  else if (!preprocess_glsl(code, glsl_version, add_include_directive)) {
+    return nullptr;
+  }
+
   static bool is_initialized = false;
   if (!is_initialized) {
     ShInitialize();
@@ -291,15 +302,14 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
   const int length = (int)code.size();
   const char *fname = filename.c_str();
 
-  EShMessages messages = (EShMessages)(EShMsgDefault | EShMsgDebugInfo);
+  EShMessages messages = (EShMessages)(EShMsgDefault | EShMsgSpvRules);
 
   glslang::TShader *shader = new glslang::TShader((EShLanguage)stage);
   shader->setStringsWithLengthsAndNames(&string, &length, &fname, 1);
   shader->setEntryPoint("main");
 
   // If it's marked as a Cg shader, we compile it with the HLSL front-end.
-  bool is_hlsl = false;
-  if (code.size() >= 5 && strncmp((const char *)&code[0], "//Cg\n", 5) == 0) {
+  if (is_cg) {
     shader->setEnvInput(glslang::EShSource::EShSourceHlsl, (EShLanguage)stage, glslang::EShClient::EShClientOpenGL, 120);
     switch (stage) {
     case ShaderModule::Stage::vertex:
@@ -311,6 +321,10 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
     case ShaderModule::Stage::fragment:
       shader->setSourceEntryPoint("fshader");
       break;
+    default:
+      shader_cat.error()
+        << "Cg does not support " << stage << " shaders.\n";
+      return nullptr;
     }
 
     shader->setPreamble(
@@ -319,17 +333,18 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
       "#define shadow2D(s, tc) (float4(tex2D(s, tc) > tc.z))\n"
       "#define shadow2DProj(s, tc) (float4(tex2Dproj(s, tc) > tc.z / tc.w))\n"
     );
-    is_hlsl = true;
     messages = (EShMessages)(messages | EShMsgHlslDX9Compatible | EShMsgHlslLegalization);
+  } else {
+    shader->setEnvInput(glslang::EShSource::EShSourceGlsl, (EShLanguage)stage, glslang::EShClient::EShClientOpenGL, 450);
+
+    if (add_include_directive) {
+      shader->setPreamble(
+        "#extension GL_GOOGLE_include_directive : require\n"
+      );
+    }
   }
-  //shader->setEnvInput(glslang::EShSource::EShSourceGlsl, (EShLanguage)stage, glslang::EShClient::EShClientVulkan, 430);
   shader->setEnvClient(glslang::EShClient::EShClientOpenGL, glslang::EShTargetOpenGL_450);
   shader->setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_0);
-
-  // Have the compilers assign bindings to everything--even if we will end up
-  // changing them, it's useful if there are already location assignments to
-  // overwrite so that we only have to modify instructions and not insert new
-  // ones.
 
   // This will squelch the warnings about missing bindings and locations, since
   // we can assign those ourselves.
@@ -344,13 +359,24 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
     return nullptr;
   }
 
-  glslang::TIntermediate *ir = shader->getIntermediate();
+  // I don't know why we need to pretend to link it into a program.  One would
+  // think one can just do shader->getIntermediate() and convert that to SPIR-V,
+  // but that generates shaders that are ever-so-subtly wrong.
+  glslang::TProgram program;
+  program.addShader(shader);
+
+  if (!program.link(messages)) {
+    std::cerr << "failed to link " << filename << "\n";
+    return nullptr;
+  }
+
+  glslang::TIntermediate *ir = program.getIntermediate((EShLanguage)stage);
   if (!ir) {
     std::cerr << "failed to obtain IR " << filename << ":\n";
     return nullptr;
   }
 
-  std::vector<unsigned int> spirv;
+  ShaderModuleSpirV::InstructionStream stream;
   std::string warningsErrors;
   spv::SpvBuildLogger logger;
   glslang::SpvOptions spvOptions;
@@ -359,7 +385,16 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
   spvOptions.optimizeSize = false;
   spvOptions.disassemble = false;
   spvOptions.validate = true;
-  glslang::GlslangToSpv(*ir, spirv, &logger, &spvOptions);
+  glslang::GlslangToSpv(*ir, stream, &logger, &spvOptions);
+
+  if (!stream.validate_header()) {
+    return nullptr;
+  }
+
+  // Special validation for features in GLSL 330 that are not in GLSL 150.
+  if (glsl_version == 150 && !postprocess_glsl150(stream)) {
+    return nullptr;
+  }
 
   printf("%s", logger.getAllMessages().c_str());
   /*if (Options & EOptionOutputHexadecimal) {
@@ -367,18 +402,182 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
       glslang::OutputSpvBin(spirv, GetBinaryName((EShLanguage)stage));
   }*/
 
+  // Run it through the optimizer.
   spvtools::Optimizer opt(SPV_ENV_UNIVERSAL_1_0);
   opt.SetMessageConsumer(log_message);
   opt.RegisterPerformancePasses();
 
-  if (is_hlsl) {
+  if (is_cg) {
     opt.RegisterLegalizationPasses();
   }
 
   std::vector<uint32_t> optimized;
-  if (!opt.Run(spirv.data(), spirv.size(), &optimized)) {
+  if (!opt.Run(stream.get_data(), stream.get_data_size(), &optimized)) {
     return nullptr;
   }
 
-  return new ShaderModuleSpirV(stage, optimized.data(), optimized.size());
+  return new ShaderModuleSpirV(stage, std::move(optimized));
+}
+
+/**
+ * Do some very basic preprocessing of the GLSL shader to extract the GLSL
+ * version and fix the use of #pragma include (which glslang doesn't support,
+ * but we historically did).
+ * Returns false if any errors occurred.
+ */
+bool ShaderCompilerGlslang::
+preprocess_glsl(vector_uchar &code, int &glsl_version, bool &uses_pragma_include) {
+  glsl_version = 110;
+
+  // Make sure it ends with a newline.  This makes parsing easier.
+  if (!code.empty() && code.back() != (unsigned char)'\n') {
+    code.push_back((unsigned char)'\n');
+  }
+
+  char *p = (char *)&code[0];
+  char *end = (char *)&code[0] + code.size();
+  bool has_code = false;
+
+  while (p < end) {
+    if (isspace(*p)) {
+      ++p;
+      continue;
+    }
+    if (*p == '/') {
+      // Check for comment, so that we don't pick up commented-out preprocessor
+      // directives.
+      ++p;
+      if (*p == '/') {
+        // Skip till end of line.
+        do { ++p; } while (*p != '\n');
+      }
+      else if (*p == '*') {
+        // Skip till */
+        do { ++p; } while ((p + 1) < end && (p[0] != '*' || p[1] != '/'));
+      }
+    }
+    else if (*p == '#') {
+      // Check for a preprocessor directive.
+      do { ++p; } while (isspace(*p) && *p != '\n');
+      char *directive = p;
+      do { ++p; } while (!isspace(*p));
+      size_t directive_size = p - directive;
+      do { ++p; } while (isspace(*p) && *p != '\n');
+
+      if (directive_size == 7 && strncmp(directive, "version", directive_size) == 0) {
+        glsl_version = strtol(p, &p, 10);
+
+        if (!isspace(*p)) {
+          shader_cat.error()
+            << "Invalid version number in #version directive\n";
+          return false;
+        }
+
+        if (glsl_version == 150) {
+          // glslang doesn't support 150, but it's almost identical to 330,
+          // and we have many shaders written in 150, so sneakily change
+          // the version number.  We'll do some extra validation later.
+          p[-3] = '3';
+          p[-2] = '3';
+          p[-1] = '0';
+        }
+      }
+      else if (directive_size == 6 && strncmp(directive, "pragma", directive_size) == 0) {
+        if (strncmp(p, "include", 7) == 0 && !isalnum(p[7]) && p[7] != '_') {
+          // Turn this into a normal include directive (by replacing the word
+          // "pragma" with spaces) and enable the GL_GOOGLE_include_directive
+          // extension using the preamble.
+          memset(directive, ' ', directive_size);
+          uses_pragma_include = true;
+          has_code = true;
+
+          static bool warned = false;
+          if (!warned) {
+            warned = true;
+            shader_cat.warning()
+              << "#pragma include is deprecated, use the "
+                 "GL_GOOGLE_include_directive extension instead.\n";
+          }
+        }
+      }
+      else {
+        has_code = true;
+      }
+
+      // Skip the rest of the line.
+      while (*p != '\n') { ++p; }
+    }
+    else {
+      has_code = true;
+    }
+
+    ++p;
+  }
+
+  if (!has_code) {
+    shader_cat.error()
+      << "Shader contains no code\n";
+    return false;
+  }
+
+  if (glsl_version < 330 && glsl_version != 150) {
+    if (glsl_version == 100 || glsl_version == 110 || glsl_version == 120 ||
+        glsl_version == 130 || glsl_version == 140 || glsl_version == 300) {
+      shader_cat.warning()
+        << "Support for GLSL " << glsl_version << " is deprecated.  Some "
+           "features may not work.  Minimum supported version is GLSL 330.\n";
+      return true;
+    }
+    else {
+      shader_cat.error()
+        << "Invalid GLSL version " << glsl_version << ".\n";
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/**
+ * Validates that the given SPIR-V shader does not use features that are
+ * available in GLSL 330 but not in GLSL 150.
+ */
+bool ShaderCompilerGlslang::
+postprocess_glsl150(ShaderModuleSpirV::InstructionStream &stream) {
+  bool has_bit_encoding = false;
+  bool has_explicit_location = false;
+
+  for (ShaderModuleSpirV::Instruction op : stream) {
+    if (op.opcode == SpvOpSource) {
+      // Set this back to 150.
+      if (op.nargs >= 2) {
+        op.args[1] = 150;
+      }
+    }
+    else if (op.opcode == SpvOpSourceExtension) {
+      if (strcmp((const char *)op.args, "GL_ARB_shader_bit_encoding") == 0 ||
+          strcmp((const char *)op.args, "GL_ARB_gpu_shader5") == 0) {
+        has_bit_encoding = true;
+      }
+      else if (strcmp((const char *)op.args, "GL_ARB_explicit_attrib_location") == 0) {
+        has_explicit_location = true;
+      }
+    }
+    else if (op.opcode == SpvOpDecorate && op.nargs >= 2 &&
+             (SpvDecoration)op.args[1] == SpvDecorationLocation &&
+             !has_explicit_location) {
+      shader_cat.error()
+        << "Explicit location assignments require #version 330 or "
+           "#extension GL_ARB_explicit_attrib_location\n";
+      return false;
+    }
+    else if (op.opcode == SpvOpBitcast && !has_bit_encoding) {
+      shader_cat.error()
+        << "floatBitsToInt, floatBitsToUint, intBitsToFloat, uintBitsToFloat"
+           " require #version 330 or #extension GL_ARB_shader_bit_encoding.\n";
+      return false;
+    }
+  }
+
+  return true;
 }

@@ -26,7 +26,7 @@ class ShaderType;
  */
 class EXPCL_PANDA_SHADERPIPELINE ShaderModuleSpirV final : public ShaderModule {
 public:
-  ShaderModuleSpirV(Stage stage, const uint32_t *words, size_t size);
+  ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words);
   virtual ~ShaderModuleSpirV();
 
   virtual PT(CopyOnWriteObject) make_cow_copy() override;
@@ -39,7 +39,6 @@ public:
 
   virtual std::string get_ir() const override;
 
-protected:
   class InstructionStream;
 
   struct Instruction {
@@ -72,7 +71,13 @@ protected:
   public:
     typedef InstructionIterator iterator;
 
-    INLINE InstructionStream(const uint32_t *words, size_t size);
+    InstructionStream() = default;
+    INLINE InstructionStream(const uint32_t *words, size_t num_words);
+    INLINE InstructionStream(std::vector<uint32_t> words);
+
+    bool validate_header() const;
+
+    INLINE operator std::vector<uint32_t> & ();
 
     InstructionStream strip() const;
 
@@ -87,14 +92,18 @@ protected:
     INLINE const uint32_t *get_data() const;
     INLINE size_t get_data_size() const;
 
+    INLINE uint32_t get_id_bound() const;
     INLINE uint32_t allocate_id();
 
   private:
-    pvector<uint32_t> _words;
+    // We're not using a pvector since glslang/spirv-opt are working with
+    // std::vector<uint32_t> and so we can avoid some unnecessary copies.
+    std::vector<uint32_t> _words;
   };
 
   InstructionStream _instructions;
 
+protected:
   enum DefinitionType {
     DT_none,
     DT_type,

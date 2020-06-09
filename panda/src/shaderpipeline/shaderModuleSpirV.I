@@ -79,8 +79,22 @@ InstructionIterator(uint32_t *words) : _words(words) {
 INLINE ShaderModuleSpirV::InstructionStream::
 InstructionStream(const uint32_t *words, size_t num_words) :
   _words(words, words + num_words) {
-  // We must have at least a valid header.
-  nassertv(num_words >= 5);
+}
+
+/**
+ * Initializes the instruction stream from an existing module.
+ */
+INLINE ShaderModuleSpirV::InstructionStream::
+InstructionStream(std::vector<uint32_t> words) :
+  _words(std::move(words)) {
+}
+
+/**
+ * Direct cast to the underlying vector.
+ */
+INLINE ShaderModuleSpirV::InstructionStream::
+operator std::vector<uint32_t> & () {
+  return _words;
 }
 
 /**
@@ -206,6 +220,14 @@ get_data() const {
 size_t ShaderModuleSpirV::InstructionStream::
 get_data_size() const {
   return _words.size();
+}
+
+/**
+ * Returns the number of ids allocated.
+ */
+INLINE uint32_t ShaderModuleSpirV::InstructionStream::
+get_id_bound() const {
+  return _words[3];
 }
 
 /**

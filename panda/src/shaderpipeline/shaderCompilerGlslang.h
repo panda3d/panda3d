@@ -17,6 +17,7 @@
 #include "pandabase.h"
 
 #include "shaderCompiler.h"
+#include "shaderModuleSpirV.h"
 
 /**
  * ShaderCompiler implementation that uses the libglslang library to compile
@@ -31,6 +32,10 @@ public:
   virtual PT(ShaderModule) compile_now(Stage stage, std::istream &in,
                                        const std::string &filename = "created-shader",
                                        BamCacheRecord *record = nullptr) const override;
+
+private:
+  static bool preprocess_glsl(vector_uchar &code, int &glsl_version, bool &uses_pragma_include);
+  static bool postprocess_glsl150(ShaderModuleSpirV::InstructionStream &stream);
 
 public:
   static TypeHandle get_class_type() {
