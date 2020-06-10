@@ -285,7 +285,8 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
   int glsl_version = 110;
 
   // Is this a Cg shader or a GLSL shader?
-  if (code.size() >= 5 && strncmp((const char *)&code[0], "//Cg\n", 5) == 0) {
+  if (code.size() >= 5 &&
+      strncmp((const char *)&code[0], "//Cg", 4) == 0 && isspace(code[4])) {
     is_cg = true;
   }
   else if (!preprocess_glsl(code, glsl_version, add_include_directive)) {
@@ -298,94 +299,123 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
     is_initialized = true;
   }
 
+  EShMessages messages = (EShMessages)(EShMsgDefault | EShMsgSpvRules);
+  EShLanguage language;
+  switch (stage) {
+  case ShaderModule::Stage::vertex:
+    language = EShLangVertex;
+    break;
+  case ShaderModule::Stage::tess_control:
+    language = EShLangTessControl;
+    break;
+  case ShaderModule::Stage::tess_evaluation:
+    language = EShLangTessEvaluation;
+    break;
+  case ShaderModule::Stage::geometry:
+    language = EShLangGeometry;
+    break;
+  case ShaderModule::Stage::fragment:
+    language = EShLangFragment;
+    break;
+  default:
+    shader_cat.error()
+      << "glslang compiler does not support " << stage << " shaders.\n";
+    return nullptr;
+  }
+
+  glslang::TShader shader(language);
+
   const char *string = (const char *)code.data();
   const int length = (int)code.size();
   const char *fname = filename.c_str();
-
-  EShMessages messages = (EShMessages)(EShMsgDefault | EShMsgSpvRules);
-
-  glslang::TShader *shader = new glslang::TShader((EShLanguage)stage);
-  shader->setStringsWithLengthsAndNames(&string, &length, &fname, 1);
-  shader->setEntryPoint("main");
+  shader.setStringsWithLengthsAndNames(&string, &length, &fname, 1);
+  shader.setEntryPoint("main");
 
   // If it's marked as a Cg shader, we compile it with the HLSL front-end.
   if (is_cg) {
-    shader->setEnvInput(glslang::EShSource::EShSourceHlsl, (EShLanguage)stage, glslang::EShClient::EShClientOpenGL, 120);
+    messages = (EShMessages)(messages | EShMsgHlslDX9Compatible | EShMsgHlslLegalization);
+
+    const char *source_entry_point;
     switch (stage) {
     case ShaderModule::Stage::vertex:
-      shader->setSourceEntryPoint("vshader");
+      source_entry_point = "vshader";
       break;
     case ShaderModule::Stage::geometry:
-      shader->setSourceEntryPoint("gshader");
+      source_entry_point = "gshader";
       break;
     case ShaderModule::Stage::fragment:
-      shader->setSourceEntryPoint("fshader");
+      source_entry_point = "fshader";
       break;
     default:
       shader_cat.error()
         << "Cg does not support " << stage << " shaders.\n";
       return nullptr;
     }
+    shader.setSourceEntryPoint(source_entry_point);
 
-    shader->setPreamble(
-      "#define f1tex2D(x, y) (tex2D(x, y).r)\n"
-      "#define sampler2DShadow sampler2D\n"
-      "#define shadow2D(s, tc) (float4(tex2D(s, tc) > tc.z))\n"
-      "#define shadow2DProj(s, tc) (float4(tex2Dproj(s, tc) > tc.z / tc.w))\n"
-    );
-    messages = (EShMessages)(messages | EShMsgHlslDX9Compatible | EShMsgHlslLegalization);
+    // Generate a special preamble to define some functions that Cg defines but
+    // HLSL doesn't.  This is sourced from cg_preamble.hlsl.
+    extern const char cg_preamble[];
+    shader.setPreamble(cg_preamble);
+
+    shader.setEnvInput(glslang::EShSource::EShSourceHlsl, (EShLanguage)stage, glslang::EShClient::EShClientOpenGL, 120);
   } else {
-    shader->setEnvInput(glslang::EShSource::EShSourceGlsl, (EShLanguage)stage, glslang::EShClient::EShClientOpenGL, 450);
+    shader.setEnvInput(glslang::EShSource::EShSourceGlsl, (EShLanguage)stage, glslang::EShClient::EShClientOpenGL, 450);
 
     if (add_include_directive) {
-      shader->setPreamble(
+      shader.setPreamble(
         "#extension GL_GOOGLE_include_directive : require\n"
       );
     }
   }
-  shader->setEnvClient(glslang::EShClient::EShClientOpenGL, glslang::EShTargetOpenGL_450);
-  shader->setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_0);
+  shader.setEnvClient(glslang::EShClient::EShClientOpenGL, glslang::EShTargetOpenGL_450);
+  shader.setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_0);
 
   // This will squelch the warnings about missing bindings and locations, since
   // we can assign those ourselves.
-  shader->setAutoMapBindings(true);
-  shader->setAutoMapLocations(true);
+  shader.setAutoMapBindings(true);
+  shader.setAutoMapLocations(true);
 
   Includer includer(record);
-  if (!shader->parse(&resource_limits, 110, false, messages, includer)) {
-    std::cerr << "failed to parse " << filename << ":\n";
-    std::cerr << shader->getInfoLog() << "\n";
-    std::cerr << shader->getInfoDebugLog() << "\n";
+  if (!shader.parse(&resource_limits, 110, false, messages, includer)) {
+    shader_cat.error()
+      << "Failed to parse " << filename << ":\n"
+      << shader.getInfoLog();
     return nullptr;
   }
 
   // I don't know why we need to pretend to link it into a program.  One would
   // think one can just do shader->getIntermediate() and convert that to SPIR-V,
   // but that generates shaders that are ever-so-subtly wrong.
-  glslang::TProgram program;
-  program.addShader(shader);
-
-  if (!program.link(messages)) {
-    std::cerr << "failed to link " << filename << "\n";
-    return nullptr;
-  }
-
-  glslang::TIntermediate *ir = program.getIntermediate((EShLanguage)stage);
-  if (!ir) {
-    std::cerr << "failed to obtain IR " << filename << ":\n";
-    return nullptr;
-  }
-
   ShaderModuleSpirV::InstructionStream stream;
-  std::string warningsErrors;
-  spv::SpvBuildLogger logger;
-  glslang::SpvOptions spvOptions;
-  spvOptions.generateDebugInfo = true;
-  spvOptions.disableOptimizer = false;
-  spvOptions.optimizeSize = false;
-  spvOptions.disassemble = false;
-  spvOptions.validate = true;
-  glslang::GlslangToSpv(*ir, stream, &logger, &spvOptions);
+  {
+    glslang::TProgram program;
+    program.addShader(&shader);
+    if (!program.link(messages)) {
+      shader_cat.error()
+        << "Failed to link " << filename << "\n";
+      return nullptr;
+    }
+
+    glslang::TIntermediate *ir = program.getIntermediate((EShLanguage)stage);
+    nassertr(ir != nullptr, nullptr);
+
+    spv::SpvBuildLogger logger;
+    glslang::SpvOptions spvOptions;
+    spvOptions.generateDebugInfo = true;
+    spvOptions.disableOptimizer = false;
+    spvOptions.optimizeSize = false;
+    spvOptions.disassemble = false;
+    spvOptions.validate = true;
+    glslang::GlslangToSpv(*ir, stream, &logger, &spvOptions);
+
+    std::string messages = logger.getAllMessages();
+    if (!messages.empty()) {
+      shader_cat.warning()
+        << "Compilation to SPIR-V produced the following messages:\n"
+        << messages;
+    }
+  }
 
   if (!stream.validate_header()) {
     return nullptr;
@@ -395,12 +425,6 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
   if (glsl_version == 150 && !postprocess_glsl150(stream)) {
     return nullptr;
   }
-
-  printf("%s", logger.getAllMessages().c_str());
-  /*if (Options & EOptionOutputHexadecimal) {
-  } else {
-      glslang::OutputSpvBin(spirv, GetBinaryName((EShLanguage)stage));
-  }*/
 
   // Run it through the optimizer.
   spvtools::Optimizer opt(SPV_ENV_UNIVERSAL_1_0);

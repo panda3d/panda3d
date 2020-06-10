@@ -3723,6 +3723,11 @@ PyTargetAdd('p3display_ext_composite.obj', opts=OPTS, input='p3display_ext_compo
 OPTS=['DIR:panda/src/shaderpipeline', 'BUILDING:PANDA', 'GLSLANG', 'SPIRV-TOOLS']
 TargetAdd('p3shaderpipeline_composite1.obj', opts=OPTS, input='p3shaderpipeline_composite1.cxx')
 
+cg_preamble = WriteEmbeddedStringFile('cg_preamble', inputs=[
+    'panda/src/shaderpipeline/cg_preamble.hlsl',
+])
+TargetAdd('p3shaderpipeline_cg_preamble.obj', opts=OPTS, input=cg_preamble)
+
 OPTS=['DIR:panda/src/shaderpipeline']
 IGATEFILES=GetDirectoryContents('panda/src/shaderpipeline', ["*.h", "*_composite*.cxx"])
 TargetAdd('libp3shaderpipeline.in', opts=OPTS, input=IGATEFILES)
@@ -3927,6 +3932,7 @@ TargetAdd('libpanda.dll', input='p3pgraph_composite4.obj')
 TargetAdd('libpanda.dll', input='p3cull_composite1.obj')
 TargetAdd('libpanda.dll', input='p3cull_composite2.obj')
 TargetAdd('libpanda.dll', input='p3shaderpipeline_composite1.obj')
+TargetAdd('libpanda.dll', input='p3shaderpipeline_cg_preamble.obj')
 TargetAdd('libpanda.dll', input='p3movies_composite1.obj')
 TargetAdd('libpanda.dll', input='p3grutil_multitexReducer.obj')
 TargetAdd('libpanda.dll', input='p3grutil_composite1.obj')
