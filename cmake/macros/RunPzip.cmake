@@ -2,9 +2,9 @@ function(run_pzip target_name source destination glob)
   file(GLOB_RECURSE files RELATIVE "${source}" "${source}/${glob}")
 
   if(CMAKE_CROSSCOMPILING)
-    set(pzip_executable ${HOST_BIN_DIR}/pzip)
+    add_executable(host_pzip ALIAS Panda3D::Tools::pzip)
   else()
-    set(pzip_executable host_pzip)
+    add_executable(host_pzip ALIAS pzip)
   endif()
 
   set(dstfiles "")

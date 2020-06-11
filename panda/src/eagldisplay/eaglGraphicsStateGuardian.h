@@ -20,6 +20,7 @@
 
 
 #import <OpenGLES/EAGL.h>
+#import <QuartzCore/CAEAGLLayer.h>
 
 /**
  * A variation of GLES2GraphicsStateGuardian to support Apple's EGL

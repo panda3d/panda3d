@@ -17,6 +17,8 @@
 
 #include "eaglGraphicsStateGuardian.h"
 #include "mouseButton.h"
+
+#include "config_eagldisplay.h"
 // #import "iOSNSNotificationHandler.h"
 
 TypeHandle EAGLGraphicsWindow::_type_handle;

@@ -17,14 +17,14 @@
 #include "pandabase.h"
 #include "gles2gsg.h"
 
-
+#import <QuartzCore/CAEAGLLayer.h>
 
 /**
  * This is a light wrapper around GLGraphicsBuffer (ie. FBOs) to interface
  * with Cocoa contexts, so that it can be used without a host window.
  */
 class EAGLGraphicsBuffer : public GLES2GraphicsBuffer {
-friend EAGLGraphicsWindow;
+friend class EAGLGraphicsWindow;
 
 public:
   EAGLGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe,

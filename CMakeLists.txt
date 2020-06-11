@@ -95,6 +95,20 @@ include(dtool/PandaVersion.cmake)
 include(dtool/Package.cmake)
 include(dtool/Config.cmake)
 
+# If cross compiling, find the host's Panda3D, if needed.
+if(CMAKE_CROSSCOMPILING)
+  if(INTERROGATE_PYTHON_INTERFACE)
+    find_package(Panda3D REQUIRED COMPONENTS Core OPTIONAL_COMPONENTS Tools CONFIG)
+    set_target_properties(Panda3D::Core::interrogate Panda3D::Core::interrogate_module PROPERTIES IMPORTED_GLOBAL TRUE)
+  else()
+    find_package(Panda3D COMPONENTS Tools CONFIG)
+  endif()
+
+  if(TARGET Panda3D::Tools::pzip)
+    set_target_properties(Panda3D::Tools::pzip PROPERTIES IMPORTED_GLOBAL TRUE)
+  endif()
+endif()
+
 # Include global modules
 include(AddBisonTarget)     # Defines add_bison_target function
 include(AddFlexTarget)      # Defines add_flex_target function

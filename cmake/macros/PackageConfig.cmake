@@ -310,6 +310,13 @@ endfunction()
 function(export_packages filename)
   set(exports "# Exports for Panda3D PKG:: packages\n")
 
+  if(IS_OSX)
+    set(exports "${exports}set(_panda_archs ${CMAKE_OSX_ARCHITECTURES})\n")
+    set(exports "${exports}if(NOT _panda_archs STREQUAL \$\{CMAKE_OSX_ARCHITECTURES\})\n")
+    set(exports "${exports}  return()\n")
+    set(exports "${exports}endif()\n")
+  endif()
+
   foreach(pkg ${_ALL_PACKAGE_OPTIONS})
     set(exports "${exports}\n# Create imported target PKG::${pkg}\n")
     set(exports "${exports}add_library(PKG::${pkg} INTERFACE IMPORTED)\n\n")

@@ -335,7 +335,9 @@ mark_as_advanced(USE_MEMORY_DLMALLOC USE_MEMORY_PTMALLOC2
 #
 
 # iOS support
-if(CMAKE_SYSTEM_NAME STREQUAL "iOS")
+if(IS_IOS)
+
+  set(CMAKE_MACOSX_BUNDLE OFF)
 
   # A bug in CMake (https://gitlab.kitware.com/cmake/cmake/issues/19375) causes
   # MACOSX_RPATH to not be respected on iOS.

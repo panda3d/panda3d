@@ -20,14 +20,23 @@ if(THIRDPARTY_DIRECTORY)
     message(FATAL_ERROR
       "Your version of CMake is too old; please upgrade or unset THIRDPARTY_DIRECTORY to continue.")
   endif()
-
   # Dig up the actual "libs" directory
-  if(APPLE)
+  if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
     set(_package_dir "${THIRDPARTY_DIRECTORY}/darwin-libs-a")
 
     # Make sure thirdparty has the first shot, not system frameworks
     set(CMAKE_FIND_FRAMEWORK LAST)
+  elseif(CMAKE_SYSTEM_NAME MATCHES "iOS")
+    set(_package_dir "${THIRDPARTY_DIRECTORY}/ios-libs-arm64")
+    file(GLOB _python_dirs "${THIRDPARTY_DIRECTORY}/ios-python*-arm64")
 
+    # Make sure thirdparty has the first shot, not system frameworks
+    set(CMAKE_FIND_FRAMEWORK LAST)
+
+    list(REVERSE _python_dirs) # Descending order of version
+    if(NOT DEFINED Python_ROOT)
+      set(Python_ROOT "${_python_dirs}")
+    endif()
   elseif(WIN32)
     if(CMAKE_SIZEOF_VOID_P EQUAL 8)
       set(_package_dir "${THIRDPARTY_DIRECTORY}/win-libs-vc14-x64")
@@ -153,28 +162,7 @@ endfunction(thirdparty_copy_alongside)
 # ------------ Python ------------
 #
 
-set(THIRDPARTY_DIRECTORY "" CACHE PATH
-  "Optional location of a makepanda-style thirdparty directory. All libraries
-   located here will be prioritized over system libraries. Useful for
-   cross-compiling.")
-# Makes CMake look for modules here first.
-if(THIRDPARTY_DIRECTORY)
-  set(CMAKE_FIND_ROOT_PATH ${CMAKE_FIND_ROOT_PATH} "${THIRDPARTY_DIRECTORY}")
-  set(OpenSSL_ROOT "${THIRDPARTY_DIRECTORY}/openssl")
-  set(JPEG_ROOT "${THIRDPARTY_DIRECTORY}/jpeg")
-  set(PNG_ROOT "${THIRDPARTY_DIRECTORY}/png")
-  set(TIFF_ROOT "${THIRDPARTY_DIRECTORY}/tiff")
-  set(LibSquish_ROOT "${THIRDPARTY_DIRECTORY}/squish")
-  set(FFMPEG_ROOT "${THIRDPARTY_DIRECTORY}/ffmpeg")
-  set(SWScale_ROOT "${THIRDPARTY_DIRECTORY}/ffmpeg")
-  set(SWResample_ROOT "${THIRDPARTY_DIRECTORY}/ffmpeg")
-  set(ODE_ROOT "${THIRDPARTY_DIRECTORY}/ode")
-  set(HarfBuzz_ROOT "${THIRDPARTY_DIRECTORY}/harfbuzz")
-  set(OpusFile_ROOT "${THIRDPARTY_DIRECTORY}/opus")
-  set(VorbisFile_ROOT "${THIRDPARTY_DIRECTORY}/vorbis")
-  set(ARToolKit_ROOT "${THIRDPARTY_DIRECTORY}/artoolkit")
-  set(Bullet_ROOT "${THIRDPARTY_DIRECTORY}/bullet")
-endif()
+list(APPEND CMAKE_FIND_ROOT_PATH "${_package_dir}" "${_python_dirs}")
 
 set(WANT_PYTHON_VERSION ""
   CACHE STRING "Which Python version to seek out for building Panda3D against.")
@@ -205,7 +193,14 @@ if(WANT_PYTHON_VERSION)
 endif()
 
 get_directory_property(_old_cache_vars CACHE_VARIABLES)
-find_package(Python ${WANT_PYTHON_VERSION} QUIET COMPONENTS Interpreter Development)
+
+if(CMAKE_SYSTEM_NAME MATCHES "iOS")
+  set(Python_LIBRARY ${Python_ROOT}/Python.framework/libPython.a)
+  set(Python_INCLUDE_DIR ${Python_ROOT}/Python.framework/Headers)
+  find_package(Python ${WANT_PYTHON_VERSION} QUIET COMPONENTS Development)
+else()
+  find_package(Python ${WANT_PYTHON_VERSION} QUIET COMPONENTS Interpreter Development)
+endif()
 
 if(Python_FOUND)
   set(PYTHON_FOUND ON)
