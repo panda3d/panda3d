@@ -605,7 +605,7 @@ verify_hardware_software(const FrameBufferProperties &props, const std::string &
 
   if (get_force_hardware() < props.get_force_hardware()) {
     display_cat.error()
-      << "The application requested harware acceleration, but your OpenGL\n";
+      << "The application requested hardware acceleration, but your OpenGL\n";
     display_cat.error()
       << "driver, " << renderer << ", only supports software rendering.\n";
     display_cat.error()
