@@ -8827,13 +8827,26 @@ query_glsl_version() {
   _glsl_version = major * 100 + minor;
 #endif
 
-  if (GLCAT.is_debug()) {
-    GLCAT.debug()
-      << "Detected GLSL "
+  if (gl_force_glsl_version.get_num_words() > 0 && gl_force_glsl_version > 0) {
+    _glsl_version = gl_force_glsl_version;
+
+    if (GLCAT.is_debug()) {
+      GLCAT.debug()
+        << "Forced GLSL "
 #ifdef OPENGLES
-         "ES "
+           "ES "
 #endif
-         "version: " << _glsl_version << "\n";
+           "version: " << _glsl_version << "\n";
+    }
+  } else {
+    if (GLCAT.is_debug()) {
+      GLCAT.debug()
+        << "Detected GLSL "
+#ifdef OPENGLES
+           "ES "
+#endif
+           "version: " << _glsl_version << "\n";
+    }
   }
 #endif  // !OPENGLES_1
 }

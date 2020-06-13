@@ -29,6 +29,8 @@
 #include "shaderModuleGlsl.h"
 #include "shaderModuleSpirV.h"
 
+#include <spirv_cross/spirv_glsl.hpp>
+
 using std::dec;
 using std::hex;
 using std::max;
@@ -266,7 +268,7 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
   _color_attrib_index = -1;
   _transform_table_index = -1;
   _slider_table_index = -1;
-  _frame_number_loc = s->_frame_number_loc;
+  _frame_number_loc = -1;
   _frame_number = -1;
   _validated = !gl_validate_shaders;
 
@@ -280,34 +282,83 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
 
   // Is this a SPIR-V shader?  If so, we've already done the reflection.
   if (!_needs_reflection) {
+    if (_needs_query_uniform_locations) {
+      for (const Module &module : _modules) {
+        query_uniform_locations(module._module);
+      }
+    }
+
     // Rebind the texture and image inputs.
     size_t num_textures = s->_tex_spec.size();
     for (size_t i = 0; i < num_textures;) {
-      const Shader::ShaderTexSpec &spec = s->_tex_spec[i];
+      Shader::ShaderTexSpec &spec = s->_tex_spec[i];
       nassertd(spec._id._seqno >= 0) continue;
 
+      GLint location = get_uniform_location(spec._id._seqno);
+      if (location < 0) {
+        // Not used.  Optimize it out.
+        s->_tex_spec.erase(s->_tex_spec.begin() + i);
+        --num_textures;
+        continue;
+      }
+
 #ifndef OPENGLES
-      _glgsg->_glProgramUniform1i(_glsl_program, spec._id._seqno, (int)i);
+      _glgsg->_glProgramUniform1i(_glsl_program, location, (int)i);
 #endif
       ++i;
     }
 
     size_t num_images = min(s->_img_spec.size(), (size_t)glgsg->_max_image_units);
     for (size_t i = 0; i < num_images;) {
-      const Shader::ShaderImgSpec &spec = s->_img_spec[i];
+      Shader::ShaderImgSpec &spec = s->_img_spec[i];
       nassertd(spec._id._seqno >= 0) continue;
 
       if (GLCAT.is_debug()) {
         GLCAT.debug()
           << "Active uniform " << spec._id._name << " is bound to location " << spec._id._seqno << " (image binding " << i << ")\n";
       }
+
+      GLint location = get_uniform_location(spec._id._seqno);
+      if (location < 0) {
+        // Not used.  Optimize it out.
+        s->_img_spec.erase(s->_img_spec.begin() + i);
+        --num_images;
+        continue;
+      }
+
       ImageInput input = {spec._name, nullptr, spec._writable};
       _glsl_img_inputs.push_back(std::move(input));
 
 #ifndef OPENGLES
-      _glgsg->_glProgramUniform1i(_glsl_program, spec._id._seqno, (int)i);
+      _glgsg->_glProgramUniform1i(_glsl_program, location, (int)i);
 #endif
       ++i;
+    }
+
+    if (_remap_uniform_locations) {
+      for (auto it = s->_mat_spec.begin(); it != s->_mat_spec.end();) {
+        const Shader::ShaderMatSpec &spec = *it;
+        if (get_uniform_location(spec._id._seqno) < 0) {
+          // Not used.  Optimize it out.
+          it = s->_mat_spec.erase(it);
+          continue;
+        }
+        ++it;
+      }
+
+      for (auto it = s->_ptr_spec.begin(); it != s->_ptr_spec.end();) {
+        const Shader::ShaderPtrSpec &spec = *it;
+        if (get_uniform_location(spec._id._seqno) < 0) {
+          // Not used.  Optimize it out.
+          it = s->_ptr_spec.erase(it);
+          continue;
+        }
+        ++it;
+      }
+    }
+
+    if (s->_frame_number_loc >= 0) {
+      _frame_number_loc = get_uniform_location(s->_frame_number_loc);
     }
 
     // Do we have a p3d_Color attribute?
@@ -438,6 +489,82 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
   }
 
   _mat_part_cache = new LMatrix4[_shader->cp_get_mat_cache_size()];
+}
+
+/**
+ * Queries the locations for a shader compiled with SPIRV-Cross.
+ */
+void CLP(ShaderContext)::
+query_uniform_locations(const ShaderModule *module) {
+  for (size_t i = 0; i < module->get_num_parameters(); ++i) {
+    const ShaderModule::Variable &var = module->get_parameter(i);
+    if (!var.has_location()) {
+      continue;
+    }
+
+    uint32_t location = (uint32_t)var.get_location();
+    char buffer[13];
+    sprintf(buffer, "p%u", location);
+    r_query_uniform_locations(location, var.type, buffer);
+  }
+}
+
+/**
+ * Recursively queries the uniform locations of an aggregate type.
+ */
+void CLP(ShaderContext)::
+r_query_uniform_locations(uint32_t from_location, const ShaderType *type, const char *name) {
+  while (from_location >= _uniform_location_map.size()) {
+    _uniform_location_map.push_back(-1);
+  }
+
+  // Is this an array of an aggregate type?
+  if (const ShaderType::Array *array_type = type->as_array()) {
+    const ShaderType *element_type = array_type->get_element_type();
+    if (element_type->is_aggregate_type()) {
+      // Recurse.
+      char *buffer = (char *)alloca(strlen(name) + 14);
+      int num_locations = element_type->get_num_parameter_locations();
+
+      for (uint32_t i = 0; i < array_type->get_num_elements(); ++i) {
+        sprintf(buffer, "%s[%u]", name, i);
+        r_query_uniform_locations(from_location, element_type, buffer);
+        from_location += num_locations;
+      }
+      return;
+    }
+  }
+  else if (const ShaderType::Struct *struct_type = type->as_struct()) {
+    char *buffer = (char *)alloca(strlen(name) + 14);
+
+    for (uint32_t i = 0; i < struct_type->get_num_members(); ++i) {
+      const ShaderType::Struct::Member &member = struct_type->get_member(i);
+
+      // SPIRV-Cross names struct members _m0, _m1, etc. in declaration order.
+      sprintf(buffer, "%s._m%u", name, i);
+      r_query_uniform_locations(from_location, member.type, buffer);
+      from_location += member.type->get_num_parameter_locations();
+    }
+    return;
+  }
+
+  GLint p = _glgsg->_glGetUniformLocation(_glsl_program, name);
+  if (p >= 0) {
+    if (GLCAT.is_debug()) {
+      GLCAT.debug()
+        << "Active uniform " << name << " (original location " << from_location
+        << ") is mapped to location " << p << "\n";
+    }
+    set_uniform_location(from_location, p);
+  }
+  else {
+    if (GLCAT.is_debug()) {
+      GLCAT.debug()
+        << "Active uniform " << name << " (original location " << from_location
+        << ") does not appear in the compiled program\n";
+    }
+    set_uniform_location(from_location, -1);
+  }
 }
 
 /**
@@ -2185,7 +2312,11 @@ issue_parameters(int altered) {
       nassertd(spec._dim[1] > 0) continue;
 
       uint32_t dim = spec._dim[1] * spec._dim[2];
-      GLint p = spec._id._seqno;
+      GLint p = get_uniform_location(spec._id._seqno);
+      if (p < 0) {
+        continue;
+      }
+
       int array_size = min(spec._dim[0], (uint32_t)(ptr_data._size / dim));
       switch (spec._type) {
       case ShaderType::ST_bool:
@@ -2315,7 +2446,11 @@ issue_parameters(int altered) {
       const PN_float32 *data = valf.get_data();
 #endif
 
-      GLint p = spec._id._seqno;
+      GLint p = get_uniform_location(spec._id._seqno);
+      if (p < 0) {
+        continue;
+      }
+
       switch (spec._piece) {
       case Shader::SMP_whole: _glgsg->_glUniformMatrix4fv(p, 1, GL_FALSE, data); continue;
       case Shader::SMP_transpose: _glgsg->_glUniformMatrix4fv(p, 1, GL_TRUE, data); continue;
@@ -3170,19 +3305,120 @@ attach_shader(const ShaderModule *module) {
     _glgsg->_glObjectLabel(GL_SHADER, handle, name.size(), name.data());
   }
 
+  bool needs_compile = false;
 #ifndef OPENGLES
-  if (module->is_of_type(ShaderModuleSpirV::get_class_type()) && _glgsg->_supports_spir_v) {
-    // Load a SPIR-V binary.
-    if (GLCAT.is_debug()) {
-      GLCAT.debug()
-        << "Attaching SPIR-V " << stage << " shader binary "
-        << module->get_source_filename() << "\n";
-    }
+  if (module->is_of_type(ShaderModuleSpirV::get_class_type())) {
     ShaderModuleSpirV *spv = (ShaderModuleSpirV *)module;
-    _glgsg->_glShaderBinary(1, &handle, GL_SHADER_BINARY_FORMAT_SPIR_V_ARB,
-                            (const char *)spv->get_data(),
-                            spv->get_data_size() * sizeof(uint32_t));
-    _glgsg->_glSpecializeShader(handle, "main", 0, nullptr, nullptr);
+
+    if (_glgsg->_supports_spir_v) {
+      // Load a SPIR-V binary.
+      if (GLCAT.is_debug()) {
+        GLCAT.debug()
+          << "Attaching SPIR-V " << stage << " shader binary "
+          << module->get_source_filename() << "\n";
+      }
+      _glgsg->_glShaderBinary(1, &handle, GL_SHADER_BINARY_FORMAT_SPIR_V_ARB,
+                              (const char *)spv->get_data(),
+                              spv->get_data_size() * sizeof(uint32_t));
+      _glgsg->_glSpecializeShader(handle, "main", 0, nullptr, nullptr);
+    }
+    else {
+      // Compile to GLSL using SPIRV-Cross.
+      if (GLCAT.is_debug()) {
+        GLCAT.debug()
+          << "Transpiling SPIR-V " << stage << " shader "
+          << module->get_source_filename() << "\n";
+      }
+      spirv_cross::CompilerGLSL compiler(std::vector<uint32_t>(spv->get_data(), spv->get_data() + spv->get_data_size()));
+      spirv_cross::CompilerGLSL::Options options;
+
+      options.version = _glgsg->_glsl_version;
+#ifdef OPENGLES
+      options.es = true;
+#else
+      options.es = false;
+#endif
+      compiler.set_common_options(options);
+
+      // At this time, SPIRV-Cross doesn't add this extension automatically.
+      if (!options.es && options.version < 140 &&
+          (module->get_used_capabilities() & ShaderModule::C_instance_id) != 0) {
+        if (_glgsg->has_extension("GL_ARB_draw_instanced")) {
+          compiler.require_extension("GL_ARB_draw_instanced");
+        } else {
+          compiler.require_extension("GL_EXT_gpu_shader4");
+        }
+      }
+
+      // Assign names based on locations.  This is important to make sure that
+      // uniforms shared between shader stages have the same name, or the
+      // compiler may start to complain about overlapping locations.
+      for (spirv_cross::VariableID id : compiler.get_active_interface_variables()) {
+        uint32_t loc = compiler.get_decoration(id, spv::DecorationLocation);
+        spv::StorageClass sc = compiler.get_storage_class(id);
+
+        char buf[24];
+        if (sc == spv::StorageClassUniformConstant) {
+          sprintf(buf, "p%u", loc);
+          compiler.set_name(id, buf);
+
+          // Older versions of OpenGL (ES) do not support explicit uniform
+          // locations, and we need to query the locations later.
+          if ((!options.es && options.version < 430) ||
+              (options.es && options.version < 310)) {
+            _needs_query_uniform_locations = true;
+          }
+          else {
+            set_uniform_location(loc, loc);
+          }
+        }
+        else if (sc == spv::StorageClassInput) {
+          if (stage == ShaderModule::Stage::vertex) {
+            // Explicit attrib locations were added in GLSL 3.30, but we can
+            // override the binding in older versions using the API.
+            sprintf(buf, "a%u", loc);
+            if (options.version < 330) {
+              _glgsg->_glBindAttribLocation(_glsl_program, loc, buf);
+            }
+          } else {
+            // For all other stages, it's just important that the names match,
+            // so we assign the names based on the location and successive
+            // numbering of the shaders.
+            sprintf(buf, "i%u_%u", (unsigned)_modules.size(), loc);
+          }
+          compiler.set_name(id, buf);
+        }
+        else if (sc == spv::StorageClassOutput) {
+          if (stage == ShaderModule::Stage::fragment) {
+            // Output of the last stage, same story as above.
+            sprintf(buf, "o%u", loc);
+            if (options.version < 330) {
+              _glgsg->_glBindFragDataLocation(_glsl_program, loc, buf);
+            }
+          } else {
+            // Match the name of the next stage.
+            sprintf(buf, "i%u_%u", (unsigned)_modules.size() + 1u, loc);
+          }
+          compiler.set_name(id, buf);
+        }
+      }
+
+      // Optimize out unused variables.
+      compiler.set_enabled_interface_variables(compiler.get_active_interface_variables());
+
+      std::string text = compiler.compile();
+
+      if (GLCAT.is_spam()) {
+        GLCAT.spam()
+          << "SPIRV-Cross compilation resulted in GLSL shader:\n"
+          << text << "\n";
+      }
+
+      const char *text_str = text.c_str();
+      _glgsg->_glShaderSource(handle, 1, &text_str, nullptr);
+      needs_compile = true;
+      _remap_uniform_locations = true;
+    }
   } else
 #endif
   if (module->is_of_type(ShaderModuleGlsl::get_class_type())) {
@@ -3198,6 +3434,7 @@ attach_shader(const ShaderModule *module) {
     const char *text_str = text.c_str();
     _glgsg->_glShaderSource(handle, 1, &text_str, nullptr);
 
+    needs_compile = true;
     _needs_reflection = true;
   } else {
     GLCAT.error()
@@ -3209,7 +3446,7 @@ attach_shader(const ShaderModule *module) {
   // synchronously.
   _glgsg->_glAttachShader(_glsl_program, handle);
 
-  Module moddef = {module, handle};
+  Module moddef = {module, handle, needs_compile};
   _modules.push_back(std::move(moddef));
 
   return true;
@@ -3268,8 +3505,9 @@ compile_and_link() {
   // Now compile the individual shaders.  NVIDIA drivers seem to cope better
   // when we compile them all in one go.
   for (Module &module : _modules) {
-    if (module._module->is_of_type(ShaderModuleGlsl::get_class_type())) {
+    if (module._needs_compile) {
       _glgsg->_glCompileShader(module._handle);
+      module._needs_compile = false;
     }
   }
 

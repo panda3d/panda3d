@@ -34,12 +34,17 @@ public:
   ~CLP(ShaderContext)();
   ALLOC_DELETED_CHAIN(CLP(ShaderContext));
 
+  void query_uniform_locations(const ShaderModule *module);
+  void r_query_uniform_locations(uint32_t from_location, const ShaderType *type, const char *name);
   void reflect_attribute(int i, char *name_buf, GLsizei name_buflen);
   void reflect_uniform_block(int i, const char *block_name,
                              char *name_buffer, GLsizei name_buflen);
   void reflect_uniform(int i, char *name_buffer, GLsizei name_buflen);
   bool get_sampler_texture_type(int &out, GLenum param_type);
   const ShaderType *get_param_type(GLenum type);
+
+  INLINE GLint get_uniform_location(int seqno) const;
+  INLINE void set_uniform_location(int seqno, GLint location);
 
   bool valid(void) override;
   void bind() override;
@@ -72,10 +77,13 @@ private:
   struct Module {
     const ShaderModule *_module;
     GLuint _handle;
+    bool _needs_compile;
   };
   typedef pvector<Module> Modules;
   Modules _modules;
   bool _needs_reflection = false;
+  bool _needs_query_uniform_locations = false;
+  bool _remap_uniform_locations = false;
 
   WCPT(RenderState) _state_rs;
   CPT(TransformState) _modelview_transform;
@@ -90,6 +98,7 @@ private:
  * pvector<ParamContext> ParamContexts; ParamContexts _params;
  */
 
+  pvector<GLint> _uniform_location_map;
   BitMask32 _enabled_attribs;
   GLint _color_attrib_index;
   GLint _transform_table_index;

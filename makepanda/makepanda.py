@@ -800,6 +800,7 @@ if (COMPILER=="GCC"):
     SmartPkgEnable("PNG",       "libpng",    ("png"), "png.h", tool = "libpng-config")
     SmartPkgEnable("GLSLANG",   "",          ("glslang", "SPIRV", "OSDependent", "OGLCompiler", "HLSL"), "glslang/Public/ShaderLang.h")
     SmartPkgEnable("SPIRV-TOOLS", "",        ("SPIRV-Tools-opt"), "spirv-tools/optimizer.hpp")
+    SmartPkgEnable("SPIRV-CROSS-GLSL", "",   ("spirv-cross-core", "spirv-cross-glsl"), "spirv_cross/spirv_cross.hpp")
 
     # Copy freetype libraries to be specified after harfbuzz libraries as well,
     # because there's a circular dependency between the two libraries.
@@ -868,6 +869,17 @@ if (COMPILER=="GCC"):
         if not PkgSkip("ARTOOLKIT"):
             LibName("ARTOOLKIT", "-Wl,--exclude-libs,libAR.a")
             LibName("ARTOOLKIT", "-Wl,--exclude-libs,libARMulti.a")
+
+        LibName("GLSLANG", "-Wl,--exclude-libs,libglslang.a")
+        LibName("GLSLANG", "-Wl,--exclude-libs,libSPIRV.a")
+        LibName("GLSLANG", "-Wl,--exclude-libs,libOSDependent.a")
+        LibName("GLSLANG", "-Wl,--exclude-libs,libOGLCompiler.a")
+        LibName("GLSLANG", "-Wl,--exclude-libs,libHLSL.a")
+
+        LibName("SPIRV-TOOLS", "-Wl,--exclude-libs,libSPIRV-Tools-opt.a")
+
+        LibName("SPIRV-CROSS-GLSL", "-Wl,--exclude-libs,libspirv-cross-core.a")
+        LibName("SPIRV-CROSS-GLSL", "-Wl,--exclude-libs,libspirv-cross-glsl.a")
 
     if PkgSkip("FFMPEG") or GetTarget() == "darwin":
         cv_lib = ChooseLib(("opencv_core", "cv"), "OPENCV")
@@ -4467,7 +4479,8 @@ if (GetTarget() not in ['windows', 'darwin'] and PkgSkip("X11")==0):
 if (GetTarget() not in ['windows', 'darwin'] and PkgSkip("GL")==0 and PkgSkip("X11")==0):
   OPTS=['DIR:panda/src/glxdisplay', 'BUILDING:PANDAGL',  'GL', 'NVIDIACG', 'CGGL']
   TargetAdd('p3glxdisplay_composite1.obj', opts=OPTS, input='p3glxdisplay_composite1.cxx')
-  OPTS=['DIR:panda/metalibs/pandagl', 'BUILDING:PANDAGL',  'GL', 'NVIDIACG', 'CGGL']
+
+  OPTS=['DIR:panda/metalibs/pandagl', 'BUILDING:PANDAGL',  'GL', 'NVIDIACG', 'CGGL', 'SPIRV-CROSS-GLSL']
   TargetAdd('pandagl_pandagl.obj', opts=OPTS, input='pandagl.cxx')
   TargetAdd('libpandagl.dll', input='p3x11display_composite1.obj')
   TargetAdd('libpandagl.dll', input='pandagl_pandagl.obj')
@@ -4475,7 +4488,7 @@ if (GetTarget() not in ['windows', 'darwin'] and PkgSkip("GL")==0 and PkgSkip("X
   TargetAdd('libpandagl.dll', input='p3glgsg_glgsg.obj')
   TargetAdd('libpandagl.dll', input='p3glxdisplay_composite1.obj')
   TargetAdd('libpandagl.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandagl.dll', opts=['MODULE', 'GL', 'NVIDIACG', 'CGGL', 'X11'])
+  TargetAdd('libpandagl.dll', opts=['MODULE', 'GL', 'NVIDIACG', 'CGGL', 'X11', 'SPIRV-CROSS-GLSL'])
 
 #
 # DIRECTORY: panda/src/cocoadisplay/
