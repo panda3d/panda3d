@@ -126,7 +126,14 @@ expect_float_matrix(const InternalName *name, const ::ShaderType *type, int lo, 
   }
   if (scalar_type != ScalarType::ST_float || num_rows != num_columns ||
       num_rows < lo || num_rows > hi) {
-    return report_parameter_error(name, type, "expected square floating-point matrix");
+
+    std::string msg = "expected square floating-point matrix of ";
+    if (lo < hi) {
+      msg += "at least ";
+    }
+    msg += "size ";
+    msg += format_string(lo);
+    return report_parameter_error(name, type, msg.c_str());
   }
   return true;
 }
@@ -2498,15 +2505,15 @@ bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
     bind._func = SMF_compose;
 
     if (pieces[0] == "trans" || pieces[0] == "tpose") {
-      if (!expect_float_matrix(name, type, 4, 4)) {
+      if (!expect_float_matrix(name, type, 3, 4)) {
         return false;
       }
       const ::ShaderType::Matrix *matrix = type->as_matrix();
       if (matrix->get_num_rows() == 4) {
-        bind._piece = (pieces[0][2] == 'p') ? SMP_transpose : SMP_whole;
+        bind._piece = (pieces[0][1] == 'p') ? SMP_transpose : SMP_whole;
       }
       else {
-        bind._piece = (pieces[0][2] == 'p') ? SMP_transpose3x3 : SMP_upper3x3;
+        bind._piece = (pieces[0][1] == 'p') ? SMP_transpose3x3 : SMP_upper3x3;
       }
     }
     else if (pieces[0] == "row3") {
