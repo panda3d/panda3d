@@ -34,6 +34,7 @@ public:
                                        BamCacheRecord *record = nullptr) const override;
 
 private:
+  static bool check_cg_header(const vector_uchar &code);
   static bool preprocess_glsl(vector_uchar &code, int &glsl_version, bool &uses_pragma_include);
   static bool postprocess_glsl150(ShaderModuleSpirV::InstructionStream &stream);
 

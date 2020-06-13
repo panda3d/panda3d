@@ -284,9 +284,8 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
   bool add_include_directive = false;
   int glsl_version = 110;
 
-  // Is this a Cg shader or a GLSL shader?
-  if (code.size() >= 5 &&
-      strncmp((const char *)&code[0], "//Cg", 4) == 0 && isspace(code[4])) {
+  // Look for a special //Cg header.  Otherwise, it's a GLSL shader.
+  if (check_cg_header(code)) {
     is_cg = true;
   }
   else if (!preprocess_glsl(code, glsl_version, add_include_directive)) {
@@ -316,6 +315,9 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
     break;
   case ShaderModule::Stage::fragment:
     language = EShLangFragment;
+    break;
+  case ShaderModule::Stage::compute:
+    language = EShLangCompute;
     break;
   default:
     shader_cat.error()
@@ -444,6 +446,22 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
 }
 
 /**
+ * Returns true if there is a special //Cg header at the beginning of the code.
+ */
+bool ShaderCompilerGlslang::
+check_cg_header(const vector_uchar &code) {
+  const char *p = (const char *)&code[0];
+  const char *end = p + code.size();
+  while (isspace(*p) && p < end) {
+    // Skip leading whitespace.
+    ++p;
+  }
+  return (end - p) >= 5
+      && strncmp(p, "//Cg", 4) == 0
+      && isspace(p[4]);
+}
+
+/**
  * Do some very basic preprocessing of the GLSL shader to extract the GLSL
  * version and fix the use of #pragma include (which glslang doesn't support,
  * but we historically did).
@@ -506,7 +524,8 @@ preprocess_glsl(vector_uchar &code, int &glsl_version, bool &uses_pragma_include
           p[-1] = '0';
         }
       }
-      else if (directive_size == 6 && strncmp(directive, "pragma", directive_size) == 0) {
+      else if (directive_size == 6 && glsl_preprocess &&
+               strncmp(directive, "pragma", directive_size) == 0) {
         if (strncmp(p, "include", 7) == 0 && !isalnum(p[7]) && p[7] != '_') {
           // Turn this into a normal include directive (by replacing the word
           // "pragma" with spaces) and enable the GL_GOOGLE_include_directive

@@ -130,3 +130,16 @@ float4 f4texCUBE(samplerCUBE samp, float4 s, float3 dx, float3 dy) {
 #define f3texCUBE(x, y) (f4texCUBE((x), (y)).rgb)
 #define texCUBE f4texCUBE
 */
+
+uint bitfieldExtract(uint val, int off, int size) {
+  uint mask = uint((1 << size) - 1);
+  return uint(val >> off) & mask;
+}
+
+#define bitCount(x) (countbits(x))
+#define bitfieldReverse(x) (reversebits(x))
+#define findLSB(x) (firstbitlow(x))
+#define findMSB(x) (firstbithigh(x))
+#define floatToIntBits(x) (asint(x))
+#define floatToRawIntBits(x) (asint(x))
+#define intBitsToFloat(x) (asfloat(x))
