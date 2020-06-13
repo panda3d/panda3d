@@ -1688,8 +1688,10 @@ do_read_source(ShaderModule::Stage stage, std::istream &in,
     }
   }
 
+  int used_caps = module->get_used_capabilities();
   _modules.push_back(std::move(module));
   _module_mask |= (1u << (uint32_t)stage);
+  _used_caps |= used_caps;
 
   return true;
 }

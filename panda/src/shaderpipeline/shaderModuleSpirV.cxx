@@ -75,6 +75,37 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words) :
       else if (def._storage_class == SpvStorageClassUniformConstant) {
         _parameters.push_back(std::move(var));
       }
+
+      if (def._type->contains_scalar_type(ShaderType::ST_int) ||
+          def._type->contains_scalar_type(ShaderType::ST_uint)) {
+        _used_caps |= C_integer;
+      }
+    }
+    else if (def._dtype == DT_variable && def._used &&
+             def._storage_class == SpvStorageClassInput) {
+      // Built-in input variable.
+      switch (def._builtin) {
+      case SpvBuiltInVertexId:
+        _used_caps |= C_vertex_id;
+        break;
+
+      case SpvBuiltInInstanceId:
+        _used_caps |= C_instance_id;
+        break;
+
+      case SpvBuiltInPrimitiveId:
+        _used_caps |= C_primitive_id;
+        break;
+
+      case SpvBuiltInSampleId:
+      case SpvBuiltInSampleMask:
+      case SpvBuiltInSamplePosition:
+        _used_caps |= C_sample_variables;
+        break;
+
+      default:
+        break;
+      }
     }
   }
 
@@ -196,6 +227,19 @@ validate_header() const {
 bool ShaderModuleSpirV::
 parse_instruction(Definitions &defs, SpvOp opcode, const uint32_t *args, size_t nargs) {
   switch (opcode) {
+  case SpvOpExtInstImport:
+    defs[args[0]].set_ext_inst((const char *)&args[1]);
+    break;
+
+  case SpvOpExtInst:
+    nassertr(defs[args[2]]._dtype == DT_ext_inst, false);
+    if (defs[args[2]]._name == "GLSL.std.450" && args[3] == 2) {
+      // We mark the use of the GLSL roundEven() function, which is not
+      // supported by HLSL and requires GLSL 1.30.
+      _used_caps |= C_round_even;
+    }
+    break;
+
   case SpvOpMemoryModel:
     if (args[0] != SpvAddressingModelLogical) {
       shader_cat.error()
@@ -231,6 +275,17 @@ parse_instruction(Definitions &defs, SpvOp opcode, const uint32_t *args, size_t 
     }*/
     break;
 
+  case SpvOpCapability:
+    switch ((SpvCapability)args[0]) {
+    case SpvCapabilityFloat64:
+      _used_caps |= C_double;
+      break;
+
+    case SpvCapabilityImageCubeArray:
+      _used_caps |= C_cube_map_array;
+      break;
+    }
+
   case SpvOpName:
     defs[args[0]].set_name((const char *)&args[1]);
     break;
@@ -259,7 +314,11 @@ parse_instruction(Definitions &defs, SpvOp opcode, const uint32_t *args, size_t 
 
   case SpvOpTypeFloat:
     {
-      defs[args[0]].set_type(ShaderType::float_type);
+      if (nargs >= 2 && args[1] >= 64) {
+        defs[args[0]].set_type(ShaderType::double_type);
+      } else {
+        defs[args[0]].set_type(ShaderType::float_type);
+      }
     }
     break;
 
@@ -318,6 +377,7 @@ parse_instruction(Definitions &defs, SpvOp opcode, const uint32_t *args, size_t 
           texture_type = Texture::TT_cube_map;
         }
         break;
+
       case SpvDimRect:
         shader_cat.error()
           << "imageRect shader inputs are not supported.\n";
@@ -402,6 +462,13 @@ parse_instruction(Definitions &defs, SpvOp opcode, const uint32_t *args, size_t 
     defs[args[1]].set_constant(defs[args[0]]._type, args + 2, nargs - 2);
     break;
 
+  case SpvOpFunctionCall:
+    // Mark all arguments as used.
+    for (size_t i = 3; i < nargs; ++i) {
+      defs[args[i]].mark_used();
+    }
+    break;
+
   case SpvOpVariable:
     {
       const Definition &ptr = defs[args[0]];
@@ -411,6 +478,44 @@ parse_instruction(Definitions &defs, SpvOp opcode, const uint32_t *args, size_t 
         return false;
       }
       defs[args[1]].set_variable(ptr._type, (SpvStorageClass)args[2]);
+    }
+    break;
+
+  case SpvOpImageTexelPointer:
+  case SpvOpLoad:
+  case SpvOpAccessChain:
+  case SpvOpInBoundsAccessChain:
+  case SpvOpPtrAccessChain:
+  case SpvOpCopyObject:
+  case SpvOpAtomicLoad:
+  case SpvOpAtomicExchange:
+  case SpvOpAtomicCompareExchange:
+  case SpvOpAtomicCompareExchangeWeak:
+  case SpvOpAtomicIIncrement:
+  case SpvOpAtomicIDecrement:
+  case SpvOpAtomicIAdd:
+  case SpvOpAtomicISub:
+  case SpvOpAtomicSMin:
+  case SpvOpAtomicUMin:
+  case SpvOpAtomicSMax:
+  case SpvOpAtomicUMax:
+  case SpvOpAtomicAnd:
+  case SpvOpAtomicOr:
+  case SpvOpAtomicXor:
+  case SpvOpAtomicFlagTestAndSet:
+    defs[args[2]].mark_used();
+    if (defs[args[2]]._type != nullptr &&
+        defs[args[2]]._type->contains_scalar_type(ShaderType::ST_double)) {
+      _used_caps |= C_double;
+    }
+    break;
+
+  case SpvOpCopyMemory:
+  case SpvOpCopyMemorySized:
+    defs[args[1]].mark_used();
+    if (defs[args[1]]._type != nullptr &&
+        defs[args[1]]._type->contains_scalar_type(ShaderType::ST_double)) {
+      _used_caps |= C_double;
     }
     break;
 
@@ -429,6 +534,50 @@ parse_instruction(Definitions &defs, SpvOp opcode, const uint32_t *args, size_t 
     } else if (args[1] == SpvDecorationDescriptorSet) {
       vars[args[0]]._set = args[2];
     }*/
+    break;
+
+  case SpvOpImageRead:
+  case SpvOpImageWrite:
+    _used_caps |= C_image_load_store;
+    break;
+
+  case SpvOpImageFetch:
+  case SpvOpImageQuerySizeLod:
+  case SpvOpImageQuerySize:
+    _used_caps |= C_texture_fetch;
+    break;
+
+  case SpvOpImageQueryLod:
+    _used_caps |= C_texture_query_lod;
+    break;
+
+  case SpvOpImageQueryLevels:
+    _used_caps |= C_texture_query_levels;
+    break;
+
+  case SpvOpImageQuerySamples:
+    _used_caps |= C_texture_query_samples;
+    break;
+
+  case SpvOpBitcast:
+    _used_caps |= C_bit_encoding;
+    break;
+
+
+  case SpvOpIAddCarry:
+  case SpvOpISubBorrow:
+  case SpvOpUMulExtended:
+  case SpvOpSMulExtended:
+    _used_caps |= C_extended_arithmetic;
+    break;
+
+  case SpvOpDPdxFine:
+  case SpvOpDPdyFine:
+  case SpvOpFwidthFine:
+  case SpvOpDPdxCoarse:
+  case SpvOpDPdyCoarse:
+  case SpvOpFwidthCoarse:
+    _used_caps |= C_derivative_control;
     break;
   }
 
@@ -698,6 +847,7 @@ flatten_struct(Definitions &defs, uint32_t type_id) {
 
     case SpvOpAccessChain:
     case SpvOpInBoundsAccessChain:
+    case SpvOpPtrAccessChain:
       if (deleted_ids.count(op.args[2])) {
         uint32_t index = defs[op.args[3]]._constant;
         if (op.nargs > 4) {
@@ -724,6 +874,7 @@ flatten_struct(Definitions &defs, uint32_t type_id) {
       break;
 
     case SpvOpCopyMemory:
+    case SpvOpCopyMemorySized:
       // Shouldn't be copying the struct directly.
       nassertv(!deleted_ids.count(op.args[1]));
 
@@ -924,6 +1075,23 @@ set_constant(const ShaderType *type, const uint32_t *words, uint32_t nwords) {
   } else {
     _constant = 0;
   }
+}
+
+/**
+ * Called when OpExtInstImport is encountered in the SPIR-V instruction stream.
+ */
+void ShaderModuleSpirV::Definition::
+set_ext_inst(const char *name) {
+  _dtype = DT_ext_inst;
+  _name.assign(name);
+}
+
+/**
+ * Marks the variable as having been loaded.
+ */
+void ShaderModuleSpirV::Definition::
+mark_used() {
+  _used = true;
 }
 
 /**

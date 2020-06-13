@@ -241,9 +241,6 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   _supports_shadow_filter = false;
   _supports_sampler_objects = false;
   _supports_basic_shaders = false;
-  _supports_geometry_shaders = false;
-  _supports_tessellation_shaders = false;
-  _supports_compute_shaders = false;
   _supports_glsl = false;
   _supports_hlsl = false;
   _supports_spir_v = false;
@@ -2637,6 +2634,8 @@ reset() {
 
   _tex_gen_modifies_mat = false;
   _last_max_stage_index = 0;
+
+  _supported_shader_caps = 0;
 
   _is_valid = true;
 }

@@ -61,6 +61,7 @@ public:
   virtual ~ShaderModule();
 
   INLINE Stage get_stage() const;
+  INLINE int get_used_capabilities() const;
 
   INLINE const Filename &get_source_filename() const;
   INLINE void set_source_filename(const Filename &);
@@ -90,7 +91,54 @@ PUBLISHED:
   virtual std::string get_ir() const=0;
 
 public:
+  /**
+   * Indicates which features are used by the shader, which can be used by the
+   * driver to check whether cross-compilation is possible, or whether certain
+   * transformation steps may need to be applied.
+   */
+  enum Capabilities {
+    // GLSL 1.30
+    C_integer = 1 << 0,
+    C_texture_fetch = 1 << 1, // texelFetch, textureSize, etc.
+    C_buffer_texture = 1 << 2,
+    C_vertex_id = 1 << 3,
+    C_round_even = 1 << 4,
+
+    // GLSL 1.40
+    C_instance_id = 1 << 5,
+
+    // GLSL 1.50
+    C_geometry_shader = 1 << 6,
+    C_primitive_id = 1 << 7,
+
+    // GLSL 3.30 / ARB_shader_bit_encoding
+    C_bit_encoding = 1 << 8,
+
+    // GLSL 4.00
+    C_double = 1 << 9,
+    C_cube_map_array = 1 << 10,
+    C_tessellation_shader = 1 << 11,
+    C_sample_variables = 1 << 12,
+    C_extended_arithmetic = 1 << 13,
+    C_texture_query_lod = 1 << 14,
+
+    // GLSL 4.20
+    C_image_load_store = 1 << 15,
+
+    // GLSL 4.30
+    C_compute_shader = 1 << 16,
+    C_texture_query_levels = 1 << 17,
+
+    // GLSL 4.40 / ARB_enhanced_layouts
+    C_enhanced_layouts = 1 << 18,
+
+    // GLSL 4.50
+    C_derivative_control = 1 << 19,
+    C_texture_query_samples = 1 << 20,
+  };
+
   static std::string format_stage(Stage stage);
+  static void output_capabilities(std::ostream &out, int capabilities);
 
   virtual void output(std::ostream &out) const;
 
@@ -105,6 +153,7 @@ protected:
   //std::pvector<Filename> _source_files;
   Filename _source_filename;
   //time_t _source_modified = 0;
+  int _used_caps = 0;
 
   typedef pvector<Variable> Variables;
   Variables _inputs;

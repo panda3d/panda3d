@@ -580,7 +580,7 @@ get_supports_basic_shaders() const {
  */
 INLINE bool GraphicsStateGuardian::
 get_supports_geometry_shaders() const {
-  return _supports_geometry_shaders;
+  return (_supported_shader_caps & ShaderModule::C_geometry_shader) != 0;
 }
 
 /**
@@ -588,7 +588,7 @@ get_supports_geometry_shaders() const {
  */
 INLINE bool GraphicsStateGuardian::
 get_supports_tessellation_shaders() const {
-  return _supports_tessellation_shaders;
+  return (_supported_shader_caps & ShaderModule::C_tessellation_shader) != 0;
 }
 
 /**
@@ -596,7 +596,7 @@ get_supports_tessellation_shaders() const {
  */
 INLINE bool GraphicsStateGuardian::
 get_supports_compute_shaders() const {
-  return _supports_compute_shaders;
+  return (_supported_shader_caps & ShaderModule::C_compute_shader) != 0;
 }
 
 /**

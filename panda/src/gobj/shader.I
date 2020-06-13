@@ -136,6 +136,15 @@ get_language() const {
 }
 
 /**
+ * Returns a mask indicating which capabilities this shader needs to function
+ * optimally.
+ */
+INLINE int Shader::
+get_used_capabilities() const {
+  return _used_caps;
+}
+
+/**
  * Returns true if the fullpath has been set and is available.  See
  * set_fullpath().
  */

@@ -620,9 +620,6 @@ protected:
   bool _supports_shadow_filter;
   bool _supports_sampler_objects;
   bool _supports_basic_shaders;
-  bool _supports_geometry_shaders;
-  bool _supports_tessellation_shaders;
-  bool _supports_compute_shaders;
   bool _supports_glsl;
   bool _supports_hlsl;
   bool _supports_spir_v;
@@ -647,6 +644,7 @@ protected:
 
   ShaderModel _auto_detect_shader_model;
   ShaderModel _shader_model;
+  int _supported_shader_caps;
 
   static PT(TextureStage) _alpha_scale_texture_stage;
 

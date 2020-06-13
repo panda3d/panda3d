@@ -159,7 +159,7 @@ null_glBlendColor(GLclampf, GLclampf, GLclampf, GLclampf) {
 // drawing GUIs and such.
 static const string default_vshader =
 #ifndef OPENGLES
-  "#version 150\n"
+  "#version 330\n"
   "in vec4 p3d_Vertex;\n"
   "in vec4 p3d_Color;\n"
   "in vec2 p3d_MultiTexCoord0;\n"
@@ -184,7 +184,7 @@ static const string default_vshader =
 #ifndef OPENGLES
 // This version of the shader is used if vertices-float64 is enabled.
 static const string default_vshader_fp64 =
-  "#version 150\n"
+  "#version 330\n"
   "#extension GL_ARB_vertex_attrib_64bit : require\n"
   "#extension GL_ARB_gpu_shader_fp64 : require\n"
   "in dvec3 p3d_Vertex;\n"
@@ -221,7 +221,7 @@ static const string default_vshader_fp64_gl41 =
 
 static const string default_fshader =
 #ifndef OPENGLES
-  "#version 150\n"
+  "#version 330\n"
   "in vec2 texcoord;\n"
   "in vec4 color;\n"
   "out vec4 p3d_FragColor;\n"
@@ -468,8 +468,8 @@ string CLP(GraphicsStateGuardian)::get_driver_renderer() { return _gl_renderer; 
 string CLP(GraphicsStateGuardian)::get_driver_version() { return _gl_version; }
 int CLP(GraphicsStateGuardian)::get_driver_version_major() { return _gl_version_major; }
 int CLP(GraphicsStateGuardian)::get_driver_version_minor() { return _gl_version_minor; }
-int CLP(GraphicsStateGuardian)::get_driver_shader_version_major() { return _gl_shadlang_ver_major; }
-int CLP(GraphicsStateGuardian)::get_driver_shader_version_minor() { return _gl_shadlang_ver_minor; }
+int CLP(GraphicsStateGuardian)::get_driver_shader_version_major() { return _glsl_version / 100; }
+int CLP(GraphicsStateGuardian)::get_driver_shader_version_minor() { return _glsl_version % 100; }
 
 /**
  *
@@ -485,9 +485,6 @@ CLP(GraphicsStateGuardian)(GraphicsEngine *engine, GraphicsPipe *pipe) :
   // calling glGetError() forces a sync, this turns it on if you want to.
   _check_errors = gl_check_errors;
   _force_flush = gl_force_flush;
-
-  _gl_shadlang_ver_major = 0;
-  _gl_shadlang_ver_minor = 0;
 
   // Let's say we have a core profile, to be checked later (Otherwise, if we are
   // wrong the user may ask for some non-available functions)
@@ -807,12 +804,6 @@ reset() {
     Geom::GR_triangle_strip | Geom::GR_triangle_fan |
     Geom::GR_line_strip |
     Geom::GR_flat_last_vertex;
-
-#ifndef OPENGLES
-  if (_supports_geometry_shaders) {
-    _supported_geom_rendering |= Geom::GR_adjacency;
-  }
-#endif
 
   _supports_point_parameters = false;
 
@@ -1677,47 +1668,163 @@ reset() {
   }
 
   // Check for GLSL support.
+  _supported_shader_caps = 0;
 #if defined(OPENGLES_1)
   _supports_glsl = false;
-  _supports_geometry_shaders = false;
-  _supports_tessellation_shaders = false;
+
 #elif defined(OPENGLES)
   _supports_glsl = true;
-  _supports_geometry_shaders = false;
-  _supports_tessellation_shaders = false;
+
+  if (is_at_least_gles_version(3, 0)) {
+    _supported_shader_caps |=
+      ShaderModule::C_integer |
+      ShaderModule::C_texture_fetch |
+      ShaderModule::C_vertex_id |
+      ShaderModule::C_round_even |
+      ShaderModule::C_instance_id;
+  }
+
+  if (is_at_least_gles_version(3, 1)) {
+    _supported_shader_caps |=
+      ShaderModule::C_compute_shader |
+      ShaderModule::C_image_load_store |
+      ShaderModule::C_extended_arithmetic;
+  }
+
+  if (is_at_least_gles_version(3, 2)) {
+    _supported_shader_caps |=
+      ShaderModule::C_sample_variables |
+      ShaderModule::C_buffer_texture;
+
+    if (has_extension("GL_EXT_geometry_shader")) {
+      _supported_shader_caps |= ShaderModule::C_geometry_shader;
+    }
+    if (has_extension("GL_EXT_tessellation_shader")) {
+      _supported_shader_caps |= ShaderModule::C_tessellation_shader;
+    }
+  }
+  else {
+    if (has_extension("GL_OES_sample_variables")) {
+      _supported_shader_caps |= ShaderModule::C_sample_variables;
+    }
+    if (has_extension("GL_OES_texture_buffer")) {
+      _supported_shader_caps |= ShaderModule::C_buffer_texture;
+    }
+  }
+
 #else
-  _supports_glsl = (_gl_shadlang_ver_major >= 1);
-  _supports_tessellation_shaders = is_at_least_gl_version(4, 0) || has_extension("GL_ARB_tessellation_shader");
+  _supports_glsl = (_glsl_version >= 100);
+
+  // Test support for shader features.
+  if (_supports_glsl) {
+    // 2.0 guarantees support for 1.10
+    // 2.1 guarantees support for 1.20
+    // 3.0 and 3.1 guarantee support for 1.30
+    // 3.2 guarantees support for 1.40 and 1.50
+    // 3.3 guarantees support for 3.30
+    // 4.0 guarantees support for 4.00
+    // 4.1 guarantees support for 4.10
+    // 4.x guarantees support for 1.40-4.x0 (for x >= 2)
+
+    if (_glsl_version >= 130) { // OpenGL 3.0
+      _supported_shader_caps |=
+        ShaderModule::C_integer |
+        ShaderModule::C_texture_fetch |
+        ShaderModule::C_buffer_texture |
+        ShaderModule::C_vertex_id |
+        ShaderModule::C_round_even;
+    }
+
+    if (_glsl_version >= 140) { // OpenGL 3.1
+      _supported_shader_caps |= ShaderModule::C_instance_id;
+    }
+
+    if (_glsl_version >= 150) { // OpenGL 3.2
+      _supported_shader_caps |=
+        ShaderModule::C_geometry_shader |
+        ShaderModule::C_primitive_id;
+      _supported_geom_rendering |= Geom::GR_adjacency;
+    }
+    else {
+      if (has_extension("GL_ARB_draw_instanced")) {
+        _supported_shader_caps |= ShaderModule::C_instance_id;
+      }
+      if (has_extension("GL_ARB_geometry_shader4")) {
+        _supported_shader_caps |= ShaderModule::C_geometry_shader;
+        _supported_geom_rendering |= Geom::GR_adjacency;
+      }
+    }
+
+    if (_glsl_version >= 330 || has_extension("GL_ARB_shader_bit_encoding")) {
+      _supported_shader_caps |= ShaderModule::C_bit_encoding;
+    }
+
+    if (_glsl_version >= 400) {
+      _supported_shader_caps |=
+        ShaderModule::C_double |
+        ShaderModule::C_cube_map_array |
+        ShaderModule::C_tessellation_shader |
+        ShaderModule::C_sample_variables |
+        ShaderModule::C_extended_arithmetic |
+        ShaderModule::C_texture_query_lod;
+    }
+    else {
+      if (has_extension("GL_ARB_gpu_shader_fp64")) {
+        _supported_shader_caps |= ShaderModule::C_double;
+      }
+      if (has_extension("GL_ARB_tessellation_shader")) {
+        _supported_shader_caps |= ShaderModule::C_tessellation_shader;
+      }
+      if (has_extension("GL_ARB_texture_query_lod")) {
+        _supported_shader_caps |= ShaderModule::C_texture_query_lod;
+      }
+    }
+
+    if (_glsl_version >= 420 || has_extension("GL_ARB_shader_image_load_store")) {
+      _supported_shader_caps |= ShaderModule::C_image_load_store;
+    }
+
+    if (_glsl_version >= 430 || has_extension("GL_ARB_compute_shader")) {
+      _supported_shader_caps |= ShaderModule::C_compute_shader;
+    }
+
+    if (_glsl_version >= 430 || has_extension("GL_ARB_texture_query_levels")) {
+      _supported_shader_caps |= ShaderModule::C_texture_query_levels;
+    }
+
+    if (_glsl_version >= 440 || has_extension("GL_ARB_enhanced_layouts")) {
+      _supported_shader_caps |= ShaderModule::C_enhanced_layouts;
+    }
+
+    if (_glsl_version >= 450) {
+      _supported_shader_caps |=
+        ShaderModule::C_derivative_control |
+        ShaderModule::C_texture_query_samples;
+    }
+    else if (has_extension("GL_ARB_derivative_control")) {
+      _supported_shader_caps |= ShaderModule::C_derivative_control;
+    }
+  }
 
   if (is_at_least_gl_version(3, 2)) {
-    _supports_geometry_shaders = true;
     _glFramebufferTexture = (PFNGLFRAMEBUFFERTEXTUREARBPROC)
       get_extension_func("glFramebufferTexture");
-
-  } else if (has_extension("GL_ARB_geometry_shader4")) {
-    _supports_geometry_shaders = true;
+  }
+  else if (has_extension("GL_ARB_geometry_shader4")) {
     _glFramebufferTexture = (PFNGLFRAMEBUFFERTEXTUREARBPROC)
       get_extension_func("glFramebufferTextureARB");
     _glProgramParameteri = (PFNGLPROGRAMPARAMETERIPROC)
       get_extension_func("glProgramParameteriARB");
-
-  } else if (has_extension("GL_EXT_geometry_shader4")) {
-    _supports_geometry_shaders = true;
-    _glFramebufferTexture = nullptr;
-    _glProgramParameteri = (PFNGLPROGRAMPARAMETERIPROC)
-      get_extension_func("glProgramParameteriEXT");
-
-  } else {
-    _supports_geometry_shaders = false;
+  }
+  else {
     _glFramebufferTexture = nullptr;
   }
 #endif
-  _shader_caps._supports_glsl = _supports_glsl;
 
   // Check for SPIR-V support.
 #ifndef OPENGLES
-  _supports_spir_v = has_extension("GL_ARB_gl_spirv");
-  if (_supports_spir_v) {
+  _supports_spir_v = false;
+  if (has_extension("GL_ARB_gl_spirv")) {
     _glShaderBinary = (PFNGLSHADERBINARYPROC)
       get_extension_func("glShaderBinary");
     _glSpecializeShader = (PFNGLSPECIALIZESHADERARBPROC)
@@ -1731,89 +1838,30 @@ reset() {
                has_extension("GL_EXT_direct_state_access")) {
       _glProgramUniform1i = (PFNGLPROGRAMUNIFORM1IPROC)
         get_extension_func("glProgramUniform1iEXT");
+    }
 
-    } else {
-      _supports_spir_v = false;
+    if (gl_support_spirv && _glShaderBinary != nullptr &&
+        _glSpecializeShader != nullptr && _glProgramUniform1i != nullptr) {
+      _supports_spir_v = true;
     }
   }
 #endif
 
-  // Check for support for other types of shaders that can be used by Cg.
-  _supports_basic_shaders = false;
+  _supports_basic_shaders = _supports_glsl;
+
 #if defined(HAVE_CG) && !defined(OPENGLES)
-  if (has_extension("GL_ARB_vertex_program") &&
-      has_extension("GL_ARB_fragment_program")) {
-    _supports_basic_shaders = true;
-    _shader_caps._active_vprofile = (int)CG_PROFILE_ARBVP1;
-    _shader_caps._active_fprofile = (int)CG_PROFILE_ARBFP1;
-    _shader_caps._active_gprofile = (int)CG_PROFILE_UNKNOWN; // No geometry shader if only using basic
-
-    if (basic_shaders_only) {
-      // We're happy with ARB programs, thanks.
-    } else if (has_extension("GL_NV_gpu_program5")) {
-      _shader_caps._active_vprofile = (int)CG_PROFILE_GP5VP;
-      _shader_caps._active_fprofile = (int)CG_PROFILE_GP5FP;
-      _shader_caps._active_gprofile = (int)CG_PROFILE_GP5GP;
-
-    } else if (has_extension("GL_NV_gpu_program4")) {
-      _shader_caps._active_vprofile = (int)CG_PROFILE_GP4VP;
-      _shader_caps._active_fprofile = (int)CG_PROFILE_GP4FP;
-      _shader_caps._active_gprofile = (int)CG_PROFILE_GP4GP;
-
-    } else if (has_extension("GL_NV_vertex_program3") &&
-               has_extension("GL_NV_fragment_program2")) {
-      _shader_caps._active_vprofile = (int)CG_PROFILE_VP40;
-      _shader_caps._active_fprofile = (int)CG_PROFILE_FP40;
-      _shader_caps._active_gprofile = (int)CG_PROFILE_UNKNOWN;
-
-    } else if (has_extension("GL_NV_vertex_program2") &&
-               has_extension("GL_NV_fragment_program")) {
-      _shader_caps._active_vprofile = (int)CG_PROFILE_VP30;
-      _shader_caps._active_fprofile = (int)CG_PROFILE_FP30;
-      _shader_caps._active_gprofile = (int)CG_PROFILE_UNKNOWN;
-
-    } else if (has_extension("GL_NV_vertex_program1_1") &&
-               has_extension("GL_NV_texture_shader2") &&
-               has_extension("GL_NV_register_combiners2")) {
-      _shader_caps._active_vprofile = (int)CG_PROFILE_VP20;
-      _shader_caps._active_fprofile = (int)CG_PROFILE_FP20;
-      _shader_caps._active_gprofile = (int)CG_PROFILE_UNKNOWN;
-
-    } else if (_supports_glsl) {
-      // This is what will be available to non-NVIDIA cards.  It is the last
-      // option since it is slower to compile GLSL than the other options.
-      _shader_caps._active_vprofile = (int)CG_PROFILE_GLSLV;
-      _shader_caps._active_fprofile = (int)CG_PROFILE_GLSLF;
-      if (_supports_geometry_shaders) {
-        _shader_caps._active_gprofile = (int)CG_PROFILE_GLSLG;
-      }
+  if (_supports_glsl) {
+    _shader_caps._active_vprofile = (int)CG_PROFILE_GLSLV;
+    _shader_caps._active_fprofile = (int)CG_PROFILE_GLSLF;
+    if (get_supports_geometry_shaders()) {
+      _shader_caps._active_gprofile = (int)CG_PROFILE_GLSLG;
     }
     _shader_caps._ultimate_vprofile = (int)CG_PROFILE_GLSLV;
     _shader_caps._ultimate_fprofile = (int)CG_PROFILE_GLSLF;
     _shader_caps._ultimate_gprofile = (int)CG_PROFILE_GLSLG;
-
-    // Bug workaround for radeons.
-    if (_shader_caps._active_fprofile == CG_PROFILE_ARBFP1) {
-      if (has_extension("GL_ATI_draw_buffers")) {
-        _shader_caps._bug_list.insert(Shader::SBUG_ati_draw_buffers);
-      }
-    }
-
-    Shader::set_default_caps(_shader_caps);
-
-  } else if (_supports_glsl) {
-    // No, but we do support GLSL...
-    _shader_caps._active_vprofile = (int)CG_PROFILE_GLSLV;
-    _shader_caps._active_fprofile = (int)CG_PROFILE_GLSLF;
-    if (_supports_geometry_shaders) {
-      _shader_caps._active_gprofile = (int)CG_PROFILE_GLSLG;
-    } else {
-      _shader_caps._active_gprofile = (int)CG_PROFILE_UNKNOWN;
-    }
   }
 #endif  // HAVE_CG
 
-  _supports_compute_shaders = false;
 #ifndef OPENGLES_1
 #ifdef OPENGLES
   if (is_at_least_gles_version(3, 1)) {
@@ -1822,10 +1870,6 @@ reset() {
 #endif
     _glDispatchCompute = (PFNGLDISPATCHCOMPUTEPROC)
       get_extension_func("glDispatchCompute");
-
-    if (_glDispatchCompute != nullptr) {
-      _supports_compute_shaders = true;
-    }
   }
 #endif  // !OPENGLES_1
 
@@ -1946,7 +1990,7 @@ reset() {
       _glVertexAttribLPointer = nullptr;
     }
 
-    if (_supports_tessellation_shaders) {
+    if (get_supports_tessellation_shaders()) {
       _glPatchParameteri = (PFNGLPATCHPARAMETERIPROC)
          get_extension_func("glPatchParameteri");
     }
@@ -3489,36 +3533,34 @@ reset() {
   _runtime_color_scale = !has_fixed_function_pipeline();
 
 #ifndef OPENGLES
-  if (_gl_shadlang_ver_major >= 4 || has_extension("GL_NV_gpu_program5")) {
+  if (_glsl_version >= 400 || has_extension("GL_NV_gpu_program5")) {
     // gp5fp - OpenGL fragment profile for GeForce 400 Series and up
     _shader_model = SM_50;
-
-  } else if (_gl_shadlang_ver_major >= 3 ||
-             has_extension("GL_NV_gpu_program4")) {
+  }
+  else if (_glsl_version >= 300 || has_extension("GL_NV_gpu_program4")) {
     // gp4fp - OpenGL fragment profile for G8x (GeForce 8xxx and up)
     _shader_model = SM_40;
-
-  } else if (has_extension("GL_NV_fragment_program2")) {
+  }
+  else if (has_extension("GL_NV_fragment_program2")) {
     // fp40 - OpenGL fragment profile for NV4x (GeForce 6xxx and 7xxx Series,
     // NV4x-based Quadro FX, etc.)
     _shader_model = SM_30;
-
-  } else if (has_extension("GL_NV_fragment_program")) {
+  }
+  else if (has_extension("GL_NV_fragment_program")) {
     // fp30 - OpenGL fragment profile for NV3x (GeForce FX, Quadro FX, etc.)
     _shader_model = SM_2X;
-
-  } else if (_gl_shadlang_ver_major >= 1 ||
-             has_extension("GL_ARB_fragment_program")) {
+  }
+  else if (_glsl_version >= 100 || has_extension("GL_ARB_fragment_program")) {
     // This OpenGL profile corresponds to the per-fragment functionality
     // introduced by GeForce FX and other DirectX 9 GPUs.
     _shader_model = SM_20;
-
-  } else if (has_extension("GL_NV_texture_shader2")) {
+  }
+  else if (has_extension("GL_NV_texture_shader2")) {
     // fp20 - OpenGL fragment profile for NV2x (GeForce3, GeForce4 Ti, Quadro
     // DCC, etc.)
     _shader_model = SM_11;
-
-  } else {
+  }
+  else {
     // No shader support
     _shader_model = SM_00;
   }
@@ -3541,53 +3583,11 @@ reset() {
   _auto_detect_shader_model = _shader_model;
 
   if (GLCAT.is_debug()) {
-#ifdef HAVE_CG
-#if CG_VERSION_NUM >= 2200
-    GLCAT.debug() << "Supported Cg profiles:\n";
-    int num_profiles = cgGetNumSupportedProfiles();
-    for (int i = 0; i < num_profiles; ++i) {
-      CGprofile profile = cgGetSupportedProfile(i);
-      if (cgGLIsProfileSupported(profile)) {
-        GLCAT.debug() << "  " << cgGetProfileString(profile) << "\n";
-      }
-    }
-#endif  // CG_VERSION_NUM >= 2200
-
-#if CG_VERSION_NUM >= 3100
-    GLCAT.debug() << "Cg GLSL version = "
-      << cgGLGetGLSLVersionString(cgGLDetectGLSLVersion()) << "\n";
-#endif
-
-    GLCAT.debug()
-      << "Cg latest vertex profile = "
-      << cgGetProfileString(cgGLGetLatestProfile(CG_GL_VERTEX)) << "\n";
-    GLCAT.debug()
-      << "Cg latest fragment profile = "
-      << cgGetProfileString(cgGLGetLatestProfile(CG_GL_FRAGMENT)) << "\n";
-#if CG_VERSION_NUM >= 2000
-    GLCAT.debug()
-      << "Cg latest geometry profile = "
-      << cgGetProfileString(cgGLGetLatestProfile(CG_GL_GEOMETRY)) << "\n";
-#endif
-    GLCAT.debug() << "basic-shaders-only " << basic_shaders_only << "\n";
-    GLCAT.debug()
-      << "Cg active vertex profile = "
-      << cgGetProfileString((CGprofile)_shader_caps._active_vprofile) << "\n";
-    GLCAT.debug()
-      << "Cg active fragment profile = "
-      << cgGetProfileString((CGprofile)_shader_caps._active_fprofile) << "\n";
-    GLCAT.debug()
-      << "Cg active geometry profile = "
-      << cgGetProfileString((CGprofile)_shader_caps._active_gprofile) << "\n";
-#endif  // HAVE_CG
-
     GLCAT.debug() << "shader model = " << _shader_model << "\n";
   }
-#endif  // !OPENGLES
 
   // OpenGL core profile requires a VAO to be bound.  It's a bit silly,
   // because we can just bind a VAO and then forget about it.
-#if !defined(OPENGLES)
   if (core_profile) {
     if (_supports_vao) {
       _glGenVertexArrays(1, &_current_vao_index);
@@ -6267,6 +6267,16 @@ prepare_shader(Shader *se) {
 
 #ifndef OPENGLES_1
   if (_supports_glsl) {
+    int unsupported_caps = se->get_used_capabilities() & ~_supported_shader_caps;
+    if (unsupported_caps != 0) {
+      std::ostream &out = GLCAT.error()
+        << "Cannot load shader because the graphics back-end does not support "
+           "these capabilities: ";
+
+      ShaderModule::output_capabilities(out, unsupported_caps);
+      out << std::endl;
+    }
+
     push_group_marker(std::string("Prepare Shader ") + se->get_debug_name());
     ShaderContext *result = new CLP(ShaderContext)(this, se);
     pop_group_marker();
@@ -7068,7 +7078,7 @@ dispatch_compute(int num_groups_x, int num_groups_y, int num_groups_z) {
   maybe_gl_finish();
 
   PStatGPUTimer timer(this, _compute_dispatch_pcollector);
-  nassertv(_supports_compute_shaders);
+  nassertv(get_supports_compute_shaders());
   nassertv(_current_shader_context != nullptr);
   _glDispatchCompute(num_groups_x, num_groups_y, num_groups_z);
 
@@ -8791,32 +8801,30 @@ query_gl_version() {
  */
 void CLP(GraphicsStateGuardian)::
 query_glsl_version() {
-  _gl_shadlang_ver_major = 0;
-  _gl_shadlang_ver_minor = 0;
+  _glsl_version = 0;
 #ifndef OPENGLES_1
 
 #ifndef OPENGLES
   // OpenGL 2.0 introduces GLSL in the core.  In 1.x, it is an extension.
   if (_gl_version_major >= 2 || has_extension("GL_ARB_shading_language_100")) {
     string ver = show_gl_string("GL_SHADING_LANGUAGE_VERSION", GL_SHADING_LANGUAGE_VERSION);
-    _gl_shadlang_ver_major = 1;
-    _gl_shadlang_ver_minor = (_gl_version_major >= 2) ? 1 : 0;
-    if (ver.empty() ||
-        sscanf(ver.c_str(), "%d.%d", &_gl_shadlang_ver_major,
-                                     &_gl_shadlang_ver_minor) != 2) {
+    int major = 1;
+    int minor = (_gl_version_major >= 2) ? 1 : 0;
+    if (ver.empty() || sscanf(ver.c_str(), "%d.%d", &major, &minor) != 2) {
       GLCAT.warning() << "Invalid GL_SHADING_LANGUAGE_VERSION format.\n";
     }
+    _glsl_version = major * 100 + minor;
   }
 #else
   // OpenGL ES 2.0 and above has shader support built-in.
   string ver = show_gl_string("GL_SHADING_LANGUAGE_VERSION", GL_SHADING_LANGUAGE_VERSION);
-  _gl_shadlang_ver_major = 1;
-  _gl_shadlang_ver_minor = 0;
+  int major = 1;
+  int minor = 0;
   if (ver.empty() ||
-      sscanf(ver.c_str(), "OpenGL ES GLSL ES %d.%d", &_gl_shadlang_ver_major,
-                                                     &_gl_shadlang_ver_minor) != 2) {
+      sscanf(ver.c_str(), "OpenGL ES GLSL ES %d.%d", &major, &minor) != 2) {
     GLCAT.warning() << "Invalid GL_SHADING_LANGUAGE_VERSION format.\n";
   }
+  _glsl_version = major * 100 + minor;
 #endif
 
   if (GLCAT.is_debug()) {
@@ -8825,8 +8833,7 @@ query_glsl_version() {
 #ifdef OPENGLES
          "ES "
 #endif
-         "version: "
-      << _gl_shadlang_ver_major << "." << _gl_shadlang_ver_minor << "\n";
+         "version: " << _glsl_version << "\n";
   }
 #endif  // !OPENGLES_1
 }

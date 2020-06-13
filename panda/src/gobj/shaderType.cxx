@@ -82,6 +82,14 @@ std::ostream &operator << (std::ostream &out, ShaderType::ScalarType scalar_type
 
 #ifndef CPPPARSER
 /**
+ * Returns true if this type contains the given scalar type.
+ */
+bool ShaderType::Scalar::
+contains_scalar_type(ScalarType type) const {
+  return _scalar_type == type;
+}
+
+/**
  * If this is an array, vector or matrix of a scalar type, extracts the
  * dimensions.
  */
@@ -112,6 +120,14 @@ compare_to_impl(const ShaderType &other) const {
   const Scalar &other_scalar = (const Scalar &)other;
   return (_scalar_type > other_scalar._scalar_type)
        - (_scalar_type < other_scalar._scalar_type);
+}
+
+/**
+ * Returns true if this type contains the given scalar type.
+ */
+bool ShaderType::Vector::
+contains_scalar_type(ScalarType type) const {
+  return _scalar_type == type;
 }
 
 /**
@@ -151,6 +167,14 @@ compare_to_impl(const ShaderType &other) const {
 }
 
 /**
+ * Returns true if this type contains the given scalar type.
+ */
+bool ShaderType::Matrix::
+contains_scalar_type(ScalarType type) const {
+  return _scalar_type == type;
+}
+
+/**
  * If this is an array, vector or matrix of a scalar type, extracts the
  * dimensions.
  */
@@ -187,6 +211,19 @@ compare_to_impl(const ShaderType &other) const {
   }
   return (_num_columns > other_matrix._num_columns)
        - (_num_columns < other_matrix._num_columns);
+}
+
+/**
+ * Returns true if this type contains the given scalar type.
+ */
+bool ShaderType::Struct::
+contains_scalar_type(ScalarType type) const {
+  for (const Member &member : _members) {
+    if (member.type != nullptr && member.type->contains_scalar_type(type)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 /**
@@ -241,6 +278,14 @@ get_num_parameter_locations() const {
     total += member.type->get_num_parameter_locations();
   }
   return total;
+}
+
+/**
+ * Returns true if this type contains the given scalar type.
+ */
+bool ShaderType::Array::
+contains_scalar_type(ScalarType type) const {
+  return _element_type != nullptr && _element_type->contains_scalar_type(type);
 }
 
 /**

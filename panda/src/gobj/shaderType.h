@@ -69,6 +69,7 @@ PUBLISHED:
 
 public:
   virtual bool is_aggregate_type() const { return false; }
+  virtual bool contains_scalar_type(ScalarType type) const { return false; }
   virtual bool as_scalar_type(ScalarType &type,
                               uint32_t &num_elements,
                               uint32_t &num_rows,
@@ -115,6 +116,7 @@ public:
   INLINE Scalar(ScalarType scalar_type);
 
   INLINE ScalarType get_scalar_type() const;
+  virtual bool contains_scalar_type(ScalarType type) const override;
   virtual bool as_scalar_type(ScalarType &type, uint32_t &num_elements,
                               uint32_t &num_rows, uint32_t &num_columns) const override;
 
@@ -152,6 +154,7 @@ public:
   INLINE ScalarType get_scalar_type() const;
   INLINE uint32_t get_num_components() const;
 
+  virtual bool contains_scalar_type(ScalarType type) const override;
   virtual bool as_scalar_type(ScalarType &type, uint32_t &num_elements,
                               uint32_t &num_rows, uint32_t &num_columns) const override;
 
@@ -190,6 +193,7 @@ public:
   INLINE uint32_t get_num_rows() const;
   INLINE uint32_t get_num_columns() const;
 
+  virtual bool contains_scalar_type(ScalarType type) const override;
   virtual bool as_scalar_type(ScalarType &type, uint32_t &num_elements,
                               uint32_t &num_rows, uint32_t &num_columns) const override;
 
@@ -235,6 +239,7 @@ public:
   virtual int get_num_parameter_locations() const override;
 
   bool is_aggregate_type() const override { return true; }
+  virtual bool contains_scalar_type(ScalarType type) const override;
   const Struct *as_struct() const override { return this; }
 
 PUBLISHED:
@@ -272,6 +277,7 @@ public:
   INLINE const ShaderType *get_element_type() const;
   INLINE uint32_t get_num_elements() const;
 
+  virtual bool contains_scalar_type(ScalarType type) const override;
   virtual bool as_scalar_type(ScalarType &type, uint32_t &num_elements,
                               uint32_t &num_rows, uint32_t &num_columns) const override;
 

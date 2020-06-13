@@ -748,8 +748,7 @@ protected:
   std::string _gl_renderer;
   std::string _gl_version;
   int _gl_version_major, _gl_version_minor;
-  // #--- Zhao Nov2011
-  int _gl_shadlang_ver_major, _gl_shadlang_ver_minor;
+  int _glsl_version = 0;
 
   pset<std::string> _extensions;
 

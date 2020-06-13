@@ -21,6 +21,14 @@ get_stage() const {
 }
 
 /**
+ * Returns the set of capabilities used by this shader.
+ */
+INLINE int ShaderModule::
+get_used_capabilities() const {
+  return _used_caps;
+}
+
+/**
  * Returns the original filename that the module was compiled from.  This may
  * be empty.
  */

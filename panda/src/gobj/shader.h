@@ -113,6 +113,7 @@ PUBLISHED:
   INLINE const std::string &get_text(ShaderType type = ST_none) const;
   INLINE bool get_error_flag() const;
   INLINE ShaderLanguage get_language() const;
+  INLINE int get_used_capabilities() const;
 
   INLINE bool has_fullpath() const;
   INLINE const Filename &get_fullpath() const;
@@ -541,6 +542,7 @@ public:
   typedef pvector<COWPT(ShaderModule)> Modules;
   Modules _modules;
   uint32_t _module_mask = 0;
+  int _used_caps = 0;
 
 protected:
   ShaderFile _filename;

@@ -110,6 +110,7 @@ protected:
     DT_type_pointer,
     DT_variable,
     DT_constant,
+    DT_ext_inst,
   };
 
   /**
@@ -124,6 +125,7 @@ protected:
     SpvBuiltIn _builtin = SpvBuiltInMax;
     uint32_t _constant = 0;
     vector_string _member_names;
+    bool _used = false;
 
     // Only defined for DT_variable.
     SpvStorageClass _storage_class;
@@ -135,6 +137,9 @@ protected:
     void set_type_pointer(SpvStorageClass storage_class, const ShaderType *type);
     void set_variable(const ShaderType *type, SpvStorageClass storage_class);
     void set_constant(const ShaderType *type, const uint32_t *words, uint32_t nwords);
+    void set_ext_inst(const char *name);
+
+    void mark_used();
 
     void clear();
   };

@@ -28,6 +28,11 @@ ConfigVariableBool gl_support_fbo
             "EXT_framebuffer_object is broken.  The system might still be "
             "able to create buffers using pbuffers or the like."));
 
+ConfigVariableBool gl_support_spirv
+  ("gl-support-spirv", true,
+   PRC_DESC("True to use the graphics driver's support for SPIR-V shaders if "
+            "available, false to transpile all SPIR-V shaders to GLSL first."));
+
 ConfigVariableBool gl_cheap_textures
   ("gl-cheap-textures", false,
    PRC_DESC("Configure this true to glHint the textures into the cheapest "

@@ -20,6 +20,23 @@ TypeHandle ShaderModule::_type_handle;
  */
 ShaderModule::
 ShaderModule(Stage stage) : _stage(stage) {
+  switch (stage) {
+  case Stage::tess_control:
+  case Stage::tess_evaluation:
+    _used_caps |= C_tessellation_shader;
+    break;
+
+  case Stage::geometry:
+    _used_caps |= C_geometry_shader;
+    break;
+
+  case Stage::compute:
+    _used_caps |= C_compute_shader;
+    break;
+
+  default:
+    break;
+  }
 }
 
 /**
@@ -99,4 +116,74 @@ format_stage(Stage stage) {
   }
 
   return "**invalid**";
+}
+
+/**
+ * Outputs the given capabilities mask.
+ */
+void ShaderModule::
+output_capabilities(std::ostream &out, int caps) {
+  if (caps & C_integer) {
+    out << "integer ";
+  }
+  if (caps & C_texture_fetch) {
+    out << "texture_fetch ";
+  }
+  if (caps & C_buffer_texture) {
+    out << "buffer_texture ";
+  }
+  if (caps & C_vertex_id) {
+    out << "vertex_id ";
+  }
+  if (caps & C_round_even) {
+    out << "round_even ";
+  }
+  if (caps & C_instance_id) {
+    out << "instance_id ";
+  }
+  if (caps & C_geometry_shader) {
+    out << "geometry_shader ";
+  }
+  if (caps & C_primitive_id) {
+    out << "primitive_id ";
+  }
+  if (caps & C_bit_encoding) {
+    out << "bit_encoding ";
+  }
+  if (caps & C_double) {
+    out << "double ";
+  }
+  if (caps & C_cube_map_array) {
+    out << "cube_map_array ";
+  }
+  if (caps & C_tessellation_shader) {
+    out << "tessellation_shader ";
+  }
+  if (caps & C_sample_variables) {
+    out << "sample_variables ";
+  }
+  if (caps & C_extended_arithmetic) {
+    out << "extended_arithmetic ";
+  }
+  if (caps & C_texture_query_lod) {
+    out << "texture_query_lod ";
+  }
+  if (caps & C_image_load_store) {
+    out << "image_load_store ";
+  }
+  if (caps & C_compute_shader) {
+    out << "compute_shader ";
+  }
+  if (caps & C_texture_query_levels) {
+    out << "texture_query_levels ";
+  }
+  if (caps & C_enhanced_layouts) {
+    out << "enhanced_layouts ";
+  }
+  if (caps & C_derivative_control) {
+    out << "derivative_control ";
+  }
+  if (caps & C_texture_query_samples) {
+    out << "texture_query_samples ";
+  }
 }
