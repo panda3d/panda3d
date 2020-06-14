@@ -1891,7 +1891,7 @@ instance_identifier_and_maybe_trailing_return_type:
   }
   $$ = $1;
 }
-        | instance_identifier ':' INTEGER
+        | instance_identifier ':' const_expr
 {
   // Bitfield definition.
   $1->_bit_width = $3;
