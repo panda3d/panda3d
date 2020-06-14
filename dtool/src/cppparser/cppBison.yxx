@@ -3278,17 +3278,9 @@ no_angle_bracket_const_expr:
 {
   $$ = new CPPExpression(CPPExpression::sizeof_func($3));
 }
-        | KW_SIZEOF '(' IDENTIFIER ')' %prec UNARY
+        | KW_SIZEOF no_angle_bracket_const_expr %prec UNARY
 {
-  CPPDeclaration *arg = $3->find_symbol(current_scope, global_scope, current_lexer);
-  if (arg == nullptr) {
-    yyerror("undefined sizeof argument: " + $3->get_fully_scoped_name(), @3);
-  } else if (arg->get_subtype() == CPPDeclaration::ST_instance) {
-    CPPInstance *inst = arg->as_instance();
-    $$ = new CPPExpression(CPPExpression::sizeof_func(inst->_type));
-  } else {
-    $$ = new CPPExpression(CPPExpression::sizeof_func(arg->as_type()));
-  }
+  $$ = new CPPExpression(CPPExpression::sizeof_func($2));
 }
         | KW_SIZEOF ELLIPSIS '(' name ')' %prec UNARY
 {
@@ -3402,9 +3394,9 @@ no_angle_bracket_const_expr:
 {
   $$ = new CPPExpression('f', $1);
 }
-        | no_angle_bracket_const_expr '.' no_angle_bracket_const_expr
+        | no_angle_bracket_const_expr '.' name
 {
-  $$ = new CPPExpression('.', $1, $3);
+  $$ = new CPPExpression('.', $1, new CPPExpression($3, current_scope, global_scope, current_lexer));
 }
         | no_angle_bracket_const_expr POINTSAT no_angle_bracket_const_expr
 {
@@ -3542,17 +3534,9 @@ const_expr:
 {
   $$ = new CPPExpression(CPPExpression::sizeof_func($3));
 }
-        | KW_SIZEOF '(' IDENTIFIER ')' %prec UNARY
+        | KW_SIZEOF const_expr %prec UNARY
 {
-  CPPDeclaration *arg = $3->find_symbol(current_scope, global_scope, current_lexer);
-  if (arg == nullptr) {
-    yyerror("undefined sizeof argument: " + $3->get_fully_scoped_name(), @3);
-  } else if (arg->get_subtype() == CPPDeclaration::ST_instance) {
-    CPPInstance *inst = arg->as_instance();
-    $$ = new CPPExpression(CPPExpression::sizeof_func(inst->_type));
-  } else {
-    $$ = new CPPExpression(CPPExpression::sizeof_func(arg->as_type()));
-  }
+  $$ = new CPPExpression(CPPExpression::sizeof_func($2));
 }
         | KW_SIZEOF ELLIPSIS '(' name ')' %prec UNARY
 {
@@ -3704,9 +3688,9 @@ const_expr:
 {
   $$ = new CPPExpression('f', $1);
 }
-        | const_expr '.' const_expr
+        | const_expr '.' name
 {
-  $$ = new CPPExpression('.', $1, $3);
+  $$ = new CPPExpression('.', $1, new CPPExpression($3, current_scope, global_scope, current_lexer));
 }
         | const_expr POINTSAT const_expr
 {
@@ -3886,17 +3870,9 @@ formal_const_expr:
 {
   $$ = new CPPExpression(CPPExpression::sizeof_func($3));
 }
-        | KW_SIZEOF '(' IDENTIFIER ')' %prec UNARY
+        | KW_SIZEOF formal_const_expr %prec UNARY
 {
-  CPPDeclaration *arg = $3->find_symbol(current_scope, global_scope, current_lexer);
-  if (arg == nullptr) {
-    yyerror("undefined sizeof argument: " + $3->get_fully_scoped_name(), @3);
-  } else if (arg->get_subtype() == CPPDeclaration::ST_instance) {
-    CPPInstance *inst = arg->as_instance();
-    $$ = new CPPExpression(CPPExpression::sizeof_func(inst->_type));
-  } else {
-    $$ = new CPPExpression(CPPExpression::sizeof_func(arg->as_type()));
-  }
+  $$ = new CPPExpression(CPPExpression::sizeof_func($2));
 }
         | KW_SIZEOF ELLIPSIS '(' name ')' %prec UNARY
 {
@@ -4044,9 +4020,9 @@ formal_const_expr:
 {
   $$ = new CPPExpression('f', $1);
 }
-        | formal_const_expr '.' const_expr
+        | formal_const_expr '.' name
 {
-  $$ = new CPPExpression('.', $1, $3);
+  $$ = new CPPExpression('.', $1, new CPPExpression($3, current_scope, global_scope, current_lexer));
 }
         | formal_const_expr POINTSAT const_expr
 {
