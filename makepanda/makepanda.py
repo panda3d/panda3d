@@ -743,6 +743,21 @@ if (COMPILER == "MSVC"):
         LibName("BULLET", GetThirdpartyDir() + "bullet/lib/BulletDynamics" + suffix)
         LibName("BULLET", GetThirdpartyDir() + "bullet/lib/BulletSoftBody" + suffix)
 
+    IncDirectory("GLSLANG", GetThirdpartyDir() + "glslang/include")
+    LibName("GLSLANG", GetThirdpartyDir() + "glslang/lib/glslang.lib")
+    LibName("GLSLANG", GetThirdpartyDir() + "glslang/lib/HLSL.lib")
+    LibName("GLSLANG", GetThirdpartyDir() + "glslang/lib/OGLCompiler.lib")
+    LibName("GLSLANG", GetThirdpartyDir() + "glslang/lib/OSDependent.lib")
+    LibName("GLSLANG", GetThirdpartyDir() + "glslang/lib/SPIRV.lib")
+
+    IncDirectory("SPIRV-TOOLS", GetThirdpartyDir() + "spirv-tools/include")
+    LibName("SPIRV-TOOLS", GetThirdpartyDir() + "spirv-tools/lib/SPIRV-Tools.lib")
+    LibName("SPIRV-TOOLS", GetThirdpartyDir() + "spirv-tools/lib/SPIRV-Tools-Opt.lib")
+
+    IncDirectory("SPIRV-CROSS-GLSL", GetThirdpartyDir() + "spirv-cross/include")
+    LibName("SPIRV-CROSS-GLSL", GetThirdpartyDir() + "spirv-cross/lib/spirv-cross-core.lib")
+    LibName("SPIRV-CROSS-GLSL", GetThirdpartyDir() + "spirv-cross/lib/spirv-cross-glsl.lib")
+
 if (COMPILER=="GCC"):
     if GetTarget() != "darwin":
         PkgDisable("COCOA")
@@ -4410,7 +4425,7 @@ TargetAdd('libp3framework.dll', opts=['ADVAPI'])
 #
 
 if (PkgSkip("GL")==0):
-  OPTS=['DIR:panda/src/glgsg', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGL', 'GL', 'NVIDIACG']
+  OPTS=['DIR:panda/src/glgsg', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGL', 'GL', 'NVIDIACG', 'SPIRV-CROSS-GLSL']
   TargetAdd('p3glgsg_config_glgsg.obj', opts=OPTS, input='config_glgsg.cxx')
   TargetAdd('p3glgsg_glgsg.obj', opts=OPTS, input='glgsg.cxx')
 
@@ -4525,7 +4540,7 @@ if (GetTarget() == 'windows' and PkgSkip("GL")==0):
   if (PkgSkip('PANDAFX')==0):
     TargetAdd('libpandagl.dll', input='libpandafx.dll')
   TargetAdd('libpandagl.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandagl.dll', opts=['MODULE', 'WINGDI', 'GL', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM',  'NVIDIACG', 'CGGL'])
+  TargetAdd('libpandagl.dll', opts=['MODULE', 'WINGDI', 'GL', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM',  'NVIDIACG', 'CGGL', 'SPIRV-CROSS-GLSL'])
 
 #
 # DIRECTORY: panda/src/egldisplay/
