@@ -45,9 +45,7 @@ StandardMunger(GraphicsStateGuardianBase *gsg, const RenderState *state,
 {
   const ShaderAttrib *shader_attrib;
   state->get_attrib_def(shader_attrib);
-#ifdef HAVE_CG
   _auto_shader = shader_attrib->auto_shader();
-#endif
   if (shader_attrib->get_flag(ShaderAttrib::F_hardware_skinning)) {
     _shader_skinning = true;
   }

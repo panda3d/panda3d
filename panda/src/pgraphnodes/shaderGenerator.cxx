@@ -51,8 +51,6 @@ using std::string;
 
 TypeHandle ShaderGenerator::_type_handle;
 
-#ifdef HAVE_CG
-
 #define UNPACK_COMBINE_SRC(from, n) (TextureStage::CombineSource)((from >> ((uint16_t)n * 5u)) & 7u)
 #define UNPACK_COMBINE_OP(from, n) (TextureStage::CombineOperand)(((from >> (((uint16_t)n * 5u) + 3u)) & 3u) + 1u)
 
@@ -2023,5 +2021,3 @@ operator == (const ShaderKey &other) const {
       && _num_clip_planes == other._num_clip_planes
       && _light_ramp == other._light_ramp;
 }
-
-#endif  // HAVE_CG

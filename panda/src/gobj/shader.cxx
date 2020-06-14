@@ -3396,12 +3396,6 @@ make(string body, ShaderLanguage lang) {
       << "Shader::make() now requires an explicit shader language.  Assuming Cg.\n";
     lang = SL_Cg;
   }
-#ifndef HAVE_CG
-  if (lang == SL_Cg) {
-    shader_cat.error() << "Support for Cg shaders is not enabled.\n";
-    return nullptr;
-  }
-#endif
 
   ShaderFile sbody(move(body));
 
@@ -3451,12 +3445,6 @@ make(string body, ShaderLanguage lang) {
 PT(Shader) Shader::
 make(ShaderLanguage lang, string vertex, string fragment, string geometry,
      string tess_control, string tess_evaluation) {
-#ifndef HAVE_CG
-  if (lang == SL_Cg) {
-    shader_cat.error() << "Support for Cg shaders is not enabled.\n";
-    return nullptr;
-  }
-#endif
   if (lang == SL_none) {
     shader_cat.error()
       << "Shader::make() requires an explicit shader language.\n";
