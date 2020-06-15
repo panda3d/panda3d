@@ -280,6 +280,9 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
     return;
   }
 
+  // Bind the program, so that we can call glUniform1i for the textures.
+  _glgsg->_glUseProgram(_glsl_program);
+
   // Is this a SPIR-V shader?  If so, we've already done the reflection.
   if (!_needs_reflection) {
     if (_needs_query_uniform_locations) {
@@ -302,9 +305,7 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
         continue;
       }
 
-#ifndef OPENGLES
-      _glgsg->_glProgramUniform1i(_glsl_program, location, (int)i);
-#endif
+      _glgsg->_glUniform1i(location, (int)i);
       ++i;
     }
 
@@ -329,9 +330,7 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
       ImageInput input = {spec._name, nullptr, spec._writable};
       _glsl_img_inputs.push_back(std::move(input));
 
-#ifndef OPENGLES
-      _glgsg->_glProgramUniform1i(_glsl_program, location, (int)i);
-#endif
+      _glgsg->_glUniform1i(location, (int)i);
       ++i;
     }
 
@@ -383,11 +382,28 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
     if (_slider_table_size > 0 && _slider_table_index == -1) {
       _slider_table_index = _glgsg->_glGetUniformLocation(_glsl_program, "p3d_SliderTable");
     }
-
-    _mat_part_cache = new LMatrix4[_shader->cp_get_mat_cache_size()];
-    return;
+  } else {
+    reflect_program();
   }
 
+  _glgsg->report_my_gl_errors();
+
+  // Restore the active shader.
+  if (_glgsg->_current_shader_context == nullptr) {
+    _glgsg->_glUseProgram(0);
+  } else {
+    _glgsg->_current_shader_context->bind();
+  }
+
+  _mat_part_cache = new LMatrix4[_shader->cp_get_mat_cache_size()];
+}
+
+/**
+ * Analyzes the uniforms, attributes, etc. of a shader that was not already
+ * reflected.
+ */
+void CLP(ShaderContext)::
+reflect_program() {
   // Process the vertex attributes first.
   GLint param_count = 0;
   GLint name_buflen = 0;
@@ -465,9 +481,6 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
   }
 #endif
 
-  // Bind the program, so that we can call glUniform1i for the textures.
-  _glgsg->_glUseProgram(_glsl_program);
-
   // Analyze the uniforms.
   param_count = 0;
   _glgsg->_glGetProgramiv(_glsl_program, GL_ACTIVE_UNIFORMS, &param_count);
@@ -478,17 +491,6 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
   for (int i = 0; i < param_count; ++i) {
     reflect_uniform(i, name_buffer, name_buflen);
   }
-
-  _glgsg->report_my_gl_errors();
-
-  // Restore the active shader.
-  if (_glgsg->_current_shader_context == nullptr) {
-    _glgsg->_glUseProgram(0);
-  } else {
-    _glgsg->_current_shader_context->bind();
-  }
-
-  _mat_part_cache = new LMatrix4[_shader->cp_get_mat_cache_size()];
 }
 
 /**

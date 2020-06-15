@@ -1832,18 +1832,8 @@ reset() {
     _glSpecializeShader = (PFNGLSPECIALIZESHADERARBPROC)
       get_extension_func("glSpecializeShaderARB");
 
-    if (is_at_least_gl_version(4, 1) || has_extension("GL_ARB_separate_shader_objects")) {
-      _glProgramUniform1i = (PFNGLPROGRAMUNIFORM1IPROC)
-        get_extension_func("glProgramUniform1i");
-
-    } else if (has_extension("GL_EXT_separate_shader_objects") ||
-               has_extension("GL_EXT_direct_state_access")) {
-      _glProgramUniform1i = (PFNGLPROGRAMUNIFORM1IPROC)
-        get_extension_func("glProgramUniform1iEXT");
-    }
-
     if (gl_support_spirv && _glShaderBinary != nullptr &&
-        _glSpecializeShader != nullptr && _glProgramUniform1i != nullptr) {
+       _glSpecializeShader != nullptr) {
       _supports_spir_v = true;
     }
   }

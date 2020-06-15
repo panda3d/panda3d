@@ -34,6 +34,7 @@ public:
   ~CLP(ShaderContext)();
   ALLOC_DELETED_CHAIN(CLP(ShaderContext));
 
+  void reflect_program();
   void query_uniform_locations(const ShaderModule *module);
   void r_query_uniform_locations(uint32_t from_location, const ShaderType *type, const char *name);
   void reflect_attribute(int i, char *name_buf, GLsizei name_buflen);
