@@ -12,7 +12,7 @@ import pickle
 import _thread as thread
 import configparser
 
-SUFFIX_INC = [".cxx",".cpp",".c",".h",".I",".yxx",".lxx",".mm",".rc",".r"]
+SUFFIX_INC = [".cxx",".cpp",".c",".h",".hpp",".I",".yxx",".lxx",".mm",".rc",".r"]
 SUFFIX_DLL = [".dll",".dlo",".dle",".dli",".dlm",".mll",".exe",".pyd",".ocx"]
 SUFFIX_LIB = [".lib",".ilb"]
 VCS_DIRS = set(["CVS", "CVSROOT", ".git", ".hg", "__pycache__"])
@@ -2992,7 +2992,7 @@ def CopyAllFiles(dstdir, srcdir, suffix=""):
         CopyFile(dstdir + x, srcdir + x)
 
 def CopyAllHeaders(dir, skip=[]):
-    for filename in GetDirectoryContents(dir, ["*.h", "*.I", "*.T"], skip):
+    for filename in GetDirectoryContents(dir, ["*.h", "*.hpp", "*.I", "*.T"], skip):
         srcfile = dir + "/" + filename
         dstfile = OUTPUTDIR + "/include/" + filename
         if (NeedsBuild([dstfile], [srcfile])):
