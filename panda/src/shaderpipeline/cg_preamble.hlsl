@@ -17,6 +17,10 @@
  * and types that were supported in Cg but are not available in HLSL.
  */
 
+// Bug in glslang, see KhronosGroup/glslang#2265
+typedef samplerCube samplerCUBE;
+
+// Cg accepts this type and these functions, despite being GLSL
 typedef sampler2D sampler2DShadow;
 
 float4 shadow2D(sampler2D samp, float3 s) {
@@ -27,6 +31,9 @@ float4 shadow2DProj(sampler2D samp, float4 s) {
   return tex2Dproj(samp, s).r > s.z / s.w;
 }
 
+// Redefine overloads for built-in texturing functions to match the Cg
+// parameterization.  We can't overload tex2D, but we'll define them as
+// f4tex2D et al and use macros to redefine tex2D et al to that.
 float4 f4tex1D(sampler1D samp, float s) {
   return tex1D(samp, s);
 }
@@ -91,7 +98,6 @@ float4 f4tex2Dproj(sampler2D samp, float4 s, float2 dx, float2 dy) {
   return tex2D(samp, s.xy / s.w, dx, dy).r > s.z / s.w;
 }
 
-/*
 float4 f4texCUBE(samplerCUBE samp, float3 s) {
   return texCUBE(samp, s);
 }
@@ -107,7 +113,6 @@ float4 f4texCUBE(samplerCUBE samp, float3 s, float3 dx, float3 dy) {
 float4 f4texCUBE(samplerCUBE samp, float4 s, float3 dx, float3 dy) {
   return texCUBE(samp, s.xyz, dx, dy).r > s.w;
 }
-*/
 
 #define f1tex1D(x, y) (f4tex1D((x), (y)).r)
 #define f3tex1D(x, y) (f4tex1D((x), (y)).rgb)
@@ -125,11 +130,9 @@ float4 f4texCUBE(samplerCUBE samp, float4 s, float3 dx, float3 dy) {
 #define f3tex2Dproj(x, y) (f4tex2Dproj((x), (y)).rgb)
 #define tex2Dproj f4tex2Dproj
 
-/*
 #define f1texCUBE(x, y) (f4texCUBE((x), (y)).r)
 #define f3texCUBE(x, y) (f4texCUBE((x), (y)).rgb)
 #define texCUBE f4texCUBE
-*/
 
 uint bitfieldExtract(uint val, int off, int size) {
   uint mask = uint((1 << size) - 1);
