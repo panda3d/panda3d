@@ -49,6 +49,8 @@ set(P3GOBJ_HEADERS
   shader.I shader.h
   shaderBuffer.h shaderBuffer.I
   shaderContext.h shaderContext.I
+  shaderModule.h shaderModule.I
+  shaderType.h shaderType.I
   simpleAllocator.h simpleAllocator.I
   simpleLru.h simpleLru.I
   sliderTable.I sliderTable.h
@@ -129,6 +131,8 @@ set(P3GOBJ_SOURCES
   shader.cxx
   shaderBuffer.cxx
   shaderContext.cxx
+  shaderModule.cxx
+  shaderType.cxx
   simpleAllocator.cxx
   simpleLru.cxx
   sliderTable.cxx

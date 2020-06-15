@@ -17,6 +17,7 @@
 #include "copyOnWriteObject.h"
 #include "bamCacheRecord.h"
 #include "shaderType.h"
+#include "internalName.h"
 
 /**
  * Represents a single shader module in some intermediate representation for
@@ -27,7 +28,7 @@
  * shared between multiple Shader objects, with a unique copy automatically
  * being created if the Shader needs to manipulate the module.
  */
-class EXPCL_PANDA_SHADERPIPELINE ShaderModule : public CopyOnWriteObject {
+class EXPCL_PANDA_GOBJ ShaderModule : public CopyOnWriteObject {
 PUBLISHED:
   enum class Stage {
     vertex,
@@ -48,7 +49,7 @@ PUBLISHED:
 
   PUBLISHED:
     const ShaderType *type;
-    CPT_InternalName name;
+    CPT(InternalName) name;
 
     MAKE_PROPERTY2(location, has_location, get_location);
 

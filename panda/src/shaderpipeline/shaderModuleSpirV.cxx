@@ -62,7 +62,7 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words) :
     if (def._dtype == DT_variable && def._builtin == SpvBuiltInMax) {
       Variable var;
       var.type = def._type;
-      var.name = def._name;
+      var.name = InternalName::make(def._name);
       var._location = def._location;
       //var._id = id;
 

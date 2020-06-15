@@ -18,7 +18,6 @@
 #include "shaderCompilerGlslPreProc.h"
 #include "shaderCompilerCg.h"
 
-#include "shaderModule.h"
 #include "shaderModuleGlsl.h"
 #include "shaderModuleSpirV.h"
 
@@ -47,7 +46,6 @@ init_libshaderpipeline() {
   initialized = true;
 
   ShaderCompilerGlslang::init_type();
-  ShaderModule::init_type();
   ShaderModuleSpirV::init_type();
   ShaderModuleGlsl::init_type();
 
