@@ -5,7 +5,7 @@ coverage:
         threshold: 0.1
     patch:
       default:
-        threshold: 0.1
+        target: 0%
 codecov:
   require_ci_to_pass: true
   notify:

@@ -25,19 +25,39 @@ TypeHandle eglGraphicsPipe::_type_handle;
  *
  */
 eglGraphicsPipe::
-eglGraphicsPipe(const std::string &display) : x11GraphicsPipe(display) {
+eglGraphicsPipe() {
+  //NB. if the X11 display failed to open, _display will be 0, which is a valid
+  // input to eglGetDisplay - it means to open the default display.
+#ifdef HAVE_X11
   _egl_display = eglGetDisplay((NativeDisplayType) _display);
+#else
+  _egl_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+#endif
   if (!eglInitialize(_egl_display, nullptr, nullptr)) {
     egldisplay_cat.error()
       << "Couldn't initialize the EGL display: "
       << get_egl_error_string(eglGetError()) << "\n";
+    _is_valid = false;
+    return;
   }
 
+#if defined(OPENGLES_1) || defined(OPENGLES_2)
   if (!eglBindAPI(EGL_OPENGL_ES_API)) {
     egldisplay_cat.error()
       << "Couldn't bind EGL to the OpenGL ES API: "
       << get_egl_error_string(eglGetError()) << "\n";
+#else
+  if (!eglBindAPI(EGL_OPENGL_API)) {
+    egldisplay_cat.error()
+      << "Couldn't bind EGL to the OpenGL API: "
+      << get_egl_error_string(eglGetError()) << "\n";
+#endif
+    _is_valid = false;
+    return;
   }
+
+  // Even if we don't have an X11 display, we can still render headless.
+  _is_valid = true;
 }
 
 /**
@@ -61,7 +81,11 @@ eglGraphicsPipe::
  */
 std::string eglGraphicsPipe::
 get_interface_name() const {
+#if defined(OPENGLES_1) || defined(OPENGLES_2)
   return "OpenGL ES";
+#else
+  return "OpenGL";
+#endif
 }
 
 /**
@@ -110,6 +134,10 @@ make_output(const std::string &name,
   // First thing to try: an eglGraphicsWindow
 
   if (retry == 0) {
+#ifdef HAVE_X11
+    if (!_display) {
+      return nullptr;
+    }
     if (((flags&BF_require_parasite)!=0)||
         ((flags&BF_refuse_window)!=0)||
         ((flags&BF_resizeable)!=0)||
@@ -121,9 +149,12 @@ make_output(const std::string &name,
     }
     return new eglGraphicsWindow(engine, this, name, fb_prop, win_prop,
                                  flags, gsg, host);
+#else
+    return nullptr;
+#endif
   }
 
-  // Second thing to try: a GLES(2)GraphicsBuffer
+  // Second thing to try: a GL(ES(2))GraphicsBuffer
   if (retry == 1) {
     if ((host==0)||
   // (!gl_support_fbo)||
@@ -154,9 +185,12 @@ make_output(const std::string &name,
 #ifdef OPENGLES_2
     return new GLES2GraphicsBuffer(engine, this, name, fb_prop, win_prop,
                                   flags, gsg, host);
-#else
+#elif defined(OPENGLES_1)
     return new GLESGraphicsBuffer(engine, this, name, fb_prop, win_prop,
                                   flags, gsg, host);
+#else
+    return new GLGraphicsBuffer(engine, this, name, fb_prop, win_prop,
+                                flags, gsg, host);
 #endif
   }
 
@@ -184,6 +218,10 @@ make_output(const std::string &name,
 
   // Fourth thing to try: an eglGraphicsPixmap.
   if (retry == 3) {
+#ifdef HAVE_X11
+    if (!_display) {
+      return nullptr;
+    }
     if (((flags&BF_require_parasite)!=0)||
         ((flags&BF_require_window)!=0)||
         ((flags&BF_resizeable)!=0)||
@@ -198,6 +236,9 @@ make_output(const std::string &name,
 
     return new eglGraphicsPixmap(engine, this, name, fb_prop, win_prop,
                                  flags, gsg, host);
+#else
+    return nullptr;
+#endif
   }
 
   // Nothing else left to try.
