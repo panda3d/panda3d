@@ -591,13 +591,13 @@ postprocess_glsl150(ShaderModuleSpirV::InstructionStream &stream) {
   bool has_explicit_location = false;
 
   for (ShaderModuleSpirV::Instruction op : stream) {
-    if (op.opcode == SpvOpSource) {
+    if (op.opcode == spv::OpSource) {
       // Set this back to 150.
       if (op.nargs >= 2) {
         op.args[1] = 150;
       }
     }
-    else if (op.opcode == SpvOpSourceExtension) {
+    else if (op.opcode == spv::OpSourceExtension) {
       if (strcmp((const char *)op.args, "GL_ARB_shader_bit_encoding") == 0 ||
           strcmp((const char *)op.args, "GL_ARB_gpu_shader5") == 0) {
         has_bit_encoding = true;
@@ -606,15 +606,15 @@ postprocess_glsl150(ShaderModuleSpirV::InstructionStream &stream) {
         has_explicit_location = true;
       }
     }
-    else if (op.opcode == SpvOpDecorate && op.nargs >= 2 &&
-             (SpvDecoration)op.args[1] == SpvDecorationLocation &&
+    else if (op.opcode == spv::OpDecorate && op.nargs >= 2 &&
+             (spv::Decoration)op.args[1] == spv::DecorationLocation &&
              !has_explicit_location) {
       shader_cat.error()
         << "Explicit location assignments require #version 330 or "
            "#extension GL_ARB_explicit_attrib_location\n";
       return false;
     }
-    else if (op.opcode == SpvOpBitcast && !has_bit_encoding) {
+    else if (op.opcode == spv::OpBitcast && !has_bit_encoding) {
       shader_cat.error()
         << "floatBitsToInt, floatBitsToUint, intBitsToFloat, uintBitsToFloat"
            " require #version 330 or #extension GL_ARB_shader_bit_encoding.\n";

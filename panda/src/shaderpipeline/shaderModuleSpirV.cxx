@@ -59,20 +59,20 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words) :
   // Identify the inputs, outputs and uniform parameters.
   for (uint32_t id = 0; id < defs.size(); ++id) {
     Definition &def = defs[id];
-    if (def._dtype == DT_variable && def._builtin == SpvBuiltInMax) {
+    if (def._dtype == DT_variable && def._builtin == spv::BuiltInMax) {
       Variable var;
       var.type = def._type;
       var.name = InternalName::make(def._name);
       var._location = def._location;
       //var._id = id;
 
-      if (def._storage_class == SpvStorageClassInput) {
+      if (def._storage_class == spv::StorageClassInput) {
         _inputs.push_back(std::move(var));
       }
-      else if (def._storage_class == SpvStorageClassOutput) {
+      else if (def._storage_class == spv::StorageClassOutput) {
         _outputs.push_back(std::move(var));
       }
-      else if (def._storage_class == SpvStorageClassUniformConstant) {
+      else if (def._storage_class == spv::StorageClassUniformConstant) {
         _parameters.push_back(std::move(var));
       }
 
@@ -82,24 +82,24 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words) :
       }
     }
     else if (def._dtype == DT_variable && def._used &&
-             def._storage_class == SpvStorageClassInput) {
+             def._storage_class == spv::StorageClassInput) {
       // Built-in input variable.
       switch (def._builtin) {
-      case SpvBuiltInVertexId:
+      case spv::BuiltInVertexId:
         _used_caps |= C_vertex_id;
         break;
 
-      case SpvBuiltInInstanceId:
+      case spv::BuiltInInstanceId:
         _used_caps |= C_instance_id;
         break;
 
-      case SpvBuiltInPrimitiveId:
+      case spv::BuiltInPrimitiveId:
         _used_caps |= C_primitive_id;
         break;
 
-      case SpvBuiltInSampleId:
-      case SpvBuiltInSampleMask:
-      case SpvBuiltInSamplePosition:
+      case spv::BuiltInSampleId:
+      case spv::BuiltInSampleMask:
+      case spv::BuiltInSamplePosition:
         _used_caps |= C_sample_variables;
         break;
 
@@ -174,7 +174,7 @@ link_inputs(const ShaderModule *previous) {
   }
 
   if (!location_remap.empty()) {
-    remap_locations(SpvStorageClassInput, location_remap);
+    remap_locations(spv::StorageClassInput, location_remap);
   }
   return true;
 }
@@ -185,7 +185,7 @@ link_inputs(const ShaderModule *previous) {
  */
 void ShaderModuleSpirV::
 remap_parameter_locations(pmap<int, int> &locations) {
-  remap_locations(SpvStorageClassUniformConstant, locations);
+  remap_locations(spv::StorageClassUniformConstant, locations);
 
   // If we extracted out the parameters, replace the locations there as well.
   for (Variable &parameter : _parameters) {
@@ -211,7 +211,7 @@ validate_header() const {
 
   // Validate the header.
   const uint32_t *words = (const uint32_t *)&_words[0];
-  if (*words++ != SpvMagicNumber) {
+  if (*words++ != spv::MagicNumber) {
     shader_cat.error()
       << "Invalid SPIR-V file: wrong magic number.\n";
     return false;
@@ -225,13 +225,13 @@ validate_header() const {
  * encountered definitions are stored in the given definitions vector.
  */
 bool ShaderModuleSpirV::
-parse_instruction(Definitions &defs, SpvOp opcode, const uint32_t *args, size_t nargs) {
+parse_instruction(Definitions &defs, spv::Op opcode, const uint32_t *args, size_t nargs) {
   switch (opcode) {
-  case SpvOpExtInstImport:
+  case spv::OpExtInstImport:
     defs[args[0]].set_ext_inst((const char *)&args[1]);
     break;
 
-  case SpvOpExtInst:
+  case spv::OpExtInst:
     nassertr(defs[args[2]]._dtype == DT_ext_inst, false);
     if (defs[args[2]]._name == "GLSL.std.450" && args[3] == 2) {
       // We mark the use of the GLSL roundEven() function, which is not
@@ -240,34 +240,34 @@ parse_instruction(Definitions &defs, SpvOp opcode, const uint32_t *args, size_t 
     }
     break;
 
-  case SpvOpMemoryModel:
-    if (args[0] != SpvAddressingModelLogical) {
+  case spv::OpMemoryModel:
+    if (args[0] != spv::AddressingModelLogical) {
       shader_cat.error()
         << "Invalid SPIR-V shader: addressing model Logical must be used.\n";
       return false;
     }
-    if (args[1] != SpvMemoryModelGLSL450) {
+    if (args[1] != spv::MemoryModelGLSL450) {
       shader_cat.error()
         << "Invalid SPIR-V shader: memory model GLSL450 must be used.\n";
       return false;
     }
     break;
 
-  case SpvOpEntryPoint:
-    /*switch ((SpvExecutionModel)args[0]) {
-    case SpvExecutionModelVertex:
+  case spv::OpEntryPoint:
+    /*switch ((spv::ExecutionModel)args[0]) {
+    case spv::ExecutionModelVertex:
       _stage = Stage::vertex;
       break;
-    case SpvExecutionModelTessellationControl:
+    case spv::ExecutionModelTessellationControl:
       _stage = Stage::tess_control;
       break;
-    case SpvExecutionModelTessellationEvaluation:
+    case spv::ExecutionModelTessellationEvaluation:
       _stage = Stage::tess_evaluation;
       break;
-    case SpvExecutionModelGeometry:
+    case spv::ExecutionModelGeometry:
       _stage = Stage::geometry;
       break;
-    case SpvExecutionModelFragment:
+    case spv::ExecutionModelFragment:
       _stage = Stage::fragment;
       break;
     default:
@@ -275,34 +275,38 @@ parse_instruction(Definitions &defs, SpvOp opcode, const uint32_t *args, size_t 
     }*/
     break;
 
-  case SpvOpCapability:
-    switch ((SpvCapability)args[0]) {
-    case SpvCapabilityFloat64:
+  case spv::OpCapability:
+    switch ((spv::Capability)args[0]) {
+    case spv::CapabilityFloat64:
       _used_caps |= C_double;
       break;
 
-    case SpvCapabilityImageCubeArray:
+    case spv::CapabilityImageCubeArray:
       _used_caps |= C_cube_map_array;
       break;
-    }
 
-  case SpvOpName:
+    default:
+      break;
+    }
+    break;
+
+  case spv::OpName:
     defs[args[0]].set_name((const char *)&args[1]);
     break;
 
-  case SpvOpMemberName:
+  case spv::OpMemberName:
     defs[args[0]].set_member_name(args[1], (const char *)&args[2]);
     break;
 
-  case SpvOpTypeVoid:
+  case spv::OpTypeVoid:
     defs[args[0]].set_type(nullptr);
     break;
 
-  case SpvOpTypeBool:
+  case spv::OpTypeBool:
     defs[args[0]].set_type(ShaderType::bool_type);
     break;
 
-  case SpvOpTypeInt:
+  case spv::OpTypeInt:
     {
       if (args[2]) {
         defs[args[0]].set_type(ShaderType::int_type);
@@ -312,7 +316,7 @@ parse_instruction(Definitions &defs, SpvOp opcode, const uint32_t *args, size_t 
     }
     break;
 
-  case SpvOpTypeFloat:
+  case spv::OpTypeFloat:
     {
       if (nargs >= 2 && args[1] >= 64) {
         defs[args[0]].set_type(ShaderType::double_type);
@@ -322,7 +326,7 @@ parse_instruction(Definitions &defs, SpvOp opcode, const uint32_t *args, size_t 
     }
     break;
 
-  case SpvOpTypeVector:
+  case spv::OpTypeVector:
     {
       const ShaderType::Scalar *element_type;
       DCAST_INTO_R(element_type, defs[args[1]]._type, false);
@@ -332,7 +336,7 @@ parse_instruction(Definitions &defs, SpvOp opcode, const uint32_t *args, size_t 
     }
     break;
 
-  case SpvOpTypeMatrix:
+  case spv::OpTypeMatrix:
     {
       const ShaderType::Vector *column_type;
       DCAST_INTO_R(column_type, defs[args[1]]._type, false);
@@ -342,15 +346,15 @@ parse_instruction(Definitions &defs, SpvOp opcode, const uint32_t *args, size_t 
     }
     break;
 
-  case SpvOpTypePointer:
-    defs[args[0]].set_type_pointer((SpvStorageClass)args[1], defs[args[2]]._type);
+  case spv::OpTypePointer:
+    defs[args[0]].set_type_pointer((spv::StorageClass)args[1], defs[args[2]]._type);
     break;
 
-  case SpvOpTypeImage:
+  case spv::OpTypeImage:
     {
       Texture::TextureType texture_type;
-      switch ((SpvDim)args[2]) {
-      case SpvDim1D:
+      switch ((spv::Dim)args[2]) {
+      case spv::Dim1D:
         if (args[4]) {
           texture_type = Texture::TT_1d_texture_array;
         } else {
@@ -358,7 +362,7 @@ parse_instruction(Definitions &defs, SpvOp opcode, const uint32_t *args, size_t 
         }
         break;
 
-      case SpvDim2D:
+      case spv::Dim2D:
         if (args[4]) {
           texture_type = Texture::TT_2d_texture_array;
         } else {
@@ -366,11 +370,11 @@ parse_instruction(Definitions &defs, SpvOp opcode, const uint32_t *args, size_t 
         }
         break;
 
-      case SpvDim3D:
+      case spv::Dim3D:
         texture_type = Texture::TT_3d_texture;
         break;
 
-      case SpvDimCube:
+      case spv::DimCube:
         if (args[4]) {
           texture_type = Texture::TT_cube_map_array;
         } else {
@@ -378,16 +382,16 @@ parse_instruction(Definitions &defs, SpvOp opcode, const uint32_t *args, size_t 
         }
         break;
 
-      case SpvDimRect:
+      case spv::DimRect:
         shader_cat.error()
           << "imageRect shader inputs are not supported.\n";
         return false;
 
-      case SpvDimBuffer:
+      case spv::DimBuffer:
         texture_type = Texture::TT_buffer_texture;
         break;
 
-      case SpvDimSubpassData:
+      case spv::DimSubpassData:
         shader_cat.error()
           << "subpassInput shader inputs are not supported.\n";
         return false;
@@ -400,14 +404,14 @@ parse_instruction(Definitions &defs, SpvOp opcode, const uint32_t *args, size_t 
 
       ShaderType::Image::Access access = ShaderType::Image::Access::unknown;
       if (nargs > 8) {
-        switch ((SpvAccessQualifier)args[8]) {
-        case SpvAccessQualifierReadOnly:
+        switch ((spv::AccessQualifier)args[8]) {
+        case spv::AccessQualifierReadOnly:
           access = ShaderType::Image::Access::read_only;
           break;
-        case SpvAccessQualifierWriteOnly:
+        case spv::AccessQualifierWriteOnly:
           access = ShaderType::Image::Access::write_only;
           break;
-        case SpvAccessQualifierReadWrite:
+        case spv::AccessQualifierReadWrite:
           access = ShaderType::Image::Access::read_write;
           break;
         default:
@@ -422,12 +426,12 @@ parse_instruction(Definitions &defs, SpvOp opcode, const uint32_t *args, size_t 
     }
     break;
 
-  case SpvOpTypeSampler:
+  case spv::OpTypeSampler:
     // A sampler that's not bound to a particular image.
     defs[args[0]].set_type(ShaderType::sampler_type);
     break;
 
-  case SpvOpTypeSampledImage:
+  case spv::OpTypeSampledImage:
     if (const ShaderType::Image *image = defs[args[1]]._type->as_image()) {
       defs[args[0]].set_type(ShaderType::register_type(
         ShaderType::SampledImage(image->get_texture_type())));
@@ -438,14 +442,14 @@ parse_instruction(Definitions &defs, SpvOp opcode, const uint32_t *args, size_t 
     }
     break;
 
-  case SpvOpTypeArray:
+  case spv::OpTypeArray:
     if (defs[args[1]]._type != nullptr) {
       defs[args[0]].set_type(ShaderType::register_type(
         ShaderType::Array(defs[args[1]]._type, defs[args[2]]._constant)));
     }
     break;
 
-  case SpvOpTypeStruct:
+  case spv::OpTypeStruct:
     {
       ShaderType::Struct type;
       for (size_t i = 0; i < nargs - 1; ++i) {
@@ -458,18 +462,18 @@ parse_instruction(Definitions &defs, SpvOp opcode, const uint32_t *args, size_t 
     }
     break;
 
-  case SpvOpConstant:
+  case spv::OpConstant:
     defs[args[1]].set_constant(defs[args[0]]._type, args + 2, nargs - 2);
     break;
 
-  case SpvOpFunctionCall:
+  case spv::OpFunctionCall:
     // Mark all arguments as used.
     for (size_t i = 3; i < nargs; ++i) {
       defs[args[i]].mark_used();
     }
     break;
 
-  case SpvOpVariable:
+  case spv::OpVariable:
     {
       const Definition &ptr = defs[args[0]];
       if (ptr._dtype != DT_type_pointer) {
@@ -477,32 +481,32 @@ parse_instruction(Definitions &defs, SpvOp opcode, const uint32_t *args, size_t 
           << "Variable with id " << args[1] << " should use pointer type\n";
         return false;
       }
-      defs[args[1]].set_variable(ptr._type, (SpvStorageClass)args[2]);
+      defs[args[1]].set_variable(ptr._type, (spv::StorageClass)args[2]);
     }
     break;
 
-  case SpvOpImageTexelPointer:
-  case SpvOpLoad:
-  case SpvOpAccessChain:
-  case SpvOpInBoundsAccessChain:
-  case SpvOpPtrAccessChain:
-  case SpvOpCopyObject:
-  case SpvOpAtomicLoad:
-  case SpvOpAtomicExchange:
-  case SpvOpAtomicCompareExchange:
-  case SpvOpAtomicCompareExchangeWeak:
-  case SpvOpAtomicIIncrement:
-  case SpvOpAtomicIDecrement:
-  case SpvOpAtomicIAdd:
-  case SpvOpAtomicISub:
-  case SpvOpAtomicSMin:
-  case SpvOpAtomicUMin:
-  case SpvOpAtomicSMax:
-  case SpvOpAtomicUMax:
-  case SpvOpAtomicAnd:
-  case SpvOpAtomicOr:
-  case SpvOpAtomicXor:
-  case SpvOpAtomicFlagTestAndSet:
+  case spv::OpImageTexelPointer:
+  case spv::OpLoad:
+  case spv::OpAccessChain:
+  case spv::OpInBoundsAccessChain:
+  case spv::OpPtrAccessChain:
+  case spv::OpCopyObject:
+  case spv::OpAtomicLoad:
+  case spv::OpAtomicExchange:
+  case spv::OpAtomicCompareExchange:
+  case spv::OpAtomicCompareExchangeWeak:
+  case spv::OpAtomicIIncrement:
+  case spv::OpAtomicIDecrement:
+  case spv::OpAtomicIAdd:
+  case spv::OpAtomicISub:
+  case spv::OpAtomicSMin:
+  case spv::OpAtomicUMin:
+  case spv::OpAtomicSMax:
+  case spv::OpAtomicUMax:
+  case spv::OpAtomicAnd:
+  case spv::OpAtomicOr:
+  case spv::OpAtomicXor:
+  case spv::OpAtomicFlagTestAndSet:
     defs[args[2]].mark_used();
     if (defs[args[2]]._type != nullptr &&
         defs[args[2]]._type->contains_scalar_type(ShaderType::ST_double)) {
@@ -510,8 +514,8 @@ parse_instruction(Definitions &defs, SpvOp opcode, const uint32_t *args, size_t 
     }
     break;
 
-  case SpvOpCopyMemory:
-  case SpvOpCopyMemorySized:
+  case spv::OpCopyMemory:
+  case spv::OpCopyMemorySized:
     defs[args[1]].mark_used();
     if (defs[args[1]]._type != nullptr &&
         defs[args[1]]._type->contains_scalar_type(ShaderType::ST_double)) {
@@ -519,65 +523,71 @@ parse_instruction(Definitions &defs, SpvOp opcode, const uint32_t *args, size_t 
     }
     break;
 
-  case SpvOpDecorate:
-    switch ((SpvDecoration)args[1]) {
-    case SpvDecorationBuiltIn:
-      defs[args[0]]._builtin = (SpvBuiltIn)args[2];
+  case spv::OpDecorate:
+    switch ((spv::Decoration)args[1]) {
+    case spv::DecorationBuiltIn:
+      defs[args[0]]._builtin = (spv::BuiltIn)args[2];
       break;
 
-    case SpvDecorationLocation:
+    case spv::DecorationLocation:
       defs[args[0]]._location = args[2];
       break;
+
+    default:
+      break;
     }
-    /*if (args[1] == SpvDecorationLocation || args[1] == SpvDecorationBinding) {
+    /*if (args[1] == spv::DecorationLocation || args[1] == spv::DecorationBinding) {
       vars[args[0]]._location = args[2];
-    } else if (args[1] == SpvDecorationDescriptorSet) {
+    } else if (args[1] == spv::DecorationDescriptorSet) {
       vars[args[0]]._set = args[2];
     }*/
     break;
 
-  case SpvOpImageRead:
-  case SpvOpImageWrite:
+  case spv::OpImageRead:
+  case spv::OpImageWrite:
     _used_caps |= C_image_load_store;
     break;
 
-  case SpvOpImageFetch:
-  case SpvOpImageQuerySizeLod:
-  case SpvOpImageQuerySize:
+  case spv::OpImageFetch:
+  case spv::OpImageQuerySizeLod:
+  case spv::OpImageQuerySize:
     _used_caps |= C_texture_fetch;
     break;
 
-  case SpvOpImageQueryLod:
+  case spv::OpImageQueryLod:
     _used_caps |= C_texture_query_lod;
     break;
 
-  case SpvOpImageQueryLevels:
+  case spv::OpImageQueryLevels:
     _used_caps |= C_texture_query_levels;
     break;
 
-  case SpvOpImageQuerySamples:
+  case spv::OpImageQuerySamples:
     _used_caps |= C_texture_query_samples;
     break;
 
-  case SpvOpBitcast:
+  case spv::OpBitcast:
     _used_caps |= C_bit_encoding;
     break;
 
 
-  case SpvOpIAddCarry:
-  case SpvOpISubBorrow:
-  case SpvOpUMulExtended:
-  case SpvOpSMulExtended:
+  case spv::OpIAddCarry:
+  case spv::OpISubBorrow:
+  case spv::OpUMulExtended:
+  case spv::OpSMulExtended:
     _used_caps |= C_extended_arithmetic;
     break;
 
-  case SpvOpDPdxFine:
-  case SpvOpDPdyFine:
-  case SpvOpFwidthFine:
-  case SpvOpDPdxCoarse:
-  case SpvOpDPdyCoarse:
-  case SpvOpFwidthCoarse:
+  case spv::OpDPdxFine:
+  case spv::OpDPdyFine:
+  case spv::OpFwidthFine:
+  case spv::OpDPdxCoarse:
+  case spv::OpDPdyCoarse:
+  case spv::OpFwidthCoarse:
     _used_caps |= C_derivative_control;
+    break;
+
+  default:
     break;
   }
 
@@ -599,21 +609,21 @@ assign_locations(Definitions &defs) {
   for (const Definition &def : defs) {
     if (def._dtype == DT_variable) {
       if (def._location < 0) {
-        if (def._builtin == SpvBuiltInMax &&
-            (def._storage_class == SpvStorageClassInput ||
-             def._storage_class == SpvStorageClassOutput ||
-             def._storage_class == SpvStorageClassUniformConstant)) {
+        if (def._builtin == spv::BuiltInMax &&
+            (def._storage_class == spv::StorageClassInput ||
+             def._storage_class == spv::StorageClassOutput ||
+             def._storage_class == spv::StorageClassUniformConstant)) {
           // A non-built-in variable definition without a location.
           has_unassigned_locations = true;
         }
       }
-      else if (def._storage_class == SpvStorageClassInput) {
+      else if (def._storage_class == spv::StorageClassInput) {
         input_locations.set_bit(def._location);
       }
-      else if (def._storage_class == SpvStorageClassOutput) {
+      else if (def._storage_class == spv::StorageClassOutput) {
         output_locations.set_bit(def._location);
       }
-      else if (def._storage_class == SpvStorageClassUniformConstant) {
+      else if (def._storage_class == spv::StorageClassUniformConstant) {
         uniform_locations.set_range(def._location, def._type ? def._type->get_num_parameter_locations() : 1);
       }
     }
@@ -630,9 +640,9 @@ assign_locations(Definitions &defs) {
     Definition &def = defs[id];
     if (def._dtype == DT_variable &&
         def._location < 0 &&
-        def._builtin == SpvBuiltInMax) {
+        def._builtin == spv::BuiltInMax) {
       int location;
-      if (def._storage_class == SpvStorageClassInput) {
+      if (def._storage_class == spv::StorageClassInput) {
         if (get_stage() == Stage::vertex && !input_locations.get_bit(0)) {
           if (def._name == "vertex" || def._name == "p3d_Vertex" ||
               def._name == "vtx_position") {
@@ -653,7 +663,7 @@ assign_locations(Definitions &defs) {
             << "Assigning " << def._name << " to input location " << location << "\n";
         }
       }
-      else if (def._storage_class == SpvStorageClassOutput) {
+      else if (def._storage_class == spv::StorageClassOutput) {
         location = output_locations.get_lowest_off_bit();
         output_locations.set_bit(location);
 
@@ -662,7 +672,7 @@ assign_locations(Definitions &defs) {
             << "Assigning " << def._name << " to output location " << location << "\n";
         }
       }
-      else if (def._storage_class == SpvStorageClassUniformConstant) {
+      else if (def._storage_class == spv::StorageClassUniformConstant) {
         int num_locations = def._type->get_num_parameter_locations();
         location = uniform_locations.get_lowest_off_bit();
         while (num_locations > 1 && uniform_locations.has_any_of(location, num_locations)) {
@@ -691,7 +701,7 @@ assign_locations(Definitions &defs) {
 
       def._location = location;
       it = _instructions.insert(it,
-        SpvOpDecorate, {id, SpvDecorationLocation, (uint32_t)location});
+        spv::OpDecorate, {id, spv::DecorationLocation, (uint32_t)location});
       ++it;
     }
   }
@@ -704,17 +714,17 @@ assign_locations(Definitions &defs) {
  * that.
  */
 void ShaderModuleSpirV::
-remap_locations(SpvStorageClass storage_class, const pmap<int, int> &locations) {
+remap_locations(spv::StorageClass storage_class, const pmap<int, int> &locations) {
   pmap<uint32_t, uint32_t *> decorations;
 
   for (Instruction op : _instructions) {
-    if (op.opcode == SpvOpDecorate) {
+    if (op.opcode == spv::OpDecorate) {
       // Store the location of this decoration in the bytecode.
-      if ((SpvDecoration)op.args[1] == SpvDecorationLocation && op.nargs >= 3) {
+      if ((spv::Decoration)op.args[1] == spv::DecorationLocation && op.nargs >= 3) {
         decorations[op.args[0]] = &op.args[2];
       }
     }
-    else if (op.opcode == SpvOpVariable && (SpvStorageClass)op.args[2] == storage_class) {
+    else if (op.opcode == spv::OpVariable && (spv::StorageClass)op.args[2] == storage_class) {
       // Found a variable, did we store the location for its decoration?
       pmap<uint32_t, uint32_t *>::const_iterator it = decorations.find(op.args[1]);
       if (it != decorations.end()) {
@@ -748,10 +758,10 @@ flatten_struct(Definitions &defs, uint32_t type_id) {
     Instruction op = *it;
 
     switch (op.opcode) {
-    case SpvOpName:
-    case SpvOpMemberName:
-    case SpvOpDecorate:
-    case SpvOpMemberDecorate:
+    case spv::OpName:
+    case spv::OpMemberName:
+    case spv::OpDecorate:
+    case spv::OpMemberDecorate:
       // Delete decorations on the struct type.
       if (op.nargs >= 1 && op.args[0] == type_id) {
         it = _instructions.erase(it);
@@ -759,7 +769,7 @@ flatten_struct(Definitions &defs, uint32_t type_id) {
       }
       break;
 
-    case SpvOpTypeStruct:
+    case spv::OpTypeStruct:
       // Delete the struct definition itself.
       if (op.nargs >= 1 && op.args[0] == type_id) {
         defs[type_id].clear();
@@ -768,7 +778,7 @@ flatten_struct(Definitions &defs, uint32_t type_id) {
       }
       break;
 
-    case SpvOpTypePointer:
+    case spv::OpTypePointer:
       if (op.nargs >= 3 && op.args[2] == type_id) {
         // Remember this pointer.
         deleted_ids.insert(op.args[0]);
@@ -778,7 +788,7 @@ flatten_struct(Definitions &defs, uint32_t type_id) {
       }
       break;
 
-    case SpvOpVariable:
+    case spv::OpVariable:
       if (op.nargs >= 3 && deleted_ids.count(op.args[0])) {
         // Delete this variable entirely, and replace it instead with individual
         // variable definitions for all its members.
@@ -807,22 +817,22 @@ flatten_struct(Definitions &defs, uint32_t type_id) {
           // Create an OpTypePointer instruction.
           uint32_t type_pointer_id = _instructions.allocate_id();
 
-          it = _instructions.insert(it, SpvOpTypePointer, {
+          it = _instructions.insert(it, spv::OpTypePointer, {
             type_pointer_id,
-            SpvStorageClassUniformConstant,
+            spv::StorageClassUniformConstant,
             type_id,
           });
           ++it;
 
           defs.push_back(Definition());
-          defs[type_pointer_id].set_type_pointer(SpvStorageClassUniformConstant, member.type);
+          defs[type_pointer_id].set_type_pointer(spv::StorageClassUniformConstant, member.type);
 
           // Insert a new variable for this struct member.
           uint32_t variable_id = _instructions.allocate_id();
-          it = _instructions.insert(it, SpvOpVariable, {
+          it = _instructions.insert(it, spv::OpVariable, {
             type_pointer_id,
             variable_id,
-            SpvStorageClassUniformConstant,
+            spv::StorageClassUniformConstant,
           });
           ++it;
 
@@ -837,7 +847,7 @@ flatten_struct(Definitions &defs, uint32_t type_id) {
             int location = struct_location + mi;
             defs[variable_id]._location = location;
           }
-          defs[variable_id].set_variable(member.type, SpvStorageClassUniformConstant);
+          defs[variable_id].set_variable(member.type, spv::StorageClassUniformConstant);
 
           member_ids[mi] = variable_id;
         }
@@ -845,9 +855,9 @@ flatten_struct(Definitions &defs, uint32_t type_id) {
       }
       break;
 
-    case SpvOpAccessChain:
-    case SpvOpInBoundsAccessChain:
-    case SpvOpPtrAccessChain:
+    case spv::OpAccessChain:
+    case spv::OpInBoundsAccessChain:
+    case spv::OpPtrAccessChain:
       if (deleted_ids.count(op.args[2])) {
         uint32_t index = defs[op.args[3]]._constant;
         if (op.nargs > 4) {
@@ -863,7 +873,7 @@ flatten_struct(Definitions &defs, uint32_t type_id) {
       }
       break;
 
-    case SpvOpLoad:
+    case spv::OpLoad:
       // If this triggers, the struct is being loaded into another variable,
       // which means we can't unwrap this (for now).
       nassertv(!deleted_ids.count(op.args[2]));
@@ -873,8 +883,8 @@ flatten_struct(Definitions &defs, uint32_t type_id) {
       }
       break;
 
-    case SpvOpCopyMemory:
-    case SpvOpCopyMemorySized:
+    case spv::OpCopyMemory:
+    case spv::OpCopyMemorySized:
       // Shouldn't be copying the struct directly.
       nassertv(!deleted_ids.count(op.args[1]));
 
@@ -896,7 +906,7 @@ flatten_struct(Definitions &defs, uint32_t type_id) {
     int location = defs[var_id]._location;
     if (location >= 0) {
       it = _instructions.insert(it,
-        SpvOpDecorate, {var_id, SpvDecorationLocation, (uint32_t)location});
+        spv::OpDecorate, {var_id, spv::DecorationLocation, (uint32_t)location});
     }
   }
 
@@ -910,7 +920,7 @@ flatten_struct(Definitions &defs, uint32_t type_id) {
   while (it != _instructions.end()) {
     Instruction op = *it;
 
-    if ((op.opcode == SpvOpName || op.opcode == SpvOpDecorate || op.opcode == SpvOpMemberName || op.opcode == SpvOpMemberDecorate) &&
+    if ((op.opcode == spv::OpName || op.opcode == spv::OpDecorate || op.opcode == spv::OpMemberName || op.opcode == spv::OpMemberDecorate) &&
         op.nargs >= 2 && deleted_ids.count(op.args[0])) {
       _instructions.erase(it);
       continue;
@@ -943,20 +953,20 @@ strip() const {
   // Copy all non-debug instructions to the new vector.
   words += 5;
   while (words < end) {
-    uint16_t wcount = words[0] >> SpvWordCountShift;
-    SpvOp opcode = (SpvOp)(words[0] & SpvOpCodeMask);
+    uint16_t wcount = words[0] >> spv::WordCountShift;
+    spv::Op opcode = (spv::Op)(words[0] & spv::OpCodeMask);
     nassertr(wcount > 0, copy);
 
-    if (opcode != SpvOpNop &&
-        opcode != SpvOpSourceContinued &&
-        opcode != SpvOpSource &&
-        opcode != SpvOpSourceExtension &&
-        opcode != SpvOpName &&
-        opcode != SpvOpMemberName &&
-        opcode != SpvOpString &&
-        opcode != SpvOpLine &&
-        opcode != SpvOpNoLine &&
-        opcode != SpvOpModuleProcessed) {
+    if (opcode != spv::OpNop &&
+        opcode != spv::OpSourceContinued &&
+        opcode != spv::OpSource &&
+        opcode != spv::OpSourceExtension &&
+        opcode != spv::OpName &&
+        opcode != spv::OpMemberName &&
+        opcode != spv::OpString &&
+        opcode != spv::OpLine &&
+        opcode != spv::OpNoLine &&
+        opcode != spv::OpModuleProcessed) {
 
       copy._words.insert(copy._words.end(), words, words + wcount);
     }
@@ -1008,7 +1018,7 @@ set_type(const ShaderType *type) {
  * Called when an OpTypePointer is encountered in the SPIR-V instruction stream.
  */
 void ShaderModuleSpirV::Definition::
-set_type_pointer(SpvStorageClass storage_class, const ShaderType *type) {
+set_type_pointer(spv::StorageClass storage_class, const ShaderType *type) {
   _dtype = DT_type_pointer;
   _type = type;
 }
@@ -1017,12 +1027,12 @@ set_type_pointer(SpvStorageClass storage_class, const ShaderType *type) {
  * Called when an OpVariable is encountered in the SPIR-V instruction stream.
  */
 void ShaderModuleSpirV::Definition::
-set_variable(const ShaderType *type, SpvStorageClass storage_class) {
+set_variable(const ShaderType *type, spv::StorageClass storage_class) {
   _dtype = DT_variable;
   _type = type;
   _storage_class = storage_class;
 
-  if (shader_cat.is_debug() && storage_class == SpvStorageClassUniformConstant) {
+  if (shader_cat.is_debug() && storage_class == spv::StorageClassUniformConstant) {
     shader_cat.debug()
       << "Defined uniform " << _name;
 
@@ -1040,25 +1050,28 @@ set_variable(const ShaderType *type, SpvStorageClass storage_class) {
   }
 
   switch (storage_class) {
-  case SpvStorageClassUniformConstant:
+  case spv::StorageClassUniformConstant:
     //_uniform_constants.push_back(&def);
     break;
-  case SpvStorageClassInput:
+  case spv::StorageClassInput:
     //_inputs.push_back(Varying({}));
     break;
-  case SpvStorageClassUniform:
+  case spv::StorageClassUniform:
     break;
-  case SpvStorageClassOutput:
+  case spv::StorageClassOutput:
     //_outputs.push_back(&def);
     break;
-  case SpvStorageClassWorkgroup:
-  case SpvStorageClassCrossWorkgroup:
-  case SpvStorageClassPrivate:
-  case SpvStorageClassFunction:
-  case SpvStorageClassGeneric:
-  case SpvStorageClassPushConstant:
-  case SpvStorageClassAtomicCounter:
-  case SpvStorageClassImage:
+  case spv::StorageClassWorkgroup:
+  case spv::StorageClassCrossWorkgroup:
+  case spv::StorageClassPrivate:
+  case spv::StorageClassFunction:
+  case spv::StorageClassGeneric:
+  case spv::StorageClassPushConstant:
+  case spv::StorageClassAtomicCounter:
+  case spv::StorageClassImage:
+    break;
+
+  default:
     break;
   }
 }
@@ -1103,7 +1116,7 @@ clear() {
   _name.clear();
   _type = nullptr;
   _location = -1;
-  _builtin = SpvBuiltInMax;
+  _builtin = spv::BuiltInMax;
   _constant = 0;
   _member_names.clear();
 }

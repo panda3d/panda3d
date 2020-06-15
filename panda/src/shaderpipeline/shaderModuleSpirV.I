@@ -33,8 +33,8 @@ get_data_size() const {
 INLINE ShaderModuleSpirV::Instruction ShaderModuleSpirV::InstructionIterator::
 operator *() {
   return Instruction {
-    (SpvOp)(_words[0] & SpvOpCodeMask),
-    (_words[0] >> SpvWordCountShift) - 1,
+    (spv::Op)(_words[0] & spv::OpCodeMask),
+    (_words[0] >> spv::WordCountShift) - 1,
     _words + 1,
   };
 }
@@ -44,7 +44,7 @@ operator *() {
  */
 INLINE ShaderModuleSpirV::InstructionIterator &ShaderModuleSpirV::InstructionIterator::
 operator ++() {
-  uint16_t wcount = _words[0] >> SpvWordCountShift;
+  uint16_t wcount = _words[0] >> spv::WordCountShift;
   _words += wcount;
   nassertr(wcount > 0, *this);
   return *this;
@@ -112,21 +112,21 @@ INLINE ShaderModuleSpirV::InstructionIterator ShaderModuleSpirV::InstructionStre
 begin_annotations() {
   iterator it;
   for (it = begin(); it != end(); ++it) {
-    SpvOp opcode = (*it).opcode;
-    if (opcode != SpvOpNop &&
-        opcode != SpvOpCapability &&
-        opcode != SpvOpExtension &&
-        opcode != SpvOpExtInstImport &&
-        opcode != SpvOpMemoryModel &&
-        opcode != SpvOpEntryPoint &&
-        opcode != SpvOpExecutionMode &&
-        opcode != SpvOpString &&
-        opcode != SpvOpSourceExtension &&
-        opcode != SpvOpSource &&
-        opcode != SpvOpSourceContinued &&
-        opcode != SpvOpName &&
-        opcode != SpvOpMemberName &&
-        opcode != SpvOpModuleProcessed) {
+    spv::Op opcode = (*it).opcode;
+    if (opcode != spv::OpNop &&
+        opcode != spv::OpCapability &&
+        opcode != spv::OpExtension &&
+        opcode != spv::OpExtInstImport &&
+        opcode != spv::OpMemoryModel &&
+        opcode != spv::OpEntryPoint &&
+        opcode != spv::OpExecutionMode &&
+        opcode != spv::OpString &&
+        opcode != spv::OpSourceExtension &&
+        opcode != spv::OpSource &&
+        opcode != spv::OpSourceContinued &&
+        opcode != spv::OpName &&
+        opcode != spv::OpMemberName &&
+        opcode != spv::OpModuleProcessed) {
       break;
     }
   }
@@ -147,7 +147,7 @@ end() {
  * instruction.
  */
 INLINE ShaderModuleSpirV::InstructionIterator ShaderModuleSpirV::InstructionStream::
-insert(iterator &it, SpvOp opcode, std::initializer_list<uint32_t > args) {
+insert(iterator &it, spv::Op opcode, std::initializer_list<uint32_t > args) {
   return insert(it, opcode, args.begin(), args.size());
 }
 
@@ -157,13 +157,13 @@ insert(iterator &it, SpvOp opcode, std::initializer_list<uint32_t > args) {
  * instruction.
  */
 INLINE ShaderModuleSpirV::InstructionIterator ShaderModuleSpirV::InstructionStream::
-insert(iterator &it, SpvOp opcode, const uint32_t *args, uint16_t nargs) {
+insert(iterator &it, spv::Op opcode, const uint32_t *args, uint16_t nargs) {
   ptrdiff_t offset = it._words - &_words[0];
 
   // If this triggers, you used an invalid iterator.
   assert(offset >= 0 && offset <= _words.size());
 
-  _words.insert(_words.begin() + offset, ((nargs + 1) << SpvWordCountShift) | opcode);
+  _words.insert(_words.begin() + offset, ((nargs + 1) << spv::WordCountShift) | opcode);
   _words.insert(_words.begin() + offset + 1, args, args + nargs);
 
   return iterator(&_words[offset]);
@@ -180,7 +180,7 @@ erase(iterator &it) {
   // If this triggers, you used an invalid iterator.
   assert(offset >= 0 && offset <= _words.size());
 
-  uint16_t wcount = _words[offset] >> SpvWordCountShift;
+  uint16_t wcount = _words[offset] >> spv::WordCountShift;
   _words.erase(_words.begin() + offset, _words.begin() + offset + wcount);
 
   return iterator(&_words[offset]);
@@ -196,11 +196,11 @@ erase_arg(iterator &it, uint16_t arg) {
   // If this triggers, you used an invalid iterator.
   assert(offset >= 0 && offset <= _words.size());
 
-  uint16_t wcount = _words[offset] >> SpvWordCountShift;
+  uint16_t wcount = _words[offset] >> spv::WordCountShift;
   nassertr(arg < wcount - 1, it);
 
-  SpvOp op = (SpvOp)(_words[offset] & SpvOpCodeMask);
-  _words[offset] = op | ((wcount - 1) << SpvWordCountShift);
+  spv::Op op = (spv::Op)(_words[offset] & spv::OpCodeMask);
+  _words[offset] = op | ((wcount - 1) << spv::WordCountShift);
   _words.erase(_words.begin() + offset + 1 + arg);
 
   return iterator(&_words[offset]);

@@ -15,7 +15,7 @@
 #define SHADERMODULESPIRV_H
 
 #include "shader.h"
-#include "spirv.h"
+#include "spirv.hpp"
 
 class ShaderType;
 
@@ -42,7 +42,7 @@ public:
   class InstructionStream;
 
   struct Instruction {
-    const SpvOp opcode;
+    const spv::Op opcode;
     const uint32_t nargs;
     uint32_t *args;
   };
@@ -84,8 +84,8 @@ public:
     INLINE iterator begin();
     INLINE iterator begin_annotations();
     INLINE iterator end();
-    INLINE iterator insert(iterator &it, SpvOp opcode, std::initializer_list<uint32_t > args);
-    INLINE iterator insert(iterator &it, SpvOp opcode, const uint32_t *args, uint16_t nargs);
+    INLINE iterator insert(iterator &it, spv::Op opcode, std::initializer_list<uint32_t > args);
+    INLINE iterator insert(iterator &it, spv::Op opcode, const uint32_t *args, uint16_t nargs);
     INLINE iterator erase(iterator &it);
     INLINE iterator erase_arg(iterator &it, uint16_t arg);
 
@@ -122,20 +122,20 @@ protected:
     std::string _name;
     const ShaderType *_type = nullptr;
     int _location = -1;
-    SpvBuiltIn _builtin = SpvBuiltInMax;
+    spv::BuiltIn _builtin = spv::BuiltInMax;
     uint32_t _constant = 0;
     vector_string _member_names;
     bool _used = false;
 
     // Only defined for DT_variable.
-    SpvStorageClass _storage_class;
+    spv::StorageClass _storage_class;
 
     void set_name(const char *name);
     void set_member_name(uint32_t i, const char *name);
 
     void set_type(const ShaderType *type);
-    void set_type_pointer(SpvStorageClass storage_class, const ShaderType *type);
-    void set_variable(const ShaderType *type, SpvStorageClass storage_class);
+    void set_type_pointer(spv::StorageClass storage_class, const ShaderType *type);
+    void set_variable(const ShaderType *type, spv::StorageClass storage_class);
     void set_constant(const ShaderType *type, const uint32_t *words, uint32_t nwords);
     void set_ext_inst(const char *name);
 
@@ -147,11 +147,11 @@ protected:
 
 private:
   bool parse(Definitions &defs);
-  bool parse_instruction(Definitions &defs, SpvOp opcode,
+  bool parse_instruction(Definitions &defs, spv::Op opcode,
                          const uint32_t *args, size_t nargs);
 
   void assign_locations(Definitions &defs);
-  void remap_locations(SpvStorageClass storage_class, const pmap<int, int> &locations);
+  void remap_locations(spv::StorageClass storage_class, const pmap<int, int> &locations);
 
   void flatten_struct(Definitions &defs, uint32_t type_id);
   void strip();
