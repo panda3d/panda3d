@@ -29,6 +29,7 @@
 #include "shaderModuleGlsl.h"
 #include "shaderModuleSpirV.h"
 
+#define SPIRV_CROSS_EXCEPTIONS_TO_ASSERTIONS
 #include <spirv_cross/spirv_glsl.hpp>
 
 using std::dec;
