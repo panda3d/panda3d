@@ -68,7 +68,7 @@ register_texture_type(MakeTextureFunc *func, const string &extensions) {
  */
 void TexturePool::
 register_filter(TexturePoolFilter *filter) {
-  MutexHolder holder(_lock);
+  MutexHolder holder(_filter_lock);
 
   gobj_cat.info()
     << "Registering Texture filter " << *filter << "\n";
@@ -223,10 +223,13 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
   PT(Texture) tex;
   PT(BamCacheRecord) record;
   bool store_record = false;
+  bool use_filters = (options.get_flags() & LoaderOptions::LF_no_filters) == 0;
 
   // Can one of our texture filters supply the texture?
-  tex = pre_load(orig_filename, Filename(), primary_file_num_channels, 0,
-                 read_mipmaps, options);
+  if (use_filters) {
+    tex = pre_load(orig_filename, Filename(), primary_file_num_channels, 0,
+                   read_mipmaps, options);
+  }
 
   BamCache *cache = BamCache::get_global_ptr();
   bool compressed_cache_record = false;
@@ -346,7 +349,9 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
   nassertr(!tex->get_fullpath().empty(), tex);
 
   // Finally, apply any post-loading texture filters.
-  tex = post_load(tex);
+  if (use_filters) {
+    tex = post_load(tex);
+  }
 
   return tex;
 }
@@ -386,10 +391,13 @@ ns_load_texture(const Filename &orig_filename,
   PT(Texture) tex;
   PT(BamCacheRecord) record;
   bool store_record = false;
+  bool use_filters = (options.get_flags() & LoaderOptions::LF_no_filters) == 0;
 
   // Can one of our texture filters supply the texture?
-  tex = pre_load(orig_filename, orig_alpha_filename, primary_file_num_channels,
-                 alpha_file_channel, read_mipmaps, options);
+  if (use_filters) {
+    tex = pre_load(orig_filename, orig_alpha_filename, primary_file_num_channels,
+                   alpha_file_channel, read_mipmaps, options);
+  }
 
   BamCache *cache = BamCache::get_global_ptr();
   bool compressed_cache_record = false;
@@ -476,7 +484,9 @@ ns_load_texture(const Filename &orig_filename,
   nassertr(!tex->get_fullpath().empty(), tex);
 
   // Finally, apply any post-loading texture filters.
-  tex = post_load(tex);
+  if (use_filters) {
+    tex = post_load(tex);
+  }
 
   return tex;
 }
@@ -1212,8 +1222,7 @@ pre_load(const Filename &orig_filename, const Filename &orig_alpha_filename,
          int primary_file_num_channels, int alpha_file_channel,
          bool read_mipmaps, const LoaderOptions &options) {
   PT(Texture) tex;
-
-  MutexHolder holder(_lock);
+  MutexHolder holder(_filter_lock);
 
   FilterRegistry::iterator fi;
   for (fi = _filter_registry.begin();
@@ -1237,7 +1246,7 @@ PT(Texture) TexturePool::
 post_load(Texture *tex) {
   PT(Texture) result = tex;
 
-  MutexHolder holder(_lock);
+  MutexHolder holder(_filter_lock);
 
   FilterRegistry::iterator fi;
   for (fi = _filter_registry.begin();

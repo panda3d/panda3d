@@ -41,7 +41,7 @@ class LoaderOptions;
  */
 class EXPCL_PANDA_GOBJ TexturePoolFilter : public TypedObject {
 public:
-  virtual ~TexturePoolFilter();
+  virtual ~TexturePoolFilter() = default;
 
   virtual PT(Texture) pre_load(const Filename &orig_filename,
                                const Filename &orig_alpha_filename,

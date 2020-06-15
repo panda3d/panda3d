@@ -149,6 +149,8 @@ private:
   static TexturePool *_global_ptr;
 
   Mutex _lock;
+  Mutex _filter_lock;
+
   struct LookupKey {
     Filename _fullpath;
     Filename _alpha_fullpath;
