@@ -98,9 +98,7 @@ class DirectObject:
             andStr = (' and ' if len(events) and len(tasks) else '')
             tstr = ('%srunning tasks: %s' % (andStr, tasks) if len(tasks) else '')
             notify = directNotify.newCategory('LeakDetect')
-            crash = False
-            if hasattr(getRepository(), '_crashOnProactiveLeakDetect'):
-                crash = getRepository()._crashOnProactiveLeakDetect
+            crash = getattr(getRepository(), '_crashOnProactiveLeakDetect', False)
             func = (self.notify.error if crash else self.notify.warning)
             func('destroyed %s instance is still %s%s' % (self.__class__.__name__, estr, tstr))
 
