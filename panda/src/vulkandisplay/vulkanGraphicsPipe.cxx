@@ -78,7 +78,7 @@ VulkanGraphicsPipe() : _max_allocation_size(0) {
   }
 
   const char *const layers[] = {
-    "VK_LAYER_LUNARG_standard_validation",
+    "VK_LAYER_KHRONOS_validation",
   };
 
   std::vector<const char *> extensions;
@@ -594,7 +594,7 @@ VulkanGraphicsPipe() : _max_allocation_size(0) {
       "ASTC_12x12_SRGB_BLOCK",
     };
 
-    for (int i = 1; i < VK_FORMAT_RANGE_SIZE; ++i) {
+    for (int i = 1; i <= VK_FORMAT_ASTC_12x12_SRGB_BLOCK; ++i) {
       VkFormatProperties fmt_props;
       vkGetPhysicalDeviceFormatProperties(_gpu, (VkFormat)i, &fmt_props);
 
