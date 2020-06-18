@@ -3320,9 +3320,50 @@ attach_shader(const ShaderModule *module) {
           << "Attaching SPIR-V " << stage << " shader binary "
           << module->get_source_filename() << "\n";
       }
-      _glgsg->_glShaderBinary(1, &handle, GL_SHADER_BINARY_FORMAT_SPIR_V_ARB,
-                              (const char *)spv->get_data(),
-                              spv->get_data_size() * sizeof(uint32_t));
+
+      if (_glgsg->_gl_vendor == "NVIDIA Corporation" && spv->get_num_parameters() > 0) {
+        // Sigh... NVIDIA driver gives an error if the SPIR-V ID doesn't match
+        // for variables with overlapping locations if the OpName is stripped.
+        // We'll have to just insert OpNames for every parameter.
+        // https://forums.developer.nvidia.com/t/gl-arb-gl-spirv-bug-duplicate-location-link-error-if-opname-is-stripped-from-spir-v-shader/128491
+        // Bug was found with 446.14 drivers on Windows 10 64-bit.
+
+        // Make a copy of the stream wherein we insert names while we iterate
+        // on the original one.
+        ShaderModuleSpirV::InstructionStream stream = spv->_instructions;
+        ShaderModuleSpirV::InstructionIterator it = stream.begin_annotations();
+        pmap<uint32_t, uint32_t> locations;
+        for (ShaderModuleSpirV::Instruction op : spv->_instructions) {
+          if (op.opcode == spv::OpDecorate) {
+            // Save the location for this variable.  Safe to do in the same
+            // iteration because SPIR-V guarantees that the decorations come
+            // before the variables.
+            if ((spv::Decoration)op.args[1] == spv::DecorationLocation && op.nargs >= 3) {
+              locations[op.args[0]] = op.args[2];
+            }
+          } else if (op.opcode == spv::OpVariable &&
+                     (spv::StorageClass)op.args[2] == spv::StorageClassUniformConstant) {
+            uint32_t var_id = op.args[1];
+            auto lit = locations.find(var_id);
+            if (lit != locations.end()) {
+              uint32_t args[4] = {var_id, 0, 0, 0};
+              int len = sprintf((char *)(args + 1), "p%u", lit->second);
+              nassertr(len > 0 && len < 12, false);
+              it = stream.insert(it, spv::OpName, args, len / 4 + 2);
+              ++it;
+            }
+          }
+        }
+
+        _glgsg->_glShaderBinary(1, &handle, GL_SHADER_BINARY_FORMAT_SPIR_V_ARB,
+                                (const char *)stream.get_data(),
+                                stream.get_data_size() * sizeof(uint32_t));
+      }
+      else {
+        _glgsg->_glShaderBinary(1, &handle, GL_SHADER_BINARY_FORMAT_SPIR_V_ARB,
+                                (const char *)spv->get_data(),
+                                spv->get_data_size() * sizeof(uint32_t));
+      }
       _glgsg->_glSpecializeShader(handle, "main", 0, nullptr, nullptr);
     }
     else {
@@ -3411,8 +3452,8 @@ attach_shader(const ShaderModule *module) {
 
       std::string text = compiler.compile();
 
-      if (GLCAT.is_spam()) {
-        GLCAT.spam()
+      if (GLCAT.is_debug()) {
+        GLCAT.debug()
           << "SPIRV-Cross compilation resulted in GLSL shader:\n"
           << text << "\n";
       }
