@@ -11,6 +11,7 @@ import struct
 import io
 import distutils.sysconfig as sysconf
 import zipfile
+import importlib
 
 from . import pefile
 
@@ -35,21 +36,15 @@ isDebugBuild = (python.lower().endswith('_d'))
 # NB. if encodings are removed, be sure to remove them from the shortcut in
 # deploy-stub.c.
 startupModules = [
-    'imp', 'encodings', 'encodings.*',
+    'imp', 'encodings', 'encodings.*', 'io', 'marshal', 'importlib.machinery',
+    'importlib.util',
 ]
-if sys.version_info >= (3, 0):
-    # Modules specific to Python 3
-    startupModules += ['io', 'marshal', 'importlib.machinery', 'importlib.util']
-else:
-    # Modules specific to Python 2
-    startupModules += []
 
 # These are some special init functions for some built-in Python modules that
 # deviate from the standard naming convention.  A value of None means that a
 # dummy entry should be written to the inittab.
 builtinInitFuncs = {
     'builtins': None,
-    '__builtin__': None,
     'sys': None,
     'exceptions': None,
     '_warnings': '_PyWarnings_Init',
@@ -75,6 +70,7 @@ hiddenImports = {
     'datetime': ['_strptime'],
     'keyring.backends': ['keyring.backends.*'],
     'matplotlib.font_manager': ['encodings.mac_roman'],
+    'matplotlib.backends._backend_tk': ['tkinter'],
     'direct.particles': ['direct.particles.ParticleManagerGlobal'],
     'numpy.core._multiarray_umath': [
         'numpy.core._internal',
@@ -82,12 +78,6 @@ hiddenImports = {
         'numpy.core._methods',
     ],
 }
-
-if sys.version_info >= (3,):
-    hiddenImports['matplotlib.backends._backend_tk'] = ['tkinter']
-else:
-    hiddenImports['matplotlib.backends._backend_tk'] = ['Tkinter']
-
 
 # These are overrides for specific modules.
 overrideModules = {
@@ -785,7 +775,7 @@ class Freezer:
         # already-imported modules.  (Some of them might do their own
         # special path mangling.)
         for moduleName, module in list(sys.modules.items()):
-            if module and hasattr(module, '__path__'):
+            if module and getattr(module, '__path__', None) is not None:
                 path = list(getattr(module, '__path__'))
                 if path:
                     modulefinder.AddPackagePath(moduleName, path[0])
@@ -1310,11 +1300,7 @@ class Freezer:
 
     def __addPyc(self, multifile, filename, code, compressionLevel):
         if code:
-            data = imp.get_magic() + b'\0\0\0\0'
-
-            if sys.version_info >= (3, 0):
-                data += b'\0\0\0\0'
-
+            data = imp.get_magic() + b'\0\0\0\0\0\0\0\0'
             data += marshal.dumps(code)
 
             stream = StringStream(data)
@@ -1671,10 +1657,7 @@ class Freezer:
                     # initmodule or PyInit_module function.
                     modname = mod.split('.')[-1]
                     libfile = modname + '.lib'
-                    if sys.version_info >= (3, 0):
-                        symbolName = 'PyInit_' + modname
-                    else:
-                        symbolName = 'init' + modname
+                    symbolName = 'PyInit_' + modname
                     os.system('lib /nologo /def /export:%s /name:%s.pyd /out:%s' % (symbolName, modname, libfile))
                     extraLink.append(libfile)
                     cleanFiles += [libfile, modname + '.exp']
@@ -1778,10 +1761,7 @@ class Freezer:
                     code = 'import sys;del sys.modules["%s"];import sys,os,imp;imp.load_dynamic("%s",os.path.join(sys.path[0], "%s%s"))' % (moduleName, moduleName, moduleName, modext)
                 else:
                     code = 'import sys;del sys.modules["%s"];import sys,os,imp;imp.load_dynamic("%s",os.path.join(os.path.dirname(sys.executable), "%s%s"))' % (moduleName, moduleName, moduleName, modext)
-                if sys.version_info >= (3, 2):
-                    code = compile(code, moduleName, 'exec', optimize=2)
-                else:
-                    code = compile(code, moduleName, 'exec')
+                code = compile(code, moduleName, 'exec', optimize=2)
                 code = marshal.dumps(code)
                 moduleList.append((moduleName, len(pool), len(code)))
                 pool += code
@@ -2221,6 +2201,10 @@ class Freezer:
 
         return True
 
+
+_PKG_NAMESPACE_DIRECTORY = object()
+
+
 class PandaModuleFinder(modulefinder.ModuleFinder):
 
     def __init__(self, *args, **kw):
@@ -2269,7 +2253,7 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
                 except KeyError:
                     return None
 
-                if sys.version_info >= (3, 0) and 'b' not in mode:
+                if 'b' not in mode:
                     return io.TextIOWrapper(fp, encoding='utf8')
                 return fp
 
@@ -2278,6 +2262,44 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
             fn = os.path.join(dirname, fn)
 
         return None
+
+    def _dir_exists(self, path):
+        """Returns True if the given directory exists, either on disk or inside
+        a wheel."""
+
+        if os.path.isdir(path):
+            return True
+
+        # Is there a zip file along the path?
+        dir, dirname = os.path.split(path.rstrip(os.path.sep + '/'))
+        fn = dirname
+        while dirname:
+            if os.path.isfile(dir):
+                # Okay, this is actually a file.  Is it a zip file?
+                if dir in self._zip_files:
+                    # Yes, and we've previously opened this.
+                    zip = self._zip_files[dir]
+                elif zipfile.is_zipfile(dir):
+                    zip = zipfile.ZipFile(dir)
+                    self._zip_files[dir] = zip
+                else:
+                    # It's a different kind of file.  Stop looking.
+                    return None
+
+                # (Most) zip files do not store directories; check instead for a
+                # file whose path starts with this directory name.
+                prefix = fn.replace(os.path.sep, '/') + '/'
+                for name in zip.namelist():
+                    if name.startswith(prefix):
+                        return True
+
+                return False
+
+            # Look at the parent directory.
+            dir, dirname = os.path.split(dir)
+            fn = os.path.join(dirname, fn)
+
+        return False
 
     def load_module(self, fqname, fp, pathname, file_info):
         """Copied from ModuleFinder.load_module with fixes to handle sending bytes
@@ -2291,6 +2313,12 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
             self.msgout(2, "load_module ->", m)
             return m
 
+        if type is _PKG_NAMESPACE_DIRECTORY:
+            m = self.add_module(fqname)
+            m.__code__ = compile('', '', 'exec')
+            m.__path__ = pathname
+            return m
+
         if type == imp.PY_SOURCE:
             if fqname in overrideModules:
                 # This module has a custom override.
@@ -2301,12 +2329,23 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
             code += b'\n' if isinstance(code, bytes) else '\n'
             co = compile(code, pathname, 'exec')
         elif type == imp.PY_COMPILED:
-            try:
-                marshal_data = importlib._bootstrap_external._validate_bytecode_header(fp.read())
-            except ImportError as exc:
-                self.msgout(2, "raise ImportError: " + str(exc), pathname)
-                raise
-            co = marshal.loads(marshal_data)
+            if sys.version_info >= (3, 7):
+                try:
+                    data = fp.read()
+                    importlib._bootstrap_external._classify_pyc(data, fqname, {})
+                except ImportError as exc:
+                    self.msgout(2, "raise ImportError: " + str(exc), pathname)
+                    raise
+
+                co = marshal.loads(memoryview(data)[16:])
+            else:
+                try:
+                    marshal_data = importlib._bootstrap_external._validate_bytecode_header(fp.read())
+                except ImportError as exc:
+                    self.msgout(2, "raise ImportError: " + str(exc), pathname)
+                    raise
+
+                co = marshal.loads(marshal_data)
         else:
             co = None
 
@@ -2372,7 +2411,20 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
 
             path = self.path
 
+            if fullname == 'distutils' and hasattr(sys, 'real_prefix'):
+                # The PyPI version of virtualenv inserts a special version of
+                # distutils that does some bizarre stuff that won't work in our
+                # deployed application.  Force it to find the regular one.
+                try:
+                    fp, fn, stuff = self.find_module('opcode')
+                    if fn:
+                        path = [os.path.dirname(fn)] + path
+                except ImportError:
+                    pass
+
         # Look for the module on the search path.
+        ns_dirs = []
+
         for dir_path in path:
             basename = os.path.join(dir_path, name.split('.')[-1])
 
@@ -2389,6 +2441,10 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
                 if self._open_file(init, mode):
                     return (None, basename, ('', '', imp.PKG_DIRECTORY))
 
+            # This may be a namespace package.
+            if self._dir_exists(basename):
+                ns_dirs.append(basename)
+
         # It wasn't found through the normal channels.  Maybe it's one of
         # ours, or maybe it's frozen?
         if not path:
@@ -2396,6 +2452,11 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
             if p3extend_frozen and p3extend_frozen.is_frozen_module(name):
                 # It's a frozen module.
                 return (None, name, ('', '', imp.PY_FROZEN))
+
+        # If we found folders on the path with this module name without an
+        # __init__.py file, we should consider this a namespace package.
+        if ns_dirs:
+            return (None, ns_dirs, ('', '', _PKG_NAMESPACE_DIRECTORY))
 
         raise ImportError(name)
 

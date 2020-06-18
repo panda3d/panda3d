@@ -24,9 +24,9 @@ Installing Panda3D
 ==================
 
 The latest Panda3D SDK can be downloaded from
-[this page](https://www.panda3d.org/download/sdk-1-10-4-1/).
+[this page](https://www.panda3d.org/download/sdk-1-10-6/).
 If you are familiar with installing Python packages, you can use
-the following comand:
+the following command:
 
 ```bash
 pip install panda3d
@@ -52,11 +52,11 @@ Building Panda3D
 Windows
 -------
 
-You can build Panda3D with the Microsoft Visual C++ 2015 or 2017 compiler,
+You can build Panda3D with the Microsoft Visual C++ 2015, 2017 or 2019 compiler,
 which can be downloaded for free from the [Visual Studio site](https://visualstudio.microsoft.com/downloads/).
 You will also need to install the [Windows 10 SDK](https://developer.microsoft.com/en-us/windows/downloads/windows-10-sdk),
-and if you intend to target Windows XP, you will also need the
-[Windows 7.1 SDK](https://www.microsoft.com/en-us/download/details.aspx?id=8279).
+and if you intend to target Windows Vista, you will also need the
+[Windows 8.1 SDK](https://go.microsoft.com/fwlink/p/?LinkId=323507).
 
 You will also need to have the third-party dependency libraries available for
 the build scripts to use.  These are available from one of these two URLs,
@@ -64,16 +64,17 @@ depending on whether you are on a 32-bit or 64-bit system, or you can
 [click here](https://github.com/rdb/panda3d-thirdparty) for instructions on
 building them from source.
 
-https://www.panda3d.org/download/panda3d-1.10.4.1/panda3d-1.10.4.1-tools-win64.zip
-https://www.panda3d.org/download/panda3d-1.10.4.1/panda3d-1.10.4.1-tools-win32.zip
+- https://www.panda3d.org/download/panda3d-1.10.6/panda3d-1.10.6-tools-win64.zip
+- https://www.panda3d.org/download/panda3d-1.10.6/panda3d-1.10.6-tools-win32.zip
 
-After acquiring these dependencies, you may simply build Panda3D from the
-command prompt using the following command.  (Change `14.1` to `14` if you are
-using Visual C++ 2015 instead of 2017.  Add the `--windows-sdk=10` option if
-you don't need to support Windows XP and did not install the Windows 7.1 SDK.)
+After acquiring these dependencies, you can build Panda3D from the command
+prompt using the following command.  Change the `--msvc-version` option based
+on your version of Visual C++; 2019 is 14.2, 2017 is 14.1, and 2015 is 14.
+Remove the `--windows-sdk=10` option if you need to support Windows Vista,
+which requires the Windows 8.1 SDK.
 
 ```bash
-makepanda\makepanda.bat --everything --installer --msvc-version=14.1 --no-eigen --threads=2
+makepanda\makepanda.bat --everything --installer --msvc-version=14.2 --windows-sdk=10 --no-eigen --threads=2
 ```
 
 When the build succeeds, it will produce an .exe file that you can use to
@@ -116,7 +117,7 @@ sudo apt-get install build-essential pkg-config fakeroot python-dev libpng-dev l
 ```
 
 Once Panda3D has built, you can either install the .deb or .rpm package that
-it produced, depending on which Linux distribution you are using.  For example,
+is produced, depending on which Linux distribution you are using.  For example,
 to install the package on Debian or Ubuntu, use this:
 
 ```bash
@@ -135,7 +136,7 @@ macOS
 -----
 
 On macOS, you will need to download a set of precompiled thirdparty packages in order to
-compile Panda3D, which can be acquired from [here](https://www.panda3d.org/download/panda3d-1.10.4.1/panda3d-1.10.4.1-tools-mac.tar.gz).
+compile Panda3D, which can be acquired from [here](https://www.panda3d.org/download/panda3d-1.10.6/panda3d-1.10.6-tools-mac.tar.gz).
 
 After placing the thirdparty directory inside the panda3d source directory,
 you may build Panda3D using a command like the following:
@@ -145,7 +146,7 @@ python makepanda/makepanda.py --everything --installer
 ```
 
 You may target a specific minimum macOS version using the --osxtarget flag
-followed by the release number, eg. 10.7 or 10.9.
+followed by the release number, eg. 10.9 or 10.14.
 
 If the build was successful, makepanda will have generated a .dmg file in
 the source directory containing the installer.  Simply open it and run the
@@ -163,11 +164,11 @@ pkg install pkgconf bison png jpeg-turbo tiff freetype2 harfbuzz eigen squish op
 ```
 
 You will also need to choose which version of Python you want to use.
-Install the appropriate package for it (such as `python2` or `python36`) and
+Install the appropriate package for it (such as `python37` or `python38`) and
 run the makepanda script with your chosen Python version:
 
 ```bash
-python3.6 makepanda/makepanda.py --everything --installer --no-egl --no-gles --no-gles2
+python3.7 makepanda/makepanda.py --everything --installer --no-egl --no-gles --no-gles2
 ```
 
 If successful, this will produce a .pkg file in the root of the source
@@ -185,15 +186,18 @@ from the Play Store.  Many of the dependencies can be installed by running the
 following command in the Termux shell:
 
 ```bash
-pkg install python-dev termux-tools ndk-stl ndk-sysroot clang libvorbis-dev libopus-dev opusfile-dev openal-soft-dev freetype-dev harfbuzz-dev libpng-dev ecj4.6 dx patchelf aapt apksigner libcrypt-dev
+pkg install python ndk-sysroot clang bison freetype harfbuzz libpng eigen openal-soft opusfile libvorbis assimp libopus ecj dx patchelf aapt apksigner libcrypt openssl pkg-config
 ```
 
-Then, you can build and install the .apk right away using these commands:
+Then, you can build the .apk using this command:
 
 ```bash
 python makepanda/makepanda.py --everything --target android-21 --no-tiff --installer
-xdg-open panda3d.apk
 ```
+
+You can install the generated panda3d.apk by browsing to the panda3d folder
+using a file manager.  You may need to copy it to `/sdcard` to be able to
+access it from other apps.
 
 To launch a Python program from Termux, you can use the `run_python.sh` script
 inside the `panda/src/android` directory.  It will launch Python in a separate
@@ -208,7 +212,7 @@ Running Tests
 
 Install [PyTest](https://docs.pytest.org/en/latest/getting-started.html#installation)
 and run the `pytest` command.  If you have not installed Panda3D, you will
-need to configure your enviroment by pointing the `PYTHONPATH` variable at
+need to configure your environment by pointing the `PYTHONPATH` variable at
 the `built` directory.  On Linux, you will also need to point the
 `LD_LIBRARY_PATH` variable at the `built/lib` directory.
 

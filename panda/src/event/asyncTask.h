@@ -124,7 +124,7 @@ protected:
   void jump_to_task_chain(AsyncTaskManager *manager);
   DoneStatus unlock_and_do_task();
 
-  virtual bool cancel() final;
+  virtual bool cancel();
   virtual bool is_task() const final {return true;}
 
   virtual bool is_runnable();

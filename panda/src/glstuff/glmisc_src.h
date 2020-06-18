@@ -43,6 +43,8 @@
 extern EXPCL_GL ConfigVariableInt gl_version;
 extern EXPCL_GL ConfigVariableBool gl_forward_compatible;
 extern EXPCL_GL ConfigVariableBool gl_support_fbo;
+extern ConfigVariableBool gl_support_spirv;
+extern ConfigVariableInt gl_force_glsl_version;
 extern ConfigVariableBool gl_cheap_textures;
 extern ConfigVariableBool gl_ignore_clamp;
 extern ConfigVariableBool gl_support_clamp_to_border;
@@ -87,7 +89,7 @@ extern ConfigVariableEnum<CoordinateSystem> gl_coordinate_system;
 extern EXPCL_GL void CLP(init_classes)();
 
 
-#if !defined(WIN32) && defined(GSG_VERBOSE)
+#if !defined(_WIN32) && defined(GSG_VERBOSE)
 std::ostream &output_gl_enum(std::ostream &out, GLenum v);
 INLINE std::ostream &operator << (std::ostream &out, GLenum v) {
   return output_gl_enum(out, v);

@@ -46,6 +46,7 @@ PartBundleNode(const PartBundleNode &copy) :
  */
 INLINE int PartBundleNode::
 get_num_bundles() const {
+  LightMutexHolder holder(_lock);
   return _bundles.size();
 }
 
@@ -54,6 +55,7 @@ get_num_bundles() const {
  */
 INLINE PartBundle *PartBundleNode::
 get_bundle(int n) const {
+  LightMutexHolder holder(_lock);
   nassertr(n >= 0 && n < (int)_bundles.size(), nullptr);
   return _bundles[n]->get_bundle();
 }
@@ -65,6 +67,7 @@ get_bundle(int n) const {
  */
 INLINE PartBundleHandle *PartBundleNode::
 get_bundle_handle(int n) const {
+  LightMutexHolder holder(_lock);
   nassertr(n >= 0 && n < (int)_bundles.size(), nullptr);
   return _bundles[n];
 }

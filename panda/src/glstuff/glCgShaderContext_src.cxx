@@ -338,6 +338,8 @@ CLP(CgShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderConte
     }
   }
 
+  _mat_part_cache = new LMatrix4[_shader->cp_get_mat_cache_size()];
+
   _glgsg->report_my_gl_errors();
 }
 
@@ -347,6 +349,7 @@ CLP(CgShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderConte
 CLP(CgShaderContext)::
 ~CLP(CgShaderContext)() {
   // Don't call release_resources; we may not have an active context.
+  delete[] _mat_part_cache;
 }
 
 /**
@@ -552,135 +555,68 @@ issue_parameters(int altered) {
         return;
       }
       CGparameter p = _cg_parameter_map[spec._id._seqno];
+      void *data = ptr_data->_ptr;
 
       switch (ptr_data->_type) {
-      case Shader::SPT_float:
-        switch (spec._info._class) {
-        case Shader::SAC_scalar:
-          cgSetParameter1fv(p, (float*)ptr_data->_ptr);
-          continue;
-
-        case Shader::SAC_vector:
-          switch (spec._info._type) {
-          case Shader::SAT_vec1:
-            cgSetParameter1fv(p, (float*)ptr_data->_ptr);
-            continue;
-          case Shader::SAT_vec2:
-            cgSetParameter2fv(p, (float*)ptr_data->_ptr);
-            continue;
-          case Shader::SAT_vec3:
-            cgSetParameter3fv(p, (float*)ptr_data->_ptr);
-            continue;
-          case Shader::SAT_vec4:
-            cgSetParameter4fv(p, (float*)ptr_data->_ptr);
-            continue;
-          default:
-            nassertd(false) continue;
+      case ShaderType::ST_float:
+        if (spec._info._type->as_array() != nullptr) {
+          switch (spec._dim[1]) {
+          case 1: cgGLSetParameterArray1f(p, 0, spec._dim[0], (float *)data); continue;
+          case 2: cgGLSetParameterArray2f(p, 0, spec._dim[0], (float *)data); continue;
+          case 3: cgGLSetParameterArray3f(p, 0, spec._dim[0], (float *)data); continue;
+          case 4: cgGLSetParameterArray4f(p, 0, spec._dim[0], (float *)data); continue;
+          case 9: cgGLSetMatrixParameterArrayfc(p, 0, spec._dim[0], (float *)data); continue;
+          case 16: cgGLSetMatrixParameterArrayfc(p, 0, spec._dim[0], (float *)data); continue;
+          default: nassertd(false) continue;
           }
-          continue;
-
-        case Shader::SAC_matrix:
-          cgGLSetMatrixParameterfc(p, (float*)ptr_data->_ptr);
-          continue;
-
-        case Shader::SAC_array:
-          switch (spec._info._subclass) {
-          case Shader::SAC_scalar:
-            cgGLSetParameterArray1f(p, 0, spec._dim[0], (float*)ptr_data->_ptr);
-            continue;
-          case Shader::SAC_vector:
-            switch (spec._dim[2]) {
-            case 1: cgGLSetParameterArray1f(p, 0, spec._dim[0], (float*)ptr_data->_ptr); continue;
-            case 2: cgGLSetParameterArray2f(p, 0, spec._dim[0], (float*)ptr_data->_ptr); continue;
-            case 3: cgGLSetParameterArray3f(p, 0, spec._dim[0], (float*)ptr_data->_ptr); continue;
-            case 4: cgGLSetParameterArray4f(p, 0, spec._dim[0], (float*)ptr_data->_ptr); continue;
-            default:
-              nassertd(spec._dim[2] > 0 && spec._dim[2] <= 4) continue;
-            }
-            continue;
-          case Shader::SAC_matrix:
-            cgGLSetMatrixParameterArrayfc(p, 0, spec._dim[0], (float*)ptr_data->_ptr);
-            continue;
-          default:
-            nassertd(false) continue;
+        } else {
+          switch (spec._dim[1]) {
+          case 1: cgSetParameter1fv(p, (float *)data); continue;
+          case 2: cgSetParameter2fv(p, (float *)data); continue;
+          case 3: cgSetParameter3fv(p, (float *)data); continue;
+          case 4: cgSetParameter4fv(p, (float *)data); continue;
+          case 9: cgGLSetMatrixParameterfc(p, (float *)data); continue;
+          case 16: cgGLSetMatrixParameterfc(p, (float *)data); continue;
+          default: nassertd(false) continue;
           }
-        default:
-          nassertd(false) continue;
         }
+        break;
 
-      case Shader::SPT_double:
-        switch (spec._info._class) {
-        case Shader::SAC_scalar:
-          cgSetParameter1dv(p, (double*)ptr_data->_ptr);
-          continue;
-
-        case Shader::SAC_vector:
-          switch (spec._info._type) {
-          case Shader::SAT_vec1:
-            cgSetParameter1dv(p, (double*)ptr_data->_ptr);
-            continue;
-          case Shader::SAT_vec2:
-            cgSetParameter2dv(p, (double*)ptr_data->_ptr);
-            continue;
-          case Shader::SAT_vec3:
-            cgSetParameter3dv(p, (double*)ptr_data->_ptr);
-            continue;
-          case Shader::SAT_vec4:
-            cgSetParameter4dv(p, (double*)ptr_data->_ptr);
-            continue;
-          default:
-            nassertd(false) continue;
+      case ShaderType::ST_double:
+        if (spec._info._type->as_array() != nullptr) {
+          switch (spec._dim[1]) {
+          case 1: cgGLSetParameterArray1d(p, 0, spec._dim[0], (double *)data); continue;
+          case 2: cgGLSetParameterArray2d(p, 0, spec._dim[0], (double *)data); continue;
+          case 3: cgGLSetParameterArray3d(p, 0, spec._dim[0], (double *)data); continue;
+          case 4: cgGLSetParameterArray4d(p, 0, spec._dim[0], (double *)data); continue;
+          case 9: cgGLSetMatrixParameterArraydc(p, 0, spec._dim[0], (double *)data); continue;
+          case 16: cgGLSetMatrixParameterArraydc(p, 0, spec._dim[0], (double *)data); continue;
+          default: nassertd(false) continue;
           }
-          continue;
-
-        case Shader::SAC_matrix:
-          cgGLSetMatrixParameterdc(p, (double*)ptr_data->_ptr);
-          continue;
-
-        case Shader::SAC_array:
-          switch (spec._info._subclass) {
-          case Shader::SAC_scalar:
-            cgGLSetParameterArray1d(p, 0, spec._dim[0], (double*)ptr_data->_ptr);
-            continue;
-          case Shader::SAC_vector:
-            switch (spec._dim[2]) {
-            case 1: cgGLSetParameterArray1d(p, 0, spec._dim[0], (double*)ptr_data->_ptr); continue;
-            case 2: cgGLSetParameterArray2d(p, 0, spec._dim[0], (double*)ptr_data->_ptr); continue;
-            case 3: cgGLSetParameterArray3d(p, 0, spec._dim[0], (double*)ptr_data->_ptr); continue;
-            case 4: cgGLSetParameterArray4d(p, 0, spec._dim[0], (double*)ptr_data->_ptr); continue;
-            default:
-              nassertd(spec._dim[2] > 0 && spec._dim[2] <= 4) continue;
-            }
-            continue;
-          case Shader::SAC_matrix:
-            cgGLSetMatrixParameterArraydc(p, 0, spec._dim[0], (double*)ptr_data->_ptr);
-            continue;
-          default:
-            nassertd(false) continue;
+        } else {
+          switch (spec._dim[1]) {
+          case 1: cgSetParameter1dv(p, (double *)data); continue;
+          case 2: cgSetParameter2dv(p, (double *)data); continue;
+          case 3: cgSetParameter3dv(p, (double *)data); continue;
+          case 4: cgSetParameter4dv(p, (double *)data); continue;
+          case 9: cgGLSetMatrixParameterdc(p, (double *)data); continue;
+          case 16: cgGLSetMatrixParameterdc(p, (double *)data); continue;
+          default: nassertd(false) continue;
           }
-        default:
-          nassertd(false) continue;
         }
-        continue;
+        break;
 
-      case Shader::SPT_int:
-      case Shader::SPT_uint:
-        switch (spec._info._class) {
-        case Shader::SAC_scalar:
-          cgSetParameter1iv(p, (int*)ptr_data->_ptr);
-          continue;
-        case Shader::SAC_vector:
-          switch (spec._info._type) {
-          case Shader::SAT_vec1: cgSetParameter1iv(p, (int*)ptr_data->_ptr); continue;
-          case Shader::SAT_vec2: cgSetParameter2iv(p, (int*)ptr_data->_ptr); continue;
-          case Shader::SAT_vec3: cgSetParameter3iv(p, (int*)ptr_data->_ptr); continue;
-          case Shader::SAT_vec4: cgSetParameter4iv(p, (int*)ptr_data->_ptr); continue;
-          default:
-            nassertd(false) continue;
-          }
-        default:
-          nassertd(false) continue;
+      case ShaderType::ST_int:
+      case ShaderType::ST_uint:
+        switch (spec._dim[1]) {
+        case 1: cgSetParameter1iv(p, (int *)data); continue;
+        case 2: cgSetParameter2iv(p, (int *)data); continue;
+        case 3: cgSetParameter3iv(p, (int *)data); continue;
+        case 4: cgSetParameter4iv(p, (int *)data); continue;
+        default: nassertd(false) continue;
         }
+        break;
+
       default:
         GLCAT.error() << spec._id._name << ":" << "unrecognized parameter type\n";
         release_resources();
@@ -690,14 +626,14 @@ issue_parameters(int altered) {
   }
 
   if (altered & _shader->_mat_deps) {
-    for (int i = 0; i < (int)_shader->_mat_spec.size(); ++i) {
-      Shader::ShaderMatSpec &spec = _shader->_mat_spec[i];
+    _glgsg->update_shader_matrix_cache(_shader, _mat_part_cache, altered);
 
-      if ((altered & (spec._dep[0] | spec._dep[1])) == 0) {
+    for (Shader::ShaderMatSpec &spec : _shader->_mat_spec) {
+      if ((altered & spec._dep) == 0) {
         continue;
       }
 
-      const LMatrix4 *val = _glgsg->fetch_specified_value(spec, altered);
+      const LMatrix4 *val = _glgsg->fetch_specified_value(spec, _mat_part_cache, altered);
       if (!val) continue;
       const PN_stdfloat *data = val->get_data();
 
@@ -902,11 +838,11 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
             // It requires us to pass GL_TRUE for normalized.
             _glgsg->_glVertexAttribPointer(p, GL_BGRA, GL_UNSIGNED_BYTE,
                                            GL_TRUE, stride, client_pointer);
-          } else if (bind._numeric_type == Shader::SPT_float ||
+          } else if (bind._scalar_type == ShaderType::ST_float ||
                      numeric_type == GeomEnums::NT_float32) {
             _glgsg->_glVertexAttribPointer(p, num_values, type,
                                            normalized, stride, client_pointer);
-          } else if (bind._numeric_type == Shader::SPT_double) {
+          } else if (bind._scalar_type == ShaderType::ST_double) {
             _glgsg->_glVertexAttribLPointer(p, num_values, type,
                                             stride, client_pointer);
           } else {
@@ -968,9 +904,9 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
           // So, we work around this by just binding something silly to 0.
           // This breaks flat colors, but it's better than invisible objects?
           _glgsg->enable_vertex_attrib_array(0);
-          if (bind._numeric_type == Shader::SPT_float) {
+          if (bind._scalar_type == ShaderType::ST_float) {
             _glgsg->_glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
-          } else if (bind._numeric_type == Shader::SPT_double) {
+          } else if (bind._scalar_type == ShaderType::ST_double) {
             _glgsg->_glVertexAttribLPointer(0, 4, GL_DOUBLE, 0, 0);
           } else {
             _glgsg->_glVertexAttribIPointer(0, 4, GL_INT, 0, 0);

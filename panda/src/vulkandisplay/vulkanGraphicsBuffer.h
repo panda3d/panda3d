@@ -31,7 +31,7 @@ public:
                        GraphicsOutput *host);
   virtual ~VulkanGraphicsBuffer();
 
-  virtual bool get_supports_render_texture() const;
+  virtual bool get_supports_render_texture() const override;
 
   virtual void clear(Thread *current_thread) override;
   virtual bool begin_frame(FrameMode mode, Thread *current_thread) override;

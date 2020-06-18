@@ -42,7 +42,8 @@ void main() {{
 """
 
 
-def run_glsl_test(gsg, body, preamble="", inputs={}, version=150, exts=set()):
+def run_glsl_test(gsg, body, preamble="", inputs={}, version=420, exts=set(),
+                  state=core.RenderState.make_empty()):
     """ Runs a GLSL test on the given GSG.  The given body is executed in the
     main function and should call assert().  The preamble should contain all
     of the shader inputs. """
@@ -69,7 +70,8 @@ def run_glsl_test(gsg, body, preamble="", inputs={}, version=150, exts=set()):
     code = GLSL_COMPUTE_TEMPLATE.format(version=version, extensions=extensions, preamble=preamble, body=body)
     line_offset = code[:code.find(body)].count('\n') + 1
     shader = core.Shader.make_compute(core.Shader.SL_GLSL, code)
-    assert shader, code
+    if not shader:
+        pytest.fail("error compiling shader:\n" + code)
 
     # Create a buffer to hold the results of the assertion.  We use one byte
     # per line of shader code, so we can show which lines triggered.
@@ -83,11 +85,12 @@ def run_glsl_test(gsg, body, preamble="", inputs={}, version=150, exts=set()):
     for name, value in inputs.items():
         attrib = attrib.set_shader_input(name, value)
     attrib = attrib.set_shader_input('_triggered', result)
+    state = state.set_attrib(attrib)
 
     # Run the compute shader.
     engine = core.GraphicsEngine.get_global_ptr()
     try:
-        engine.dispatch_compute((1, 1, 1), attrib, gsg)
+        engine.dispatch_compute((1, 1, 1), state, gsg)
     except AssertionError as exc:
         assert False, "Error executing compute shader:\n" + code
 
@@ -109,6 +112,10 @@ def run_glsl_test(gsg, body, preamble="", inputs={}, version=150, exts=set()):
 def run_glsl_compile_check(gsg, vert_path, frag_path, expect_fail=False):
     """Compile supplied GLSL shader paths and check for errors"""
     shader = core.Shader.load(core.Shader.SL_GLSL, vert_path, frag_path)
+    if expect_fail:
+        assert shader is None
+        return
+
     assert shader is not None
 
     shader.prepare_now(gsg.prepared_objects, gsg)
@@ -172,6 +179,7 @@ def test_glsl_image(gsg):
     run_glsl_test(gsg, code, preamble, {'tex1': tex1, 'tex2': tex2})
 
 
+@pytest.mark.xfail(reason="not yet implemented")
 def test_glsl_ssbo(gsg):
     from struct import pack
     num1 = pack('<i', 1234567)
@@ -192,9 +200,7 @@ def test_glsl_ssbo(gsg):
     assert(value2 == -1234567);
     """
     run_glsl_test(gsg, code, preamble, {'buffer1': buffer1, 'buffer2': buffer2},
-                  exts={'GL_ARB_shader_storage_buffer_object',
-                        'GL_ARB_uniform_buffer_object',
-                        'GL_ARB_shading_language_420pack'})
+                  version=430)
 
 
 def test_glsl_int(gsg):
@@ -233,6 +239,7 @@ def test_glsl_uint(gsg):
     run_glsl_test(gsg, code, preamble, inputs)
 
 
+@pytest.mark.xfail(reason="https://github.com/KhronosGroup/SPIRV-Tools/issues/3387")
 def test_glsl_bool(gsg):
     flags = dict(
         flag1=False,
@@ -259,6 +266,54 @@ def test_glsl_bool(gsg):
     assert(flag6);
     """
     run_glsl_test(gsg, code, preamble, flags)
+
+
+def test_glsl_mat3(gsg):
+    param1 = core.LMatrix4(core.LMatrix3(1, 2, 3, 4, 5, 6, 7, 8, 9))
+
+    param2 = core.NodePath("param2")
+    param2.set_mat(core.LMatrix3(10, 11, 12, 13, 14, 15, 16, 17, 18))
+
+    preamble = """
+    uniform mat3 param1;
+    uniform mat3 param2;
+    """
+    code = """
+    assert(param1[0] == vec3(1, 2, 3));
+    assert(param1[1] == vec3(4, 5, 6));
+    assert(param1[2] == vec3(7, 8, 9));
+    assert(param2[0] == vec3(10, 11, 12));
+    assert(param2[1] == vec3(13, 14, 15));
+    assert(param2[2] == vec3(16, 17, 18));
+    """
+    run_glsl_test(gsg, code, preamble, {'param1': param1, 'param2': param2})
+
+
+def test_glsl_mat4(gsg):
+    param1 = core.LMatrix4(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
+
+    param2 = core.NodePath("param2")
+    param2.set_mat(core.LMatrix4(
+        17, 18, 19, 20,
+        21, 22, 23, 24,
+        25, 26, 27, 28,
+        29, 30, 31, 32))
+
+    preamble = """
+    uniform mat4 param1;
+    uniform mat4 param2;
+    """
+    code = """
+    assert(param1[0] == vec4(1, 2, 3, 4));
+    assert(param1[1] == vec4(5, 6, 7, 8));
+    assert(param1[2] == vec4(9, 10, 11, 12));
+    assert(param1[3] == vec4(13, 14, 15, 16));
+    assert(param2[0] == vec4(17, 18, 19, 20));
+    assert(param2[1] == vec4(21, 22, 23, 24));
+    assert(param2[2] == vec4(25, 26, 27, 28));
+    assert(param2[3] == vec4(29, 30, 31, 32));
+    """
+    run_glsl_test(gsg, code, preamble, {'param1': param1, 'param2': param2})
 
 
 def test_glsl_pta_int(gsg):
@@ -339,6 +394,188 @@ def test_glsl_param_ivec4(gsg):
     assert(param.w == 3);
     """
     run_glsl_test(gsg, code, preamble, {'param': param})
+
+
+def test_glsl_struct(gsg):
+    preamble = """
+    uniform struct TestStruct {
+        vec3 a;
+        float b;
+        sampler2D c;
+        float unused;
+        vec2 d;
+        sampler2D e;
+    } test;
+    """
+    code = """
+    assert(test.a == vec3(1, 2, 3));
+    assert(test.b == 4);
+    assert(texture(test.c, vec2(0, 0)).r == 5);
+    assert(test.d == vec2(6, 7));
+    assert(texture(test.e, vec2(0, 0)).r == 8);
+    """
+    tex_c = core.Texture()
+    tex_c.setup_2d_texture(1, 1, core.Texture.T_float, core.Texture.F_r32)
+    tex_c.set_clear_color((5, 0, 0, 0))
+    tex_d = core.Texture()
+    tex_d.setup_2d_texture(1, 1, core.Texture.T_float, core.Texture.F_r32)
+    tex_d.set_clear_color((8, 0, 0, 0))
+    run_glsl_test(gsg, code, preamble, {
+        'test.unused': 0,
+        'test.a': (1, 2, 3),
+        'test.b': 4,
+        'test.c': tex_c,
+        'test.d': (6, 7),
+        'test.e': tex_d,
+    })
+
+
+def test_glsl_struct_array(gsg):
+    preamble = """
+    uniform struct TestStruct {
+        vec3 a;
+        sampler2D b;
+        float unused;
+        float c;
+    } test[2];
+    """
+    code = """
+    assert(test[0].a == vec3(1, 2, 3));
+    assert(texture(test[0].b, vec2(0, 0)).r == 4);
+    assert(test[0].c == 5);
+    assert(test[1].a == vec3(6, 7, 8));
+    assert(texture(test[1].b, vec2(0, 0)).r == 9);
+    assert(test[1].c == 10);
+    """
+    tex_0_b = core.Texture()
+    tex_0_b.setup_2d_texture(1, 1, core.Texture.T_float, core.Texture.F_r32)
+    tex_0_b.set_clear_color((4, 0, 0, 0))
+    tex_1_b = core.Texture()
+    tex_1_b.setup_2d_texture(1, 1, core.Texture.T_float, core.Texture.F_r32)
+    tex_1_b.set_clear_color((9, 0, 0, 0))
+    run_glsl_test(gsg, code, preamble, {
+        'test[0].unused': 0,
+        'test[0].a': (1, 2, 3),
+        'test[0].b': tex_0_b,
+        'test[0].c': 5,
+        'test[1].unused': 0,
+        'test[1].a': (6, 7, 8),
+        'test[1].b': tex_1_b,
+        'test[1].c': 10,
+    })
+
+
+def test_glsl_light(gsg):
+    preamble = """
+    uniform struct p3d_LightSourceParameters {
+        vec4 color;
+        vec3 ambient;
+        vec4 diffuse;
+        vec4 specular;
+        vec3 position;
+        vec4 halfVector;
+        vec4 spotDirection;
+        float spotCutoff;
+        float spotCosCutoff;
+        float spotExponent;
+        vec3 attenuation;
+        float constantAttenuation;
+        float linearAttenuation;
+        float quadraticAttenuation;
+    } plight;
+    """
+    code = """
+    assert(plight.color == vec4(1, 2, 3, 4));
+    assert(plight.ambient == vec3(0, 0, 0));
+    assert(plight.diffuse == vec4(1, 2, 3, 4));
+    assert(plight.specular == vec4(5, 6, 7, 8));
+    assert(plight.position == vec3(9, 10, 11));
+    assert(plight.spotCutoff == 180);
+    assert(plight.spotCosCutoff == -1);
+    assert(plight.spotExponent == 0);
+    assert(plight.attenuation == vec3(12, 13, 14));
+    assert(plight.constantAttenuation == 12);
+    assert(plight.linearAttenuation == 13);
+    assert(plight.quadraticAttenuation == 14);
+    """
+    plight = core.PointLight("plight")
+    plight.color = (1, 2, 3, 4)
+    plight.specular_color = (5, 6, 7, 8)
+    plight.transform = core.TransformState.make_pos((9, 10, 11))
+    plight.attenuation = (12, 13, 14)
+
+    run_glsl_test(gsg, code, preamble, {
+        'plight': core.NodePath(plight),
+    })
+
+
+def test_glsl_state_light(gsg):
+    preamble = """
+    uniform struct p3d_LightSourceParameters {
+        vec4 color;
+        vec3 ambient;
+        vec4 diffuse;
+        vec4 specular;
+        vec4 position;
+        vec4 halfVector;
+        vec4 spotDirection;
+        float spotCutoff;
+        float spotCosCutoff;
+        float spotExponent;
+        vec3 attenuation;
+        float constantAttenuation;
+        float linearAttenuation;
+        float quadraticAttenuation;
+    } p3d_LightSource[2];
+    """
+    code = """
+    assert(p3d_LightSource[0].color == vec4(1, 2, 3, 4));
+    assert(p3d_LightSource[0].ambient == vec3(0, 0, 0));
+    assert(p3d_LightSource[0].diffuse == vec4(1, 2, 3, 4));
+    assert(p3d_LightSource[0].specular == vec4(5, 6, 7, 8));
+    assert(p3d_LightSource[0].position == vec4(9, 10, 11, 1));
+    assert(p3d_LightSource[0].spotCutoff == 180);
+    assert(p3d_LightSource[0].spotCosCutoff == -1);
+    assert(p3d_LightSource[0].spotExponent == 0);
+    assert(p3d_LightSource[0].attenuation == vec3(12, 13, 14));
+    assert(p3d_LightSource[0].constantAttenuation == 12);
+    assert(p3d_LightSource[0].linearAttenuation == 13);
+    assert(p3d_LightSource[0].quadraticAttenuation == 14);
+    assert(p3d_LightSource[1].color == vec4(15, 16, 17, 18));
+    assert(p3d_LightSource[1].ambient == vec3(0, 0, 0));
+    assert(p3d_LightSource[1].diffuse == vec4(15, 16, 17, 18));
+    assert(p3d_LightSource[1].specular == vec4(19, 20, 21, 22));
+    assert(p3d_LightSource[1].position == vec4(0, 1, 0, 0));
+    assert(p3d_LightSource[1].spotCutoff == 180);
+    assert(p3d_LightSource[1].spotCosCutoff == -1);
+    assert(p3d_LightSource[1].spotExponent == 0);
+    assert(p3d_LightSource[1].attenuation == vec3(1, 0, 0));
+    assert(p3d_LightSource[1].constantAttenuation == 1);
+    assert(p3d_LightSource[1].linearAttenuation == 0);
+    assert(p3d_LightSource[1].quadraticAttenuation == 0);
+    """
+    plight = core.PointLight("plight")
+    plight.priority = 0
+    plight.color = (1, 2, 3, 4)
+    plight.specular_color = (5, 6, 7, 8)
+    plight.transform = core.TransformState.make_pos((9, 10, 11))
+    plight.attenuation = (12, 13, 14)
+    plight_path = core.NodePath(plight)
+
+    dlight = core.DirectionalLight("dlight")
+    dlight.priority = -1
+    dlight.direction = (0, -1, 0)
+    dlight.color = (15, 16, 17, 18)
+    dlight.specular_color = (19, 20, 21, 22)
+    dlight.transform = core.TransformState.make_pos((23, 24, 25))
+    dlight_path = core.NodePath(dlight)
+
+    lattr = core.LightAttrib.make()
+    lattr = lattr.add_on_light(plight_path)
+    lattr = lattr.add_on_light(dlight_path)
+    state = core.RenderState.make(lattr)
+
+    run_glsl_test(gsg, code, preamble, state=state)
 
 
 def test_glsl_write_extract_image_buffer(gsg):

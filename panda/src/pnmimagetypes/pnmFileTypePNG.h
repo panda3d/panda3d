@@ -28,7 +28,7 @@
 /**
  * For reading and writing PNG files.
  */
-class EXPCL_PANDA_PNMIMAGETYPES PNMFileTypePNG : public PNMFileType {
+class PNMFileTypePNG : public PNMFileType {
 public:
   PNMFileTypePNG();
 

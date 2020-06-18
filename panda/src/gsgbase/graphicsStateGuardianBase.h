@@ -234,9 +234,7 @@ public:
   virtual void ensure_generated_shader(const RenderState *state)=0;
 
   static void mark_rehash_generated_shaders() {
-#ifdef HAVE_CG
     ++_generated_shader_seq;
-#endif
   }
 
   virtual void push_group_marker(const std::string &marker) {}

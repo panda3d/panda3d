@@ -80,18 +80,18 @@ BamWriter(DatagramSink *target) :
       _file_minor = 21;
       bam_version.set_string_value("6 21");
 
-    } else if (_file_major > _bam_major_ver || _file_minor > _bam_minor_ver) {
+    } else if (_file_major > _bam_major_ver || _file_minor > _bam_last_minor_ver) {
       util_cat.error()
         << "bam-version is set to " << bam_version << ", but this version of "
            "Panda3D cannot produce .bam files newer than " << _bam_major_ver
-        << "." << _bam_minor_ver << ".  Set bam-version to a supported "
+        << "." << _bam_last_minor_ver << ".  Set bam-version to a supported "
            "version or leave it blank to write version " << _bam_major_ver
-        << "." << _bam_minor_ver << " files.\n";
+        << "." << _bam_last_minor_ver << " files.\n";
 
       _file_major = _bam_major_ver;
-      _file_minor = _bam_minor_ver;
+      _file_minor = _bam_last_minor_ver;
       bam_version.set_word(0, _bam_major_ver);
-      bam_version.set_word(1, _bam_minor_ver);
+      bam_version.set_word(1, _bam_last_minor_ver);
     }
   } else {
     _file_major = _bam_major_ver;
@@ -157,7 +157,7 @@ init() {
   _long_pta_id = false;
 
   nassertr_always(_file_major == _bam_major_ver, false);
-  nassertr_always(_file_minor <= _bam_minor_ver && _file_minor >= 21, false);
+  nassertr_always(_file_minor <= _bam_last_minor_ver && _file_minor >= 21, false);
 
   _file_endian = bam_endian;
   _file_texture_mode = bam_texture_mode;

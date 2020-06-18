@@ -104,7 +104,7 @@ get_compute_pipeline(VulkanGraphicsStateGuardian *gsg) {
     return _compute_pipeline;
   }
 
-  nassertr(_modules[Shader::ST_compute] != VK_NULL_HANDLE, VK_NULL_HANDLE);
+  nassertr(_modules[(size_t)Shader::Stage::compute] != VK_NULL_HANDLE, VK_NULL_HANDLE);
 
   VkPipeline pipeline = gsg->make_compute_pipeline(this);
   _compute_pipeline = pipeline;

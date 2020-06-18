@@ -72,7 +72,7 @@ public:
 
   static NotifySeverity string_severity(const std::string &string);
 
-  void config_initialized();
+  static void config_initialized();
 
 private:
   std::ostream *_ostream_ptr;

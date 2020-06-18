@@ -172,13 +172,12 @@ clear_shader() const {
 CPT(RenderAttrib) ShaderAttrib::
 set_flag(int flag, bool value) const {
   ShaderAttrib *result = new ShaderAttrib(*this);
-  int bit = 1<<flag;
   if (value) {
-    result->_flags |= bit;
+    result->_flags |= flag;
   } else {
-    result->_flags &= ~bit;
+    result->_flags &= ~flag;
   }
-  result->_has_flags |= bit;
+  result->_has_flags |= flag;
   return return_new(result);
 }
 
@@ -188,9 +187,8 @@ set_flag(int flag, bool value) const {
 CPT(RenderAttrib) ShaderAttrib::
 clear_flag(int flag) const {
   ShaderAttrib *result = new ShaderAttrib(*this);
-  int bit = 1<<flag;
-  result->_flags &= ~bit;
-  result->_has_flags &= ~bit;
+  result->_flags &= ~flag;
+  result->_has_flags &= ~flag;
   return return_new(result);
 }
 
@@ -344,7 +342,7 @@ get_shader_input_nodepath(const InternalName *id) const {
  * if it is not a vector.
  */
 LVecBase4 ShaderAttrib::
-get_shader_input_vector(InternalName *id) const {
+get_shader_input_vector(const InternalName *id) const {
   static LVecBase4 resfail(0,0,0,0);
   Inputs::const_iterator i = _inputs.find(id);
   if (i != _inputs.end()) {
@@ -357,22 +355,28 @@ get_shader_input_vector(InternalName *id) const {
       const Shader::ShaderPtrData &ptr = p.get_ptr();
 
       switch (ptr._type) {
-      case Shader::SPT_float:
+      case ShaderType::ST_float:
         {
           LVector4f vectorf;
           memcpy(&vectorf[0], ptr._ptr, sizeof(float) * ptr._size);
           return LCAST(PN_stdfloat, vectorf);
         }
-      case Shader::SPT_double:
+      case ShaderType::ST_double:
         {
           LVector4d vectord;
           memcpy(&vectord[0], ptr._ptr, sizeof(double) * ptr._size);
           return LCAST(PN_stdfloat, vectord);
         }
+      case ShaderType::ST_int:
+        {
+          LVector4i vectori;
+          memcpy(&vectori[0], ptr._ptr, sizeof(int) * ptr._size);
+          return LCAST(PN_stdfloat, vectori);
+        }
       default:
        {
           ostringstream strm;
-          strm << "Shader input " << id->get_name() << " does not contain floating-point data.\n";
+          strm << "Shader input " << id->get_name() << " does not contain numeric data.\n";
           nassert_raise(strm.str());
           return resfail;
         }
@@ -444,19 +448,19 @@ get_shader_input_ptr(const InternalName *id, Shader::ShaderPtrData &data) const 
         if (param->is_of_type(ParamVecBase4f::get_class_type())) {
           data._ptr = (void *)((const ParamVecBase4f *)param)->get_value().get_data();
           data._size = 4;
-          data._type = Shader::SPT_float;
+          data._type = ShaderType::ST_float;
           return true;
         }
         else if (param->is_of_type(ParamVecBase4i::get_class_type())) {
           data._ptr = (void *)((const ParamVecBase4i *)param)->get_value().get_data();
           data._size = 4;
-          data._type = Shader::SPT_int;
+          data._type = ShaderType::ST_int;
           return true;
         }
         else if (param->is_of_type(ParamVecBase4d::get_class_type())) {
           data._ptr = (void *)((const ParamVecBase4d *)param)->get_value().get_data();
           data._size = 4;
-          data._type = Shader::SPT_float;
+          data._type = ShaderType::ST_float;
           return true;
         }
       }
@@ -532,20 +536,21 @@ get_shader_input_matrix(const InternalName *id, LMatrix4 &matrix) const {
     if (p.get_value_type() == ShaderInput::M_nodepath) {
       const NodePath &np = p.get_nodepath();
       nassertr(!np.is_empty(), LMatrix4::ident_mat());
-      return np.get_transform()->get_mat();
+      matrix = np.get_transform()->get_mat();
+      return matrix;
 
     } else if (p.get_value_type() == ShaderInput::M_numeric &&
                p.get_ptr()._size >= 16 && (p.get_ptr()._size & 15) == 0) {
       const Shader::ShaderPtrData &ptr = p.get_ptr();
 
       switch (ptr._type) {
-        case Shader::SPT_float: {
+        case ShaderType::ST_float: {
           LMatrix4f matrixf;
           memcpy(&matrixf(0, 0), ptr._ptr, sizeof(float) * 16);
           matrix = LCAST(PN_stdfloat, matrixf);
           return matrix;
         }
-        case Shader::SPT_double: {
+        case ShaderType::ST_double: {
           LMatrix4d matrixd;
           memcpy(&matrixd(0, 0), ptr._ptr, sizeof(double) * 16);
           matrix = LCAST(PN_stdfloat, matrixd);

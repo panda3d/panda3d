@@ -60,11 +60,7 @@ readline() {
     ch = in->get();
   }
 
-#if PY_MAJOR_VERSION >= 3
   return PyBytes_FromStringAndSize(line.data(), line.size());
-#else
-  return PyString_FromStringAndSize(line.data(), line.size());
-#endif
 }
 
 /**
@@ -80,11 +76,7 @@ readlines() {
 
   PyObject *py_line = readline();
 
-#if PY_MAJOR_VERSION >= 3
   while (PyBytes_GET_SIZE(py_line) > 0) {
-#else
-  while (PyString_GET_SIZE(py_line) > 0) {
-#endif
     PyList_Append(lst, py_line);
     Py_DECREF(py_line);
 

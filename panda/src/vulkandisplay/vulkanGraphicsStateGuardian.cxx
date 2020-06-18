@@ -16,6 +16,7 @@
 #include "graphicsEngine.h"
 #include "pStatTimer.h"
 #include "standardMunger.h"
+#include "shaderModuleSpirV.h"
 
 #include "colorAttrib.h"
 #include "colorBlendAttrib.h"
@@ -28,63 +29,34 @@
 #include "renderModeAttrib.h"
 #include "transparencyAttrib.h"
 
-const uint32_t default_vshader[] = {0x07230203, 0x10000, 0x80007, 0x2b, 0x00,
-  0x20011, 0x01, 0x6000b, 0x01, 0x4c534c47, 0x6474732e, 0x3035342e, 0x00,
-  0x3000e, 0x00, 0x01, 0xb000f, 0x00, 0x04, 0x6e69616d, 0x00, 0x0d, 0x18,
-  0x1f, 0x21, 0x23, 0x24, 0x30003, 0x02, 0x1ae, 0x40005, 0x04, 0x6e69616d,
-  0x00, 0x60005, 0x0b, 0x505f6c67, 0x65567265, 0x78657472, 0x00, 0x60006,
-  0x0b, 0x00, 0x505f6c67, 0x7469736f, 0x6e6f69, 0x70006, 0x0b, 0x01,
-  0x505f6c67, 0x746e696f, 0x657a6953, 0x00, 0x70006, 0x0b, 0x02, 0x435f6c67,
-  0x4470696c, 0x61747369, 0x65636e, 0x30005, 0x0d, 0x00, 0x70005, 0x11,
-  0x5f643370, 0x68737550, 0x736e6f43, 0x746e6174, 0x73, 0xb0006, 0x11, 0x00,
-  0x5f643370, 0x65646f4d, 0x6569566c, 0x6f725077, 0x7463656a, 0x4d6e6f69,
-  0x69727461, 0x78, 0x70006, 0x11, 0x01, 0x5f643370, 0x6f6c6f43, 0x61635372,
-  0x656c, 0x30005, 0x13, 0x00, 0x40005, 0x18, 0x74726576, 0x7865, 0x50005,
-  0x1f, 0x7865746f, 0x726f6f63, 0x64, 0x50005, 0x21, 0x63786574, 0x64726f6f,
-  0x00, 0x40005, 0x23, 0x6c6f636f, 0x726f, 0x40005, 0x24, 0x6f6c6f63, 0x72,
-  0x50048, 0x0b, 0x00, 0x0b, 0x00, 0x50048, 0x0b, 0x01, 0x0b, 0x01, 0x50048,
-  0x0b, 0x02, 0x0b, 0x03, 0x30047, 0x0b, 0x02, 0x40048, 0x11, 0x00, 0x05,
-  0x50048, 0x11, 0x00, 0x23, 0x00, 0x50048, 0x11, 0x00, 0x07, 0x10, 0x50048,
-  0x11, 0x01, 0x23, 0x40, 0x30047, 0x11, 0x02, 0x40047, 0x18, 0x1e, 0x00,
-  0x40047, 0x1f, 0x1e, 0x00, 0x40047, 0x21, 0x1e, 0x02, 0x40047, 0x23, 0x1e,
-  0x01, 0x40047, 0x24, 0x1e, 0x01, 0x20013, 0x02, 0x30021, 0x03, 0x02,
-  0x30016, 0x06, 0x20, 0x40017, 0x07, 0x06, 0x04, 0x40015, 0x08, 0x20, 0x00,
-  0x4002b, 0x08, 0x09, 0x01, 0x4001c, 0x0a, 0x06, 0x09, 0x5001e, 0x0b, 0x07,
-  0x06, 0x0a, 0x40020, 0x0c, 0x03, 0x0b, 0x4003b, 0x0c, 0x0d, 0x03, 0x40015,
-  0x0e, 0x20, 0x01, 0x4002b, 0x0e, 0x0f, 0x00, 0x40018, 0x10, 0x07, 0x04,
-  0x4001e, 0x11, 0x10, 0x07, 0x40020, 0x12, 0x09, 0x11, 0x4003b, 0x12, 0x13,
-  0x09, 0x40020, 0x14, 0x09, 0x10, 0x40020, 0x17, 0x01, 0x07, 0x4003b, 0x17,
-  0x18, 0x01, 0x40020, 0x1b, 0x03, 0x07, 0x40017, 0x1d, 0x06, 0x02, 0x40020,
-  0x1e, 0x03, 0x1d, 0x4003b, 0x1e, 0x1f, 0x03, 0x40020, 0x20, 0x01, 0x1d,
-  0x4003b, 0x20, 0x21, 0x01, 0x4003b, 0x1b, 0x23, 0x03, 0x4003b, 0x17, 0x24,
-  0x01, 0x4002b, 0x0e, 0x26, 0x01, 0x40020, 0x27, 0x09, 0x07, 0x50036, 0x02,
-  0x04, 0x00, 0x03, 0x200f8, 0x05, 0x50041, 0x14, 0x15, 0x13, 0x0f, 0x4003d,
-  0x10, 0x16, 0x15, 0x4003d, 0x07, 0x19, 0x18, 0x50091, 0x07, 0x1a, 0x16,
-  0x19, 0x50041, 0x1b, 0x1c, 0x0d, 0x0f, 0x3003e, 0x1c, 0x1a, 0x4003d, 0x1d,
-  0x22, 0x21, 0x3003e, 0x1f, 0x22, 0x4003d, 0x07, 0x25, 0x24, 0x50041, 0x27,
-  0x28, 0x13, 0x26, 0x4003d, 0x07, 0x29, 0x28, 0x50085, 0x07, 0x2a, 0x25,
-  0x29, 0x3003e, 0x23, 0x2a, 0x100fd, 0x10038,
-};
+static const std::string default_vshader =
+  "#version 430\n"
+  "in vec4 p3d_Vertex;\n"
+  "in vec4 p3d_Color;\n"
+  "in vec2 p3d_MultiTexCoord0;\n"
+  "out vec2 texcoord;\n"
+  "out vec4 color;\n"
+  "layout(push_constant, std140) uniform p3d_PushConstants {\n"
+  "  uniform mat4 p3d_ModelViewProjectionMatrix;\n"
+  "  uniform vec4 p3d_ColorScale;\n"
+  "};\n"
+  "void main(void) {\n"
+  "  gl_Position = p3d_ModelViewProjectionMatrix * p3d_Vertex;\n"
+  "  texcoord = p3d_MultiTexCoord0;\n"
+  "  color = p3d_Color * p3d_ColorScale;\n"
+  "}\n";
 
-const uint32_t default_fshader[] = {0x07230203, 0x10000, 0x80007, 0x19, 0x00,
-  0x20011, 0x01, 0x6000b, 0x01, 0x4c534c47, 0x6474732e, 0x3035342e, 0x00,
-  0x3000e, 0x00, 0x01, 0x8000f, 0x04, 0x04, 0x6e69616d, 0x00, 0x09, 0x11,
-  0x15, 0x30010, 0x04, 0x07, 0x30003, 0x02, 0x1ae, 0x40005, 0x04, 0x6e69616d,
-  0x00, 0x60005, 0x09, 0x5f643370, 0x67617246, 0x6f6c6f43, 0x72, 0x60005,
-  0x0d, 0x5f643370, 0x74786554, 0x30657275, 0x00, 0x50005, 0x11, 0x63786574,
-  0x64726f6f, 0x00, 0x40005, 0x15, 0x6f6c6f63, 0x72, 0x40047, 0x09, 0x1e,
-  0x00, 0x40047, 0x0d, 0x22, 0x00, 0x40047, 0x0d, 0x21, 0x00, 0x40047, 0x11,
-  0x1e, 0x00, 0x40047, 0x15, 0x1e, 0x01, 0x20013, 0x02, 0x30021, 0x03, 0x02,
-  0x30016, 0x06, 0x20, 0x40017, 0x07, 0x06, 0x04, 0x40020, 0x08, 0x03, 0x07,
-  0x4003b, 0x08, 0x09, 0x03, 0x90019, 0x0a, 0x06, 0x01, 0x00, 0x00, 0x00,
-  0x01, 0x00, 0x3001b, 0x0b, 0x0a, 0x40020, 0x0c, 0x00, 0x0b, 0x4003b, 0x0c,
-  0x0d, 0x00, 0x40017, 0x0f, 0x06, 0x02, 0x40020, 0x10, 0x01, 0x0f, 0x4003b,
-  0x10, 0x11, 0x01, 0x40020, 0x14, 0x01, 0x07, 0x4003b, 0x14, 0x15, 0x01,
-  0x50036, 0x02, 0x04, 0x00, 0x03, 0x200f8, 0x05, 0x4003d, 0x0b, 0x0e, 0x0d,
-  0x4003d, 0x0f, 0x12, 0x11, 0x50057, 0x07, 0x13, 0x0e, 0x12, 0x3003e, 0x09,
-  0x13, 0x4003d, 0x07, 0x16, 0x15, 0x4003d, 0x07, 0x17, 0x09, 0x50085, 0x07,
-  0x18, 0x17, 0x16, 0x3003e, 0x09, 0x18, 0x100fd, 0x10038,
-};
+static const std::string default_fshader =
+  "#version 430\n"
+  "in vec2 texcoord;\n"
+  "in vec4 color;\n"
+  "out vec4 p3d_FragColor;\n"
+  "uniform sampler2D p3d_Texture0;\n"
+  "void main(void) {\n"
+  "  p3d_FragColor = texture(p3d_Texture0, texcoord);\n"
+  "  //p3d_FragColor += p3d_TexAlphaOnly;\n" // Hack for text rendering
+  "  p3d_FragColor *= color;\n"
+  "}\n";
 
 TypeHandle VulkanGraphicsStateGuardian::_type_handle;
 
@@ -262,9 +234,7 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   // Load the default shader.  Temporary hack.
   static PT(Shader) default_shader;
   if (default_shader.is_null()) {
-    default_shader = Shader::make(Shader::SL_SPIR_V,
-      std::string((char *)default_vshader, sizeof(default_vshader)),
-      std::string((char *)default_fshader, sizeof(default_fshader)));
+    default_shader = Shader::make(Shader::SL_GLSL, default_vshader, default_fshader);
     nassertv(default_shader);
   }
   if (_default_sc == nullptr) {
@@ -327,10 +297,7 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   _supports_depth_stencil = true;
   _supports_shadow_filter = true;
   _supports_sampler_objects = true;
-  _supports_basic_shaders = false;
-  _supports_geometry_shaders = (features.geometryShader != VK_FALSE);
-  _supports_tessellation_shaders = (features.tessellationShader != VK_FALSE);
-  _supports_compute_shaders = true;
+  _supports_basic_shaders = true;
   _supports_glsl = false;
   _supports_hlsl = false;
   _supports_framebuffer_multisample = true;
@@ -341,6 +308,32 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   _supports_two_sided_stencil = true;
   _supports_geometry_instancing = true;
   _supports_indirect_draw = true;
+
+  _supported_shader_caps |=
+    ShaderModule::C_integer |
+    ShaderModule::C_texture_fetch |
+    ShaderModule::C_buffer_texture |
+    ShaderModule::C_vertex_id |
+    ShaderModule::C_round_even |
+    ShaderModule::C_compute_shader |
+    ShaderModule::C_instance_id |
+    ShaderModule::C_primitive_id;
+
+  if (features.geometryShader) {
+    _supported_shader_caps |= ShaderModule::C_geometry_shader;
+  }
+
+  if (features.tessellationShader) {
+    _supported_shader_caps |= ShaderModule::C_tessellation_shader;
+  }
+
+  if (features.shaderFloat64) {
+    _supported_shader_caps |= ShaderModule::C_double;
+  }
+
+  if (features.imageCubeArray) {
+    _supported_shader_caps |= ShaderModule::C_cube_map_array;
+  }
 
   _max_color_targets = limits.maxColorAttachments;
   _supports_dual_source_blending = (features.dualSrcBlend != VK_FALSE);
@@ -1357,31 +1350,24 @@ release_geom(GeomContext *) {
  */
 ShaderContext *VulkanGraphicsStateGuardian::
 prepare_shader(Shader *shader) {
-  if (shader->get_language() != Shader::SL_SPIR_V) {
-    vulkandisplay_cat.error()
-      << "Vulkan can only consume SPIR-V shaders.\n";
-    return nullptr;
-  }
-
   PStatTimer timer(_prepare_shader_pcollector);
 
   VulkanShaderContext *sc = new VulkanShaderContext(shader);
 
-  for (size_t i = Shader::ST_none + 1; i < Shader::ST_COUNT; ++i) {
-    const std::string &code = shader->get_text((Shader::ShaderType)i);
-    if (code.empty()) {
-      continue;
-    }
+  for (COWPT(ShaderModule) &cow_module : shader->_modules) {
+    CPT(ShaderModule) module = cow_module.get_read_pointer();
+    const ShaderModuleSpirV *spv_module = DCAST(ShaderModuleSpirV, module.p());
+    nassertd(spv_module != nullptr) continue;
 
     VkShaderModuleCreateInfo module_info;
     module_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
     module_info.pNext = nullptr;
     module_info.flags = 0;
-    module_info.codeSize = code.size();
-    module_info.pCode = (const uint32_t *)code.data();
+    module_info.codeSize = spv_module->get_data_size() * 4;
+    module_info.pCode = (const uint32_t *)spv_module->get_data();
 
     VkResult err;
-    err = vkCreateShaderModule(_device, &module_info, nullptr, &sc->_modules[i]);
+    err = vkCreateShaderModule(_device, &module_info, nullptr, &sc->_modules[(size_t)spv_module->get_stage()]);
     if (err) {
       vulkan_error(err, "Failed to load shader module");
       delete sc;
@@ -1407,7 +1393,7 @@ release_shader(ShaderContext *context) {
 
   // According to the Vulkan spec, it is safe to delete a shader module even
   // if pipelines using it are still in use, so let's do it now.
-  for (size_t i = 0; i < Shader::ST_COUNT; ++i) {
+  for (size_t i = 0; i <= (size_t)Shader::Stage::compute; ++i) {
     if (sc->_modules[i] != VK_NULL_HANDLE) {
       vkDestroyShaderModule(_device, sc->_modules[i], nullptr);
       sc->_modules[i] = VK_NULL_HANDLE;
@@ -2667,19 +2653,18 @@ make_pipeline(VulkanShaderContext *sc, const RenderState *state,
       << "Making pipeline for state " << *state << " and format " << *format << "\n";
   }
 
-  VkPipelineShaderStageCreateInfo stages[Shader::ST_COUNT];
-  const VkShaderStageFlagBits stage_flags[Shader::ST_COUNT] = {
-    VK_SHADER_STAGE_ALL,
+  VkPipelineShaderStageCreateInfo stages[(size_t)Shader::Stage::compute + 1];
+  const VkShaderStageFlagBits stage_flags[(size_t)Shader::Stage::compute + 1] = {
     VK_SHADER_STAGE_VERTEX_BIT,
-    VK_SHADER_STAGE_FRAGMENT_BIT,
-    VK_SHADER_STAGE_GEOMETRY_BIT,
     VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT,
     VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT,
+    VK_SHADER_STAGE_GEOMETRY_BIT,
+    VK_SHADER_STAGE_FRAGMENT_BIT,
     VK_SHADER_STAGE_COMPUTE_BIT,
   };
   uint32_t num_stages = 0;
 
-  for (size_t i = 0; i < Shader::ST_COUNT; ++i) {
+  for (size_t i = 0; i <= (size_t)Shader::Stage::compute; ++i) {
     if (sc->_modules[i] != VK_NULL_HANDLE) {
       VkPipelineShaderStageCreateInfo &stage = stages[num_stages++];
       stage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -3116,7 +3101,7 @@ make_compute_pipeline(VulkanShaderContext *sc) {
   pipeline_info.stage.pNext = nullptr;
   pipeline_info.stage.flags = 0;
   pipeline_info.stage.stage = VK_SHADER_STAGE_COMPUTE_BIT;
-  pipeline_info.stage.module = sc->_modules[Shader::ST_compute];
+  pipeline_info.stage.module = sc->_modules[(size_t)Shader::Stage::compute];
   pipeline_info.stage.pName = "main";
   pipeline_info.stage.pSpecializationInfo = nullptr;
   pipeline_info.layout = sc->_pipeline_layout;

@@ -13,15 +13,9 @@ from direct.tkpanels import Placer
 from direct.particles import ForceGroup
 from direct.particles import Particles
 from direct.particles import ParticleEffect
-import Pmw, os, sys
-
-if sys.version_info >= (3, 0):
-    from tkinter.filedialog import *
-    from tkinter.simpledialog import askstring
-else:
-    from tkFileDialog import *
-    from tkSimpleDialog import askstring
-
+import Pmw, os
+from tkinter.filedialog import *
+from tkinter.simpledialog import askstring
 from panda3d.core import *
 from panda3d.physics import *
 from panda3d.direct import getParticlePath
@@ -1272,7 +1266,7 @@ class ParticlePanel(AppShell):
             initialdir = path,
             title = 'Load Particle Effect',
             parent = self.parent)
-        if particleFilename:
+        if particleFilename and particleFilename != 'None':
             # Delete existing particles and forces
             self.particleEffect.loadConfig(
                 Filename.fromOsSpecific(particleFilename))

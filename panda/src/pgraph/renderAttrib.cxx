@@ -209,14 +209,15 @@ garbage_collect() {
 
   do {
     RenderAttrib *attrib = (RenderAttrib *)_attribs.get_key(si);
-    if (attrib->get_ref_count() == 1) {
+    if (!attrib->unref_if_one()) {
       // This attrib has recently been unreffed to 1 (the one we added when
       // we stored it in the cache).  Now it's time to delete it.  This is
       // safe, because we're holding the _attribs_lock, so it's not possible
       // for some other thread to find the attrib in the cache and ref it
-      // while we're doing this.
+      // while we're doing this.  Also, we've just made sure to unref it to 0,
+      // to ensure that another thread can't get it via a weak pointer.
       attrib->release_new();
-      unref_delete(attrib);
+      delete attrib;
 
       // When we removed it from the hash map, it swapped the last element
       // with the one we just removed.  So the current index contains one we

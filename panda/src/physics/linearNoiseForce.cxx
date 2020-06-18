@@ -89,17 +89,12 @@ get_child_vector(const PhysicsObject *po) {
   LPoint3 p = po->get_position();
 
   // get all of the components
-  int int_x, int_y, int_z;
+  PN_stdfloat int_x, int_y, int_z;
   PN_stdfloat frac_x, frac_y, frac_z;
 
-  int_x = (int) p[0];
-  frac_x = p[0] - int_x;
-
-  int_y = (int) p[1];
-  frac_y = p[1] - int_y;
-
-  int_z = (int) p[2];
-  frac_z = p[2] - int_z;
+  frac_x = std::modf(p[0], &int_x);
+  frac_y = std::modf(p[1], &int_y);
+  frac_z = std::modf(p[2], &int_z);
 
   // apply the cubic smoother to the fractional values
   PN_stdfloat cubic_x, cubic_y, cubic_z;

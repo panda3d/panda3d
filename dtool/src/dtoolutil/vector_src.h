@@ -34,7 +34,7 @@
 
 #include "pvector.h"
 
-#if defined(WIN32_VC) && !defined(CPPPARSER)
+#if defined(_MSC_VER) && !defined(CPPPARSER)
 
   #ifdef HAVE_DINKUM
 // With the Dinkum library, we must first export the base class, _Vector_val.

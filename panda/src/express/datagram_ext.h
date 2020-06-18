@@ -31,6 +31,7 @@ class Extension<Datagram> : public ExtensionBase<Datagram> {
 public:
   INLINE PyObject *get_message() const;
   INLINE PyObject *__bytes__() const;
+  INLINE PyObject *__reduce__() const;
 };
 
 #include "datagram_ext.I"

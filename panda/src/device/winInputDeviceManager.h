@@ -20,7 +20,7 @@
 
 #include "xInputDevice.h"
 
-#include <CfgMgr32.h>
+#include <cfgmgr32.h>
 #include <devpkey.h>
 
 class WinRawInputDevice;

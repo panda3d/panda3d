@@ -1,0 +1,7 @@
+Metadata-Version: 2.0
+Name: Panda3D
+Version: ${PROJECT_VERSION}
+License: BSD
+Home-page: https://www.panda3d.org/
+Author: Panda3D Team
+Author-email: etc-panda3d@lists.andrew.cmu.edu

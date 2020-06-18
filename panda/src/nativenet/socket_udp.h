@@ -15,6 +15,7 @@
 #define __SOCKET_UDP_H__
 
 #include "socket_udp_incoming.h"
+#include "vector_uchar.h"
 
 /**
  * Base functionality for a combination UDP Reader and Writer.  This
@@ -31,11 +32,11 @@ PUBLISHED:
 public:
   inline bool Send(const char *data, int len);
 PUBLISHED:
-  inline bool Send(const std::string &data);
+  inline bool Send(const vector_uchar &data);
 public:
   inline bool SendTo(const char *data, int len, const Socket_Address &address);
 PUBLISHED:
-  inline bool SendTo(const std::string &data, const Socket_Address &address);
+  inline bool SendTo(const vector_uchar &data, const Socket_Address &address);
   inline bool SetToBroadCast();
 
 public:
@@ -96,8 +97,8 @@ Send(const char *data, int len) {
  * Send data to connected address
  */
 inline bool Socket_UDP::
-Send(const std::string &data) {
-  return Send(data.data(), data.size());
+Send(const vector_uchar &data) {
+  return Send((char*) data.data(), data.size());
 }
 
 /**
@@ -112,8 +113,8 @@ SendTo(const char *data, int len, const Socket_Address &address) {
  * Send data to specified address
  */
 inline bool Socket_UDP::
-SendTo(const std::string &data, const Socket_Address &address) {
-  return SendTo(data.data(), data.size(), address);
+SendTo(const vector_uchar &data, const Socket_Address &address) {
+  return SendTo((char*) data.data(), data.size(), address);
 }
 
 #endif //__SOCKET_UDP_H__

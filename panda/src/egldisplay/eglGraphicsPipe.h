@@ -15,7 +15,14 @@
 #define EGLGRAPHICSPIPE_H
 
 #include "pandabase.h"
+
+#ifdef HAVE_X11
 #include "x11GraphicsPipe.h"
+typedef x11GraphicsPipe BaseGraphicsPipe;
+#else
+#include "graphicsPipe.h"
+typedef GraphicsPipe BaseGraphicsPipe;
+#endif
 
 #ifdef OPENGLES_2
   #include "gles2gsg.h"
@@ -25,10 +32,15 @@
   #define NativeDisplayType EGLNativeDisplayType
   #define NativePixmapType EGLNativePixmapType
   #define NativeWindowType EGLNativeWindowType
-#else
+#elif defined(OPENGLES_1)
   #include "glesgsg.h"
   #include "pre_x11_include.h"
   #include <GLES/egl.h>
+  #include "post_x11_include.h"
+#else
+  #include "glgsg.h"
+  #include "pre_x11_include.h"
+  #include <EGL/egl.h>
   #include "post_x11_include.h"
 #endif
 
@@ -42,13 +54,15 @@ class eglGraphicsWindow;
  * This graphics pipe represents the interface for creating OpenGL ES graphics
  * windows on an X-based (e.g.  Unix) client.
  */
-class eglGraphicsPipe : public x11GraphicsPipe {
+class eglGraphicsPipe : public BaseGraphicsPipe {
 public:
-  eglGraphicsPipe(const std::string &display = std::string());
+  eglGraphicsPipe();
   virtual ~eglGraphicsPipe();
 
   virtual std::string get_interface_name() const;
   static PT(GraphicsPipe) pipe_constructor();
+
+  INLINE EGLDisplay get_egl_display() const;
 
 protected:
   virtual PT(GraphicsOutput) make_output(const std::string &name,
@@ -62,16 +76,16 @@ protected:
                                          bool &precertify);
 
 private:
-  EGLDisplay _egl_display;
+  EGLDisplay _egl_display = 0;
 
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
-    x11GraphicsPipe::init_type();
+    BaseGraphicsPipe::init_type();
     register_type(_type_handle, "eglGraphicsPipe",
-                  x11GraphicsPipe::get_class_type());
+                  BaseGraphicsPipe::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -80,10 +94,6 @@ public:
 
 private:
   static TypeHandle _type_handle;
-
-  friend class eglGraphicsBuffer;
-  friend class eglGraphicsPixmap;
-  friend class eglGraphicsWindow;
 };
 
 #include "eglGraphicsPipe.I"

@@ -52,7 +52,8 @@ public:
     T_empty_aggregate_init,
     T_new,
     T_default_new,
-    T_sizeof,
+    T_sizeof_type,
+    T_sizeof_expr,
     T_sizeof_ellipsis,
     T_alignof,
     T_unary_operation,
@@ -89,6 +90,7 @@ public:
   static CPPExpression typeid_op(CPPExpression *op1, CPPType *std_type_info);
   static CPPExpression type_trait(int trait, CPPType *type, CPPType *arg = nullptr);
   static CPPExpression sizeof_func(CPPType *type);
+  static CPPExpression sizeof_func(CPPExpression *op1);
   static CPPExpression sizeof_ellipsis_func(CPPIdentifier *ident);
   static CPPExpression alignof_func(CPPType *type);
   static CPPExpression lambda(CPPClosureType *type);

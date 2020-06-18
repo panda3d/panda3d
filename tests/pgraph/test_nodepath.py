@@ -109,6 +109,49 @@ def test_nodepath_transform_composition():
     assert np1.get_transform(np2) == relative_transform
 
 
+def test_nodepath_comparison():
+    from panda3d.core import NodePath, PandaNode
+
+    path = NodePath("node")
+
+    # Empty NodePath equals itself
+    assert NodePath() == NodePath()
+    assert not (NodePath() != NodePath())
+    assert not (NodePath() > NodePath())
+    assert not (NodePath() < NodePath())
+    assert NodePath().compare_to(NodePath()) == 0
+
+    # Empty NodePath does not equal non-empty NodePath
+    assert NodePath() != path
+    assert not (NodePath() == path)
+    assert NodePath().compare_to(path) != 0
+    assert path != NodePath()
+    assert not (path == NodePath())
+    assert path.compare_to(NodePath()) != 0
+
+    # Copy of NodePath equals original
+    path2 = NodePath(path)
+    assert path == path2
+    assert path2 == path
+    assert not (path != path2)
+    assert not (path2 != path)
+    assert not (path > path2)
+    assert not (path < path2)
+    assert path.compare_to(path2) == 0
+    assert path2.compare_to(path) == 0
+
+    # NodePath pointing to copy of node is not the same
+    path2 = NodePath(path.node().make_copy())
+    assert path != path2
+    assert path2 != path
+    assert not (path == path2)
+    assert not (path2 == path)
+    assert (path2 > path) or (path > path2)
+    assert (path2 < path) or (path < path2)
+    assert path.compare_to(path2) != 0
+    assert path2.compare_to(path) != 0
+
+
 def test_weak_nodepath_comparison():
     from panda3d.core import NodePath, WeakNodePath
 
@@ -149,6 +192,35 @@ def test_nodepath_python_tags():
     rc1 = sys.getrefcount(path.python_tags)
     rc2 = sys.getrefcount(path.python_tags)
     assert rc1 == rc2
+
+
+def test_nodepath_clear_python_tag():
+    from panda3d.core import NodePath
+
+    path = NodePath("node")
+    assert not path.has_python_tag("a")
+    assert not path.has_python_tag("b")
+    assert not path.node().has_tags()
+
+    path.set_python_tag("a", "value")
+    assert path.has_python_tag("a")
+    assert not path.has_python_tag("b")
+    assert path.node().has_tags()
+
+    path.set_python_tag("b", "value")
+    assert path.has_python_tag("a")
+    assert path.has_python_tag("b")
+    assert path.node().has_tags()
+
+    path.clear_python_tag("a")
+    assert not path.has_python_tag("a")
+    assert path.has_python_tag("b")
+    assert path.node().has_tags()
+
+    path.clear_python_tag("b")
+    assert not path.has_python_tag("a")
+    assert not path.has_python_tag("b")
+    assert not path.node().has_tags()
 
 
 def test_nodepath_replace_texture():

@@ -40,7 +40,7 @@ public:
   INLINE void unlock();
 
 private:
-  pthread_mutex_t _lock;
+  pthread_mutex_t _lock = PTHREAD_MUTEX_INITIALIZER;
   friend class ConditionVarPosixImpl;
 };
 

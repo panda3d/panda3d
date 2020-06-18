@@ -52,7 +52,7 @@ inline Socket_fdset::Socket_fdset() {
 inline void Socket_fdset::setForSocketNative(SOCKET inid)
 {
     assert( inid >= 0);
-#ifndef WIN32
+#ifndef _WIN32
     assert(inid < FD_SETSIZE);
 #endif
 
@@ -68,7 +68,7 @@ inline void Socket_fdset::setForSocketNative(SOCKET inid)
 inline bool Socket_fdset::isSetForNative(SOCKET inid) const
 {
     assert( inid >= 0);
-#ifndef WIN32
+#ifndef _WIN32
     assert(inid < FD_SETSIZE);
 #endif
 

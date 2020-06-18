@@ -51,8 +51,6 @@ using std::string;
 
 TypeHandle ShaderGenerator::_type_handle;
 
-#ifdef HAVE_CG
-
 #define UNPACK_COMBINE_SRC(from, n) (TextureStage::CombineSource)((from >> ((uint16_t)n * 5u)) & 7u)
 #define UNPACK_COMBINE_OP(from, n) (TextureStage::CombineOperand)(((from >> (((uint16_t)n * 5u) + 3u)) & 3u) + 1u)
 
@@ -1241,12 +1239,23 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       const ShaderKey::TextureInfo &tex = key._textures[i];
       if (tex._flags & ShaderKey::TF_map_normal) {
         if (is_first) {
-          text << "\t float3 tsnormal = normalize((tex" << i << ".xyz * 2) - 1);\n";
+          if (tex._flags & ShaderKey::TF_has_texscale) {
+            text << "\t float3 tsnormal = normalize(((tex" << i << ".xyz * 2) - 1) * texscale_" << i << ");\n";
+          } else if (tex._flags & ShaderKey::TF_has_texmat) {
+            text << "\t float3 tsnormal = normalize(mul(texmat_" << i << ", float4((tex" << i << ".xyz * 2) - 1, 0)).xyz);\n";
+          } else {
+            text << "\t float3 tsnormal = normalize((tex" << i << ".xyz * 2) - 1);\n";
+          }
           is_first = false;
           continue;
         }
         text << "\t tsnormal.z += 1;\n";
         text << "\t float3 tmp" << i << " = tex" << i << ".xyz * float3(-2, -2, 2) + float3(1, 1, -1);\n";
+        if (tex._flags & ShaderKey::TF_has_texscale) {
+          text << "\t tmp" << i << " *= texscale_" << i << ";\n";
+        } else if (tex._flags & ShaderKey::TF_has_texmat) {
+          text << "\t tmp" << i << " = mul(texmat_" << i << ", float4(tmp" << i << ", 0)).xyz;\n";
+        }
         text << "\t tsnormal = normalize(tsnormal * dot(tsnormal, tmp" << i << ") - tmp" << i << " * tsnormal.z);\n";
       }
     }
@@ -2012,5 +2021,3 @@ operator == (const ShaderKey &other) const {
       && _num_clip_planes == other._num_clip_planes
       && _light_ramp == other._light_ramp;
 }
-
-#endif  // HAVE_CG

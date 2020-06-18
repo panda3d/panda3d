@@ -92,6 +92,7 @@ typedef void (APIENTRYP PFNGLGENBUFFERSPROC) (GLsizei n, GLuint *buffers);
 typedef void (APIENTRYP PFNGLBINDBUFFERPROC) (GLenum target, GLuint buffer);
 typedef void (APIENTRYP PFNGLBUFFERSUBDATAPROC) (GLenum target, GLintptr offset, GLsizeiptr size, const GLvoid *data);
 typedef void (APIENTRYP PFNGLDRAWBUFFERSPROC) (GLsizei n, const GLenum *bufs);
+typedef void (APIENTRYP PFNGLREADBUFFERPROC) (GLenum src);
 typedef void (APIENTRYP PFNGLCLEARBUFFERFVPROC) (GLenum buffer, GLint drawbuffer, const GLfloat *value);
 typedef void (APIENTRYP PFNGLBUFFERDATAPROC) (GLenum target, GLsizeiptr size, const GLvoid *data, GLenum usage);
 typedef void (APIENTRYP PFNGLDELETEBUFFERSPROC) (GLsizei n, const GLuint *buffers);
@@ -165,6 +166,7 @@ typedef void (APIENTRYP PFNGLGETSHADERINFOLOGPROC) (GLuint shader, GLsizei bufSi
 typedef GLint (APIENTRYP PFNGLGETUNIFORMLOCATIONPROC) (GLuint program, const GLchar *name);
 typedef void (APIENTRYP PFNGLLINKPROGRAMPROC) (GLuint program);
 typedef void (APIENTRYP PFNGLSHADERSOURCEPROC_P) (GLuint shader, GLsizei count, const GLchar* const *string, const GLint *length);
+typedef void (APIENTRYP PFNGLSPECIALIZESHADERARBPROC) (GLuint shader, const GLchar *, GLuint, const GLuint *, const GLuint *);
 typedef void (APIENTRYP PFNGLUSEPROGRAMPROC) (GLuint program);
 typedef void (APIENTRYP PFNGLUNIFORM4FPROC) (GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3);
 typedef void (APIENTRYP PFNGLUNIFORM1IPROC) (GLint location, GLint v0);
@@ -746,8 +748,7 @@ protected:
   std::string _gl_renderer;
   std::string _gl_version;
   int _gl_version_major, _gl_version_minor;
-  // #--- Zhao Nov2011
-  int _gl_shadlang_ver_major, _gl_shadlang_ver_minor;
+  int _glsl_version = 0;
 
   pset<std::string> _extensions;
 
@@ -814,6 +815,7 @@ public:
   PFNGLGETCOMPRESSEDTEXIMAGEPROC _glGetCompressedTexImage;
 
   bool _supports_bgr;
+  bool _supports_bgra_read;
   bool _supports_packed_dabc;
   bool _supports_packed_ufloat;
 
@@ -939,6 +941,10 @@ public:
   PFNGLBLITFRAMEBUFFEREXTPROC _glBlitFramebuffer;
   PFNGLDRAWBUFFERSPROC _glDrawBuffers;
 
+#if defined(OPENGLES) && !defined(OPENGLES_1)
+  PFNGLREADBUFFERPROC _glReadBuffer;
+#endif
+
 #ifndef OPENGLES_1
   PFNGLCLEARBUFFERFVPROC _glClearBufferfv;
   PFNGLCLEARBUFFERIVPROC _glClearBufferiv;
@@ -988,6 +994,8 @@ public:
   PFNGLGETSHADERINFOLOGPROC _glGetShaderInfoLog;
   PFNGLGETUNIFORMLOCATIONPROC _glGetUniformLocation;
   PFNGLLINKPROGRAMPROC _glLinkProgram;
+  PFNGLSPECIALIZESHADERARBPROC _glSpecializeShader;
+  PFNGLSHADERBINARYPROC _glShaderBinary;
   PFNGLSHADERSOURCEPROC_P _glShaderSource;
   PFNGLUSEPROGRAMPROC  _glUseProgram;
   PFNGLUNIFORM4FPROC _glUniform4f;

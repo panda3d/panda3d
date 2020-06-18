@@ -73,6 +73,23 @@ make_copy() {
  * Verifies that the indicated set of points will define a valid
  * CollisionPolygon: that is, at least three non-collinear points, with no
  * points repeated.
+ */
+bool CollisionPolygon::
+verify_points(const LPoint3 &a, const LPoint3 &b, const LPoint3 &c) {
+  // First, check for repeated or invalid points.
+  if (a.is_nan() || b.is_nan() || c.is_nan() || a == b || b == c || a == c) {
+    return false;
+  }
+
+  // Check that the vectors ab and ac are not colinear.
+  LVector3 normal = ::cross(b - a, c - a);
+  return normal.length_squared() != (PN_stdfloat)0.0f;
+}
+
+/**
+ * Verifies that the indicated set of points will define a valid
+ * CollisionPolygon: that is, at least three non-collinear points, with no
+ * points repeated.
  *
  * This does not check that the polygon defined is convex; that check is made
  * later, once we have projected the points to 2-d space where the decision is
@@ -442,10 +459,12 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   LVector3 normal = (has_effective_normal() && sphere->get_respect_effective_normal()) ? get_effective_normal() : get_normal();
 #ifndef NDEBUG
   if (!IS_THRESHOLD_EQUAL(normal.length_squared(), 1.0f, 0.001)) {
-    collide_cat.info()
-      << "polygon within " << entry.get_into_node_path()
-      << " has normal " << normal << " of length " << normal.length()
-      << "\n";
+    if (collide_cat.is_info()) {
+      collide_cat.info()
+        << "polygon within " << entry.get_into_node_path()
+        << " has normal " << normal << " of length " << normal.length()
+        << "\n";
+    }
     normal.normalize();
   }
 #endif
@@ -465,6 +484,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   }
 
   LPoint2 p = to_2d(from_center - dist * get_normal());
+  LPoint2 edge_p;
   PN_stdfloat edge_dist = 0.0f;
 
   const ClipPlaneAttrib *cpa = entry.get_into_clip_planes();
@@ -473,7 +493,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
     Points new_points;
     if (apply_clip_plane(new_points, cpa, entry.get_into_node_path().get_net_transform())) {
       // All points are behind the clip plane; just do the default test.
-      edge_dist = dist_to_polygon(p, _points);
+      edge_dist = dist_to_polygon(p, edge_p, _points);
 
     } else if (new_points.empty()) {
       // The polygon is completely clipped.
@@ -481,12 +501,12 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
 
     } else {
       // Test against the clipped polygon.
-      edge_dist = dist_to_polygon(p, new_points);
+      edge_dist = dist_to_polygon(p, edge_p, new_points);
     }
 
   } else {
     // No clip plane is in effect.  Do the default test.
-    edge_dist = dist_to_polygon(p, _points);
+    edge_dist = dist_to_polygon(p, edge_p, _points);
   }
 
   // Now we have edge_dist, which is the distance from the sphere center to
@@ -508,8 +528,8 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
     max_dist = csqrt(max_dist_2);
   }
 
-  if (dist > max_dist) {
-    // There's no intersection: the sphere is hanging off the edge.
+  if (dist > max_dist || -dist > max_dist) {
+    // There's no intersection: the sphere is hanging above or under the edge.
     return nullptr;
   }
 
@@ -529,9 +549,21 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
     into_depth = max_dist - orig_dist;
   }
 
+  if (edge_dist >= 0.0f) {
+    // If colliding with an edge, we take the point on the edge.
+    LMatrix4 to_3d_mat;
+    rederive_to_3d_mat(to_3d_mat);
+
+    LPoint3 surface_point = to_3d(edge_p, to_3d_mat);
+    new_entry->set_surface_point(surface_point);
+    new_entry->set_interior_point(surface_point - normal * into_depth);
+  } else {
+    // Otherwise, we use the projection of the center onto the polygon.
+    new_entry->set_surface_point(from_center - normal * dist);
+    new_entry->set_interior_point(from_center - normal * (dist + into_depth));
+  }
+
   new_entry->set_surface_normal(normal);
-  new_entry->set_surface_point(from_center - normal * dist);
-  new_entry->set_interior_point(from_center - normal * (dist + into_depth));
   new_entry->set_contact_pos(contact_point);
   new_entry->set_contact_normal(get_normal());
   new_entry->set_t(actual_t);
@@ -1311,9 +1343,12 @@ point_is_inside(const LPoint2 &p, const CollisionPolygon::Points &points) const 
  * Returns the linear distance from the 2-d point to the nearest part of the
  * polygon defined by the points vector.  The result is negative if the point
  * is within the polygon.
+ *
+ * If the point is not within the polygon, the closest point to the edge is
+ * returned in the edge_p argument.
  */
 PN_stdfloat CollisionPolygon::
-dist_to_polygon(const LPoint2 &p, const CollisionPolygon::Points &points) const {
+dist_to_polygon(const LPoint2 &p, LPoint2 &edge_p, const CollisionPolygon::Points &points) const {
 
   // We know that that the polygon is convex and is defined with the points in
   // counterclockwise order.  Therefore, we simply compare the signed distance
@@ -1325,6 +1360,7 @@ dist_to_polygon(const LPoint2 &p, const CollisionPolygon::Points &points) const 
 
   bool got_dist = false;
   PN_stdfloat best_dist = -1.0f;
+  size_t best_i;
 
   size_t num_points = points.size();
   for (size_t i = 0; i < num_points - 1; ++i) {
@@ -1334,6 +1370,7 @@ dist_to_polygon(const LPoint2 &p, const CollisionPolygon::Points &points) const 
       if (!got_dist || d < best_dist) {
         best_dist = d;
         got_dist = true;
+        best_i = i;
       }
     }
   }
@@ -1344,6 +1381,24 @@ dist_to_polygon(const LPoint2 &p, const CollisionPolygon::Points &points) const 
     if (!got_dist || d < best_dist) {
       best_dist = d;
       got_dist = true;
+      best_i = num_points - 1;
+    }
+  }
+
+  if (got_dist) {
+    // Project the point onto the best line, so that we can confine it to the
+    // line segment.
+    LPoint2 best_p = points[best_i]._p;
+    LPoint2 next_p = points[(best_i + 1) % points.size()]._p;
+    LVector2 segment = next_p - best_p;
+    PN_stdfloat t = (p - best_p).dot(segment) / segment.length_squared();
+    if (t <= 0.0f) {
+      edge_p = best_p;
+    } else if (t >= 1.0f) {
+      edge_p = next_p;
+    } else {
+      LVector2 v(points[best_i]._v[1], -points[best_i]._v[0]);
+      edge_p = p - v * best_dist;
     }
   }
 

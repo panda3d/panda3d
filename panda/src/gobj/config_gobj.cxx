@@ -53,6 +53,8 @@
 #include "samplerState.h"
 #include "shader.h"
 #include "shaderContext.h"
+#include "shaderModule.h"
+#include "shaderType.h"
 #include "transformBlend.h"
 #include "transformBlendTable.h"
 #include "transformTable.h"
@@ -585,8 +587,10 @@ ConfigureFn(config_gobj) {
   QueryContext::init_type();
   SamplerContext::init_type();
   SamplerState::init_type();
-  ShaderContext::init_type();
   Shader::init_type();
+  ShaderContext::init_type();
+  ShaderModule::init_type();
+  ShaderType::init_type();
   SliderTable::init_type();
   Texture::init_type();
   TextureContext::init_type();

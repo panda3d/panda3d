@@ -14,6 +14,7 @@
 #include "winInputDeviceManager.h"
 #include "winRawInputDevice.h"
 #include "throw_event.h"
+#include "phidsdi.h"
 
 #if defined(_WIN32) && !defined(CPPPARSER)
 
@@ -53,7 +54,7 @@ WinInputDeviceManager() :
   _xinput_device2.local_object();
   _xinput_device3.local_object();
 
-  // This function is only available in Vista and later, so we use a wrapper.
+  // This function is not available in the 7.1A SDK, so we use a wrapper.
   HMODULE module = LoadLibraryA("cfgmgr32.dll");
   if (module) {
     _CM_Get_DevNode_PropertyW = (pCM_Get_DevNode_Property)GetProcAddress(module, "CM_Get_DevNode_PropertyW");
@@ -385,7 +386,7 @@ setup_message_loop() {
   }
 
   // Now listen for raw input devices using the created message loop.
-  RAWINPUTDEVICE rid[3];
+  RAWINPUTDEVICE rid[4];
   rid[0].usUsagePage = 1;
   rid[0].usUsage = 4; // Joysticks
   rid[0].dwFlags = RIDEV_DEVNOTIFY | RIDEV_INPUTSINK;
@@ -398,7 +399,11 @@ setup_message_loop() {
   rid[2].usUsage = 8; // Multi-axis controllers (including 3D mice)
   rid[2].dwFlags = RIDEV_DEVNOTIFY | RIDEV_INPUTSINK;
   rid[2].hwndTarget = _message_hwnd;
-  if (!RegisterRawInputDevices(rid, 3, sizeof(RAWINPUTDEVICE))) {
+  rid[3].usUsagePage = HID_USAGE_PAGE_DIGITIZER;
+  rid[3].usUsage = 1; // Digitizers
+  rid[3].dwFlags = RIDEV_DEVNOTIFY | RIDEV_INPUTSINK;
+  rid[3].hwndTarget = _message_hwnd;
+  if (!RegisterRawInputDevices(rid, 4, sizeof(RAWINPUTDEVICE))) {
     device_cat.warning()
       << "Failed to register raw input devices.\n";
   }
@@ -516,7 +521,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   default:
     break;
   }
-  return DefWindowProcW(hwnd, msg, wparam, lparam);
+  return DefWindowProc(hwnd, msg, wparam, lparam);
 }
 
 #ifdef HAVE_THREADS

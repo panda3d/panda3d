@@ -18,9 +18,7 @@
 #undef _POSIX_C_SOURCE
 #undef _XOPEN_SOURCE
 #include <Python.h>
-#if PY_MAJOR_VERSION >= 3
 #include <wchar.h>
-#endif
 
 #include <dlfcn.h>
 

@@ -47,10 +47,10 @@ PUBLISHED:
   static CPT(RenderAttrib) make_default();
 
   enum {
-    F_disable_alpha_write = 0,  // Suppress writes to color buffer alpha channel.
-    F_subsume_alpha_test  = 1,  // Shader promises to subsume the alpha test using TEXKILL
-    F_hardware_skinning   = 2,  // Shader needs pre-animated vertices
-    F_shader_point_size   = 3,  // Shader provides point size, not RenderModeAttrib
+    F_disable_alpha_write = 1 << 0,  // Suppress writes to color buffer alpha channel.
+    F_subsume_alpha_test  = 1 << 1,  // Shader promises to subsume the alpha test using TEXKILL
+    F_hardware_skinning   = 1 << 2,  // Shader needs pre-animated vertices
+    F_shader_point_size   = 1 << 3,  // Shader provides point size, not RenderModeAttrib
   };
 
   INLINE bool               has_shader() const;
@@ -116,7 +116,7 @@ PUBLISHED:
   const ShaderInput &get_shader_input(const std::string &id) const;
 
   NodePath get_shader_input_nodepath(const InternalName *id) const;
-  LVecBase4 get_shader_input_vector(InternalName *id) const;
+  LVecBase4 get_shader_input_vector(const InternalName *id) const;
   Texture *get_shader_input_texture(const InternalName *id, SamplerState *sampler=nullptr) const;
   const Shader::ShaderPtrData *get_shader_input_ptr(const InternalName *id) const;
   bool get_shader_input_ptr(const InternalName *id, Shader::ShaderPtrData &data) const;

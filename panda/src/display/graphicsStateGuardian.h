@@ -336,10 +336,12 @@ public:
 
   virtual void clear(DrawableRegion *clearable);
 
-  const LMatrix4 *fetch_specified_value(Shader::ShaderMatSpec &spec, int altered);
-  const LMatrix4 *fetch_specified_part(Shader::ShaderMatInput input, InternalName *name,
-                                       LMatrix4 &t, int index);
-  const LMatrix4 *fetch_specified_member(const NodePath &np, CPT_InternalName member, LMatrix4 &t);
+  void update_shader_matrix_cache(Shader *shader, LMatrix4 *cache, int altered);
+  const LMatrix4 *fetch_specified_value(Shader::ShaderMatSpec &spec, const LMatrix4 *cache, int altered);
+  void fetch_specified_part(Shader::ShaderMatInput input, const InternalName *name,
+                            LMatrix4 *into, int count = 1);
+  void fetch_specified_member(const NodePath &np, CPT_InternalName member,
+                              LMatrix4 &t);
   PT(Texture) fetch_specified_texture(Shader::ShaderTexSpec &spec,
                                       SamplerState &sampler, int &view);
   const Shader::ShaderPtrData *fetch_ptr_parameter(const Shader::ShaderPtrSpec& spec);
@@ -618,11 +620,9 @@ protected:
   bool _supports_shadow_filter;
   bool _supports_sampler_objects;
   bool _supports_basic_shaders;
-  bool _supports_geometry_shaders;
-  bool _supports_tessellation_shaders;
-  bool _supports_compute_shaders;
   bool _supports_glsl;
   bool _supports_hlsl;
+  bool _supports_spir_v;
   bool _supports_framebuffer_multisample;
   bool _supports_framebuffer_blit;
 
@@ -644,6 +644,7 @@ protected:
 
   ShaderModel _auto_detect_shader_model;
   ShaderModel _shader_model;
+  int _supported_shader_caps;
 
   static PT(TextureStage) _alpha_scale_texture_stage;
 

@@ -27,7 +27,7 @@ get_graphics_window() const {
   return _graphicsWindow;
 }
 
-#ifdef WIN32
+#ifdef _WIN32
 
 /**
  * Returns the Windows proc hwnd parameter.

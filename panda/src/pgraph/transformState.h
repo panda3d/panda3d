@@ -213,6 +213,11 @@ public:
 
   INLINE static void flush_level();
 
+  INLINE void cache_ref_only() const;
+
+protected:
+  INLINE void cache_unref_only() const;
+
 private:
   INLINE bool do_cache_unref() const;
   INLINE bool do_node_unref() const;

@@ -34,7 +34,7 @@ public:
   VkPipeline get_compute_pipeline(VulkanGraphicsStateGuardian *gsg);
 
 private:
-  VkShaderModule _modules[Shader::ST_COUNT];
+  VkShaderModule _modules[(size_t)Shader::Stage::compute + 1];
   VkDescriptorSetLayout _descriptor_set_layout;
   VkPipelineLayout _pipeline_layout;
 
