@@ -161,7 +161,7 @@ insert(iterator &it, spv::Op opcode, const uint32_t *args, uint16_t nargs) {
   ptrdiff_t offset = it._words - &_words[0];
 
   // If this triggers, you used an invalid iterator.
-  assert(offset >= 0 && offset <= _words.size());
+  assert(offset >= 0 && (size_t)offset <= _words.size());
 
   _words.insert(_words.begin() + offset, ((nargs + 1) << spv::WordCountShift) | opcode);
   _words.insert(_words.begin() + offset + 1, args, args + nargs);
@@ -178,7 +178,7 @@ erase(iterator &it) {
   ptrdiff_t offset = it._words - &_words[0];
 
   // If this triggers, you used an invalid iterator.
-  assert(offset >= 0 && offset <= _words.size());
+  assert(offset >= 0 && (size_t)offset <= _words.size());
 
   uint16_t wcount = _words[offset] >> spv::WordCountShift;
   _words.erase(_words.begin() + offset, _words.begin() + offset + wcount);
@@ -194,7 +194,7 @@ erase_arg(iterator &it, uint16_t arg) {
   ptrdiff_t offset = it._words - &_words[0];
 
   // If this triggers, you used an invalid iterator.
-  assert(offset >= 0 && offset <= _words.size());
+  assert(offset >= 0 && (size_t)offset <= _words.size());
 
   uint16_t wcount = _words[offset] >> spv::WordCountShift;
   nassertr(arg < wcount - 1, it);

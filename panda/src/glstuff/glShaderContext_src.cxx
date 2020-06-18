@@ -3173,11 +3173,11 @@ report_shader_errors(const Module &module, bool fatal) {
     return;
   }
 
-  const ShaderModuleGlsl *glsl_module = DCAST(ShaderModuleGlsl, module._module);
-  if (glsl_module == nullptr) {
+  if (!module._module->is_of_type(ShaderModuleGlsl::get_class_type())) {
     GLCAT.error(false) << info_log;
     return;
   }
+  const ShaderModuleGlsl *glsl_module = (const ShaderModuleGlsl *)module._module;
 
   // Parse the errors so that we can substitute in actual file locations
   // instead of source indices.

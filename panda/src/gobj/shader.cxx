@@ -125,7 +125,7 @@ expect_float_matrix(const InternalName *name, const ::ShaderType *type, int lo, 
     scalar_type = matrix->get_scalar_type();
   }
   if (scalar_type != ScalarType::ST_float || num_rows != num_columns ||
-      num_rows < lo || num_rows > hi) {
+      (int)num_rows < lo || (int)num_rows > hi) {
 
     std::string msg = "expected square floating-point matrix of ";
     if (lo < hi) {
@@ -2278,7 +2278,7 @@ bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
           bind._id._name = fqname->get_name();
           bind._part = STO_light_i_shadow_map;
           bind._desired_type = Texture::TT_2d_texture;
-          for (bind._stage = 0; bind._stage < array->get_num_elements(); ++bind._stage) {
+          for (bind._stage = 0; bind._stage < (int)array->get_num_elements(); ++bind._stage) {
             _tex_spec.push_back(bind);
             bind._id._seqno += num_members;
           }
@@ -2342,7 +2342,7 @@ bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
             bind._part[1] = SMO_identity;
             bind._arg[1] = nullptr;
           }
-          for (bind._index = 0; bind._index < array->get_num_elements(); ++bind._index) {
+          for (bind._index = 0; bind._index < (int)array->get_num_elements(); ++bind._index) {
             cp_add_mat_spec(bind);
             bind._id._seqno += num_members;
           }
