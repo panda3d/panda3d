@@ -1,4 +1,4 @@
-#include "config_recastdetour.cxx"
+#include "config_navigation.cxx"
 #include "InputGeom.cxx"
 #include "MeshLoaderObj.cxx"
 #include "NavMeshSample.cxx"
