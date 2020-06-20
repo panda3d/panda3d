@@ -95,7 +95,7 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "PANDAPARTICLESYSTEM",                               # Built in particle system
   "CONTRIB",                                           # Experimental
   "SSE2", "NEON",                                      # Compiler features
-  "RECASTDETOUR",				       # Recast Detour Toolset
+  "NAVIGATION",				       # Recast Detour Toolset
 ])
 
 CheckPandaSourceTree()
@@ -2640,8 +2640,8 @@ if not PkgSkip("DIRECT"):
     panda_modules.append('direct')
 if not PkgSkip("VISION"):
     panda_modules.append('vision')
-if not PkgSkip("RECASTDETOUR"):
-    panda_modules.append('recastdetour')
+if not PkgSkip("NAVIGATION"):
+    panda_modules.append('navigation')
 if not PkgSkip("SKEL"):
     panda_modules.append('skel')
 if not PkgSkip("EGG"):
@@ -3047,8 +3047,9 @@ CopyAllHeaders('panda/src/text')
 CopyAllHeaders('panda/src/grutil')
 if (PkgSkip("VISION")==0):
     CopyAllHeaders('panda/src/vision')
-if (PkgSkip("RECASTDETOUR")==0):
-    CopyAllHeaders('panda/src/recastdetour')
+if (PkgSkip("NAVIGATION")==0):
+    CopyAllHeaders('panda/src/navigation/Recast/Include')
+    CopyAllHeaders('panda/src/navigation/Detour/Include')
 if (PkgSkip("FFMPEG")==0):
     CopyAllHeaders('panda/src/ffmpeg')
 CopyAllHeaders('panda/src/tform')
@@ -4126,92 +4127,70 @@ if (PkgSkip("VISION") == 0):
   PyTargetAdd('vision.pyd', input=COMMON_PANDA_LIBS)
 
 #
-# DIRECTORY: panda/src/recastdetour/
+# DIRECTORY: panda/src/navigation/
 #
 
-if (PkgSkip("RECASTDETOUR") == 0):
-  OPTS=['DIR:panda/src/recastdetour', 'BUILDING:RECASTDETOUR']
-  TargetAdd('p3recastdetour_composite1.obj', opts=OPTS, input='p3recastdetour_composite1.cxx')
-  TargetAdd('p3recastdetour_DebugDraw.obj', opts=OPTS,  input='DebugDraw.cpp')
-  TargetAdd('p3recastdetour_DetourAlloc.obj', opts=OPTS,  input='DetourAlloc.cpp')
-  TargetAdd('p3recastdetour_DetourAssert.obj', opts=OPTS,  input='DetourAssert.cpp')
-  TargetAdd('p3recastdetour_DetourCommon.obj', opts=OPTS,  input='DetourCommon.cpp')
-  TargetAdd('p3recastdetour_DetourCrowd.obj', opts=OPTS,  input='DetourCrowd.cpp')
-  TargetAdd('p3recastdetour_DetourDebugDraw.obj', opts=OPTS,  input='DetourDebugDraw.cpp')
-  TargetAdd('p3recastdetour_DetourLocalBoundary.obj', opts=OPTS,  input='DetourLocalBoundary.cpp')
-  TargetAdd('p3recastdetour_DetourNavMesh.obj', opts=OPTS,  input='DetourNavMesh.cpp')
-  TargetAdd('p3recastdetour_DetourNavMeshBuilder.obj', opts=OPTS,  input='DetourNavMeshBuilder.cpp')
-  TargetAdd('p3recastdetour_DetourNavMeshQuery.obj', opts=OPTS,  input='DetourNavMeshQuery.cpp')
-  TargetAdd('p3recastdetour_DetourNode.obj', opts=OPTS,  input='DetourNode.cpp')
-  TargetAdd('p3recastdetour_DetourObstacleAvoidance.obj', opts=OPTS,  input='DetourObstacleAvoidance.cpp')
-  TargetAdd('p3recastdetour_DetourPathCorridor.obj', opts=OPTS,  input='DetourPathCorridor.cpp')
-  TargetAdd('p3recastdetour_DetourPathQueue.obj', opts=OPTS,  input='DetourPathQueue.cpp')
-  TargetAdd('p3recastdetour_DetourProximityGrid.obj', opts=OPTS,  input='DetourProximityGrid.cpp')
-  TargetAdd('p3recastdetour_DetourTileCache.obj', opts=OPTS,  input='DetourTileCache.cpp')
-  TargetAdd('p3recastdetour_DetourTileCacheBuilder.obj', opts=OPTS,  input='DetourTileCacheBuilder.cpp')
-  TargetAdd('p3recastdetour_Recast.obj', opts=OPTS,  input='Recast.cpp')
-  TargetAdd('p3recastdetour_RecastAlloc.obj', opts=OPTS,  input='RecastAlloc.cpp')
-  TargetAdd('p3recastdetour_RecastArea.obj', opts=OPTS,  input='RecastArea.cpp')
-  TargetAdd('p3recastdetour_RecastAssert.obj', opts=OPTS,  input='RecastAssert.cpp')
-  TargetAdd('p3recastdetour_RecastContour.obj', opts=OPTS,  input='RecastContour.cpp')
-  TargetAdd('p3recastdetour_RecastDebugDraw.obj', opts=OPTS,  input='RecastDebugDraw.cpp')
-  TargetAdd('p3recastdetour_RecastDump.obj', opts=OPTS,  input='RecastDump.cpp')
-  TargetAdd('p3recastdetour_RecastFilter.obj', opts=OPTS,  input='RecastFilter.cpp')
-  TargetAdd('p3recastdetour_RecastLayers.obj', opts=OPTS,  input='RecastLayers.cpp')
-  TargetAdd('p3recastdetour_RecastMesh.obj', opts=OPTS,  input='RecastMesh.cpp')
-  TargetAdd('p3recastdetour_RecastMeshDetail.obj', opts=OPTS,  input='RecastMeshDetail.cpp')
-  TargetAdd('p3recastdetour_RecastRasterization.obj', opts=OPTS,  input='RecastRasterization.cpp')
-  TargetAdd('p3recastdetour_RecastRegion.obj', opts=OPTS,  input='RecastRegion.cpp')
+if (PkgSkip("NAVIGATION") == 0):
+  OPTS=['DIR:panda/src/navigation', 'BUILDING:NAVIGATION']
+  TargetAdd('p3navigation_composite1.obj', opts=OPTS, input='p3navigation_composite1.cxx')
+  OPTS=['DIR:panda/src/navigation/Detour/Source', 'BUILDING:NAVIGATION']
+  TargetAdd('p3navigation_DetourAlloc.obj', opts=OPTS,  input='DetourAlloc.cpp')
+  TargetAdd('p3navigation_DetourAssert.obj', opts=OPTS,  input='DetourAssert.cpp')
+  TargetAdd('p3navigation_DetourCommon.obj', opts=OPTS,  input='DetourCommon.cpp')
+  TargetAdd('p3navigation_DetourNavMesh.obj', opts=OPTS,  input='DetourNavMesh.cpp')
+  TargetAdd('p3navigation_DetourNavMeshBuilder.obj', opts=OPTS,  input='DetourNavMeshBuilder.cpp')
+  TargetAdd('p3navigation_DetourNavMeshQuery.obj', opts=OPTS,  input='DetourNavMeshQuery.cpp')
+  TargetAdd('p3navigation_DetourNode.obj', opts=OPTS,  input='DetourNode.cpp')
+  OPTS=['DIR:panda/src/navigation/Recast/Source', 'BUILDING:NAVIGATION']
+  TargetAdd('p3navigation_Recast.obj', opts=OPTS,  input='Recast.cpp')
+  TargetAdd('p3navigation_RecastAlloc.obj', opts=OPTS,  input='RecastAlloc.cpp')
+  TargetAdd('p3navigation_RecastArea.obj', opts=OPTS,  input='RecastArea.cpp')
+  TargetAdd('p3navigation_RecastAssert.obj', opts=OPTS,  input='RecastAssert.cpp')
+  TargetAdd('p3navigation_RecastContour.obj', opts=OPTS,  input='RecastContour.cpp')
+  TargetAdd('p3navigation_RecastFilter.obj', opts=OPTS,  input='RecastFilter.cpp')
+  TargetAdd('p3navigation_RecastLayers.obj', opts=OPTS,  input='RecastLayers.cpp')
+  TargetAdd('p3navigation_RecastMesh.obj', opts=OPTS,  input='RecastMesh.cpp')
+  TargetAdd('p3navigation_RecastMeshDetail.obj', opts=OPTS,  input='RecastMeshDetail.cpp')
+  TargetAdd('p3navigation_RecastRasterization.obj', opts=OPTS,  input='RecastRasterization.cpp')
+  TargetAdd('p3navigation_RecastRegion.obj', opts=OPTS,  input='RecastRegion.cpp')
 
-  TargetAdd('libp3recastdetour.dll', input='p3recastdetour_composite1.obj')
-  TargetAdd('libp3recastdetour.dll', input='p3recastdetour_DebugDraw.obj')
-  TargetAdd('libp3recastdetour.dll', input='p3recastdetour_DetourAlloc.obj')
-  TargetAdd('libp3recastdetour.dll', input='p3recastdetour_DetourAssert.obj')
-  TargetAdd('libp3recastdetour.dll', input='p3recastdetour_DetourCommon.obj')
-  TargetAdd('libp3recastdetour.dll', input='p3recastdetour_DetourCrowd.obj')
-  TargetAdd('libp3recastdetour.dll', input='p3recastdetour_DetourDebugDraw.obj')
-  TargetAdd('libp3recastdetour.dll', input='p3recastdetour_DetourLocalBoundary.obj')
-  TargetAdd('libp3recastdetour.dll', input='p3recastdetour_DetourNavMesh.obj')
-  TargetAdd('libp3recastdetour.dll', input='p3recastdetour_DetourNavMeshBuilder.obj')
-  TargetAdd('libp3recastdetour.dll', input='p3recastdetour_DetourNavMeshQuery.obj')
-  TargetAdd('libp3recastdetour.dll', input='p3recastdetour_DetourNode.obj')
-  TargetAdd('libp3recastdetour.dll', input='p3recastdetour_DetourObstacleAvoidance.obj')
-  TargetAdd('libp3recastdetour.dll', input='p3recastdetour_DetourPathCorridor.obj')
-  TargetAdd('libp3recastdetour.dll', input='p3recastdetour_DetourPathQueue.obj')
-  TargetAdd('libp3recastdetour.dll', input='p3recastdetour_DetourProximityGrid.obj')
-  TargetAdd('libp3recastdetour.dll', input='p3recastdetour_DetourTileCache.obj')
-  TargetAdd('libp3recastdetour.dll', input='p3recastdetour_DetourTileCacheBuilder.obj')
-  TargetAdd('libp3recastdetour.dll', input='p3recastdetour_Recast.obj')
-  TargetAdd('libp3recastdetour.dll', input='p3recastdetour_RecastAlloc.obj')
-  TargetAdd('libp3recastdetour.dll', input='p3recastdetour_RecastArea.obj')
-  TargetAdd('libp3recastdetour.dll', input='p3recastdetour_RecastAssert.obj')
-  TargetAdd('libp3recastdetour.dll', input='p3recastdetour_RecastContour.obj')
-  TargetAdd('libp3recastdetour.dll', input='p3recastdetour_RecastDebugDraw.obj')
-  TargetAdd('libp3recastdetour.dll', input='p3recastdetour_RecastDump.obj')
-  TargetAdd('libp3recastdetour.dll', input='p3recastdetour_RecastFilter.obj')
-  TargetAdd('libp3recastdetour.dll', input='p3recastdetour_RecastLayers.obj')
-  TargetAdd('libp3recastdetour.dll', input='p3recastdetour_RecastMesh.obj')
-  TargetAdd('libp3recastdetour.dll', input='p3recastdetour_RecastMeshDetail.obj')
-  TargetAdd('libp3recastdetour.dll', input='p3recastdetour_RecastRasterization.obj')
-  TargetAdd('libp3recastdetour.dll', input='p3recastdetour_RecastRegion.obj')
-  TargetAdd('libp3recastdetour.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libp3recastdetour.dll', opts=OPTS)
+  TargetAdd('libp3navigation.dll', input='p3navigation_composite1.obj')
+  TargetAdd('libp3navigation.dll', input='p3navigation_DetourAlloc.obj')
+  TargetAdd('libp3navigation.dll', input='p3navigation_DetourAssert.obj')
+  TargetAdd('libp3navigation.dll', input='p3navigation_DetourCommon.obj')
+  TargetAdd('libp3navigation.dll', input='p3navigation_DetourNavMesh.obj')
+  TargetAdd('libp3navigation.dll', input='p3navigation_DetourNavMeshBuilder.obj')
+  TargetAdd('libp3navigation.dll', input='p3navigation_DetourNavMeshQuery.obj')
+  TargetAdd('libp3navigation.dll', input='p3navigation_DetourNode.obj')
+  TargetAdd('libp3navigation.dll', input='p3navigation_Recast.obj')
+  TargetAdd('libp3navigation.dll', input='p3navigation_RecastAlloc.obj')
+  TargetAdd('libp3navigation.dll', input='p3navigation_RecastArea.obj')
+  TargetAdd('libp3navigation.dll', input='p3navigation_RecastAssert.obj')
+  TargetAdd('libp3navigation.dll', input='p3navigation_RecastContour.obj')
+  TargetAdd('libp3navigation.dll', input='p3navigation_RecastFilter.obj')
+  TargetAdd('libp3navigation.dll', input='p3navigation_RecastLayers.obj')
+  TargetAdd('libp3navigation.dll', input='p3navigation_RecastMesh.obj')
+  TargetAdd('libp3navigation.dll', input='p3navigation_RecastMeshDetail.obj')
+  TargetAdd('libp3navigation.dll', input='p3navigation_RecastRasterization.obj')
+  TargetAdd('libp3navigation.dll', input='p3navigation_RecastRegion.obj')
+  TargetAdd('libp3navigation.dll', input=COMMON_PANDA_LIBS)
+  TargetAdd('libp3navigation.dll', opts=OPTS)
 
-  OPTS=['DIR:panda/src/recastdetour']
-  IGATEFILES = ["config_recastdetour.h", "p3recastdetour_composite1.cxx"]
-  TargetAdd('libp3recastdetour.in', opts=OPTS, input=IGATEFILES)
-  TargetAdd('libp3recastdetour.in', opts=['IMOD:panda3d.recastdetour', 'ILIB:libp3recastdetour', 'SRCDIR:panda/src/recastdetour'])
+  OPTS=['DIR:panda/src/navigation']
+  IGATEFILES = ["config_navigation.h", "p3navigation_composite1.cxx"]
+  TargetAdd('libp3navigation.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libp3navigation.in', opts=['IMOD:panda3d.navigation', 'ILIB:libp3navigation', 'SRCDIR:panda/src/navigation'])
 
 
-  PyTargetAdd('recastdetour_module.obj', input='libp3recastdetour.in')
-  PyTargetAdd('recastdetour_module.obj', opts=OPTS)
-  PyTargetAdd('recastdetour_module.obj', opts=['IMOD:panda3d.recastdetour', 'ILIB:recastdetour', 'IMPORT:panda3d.core'])
+  PyTargetAdd('navigation_module.obj', input='libp3navigation.in')
+  PyTargetAdd('navigation_module.obj', opts=OPTS)
+  PyTargetAdd('navigation_module.obj', opts=['IMOD:panda3d.navigation', 'ILIB:navigation', 'IMPORT:panda3d.core'])
 
-  PyTargetAdd('recastdetour.pyd', input='recastdetour_module.obj')
-  PyTargetAdd('recastdetour.pyd', input='libp3recastdetour_igate.obj')
-  PyTargetAdd('recastdetour.pyd', input='libp3recastdetour.dll')
-  PyTargetAdd('recastdetour.pyd', input='libp3interrogatedb.dll')
-  PyTargetAdd('recastdetour.pyd', input=COMMON_PANDA_LIBS)
+  PyTargetAdd('navigation.pyd', input='navigation_module.obj')
+  PyTargetAdd('navigation.pyd', input='libp3navigation_igate.obj')
+  PyTargetAdd('navigation.pyd', input='libp3navigation.dll')
+  PyTargetAdd('navigation.pyd', input='libp3interrogatedb.dll')
+  PyTargetAdd('navigation.pyd', input=COMMON_PANDA_LIBS)
 
 
 #
