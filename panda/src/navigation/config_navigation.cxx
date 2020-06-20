@@ -1,6 +1,6 @@
 
 
-#include "config_recastdetour.h"
+#include "config_navigation.h"
 
 #include "pandaSystem.h"
 #include "dconfig.h"
@@ -9,18 +9,18 @@
 #include "NavMeshSample.h"
 
 #if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_RECASTDETOUR)
-  #error Buildsystem error: BUILDING_RECASTDETOUR not defined
+  #error Buildsystem error: BUILDING_NAVIGATION not defined
 #endif
 
-Configure(config_recastdetour);
-NotifyCategoryDef(recastdetour, "");
+Configure(config_navigation);
+NotifyCategoryDef(navigation, "");
 
-ConfigureFn(config_recastdetour) {
-  init_librecastdetour();
+ConfigureFn(config_navigation) {
+  init_libnavigation();
 }
 
-ConfigVariableInt recastdetour_sample_config_variable
-("recastdetour-sample-config-variable", 25);
+ConfigVariableInt navigation_sample_config_variable
+("navigation-sample-config-variable", 25);
 
 /**
  * Initializes the library.  This must be called at least once before any of
@@ -29,7 +29,7 @@ ConfigVariableInt recastdetour_sample_config_variable
  * special cases exist.
  */
 void
-init_librecastdetour() {
+init_libnavigation() {
   static bool initialized = false;
   if (initialized) {
     return;
