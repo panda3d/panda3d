@@ -1,3 +1,17 @@
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file movieAudio.h
+ * @author ashwini
+ * @date 2020-060-21
+ */
+
+
 #ifndef NAVMESH_H
 #define NAVMESH_H
 
@@ -5,22 +19,20 @@
 #include "DetourNavMesh.h"
 #include "pandaFramework.h"
 
-class NavMesh
+class NavMesh: public TypedWritableReferenceCount
 {
+PUBLISHED:
+  NavMesh(dtNavMesh *nav_mesh);
+  void set_nav_mesh(dtNavMesh *m) { _nav_mesh = m; }
+
 private:
   dtNavMesh *_nav_mesh;
-  rcPolyMesh *_pmesh;
-  rcPolyMeshDetail *_dmesh;
   
 public:
   NavMesh();
-  NavMesh(dtNavMesh *nav_mesh, rcPolyMesh *pmesh, rcPolyMeshDetail *dmesh);
+  
   ~NavMesh();
-  PT(GeomNode) draw_poly_mesh_geom();
-  void set_nav_mesh(dtNavMesh *m) { _nav_mesh = m; }
-  void set_poly_mesh(rcPolyMesh *p) { _pmesh = p; }
-  void set_detail_poly_mesh(rcPolyMeshDetail *d) { _dmesh = d; }
-  //has draw functions
+  
 };
 
 #endif // NAVMESH_H

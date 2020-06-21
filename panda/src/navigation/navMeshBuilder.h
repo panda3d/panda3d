@@ -1,3 +1,17 @@
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file movieAudio.h
+ * @author ashwini
+ * @date 2020-060-21
+ */
+
+
 #ifndef NAVMESHBUILDER_H
 #define NAVMESHBUILDER_H
 
@@ -49,6 +63,19 @@ struct BuildSettings {
 
 
 class NavMeshBuilder {
+PUBLISHED:
+  float get_agent_radius() { return _agent_radius; }
+  float get_agent_height() { return _agent_height; }
+  float get_agent_climb() { return _agent_max_climb; }
+  void set_actor_height(float h) { _agent_height = h; }
+  void set_actor_radius(float r) { _agent_radius = r; }
+  void set_actor_climb(float c) { _agent_max_climb = c; }
+  void set_partition_type(std::string p);
+  void reset_common_settings();
+  bool from_node_path(NodePath node);
+  PT(GeomNode) draw_poly_mesh_geom();
+
+  PT(NavMesh) build();
 private:
   std::string _filename;
   float _scale;
@@ -67,11 +94,12 @@ private:
   void process_vertex_data(const GeomVertexData *vdata, int &vcap);
   void process_primitive(const GeomPrimitive *orig_prim, const GeomVertexData *vdata, int &tcap);
 
-  std::map<LVector3, int> mp;
-  std::vector<LVector3> vc, fc;
-  bool loaded;
+  std::map<LVector3, int> vertex_map;
+  std::vector<LVector3> vertex_vector, face_vector;
+  bool _loaded;
   int index_temp;
 protected:
+  PT(NavMesh) _nav_mesh_obj;
   class dtNavMesh *_nav_mesh;
   class dtNavMeshQuery *_nav_query;
   class dtCrowd *_crowd;
@@ -120,36 +148,18 @@ public:
 
   virtual void collect_settings(struct BuildSettings &settings);
 
-  float get_agent_radius() { return _agent_radius; }
-  float get_agent_height() { return _agent_height; }
-  float get_agent_climb() { return _agent_max_climb; }
+  
   dtNavMeshQuery *get_nav_query() { return _nav_query; }
 
-  void set_actor_height(float h) { _agent_height = h; }
-  void set_actor_radius(float r) { _agent_radius = r; }
-  void set_actor_clinb(float c) { _agent_max_climb = c; }
-  void set_partition_type(std::string p);
-
-  void reset_common_settings();
-
-  bool build();
-  NavMesh get_navmesh();
-
+ 
   unsigned char getNavMeshDrawFlags() const { return _nav_mesh_draw_flags; }
-
-  //shifted from NavMeshNode
-  bool from_node_path(NodePath node);
-  //future functions:
-  //bool from_geom(Geom g);
-  //bool from_egg(string filename);
-
   const float *get_verts() const { return _verts; }
   const float *get_normals() const { return _normals; }
   const int *get_tris() const { return _tris; }
   int get_vert_count() const { return _vert_count; }
   int get_tri_count() const { return _tri_count; }
   const std::string& get_file_name() const { return _filename; }
-  bool loaded_geom() { return loaded; }
+  bool loaded_geom() { return _loaded; }
   
 
 };
