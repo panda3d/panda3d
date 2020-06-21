@@ -15,3 +15,4 @@ extern ConfigVariableInt    navigation_sample_config_variable;
 extern EXPCL_NAVIGATION void init_libnavigation();
 
 #endif
+
