@@ -37,3 +37,4 @@ init_libnavigation() {
   }
   initialized = true;
 }
+
