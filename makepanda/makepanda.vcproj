@@ -649,12 +649,14 @@
 				<File RelativePath="..\panda\src\vision\arToolKit.cxx"></File>
 			</Filter>
 			<Filter Name="navigation">
-				<File RelativePath="..\panda\src\navigation\InputGeom.cxx"></File>
-				<File RelativePath="..\panda\src\navigation\InputGeom.h"></File>
-				<File RelativePath="..\panda\src\navigation\MeshLoaderObj.cxx"></File>
-				<File RelativePath="..\panda\src\navigation\MeshLoaderObj.h"></File>
-				<File RelativePath="..\panda\src\navigation\NavMeshSample.cxx"></File>
-				<File RelativePath="..\panda\src\navigation\NavMeshSample.h"></File>
+				<File RelativePath="..\panda\src\navigation\navMesh.cxx"></File>
+				<File RelativePath="..\panda\src\navigation\navMesh.h"></File>
+				<File RelativePath="..\panda\src\navigation\navMeshBuilder.cxx"></File>
+				<File RelativePath="..\panda\src\navigation\navMeshBuilder.h"></File>
+				<File RelativePath="..\panda\src\navigation\navMeshNode.cxx"></File>
+				<File RelativePath="..\panda\src\navigation\navMeshNode.h"></File>
+				<File RelativePath="..\panda\src\navigation\navMeshQuery.cxx"></File>
+				<File RelativePath="..\panda\src\navigation\navMeshQuery.h"></File>
 				<File RelativePath="..\panda\src\navigation\Detour\Source\DetourAlloc.cpp"></File>
 				<File RelativePath="..\panda\src\navigation\Detour\Source\DetourAssert.cpp"></File>
 				<File RelativePath="..\panda\src\navigation\Detour\Source\DetourCommon.cpp"></File>
