@@ -1,4 +1,4 @@
-#include "config_navigation.cxx"
-#include "InputGeom.cxx"
-#include "MeshLoaderObj.cxx"
-#include "NavMeshSample.cxx"
+#include "navMesh.cxx"
+#include "navMeshBuilder.cxx"
+#include "navMeshNode.cxx"
+#include "navMeshQuery.cxx"

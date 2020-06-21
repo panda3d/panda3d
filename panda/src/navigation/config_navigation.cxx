@@ -4,9 +4,10 @@
 
 #include "pandaSystem.h"
 #include "dconfig.h"
-#include "InputGeom.h"
-#include "MeshLoaderObj.h"
-#include "NavMeshSample.h"
+#include "navMesh.h"
+#include "navMeshBuilder.h"
+#include "navMeshNode.h"
+#include "navMeshQuery.h"
 
 #if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_RECASTDETOUR)
   #error Buildsystem error: BUILDING_NAVIGATION not defined
