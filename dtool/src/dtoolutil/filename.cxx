@@ -433,7 +433,11 @@ temporary(const string &dirname, const string &prefix, const string &suffix,
   if (fdirname.empty()) {
     // If we are not given a dirname, use the system tempnam() function to
     // create a system-defined temporary filename.
+#ifdef _MSC_VER
+    char *name = _tempnam(nullptr, prefix.c_str());
+#else
     char *name = tempnam(nullptr, prefix.c_str());
+#endif
     Filename result = Filename::from_os_specific(name);
     free(name);
     result.set_type(type);

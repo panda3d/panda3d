@@ -146,7 +146,7 @@ python makepanda/makepanda.py --everything --installer
 ```
 
 You may target a specific minimum macOS version using the --osxtarget flag
-followed by the release number, eg. 10.7 or 10.9.
+followed by the release number, eg. 10.9 or 10.14.
 
 If the build was successful, makepanda will have generated a .dmg file in
 the source directory containing the installer.  Simply open it and run the
@@ -164,11 +164,11 @@ pkg install pkgconf bison png jpeg-turbo tiff freetype2 harfbuzz eigen squish op
 ```
 
 You will also need to choose which version of Python you want to use.
-Install the appropriate package for it (such as `python2` or `python36`) and
+Install the appropriate package for it (such as `python37` or `python38`) and
 run the makepanda script with your chosen Python version:
 
 ```bash
-python3.6 makepanda/makepanda.py --everything --installer --no-egl --no-gles --no-gles2
+python3.7 makepanda/makepanda.py --everything --installer --no-egl --no-gles --no-gles2
 ```
 
 If successful, this will produce a .pkg file in the root of the source

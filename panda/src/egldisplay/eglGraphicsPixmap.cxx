@@ -12,6 +12,9 @@
  */
 
 #include "eglGraphicsPixmap.h"
+
+#ifdef HAVE_X11
+
 #include "eglGraphicsWindow.h"
 #include "eglGraphicsStateGuardian.h"
 #include "config_egldisplay.h"
@@ -37,8 +40,7 @@ eglGraphicsPixmap(GraphicsEngine *engine, GraphicsPipe *pipe,
 {
   eglGraphicsPipe *egl_pipe;
   DCAST_INTO_V(egl_pipe, _pipe);
-  _display = egl_pipe->get_display();
-  _egl_display = egl_pipe->_egl_display;
+  _egl_display = egl_pipe->get_egl_display();
   _drawable = None;
   _x_pixmap = None;
   _egl_surface = EGL_NO_SURFACE;
@@ -167,7 +169,7 @@ open_buffer() {
   if (_gsg == 0) {
     // There is no old gsg.  Create a new one.
     eglgsg = new eglGraphicsStateGuardian(_engine, _pipe, nullptr);
-    eglgsg->choose_pixel_format(_fb_properties, _display, egl_pipe->get_screen(), false, true);
+    eglgsg->choose_pixel_format(_fb_properties, egl_pipe, false, false, true);
     _gsg = eglgsg;
   } else {
     // If the old gsg has the wrong pixel format, create a new one that shares
@@ -175,7 +177,7 @@ open_buffer() {
     DCAST_INTO_R(eglgsg, _gsg, false);
     if (!eglgsg->get_fb_properties().subsumes(_fb_properties)) {
       eglgsg = new eglGraphicsStateGuardian(_engine, _pipe, eglgsg);
-      eglgsg->choose_pixel_format(_fb_properties, _display, egl_pipe->get_screen(), false, true);
+      eglgsg->choose_pixel_format(_fb_properties, egl_pipe, false, false, true);
       _gsg = eglgsg;
     }
   }
@@ -194,6 +196,7 @@ open_buffer() {
     return false;
   }
 
+  _display = egl_pipe->get_display();
   _drawable = egl_pipe->get_root();
   if (_host != nullptr) {
     if (_host->is_of_type(eglGraphicsWindow::get_class_type())) {
@@ -241,3 +244,5 @@ open_buffer() {
   _is_valid = true;
   return true;
 }
+
+#endif  // HAVE_X11

@@ -46,10 +46,7 @@ from direct.extensions_native import NodePath_extensions
 
 # This needs to be available early for DirectGUI imports
 import sys
-if sys.version_info >= (3, 0):
-    import builtins
-else:
-    import __builtin__ as builtins
+import builtins
 builtins.config = DConfig
 
 from direct.directnotify.DirectNotifyGlobal import directNotify, giveNotify
@@ -422,7 +419,6 @@ class ShowBase(DirectObject.DirectObject):
         builtins.cpMgr = ConfigPageManager.getGlobalPtr()
         builtins.cvMgr = ConfigVariableManager.getGlobalPtr()
         builtins.pandaSystem = PandaSystem.getGlobalPtr()
-        builtins.wantUberdog = self.config.GetBool('want-uberdog', 1)
         if __debug__:
             builtins.deltaProfiler = DeltaProfiler.DeltaProfiler("ShowBase")
             self.onScreenDebug = OnScreenDebug.OnScreenDebug()

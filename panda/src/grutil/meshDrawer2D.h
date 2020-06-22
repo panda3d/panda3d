@@ -39,8 +39,8 @@
 #include "nodePath.h"
 
 /**
- * This class allows the drawing of 2d objects - mainly based on quads and
- * rectangles.  Allows clipping and serverl high level UI theme functions.
+ * This class allows the drawing of 2D objects - mainly based on quads and
+ * rectangles.  It allows clipping and several high level UI theme functions.
  */
 class EXPCL_PANDA_GRUTIL MeshDrawer2D : public TypedObject {
 PUBLISHED:

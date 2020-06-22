@@ -1176,7 +1176,7 @@ add_sub_image(const PNMImage &copy, int xto, int yto,
   if (has_alpha() && copy.has_alpha()) {
     for (y = ymin; y < ymax; y++) {
       for (x = xmin; x < xmax; x++) {
-        set_alpha(x, y, get_alpha(x, y) + copy.get_alpha(x, y) * pixel_scale);
+        set_alpha(x, y, get_alpha(x, y) + copy.get_alpha(x - xmin + xfrom, y - ymin + yfrom) * pixel_scale);
       }
     }
   }
@@ -1184,7 +1184,7 @@ add_sub_image(const PNMImage &copy, int xto, int yto,
   for (y = ymin; y < ymax; y++) {
     for (x = xmin; x < xmax; x++) {
       LRGBColorf rgb1 = get_xel(x, y);
-      LRGBColorf rgb2 = copy.get_xel(x, y);
+      LRGBColorf rgb2 = copy.get_xel(x - xmin + xfrom, y - ymin + yfrom);
       set_xel(x, y,
               rgb1[0] + rgb2[0] * pixel_scale,
               rgb1[1] + rgb2[1] * pixel_scale,
@@ -1210,7 +1210,7 @@ mult_sub_image(const PNMImage &copy, int xto, int yto,
   if (has_alpha() && copy.has_alpha()) {
     for (y = ymin; y < ymax; y++) {
       for (x = xmin; x < xmax; x++) {
-        set_alpha(x, y, get_alpha(x, y) * copy.get_alpha(x, y) * pixel_scale);
+        set_alpha(x, y, get_alpha(x, y) * copy.get_alpha(x - xmin + xfrom, y - ymin + yfrom) * pixel_scale);
       }
     }
   }
@@ -1218,7 +1218,7 @@ mult_sub_image(const PNMImage &copy, int xto, int yto,
   for (y = ymin; y < ymax; y++) {
     for (x = xmin; x < xmax; x++) {
       LRGBColorf rgb1 = get_xel(x, y);
-      LRGBColorf rgb2 = copy.get_xel(x, y);
+      LRGBColorf rgb2 = copy.get_xel(x - xmin + xfrom, y - ymin + yfrom);
       set_xel(x, y,
               rgb1[0] * rgb2[0] * pixel_scale,
               rgb1[1] * rgb2[1] * pixel_scale,

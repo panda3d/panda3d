@@ -2,6 +2,10 @@ from panda3d import core
 import pickle
 
 
+def test_sparse_array_type():
+    assert core.SparseArray.get_class_type().name == "SparseArray"
+
+
 def test_sparse_array_set_bit_to():
     """Tests SparseArray behavior for set_bit_to()."""
 

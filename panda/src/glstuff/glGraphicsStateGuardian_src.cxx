@@ -1304,10 +1304,12 @@ reset() {
   // Note that these extensions only offer support for GL_BGRA, not GL_BGR.
   _supports_bgr = has_extension("GL_EXT_texture_format_BGRA8888") ||
                   has_extension("GL_APPLE_texture_format_BGRA8888");
+  _supports_bgra_read = has_extension("GL_EXT_read_format_bgra");
 #else
   // In regular OpenGL, we have both GL_BGRA and GL_BGR.
   _supports_bgr =
     is_at_least_gl_version(1, 2) || has_extension("GL_EXT_bgra");
+  _supports_bgra_read = _supports_bgr;
 #endif
 
 #ifdef SUPPORT_FIXED_FUNCTION
@@ -7417,6 +7419,12 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
   nassertr(z < tex->get_z_size(), false);
 
   GLenum external_format = get_external_image_format(tex);
+
+  // OpenGL ES implementations may support BGRA, but that doesn't imply they
+  // also support it for glReadPixels specifically.
+  if (!_supports_bgra_read && external_format == GL_BGRA) {
+    external_format = GL_RGBA;
+  }
 
   if (GLCAT.is_spam()) {
     GLCAT.spam()

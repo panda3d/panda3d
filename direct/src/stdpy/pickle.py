@@ -23,11 +23,8 @@ support extensions of this nature. """
 
 import sys
 from panda3d.core import BamWriter, BamReader
+from copyreg import dispatch_table
 
-if sys.version_info >= (3, 0):
-    from copyreg import dispatch_table
-else:
-    from copy_reg import dispatch_table
 
 # A funny replacement for "import pickle" so we don't get confused
 # with the local pickle.py.

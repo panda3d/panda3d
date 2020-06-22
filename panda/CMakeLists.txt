@@ -118,14 +118,8 @@ if(INTERROGATE_PYTHON_INTERFACE)
 __version__ = '${PROJECT_VERSION}'
 
 if __debug__:
-    import sys
-    if sys.version_info < (3, 0):
-        sys.stderr.write('''\\
-WARNING: Python 2.7 has reached EOL as of January 1, 2020.
-To suppress this warning, upgrade to Python 3.
-''')
-        sys.stdout.flush()
-    del sys
+    if 1 / 2 == 0:
+        raise ImportError(\"Python 2 is not supported.\")
 
 ${win32_init}")
 
@@ -150,6 +144,16 @@ from .interrogatedb import *
     file(WRITE "${PROJECT_BINARY_DIR}/panda3d/__init__.py" ${init_file})
     file(WRITE "${PROJECT_BINARY_DIR}/panda3d/dtoolconfig.py" ${dtoolconfig_file})
   endif()
+
+  # Also generate a panda3d.dist-info directory.
+  set(entry_points_file "[distutils.commands]
+build_apps = direct.dist.commands:build_apps
+bdist_apps = direct.dist.commands:bdist_apps
+")
+
+  configure_file("${PROJECT_SOURCE_DIR}/cmake/templates/METADATA.in"
+                 "${PROJECT_BINARY_DIR}/panda3d.dist-info/METADATA")
+  file(WRITE "${PROJECT_BINARY_DIR}/panda3d.dist-info/entry_points.txt" ${entry_points_file})
 
   if(HAVE_BULLET)
     add_python_module(panda3d.bullet p3bullet IMPORT panda3d.core COMPONENT BulletPython)

@@ -14,6 +14,43 @@ if(CMAKE_VERSION VERSION_GREATER "3.12" OR POLICY CMP0074)
   cmake_policy(SET CMP0074 NEW)
 endif()
 
+if(POLICY CMP0091)
+  # Needed for CMake to pass /MD flag properly with non-VC generators.
+  cmake_policy(SET CMP0091 NEW)
+endif()
+
+# Determine whether we are using a multi-config generator.
+if(CMAKE_VERSION VERSION_GREATER "3.8")
+  get_property(IS_MULTICONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+else()
+  message(WARNING "Multi-configuration builds may not work properly when using
+a CMake < 3.9. Making a guess if this is a multi-config generator.")
+  if(DEFINED CMAKE_CONFIGURATION_TYPES)
+    set(IS_MULTICONFIG ON)
+  else()
+    set(IS_MULTICONFIG OFF)
+  endif()
+endif()
+
+# Define the type of build we are setting up.
+set(_configs Standard Release RelWithDebInfo Debug MinSizeRel)
+if(CMAKE_CXX_COMPILER_ID MATCHES "(AppleClang|Clang|GCC)")
+  list(APPEND _configs Coverage)
+endif()
+
+if(IS_MULTICONFIG)
+  message(STATUS "Using multi-configuration generator")
+else()
+  # Set the default CMAKE_BUILD_TYPE before calling project().
+  if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Standard CACHE STRING "Choose the type of build." FORCE)
+    message(STATUS "Using default build type ${CMAKE_BUILD_TYPE}")
+  else()
+    message(STATUS "Using build type ${CMAKE_BUILD_TYPE}")
+  endif()
+  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS ${_configs})
+endif()
+
 # Figure out the version
 set(_s "[\\t ]*") # CMake doesn't support \s*
 file(STRINGS "setup.cfg" _version REGEX "^version${_s}=${_s}")
@@ -42,6 +79,7 @@ include(GNUInstallDirs)     # Defines CMAKE_INSTALL_<dir> variables
 
 # Include global modules needed for configure scripts
 include(PackageConfig)      # Defines package_option
+include(PerConfigOption)    # Defines per_config_option
 
 # Configure Panda3D
 include(dtool/CompilerFlags.cmake)

@@ -411,19 +411,12 @@ send_datagram(const Datagram &dg) {
     if (!result && _bdc.IsConnected()) {
 #ifdef HAVE_PYTHON
       std::ostringstream s;
-
-#if PY_VERSION_HEX >= 0x03030000
-      PyObject *exc_type = PyExc_ConnectionError;
-#else
-      PyObject *exc_type = PyExc_OSError;
-#endif
-
       s << endl << "Error sending message: " << endl;
       dg.dump_hex(s);
       s << "Message data: " << dg.get_data() << endl;
 
       string message = s.str();
-      PyErr_SetString(exc_type, message.c_str());
+      PyErr_SetString(PyExc_ConnectionError, message.c_str());
 #endif
     }
     return result;
@@ -922,22 +915,14 @@ describe_message(std::ostream &out, const string &prefix,
     if (_python_repository != nullptr) {
       PyObject *msgId = PyLong_FromLong(msg_type);
       nassertv(msgId != nullptr);
-#if PY_MAJOR_VERSION >= 3
       PyObject *methodName = PyUnicode_FromString("_getMsgName");
-#else
-      PyObject *methodName = PyString_FromString("_getMsgName");
-#endif
       nassertv(methodName != nullptr);
 
       PyObject *result = PyObject_CallMethodObjArgs(_python_repository, methodName,
                                                     msgId, nullptr);
       nassertv(result != nullptr);
 
-#if PY_MAJOR_VERSION >= 3
       msgName += string(PyUnicode_AsUTF8(result));
-#else
-      msgName += string(PyString_AsString(result));
-#endif
 
       Py_DECREF(methodName);
       Py_DECREF(msgId);

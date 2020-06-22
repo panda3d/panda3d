@@ -1,5 +1,4 @@
 import math
-import sys
 
 from panda3d.core import *
 from .DirectUtil import *
@@ -942,10 +941,7 @@ class DirectSession(DirectObject):
 
     def getAndSetName(self, nodePath):
         """ Prompt user for new node path name """
-        if sys.version_info >= (3, 0):
-            from tkinter.simpledialog import askstring
-        else:
-            from tkSimpleDialog import askstring
+        from tkinter.simpledialog import askstring
         newName = askstring('Node Path: ' + nodePath.getName(),
                             'Enter new name:')
         if newName:

@@ -2525,6 +2525,7 @@ read(const ShaderFile &sfile, BamCacheRecord *record) {
 #else
       shader_cat.error()
         << "Tried to load Cg shader, but no Cg support is enabled.\n";
+      return false;
 #endif
     } else {
       shader_cat.error()
@@ -2618,6 +2619,7 @@ load(const ShaderFile &sbody, BamCacheRecord *record) {
 #else
       shader_cat.error()
         << "Tried to load Cg shader, but no Cg support is enabled.\n";
+      return false;
 #endif
     } else {
       shader_cat.error()

@@ -37,9 +37,9 @@ MeshDrawer2D() {
 INLINE MeshDrawer2D::
 ~MeshDrawer2D() {
   _root.remove_node();
-  if (_vertex != nullptr) delete _vertex;
-  if (_uv != nullptr)     delete _uv;
-  if (_color != nullptr)  delete _color;
+  delete _vertex;
+  delete _uv;
+  delete _color;
 }
 
 /**
@@ -60,7 +60,7 @@ set_budget(int total_budget) {
 }
 
 /**
- * Gets the total triangle budget of the drawer
+ * Gets the total triangle budget of the drawer.
  */
 INLINE int MeshDrawer2D::
 get_budget() {
@@ -68,7 +68,7 @@ get_budget() {
 }
 
 /**
- * Sets clipping rectangle
+ * Sets the clipping rectangle.
  */
 INLINE void MeshDrawer2D::
 set_clip(PN_stdfloat x, PN_stdfloat y, PN_stdfloat w, PN_stdfloat h) {
@@ -79,7 +79,7 @@ set_clip(PN_stdfloat x, PN_stdfloat y, PN_stdfloat w, PN_stdfloat h) {
 }
 
 /**
- * Draws a 2d rectangle.  Ignores the cliping rectangle
+ * Draws a 2D rectangle.  Ignores the clipping rectangle.
  */
 INLINE void MeshDrawer2D::
 quad_raw(const LVector3 &v1, const LVector4 &c1, const LVector2 &uv1,
@@ -125,7 +125,7 @@ rectangle_raw(PN_stdfloat x, PN_stdfloat y, PN_stdfloat w, PN_stdfloat h,
 }
 
 /**
- * Draws a 2d rectangle, that can be cliped
+ * Draws a 2D rectangle which can be clipped.
  */
 INLINE void MeshDrawer2D::
 rectangle(PN_stdfloat x, PN_stdfloat y, PN_stdfloat w, PN_stdfloat h,

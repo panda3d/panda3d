@@ -286,12 +286,8 @@ set_shader_inputs(PyObject *args, PyObject *kwargs) {
   while (PyDict_Next(kwargs, &pos, &key, &value)) {
     char *buffer;
     Py_ssize_t length;
-#if PY_MAJOR_VERSION >= 3
     buffer = (char *)PyUnicode_AsUTF8AndSize(key, &length);
     if (buffer == nullptr) {
-#else
-    if (PyString_AsStringAndSize(key, &buffer, &length) == -1) {
-#endif
       Dtool_Raise_TypeError("NodePath.set_shader_inputs accepts only string keywords");
       return;
     }

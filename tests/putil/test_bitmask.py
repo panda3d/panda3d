@@ -8,6 +8,10 @@ double_num_bits = DoubleBitMaskNative.get_max_num_bits()
 quad_num_bits = QuadBitMaskNative.get_max_num_bits()
 
 
+def test_bitmask_type():
+    assert BitMask16.get_class_type().name == "BitMask16"
+
+
 def test_bitmask_allon():
     assert BitMask16.all_on().is_all_on()
     assert BitMask32.all_on().is_all_on()
@@ -33,6 +37,13 @@ def test_bitmask_overflow():
 
     with pytest.raises(OverflowError):
         QuadBitMaskNative(1 << quad_num_bits)
+
+    with pytest.raises(Exception):
+        DoubleBitMaskNative(-1)
+
+
+def test_bitmask_repr():
+    repr(BitMask16(0)) == ' 0000 0000 0000 0000'
 
 
 def test_bitmask_int():
@@ -65,6 +76,13 @@ def test_bitmask_pickle():
     assert pickle.loads(pickle.dumps(BitMask16(0), -1)).is_zero()
 
     mask1 = BitMask16(123)
+    data = pickle.dumps(mask1, -1)
+    mask2 = pickle.loads(data)
+    assert mask1 == mask2
+
+    assert pickle.loads(pickle.dumps(DoubleBitMaskNative(0), -1)).is_zero()
+
+    mask1 = DoubleBitMaskNative(0xffff0001)
     data = pickle.dumps(mask1, -1)
     mask2 = pickle.loads(data)
     assert mask1 == mask2

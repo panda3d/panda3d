@@ -34,6 +34,8 @@ public:
   PyObject *add_done_callback(PyObject *self, PyObject *fn);
 
   static PyObject *gather(PyObject *args);
+
+  static PyObject *get_cancelled_error_type();
 };
 
 #endif  // HAVE_PYTHON

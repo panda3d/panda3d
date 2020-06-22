@@ -7,14 +7,16 @@
 # panda3d.
 #
 ########################################################################
+
+import sys
+if sys.version_info < (3, 5):
+    print("This version of Python is not supported, use version 3.5 or higher.")
+    exit(1)
+
 try:
-    import sys, os, platform, time, stat, re, getopt, threading, signal, shutil
-    if sys.platform == "darwin" or sys.version_info >= (2, 6):
-        import plistlib
-    if sys.version_info >= (3, 0):
-        import queue
-    else:
-        import Queue as queue
+    import os, platform, time, stat, re, getopt, threading, signal, shutil
+    import plistlib
+    import queue
 except KeyboardInterrupt:
     raise
 except:
@@ -166,7 +168,7 @@ def parseopts(args):
     # Options for which to display a deprecation warning.
     removedopts = [
         "use-touchinput", "no-touchinput", "no-awesomium", "no-directscripts",
-        "no-carbon", "universal", "no-physx", "no-rocket"
+        "no-carbon", "universal", "no-physx", "no-rocket", "host"
         ]
 
     # All recognized options.
@@ -484,15 +486,13 @@ SdkAutoDisableMax()
 SdkAutoDisableSpeedTree()
 
 if not PkgSkip("PYTHON") and SDK["PYTHONVERSION"] == "python2.7":
-    warn_prefix = "%sWARNING:%s " % (GetColor("red"), GetColor())
-    print("==========================================================================")
-    print(warn_prefix + "Python 2.7 has reached EOL as of January 1, 2020 and is no longer")
-    print(warn_prefix + "maintained.  Panda3D will soon cease to work with this version.")
-    print(warn_prefix + "Please upgrade to Python 3 now.")
-    print("==========================================================================")
+    pref = "%sERROR:%s " % (GetColor("red"), GetColor())
+    print("========================================================================")
+    print(pref + "Python 2.7 has reached EOL as of January 1, 2020 and is no longer")
+    print(pref + "supported.  Please upgrade to Python 3.5 or later.")
+    print("========================================================================")
     sys.stdout.flush()
-    # Give the user some time to contemplate their sins
-    time.sleep(6.0)
+    sys.exit(1)
 
 ########################################################################
 ##
@@ -1969,8 +1969,7 @@ def FreezePy(target, inputs, opts):
     assert len(inputs) > 0
 
     cmdstr = BracketNameWithQuotes(SDK["PYTHONEXEC"].replace('\\', '/')) + " "
-    if sys.version_info >= (2, 6):
-        cmdstr += "-B "
+    cmdstr += "-B "
 
     cmdstr += os.path.join(GetOutputDir(), "direct", "dist", "pfreeze.py")
 
@@ -2362,6 +2361,9 @@ def WriteConfigSettings():
         if int(platform.mac_ver()[0][3]) <= 4:
             dtool_config["PHAVE_UCONTEXT_H"] = 'UNDEF'
 
+    if PkgSkip("X11"):
+        dtool_config["HAVE_GLX"] = 'UNDEF'
+
     if (GetTarget() == "freebsd"):
         dtool_config["IS_LINUX"] = 'UNDEF'
         dtool_config["HAVE_VIDEO4LINUX"] = 'UNDEF'
@@ -2584,12 +2586,8 @@ p3d_init = """"Python bindings for the Panda3D libraries"
 __version__ = '%s'
 
 if __debug__:
-    import sys
-    if sys.version_info < (3, 0):
-        sys.stderr.write("WARNING: Python 2.7 has reached EOL as of January 1, 2020.\\n")
-        sys.stderr.write("To suppress this warning, upgrade to Python 3.\\n")
-        sys.stderr.flush()
-    del sys
+    if 1 / 2 == 0:
+        raise ImportError("Python 2 is not supported.")
 """ % (WHLVERSION)
 
 if GetTarget() == 'windows':
@@ -4499,13 +4497,33 @@ if (GetTarget() == 'windows' and PkgSkip("GL")==0):
 # DIRECTORY: panda/src/egldisplay/
 #
 
-if (PkgSkip("EGL")==0 and PkgSkip("GLES")==0 and PkgSkip("X11")==0):
+# If we're not compiling with any windowing system at all, but we do have EGL,
+# we can use that to create a headless libpandagl instead.
+if not PkgSkip("EGL") and not PkgSkip("GL") and PkgSkip("X11") and GetTarget() not in ('windows', 'darwin'):
+  DefSymbol('EGL', 'HAVE_EGL', '')
+  OPTS=['DIR:panda/src/egldisplay', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGL', 'GL', 'EGL']
+  TargetAdd('pandagl_egldisplay_composite1.obj', opts=OPTS, input='p3egldisplay_composite1.cxx')
+  OPTS=['DIR:panda/metalibs/pandagl', 'BUILDING:PANDAGL', 'GL', 'EGL']
+  TargetAdd('pandagl_pandagl.obj', opts=OPTS, input='pandagl.cxx')
+  TargetAdd('libpandagl.dll', input='pandagl_pandagl.obj')
+  TargetAdd('libpandagl.dll', input='p3glgsg_config_glgsg.obj')
+  TargetAdd('libpandagl.dll', input='p3glgsg_glgsg.obj')
+  TargetAdd('libpandagl.dll', input='pandagl_egldisplay_composite1.obj')
+  TargetAdd('libpandagl.dll', input=COMMON_PANDA_LIBS)
+  TargetAdd('libpandagl.dll', opts=['MODULE', 'GL', 'EGL', 'CGGL'])
+
+#
+# DIRECTORY: panda/src/egldisplay/
+#
+
+if (PkgSkip("EGL")==0 and PkgSkip("GLES")==0):
   DefSymbol('GLES', 'OPENGLES_1', '')
   OPTS=['DIR:panda/src/egldisplay', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGLES',  'GLES', 'EGL']
   TargetAdd('pandagles_egldisplay_composite1.obj', opts=OPTS, input='p3egldisplay_composite1.cxx')
   OPTS=['DIR:panda/metalibs/pandagles', 'BUILDING:PANDAGLES', 'GLES', 'EGL']
   TargetAdd('pandagles_pandagles.obj', opts=OPTS, input='pandagles.cxx')
-  TargetAdd('libpandagles.dll', input='p3x11display_composite1.obj')
+  if not PkgSkip("X11"):
+    TargetAdd('libpandagles.dll', input='p3x11display_composite1.obj')
   TargetAdd('libpandagles.dll', input='pandagles_pandagles.obj')
   TargetAdd('libpandagles.dll', input='p3glesgsg_config_glesgsg.obj')
   TargetAdd('libpandagles.dll', input='p3glesgsg_glesgsg.obj')
@@ -4517,13 +4535,14 @@ if (PkgSkip("EGL")==0 and PkgSkip("GLES")==0 and PkgSkip("X11")==0):
 # DIRECTORY: panda/src/egldisplay/
 #
 
-if (PkgSkip("EGL")==0 and PkgSkip("GLES2")==0 and PkgSkip("X11")==0):
+if (PkgSkip("EGL")==0 and PkgSkip("GLES2")==0):
   DefSymbol('GLES2', 'OPENGLES_2', '')
   OPTS=['DIR:panda/src/egldisplay', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGLES2',  'GLES2', 'EGL']
   TargetAdd('pandagles2_egldisplay_composite1.obj', opts=OPTS, input='p3egldisplay_composite1.cxx')
   OPTS=['DIR:panda/metalibs/pandagles2', 'BUILDING:PANDAGLES2', 'GLES2', 'EGL']
   TargetAdd('pandagles2_pandagles2.obj', opts=OPTS, input='pandagles2.cxx')
-  TargetAdd('libpandagles2.dll', input='p3x11display_composite1.obj')
+  if not PkgSkip("X11"):
+    TargetAdd('libpandagles2.dll', input='p3x11display_composite1.obj')
   TargetAdd('libpandagles2.dll', input='pandagles2_pandagles2.obj')
   TargetAdd('libpandagles2.dll', input='p3gles2gsg_config_gles2gsg.obj')
   TargetAdd('libpandagles2.dll', input='p3gles2gsg_gles2gsg.obj')
@@ -6034,9 +6053,7 @@ finally:
 # Run the test suite.
 if RUNTESTS:
     cmdstr = BracketNameWithQuotes(SDK["PYTHONEXEC"].replace('\\', '/'))
-    if sys.version_info >= (2, 6):
-        cmdstr += " -B"
-    cmdstr += " -m pytest tests"
+    cmdstr += " -B -m pytest tests"
     if GetVerbose():
         cmdstr += " --verbose"
     oscmd(cmdstr)

@@ -17,18 +17,15 @@ from direct.showbase.MessengerGlobal import messenger
 import types
 import random
 import importlib
-import sys
 
 try:
-    if sys.version_info >= (3, 0):
-        import _signal as signal
-    else:
-        import signal
+    import _signal as signal
 except ImportError:
     signal = None
 
 from panda3d.core import *
 from direct.extensions_native import HTTPChannel_extensions
+
 
 def print_exc_plus():
     """

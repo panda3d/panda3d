@@ -72,13 +72,8 @@ def inspect(anObject):
     return Inspector.inspect(anObject)
 
 
-import sys
-if sys.version_info >= (3, 0):
-    import builtins
-else:
-    import __builtin__ as builtins
+import builtins
 builtins.inspect = inspect
-del sys
 
 # this also appears in AIBaseGlobal
 if (not __debug__) and __dev__:

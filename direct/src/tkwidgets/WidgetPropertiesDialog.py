@@ -3,7 +3,7 @@
 __all__ = ['WidgetPropertiesDialog']
 
 from direct.showbase.TkGlobal import *
-import Pmw, sys
+import Pmw
 
 """
 TODO:
@@ -31,12 +31,8 @@ class WidgetPropertiesDialog(Toplevel):
             self.propertyList.sort()
         # Use default parent if none specified
         if not parent:
-            if sys.version_info >= (3, 0):
-                import tkinter
-                parent = tkinter._default_root
-            else:
-                import Tkinter
-                parent = Tkinter._default_root
+            import tkinter
+            parent = tkinter._default_root
         # Create toplevel window
         Toplevel.__init__(self, parent)
         self.transient(parent)
