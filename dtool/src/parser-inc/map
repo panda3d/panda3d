@@ -28,19 +28,19 @@ namespace std {
   template<class T> class allocator;
 }
 
-template<class Key, class Element, class Compare = less<Key>, class Allocator = std::allocator<pair<const Key, T> > >
+template<class Key, class T, class Compare = less<Key>, class Allocator = std::allocator<pair<const Key, T> > >
 class map {
 public:
   typedef Key key_type;
-  typedef Element data_type;
-  typedef Element mapped_type;
-  typedef pair<const Key, Element> value_type;
+  typedef T data_type;
+  typedef T mapped_type;
+  typedef pair<const Key, T> value_type;
   typedef Compare key_compare;
 
-  typedef Element *pointer;
-  typedef const Element *const_pointer;
-  typedef Element &reference;
-  typedef const Element &const_reference;
+  typedef T *pointer;
+  typedef const T *const_pointer;
+  typedef T &reference;
+  typedef const T &const_reference;
 
   class iterator;
   class const_iterator;
