@@ -10,7 +10,7 @@ insert_final_newline = true
 indent_style = space
 indent_size = 4
 
-[*.{h,c,cxx,cpp,I}]
+[*.{h,c,cxx,cpp,I,T}]
 indent_style = space
 indent_size = 2
 

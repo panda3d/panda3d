@@ -655,6 +655,9 @@ int main(int argc, char *argv[]) {
   PyImport_FrozenModules = blobinfo.pointers[0];
   retval = Py_FrozenMain(argc, argv);
 
+  fflush(stdout);
+  fflush(stderr);
+
   unmap_blob(blob);
   return retval;
 }

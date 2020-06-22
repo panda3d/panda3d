@@ -328,6 +328,13 @@ ConfigVariableInt win_origin
 ConfigVariableBool fullscreen
 ("fullscreen", false);
 
+ConfigVariableBool maximized
+("maximized", false,
+ PRC_DESC("Start the window in a maximized state as handled by the window"
+          "manager.  In comparison to the fullscreen setting, this will"
+          "usually not remove the window decoration and not occupy the"
+          "whole screen space."));
+
 ConfigVariableBool undecorated
 ("undecorated", false,
  PRC_DESC("This specifies the default value of the 'undecorated' window "

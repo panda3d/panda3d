@@ -22,17 +22,21 @@
 
 #include <stdtypedefs.h>
 
+namespace std {
+  template<class T> class allocator;
+}
+
 inline namespace std {
 
-template<class element>
+template<class T, class Allocator = std::allocator<T> >
 class vector {
 public:
-  typedef element value_type;
+  typedef T value_type;
 
-  typedef element *pointer;
-  typedef const element *const_pointer;
-  typedef element &reference;
-  typedef const element &const_reference;
+  typedef T *pointer;
+  typedef const T *const_pointer;
+  typedef T &reference;
+  typedef const T &const_reference;
 
   typedef pointer iterator;
   typedef const_pointer const_iterator;

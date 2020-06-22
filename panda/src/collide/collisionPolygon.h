@@ -42,6 +42,8 @@ public:
 
   virtual CollisionSolid *make_copy();
 
+  static bool verify_points(const LPoint3 *begin, const LPoint3 *end);
+
 PUBLISHED:
   virtual LPoint3 get_collision_origin() const;
 
@@ -53,7 +55,6 @@ PUBLISHED:
   INLINE static bool verify_points(const LPoint3 &a, const LPoint3 &b,
                                    const LPoint3 &c, const LPoint3 &d);
   static bool verify_points(const LPoint3 &a, const LPoint3 &b, const LPoint3 &c);
-  static bool verify_points(const LPoint3 *begin, const LPoint3 *end);
 
   bool is_valid() const;
   bool is_concave() const;

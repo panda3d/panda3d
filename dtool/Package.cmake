@@ -408,7 +408,7 @@ package_status(SQUISH "libsquish")
 #
 
 # Assimp
-find_package(Assimp QUIET)
+find_package(Assimp QUIET MODULE)
 
 package_option(Assimp
   "Build pandatool with support for loading 3D assets supported by Assimp.")
