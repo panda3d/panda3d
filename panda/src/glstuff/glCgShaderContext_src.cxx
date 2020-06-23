@@ -191,7 +191,7 @@ CLP(CgShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderConte
       } else {
         loc = cgGetParameterResourceIndex(p);
 
-        if (loc != 0 && bind._id._name == "vtx_position") {
+        if (loc != 0 && bind._id._name->get_basename() == "vtx_position") {
           // We really have to bind the vertex position to attribute 0, since
           // OpenGL will hide the model if attribute 0 is not enabled, and we
           // can only ever be sure that vtx_position is bound.
@@ -228,7 +228,7 @@ CLP(CgShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderConte
       }
       loc = _glgsg->_glGetAttribLocation(_glsl_program, attribname);
 
-      if (bind._id._name == "vtx_color") {
+      if (bind._id._name->get_basename() == "vtx_color") {
         _color_attrib_index = loc;
       }
 
@@ -246,7 +246,7 @@ CLP(CgShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderConte
           GLCAT.debug(false) << " (" << resource << ") in the compiled GLSL program.\n";
         }
 
-      } else if (loc != 0 && bind._id._name == "vtx_position") {
+      } else if (loc != 0 && bind._id._name->get_basename() == "vtx_position") {
         // We really have to bind the vertex position to attribute 0, since
         // OpenGL will hide the model if attribute 0 is not enabled, and we
         // can only ever be sure that vtx_position is bound.
@@ -554,12 +554,12 @@ issue_parameters(int altered) {
         release_resources();
         return;
       }
-      CGparameter p = _cg_parameter_map[spec._id._seqno];
+      CGparameter p = _cg_parameter_map[spec._id._location];
       void *data = ptr_data->_ptr;
 
       switch (ptr_data->_type) {
       case ShaderType::ST_float:
-        if (spec._info._type->as_array() != nullptr) {
+        if (spec._id._type->as_array() != nullptr) {
           switch (spec._dim[1]) {
           case 1: cgGLSetParameterArray1f(p, 0, spec._dim[0], (float *)data); continue;
           case 2: cgGLSetParameterArray2f(p, 0, spec._dim[0], (float *)data); continue;
@@ -583,7 +583,7 @@ issue_parameters(int altered) {
         break;
 
       case ShaderType::ST_double:
-        if (spec._info._type->as_array() != nullptr) {
+        if (spec._id._type->as_array() != nullptr) {
           switch (spec._dim[1]) {
           case 1: cgGLSetParameterArray1d(p, 0, spec._dim[0], (double *)data); continue;
           case 2: cgGLSetParameterArray2d(p, 0, spec._dim[0], (double *)data); continue;
@@ -637,7 +637,7 @@ issue_parameters(int altered) {
       if (!val) continue;
       const PN_stdfloat *data = val->get_data();
 
-      CGparameter p = _cg_parameter_map[spec._id._seqno];
+      CGparameter p = _cg_parameter_map[spec._id._location];
       switch (spec._piece) {
       case Shader::SMP_whole: GLfc(cgGLSetMatrixParameter)(p, data); continue;
       case Shader::SMP_transpose: GLfr(cgGLSetMatrixParameter)(p, data); continue;
@@ -991,7 +991,7 @@ disable_shader_texture_bindings() {
   }
 
   for (int i = 0; i < (int)_shader->_tex_spec.size(); ++i) {
-    CGparameter p = _cg_parameter_map[_shader->_tex_spec[i]._id._seqno];
+    CGparameter p = _cg_parameter_map[_shader->_tex_spec[i]._id._location];
     if (p == 0) continue;
 
     int texunit = cgGetParameterResourceIndex(p);
@@ -1039,7 +1039,7 @@ update_shader_texture_bindings(ShaderContext *prev) {
   for (int i = 0; i < (int)_shader->_tex_spec.size(); ++i) {
     Shader::ShaderTexSpec &spec = _shader->_tex_spec[i];
 
-    CGparameter p = _cg_parameter_map[spec._id._seqno];
+    CGparameter p = _cg_parameter_map[spec._id._location];
     if (p == 0) {
       continue;
     }

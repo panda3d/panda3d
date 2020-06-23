@@ -82,6 +82,25 @@ std::ostream &operator << (std::ostream &out, ShaderType::ScalarType scalar_type
 
 #ifndef CPPPARSER
 /**
+ * Returns the size in bytes of this type in memory, if applicable.  Opaque
+ * types will return -1.
+ */
+int ShaderType::
+get_size_bytes() const {
+  ScalarType type;
+  uint32_t dim[3];
+  if (as_scalar_type(type, dim[0], dim[1], dim[2]) && type != ST_bool) {
+    if (type == ST_double) {
+      return 8 * dim[0] * dim[1] * dim[2];
+    } else {
+      return 4 * dim[0] * dim[1] * dim[2];
+    }
+  } else {
+    return -1;
+  }
+}
+
+/**
  * Returns true if this type contains the given scalar type.
  */
 bool ShaderType::Scalar::
@@ -214,6 +233,15 @@ compare_to_impl(const ShaderType &other) const {
 }
 
 /**
+ * Returns the number of in/out locations taken up by in/out variables having
+ * this type.
+ */
+int ShaderType::Matrix::
+get_num_interface_locations() const {
+  return _num_rows;
+}
+
+/**
  * Returns true if this type contains the given scalar type.
  */
 bool ShaderType::Struct::
@@ -265,6 +293,28 @@ compare_to_impl(const ShaderType &other) const {
   }
 
   return 0;
+}
+
+/**
+ * Returns the size in bytes of this type in memory, if applicable.  Opaque
+ * types will return -1.
+ */
+int ShaderType::Struct::
+get_size_bytes() const {
+  return _members.empty() ? 0 : _members.back().offset + _members.back().type->get_size_bytes();
+}
+
+/**
+ * Returns the number of in/out locations taken up by in/out variables having
+ * this type.
+ */
+int ShaderType::Struct::
+get_num_interface_locations() const {
+  int total = 0;
+  for (const Member &member : _members) {
+    total += member.type->get_num_interface_locations();
+  }
+  return total;
 }
 
 /**
@@ -327,6 +377,24 @@ compare_to_impl(const ShaderType &other) const {
 }
 
 /**
+ * Returns the size in bytes of this type in memory, if applicable.  Opaque
+ * types will return -1.
+ */
+int ShaderType::Array::
+get_size_bytes() const {
+  return _element_type->get_size_bytes() * _num_elements;
+}
+
+/**
+ * Returns the number of in/out locations taken up by in/out variables having
+ * this type.
+ */
+int ShaderType::Array::
+get_num_interface_locations() const {
+  return _element_type->get_num_interface_locations() * _num_elements;
+}
+
+/**
  * Returns the number of uniform locations taken up by uniform variables having
  * this type.
  */
@@ -340,6 +408,11 @@ get_num_parameter_locations() const {
  */
 void ShaderType::Image::
 output(std::ostream &out) const {
+  if (_sampled_type == ST_int) {
+    out << 'i';
+  } else if (_sampled_type == ST_uint) {
+    out << 'u';
+  }
   out << "image" << texture_type_suffixes[_texture_type];
 }
 
@@ -350,8 +423,16 @@ output(std::ostream &out) const {
 int ShaderType::Image::
 compare_to_impl(const ShaderType &other) const {
   const Image &other_image = (const Image &)other;
-  return (_texture_type > other_image._texture_type)
-       - (_texture_type < other_image._texture_type);
+  if (_texture_type != other_image._texture_type) {
+    return (_texture_type > other_image._texture_type)
+         - (_texture_type < other_image._texture_type);
+  }
+  if (_sampled_type != other_image._sampled_type) {
+    return (_sampled_type > other_image._sampled_type)
+         - (_sampled_type < other_image._sampled_type);
+  }
+  return (_access > other_image._access)
+       - (_access < other_image._access);
 }
 
 /**
@@ -377,6 +458,11 @@ compare_to_impl(const ShaderType &other) const {
  */
 void ShaderType::SampledImage::
 output(std::ostream &out) const {
+  if (_sampled_type == ST_int) {
+    out << 'i';
+  } else if (_sampled_type == ST_uint) {
+    out << 'u';
+  }
   out << "sampler" << texture_type_suffixes[_texture_type];
 }
 
@@ -387,7 +473,11 @@ output(std::ostream &out) const {
 int ShaderType::SampledImage::
 compare_to_impl(const ShaderType &other) const {
   const SampledImage &other_sampled_image = (const SampledImage &)other;
-  return (_texture_type > other_sampled_image._texture_type)
-       - (_texture_type < other_sampled_image._texture_type);
+  if (_texture_type != other_sampled_image._texture_type) {
+    return (_texture_type > other_sampled_image._texture_type)
+         - (_texture_type < other_sampled_image._texture_type);
+  }
+  return (_sampled_type > other_sampled_image._sampled_type)
+       - (_sampled_type < other_sampled_image._sampled_type);
 }
 #endif  // CPPPARSER

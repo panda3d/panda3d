@@ -293,10 +293,11 @@ public:
     SMF_first,
   };
 
-  struct ShaderArgId {
-    std::string     _name;
-    ShaderType _type;
-    int        _seqno;
+  struct Parameter {
+    CPT_InternalName _name;
+    const ::ShaderType *_type = nullptr;
+    int _location = -1;
+    int _stage_mask = 0;
   };
 
   enum ShaderPtrType {
@@ -305,11 +306,6 @@ public:
     SPT_int = ScalarType::ST_int,
     SPT_uint = ScalarType::ST_uint,
     SPT_unknown = ScalarType::ST_unknown,
-  };
-
-  struct ShaderArgInfo {
-    ShaderArgId _id;
-    const ::ShaderType *_type;
   };
 
   // Container structure for data of parameters ShaderPtrSpec.
@@ -378,7 +374,7 @@ public:
    */
   struct ShaderMatSpec {
     size_t _cache_offset[2];
-    ShaderArgId       _id;
+    Parameter         _id;
     ShaderMatFunc     _func;
     ShaderMatInput    _part[2];
     CPT(InternalName) _arg[2];
@@ -389,7 +385,7 @@ public:
   };
 
   struct ShaderTexSpec {
-    ShaderArgId       _id;
+    Parameter         _id;
     CPT(InternalName) _name;
     ShaderTexInput    _part;
     int               _stage;
@@ -398,14 +394,14 @@ public:
   };
 
   struct ShaderImgSpec {
-    ShaderArgId       _id;
+    Parameter         _id;
     CPT(InternalName) _name;
     int               _desired_type;
     bool              _writable;
   };
 
   struct ShaderVarSpec {
-    ShaderArgId       _id;
+    Parameter         _id;
     PT(InternalName)  _name;
     int               _append_uv;
     int               _elements;
@@ -413,11 +409,9 @@ public:
   };
 
   struct ShaderPtrSpec {
-    ShaderArgId       _id;
+    Parameter         _id;
     uint32_t          _dim[3]; //n_elements,rows,cols
-    int               _dep[2];
     CPT(InternalName) _arg;
-    ShaderArgInfo     _info;
     ScalarType        _type;
   };
 
@@ -482,7 +476,7 @@ public:
   void cp_add_mat_spec(ShaderMatSpec &spec);
   size_t cp_get_mat_cache_size() const;
 
-  bool compile_parameter(ShaderArgId &p);
+  bool compile_parameter(Parameter &p);
 
   void clear_parameters();
 
@@ -589,7 +583,7 @@ private:
 public:
   bool link();
   bool bind_vertex_input(const InternalName *name, const ::ShaderType *type, int location);
-  bool bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location);
+  bool bind_parameter(const Parameter &parameter);
 
   bool check_modified() const;
   ShaderCompiler *get_compiler(ShaderLanguage lang) const;

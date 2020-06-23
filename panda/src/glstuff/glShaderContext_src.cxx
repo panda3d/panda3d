@@ -58,7 +58,7 @@ TypeHandle CLP(ShaderContext)::_type_handle;
  * pushed onto _mat_spec.
  */
 bool CLP(ShaderContext)::
-parse_and_set_short_hand_shader_vars(Shader::ShaderArgId &arg_id, GLenum param_type, GLint param_size, Shader *objShader) {
+parse_and_set_short_hand_shader_vars(Shader::Parameter &arg_id, GLenum param_type, GLint param_size, Shader *objShader) {
   /*Shader::ShaderArgInfo p;
   p._id = arg_id;
 
@@ -243,7 +243,7 @@ parse_and_set_short_hand_shader_vars(Shader::ShaderArgId &arg_id, GLenum param_t
           param_size = 4;
         }
         for (int i = 1; i < param_size; ++i) {
-          bind._id._seqno += 1;
+          bind._id._location += 1;
           bind._piece = (Shader::ShaderMatPiece)((int)bind._piece + 1);
           objShader->cp_add_mat_spec(bind);
         }
@@ -296,9 +296,9 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
     size_t num_textures = s->_tex_spec.size();
     for (size_t i = 0; i < num_textures;) {
       Shader::ShaderTexSpec &spec = s->_tex_spec[i];
-      nassertd(spec._id._seqno >= 0) continue;
+      nassertd(spec._id._location >= 0) continue;
 
-      GLint location = get_uniform_location(spec._id._seqno);
+      GLint location = get_uniform_location(spec._id._location);
       if (location < 0) {
         // Not used.  Optimize it out.
         s->_tex_spec.erase(s->_tex_spec.begin() + i);
@@ -313,14 +313,14 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
     size_t num_images = min(s->_img_spec.size(), (size_t)glgsg->_max_image_units);
     for (size_t i = 0; i < num_images;) {
       Shader::ShaderImgSpec &spec = s->_img_spec[i];
-      nassertd(spec._id._seqno >= 0) continue;
+      nassertd(spec._id._location >= 0) continue;
 
       if (GLCAT.is_debug()) {
         GLCAT.debug()
-          << "Active uniform " << spec._id._name << " is bound to location " << spec._id._seqno << " (image binding " << i << ")\n";
+          << "Active uniform " << spec._id._name << " is bound to location " << spec._id._location << " (image binding " << i << ")\n";
       }
 
-      GLint location = get_uniform_location(spec._id._seqno);
+      GLint location = get_uniform_location(spec._id._location);
       if (location < 0) {
         // Not used.  Optimize it out.
         s->_img_spec.erase(s->_img_spec.begin() + i);
@@ -338,7 +338,7 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
     if (_remap_uniform_locations) {
       for (auto it = s->_mat_spec.begin(); it != s->_mat_spec.end();) {
         const Shader::ShaderMatSpec &spec = *it;
-        if (get_uniform_location(spec._id._seqno) < 0) {
+        if (get_uniform_location(spec._id._location) < 0) {
           // Not used.  Optimize it out.
           it = s->_mat_spec.erase(it);
           continue;
@@ -348,7 +348,7 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
 
       for (auto it = s->_ptr_spec.begin(); it != s->_ptr_spec.end();) {
         const Shader::ShaderPtrSpec &spec = *it;
-        if (get_uniform_location(spec._id._seqno) < 0) {
+        if (get_uniform_location(spec._id._location) < 0) {
           // Not used.  Optimize it out.
           it = s->_ptr_spec.erase(it);
           continue;
@@ -365,7 +365,7 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
     for (auto it = s->_var_spec.begin(); it != s->_var_spec.end(); ++it) {
       Shader::ShaderVarSpec &spec = *it;
       if (spec._name == InternalName::get_color()) {
-        _color_attrib_index = spec._id._seqno;
+        _color_attrib_index = spec._id._location;
         break;
       }
     }
@@ -823,9 +823,9 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
 
   string param_name(name_buffer);
 
-  Shader::ShaderArgId arg_id;
+  Shader::Parameter arg_id;
   arg_id._name = param_name;
-  arg_id._seqno = p;
+  arg_id._location = p;
 
   // Check if it has a p3d_ prefix - if so, assign special meaning.
   if (strncmp(name_buffer, "p3d_", 4) == 0) {
@@ -957,9 +957,9 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
           // hard to fix on the 1.10 branch.  We'll have a proper fix on the
           // master branch.
 #ifdef __APPLE__
-          bind._id._seqno = p + bind._index * 4;
+          bind._id._location = p + bind._index * 4;
 #else
-          bind._id._seqno = p + bind._index;
+          bind._id._location = p + bind._index;
 #endif
           _shader->cp_add_mat_spec(bind);
         }
@@ -1180,7 +1180,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       for (int i = 0; i < param_size; ++i) {
         Shader::ShaderMatSpec bind;
         bind._id = arg_id;
-        bind._id._seqno = p + i;
+        bind._id._location = p + i;
         bind._piece = Shader::SMP_row3;
         bind._func = Shader::SMF_first;
         bind._index = i;
@@ -1655,8 +1655,6 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
           break;
         }
         bind._arg = InternalName::make(param_name);
-        bind._dep[0] = Shader::SSD_general | Shader::SSD_shaderinputs | Shader::SSD_frame;
-        bind._dep[1] = Shader::SSD_NONE;
         _shader->_ptr_spec.push_back(bind);
         return;
       }
@@ -1784,8 +1782,6 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
         break;
       }
       bind._arg = InternalName::make(param_name);
-      bind._dep[0] = Shader::SSD_general | Shader::SSD_shaderinputs | Shader::SSD_frame;
-      bind._dep[1] = Shader::SSD_NONE;
       _shader->_ptr_spec.push_back(bind);
       return;
     }
@@ -1918,52 +1914,84 @@ get_param_type(GLenum param_type) {
 #endif
 
 #ifndef OPENGLES
-  case GL_INT_SAMPLER_1D:
-  case GL_UNSIGNED_INT_SAMPLER_1D:
   case GL_SAMPLER_1D:
   case GL_SAMPLER_1D_SHADOW:
-    return ShaderType::register_type(ShaderType::SampledImage(Texture::TT_1d_texture));
+    return ShaderType::register_type(ShaderType::SampledImage(Texture::TT_1d_texture, ShaderType::ST_float));
+
+  case GL_INT_SAMPLER_1D:
+    return ShaderType::register_type(ShaderType::SampledImage(Texture::TT_1d_texture, ShaderType::ST_int));
+
+  case GL_UNSIGNED_INT_SAMPLER_1D:
+    return ShaderType::register_type(ShaderType::SampledImage(Texture::TT_1d_texture, ShaderType::ST_uint));
+
+  case GL_SAMPLER_1D_ARRAY:
+    return ShaderType::register_type(ShaderType::SampledImage(Texture::TT_1d_texture_array, ShaderType::ST_float));
 
   case GL_INT_SAMPLER_1D_ARRAY:
+    return ShaderType::register_type(ShaderType::SampledImage(Texture::TT_1d_texture_array, ShaderType::ST_int));
+
   case GL_UNSIGNED_INT_SAMPLER_1D_ARRAY:
-  case GL_SAMPLER_1D_ARRAY:
-    return ShaderType::register_type(ShaderType::SampledImage(Texture::TT_1d_texture_array));
+    return ShaderType::register_type(ShaderType::SampledImage(Texture::TT_1d_texture_array, ShaderType::ST_uint));
 #endif
 
-  case GL_INT_SAMPLER_2D:
-  case GL_UNSIGNED_INT_SAMPLER_2D:
   case GL_SAMPLER_2D:
   case GL_SAMPLER_2D_SHADOW:
-    return ShaderType::register_type(ShaderType::SampledImage(Texture::TT_2d_texture));
+    return ShaderType::register_type(ShaderType::SampledImage(Texture::TT_2d_texture, ShaderType::ST_float));
+
+  case GL_INT_SAMPLER_2D:
+    return ShaderType::register_type(ShaderType::SampledImage(Texture::TT_2d_texture, ShaderType::ST_int));
+
+  case GL_UNSIGNED_INT_SAMPLER_2D:
+    return ShaderType::register_type(ShaderType::SampledImage(Texture::TT_2d_texture, ShaderType::ST_uint));
+
+  case GL_SAMPLER_3D:
+    return ShaderType::register_type(ShaderType::SampledImage(Texture::TT_3d_texture, ShaderType::ST_float));
 
   case GL_INT_SAMPLER_3D:
-  case GL_UNSIGNED_INT_SAMPLER_3D:
-  case GL_SAMPLER_3D:
-    return ShaderType::register_type(ShaderType::SampledImage(Texture::TT_3d_texture));
+    return ShaderType::register_type(ShaderType::SampledImage(Texture::TT_3d_texture, ShaderType::ST_int));
 
-  case GL_INT_SAMPLER_CUBE:
-  case GL_UNSIGNED_INT_SAMPLER_CUBE:
+  case GL_UNSIGNED_INT_SAMPLER_3D:
+    return ShaderType::register_type(ShaderType::SampledImage(Texture::TT_3d_texture, ShaderType::ST_uint));
+
   case GL_SAMPLER_CUBE:
   case GL_SAMPLER_CUBE_SHADOW:
-    return ShaderType::register_type(ShaderType::SampledImage(Texture::TT_cube_map));
+    return ShaderType::register_type(ShaderType::SampledImage(Texture::TT_cube_map, ShaderType::ST_float));
 
-  case GL_INT_SAMPLER_2D_ARRAY:
-  case GL_UNSIGNED_INT_SAMPLER_2D_ARRAY:
+  case GL_INT_SAMPLER_CUBE:
+    return ShaderType::register_type(ShaderType::SampledImage(Texture::TT_cube_map, ShaderType::ST_int));
+
+  case GL_UNSIGNED_INT_SAMPLER_CUBE:
+    return ShaderType::register_type(ShaderType::SampledImage(Texture::TT_cube_map, ShaderType::ST_uint));
+
   case GL_SAMPLER_2D_ARRAY:
   case GL_SAMPLER_2D_ARRAY_SHADOW:
-    return ShaderType::register_type(ShaderType::SampledImage(Texture::TT_2d_texture_array));
+    return ShaderType::register_type(ShaderType::SampledImage(Texture::TT_2d_texture_array, ShaderType::ST_float));
+
+  case GL_INT_SAMPLER_2D_ARRAY:
+    return ShaderType::register_type(ShaderType::SampledImage(Texture::TT_2d_texture_array, ShaderType::ST_int));
+
+  case GL_UNSIGNED_INT_SAMPLER_2D_ARRAY:
+    return ShaderType::register_type(ShaderType::SampledImage(Texture::TT_2d_texture_array, ShaderType::ST_uint));
 
 #ifndef OPENGLES
-  case GL_INT_SAMPLER_CUBE_MAP_ARRAY:
-  case GL_UNSIGNED_INT_SAMPLER_CUBE_MAP_ARRAY:
   case GL_SAMPLER_CUBE_MAP_ARRAY:
   case GL_SAMPLER_CUBE_MAP_ARRAY_SHADOW:
-    return ShaderType::register_type(ShaderType::SampledImage(Texture::TT_cube_map_array));
+    return ShaderType::register_type(ShaderType::SampledImage(Texture::TT_cube_map_array, ShaderType::ST_float));
+
+  case GL_INT_SAMPLER_CUBE_MAP_ARRAY:
+    return ShaderType::register_type(ShaderType::SampledImage(Texture::TT_cube_map_array, ShaderType::ST_int));
+
+  case GL_UNSIGNED_INT_SAMPLER_CUBE_MAP_ARRAY:
+    return ShaderType::register_type(ShaderType::SampledImage(Texture::TT_cube_map_array, ShaderType::ST_uint));
+
+  case GL_SAMPLER_BUFFER:
+    return ShaderType::register_type(ShaderType::SampledImage(Texture::TT_buffer_texture, ShaderType::ST_float));
 
   case GL_INT_SAMPLER_BUFFER:
+    return ShaderType::register_type(ShaderType::SampledImage(Texture::TT_buffer_texture, ShaderType::ST_int));
+
   case GL_UNSIGNED_INT_SAMPLER_BUFFER:
-  case GL_SAMPLER_BUFFER:
-    return ShaderType::register_type(ShaderType::SampledImage(Texture::TT_buffer_texture));
+    return ShaderType::register_type(ShaderType::SampledImage(Texture::TT_buffer_texture, ShaderType::ST_uint));
 #endif  // !OPENGLES
   }
 
@@ -2315,7 +2343,7 @@ issue_parameters(int altered) {
       nassertd(spec._dim[1] > 0) continue;
 
       uint32_t dim = spec._dim[1] * spec._dim[2];
-      GLint p = get_uniform_location(spec._id._seqno);
+      GLint p = get_uniform_location(spec._id._location);
       if (p < 0) {
         continue;
       }
@@ -2380,8 +2408,7 @@ issue_parameters(int altered) {
 
           // Deactivate it to make sure the user doesn't get flooded with this
           // error.
-          spec._dep[0] = 0;
-          spec._dep[1] = 0;
+          set_uniform_location(spec._id._location, -1);
 
         } else {
           switch (spec._dim[1] * spec._dim[2]) {
@@ -2402,8 +2429,7 @@ issue_parameters(int altered) {
 
           // Deactivate it to make sure the user doesn't get flooded with this
           // error.
-          spec._dep[0] = 0;
-          spec._dep[1] = 0;
+          set_uniform_location(spec._id._location, -1);
 
         } else {
           switch (spec._dim[1] * spec._dim[2]) {
@@ -2421,8 +2447,8 @@ issue_parameters(int altered) {
 
         // Deactivate it to make sure the user doesn't get flooded with this
         // error.
-        spec._dep[0] = 0;
-        spec._dep[1] = 0;
+        set_uniform_location(spec._id._location, -1);
+        break;
 
       default:
         continue;
@@ -2449,7 +2475,7 @@ issue_parameters(int altered) {
       const PN_float32 *data = valf.get_data();
 #endif
 
-      GLint p = get_uniform_location(spec._id._seqno);
+      GLint p = get_uniform_location(spec._id._location);
       if (p < 0) {
         continue;
       }
@@ -2561,7 +2587,7 @@ disable_shader_vertex_arrays() {
 
   for (size_t i = 0; i < _shader->_var_spec.size(); ++i) {
     const Shader::ShaderVarSpec &bind = _shader->_var_spec[i];
-    GLint p = bind._id._seqno;
+    GLint p = bind._id._location;
 
     for (int i = 0; i < bind._elements; ++i) {
       _glgsg->disable_vertex_attrib_array(p + i);
@@ -2667,7 +2693,7 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
         }
       }
 
-      GLint p = bind._id._seqno;
+      GLint p = bind._id._location;
       max_p = max(max_p, p + bind._elements);
 
       // Don't apply vertex colors if they are disabled with a ColorAttrib.
@@ -2764,7 +2790,7 @@ disable_shader_texture_bindings() {
 #ifndef OPENGLES
     // Check if bindless was used, if so, there's nothing to unbind.
     if (_glgsg->_supports_bindless_texture) {
-      GLint p = _shader->_tex_spec[i]._id._seqno;
+      GLint p = _shader->_tex_spec[i]._id._location;
 
       if (_glsl_uniform_handles.count(p) > 0) {
         continue;
@@ -3037,7 +3063,7 @@ update_shader_texture_bindings(ShaderContext *prev) {
     }
 
 #ifndef OPENGLES
-    GLint p = spec._id._seqno;
+    GLint p = spec._id._location;
 
     // If it was recently written to, we will have to issue a memory barrier
     // soon.

@@ -41,12 +41,21 @@ public:
 
   class InstructionStream;
 
+  /**
+   * A single instruction as returned by the InstructionIterator.
+   */
   struct Instruction {
     const spv::Op opcode;
     const uint32_t nargs;
     uint32_t *args;
+
+    INLINE bool is_debug() const;
+    INLINE bool is_annotation() const;
   };
 
+  /**
+   * Provided by InstructionStream to iterate over the instructions.
+   */
   class InstructionIterator {
   public:
     constexpr InstructionIterator() = default;
@@ -79,15 +88,17 @@ public:
 
     INLINE operator std::vector<uint32_t> & ();
 
-    InstructionStream strip() const;
-
     INLINE iterator begin();
     INLINE iterator begin_annotations();
+    INLINE iterator end_annotations();
+    INLINE iterator begin_functions();
     INLINE iterator end();
-    INLINE iterator insert(iterator &it, spv::Op opcode, std::initializer_list<uint32_t > args);
-    INLINE iterator insert(iterator &it, spv::Op opcode, const uint32_t *args, uint16_t nargs);
-    INLINE iterator erase(iterator &it);
-    INLINE iterator erase_arg(iterator &it, uint16_t arg);
+    INLINE iterator insert(const iterator &it, spv::Op opcode, std::initializer_list<uint32_t > args);
+    INLINE iterator insert(const iterator &it, spv::Op opcode, const uint32_t *args, uint16_t nargs);
+    INLINE iterator insert(const iterator &it, const Instruction &op);
+    INLINE iterator insert_arg(const iterator &it, uint16_t arg_index, uint32_t arg);
+    INLINE iterator erase(const iterator &it);
+    INLINE iterator erase_arg(const iterator &it, uint16_t arg);
 
     INLINE const uint32_t *get_data() const;
     INLINE size_t get_data_size() const;
@@ -103,7 +114,6 @@ public:
 
   InstructionStream _instructions;
 
-protected:
   enum DefinitionType {
     DT_none,
     DT_type,
@@ -112,6 +122,18 @@ protected:
     DT_constant,
     DT_ext_inst,
   };
+
+  /**
+   * Used by below Definition struct to hold member info.
+   */
+  struct MemberDefinition {
+    std::string _name;
+    uint32_t _type_id = 0;
+    int _location = -1;
+    int _offset = -1;
+    spv::BuiltIn _builtin = spv::BuiltInMax;
+  };
+  typedef pvector<MemberDefinition> MemberDefinitions;
 
   /**
    * Temporary structure to hold a single definition, which could be a variable,
@@ -124,38 +146,73 @@ protected:
     int _location = -1;
     spv::BuiltIn _builtin = spv::BuiltInMax;
     uint32_t _constant = 0;
-    vector_string _member_names;
+    uint32_t _type_id = 0;
+    MemberDefinitions _members;
     bool _used = false;
 
     // Only defined for DT_variable.
     spv::StorageClass _storage_class;
 
-    void set_name(const char *name);
-    void set_member_name(uint32_t i, const char *name);
-
-    void set_type(const ShaderType *type);
-    void set_type_pointer(spv::StorageClass storage_class, const ShaderType *type);
-    void set_variable(const ShaderType *type, spv::StorageClass storage_class);
-    void set_constant(const ShaderType *type, const uint32_t *words, uint32_t nwords);
-    void set_ext_inst(const char *name);
-
-    void mark_used();
-
+    bool has_builtin() const;
+    const MemberDefinition &get_member(uint32_t i) const;
+    MemberDefinition &modify_member(uint32_t i);
     void clear();
   };
   typedef pvector<Definition> Definitions;
 
+  /**
+   * An InstructionWriter can be used for more advanced transformations on a
+   * SPIR-V instruction stream.  It sets up temporary support structures that
+   * help make changes more efficiently.  Only one writer to a given stream may
+   * exist at any given time, and the stream may not be modified by other means
+   * in the meantime.
+   */
+  class InstructionWriter {
+  public:
+    InstructionWriter(InstructionStream &stream);
+
+    uint32_t find_definition(const std::string &name) const;
+    const Definition &get_definition(uint32_t id) const;
+    Definition &modify_definition(uint32_t id);
+
+    void assign_locations(Stage stage);
+
+    void flatten_struct(uint32_t type_id);
+    uint32_t make_block(const ShaderType::Struct *block_type, const pvector<int> &locations,
+                        spv::StorageClass storage_class, uint32_t binding=0, uint32_t set=0);
+
+    uint32_t define_variable(const ShaderType *type, spv::StorageClass storage_class);
+    uint32_t define_type_pointer(const ShaderType *type, spv::StorageClass storage_class);
+    uint32_t define_type(const ShaderType *type);
+    uint32_t define_constant(const ShaderType *type, uint32_t constant);
+
+  private:
+    uint32_t r_define_variable(InstructionIterator &it, const ShaderType *type, spv::StorageClass storage_class);
+    uint32_t r_define_type_pointer(InstructionIterator &it, const ShaderType *type, spv::StorageClass storage_class);
+    uint32_t r_define_type(InstructionIterator &it, const ShaderType *type);
+    uint32_t r_define_constant(InstructionIterator &it, const ShaderType *type, uint32_t constant);
+    void r_annotate_struct_layout(InstructionIterator &it, uint32_t type_id);
+
+    void parse_instruction(const Instruction &op);
+    void record_type(uint32_t id, const ShaderType *type);
+    void record_type_pointer(uint32_t id, spv::StorageClass storage_class, uint32_t type_id);
+    void record_variable(uint32_t id, uint32_t type_pointer_id, spv::StorageClass storage_class);
+    void record_constant(uint32_t id, uint32_t type_id, const uint32_t *words, uint32_t nwords);
+    void record_ext_inst_import(uint32_t id, const char *import);
+
+    InstructionStream &_instructions;
+    Definitions _defs;
+
+    // Reverse mapping from type to ID.  Excludes types with BuiltIn decoration.
+    typedef pmap<const ShaderType *, uint32_t> TypeMap;
+    TypeMap _type_map;
+  };
+
 private:
-  bool parse(Definitions &defs);
-  bool parse_instruction(Definitions &defs, spv::Op opcode,
-                         const uint32_t *args, size_t nargs);
-
-  void assign_locations(Definitions &defs);
   void remap_locations(spv::StorageClass storage_class, const pmap<int, int> &locations);
-
-  void flatten_struct(Definitions &defs, uint32_t type_id);
   void strip();
 
+private:
   int _index;
 
 public:

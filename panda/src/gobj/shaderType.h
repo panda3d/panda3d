@@ -34,6 +34,8 @@ public:
 
   virtual void output(std::ostream &out) const=0;
 
+  virtual int get_size_bytes() const;
+  virtual int get_num_interface_locations() const { return 1; }
   virtual int get_num_parameter_locations() const { return 1; }
 
   enum ScalarType {
@@ -197,6 +199,8 @@ public:
   virtual bool as_scalar_type(ScalarType &type, uint32_t &num_elements,
                               uint32_t &num_rows, uint32_t &num_columns) const override;
 
+  virtual int get_num_interface_locations() const override;
+
   const Matrix *as_matrix() const override { return this; }
 
   virtual void output(std::ostream &out) const override;
@@ -232,10 +236,13 @@ public:
   INLINE size_t get_num_members() const;
   INLINE const Member &get_member(size_t i) const;
   INLINE void add_member(const ShaderType *type, std::string name);
+  INLINE void add_member(const ShaderType *type, std::string name, uint32_t offset);
 
   virtual void output(std::ostream &out) const override;
   virtual int compare_to_impl(const ShaderType &other) const override;
 
+  virtual int get_size_bytes() const override;
+  virtual int get_num_interface_locations() const override;
   virtual int get_num_parameter_locations() const override;
 
   bool is_aggregate_type() const override { return true; }
@@ -248,6 +255,7 @@ PUBLISHED:
   struct Member {
     const ShaderType *type;
     std::string name;
+    uint32_t offset;
   };
 
 private:
@@ -284,6 +292,8 @@ public:
   virtual void output(std::ostream &out) const override;
   virtual int compare_to_impl(const ShaderType &other) const override;
 
+  virtual int get_size_bytes() const override;
+  virtual int get_num_interface_locations() const override;
   virtual int get_num_parameter_locations() const override;
 
   bool is_aggregate_type() const override { return true; }
@@ -324,9 +334,10 @@ PUBLISHED:
   };
 
 public:
-  INLINE Image(Texture::TextureType texture_type, Access access);
+  INLINE Image(Texture::TextureType texture_type, ScalarType sampled_type, Access access);
 
   INLINE Texture::TextureType get_texture_type() const;
+  INLINE ScalarType get_sampled_type() const;
   INLINE Access get_access() const;
   INLINE bool is_writable() const;
 
@@ -337,11 +348,13 @@ public:
 
 PUBLISHED:
   MAKE_PROPERTY(texture_type, get_texture_type);
+  MAKE_PROPERTY(sampled_type, get_sampled_type);
   MAKE_PROPERTY(access, get_access);
   MAKE_PROPERTY(writable, is_writable);
 
 private:
   Texture::TextureType _texture_type;
+  ScalarType _sampled_type;
   Access _access;
 
 public:
@@ -390,9 +403,10 @@ private:
  */
 class EXPCL_PANDA_GOBJ ShaderType::SampledImage final : public ShaderType {
 public:
-  INLINE SampledImage(Texture::TextureType texture_type);
+  INLINE SampledImage(Texture::TextureType texture_type, ScalarType sampled_type);
 
   INLINE Texture::TextureType get_texture_type() const;
+  INLINE ScalarType get_sampled_type() const;
 
   virtual void output(std::ostream &out) const override;
   virtual int compare_to_impl(const ShaderType &other) const override;
@@ -401,6 +415,7 @@ public:
 
 private:
   Texture::TextureType _texture_type;
+  ScalarType _sampled_type;
 
 public:
   static TypeHandle get_class_type() {
