@@ -17,9 +17,6 @@
  * and types that were supported in Cg but are not available in HLSL.
  */
 
-// Bug in glslang, see KhronosGroup/glslang#2265
-typedef samplerCube samplerCUBE;
-
 // Cg accepts this type and these functions, despite being GLSL
 typedef sampler2D sampler2DShadow;
 
