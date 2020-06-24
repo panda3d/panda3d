@@ -14,6 +14,7 @@
 #include "shaderCompilerGlslang.h"
 #include "config_shaderpipeline.h"
 #include "virtualFile.h"
+#include "shaderCompilerGlslPreProc.h"
 
 #ifndef CPPPARSER
 #include <glslang/Public/ShaderLang.h>
@@ -290,6 +291,14 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
   }
   else if (!preprocess_glsl(code, glsl_version, add_include_directive)) {
     return nullptr;
+  }
+
+  if (!is_cg && glsl_version < 330 && glsl_version != 150) {
+    // Fall back to GlslPreProc handler.  Cleaner way to do this?
+    static ShaderCompilerGlslPreProc preprocessor;
+
+    std::istringstream stream(std::string((const char *)&code[0], code.size()));
+    return preprocessor.compile_now(stage, stream, filename, record);
   }
 
   static bool is_initialized = false;

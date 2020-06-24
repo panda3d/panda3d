@@ -675,7 +675,7 @@ cg_parameter_type(CGparameter p) {
       default:
         return nullptr;
       }
-      return ::ShaderType::register_type(::ShaderType::SampledImage(texture_type));
+      return ::ShaderType::register_type(::ShaderType::SampledImage(texture_type, ::ShaderType::ST_float));
     }
 
   default:
@@ -1003,7 +1003,10 @@ cg_analyze_entry_point(CGprogram prog, ShaderType type) {
           success &= bind_vertex_input(name, arg_type, -1);
         }
         else if (vbl == CG_UNIFORM) {
-          success &= bind_parameter(name, arg_type, -1);
+          Parameter param;
+          param._name = name;
+          param._type = arg_type;
+          success &= bind_parameter(param);
         }
       }
     } else if (shader_cat.is_debug()) {
@@ -1091,22 +1094,21 @@ cg_analyze_shader(const ShaderCaps &caps) {
     }
   }
 
-  // Assign sequence numbers to all parameters.  GLCgShaderContext relies on
-  // the fact that the varyings start at seqno 0.
-  int seqno = 0;
+  // Assign locations to all parameters.  GLCgShaderContext relies on the fact
+  // that the varyings start at location 0.
+  int location = 0;
   for (size_t i = 0; i < _var_spec.size(); ++i) {
-    _var_spec[i]._id._seqno = seqno++;
+    _var_spec[i]._id._location = location++;
   }
   for (size_t i = 0; i < _mat_spec.size(); ++i) {
-    _mat_spec[i]._id._seqno = seqno++;
+    _mat_spec[i]._id._location = location++;
   }
   for (size_t i = 0; i < _tex_spec.size(); ++i) {
-    _tex_spec[i]._id._seqno = seqno++;
+    _tex_spec[i]._id._location = location++;
   }
 
   for (size_t i = 0; i < _ptr_spec.size(); ++i) {
-    _ptr_spec[i]._id._seqno = seqno++;
-    _ptr_spec[i]._info._id = _ptr_spec[i]._id;
+    _ptr_spec[i]._id._location = location++;
   }
 
   /*
@@ -1264,12 +1266,12 @@ cg_compile_for(const ShaderCaps &caps, CGcontext context,
     programs_by_type[cgGetProgramDomain(program)] = program;
   }
 
-  for (size_t i = 0; i < n_mat; ++i) {
-    const ShaderArgId &id = _mat_spec[i]._id;
-    map[id._seqno] = cgGetNamedParameter(programs_by_type[id._type], id._name.c_str());
+  /*for (size_t i = 0; i < n_mat; ++i) {
+    const Parameter &id = _mat_spec[i]._id;
+    map[id._location] = cgGetNamedParameter(programs_by_type[id._type], id._name.c_str());
 
     if (shader_cat.is_debug()) {
-      const char *resource = cgGetParameterResourceName(map[id._seqno]);
+      const char *resource = cgGetParameterResourceName(map[id._location]);
       if (resource != nullptr) {
         shader_cat.debug() << "Uniform parameter " << id._name
                            << " is bound to resource " << resource << "\n";
@@ -1278,7 +1280,7 @@ cg_compile_for(const ShaderCaps &caps, CGcontext context,
   }
 
   for (size_t i = 0; i < n_tex; ++i) {
-    const ShaderArgId &id = _tex_spec[i]._id;
+    const Parameter &id = _tex_spec[i]._id;
     CGparameter p = cgGetNamedParameter(programs_by_type[id._type], id._name.c_str());
 
     if (shader_cat.is_debug()) {
@@ -1288,11 +1290,11 @@ cg_compile_for(const ShaderCaps &caps, CGcontext context,
                           << " is bound to resource " << resource << "\n";
       }
     }
-    map[id._seqno] = p;
+    map[id._location] = p;
   }
 
   for (size_t i = 0; i < n_var; ++i) {
-    const ShaderArgId &id = _var_spec[i]._id;
+    const Parameter &id = _var_spec[i]._id;
     CGparameter p = cgGetNamedParameter(programs_by_type[id._type], id._name.c_str());
 
     const char *resource = cgGetParameterResourceName(p);
@@ -1309,21 +1311,21 @@ cg_compile_for(const ShaderCaps &caps, CGcontext context,
       }
     }
 
-    map[id._seqno] = p;
+    map[id._location] = p;
   }
 
   for (size_t i = 0; i < n_ptr; ++i) {
-    const ShaderArgId &id = _ptr_spec[i]._id;
-    map[id._seqno] = cgGetNamedParameter(programs_by_type[id._type], id._name.c_str());
+    const Parameter &id = _ptr_spec[i]._id;
+    map[id._location] = cgGetNamedParameter(programs_by_type[id._type], id._name.c_str());
 
     if (shader_cat.is_debug()) {
-      const char *resource = cgGetParameterResourceName(map[id._seqno]);
+      const char *resource = cgGetParameterResourceName(map[id._location]);
       if (resource != nullptr) {
         shader_cat.debug() << "Uniform ptr parameter " << id._name
                            << " is bound to resource " << resource << "\n";
       }
     }
-  }
+  }*/
 
   // Transfer ownership of the compiled shader.
   if (_cg_vprogram != 0) {
@@ -1722,8 +1724,8 @@ do_load_source(ShaderModule::Stage stage, const std::string &source, BamCacheRec
 bool Shader::
 link() {
   // Go through all the modules to fetch the parameters.
-  pmap<CPT_InternalName, const ShaderModule::Variable *> parameters_by_name;
-  pvector<const ShaderModule::Variable *> parameters;
+  pmap<CPT_InternalName, Parameter> parameters_by_name;
+  pvector<Parameter *> parameters;
   BitArray used_locations;
 
   for (COWPT(ShaderModule) &cow_module : _modules) {
@@ -1731,14 +1733,20 @@ link() {
     pmap<int, int> remap;
 
     for (const ShaderModule::Variable &var : module->_parameters) {
-      const auto result = parameters_by_name.insert({var.name, &var});
-      const auto &it = result.first;
+      Parameter param;
+      param._name = var.name;
+      param._type = var.type;
+      param._location = var._location;
+      param._stage_mask = (1 << (int)module->get_stage());
+
+      auto result = parameters_by_name.insert({var.name, param});
+      auto &it = result.first;
 
       if (!result.second) {
         // A variable by this name was already added by another stage.  Check
         // that it has the same type and location.
-        const ShaderModule::Variable &other = *(it->second);
-        if (other.type != var.type) {
+        Parameter &other = it->second;
+        if (other._type != var.type) {
           shader_cat.error()
             << "Parameter " << *var.name << " in module " << *module
             << " is declared in another stage with a mismatching type!\n";
@@ -1748,10 +1756,11 @@ link() {
         // Aggregate types don't seem to work properly when sharing uniforms
         // between shader stages.  Needs revisiting.
         if (!var.type->is_aggregate_type()) {
-          if (it->second->get_location() != var.get_location()) {
+          if (other._location != param._location) {
             // Different location; need to remap this.
-            remap[var.get_location()] = it->second->get_location();
+            remap[param._location] = other._location;
           }
+          other._stage_mask |= param._stage_mask;
           continue;
         }
       }
@@ -1772,11 +1781,12 @@ link() {
           }
           used_locations.set_range(location, num_locations);
           remap[var.get_location()] = location;
+          it->second._location = location;
         } else {
           used_locations.set_range(var.get_location(), num_locations);
         }
       }
-      parameters.push_back(&var);
+      parameters.push_back(&(it->second));
     }
 
     if (!remap.empty()) {
@@ -1799,8 +1809,8 @@ link() {
 
   // Now bind all of the parameters.
   bool success = true;
-  for (const ShaderModule::Variable *var : parameters) {
-    if (!bind_parameter(var->name, var->type, var->get_location())) {
+  for (const Parameter *param : parameters) {
+    if (!bind_parameter(*param)) {
       success = false;
     }
   }
@@ -1817,7 +1827,8 @@ bind_vertex_input(const InternalName *name, const ::ShaderType *type, int locati
 
   Shader::ShaderVarSpec bind;
   bind._id._name = name_str;
-  bind._id._seqno = location;
+  bind._id._type = type;
+  bind._id._location = location;
   bind._name = nullptr;
   bind._append_uv = -1;
 
@@ -1906,7 +1917,9 @@ bind_vertex_input(const InternalName *name, const ::ShaderType *type, int locati
  * Binds a uniform parameter with the given type.
  */
 bool Shader::
-bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
+bind_parameter(const Parameter &param) {
+  const InternalName *name = param._name;
+  const ::ShaderType *type = param._type;
   std::string name_str = name->get_name();
 
   // If this is an empty struct, we bind the individual members.
@@ -1914,27 +1927,39 @@ bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
   if (struct_type != nullptr && name_str.empty()) {
     bool success = true;
 
+    int location = param._location;
+
     for (size_t i = 0; i < struct_type->get_num_members(); ++i) {
       const ::ShaderType::Struct::Member &member = struct_type->get_member(i);
 
       // Recurse.
-      if (!bind_parameter(InternalName::make(member.name), member.type, location + i)) {
+      Parameter member_param(param);
+      member_param._name = member.name;
+      member_param._type = member.type;
+      member_param._location = location;
+      if (!bind_parameter(member_param)) {
         success = false;
       }
+
+      location += member.type->get_num_parameter_locations();
     }
 
     return success;
   }
 
   if (shader_cat.is_debug()) {
-    shader_cat.debug()
-      << "Binding parameter " << name_str << " with type " << *type
-      << " (location=" << location << ")\n";
+    int num_locations = type->get_num_parameter_locations();
+    if (num_locations < 2) {
+      shader_cat.debug()
+        << "Binding parameter " << name_str << " with type " << *type
+        << " (location=" << param._location << ")\n";
+    } else {
+      shader_cat.debug()
+        << "Binding parameter " << name_str << " with type " << *type
+        << " (location=" << param._location << ".."
+        << param._location + num_locations - 1 << ")\n";
+    }
   }
-
-  ShaderArgId arg_id;
-  arg_id._name = name_str;
-  arg_id._seqno = location;
 
   // Split it at the underscores.
   vector_string pieces;
@@ -1966,7 +1991,7 @@ bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
         matrix_name.compare(matrix_name.size() - 6, 6, "Matrix") == 0) {
 
       ShaderMatSpec bind;
-      bind._id = arg_id;
+      bind._id = param;
       bind._func = SMF_compose;
       bind._arg[0] = nullptr;
       bind._arg[1] = nullptr;
@@ -2061,9 +2086,9 @@ bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
 //          // hard to fix on the 1.10 branch.  We'll have a proper fix on the
 //          // master branch.
 //#ifdef __APPLE__
-//          bind._id._seqno = p + bind._index * 4;
+//          bind._id._location = p + bind._index * 4;
 //#else
-//          bind._id._seqno = p + bind._index;
+//          bind._id._location = p + bind._index;
 //#endif
 //          cp_add_mat_spec(bind);
 //        }
@@ -2078,10 +2103,15 @@ bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
     }
     if (pieces[1].compare(0, 7, "Texture") == 0) {
       ShaderTexSpec bind;
-      bind._id = arg_id;
+      bind._id = param;
       bind._part = STO_stage_i;
       bind._name = 0;
-      bind._desired_type = Texture::TT_2d_texture;
+
+      const ::ShaderType::SampledImage *sampled_image_type = type->as_sampled_image();
+      if (sampled_image_type == nullptr) {
+        return report_parameter_error(name, type, "expected sampled image");
+      }
+      bind._desired_type = sampled_image_type->get_texture_type();
 
       std::string tail;
       bind._stage = string_to_int(pieces[1].substr(7), tail);
@@ -2095,7 +2125,7 @@ bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
     }
     if (pieces[1] == "Material") {
       ShaderMatSpec bind;
-      bind._id = arg_id;
+      bind._id = param;
       bind._func = SMF_first;
       bind._part[0] = SMO_attr_material;
       bind._arg[0] = nullptr;
@@ -2111,9 +2141,10 @@ bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
       for (size_t i = 0; i < struct_type->get_num_members(); ++i) {
         const ::ShaderType::Struct::Member &member = struct_type->get_member(i);
 
-        CPT(InternalName) fqname = ((InternalName *)name.p())->append(member.name);
-        bind._id._seqno = arg_id._seqno + i;
+        CPT(InternalName) fqname = ((InternalName *)name)->append(member.name);
+        bind._id._location = param._location + i;
         bind._id._name = fqname->get_name();
+        bind._id._type = member.type;
 
         if (member.name == "baseColor") {
           if (expect_float_vector(fqname, member.type, 4, 4)) {
@@ -2194,7 +2225,7 @@ bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
         return false;
       }
       ShaderMatSpec bind;
-      bind._id = arg_id;
+      bind._id = param;
       bind._func = SMF_first;
       bind._part[0] = SMO_attr_colorscale;
       bind._arg[0] = nullptr;
@@ -2206,7 +2237,7 @@ bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
     }
     if (pieces[1] == "TexAlphaOnly") {
       ShaderMatSpec bind;
-      bind._id = arg_id;
+      bind._id = param;
       bind._func = SMF_first;
       bind._index = 0;
       bind._part[0] = SMO_tex_is_alpha_i;
@@ -2229,13 +2260,13 @@ bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
           return report_parameter_error(name, type, "expected 'ambient' member");
         }
 
-        CPT(InternalName) fqname = ((InternalName *)name.p())->append(member.name);
+        CPT(InternalName) fqname = ((InternalName *)name)->append(member.name);
         if (!expect_float_vector(fqname, member.type, 3, 4)) {
           return false;
         }
 
         ShaderMatSpec bind;
-        bind._id = arg_id;
+        bind._id = param;
         bind._func = SMF_first;
         bind._part[0] = SMO_light_ambient;
         bind._arg[0] = nullptr;
@@ -2263,29 +2294,33 @@ bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
         return report_parameter_error(name, type, "expected array of structs");
       }
 
+      int location = param._location;
+
       size_t num_members = struct_type->get_num_members();
       for (size_t i = 0; i < num_members; ++i) {
         const ::ShaderType::Struct::Member &member = struct_type->get_member(i);
 
-        CPT(InternalName) fqname = ((InternalName *)name.p())->append(member.name);
+        CPT(InternalName) fqname = ((InternalName *)name)->append(member.name);
 
         if (member.name == "shadowMap") {
           if (member.type->as_sampled_image() == nullptr) {
             return report_parameter_error(name, type, "expected sampler2D");
           }
           ShaderTexSpec bind;
-          bind._id = arg_id;
-          bind._id._name = fqname->get_name();
+          bind._id = param;
+          bind._id._name = fqname;
+          bind._id._location = location++;
           bind._part = STO_light_i_shadow_map;
           bind._desired_type = Texture::TT_2d_texture;
           for (bind._stage = 0; bind._stage < (int)array->get_num_elements(); ++bind._stage) {
             _tex_spec.push_back(bind);
-            bind._id._seqno += num_members;
+            bind._id._location += num_members;
           }
         } else {
           ShaderMatSpec bind;
-          bind._id = arg_id;
-          bind._id._name = fqname->get_name();
+          bind._id = param;
+          bind._id._name = fqname;
+          bind._id._location = location++;
           bind._func = SMF_first;
           bind._part[0] = SMO_light_source_i_attrib;
           bind._arg[0] = InternalName::make(member.name);
@@ -2344,11 +2379,9 @@ bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
           }
           for (bind._index = 0; bind._index < (int)array->get_num_elements(); ++bind._index) {
             cp_add_mat_spec(bind);
-            bind._id._seqno += num_members;
+            bind._id._location += num_members;
           }
         }
-
-        arg_id._seqno += 1;
       }
 
       return true;
@@ -2364,7 +2397,7 @@ bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
     // These inputs are supported by OpenSceneGraph.  We can support them as
     // well, to increase compatibility.
     ShaderMatSpec bind;
-    bind._id = arg_id;
+    bind._id = param;
     bind._arg[0] = nullptr;
     bind._arg[1] = nullptr;
 
@@ -2394,7 +2427,7 @@ bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
     }
     else if (pieces[1] == "FrameNumber") {
       if (type == ::ShaderType::int_type) {
-        _frame_number_loc = location;
+        _frame_number_loc = param._location;
         return true;
       } else {
         return report_parameter_error(name, type, "expected int");
@@ -2457,7 +2490,7 @@ bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
         return false;
       }
       ShaderMatSpec bind;
-      bind._id = arg_id;
+      bind._id = param;
       bind._piece = SMP_whole;
       bind._func = SMF_compose;
       bind._part[1] = SMO_light_source_i_attrib;
@@ -2501,7 +2534,7 @@ bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
       pieces[0] == "col3") {
 
     ShaderMatSpec bind;
-    bind._id = arg_id;
+    bind._id = param;
     bind._func = SMF_compose;
 
     if (pieces[0] == "trans" || pieces[0] == "tpose") {
@@ -2596,7 +2629,7 @@ bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
         return false;
       }
       ShaderMatSpec bind;
-      bind._id = arg_id;
+      bind._id = param;
       if (pieces[1] == "material") {
         if (!expect_float_matrix(name, type, 4, 4)) {
           return false;
@@ -2702,7 +2735,7 @@ bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
         return false;
       }
       ShaderMatSpec bind;
-      bind._id = arg_id;
+      bind._id = param;
       bind._piece = SMP_row3;
       bind._func = SMF_first;
       bind._part[0] = SMO_alight_x;
@@ -2720,7 +2753,7 @@ bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
         return false;
       }
       ShaderMatSpec bind;
-      bind._id = arg_id;
+      bind._id = param;
       bind._piece = SMP_row3;
       bind._func = SMF_first;
       bind._part[0] = SMO_satten_x;
@@ -2737,7 +2770,7 @@ bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
         return false;
       }
       ShaderMatSpec bind;
-      bind._id = arg_id;
+      bind._id = param;
       bind._piece = SMP_transpose;
       int next = 1;
       pieces.push_back("");
@@ -2778,7 +2811,7 @@ bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
         return false;
       }
       ShaderMatSpec bind;
-      bind._id = arg_id;
+      bind._id = param;
       bind._piece = SMP_whole;
       bind._func = SMF_first;
       bind._part[0] = SMO_texmat_i;
@@ -2797,7 +2830,7 @@ bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
         return false;
       }
       ShaderMatSpec bind;
-      bind._id = arg_id;
+      bind._id = param;
       bind._piece = SMP_row3;
       bind._func = SMF_first;
       bind._part[0] = SMO_texscale_i;
@@ -2816,7 +2849,7 @@ bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
         return false;
       }
       ShaderMatSpec bind;
-      bind._id = arg_id;
+      bind._id = param;
       bind._piece = SMP_row3;
       bind._func = SMF_first;
       bind._part[0] = SMO_texcolor_i;
@@ -2835,7 +2868,7 @@ bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
         return false;
       }
       ShaderMatSpec bind;
-      bind._id = arg_id;
+      bind._id = param;
       bind._piece = SMP_row3;
       bind._func = SMF_first;
       bind._part[0] = SMO_plane_x;
@@ -2853,7 +2886,7 @@ bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
         return false;
       }
       ShaderMatSpec bind;
-      bind._id = arg_id;
+      bind._id = param;
       bind._piece = SMP_row3;
       bind._func = SMF_first;
       bind._part[0] = SMO_clipplane_x;
@@ -2871,7 +2904,7 @@ bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
         return false;
       }
       ShaderMatSpec bind;
-      bind._id = arg_id;
+      bind._id = param;
       bind._piece = SMP_row3;
       bind._func = SMF_first;
       bind._part[1] = SMO_identity;
@@ -2913,7 +2946,7 @@ bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
         return report_parameter_error(name, type, "unrecognized parameter name");
       }
       ShaderTexSpec bind;
-      bind._id = arg_id;
+      bind._id = param;
       bind._name = nullptr;
       bind._stage = atoi(pieces[1].c_str());
       bind._part = STO_stage_i;
@@ -2938,7 +2971,7 @@ bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
         return report_parameter_error(name, type, "unrecognized parameter name");
       }
       ShaderTexSpec bind;
-      bind._id = arg_id;
+      bind._id = param;
       bind._name = nullptr;
       bind._stage = atoi(pieces[1].c_str());
       bind._part = STO_light_i_shadow_map;
@@ -2961,7 +2994,7 @@ bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
         return false;
       }
       ShaderMatSpec bind;
-      bind._id = arg_id;
+      bind._id = param;
       bind._piece = SMP_row3;
       bind._func = SMF_first;
       bind._part[0] = SMO_texpad_x;
@@ -2978,7 +3011,7 @@ bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
         return false;
       }
       ShaderMatSpec bind;
-      bind._id = arg_id;
+      bind._id = param;
       bind._piece = SMP_row3;
       bind._func = SMF_first;
       bind._part[0] = SMO_texpix_x;
@@ -3007,7 +3040,7 @@ bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
   // user-defined input.
   if (const ::ShaderType::SampledImage *sampler = type->as_sampled_image()) {
     ShaderTexSpec bind;
-    bind._id = arg_id;
+    bind._id = param;
     bind._part = STO_named_input;
     bind._name = name;
     bind._desired_type = sampler->get_texture_type();
@@ -3017,7 +3050,7 @@ bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
   }
   else if (const ::ShaderType::Image *image = type->as_image()) {
     ShaderImgSpec bind;
-    bind._id = arg_id;
+    bind._id = param;
     bind._name = name;
     bind._desired_type = image->get_texture_type();
     bind._writable = image->is_writable();
@@ -3027,7 +3060,7 @@ bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
   else if (const ::ShaderType::Matrix *matrix = type->as_matrix()) {
     if (matrix->get_num_columns() == 3 && matrix->get_num_rows() == 3) {
       ShaderMatSpec bind;
-      bind._id = arg_id;
+      bind._id = param;
       bind._piece = SMP_upper3x3;
       bind._func = SMF_first;
       bind._part[0] = SMO_mat_constant_x;
@@ -3039,7 +3072,7 @@ bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
     }
     else if (matrix->get_num_columns() == 4 && matrix->get_num_rows() == 4) {
       ShaderMatSpec bind;
-      bind._id = arg_id;
+      bind._id = param;
       bind._piece = SMP_whole;
       bind._func = SMF_first;
       bind._part[0] = SMO_mat_constant_x;
@@ -3054,10 +3087,12 @@ bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
     // Is this a struct?  If so, bind the individual members.
     bool success = true;
 
+    int location = param._location;
+
     for (size_t i = 0; i < struct_type->get_num_members(); ++i) {
       const ::ShaderType::Struct::Member &member = struct_type->get_member(i);
 
-      PT(InternalName) fqname = ((InternalName *)name.p())->append(member.name);
+      PT(InternalName) fqname = ((InternalName *)name)->append(member.name);
 
       // Numeric struct members under GLSL may need a special treatment.
       ScalarType scalar_type;
@@ -3070,8 +3105,8 @@ bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
         // light parameter.  It might also just be a custom struct parameter.
         // We can't know yet, so we always have to handle it specially.
         ShaderMatSpec bind;
-        bind._id = arg_id;
-        bind._id._seqno += i;
+        bind._id = param;
+        bind._id._location = location;
         if (member.name == "shadowMatrix" && dim[1] == 4 && dim[2] == 4) {
           // Special exception for shadowMatrix, which is deprecated because it
           // includes the model transformation.  It is far more efficient to do
@@ -3089,7 +3124,7 @@ bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
           bind._part[0] = SMO_model_to_apiview;
           bind._arg[0] = nullptr;
           bind._part[1] = SMO_mat_constant_x_attrib;
-          bind._arg[1] = ((InternalName *)name.p())->append("shadowViewMatrix");
+          bind._arg[1] = ((InternalName *)name)->append("shadowViewMatrix");
         }
         else {
           bind._func = SMF_first;
@@ -3121,19 +3156,25 @@ bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
           bind._arg[1] = nullptr;
         }
         cp_add_mat_spec(bind);
-        continue;
       }
-
-      // Otherwise, recurse.
-      if (!bind_parameter(fqname, member.type, location + i)) {
-        success = false;
+      else {
+        // Otherwise, recurse.
+        Parameter member_param(param);
+        member_param._name = fqname;
+        member_param._type = member.type;
+        member_param._location = location;
+        if (!bind_parameter(member_param)) {
+          success = false;
+        }
       }
+      location += member.type->get_num_parameter_locations();
     }
 
     return success;
   }
   else if (const ::ShaderType::Array *array_type = type->as_array()) {
     // Check if this is an array of structs.
+    int location = param._location;
     if (const ::ShaderType::Struct *struct_type = array_type->get_element_type()->as_struct()) {
       bool success = true;
 
@@ -3152,10 +3193,15 @@ bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
           const ::ShaderType::Struct::Member &member = struct_type->get_member(mi);
 
           // Recurse.
-          PT(InternalName) fqname = elemname->append(member.name);
-          if (!bind_parameter(fqname, member.type, location++)) {
+          Parameter member_param(param);
+          member_param._name = elemname->append(member.name);
+          member_param._type = member.type;
+          member_param._location = location;
+          if (!bind_parameter(member_param)) {
             success = false;
           }
+
+          location += member.type->get_num_parameter_locations();
         }
       }
       return success;
@@ -3164,14 +3210,8 @@ bind_parameter(CPT_InternalName name, const ::ShaderType *type, int location) {
 
   ShaderPtrSpec bind;
   if (type->as_scalar_type(bind._type, bind._dim[0], bind._dim[1], bind._dim[2])) {
-    bind._id = arg_id;
+    bind._id = param;
     bind._arg = std::move(name);
-
-    // We specify SSD_frame because a PTA may be modified by the app from
-    // frame to frame, and we have no way to know.  So, we must respecify a
-    // PTA at least once every frame.
-    bind._dep[0] = SSD_general | SSD_shaderinputs | SSD_frame;
-    bind._dep[1] = SSD_NONE;
 
     //if (k_prefix) {
     //  // Backward compatibility, disables certain checks.

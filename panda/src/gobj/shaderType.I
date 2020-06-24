@@ -142,7 +142,24 @@ add_member(const ShaderType *type, std::string name) {
   Member member;
   member.type = type;
   member.name = std::move(name);
+  member.offset = _members.empty() ? 0 : _members.back().offset + _members.back().type->get_size_bytes();
   _members.push_back(std::move(member));
+}
+
+/**
+ * Adds a member to this struct with a given offset.
+ */
+INLINE void ShaderType::Struct::
+add_member(const ShaderType *type, std::string name, uint32_t offset) {
+  pvector<Member>::iterator it = _members.begin();
+  while (it != _members.end() && it->offset < offset) {
+    ++it;
+  }
+  Member member;
+  member.type = type;
+  member.name = std::move(name);
+  member.offset = offset;
+  _members.insert(it, std::move(member));
 }
 
 /**
@@ -174,8 +191,9 @@ get_num_elements() const {
  * Constructs an image type.
  */
 INLINE ShaderType::Image::
-Image(Texture::TextureType type, Access access) :
+Image(Texture::TextureType type, ScalarType sampled_type, Access access) :
   _texture_type(type),
+  _sampled_type(sampled_type),
   _access(access) {
 }
 
@@ -185,6 +203,14 @@ Image(Texture::TextureType type, Access access) :
 INLINE Texture::TextureType ShaderType::Image::
 get_texture_type() const {
   return _texture_type;
+}
+
+/**
+ * Returns the type of scalar that sampling this image produces.
+ */
+INLINE ShaderType::ScalarType ShaderType::Image::
+get_sampled_type() const {
+  return _sampled_type;
 }
 
 /**
@@ -207,8 +233,9 @@ is_writable() const {
  * Constructs a sampled image type.
  */
 INLINE ShaderType::SampledImage::
-SampledImage(Texture::TextureType type) :
-  _texture_type(type) {
+SampledImage(Texture::TextureType type, ScalarType sampled_type) :
+  _texture_type(type),
+  _sampled_type(sampled_type) {
 }
 
 /**
@@ -217,4 +244,12 @@ SampledImage(Texture::TextureType type) :
 INLINE Texture::TextureType ShaderType::SampledImage::
 get_texture_type() const {
   return _texture_type;
+}
+
+/**
+ * Returns the type of scalar that sampling this image produces.
+ */
+INLINE ShaderType::ScalarType ShaderType::SampledImage::
+get_sampled_type() const {
+  return _sampled_type;
 }

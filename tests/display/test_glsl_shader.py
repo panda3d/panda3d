@@ -430,6 +430,47 @@ def test_glsl_struct(gsg):
     })
 
 
+def test_glsl_struct_nested(gsg):
+    preamble = """
+    struct TestSubStruct1 {
+        float a;
+        float b;
+    };
+    struct TestSubStruct2 {
+        float unused;
+        sampler2D a;
+        vec2 b;
+    };
+    uniform struct TestStruct {
+        vec3 a;
+        TestSubStruct1 b;
+        TestSubStruct2 c;
+        float d;
+    } test;
+    """
+    code = """
+    assert(test.a == vec3(1, 2, 3));
+    assert(test.b.a == 4);
+    assert(test.b.b == 5);
+    assert(texture(test.c.a, vec2(0, 0)).r == 6);
+    assert(test.c.b == vec2(7, 8));
+    assert(test.d == 9);
+    """
+    tex_c_a = core.Texture()
+    tex_c_a.setup_2d_texture(1, 1, core.Texture.T_float, core.Texture.F_r32)
+    tex_c_a.set_clear_color((6, 0, 0, 0))
+    run_glsl_test(gsg, code, preamble, {
+        'test.unused': 0,
+        'test.a': (1, 2, 3),
+        'test.b.a': 4,
+        'test.b.b': 5,
+        'test.c.unused': 0,
+        'test.c.a': tex_c_a,
+        'test.c.b': (7, 8),
+        'test.d': 9,
+    })
+
+
 def test_glsl_struct_array(gsg):
     preamble = """
     uniform struct TestStruct {

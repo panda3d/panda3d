@@ -14,7 +14,7 @@
 /**
  * Returns a pointer to the raw words.
  */
-const uint32_t *ShaderModuleSpirV::
+INLINE const uint32_t *ShaderModuleSpirV::
 get_data() const {
   return _instructions.get_data();
 }
@@ -22,9 +22,39 @@ get_data() const {
 /**
  * Returns the number of words in the module.
  */
-size_t ShaderModuleSpirV::
+INLINE size_t ShaderModuleSpirV::
 get_data_size() const {
   return _instructions.get_data_size();
+}
+
+/**
+ * Returns true if this is a debug instruction.
+ */
+INLINE bool ShaderModuleSpirV::Instruction::
+is_debug() const {
+  return
+    opcode == spv::OpSourceContinued ||
+    opcode == spv::OpSource ||
+    opcode == spv::OpSourceExtension ||
+    opcode == spv::OpName ||
+    opcode == spv::OpMemberName ||
+    opcode == spv::OpString ||
+    opcode == spv::OpLine ||
+    opcode == spv::OpNoLine ||
+    opcode == spv::OpModuleProcessed;
+}
+
+/**
+ * Returns true if this is an annotation instruction.
+ */
+INLINE bool ShaderModuleSpirV::Instruction::
+is_annotation() const {
+  return
+    opcode == spv::OpDecorate ||
+    opcode == spv::OpMemberDecorate ||
+    opcode == spv::OpGroupDecorate ||
+    opcode == spv::OpGroupMemberDecorate ||
+    opcode == spv::OpDecorationGroup;
 }
 
 /**
@@ -134,6 +164,35 @@ begin_annotations() {
 }
 
 /**
+ * Returns an iterator to the end of the annotations block.
+ */
+INLINE ShaderModuleSpirV::InstructionIterator ShaderModuleSpirV::InstructionStream::
+end_annotations() {
+  iterator it;
+  for (it = begin_annotations(); it != end(); ++it) {
+    if (!(*it).is_annotation()) {
+      break;
+    }
+  }
+  return it;
+}
+
+/**
+ * Returns an iterator to the beginning of the functions block.
+ */
+INLINE ShaderModuleSpirV::InstructionIterator ShaderModuleSpirV::InstructionStream::
+begin_functions() {
+  iterator it;
+  for (it = begin(); it != end(); ++it) {
+    spv::Op opcode = (*it).opcode;
+    if (opcode == spv::OpFunction) {
+      break;
+    }
+  }
+  return it;
+}
+
+/**
  * Returns an iterator past the end of the instruction stream.
  */
 INLINE ShaderModuleSpirV::InstructionIterator ShaderModuleSpirV::InstructionStream::
@@ -147,7 +206,7 @@ end() {
  * instruction.
  */
 INLINE ShaderModuleSpirV::InstructionIterator ShaderModuleSpirV::InstructionStream::
-insert(iterator &it, spv::Op opcode, std::initializer_list<uint32_t > args) {
+insert(const iterator &it, spv::Op opcode, std::initializer_list<uint32_t > args) {
   return insert(it, opcode, args.begin(), args.size());
 }
 
@@ -157,7 +216,7 @@ insert(iterator &it, spv::Op opcode, std::initializer_list<uint32_t > args) {
  * instruction.
  */
 INLINE ShaderModuleSpirV::InstructionIterator ShaderModuleSpirV::InstructionStream::
-insert(iterator &it, spv::Op opcode, const uint32_t *args, uint16_t nargs) {
+insert(const iterator &it, spv::Op opcode, const uint32_t *args, uint16_t nargs) {
   ptrdiff_t offset = it._words - &_words[0];
 
   // If this triggers, you used an invalid iterator.
@@ -170,11 +229,41 @@ insert(iterator &it, spv::Op opcode, const uint32_t *args, uint16_t nargs) {
 }
 
 /**
+ * Inserts a new instruction before the given other one.  Invalidates existing
+ * iterators, but returns a new one pointing to the location of the inserted
+ * instruction.
+ */
+INLINE ShaderModuleSpirV::InstructionIterator ShaderModuleSpirV::InstructionStream::
+insert(const iterator &it, const Instruction &op) {
+  return insert(it, op.opcode, op.args, op.nargs);
+}
+
+/**
+ * Inserts the given argument of the given instruction.
+ */
+INLINE ShaderModuleSpirV::InstructionIterator ShaderModuleSpirV::InstructionStream::
+insert_arg(const iterator &it, uint16_t arg_index, uint32_t arg) {
+  ptrdiff_t offset = it._words - &_words[0];
+
+  // If this triggers, you used an invalid iterator.
+  assert(offset >= 0 && (size_t)offset <= _words.size());
+
+  uint16_t wcount = _words[offset] >> spv::WordCountShift;
+  nassertr(arg_index < wcount - 1, it);
+
+  spv::Op op = (spv::Op)(_words[offset] & spv::OpCodeMask);
+  _words[offset] = op | ((wcount + 1) << spv::WordCountShift);
+  _words.insert(_words.begin() + offset + 1 + arg_index, arg);
+
+  return iterator(&_words[offset]);
+}
+
+/**
  * Erases the given instruction.  Invalidates iterators at or after the
  * insertion point, but returns a new iterator pointing to the next element.
  */
 INLINE ShaderModuleSpirV::InstructionIterator ShaderModuleSpirV::InstructionStream::
-erase(iterator &it) {
+erase(const iterator &it) {
   ptrdiff_t offset = it._words - &_words[0];
 
   // If this triggers, you used an invalid iterator.
@@ -190,7 +279,7 @@ erase(iterator &it) {
  * Erases the given argument of the given instruction.
  */
 INLINE ShaderModuleSpirV::InstructionIterator ShaderModuleSpirV::InstructionStream::
-erase_arg(iterator &it, uint16_t arg) {
+erase_arg(const iterator &it, uint16_t arg) {
   ptrdiff_t offset = it._words - &_words[0];
 
   // If this triggers, you used an invalid iterator.
