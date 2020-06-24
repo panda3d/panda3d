@@ -141,6 +141,15 @@ PUBLISHED:
   INLINE const std::string &get_id() const;
   INLINE void set_id(const std::string &id);
 
+  MAKE_PROPERTY(name, get_name, set_name);
+  MAKE_PROPERTY2(frame, has_frame, get_frame, set_frame, clear_frame);
+  MAKE_PROPERTY(state, get_state, set_state);
+  MAKE_PROPERTY(active, get_active, set_active);
+  MAKE_PROPERTY(focus, get_focus, set_focus);
+  MAKE_PROPERTY(background_focus, get_background_focus, set_background_focus);
+  MAKE_PROPERTY(suppress_flags, get_suppress_flags, set_suppress_flags);
+  MAKE_PROPERTY(id, get_id, set_id);
+
   INLINE static std::string get_enter_prefix();
   INLINE static std::string get_exit_prefix();
   INLINE static std::string get_within_prefix();
