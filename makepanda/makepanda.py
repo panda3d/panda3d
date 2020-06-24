@@ -4490,6 +4490,7 @@ if (PkgSkip("NAVIGATION") == 0):
   TargetAdd('libp3navigation.dll', input='p3navigation_RecastRasterization.obj')
   TargetAdd('libp3navigation.dll', input='p3navigation_RecastRegion.obj')
   TargetAdd('libp3navigation.dll', input=COMMON_PANDA_LIBS)
+  OPTS=['DIR:panda/src/navigation', 'BUILDING:NAVIGATION']
   TargetAdd('libp3navigation.dll', opts=OPTS)
 
   OPTS=['DIR:panda/src/navigation']
