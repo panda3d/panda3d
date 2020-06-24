@@ -1196,7 +1196,6 @@ r_define_type(InstructionIterator &it, const ShaderType *type) {
       0, // Access qualifier
     };
 
-    Texture::TextureType texture_type;
     switch (image_type->get_texture_type()) {
     case Texture::TT_1d_texture:
       args[2] = spv::Dim1D;

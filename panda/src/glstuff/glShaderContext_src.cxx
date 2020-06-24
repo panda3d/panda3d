@@ -41,223 +41,6 @@ using std::string;
 TypeHandle CLP(ShaderContext)::_type_handle;
 
 /**
- * The Panda CG shader syntax defines a useful set of shorthand notations for
- * setting nodepath properties as shaderinputs.  For example, float4 mspos_XXX
- * refers to nodepath XXX's position in model space.  This function is a rough
- * attempt to reimplement some of the shorthand notations for GLSL. The code
- * is ~99% composed of excerpts dealing with matrix shaderinputs from
- * Shader::compile_parameter.
- *
- * Given a uniform variable name queried from the compiled shader passed in
- * via arg_id, 1) parse the name 2a) if the name refers to a Panda shorthand
- * notation push the appropriate matrix into shader._mat_spec returns True 2b)
- * If the name doesn't refer to a Panda shorthand notation returns False
- *
- * The boolean return is used to notify down-river processing whether the
- * shader var/parm was actually picked up and the appropriate ShaderMatSpec
- * pushed onto _mat_spec.
- */
-bool CLP(ShaderContext)::
-parse_and_set_short_hand_shader_vars(Shader::Parameter &arg_id, GLenum param_type, GLint param_size, Shader *objShader) {
-  /*Shader::ShaderArgInfo p;
-  p._id = arg_id;
-
-  string basename(arg_id._name);
-
-  // Split it at the underscores.
-  vector_string pieces;
-  tokenize(basename, pieces, "_");
-
-  if (pieces.size() == 0 || pieces[0].size() < 3) {
-    return false;
-  }
-
-  // mstrans, wstrans, vstrans, cstrans, mspos, wspos, vspos, cspos
-  if (strcmp(pieces[0].c_str() + 1, "strans") == 0 ||
-      strcmp(pieces[0].c_str() + 1, "spos") == 0) {
-    pieces.push_back("to");
-
-    switch (pieces[0][0]) {
-    case 'm':
-      pieces.push_back("model");
-      break;
-    case 'w':
-      pieces.push_back("world");
-      break;
-    case 'v':
-      pieces.push_back("view");
-      break;
-    case 'c':
-      pieces.push_back("clip");
-      break;
-    default:
-      return false;
-    }
-    if (strcmp(pieces[0].c_str() + 1, "strans") == 0) {
-      pieces[0] = "trans";
-    } else {
-      pieces[0] = "row3";
-    }
-  // mat_modelproj et al
-  } else if (pieces[0].size() == 3 &&
-             (pieces[0] == "mat" || pieces[0] == "inv" ||
-              pieces[0] == "tps" || pieces[0] == "itp")) {
-    if (!objShader->cp_errchk_parameter_words(p, 2)) {
-      return false;
-    }
-    string trans = pieces[0];
-    string matrix = pieces[1];
-    pieces.clear();
-    if (matrix == "modelview") {
-      tokenize("trans_model_to_apiview", pieces, "_");
-    } else if (matrix == "projection") {
-      tokenize("trans_apiview_to_apiclip", pieces, "_");
-    } else if (matrix == "modelproj") {
-      tokenize("trans_model_to_apiclip", pieces, "_");
-    } else {
-      objShader->cp_report_error(p,"unrecognized matrix name");
-      return false;
-    }
-    if (trans == "mat") {
-      pieces[0] = "trans";
-    } else if (trans == "inv") {
-      string t = pieces[1];
-      pieces[1] = pieces[3];
-      pieces[3] = t;
-    } else if (trans == "tps") {
-      pieces[0] = "tpose";
-    } else if (trans == "itp") {
-      string t = pieces[1];
-      pieces[1] = pieces[3];
-      pieces[3] = t;
-      pieces[0] = "tpose";
-    }
-  }
-
-  // Implement the transform-matrix generator.
-  if ((pieces[0] == "trans") ||
-      (pieces[0] == "tpose") ||
-      (pieces[0] == "row0") ||
-      (pieces[0] == "row1") ||
-      (pieces[0] == "row2") ||
-      (pieces[0] == "row3") ||
-      (pieces[0] == "col0") ||
-      (pieces[0] == "col1") ||
-      (pieces[0] == "col2") ||
-      (pieces[0] == "col3")) {
-
-    Shader::ShaderMatSpec bind;
-    bind._id = arg_id;
-    bind._func = Shader::SMF_compose;
-
-    int next = 1;
-    pieces.push_back("");
-
-    // Decide whether this is a matrix or vector.
-    if (param_type == GL_FLOAT_MAT4) {
-      if      (pieces[0] == "trans") bind._piece = Shader::SMP_whole;
-      else if (pieces[0] == "tpose") bind._piece = Shader::SMP_transpose;
-      else {
-        GLCAT.error() << basename << " should be vec4, not mat3\n";
-        return false;
-      }
-    } else if (param_type == GL_FLOAT_MAT3) {
-      if      (pieces[0] == "trans") bind._piece = Shader::SMP_upper3x3;
-      else if (pieces[0] == "tpose") bind._piece = Shader::SMP_transpose3x3;
-      else {
-        GLCAT.error() << basename << " should be vec4, not mat3\n";
-        return false;
-      }
-    } else if (param_type == GL_FLOAT_VEC4) {
-      if      (pieces[0] == "trans") bind._piece = Shader::SMP_col0;
-      else if (pieces[0] == "tpose") bind._piece = Shader::SMP_row0;
-      else if (pieces[0] == "row0")  bind._piece = Shader::SMP_row0;
-      else if (pieces[0] == "row1")  bind._piece = Shader::SMP_row1;
-      else if (pieces[0] == "row2")  bind._piece = Shader::SMP_row2;
-      else if (pieces[0] == "row3")  bind._piece = Shader::SMP_row3;
-      else if (pieces[0] == "col0")  bind._piece = Shader::SMP_col0;
-      else if (pieces[0] == "col1")  bind._piece = Shader::SMP_col1;
-      else if (pieces[0] == "col2")  bind._piece = Shader::SMP_col2;
-      else if (pieces[0] == "col3")  bind._piece = Shader::SMP_col3;
-      else {
-        GLCAT.error() << basename << " should be mat4, not vec4\n";
-        return false;
-      }
-    } else if (pieces[0] == "row3") {
-      // We'll permit this too, simply because we can support it.
-      switch (param_type) {
-      case GL_FLOAT:
-        bind._piece = Shader::SMP_row3x1;
-        break;
-      case GL_FLOAT_VEC2:
-        bind._piece = Shader::SMP_row3x2;
-        break;
-      case GL_FLOAT_VEC3:
-        bind._piece = Shader::SMP_row3x3;
-        break;
-      default:
-        GLCAT.error() << basename << " should be vec4\n";
-        return false;
-      }
-    } else if (pieces[0] == "trans" || pieces[0] == "tpose") {
-      GLCAT.error() << basename << " should be mat4 or mat3\n";
-      return false;
-    } else {
-      GLCAT.error() << basename << " should be vec4\n";
-      return false;
-    }
-
-    if (!objShader->cp_parse_coord_sys(p, pieces, next, bind, true)) {
-      return false;
-    }
-    if (!objShader->cp_parse_delimiter(p, pieces, next)) {
-      return false;
-    }
-    if (!objShader->cp_parse_coord_sys(p, pieces, next, bind, false)) {
-      return false;
-    }
-    if (!objShader->cp_parse_eol(p, pieces, next)) {
-      return false;
-    }
-
-    // clip == apiclip in OpenGL, and the apiclip matrices are cached.
-    if (bind._part[0] == Shader::SMO_view_to_clip) {
-      bind._part[0] = Shader::SMO_view_to_apiclip;
-    } else if (bind._part[0] == Shader::SMO_clip_to_view) {
-      bind._part[0] = Shader::SMO_apiclip_to_view;
-    }
-    if (bind._part[1] == Shader::SMO_view_to_clip) {
-      bind._part[1] = Shader::SMO_view_to_apiclip;
-    } else if (bind._part[1] == Shader::SMO_clip_to_view) {
-      bind._part[1] = Shader::SMO_apiclip_to_view;
-    }
-
-    objShader->cp_add_mat_spec(bind);
-
-    if (param_size > 1) {
-      // We support arrays of rows and arrays of columns, so we can run the
-      // GLSL shaders that cgc spits out.
-      if (bind._piece == Shader::SMP_row0 || bind._piece == Shader::SMP_col0) {
-        if (param_size > 4) {
-          GLCAT.warning() << basename << "[" << param_size << "] is too large, only the first four elements will be defined\n";
-          param_size = 4;
-        }
-        for (int i = 1; i < param_size; ++i) {
-          bind._id._location += 1;
-          bind._piece = (Shader::ShaderMatPiece)((int)bind._piece + 1);
-          objShader->cp_add_mat_spec(bind);
-        }
-      } else {
-        GLCAT.warning() << basename << "[" << param_size << "] should not be an array, only the first element will be defined\n";
-      }
-    }
-
-    return true;
-  }*/
-  return false;
-}
-
-/**
  * xyz
  */
 CLP(ShaderContext)::
@@ -815,17 +598,22 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
   }
 
   // Strip off [0] suffix that some drivers append to arrays.
+  bool is_array = false;
   size_t size = strlen(name_buffer);
   if (size > 3 && strncmp(name_buffer + (size - 3), "[0]", 3) == 0) {
     size -= 3;
     name_buffer[size] = 0;
+    is_array = true;
   }
 
-  string param_name(name_buffer);
+  Shader::Parameter param;
+  param._name = InternalName::make(name_buffer);
+  param._type = get_param_type(param_type);
+  param._location = p;
 
-  Shader::Parameter arg_id;
-  arg_id._name = param_name;
-  arg_id._location = p;
+  if (is_array || param_size > 1) {
+    param._type = ShaderType::register_type(ShaderType::Array(param._type, param_size));
+  }
 
   // Check if it has a p3d_ prefix - if so, assign special meaning.
   if (strncmp(name_buffer, "p3d_", 4) == 0) {
@@ -853,7 +641,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
     // supposed to be a matrix input.
     if (size > 6 && matrix_name.compare(size - 6, 6, "Matrix") == 0) {
       Shader::ShaderMatSpec bind;
-      bind._id = arg_id;
+      bind._id = param;
       bind._func = Shader::SMF_compose;
       if (param_type == GL_FLOAT_MAT3) {
         if (transpose) {
@@ -883,20 +671,20 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
           bind._part[0] = Shader::SMO_model_to_apiview;
           bind._part[1] = Shader::SMO_apiview_to_apiclip;
         }
-
-      } else if (matrix_name == "ModelViewMatrix") {
+      }
+      else if (matrix_name == "ModelViewMatrix") {
         bind._func = Shader::SMF_first;
         bind._part[0] = inverse ? Shader::SMO_apiview_to_model
                                 : Shader::SMO_model_to_apiview;
         bind._part[1] = Shader::SMO_identity;
-
-      } else if (matrix_name == "ProjectionMatrix") {
+      }
+      else if (matrix_name == "ProjectionMatrix") {
         bind._func = Shader::SMF_first;
         bind._part[0] = inverse ? Shader::SMO_apiclip_to_apiview
                                 : Shader::SMO_apiview_to_apiclip;
         bind._part[1] = Shader::SMO_identity;
-
-      } else if (matrix_name == "NormalMatrix") {
+      }
+      else if (matrix_name == "NormalMatrix") {
         // This is really the upper 3x3 of the
         // ModelViewMatrixInverseTranspose.
         bind._func = Shader::SMF_first;
@@ -907,8 +695,8 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
         if (param_type != GL_FLOAT_MAT3) {
           GLCAT.warning() << "p3d_NormalMatrix input should be mat3, not mat4!\n";
         }
-
-      } else if (matrix_name == "ModelMatrix") {
+      }
+      else if (matrix_name == "ModelMatrix") {
         if (inverse) {
           bind._part[0] = Shader::SMO_world_to_view;
           bind._part[1] = Shader::SMO_view_to_model;
@@ -916,8 +704,8 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
           bind._part[0] = Shader::SMO_model_to_view;
           bind._part[1] = Shader::SMO_view_to_world;
         }
-
-      } else if (matrix_name == "ViewMatrix") {
+      }
+      else if (matrix_name == "ViewMatrix") {
         if (inverse) {
           bind._part[0] = Shader::SMO_apiview_to_view;
           bind._part[1] = Shader::SMO_view_to_world;
@@ -925,8 +713,8 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
           bind._part[0] = Shader::SMO_world_to_view;
           bind._part[1] = Shader::SMO_view_to_apiview;
         }
-
-      } else if (matrix_name == "ViewProjectionMatrix") {
+      }
+      else if (matrix_name == "ViewProjectionMatrix") {
         if (inverse) {
           bind._part[0] = Shader::SMO_apiclip_to_view;
           bind._part[1] = Shader::SMO_view_to_world;
@@ -934,8 +722,8 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
           bind._part[0] = Shader::SMO_world_to_view;
           bind._part[1] = Shader::SMO_view_to_apiclip;
         }
-
-      } else if (matrix_name == "TextureMatrix") {
+      }
+      else if (matrix_name == "TextureMatrix") {
         // We may support 2-D texmats later, but let's make sure that people
         // don't think they can just use a mat3 to get the 2-D version.
         if (param_type != GL_FLOAT_MAT4) {
@@ -964,8 +752,8 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
           _shader->cp_add_mat_spec(bind);
         }
         return;
-
-      } else if (matrix_name.size() > 15 &&
+      }
+      else if (matrix_name.size() > 15 &&
                  matrix_name.substr(0, 12) == "LightSource[" &&
                  sscanf(matrix_name.c_str(), "LightSource[%d].%s", &bind._index, name_buffer) == 2) {
         // A matrix member of a p3d_LightSource struct.
@@ -980,8 +768,8 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
           bind._arg[0] = InternalName::make(name_buffer);
           bind._part[1] = Shader::SMO_identity;
           bind._arg[1] = nullptr;
-
-        } else if (strncmp(name_buffer, "shadowMatrix", 127) == 0) {
+        }
+        else if (strncmp(name_buffer, "shadowMatrix", 127) == 0) {
           // Only supported for backward compatibility: includes the model
           // matrix.  Not very efficient to do this.
           bind._func = Shader::SMF_compose;
@@ -1012,7 +800,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
     }
     if (size > 7 && noprefix.substr(0, 7) == "Texture") {
       Shader::ShaderTexSpec bind;
-      bind._id = arg_id;
+      bind._id = param;
       bind._part = Shader::STO_stage_i;
       bind._name = 0;
 
@@ -1021,7 +809,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       if (!tail.empty()) {
         GLCAT.error()
           << "Error parsing shader input name: unexpected '"
-          << tail << "' in '" << param_name << "'\n";
+          << tail << "' in '" << name_buffer << "'\n";
         return;
       }
 
@@ -1030,13 +818,13 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
         _shader->_tex_spec.push_back(bind);
       } else {
         GLCAT.error()
-          << "Could not bind texture input " << param_name << "\n";
+          << "Could not bind texture input " << name_buffer << "\n";
       }
       return;
     }
     if (size > 9 && noprefix.substr(0, 9) == "Material.") {
       Shader::ShaderMatSpec bind;
-      bind._id = arg_id;
+      bind._id = param;
       bind._func = Shader::SMF_first;
       bind._part[0] = Shader::SMO_attr_material;
       bind._arg[0] = nullptr;
@@ -1052,8 +840,8 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
         bind._piece = Shader::SMP_row0;
         _shader->cp_add_mat_spec(bind);
         return;
-
-      } else if (noprefix == "Material.ambient") {
+      }
+      else if (noprefix == "Material.ambient") {
         if (param_type != GL_FLOAT_VEC4) {
           GLCAT.error()
             << "p3d_Material.ambient should be vec4\n";
@@ -1061,8 +849,8 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
         bind._piece = Shader::SMP_row0;
         _shader->cp_add_mat_spec(bind);
         return;
-
-      } else if (noprefix == "Material.diffuse") {
+      }
+      else if (noprefix == "Material.diffuse") {
         if (param_type != GL_FLOAT_VEC4) {
           GLCAT.error()
             << "p3d_Material.diffuse should be vec4\n";
@@ -1070,8 +858,8 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
         bind._piece = Shader::SMP_row1;
         _shader->cp_add_mat_spec(bind);
         return;
-
-      } else if (noprefix == "Material.emission") {
+      }
+      else if (noprefix == "Material.emission") {
         if (param_type != GL_FLOAT_VEC4) {
           GLCAT.error()
             << "p3d_Material.emission should be vec4\n";
@@ -1079,8 +867,8 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
         bind._piece = Shader::SMP_row2;
         _shader->cp_add_mat_spec(bind);
         return;
-
-      } else if (noprefix == "Material.specular") {
+      }
+      else if (noprefix == "Material.specular") {
         if (param_type != GL_FLOAT_VEC3) {
           GLCAT.error()
             << "p3d_Material.specular should be vec3\n";
@@ -1088,8 +876,8 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
         bind._piece = Shader::SMP_row3x3;
         _shader->cp_add_mat_spec(bind);
         return;
-
-      } else if (noprefix == "Material.shininess") {
+      }
+      else if (noprefix == "Material.shininess") {
         if (param_type != GL_FLOAT) {
           GLCAT.error()
             << "p3d_Material.shininess should be float\n";
@@ -1097,8 +885,8 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
         bind._piece = Shader::SMP_cell15;
         _shader->cp_add_mat_spec(bind);
         return;
-
-      } else if (noprefix == "Material.roughness") {
+      }
+      else if (noprefix == "Material.roughness") {
         if (param_type != GL_FLOAT) {
           GLCAT.error()
             << "p3d_Material.roughness should be float\n";
@@ -1107,8 +895,8 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
         bind._piece = Shader::SMP_cell15;
         _shader->cp_add_mat_spec(bind);
         return;
-
-      } else if (noprefix == "Material.metallic") {
+      }
+      else if (noprefix == "Material.metallic") {
         if (param_type != GL_FLOAT && param_type != GL_BOOL) {
           GLCAT.error()
             << "p3d_Material.metallic should be bool or float\n";
@@ -1117,8 +905,8 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
         bind._piece = Shader::SMP_row3x1;
         _shader->cp_add_mat_spec(bind);
         return;
-
-      } else if (noprefix == "Material.refractiveIndex") {
+      }
+      else if (noprefix == "Material.refractiveIndex") {
         if (param_type != GL_FLOAT) {
           GLCAT.error()
             << "p3d_Material.refractiveIndex should be float\n";
@@ -1131,7 +919,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
     }
     if (noprefix == "ColorScale") {
       Shader::ShaderMatSpec bind;
-      bind._id = arg_id;
+      bind._id = param;
       bind._func = Shader::SMF_first;
       bind._part[0] = Shader::SMO_attr_colorscale;
       bind._arg[0] = nullptr;
@@ -1152,7 +940,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
     }
     if (noprefix == "Color") {
       Shader::ShaderMatSpec bind;
-      bind._id = arg_id;
+      bind._id = param;
       bind._func = Shader::SMF_first;
       bind._part[0] = Shader::SMO_attr_color;
       bind._arg[0] = nullptr;
@@ -1179,7 +967,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       }
       for (int i = 0; i < param_size; ++i) {
         Shader::ShaderMatSpec bind;
-        bind._id = arg_id;
+        bind._id = param;
         bind._id._location = p + i;
         bind._piece = Shader::SMP_row3;
         bind._func = Shader::SMF_first;
@@ -1194,7 +982,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
     }
     if (size > 4 && noprefix.substr(0, 4) == "Fog.") {
       Shader::ShaderMatSpec bind;
-      bind._id = arg_id;
+      bind._id = param;
       bind._func = Shader::SMF_first;
       bind._arg[0] = nullptr;
       bind._part[1] = Shader::SMO_identity;
@@ -1212,8 +1000,8 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
             << "p3d_Fog.color should be vec3 or vec4\n";
           return;
         }
-
-      } else if (noprefix == "Fog.density") {
+      }
+      else if (noprefix == "Fog.density") {
         bind._part[0] = Shader::SMO_attr_fog;
 
         if (param_type == GL_FLOAT) {
@@ -1223,8 +1011,8 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
             << "p3d_Fog.density should be float\n";
           return;
         }
-
-      } else if (noprefix == "Fog.start") {
+      }
+      else if (noprefix == "Fog.start") {
         bind._part[0] = Shader::SMO_attr_fog;
 
         if (param_type == GL_FLOAT) {
@@ -1234,8 +1022,8 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
             << "p3d_Fog.start should be float\n";
           return;
         }
-
-      } else if (noprefix == "Fog.end") {
+      }
+      else if (noprefix == "Fog.end") {
         bind._part[0] = Shader::SMO_attr_fog;
 
         if (param_type == GL_FLOAT) {
@@ -1245,8 +1033,8 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
             << "p3d_Fog.end should be float\n";
           return;
         }
-
-      } else if (noprefix == "Fog.scale") {
+      }
+      else if (noprefix == "Fog.scale") {
         bind._part[0] = Shader::SMO_attr_fog;
 
         if (param_type == GL_FLOAT) {
@@ -1263,7 +1051,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
     }
     if (noprefix == "LightModel.ambient") {
       Shader::ShaderMatSpec bind;
-      bind._id = arg_id;
+      bind._id = param;
       bind._func = Shader::SMF_first;
       bind._part[0] = Shader::SMO_light_ambient;
       bind._arg[0] = nullptr;
@@ -1295,7 +1083,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
           case GL_SAMPLER_CUBE:
             {
               Shader::ShaderTexSpec bind;
-              bind._id = arg_id;
+              bind._id = param;
               bind._part = Shader::STO_light_i_shadow_map;
               bind._name = 0;
               bind._desired_type = Texture::TT_2d_texture;
@@ -1314,7 +1102,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
         } else {
           // A non-sampler attribute of a numbered light source.
           Shader::ShaderMatSpec bind;
-          bind._id = arg_id;
+          bind._id = param;
           bind._func = Shader::SMF_first;
           bind._index = index;
           bind._part[0] = Shader::SMO_light_source_i_attrib;
@@ -1371,7 +1159,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
     }
     if (noprefix == "TexAlphaOnly") {
       Shader::ShaderMatSpec bind;
-      bind._id = arg_id;
+      bind._id = param;
       bind._func = Shader::SMF_first;
       bind._index = 0;
       bind._part[0] = Shader::SMO_tex_is_alpha_i;
@@ -1382,16 +1170,16 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       _shader->cp_add_mat_spec(bind);
       return;
     }
-    GLCAT.error() << "Unrecognized uniform name '" << param_name << "'!\n";
+    GLCAT.error() << "Unrecognized uniform name '" << name_buffer << "'!\n";
     return;
-
-  } else if (strncmp(name_buffer, "osg_", 4) == 0) {
+  }
+  else if (strncmp(name_buffer, "osg_", 4) == 0) {
     string noprefix(name_buffer + 4);
     // These inputs are supported by OpenSceneGraph.  We can support them as
     // well, to increase compatibility.
 
     Shader::ShaderMatSpec bind;
-    bind._id = arg_id;
+    bind._id = param;
     bind._arg[0] = nullptr;
     bind._arg[1] = nullptr;
 
@@ -1402,32 +1190,32 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       bind._part[1] = Shader::SMO_view_to_apiview;
       _shader->cp_add_mat_spec(bind);
       return;
-
-    } else if (noprefix == "InverseViewMatrix" || noprefix == "ViewMatrixInverse") {
+    }
+    else if (noprefix == "InverseViewMatrix" || noprefix == "ViewMatrixInverse") {
       bind._piece = Shader::SMP_whole;
       bind._func = Shader::SMF_compose;
       bind._part[0] = Shader::SMO_apiview_to_view;
       bind._part[1] = Shader::SMO_view_to_world;
       _shader->cp_add_mat_spec(bind);
       return;
-
-    } else if (noprefix == "FrameTime") {
+    }
+    else if (noprefix == "FrameTime") {
       bind._piece = Shader::SMP_row3x1;
       bind._func = Shader::SMF_first;
       bind._part[0] = Shader::SMO_frame_time;
       bind._part[1] = Shader::SMO_identity;
       _shader->cp_add_mat_spec(bind);
       return;
-
-    } else if (noprefix == "DeltaFrameTime") {
+    }
+    else if (noprefix == "DeltaFrameTime") {
       bind._piece = Shader::SMP_row3x1;
       bind._func = Shader::SMF_first;
       bind._part[0] = Shader::SMO_frame_delta;
       bind._part[1] = Shader::SMO_identity;
       _shader->cp_add_mat_spec(bind);
       return;
-
-    } else if (noprefix == "FrameNumber") {
+    }
+    else if (noprefix == "FrameNumber") {
       // We don't currently support ints with this mechanism, so we special-
       // case this one.
       if (param_type != GL_INT) {
@@ -1437,263 +1225,258 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       }
       return;
     }
-
-  } else {
-    // Tries to parse shorthand notations like mspos_XXX and
-    // trans_model_to_clip_of_XXX
-    if (parse_and_set_short_hand_shader_vars(arg_id, param_type, param_size, _shader)) {
-      return;
-    }
   }
-
-  if (param_size == 1) {
+  else if (param_size == 1) {
     // A single uniform (not an array, or an array of size 1).
     switch (param_type) {
-      case GL_INT_SAMPLER_2D:
-      case GL_INT_SAMPLER_3D:
-      case GL_INT_SAMPLER_2D_ARRAY:
-      case GL_INT_SAMPLER_CUBE:
-      case GL_UNSIGNED_INT_SAMPLER_2D:
-      case GL_UNSIGNED_INT_SAMPLER_3D:
-      case GL_UNSIGNED_INT_SAMPLER_CUBE:
-      case GL_UNSIGNED_INT_SAMPLER_2D_ARRAY:
-      case GL_SAMPLER_CUBE_SHADOW:
-      case GL_SAMPLER_2D_ARRAY:
-      case GL_SAMPLER_2D_ARRAY_SHADOW:
+    case GL_INT_SAMPLER_2D:
+    case GL_INT_SAMPLER_3D:
+    case GL_INT_SAMPLER_2D_ARRAY:
+    case GL_INT_SAMPLER_CUBE:
+    case GL_UNSIGNED_INT_SAMPLER_2D:
+    case GL_UNSIGNED_INT_SAMPLER_3D:
+    case GL_UNSIGNED_INT_SAMPLER_CUBE:
+    case GL_UNSIGNED_INT_SAMPLER_2D_ARRAY:
+    case GL_SAMPLER_CUBE_SHADOW:
+    case GL_SAMPLER_2D_ARRAY:
+    case GL_SAMPLER_2D_ARRAY_SHADOW:
 #ifndef OPENGLES
-      case GL_INT_SAMPLER_1D:
-      case GL_INT_SAMPLER_1D_ARRAY:
-      case GL_INT_SAMPLER_BUFFER:
-      case GL_INT_SAMPLER_CUBE_MAP_ARRAY:
-      case GL_UNSIGNED_INT_SAMPLER_1D:
-      case GL_UNSIGNED_INT_SAMPLER_1D_ARRAY:
-      case GL_UNSIGNED_INT_SAMPLER_BUFFER:
-      case GL_UNSIGNED_INT_SAMPLER_CUBE_MAP_ARRAY:
-      case GL_SAMPLER_1D:
-      case GL_SAMPLER_1D_ARRAY:
-      case GL_SAMPLER_1D_SHADOW:
-      case GL_SAMPLER_BUFFER:
-      case GL_SAMPLER_CUBE_MAP_ARRAY:
-      case GL_SAMPLER_CUBE_MAP_ARRAY_SHADOW:
+    case GL_INT_SAMPLER_1D:
+    case GL_INT_SAMPLER_1D_ARRAY:
+    case GL_INT_SAMPLER_BUFFER:
+    case GL_INT_SAMPLER_CUBE_MAP_ARRAY:
+    case GL_UNSIGNED_INT_SAMPLER_1D:
+    case GL_UNSIGNED_INT_SAMPLER_1D_ARRAY:
+    case GL_UNSIGNED_INT_SAMPLER_BUFFER:
+    case GL_UNSIGNED_INT_SAMPLER_CUBE_MAP_ARRAY:
+    case GL_SAMPLER_1D:
+    case GL_SAMPLER_1D_ARRAY:
+    case GL_SAMPLER_1D_SHADOW:
+    case GL_SAMPLER_BUFFER:
+    case GL_SAMPLER_CUBE_MAP_ARRAY:
+    case GL_SAMPLER_CUBE_MAP_ARRAY_SHADOW:
 #endif  // !OPENGLES
-      case GL_SAMPLER_2D:
-      case GL_SAMPLER_2D_SHADOW:
-      case GL_SAMPLER_3D:
-      case GL_SAMPLER_CUBE: {
-        Shader::ShaderTexSpec bind;
-        bind._id = arg_id;
-        bind._part = Shader::STO_named_input;
-        bind._name = InternalName::make(param_name);
-        bind._desired_type = Texture::TT_2d_texture;
-        bind._stage = 0;
-        if (get_sampler_texture_type(bind._desired_type, param_type)) {
-          _glgsg->_glUniform1i(p, _shader->_tex_spec.size());
-          _shader->_tex_spec.push_back(bind);
-        }
-        return;
+    case GL_SAMPLER_2D:
+    case GL_SAMPLER_2D_SHADOW:
+    case GL_SAMPLER_3D:
+    case GL_SAMPLER_CUBE: {
+      Shader::ShaderTexSpec bind;
+      bind._id = param;
+      bind._part = Shader::STO_named_input;
+      bind._name = param._name;
+      bind._desired_type = Texture::TT_2d_texture;
+      bind._stage = 0;
+      if (get_sampler_texture_type(bind._desired_type, param_type)) {
+        _glgsg->_glUniform1i(p, _shader->_tex_spec.size());
+        _shader->_tex_spec.push_back(bind);
       }
-      case GL_FLOAT_MAT2:
-      case GL_FLOAT_MAT2x3:
-      case GL_FLOAT_MAT2x4:
-      case GL_FLOAT_MAT3x2:
-      case GL_FLOAT_MAT3x4:
-      case GL_FLOAT_MAT4x2:
-      case GL_FLOAT_MAT4x3:
-        GLCAT.warning() << "GLSL shader requested an unsupported matrix type\n";
-        return;
-      case GL_FLOAT_MAT3: {
+      return;
+    }
+    case GL_FLOAT_MAT2:
+    case GL_FLOAT_MAT2x3:
+    case GL_FLOAT_MAT2x4:
+    case GL_FLOAT_MAT3x2:
+    case GL_FLOAT_MAT3x4:
+    case GL_FLOAT_MAT4x2:
+    case GL_FLOAT_MAT4x3:
+      GLCAT.warning() << "GLSL shader requested an unsupported matrix type\n";
+      return;
+    case GL_FLOAT_MAT3: {
+      if (param._name->get_parent() != InternalName::get_root()) {
         Shader::ShaderMatSpec bind;
-        bind._id = arg_id;
+        bind._id = param;
         bind._piece = Shader::SMP_upper3x3;
         bind._func = Shader::SMF_first;
         bind._part[0] = Shader::SMO_mat_constant_x;
-        bind._arg[0] = InternalName::make(param_name);
+        bind._arg[0] = param._name;
         bind._part[1] = Shader::SMO_identity;
         bind._arg[1] = nullptr;
         _shader->cp_add_mat_spec(bind);
-        return;
+      } else {
+        _shader->bind_parameter(param);
       }
-      case GL_FLOAT_MAT4: {
+      return;
+    }
+    case GL_FLOAT_MAT4: {
+      if (param._name->get_parent() != InternalName::get_root()) {
+        // It might be something like an attribute of a shader input, like a
+        // light parameter.  It might also just be a custom struct
+        // parameter.  We can't know yet, sadly.
         Shader::ShaderMatSpec bind;
-        bind._id = arg_id;
+        bind._id = param;
         bind._piece = Shader::SMP_whole;
         bind._func = Shader::SMF_first;
         bind._part[1] = Shader::SMO_identity;
         bind._arg[1] = nullptr;
-        PT(InternalName) iname = InternalName::make(param_name);
-        if (iname->get_parent() != InternalName::get_root()) {
-          // It might be something like an attribute of a shader input, like a
-          // light parameter.  It might also just be a custom struct
-          // parameter.  We can't know yet, sadly.
-          if (iname->get_basename() == "shadowMatrix") {
-            // Special exception for shadowMatrix, which is deprecated,
-            // because it includes the model transformation.  It is far more
-            // efficient to do that in the shader instead.
-            static bool warned = false;
-            if (!warned) {
-              warned = true;
-              GLCAT.warning()
-                << "light.shadowMatrix inputs are deprecated; use "
-                   "shadowViewMatrix instead, which transforms from view "
-                   "space instead of model space.\n";
-            }
-            bind._func = Shader::SMF_compose;
-            bind._part[0] = Shader::SMO_model_to_apiview;
-            bind._arg[0] = nullptr;
-            bind._part[1] = Shader::SMO_mat_constant_x_attrib;
-            bind._arg[1] = iname->get_parent()->append("shadowViewMatrix");
-          } else {
-            bind._part[0] = Shader::SMO_mat_constant_x_attrib;
-            bind._arg[0] = InternalName::make(param_name);
+        if (param._name->get_basename() == "shadowMatrix") {
+          // Special exception for shadowMatrix, which is deprecated,
+          // because it includes the model transformation.  It is far more
+          // efficient to do that in the shader instead.
+          static bool warned = false;
+          if (!warned) {
+            warned = true;
+            GLCAT.warning()
+              << "light.shadowMatrix inputs are deprecated; use "
+                 "shadowViewMatrix instead, which transforms from view "
+                 "space instead of model space.\n";
           }
+          bind._func = Shader::SMF_compose;
+          bind._part[0] = Shader::SMO_model_to_apiview;
+          bind._arg[0] = nullptr;
+          bind._part[1] = Shader::SMO_mat_constant_x_attrib;
+          bind._arg[1] = param._name->get_parent()->append("shadowViewMatrix");
         } else {
-          bind._part[0] = Shader::SMO_mat_constant_x;
-          bind._arg[0] = InternalName::make(param_name);
+          bind._part[0] = Shader::SMO_mat_constant_x_attrib;
+          bind._arg[0] = param._name;
         }
         _shader->cp_add_mat_spec(bind);
-        return;
+      } else {
+        _shader->bind_parameter(param);
       }
-      case GL_FLOAT:
-      case GL_FLOAT_VEC2:
-      case GL_FLOAT_VEC3:
-      case GL_FLOAT_VEC4: {
-        PT(InternalName) iname = InternalName::make(param_name);
-        if (iname->get_parent() != InternalName::get_root()) {
-          // It might be something like an attribute of a shader input, like a
-          // light parameter.  It might also just be a custom struct
-          // parameter.  We can't know yet, sadly.
-          Shader::ShaderMatSpec bind;
-          bind._id = arg_id;
-          switch (param_type) {
-          case GL_FLOAT:
-            bind._piece = Shader::SMP_row3x1;
-            break;
-          case GL_FLOAT_VEC2:
-            bind._piece = Shader::SMP_row3x2;
-            break;
-          case GL_FLOAT_VEC3:
-            bind._piece = Shader::SMP_row3x3;
-            break;
-          default:
-            bind._piece = Shader::SMP_row3;
-          }
-          bind._func = Shader::SMF_first;
-          bind._part[0] = Shader::SMO_vec_constant_x_attrib;
-          bind._arg[0] = iname;
-          bind._part[1] = Shader::SMO_identity;
-          bind._arg[1] = nullptr;
-          _shader->cp_add_mat_spec(bind);
-          return;
-        } // else fall through
+      return;
+    }
+    case GL_FLOAT:
+    case GL_FLOAT_VEC2:
+    case GL_FLOAT_VEC3:
+    case GL_FLOAT_VEC4: {
+      if (param._name->get_parent() != InternalName::get_root()) {
+        // It might be something like an attribute of a shader input, like a
+        // light parameter.  It might also just be a custom struct
+        // parameter.  We can't know yet, sadly.
+        Shader::ShaderMatSpec bind;
+        bind._id = param;
+        switch (param_type) {
+        case GL_FLOAT:
+          bind._piece = Shader::SMP_row3x1;
+          break;
+        case GL_FLOAT_VEC2:
+          bind._piece = Shader::SMP_row3x2;
+          break;
+        case GL_FLOAT_VEC3:
+          bind._piece = Shader::SMP_row3x3;
+          break;
+        default:
+          bind._piece = Shader::SMP_row3;
+        }
+        bind._func = Shader::SMF_first;
+        bind._part[0] = Shader::SMO_vec_constant_x_attrib;
+        bind._arg[0] = param._name;
+        bind._part[1] = Shader::SMO_identity;
+        bind._arg[1] = nullptr;
+        _shader->cp_add_mat_spec(bind);
+      } else {
+        _shader->bind_parameter(param);
       }
+      return;
+    }
+    case GL_BOOL:
+    case GL_BOOL_VEC2:
+    case GL_BOOL_VEC3:
+    case GL_BOOL_VEC4:
+    case GL_INT:
+    case GL_INT_VEC2:
+    case GL_INT_VEC3:
+    case GL_INT_VEC4:
+    case GL_UNSIGNED_INT:
+    case GL_UNSIGNED_INT_VEC2:
+    case GL_UNSIGNED_INT_VEC3:
+    case GL_UNSIGNED_INT_VEC4: {
+      Shader::ShaderPtrSpec bind;
+      bind._id = param;
+      bind._dim[0] = 1;
+      bind._dim[1] = 1;
+      switch (param_type) {
+      case GL_BOOL:
+      case GL_INT:
+      case GL_UNSIGNED_INT:
+      case GL_FLOAT:      bind._dim[2] = 1; break;
+      case GL_BOOL_VEC2:
+      case GL_INT_VEC2:
+      case GL_UNSIGNED_INT_VEC2:
+      case GL_FLOAT_VEC2: bind._dim[2] = 2; break;
+      case GL_BOOL_VEC3:
+      case GL_INT_VEC3:
+      case GL_UNSIGNED_INT_VEC3:
+      case GL_FLOAT_VEC3: bind._dim[2] = 3; break;
+      case GL_BOOL_VEC4:
+      case GL_INT_VEC4:
+      case GL_UNSIGNED_INT_VEC4:
+      case GL_FLOAT_VEC4: bind._dim[2] = 4; break;
+      case GL_FLOAT_MAT3:
+        bind._dim[1] = 3;
+        bind._dim[2] = 3;
+        break;
+      case GL_FLOAT_MAT4:
+        bind._dim[1] = 4;
+        bind._dim[2] = 4;
+        break;
+      }
+      switch (param_type) {
       case GL_BOOL:
       case GL_BOOL_VEC2:
       case GL_BOOL_VEC3:
       case GL_BOOL_VEC4:
+      case GL_UNSIGNED_INT:
+      case GL_UNSIGNED_INT_VEC2:
+      case GL_UNSIGNED_INT_VEC3:
+      case GL_UNSIGNED_INT_VEC4:
+        bind._type = ShaderType::ST_uint;
+        break;
       case GL_INT:
       case GL_INT_VEC2:
       case GL_INT_VEC3:
       case GL_INT_VEC4:
-      case GL_UNSIGNED_INT:
-      case GL_UNSIGNED_INT_VEC2:
-      case GL_UNSIGNED_INT_VEC3:
-      case GL_UNSIGNED_INT_VEC4: {
-        Shader::ShaderPtrSpec bind;
-        bind._id = arg_id;
-        bind._dim[0] = 1;
-        bind._dim[1] = 1;
-        switch (param_type) {
-          case GL_BOOL:
-          case GL_INT:
-          case GL_UNSIGNED_INT:
-          case GL_FLOAT:      bind._dim[2] = 1; break;
-          case GL_BOOL_VEC2:
-          case GL_INT_VEC2:
-          case GL_UNSIGNED_INT_VEC2:
-          case GL_FLOAT_VEC2: bind._dim[2] = 2; break;
-          case GL_BOOL_VEC3:
-          case GL_INT_VEC3:
-          case GL_UNSIGNED_INT_VEC3:
-          case GL_FLOAT_VEC3: bind._dim[2] = 3; break;
-          case GL_BOOL_VEC4:
-          case GL_INT_VEC4:
-          case GL_UNSIGNED_INT_VEC4:
-          case GL_FLOAT_VEC4: bind._dim[2] = 4; break;
-          case GL_FLOAT_MAT3:
-            bind._dim[1] = 3;
-            bind._dim[2] = 3;
-            break;
-          case GL_FLOAT_MAT4:
-            bind._dim[1] = 4;
-            bind._dim[2] = 4;
-            break;
-        }
-        switch (param_type) {
-        case GL_BOOL:
-        case GL_BOOL_VEC2:
-        case GL_BOOL_VEC3:
-        case GL_BOOL_VEC4:
-        case GL_UNSIGNED_INT:
-        case GL_UNSIGNED_INT_VEC2:
-        case GL_UNSIGNED_INT_VEC3:
-        case GL_UNSIGNED_INT_VEC4:
-          bind._type = ShaderType::ST_uint;
-          break;
-        case GL_INT:
-        case GL_INT_VEC2:
-        case GL_INT_VEC3:
-        case GL_INT_VEC4:
-          bind._type = ShaderType::ST_int;
-          break;
-        case GL_FLOAT:
-        case GL_FLOAT_VEC2:
-        case GL_FLOAT_VEC3:
-        case GL_FLOAT_VEC4:
-        case GL_FLOAT_MAT3:
-        case GL_FLOAT_MAT4:
-          bind._type = ShaderType::ST_float;
-          break;
-        }
-        bind._arg = InternalName::make(param_name);
-        _shader->_ptr_spec.push_back(bind);
-        return;
+        bind._type = ShaderType::ST_int;
+        break;
+      case GL_FLOAT:
+      case GL_FLOAT_VEC2:
+      case GL_FLOAT_VEC3:
+      case GL_FLOAT_VEC4:
+      case GL_FLOAT_MAT3:
+      case GL_FLOAT_MAT4:
+        bind._type = ShaderType::ST_float;
+        break;
       }
-      case GL_IMAGE_2D:
-      case GL_IMAGE_3D:
-      case GL_IMAGE_CUBE:
-      case GL_IMAGE_2D_ARRAY:
-      case GL_INT_IMAGE_2D:
-      case GL_INT_IMAGE_3D:
-      case GL_INT_IMAGE_CUBE:
-      case GL_INT_IMAGE_2D_ARRAY:
-      case GL_UNSIGNED_INT_IMAGE_2D:
-      case GL_UNSIGNED_INT_IMAGE_3D:
-      case GL_UNSIGNED_INT_IMAGE_CUBE:
-      case GL_UNSIGNED_INT_IMAGE_2D_ARRAY:
+      bind._arg = param._name;
+      _shader->_ptr_spec.push_back(bind);
+      return;
+    }
+    case GL_IMAGE_2D:
+    case GL_IMAGE_3D:
+    case GL_IMAGE_CUBE:
+    case GL_IMAGE_2D_ARRAY:
+    case GL_INT_IMAGE_2D:
+    case GL_INT_IMAGE_3D:
+    case GL_INT_IMAGE_CUBE:
+    case GL_INT_IMAGE_2D_ARRAY:
+    case GL_UNSIGNED_INT_IMAGE_2D:
+    case GL_UNSIGNED_INT_IMAGE_3D:
+    case GL_UNSIGNED_INT_IMAGE_CUBE:
+    case GL_UNSIGNED_INT_IMAGE_2D_ARRAY:
 #ifndef OPENGLES
-      case GL_IMAGE_1D:
-      case GL_IMAGE_CUBE_MAP_ARRAY:
-      case GL_IMAGE_BUFFER:
-      case GL_INT_IMAGE_1D:
-      case GL_INT_IMAGE_CUBE_MAP_ARRAY:
-      case GL_INT_IMAGE_BUFFER:
-      case GL_UNSIGNED_INT_IMAGE_1D:
-      case GL_UNSIGNED_INT_IMAGE_CUBE_MAP_ARRAY:
-      case GL_UNSIGNED_INT_IMAGE_BUFFER:
+    case GL_IMAGE_1D:
+    case GL_IMAGE_CUBE_MAP_ARRAY:
+    case GL_IMAGE_BUFFER:
+    case GL_INT_IMAGE_1D:
+    case GL_INT_IMAGE_CUBE_MAP_ARRAY:
+    case GL_INT_IMAGE_BUFFER:
+    case GL_UNSIGNED_INT_IMAGE_1D:
+    case GL_UNSIGNED_INT_IMAGE_CUBE_MAP_ARRAY:
+    case GL_UNSIGNED_INT_IMAGE_BUFFER:
 #endif
-        // This won't really change at runtime, so we might as well bind once
-        // and then forget about it.
-        _glgsg->_glUniform1i(p, _glsl_img_inputs.size());
-        {
-          ImageInput input;
-          input._name = InternalName::make(param_name);
-          input._writable = false;
-          input._gtc = nullptr;
-          _glsl_img_inputs.push_back(input);
-        }
-        return;
-      default:
-        GLCAT.warning() << "Ignoring unrecognized GLSL parameter type!\n";
+      // This won't really change at runtime, so we might as well bind once
+      // and then forget about it.
+      _glgsg->_glUniform1i(p, _glsl_img_inputs.size());
+      {
+        ImageInput input;
+        input._name = param._name;
+        input._writable = false;
+        input._gtc = nullptr;
+        _glsl_img_inputs.push_back(input);
+      }
+      return;
+    default:
+      GLCAT.warning() << "Ignoring unrecognized GLSL parameter type!\n";
     }
   } else {
     // A uniform array.
@@ -1726,7 +1509,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
     case GL_FLOAT_MAT3:
     case GL_FLOAT_MAT4: {
       Shader::ShaderPtrSpec bind;
-      bind._id = arg_id;
+      bind._id = param;
       bind._dim[0] = param_size;
       bind._dim[1] = 1;
       switch (param_type) {
@@ -1781,7 +1564,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
         bind._type = ShaderType::ST_float;
         break;
       }
-      bind._arg = InternalName::make(param_name);
+      bind._arg = param._name;
       _shader->_ptr_spec.push_back(bind);
       return;
     }

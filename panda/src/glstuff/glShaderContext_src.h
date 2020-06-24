@@ -140,7 +140,6 @@ private:
   void report_program_errors(GLuint program, bool fatal);
   bool attach_shader(const ShaderModule *module);
   bool compile_and_link();
-  bool parse_and_set_short_hand_shader_vars(Shader::Parameter &arg_id, GLenum param_type, GLint param_size, Shader *s);
   void release_resources();
 
 public:

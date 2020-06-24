@@ -2106,7 +2106,12 @@ bind_parameter(const Parameter &param) {
       bind._id = param;
       bind._part = STO_stage_i;
       bind._name = 0;
-      bind._desired_type = Texture::TT_2d_texture;
+
+      const ::ShaderType::SampledImage *sampled_image_type = type->as_sampled_image();
+      if (sampled_image_type == nullptr) {
+        return report_parameter_error(name, type, "expected sampled image");
+      }
+      bind._desired_type = sampled_image_type->get_texture_type();
 
       std::string tail;
       bind._stage = string_to_int(pieces[1].substr(7), tail);
