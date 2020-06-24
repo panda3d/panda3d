@@ -6,7 +6,7 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * @file movieAudio.h
+ * @file navMeshBuilder.cxx
  * @author ashwini
  * @date 2020-060-21
  */
@@ -16,7 +16,6 @@
 #include "DetourNavMesh.h"
 #include "DetourNavMeshQuery.h"
 #include "DetourNavMeshBuilder.h"
-#include "DetourCrowd.h"
 
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -59,7 +58,7 @@ NavMeshBuilder::NavMeshBuilder() :
   _ctx = new rcContext;
   reset_common_settings();
   _nav_query = dtAllocNavMeshQuery();
-  _crowd = dtAllocCrowd();
+  //_crowd = dtAllocCrowd();
 }
 
 NavMeshBuilder::~NavMeshBuilder() {
@@ -68,7 +67,7 @@ NavMeshBuilder::~NavMeshBuilder() {
   delete[] _tris;
 
   dtFreeNavMeshQuery(_nav_query);
-  dtFreeCrowd(_crowd);
+  //dtFreeCrowd(_crowd);
 
   cleanup();
 

@@ -1,4 +1,15 @@
-
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file config_navigation.cxx
+ * @author ashwini
+ * @date 2020-060-21
+ */
 
 #include "config_navigation.h"
 
@@ -31,6 +42,8 @@ ConfigVariableInt navigation_sample_config_variable
  */
 void
 init_libnavigation() {
+  NavMesh::init_type();
+  NavMeshNode::init_type();
   static bool initialized = false;
   if (initialized) {
     return;
