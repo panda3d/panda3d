@@ -49,10 +49,9 @@ bool Extension<TexturePool>::
 unregister_filter(PyObject *tex_filter) {
   // Keep looping until we've removed all instances of it.
   bool unregistered = false;
-  TexturePoolFilter *filter;
 
   while (true) {
-    filter = find_existing_filter(tex_filter);
+    TexturePoolFilter *filter = find_existing_filter(tex_filter);
 
     if (filter == nullptr) {
       // Last filter has been removed.

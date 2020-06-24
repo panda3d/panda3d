@@ -107,7 +107,7 @@ pre_load(const Filename &orig_filename, const Filename &orig_alpha_filename,
     DTool_CreatePyInstance((void *)&options, Dtool_LoaderOptions, false, true)
   );
 
-  PT(Texture) tex;
+  PT(Texture) tex = nullptr;
   PyObject *result = PythonThread::call_python_func(_pre_load_func, args);
 
   Py_DECREF(args);
@@ -154,7 +154,7 @@ post_load(Texture *tex) {
   // Wrap the arguments.
   PyObject *args = PyTuple_Pack(1, DTool_CreatePyInstance(tex, Dtool_Texture, true, false));
   PyObject *result = PythonThread::call_python_func(_post_load_func, args);
-  Texture *tex_res;
+  Texture *tex_res = nullptr;
 
   Py_DECREF(args);
 
