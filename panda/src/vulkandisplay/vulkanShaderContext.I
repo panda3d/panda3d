@@ -20,6 +20,16 @@ INLINE VulkanShaderContext::
 VulkanShaderContext(Shader *shader) :
   ShaderContext(shader),
   _modules{VK_NULL_HANDLE} {
+
+  _mat_part_cache = new LMatrix4[_shader->cp_get_mat_cache_size()];
+}
+
+/**
+ *
+ */
+INLINE VulkanShaderContext::
+~VulkanShaderContext()  {
+  delete _mat_part_cache;
 }
 
 /**

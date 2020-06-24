@@ -145,27 +145,11 @@ public:
                            VkPrimitiveTopology topology);
   VkPipeline make_compute_pipeline(VulkanShaderContext *sc);
 
-  /**
-   * Stores whatever is used to key a cached descriptor set into the
-   * descriptor set map.
-   */
-  struct DescriptorSetKey {
-    INLINE DescriptorSetKey() = default;
-    INLINE DescriptorSetKey(const DescriptorSetKey &copy);
-    INLINE DescriptorSetKey(DescriptorSetKey &&from) noexcept;
-
-    INLINE void operator = (const DescriptorSetKey &copy);
-    INLINE void operator = (DescriptorSetKey &&from) noexcept;
-
-    INLINE bool operator ==(const DescriptorSetKey &other) const;
-    INLINE bool operator < (const DescriptorSetKey &other) const;
-
-    CPT(TextureAttrib) _tex_attrib;
-    CPT(ShaderAttrib) _shader_attrib;
-  };
-
   VkDescriptorSet get_descriptor_set(const RenderState *state);
   VkDescriptorSet make_descriptor_set(const RenderState *state);
+
+  VkDeviceSize update_dynamic_uniform_buffer(void *data, VkDeviceSize size);
+  uint32_t get_color_palette_offset(const LColor &color);
 
   VkFormat get_image_format(const Texture *texture) const;
   static bool lookup_image_format(VkFormat vk_format, Texture::Format &format,
@@ -189,8 +173,17 @@ private:
   VkDescriptorPool _descriptor_pool;
   VulkanShaderContext *_default_sc;
   VulkanShaderContext *_current_shader;
+  const ShaderType::Struct *_push_constant_block_type = nullptr;
   CPT(GeomVertexFormat) _format;
   PT(Texture) _white_texture;
+
+  // Single large uniform buffer used for everything in a frame.
+  VkBuffer _uniform_buffer;
+  VulkanMemoryBlock _uniform_buffer_memory;
+  VkDeviceSize _uniform_buffer_size = 0;
+  VkDeviceSize _uniform_buffer_offset = 0;
+  VkDeviceSize _uniform_buffer_offset_alignment;
+  VkDescriptorSet _uniform_descriptor_set;
 
   // Stores current framebuffer info.
   VkRenderPass _render_pass;
@@ -209,6 +202,19 @@ private:
   typedef pmap<LColorf, uint32_t> ColorPaletteIndices;
   ColorPaletteIndices _color_palette;
 
+  /**
+   * Stores whatever is used to key a cached descriptor set into the
+   * descriptor set map.
+   */
+  struct DescriptorSetKey {
+    INLINE bool operator ==(const DescriptorSetKey &other) const;
+    INLINE bool operator < (const DescriptorSetKey &other) const;
+
+    CPT(TextureAttrib) _tex_attrib;
+    CPT(ShaderAttrib) _shader_attrib;
+  };
+
+  //TODO: we need a garbage collection mechanism for this.
   typedef pmap<DescriptorSetKey, VkDescriptorSet> DescriptorSetMap;
   DescriptorSetMap _descriptor_set_map;
 

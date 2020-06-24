@@ -30,16 +30,14 @@
 #include "transparencyAttrib.h"
 
 static const std::string default_vshader =
-  "#version 430\n"
+  "#version 330\n"
   "in vec4 p3d_Vertex;\n"
   "in vec4 p3d_Color;\n"
   "in vec2 p3d_MultiTexCoord0;\n"
   "out vec2 texcoord;\n"
   "out vec4 color;\n"
-  "layout(push_constant, std140) uniform p3d_PushConstants {\n"
-  "  uniform mat4 p3d_ModelViewProjectionMatrix;\n"
-  "  uniform vec4 p3d_ColorScale;\n"
-  "};\n"
+  "uniform mat4 p3d_ModelViewProjectionMatrix;\n"
+  "uniform vec4 p3d_ColorScale;\n"
   "void main(void) {\n"
   "  gl_Position = p3d_ModelViewProjectionMatrix * p3d_Vertex;\n"
   "  texcoord = p3d_MultiTexCoord0;\n"
@@ -47,7 +45,7 @@ static const std::string default_vshader =
   "}\n";
 
 static const std::string default_fshader =
-  "#version 430\n"
+  "#version 330\n"
   "in vec2 texcoord;\n"
   "in vec4 color;\n"
   "out vec4 p3d_FragColor;\n"
@@ -84,6 +82,9 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   _default_sc(nullptr),
   _total_allocated(0)
 {
+  const VkPhysicalDeviceLimits &limits = pipe->_gpu_properties.limits;
+  const VkPhysicalDeviceFeatures &features = pipe->_gpu_features;
+
   const char *const layers[] = {
     "VK_LAYER_LUNARG_standard_validation",
   };
@@ -231,6 +232,26 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   _color_palette[LColorf(1, 1, 1, 1)] = 1;
   _next_palette_index = 2;
 
+  // Create a push constant layout based on the available space.
+  {
+    ShaderType::Struct struct_type;
+    struct_type.add_member(ShaderType::register_type(ShaderType::Matrix(ShaderType::ST_float, 4, 4)), "p3d_ModelViewProjectionMatrix");
+    struct_type.add_member(ShaderType::register_type(ShaderType::Vector(ShaderType::ST_float, 4)), "p3d_ColorScale");
+    _push_constant_block_type = ShaderType::register_type(std::move(struct_type));
+  }
+
+  // Create a uniform buffer that we'll use for everything.
+  VkDeviceSize uniform_buffer_size = vulkan_global_uniform_buffer_size;
+  if (!create_buffer(uniform_buffer_size, _uniform_buffer, _uniform_buffer_memory,
+                     VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+                     VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)) {
+    vulkandisplay_cat.error()
+      << "Failed to create uniform buffer buffer.\n";
+    return;
+  }
+  _uniform_buffer_size = uniform_buffer_size;
+  _uniform_buffer_offset_alignment = limits.minUniformBufferOffsetAlignment;
+
   // Load the default shader.  Temporary hack.
   static PT(Shader) default_shader;
   if (default_shader.is_null()) {
@@ -244,8 +265,6 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   }
 
   // Fill in the features supported by this physical device.
-  const VkPhysicalDeviceLimits &limits = pipe->_gpu_properties.limits;
-  const VkPhysicalDeviceFeatures &features = pipe->_gpu_features;
   _is_hardware = (pipe->_gpu_properties.deviceType != VK_PHYSICAL_DEVICE_TYPE_CPU);
 
   _max_vertices_per_array = std::max((uint32_t)0x7fffffff, limits.maxDrawIndexedIndexValue);
@@ -376,6 +395,7 @@ VulkanGraphicsStateGuardian::
   }
 
   // Remove the things we created in the constructor, in reverse order.
+  vkDestroyBuffer(_device, _uniform_buffer, nullptr);
   vkDestroyBuffer(_device, _color_vertex_buffer, nullptr);
   vkDestroyDescriptorPool(_device, _descriptor_pool, nullptr);
   vkDestroyDescriptorSetLayout(_device, _descriptor_set_layout, nullptr);
@@ -387,6 +407,7 @@ VulkanGraphicsStateGuardian::
   _memory_pages.clear();
 
   vkDestroyDevice(_device, nullptr);
+  _device = VK_NULL_HANDLE;
 }
 
 /**
@@ -1354,31 +1375,59 @@ prepare_shader(Shader *shader) {
 
   VulkanShaderContext *sc = new VulkanShaderContext(shader);
 
-  for (COWPT(ShaderModule) &cow_module : shader->_modules) {
-    CPT(ShaderModule) module = cow_module.get_read_pointer();
-    const ShaderModuleSpirV *spv_module = DCAST(ShaderModuleSpirV, module.p());
-    nassertd(spv_module != nullptr) continue;
-
-    VkShaderModuleCreateInfo module_info;
-    module_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-    module_info.pNext = nullptr;
-    module_info.flags = 0;
-    module_info.codeSize = spv_module->get_data_size() * 4;
-    module_info.pCode = (const uint32_t *)spv_module->get_data();
-
-    VkResult err;
-    err = vkCreateShaderModule(_device, &module_info, nullptr, &sc->_modules[(size_t)spv_module->get_stage()]);
-    if (err) {
-      vulkan_error(err, "Failed to load shader module");
-      delete sc;
-      return nullptr;
-    }
-  }
-
-  if (!sc->make_pipeline_layout(_device)) {
+  if (!sc->create_modules(_device, _push_constant_block_type) ||
+      !sc->make_pipeline_layout(_device)) {
     delete sc;
     return nullptr;
   }
+
+  VkResult err;
+
+  // Create a descriptor set for the UBOs.
+  //TODO: actually figure out where this should live.
+  VkDescriptorSetAllocateInfo alloc_info;
+  alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+  alloc_info.pNext = nullptr;
+  alloc_info.descriptorPool = _descriptor_pool;
+  alloc_info.descriptorSetCount = 1;
+  alloc_info.pSetLayouts = &sc->_descriptor_set_layouts[1];
+  err = vkAllocateDescriptorSets(_device, &alloc_info, &sc->_uniform_descriptor_set);
+  if (err) {
+    vulkan_error(err, "Failed to allocate descriptor set");
+    delete sc;
+    return nullptr;
+  }
+
+  // We set the offsets to 0, since we use dynamic offsets.
+  size_t count = 0;
+  VkDescriptorBufferInfo buffer_info[2];
+  if (sc->_mat_block_size > 0) {
+    buffer_info[count].buffer = _uniform_buffer;
+    buffer_info[count].offset = 0;
+    buffer_info[count].range = sc->_mat_block_size;
+    ++count;
+  }
+  if (sc->_ptr_block_size > 0) {
+    buffer_info[count].buffer = _uniform_buffer;
+    buffer_info[count].offset = 0;
+    buffer_info[count].range = sc->_ptr_block_size;
+    ++count;
+  }
+
+  VkWriteDescriptorSet write[2];
+  for (size_t i = 0; i < count; ++i) {
+    write[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    write[i].pNext = nullptr;
+    write[i].dstSet = sc->_uniform_descriptor_set;
+    write[i].dstBinding = i;
+    write[i].dstArrayElement = 0;
+    write[i].descriptorCount = 1;
+    write[i].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+    write[i].pImageInfo = nullptr;
+    write[i].pBufferInfo = &buffer_info[i];
+    write[i].pTexelBufferView = nullptr;
+  }
+  vkUpdateDescriptorSets(_device, count, write, 0, nullptr);
 
   return sc;
 }
@@ -1413,7 +1462,8 @@ release_shader(ShaderContext *context) {
   }
 
   vkDestroyPipelineLayout(_device, sc->_pipeline_layout, nullptr);
-  vkDestroyDescriptorSetLayout(_device, sc->_descriptor_set_layout, nullptr);
+  vkDestroyDescriptorSetLayout(_device, sc->_descriptor_set_layouts[0], nullptr);
+  vkDestroyDescriptorSetLayout(_device, sc->_descriptor_set_layouts[1], nullptr);
 
   delete sc;
 }
@@ -1678,26 +1728,36 @@ set_state_and_transform(const RenderState *state,
   // This does not actually set the state just yet, because we can't make a
   // pipeline state without knowing the vertex format.
   _state_rs = state;
+  _target_rs = state;
+  _internal_transform = trans;
 
   VulkanShaderContext *sc = _default_sc;
   const ShaderAttrib *sa;
   if (state->get_attrib(sa) && sa->has_shader()) {
     Shader *shader = (Shader *)sa->get_shader();
+    nassertv(shader != nullptr);
     DCAST_INTO_V(sc, shader->prepare_now(get_prepared_objects(), this));
   }
 
   _current_shader = sc;
   nassertv(sc != nullptr);
 
-  // Put the modelview projection matrix in the push constants.
-  CPT(TransformState) combined = _projection_mat->compose(trans);
-  LMatrix4f matrix = LCAST(float, combined->get_mat());
-  vkCmdPushConstants(_cmd, sc->_pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT, 0, 64, matrix.get_data());
+  // Put the modelview projection matrix and color scale in the push constants.
+  if (sc->_projection_mat_stage_mask != 0) {
+    CPT(TransformState) combined = _projection_mat->compose(trans);
+    LMatrix4f matrix = LCAST(float, combined->get_mat());
+    vkCmdPushConstants(_cmd, sc->_pipeline_layout, sc->_push_constant_stage_mask, 0, 64, matrix.get_data());
+  }
 
-  const ColorScaleAttrib *color_scale_attrib;
-  state->get_attrib_def(color_scale_attrib);
-  LColorf color = LCAST(float, color_scale_attrib->get_scale());
-  vkCmdPushConstants(_cmd, sc->_pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT, 64, 16, color.get_data());
+  if (sc->_color_scale_stage_mask != 0) {
+    const ColorScaleAttrib *color_scale_attrib;
+    state->get_attrib_def(color_scale_attrib);
+    LColorf color = LCAST(float, color_scale_attrib->get_scale());
+    vkCmdPushConstants(_cmd, sc->_pipeline_layout, sc->_push_constant_stage_mask, 64, 16, color.get_data());
+  }
+
+  //TODO: properly compute altered field.
+  sc->update_uniform_buffers(this, _cmd, ~0);
 
   const TextureAttrib *tex_attrib;
   state->get_attrib_def(tex_attrib);
@@ -1908,6 +1968,20 @@ begin_frame(Thread *current_thread) {
   }
   _pending_delete_buffers.clear();
   _pending_free.clear();
+
+  // Recycle the global uniform buffer.  It's probably not worth it to expect
+  // values to stick around between frames, because the vast majority of global
+  // uniforms will change more frequently than that anyway.
+  if (vulkandisplay_cat.is_debug()) {
+    static VkDeviceSize max_used = 0;
+    if (_uniform_buffer_offset > max_used) {
+      max_used = _uniform_buffer_offset;
+      vulkandisplay_cat.debug()
+        << "Used at most " << max_used << " of " << _uniform_buffer_size
+        << " bytes of global uniform buffer.\n";
+    }
+  }
+  _uniform_buffer_offset = 0;
 
   // Reset the fence to unsignaled status.
   err = vkResetFences(_device, 1, &_fence);
@@ -2713,7 +2787,7 @@ make_pipeline(VulkanShaderContext *sc, const RenderState *state,
     int array_index;
     const GeomVertexColumn *column;
 
-    attrib_desc[i].location = spec._id._seqno;
+    attrib_desc[i].location = spec._id._location;
 
     if (!format->get_array_info(spec._name, array_index, column) ||
         (spec._name == InternalName::get_color() &&
@@ -2732,25 +2806,7 @@ make_pipeline(VulkanShaderContext *sc, const RenderState *state,
           attrib_desc[i].offset = 16;
         } else {
           LColorf color = LCAST(float, color_attr->get_color());
-
-          ColorPaletteIndices::const_iterator it = _color_palette.find(color);
-          if (it != _color_palette.end()) {
-            attrib_desc[i].offset = it->second * 16;
-          } else {
-            // Not yet in the palette.  Write an entry.
-            if (_next_palette_index >= vulkan_color_palette_size) {
-              attrib_desc[i].offset = 1;
-              vulkandisplay_cat.error()
-                << "Ran out of color palette entries.  Increase "
-                   "vulkan-color-palette-size value in Config.prc.\n";
-            } else {
-              uint32_t offset = _next_palette_index * 16;
-              attrib_desc[i].offset = offset;
-              _color_palette[color] = _next_palette_index++;
-              vkCmdUpdateBuffer(_transfer_cmd, _color_vertex_buffer, offset, 16,
-                                (const uint32_t *)color.get_data());
-            }
-          }
+          attrib_desc[i].offset = get_color_palette_offset(color);
         }
       } else {
         attrib_desc[i].offset = 0;
@@ -3209,6 +3265,56 @@ make_descriptor_set(const RenderState *state) {
   vkUpdateDescriptorSets(_device, 1, &write, 0, nullptr);
 
   return ds;
+}
+
+/**
+ * Reserves space in the global uniform buffer.
+ */
+VkDeviceSize VulkanGraphicsStateGuardian::
+update_dynamic_uniform_buffer(void *data, VkDeviceSize size) {
+  VkDeviceSize offset = _uniform_buffer_offset;
+  VkDeviceSize align = _uniform_buffer_offset_alignment;
+  offset = offset - 1 - (offset - 1) % align + align;
+
+  //TODO: fail more gracefully.  Create a new buffer on the fly and manage
+  // multiple buffers?  Or submit work and insert a fence, then replace the
+  // buffer with a new one?
+  if (offset + size > _uniform_buffer_size) {
+    vulkandisplay_cat.error()
+      << "Ran out of space in the global uniform buffer.  Increase "
+         "vulkan-global-uniform-buffer-size in Config.prc.\n";
+    abort();
+    return offset;
+  }
+
+  vkCmdUpdateBuffer(_transfer_cmd, _uniform_buffer, offset, size, data);
+  _uniform_buffer_offset = offset + size;
+  return offset;
+}
+
+/**
+ * Returns the offset of the given color in the color palette.
+ */
+uint32_t VulkanGraphicsStateGuardian::
+get_color_palette_offset(const LColor &color) {
+  ColorPaletteIndices::const_iterator it = _color_palette.find(color);
+  if (it != _color_palette.end()) {
+    return it->second * 16;
+  }
+
+  // Not yet in the palette.  Write an entry.
+  if (_next_palette_index >= vulkan_color_palette_size) {
+    vulkandisplay_cat.error()
+      << "Ran out of color palette entries.  Increase "
+         "vulkan-color-palette-size value in Config.prc.\n";
+    return 1;
+  }
+
+  uint32_t offset = _next_palette_index * 16;
+  _color_palette[color] = _next_palette_index++;
+  vkCmdUpdateBuffer(_transfer_cmd, _color_vertex_buffer, offset, 16,
+                    (const uint32_t *)color.get_data());
+  return offset;
 }
 
 /**

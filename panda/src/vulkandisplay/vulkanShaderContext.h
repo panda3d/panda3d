@@ -15,6 +15,7 @@
 #define VULKANSHADERCONTEXT_H
 
 #include "config_vulkandisplay.h"
+#include "shaderModuleSpirV.h"
 
 /**
  * Manages a set of Vulkan shader modules.
@@ -22,11 +23,15 @@
 class EXPCL_VULKANDISPLAY VulkanShaderContext : public ShaderContext {
 public:
   INLINE VulkanShaderContext(Shader *shader);
-  ~VulkanShaderContext() {};
+  INLINE ~VulkanShaderContext();
 
   ALLOC_DELETED_CHAIN(VulkanShaderContext);
 
+  bool create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_type);
   bool make_pipeline_layout(VkDevice device);
+
+  void update_uniform_buffers(VulkanGraphicsStateGuardian *gsg, VkCommandBuffer cmd, int altered);
+
   VkPipeline get_pipeline(VulkanGraphicsStateGuardian *gsg,
                           const RenderState *state,
                           const GeomVertexFormat *format,
@@ -35,8 +40,29 @@ public:
 
 private:
   VkShaderModule _modules[(size_t)Shader::Stage::compute + 1];
-  VkDescriptorSetLayout _descriptor_set_layout;
+  VkDescriptorSetLayout _descriptor_set_layouts[2];
   VkPipelineLayout _pipeline_layout;
+
+  // Describe the two UBOs and push constant range we create.
+  const ShaderType::Struct *_mat_block_type = nullptr;
+  const ShaderType::Struct *_ptr_block_type = nullptr;
+  VkDeviceSize _mat_block_size = 0;
+  VkDeviceSize _ptr_block_size = 0;
+  int _mat_block_stage_mask = 0;
+  int _ptr_block_stage_mask = 0;
+  int _mat_deps = Shader::SSD_NONE;
+  LMatrix4 *_mat_part_cache = nullptr;
+  pvector<Shader::ShaderMatSpec> _mat_spec;
+
+  VkDescriptorSet _uniform_descriptor_set;
+  uint32_t _uniform_offsets[2];
+
+  // These are for the push constants; maybe in the future we'll replace this
+  // with a more generic and flexible system.
+  const ShaderType::Struct *_push_constant_block_type = nullptr;
+  int _push_constant_stage_mask = 0;
+  int _projection_mat_stage_mask = 0;
+  int _color_scale_stage_mask = 0;
 
   /**
    * Stores whatever is used to key a cached pipeline into the pipeline map.

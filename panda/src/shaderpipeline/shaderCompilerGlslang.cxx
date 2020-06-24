@@ -379,7 +379,7 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
       );
     }
   }
-  shader.setEnvClient(glslang::EShClient::EShClientVulkan, glslang::EShTargetVulkan_1_0);
+  shader.setEnvClient(glslang::EShClient::EShClientOpenGL, glslang::EShTargetOpenGL_450);
   shader.setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_0);
 
   // This will squelch the warnings about missing bindings and locations, since

@@ -48,6 +48,15 @@ ConfigVariableInt64 vulkan_memory_page_size
           "several pages will be allocated at application start due to the "
           "need for pages with varying memory types."));
 
+ConfigVariableInt64 vulkan_global_uniform_buffer_size
+("vulkan-global-uniform-buffer-size", 64 * 1024,
+ PRC_DESC("This value indicates how large the uniform buffer should be that is "
+          "allocated to contain all of the global uniforms values used by all "
+          "shaders in a give frame.  To optimize this value, enable "
+          "\"notify-level-vulkandisplay debug\" and look for the highest value "
+          "in the message \"Used at most # bytes of global uniform buffer.\" "
+          "in the most complex scene, then add a generous safety margin."));
+
 #define VK_ERROR_INVALID_SHADER_NV -1000012000
 
 /**

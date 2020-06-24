@@ -23,6 +23,7 @@ NotifyCategoryDecl(vulkandisplay, EXPCL_VULKANDISPLAY, EXPTP_VULKANDISPLAY);
 
 extern ConfigVariableInt vulkan_color_palette_size;
 extern ConfigVariableInt64 vulkan_memory_page_size;
+extern ConfigVariableInt64 vulkan_global_uniform_buffer_size;
 
 extern EXPCL_VULKANDISPLAY void init_libvulkandisplay();
 extern "C" EXPCL_VULKANDISPLAY int get_pipe_type_p3vulkandisplay();

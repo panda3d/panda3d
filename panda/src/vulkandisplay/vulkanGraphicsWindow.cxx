@@ -394,6 +394,7 @@ close_window() {
 
     // Wait until the queue is done with any commands that might use the swap
     // chain, then destroy it.
+    nassertv(vkgsg->_device != VK_NULL_HANDLE);
     vkQueueWaitIdle(vkgsg->_queue);
     destroy_swapchain();
 
