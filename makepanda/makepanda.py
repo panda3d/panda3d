@@ -4493,7 +4493,7 @@ if (PkgSkip("NAVIGATION") == 0):
   TargetAdd('libp3navigation.dll', opts=OPTS)
 
   OPTS=['DIR:panda/src/navigation']
-  IGATEFILES = ["config_navigation.h", "p3navigation_composite1.cxx"]
+  IGATEFILES=GetDirectoryContents('panda/src/navigation', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3navigation.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3navigation.in', opts=['IMOD:panda3d.navigation', 'ILIB:libp3navigation', 'SRCDIR:panda/src/navigation'])
 
