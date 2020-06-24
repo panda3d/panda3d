@@ -15,8 +15,6 @@
 #include "string_utils.h"
 #include "shaderType.h"
 
-//#include <glslang/SPIRV/disassemble.h>
-
 TypeHandle ShaderModuleSpirV::_type_handle;
 
 /**
@@ -157,9 +155,7 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words) :
 
   // We no longer need the debugging information, so it can be safely stripped
   // from the module.
-  //strip();
-
-  //spv::Disassemble(std::cerr, _instructions);
+  strip();
 
   // Check for more caps.
   for (InstructionIterator it = _instructions.begin_functions(); it != _instructions.end(); ++it) {
