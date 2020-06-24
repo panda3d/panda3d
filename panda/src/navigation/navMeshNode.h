@@ -6,7 +6,7 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * @file movieAudio.h
+ * @file navMeshNode.h
  * @author ashwini
  * @date 2020-060-21
  */
@@ -31,6 +31,25 @@ private:
 public:
   
   ~NavMeshNode();
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    PandaNode::init_type();
+    register_type(_type_handle, "NavMeshNode",
+      PandaNode::get_class_type());
+  }
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() { init_type(); return get_class_type(); }
+
+private:
+  static TypeHandle _type_handle;
+
+
 };
 
 #endif // NAVMESHNODE_H

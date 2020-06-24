@@ -6,7 +6,7 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * @file movieAudio.h
+ * @file navMesh.h
  * @author ashwini
  * @date 2020-060-21
  */
@@ -17,7 +17,7 @@
 
 #include "Recast.h"
 #include "DetourNavMesh.h"
-#include "pandaFramework.h"
+#include "typedWritableReferenceCount.h"
 
 class NavMesh: public TypedWritableReferenceCount
 {
@@ -33,6 +33,23 @@ public:
   
   ~NavMesh();
   
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    TypedWritableReferenceCount::init_type();
+    register_type(_type_handle, "NavMesh",
+      TypedWritableReferenceCount::get_class_type());
+  }
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() { init_type(); return get_class_type(); }
+
+private:
+  static TypeHandle _type_handle;
 };
 
 #endif // NAVMESH_H

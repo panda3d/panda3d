@@ -6,7 +6,7 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * @file movieAudio.h
+ * @file navMeshNode.cxx
  * @author ashwini
  * @date 2020-060-21
  */
@@ -14,6 +14,7 @@
 
 #include "navMeshNode.h"
 
+TypeHandle NavMeshNode::_type_handle;
 
 NavMeshNode::NavMeshNode(const std::string &name, PT(NavMesh) nav_mesh):
   PandaNode(name)
