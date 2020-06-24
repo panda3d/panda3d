@@ -28,6 +28,8 @@
 #include "mutexHolder.h"
 #include "dcast.h"
 
+#include <algorithm>
+
 using std::istream;
 using std::ostream;
 using std::string;
@@ -66,13 +68,63 @@ register_texture_type(MakeTextureFunc *func, const string &extensions) {
  * Records a TexturePoolFilter object that may operate on texture images as
  * they are loaded from disk.
  */
-void TexturePool::
-register_filter(TexturePoolFilter *filter) {
+bool TexturePool::
+register_filter(TexturePoolFilter *tex_filter) {
   MutexHolder holder(_filter_lock);
 
+  // Make sure we haven't already registered this filter.
+  if (find(_filter_registry.begin(), _filter_registry.end(), tex_filter) != _filter_registry.end()) {
+    gobj_cat->warning()
+      << "Attempted to register texture filter " << *tex_filter
+      << " more than once.\n";
+    return false;
+  }
+
   gobj_cat.info()
-    << "Registering Texture filter " << *filter << "\n";
-  _filter_registry.push_back(filter);
+    << "Registering Texture filter " << *tex_filter << "\n";
+  _filter_registry.push_back(tex_filter);
+  return true;
+}
+
+/**
+ * Stops a TexturePoolFilter object from operating on this pool.
+ */
+bool TexturePool::
+unregister_filter(TexturePoolFilter *tex_filter) {
+  MutexHolder holder(_filter_lock);
+
+  FilterRegistry::iterator fi = find(_filter_registry.begin(), _filter_registry.end(), tex_filter);
+
+  if (fi == _filter_registry.end()) {
+    gobj_cat.warning()
+      << "Attempted to unregister texture filter " << *tex_filter
+      << " which was not registered.\n";
+    return false;
+  }
+
+  gobj_cat.info()
+    << "Unregistering Texture filter " << *tex_filter << "\n";
+  _filter_registry.erase(fi);
+  return true;
+}
+
+/**
+ * Returns the total number of registered texture pool filters.
+ */
+size_t TexturePool::
+get_num_filters() const {
+  return _filter_registry.size();
+}
+
+/**
+ * Returns the nth texture pool filter registered.
+ */
+TexturePoolFilter *TexturePool::
+get_filter(size_t i) const {
+  MutexHolder holder(_filter_lock);
+
+  nassertr(i >= 0 && i < _filter_registry.size(), nullptr);
+  return _filter_registry[i];
 }
 
 /**

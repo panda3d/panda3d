@@ -21,7 +21,6 @@
 extern struct Dtool_PyTypedObject Dtool_Filename;
 extern struct Dtool_PyTypedObject Dtool_LoaderOptions;
 extern struct Dtool_PyTypedObject Dtool_Texture;
-extern struct Dtool_PyTypedObject Dtool_PythonTexturePoolFilter;
 
 TypeHandle PythonTexturePoolFilter::_type_handle;
 
@@ -54,40 +53,30 @@ PythonTexturePoolFilter::
 }
 
 /**
- * Initializes the fields from the given Python texture pool object,
- * then registers the filter at a texture pool.
+ * Initializes the filter to use the given Python filter object.
+ *
+ * This method expects a Python object that implements either
+ * the pre_load or the post_load method.
  */
 bool PythonTexturePoolFilter::
-register_filter(PyObject *tex_filter, TexturePool *tex_pool) {
+init(PyObject *tex_filter) {
   nassertr(tex_filter != nullptr, false);
   nassertr(_pre_load_func == nullptr, false);
   nassertr(_post_load_func == nullptr, false);
 
   _pre_load_func = PyObject_GetAttrString(tex_filter, "pre_load");
   _post_load_func = PyObject_GetAttrString(tex_filter, "post_load");
+  _filter_hash = PyObject_Hash(tex_filter);
   PyErr_Clear();
 
   if (_pre_load_func == nullptr && _post_load_func == nullptr) {
     PyErr_Format(PyExc_TypeError,
                  "texture pool filter plug-in %R does not define pre_load or post_load function",
-                 tex_filter);
+				 tex_filter);
     return false;
   }
 
-  if (tex_pool != nullptr) {
-    tex_pool->register_filter(this);
-  }
-
   return true;
-}
-
-/**
- * Initializes the fields from the given Python texture pool object,
- * then registers the filter at the global texture pool.
- */
-bool PythonTexturePoolFilter::
-register_filter(PyObject *tex_filter) {
-  return register_filter(tex_filter, TexturePool::get_global_ptr());
 }
 
 /**

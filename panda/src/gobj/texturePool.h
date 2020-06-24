@@ -80,17 +80,26 @@ PUBLISHED:
   INLINE static const Filename &get_fake_texture_image();
   INLINE static PT(Texture) make_texture(const std::string &extension);
 
+  EXTENSION(bool register_filter(PyObject *tex_filter));
+  EXTENSION(bool unregister_filter(PyObject *tex_filter));
+
+  bool register_filter(TexturePoolFilter *tex_filter);
+  bool unregister_filter(TexturePoolFilter *tex_filter);
+
+  size_t get_num_filters() const;
+  TexturePoolFilter *get_filter(size_t i) const;
+  MAKE_SEQ(get_filters, get_num_filters, get_filter);
+
+  static TexturePool *get_global_ptr();
+
   static void write(std::ostream &out);
 
 public:
   typedef Texture::MakeTextureFunc MakeTextureFunc;
   void register_texture_type(MakeTextureFunc *func, const std::string &extensions);
-  void register_filter(TexturePoolFilter *filter);
 
   MakeTextureFunc *get_texture_type(const std::string &extension) const;
   void write_texture_types(std::ostream &out, int indent_level) const;
-
-  static TexturePool *get_global_ptr();
 
 private:
   TexturePool();

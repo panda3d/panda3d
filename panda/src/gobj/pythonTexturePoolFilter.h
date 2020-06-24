@@ -27,21 +27,18 @@
  * This defines a Python-based texture pool filter plug-in. Instances of
  * this must be constructed by inheritance and explicitly registered.
  *
- * Registration can be performed using register_filter.
  * The Python texture pool filter must implement either the pre_load
  * or the post_load function of a typical texture pool filter.
  *
  * @since 1.11.0
  */
 class PythonTexturePoolFilter : public TexturePoolFilter {
-PUBLISHED:
+public:
   PythonTexturePoolFilter();
   ~PythonTexturePoolFilter();
 
-  bool register_filter(PyObject *tex_filter, TexturePool *tex_pool);
-  bool register_filter(PyObject *tex_filter);
+  bool init(PyObject *tex_filter);
 
-public:
   virtual PT(Texture) pre_load(const Filename &orig_filename,
                                const Filename &orig_alpha_filename,
                                int primary_file_num_channels,
@@ -53,6 +50,9 @@ public:
 private:
   PyObject *_pre_load_func = nullptr;
   PyObject *_post_load_func = nullptr;
+  long _filter_hash = -1;
+
+  friend class Extension<TexturePool>;
 
 public:
   static TypeHandle get_class_type() {
