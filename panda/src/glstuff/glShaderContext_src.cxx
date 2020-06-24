@@ -3432,6 +3432,16 @@ attach_shader(const ShaderModule *module) {
           sprintf(buf, "p%u", loc);
           compiler.set_name(id, buf);
 
+          // Find out how many locations this parameter occupies.
+          int num_locations = 1;
+          for (size_t i = 0; i < spv->get_num_parameters(); ++i) {
+            const ShaderModule::Variable &var = spv->get_parameter(i);
+            if (var._location == loc) {
+              num_locations = var.type->get_num_parameter_locations();
+              break;
+            }
+          }
+
           // Older versions of OpenGL (ES) do not support explicit uniform
           // locations, and we need to query the locations later.
           if ((!options.es && options.version < 430) ||
@@ -3439,7 +3449,9 @@ attach_shader(const ShaderModule *module) {
             _needs_query_uniform_locations = true;
           }
           else {
-            set_uniform_location(loc, loc);
+            for (int loc2 = loc; loc2 < loc + num_locations; ++loc2) {
+              set_uniform_location(loc2, loc2);
+            }
           }
         }
         else if (sc == spv::StorageClassInput) {

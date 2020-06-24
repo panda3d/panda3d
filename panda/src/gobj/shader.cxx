@@ -1927,6 +1927,8 @@ bind_parameter(const Parameter &param) {
   if (struct_type != nullptr && name_str.empty()) {
     bool success = true;
 
+    int location = param._location;
+
     for (size_t i = 0; i < struct_type->get_num_members(); ++i) {
       const ::ShaderType::Struct::Member &member = struct_type->get_member(i);
 
@@ -1934,19 +1936,29 @@ bind_parameter(const Parameter &param) {
       Parameter member_param(param);
       member_param._name = member.name;
       member_param._type = member.type;
-      member_param._location += i;
+      member_param._location = location;
       if (!bind_parameter(member_param)) {
         success = false;
       }
+
+      location += member.type->get_num_parameter_locations();
     }
 
     return success;
   }
 
   if (shader_cat.is_debug()) {
-    shader_cat.debug()
-      << "Binding parameter " << name_str << " with type " << *type
-      << " (location=" << param._location << ")\n";
+    int num_locations = type->get_num_parameter_locations();
+    if (num_locations < 2) {
+      shader_cat.debug()
+        << "Binding parameter " << name_str << " with type " << *type
+        << " (location=" << param._location << ")\n";
+    } else {
+      shader_cat.debug()
+        << "Binding parameter " << name_str << " with type " << *type
+        << " (location=" << param._location << ".."
+        << param._location + num_locations - 1 << ")\n";
+    }
   }
 
   // Split it at the underscores.
@@ -3070,6 +3082,8 @@ bind_parameter(const Parameter &param) {
     // Is this a struct?  If so, bind the individual members.
     bool success = true;
 
+    int location = param._location;
+
     for (size_t i = 0; i < struct_type->get_num_members(); ++i) {
       const ::ShaderType::Struct::Member &member = struct_type->get_member(i);
 
@@ -3087,7 +3101,7 @@ bind_parameter(const Parameter &param) {
         // We can't know yet, so we always have to handle it specially.
         ShaderMatSpec bind;
         bind._id = param;
-        bind._id._location += i;
+        bind._id._location = location;
         if (member.name == "shadowMatrix" && dim[1] == 4 && dim[2] == 4) {
           // Special exception for shadowMatrix, which is deprecated because it
           // includes the model transformation.  It is far more efficient to do
@@ -3137,17 +3151,18 @@ bind_parameter(const Parameter &param) {
           bind._arg[1] = nullptr;
         }
         cp_add_mat_spec(bind);
-        continue;
       }
-
-      // Otherwise, recurse.
-      Parameter member_param(param);
-      member_param._name = fqname;
-      member_param._type = member.type;
-      member_param._location += i;
-      if (!bind_parameter(member_param)) {
-        success = false;
+      else {
+        // Otherwise, recurse.
+        Parameter member_param(param);
+        member_param._name = fqname;
+        member_param._type = member.type;
+        member_param._location = location;
+        if (!bind_parameter(member_param)) {
+          success = false;
+        }
       }
+      location += member.type->get_num_parameter_locations();
     }
 
     return success;
@@ -3176,10 +3191,12 @@ bind_parameter(const Parameter &param) {
           Parameter member_param(param);
           member_param._name = elemname->append(member.name);
           member_param._type = member.type;
-          member_param._location = location++;
+          member_param._location = location;
           if (!bind_parameter(member_param)) {
             success = false;
           }
+
+          location += member.type->get_num_parameter_locations();
         }
       }
       return success;
