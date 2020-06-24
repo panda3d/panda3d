@@ -16,7 +16,7 @@
 #include "geom.h"
 #include "geomTrifans.h"
 
-TypedWritableReferenceCount NavMesh::_type_handle;
+TypeHandle NavMesh::_type_handle;
 
 NavMesh::NavMesh() {
 
