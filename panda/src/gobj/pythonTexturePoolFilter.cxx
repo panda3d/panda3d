@@ -72,7 +72,7 @@ init(PyObject *tex_filter) {
   if (_pre_load_func == nullptr && _post_load_func == nullptr) {
     PyErr_Format(PyExc_TypeError,
                  "texture pool filter plug-in %R does not define pre_load or post_load function",
-				 tex_filter);
+                 tex_filter);
     return false;
   }
 
