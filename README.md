@@ -100,7 +100,7 @@ for you to install, depending on your distribution).
 The following command illustrates how to build Panda3D with some common
 options:
 ```bash
-python makepanda/makepanda.py --everything --installer --no-egl --no-gles --no-gles2 --no-opencv
+python3 makepanda/makepanda.py --everything --installer --no-egl --no-gles --no-gles2 --no-opencv
 ```
 
 You will probably see some warnings saying that it's unable to find several
@@ -113,7 +113,7 @@ If you are on Ubuntu, this command should cover the most frequently
 used third-party packages:
 
 ```bash
-sudo apt-get install build-essential pkg-config fakeroot python-dev libpng-dev libjpeg-dev libtiff-dev zlib1g-dev libssl-dev libx11-dev libgl1-mesa-dev libxrandr-dev libxxf86dga-dev libxcursor-dev bison flex libfreetype6-dev libvorbis-dev libeigen3-dev libopenal-dev libode-dev libbullet-dev nvidia-cg-toolkit libgtk2.0-dev libassimp-dev libopenexr-dev
+sudo apt-get install build-essential pkg-config fakeroot python3-dev libpng-dev libjpeg-dev libtiff-dev zlib1g-dev libssl-dev libx11-dev libgl1-mesa-dev libxrandr-dev libxxf86dga-dev libxcursor-dev bison flex libfreetype6-dev libvorbis-dev libeigen3-dev libopenal-dev libode-dev libbullet-dev nvidia-cg-toolkit libgtk2.0-dev libassimp-dev libopenexr-dev
 ```
 
 Once Panda3D has built, you can either install the .deb or .rpm package that
