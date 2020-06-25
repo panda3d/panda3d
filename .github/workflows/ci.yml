@@ -4,6 +4,7 @@ on: [push, pull_request]
 jobs:
   cmake:
     name: CMake Buildsystem
+    if: "!contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.head_commit.message, '[ci skip]')"
 
     strategy:
       fail-fast: false
@@ -326,6 +327,7 @@ jobs:
         bash <(curl -s https://codecov.io/bash) -y ../.github/codecov.yml
 
   makepanda:
+    if: "!contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.head_commit.message, '[ci skip]')"
     strategy:
       matrix:
         os: [ubuntu-16.04, windows-2016, macOS-latest]
