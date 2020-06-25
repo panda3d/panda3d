@@ -73,6 +73,14 @@ unregister_filter(PyObject *tex_filter) {
 }
 
 /**
+ * If the given Python texture pool filter is registered, returns true.
+ */
+bool Extension<TexturePool>::
+is_filter_registered(PyObject *tex_filter) {
+  return find_existing_filter(tex_filter) != nullptr;
+}
+
+/**
  * Looks for a texture pool filter that is using the
  * given Python implementation of the texture filter.
  *

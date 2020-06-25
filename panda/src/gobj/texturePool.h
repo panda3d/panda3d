@@ -82,6 +82,7 @@ PUBLISHED:
 
   EXTENSION(bool register_filter(PyObject *tex_filter));
   EXTENSION(bool unregister_filter(PyObject *tex_filter));
+  EXTENSION(bool is_filter_registered(PyObject *tex_filter));
 
   bool register_filter(TexturePoolFilter *tex_filter);
   bool unregister_filter(TexturePoolFilter *tex_filter);

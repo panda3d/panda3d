@@ -34,6 +34,7 @@ class Extension<TexturePool> : public ExtensionBase<TexturePool> {
 public:
   bool register_filter(PyObject *tex_filter);
   bool unregister_filter(PyObject *tex_filter);
+  bool is_filter_registered(PyObject *tex_filter);
 
 private:
   TexturePoolFilter *find_existing_filter(PyObject *tex_filter);
