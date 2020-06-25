@@ -85,6 +85,7 @@ PUBLISHED:
 
   bool register_filter(TexturePoolFilter *tex_filter);
   bool unregister_filter(TexturePoolFilter *tex_filter);
+  bool is_filter_registered(TexturePoolFilter *tex_filter);
 
   size_t get_num_filters() const;
   TexturePoolFilter *get_filter(size_t i) const;

@@ -87,6 +87,17 @@ register_filter(TexturePoolFilter *tex_filter) {
 }
 
 /**
+ * Checks whether the given TexturePoolFilter object is
+ * currently registered in the texture pool or not.
+ */
+bool TexturePool::
+is_filter_registered(TexturePoolFilter *tex_filter) {
+  MutexHolder holder(_filter_lock);
+
+  return find(_filter_registry.begin(), _filter_registry.end(), tex_filter) != _filter_registry.end();
+}
+
+/**
  * Stops a TexturePoolFilter object from operating on this pool.
  */
 bool TexturePool::
