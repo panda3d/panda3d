@@ -154,13 +154,12 @@ post_load(Texture *tex) {
   // Wrap the arguments.
   PyObject *args = PyTuple_Pack(1, DTool_CreatePyInstance(tex, Dtool_Texture, true, false));
   PyObject *result = PythonThread::call_python_func(_post_load_func, args);
-  Texture *tex_res = nullptr;
 
   Py_DECREF(args);
 
   if (result != nullptr) {
     if (DtoolInstance_Check(result)) {
-      tex_res = (Texture *)DtoolInstance_UPCAST(result, Dtool_Texture);
+      tex = (Texture *)DtoolInstance_UPCAST(result, Dtool_Texture);
     }
     Py_DECREF(result);
   }
@@ -178,13 +177,7 @@ post_load(Texture *tex) {
   PyGILState_Release(gstate);
 #endif
 
-  if (tex_res != nullptr) {
-    return tex_res;
-  } else {
-    // The Python function did not return anything.
-    // We'll return our original texture instead!
-    return tex;
-  }
+  return tex;
 }
 
 #endif  // HAVE_PYTHON
