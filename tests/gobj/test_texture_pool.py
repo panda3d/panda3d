@@ -337,15 +337,13 @@ def test_is_texture_filter_registered(pool, pre_filter, mix_filter):
 
 
 def test_get_texture_filter(pool, pre_filter):
-    with pytest.raises(AssertionError):
-        pool.get_filter(0)
+    assert not pool.get_filter(0)
 
     assert pool.register_filter(pre_filter)
     tex_filter = pool.get_filter(0)
     assert isinstance(tex_filter, core.TexturePoolFilter)
 
-    with pytest.raises(AssertionError):
-        pool.get_filter(1)
+    assert not pool.get_filter(1)
 
 
 def test_texture_pre_filter(pool, pre_filter):

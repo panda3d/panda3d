@@ -144,8 +144,11 @@ TexturePoolFilter *TexturePool::
 ns_get_filter(size_t i) const {
   MutexHolder holder(_filter_lock);
 
-  nassertr_always(i >= 0 && i < _filter_registry.size(), nullptr);
-  return _filter_registry[i];
+  if (i >= 0 && i < _filter_registry.size()) {
+    return _filter_registry[i];
+  }
+
+  return nullptr;
 }
 
 /**

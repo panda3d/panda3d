@@ -94,7 +94,7 @@ find_existing_filter(PyObject *tex_filter) {
   for (size_t i = 0; i < num_filters; ++i) {
     TexturePoolFilter *filter = _this->get_filter(i);
 
-    if (filter->is_of_type(PythonTexturePoolFilter::get_class_type())) {
+    if (filter != nullptr && filter->is_of_type(PythonTexturePoolFilter::get_class_type())) {
       PythonTexturePoolFilter *py_filter = (PythonTexturePoolFilter *)filter;
 
       if (py_filter->_filter_hash == filter_hash) {
