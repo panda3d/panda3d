@@ -368,3 +368,11 @@ def test_texture_mix_filter(pool, mix_filter):
     texture = pool.load_texture('nonexistent')
     assert isinstance(texture, core.Texture)
     assert texture.get_name() == 'preloaded-postloaded'
+
+
+def test_no_texture_filter_option(pool, pre_filter, image_rgb_path):
+    register_filter(pool, pre_filter)
+
+    texture = pool.load_texture(image_rgb_path, 3, False, core.LoaderOptions.LF_no_filters)
+    assert isinstance(texture, core.Texture)
+    assert texture.get_name() != 'preloaded'
