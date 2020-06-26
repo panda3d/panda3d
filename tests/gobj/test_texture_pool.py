@@ -23,18 +23,14 @@ def register_filter(pool, tex_filter):
     assert pool.get_num_filters() == 1
 
 
-def unregister_filter(tex_filter):
+def yield_registered_filter(filter_type):
+    tex_filter = filter_type()
+    yield tex_filter
+
     p = core.TexturePool.get_global_ptr()
 
     if p.is_filter_registered(tex_filter):
         p.unregister_filter(tex_filter)
-
-
-def yield_registered_filter(filter_type):
-    tex_filter = filter_type()
-    yield tex_filter
-    unregister_filter(tex_filter)
-
 
 @pytest.fixture(scope='function')
 def pool():
