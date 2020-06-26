@@ -69,7 +69,7 @@ register_texture_type(MakeTextureFunc *func, const string &extensions) {
  * they are loaded from disk.
  */
 bool TexturePool::
-register_filter(TexturePoolFilter *tex_filter) {
+ns_register_filter(TexturePoolFilter *tex_filter) {
   MutexHolder holder(_filter_lock);
 
   // Make sure we haven't already registered this filter.
@@ -87,31 +87,31 @@ register_filter(TexturePoolFilter *tex_filter) {
 }
 
 /**
- * Checks whether the given TexturePoolFilter object is
- * currently registered in the texture pool or not.
- */
-bool TexturePool::
-is_filter_registered(TexturePoolFilter *tex_filter) {
-  MutexHolder holder(_filter_lock);
-
-  return find(_filter_registry.begin(), _filter_registry.end(), tex_filter) != _filter_registry.end();
-}
-
-/**
  * Stops all TexturePoolFilter objects from operating on this pool.
  */
 void TexturePool::
-clear_filters() {
+ns_clear_filters() {
   MutexHolder holder(_filter_lock);
 
   _filter_registry.clear();
 }
 
 /**
+ * Checks whether the given TexturePoolFilter object is
+ * currently registered in the texture pool or not.
+ */
+bool TexturePool::
+ns_is_filter_registered(TexturePoolFilter *tex_filter) {
+  MutexHolder holder(_filter_lock);
+
+  return find(_filter_registry.begin(), _filter_registry.end(), tex_filter) != _filter_registry.end();
+}
+
+/**
  * Stops a TexturePoolFilter object from operating on this pool.
  */
 bool TexturePool::
-unregister_filter(TexturePoolFilter *tex_filter) {
+ns_unregister_filter(TexturePoolFilter *tex_filter) {
   MutexHolder holder(_filter_lock);
 
   FilterRegistry::iterator fi = find(_filter_registry.begin(), _filter_registry.end(), tex_filter);
@@ -133,7 +133,7 @@ unregister_filter(TexturePoolFilter *tex_filter) {
  * Returns the total number of registered texture pool filters.
  */
 size_t TexturePool::
-get_num_filters() const {
+ns_get_num_filters() const {
   return _filter_registry.size();
 }
 
@@ -141,10 +141,10 @@ get_num_filters() const {
  * Returns the nth texture pool filter registered.
  */
 TexturePoolFilter *TexturePool::
-get_filter(size_t i) const {
+ns_get_filter(size_t i) const {
   MutexHolder holder(_filter_lock);
 
-  nassertr(i >= 0 && i < _filter_registry.size(), nullptr);
+  nassertr_always(i >= 0 && i < _filter_registry.size(), nullptr);
   return _filter_registry[i];
 }
 

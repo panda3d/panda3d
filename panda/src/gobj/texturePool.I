@@ -277,6 +277,56 @@ make_texture(const std::string &extension) {
 }
 
 /**
+ * Records a TexturePoolFilter object that may operate on texture images as
+ * they are loaded from disk.
+ */
+INLINE bool TexturePool::
+register_filter(TexturePoolFilter *tex_filter) {
+  return get_global_ptr()->ns_register_filter(tex_filter);
+}
+
+/**
+ * Stops all TexturePoolFilter objects from operating on this pool.
+ */
+INLINE void TexturePool::
+clear_filters() {
+  get_global_ptr()->ns_clear_filters();
+}
+
+/**
+ * Checks whether the given TexturePoolFilter object is
+ * currently registered in the texture pool or not.
+ */
+INLINE bool TexturePool::
+is_filter_registered(TexturePoolFilter *tex_filter) {
+  return get_global_ptr()->ns_is_filter_registered(tex_filter);
+}
+
+/**
+ * Stops a TexturePoolFilter object from operating on this pool.
+ */
+INLINE bool TexturePool::
+unregister_filter(TexturePoolFilter *tex_filter) {
+  return get_global_ptr()->ns_unregister_filter(tex_filter);
+}
+
+/**
+ * Returns the total number of registered texture pool filters.
+ */
+INLINE size_t TexturePool::
+get_num_filters() {
+  return get_global_ptr()->ns_get_num_filters();
+}
+
+/**
+ * Returns the nth texture pool filter registered.
+ */
+INLINE TexturePoolFilter *TexturePool::
+get_filter(size_t i) {
+  return get_global_ptr()->ns_get_filter(i);
+}
+
+/**
  * Defines relative ordering between LookupKey instances.
  */
 INLINE bool TexturePool::LookupKey::

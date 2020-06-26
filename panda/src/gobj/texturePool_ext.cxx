@@ -35,7 +35,7 @@ register_filter(PyObject *tex_filter) {
   PythonTexturePoolFilter *filter = new PythonTexturePoolFilter();
 
   if (filter->init(tex_filter)) {
-    return _this->register_filter(filter);
+    return _this->ns_register_filter(filter);
   }
 
   delete filter;
@@ -58,7 +58,7 @@ unregister_filter(PyObject *tex_filter) {
       break;
     }
 
-    unregistered = _this->unregister_filter(filter);
+    unregistered = _this->ns_unregister_filter(filter);
   }
 
   if (!unregistered) {

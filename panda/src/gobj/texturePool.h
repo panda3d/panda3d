@@ -80,19 +80,18 @@ PUBLISHED:
   INLINE static const Filename &get_fake_texture_image();
   INLINE static PT(Texture) make_texture(const std::string &extension);
 
+  INLINE static bool register_filter(TexturePoolFilter *tex_filter);
+  INLINE static bool unregister_filter(TexturePoolFilter *tex_filter);
+  INLINE static void clear_filters();
+
+  INLINE static bool is_filter_registered(TexturePoolFilter *tex_filter);
+
+  INLINE static size_t get_num_filters();
+  INLINE static TexturePoolFilter *get_filter(size_t i);
+
   EXTENSION(bool register_filter(PyObject *tex_filter));
   EXTENSION(bool unregister_filter(PyObject *tex_filter));
   EXTENSION(bool is_filter_registered(PyObject *tex_filter));
-
-  bool register_filter(TexturePoolFilter *tex_filter);
-  bool unregister_filter(TexturePoolFilter *tex_filter);
-  void clear_filters();
-
-  bool is_filter_registered(TexturePoolFilter *tex_filter);
-
-  size_t get_num_filters() const;
-  TexturePoolFilter *get_filter(size_t i) const;
-  MAKE_SEQ(get_filters, get_num_filters, get_filter);
 
   static TexturePool *get_global_ptr();
 
@@ -157,6 +156,15 @@ private:
                        bool read_mipmaps, const LoaderOptions &options);
   PT(Texture) post_load(Texture *tex);
 
+  bool ns_register_filter(TexturePoolFilter *tex_filter);
+  bool ns_unregister_filter(TexturePoolFilter *tex_filter);
+  void ns_clear_filters();
+
+  bool ns_is_filter_registered(TexturePoolFilter *tex_filter);
+
+  size_t ns_get_num_filters() const;
+  TexturePoolFilter *ns_get_filter(size_t i) const;
+
   void load_filters();
 
   static TexturePool *_global_ptr;
@@ -188,6 +196,8 @@ private:
 
   typedef pvector<TexturePoolFilter *> FilterRegistry;
   FilterRegistry _filter_registry;
+
+  friend class Extension<TexturePool>;
 };
 
 #include "texturePool.I"
