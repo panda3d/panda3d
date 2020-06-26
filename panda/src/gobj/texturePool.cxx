@@ -98,6 +98,16 @@ is_filter_registered(TexturePoolFilter *tex_filter) {
 }
 
 /**
+ * Stops all TexturePoolFilter objects from operating on this pool.
+ */
+void TexturePool::
+clear_filters() {
+  MutexHolder holder(_filter_lock);
+
+  _filter_registry.clear();
+}
+
+/**
  * Stops a TexturePoolFilter object from operating on this pool.
  */
 bool TexturePool::
