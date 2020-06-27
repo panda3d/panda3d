@@ -18,7 +18,7 @@
 #include "DetourNavMeshQuery.h"
 #include "navMeshBuilder.h"
 
-class NavMeshQuery
+class EXPCL_NAVIGATION NavMeshQuery
 {
 PUBLISHED:
   void set_nav_query(NavMeshBuilder *nav_mesh) { _nav_query = nav_mesh->get_nav_query(); }

@@ -21,7 +21,7 @@
 #include "navMesh.h"
 #include <string>
 
-class NavMeshNode: public PandaNode
+class EXPCL_NAVIGATION NavMeshNode: public PandaNode
 {
 PUBLISHED:
   NavMeshNode(const std::string &name, PT(NavMesh) nav_mesh);

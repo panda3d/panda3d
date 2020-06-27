@@ -52,6 +52,7 @@ NavMeshBuilder::NavMeshBuilder() :
   _normals(0),
   _vert_count(0),
   _tri_count(0) {
+  index_temp = 0;
   vertex_map.clear();
   vertex_vector.clear();
   face_vector.clear();
@@ -108,11 +109,27 @@ void NavMeshBuilder::add_triangle(int a, int b, int c, int &cap) {
   _tri_count++;
 }
 
+bool NavMeshBuilder::from_geom(PT(Geom) geom) {
+  int vcap = 0;
+  int tcap = 0;
+  //CPT(geom_pt) = &geom;
+  process_geom(geom, vcap, tcap);
+  _loaded = true;
+  return true;
+}
+
 bool NavMeshBuilder::from_node_path(NodePath node) {
   NodePathCollection geom_node_collection = node.find_all_matches("**/+GeomNode");
 
   int vcap = 0;
   int tcap = 0;
+
+  if (node.node()->is_of_type(GeomNode::get_class_type())) {
+    PT(GeomNode) g = DCAST(GeomNode, node.node());
+    process_geom_node(g, vcap, tcap);
+    _loaded = true;
+    return true;
+  }
 
   for (size_t i = 0; i < geom_node_collection.get_num_paths(); ++i) {
 
@@ -141,6 +158,7 @@ void NavMeshBuilder::process_primitive(const GeomPrimitive *orig_prim, const Geo
       vertex.set_row(a);
       v = vertex.get_data3();
       a = vertex_map[v];
+
       int b = prim->get_vertex(s + 1);
       vertex.set_row(b);
       v = vertex.get_data3();
@@ -155,6 +173,7 @@ void NavMeshBuilder::process_primitive(const GeomPrimitive *orig_prim, const Geo
       LVector3 xvx = { float(a + 1), float(b + 1), float(c + 1) };
       face_vector.push_back(xvx);
       add_triangle(a, b, c, tcap);
+
     }
     else if (e - s > 3) {
 
@@ -177,6 +196,7 @@ void NavMeshBuilder::process_primitive(const GeomPrimitive *orig_prim, const Geo
         LVector3 xvx = { float(a + 1), float(b + 1), float(c + 1) };
         face_vector.push_back(xvx);
         add_triangle(a, b, c, tcap);
+
       }
     }
     else continue;
@@ -196,16 +216,20 @@ void NavMeshBuilder::process_vertex_data(const GeomVertexData *vdata, int &vcap)
     y = v[1];
     z = v[2];
     if (vertex_map.find(v) == vertex_map.end()) {
-      //add_vertex(x, z, -y, vcap); //if input model is originally z-up
-      add_vertex(x, y, z, vcap); //if input model is originally y-up
-      vertex_map[v] = index_temp++;
+      add_vertex(x, z, -y, vcap); //if input model is originally z-up
+      //add_vertex(x, y, z, vcap); //if input model is originally y-up
+
+      //vertex_map[v] = index_temp++;
       LVector3 xvx = { v[0],v[2],-v[1] };
-      vertex_vector.push_back(xvx);
+      vertex_map[v] = index_temp++;
+      vertex_vector.push_back(v);
     }
 
   }
   return;
 }
+
+
 
 void NavMeshBuilder::process_geom(CPT(Geom) geom, int& vcap, int& tcap) {
 
@@ -401,7 +425,9 @@ PT(NavMesh) NavMeshBuilder::build() {
   // If your input data is multiple meshes, you can transform them here, calculate
   // the are type for each of the meshes and rasterize them.
   memset(_triareas, 0, ntris * sizeof(unsigned char));
+  
   rcMarkWalkableTriangles(_ctx, _cfg.walkableSlopeAngle, verts, nverts, tris, ntris, _triareas);
+
   if (!rcRasterizeTriangles(_ctx, verts, nverts, tris, _triareas, ntris, *_solid, _cfg.walkableClimb)) {
     _ctx->log(RC_LOG_ERROR, "buildNavigation: Could not rasterize triangles.");
     std::cout << "\nbuildNavigation: Could not rasterize triangles.\n";
@@ -572,7 +598,6 @@ PT(NavMesh) NavMeshBuilder::build() {
   //
   // (Optional) Step 8. Create Detour data from Recast poly mesh.
   //
-  std::cout << "\nSample_SoloMesh::handleBuild() : (Optional) Step 8. Create Detour data from Recast poly mesh.\n";
   // The GUI may allow more max points per polygon than Detour can handle.
   // Only build the detour navmesh if we do not exceed the limit.
   if (_cfg.maxVertsPerPoly <= DT_VERTS_PER_POLYGON) {
@@ -699,10 +724,10 @@ PT(GeomNode) NavMeshBuilder::draw_poly_mesh_geom() {
     const float y = orig[1] + v[1] * ch;
     const float z = orig[2] + v[2] * cs;
 
-    //vertex.add_data3(x, -z, y); //if origingally model is z-up
-    vertex.add_data3(x, y, z); //if originally model is y-up
+    vertex.add_data3(x, -z, y); //if origingally model is z-up
+    //vertex.add_data3(x, y, z); //if originally model is y-up
     colour.add_data4((float)rand() / RAND_MAX, (float)rand() / RAND_MAX, (float)rand() / RAND_MAX, 1);
-    std::cout << "index: " << i / 3 << "\t" << x << "\t" << y << "\t" << z << "\n";
+    //std::cout << "index: " << i / 3 << "\t" << x << "\t" << y << "\t" << z << "\n";
 
   }
 
@@ -732,7 +757,7 @@ PT(GeomNode) NavMeshBuilder::draw_poly_mesh_geom() {
         // The edge beginning with this vertex connects to 
         // polygon p[j + nvp].
       }
-      std::cout << "p[j]: " << p[j] << std::endl;
+      //std::cout << "p[j]: " << p[j] << std::endl;
 
     }
     prim->close_primitive();

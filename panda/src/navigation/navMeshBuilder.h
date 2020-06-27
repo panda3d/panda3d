@@ -62,20 +62,28 @@ struct BuildSettings {
 };
 
 
-class NavMeshBuilder {
+class EXPCL_NAVIGATION NavMeshBuilder {
 PUBLISHED:
-  float get_agent_radius() { return _agent_radius; }
-  float get_agent_height() { return _agent_height; }
-  float get_agent_climb() { return _agent_max_climb; }
+  float get_actor_radius() { return _agent_radius; }
+  float get_actor_height() { return _agent_height; }
+  float get_actor_climb() { return _agent_max_climb; }
   void set_actor_height(float h) { _agent_height = h; }
   void set_actor_radius(float r) { _agent_radius = r; }
   void set_actor_climb(float c) { _agent_max_climb = c; }
   void set_partition_type(std::string p);
   void reset_common_settings();
   bool from_node_path(NodePath node);
+  bool from_geom(PT(Geom) geom);
   PT(GeomNode) draw_poly_mesh_geom();
 
   PT(NavMesh) build();
+  NavMeshBuilder();
+
+  int get_vert_count() const { return _vert_count; }
+  int get_tri_count() const { return _tri_count; }
+  int get_pmesh_vert_count() { return _pmesh->nverts; }
+  int get_pmesh_poly_count() { return _pmesh->npolys; }
+  int get_pmesh_max_poly_count() { return _pmesh->maxpolys; }
 private:
   std::string _filename;
   float _scale;
@@ -142,7 +150,7 @@ protected:
 
 public:
 
-  NavMeshBuilder();
+  
   ~NavMeshBuilder();
   void set_context(rcContext *ctx) { _ctx = ctx; }
 
@@ -156,8 +164,7 @@ public:
   const float *get_verts() const { return _verts; }
   const float *get_normals() const { return _normals; }
   const int *get_tris() const { return _tris; }
-  int get_vert_count() const { return _vert_count; }
-  int get_tri_count() const { return _tri_count; }
+  
   const std::string& get_file_name() const { return _filename; }
   bool loaded_geom() { return _loaded; }
   
