@@ -19,17 +19,18 @@
 #include "DetourNavMesh.h"
 #include "typedWritableReferenceCount.h"
 
-class NavMesh: public TypedWritableReferenceCount
+class EXPCL_NAVIGATION NavMesh: public TypedWritableReferenceCount
 {
 PUBLISHED:
   NavMesh(dtNavMesh *nav_mesh);
   void set_nav_mesh(dtNavMesh *m) { _nav_mesh = m; }
+  NavMesh();
 
 private:
   dtNavMesh *_nav_mesh;
   
 public:
-  NavMesh();
+  
   
   ~NavMesh();
   
