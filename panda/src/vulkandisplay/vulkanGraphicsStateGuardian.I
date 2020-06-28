@@ -10,23 +10,3 @@
  * @author rdb
  * @date 2016-02-16
  */
-
-/**
- * Returns true if these two DescriptorSetKey objects are identical.
- */
-INLINE bool VulkanGraphicsStateGuardian::DescriptorSetKey::
-operator ==(const DescriptorSetKey &other) const {
-  return _tex_attrib == other._tex_attrib &&
-         _shader_attrib == other._shader_attrib;
-}
-
-/**
- * Defines relative sorting order of DescriptorSetKey objects.
- */
-INLINE bool VulkanGraphicsStateGuardian::DescriptorSetKey::
-operator < (const DescriptorSetKey &other) const {
-  if (_tex_attrib != other._tex_attrib) {
-    return _tex_attrib < other._tex_attrib;
-  }
-  return _shader_attrib < other._shader_attrib;
-}

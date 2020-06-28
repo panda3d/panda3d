@@ -30,7 +30,8 @@ public:
   bool create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_type);
   bool make_pipeline_layout(VkDevice device);
 
-  void update_uniform_buffers(VulkanGraphicsStateGuardian *gsg, VkCommandBuffer cmd, int altered);
+  void update_uniform_buffers(VulkanGraphicsStateGuardian *gsg, int altered);
+  bool update_descriptor_set(VulkanGraphicsStateGuardian *gsg, VkDescriptorSet ds);
 
   VkPipeline get_pipeline(VulkanGraphicsStateGuardian *gsg,
                           const RenderState *state,
@@ -40,7 +41,7 @@ public:
 
 private:
   VkShaderModule _modules[(size_t)Shader::Stage::compute + 1];
-  VkDescriptorSetLayout _descriptor_set_layouts[2];
+  VkDescriptorSetLayout _descriptor_set_layouts[VulkanGraphicsStateGuardian::DS_SET_COUNT];
   VkPipelineLayout _pipeline_layout;
 
   // Describe the two UBOs and push constant range we create.
@@ -56,6 +57,7 @@ private:
 
   VkDescriptorSet _uniform_descriptor_set;
   uint32_t _uniform_offsets[2];
+  uint32_t _num_uniform_offsets = 0;
 
   // These are for the push constants; maybe in the future we'll replace this
   // with a more generic and flexible system.

@@ -145,8 +145,18 @@ public:
                            VkPrimitiveTopology topology);
   VkPipeline make_compute_pipeline(VulkanShaderContext *sc);
 
-  VkDescriptorSet get_descriptor_set(const RenderState *state);
-  VkDescriptorSet make_descriptor_set(const RenderState *state);
+  // Built-in descriptor set indices, ordered by frequency.  Static descriptor
+  // sets come first.  We separate descriptor sets by the RenderAttrib that
+  // contains those inputs, so we can swap out only the set that has changed.
+  enum DescriptorSetIndex {
+    DS_texture_attrib = 0,
+    DS_ATTRIB_COUNT = 1,
+    DS_dynamic_uniforms = 1,
+    DS_SET_COUNT = 2,
+  };
+
+  bool get_attrib_descriptor_set(VkDescriptorSet &out, VkDescriptorSetLayout layout,
+                                 const RenderAttrib *attrib);
 
   VkDeviceSize update_dynamic_uniform_buffer(void *data, VkDeviceSize size);
   uint32_t get_color_palette_offset(const LColor &color);
@@ -157,25 +167,25 @@ public:
 
 public:
   VkDevice _device;
+  VkCommandBuffer _cmd;
+  VkCommandBuffer _transfer_cmd;
+  uint32_t _graphics_queue_family_index;
+  PT(Texture) _white_texture;
 
 private:
+  uint64_t _frame_counter = 0;
   VkQueue _queue;
   VkQueue _dma_queue;
-  uint32_t _graphics_queue_family_index;
   VkSampleCountFlagBits _multisample_count;
   VkFence _fence;
   VkCommandPool _cmd_pool;
-  VkCommandBuffer _cmd;
-  VkCommandBuffer _transfer_cmd;
   pvector<VkRect2D> _viewports;
   VkPipelineCache _pipeline_cache;
-  VkDescriptorSetLayout _descriptor_set_layout;
   VkDescriptorPool _descriptor_pool;
   VulkanShaderContext *_default_sc;
   VulkanShaderContext *_current_shader;
   const ShaderType::Struct *_push_constant_block_type = nullptr;
   CPT(GeomVertexFormat) _format;
-  PT(Texture) _white_texture;
 
   // Single large uniform buffer used for everything in a frame.
   VkBuffer _uniform_buffer;
@@ -202,21 +212,18 @@ private:
   typedef pmap<LColorf, uint32_t> ColorPaletteIndices;
   ColorPaletteIndices _color_palette;
 
-  /**
-   * Stores whatever is used to key a cached descriptor set into the
-   * descriptor set map.
-   */
-  struct DescriptorSetKey {
-    INLINE bool operator ==(const DescriptorSetKey &other) const;
-    INLINE bool operator < (const DescriptorSetKey &other) const;
-
-    CPT(TextureAttrib) _tex_attrib;
-    CPT(ShaderAttrib) _shader_attrib;
+  // Keep track of a created descriptor set and the last frame in which it was
+  // bound (since we can only update it once per frame).
+  struct DescriptorSet {
+    VkDescriptorSet _handle = VK_NULL_HANDLE;
+    uint64_t _last_update_frame = 0;
+    WeakReferenceList *_weak_ref = nullptr;
   };
 
-  //TODO: we need a garbage collection mechanism for this.
-  typedef pmap<DescriptorSetKey, VkDescriptorSet> DescriptorSetMap;
-  DescriptorSetMap _descriptor_set_map;
+  // We need only one map rather than one per descriptor set since each
+  // different type of RenderAttrib corresponds to a different descriptor set.
+  typedef pmap<const RenderAttrib *, DescriptorSet> AttribDescriptorSetMap;
+  AttribDescriptorSetMap _attrib_descriptor_set_map;
 
   // Keep track of all the individual allocations.
   Mutex _allocator_lock;
@@ -226,6 +233,7 @@ private:
   // Keep track of blocks that should be deleted at the next fence.
   pvector<VulkanMemoryBlock> _pending_free;
   pvector<VkBuffer> _pending_delete_buffers;
+  pvector<VkDescriptorSet> _pending_delete_descriptor_sets;
 
   // Queued buffer-to-RAM transfer.
   struct QueuedDownload {

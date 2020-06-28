@@ -176,35 +176,16 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
     vulkan_error(err, "Failed to create pipeline cache");
   }
 
-  // Create a descriptor set layout.
-  VkDescriptorSetLayoutBinding layout_binding;
-  layout_binding.binding = 0;
-  layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-  layout_binding.descriptorCount = 1;
-  layout_binding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-  layout_binding.pImmutableSamplers = nullptr;
-
-  VkDescriptorSetLayoutCreateInfo set_info;
-  set_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-  set_info.pNext = nullptr;
-  set_info.flags = 0;
-  set_info.bindingCount = 1;
-  set_info.pBindings = &layout_binding;
-
-  err = vkCreateDescriptorSetLayout(_device, &set_info, nullptr, &_descriptor_set_layout);
-  if (err) {
-    vulkan_error(err, "Failed to create descriptor set layout");
-  }
-
+  //TODO: dynamic allocation, create more pools if we run out
   VkDescriptorPoolSize pool_size;
   pool_size.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-  pool_size.descriptorCount = 64;
+  pool_size.descriptorCount = 256;
 
   VkDescriptorPoolCreateInfo pool_info;
   pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
   pool_info.pNext = nullptr;
-  pool_info.flags = 0;
-  pool_info.maxSets = 64;
+  pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+  pool_info.maxSets = 256;
   pool_info.poolSizeCount = 1;
   pool_info.pPoolSizes = &pool_size;
 
@@ -398,7 +379,6 @@ VulkanGraphicsStateGuardian::
   vkDestroyBuffer(_device, _uniform_buffer, nullptr);
   vkDestroyBuffer(_device, _color_vertex_buffer, nullptr);
   vkDestroyDescriptorPool(_device, _descriptor_pool, nullptr);
-  vkDestroyDescriptorSetLayout(_device, _descriptor_set_layout, nullptr);
   vkDestroyPipelineCache(_device, _pipeline_cache, nullptr);
   vkDestroyCommandPool(_device, _cmd_pool, nullptr);
   vkDestroyFence(_device, _fence, nullptr);
@@ -1203,6 +1183,8 @@ update_texture(TextureContext *tc, bool force) {
     if (!upload_texture(vtc)) {
       return false;
     }
+
+    vtc->mark_loaded();
   }
 
   vtc->enqueue_lru(&_prepared_objects->_graphics_memory_lru);
@@ -1393,7 +1375,7 @@ prepare_shader(Shader *shader) {
   alloc_info.pSetLayouts = &sc->_descriptor_set_layouts[1];
   err = vkAllocateDescriptorSets(_device, &alloc_info, &sc->_uniform_descriptor_set);
   if (err) {
-    vulkan_error(err, "Failed to allocate descriptor set");
+    vulkan_error(err, "Failed to allocate descriptor set for dynamic uniforms");
     delete sc;
     return nullptr;
   }
@@ -1756,35 +1738,26 @@ set_state_and_transform(const RenderState *state,
     vkCmdPushConstants(_cmd, sc->_pipeline_layout, sc->_push_constant_stage_mask, 64, 16, color.get_data());
   }
 
-  //TODO: properly compute altered field.
-  sc->update_uniform_buffers(this, _cmd, ~0);
+  // Update and bind descriptor sets.
+  VkDescriptorSet descriptor_sets[DS_SET_COUNT] = {};
 
-  const TextureAttrib *tex_attrib;
-  state->get_attrib_def(tex_attrib);
-
-  Texture *texture;
-  if (tex_attrib->has_on_stage(TextureStage::get_default())) {
-    texture = tex_attrib->get_on_texture(TextureStage::get_default());
-  } else {
-    texture = _white_texture;
+  if (get_attrib_descriptor_set(
+        descriptor_sets[DS_texture_attrib],
+        sc->_descriptor_set_layouts[DS_texture_attrib],
+        state->get_attrib_def(TextureAttrib::get_class_slot()))) {
+    // The first time this set is bound in this frame, we update it.  Once we
+    // use it in a command buffer, we can't update it again anyway.
+    sc->update_descriptor_set(this, descriptor_sets[DS_texture_attrib]);
   }
 
-  VulkanTextureContext *tc;
-  DCAST_INTO_V(tc, texture->prepare_now(0, get_prepared_objects(), this));
-  tc->set_active(true);
-  update_texture(tc, true);
+  descriptor_sets[DS_dynamic_uniforms] = sc->_uniform_descriptor_set;
 
-  // Transition the texture so that it can be read by the shader.  This has
-  // to happen on the transfer command buffer, since it can't happen during
-  // an active render pass.
-  tc->transition(_transfer_cmd, _graphics_queue_family_index,
-                 VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                 VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-                 VK_ACCESS_SHADER_READ_BIT);
+  //TODO: properly compute altered field.
+  sc->update_uniform_buffers(this, ~0);
 
-  VkDescriptorSet ds = get_descriptor_set(state);
   vkCmdBindDescriptorSets(_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                          sc->_pipeline_layout, 0, 1, &ds, 0, nullptr);
+                          sc->_pipeline_layout, 0, DS_SET_COUNT, descriptor_sets,
+                          sc->_num_uniform_offsets, sc->_uniform_offsets);
 }
 
 /**
@@ -1962,12 +1935,25 @@ begin_frame(Thread *current_thread) {
     }
   }
 
+  // Increase the frame counter, which we use to determine whether we've
+  // updated any resources in this frame.
+  ++_frame_counter;
+
   // Now we can return any memory that was pending deletion.
   for (VkBuffer buffer : _pending_delete_buffers) {
     vkDestroyBuffer(_device, buffer, nullptr);
   }
   _pending_delete_buffers.clear();
   _pending_free.clear();
+
+  if (!_pending_delete_descriptor_sets.empty()) {
+    if (!vkFreeDescriptorSets(_device, _descriptor_pool,
+                              _pending_delete_descriptor_sets.size(),
+                              &_pending_delete_descriptor_sets[0])) {
+      vulkan_error(err, "Failed to free descriptor sets");
+    }
+    _pending_delete_descriptor_sets.clear();
+  }
 
   // Recycle the global uniform buffer.  It's probably not worth it to expect
   // values to stick around between frames, because the vast majority of global
@@ -3177,94 +3163,60 @@ make_compute_pipeline(VulkanShaderContext *sc) {
 
 /**
  * Returns a VkDescriptorSet for the resources of the given render state.
+ * Returns true if this was the first use of this set in this frame, false
+ * otherwise.
  */
-VkDescriptorSet VulkanGraphicsStateGuardian::
-get_descriptor_set(const RenderState *state) {
-  DescriptorSetKey key;
-  key._tex_attrib =
-    (const TextureAttrib *)state->get_attrib_def(TextureAttrib::get_class_slot());
-  key._shader_attrib =
-    (const ShaderAttrib *)state->get_attrib_def(ShaderAttrib::get_class_slot());
+bool VulkanGraphicsStateGuardian::
+get_attrib_descriptor_set(VkDescriptorSet &out, VkDescriptorSetLayout layout, const RenderAttrib *attrib) {
+  // Look it up in the attribute map.
+  auto it = _attrib_descriptor_set_map.find(attrib);
+  if (it != _attrib_descriptor_set_map.end()) {
+    // Found something.  Check that it's not just a different state that has
+    // been allocated in the memory of a previous state.
+    DescriptorSet &set = it->second;
+    if (!set._weak_ref->was_deleted()) {
+      // Nope, it's not deleted, which must mean it's the same one, which must
+      // mean we have a live pointer to it (so no need to lock anything).
+      out = set._handle;
 
-  DescriptorSetMap::const_iterator it;
-  it = _descriptor_set_map.find(key);
-  if (it == _descriptor_set_map.end()) {
-    VkDescriptorSet ds = make_descriptor_set(state);
-    _descriptor_set_map[std::move(key)] = ds;
-    return ds;
-  } else {
-    return it->second;
+      bool is_current = _frame_counter == set._last_update_frame;
+      set._last_update_frame = _frame_counter;
+      return !is_current;
+    }
+
+
+    // It's been deleted, which means it's for a very different state.  We can
+    // let go of this one and create a new one instead.
+    if (!set._weak_ref->unref()) {
+      delete set._weak_ref;
+    }
+
+    _pending_delete_descriptor_sets.push_back(set._handle);
+    set._handle = VK_NULL_HANDLE;
   }
-}
 
-/**
- * Creates a VkDescriptorSet for the resources of the given render state.
- */
-VkDescriptorSet VulkanGraphicsStateGuardian::
-make_descriptor_set(const RenderState *state) {
-  if (vulkandisplay_cat.is_debug()) {
-    vulkandisplay_cat.debug()
-      << "Making descriptor set for state " << *state << "\n";
-  }
+  DescriptorSet set;
 
-  VkResult err;
-  VkDescriptorSet ds;
-
-  //TODO: layout creation.
   VkDescriptorSetAllocateInfo alloc_info;
   alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
   alloc_info.pNext = nullptr;
   alloc_info.descriptorPool = _descriptor_pool;
   alloc_info.descriptorSetCount = 1;
-  alloc_info.pSetLayouts = &_descriptor_set_layout;
-  err = vkAllocateDescriptorSets(_device, &alloc_info, &ds);
+  alloc_info.pSetLayouts = &layout;
+  VkResult err = vkAllocateDescriptorSets(_device, &alloc_info, &set._handle);
   if (err) {
-    vulkan_error(err, "Failed to allocate descriptor set");
-    return VK_NULL_HANDLE;
+    vulkan_error(err, "Failed to allocate descriptor set for attribute");
+    return false;
   }
 
-  // Now fill in the descriptor set with bindings.
-  const TextureAttrib *tex_attrib;
-  state->get_attrib_def(tex_attrib);
+  // Keep a weak reference, so we'll know if it's been deleted.
+  set._weak_ref = ((RenderAttrib *)attrib)->weak_ref();
 
-  Texture *texture;
-  SamplerState sampler;
+  set._last_update_frame = _frame_counter;
 
-  if (tex_attrib->has_on_stage(TextureStage::get_default())) {
-    texture = tex_attrib->get_on_texture(TextureStage::get_default());
-    sampler = tex_attrib->get_on_sampler(TextureStage::get_default());
-    nassertr(texture != nullptr, VK_NULL_HANDLE);
-  } else {
-    // Just use a white texture.
-    texture = _white_texture;
-  }
-
-  VulkanTextureContext *tc;
-  DCAST_INTO_R(tc, texture->prepare_now(0, get_prepared_objects(), this), VK_NULL_HANDLE);
-
-  VulkanSamplerContext *sc;
-  DCAST_INTO_R(sc, sampler.prepare_now(get_prepared_objects(), this), VK_NULL_HANDLE);
-
-  VkDescriptorImageInfo image_info;
-  image_info.sampler = sc->_sampler;
-  image_info.imageView = tc->_image_view;
-  image_info.imageLayout = tc->_layout;
-
-  VkWriteDescriptorSet write;
-  write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-  write.pNext = nullptr;
-  write.dstSet = ds;
-  write.dstBinding = 0;
-  write.dstArrayElement = 0;
-  write.descriptorCount = 1;
-  write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-  write.pImageInfo = &image_info;
-  write.pBufferInfo = nullptr;
-  write.pTexelBufferView = nullptr;
-
-  vkUpdateDescriptorSets(_device, 1, &write, 0, nullptr);
-
-  return ds;
+  _attrib_descriptor_set_map[attrib] = std::move(set);
+  out = set._handle;
+  return true;
 }
 
 /**
