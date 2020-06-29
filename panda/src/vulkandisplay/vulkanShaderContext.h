@@ -36,7 +36,8 @@ public:
   VkPipeline get_pipeline(VulkanGraphicsStateGuardian *gsg,
                           const RenderState *state,
                           const GeomVertexFormat *format,
-                          VkPrimitiveTopology topology);
+                          VkPrimitiveTopology topology,
+                          VkSampleCountFlagBits multisamples);
   VkPipeline get_compute_pipeline(VulkanGraphicsStateGuardian *gsg);
 
 private:
@@ -77,6 +78,7 @@ private:
     CPT(RenderState) _state;
     CPT(GeomVertexFormat) _format;
     VkPrimitiveTopology _topology;
+    VkSampleCountFlagBits _multisamples;
   };
 
   // A map of all pipelines that use this shader.  This is in ShaderContext

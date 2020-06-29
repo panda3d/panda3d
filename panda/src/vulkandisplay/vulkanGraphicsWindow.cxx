@@ -228,6 +228,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   vkgsg->_render_pass = _render_pass;
   vkgsg->_fb_color_tc = color_tc;
   vkgsg->_fb_depth_tc = _depth_stencil_tc;
+  vkgsg->_fb_ms_count = _ms_count;
   vkgsg->_wait_semaphore = _image_available;
   vkgsg->_signal_semaphore = _render_complete;
 
@@ -492,16 +493,11 @@ open_window() {
     }
 
     // There is no old gsg.  Create a new one.
-    vkgsg = new VulkanGraphicsStateGuardian(_engine, vkpipe, nullptr, queue_family_index, _ms_count);
+    vkgsg = new VulkanGraphicsStateGuardian(_engine, vkpipe, nullptr, queue_family_index);
     _gsg = vkgsg;
   } else {
     //TODO: check that the GSG's queue can present to our surface.
     DCAST_INTO_R(vkgsg, _gsg.p(), false);
-
-    if (vkgsg == nullptr || vkgsg->_multisample_count != _ms_count) {
-      vkgsg = new VulkanGraphicsStateGuardian(_engine, vkpipe, nullptr, queue_family_index, _ms_count);
-      _gsg = vkgsg;
-    }
   }
 
   if (!vkgsg->is_valid()) {

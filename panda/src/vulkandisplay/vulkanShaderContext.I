@@ -29,7 +29,7 @@ VulkanShaderContext(Shader *shader) :
  */
 INLINE VulkanShaderContext::
 ~VulkanShaderContext()  {
-  delete _mat_part_cache;
+  delete[] _mat_part_cache;
 }
 
 /**

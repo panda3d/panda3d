@@ -447,16 +447,18 @@ update_descriptor_set(VulkanGraphicsStateGuardian *gsg, VkDescriptorSet ds) {
  */
 VkPipeline VulkanShaderContext::
 get_pipeline(VulkanGraphicsStateGuardian *gsg, const RenderState *state,
-             const GeomVertexFormat *format, VkPrimitiveTopology topology) {
+             const GeomVertexFormat *format, VkPrimitiveTopology topology,
+             VkSampleCountFlagBits multisamples) {
   PipelineKey key;
   key._state = state;
   key._format = format;
   key._topology = topology;
+  key._multisamples = multisamples;
 
   PipelineMap::const_iterator it;
   it = _pipeline_map.find(key);
   if (it == _pipeline_map.end()) {
-    VkPipeline pipeline = gsg->make_pipeline(this, state, format, topology);
+    VkPipeline pipeline = gsg->make_pipeline(this, state, format, topology, multisamples);
     _pipeline_map[std::move(key)] = pipeline;
     return pipeline;
   } else {

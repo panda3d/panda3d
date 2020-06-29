@@ -176,6 +176,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 
   vkCmdBeginRenderPass(cmd, &begin_info, VK_SUBPASS_CONTENTS_INLINE);
   vkgsg->_render_pass = _render_pass;
+  vkgsg->_fb_ms_count = VK_SAMPLE_COUNT_1_BIT;
 
   return true;
 }

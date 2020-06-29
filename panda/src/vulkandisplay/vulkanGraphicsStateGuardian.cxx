@@ -64,14 +64,12 @@ TypeHandle VulkanGraphicsStateGuardian::_type_handle;
 VulkanGraphicsStateGuardian::
 VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
                             VulkanGraphicsStateGuardian *share_with,
-                            uint32_t queue_family_index,
-                            VkSampleCountFlagBits multisample_count) :
+                            uint32_t queue_family_index) :
   GraphicsStateGuardian(CS_default, engine, pipe),
   _device(VK_NULL_HANDLE),
   _queue(VK_NULL_HANDLE),
   _dma_queue(VK_NULL_HANDLE),
   _graphics_queue_family_index(queue_family_index),
-  _multisample_count(multisample_count),
   _cmd_pool(VK_NULL_HANDLE),
   _cmd(VK_NULL_HANDLE),
   _transfer_cmd(VK_NULL_HANDLE),
@@ -291,7 +289,7 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   _copy_texture_inverted = true;
 
   // Similarly with these capabilities flags.
-  _supports_multisample = (multisample_count > VK_SAMPLE_COUNT_1_BIT);
+  _supports_multisample = true;
   _supports_generate_mipmap = false;
   _supports_depth_texture = true;
   _supports_depth_stencil = true;
@@ -1715,10 +1713,11 @@ set_state_and_transform(const RenderState *state,
 
   VulkanShaderContext *sc = _default_sc;
   const ShaderAttrib *sa;
-  if (state->get_attrib(sa) && sa->has_shader()) {
+  if (state->get_attrib(sa)) {
     Shader *shader = (Shader *)sa->get_shader();
-    nassertv(shader != nullptr);
-    DCAST_INTO_V(sc, shader->prepare_now(get_prepared_objects(), this));
+    if (shader != nullptr) {
+      DCAST_INTO_V(sc, shader->prepare_now(get_prepared_objects(), this));
+    }
   }
 
   _current_shader = sc;
@@ -2558,7 +2557,7 @@ bool VulkanGraphicsStateGuardian::
 do_draw_primitive(const GeomPrimitivePipelineReader *reader, bool force,
                   VkPrimitiveTopology topology) {
 
-  VkPipeline pipeline = _current_shader->get_pipeline(this, _state_rs, _format, topology);
+  VkPipeline pipeline = _current_shader->get_pipeline(this, _state_rs, _format, topology, _fb_ms_count);
   nassertr(pipeline != VK_NULL_HANDLE, false);
   vkCmdBindPipeline(_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
@@ -2707,7 +2706,8 @@ create_semaphore() {
  */
 VkPipeline VulkanGraphicsStateGuardian::
 make_pipeline(VulkanShaderContext *sc, const RenderState *state,
-              const GeomVertexFormat *format, VkPrimitiveTopology topology) {
+              const GeomVertexFormat *format, VkPrimitiveTopology topology,
+              VkSampleCountFlagBits multisamples) {
   if (vulkandisplay_cat.is_debug()) {
     vulkandisplay_cat.debug()
       << "Making pipeline for state " << *state << " and format " << *format << "\n";
@@ -2951,7 +2951,7 @@ make_pipeline(VulkanShaderContext *sc, const RenderState *state,
   ms_info.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
   ms_info.pNext = nullptr;
   ms_info.flags = 0;
-  ms_info.rasterizationSamples = _multisample_count;
+  ms_info.rasterizationSamples = multisamples;
   ms_info.sampleShadingEnable = VK_FALSE;
   ms_info.minSampleShading = 0.0;
   ms_info.pSampleMask = nullptr;
@@ -3183,7 +3183,6 @@ get_attrib_descriptor_set(VkDescriptorSet &out, VkDescriptorSetLayout layout, co
       set._last_update_frame = _frame_counter;
       return !is_current;
     }
-
 
     // It's been deleted, which means it's for a very different state.  We can
     // let go of this one and create a new one instead.
