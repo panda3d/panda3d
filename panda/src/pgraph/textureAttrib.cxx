@@ -109,12 +109,18 @@ add_on_stage(TextureStage *stage, Texture *tex, int override) const {
   nassertr(tex != nullptr, this);
 
   TextureAttrib *attrib = new TextureAttrib(*this);
-  Stages::iterator si = attrib->_on_stages.insert(StageNode(stage)).first;
-  (*si)._override = override;
-  (*si)._texture = tex;
-  (*si)._implicit_sort = attrib->_next_implicit_sort;
-  (*si)._has_sampler = false;
-  ++(attrib->_next_implicit_sort);
+  auto result = attrib->_on_stages.insert(StageNode(stage));
+  StageNode &sn = *result.first;
+  sn._override = override;
+  sn._texture = tex;
+  sn._has_sampler = false;
+
+  // Only bump this if it doesn't already have the highest implicit sort.
+  // This prevents replacing a texture from creating a unique TextureAttrib.
+  if (result.second || sn._implicit_sort + 1 != attrib->_next_implicit_sort) {
+    sn._implicit_sort = attrib->_next_implicit_sort;
+    ++(attrib->_next_implicit_sort);
+  }
 
   return return_new(attrib);
 }
@@ -128,13 +134,19 @@ add_on_stage(TextureStage *stage, Texture *tex, const SamplerState &sampler, int
   nassertr(tex != nullptr, this);
 
   TextureAttrib *attrib = new TextureAttrib(*this);
-  Stages::iterator si = attrib->_on_stages.insert(StageNode(stage)).first;
-  (*si)._override = override;
-  (*si)._texture = tex;
-  (*si)._sampler = sampler;
-  (*si)._implicit_sort = attrib->_next_implicit_sort;
-  (*si)._has_sampler = true;
-  ++(attrib->_next_implicit_sort);
+  auto result = attrib->_on_stages.insert(StageNode(stage));
+  StageNode &sn = *result.first;
+  sn._override = override;
+  sn._texture = tex;
+  sn._sampler = sampler;
+  sn._has_sampler = true;
+
+  // Only bump this if it doesn't already have the highest implicit sort.
+  // This prevents replacing a texture from creating a unique TextureAttrib.
+  if (result.second || sn._implicit_sort + 1 != attrib->_next_implicit_sort) {
+    sn._implicit_sort = attrib->_next_implicit_sort;
+    ++(attrib->_next_implicit_sort);
+  }
 
   return return_new(attrib);
 }

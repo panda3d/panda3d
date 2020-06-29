@@ -306,22 +306,29 @@ set_properties_now(WindowProperties &properties) {
     LPoint2i bottom_right = top_left + _properties.get_size();
 
     DWORD window_style = make_style(_properties);
+    DWORD current_style = GetWindowLong(_hWnd, GWL_STYLE);
     SetWindowLong(_hWnd, GWL_STYLE, window_style);
 
-    // Now calculate the proper size and origin with the new window style.
-    RECT view_rect;
-    SetRect(&view_rect, top_left[0], top_left[1],
-            bottom_right[0], bottom_right[1]);
-    WINDOWINFO wi;
-    GetWindowInfo(_hWnd, &wi);
-    AdjustWindowRectEx(&view_rect, wi.dwStyle, FALSE, wi.dwExStyle);
+    // If we switched to/from undecorated, calculate the new size.
+    if (((window_style ^ current_style) & WS_CAPTION) != 0) {
+      RECT view_rect;
+      SetRect(&view_rect, top_left[0], top_left[1],
+              bottom_right[0], bottom_right[1]);
+      WINDOWINFO wi;
+      GetWindowInfo(_hWnd, &wi);
+      AdjustWindowRectEx(&view_rect, wi.dwStyle, FALSE, wi.dwExStyle);
 
-    // We need to call this to ensure that the style change takes effect.
-    SetWindowPos(_hWnd, HWND_NOTOPMOST, view_rect.left, view_rect.top,
-                 view_rect.right - view_rect.left,
-                 view_rect.bottom - view_rect.top,
-                 SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED |
-                 SWP_NOSENDCHANGING | SWP_SHOWWINDOW);
+      SetWindowPos(_hWnd, HWND_NOTOPMOST, view_rect.left, view_rect.top,
+                   view_rect.right - view_rect.left,
+                   view_rect.bottom - view_rect.top,
+                   SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED |
+                   SWP_NOSENDCHANGING | SWP_SHOWWINDOW);
+    } else {
+      // We need to call this to ensure that the style change takes effect.
+      SetWindowPos(_hWnd, HWND_NOTOPMOST, 0, 0, 0, 0,
+                   SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE |
+                   SWP_FRAMECHANGED | SWP_NOSENDCHANGING | SWP_SHOWWINDOW);
+    }
   }
 
   if (properties.has_title()) {
@@ -400,6 +407,23 @@ set_properties_now(WindowProperties &properties) {
       _properties.set_foreground(!properties.get_minimized());
     }
     properties.clear_minimized();
+  }
+
+  if (properties.has_maximized()) {
+    if (_properties.get_maximized() != properties.get_maximized()) {
+      if (properties.get_maximized()) {
+        ShowWindow(_hWnd, SW_MAXIMIZE);
+      } else {
+        ShowWindow(_hWnd, SW_RESTORE);
+      }
+      _properties.set_maximized(properties.get_maximized());
+
+      if (_properties.get_minimized()) {
+        // Immediately minimize it again
+        ShowWindow(_hWnd, SW_MINIMIZE);
+      }
+    }
+    properties.clear_maximized();
   }
 
   if (properties.has_fullscreen()) {
@@ -507,6 +531,7 @@ open_window() {
   }
   bool want_foreground = (!_properties.has_foreground() || _properties.get_foreground());
   bool want_minimized = (_properties.has_minimized() && _properties.get_minimized()) && !want_foreground;
+  bool want_maximized = (_properties.has_maximized() && _properties.get_maximized()) && want_foreground;
 
   HWND old_foreground_window = GetForegroundWindow();
 
@@ -533,6 +558,9 @@ open_window() {
   if (want_minimized) {
     ShowWindow(_hWnd, SW_MINIMIZE);
     ShowWindow(_hWnd, SW_MINIMIZE);
+  } else if (want_maximized) {
+    ShowWindow(_hWnd, SW_MAXIMIZE);
+    ShowWindow(_hWnd, SW_MAXIMIZE);
   } else {
     ShowWindow(_hWnd, SW_SHOWNORMAL);
     ShowWindow(_hWnd, SW_SHOWNORMAL);
@@ -854,6 +882,21 @@ handle_reshape() {
       << "," << properties.get_y_size() << ")\n";
   }
 
+  // Check whether the window has been maximized or unmaximized.
+  WINDOWPLACEMENT pl;
+  pl.length = sizeof(WINDOWPLACEMENT);
+  if (GetWindowPlacement(_hWnd, &pl)) {
+    if (pl.showCmd == SW_SHOWMAXIMIZED || (pl.flags & WPF_RESTORETOMAXIMIZED) != 0) {
+      properties.set_maximized(true);
+    } else {
+      properties.set_maximized(false);
+    }
+  }
+  else if (windisplay_cat.is_debug()) {
+    windisplay_cat.debug()
+      << "GetWindowPlacement() failed in handle_reshape.  Ignoring.\n";
+  }
+
   adjust_z_order();
   system_changed_properties(properties);
 }
@@ -1083,6 +1126,9 @@ calculate_metrics(bool fullscreen, DWORD window_style, WINDOW_METRICS &metrics,
 bool WinGraphicsWindow::
 open_graphic_window() {
   DWORD window_style = make_style(_properties);
+  if (_properties.get_maximized()) {
+    window_style |= WS_MAXIMIZE;
+  }
 
   wstring title;
   if (_properties.has_title()) {
