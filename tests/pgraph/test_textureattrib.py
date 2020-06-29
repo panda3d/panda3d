@@ -89,25 +89,6 @@ def test_textureattrib_compose_both():
     assert stage3 in tattr3.on_stages
 
 
-def test_textureattrib_implicit_sort():
-    # Tests that two TextureStages with same sort retain insertion order.
-    tattr1 = core.TextureAttrib.make()
-    tattr1 = tattr1.add_on_stage(stage1, tex1)
-    tattr1 = tattr1.add_on_stage(stage2, tex2)
-
-    assert tattr1.get_on_stage(0) == stage1
-    assert tattr1.get_on_stage(1) == stage2
-
-    tattr2 = core.TextureAttrib.make()
-    tattr2 = tattr1.add_on_stage(stage2, tex2)
-    tattr2 = tattr1.add_on_stage(stage1, tex1)
-
-    assert tattr2.get_on_stage(0) == stage2
-    assert tattr2.get_on_stage(1) == stage1
-
-    assert tattr1.compare_to(tattr2) == -tattr2.compare_to(tattr1)
-
-
 def test_textureattrib_compose_alloff():
     # Tests a case in which a child node disables all textures.
     tattr1 = core.TextureAttrib.make()
@@ -122,6 +103,37 @@ def test_textureattrib_compose_alloff():
     assert tattr3.get_num_on_stages() == 0
     assert tattr3.get_num_off_stages() == 0
     assert tattr3.has_all_off()
+
+
+def test_textureattrib_implicit_sort():
+    # Tests that two TextureStages with same sort retain insertion order.
+    tattr1 = core.TextureAttrib.make()
+    tattr1 = tattr1.add_on_stage(stage1, tex1)
+    tattr1 = tattr1.add_on_stage(stage2, tex2)
+
+    assert tattr1.get_on_stage(0) == stage1
+    assert tattr1.get_on_stage(1) == stage2
+
+    tattr2 = core.TextureAttrib.make()
+    tattr2 = tattr2.add_on_stage(stage2, tex2)
+    tattr2 = tattr2.add_on_stage(stage1, tex1)
+
+    assert tattr2.get_on_stage(0) == stage2
+    assert tattr2.get_on_stage(1) == stage1
+
+    assert tattr1.compare_to(tattr2) == -tattr2.compare_to(tattr1)
+
+
+def test_textureattrib_replace():
+    # Test that replacing a texture doesn't create a unique TextureAttrib.
+    tattr1 = core.TextureAttrib.make()
+    tattr1 = tattr1.add_on_stage(stage1, tex1)
+
+    tattr2 = tattr1.add_on_stage(stage1, tex1)
+
+    assert tattr1.get_num_stages() == 1
+    assert tattr2.get_num_stages() == 1
+    assert tattr1.compare_to(tattr2) == 0
 
 
 def test_textureattrib_compare():
