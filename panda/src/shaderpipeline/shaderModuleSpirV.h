@@ -176,6 +176,7 @@ public:
     Definition &modify_definition(uint32_t id);
 
     void assign_locations(Stage stage);
+    void bind_descriptor_set(uint32_t set, const vector_int &locations);
 
     void flatten_struct(uint32_t type_id);
     uint32_t make_block(const ShaderType::Struct *block_type, const pvector<int> &locations,
