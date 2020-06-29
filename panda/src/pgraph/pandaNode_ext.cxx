@@ -165,6 +165,12 @@ clear_python_tag(PyObject *key) {
   if (PyDict_GetItem(dict, key) != nullptr) {
     PyDict_DelItem(dict, key);
   }
+
+  if (PyDict_Size(dict) == 0 && Py_REFCNT(dict) == 1) {
+    // This was the last tag, and do_get_python_tags() made sure we have a
+    // unique reference to the tags, so clear the tag object.
+    _this->_python_tag_data.clear();
+  }
 }
 
 /**

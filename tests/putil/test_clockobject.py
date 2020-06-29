@@ -15,8 +15,14 @@ def test_clock_jump_frame_time(clockobj):
 
 def test_clock_get_real_time(clockobj):
     current_time = clockobj.get_real_time()
-    time.sleep(0.2)
-    assert current_time != clockobj.get_real_time()
+    time.sleep(0.4)
+    assert clockobj.get_real_time() - current_time >= 0.39
+
+
+def test_clock_get_long_time(clockobj):
+    current_time = clockobj.get_long_time()
+    time.sleep(0.4)
+    assert clockobj.get_long_time() - current_time >= 0.39
 
 
 def test_clock_get_dt(clockobj):

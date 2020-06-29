@@ -78,9 +78,7 @@ DAEToEggConverter(const DAEToEggConverter &copy) :
  */
 DAEToEggConverter::
 ~DAEToEggConverter() {
-  if (_error_handler != nullptr) {
-    delete _error_handler;
-  }
+  delete _error_handler;
 }
 
 /**

@@ -16,6 +16,8 @@
 
 #include "pandabase.h"
 
+#ifdef HAVE_X11
+
 #include "eglGraphicsPipe.h"
 #include "x11GraphicsWindow.h"
 
@@ -64,5 +66,7 @@ private:
 };
 
 #include "eglGraphicsWindow.I"
+
+#endif  // HAVE_X11
 
 #endif

@@ -199,39 +199,25 @@ void LwoToEggConverter::
 cleanup() {
   _lwo_header.clear();
 
-  if (_generic_layer != nullptr) {
-    delete _generic_layer;
-    _generic_layer = nullptr;
-  }
+  delete _generic_layer;
+  _generic_layer = nullptr;
 
-  Layers::iterator li;
-  for (li = _layers.begin(); li != _layers.end(); ++li) {
-    CLwoLayer *layer = (*li);
-    if (layer != nullptr) {
-      delete layer;
-    }
+  for (CLwoLayer *layer : _layers) {
+    delete layer;
   }
   _layers.clear();
 
-  Clips::iterator ci;
-  for (ci = _clips.begin(); ci != _clips.end(); ++ci) {
-    CLwoClip *clip = (*ci);
-    if (clip != nullptr) {
-      delete clip;
-    }
+  for (CLwoClip *clip : _clips) {
+    delete clip;
   }
   _clips.clear();
 
-  Points::iterator pi;
-  for (pi = _points.begin(); pi != _points.end(); ++pi) {
-    CLwoPoints *points = (*pi);
+  for (CLwoPoints *points : _points) {
     delete points;
   }
   _points.clear();
 
-  Polygons::iterator gi;
-  for (gi = _polygons.begin(); gi != _polygons.end(); ++gi) {
-    CLwoPolygons *polygons = (*gi);
+  for (CLwoPolygons *polygons : _polygons) {
     delete polygons;
   }
   _polygons.clear();

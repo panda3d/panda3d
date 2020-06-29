@@ -4,8 +4,6 @@ See the :ref:`distribution` section of the programming manual for information
 on how to use these commands.
 """
 
-from __future__ import print_function
-
 import collections
 import os
 import plistlib
@@ -31,9 +29,6 @@ import panda3d.core as p3d
 
 
 if sys.version_info < (3, 0):
-    # Python 3 defines these subtypes of IOError, but Python 2 doesn't.
-    FileNotFoundError = IOError
-
     # Warn the user.  They might be using Python 2 by accident.
     print("=================================================================")
     print("WARNING: You are using Python 2, which has reached the end of its")

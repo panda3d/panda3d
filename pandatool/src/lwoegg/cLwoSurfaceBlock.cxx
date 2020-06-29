@@ -144,7 +144,5 @@ CLwoSurfaceBlock(LwoToEggConverter *converter, const LwoSurfaceBlock *block) :
  */
 CLwoSurfaceBlock::
 ~CLwoSurfaceBlock() {
-  if (_tmap != nullptr) {
-    delete _tmap;
-  }
+  delete _tmap;
 }

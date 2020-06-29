@@ -805,21 +805,25 @@ read_args() {
 #elif defined(IS_FREEBSD)
   // In FreeBSD, we can use sysctl to determine the command-line arguments.
 
-  size_t bufsize = 4096;
-  char buffer[4096];
+  size_t bufsize = 0;
   int mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_ARGS, 0};
   mib[3] = getpid();
-  if (sysctl(mib, 4, (void*) buffer, &bufsize, nullptr, 0) == -1) {
+  if (sysctl(mib, 4, nullptr, &bufsize, nullptr, 0) == -1) {
     perror("sysctl");
   } else {
-    if (_binary_name.empty()) {
-      _binary_name = buffer;
-    }
-    size_t idx = strlen(buffer) + 1;
-    while (idx < bufsize) {
-      _args.push_back((char*)(buffer + idx));
-      size_t newidx = strlen(buffer + idx);
-      idx += newidx + 1;
+    char *buffer = (char *)alloca(bufsize);
+    if (sysctl(mib, 4, buffer, &bufsize, nullptr, 0) == -1) {
+      perror("sysctl");
+    } else {
+      if (_binary_name.empty()) {
+        _binary_name = buffer;
+      }
+      size_t idx = strlen(buffer) + 1;
+      while (idx < bufsize) {
+        _args.push_back((char*)(buffer + idx));
+        size_t newidx = strlen(buffer + idx);
+        idx += newidx + 1;
+      }
     }
   }
 

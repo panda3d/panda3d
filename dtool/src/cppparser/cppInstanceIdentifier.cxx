@@ -82,7 +82,7 @@ initializer_type(CPPParameterList *params) {
 CPPInstanceIdentifier::
 CPPInstanceIdentifier(CPPIdentifier *ident) :
   _ident(ident),
-  _bit_width(-1),
+  _bit_width(nullptr),
   _packed(false) {
 }
 
