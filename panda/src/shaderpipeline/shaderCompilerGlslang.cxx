@@ -461,7 +461,7 @@ bool ShaderCompilerGlslang::
 check_cg_header(const vector_uchar &code) {
   const char *p = (const char *)&code[0];
   const char *end = p + code.size();
-  while (isspace(*p) && p < end) {
+  while (p < end && isspace(*p)) {
     // Skip leading whitespace.
     ++p;
   }
