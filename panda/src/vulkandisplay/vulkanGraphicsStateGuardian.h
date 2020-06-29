@@ -148,17 +148,28 @@ public:
   // Built-in descriptor set indices, ordered by frequency.  Static descriptor
   // sets come first.  We separate descriptor sets by the RenderAttrib that
   // contains those inputs, so we can swap out only the set that has changed.
-  enum DescriptorSetIndex {
+  // Note that Vulkan only guarantees that 4 sets can be bound simultaneously,
+  // though most implementations support at least 8.
+  enum DescriptorSetIndex : uint32_t {
     DS_texture_attrib = 0,
-    DS_ATTRIB_COUNT = 1,
-    DS_dynamic_uniforms = 1,
-    DS_SET_COUNT = 2,
+    DS_shader_attrib = 1,
+
+    DS_ATTRIB_COUNT = 2,
+
+    // This one is used for other shader inputs and uses dynamic offsets.
+    DS_dynamic_uniforms = 2,
+
+    DS_SET_COUNT = 3,
   };
 
   bool get_attrib_descriptor_set(VkDescriptorSet &out, VkDescriptorSetLayout layout,
                                  const RenderAttrib *attrib);
 
+  bool update_lattr_descriptor_set(VkDescriptorSet ds, const LightAttrib *attr);
+  bool update_tattr_descriptor_set(VkDescriptorSet ds, const TextureAttrib *attr);
+  bool update_sattr_descriptor_set(VkDescriptorSet ds, const ShaderAttrib *attr);
   VkDeviceSize update_dynamic_uniform_buffer(void *data, VkDeviceSize size);
+
   uint32_t get_color_palette_offset(const LColor &color);
 
   VkFormat get_image_format(const Texture *texture) const;
@@ -224,6 +235,10 @@ private:
   // different type of RenderAttrib corresponds to a different descriptor set.
   typedef pmap<const RenderAttrib *, DescriptorSet> AttribDescriptorSetMap;
   AttribDescriptorSetMap _attrib_descriptor_set_map;
+
+  // Descriptor set layout used for the TextureAttrib descriptor set.  The
+  // others are shader-dependent and stored in VulkanShaderContext.
+  VkDescriptorSetLayout _tattr_descriptor_set_layout;
 
   // Keep track of all the individual allocations.
   Mutex _allocator_lock;

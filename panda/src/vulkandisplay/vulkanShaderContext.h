@@ -28,10 +28,11 @@ public:
   ALLOC_DELETED_CHAIN(VulkanShaderContext);
 
   bool create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_type);
-  bool make_pipeline_layout(VkDevice device);
+
+  VkDescriptorSetLayout make_shader_attrib_descriptor_set_layout(VkDevice device);
+  VkDescriptorSetLayout make_dynamic_uniform_descriptor_set_layout(VkDevice device);
 
   void update_uniform_buffers(VulkanGraphicsStateGuardian *gsg, int altered);
-  bool update_descriptor_set(VulkanGraphicsStateGuardian *gsg, VkDescriptorSet ds);
 
   VkPipeline get_pipeline(VulkanGraphicsStateGuardian *gsg,
                           const RenderState *state,
@@ -42,8 +43,8 @@ public:
 
 private:
   VkShaderModule _modules[(size_t)Shader::Stage::compute + 1];
-  VkDescriptorSetLayout _descriptor_set_layouts[VulkanGraphicsStateGuardian::DS_SET_COUNT];
-  VkPipelineLayout _pipeline_layout;
+  VkDescriptorSetLayout _sattr_descriptor_set_layout = VK_NULL_HANDLE;
+  VkPipelineLayout _pipeline_layout = VK_NULL_HANDLE;
 
   // Describe the two UBOs and push constant range we create.
   const ShaderType::Struct *_mat_block_type = nullptr;
@@ -62,7 +63,6 @@ private:
 
   // These are for the push constants; maybe in the future we'll replace this
   // with a more generic and flexible system.
-  const ShaderType::Struct *_push_constant_block_type = nullptr;
   int _push_constant_stage_mask = 0;
   int _projection_mat_stage_mask = 0;
   int _color_scale_stage_mask = 0;

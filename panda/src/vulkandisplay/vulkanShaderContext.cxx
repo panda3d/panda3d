@@ -20,10 +20,6 @@ TypeHandle VulkanShaderContext::_type_handle;
  */
 bool VulkanShaderContext::
 create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_type) {
-  nassertr(push_constant_block_type != nullptr, false);
-
-  _push_constant_block_type = push_constant_block_type;
-
   // Compose a struct type for all the mat inputs, also gathering ones that
   // should go into a separate push constant block.  This will become a new
   // uniform block in the shader that replaces the regular uniforms.
@@ -90,6 +86,26 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
     }
   }
 
+  // Compose descriptor sets for all the texture inputs.
+  vector_int tex_stage_set_locations;
+  vector_int tex_input_set_locations;
+  for (const Shader::ShaderTexSpec &spec : _shader->_tex_spec) {
+    if (spec._id._location >= 0) {
+      if (spec._part == Shader::STO_stage_i) {
+        // From TextureAttrib, these are bound as a descriptor set where each
+        // stage is simply numbered consecutively.
+        if (spec._stage >= tex_stage_set_locations.size()) {
+          tex_stage_set_locations.resize(spec._stage + 1, -1);
+        }
+        tex_stage_set_locations[spec._stage] = spec._id._location;
+      }
+      else if (spec._part == Shader::STO_named_input) {
+        // From ShaderAttrib.
+        tex_input_set_locations.push_back(spec._id._location);
+      }
+    }
+  }
+
   for (COWPT(ShaderModule) &cow_module : _shader->_modules) {
     CPT(ShaderModule) module = cow_module.get_read_pointer();
 
@@ -100,15 +116,27 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
     ShaderModuleSpirV::InstructionStream instructions = spv_module->_instructions;
     ShaderModuleSpirV::InstructionWriter writer(instructions);
 
+    // Create UBOs and a push constant block for the uniforms.
     size_t count = 0;
     if (_mat_block_size > 0) {
-      writer.make_block(_mat_block_type, mat_struct_locations, spv::StorageClassUniform, count++, 1);
+      writer.make_block(_mat_block_type, mat_struct_locations, spv::StorageClassUniform,
+                        count++, VulkanGraphicsStateGuardian::DS_dynamic_uniforms);
     }
     if (_ptr_block_size > 0) {
-      writer.make_block(_ptr_block_type, ptr_struct_locations, spv::StorageClassUniform, count++, 1);
+      writer.make_block(_ptr_block_type, ptr_struct_locations, spv::StorageClassUniform,
+                        count++, VulkanGraphicsStateGuardian::DS_dynamic_uniforms);
     }
-    if (_push_constant_stage_mask & (1 << (int)module->get_stage())) {
+    if (push_constant_block_type != nullptr &&
+        _push_constant_stage_mask & (1 << (int)module->get_stage())) {
       writer.make_block(push_constant_block_type, push_constant_locations, spv::StorageClassPushConstant, 0, 0);
+    }
+
+    // Bind the textures to the desired descriptor sets.
+    if (!tex_stage_set_locations.empty()) {
+      writer.bind_descriptor_set(VulkanGraphicsStateGuardian::DS_texture_attrib, tex_stage_set_locations);
+    }
+    if (!tex_input_set_locations.empty()) {
+      writer.bind_descriptor_set(VulkanGraphicsStateGuardian::DS_shader_attrib, tex_input_set_locations);
     }
 
     // Change OpenGL conventions to Vulkan conventions.
@@ -153,49 +181,59 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
 }
 
 /**
- *
+ * Creates a descriptor set to hold the shader inputs in this shader.
+ * Result is returned and also stored in _sattr_descriptor_set_layout.
  */
-bool VulkanShaderContext::
-make_pipeline_layout(VkDevice device) {
-  // Create a layout containing two sets: one for textures, one for uniforms.
-  uint32_t tex_binding_count = (uint32_t)_shader->_tex_spec.size();
-  VkDescriptorSetLayoutBinding *ds_bindings[2] = {
-    (VkDescriptorSetLayoutBinding *)alloca(sizeof(VkDescriptorSetLayoutBinding) * tex_binding_count),
-    (VkDescriptorSetLayoutBinding *)alloca(sizeof(VkDescriptorSetLayoutBinding) * 2),
-  };
+VkDescriptorSetLayout VulkanShaderContext::
+make_shader_attrib_descriptor_set_layout(VkDevice device) {
+  VkDescriptorSetLayoutBinding *bindings;
+  bindings = (VkDescriptorSetLayoutBinding *)alloca(sizeof(VkDescriptorSetLayoutBinding) * _shader->_tex_spec.size());
 
-  uint32_t index = 0;
+  size_t i = 0;
   for (const Shader::ShaderTexSpec &spec : _shader->_tex_spec) {
-    VkDescriptorSetLayoutBinding &binding = ds_bindings[0][index];
-    binding.binding = index;
+    if (spec._part != Shader::STO_named_input || spec._id._location < 0) {
+      continue;
+    }
+
+    VkDescriptorSetLayoutBinding &binding = bindings[i];
+    binding.binding = i;
     binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     binding.descriptorCount = 1;
     binding.stageFlags = spec._id._stage_mask;
     binding.pImmutableSamplers = nullptr;
-    ++index;
+
+    ++i;
   }
 
-  {
-    VkDescriptorSetLayoutCreateInfo set_info;
-    set_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    set_info.pNext = nullptr;
-    set_info.flags = 0;
-    set_info.bindingCount = tex_binding_count;
-    set_info.pBindings = ds_bindings[0];
+  VkDescriptorSetLayoutCreateInfo set_info;
+  set_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+  set_info.pNext = nullptr;
+  set_info.flags = 0;
+  set_info.bindingCount = i;
+  set_info.pBindings = bindings;
 
-    VkResult
-    err = vkCreateDescriptorSetLayout(device, &set_info, nullptr,
-      &_descriptor_set_layouts[VulkanGraphicsStateGuardian::DS_texture_attrib]);
-    if (err) {
-      vulkan_error(err, "Failed to create descriptor set layout");
-      return false;
-    }
+  VkDescriptorSetLayout result;
+  VkResult
+  err = vkCreateDescriptorSetLayout(device, &set_info, nullptr, &result);
+  if (err) {
+    vulkan_error(err, "Failed to create descriptor set layout for ShaderAttrib");
+    return VK_NULL_HANDLE;
   }
 
-  // Same for the UBOs.
+  _sattr_descriptor_set_layout = result;
+  return result;
+}
+
+/**
+ * Creates a descriptor set to hold the dynamic uniform blocks in this shader.
+ */
+VkDescriptorSetLayout VulkanShaderContext::
+make_dynamic_uniform_descriptor_set_layout(VkDevice device) {
+  VkDescriptorSetLayoutBinding bindings[2];
+
   size_t count = 0;
   if (_mat_block_size > 0) {
-    VkDescriptorSetLayoutBinding &binding = ds_bindings[1][count];
+    VkDescriptorSetLayoutBinding &binding = bindings[count];
     binding.binding = count++;
     binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
     binding.descriptorCount = 1;
@@ -203,7 +241,7 @@ make_pipeline_layout(VkDevice device) {
     binding.pImmutableSamplers = nullptr;
   }
   if (_ptr_block_size > 0) {
-    VkDescriptorSetLayoutBinding &binding = ds_bindings[1][count];
+    VkDescriptorSetLayoutBinding &binding = bindings[count];
     binding.binding = count++;
     binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
     binding.descriptorCount = 1;
@@ -211,49 +249,22 @@ make_pipeline_layout(VkDevice device) {
     binding.pImmutableSamplers = nullptr;
   }
 
-  {
-    VkDescriptorSetLayoutCreateInfo set_info;
-    set_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    set_info.pNext = nullptr;
-    set_info.flags = 0;
-    set_info.bindingCount = count;
-    set_info.pBindings = ds_bindings[1];
+  VkDescriptorSetLayoutCreateInfo set_info;
+  set_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+  set_info.pNext = nullptr;
+  set_info.flags = 0;
+  set_info.bindingCount = count;
+  set_info.pBindings = bindings;
 
-    VkResult
-    err = vkCreateDescriptorSetLayout(device, &set_info, nullptr,
-      &_descriptor_set_layouts[VulkanGraphicsStateGuardian::DS_dynamic_uniforms]);
-    if (err) {
-      vulkan_error(err, "Failed to create descriptor set layout");
-      return false;
-    }
-  }
-
-  // Create the push constant range.  Because we have declared the same block
-  // in all stages that use any push constant, we only need to define one range.
-  // I'm happy with that, because I've gone down the route of trying to sort out
-  // the ranges exactly in the way that Vulkan wants it, and it's not fun.
-  VkPushConstantRange range;
-  range.stageFlags = _push_constant_stage_mask;
-  range.offset = 0;
-  range.size = _push_constant_stage_mask ? _push_constant_block_type->get_size_bytes() : 0;
-
-  VkPipelineLayoutCreateInfo layout_info;
-  layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-  layout_info.pNext = nullptr;
-  layout_info.flags = 0;
-  layout_info.setLayoutCount = VulkanGraphicsStateGuardian::DS_SET_COUNT;
-  layout_info.pSetLayouts = _descriptor_set_layouts;
-  layout_info.pushConstantRangeCount = _push_constant_stage_mask ? 1 : 0;
-  layout_info.pPushConstantRanges = &range;
-
+  VkDescriptorSetLayout result;
   VkResult
-  err = vkCreatePipelineLayout(device, &layout_info, nullptr, &_pipeline_layout);
+  err = vkCreateDescriptorSetLayout(device, &set_info, nullptr, &result);
   if (err) {
-    vulkan_error(err, "Failed to create pipeline layout");
-    return false;
+    vulkan_error(err, "Failed to create descriptor set layout for dynamic uniforms");
+    return VK_NULL_HANDLE;
   }
 
-  return true;
+  return result;
 }
 
 /**
@@ -337,109 +348,6 @@ update_uniform_buffers(VulkanGraphicsStateGuardian *gsg, int altered) {
 
   //TODO: ptr inputs
   _uniform_offsets[count] = 0;
-}
-
-/**
- * Updates a VkDescriptorSet with the resources of the current render state.
- */
-bool VulkanShaderContext::
-update_descriptor_set(VulkanGraphicsStateGuardian *gsg, VkDescriptorSet ds) {
-  PreparedGraphicsObjects *pgo = gsg->get_prepared_objects();
-
-  size_t num_textures = _shader->_tex_spec.size();
-  VkWriteDescriptorSet *writes = (VkWriteDescriptorSet *)alloca(num_textures * sizeof(VkWriteDescriptorSet));
-  VkDescriptorImageInfo *image_infos = (VkDescriptorImageInfo *)alloca(num_textures * sizeof(VkDescriptorImageInfo));
-
-  for (size_t i = 0; i < num_textures; ++i) {
-    Shader::ShaderTexSpec &spec = _shader->_tex_spec[i];
-
-    SamplerState sampler;
-    int view = gsg->get_current_tex_view_offset();
-
-    PT(Texture) tex = gsg->fetch_specified_texture(spec, sampler, view);
-    if (tex.is_null()) {
-      tex = gsg->_white_texture;
-    }
-
-    if (tex->get_texture_type() != spec._desired_type) {
-      switch (spec._part) {
-      case Shader::STO_named_input:
-        vulkandisplay_cat.error()
-          << "Sampler type of shader input '" << *spec._name << "' does not "
-             "match type of texture " << *tex << ".\n";
-        break;
-
-      case Shader::STO_stage_i:
-        vulkandisplay_cat.error()
-          << "Sampler type of shader input p3d_Texture" << spec._stage
-          << " does not match type of texture " << *tex << ".\n";
-        break;
-
-      case Shader::STO_light_i_shadow_map:
-        vulkandisplay_cat.error()
-          << "Sampler type of shader input p3d_LightSource[" << spec._stage
-          << "].shadowMap does not match type of texture " << *tex << ".\n";
-        break;
-      }
-      // TODO: also check whether shadow sampler textures have shadow filter
-      // enabled.
-    }
-
-    VulkanTextureContext *tc;
-    DCAST_INTO_R(tc, tex->prepare_now(view, pgo, gsg), false);
-
-    VulkanSamplerContext *sampc;
-    DCAST_INTO_R(sampc, sampler.prepare_now(pgo, gsg), false);
-
-    tc->set_active(true);
-    gsg->update_texture(tc, true);
-
-    // Transition the texture so that it can be read by the shader.  This has
-    // to happen on the transfer command buffer, since it can't happen during
-    // an active render pass.
-    VkPipelineStageFlags stage_flags = 0;
-    if (spec._id._stage_mask & (1 << (int)Shader::Stage::vertex)) {
-      stage_flags |= VK_PIPELINE_STAGE_VERTEX_SHADER_BIT;
-    }
-    if (spec._id._stage_mask & (1 << (int)Shader::Stage::tess_control)) {
-      stage_flags |= VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT;
-    }
-    if (spec._id._stage_mask & (1 << (int)Shader::Stage::tess_evaluation)) {
-      stage_flags |= VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT;
-    }
-    if (spec._id._stage_mask & (1 << (int)Shader::Stage::fragment)) {
-      stage_flags |= VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-    }
-    if (spec._id._stage_mask & (1 << (int)Shader::Stage::geometry)) {
-      stage_flags |= VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT;
-    }
-    if (spec._id._stage_mask & (1 << (int)Shader::Stage::compute)) {
-      stage_flags |= VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
-    }
-    tc->transition(gsg->_transfer_cmd, gsg->_graphics_queue_family_index,
-                   VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                   stage_flags, VK_ACCESS_SHADER_READ_BIT);
-
-    VkDescriptorImageInfo &image_info = image_infos[i];
-    image_info.sampler = sampc->_sampler;
-    image_info.imageView = tc->_image_view;
-    image_info.imageLayout = tc->_layout;
-
-    VkWriteDescriptorSet &write = writes[i];
-    write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    write.pNext = nullptr;
-    write.dstSet = ds;
-    write.dstBinding = 0;
-    write.dstArrayElement = 0;
-    write.descriptorCount = 1;
-    write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    write.pImageInfo = &image_info;
-    write.pBufferInfo = nullptr;
-    write.pTexelBufferView = nullptr;
-  }
-
-  vkUpdateDescriptorSets(gsg->_device, num_textures, writes, 0, nullptr);
-  return true;
 }
 
 /**
