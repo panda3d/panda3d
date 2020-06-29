@@ -296,11 +296,29 @@ update_uniform_buffers(VulkanGraphicsStateGuardian *gsg, int altered) {
   #endif
 
       uint32_t offset = _mat_block_type->get_member(i++).offset;
-      char *dest = (char *)ptr + offset;
+      PN_float32 *dest = (PN_float32 *)((char *)ptr + offset);
 
       switch (spec._piece) {
       case Shader::SMP_whole:
         memcpy(dest, data, 64);
+        break;
+      case Shader::SMP_transpose:
+        dest[0] = data[0];
+        dest[1] = data[4];
+        dest[2] = data[8];
+        dest[3] = data[12];
+        dest[4] = data[1];
+        dest[5] = data[5];
+        dest[6] = data[9];
+        dest[7] = data[13];
+        dest[8] = data[2];
+        dest[9] = data[6];
+        dest[10] = data[10];
+        dest[11] = data[14];
+        dest[12] = data[3];
+        dest[13] = data[7];
+        dest[14] = data[11];
+        dest[15] = data[15];
         break;
       case Shader::SMP_row0:
         memcpy(dest, data + 0, 16);
@@ -314,6 +332,30 @@ update_uniform_buffers(VulkanGraphicsStateGuardian *gsg, int altered) {
       case Shader::SMP_row3:
         memcpy(dest, data + 12, 16);
         break;
+      case Shader::SMP_col0:
+        dest[0] = data[0];
+        dest[1] = data[4];
+        dest[2] = data[8];
+        dest[3] = data[12];
+        break;
+      case Shader::SMP_col1:
+        dest[0] = data[1];
+        dest[1] = data[5];
+        dest[2] = data[9];
+        dest[3] = data[13];
+        break;
+      case Shader::SMP_col2:
+        dest[0] = data[2];
+        dest[1] = data[6];
+        dest[2] = data[10];
+        dest[3] = data[14];
+        break;
+      case Shader::SMP_col3:
+        dest[0] = data[3];
+        dest[1] = data[7];
+        dest[2] = data[11];
+        dest[3] = data[15];
+        break;
       case Shader::SMP_row3x1:
         memcpy(dest, data + 12, 4);
         break;
@@ -323,6 +365,28 @@ update_uniform_buffers(VulkanGraphicsStateGuardian *gsg, int altered) {
       case Shader::SMP_row3x3:
         memcpy(dest, data + 12, 12);
         break;
+      case Shader::SMP_upper3x3:
+        dest[0] = data[0];
+        dest[1] = data[1];
+        dest[2] = data[2];
+        dest[3] = data[4];
+        dest[4] = data[5];
+        dest[5] = data[6];
+        dest[6] = data[8];
+        dest[7] = data[9];
+        dest[8] = data[10];
+        break;
+      case Shader::SMP_transpose3x3:
+        dest[0] = data[0];
+        dest[1] = data[4];
+        dest[2] = data[8];
+        dest[3] = data[1];
+        dest[4] = data[5];
+        dest[5] = data[9];
+        dest[6] = data[2];
+        dest[7] = data[6];
+        dest[8] = data[10];
+        break;
       case Shader::SMP_cell15:
         memcpy(dest, data + 15, 4);
         break;
@@ -331,10 +395,6 @@ update_uniform_buffers(VulkanGraphicsStateGuardian *gsg, int altered) {
         break;
       case Shader::SMP_cell13:
         memcpy(dest, data + 13, 4);
-        break;
-      default:
-        //TODO: transpositions and such
-        assert(false);
         break;
       }
     }
