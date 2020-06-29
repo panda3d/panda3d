@@ -17,6 +17,8 @@
 #include "config_vulkandisplay.h"
 #include "graphicsBuffer.h"
 
+class VulkanTextureContext;
+
 /**
  * An offscreen buffer using the Vulkan API.
  */
@@ -64,7 +66,6 @@ private:
   };
   typedef pvector<Attachment> Attachments;
   Attachments _attachments;
-  bool _layout_defined;
 
 public:
   static TypeHandle get_class_type() {

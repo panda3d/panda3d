@@ -2472,8 +2472,14 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
   nassertr(_render_pass == VK_NULL_HANDLE, false);
   nassertr(!_closing_gsg, false);
 
-  nassertr(_fb_color_tc != nullptr, false);
-  VulkanTextureContext *fbtc = _fb_color_tc;
+  VulkanTextureContext *fbtc;
+  if (rb._buffer_type & (RenderBuffer::T_depth | RenderBuffer::T_stencil)) {
+    fbtc = _fb_depth_tc;
+    nassertr(_fb_depth_tc != nullptr, false);
+  } else {
+    fbtc = _fb_color_tc;
+    nassertr(_fb_color_tc != nullptr, false);
+  }
 
   int xo, yo, w, h;
   dr->get_region_pixels(xo, yo, w, h);

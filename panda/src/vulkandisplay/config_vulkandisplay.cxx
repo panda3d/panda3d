@@ -12,6 +12,7 @@
  */
 
 #include "config_vulkandisplay.h"
+#include "vulkanGraphicsBuffer.h"
 #include "vulkanGraphicsPipe.h"
 #include "vulkanGraphicsStateGuardian.h"
 #include "vulkanGraphicsWindow.h"
@@ -73,6 +74,7 @@ init_libvulkandisplay() {
   }
   initialized = true;
 
+  VulkanGraphicsBuffer::init_type();
   VulkanGraphicsPipe::init_type();
   VulkanGraphicsStateGuardian::init_type();
   VulkanGraphicsWindow::init_type();
