@@ -1872,7 +1872,14 @@ fetch_specified_texture(Shader::ShaderTexSpec &spec, SamplerState &sampler,
         Light *light_obj = light.node()->as_light();
         nassertr(light_obj != nullptr, nullptr);
 
-        PT(Texture) tex = get_shadow_map(light);
+        PT(Texture) tex;
+        LightLensNode *lln = DCAST(LightLensNode, light.node());
+        if (lln != nullptr && lln->_shadow_caster) {
+          tex = get_shadow_map(light);
+        } else {
+          tex = get_dummy_shadow_map((Texture::TextureType)spec._desired_type);
+        }
+
         if (tex != nullptr) {
           sampler = tex->get_default_sampler();
         }
