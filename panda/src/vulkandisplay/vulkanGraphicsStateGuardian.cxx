@@ -2836,7 +2836,8 @@ make_pipeline(VulkanShaderContext *sc, const RenderState *state,
   state->get_attrib_def(color_attr);
 
   // Now describe each vertex attribute (ie. GeomVertexColumn).
-  const Shader *shader = _default_sc->get_shader();
+  const Shader *shader = sc->get_shader();
+  nassertr(shader != nullptr, VK_NULL_HANDLE);
   pvector<Shader::ShaderVarSpec>::const_iterator it;
 
   VkVertexInputAttributeDescription *attrib_desc = (VkVertexInputAttributeDescription *)
