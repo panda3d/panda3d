@@ -406,8 +406,121 @@ update_uniform_buffers(VulkanGraphicsStateGuardian *gsg, int altered) {
     ++count;
   }
 
-  //TODO: ptr inputs
-  _uniform_offsets[count] = 0;
+  // We have no way to track modifications to PTAs, so we assume that they are
+  // modified every frame and when we switch ShaderAttribs.
+  if (_ptr_block_size > 0 &&
+      (altered & (Shader::SSD_shaderinputs | Shader::SSD_frame)) != 0) {
+    void *ptr = alloca(_ptr_block_size);
+
+    size_t i = 0;
+    for (Shader::ShaderPtrSpec &spec : _shader->_ptr_spec) {
+      Shader::ShaderPtrData ptr_data;
+      if (!gsg->fetch_ptr_parameter(spec, ptr_data)) {
+        continue;
+      }
+
+      nassertd(spec._dim[1] > 0) continue;
+
+      uint32_t dim = spec._dim[1] * spec._dim[2];
+
+      uint32_t offset = _ptr_block_type->get_member(i++).offset;
+      void *dest = (void *)((char *)ptr + offset);
+
+      int array_size = std::min(spec._dim[0], (uint32_t)(ptr_data._size / dim));
+      switch (spec._type) {
+      case ShaderType::ST_bool:
+      case ShaderType::ST_float:
+        {
+          float *data = (float *)dest;
+
+          switch (ptr_data._type) {
+          case ShaderType::ST_int:
+            // Convert int data to float data.
+            for (int i = 0; i < (array_size * dim); ++i) {
+              data[i] = (float)(((int*)ptr_data._ptr)[i]);
+            }
+            break;
+
+          case ShaderType::ST_uint:
+            // Convert unsigned int data to float data.
+            for (int i = 0; i < (array_size * dim); ++i) {
+              data[i] = (float)(((unsigned int*)ptr_data._ptr)[i]);
+            }
+            break;
+
+          case ShaderType::ST_double:
+            // Downgrade double data to float data.
+            for (int i = 0; i < (array_size * dim); ++i) {
+              data[i] = (float)(((double*)ptr_data._ptr)[i]);
+            }
+            break;
+
+          case ShaderType::ST_float:
+            memcpy(data, ptr_data._ptr, array_size * dim * sizeof(float));
+            break;
+
+          default:
+            nassertd(false) continue;
+          }
+        }
+        break;
+
+      case ShaderType::ST_int:
+      case ShaderType::ST_uint:
+        if (ptr_data._type != ShaderType::ST_int &&
+            ptr_data._type != ShaderType::ST_uint) {
+          vulkandisplay_cat.error()
+            << "Cannot pass floating-point data to integer shader input '" << spec._id._name << "'\n";
+
+        } else {
+          memcpy(dest, ptr_data._ptr, array_size * dim * sizeof(int));
+          nassertd(false) continue;
+        }
+        break;
+
+      case ShaderType::ST_double:
+        {
+          double *data = (double *)dest;
+
+          switch (ptr_data._type) {
+          case ShaderType::ST_int:
+            // Convert int data to double data.
+            for (int i = 0; i < (array_size * dim); ++i) {
+              data[i] = (double)(((int*)ptr_data._ptr)[i]);
+            }
+            break;
+
+          case ShaderType::ST_uint:
+            // Convert unsigned int data to double data.
+            for (int i = 0; i < (array_size * dim); ++i) {
+              data[i] = (double)(((unsigned int*)ptr_data._ptr)[i]);
+            }
+            break;
+
+          case ShaderType::ST_double:
+            memcpy(data, ptr_data._ptr, array_size * dim * sizeof(double));
+            break;
+
+          case ShaderType::ST_float:
+            // Upgrade float data to double data.
+            for (int i = 0; i < (array_size * dim); ++i) {
+              data[i] = (double)(((double*)ptr_data._ptr)[i]);
+            }
+            break;
+
+          default:
+            nassertd(false) continue;
+          }
+        }
+        break;
+
+      default:
+        continue;
+      }
+    }
+
+    _uniform_offsets[count] = gsg->update_dynamic_uniform_buffer(ptr, _mat_block_size);
+  }
 }
 
 /**
