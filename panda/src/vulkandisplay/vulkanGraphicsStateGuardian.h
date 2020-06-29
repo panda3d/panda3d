@@ -151,15 +151,16 @@ public:
   // Note that Vulkan only guarantees that 4 sets can be bound simultaneously,
   // though most implementations support at least 8.
   enum DescriptorSetIndex : uint32_t {
-    DS_texture_attrib = 0,
-    DS_shader_attrib = 1,
+    DS_light_attrib = 0,
+    DS_texture_attrib = 1,
+    DS_shader_attrib = 2,
 
-    DS_ATTRIB_COUNT = 2,
+    DS_ATTRIB_COUNT = 3,
 
     // This one is used for other shader inputs and uses dynamic offsets.
-    DS_dynamic_uniforms = 2,
+    DS_dynamic_uniforms = 3,
 
-    DS_SET_COUNT = 3,
+    DS_SET_COUNT = 4,
   };
 
   bool get_attrib_descriptor_set(VkDescriptorSet &out, VkDescriptorSetLayout layout,
@@ -236,8 +237,10 @@ private:
   typedef pmap<const RenderAttrib *, DescriptorSet> AttribDescriptorSetMap;
   AttribDescriptorSetMap _attrib_descriptor_set_map;
 
-  // Descriptor set layout used for the TextureAttrib descriptor set.  The
-  // others are shader-dependent and stored in VulkanShaderContext.
+  // Descriptor set layouts used for the TextureAttrib and LightAttrib
+  // descriptor sets.  The others are shader-dependent and stored in
+  // VulkanShaderContext.
+  VkDescriptorSetLayout _lattr_descriptor_set_layout;
   VkDescriptorSetLayout _tattr_descriptor_set_layout;
 
   // Keep track of all the individual allocations.

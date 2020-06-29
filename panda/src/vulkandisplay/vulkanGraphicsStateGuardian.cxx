@@ -25,9 +25,12 @@
 #include "cullFaceAttrib.h"
 #include "depthTestAttrib.h"
 #include "depthWriteAttrib.h"
+#include "lightAttrib.h"
 #include "logicOpAttrib.h"
 #include "renderModeAttrib.h"
 #include "transparencyAttrib.h"
+
+#include "lightLensNode.h"
 
 static const std::string default_vshader =
   "#version 330\n"
@@ -219,20 +222,50 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
     _push_constant_block_type = ShaderType::register_type(std::move(struct_type));
   }
 
-  // Create a descriptor set layout for our TextureAttrib descriptor set.
-  const uint32_t num_texture_stages = 16;
-  VkDescriptorSetLayoutBinding stage_bindings[num_texture_stages];
+  // Create a descriptor set layout for our LightAttrib descriptor set.
+  const uint32_t num_shadow_maps = 16;
+  {
+    VkDescriptorSetLayoutBinding shadow_bindings[num_shadow_maps];
 
-  for (uint32_t i = 0; i < num_texture_stages; ++i) {
-    VkDescriptorSetLayoutBinding &binding = stage_bindings[i];
-    binding.binding = i;
-    binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    binding.descriptorCount = 1;
-    binding.stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS;
-    binding.pImmutableSamplers = nullptr;
+    for (uint32_t i = 0; i < num_shadow_maps; ++i) {
+      VkDescriptorSetLayoutBinding &binding = shadow_bindings[i];
+      binding.binding = i;
+      binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+      binding.descriptorCount = 1;
+      binding.stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS;
+      binding.pImmutableSamplers = nullptr;
+    }
+
+    VkDescriptorSetLayoutCreateInfo set_info;
+    set_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    set_info.pNext = nullptr;
+    set_info.flags = 0;
+    set_info.bindingCount = num_shadow_maps;
+    set_info.pBindings = shadow_bindings;
+
+    VkResult
+    err = vkCreateDescriptorSetLayout(_device, &set_info, nullptr,
+      &_lattr_descriptor_set_layout);
+    if (err) {
+      vulkan_error(err, "Failed to create descriptor set layout for LightAttrib");
+      return;
+    }
   }
 
+  // Create a descriptor set layout for our TextureAttrib descriptor set.
+  const uint32_t num_texture_stages = 16;
   {
+    VkDescriptorSetLayoutBinding stage_bindings[num_texture_stages];
+
+    for (uint32_t i = 0; i < num_texture_stages; ++i) {
+      VkDescriptorSetLayoutBinding &binding = stage_bindings[i];
+      binding.binding = i;
+      binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+      binding.descriptorCount = 1;
+      binding.stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS;
+      binding.pImmutableSamplers = nullptr;
+    }
+
     VkDescriptorSetLayoutCreateInfo set_info;
     set_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
     set_info.pNext = nullptr;
@@ -407,6 +440,7 @@ VulkanGraphicsStateGuardian::
   // Remove the things we created in the constructor, in reverse order.
   vkDestroyBuffer(_device, _uniform_buffer, nullptr);
   vkDestroyBuffer(_device, _color_vertex_buffer, nullptr);
+  vkDestroyDescriptorSetLayout(_device, _lattr_descriptor_set_layout, nullptr);
   vkDestroyDescriptorSetLayout(_device, _tattr_descriptor_set_layout, nullptr);
   vkDestroyDescriptorPool(_device, _descriptor_pool, nullptr);
   vkDestroyPipelineCache(_device, _pipeline_cache, nullptr);
@@ -1395,6 +1429,7 @@ prepare_shader(Shader *shader) {
   // Create the pipeline layout.  We use a predetermined number of sets, with
   // specific sets corresponding to different render attributes.
   VkDescriptorSetLayout ds_layouts[DS_SET_COUNT] = {};
+  ds_layouts[DS_light_attrib] = _lattr_descriptor_set_layout;
   ds_layouts[DS_texture_attrib] = _tattr_descriptor_set_layout;
   ds_layouts[DS_shader_attrib] = sc->make_shader_attrib_descriptor_set_layout(_device);
   ds_layouts[DS_dynamic_uniforms] = sc->make_dynamic_uniform_descriptor_set_layout(_device);
@@ -1809,12 +1844,20 @@ set_state_and_transform(const RenderState *state,
   // Update and bind descriptor sets.
   VkDescriptorSet descriptor_sets[DS_SET_COUNT] = {};
 
+  const LightAttrib *target_light;
+  state->get_attrib_def(target_light);
+  if (get_attrib_descriptor_set(descriptor_sets[DS_light_attrib],
+                                _lattr_descriptor_set_layout,
+                                target_light)) {
+    // The first time this set is bound in this frame, we update it.  Once we
+    // use it in a command buffer, we can't update it again anyway.
+    update_lattr_descriptor_set(descriptor_sets[DS_light_attrib], target_light);
+  }
+
   determine_target_texture();
   if (get_attrib_descriptor_set(descriptor_sets[DS_texture_attrib],
                                 _tattr_descriptor_set_layout,
                                 _target_texture)) {
-    // The first time this set is bound in this frame, we update it.  Once we
-    // use it in a command buffer, we can't update it again anyway.
     update_tattr_descriptor_set(descriptor_sets[DS_texture_attrib], _target_texture);
   }
 
@@ -3299,7 +3342,84 @@ get_attrib_descriptor_set(VkDescriptorSet &out, VkDescriptorSetLayout layout, co
  */
 bool VulkanGraphicsStateGuardian::
 update_lattr_descriptor_set(VkDescriptorSet ds, const LightAttrib *attr) {
-  return false;
+  const size_t num_shadow_maps = 16;
+  VkWriteDescriptorSet *writes = (VkWriteDescriptorSet *)alloca(num_shadow_maps * sizeof(VkWriteDescriptorSet));
+  VkDescriptorImageInfo *image_infos = (VkDescriptorImageInfo *)alloca(num_shadow_maps * sizeof(VkDescriptorImageInfo));
+
+  size_t num_lights = attr->get_num_non_ambient_lights();
+
+  PT(Texture) dummy = get_dummy_shadow_map(Texture::TT_2d_texture);
+
+  for (size_t i = 0; i < num_shadow_maps; ++i) {
+    PT(Texture) texture;
+
+    if (i < num_lights) {
+      NodePath light = attr->get_on_light(i);
+      nassertr(!light.is_empty(), nullptr);
+      Light *light_obj = light.node()->as_light();
+      nassertr(light_obj != nullptr, nullptr);
+
+      LightLensNode *lln = DCAST(LightLensNode, light.node());
+      if (lln != nullptr && lln->is_shadow_caster()) {
+        texture = get_shadow_map(light);
+      } else {
+        texture = dummy;
+      }
+    } else {
+      texture = dummy;
+    }
+
+    VulkanTextureContext *tc;
+    DCAST_INTO_R(tc, texture->prepare_now(0, _prepared_objects, this), false);
+
+    VulkanSamplerContext *sc;
+    DCAST_INTO_R(sc, texture->get_default_sampler().prepare_now(_prepared_objects, this), false);
+
+    tc->set_active(true);
+    update_texture(tc, true);
+
+    // Transition the texture so that it can be read by the shader.  This has
+    // to happen on the transfer command buffer, since it can't happen during
+    // an active render pass.
+    // We don't know at this point which stages is using them, and finding out
+    // would require duplication of descriptor sets, so we flag all stages.
+    VkPipelineStageFlags stage_flags = 0
+      | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT
+      | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT
+      | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT
+      ;
+    if (_supported_shader_caps & ShaderModule::C_tessellation_shader) {
+      //stage_flags |= VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT;
+      //stage_flags |= VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT;
+    }
+    if (_supported_shader_caps & ShaderModule::C_geometry_shader) {
+      //stage_flags |= VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT;
+    }
+
+    tc->transition(_transfer_cmd, _graphics_queue_family_index,
+                   VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                   stage_flags, VK_ACCESS_SHADER_READ_BIT);
+
+    VkDescriptorImageInfo &image_info = image_infos[i];
+    image_info.sampler = sc->_sampler;
+    image_info.imageView = tc->_image_view;
+    image_info.imageLayout = tc->_layout;
+
+    VkWriteDescriptorSet &write = writes[i];
+    write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    write.pNext = nullptr;
+    write.dstSet = ds;
+    write.dstBinding = i;
+    write.dstArrayElement = 0;
+    write.descriptorCount = 1;
+    write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    write.pImageInfo = &image_info;
+    write.pBufferInfo = nullptr;
+    write.pTexelBufferView = nullptr;
+  }
+
+  vkUpdateDescriptorSets(_device, num_shadow_maps, writes, 0, nullptr);
+  return true;
 }
 
 /**
