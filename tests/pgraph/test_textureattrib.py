@@ -131,8 +131,8 @@ def test_textureattrib_replace():
 
     tattr2 = tattr1.add_on_stage(stage1, tex1)
 
-    assert tattr1.get_num_stages() == 1
-    assert tattr2.get_num_stages() == 1
+    assert tattr1.get_num_on_stages() == 1
+    assert tattr2.get_num_on_stages() == 1
     assert tattr1.compare_to(tattr2) == 0
 
 
