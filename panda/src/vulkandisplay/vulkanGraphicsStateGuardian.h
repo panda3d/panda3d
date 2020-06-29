@@ -141,7 +141,8 @@ public:
 
   VkPipeline make_pipeline(VulkanShaderContext *sc, const RenderState *state,
                            const GeomVertexFormat *format,
-                           VkPrimitiveTopology topology);
+                           VkPrimitiveTopology topology,
+                           VkSampleCountFlagBits multisamples);
   VkPipeline make_compute_pipeline(VulkanShaderContext *sc);
 
   // Built-in descriptor set indices, ordered by frequency.  Static descriptor

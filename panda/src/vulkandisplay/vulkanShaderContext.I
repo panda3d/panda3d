@@ -39,7 +39,8 @@ INLINE bool VulkanShaderContext::PipelineKey::
 operator ==(const PipelineKey &other) const {
   return _state == other._state
       && _format == other._format
-      && _topology == other._topology;
+      && _topology == other._topology
+      && _multisamples == other._multisamples;
 }
 
 /**
@@ -53,5 +54,8 @@ operator < (const PipelineKey &other) const {
   if (_format != other._format) {
     return _format < other._format;
   }
-  return _topology < other._topology;
+  if (_topology != other._topology) {
+    return _topology < other._topology;
+  }
+  return _multisamples < other._multisamples;
 }
