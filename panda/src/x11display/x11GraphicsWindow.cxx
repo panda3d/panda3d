@@ -309,6 +309,9 @@ process_events() {
   WindowProperties properties;
   bool changed_properties = false;
 
+  XPropertyEvent property_event;
+  bool got_net_wm_state_change = false;
+
   while (XCheckIfEvent(_display, &event, check_event, (char *)this)) {
     if (got_keyrelease_event) {
       // If a keyrelease event is immediately followed by a matching keypress
@@ -360,6 +363,19 @@ process_events() {
 
     switch (event.type) {
     case ReparentNotify:
+      break;
+
+    case PropertyNotify:
+      //std::cout << "PropertyNotify event: atom = " << event.xproperty.atom << std::endl;
+      x11GraphicsPipe *x11_pipe;
+      DCAST_INTO_V(x11_pipe, _pipe);
+      if (event.xproperty.atom == x11_pipe->_net_wm_state) {
+        // currently we're only interested in the net_wm_state type of
+        // changes and only need to gather property informations once at
+        // the end after the while loop
+        property_event = event.xproperty;
+        got_net_wm_state_change = true;
+      }
       break;
 
     case ConfigureNotify:
@@ -585,6 +601,45 @@ process_events() {
       }
   }
 
+  if (got_net_wm_state_change) {
+    // some wm state properties have been changed, check their values
+    // once in this part instead of multiple times in the while loop
+
+    // Check if this window is maximized or not
+    bool is_maximized = false;
+    Atom wmState = property_event.atom;
+    Atom type;
+    int format;
+    unsigned long nItem, bytesAfter;
+    unsigned char *new_window_properties = NULL;
+    // gather all properties from the active dispplay and window
+    XGetWindowProperty(_display, _xwindow, wmState, 0, LONG_MAX, false, AnyPropertyType, &type, &format, &nItem, &bytesAfter, &new_window_properties);
+    if (nItem > 0) {
+      x11GraphicsPipe *x11_pipe;
+      DCAST_INTO_V(x11_pipe, _pipe);
+      // run through all found items
+      for (unsigned long iItem = 0; iItem < nItem; ++iItem) {
+        unsigned long item = reinterpret_cast<unsigned long *>(new_window_properties)[iItem];
+        // check if the item is one of the maximized states
+        if (item == x11_pipe->_net_wm_state_maximized_horz ||
+            item == x11_pipe->_net_wm_state_maximized_vert) {
+          // The window was maximized
+          is_maximized = true;
+        }
+      }
+    }
+
+    // Debug entry
+    if (x11display_cat.is_debug()) {
+      x11display_cat.debug()
+        << "set maximized to: " << is_maximized << "\n";
+    }
+
+    // Now make sure the property will get stored correctly
+    properties.set_maximized(is_maximized);
+    changed_properties = true;
+  }
+
   if (changed_properties) {
     system_changed_properties(properties);
   }
@@ -789,6 +844,12 @@ set_properties_now(WindowProperties &properties) {
   if (properties.has_fullscreen()) {
     _properties.set_fullscreen(properties.get_fullscreen());
     properties.clear_fullscreen();
+  }
+
+  // Same for maximized.
+  if (properties.has_maximized()) {
+    _properties.set_maximized(properties.get_maximized());
+    properties.clear_maximized();
   }
 
   // The size and position of an already-open window are changed via explicit
@@ -1101,7 +1162,8 @@ open_window() {
     KeyPressMask | KeyReleaseMask |
     EnterWindowMask | LeaveWindowMask |
     PointerMotionMask |
-    FocusChangeMask | StructureNotifyMask;
+    FocusChangeMask | StructureNotifyMask |
+    PropertyChangeMask;
 
   // Initialize window attributes
   XSetWindowAttributes wa;
@@ -1271,6 +1333,18 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
   };
   SetAction set_data[max_set_data];
   int next_set_data = 0;
+
+  if (properties.has_maximized()) {
+    if (properties.get_maximized()) {
+      state_data[next_state_data++] = x11_pipe->_net_wm_state_maximized_vert;
+      set_data[next_set_data++] = SetAction(x11_pipe->_net_wm_state_maximized_vert, 1);
+      state_data[next_state_data++] = x11_pipe->_net_wm_state_maximized_horz;
+      set_data[next_set_data++] = SetAction(x11_pipe->_net_wm_state_maximized_horz, 1);
+    } else {
+      set_data[next_set_data++] = SetAction(x11_pipe->_net_wm_state_maximized_vert, 0);
+      set_data[next_set_data++] = SetAction(x11_pipe->_net_wm_state_maximized_horz, 0);
+    }
+  }
 
   if (properties.has_fullscreen()) {
     if (properties.get_fullscreen()) {

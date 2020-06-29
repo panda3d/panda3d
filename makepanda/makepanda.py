@@ -169,7 +169,7 @@ def parseopts(args):
     # Options for which to display a deprecation warning.
     removedopts = [
         "use-touchinput", "no-touchinput", "no-awesomium", "no-directscripts",
-        "no-carbon", "universal", "no-physx", "no-rocket"
+        "no-carbon", "universal", "no-physx", "no-rocket", "host"
         ]
 
     # All recognized options.

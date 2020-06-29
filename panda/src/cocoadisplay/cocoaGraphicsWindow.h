@@ -51,6 +51,7 @@ public:
   void handle_move_event();
   void handle_resize_event();
   void handle_minimize_event(bool minimized);
+  void handle_maximize_event(bool maximized);
   void handle_foreground_event(bool foreground);
   bool handle_close_request();
   void handle_close_event();

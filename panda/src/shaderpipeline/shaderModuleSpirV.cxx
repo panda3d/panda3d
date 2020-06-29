@@ -594,6 +594,34 @@ assign_locations(Stage stage) {
 }
 
 /**
+ * Assign descriptor bindings for a descriptor set based on the given locations.
+ * Assumes there are already binding and set decorations.
+ * To create gaps in the descriptor set, entries in locations may be -1.
+ */
+void ShaderModuleSpirV::InstructionWriter::
+bind_descriptor_set(uint32_t set, const vector_int &locations) {
+  for (InstructionIterator it = _instructions.begin_annotations();
+       it != _instructions.end() && (*it).is_annotation();
+       ++it) {
+    Instruction op = *it;
+
+    if (op.opcode == spv::OpDecorate && op.nargs >= 3) {
+      Definition &def = _defs[op.args[0]];
+
+      auto lit = std::find(locations.begin(), locations.end(), def._location);
+      if (lit != locations.end() && def._location >= 0) {
+        if (op.args[1] == spv::DecorationBinding) {
+          op.args[2] = std::distance(locations.begin(), lit);
+        }
+        else if (op.args[1] == spv::DecorationDescriptorSet) {
+          op.args[2] = set;
+        }
+      }
+    }
+  }
+}
+
+/**
  * Converts the members of the struct type with the given ID to regular
  * variables.  Useful for unwrapping uniform blocks.
  */

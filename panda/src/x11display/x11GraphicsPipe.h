@@ -177,6 +177,8 @@ public:
   Atom _net_wm_state_add;
   Atom _net_wm_state_remove;
   Atom _net_wm_bypass_compositor;
+  Atom _net_wm_state_maximized_vert;
+  Atom _net_wm_state_maximized_horz;
 
   // Extension functions.
   typedef int (*pfn_XcursorGetDefaultSize)(X11_Display *);

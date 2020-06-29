@@ -405,6 +405,9 @@ open_window() {
   if (!_properties.has_minimized()) {
     _properties.set_minimized(false);
   }
+  if (!_properties.has_maximized()) {
+    _properties.set_maximized(false);
+  }
   if (!_properties.has_z_order()) {
     _properties.set_z_order(WindowProperties::Z_normal);
   }
@@ -713,7 +716,7 @@ close_window() {
 
   if (_window != nil) {
     [_window close];
-    
+
     // Process events once more so any pending NSEvents are cleared. Not doing
     // this causes the window to stick around after calling [_window close].
     process_events();
@@ -923,6 +926,14 @@ set_properties_now(WindowProperties &properties) {
       }
     }
     properties.clear_origin();
+  }
+
+  if (properties.has_maximized() && _window != nil) {
+    _properties.set_maximized(properties.get_maximized());
+    if (properties.get_maximized() != !![_window isZoomed]) {
+      [_window zoom:nil];
+    }
+    properties.clear_maximized();
   }
 
   if (properties.has_title() && _window != nil) {
@@ -1404,10 +1415,12 @@ handle_resize_event() {
 
   NSRect frame = [_view convertRect:[_view bounds] toView:nil];
 
+  WindowProperties properties;
+  bool changed = false;
+
   if (frame.size.width != _properties.get_x_size() ||
       frame.size.height != _properties.get_y_size()) {
 
-    WindowProperties properties;
     properties.set_size(frame.size.width, frame.size.height);
 
     if (cocoadisplay_cat.is_spam()) {
@@ -1415,6 +1428,18 @@ handle_resize_event() {
         << "Window changed size to (" << frame.size.width
        << ", " << frame.size.height << ")\n";
     }
+    changed = true;
+  }
+
+  if (_window != nil) {
+    bool is_maximized = [_window isZoomed];
+    if (is_maximized != _properties.get_maximized()) {
+      properties.set_maximized(is_maximized);
+      changed = true;
+    }
+  }
+
+  if (changed) {
     system_changed_properties(properties);
   }
 
@@ -1443,6 +1468,31 @@ handle_minimize_event(bool minimized) {
   properties.set_minimized(minimized);
   system_changed_properties(properties);
 }
+
+/**
+ * Called by the window delegate when the window is maximized or
+ * demaximized.
+ */
+void CocoaGraphicsWindow::
+handle_maximize_event(bool maximized) {
+  if (maximized == _properties.get_maximized()) {
+    return;
+  }
+
+  if (cocoadisplay_cat.is_debug()) {
+    if (maximized) {
+      cocoadisplay_cat.debug() << "Window was maximized\n";
+    } else {
+      cocoadisplay_cat.debug() << "Window was demaximized\n";
+    }
+  }
+
+  WindowProperties properties;
+  properties.set_maximized(maximized);
+  system_changed_properties(properties);
+}
+
+
 
 /**
  * Called by the window delegate when the window has become the key window or

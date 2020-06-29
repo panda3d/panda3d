@@ -107,3 +107,37 @@ def test_lightattrib_compare():
     assert lattr1.compare_to(lattr2) != 0
     assert lattr2.compare_to(lattr1) != 0
     assert lattr2.compare_to(lattr1) == -lattr1.compare_to(lattr2)
+
+    # An on light is not the same as an off light
+    lattr1 = core.LightAttrib.make().add_on_light(spot)
+    lattr2 = core.LightAttrib.make().add_off_light(spot)
+    assert lattr1.compare_to(lattr2) != 0
+    assert lattr2.compare_to(lattr1) != 0
+    assert lattr2.compare_to(lattr1) == -lattr1.compare_to(lattr2)
+
+    # If both have the same off light, they are equal
+    lattr1 = core.LightAttrib.make().add_off_light(spot)
+    lattr2 = core.LightAttrib.make().add_off_light(spot)
+    assert lattr1.compare_to(lattr2) == 0
+    assert lattr2.compare_to(lattr1) == 0
+
+    # Off light should not be equal to empty
+    lattr1 = core.LightAttrib.make().add_off_light(spot)
+    lattr2 = core.LightAttrib.make_all_off()
+    assert lattr1.compare_to(lattr2) != 0
+    assert lattr2.compare_to(lattr1) != 0
+    assert lattr2.compare_to(lattr1) == -lattr1.compare_to(lattr2)
+
+    # Off light should not be equal to all-off
+    lattr1 = core.LightAttrib.make().add_off_light(spot)
+    lattr2 = core.LightAttrib.make_all_off()
+    assert lattr1.compare_to(lattr2) != 0
+    assert lattr2.compare_to(lattr1) != 0
+    assert lattr2.compare_to(lattr1) == -lattr1.compare_to(lattr2)
+
+    # Different off lights shouldn't be equal either, of course
+    lattr1 = core.LightAttrib.make().add_off_light(spot)
+    lattr2 = core.LightAttrib.make().add_off_light(point)
+    assert lattr1.compare_to(lattr2) != 0
+    assert lattr2.compare_to(lattr1) != 0
+    assert lattr2.compare_to(lattr1) == -lattr1.compare_to(lattr2)
