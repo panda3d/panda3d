@@ -28,6 +28,8 @@ public:
 
   ALLOC_DELETED_CHAIN(VulkanTextureContext);
 
+  INLINE void set_texture(Texture *texture);
+
   INLINE void access(VkPipelineStageFlags stage_mask, VkAccessFlags access_mask);
   INLINE void discard();
 

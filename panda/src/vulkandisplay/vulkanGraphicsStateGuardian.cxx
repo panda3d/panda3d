@@ -636,116 +636,103 @@ prepare_texture(Texture *texture, int view) {
   VulkanGraphicsPipe *vkpipe;
   DCAST_INTO_R(vkpipe, get_pipe(), nullptr);
 
-  VkResult err;
-  VkImageCreateInfo image_info;
-  image_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-  image_info.pNext = nullptr;
-  image_info.flags = 0;
-
-  int width = texture->get_x_size();
-  int height = texture->get_y_size();
-  int depth = 1;
-  int num_layers = 1;
+  VkImageCreateFlags flags = 0;
+  VkImageType type;
+  VkExtent3D extent;
+  extent.width = texture->get_x_size();
+  extent.height = texture->get_y_size();
+  extent.depth = 1;
+  uint32_t num_layers = 1;
+  uint32_t num_levels = 1;
 
   switch (texture->get_texture_type()) {
   case Texture::TT_1d_texture:
   case Texture::TT_1d_texture_array:
-    image_info.imageType = VK_IMAGE_TYPE_1D;
-    swap(height, num_layers);
+    type = VK_IMAGE_TYPE_1D;
+    swap(extent.height, num_layers);
     break;
 
   case Texture::TT_cube_map:
   case Texture::TT_cube_map_array:
-    image_info.flags |= VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
+    flags |= VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
     // Fall through
   case Texture::TT_2d_texture:
   case Texture::TT_2d_texture_array:
-    image_info.imageType = VK_IMAGE_TYPE_2D;
+    type = VK_IMAGE_TYPE_2D;
     num_layers = texture->get_z_size();
     break;
 
   case Texture::TT_3d_texture:
-    image_info.imageType = VK_IMAGE_TYPE_3D;
-    depth = texture->get_z_size();
+    type = VK_IMAGE_TYPE_3D;
+    extent.depth = texture->get_z_size();
     break;
 
   case Texture::TT_buffer_texture:
     // Not yet supported.
     return nullptr;
   }
-
-  image_info.format = get_image_format(texture);
-  image_info.extent.width = width;
-  image_info.extent.height = height;
-  image_info.extent.depth = depth;
-  image_info.mipLevels = 1;
-  image_info.arrayLayers = num_layers;
-  image_info.samples = VK_SAMPLE_COUNT_1_BIT;
-  image_info.tiling = VK_IMAGE_TILING_OPTIMAL;
-  image_info.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-  image_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-  image_info.queueFamilyIndexCount = 0;
-  image_info.pQueueFamilyIndices = nullptr;
-  image_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+  const VkExtent3D orig_extent = extent;
 
   // Check if the format is actually supported.
+  VkFormat format = get_image_format(texture);
   VkFormatProperties fmt_props;
-  vkGetPhysicalDeviceFormatProperties(vkpipe->_gpu, image_info.format, &fmt_props);
+  vkGetPhysicalDeviceFormatProperties(vkpipe->_gpu, format, &fmt_props);
 
   bool pack_bgr8 = false;
   if ((fmt_props.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT) == 0) {
     // Not supported.  Can we convert it to a format that is supported?
-    switch (image_info.format) {
+    switch (format) {
     case VK_FORMAT_B8G8R8_UNORM:
-      image_info.format = VK_FORMAT_A8B8G8R8_UNORM_PACK32;
+      format = VK_FORMAT_A8B8G8R8_UNORM_PACK32;
       pack_bgr8 = true;
       break;
 
     case VK_FORMAT_B8G8R8_UINT:
-      image_info.format = VK_FORMAT_A8B8G8R8_UINT_PACK32;
+      format = VK_FORMAT_A8B8G8R8_UINT_PACK32;
       pack_bgr8 = true;
       break;
 
     default:
       vulkandisplay_cat.error()
-        << "Texture format " << image_info.format << " not supported.\n";
+        << "Texture format " << format << " not supported.\n";
       return nullptr;
     }
 
     // Update the properties for the new format.
-    vkGetPhysicalDeviceFormatProperties(vkpipe->_gpu, image_info.format, &fmt_props);
+    vkGetPhysicalDeviceFormatProperties(vkpipe->_gpu, format, &fmt_props);
   }
+
+  VkImageUsageFlags usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 
   // Check that the size is actually supported.
   int mipmap_begin = 0;
   VkImageFormatProperties img_props;
-  vkGetPhysicalDeviceImageFormatProperties(vkpipe->_gpu, image_info.format,
-                                           image_info.imageType, image_info.tiling,
-                                           image_info.usage, image_info.flags,
-                                           &img_props);
-  if (image_info.arrayLayers > img_props.maxArrayLayers) {
+  vkGetPhysicalDeviceImageFormatProperties(vkpipe->_gpu, format, type,
+                                           VK_IMAGE_TILING_OPTIMAL, usage,
+                                           flags, &img_props);
+  if (num_layers > img_props.maxArrayLayers) {
     //TODO: more elegant solution to reduce layer count.
     vulkandisplay_cat.error()
       << "Texture has too many layers, this format has a maximum of "
-      << img_props.maxArrayLayers << "\n";
+      << num_layers << "\n";
     return nullptr;
   }
-  while (image_info.extent.width > img_props.maxExtent.width ||
-         image_info.extent.height > img_props.maxExtent.height ||
-         image_info.extent.depth > img_props.maxExtent.depth) {
+  while (extent.width > img_props.maxExtent.width ||
+         extent.height > img_props.maxExtent.height ||
+         extent.depth > img_props.maxExtent.depth) {
     // Reduce the size by bumping the first mipmap level uploaded.
-    image_info.extent.width = std::max(1U, image_info.extent.width >> 1);
-    image_info.extent.height = std::max(1U, image_info.extent.height >> 1);
-    image_info.extent.depth = std::max(1U, image_info.extent.depth >> 1);
+    extent.width = std::max(1U, extent.width >> 1);
+    extent.height = std::max(1U, extent.height >> 1);
+    extent.depth = std::max(1U, extent.depth >> 1);
     ++mipmap_begin;
   }
 
   if (mipmap_begin != 0) {
     vulkandisplay_cat.info()
       << "Reducing image " << texture->get_name() << " from "
-      << width << " x " << height << " x " << depth << " to "
-      << image_info.extent.width << " x " << image_info.extent.height << " x "
-      << image_info.extent.depth << "\n";
+      << orig_extent.width << " x " << orig_extent.height << " x "
+      << orig_extent.depth << " to " << extent.width << " x "
+      << extent.height << " x " << extent.depth << "\n";
 
     if (!texture->has_ram_mipmap_image(mipmap_begin)) {
       // Ugh, and to do this, we have to generate mipmaps on the CPU.
@@ -781,67 +768,35 @@ prepare_texture(Texture *texture, int view) {
       generate_mipmaps = false;
     } else {
       // We'll be generating mipmaps from it, so mark it as transfer source.
-      image_info.usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+      usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
     }
   }
 
-  image_info.mipLevels = mipmap_end - mipmap_begin;
-  if (image_info.mipLevels > img_props.maxMipLevels) {
-    mipmap_end -= image_info.mipLevels - img_props.maxMipLevels;
-    image_info.mipLevels = img_props.maxMipLevels;
+  num_levels = mipmap_end - mipmap_begin;
+  if (num_levels > img_props.maxMipLevels) {
+    mipmap_end -= num_levels - img_props.maxMipLevels;
+    num_levels = img_props.maxMipLevels;
   }
 
-  VkImage image;
-  err = vkCreateImage(_device, &image_info, nullptr, &image);
-  if (err) {
-    vulkan_error(err, "Failed to create texture image");
-    return nullptr;
-  }
-
-  // Create a texture context to manage the image's lifetime.
-  VulkanTextureContext *tc = new VulkanTextureContext(get_prepared_objects(), texture, view);
+  VulkanTextureContext *tc;
+  tc = create_image(type, format, extent, num_levels, num_layers,
+                    VK_SAMPLE_COUNT_1_BIT, usage, flags);
   nassertr_always(tc != nullptr, nullptr);
-  tc->_format = image_info.format;
-  tc->_extent = image_info.extent;
+  tc->set_texture(texture);
   tc->_mipmap_begin = mipmap_begin;
   tc->_mipmap_end = mipmap_end;
-  tc->_mip_levels = image_info.mipLevels;
-  tc->_array_layers = image_info.arrayLayers;
   tc->_generate_mipmaps = generate_mipmaps;
   tc->_pack_bgr8 = pack_bgr8;
 
-  Texture::Format format = texture->get_format();
-  if (format == Texture::F_depth_stencil ||
-      format == Texture::F_depth_component ||
-      format == Texture::F_depth_component16 ||
-      format == Texture::F_depth_component24 ||
-      format == Texture::F_depth_component32) {
+  Texture::Format tex_format = texture->get_format();
+  if (tex_format == Texture::F_depth_stencil ||
+      tex_format == Texture::F_depth_component ||
+      tex_format == Texture::F_depth_component16 ||
+      tex_format == Texture::F_depth_component24 ||
+      tex_format == Texture::F_depth_component32) {
     tc->_aspect_mask = VK_IMAGE_ASPECT_DEPTH_BIT;
   } else {
     tc->_aspect_mask = VK_IMAGE_ASPECT_COLOR_BIT;
-  }
-
-  tc->_image = image;
-
-  // Get the memory requirements, and find an appropriate heap to alloc in.
-  // The texture will be stored in device-local memory, since we can't write
-  // to OPTIMAL-tiled images anyway.
-  VkMemoryRequirements mem_reqs;
-  vkGetImageMemoryRequirements(_device, image, &mem_reqs);
-
-  if (!allocate_memory(tc->_block, mem_reqs, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, false)) {
-    vulkandisplay_cat.error() << "Failed to allocate texture memory.\n";
-    vkDestroyImage(_device, image, nullptr);
-    delete tc;
-    return nullptr;
-  }
-
-
-  // Bind memory to image.
-  if (!tc->_block.bind_image(image)) {
-    vkDestroyImage(_device, image, nullptr);
-    delete tc;
-    return nullptr;
   }
 
   // Now we'll create an image view that describes how we interpret the image.
@@ -849,7 +804,7 @@ prepare_texture(Texture *texture, int view) {
   view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
   view_info.pNext = nullptr;
   view_info.flags = 0;
-  view_info.image = image;
+  view_info.image = tc->_image;
 
   switch (texture->get_texture_type()) {
   case Texture::TT_1d_texture:
@@ -878,10 +833,10 @@ prepare_texture(Texture *texture, int view) {
     break;
   }
 
-  view_info.format = image_info.format;
+  view_info.format = format;
 
   // We use the swizzle mask to emulate deprecated formats.
-  switch (format) {
+  switch (texture->get_format()) {
   case Texture::F_green:
     view_info.components.r = VK_COMPONENT_SWIZZLE_ZERO;
     view_info.components.g = VK_COMPONENT_SWIZZLE_R;
@@ -931,27 +886,24 @@ prepare_texture(Texture *texture, int view) {
 
   view_info.subresourceRange.aspectMask = tc->_aspect_mask;
   view_info.subresourceRange.baseMipLevel = 0;
-  view_info.subresourceRange.levelCount = image_info.mipLevels;
+  view_info.subresourceRange.levelCount = num_levels;
   view_info.subresourceRange.baseArrayLayer = 0;
   view_info.subresourceRange.layerCount = num_layers;
 
+  VkResult err;
   err = vkCreateImageView(_device, &view_info, nullptr, &tc->_image_view);
   if (err) {
     vulkan_error(err, "Failed to create image view for texture");
-    vkDestroyImage(_device, image, nullptr);
+    vkDestroyImage(_device, tc->_image, nullptr);
     delete tc;
     return nullptr;
   }
 
   if (vulkandisplay_cat.is_debug()) {
     vulkandisplay_cat.debug()
-      << "Created image " << image << " and view " << tc->_image_view
+      << "Created image " << tc->_image << " and view " << tc->_image_view
       << " for texture " << *texture << "\n";
   }
-
-  // Update the BufferResidencyTracker to keep track of the allocated memory.
-  tc->set_resident(true);
-  tc->update_data_size_bytes(mem_reqs.size);
 
   // We can't upload it at this point because the texture lock is currently
   // held, so accessing the RAM image will cause a deadlock.
@@ -2756,11 +2708,11 @@ create_buffer(VkDeviceSize size, VkBuffer &buffer, VulkanMemoryBlock &block,
 VulkanTextureContext *VulkanGraphicsStateGuardian::
 create_image(VkImageType type, VkFormat format, const VkExtent3D &extent,
              uint32_t levels, uint32_t layers, VkSampleCountFlagBits samples,
-             VkImageUsageFlags usage) {
+             VkImageUsageFlags usage, VkImageCreateFlags flags) {
   VkImageCreateInfo img_info;
   img_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
   img_info.pNext = nullptr;
-  img_info.flags = 0;
+  img_info.flags = flags;
   img_info.imageType = type;
   img_info.format = format;
   img_info.extent = extent;
@@ -2786,7 +2738,7 @@ create_image(VkImageType type, VkFormat format, const VkExtent3D &extent,
   vkGetImageMemoryRequirements(_device, image, &mem_reqs);
 
   VulkanMemoryBlock block;
-  if (!allocate_memory(block, mem_reqs, 0, false)) {
+  if (!allocate_memory(block, mem_reqs, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, false)) {
     vulkandisplay_cat.error()
       << "Failed to allocate " << mem_reqs.size << " bytes for image.\n";
     vkDestroyImage(_device, image, nullptr);
@@ -2805,6 +2757,9 @@ create_image(VkImageType type, VkFormat format, const VkExtent3D &extent,
   tc->_mip_levels = levels;
   tc->_array_layers = layers;
   tc->_block = std::move(block);
+
+  tc->set_resident(true);
+  tc->update_data_size_bytes(mem_reqs.size);
   return tc;
 }
 

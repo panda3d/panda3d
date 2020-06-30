@@ -38,6 +38,14 @@ VulkanTextureContext(PreparedGraphicsObjects *pgo, VkImage image, VkFormat forma
 }
 
 /**
+ * Sets the Texture object this context is for.
+ */
+INLINE void VulkanTextureContext::
+set_texture(Texture *texture) {
+  _object = texture;
+}
+
+/**
  * Records a way that the image has been accessed.
  */
 INLINE void VulkanTextureContext::

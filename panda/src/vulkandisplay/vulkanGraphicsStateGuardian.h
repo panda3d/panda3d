@@ -135,7 +135,8 @@ public:
   VulkanTextureContext *create_image(VkImageType type, VkFormat format,
                                      const VkExtent3D &extent, uint32_t levels,
                                      uint32_t layers, VkSampleCountFlagBits samples,
-                                     VkImageUsageFlags usage);
+                                     VkImageUsageFlags usage,
+                                     VkImageCreateFlags flags = 0);
 
   VkSemaphore create_semaphore();
 
