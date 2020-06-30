@@ -32,7 +32,8 @@ public:
   VkDescriptorSetLayout make_shader_attrib_descriptor_set_layout(VkDevice device);
   VkDescriptorSetLayout make_dynamic_uniform_descriptor_set_layout(VkDevice device);
 
-  void update_uniform_buffers(VulkanGraphicsStateGuardian *gsg, int altered);
+  uint32_t update_sattr_uniforms(VulkanGraphicsStateGuardian *gsg);
+  uint32_t update_dynamic_uniforms(VulkanGraphicsStateGuardian *gsg, int altered);
 
   VkPipeline get_pipeline(VulkanGraphicsStateGuardian *gsg,
                           const RenderState *state,
@@ -58,8 +59,7 @@ private:
   pvector<Shader::ShaderMatSpec> _mat_spec;
 
   VkDescriptorSet _uniform_descriptor_set;
-  uint32_t _uniform_offsets[2];
-  uint32_t _num_uniform_offsets = 0;
+  uint32_t _dynamic_uniform_offset = 0;
 
   // These are for the push constants; maybe in the future we'll replace this
   // with a more generic and flexible system.

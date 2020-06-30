@@ -1490,14 +1490,8 @@ prepare_shader(Shader *shader) {
       buffer_info[count].range = sc->_mat_block_size;
       ++count;
     }
-    if (sc->_ptr_block_size > 0) {
-      buffer_info[count].buffer = _uniform_buffer;
-      buffer_info[count].offset = 0;
-      buffer_info[count].range = sc->_ptr_block_size;
-      ++count;
-    }
 
-    VkWriteDescriptorSet write[2];
+    VkWriteDescriptorSet write[1];
     for (size_t i = 0; i < count; ++i) {
       write[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       write[i].pNext = nullptr;
@@ -1870,11 +1864,16 @@ set_state_and_transform(const RenderState *state,
   descriptor_sets[DS_dynamic_uniforms] = sc->_uniform_descriptor_set;
 
   //TODO: properly compute altered field.
-  sc->update_uniform_buffers(this, ~0);
+  uint32_t num_offsets = 0;
+  uint32_t offset = 0;
+  if (sc->_mat_block_size > 0) {
+    offset = sc->update_dynamic_uniforms(this, ~0);
+    num_offsets = 1;
+  }
 
   vkCmdBindDescriptorSets(_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
                           sc->_pipeline_layout, 0, DS_SET_COUNT, descriptor_sets,
-                          sc->_num_uniform_offsets, sc->_uniform_offsets);
+                          num_offsets, &offset);
 }
 
 /**
@@ -3518,12 +3517,38 @@ update_sattr_descriptor_set(VkDescriptorSet ds, const ShaderAttrib *attr) {
     return true;
   }
 
-  // Allocate enough memory.
-  size_t max_num_textures = shader->_tex_spec.size();
-  VkWriteDescriptorSet *writes = (VkWriteDescriptorSet *)alloca(max_num_textures * sizeof(VkWriteDescriptorSet));
-  VkDescriptorImageInfo *image_infos = (VkDescriptorImageInfo *)alloca(max_num_textures * sizeof(VkDescriptorImageInfo));
+  VulkanShaderContext *sc;
+  DCAST_INTO_R(sc, shader->prepare_now(get_prepared_objects(), this), false);
 
+  // Allocate enough memory.
+  size_t max_num_descriptors = 1 + shader->_tex_spec.size();
+  VkWriteDescriptorSet *writes = (VkWriteDescriptorSet *)alloca(max_num_descriptors * sizeof(VkWriteDescriptorSet));
+  VkDescriptorImageInfo *image_infos = (VkDescriptorImageInfo *)alloca(max_num_descriptors * sizeof(VkDescriptorImageInfo));
+
+  // First the UBO, then the shader input textures.
   size_t i = 0;
+
+  VkDescriptorBufferInfo buffer_info;
+  if (sc->_ptr_block_size > 0) {
+    buffer_info.buffer = _uniform_buffer;
+    buffer_info.offset = sc->update_sattr_uniforms(this);
+    buffer_info.range = sc->_ptr_block_size;
+
+    VkWriteDescriptorSet &write = writes[i];
+    write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    write.pNext = nullptr;
+    write.dstSet = ds;
+    write.dstBinding = i;
+    write.dstArrayElement = 0;
+    write.descriptorCount = 1;
+    write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    write.pImageInfo = nullptr;
+    write.pBufferInfo = &buffer_info;
+    write.pTexelBufferView = nullptr;
+
+    ++i;
+  }
+
   for (Shader::ShaderTexSpec &spec : shader->_tex_spec) {
     if (spec._part != Shader::STO_named_input || spec._id._location < 0) {
       continue;
@@ -3608,6 +3633,10 @@ update_sattr_descriptor_set(VkDescriptorSet ds, const ShaderAttrib *attr) {
  */
 VkDeviceSize VulkanGraphicsStateGuardian::
 update_dynamic_uniform_buffer(void *data, VkDeviceSize size) {
+  if (size == 0) {
+    return 0;
+  }
+
   VkDeviceSize offset = _uniform_buffer_offset;
   VkDeviceSize align = _uniform_buffer_offset_alignment;
   offset = offset - 1 - (offset - 1) % align + align;

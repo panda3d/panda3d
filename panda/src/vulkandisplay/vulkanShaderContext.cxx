@@ -62,7 +62,6 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
     if (struct_type.get_num_members() > 0) {
       _mat_block_type = ShaderType::register_type(std::move(struct_type));
       _mat_block_size = _mat_block_type->get_size_bytes();
-      ++_num_uniform_offsets;
     }
   }
 
@@ -82,13 +81,15 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
     if (struct_type.get_num_members() > 0) {
       _ptr_block_type = ShaderType::register_type(std::move(struct_type));
       _ptr_block_size = _ptr_block_type->get_size_bytes();
-      ++_num_uniform_offsets;
     }
   }
 
   // Compose descriptor sets for all the texture inputs.
   vector_int tex_stage_set_locations;
   vector_int tex_input_set_locations;
+  if (_ptr_block_size > 0) {
+    tex_input_set_locations.push_back(-1);
+  }
   for (const Shader::ShaderTexSpec &spec : _shader->_tex_spec) {
     if (spec._id._location >= 0) {
       if (spec._part == Shader::STO_stage_i) {
@@ -117,14 +118,13 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
     ShaderModuleSpirV::InstructionWriter writer(instructions);
 
     // Create UBOs and a push constant block for the uniforms.
-    size_t count = 0;
     if (_mat_block_size > 0) {
       writer.make_block(_mat_block_type, mat_struct_locations, spv::StorageClassUniform,
-                        count++, VulkanGraphicsStateGuardian::DS_dynamic_uniforms);
+                        0, VulkanGraphicsStateGuardian::DS_dynamic_uniforms);
     }
     if (_ptr_block_size > 0) {
       writer.make_block(_ptr_block_type, ptr_struct_locations, spv::StorageClassUniform,
-                        count++, VulkanGraphicsStateGuardian::DS_dynamic_uniforms);
+                        0, VulkanGraphicsStateGuardian::DS_shader_attrib);
     }
     if (push_constant_block_type != nullptr &&
         _push_constant_stage_mask & (1 << (int)module->get_stage())) {
@@ -187,9 +187,22 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
 VkDescriptorSetLayout VulkanShaderContext::
 make_shader_attrib_descriptor_set_layout(VkDevice device) {
   VkDescriptorSetLayoutBinding *bindings;
-  bindings = (VkDescriptorSetLayoutBinding *)alloca(sizeof(VkDescriptorSetLayoutBinding) * _shader->_tex_spec.size());
+  bindings = (VkDescriptorSetLayoutBinding *)alloca(sizeof(VkDescriptorSetLayoutBinding) * (1 + _shader->_tex_spec.size()));
 
   size_t i = 0;
+
+  // First binding is for the UBO.
+  if (_ptr_block_size > 0) {
+    VkDescriptorSetLayoutBinding &binding = bindings[i];
+    binding.binding = i;
+    binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    binding.descriptorCount = 1;
+    binding.stageFlags = _ptr_block_stage_mask;
+    binding.pImmutableSamplers = nullptr;
+
+    ++i;
+  }
+
   for (const Shader::ShaderTexSpec &spec : _shader->_tex_spec) {
     if (spec._part != Shader::STO_named_input || spec._id._location < 0) {
       continue;
@@ -231,6 +244,8 @@ VkDescriptorSetLayout VulkanShaderContext::
 make_dynamic_uniform_descriptor_set_layout(VkDevice device) {
   VkDescriptorSetLayoutBinding bindings[2];
 
+  // This is a dynamic UBO, which means that we'll be specifying the offsets in
+  // the bind call, rather than when writing the descriptor set.
   size_t count = 0;
   if (_mat_block_size > 0) {
     VkDescriptorSetLayoutBinding &binding = bindings[count];
@@ -238,14 +253,6 @@ make_dynamic_uniform_descriptor_set_layout(VkDevice device) {
     binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
     binding.descriptorCount = 1;
     binding.stageFlags = _mat_block_stage_mask;
-    binding.pImmutableSamplers = nullptr;
-  }
-  if (_ptr_block_size > 0) {
-    VkDescriptorSetLayoutBinding &binding = bindings[count];
-    binding.binding = count++;
-    binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-    binding.descriptorCount = 1;
-    binding.stageFlags = _ptr_block_stage_mask;
     binding.pImmutableSamplers = nullptr;
   }
 
@@ -268,15 +275,135 @@ make_dynamic_uniform_descriptor_set_layout(VkDevice device) {
 }
 
 /**
- * Updates the ShaderMatSpec uniforms.
+ * Updates the ShaderPtrSpec uniforms, which change with the ShaderAttrib.
  */
-void VulkanShaderContext::
-update_uniform_buffers(VulkanGraphicsStateGuardian *gsg, int altered) {
-  if (_mat_block_size == 0 && _ptr_block_size == 0) {
-    return;
+uint32_t VulkanShaderContext::
+update_sattr_uniforms(VulkanGraphicsStateGuardian *gsg) {
+  if (_ptr_block_size == 0) {
+    return 0;
   }
 
-  size_t count = 0;
+  void *ptr = alloca(_ptr_block_size);
+
+  size_t i = 0;
+  for (Shader::ShaderPtrSpec &spec : _shader->_ptr_spec) {
+    Shader::ShaderPtrData ptr_data;
+    if (!gsg->fetch_ptr_parameter(spec, ptr_data)) {
+      continue;
+    }
+
+    nassertd(spec._dim[1] > 0) continue;
+
+    uint32_t dim = spec._dim[1] * spec._dim[2];
+
+    uint32_t offset = _ptr_block_type->get_member(i++).offset;
+    void *dest = (void *)((char *)ptr + offset);
+
+    int array_size = std::min(spec._dim[0], (uint32_t)(ptr_data._size / dim));
+    switch (spec._type) {
+    case ShaderType::ST_bool:
+    case ShaderType::ST_float:
+      {
+        float *data = (float *)dest;
+
+        switch (ptr_data._type) {
+        case ShaderType::ST_int:
+          // Convert int data to float data.
+          for (int i = 0; i < (array_size * dim); ++i) {
+            data[i] = (float)(((int*)ptr_data._ptr)[i]);
+          }
+          break;
+
+        case ShaderType::ST_uint:
+          // Convert unsigned int data to float data.
+          for (int i = 0; i < (array_size * dim); ++i) {
+            data[i] = (float)(((unsigned int*)ptr_data._ptr)[i]);
+          }
+          break;
+
+        case ShaderType::ST_double:
+          // Downgrade double data to float data.
+          for (int i = 0; i < (array_size * dim); ++i) {
+            data[i] = (float)(((double*)ptr_data._ptr)[i]);
+          }
+          break;
+
+        case ShaderType::ST_float:
+          memcpy(data, ptr_data._ptr, array_size * dim * sizeof(float));
+          break;
+
+        default:
+          nassertd(false) continue;
+        }
+      }
+      break;
+
+    case ShaderType::ST_int:
+    case ShaderType::ST_uint:
+      if (ptr_data._type != ShaderType::ST_int &&
+          ptr_data._type != ShaderType::ST_uint) {
+        vulkandisplay_cat.error()
+          << "Cannot pass floating-point data to integer shader input '" << spec._id._name << "'\n";
+
+      } else {
+        memcpy(dest, ptr_data._ptr, array_size * dim * sizeof(int));
+        nassertd(false) continue;
+      }
+      break;
+
+    case ShaderType::ST_double:
+      {
+        double *data = (double *)dest;
+
+        switch (ptr_data._type) {
+        case ShaderType::ST_int:
+          // Convert int data to double data.
+          for (int i = 0; i < (array_size * dim); ++i) {
+            data[i] = (double)(((int*)ptr_data._ptr)[i]);
+          }
+          break;
+
+        case ShaderType::ST_uint:
+          // Convert unsigned int data to double data.
+          for (int i = 0; i < (array_size * dim); ++i) {
+            data[i] = (double)(((unsigned int*)ptr_data._ptr)[i]);
+          }
+          break;
+
+        case ShaderType::ST_double:
+          memcpy(data, ptr_data._ptr, array_size * dim * sizeof(double));
+          break;
+
+        case ShaderType::ST_float:
+          // Upgrade float data to double data.
+          for (int i = 0; i < (array_size * dim); ++i) {
+            data[i] = (double)(((double*)ptr_data._ptr)[i]);
+          }
+          break;
+
+        default:
+          nassertd(false) continue;
+        }
+      }
+      break;
+
+    default:
+      continue;
+    }
+  }
+
+  return gsg->update_dynamic_uniform_buffer(ptr, _ptr_block_size);
+}
+
+/**
+ * Updates the ShaderMatSpec uniforms, if they have changed.
+ */
+uint32_t VulkanShaderContext::
+update_dynamic_uniforms(VulkanGraphicsStateGuardian *gsg, int altered) {
+  if (_mat_block_size == 0) {
+    return 0;
+  }
+
   if (altered & _mat_deps) {
     gsg->update_shader_matrix_cache(_shader, _mat_part_cache, altered);
 
@@ -399,128 +526,12 @@ update_uniform_buffers(VulkanGraphicsStateGuardian *gsg, int altered) {
       }
     }
 
-    _uniform_offsets[count] = gsg->update_dynamic_uniform_buffer(ptr, _mat_block_size);
+    uint32_t offset = gsg->update_dynamic_uniform_buffer(ptr, _mat_block_size);
+    _dynamic_uniform_offset = offset;
+    return offset;
   }
 
-  if (_mat_block_size != 0) {
-    ++count;
-  }
-
-  // We have no way to track modifications to PTAs, so we assume that they are
-  // modified every frame and when we switch ShaderAttribs.
-  if (_ptr_block_size > 0 &&
-      (altered & (Shader::SSD_shaderinputs | Shader::SSD_frame)) != 0) {
-    void *ptr = alloca(_ptr_block_size);
-
-    size_t i = 0;
-    for (Shader::ShaderPtrSpec &spec : _shader->_ptr_spec) {
-      Shader::ShaderPtrData ptr_data;
-      if (!gsg->fetch_ptr_parameter(spec, ptr_data)) {
-        continue;
-      }
-
-      nassertd(spec._dim[1] > 0) continue;
-
-      uint32_t dim = spec._dim[1] * spec._dim[2];
-
-      uint32_t offset = _ptr_block_type->get_member(i++).offset;
-      void *dest = (void *)((char *)ptr + offset);
-
-      int array_size = std::min(spec._dim[0], (uint32_t)(ptr_data._size / dim));
-      switch (spec._type) {
-      case ShaderType::ST_bool:
-      case ShaderType::ST_float:
-        {
-          float *data = (float *)dest;
-
-          switch (ptr_data._type) {
-          case ShaderType::ST_int:
-            // Convert int data to float data.
-            for (int i = 0; i < (array_size * dim); ++i) {
-              data[i] = (float)(((int*)ptr_data._ptr)[i]);
-            }
-            break;
-
-          case ShaderType::ST_uint:
-            // Convert unsigned int data to float data.
-            for (int i = 0; i < (array_size * dim); ++i) {
-              data[i] = (float)(((unsigned int*)ptr_data._ptr)[i]);
-            }
-            break;
-
-          case ShaderType::ST_double:
-            // Downgrade double data to float data.
-            for (int i = 0; i < (array_size * dim); ++i) {
-              data[i] = (float)(((double*)ptr_data._ptr)[i]);
-            }
-            break;
-
-          case ShaderType::ST_float:
-            memcpy(data, ptr_data._ptr, array_size * dim * sizeof(float));
-            break;
-
-          default:
-            nassertd(false) continue;
-          }
-        }
-        break;
-
-      case ShaderType::ST_int:
-      case ShaderType::ST_uint:
-        if (ptr_data._type != ShaderType::ST_int &&
-            ptr_data._type != ShaderType::ST_uint) {
-          vulkandisplay_cat.error()
-            << "Cannot pass floating-point data to integer shader input '" << spec._id._name << "'\n";
-
-        } else {
-          memcpy(dest, ptr_data._ptr, array_size * dim * sizeof(int));
-          nassertd(false) continue;
-        }
-        break;
-
-      case ShaderType::ST_double:
-        {
-          double *data = (double *)dest;
-
-          switch (ptr_data._type) {
-          case ShaderType::ST_int:
-            // Convert int data to double data.
-            for (int i = 0; i < (array_size * dim); ++i) {
-              data[i] = (double)(((int*)ptr_data._ptr)[i]);
-            }
-            break;
-
-          case ShaderType::ST_uint:
-            // Convert unsigned int data to double data.
-            for (int i = 0; i < (array_size * dim); ++i) {
-              data[i] = (double)(((unsigned int*)ptr_data._ptr)[i]);
-            }
-            break;
-
-          case ShaderType::ST_double:
-            memcpy(data, ptr_data._ptr, array_size * dim * sizeof(double));
-            break;
-
-          case ShaderType::ST_float:
-            // Upgrade float data to double data.
-            for (int i = 0; i < (array_size * dim); ++i) {
-              data[i] = (double)(((double*)ptr_data._ptr)[i]);
-            }
-            break;
-
-          default:
-            nassertd(false) continue;
-          }
-        }
-        break;
-
-      default:
-        continue;
-      }
-    }
-
-    _uniform_offsets[count] = gsg->update_dynamic_uniform_buffer(ptr, _mat_block_size);
-  }
+  return _dynamic_uniform_offset;
 }
 
 /**
