@@ -140,6 +140,11 @@ static const char *string_result(VkResult result) {
     return "Exhausted object limit.";
   case VK_ERROR_FORMAT_NOT_SUPPORTED:
     return "Requested format is not supported.";
+  case VK_ERROR_FRAGMENTED_POOL:
+  case VK_ERROR_FRAGMENTATION:
+    return "Pool allocation failed due to memory fragmentation.";
+  case VK_ERROR_UNKNOWN:
+    return "Unknown error.";
   case VK_ERROR_SURFACE_LOST_KHR:
     return "Surface lost.";
   case VK_ERROR_NATIVE_WINDOW_IN_USE_KHR:
@@ -154,6 +159,10 @@ static const char *string_result(VkResult result) {
     return "Validation failed.";
   case VK_ERROR_INVALID_SHADER_NV:
     return "Shader(s) failed to compile or link.";
+  case VK_ERROR_OUT_OF_POOL_MEMORY:
+    return "Out of pool memory.";
+  case VK_ERROR_INVALID_EXTERNAL_HANDLE:
+    return "Invalid external handle.";
   default:
     break;
   }
