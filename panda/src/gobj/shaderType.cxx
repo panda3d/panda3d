@@ -142,6 +142,14 @@ compare_to_impl(const ShaderType &other) const {
 }
 
 /**
+ * Returns the alignment in bytes of this type in memory, if applicable.
+ */
+int ShaderType::Scalar::
+get_align_bytes() const {
+  return (_scalar_type == ST_double) ? 8 : 4;
+}
+
+/**
  * Returns true if this type contains the given scalar type.
  */
 bool ShaderType::Vector::
@@ -183,6 +191,15 @@ compare_to_impl(const ShaderType &other) const {
   }
   return (_num_components > other_vector._num_components)
        - (_num_components < other_vector._num_components);
+}
+
+/**
+ * Returns the alignment in bytes of this type in memory, if applicable.
+ */
+int ShaderType::Vector::
+get_align_bytes() const {
+  int component_align = (_scalar_type == ST_double) ? 8 : 4;
+  return component_align * ((_num_components == 3) ? 4 : _num_components);
 }
 
 /**
@@ -233,12 +250,52 @@ compare_to_impl(const ShaderType &other) const {
 }
 
 /**
+ * Returns the alignment in bytes of this type in memory, if applicable.
+ */
+int ShaderType::Matrix::
+get_align_bytes() const {
+  //TODO: needs to be checked
+  int row_align = (_scalar_type == ST_double) ? 32 : 16;
+  return row_align * _num_rows;
+}
+
+/**
  * Returns the number of in/out locations taken up by in/out variables having
  * this type.
  */
 int ShaderType::Matrix::
 get_num_interface_locations() const {
   return _num_rows;
+}
+
+/**
+ * Adds a member to this struct.
+ */
+void ShaderType::Struct::
+add_member(const ShaderType *type, std::string name) {
+  Member member;
+  member.type = type;
+  member.name = std::move(name);
+  member.offset = _members.empty() ? 0 : _members.back().offset + _members.back().type->get_size_bytes();
+  int alignment = type->get_align_bytes();
+  member.offset += alignment - ((member.offset + (alignment - 1)) % alignment) - 1;
+  _members.push_back(std::move(member));
+}
+
+/**
+ * Adds a member to this struct with a given offset.
+ */
+void ShaderType::Struct::
+add_member(const ShaderType *type, std::string name, uint32_t offset) {
+  pvector<Member>::iterator it = _members.begin();
+  while (it != _members.end() && it->offset < offset) {
+    ++it;
+  }
+  Member member;
+  member.type = type;
+  member.name = std::move(name);
+  member.offset = offset;
+  _members.insert(it, std::move(member));
 }
 
 /**
@@ -293,6 +350,18 @@ compare_to_impl(const ShaderType &other) const {
   }
 
   return 0;
+}
+
+/**
+ * Returns the alignment in bytes of this type in memory, if applicable.
+ */
+int ShaderType::Struct::
+get_align_bytes() const {
+  int align = 16;
+  for (const Member &member : _members) {
+    align = std::max(align, member.type->get_align_bytes());
+  }
+  return align;
 }
 
 /**
@@ -377,12 +446,29 @@ compare_to_impl(const ShaderType &other) const {
 }
 
 /**
+ * Returns the array stride in bytes.
+ */
+int ShaderType::Array::
+get_stride_bytes() const {
+  int element_size = _element_type->get_size_bytes();
+  return (element_size + 15) & ~15;
+}
+
+/**
+ * Returns the alignment in bytes of this type in memory, if applicable.
+ */
+int ShaderType::Array::
+get_align_bytes() const {
+  return get_stride_bytes();
+}
+
+/**
  * Returns the size in bytes of this type in memory, if applicable.  Opaque
  * types will return -1.
  */
 int ShaderType::Array::
 get_size_bytes() const {
-  return _element_type->get_size_bytes() * _num_elements;
+  return get_stride_bytes() * _num_elements;
 }
 
 /**

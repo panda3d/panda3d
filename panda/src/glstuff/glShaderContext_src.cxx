@@ -2226,7 +2226,7 @@ issue_parameters(int altered) {
         break;
 
       case ShaderType::ST_double:
-        GLCAT.error() << "Passing double-precision shader inputs to GLSL shaders is not currently supported\n";
+        GLCAT.error() << "Passing double-precision shader inputs to shaders is not currently supported\n";
 
         // Deactivate it to make sure the user doesn't get flooded with this
         // error.
@@ -2816,19 +2816,19 @@ update_shader_texture_bindings(ShaderContext *prev) {
       switch (spec._part) {
       case Shader::STO_named_input:
         GLCAT.error()
-          << "Sampler type of GLSL shader input '" << *id << "' does not "
+          << "Sampler type of shader input '" << *id << "' does not "
              "match type of texture " << *tex << ".\n";
         break;
 
       case Shader::STO_stage_i:
         GLCAT.error()
-          << "Sampler type of GLSL shader input p3d_Texture" << spec._stage
+          << "Sampler type of shader input p3d_Texture" << spec._stage
           << " does not match type of texture " << *tex << ".\n";
         break;
 
       case Shader::STO_light_i_shadow_map:
         GLCAT.error()
-          << "Sampler type of GLSL shader input p3d_LightSource[" << spec._stage
+          << "Sampler type of shader input p3d_LightSource[" << spec._stage
           << "].shadowMap does not match type of texture " << *tex << ".\n";
         break;
       }

@@ -34,6 +34,7 @@ public:
 
   virtual void output(std::ostream &out) const=0;
 
+  virtual int get_align_bytes() const { return 1; }
   virtual int get_size_bytes() const;
   virtual int get_num_interface_locations() const { return 1; }
   virtual int get_num_parameter_locations() const { return 1; }
@@ -129,6 +130,8 @@ public:
 private:
   virtual int compare_to_impl(const ShaderType &other) const override;
 
+  virtual int get_align_bytes() const override;
+
   const ScalarType _scalar_type;
 
 public:
@@ -166,6 +169,8 @@ public:
 
 private:
   virtual int compare_to_impl(const ShaderType &other) const override;
+
+  virtual int get_align_bytes() const override;
 
   const ScalarType _scalar_type;
   const uint32_t _num_components;
@@ -208,6 +213,8 @@ public:
 private:
   virtual int compare_to_impl(const ShaderType &other) const override;
 
+  virtual int get_align_bytes() const override;
+
   const ScalarType _scalar_type;
   const uint32_t _num_rows;
   const uint32_t _num_columns;
@@ -235,12 +242,13 @@ public:
 
   INLINE size_t get_num_members() const;
   INLINE const Member &get_member(size_t i) const;
-  INLINE void add_member(const ShaderType *type, std::string name);
-  INLINE void add_member(const ShaderType *type, std::string name, uint32_t offset);
+  void add_member(const ShaderType *type, std::string name);
+  void add_member(const ShaderType *type, std::string name, uint32_t offset);
 
   virtual void output(std::ostream &out) const override;
   virtual int compare_to_impl(const ShaderType &other) const override;
 
+  virtual int get_align_bytes() const override;
   virtual int get_size_bytes() const override;
   virtual int get_num_interface_locations() const override;
   virtual int get_num_parameter_locations() const override;
@@ -292,6 +300,8 @@ public:
   virtual void output(std::ostream &out) const override;
   virtual int compare_to_impl(const ShaderType &other) const override;
 
+  int get_stride_bytes() const;
+  virtual int get_align_bytes() const override;
   virtual int get_size_bytes() const override;
   virtual int get_num_interface_locations() const override;
   virtual int get_num_parameter_locations() const override;

@@ -1344,6 +1344,17 @@ r_annotate_struct_layout(InstructionIterator &it, uint32_t type_id) {
     const ShaderType *base_type = member.type;
     while (const ShaderType::Array *array_type = base_type->as_array()) {
       base_type = array_type->get_element_type();
+
+      // Also make sure there's an ArrayStride decoration for this array.
+      uint32_t array_type_id = _type_map[array_type];
+      Definition &array_def = _defs[array_type_id];
+
+      if (array_def._array_stride == 0) {
+        array_def._array_stride = array_type->get_stride_bytes();
+        it = _instructions.insert(it, spv::OpDecorate,
+          {array_type_id, spv::DecorationArrayStride, array_def._array_stride});
+        ++it;
+      }
     }
 
     if (const ShaderType::Matrix *matrix_type = base_type->as_matrix()) {
@@ -1615,6 +1626,10 @@ parse_instruction(const Instruction &op) {
 
     case spv::DecorationLocation:
       _defs[op.args[0]]._location = op.args[2];
+      break;
+
+    case spv::DecorationArrayStride:
+      _defs[op.args[0]]._array_stride = op.args[2];
       break;
 
     default:
