@@ -1918,7 +1918,7 @@ bind_vertex_input(const InternalName *name, const ::ShaderType *type, int locati
  */
 bool Shader::
 bind_parameter(const Parameter &param) {
-  const InternalName *name = param._name;
+  CPT(InternalName) name = param._name;
   const ::ShaderType *type = param._type;
   std::string name_str = name->get_name();
 
@@ -2141,7 +2141,7 @@ bind_parameter(const Parameter &param) {
       for (size_t i = 0; i < struct_type->get_num_members(); ++i) {
         const ::ShaderType::Struct::Member &member = struct_type->get_member(i);
 
-        CPT(InternalName) fqname = ((InternalName *)name)->append(member.name);
+        CPT(InternalName) fqname = ((InternalName *)name.p())->append(member.name);
         bind._id._location = param._location + i;
         bind._id._name = fqname->get_name();
         bind._id._type = member.type;
@@ -2260,7 +2260,7 @@ bind_parameter(const Parameter &param) {
           return report_parameter_error(name, type, "expected 'ambient' member");
         }
 
-        CPT(InternalName) fqname = ((InternalName *)name)->append(member.name);
+        CPT(InternalName) fqname = ((InternalName *)name.p())->append(member.name);
         if (!expect_float_vector(fqname, member.type, 3, 4)) {
           return false;
         }
@@ -2300,7 +2300,7 @@ bind_parameter(const Parameter &param) {
       for (size_t i = 0; i < num_members; ++i) {
         const ::ShaderType::Struct::Member &member = struct_type->get_member(i);
 
-        CPT(InternalName) fqname = ((InternalName *)name)->append(member.name);
+        CPT(InternalName) fqname = ((InternalName *)name.p())->append(member.name);
 
         if (member.name == "shadowMap") {
           if (member.type->as_sampled_image() == nullptr) {
@@ -3092,7 +3092,7 @@ bind_parameter(const Parameter &param) {
     for (size_t i = 0; i < struct_type->get_num_members(); ++i) {
       const ::ShaderType::Struct::Member &member = struct_type->get_member(i);
 
-      PT(InternalName) fqname = ((InternalName *)name)->append(member.name);
+      PT(InternalName) fqname = ((InternalName *)name.p())->append(member.name);
 
       // Numeric struct members under GLSL may need a special treatment.
       ScalarType scalar_type;
@@ -3124,7 +3124,7 @@ bind_parameter(const Parameter &param) {
           bind._part[0] = SMO_model_to_apiview;
           bind._arg[0] = nullptr;
           bind._part[1] = SMO_mat_constant_x_attrib;
-          bind._arg[1] = ((InternalName *)name)->append("shadowViewMatrix");
+          bind._arg[1] = ((InternalName *)name.p())->append("shadowViewMatrix");
         }
         else {
           bind._func = SMF_first;
@@ -3211,14 +3211,14 @@ bind_parameter(const Parameter &param) {
   ShaderPtrSpec bind;
   if (type->as_scalar_type(bind._type, bind._dim[0], bind._dim[1], bind._dim[2])) {
     bind._id = param;
-    bind._arg = std::move(name);
+    bind._arg = name;
 
     //if (k_prefix) {
     //  // Backward compatibility, disables certain checks.
     //  bind._dim[0] = -1;
     //}
 
-    _ptr_spec.push_back(bind);
+    _ptr_spec.push_back(std::move(bind));
     return true;
   }
 
