@@ -35,6 +35,7 @@ public:
 
   void clear_color_image(VkCommandBuffer cmd, const VkClearColorValue &value);
   void clear_depth_stencil_image(VkCommandBuffer cmd, const VkClearDepthStencilValue &value);
+  void clear_buffer(VkCommandBuffer cmd, uint32_t fill);
 
   void transition(VkCommandBuffer cmd, uint32_t queue_family, VkImageLayout layout,
                   VkPipelineStageFlags dst_stage_mask, VkAccessFlags dst_access_mask);
@@ -42,15 +43,19 @@ public:
 public:
   VkFormat _format;
   VkExtent3D _extent;
-  int _mipmap_begin, _mipmap_end;
+  int _mipmap_begin = 0, _mipmap_end = 1;
   uint32_t _mip_levels = 1;
   uint32_t _array_layers = 1;
-  VkImageAspectFlags _aspect_mask;
-  bool _generate_mipmaps;
-  bool _pack_bgr8;
+  VkImageAspectFlags _aspect_mask = 0;
+  bool _generate_mipmaps = false;
+  bool _pack_bgr8 = false;
 
+  // Depending on whether it's a buffer texture or image texture, either the
+  // image and image view or buffer and buffer view will be set.
   VkImage _image = VK_NULL_HANDLE;
   VkImageView _image_view = VK_NULL_HANDLE;
+  VkBuffer _buffer = VK_NULL_HANDLE;
+  VkBufferView _buffer_view = VK_NULL_HANDLE;
   VulkanMemoryBlock _block;
 
   VkImageLayout _layout = VK_IMAGE_LAYOUT_UNDEFINED;

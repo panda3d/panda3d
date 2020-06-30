@@ -203,6 +203,7 @@ make_shader_attrib_descriptor_set_layout(VkDevice device) {
     ++i;
   }
 
+  // Then the named texture inputs.
   for (const Shader::ShaderTexSpec &spec : _shader->_tex_spec) {
     if (spec._part != Shader::STO_named_input || spec._id._location < 0) {
       continue;
@@ -210,7 +211,10 @@ make_shader_attrib_descriptor_set_layout(VkDevice device) {
 
     VkDescriptorSetLayoutBinding &binding = bindings[i];
     binding.binding = i;
-    binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    binding.descriptorType =
+      (spec._desired_type == Texture::TT_buffer_texture)
+        ? VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER
+        : VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     binding.descriptorCount = 1;
     binding.stageFlags = spec._id._stage_mask;
     binding.pImmutableSamplers = nullptr;

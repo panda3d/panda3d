@@ -64,6 +64,16 @@ clear_depth_stencil_image(VkCommandBuffer cmd, const VkClearDepthStencilValue &v
 }
 
 /**
+ * Inserts commands to clear the image.
+ */
+void VulkanTextureContext::
+clear_buffer(VkCommandBuffer cmd, uint32_t fill) {
+  nassertv(_buffer != VK_NULL_HANDLE);
+
+  vkCmdFillBuffer(cmd, _buffer, 0, VK_WHOLE_SIZE, fill);
+}
+
+/**
  * Issues a command to transition the image to a new layout or queue family.
  * Does not (yet) do inter-queue synchronization.
  */
@@ -71,7 +81,10 @@ void VulkanTextureContext::
 transition(VkCommandBuffer cmd, uint32_t queue_family, VkImageLayout layout,
            VkPipelineStageFlags dst_stage_mask, VkAccessFlags dst_access_mask) {
 
-  nassertv(_image != VK_NULL_HANDLE);
+  if (_image == VK_NULL_HANDLE) {
+    return;
+  }
+
   if (_layout == layout) {
     return;
   }
