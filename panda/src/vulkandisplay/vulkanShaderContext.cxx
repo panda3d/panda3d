@@ -106,6 +106,12 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
       }
     }
   }
+  for (const Shader::ShaderImgSpec &spec : _shader->_img_spec) {
+    if (spec._id._location >= 0) {
+      // These are always from ShaderAttrib.
+      tex_input_set_locations.push_back(spec._id._location);
+    }
+  }
 
   for (COWPT(ShaderModule) &cow_module : _shader->_modules) {
     CPT(ShaderModule) module = cow_module.get_read_pointer();
@@ -186,8 +192,9 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
  */
 VkDescriptorSetLayout VulkanShaderContext::
 make_shader_attrib_descriptor_set_layout(VkDevice device) {
+  size_t num_descriptors = _shader->_tex_spec.size() + _shader->_img_spec.size() + 1;
   VkDescriptorSetLayoutBinding *bindings;
-  bindings = (VkDescriptorSetLayoutBinding *)alloca(sizeof(VkDescriptorSetLayoutBinding) * (1 + _shader->_tex_spec.size()));
+  bindings = (VkDescriptorSetLayoutBinding *)alloca(sizeof(VkDescriptorSetLayoutBinding) * num_descriptors);
 
   size_t i = 0;
 
@@ -219,6 +226,24 @@ make_shader_attrib_descriptor_set_layout(VkDevice device) {
     binding.stageFlags = spec._id._stage_mask;
     binding.pImmutableSamplers = nullptr;
 
+    ++i;
+  }
+
+  // And storage image inputs.
+  for (const Shader::ShaderImgSpec &spec : _shader->_img_spec) {
+    if (spec._id._location < 0) {
+      continue;
+    }
+
+    VkDescriptorSetLayoutBinding &binding = bindings[i];
+    binding.binding = i;
+    binding.descriptorType =
+      (spec._desired_type == Texture::TT_buffer_texture)
+        ? VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER
+        : VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+    binding.descriptorCount = 1;
+    binding.stageFlags = spec._id._stage_mask;
+    binding.pImmutableSamplers = nullptr;
     ++i;
   }
 

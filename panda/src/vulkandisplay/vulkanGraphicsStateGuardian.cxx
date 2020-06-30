@@ -31,6 +31,7 @@
 #include "transparencyAttrib.h"
 
 #include "lightLensNode.h"
+#include "paramTexture.h"
 
 static const std::string default_vshader =
   "#version 330\n"
@@ -688,15 +689,16 @@ prepare_texture(Texture *texture, int view) {
 
   bool pack_bgr8 = false;
   if (!supported) {
-    // Not supported.  Can we convert it to a format that is supported?
+    // Not supported.  Can we convert it to a format that is supported?  The two
+    // we pick have mandatory support in Vulkan, so no need to check things.
     switch (format) {
     case VK_FORMAT_B8G8R8_UNORM:
-      format = VK_FORMAT_A8B8G8R8_UNORM_PACK32;
+      format = VK_FORMAT_R8G8B8A8_UNORM;
       pack_bgr8 = true;
       break;
 
     case VK_FORMAT_B8G8R8_UINT:
-      format = VK_FORMAT_A8B8G8R8_UINT_PACK32;
+      format = VK_FORMAT_R8G8B8A8_UINT;
       pack_bgr8 = true;
       break;
 
@@ -714,6 +716,10 @@ prepare_texture(Texture *texture, int view) {
   if (!is_buffer) {
     // Image texture.  Is the size supported for this format?
     VkImageUsageFlags usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+    if (fmt_props.optimalTilingFeatures & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT) {
+      usage |= VK_IMAGE_USAGE_STORAGE_BIT;
+    }
+
     VkImageFormatProperties img_props;
     vkGetPhysicalDeviceImageFormatProperties(vkpipe->_gpu, format, type,
                                              VK_IMAGE_TILING_OPTIMAL, usage,
@@ -922,8 +928,13 @@ prepare_texture(Texture *texture, int view) {
       return nullptr;
     }
 
-    VkBufferUsageFlags usage;
-    usage = VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+    VkBufferUsageFlags usage = 0;
+    usage |= VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT;
+    usage |= VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+    usage |= VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+    if (fmt_props.bufferFeatures & VK_FORMAT_FEATURE_STORAGE_TEXEL_BUFFER_BIT) {
+      usage |= VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT;
+    }
 
     VkBuffer buffer;
     VulkanMemoryBlock block;
@@ -2709,7 +2720,7 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
  */
 bool VulkanGraphicsStateGuardian::
 do_extract_image(VulkanTextureContext *tc, Texture *tex, int view, int z) {
-  VkDeviceSize buffer_size = tc->_extent.width * tc->_extent.height * 4;
+  VkDeviceSize buffer_size = tex->get_expected_ram_image_size();
 
   // Create a temporary buffer for transferring into.
   QueuedDownload down;
@@ -2724,33 +2735,42 @@ do_extract_image(VulkanTextureContext *tc, Texture *tex, int view, int z) {
   // We tack this onto the existing command buffer, for now.
   VkCommandBuffer cmd = _cmd;
 
-  VkBufferImageCopy region;
-  region.bufferOffset = 0;
-  region.bufferRowLength = 0;
-  region.bufferImageHeight = 0;
-  region.imageSubresource.aspectMask = tc->_aspect_mask;
-  region.imageSubresource.mipLevel = 0;
-  if (z != -1) {
-    nassertr(z >= 0 && (uint32_t)z < tc->_array_layers, false);
-    region.imageSubresource.baseArrayLayer = z;
-    region.imageSubresource.layerCount = 1;
-  } else {
-    region.imageSubresource.baseArrayLayer = 0;
-    region.imageSubresource.layerCount = tc->_array_layers;
+  if (tc->_image != VK_NULL_HANDLE) {
+    VkBufferImageCopy region;
+    region.bufferOffset = 0;
+    region.bufferRowLength = 0;
+    region.bufferImageHeight = 0;
+    region.imageSubresource.aspectMask = tc->_aspect_mask;
+    region.imageSubresource.mipLevel = 0;
+    if (z != -1) {
+      nassertr(z >= 0 && (uint32_t)z < tc->_array_layers, false);
+      region.imageSubresource.baseArrayLayer = z;
+      region.imageSubresource.layerCount = 1;
+    } else {
+      region.imageSubresource.baseArrayLayer = 0;
+      region.imageSubresource.layerCount = tc->_array_layers;
+    }
+    region.imageOffset.x = 0;
+    region.imageOffset.y = 0;
+    region.imageOffset.z = 0;
+    region.imageExtent = tc->_extent;
+
+    // Issue a command to transition the image into a layout optimal for
+    // transferring from.
+    tc->transition(cmd, _graphics_queue_family_index,
+      VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+      VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_TRANSFER_READ_BIT);
+
+    vkCmdCopyImageToBuffer(cmd, tc->_image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                           down._buffer, 1, &region);
   }
-  region.imageOffset.x = 0;
-  region.imageOffset.y = 0;
-  region.imageOffset.z = 0;
-  region.imageExtent = tc->_extent;
-
-  // Issue a command to transition the image into a layout optimal for
-  // transferring from.
-  tc->transition(cmd, _graphics_queue_family_index,
-    VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-    VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_TRANSFER_READ_BIT);
-
-  vkCmdCopyImageToBuffer(cmd, tc->_image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                         down._buffer, 1, &region);
+  else {
+    VkBufferCopy region;
+    region.srcOffset = 0;
+    region.dstOffset = 0;
+    region.size = buffer_size;
+    vkCmdCopyBuffer(_transfer_cmd, tc->_buffer, down._buffer, 1, &region);
+  }
 
   down._texture = tex;
   down._view = view;
@@ -3621,7 +3641,7 @@ update_sattr_descriptor_set(VkDescriptorSet ds, const ShaderAttrib *attr) {
   DCAST_INTO_R(sc, shader->prepare_now(get_prepared_objects(), this), false);
 
   // Allocate enough memory.
-  size_t max_num_descriptors = 1 + shader->_tex_spec.size();
+  size_t max_num_descriptors = 1 + shader->_tex_spec.size() + shader->_img_spec.size();
   VkWriteDescriptorSet *writes = (VkWriteDescriptorSet *)alloca(max_num_descriptors * sizeof(VkWriteDescriptorSet));
   VkDescriptorImageInfo *image_infos = (VkDescriptorImageInfo *)alloca(max_num_descriptors * sizeof(VkDescriptorImageInfo));
 
@@ -3724,6 +3744,113 @@ update_sattr_descriptor_set(VkDescriptorSet ds, const ShaderAttrib *attr) {
       write.pImageInfo = &image_info;
     } else {
       write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER;
+      write.pTexelBufferView = &tc->_buffer_view;
+    }
+
+    ++i;
+  }
+
+  for (const Shader::ShaderImgSpec &spec : shader->_img_spec) {
+    if (spec._id._location < 0) {
+      continue;
+    }
+
+    const ParamTextureImage *param = nullptr;
+    Texture *texture;
+    VkAccessFlags access_mask = 0;
+
+    const ShaderInput &sinp = attr->get_shader_input(spec._name);
+    switch (sinp.get_value_type()) {
+    case ShaderInput::M_texture_image:
+      param = (const ParamTextureImage *)sinp.get_param();
+      texture = param->get_texture();
+      if (param->has_read_access()) {
+        access_mask |= VK_ACCESS_SHADER_READ_BIT;
+      }
+      if (param->has_write_access()) {
+        access_mask |= VK_ACCESS_SHADER_WRITE_BIT;
+      }
+      break;
+
+    case ShaderInput::M_texture:
+      // People find it convenient to be able to pass a texture without
+      // further ado.
+      texture = sinp.get_texture();
+      access_mask = VK_ACCESS_SHADER_READ_BIT;
+      break;
+
+    case ShaderInput::M_invalid:
+      vulkandisplay_cat.error()
+        << "Missing texture image binding input " << *spec._name << "\n";
+      return false;
+
+    default:
+      vulkandisplay_cat.error()
+        << "Mismatching type for parameter " << *spec._name
+        << ", expected texture image binding\n";
+      return false;
+    }
+
+    if (texture->get_texture_type() != spec._desired_type) {
+      vulkandisplay_cat.error()
+        << "Sampler type of shader input '" << *spec._name << "' does not "
+           "match type of texture " << *texture << ".\n";
+    }
+
+    VulkanTextureContext *tc;
+    int view = get_current_tex_view_offset();
+    DCAST_INTO_R(tc, texture->prepare_now(view, _prepared_objects, this), false);
+
+    tc->set_active(true);
+    update_texture(tc, true);
+
+    // Transition the texture so that it can be read by the shader.  This has
+    // to happen on the transfer command buffer, since it can't happen during
+    // an active render pass.
+    VkPipelineStageFlags stage_flags = 0;
+    if (spec._id._stage_mask & (1 << (int)Shader::Stage::vertex)) {
+      stage_flags |= VK_PIPELINE_STAGE_VERTEX_SHADER_BIT;
+    }
+    if (spec._id._stage_mask & (1 << (int)Shader::Stage::tess_control)) {
+      stage_flags |= VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT;
+    }
+    if (spec._id._stage_mask & (1 << (int)Shader::Stage::tess_evaluation)) {
+      stage_flags |= VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT;
+    }
+    if (spec._id._stage_mask & (1 << (int)Shader::Stage::fragment)) {
+      stage_flags |= VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+    }
+    if (spec._id._stage_mask & (1 << (int)Shader::Stage::geometry)) {
+      stage_flags |= VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT;
+    }
+    if (spec._id._stage_mask & (1 << (int)Shader::Stage::compute)) {
+      stage_flags |= VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+    }
+
+    // Load/store images need to be in the general layout.
+    tc->transition(_transfer_cmd, _graphics_queue_family_index,
+                   VK_IMAGE_LAYOUT_GENERAL, stage_flags, access_mask);
+
+    VkWriteDescriptorSet &write = writes[i];
+    write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    write.pNext = nullptr;
+    write.dstSet = ds;
+    write.dstBinding = i;
+    write.dstArrayElement = 0;
+    write.descriptorCount = 1;
+    write.pImageInfo = nullptr;
+    write.pBufferInfo = nullptr;
+    write.pTexelBufferView = nullptr;
+
+    if (spec._desired_type != Texture::TT_buffer_texture) {
+      write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+      VkDescriptorImageInfo &image_info = image_infos[i];
+      image_info.sampler = VK_NULL_HANDLE;
+      image_info.imageView = tc->_image_view;
+      image_info.imageLayout = tc->_layout;
+      write.pImageInfo = &image_info;
+    } else {
+      write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER;
       write.pTexelBufferView = &tc->_buffer_view;
     }
 
