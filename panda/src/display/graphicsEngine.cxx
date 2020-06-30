@@ -1132,9 +1132,16 @@ extract_texture_data(Texture *tex, GraphicsStateGuardian *gsg) {
   string draw_name = gsg->get_threading_model().get_draw_name();
   if (draw_name.empty()) {
     // A single-threaded environment.  No problem.
-    return gsg->extract_texture_data(tex);
+    Thread *current_thread = Thread::get_current_thread();
+    if (!gsg->begin_frame(current_thread)) {
+      return false;
+    }
 
-  } else {
+    bool result = gsg->extract_texture_data(tex);
+    gsg->end_frame(current_thread);
+    return result;
+  }
+  else {
     // A multi-threaded environment.  We have to wait until the draw thread
     // has finished its current task.
     WindowRenderer *wr = get_window_renderer(draw_name, 0);
@@ -1196,10 +1203,17 @@ dispatch_compute(const LVecBase3i &work_groups, const RenderState *state, Graphi
   string draw_name = gsg->get_threading_model().get_draw_name();
   if (draw_name.empty()) {
     // A single-threaded environment.  No problem.
+    Thread *current_thread = Thread::get_current_thread();
+    if (!gsg->begin_frame(current_thread)) {
+      display_cat.error()
+        << "Failed to begin frame for compute shader dispatch.\n";
+      return;
+    }
     gsg->push_group_marker(std::string("Compute ") + shader->get_filename(Shader::ST_compute).get_basename());
     gsg->set_state_and_transform(state, TransformState::make_identity());
     gsg->dispatch_compute(work_groups[0], work_groups[1], work_groups[2]);
     gsg->pop_group_marker();
+    gsg->end_frame(current_thread);
 
   } else {
     // A multi-threaded environment.  We have to wait until the draw thread
