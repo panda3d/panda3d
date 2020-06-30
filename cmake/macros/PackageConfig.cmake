@@ -312,7 +312,7 @@ function(export_packages filename)
 
   if(IS_OSX)
     set(exports "${exports}set(_panda_archs ${CMAKE_OSX_ARCHITECTURES})\n")
-    set(exports "${exports}if(NOT _panda_archs STREQUAL \$\{CMAKE_OSX_ARCHITECTURES\})\n")
+    set(exports "${exports}if(NOT _panda_archs STREQUAL \${CMAKE_OSX_ARCHITECTURES})\n")
     set(exports "${exports}  return()\n")
     set(exports "${exports}endif()\n")
   endif()
