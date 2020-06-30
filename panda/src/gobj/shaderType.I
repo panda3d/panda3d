@@ -135,34 +135,6 @@ get_member(size_t i) const {
 }
 
 /**
- * Adds a member to this struct.
- */
-INLINE void ShaderType::Struct::
-add_member(const ShaderType *type, std::string name) {
-  Member member;
-  member.type = type;
-  member.name = std::move(name);
-  member.offset = _members.empty() ? 0 : _members.back().offset + _members.back().type->get_size_bytes();
-  _members.push_back(std::move(member));
-}
-
-/**
- * Adds a member to this struct with a given offset.
- */
-INLINE void ShaderType::Struct::
-add_member(const ShaderType *type, std::string name, uint32_t offset) {
-  pvector<Member>::iterator it = _members.begin();
-  while (it != _members.end() && it->offset < offset) {
-    ++it;
-  }
-  Member member;
-  member.type = type;
-  member.name = std::move(name);
-  member.offset = offset;
-  _members.insert(it, std::move(member));
-}
-
-/**
  * Constructs an array type from a base type and number of elements.
  */
 INLINE ShaderType::Array::

@@ -147,6 +147,7 @@ public:
     spv::BuiltIn _builtin = spv::BuiltInMax;
     uint32_t _constant = 0;
     uint32_t _type_id = 0;
+    uint32_t _array_stride = 0;
     MemberDefinitions _members;
     bool _used = false;
 
