@@ -2113,6 +2113,12 @@ bind_parameter(const Parameter &param) {
       }
       bind._desired_type = sampled_image_type->get_texture_type();
 
+      // Because of Vulkan limitations, we require buffer textures to be set as
+      // shader inputs
+      if (bind._desired_type == Texture::TT_buffer_texture) {
+        return report_parameter_error(name, type, "numbered stages may not use samplerBuffer");
+      }
+
       std::string tail;
       bind._stage = string_to_int(pieces[1].substr(7), tail);
       if (!tail.empty()) {
@@ -2953,6 +2959,12 @@ bind_parameter(const Parameter &param) {
 
       if (const ::ShaderType::SampledImage *image = type->as_sampled_image()) {
         bind._desired_type = image->get_texture_type();
+
+        // Because of Vulkan limitations, we require buffer textures to be set
+        // as shader inputs
+        if (bind._desired_type == Texture::TT_buffer_texture) {
+          return report_parameter_error(name, type, "numbered stages may not use samplerBuffer");
+        }
       }
       else {
         return report_parameter_error(name, type, "expected sampler type");
