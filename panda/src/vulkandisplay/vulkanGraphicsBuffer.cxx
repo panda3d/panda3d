@@ -96,6 +96,12 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     setup_render_pass();
   }
 
+  if (_creation_flags & GraphicsPipe::BF_size_track_host) {
+    if (_host != nullptr) {
+      _size = _host->get_size();
+    }
+  }
+
   if (_framebuffer_size != _size) {
     // Uh-oh, the window must have resized.  Recreate the framebuffer.
     // Before destroying the old, make sure the queue is no longer rendering
@@ -363,6 +369,12 @@ open_buffer() {
     _depth_stencil_plane = RTP_depth_stencil;
   }
 
+  if (_creation_flags & GraphicsPipe::BF_size_track_host) {
+    GraphicsOutput *host = _host;
+    nassertr(host != nullptr, false);
+    _size = host->get_size();
+  }
+
   return setup_render_pass() && create_framebuffer();
 }
 
@@ -616,51 +628,22 @@ create_attachment(RenderTexturePlane plane, VkFormat format) {
   DCAST_INTO_R(vkgsg, _gsg, false);
   VkDevice device = vkgsg->_device;
 
-  VkImageCreateInfo img_info;
-  img_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-  img_info.pNext = nullptr;
-  img_info.flags = 0;
-  img_info.imageType = VK_IMAGE_TYPE_2D;
-  img_info.format = format;
-  img_info.extent.width = _size[0];
-  img_info.extent.height = _size[1];
-  img_info.extent.depth = 1;
-  img_info.mipLevels = 1;
-  img_info.arrayLayers = 1;
-  img_info.samples = VK_SAMPLE_COUNT_1_BIT;
-  img_info.tiling = VK_IMAGE_TILING_OPTIMAL;
-  img_info.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-  img_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-  img_info.queueFamilyIndexCount = 0;
-  img_info.pQueueFamilyIndices = nullptr;
-  img_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+  VkExtent3D extent;
+  extent.width = _size[0];
+  extent.height = _size[1];
+  extent.depth = 1;
 
+  VkImageUsageFlags usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
   if (plane == RTP_depth || plane == RTP_stencil || plane == RTP_depth_stencil) {
-    img_info.usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+    usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
   } else {
-    img_info.usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
   }
 
-  VkImage image;
-  VkResult err = vkCreateImage(device, &img_info, nullptr, &image);
-  if (err) {
-    vulkan_error(err, "Failed to create image");
-    return false;
-  }
-
-  // Get the memory requirements, and find an appropriate heap to alloc in.
-  VkMemoryRequirements mem_reqs;
-  vkGetImageMemoryRequirements(device, image, &mem_reqs);
-
-  VulkanMemoryBlock block;
-  if (!vkgsg->allocate_memory(block, mem_reqs, 0, false)) {
-    vulkandisplay_cat.error() << "Failed to allocate texture memory for depth image.\n";
-    return false;
-  }
-
-  // Bind memory to image.
-  if (!block.bind_image(image)) {
-    vulkan_error(err, "Failed to bind memory to depth image");
+  VulkanTextureContext *tc;
+  tc = vkgsg->create_image(VK_IMAGE_TYPE_2D, format, extent, 1, 1,
+                           VK_SAMPLE_COUNT_1_BIT, usage);
+  if (tc == nullptr) {
     return false;
   }
 
@@ -668,9 +651,9 @@ create_attachment(RenderTexturePlane plane, VkFormat format) {
   view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
   view_info.pNext = nullptr;
   view_info.flags = 0;
-  view_info.image = image;
+  view_info.image = tc->_image;
   view_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
-  view_info.format = format;
+  view_info.format = tc->_format;
   view_info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
   view_info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
   view_info.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -698,22 +681,15 @@ create_attachment(RenderTexturePlane plane, VkFormat format) {
     //                                      | VK_IMAGE_ASPECT_STENCIL_BIT;
     break;
   }
+  tc->_aspect_mask = view_info.subresourceRange.aspectMask;
 
-  VkImageView image_view;
-  err = vkCreateImageView(device, &view_info, nullptr, &image_view);
+  VkResult err;
+  err = vkCreateImageView(device, &view_info, nullptr, &tc->_image_view);
   if (err) {
     vulkan_error(err, "Failed to create image view for attachment");
+    delete tc;
     return false;
   }
-
-  PreparedGraphicsObjects *pgo = vkgsg->get_prepared_objects();
-  VulkanTextureContext *tc = new VulkanTextureContext(pgo, image, format);
-  tc->_extent = img_info.extent;
-  tc->_mip_levels = img_info.mipLevels;
-  tc->_array_layers = img_info.arrayLayers;
-  tc->_aspect_mask = view_info.subresourceRange.aspectMask;
-  tc->_image_view = image_view;
-  tc->_block = std::move(block);
 
   _attachments.push_back({tc, plane});
   return true;

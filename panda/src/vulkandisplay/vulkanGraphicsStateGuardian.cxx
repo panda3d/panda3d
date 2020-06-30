@@ -2886,6 +2886,7 @@ create_image(VkImageType type, VkFormat format, const VkExtent3D &extent,
   }
 
   VulkanTextureContext *tc = new VulkanTextureContext(get_prepared_objects(), image, format);
+  tc->_format = format;
   tc->_extent = extent;
   tc->_mip_levels = levels;
   tc->_array_layers = layers;
