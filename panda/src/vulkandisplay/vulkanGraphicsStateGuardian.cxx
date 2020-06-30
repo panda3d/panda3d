@@ -1866,6 +1866,7 @@ release_index_buffer(IndexBufferContext *context) {
  */
 void VulkanGraphicsStateGuardian::
 dispatch_compute(int num_groups_x, int num_groups_y, int num_groups_z) {
+  nassertv(_cmd != VK_NULL_HANDLE);
   //TODO: must actually be outside render pass, and on a queue that supports
   // compute.  Should we have separate pool/queue/buffer for compute?
   VkPipeline pipeline = _current_shader->get_compute_pipeline(this);
@@ -1967,7 +1968,8 @@ set_state_and_transform(const RenderState *state,
     num_offsets = 1;
   }
 
-  vkCmdBindDescriptorSets(_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+  bool is_compute = (sc->_modules[(size_t)Shader::Stage::compute] != VK_NULL_HANDLE);
+  vkCmdBindDescriptorSets(_cmd, is_compute ? VK_PIPELINE_BIND_POINT_COMPUTE : VK_PIPELINE_BIND_POINT_GRAPHICS,
                           sc->_pipeline_layout, 0, DS_SET_COUNT, descriptor_sets,
                           num_offsets, &offset);
 }

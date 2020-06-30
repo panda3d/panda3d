@@ -376,7 +376,6 @@ update_sattr_uniforms(VulkanGraphicsStateGuardian *gsg) {
 
       } else {
         memcpy(dest, ptr_data._ptr, array_size * dim * sizeof(int));
-        nassertd(false) continue;
       }
       break;
 

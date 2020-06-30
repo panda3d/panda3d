@@ -58,7 +58,7 @@ private:
   LMatrix4 *_mat_part_cache = nullptr;
   pvector<Shader::ShaderMatSpec> _mat_spec;
 
-  VkDescriptorSet _uniform_descriptor_set;
+  VkDescriptorSet _uniform_descriptor_set = VK_NULL_HANDLE;
   uint32_t _dynamic_uniform_offset = 0;
 
   // These are for the push constants; maybe in the future we'll replace this
