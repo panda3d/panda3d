@@ -2055,8 +2055,7 @@ def SdkLocatePython(prefer_thirdparty_python=False):
         # in case we want to run any scripts that use Python, though.
         SDK["PYTHONEXEC"] = os.path.realpath(sys.executable)
         if GetTarget() == 'emscripten':
-            Warn("Need --use-python !")
-            raise SystemExit
+            Warn("Reminder: Need --use-python for python support !")
         return
 
     abiflags = getattr(sys, 'abiflags', '')

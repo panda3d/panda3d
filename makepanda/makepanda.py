@@ -841,7 +841,7 @@ if (COMPILER=="GCC"):
     if GetTarget() != "darwin":
         if GetTarget() == "emscripten":
             Warn("makepanda@841 : if using pic and MAIN_MODULE>0 change /wasm/ to /wasm-pic/")
-            if '-fpic' in os.environ.get('EMCC_FLAGS','').lower():
+            if '-fpic' in os.environ.get('EMCC_FLAGS','').lower() or PkgSkip("PYTHON"):
                 excludelibs = f"{os.environ.get('EM_CACHE')}/wasm-pic/"
             else:
                 excludelibs = f"{os.environ.get('EM_CACHE')}/wasm/"
@@ -936,9 +936,12 @@ if (COMPILER=="GCC"):
             LibName("PYTHON", "-lutil")
             LibName("PYTHON", "-lrt")
     elif GetTarget() == 'emscripten':
-        Warn("FORCING PYTHON SUPPORT FOR WASM TARGET")
-        python_lib = SDK["PYTHONVERSION"]
-        SmartPkgEnable("PYTHON", "", python_lib, (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"))
+        if PkgSkip("PYTHON"):
+            Warn("         ********** PYTHON SUPPORT FOR WASM TARGET DISABLED ************")
+        else:
+            Warn("         *********** FORCING PYTHON SUPPORT FOR WASM TARGET ************")
+            python_lib = SDK["PYTHONVERSION"]
+            SmartPkgEnable("PYTHON", "", python_lib, (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"))
 
     SmartPkgEnable("OPENSSL",   "openssl",   ("ssl", "crypto"), ("openssl/ssl.h", "openssl/crypto.h"))
     SmartPkgEnable("GTK2",      "gtk+-2.0")
@@ -1424,11 +1427,18 @@ def CompileCxx(obj,src,opts):
 
         # temporary workaround for clang11+wasm backend
         if GetTarget() == "emscripten":
-            Warn("makepanda.py@1412 : temporary workaround for clang11+wasm backend")
+            Warn("makepanda.py@1427 : temporary workaround for clang11+wasm backend")
+
             cmd = cmd.replace(' -ffast-math','')
+            cmd = cmd.replace(' -fno-unsafe-math-optimizations','')
+
             cmd = cmd.replace(' -fPIC','')
             cmd = cmd.replace(' -fpic','')
-            cmd = cmd.replace(' -fno-unsafe-math-optimizations','')
+            if PkgSkip("PYTHON"):
+                # dlopen ffi support
+                cmd += ' -fPIC'
+
+
 
         cmd = cmd.rstrip()
 
