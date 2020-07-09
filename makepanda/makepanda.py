@@ -102,7 +102,8 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "CONTRIB",                                           # Experimental
   "SSE2", "NEON",                                      # Compiler features
   "MIMALLOC",                                          # Memory allocators
-  "NAVIGATION",				                           # Recast Detour Toolset
+  "NAVIGATION",				                           # Detour Toolset
+  "NAVMESHGEN",                                        # Recast Toolset
 ])
 
 CheckPandaSourceTree()
@@ -2948,6 +2949,8 @@ if not PkgSkip("VISION"):
     panda_modules.append('vision')
 if not PkgSkip("NAVIGATION"):
     panda_modules.append('navigation')
+if not PkgSkip("NAVMESHGEN"):
+    panda_modules.append('navmeshgen')
 if not PkgSkip("SKEL"):
     panda_modules.append('skel')
 if not PkgSkip("EGG"):
@@ -3373,8 +3376,11 @@ CopyAllHeaders('panda/src/grutil')
 if not PkgSkip("VISION"):
     CopyAllHeaders('panda/src/vision')
 if not PkgSkip("NAVIGATION"):
-    CopyAllHeaders('panda/src/navigation/Recast/Include')
     CopyAllHeaders('panda/src/navigation/Detour/Include')
+    CopyAllHeaders('panda/src/navigation')
+if not PkgSkip("NAVMESHGEN"):
+    CopyAllHeaders('panda/src/navmeshgen/Recast/Include')
+    CopyAllHeaders('panda/src/navmeshgen')
 if not PkgSkip("FFMPEG"):
     CopyAllHeaders('panda/src/ffmpeg')
 if not PkgSkip("RECASTDETOUR"):
@@ -4457,18 +4463,6 @@ if (PkgSkip("NAVIGATION") == 0):
   TargetAdd('p3navigation_DetourNavMeshBuilder.obj', opts=OPTS,  input='DetourNavMeshBuilder.cpp')
   TargetAdd('p3navigation_DetourNavMeshQuery.obj', opts=OPTS,  input='DetourNavMeshQuery.cpp')
   TargetAdd('p3navigation_DetourNode.obj', opts=OPTS,  input='DetourNode.cpp')
-  OPTS=['DIR:panda/src/navigation/Recast/Source', 'BUILDING:NAVIGATION']
-  TargetAdd('p3navigation_Recast.obj', opts=OPTS,  input='Recast.cpp')
-  TargetAdd('p3navigation_RecastAlloc.obj', opts=OPTS,  input='RecastAlloc.cpp')
-  TargetAdd('p3navigation_RecastArea.obj', opts=OPTS,  input='RecastArea.cpp')
-  TargetAdd('p3navigation_RecastAssert.obj', opts=OPTS,  input='RecastAssert.cpp')
-  TargetAdd('p3navigation_RecastContour.obj', opts=OPTS,  input='RecastContour.cpp')
-  TargetAdd('p3navigation_RecastFilter.obj', opts=OPTS,  input='RecastFilter.cpp')
-  TargetAdd('p3navigation_RecastLayers.obj', opts=OPTS,  input='RecastLayers.cpp')
-  TargetAdd('p3navigation_RecastMesh.obj', opts=OPTS,  input='RecastMesh.cpp')
-  TargetAdd('p3navigation_RecastMeshDetail.obj', opts=OPTS,  input='RecastMeshDetail.cpp')
-  TargetAdd('p3navigation_RecastRasterization.obj', opts=OPTS,  input='RecastRasterization.cpp')
-  TargetAdd('p3navigation_RecastRegion.obj', opts=OPTS,  input='RecastRegion.cpp')
 
   TargetAdd('libp3navigation.dll', input='p3navigation_composite1.obj')
   TargetAdd('libp3navigation.dll', input='p3navigation_DetourAlloc.obj')
@@ -4478,17 +4472,7 @@ if (PkgSkip("NAVIGATION") == 0):
   TargetAdd('libp3navigation.dll', input='p3navigation_DetourNavMeshBuilder.obj')
   TargetAdd('libp3navigation.dll', input='p3navigation_DetourNavMeshQuery.obj')
   TargetAdd('libp3navigation.dll', input='p3navigation_DetourNode.obj')
-  TargetAdd('libp3navigation.dll', input='p3navigation_Recast.obj')
-  TargetAdd('libp3navigation.dll', input='p3navigation_RecastAlloc.obj')
-  TargetAdd('libp3navigation.dll', input='p3navigation_RecastArea.obj')
-  TargetAdd('libp3navigation.dll', input='p3navigation_RecastAssert.obj')
-  TargetAdd('libp3navigation.dll', input='p3navigation_RecastContour.obj')
-  TargetAdd('libp3navigation.dll', input='p3navigation_RecastFilter.obj')
-  TargetAdd('libp3navigation.dll', input='p3navigation_RecastLayers.obj')
-  TargetAdd('libp3navigation.dll', input='p3navigation_RecastMesh.obj')
-  TargetAdd('libp3navigation.dll', input='p3navigation_RecastMeshDetail.obj')
-  TargetAdd('libp3navigation.dll', input='p3navigation_RecastRasterization.obj')
-  TargetAdd('libp3navigation.dll', input='p3navigation_RecastRegion.obj')
+
   TargetAdd('libp3navigation.dll', input=COMMON_PANDA_LIBS)
   OPTS=['DIR:panda/src/navigation', 'BUILDING:NAVIGATION']
   TargetAdd('libp3navigation.dll', opts=OPTS)
@@ -4508,6 +4492,59 @@ if (PkgSkip("NAVIGATION") == 0):
   PyTargetAdd('navigation.pyd', input='libp3navigation.dll')
   PyTargetAdd('navigation.pyd', input='libp3interrogatedb.dll')
   PyTargetAdd('navigation.pyd', input=COMMON_PANDA_LIBS)
+
+#
+# DIRECTORY: panda/src/navmeshgen/
+#
+
+if (PkgSkip("NAVMESHGEN") == 0):
+  OPTS=['DIR:panda/src/navmeshgen', 'BUILDING:NAVMESHGEN']
+  TargetAdd('p3navmeshgen_composite1.obj', opts=OPTS, input='p3navmeshgen_composite1.cxx')
+  OPTS=['DIR:panda/src/navmeshgen/Recast/Source', 'BUILDING:NAVMESHGEN']
+  TargetAdd('p3navmeshgen_Recast.obj', opts=OPTS,  input='Recast.cpp')
+  TargetAdd('p3navmeshgen_RecastAlloc.obj', opts=OPTS,  input='RecastAlloc.cpp')
+  TargetAdd('p3navmeshgen_RecastArea.obj', opts=OPTS,  input='RecastArea.cpp')
+  TargetAdd('p3navmeshgen_RecastAssert.obj', opts=OPTS,  input='RecastAssert.cpp')
+  TargetAdd('p3navmeshgen_RecastContour.obj', opts=OPTS,  input='RecastContour.cpp')
+  TargetAdd('p3navmeshgen_RecastFilter.obj', opts=OPTS,  input='RecastFilter.cpp')
+  TargetAdd('p3navmeshgen_RecastLayers.obj', opts=OPTS,  input='RecastLayers.cpp')
+  TargetAdd('p3navmeshgen_RecastMesh.obj', opts=OPTS,  input='RecastMesh.cpp')
+  TargetAdd('p3navmeshgen_RecastMeshDetail.obj', opts=OPTS,  input='RecastMeshDetail.cpp')
+  TargetAdd('p3navmeshgen_RecastRasterization.obj', opts=OPTS,  input='RecastRasterization.cpp')
+  TargetAdd('p3navmeshgen_RecastRegion.obj', opts=OPTS,  input='RecastRegion.cpp')
+
+  TargetAdd('libp3navmeshgen.dll', input='p3navmeshgen_composite1.obj')
+  TargetAdd('libp3navmeshgen.dll', input='p3navmeshgen_Recast.obj')
+  TargetAdd('libp3navmeshgen.dll', input='p3navmeshgen_RecastAlloc.obj')
+  TargetAdd('libp3navmeshgen.dll', input='p3navmeshgen_RecastArea.obj')
+  TargetAdd('libp3navmeshgen.dll', input='p3navmeshgen_RecastAssert.obj')
+  TargetAdd('libp3navmeshgen.dll', input='p3navmeshgen_RecastContour.obj')
+  TargetAdd('libp3navmeshgen.dll', input='p3navmeshgen_RecastFilter.obj')
+  TargetAdd('libp3navmeshgen.dll', input='p3navmeshgen_RecastLayers.obj')
+  TargetAdd('libp3navmeshgen.dll', input='p3navmeshgen_RecastMesh.obj')
+  TargetAdd('libp3navmeshgen.dll', input='p3navmeshgen_RecastMeshDetail.obj')
+  TargetAdd('libp3navmeshgen.dll', input='p3navmeshgen_RecastRasterization.obj')
+  TargetAdd('libp3navmeshgen.dll', input='p3navmeshgen_RecastRegion.obj')
+  TargetAdd('libp3navmeshgen.dll', input='libp3navigation.dll')
+  TargetAdd('libp3navmeshgen.dll', input=COMMON_PANDA_LIBS)
+  OPTS=['DIR:panda/src/navmeshgen', 'BUILDING:NAVMESHGEN']
+  TargetAdd('libp3navmeshgen.dll', opts=OPTS)
+
+  OPTS=['DIR:panda/src/navmeshgen']
+  IGATEFILES=GetDirectoryContents('panda/src/navmeshgen', ["*.h", "*_composite*.cxx"])
+  TargetAdd('libp3navmeshgen.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libp3navmeshgen.in', opts=['IMOD:panda3d.navmeshgen', 'ILIB:libp3navmeshgen', 'SRCDIR:panda/src/navmeshgen'])
+
+
+  PyTargetAdd('navmeshgen_module.obj', input='libp3navmeshgen.in')
+  PyTargetAdd('navmeshgen_module.obj', opts=OPTS)
+  PyTargetAdd('navmeshgen_module.obj', opts=['IMOD:panda3d.navmeshgen', 'ILIB:navmeshgen', 'IMPORT:panda3d.core'])
+
+  PyTargetAdd('navmeshgen.pyd', input='navmeshgen_module.obj')
+  PyTargetAdd('navmeshgen.pyd', input='libp3navmeshgen_igate.obj')
+  PyTargetAdd('navmeshgen.pyd', input='libp3navmeshgen.dll')
+  PyTargetAdd('navmeshgen.pyd', input='libp3interrogatedb.dll')
+  PyTargetAdd('navmeshgen.pyd', input=COMMON_PANDA_LIBS)
 
 #
 # DIRECTORY: panda/src/p3skel
