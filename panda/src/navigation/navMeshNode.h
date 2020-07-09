@@ -29,7 +29,7 @@ private:
   PT(NavMesh) _nav_mesh;
 
 public:
-  
+  NavMeshNode(const std::string &name);
   ~NavMeshNode();
 
 public:
@@ -49,6 +49,15 @@ public:
 private:
   static TypeHandle _type_handle;
 
+public:
+  static void register_with_read_factory();
+  virtual void write_datagram(BamWriter *manager, Datagram &dg);
+  virtual int complete_pointers(TypedWritable **plist,
+                                BamReader *manager);
+
+protected:
+  //static TypedWritable *make_from_bam(const FactoryParams &params);
+  void fillin(DatagramIterator &scan, BamReader *manager);
 
 };
 

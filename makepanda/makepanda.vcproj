@@ -651,8 +651,6 @@
 			<Filter Name="navigation">
 				<File RelativePath="..\panda\src\navigation\navMesh.cxx"></File>
 				<File RelativePath="..\panda\src\navigation\navMesh.h"></File>
-				<File RelativePath="..\panda\src\navigation\navMeshBuilder.cxx"></File>
-				<File RelativePath="..\panda\src\navigation\navMeshBuilder.h"></File>
 				<File RelativePath="..\panda\src\navigation\navMeshNode.cxx"></File>
 				<File RelativePath="..\panda\src\navigation\navMeshNode.h"></File>
 				<File RelativePath="..\panda\src\navigation\navMeshQuery.cxx"></File>
@@ -673,23 +671,31 @@
 				<File RelativePath="..\panda\src\navigation\Detour\Include\DetourNavMeshQuery.h"></File>
 				<File RelativePath="..\panda\src\navigation\Detour\Include\DetourNode.h"></File>
 				<File RelativePath="..\panda\src\navigation\Detour\Include\DetourStatus.h"></File>
-				<File RelativePath="..\panda\src\navigation\Recast\Source\Recast.cpp"></File>
-				<File RelativePath="..\panda\src\navigation\Recast\Source\RecastAlloc.cpp"></File>
-				<File RelativePath="..\panda\src\navigation\Recast\Source\RecastArea.cpp"></File>
-				<File RelativePath="..\panda\src\navigation\Recast\Source\RecastAssert.cpp"></File>
-				<File RelativePath="..\panda\src\navigation\Recast\Source\RecastContour.cpp"></File>
-				<File RelativePath="..\panda\src\navigation\Recast\Source\RecastFilter.cpp"></File>
-				<File RelativePath="..\panda\src\navigation\Recast\Source\RecastLayers.cpp"></File>
-				<File RelativePath="..\panda\src\navigation\Recast\Source\RecastMesh.cpp"></File>
-				<File RelativePath="..\panda\src\navigation\Recast\Source\RecastMeshDetail.cpp"></File>
-				<File RelativePath="..\panda\src\navigation\Recast\Source\RecastRasterization.cpp"></File>
-				<File RelativePath="..\panda\src\navigation\Recast\Source\RecastRegion.cpp"></File>
-				<File RelativePath="..\panda\src\navigation\Recast\Include\Recast.h"></File>
-				<File RelativePath="..\panda\src\navigation\Recast\Include\RecastAlloc.h"></File>
-				<File RelativePath="..\panda\src\navigation\Recast\Include\RecastAssert.h"></File>
 				<File RelativePath="..\panda\src\navigation\navigation_composite1.cxx"></File>
 				<File RelativePath="..\panda\src\navigation\config_navigation.cxx"></File>
 				<File RelativePath="..\panda\src\navigation\config_navigation.h"></File>
+			</Filter>
+
+			<Filter Name="navmeshgen">
+				<File RelativePath="..\panda\src\navmeshgen\navMeshBuilder.cxx"></File>
+				<File RelativePath="..\panda\src\navmeshgen\navMeshBuilder.h"></File>
+				<File RelativePath="..\panda\src\navmeshgen\Recast\Source\Recast.cpp"></File>
+				<File RelativePath="..\panda\src\navmeshgen\Recast\Source\RecastAlloc.cpp"></File>
+				<File RelativePath="..\panda\src\navmeshgen\Recast\Source\RecastArea.cpp"></File>
+				<File RelativePath="..\panda\src\navmeshgen\Recast\Source\RecastAssert.cpp"></File>
+				<File RelativePath="..\panda\src\navmeshgen\Recast\Source\RecastContour.cpp"></File>
+				<File RelativePath="..\panda\src\navmeshgen\Recast\Source\RecastFilter.cpp"></File>
+				<File RelativePath="..\panda\src\navmeshgen\Recast\Source\RecastLayers.cpp"></File>
+				<File RelativePath="..\panda\src\navmeshgen\Recast\Source\RecastMesh.cpp"></File>
+				<File RelativePath="..\panda\src\navmeshgen\Recast\Source\RecastMeshDetail.cpp"></File>
+				<File RelativePath="..\panda\src\navmeshgen\Recast\Source\RecastRasterization.cpp"></File>
+				<File RelativePath="..\panda\src\navmeshgen\Recast\Source\RecastRegion.cpp"></File>
+				<File RelativePath="..\panda\src\navmeshgen\Recast\Include\Recast.h"></File>
+				<File RelativePath="..\panda\src\navmeshgen\Recast\Include\RecastAlloc.h"></File>
+				<File RelativePath="..\panda\src\navmeshgen\Recast\Include\RecastAssert.h"></File>
+				<File RelativePath="..\panda\src\navmeshgen\navmeshgen_composite1.cxx"></File>
+				<File RelativePath="..\panda\src\navmeshgen\config_navmeshgen.cxx"></File>
+				<File RelativePath="..\panda\src\navmeshgen\config_navmeshgen.h"></File>
 			</Filter>
 			<Filter Name="gobj">
 				<File RelativePath="..\panda\src\gobj\geomEnums.cxx"></File>

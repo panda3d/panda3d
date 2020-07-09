@@ -8,7 +8,7 @@
  *
  * @file navMeshBuilder.h
  * @author ashwini
- * @date 2020-060-21
+ * @date 2020-06-21
  */
 
 
@@ -62,7 +62,7 @@ struct BuildSettings {
 };
 
 
-class EXPCL_NAVIGATION NavMeshBuilder {
+class EXPCL_NAVMESHGEN NavMeshBuilder {
 PUBLISHED:
   float get_actor_radius() { return _agent_radius; }
   float get_actor_height() { return _agent_height; }
@@ -109,8 +109,6 @@ private:
 protected:
   PT(NavMesh) _nav_mesh_obj;
   class dtNavMesh *_nav_mesh;
-  class dtNavMeshQuery *_nav_query;
-  class dtCrowd *_crowd;
 
   unsigned char _nav_mesh_draw_flags;
 
@@ -155,10 +153,6 @@ public:
   void set_context(rcContext *ctx) { _ctx = ctx; }
 
   virtual void collect_settings(struct BuildSettings &settings);
-
-  
-  dtNavMeshQuery *get_nav_query() { return _nav_query; }
-
  
   unsigned char getNavMeshDrawFlags() const { return _nav_mesh_draw_flags; }
   const float *get_verts() const { return _verts; }
