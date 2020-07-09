@@ -6,32 +6,30 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * @file config_navigation.cxx
+ * @file config_navmeshgen.cxx
  * @author ashwini
  * @date 2020-060-21
  */
 
-#include "config_navigation.h"
+#include "config_navmeshgen.h"
 
 #include "pandaSystem.h"
 #include "dconfig.h"
-#include "navMesh.h"
-#include "navMeshNode.h"
-#include "navMeshQuery.h"
+#include "navMeshBuilder.h"
 
 #if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_RECASTDETOUR)
-  #error Buildsystem error: BUILDING_NAVIGATION not defined
+  #error Buildsystem error: BUILDING_NAVMESHGEN not defined
 #endif
 
-Configure(config_navigation);
-NotifyCategoryDef(navigation, "");
+Configure(config_navmeshgen);
+NotifyCategoryDef(navmeshgen, "");
 
-ConfigureFn(config_navigation) {
-  init_libnavigation();
+ConfigureFn(config_navmeshgen) {
+  init_libnavmeshgen();
 }
 
-ConfigVariableInt navigation_sample_config_variable
-("navigation-sample-config-variable", 25);
+ConfigVariableInt navmeshgen_sample_config_variable
+("navmeshgen-sample-config-variable", 25);
 
 /**
  * Initializes the library.  This must be called at least once before any of
@@ -40,9 +38,8 @@ ConfigVariableInt navigation_sample_config_variable
  * special cases exist.
  */
 void
-init_libnavigation() {
-  NavMesh::init_type();
-  NavMeshNode::init_type();
+init_libnavmeshgen() {
+  
   static bool initialized = false;
   if (initialized) {
     return;

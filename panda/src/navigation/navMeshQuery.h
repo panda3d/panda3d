@@ -16,17 +16,31 @@
 #define NAVMESHQUERY_H
 
 #include "DetourNavMeshQuery.h"
-#include "navMeshBuilder.h"
+#include "navMesh.h"
+#include "pta_LVecBase3.h"
+#include "pandaFramework.h"
+#include "pandaSystem.h"
 
 class EXPCL_NAVIGATION NavMeshQuery
 {
+
 PUBLISHED:
-  void set_nav_query(NavMeshBuilder *nav_mesh) { _nav_query = nav_mesh->get_nav_query(); }
-  bool nearest_point(LPoint3 &p);
-private:
-  class dtNavMeshQuery *_nav_query;
   
+  NavMeshQuery();
+  NavMeshQuery(PT(NavMesh) nav_mesh);
+  bool set_nav_query(PT(NavMesh) nav_mesh);
+  bool nearest_point(LPoint3 &p);
+  PTA_LVecBase3 find_path(LPoint3 &start, LPoint3 &end);
+  PTA_LVecBase3 find_straight_path(LPoint3 &start, LPoint3 &end, int opt=0);
+
+private:
+  
+  class dtNavMeshQuery *_nav_query;
+  static const int MAX_POLYS = 256;
+
 public:
+  
+  ~NavMeshQuery();
   
   
 };

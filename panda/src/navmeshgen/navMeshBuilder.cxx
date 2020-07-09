@@ -8,13 +8,12 @@
  *
  * @file navMeshBuilder.cxx
  * @author ashwini
- * @date 2020-060-21
+ * @date 2020-06-21
  */
 
 #include "navMeshBuilder.h"
 #include "Recast.h"
 #include "DetourNavMesh.h"
-#include "DetourNavMeshQuery.h"
 #include "DetourNavMeshBuilder.h"
 
 #define _USE_MATH_DEFINES
@@ -33,9 +32,6 @@
 #endif
 
 NavMeshBuilder::NavMeshBuilder() :
-  _nav_mesh(0),
-  _nav_query(0),
-  _crowd(0),
   _filter_low_hanging_obstacles(true),
   _filter_ledge_spans(true),
   _filter_walkable_low_height_spans(true),
@@ -58,7 +54,6 @@ NavMeshBuilder::NavMeshBuilder() :
   face_vector.clear();
   _ctx = new rcContext;
   reset_common_settings();
-  _nav_query = dtAllocNavMeshQuery();
   //_crowd = dtAllocCrowd();
 }
 
@@ -67,7 +62,6 @@ NavMeshBuilder::~NavMeshBuilder() {
   delete[] _normals;
   delete[] _tris;
 
-  dtFreeNavMeshQuery(_nav_query);
   //dtFreeCrowd(_crowd);
 
   cleanup();
@@ -276,8 +270,7 @@ void NavMeshBuilder::cleanup()
   _pmesh = 0;
   rcFreePolyMeshDetail(_dmesh);
   _dmesh = 0;
-  dtFreeNavMesh(_nav_mesh);
-  _nav_mesh = 0;
+  
 }
 
 void NavMeshBuilder::set_partition_type(std::string p) {
@@ -601,8 +594,7 @@ PT(NavMesh) NavMeshBuilder::build() {
   // The GUI may allow more max points per polygon than Detour can handle.
   // Only build the detour navmesh if we do not exceed the limit.
   if (_cfg.maxVertsPerPoly <= DT_VERTS_PER_POLYGON) {
-    unsigned char *nav_data = 0;
-    int nav_data_size = 0;
+    
 
     // Update poly flags from areas.
     for (int i = 0; i < _pmesh->npolys; ++i) {
@@ -620,59 +612,33 @@ PT(NavMesh) NavMeshBuilder::build() {
       }
     }
 
+    _nav_mesh_obj = new NavMesh(_nav_mesh);
+    
+    memset(&(_nav_mesh_obj->params), 0, sizeof(_nav_mesh_obj->params));
+    _nav_mesh_obj->params.verts = _pmesh->verts;
+    _nav_mesh_obj->params.vertCount = _pmesh->nverts;
+    _nav_mesh_obj->params.polys = _pmesh->polys;
+    _nav_mesh_obj->params.polyAreas = _pmesh->areas;
+    _nav_mesh_obj->params.polyFlags = _pmesh->flags;
+    _nav_mesh_obj->params.polyCount = _pmesh->npolys;
+    _nav_mesh_obj->params.nvp = _pmesh->nvp;
+    _nav_mesh_obj->params.detailMeshes = _dmesh->meshes;
+    _nav_mesh_obj->params.detailVerts = _dmesh->verts;
+    _nav_mesh_obj->params.detailVertsCount = _dmesh->nverts;
+    _nav_mesh_obj->params.detailTris = _dmesh->tris;
+    _nav_mesh_obj->params.detailTriCount = _dmesh->ntris;
 
-    dtNavMeshCreateParams params;
-    memset(&params, 0, sizeof(params));
-    params.verts = _pmesh->verts;
-    params.vertCount = _pmesh->nverts;
-    params.polys = _pmesh->polys;
-    params.polyAreas = _pmesh->areas;
-    params.polyFlags = _pmesh->flags;
-    params.polyCount = _pmesh->npolys;
-    params.nvp = _pmesh->nvp;
-    params.detailMeshes = _dmesh->meshes;
-    params.detailVerts = _dmesh->verts;
-    params.detailVertsCount = _dmesh->nverts;
-    params.detailTris = _dmesh->tris;
-    params.detailTriCount = _dmesh->ntris;
 
+    _nav_mesh_obj->params.walkableHeight = _agent_height;
+    _nav_mesh_obj->params.walkableRadius = _agent_radius;
+    _nav_mesh_obj->params.walkableClimb = _agent_max_climb;
+    rcVcopy(_nav_mesh_obj->params.bmin, _pmesh->bmin);
+    rcVcopy(_nav_mesh_obj->params.bmax, _pmesh->bmax);
+    _nav_mesh_obj->params.cs = _cfg.cs;
+    _nav_mesh_obj->params.ch = _cfg.ch;
+    _nav_mesh_obj->params.buildBvTree = true;
 
-    params.walkableHeight = _agent_height;
-    params.walkableRadius = _agent_radius;
-    params.walkableClimb = _agent_max_climb;
-    rcVcopy(params.bmin, _pmesh->bmin);
-    rcVcopy(params.bmax, _pmesh->bmax);
-    params.cs = _cfg.cs;
-    params.ch = _cfg.ch;
-    params.buildBvTree = true;
-
-    if (!dtCreateNavMeshData(&params, &nav_data, &nav_data_size)) {
-      _ctx->log(RC_LOG_ERROR, "Could not build Detour navmesh.");
-      return _nav_mesh_obj;
-    }
-
-    _nav_mesh = dtAllocNavMesh();
-
-    if (!_nav_mesh) {
-      dtFree(nav_data);
-      _ctx->log(RC_LOG_ERROR, "Could not create Detour navmesh");
-      return _nav_mesh_obj;
-    }
-
-    dtStatus status;
-
-    status = _nav_mesh->init(nav_data, nav_data_size, DT_TILE_FREE_DATA);
-    if (dtStatusFailed(status)) {
-      dtFree(nav_data);
-      _ctx->log(RC_LOG_ERROR, "Could not init Detour navmesh");
-      return _nav_mesh_obj;
-    }
-
-    status = _nav_query->init(_nav_mesh, 2048);
-    if (dtStatusFailed(status)) {
-      _ctx->log(RC_LOG_ERROR, "Could not init Detour navmesh query");
-      return _nav_mesh_obj;
-    }
+    _nav_mesh_obj->init_nav_mesh();
 
   }
 
@@ -684,11 +650,8 @@ PT(NavMesh) NavMeshBuilder::build() {
 
   _total_build_time_ms = _ctx->getAccumulatedTime(RC_TIMER_TOTAL) / 1000.0f;
 
-  //if (_tool)
-    //_tool->init(this);
-  //initToolStates(this);
-  //std::cout << "\nExiting Sample_SoloMesh::handleBuild()\n";
-  _nav_mesh_obj = new NavMesh(_nav_mesh);
+  
+  
   return _nav_mesh_obj;
 }
 

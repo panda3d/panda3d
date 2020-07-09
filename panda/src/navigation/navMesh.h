@@ -15,9 +15,11 @@
 #ifndef NAVMESH_H
 #define NAVMESH_H
 
-#include "Recast.h"
 #include "DetourNavMesh.h"
+#include "DetourNavMeshBuilder.h"
 #include "typedWritableReferenceCount.h"
+#include "pandaFramework.h"
+#include "pandaSystem.h"
 
 class EXPCL_NAVIGATION NavMesh: public TypedWritableReferenceCount
 {
@@ -30,8 +32,9 @@ private:
   dtNavMesh *_nav_mesh;
   
 public:
-  
-  
+  bool init_nav_mesh();
+  dtNavMesh *get_nav_mesh() { return _nav_mesh; }
+  dtNavMeshCreateParams params;
   ~NavMesh();
   
 
@@ -51,6 +54,16 @@ public:
 
 private:
   static TypeHandle _type_handle;
+
+public:
+  static void register_with_read_factory();
+  virtual void write_datagram(BamWriter *manager, Datagram &dg);
+
+protected:
+  static TypedWritable *make_from_bam(const FactoryParams &params);
+  void fillin(DatagramIterator &scan, BamReader *manager);
 };
+
+
 
 #endif // NAVMESH_H
