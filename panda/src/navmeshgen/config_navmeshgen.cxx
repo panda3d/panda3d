@@ -17,7 +17,7 @@
 #include "dconfig.h"
 #include "navMeshBuilder.h"
 
-#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_RECASTDETOUR)
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_NAVMESHGEN)
   #error Buildsystem error: BUILDING_NAVMESHGEN not defined
 #endif
 

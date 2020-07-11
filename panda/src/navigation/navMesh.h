@@ -34,7 +34,7 @@ private:
 public:
   bool init_nav_mesh();
   dtNavMesh *get_nav_mesh() { return _nav_mesh; }
-  dtNavMeshCreateParams params;
+  dtNavMeshCreateParams _params;
   ~NavMesh();
   
 

@@ -26,6 +26,7 @@
 #include "geomVertexWriter.h"
 #include "geomTrifans.h"
 
+#include "string_utils.h"
 
 #ifdef WIN32
 # define snprintf _snprintf
@@ -49,9 +50,9 @@ NavMeshBuilder::NavMeshBuilder() :
   _vert_count(0),
   _tri_count(0) {
   index_temp = 0;
-  vertex_map.clear();
-  vertex_vector.clear();
-  face_vector.clear();
+  _vertex_map.clear();
+  _vertex_vector.clear();
+  _face_vector.clear();
   _ctx = new rcContext;
   reset_common_settings();
   //_crowd = dtAllocCrowd();
@@ -151,21 +152,21 @@ void NavMeshBuilder::process_primitive(const GeomPrimitive *orig_prim, const Geo
       int a = prim->get_vertex(s);
       vertex.set_row(a);
       v = vertex.get_data3();
-      a = vertex_map[v];
+      a = _vertex_map[v];
 
       int b = prim->get_vertex(s + 1);
       vertex.set_row(b);
       v = vertex.get_data3();
-      b = vertex_map[v];
+      b = _vertex_map[v];
 
       int c = prim->get_vertex(s + 2);
       vertex.set_row(c);
       v = vertex.get_data3();
-      c = vertex_map[v];
+      c = _vertex_map[v];
 
 
       LVector3 xvx = { float(a + 1), float(b + 1), float(c + 1) };
-      face_vector.push_back(xvx);
+      _face_vector.push_back(xvx);
       add_triangle(a, b, c, tcap);
 
     }
@@ -175,20 +176,20 @@ void NavMeshBuilder::process_primitive(const GeomPrimitive *orig_prim, const Geo
         int a = prim->get_vertex(s);
         vertex.set_row(a);
         v = vertex.get_data3();
-        a = vertex_map[v];
+        a = _vertex_map[v];
 
         int b = prim->get_vertex(i - 1);
         vertex.set_row(b);
         v = vertex.get_data3();
-        b = vertex_map[v];
+        b = _vertex_map[v];
 
         int c = prim->get_vertex(i);
         vertex.set_row(c);
         v = vertex.get_data3();
-        c = vertex_map[v];
+        c = _vertex_map[v];
 
         LVector3 xvx = { float(a + 1), float(b + 1), float(c + 1) };
-        face_vector.push_back(xvx);
+        _face_vector.push_back(xvx);
         add_triangle(a, b, c, tcap);
 
       }
@@ -196,7 +197,7 @@ void NavMeshBuilder::process_primitive(const GeomPrimitive *orig_prim, const Geo
     else continue;
 
   }
-  return;
+  
 }
 
 void NavMeshBuilder::process_vertex_data(const GeomVertexData *vdata, int &vcap) {
@@ -209,14 +210,14 @@ void NavMeshBuilder::process_vertex_data(const GeomVertexData *vdata, int &vcap)
     x = v[0];
     y = v[1];
     z = v[2];
-    if (vertex_map.find(v) == vertex_map.end()) {
+    if (_vertex_map.find(v) == _vertex_map.end()) {
       add_vertex(x, z, -y, vcap); //if input model is originally z-up
       //add_vertex(x, y, z, vcap); //if input model is originally y-up
 
-      //vertex_map[v] = index_temp++;
+      //_vertex_map[v] = index_temp++;
       LVector3 xvx = { v[0],v[2],-v[1] };
-      vertex_map[v] = index_temp++;
-      vertex_vector.push_back(v);
+      _vertex_map[v] = index_temp++;
+      _vertex_vector.push_back(v);
     }
 
   }
@@ -274,15 +275,15 @@ void NavMeshBuilder::cleanup()
 }
 
 void NavMeshBuilder::set_partition_type(std::string p) {
-  if (p == "watershed" || p == "Watershed" || p == "WATERSHED") {
+  if (downcase(p) == "watershed") {
     _partition_type = SAMPLE_PARTITION_WATERSHED;
     return;
   }
-  if (p == "monotone" || p == "Monotone" || p == "MONOTONE") {
+  if (downcase(p) == "monotone") {
     _partition_type = SAMPLE_PARTITION_MONOTONE;
     return;
   }
-  if (p == "layer" || p == "Layer" || p == "LAYER") {
+  if (downcase(p) == "layer") {
     _partition_type = SAMPLE_PARTITION_LAYERS;
     return;
   }
@@ -614,29 +615,29 @@ PT(NavMesh) NavMeshBuilder::build() {
 
     _nav_mesh_obj = new NavMesh(_nav_mesh);
     
-    memset(&(_nav_mesh_obj->params), 0, sizeof(_nav_mesh_obj->params));
-    _nav_mesh_obj->params.verts = _pmesh->verts;
-    _nav_mesh_obj->params.vertCount = _pmesh->nverts;
-    _nav_mesh_obj->params.polys = _pmesh->polys;
-    _nav_mesh_obj->params.polyAreas = _pmesh->areas;
-    _nav_mesh_obj->params.polyFlags = _pmesh->flags;
-    _nav_mesh_obj->params.polyCount = _pmesh->npolys;
-    _nav_mesh_obj->params.nvp = _pmesh->nvp;
-    _nav_mesh_obj->params.detailMeshes = _dmesh->meshes;
-    _nav_mesh_obj->params.detailVerts = _dmesh->verts;
-    _nav_mesh_obj->params.detailVertsCount = _dmesh->nverts;
-    _nav_mesh_obj->params.detailTris = _dmesh->tris;
-    _nav_mesh_obj->params.detailTriCount = _dmesh->ntris;
+    memset(&(_nav_mesh_obj->_params), 0, sizeof(_nav_mesh_obj->_params));
+    _nav_mesh_obj->_params.verts = _pmesh->verts;
+    _nav_mesh_obj->_params.vertCount = _pmesh->nverts;
+    _nav_mesh_obj->_params.polys = _pmesh->polys;
+    _nav_mesh_obj->_params.polyAreas = _pmesh->areas;
+    _nav_mesh_obj->_params.polyFlags = _pmesh->flags;
+    _nav_mesh_obj->_params.polyCount = _pmesh->npolys;
+    _nav_mesh_obj->_params.nvp = _pmesh->nvp;
+    _nav_mesh_obj->_params.detailMeshes = _dmesh->meshes;
+    _nav_mesh_obj->_params.detailVerts = _dmesh->verts;
+    _nav_mesh_obj->_params.detailVertsCount = _dmesh->nverts;
+    _nav_mesh_obj->_params.detailTris = _dmesh->tris;
+    _nav_mesh_obj->_params.detailTriCount = _dmesh->ntris;
 
 
-    _nav_mesh_obj->params.walkableHeight = _agent_height;
-    _nav_mesh_obj->params.walkableRadius = _agent_radius;
-    _nav_mesh_obj->params.walkableClimb = _agent_max_climb;
-    rcVcopy(_nav_mesh_obj->params.bmin, _pmesh->bmin);
-    rcVcopy(_nav_mesh_obj->params.bmax, _pmesh->bmax);
-    _nav_mesh_obj->params.cs = _cfg.cs;
-    _nav_mesh_obj->params.ch = _cfg.ch;
-    _nav_mesh_obj->params.buildBvTree = true;
+    _nav_mesh_obj->_params.walkableHeight = _agent_height;
+    _nav_mesh_obj->_params.walkableRadius = _agent_radius;
+    _nav_mesh_obj->_params.walkableClimb = _agent_max_climb;
+    rcVcopy(_nav_mesh_obj->_params.bmin, _pmesh->bmin);
+    rcVcopy(_nav_mesh_obj->_params.bmax, _pmesh->bmax);
+    _nav_mesh_obj->_params.cs = _cfg.cs;
+    _nav_mesh_obj->_params.ch = _cfg.ch;
+    _nav_mesh_obj->_params.buildBvTree = true;
 
     _nav_mesh_obj->init_nav_mesh();
 

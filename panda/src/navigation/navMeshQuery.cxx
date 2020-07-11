@@ -21,15 +21,15 @@ NavMeshQuery::NavMeshQuery():
   _nav_query = dtAllocNavMeshQuery();
 }
 
+/**
+ * This function forms and initialises query object. No need to call set_nav_query() 
+ * after calling this constructor.
+ */
 NavMeshQuery::NavMeshQuery(PT(NavMesh) nav_mesh):
   _nav_query(0) {
   
   _nav_query = dtAllocNavMeshQuery();
-  dtStatus status = _nav_query->init(nav_mesh->get_nav_mesh(), 2048);
-
-  if (dtStatusFailed(status)) {
-    std::cout<<"\nCannot set nav query!\n";
-  }
+  set_nav_query(nav_mesh);
 
 }
 
@@ -37,9 +37,14 @@ NavMeshQuery::~NavMeshQuery() {
   dtFreeNavMeshQuery(_nav_query);
 }
 
+/**
+ * This function initializes the query object.
+ * It must be the first function called after construction, before other functions are used
+ * and can be used multiple times.
+ */
 bool NavMeshQuery::set_nav_query(PT(NavMesh) nav_mesh) {
-
-  dtStatus status = _nav_query->init(nav_mesh->get_nav_mesh(), 2048);
+  const int MAX_NODES = 2048;
+  dtStatus status = _nav_query->init(nav_mesh->get_nav_mesh(), MAX_NODES);
 
   if (dtStatusFailed(status)) {
     std::cout<<"\nCannot set nav query!\n";
@@ -49,6 +54,10 @@ bool NavMeshQuery::set_nav_query(PT(NavMesh) nav_mesh) {
   return true;
 }
 
+/**
+ * Given an input point, this function finds 
+ * the nearest point to it lying over the navigation mesh surface.
+ */
 bool NavMeshQuery::nearest_point(LPoint3 &p) {
   if (!_nav_query) {
     std::cout << "\nNavMeshQuery not created!\n";
@@ -74,6 +83,10 @@ bool NavMeshQuery::nearest_point(LPoint3 &p) {
   return true;
 }
 
+/**
+ * This function takes two input points as start and end points.
+ * It returns an array of points that form a path from start to end point.
+ */
 PTA_LVecBase3 NavMeshQuery::find_path(LPoint3 &start, LPoint3 &end) {
 
   PTA_LVecBase3 path_array;
@@ -136,6 +149,10 @@ PTA_LVecBase3 NavMeshQuery::find_path(LPoint3 &start, LPoint3 &end) {
   return path_array;
 }
 
+/**
+ * This function takes two input points as start and end points.
+ * It returns an array of points that form a straight path from start to end point.
+ */
 PTA_LVecBase3 NavMeshQuery::find_straight_path(LPoint3 &start, LPoint3 &end, int opt) {
 
   PTA_LVecBase3 straight_path_array;
