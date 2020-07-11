@@ -85,7 +85,6 @@ PUBLISHED:
   int get_pmesh_poly_count() { return _pmesh->npolys; }
   int get_pmesh_max_poly_count() { return _pmesh->maxpolys; }
 private:
-  std::string _filename;
   float _scale;
   float *_verts;
   int *_tris;
@@ -102,8 +101,8 @@ private:
   void process_vertex_data(const GeomVertexData *vdata, int &vcap);
   void process_primitive(const GeomPrimitive *orig_prim, const GeomVertexData *vdata, int &tcap);
 
-  std::map<LVector3, int> vertex_map;
-  std::vector<LVector3> vertex_vector, face_vector;
+  std::map<LVector3, int> _vertex_map;
+  std::vector<LVector3> _vertex_vector, _face_vector;
   bool _loaded;
   int index_temp;
 protected:
@@ -154,12 +153,11 @@ public:
 
   virtual void collect_settings(struct BuildSettings &settings);
  
-  unsigned char getNavMeshDrawFlags() const { return _nav_mesh_draw_flags; }
+  unsigned char get_nav_mesh_draw_flags() const { return _nav_mesh_draw_flags; }
   const float *get_verts() const { return _verts; }
   const float *get_normals() const { return _normals; }
   const int *get_tris() const { return _tris; }
   
-  const std::string& get_file_name() const { return _filename; }
   bool loaded_geom() { return _loaded; }
   
 
