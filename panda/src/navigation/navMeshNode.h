@@ -25,6 +25,7 @@ class EXPCL_NAVIGATION NavMeshNode: public PandaNode
 {
 PUBLISHED:
   NavMeshNode(const std::string &name, PT(NavMesh) nav_mesh);
+  PT(NavMesh) get_navmesh() { return _nav_mesh; }
 private:
   PT(NavMesh) _nav_mesh;
 

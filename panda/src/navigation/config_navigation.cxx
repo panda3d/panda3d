@@ -18,8 +18,9 @@
 #include "navMesh.h"
 #include "navMeshNode.h"
 #include "navMeshQuery.h"
+#include <iostream>
 
-#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_RECASTDETOUR)
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_NAVIGATION)
   #error Buildsystem error: BUILDING_NAVIGATION not defined
 #endif
 
@@ -41,12 +42,22 @@ ConfigVariableInt navigation_sample_config_variable
  */
 void
 init_libnavigation() {
-  NavMesh::init_type();
-  NavMeshNode::init_type();
+  
+  std::cout<<"\nCalled init_libnavigation\n";
   static bool initialized = false;
   if (initialized) {
     return;
   }
   initialized = true;
+  std::cout<<"\nCalling init_type\n";
+  NavMesh::init_type();
+  NavMeshNode::init_type();
+  
+  std::cout<<"\nCalling register_with_read_factory\n";
+  // Register factory functions for constructing objects from .bam files
+  NavMeshNode::register_with_read_factory();
+  NavMesh::register_with_read_factory();
+
+  
 }
 

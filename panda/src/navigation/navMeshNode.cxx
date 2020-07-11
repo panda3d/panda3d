@@ -13,6 +13,7 @@
 
 
 #include "navMeshNode.h"
+#include <iostream>
 
 TypeHandle NavMeshNode::_type_handle;
 
@@ -25,9 +26,7 @@ NavMeshNode::NavMeshNode(const std::string &name, PT(NavMesh) nav_mesh):
 NavMeshNode::NavMeshNode(const std::string &name):
  PandaNode(name) {}
 
-NavMeshNode::~NavMeshNode() {
-  
-}
+NavMeshNode::~NavMeshNode() {}
 
 
 /**
@@ -35,6 +34,8 @@ NavMeshNode::~NavMeshNode() {
  */
 void NavMeshNode::
 register_with_read_factory() {
+  std::cout<<"\nCalled NavMeshNode::register_with_read_factory()\n";
+  
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
@@ -70,18 +71,18 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 //  * type BulletShape is encountered in the Bam file.  It should create the
 //  * BulletShape and extract its information from the file.
 //  */
-// TypedWritable *NavMeshNode::
-// make_from_bam(const FactoryParams &params) {
-//   string s = "FromBam"
-//   NavMeshNode *param = new NavMeshNode(s);
-//   DatagramIterator scan;
-//   BamReader *manager;
+TypedWritable *NavMeshNode::
+make_from_bam(const FactoryParams &params) {
+  string s = "FromBam"
+  NavMeshNode *param = new NavMeshNode(s);
+  DatagramIterator scan;
+  BamReader *manager;
 
-//   parse_params(params, scan, manager);
-//   param->fillin(scan, manager);
+  parse_params(params, scan, manager);
+  param->fillin(scan, manager);
 
-//   return param;
-// }
+  return param;
+}
 
 /**
  * This internal function is called by make_from_bam to read in all of the
@@ -90,12 +91,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 void NavMeshNode::
 fillin(DatagramIterator &scan, BamReader *manager) {
   PandaNode::fillin(scan, manager);
-
- 
-
   manager->read_pointer(scan);
-
-  
 }
 
 

@@ -35,7 +35,7 @@ bool NavMesh::init_nav_mesh() {
 	unsigned char *nav_data = 0;
   int nav_data_size = 0;
 
-  if (!dtCreateNavMeshData(&params, &nav_data, &nav_data_size)) {
+  if (!dtCreateNavMeshData(&_params, &nav_data, &nav_data_size)) {
     std::cout<<"\nCould not build Detour navmesh.\n";
     return false;
   }
@@ -63,6 +63,7 @@ bool NavMesh::init_nav_mesh() {
  */
 void NavMesh::
 register_with_read_factory() {
+  std::cout<<"\nCalled NavMesh::register_with_read_factory()\n";
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
@@ -72,65 +73,65 @@ register_with_read_factory() {
  */
 void NavMesh::
 write_datagram(BamWriter *manager, Datagram &dg) {
-  NavMesh::write_datagram(manager, dg);
+  //NavMesh::write_datagram(manager, dg);
   
-  dg.add_int32(params.vertCount);
-  dg.add_int32(params.polyCount);
-  dg.add_int32(params.nvp);
-  dg.add_int32(params.detailVertsCount);
-  dg.add_int32(params.detailTriCount);
-  dg.add_float32(params.walkableHeight);
-  dg.add_float32(params.walkableRadius);
-  dg.add_float32(params.walkableClimb);
-  dg.add_float32(params.cs);
-  dg.add_float32(params.ch);
-  dg.add_bool(params.buildBvTree);
+  dg.add_int32(_params.vertCount);
+  dg.add_int32(_params.polyCount);
+  dg.add_int32(_params.nvp);
+  dg.add_int32(_params.detailVertsCount);
+  dg.add_int32(_params.detailTriCount);
+  dg.add_float32(_params.walkableHeight);
+  dg.add_float32(_params.walkableRadius);
+  dg.add_float32(_params.walkableClimb);
+  dg.add_float32(_params.cs);
+  dg.add_float32(_params.ch);
+  dg.add_bool(_params.buildBvTree);
 
   //the bmin and bmax values
   for(int i=0;i<3;i++) {
-    dg.add_float32(params.bmin[i]);
+    dg.add_float32(_params.bmin[i]);
   }
   for(int i=0;i<3;i++) {
-    dg.add_float32(params.bmax[i]);
+    dg.add_float32(_params.bmax[i]);
   }
   
   //POLYGON MESH ATTRIBUTES
 
   //the vertices
-  for(int i=0 ; i < (params.vertCount) * 3 ; i++) {
-    dg.add_uint16(params.verts[i]);
+  for(int i=0 ; i < (_params.vertCount) * 3 ; i++) {
+    dg.add_uint16(_params.verts[i]);
   }
 
   //the polygon data
-  for(int i=0 ; i < (params.polyCount) * 2 * (params.nvp) ;i++) {
-    dg.add_uint16(params.polys[i]);
+  for(int i=0 ; i < (_params.polyCount) * 2 * (_params.nvp) ;i++) {
+    dg.add_uint16(_params.polys[i]);
   }
 
   //the polygon flags
-  for(int i=0 ; i < params.polyCount ;i++) {
-    dg.add_uint16(params.polyFlags[i]);
+  for(int i=0 ; i < _params.polyCount ;i++) {
+    dg.add_uint16(_params.polyFlags[i]);
   }
 
   //the polygon area IDs
-  for(int i=0 ; i < params.polyCount ;i++) {
-    dg.add_uint8(params.polyAreas[i]);           
+  for(int i=0 ; i < _params.polyCount ;i++) {
+    dg.add_uint8(_params.polyAreas[i]);           
   }
   
   //POLYGON MESH DETAIL ATTRIBUTES
 
   //height detail sub-mesh data
-  for(int i=0 ; i < (params.polyCount) * 4 ;i++) {
-    dg.add_uint32(params.detailMeshes[i]);
+  for(int i=0 ; i < (_params.polyCount) * 4 ;i++) {
+    dg.add_uint32(_params.detailMeshes[i]);
   }
 
   //detail mesh vertices
-  for(int i=0 ; i < (params.detailVertsCount) * 3 ;i++) {
-    dg.add_float32(params.detailVerts[i]);
+  for(int i=0 ; i < (_params.detailVertsCount) * 3 ;i++) {
+    dg.add_float32(_params.detailVerts[i]);
   }
 
   //detail mesh vertices
-  for(int i=0 ; i < (params.detailTriCount) * 4 ;i++) {
-    dg.add_uint8(params.detailTris[i]);
+  for(int i=0 ; i < (_params.detailTriCount) * 4 ;i++) {
+    dg.add_uint8(_params.detailTris[i]);
   }
 
 }
@@ -158,7 +159,7 @@ make_from_bam(const FactoryParams &params) {
  */
 void NavMesh::
 fillin(DatagramIterator &scan, BamReader *manager) {
-  NavMesh::fillin(scan, manager);
+  //NavMesh::fillin(scan, manager);
   
   int vert_count = scan.get_int32();
   int poly_count = scan.get_int32();
@@ -220,36 +221,36 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     detail_tris[i] = scan.get_uint8();
   }
 
-  memset(&(params), 0, sizeof(params));
+  memset(&(_params), 0, sizeof(_params));
 
-  params.verts = verts;
-  params.vertCount = vert_count;
-  params.polys = polys;
-  params.polyAreas = poly_areas;
-  params.polyFlags = poly_flags;
-  params.polyCount = poly_count;
-  params.nvp = nvp;
-  params.detailMeshes = detail_meshes;
-  params.detailVerts = detail_verts;
-  params.detailVertsCount = detail_vert_count;
-  params.detailTris = detail_tris;
-  params.detailTriCount = detail_tri_count;
+  _params.verts = verts;
+  _params.vertCount = vert_count;
+  _params.polys = polys;
+  _params.polyAreas = poly_areas;
+  _params.polyFlags = poly_flags;
+  _params.polyCount = poly_count;
+  _params.nvp = nvp;
+  _params.detailMeshes = detail_meshes;
+  _params.detailVerts = detail_verts;
+  _params.detailVertsCount = detail_vert_count;
+  _params.detailTris = detail_tris;
+  _params.detailTriCount = detail_tri_count;
 
 
-  params.walkableHeight = walkable_height;
-  params.walkableRadius = walkable_radius;
-  params.walkableClimb = walkable_climb;
+  _params.walkableHeight = walkable_height;
+  _params.walkableRadius = walkable_radius;
+  _params.walkableClimb = walkable_climb;
 
-  params.bmin[0] = b_min[0];
-  params.bmin[1] = b_min[1];
-  params.bmin[2] = b_min[2];
-  params.bmax[0] = b_max[0];
-  params.bmax[1] = b_max[1];
-  params.bmax[2] = b_max[2];
+  _params.bmin[0] = b_min[0];
+  _params.bmin[1] = b_min[1];
+  _params.bmin[2] = b_min[2];
+  _params.bmax[0] = b_max[0];
+  _params.bmax[1] = b_max[1];
+  _params.bmax[2] = b_max[2];
   
-  params.cs = cs;
-  params.ch = ch;
-  params.buildBvTree = build_bv_tree;
+  _params.cs = cs;
+  _params.ch = ch;
+  _params.buildBvTree = build_bv_tree;
 
   init_nav_mesh();
 

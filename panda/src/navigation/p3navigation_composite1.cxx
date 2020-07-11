@@ -1,3 +1,5 @@
 #include "navMesh.cxx"
-#include "navMeshNode.cxx"
 #include "navMeshQuery.cxx"
+#include "config_navigation.cxx"
+#include "navMeshNode.cxx"
+
