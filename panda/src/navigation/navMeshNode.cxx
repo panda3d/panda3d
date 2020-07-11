@@ -73,8 +73,8 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 //  */
 TypedWritable *NavMeshNode::
 make_from_bam(const FactoryParams &params) {
-  string s = "FromBam"
-  NavMeshNode *param = new NavMeshNode(s);
+  std::string name = "FromBam";
+  NavMeshNode *param = new NavMeshNode(name);
   DatagramIterator scan;
   BamReader *manager;
 
