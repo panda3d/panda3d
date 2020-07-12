@@ -12,6 +12,7 @@
  */
 
 #include "navMeshQuery.h"
+#include "navMeshNode.h"
 #include "DetourNavMeshQuery.h"
 #include "lvecBase3.h"
 #include <iostream>
@@ -32,6 +33,14 @@ NavMeshQuery::NavMeshQuery(PT(NavMesh) nav_mesh):
   set_nav_query(nav_mesh);
 
 }
+NavMeshQuery::NavMeshQuery(NodePath nav_mesh_node_path):
+  _nav_query(0) {
+  
+  _nav_query = dtAllocNavMeshQuery();
+  set_nav_query(nav_mesh_node_path);
+
+}
+
 
 NavMeshQuery::~NavMeshQuery() {
   dtFreeNavMeshQuery(_nav_query);
@@ -52,6 +61,11 @@ bool NavMeshQuery::set_nav_query(PT(NavMesh) nav_mesh) {
   }
 
   return true;
+}
+
+bool NavMeshQuery::set_nav_query(NodePath nav_mesh_node_path) {
+  NavMeshNode *node = dynamic_cast<NavMeshNode*>(nav_mesh_node_path.node());
+  return set_nav_query(node->get_nav_mesh());
 }
 
 /**

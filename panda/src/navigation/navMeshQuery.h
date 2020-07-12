@@ -20,6 +20,7 @@
 #include "pta_LVecBase3.h"
 #include "pandaFramework.h"
 #include "pandaSystem.h"
+#include "nodePath.h"
 
 class EXPCL_NAVIGATION NavMeshQuery
 {
@@ -29,6 +30,8 @@ PUBLISHED:
   NavMeshQuery();
   NavMeshQuery(PT(NavMesh) nav_mesh);
   bool set_nav_query(PT(NavMesh) nav_mesh);
+  NavMeshQuery(NodePath nav_mesh_node_path);
+  bool set_nav_query(NodePath nav_mesh_node_path);
   bool nearest_point(LPoint3 &p);
   PTA_LVecBase3 find_path(LPoint3 &start, LPoint3 &end);
   PTA_LVecBase3 find_straight_path(LPoint3 &start, LPoint3 &end, int opt=0);
