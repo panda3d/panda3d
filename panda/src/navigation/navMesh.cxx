@@ -31,6 +31,44 @@ NavMesh::NavMesh(dtNavMesh *nav_mesh) {
   _nav_mesh = nav_mesh;
 }
 
+NavMesh::NavMesh(NavMeshParams mesh_params):
+  _nav_mesh(0) {
+  memset(&(_params), 0, sizeof(_params));
+
+  _params.verts = mesh_params.verts;
+  _params.vertCount = mesh_params.vert_count;
+  _params.polys = mesh_params.polys;
+  _params.polyAreas = mesh_params.poly_areas;
+  _params.polyFlags = mesh_params.poly_flags;
+  _params.polyCount = mesh_params.poly_count;
+  _params.nvp = mesh_params.nvp;
+  _params.detailMeshes = mesh_params.detail_meshes;
+  _params.detailVerts = mesh_params.detail_verts;
+  _params.detailVertsCount = mesh_params.detail_vert_count;
+  _params.detailTris = mesh_params.detail_tris;
+  _params.detailTriCount = mesh_params.detail_tri_count;
+
+
+  _params.walkableHeight = mesh_params.walkable_height;
+  _params.walkableRadius = mesh_params.walkable_radius;
+  _params.walkableClimb = mesh_params.walkable_climb;
+
+  _params.bmin[0] = mesh_params.b_min[0];
+  _params.bmin[1] = mesh_params.b_min[1];
+  _params.bmin[2] = mesh_params.b_min[2];
+  _params.bmax[0] = mesh_params.b_max[0];
+  _params.bmax[1] = mesh_params.b_max[1];
+  _params.bmax[2] = mesh_params.b_max[2];
+  
+  _params.cs = mesh_params.cs;
+  _params.ch = mesh_params.ch;
+  _params.buildBvTree = mesh_params.build_bv_tree;
+  
+  RC_MESH_NULL_IDX = mesh_params.RC_MESH_NULL_IDX;
+  
+  init_nav_mesh();
+}
+
 bool NavMesh::init_nav_mesh() {
 	unsigned char *nav_data = 0;
   int nav_data_size = 0;
@@ -57,6 +95,92 @@ bool NavMesh::init_nav_mesh() {
     return false;
   }
 }
+
+
+PT(GeomNode) NavMesh::draw_nav_mesh_geom() {
+
+  PT(GeomVertexData) vdata;
+  vdata = new GeomVertexData("vertexInfo", GeomVertexFormat::get_v3c4(), Geom::UH_static);
+  std::cout << "\nJust degbugging for navMesh: navmesh vert count: " << _params.vertCount << "\n";
+  vdata->set_num_rows(_params.vertCount);
+
+  GeomVertexWriter vertex(vdata, "vertex");
+  GeomVertexWriter colour(vdata, "color");
+
+  const int nvp = _params.nvp;
+  std::cout << "nvp: " << nvp << std::endl;
+  const float cs = _params.cs;
+  std::cout << "cs: " << cs << std::endl;
+  const float ch = _params.ch;
+  std::cout << "ch: " << ch << std::endl;
+  const float* orig = _params.bmin;
+  std::cout << "orig: " << orig[0] << "\t" << orig[1] << "\t" << orig[2] << std::endl;
+
+  std::cout << "NavMesh poly count: " << _params.polyCount << std::endl;
+  std::cout << "NavMesh vert count: " << _params.vertCount << std::endl;
+
+  for (int i = 0;i < _params.vertCount * 3;i += 3) {
+
+    const unsigned short* v = &_params.verts[i];
+
+    //convert to world space
+    const float x = orig[0] + v[0] * cs;
+    const float y = orig[1] + v[1] * ch;
+    const float z = orig[2] + v[2] * cs;
+
+    vertex.add_data3(x, -z, y); //if origingally model is z-up
+    //vertex.add_data3(x, y, z); //if originally model is y-up
+    colour.add_data4((float)rand() / RAND_MAX, (float)rand() / RAND_MAX, (float)rand() / RAND_MAX, 1);
+    //std::cout << "index: " << i / 3 << "\t" << x << "\t" << y << "\t" << z << "\n";
+
+  }
+
+  PT(GeomNode) node;
+  node = new GeomNode("gnode");
+
+  PT(GeomTrifans) prim;
+  prim = new GeomTrifans(Geom::UH_static);
+
+  for (int i = 0; i < _params.polyCount; ++i) {
+
+
+    const unsigned short* p = &_params.polys[i*nvp * 2];
+
+    // Iterate the vertices.
+    //unsigned short vi[3];  // The vertex indices.
+    for (int j = 0; j < nvp; ++j) {
+      if (p[j] == RC_MESH_NULL_IDX) {
+        break;// End of vertices.
+      }
+      if (p[j + nvp] == RC_MESH_NULL_IDX) {
+        prim->add_vertex(p[j]);
+        // The edge beginning with this vertex is a solid border.
+      }
+      else {
+        prim->add_vertex(p[j]);
+        // The edge beginning with this vertex connects to 
+        // polygon p[j + nvp].
+      }
+      //std::cout << "p[j]: " << p[j] << std::endl;
+
+    }
+    prim->close_primitive();
+
+  }
+  PT(Geom) polymeshgeom;
+  polymeshgeom = new Geom(vdata);
+  polymeshgeom->add_primitive(prim);
+
+  node->add_geom(polymeshgeom);
+  std::cout << "Number of Polygons: " << _params.polyCount << std::endl;
+
+
+  return node;
+}
+
+
+
+
 
 /**
  * Tells the BamReader how to create objects of type NavMesh.
@@ -134,6 +258,9 @@ write_datagram(BamWriter *manager, Datagram &dg) {
     dg.add_uint8(_params.detailTris[i]);
   }
 
+  //RC_MESH_NULL_IDX
+  dg.add_int32(RC_MESH_NULL_IDX);
+
 }
 
 /**
@@ -184,42 +311,45 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
   //POLYGON MESH ATTRIBUTES
 
-  unsigned short* verts = new unsigned short[3 * vert_count];
+  unsigned short *verts = new unsigned short[3 * vert_count];
   for(int i=0 ; i < 3 * vert_count ; i++) {
     verts[i] = scan.get_uint16();
   }
 
-  unsigned short* polys = new unsigned short[poly_count * 2 * nvp];
+  unsigned short *polys = new unsigned short[poly_count * 2 * nvp];
   for(int i=0 ; i < poly_count * 2 * nvp ; i++) {
     polys[i] = scan.get_uint16();
   }
 
-  unsigned short* poly_flags = new unsigned short[poly_count];
+  unsigned short *poly_flags = new unsigned short[poly_count];
   for(int i=0 ; i < poly_count; i++) {
     poly_flags[i] = scan.get_uint16();
   }
 
-  unsigned char* poly_areas = new unsigned char[poly_count];
+  unsigned char *poly_areas = new unsigned char[poly_count];
   for(int i=0 ; i < poly_count; i++) {
     poly_areas[i] = scan.get_uint8();
   }
 
   //POLYGON MESH DETAIL ATTRIBUTES
 
-  unsigned int* detail_meshes = new unsigned int[poly_count * 4];
+  unsigned int *detail_meshes = new unsigned int[poly_count * 4];
   for(int i=0 ; i < poly_count * 4 ;i++) {
     detail_meshes[i] = scan.get_uint32();
   }
 
-  float* detail_verts = new float[detail_vert_count * 3];
+  float *detail_verts = new float[detail_vert_count * 3];
   for(int i=0 ; i < detail_vert_count * 3 ;i++) {
     detail_verts[i] = scan.get_float32();
   }
 
-  unsigned char* detail_tris = new unsigned char[detail_tri_count * 4];
+  unsigned char *detail_tris = new unsigned char[detail_tri_count * 4];
   for(int i=0 ; i < detail_tri_count * 4 ;i++) {
     detail_tris[i] = scan.get_uint8();
   }
+
+  //RC_MESH_NULL_IDX
+  RC_MESH_NULL_IDX = scan.get_int32();
 
   memset(&(_params), 0, sizeof(_params));
 
