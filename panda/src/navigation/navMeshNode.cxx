@@ -28,7 +28,6 @@ NavMeshNode::NavMeshNode(const std::string &name):
 
 NavMeshNode::~NavMeshNode() {}
 
-
 /**
  * Tells the BamReader how to create objects of type BulletTriangleMeshShape.
  */

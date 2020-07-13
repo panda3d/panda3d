@@ -26,6 +26,7 @@ class EXPCL_NAVIGATION NavMeshNode: public PandaNode
 PUBLISHED:
   NavMeshNode(const std::string &name, PT(NavMesh) nav_mesh);
   PT(NavMesh) get_nav_mesh() { return _nav_mesh; }
+  PT(GeomNode) draw_nav_mesh_geom() { return _nav_mesh->draw_nav_mesh_geom(); }
 private:
   PT(NavMesh) _nav_mesh;
 

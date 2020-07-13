@@ -30,7 +30,7 @@ enum SamplePolyAreas {
   SAMPLE_POLYAREA_ROAD,
   SAMPLE_POLYAREA_DOOR,
   SAMPLE_POLYAREA_GRASS,
-  SAMPLE_POLYAREA_JUMP,
+  SAMPLE_POLYAREA_JUMP
 };
 enum SamplePolyFlags {
   SAMPLE_POLYFLAGS_WALK = 0x01,		// Ability to walk (ground, grass, road)
@@ -40,8 +40,8 @@ enum SamplePolyFlags {
   SAMPLE_POLYFLAGS_DISABLED = 0x10,		// Disabled polygon
   SAMPLE_POLYFLAGS_ALL = 0xffff	// All abilities.
 };
-struct BuildSettings {
-  
+class EXPCL_NAVMESHGEN BuildSettings {
+PUBLISHED:
   float cell_size;
   float cell_height;
   float agent_height;
