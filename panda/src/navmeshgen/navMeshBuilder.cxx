@@ -613,33 +613,36 @@ PT(NavMesh) NavMeshBuilder::build() {
       }
     }
 
-    _nav_mesh_obj = new NavMesh(_nav_mesh);
     
-    memset(&(_nav_mesh_obj->_params), 0, sizeof(_nav_mesh_obj->_params));
-    _nav_mesh_obj->_params.verts = _pmesh->verts;
-    _nav_mesh_obj->_params.vertCount = _pmesh->nverts;
-    _nav_mesh_obj->_params.polys = _pmesh->polys;
-    _nav_mesh_obj->_params.polyAreas = _pmesh->areas;
-    _nav_mesh_obj->_params.polyFlags = _pmesh->flags;
-    _nav_mesh_obj->_params.polyCount = _pmesh->npolys;
-    _nav_mesh_obj->_params.nvp = _pmesh->nvp;
-    _nav_mesh_obj->_params.detailMeshes = _dmesh->meshes;
-    _nav_mesh_obj->_params.detailVerts = _dmesh->verts;
-    _nav_mesh_obj->_params.detailVertsCount = _dmesh->nverts;
-    _nav_mesh_obj->_params.detailTris = _dmesh->tris;
-    _nav_mesh_obj->_params.detailTriCount = _dmesh->ntris;
+    
+    NavMeshParams mesh_params;
+
+    mesh_params.verts = _pmesh->verts;
+    mesh_params.vert_count = _pmesh->nverts;
+    mesh_params.polys = _pmesh->polys;
+    mesh_params.poly_areas = _pmesh->areas;
+    mesh_params.poly_flags = _pmesh->flags;
+    mesh_params.poly_count = _pmesh->npolys;
+    mesh_params.nvp = _pmesh->nvp;
+    mesh_params.detail_meshes = _dmesh->meshes;
+    mesh_params.detail_verts = _dmesh->verts;
+    mesh_params.detail_vert_count = _dmesh->nverts;
+    mesh_params.detail_tris = _dmesh->tris;
+    mesh_params.detail_tri_count = _dmesh->ntris;
 
 
-    _nav_mesh_obj->_params.walkableHeight = _agent_height;
-    _nav_mesh_obj->_params.walkableRadius = _agent_radius;
-    _nav_mesh_obj->_params.walkableClimb = _agent_max_climb;
-    rcVcopy(_nav_mesh_obj->_params.bmin, _pmesh->bmin);
-    rcVcopy(_nav_mesh_obj->_params.bmax, _pmesh->bmax);
-    _nav_mesh_obj->_params.cs = _cfg.cs;
-    _nav_mesh_obj->_params.ch = _cfg.ch;
-    _nav_mesh_obj->_params.buildBvTree = true;
+    mesh_params.walkable_height = _agent_height;
+    mesh_params.walkable_radius = _agent_radius;
+    mesh_params.walkable_climb = _agent_max_climb;
+    rcVcopy(mesh_params.b_min, _pmesh->bmin);
+    rcVcopy(mesh_params.b_max, _pmesh->bmax);
+    mesh_params.cs = _cfg.cs;
+    mesh_params.ch = _cfg.ch;
+    mesh_params.build_bv_tree = true;
 
-    _nav_mesh_obj->init_nav_mesh();
+    mesh_params.RC_MESH_NULL_IDX = RC_MESH_NULL_IDX;
+
+    _nav_mesh_obj = new NavMesh(mesh_params);
 
   }
 
