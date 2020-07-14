@@ -54,6 +54,10 @@ PUBLISHED:
   void set_nav_mesh(dtNavMesh *m) { _nav_mesh = m; }
   NavMesh();
   PT(GeomNode) draw_nav_mesh_geom();
+  int get_vert_count() { return _params.vertCount; }
+  int get_poly_count() { return _params.polyCount; }
+  int get_detail_vert_count() { return _params.detailVertsCount; }
+  int get_detail_tri_count() { return _params.detailTriCount; }
 
 private:
   dtNavMesh *_nav_mesh;
