@@ -126,7 +126,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 
   // Now that we have a command buffer, start our render pass.  First
   // transition the swapchain images into the valid state for rendering into.
-  VkCommandBuffer cmd = vkgsg->_cmd;
+  VkCommandBuffer cmd = vkgsg->_frame_data->_cmd;
 
   VkClearValue *clears = (VkClearValue *)
     alloca(sizeof(VkClearValue) * _attachments.size());
@@ -199,7 +199,7 @@ end_frame(FrameMode mode, Thread *current_thread) {
   if (mode == FM_render) {
     VulkanGraphicsStateGuardian *vkgsg;
     DCAST_INTO_V(vkgsg, _gsg);
-    VkCommandBuffer cmd = vkgsg->_cmd;
+    VkCommandBuffer cmd = vkgsg->_frame_data->_cmd;
     nassertv(cmd != VK_NULL_HANDLE);
 
     vkCmdEndRenderPass(cmd);
@@ -531,9 +531,9 @@ destroy_framebuffer() {
   VkDevice device = vkgsg->_device;
 
   // Make sure that the GSG's command buffer releases its resources.
-  if (vkgsg->_cmd != VK_NULL_HANDLE) {
-    vkResetCommandBuffer(vkgsg->_cmd, 0);
-  }
+  //if (vkgsg->_cmd != VK_NULL_HANDLE) {
+  //  vkResetCommandBuffer(vkgsg->_cmd, 0);
+  //}
 
   /*if (!_present_cmds.empty()) {
     vkFreeCommandBuffers(device, vkgsg->_cmd_pool, _present_cmds.size(), &_present_cmds[0]);

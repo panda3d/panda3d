@@ -75,8 +75,6 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   _dma_queue(VK_NULL_HANDLE),
   _graphics_queue_family_index(queue_family_index),
   _cmd_pool(VK_NULL_HANDLE),
-  _cmd(VK_NULL_HANDLE),
-  _transfer_cmd(VK_NULL_HANDLE),
   _render_pass(VK_NULL_HANDLE),
   _wait_semaphore(VK_NULL_HANDLE),
   _signal_semaphore(VK_NULL_HANDLE),
@@ -139,17 +137,6 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
     _dma_queue = _queue;
   }
 
-  // Create a fence to signal when the command buffers have finished.
-  VkFenceCreateInfo fence_info;
-  fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-  fence_info.pNext = nullptr;
-  fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-  err = vkCreateFence(_device, &fence_info, nullptr, &_fence);
-  if (err) {
-    vulkan_error(err, "Failed to create fence");
-    return;
-  }
-
   // Create a command pool to allocate command buffers from.
   VkCommandPoolCreateInfo cmd_pool_info;
   cmd_pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -162,6 +149,36 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   if (err) {
     vulkan_error(err, "Failed to create command pool");
     return;
+  }
+
+  // Create two command buffers per frame.
+  const uint32_t num_command_buffers = 2 * sizeof(_frame_data_pool) / sizeof(FrameData);
+  VkCommandBufferAllocateInfo alloc_info;
+  alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+  alloc_info.pNext = nullptr;
+  alloc_info.commandPool = _cmd_pool;
+  alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+  alloc_info.commandBufferCount = num_command_buffers;
+
+  VkCommandBuffer buffers[num_command_buffers];
+  err = vkAllocateCommandBuffers(_device, &alloc_info, buffers);
+  nassertv(!err);
+
+  size_t ci = 0;
+  for (FrameData &frame_data : _frame_data_pool) {
+    frame_data._cmd = buffers[ci++];
+    frame_data._transfer_cmd = buffers[ci++];
+
+    // Create a fence to signal when this frame has finished.
+    VkFenceCreateInfo fence_info;
+    fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    fence_info.pNext = nullptr;
+    fence_info.flags = 0;
+    err = vkCreateFence(_device, &fence_info, nullptr, &frame_data._fence);
+    if (err) {
+      vulkan_error(err, "Failed to create fence");
+      return;
+    }
   }
 
   // Create a pipeline cache, which may help with performance.
@@ -181,13 +198,13 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   //TODO: dynamic allocation, create more pools if we run out
   VkDescriptorPoolSize pool_size;
   pool_size.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-  pool_size.descriptorCount = 256;
+  pool_size.descriptorCount = 1024;
 
   VkDescriptorPoolCreateInfo pool_info;
   pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
   pool_info.pNext = nullptr;
   pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-  pool_info.maxSets = 256;
+  pool_info.maxSets = 1024;
   pool_info.poolSizeCount = 1;
   pool_info.pPoolSizes = &pool_size;
 
@@ -446,7 +463,10 @@ VulkanGraphicsStateGuardian::
   vkDestroyDescriptorPool(_device, _descriptor_pool, nullptr);
   vkDestroyPipelineCache(_device, _pipeline_cache, nullptr);
   vkDestroyCommandPool(_device, _cmd_pool, nullptr);
-  vkDestroyFence(_device, _fence, nullptr);
+
+  for (FrameData &frame_data : _frame_data_pool) {
+    vkDestroyFence(_device, frame_data._fence, nullptr);
+  }
 
   // Also free all the memory pages before destroying the device.
   _memory_pages.clear();
@@ -462,15 +482,37 @@ VulkanGraphicsStateGuardian::
  */
 void VulkanGraphicsStateGuardian::
 close_gsg() {
+  nassertv(_frame_data == nullptr);
+
   // Make sure it's no longer doing anything before we destroy it.
   vkDeviceWaitIdle(_device);
+
+  // Call finish_frame() on all frames.  We don't need to wait on the fences due
+  // to the above call.
+  const size_t num_frames = (sizeof(_frame_data_pool) / sizeof(FrameData));
+
+  while (_frame_data_tail != _frame_data_head) {
+    FrameData &frame_data = _frame_data_pool[_frame_data_tail];
+
+    ++_last_finished_frame;
+    _frame_data_tail = (_frame_data_tail + 1) % num_frames;
+
+    finish_frame(frame_data);
+  }
+
+  nassertv(_frame_data_tail == _frame_data_head);
 
   // We need to release all prepared resources, since the upcall to close_gsg
   // will cause the PreparedGraphicsObjects to be cleared out.
   {
     PT(PreparedGraphicsObjects) pgo = std::move(_prepared_objects);
     if (pgo != nullptr) {
+      // Create a temporary FrameData to hold all objects we need to destroy.
+      FrameData frame_data;
+      _frame_data = &frame_data;
       pgo->release_all_now(this);
+      _frame_data = nullptr;
+      finish_frame(frame_data);
     }
   }
 
@@ -989,6 +1031,8 @@ prepare_texture(Texture *texture, int view) {
  */
 bool VulkanGraphicsStateGuardian::
 upload_texture(VulkanTextureContext *tc) {
+  nassertr(_frame_data != nullptr, false);
+
   Texture *texture = tc->get_texture();
   VkImage image = tc->_image;
 
@@ -1008,12 +1052,12 @@ upload_texture(VulkanTextureContext *tc) {
         // Vulkan can only clear buffers using a multiple of 4 bytes.  If it's
         // all zeroes or texels are 4 bytes, it's easy.
         if (col == LColor::zero()) {
-          tc->clear_buffer(_transfer_cmd, 0);
+          tc->clear_buffer(_frame_data->_transfer_cmd, 0);
           return true;
         }
         vector_uchar data = texture->get_clear_data();
         if (data.size() == sizeof(uint32_t)) {
-          tc->clear_buffer(_transfer_cmd, *(uint32_t *)&data[0]);
+          tc->clear_buffer(_frame_data->_transfer_cmd, *(uint32_t *)&data[0]);
           return true;
         }
         // Otherwise, make a RAM mipmap image and fall through.
@@ -1025,14 +1069,14 @@ upload_texture(VulkanTextureContext *tc) {
         value.float32[1] = col[1];
         value.float32[2] = col[2];
         value.float32[3] = col[3];
-        tc->clear_color_image(_transfer_cmd, value);
+        tc->clear_color_image(_frame_data->_transfer_cmd, value);
         return true;
       }
       else {
         VkClearDepthStencilValue value;
         value.depth = col[0];
         value.stencil = 0;
-        tc->clear_depth_stencil_image(_transfer_cmd, value);
+        tc->clear_depth_stencil_image(_frame_data->_transfer_cmd, value);
         return true;
       }
     } else {
@@ -1087,7 +1131,7 @@ upload_texture(VulkanTextureContext *tc) {
   if (tc->_image != VK_NULL_HANDLE) {
     // Issue a command to transition the image into a layout optimal for
     // transferring into.
-    tc->transition(_transfer_cmd, _graphics_queue_family_index,
+    tc->transition(_frame_data->_transfer_cmd, _graphics_queue_family_index,
       VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
       VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT);
 
@@ -1143,7 +1187,7 @@ upload_texture(VulkanTextureContext *tc) {
         if (n > 0 && tc->_generate_mipmaps) {
           // Transition the previous mipmap level to optimal read layout.
           barrier.subresourceRange.baseMipLevel = blit.srcSubresource.mipLevel;
-          vkCmdPipelineBarrier(_transfer_cmd, VK_PIPELINE_STAGE_TRANSFER_BIT,
+          vkCmdPipelineBarrier(_frame_data->_transfer_cmd, VK_PIPELINE_STAGE_TRANSFER_BIT,
                                VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
                                0, nullptr, 0, nullptr, 1, &barrier);
           levels_in_dst_optimal_layout.clear_bit(barrier.subresourceRange.baseMipLevel);
@@ -1152,7 +1196,7 @@ upload_texture(VulkanTextureContext *tc) {
           blit.dstOffsets[1].x = region.imageExtent.width;
           blit.dstOffsets[1].y = region.imageExtent.height;
           blit.dstOffsets[1].z = region.imageExtent.depth;
-          vkCmdBlitImage(_transfer_cmd, image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+          vkCmdBlitImage(_frame_data->_transfer_cmd, image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
                          image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blit,
                          VK_FILTER_LINEAR);
 
@@ -1194,7 +1238,7 @@ upload_texture(VulkanTextureContext *tc) {
         }
 
         // Schedule a copy from the staging buffer.
-        vkCmdCopyBufferToImage(_transfer_cmd, buffer, image,
+        vkCmdCopyBufferToImage(_frame_data->_transfer_cmd, buffer, image,
                                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
         region.bufferOffset += src_size;
         _data_transferred_pcollector.add_level(src_size);
@@ -1220,7 +1264,7 @@ upload_texture(VulkanTextureContext *tc) {
         barrier.subresourceRange.levelCount = levels_in_dst_optimal_layout.get_subrange_end(ri)
                                             - levels_in_dst_optimal_layout.get_subrange_begin(ri);
 
-        vkCmdPipelineBarrier(_transfer_cmd, VK_PIPELINE_STAGE_TRANSFER_BIT,
+        vkCmdPipelineBarrier(_frame_data->_transfer_cmd, VK_PIPELINE_STAGE_TRANSFER_BIT,
                              VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0,
                              nullptr, 1, &barrier);
       }
@@ -1260,14 +1304,14 @@ upload_texture(VulkanTextureContext *tc) {
     region.srcOffset = 0;
     region.dstOffset = 0;
     region.size = src_size;
-    vkCmdCopyBuffer(_transfer_cmd, buffer, tc->_buffer, 1, &region);
+    vkCmdCopyBuffer(_frame_data->_transfer_cmd, buffer, tc->_buffer, 1, &region);
   }
 
   tc->mark_loaded();
 
   // Make sure that the staging memory is not deleted until the next fence.
-  _pending_free.push_back(std::move(block));
-  _pending_delete_buffers.push_back(buffer);
+  _frame_data->_pending_free.push_back(std::move(block));
+  _frame_data->_pending_destroy_buffers.push_back(buffer);
 
   // Tell the GraphicsEngine that we uploaded the texture.  This may cause
   // it to unload the data from RAM at the end of this frame.
@@ -1343,8 +1387,8 @@ update_texture(TextureContext *tc, bool force) {
  */
 void VulkanGraphicsStateGuardian::
 release_texture(TextureContext *tc) {
-  // This is called during begin_frame, after the fence has been waited upon,
-  // so we know that any command buffers using this have finished executing.
+  nassertv(_frame_data != nullptr);
+
   VulkanTextureContext *vtc;
   DCAST_INTO_V(vtc, tc);
 
@@ -1354,12 +1398,10 @@ release_texture(TextureContext *tc) {
   }
 
   if (vtc->_image_view != VK_NULL_HANDLE) {
-    vkDestroyImageView(_device, vtc->_image_view, nullptr);
-    vtc->_image_view = VK_NULL_HANDLE;
+    _frame_data->_pending_destroy_image_views.push_back(vtc->_image_view);
   }
   if (vtc->_image != VK_NULL_HANDLE) {
-    vkDestroyImage(_device, vtc->_image, nullptr);
-    vtc->_image = VK_NULL_HANDLE;
+    _frame_data->_pending_destroy_images.push_back(vtc->_image);
   }
 
   if (vtc->_buffer != VK_NULL_HANDLE && vulkandisplay_cat.is_debug()) {
@@ -1368,13 +1410,14 @@ release_texture(TextureContext *tc) {
   }
 
   if (vtc->_buffer_view != VK_NULL_HANDLE) {
-    vkDestroyBufferView(_device, vtc->_buffer_view, nullptr);
-    vtc->_buffer_view = VK_NULL_HANDLE;
+    _frame_data->_pending_destroy_buffer_views.push_back(vtc->_buffer_view);
   }
   if (vtc->_buffer != VK_NULL_HANDLE) {
-    vkDestroyBuffer(_device, vtc->_buffer, nullptr);
-    vtc->_buffer = VK_NULL_HANDLE;
+    _frame_data->_pending_destroy_buffers.push_back(vtc->_buffer);
   }
+
+  // Make sure that the memory remains untouched until the frame is over.
+  _frame_data->_pending_free.push_back(std::move(vtc->_block));
 
   delete vtc;
 }
@@ -1396,6 +1439,8 @@ release_texture(TextureContext *tc) {
  */
 bool VulkanGraphicsStateGuardian::
 extract_texture_data(Texture *tex) {
+  nassertr(_frame_data != nullptr, false);
+
   bool success = true;
 
   // If we wanted to optimize this use-case, we could allocate a single buffer
@@ -1473,16 +1518,13 @@ prepare_sampler(const SamplerState &sampler) {
  */
 void VulkanGraphicsStateGuardian::
 release_sampler(SamplerContext *sc) {
-  // This is called during begin_frame, after the fence has been waited upon,
-  // so we know that any command buffers using this have finished executing.
+  nassertv(_frame_data != nullptr);
+
   VulkanSamplerContext *vsc;
   DCAST_INTO_V(vsc, sc);
 
-  if (vsc->_sampler != VK_NULL_HANDLE) {
-    vkDestroySampler(_device, vsc->_sampler, nullptr);
-    vsc->_sampler = VK_NULL_HANDLE;
-  }
-
+  nassertv(vsc->_sampler != VK_NULL_HANDLE);
+  _frame_data->_pending_destroy_samplers.push_back(vsc->_sampler);
   delete vsc;
 }
 
@@ -1718,16 +1760,13 @@ update_vertex_buffer(VulkanVertexBufferContext *vbc,
  */
 void VulkanGraphicsStateGuardian::
 release_vertex_buffer(VertexBufferContext *context) {
-  // This is called during begin_frame, after the fence has been waited upon,
-  // so we know that any command buffers using this have finished executing.
+  nassertv(_frame_data != nullptr);
+
   VulkanVertexBufferContext *vbc;
   DCAST_INTO_V(vbc, context);
 
-  if (vbc->_buffer) {
-    vkDestroyBuffer(_device, vbc->_buffer, nullptr);
-    vbc->_buffer = nullptr;
-  }
-
+  _frame_data->_pending_destroy_buffers.push_back(vbc->_buffer);
+  _frame_data->_pending_free.push_back(std::move(vbc->_block));
   delete vbc;
 }
 
@@ -1847,17 +1886,14 @@ update_index_buffer(VulkanIndexBufferContext *ibc,
  */
 void VulkanGraphicsStateGuardian::
 release_index_buffer(IndexBufferContext *context) {
-  // This is called during begin_frame, after the fence has been waited upon,
-  // so we know that any command buffers using this have finished executing.
-  VulkanIndexBufferContext *ibc;
-  DCAST_INTO_V(ibc, context);
+  nassertv(_frame_data != nullptr);
 
-  if (ibc->_buffer) {
-    vkDestroyBuffer(_device, ibc->_buffer, nullptr);
-    ibc->_buffer = nullptr;
-  }
+  VulkanIndexBufferContext *vbc;
+  DCAST_INTO_V(vbc, context);
 
-  delete ibc;
+  _frame_data->_pending_destroy_buffers.push_back(vbc->_buffer);
+  _frame_data->_pending_free.push_back(std::move(vbc->_block));
+  delete vbc;
 }
 
 /**
@@ -1866,14 +1902,15 @@ release_index_buffer(IndexBufferContext *context) {
  */
 void VulkanGraphicsStateGuardian::
 dispatch_compute(int num_groups_x, int num_groups_y, int num_groups_z) {
-  nassertv(_cmd != VK_NULL_HANDLE);
+  nassertv(_frame_data != nullptr);
+
   //TODO: must actually be outside render pass, and on a queue that supports
   // compute.  Should we have separate pool/queue/buffer for compute?
   VkPipeline pipeline = _current_shader->get_compute_pipeline(this);
   nassertv(pipeline != VK_NULL_HANDLE);
-  vkCmdBindPipeline(_cmd, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline);
+  vkCmdBindPipeline(_frame_data->_cmd, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline);
 
-  vkCmdDispatch(_cmd, num_groups_x, num_groups_y, num_groups_z);
+  vkCmdDispatch(_frame_data->_cmd, num_groups_x, num_groups_y, num_groups_z);
 }
 
 /**
@@ -1922,14 +1959,14 @@ set_state_and_transform(const RenderState *state,
   if (sc->_projection_mat_stage_mask != 0) {
     CPT(TransformState) combined = _projection_mat->compose(trans);
     LMatrix4f matrix = LCAST(float, combined->get_mat());
-    vkCmdPushConstants(_cmd, sc->_pipeline_layout, sc->_push_constant_stage_mask, 0, 64, matrix.get_data());
+    vkCmdPushConstants(_frame_data->_cmd, sc->_pipeline_layout, sc->_push_constant_stage_mask, 0, 64, matrix.get_data());
   }
 
   if (sc->_color_scale_stage_mask != 0) {
     const ColorScaleAttrib *color_scale_attrib;
     state->get_attrib_def(color_scale_attrib);
     LColorf color = LCAST(float, color_scale_attrib->get_scale());
-    vkCmdPushConstants(_cmd, sc->_pipeline_layout, sc->_push_constant_stage_mask, 64, 16, color.get_data());
+    vkCmdPushConstants(_frame_data->_cmd, sc->_pipeline_layout, sc->_push_constant_stage_mask, 64, 16, color.get_data());
   }
 
   // Update and bind descriptor sets.
@@ -1969,7 +2006,7 @@ set_state_and_transform(const RenderState *state,
   }
 
   bool is_compute = (sc->_modules[(size_t)Shader::Stage::compute] != VK_NULL_HANDLE);
-  vkCmdBindDescriptorSets(_cmd, is_compute ? VK_PIPELINE_BIND_POINT_COMPUTE : VK_PIPELINE_BIND_POINT_GRAPHICS,
+  vkCmdBindDescriptorSets(_frame_data->_cmd, is_compute ? VK_PIPELINE_BIND_POINT_COMPUTE : VK_PIPELINE_BIND_POINT_GRAPHICS,
                           sc->_pipeline_layout, 0, DS_SET_COUNT, descriptor_sets,
                           num_offsets, &offset);
 }
@@ -1984,7 +2021,7 @@ set_state_and_transform(const RenderState *state,
  */
 void VulkanGraphicsStateGuardian::
 clear(DrawableRegion *clearable) {
-  nassertv(_cmd != VK_NULL_HANDLE);
+  nassertv(_frame_data != nullptr);
   nassertv(clearable->is_any_clear_active());
 
   VkClearAttachment attachments[2];
@@ -2028,7 +2065,7 @@ clear(DrawableRegion *clearable) {
   }
 
   if (ai > 0) {
-    vkCmdClearAttachments(_cmd, ai, attachments, _viewports.size(), rects);
+    vkCmdClearAttachments(_frame_data->_cmd, ai, attachments, _viewports.size(), rects);
   }
 }
 
@@ -2061,8 +2098,8 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
     _viewports[i].extent.height = h;
   }
 
-  vkCmdSetViewport(_cmd, 0, count, viewports);
-  vkCmdSetScissor(_cmd, 0, count, &_viewports[0]);
+  vkCmdSetViewport(_frame_data->_cmd, 0, count, viewports);
+  vkCmdSetScissor(_frame_data->_cmd, 0, count, &_viewports[0]);
 }
 
 
@@ -2127,46 +2164,54 @@ prepare_lens() {
 bool VulkanGraphicsStateGuardian::
 begin_frame(Thread *current_thread) {
   nassertr_always(!_closing_gsg, false);
+  nassertr_always(_frame_data == nullptr, false);
 
-  VkResult err;
-
-  {
-    PStatTimer timer(_flush_pcollector);
-
-    // Make sure that the previous command buffer is done executing, so that
-    // we don't update or delete resources while they're still being used.
-    // We should probably come up with a better mechanism for this.
-    //NB: if we remove this, we also need to change the code in release_xxx in
-    // order not to delete resources that are still being used.
-    err = vkWaitForFences(_device, 1, &_fence, VK_TRUE, 1000000000ULL);
-    if (err == VK_TIMEOUT) {
-      vulkandisplay_cat.error()
-        << "Timed out waiting for previous frame to complete rendering.\n";
-      return false;
-    } else if (err) {
-      vulkan_error(err, "Failure waiting for command buffer fence");
-      return false;
-    }
-  }
+  const size_t num_frames = (sizeof(_frame_data_pool) / sizeof(FrameData));
+  size_t current_head = _frame_data_head;
+  _frame_data = &_frame_data_pool[current_head];
+  _frame_data_head = (current_head + 1) % num_frames;
 
   // Increase the frame counter, which we use to determine whether we've
   // updated any resources in this frame.
-  ++_frame_counter;
+  _frame_data->_frame_index = ++_frame_counter;
 
-  // Now we can return any memory that was pending deletion.
-  for (VkBuffer buffer : _pending_delete_buffers) {
-    vkDestroyBuffer(_device, buffer, nullptr);
-  }
-  _pending_delete_buffers.clear();
-  _pending_free.clear();
+  VkFence reset_fences[num_frames];
+  size_t num_reset_fences = 0;
 
-  if (!_pending_delete_descriptor_sets.empty()) {
-    if (!vkFreeDescriptorSets(_device, _descriptor_pool,
-                              _pending_delete_descriptor_sets.size(),
-                              &_pending_delete_descriptor_sets[0])) {
-      vulkan_error(err, "Failed to free descriptor sets");
+  while (_frame_data_tail != current_head) {
+    FrameData &frame_data = _frame_data_pool[_frame_data_tail];
+
+    if (_frame_data_tail == _frame_data_head) {
+      // We have reached the limit of queued frames, so we must wait.
+      VkResult err;
+      err = vkWaitForFences(_device, 1, &frame_data._fence, VK_TRUE, 1000000000ULL);
+      if (err == VK_TIMEOUT) {
+        vulkandisplay_cat.error()
+          << "Timed out waiting for previous frame to complete rendering.\n";
+        _frame_data = nullptr;
+        return false;
+      } else if (err) {
+        vulkan_error(err, "Failure waiting for command buffer fence");
+        return false;
+      }
+    } else if (vkGetFenceStatus(_device, frame_data._fence) == VK_NOT_READY) {
+      // This frame is not yet ready, so abort the loop here, since there's no
+      // use checking frames that come after this one.
+      break;
     }
-    _pending_delete_descriptor_sets.clear();
+
+    // This frame has completed execution.
+    reset_fences[num_reset_fences++] = frame_data._fence;
+    ++_last_finished_frame;
+    _frame_data_tail = (_frame_data_tail + 1) % num_frames;
+
+    finish_frame(frame_data);
+  }
+
+  // Reset the used fences to unsignaled status.
+  if (num_reset_fences > 0) {
+    VkResult err = vkResetFences(_device, num_reset_fences, reset_fences);
+    nassertr(!err, false);
   }
 
   // Recycle the global uniform buffer.  It's probably not worth it to expect
@@ -2183,27 +2228,6 @@ begin_frame(Thread *current_thread) {
   }
   _uniform_buffer_offset = 0;
 
-  // Reset the fence to unsignaled status.
-  err = vkResetFences(_device, 1, &_fence);
-  nassertr(!err, false);
-
-  if (_cmd == VK_NULL_HANDLE) {
-    // Create a command buffer.
-    VkCommandBufferAllocateInfo alloc_info;
-    alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    alloc_info.pNext = nullptr;
-    alloc_info.commandPool = _cmd_pool;
-    alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    alloc_info.commandBufferCount = 2;
-
-    VkCommandBuffer buffers[2];
-    err = vkAllocateCommandBuffers(_device, &alloc_info, buffers);
-    nassertr(!err, false);
-    _cmd = buffers[0];
-    _transfer_cmd = buffers[1];
-    nassertr(_cmd != VK_NULL_HANDLE, false);
-  }
-
   // Begin the transfer command buffer, for preparing resources.
   VkCommandBufferBeginInfo begin_info;
   begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -2211,7 +2235,8 @@ begin_frame(Thread *current_thread) {
   begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
   begin_info.pInheritanceInfo = nullptr;
 
-  err = vkBeginCommandBuffer(_transfer_cmd, &begin_info);
+  VkResult err;
+  err = vkBeginCommandBuffer(_frame_data->_transfer_cmd, &begin_info);
   if (err) {
     vulkan_error(err, "Can't begin command buffer");
     return false;
@@ -2227,7 +2252,7 @@ begin_frame(Thread *current_thread) {
 
   // Update the "null" vertex buffer.
   LVecBase4f data[2] = {LVecBase4(0, 0, 0, 1), LVecBase4(1, 1, 1, 1)};
-  vkCmdUpdateBuffer(_transfer_cmd, _color_vertex_buffer, 0, 32, (const uint32_t *)data[0].get_data());
+  vkCmdUpdateBuffer(_frame_data->_transfer_cmd, _color_vertex_buffer, 0, 32, (const uint32_t *)data[0].get_data());
 
   // Call the GSG's begin_frame, which will cause any queued-up release() and
   // prepare() methods to be called.  Note that some of them may add to the
@@ -2237,7 +2262,7 @@ begin_frame(Thread *current_thread) {
   }
 
   // Let's submit our preparation calls, so the GPU has something to munch on.
-  //vkEndCommandBuffer(_transfer_cmd);
+  //vkEndCommandBuffer(_frame_data->_transfer_cmd);
 
   /*VkSubmitInfo submit_info;
   submit_info.pNext = nullptr;
@@ -2256,7 +2281,7 @@ begin_frame(Thread *current_thread) {
   }*/
 
   // Now begin the main (ie. graphics) command buffer.
-  err = vkBeginCommandBuffer(_cmd, &begin_info);
+  err = vkBeginCommandBuffer(_frame_data->_cmd, &begin_info);
   if (err) {
     vulkan_error(err, "Can't begin command buffer");
     return false;
@@ -2300,8 +2325,8 @@ void VulkanGraphicsStateGuardian::
 end_frame(Thread *current_thread) {
   GraphicsStateGuardian::end_frame(current_thread);
 
-  nassertv(_transfer_cmd != VK_NULL_HANDLE);
-  vkEndCommandBuffer(_transfer_cmd);
+  nassertv(_frame_data->_transfer_cmd != VK_NULL_HANDLE);
+  vkEndCommandBuffer(_frame_data->_transfer_cmd);
 
   // Issue commands to transition the staging buffers of the texture downloads
   // to make sure that the previous copy operations are visible to host reads.
@@ -2322,14 +2347,14 @@ end_frame(Thread *current_thread) {
       barriers[i].size = VK_WHOLE_SIZE;
     }
 
-    vkCmdPipelineBarrier(_cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_HOST_BIT, 0,
+    vkCmdPipelineBarrier(_frame_data->_cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_HOST_BIT, 0,
                          0, nullptr, (uint32_t)num_downloads, barriers, 0, nullptr);
   }
 
-  nassertv(_cmd != VK_NULL_HANDLE);
-  vkEndCommandBuffer(_cmd);
+  nassertv(_frame_data->_cmd != VK_NULL_HANDLE);
+  vkEndCommandBuffer(_frame_data->_cmd);
 
-  VkCommandBuffer cmdbufs[] = {_transfer_cmd, _cmd};
+  VkCommandBuffer cmdbufs[] = {_frame_data->_transfer_cmd, _frame_data->_cmd};
 
   // Submit the command buffers to the queue.
   VkSubmitInfo submit_info;
@@ -2358,11 +2383,12 @@ end_frame(Thread *current_thread) {
   }
 
   VkResult err;
-  err = vkQueueSubmit(_queue, 1, &submit_info, _fence);
+  err = vkQueueSubmit(_queue, 1, &submit_info, _frame_data->_fence);
   if (err) {
     vulkan_error(err, "Error submitting queue");
     return;
   }
+  _frame_data = nullptr;
 
   // We're done with these for now.
   _wait_semaphore = VK_NULL_HANDLE;
@@ -2373,7 +2399,7 @@ end_frame(Thread *current_thread) {
   if (!_download_queue.empty()) {
     {
       PStatTimer timer(_flush_pcollector);
-      err = vkWaitForFences(_device, 1, &_fence, VK_TRUE, ~0ULL);
+      err = vkWaitForFences(_device, 1, &_frame_data->_fence, VK_TRUE, ~0ULL);
     }
     if (err) {
       vulkan_error(err, "Failed to wait for command buffer execution");
@@ -2399,6 +2425,51 @@ end_frame(Thread *current_thread) {
   }
 
   //TODO: delete command buffer, schedule for deletion, or recycle.
+}
+
+/**
+ * Called after the frame has finished executing to clean up any resources.
+ */
+void VulkanGraphicsStateGuardian::
+finish_frame(FrameData &frame_data) {
+  for (VkBufferView buffer_view : frame_data._pending_destroy_buffer_views) {
+    vkDestroyBufferView(_device, buffer_view, nullptr);
+  }
+  frame_data._pending_destroy_buffer_views.clear();
+
+  for (VkBuffer buffer : frame_data._pending_destroy_buffers) {
+    vkDestroyBuffer(_device, buffer, nullptr);
+  }
+  frame_data._pending_destroy_buffers.clear();
+
+  for (VkImageView image_view : frame_data._pending_destroy_image_views) {
+    vkDestroyImageView(_device, image_view, nullptr);
+  }
+  frame_data._pending_destroy_image_views.clear();
+
+  for (VkImage image : frame_data._pending_destroy_images) {
+    vkDestroyImage(_device, image, nullptr);
+  }
+  frame_data._pending_destroy_images.clear();
+
+  for (VkSampler sampler : frame_data._pending_destroy_samplers) {
+    vkDestroySampler(_device, sampler, nullptr);
+  }
+  frame_data._pending_destroy_samplers.clear();
+
+  // This will return all the allocated memory blocks to the pool.
+  frame_data._pending_free.clear();
+
+  if (!frame_data._pending_free_descriptor_sets.empty()) {
+    VkResult err;
+    err = vkFreeDescriptorSets(_device, _descriptor_pool,
+                               frame_data._pending_free_descriptor_sets.size(),
+                               &frame_data._pending_free_descriptor_sets[0]);
+    if (err) {
+      vulkan_error(err, "Failed to free descriptor sets");
+    }
+    frame_data._pending_free_descriptor_sets.clear();
+  }
 }
 
 /**
@@ -2440,7 +2511,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   buffers[i] = _color_vertex_buffer;
   offsets[i] = 0;
 
-  vkCmdBindVertexBuffers(_cmd, 0, num_arrays + 1, buffers, offsets);
+  vkCmdBindVertexBuffers(_frame_data->_cmd, 0, num_arrays + 1, buffers, offsets);
 
   _format = data_reader->get_format();
   return true;
@@ -2605,11 +2676,11 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
 
   // Issue a command to transition the image into a layout optimal for
   // transferring from.
-  fbtc->transition(_cmd, _graphics_queue_family_index,
+  fbtc->transition(_frame_data->_cmd, _graphics_queue_family_index,
     VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
     VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_TRANSFER_READ_BIT);
 
-  tc->transition(_cmd, _graphics_queue_family_index,
+  tc->transition(_frame_data->_cmd, _graphics_queue_family_index,
     VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
     VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT);
 
@@ -2635,7 +2706,7 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
     region.dstOffset.z = 0;
     region.extent = fbtc->_extent;
 
-    vkCmdCopyImage(_cmd, fbtc->_image, fbtc->_layout, tc->_image, tc->_layout, 1, &region);
+    vkCmdCopyImage(_frame_data->_cmd, fbtc->_image, fbtc->_layout, tc->_image, tc->_layout, 1, &region);
   } else {
     // The formats are not the same, so we need a blit operation.
     VkImageBlit region;
@@ -2663,7 +2734,7 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
     region.dstOffsets[1].y = fbtc->_extent.height;
     region.dstOffsets[1].z = fbtc->_extent.depth;
 
-    vkCmdBlitImage(_cmd, fbtc->_image, fbtc->_layout, tc->_image, tc->_layout, 1, &region, VK_FILTER_NEAREST);
+    vkCmdBlitImage(_frame_data->_cmd, fbtc->_image, fbtc->_layout, tc->_image, tc->_layout, 1, &region, VK_FILTER_NEAREST);
   }
   return true;
 }
@@ -2735,7 +2806,7 @@ do_extract_image(VulkanTextureContext *tc, Texture *tex, int view, int z) {
   }
 
   // We tack this onto the existing command buffer, for now.
-  VkCommandBuffer cmd = _cmd;
+  VkCommandBuffer cmd = _frame_data->_cmd;
 
   if (tc->_image != VK_NULL_HANDLE) {
     VkBufferImageCopy region;
@@ -2771,7 +2842,7 @@ do_extract_image(VulkanTextureContext *tc, Texture *tex, int view, int z) {
     region.srcOffset = 0;
     region.dstOffset = 0;
     region.size = buffer_size;
-    vkCmdCopyBuffer(_transfer_cmd, tc->_buffer, down._buffer, 1, &region);
+    vkCmdCopyBuffer(_frame_data->_transfer_cmd, tc->_buffer, down._buffer, 1, &region);
   }
 
   down._texture = tex;
@@ -2789,7 +2860,7 @@ do_draw_primitive(const GeomPrimitivePipelineReader *reader, bool force,
 
   VkPipeline pipeline = _current_shader->get_pipeline(this, _state_rs, _format, topology, _fb_ms_count);
   nassertr(pipeline != VK_NULL_HANDLE, false);
-  vkCmdBindPipeline(_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+  vkCmdBindPipeline(_frame_data->_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
   int num_vertices = reader->get_num_vertices();
 
@@ -2802,11 +2873,11 @@ do_draw_primitive(const GeomPrimitivePipelineReader *reader, bool force,
       return false;
     }
 
-    vkCmdBindIndexBuffer(_cmd, ibc->_buffer, 0, ibc->_index_type);
-    vkCmdDrawIndexed(_cmd, num_vertices, 1, 0, 0, 0);
+    vkCmdBindIndexBuffer(_frame_data->_cmd, ibc->_buffer, 0, ibc->_index_type);
+    vkCmdDrawIndexed(_frame_data->_cmd, num_vertices, 1, 0, 0, 0);
   } else {
     // A non-indexed primitive.
-    vkCmdDraw(_cmd, num_vertices, 1, reader->get_first_vertex(), 0);
+    vkCmdDraw(_frame_data->_cmd, num_vertices, 1, reader->get_first_vertex(), 0);
   }
   return true;
 }
@@ -3415,8 +3486,15 @@ get_attrib_descriptor_set(VkDescriptorSet &out, VkDescriptorSetLayout layout, co
       out = set._handle;
 
       bool is_current = _frame_counter == set._last_update_frame;
-      set._last_update_frame = _frame_counter;
-      return !is_current;
+      if (is_current) {
+        return false;
+      }
+      else if (set._last_update_frame <= _last_finished_frame) {
+        // We have a descriptor set from a frame that has finished, so we can
+        // safely update it.
+        set._last_update_frame = _frame_counter;
+        return true;
+      }
     }
 
     // It's been deleted, which means it's for a very different state.  We can
@@ -3425,7 +3503,7 @@ get_attrib_descriptor_set(VkDescriptorSet &out, VkDescriptorSetLayout layout, co
       delete set._weak_ref;
     }
 
-    _pending_delete_descriptor_sets.push_back(set._handle);
+    _frame_data->_pending_free_descriptor_sets.push_back(set._handle);
     set._handle = VK_NULL_HANDLE;
   }
 
@@ -3512,7 +3590,7 @@ update_lattr_descriptor_set(VkDescriptorSet ds, const LightAttrib *attr) {
       //stage_flags |= VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT;
     }
 
-    tc->transition(_transfer_cmd, _graphics_queue_family_index,
+    tc->transition(_frame_data->_transfer_cmd, _graphics_queue_family_index,
                    VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
                    stage_flags, VK_ACCESS_SHADER_READ_BIT);
 
@@ -3602,7 +3680,7 @@ update_tattr_descriptor_set(VkDescriptorSet ds, const TextureAttrib *attr) {
       //stage_flags |= VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT;
     }
 
-    tc->transition(_transfer_cmd, _graphics_queue_family_index,
+    tc->transition(_frame_data->_transfer_cmd, _graphics_queue_family_index,
                    VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
                    stage_flags, VK_ACCESS_SHADER_READ_BIT);
 
@@ -3722,7 +3800,7 @@ update_sattr_descriptor_set(VkDescriptorSet ds, const ShaderAttrib *attr) {
       stage_flags |= VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
     }
 
-    tc->transition(_transfer_cmd, _graphics_queue_family_index,
+    tc->transition(_frame_data->_transfer_cmd, _graphics_queue_family_index,
                    VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
                    stage_flags, VK_ACCESS_SHADER_READ_BIT);
 
@@ -3830,7 +3908,7 @@ update_sattr_descriptor_set(VkDescriptorSet ds, const ShaderAttrib *attr) {
     }
 
     // Load/store images need to be in the general layout.
-    tc->transition(_transfer_cmd, _graphics_queue_family_index,
+    tc->transition(_frame_data->_transfer_cmd, _graphics_queue_family_index,
                    VK_IMAGE_LAYOUT_GENERAL, stage_flags, access_mask);
 
     VkWriteDescriptorSet &write = writes[i];
@@ -3887,7 +3965,7 @@ update_dynamic_uniform_buffer(void *data, VkDeviceSize size) {
     return offset;
   }
 
-  vkCmdUpdateBuffer(_transfer_cmd, _uniform_buffer, offset, size, data);
+  vkCmdUpdateBuffer(_frame_data->_transfer_cmd, _uniform_buffer, offset, size, data);
   _uniform_buffer_offset = offset + size;
   return offset;
 }
@@ -3912,7 +3990,7 @@ get_color_palette_offset(const LColor &color) {
 
   uint32_t offset = _next_palette_index * 16;
   _color_palette[color] = _next_palette_index++;
-  vkCmdUpdateBuffer(_transfer_cmd, _color_vertex_buffer, offset, 16,
+  vkCmdUpdateBuffer(_frame_data->_transfer_cmd, _color_vertex_buffer, offset, 16,
                     (const uint32_t *)color.get_data());
   return offset;
 }

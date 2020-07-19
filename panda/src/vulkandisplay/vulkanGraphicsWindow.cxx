@@ -152,7 +152,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 
   // Now that we have a command buffer, start our render pass.  First
   // transition the swapchain images into the valid state for rendering into.
-  VkCommandBuffer cmd = vkgsg->_cmd;
+  VkCommandBuffer cmd = vkgsg->_frame_data->_cmd;
 
   VkClearValue clears[2];
 
@@ -247,7 +247,7 @@ end_frame(FrameMode mode, Thread *current_thread) {
   VulkanGraphicsStateGuardian *vkgsg;
   DCAST_INTO_V(vkgsg, _gsg);
 
-  VkCommandBuffer cmd = vkgsg->_cmd;
+  VkCommandBuffer cmd = vkgsg->_frame_data->_cmd;
   nassertv(cmd != VK_NULL_HANDLE);
   SwapBuffer &buffer = _swap_buffers[_image_index];
 
@@ -782,9 +782,9 @@ destroy_swapchain() {
   VkDevice device = vkgsg->_device;
 
   // Make sure that the GSG's command buffer releases its resources.
-  if (vkgsg->_cmd != VK_NULL_HANDLE) {
-    vkResetCommandBuffer(vkgsg->_cmd, 0);
-  }
+  //if (vkgsg->_cmd != VK_NULL_HANDLE) {
+  //  vkResetCommandBuffer(vkgsg->_cmd, 0);
+  //}
 
   // Destroy the resources held for each link in the swap chain.
   for (SwapBuffer &buffer : _swap_buffers) {

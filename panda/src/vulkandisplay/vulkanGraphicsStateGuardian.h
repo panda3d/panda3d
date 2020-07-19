@@ -18,6 +18,7 @@
 #include "vulkanMemoryPage.h"
 
 class VulkanIndexBufferContext;
+class VulkanSamplerContext;
 class VulkanShaderContext;
 class VulkanTextureContext;
 class VulkanVertexBufferContext;
@@ -27,6 +28,9 @@ class VulkanVertexBufferContext;
  * device.
  */
 class VulkanGraphicsStateGuardian final : public GraphicsStateGuardian {
+private:
+  struct FrameData;
+
 public:
   VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
                               VulkanGraphicsStateGuardian *share_with,
@@ -86,6 +90,7 @@ public:
   virtual bool begin_scene();
   virtual void end_scene();
   virtual void end_frame(Thread *current_thread);
+  void finish_frame(FrameData &frame_data);
 
   virtual bool begin_draw_primitives(const GeomPipelineReader *geom_reader,
                                      const GeomVertexDataPipelineReader *data_reader,
@@ -180,16 +185,12 @@ public:
 
 public:
   VkDevice _device;
-  VkCommandBuffer _cmd;
-  VkCommandBuffer _transfer_cmd;
   uint32_t _graphics_queue_family_index;
   PT(Texture) _white_texture;
 
 private:
-  uint64_t _frame_counter = 0;
   VkQueue _queue;
   VkQueue _dma_queue;
-  VkFence _fence;
   VkCommandPool _cmd_pool;
   pvector<VkRect2D> _viewports;
   VkPipelineCache _pipeline_cache;
@@ -249,10 +250,29 @@ private:
   pvector<VulkanMemoryPage> _memory_pages;
   VkDeviceSize _total_allocated;
 
-  // Keep track of blocks that should be deleted at the next fence.
-  pvector<VulkanMemoryBlock> _pending_free;
-  pvector<VkBuffer> _pending_delete_buffers;
-  pvector<VkDescriptorSet> _pending_delete_descriptor_sets;
+  struct FrameData {
+    uint64_t _frame_index = 0;
+    VkFence _fence = VK_NULL_HANDLE;
+    VkCommandBuffer _cmd = VK_NULL_HANDLE;
+    VkCommandBuffer _transfer_cmd = VK_NULL_HANDLE;
+
+    // Keep track of resources that should be deleted after this frame is done.
+    pvector<VulkanMemoryBlock> _pending_free;
+    pvector<VkBuffer> _pending_destroy_buffers;
+    pvector<VkBufferView> _pending_destroy_buffer_views;
+    pvector<VkImage> _pending_destroy_images;
+    pvector<VkImageView> _pending_destroy_image_views;
+    pvector<VkSampler> _pending_destroy_samplers;
+    pvector<VkDescriptorSet> _pending_free_descriptor_sets;
+  };
+  FrameData _frame_data_pool[5];
+  size_t _frame_data_tail = 0;
+  size_t _frame_data_head = 0;
+  FrameData *_frame_data = nullptr;
+  FrameData *_last_frame_data = nullptr;
+
+  uint64_t _frame_counter = 0;
+  uint64_t _last_finished_frame = 0;
 
   // Queued buffer-to-RAM transfer.
   struct QueuedDownload {
