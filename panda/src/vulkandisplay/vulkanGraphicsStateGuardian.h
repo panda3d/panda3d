@@ -242,6 +242,7 @@ private:
   // Descriptor set layouts used for the TextureAttrib and LightAttrib
   // descriptor sets.  The others are shader-dependent and stored in
   // VulkanShaderContext.
+  VkSampler _shadow_sampler;
   VkDescriptorSetLayout _lattr_descriptor_set_layout;
   VkDescriptorSetLayout _tattr_descriptor_set_layout;
 

@@ -243,6 +243,35 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   // Create a descriptor set layout for our LightAttrib descriptor set.
   const uint32_t num_shadow_maps = 16;
   {
+    // The depth map is managed by Panda, so we can bake the sampler state into
+    // the pipeline layout, which allows lower-latency samples on some cards.
+    VkSamplerCreateInfo sampler_info;
+    sampler_info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+    sampler_info.pNext = nullptr;
+    sampler_info.flags = 0;
+    sampler_info.magFilter = VK_FILTER_NEAREST;
+    sampler_info.minFilter = VK_FILTER_NEAREST;
+    sampler_info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+    sampler_info.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
+    sampler_info.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
+    sampler_info.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
+    sampler_info.mipLodBias = 0;
+    sampler_info.anisotropyEnable = VK_FALSE;
+    sampler_info.maxAnisotropy = 0;
+    sampler_info.compareEnable = VK_TRUE;
+    sampler_info.compareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+    sampler_info.minLod = 0;
+    sampler_info.maxLod = 0.25;
+    sampler_info.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+    sampler_info.unnormalizedCoordinates = VK_FALSE;
+
+    VkResult err;
+    err = vkCreateSampler(_device, &sampler_info, nullptr, &_shadow_sampler);
+    if (err) {
+      vulkan_error(err, "Failed to create shadow sampler object");
+      return;
+    }
+
     VkDescriptorSetLayoutBinding shadow_bindings[num_shadow_maps];
 
     for (uint32_t i = 0; i < num_shadow_maps; ++i) {
@@ -251,7 +280,7 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
       binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
       binding.descriptorCount = 1;
       binding.stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS;
-      binding.pImmutableSamplers = nullptr;
+      binding.pImmutableSamplers = &_shadow_sampler;
     }
 
     VkDescriptorSetLayoutCreateInfo set_info;
@@ -261,7 +290,6 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
     set_info.bindingCount = num_shadow_maps;
     set_info.pBindings = shadow_bindings;
 
-    VkResult
     err = vkCreateDescriptorSetLayout(_device, &set_info, nullptr,
       &_lattr_descriptor_set_layout);
     if (err) {
@@ -461,6 +489,7 @@ VulkanGraphicsStateGuardian::
   vkDestroyDescriptorSetLayout(_device, _lattr_descriptor_set_layout, nullptr);
   vkDestroyDescriptorSetLayout(_device, _tattr_descriptor_set_layout, nullptr);
   vkDestroyDescriptorPool(_device, _descriptor_pool, nullptr);
+  vkDestroySampler(_device, _shadow_sampler, nullptr);
   vkDestroyPipelineCache(_device, _pipeline_cache, nullptr);
   vkDestroyCommandPool(_device, _cmd_pool, nullptr);
 
@@ -3566,9 +3595,6 @@ update_lattr_descriptor_set(VkDescriptorSet ds, const LightAttrib *attr) {
     VulkanTextureContext *tc;
     DCAST_INTO_R(tc, texture->prepare_now(0, _prepared_objects, this), false);
 
-    VulkanSamplerContext *sc;
-    DCAST_INTO_R(sc, texture->get_default_sampler().prepare_now(_prepared_objects, this), false);
-
     tc->set_active(true);
     update_texture(tc, true);
 
@@ -3595,7 +3621,7 @@ update_lattr_descriptor_set(VkDescriptorSet ds, const LightAttrib *attr) {
                    stage_flags, VK_ACCESS_SHADER_READ_BIT);
 
     VkDescriptorImageInfo &image_info = image_infos[i];
-    image_info.sampler = sc->_sampler;
+    image_info.sampler = _shadow_sampler;
     image_info.imageView = tc->_image_view;
     image_info.imageLayout = tc->_layout;
 
