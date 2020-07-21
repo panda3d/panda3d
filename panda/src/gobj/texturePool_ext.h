@@ -11,8 +11,8 @@
  * @date 2020-06-24
  */
 
-#ifndef TEXTUREPOOLEXT_H
-#define TEXTUREPOOLEXT_H
+#ifndef TEXTUREPOOL_EXT_H
+#define TEXTUREPOOL_EXT_H
 
 #include "pandabase.h"
 

@@ -89,7 +89,6 @@ is_filter_registered(PyObject *tex_filter) {
 TexturePoolFilter *Extension<TexturePool>::
 find_existing_filter(PyObject *tex_filter) {
   size_t num_filters = _this->get_num_filters();
-  long filter_hash = PyObject_Hash(tex_filter);
 
   for (size_t i = 0; i < num_filters; ++i) {
     TexturePoolFilter *filter = _this->get_filter(i);
@@ -97,7 +96,7 @@ find_existing_filter(PyObject *tex_filter) {
     if (filter != nullptr && filter->is_of_type(PythonTexturePoolFilter::get_class_type())) {
       PythonTexturePoolFilter *py_filter = (PythonTexturePoolFilter *)filter;
 
-      if (py_filter->_filter_hash == filter_hash) {
+      if (py_filter->_entry_point == tex_filter) {
         return filter;
       }
     }

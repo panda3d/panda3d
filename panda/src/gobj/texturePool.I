@@ -311,22 +311,6 @@ unregister_filter(TexturePoolFilter *tex_filter) {
 }
 
 /**
- * Returns the total number of registered texture pool filters.
- */
-INLINE size_t TexturePool::
-get_num_filters() {
-  return get_global_ptr()->ns_get_num_filters();
-}
-
-/**
- * Returns the nth texture pool filter registered.
- */
-INLINE TexturePoolFilter *TexturePool::
-get_filter(size_t i) {
-  return get_global_ptr()->ns_get_filter(i);
-}
-
-/**
  * Defines relative ordering between LookupKey instances.
  */
 INLINE bool TexturePool::LookupKey::

@@ -75,7 +75,6 @@ output(std::ostream &out) const {
     write_flag(out, sep, "LF_no_ram_cache", LF_no_ram_cache);
   }
   write_flag(out, sep, "LF_allow_instance", LF_allow_instance);
-  write_flag(out, sep, "LF_no_filters", LF_no_filters);
   if (sep.empty()) {
     out << "0";
   }
@@ -88,6 +87,7 @@ output(std::ostream &out) const {
   write_texture_flag(out, sep, "TF_allow_1d", TF_allow_1d);
   write_texture_flag(out, sep, "TF_generate_mipmaps", TF_generate_mipmaps);
   write_texture_flag(out, sep, "TF_allow_compression", TF_allow_compression);
+  write_texture_flag(out, sep, "TF_no_filters", TF_no_filters);
   if (sep.empty()) {
     out << "0";
   }

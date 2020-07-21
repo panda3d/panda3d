@@ -50,7 +50,7 @@ public:
 private:
   PyObject *_pre_load_func = nullptr;
   PyObject *_post_load_func = nullptr;
-  long _filter_hash = -1;
+  PyObject *_entry_point = nullptr;
 
   friend class Extension<TexturePool>;
 

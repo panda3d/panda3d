@@ -86,8 +86,9 @@ PUBLISHED:
 
   INLINE static bool is_filter_registered(TexturePoolFilter *tex_filter);
 
-  INLINE static size_t get_num_filters();
-  INLINE static TexturePoolFilter *get_filter(size_t i);
+  size_t get_num_filters() const;
+  TexturePoolFilter *get_filter(size_t i) const;
+  MAKE_SEQ_PROPERTY(filters, get_num_filters, get_filter);
 
   EXTENSION(bool register_filter(PyObject *tex_filter));
   EXTENSION(bool unregister_filter(PyObject *tex_filter));
@@ -161,9 +162,6 @@ private:
   void ns_clear_filters();
 
   bool ns_is_filter_registered(TexturePoolFilter *tex_filter);
-
-  size_t ns_get_num_filters() const;
-  TexturePoolFilter *ns_get_filter(size_t i) const;
 
   void load_filters();
 

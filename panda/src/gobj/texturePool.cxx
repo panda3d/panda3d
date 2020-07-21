@@ -73,7 +73,7 @@ ns_register_filter(TexturePoolFilter *tex_filter) {
   MutexHolder holder(_filter_lock);
 
   // Make sure we haven't already registered this filter.
-  if (find(_filter_registry.begin(), _filter_registry.end(), tex_filter) != _filter_registry.end()) {
+  if (std::find(_filter_registry.begin(), _filter_registry.end(), tex_filter) != _filter_registry.end()) {
     gobj_cat->warning()
       << "Attempted to register texture filter " << *tex_filter
       << " more than once.\n";
@@ -104,7 +104,7 @@ bool TexturePool::
 ns_is_filter_registered(TexturePoolFilter *tex_filter) {
   MutexHolder holder(_filter_lock);
 
-  return find(_filter_registry.begin(), _filter_registry.end(), tex_filter) != _filter_registry.end();
+  return std::find(_filter_registry.begin(), _filter_registry.end(), tex_filter) != _filter_registry.end();
 }
 
 /**
@@ -114,7 +114,7 @@ bool TexturePool::
 ns_unregister_filter(TexturePoolFilter *tex_filter) {
   MutexHolder holder(_filter_lock);
 
-  FilterRegistry::iterator fi = find(_filter_registry.begin(), _filter_registry.end(), tex_filter);
+  FilterRegistry::iterator fi = std::find(_filter_registry.begin(), _filter_registry.end(), tex_filter);
 
   if (fi == _filter_registry.end()) {
     gobj_cat.warning()
@@ -133,7 +133,7 @@ ns_unregister_filter(TexturePoolFilter *tex_filter) {
  * Returns the total number of registered texture pool filters.
  */
 size_t TexturePool::
-ns_get_num_filters() const {
+get_num_filters() const {
   return _filter_registry.size();
 }
 
@@ -141,7 +141,7 @@ ns_get_num_filters() const {
  * Returns the nth texture pool filter registered.
  */
 TexturePoolFilter *TexturePool::
-ns_get_filter(size_t i) const {
+get_filter(size_t i) const {
   MutexHolder holder(_filter_lock);
 
   if (i >= 0 && i < _filter_registry.size()) {
@@ -299,7 +299,7 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
   PT(Texture) tex;
   PT(BamCacheRecord) record;
   bool store_record = false;
-  bool use_filters = (options.get_flags() & LoaderOptions::LF_no_filters) == 0;
+  bool use_filters = (options.get_texture_flags() & LoaderOptions::TF_no_filters) == 0;
 
   // Can one of our texture filters supply the texture?
   if (use_filters) {
@@ -467,7 +467,7 @@ ns_load_texture(const Filename &orig_filename,
   PT(Texture) tex;
   PT(BamCacheRecord) record;
   bool store_record = false;
-  bool use_filters = (options.get_flags() & LoaderOptions::LF_no_filters) == 0;
+  bool use_filters = (options.get_texture_flags() & LoaderOptions::TF_no_filters) == 0;
 
   // Can one of our texture filters supply the texture?
   if (use_filters) {

@@ -43,6 +43,7 @@ PythonTexturePoolFilter::
     gstate = PyGILState_Ensure();
 #endif
 
+    Py_CLEAR(_entry_point);
     Py_CLEAR(_pre_load_func);
     Py_CLEAR(_post_load_func);
 
@@ -61,12 +62,12 @@ PythonTexturePoolFilter::
 bool PythonTexturePoolFilter::
 init(PyObject *tex_filter) {
   nassertr(tex_filter != nullptr, false);
+  nassertr(_entry_point == nullptr, false);
   nassertr(_pre_load_func == nullptr, false);
   nassertr(_post_load_func == nullptr, false);
 
   _pre_load_func = PyObject_GetAttrString(tex_filter, "pre_load");
   _post_load_func = PyObject_GetAttrString(tex_filter, "post_load");
-  _filter_hash = PyObject_Hash(tex_filter);
   PyErr_Clear();
 
   if (_pre_load_func == nullptr && _post_load_func == nullptr) {
@@ -76,6 +77,9 @@ init(PyObject *tex_filter) {
     return false;
   }
 
+  _entry_point = tex_filter;
+
+  Py_INCREF(_entry_point);
   return true;
 }
 
@@ -98,17 +102,17 @@ pre_load(const Filename &orig_filename, const Filename &orig_alpha_filename,
 #endif
 
   // Wrap the arguments.
-  PyObject *args = PyTuple_Pack(6,
+  PyObject *args = Py_BuildValue("(OOiiNO)",
     DTool_CreatePyInstance((void *)&orig_filename, Dtool_Filename, false, true),
     DTool_CreatePyInstance((void *)&orig_alpha_filename, Dtool_Filename, false, true),
-    Dtool_WrapValue(primary_file_num_channels),
-    Dtool_WrapValue(alpha_file_channel),
-    Dtool_WrapValue(read_mipmaps),
+    primary_file_num_channels,
+    alpha_file_channel,
+    PyBool_FromLong(read_mipmaps),
     DTool_CreatePyInstance((void *)&options, Dtool_LoaderOptions, false, true)
   );
 
-  PT(Texture) tex = nullptr;
   PyObject *result = PythonThread::call_python_func(_pre_load_func, args);
+  PT(Texture) tex;
 
   Py_DECREF(args);
 
@@ -116,6 +120,13 @@ pre_load(const Filename &orig_filename, const Filename &orig_alpha_filename,
     if (DtoolInstance_Check(result)) {
       tex = (Texture *)DtoolInstance_UPCAST(result, Dtool_Texture);
     }
+
+    if (tex == nullptr) {
+      gobj_cat.error()
+        << "Preloading " << orig_filename.get_basename() << " failed as"
+        << "preloaded texture is not of Texture type.\n";
+    }
+
     Py_DECREF(result);
   }
 
@@ -152,15 +163,30 @@ post_load(Texture *tex) {
 #endif
 
   // Wrap the arguments.
-  PyObject *args = PyTuple_Pack(1, DTool_CreatePyInstance(tex, Dtool_Texture, true, false));
+  PyObject *args = Py_BuildValue("(O)",
+    DTool_CreatePyInstance(tex, Dtool_Texture, true, false)
+  );
   PyObject *result = PythonThread::call_python_func(_post_load_func, args);
 
   Py_DECREF(args);
 
   if (result != nullptr) {
+    PT(Texture) result_tex;
+
+    // Check if the call returned a texture pointer.
     if (DtoolInstance_Check(result)) {
-      tex = (Texture *)DtoolInstance_UPCAST(result, Dtool_Texture);
+      result_tex = (Texture *)DtoolInstance_UPCAST(result, Dtool_Texture);
     }
+
+    if (result_tex != nullptr) {
+      // Our postload filter returned a texture.
+      tex = result_tex;
+    } else {
+      // No valid texture was returned, use the original pointer.
+      gobj_cat.error()
+        << "Postloading failed as the returned texture is not of the Texture type.\n";
+    }
+
     Py_DECREF(result);
   }
 

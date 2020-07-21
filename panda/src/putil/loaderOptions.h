@@ -34,7 +34,6 @@ PUBLISHED:
     LF_no_cache          = 0x0030,  // no_disk + no_ram
     LF_cache_only        = 0x0040,  // fail if not in cache
     LF_allow_instance    = 0x0080,  // returned pointer might be shared
-    LF_no_filters        = 0x0100,  // disallow using texture pool filters
   };
 
   // Flags for loading texture files.
@@ -47,6 +46,7 @@ PUBLISHED:
     TF_integer           = 0x0080,  // Load as an integer (RGB) texture
     TF_float             = 0x0100,  // Load as a floating-point (depth) texture
     TF_allow_compression = 0x0200,  // Consider compressing RAM image
+    TF_no_filters        = 0x0400,  // disallow using texture pool filters
   };
 
   LoaderOptions(int flags = LF_search | LF_report_errors);
