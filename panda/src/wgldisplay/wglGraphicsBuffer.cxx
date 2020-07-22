@@ -429,8 +429,8 @@ rebuild_bitplanes() {
   int desired_x = get_x_size();
   int desired_y = get_y_size();
   if ((bindtexture != 0)&&(Texture::get_textures_power_2() != ATS_none)) {
-    desired_x = Texture::up_to_power_2(desired_x);
-    desired_y = Texture::up_to_power_2(desired_y);
+    desired_x = (int)Texture::up_to_power_2(desired_x);
+    desired_y = (int)Texture::up_to_power_2(desired_y);
   }
   bool desired_mipmap = false;
   Texture::TextureType desired_type = Texture::TT_2d_texture;

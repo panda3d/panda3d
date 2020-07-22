@@ -1334,8 +1334,8 @@ generate_simple_ram_image() {
 
   // Limit it to no larger than the source image, and also make it a power of
   // two.
-  x_size = down_to_power_2(min(x_size, cdata->_x_size));
-  y_size = down_to_power_2(min(y_size, cdata->_y_size));
+  x_size = (int)down_to_power_2(min(x_size, cdata->_x_size));
+  y_size = (int)down_to_power_2(min(y_size, cdata->_y_size));
 
   // Generate a reduced image of that size.
   PNMImage scaled(x_size, y_size, pnmimage.get_num_channels());
@@ -1907,13 +1907,13 @@ void Texture::
 set_size_padded(int x, int y, int z) {
   CDWriter cdata(_cycler, true);
   if (do_get_auto_texture_scale(cdata) != ATS_none) {
-    do_set_x_size(cdata, up_to_power_2(x));
-    do_set_y_size(cdata, up_to_power_2(y));
+    do_set_x_size(cdata, (int)up_to_power_2(x));
+    do_set_y_size(cdata, (int)up_to_power_2(y));
 
     if (cdata->_texture_type == TT_3d_texture) {
       // Only pad 3D textures.  It does not make sense to do so for cube maps
       // or 2D texture arrays.
-      do_set_z_size(cdata, up_to_power_2(z));
+      do_set_z_size(cdata, (int)up_to_power_2(z));
     } else {
       do_set_z_size(cdata, z);
     }
@@ -1979,24 +1979,24 @@ prepare_now(int view,
 /**
  * Returns the smallest power of 2 greater than or equal to value.
  */
-int Texture::
-up_to_power_2(int value) {
+size_t Texture::
+up_to_power_2(size_t value) {
   if (value <= 1) {
     return 1;
   }
-  int bit = get_next_higher_bit(((unsigned int)value) - 1);
+  size_t bit = get_next_higher_bit(((uint64_t)value) - 1);
   return (1 << bit);
 }
 
 /**
  * Returns the largest power of 2 less than or equal to value.
  */
-int Texture::
-down_to_power_2(int value) {
+size_t Texture::
+down_to_power_2(size_t value) {
   if (value <= 1) {
     return 1;
   }
-  int bit = get_next_higher_bit(((unsigned int)value) >> 1);
+  size_t bit = get_next_higher_bit(((uint64_t)value) >> 1);
   return (1 << bit);
 }
 
@@ -2674,14 +2674,14 @@ adjust_size(int &x_size, int &y_size, const string &name,
 
   switch (ats) {
   case ATS_down:
-    new_x_size = down_to_power_2(new_x_size);
-    new_y_size = down_to_power_2(new_y_size);
+    new_x_size = (int)down_to_power_2(new_x_size);
+    new_y_size = (int)down_to_power_2(new_y_size);
     break;
 
   case ATS_up:
   case ATS_pad:
-    new_x_size = up_to_power_2(new_x_size);
-    new_y_size = up_to_power_2(new_y_size);
+    new_x_size = (int)up_to_power_2(new_x_size);
+    new_y_size = (int)up_to_power_2(new_y_size);
     break;
 
   case ATS_none:

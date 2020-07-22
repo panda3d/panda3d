@@ -1468,8 +1468,8 @@ create_texture_card_vdata(int x, int y) {
   PN_stdfloat yhi = 1.0;
 
   if (Texture::get_textures_power_2() != ATS_none) {
-    int xru = Texture::up_to_power_2(x);
-    int yru = Texture::up_to_power_2(y);
+    size_t xru = Texture::up_to_power_2(x);
+    size_t yru = Texture::up_to_power_2(y);
     xhi = (x * 1.0f) / xru;
     yhi = (y * 1.0f) / yru;
   }

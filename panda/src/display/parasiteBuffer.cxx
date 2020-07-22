@@ -91,8 +91,8 @@ void ParasiteBuffer::
 set_size_and_recalc(int x, int y) {
   if (!(_creation_flags & GraphicsPipe::BF_size_track_host)) {
     if (_creation_flags & GraphicsPipe::BF_size_power_2) {
-      x = Texture::down_to_power_2(x);
-      y = Texture::down_to_power_2(y);
+      x = (int)Texture::down_to_power_2(x);
+      y = (int)Texture::down_to_power_2(y);
     }
     if (_creation_flags & GraphicsPipe::BF_size_square) {
       x = y = std::min(x, y);

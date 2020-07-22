@@ -883,7 +883,7 @@ class TexMemWatcher(DirectObject):
             matches.append((match, tp))
 
         if matches:
-            return max(matches)[1]
+            return max(matches, key=lambda match: match[0])[1]
         return None
 
     def findHolePieces(self, area):
@@ -937,7 +937,7 @@ class TexMemWatcher(DirectObject):
     def findLargestHole(self):
         holes = self.findAvailableHoles(0)
         if holes:
-            return max(holes)[1]
+            return max(holes, key=lambda hole: hole[0])[1]
         return None
 
     def findAvailableHoles(self, area, w = None, h = None):

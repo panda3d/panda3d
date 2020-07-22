@@ -589,8 +589,8 @@ PUBLISHED:
                               PreparedGraphicsObjects *prepared_objects,
                               GraphicsStateGuardianBase *gsg);
 
-  static int up_to_power_2(int value);
-  static int down_to_power_2(int value);
+  static size_t up_to_power_2(size_t value);
+  static size_t down_to_power_2(size_t value);
 
   void consider_rescale(PNMImage &pnmimage);
   static void consider_rescale(PNMImage &pnmimage, const std::string &name, AutoTextureScale auto_texture_scale = ATS_unspecified);

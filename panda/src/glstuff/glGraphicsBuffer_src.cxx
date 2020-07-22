@@ -385,8 +385,8 @@ rebuild_bitplanes() {
   int bitplane_x = get_x_size();
   int bitplane_y = get_y_size();
   if (Texture::get_textures_power_2() != ATS_none) {
-    bitplane_x = Texture::up_to_power_2(bitplane_x);
-    bitplane_y = Texture::up_to_power_2(bitplane_y);
+    bitplane_x = (int)Texture::up_to_power_2(bitplane_x);
+    bitplane_y = (int)Texture::up_to_power_2(bitplane_y);
   }
   bool rb_resize = false;
   if ((bitplane_x != _rb_size_x)||
