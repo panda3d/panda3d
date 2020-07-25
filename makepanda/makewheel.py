@@ -564,6 +564,7 @@ def makewheel(version, output_dir, platform=None):
         libs_dir = join(output_dir, "bin")
     else:
         libs_dir = join(output_dir, "lib")
+    ext_mod_dir = get_python_ext_module_dir()
     license_src = "LICENSE"
     readme_src = "README.md"
 
@@ -595,7 +596,7 @@ def makewheel(version, output_dir, platform=None):
     whl.lib_path = [libs_dir]
 
     if sys.platform == "win32":
-        whl.lib_path.append(join(output_dir, "python", "DLLs"))
+        whl.lib_path.append(ext_mod_dir)
 
     if platform.startswith("manylinux"):
         # On manylinux1, we pick up all libraries except for the ones specified
@@ -648,7 +649,6 @@ if __debug__:
     # And copy the extension modules from the Python installation into the
     # deploy_libs directory, for use by deploy-ng.
     ext_suffix = '.pyd' if sys.platform in ('win32', 'cygwin') else '.so'
-    ext_mod_dir = get_python_ext_module_dir()
 
     for file in os.listdir(ext_mod_dir):
         if file.endswith(ext_suffix):

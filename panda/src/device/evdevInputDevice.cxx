@@ -595,6 +595,8 @@ init_device() {
               _buttons.push_back(ButtonState(GamepadButton::hat_left()));
               _buttons.push_back(ButtonState(GamepadButton::hat_right()));
             }
+            _buttons[_dpad_left_button]._state = S_up;
+            _buttons[_dpad_left_button+1]._state = S_up;
           }
           break;
         case ABS_HAT0Y:
@@ -608,6 +610,8 @@ init_device() {
               _buttons.push_back(ButtonState(GamepadButton::hat_up()));
               _buttons.push_back(ButtonState(GamepadButton::hat_down()));
             }
+            _buttons[_dpad_up_button]._state = S_up;
+            _buttons[_dpad_up_button+1]._state = S_up;
           }
           break;
         case ABS_HAT2X:
