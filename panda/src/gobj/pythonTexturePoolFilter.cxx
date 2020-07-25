@@ -116,14 +116,17 @@ pre_load(const Filename &orig_filename, const Filename &orig_alpha_filename,
 
   Py_DECREF(args);
 
-  if (result != nullptr) {
+  if (result == Py_None) {
+    // We've got None as our result, so we shouldn't return any Texture
+    Py_DECREF(result);
+  } else if (result != nullptr) {
     if (DtoolInstance_Check(result)) {
       tex = (Texture *)DtoolInstance_UPCAST(result, Dtool_Texture);
     }
 
     if (tex == nullptr) {
       gobj_cat.error()
-        << "Preloading " << orig_filename.get_basename() << " failed as"
+        << "Preloading " << orig_filename.get_basename() << " failed as "
         << "preloaded texture is not of Texture type.\n";
     }
 
@@ -170,7 +173,10 @@ post_load(Texture *tex) {
 
   Py_DECREF(args);
 
-  if (result != nullptr) {
+  if (result == Py_None) {
+    // We've got None as our result, so we shouldn't return any Texture
+    Py_DECREF(result);
+  } else if (result != nullptr) {
     PT(Texture) result_tex;
 
     // Check if the call returned a texture pointer.
