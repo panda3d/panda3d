@@ -248,7 +248,10 @@ clear_colliders() {
 }
 
 /**
- *
+ * Perform the traversal. Begins at the indicated root and detects all
+ * collisions with any of its collider objects against nodes at or below the
+ * indicated root, calling the appropriate CollisionHandler for each detected
+ * collision.
  */
 void CollisionTraverser::
 traverse(const NodePath &root) {
