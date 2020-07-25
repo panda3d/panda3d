@@ -167,6 +167,10 @@ set(P3GOBJ_IGATEEXT
   texture_ext.h
   textureCollection_ext.cxx
   textureCollection_ext.h
+  texturePool_ext.cxx
+  texturePool_ext.h
+  pythonTexturePoolFilter.cxx
+  pythonTexturePoolFilter.h
 )
 
 composite_sources(p3gobj P3GOBJ_SOURCES)
