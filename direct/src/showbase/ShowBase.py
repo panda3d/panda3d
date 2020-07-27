@@ -1,4 +1,4 @@
-""" This module contains ShowBase, an application framework responsible
+""" This module contains `.ShowBase`, an application framework responsible
 for opening a graphical display, setting up input devices and creating
 the scene graph.
 
@@ -19,14 +19,15 @@ Built-in global variables
 Some key variables used in all Panda3D scripts are actually attributes of the
 ShowBase instance.  When creating an instance of this class, it will write many
 of these variables to the built-in scope of the Python interpreter, so that
-they are accessible to any Python module.
+they are accessible to any Python module, without the need fors extra imports.
 
 While these are handy for prototyping, we do not recommend using them in bigger
 projects, as it can make the code confusing to read to other Python developers,
 to whom it may not be obvious where these variables are originating.
 
-Some of these built-in variables are documented further in the
-:mod:`~direct.showbase.ShowBaseGlobal` module.
+Refer to the :mod:`builtins` page for a listing of the variables written to the
+built-in scope.
+
 """
 
 __all__ = ['ShowBase', 'WindowControls']
@@ -2022,7 +2023,7 @@ class ShowBase(DirectObject.DirectObject):
     def enableAllAudio(self):
         """
         Reenables the SFX and music managers that were active at the time
-        `disableAllAudio() was called.  Meant to be called when the app regains
+        `disableAllAudio()` was called.  Meant to be called when the app regains
         audio focus.
         """
         self.AppHasAudioFocus = 1

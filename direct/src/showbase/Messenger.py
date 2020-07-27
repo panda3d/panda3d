@@ -1,5 +1,5 @@
 """This defines the Messenger class, which is responsible for most of the
-event handling that happens on the Python side.
+:ref:`event handling <event-handlers>` that happens on the Python side.
 """
 
 __all__ = ['Messenger']
