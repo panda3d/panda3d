@@ -18,6 +18,8 @@ import imp
 import string
 import time
 import tempfile
+import urllib.request
+import platform as py_platform
 
 import setuptools
 import distutils.log
@@ -1390,6 +1392,101 @@ class bdist_apps(setuptools.Command):
         cmd.append(nsifile.to_os_specific())
         subprocess.check_call(cmd)
 
+    def create_appimage(self, basename, build_dir, platform, icons):
+        # Get a list of build applications
+        build_cmd = self.get_finalized_command('build_apps')
+
+        fullname = self.distribution.get_fullname()
+        shortname = self.distribution.get_name()
+
+        # Build the AppImage in build/
+        os.chdir(build_cmd.build_base)
+
+        # Clean previous builds
+        appimagedir = shortname.capitalize() + '.AppDir'
+        if os.path.exists(appimagedir):
+            shutil.rmtree(appimagedir)
+
+        # Copy the game's raw directory to appimagedir's usr/bin/
+        shutil.copytree(platform, os.path.join(appimagedir, 'usr','bin'))
+
+        # AppImage requires an icon
+        if shortname in icons and icons[shortname]:
+            # Take the bigger icon, if the user provides them
+            icon_ext = os.path.splitext(icons[shortname][0])[1]
+            src_img = os.path.join(appimagedir, 'usr','bin', icons[shortname][0])
+            dst_img = os.path.join(appimagedir, 'icon' + icon_ext)
+            shutil.copy(src_img, dst_img)
+        else:
+            # Otherwise, take a simple image from Panda3d's installation
+            for path in sys.path:
+                img = os.path.join(path, 'panda3d', 'models', 'maps', 'circle.png')
+                if os.path.exists(img):
+                    shutil.copy(img, os.path.join(appimagedir, 'icon.png'))
+
+        # Create the AppRun file
+        apprunfile = p3d.Filename(appimagedir, "AppRun")
+        apprunfile.unlink()
+        apprun = open(apprunfile.to_os_specific(), "w")
+        apprun.write('#!/bin/sh\n')
+        apprun.write('SELF=$(readlink -f "$0")\n')
+        apprun.write('HERE=${SELF%/*}\n')
+        apprun.write('export PATH="${HERE}/usr/bin/:${HERE}/usr/sbin/:${HERE}/usr/games/:${HERE}/bin/:${HERE}/sbin/${PATH:+:$PATH}"\n')
+        apprun.write('export LD_LIBRARY_PATH="${HERE}/usr/bin/:${HERE}/usr/lib/:${HERE}/usr/lib/i386-linux-gnu/:${HERE}/usr/lib/x86_64-linux-gnu/:${HERE}/usr/lib32/:${HERE}/usr/lib64/:${HERE}/lib/:${HERE}/lib/i386-linux-gnu/:${HERE}/lib/x86_64-linux-gnu/:${HERE}/lib32/:${HERE}/lib64/${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"\n')
+        apprun.write('export PYTHONPATH="${HERE}/usr/bin/:${HERE}/usr/share/pyshared/${PYTHONPATH:+:$PYTHONPATH}"\n')
+        apprun.write('export XDG_DATA_DIRS="${HERE}/usr/share/${XDG_DATA_DIRS:+:$XDG_DATA_DIRS}"\n')
+        apprun.write('export PERLLIB="${HERE}/usr/share/perl5/:${HERE}/usr/lib/perl5/${PERLLIB:+:$PERLLIB}"\n')
+        apprun.write('export GSETTINGS_SCHEMA_DIR="${HERE}/usr/share/glib-2.0/schemas/${GSETTINGS_SCHEMA_DIR:+:$GSETTINGS_SCHEMA_DIR}"\n')
+        apprun.write('export QT_PLUGIN_PATH="${HERE}/usr/lib/qt4/plugins/:${HERE}/usr/lib/i386-linux-gnu/qt4/plugins/:${HERE}/usr/lib/x86_64-linux-gnu/qt4/plugins/:${HERE}/usr/lib32/qt4/plugins/:${HERE}/usr/lib64/qt4/plugins/:${HERE}/usr/lib/qt5/plugins/:${HERE}/usr/lib/i386-linux-gnu/qt5/plugins/:${HERE}/usr/lib/x86_64-linux-gnu/qt5/plugins/:${HERE}/usr/lib32/qt5/plugins/:${HERE}/usr/lib64/qt5/plugins/${QT_PLUGIN_PATH:+:$QT_PLUGIN_PATH}"\n')
+        apprun.write('EXEC=$(grep -e "^Exec=.*" "${HERE}"/*.desktop | head -n 1 | cut -d "=" -f 2 | cut -d " " -f 1)\n')
+        apprun.write('exec "${EXEC}" "$@"\n')
+        apprun.close()
+
+        # It has to be executable
+        os.chmod(apprunfile, os.stat(apprunfile).st_mode | stat.S_IEXEC)
+
+        # Create the .desktop file
+        desktopfile = p3d.Filename(appimagedir, shortname + ".desktop")
+        desktopfile.unlink()
+        desktop = open(desktopfile.to_os_specific(), "w")
+        desktop.write('[Desktop Entry]\n')
+        desktop.write('Name=%s\n' % shortname)
+        desktop.write('Exec=%s\n' % shortname)
+        desktop.write('Icon=icon\n')
+        desktop.write('Type=Application\n')
+        desktop.write('Categories=Game;\n')
+        desktop.close()
+
+        # Download the AppImage tool (if not present)
+        curr_platform = py_platform.machine()
+        url = 'https://github.com/AppImage/AppImageKit/releases/download/12/appimagetool-%s.AppImage' % curr_platform
+        app_tool = 'appimagetool-%s.AppImage' % curr_platform
+        if not os.path.exists(app_tool):
+            try:
+                urllib.request.urlretrieve(url, app_tool)
+            except urllib.error.URLError:
+                msg = '\tThe target architecture is not supported by AppImage'
+                self.announce(msg, distutils.log.ERROR)
+                return
+
+        # It has to be executable
+        os.chmod(app_tool, os.stat(app_tool).st_mode | stat.S_IEXEC)
+
+        # Build the AppImage file
+        tgt_arch = platform.split('_', 1)[1]
+        cmd = [os.path.join('.', app_tool), appimagedir]
+        subprocess.check_call(cmd, env={'ARCH': tgt_arch})
+
+        # AppImage eventually creates a file with a different name
+        tgt_arch_name = tgt_arch.replace('i686', 'i386')
+
+        # Move the built file in dist/
+        app_name = '%s-%s.AppImage' % (shortname, tgt_arch_name)
+        shutil.move(app_name, os.path.join(os.pardir, 'dist', app_name))
+
+        # Restore the state
+        os.chdir(self.dist_dir)
+
     def run(self):
         build_cmd = self.distribution.get_command_obj('build_apps')
         for opt in self._build_apps_options():
@@ -1439,6 +1536,13 @@ class bdist_apps(setuptools.Command):
                         # continue
                     is_64bit = platform == 'win_amd64'
                     self.create_nsis(basename, build_dir, is_64bit)
-
+                elif installer == 'appimage':
+                    if 'linux' not in platform:
+                        self.announce(
+                            '\tAppImage installer not supported for platform: {}'.format(platform),
+                            distutils.log.ERROR
+                        )
+                        continue
+                    self.create_appimage(basename, build_dir, platform, build_cmd.icons)
                 else:
                     self.announce('\tUnknown installer: {}'.format(installer), distutils.log.ERROR)
