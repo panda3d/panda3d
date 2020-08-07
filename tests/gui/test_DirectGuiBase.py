@@ -11,15 +11,17 @@ import pytest
 def test_create_DirectGuiBase():
     baseitem = DirectGuiBase()
 
+
 def test_defineoptions():
     baseitem = DirectGuiBase()
-    testoptiondefs = (('test',0,None),)
+    testoptiondefs = (('test', 0, None),)
     baseitem.defineoptions({}, testoptiondefs)
     assert baseitem['test'] == 0
 
+
 def test_addoptions():
     baseitem = DirectGuiBase()
-    testoptiondefs = (('test',0,None),)
+    testoptiondefs = (('test', 0, None),)
 
     # Those two will usually be set in the defineoptions function
     baseitem._optionInfo = {}
@@ -27,6 +29,7 @@ def test_addoptions():
 
     baseitem.addoptions(testoptiondefs, {})
     assert baseitem['test'] == 0
+
 
 def test_initialiseoptions():
     baseitem = DirectGuiBase()
@@ -38,11 +41,12 @@ def test_initialiseoptions():
     tw = testWidget()
     baseitem.initialiseoptions(tw)
 
-    testoptiondefs = (('test',0,None),)
+    testoptiondefs = (('test', 0, None),)
     tw.defineoptions({}, testoptiondefs)
     baseitem.initialiseoptions(tw)
 
     assert tw['test'] == 0
+
 
 def test_postInitialiseFunc():
     baseitem = DirectGuiBase()
@@ -50,6 +54,7 @@ def test_postInitialiseFunc():
     def func_a():
         global test_value_a
         test_value_a = 1
+
     def func_b():
         global test_value_b
         test_value_b = 1
@@ -65,27 +70,30 @@ def test_postInitialiseFunc():
     global test_value_b
     assert test_value_b == 1
 
+
 def test_isinitoption():
     baseitem = DirectGuiBase()
-    testoptiondefs = (('test-true',0,DGG.INITOPT),('test-false',0,None))
+    testoptiondefs = (('test-true', 0, DGG.INITOPT), ('test-false', 0, None))
     baseitem.defineoptions({}, testoptiondefs)
-    assert baseitem.isinitoption('test-true') == True
+    assert baseitem.isinitoption('test-true')
     assert baseitem.isinitoption('test-false') == False
+
 
 def test_options():
     baseitem = DirectGuiBase()
-    testoptiondefs = (('test-1',0,DGG.INITOPT),('test-2',0,None),)
+    testoptiondefs = (('test-1', 0, DGG.INITOPT), ('test-2', 0, None),)
     baseitem.defineoptions({}, testoptiondefs)
     assert len(baseitem.options()) == 2
 
+
 def test_get_options():
     baseitem = DirectGuiBase()
-    testoptiondefs = (('test-1',0,None),)
+    testoptiondefs = (('test-1', 0, None),)
     baseitem.defineoptions({}, testoptiondefs)
 
     # Using the configure function
     # check if configuration have been set correctly
-    assert baseitem.configure() == {'test-1': ('test-1', 0, 0),}
+    assert baseitem.configure() == {'test-1': ('test-1', 0, 0), }
     # check for specific configurations
     assert baseitem.configure('test-1') == ('test-1', 0, 0)
 
@@ -93,10 +101,11 @@ def test_get_options():
     assert baseitem['test-1'] == 0
     assert baseitem.cget('test-1') == 0
 
+
 def test_set_options():
     baseitem = DirectGuiBase()
 
-    testoptiondefs = (('test-1',0,DGG.INITOPT),('test-2',0,None))
+    testoptiondefs = (('test-1', 0, DGG.INITOPT), ('test-2', 0, None))
     baseitem.defineoptions({}, testoptiondefs)
 
     # try to set a value of an initopt option (shouldn't be possible)
@@ -118,9 +127,10 @@ def test_set_options():
     baseitem['test-2'] = 1
     assert baseitem['test-2'] == 1
 
+
 def test_component_handling():
     baseitem = DirectGuiBase()
-    testoptiondefs = (('test-1',0,None),)
+    testoptiondefs = (('test-1', 0, None),)
     baseitem.defineoptions({}, testoptiondefs)
 
     assert len(baseitem.components()) == 0
@@ -131,9 +141,9 @@ def test_component_handling():
         'componentGroup',   # componentGroup
         OnscreenText,       # widgetClass
         (),                 # *widgetArgs
-        text = 'Test',      # **kw
-        parent = core.NodePath()
-        )
+        text='Test',      # **kw
+        parent=core.NodePath()
+    )
 
     # check if we have exactly one component now
     assert len(baseitem.components()) == 1
@@ -150,9 +160,10 @@ def test_component_handling():
     # check if it really is gone
     assert baseitem.hascomponent('componentName') == False
 
+
 def test_destroy():
     baseitem = DirectGuiBase()
-    testoptiondefs = (('test-1',0,None),)
+    testoptiondefs = (('test-1', 0, None),)
     baseitem.defineoptions({}, testoptiondefs)
     baseitem.destroy()
     # check if things got correctly removed
@@ -160,12 +171,14 @@ def test_destroy():
     assert not hasattr(baseitem, '__componentInfo')
     assert not hasattr(baseitem, 'postInitialiseFuncList')
 
+
 def test_bindings():
     baseitem = DirectGuiBase()
 
     # Our test function and variable to check
     global commandCalled
     commandCalled = False
+
     def command(**kw):
         global commandCalled
         commandCalled = True
@@ -187,6 +200,7 @@ def test_bindings():
     messenger.send(DGG.B1CLICK + baseitem.guiId)
     assert not commandCalled
 
+
 def test_toggle_snap():
     try:
         DirectGuiWidget.snapToGrid = 0
@@ -197,6 +211,7 @@ def test_toggle_snap():
     finally:
         DirectGuiWidget.snapToGrid = 0
 
+
 def test_toggle_spacing():
     try:
         DirectGuiWidget.gridSpacing = 0
@@ -205,6 +220,7 @@ def test_toggle_spacing():
         assert item.gridSpacing == 5
     finally:
         DirectGuiWidget.gridSpacing = 0.05
+
 
 @pytest.mark.skipif(not ShowBaseGlobal.__dev__, reason="requires want-dev")
 def test_track_gui_items():
