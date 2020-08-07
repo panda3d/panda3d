@@ -28,10 +28,6 @@
 
 #include "string_utils.h"
 
-#ifdef WIN32
-# define snprintf _snprintf
-#endif
-
 NavMeshBuilder::NavMeshBuilder() :
   _filter_low_hanging_obstacles(true),
   _filter_ledge_spans(true),
@@ -274,16 +270,16 @@ void NavMeshBuilder::cleanup()
   
 }
 
-void NavMeshBuilder::set_partition_type(std::string p) {
-  if (downcase(p) == "watershed") {
+void NavMeshBuilder::set_partition_type(std::string partition) {
+  if (downcase(partition) == "watershed") {
     _partition_type = SAMPLE_PARTITION_WATERSHED;
     return;
   }
-  if (downcase(p) == "monotone") {
+  if (downcase(partition) == "monotone") {
     _partition_type = SAMPLE_PARTITION_MONOTONE;
     return;
   }
-  if (downcase(p) == "layer") {
+  if (downcase(partition) == "layer") {
     _partition_type = SAMPLE_PARTITION_LAYERS;
     return;
   }
