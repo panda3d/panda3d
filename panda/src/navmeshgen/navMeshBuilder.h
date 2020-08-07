@@ -67,10 +67,10 @@ PUBLISHED:
   float get_actor_radius() { return _agent_radius; }
   float get_actor_height() { return _agent_height; }
   float get_actor_climb() { return _agent_max_climb; }
-  void set_actor_height(float h) { _agent_height = h; }
-  void set_actor_radius(float r) { _agent_radius = r; }
-  void set_actor_climb(float c) { _agent_max_climb = c; }
-  void set_partition_type(std::string p);
+  void set_actor_height(float height) { _agent_height = height; }
+  void set_actor_radius(float radius) { _agent_radius = radius; }
+  void set_actor_climb(float climb) { _agent_max_climb = climb; }
+  void set_partition_type(std::string partition);
   void reset_common_settings();
   bool from_node_path(NodePath node);
   bool from_geom(PT(Geom) geom);

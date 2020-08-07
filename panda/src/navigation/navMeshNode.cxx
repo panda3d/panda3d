@@ -34,7 +34,6 @@ NavMeshNode::~NavMeshNode() {}
 void NavMeshNode::
 register_with_read_factory() {
   std::cout<<"\nCalled NavMeshNode::register_with_read_factory()\n";
-  
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
@@ -45,11 +44,7 @@ register_with_read_factory() {
 void NavMeshNode::
 write_datagram(BamWriter *manager, Datagram &dg) {
   PandaNode::write_datagram(manager, dg);
-
   manager->write_pointer(dg, _nav_mesh);
-  // Write NULL pointer to indicate the end of the list.
-  manager->write_pointer(dg, nullptr);
-
 }
 
 /**
@@ -65,11 +60,11 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   return pi;
 }
 
-// /**
-//  * This function is called by the BamReader's factory when a new object of
-//  * type BulletShape is encountered in the Bam file.  It should create the
-//  * BulletShape and extract its information from the file.
-//  */
+/**
+ * This function is called by the BamReader's factory when a new object of
+ * type BulletShape is encountered in the Bam file.  It should create the
+ * BulletShape and extract its information from the file.
+ */
 TypedWritable *NavMeshNode::
 make_from_bam(const FactoryParams &params) {
   std::string name = "FromBam";
