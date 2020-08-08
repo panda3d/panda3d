@@ -1,11 +1,6 @@
-from direct.showbase.ShowBase import ShowBase
-import direct.directbase.DirectStart
 from panda3d import navigation
 from panda3d import navmeshgen
 from panda3d import core
-from panda3d.core import NodePath
-from panda3d.core import LPoint3
-
 
 def reconstruct(object):
     # Create a temporary buffer, which we first write the object into, and
@@ -25,7 +20,6 @@ def reconstruct(object):
 
 
 def test_nav_mesh_bam():
-	
     data = core.GeomVertexData("", core.GeomVertexFormat.get_v3(), core.Geom.UH_static)
     vertex = core.GeomVertexWriter(data, "vertex")
     vertex.add_data3((0, 0, 0))
@@ -35,24 +29,24 @@ def test_nav_mesh_bam():
     
     prim = core.GeomTriangles(core.Geom.UH_static)
     prim.add_vertices(0, 1, 2)
-    prim.closePrimitive()
+    prim.close_primitive()
 
     geom = core.Geom(data)
     geom.add_primitive(prim)
 
     prim.add_vertices(3, 1, 2)
-    prim.closePrimitive()
+    prim.close_primitive()
 
     node = core.GeomNode('gnode')
-    node.addGeom(geom)
+    node.add_geom(geom)
 
-    scene = NodePath(node)
+    scene = core.NodePath(node)
     
     # Defining navmesh as object of NavMehsBuilder class.
     builder = navmeshgen.NavMeshBuilder()
 
     # Extracting geoms from 'scene' and calculating vertices and triangles.
-    builder.fromNodePath(scene)
+    builder.from_node_path(scene)
     
     navmesh = builder.build()
 
@@ -71,7 +65,6 @@ def test_nav_mesh_bam():
 
 
 def test_nav_mesh_node_bam():
-    
     data = core.GeomVertexData("", core.GeomVertexFormat.get_v3(), core.Geom.UH_static)
     vertex = core.GeomVertexWriter(data, "vertex")
     vertex.add_data3((0, 0, 0))
@@ -81,24 +74,24 @@ def test_nav_mesh_node_bam():
     
     prim = core.GeomTriangles(core.Geom.UH_static)
     prim.add_vertices(0, 1, 2)
-    prim.closePrimitive()
+    prim.close_primitive()
 
     geom = core.Geom(data)
     geom.add_primitive(prim)
 
     prim.add_vertices(3, 1, 2)
-    prim.closePrimitive()
+    prim.close_primitive()
 
     node = core.GeomNode('gnode')
-    node.addGeom(geom)
+    node.add_geom(geom)
 
-    scene = NodePath(node)
+    scene = core.NodePath(node)
     
     # Defining navmesh as object of NavMehsBuilder class.
     builder = navmeshgen.NavMeshBuilder()
 
     # Extracting geoms from 'scene' and calculating vertices and triangles.
-    builder.fromNodePath(scene)
+    builder.from_node_path(scene)
     
     navmesh = builder.build()
 
@@ -118,7 +111,6 @@ def test_nav_mesh_node_bam():
 
 
 def test_nav_query_bam():
-    
     data = core.GeomVertexData("", core.GeomVertexFormat.get_v3(), core.Geom.UH_static)
     vertex = core.GeomVertexWriter(data, "vertex")
     vertex.add_data3((0, 0, 0))
@@ -128,38 +120,37 @@ def test_nav_query_bam():
     
     prim = core.GeomTriangles(core.Geom.UH_static)
     prim.add_vertices(0, 1, 2)
-    prim.closePrimitive()
+    prim.close_primitive()
 
     geom = core.Geom(data)
     geom.add_primitive(prim)
 
     prim.add_vertices(3, 1, 2)
-    prim.closePrimitive()
+    prim.close_primitive()
 
     node = core.GeomNode('gnode')
-    node.addGeom(geom)
+    node.add_geom(geom)
 
-    scene = NodePath(node)
+    scene = core.NodePath(node)
     
     # Defining navmesh as object of NavMehsBuilder class.
     builder = navmeshgen.NavMeshBuilder()
 
     # Extracting geoms from 'scene' and calculating vertices and triangles.
-    builder.fromNodePath(scene)
+    builder.from_node_path(scene)
     
     navmesh = builder.build()
 
     query = navigation.NavMeshQuery(navmesh)
-    pos = LPoint3(50,55,3);
-    query.nearestPoint(pos)
-    path = query.findPath(pos,LPoint3(100,0,3))
+    pos = core.LPoint3(50,55,3);
+    query.nearest_point(pos)
+    path = query.find_path(pos, core.LPoint3(100,0,3))
 
     navmeshBam = reconstruct(navmesh)
     queryBam = navigation.NavMeshQuery(navmeshBam)
-    posBam = LPoint3(50,55,3);
-    queryBam.nearestPoint(posBam)
-    pathBam = query.findPath(posBam,LPoint3(100,0,3))
+    posBam = core.LPoint3(50,55,3);
+    queryBam.nearest_point(posBam)
+    pathBam = query.find_path(posBam, core.LPoint3(100,0,3))
 
     assert pos == posBam
     assert len(path) == len(pathBam)
-    
