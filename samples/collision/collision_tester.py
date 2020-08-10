@@ -30,12 +30,15 @@ from direct.showbase.ShowBase import ShowBase
 from direct.gui.DirectGui import OnscreenText
 
 
+#this is a helper function that creates UI text
 def hint_text(text, i):
     return OnscreenText(
         text=text, pos=(0.06, -.06 * (i + 0.5)), fg=(1, 1, 1, 1),
         parent=base.a2dTopLeft,align=TextNode.ALeft, scale=.05,
     )
 
+#this is a helper class that unifies the different Collision object
+#types for the purpose of this sample
 class ColliderSolid:
     def __init__(self, name, solid, cam_shot=False, origin=True):
         self.name = name
@@ -47,6 +50,10 @@ class ColliderSolid:
         return self.name
 
 
+# "into" and "from" are just panda terminilogy to make sure 
+# the collision operation is supported.
+# e.g. line into sphere vs. sphere into line, the later doesn't make sense.
+# but the actual objects/classes are the same.
 solids_into = [
     ColliderSolid("Sphere", CollisionSphere((0, 0, 0), 1.5)),
     ColliderSolid("Capsule", CollisionCapsule((-1, 0, 0), (1, 0, 0), 1)),
@@ -54,6 +61,8 @@ solids_into = [
     ColliderSolid("Plane", CollisionPlane(Plane((0, 0, 1), (0, 0, 0)))),
     ColliderSolid("InvSphere", CollisionInvSphere((0, 0, 0), 2)),
 ]
+
+
 solids_from = [
     ColliderSolid(
         "Sphere",
@@ -85,15 +94,21 @@ solids_from = [
 ]
 
 
+#the main app class for this sample
 class Base(ShowBase):
     def __init__(self):
+        #this is normal setup
         ShowBase.__init__(self)
         base.disableMouse()
         self.accept("escape", sys.exit)
 
+        #this creates the center point where the camera originaly
+        #points to and rotates around
         self.camera_gimbal = base.render.attach_new_node("Camera gimbal")
         base.camera.reparent_to(self.camera_gimbal)
         base.camera.set_pos(0, -10, 0)
+        
+        #these are UI functions to move the camera
         self.rotation_mode = False
         self.mouse_pos = None
         self.accept("mouse3", self.set_rotation_mode, [True])
@@ -102,6 +117,7 @@ class Base(ShowBase):
         self.accept("wheel_down", self.move_camera_distance, [1])
         base.taskMgr.add(self.move_camera, "Move camera", sort=10)
 
+        #more UI to tell the user how to operate the sample
         self.hint_from = hint_text("", 1)
         self.hint_into = hint_text("", 2)
         self.hint_lmb = hint_text("LMB: Shoot / move From solid", 3)
@@ -109,6 +125,9 @@ class Base(ShowBase):
         self.hint_mmb = hint_text("MMB: Rotate From CollisionSolid", 5)
         self.hint_wheel = hint_text("Mouse wheel: Zoom in / out", 6)
         self.solid_texts = [self.hint_from, self.hint_into]
+        
+        # this changes the text of the UI after the new collision solids
+        # are created.
         self.accept(
             "update-from-text",
             self.update_solid_text,
@@ -128,6 +147,8 @@ class Base(ShowBase):
     def update_solid_text(self, idx, hint_text, solid_repr):
         self.solid_texts[idx].setText(hint_text.format(solid_repr))
 
+
+    #these are camera functions again
     def set_rotation_mode(self, mode):
         self.rotation_mode = mode
         if base.mouseWatcherNode.has_mouse():
@@ -162,22 +183,35 @@ class Base(ShowBase):
 
 class Collider:
     def __init__(self, solids):
+        #these are all possible collision objects, defined about
         self.solids = solids
         self.solid_idx = 0
 
+
+        #think of this as "contains everything for the 'from' object
         self.np = base.render.attach_new_node("from")
+        
+        #the location for this is in the panda3d main directory
         self.model = base.loader.load_model("models/zup-axis")
         self.model.reparent_to(self.np)
         self.model.set_scale(0.1)
         if not self.solids[self.solid_idx].origin:
             self.model.hide()
+            
+        #this adds the collision geometry to the node
         self.coll = CollisionNode("coll")
         self.coll_np = self.np.attach_new_node(self.coll)
         self.coll_np.show()
+        #this specifically
         self.coll.add_solid(self.solids[self.solid_idx].solid)
 
     def switch_solid(self):
+        #remove the current collision geometry
         self.coll.remove_solid(0)
+        
+        # this counts up, and the modulo operator makes sure we
+        # always get a good index, then the collision object
+        # at the new index gets added.
         self.solid_idx = (self.solid_idx + 1) % len(self.solids)
         self.coll.add_solid(self.solids[self.solid_idx].solid)
         if self.solids[self.solid_idx].origin:
@@ -186,17 +220,31 @@ class Collider:
             self.model.hide()
 
 
+#some inheritance and setup
 class FromCollider(Collider):
     def __init__(self, solids):
         Collider.__init__(self, solids)
+        
+        
+        #bit masks are for setting up scenes with lots of different
+        #collision objects, with different interactions
+        #e.g. ball + cube collide
+        #     ball + wall collide
+        # but cube + wall don't
+        
         self.coll.set_into_collide_mask(0)
 
+        #this object does the collision calculations
         self.traverser = CollisionTraverser("traverser")
         self.traverser.show_collisions(base.render)
         self.queue = CollisionHandlerQueue()
         self.traverser.add_collider(self.coll_np, self.queue)
+        
+        #this adds the calculation tasks to the task_mgr loop
         base.task_mgr.add(self.collide, "collide", sort=15)
         base.task_mgr.add(self.adjust_solid_pos, "adjust solid pos", sort=10)
+        
+        #this sends the message to change the text object from earlier
         base.messenger.send(
             "update-from-text",
             [self.solids[self.solid_idx].name],
@@ -209,10 +257,13 @@ class FromCollider(Collider):
 
     def adjust_solid_pos(self, task):
         if base.mouseWatcherNode.has_mouse():
+            
+            #get input events
             lmb = base.mouseWatcherNode.is_button_down(MouseButton.one())
             mmb = base.mouseWatcherNode.is_button_down(MouseButton.two())
             mpos = Point2(base.mouseWatcherNode.get_mouse())
 
+            # I think what this does is obvious when the sample is run
             if lmb and self.solids[self.solid_idx].cam_shot:
                 self.np.reparent_to(base.cam)
                 self.np.set_pos(0, 0, 0)
@@ -222,6 +273,7 @@ class FromCollider(Collider):
                 cam_space_vec /= cam_space_vec.length()
                 self.np.look_at(cam_space_vec)
                 self.np.wrt_reparent_to(base.render)
+                
             elif lmb and not self.solids[self.solid_idx].cam_shot:
                 model_pos = self.np.get_pos(base.cam)
                 frustum_pos = Point3()
@@ -256,6 +308,7 @@ class FromCollider(Collider):
             [self.solids[self.solid_idx].name],
         )
 
+    #this calculates the collisions
     def collide(self, task):
         self.traverser.traverse(base.render)
         return task.cont
@@ -264,6 +317,8 @@ class FromCollider(Collider):
 class IntoCollider(Collider):
     def __init__(self, solids):
         Collider.__init__(self, solids)
+        
+        #note that this has the same collision mask as the other one
         self.coll.set_from_collide_mask(0)
         base.messenger.send(
             "update-into-text",
