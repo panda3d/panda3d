@@ -110,4 +110,14 @@ def test_click():
 
     assert test_value_a
 
+def test_suppress():
+    spinner = DirectSpinBox(suppressKeys=True, suppressMouse=True)
+
+    assert spinner.valueEntry["suppressKeys"]
+    assert spinner.valueEntry["suppressMouse"]
+    assert spinner.incButton["suppressKeys"]
+    assert spinner.incButton["suppressMouse"]
+    assert spinner.decButton["suppressKeys"]
+    assert spinner.decButton["suppressMouse"]
+
 #pytest.main()

@@ -38,7 +38,7 @@ Options available for this Widget are:
     the value correctly will then be converted using the textFormat to
     a string which is entered into the textfield.
 
-*   repeatdelay
+*   repeatDelay
     Delay in seconds at which the value should be in-/decreased when the
     up or down arrow button is held down
 
@@ -104,7 +104,7 @@ class DirectSpinBox(DirectFrame):
             ('minValue',           0,         None),
             ('maxValue',           100,       None),
             ('valueType',          int,       None),
-            ('repeatdelay',        0.125,     None),
+            ('repeatDelay',        0.125,     None),
             ('repeatStartdelay',   0.25,      None),
             ('command',            None,      None),
             ('extraArgs',          [],        None),
@@ -127,6 +127,8 @@ class DirectSpinBox(DirectFrame):
                                                #overflow = 1, #DOESN'T WORK WITH RIGHT TEXT ALIGN!!!
                                                width = 2,
                                                text_align = TextNode.ARight,
+                                               suppressKeys = self['suppressKeys'],
+                                               suppressMouse = self['suppressMouse'],
                                                command = self['command'],
                                                extraArgs = self['extraArgs'],
                                                focusOutCommand = self.focusOutCommand,
@@ -142,12 +144,16 @@ class DirectSpinBox(DirectFrame):
             self.setValue(0)
 
         # This font contains the up and down arrow
-        shuttle_controls_font = loader.loadFont('shuttle_controls')
+        shuttle_controls_font = FontPool.loadFont('shuttle_controls')
+        if shuttle_controls_font is None:
+            raise IOError('Could not load font file: shuttle_controls')
 
         # create the up arrow button
         self.incButton = self.createcomponent('incButton', (), None,
                                               DirectButton, (self,),
                                               text = '5' if self['buttonOrientation'] == DGG.VERTICAL else '4',
+                                              suppressKeys = self['suppressKeys'],
+                                              suppressMouse = self['suppressMouse'],
                                               text_font = shuttle_controls_font,
                                               )
         # Set commands for the Inc Button
@@ -158,6 +164,8 @@ class DirectSpinBox(DirectFrame):
         self.decButton = self.createcomponent('decButton', (), None,
                                               DirectButton, (self,),
                                               text = '6' if self['buttonOrientation'] == DGG.VERTICAL else '3',
+                                              suppressKeys = self['suppressKeys'],
+                                              suppressMouse = self['suppressMouse'],
                                               text_font = shuttle_controls_font
                                               )
         # Set commands for the Dec Button
@@ -242,7 +250,7 @@ class DirectSpinBox(DirectFrame):
     def __repeatStepTask(self, task):
         assert self.notify.debugStateCall(self)
         ret = self.doStep(task.stepSize)
-        task.setDelay(self['repeatdelay'])
+        task.setDelay(self['repeatDelay'])
         if ret:
             return Task.again
         else:
@@ -364,7 +372,7 @@ class DirectSpinBox(DirectFrame):
 from direct.showbase.ShowBase import ShowBase
 base = ShowBase()
 
-spinBox = DirectSpinBox(pos=(0,0,-0.25), value=5, minValue=-100, maxValue=100, repeatdelay=0.125, buttonOrientation=DGG.HORIZONTAL, valueEntry_text_align=TextNode.ACenter, borderWidth=(1,1))
+spinBox = DirectSpinBox(pos=(0,0,-0.25), value=5, minValue=-100, maxValue=100, repeatDelay=0.125, buttonOrientation=DGG.HORIZONTAL, valueEntry_text_align=TextNode.ACenter, borderWidth=(1,1))
 spinBox.setScale(0.1)
 spinBox["relief"] = 2
 spinBox = DirectSpinBox(pos=(0,0,0.25), valueEntry_width=10, borderWidth=(2,2), frameColor=(1,0,0,1))
