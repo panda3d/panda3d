@@ -150,7 +150,11 @@ triangulate() {
   }
   */
 
+  int attempts = 0;
+
   while (construct_trapezoids(num_segments) != 0) {
+    nassertv_always(attempts++ < 100);
+
     // If there's an error, re-shuffle the index and try again.
     Randomizer randomizer;
     for (i = 0; i < num_segments; ++i) {
