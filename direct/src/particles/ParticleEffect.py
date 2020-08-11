@@ -201,6 +201,7 @@ class ParticleEffect(NodePath):
               f.write('self.addForceGroup(%s)\n' % target)
 
     def loadConfig(self, filename):
+        vfs = VirtualFileSystem.getGlobalPtr()
         data = vfs.readFile(filename, 1)
         data = data.replace(b'\r', b'')
         try:
