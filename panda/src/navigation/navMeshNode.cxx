@@ -17,6 +17,9 @@
 
 TypeHandle NavMeshNode::_type_handle;
 
+/**
+ * NavMeshNode contructor which stores the NavMesh object as _nav_mesh
+ */
 NavMeshNode::NavMeshNode(const std::string &name, PT(NavMesh) nav_mesh):
   PandaNode(name)
 {
