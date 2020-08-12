@@ -32,6 +32,7 @@ enum SamplePolyAreas {
   SAMPLE_POLYAREA_GRASS,
   SAMPLE_POLYAREA_JUMP
 };
+
 enum SamplePolyFlags {
   SAMPLE_POLYFLAGS_WALK = 0x01,		// Ability to walk (ground, grass, road)
   SAMPLE_POLYFLAGS_SWIM = 0x02,		// Ability to swim (water).
@@ -40,37 +41,42 @@ enum SamplePolyFlags {
   SAMPLE_POLYFLAGS_DISABLED = 0x10,		// Disabled polygon
   SAMPLE_POLYFLAGS_ALL = 0xffff	// All abilities.
 };
-class EXPCL_NAVMESHGEN BuildSettings {
-PUBLISHED:
-  float cell_size;
-  float cell_height;
-  float agent_height;
-  float agent_radius;
-  float agent_max_climb;
-  float agent_max_slope;
-  float region_min_size;
-  float region_merge_size;
-  float edge_max_len;
-  float edge_max_error;
-  float verts_per_poly;
-  float detail_sample_dist;
-  float detail_sample_max_error;
-  int partition_type;
-  float nav_mesh_bMin[3];
-  float nav_mesh_bMax[3];
-  float tile_size;
-};
+
 
 
 class EXPCL_NAVMESHGEN NavMeshBuilder {
 PUBLISHED:
+  enum PartitionType {
+    SAMPLE_PARTITION_WATERSHED,
+    SAMPLE_PARTITION_MONOTONE,
+    SAMPLE_PARTITION_LAYERS,
+  };
   float get_actor_radius() { return _agent_radius; }
   float get_actor_height() { return _agent_height; }
-  float get_actor_climb() { return _agent_max_climb; }
+  float get_actor_max_climb() { return _agent_max_climb; }
+  float get_actor_max_slope() { return _agent_max_slope; }
+  float get_region_min_size() { return _region_min_size; }
+  float get_region_merge_size() { return _region_merge_size; }
+  float get_edge_max_len() { return _edge_max_len; }
+  float get_edge_max_error() { return _edge_max_error; }
+  float get_verts_per_poly() { return _verts_per_poly; }
+  float get_cell_size() { return _cell_size; }
+  float get_cell_height() { return _cell_height; }
+  PartitionType get_partition_type() { return _partition_type; }
+
   void set_actor_height(float height) { _agent_height = height; }
   void set_actor_radius(float radius) { _agent_radius = radius; }
-  void set_actor_climb(float climb) { _agent_max_climb = climb; }
-  void set_partition_type(std::string partition);
+  void set_actor_max_climb(float climb) { _agent_max_climb = climb; }
+  void set_actor_max_slope(float slope) { _agent_max_slope = slope; }
+  void set_region_min_size(float region_min_size) { _region_min_size = region_min_size; }
+  void set_region_merge_size(float region_merge_size) { _region_merge_size = region_merge_size; }
+  void set_edge_max_len(float max_len) { _edge_max_len = max_len; }
+  void set_edge_max_error(float max_error) { _edge_max_error = max_error; }
+  void set_verts_per_poly(float verts_per_poly) { _verts_per_poly = verts_per_poly; }
+  void set_cell_size(float cs) { _cell_size = cs; }
+  void set_cell_height(float ch) { _cell_height = ch; }
+  void set_partition_type(PartitionType partition) { _partition_type = partition; }
+
   void reset_common_settings();
   bool from_node_path(NodePath node);
   bool from_geom(PT(Geom) geom);
@@ -84,6 +90,7 @@ PUBLISHED:
   int get_pmesh_vert_count() { return _pmesh->nverts; }
   int get_pmesh_poly_count() { return _pmesh->npolys; }
   int get_pmesh_max_poly_count() { return _pmesh->maxpolys; }
+
 private:
   float _scale;
   float *_verts;
@@ -95,7 +102,6 @@ private:
   void add_vertex(float x, float y, float z, int &cap);
   void add_triangle(int a, int b, int c, int &cap);
 
-
   void process_geom_node(GeomNode *geomnode, int &vcap, int &tcap);
   void process_geom(CPT(Geom) geom, int &vcap, int &tcap);
   void process_vertex_data(const GeomVertexData *vdata, int &vcap);
@@ -105,6 +111,7 @@ private:
   std::vector<LVector3> _vertex_vector, _face_vector;
   bool _loaded;
   int index_temp;
+
 protected:
   PT(NavMesh) _nav_mesh_obj;
   class dtNavMesh *_nav_mesh;
@@ -124,7 +131,7 @@ protected:
   float _verts_per_poly;
   float _detail_sample_dist;
   float _detail_sample_max_error;
-  int _partition_type;
+  PartitionType _partition_type;
 
   bool _filter_low_hanging_obstacles;
   bool _filter_ledge_spans;
@@ -146,28 +153,17 @@ protected:
   void cleanup();
 
 public:
-
   
   ~NavMeshBuilder();
   void set_context(rcContext *ctx) { _ctx = ctx; }
 
-  virtual void collect_settings(struct BuildSettings &settings);
- 
   unsigned char get_nav_mesh_draw_flags() const { return _nav_mesh_draw_flags; }
   const float *get_verts() const { return _verts; }
   const float *get_normals() const { return _normals; }
   const int *get_tris() const { return _tris; }
   
   bool loaded_geom() { return _loaded; }
-  
 
 };
-
-enum SamplePartitionType {
-  SAMPLE_PARTITION_WATERSHED,
-  SAMPLE_PARTITION_MONOTONE,
-  SAMPLE_PARTITION_LAYERS,
-};
-
 
 #endif // NAVMESHBUILDER_H
