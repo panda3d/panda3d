@@ -298,38 +298,20 @@ void NavMeshBuilder::cleanup()
 /**
  * Function to set partition type for the navigation mesh.
  */
-void NavMeshBuilder::set_partition_type(std::string partition) {
-  if (downcase(partition) == "watershed") {
-    _partition_type = SAMPLE_PARTITION_WATERSHED;
-    return;
-  }
-  if (downcase(partition) == "monotone") {
-    _partition_type = SAMPLE_PARTITION_MONOTONE;
-    return;
-  }
-  if (downcase(partition) == "layer") {
-    _partition_type = SAMPLE_PARTITION_LAYERS;
-    return;
-  }
-}
-
-void NavMeshBuilder::collect_settings(BuildSettings& settings)
-{
-  settings.cell_size = _cell_size;
-  settings.cell_height = _cell_height;
-  settings.agent_height = _agent_height;
-  settings.agent_radius = _agent_radius;
-  settings.agent_max_climb = _agent_max_climb;
-  settings.agent_max_slope = _agent_max_slope;
-  settings.region_min_size = _region_min_size;
-  settings.region_merge_size = _region_merge_size;
-  settings.edge_max_len = _edge_max_len;
-  settings.edge_max_error = _edge_max_error;
-  settings.verts_per_poly = _verts_per_poly;
-  settings.detail_sample_dist = _detail_sample_dist;
-  settings.detail_sample_max_error = _detail_sample_max_error;
-  settings.partition_type = _partition_type;
-}
+// void NavMeshBuilder::set_partition_type(std::string partition) {
+//   if (downcase(partition) == "watershed") {
+//     _partition_type = SAMPLE_PARTITION_WATERSHED;
+//     return;
+//   }
+//   if (downcase(partition) == "monotone") {
+//     _partition_type = SAMPLE_PARTITION_MONOTONE;
+//     return;
+//   }
+//   if (downcase(partition) == "layer") {
+//     _partition_type = SAMPLE_PARTITION_LAYERS;
+//     return;
+//   }
+// }
 
 /**
  * Function to reset common settings to default values.
