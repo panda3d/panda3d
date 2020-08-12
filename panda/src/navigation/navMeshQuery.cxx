@@ -17,13 +17,17 @@
 #include "lvecBase3.h"
 #include <iostream>
 
+/**
+ * NavMeshQuery constructor to initialize member variables. The function set_nav_query()
+ * should be called after this constructor is called.
+ */
 NavMeshQuery::NavMeshQuery():
   _nav_query(0) {
   _nav_query = dtAllocNavMeshQuery();
 }
 
 /**
- * This function forms and initialises query object. No need to call set_nav_query() 
+ * This constructor forms and initialises query object. No need to call set_nav_query() 
  * after calling this constructor.
  */
 NavMeshQuery::NavMeshQuery(PT(NavMesh) nav_mesh):
@@ -33,6 +37,11 @@ NavMeshQuery::NavMeshQuery(PT(NavMesh) nav_mesh):
   set_nav_query(nav_mesh);
 
 }
+
+/**
+ * This constructor forms and initialises query object. No need to call set_nav_query() 
+ * after calling this constructor.
+ */
 NavMeshQuery::NavMeshQuery(NodePath nav_mesh_node_path):
   _nav_query(0) {
   
@@ -48,7 +57,7 @@ NavMeshQuery::~NavMeshQuery() {
 
 /**
  * This function initializes the query object.
- * It must be the first function called after construction, before other functions are used
+ * It must be the first function called after constructor, before other functions are used
  * and can be used multiple times.
  */
 bool NavMeshQuery::set_nav_query(PT(NavMesh) nav_mesh) {
@@ -63,6 +72,11 @@ bool NavMeshQuery::set_nav_query(PT(NavMesh) nav_mesh) {
   return true;
 }
 
+/**
+ * This function initializes the query object.
+ * It must be the first function called after constructor, before other functions are used
+ * and can be used multiple times.
+ */
 bool NavMeshQuery::set_nav_query(NodePath nav_mesh_node_path) {
   NavMeshNode *node = dynamic_cast<NavMeshNode*>(nav_mesh_node_path.node());
   return set_nav_query(node->get_nav_mesh());

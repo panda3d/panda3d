@@ -28,6 +28,10 @@
 
 #include "string_utils.h"
 
+
+/**
+ * NavMeshBuilder contructor which initiates the member variables
+ */
 NavMeshBuilder::NavMeshBuilder() :
   _filter_low_hanging_obstacles(true),
   _filter_ledge_spans(true),
@@ -66,6 +70,9 @@ NavMeshBuilder::~NavMeshBuilder() {
 }
 
 
+/**
+ * Function to add vertex to the vertex array.
+ */
 void NavMeshBuilder::add_vertex(float x, float y, float z, int &cap) {
   if (_vert_count + 1 > cap) {
     cap = !cap ? 8 : cap * 2;
@@ -83,6 +90,9 @@ void NavMeshBuilder::add_vertex(float x, float y, float z, int &cap) {
   _vert_count++;
 }
 
+/**
+ * Function to add triangles to the triangles array.
+ */
 void NavMeshBuilder::add_triangle(int a, int b, int c, int &cap) {
   if (_tri_count + 1 > cap) {
     cap = !cap ? 8 : cap * 2;
@@ -100,6 +110,9 @@ void NavMeshBuilder::add_triangle(int a, int b, int c, int &cap) {
   _tri_count++;
 }
 
+/**
+ * Function to build vertex array and triangles array from a geom.
+ */
 bool NavMeshBuilder::from_geom(PT(Geom) geom) {
   int vcap = 0;
   int tcap = 0;
@@ -109,6 +122,9 @@ bool NavMeshBuilder::from_geom(PT(Geom) geom) {
   return true;
 }
 
+/**
+ * Function to build vertex array and triangles array from a node path.
+ */
 bool NavMeshBuilder::from_node_path(NodePath node) {
   NodePathCollection geom_node_collection = node.find_all_matches("**/+GeomNode");
 
@@ -132,6 +148,9 @@ bool NavMeshBuilder::from_node_path(NodePath node) {
   return true;
 }
 
+/**
+ * Function to find vertices and faces in a geom primitive.
+ */
 void NavMeshBuilder::process_primitive(const GeomPrimitive *orig_prim, const GeomVertexData *vdata, int &tcap) {
 
   GeomVertexReader vertex(vdata, "vertex");
@@ -196,6 +215,9 @@ void NavMeshBuilder::process_primitive(const GeomPrimitive *orig_prim, const Geo
   
 }
 
+/**
+ * Function to find vertices from GeomVertexData.
+ */
 void NavMeshBuilder::process_vertex_data(const GeomVertexData *vdata, int &vcap) {
   GeomVertexReader vertex(vdata, "vertex");
   float x, y, z;
@@ -220,8 +242,9 @@ void NavMeshBuilder::process_vertex_data(const GeomVertexData *vdata, int &vcap)
   return;
 }
 
-
-
+/**
+ * Function to process geom to find primitives.
+ */
 void NavMeshBuilder::process_geom(CPT(Geom) geom, int& vcap, int& tcap) {
 
   CPT(GeomVertexData) vdata = geom->get_vertex_data();
@@ -235,6 +258,9 @@ void NavMeshBuilder::process_geom(CPT(Geom) geom, int& vcap, int& tcap) {
   return;
 }
 
+/**
+ * Function to process geom node to find geoms.
+ */
 void NavMeshBuilder::process_geom_node(GeomNode *geomnode, int &vcap, int &tcap) {
 
 
@@ -249,10 +275,9 @@ void NavMeshBuilder::process_geom_node(GeomNode *geomnode, int &vcap, int &tcap)
   return;
 }
 
-
-
-
-
+/**
+ *
+ */
 void NavMeshBuilder::cleanup()
 {
   delete[] _triareas;
@@ -270,6 +295,9 @@ void NavMeshBuilder::cleanup()
   
 }
 
+/**
+ * Function to set partition type for the navigation mesh.
+ */
 void NavMeshBuilder::set_partition_type(std::string partition) {
   if (downcase(partition) == "watershed") {
     _partition_type = SAMPLE_PARTITION_WATERSHED;
@@ -303,6 +331,9 @@ void NavMeshBuilder::collect_settings(BuildSettings& settings)
   settings.partition_type = _partition_type;
 }
 
+/**
+ * Function to reset common settings to default values.
+ */
 void NavMeshBuilder::reset_common_settings()
 {
   _cell_size = 0.3f;
@@ -324,6 +355,10 @@ void NavMeshBuilder::reset_common_settings()
 static const int NAVMESHSET_MAGIC = 'M' << 24 | 'S' << 16 | 'E' << 8 | 'T'; //'MSET';
 static const int NAVMESHSET_VERSION = 1;
 
+/**
+ * Function to build the navigation mesh from the vertex array, triangles array
+ * and on the basis of the settings such as actor radius, actor height, max climb etc.
+ */
 PT(NavMesh) NavMeshBuilder::build() {
   if (!loaded_geom()) {
 
@@ -608,8 +643,6 @@ PT(NavMesh) NavMeshBuilder::build() {
         _pmesh->flags[i] = SAMPLE_POLYFLAGS_WALK | SAMPLE_POLYFLAGS_DOOR;
       }
     }
-
-    
     
     NavMeshParams mesh_params;
 
@@ -626,7 +659,6 @@ PT(NavMesh) NavMeshBuilder::build() {
     mesh_params.detail_tris = _dmesh->tris;
     mesh_params.detail_tri_count = _dmesh->ntris;
 
-
     mesh_params.walkable_height = _agent_height;
     mesh_params.walkable_radius = _agent_radius;
     mesh_params.walkable_climb = _agent_max_climb;
@@ -642,7 +674,6 @@ PT(NavMesh) NavMeshBuilder::build() {
 
   }
 
-
   _ctx->stopTimer(RC_TIMER_TOTAL);
 
   // Show performance stats.
@@ -650,12 +681,12 @@ PT(NavMesh) NavMeshBuilder::build() {
 
   _total_build_time_ms = _ctx->getAccumulatedTime(RC_TIMER_TOTAL) / 1000.0f;
 
-  
-  
   return _nav_mesh_obj;
 }
 
-
+/**
+ * Function to return geomnode for the navigation mesh.
+ */
 PT(GeomNode) NavMeshBuilder::draw_poly_mesh_geom() {
 
   PT(GeomVertexData) vdata;

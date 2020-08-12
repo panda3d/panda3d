@@ -27,10 +27,16 @@ NavMesh::~NavMesh() {
   _nav_mesh = 0;
 }
 
+/**
+ * NavMesh constructor to store dtNavMesh object as _nav_mesh.
+ */
 NavMesh::NavMesh(dtNavMesh *nav_mesh) {
   _nav_mesh = nav_mesh;
 }
 
+/**
+ * NavMesh constructor to store NavMesh Parameters.
+ */
 NavMesh::NavMesh(NavMeshParams mesh_params):
   _nav_mesh(0) {
   memset(&(_params), 0, sizeof(_params));
@@ -69,6 +75,9 @@ NavMesh::NavMesh(NavMeshParams mesh_params):
   init_nav_mesh();
 }
 
+/**
+ * Function to build navigation mesh from the parameters.
+ */
 bool NavMesh::init_nav_mesh() {
 	unsigned char *nav_data = 0;
   int nav_data_size = 0;
@@ -96,7 +105,9 @@ bool NavMesh::init_nav_mesh() {
   }
 }
 
-
+/**
+ * Function to return geomnode for the navigation mesh.
+ */
 PT(GeomNode) NavMesh::draw_nav_mesh_geom() {
 
   PT(GeomVertexData) vdata;
@@ -177,10 +188,6 @@ PT(GeomNode) NavMesh::draw_nav_mesh_geom() {
 
   return node;
 }
-
-
-
-
 
 /**
  * Tells the BamReader how to create objects of type NavMesh.
@@ -365,7 +372,6 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _params.detailVertsCount = detail_vert_count;
   _params.detailTris = detail_tris;
   _params.detailTriCount = detail_tri_count;
-
 
   _params.walkableHeight = walkable_height;
   _params.walkableRadius = walkable_radius;
