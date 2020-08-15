@@ -368,9 +368,7 @@ class FilterManager(DirectObject):
         self.nextsort += 1
         return buffer
 
-    # Disable unused variable warning to avoid API change
-    # pylint: disable=unused-argument
-    def windowEvent(self, win):
+    def windowEvent(self, _win):
         """ When the window changes size, automatically resize all buffers """
         self.resizeBuffers()
 
