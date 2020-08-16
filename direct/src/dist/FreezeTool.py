@@ -1721,6 +1721,8 @@ class Freezer:
 
     def generateRuntimeFromStub(self, target, stub_file, use_console, fields={},
                                 log_append=False):
+        self.__replacePaths()
+
         # We must have a __main__ module to make an exe file.
         if not self.__writingModule('__main__'):
             message = "Can't generate an executable without a __main__ module."
