@@ -88,6 +88,7 @@ void NavMeshBuilder::add_vertex(float x, float y, float z, int &cap) {
   *dst++ = y * _scale;
   *dst++ = z * _scale;
   _vert_count++;
+  _vert_capacity = cap;
 }
 
 /**
@@ -108,7 +109,60 @@ void NavMeshBuilder::add_triangle(int a, int b, int c, int &cap) {
   *dst++ = b;
   *dst++ = c;
   _tri_count++;
+  _tri_capacity = cap;
 }
+
+/**
+ * This function adds a custom polygon with three vertices to the input geometry.
+ */
+void NavMeshBuilder::add_polygon(LPoint3 a, LPoint3 b, LPoint3 c) {
+
+  int v1, v2, v3;
+
+  LVector3 v = {a[0], a[1], a[2]};
+  if (_vertex_map.find(v) == _vertex_map.end()) {
+    add_vertex(v[0], v[2], -v[1], _vert_capacity); //if input model is originally z-up
+    //add_vertex(v[0], v[1], v[2], _vert_capacity); //if input model is originally y-up
+    _vertex_map[v] = index_temp++;
+    _vertex_vector.push_back(v);
+  }
+
+  v1 = _vertex_map[v];
+
+  v = {b[0], b[1], b[2]};
+  if (_vertex_map.find(v) == _vertex_map.end()) {
+    add_vertex(v[0], v[2], -v[1], _vert_capacity); //if input model is originally z-up
+    //add_vertex(v[0], v[1], v[2], _vert_capacity); //if input model is originally y-up
+    _vertex_map[v] = index_temp++;
+    _vertex_vector.push_back(v);
+  }
+
+  v2 = _vertex_map[v];
+
+  v = {c[0], c[1], c[2]};
+  if (_vertex_map.find(v) == _vertex_map.end()) {
+    add_vertex(v[0], v[2], -v[1], _vert_capacity); //if input model is originally z-up
+    //add_vertex(v[0], v[1], v[2], _vert_capacity); //if input model is originally y-up
+    _vertex_map[v] = index_temp++;
+    _vertex_vector.push_back(v);
+  }
+
+  v3 = _vertex_map[v];
+
+  LVector3 xvx = { float(v1 + 1), float(v2 + 1), float(v3 + 1) };
+  _face_vector.push_back(xvx);
+  add_triangle(v1, v2, v3, _tri_capacity);
+
+}
+
+/**
+ * This function adds a custom polygon with equal to or more than three vertices to the input geometry.
+ */
+// void NavMeshBuilder::add_polygon(std::vector<LVector3> p) {
+//   for (int i = 2; i < p.size(); ++i) {
+//     add_polygon(p[i-2], p[i-1], p[i]);
+//   }
+// }
 
 /**
  * Function to build vertex array and triangles array from a geom.
@@ -294,24 +348,6 @@ void NavMeshBuilder::cleanup()
   _dmesh = 0;
   
 }
-
-/**
- * Function to set partition type for the navigation mesh.
- */
-// void NavMeshBuilder::set_partition_type(std::string partition) {
-//   if (downcase(partition) == "watershed") {
-//     _partition_type = SAMPLE_PARTITION_WATERSHED;
-//     return;
-//   }
-//   if (downcase(partition) == "monotone") {
-//     _partition_type = SAMPLE_PARTITION_MONOTONE;
-//     return;
-//   }
-//   if (downcase(partition) == "layer") {
-//     _partition_type = SAMPLE_PARTITION_LAYERS;
-//     return;
-//   }
-// }
 
 /**
  * Function to reset common settings to default values.
