@@ -96,6 +96,14 @@ get_file_endian() const {
 }
 
 /**
+ * Returns the level of compression for textures in the .bam.
+ */
+INLINE BamReader::BamTexCompressionLv BamReader::
+get_texture_compression_level() const {
+  return _tex_compression_level;
+}
+
+/**
  * Returns true if the file stores all "standard" floats as 64-bit doubles, or
  * false if they are 32-bit floats.  This is determined by the compilation
  * flags of the version of Panda that generated this file.

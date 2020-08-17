@@ -133,6 +133,10 @@ init() {
     _file_stdfloat_double = scan.get_bool();
   }
 
+  if(_file_minor >= 46) {
+    _tex_compression_level = (BamTexCompressionLv)scan.get_uint8();
+  }
+
   if (scan.get_current_index() > header.get_length()) {
     bam_cat.error()
       << "Bam header is too short.\n";

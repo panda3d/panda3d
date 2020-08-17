@@ -69,6 +69,12 @@ PUBLISHED:
     BTM_basename,
     BTM_rawdata
   };
+
+  // Level of compression for textures in the .bam
+  enum BamTexCompressionLv{
+    BTC_off,
+    BTC_on,
+  };
 };
 
 EXPCL_PANDA_PUTIL std::ostream &operator << (std::ostream &out, BamEnums::BamEndian be);
@@ -79,4 +85,6 @@ EXPCL_PANDA_PUTIL std::ostream &operator << (std::ostream &out, BamEnums::BamObj
 EXPCL_PANDA_PUTIL std::ostream &operator << (std::ostream &out, BamEnums::BamTextureMode btm);
 EXPCL_PANDA_PUTIL std::istream &operator >> (std::istream &in, BamEnums::BamTextureMode &btm);
 
+EXPCL_PANDA_PUTIL std::ostream &operator << (std::ostream &out, BamEnums::BamTexCompressionLv btc);
+EXPCL_PANDA_PUTIL std::istream &operator >> (std::istream &in, BamEnums::BamTexCompressionLv &btc);
 #endif

@@ -15,6 +15,7 @@
 
 #include "pandabase.h"
 #include "texture.h"
+#include "compress_string.h"
 #include "config_gobj.h"
 #include "config_putil.h"
 #include "texturePool.h"
@@ -47,8 +48,10 @@
 #include <squish.h>
 #endif  // HAVE_SQUISH
 
+#include <algorithm>
 #include <stddef.h>
 
+using std::copy;
 using std::endl;
 using std::istream;
 using std::max;
@@ -9845,7 +9848,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
 
   // If we are also including the texture's image data, then stuff it in here.
   if (has_rawdata) {
-    do_write_datagram_rawdata(cdata, manager, me);
+    (cdata, manager, me);
   }
 }
 
@@ -10056,6 +10059,10 @@ do_write_datagram_rawdata(CData *cdata, BamWriter *manager, Datagram &me) {
   me.add_uint8(cdata->_component_width);
   me.add_uint8(cdata->_ram_image_compression);
 
+  if(manager->get_file_minor_ver() >= 46) {
+    me.add_uint8(manager->get_tex_compress_level());
+  }
+
   if (cdata->_ram_images.empty() && cdata->_has_clear_color &&
       manager->get_file_minor_ver() < 45) {
     // For older .bam versions that don't support clear colors, make up a RAM
@@ -10077,8 +10084,17 @@ do_write_datagram_rawdata(CData *cdata, BamWriter *manager, Datagram &me) {
     me.add_uint8(cdata->_ram_images.size());
     for (size_t n = 0; n < cdata->_ram_images.size(); ++n) {
       me.add_uint32(cdata->_ram_images[n]._page_size);
-      me.add_uint32(cdata->_ram_images[n]._image.size());
-      me.append_data(cdata->_ram_images[n]._image, cdata->_ram_images[n]._image.size());
+
+      // Only write the size of the image data written to bam.
+      if(manager->get_tex_compress_level() == BamEnums::BTC_on) {
+        string raw_image = cdata->_ram_images[n]._image.get_data();
+        string compressed_image = compress_string(raw_image, 6);
+        me.add_uint32(compressed_image.length());
+        me.append_data(compressed_image.data(), compressed_image.length());
+      } else {
+        me.add_uint32(cdata->_ram_images[n]._image.size());
+        me.append_data(cdata->_ram_images[n]._image, cdata->_ram_images[n]._image.size());
+      }
     }
   }
 }
@@ -10349,20 +10365,27 @@ do_fillin_rawdata(CData *cdata, DatagramIterator &scan, BamReader *manager) {
       cdata->_ram_images[n]._page_size = scan.get_uint32();
     }
 
-    // fill the cdata->_image buffer with image data
-    size_t u_size = scan.get_uint32();
+    // fill the cdata->_image buffer with image data.
+    // Decompress if neccesary
+    size_t read_size = scan.get_uint32();
 
     // Protect against large allocation.
-    if (u_size > scan.get_remaining_size()) {
+    if (read_size > scan.get_remaining_size()) {
       gobj_cat.error()
         << "RAM image " << n << " extends past end of datagram, is texture corrupt?\n";
       return;
     }
 
-    PTA_uchar image = PTA_uchar::empty_array(u_size, get_class_type());
-    scan.extract_bytes(image.p(), u_size);
+    PTA_uchar image_data = PTA_uchar::empty_array(read_size, get_class_type());
+    scan.extract_bytes(image_data.p(), read_size);
 
-    cdata->_ram_images[n]._image = image;
+    if(manager->get_texture_compression_level() != BamEnums::BTC_off) {
+      string decompressed = decompress_string(image_data.get_data());
+      image_data.resize(decompressed.length());
+      image_data.set_data(decompressed);
+    }
+
+    cdata->_ram_images[n]._image = image_data;
   }
   cdata->_loaded_from_image = true;
   cdata->inc_image_modified();

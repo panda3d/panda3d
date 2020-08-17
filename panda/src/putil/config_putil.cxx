@@ -89,6 +89,18 @@ ConfigVariableEnum<BamEnums::BamTextureMode> bam_texture_mode
  PRC_DESC("Set this to specify how textures should be written into Bam files."
           "See the panda source or documentation for available options."));
 
+ConfigVariableEnum<BamEnums::BamTexCompressionLv> bam_tex_compression_level
+("bam-tex-compression-level",
+ #ifndef HAVE_ZLIB
+   BamEnums::BTC_off,
+ #else
+   BamEnums::BTC_on,
+ #endif
+ PRC_DESC("Set this to BTC_on to compress textures on the fly as they are "
+          "being written into bam files. Specifically, this changes the "
+          "meaning of set_compression(BamEnums::BC_default) to BTC_on."
+          "This variable will be BTC_off in case ZLib is not found."));
+
 ConfigureFn(config_putil) {
   init_libputil();
 }

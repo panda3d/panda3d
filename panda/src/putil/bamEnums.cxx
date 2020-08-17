@@ -122,3 +122,33 @@ operator >> (istream &in, BamEnums::BamTextureMode &btm) {
 
   return in;
 }
+
+ostream &
+operator << (ostream &out, BamEnums::BamTexCompressionLv btc) {
+  switch (btc) {
+  case BamEnums::BTC_off:
+    return out << "off";
+
+  case BamEnums::BTC_on:
+    return out << "on";
+  }
+
+  return out << "**invalid BamEnums::BamTexCompressionLv (" << (int)btc << ")**";
+}
+
+istream &
+operator >> (istream &in, BamEnums::BamTexCompressionLv &btc) {
+  string word;
+  in >> word;
+
+  if (cmp_nocase(word, "off") == 0) {
+    btc = BamEnums::BTC_off;
+  } else if (cmp_nocase(word, "on") == 0) {
+    btc = BamEnums::BTC_on;
+  } else {
+    util_cat->error() << "Invalid BamEnums::BamTexCompressionLv value: " << word << "\n";
+    btc = BamEnums::BTC_off;
+  }
+
+  return in;
+}
