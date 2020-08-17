@@ -1,6 +1,5 @@
-#ifndef __BUFFEREDREADER_GM_H__
-#define __BUFFEREDREADER_GM_H__
-
+#ifndef BUFFERED_DATAGRAMREADER_H
+#define BUFFERED_DATAGRAMREADER_H
 
 #include "ringbuffer.h"
 #include "datagram.h"
@@ -91,4 +90,4 @@ public:
 
 #include "buffered_datagramreader.I"
 
-#endif //__BUFFEREDREADER_GM_H__
+#endif // BUFFERED_DATAGRAMREADER_H

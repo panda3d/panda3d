@@ -1,5 +1,5 @@
-#ifndef __BufferedWriter_H__
-#define __BufferedWriter_H__
+#ifndef BufferedWriter_H
+#define BufferedWriter_H
 
 #include "ringbuffer.h"
 /**
@@ -126,4 +126,4 @@ inline int Buffered_DatagramWriter::AddData(const void * data, size_t len)
 
   return answer;
 }
-#endif //__BufferedWriter_H__
+#endif //BufferedWriter_H

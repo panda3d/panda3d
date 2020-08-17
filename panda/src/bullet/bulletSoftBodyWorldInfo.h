@@ -11,8 +11,8 @@
  * @date 2010-03-04
  */
 
-#ifndef __BULLET_SOFT_BODY_WORLD_INFO_H__
-#define __BULLET_SOFT_BODY_WORLD_INFO_H__
+#ifndef BULLETSOFTBODYWORLDINFO_H
+#define BULLETSOFTBODYWORLDINFO_H
 
 #include "pandabase.h"
 
@@ -60,4 +60,4 @@ private:
 
 #include "bulletSoftBodyWorldInfo.I"
 
-#endif // __BULLET_SOFT_BODY_WORLD_INFO_H__
+#endif // BULLETSOFTBODYWORLDINFO_H

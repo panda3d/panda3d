@@ -1,5 +1,5 @@
-#ifndef __TIME_BASE_H__
-#define __TIME_BASE_H__
+#ifndef TIME_BASE_H
+#define TIME_BASE_H
 /*
  * Functions To support General Time Managment.  And to allow for cross
  * platform use.  Today Really Two Base classes and one convience class
@@ -85,4 +85,4 @@ inline int gettimeofday(struct timeval *tv, void * trash)
 #include "time_general.h"
 #include "time_out.h"
 
-#endif //__TIME_BASE_H__
+#endif //TIME_BASE_H
