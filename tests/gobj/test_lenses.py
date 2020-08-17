@@ -1,4 +1,4 @@
-from panda3d.core import PerspectiveLens, Point3, Point2
+from panda3d.core import PerspectiveLens, Point3, Point2, CS_zup_right
 
 
 def test_perspectivelens_extrude():
@@ -75,3 +75,25 @@ def test_perspectivelens_project():
 
     assert lens.project((100, 100, 0), point)
     assert point.almost_equal((1, 0), 0.001)
+
+
+def test_perspectivelens_far_inf():
+    lens = PerspectiveLens()
+    lens.set_fov(90, 90)
+    lens.set_near_far(2, float("inf"))
+    lens.coordinate_system = CS_zup_right
+
+    mat = lens.get_projection_mat()
+    assert mat[1][2] == 1
+    assert mat[3][2] == -4
+
+
+def test_perspectivelens_near_inf():
+    lens = PerspectiveLens()
+    lens.set_fov(90, 90)
+    lens.set_near_far(float("inf"), 2)
+    lens.coordinate_system = CS_zup_right
+
+    mat = lens.get_projection_mat()
+    assert mat[1][2] == -1
+    assert mat[3][2] == 4
