@@ -89,3 +89,31 @@ def test_vec2_compare():
     assert Vec2(1, 0).compare_to(Vec2(0, 1)) == 1
     assert Vec2(0, 1).compare_to(Vec2(1, 0)) == -1
     assert Vec2(0, 1).compare_to(Vec2(0, 1)) == 0
+
+
+def test_vec2_nan():
+    nan = float("nan")
+    inf = float("inf")
+    assert not Vec2F(0, 0).is_nan()
+    assert not Vec2F(1, 0).is_nan()
+    assert Vec2F(nan, 0).is_nan()
+    assert Vec2F(0, nan).is_nan()
+    assert Vec2F(nan, nan).is_nan()
+    assert Vec2F(-nan, 0).is_nan()
+    assert Vec2F(-nan, nan).is_nan()
+    assert Vec2F(inf, nan).is_nan()
+    assert not Vec2F(inf, 0).is_nan()
+    assert not Vec2F(inf, inf).is_nan()
+    assert not Vec2F(-inf, 0).is_nan()
+
+    assert not Vec2D(0, 0).is_nan()
+    assert not Vec2D(1, 0).is_nan()
+    assert Vec2D(nan, 0).is_nan()
+    assert Vec2D(0, nan).is_nan()
+    assert Vec2D(nan, nan).is_nan()
+    assert Vec2D(-nan, 0).is_nan()
+    assert Vec2D(-nan, nan).is_nan()
+    assert Vec2D(inf, nan).is_nan()
+    assert not Vec2D(inf, 0).is_nan()
+    assert not Vec2D(inf, inf).is_nan()
+    assert not Vec2D(-inf, 0).is_nan()

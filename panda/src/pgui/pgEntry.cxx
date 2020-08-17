@@ -203,6 +203,11 @@ press(const MouseWatcherParameter &param, bool background) {
 
       ButtonHandle button = param.get_button();
 
+      if (button == KeyboardButton::tab()) {
+        // Tab. Ignore the entry.
+        return;
+      }
+
       if (button == MouseButton::one() ||
           button == MouseButton::two() ||
           button == MouseButton::three() ||

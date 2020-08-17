@@ -1333,7 +1333,8 @@ class Freezer:
         for moduleName, module in list(self.mf.modules.items()):
             if module.__code__:
                 origPathname = module.__code__.co_filename
-                replace_paths.append((origPathname, moduleName))
+                if origPathname:
+                    replace_paths.append((origPathname, moduleName))
         self.mf.replace_paths = replace_paths
 
         # Now that we have built up the replacement mapping, go back
@@ -1721,6 +1722,8 @@ class Freezer:
 
     def generateRuntimeFromStub(self, target, stub_file, use_console, fields={},
                                 log_append=False):
+        self.__replacePaths()
+
         # We must have a __main__ module to make an exe file.
         if not self.__writingModule('__main__'):
             message = "Can't generate an executable without a __main__ module."
