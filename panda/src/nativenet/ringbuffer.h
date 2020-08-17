@@ -11,14 +11,9 @@ protected:
   inline char *GetBufferOpen(void);
   inline void ForceWindowSlide(void);
 
-#define FastGetMessageHead() (_Buffer + _StartPos)
-#define FastAmountBeffered() (_EndPos - _StartPos)
-
-  inline bool PutFast(const char * data, size_t len);
-
 public:
   inline size_t AmountBuffered(void);
-  inline size_t BufferAvailabe(void);
+  inline size_t BufferAvailable(void);
   inline void ResetContent(void);
 
   inline RingBuffer(size_t in_size = 4096);
