@@ -43,17 +43,14 @@ ConfigVariableInt navigation_sample_config_variable
 void
 init_libnavigation() {
   
-  std::cout<<"\nCalled init_libnavigation\n";
   static bool initialized = false;
   if (initialized) {
     return;
   }
   initialized = true;
-  std::cout<<"\nCalling init_type\n";
   NavMesh::init_type();
   NavMeshNode::init_type();
   
-  std::cout<<"\nCalling register_with_read_factory\n";
   // Register factory functions for constructing objects from .bam files
   NavMeshNode::register_with_read_factory();
   NavMesh::register_with_read_factory();

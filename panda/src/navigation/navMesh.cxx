@@ -15,10 +15,14 @@
 #include "navMesh.h"
 #include "geom.h"
 #include "geomTrifans.h"
+#include "config_navigation.h"
 #include <iostream>
 
 TypeHandle NavMesh::_type_handle;
 
+/**
+ * NavMesh constructor to initialize member variables.
+ */
 NavMesh::NavMesh():
   _nav_mesh(0) {}
 
@@ -39,7 +43,8 @@ NavMesh::NavMesh(dtNavMesh *nav_mesh) {
  */
 NavMesh::NavMesh(NavMeshParams mesh_params):
   _nav_mesh(0) {
-  memset(&(_params), 0, sizeof(_params));
+  //memset(&(_params), 0, sizeof(_params));
+  _params = {};
 
   _params.verts = mesh_params.verts;
   _params.vertCount = mesh_params.vert_count;
@@ -79,11 +84,11 @@ NavMesh::NavMesh(NavMeshParams mesh_params):
  * Function to build navigation mesh from the parameters.
  */
 bool NavMesh::init_nav_mesh() {
-	unsigned char *nav_data = 0;
+  unsigned char *nav_data = 0;
   int nav_data_size = 0;
 
   if (!dtCreateNavMeshData(&_params, &nav_data, &nav_data_size)) {
-    std::cout<<"\nCould not build Detour navmesh.\n";
+    navigation_cat.error() << "\nCould not build Detour navmesh.\n";
     return false;
   }
 
@@ -91,7 +96,7 @@ bool NavMesh::init_nav_mesh() {
 
   if (!_nav_mesh) {
     dtFree(nav_data);
-    std::cout<<"\nCould not create Detour navmesh\n";
+    navigation_cat.error() << "\nCould not create Detour navmesh\n";
     return false;
   }
 
@@ -100,7 +105,7 @@ bool NavMesh::init_nav_mesh() {
   status = _nav_mesh->init(nav_data, nav_data_size, DT_TILE_FREE_DATA);
   if (dtStatusFailed(status)) {
     dtFree(nav_data);
-    std::cout<<"\nCould not init Detour navmesh\n";
+    navigation_cat.error() << "\nCould not init Detour navmesh\n";
     return false;
   }
 }
@@ -112,26 +117,17 @@ PT(GeomNode) NavMesh::draw_nav_mesh_geom() {
 
   PT(GeomVertexData) vdata;
   vdata = new GeomVertexData("vertexInfo", GeomVertexFormat::get_v3c4(), Geom::UH_static);
-  std::cout << "\nJust degbugging for navMesh: navmesh vert count: " << _params.vertCount << "\n";
   vdata->set_num_rows(_params.vertCount);
 
   GeomVertexWriter vertex(vdata, "vertex");
   GeomVertexWriter colour(vdata, "color");
 
   const int nvp = _params.nvp;
-  std::cout << "nvp: " << nvp << std::endl;
   const float cs = _params.cs;
-  std::cout << "cs: " << cs << std::endl;
   const float ch = _params.ch;
-  std::cout << "ch: " << ch << std::endl;
   const float* orig = _params.bmin;
-  std::cout << "orig: " << orig[0] << "\t" << orig[1] << "\t" << orig[2] << std::endl;
-
-  std::cout << "NavMesh poly count: " << _params.polyCount << std::endl;
-  std::cout << "NavMesh vert count: " << _params.vertCount << std::endl;
-
+  
   for (int i = 0;i < _params.vertCount * 3;i += 3) {
-
     const unsigned short* v = &_params.verts[i];
 
     //convert to world space
@@ -183,8 +179,6 @@ PT(GeomNode) NavMesh::draw_nav_mesh_geom() {
   polymeshgeom->add_primitive(prim);
 
   node->add_geom(polymeshgeom);
-  std::cout << "Number of Polygons: " << _params.polyCount << std::endl;
-
 
   return node;
 }
@@ -194,7 +188,6 @@ PT(GeomNode) NavMesh::draw_nav_mesh_geom() {
  */
 void NavMesh::
 register_with_read_factory() {
-  std::cout<<"\nCalled NavMesh::register_with_read_factory()\n";
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
