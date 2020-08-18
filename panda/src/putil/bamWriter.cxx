@@ -102,8 +102,8 @@ BamWriter(DatagramSink *target) :
   _file_texture_mode = bam_texture_mode;
 
   if(_file_minor >= 46) {
-    _tex_compression_level = bam_tex_compression_level;
-  } else _tex_compression_level = BamEnums::BTC_off;
+    _tex_compression_format = bam_tex_compression_format;
+  } else _tex_compression_format = BamEnums::BTC_off;
 }
 
 /**
@@ -180,7 +180,7 @@ init() {
   }
 
   // Write out whether texture rawdata will be compressed in .bam
-  header.add_uint8(_tex_compression_level);
+  header.add_uint8(_tex_compression_format);
 
   if (!_target->put_datagram(header)) {
     util_cat.error()

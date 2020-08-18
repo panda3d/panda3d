@@ -134,7 +134,15 @@ init() {
   }
 
   if(_file_minor >= 46) {
-    _tex_compression_level = (BamTexCompressionLv)scan.get_uint8();
+    _tex_compression_format = (BamTexCompressionFormat)scan.get_uint8();
+  }
+
+  if(_tex_compression_format == BTC_zlib) {
+#ifndef HAVE_ZLIB
+    bam_cat.error()
+      << "This program can not decompress using zlib"
+      << std::endl;
+#endif
   }
 
   if (scan.get_current_index() > header.get_length()) {

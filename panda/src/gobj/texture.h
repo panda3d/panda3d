@@ -749,7 +749,6 @@ protected:
   bool do_has_compression(const CData *cdata) const;
   virtual bool do_has_ram_image(const CData *cdata) const;
   virtual bool do_has_uncompressed_ram_image(const CData *cdata) const;
-
   CPTA_uchar do_get_ram_image(CData *cdata);
   CPTA_uchar do_get_uncompressed_ram_image(CData *cdata);
   void do_set_simple_ram_image(CData *cdata, CPTA_uchar image, int x_size, int y_size);

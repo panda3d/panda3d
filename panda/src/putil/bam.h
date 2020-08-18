@@ -66,6 +66,6 @@ static const unsigned short _bam_minor_ver = 44;
 // Bumped to minor version 43 on 2018-12-06 to expand BillboardEffect and CompassEffect.
 // Bumped to minor version 44 on 2018-12-23 to rename CollisionTube to CollisionCapsule.
 // Bumped to minor version 45 on 2020-03-18 to add Texture::_clear_color.
-// Bumped to minor version 46 on 2020-08-   to add BamWriter::TexCompressionLv.
+// Bumped to minor version 46 on 2020-08-   to add BamEnums::TexCompressionFormat.
 
 #endif

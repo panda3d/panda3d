@@ -9848,7 +9848,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
 
   // If we are also including the texture's image data, then stuff it in here.
   if (has_rawdata) {
-    (cdata, manager, me);
+    do_write_datagram_rawdata(cdata, manager, me);
   }
 }
 
@@ -10060,7 +10060,7 @@ do_write_datagram_rawdata(CData *cdata, BamWriter *manager, Datagram &me) {
   me.add_uint8(cdata->_ram_image_compression);
 
   if(manager->get_file_minor_ver() >= 46) {
-    me.add_uint8(manager->get_tex_compress_level());
+    me.add_uint8(manager->get_tex_compression_format());
   }
 
   if (cdata->_ram_images.empty() && cdata->_has_clear_color &&
@@ -10086,7 +10086,7 @@ do_write_datagram_rawdata(CData *cdata, BamWriter *manager, Datagram &me) {
       me.add_uint32(cdata->_ram_images[n]._page_size);
 
       // Only write the size of the image data written to bam.
-      if(manager->get_tex_compress_level() == BamEnums::BTC_on) {
+      if(manager->get_tex_compression_format() == BamEnums::BTC_zlib) {
         string raw_image = cdata->_ram_images[n]._image.get_data();
         string compressed_image = compress_string(raw_image, 6);
         me.add_uint32(compressed_image.length());
@@ -10379,7 +10379,7 @@ do_fillin_rawdata(CData *cdata, DatagramIterator &scan, BamReader *manager) {
     PTA_uchar image_data = PTA_uchar::empty_array(read_size, get_class_type());
     scan.extract_bytes(image_data.p(), read_size);
 
-    if(manager->get_texture_compression_level() != BamEnums::BTC_off) {
+    if(manager->get_tex_compression_format() == BamEnums::BTC_zlib) {
       string decompressed = decompress_string(image_data.get_data());
       image_data.resize(decompressed.length());
       image_data.set_data(decompressed);
