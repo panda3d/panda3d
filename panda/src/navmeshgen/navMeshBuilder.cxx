@@ -16,6 +16,7 @@
 #include "DetourNavMesh.h"
 #include "DetourNavMeshBuilder.h"
 #include "pta_LVecBase3.h"
+#include "config_navmeshgen.h"
 
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -56,15 +57,12 @@ NavMeshBuilder::NavMeshBuilder() :
   _face_vector.clear();
   _ctx = new rcContext;
   reset_common_settings();
-  //_crowd = dtAllocCrowd();
 }
 
 NavMeshBuilder::~NavMeshBuilder() {
   delete[] _verts;
   delete[] _normals;
   delete[] _tris;
-
-  //dtFreeCrowd(_crowd);
 
   cleanup();
 
@@ -171,7 +169,7 @@ void NavMeshBuilder::add_polygon(PTA_LVecBase3f vec) {
 bool NavMeshBuilder::from_geom(PT(Geom) geom) {
   int vcap = 0;
   int tcap = 0;
-  //CPT(geom_pt) = &geom;
+  
   process_geom(geom, vcap, tcap);
   _loaded = true;
   return true;
@@ -381,8 +379,8 @@ static const int NAVMESHSET_VERSION = 1;
 PT(NavMesh) NavMeshBuilder::build() {
   if (!loaded_geom()) {
 
-    _ctx->log(RC_LOG_ERROR, "buildNavigation: Input mesh is not specified.");
-    std::cout << "\nbuildNavigation: Input mesh is not specified.\n";
+    _ctx->log(RC_LOG_ERROR, "build(): Input mesh is not specified.");
+    navmeshgen_cat.error() << "\nbuild(): Input mesh is not specified.\n";
 
     return _nav_mesh_obj;
   }
@@ -397,8 +395,8 @@ PT(NavMesh) NavMeshBuilder::build() {
   const int nverts = get_vert_count();
   const int *tris = get_tris();
   const int ntris = get_tri_count();
-  std::cout << "BMIN: " << bmin[0] << " " << bmin[1] << std::endl;
-  std::cout << "BMAX: " << bmax[0] << " " << bmax[1] << std::endl;
+  navmeshgen_cat.info() << "BMIN: " << bmin[0] << " " << bmin[1] << std::endl;
+  navmeshgen_cat.info() << "BMAX: " << bmax[0] << " " << bmax[1] << std::endl;
   //
   // Step 1. Initialize build config.
   //
@@ -431,12 +429,12 @@ PT(NavMesh) NavMeshBuilder::build() {
   // Start the build process. 
   _ctx->startTimer(RC_TIMER_TOTAL);
 
-  _ctx->log(RC_LOG_PROGRESS, "Building navigation:");
-  std::cout << "\nBuilding navigation:\n";
+  _ctx->log(RC_LOG_PROGRESS, "Building navigation mesh:");
+  navmeshgen_cat.info() << "\nBuilding navigation mesh:\n";
   _ctx->log(RC_LOG_PROGRESS, " - %d x %d cells", _cfg.width, _cfg.height);
-  std::cout << "\n - " << _cfg.width << " x " << _cfg.height << " cells\n";
+  navmeshgen_cat.info() << "\n - " << _cfg.width << " x " << _cfg.height << " cells\n";
   _ctx->log(RC_LOG_PROGRESS, " - %.1fK verts, %.1fK tris", nverts / 1000.0f, ntris / 1000.0f);
-  std::cout << "\n - " << nverts / 1000.0f << "K vetrs, " << ntris / 1000.0f << "K tris\n";
+  navmeshgen_cat.info() << "\n - " << nverts / 1000.0f << "K vetrs, " << ntris / 1000.0f << "K tris\n";
 
   //
   // Step 2. Rasterize input polygon soup.
@@ -445,13 +443,13 @@ PT(NavMesh) NavMeshBuilder::build() {
   // Allocate voxel heightfield where we rasterize our input data to.
   _solid = rcAllocHeightfield();
   if (!_solid) {
-    _ctx->log(RC_LOG_ERROR, "buildNavigation: Out of memory 'solid'.");
-    std::cout << "\nbuildNavigation: Out of memory 'solid'.\n";
+    _ctx->log(RC_LOG_ERROR, "build(): Out of memory 'solid'.");
+    navmeshgen_cat.error() << "\nbuild(): Out of memory 'solid'.\n";
     return _nav_mesh_obj;
   }
   if (!rcCreateHeightfield(_ctx, *_solid, _cfg.width, _cfg.height, _cfg.bmin, _cfg.bmax, _cfg.cs, _cfg.ch)) {
-    _ctx->log(RC_LOG_ERROR, "buildNavigation: Could not create solid heightfield.");
-    std::cout << "\nbuildNavigation: Could not create solid heightfield.\n";
+    _ctx->log(RC_LOG_ERROR, "build(): Could not create solid heightfield.");
+    navmeshgen_cat.error() << "\nbuild(): Could not create solid heightfield.\n";
     return _nav_mesh_obj;
   }
 
@@ -460,8 +458,8 @@ PT(NavMesh) NavMeshBuilder::build() {
   // and array which can hold the max number of triangles you need to process.
   _triareas = new unsigned char[ntris];
   if (!_triareas) {
-    _ctx->log(RC_LOG_ERROR, "buildNavigation: Out of memory '_triareas' (%d).", ntris);
-    std::cout << "\nbuildNavigation: Out of memory '_triareas' (" << ntris << ").\n";
+    _ctx->log(RC_LOG_ERROR, "build(): Out of memory '_triareas' (%d).", ntris);
+    navmeshgen_cat.error() << "\nbuild(): Out of memory '_triareas' (" << ntris << ").\n";
     return _nav_mesh_obj;
   }
 
@@ -473,8 +471,8 @@ PT(NavMesh) NavMeshBuilder::build() {
   rcMarkWalkableTriangles(_ctx, _cfg.walkableSlopeAngle, verts, nverts, tris, ntris, _triareas);
 
   if (!rcRasterizeTriangles(_ctx, verts, nverts, tris, _triareas, ntris, *_solid, _cfg.walkableClimb)) {
-    _ctx->log(RC_LOG_ERROR, "buildNavigation: Could not rasterize triangles.");
-    std::cout << "\nbuildNavigation: Could not rasterize triangles.\n";
+    _ctx->log(RC_LOG_ERROR, "build(): Could not rasterize triangles.");
+    navmeshgen_cat.error() << "\nbuild(): Could not rasterize triangles.\n";
     return _nav_mesh_obj;
   }
 
@@ -503,21 +501,21 @@ PT(NavMesh) NavMeshBuilder::build() {
   // between walkable cells will be calculated.
   _chf = rcAllocCompactHeightfield();
   if (!_chf) {
-    _ctx->log(RC_LOG_ERROR, "buildNavigation: Out of memory 'chf'.");
-    std::cout << "\nbuildNavigation: Out of memory 'chf'.\n";
+    _ctx->log(RC_LOG_ERROR, "build(): Out of memory 'chf'.");
+    navmeshgen_cat.error() << "\nbuild(): Out of memory 'chf'.\n";
     return _nav_mesh_obj;
   }
   if (!rcBuildCompactHeightfield(_ctx, _cfg.walkableHeight, _cfg.walkableClimb, *_solid, *_chf)) {
-    _ctx->log(RC_LOG_ERROR, "buildNavigation: Could not build compact data.");
-    std::cout << "\nbuildNavigation: Could not build compact data.\n";
+    _ctx->log(RC_LOG_ERROR, "build(): Could not build compact data.");
+    navmeshgen_cat.error() << "\nbuild(): Could not build compact data.\n";
     return _nav_mesh_obj;
   }
 
 
   // Erode the walkable area by agent radius.
   if (!rcErodeWalkableArea(_ctx, _cfg.walkableRadius, *_chf)) {
-    _ctx->log(RC_LOG_ERROR, "buildNavigation: Could not erode.");
-    std::cout << "\nbuildNavigation: Could not erode.\n";
+    _ctx->log(RC_LOG_ERROR, "build(): Could not erode.");
+    navmeshgen_cat.error() << "\nbuild(): Could not erode.\n";
     return _nav_mesh_obj;
   }
 
@@ -551,15 +549,15 @@ PT(NavMesh) NavMeshBuilder::build() {
   if (_partition_type == SAMPLE_PARTITION_WATERSHED) {
     // Prepare for region partitioning, by calculating distance field along the walkable surface.
     if (!rcBuildDistanceField(_ctx, *_chf)) {
-      _ctx->log(RC_LOG_ERROR, "buildNavigation: Could not build distance field.");
-      std::cout << "\nbuildNavigation: Could not build distance field.\n";
+      _ctx->log(RC_LOG_ERROR, "build(): Could not build distance field.");
+      navmeshgen_cat.error() << "\nbuild(): Could not build distance field.\n";
       return _nav_mesh_obj;
     }
 
     // Partition the walkable surface into simple regions without holes.
     if (!rcBuildRegions(_ctx, *_chf, 0, _cfg.minRegionArea, _cfg.mergeRegionArea)) {
-      _ctx->log(RC_LOG_ERROR, "buildNavigation: Could not build watershed regions.");
-      std::cout << "\nbuildNavigation: Could not build watershed regions.\n";
+      _ctx->log(RC_LOG_ERROR, "build(): Could not build watershed regions.");
+      navmeshgen_cat.error() << "\nbuild(): Could not build watershed regions.\n";
       return _nav_mesh_obj;
     }
   }
@@ -567,16 +565,16 @@ PT(NavMesh) NavMeshBuilder::build() {
     // Partition the walkable surface into simple regions without holes.
     // Monotone partitioning does not need distancefield.
     if (!rcBuildRegionsMonotone(_ctx, *_chf, 0, _cfg.minRegionArea, _cfg.mergeRegionArea)) {
-      _ctx->log(RC_LOG_ERROR, "buildNavigation: Could not build monotone regions.");
-      std::cout << "\nbuildNavigation: Could not build monotone regions.\n";
+      _ctx->log(RC_LOG_ERROR, "build(): Could not build monotone regions.");
+      navmeshgen_cat.error() << "\nbuild(): Could not build monotone regions.\n";
       return _nav_mesh_obj;
     }
   }
   else { // SAMPLE_PARTITION_LAYERS
     // Partition the walkable surface into simple regions without holes.
     if (!rcBuildLayerRegions(_ctx, *_chf, 0, _cfg.minRegionArea)) {
-      _ctx->log(RC_LOG_ERROR, "buildNavigation: Could not build layer regions.");
-      std::cout << "\nbuildNavigation: Could not build layer regions.\n";
+      _ctx->log(RC_LOG_ERROR, "build(): Could not build layer regions.");
+      navmeshgen_cat.error() << "\nbuild(): Could not build layer regions.\n";
       return _nav_mesh_obj;
     }
   }
@@ -588,13 +586,13 @@ PT(NavMesh) NavMeshBuilder::build() {
   // Create contours.
   _cset = rcAllocContourSet();
   if (!_cset) {
-    _ctx->log(RC_LOG_ERROR, "buildNavigation: Out of memory 'cset'.");
-    std::cout << "\nbuildNavigation: Out of memory 'cset'.\n";
+    _ctx->log(RC_LOG_ERROR, "build(): Out of memory 'cset'.");
+    navmeshgen_cat.error() << "\nbuild(): Out of memory 'cset'.\n";
     return _nav_mesh_obj;
   }
   if (!rcBuildContours(_ctx, *_chf, _cfg.maxSimplificationError, _cfg.maxEdgeLen, *_cset)) {
-    _ctx->log(RC_LOG_ERROR, "buildNavigation: Could not create contours.");
-    std::cout << "\nbuildNavigation: Could not create contours.\n";
+    _ctx->log(RC_LOG_ERROR, "build(): Could not create contours.");
+    navmeshgen_cat.error() << "\nbuild(): Could not create contours.\n";
     return _nav_mesh_obj;
   }
 
@@ -605,13 +603,13 @@ PT(NavMesh) NavMeshBuilder::build() {
   // Build polygon navmesh from the contours.
   _pmesh = rcAllocPolyMesh();
   if (!_pmesh) {
-    _ctx->log(RC_LOG_ERROR, "buildNavigation: Out of memory 'pmesh'.");
-    std::cout << "\nbuildNavigation: Out of memory 'pmesh'.\n";
+    _ctx->log(RC_LOG_ERROR, "build(): Out of memory 'pmesh'.");
+    navmeshgen_cat.error() << "\nbuild(): Out of memory 'pmesh'.\n";
     return _nav_mesh_obj;
   }
   if (!rcBuildPolyMesh(_ctx, *_cset, _cfg.maxVertsPerPoly, *_pmesh)) {
-    _ctx->log(RC_LOG_ERROR, "buildNavigation: Could not triangulate contours.");
-    std::cout << "\nbuildNavigation: Could not triangulate contours.\n";
+    _ctx->log(RC_LOG_ERROR, "build(): Could not triangulate contours.");
+    navmeshgen_cat.error() << "\nbuild(): Could not triangulate contours.\n";
     return _nav_mesh_obj;
   }
 
@@ -621,26 +619,26 @@ PT(NavMesh) NavMeshBuilder::build() {
 
   _dmesh = rcAllocPolyMeshDetail();
   if (!_dmesh) {
-    _ctx->log(RC_LOG_ERROR, "buildNavigation: Out of memory 'pmdtl'.");
-    std::cout << "\nbuildNavigation: Out of memory 'pmdt1'.\n";
+    _ctx->log(RC_LOG_ERROR, "build(): Out of memory 'pmdtl'.");
+    navmeshgen_cat.error() << "\nbuild(): Out of memory 'pmdt1'.\n";
     return _nav_mesh_obj;
   }
 
   if (!rcBuildPolyMeshDetail(_ctx, *_pmesh, *_chf, _cfg.detailSampleDist, _cfg.detailSampleMaxError, *_dmesh)) {
-    _ctx->log(RC_LOG_ERROR, "buildNavigation: Could not build detail mesh.");
-    std::cout << "\nbuildNavigation: Could not build detail mesh.\n";
+    _ctx->log(RC_LOG_ERROR, "build(): Could not build detail mesh.");
+    navmeshgen_cat.error() << "\nbuild(): Could not build detail mesh.\n";
     return _nav_mesh_obj;
   }
-  std::cout << "Number of vertices: " << _pmesh->nverts << std::endl;
-  std::cout << "Number of polygons: " << _pmesh->npolys << std::endl;
-  std::cout << "Number of allocated polygons: " << _pmesh->maxpolys << std::endl;
+  navmeshgen_cat.info() << "Number of vertices: " << _pmesh->nverts << std::endl;
+  navmeshgen_cat.info() << "Number of polygons: " << _pmesh->npolys << std::endl;
+  navmeshgen_cat.info() << "Number of allocated polygons: " << _pmesh->maxpolys << std::endl;
 
   // At this point the navigation mesh data is ready, you can access it from _pmesh.
   // See duDebugDrawPolyMesh or dtCreateNavMeshData as examples how to access the data.
 
 
   //
-  // (Optional) Step 8. Create Detour data from Recast poly mesh.
+  // Step 8. Create Detour data from Recast poly mesh.
   //
   // The GUI may allow more max points per polygon than Detour can handle.
   // Only build the detour navmesh if we do not exceed the limit.
@@ -710,24 +708,16 @@ PT(GeomNode) NavMeshBuilder::draw_poly_mesh_geom() {
 
   PT(GeomVertexData) vdata;
   vdata = new GeomVertexData("vertexInfo", GeomVertexFormat::get_v3c4(), Geom::UH_static);
-  std::cout << "\nJust degbugging for navMesh: _pmesh->nverts: " << _pmesh->nverts << "\n";
   vdata->set_num_rows(_pmesh->nverts);
 
   GeomVertexWriter vertex(vdata, "vertex");
   GeomVertexWriter colour(vdata, "color");
 
   const int nvp = _pmesh->nvp;
-  std::cout << "nvp: " << nvp << std::endl;
   const float cs = _pmesh->cs;
-  std::cout << "cs: " << cs << std::endl;
   const float ch = _pmesh->ch;
-  std::cout << "ch: " << ch << std::endl;
   const float* orig = _pmesh->bmin;
-  std::cout << "orig: " << orig[0] << "\t" << orig[1] << "\t" << orig[2] << std::endl;
-
-  std::cout << "_pmesh->npolys: " << _pmesh->npolys << std::endl;
-  std::cout << "_pmesh->nverts: " << _pmesh->nverts << std::endl;
-
+  
   for (int i = 0;i < _pmesh->nverts * 3;i += 3) {
 
     const unsigned short* v = &_pmesh->verts[i];
@@ -740,8 +730,7 @@ PT(GeomNode) NavMeshBuilder::draw_poly_mesh_geom() {
     vertex.add_data3(x, -z, y); //if origingally model is z-up
     //vertex.add_data3(x, y, z); //if originally model is y-up
     colour.add_data4((float)rand() / RAND_MAX, (float)rand() / RAND_MAX, (float)rand() / RAND_MAX, 1);
-    //std::cout << "index: " << i / 3 << "\t" << x << "\t" << y << "\t" << z << "\n";
-
+    
   }
 
   PT(GeomNode) node;
@@ -751,8 +740,6 @@ PT(GeomNode) NavMeshBuilder::draw_poly_mesh_geom() {
   prim = new GeomTrifans(Geom::UH_static);
 
   for (int i = 0; i < _pmesh->npolys; ++i) {
-
-
     const unsigned short* p = &_pmesh->polys[i*nvp * 2];
 
     // Iterate the vertices.
@@ -782,7 +769,5 @@ PT(GeomNode) NavMeshBuilder::draw_poly_mesh_geom() {
 
   node->add_geom(polymeshgeom);
   std::cout << "Number of Polygons: " << _pmesh->npolys << std::endl;
-
-
   return node;
 }
