@@ -16,6 +16,7 @@
 #include "DetourNavMesh.h"
 #include "DetourNavMeshBuilder.h"
 #include "pta_LVecBase3.h"
+#include "lvecBase3.h"
 #include "config_navmeshgen.h"
 
 #define _USE_MATH_DEFINES
@@ -120,7 +121,11 @@ void NavMeshBuilder::add_polygon(LPoint3 a, LPoint3 b, LPoint3 c) {
 
   LVector3 v = {a[0], a[1], a[2]};
   if (_vertex_map.find(v) == _vertex_map.end()) {
-    add_vertex(v[0], v[2], -v[1], _vert_capacity); //if input model is originally z-up
+
+    LVecBase3 vec = mat_to_y.xform_point(v);
+    add_vertex(vec[0], vec[1], vec[2], _vert_capacity);
+  
+    //add_vertex(v[0], v[2], -v[1], _vert_capacity); //if input model is originally z-up
     //add_vertex(v[0], v[1], v[2], _vert_capacity); //if input model is originally y-up
     _vertex_map[v] = index_temp++;
     _vertex_vector.push_back(v);
@@ -130,7 +135,10 @@ void NavMeshBuilder::add_polygon(LPoint3 a, LPoint3 b, LPoint3 c) {
 
   v = {b[0], b[1], b[2]};
   if (_vertex_map.find(v) == _vertex_map.end()) {
-    add_vertex(v[0], v[2], -v[1], _vert_capacity); //if input model is originally z-up
+    LVecBase3 vec = mat_to_y.xform_point(v);
+    add_vertex(vec[0], vec[1], vec[2], _vert_capacity);
+
+    //add_vertex(v[0], v[2], -v[1], _vert_capacity); //if input model is originally z-up
     //add_vertex(v[0], v[1], v[2], _vert_capacity); //if input model is originally y-up
     _vertex_map[v] = index_temp++;
     _vertex_vector.push_back(v);
@@ -140,7 +148,10 @@ void NavMeshBuilder::add_polygon(LPoint3 a, LPoint3 b, LPoint3 c) {
 
   v = {c[0], c[1], c[2]};
   if (_vertex_map.find(v) == _vertex_map.end()) {
-    add_vertex(v[0], v[2], -v[1], _vert_capacity); //if input model is originally z-up
+    LVecBase3 vec = mat_to_y.xform_point(v);
+    add_vertex(vec[0], vec[1], vec[2], _vert_capacity);
+
+    //add_vertex(v[0], v[2], -v[1], _vert_capacity); //if input model is originally z-up
     //add_vertex(v[0], v[1], v[2], _vert_capacity); //if input model is originally y-up
     _vertex_map[v] = index_temp++;
     _vertex_vector.push_back(v);
@@ -282,7 +293,10 @@ void NavMeshBuilder::process_vertex_data(const GeomVertexData *vdata, int &vcap)
     y = v[1];
     z = v[2];
     if (_vertex_map.find(v) == _vertex_map.end()) {
-      add_vertex(x, z, -y, vcap); //if input model is originally z-up
+      LVecBase3 vec = mat_to_y.xform_point(v);
+      add_vertex(vec[0], vec[1], vec[2], vcap);
+      
+      //add_vertex(x, z, -y, vcap); //if input model is originally z-up
       //add_vertex(x, y, z, vcap); //if input model is originally y-up
 
       //_vertex_map[v] = index_temp++;
@@ -686,7 +700,7 @@ PT(NavMesh) NavMeshBuilder::build() {
     mesh_params.build_bv_tree = true;
 
     mesh_params.RC_MESH_NULL_IDX = RC_MESH_NULL_IDX;
-
+    
     _nav_mesh_obj = new NavMesh(mesh_params);
 
   }
@@ -726,8 +740,11 @@ PT(GeomNode) NavMeshBuilder::draw_poly_mesh_geom() {
     const float x = orig[0] + v[0] * cs;
     const float y = orig[1] + v[1] * ch;
     const float z = orig[2] + v[2] * cs;
+    
+    LVecBase3 vec = mat_from_y.xform_point({x, y, z});
+    vertex.add_data3(vec);
 
-    vertex.add_data3(x, -z, y); //if origingally model is z-up
+    //vertex.add_data3(x, -z, y); //if origingally model is z-up
     //vertex.add_data3(x, y, z); //if originally model is y-up
     colour.add_data4((float)rand() / RAND_MAX, (float)rand() / RAND_MAX, (float)rand() / RAND_MAX, 1);
     
@@ -768,6 +785,6 @@ PT(GeomNode) NavMeshBuilder::draw_poly_mesh_geom() {
   polymeshgeom->add_primitive(prim);
 
   node->add_geom(polymeshgeom);
-  std::cout << "Number of Polygons: " << _pmesh->npolys << std::endl;
+  navmeshgen_cat.info() << "Number of Polygons: " << _pmesh->npolys << std::endl;
   return node;
 }

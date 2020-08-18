@@ -16,6 +16,7 @@
 #include "geom.h"
 #include "geomTrifans.h"
 #include "config_navigation.h"
+#include "lvecBase3.h"
 #include <iostream>
 
 TypeHandle NavMesh::_type_handle;
@@ -134,12 +135,15 @@ PT(GeomNode) NavMesh::draw_nav_mesh_geom() {
     const float x = orig[0] + v[0] * cs;
     const float y = orig[1] + v[1] * ch;
     const float z = orig[2] + v[2] * cs;
+    
 
-    vertex.add_data3(x, -z, y); //if origingally model is z-up
+    LVecBase3 vec = mat_from_y.xform_point({x, y, z});
+    vertex.add_data3(vec);
+
+    //vertex.add_data3(x, -z, y); //if origingally model is z-up
     //vertex.add_data3(x, y, z); //if originally model is y-up
+    
     colour.add_data4((float)rand() / RAND_MAX, (float)rand() / RAND_MAX, (float)rand() / RAND_MAX, 1);
-    //std::cout << "index: " << i / 3 << "\t" << x << "\t" << y << "\t" << z << "\n";
-
   }
 
   PT(GeomNode) node;
@@ -149,7 +153,6 @@ PT(GeomNode) NavMesh::draw_nav_mesh_geom() {
   prim = new GeomTrifans(Geom::UH_static);
 
   for (int i = 0; i < _params.polyCount; ++i) {
-
 
     const unsigned short* p = &_params.polys[i*nvp * 2];
 
@@ -168,8 +171,6 @@ PT(GeomNode) NavMesh::draw_nav_mesh_geom() {
         // The edge beginning with this vertex connects to 
         // polygon p[j + nvp].
       }
-      //std::cout << "p[j]: " << p[j] << std::endl;
-
     }
     prim->close_primitive();
 
@@ -286,7 +287,6 @@ make_from_bam(const FactoryParams &params) {
  */
 void NavMesh::
 fillin(DatagramIterator &scan, BamReader *manager) {
-  //NavMesh::fillin(scan, manager);
   
   int vert_count = scan.get_int32();
   int poly_count = scan.get_int32();
@@ -382,6 +382,4 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _params.buildBvTree = build_bv_tree;
 
   init_nav_mesh();
-
-
 }

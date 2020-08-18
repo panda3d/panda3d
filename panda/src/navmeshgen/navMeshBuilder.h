@@ -25,6 +25,7 @@
 #include "navMesh.h"
 #include "lpoint3.h"
 #include "pta_LVecBase3.h"
+#include "lmatrix.h"
 
 enum SamplePolyAreas {
   SAMPLE_POLYAREA_GROUND,
@@ -53,6 +54,7 @@ PUBLISHED:
     SAMPLE_PARTITION_MONOTONE,
     SAMPLE_PARTITION_LAYERS,
   };
+  
   float get_actor_radius() { return _agent_radius; }
   float get_actor_height() { return _agent_height; }
   float get_actor_max_climb() { return _agent_max_climb; }
@@ -65,7 +67,7 @@ PUBLISHED:
   float get_cell_size() { return _cell_size; }
   float get_cell_height() { return _cell_height; }
   PartitionType get_partition_type() { return _partition_type; }
-
+  
   void set_actor_height(float height) { _agent_height = height; }
   void set_actor_radius(float radius) { _agent_radius = radius; }
   void set_actor_max_climb(float climb) { _agent_max_climb = climb; }
@@ -78,7 +80,7 @@ PUBLISHED:
   void set_cell_size(float cs) { _cell_size = cs; }
   void set_cell_height(float ch) { _cell_height = ch; }
   void set_partition_type(PartitionType partition) { _partition_type = partition; }
-
+  
   MAKE_PROPERTY(_agent_radius, get_actor_radius, set_actor_radius);
   MAKE_PROPERTY(_agent_height, get_actor_height, set_actor_height);
   MAKE_PROPERTY(_agent_max_climb, get_actor_max_climb, set_actor_max_climb);
@@ -131,6 +133,11 @@ private:
   bool _loaded;
   int index_temp;
 
+  LMatrix4 mat_from_y = LMatrix4::convert_mat(CS_yup_right, CS_default);
+  LMatrix4 mat_from_z = LMatrix4::convert_mat(CS_zup_right, CS_default);
+  LMatrix4 mat_to_y = LMatrix4::convert_mat(CS_default, CS_yup_right);
+  LMatrix4 mat_to_z = LMatrix4::convert_mat(CS_default, CS_zup_right);
+
 protected:
   PT(NavMesh) _nav_mesh_obj;
   class dtNavMesh *_nav_mesh;
@@ -151,7 +158,7 @@ protected:
   float _detail_sample_dist;
   float _detail_sample_max_error;
   PartitionType _partition_type;
-
+  
   bool _filter_low_hanging_obstacles;
   bool _filter_ledge_spans;
   bool _filter_walkable_low_height_spans;
