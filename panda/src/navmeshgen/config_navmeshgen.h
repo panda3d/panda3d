@@ -22,8 +22,6 @@
 
 NotifyCategoryDecl(navmeshgen, EXPCL_NAVMESHGEN, EXPTP_NAVMESHGEN);
 
-extern ConfigVariableInt    navmeshgen_sample_config_variable;
-
 extern EXPCL_NAVMESHGEN void init_libnavmeshgen();
 
 #endif

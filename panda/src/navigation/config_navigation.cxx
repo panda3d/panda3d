@@ -31,8 +31,6 @@ ConfigureFn(config_navigation) {
   init_libnavigation();
 }
 
-ConfigVariableInt navigation_sample_config_variable
-("navigation-sample-config-variable", 25);
 
 /**
  * Initializes the library.  This must be called at least once before any of
@@ -54,7 +52,6 @@ init_libnavigation() {
   // Register factory functions for constructing objects from .bam files
   NavMeshNode::register_with_read_factory();
   NavMesh::register_with_read_factory();
-
   
 }
 
