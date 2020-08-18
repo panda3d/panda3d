@@ -28,8 +28,6 @@ ConfigureFn(config_navmeshgen) {
   init_libnavmeshgen();
 }
 
-ConfigVariableInt navmeshgen_sample_config_variable
-("navmeshgen-sample-config-variable", 25);
 
 /**
  * Initializes the library.  This must be called at least once before any of
