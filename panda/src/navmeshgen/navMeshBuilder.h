@@ -24,6 +24,7 @@
 #include "pandaSystem.h"
 #include "navMesh.h"
 #include "lpoint3.h"
+#include "pta_LVecBase3.h"
 
 enum SamplePolyAreas {
   SAMPLE_POLYAREA_GROUND,
@@ -93,7 +94,7 @@ PUBLISHED:
   int get_pmesh_max_poly_count() { return _pmesh->maxpolys; }
 
   void add_polygon(LPoint3 a, LPoint3 b, LPoint3 c);
-  // void add_polygon(std::vector<LVector3> p);
+  void add_polygon(PTA_LVecBase3f vec);
 
 private:
   float _scale;

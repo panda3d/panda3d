@@ -15,6 +15,7 @@
 #include "Recast.h"
 #include "DetourNavMesh.h"
 #include "DetourNavMeshBuilder.h"
+#include "pta_LVecBase3.h"
 
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -158,11 +159,11 @@ void NavMeshBuilder::add_polygon(LPoint3 a, LPoint3 b, LPoint3 c) {
 /**
  * This function adds a custom polygon with equal to or more than three vertices to the input geometry.
  */
-// void NavMeshBuilder::add_polygon(std::vector<LVector3> p) {
-//   for (int i = 2; i < p.size(); ++i) {
-//     add_polygon(p[i-2], p[i-1], p[i]);
-//   }
-// }
+void NavMeshBuilder::add_polygon(PTA_LVecBase3f vec) {
+  for (int i = 2; i < vec.size(); ++i) {
+    add_polygon(LPoint3(vec[i-2]), LPoint3(vec[i-1]), LPoint3(vec[i]));
+  }
+}
 
 /**
  * Function to build vertex array and triangles array from a geom.

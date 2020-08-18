@@ -45,7 +45,6 @@ public:
   
   ~NavMeshQuery();
   
-  
 };
 
 #endif // NAVMESHQUERY_H

@@ -36,7 +36,6 @@ NavMeshNode::~NavMeshNode() {}
  */
 void NavMeshNode::
 register_with_read_factory() {
-  std::cout<<"\nCalled NavMeshNode::register_with_read_factory()\n";
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
