@@ -20,6 +20,7 @@
 #include "typedWritableReferenceCount.h"
 #include "pandaFramework.h"
 #include "pandaSystem.h"
+#include "lmatrix.h"
 
 class EXPCL_NAVIGATION NavMeshParams {
 PUBLISHED:
@@ -44,11 +45,14 @@ PUBLISHED:
   float *detail_verts;          // size: detail_vert_count * 3
   unsigned char *detail_tris;   // size: detail_tri_count * 4
   int RC_MESH_NULL_IDX = 65535;
+  int input_model_coordinate_system = 0;
+
 };
 
 class EXPCL_NAVIGATION NavMesh: public TypedWritableReferenceCount
 {
 PUBLISHED:
+
   NavMesh(dtNavMesh *nav_mesh);
   NavMesh(NavMeshParams mesh_params);
   void set_nav_mesh(dtNavMesh *m) { _nav_mesh = m; }
@@ -62,6 +66,10 @@ PUBLISHED:
 private:
   dtNavMesh *_nav_mesh;
   dtNavMeshCreateParams _params;
+  LMatrix4 mat_from_y = LMatrix4::convert_mat(CS_yup_right, CS_default);
+  LMatrix4 mat_from_z = LMatrix4::convert_mat(CS_zup_right, CS_default);
+  LMatrix4 mat_to_y = LMatrix4::convert_mat(CS_default, CS_yup_right);
+  LMatrix4 mat_to_z = LMatrix4::convert_mat(CS_default, CS_zup_right);
   int RC_MESH_NULL_IDX;
   
 public:
