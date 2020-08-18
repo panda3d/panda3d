@@ -136,10 +136,7 @@ get_tex_compress_level() const {
  */
 INLINE void BamWriter::
 set_tex_compress_level(BamEnums::BamTexCompressionLv level) {
-#ifndef HAVE_ZLIB
-  _tex_compression_level = BamEnums::BTC_off;
-  return;
+#ifdef HAVE_ZLIB
+  if(_file_minor >= 46) _tex_compression_level = level;
 #endif
-
-  _tex_compression_level = level;
 }
