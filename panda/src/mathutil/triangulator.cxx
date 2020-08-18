@@ -263,7 +263,7 @@ cleanup_polygon_indices(vector_int &polygon) {
       ++pi;
     } else {
       // This index is out-of-bounds; remove it.
-      polygon.erase(_polygon.begin() + pi);
+      polygon.erase(polygon.begin() + pi);
     }
   }
 
@@ -275,11 +275,11 @@ cleanup_polygon_indices(vector_int &polygon) {
       ++pi;
     } else {
       // This vertex repeats the previous one; remove it.
-      polygon.erase(_polygon.begin() + pi);
+      polygon.erase(polygon.begin() + pi);
     }
   }
 
-  if (polygon.size() > 1 && _vertices[polygon.back()] == _vertices[_polygon.front()]) {
+  if (polygon.size() > 1 && _vertices[polygon.back()] == _vertices[polygon.front()]) {
     // The last vertex repeats the first one; remove it.
     polygon.pop_back();
   }
