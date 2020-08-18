@@ -79,6 +79,19 @@ PUBLISHED:
   void set_cell_height(float ch) { _cell_height = ch; }
   void set_partition_type(PartitionType partition) { _partition_type = partition; }
 
+  MAKE_PROPERTY(_agent_radius, get_actor_radius, set_actor_radius);
+  MAKE_PROPERTY(_agent_height, get_actor_height, set_actor_height);
+  MAKE_PROPERTY(_agent_max_climb, get_actor_max_climb, set_actor_max_climb);
+  MAKE_PROPERTY(_agent_max_slope, get_actor_max_slope, set_actor_max_slope);
+  MAKE_PROPERTY(_region_min_size, get_region_min_size, set_region_min_size);
+  MAKE_PROPERTY(_region_merge_size, get_region_merge_size, set_region_merge_size);
+  MAKE_PROPERTY(_edge_max_len, get_edge_max_len, set_edge_max_len);
+  MAKE_PROPERTY(_edge_max_error, get_edge_max_error, set_edge_max_error);
+  MAKE_PROPERTY(_verts_per_poly, get_verts_per_poly, set_verts_per_poly);
+  MAKE_PROPERTY(_cell_size, get_cell_size, set_cell_size);
+  MAKE_PROPERTY(_cell_height, get_cell_height, set_cell_height);
+  MAKE_PROPERTY(_partition_type, get_partition_type, set_partition_type);
+  
   void reset_common_settings();
   bool from_node_path(NodePath node);
   bool from_geom(PT(Geom) geom);
