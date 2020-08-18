@@ -279,6 +279,38 @@ cleanup_polygon_indices(vector_int &polygon) {
     // The last vertex repeats the first one; remove it.
     polygon.pop_back();
   }
+
+  // Another pass over the polygons, this time removing any "tails".
+  while (polygon.size() >= 3) {
+    bool removed_any = false;
+
+    int prevprev = polygon[polygon.size() - 2];
+    int prev = polygon[polygon.size() - 1];
+
+    for (size_t i = 0; i < polygon.size(); ++i) {
+      int cur = polygon[i];
+      if (_vertices[prevprev] == _vertices[cur]) {
+        // Cut off the tail.
+        removed_any = true;
+        polygon.erase(polygon.begin() + i);
+        if (i == 0) {
+          polygon.pop_back();
+        } else {
+          polygon.erase(polygon.begin() + i - 1);
+        }
+        break;
+      }
+
+      prevprev = prev;
+      prev = cur;
+    }
+
+    // This might have been the tip of a longer tail, so if we removed
+    // something, go again.
+    if (!removed_any) {
+      break;
+    }
+  }
 }
 
 
