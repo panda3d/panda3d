@@ -14,27 +14,16 @@
 /**
  *
  */
-INLINE BulletTriangleMesh::
-~BulletTriangleMesh() {
-
-  delete _mesh;
-}
-
-/**
- *
- */
-btTriangleMesh *BulletTriangleMesh::
+INLINE btStridingMeshInterface *BulletTriangleMesh::
 ptr() const {
-
-  return _mesh;
+  return (btStridingMeshInterface *)&_mesh;
 }
 
 /**
  *
  */
-INLINE ostream &
-operator << (ostream &out, const BulletTriangleMesh &obj) {
-
+INLINE std::ostream &
+operator << (std::ostream &out, const BulletTriangleMesh &obj) {
   obj.output(out);
   return out;
 }

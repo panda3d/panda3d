@@ -2,15 +2,17 @@
 GravityWalker.py is for avatars.
 
 A walker control such as this one provides:
-    - creation of the collision nodes
-    - handling the keyboard and mouse input for avatar movement
-    - moving the avatar
+
+- creation of the collision nodes
+- handling the keyboard and mouse input for avatar movement
+- moving the avatar
 
 it does not:
-    - play sounds
-    - play animations
 
-although it does send messeges that allow a listener to play sounds or
+- play sounds
+- play animations
+
+although it does send messages that allow a listener to play sounds or
 animations based on walker events.
 """
 from direct.directnotify.DirectNotifyGlobal import directNotify
@@ -71,90 +73,6 @@ class GravityWalker(DirectObject.DirectObject):
         self.isAirborne = 0
         self.highMark = 0
 
-    """
-    def spawnTest(self):
-        assert self.notify.debugStateCall(self)
-        if not self.wantDebugIndicator:
-            return
-        from pandac.PandaModules import *
-        from direct.interval.IntervalGlobal import *
-        from toontown.coghq import MovingPlatform
-
-        if hasattr(self, "platform"):
-            # Remove the prior instantiation:
-            self.moveIval.pause()
-            del self.moveIval
-            self.platform.destroy()
-            del self.platform
-            self.platform2.destroy()
-            del self.platform2
-
-        model = loader.loadModel('phase_9/models/cogHQ/platform1')
-        fakeId = id(self)
-        self.platform = MovingPlatform.MovingPlatform()
-        self.platform.setupCopyModel(fakeId, model, 'platformcollision')
-        self.platformRoot = render.attachNewNode("GravityWalker-spawnTest-%s"%fakeId)
-        self.platformRoot.setPos(base.localAvatar, Vec3(0.0, 0.0, 1.0))
-        self.platformRoot.setHpr(base.localAvatar, Vec3.zero())
-        self.platform.reparentTo(self.platformRoot)
-
-        self.platform2 = MovingPlatform.MovingPlatform()
-        self.platform2.setupCopyModel(1+fakeId, model, 'platformcollision')
-        self.platform2Root = render.attachNewNode("GravityWalker-spawnTest2-%s"%fakeId)
-        self.platform2Root.setPos(base.localAvatar, Vec3(-16.0, 30.0, 1.0))
-        self.platform2Root.setHpr(base.localAvatar, Vec3.zero())
-        self.platform2.reparentTo(self.platform2Root)
-
-        duration = 5
-        self.moveIval = Parallel(
-                Sequence(
-                    WaitInterval(0.3),
-                    LerpPosInterval(self.platform, duration,
-                                    Vec3(0.0, 30.0, 0.0),
-                                    name='platformOut%s' % fakeId,
-                                    fluid = 1),
-                    WaitInterval(0.3),
-                    LerpPosInterval(self.platform, duration,
-                                    Vec3(0.0, 0.0, 0.0),
-                                    name='platformBack%s' % fakeId,
-                                    fluid = 1),
-                    WaitInterval(0.3),
-                    LerpPosInterval(self.platform, duration,
-                                    Vec3(0.0, 0.0, 30.0),
-                                    name='platformUp%s' % fakeId,
-                                    fluid = 1),
-                    WaitInterval(0.3),
-                    LerpPosInterval(self.platform, duration,
-                                    Vec3(0.0, 0.0, 0.0),
-                                    name='platformDown%s' % fakeId,
-                                    fluid = 1),
-                ),
-                Sequence(
-                    WaitInterval(0.3),
-                    LerpPosInterval(self.platform2, duration,
-                                    Vec3(0.0, -30.0, 0.0),
-                                    name='platform2Out%s' % fakeId,
-                                    fluid = 1),
-                    WaitInterval(0.3),
-                    LerpPosInterval(self.platform2, duration,
-                                    Vec3(0.0, 30.0, 30.0),
-                                    name='platform2Back%s' % fakeId,
-                                    fluid = 1),
-                    WaitInterval(0.3),
-                    LerpPosInterval(self.platform2, duration,
-                                    Vec3(0.0, -30.0, 0.0),
-                                    name='platform2Up%s' % fakeId,
-                                    fluid = 1),
-                    WaitInterval(0.3),
-                    LerpPosInterval(self.platform2, duration,
-                                    Vec3(0.0, 0.0, 0.0),
-                                    name='platformDown%s' % fakeId,
-                                    fluid = 1),
-                ),
-            name='platformIval%s' % fakeId,
-            )
-        self.moveIval.loop()
-    """
     def setWalkSpeed(self, forward, jump, reverse, rotate):
         assert self.notify.debugStateCall(self)
         self.avatarControlForwardSpeed=forward

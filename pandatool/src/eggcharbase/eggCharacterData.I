@@ -47,7 +47,7 @@ get_model_index(int n) const {
  */
 INLINE EggNode *EggCharacterData::
 get_model_root(int n) const {
-  nassertr(n >= 0 && n < (int)_models.size(), (EggNode *)NULL);
+  nassertr(n >= 0 && n < (int)_models.size(), nullptr);
   return _models[n]._model_root;
 }
 
@@ -57,7 +57,7 @@ get_model_root(int n) const {
  */
 INLINE EggData *EggCharacterData::
 get_egg_data(int n) const {
-  nassertr(n >= 0 && n < (int)_models.size(), (EggData *)NULL);
+  nassertr(n >= 0 && n < (int)_models.size(), nullptr);
   return _models[n]._egg_data;
 }
 
@@ -77,7 +77,7 @@ get_root_joint() const {
  * has that name.
  */
 INLINE EggJointData *EggCharacterData::
-find_joint(const string &name) const {
+find_joint(const std::string &name) const {
   return _root_joint->find_joint(name);
 }
 
@@ -87,7 +87,7 @@ find_joint(const string &name) const {
  * inherits the net transform of the indicated parent joint.
  */
 INLINE EggJointData *EggCharacterData::
-make_new_joint(const string &name, EggJointData *parent) {
+make_new_joint(const std::string &name, EggJointData *parent) {
   EggJointData *joint = parent->make_new_joint(name);
   _joints.push_back(joint);
   _components.push_back(joint);
@@ -108,7 +108,7 @@ get_num_joints() const {
  */
 INLINE EggJointData *EggCharacterData::
 get_joint(int n) const {
-  nassertr(n >= 0 && n < (int)_joints.size(), NULL);
+  nassertr(n >= 0 && n < (int)_joints.size(), nullptr);
   return _joints[n];
 }
 
@@ -125,7 +125,7 @@ get_num_sliders() const {
  */
 INLINE EggSliderData *EggCharacterData::
 get_slider(int n) const {
-  nassertr(n >= 0 && n < (int)_sliders.size(), NULL);
+  nassertr(n >= 0 && n < (int)_sliders.size(), nullptr);
   return _sliders[n];
 }
 
@@ -145,6 +145,6 @@ get_num_components() const {
  */
 INLINE EggComponentData *EggCharacterData::
 get_component(int n) const {
-  nassertr(n >= 0 && n < (int)_components.size(), NULL);
+  nassertr(n >= 0 && n < (int)_components.size(), nullptr);
   return _components[n];
 }

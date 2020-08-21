@@ -18,16 +18,11 @@
 
 #ifdef HAVE_OPENSSL
 
-#if defined(WIN32_VC) || defined(WIN64_VC)
-  #include <WinSock2.h>
+#ifdef _WIN32
+  #include <winsock2.h>
   #include <windows.h>  // for WSAGetLastError()
   #undef X509_NAME
-#endif  // WIN32_VC
-
-#ifndef HAVE_STREAMSIZE
-// Some compilers (notably SGI) don't define this for us
-typedef int streamsize;
-#endif /* HAVE_STREAMSIZE */
+#endif  // _WIN32
 
 /**
  *
@@ -167,11 +162,11 @@ underflow() {
       if (read_count <= 0) {
         // Immediately save the os error in case we screw up and do something
         // that will change its value before we can output it.
-#if defined(WIN32_VC) || defined(WIN64_VC)
+#ifdef _WIN32
         int os_error = WSAGetLastError();
 #else
         int os_error = errno;
-#endif  // WIN32_VC
+#endif  // _WIN32
 
         // Though BIO_eof() is tempting, it appears there are cases in which
         // that never returns true, if the socket is closed by the server.
@@ -194,21 +189,21 @@ underflow() {
             << _source->get_port() << " (" << read_count << ").\n";
           OpenSSLWrapper::get_global_ptr()->notify_ssl_errors();
 
-          SSL *ssl = NULL;
+          SSL *ssl = nullptr;
           BIO_get_ssl(*_source, &ssl);
-          if (ssl != (SSL *)NULL) {
+          if (ssl != nullptr) {
             downloader_cat.warning()
               << "OpenSSL error code: " << SSL_get_error(ssl, read_count)
               << "\n";
           }
 
-#if defined(WIN32_VC) || defined(WIN64_VC)
+#ifdef _WIN32
           downloader_cat.warning()
             << "Windows error code: " << os_error << "\n";
 #else
           downloader_cat.warning()
             << "Unix error code: " << os_error << "\n";
-#endif  // WIN32_VC
+#endif  // _WIN32
         }
         gbump(num_bytes);
         return EOF;
@@ -276,7 +271,7 @@ write_chars(const char *start, size_t length) {
           fd_set wset;
           FD_ZERO(&wset);
           FD_SET(fd, &wset);
-          select(fd + 1, NULL, &wset, NULL, NULL);
+          select(fd + 1, nullptr, &wset, nullptr, nullptr);
 #endif  // SIMPLE_THREADS
         }
 

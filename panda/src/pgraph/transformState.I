@@ -664,7 +664,7 @@ get_invert_composition_cache_num_entries() const {
 INLINE size_t TransformState::
 get_composition_cache_size() const {
   LightReMutexHolder holder(*_states_lock);
-  return _composition_cache.get_size();
+  return _composition_cache.get_num_entries();
 }
 
 /**
@@ -678,9 +678,6 @@ get_composition_cache_size() const {
 INLINE const TransformState *TransformState::
 get_composition_cache_source(size_t n) const {
   LightReMutexHolder holder(*_states_lock);
-  if (!_composition_cache.has_element(n)) {
-    return NULL;
-  }
   return _composition_cache.get_key(n);
 }
 
@@ -698,9 +695,6 @@ get_composition_cache_source(size_t n) const {
 INLINE const TransformState *TransformState::
 get_composition_cache_result(size_t n) const {
   LightReMutexHolder holder(*_states_lock);
-  if (!_composition_cache.has_element(n)) {
-    return NULL;
-  }
   return _composition_cache.get_data(n)._result;
 }
 
@@ -716,7 +710,7 @@ get_composition_cache_result(size_t n) const {
 INLINE size_t TransformState::
 get_invert_composition_cache_size() const {
   LightReMutexHolder holder(*_states_lock);
-  return _invert_composition_cache.get_size();
+  return _invert_composition_cache.get_num_entries();
 }
 
 /**
@@ -730,9 +724,6 @@ get_invert_composition_cache_size() const {
 INLINE const TransformState *TransformState::
 get_invert_composition_cache_source(size_t n) const {
   LightReMutexHolder holder(*_states_lock);
-  if (!_invert_composition_cache.has_element(n)) {
-    return NULL;
-  }
   return _invert_composition_cache.get_key(n);
 }
 
@@ -750,9 +741,6 @@ get_invert_composition_cache_source(size_t n) const {
 INLINE const TransformState *TransformState::
 get_invert_composition_cache_result(size_t n) const {
   LightReMutexHolder holder(*_states_lock);
-  if (!_invert_composition_cache.has_element(n)) {
-    return NULL;
-  }
   return _invert_composition_cache.get_data(n)._result;
 }
 
@@ -763,6 +751,34 @@ INLINE void TransformState::
 flush_level() {
   _node_counter.flush_level();
   _cache_counter.flush_level();
+}
+
+/**
+ * Overrides this method to update PStats appropriately.
+ */
+INLINE void TransformState::
+cache_ref_only() const {
+#ifdef DO_PSTATS
+  int old_referenced_bits = get_referenced_bits();
+  NodeCachedReferenceCount::cache_ref_only();
+  consider_update_pstats(old_referenced_bits);
+#else  // DO_PSTATS
+  NodeCachedReferenceCount::cache_ref_only();
+#endif  // DO_PSTATS
+}
+
+/**
+ * Overrides this method to update PStats appropriately.
+ */
+INLINE void TransformState::
+cache_unref_only() const {
+#ifdef DO_PSTATS
+  int old_referenced_bits = get_referenced_bits();
+  NodeCachedReferenceCount::cache_unref_only();
+  consider_update_pstats(old_referenced_bits);
+#else  // DO_PSTATS
+  NodeCachedReferenceCount::cache_unref_only();
+#endif  // DO_PSTATS
 }
 
 /**
@@ -781,7 +797,7 @@ do_node_unref() const {
  */
 INLINE bool TransformState::
 do_cache_unref() const {
-  cache_unref_only();
+  NodeCachedReferenceCount::cache_unref_only();
   return unref();
 }
 

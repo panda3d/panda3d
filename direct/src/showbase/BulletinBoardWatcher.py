@@ -1,4 +1,4 @@
-"""Undocumented Module"""
+"""Contains the BulletinBoardWatcher class."""
 
 __all__ = ['BulletinBoardWatcher']
 

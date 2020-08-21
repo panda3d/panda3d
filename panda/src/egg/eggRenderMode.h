@@ -28,13 +28,13 @@
  * EggPolygon level with multiple appearances of the EggObject base class.
  * And making EggObject a virtual base class is just no fun.
  */
-class EXPCL_PANDAEGG EggRenderMode {
+class EXPCL_PANDA_EGG EggRenderMode {
 PUBLISHED:
   EggRenderMode();
   INLINE EggRenderMode(const EggRenderMode &copy);
   EggRenderMode &operator = (const EggRenderMode &copy);
 
-  void write(ostream &out, int indent_level) const;
+  void write(std::ostream &out, int indent_level) const;
 
   enum AlphaMode {  // Specifies implementation of transparency.
     AM_unspecified,
@@ -83,8 +83,8 @@ PUBLISHED:
   INLINE bool has_draw_order() const;
   INLINE void clear_draw_order();
 
-  INLINE void set_bin(const string &bin);
-  INLINE string get_bin() const;
+  INLINE void set_bin(const std::string &bin);
+  INLINE std::string get_bin() const;
   INLINE bool has_bin() const;
   INLINE void clear_bin();
 
@@ -93,10 +93,10 @@ PUBLISHED:
   INLINE bool operator != (const EggRenderMode &other) const;
   bool operator < (const EggRenderMode &other) const;
 
-  static AlphaMode string_alpha_mode(const string &string);
-  static DepthWriteMode string_depth_write_mode(const string &string);
-  static DepthTestMode string_depth_test_mode(const string &string);
-  static VisibilityMode string_visibility_mode(const string &string);
+  static AlphaMode string_alpha_mode(const std::string &string);
+  static DepthWriteMode string_depth_write_mode(const std::string &string);
+  static DepthTestMode string_depth_test_mode(const std::string &string);
+  static VisibilityMode string_visibility_mode(const std::string &string);
 
 private:
   AlphaMode _alpha_mode;
@@ -107,7 +107,7 @@ private:
   bool _has_depth_offset;
   int _draw_order;
   bool _has_draw_order;
-  string _bin;
+  std::string _bin;
 
 
 public:
@@ -122,12 +122,12 @@ private:
   static TypeHandle _type_handle;
 };
 
-EXPCL_PANDAEGG ostream &operator << (ostream &out, EggRenderMode::AlphaMode mode);
-EXPCL_PANDAEGG istream &operator >> (istream &in, EggRenderMode::AlphaMode &mode);
+EXPCL_PANDA_EGG std::ostream &operator << (std::ostream &out, EggRenderMode::AlphaMode mode);
+EXPCL_PANDA_EGG std::istream &operator >> (std::istream &in, EggRenderMode::AlphaMode &mode);
 
-EXPCL_PANDAEGG ostream &operator << (ostream &out, EggRenderMode::DepthWriteMode mode);
-EXPCL_PANDAEGG ostream &operator << (ostream &out, EggRenderMode::DepthTestMode mode);
-EXPCL_PANDAEGG ostream &operator << (ostream &out, EggRenderMode::VisibilityMode mode);
+EXPCL_PANDA_EGG std::ostream &operator << (std::ostream &out, EggRenderMode::DepthWriteMode mode);
+EXPCL_PANDA_EGG std::ostream &operator << (std::ostream &out, EggRenderMode::DepthTestMode mode);
+EXPCL_PANDA_EGG std::ostream &operator << (std::ostream &out, EggRenderMode::VisibilityMode mode);
 
 #include "eggRenderMode.I"
 

@@ -37,17 +37,19 @@
  */
 class EXPCL_PANDA_PUTIL UniqueIdAllocator {
 PUBLISHED:
-  UniqueIdAllocator(uint32_t min=0, uint32_t max=20);
+  explicit UniqueIdAllocator(uint32_t min=0, uint32_t max=20);
   ~UniqueIdAllocator();
 
   uint32_t allocate();
   void initial_reserve_id(uint32_t id);
 
+  bool is_allocated(uint32_t index);
+
   void free(uint32_t index);
   PN_stdfloat fraction_used() const;
 
-  void output(ostream &out) const;
-  void write(ostream &out) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out) const;
 
 public:
   static const uint32_t IndexEnd;

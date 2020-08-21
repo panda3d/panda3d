@@ -140,7 +140,9 @@ get_reduced_viewport(LPoint2& min, LPoint2& max) const  {
  */
 INLINE bool PortalClipper::
 is_facing_view(const LPlane &portal_plane) {
-  portal_cat.debug() << "portal plane check value: " << portal_plane[3] << "\n";
+  if (portal_cat.is_debug()) {
+    portal_cat.debug() << "portal plane check value: " << portal_plane[3] << "\n";
+  }
   return (portal_plane[3] > 0);
 }
 
@@ -161,7 +163,9 @@ is_whole_portal_in_view(const LMatrix4 &cmat) {
 
   int result = _reduced_frustum->contains(gbv);
 
-  portal_cat.spam() << "1st level test if portal: " << *_reduced_frustum << " is in view " << result << endl;
+  if (portal_cat.is_spam()) {
+    portal_cat.spam() << "1st level test if portal: " << *_reduced_frustum << " is in view " << result << std::endl;
+  }
   return (result != 0);
 }
 
@@ -179,7 +183,9 @@ is_partial_portal_in_view() {
   for (int j=0; j<_num_vert; ++j) {
     result |= _reduced_frustum->contains(_coords[j]);
   }
-  portal_cat.spam() << "frustum: " << *_reduced_frustum << " contains(coord) result = " << result << endl;
+  if (portal_cat.is_spam()) {
+    portal_cat.spam() << "frustum: " << *_reduced_frustum << " contains(coord) result = " << result << endl;
+  }
 
   return (result != 0);
 }
@@ -193,9 +199,11 @@ INLINE PN_stdfloat PortalClipper::
 get_plane_depth(PN_stdfloat x, PN_stdfloat z, LPlane *portal_plane) {
   PN_stdfloat y = 0.0;
   // Plane equation: Ax + By + Cz + D = 0 y = (Ax + Cz + D)  -B
-  portal_cat.spam() << *portal_plane << endl;
-  portal_cat.spam() << portal_plane->_v.v._0 << " " << portal_plane->_v.v._1 << " "
-                     << portal_plane->_v.v._2 << " " << portal_plane->_v.v._3 << endl;
+  if (portal_cat.is_spam()) {
+    portal_cat.spam() << *portal_plane << endl;
+    portal_cat.spam() << portal_plane->_v.v._0 << " " << portal_plane->_v.v._1 << " "
+                      << portal_plane->_v.v._2 << " " << portal_plane->_v.v._3 << endl;
+  }
 
   if (portal_plane->_v.v._1 != 0.0) {
     y = (((portal_plane->_v.v._0*x)+(portal_plane->_v.v._2*z)+portal_plane->_v.v._3)

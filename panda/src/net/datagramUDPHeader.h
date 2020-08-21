@@ -37,7 +37,8 @@ public:
   DatagramUDPHeader(const void *data);
 
   INLINE int get_datagram_checksum() const;
-  INLINE string get_header() const;
+  INLINE std::string get_header() const;
+  INLINE CPTA_uchar get_array() const;
 
   bool verify_datagram(const NetDatagram &datagram) const;
 

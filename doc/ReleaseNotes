@@ -1,3 +1,422 @@
+------------------------  RELEASE 1.10.6  -----------------------
+
+This is a recommended bugfix release that adds additional stability fixes.
+
+Stability
+* Fix deployment system to work properly with pip 20
+* Fix multithreading crash when garbage collecting render states (#499)
+* Fix crashes when hotplugging USB device on macOS Catalina (#847)
+* Fix crash when using Python OpenSSL module with wheel build of Panda3D (#851)
+* Fix a memory leak in task system in Python 3 (#873)
+* Fix detection for convex angles in visible geometry in collision system (#879)
+* Fix regression in 1.10.4 when overriding verticalScroll_frameSize (#864)
+* Fix DirectScrolledList scrollTo error in Python 3 (#880)
+
+Shaders
+* Fix OpenGL shaders not being properly applied across multiple buffers
+* Proper handling of texture rotations applied to normal maps (#808)
+* "//Cg profile" no longer affects subsequent shader loads (#863)
+* Add support for custom vertex columns when munging points to quads (#870)
+* Workaround for GLSL p3d_TextureMatrix[] input giving GL error on macOS (#846)
+* Fix ShaderTerrainMesh disappearing when enabling compressed-textures
+
+Input
+* Fix MouseWatcherRegion leave event sometimes being fired twice (#858)
+* Fix odd behavior when pressing multiple mouse buttons during capture (#843)
+* Fix support for dead key input on some X11 servers
+* Fix raw key events being sent down repeatedly when holding key on X11 (#874)
+* Numpad keys are no longer included in get_keyboard_map() on X11
+* Add labels to some keys in get_keyboard_map() on X11
+* Properly use cursor hotspot when loading custom cursor on macOS (#845)
+* Loading custom cursor on macOS now properly resolves against model-path
+
+Animation
+* unloadAnims no longer removes all control effects, only for given anims (#853)
+* AnimChannelScalarTable (for morph animations) is now exposed to Python
+* It's now possible to create a CharacterSlider with default value
+
+Pipeline
+* Fix assertion errors when model-cache-dir cannot be created (#790)
+* Textures with clear colors are no longer stripped from bam files (#844)
+* Support texture clear colors in bam files (requires "bam-version 6 45" in PRC)
+* Fix bam2egg skinning bug for models with default poses on joints
+* bam2egg supports multitexturing and multiple UV sets
+
+Build system
+* Add missing --cggl-incdir and --cggl-libdir options in makepanda
+* Reduce library size by not exporting symbols of linked static libraries
+* Wheels no longer unnecessarily include libpythonX.Y.a (#839)
+* makepanda now auto-disables plug-ins in Config.prc that were not compiled in
+* Fix refcounting of returned ReferenceCount-like objects in interrogate
+* Fix inability to build a .whl on Ubuntu
+* Fix erratic build failure in dcParser code
+* Fix compilation using Windows 8.1 SDK
+
+------------------------  RELEASE 1.10.5  -----------------------
+
+This is a recommended bugfix release, especially for macOS users.
+
+* Fix DPI scaling issue in macOS 10.15 "Catalina" (#794)
+* Fix crash on macOS Catalina without "Input Monitoring" permission (#795)
+* macOS installer now installs to /Library/Developer/Panda3D (#760)
+* macOS thirdparty packages are now linked with libc++ (#584)
+* Homebrew Python should now locate Panda libraries correctly (#755)
+* Work around Tk bug cancelling Load Params in Particle Panel on macOS (#811)
+* Fix NaN assertions when particles get very large positions (#822)
+* Add support for Autodesk Maya 2020
+* Fix maya2egg erroring when running from a pip installation (#709)
+* Support DualShock 4 (2nd gen) controller on Windows
+* Support .pz and .gz compressed models in deployment system
+* Support implicit namespace packages in deployment system (#778)
+* Fix issues when using CEF Python on macOS with deployment system
+* Fix deployment system issues reading .pyc files in some Python versions
+* Fix error with distutils package when deploying in a "virtualenv" env (#747)
+* Fix "NameError: name 'mdef' is not defined" error when deploying (#721)
+* Deployment system now strips weird -psn_* argument passed to macOS GUI apps
+* Fix custom loader hooks sometimes not working with Actor (#750)
+* Fix defaults for package_data_dirs in deployment system (#779)
+* Fix issues with adding icons to deployed executable (#718)
+* Add PNMImage.quantize() that palettizes using median cut algorithm
+* Fix stereo and MRT FBO rendering in OpenGL ES (#815)
+* RTM_copy_ram mode is now fixed for multiview textures in OpenGL
+* Fix OpenGL multisample FBO issue with 16-bit float buffer (#756)
+* Fix DirectX 9 crash when resizing vertex buffer in certain ways (#824)
+* Workaround for infinite loop in Triangulator for certain polygons (#737)
+* Fix dcparser issue with unpacking uint64 and int64 (#751)
+* Fix ability to compile dcparser outside of the Panda3D codebase (#759)
+* Fix all direct.stdpy.threading2 threads behaving daemonically (#758)
+* direct.stdpy.threading2.Thread instances provide daemon and name properties
+* Workaround for Tkinter crash on Windows when resizing window (#586)
+* Fix possible stack overflow when reading many bytes from a stream (#754)
+* Fix mouse confinement region on Windows not updating on window resize (#727)
+* Fix mouse confinement being lost on Windows when window loses focus (#729)
+* Support adjusting particle birth offset time (#769)
+* Support building against OpenEXR 2.4 on Windows (#799)
+* Fix ability to pass a tuple to loader.loadModel
+* Fix an issue in interrogate with generating C bindings (#722)
+* Fix a variety of ABI compatibility issues with NDEBUG builds
+* Fix static linking of harfbuzz and freetype in makepanda
+* Fix ability to specify --python-incdir and -libdir to makepanda on macOS
+* `ls()` and `bam-info -ls` now list included animations
+* Fix white ambient color when loading PBR materials from .bam/cache (#828)
+* Fix inconsistent behavior when passing small values to shader inputs (#827)
+* Fix very rare NVIDIA driver crash when mixing GLSL and Cg shaders
+* Fix issue passing unicode to DirectScrolledList (#752)
+* Fix interrogate parser issue with function-like macro expansion
+* Interrogate now finds types nested in explicitly specialized template class
+* Improve performance reading all data from a file with direct.stdpy.file
+* PandaSystem now records whether libc++ or libstdc++ was used on macOS
+* makepanda.bat now builds against Python 3.7 by default
+* Many improvements to API documentation
+* pandac/input/*.in interrogatedb files are now included in .whl builds
+* Fix division exception in ServerRepository (#762)
+* Fix ShaderBuffer contexts not being cleared at GSG destruction
+* Fix DirectOptionMenu item text scale reset on item unhighlight (#768)
+* Python particle classes now have snake-case aliases
+* Fix crash printing out cached buffer contexts
+* Rudimentary, experimental, low-level handling of digitizer input devices
+
+------------------------  RELEASE 1.10.4.1  ---------------------
+
+This release fixes only one critical regression: calling destroy()
+on a DirectGUI item would cause an exception.
+
+------------------------  RELEASE 1.10.4  -----------------------
+
+This release fixes a regression with DirectScrolledList in 1.10.3,
+fixes various other bugs, and introduces a few minor features.
+
+* Fix exception trying to create DirectScrolledList
+* Fix flickering in DirectScrolledFrame and other scissor issues (#681)
+* Experimental support for Python 3.8
+* Support adding icons to deployed applications
+* Support non-affine (eg. projective) transforms in calc_tight_bounds
+* Allow setting notify-output after initial import
+* Fix macOS issue locating Panda3D using Python 2.7.13+ from python.org
+* Support for Maya 2019
+* On Windows, pip is now installed by the installer (#690)
+* Fix Actor.makeSubpart on models with pre-bound animations (#647)
+* Properly interrupt task manager if first task chain raises error (#692)
+* Fix return value of encrypt_string in Python 3 (#684)
+* Support writing loader plug-ins in Python
+* Fix reading multiple p3d_TextureMatrix[] values from GLSL shaders
+* Fix shader error flag not being set if GLSL compilation failed (#622)
+* Add NodePath.replace_texture() convenience method
+* Fix deadlock when building with SIMPLE_THREADS=1 (#704)
+* Fix DirectOptionMenu cancelFrame not working inside scrolled frame (#658)
+* Fix assertion when calling analyze() on geometry with strip cut index
+* Implement fallback in GL renderer when F_sluminance is not supported (#693)
+* Set reasonable limits for sliders in ParticlePanel
+* Fix for DirectEntry autoCapitalize feature on Python 3 (#628)
+* Fix various DirectGUI items not working before ShowBase is instantiated
+* Work around an MSVC compiler bug in the release build
+* PythonUtil.weightedChoice now raises IndexError on empty list
+* Support changing DirectScrollBar width after initialiation (#699)
+* Workaround for Bullet deadlock when adding shape to a scaled body (#689)
+* Support setting DirectEntryScroll entry after initialization (#702)
+* Fix some missing imports in directtools (#698)
+* Fix undefined behavior issue when using musl-libc
+* Update Eigen in Windows thirdparty packages to 3.3.7
+* Update metadata of pip wheels
+
+------------------------  RELEASE 1.10.3  -----------------------
+
+This is another bugfix release that addresses a variety of issues
+in 1.10.2 and further improves the stability.
+
+* Fix crash when unplugging certain devices on macOS
+* Fix crash on macOS when using RIME input
+* Fix logging issues/crashes in apps deployed with Python 2.7
+* Fix issues when starting in fullscreen on Linux/X11
+* Fix mapping of several gamepads including Trust GXT 24
+* Fix Linux crash when no input devices are present
+* Unbreak support for matrix arrays in vertex data in OpenGL
+* Allow creating multisample FBO in OpenGL with non-MS host window
+* Support playing and looping compressed Ogg and WAV audio files
+* Fix generation of CollisionBox for transformed geometry in .egg
+* Fix Bullet rigid body transform not updating after reparenting
+* Fix sporadic color scales with lighting and custom GLSL shader
+* Prevent faulty shaders from shutting down GSG on some drivers
+* Allow None as either argument to OdeJoint.attach()
+* Fix BufferViewer when main window is not opened right away
+* Properly detect extension of pz/gz compressed video/audio files
+* Fix for invalid behavior of SparseArray methods to clear bits
+* FilterManager now allows overriding framebuffer properties
+* Fix detection of core-only OpenGL profile on some drivers
+* Add gl-forward-compatible config var for OpenGL context creation
+* Add paste-emit-keystrokes variable to disable Ctrl+V on Windows
+* Fix in-place |= operator on Panda types (such as SparseArray)
+* Fix rare FFmpeg "bad src image pointers" errors after seek
+* Fix uses of types.InstanceType in some obscure direct functions
+* Fix capsule-into-sphere collision test in degenerate case
+* KeyboardButton.ascii_key now also accepts a str character
+* Fix errors in various Tkinter DIRECT widgets
+* Expose save_egg_file/save_egg_data functions in Python API
+* Fix assertion error in BoundingBox.set_min_max
+* Fix typo in CollisionTraverser.respect_prev_transform property
+* Properly install Python bindings when building FreeBSD installer
+
+------------------------  RELEASE 1.10.2  -----------------------
+
+This release fixes several more bugs, including a few regressions
+in 1.10.1.  Upgrading is highly recommended.
+
+* Fix regression on Windows causing freezes and instability
+* Fix a memory leak issue in Python applications
+* Fix crash reading unaligned float4 column in GeomVertexReader
+* Fixes for switching to fullscreen at runtime on Windows and Linux
+* Fix incorrect display mode listing in some Linux distributions
+* Fix threading crash on Linux when using get_keyboard_map()
+* Support "from __future__ import division" for Panda types
+* Support building with Visual Studio 2019 in makepanda
+* Work around Assimp crash when loading multiple .ply models
+* On Windows, a Python 3-compatible version of Pmw is included
+* Fix ParticlePanel spam when hovering over File menu items
+* TexMemWatcher has been fixed for Python 3
+* Prevent macOS window getting stuck after base.destroy()
+* Fix assertion setting mass before shape with Bullet debug build
+* Don't error if DirectScrolledFrame is destroyed twice
+* Fix reference count corruption accessing task.__dict__
+* Fix writing to SequenceNode frame_rate property
+* Fix collider sort not copied when copying CollisionNode
+* Add OpenCollective backer file
+
+------------------------  RELEASE 1.10.1  -----------------------
+
+This is a bugfix release intended to fix several issues in 1.10.0.
+
+* Fix crashes when gamepad is plugged in on 32-bit Windows
+* Fix deploy-ng error regarding 'exist_ok' on Python 2
+* Fix Linux install from pip not working with some mesa drivers
+* Fix compatibility issues with upcoming Python 3.8
+* Fix regression with Audio3DManager.setSoundVelocityAuto()
+* Fix issues when awaiting loader.loadModel in Python 3.7
+* Audio3DManager accepts tuple in setSoundVelocity/setListenerVelocity
+* Fix lighting being disabled when only an AmbientLight is active
+* Fix an error saving from Particle Panel in Python 3
+* Depth buffer now defaults to 24-bit on macOS (fixes flickering)
+* Fix no devices being detected on Windows with threading-model
+* Implement collision tests from Capsule and Box into InvSphere
+* Fix odd behavior and occasional crash in QuatInterval
+* Fix SpriteAnim error in particle system
+* Fix ShaderGenerator error when using too many shadowing lights
+* Fix interrogate crash in Python 3 with optional wstring args
+* Fix compilation errors for x86 Android platform
+* Fix permissions of directories created by installpanda
+* Improvements to API reference documentation
+* Fix incorrect features printed out when printing an InputDevice
+* Support cross-compiling for Android platforms in makepanda
+* Work around various bugs when compiling with OS X 10.7's libc++
+* Fix wrong error sometimes being reported when loading plug-in
+* Allow getting NodePath from CullTraverserData object
+* Add config options to Assimp loader for generating normals
+* Fix multisampling in floating-point framebuffers on OpenGL
+* Parse egg files with 4-component tangents (must be 1 or -1)
+* StencilAttrib.make() write_mask argument is now optional
+
+------------------------  RELEASE 1.10.0  -----------------------
+
+This is a major release with significant changes.  Please review the
+changes when upgrading.  The list below is by no means exhaustive, but
+should contain the most important changes.
+
+General
+* Experimental ability to build for Android
+* New input framework to natively support gamepads, joysticks, etc.
+* Multi-threaded render pipeline is a lot more stable now
+* New setuptools-based deployment pipeline
+* Improvements to mouselook smoothness
+* Cache is now at $XDG_CACHE_HOME/panda3d (~/.cache/panda3d), not ~/.panda3d
+* Addition of unit test suite
+* Many improvements to thread safety
+* Many performance improvements
+* Tons of bugfixes
+* Big style cleanup of C++ source code
+
+Python API
+* Complete support for Python 3
+* Support for coroutines and async/await
+* Property interfaces have been added for many settings
+* More flexible handling for keyboard arguments in C++ APIs
+* Python bindings are completely separated out of the C++ libraries.
+* Interrogate binding generator has many improvements.
+* Use of pandac.PandaModules is discouraged, use panda3d.core et al
+* Use of libRocket is discouraged due to lack of Python 3 support
+* Tasks are now sorted in addition order when lacking a sort value
+* Fixes iris/fade transitions for extreme aspect ratios
+* WeakNodePath is now exposed to Python
+* WindowProperties.size(x, y) deprecated; use WindowProperties(size=(x, y))
+* Calling bare run() is deprecated, use base.run() instead
+* downcastTo*() methods have been removed, they were already no-ops
+
+Rendering
+* Add new shader-based terrain rendering method (ShaderTerrainMesh)
+* The default ColorAttrib mode is now T_vertex
+* The ColorAttrib T_off mode now properly disables vertex colors entirely
+* Make handling of color attributes more consistent between renderers
+* Ability to create an OpenGL core profile context; set "gl-version 3 2"
+* Experimental support for reverse-Z rendering for best depth precision
+* sRGB framebuffers supported more widely
+* Support for infinite near/far clip in lens
+* Add some PBR material parameters to material class
+* Addition of more built-in GLSL shader inputs; see manual.
+* Add p3d_FragData[] GLSL output for MRT in GLSL 1.30
+* Add flag enabling vertex shader control over point size
+* Support signed ints and double-precision floats in vertex data with GLSL
+* Support unsigned 11/10/10-bit floating-point textures and vertex data
+* Support for SSBOs via ShaderBuffer class
+* Support OpenGL FBO buffers without any attachments
+* Support passing uint variables to GLSL shader
+* Allow rendering objects with empty vertex data (for vertex pulling)
+* Add LogicOpAttrib, for supporting logical operator blending
+* Improvements to OpenGL ES support
+* Support for geometry with adjacency information
+* Change default alpha blending to improve blending rendered result
+* New method for obtaining native OpenGL texture object
+* Support windowless offscreen rendering on macOS
+* Panda resets OpenGL state better before and after draw callbacks
+* OpenGL renderer better supports debugging tools like apitrace
+* Support fixed-depth billboards, useful for 2D tags that don't change size
+
+Shader generator
+* Significant performance improvements
+* Support for point light shadows
+* Hardware skinning support
+* Changes to match fixed-function pipeline better
+* Fixes for normal vector normalization
+* Support multiple normal maps (uses Reoriented Normal Mapping)
+* Tracks modifications to materials and texture stages automatically
+
+Lighting
+* Allow specifying light color based on color temperature
+* Setting specular color of a light separately is deprecated
+* New GLSL inputs to make implementing lighting in shaders much easier
+* Add representation for sphere light and rectangle light
+* Efficiency improvements for passing light information to shader
+* Interocular distance for shadow cameras now always defaults to 0
+* Add low-level lighting module from RenderPipeline
+
+Textures
+* Support cube map arrays
+* Support buffer textures
+* Many more texture formats supported
+* BC4 and BC5 compression modes supported
+* Proper depth textures supported in DirectX 9 renderer
+* set_ram_image(_as) directly supports buffer protocol
+* TexturePeeker supports more formats and component types
+
+Text
+* Dramatic improvements to text rendering performance
+* Support for HarfBuzz for higher-quality text shaping and kerning
+* Support for right-to-left text
+* Support for signed-distance-field rendering in egg-mkfont
+
+Audio/video
+* The default unit for audio is now 1 meter for each Panda unit.
+* Native .flac loader
+* Support videos with alpha channel in ffmpeg
+* OpenAL stability improvements, especially on macOS
+* Support loading .opus files with libopusfile
+* Fix various memory leaks
+
+Physics / collisions
+* CollisionTube is renamed to CollisionCapsule.
+* Box-box collision test is improved to work well with the Pusher
+* More box tests for collision system: box-into-plane, box-into-poly
+* Capsule (tube) can be used as "from" shape into plane, sphere, capsule, box
+* Bullet objects are serializable to .bam files.
+* Bullet bindings are now thread safe.
+* Bullet debug drawer is more efficient; no longer inherits GeomNode.
+* Various fixes to bullet vehicle wheel synchronization
+* PhysX bindings are deprecated.
+
+Pipeline / loading
+* Support for Assimp library to load a broad variety of model formats
+* Ability to specify min-lod, max-lod, lod-bias in .egg file
+* Egg file materials support PBR-style material parameterization
+* Support loading more DDS files, including DX10-style ones
+* Add support for OpenEXR and HDR textures
+* Support line/point thickness in bam2egg
+* bam2egg no longer inserts a vestigial ModelNode at the top
+* bam2egg supports depth test, offset, cull bin attributes
+* Accept a .gz file wherever a .pz file is accepted
+* egg-palettize supports mirror and border-color wrap modes
+* More robust checks against memory corruptions when loading bad .bam files
+* Support for Maya 2017 and 2018
+* Support preprocessing GLSL shaders created with Shader.make
+
+Build
+* We now require using MSVC 2015 or 2017 to compile on Windows.
+* At least GCC 4.8 is now required.
+* With GCC/clang, enabling C++11 is now required.
+* Allow building with more recent ffmpeg versions
+* Support for old FFMpeg versions (before 1.1) dropped.
+* The ppremake build system has been removed.
+* Support for OpenSSL versions before 0.9.7 has been dropped.
+
+C++
+* Use of NULL is replaced with nullptr
+* WeakPointerTo now requires use of lock() method for thread safety
+* Mutex et al now satisfy C++11 Lockable constraints
+* Panda headers no longer contain `using namespace std;`
+* PN_int32 et al have been removed, use stdint.h types instead
+* The need to link with pystub and add Python include dirs is removed.
+
+------------------------  RELEASE 1.9.4  ------------------------
+
+One of the bugfixes in the last 1.9.3 release introduced a regression,
+therefore it was decided to make another 1.9.x release.
+
+* Fix 1.9.3 regression with generating geometry in threaded pipeline
+* Various compile warning fixes
+* Fix occasional crash in PNMImage::quick_filter_from()
+* Fix issue taking screenshots from an OpenGL FBO buffer
+* Fix various issues with MeshDrawer
+* Fix issue with collision sphere generation in bam2egg
+* Fix compile errors with more obscure Python configurations
+* Fix assert when using Texture.load_sub_image to load whole image
+* Fix fsm FourState
+
 ------------------------  RELEASE 1.9.3  ------------------------
 
 This issue fixes several bugs that were still found in 1.9.2.

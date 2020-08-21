@@ -49,7 +49,7 @@
 // Currently-being-define proto.  Prototypes may be nested, so a stack
 // is needed:
 
-stack< VrmlNodeType*, plist<VrmlNodeType*> > currentProtoStack;
+std::stack<VrmlNodeType*, plist<VrmlNodeType*> > currentProtoStack;
 
 // This is used to keep track of which field in which type of node is being
 // parsed.  Field are nested (nodes are contained inside MFNode/SFNode fields)
@@ -60,12 +60,12 @@ typedef struct {
     const VrmlNodeType::NameTypeRec *typeRec;
 } FieldRec;
 
-stack< FieldRec*, plist<FieldRec*> > currentField;
+std::stack<FieldRec*, plist<FieldRec*> > currentField;
 
 // Similarly for the node entries (which contain the actual values for
 // the fields as they are encountered):
 
-stack< VrmlNode*, plist<VrmlNode*> > currentNode;
+std::stack<VrmlNode*, plist<VrmlNode*> > currentNode;
 
 // This is used when the parser knows what kind of token it expects
 // to get next-- used when parsing field values (whose types are declared
@@ -73,15 +73,15 @@ stack< VrmlNode*, plist<VrmlNode*> > currentNode;
 extern int expectToken;
 
 // This is where we store the parsed scene.
-VrmlScene *parsed_scene = NULL;
+VrmlScene *parsed_scene = nullptr;
 
 // Some helper routines defined below:
 static void beginProto(const char *);
 static void endProto();
-int addField(const char *type, const char *name, const VrmlFieldValue *dflt = NULL);
-int addEventIn(const char *type, const char *name, const VrmlFieldValue *dflt = NULL);
-int addEventOut(const char *type, const char *name, const VrmlFieldValue *dflt = NULL);
-int addExposedField(const char *type, const char *name, const VrmlFieldValue *dflt = NULL);
+int addField(const char *type, const char *name, const VrmlFieldValue *dflt = nullptr);
+int addEventIn(const char *type, const char *name, const VrmlFieldValue *dflt = nullptr);
+int addEventOut(const char *type, const char *name, const VrmlFieldValue *dflt = nullptr);
+int addExposedField(const char *type, const char *name, const VrmlFieldValue *dflt = nullptr);
 int add(void (VrmlNodeType::*func)(const char *, int, const VrmlFieldValue *), 
         const char *typeString, const char *name,
         const VrmlFieldValue *dflt);
@@ -94,14 +94,14 @@ void storeField(const VrmlFieldValue &value);
 void exitField();
 void expect(int type);
 
-extern void vrmlyyerror(const string &);
+extern void vrmlyyerror(const std::string &);
 
 ////////////////////////////////////////////////////////////////////
 // Defining the interface to the parser.
 ////////////////////////////////////////////////////////////////////
 
 void
-vrml_init_parser(istream &in, const string &filename) {
+vrml_init_parser(std::istream &in, const std::string &filename) {
   //yydebug = 0;
   vrml_init_lexer(in, filename);
 }
@@ -132,7 +132,7 @@ vrml_cleanup_parser() {
  * %type <nodeList> vrmlscene declarations
  */
 
-%token <string> IDENTIFIER 
+%token <string> IDENTIFIER
 %token DEF USE PROTO EXTERNPROTO TO IS ROUTE SFN_NULL
 %token EVENTIN EVENTOUT FIELD EXPOSEDFIELD
 
@@ -170,7 +170,7 @@ nodeDeclaration:
 {
   $$._p = $1;
   $$._type = SFNodeRef::T_unnamed;
-  $$._name = NULL;
+  $$._name = nullptr;
 }
     |   DEF IDENTIFIER node    
 {
@@ -180,7 +180,7 @@ nodeDeclaration:
 }
     |   USE IDENTIFIER
 {
-  $$._p = NULL;
+  $$._p = nullptr;
   $$._type = SFNodeRef::T_use;
   $$._name = $2;
 }
@@ -314,9 +314,9 @@ fieldValue:
     |   SFNODE nodeDeclaration { $$._sfnode = $2; }
     |   SFNODE SFN_NULL 
 { 
-  $$._sfnode._p = NULL;
+  $$._sfnode._p = nullptr;
   $$._sfnode._type = SFNodeRef::T_null;
-  $$._sfnode._name = NULL;
+  $$._sfnode._name = nullptr;
 }
     |   MFNODE mfnodeValue { $$._mf = $2; }
     |   IS IDENTIFIER               { free($2); }
@@ -370,7 +370,7 @@ endProto()
 
     // Add this proto definition:
     if (currentProtoStack.empty()) {
-        cerr << "Error: Empty PROTO stack!\n";
+        std::cerr << "Error: Empty PROTO stack!\n";
     }
     else {
         VrmlNodeType *t = currentProtoStack.top();
@@ -413,14 +413,14 @@ add(void (VrmlNodeType::*func)(const char *, int, const VrmlFieldValue *),
     int type = fieldType(typeString);
 
     if (type == 0) {
-        cerr << "Error: invalid field type: " << type << "\n";
+        std::cerr << "Error: invalid field type: " << type << "\n";
     }
 
     // Need to add support for Script nodes:
     // if (inScript) ... ???
 
     if (currentProtoStack.empty()) {
-        cerr << "Error: declaration outside of prototype\n";
+        std::cerr << "Error: declaration outside of prototype\n";
         return 0;
     }
     VrmlNodeType *t = currentProtoStack.top();
@@ -452,7 +452,7 @@ fieldType(const char *type)
     if (strcmp(type, "MFVec2f") == 0) return MFVEC2F;
     if (strcmp(type, "MFVec3f") == 0) return MFVEC3F;
 
-    cerr << "Illegal field type: " << type << "\n";
+    std::cerr << "Illegal field type: " << type << "\n";
 
     return 0;
 }
@@ -461,15 +461,15 @@ void
 enterNode(const char *nodeType)
 {
     const VrmlNodeType *t = VrmlNodeType::find(nodeType);
-    if (t == NULL) {
+    if (t == nullptr) {
         char tmp[1000];
         sprintf(tmp, "Unknown node type '%s'", nodeType);
         vrmlyyerror(tmp);
     }
     FieldRec *fr = new FieldRec;
     fr->nodeType = t;
-    fr->fieldName = NULL;
-    fr->typeRec = NULL;
+    fr->fieldName = nullptr;
+    fr->typeRec = nullptr;
     currentField.push(fr);
 
     VrmlNode *node = new VrmlNode(t);
@@ -480,14 +480,14 @@ VrmlNode *
 exitNode()
 {
     FieldRec *fr = currentField.top();
-    nassertr(fr != NULL, NULL);
+    nassertr(fr != nullptr, nullptr);
     currentField.pop();
 
     VrmlNode *node = currentNode.top();
-    nassertr(node != NULL, NULL);
+    nassertr(node != nullptr, nullptr);
     currentNode.pop();
 
-    //    cerr << "Just defined node:\n" << *node << "\n\n";
+    //    std::cerr << "Just defined node:\n" << *node << "\n\n";
 
     delete fr;
     return node;
@@ -497,7 +497,7 @@ void
 inScript()
 {
     FieldRec *fr = currentField.top();
-    if (fr->nodeType == NULL ||
+    if (fr->nodeType == nullptr ||
         strcmp(fr->nodeType->getName(), "Script") != 0) {
         vrmlyyerror("interface declaration outside of Script or prototype");
     }
@@ -507,11 +507,11 @@ void
 enterField(const char *fieldName)
 {
     FieldRec *fr = currentField.top();
-    nassertv(fr != NULL);
+    nassertv(fr != nullptr);
 
     fr->fieldName = fieldName;
-    fr->typeRec = NULL;
-    if (fr->nodeType != NULL) {
+    fr->typeRec = nullptr;
+    if (fr->nodeType != nullptr) {
         // enterField is called when parsing eventIn and eventOut IS
         // declarations, in which case we don't need to do anything special--
         // the IS IDENTIFIER will be returned from the lexer normally.
@@ -521,13 +521,13 @@ enterField(const char *fieldName)
     
         const VrmlNodeType::NameTypeRec *typeRec =
           fr->nodeType->hasField(fieldName);
-        if (typeRec != NULL) {
+        if (typeRec != nullptr) {
             fr->typeRec = typeRec;
             // Let the lexer know what field type to expect:
             expect(typeRec->type);
         }
         else {
-            cerr << "Error: Nodes of type " << fr->nodeType->getName() <<
+            std::cerr << "Error: Nodes of type " << fr->nodeType->getName() <<
                 " do not have fields/eventIn/eventOut named " <<
                 fieldName << "\n";
             // expect(ANY_FIELD);
@@ -539,12 +539,12 @@ enterField(const char *fieldName)
 void
 storeField(const VrmlFieldValue &value) {
   FieldRec *fr = currentField.top();
-  nassertv(fr != NULL);
+  nassertv(fr != nullptr);
 
   VrmlNode *node = currentNode.top();
-  nassertv(node != NULL);
+  nassertv(node != nullptr);
 
-  if (fr->typeRec != NULL) {
+  if (fr->typeRec != nullptr) {
     node->_fields.push_back(VrmlNode::Field(fr->typeRec, value));
   }
 }
@@ -553,10 +553,10 @@ void
 exitField()
 {
     FieldRec *fr = currentField.top();
-    nassertv(fr != NULL);
+    nassertv(fr != nullptr);
 
-    fr->fieldName = NULL;
-    fr->typeRec = NULL;
+    fr->fieldName = nullptr;
+    fr->typeRec = nullptr;
 }
 
 void

@@ -12,7 +12,7 @@
  */
 
 #include "copyOnWritePointer.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "config_pipeline.h"
 
 #ifdef COW_THREADED
@@ -23,12 +23,10 @@
  * This flavor of the method is written for the threaded case.
  */
 CPT(CopyOnWriteObject) CopyOnWritePointer::
-get_read_pointer() const {
-  if (_cow_object == (CopyOnWriteObject *)NULL) {
-    return NULL;
+get_read_pointer(Thread *current_thread) const {
+  if (_cow_object == nullptr) {
+    return nullptr;
   }
-
-  Thread *current_thread = Thread::get_current_thread();
 
   MutexHolder holder(_cow_object->_lock_mutex);
   while (_cow_object->_lock_status == CopyOnWriteObject::LS_locked_write) {
@@ -62,13 +60,13 @@ get_read_pointer() const {
  */
 PT(CopyOnWriteObject) CopyOnWritePointer::
 get_write_pointer() {
-  if (_cow_object == (CopyOnWriteObject *)NULL) {
-    return NULL;
+  if (_cow_object == nullptr) {
+    return nullptr;
   }
 
   Thread *current_thread = Thread::get_current_thread();
 
-  _cow_object->_lock_mutex.acquire();
+  _cow_object->_lock_mutex.lock();
   while (_cow_object->_lock_status == CopyOnWriteObject::LS_locked_write &&
          _cow_object->_locking_thread != current_thread) {
     if (util_cat.is_debug()) {
@@ -81,7 +79,7 @@ get_write_pointer() {
   }
 
   if (_cow_object->_lock_status == CopyOnWriteObject::LS_locked_read) {
-    nassertr(_cow_object->get_ref_count() > _cow_object->get_cache_ref_count(), NULL);
+    nassertr(_cow_object->get_ref_count() > _cow_object->get_cache_ref_count(), nullptr);
 
     if (util_cat.is_debug()) {
       util_cat.debug()
@@ -91,7 +89,7 @@ get_write_pointer() {
 
     PT(CopyOnWriteObject) new_object = _cow_object->make_cow_copy();
     _cow_object->CachedTypedWritableReferenceCount::cache_unref();
-    _cow_object->_lock_mutex.release();
+    _cow_object->_lock_mutex.unlock();
 
     MutexHolder holder(new_object->_lock_mutex);
     _cow_object = new_object;
@@ -114,7 +112,7 @@ get_write_pointer() {
 
     PT(CopyOnWriteObject) new_object = _cow_object->make_cow_copy();
     _cow_object->CachedTypedWritableReferenceCount::cache_unref();
-    _cow_object->_lock_mutex.release();
+    _cow_object->_lock_mutex.unlock();
 
     MutexHolder holder(new_object->_lock_mutex);
     _cow_object = new_object;
@@ -134,7 +132,7 @@ get_write_pointer() {
     // reference.
     _cow_object->_lock_status = CopyOnWriteObject::LS_locked_write;
     _cow_object->_locking_thread = current_thread;
-    _cow_object->_lock_mutex.release();
+    _cow_object->_lock_mutex.unlock();
   }
 
   return _cow_object;

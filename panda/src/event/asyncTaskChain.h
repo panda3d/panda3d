@@ -20,7 +20,7 @@
 #include "asyncTaskCollection.h"
 #include "typedReferenceCount.h"
 #include "thread.h"
-#include "conditionVarFull.h"
+#include "conditionVar.h"
 #include "pvector.h"
 #include "pdeque.h"
 #include "pStatCollector.h"
@@ -49,7 +49,7 @@ class AsyncTaskManager;
  */
 class EXPCL_PANDA_EVENT AsyncTaskChain : public TypedReferenceCount, public Namable {
 public:
-  AsyncTaskChain(AsyncTaskManager *manager, const string &name);
+  AsyncTaskChain(AsyncTaskManager *manager, const std::string &name);
   ~AsyncTaskChain();
 
 PUBLISHED:
@@ -88,15 +88,15 @@ PUBLISHED:
   void poll();
   double get_next_wake_time() const;
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level = 0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level = 0) const;
 
 protected:
   class AsyncTaskChainThread;
   typedef pvector< PT(AsyncTask) > TaskHeap;
 
   void do_add(AsyncTask *task);
-  bool do_remove(AsyncTask *task);
+  bool do_remove(AsyncTask *task, bool upon_death=false);
   void do_wait_for_tasks();
   void do_cleanup();
 
@@ -115,15 +115,15 @@ protected:
   void cleanup_pickup_mode();
   INLINE double do_get_next_wake_time() const;
   static INLINE double get_wake_time(AsyncTask *task);
-  void do_output(ostream &out) const;
-  void do_write(ostream &out, int indent_level) const;
+  void do_output(std::ostream &out) const;
+  void do_write(std::ostream &out, int indent_level) const;
 
-  void write_task_line(ostream &out, int indent_level, AsyncTask *task, double now) const;
+  void write_task_line(std::ostream &out, int indent_level, AsyncTask *task, double now) const;
 
 protected:
   class AsyncTaskChainThread : public Thread {
   public:
-    AsyncTaskChainThread(const string &name, AsyncTaskChain *chain);
+    AsyncTaskChainThread(const std::string &name, AsyncTaskChain *chain);
     virtual void thread_main();
 
     AsyncTaskChain *_chain;
@@ -146,7 +146,12 @@ protected:
       if (a->get_priority() != b->get_priority()) {
         return a->get_priority() < b->get_priority();
       }
-      return a->get_start_time() > b->get_start_time();
+      if (a->get_start_time() != b->get_start_time()) {
+        return a->get_start_time() > b->get_start_time();
+      }
+      // Failing any other ordering criteria, we sort the tasks based on the
+      // order in which they were added to the task chain.
+      return a->_implicit_sort > b->_implicit_sort;
     }
   };
 
@@ -154,7 +159,7 @@ protected:
 
   AsyncTaskManager *_manager;
 
-  ConditionVarFull _cvar;  // signaled when one of the task heaps, _state, or _current_sort changes, or a task finishes.
+  ConditionVar _cvar;  // signaled when one of the task heaps, _state, or _current_sort changes, or a task finishes.
 
   enum State {
     S_initial,     // no threads yet
@@ -172,6 +177,7 @@ protected:
   bool _frame_sync;
   int _num_busy_threads;
   int _num_tasks;
+  int _num_awaiting_tasks;
   TaskHeap _active;
   TaskHeap _this_active;
   TaskHeap _next_active;
@@ -184,6 +190,8 @@ protected:
   int _current_frame;
   double _time_in_frame;
   bool _block_till_next_frame;
+
+  unsigned int _next_implicit_sort;
 
   static PStatCollector _task_pcollector;
   static PStatCollector _wait_pcollector;
@@ -205,13 +213,15 @@ public:
 private:
   static TypeHandle _type_handle;
 
+  friend class AsyncFuture;
   friend class AsyncTaskChainThread;
   friend class AsyncTask;
   friend class AsyncTaskManager;
   friend class AsyncTaskSortWakeTime;
+  friend class PythonTask;
 };
 
-INLINE ostream &operator << (ostream &out, const AsyncTaskChain &chain) {
+INLINE std::ostream &operator << (std::ostream &out, const AsyncTaskChain &chain) {
   chain.output(out);
   return out;
 };

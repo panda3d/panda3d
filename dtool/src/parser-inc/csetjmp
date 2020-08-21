@@ -1,0 +1,5 @@
+#pragma once
+
+namespace std {
+  typedef int jmp_buf[1];
+}

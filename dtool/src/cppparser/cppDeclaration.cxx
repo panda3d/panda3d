@@ -22,8 +22,8 @@ CPPDeclaration(const CPPFile &file) :
   _file(file)
 {
   _vis = V_unknown;
-  _template_scope = NULL;
-  _leading_comment = (CPPCommentBlock *)NULL;
+  _template_scope = nullptr;
+  _leading_comment = nullptr;
 }
 
 /**
@@ -86,7 +86,7 @@ operator < (const CPPDeclaration &other) const {
  */
 bool CPPDeclaration::
 is_template() const {
-  return _template_scope != NULL;
+  return _template_scope != nullptr;
 }
 
 /**
@@ -116,7 +116,7 @@ CPPDeclaration *CPPDeclaration::
 instantiate(const CPPTemplateParameterList *,
             CPPScope *, CPPScope *,
             CPPPreprocessor *error_sink) const {
-  if (error_sink != NULL) {
+  if (error_sink != nullptr) {
     error_sink->warning("Ignoring template parameters");
   }
   return (CPPDeclaration *)this;
@@ -129,7 +129,7 @@ CPPDeclaration *CPPDeclaration::
 substitute_decl(SubstDecl &subst, CPPScope *, CPPScope *) {
   SubstDecl::const_iterator si = subst.find(this);
   if (si != subst.end()) {
-    assert((*si).second != NULL);
+    assert((*si).second != nullptr);
     return (*si).second;
   }
   return this;
@@ -140,7 +140,7 @@ substitute_decl(SubstDecl &subst, CPPScope *, CPPScope *) {
  */
 CPPInstance *CPPDeclaration::
 as_instance() {
-  return (CPPInstance *)NULL;
+  return nullptr;
 }
 
 /**
@@ -148,7 +148,7 @@ as_instance() {
  */
 CPPClassTemplateParameter *CPPDeclaration::
 as_class_template_parameter() {
-  return (CPPClassTemplateParameter *)NULL;
+  return nullptr;
 }
 
 /**
@@ -156,7 +156,7 @@ as_class_template_parameter() {
  */
 CPPTypedefType *CPPDeclaration::
 as_typedef_type() {
-  return (CPPTypedefType *)NULL;
+  return nullptr;
 }
 
 /**
@@ -164,7 +164,7 @@ as_typedef_type() {
  */
 CPPTypeDeclaration *CPPDeclaration::
 as_type_declaration() {
-  return (CPPTypeDeclaration *)NULL;
+  return nullptr;
 }
 
 /**
@@ -172,7 +172,7 @@ as_type_declaration() {
  */
 CPPExpression *CPPDeclaration::
 as_expression() {
-  return (CPPExpression *)NULL;
+  return nullptr;
 }
 
 /**
@@ -180,7 +180,7 @@ as_expression() {
  */
 CPPType *CPPDeclaration::
 as_type() {
-  return (CPPType *)NULL;
+  return nullptr;
 }
 
 /**
@@ -188,7 +188,7 @@ as_type() {
  */
 CPPNamespace *CPPDeclaration::
 as_namespace() {
-  return (CPPNamespace *)NULL;
+  return nullptr;
 }
 
 /**
@@ -196,7 +196,7 @@ as_namespace() {
  */
 CPPUsing *CPPDeclaration::
 as_using() {
-  return (CPPUsing *)NULL;
+  return nullptr;
 }
 
 /**
@@ -204,7 +204,7 @@ as_using() {
  */
 CPPSimpleType *CPPDeclaration::
 as_simple_type() {
-  return (CPPSimpleType *)NULL;
+  return nullptr;
 }
 
 /**
@@ -212,7 +212,7 @@ as_simple_type() {
  */
 CPPPointerType *CPPDeclaration::
 as_pointer_type() {
-  return (CPPPointerType *)NULL;
+  return nullptr;
 }
 
 /**
@@ -220,7 +220,7 @@ as_pointer_type() {
  */
 CPPReferenceType *CPPDeclaration::
 as_reference_type() {
-  return (CPPReferenceType *)NULL;
+  return nullptr;
 }
 
 /**
@@ -228,7 +228,7 @@ as_reference_type() {
  */
 CPPArrayType *CPPDeclaration::
 as_array_type() {
-  return (CPPArrayType *)NULL;
+  return nullptr;
 }
 
 /**
@@ -236,7 +236,7 @@ as_array_type() {
  */
 CPPConstType *CPPDeclaration::
 as_const_type() {
-  return (CPPConstType *)NULL;
+  return nullptr;
 }
 
 /**
@@ -244,7 +244,7 @@ as_const_type() {
  */
 CPPFunctionType *CPPDeclaration::
 as_function_type() {
-  return (CPPFunctionType *)NULL;
+  return nullptr;
 }
 
 /**
@@ -252,7 +252,7 @@ as_function_type() {
  */
 CPPFunctionGroup *CPPDeclaration::
 as_function_group() {
-  return (CPPFunctionGroup *)NULL;
+  return nullptr;
 }
 
 /**
@@ -260,7 +260,7 @@ as_function_group() {
  */
 CPPExtensionType *CPPDeclaration::
 as_extension_type() {
-  return (CPPExtensionType *)NULL;
+  return nullptr;
 }
 
 /**
@@ -268,7 +268,7 @@ as_extension_type() {
  */
 CPPStructType *CPPDeclaration::
 as_struct_type() {
-  return (CPPStructType *)NULL;
+  return nullptr;
 }
 
 /**
@@ -276,7 +276,7 @@ as_struct_type() {
  */
 CPPEnumType *CPPDeclaration::
 as_enum_type() {
-  return (CPPEnumType *)NULL;
+  return nullptr;
 }
 
 /**
@@ -284,7 +284,7 @@ as_enum_type() {
  */
 CPPTBDType *CPPDeclaration::
 as_tbd_type() {
-  return (CPPTBDType *)NULL;
+  return nullptr;
 }
 
 /**
@@ -292,7 +292,7 @@ as_tbd_type() {
  */
 CPPTypeProxy *CPPDeclaration::
 as_type_proxy() {
-  return (CPPTypeProxy *)NULL;
+  return nullptr;
 }
 
 /**
@@ -300,7 +300,7 @@ as_type_proxy() {
  */
 CPPMakeProperty *CPPDeclaration::
 as_make_property() {
-  return (CPPMakeProperty *)NULL;
+  return nullptr;
 }
 
 /**
@@ -308,7 +308,7 @@ as_make_property() {
  */
 CPPMakeSeq *CPPDeclaration::
 as_make_seq() {
-  return (CPPMakeSeq *)NULL;
+  return nullptr;
 }
 
 /**
@@ -316,7 +316,7 @@ as_make_seq() {
  */
 CPPClosureType *CPPDeclaration::
 as_closure_type() {
-  return (CPPClosureType *)NULL;
+  return nullptr;
 }
 
 /**
@@ -338,18 +338,18 @@ is_less(const CPPDeclaration *other) const {
 }
 
 
-ostream &
-operator << (ostream &out, const CPPDeclaration::SubstDecl &subst) {
+std::ostream &
+operator << (std::ostream &out, const CPPDeclaration::SubstDecl &subst) {
   CPPDeclaration::SubstDecl::const_iterator it;
   for (it = subst.begin(); it != subst.end(); ++it) {
     out << "  ";
-    if (it->first == NULL) {
+    if (it->first == nullptr) {
       out << "(null)";
     } else {
       out << *(it->first);
     }
     out << " -> ";
-    if (it->second == NULL) {
+    if (it->second == nullptr) {
       out << "(null)";
     } else {
       out << *(it->second);

@@ -21,8 +21,6 @@ TypeHandle NodeReferenceCount::_type_handle;
  */
 bool NodeReferenceCount::
 do_test_ref_count_integrity() const {
-  nassertr(this != NULL, false);
-
   // If this assertion fails, we're trying to delete an object that was just
   // deleted.  Possibly you used a real pointer instead of a PointerTo at some
   // point, and the object was deleted when the PointerTo went out of scope.

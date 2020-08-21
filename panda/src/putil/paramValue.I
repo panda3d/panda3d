@@ -43,7 +43,7 @@ ParamTypedRefCount(const TypedReferenceCount *value) :
  */
 INLINE TypeHandle ParamTypedRefCount::
 get_value_type() const {
-  if (_value == NULL) {
+  if (_value == nullptr) {
     return TypeHandle::none();
   } else {
     return _value->get_type();
@@ -116,7 +116,7 @@ get_value() const {
  */
 template<class Type>
 INLINE void ParamValue<Type>::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << _value;
 }
 

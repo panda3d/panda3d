@@ -59,7 +59,7 @@ protected:
   virtual PT(CopyOnWriteObject) make_cow_copy();
 
 PUBLISHED:
-  GeomPrimitive(UsageHint usage_hint);
+  explicit GeomPrimitive(UsageHint usage_hint);
   GeomPrimitive(const GeomPrimitive &copy);
   void operator = (const GeomPrimitive &copy);
   virtual ~GeomPrimitive();
@@ -134,6 +134,7 @@ PUBLISHED:
   CPT(GeomPrimitive) make_points() const;
   CPT(GeomPrimitive) make_lines() const;
   CPT(GeomPrimitive) make_patches() const;
+  virtual CPT(GeomPrimitive) make_adjacency() const;
 
   int get_num_bytes() const;
   INLINE int get_data_size_bytes() const;
@@ -142,12 +143,13 @@ PUBLISHED:
   MAKE_PROPERTY(data_size_bytes, get_data_size_bytes);
   MAKE_PROPERTY(modified, get_modified);
 
-  bool request_resident() const;
+  bool request_resident(Thread *current_thread = Thread::get_current_thread()) const;
 
   INLINE bool check_valid(const GeomVertexData *vertex_data) const;
+  INLINE bool check_valid(const GeomVertexDataPipelineReader *data_reader) const;
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
 PUBLISHED:
 /*
@@ -162,7 +164,9 @@ PUBLISHED:
  */
 
   INLINE CPT(GeomVertexArrayData) get_vertices() const;
+  INLINE CPT(GeomVertexArrayDataHandle) get_vertices_handle(Thread *current_thread) const;
   PT(GeomVertexArrayData) modify_vertices(int num_vertices = -1);
+  INLINE PT(GeomVertexArrayDataHandle) modify_vertices_handle(Thread *current_thread);
   void set_vertices(const GeomVertexArrayData *vertices, int num_vertices = -1);
   void set_nonindexed_vertices(int first_vertex, int num_vertices);
 
@@ -347,14 +351,13 @@ private:
  */
 class EXPCL_PANDA_GOBJ GeomPrimitivePipelineReader : public GeomEnums {
 public:
-  INLINE GeomPrimitivePipelineReader(const GeomPrimitive *object, Thread *current_thread);
-private:
-  INLINE GeomPrimitivePipelineReader(const GeomPrimitivePipelineReader &copy);
-  INLINE void operator = (const GeomPrimitivePipelineReader &copy);
-
-public:
+  INLINE GeomPrimitivePipelineReader(CPT(GeomPrimitive) object, Thread *current_thread);
+  GeomPrimitivePipelineReader(const GeomPrimitivePipelineReader &copy) = delete;
   INLINE ~GeomPrimitivePipelineReader();
+
   ALLOC_DELETED_CHAIN(GeomPrimitivePipelineReader);
+
+  GeomPrimitivePipelineReader &operator = (const GeomPrimitivePipelineReader &copy) = delete;
 
   INLINE const GeomPrimitive *get_object() const;
   INLINE Thread *get_current_thread() const;
@@ -369,13 +372,13 @@ public:
   INLINE int get_num_vertices() const;
   int get_vertex(int i) const;
   int get_num_primitives() const;
+  void get_referenced_vertices(BitArray &bits) const;
   INLINE int get_min_vertex() const;
   INLINE int get_max_vertex() const;
   INLINE int get_data_size_bytes() const;
   INLINE UpdateSeq get_modified() const;
   bool check_valid(const GeomVertexDataPipelineReader *data_reader) const;
   INLINE int get_index_stride() const;
-  INLINE const GeomVertexArrayDataHandle *get_vertices_reader() const;
   INLINE const unsigned char *get_read_pointer(bool force) const;
   INLINE int get_strip_cut_index() const;
   INLINE CPTA_int get_ends() const;
@@ -384,13 +387,15 @@ public:
 
   INLINE IndexBufferContext *prepare_now(PreparedGraphicsObjects *prepared_objects,
                                          GraphicsStateGuardianBase *gsg) const;
+  INLINE bool draw(GraphicsStateGuardianBase *gsg, bool force) const;
 
 private:
   CPT(GeomPrimitive) _object;
   Thread *_current_thread;
   const GeomPrimitive::CData *_cdata;
 
-  CPT(GeomVertexArrayDataHandle) _vertices_reader;
+  CPT(GeomVertexArrayData) _vertices;
+  const GeomVertexArrayData::CData *_vertices_cdata;
 
 public:
   static TypeHandle get_class_type() {
@@ -404,7 +409,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const GeomPrimitive &obj);
+INLINE std::ostream &operator << (std::ostream &out, const GeomPrimitive &obj);
 
 #include "geomPrimitive.I"
 

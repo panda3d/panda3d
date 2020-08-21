@@ -20,6 +20,7 @@
 #define WINDOWS_H
 
 #include <wtypes.h>
+#include <synchapi.h>
 
 #ifdef _WIN64
 typedef int HALF_PTR;
@@ -38,8 +39,10 @@ typedef unsigned long ULONG_PTR;
 // http://msdn.microsoft.com/en-us/library/cc230309.aspx
 typedef bool BOOL;
 typedef unsigned long DWORD;
+typedef unsigned short WORD;
 typedef long LONG;
 typedef long UINT;
+typedef unsigned char BYTE;
 typedef unsigned long ULONG;
 typedef long long LONGLONG;
 typedef long HRESULT;

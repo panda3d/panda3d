@@ -45,8 +45,8 @@ public:
     T_template,
   };
 
-  INLINE XFileDataDef(XFile *x_file, const string &name,
-                      Type type, XFileTemplate *xtemplate = NULL);
+  INLINE XFileDataDef(XFile *x_file, const std::string &name,
+                      Type type, XFileTemplate *xtemplate = nullptr);
   virtual ~XFileDataDef();
 
   virtual void clear();
@@ -58,7 +58,7 @@ public:
   INLINE int get_num_array_defs() const;
   INLINE const XFileArrayDef &get_array_def(int i) const;
 
-  virtual void write_text(ostream &out, int indent_level) const;
+  virtual void write_text(std::ostream &out, int indent_level) const;
 
   virtual bool repack_data(XFileDataObject *object,
                            const XFileParseDataList &parse_data_list,

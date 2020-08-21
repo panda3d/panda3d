@@ -43,12 +43,12 @@ public:
   virtual bool do_rebuild(EggCharacterDb &db);
 
   virtual void optimize();
-  virtual void zero_channels(const string &components);
-  virtual void quantize_channels(const string &components, double quantum);
+  virtual void zero_channels(const std::string &components);
+  virtual void quantize_channels(const std::string &components, double quantum);
 
-  virtual EggJointPointer *make_new_joint(const string &name);
+  virtual EggJointPointer *make_new_joint(const std::string &name);
 
-  virtual void set_name(const string &name);
+  virtual void set_name(const std::string &name);
 
 private:
   PT(EggTable) _table;

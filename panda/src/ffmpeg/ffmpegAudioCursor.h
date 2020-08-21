@@ -23,7 +23,7 @@
 #include "ffmpegVirtualFile.h"
 
 extern "C" {
-  #include "libavcodec/avcodec.h"
+  #include <libavcodec/avcodec.h>
 }
 
 class FfmpegAudio;
@@ -45,7 +45,7 @@ PUBLISHED:
   virtual void seek(double offset);
 
 public:
-  virtual void read_samples(int n, int16_t *data);
+  virtual int read_samples(int n, int16_t *data);
 
 protected:
   void fetch_packet();

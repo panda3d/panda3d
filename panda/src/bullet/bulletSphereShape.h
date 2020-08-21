@@ -11,8 +11,8 @@
  * @date 2010-01-23
  */
 
-#ifndef __BULLET_SPHERE_SHAPE_H__
-#define __BULLET_SPHERE_SHAPE_H__
+#ifndef BULLETSPHERESHAPE_H
+#define BULLETSPHERESHAPE_H
 
 #include "pandabase.h"
 
@@ -28,23 +28,25 @@
 class EXPCL_PANDABULLET BulletSphereShape : public BulletShape {
 private:
   // Only used by make_from_bam
-  INLINE BulletSphereShape() : _shape(NULL) {};
+  INLINE BulletSphereShape() : _shape(nullptr) {};
 
 PUBLISHED:
-  BulletSphereShape(PN_stdfloat radius);
-  INLINE BulletSphereShape(const BulletSphereShape &copy);
-  INLINE void operator = (const BulletSphereShape &copy);
+  explicit BulletSphereShape(PN_stdfloat radius);
+  BulletSphereShape(const BulletSphereShape &copy);
   INLINE ~BulletSphereShape();
 
   INLINE PN_stdfloat get_radius() const;
 
   static BulletSphereShape *make_from_solid(const CollisionSphere *solid);
 
+  MAKE_PROPERTY(radius, get_radius);
+
 public:
   virtual btCollisionShape *ptr() const;
 
 private:
   btSphereShape *_shape;
+  PN_stdfloat _radius;
 
 public:
   static void register_with_read_factory();
@@ -77,4 +79,4 @@ private:
 
 #include "bulletSphereShape.I"
 
-#endif // __BULLET_SPHERE_SHAPE_H__
+#endif // BULLETSPHERESHAPE_H

@@ -28,8 +28,8 @@ class SomethingToEggConverter;
  */
 class SomethingToEgg : public EggConverter {
 public:
-  SomethingToEgg(const string &format_name,
-                 const string &preferred_extension = string(),
+  SomethingToEgg(const std::string &format_name,
+                 const std::string &preferred_extension = std::string(),
                  bool allow_last_param = true,
                  bool allow_stdout = true);
 
@@ -45,7 +45,7 @@ protected:
   virtual bool post_command_line();
   virtual void post_process_egg_file();
 
-  static bool dispatch_animation_convert(const string &opt, const string &arg, void *var);
+  static bool dispatch_animation_convert(const std::string &opt, const std::string &arg, void *var);
 
 
   Filename _input_filename;
@@ -54,7 +54,7 @@ protected:
   DistanceUnit _output_units;
 
   AnimationConvert _animation_convert;
-  string _character_name;
+  std::string _character_name;
   double _start_frame;
   double _end_frame;
   double _frame_inc;

@@ -28,7 +28,7 @@ public:
   void run();
 
 protected:
-  static bool dispatch_transform_type(const string &opt, const string &arg, void *var);
+  static bool dispatch_transform_type(const std::string &opt, const std::string &arg, void *var);
 
   int _verbose;
   bool _polygon_output;

@@ -12,8 +12,14 @@
 from direct.tkwidgets import Valuator
 from direct.tkwidgets import Floater
 from direct.tkwidgets import Slider
-import string, Pmw, Tkinter, tkColorChooser
+import sys, Pmw
 from direct.tkwidgets.VectorWidgets import VectorEntry
+
+if sys.version_info >= (3, 0):
+    from tkinter.colorchooser import askcolor
+else:
+    from tkColorChooser import askcolor
+
 
 class seColorEntry(VectorEntry):
     def __init__(self, parent = None, **kw):
@@ -41,7 +47,7 @@ class seColorEntry(VectorEntry):
 
     def popupColorPicker(self):
         # Can pass in current color with: color = (255, 0, 0)
-        color = tkColorChooser.askcolor(
+        color = askcolor(
             parent = self.interior(),
             # Initialize it to current color
             initialcolor = tuple(self.get()[:3]))[0]

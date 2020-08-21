@@ -74,7 +74,7 @@
 #include "collisionNode.h"
 #include "collisionSphere.h"
 #include "collisionInvSphere.h"
-#include "collisionTube.h"
+#include "collisionCapsule.h"
 #include "collisionPlane.h"
 #include "collisionPolygon.h"
 #include "collisionFloorMesh.h"
@@ -100,6 +100,10 @@
 #include <ctype.h>
 #include <algorithm>
 
+using std::max;
+using std::min;
+using std::string;
+
 // This class is used in make_node(EggBin *) to sort LOD instances in order by
 // switching distance.
 class LODInstance {
@@ -115,7 +119,7 @@ public:
 
 LODInstance::
 LODInstance(EggNode *egg_node) {
-  nassertv(egg_node != NULL);
+  nassertv(egg_node != nullptr);
   _egg_node = egg_node;
 
   // We expect this egg node to be an EggGroup with an LOD specification.
@@ -139,7 +143,7 @@ EggLoader() {
   _data->set_coordinate_system(egg_coordinate_system);
   _error = false;
   _dynamic_override = false;
-  _dynamic_override_char_maker = NULL;
+  _dynamic_override_char_maker = nullptr;
 }
 
 /**
@@ -151,7 +155,7 @@ EggLoader(const EggData *data) :
 {
   _error = false;
   _dynamic_override = false;
-  _dynamic_override_char_maker = NULL;
+  _dynamic_override_char_maker = nullptr;
 }
 
 
@@ -224,7 +228,7 @@ reparent_decals() {
   ExtraNodes::const_iterator di;
   for (di = _decals.begin(); di != _decals.end(); ++di) {
     PandaNode *node = (*di);
-    nassertv(node != (PandaNode *)NULL);
+    nassertv(node != nullptr);
 
     // The NodePath interface is best for this.
     NodePath parent(node);
@@ -307,7 +311,7 @@ make_polyset(EggBin *egg_bin, PandaNode *parent, const LMatrix4d *transform,
   EggGroupNode::const_iterator ci = egg_bin->begin();
   nassertv(ci != egg_bin->end());
   CPT(EggPrimitive) first_prim = DCAST(EggPrimitive, (*ci));
-  nassertv(first_prim != (EggPrimitive *)NULL);
+  nassertv(first_prim != nullptr);
   const EggRenderState *render_state;
   DCAST_INTO_V(render_state, first_prim->get_user_data(EggRenderState::get_class_type()));
 
@@ -390,7 +394,7 @@ make_polyset(EggBin *egg_bin, PandaNode *parent, const LMatrix4d *transform,
 
     if (!primitives.empty()) {
       LMatrix4d mat;
-      if (transform != NULL) {
+      if (transform != nullptr) {
         mat = (*transform);
       } else {
         mat = egg_bin->get_vertex_to_node();
@@ -400,7 +404,7 @@ make_polyset(EggBin *egg_bin, PandaNode *parent, const LMatrix4d *transform,
       PT(GeomVertexData) vertex_data =
         make_vertex_data(render_state, vertex_pool, egg_bin, mat, blend_table,
                          is_dynamic, character_maker, has_overall_color);
-      nassertv(vertex_data != (GeomVertexData *)NULL);
+      nassertv(vertex_data != nullptr);
 
       // And create a Geom to hold the primitives.
       PT(Geom) geom = new Geom(vertex_data);
@@ -423,7 +427,7 @@ make_polyset(EggBin *egg_bin, PandaNode *parent, const LMatrix4d *transform,
         // render_state->_state->write(cerr, 0);
 
       // Create a new GeomNode if we haven't already.
-      if (geom_node == (GeomNode *)NULL) {
+      if (geom_node == nullptr) {
         // Now, is our parent node a GeomNode, or just an ordinary PandaNode?
         // If it's a GeomNode, we can add the new Geom directly to our parent;
         // otherwise, we need to create a new node.
@@ -453,7 +457,7 @@ make_polyset(EggBin *egg_bin, PandaNode *parent, const LMatrix4d *transform,
     }
   }
 
-  if (geom_node != (GeomNode *)NULL && egg_show_normals) {
+  if (geom_node != nullptr && egg_show_normals) {
     // Create some more geometry to visualize each normal.
     for (vpi = vertex_pools.begin(); vpi != vertex_pools.end(); ++vpi) {
       EggVertexPool *vertex_pool = (*vpi);
@@ -659,11 +663,11 @@ make_nurbs_curve(EggNurbsCurve *egg_curve, PandaNode *parent,
     return;
   }
 
-  assert(parent != NULL);
+  assert(parent != nullptr);
   assert(!parent->is_geom_node());
 
   PT(NurbsCurveEvaluator) nurbs = ::make_nurbs_curve(egg_curve, mat);
-  if (nurbs == (NurbsCurveEvaluator *)NULL) {
+  if (nurbs == nullptr) {
     _error = true;
     return;
   }
@@ -722,18 +726,20 @@ make_nurbs_curve(EggNurbsCurve *egg_curve, PandaNode *parent,
  * This deprecated interface creates a NurbsCurve object for the EggNurbsCurve
  * entry.  It will eventually be removed in favor of the above, which creates
  * a RopeNode.
+ *
+ * @deprecated See make_nurbs_curve.
  */
 void EggLoader::
 make_old_nurbs_curve(EggNurbsCurve *egg_curve, PandaNode *parent,
                      const LMatrix4d &mat) {
-  assert(parent != NULL);
+  assert(parent != nullptr);
   assert(!parent->is_geom_node());
 
   PT(ParametricCurve) curve;
   curve = new NurbsCurve;
 
   NurbsCurveInterface *nurbs = curve->get_nurbs_interface();
-  nassertv(nurbs != (NurbsCurveInterface *)NULL);
+  nassertv(nurbs != nullptr);
 
   if (egg_curve->get_order() < 1 || egg_curve->get_order() > 4) {
     egg2pg_cat.error()
@@ -798,11 +804,11 @@ make_old_nurbs_curve(EggNurbsCurve *egg_curve, PandaNode *parent,
 void EggLoader::
 make_nurbs_surface(EggNurbsSurface *egg_surface, PandaNode *parent,
                    const LMatrix4d &mat) {
-  assert(parent != NULL);
+  assert(parent != nullptr);
   assert(!parent->is_geom_node());
 
   PT(NurbsSurfaceEvaluator) nurbs = ::make_nurbs_surface(egg_surface, mat);
-  if (nurbs == (NurbsSurfaceEvaluator *)NULL) {
+  if (nurbs == nullptr) {
     _error = true;
     return;
   }
@@ -915,7 +921,7 @@ load_texture(TextureDef &def, EggTexture *egg_tex) {
   // Since some properties of the textures are inferred from the texture files
   // themselves (if the properties are not explicitly specified in the egg
   // file), then we add the textures as dependents for the egg file.
-  if (_record != (BamCacheRecord *)NULL) {
+  if (_record != nullptr) {
     _record->add_dependent_file(egg_tex->get_fullpath());
     if (egg_tex->has_alpha_filename() && wanted_alpha) {
       _record->add_dependent_file(egg_tex->get_alpha_fullpath());
@@ -987,7 +993,7 @@ load_texture(TextureDef &def, EggTexture *egg_tex) {
     break;
   }
 
-  if (tex == (Texture *)NULL) {
+  if (tex == nullptr) {
     return false;
   }
 
@@ -1002,7 +1008,7 @@ load_texture(TextureDef &def, EggTexture *egg_tex) {
   // See if there is some egg data hanging on the texture.  In particular, the
   // TxaFileFilter might have left that here for us.
   TypedReferenceCount *aux = tex->get_aux_data("egg");
-  if (aux != (TypedReferenceCount *)NULL &&
+  if (aux != nullptr &&
       aux->is_of_type(EggTexture::get_class_type())) {
     EggTexture *aux_egg_tex = DCAST(EggTexture, aux);
 
@@ -1686,7 +1692,7 @@ make_node(EggNode *egg_node, PandaNode *parent) {
     return make_node(DCAST(EggGroupNode, egg_node), parent);
   }
 
-  return (PandaNode *)NULL;
+  return nullptr;
 }
 
 /**
@@ -1700,40 +1706,40 @@ make_node(EggBin *egg_bin, PandaNode *parent) {
   switch (egg_bin->get_bin_number()) {
   case EggBinner::BN_polyset:
   case EggBinner::BN_patches:
-    make_polyset(egg_bin, parent, NULL, _dynamic_override, _dynamic_override_char_maker);
-    return NULL;
+    make_polyset(egg_bin, parent, nullptr, _dynamic_override, _dynamic_override_char_maker);
+    return nullptr;
 
   case EggBinner::BN_lod:
     return make_lod(egg_bin, parent);
 
   case EggBinner::BN_nurbs_surface:
     {
-      nassertr(!egg_bin->empty(), NULL);
+      nassertr(!egg_bin->empty(), nullptr);
       EggNode *child = egg_bin->get_first_child();
       EggNurbsSurface *egg_nurbs;
-      DCAST_INTO_R(egg_nurbs, child, NULL);
+      DCAST_INTO_R(egg_nurbs, child, nullptr);
       const LMatrix4d &mat = egg_nurbs->get_vertex_to_node();
       make_nurbs_surface(egg_nurbs, parent, mat);
     }
-    return NULL;
+    return nullptr;
 
   case EggBinner::BN_nurbs_curve:
     {
-      nassertr(!egg_bin->empty(), NULL);
+      nassertr(!egg_bin->empty(), nullptr);
       EggNode *child = egg_bin->get_first_child();
       EggNurbsCurve *egg_nurbs;
-      DCAST_INTO_R(egg_nurbs, child, NULL);
+      DCAST_INTO_R(egg_nurbs, child, nullptr);
       const LMatrix4d &mat = egg_nurbs->get_vertex_to_node();
       make_nurbs_curve(egg_nurbs, parent, mat);
     }
-    return NULL;
+    return nullptr;
 
   case EggBinner::BN_none:
     break;
   }
 
   // Shouldn't get here.
-  return (PandaNode *)NULL;
+  return nullptr;
 }
 
 /**
@@ -1769,7 +1775,7 @@ make_lod(EggBin *egg_bin, PandaNode *parent) {
     // All of the children should have the same center, because that's how we
     // binned them.
     nassertr(lod_node->get_center().almost_equal
-             (LCAST(PN_stdfloat, instance._d->_center), 0.01), NULL);
+             (LCAST(PN_stdfloat, instance._d->_center), 0.01), nullptr);
 
     // Tell the LOD node about this child's switching distances.
     lod_node->add_switch(instance._d->_switch_in, instance._d->_switch_out);
@@ -1784,7 +1790,7 @@ make_lod(EggBin *egg_bin, PandaNode *parent) {
  */
 PandaNode *EggLoader::
 make_node(EggGroup *egg_group, PandaNode *parent) {
-  PT(PandaNode) node = NULL;
+  PT(PandaNode) node = nullptr;
 
   if (egg_group->get_dart_type() != EggGroup::DT_none) {
     // A group with the <Dart> flag set means to create a character.
@@ -1802,7 +1808,7 @@ make_node(EggGroup *egg_group, PandaNode *parent) {
       for (ci = egg_group->begin(); ci != egg_group->end(); ++ci) {
         make_node(*ci, node);
       }
-      _dynamic_override_char_maker = NULL;
+      _dynamic_override_char_maker = nullptr;
       _dynamic_override = false;
     }
 
@@ -1810,10 +1816,11 @@ make_node(EggGroup *egg_group, PandaNode *parent) {
     // A collision group: create collision geometry.
     node = new CollisionNode(egg_group->get_name());
 
+    // Piggy-back the desired transform to apply onto the node, since we can't
+    // break the ABI in 1.10.
+    node->set_transform(TransformState::make_mat(LCAST(PN_stdfloat, egg_group->get_vertex_to_node())));
     make_collision_solids(egg_group, egg_group, (CollisionNode *)node.p());
-
-    // Transform all of the collision solids into local space.
-    node->xform(LCAST(PN_stdfloat, egg_group->get_vertex_to_node()));
+    node->clear_transform();
 
     if ((egg_group->get_collide_flags() & EggGroup::CF_keep) != 0) {
       // If we also specified to keep the geometry, continue the traversal.
@@ -1956,8 +1963,8 @@ make_node(EggGroup *egg_group, PandaNode *parent) {
     }
   }
 
-  if (node == (PandaNode *)NULL) {
-    return NULL;
+  if (node == nullptr) {
+    return nullptr;
   }
 
   // Associate any instances with this node.
@@ -2319,7 +2326,7 @@ make_vertex_data(const EggRenderState *render_state,
   vertex_data->reserve_num_rows(vertex_pool->size());
 
   vertex_data->set_transform_blend_table(blend_table);
-  if (slider_table != (SliderTable *)NULL) {
+  if (slider_table != nullptr) {
     vertex_data->set_slider_table(SliderTable::register_table(slider_table));
   }
 
@@ -2477,7 +2484,7 @@ make_blend_table(EggVertexPool *vertex_pool, EggNode *primitive_home,
       // If the vertex has no explicit membership, it belongs right where it
       // is.
       PT(VertexTransform) vt = character_maker->egg_to_transform(primitive_home);
-      nassertr(vt != (VertexTransform *)NULL, NULL);
+      nassertr(vt != nullptr, nullptr);
       blend.add_transform(vt, 1.0f);
     } else {
       // If the vertex does have an explicit membership, ignore its parentage
@@ -2492,7 +2499,7 @@ make_blend_table(EggVertexPool *vertex_pool, EggNode *primitive_home,
         }
 
         PT(VertexTransform) vt = character_maker->egg_to_transform(egg_joint);
-        nassertr(vt != (VertexTransform *)NULL, NULL);
+        nassertr(vt != nullptr, nullptr);
         blend.add_transform(vt, membership);
       }
     }
@@ -2564,7 +2571,7 @@ make_primitive(const EggRenderState *render_state, EggPrimitive *egg_prim,
     primitive = new GeomPatches(num_vertices, Geom::UH_static);
   }
 
-  if (primitive == (GeomPrimitive *)NULL) {
+  if (primitive == nullptr) {
     // Don't know how to make this kind of primitive.
     egg2pg_cat.warning()
       << "Ignoring " << egg_prim->get_type() << "\n";
@@ -2584,7 +2591,7 @@ make_primitive(const EggRenderState *render_state, EggPrimitive *egg_prim,
   // Insert the primitive into the set, but if we already have a primitive of
   // that type, reset the pointer to that one instead.
   PrimitiveUnifier pu(primitive);
-  pair<UniquePrimitives::iterator, bool> result =
+  std::pair<UniquePrimitives::iterator, bool> result =
     unique_primitives.insert(UniquePrimitives::value_type(pu, primitive));
 
   if (result.second) {
@@ -2633,7 +2640,7 @@ set_portal_polygon(EggGroup *egg_group, PortalNode *pnode) {
   pnode->clear_vertices();
 
   PT(EggPolygon) poly = find_first_polygon(egg_group);
-  if (poly != (EggPolygon *)NULL) {
+  if (poly != nullptr) {
     LMatrix4d mat = poly->get_vertex_to_node();
 
     EggPolygon::const_iterator vi;
@@ -2650,14 +2657,13 @@ set_portal_polygon(EggGroup *egg_group, PortalNode *pnode) {
 void EggLoader::
 set_occluder_polygon(EggGroup *egg_group, OccluderNode *pnode) {
   PT(EggPolygon) poly = find_first_polygon(egg_group);
-  if (poly != (EggPolygon *)NULL) {
+  if (poly != nullptr) {
     if (poly->size() != 4) {
       egg2pg_cat.error()
         << "Invalid number of vertices for " << egg_group->get_name() << "\n";
     } else {
       LMatrix4d mat = poly->get_vertex_to_node();
 
-      EggPolygon::const_iterator vi;
       LPoint3d v0 = (*poly)[0]->get_pos3() * mat;
       LPoint3d v1 = (*poly)[1]->get_pos3() * mat;
       LPoint3d v2 = (*poly)[2]->get_pos3() * mat;
@@ -2693,14 +2699,14 @@ find_first_polygon(EggGroup *egg_group) {
     if ((*ci)->is_of_type(EggGroup::get_class_type())) {
       EggGroup *child_group = DCAST(EggGroup, *ci);
       PT(EggPolygon) found = find_first_polygon(child_group);
-      if (found != (EggPolygon *)NULL) {
+      if (found != nullptr) {
         return found;
       }
     }
   }
 
   // We got nothing.
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -2712,7 +2718,7 @@ bool EggLoader::
 make_sphere(EggGroup *egg_group, EggGroup::CollideFlags flags,
             LPoint3 &center, PN_stdfloat &radius, LColor &color) {
   EggGroup *geom_group = find_collision_geometry(egg_group, flags);
-  if (geom_group != (EggGroup *)NULL) {
+  if (geom_group != nullptr) {
     // Collect all of the vertices.
     pset<EggVertex *> vertices;
 
@@ -2770,9 +2776,9 @@ make_sphere(EggGroup *egg_group, EggGroup::CollideFlags flags,
  */
 bool EggLoader::
 make_box(EggGroup *egg_group, EggGroup::CollideFlags flags,
-         LPoint3 &min_p, LPoint3 &max_p, LColor &color) {
+         const LMatrix4 &xform, LPoint3 &min_p, LPoint3 &max_p) {
   EggGroup *geom_group = find_collision_geometry(egg_group, flags);
-  if (geom_group != (EggGroup *)NULL) {
+  if (geom_group != nullptr) {
     // Collect all of the vertices.
     pset<EggVertex *> vertices;
 
@@ -2799,13 +2805,12 @@ make_box(EggGroup *egg_group, EggGroup::CollideFlags flags,
     }
 
     EggVertex *vertex = (*vi);
-    LVertexd min_pd = vertex->get_pos3();
-    LVertexd max_pd = min_pd;
-    color = vertex->get_color();
+    LPoint3 min_pd = LCAST(PN_stdfloat, vertex->get_pos3()) * xform;
+    LPoint3 max_pd = min_pd;
 
     for (++vi; vi != vertices.end(); ++vi) {
       vertex = (*vi);
-      const LVertexd &pos = vertex->get_pos3();
+      LPoint3 pos = LCAST(PN_stdfloat, vertex->get_pos3()) * xform;
       min_pd.set(min(min_pd[0], pos[0]),
                  min(min_pd[1], pos[1]),
                  min(min_pd[2], pos[2]));
@@ -2814,11 +2819,23 @@ make_box(EggGroup *egg_group, EggGroup::CollideFlags flags,
                  max(max_pd[2], pos[2]));
     }
 
-    min_p = LCAST(PN_stdfloat, min_pd);
-    max_p = LCAST(PN_stdfloat, max_pd);
+    min_p = min_pd;
+    max_p = max_pd;
     return (min_pd != max_pd);
   }
   return false;
+}
+
+/**
+ * Creates a single generic Box corresponding to the polygons associated with
+ * this group.  This box is used by make_collision_box.
+ */
+bool EggLoader::
+make_box(EggGroup *egg_group, EggGroup::CollideFlags flags,
+         LPoint3 &min_p, LPoint3 &max_p, LColor &color) {
+
+  color.set(1.0, 1.0, 1.0, 1.0);
+  return make_box(egg_group, flags, LMatrix4::ident_mat(), min_p, max_p);
 }
 
 /**
@@ -2862,7 +2879,7 @@ make_collision_solids(EggGroup *start_group, EggGroup *egg_group,
     break;
 
   case EggGroup::CST_tube:
-    make_collision_tube(egg_group, cnode, start_group->get_collide_flags());
+    make_collision_capsule(egg_group, cnode, start_group->get_collide_flags());
     break;
 
   case EggGroup::CST_floor_mesh:
@@ -2893,14 +2910,15 @@ void EggLoader::
 make_collision_plane(EggGroup *egg_group, CollisionNode *cnode,
                      EggGroup::CollideFlags flags) {
   EggGroup *geom_group = find_collision_geometry(egg_group, flags);
-  if (geom_group != (EggGroup *)NULL) {
+  if (geom_group != nullptr) {
     EggGroup::const_iterator ci;
     for (ci = geom_group->begin(); ci != geom_group->end(); ++ci) {
       if ((*ci)->is_of_type(EggPolygon::get_class_type())) {
         CollisionPlane *csplane =
           create_collision_plane(DCAST(EggPolygon, *ci), egg_group);
-        if (csplane != (CollisionPlane *)NULL) {
+        if (csplane != nullptr) {
           apply_collision_flags(csplane, flags);
+          csplane->xform(cnode->get_transform()->get_mat());
           cnode->add_solid(csplane);
           return;
         }
@@ -2929,7 +2947,7 @@ make_collision_floor_mesh(EggGroup *egg_group, CollisionNode *cnode,
   EggGroup *geom_group = find_collision_geometry(egg_group, flags);
 
 
-  if (geom_group != (EggGroup *)NULL) {
+  if (geom_group != nullptr) {
     create_collision_floor_mesh(cnode, geom_group,flags);
   }
 }
@@ -2943,7 +2961,7 @@ make_collision_polygon(EggGroup *egg_group, CollisionNode *cnode,
                        EggGroup::CollideFlags flags) {
 
   EggGroup *geom_group = find_collision_geometry(egg_group, flags);
-  if (geom_group != (EggGroup *)NULL) {
+  if (geom_group != nullptr) {
     EggGroup::const_iterator ci;
     for (ci = geom_group->begin(); ci != geom_group->end(); ++ci) {
       if ((*ci)->is_of_type(EggPolygon::get_class_type())) {
@@ -2970,7 +2988,7 @@ void EggLoader::
 make_collision_polyset(EggGroup *egg_group, CollisionNode *cnode,
                        EggGroup::CollideFlags flags) {
   EggGroup *geom_group = find_collision_geometry(egg_group, flags);
-  if (geom_group != (EggGroup *)NULL) {
+  if (geom_group != nullptr) {
     EggGroup::const_iterator ci;
     for (ci = geom_group->begin(); ci != geom_group->end(); ++ci) {
       if ((*ci)->is_of_type(EggPolygon::get_class_type())) {
@@ -3001,6 +3019,7 @@ make_collision_sphere(EggGroup *egg_group, CollisionNode *cnode,
     CollisionSphere *cssphere =
       new CollisionSphere(center, radius);
     apply_collision_flags(cssphere, flags);
+    cssphere->xform(cnode->get_transform()->get_mat());
     cnode->add_solid(cssphere);
   }
 }
@@ -3014,8 +3033,8 @@ make_collision_box(EggGroup *egg_group, CollisionNode *cnode,
                    EggGroup::CollideFlags flags) {
   LPoint3 min_p;
   LPoint3 max_p;
-  LColor dummycolor;
-  if (make_box(egg_group, flags, min_p, max_p, dummycolor)) {
+  CPT(TransformState) transform = cnode->get_transform();
+  if (make_box(egg_group, flags, transform->get_mat(), min_p, max_p)) {
     CollisionBox *csbox =
       new CollisionBox(min_p, max_p);
     apply_collision_flags(csbox, flags);
@@ -3037,19 +3056,20 @@ make_collision_inv_sphere(EggGroup *egg_group, CollisionNode *cnode,
     CollisionInvSphere *cssphere =
       new CollisionInvSphere(center, radius);
     apply_collision_flags(cssphere, flags);
+    cssphere->xform(cnode->get_transform()->get_mat());
     cnode->add_solid(cssphere);
   }
 }
 
 /**
- * Creates a single CollisionTube corresponding to the polygons associated
+ * Creates a single CollisionCapsule corresponding to the polygons associated
  * with this group.
  */
 void EggLoader::
-make_collision_tube(EggGroup *egg_group, CollisionNode *cnode,
-                    EggGroup::CollideFlags flags) {
+make_collision_capsule(EggGroup *egg_group, CollisionNode *cnode,
+                       EggGroup::CollideFlags flags) {
   EggGroup *geom_group = find_collision_geometry(egg_group, flags);
-  if (geom_group != (EggGroup *)NULL) {
+  if (geom_group != nullptr) {
     // Collect all of the vertices.
     pset<EggVertex *> vertices;
 
@@ -3172,7 +3192,7 @@ make_collision_tube(EggGroup *egg_group, CollisionNode *cnode,
 
         // Transform all of the points so that the major axis is along the Y
         // axis, and the origin is the center.  This is very similar to the
-        // CollisionTube's idea of its canonical orientation (although not
+        // CollisionCapsule's idea of its canonical orientation (although not
         // exactly the same, since it is centered on the origin instead of
         // having point_a on the origin).  It makes it easier to determine the
         // length and radius of the cylinder.
@@ -3227,11 +3247,12 @@ make_collision_tube(EggGroup *egg_group, CollisionNode *cnode,
         LPoint3d point_a = center - half;
         LPoint3d point_b = center + half;
 
-        CollisionTube *cstube =
-          new CollisionTube(LCAST(PN_stdfloat, point_a), LCAST(PN_stdfloat, point_b),
+        CollisionCapsule *cscapsule =
+          new CollisionCapsule(LCAST(PN_stdfloat, point_a), LCAST(PN_stdfloat, point_b),
                             radius);
-        apply_collision_flags(cstube, flags);
-        cnode->add_solid(cstube);
+        apply_collision_flags(cscapsule, flags);
+        cscapsule->xform(cnode->get_transform()->get_mat());
+        cnode->add_solid(cscapsule);
       }
     }
   }
@@ -3284,7 +3305,7 @@ find_collision_geometry(EggGroup *egg_group, EggGroup::CollideFlags flags) {
   }
 
   // We got nothing.
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -3296,7 +3317,7 @@ create_collision_plane(EggPolygon *egg_poly, EggGroup *parent_group) {
     egg2pg_cat.info()
       << "Ignoring degenerate collision plane in " << parent_group->get_name()
       << "\n";
-    return NULL;
+    return nullptr;
   }
 
   if (!egg_poly->is_planar()) {
@@ -3328,7 +3349,7 @@ create_collision_plane(EggPolygon *egg_poly, EggGroup *parent_group) {
   }
 
   if (vertices.size() < 3) {
-    return NULL;
+    return nullptr;
   }
   LPlane plane(vertices[0], vertices[1], vertices[2]);
   return new CollisionPlane(plane);
@@ -3392,6 +3413,7 @@ create_collision_polygons(CollisionNode *cnode, EggPolygon *egg_poly,
         new CollisionPolygon(vertices_begin, vertices_end);
       if (cspoly->is_valid()) {
         apply_collision_flags(cspoly, flags);
+        cspoly->xform(cnode->get_transform()->get_mat());
         cnode->add_solid(cspoly);
       }
     }
@@ -3482,6 +3504,7 @@ create_collision_floor_mesh(CollisionNode *cnode,
     CollisionFloorMesh::TriangleIndices triangle = *ti;
     csfloor->add_triangle(triangle.p1, triangle.p2, triangle.p3);
   }
+  csfloor->xform(cnode->get_transform()->get_mat());
   cnode->add_solid(csfloor);
 }
 
@@ -3792,7 +3815,7 @@ TextureStage::CombineOperand EggLoader::
 get_combine_operand(const EggTexture *egg_tex,
                     EggTexture::CombineChannel channel, int n) {
   switch (egg_tex->get_combine_operand(channel, n)) {
-  case EggTexture::CS_unspecified:
+  case EggTexture::CO_unspecified:
     if (channel == EggTexture::CC_rgb) {
       // The default operand for RGB is src_color, except for the third
       // parameter, which defaults to src_alpha.

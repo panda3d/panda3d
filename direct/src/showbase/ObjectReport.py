@@ -1,18 +1,3 @@
-"""Undocumented Module"""
-
-__all__ = ['ExclusiveObjectPool', 'ObjectReport']
-
-from direct.directnotify.DirectNotifyGlobal import directNotify
-from direct.showbase import DirectObject, ObjectPool, GarbageReport
-from direct.showbase.PythonUtil import makeList, Sync
-import gc
-import sys
-
-if sys.version_info >= (3, 0):
-    import builtins
-else:
-    import __builtin__ as builtins
-
 """
 >>> from direct.showbase import ObjectReport
 
@@ -23,6 +8,16 @@ else:
 >>> o2=ObjectReport.ObjectReport('')
 >>> o.diff(o2)
 """
+
+__all__ = ['ExclusiveObjectPool', 'ObjectReport']
+
+from direct.directnotify.DirectNotifyGlobal import directNotify
+from direct.showbase import DirectObject, ObjectPool, GarbageReport
+from direct.showbase.PythonUtil import makeList, Sync
+import gc
+import sys
+import builtins
+
 
 class ExclusiveObjectPool(DirectObject.DirectObject):
     # ObjectPool specialization that excludes particular objects

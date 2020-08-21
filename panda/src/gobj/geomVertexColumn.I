@@ -16,7 +16,7 @@
  */
 INLINE GeomVertexColumn::
 GeomVertexColumn() :
-  _packer(NULL)
+  _packer(nullptr)
 {
 }
 
@@ -28,7 +28,7 @@ GeomVertexColumn(CPT_InternalName name, int num_components,
                  NumericType numeric_type, Contents contents,
                  int start, int column_alignment, int num_elements,
                  int element_stride) :
-  _name(MOVE(name)),
+  _name(std::move(name)),
   _num_components(num_components),
   _numeric_type(numeric_type),
   _contents(contents),
@@ -36,7 +36,7 @@ GeomVertexColumn(CPT_InternalName name, int num_components,
   _column_alignment(column_alignment),
   _num_elements(num_elements),
   _element_stride(element_stride),
-  _packer(NULL)
+  _packer(nullptr)
 {
   setup();
 }
@@ -54,7 +54,7 @@ GeomVertexColumn(const GeomVertexColumn &copy) :
   _column_alignment(copy._column_alignment),
   _num_elements(copy._num_elements),
   _element_stride(copy._element_stride),
-  _packer(NULL)
+  _packer(nullptr)
 {
   setup();
 }
@@ -300,8 +300,8 @@ operator < (const GeomVertexColumn &other) const {
   return 0;
 }
 
-INLINE ostream &
-operator << (ostream &out, const GeomVertexColumn &obj) {
+INLINE std::ostream &
+operator << (std::ostream &out, const GeomVertexColumn &obj) {
   obj.output(out);
   return out;
 }

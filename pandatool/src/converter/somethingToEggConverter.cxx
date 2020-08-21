@@ -33,7 +33,7 @@ SomethingToEggConverter() {
   _output_frame_rate = 0.0;
   _control_flags = 0;
   _merge_externals = false;
-  _egg_data = (EggData *)NULL;
+  _egg_data = nullptr;
   _error = false;
 }
 
@@ -46,7 +46,7 @@ SomethingToEggConverter(const SomethingToEggConverter &copy) :
   _path_replace(copy._path_replace),
   _merge_externals(copy._merge_externals)
 {
-  _egg_data = (EggData *)NULL;
+  _egg_data = nullptr;
   _error = false;
 }
 
@@ -71,9 +71,9 @@ set_egg_data(EggData *egg_data) {
  * Returns a space-separated list of extension, in addition to the one
  * returned by get_extension(), that are recognized by this converter.
  */
-string SomethingToEggConverter::
+std::string SomethingToEggConverter::
 get_additional_extensions() const {
-  return string();
+  return std::string();
 }
 
 /**
@@ -116,7 +116,7 @@ get_input_units() {
  */
 PT(PandaNode) SomethingToEggConverter::
 convert_to_node(const LoaderOptions &options, const Filename &filename) {
-  return NULL;
+  return nullptr;
 }
 
 /**

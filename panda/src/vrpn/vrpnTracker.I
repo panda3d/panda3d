@@ -15,7 +15,7 @@
  * Returns the name of the tracker device that was used to create this
  * VrpnTracker.
  */
-INLINE const string &VrpnTracker::
+INLINE const std::string &VrpnTracker::
 get_tracker_name() const {
   return _tracker_name;
 }
@@ -27,13 +27,4 @@ get_tracker_name() const {
 INLINE bool VrpnTracker::
 is_empty() const {
   return _devices.empty();
-}
-
-/**
- * Polls the connected device.  Normally you should not call this directly;
- * this will be called by the VrpnClient.
- */
-INLINE void VrpnTracker::
-poll() {
-  _tracker->mainloop();
 }

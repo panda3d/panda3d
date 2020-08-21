@@ -54,7 +54,7 @@ make_off() {
  *
  */
 void FogAttrib::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":";
   if (is_off()) {
     out << "(off)";
@@ -101,14 +101,6 @@ get_hash_impl() const {
 }
 
 /**
- *
- */
-CPT(RenderAttrib) FogAttrib::
-get_auto_shader_attrib_impl(const RenderState *state) const {
-  return this;
-}
-
-/**
  * Tells the BamReader how to create objects of type FogAttrib.
  */
 void FogAttrib::
@@ -136,7 +128,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = RenderAttrib::complete_pointers(p_list, manager);
 
   TypedWritable *fog = p_list[pi++];
-  if (fog != (TypedWritable *)NULL) {
+  if (fog != nullptr) {
     _fog = DCAST(Fog, fog);
   }
 

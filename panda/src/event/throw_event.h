@@ -22,17 +22,17 @@
 
 // A handful of convenience functions to throw events.
 INLINE void throw_event(const CPT_Event &event);
-INLINE void throw_event(const string &event_name);
-INLINE void throw_event(const string &event_name,
+INLINE void throw_event(const std::string &event_name);
+INLINE void throw_event(const std::string &event_name,
                         const EventParameter &p1);
-INLINE void throw_event(const string &event_name,
+INLINE void throw_event(const std::string &event_name,
                         const EventParameter &p1,
                         const EventParameter &p2);
-INLINE void throw_event(const string &event_name,
+INLINE void throw_event(const std::string &event_name,
                         const EventParameter &p1,
                         const EventParameter &p2,
                         const EventParameter &p3);
-INLINE void throw_event(const string &event_name,
+INLINE void throw_event(const std::string &event_name,
                         const EventParameter &p1,
                         const EventParameter &p2,
                         const EventParameter &p3,
@@ -43,16 +43,16 @@ INLINE void throw_event(const string &event_name,
 INLINE void throw_event_directly(EventHandler& handler,
                                  const CPT_Event &event);
 INLINE void throw_event_directly(EventHandler& handler,
-                                 const string &event_name);
+                                 const std::string &event_name);
 INLINE void throw_event_directly(EventHandler& handler,
-                                 const string &event_name,
+                                 const std::string &event_name,
                                  const EventParameter &p1);
 INLINE void throw_event_directly(EventHandler& handler,
-                                 const string &event_name,
+                                 const std::string &event_name,
                                  const EventParameter &p1,
                                  const EventParameter &p2);
 INLINE void throw_event_directly(EventHandler& handler,
-                                 const string &event_name,
+                                 const std::string &event_name,
                                  const EventParameter &p1,
                                  const EventParameter &p2,
                                  const EventParameter &p3);

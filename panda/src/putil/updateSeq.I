@@ -12,47 +12,31 @@
  */
 
 /**
+ * Creates an UpdateSeq in the given state.
+ */
+constexpr UpdateSeq::
+UpdateSeq(unsigned int seq) : _seq(seq) {
+}
+
+/**
  * Creates an UpdateSeq in the 'initial' state.
  */
-INLINE UpdateSeq::
-UpdateSeq() {
-  _seq = (unsigned int)SC_initial;
-}
-
-/**
- * Returns an UpdateSeq in the 'initial' state.
- */
-INLINE UpdateSeq UpdateSeq::
-initial() {
-  return UpdateSeq();
-}
-
-/**
- * Returns an UpdateSeq in the 'old' state.
- */
-INLINE UpdateSeq UpdateSeq::
-old() {
-  UpdateSeq result;
-  result._seq = (unsigned int)SC_old;
-  return result;
-}
-
-/**
- * Returns an UpdateSeq in the 'fresh' state.
- */
-INLINE UpdateSeq UpdateSeq::
-fresh() {
-  UpdateSeq result;
-  result._seq = (unsigned int)SC_fresh;
-  return result;
+constexpr UpdateSeq::
+UpdateSeq() : _seq((unsigned int)SC_initial) {
 }
 
 /**
  *
  */
 INLINE UpdateSeq::
-UpdateSeq(const UpdateSeq &copy) {
-  _seq = AtomicAdjust::get(copy._seq);
+UpdateSeq(const UpdateSeq &copy) : _seq(AtomicAdjust::get(copy._seq)) {
+}
+
+/**
+ *
+ */
+constexpr UpdateSeq::
+UpdateSeq(const UpdateSeq &&from) noexcept : _seq(from._seq) {
 }
 
 /**
@@ -103,7 +87,7 @@ is_fresh() const {
 INLINE bool UpdateSeq::
 is_special() const {
   // This relies on the assumption that (~0 + 1) == 0.
-  return ((AtomicAdjust::get(_seq) + 1) <= 2);
+  return (((unsigned int)AtomicAdjust::get(_seq) + 1u) <= 2u);
 }
 
 /**
@@ -235,7 +219,7 @@ get_seq() const {
  *
  */
 INLINE void UpdateSeq::
-output(ostream &out) const {
+output(std::ostream &out) const {
   AtomicAdjust::Integer seq = AtomicAdjust::get(_seq);
   switch (seq) {
   case (AtomicAdjust::Integer)SC_initial:
@@ -287,7 +271,7 @@ priv_le(AtomicAdjust::Integer a, AtomicAdjust::Integer b) {
   return (a == b) || priv_lt(a, b);
 }
 
-INLINE ostream &operator << (ostream &out, const UpdateSeq &value) {
+INLINE std::ostream &operator << (std::ostream &out, const UpdateSeq &value) {
   value.output(out);
   return out;
 }

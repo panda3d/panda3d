@@ -7,6 +7,8 @@ from direct.task import Task
 from direct.directnotify import DirectNotifyGlobal
 from direct.distributed.PyDatagram import PyDatagram
 
+import inspect
+
 
 class ServerRepository:
 
@@ -135,7 +137,7 @@ class ServerRepository:
 
         # An allocator object that assigns the next doIdBase to each
         # client.
-        self.idAllocator = UniqueIdAllocator(0, 0xffffffff / self.doIdRange)
+        self.idAllocator = UniqueIdAllocator(0, 0xffffffff // self.doIdRange)
 
         self.dcFile = DCFile()
         self.dcSuffix = ''
@@ -223,6 +225,7 @@ class ServerRepository:
             searchPath = getModelPath().getValue()
             for dcFileName in dcFileNames:
                 pathname = Filename(dcFileName)
+                vfs = VirtualFileSystem.getGlobalPtr()
                 vfs.resolveFilename(pathname, searchPath)
                 readResult = dcFile.read(pathname)
                 if not readResult:
@@ -273,12 +276,12 @@ class ServerRepository:
             if classDef == None:
                 self.notify.debug("No class definition for %s." % (className))
             else:
-                if type(classDef) == types.ModuleType:
+                if inspect.ismodule(classDef):
                     if not hasattr(classDef, className):
                         self.notify.error("Module %s does not define class %s." % (className, className))
                     classDef = getattr(classDef, className)
 
-                if type(classDef) != types.ClassType and type(classDef) != types.TypeType:
+                if not inspect.isclass(classDef):
                     self.notify.error("Symbol %s is not a class name." % (className))
                 else:
                     dclass.setClassDef(classDef)
@@ -626,7 +629,7 @@ class ServerRepository:
         del self.clientsByConnection[client.connection]
         del self.clientsByDoIdBase[client.doIdBase]
 
-        id = client.doIdBase / self.doIdRange
+        id = client.doIdBase // self.doIdRange
         self.idAllocator.free(id)
 
         self.qcr.removeConnection(client.connection)
@@ -687,7 +690,7 @@ class ServerRepository:
     def clientHardDisconnectTask(self, task):
         """ client did not tell us he was leaving but we lost connection to
         him, so we need to update our data and tell others """
-        for client in self.clientsByConnection.values():
+        for client in list(self.clientsByConnection.values()):
             if not self.qcr.isConnectionOk(client.connection):
                 self.handleClientDisconnect(client)
         return Task.cont

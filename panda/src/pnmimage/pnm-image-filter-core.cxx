@@ -43,8 +43,9 @@ FUNCTION_NAME(IMAGETYPE &dest, const IMAGETYPE &source,
 
   WorkType *filter;
   float filter_width;
+  int actual_width;
 
-  make_filter(scale, width, filter, filter_width);
+  make_filter(scale, width, filter, filter_width, actual_width);
 
   for (b = 0; b < source.BSIZE(); b++) {
     for (a = 0; a < source.ASIZE(); a++) {
@@ -54,7 +55,7 @@ FUNCTION_NAME(IMAGETYPE &dest, const IMAGETYPE &source,
     filter_row(temp_dest, dest.ASIZE(),
                temp_source, source.ASIZE(),
                scale,
-               filter, filter_width);
+               filter, filter_width, actual_width);
 
     for (a = 0; a < dest.ASIZE(); a++) {
       matrix[a][b] = temp_dest[a];
@@ -69,13 +70,13 @@ FUNCTION_NAME(IMAGETYPE &dest, const IMAGETYPE &source,
   scale = (float)dest.BSIZE() / (float)source.BSIZE();
   temp_dest = (StoreType *)PANDA_MALLOC_ARRAY(dest.BSIZE() * sizeof(StoreType));
 
-  make_filter(scale, width, filter, filter_width);
+  make_filter(scale, width, filter, filter_width, actual_width);
 
   for (a = 0; a < dest.ASIZE(); a++) {
     filter_row(temp_dest, dest.BSIZE(),
                matrix[a], source.BSIZE(),
                scale,
-               filter, filter_width);
+               filter, filter_width, actual_width);
 
     for (b = 0; b < dest.BSIZE(); b++) {
       dest.SETVAL(a, b, channel, (float)temp_dest[b]/(float)source_max);

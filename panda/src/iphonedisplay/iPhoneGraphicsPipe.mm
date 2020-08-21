@@ -51,7 +51,7 @@ IPhoneGraphicsPipe::
  * choose between several possible GraphicsPipes available on a particular
  * platform, so the name should be meaningful and unique for a given platform.
  */
-string IPhoneGraphicsPipe::
+std::string IPhoneGraphicsPipe::
 get_interface_name() const {
   return "OpenGL ES";
 }

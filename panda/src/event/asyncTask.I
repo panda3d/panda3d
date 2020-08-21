@@ -33,6 +33,7 @@ is_alive() const {
   case S_servicing:
   case S_sleeping:
   case S_active_nested:
+  case S_awaiting:
     return true;
 
   case S_inactive:
@@ -130,7 +131,7 @@ get_start_frame() const {
  */
 INLINE void AsyncTask::
 clear_name() {
-  set_name(string());
+  set_name(std::string());
 }
 
 /**
@@ -146,7 +147,7 @@ get_task_id() const {
  * Returns the AsyncTaskChain on which this task will be running.  Each task
  * chain runs tasks independently of the others.
  */
-INLINE const string &AsyncTask::
+INLINE const std::string &AsyncTask::
 get_task_chain() const {
   return _chain_name;
 }
@@ -175,18 +176,9 @@ get_priority() const {
  * returns S_inactive).
  */
 INLINE void AsyncTask::
-set_done_event(const string &done_event) {
+set_done_event(const std::string &done_event) {
   nassertv(_state == S_inactive);
   _done_event = done_event;
-}
-
-/**
- * Returns the event name that will be triggered when the task finishes.  See
- * set_done_event().
- */
-INLINE const string &AsyncTask::
-get_done_event() const {
-  return _done_event;
 }
 
 /**

@@ -20,10 +20,8 @@
  */
 BioStreamPtr::
 ~BioStreamPtr() {
-  if (_stream != (BioStream *)NULL) {
-    delete _stream;
-    _stream = (BioStream *)NULL;
-  }
+  delete _stream;
+  _stream = nullptr;
 }
 
 #endif  // HAVE_OPENSSL

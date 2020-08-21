@@ -49,6 +49,11 @@ PUBLISHED:
     A_boxed_center
   };
 
+  enum Direction {
+    D_ltr,
+    D_rtl,
+  };
+
   TextProperties();
   TextProperties(const TextProperties &copy);
   void operator = (const TextProperties &copy);
@@ -130,10 +135,10 @@ PUBLISHED:
   INLINE bool has_shadow() const;
   INLINE LVector2 get_shadow() const;
 
-  INLINE void set_bin(const string &bin);
+  INLINE void set_bin(const std::string &bin);
   INLINE void clear_bin();
   INLINE bool has_bin() const;
-  INLINE const string &get_bin() const;
+  INLINE const std::string &get_bin() const;
 
   INLINE int set_draw_order(int draw_order);
   INLINE void clear_draw_order();
@@ -160,9 +165,14 @@ PUBLISHED:
   INLINE bool has_text_scale() const;
   INLINE PN_stdfloat get_text_scale() const;
 
+  INLINE void set_direction(Direction direction);
+  INLINE void clear_direction();
+  INLINE bool has_direction() const;
+  INLINE Direction get_direction() const;
+
   void add_properties(const TextProperties &other);
 
-  void write(ostream &out, int indent_level = 0) const;
+  void write(std::ostream &out, int indent_level = 0) const;
 
 PUBLISHED:
   MAKE_PROPERTY2(font, has_font, get_font, set_font, clear_font);
@@ -197,6 +207,8 @@ PUBLISHED:
                               set_glyph_shift, clear_glyph_shift);
   MAKE_PROPERTY2(text_scale, has_text_scale, get_text_scale,
                              set_text_scale, clear_text_scale);
+  MAKE_PROPERTY2(direction, has_direction, get_direction,
+                            set_direction, clear_direction);
 
 public:
   const RenderState *get_text_state() const;
@@ -225,6 +237,7 @@ private:
     F_has_underscore                   = 0x00010000,
     F_has_underscore_height            = 0x00020000,
     F_has_text_scale                   = 0x00040000,
+    F_has_direction                    = 0x00080000,
   };
 
   int _specified;
@@ -242,12 +255,13 @@ private:
   LColor _text_color;
   LColor _shadow_color;
   LVector2 _shadow_offset;
-  string _bin;
+  std::string _bin;
   int _draw_order;
   PN_stdfloat _tab_width;
   PN_stdfloat _glyph_scale;
   PN_stdfloat _glyph_shift;
   PN_stdfloat _text_scale;
+  Direction _direction;
 
   mutable CPT(RenderState) _text_state;
   mutable CPT(RenderState) _shadow_state;

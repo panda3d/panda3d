@@ -18,7 +18,7 @@
  */
 INLINE GeomVertexReader::
 GeomVertexReader(Thread *current_thread) :
-  _vertex_data(NULL),
+  _vertex_data(nullptr),
   _current_thread(current_thread)
 {
   initialize();
@@ -50,7 +50,7 @@ GeomVertexReader(const GeomVertexData *vertex_data,
   _current_thread(current_thread)
 {
   initialize();
-  set_column(MOVE(name));
+  set_column(std::move(name));
 }
 
 /**
@@ -227,7 +227,7 @@ get_force() const {
  */
 INLINE bool GeomVertexReader::
 set_column(int column) {
-  if (_vertex_data != (const GeomVertexData *)NULL) {
+  if (_vertex_data != nullptr) {
     GeomVertexDataPipelineReader reader(_vertex_data, _current_thread);
     reader.check_array_readers();
     const GeomVertexFormat *format = reader.get_format();
@@ -235,7 +235,7 @@ set_column(int column) {
                              format->get_column(column),
                              &reader);
   }
-  if (_array_data != (const GeomVertexArrayData *)NULL) {
+  if (_array_data != nullptr) {
     return set_array_column(_array_data->get_array_format()->get_column(column));
   }
   return false;
@@ -252,7 +252,7 @@ set_column(int column) {
  */
 INLINE bool GeomVertexReader::
 set_column(CPT_InternalName name) {
-  if (_vertex_data != (const GeomVertexData *)NULL) {
+  if (_vertex_data != nullptr) {
     GeomVertexDataPipelineReader reader(_vertex_data, _current_thread);
     reader.check_array_readers();
     const GeomVertexFormat *format = reader.get_format();
@@ -260,7 +260,7 @@ set_column(CPT_InternalName name) {
                              format->get_column(name),
                              &reader);
   }
-  if (_array_data != (const GeomVertexArrayData *)NULL) {
+  if (_array_data != nullptr) {
     return set_array_column(_array_data->get_array_format()->get_column(name));
   }
 
@@ -282,7 +282,7 @@ clear() {
  */
 INLINE bool GeomVertexReader::
 has_column() const {
-  return (_packer != (GeomVertexColumn::Packer *)NULL);
+  return (_packer != nullptr);
 }
 
 /**
@@ -299,10 +299,10 @@ get_array() const {
  */
 INLINE const GeomVertexColumn *GeomVertexReader::
 get_column() const {
-  if (_packer != (GeomVertexColumn::Packer *)NULL) {
+  if (_packer != nullptr) {
     return _packer->_column;
   }
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -328,6 +328,7 @@ set_row_unsafe(int row) {
  */
 INLINE void GeomVertexReader::
 set_row(int row) {
+  nassertv(row >= 0);
   _start_row = row;
   if (has_column()) {
     bool result = set_pointer(_start_row);
@@ -683,9 +684,9 @@ get_packer() const {
 INLINE bool GeomVertexReader::
 set_pointer(int row) {
   _pointer_begin = _handle->get_read_pointer(_force);
-  if (_pointer_begin == NULL && _handle->get_data_size_bytes() != 0) {
+  if (_pointer_begin == nullptr && _handle->get_data_size_bytes() != 0) {
     // Vertex data is not resident.
-    set_column(0, NULL);
+    set_column(0, nullptr);
     return false;
   }
 
@@ -701,7 +702,7 @@ set_pointer(int row) {
  */
 INLINE void GeomVertexReader::
 quick_set_pointer(int row) {
-  nassertv(has_column() && (_pointer_begin != NULL || row == 0));
+  nassertv(has_column() && (_pointer_begin != nullptr || row == 0));
 
 #if defined(_DEBUG)
   // Make sure we still have the same pointer as stored in the array.

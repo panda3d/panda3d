@@ -16,6 +16,10 @@
 #include "filename.h"
 #include "pandaSystem.h"
 
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_DTOOL_DTOOLUTIL)
+  #error Buildsystem error: BUILDING_DTOOL_DCTOOLUTIL not defined
+#endif
+
 /**
  * Initializes the library.  This must be called at least once before any of
  * the functions or classes in this library can be used.  Normally it will be

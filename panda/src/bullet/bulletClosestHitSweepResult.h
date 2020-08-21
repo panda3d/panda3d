@@ -11,8 +11,8 @@
  * @date 2010-12-01
  */
 
-#ifndef __BULLET_CLOSEST_HIT_SWEEP_RESULT_H__
-#define __BULLET_CLOSEST_HIT_SWEEP_RESULT_H__
+#ifndef BULLETCLOSESTHITSWEEPRESULT_H
+#define BULLETCLOSESTHITSWEEPRESULT_H
 
 #include "pandabase.h"
 
@@ -41,6 +41,13 @@ PUBLISHED:
   LVector3 get_hit_normal() const;
   PN_stdfloat get_hit_fraction() const;
 
+  MAKE_PROPERTY(from_pos, get_from_pos);
+  MAKE_PROPERTY(to_pos, get_to_pos);
+  MAKE_PROPERTY(node, get_node);
+  MAKE_PROPERTY(hit_pos, get_hit_pos);
+  MAKE_PROPERTY(hit_normal, get_hit_normal);
+  MAKE_PROPERTY(hit_fraction, get_hit_fraction);
+
 public:
   virtual bool needsCollision(btBroadphaseProxy* proxy0) const;
 
@@ -54,4 +61,4 @@ private:
 
 #include "bulletClosestHitSweepResult.I"
 
-#endif // __BULLET_CLOSEST_HIT_SWEEP_RESULT_H__
+#endif // BULLETCLOSESTHITSWEEPRESULT_H

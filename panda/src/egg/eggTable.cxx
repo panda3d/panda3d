@@ -41,7 +41,7 @@ has_transform() const {
  * Egg format.
  */
 void EggTable::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   test_under_integrity();
 
   switch (get_table_type()) {
@@ -69,7 +69,7 @@ write(ostream &out, int indent_level) const {
  * TableType value.
  */
 EggTable::TableType EggTable::
-string_table_type(const string &string) {
+string_table_type(const std::string &string) {
   if (cmp_nocase_uh(string, "table") == 0) {
     return TT_table;
   } else if (cmp_nocase_uh(string, "bundle") == 0) {
@@ -137,7 +137,7 @@ r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
 /**
  *
  */
-ostream &operator << (ostream &out, EggTable::TableType t) {
+std::ostream &operator << (std::ostream &out, EggTable::TableType t) {
   switch (t) {
   case EggTable::TT_invalid:
     return out << "invalid table";

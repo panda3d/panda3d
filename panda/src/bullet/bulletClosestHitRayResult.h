@@ -11,8 +11,8 @@
  * @date 2010-02-21
  */
 
-#ifndef __BULLET_CLOSEST_HIT_RAY_RESULT_H__
-#define __BULLET_CLOSEST_HIT_RAY_RESULT_H__
+#ifndef BULLETCLOSESTHITRAYRESULT_H
+#define BULLETCLOSESTHITRAYRESULT_H
 
 #include "pandabase.h"
 
@@ -44,6 +44,15 @@ PUBLISHED:
   int get_shape_part() const;
   int get_triangle_index() const;
 
+  MAKE_PROPERTY(from_pos, get_from_pos);
+  MAKE_PROPERTY(to_pos, get_to_pos);
+  MAKE_PROPERTY(node, get_node);
+  MAKE_PROPERTY(hit_pos, get_hit_pos);
+  MAKE_PROPERTY(hit_normal, get_hit_normal);
+  MAKE_PROPERTY(hit_fraction, get_hit_fraction);
+  MAKE_PROPERTY(shape_part, get_shape_part);
+  MAKE_PROPERTY(triangle_index, get_triangle_index);
+
 public:
   virtual bool needsCollision(btBroadphaseProxy* proxy0) const;
   virtual btScalar addSingleResult(btCollisionWorld::LocalRayResult& rayResult, bool normalInWorldSpace);
@@ -61,4 +70,4 @@ private:
 
 #include "bulletClosestHitRayResult.I"
 
-#endif // __BULLET_CLOSEST_HIT_RAY_RESULT_H__
+#endif // BULLETCLOSESTHITRAYRESULT_H

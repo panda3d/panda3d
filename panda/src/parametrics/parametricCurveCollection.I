@@ -31,9 +31,18 @@ get_num_curves() const {
  */
 INLINE ParametricCurve *ParametricCurveCollection::
 get_curve(int index) const {
-  nassertr(index >= 0 && index < (int)_curves.size(), (ParametricCurve *)NULL);
+  nassertr(index >= 0 && index < (int)_curves.size(), nullptr);
 
   return _curves[index];
+}
+
+/**
+ * Adds a new ParametricCurve to the collection at the indicated index.
+ * @deprecated Use insert_curve(index, curve) instead.
+ */
+INLINE void ParametricCurveCollection::
+add_curve(ParametricCurve *curve, int index) {
+  insert_curve(std::max(index, 0), curve);
 }
 
 /**

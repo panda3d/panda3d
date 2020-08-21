@@ -40,6 +40,7 @@ public:
   PandaFramework();
   virtual ~PandaFramework();
 
+  void open_framework();
   void open_framework(int &argc, char **&argv);
   void close_framework();
 
@@ -51,20 +52,20 @@ public:
   NodePath get_mouse(GraphicsOutput *window);
   void remove_mouse(const GraphicsOutput *window);
 
-  void define_key(const string &event_name,
-                  const string &description,
+  void define_key(const std::string &event_name,
+                  const std::string &description,
                   EventHandler::EventCallbackFunction *function,
                   void *data);
 
-  INLINE void set_window_title(const string &title);
+  INLINE void set_window_title(const std::string &title);
   virtual void get_default_window_props(WindowProperties &props);
 
   WindowFramework *open_window();
   WindowFramework *open_window(GraphicsPipe *pipe,
-                               GraphicsStateGuardian *gsg = NULL);
+                               GraphicsStateGuardian *gsg = nullptr);
   WindowFramework *open_window(const WindowProperties &props, int flags,
-                               GraphicsPipe *pipe = NULL,
-                               GraphicsStateGuardian *gsg = NULL);
+                               GraphicsPipe *pipe = nullptr,
+                               GraphicsStateGuardian *gsg = nullptr);
 
   INLINE int get_num_windows() const;
   INLINE WindowFramework *get_window(int n) const;
@@ -77,7 +78,7 @@ public:
 
   NodePath &get_models();
 
-  void report_frame_rate(ostream &out) const;
+  void report_frame_rate(std::ostream &out) const;
   void reset_frame_rate();
 
   void set_wireframe(bool enable);
@@ -163,7 +164,7 @@ private:
   bool _is_open;
   bool _made_default_pipe;
 
-  string _window_title;
+  std::string _window_title;
 
   PT(GraphicsPipe) _default_pipe;
   PT(GraphicsEngine) _engine;
@@ -200,8 +201,8 @@ private:
 
   class KeyDefinition {
   public:
-    string _event_name;
-    string _description;
+    std::string _event_name;
+    std::string _description;
   };
   typedef pvector<KeyDefinition> KeyDefinitions;
   KeyDefinitions _key_definitions;

@@ -37,12 +37,12 @@ public:
   virtual ~PNMFileType();
 
 PUBLISHED:
-  virtual string get_name() const=0;
+  virtual std::string get_name() const=0;
 
   virtual int get_num_extensions() const;
-  virtual string get_extension(int n) const;
+  virtual std::string get_extension(int n) const;
   MAKE_SEQ(get_extensions, get_num_extensions, get_extension);
-  virtual string get_suggested_extension() const;
+  virtual std::string get_suggested_extension() const;
 
   MAKE_PROPERTY(name, get_name);
   MAKE_SEQ_PROPERTY(extensions, get_num_extensions, get_extension);
@@ -50,11 +50,11 @@ PUBLISHED:
 
 public:
   virtual bool has_magic_number() const;
-  virtual bool matches_magic_number(const string &magic_number) const;
+  virtual bool matches_magic_number(const std::string &magic_number) const;
 
-  virtual PNMReader *make_reader(istream *file, bool owns_file = true,
-                                 const string &magic_number = string());
-  virtual PNMWriter *make_writer(ostream *file, bool owns_file = true);
+  virtual PNMReader *make_reader(std::istream *file, bool owns_file = true,
+                                 const std::string &magic_number = std::string());
+  virtual PNMWriter *make_writer(std::ostream *file, bool owns_file = true);
 
 protected:
   static void init_pnm();

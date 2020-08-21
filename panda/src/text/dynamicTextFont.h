@@ -31,6 +31,8 @@
 
 class NurbsCurveResult;
 
+typedef struct hb_font_t hb_font_t;
+
 /**
  * A DynamicTextFont is a special TextFont object that rasterizes its glyphs
  * from a standard font file (e.g.  a TTF file) on the fly.  It requires the
@@ -45,7 +47,7 @@ PUBLISHED:
 
   virtual PT(TextFont) make_copy() const;
 
-  INLINE const string &get_name() const;
+  INLINE const std::string &get_name() const;
 
   INLINE bool set_point_size(PN_stdfloat point_size);
   INLINE PN_stdfloat get_point_size() const;
@@ -119,10 +121,14 @@ PUBLISHED:
   int garbage_collect();
   void clear();
 
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
 public:
   virtual bool get_glyph(int character, CPT(TextGlyph) &glyph);
+  virtual PN_stdfloat get_kerning(int first, int second) const;
+
+  bool get_glyph_by_index(int character, int glyph_index, CPT(TextGlyph) &glyph);
+  hb_font_t *get_hb_font() const;
 
 private:
   void initialize();
@@ -170,6 +176,8 @@ private:
   typedef pvector< PT(TextGlyph) > EmptyGlyphs;
   EmptyGlyphs _empty_glyphs;
 
+  mutable hb_font_t *_hb_font;
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -190,7 +198,7 @@ private:
   friend class TextNode;
 };
 
-INLINE ostream &operator << (ostream &out, const DynamicTextFont &dtf);
+INLINE std::ostream &operator << (std::ostream &out, const DynamicTextFont &dtf);
 
 #include "dynamicTextFont.I"
 

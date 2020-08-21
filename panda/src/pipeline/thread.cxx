@@ -17,7 +17,6 @@
 #include "config_pipeline.h"
 #include "mutexDebug.h"
 #include "conditionVarDebug.h"
-#include "conditionVarFullDebug.h"
 
 Thread *Thread::_main_thread;
 Thread *Thread::_external_thread;
@@ -36,7 +35,7 @@ TypeHandle Thread::_type_handle;
  * given the same sync_name, for the benefit of PStats.
  */
 Thread::
-Thread(const string &name, const string &sync_name) :
+Thread(const std::string &name, const std::string &sync_name) :
   Namable(name),
   _sync_name(sync_name),
   _impl(this)
@@ -44,15 +43,14 @@ Thread(const string &name, const string &sync_name) :
   _started = false;
   _pstats_index = -1;
   _python_index = -1;
-  _pstats_callback = NULL;
+  _pstats_callback = nullptr;
   _pipeline_stage = 0;
   _joinable = false;
-  _current_task = NULL;
+  _current_task = nullptr;
 
 #ifdef DEBUG_THREADS
-  _blocked_on_mutex = NULL;
-  _waiting_on_cvar = NULL;
-  _waiting_on_cvar_full = NULL;
+  _blocked_on_mutex = nullptr;
+  _waiting_on_cvar = nullptr;
 #endif
 }
 
@@ -62,9 +60,8 @@ Thread(const string &name, const string &sync_name) :
 Thread::
 ~Thread() {
 #ifdef DEBUG_THREADS
-  nassertv(_blocked_on_mutex == NULL &&
-           _waiting_on_cvar == NULL &&
-           _waiting_on_cvar_full == NULL);
+  nassertv(_blocked_on_mutex == nullptr &&
+           _waiting_on_cvar == nullptr);
 #endif
 }
 
@@ -87,7 +84,7 @@ Thread::
  * case the same pointer will be returned each time).
  */
 PT(Thread) Thread::
-bind_thread(const string &name, const string &sync_name) {
+bind_thread(const std::string &name, const std::string &sync_name) {
   Thread *current_thread = get_current_thread();
   if (current_thread != get_external_thread()) {
     // This thread already has an associated thread.
@@ -129,7 +126,7 @@ set_pipeline_stage(int pipeline_stage) {
  *
  */
 void Thread::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << " " << get_name();
 }
 
@@ -139,14 +136,12 @@ output(ostream &out) const {
  * DEBUG_THREADS mode.
  */
 void Thread::
-output_blocker(ostream &out) const {
+output_blocker(std::ostream &out) const {
 #ifdef DEBUG_THREADS
-  if (_blocked_on_mutex != (MutexDebug *)NULL) {
+  if (_blocked_on_mutex != nullptr) {
     _blocked_on_mutex->output_with_holder(out);
-  } else if (_waiting_on_cvar != (ConditionVarDebug *)NULL) {
+  } else if (_waiting_on_cvar != nullptr) {
     out << *_waiting_on_cvar;
-  } else if (_waiting_on_cvar_full != (ConditionVarFullDebug *)NULL) {
-    out << *_waiting_on_cvar_full;
   }
 #endif  // DEBUG_THREADS
 }
@@ -155,7 +150,7 @@ output_blocker(ostream &out) const {
  *
  */
 void Thread::
-write_status(ostream &out) {
+write_status(std::ostream &out) {
 #if defined(HAVE_THREADS) && defined(SIMPLE_THREADS)
   ThreadImpl::write_status(out);
 #endif
@@ -210,7 +205,8 @@ init_main_thread() {
   // here attempts to protect against that.
   static int count = 0;
   ++count;
-  if (count == 1 && _main_thread == (Thread *)NULL) {
+  if (count == 1 && _main_thread == nullptr) {
+    init_memory_hook();
     _main_thread = new MainThread;
     _main_thread->ref();
   }
@@ -221,7 +217,8 @@ init_main_thread() {
  */
 void Thread::
 init_external_thread() {
-  if (_external_thread == (Thread *)NULL) {
+  if (_external_thread == nullptr) {
+    init_memory_hook();
     _external_thread = new ExternalThread;
     _external_thread->ref();
   }

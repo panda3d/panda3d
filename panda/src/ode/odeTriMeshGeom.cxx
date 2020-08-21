@@ -23,19 +23,19 @@ OdeTriMeshGeom(dGeomID id) :
 
 OdeTriMeshGeom::
 OdeTriMeshGeom(OdeTriMeshData &data) :
-  OdeGeom(dCreateTriMesh(0, data.get_id(), 0, 0, 0)) {
+  OdeGeom(dCreateTriMesh(nullptr, data.get_id(), nullptr, nullptr, nullptr)) {
   OdeTriMeshData::link_data(_id, &data);
 }
 
 OdeTriMeshGeom::
 OdeTriMeshGeom(OdeSpace &space, OdeTriMeshData &data) :
-  OdeGeom(dCreateTriMesh(space.get_id(), data.get_id(), 0, 0, 0)) {
+  OdeGeom(dCreateTriMesh(space.get_id(), data.get_id(), nullptr, nullptr, nullptr)) {
   OdeTriMeshData::link_data(_id, &data);
 }
 
 OdeTriMeshGeom::
 OdeTriMeshGeom(const OdeTriMeshGeom &copy) :
-  OdeGeom(dCreateTriMesh(0, copy.get_data_id(), 0, 0, 0)) {
+  OdeGeom(dCreateTriMesh(nullptr, copy.get_data_id(), nullptr, nullptr, nullptr)) {
   OdeTriMeshData::link_data(_id, copy.get_data());
 }
 

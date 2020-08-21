@@ -51,17 +51,16 @@ class FactoryParams;
  * directly.  Instead, call one of the make() functions to create one for you.
  * And instead of modifying a TransformState object, create a new one.
  */
-class EXPCL_PANDA_PGRAPH TransformState FINAL : public NodeCachedReferenceCount {
+class EXPCL_PANDA_PGRAPH TransformState final : public NodeCachedReferenceCount {
 protected:
   TransformState();
 
-private:
-  TransformState(const TransformState &copy);
-  void operator = (const TransformState &copy);
-
 public:
+  TransformState(const TransformState &copy) = delete;
   virtual ~TransformState();
   ALLOC_DELETED_CHAIN(TransformState);
+
+  TransformState &operator = (const TransformState &copy) = delete;
 
 PUBLISHED:
   INLINE bool operator != (const TransformState &other) const;
@@ -195,16 +194,16 @@ PUBLISHED:
   EXTENSION(PyObject *get_composition_cache() const);
   EXTENSION(PyObject *get_invert_composition_cache() const);
 
-  void output(ostream &out) const;
-  void write(ostream &out, int indent_level) const;
-  void write_composition_cache(ostream &out, int indent_level) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent_level) const;
+  void write_composition_cache(std::ostream &out, int indent_level) const;
 
   static int get_num_states();
   static int get_num_unused_states();
   static int clear_cache();
   static int garbage_collect();
-  static void list_cycles(ostream &out);
-  static void list_states(ostream &out);
+  static void list_cycles(std::ostream &out);
+  static void list_states(std::ostream &out);
   static bool validate_states();
   EXTENSION(static PyObject *get_states());
   EXTENSION(static PyObject *get_unused_states());
@@ -213,6 +212,11 @@ public:
   static void init_states();
 
   INLINE static void flush_level();
+
+  INLINE void cache_ref_only() const;
+
+protected:
+  INLINE void cache_unref_only() const;
 
 private:
   INLINE bool do_cache_unref() const;
@@ -234,9 +238,7 @@ private:
   static CPT(TransformState) return_unique(TransformState *state);
 
   CPT(TransformState) do_compose(const TransformState *other) const;
-  CPT(TransformState) store_compose(const TransformState *other, const TransformState *result);
   CPT(TransformState) do_invert_compose(const TransformState *other) const;
-  CPT(TransformState) store_invert_compose(const TransformState *other, const TransformState *result);
   void detect_and_break_cycles();
   static bool r_detect_cycles(const TransformState *start_state,
                               const TransformState *current_state,
@@ -255,10 +257,8 @@ private:
   // cache, which is encoded in _composition_cache and
   // _invert_composition_cache.
   static LightReMutex *_states_lock;
-  class Empty {
-  };
-  typedef SimpleHashMap<const TransformState *, Empty, indirect_equals_hash<const TransformState *> > States;
-  static States *_states;
+  typedef SimpleHashMap<const TransformState *, std::nullptr_t, indirect_equals_hash<const TransformState *> > States;
+  static States _states;
   static CPT(TransformState) _identity_state;
   static CPT(TransformState) _invalid_state;
 
@@ -288,8 +288,8 @@ private:
   };
 
   typedef SimpleHashMap<const TransformState *, Composition, pointer_hash> CompositionCache;
-  CompositionCache _composition_cache;
-  CompositionCache _invert_composition_cache;
+  mutable CompositionCache _composition_cache;
+  mutable CompositionCache _invert_composition_cache;
 
   // This is used to mark nodes as we visit them to detect cycles.
   UpdateSeq _cycle_detect;
@@ -297,7 +297,7 @@ private:
 
   // This keeps track of our current position through the garbage collection
   // cycle.
-  static int _garbage_index;
+  static size_t _garbage_index;
 
   static bool _uniquify_matrix;
 
@@ -408,7 +408,11 @@ private:
   friend class Extension<TransformState>;
 };
 
-INLINE ostream &operator << (ostream &out, const TransformState &state) {
+// We can safely redefine this as a no-op.
+template<>
+INLINE void PointerToBase<TransformState>::update_type(To *ptr) {}
+
+INLINE std::ostream &operator << (std::ostream &out, const TransformState &state) {
   state.output(out);
   return out;
 }

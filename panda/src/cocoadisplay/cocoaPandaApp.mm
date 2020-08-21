@@ -12,6 +12,7 @@
  */
 
 #import "cocoaPandaApp.h"
+#include "config_cocoadisplay.h"
 
 @implementation CocoaPandaApp
 - (void) sendEvent: (NSEvent *) event {

@@ -27,7 +27,7 @@ public:
 
   const VrmlFieldValue &get_value(const char *field_name) const;
 
-  void output(ostream &out, int indent) const;
+  void output(std::ostream &out, int indent) const;
 
   class Field {
   public:
@@ -38,7 +38,7 @@ public:
     VrmlFieldValue _value;
   };
 
-  typedef vector<Field> Fields;
+  typedef std::vector<Field> Fields;
   Fields _fields;
 
   int _use_count;
@@ -46,7 +46,7 @@ public:
   const VrmlNodeType *_type;
 };
 
-inline ostream &operator << (ostream &out, const VrmlNode &node) {
+inline std::ostream &operator << (std::ostream &out, const VrmlNode &node) {
   node.output(out, 0);
   return out;
 }
@@ -55,16 +55,16 @@ class Declaration {
 public:
   SFNodeRef _node;
 
-  void output(ostream &out, int indent) const;
+  void output(std::ostream &out, int indent) const;
 };
 
-inline ostream &operator << (ostream &out, const Declaration &dec) {
+inline std::ostream &operator << (std::ostream &out, const Declaration &dec) {
   dec.output(out, 0);
   return out;
 }
 
 typedef pvector<Declaration> VrmlScene;
 
-ostream &operator << (ostream &out, const VrmlScene &scene);
+std::ostream &operator << (std::ostream &out, const VrmlScene &scene);
 
 #endif

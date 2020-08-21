@@ -19,7 +19,7 @@
  * Formats the InterrogateManifest data for output to a data file.
  */
 void InterrogateManifest::
-output(ostream &out) const {
+output(std::ostream &out) const {
   InterrogateComponent::output(out);
   out << _flags << " "
       << _int_value << " "
@@ -32,7 +32,7 @@ output(ostream &out) const {
  * Reads the data file as previously formatted by output().
  */
 void InterrogateManifest::
-input(istream &in) {
+input(std::istream &in) {
   InterrogateComponent::input(in);
   in >> _flags >> _int_value >> _type >> _getter;
   idf_input_string(in, _definition);

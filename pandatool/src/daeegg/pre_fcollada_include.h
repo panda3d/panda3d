@@ -38,4 +38,8 @@
 #define NO_LIBXML
 #define FCOLLADA_NOMINMAX
 
+// FCollada does use global min/max.
+using std::min;
+using std::max;
+
 #endif

@@ -29,7 +29,7 @@
  */
 class XFileDataNodeTemplate : public XFileDataNode {
 public:
-  XFileDataNodeTemplate(XFile *x_file, const string &name,
+  XFileDataNodeTemplate(XFile *x_file, const std::string &name,
                         XFileTemplate *xtemplate);
 
   void zero_fill();
@@ -38,19 +38,19 @@ public:
 
   void add_parse_double(PTA_double double_list);
   void add_parse_int(PTA_int int_list);
-  void add_parse_string(const string &str);
+  void add_parse_string(const std::string &str);
   bool finalize_parse_data();
 
   virtual bool add_element(XFileDataObject *element);
 
-  virtual void write_text(ostream &out, int indent_level) const;
-  virtual void write_data(ostream &out, int indent_level,
+  virtual void write_text(std::ostream &out, int indent_level) const;
+  virtual void write_data(std::ostream &out, int indent_level,
                           const char *separator) const;
 
 protected:
   virtual int get_num_elements() const;
   virtual XFileDataObject *get_element(int n);
-  virtual XFileDataObject *get_element(const string &name);
+  virtual XFileDataObject *get_element(const std::string &name);
 
 private:
   XFileParseDataList _parse_data_list;

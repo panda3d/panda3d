@@ -53,7 +53,7 @@ PUBLISHED:
   INLINE void set_panda();
   INLINE void set_hardware(int num_transforms, bool indexed_transforms);
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
 public:
   INLINE bool operator < (const GeomVertexAnimationSpec &other) const;
@@ -72,8 +72,8 @@ private:
   bool _indexed_transforms;
 };
 
-INLINE ostream &
-operator << (ostream &out, const GeomVertexAnimationSpec &animation);
+INLINE std::ostream &
+operator << (std::ostream &out, const GeomVertexAnimationSpec &animation);
 
 #include "geomVertexAnimationSpec.I"
 

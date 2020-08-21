@@ -30,7 +30,7 @@ get_client_data() const {
 /**
  * Returns the name of the indicated collector, if it is known.
  */
-INLINE string PStatMonitor::
+INLINE std::string PStatMonitor::
 get_collector_name(int collector_index) {
   if (!_client_data.is_null() &&
       _client_data->has_collector(collector_index)) {
@@ -54,7 +54,7 @@ is_client_known() const {
  * thereafter when we receive the client's "hello" message.  See
  * is_client_known().
  */
-INLINE string PStatMonitor::
+INLINE std::string PStatMonitor::
 get_client_hostname() const {
   return _client_hostname;
 }
@@ -65,7 +65,7 @@ get_client_hostname() const {
  * shortly thereafter when we receive the client's "hello" message.  See
  * is_client_known().
  */
-INLINE string PStatMonitor::
+INLINE std::string PStatMonitor::
 get_client_progname() const {
   return _client_progname;
 }

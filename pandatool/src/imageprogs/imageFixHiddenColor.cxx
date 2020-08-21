@@ -41,19 +41,19 @@ ImageFixHiddenColor() : ImageFilter(true) {
      "alpha channel on the source image.  If this file has an alpha "
      "channel, that alpha channel is used; otherwise, the grayscale "
      "value of the image is used.",
-     &ImageFixHiddenColor::dispatch_filename, NULL, &_alpha_filename);
+     &ImageFixHiddenColor::dispatch_filename, nullptr, &_alpha_filename);
 
   add_option
     ("opaque", "alpha", 0,
      "Specifies the minimum alpha value (in the range of 0 to 1) for a "
      "pixel to be considered fully opaque.  The default is 1.",
-     &ImageFixHiddenColor::dispatch_double, NULL, &_min_opaque_alpha);
+     &ImageFixHiddenColor::dispatch_double, nullptr, &_min_opaque_alpha);
 
   add_option
     ("transparent", "alpha", 0,
      "Specifies the maximum alpha value (in the range of 0 to 1) for a "
      "pixel to be considered fully transparent.  The default is 0.",
-     &ImageFixHiddenColor::dispatch_double, NULL, &_max_transparent_alpha);
+     &ImageFixHiddenColor::dispatch_double, nullptr, &_max_transparent_alpha);
 
   _min_opaque_alpha = 1.0;
   _max_transparent_alpha = 0.0;

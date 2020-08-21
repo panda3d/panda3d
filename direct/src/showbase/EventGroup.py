@@ -1,4 +1,4 @@
-"""Undocumented Module"""
+"""This module defines the EventGroup class."""
 
 __all__ = ['EventGroup']
 

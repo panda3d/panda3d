@@ -26,7 +26,7 @@ TypeHandle PGButton::_type_handle;
  *
  */
 PGButton::
-PGButton(const string &name) : PGItem(name)
+PGButton(const std::string &name) : PGItem(name)
 {
   _button_down = false;
   _click_buttons.insert(MouseButton::one());
@@ -115,7 +115,11 @@ release(const MouseWatcherParameter &param, bool background) {
   if (has_click_button(param.get_button())) {
     _button_down = false;
     if (get_active()) {
-      if (param.is_outside()) {
+      // Note that a "click" may come from a keyboard button press.  In that
+      // case, instead of checking that the mouse cursor is still over the
+      // button, we check whether the item has keyboard focus.
+      if (param.is_outside() &&
+          (MouseButton::is_mouse_button(param.get_button()) || !get_focus())) {
         set_state(S_ready);
       } else {
         set_state(S_rollover);
@@ -134,7 +138,7 @@ void PGButton::
 click(const MouseWatcherParameter &param) {
   LightReMutexHolder holder(_lock);
   PGMouseWatcherParameter *ep = new PGMouseWatcherParameter(param);
-  string event = get_click_event(param.get_button());
+  std::string event = get_click_event(param.get_button());
   play_sound(event);
   throw_event(event, EventParameter(ep));
 
@@ -150,7 +154,7 @@ click(const MouseWatcherParameter &param) {
  * to the size of the text.
  */
 void PGButton::
-setup(const string &label, PN_stdfloat bevel) {
+setup(const std::string &label, PN_stdfloat bevel) {
   LightReMutexHolder holder(_lock);
   clear_state_def(S_ready);
   clear_state_def(S_depressed);

@@ -55,10 +55,9 @@ fillin(DatagramIterator &scan, BamReader *) {
  *
  */
 DirectionalLight::
-DirectionalLight(const string &name) :
-  LightLensNode(name, new OrthographicLens()),
-  _has_specular_color(false)
-{
+DirectionalLight(const std::string &name) :
+  LightLensNode(name, new OrthographicLens()) {
+  _lenses[0]._lens->set_interocular_distance(0);
 }
 
 /**
@@ -68,7 +67,6 @@ DirectionalLight(const string &name) :
 DirectionalLight::
 DirectionalLight(const DirectionalLight &copy) :
   LightLensNode(copy),
-  _has_specular_color(copy._has_specular_color),
   _cycler(copy._cycler)
 {
 }
@@ -100,7 +98,7 @@ xform(const LMatrix4 &mat) {
  *
  */
 void DirectionalLight::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << *this << ":\n";
   indent(out, indent_level + 2)
     << "color " << get_color() << "\n";

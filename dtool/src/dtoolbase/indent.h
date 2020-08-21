@@ -22,8 +22,8 @@
  * stream itself.  Useful for indenting a series of lines of text by a given
  * amount.
  */
-EXPCL_DTOOL ostream &
-indent(ostream &out, int indent_level);
+EXPCL_DTOOL_DTOOLBASE std::ostream &
+indent(std::ostream &out, int indent_level);
 
 /**
  * Writes a list of things to the indicated output stream, with a space
@@ -33,10 +33,10 @@ indent(ostream &out, int indent_level);
  */
 template<class InputIterator>
 void
-write_long_list(ostream &out, int indent_level,
+write_long_list(std::ostream &out, int indent_level,
                 InputIterator ifirst, InputIterator ilast,
-                string first_prefix = "",
-                string later_prefix = "",
+                std::string first_prefix = "",
+                std::string later_prefix = "",
                 int max_col = 72);
 
 #include "indent.I"

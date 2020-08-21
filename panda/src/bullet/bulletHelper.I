@@ -17,7 +17,7 @@
 INLINE PT(InternalName) BulletHelper::
 get_sb_index() {
 
-  if (_sb_index == (InternalName *)NULL) {
+  if (_sb_index == nullptr) {
     _sb_index = InternalName::make("sb_index");
   }
   return _sb_index;
@@ -29,7 +29,7 @@ get_sb_index() {
 INLINE PT(InternalName) BulletHelper::
 get_sb_flip() {
 
-  if (_sb_flip == (InternalName *)NULL) {
+  if (_sb_flip == nullptr) {
     _sb_flip = InternalName::make("sb_flip");
   }
   return _sb_flip;

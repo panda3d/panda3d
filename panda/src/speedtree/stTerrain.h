@@ -68,8 +68,8 @@ PUBLISHED:
                              PN_stdfloat start_x, PN_stdfloat start_y,
                              PN_stdfloat size_xy, int num_xy) const;
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level = 0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level = 0) const;
 
 public:
   const SpeedTree::SVertexAttribDesc *get_st_vertex_format() const;
@@ -123,7 +123,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const STTerrain &terrain) {
+INLINE std::ostream &operator << (std::ostream &out, const STTerrain &terrain) {
   terrain.output(out);
   return out;
 }

@@ -22,8 +22,12 @@
 #include "cppGlobals.h"
 #include "panda_getopt_long.h"
 #include "preprocess_argv.h"
-#include "pystub.h"
 #include <stdlib.h>
+
+using std::cerr;
+using std::cin;
+using std::cout;
+using std::string;
 
 CPPParser parser;
 
@@ -48,10 +52,10 @@ predefine_macro(CPPParser &parser, const string &option) {
 void
 show_type_or_expression(const string &str) {
   CPPExpression *expr = parser.parse_expr(str);
-  if (expr != NULL) {
+  if (expr != nullptr) {
     cout << "\nExpression: " << *expr << "\n";
     CPPType *type = expr->determine_type();
-    if (type == NULL) {
+    if (type == nullptr) {
       cout << "type is unknown\n";
     } else {
       cout << "type is " << *type << "\n";
@@ -60,13 +64,13 @@ show_type_or_expression(const string &str) {
 
   } else {
     CPPType *type = parser.parse_type(str);
-    if (type != NULL) {
+    if (type != nullptr) {
       cout << "\nType: " << *type << "\n"
            << "Defined in: " << type->_file << "\n"
            << "Subtype code is: " << (int)type->get_subtype() << "\n\n";
 
       CPPStructType *stype = type->as_struct_type();
-      if (stype != (CPPStructType *)NULL) {
+      if (stype != nullptr) {
         stype->check_virtual();
       }
 
@@ -74,7 +78,14 @@ show_type_or_expression(const string &str) {
       cout << "\n\n"
            << "is_template = " << type->is_template() << "\n"
            << "is_fully_specified = " << type->is_fully_specified() << "\n"
-           << "is_tbd = " << type->is_tbd() << "\n";
+           << "is_tbd = " << type->is_tbd() << "\n"
+           << "is_fundamental = " << type->is_fundamental() << "\n"
+           << "is_standard_layout = " << type->is_standard_layout() << "\n"
+           << "is_trivial = " << type->is_trivial() << "\n"
+           << "is_default_constructible = " << type->is_default_constructible() << "\n"
+           << "is_copy_constructible = " << type->is_copy_constructible() << "\n"
+           << "is_copy_assignable = " << type->is_copy_assignable() << "\n"
+           << "is_destructible = " << type->is_destructible() << "\n";
       if (type->has_typedef_name()) {
         cout << "get_typedef_name = " << type->get_typedef_name() << "\n";
       }
@@ -84,7 +95,7 @@ show_type_or_expression(const string &str) {
            << "get_preferred_name = " << type->get_preferred_name() << "\n"
            << "is_incomplete = " << type->is_incomplete() << "\n";
 
-      if (stype != (CPPStructType *)NULL) {
+      if (stype != nullptr) {
         cout << "scope = " << stype->get_scope()->get_fully_scoped_name() << "\n";
         bool is_abstract = stype->is_abstract();
         cout << "is_abstract = " << is_abstract << "\n";
@@ -109,19 +120,19 @@ show_type_or_expression(const string &str) {
 void
 show_methods(const string &str) {
   CPPType *type = parser.parse_type(str);
-  if (type == NULL) {
+  if (type == nullptr) {
     cerr << "Invalid type: " << str << "\n";
     return;
   }
 
   CPPStructType *stype = type->as_struct_type();
-  if (stype == NULL) {
+  if (stype == nullptr) {
     cerr << "Type is not a structure or class.\n";
     return;
   }
 
   CPPScope *scope = stype->get_scope();
-  assert(scope != (CPPScope *)NULL);
+  assert(scope != nullptr);
 
   cerr << "Methods in " << *stype << ":\n";
 
@@ -142,19 +153,19 @@ show_methods(const string &str) {
 void
 show_data_members(const string &str) {
   CPPType *type = parser.parse_type(str);
-  if (type == NULL) {
+  if (type == nullptr) {
     cerr << "Invalid type: " << str << "\n";
     return;
   }
 
   CPPStructType *stype = type->as_struct_type();
-  if (stype == NULL) {
+  if (stype == nullptr) {
     cerr << "Type is not a structure or class.\n";
     return;
   }
 
   CPPScope *scope = stype->get_scope();
-  assert(scope != (CPPScope *)NULL);
+  assert(scope != nullptr);
 
   cerr << "Data members in " << *stype << ":\n";
 
@@ -168,19 +179,19 @@ show_data_members(const string &str) {
 void
 show_nested_types(const string &str) {
   CPPType *type = parser.parse_type(str);
-  if (type == NULL) {
+  if (type == nullptr) {
     cerr << "Invalid type: " << str << "\n";
     return;
   }
 
   CPPStructType *stype = type->as_struct_type();
-  if (stype == NULL) {
+  if (stype == nullptr) {
     cerr << "Type is not a structure or class.\n";
     return;
   }
 
   CPPScope *scope = stype->get_scope();
-  assert(scope != (CPPScope *)NULL);
+  assert(scope != nullptr);
 
   cerr << "Nested types in " << *stype << ":\n";
 
@@ -194,8 +205,6 @@ show_nested_types(const string &str) {
 
 int
 main(int argc, char **argv) {
-  pystub();
-
   extern char *optarg;
   extern int optind;
   const char *optstr = "I:S:D:o:l:vp";
@@ -276,7 +285,7 @@ main(int argc, char **argv) {
     while (cin) {
       string str;
       cout << "Enter an expression or type name:\n";
-      getline(cin, str);
+      std::getline(std::cin, str);
       if (!str.empty()) {
 
         size_t space = str.find(' ');

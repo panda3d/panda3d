@@ -36,7 +36,7 @@ ParameterRemapHandleToInt(CPPType *orig_type) :
  * type to the original type, for passing into the actual C++ function.
  */
 void ParameterRemapHandleToInt::
-pass_parameter(ostream &out, const string &variable_name) {
+pass_parameter(std::ostream &out, const std::string &variable_name) {
   CPPType *unwrapped = TypeManager::unwrap_const(_orig_type);
 
   if (unwrapped->get_local_name(&parser) == "TypeHandle") {
@@ -50,7 +50,7 @@ pass_parameter(ostream &out, const string &variable_name) {
  * Returns an expression that evalutes to the appropriate value type for
  * returning from the function, given an expression of the original type.
  */
-string ParameterRemapHandleToInt::
-get_return_expr(const string &expression) {
+std::string ParameterRemapHandleToInt::
+get_return_expr(const std::string &expression) {
   return "(" + expression + ").get_index()";
 }

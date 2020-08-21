@@ -17,12 +17,21 @@
 
 #include "mutexSpinlockImpl.h"
 
+#if defined(__i386__) || defined(__x86_64) || defined(_M_IX86) || defined(_M_X64)
+#include <emmintrin.h>
+#define PAUSE() _mm_pause()
+#else
+#define PAUSE()
+#endif
+
 /**
  *
  */
 void MutexSpinlockImpl::
 do_lock() {
-  while (AtomicAdjust::compare_and_exchange(_lock, 0, 1) != 0) {
+  // Loop until we changed the flag from 0 to 1 (and it wasn't already 1).
+  while (_flag.test_and_set(std::memory_order_acquire)) {
+    PAUSE();
   }
 }
 

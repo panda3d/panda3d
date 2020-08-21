@@ -30,7 +30,7 @@
  * BillboardParticleRenderer for that.
  */
 
-class EXPCL_PANDAPHYSICS PointParticleRenderer : public BaseParticleRenderer {
+class EXPCL_PANDA_PARTICLESYSTEM PointParticleRenderer : public BaseParticleRenderer {
 PUBLISHED:
   enum PointParticleBlendType {
     PP_ONE_COLOR,
@@ -39,12 +39,12 @@ PUBLISHED:
   };
 
   PointParticleRenderer(const PointParticleRenderer& copy);
-  PointParticleRenderer(ParticleRendererAlphaMode ad = PR_ALPHA_NONE,
-                        PN_stdfloat point_size = 1.0f,
-                        PointParticleBlendType bt = PP_ONE_COLOR,
-                        ParticleRendererBlendMethod bm = PP_NO_BLEND,
-                        const LColor& sc = LColor(1.0f, 1.0f, 1.0f, 1.0f),
-                        const LColor& ec = LColor(1.0f, 1.0f, 1.0f, 1.0f));
+  explicit PointParticleRenderer(ParticleRendererAlphaMode ad = PR_ALPHA_NONE,
+                                 PN_stdfloat point_size = 1.0f,
+                                 PointParticleBlendType bt = PP_ONE_COLOR,
+                                 ParticleRendererBlendMethod bm = PP_NO_BLEND,
+                                 const LColor& sc = LColor(1.0f, 1.0f, 1.0f, 1.0f),
+                                 const LColor& ec = LColor(1.0f, 1.0f, 1.0f, 1.0f));
 
   virtual ~PointParticleRenderer();
 
@@ -64,8 +64,8 @@ PUBLISHED:
   INLINE PointParticleBlendType get_blend_type() const;
   INLINE ParticleRendererBlendMethod get_blend_method() const;
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level = 0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level = 0) const;
 
 private:
   LColor _start_color;

@@ -21,12 +21,12 @@
 /**
  * This defines the Loader interface to read Egg files.
  */
-class EXPCL_PANDAEGG LoaderFileTypeEgg : public LoaderFileType {
+class EXPCL_PANDA_EGG2PG LoaderFileTypeEgg : public LoaderFileType {
 public:
   LoaderFileTypeEgg();
 
-  virtual string get_name() const;
-  virtual string get_extension() const;
+  virtual std::string get_name() const;
+  virtual std::string get_extension() const;
   virtual bool supports_compressed() const;
 
   virtual bool supports_load() const;

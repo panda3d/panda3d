@@ -40,7 +40,7 @@ class EggXfmSAnim;
 class MayaNodeDesc : public ReferenceCount, public Namable {
 public:
   MayaNodeDesc(MayaNodeTree *tree,
-               MayaNodeDesc *parent = NULL, const string &name = string());
+               MayaNodeDesc *parent = nullptr, const std::string &name = std::string());
   ~MayaNodeDesc();
 
   void from_dag_path(const MDagPath &dag_path, MayaToEggConverter *converter);
@@ -55,7 +55,7 @@ public:
 
   bool is_tagged() const;
   bool is_joint_tagged() const;
-  bool has_object_type(string object_type) const;
+  bool has_object_type(std::string object_type) const;
 
   MayaNodeTree *_tree;
   MayaNodeDesc *_parent;
@@ -74,7 +74,7 @@ private:
   void mark_joint_parent();
   void check_pseudo_joints(bool joint_above);
   void check_blend_shapes(const MFnDagNode &node,
-                          const string &attrib_name);
+                          const std::string &attrib_name);
   void check_lods();
 
   MDagPath *_dag_path;

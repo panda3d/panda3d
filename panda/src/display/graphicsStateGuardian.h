@@ -154,6 +154,7 @@ PUBLISHED:
   INLINE bool get_supports_generate_mipmap() const;
   INLINE bool get_supports_depth_texture() const;
   INLINE bool get_supports_depth_stencil() const;
+  INLINE bool get_supports_luminance_texture() const;
   INLINE bool get_supports_shadow_filter() const;
   INLINE bool get_supports_sampler_objects() const;
   INLINE bool get_supports_basic_shaders() const;
@@ -203,6 +204,7 @@ PUBLISHED:
   MAKE_PROPERTY(supports_generate_mipmap, get_supports_generate_mipmap);
   MAKE_PROPERTY(supports_depth_texture, get_supports_depth_texture);
   MAKE_PROPERTY(supports_depth_stencil, get_supports_depth_stencil);
+  MAKE_PROPERTY(supports_luminance_texture, get_supports_luminance_texture);
   MAKE_PROPERTY(supports_shadow_filter, get_supports_shadow_filter);
   MAKE_PROPERTY(supports_sampler_objects, get_supports_sampler_objects);
   MAKE_PROPERTY(supports_basic_shaders, get_supports_basic_shaders);
@@ -226,7 +228,7 @@ PUBLISHED:
   MAKE_PROPERTY(shader_model, get_shader_model, set_shader_model);
 
   virtual int get_supported_geom_rendering() const;
-  virtual bool get_supports_cg_profile(const string &name) const;
+  virtual bool get_supports_cg_profile(const std::string &name) const;
 
   INLINE bool get_color_scale_via_lighting() const;
   INLINE bool get_alpha_scale_via_texture() const;
@@ -257,7 +259,7 @@ PUBLISHED:
   typedef bool TextureCallback(TextureContext *tc, void *callback_arg);
   void traverse_prepared_textures(TextureCallback *func, void *callback_arg);
 
-#ifndef NDEBUG
+#if !defined(NDEBUG) || !defined(CPPPARSER)
   void set_flash_texture(Texture *tex);
   void clear_flash_texture();
   Texture *get_flash_texture() const;
@@ -265,11 +267,11 @@ PUBLISHED:
 #endif
 
 PUBLISHED:
-  virtual bool has_extension(const string &extension) const;
+  virtual bool has_extension(const std::string &extension) const;
 
-  virtual string get_driver_vendor();
-  virtual string get_driver_renderer();
-  virtual string get_driver_version();
+  virtual std::string get_driver_vendor();
+  virtual std::string get_driver_renderer();
+  virtual std::string get_driver_version();
   virtual int get_driver_version_major();
   virtual int get_driver_version_minor();
   virtual int get_driver_shader_version_major();
@@ -284,13 +286,14 @@ PUBLISHED:
   MAKE_PROPERTY(driver_shader_version_minor, get_driver_shader_version_minor);
 
   bool set_scene(SceneSetup *scene_setup);
-  virtual SceneSetup *get_scene() const;
+  virtual SceneSetup *get_scene() const final;
   MAKE_PROPERTY(scene, get_scene, set_scene);
 
 public:
-  virtual TextureContext *prepare_texture(Texture *tex);
+  virtual TextureContext *prepare_texture(Texture *tex, int view);
   virtual bool update_texture(TextureContext *tc, bool force);
   virtual void release_texture(TextureContext *tc);
+  virtual void release_textures(const pvector<TextureContext *> &contexts);
   virtual bool extract_texture_data(Texture *tex);
 
   virtual SamplerContext *prepare_sampler(const SamplerState &sampler);
@@ -304,12 +307,15 @@ public:
 
   virtual VertexBufferContext *prepare_vertex_buffer(GeomVertexArrayData *data);
   virtual void release_vertex_buffer(VertexBufferContext *vbc);
+  virtual void release_vertex_buffers(const pvector<BufferContext *> &contexts);
 
   virtual IndexBufferContext *prepare_index_buffer(GeomPrimitive *data);
   virtual void release_index_buffer(IndexBufferContext *ibc);
+  virtual void release_index_buffers(const pvector<BufferContext *> &contexts);
 
   virtual BufferContext *prepare_shader_buffer(ShaderBuffer *data);
   virtual void release_shader_buffer(BufferContext *ibc);
+  virtual void release_shader_buffers(const pvector<BufferContext *> &contexts);
 
   virtual void begin_occlusion_query();
   virtual PT(OcclusionQueryContext) end_occlusion_query();
@@ -330,13 +336,16 @@ public:
 
   virtual void clear(DrawableRegion *clearable);
 
-  const LMatrix4 *fetch_specified_value(Shader::ShaderMatSpec &spec, int altered);
-  const LMatrix4 *fetch_specified_part(Shader::ShaderMatInput input, InternalName *name,
-                                       LMatrix4 &t, int index);
-  const LMatrix4 *fetch_specified_member(const NodePath &np, CPT_InternalName member, LMatrix4 &t);
+  void update_shader_matrix_cache(Shader *shader, LMatrix4 *cache, int altered);
+  const LMatrix4 *fetch_specified_value(Shader::ShaderMatSpec &spec, const LMatrix4 *cache, int altered);
+  void fetch_specified_part(Shader::ShaderMatInput input, InternalName *name,
+                            LMatrix4 *into, int count = 1);
+  void fetch_specified_member(const NodePath &np, CPT_InternalName member,
+                              LMatrix4 &t);
   PT(Texture) fetch_specified_texture(Shader::ShaderTexSpec &spec,
                                       SamplerState &sampler, int &view);
   const Shader::ShaderPtrData *fetch_ptr_parameter(const Shader::ShaderPtrSpec& spec);
+  bool fetch_ptr_parameter(const Shader::ShaderPtrSpec &spec, Shader::ShaderPtrData &data);
 
   virtual void prepare_display_region(DisplayRegionPipelineReader *dr);
   virtual void clear_before_callback();
@@ -365,21 +374,28 @@ public:
   virtual void finish_decal();
 
   virtual bool begin_draw_primitives(const GeomPipelineReader *geom_reader,
-                                     const GeomMunger *munger,
                                      const GeomVertexDataPipelineReader *data_reader,
                                      bool force);
   virtual bool draw_triangles(const GeomPrimitivePipelineReader *reader,
                               bool force);
+  virtual bool draw_triangles_adj(const GeomPrimitivePipelineReader *reader,
+                                  bool force);
   virtual bool draw_tristrips(const GeomPrimitivePipelineReader *reader,
                               bool force);
+  virtual bool draw_tristrips_adj(const GeomPrimitivePipelineReader *reader,
+                                  bool force);
   virtual bool draw_trifans(const GeomPrimitivePipelineReader *reader,
                             bool force);
   virtual bool draw_patches(const GeomPrimitivePipelineReader *reader,
                             bool force);
   virtual bool draw_lines(const GeomPrimitivePipelineReader *reader,
                           bool force);
+  virtual bool draw_lines_adj(const GeomPrimitivePipelineReader *reader,
+                              bool force);
   virtual bool draw_linestrips(const GeomPrimitivePipelineReader *reader,
                                bool force);
+  virtual bool draw_linestrips_adj(const GeomPrimitivePipelineReader *reader,
+                                   bool force);
   virtual bool draw_points(const GeomPrimitivePipelineReader *reader,
                            bool force);
   virtual void end_draw_primitives();
@@ -421,8 +437,11 @@ public:
 
   static void create_gamma_table (PN_stdfloat gamma, unsigned short *red_table, unsigned short *green_table, unsigned short *blue_table);
 
-  PT(Texture) get_shadow_map(const NodePath &light_np, GraphicsOutputBase *host=NULL);
-  PT(Texture) make_shadow_buffer(const NodePath &light_np, GraphicsOutputBase *host);
+  PT(Texture) get_shadow_map(const NodePath &light_np, GraphicsOutputBase *host=nullptr);
+  PT(Texture) get_dummy_shadow_map(Texture::TextureType texture_type) const;
+  virtual GraphicsOutput *make_shadow_buffer(LightLensNode *light, Texture *tex, GraphicsOutput *host);
+
+  virtual void ensure_generated_shader(const RenderState *state);
 
 #ifdef DO_PSTATS
   static void init_frame_pstats();
@@ -444,6 +463,7 @@ protected:
   virtual void end_bind_clip_planes();
 
   void determine_target_texture();
+  void determine_target_shader();
 
   virtual void free_pointers();
   virtual void close_gsg();
@@ -455,7 +475,7 @@ protected:
   static CPT(RenderState) get_unclipped_state();
   static CPT(RenderState) get_untextured_state();
 
-  void async_reload_texture(TextureContext *tc);
+  AsyncFuture *async_reload_texture(TextureContext *tc);
 
 protected:
   PT(SceneSetup) _scene_null;
@@ -493,9 +513,8 @@ protected:
   CPT(ShaderAttrib) _state_shader;
   CPT(ShaderAttrib) _target_shader;
 
-  // These are set by begin_draw_primitives(), and are only valid between
+  // This is set by begin_draw_primitives(), and are only valid between
   // begin_draw_primitives() and end_draw_primitives().
-  CPT(GeomMunger) _munger;
   const GeomVertexDataPipelineReader *_data_reader;
 
   unsigned int _color_write_mask;
@@ -597,6 +616,7 @@ protected:
   bool _supports_generate_mipmap;
   bool _supports_depth_texture;
   bool _supports_depth_stencil;
+  bool _supports_luminance_texture;
   bool _supports_shadow_filter;
   bool _supports_sampler_objects;
   bool _supports_basic_shaders;
@@ -638,6 +658,8 @@ protected:
 
 #ifndef NDEBUG
   PT(Texture) _flash_texture;
+#else
+  PT(Texture) _flash_texture_unused;
 #endif
 
 public:
@@ -672,7 +694,6 @@ public:
   static PStatCollector _texture_state_pcollector;
   static PStatCollector _draw_primitive_pcollector;
   static PStatCollector _draw_set_state_pcollector;
-  static PStatCollector _clear_pcollector;
   static PStatCollector _flush_pcollector;
   static PStatCollector _compute_dispatch_pcollector;
   static PStatCollector _wait_occlusion_pcollector;
@@ -747,7 +768,7 @@ private:
   friend class GraphicsEngine;
 };
 
-EXPCL_PANDA_DISPLAY ostream &operator << (ostream &out, GraphicsStateGuardian::ShaderModel sm);
+EXPCL_PANDA_DISPLAY std::ostream &operator << (std::ostream &out, GraphicsStateGuardian::ShaderModel sm);
 
 #include "graphicsStateGuardian.I"
 

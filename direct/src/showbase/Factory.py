@@ -1,4 +1,4 @@
-"""Undocumented Module"""
+"""Contains the Factory class."""
 
 __all__ = ['Factory']
 

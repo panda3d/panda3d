@@ -1378,7 +1378,7 @@ static const wchar_t combining_accent_map[] = {
  * Returns the Entry associated with the indicated character, if there is one.
  */
 const UnicodeLatinMap::Entry *UnicodeLatinMap::
-look_up(wchar_t character) {
+look_up(char32_t character) {
   if (!_initialized) {
     init();
   }
@@ -1392,7 +1392,7 @@ look_up(wchar_t character) {
     if (ci != _by_character->end()) {
       return (*ci).second;
     }
-    return NULL;
+    return nullptr;
   }
 }
 

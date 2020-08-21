@@ -20,8 +20,10 @@
 #include "hashGenerator.h"
 #include <math.h>
 
+using std::string;
+
 DCSimpleParameter::NestedFieldMap DCSimpleParameter::_nested_field_map;
-DCClassParameter *DCSimpleParameter::_uint32uint8_type = NULL;
+DCClassParameter *DCSimpleParameter::_uint32uint8_type = nullptr;
 
 /**
  *
@@ -186,7 +188,7 @@ DCSimpleParameter(DCSubatomicType type, unsigned int divisor) :
     _nested_field = create_uint32uint8_type();
 
   } else {
-    _nested_field = NULL;
+    _nested_field = nullptr;
   }
 }
 
@@ -1068,6 +1070,52 @@ pack_string(DCPackData &pack_data, const string &value,
 }
 
 /**
+ * Packs the indicated numeric or string value into the stream.
+ */
+void DCSimpleParameter::
+pack_blob(DCPackData &pack_data, const vector_uchar &value,
+          bool &pack_error, bool &range_error) const {
+  size_t blob_size = value.size();
+
+  switch (_type) {
+  case ST_char:
+  case ST_uint8:
+  case ST_int8:
+    if (blob_size == 0) {
+      pack_error = true;
+    } else {
+      if (blob_size != 1) {
+        range_error = true;
+      }
+      _uint_range.validate((unsigned int)value[0], range_error);
+      do_pack_uint8(pack_data.get_write_pointer(1), (unsigned int)value[0]);
+    }
+    break;
+
+  case ST_string:
+  case ST_blob:
+    _uint_range.validate(blob_size, range_error);
+    validate_uint_limits(blob_size, 16, range_error);
+    if (_num_length_bytes != 0) {
+      do_pack_uint16(pack_data.get_write_pointer(2), blob_size);
+    }
+    pack_data.append_data((const char *)value.data(), blob_size);
+    break;
+
+  case ST_blob32:
+    _uint_range.validate(blob_size, range_error);
+    if (_num_length_bytes != 0) {
+      do_pack_uint32(pack_data.get_write_pointer(4), blob_size);
+    }
+    pack_data.append_data((const char *)value.data(), blob_size);
+    break;
+
+  default:
+    pack_error = true;
+  }
+}
+
+/**
  * Packs the simpleParameter's specified default value (or a sensible default
  * if no value is specified) into the stream.  Returns true if the default
  * value is packed, false if the simpleParameter doesn't know how to pack its
@@ -1936,6 +1984,79 @@ unpack_string(const char *data, size_t length, size_t &p, string &value,
 }
 
 /**
+ * Unpacks the current numeric or string value from the stream.
+ */
+void DCSimpleParameter::
+unpack_blob(const char *data, size_t length, size_t &p, vector_uchar &value,
+            bool &pack_error, bool &range_error) const {
+  // If the type is a single byte, unpack it into a string of length 1.
+  switch (_type) {
+  case ST_char:
+  case ST_int8:
+  case ST_uint8:
+    {
+      if (p + 1 > length) {
+        pack_error = true;
+        return;
+      }
+      unsigned int int_value = do_unpack_uint8(data + p);
+      _uint_range.validate(int_value, range_error);
+      value.resize(1);
+      value[0] = int_value;
+      p++;
+    }
+    return;
+
+  default:
+    break;
+  }
+
+  size_t blob_size;
+
+  if (_num_length_bytes == 0) {
+    blob_size = _fixed_byte_size;
+
+  } else {
+    switch (_type) {
+    case ST_string:
+    case ST_blob:
+      if (p + 2 > length) {
+        pack_error = true;
+        return;
+      }
+      blob_size = do_unpack_uint16(data + p);
+      p += 2;
+      break;
+
+    case ST_blob32:
+      if (p + 4 > length) {
+        pack_error = true;
+        return;
+      }
+      blob_size = do_unpack_uint32(data + p);
+      p += 4;
+      break;
+
+    default:
+      pack_error = true;
+      return;
+    }
+  }
+
+  _uint_range.validate(blob_size, range_error);
+
+  if (p + blob_size > length) {
+    pack_error = true;
+    return;
+  }
+  value = vector_uchar((const unsigned char *)data + p,
+                       (const unsigned char *)data + p + blob_size);
+  p += blob_size;
+
+  return;
+}
+
+/**
  * Internally unpacks the current numeric or string value and validates it
  * against the type range limits, but does not return the value.  Returns true
  * on success, false on failure (e.g.  we don't know how to validate this
@@ -2171,9 +2292,9 @@ unpack_skip(const char *data, size_t length, size_t &p,
  * identifier.
  */
 void DCSimpleParameter::
-output_instance(ostream &out, bool brief, const string &prename,
+output_instance(std::ostream &out, bool brief, const string &prename,
                 const string &name, const string &postname) const {
-  if (get_typedef() != (DCTypedef *)NULL) {
+  if (get_typedef() != nullptr) {
     output_typedef_name(out, brief, prename, name, postname);
 
   } else {
@@ -2238,6 +2359,8 @@ output_instance(ostream &out, bool brief, const string &prename,
       }
       break;
 
+    case ST_blob:
+    case ST_blob32:
     case ST_string:
       if (!_uint_range.is_empty()) {
         out << "(";
@@ -2340,7 +2463,7 @@ do_check_match_array_parameter(const DCArrayParameter *other) const {
     // We cannot match a fixed-size array.
     return false;
   }
-  if (_nested_field == NULL) {
+  if (_nested_field == nullptr) {
     // Only an array-style simple parameter can match a DCArrayParameter.
     return false;
   }
@@ -2372,8 +2495,8 @@ create_nested_field(DCSubatomicType type, unsigned int divisor) {
  */
 DCPackerInterface *DCSimpleParameter::
 create_uint32uint8_type() {
-  if (_uint32uint8_type == NULL) {
-    DCClass *dclass = new DCClass(NULL, "", true, false);
+  if (_uint32uint8_type == nullptr) {
+    DCClass *dclass = new DCClass(nullptr, "", true, false);
     dclass->add_field(new DCSimpleParameter(ST_uint32));
     dclass->add_field(new DCSimpleParameter(ST_uint8));
     _uint32uint8_type = new DCClassParameter(dclass);

@@ -36,12 +36,12 @@ public:
                          bool is_proxy);
   virtual ~HTTPBasicAuthorization();
 
-  virtual const string &get_mechanism() const;
-  virtual string generate(HTTPEnum::Method method, const string &request_path,
-                          const string &username, const string &body);
+  virtual const std::string &get_mechanism() const;
+  virtual std::string generate(HTTPEnum::Method method, const std::string &request_path,
+                          const std::string &username, const std::string &body);
 
 private:
-  static const string _mechanism;
+  static const std::string _mechanism;
 };
 
 #include "httpBasicAuthorization.I"

@@ -24,7 +24,7 @@ TypeHandle PGTop::_type_handle;
  *
  */
 PGTop::
-PGTop(const string &name) :
+PGTop(const std::string &name) :
   PandaNode(name)
 {
   set_cull_callback();
@@ -47,7 +47,7 @@ PGTop(const string &name) :
  */
 PGTop::
 ~PGTop() {
-  set_mouse_watcher((MouseWatcher *)NULL);
+  set_mouse_watcher(nullptr);
 }
 
 /**
@@ -83,7 +83,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   // We create a new MouseWatcherGroup for the purposes of collecting a new
   // set of regions visible onscreen.
   PT(PGMouseWatcherGroup) old_watcher_group;
-  if (_watcher_group != (PGMouseWatcherGroup *)NULL) {
+  if (_watcher_group != nullptr) {
     _watcher_group->clear_top(this);
     old_watcher_group = _watcher_group;
     _watcher_group = new PGMouseWatcherGroup(this);
@@ -102,8 +102,8 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   // shouldn't do this until the frame that we're about to render has been
   // presented; otherwise, we may make regions active before they are actually
   // visible.  But no one has complained about this so far.
-  if (_watcher_group != (PGMouseWatcherGroup *)NULL) {
-    nassertr(_watcher != (MouseWatcher *)NULL, false);
+  if (_watcher_group != nullptr) {
+    nassertr(_watcher != nullptr, false);
     _watcher->replace_group(old_watcher_group, _watcher_group);
   }
 
@@ -130,17 +130,17 @@ is_renderable() const {
  */
 void PGTop::
 set_mouse_watcher(MouseWatcher *watcher) {
-  if (_watcher_group != (PGMouseWatcherGroup *)NULL) {
+  if (_watcher_group != nullptr) {
     _watcher_group->clear_top(this);
   }
-  if (_watcher != (MouseWatcher *)NULL) {
+  if (_watcher != nullptr) {
     _watcher->remove_group(_watcher_group);
   }
 
   _watcher = watcher;
-  _watcher_group = (PGMouseWatcherGroup *)NULL;
+  _watcher_group = nullptr;
 
-  if (_watcher != (MouseWatcher *)NULL) {
+  if (_watcher != nullptr) {
     _watcher_group = new PGMouseWatcherGroup(this);
     _watcher->add_group(_watcher_group);
   }

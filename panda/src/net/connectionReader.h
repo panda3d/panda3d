@@ -60,8 +60,8 @@ PUBLISHED:
   // by a previous call to PR_Poll(), or (b) execute (and possibly block on) a
   // new call to PR_Poll().
 
-  ConnectionReader(ConnectionManager *manager, int num_threads,
-                   const string &thread_name = string());
+  explicit ConnectionReader(ConnectionManager *manager, int num_threads,
+                            const std::string &thread_name = std::string());
   virtual ~ConnectionReader();
 
   bool add_connection(Connection *connection);
@@ -135,7 +135,7 @@ private:
 
   class ReaderThread : public Thread {
   public:
-    ReaderThread(ConnectionReader *reader, const string &thread_name,
+    ReaderThread(ConnectionReader *reader, const std::string &thread_name,
                  int thread_index);
     virtual void thread_main();
 

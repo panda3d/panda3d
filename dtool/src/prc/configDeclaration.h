@@ -19,6 +19,7 @@
 #include "configPage.h"
 #include "vector_string.h"
 #include "numeric_types.h"
+#include "filename.h"
 
 #include <vector>
 
@@ -30,10 +31,10 @@ class ConfigVariableCore;
  * pairing of a string name (actually, a ConfigVariableCore pointer) to a
  * string value.
  */
-class EXPCL_DTOOLCONFIG ConfigDeclaration : public ConfigFlags {
+class EXPCL_DTOOL_PRC ConfigDeclaration : public ConfigFlags {
 private:
   ConfigDeclaration(ConfigPage *page, ConfigVariableCore *variable,
-                    const string &string_value, int decl_seq);
+                    const std::string &string_value, int decl_seq);
   ~ConfigDeclaration();
 
 public:
@@ -45,8 +46,8 @@ PUBLISHED:
   MAKE_PROPERTY(page, get_page);
   MAKE_PROPERTY(variable, get_variable);
 
-  INLINE const string &get_string_value() const;
-  INLINE void set_string_value(const string &value);
+  INLINE const std::string &get_string_value() const;
+  INLINE void set_string_value(const std::string &value);
 
   INLINE size_t get_num_words() const;
 
@@ -56,26 +57,28 @@ PUBLISHED:
   INLINE bool has_int64_word(size_t n) const;
   INLINE bool has_double_word(size_t n) const;
 
-  INLINE string get_string_word(size_t n) const;
+  INLINE std::string get_string_word(size_t n) const;
   INLINE bool get_bool_word(size_t n) const;
   INLINE int get_int_word(size_t n) const;
   INLINE int64_t get_int64_word(size_t n) const;
   INLINE double get_double_word(size_t n) const;
 
-  void set_string_word(size_t n, const string &value);
+  void set_string_word(size_t n, const std::string &value);
   void set_bool_word(size_t n, bool value);
   void set_int_word(size_t n, int value);
   void set_int64_word(size_t n, int64_t value);
   void set_double_word(size_t n, double value);
 
+  Filename get_filename_value() const;
+
   INLINE int get_decl_seq() const;
 
-  void output(ostream &out) const;
-  void write(ostream &out) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out) const;
 
 public:
-  static size_t extract_words(const string &str, vector_string &words);
-  static string downcase(const string &s);
+  static size_t extract_words(const std::string &str, vector_string &words);
+  static std::string downcase(const std::string &s);
 
 private:
   void get_words();
@@ -87,7 +90,7 @@ private:
 private:
   ConfigPage *_page;
   ConfigVariableCore *_variable;
-  string _string_value;
+  std::string _string_value;
   int _decl_seq;
 
   enum WordFlags {
@@ -103,7 +106,7 @@ private:
 
   class Word {
   public:
-    string _str;
+    std::string _str;
     bool _bool;
     int _int;
     int64_t _int_64;
@@ -111,14 +114,14 @@ private:
     short _flags;
   };
 
-  typedef vector<Word> Words;
+  typedef std::vector<Word> Words;
   Words _words;
   bool _got_words;
 
   friend class ConfigPage;
 };
 
-INLINE ostream &operator << (ostream &out, const ConfigDeclaration &decl);
+INLINE std::ostream &operator << (std::ostream &out, const ConfigDeclaration &decl);
 
 #include "configDeclaration.I"
 

@@ -35,8 +35,8 @@ class EXPCL_PANDA_GOBJ SamplerContext : public SavedContext, public SimpleLruPag
 public:
   INLINE SamplerContext(const SamplerState &sampler);
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
 public:
   static TypeHandle get_class_type() {
@@ -58,7 +58,7 @@ private:
   friend class PreparedGraphicsObjects;
 };
 
-inline ostream &operator << (ostream &out, const SamplerContext &context) {
+inline std::ostream &operator << (std::ostream &out, const SamplerContext &context) {
   context.output(out);
   return out;
 }

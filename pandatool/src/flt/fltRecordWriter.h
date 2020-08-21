@@ -30,7 +30,7 @@ class FltHeader;
  */
 class FltRecordWriter {
 public:
-  FltRecordWriter(ostream &out);
+  FltRecordWriter(std::ostream &out);
   ~FltRecordWriter();
 
   void set_opcode(FltOpcode opcode);
@@ -46,7 +46,7 @@ public:
   FltError write_instance_def(FltHeader *header, int instance_index);
 
 private:
-  ostream &_out;
+  std::ostream &_out;
   Datagram _datagram;
   FltOpcode _opcode;
 

@@ -37,6 +37,9 @@
 #include "geomVertexWriter.h"
 #include "geomVertexReader.h"
 
+using std::max;
+using std::min;
+
 /**
  *
  */
@@ -236,12 +239,12 @@ flatten(GraphicsOutput *window) {
                         window);
 
     static int multitex_id = 1;
-    ostringstream multitex_name_strm;
+    std::ostringstream multitex_name_strm;
     multitex_name_strm << "multitex" << multitex_id;
     multitex_id++;
 
     GraphicsOutput *buffer = window->make_texture_buffer
-      (multitex_name_strm.str(), x_size, y_size, NULL, false);
+      (multitex_name_strm.str(), x_size, y_size, nullptr, false);
 
     // TODO: this no longer automatically deletes the buffer.  We need to take
     // care of this explicitly now.
@@ -323,7 +326,7 @@ flatten(GraphicsOutput *window) {
       // first texture layer to apply only.
       nassertv(bake_in_color);
       PT(GeomNode) geom_node = new GeomNode("background");
-      transfer_geom(geom_node, NULL, geom_list, true);
+      transfer_geom(geom_node, nullptr, geom_list, true);
 
       render.attach_new_node(geom_node);
     }
@@ -362,7 +365,7 @@ flatten(GraphicsOutput *window) {
         const RenderAttrib *attrib =
           geom_info._geom_net_state->get_attrib(ColorScaleAttrib::get_class_slot());
 
-        if (attrib != (const RenderAttrib *)NULL) {
+        if (attrib != nullptr) {
           geom_state = geom_state->add_attrib
             (attrib->invert_compose(ColorScaleAttrib::make_identity()));
         }
@@ -372,7 +375,7 @@ flatten(GraphicsOutput *window) {
       CPT(TransformState) tex_mat = TransformState::make_identity();
 
       const RenderAttrib *ra = geom_info._state->get_attrib(TexMatrixAttrib::get_class_slot());
-      if (ra != (const RenderAttrib *)NULL) {
+      if (ra != nullptr) {
         // There is a texture matrix inherited from above; put an inverse
         // matrix on the Geom to compensate.
         const TexMatrixAttrib *tma = DCAST(TexMatrixAttrib, ra);
@@ -437,19 +440,19 @@ scan_geom_node(GeomNode *node, const RenderState *state,
     if (grutil_cat.is_debug()) {
       grutil_cat.debug()
         << "geom " << gi << " net_state =\n";
-      geom_net_state->write(cerr, 2);
+      geom_net_state->write(std::cerr, 2);
     }
 
     // Get out the net TextureAttrib and TexMatrixAttrib from the state.
     const RenderAttrib *attrib;
-    const TextureAttrib *ta = NULL;
+    const TextureAttrib *ta = nullptr;
 
     attrib = geom_net_state->get_attrib(TextureAttrib::get_class_slot());
-    if (attrib != (const RenderAttrib *)NULL) {
+    if (attrib != nullptr) {
       ta = DCAST(TextureAttrib, attrib);
     }
 
-    if (ta == (TextureAttrib *)NULL) {
+    if (ta == nullptr) {
       // No texture should be on the Geom.
       CPT(RenderState) geom_state = node->get_geom_state(gi);
       geom_state = geom_state->remove_attrib(TextureAttrib::get_class_slot());
@@ -468,7 +471,7 @@ scan_geom_node(GeomNode *node, const RenderState *state,
       // Ok, we have multitexture.  Record the Geom.
       CPT(TexMatrixAttrib) tma = DCAST(TexMatrixAttrib, TexMatrixAttrib::make());
       attrib = geom_net_state->get_attrib(TexMatrixAttrib::get_class_slot());
-      if (attrib != (const RenderAttrib *)NULL) {
+      if (attrib != nullptr) {
         tma = DCAST(TexMatrixAttrib, attrib);
       }
 
@@ -863,7 +866,7 @@ transfer_geom(GeomNode *geom_node, const InternalName *texcoord_name,
     PT(Geom) geom = orig_geom->make_copy();
 
     // Ensure that any vertex animation has been applied.
-    geom->set_vertex_data(geom->get_vertex_data(current_thread)->animate_vertices(true, current_thread));
+    geom->set_vertex_data(geom->get_animated_vertex_data(true, current_thread));
 
     // Now get a modifiable pointer to the vertex data in the new Geom.  This
     // will actually perform a deep copy of the vertex data.
@@ -880,13 +883,13 @@ transfer_geom(GeomNode *geom_node, const InternalName *texcoord_name,
       }
     }
 
-    if (texcoord_name != (const InternalName *)NULL &&
+    if (texcoord_name != nullptr &&
         texcoord_name != InternalName::get_texcoord()) {
       // Copy the texture coordinates from the indicated name over to the
       // default name.
       const GeomVertexColumn *column =
         vdata->get_format()->get_column(texcoord_name);
-      if (column != (const GeomVertexColumn *)NULL) {
+      if (column != nullptr) {
         vdata = vdata->replace_column
           (InternalName::get_texcoord(), column->get_num_components(),
            column->get_numeric_type(), column->get_contents());
@@ -904,11 +907,11 @@ transfer_geom(GeomNode *geom_node, const InternalName *texcoord_name,
     if (preserve_color) {
       // Be sure to preserve whatever colors are on the geom.
       const RenderAttrib *ca = geom_info._geom_net_state->get_attrib(ColorAttrib::get_class_slot());
-      if (ca != (const RenderAttrib *)NULL) {
+      if (ca != nullptr) {
         geom_state = geom_state->add_attrib(ca);
       }
       const RenderAttrib *csa = geom_info._geom_net_state->get_attrib(ColorScaleAttrib::get_class_slot());
-      if (csa != (const RenderAttrib *)NULL) {
+      if (csa != nullptr) {
         geom_state = geom_state->add_attrib(csa);
       }
     }
@@ -938,7 +941,7 @@ scan_color(const MultitexReducer::GeomList &geom_list, LColor &geom_color,
 
     LColor color_scale(1.0f, 1.0f, 1.0f, 1.0f);
     const RenderAttrib *csa = geom_info._geom_net_state->get_attrib(ColorScaleAttrib::get_class_slot());
-    if (csa != (const RenderAttrib *)NULL) {
+    if (csa != nullptr) {
       const ColorScaleAttrib *a = DCAST(ColorScaleAttrib, csa);
       if (a->has_scale()) {
         color_scale = a->get_scale();
@@ -947,7 +950,7 @@ scan_color(const MultitexReducer::GeomList &geom_list, LColor &geom_color,
 
     ColorAttrib::Type color_type = ColorAttrib::T_vertex;
     const RenderAttrib *ca = geom_info._geom_net_state->get_attrib(ColorAttrib::get_class_slot());
-    if (ca != (const RenderAttrib *)NULL) {
+    if (ca != nullptr) {
       color_type = DCAST(ColorAttrib, ca)->get_color_type();
     }
 

@@ -12,7 +12,9 @@
  */
 
 #include "bulletHingeConstraint.h"
+
 #include "bulletRigidBodyNode.h"
+#include "bulletWorld.h"
 
 #include "deg_2_rad.h"
 
@@ -111,6 +113,7 @@ ptr() const {
  */
 void BulletHingeConstraint::
 set_angular_only(bool value) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return _constraint->setAngularOnly(value);
 }
@@ -120,6 +123,7 @@ set_angular_only(bool value) {
  */
 bool BulletHingeConstraint::
 get_angular_only() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return _constraint->getAngularOnly();
 }
@@ -129,6 +133,7 @@ get_angular_only() const {
  */
 void BulletHingeConstraint::
 set_limit(PN_stdfloat low, PN_stdfloat high, PN_stdfloat softness, PN_stdfloat bias, PN_stdfloat relaxation) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   low  = deg_2_rad(low);
   high = deg_2_rad(high);
@@ -141,6 +146,7 @@ set_limit(PN_stdfloat low, PN_stdfloat high, PN_stdfloat softness, PN_stdfloat b
  */
 void BulletHingeConstraint::
 set_axis(const LVector3 &axis) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   nassertv(!axis.is_nan());
 
@@ -153,6 +159,7 @@ set_axis(const LVector3 &axis) {
  */
 PN_stdfloat BulletHingeConstraint::
 get_lower_limit() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return rad_2_deg(_constraint->getLowerLimit());
 }
@@ -162,6 +169,7 @@ get_lower_limit() const {
  */
 PN_stdfloat BulletHingeConstraint::
 get_upper_limit() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return rad_2_deg(_constraint->getUpperLimit());
 }
@@ -171,6 +179,7 @@ get_upper_limit() const {
  */
 PN_stdfloat BulletHingeConstraint::
 get_hinge_angle() {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return rad_2_deg(_constraint->getHingeAngle());
 }
@@ -184,6 +193,7 @@ get_hinge_angle() {
  */
 void BulletHingeConstraint::
 enable_angular_motor(bool enable, PN_stdfloat target_velocity, PN_stdfloat max_impulse) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _constraint->enableAngularMotor(enable, target_velocity, max_impulse);
 }
@@ -193,6 +203,7 @@ enable_angular_motor(bool enable, PN_stdfloat target_velocity, PN_stdfloat max_i
  */
 void BulletHingeConstraint::
 enable_motor(bool enable) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _constraint->enableMotor(enable);
 }
@@ -203,6 +214,7 @@ enable_motor(bool enable) {
  */
 void BulletHingeConstraint::
 set_max_motor_impulse(PN_stdfloat max_impulse) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _constraint->setMaxMotorImpulse(max_impulse);
 }
@@ -212,6 +224,7 @@ set_max_motor_impulse(PN_stdfloat max_impulse) {
  */
 void BulletHingeConstraint::
 set_motor_target(const LQuaternion &quat, PN_stdfloat dt) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _constraint->setMotorTarget(LQuaternion_to_btQuat(quat), dt);
 }
@@ -221,6 +234,7 @@ set_motor_target(const LQuaternion &quat, PN_stdfloat dt) {
  */
 void BulletHingeConstraint::
 set_motor_target(PN_stdfloat target_angle, PN_stdfloat dt) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _constraint->setMotorTarget(target_angle, dt);
 }
@@ -230,9 +244,30 @@ set_motor_target(PN_stdfloat target_angle, PN_stdfloat dt) {
  */
 void BulletHingeConstraint::
 set_frames(const TransformState *ts_a, const TransformState *ts_b) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   btTransform frame_a = TransformState_to_btTrans(ts_a);
   btTransform frame_b = TransformState_to_btTrans(ts_b);
 
   _constraint->setFrames(frame_a, frame_b);
+}
+
+/**
+ *
+ */
+CPT(TransformState) BulletHingeConstraint::
+get_frame_a() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return btTrans_to_TransformState(_constraint->getAFrame());
+}
+
+/**
+ *
+ */
+CPT(TransformState) BulletHingeConstraint::
+get_frame_b() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return btTrans_to_TransformState(_constraint->getBFrame());
 }

@@ -59,7 +59,7 @@ fillin(DatagramIterator &scan, BamReader *) {
  *
  */
 PlaneNode::
-PlaneNode(const string &name, const LPlane &plane) :
+PlaneNode(const std::string &name, const LPlane &plane) :
   PandaNode(name),
   _priority(0),
   _clip_effect(~0)
@@ -88,7 +88,7 @@ PlaneNode(const PlaneNode &copy) :
  *
  */
 void PlaneNode::
-output(ostream &out) const {
+output(std::ostream &out) const {
   PandaNode::output(out);
   out << " " << get_plane();
 }
@@ -112,8 +112,8 @@ xform(const LMatrix4 &mat) {
   PandaNode::xform(mat);
   CDWriter cdata(_cycler);
   cdata->_plane = cdata->_plane * mat;
-  cdata->_front_viz = NULL;
-  cdata->_back_viz = NULL;
+  cdata->_front_viz = nullptr;
+  cdata->_back_viz = nullptr;
 }
 
 /**
@@ -186,7 +186,7 @@ get_viz(CullTraverser *trav, CullTraverserData &data) {
   LPlane eye_plane = cdata->_plane * data.get_modelview_transform(trav)->get_mat();
   bool front = (eye_plane.dist_to_plane(lens->get_nodal_point()) >= 0.0f);
 
-  if (cdata->_front_viz != (Geom *)NULL) {
+  if (cdata->_front_viz != nullptr) {
     return front ? cdata->_front_viz : cdata->_back_viz;
   }
 

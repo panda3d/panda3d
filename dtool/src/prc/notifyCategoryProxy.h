@@ -71,25 +71,20 @@ public:
 
   INLINE bool is_on(NotifySeverity severity);
 
-#if defined(NOTIFY_DEBUG) || defined(CPPPARSER)
   INLINE bool is_spam();
   INLINE bool is_debug();
-#else
-  CONSTEXPR static bool is_spam();
-  CONSTEXPR static bool is_debug();
-#endif
   INLINE bool is_info();
   INLINE bool is_warning();
   INLINE bool is_error();
   INLINE bool is_fatal();
 
-  INLINE ostream &out(NotifySeverity severity, bool prefix = true);
-  INLINE ostream &spam(bool prefix = true);
-  INLINE ostream &debug(bool prefix = true);
-  INLINE ostream &info(bool prefix = true);
-  INLINE ostream &warning(bool prefix = true);
-  INLINE ostream &error(bool prefix = true);
-  INLINE ostream &fatal(bool prefix = true);
+  INLINE std::ostream &out(NotifySeverity severity, bool prefix = true);
+  INLINE std::ostream &spam(bool prefix = true);
+  INLINE std::ostream &debug(bool prefix = true);
+  INLINE std::ostream &info(bool prefix = true);
+  INLINE std::ostream &warning(bool prefix = true);
+  INLINE std::ostream &error(bool prefix = true);
+  INLINE std::ostream &fatal(bool prefix = true);
 
   // The same functions as above, when accessed using proxy->function()
   // syntax, call get_safe_ptr().  These can be used safely either in static-
@@ -103,7 +98,7 @@ private:
 };
 
 template<class GetCategory>
-INLINE ostream &operator << (ostream &out, NotifyCategoryProxy<GetCategory> &proxy) {
+INLINE std::ostream &operator << (std::ostream &out, NotifyCategoryProxy<GetCategory> &proxy) {
   return out << proxy->get_fullname();
 }
 
@@ -159,7 +154,7 @@ INLINE ostream &operator << (ostream &out, NotifyCategoryProxy<GetCategory> &pro
   } \
   NotifyCategory *NotifyCategoryGetCategory_ ## basename:: \
   get_category() { \
-    return Notify::ptr()->get_category(string(actual_name), parent_category); \
+    return Notify::ptr()->get_category(std::string(actual_name), parent_category); \
   }
 #define NotifyCategoryDef(basename, parent_category) \
   NotifyCategoryDefName(basename, #basename, parent_category);

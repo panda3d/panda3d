@@ -29,7 +29,7 @@ TypeHandle PolylightNode::_type_handle;
  * Use PolylightNode() to construct a new PolylightNode object.
  */
 PolylightNode::
-PolylightNode(const string &name) :
+PolylightNode(const std::string &name) :
 PandaNode(name)
 {
   _enabled = true;
@@ -100,12 +100,12 @@ LColor PolylightNode::flicker() const {
     variation = (rand()%100);  // a value between 0-99
     variation /= 100.0;
     if (polylight_info)
-      pgraph_cat.info() << "Random Variation: " << variation << endl;
+      pgraph_cat.info() << "Random Variation: " << variation << std::endl;
   } else if (_flicker_type == FSIN) {
     double now = ClockObject::get_global_clock()->get_frame_time();
     variation = sinf(now*_sin_freq);
     if (polylight_info)
-      pgraph_cat.info() << "Variation: " << variation << endl;
+      pgraph_cat.info() << "Variation: " << variation << std::endl;
     // can't use negative variation, so make it positive
     if (variation < 0.0)
       variation *= -1.0;
@@ -134,7 +134,9 @@ LColor PolylightNode::flicker() const {
     b = color[2];
   }
   */
-  pgraph_cat.debug() << "Color R:" << r << "; G:" << g << "; B:" << b << endl;
+  if (pgraph_cat.is_debug()) {
+    pgraph_cat.debug() << "Color R:" << r << "; G:" << g << "; B:" << b << std::endl;
+  }
   return LColor(r,g,b,1.0);
 }
 
@@ -277,7 +279,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
  *
  */
 void PolylightNode::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":";
   // out << "Position: " << get_x() << " " << get_y() << " " << get_z() <<
   // "\n"; out << "Color: " << get_r() << " " << get_g() << " " << get_b() <<

@@ -23,7 +23,7 @@ OdeHingeJoint(dJointID id) :
 
 OdeHingeJoint::
 OdeHingeJoint(OdeWorld &world) :
-  OdeJoint(dJointCreateHinge(world.get_id(), 0)) {
+  OdeJoint(dJointCreateHinge(world.get_id(), nullptr)) {
 }
 
 OdeHingeJoint::

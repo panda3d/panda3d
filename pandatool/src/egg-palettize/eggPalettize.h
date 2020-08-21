@@ -37,19 +37,19 @@ public:
   bool _got_txa_filename;
   Filename _txa_filename;
   bool _got_txa_script;
-  string _txa_script;
+  std::string _txa_script;
   bool _nodb;
-  string _generated_image_pattern;
+  std::string _generated_image_pattern;
   bool _got_generated_image_pattern;
-  string _map_dirname;
+  std::string _map_dirname;
   bool _got_map_dirname;
   Filename _shadow_dirname;
   bool _got_shadow_dirname;
   Filename _rel_dirname;
   bool _got_rel_dirname;
-  string _default_groupname;
+  std::string _default_groupname;
   bool _got_default_groupname;
-  string _default_groupdir;
+  std::string _default_groupdir;
   bool _got_default_groupdir;
 
 private:
@@ -62,7 +62,6 @@ private:
   bool _omitall;
   bool _redo_all;
   bool _redo_eggs;
-  bool _dont_lock_txa;
 
   bool _describe_input_file;
   bool _remove_eggs;

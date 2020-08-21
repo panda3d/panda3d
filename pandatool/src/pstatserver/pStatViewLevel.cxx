@@ -77,6 +77,6 @@ get_num_children() const {
  */
 const PStatViewLevel *PStatViewLevel::
 get_child(int n) const {
-  nassertr(n >= 0 && n < (int)_children.size(), NULL);
+  nassertr(n >= 0 && n < (int)_children.size(), nullptr);
   return _children[n];
 }

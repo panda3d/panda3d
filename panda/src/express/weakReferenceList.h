@@ -15,30 +15,48 @@
 #define WEAKREFERENCELIST_H
 
 #include "pandabase.h"
-#include "pset.h"
+#include "pmap.h"
 #include "mutexImpl.h"
 
-class WeakPointerToVoid;
+class WeakPointerCallback;
 
 /**
- * This is a list of WeakPointerTo's that share a reference to a given
- * ReferenceCount object.  It is stored in a separate class since it is
- * assumed that most ReferenceCount objects do not need to store this list at
- * all; this avoids bloating every ReferenceCount object in the world with the
- * size of this object.
+ * This is an object shared by all the weak pointers that point to the same
+ * ReferenceCount object.  It is created whenever a weak reference to an
+ * object is created, and can outlive the object until all weak references
+ * have disappeared.
  */
-class EXPCL_PANDAEXPRESS WeakReferenceList {
+class EXPCL_PANDA_EXPRESS WeakReferenceList {
 public:
   WeakReferenceList();
   ~WeakReferenceList();
 
-  void add_reference(WeakPointerToVoid *ptv);
-  void clear_reference(WeakPointerToVoid *ptv);
+  INLINE void ref() const;
+  INLINE bool unref() const;
+  INLINE bool was_deleted() const;
+
+  void add_callback(WeakPointerCallback *callback, void *data);
+  void remove_callback(WeakPointerCallback *callback);
 
 private:
-  typedef pset<WeakPointerToVoid *> Pointers;
-  Pointers _pointers;
+  void mark_deleted();
+
+public:
+  // This lock protects the callbacks below, but it also protects the object
+  // from being deleted during a call to WeakPointerTo::lock().
   MutexImpl _lock;
+
+private:
+  typedef pmap<WeakPointerCallback *, void *> Callbacks;
+  Callbacks _callbacks;
+
+  // This has a very large number added to it if the object is still alive.
+  // It could be 1, but having it be a large number makes it easy to check
+  // whether the object has been deleted or not.
+  static const AtomicAdjust::Integer _alive_offset = (1 << 30);
+  mutable AtomicAdjust::Integer _count;
+
+  friend class ReferenceCount;
 };
 
 #include "weakReferenceList.I"

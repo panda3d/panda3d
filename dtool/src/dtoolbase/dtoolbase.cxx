@@ -14,7 +14,11 @@
 #include "dtoolbase.h"
 #include "memoryHook.h"
 
-#if defined(USE_TAU) && defined(WIN32)
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_DTOOL_DTOOLBASE)
+  #error Buildsystem error: BUILDING_DTOOL_DTOOLBASE not defined
+#endif
+
+#if defined(USE_TAU) && defined(_WIN32)
 // Hack around tau's lack of DLL export declarations for Profiler class.
 bool __tau_shutdown = false;
 #endif
@@ -32,7 +36,7 @@ MemoryHook *memory_hook;
  */
 void
 init_memory_hook() {
-  if (memory_hook == NULL) {
+  if (memory_hook == nullptr) {
     memory_hook = new MemoryHook;
   }
 }
@@ -57,5 +61,13 @@ default_thread_consider_yield() {
 }
 void (*global_thread_yield)() = default_thread_yield;
 void (*global_thread_consider_yield)() = default_thread_consider_yield;
+
+#ifdef HAVE_PYTHON
+static PyThreadState *
+default_thread_state_swap(PyThreadState *state) {
+  return nullptr;
+}
+PyThreadState *(*global_thread_state_swap)(PyThreadState *tstate) = default_thread_state_swap;
+#endif  // HAVE_PYTHON
 
 #endif  // HAVE_THREADS && SIMPLE_THREADS

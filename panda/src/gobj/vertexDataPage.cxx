@@ -109,9 +109,9 @@ VertexDataPage(size_t book_size) :
   SimpleLruPage(book_size),
   _book_size(book_size),
   _block_size(0),
-  _book(NULL)
+  _book(nullptr)
 {
-  _page_data = NULL;
+  _page_data = nullptr;
   _size = 0;
   _uncompressed_size = 0;
   _ram_class = RC_resident;
@@ -150,17 +150,17 @@ VertexDataPage::
   {
     MutexHolder holder2(_tlock);
     if (_pending_ram_class != _ram_class) {
-      nassertv(_thread_mgr != (PageThreadManager *)NULL);
+      nassertv(_thread_mgr != nullptr);
       _thread_mgr->remove_page(this);
     }
   }
 
-  if (_page_data != NULL) {
+  if (_page_data != nullptr) {
     free_page_data(_page_data, _allocated_size);
     _size = 0;
   }
 
-  nassertv(_book == NULL);
+  nassertv(_book == nullptr);
 }
 
 /**
@@ -176,7 +176,7 @@ stop_threads() {
     _thread_mgr.clear();
   }
 
-  if (thread_mgr != (PageThreadManager *)NULL) {
+  if (thread_mgr != nullptr) {
     gobj_cat.info()
       << "Stopping vertex paging threads.\n";
     thread_mgr->stop_threads();
@@ -200,7 +200,7 @@ flush_threads() {
     thread_mgr = _thread_mgr;
   }
 
-  if (thread_mgr != (PageThreadManager *)NULL) {
+  if (thread_mgr != nullptr) {
     thread_mgr->stop_threads();
     MutexHolder holder(_tlock);
     thread_mgr->start_threads(num_threads);
@@ -211,7 +211,7 @@ flush_threads() {
  *
  */
 void VertexDataPage::
-output(ostream &out) const {
+output(std::ostream &out) const {
   SimpleAllocator::output(out);
 }
 
@@ -219,7 +219,7 @@ output(ostream &out) const {
  *
  */
 void VertexDataPage::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   SimpleAllocator::write(out);
 }
 
@@ -244,7 +244,7 @@ changed_contiguous() {
     VertexDataBook::Pages::iterator pi = _book->_pages.find(this);
     nassertv(pi != _book->_pages.end());
     _book->_pages.erase(pi);
-    _book = NULL;
+    _book = nullptr;
     delete this;
     return;
   }
@@ -301,7 +301,7 @@ VertexDataBlock *VertexDataPage::
 do_alloc(size_t size) {
   VertexDataBlock *block = (VertexDataBlock *)SimpleAllocator::do_alloc(size);
 
-  if (block != (VertexDataBlock *)NULL && _ram_class != RC_disk) {
+  if (block != nullptr && _ram_class != RC_disk) {
     // When we allocate a new block within a resident page, we have to clear
     // the disk cache (since we have just invalidated it).
     _saved_block.clear();
@@ -321,7 +321,7 @@ void VertexDataPage::
 make_resident_now() {
   MutexHolder holder(_tlock);
   if (_pending_ram_class != _ram_class) {
-    nassertv(_thread_mgr != (PageThreadManager *)NULL);
+    nassertv(_thread_mgr != nullptr);
     _thread_mgr->remove_page(this);
   }
 
@@ -391,7 +391,7 @@ make_resident() {
     while (result != Z_STREAM_END) {
       unsigned char *start_out = (unsigned char *)z_source.next_out;
       nassertv(start_out < end_data);
-      z_source.avail_out = min((size_t)(end_data - start_out), (size_t)inflate_page_size);
+      z_source.avail_out = std::min((size_t)(end_data - start_out), (size_t)inflate_page_size);
       nassertv(z_source.avail_out != 0);
       result = inflate(&z_source, flush);
       if (result < 0 && result != Z_BUF_ERROR) {
@@ -522,7 +522,7 @@ make_compressed() {
     size_t copied_size = 0;
     unsigned char *p = new_data;
     page = head;
-    while (page != NULL) {
+    while (page != nullptr) {
       memcpy(p, page->_buffer, page->_used_size);
       copied_size += page->_used_size;
       p += page->_used_size;
@@ -573,7 +573,7 @@ make_disk() {
     }
 
     free_page_data(_page_data, _allocated_size);
-    _page_data = NULL;
+    _page_data = nullptr;
     _size = 0;
 
     set_ram_class(RC_disk);
@@ -593,7 +593,7 @@ do_save_to_disk() {
   if (_ram_class == RC_resident || _ram_class == RC_compressed) {
     PStatTimer timer(_vdata_save_pcollector);
 
-    if (_saved_block == (VertexDataSaveBlock *)NULL) {
+    if (_saved_block == nullptr) {
       if (gobj_cat.is_debug()) {
         gobj_cat.debug()
           << "Storing page, " << _size << " bytes, to disk\n";
@@ -602,7 +602,7 @@ do_save_to_disk() {
       bool compressed = (_ram_class == RC_compressed);
 
       _saved_block = get_save_file()->write_data(_page_data, _allocated_size, compressed);
-      if (_saved_block == (VertexDataSaveBlock *)NULL) {
+      if (_saved_block == nullptr) {
         // Can't write it to disk.  Too bad.
         return false;
       }
@@ -626,8 +626,8 @@ do_save_to_disk() {
 void VertexDataPage::
 do_restore_from_disk() {
   if (_ram_class == RC_disk) {
-    nassertv(_saved_block != (VertexDataSaveBlock *)NULL);
-    nassertv(_page_data == (unsigned char *)NULL && _size == 0);
+    nassertv(_saved_block != nullptr);
+    nassertv(_page_data == nullptr && _size == 0);
 
     PStatTimer timer(_vdata_restore_pcollector);
 
@@ -643,7 +643,7 @@ do_restore_from_disk() {
       nassert_raise("read error");
     }
 
-    nassertv(_page_data == (unsigned char *)NULL);
+    nassertv(_page_data == nullptr);
     _page_data = new_data;
     _size = buffer_size;
     _allocated_size = new_allocated_size;
@@ -669,7 +669,7 @@ adjust_book_size() {
     new_size = 0;
   }
 
-  if (_book != (VertexDataBook *)NULL && new_size != _book_size) {
+  if (_book != nullptr && new_size != _book_size) {
     VertexDataBook::Pages::iterator pi = _book->_pages.find(this);
     nassertv(pi != _book->_pages.end());
     _book->_pages.erase(pi);
@@ -713,7 +713,7 @@ request_ram_class(RamClass ram_class) {
   }
 
   MutexHolder holder(_tlock);
-  if (_thread_mgr == (PageThreadManager *)NULL) {
+  if (_thread_mgr == nullptr) {
     // Create the thread manager.
     gobj_cat.info()
       << "Spawning " << num_threads << " vertex paging threads.\n";
@@ -812,7 +812,7 @@ add_page(VertexDataPage *page, RamClass ram_class) {
  */
 void VertexDataPage::PageThreadManager::
 remove_page(VertexDataPage *page) {
-  nassertv(page != (VertexDataPage *)NULL);
+  nassertv(page != nullptr);
 
   PageThreads::iterator ti;
   for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
@@ -884,7 +884,7 @@ start_threads(int num_threads) {
 
   _threads.reserve(num_threads);
   for (int i = 0; i < num_threads; ++i) {
-    ostringstream name_strm;
+    std::ostringstream name_strm;
     name_strm << "VertexDataPage" << _threads.size();
     PT(PageThread) thread = new PageThread(this, name_strm.str());
     thread->start(TP_low, true);
@@ -919,7 +919,7 @@ stop_threads() {
  *
  */
 VertexDataPage::PageThread::
-PageThread(PageThreadManager *manager, const string &name) :
+PageThread(PageThreadManager *manager, const std::string &name) :
   Thread(name, name),
   _manager(manager),
   _working_cvar(_tlock)
@@ -980,7 +980,7 @@ thread_main() {
 
     _tlock.acquire();
 
-    _working_page = NULL;
+    _working_page = nullptr;
     _working_cvar.notify();
 
     Thread::consider_yield();

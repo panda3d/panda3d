@@ -27,6 +27,10 @@
 
 #include "dconfig.h"
 
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDADX)
+  #error Buildsystem error: BUILDING_PANDADX not defined
+#endif
+
 DToolConfigure(config_dxgsg9);
 NotifyCategoryDef(dxgsg9, ":display:gsg");
 NotifyCategoryDef(wdxdisplay9, "display");
@@ -265,8 +269,3 @@ init_libdxgsg9() {
   PandaSystem *ps = PandaSystem::get_global_ptr();
   ps->add_system("DirectX9");
 }
-
-// Necessary to allow use of dxerr from MSVC 2015
-#if _MSC_VER >= 1900
-int (WINAPIV * __vsnprintf)(char *, size_t, const char*, va_list) = _vsnprintf;
-#endif

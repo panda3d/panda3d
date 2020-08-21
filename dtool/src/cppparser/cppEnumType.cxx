@@ -29,12 +29,12 @@ CPPEnumType(Type type, CPPIdentifier *ident, CPPScope *current_scope,
             CPPScope *scope, const CPPFile &file) :
   CPPExtensionType(type, ident, current_scope, file),
   _scope(scope),
-  _element_type(NULL),
-  _last_value(NULL)
+  _element_type(nullptr),
+  _last_value(nullptr)
 {
   _parent_scope = (type == T_enum) ? current_scope : scope;
 
-  if (ident != NULL) {
+  if (ident != nullptr) {
     ident->_native_scope = current_scope;
   }
 }
@@ -48,10 +48,10 @@ CPPEnumType(Type type, CPPIdentifier *ident, CPPType *element_type,
   CPPExtensionType(type, ident, current_scope, file),
   _scope(scope),
   _element_type(element_type),
-  _last_value(NULL)
+  _last_value(nullptr)
 {
   _parent_scope = (type == T_enum) ? current_scope : scope;
-  if (ident != NULL) {
+  if (ident != nullptr) {
     ident->_native_scope = current_scope;
   }
 }
@@ -69,11 +69,11 @@ is_scoped() const {
  */
 CPPType *CPPEnumType::
 get_underlying_type() {
-  if (_element_type == NULL) {
+  if (_element_type == nullptr) {
     // This enum is untyped.  Use a suitable default, ie.  'int'. In the
     // future, we might want to check whether it fits in an int.
-    static CPPType *default_element_type = NULL;
-    if (default_element_type == NULL) {
+    static CPPType *default_element_type = nullptr;
+    if (default_element_type == nullptr) {
       default_element_type =
         CPPType::new_type(new CPPConstType(new CPPSimpleType(CPPSimpleType::T_int, 0)));
     }
@@ -89,7 +89,7 @@ get_underlying_type() {
  *
  */
 CPPInstance *CPPEnumType::
-add_element(const string &name, CPPExpression *value, CPPPreprocessor *preprocessor, const cppyyltype &pos) {
+add_element(const std::string &name, CPPExpression *value, CPPPreprocessor *preprocessor, const cppyyltype &pos) {
   CPPIdentifier *ident = new CPPIdentifier(name);
   ident->_native_scope = _parent_scope;
 
@@ -104,8 +104,8 @@ add_element(const string &name, CPPExpression *value, CPPPreprocessor *preproces
   inst->_storage_class |= CPPInstance::SC_constexpr;
   _elements.push_back(inst);
 
-  if (value == (CPPExpression *)NULL) {
-    if (_last_value == (CPPExpression *)NULL) {
+  if (value == nullptr) {
+    if (_last_value == nullptr) {
       // This is the first value, and should therefore be 0.
       static CPPExpression *const zero = new CPPExpression(0);
       value = zero;
@@ -123,17 +123,17 @@ add_element(const string &name, CPPExpression *value, CPPPreprocessor *preproces
   inst->_initializer = value;
   _last_value = value;
 
-  if (preprocessor != (CPPPreprocessor *)NULL) {
+  if (preprocessor != nullptr) {
     // Same-line comment?
     CPPCommentBlock *comment =
       preprocessor->get_comment_on(pos.first_line, pos.file);
 
-    if (comment == (CPPCommentBlock *)NULL) {
+    if (comment == nullptr) {
       // Nope.  Check for a comment before this line.
       comment =
         preprocessor->get_comment_before(pos.first_line, pos.file);
 
-      if (comment != NULL) {
+      if (comment != nullptr) {
         // This is a bit of a hack, but it prevents us from picking up a same-
         // line comment from the previous line.
         if (comment->_line_number != pos.first_line - 1 ||
@@ -148,12 +148,12 @@ add_element(const string &name, CPPExpression *value, CPPPreprocessor *preproces
   }
 
   // Add the value to the enum scope (as per C++11), assuming it's not anonymous.
-  if (_scope != NULL) {
+  if (_scope != nullptr) {
     _scope->add_enum_value(inst);
   }
 
   // Now add it to the containing scope as well if it's not an "enum class".
-  if (!is_scoped() && _parent_scope != NULL) {
+  if (!is_scoped() && _parent_scope != nullptr) {
     _parent_scope->add_enum_value(inst);
   }
 
@@ -179,11 +179,11 @@ is_fully_specified() const {
     return false;
   }
 
-  if (_ident != NULL && !_ident->is_fully_specified()) {
+  if (_ident != nullptr && !_ident->is_fully_specified()) {
     return false;
   }
 
-  if (_element_type != NULL && !_element_type->is_fully_specified()) {
+  if (_element_type != nullptr && !_element_type->is_fully_specified()) {
     return false;
   }
 
@@ -210,12 +210,12 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
 
   CPPEnumType *rep = new CPPEnumType(*this);
 
-  if (_ident != NULL) {
+  if (_ident != nullptr) {
     rep->_ident =
       _ident->substitute_decl(subst, current_scope, global_scope);
   }
 
-  if (_element_type != NULL) {
+  if (_element_type != nullptr) {
     rep->_element_type =
       _element_type->substitute_decl(subst, current_scope, global_scope)
       ->as_type();
@@ -224,12 +224,24 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
   bool any_changed = false;
 
   for (size_t i = 0; i < _elements.size(); ++i) {
-    CPPInstance *elem_rep =
-      _elements[i]->substitute_decl(subst, current_scope, global_scope)
-      ->as_instance();
+    // We don't just do substitute_decl on the instance, which could lead to
+    // an infinite recursion.
+    CPPInstance *element = _elements[i];
+    CPPExpression *value = element->_initializer->
+      substitute_decl(subst, current_scope, global_scope)->as_expression();
 
-    if (elem_rep != _elements[i]) {
-      rep->_elements[i] = elem_rep;
+    if (is_scoped()) {
+      // For a strong enum, we consider the elements to be of this type.
+      if (value != element->_initializer) {
+        rep->_elements[i] = new CPPInstance(rep, element->_ident);
+        rep->_elements[i]->_initializer = value;
+        any_changed = true;
+      }
+    } else if (value != element->_initializer ||
+               rep->get_underlying_type() != get_underlying_type()) {
+      // In an unscoped enum, the elements are integers.
+      rep->_elements[i] = new CPPInstance(rep->get_underlying_type(), element->_ident);
+      rep->_elements[i]->_initializer = value;
       any_changed = true;
     }
   }
@@ -250,8 +262,8 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
  *
  */
 void CPPEnumType::
-output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
-  if (!complete && _ident != NULL) {
+output(std::ostream &out, int indent_level, CPPScope *scope, bool complete) const {
+  if (!complete && _ident != nullptr) {
     // If we have a name, use it.
     if (cppparser_output_class_keyword) {
       out << _type << " ";
@@ -260,10 +272,10 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
 
   } else {
     out << _type;
-    if (_ident != NULL) {
+    if (_ident != nullptr) {
       out << " " << _ident->get_local_name(scope);
     }
-    if (_element_type != NULL) {
+    if (_element_type != nullptr) {
       out << " : " << _element_type->get_local_name(scope);
     }
 
@@ -271,7 +283,7 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
     Elements::const_iterator ei;
     for (ei = _elements.begin(); ei != _elements.end(); ++ei) {
       indent(out, indent_level + 2) << (*ei)->get_local_name();
-      if ((*ei)->_initializer != NULL) {
+      if ((*ei)->_initializer != nullptr) {
         out << " = " << *(*ei)->_initializer;
       }
       out << ",\n";

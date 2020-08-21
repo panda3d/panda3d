@@ -33,7 +33,7 @@ public:
   AccumulatedAttribs(const AccumulatedAttribs &copy);
   void operator = (const AccumulatedAttribs &copy);
 
-  void write(ostream &out, int attrib_types, int indent_level) const;
+  void write(std::ostream &out, int attrib_types, int indent_level) const;
 
   void collect(PandaNode *node, int attrib_types);
   CPT(RenderState) collect(const RenderState *state, int attrib_types);

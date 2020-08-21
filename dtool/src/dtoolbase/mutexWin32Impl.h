@@ -17,37 +17,57 @@
 #include "dtoolbase.h"
 #include "selectThreadImpl.h"
 
-#ifdef WIN32_VC
+#ifdef _WIN32
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN 1
 #endif
 #include <windows.h>
 
 /**
- * Uses Windows native calls to implement a mutex.
+ * Uses SRWLock on Vista and above to implement a mutex.  Older versions of
+ * Windows fall back to a combination of a spinlock and an Event object.
  */
-class EXPCL_DTOOL MutexWin32Impl {
+class EXPCL_DTOOL_DTOOLBASE MutexWin32Impl {
 public:
-  MutexWin32Impl();
-  INLINE ~MutexWin32Impl();
+  constexpr MutexWin32Impl() = default;
+  MutexWin32Impl(const MutexWin32Impl &copy) = delete;
+  ~MutexWin32Impl() = default;
+
+  MutexWin32Impl &operator = (const MutexWin32Impl &copy) = delete;
+
+public:
+  INLINE void lock();
+  INLINE bool try_lock();
+  INLINE void unlock();
 
 private:
-  MutexWin32Impl(const MutexWin32Impl &copy) DELETED;
-  MutexWin32Impl &operator = (const MutexWin32Impl &copy) DELETED_ASSIGN;
+  SRWLOCK _lock = SRWLOCK_INIT;
+
+  friend class ConditionVarWin32Impl;
+};
+
+/**
+ * Uses CRITICAL_SECTION to implement a recursive mutex.
+ */
+class EXPCL_DTOOL_DTOOLBASE ReMutexWin32Impl {
+public:
+  ReMutexWin32Impl();
+  ReMutexWin32Impl(const ReMutexWin32Impl &copy) = delete;
+  INLINE ~ReMutexWin32Impl();
+
+  ReMutexWin32Impl &operator = (const ReMutexWin32Impl &copy) = delete;
 
 public:
-  INLINE void acquire();
-  INLINE bool try_acquire();
-  INLINE void release();
+  INLINE void lock();
+  INLINE bool try_lock();
+  INLINE void unlock();
 
 private:
   CRITICAL_SECTION _lock;
-  friend class ConditionVarWin32Impl;
-  friend class ConditionVarFullWin32Impl;
 };
 
 #include "mutexWin32Impl.I"
 
-#endif  // WIN32_VC
+#endif  // _WIN32
 
 #endif

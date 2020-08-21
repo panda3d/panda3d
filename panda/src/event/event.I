@@ -15,7 +15,7 @@
  *
  */
 INLINE void Event::
-set_name(const string &name) {
+set_name(const std::string &name) {
   _name = name;
 }
 
@@ -39,13 +39,13 @@ has_name() const {
 /**
  *
  */
-INLINE const string &Event::
+INLINE const std::string &Event::
 get_name() const {
   return _name;
 }
 
 
-INLINE ostream &operator << (ostream &out, const Event &n) {
+INLINE std::ostream &operator << (std::ostream &out, const Event &n) {
   n.output(out);
   return out;
 }

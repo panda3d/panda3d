@@ -13,11 +13,6 @@
 
 #include "pta_uchar.h"
 
-// Tell GCC that we'll take care of the instantiation explicitly here.
-#ifdef __GNUC__
-#pragma implementation
-#endif
-
 template class PointerToBase<ReferenceCountedVector<uchar> >;
 template class PointerToArrayBase<uchar>;
 template class PointerToArray<unsigned char>;

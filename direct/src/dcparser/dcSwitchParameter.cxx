@@ -15,6 +15,8 @@
 #include "dcSwitch.h"
 #include "hashGenerator.h"
 
+using std::string;
+
 /**
  *
  */
@@ -66,7 +68,7 @@ DCSwitchParameter(const DCSwitch *dswitch) :
   // Also consider the default case, if there is one.
   const DCSwitch::SwitchFields *fields =
     (DCSwitch::SwitchFields *)_dswitch->get_default_case();
-  if (fields != (DCSwitch::SwitchFields *)NULL) {
+  if (fields != nullptr) {
     if (!fields->has_fixed_byte_size() ||
         fields->get_fixed_byte_size() != _fixed_byte_size) {
       _has_fixed_byte_size = false;
@@ -153,9 +155,9 @@ apply_switch(const char *value_data, size_t length) const {
  * identifier.
  */
 void DCSwitchParameter::
-output_instance(ostream &out, bool brief, const string &prename,
+output_instance(std::ostream &out, bool brief, const string &prename,
                 const string &name, const string &postname) const {
-  if (get_typedef() != (DCTypedef *)NULL) {
+  if (get_typedef() != nullptr) {
     output_typedef_name(out, brief, prename, name, postname);
 
   } else {
@@ -168,10 +170,10 @@ output_instance(ostream &out, bool brief, const string &prename,
  * identifier.
  */
 void DCSwitchParameter::
-write_instance(ostream &out, bool brief, int indent_level,
+write_instance(std::ostream &out, bool brief, int indent_level,
                const string &prename, const string &name,
                const string &postname) const {
-  if (get_typedef() != (DCTypedef *)NULL) {
+  if (get_typedef() != nullptr) {
     write_typedef_name(out, brief, indent_level, prename, name, postname);
 
   } else {

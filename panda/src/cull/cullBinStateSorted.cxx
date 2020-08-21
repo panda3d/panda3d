@@ -38,7 +38,7 @@ CullBinStateSorted::
  * Factory constructor for passing to the CullBinManager.
  */
 CullBin *CullBinStateSorted::
-make_bin(const string &name, GraphicsStateGuardianBase *gsg,
+make_bin(const std::string &name, GraphicsStateGuardianBase *gsg,
          const PStatCollector &draw_region_pcollector) {
   return new CullBinStateSorted(name, gsg, draw_region_pcollector);
 }
@@ -69,10 +69,25 @@ finish_cull(SceneSetup *, Thread *current_thread) {
 void CullBinStateSorted::
 draw(bool force, Thread *current_thread) {
   PStatTimer timer(_draw_this_pcollector, current_thread);
+
   Objects::const_iterator oi;
   for (oi = _objects.begin(); oi != _objects.end(); ++oi) {
     CullableObject *object = (*oi)._object;
-    CullHandler::draw(object, _gsg, force, current_thread);
+
+    if (object->_draw_callback == nullptr) {
+      nassertd(object->_geom != nullptr) continue;
+
+      _gsg->set_state_and_transform(object->_state, object->_internal_transform);
+
+      GeomPipelineReader geom_reader(object->_geom, current_thread);
+      GeomVertexDataPipelineReader data_reader(object->_munged_data, current_thread);
+      data_reader.check_array_readers();
+      geom_reader.draw(_gsg, &data_reader, force);
+    } else {
+      // It has a callback associated.
+      object->draw_callback(_gsg, force, current_thread);
+      // Now the callback has taken care of drawing.
+    }
   }
 }
 

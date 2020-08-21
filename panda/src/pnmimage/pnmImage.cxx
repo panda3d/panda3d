@@ -21,13 +21,16 @@
 #include "stackedPerlinNoise2.h"
 #include <algorithm>
 
+using std::max;
+using std::min;
+
 /**
  *
  */
 PNMImage::
 PNMImage(const Filename &filename, PNMFileType *type) {
-  _array = NULL;
-  _alpha = NULL;
+  _array = nullptr;
+  _alpha = nullptr;
   _has_read_size = false;
 
   bool result = read(filename, type);
@@ -43,13 +46,13 @@ PNMImage(const Filename &filename, PNMFileType *type) {
  */
 void PNMImage::
 clear() {
-  if (_array != (xel *)NULL) {
+  if (_array != nullptr) {
     PANDA_FREE_ARRAY(_array);
-    _array = (xel *)NULL;
+    _array = nullptr;
   }
-  if (_alpha != (xelval *)NULL) {
+  if (_alpha != nullptr) {
     PANDA_FREE_ARRAY(_alpha);
-    _alpha = (xelval *)NULL;
+    _alpha = nullptr;
   }
   _x_size = 0;
   _y_size = 0;
@@ -58,7 +61,7 @@ clear() {
   _inv_maxval = 1.0 / 255.0;
   _color_space = CS_linear;
   _comment.clear();
-  _type = (PNMFileType *)NULL;
+  _type = nullptr;
   _has_read_size = false;
   _xel_encoding = XE_generic;
 }
@@ -226,10 +229,10 @@ take_from(PNMImage &orig) {
 
   if (has_alpha()) {
     _alpha = orig._alpha;
-    orig._alpha = NULL;
+    orig._alpha = nullptr;
   }
   _array = orig._array;
-  orig._array = NULL;
+  orig._array = nullptr;
 
   orig.clear();
 }
@@ -274,7 +277,7 @@ alpha_fill_val(xelval alpha) {
 bool PNMImage::
 read(const Filename &filename, PNMFileType *type, bool report_unknown_type) {
   PNMReader *reader = make_reader(filename, type, report_unknown_type);
-  if (reader == (PNMReader *)NULL) {
+  if (reader == nullptr) {
     clear();
     return false;
   }
@@ -295,11 +298,11 @@ read(const Filename &filename, PNMFileType *type, bool report_unknown_type) {
  * Returns true if successful, false on error.
  */
 bool PNMImage::
-read(istream &data, const string &filename, PNMFileType *type,
+read(std::istream &data, const std::string &filename, PNMFileType *type,
      bool report_unknown_type) {
   PNMReader *reader = PNMImageHeader::make_reader
-    (&data, false, filename, string(), type, report_unknown_type);
-  if (reader == (PNMReader *)NULL) {
+    (&data, false, filename, std::string(), type, report_unknown_type);
+  if (reader == nullptr) {
     clear();
     return false;
   }
@@ -322,7 +325,7 @@ read(PNMReader *reader) {
 
   clear();
 
-  if (reader == NULL) {
+  if (reader == nullptr) {
     return false;
   }
 
@@ -385,7 +388,7 @@ write(const Filename &filename, PNMFileType *type) const {
   }
 
   PNMWriter *writer = PNMImageHeader::make_writer(filename, type);
-  if (writer == (PNMWriter *)NULL) {
+  if (writer == nullptr) {
     return false;
   }
 
@@ -402,14 +405,14 @@ write(const Filename &filename, PNMFileType *type) const {
  * write.
  */
 bool PNMImage::
-write(ostream &data, const string &filename, PNMFileType *type) const {
+write(std::ostream &data, const std::string &filename, PNMFileType *type) const {
   if (!is_valid()) {
     return false;
   }
 
   PNMWriter *writer = PNMImageHeader::make_writer
     (&data, false, filename, type);
-  if (writer == (PNMWriter *)NULL) {
+  if (writer == nullptr) {
     return false;
   }
 
@@ -425,7 +428,7 @@ write(ostream &data, const string &filename, PNMFileType *type) const {
  */
 bool PNMImage::
 write(PNMWriter *writer) const {
-  if (writer == NULL) {
+  if (writer == nullptr) {
     return false;
   }
 
@@ -497,9 +500,9 @@ set_color_type(PNMImage::ColorType color_type) {
 
   if (has_alpha() && !has_alpha(color_type)) {
     // Discard the alpha channel
-    if (_alpha != NULL) {
+    if (_alpha != nullptr) {
       PANDA_FREE_ARRAY(_alpha);
-      _alpha = NULL;
+      _alpha = nullptr;
     }
 
   } else if (!has_alpha() && has_alpha(color_type)) {
@@ -535,7 +538,7 @@ set_color_space(ColorSpace color_space) {
     return;
   }
 
-  if (_array != NULL) {
+  if (_array != nullptr) {
     size_t array_size = _x_size * _y_size;
 
     // Note: only convert RGB, since alpha channel is always linear.
@@ -593,8 +596,8 @@ set_color_space(ColorSpace color_space) {
       break;
 
     default:
-      nassertv(false);
-      break;
+      nassert_raise("invalid color space");
+      return;
     }
 
     // Initialize the new encoding settings.
@@ -680,7 +683,7 @@ unpremultiply_alpha() {
  */
 void PNMImage::
 reverse_rows() {
-  if (_array != NULL) {
+  if (_array != nullptr) {
     xel *new_array = (xel *)PANDA_MALLOC_ARRAY(_x_size * _y_size * sizeof(xel));
     for (int y = 0; y < _y_size; y++) {
       int new_y = _y_size - 1 - y;
@@ -690,7 +693,7 @@ reverse_rows() {
     _array = new_array;
   }
 
-  if (_alpha != NULL) {
+  if (_alpha != nullptr) {
     xelval *new_alpha = (xelval *)PANDA_MALLOC_ARRAY(_x_size * _y_size * sizeof(xelval));
     for (int y = 0; y < _y_size; y++) {
       int new_y = _y_size - 1 - y;
@@ -712,7 +715,7 @@ void PNMImage::
 flip(bool flip_x, bool flip_y, bool transpose) {
   if (transpose) {
     // Transposed case.  X becomes Y, Y becomes X.
-    if (_array != NULL) {
+    if (_array != nullptr) {
       xel *new_array = (xel *)PANDA_MALLOC_ARRAY(_x_size * _y_size * sizeof(xel));
       for (int xi = 0; xi < _x_size; ++xi) {
         xel *row = new_array + xi * _y_size;
@@ -727,7 +730,7 @@ flip(bool flip_x, bool flip_y, bool transpose) {
       _array = new_array;
     }
 
-    if (_alpha != NULL) {
+    if (_alpha != nullptr) {
       xelval *new_alpha = (xelval *)PANDA_MALLOC_ARRAY(_x_size * _y_size * sizeof(xelval));
       for (int xi = 0; xi < _x_size; ++xi) {
         xelval *row = new_alpha + xi * _y_size;
@@ -749,7 +752,7 @@ flip(bool flip_x, bool flip_y, bool transpose) {
 
   } else {
     // Non-transposed.  X is X, Y is Y.
-    if (_array != NULL) {
+    if (_array != nullptr) {
       xel *new_array = (xel *)PANDA_MALLOC_ARRAY(_x_size * _y_size * sizeof(xel));
       for (int yi = 0; yi < _y_size; ++yi) {
         xel *row = new_array + yi * _x_size;
@@ -765,7 +768,7 @@ flip(bool flip_x, bool flip_y, bool transpose) {
       _array = new_array;
     }
 
-    if (_alpha != NULL) {
+    if (_alpha != nullptr) {
       xelval *new_alpha = (xelval *)PANDA_MALLOC_ARRAY(_x_size * _y_size * sizeof(xelval));
       for (int yi = 0; yi < _y_size; ++yi) {
         xelval *row = new_alpha + yi * _x_size;
@@ -849,7 +852,7 @@ get_channel_val(int x, int y, int channel) const {
     pnmimage_cat.error()
       << "Invalid request for channel " << channel << " in "
       << get_num_channels() << "-channel image.\n";
-    nassertr(false, 0);
+    nassert_raise("unexpected channel count");
     return 0;
   }
 }
@@ -885,7 +888,8 @@ set_channel_val(int x, int y, int channel, xelval value) {
     break;
 
   default:
-    nassertv(false);
+    nassert_raise("unexpected channel count");
+    break;
   }
 }
 
@@ -915,7 +919,7 @@ get_channel(int x, int y, int channel) const {
     pnmimage_cat.error()
       << "Invalid request for channel " << channel << " in "
       << get_num_channels() << "-channel image.\n";
-    nassertr(false, 0);
+    nassert_raise("unexpected channel count");
     return 0;
   }
 }
@@ -951,7 +955,8 @@ set_channel(int x, int y, int channel, float value) {
     break;
 
   default:
-    nassertv(false);
+    nassert_raise("unexpected channel count");
+    break;
   }
 }
 
@@ -984,7 +989,7 @@ set_pixel(int x, int y, const PixelSpec &pixel) {
   xel p;
   PPM_ASSIGN(p, pixel._red, pixel._green, pixel._blue);
   set_xel_val(x, y, p);
-  if (_alpha != NULL) {
+  if (_alpha != nullptr) {
     set_alpha_val(x, y, pixel._alpha);
   }
 }
@@ -1016,9 +1021,9 @@ blend(int x, int y, float r, float g, float b, float alpha) {
     } else {
       // Blend the color with the previous color.
       LRGBColorf prev_rgb = get_xel(x, y);
-      r = r + (1.0f - alpha) * (get_red(x, y) - r);
-      g = g + (1.0f - alpha) * (get_green(x, y) - g);
-      b = b + (1.0f - alpha) * (get_blue(x, y) - b);
+      r = r + (1.0f - alpha) * (prev_rgb[0] - r);
+      g = g + (1.0f - alpha) * (prev_rgb[1] - g);
+      b = b + (1.0f - alpha) * (prev_rgb[2] - b);
       alpha = prev_alpha + alpha * (1.0f - prev_alpha);
 
       if (has_alpha()) {
@@ -1039,7 +1044,7 @@ blend(int x, int y, float r, float g, float b, float alpha) {
  */
 void PNMImage::
 set_array(xel *array) {
-  if (_array != (xel *)NULL) {
+  if (_array != nullptr) {
     PANDA_FREE_ARRAY(_array);
   }
   _array = array;
@@ -1055,7 +1060,7 @@ set_array(xel *array) {
  */
 void PNMImage::
 set_alpha_array(xelval *alpha) {
-  if (_alpha != (xelval *)NULL) {
+  if (_alpha != nullptr) {
     PANDA_FREE_ARRAY(_alpha);
   }
   _alpha = alpha;
@@ -1171,7 +1176,7 @@ add_sub_image(const PNMImage &copy, int xto, int yto,
   if (has_alpha() && copy.has_alpha()) {
     for (y = ymin; y < ymax; y++) {
       for (x = xmin; x < xmax; x++) {
-        set_alpha(x, y, get_alpha(x, y) + copy.get_alpha(x, y) * pixel_scale);
+        set_alpha(x, y, get_alpha(x, y) + copy.get_alpha(x - xmin + xfrom, y - ymin + yfrom) * pixel_scale);
       }
     }
   }
@@ -1179,7 +1184,7 @@ add_sub_image(const PNMImage &copy, int xto, int yto,
   for (y = ymin; y < ymax; y++) {
     for (x = xmin; x < xmax; x++) {
       LRGBColorf rgb1 = get_xel(x, y);
-      LRGBColorf rgb2 = copy.get_xel(x, y);
+      LRGBColorf rgb2 = copy.get_xel(x - xmin + xfrom, y - ymin + yfrom);
       set_xel(x, y,
               rgb1[0] + rgb2[0] * pixel_scale,
               rgb1[1] + rgb2[1] * pixel_scale,
@@ -1205,7 +1210,7 @@ mult_sub_image(const PNMImage &copy, int xto, int yto,
   if (has_alpha() && copy.has_alpha()) {
     for (y = ymin; y < ymax; y++) {
       for (x = xmin; x < xmax; x++) {
-        set_alpha(x, y, get_alpha(x, y) * copy.get_alpha(x, y) * pixel_scale);
+        set_alpha(x, y, get_alpha(x, y) * copy.get_alpha(x - xmin + xfrom, y - ymin + yfrom) * pixel_scale);
       }
     }
   }
@@ -1213,7 +1218,7 @@ mult_sub_image(const PNMImage &copy, int xto, int yto,
   for (y = ymin; y < ymax; y++) {
     for (x = xmin; x < xmax; x++) {
       LRGBColorf rgb1 = get_xel(x, y);
-      LRGBColorf rgb2 = copy.get_xel(x, y);
+      LRGBColorf rgb2 = copy.get_xel(x - xmin + xfrom, y - ymin + yfrom);
       set_xel(x, y,
               rgb1[0] * rgb2[0] * pixel_scale,
               rgb1[1] * rgb2[1] * pixel_scale,
@@ -1596,7 +1601,7 @@ threshold(const PNMImage &select_image, int channel, float threshold,
 void PNMImage::
 fill_distance_inside(const PNMImage &mask, float threshold, int radius, bool shrink_from_border) {
   nassertv(radius <= PNM_MAXMAXVAL);
-  PNMImage dist(mask.get_x_size(), mask.get_y_size(), 1, radius, NULL, CS_linear);
+  PNMImage dist(mask.get_x_size(), mask.get_y_size(), 1, radius, nullptr, CS_linear);
   dist.fill_val(radius);
 
   xelval threshold_val = mask.to_val(threshold);
@@ -1640,7 +1645,7 @@ fill_distance_inside(const PNMImage &mask, float threshold, int radius, bool shr
 void PNMImage::
 fill_distance_outside(const PNMImage &mask, float threshold, int radius) {
   nassertv(radius <= PNM_MAXMAXVAL);
-  PNMImage dist(mask.get_x_size(), mask.get_y_size(), 1, radius, NULL, CS_linear);
+  PNMImage dist(mask.get_x_size(), mask.get_y_size(), 1, radius, nullptr, CS_linear);
   dist.fill_val(radius);
 
   xelval threshold_val = mask.to_val(threshold);
@@ -1918,9 +1923,54 @@ make_histogram(PNMImage::Histogram &histogram) {
       pixels.push_back(PixelSpecCount((*hi).first, (*hi).second));
     }
   }
-  ::sort(pixels.begin(), pixels.end());
+  std::sort(pixels.begin(), pixels.end());
 
   histogram.swap(pixels, hist_map);
+}
+
+/**
+ * Reduces the number of unique colors in the image to (at most) the given
+ * count.  Fewer colors than requested may be left in the image after this
+ * operation, but never more.
+ *
+ * At present, this is only supported on images without an alpha channel.
+ *
+ * @since 1.10.5
+ */
+void PNMImage::
+quantize(size_t max_colors) {
+  nassertv(_array != nullptr);
+  nassertv(!has_alpha());
+  size_t array_size = _x_size * _y_size;
+
+  // Get all the unique colors in this image.
+  pmap<xel, xel> color_map;
+  for (size_t i = 0; i < array_size; ++i) {
+    color_map[_array[i]];
+  }
+
+  size_t num_colors = color_map.size();
+  if (num_colors <= max_colors) {
+    // We are already down to the requested number of colors.
+    return;
+  }
+
+  // Collect all the colors into a contiguous array.
+  xel *colors = (xel *)alloca(num_colors * sizeof(xel));
+  size_t i = 0;
+  for (pmap<xel, xel>::const_iterator it = color_map.begin();
+       it != color_map.end(); ++it) {
+    colors[i++] = it->first;
+  }
+  nassertv(i == num_colors);
+
+  // Apply the median cut algorithm, which will give us a color map.
+  r_quantize(color_map, max_colors, colors, num_colors);
+
+  // Replace all the existing colors with the corresponding bucket average.
+  for (size_t i = 0; i < array_size; ++i) {
+    _array[i] = color_map[_array[i]];
+  }
 }
 
 /**
@@ -2123,7 +2173,7 @@ setup_encoding() {
       break;
 
     default:
-      nassertv(false);
+      nassert_raise("invalid color space");
       break;
     }
   } else {
@@ -2150,10 +2200,96 @@ setup_encoding() {
       break;
 
     default:
-      nassertv(false);
+      nassert_raise("invalid color space");
       break;
     }
   }
+}
+
+/**
+ * Recursive implementation of quantize() using the median cut algorithm.
+ */
+void PNMImage::
+r_quantize(pmap<xel, xel> &color_map, size_t max_colors,
+           xel *colors, size_t num_colors) {
+  if (num_colors <= max_colors) {
+    // All points in this bucket can be preserved 1:1.
+    for (size_t i = 0; i < num_colors; ++i) {
+      const xel &col = colors[i];
+      color_map[col] = col;
+    }
+    return;
+  }
+  else if (max_colors == 1) {
+    // We've reached the target.  Calculate the average, in linear space.
+    LRGBColorf avg(0);
+    for (size_t i = 0; i < num_colors; ++i) {
+      avg += from_val(colors[i]);
+    }
+    avg *= 1.0f / num_colors;
+    xel avg_val = to_val(avg);
+
+    // Map all colors in this bucket to the avg.
+    for (size_t i = 0; i < num_colors; ++i) {
+      color_map[colors[i]] = avg_val;
+    }
+    return;
+  }
+  else if (max_colors == 0) {
+    // Not sure how this happens, but we can't preserve any color here.
+    return;
+  }
+
+  // Find the minimum/maximum RGB values.  We should probably do this in
+  // linear space, but eh.
+  xelval min_r = _maxval;
+  xelval min_g = _maxval;
+  xelval min_b = _maxval;
+  xelval max_r = 0, max_g = 0, max_b = 0;
+  for (size_t i = 0; i < num_colors; ++i) {
+    const xel &col = colors[i];
+    min_r = std::min(min_r, col.r);
+    max_r = std::max(max_r, col.r);
+    min_g = std::min(min_g, col.g);
+    max_g = std::max(max_g, col.g);
+    min_b = std::min(min_b, col.b);
+    max_b = std::max(max_b, col.b);
+  }
+
+  int diff_r = max_r - min_r;
+  int diff_g = max_g - min_g;
+  int diff_b = max_b - min_b;
+
+  auto sort_by_red = [](const xel &c1, const xel &c2) {
+    return c1.r < c2.r;
+  };
+  auto sort_by_green = [](const xel &c1, const xel &c2) {
+    return c1.g < c2.g;
+  };
+  auto sort_by_blue = [](const xel &c1, const xel &c2) {
+    return c1.b < c2.b;
+  };
+
+  // Sort by the component with the most variation.
+  if (diff_g >= diff_r) {
+    if (diff_g >= diff_b) {
+      std::sort(colors, colors + num_colors, sort_by_green);
+    } else {
+      std::sort(colors, colors + num_colors, sort_by_blue);
+    }
+  } else if (diff_r >= diff_b) {
+    std::sort(colors, colors + num_colors, sort_by_red);
+  } else {
+    std::sort(colors, colors + num_colors, sort_by_blue);
+  }
+
+  // Subdivide the sorted colors into two buckets, and recurse.
+  size_t max_colors_1 = max_colors / 2;
+  size_t max_colors_2 = max_colors - max_colors_1;
+  size_t num_colors_1 = num_colors / 2;
+  size_t num_colors_2 = num_colors - num_colors_1;
+  r_quantize(color_map, max_colors_1, colors, num_colors_1);
+  r_quantize(color_map, max_colors_2, colors + num_colors_1, num_colors_2);
 }
 
 /**
@@ -2252,20 +2388,20 @@ operator ~ () const {
   PNMImage target (*this);
   size_t array_size = _x_size * _y_size;
 
-  if (_array != NULL && _alpha != NULL) {
+  if (_array != nullptr && _alpha != nullptr) {
     for (size_t i = 0; i < array_size; ++i) {
       target._array[i].r = _maxval - _array[i].r;
       target._array[i].g = _maxval - _array[i].g;
       target._array[i].b = _maxval - _array[i].b;
       target._alpha[i] = _maxval - _alpha[i];
     }
-  } else if (_array != NULL) {
+  } else if (_array != nullptr) {
     for (size_t i = 0; i < array_size; ++i) {
       target._array[i].r = _maxval - _array[i].r;
       target._array[i].g = _maxval - _array[i].g;
       target._array[i].b = _maxval - _array[i].b;
     }
-  } else if (_alpha != NULL) {
+  } else if (_alpha != nullptr) {
     for (size_t i = 0; i < array_size; ++i) {
       target._alpha[i] = _maxval - _alpha[i];
     }
@@ -2288,7 +2424,7 @@ operator += (const PNMImage &other) {
     size_t array_size = _x_size * _y_size;
 
     // Simple case: add vals directly.
-    if (_alpha != NULL && other._alpha != NULL) {
+    if (_alpha != nullptr && other._alpha != nullptr) {
       for (size_t i = 0; i < array_size; ++i) {
         _array[i].r = clamp_val((int)_array[i].r + (int)other._array[i].r);
         _array[i].g = clamp_val((int)_array[i].g + (int)other._array[i].g);
@@ -2329,7 +2465,7 @@ operator += (const LColorf &other) {
     int add_b = (int)(other.get_z() * get_maxval() + 0.5);
     int add_a = (int)(other.get_w() * get_maxval() + 0.5);
 
-    if (_alpha != NULL) {
+    if (_alpha != nullptr) {
       for (size_t i = 0; i < array_size; ++i) {
         _array[i].r = clamp_val((int)_array[i].r + add_r);
         _array[i].g = clamp_val((int)_array[i].g + add_g);
@@ -2370,7 +2506,7 @@ operator -= (const PNMImage &other) {
     size_t array_size = _x_size * _y_size;
 
     // Simple case: subtract vals directly.
-    if (_alpha != NULL && other._alpha != NULL) {
+    if (_alpha != nullptr && other._alpha != nullptr) {
       for (size_t i = 0; i < array_size; ++i) {
         _array[i].r = clamp_val((int)_array[i].r - (int)other._array[i].r);
         _array[i].g = clamp_val((int)_array[i].g - (int)other._array[i].g);
@@ -2433,7 +2569,7 @@ operator *= (float multiplier) {
   if (get_color_space() == CS_linear) {
     size_t array_size = _x_size * _y_size;
 
-    if (_alpha != NULL) {
+    if (_alpha != nullptr) {
       for (size_t i = 0; i < array_size; ++i) {
         _array[i].r = clamp_val((int)(_array[i].r * multiplier + 0.5f));
         _array[i].g = clamp_val((int)(_array[i].g * multiplier + 0.5f));
@@ -2470,7 +2606,7 @@ operator *= (const LColorf &other) {
   if (get_color_space() == CS_linear) {
     size_t array_size = _x_size * _y_size;
 
-    if (_alpha != NULL) {
+    if (_alpha != nullptr) {
       for (size_t i = 0; i < array_size; ++i) {
         _array[i].r = clamp_val((int)(_array[i].r * other[0] + 0.5f));
         _array[i].g = clamp_val((int)(_array[i].g * other[1] + 0.5f));

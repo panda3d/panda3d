@@ -16,9 +16,13 @@
  * to true, indicating that this class will be in effect.  If this returns
  * false, the user has indicated not to do any of this.
  */
-INLINE bool MemoryUsage::
+ALWAYS_INLINE bool MemoryUsage::
 get_track_memory_usage() {
+#ifdef DO_MEMORY_USAGE
   return get_global_ptr()->_track_memory_usage;
+#else
+  return false;
+#endif
 }
 
 /**
@@ -26,7 +30,19 @@ get_track_memory_usage() {
  */
 INLINE void MemoryUsage::
 record_pointer(ReferenceCount *ptr) {
+#ifdef DO_MEMORY_USAGE
   get_global_ptr()->ns_record_pointer(ptr);
+#endif
+}
+
+/**
+ * Indicates that the given pointer has been recently allocated.
+ */
+INLINE void MemoryUsage::
+record_pointer(void *ptr, TypeHandle type) {
+#ifdef DO_MEMORY_USAGE
+  get_global_ptr()->ns_record_pointer(ptr, type);
+#endif
 }
 
 /**
@@ -37,7 +53,9 @@ record_pointer(ReferenceCount *ptr) {
  */
 INLINE void MemoryUsage::
 update_type(ReferenceCount *ptr, TypeHandle type) {
-  get_global_ptr()->ns_update_type(ptr, type);
+#ifdef DO_MEMORY_USAGE
+  get_global_ptr()->ns_update_type((void *)ptr, type);
+#endif
 }
 
 /**
@@ -48,7 +66,21 @@ update_type(ReferenceCount *ptr, TypeHandle type) {
  */
 INLINE void MemoryUsage::
 update_type(ReferenceCount *ptr, TypedObject *typed_ptr) {
-  get_global_ptr()->ns_update_type(ptr, typed_ptr);
+#ifdef DO_MEMORY_USAGE
+  get_global_ptr()->ns_update_type((void *)ptr, typed_ptr);
+#endif
+}
+
+/**
+ * Associates the indicated type with the given pointer.  This should be
+ * called by functions (e.g.  the constructor) that know more specifically
+ * what type of thing we've got.
+ */
+INLINE void MemoryUsage::
+update_type(void *ptr, TypeHandle type) {
+#ifdef DO_MEMORY_USAGE
+  get_global_ptr()->ns_update_type(ptr, type);
+#endif
 }
 
 /**
@@ -56,7 +88,9 @@ update_type(ReferenceCount *ptr, TypedObject *typed_ptr) {
  */
 INLINE void MemoryUsage::
 remove_pointer(ReferenceCount *ptr) {
+#ifdef DO_MEMORY_USAGE
   get_global_ptr()->ns_remove_pointer(ptr);
+#endif
 }
 
 /**
@@ -65,7 +99,11 @@ remove_pointer(ReferenceCount *ptr) {
  */
 INLINE bool MemoryUsage::
 is_tracking() {
+#ifdef DO_MEMORY_USAGE
   return get_global_ptr()->_track_memory_usage;
+#else
+  return false;
+#endif
 }
 
 /**
@@ -75,7 +113,11 @@ is_tracking() {
  */
 INLINE bool MemoryUsage::
 is_counting() {
+#ifdef DO_MEMORY_USAGE
   return get_global_ptr()->_count_memory_usage;
+#else
+  return false;
+#endif
 }
 
 /**
@@ -84,7 +126,11 @@ is_counting() {
  */
 INLINE size_t MemoryUsage::
 get_current_cpp_size() {
+#ifdef DO_MEMORY_USAGE
   return get_global_ptr()->_current_cpp_size;
+#else
+  return 0;
+#endif
 }
 
 /**
@@ -93,7 +139,11 @@ get_current_cpp_size() {
  */
 INLINE size_t MemoryUsage::
 get_total_cpp_size() {
+#ifdef DO_MEMORY_USAGE
   return get_global_ptr()->_total_cpp_size;
+#else
+  return 0;
+#endif
 }
 
 /**
@@ -102,7 +152,11 @@ get_total_cpp_size() {
  */
 INLINE size_t MemoryUsage::
 get_panda_heap_single_size() {
+#ifdef DO_MEMORY_USAGE
   return (size_t)AtomicAdjust::get(get_global_ptr()->_total_heap_single_size);
+#else
+  return 0;
+#endif
 }
 
 /**
@@ -111,7 +165,11 @@ get_panda_heap_single_size() {
  */
 INLINE size_t MemoryUsage::
 get_panda_heap_array_size() {
+#ifdef DO_MEMORY_USAGE
   return (size_t)AtomicAdjust::get(get_global_ptr()->_total_heap_array_size);
+#else
+  return 0;
+#endif
 }
 
 /**
@@ -121,7 +179,7 @@ get_panda_heap_array_size() {
  */
 INLINE size_t MemoryUsage::
 get_panda_heap_overhead() {
-#if defined(USE_MEMORY_DLMALLOC) || defined(USE_MEMORY_PTMALLOC2)
+#if defined(DO_MEMORY_USAGE) && (defined(USE_MEMORY_DLMALLOC) || defined(USE_MEMORY_PTMALLOC2))
   MemoryUsage *mu = get_global_ptr();
   return (size_t)(AtomicAdjust::get(mu->_requested_heap_size) - AtomicAdjust::get(mu->_total_heap_single_size) - AtomicAdjust::get(mu->_total_heap_array_size));
 #else
@@ -135,7 +193,11 @@ get_panda_heap_overhead() {
  */
 INLINE size_t MemoryUsage::
 get_panda_mmap_size() {
+#ifdef DO_MEMORY_USAGE
   return (size_t)AtomicAdjust::get(get_global_ptr()->_total_mmap_size);
+#else
+  return 0;
+#endif
 }
 
 /**
@@ -152,6 +214,7 @@ get_panda_mmap_size() {
  */
 INLINE size_t MemoryUsage::
 get_external_size() {
+#ifdef DO_MEMORY_USAGE
   MemoryUsage *mu = get_global_ptr();
   if (mu->_count_memory_usage) {
     // We can only possibly know this with memory counting, which tracks every
@@ -169,6 +232,9 @@ get_external_size() {
   } else {
     return 0;
   }
+#else
+  return 0;
+#endif
 }
 
 /**
@@ -177,6 +243,7 @@ get_external_size() {
  */
 INLINE size_t MemoryUsage::
 get_total_size() {
+#ifdef DO_MEMORY_USAGE
   MemoryUsage *mu = get_global_ptr();
   if (mu->_count_memory_usage) {
     return mu->_total_size + (size_t)mu->_requested_heap_size;
@@ -187,6 +254,9 @@ get_total_size() {
     return (size_t)(AtomicAdjust::get(mu->_total_heap_single_size) + AtomicAdjust::get(mu->_total_heap_array_size));
 #endif
   }
+#else
+  return 0;
+#endif
 }
 
 /**
@@ -194,7 +264,11 @@ get_total_size() {
  */
 INLINE int MemoryUsage::
 get_num_pointers() {
+#ifdef DO_MEMORY_USAGE
   return get_global_ptr()->ns_get_num_pointers();
+#else
+  return 0;
+#endif
 }
 
 /**
@@ -203,7 +277,9 @@ get_num_pointers() {
  */
 INLINE void MemoryUsage::
 get_pointers(MemoryUsagePointers &result) {
+#ifdef DO_MEMORY_USAGE
   get_global_ptr()->ns_get_pointers(result);
+#endif
 }
 
 /**
@@ -212,7 +288,9 @@ get_pointers(MemoryUsagePointers &result) {
  */
 INLINE void MemoryUsage::
 get_pointers_of_type(MemoryUsagePointers &result, TypeHandle type) {
+#ifdef DO_MEMORY_USAGE
   get_global_ptr()->ns_get_pointers_of_type(result, type);
+#endif
 }
 
 /**
@@ -221,7 +299,9 @@ get_pointers_of_type(MemoryUsagePointers &result, TypeHandle type) {
  */
 INLINE void MemoryUsage::
 get_pointers_of_age(MemoryUsagePointers &result, double from, double to) {
+#ifdef DO_MEMORY_USAGE
   get_global_ptr()->ns_get_pointers_of_age(result, from, to);
+#endif
 }
 
 /**
@@ -242,7 +322,9 @@ get_pointers_of_age(MemoryUsagePointers &result, double from, double to) {
  */
 INLINE void MemoryUsage::
 get_pointers_with_zero_count(MemoryUsagePointers &result) {
+#ifdef DO_MEMORY_USAGE
   get_global_ptr()->ns_get_pointers_with_zero_count(result);
+#endif
 }
 
 /**
@@ -253,7 +335,9 @@ get_pointers_with_zero_count(MemoryUsagePointers &result) {
  */
 INLINE void MemoryUsage::
 freeze() {
+#ifdef DO_MEMORY_USAGE
   get_global_ptr()->ns_freeze();
+#endif
 }
 
 /**
@@ -261,7 +345,9 @@ freeze() {
  */
 INLINE void MemoryUsage::
 show_current_types() {
+#ifdef DO_MEMORY_USAGE
   get_global_ptr()->ns_show_current_types();
+#endif
 }
 
 /**
@@ -270,7 +356,9 @@ show_current_types() {
  */
 INLINE void MemoryUsage::
 show_trend_types() {
+#ifdef DO_MEMORY_USAGE
   get_global_ptr()->ns_show_trend_types();
+#endif
 }
 
 /**
@@ -278,7 +366,9 @@ show_trend_types() {
  */
 INLINE void MemoryUsage::
 show_current_ages() {
+#ifdef DO_MEMORY_USAGE
   get_global_ptr()->ns_show_current_ages();
+#endif
 }
 
 /**
@@ -287,7 +377,9 @@ show_current_ages() {
  */
 INLINE void MemoryUsage::
 show_trend_ages() {
+#ifdef DO_MEMORY_USAGE
   get_global_ptr()->ns_show_trend_ages();
+#endif
 }
 
 /**
@@ -295,11 +387,18 @@ show_trend_ages() {
  */
 INLINE MemoryUsage *MemoryUsage::
 get_global_ptr() {
-  if (_global_ptr == (MemoryUsage *)NULL) {
-    init_memory_hook();
-    _global_ptr = new MemoryUsage(*memory_hook);
-    memory_hook = _global_ptr;
+#ifdef DO_MEMORY_USAGE
+#ifdef __GNUC__
+  // Tell the compiler that this is an unlikely branch.
+  if (__builtin_expect(_global_ptr == nullptr, 0)) {
+#else
+  if (_global_ptr == nullptr) {
+#endif
+    init_memory_usage();
   }
 
   return _global_ptr;
+#else
+  return nullptr;
+#endif
 }

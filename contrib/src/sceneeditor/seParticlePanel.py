@@ -1,17 +1,18 @@
 """PANDA3D Particle Panel"""
 
 # Import Tkinter, Pmw, and the floater code from this directory tree.
-from direct.tkwidgets.AppShell import *
-from direct.showbase.TkGlobal import *
-from direct.tkwidgets import Dial
-from direct.tkwidgets import Floater
-from direct.tkwidgets import Slider
-from direct.tkwidgets import VectorWidgets
+from direct.tkwidgets.AppShell import AppShell
+import os, Pmw, sys
+from direct.tkwidgets.Dial import AngleDial
+from direct.tkwidgets.Floater import Floater
+from direct.tkwidgets.Slider import Slider
+from direct.tkwidgets.VectorWidgets import Vector2Entry, Vector3Entry
+from direct.tkwidgets.VectorWidgets import ColorEntry
 from direct.tkpanels import Placer
 from direct.particles import ForceGroup
 from direct.particles import Particles
 from direct.particles import ParticleEffect
-import Pmw, os, sys
+
 
 if sys.version_info >= (3, 0):
     from tkinter.filedialog import *
@@ -20,11 +21,6 @@ else:
     from tkFileDialog import *
     from tkSimpleDialog import askstring
 
-from panda3d.core import *
-from panda3d.physics import *
-from panda3d.direct import getParticlePath
-from direct.particles import SpriteParticleRendererExt
-#import seParticleEffect
 
 class ParticlePanel(AppShell):
     # Override class variables
@@ -47,9 +43,6 @@ class ParticlePanel(AppShell):
             self.particleEffect = particleEffect
             self.effectsDict = effectsDict
         else:
-            # Make sure particles are enabled
-            base.enableParticles()
-
             # Or create a new one if none given
             particles = Particles.Particles()
             particles.setBirthRate(0.02)
@@ -77,9 +70,8 @@ class ParticlePanel(AppShell):
 
         # Initialize panel Pmw options
         self.initialiseoptions(ParticlePanel)
-
         # Update panel values to reflect particle effect's state
-        self.selectEffectNamed(next(iter(self.effectsDict)))
+        self.selectEffectNamed(self.effectsDict.keys()[0])
         # Make sure labels/menus reflect current state
         self.updateMenusAndLabels()
         # Make sure there is a page for each forceGroup objects
@@ -91,6 +83,8 @@ class ParticlePanel(AppShell):
         self.widgetDict = {}
         self.variableDict = {}
         self.forcePagesDict = {}
+        # Make sure particles are enabled
+        base.enableParticles()
 
     def onDestroy(self, event):
         messenger.send('ParticlePanle_close')
@@ -107,29 +101,19 @@ class ParticlePanel(AppShell):
         # Get a handle on the file menu so commands can be inserted
         # before quit item
         fileMenu = self.menuBar.component('File-menu')
-        menuName = "File"
         # MRM: Need to add load and save effects methods
         fileMenu.insert_command(
             fileMenu.index('Quit'),
             label = 'Load Params',
             command = self.loadParticleEffectFromFile)
-        self.menuBar._menuInfo[menuName][1].append("")
-        self.menuBar._menuInfo[menuName][1][fileMenu.index('Quit')] = self.menuBar._menuInfo[menuName][1][1]
-        self.menuBar._menuInfo[menuName][1][fileMenu.index('Load Params')] = ""
         fileMenu.insert_command(
             fileMenu.index('Quit'),
             label = 'Save Params',
             command = self.saveParticleEffectToFile)
-        self.menuBar._menuInfo[menuName][1].append("")
-        self.menuBar._menuInfo[menuName][1][fileMenu.index('Quit')] = self.menuBar._menuInfo[menuName][1][fileMenu.index('Save Params')]
-        self.menuBar._menuInfo[menuName][1][fileMenu.index('Save Params')] = ""
         fileMenu.insert_command(
             fileMenu.index('Quit'),
             label = 'Print Params',
             command = lambda s = self: s.particles.printParams())
-        self.menuBar._menuInfo[menuName][1].append("")
-        self.menuBar._menuInfo[menuName][1][fileMenu.index('Quit')] = self.menuBar._menuInfo[menuName][1][fileMenu.index('Print Params')]
-        self.menuBar._menuInfo[menuName][1][fileMenu.index('Print Params')] = ""
 
         # PARTICLE MANAGER MENU
         self.menuBar.addmenu('ParticleMgr', 'ParticleMgr Operations')
@@ -567,8 +551,9 @@ class ParticlePanel(AppShell):
         # Geom Node input field
         Label(f, width = 12, text = 'Geom Node', pady = 3).pack(side = LEFT)
         self.rendererGeomNode = StringVar()
-        self.rendererGeomNodeEntry = Entry(f, width = 12,
-                                           textvariable = self.rendererGeomNode)
+        self.rendererGeomNodeEntry = Entry(
+            f, width = 12,
+            textvariable = self.rendererGeomNode)
         self.rendererGeomNodeEntry.bind('<Return>', self.setRendererGeomNode)
         self.rendererGeomNodeEntry.pack(side = LEFT, expand = 1, fill = X)
 
@@ -788,13 +773,34 @@ class ParticlePanel(AppShell):
         self.rendererSpriteAnimationWidgetList = []
 
         self.rendererSpriteTexture = StringVar()
+        self.rendererSpriteTexture.set(SpriteParticleRenderer.sourceTextureName)
+        self.rendererSpriteTextureEntry = Entry(
+            f, width = 12,
+            textvariable = self.rendererSpriteTexture)
+        self.rendererSpriteTextureEntry.pack(side = LEFT, expand = 1, fill = X)
+        f.pack(fill = X)
+        f = Frame(spritePage)
+        Label(f, width = 6, text = 'File:').pack(side = LEFT)
         self.rendererSpriteFile = StringVar()
+        self.rendererSpriteFile.set(SpriteParticleRenderer.sourceFileName)
+        self.rendererSpriteFileEntry = Entry(
+            f, width = 12,
+            textvariable = self.rendererSpriteFile)
+        self.rendererSpriteFileEntry.pack(side = LEFT, expand = 1, fill = X)
+        Label(f, width = 6, text = 'Node:').pack(side = LEFT)
         self.rendererSpriteNode = StringVar()
-
-##################################################################################
-        p = Frame(rendererSpriteScalePage)
-        p.pack(fill = X)
-
+        self.rendererSpriteNode.set(SpriteParticleRenderer.sourceNodeName)
+        self.rendererSpriteNodeEntry = Entry(
+            f, width = 6,
+            textvariable = self.rendererSpriteNode)
+        self.rendererSpriteNodeEntry.pack(side = LEFT, expand = 1, fill = X)
+        f.pack(fill = X)
+        # Init entries
+        self.setSpriteSourceType()
+        self.setTextureButton = Button(spritePage, text = 'Set Texture',
+                                       command = self.setRendererSpriteTexture)
+        self.setTextureButton.pack(fill = X)
+        p = Frame(spritePage)
         self.createCheckbutton(
             p, 'Sprite Renderer', 'X Scale',
             ("On: x scale is interpolated over particle's life; " +
@@ -998,7 +1004,7 @@ class ParticlePanel(AppShell):
         kw['min'] = min
         kw['resolution'] = resolution
         kw['numDigits'] = numDigits
-        widget = Floater.Floater(parent, **kw)
+        widget = Floater(parent, **kw)
         # Do this after the widget so command isn't called on creation
         widget['command'] = command
         widget.pack(fill = X)
@@ -1010,7 +1016,7 @@ class ParticlePanel(AppShell):
                         command = None, **kw):
         kw['text'] = text
         kw['style'] = 'mini'
-        widget = Dial.AngleDial(parent, **kw)
+        widget = AngleDial(parent, **kw)
         # Do this after the widget so command isn't called on creation
         widget['command'] = command
         widget.pack(fill = X)
@@ -1025,7 +1031,7 @@ class ParticlePanel(AppShell):
         kw['min'] = min
         kw['max'] = max
         kw['resolution'] = resolution
-        widget = Slider.Slider(parent, **kw)
+        widget = Slider(parent, **kw)
         # Do this after the widget so command isn't called on creation
         widget['command'] = command
         widget.pack(fill = X)
@@ -1037,7 +1043,7 @@ class ParticlePanel(AppShell):
                            command = None, **kw):
         # Set label's text
         kw['text'] = text
-        widget = VectorWidgets.Vector2Entry(parent, **kw)
+        widget = Vector2Entry(parent, **kw)
         # Do this after the widget so command isn't called on creation
         widget['command'] = command
         widget.pack(fill = X)
@@ -1049,7 +1055,7 @@ class ParticlePanel(AppShell):
                            command = None, **kw):
         # Set label's text
         kw['text'] = text
-        widget = VectorWidgets.Vector3Entry(parent, **kw)
+        widget = Vector3Entry(parent, **kw)
         # Do this after the widget so command isn't called on creation
         widget['command'] = command
         widget.pack(fill = X)
@@ -1061,7 +1067,7 @@ class ParticlePanel(AppShell):
                          command = None, **kw):
         # Set label's text
         kw['text'] = text
-        widget = VectorWidgets.ColorEntry(parent, **kw)
+        widget = ColorEntry(parent, **kw)
         # Do this after the widget so command isn't called on creation
         widget['command'] = command
         widget.pack(fill = X)
@@ -1157,7 +1163,7 @@ class ParticlePanel(AppShell):
         self.particlesLabelMenu.add_separator()
         # Add in a checkbutton for each effect (to toggle on/off)
         particles = self.particleEffect.getParticlesList()
-        names = [x.getName() for x in particles]
+        names = map(lambda x: x.getName(), particles)
         names.sort()
         for name in names:
             particle = self.particleEffect.getParticlesNamed(name)
@@ -1182,7 +1188,7 @@ class ParticlePanel(AppShell):
         self.forceGroupLabelMenu.add_separator()
         # Add in a checkbutton for each effect (to toggle on/off)
         forceGroupList = self.particleEffect.getForceGroupList()
-        names = [x.getName() for x in forceGroupList]
+        names = map(lambda x: x.getName(), forceGroupList)
         names.sort()
         for name in names:
             force = self.particleEffect.getForceGroupNamed(name)
@@ -1276,7 +1282,7 @@ class ParticlePanel(AppShell):
             path = '.'
         particleFilename = askopenfilename(
             defaultextension = '.ptf',
-            filetypes = (('Particle Files', '*.ptf'), ('All files', '*')),
+            filetypes = (('Particle Files', '*.ptf'),('All files', '*')),
             initialdir = path,
             title = 'Load Particle Effect',
             parent = self.parent)
@@ -1755,10 +1761,20 @@ class ParticlePanel(AppShell):
             self.getVariable('Sparkle Renderer', 'Life Scale').set(lScale)
 
         elif isinstance(renderer, SpriteParticleRenderer):
-            self.getWidget('Sprite Renderer','Frame Rate').set(renderer.getAnimateFramesRate(), 0)
-            self.getVariable('Sprite Renderer','Enable Animation').set(
-                renderer.getAnimateFramesEnable())
-            self.readSpriteRendererAnimations() # Updates widgets with renderer data.
+            color = renderer.getColor() * 255.0
+            # Update widgets to reflect current default values
+            # Texture
+            textureName = renderer.getSourceTextureName()
+            if textureName != None:
+                self.rendererSpriteTexture.set(textureName)
+            # File
+            fileName = renderer.getSourceFileName()
+            if fileName != None:
+                self.rendererSpriteFile.set(fileName)
+            # Node
+            nodeName = renderer.getSourceNodeName()
+            if nodeName != None:
+                self.rendererSpriteNode.set(nodeName)
             self.getVariable('Sprite Renderer', 'X Scale').set(
                 renderer.getXScaleFlag())
             self.getVariable('Sprite Renderer', 'Y Scale').set(
@@ -1895,7 +1911,7 @@ class ParticlePanel(AppShell):
         self.particles.renderer.setLifeScale(lScale)
     # Sprite #
     def setSpriteSourceType(self):
-        if self.rendererSpriteSourceType.get() == SpriteAnim.ST_texture:
+        if self.rendererSpriteSourceType.get() == SpriteParticleRenderer.STTexture:
             self.rendererSpriteTextureEntry['state'] = 'normal'
             self.rendererSpriteFileEntry['state'] = 'disabled'
             self.rendererSpriteNodeEntry['state'] = 'disabled'
@@ -1983,6 +1999,7 @@ class ParticlePanel(AppShell):
     def setRendererSpriteNonAnimatedTheta(self, theta):
         self.particles.renderer.setNonanimatedTheta(theta)
     def setRendererSpriteBlendMethod(self, blendMethod):
+        print(blendMethod)
         if blendMethod == 'PP_NO_BLEND':
             bMethod = BaseParticleRenderer.PPNOBLEND
         elif blendMethod == 'PP_BLEND_LINEAR':
@@ -2616,7 +2633,7 @@ class ParticlePanel(AppShell):
         # How many forces of the same type in the force group object
         count = 0
         for f in forceGroup:
-            if f.getClassType() == force.getClassType():
+            if f.getClassType().eq(force.getClassType()):
                 count += 1
         if isinstance(force, LinearVectorForce):
             self.createLinearVectorForceWidget(

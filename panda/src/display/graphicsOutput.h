@@ -40,6 +40,7 @@
 #include "cycleDataWriter.h"
 #include "pipelineCycler.h"
 #include "updateSeq.h"
+#include "asyncFuture.h"
 
 class PNMImage;
 class GraphicsEngine;
@@ -63,16 +64,14 @@ class EXPCL_PANDA_DISPLAY GraphicsOutput : public GraphicsOutputBase, public Dra
 protected:
   GraphicsOutput(GraphicsEngine *engine,
                  GraphicsPipe *pipe,
-                 const string &name,
+                 const std::string &name,
                  const FrameBufferProperties &fb_prop,
                  const WindowProperties &win_prop, int flags,
                  GraphicsStateGuardian *gsg,
                  GraphicsOutput *host,
                  bool default_stereo_flags);
-
-private:
-  GraphicsOutput(const GraphicsOutput &copy);
-  void operator = (const GraphicsOutput &copy);
+  GraphicsOutput(const GraphicsOutput &copy) = delete;
+  GraphicsOutput &operator = (const GraphicsOutput &copy) = delete;
 
 PUBLISHED:
   enum RenderTextureMode {
@@ -114,7 +113,7 @@ PUBLISHED:
   INLINE GraphicsStateGuardian *get_gsg() const;
   INLINE GraphicsPipe *get_pipe() const;
   INLINE GraphicsEngine *get_engine() const;
-  INLINE const string &get_name() const;
+  INLINE const std::string &get_name() const;
   MAKE_PROPERTY(gsg, get_gsg);
   MAKE_PROPERTY(pipe, get_pipe);
   MAKE_PROPERTY(engine, get_engine);
@@ -197,7 +196,7 @@ PUBLISHED:
   INLINE int get_child_sort() const;
   MAKE_PROPERTY(child_sort, get_child_sort, set_child_sort);
 
-  INLINE void trigger_copy();
+  INLINE AsyncFuture *trigger_copy();
 
   INLINE DisplayRegion *make_display_region();
   INLINE DisplayRegion *make_display_region(PN_stdfloat l, PN_stdfloat r, PN_stdfloat b, PN_stdfloat t);
@@ -225,19 +224,19 @@ PUBLISHED:
   MAKE_SEQ_PROPERTY(active_display_regions, get_num_active_display_regions, get_active_display_region);
 
   GraphicsOutput *make_texture_buffer(
-      const string &name, int x_size, int y_size,
-      Texture *tex = NULL, bool to_ram = false, FrameBufferProperties *fbp = NULL);
-  GraphicsOutput *make_cube_map(const string &name, int size,
+      const std::string &name, int x_size, int y_size,
+      Texture *tex = nullptr, bool to_ram = false, FrameBufferProperties *fbp = nullptr);
+  GraphicsOutput *make_cube_map(const std::string &name, int size,
                                 NodePath &camera_rig,
                                 DrawMask camera_mask = PandaNode::get_all_camera_mask(),
-                                bool to_ram = false, FrameBufferProperties *fbp = NULL);
+                                bool to_ram = false, FrameBufferProperties *fbp = nullptr);
 
   INLINE static Filename make_screenshot_filename(
-      const string &prefix = "screenshot");
+      const std::string &prefix = "screenshot");
   INLINE Filename save_screenshot_default(
-      const string &prefix = "screenshot");
+      const std::string &prefix = "screenshot");
   INLINE bool save_screenshot(
-      const Filename &filename, const string &image_comment = "");
+      const Filename &filename, const std::string &image_comment = "");
   INLINE bool get_screenshot(PNMImage &image);
   INLINE PT(Texture) get_screenshot();
 
@@ -290,6 +289,7 @@ public:
 
   INLINE PStatCollector &get_cull_window_pcollector();
   INLINE PStatCollector &get_draw_window_pcollector();
+  INLINE PStatCollector &get_clear_window_pcollector();
 
 protected:
   virtual void pixel_factor_changed();
@@ -315,7 +315,7 @@ private:
   INLINE void determine_display_regions() const;
   void do_determine_display_regions(CData *cdata);
 
-  static unsigned int parse_color_mask(const string &word);
+  static unsigned int parse_color_mask(const std::string &word);
 
 protected:
   PT(GraphicsStateGuardian) _gsg;
@@ -324,13 +324,13 @@ protected:
   PT(GraphicsOutput) _host;
   FrameBufferProperties _fb_properties;
   bool _stereo;
-  string _name;
+  std::string _name;
   bool _flip_ready;
   int _target_tex_page;
   int _target_tex_view;
   DisplayRegion *_prev_page_dr;
   PT(GeomNode) _texture_card;
-  bool _trigger_copy;
+  PT(AsyncFuture) _trigger_copy;
 
   class RenderTexture {
   public:
@@ -395,6 +395,7 @@ protected:
   typedef CycleDataLockedReader<CData> CDLockedReader;
   typedef CycleDataReader<CData> CDReader;
   typedef CycleDataWriter<CData> CDWriter;
+  typedef CycleDataStageWriter<CData> CDStageWriter;
 
 protected:
   int _creation_flags;
@@ -409,6 +410,7 @@ protected:
   static PStatCollector _draw_pcollector;
   PStatCollector _cull_window_pcollector;
   PStatCollector _draw_window_pcollector;
+  PStatCollector _clear_window_pcollector;
 
 public:
   static TypeHandle get_class_type() {
@@ -432,7 +434,7 @@ private:
   friend class DisplayRegion;
 };
 
-EXPCL_PANDA_DISPLAY ostream &operator << (ostream &out, GraphicsOutput::FrameMode mode);
+EXPCL_PANDA_DISPLAY std::ostream &operator << (std::ostream &out, GraphicsOutput::FrameMode mode);
 
 #include "graphicsOutput.I"
 

@@ -16,17 +16,16 @@
  * load_async(), to begin an asynchronous load.
  */
 INLINE TextureReloadRequest::
-TextureReloadRequest(const string &name,
+TextureReloadRequest(const std::string &name,
                      PreparedGraphicsObjects *pgo, Texture *texture,
                      bool allow_compressed) :
   AsyncTask(name),
   _pgo(pgo),
   _texture(texture),
-  _allow_compressed(allow_compressed),
-  _is_ready(false)
+  _allow_compressed(allow_compressed)
 {
-  nassertv(_pgo != (PreparedGraphicsObjects *)NULL);
-  nassertv(_texture != (Texture *)NULL);
+  nassertv(_pgo != nullptr);
+  nassertv(_texture != nullptr);
 }
 
 /**
@@ -58,8 +57,10 @@ get_allow_compressed() const {
 
 /**
  * Returns true if this request has completed, false if it is still pending.
+ * Equivalent to `req.done() and not req.cancelled()`.
+ * @see done()
  */
 INLINE bool TextureReloadRequest::
 is_ready() const {
-  return _is_ready;
+  return (FutureState)AtomicAdjust::get(_future_state) == FS_finished;
 }

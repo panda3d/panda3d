@@ -28,7 +28,7 @@ CPT(RenderAttrib) AuxBitplaneAttrib::_default;
  */
 CPT(RenderAttrib) AuxBitplaneAttrib::
 make() {
-  if (_default == 0) {
+  if (_default == nullptr) {
     AuxBitplaneAttrib *attrib = new AuxBitplaneAttrib(0);
     _default = return_new(attrib);
   }
@@ -57,7 +57,7 @@ make_default() {
  *
  */
 void AuxBitplaneAttrib::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << "(" << _outputs << ")";
 }
 
@@ -95,14 +95,6 @@ get_hash_impl() const {
   size_t hash = 0;
   hash = int_hash::add_hash(hash, _outputs);
   return hash;
-}
-
-/**
- *
- */
-CPT(RenderAttrib) AuxBitplaneAttrib::
-get_auto_shader_attrib_impl(const RenderState *state) const {
-  return this;
 }
 
 /**

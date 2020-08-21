@@ -18,7 +18,7 @@
 #include "py_panda.h"
 #include "pythonThread.h"
 #include "callbackData.h"
-#include "config_util.h"
+#include "config_putil.h"
 
 TypeHandle PythonCallbackObject::_type_handle;
 
@@ -45,9 +45,7 @@ PythonCallbackObject(PyObject *function) {
   // Ensure that the Python threading system is initialized and ready to go.
 #ifdef WITH_THREAD  // This symbol defined within Python.h
 
-#if PY_VERSION_HEX >= 0x03020000
   Py_Initialize();
-#endif
 
   PyEval_InitThreads();
 #endif
@@ -111,7 +109,7 @@ do_callback(CallbackData *cbdata) {
  */
 void PythonCallbackObject::
 do_python_callback(CallbackData *cbdata) {
-  nassertv(cbdata != NULL);
+  nassertv(cbdata != nullptr);
 
   // Wrap the cbdata up in a Python object, then put it in a tuple, for the
   // argument list.
@@ -124,7 +122,7 @@ do_python_callback(CallbackData *cbdata) {
   PyObject *result = PythonThread::call_python_func(_function, args);
   Py_DECREF(args);
 
-  if (result == (PyObject *)NULL) {
+  if (result == nullptr) {
     if (PyErr_Occurred() != PyExc_SystemExit) {
       util_cat.error()
         << "Exception occurred in " << *this << "\n";

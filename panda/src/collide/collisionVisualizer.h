@@ -20,6 +20,7 @@
 #include "collisionSolid.h"
 #include "nodePath.h"
 #include "pmap.h"
+#include "lightMutex.h"
 
 #ifdef DO_COLLISION_RECORDING
 
@@ -32,8 +33,9 @@
  * achieve this.
  */
 class EXPCL_PANDA_COLLIDE CollisionVisualizer : public PandaNode, public CollisionRecorder {
-PUBLISHED:
-  CollisionVisualizer(const string &name);
+public:
+  explicit CollisionVisualizer(const std::string &name);
+  CollisionVisualizer(const CollisionVisualizer &copy);
   virtual ~CollisionVisualizer();
 
   INLINE void set_point_scale(PN_stdfloat point_scale);
@@ -44,16 +46,12 @@ PUBLISHED:
 
   void clear();
 
-PUBLISHED:
-  MAKE_PROPERTY(point_scale, get_point_scale, set_point_scale);
-  MAKE_PROPERTY(normal_scale, get_normal_scale, set_normal_scale);
-
 public:
   // from parent class PandaNode.
   virtual PandaNode *make_copy() const;
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
   virtual bool is_renderable() const;
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
   // from parent class CollisionRecorder.
   virtual void begin_traversal();
@@ -89,6 +87,7 @@ private:
     Points _points;
   };
 
+  LightMutex _lock;
   typedef pmap<CPT(TransformState), VizInfo> Data;
   Data _data;
 

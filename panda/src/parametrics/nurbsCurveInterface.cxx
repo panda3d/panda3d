@@ -44,7 +44,7 @@ set_cv_weight(int n, PN_stdfloat w) {
  *
  */
 void NurbsCurveInterface::
-write_cv(ostream &out, int n) const {
+write_cv(std::ostream &out, int n) const {
   nassertv(n >= 0 && n < get_num_cvs());
 
   out << "CV " << n << ": " << get_cv_point(n) << ", weight "
@@ -55,7 +55,7 @@ write_cv(ostream &out, int n) const {
  *
  */
 void NurbsCurveInterface::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level);
 
   PN_stdfloat min_t = 0.0f;
@@ -93,7 +93,7 @@ write(ostream &out, int indent_level) const {
  * Formats the Nurbs curve for output to an Egg file.
  */
 bool NurbsCurveInterface::
-format_egg(ostream &out, const string &name, const string &curve_type,
+format_egg(std::ostream &out, const std::string &name, const std::string &curve_type,
            int indent_level) const {
   indent(out, indent_level)
     << "<VertexPool> " << name << ".pool {\n";
@@ -156,7 +156,7 @@ format_egg(ostream &out, const string &name, const string &curve_type,
 bool NurbsCurveInterface::
 convert_to_nurbs(ParametricCurve *nc) const {
   NurbsCurveInterface *nurbs = nc->get_nurbs_interface();
-  nassertr(nurbs != (NurbsCurveInterface *)NULL, false);
+  nassertr(nurbs != nullptr, false);
 
   nurbs->remove_all_cvs();
   nurbs->set_order(get_order());

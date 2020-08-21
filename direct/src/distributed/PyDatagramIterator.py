@@ -7,6 +7,7 @@ from panda3d.core import *
 from panda3d.direct import *
 # Import the type numbers
 
+
 class PyDatagramIterator(DatagramIterator):
 
     # This is a little helper Dict to replace the huge <if> statement
@@ -23,8 +24,8 @@ class PyDatagramIterator(DatagramIterator):
         STUint64: DatagramIterator.getUint64,
         STFloat64: DatagramIterator.getFloat64,
         STString: DatagramIterator.getString,
-        STBlob: DatagramIterator.getString,
-        STBlob32: DatagramIterator.getString32,
+        STBlob: DatagramIterator.getBlob,
+        STBlob32: DatagramIterator.getBlob32,
         }
 
     getChannel = DatagramIterator.getUint64
@@ -75,7 +76,7 @@ class PyDatagramIterator(DatagramIterator):
                     b = self.getUint8()
                     retVal.append((a, b))
             else:
-                raise Exception("Error: No such type as: " + str(subAtomicType))
+                raise Exception("Error: No such type as: " + str(subatomicType))
         else:
             # See if it is in the handy dict
             getFunc = self.FuncDict.get(subatomicType)
@@ -121,8 +122,4 @@ class PyDatagramIterator(DatagramIterator):
             else:
                 raise Exception("Error: No such type as: " + str(subatomicType))
 
-
-
         return retVal
-
-

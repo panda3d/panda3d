@@ -20,7 +20,7 @@
 
 // Panda headers.
 #include "config_audio.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "fmodAudioManager.h"
 #include "fmodAudioSound.h"
 #include "filename.h"
@@ -42,14 +42,8 @@ pset<FmodAudioManager *> FmodAudioManager::_all_managers;
 
 bool FmodAudioManager::_system_is_valid = false;
 
-
-// This sets the distance factor for 3D audio to use feet.  FMOD uses meters
-// by default.  Since Panda use feet we need to compensate for that with a
-// factor of 3.28 This can be overwritten.  You just need to call
-// audio_3d_set_distance_factor(PN_stdfloat factor) and set your new factor.
-
 PN_stdfloat FmodAudioManager::_doppler_factor = 1;
-PN_stdfloat FmodAudioManager::_distance_factor = 3.28;
+PN_stdfloat FmodAudioManager::_distance_factor = 1;
 PN_stdfloat FmodAudioManager::_drop_off_factor = 1;
 
 
@@ -100,9 +94,11 @@ FmodAudioManager() {
   _up.y = 0;
   _up.z = 0;
 
+  _active = true;
+
   _saved_outputtype = FMOD_OUTPUTTYPE_AUTODETECT;
 
-  if (_system == (FMOD::System *)NULL) {
+  if (_system == nullptr) {
     // Create the global FMOD System object.  This one object must be shared
     // by all FmodAudioManagers (this is particularly true on OSX, but the
     // FMOD documentation is unclear as to whether this is the intended design
@@ -200,7 +196,7 @@ FmodAudioManager::
   if (_all_managers.empty()) {
     result = _system->release();
     fmod_audio_errcheck("_system->release()", result);
-    _system = NULL;
+    _system = nullptr;
     _system_is_valid = false;
   }
 }
@@ -236,13 +232,13 @@ make_dsp(const FilterProperties::FilterConfig &conf) {
   case FilterProperties::FT_compress:   dsptype = FMOD_DSP_TYPE_COMPRESSOR;  break;
   default:
     audio_error("Garbage in DSP configuration data");
-    return NULL;
+    return nullptr;
   }
 
   result = _system->createDSPByType( dsptype, &dsp);
   if (result != 0) {
     audio_error("Could not create DSP object");
-    return NULL;
+    return nullptr;
   }
 
   FMOD_RESULT res1 = FMOD_OK;
@@ -338,7 +334,7 @@ make_dsp(const FilterProperties::FilterConfig &conf) {
       (res13!=FMOD_OK)||(res14!=FMOD_OK)) {
     audio_error("Could not configure DSP");
     dsp->release();
-    return NULL;
+    return nullptr;
   }
 
   dsp->setUserData(USER_DSP_MAGIC);
@@ -368,7 +364,7 @@ update_dsp_chain(FMOD::DSP *head, FilterProperties *config) {
       break;
     }
     FMOD::DSP *prev;
-    result = head->getInput(0, &prev, NULL);
+    result = head->getInput(0, &prev, nullptr);
     fmod_audio_errcheck("head->getInput()", result);
     void *userdata;
     result = prev->getUserData(&userdata);
@@ -384,7 +380,7 @@ update_dsp_chain(FMOD::DSP *head, FilterProperties *config) {
 
   for (int i=0; i<(int)(conf.size()); i++) {
     FMOD::DSP *dsp = make_dsp(conf[i]);
-    result = _channelgroup->addDSP(dsp, NULL);
+    result = _channelgroup->addDSP(dsp, nullptr);
     fmod_audio_errcheck("_channelgroup->addDSP()", result);
   }
 }
@@ -413,7 +409,7 @@ configure_filters(FilterProperties *config) {
  * This is what creates a sound instance.
  */
 PT(AudioSound) FmodAudioManager::
-get_sound(const string &file_name, bool positional, int) {
+get_sound(const Filename &file_name, bool positional, int) {
   ReMutexHolder holder(_lock);
   // Needed so People use Panda's Generic UNIX Style Paths for Filename.
   // path.to_os_specific() converts it back to the proper OS version later on.
@@ -423,15 +419,19 @@ get_sound(const string &file_name, bool positional, int) {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   vfs->resolve_filename(path, get_model_path());
 
-  // Build a new AudioSound from the audio data.
-  PT(AudioSound) audioSound;
-  PT(FmodAudioSound) fmodAudioSound = new FmodAudioSound(this, path, positional);
+  // Locate the file on disk.
+  path.set_binary();
+  PT(VirtualFile) file = vfs->get_file(path);
+  if (file != nullptr) {
+    // Build a new AudioSound from the audio data.
+    PT(FmodAudioSound) sound = new FmodAudioSound(this, file, positional);
 
-  _all_sounds.insert(fmodAudioSound);
-
-  audioSound = fmodAudioSound;
-
-  return audioSound;
+    _all_sounds.insert(sound);
+    return sound;
+  } else {
+    audio_error("createSound(" << path << "): File not found.");
+    return get_null_sound();
+  }
 }
 
 /**
@@ -440,14 +440,14 @@ get_sound(const string &file_name, bool positional, int) {
 PT(AudioSound) FmodAudioManager::
 get_sound(MovieAudio *source, bool positional, int) {
   nassert_raise("FMOD audio manager does not support MovieAudio sources");
-  return NULL;
+  return nullptr;
 }
 
 /**
  * This is to query if you are using a MultiChannel Setup.
  */
 int FmodAudioManager::
-getSpeakerSetup() {
+get_speaker_setup() {
   ReMutexHolder holder(_lock);
   FMOD_RESULT result;
   FMOD_SPEAKERMODE speakerMode;
@@ -502,7 +502,7 @@ getSpeakerSetup() {
  * init or re-init the AudioManagers after Panda is running.
  */
 void FmodAudioManager::
-setSpeakerSetup(AudioManager::SpeakerModeCategory cat) {
+set_speaker_setup(AudioManager::SpeakerModeCategory cat) {
   ReMutexHolder holder(_lock);
   FMOD_RESULT result;
   FMOD_SPEAKERMODE speakerModeType = (FMOD_SPEAKERMODE)cat;
@@ -772,7 +772,7 @@ reduce_sounds_playing_to(unsigned int count) {
  * NOT USED FOR FMOD-EX!!! Clears a sound out of the sound cache.
  */
 void FmodAudioManager::
-uncache_sound(const string& file_name) {
+uncache_sound(const Filename &file_name) {
   audio_debug("FmodAudioManager::uncache_sound(\""<<file_name<<"\")");
 
 }

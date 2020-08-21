@@ -16,7 +16,7 @@
  */
 INLINE Pipeline *Pipeline::
 get_render_pipeline() {
-  if (_render_pipeline == (Pipeline *)NULL) {
+  if (_render_pipeline == nullptr) {
     make_render_pipeline();
   }
   return _render_pipeline;
@@ -27,7 +27,7 @@ get_render_pipeline() {
  */
 INLINE void Pipeline::
 set_min_stages(int min_stages) {
-  set_num_stages(max(min_stages, get_num_stages()));
+  set_num_stages(std::max(min_stages, get_num_stages()));
 }
 
 /**
@@ -45,7 +45,7 @@ get_num_stages() const {
  */
 INLINE int Pipeline::
 get_num_cyclers() const {
-  ReMutexHolder holder(_lock);
+  MutexHolder holder(_lock);
   return _num_cyclers;
 }
 #endif  // THREADED_PIPELINE
@@ -58,7 +58,7 @@ get_num_cyclers() const {
  */
 INLINE int Pipeline::
 get_num_dirty_cyclers() const {
-  ReMutexHolder holder(_lock);
+  MutexHolder holder(_lock);
   return _num_dirty_cyclers;
 }
 #endif  // THREADED_PIPELINE

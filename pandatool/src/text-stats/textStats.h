@@ -40,8 +40,8 @@ private:
 
   // [PECI]
   bool _got_outputFileName;
-  string _outputFileName;
-  ostream *_outFile;
+  std::string _outputFileName;
+  std::ostream *_outFile;
 };
 
 #endif

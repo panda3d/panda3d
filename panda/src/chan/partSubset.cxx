@@ -89,7 +89,7 @@ append(const PartSubset &other) {
  *
  */
 void PartSubset::
-output(ostream &out) const {
+output(std::ostream &out) const {
   if (_include_joints.empty() && _exclude_joints.empty()) {
     out << "PartSubset, empty";
   } else {
@@ -120,7 +120,7 @@ is_include_empty() const {
  * false otherwise.
  */
 bool PartSubset::
-matches_include(const string &joint_name) const {
+matches_include(const std::string &joint_name) const {
   Joints::const_iterator ji;
   for (ji = _include_joints.begin(); ji != _include_joints.end(); ++ji) {
     if ((*ji).matches(joint_name)) {
@@ -137,7 +137,7 @@ matches_include(const string &joint_name) const {
  * false otherwise.
  */
 bool PartSubset::
-matches_exclude(const string &joint_name) const {
+matches_exclude(const std::string &joint_name) const {
   Joints::const_iterator ji;
   for (ji = _exclude_joints.begin(); ji != _exclude_joints.end(); ++ji) {
     if ((*ji).matches(joint_name)) {

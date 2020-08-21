@@ -16,7 +16,7 @@
  * arbitrary name that serves mainly to uniquify the context for PStats
  * reporting.
  */
-INLINE const string &PreparedGraphicsObjects::
+INLINE const std::string &PreparedGraphicsObjects::
 get_name() const {
   return _name;
 }

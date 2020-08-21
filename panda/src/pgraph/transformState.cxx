@@ -24,12 +24,14 @@
 #include "lightMutexHolder.h"
 #include "thread.h"
 
-LightReMutex *TransformState::_states_lock = NULL;
-TransformState::States *TransformState::_states = NULL;
+using std::ostream;
+
+LightReMutex *TransformState::_states_lock = nullptr;
+TransformState::States TransformState::_states;
 CPT(TransformState) TransformState::_identity_state;
 CPT(TransformState) TransformState::_invalid_state;
 UpdateSeq TransformState::_last_cycle_detect;
-int TransformState::_garbage_index = 0;
+size_t TransformState::_garbage_index = 0;
 bool TransformState::_uniquify_matrix = true;
 
 PStatCollector TransformState::_cache_update_pcollector("*:State Cache:Update");
@@ -55,29 +57,17 @@ TypeHandle TransformState::_type_handle;
  */
 TransformState::
 TransformState() : _lock("TransformState") {
-  if (_states == (States *)NULL) {
+  if (_states_lock == nullptr) {
     init_states();
   }
   _saved_entry = -1;
   _flags = F_is_identity | F_singular_known | F_is_2d;
-  _inv_mat = (LMatrix4 *)NULL;
+  _inv_mat = nullptr;
   _cache_stats.add_num_states(1);
-}
 
-/**
- * TransformStates are not meant to be copied.
- */
-TransformState::
-TransformState(const TransformState &) {
-  nassertv(false);
-}
-
-/**
- * TransformStates are not meant to be copied.
- */
-void TransformState::
-operator = (const TransformState &) {
-  nassertv(false);
+#ifdef DO_MEMORY_USAGE
+  MemoryUsage::update_type(this, this);
+#endif
 }
 
 /**
@@ -91,10 +81,8 @@ TransformState::
   set_destructing();
 
   // Free the inverse matrix computation, if it has been stored.
-  if (_inv_mat != (LMatrix4 *)NULL) {
-    delete _inv_mat;
-    _inv_mat = (LMatrix4 *)NULL;
-  }
+  delete _inv_mat;
+  _inv_mat = nullptr;
 
   LightReMutexHolder holder(*_states_lock);
 
@@ -106,6 +94,10 @@ TransformState::
   // true now, probably we've been double-deleted.
   nassertv(get_ref_count() == 0);
   _cache_stats.add_num_states(-1);
+
+#ifndef NDEBUG
+  _flags = F_is_invalid | F_is_destructing;
+#endif
 }
 
 /**
@@ -247,7 +239,7 @@ CPT(TransformState) TransformState::
 make_identity() {
   // The identity state is asked for so often, we make it a special case and
   // store a pointer forever once we find it the first time.
-  if (_identity_state == (TransformState *)NULL) {
+  if (_identity_state == nullptr) {
     TransformState *state = new TransformState;
     _identity_state = return_unique(state);
   }
@@ -261,7 +253,7 @@ make_identity() {
  */
 CPT(TransformState) TransformState::
 make_invalid() {
-  if (_invalid_state == (TransformState *)NULL) {
+  if (_invalid_state == nullptr) {
     TransformState *state = new TransformState;
     state->_flags = F_is_invalid | F_singular_known | F_is_singular | F_components_known | F_mat_known;
     _invalid_state = return_unique(state);
@@ -608,33 +600,74 @@ compose(const TransformState *other) const {
     return do_compose(other);
   }
 
-  // Is this composition already cached?
-  CPT(TransformState) result;
-  {
-    LightReMutexHolder holder(*_states_lock);
-    int index = _composition_cache.find(other);
-    if (index != -1) {
-      const Composition &comp = _composition_cache.get_data(index);
-      result = comp._result;
-    }
-    if (result != (TransformState *)NULL) {
-      _cache_stats.inc_hits();
-    }
-  }
+  LightReMutexHolder holder(*_states_lock);
 
-  if (result != (TransformState *)NULL) {
-    // Success!
-    return result;
+  // Is this composition already cached?
+  int index = _composition_cache.find(other);
+  if (index != -1) {
+    const Composition &comp = _composition_cache.get_data(index);
+    if (comp._result != nullptr) {
+      // Success!
+      _cache_stats.inc_hits();
+      return comp._result;
+    }
   }
 
   // Not in the cache.  Compute a new result.  It's important that we don't
   // hold the lock while we do this, or we lose the benefit of
   // parallelization.
-  result = do_compose(other);
+  CPT(TransformState) result = do_compose(other);
 
-  // It's OK to cast away the constness of this pointer, because the cache is
-  // a transparent property of the class.
-  return ((TransformState *)this)->store_compose(other, result);
+  if (index != -1) {
+    Composition &comp = _composition_cache.modify_data(index);
+    // Well, it wasn't cached already, but we already had an entry (probably
+    // created for the reverse direction), so use the same entry to store
+    // the new result.
+    comp._result = result;
+
+    if (result != (const TransformState *)this) {
+      // See the comments below about the need to up the reference count
+      // only when the result is not the same as this.
+      result->cache_ref();
+    }
+    // Here's the cache!
+    _cache_stats.inc_hits();
+    return result;
+  }
+  _cache_stats.inc_misses();
+
+  // We need to make a new cache entry, both in this object and in the other
+  // object.  We make both records so the other TransformState object will
+  // know to delete the entry from this object when it destructs, and vice-
+  // versa.
+
+  // The cache entry in this object is the only one that indicates the result;
+  // the other will be NULL for now.
+  _cache_stats.add_total_size(1);
+  _cache_stats.inc_adds(_composition_cache.is_empty());
+
+  _composition_cache[other]._result = result;
+
+  if (other != this) {
+    _cache_stats.add_total_size(1);
+    _cache_stats.inc_adds(other->_composition_cache.is_empty());
+    other->_composition_cache[this]._result = nullptr;
+  }
+
+  if (result != (TransformState *)this) {
+    // If the result of do_compose() is something other than this, explicitly
+    // increment the reference count.  We have to be sure to decrement it
+    // again later, when the composition entry is removed from the cache.
+    result->cache_ref();
+
+    // (If the result was just this again, we still store the result, but we
+    // don't increment the reference count, since that would be a self-
+    // referential leak.)
+  }
+
+  _cache_stats.maybe_report("TransformState");
+
+  return result;
 }
 
 /**
@@ -676,32 +709,69 @@ invert_compose(const TransformState *other) const {
 
   LightReMutexHolder holder(*_states_lock);
 
-  CPT(TransformState) result;
-  {
-    LightReMutexHolder holder(*_states_lock);
-    int index = _invert_composition_cache.find(other);
-    if (index != -1) {
-      const Composition &comp = _invert_composition_cache.get_data(index);
-      result = comp._result;
-    }
-    if (result != (TransformState *)NULL) {
+  int index = _invert_composition_cache.find(other);
+  if (index != -1) {
+    const Composition &comp = _invert_composition_cache.get_data(index);
+    if (comp._result != nullptr) {
+      // Success!
       _cache_stats.inc_hits();
+      return comp._result;
     }
-  }
-
-  if (result != (TransformState *)NULL) {
-    // Success!
-    return result;
   }
 
   // Not in the cache.  Compute a new result.  It's important that we don't
   // hold the lock while we do this, or we lose the benefit of
   // parallelization.
-  result = do_invert_compose(other);
+  CPT(TransformState) result = do_invert_compose(other);
 
-  // It's OK to cast away the constness of this pointer, because the cache is
-  // a transparent property of the class.
-  return ((TransformState *)this)->store_invert_compose(other, result);
+  // Is this composition already cached?
+  if (index != -1) {
+    Composition &comp = _invert_composition_cache.modify_data(index);
+    // Well, it wasn't cached already, but we already had an entry (probably
+    // created for the reverse direction), so use the same entry to store
+    // the new result.
+    comp._result = result;
+
+    if (result != (const TransformState *)this) {
+      // See the comments below about the need to up the reference count
+      // only when the result is not the same as this.
+      result->cache_ref();
+    }
+    // Here's the cache!
+    _cache_stats.inc_hits();
+    return result;
+  }
+  _cache_stats.inc_misses();
+
+  // We need to make a new cache entry, both in this object and in the other
+  // object.  We make both records so the other TransformState object will
+  // know to delete the entry from this object when it destructs, and vice-
+  // versa.
+
+  // The cache entry in this object is the only one that indicates the result;
+  // the other will be NULL for now.
+  _cache_stats.add_total_size(1);
+  _cache_stats.inc_adds(_invert_composition_cache.is_empty());
+  _invert_composition_cache[other]._result = result;
+
+  if (other != this) {
+    _cache_stats.add_total_size(1);
+    _cache_stats.inc_adds(other->_invert_composition_cache.is_empty());
+    other->_invert_composition_cache[this]._result = nullptr;
+  }
+
+  if (result != (TransformState *)this) {
+    // If the result of compose() is something other than this, explicitly
+    // increment the reference count.  We have to be sure to decrement it
+    // again later, when the composition entry is removed from the cache.
+    result->cache_ref();
+
+    // (If the result was just this again, we still store the result, but we
+    // don't increment the reference count, since that would be a self-
+    // referential leak.)
+  }
+
+  return result;
 }
 
 /**
@@ -712,7 +782,7 @@ invert_compose(const TransformState *other) const {
  */
 bool TransformState::
 unref() const {
-  if (!transform_cache || garbage_collect_states) {
+  if (garbage_collect_states || !transform_cache) {
     // If we're not using the cache at all, or if we're relying on garbage
     // collection, just allow the pointer to unref normally.
     return ReferenceCount::unref();
@@ -760,13 +830,10 @@ bool TransformState::
 validate_composition_cache() const {
   LightReMutexHolder holder(*_states_lock);
 
-  int size = _composition_cache.get_size();
-  for (int i = 0; i < size; ++i) {
-    if (!_composition_cache.has_element(i)) {
-      continue;
-    }
+  size_t size = _composition_cache.get_num_entries();
+  for (size_t i = 0; i < size; ++i) {
     const TransformState *source = _composition_cache.get_key(i);
-    if (source != (TransformState *)NULL) {
+    if (source != nullptr) {
       // Check that the source also has a pointer back to this one.  We always
       // add entries to the composition cache in pairs.
       int ri = source->_composition_cache.find(this);
@@ -783,13 +850,10 @@ validate_composition_cache() const {
     }
   }
 
-  size = _invert_composition_cache.get_size();
-  for (int i = 0; i < size; ++i) {
-    if (!_invert_composition_cache.has_element(i)) {
-      continue;
-    }
+  size = _invert_composition_cache.get_num_entries();
+  for (size_t i = 0; i < size; ++i) {
     const TransformState *source = _invert_composition_cache.get_key(i);
-    if (source != (TransformState *)NULL) {
+    if (source != nullptr) {
       // Check that the source also has a pointer back to this one.  We always
       // add entries to the composition cache in pairs.
       int ri = source->_invert_composition_cache.find(this);
@@ -922,11 +986,8 @@ write_composition_cache(ostream &out, int indent_level) const {
  */
 int TransformState::
 get_num_states() {
-  if (_states == (States *)NULL) {
-    return 0;
-  }
   LightReMutexHolder holder(*_states_lock);
-  return _states->get_num_entries();
+  return _states.get_num_entries();
 }
 
 /**
@@ -944,9 +1005,6 @@ get_num_states() {
  */
 int TransformState::
 get_num_unused_states() {
-  if (_states == (States *)NULL) {
-    return 0;
-  }
   LightReMutexHolder holder(*_states_lock);
 
   // First, we need to count the number of times each TransformState object is
@@ -955,40 +1013,33 @@ get_num_unused_states() {
   typedef pmap<const TransformState *, int> StateCount;
   StateCount state_count;
 
-  int size = _states->get_size();
-  for (int si = 0; si < size; ++si) {
-    if (!_states->has_element(si)) {
-      continue;
-    }
-    const TransformState *state = _states->get_key(si);
+  size_t size = _states.get_num_entries();
+  for (size_t si = 0; si < size; ++si) {
+    const TransformState *state = _states.get_key(si);
 
-    int i;
-    int cache_size = state->_composition_cache.get_size();
+    size_t i;
+    size_t cache_size = state->_composition_cache.get_num_entries();
     for (i = 0; i < cache_size; ++i) {
-      if (state->_composition_cache.has_element(i)) {
-        const TransformState *result = state->_composition_cache.get_data(i)._result;
-        if (result != (const TransformState *)NULL && result != state) {
-          // Here's a TransformState that's recorded in the cache.  Count it.
-          pair<StateCount::iterator, bool> ir =
-            state_count.insert(StateCount::value_type(result, 1));
-          if (!ir.second) {
-            // If the above insert operation fails, then it's already in the
-            // cache; increment its value.
-            (*(ir.first)).second++;
-          }
+      const TransformState *result = state->_composition_cache.get_data(i)._result;
+      if (result != nullptr && result != state) {
+        // Here's a TransformState that's recorded in the cache.  Count it.
+        std::pair<StateCount::iterator, bool> ir =
+          state_count.insert(StateCount::value_type(result, 1));
+        if (!ir.second) {
+          // If the above insert operation fails, then it's already in the
+          // cache; increment its value.
+          (*(ir.first)).second++;
         }
       }
     }
-    cache_size = state->_invert_composition_cache.get_size();
+    cache_size = state->_invert_composition_cache.get_num_entries();
     for (i = 0; i < cache_size; ++i) {
-      if (state->_invert_composition_cache.has_element(i)) {
-        const TransformState *result = state->_invert_composition_cache.get_data(i)._result;
-        if (result != (const TransformState *)NULL && result != state) {
-          pair<StateCount::iterator, bool> ir =
-            state_count.insert(StateCount::value_type(result, 1));
-          if (!ir.second) {
-            (*(ir.first)).second++;
-          }
+      const TransformState *result = state->_invert_composition_cache.get_data(i)._result;
+      if (result != nullptr && result != state) {
+        std::pair<StateCount::iterator, bool> ir =
+          state_count.insert(StateCount::value_type(result, 1));
+        if (!ir.second) {
+          (*(ir.first)).second++;
         }
       }
     }
@@ -1036,13 +1087,10 @@ get_num_unused_states() {
  */
 int TransformState::
 clear_cache() {
-  if (_states == (States *)NULL) {
-    return 0;
-  }
   LightReMutexHolder holder(*_states_lock);
 
   PStatTimer timer(_cache_update_pcollector);
-  int orig_size = _states->get_num_entries();
+  int orig_size = _states.get_num_entries();
 
   // First, we need to copy the entire set of states to a temporary vector,
   // reference-counting each object.  That way we can walk through the copy,
@@ -1053,12 +1101,9 @@ clear_cache() {
     TempStates temp_states;
     temp_states.reserve(orig_size);
 
-    int size = _states->get_size();
-    for (int si = 0; si < size; ++si) {
-      if (!_states->has_element(si)) {
-        continue;
-      }
-      const TransformState *state = _states->get_key(si);
+    size_t size = _states.get_num_entries();
+    for (size_t si = 0; si < size; ++si) {
+      const TransformState *state = _states.get_key(si);
       temp_states.push_back(state);
     }
 
@@ -1068,28 +1113,24 @@ clear_cache() {
     for (ti = temp_states.begin(); ti != temp_states.end(); ++ti) {
       TransformState *state = (TransformState *)(*ti).p();
 
-      int i;
-      int cache_size = (int)state->_composition_cache.get_size();
+      size_t i;
+      size_t cache_size = state->_composition_cache.get_num_entries();
       for (i = 0; i < cache_size; ++i) {
-        if (state->_composition_cache.has_element(i)) {
-          const TransformState *result = state->_composition_cache.get_data(i)._result;
-          if (result != (const TransformState *)NULL && result != state) {
-            result->cache_unref();
-            nassertr(result->get_ref_count() > 0, 0);
-          }
+        const TransformState *result = state->_composition_cache.get_data(i)._result;
+        if (result != nullptr && result != state) {
+          result->cache_unref();
+          nassertr(result->get_ref_count() > 0, 0);
         }
       }
       _cache_stats.add_total_size(-(int)state->_composition_cache.get_num_entries());
       state->_composition_cache.clear();
 
-      cache_size = state->_invert_composition_cache.get_size();
+      cache_size = state->_invert_composition_cache.get_num_entries();
       for (i = 0; i < cache_size; ++i) {
-        if (state->_invert_composition_cache.has_element(i)) {
-          const TransformState *result = state->_invert_composition_cache.get_data(i)._result;
-          if (result != (const TransformState *)NULL && result != state) {
-            result->cache_unref();
-            nassertr(result->get_ref_count() > 0, 0);
-          }
+        const TransformState *result = state->_invert_composition_cache.get_data(i)._result;
+        if (result != nullptr && result != state) {
+          result->cache_unref();
+          nassertr(result->get_ref_count() > 0, 0);
         }
       }
       _cache_stats.add_total_size(-(int)state->_invert_composition_cache.get_num_entries());
@@ -1101,7 +1142,7 @@ clear_cache() {
     // the various objects' caches will go away.
   }
 
-  int new_size = _states->get_num_entries();
+  int new_size = _states.get_num_entries();
   return orig_size - new_size;
 }
 
@@ -1113,60 +1154,82 @@ clear_cache() {
  */
 int TransformState::
 garbage_collect() {
-  if (_states == (States *)NULL || !garbage_collect_states) {
+  if (!garbage_collect_states) {
     return 0;
   }
+
   LightReMutexHolder holder(*_states_lock);
 
   PStatTimer timer(_garbage_collect_pcollector);
-  int orig_size = _states->get_num_entries();
+  size_t orig_size = _states.get_num_entries();
 
   // How many elements to process this pass?
-  int size = _states->get_size();
-  int num_this_pass = int(size * garbage_collect_states_rate);
+  size_t size = orig_size;
+  size_t num_this_pass = std::max(0, int(size * garbage_collect_states_rate));
   if (num_this_pass <= 0) {
     return 0;
   }
-  num_this_pass = min(num_this_pass, size);
-  int stop_at_element = (_garbage_index + num_this_pass) % size;
 
-  int num_elements = 0;
-  int si = _garbage_index;
+  bool break_and_uniquify = (auto_break_cycles && uniquify_transforms);
+
+  size_t si = _garbage_index;
+  if (si >= size) {
+    si = 0;
+  }
+
+  num_this_pass = std::min(num_this_pass, size);
+  size_t stop_at_element = (si + num_this_pass) % size;
+
   do {
-    if (_states->has_element(si)) {
-      ++num_elements;
-      TransformState *state = (TransformState *)_states->get_key(si);
-      if (auto_break_cycles && uniquify_transforms) {
-        if (state->get_cache_ref_count() > 0 &&
-            state->get_ref_count() == state->get_cache_ref_count()) {
-          // If we have removed all the references to this state not in the
-          // cache, leaving only references in the cache, then we need to
-          // check for a cycle involving this TransformState and break it if
-          // it exists.
-          state->detect_and_break_cycles();
-        }
+    TransformState *state = (TransformState *)_states.get_key(si);
+    if (break_and_uniquify) {
+      if (state->get_cache_ref_count() > 0 &&
+          state->get_ref_count() == state->get_cache_ref_count()) {
+        // If we have removed all the references to this state not in the
+        // cache, leaving only references in the cache, then we need to
+        // check for a cycle involving this TransformState and break it if
+        // it exists.
+        state->detect_and_break_cycles();
       }
+    }
 
-      if (state->get_ref_count() == 1) {
-        // This state has recently been unreffed to 1 (the one we added when
-        // we stored it in the cache).  Now it's time to delete it.  This is
-        // safe, because we're holding the _states_lock, so it's not possible
-        // for some other thread to find the state in the cache and ref it
-        // while we're doing this.
-        state->release_new();
-        state->remove_cache_pointers();
-        state->cache_unref();
-        delete state;
+    if (!state->unref_if_one()) {
+      // This state has recently been unreffed to 1 (the one we added when
+      // we stored it in the cache).  Now it's time to delete it.  This is
+      // safe, because we're holding the _states_lock, so it's not possible
+      // for some other thread to find the state in the cache and ref it
+      // while we're doing this.  Also, we've just made sure to unref it to 0,
+      // to ensure that another thread can't get it via a weak pointer.
+      state->release_new();
+      state->remove_cache_pointers();
+      state->cache_unref_only();
+      delete state;
+
+      // When we removed it from the hash map, it swapped the last element
+      // with the one we just removed.  So the current index contains one we
+      // still need to visit.
+      --size;
+      --si;
+      if (stop_at_element > 0) {
+        --stop_at_element;
       }
     }
 
     si = (si + 1) % size;
   } while (si != stop_at_element);
   _garbage_index = si;
-  nassertr(_states->validate(), 0);
 
-  int new_size = _states->get_num_entries();
-  return orig_size - new_size;
+  nassertr(_states.get_num_entries() == size, 0);
+
+#ifdef _DEBUG
+  nassertr(_states.validate(), 0);
+#endif
+
+  // If we just cleaned up a lot of states, see if we can reduce the table in
+  // size.  This will help reduce iteration overhead in the future.
+  _states.consider_shrink_table();
+
+  return (int)orig_size - (int)size;
 }
 
 /**
@@ -1184,21 +1247,15 @@ garbage_collect() {
  */
 void TransformState::
 list_cycles(ostream &out) {
-  if (_states == (States *)NULL) {
-    return;
-  }
   LightReMutexHolder holder(*_states_lock);
 
   typedef pset<const TransformState *> VisitedStates;
   VisitedStates visited;
   CompositionCycleDesc cycle_desc;
 
-  int size = _states->get_size();
-  for (int si = 0; si < size; ++si) {
-    if (!_states->has_element(si)) {
-      continue;
-    }
-    const TransformState *state = _states->get_key(si);
+  size_t size = _states.get_num_entries();
+  for (size_t si = 0; si < size; ++si) {
+    const TransformState *state = _states.get_key(si);
 
     bool inserted = visited.insert(state).second;
     if (inserted) {
@@ -1264,20 +1321,12 @@ list_cycles(ostream &out) {
  */
 void TransformState::
 list_states(ostream &out) {
-  if (_states == (States *)NULL) {
-    out << "0 states:\n";
-    return;
-  }
   LightReMutexHolder holder(*_states_lock);
 
-  out << _states->get_num_entries() << " states:\n";
-
-  int size = _states->get_size();
-  for (int si = 0; si < size; ++si) {
-    if (!_states->has_element(si)) {
-      continue;
-    }
-    const TransformState *state = _states->get_key(si);
+  size_t size = _states.get_num_entries();
+  out << size << " states:\n";
+  for (size_t si = 0; si < size; ++si) {
+    const TransformState *state = _states.get_key(si);
     state->write(out, 2);
   }
 }
@@ -1290,42 +1339,32 @@ list_states(ostream &out) {
  */
 bool TransformState::
 validate_states() {
-  if (_states == (States *)NULL) {
-    return true;
-  }
-
   PStatTimer timer(_transform_validate_pcollector);
 
   LightReMutexHolder holder(*_states_lock);
-  if (_states->is_empty()) {
+  if (_states.is_empty()) {
     return true;
   }
 
-  if (!_states->validate()) {
+  if (!_states.validate()) {
     pgraph_cat.error()
       << "TransformState::_states cache is invalid!\n";
     return false;
   }
 
-  int size = _states->get_size();
-  int si = 0;
-  while (si < size && !_states->has_element(si)) {
-    ++si;
-  }
+  size_t size = _states.get_num_entries();
+  size_t si = 0;
   nassertr(si < size, false);
-  nassertr(_states->get_key(si)->get_ref_count() >= 0, false);
-  int snext = si;
+  nassertr(_states.get_key(si)->get_ref_count() >= 0, false);
+  size_t snext = si;
   ++snext;
-  while (snext < size && !_states->has_element(snext)) {
-    ++snext;
-  }
   while (snext < size) {
-    nassertr(_states->get_key(snext)->get_ref_count() >= 0, false);
-    const TransformState *ssi = _states->get_key(si);
+    nassertr(_states.get_key(snext)->get_ref_count() >= 0, false);
+    const TransformState *ssi = _states.get_key(si);
     if (!ssi->validate_composition_cache()) {
       return false;
     }
-    const TransformState *ssnext = _states->get_key(snext);
+    const TransformState *ssnext = _states.get_key(snext);
     bool c = (*ssi) == (*ssnext);
     bool ci = (*ssnext) == (*ssi);
     if (c != ci) {
@@ -1341,9 +1380,6 @@ validate_states() {
     }
     si = snext;
     ++snext;
-    while (snext < size && !_states->has_element(snext)) {
-      ++snext;
-    }
   }
 
   return true;
@@ -1358,8 +1394,6 @@ validate_states() {
  */
 void TransformState::
 init_states() {
-  _states = new States;
-
   ConfigVariableBool uniquify_matrix
   ("uniquify-matrix", true,
    PRC_DESC("Set this true to look up arbitrary 4x4 transform matrices in "
@@ -1390,7 +1424,7 @@ init_states() {
  */
 CPT(TransformState) TransformState::
 return_new(TransformState *state) {
-  nassertr(state != (TransformState *)NULL, state);
+  nassertr(state != nullptr, state);
   if (!uniquify_transforms && !state->is_identity()) {
     return state;
   }
@@ -1409,7 +1443,7 @@ return_new(TransformState *state) {
  */
 CPT(TransformState) TransformState::
 return_unique(TransformState *state) {
-  nassertr(state != (TransformState *)NULL, state);
+  nassertr(state != nullptr, state);
 
   if (!transform_cache) {
     return state;
@@ -1426,7 +1460,7 @@ return_unique(TransformState *state) {
   LightReMutexHolder holder(*_states_lock);
 
   if (state->_saved_entry != -1) {
-    // This state is already in the cache.  nassertr(_states->find(state) ==
+    // This state is already in the cache.  nassertr(_states.find(state) ==
     // state->_saved_entry, state);
     return state;
   }
@@ -1435,10 +1469,10 @@ return_unique(TransformState *state) {
   // of this function if no one else uses it.
   CPT(TransformState) pt_state = state;
 
-  int si = _states->find(state);
+  int si = _states.find(state);
   if (si != -1) {
     // There's an equivalent state already in the set.  Return it.
-    return _states->get_key(si);
+    return _states.get_key(si);
   }
 
   // Not already in the set; add it.
@@ -1448,7 +1482,7 @@ return_unique(TransformState *state) {
     // deleted while it's in it.
     state->cache_ref();
   }
-  si = _states->store(state, Empty());
+  si = _states.store(state, nullptr);
 
   // Save the index and return the input state.
   state->_saved_entry = si;
@@ -1534,150 +1568,6 @@ do_compose(const TransformState *other) const {
 }
 
 /**
- * Stores the result of a composition in the cache.  Returns the stored result
- * (it may be a different object than the one passed in, due to another thread
- * having computed the composition first).
- */
-CPT(TransformState) TransformState::
-store_compose(const TransformState *other, const TransformState *result) {
-  // Identity should have already been screened.
-  nassertr(!is_identity(), other);
-  nassertr(!other->is_identity(), this);
-
-  // So should have validity.
-  nassertr(!is_invalid(), this);
-  nassertr(!other->is_invalid(), other);
-
-  LightReMutexHolder holder(*_states_lock);
-
-  // Is this composition already cached?
-  int index = _composition_cache.find(other);
-  if (index != -1) {
-    Composition &comp = _composition_cache.modify_data(index);
-    if (comp._result == (const TransformState *)NULL) {
-      // Well, it wasn't cached already, but we already had an entry (probably
-      // created for the reverse direction), so use the same entry to store
-      // the new result.
-      comp._result = result;
-
-      if (result != (const TransformState *)this) {
-        // See the comments below about the need to up the reference count
-        // only when the result is not the same as this.
-        result->cache_ref();
-      }
-    }
-    // Here's the cache!
-    _cache_stats.inc_hits();
-    return comp._result;
-  }
-  _cache_stats.inc_misses();
-
-  // We need to make a new cache entry, both in this object and in the other
-  // object.  We make both records so the other TransformState object will
-  // know to delete the entry from this object when it destructs, and vice-
-  // versa.
-
-  // The cache entry in this object is the only one that indicates the result;
-  // the other will be NULL for now.
-  _cache_stats.add_total_size(1);
-  _cache_stats.inc_adds(_composition_cache.get_size() == 0);
-
-  _composition_cache[other]._result = result;
-
-  if (other != this) {
-    _cache_stats.add_total_size(1);
-    _cache_stats.inc_adds(other->_composition_cache.get_size() == 0);
-    ((TransformState *)other)->_composition_cache[this]._result = NULL;
-  }
-
-  if (result != (TransformState *)this) {
-    // If the result of do_compose() is something other than this, explicitly
-    // increment the reference count.  We have to be sure to decrement it
-    // again later, when the composition entry is removed from the cache.
-    result->cache_ref();
-
-    // (If the result was just this again, we still store the result, but we
-    // don't increment the reference count, since that would be a self-
-    // referential leak.)
-  }
-
-  _cache_stats.maybe_report("TransformState");
-
-  return result;
-}
-
-/**
- * Stores the result of a composition in the cache.  Returns the stored result
- * (it may be a different object than the one passed in, due to another thread
- * having computed the composition first).
- */
-CPT(TransformState) TransformState::
-store_invert_compose(const TransformState *other, const TransformState *result) {
-  // Identity should have already been screened.
-  nassertr(!is_identity(), other);
-
-  // So should have validity.
-  nassertr(!is_invalid(), this);
-  nassertr(!other->is_invalid(), other);
-
-  nassertr(other != this, make_identity());
-
-  LightReMutexHolder holder(*_states_lock);
-
-  // Is this composition already cached?
-  int index = _invert_composition_cache.find(other);
-  if (index != -1) {
-    Composition &comp = ((TransformState *)this)->_invert_composition_cache.modify_data(index);
-    if (comp._result == (const TransformState *)NULL) {
-      // Well, it wasn't cached already, but we already had an entry (probably
-      // created for the reverse direction), so use the same entry to store
-      // the new result.
-      comp._result = result;
-
-      if (result != (const TransformState *)this) {
-        // See the comments below about the need to up the reference count
-        // only when the result is not the same as this.
-        result->cache_ref();
-      }
-    }
-    // Here's the cache!
-    _cache_stats.inc_hits();
-    return comp._result;
-  }
-  _cache_stats.inc_misses();
-
-  // We need to make a new cache entry, both in this object and in the other
-  // object.  We make both records so the other TransformState object will
-  // know to delete the entry from this object when it destructs, and vice-
-  // versa.
-
-  // The cache entry in this object is the only one that indicates the result;
-  // the other will be NULL for now.
-  _cache_stats.add_total_size(1);
-  _cache_stats.inc_adds(_invert_composition_cache.get_size() == 0);
-  _invert_composition_cache[other]._result = result;
-
-  if (other != this) {
-    _cache_stats.add_total_size(1);
-    _cache_stats.inc_adds(other->_invert_composition_cache.get_size() == 0);
-    ((TransformState *)other)->_invert_composition_cache[this]._result = NULL;
-  }
-
-  if (result != (TransformState *)this) {
-    // If the result of compose() is something other than this, explicitly
-    // increment the reference count.  We have to be sure to decrement it
-    // again later, when the composition entry is removed from the cache.
-    result->cache_ref();
-
-    // (If the result was just this again, we still store the result, but we
-    // don't increment the reference count, since that would be a self-
-    // referential leak.)
-  }
-
-  return result;
-}
-
-/**
  * The private implemention of invert_compose().
  */
 CPT(TransformState) TransformState::
@@ -1759,7 +1649,7 @@ do_invert_compose(const TransformState *other) const {
         pgraph_cat.warning()
           << "Unexpected singular matrix found for " << *this << "\n";
       } else {
-        nassertr(_inv_mat != (LMatrix4 *)NULL, make_invalid());
+        nassertr(_inv_mat != nullptr, make_invalid());
         LMatrix4 new_mat;
         new_mat.multiply(other->get_mat(), *_inv_mat);
         if (!new_mat.almost_equal(result->get_mat(), 0.1)) {
@@ -1783,7 +1673,7 @@ do_invert_compose(const TransformState *other) const {
 
   // Now that is_singular() has returned false, we can assume that _inv_mat
   // has been allocated and filled in.
-  nassertr(_inv_mat != (LMatrix4 *)NULL, make_invalid());
+  nassertr(_inv_mat != nullptr, make_invalid());
 
   if (is_2d() && other->is_2d()) {
     const LMatrix4 &i = *_inv_mat;
@@ -1813,7 +1703,7 @@ detect_and_break_cycles() {
   PStatTimer timer(_transform_break_cycles_pcollector);
 
   ++_last_cycle_detect;
-  if (r_detect_cycles(this, this, 1, _last_cycle_detect, NULL)) {
+  if (r_detect_cycles(this, this, 1, _last_cycle_detect, nullptr)) {
     // Ok, we have a cycle.  This will be a leak unless we break the cycle by
     // freeing the cache on this object.
     if (pgraph_cat.is_debug()) {
@@ -1824,7 +1714,7 @@ detect_and_break_cycles() {
     remove_cache_pointers();
   } else {
     ++_last_cycle_detect;
-    if (r_detect_reverse_cycles(this, this, 1, _last_cycle_detect, NULL)) {
+    if (r_detect_reverse_cycles(this, this, 1, _last_cycle_detect, nullptr)) {
       if (pgraph_cat.is_debug()) {
         pgraph_cat.debug()
           << "Breaking cycle involving " << (*this) << "\n";
@@ -1857,41 +1747,37 @@ r_detect_cycles(const TransformState *start_state,
   }
   ((TransformState *)current_state)->_cycle_detect = this_seq;
 
-  int i;
-  int cache_size = current_state->_composition_cache.get_size();
+  size_t i;
+  size_t cache_size = current_state->_composition_cache.get_num_entries();
   for (i = 0; i < cache_size; ++i) {
-    if (current_state->_composition_cache.has_element(i)) {
-      const TransformState *result = current_state->_composition_cache.get_data(i)._result;
-      if (result != (const TransformState *)NULL) {
-        if (r_detect_cycles(start_state, result, length + 1,
-                            this_seq, cycle_desc)) {
-          // Cycle detected.
-          if (cycle_desc != (CompositionCycleDesc *)NULL) {
-            const TransformState *other = current_state->_composition_cache.get_key(i);
-            CompositionCycleDescEntry entry(other, result, false);
-            cycle_desc->push_back(entry);
-          }
-          return true;
+    const TransformState *result = current_state->_composition_cache.get_data(i)._result;
+    if (result != nullptr) {
+      if (r_detect_cycles(start_state, result, length + 1,
+                          this_seq, cycle_desc)) {
+        // Cycle detected.
+        if (cycle_desc != nullptr) {
+          const TransformState *other = current_state->_composition_cache.get_key(i);
+          CompositionCycleDescEntry entry(other, result, false);
+          cycle_desc->push_back(entry);
         }
+        return true;
       }
     }
   }
 
-  cache_size = current_state->_invert_composition_cache.get_size();
+  cache_size = current_state->_invert_composition_cache.get_num_entries();
   for (i = 0; i < cache_size; ++i) {
-    if (current_state->_invert_composition_cache.has_element(i)) {
-      const TransformState *result = current_state->_invert_composition_cache.get_data(i)._result;
-      if (result != (const TransformState *)NULL) {
-        if (r_detect_cycles(start_state, result, length + 1,
-                            this_seq, cycle_desc)) {
-          // Cycle detected.
-          if (cycle_desc != (CompositionCycleDesc *)NULL) {
-            const TransformState *other = current_state->_invert_composition_cache.get_key(i);
-            CompositionCycleDescEntry entry(other, result, true);
-            cycle_desc->push_back(entry);
-          }
-          return true;
+    const TransformState *result = current_state->_invert_composition_cache.get_data(i)._result;
+    if (result != nullptr) {
+      if (r_detect_cycles(start_state, result, length + 1,
+                          this_seq, cycle_desc)) {
+        // Cycle detected.
+        if (cycle_desc != nullptr) {
+          const TransformState *other = current_state->_invert_composition_cache.get_key(i);
+          CompositionCycleDescEntry entry(other, result, true);
+          cycle_desc->push_back(entry);
         }
+        return true;
       }
     }
   }
@@ -1920,52 +1806,48 @@ r_detect_reverse_cycles(const TransformState *start_state,
   }
   ((TransformState *)current_state)->_cycle_detect = this_seq;
 
-  int i;
-  int cache_size = current_state->_composition_cache.get_size();
+  size_t i;
+  size_t cache_size = current_state->_composition_cache.get_num_entries();
   for (i = 0; i < cache_size; ++i) {
-    if (current_state->_composition_cache.has_element(i)) {
-      const TransformState *other = current_state->_composition_cache.get_key(i);
-      if (other != current_state) {
-        int oi = other->_composition_cache.find(current_state);
-        nassertr(oi != -1, false);
+    const TransformState *other = current_state->_composition_cache.get_key(i);
+    if (other != current_state) {
+      int oi = other->_composition_cache.find(current_state);
+      nassertr(oi != -1, false);
 
-        const TransformState *result = other->_composition_cache.get_data(oi)._result;
-        if (result != (const TransformState *)NULL) {
-          if (r_detect_reverse_cycles(start_state, result, length + 1,
-                                      this_seq, cycle_desc)) {
-            // Cycle detected.
-            if (cycle_desc != (CompositionCycleDesc *)NULL) {
-              const TransformState *other = current_state->_composition_cache.get_key(i);
-              CompositionCycleDescEntry entry(other, result, false);
-              cycle_desc->push_back(entry);
-            }
-            return true;
+      const TransformState *result = other->_composition_cache.get_data(oi)._result;
+      if (result != nullptr) {
+        if (r_detect_reverse_cycles(start_state, result, length + 1,
+                                    this_seq, cycle_desc)) {
+          // Cycle detected.
+          if (cycle_desc != nullptr) {
+            const TransformState *other = current_state->_composition_cache.get_key(i);
+            CompositionCycleDescEntry entry(other, result, false);
+            cycle_desc->push_back(entry);
           }
+          return true;
         }
       }
     }
   }
 
-  cache_size = current_state->_invert_composition_cache.get_size();
+  cache_size = current_state->_invert_composition_cache.get_num_entries();
   for (i = 0; i < cache_size; ++i) {
-    if (current_state->_invert_composition_cache.has_element(i)) {
-      const TransformState *other = current_state->_invert_composition_cache.get_key(i);
-      if (other != current_state) {
-        int oi = other->_invert_composition_cache.find(current_state);
-        nassertr(oi != -1, false);
+    const TransformState *other = current_state->_invert_composition_cache.get_key(i);
+    if (other != current_state) {
+      int oi = other->_invert_composition_cache.find(current_state);
+      nassertr(oi != -1, false);
 
-        const TransformState *result = other->_invert_composition_cache.get_data(oi)._result;
-        if (result != (const TransformState *)NULL) {
-          if (r_detect_reverse_cycles(start_state, result, length + 1,
-                                      this_seq, cycle_desc)) {
-            // Cycle detected.
-            if (cycle_desc != (CompositionCycleDesc *)NULL) {
-              const TransformState *other = current_state->_invert_composition_cache.get_key(i);
-              CompositionCycleDescEntry entry(other, result, false);
-              cycle_desc->push_back(entry);
-            }
-            return true;
+      const TransformState *result = other->_invert_composition_cache.get_data(oi)._result;
+      if (result != nullptr) {
+        if (r_detect_reverse_cycles(start_state, result, length + 1,
+                                    this_seq, cycle_desc)) {
+          // Cycle detected.
+          if (cycle_desc != nullptr) {
+            const TransformState *other = current_state->_invert_composition_cache.get_key(i);
+            CompositionCycleDescEntry entry(other, result, false);
+            cycle_desc->push_back(entry);
           }
+          return true;
         }
       }
     }
@@ -1987,10 +1869,8 @@ release_new() {
   nassertv(_states_lock->debug_is_locked());
 
   if (_saved_entry != -1) {
-    // nassertv(_states->find(this) == _saved_entry);
-    _saved_entry = _states->find(this);
-    _states->remove_element(_saved_entry);
     _saved_entry = -1;
+    nassertv_always(_states.remove(this));
   }
 }
 
@@ -2029,13 +1909,8 @@ remove_cache_pointers() {
 
   // There are lots of ways to do this loop wrong.  Be very careful if you
   // need to modify it for any reason.
-  int i = 0;
+  size_t i = 0;
   while (!_composition_cache.is_empty()) {
-    // Scan for the next used slot in the table.
-    while (!_composition_cache.has_element(i)) {
-      ++i;
-    }
-
     // It is possible that the "other" TransformState object is currently
     // within its own destructor.  We therefore can't use a PT() to hold its
     // pointer; that could end up calling its destructor twice.  Fortunately,
@@ -2072,7 +1947,7 @@ remove_cache_pointers() {
         // It's finally safe to let our held pointers go away.  This may have
         // cascading effects as other TransformState objects are destructed,
         // but there will be no harm done if they destruct now.
-        if (ocomp._result != (const TransformState *)NULL && ocomp._result != other) {
+        if (ocomp._result != nullptr && ocomp._result != other) {
           cache_unref_delete(ocomp._result);
         }
       }
@@ -2080,7 +1955,7 @@ remove_cache_pointers() {
 
     // It's finally safe to let our held pointers go away.  (See comment
     // above.)
-    if (comp._result != (const TransformState *)NULL && comp._result != this) {
+    if (comp._result != nullptr && comp._result != this) {
       cache_unref_delete(comp._result);
     }
   }
@@ -2088,10 +1963,6 @@ remove_cache_pointers() {
   // A similar bit of code for the invert cache.
   i = 0;
   while (!_invert_composition_cache.is_empty()) {
-    while (!_invert_composition_cache.has_element(i)) {
-      ++i;
-    }
-
     TransformState *other = (TransformState *)_invert_composition_cache.get_key(i);
     nassertv(other != this);
     Composition comp = _invert_composition_cache.get_data(i);
@@ -2105,12 +1976,12 @@ remove_cache_pointers() {
         other->_invert_composition_cache.remove_element(oi);
         _cache_stats.add_total_size(-1);
         _cache_stats.inc_dels();
-        if (ocomp._result != (const TransformState *)NULL && ocomp._result != other) {
+        if (ocomp._result != nullptr && ocomp._result != other) {
           cache_unref_delete(ocomp._result);
         }
       }
     }
-    if (comp._result != (const TransformState *)NULL && comp._result != this) {
+    if (comp._result != nullptr && comp._result != this) {
       cache_unref_delete(comp._result);
     }
   }
@@ -2192,7 +2063,7 @@ calc_singular() {
   // is asking whether we're singular).
 
   // This should be NULL if no one has called calc_singular() yet.
-  nassertv(_inv_mat == (LMatrix4 *)NULL);
+  nassertv(_inv_mat == nullptr);
   _inv_mat = new LMatrix4;
 
   if ((_flags & F_mat_known) == 0) {
@@ -2203,7 +2074,7 @@ calc_singular() {
   if (!inverted) {
     _flags |= F_is_singular;
     delete _inv_mat;
-    _inv_mat = (LMatrix4 *)NULL;
+    _inv_mat = nullptr;
   }
   _flags |= F_singular_known;
 }

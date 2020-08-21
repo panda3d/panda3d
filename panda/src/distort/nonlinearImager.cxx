@@ -28,7 +28,7 @@
  */
 NonlinearImager::
 NonlinearImager() {
-  _engine = (GraphicsEngine *)NULL;
+  _engine = nullptr;
   _stale = true;
 }
 
@@ -40,7 +40,7 @@ NonlinearImager::
   remove_all_screens();
   remove_all_viewers();
 
-  if (_recompute_task != (AsyncTask *)NULL) {
+  if (_recompute_task != nullptr) {
     AsyncTaskManager *task_mgr = AsyncTaskManager::get_global_ptr();
     task_mgr->remove(_recompute_task);
   }
@@ -49,6 +49,8 @@ NonlinearImager::
 /**
  * This version of this method is deprecated and will soon be removed.  Use
  * the version that takes two parameters instead.
+ *
+ * @deprecated Use the version that takes two parameters instead.
  */
 int NonlinearImager::
 add_screen(ProjectionScreen *screen) {
@@ -71,7 +73,7 @@ add_screen(ProjectionScreen *screen) {
  * The return value is the index number of the new screen.
  */
 int NonlinearImager::
-add_screen(const NodePath &screen, const string &name) {
+add_screen(const NodePath &screen, const std::string &name) {
   nassertr(!screen.is_empty() &&
            screen.node()->is_of_type(ProjectionScreen::get_class_type()), -1);
 
@@ -82,7 +84,7 @@ add_screen(const NodePath &screen, const string &name) {
   new_screen._screen = screen;
   new_screen._screen_node = screen_node;
   new_screen._name = name;
-  new_screen._buffer = (GraphicsOutput *)NULL;
+  new_screen._buffer = nullptr;
   new_screen._tex_width = 256;
   new_screen._tex_height = 256;
   new_screen._active = true;
@@ -167,7 +169,7 @@ get_screen(int index) const {
  */
 GraphicsOutput *NonlinearImager::
 get_buffer(int index) const {
-  nassertr(index >= 0 && index < (int)_screens.size(), (GraphicsOutput *)NULL);
+  nassertr(index >= 0 && index < (int)_screens.size(), nullptr);
   return _screens[index]._buffer;
 }
 
@@ -188,9 +190,9 @@ set_texture_size(int index, int width, int height) {
   screen._tex_width = width;
   screen._tex_height = height;
 
-  if (screen._buffer != (GraphicsOutput *)NULL) {
+  if (screen._buffer != nullptr) {
     bool removed = _engine->remove_window(screen._buffer);
-    screen._buffer = (GraphicsOutput *)NULL;
+    screen._buffer = nullptr;
     nassertv(removed);
   }
 
@@ -230,9 +232,9 @@ set_screen_active(int index, bool active) {
     }
 
     // Also remove its buffer.
-    if (screen._buffer != (GraphicsOutput *)NULL) {
+    if (screen._buffer != nullptr) {
       bool removed = _engine->remove_window(screen._buffer);
-      screen._buffer = (GraphicsOutput *)NULL;
+      screen._buffer = nullptr;
       nassertv(removed);
     }
 
@@ -276,20 +278,20 @@ get_screen_active(int index) const {
 int NonlinearImager::
 add_viewer(DisplayRegion *dr) {
   GraphicsOutput *window = dr->get_window();
-  nassertr(window != (GraphicsOutput *)NULL, -1);
+  nassertr(window != nullptr, -1);
 
   GraphicsStateGuardian *gsg = window->get_gsg();
-  nassertr(gsg != (GraphicsStateGuardian *)NULL, -1);
+  nassertr(gsg != nullptr, -1);
 
   GraphicsEngine *engine = gsg->get_engine();
-  nassertr(engine != (GraphicsEngine *)NULL, -1);
+  nassertr(engine != nullptr, -1);
 
   nassertr(_viewers.empty() || (engine == _engine), -1);
-  if (_engine == (GraphicsEngine *)NULL) {
+  if (_engine == nullptr) {
     _engine = engine;
   }
 
-  if (_recompute_task == (AsyncTask *)NULL) {
+  if (_recompute_task == nullptr) {
     _recompute_task =
       new GenericAsyncTask("nli_recompute", recompute_callback, (void *)this);
     AsyncTaskManager *task_mgr = AsyncTaskManager::get_global_ptr();
@@ -310,7 +312,7 @@ add_viewer(DisplayRegion *dr) {
   // Get the current camera off of the DisplayRegion, if any.
   viewer._viewer = dr->get_camera();
   if (viewer._viewer.is_empty()) {
-    viewer._viewer_node = (LensNode *)NULL;
+    viewer._viewer_node = nullptr;
   } else {
     viewer._viewer_node = DCAST(LensNode, viewer._viewer.node());
   }
@@ -463,7 +465,7 @@ get_num_viewers() const {
  */
 DisplayRegion *NonlinearImager::
 get_viewer(int index) const {
-  nassertr(index >= 0 && index < (int)_viewers.size(), (DisplayRegion *)NULL);
+  nassertr(index >= 0 && index < (int)_viewers.size(), nullptr);
   return _viewers[index]._dr;
 }
 
@@ -509,8 +511,8 @@ recompute() {
       }
     }
 
-    if (viewer._viewer_node != (LensNode *)NULL &&
-        viewer._viewer_node->get_lens() != (Lens *)NULL) {
+    if (viewer._viewer_node != nullptr &&
+        viewer._viewer_node->get_lens() != nullptr) {
       viewer._viewer_lens_change =
         viewer._viewer_node->get_lens()->get_last_change();
     }
@@ -540,7 +542,7 @@ recompute_if_stale() {
     size_t vi;
     for (vi = 0; vi < _viewers.size(); ++vi) {
       Viewer &viewer = _viewers[vi];
-      if (viewer._viewer_node != (LensNode *)NULL) {
+      if (viewer._viewer_node != nullptr) {
         UpdateSeq lens_change =
           viewer._viewer_node->get_lens()->get_last_change();
         if (lens_change != viewer._viewer_lens_change) {
@@ -588,16 +590,16 @@ recompute_screen(NonlinearImager::Screen &screen, size_t vi) {
   Viewer &viewer = _viewers[vi];
   PT(PandaNode) mesh =
     screen._screen_node->make_flat_mesh(screen._screen, viewer._viewer);
-  if (mesh != (PandaNode *)NULL) {
+  if (mesh != nullptr) {
     screen._meshes[vi]._mesh = viewer._internal_scene.attach_new_node(mesh);
   }
 
-  if (screen._buffer == (GraphicsOutput *)NULL) {
+  if (screen._buffer == nullptr) {
     GraphicsOutput *win = viewer._dr->get_window();
     GraphicsOutput *buffer = win->make_texture_buffer
-      (screen._name, screen._tex_width, screen._tex_height, NULL, false);
+      (screen._name, screen._tex_width, screen._tex_height, nullptr, false);
 
-    if (buffer != (GraphicsOutput *)NULL) {
+    if (buffer != nullptr) {
       screen._buffer = buffer;
       DisplayRegion *dr = buffer->make_display_region();
       dr->set_camera(screen._source_camera);
@@ -607,7 +609,7 @@ recompute_screen(NonlinearImager::Screen &screen, size_t vi) {
     }
   }
 
-  if (screen._buffer != (GraphicsOutput *)NULL) {
+  if (screen._buffer != nullptr) {
     screen._meshes[vi]._mesh.set_texture(screen._buffer->get_texture());
 
     // We don't really need to set the texture on the dark room screen, since

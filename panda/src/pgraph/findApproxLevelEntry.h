@@ -47,8 +47,8 @@ public:
                           int increment) const;
   INLINE bool is_solution(int increment) const;
 
-  void output(ostream &out) const;
-  void write_level(ostream &out, int indent_level) const;
+  void output(std::ostream &out) const;
+  void write_level(std::ostream &out, int indent_level) const;
 
   // _node_path represents the most recent node that we have previously
   // accepted as being a partial solution.
@@ -73,8 +73,8 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &
-operator << (ostream &out, const FindApproxLevelEntry &entry) {
+INLINE std::ostream &
+operator << (std::ostream &out, const FindApproxLevelEntry &entry) {
   entry.output(out);
   return out;
 }

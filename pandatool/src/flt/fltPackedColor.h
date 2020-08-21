@@ -35,7 +35,7 @@ public:
   INLINE void set_color(const LColor &color);
   INLINE void set_rgb(const LRGBColor &rgb);
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
   bool extract_record(FltRecordReader &reader);
   bool build_record(FltRecordWriter &writer) const;
 
@@ -46,7 +46,7 @@ public:
   int _r;
 };
 
-INLINE ostream &operator << (ostream &out, const FltPackedColor &color);
+INLINE std::ostream &operator << (std::ostream &out, const FltPackedColor &color);
 
 #include "fltPackedColor.I"
 

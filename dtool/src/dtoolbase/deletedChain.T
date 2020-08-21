@@ -1,25 +1,22 @@
-// Filename: deletedChain.T
-// Created by:  drose (01Apr06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file deletedChain.T
+ * @author drose
+ * @date 2006-04-01
+ */
 
 template<class Type>
 DeletedChain<Type> StaticDeletedChain<Type>::_chain;
 
-////////////////////////////////////////////////////////////////////
-//     Function: DeletedChain::allocate
-//       Access: Public
-//  Description: Allocates the memory for a new object of Type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates the memory for a new object of Type.
+ */
 template<class Type>
 INLINE Type *DeletedChain<Type>::
 allocate(size_t size, TypeHandle type_handle) {
@@ -31,14 +28,12 @@ allocate(size_t size, TypeHandle type_handle) {
   memory_hook->mark_pointer(ptr, _chain->get_buffer_size(), make_ref_ptr(ptr));
 #endif  // DO_MEMORY_USAGE
 
-  return (Type *)ptr;
+  return (Type *)ASSUME_ALIGNED(ptr, MEMORY_HOOK_ALIGNMENT);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DeletedChain::deallocate
-//       Access: Public
-//  Description: Frees the memory for an object of Type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Frees the memory for an object of Type.
+ */
 template<class Type>
 INLINE void DeletedChain<Type>::
 deallocate(Type *ptr, TypeHandle type_handle) {
@@ -57,16 +52,13 @@ deallocate(Type *ptr, TypeHandle type_handle) {
   _chain->deallocate(ptr, type_handle);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DeletedChain::validate
-//       Access: Public
-//  Description: Returns true if the pointer is valid, false if it has
-//               been deleted or if it was never a valid pointer.
-//
-//               This is only meaningful in debug mode, where
-//               USE_DELETEDCHAINFLAG is defined.  If not, this
-//               trivially returns true.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the pointer is valid, false if it has been deleted or if it
+ * was never a valid pointer.
+ *
+ * This is only meaningful in debug mode, where USE_DELETEDCHAINFLAG is
+ * defined.  If not, this trivially returns true.
+ */
 template<class Type>
 INLINE bool DeletedChain<Type>::
 validate(const Type *ptr) {
@@ -80,48 +72,37 @@ validate(const Type *ptr) {
 #endif  // USE_DELETEDCHAINFLAG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DeletedChain::make_ref_ptr
-//       Access: Public, Static
-//  Description: This method has two overloads: one that accepts a
-//               void *, and one that accepts a ReferenceCount *.  We
-//               rely on the C++ compiler to select the most
-//               appropriate one for a given type to return the
-//               ReferenceCount pointer that corresponds to a
-//               particular type, or NULL if the type does not inherit
-//               from ReferenceCount.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method has two overloads: one that accepts a void *, and one that
+ * accepts a ReferenceCount *.  We rely on the C++ compiler to select the most
+ * appropriate one for a given type to return the ReferenceCount pointer that
+ * corresponds to a particular type, or NULL if the type does not inherit from
+ * ReferenceCount.
+ */
 template<class Type>
 INLINE ReferenceCount *DeletedChain<Type>::
 make_ref_ptr(void *) {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DeletedChain::make_ref_ptr
-//       Access: Public, Static
-//  Description: This method has two overloads: one that accepts a
-//               void *, and one that accepts a ReferenceCount *.  We
-//               rely on the C++ compiler to select the most
-//               appropriate one for a given type to return the
-//               ReferenceCount pointer that corresponds to a
-//               particular type, or NULL if the type does not inherit
-//               from ReferenceCount.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method has two overloads: one that accepts a void *, and one that
+ * accepts a ReferenceCount *.  We rely on the C++ compiler to select the most
+ * appropriate one for a given type to return the ReferenceCount pointer that
+ * corresponds to a particular type, or NULL if the type does not inherit from
+ * ReferenceCount.
+ */
 template<class Type>
 INLINE ReferenceCount *DeletedChain<Type>::
 make_ref_ptr(ReferenceCount *ptr) {
   return ptr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DeletedChain::init_deleted_chain
-//       Access: Private
-//  Description: Assigns the _chain pointer if it is not already
-//               assigned.  This can't be done by a constructor, since
-//               often the DeletedChain instance is used before its
-//               static construct has had a chance to be called.
-////////////////////////////////////////////////////////////////////
+/**
+ * Assigns the _chain pointer if it is not already assigned.  This can't be
+ * done by a constructor, since often the DeletedChain instance is used before
+ * its static construct has had a chance to be called.
+ */
 template<class Type>
 void DeletedChain<Type>::
 init_deleted_chain() {
@@ -131,38 +112,32 @@ init_deleted_chain() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StaticDeletedChain::allocate
-//       Access: Public, Static
-//  Description: Allocates the memory for a new object of Type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates the memory for a new object of Type.
+ */
 template<class Type>
 INLINE Type *StaticDeletedChain<Type>::
 allocate(size_t size, TypeHandle type_handle) {
-  return _chain.allocate(size, type_handle);
+  Type *ptr = _chain.allocate(size, type_handle);
+  return (Type *)ASSUME_ALIGNED(ptr, MEMORY_HOOK_ALIGNMENT);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StaticDeletedChain::deallocate
-//       Access: Public
-//  Description: Frees the memory for an object of Type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Frees the memory for an object of Type.
+ */
 template<class Type>
 INLINE void StaticDeletedChain<Type>::
 deallocate(Type *ptr, TypeHandle type_handle) {
   _chain.deallocate(ptr, type_handle);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StaticDeletedChain::validate
-//       Access: Public
-//  Description: Returns true if the pointer is valid, false if it has
-//               been deleted or if it was never a valid pointer.
-//
-//               This is only meaningful in debug mode, where
-//               USE_DELETEDCHAINFLAG is defined.  If not, this
-//               trivially returns true.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the pointer is valid, false if it has been deleted or if it
+ * was never a valid pointer.
+ *
+ * This is only meaningful in debug mode, where USE_DELETEDCHAINFLAG is
+ * defined.  If not, this trivially returns true.
+ */
 template<class Type>
 INLINE bool StaticDeletedChain<Type>::
 validate(const Type *ptr) {

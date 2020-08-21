@@ -59,7 +59,7 @@ in_map(int from) const {
  */
 int IndexRemapper::
 map_from(int from) const {
-  map<int, int>::const_iterator mi;
+  std::map<int, int>::const_iterator mi;
   mi = _map_int.find(from);
   if (mi == _map_int.end()) {
     return from;

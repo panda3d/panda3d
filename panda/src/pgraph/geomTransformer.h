@@ -194,7 +194,7 @@ private:
   public:
     INLINE bool operator < (const NewCollectedKey &other) const;
 
-    string _name;
+    std::string _name;
     CPT(GeomVertexFormat) _format;
     Geom::UsageHint _usage_hint;
     Geom::AnimationType _animation_type;
@@ -222,7 +222,7 @@ private:
     int apply_collect_changes();
 
     CPT(GeomVertexFormat) _new_format;
-    string _vdata_name;
+    std::string _vdata_name;
     GeomEnums::UsageHint _usage_hint;
     SourceDatas _source_datas;
     SourceGeoms _source_geoms;

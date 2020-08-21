@@ -47,7 +47,7 @@ get_menu_handle() {
 void WinStatsChartMenu::
 add_to_menu_bar(HMENU menu_bar, int before_menu_id) {
   const PStatClientData *client_data = _monitor->get_client_data();
-  string thread_name;
+  std::string thread_name;
   if (_thread_index == 0) {
     // A special case for the main thread.
     thread_name = "Graphs";
@@ -149,7 +149,7 @@ add_view(HMENU parent_menu, const PStatViewLevel *view_level, bool show_level) {
   int collector = view_level->get_collector();
 
   const PStatClientData *client_data = _monitor->get_client_data();
-  string collector_name = client_data->get_collector_name(collector);
+  std::string collector_name = client_data->get_collector_name(collector);
 
   WinStatsMonitor::MenuDef menu_def(_thread_index, collector, show_level);
   int menu_id = _monitor->get_menu_id(menu_def);
@@ -169,7 +169,7 @@ add_view(HMENU parent_menu, const PStatViewLevel *view_level, bool show_level) {
     // If the collector has more than one child, add a menu entry to go
     // directly to each of its children.
     HMENU submenu = CreatePopupMenu();
-    string submenu_name = collector_name + " components";
+    std::string submenu_name = collector_name + " components";
 
     mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_SUBMENU;
     mii.fType = MFT_STRING;

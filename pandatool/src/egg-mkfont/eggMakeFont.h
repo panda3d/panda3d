@@ -46,7 +46,7 @@ public:
   void run();
 
 private:
-  static bool dispatch_range(const string &, const string &arg, void *var);
+  static bool dispatch_range(const std::string &, const std::string &arg, void *var);
   EggVertex *make_vertex(const LPoint2d &xy);
 
   void add_character(int code);
@@ -55,7 +55,7 @@ private:
   EggTexture *make_tref(PNMTextGlyph *glyph, int character);
   void add_extra_glyphs(const Filename &extra_filename);
   void r_add_extra_glyphs(EggGroupNode *egg_group);
-  static bool is_numeric(const string &str);
+  static bool is_numeric(const std::string &str);
 
 
 private:
@@ -79,8 +79,8 @@ private:
   double _palettize_scale_factor;
   Filename _input_font_filename;
   int _face_index;
-  string _output_glyph_pattern;
-  string _output_palette_pattern;
+  std::string _output_glyph_pattern;
+  std::string _output_palette_pattern;
 
   PNMTextMaker *_text_maker;
 

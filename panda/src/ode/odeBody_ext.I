@@ -14,6 +14,19 @@
 #include "odeJoint_ext.h"
 
 /**
+ * Returns the custom data associated with the OdeBody.
+ */
+INLINE PyObject *Extension<OdeBody>::
+get_data() const {
+  PyObject *data = (PyObject *)_this->get_data();
+  if (data == nullptr) {
+    data = Py_None;
+  }
+  Py_INCREF(data);
+  return data;
+}
+
+/**
  * Equivalent to get_joint().convert()
  */
 INLINE PyObject *Extension<OdeBody>::

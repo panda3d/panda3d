@@ -32,12 +32,10 @@ public:
   INLINE CycleDataLockedStageReader(const PipelineCycler<CycleDataType> &cycler,
                                     int stage, Thread *current_thread = Thread::get_current_thread());
   INLINE CycleDataLockedStageReader(const CycleDataLockedStageReader<CycleDataType> &copy);
-  INLINE void operator = (const CycleDataLockedStageReader<CycleDataType> &copy);
+  INLINE CycleDataLockedStageReader(CycleDataLockedStageReader<CycleDataType> &&from) noexcept;
 
-#if defined(USE_MOVE_SEMANTICS) && defined(DO_PIPELINING)
-  INLINE CycleDataLockedStageReader(CycleDataLockedStageReader<CycleDataType> &&from) NOEXCEPT;
-  INLINE void operator = (CycleDataLockedStageReader<CycleDataType> &&from) NOEXCEPT;
-#endif
+  INLINE void operator = (const CycleDataLockedStageReader<CycleDataType> &copy);
+  INLINE void operator = (CycleDataLockedStageReader<CycleDataType> &&from) noexcept;
 
   INLINE ~CycleDataLockedStageReader();
 

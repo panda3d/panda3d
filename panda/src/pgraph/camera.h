@@ -25,7 +25,8 @@
 #include "pointerTo.h"
 #include "pmap.h"
 #include "auxSceneData.h"
-#include "displayRegionBase.h"
+
+class DisplayRegion;
 
 /**
  * A node that can be positioned around in the scene graph to represent a
@@ -33,7 +34,7 @@
  */
 class EXPCL_PANDA_PGRAPH Camera : public LensNode {
 PUBLISHED:
-  explicit Camera(const string &name, Lens *lens = new PerspectiveLens());
+  explicit Camera(const std::string &name, Lens *lens = new PerspectiveLens());
   Camera(const Camera &copy);
 
 public:
@@ -52,8 +53,8 @@ PUBLISHED:
   INLINE const NodePath &get_scene() const;
   MAKE_PROPERTY(scene, get_scene, set_scene);
 
-  INLINE int get_num_display_regions() const;
-  INLINE DisplayRegionBase *get_display_region(int n) const;
+  INLINE size_t get_num_display_regions() const;
+  INLINE DisplayRegion *get_display_region(size_t n) const;
   MAKE_SEQ(get_display_regions, get_num_display_regions, get_display_region);
   MAKE_SEQ_PROPERTY(display_regions, get_num_display_regions, get_display_region);
 
@@ -77,29 +78,33 @@ PUBLISHED:
   INLINE CPT(RenderState) get_initial_state() const;
   MAKE_PROPERTY(initial_state, get_initial_state, set_initial_state);
 
-  INLINE void set_tag_state_key(const string &tag_state_key);
-  INLINE const string &get_tag_state_key() const;
+  INLINE void set_tag_state_key(const std::string &tag_state_key);
+  INLINE const std::string &get_tag_state_key() const;
   MAKE_PROPERTY(tag_state_key, get_tag_state_key, set_tag_state_key);
 
   INLINE void set_lod_scale(PN_stdfloat value);
   INLINE PN_stdfloat get_lod_scale() const;
   MAKE_PROPERTY(lod_scale, get_lod_scale, set_lod_scale);
 
-  void set_tag_state(const string &tag_state, const RenderState *state);
-  void clear_tag_state(const string &tag_state);
+  void set_tag_state(const std::string &tag_state, const RenderState *state);
+  void clear_tag_state(const std::string &tag_state);
   void clear_tag_states();
-  bool has_tag_state(const string &tag_state) const;
-  CPT(RenderState) get_tag_state(const string &tag_state) const;
+  bool has_tag_state(const std::string &tag_state) const;
+  CPT(RenderState) get_tag_state(const std::string &tag_state) const;
+  MAKE_MAP_PROPERTY(tag_states, has_tag_state, get_tag_state,
+                    set_tag_state, clear_tag_state);
 
   void set_aux_scene_data(const NodePath &node_path, AuxSceneData *data);
   bool clear_aux_scene_data(const NodePath &node_path);
   AuxSceneData *get_aux_scene_data(const NodePath &node_path) const;
-  void list_aux_scene_data(ostream &out) const;
+  void list_aux_scene_data(std::ostream &out) const;
   int cleanup_aux_scene_data(Thread *current_thread = Thread::get_current_thread());
+  MAKE_MAP_PROPERTY(aux_scene_data, get_aux_scene_data, get_aux_scene_data,
+                    set_aux_scene_data, clear_aux_scene_data);
 
 private:
-  void add_display_region(DisplayRegionBase *display_region);
-  void remove_display_region(DisplayRegionBase *display_region);
+  void add_display_region(DisplayRegion *display_region);
+  void remove_display_region(DisplayRegion *display_region);
 
   bool _active;
   NodePath _scene;
@@ -110,13 +115,13 @@ private:
   DrawMask _camera_mask;
   PN_stdfloat _lod_scale;
 
-  typedef pvector<DisplayRegionBase *> DisplayRegions;
+  typedef pvector<DisplayRegion *> DisplayRegions;
   DisplayRegions _display_regions;
 
   CPT(RenderState) _initial_state;
-  string _tag_state_key;
+  std::string _tag_state_key;
 
-  typedef pmap<string, CPT(RenderState) > TagStates;
+  typedef pmap<std::string, CPT(RenderState) > TagStates;
   TagStates _tag_states;
 
   typedef pmap<NodePath, PT(AuxSceneData) > AuxData;

@@ -27,6 +27,8 @@ NotifyCategoryDecl(movies, EXPCL_PANDA_MOVIES, EXPTP_PANDA_MOVIES);
 extern ConfigVariableList load_audio_type;
 extern ConfigVariableList load_video_type;
 
+extern ConfigVariableBool opus_enable_seek;
+
 extern ConfigVariableBool vorbis_enable_seek;
 extern ConfigVariableBool vorbis_seek_lap;
 

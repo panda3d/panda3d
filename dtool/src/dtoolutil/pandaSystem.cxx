@@ -15,7 +15,9 @@
 #include "pandaVersion.h"
 #include "dtool_platform.h"
 
-PandaSystem *PandaSystem::_global_ptr = NULL;
+using std::string;
+
+PandaSystem *PandaSystem::_global_ptr = nullptr;
 TypeHandle PandaSystem::_type_handle;
 
 /**
@@ -29,11 +31,6 @@ PandaSystem() :
 {
   _system_names_dirty = false;
 
-  // These are settable via Config.prc, but only in development (!NDEBUG)
-  // mode, and only if they are not already defined.
-  _package_version_string = PANDA_PACKAGE_VERSION_STR;
-  _package_host_url = PANDA_PACKAGE_HOST_URL;
-
 #ifdef STDFLOAT_DOUBLE
   add_system("stdfloat-double");
 #endif
@@ -45,6 +42,11 @@ PandaSystem() :
 #else
   set_system_tag("eigen", "vectorize", "0");
 #endif
+#ifdef __AVX__
+  set_system_tag("eigen", "avx", "1");
+#else
+  set_system_tag("eigen", "avx", "0");
+#endif
 #endif  // HAVE_EIGEN
 
 #ifdef USE_MEMORY_DLMALLOC
@@ -53,6 +55,12 @@ PandaSystem() :
   set_system_tag("system", "malloc", "ptmalloc2");
 #else
   set_system_tag("system", "malloc", "malloc");
+#endif
+
+#ifdef _LIBCPP_VERSION
+  set_system_tag("system", "stdlib", "libc++");
+#elif defined(__GLIBCXX__)
+  set_system_tag("system", "stdlib", "libstdc++");
 #endif
 }
 
@@ -71,74 +79,6 @@ PandaSystem::
 string PandaSystem::
 get_version_string() {
   return PANDA_VERSION_STR;
-}
-
-/**
- * Returns the version of the Panda3D distributable package that provides this
- * build of Panda.
- *
- * When the currently-executing version of Panda was loaded from a
- * distributable package, such as via the browser plugin, then this string
- * will be nonempty and will contain the corresponding version string.  You
- * can build applications that use this particular version of Panda by
- * requesting it in the pdef file, using "panda3d", this version string, and
- * the download host provided by get_package_host_url().
- *
- * If this string is empty, then the currently-executing Panda was built
- * independently, and is not part of a distributable package.
- *
- * This string is set explicitly at compilation time.  Normally, it should be
- * set to a nonempty string only when building a Panda3D package for
- * distribution.
- */
-string PandaSystem::
-get_package_version_string() {
-#ifdef NDEBUG
-  return PANDA_PACKAGE_VERSION_STR;
-#else
-  return get_global_ptr()->_package_version_string;
-#endif
-}
-
-/**
- * Returns the URL of the download server that provides the Panda3D
- * distributable package currently running.  This can be used, along with the
- * get_package_version_string(), to uniquely identify the running version of
- * Panda among distributable Panda versions.
- *
- * See get_package_version_string() for more information.
- *
- * This string is set explicitly at compilation time.  Normally, it should be
- * set to a nonempty string only when building a Panda3D package for
- * distribution.
- */
-string PandaSystem::
-get_package_host_url() {
-#ifdef NDEBUG
-  return PANDA_PACKAGE_HOST_URL;
-#else
-  return get_global_ptr()->_package_host_url;
-#endif
-}
-
-/**
- * Returns the current version of Panda's Core API, expressed as a string of
- * dot-delimited integers.  There are usually four integers in this version,
- * but this is not guaranteed.
- *
- * The Core API is used during the runtime (plugin) environment only.  This
- * may be the empty string if the current version of Panda is not built to
- * provide a particular Core API, which will be the normal case in a
- * development SDK.  However, you should not use this method to determine
- * whether you are running in a runtime environment or not.
- */
-string PandaSystem::
-get_p3d_coreapi_version_string() {
-#ifndef P3D_COREAPI_VERSION_STR
-  return "";
-#else
-  return P3D_COREAPI_VERSION_STR;
-#endif
 }
 
 /**
@@ -190,6 +130,14 @@ is_official_version() {
 }
 
 /**
+ * Returns the memory alignment that Panda's allocators are using.
+ */
+int PandaSystem::
+get_memory_alignment() {
+  return MEMORY_HOOK_ALIGNMENT;
+}
+
+/**
  * Returns the string defined by the distributor of this version of Panda, or
  * "homebuilt" if this version was built directly from the sources by the end-
  * user.  This is a completely arbitrary string.
@@ -207,7 +155,7 @@ string PandaSystem::
 get_compiler() {
 #if defined(_MSC_VER)
   // MSVC defines this macro.  It's an integer; we need to format it.
-  ostringstream strm;
+  std::ostringstream strm;
   strm << "MSC v." << _MSC_VER;
 
   // We also get this suite of macros that tells us what the build platform
@@ -355,7 +303,7 @@ add_system(const string &system) {
 void PandaSystem::
 set_system_tag(const string &system, const string &tag,
                const string &value) {
-  pair<Systems::iterator, bool> result;
+  std::pair<Systems::iterator, bool> result;
   result = _systems.insert(Systems::value_type(system, SystemTags(get_class_type())));
   if (result.second) {
     _system_names_dirty = true;
@@ -386,7 +334,7 @@ heap_trim(size_t pad) {
  *
  */
 void PandaSystem::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "Panda version " << get_version_string();
 }
 
@@ -394,7 +342,7 @@ output(ostream &out) const {
  *
  */
 void PandaSystem::
-write(ostream &out) const {
+write(std::ostream &out) const {
   out << *this << "\n"
       << "compiled on " << get_build_date() << " by "
       << get_distributor() << "\n"
@@ -419,7 +367,8 @@ write(ostream &out) const {
  */
 PandaSystem *PandaSystem::
 get_global_ptr() {
-  if (_global_ptr == (PandaSystem *)NULL) {
+  if (_global_ptr == nullptr) {
+    init_type();
     _global_ptr = new PandaSystem;
   }
 
@@ -441,34 +390,4 @@ reset_system_names() {
   }
 
   _system_names_dirty = false;
-}
-
-/**
- * Loads the value returned by get_package_version_string().  This is intended
- * to be called by ConfigPageManager to preload the value from the panda-
- * package-version config variable, for developer's convenience.  This has no
- * effect if the PANDA_PACKAGE_VERSION_STR configure variable is defined at
- * compilation time.  This also has no effect in NDEBUG mode.
- */
-void PandaSystem::
-set_package_version_string(const string &package_version_string) {
-  _package_version_string = PANDA_PACKAGE_VERSION_STR;
-  if (_package_version_string.empty()) {
-    _package_version_string = package_version_string;
-  }
-}
-
-/**
- * Loads the value returned by get_package_host_url().  This is intended to be
- * called by ConfigPageManager to preload the value from the panda-package-
- * host-url config variable, for developer's convenience.  This has no effect
- * if the PANDA_PACKAGE_HOST_URL configure variable is defined at compilation
- * time.  This also has no effect in NDEBUG mode.
- */
-void PandaSystem::
-set_package_host_url(const string &package_host_url) {
-  _package_host_url = PANDA_PACKAGE_HOST_URL;
-  if (_package_host_url.empty()) {
-    _package_host_url = package_host_url;
-  }
 }

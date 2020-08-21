@@ -21,6 +21,9 @@ ThreadPosixImpl(Thread *parent_obj) :
   _joinable = false;
   _detached = false;
   _status = S_new;
+#ifdef ANDROID
+  _jni_env = nullptr;
+#endif
 }
 
 /**
@@ -60,6 +63,9 @@ bind_thread(Thread *thread) {
   }
   int result = pthread_setspecific(_pt_ptr_index, thread);
   nassertv(result == 0);
+#ifdef ANDROID
+  bind_java_thread();
+#endif
 }
 
 /**
@@ -95,7 +101,7 @@ sleep(double seconds) {
   struct timespec rqtp;
   rqtp.tv_sec = time_t(seconds);
   rqtp.tv_nsec = long((seconds - (double)rqtp.tv_sec) * 1000000000.0);
-  nanosleep(&rqtp, NULL);
+  nanosleep(&rqtp, nullptr);
 }
 
 /**
@@ -112,3 +118,13 @@ yield() {
 INLINE void ThreadPosixImpl::
 consider_yield() {
 }
+
+#ifdef ANDROID
+/**
+ * Returns the JNIEnv object for the current thread.
+ */
+INLINE JNIEnv *ThreadPosixImpl::
+get_jni_env() const {
+  return _jni_env;
+}
+#endif

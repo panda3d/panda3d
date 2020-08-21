@@ -23,8 +23,8 @@ PGMouseWatcherGroup::
 ~PGMouseWatcherGroup() {
   // When the MouseWatcherGroup destructs for whatever reason, the PGTop
   // object should lose its MouseWatcher.
-  if (_top != (PGTop *)NULL) {
-    _top->_watcher_group = (PGMouseWatcherGroup *)NULL;
-    _top->set_mouse_watcher((MouseWatcher *)NULL);
+  if (_top != nullptr) {
+    _top->_watcher_group = nullptr;
+    _top->set_mouse_watcher(nullptr);
   }
 }

@@ -18,7 +18,6 @@
 #include "nodePath.h"
 #include "dcbase.h"
 #include "dcPacker.h"
-#include "dcPython.h"  // to pick up Python.h
 #include "clockObject.h"
 
 class DCClass;
@@ -28,7 +27,7 @@ class CConnectionRepository;
  * This class defines some basic methods of DistributedSmoothNodeBase which
  * have been moved into C++ as a performance optimization.
  */
-class EXPCL_DIRECT CDistributedSmoothNodeBase {
+class CDistributedSmoothNodeBase {
 PUBLISHED:
   CDistributedSmoothNodeBase();
   ~CDistributedSmoothNodeBase();
@@ -69,7 +68,7 @@ private:
   INLINE void d_setSmPosHpr(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z, PN_stdfloat h, PN_stdfloat p, PN_stdfloat r);
   INLINE void d_setSmPosHprL(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z, PN_stdfloat h, PN_stdfloat p, PN_stdfloat r, uint64_t l);
 
-  void begin_send_update(DCPacker &packer, const string &field_name);
+  void begin_send_update(DCPacker &packer, const std::string &field_name);
   void finish_send_update(DCPacker &packer);
 
   enum Flags {

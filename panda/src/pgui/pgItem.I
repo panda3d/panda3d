@@ -15,7 +15,7 @@
  *
  */
 INLINE void PGItem::
-set_name(const string &name) {
+set_name(const std::string &name) {
   Namable::set_name(name);
   _lock.set_name(name);
 }
@@ -42,11 +42,11 @@ get_region() const {
 INLINE void PGItem::
 set_notify(PGItemNotify *notify) {
   LightReMutexHolder holder(_lock);
-  if (_notify != (PGItemNotify *)NULL) {
+  if (_notify != nullptr) {
     _notify->remove_item(this);
   }
   _notify = notify;
-  if (_notify != (PGItemNotify *)NULL) {
+  if (_notify != nullptr) {
     _notify->add_item(this);
   }
 }
@@ -58,7 +58,7 @@ set_notify(PGItemNotify *notify) {
 INLINE bool PGItem::
 has_notify() const {
   LightReMutexHolder holder(_lock);
-  return (_notify != (PGItemNotify *)NULL);
+  return (_notify != nullptr);
 }
 
 /**
@@ -203,11 +203,24 @@ get_suppress_flags() const {
 }
 
 /**
+ * Returns the Node that is the root of the subgraph that will be drawn when
+ * the PGItem is in the indicated state.  The first time this is called for a
+ * particular state index, it may create the Node.
+ */
+INLINE NodePath &PGItem::
+get_state_def(int state) {
+  nassertr(state >= 0 && state < 1000, get_state_def(0));  // Sanity check.
+
+  LightReMutexHolder holder(_lock);
+  return do_get_state_def(state);
+}
+
+/**
  * Returns the unique ID assigned to this PGItem.  This will be assigned to
  * the region created with the MouseWatcher, and will thus be used to generate
  * event names.
  */
-INLINE const string &PGItem::
+INLINE const std::string &PGItem::
 get_id() const {
   LightReMutexHolder holder(_lock);
   return _region->get_name();
@@ -222,7 +235,7 @@ get_id() const {
  * decide to redefine the ID to be something possibly more meaningful.
  */
 INLINE void PGItem::
-set_id(const string &id) {
+set_id(const std::string &id) {
   LightReMutexHolder holder(_lock);
   _region->set_name(id);
 }
@@ -231,7 +244,7 @@ set_id(const string &id) {
  * Returns the prefix that is used to define the enter event for all PGItems.
  * The enter event is the concatenation of this string followed by get_id().
  */
-INLINE string PGItem::
+INLINE std::string PGItem::
 get_enter_prefix() {
   return "enter-";
 }
@@ -240,7 +253,7 @@ get_enter_prefix() {
  * Returns the prefix that is used to define the exit event for all PGItems.
  * The exit event is the concatenation of this string followed by get_id().
  */
-INLINE string PGItem::
+INLINE std::string PGItem::
 get_exit_prefix() {
   return "exit-";
 }
@@ -249,7 +262,7 @@ get_exit_prefix() {
  * Returns the prefix that is used to define the within event for all PGItems.
  * The within event is the concatenation of this string followed by get_id().
  */
-INLINE string PGItem::
+INLINE std::string PGItem::
 get_within_prefix() {
   return "within-";
 }
@@ -259,7 +272,7 @@ get_within_prefix() {
  * PGItems.  The without event is the concatenation of this string followed by
  * get_id().
  */
-INLINE string PGItem::
+INLINE std::string PGItem::
 get_without_prefix() {
   return "without-";
 }
@@ -271,7 +284,7 @@ get_without_prefix() {
  *
  * Unlike most item events, this event is thrown with no parameters.
  */
-INLINE string PGItem::
+INLINE std::string PGItem::
 get_focus_in_prefix() {
   return "fin-";
 }
@@ -283,7 +296,7 @@ get_focus_in_prefix() {
  *
  * Unlike most item events, this event is thrown with no parameters.
  */
-INLINE string PGItem::
+INLINE std::string PGItem::
 get_focus_out_prefix() {
   return "fout-";
 }
@@ -293,7 +306,7 @@ get_focus_out_prefix() {
  * The press event is the concatenation of this string followed by a button
  * name, followed by a hyphen and get_id().
  */
-INLINE string PGItem::
+INLINE std::string PGItem::
 get_press_prefix() {
   return "press-";
 }
@@ -303,7 +316,7 @@ get_press_prefix() {
  * The repeat event is the concatenation of this string followed by a button
  * name, followed by a hyphen and get_id().
  */
-INLINE string PGItem::
+INLINE std::string PGItem::
 get_repeat_prefix() {
   return "repeat-";
 }
@@ -313,7 +326,7 @@ get_repeat_prefix() {
  * PGItems.  The release event is the concatenation of this string followed by
  * a button name, followed by a hyphen and get_id().
  */
-INLINE string PGItem::
+INLINE std::string PGItem::
 get_release_prefix() {
   return "release-";
 }
@@ -323,7 +336,7 @@ get_release_prefix() {
  * PGItems.  The keystroke event is the concatenation of this string followed
  * by a hyphen and get_id().
  */
-INLINE string PGItem::
+INLINE std::string PGItem::
 get_keystroke_prefix() {
   return "keystroke-";
 }
@@ -332,7 +345,7 @@ get_keystroke_prefix() {
  * Returns the event name that will be thrown when the item is active and the
  * mouse enters its frame, but not any nested frames.
  */
-INLINE string PGItem::
+INLINE std::string PGItem::
 get_enter_event() const {
   LightReMutexHolder holder(_lock);
   return get_enter_prefix() + get_id();
@@ -342,7 +355,7 @@ get_enter_event() const {
  * Returns the event name that will be thrown when the item is active and the
  * mouse exits its frame, or enters a nested frame.
  */
-INLINE string PGItem::
+INLINE std::string PGItem::
 get_exit_event() const {
   LightReMutexHolder holder(_lock);
   return get_exit_prefix() + get_id();
@@ -354,7 +367,7 @@ get_exit_event() const {
  * enter_event in that the mouse is considered within the frame even if it is
  * also within a nested frame.
  */
-INLINE string PGItem::
+INLINE std::string PGItem::
 get_within_event() const {
   LightReMutexHolder holder(_lock);
   return get_within_prefix() + get_id();
@@ -366,7 +379,7 @@ get_within_event() const {
  * different from the exit_event in that the mouse is considered within the
  * frame even if it is also within a nested frame.
  */
-INLINE string PGItem::
+INLINE std::string PGItem::
 get_without_event() const {
   LightReMutexHolder holder(_lock);
   return get_without_prefix() + get_id();
@@ -376,7 +389,7 @@ get_without_event() const {
  * Returns the event name that will be thrown when the item gets the keyboard
  * focus.
  */
-INLINE string PGItem::
+INLINE std::string PGItem::
 get_focus_in_event() const {
   LightReMutexHolder holder(_lock);
   return get_focus_in_prefix() + get_id();
@@ -386,7 +399,7 @@ get_focus_in_event() const {
  * Returns the event name that will be thrown when the item loses the keyboard
  * focus.
  */
-INLINE string PGItem::
+INLINE std::string PGItem::
 get_focus_out_event() const {
   LightReMutexHolder holder(_lock);
   return get_focus_out_prefix() + get_id();
@@ -397,7 +410,7 @@ get_focus_out_event() const {
  * indicated mouse or keyboard button is depressed while the mouse is within
  * the frame.
  */
-INLINE string PGItem::
+INLINE std::string PGItem::
 get_press_event(const ButtonHandle &button) const {
   LightReMutexHolder holder(_lock);
   return get_press_prefix() + button.get_name() + "-" + get_id();
@@ -408,7 +421,7 @@ get_press_event(const ButtonHandle &button) const {
  * indicated mouse or keyboard button is continuously held down while the
  * mouse is within the frame.
  */
-INLINE string PGItem::
+INLINE std::string PGItem::
 get_repeat_event(const ButtonHandle &button) const {
   LightReMutexHolder holder(_lock);
   return get_repeat_prefix() + button.get_name() + "-" + get_id();
@@ -419,7 +432,7 @@ get_repeat_event(const ButtonHandle &button) const {
  * indicated mouse or keyboard button, formerly clicked down is within the
  * frame, is released.
  */
-INLINE string PGItem::
+INLINE std::string PGItem::
 get_release_event(const ButtonHandle &button) const {
   LightReMutexHolder holder(_lock);
   return get_release_prefix() + button.get_name() + "-" + get_id();
@@ -429,7 +442,7 @@ get_release_event(const ButtonHandle &button) const {
  * Returns the event name that will be thrown when the item is active and any
  * key is pressed by the user.
  */
-INLINE string PGItem::
+INLINE std::string PGItem::
 get_keystroke_event() const {
   LightReMutexHolder holder(_lock);
   return get_keystroke_prefix() + get_id();

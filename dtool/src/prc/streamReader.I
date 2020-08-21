@@ -15,7 +15,7 @@
  *
  */
 INLINE StreamReader::
-StreamReader(istream &in) :
+StreamReader(std::istream &in) :
   _in(&in),
   _owns_stream(false)
 {
@@ -26,7 +26,7 @@ StreamReader(istream &in) :
  * StreamReader destructs.
  */
 INLINE StreamReader::
-StreamReader(istream *in, bool owns_stream) :
+StreamReader(std::istream *in, bool owns_stream) :
   _in(in),
   _owns_stream(owns_stream)
 {
@@ -43,7 +43,18 @@ StreamReader(const StreamReader &copy) :
 }
 
 /**
- * The copy constructor does not copy ownership of the stream.
+ * The move constructor steals ownership of the stream.
+ */
+INLINE StreamReader::
+StreamReader(StreamReader &&from) noexcept :
+  _in(from._in),
+  _owns_stream(from._owns_stream)
+{
+  from._owns_stream = false;
+}
+
+/**
+ * The copy assignment operator does not copy ownership of the stream.
  */
 INLINE void StreamReader::
 operator = (const StreamReader &copy) {
@@ -52,6 +63,19 @@ operator = (const StreamReader &copy) {
   }
   _in = copy._in;
   _owns_stream = false;
+}
+
+/**
+ * The move assignment operator steals ownership of the stream.
+ */
+INLINE void StreamReader::
+operator = (StreamReader &&from) noexcept {
+  if (_owns_stream) {
+    delete _in;
+  }
+  _in = from._in;
+  _owns_stream = from._owns_stream;
+  from._owns_stream = false;
 }
 
 /**
@@ -67,7 +91,7 @@ INLINE StreamReader::
 /**
  * Returns the stream in use.
  */
-INLINE istream *StreamReader::
+INLINE std::istream *StreamReader::
 get_istream() const {
   return _in;
 }

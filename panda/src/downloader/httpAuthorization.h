@@ -33,10 +33,10 @@ class URLSpec;
  * in the past, which can possibly be re-used for future requests to the same
  * server.
  */
-class EXPCL_PANDAEXPRESS HTTPAuthorization : public ReferenceCount {
+class EXPCL_PANDA_DOWNLOADER HTTPAuthorization : public ReferenceCount {
 public:
-  typedef pmap<string, string> Tokens;
-  typedef pmap<string, Tokens> AuthenticationSchemes;
+  typedef pmap<std::string, std::string> Tokens;
+  typedef pmap<std::string, Tokens> AuthenticationSchemes;
 
 protected:
   HTTPAuthorization(const Tokens &tokens, const URLSpec &url,
@@ -44,28 +44,28 @@ protected:
 public:
   virtual ~HTTPAuthorization();
 
-  virtual const string &get_mechanism() const=0;
+  virtual const std::string &get_mechanism() const=0;
   virtual bool is_valid();
 
-  INLINE const string &get_realm() const;
+  INLINE const std::string &get_realm() const;
   INLINE const vector_string &get_domain() const;
 
-  virtual string generate(HTTPEnum::Method method, const string &request_path,
-                          const string &username, const string &body)=0;
+  virtual std::string generate(HTTPEnum::Method method, const std::string &request_path,
+                          const std::string &username, const std::string &body)=0;
 
   static void parse_authentication_schemes(AuthenticationSchemes &schemes,
-                                           const string &field_value);
+                                           const std::string &field_value);
   static URLSpec get_canonical_url(const URLSpec &url);
-  static string base64_encode(const string &s);
-  static string base64_decode(const string &s);
+  static std::string base64_encode(const std::string &s);
+  static std::string base64_decode(const std::string &s);
 
 protected:
-  static size_t scan_quoted_or_unquoted_string(string &result,
-                                               const string &source,
+  static size_t scan_quoted_or_unquoted_string(std::string &result,
+                                               const std::string &source,
                                                size_t start);
 
 protected:
-  string _realm;
+  std::string _realm;
   vector_string _domain;
 };
 

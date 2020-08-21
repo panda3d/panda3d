@@ -45,6 +45,8 @@ public:
   int __traverse__(visitproc visit, void *arg);
 
 private:
+  PyObject *do_get_python_tags();
+
   // This is what actually stores the Python tags.
   class PythonTagDataImpl : public PandaNode::PythonTagData {
   public:

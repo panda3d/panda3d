@@ -1,7 +1,6 @@
-
-
 from direct.directnotify import DirectNotifyGlobal
 from direct.showbase import DirectObject
+from direct.showbase.PythonUtil import SerialNumGen
 
 # internal class, don't create these on your own
 class InputStateToken:
@@ -21,6 +20,9 @@ class InputStateToken:
     def __hash__(self):
         return self._hash
 
+    #snake_case alias:
+    is_valid = isValid
+
 class InputStateWatchToken(InputStateToken, DirectObject.DirectObject):
     def release(self):
         self._inputState._ignore(self)
@@ -38,6 +40,9 @@ class InputStateTokenGroup:
         for token in self._tokens:
             token.release()
         self._tokens = []
+
+    #snake_case alias:
+    add_token = addToken
 
 class InputState(DirectObject.DirectObject):
     """
@@ -130,14 +135,16 @@ class InputState(DirectObject.DirectObject):
 
     def watch(self, name, eventOn, eventOff, startState=False, inputSource=None):
         """
-        This returns a token; hold onto the token and call token.release() when you
-        no longer want to watch for these events.
+        This returns a token; hold onto the token and call token.release() when
+        you no longer want to watch for these events.
 
-        # set up
-        token = inputState.watch('forward', 'w', 'w-up', inputSource=inputState.WASD)
-         ...
-        # tear down
-        token.release()
+        Example::
+
+            # set up
+            token = inputState.watch('forward', 'w', 'w-up', inputSource=inputState.WASD)
+            ...
+            # tear down
+            token.release()
         """
         assert self.debugPrint(
             "watch(name=%s, eventOn=%s, eventOff=%s, startState=%s)"%(
@@ -186,15 +193,16 @@ class InputState(DirectObject.DirectObject):
         """
         Force isSet(name) to return 'value'.
 
-        This returns a token; hold onto the token and call token.release() when you
-        no longer want to force the state.
+        This returns a token; hold onto the token and call token.release() when
+        you no longer want to force the state.
 
-        example:
-        # set up
-        token=inputState.force('forward', True, inputSource='myForwardForcer')
-         ...
-        # tear down
-        token.release()
+        Example::
+
+            # set up
+            token = inputState.force('forward', True, inputSource='myForwardForcer')
+            ...
+            # tear down
+            token.release()
         """
         token = InputStateForceToken(self)
         self._token2forceInfo[token] = (name, inputSource)
@@ -235,3 +243,10 @@ class InputState(DirectObject.DirectObject):
         """for debugging"""
         return self.notify.debug(
             "%s (%s) %s"%(id(self), len(self._state), message))
+
+    #snake_case alias:
+    watch_with_modifiers = watchWithModifiers
+    is_set = isSet
+    get_event_name = getEventName
+    debug_print = debugPrint
+    release_inputs = releaseInputs

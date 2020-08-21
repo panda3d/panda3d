@@ -27,6 +27,10 @@
  * properties for a window after it has been opened.
  */
 class EXPCL_PANDA_DISPLAY WindowProperties {
+public:
+  WindowProperties();
+  INLINE WindowProperties(const WindowProperties &copy);
+
 PUBLISHED:
   enum ZOrder {
     Z_bottom,
@@ -40,8 +44,9 @@ PUBLISHED:
     M_confined,
   };
 
-  WindowProperties();
-  INLINE WindowProperties(const WindowProperties &copy);
+  EXTENSION(WindowProperties(PyObject *self, PyObject *args, PyObject *kwds));
+
+PUBLISHED:
   void operator = (const WindowProperties &copy);
   INLINE ~WindowProperties();
 
@@ -49,7 +54,10 @@ PUBLISHED:
   static WindowProperties get_default();
   static void set_default(const WindowProperties &default_properties);
   static void clear_default();
+  MAKE_PROPERTY(config_properties, get_config_properties);
+  MAKE_PROPERTY(default, get_default, set_default);
 
+  static WindowProperties size(const LVecBase2i &size);
   static WindowProperties size(int x_size, int y_size);
 
   bool operator == (const WindowProperties &other) const;
@@ -83,8 +91,8 @@ PUBLISHED:
   MAKE_PROPERTY2(mouse_mode, has_mouse_mode, get_mouse_mode,
                              set_mouse_mode, clear_mouse_mode);
 
-  INLINE void set_title(const string &title);
-  INLINE const string &get_title() const;
+  INLINE void set_title(const std::string &title);
+  INLINE const std::string &get_title() const;
   INLINE bool has_title() const;
   INLINE void clear_title();
   MAKE_PROPERTY2(title, has_title, get_title, set_title, clear_title);
@@ -123,6 +131,13 @@ PUBLISHED:
   INLINE void clear_minimized();
   MAKE_PROPERTY2(minimized, has_minimized, get_minimized,
                             set_minimized, clear_minimized);
+
+  INLINE void set_maximized(bool maximized);
+  INLINE bool get_maximized() const;
+  INLINE bool has_maximized() const;
+  INLINE void clear_maximized();
+  MAKE_PROPERTY2(maximized, has_maximized, get_maximized,
+                            set_maximized, clear_maximized);
 
   INLINE void set_raw_mice(bool raw_mice);
   INLINE bool get_raw_mice() const;
@@ -163,7 +178,7 @@ PUBLISHED:
   MAKE_PROPERTY2(z_order, has_z_order, get_z_order, set_z_order, clear_z_order);
 
   void set_parent_window(size_t parent);
-  INLINE void set_parent_window(WindowHandle *parent_window = NULL);
+  INLINE void set_parent_window(WindowHandle *parent_window = nullptr);
   INLINE WindowHandle *get_parent_window() const;
   INLINE bool has_parent_window() const;
   INLINE void clear_parent_window();
@@ -172,7 +187,7 @@ PUBLISHED:
 
   void add_properties(const WindowProperties &other);
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
 private:
   // This bitmask indicates which of the parameters in the properties
@@ -194,6 +209,7 @@ private:
     S_mouse_mode           = 0x02000,
     S_parent_window        = 0x04000,
     S_raw_mice             = 0x08000,
+    S_maximized            = 0x10000,
   };
 
   // This bitmask represents the truefalse settings for various boolean flags
@@ -203,6 +219,7 @@ private:
     F_fullscreen     = S_fullscreen,
     F_foreground     = S_foreground,
     F_minimized      = S_minimized,
+    F_maximized      = S_maximized,
     F_open           = S_open,
     F_cursor_hidden  = S_cursor_hidden,
     F_fixed_size     = S_fixed_size,
@@ -213,7 +230,7 @@ private:
   LPoint2i _origin;
   LVector2i _size;
   MouseMode _mouse_mode;
-  string _title;
+  std::string _title;
   Filename _cursor_filename;
   Filename _icon_filename;
   ZOrder _z_order;
@@ -223,18 +240,18 @@ private:
   static WindowProperties *_default_properties;
 };
 
-EXPCL_PANDA_DISPLAY ostream &
-operator << (ostream &out, WindowProperties::ZOrder z_order);
-EXPCL_PANDA_DISPLAY istream &
-operator >> (istream &in, WindowProperties::ZOrder &z_order);
+EXPCL_PANDA_DISPLAY std::ostream &
+operator << (std::ostream &out, WindowProperties::ZOrder z_order);
+EXPCL_PANDA_DISPLAY std::istream &
+operator >> (std::istream &in, WindowProperties::ZOrder &z_order);
 
-EXPCL_PANDA_DISPLAY ostream &
-operator << (ostream &out, WindowProperties::MouseMode mode);
-EXPCL_PANDA_DISPLAY istream &
-operator >> (istream &in, WindowProperties::MouseMode &mode);
+EXPCL_PANDA_DISPLAY std::ostream &
+operator << (std::ostream &out, WindowProperties::MouseMode mode);
+EXPCL_PANDA_DISPLAY std::istream &
+operator >> (std::istream &in, WindowProperties::MouseMode &mode);
 
 
-INLINE ostream &operator << (ostream &out, const WindowProperties &properties);
+INLINE std::ostream &operator << (std::ostream &out, const WindowProperties &properties);
 
 #include "windowProperties.I"
 

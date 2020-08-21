@@ -1,0 +1,10 @@
+forcetype std::ofstream
+forcetype std::ifstream
+forcetype std::fstream
+
+forcetype std::ios_base
+forcetype std::basic_ios<char>
+forcetype std::ios
+forcetype std::istream
+forcetype std::ostream
+forcetype std::iostream

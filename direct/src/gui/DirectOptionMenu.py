@@ -1,12 +1,18 @@
-"""Undocumented Module"""
+"""Implements a pop-up menu containing multiple clickable options.
+
+See the :ref:`directoptionmenu` page in the programming manual for a more
+in-depth explanation and an example of how to use this class.
+"""
 
 __all__ = ['DirectOptionMenu']
 
 from panda3d.core import *
+from direct.showbase import ShowBaseGlobal
 from . import DirectGuiGlobals as DGG
 from .DirectButton import *
 from .DirectLabel import *
 from .DirectFrame import *
+
 
 class DirectOptionMenu(DirectButton):
     """
@@ -22,10 +28,12 @@ class DirectOptionMenu(DirectButton):
             # List of items to display on the popup menu
             ('items',       [],             self.setItems),
             # Initial item to display on menu button
-            # Can be an interger index or the same string as the button
+            # Can be an integer index or the same string as the button
             ('initialitem', None,           DGG.INITOPT),
             # Amount of padding to place around popup button indicator
             ('popupMarkerBorder', (.1, .1), None),
+            # The initial position of the popup marker
+            ('popupMarker_pos', None, None),
             # Background color to use to highlight popup menu items
             ('highlightColor', (.5, .5, .5, 1), None),
             # Extra scale to use on highlight popup menu items
@@ -50,6 +58,8 @@ class DirectOptionMenu(DirectButton):
             frameSize = (-0.5, 0.5, -0.2, 0.2),
             scale = 0.4,
             relief = DGG.RAISED)
+        # Record any user specified popup marker position
+        self.initPopupMarkerPos = self['popupMarker_pos']
         # This needs to popup the menu too
         self.popupMarker.bind(DGG.B1PRESS, self.showPopupMenu)
         # Check if item is highlighted on release and select it if it is
@@ -64,6 +74,10 @@ class DirectOptionMenu(DirectButton):
         self.popupMenu = None
         self.selectedIndex = None
         self.highlightedIndex = None
+        if 'item_text_scale' in kw:
+            self._prevItemTextScale = kw['item_text_scale']
+        else:
+            self._prevItemTextScale = (1,1)
         # A big screen encompassing frame to catch the cancel clicks
         self.cancelFrame = self.createcomponent(
             'cancelframe', (), None,
@@ -73,6 +87,7 @@ class DirectOptionMenu(DirectButton):
             state = 'normal')
         # Make sure this is on top of all the other widgets
         self.cancelFrame.setBin('gui-popup', 0)
+        self.cancelFrame.node().setBounds(OmniBoundingVolume())
         self.cancelFrame.bind(DGG.B1PRESS, self.hidePopupMenu)
         # Default action on press is to show popup menu
         self.bind(DGG.B1PRESS, self.showPopupMenu)
@@ -168,8 +183,13 @@ class DirectOptionMenu(DirectButton):
         else:
             # Or base it upon largest item
             bounds = [self.minX, self.maxX, self.minZ, self.maxZ]
-        pm.setPos(bounds[1] + pmw/2.0, 0,
-                  bounds[2] + (bounds[3] - bounds[2])/2.0)
+        if self.initPopupMarkerPos:
+            # Use specified position
+            pmPos = list(self.initPopupMarkerPos)
+        else:
+            # Or base the position on the frame size.
+            pmPos = [bounds[1] + pmw/2.0, 0, bounds[2] + (bounds[3] - bounds[2])/2.0]
+        pm.setPos(pmPos[0], pmPos[1], pmPos[2])
         # Adjust popup menu button to fit all items (or use user specified
         # frame size
         bounds[1] += pmw
@@ -184,6 +204,12 @@ class DirectOptionMenu(DirectButton):
         Adjust popup position if default position puts it outside of
         visible screen region
         """
+
+        # Needed attributes (such as minZ) won't be set unless the user has specified
+        # items to display. Let's assert that we've given items to work with.
+        items = self['items']
+        assert items and len(items) > 0, 'Cannot show an empty popup menu! You must add items!'
+
         # Show the menu
         self.popupMenu.show()
         # Make sure its at the right scale
@@ -198,27 +224,27 @@ class DirectOptionMenu(DirectButton):
         self.popupMenu.setZ(
             self, self.minZ + (self.selectedIndex + 1)*self.maxHeight)
         # Make sure the whole popup menu is visible
-        pos = self.popupMenu.getPos(render2d)
-        scale = self.popupMenu.getScale(render2d)
+        pos = self.popupMenu.getPos(ShowBaseGlobal.render2d)
+        scale = self.popupMenu.getScale(ShowBaseGlobal.render2d)
         # How are we doing relative to the right side of the screen
         maxX = pos[0] + fb[1] * scale[0]
         if maxX > 1.0:
             # Need to move menu to the left
-            self.popupMenu.setX(render2d, pos[0] + (1.0 - maxX))
+            self.popupMenu.setX(ShowBaseGlobal.render2d, pos[0] + (1.0 - maxX))
         # How about up and down?
         minZ = pos[2] + fb[2] * scale[2]
         maxZ = pos[2] + fb[3] * scale[2]
         if minZ < -1.0:
             # Menu too low, move it up
-            self.popupMenu.setZ(render2d, pos[2] + (-1.0 - minZ))
+            self.popupMenu.setZ(ShowBaseGlobal.render2d, pos[2] + (-1.0 - minZ))
         elif maxZ > 1.0:
             # Menu too high, move it down
-            self.popupMenu.setZ(render2d, pos[2] + (1.0 - maxZ))
+            self.popupMenu.setZ(ShowBaseGlobal.render2d, pos[2] + (1.0 - maxZ))
         # Also display cancel frame to catch clicks outside of the popup
         self.cancelFrame.show()
         # Position and scale cancel frame to fill entire window
-        self.cancelFrame.setPos(render2d, 0, 0, 0)
-        self.cancelFrame.setScale(render2d, 1, 1, 1)
+        self.cancelFrame.setPos(ShowBaseGlobal.render2d, 0, 0, 0)
+        self.cancelFrame.setScale(ShowBaseGlobal.render2d, 1, 1, 1)
 
     def hidePopupMenu(self, event = None):
         """ Put away popup and cancel frame """
@@ -227,6 +253,7 @@ class DirectOptionMenu(DirectButton):
 
     def _highlightItem(self, item, index):
         """ Set frame color of highlighted item, record index """
+        self._prevItemTextScale = item['text_scale']
         item['frameColor'] = self['highlightColor']
         item['frameSize'] = (self['highlightScale'][0]*self.minX, self['highlightScale'][0]*self.maxX, self['highlightScale'][1]*self.minZ, self['highlightScale'][1]*self.maxZ)
         item['text_scale'] = self['highlightScale']
@@ -236,7 +263,7 @@ class DirectOptionMenu(DirectButton):
         """ Clear frame color, clear highlightedIndex """
         item['frameColor'] = frameColor
         item['frameSize'] = (self.minX, self.maxX, self.minZ, self.maxZ)
-        item['text_scale'] = (1,1)
+        item['text_scale'] = self._prevItemTextScale
         self.highlightedIndex = None
 
     def selectHighlightedIndex(self, event = None):

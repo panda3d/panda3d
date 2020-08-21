@@ -12,122 +12,49 @@
  */
 
 #include "cocoaGraphicsPipe.h"
-// #include "cocoaGraphicsBuffer.h"
+#include "cocoaGraphicsBuffer.h"
 #include "cocoaGraphicsWindow.h"
 #include "cocoaGraphicsStateGuardian.h"
-#include "cocoaPandaApp.h"
 #include "config_cocoadisplay.h"
 #include "frameBufferProperties.h"
 #include "displayInformation.h"
 
 #import <Foundation/NSAutoreleasePool.h>
 #import <AppKit/NSApplication.h>
-#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
 #import <AppKit/NSRunningApplication.h>
-#endif
 
 #include <mach-o/arch.h>
 
 TypeHandle CocoaGraphicsPipe::_type_handle;
 
-static void init_app() {
-  if (NSApp == nil) {
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    [CocoaPandaApp sharedApplication];
-
-#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
-    [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
-#endif
-    [NSApp finishLaunching];
-    [NSApp activateIgnoringOtherApps:YES];
-
-    // Put Cocoa into thread-safe mode by spawning a thread which immediately
-    // exits.
-    NSThread* thread = [[NSThread alloc] init];
-    [thread start];
-    [thread autorelease];
-  }
-}
-
 /**
- * Uses the main screen (the one the user is most likely to be working in at
- * the moment).
+ * Takes a CoreGraphics display ID, which defaults to the main display.
  */
 CocoaGraphicsPipe::
-CocoaGraphicsPipe() {
+CocoaGraphicsPipe(CGDirectDisplayID display) : _display(display) {
   _supported_types = OT_window | OT_buffer | OT_texture_buffer;
   _is_valid = true;
 
-  init_app();
+  [[NSAutoreleasePool alloc] init];
 
-  _screen = [NSScreen mainScreen];
-  NSNumber *num = [[_screen deviceDescription] objectForKey: @"NSScreenNumber"];
-  _display = (CGDirectDisplayID) [num longValue];
+  // Put Cocoa into thread-safe mode by spawning a thread which immediately
+  // exits.
+  NSThread* thread = [[NSThread alloc] init];
+  [thread start];
+  [thread autorelease];
+
+  // We used to also obtain the corresponding NSScreen here, but this causes
+  // the application icon to start bouncing, which may be undesirable for
+  // apps that will never open a window.
 
   _display_width = CGDisplayPixelsWide(_display);
   _display_height = CGDisplayPixelsHigh(_display);
   load_display_information();
 
-  cocoadisplay_cat.debug()
-    << "Creating CocoaGraphicsPipe for main screen "
-    << _screen << " with display ID " << _display << "\n";
-}
-
-/**
- * Takes a CoreGraphics display ID.
- */
-CocoaGraphicsPipe::
-CocoaGraphicsPipe(CGDirectDisplayID display) {
-  _supported_types = OT_window | OT_buffer | OT_texture_buffer;
-  _is_valid = true;
-  _display = display;
-
-  init_app();
-
-  // Iterate over the screens to find the one with our display ID.
-  NSEnumerator *e = [[NSScreen screens] objectEnumerator];
-  while (NSScreen *screen = (NSScreen *) [e nextObject]) {
-    NSNumber *num = [[screen deviceDescription] objectForKey: @"NSScreenNumber"];
-    if (display == (CGDirectDisplayID) [num longValue]) {
-      _screen = screen;
-      break;
-    }
+  if (cocoadisplay_cat.is_debug()) {
+    cocoadisplay_cat.debug()
+      << "Creating CocoaGraphicsPipe for display ID " << _display << "\n";
   }
-
-  _display_width = CGDisplayPixelsWide(_display);
-  _display_height = CGDisplayPixelsHigh(_display);
-  load_display_information();
-
-  cocoadisplay_cat.debug()
-    << "Creating CocoaGraphicsPipe for screen "
-    << _screen << " with display ID " << _display << "\n";
-}
-
-/**
- * Takes an NSScreen pointer.
- */
-CocoaGraphicsPipe::
-CocoaGraphicsPipe(NSScreen *screen) {
-  _supported_types = OT_window | OT_buffer | OT_texture_buffer;
-  _is_valid = true;
-
-  init_app();
-
-  if (screen == nil) {
-    _screen = [NSScreen mainScreen];
-  } else {
-    _screen = screen;
-  }
-  NSNumber *num = [[_screen deviceDescription] objectForKey: @"NSScreenNumber"];
-  _display = (CGDirectDisplayID) [num longValue];
-
-  _display_width = CGDisplayPixelsWide(_display);
-  _display_height = CGDisplayPixelsHigh(_display);
-  load_display_information();
-
-  cocoadisplay_cat.debug()
-    << "Creating CocoaGraphicsPipe for screen "
-    << _screen << " with display ID " << _display << "\n";
 }
 
 /**
@@ -141,7 +68,6 @@ load_display_information() {
 
   // Display modes
   size_t num_modes = 0;
-#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
   CFArrayRef modes = CGDisplayCopyAllDisplayModes(_display, NULL);
   if (modes != NULL) {
     num_modes = CFArrayGetCount(modes);
@@ -188,33 +114,6 @@ load_display_information() {
     CFRelease(modes);
   }
 
-#else
-  CFArrayRef modes = CGDisplayAvailableModes(_display);
-  if (modes != NULL) {
-    num_modes = CFArrayGetCount(modes);
-    _display_information->_total_display_modes = num_modes;
-    _display_information->_display_mode_array = new DisplayMode[num_modes];
-  }
-
-  for (size_t i = 0; i < num_modes; ++i) {
-    CFDictionaryRef mode = (CFDictionaryRef) CFArrayGetValueAtIndex(modes, i);
-
-    CFNumberGetValue((CFNumberRef) CFDictionaryGetValue(mode, kCGDisplayWidth),
-      kCFNumberIntType, &_display_information->_display_mode_array[i].width);
-
-    CFNumberGetValue((CFNumberRef) CFDictionaryGetValue(mode, kCGDisplayHeight),
-      kCFNumberIntType, &_display_information->_display_mode_array[i].height);
-
-    CFNumberGetValue((CFNumberRef) CFDictionaryGetValue(mode, kCGDisplayBitsPerPixel),
-      kCFNumberIntType, &_display_information->_display_mode_array[i].bits_per_pixel);
-
-    CFNumberGetValue((CFNumberRef) CFDictionaryGetValue(mode, kCGDisplayRefreshRate),
-      kCFNumberIntType, &_display_information->_display_mode_array[i].refresh_rate);
-
-    _display_information->_display_mode_array[i].fullscreen_only = false;
-  }
-#endif
-
   // Get processor information
   const NXArchInfo *ainfo = NXGetLocalArchInfo();
   _display_information->_cpu_brand_string = strdup(ainfo->description);
@@ -242,7 +141,7 @@ CocoaGraphicsPipe::
  * choose between several possible GraphicsPipes available on a particular
  * platform, so the name should be meaningful and unique for a given platform.
  */
-string CocoaGraphicsPipe::
+std::string CocoaGraphicsPipe::
 get_interface_name() const {
   return "OpenGL";
 }
@@ -272,7 +171,7 @@ CocoaGraphicsPipe::get_preferred_window_thread() const {
  * Creates a new window on the pipe, if possible.
  */
 PT(GraphicsOutput) CocoaGraphicsPipe::
-make_output(const string &name,
+make_output(const std::string &name,
             const FrameBufferProperties &fb_prop,
             const WindowProperties &win_prop,
             int flags,
@@ -308,10 +207,12 @@ make_output(const string &name,
                                    flags, gsg, host);
   }
 
-  // Second thing to try: a GLGraphicsBuffer
+  // Second thing to try: a GLGraphicsBuffer.  This requires a context, so if
+  // we don't have a host window, we instead create a CocoaGraphicsBuffer,
+  // which wraps around GLGraphicsBuffer and manages a context.
 
   if (retry == 1) {
-    if (!gl_support_fbo || host == NULL ||
+    if (!gl_support_fbo ||
         (flags & (BF_require_parasite | BF_require_window)) != 0) {
       return NULL;
     }
@@ -334,33 +235,14 @@ make_output(const string &name,
         precertify = true;
       }
     }
-    return new GLGraphicsBuffer(engine, this, name, fb_prop, win_prop,
-                                flags, gsg, host);
-  }
-/*
-  // Third thing to try: a CocoaGraphicsBuffer
-  if (retry == 2) {
-    if (((flags&BF_require_parasite)!=0)||
-        ((flags&BF_require_window)!=0)||
-        ((flags&BF_resizeable)!=0)||
-        ((flags&BF_size_track_host)!=0)||
-        ((flags&BF_can_bind_layered)!=0)) {
-      return NULL;
+    if (host != NULL) {
+      return new GLGraphicsBuffer(engine, this, name, fb_prop, win_prop,
+                                  flags, gsg, host);
+    } else {
+      return new CocoaGraphicsBuffer(engine, this, name, fb_prop, win_prop,
+                                     flags, gsg, host);
     }
-
-    if (!support_rtt) {
-      if (((flags&BF_rtt_cumulative)!=0)||
-          ((flags&BF_can_bind_every)!=0)) {
-        // If we require Render-to-Texture, but can't be sure we support it,
-        // bail.
-        return NULL;
-      }
-    }
-
-    return new CocoaGraphicsBuffer(engine, this, name, fb_prop, win_prop,
-                                 flags, gsg, host);
   }
-*/
 
   // Nothing else left to try.
   return NULL;

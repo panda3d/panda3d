@@ -37,7 +37,7 @@ NeverFreeMemory() {
  */
 void *NeverFreeMemory::
 ns_alloc(size_t size) {
-  _lock.acquire();
+  _lock.lock();
 
   //NB: we no longer do alignment here.  The only class that uses this is
   // DeletedBufferChain, and we can do the alignment potentially more
@@ -46,7 +46,7 @@ ns_alloc(size_t size) {
 
   // Look for a page that has sufficient space remaining.
 
-  Pages::iterator pi = _pages.lower_bound(Page(NULL, size));
+  Pages::iterator pi = _pages.lower_bound(Page(nullptr, size));
   if (pi != _pages.end()) {
     // Here's a page with enough remaining space.
     Page page = (*pi);
@@ -55,13 +55,13 @@ ns_alloc(size_t size) {
     if (page._remaining >= min_page_remaining_size) {
       _pages.insert(page);
     }
-    _lock.release();
+    _lock.unlock();
     return result;
   }
 
   // We have to allocate a new page.  Allocate at least min_page_size bytes,
   // and then round that up to the next _page_size bytes.
-  size_t needed_size = max(size, min_page_size);
+  size_t needed_size = std::max(size, min_page_size);
   needed_size = memory_hook->round_up_to_page_size(needed_size);
   void *start = memory_hook->mmap_alloc(needed_size, false);
   _total_alloc += needed_size;
@@ -71,7 +71,7 @@ ns_alloc(size_t size) {
   if (page._remaining >= min_page_remaining_size) {
     _pages.insert(page);
   }
-  _lock.release();
+  _lock.unlock();
   return result;
 }
 
@@ -82,8 +82,8 @@ void NeverFreeMemory::
 make_global_ptr() {
   NeverFreeMemory *ptr = new NeverFreeMemory;
   void *result = AtomicAdjust::compare_and_exchange_ptr
-    ((void * TVOLATILE &)_global_ptr, (void *)NULL, (void *)ptr);
-  if (result != NULL) {
+    ((void * TVOLATILE &)_global_ptr, nullptr, (void *)ptr);
+  if (result != nullptr) {
     // Someone else got there first.
     delete ptr;
   }

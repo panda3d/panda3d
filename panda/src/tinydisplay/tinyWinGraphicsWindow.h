@@ -16,7 +16,7 @@
 
 #include "pandabase.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 
 #include "winGraphicsWindow.h"
 #include "tinyWinGraphicsPipe.h"
@@ -28,7 +28,7 @@
 class EXPCL_TINYDISPLAY TinyWinGraphicsWindow : public WinGraphicsWindow {
 public:
   TinyWinGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
-                        const string &name,
+                        const std::string &name,
                         const FrameBufferProperties &fb_prop,
                         const WindowProperties &win_prop,
                         int flags,

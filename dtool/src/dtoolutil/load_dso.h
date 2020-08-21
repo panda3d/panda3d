@@ -22,20 +22,20 @@
 // otherwise on success.  If the filename is not absolute, searches the path.
 // If the path is empty, searches the dtool directory.
 
-EXPCL_DTOOL void *
+EXPCL_DTOOL_DTOOLUTIL void *
 load_dso(const DSearchPath &path, const Filename &filename);
 
 // true indicates success
-EXPCL_DTOOL bool
+EXPCL_DTOOL_DTOOLUTIL bool
 unload_dso(void *dso_handle);
 
 // Returns the error message from the last failed load_dso() call.
 
-EXPCL_DTOOL string
+EXPCL_DTOOL_DTOOLUTIL std::string
 load_dso_error();
 
 // Returns a function pointer or other symbol from a loaded library.
-EXPCL_DTOOL void *
-get_dso_symbol(void *handle, const string &name);
+EXPCL_DTOOL_DTOOLUTIL void *
+get_dso_symbol(void *handle, const std::string &name);
 
 #endif

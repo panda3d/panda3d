@@ -22,20 +22,20 @@
  * A connected strip of triangles.  This does not normally appear in an egg
  * file; it is typically generated as a result of meshing.
  */
-class EXPCL_PANDAEGG EggTriangleStrip : public EggCompositePrimitive {
+class EXPCL_PANDA_EGG EggTriangleStrip : public EggCompositePrimitive {
 PUBLISHED:
-  INLINE EggTriangleStrip(const string &name = "");
+  INLINE explicit EggTriangleStrip(const std::string &name = "");
   INLINE EggTriangleStrip(const EggTriangleStrip &copy);
   INLINE EggTriangleStrip &operator = (const EggTriangleStrip &copy);
   virtual ~EggTriangleStrip();
 
-  virtual EggTriangleStrip *make_copy() const OVERRIDE;
+  virtual EggTriangleStrip *make_copy() const override;
 
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void write(std::ostream &out, int indent_level) const override;
 
 protected:
-  virtual int get_num_lead_vertices() const;
-  virtual bool do_triangulate(EggGroupNode *container) const;
+  virtual int get_num_lead_vertices() const override;
+  virtual bool do_triangulate(EggGroupNode *container) const override;
 
 public:
   static TypeHandle get_class_type() {
@@ -46,10 +46,13 @@ public:
     register_type(_type_handle, "EggTriangleStrip",
                   EggCompositePrimitive::get_class_type());
   }
-  virtual TypeHandle get_type() const {
+  virtual TypeHandle get_type() const override {
     return get_class_type();
   }
-  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+  virtual TypeHandle force_init_type() override {
+    init_type();
+    return get_class_type();
+  }
 
 private:
   static TypeHandle _type_handle;

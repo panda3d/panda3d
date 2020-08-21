@@ -14,16 +14,9 @@
 /**
  *
  */
-CONSTEXPR MutexSpinlockImpl::
-MutexSpinlockImpl() : _lock(0) {
-}
-
-/**
- *
- */
 INLINE void MutexSpinlockImpl::
-acquire() {
-  if (!try_acquire()) {
+lock() {
+  if (!try_lock()) {
     do_lock();
   }
 }
@@ -32,14 +25,14 @@ acquire() {
  *
  */
 INLINE bool MutexSpinlockImpl::
-try_acquire() {
-  return (AtomicAdjust::compare_and_exchange(_lock, 0, 1) == 0);
+try_lock() {
+  return !_flag.test_and_set(std::memory_order_acquire);
 }
 
 /**
  *
  */
 INLINE void MutexSpinlockImpl::
-release() {
-  AtomicAdjust::set(_lock, 0);
+unlock() {
+  _flag.clear(std::memory_order_release);
 }

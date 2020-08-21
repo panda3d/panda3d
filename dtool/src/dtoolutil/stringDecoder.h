@@ -21,24 +21,24 @@
  * byte streams.  Give it a string, then ask it to pull the characters out one
  * at a time.  This also serves as the plain old byte-at-a-time decoder.
  */
-class EXPCL_DTOOL StringDecoder {
+class EXPCL_DTOOL_DTOOLUTIL StringDecoder {
 public:
-  INLINE StringDecoder(const string &input);
+  INLINE StringDecoder(const std::string &input);
   virtual ~StringDecoder();
 
-  virtual int get_next_character();
+  virtual char32_t get_next_character();
   INLINE bool is_eof();
 
-  static void set_notify_ptr(ostream *ptr);
-  static ostream *get_notify_ptr();
+  static void set_notify_ptr(std::ostream *ptr);
+  static std::ostream *get_notify_ptr();
 
 protected:
   INLINE bool test_eof();
 
-  string _input;
+  std::string _input;
   size_t _p;
   bool _eof;
-  static ostream *_notify_ptr;
+  static std::ostream *_notify_ptr;
 };
 
 /**
@@ -46,21 +46,24 @@ protected:
  */
 class StringUtf8Decoder : public StringDecoder {
 public:
-  INLINE StringUtf8Decoder(const string &input);
+  INLINE StringUtf8Decoder(const std::string &input);
 
-  virtual int get_next_character();
+  virtual char32_t get_next_character();
 };
 
 /**
  * This decoder extracts characters two at a time to get a plain wide
- * character sequence.
+ * character sequence.  It supports surrogate pairs.
  */
-class StringUnicodeDecoder : public StringDecoder {
+class StringUtf16Decoder : public StringDecoder {
 public:
-  INLINE StringUnicodeDecoder(const string &input);
+  INLINE StringUtf16Decoder(const std::string &input);
 
-  virtual int get_next_character();
+  virtual char32_t get_next_character();
 };
+
+// Deprecated alias of StringUtf16Encoder.
+typedef StringUtf16Decoder StringUnicodeDecoder;
 
 #include "stringDecoder.I"
 

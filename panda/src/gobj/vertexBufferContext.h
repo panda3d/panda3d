@@ -47,14 +47,10 @@ public:
   INLINE void mark_loaded(const GeomVertexArrayDataHandle *reader);
   INLINE void mark_unloaded();
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
 private:
-  // This cannot be a PT(GeomVertexArrayData), because the data and the GSG
-  // both own their VertexBufferContexts!  That would create a circular
-  // reference count.
-  GeomVertexArrayData *_data;
   GeomEnums::UsageHint _usage_hint;
 
 public:
@@ -77,7 +73,7 @@ private:
   friend class PreparedGraphicsObjects;
 };
 
-inline ostream &operator << (ostream &out, const VertexBufferContext &context) {
+inline std::ostream &operator << (std::ostream &out, const VertexBufferContext &context) {
   context.output(out);
   return out;
 }

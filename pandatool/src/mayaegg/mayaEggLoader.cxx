@@ -71,6 +71,12 @@
 
 #include "mayaEggLoader.h"
 
+using std::cerr;
+using std::endl;
+using std::ostringstream;
+using std::string;
+using std::vector;
+
 class MayaEggGroup;
 class MayaEggGeom;
 class MayaEggMesh;
@@ -235,7 +241,7 @@ MayaEggTex *MayaEggLoader::GetTex(EggTexture* etex)
 {
   string name = "";
   string fn = "";
-  if (etex != NULL) {
+  if (etex != nullptr) {
     name = etex->get_name();
     fn = etex->get_fullpath().to_os_specific();
   }
@@ -293,7 +299,7 @@ MayaEggTex *MayaEggLoader::GetTex(EggTexture* etex)
       // [gjeon] to create alpha channel connection
       LoaderOptions options;
       PT(Texture) tex = TexturePool::load_texture(etex->get_fullpath(), 0, false, options);
-      if (((tex != NULL) && (tex->get_num_components() == 4))
+      if (((tex != nullptr) && (tex->get_num_components() == 4))
           || (etex->get_format() == EggTexture::F_alpha)
           || (etex->get_format() == EggTexture::F_luminance_alpha))
         dgmod.connect(filetex.findPlug("outTransparency"),shader.findPlug("transparency"));
@@ -452,7 +458,7 @@ void MayaEggJoint::AssignNames(void)
 
 MayaEggJoint *MayaEggLoader::FindJoint(EggGroup *joint)
 {
-  if (joint==(EggGroup *)NULL) {
+  if (joint==nullptr) {
     if (mayaloader_cat.is_spam()) {
       mayaloader_cat.spam() << "joint:" << joint->get_name() << " is null: " << endl;
     }
@@ -617,7 +623,7 @@ void MayaEggJoint::CreateMayaBone(MayaEggGroup *eggParent)
 
 // MayaEggGeom : base abstract class of MayaEggMesh and MayaEggNurbsSurface
 
-typedef pair<double, EggGroup *> MayaEggWeight;
+typedef std::pair<double, EggGroup *> MayaEggWeight;
 
 struct MayaEggVertex
 {
@@ -831,12 +837,12 @@ int MayaEggGeom::GetVert(EggVertex *vert, EggGroup *context)
 void MayaEggGeom::AssignNames(void)
 {
   string name = _pool->get_name();
-  int nsize = name.size();
-  if ((nsize > 6) && (name.rfind(".verts")==(nsize-6))) {
-    name.resize(nsize-6);
+  size_t nsize = name.size();
+  if (nsize > 6 && name.rfind(".verts") == (nsize - 6)) {
+    name.resize(nsize - 6);
   }
-  if ((nsize > 4) && (name.rfind(".cvs")==(nsize-4))) {
-    name.resize(nsize-4);
+  if (nsize > 4 && name.rfind(".cvs") == (nsize - 4)) {
+    name.resize(nsize - 4);
   }
 
   MFnDependencyNode dnshape(_shapeNode);
@@ -907,7 +913,7 @@ void MayaEggGeom::AddEggFlag(MString fieldName) {
 typedef phash_map<LTexCoordd, int>             TVertTable;
 typedef phash_map<LColor, int>                CVertTable;
 
-class MayaEggMesh : public MayaEggGeom
+class MayaEggMesh final : public MayaEggGeom
 {
 public:
   MColorArray         _faceColorArray;
@@ -931,7 +937,7 @@ public:
   int GetCVert(const LColor &col);
   int AddFace(unsigned numVertices, MIntArray mvertIndices, MIntArray mtvertIndices, MayaEggTex *tex);
 
-  void ConnectTextures(void);
+  void ConnectTextures(void) override;
 };
 
 int MayaEggMesh::GetTVert(const LTexCoordd &uv)
@@ -969,7 +975,9 @@ MayaEggMesh *MayaEggLoader::GetMesh(EggVertexPool *pool, EggGroup *parent)
   MayaEggMesh *result = _mesh_tab[parent];
   if (result == 0) {
     result = new MayaEggMesh;
-    result->_name = parent->get_name();
+    if (parent != nullptr) {
+      result->_name = parent->get_name();
+    }
     result->_pool = pool;
     result->_parent = parent;
     result->_vert_count = 0;
@@ -1286,7 +1294,7 @@ void MayaEggLoader::CreateSkinCluster(MayaEggGeom *M)
       perror("skinCluster index");
       return;
     }
-    skinCluster.setWeights(M->_shape_dag_path, component.object(), index, 0.0, false, NULL);
+    skinCluster.setWeights(M->_shape_dag_path, component.object(), index, 0.0, false, nullptr);
   }
 
   MFloatArray values;
@@ -1302,7 +1310,7 @@ void MayaEggLoader::CreateSkinCluster(MayaEggGeom *M)
       values[vert->_index * joints.size() + joint->_index] = (PN_stdfloat)strength;
     }
   }
-  skinCluster.setWeights(M->_shape_dag_path, component.object(), influenceIndices, values, false, NULL);
+  skinCluster.setWeights(M->_shape_dag_path, component.object(), influenceIndices, values, false, nullptr);
 
   for (unsigned int i=0; i<joints.size(); i++) {
     /*
@@ -1350,7 +1358,7 @@ void MayaEggLoader::TraverseEggNode(EggNode *node, EggGroup *context, string del
       if (etex->has_transform())
         uvtrans = etex->get_transform2d();
     } else {
-      tex = GetTex(NULL);
+      tex = GetTex(nullptr);
     }
 
     EggPolygon::const_iterator ci;
@@ -1364,7 +1372,6 @@ void MayaEggLoader::TraverseEggNode(EggNode *node, EggGroup *context, string del
     int numVertices = 0;
     for (ci = poly->begin(); ci != poly->end(); ++ci) {
       EggVertex *vtx = (*ci);
-      EggVertexPool *pool = poly->get_pool();
       LTexCoordd uv(0,0);
       if (vtx->has_uv()) {
         uv = vtx->get_uv();
@@ -1451,7 +1458,7 @@ void MayaEggLoader::TraverseEggNode(EggNode *node, EggGroup *context, string del
         uvtrans = etex->get_transform2d();
       }
     } else {
-      tex = GetTex(NULL);
+      tex = GetTex(nullptr);
     }
 
     surface->_tex = tex;
@@ -1565,8 +1572,8 @@ void MayaEggLoader::TraverseEggNode(EggNode *node, EggGroup *context, string del
         mayaloader_cat.debug() << delim+delstring << "found an EggTable: " << node->get_name() << endl;
       }
     } else if (node->is_of_type(EggXfmSAnim::get_class_type())) {
-      MayaAnim *anim = GetAnim(DCAST(EggXfmSAnim, node));
-      // anim->PrintData();
+      //MayaAnim *anim = GetAnim(DCAST(EggXfmSAnim, node));
+      //anim->PrintData();
       if (mayaloader_cat.is_debug()) {
         mayaloader_cat.debug() << delim+delstring << "found an EggXfmSAnim: " << node->get_name() << endl;
       }
@@ -1614,7 +1621,7 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
   if (mayaloader_cat.is_debug()) {
     mayaloader_cat.debug() << "root node: " << data->get_type() << endl;
   }
-  TraverseEggNode(data, NULL, "");
+  TraverseEggNode(data, nullptr, "");
 
   MStatus status;
 
@@ -1791,7 +1798,7 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
   double thickness = 0.0;
   for (ji = _joint_tab.begin(); ji != _joint_tab.end(); ++ji) {
     MayaEggJoint *joint = (*ji).second;
-    double dfo = ((*ji).second->GetPos()).length();
+    double dfo = (joint->GetPos()).length();
     if (dfo > thickness) {
       thickness = dfo;
     }
@@ -1886,15 +1893,15 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
     MFnAnimCurve mfnAnimCurveSY;
     MFnAnimCurve mfnAnimCurveSZ;
 
-    mfnAnimCurveTX.create(node, attrTX, MFnAnimCurve::kAnimCurveTL, NULL, &status);
-    mfnAnimCurveTY.create(node, attrTY, MFnAnimCurve::kAnimCurveTL, NULL, &status);
-    mfnAnimCurveTZ.create(node, attrTZ, MFnAnimCurve::kAnimCurveTL, NULL, &status);
-    mfnAnimCurveRX.create(node, attrRX, MFnAnimCurve::kAnimCurveTA, NULL, &status);
-    mfnAnimCurveRY.create(node, attrRY, MFnAnimCurve::kAnimCurveTA, NULL, &status);
-    mfnAnimCurveRZ.create(node, attrRZ, MFnAnimCurve::kAnimCurveTA, NULL, &status);
-    mfnAnimCurveSX.create(node, attrSX, MFnAnimCurve::kAnimCurveTU, NULL, &status);
-    mfnAnimCurveSY.create(node, attrSY, MFnAnimCurve::kAnimCurveTU, NULL, &status);
-    mfnAnimCurveSZ.create(node, attrSZ, MFnAnimCurve::kAnimCurveTU, NULL, &status);
+    mfnAnimCurveTX.create(node, attrTX, MFnAnimCurve::kAnimCurveTL, nullptr, &status);
+    mfnAnimCurveTY.create(node, attrTY, MFnAnimCurve::kAnimCurveTL, nullptr, &status);
+    mfnAnimCurveTZ.create(node, attrTZ, MFnAnimCurve::kAnimCurveTL, nullptr, &status);
+    mfnAnimCurveRX.create(node, attrRX, MFnAnimCurve::kAnimCurveTA, nullptr, &status);
+    mfnAnimCurveRY.create(node, attrRY, MFnAnimCurve::kAnimCurveTA, nullptr, &status);
+    mfnAnimCurveRZ.create(node, attrRZ, MFnAnimCurve::kAnimCurveTA, nullptr, &status);
+    mfnAnimCurveSX.create(node, attrSX, MFnAnimCurve::kAnimCurveTU, nullptr, &status);
+    mfnAnimCurveSY.create(node, attrSY, MFnAnimCurve::kAnimCurveTU, nullptr, &status);
+    mfnAnimCurveSZ.create(node, attrSZ, MFnAnimCurve::kAnimCurveTU, nullptr, &status);
 
     MTransformationMatrix matrix( mMat );
     MVector trans = matrix.translation(MSpace::kTransform, &status);
@@ -1908,15 +1915,15 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
     MFnAnimCurve::TangentType tangent = MFnAnimCurve::kTangentClamped;
     MTime time(_start_frame - 1, _timeUnit);
 
-    mfnAnimCurveTX.addKey(time, trans.x, tangent, tangent, NULL, &status);
-    mfnAnimCurveTY.addKey(time, trans.y, tangent, tangent, NULL, &status);
-    mfnAnimCurveTZ.addKey(time, trans.z, tangent, tangent, NULL, &status);
-    mfnAnimCurveRX.addKey(time, rot[0], tangent, tangent, NULL, &status);
-    mfnAnimCurveRY.addKey(time, rot[1], tangent, tangent, NULL, &status);
-    mfnAnimCurveRZ.addKey(time, rot[2], tangent, tangent, NULL, &status);
-    mfnAnimCurveSX.addKey(time, scale[0], tangent, tangent, NULL, &status);
-    mfnAnimCurveSY.addKey(time, scale[1], tangent, tangent, NULL, &status);
-    mfnAnimCurveSZ.addKey(time, scale[2], tangent, tangent, NULL, &status);
+    mfnAnimCurveTX.addKey(time, trans.x, tangent, tangent, nullptr, &status);
+    mfnAnimCurveTY.addKey(time, trans.y, tangent, tangent, nullptr, &status);
+    mfnAnimCurveTZ.addKey(time, trans.z, tangent, tangent, nullptr, &status);
+    mfnAnimCurveRX.addKey(time, rot[0], tangent, tangent, nullptr, &status);
+    mfnAnimCurveRY.addKey(time, rot[1], tangent, tangent, nullptr, &status);
+    mfnAnimCurveRZ.addKey(time, rot[2], tangent, tangent, nullptr, &status);
+    mfnAnimCurveSX.addKey(time, scale[0], tangent, tangent, nullptr, &status);
+    mfnAnimCurveSY.addKey(time, scale[1], tangent, tangent, nullptr, &status);
+    mfnAnimCurveSZ.addKey(time, scale[2], tangent, tangent, nullptr, &status);
 
     for (int frame = 0; frame < anim->_pool->get_num_rows(); frame++)
     {
@@ -1935,15 +1942,15 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
       status = matrix.getScale(scale, MSpace::kTransform);
       time = MTime(frame + _start_frame, _timeUnit);
 
-      mfnAnimCurveTX.addKey(time, trans.x, tangent, tangent, NULL, &status);
-      mfnAnimCurveTY.addKey(time, trans.y, tangent, tangent, NULL, &status);
-      mfnAnimCurveTZ.addKey(time, trans.z, tangent, tangent, NULL, &status);
-      mfnAnimCurveRX.addKey(time, rot[0], tangent, tangent, NULL, &status);
-      mfnAnimCurveRY.addKey(time, rot[1], tangent, tangent, NULL, &status);
-      mfnAnimCurveRZ.addKey(time, rot[2], tangent, tangent, NULL, &status);
-      mfnAnimCurveSX.addKey(time, scale[0], tangent, tangent, NULL, &status);
-      mfnAnimCurveSY.addKey(time, scale[1], tangent, tangent, NULL, &status);
-      mfnAnimCurveSZ.addKey(time, scale[2], tangent, tangent, NULL, &status);
+      mfnAnimCurveTX.addKey(time, trans.x, tangent, tangent, nullptr, &status);
+      mfnAnimCurveTY.addKey(time, trans.y, tangent, tangent, nullptr, &status);
+      mfnAnimCurveTZ.addKey(time, trans.z, tangent, tangent, nullptr, &status);
+      mfnAnimCurveRX.addKey(time, rot[0], tangent, tangent, nullptr, &status);
+      mfnAnimCurveRY.addKey(time, rot[1], tangent, tangent, nullptr, &status);
+      mfnAnimCurveRZ.addKey(time, rot[2], tangent, tangent, nullptr, &status);
+      mfnAnimCurveSX.addKey(time, scale[0], tangent, tangent, nullptr, &status);
+      mfnAnimCurveSY.addKey(time, scale[1], tangent, tangent, nullptr, &status);
+      mfnAnimCurveSZ.addKey(time, scale[2], tangent, tangent, nullptr, &status);
     }
     if (maxFrame < time) {
       maxFrame = time;
@@ -2007,8 +2014,7 @@ void MayaEggLoader::PrintData(MayaEggMesh *mesh)
 
 void MayaEggLoader::ParseFrameInfo(string comment)
 {
-  int length = 0;
-  int pos, ls, le;
+  size_t pos, ls, le;
 
   pos = comment.find("-fri");
   if (pos != string::npos) {
@@ -2139,7 +2145,7 @@ bool MayaEggLoader::ConvertEggFile(const char *name, bool merge, bool model, boo
 MObject MayaEggLoader::GetDependencyNode(string givenName)
 {
   MObject node = MObject::kNullObj;
-  int pos;
+  size_t pos;
   string name;
 
   pos = givenName.find(":");

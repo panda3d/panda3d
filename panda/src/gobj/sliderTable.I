@@ -59,7 +59,7 @@ get_num_sliders() const {
  */
 INLINE const VertexSlider *SliderTable::
 get_slider(size_t n) const {
-  nassertr(n < _sliders.size(), NULL);
+  nassertr(n < _sliders.size(), nullptr);
   return _sliders[n]._slider;
 }
 

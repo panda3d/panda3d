@@ -49,7 +49,7 @@ void DAEToEgg::
 run() {
   if (_animation_convert != AC_both && _animation_convert != AC_none &&
       _animation_convert != AC_chan && _animation_convert != AC_model) {
-    cerr << "Unsupported animation convert option.\n";
+    std::cerr << "Unsupported animation convert option.\n";
     exit(1);
   }
 

@@ -23,7 +23,7 @@
  * to constrain simple numeric types, as well as array sizes.
  */
 template <class NUM>
-class DCNumericRange {
+class EXPCL_DIRECT_DCPARSER DCNumericRange {
 public:
   typedef NUM Number;
 
@@ -32,20 +32,20 @@ public:
   INLINE DCNumericRange(const DCNumericRange &copy);
   INLINE void operator = (const DCNumericRange &copy);
 
-  bool is_in_range(Number num) const;
+  INLINE bool is_in_range(Number num) const;
   INLINE void validate(Number num, bool &range_error) const;
 
   INLINE bool has_one_value() const;
   INLINE Number get_one_value() const;
 
-  void generate_hash(HashGenerator &hashgen) const;
+  INLINE void generate_hash(HashGenerator &hashgen) const;
 
-  void output(ostream &out, Number divisor = 1) const;
-  void output_char(ostream &out, Number divisor = 1) const;
+  INLINE void output(std::ostream &out, Number divisor = 1) const;
+  INLINE void output_char(std::ostream &out, Number divisor = 1) const;
 
 public:
   INLINE void clear();
-  bool add_range(Number min, Number max);
+  INLINE bool add_range(Number min, Number max);
 
   INLINE bool is_empty() const;
   INLINE int get_num_ranges() const;
@@ -60,8 +60,8 @@ private:
     Number _min;
     Number _max;
   };
-  INLINE void output_minmax(ostream &out, Number divisor, const MinMax &range) const;
-  INLINE void output_minmax_char(ostream &out, const MinMax &range) const;
+  INLINE void output_minmax(std::ostream &out, Number divisor, const MinMax &range) const;
+  INLINE void output_minmax_char(std::ostream &out, const MinMax &range) const;
 
   typedef pvector<MinMax> Ranges;
   Ranges _ranges;

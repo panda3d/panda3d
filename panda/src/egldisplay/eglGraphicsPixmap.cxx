@@ -12,6 +12,9 @@
  */
 
 #include "eglGraphicsPixmap.h"
+
+#ifdef HAVE_X11
+
 #include "eglGraphicsWindow.h"
 #include "eglGraphicsStateGuardian.h"
 #include "config_egldisplay.h"
@@ -27,7 +30,7 @@ TypeHandle eglGraphicsPixmap::_type_handle;
  */
 eglGraphicsPixmap::
 eglGraphicsPixmap(GraphicsEngine *engine, GraphicsPipe *pipe,
-                  const string &name,
+                  const std::string &name,
                   const FrameBufferProperties &fb_prop,
                   const WindowProperties &win_prop,
                   int flags,
@@ -37,8 +40,7 @@ eglGraphicsPixmap(GraphicsEngine *engine, GraphicsPipe *pipe,
 {
   eglGraphicsPipe *egl_pipe;
   DCAST_INTO_V(egl_pipe, _pipe);
-  _display = egl_pipe->get_display();
-  _egl_display = egl_pipe->_egl_display;
+  _egl_display = egl_pipe->get_egl_display();
   _drawable = None;
   _x_pixmap = None;
   _egl_surface = EGL_NO_SURFACE;
@@ -67,7 +69,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   PStatTimer timer(_make_current_pcollector, current_thread);
 
   begin_frame_spam(mode);
-  if (_gsg == (GraphicsStateGuardian *)NULL) {
+  if (_gsg == nullptr) {
     return false;
   }
 
@@ -110,7 +112,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 void eglGraphicsPixmap::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
-  nassertv(_gsg != (GraphicsStateGuardian *)NULL);
+  nassertv(_gsg != nullptr);
 
   if (mode == FM_render) {
     copy_to_textures();
@@ -129,7 +131,7 @@ end_frame(FrameMode mode, Thread *current_thread) {
  */
 void eglGraphicsPixmap::
 close_buffer() {
-  if (_gsg != (GraphicsStateGuardian *)NULL) {
+  if (_gsg != nullptr) {
     if (!eglMakeCurrent(_egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT)) {
       egldisplay_cat.error() << "Failed to call eglMakeCurrent: "
         << get_egl_error_string(eglGetError()) << "\n";
@@ -166,8 +168,8 @@ open_buffer() {
   eglGraphicsStateGuardian *eglgsg;
   if (_gsg == 0) {
     // There is no old gsg.  Create a new one.
-    eglgsg = new eglGraphicsStateGuardian(_engine, _pipe, NULL);
-    eglgsg->choose_pixel_format(_fb_properties, _display, egl_pipe->get_screen(), false, true);
+    eglgsg = new eglGraphicsStateGuardian(_engine, _pipe, nullptr);
+    eglgsg->choose_pixel_format(_fb_properties, egl_pipe, false, false, true);
     _gsg = eglgsg;
   } else {
     // If the old gsg has the wrong pixel format, create a new one that shares
@@ -175,7 +177,7 @@ open_buffer() {
     DCAST_INTO_R(eglgsg, _gsg, false);
     if (!eglgsg->get_fb_properties().subsumes(_fb_properties)) {
       eglgsg = new eglGraphicsStateGuardian(_engine, _pipe, eglgsg);
-      eglgsg->choose_pixel_format(_fb_properties, _display, egl_pipe->get_screen(), false, true);
+      eglgsg->choose_pixel_format(_fb_properties, egl_pipe, false, false, true);
       _gsg = eglgsg;
     }
   }
@@ -187,15 +189,16 @@ open_buffer() {
   }
 
   XVisualInfo *visual_info = eglgsg->_visual;
-  if (visual_info == NULL) {
+  if (visual_info == nullptr) {
     // No X visual for this fbconfig; how can we create the pixmap?
     egldisplay_cat.error()
       << "No X visual: cannot create pixmap.\n";
     return false;
   }
 
+  _display = egl_pipe->get_display();
   _drawable = egl_pipe->get_root();
-  if (_host != NULL) {
+  if (_host != nullptr) {
     if (_host->is_of_type(eglGraphicsWindow::get_class_type())) {
       eglGraphicsWindow *win = DCAST(eglGraphicsWindow, _host);
       _drawable = win->get_xwindow();
@@ -215,7 +218,7 @@ open_buffer() {
   }
 
   nassertr(eglgsg->_fbconfig, false);
-  _egl_surface = eglCreatePixmapSurface(_egl_display, eglgsg->_fbconfig, (NativePixmapType) _x_pixmap, NULL);
+  _egl_surface = eglCreatePixmapSurface(_egl_display, eglgsg->_fbconfig, (NativePixmapType) _x_pixmap, nullptr);
 
   if (_egl_surface == EGL_NO_SURFACE) {
     egldisplay_cat.error()
@@ -241,3 +244,5 @@ open_buffer() {
   _is_valid = true;
   return true;
 }
+
+#endif  // HAVE_X11

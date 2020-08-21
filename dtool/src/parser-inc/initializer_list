@@ -32,3 +32,5 @@ namespace std {
     typedef const E* const_iterator;
   };
 }
+
+#endif

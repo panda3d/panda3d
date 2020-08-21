@@ -16,6 +16,11 @@
  */
 INLINE void PhysicalNode::
 clear() {
+  PhysicalsVector::iterator it;
+  for (it = _physicals.begin(); it != _physicals.end(); ++it) {
+    nassertd((*it)->_physical_node == this) continue;
+    (*it)->_physical_node = nullptr;
+  }
   _physicals.erase(_physicals.begin(), _physicals.end());
 }
 
@@ -24,7 +29,7 @@ clear() {
  */
 INLINE Physical *PhysicalNode::
 get_physical(size_t index) const {
-  nassertr(index < _physicals.size(), (Physical *) NULL);
+  nassertr(index < _physicals.size(), nullptr);
   return _physicals[index];
 }
 

@@ -30,7 +30,7 @@ TypeHandle RigidBodyCombiner::_type_handle;
  *
  */
 RigidBodyCombiner::
-RigidBodyCombiner(const string &name) : PandaNode(name) {
+RigidBodyCombiner(const std::string &name) : PandaNode(name) {
   set_cull_callback();
 
   _internal_root = new PandaNode(name);
@@ -90,7 +90,7 @@ collect() {
   Children cr = get_children();
   int num_children = cr.get_num_children();
   for (int i = 0; i < num_children; i++) {
-    r_collect(cr.get_child(i), RenderState::make_empty(), NULL);
+    r_collect(cr.get_child(i), RenderState::make_empty(), nullptr);
   }
 
   _vd_table.clear();
@@ -179,7 +179,7 @@ r_collect(PandaNode *node, const RenderState *state,
     int num_geoms = gnode->get_num_geoms();
     for (int i = 0; i < num_geoms; ++i) {
       PT(Geom) geom = gnode->get_geom(i)->make_copy();
-      if (next_transform != (const VertexTransform *)NULL) {
+      if (next_transform != nullptr) {
         geom->set_vertex_data(convert_vd(next_transform, geom->get_vertex_data()));
       }
       CPT(RenderState) gstate = next_state->compose(gnode->get_geom_state(i));
@@ -225,7 +225,7 @@ convert_vd(const VertexTransform *transform, const GeomVertexData *orig) {
   CPT(GeomVertexData) converted = orig->convert_to(new_format);
   PT(GeomVertexData) new_data = new GeomVertexData(*converted);
 
-  if (new_data->get_transform_blend_table() == (TransformBlendTable *)NULL) {
+  if (new_data->get_transform_blend_table() == nullptr) {
     // Create a new table that has just the one blend: all vertices hard-
     // assigned to the indicated transform.
     PT(TransformBlendTable) new_table = new TransformBlendTable;

@@ -21,8 +21,8 @@ __reduce__(PyObject *self) const {
   // object whose constructor we should call (e.g.  this), and the arguments
   // necessary to reconstruct this object.
   PyObject *this_class = PyObject_Type(self);
-  if (this_class == NULL) {
-    return NULL;
+  if (this_class == nullptr) {
+    return nullptr;
   }
 
   PyObject *result = Py_BuildValue("(O(ffffffffffffffff))", this_class,
@@ -38,9 +38,9 @@ __reduce__(PyObject *self) const {
 /**
  *
  */
-INLINE_LINMATH string Extension<FLOATNAME(LMatrix4)>::
+INLINE_LINMATH std::string Extension<FLOATNAME(LMatrix4)>::
 __repr__() const {
-  ostringstream out;
+  std::ostringstream out;
   out << "LMatrix4" << FLOATTOKEN << "("
       << MAYBE_ZERO(_this->_m(0, 0)) << ", "
       << MAYBE_ZERO(_this->_m(0, 1)) << ", "

@@ -17,6 +17,9 @@
 
 #include <ctype.h>
 
+using std::ostream;
+using std::string;
+
 
 /**
  * Writes the string to the indicated output stream.  If the string contains

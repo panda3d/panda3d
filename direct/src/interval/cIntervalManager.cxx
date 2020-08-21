@@ -108,7 +108,7 @@ add_c_interval(CInterval *interval, bool external) {
  * interval, or -1 if there is not.
  */
 int CIntervalManager::
-find_c_interval(const string &name) const {
+find_c_interval(const std::string &name) const {
   MutexHolder holder(_lock);
 
   NameIndex::const_iterator ni = _name_index.find(name);
@@ -125,7 +125,7 @@ CInterval *CIntervalManager::
 get_c_interval(int index) const {
   MutexHolder holder(_lock);
 
-  nassertr(index >= 0 && index < (int)_intervals.size(), NULL);
+  nassertr(index >= 0 && index < (int)_intervals.size(), nullptr);
   return _intervals[index]._interval;
 }
 
@@ -140,14 +140,14 @@ remove_c_interval(int index) {
 
   nassertv(index >= 0 && index < (int)_intervals.size());
   IntervalDef &def = _intervals[index];
-  nassertv(def._interval != (CInterval *)NULL);
+  nassertv(def._interval != nullptr);
 
   NameIndex::iterator ni = _name_index.find(def._interval->get_name());
   nassertv(ni != _name_index.end());
   nassertv((*ni).second == index);
   _name_index.erase(ni);
 
-  def._interval = (CInterval *)NULL;
+  def._interval = nullptr;
   def._next_slot = _first_slot;
   _first_slot = index;
 }
@@ -171,7 +171,7 @@ interrupt() {
   while (ni != _name_index.end()) {
     int index = (*ni).second;
     const IntervalDef &def = _intervals[index];
-    nassertr(def._interval != (CInterval *)NULL, num_paused);
+    nassertr(def._interval != nullptr, num_paused);
     if (def._interval->get_auto_pause() || def._interval->get_auto_finish()) {
       // This interval may be interrupted.
       if (def._interval->get_auto_pause()) {
@@ -262,7 +262,7 @@ step() {
   while (ni != _name_index.end()) {
     int index = (*ni).second;
     const IntervalDef &def = _intervals[index];
-    nassertv(def._interval != (CInterval *)NULL);
+    nassertv(def._interval != nullptr);
     if (!def._interval->step_play()) {
       // This interval is finished and wants to be removed from the active
       // list.
@@ -299,7 +299,7 @@ get_next_event() {
 
   while (_next_event_index < (int)_intervals.size()) {
     IntervalDef &def = _intervals[_next_event_index];
-    if (def._interval != (CInterval *)NULL) {
+    if (def._interval != nullptr) {
       if ((def._flags & F_external) != 0 &&
           def._interval->check_t_callback()) {
         return _next_event_index;
@@ -338,7 +338,7 @@ get_next_removal() {
 
     nassertr(index >= 0 && index < (int)_intervals.size(), -1);
     IntervalDef &def = _intervals[index];
-    def._interval = (CInterval *)NULL;
+    def._interval = nullptr;
     def._next_slot = _first_slot;
     _first_slot = index;
     return index;
@@ -351,7 +351,7 @@ get_next_removal() {
  *
  */
 void CIntervalManager::
-output(ostream &out) const {
+output(std::ostream &out) const {
   MutexHolder holder(_lock);
 
   out << "CIntervalManager, " << (int)_name_index.size() << " intervals.";
@@ -361,7 +361,7 @@ output(ostream &out) const {
  *
  */
 void CIntervalManager::
-write(ostream &out) const {
+write(std::ostream &out) const {
   MutexHolder holder(_lock);
 
   // We need to write this line so that it's clear what's going on when there
@@ -373,7 +373,7 @@ write(ostream &out) const {
     int index = (*ni).second;
     nassertv(index >= 0 && index < (int)_intervals.size());
     const IntervalDef &def = _intervals[index];
-    nassertv(def._interval != (CInterval *)NULL);
+    nassertv(def._interval != nullptr);
     out << *def._interval << "\n";
   }
 
@@ -384,7 +384,7 @@ write(ostream &out) const {
       int index = (*ri);
       nassertv(index >= 0 && index < (int)_intervals.size());
       const IntervalDef &def = _intervals[index];
-      nassertv(def._interval != (CInterval *)NULL);
+      nassertv(def._interval != nullptr);
       out << "(R)" << *def._interval << "\n";
     }
   }
@@ -395,7 +395,7 @@ write(ostream &out) const {
  */
 CIntervalManager *CIntervalManager::
 get_global_ptr() {
-  if (_global_ptr == (CIntervalManager *)NULL) {
+  if (_global_ptr == nullptr) {
     _global_ptr = new CIntervalManager;
   }
   return _global_ptr;
@@ -433,7 +433,7 @@ remove_index(int index) {
   if ((def._flags & F_external) != 0) {
     _removed.push_back(index);
   } else {
-    def._interval = (CInterval *)NULL;
+    def._interval = nullptr;
     def._next_slot = _first_slot;
     _first_slot = index;
   }

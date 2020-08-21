@@ -44,7 +44,7 @@ struct EXPCL_PANDA_PIPELINE PipelineCyclerTrueImpl : public PipelineCyclerLinks 
 private:
   PipelineCyclerTrueImpl();
 public:
-  PipelineCyclerTrueImpl(CycleData *initial_data, Pipeline *pipeline = NULL);
+  PipelineCyclerTrueImpl(CycleData *initial_data, Pipeline *pipeline = nullptr);
   PipelineCyclerTrueImpl(const PipelineCyclerTrueImpl &copy);
   void operator = (const PipelineCyclerTrueImpl &copy);
   ~PipelineCyclerTrueImpl();
@@ -94,7 +94,7 @@ public:
     INLINE CyclerMutex(PipelineCyclerTrueImpl *cycler);
 
 #ifdef DEBUG_THREADS
-    virtual void output(ostream &out) const;
+    virtual void output(std::ostream &out) const;
     PipelineCyclerTrueImpl *_cycler;
 #endif  // DEBUG_THREADS
   };
@@ -122,7 +122,10 @@ private:
   };
   CycleDataNode *_data;
   int _num_stages;
-  bool _dirty;
+
+  // This is 0 if it's clean, or set to Pipeline::_next_cycle_seq if it's
+  // scheduled to be cycled during the next cycle() call.
+  unsigned int _dirty;
 
   CyclerMutex _lock;
 

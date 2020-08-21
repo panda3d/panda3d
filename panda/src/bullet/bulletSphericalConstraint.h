@@ -11,8 +11,8 @@
  * @date 2010-03-01
  */
 
-#ifndef __BULLET_SPHERICAL_CONSTRAINT_H__
-#define __BULLET_SPHERICAL_CONSTRAINT_H__
+#ifndef BULLETSPHERICALCONSTRAINT_H
+#define BULLETSPHERICALCONSTRAINT_H
 
 #include "pandabase.h"
 
@@ -32,14 +32,13 @@ class BulletRigidBodyNode;
  * socket" joint.
  */
 class EXPCL_PANDABULLET BulletSphericalConstraint : public BulletConstraint {
-
 PUBLISHED:
-  BulletSphericalConstraint(const BulletRigidBodyNode *node_a,
-                            const LPoint3 &pivot_a);
-  BulletSphericalConstraint(const BulletRigidBodyNode *node_a,
-                            const BulletRigidBodyNode *node_b,
-                            const LPoint3 &pivot_a,
-                            const LPoint3 &pivot_b);
+  explicit BulletSphericalConstraint(const BulletRigidBodyNode *node_a,
+                                     const LPoint3 &pivot_a);
+  explicit BulletSphericalConstraint(const BulletRigidBodyNode *node_a,
+                                     const BulletRigidBodyNode *node_b,
+                                     const LPoint3 &pivot_a,
+                                     const LPoint3 &pivot_b);
   INLINE ~BulletSphericalConstraint();
 
   // Pivots
@@ -47,6 +46,9 @@ PUBLISHED:
   void set_pivot_b(const LPoint3 &pivot_b);
   LPoint3 get_pivot_in_a() const;
   LPoint3 get_pivot_in_b() const;
+
+  MAKE_PROPERTY(pivot_a, get_pivot_in_a, set_pivot_a);
+  MAKE_PROPERTY(pivot_b, get_pivot_in_b, set_pivot_b);
 
 public:
   virtual btTypedConstraint *ptr() const;
@@ -77,4 +79,4 @@ private:
 
 #include "bulletSphericalConstraint.I"
 
-#endif // __BULLET_SPHERICAL_CONSTRAINT_H__
+#endif // BULLETSPHERICALCONSTRAINT_H

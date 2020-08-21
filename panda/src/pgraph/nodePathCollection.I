@@ -12,13 +12,6 @@
  */
 
 /**
- *
- */
-INLINE NodePathCollection::
-~NodePathCollection() {
-}
-
-/**
  * Appends the other list onto the end of this one.
  */
 INLINE void NodePathCollection::

@@ -85,17 +85,20 @@ PUBLISHED:
   void offset_vertices(const GeomVertexData *data, int offset);
   int make_nonindexed(bool composite_only);
 
+  CPT(GeomVertexData) get_animated_vertex_data(bool force, Thread *current_thread = Thread::get_current_thread()) const;
+
   INLINE bool is_empty() const;
 
-  INLINE int get_num_primitives() const;
-  INLINE CPT(GeomPrimitive) get_primitive(int i) const;
+  INLINE size_t get_num_primitives() const;
+  INLINE CPT(GeomPrimitive) get_primitive(size_t i) const;
   MAKE_SEQ(get_primitives, get_num_primitives, get_primitive);
-  INLINE PT(GeomPrimitive) modify_primitive(int i);
-  void set_primitive(int i, const GeomPrimitive *primitive);
-  void add_primitive(const GeomPrimitive *primitive);
-  void remove_primitive(int i);
+  INLINE PT(GeomPrimitive) modify_primitive(size_t i);
+  void set_primitive(size_t i, const GeomPrimitive *primitive);
+  void insert_primitive(size_t i, const GeomPrimitive *primitive);
+  INLINE void add_primitive(const GeomPrimitive *primitive);
+  void remove_primitive(size_t i);
   void clear_primitives();
-  MAKE_SEQ_PROPERTY(primitives, get_num_primitives, get_primitive, set_primitive, remove_primitive);
+  MAKE_SEQ_PROPERTY(primitives, get_num_primitives, get_primitive, set_primitive, remove_primitive, insert_primitive);
 
   INLINE PT(Geom) decompose() const;
   INLINE PT(Geom) doubleside() const;
@@ -105,6 +108,7 @@ PUBLISHED:
   INLINE PT(Geom) make_points() const;
   INLINE PT(Geom) make_lines() const;
   INLINE PT(Geom) make_patches() const;
+  INLINE PT(Geom) make_adjacency() const;
 
   void decompose_in_place();
   void doubleside_in_place();
@@ -114,6 +118,7 @@ PUBLISHED:
   void make_points_in_place();
   void make_lines_in_place();
   void make_patches_in_place();
+  void make_adjacency_in_place();
 
   virtual bool copy_primitives_from(const Geom *other);
 
@@ -137,8 +142,8 @@ PUBLISHED:
   INLINE void clear_bounds();
   MAKE_PROPERTY(bounds_type, get_bounds_type, set_bounds_type);
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level = 0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level = 0) const;
 
   void clear_cache();
   void clear_cache_stage(Thread *current_thread);
@@ -153,7 +158,6 @@ PUBLISHED:
 
 public:
   bool draw(GraphicsStateGuardianBase *gsg,
-            const GeomMunger *munger,
             const GeomVertexData *vertex_data,
             bool force, Thread *current_thread) const;
 
@@ -196,7 +200,7 @@ private:
 
   void reset_geom_rendering(CData *cdata);
 
-  void combine_primitives(GeomPrimitive *a_prim, const GeomPrimitive *b_prim,
+  void combine_primitives(GeomPrimitive *a_prim, CPT(GeomPrimitive) b_prim,
                           Thread *current_thread);
 
 private:
@@ -254,9 +258,8 @@ public:
     INLINE CacheKey(const GeomVertexData *source_data,
                     const GeomMunger *modifier);
     INLINE CacheKey(const CacheKey &copy);
-#ifdef USE_MOVE_SEMANTICS
-    INLINE CacheKey(CacheKey &&from) NOEXCEPT;
-#endif
+    INLINE CacheKey(CacheKey &&from) noexcept;
+
     INLINE bool operator < (const CacheKey &other) const;
 
     CPT(GeomVertexData) _source_data;
@@ -269,13 +272,12 @@ public:
                       const GeomVertexData *source_data,
                       const GeomMunger *modifier);
     INLINE CacheEntry(Geom *source, const CacheKey &key);
-#ifdef USE_MOVE_SEMANTICS
-    INLINE CacheEntry(Geom *source, CacheKey &&key) NOEXCEPT;
-#endif
+    INLINE CacheEntry(Geom *source, CacheKey &&key) noexcept;
+
     ALLOC_DELETED_CHAIN(CacheEntry);
 
     virtual void evict_callback();
-    virtual void output(ostream &out) const;
+    virtual void output(std::ostream &out) const;
 
     Geom *_source;  // A back pointer to the containing Geom
     CacheKey _key;
@@ -293,7 +295,7 @@ public:
     }
 
   private:
-    static TypeHandle _type_handle;
+    static EXPCL_PANDA_GOBJ TypeHandle _type_handle;
   };
   typedef pmap<const CacheKey *, PT(CacheEntry), IndirectLess<CacheKey> > Cache;
 
@@ -302,7 +304,8 @@ private:
   class EXPCL_PANDA_GOBJ CData : public CycleData {
   public:
     INLINE CData();
-    INLINE CData(const CData &copy);
+    INLINE CData(GeomVertexData *data);
+
     ALLOC_DELETED_CHAIN(CData);
     virtual CycleData *make_copy() const;
     virtual void write_datagram(BamWriter *manager, Datagram &dg) const;
@@ -401,15 +404,16 @@ private:
  */
 class EXPCL_PANDA_GOBJ GeomPipelineReader : public GeomEnums {
 public:
+  INLINE GeomPipelineReader(Thread *current_thread);
   INLINE GeomPipelineReader(const Geom *object, Thread *current_thread);
-private:
-  INLINE GeomPipelineReader(const GeomPipelineReader &copy);
-  INLINE void operator = (const GeomPipelineReader &copy);
-
-public:
+  GeomPipelineReader(const GeomPipelineReader &copy) = delete;
   INLINE ~GeomPipelineReader();
+
   ALLOC_DELETED_CHAIN(GeomPipelineReader);
 
+  GeomPipelineReader &operator = (const GeomPipelineReader &copy) = delete;
+
+  INLINE void set_object(const Geom *object);
   INLINE const Geom *get_object() const;
   INLINE Thread *get_current_thread() const;
 
@@ -427,7 +431,7 @@ public:
   INLINE GeomContext *prepare_now(PreparedGraphicsObjects *prepared_objects,
                                   GraphicsStateGuardianBase *gsg) const;
 
-  bool draw(GraphicsStateGuardianBase *gsg, const GeomMunger *munger,
+  bool draw(GraphicsStateGuardianBase *gsg,
             const GeomVertexDataPipelineReader *data_reader,
             bool force) const;
 
@@ -448,7 +452,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const Geom &obj);
+INLINE std::ostream &operator << (std::ostream &out, const Geom &obj);
 
 #include "geom.I"
 

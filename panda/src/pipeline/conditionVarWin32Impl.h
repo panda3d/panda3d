@@ -17,7 +17,7 @@
 #include "pandabase.h"
 #include "selectThreadImpl.h"
 
-#if defined(WIN32_VC)
+#ifdef _WIN32
 
 #include "mutexWin32Impl.h"
 #include "pnotify.h"
@@ -25,31 +25,25 @@
 class MutexWin32Impl;
 
 /**
- * Uses Windows native calls to implement a conditionVar.
- *
- * The Windows native synchronization primitives don't actually implement a
- * full POSIX-style condition variable, but the Event primitive does a fair
- * job if we disallow notify_all() (POSIX broadcast).  See
- * ConditionVarFullWin32Impl for a full implementation that includes
- * notify_all().  This class is much simpler than that full implementation, so
- * we can avoid the overhead required to support broadcast.
+ * Uses Windows native calls to implement a ConditionVar.
  */
 class EXPCL_PANDA_PIPELINE ConditionVarWin32Impl {
 public:
   INLINE ConditionVarWin32Impl(MutexWin32Impl &mutex);
-  INLINE ~ConditionVarWin32Impl();
+  ~ConditionVarWin32Impl() = default;
 
   INLINE void wait();
   INLINE void wait(double timeout);
   INLINE void notify();
+  INLINE void notify_all();
 
 private:
-  CRITICAL_SECTION *_external_mutex;
-  HANDLE _event_signal;
+  MutexWin32Impl &_mutex;
+  CONDITION_VARIABLE _cvar = CONDITION_VARIABLE_INIT;
 };
 
 #include "conditionVarWin32Impl.I"
 
-#endif  // WIN32_VC
+#endif  // _WIN32
 
 #endif

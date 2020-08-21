@@ -12,6 +12,7 @@
  */
 
 #include "physicalNode.h"
+#include "physicsManager.h"
 
 // static stuff.
 TypeHandle PhysicalNode::_type_handle;
@@ -20,7 +21,7 @@ TypeHandle PhysicalNode::_type_handle;
  * default constructor
  */
 PhysicalNode::
-PhysicalNode(const string &name) :
+PhysicalNode(const std::string &name) :
   PandaNode(name)
 {
 }
@@ -38,6 +39,15 @@ PhysicalNode(const PhysicalNode &copy) :
  */
 PhysicalNode::
 ~PhysicalNode() {
+  PhysicalsVector::iterator it;
+  for (it = _physicals.begin(); it != _physicals.end(); ++it) {
+    Physical *physical = *it;
+    nassertd(physical->_physical_node == this) continue;
+    physical->_physical_node = nullptr;
+    if (physical->_physics_manager != nullptr) {
+      physical->_physics_manager->remove_physical(physical);
+    }
+  }
 }
 
 /**
@@ -68,10 +78,23 @@ add_physicals_from(const PhysicalNode &other) {
  */
 void PhysicalNode::
 set_physical(size_t index, Physical *physical) {
-  nassertv(index <= _physicals.size());
+  nassertv(index < _physicals.size());
 
-  _physicals[index]->_physical_node = (PhysicalNode *) NULL;
+  _physicals[index]->_physical_node = nullptr;
   _physicals[index] = physical;
+  physical->_physical_node = this;
+}
+
+/**
+ * insert operation
+ */
+void PhysicalNode::
+insert_physical(size_t index, Physical *physical) {
+  if (index > _physicals.size()) {
+    index = _physicals.size();
+  }
+
+  _physicals.insert(_physicals.begin() + index, physical);
   physical->_physical_node = this;
 }
 
@@ -83,9 +106,13 @@ remove_physical(Physical *physical) {
   pvector< PT(Physical) >::iterator found;
   PT(Physical) ptp = physical;
   found = find(_physicals.begin(), _physicals.end(), ptp);
-  if (found == _physicals.end())
+  if (found == _physicals.end()) {
     return;
+  }
   _physicals.erase(found);
+
+  nassertv(ptp->_physical_node == this);
+  ptp->_physical_node = nullptr;
 }
 
 /**
@@ -97,7 +124,7 @@ remove_physical(size_t index) {
 
   pvector< PT(Physical) >::iterator remove;
   remove = _physicals.begin() + index;
-  (*remove)->_physical_node = (PhysicalNode *) NULL;
+  (*remove)->_physical_node = nullptr;
 
   _physicals.erase(remove);
 }
@@ -106,7 +133,7 @@ remove_physical(size_t index) {
  * Write a string representation of this instance to <out>.
  */
 void PhysicalNode::
-write(ostream &out, unsigned int indent) const {
+write(std::ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"PhysicalNode:\n";
   // PandaNode::write(out, indent+2);

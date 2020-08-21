@@ -49,13 +49,13 @@ setup_main_thread() {
  */
 bool ThreadWin32Impl::
 start(ThreadPriority priority, bool joinable) {
-  _mutex.acquire();
+  _mutex.lock();
   if (thread_cat->is_debug()) {
     thread_cat.debug() << "Starting " << *_parent_obj << "\n";
   }
 
   nassertd(_status == S_new && _thread == 0) {
-    _mutex.release();
+    _mutex.unlock();
     return false;
   }
 
@@ -70,13 +70,13 @@ start(ThreadPriority priority, bool joinable) {
   // eventually decrement it when it terminates.
   _parent_obj->ref();
   _thread =
-    CreateThread(NULL, 0, &root_func, (void *)this, 0, &_thread_id);
+    CreateThread(nullptr, 0, &root_func, (void *)this, 0, &_thread_id);
 
   if (_thread_id == 0) {
     // Oops, we couldn't start the thread.  Be sure to decrement the reference
     // count we incremented above, and return false to indicate failure.
     unref_delete(_parent_obj);
-    _mutex.release();
+    _mutex.unlock();
     return false;
   }
 
@@ -100,7 +100,7 @@ start(ThreadPriority priority, bool joinable) {
     break;
   }
 
-  _mutex.release();
+  _mutex.unlock();
   return true;
 }
 
@@ -110,24 +110,24 @@ start(ThreadPriority priority, bool joinable) {
  */
 void ThreadWin32Impl::
 join() {
-  _mutex.acquire();
+  _mutex.lock();
   nassertd(_joinable && _status != S_new) {
-    _mutex.release();
+    _mutex.unlock();
     return;
   }
 
   while (_status != S_finished) {
     _cv.wait();
   }
-  _mutex.release();
+  _mutex.unlock();
 }
 
 /**
  *
  */
-string ThreadWin32Impl::
+std::string ThreadWin32Impl::
 get_unique_id() const {
-  ostringstream strm;
+  std::ostringstream strm;
   strm << GetCurrentProcessId() << "." << _thread_id;
 
   return strm.str();
@@ -147,14 +147,14 @@ root_func(LPVOID data) {
     nassertr(result, 1);
 
     {
-      self->_mutex.acquire();
+      self->_mutex.lock();
       nassertd(self->_status == S_start_called) {
-        self->_mutex.release();
+        self->_mutex.unlock();
         return 1;
       }
       self->_status = S_running;
       self->_cv.notify();
-      self->_mutex.release();
+      self->_mutex.unlock();
     }
 
     self->_parent_obj->thread_main();
@@ -166,14 +166,14 @@ root_func(LPVOID data) {
     }
 
     {
-      self->_mutex.acquire();
+      self->_mutex.lock();
       nassertd(self->_status == S_running) {
-        self->_mutex.release();
+        self->_mutex.unlock();
         return 1;
       }
       self->_status = S_finished;
       self->_cv.notify();
-      self->_mutex.release();
+      self->_mutex.unlock();
     }
 
     // Now drop the parent object reference that we grabbed in start(). This

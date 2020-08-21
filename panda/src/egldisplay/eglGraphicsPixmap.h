@@ -16,6 +16,8 @@
 
 #include "pandabase.h"
 
+#ifdef HAVE_X11
+
 #include "eglGraphicsPipe.h"
 #include "graphicsBuffer.h"
 
@@ -27,7 +29,7 @@
 class eglGraphicsPixmap : public GraphicsBuffer {
 public:
   eglGraphicsPixmap(GraphicsEngine *engine, GraphicsPipe *pipe,
-                    const string &name,
+                    const std::string &name,
                     const FrameBufferProperties &fb_prop,
                     const WindowProperties &win_prop,
                     int flags,
@@ -66,5 +68,7 @@ public:
 private:
   static TypeHandle _type_handle;
 };
+
+#endif  // HAVE_X11
 
 #endif

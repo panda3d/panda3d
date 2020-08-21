@@ -220,7 +220,7 @@ get_msg_type() const {
  * Returns event string that will be thrown if the datagram reader queue
  * overflows.
  */
-INLINE const string &CConnectionRepository::
+INLINE const std::string &CConnectionRepository::
 get_overflow_event_name() {
   return _overflow_event_name;
 }

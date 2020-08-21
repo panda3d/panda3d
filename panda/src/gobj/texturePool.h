@@ -68,29 +68,42 @@ PUBLISHED:
 
   INLINE static int garbage_collect();
 
-  INLINE static void list_contents(ostream &out);
+  INLINE static void list_contents(std::ostream &out);
   INLINE static void list_contents();
 
-  INLINE static Texture *find_texture(const string &name);
-  INLINE static TextureCollection find_all_textures(const string &name = "*");
+  INLINE static Texture *find_texture(const std::string &name);
+  INLINE static TextureCollection find_all_textures(const std::string &name = "*");
 
   INLINE static void set_fake_texture_image(const Filename &filename);
   INLINE static void clear_fake_texture_image();
   INLINE static bool has_fake_texture_image();
   INLINE static const Filename &get_fake_texture_image();
-  INLINE static PT(Texture) make_texture(const string &extension);
+  INLINE static PT(Texture) make_texture(const std::string &extension);
 
-  static void write(ostream &out);
+  INLINE static bool register_filter(TexturePoolFilter *tex_filter);
+  INLINE static bool unregister_filter(TexturePoolFilter *tex_filter);
+  INLINE static void clear_filters();
+
+  INLINE static bool is_filter_registered(TexturePoolFilter *tex_filter);
+
+  size_t get_num_filters() const;
+  TexturePoolFilter *get_filter(size_t i) const;
+  MAKE_SEQ_PROPERTY(filters, get_num_filters, get_filter);
+
+  EXTENSION(bool register_filter(PyObject *tex_filter));
+  EXTENSION(bool unregister_filter(PyObject *tex_filter));
+  EXTENSION(bool is_filter_registered(PyObject *tex_filter));
+
+  static TexturePool *get_global_ptr();
+
+  static void write(std::ostream &out);
 
 public:
   typedef Texture::MakeTextureFunc MakeTextureFunc;
-  void register_texture_type(MakeTextureFunc *func, const string &extensions);
-  void register_filter(TexturePoolFilter *filter);
+  void register_texture_type(MakeTextureFunc *func, const std::string &extensions);
 
-  MakeTextureFunc *get_texture_type(const string &extension) const;
-  void write_texture_types(ostream &out, int indent_level) const;
-
-  static TexturePool *get_global_ptr();
+  MakeTextureFunc *get_texture_type(const std::string &extension) const;
+  void write_texture_types(std::ostream &out, int indent_level) const;
 
 private:
   TexturePool();
@@ -122,10 +135,10 @@ private:
   void ns_release_texture(Texture *texture);
   void ns_release_all_textures();
   int ns_garbage_collect();
-  void ns_list_contents(ostream &out) const;
-  Texture *ns_find_texture(const string &name) const;
-  TextureCollection ns_find_all_textures(const string &name) const;
-  PT(Texture) ns_make_texture(const string &extension) const;
+  void ns_list_contents(std::ostream &out) const;
+  Texture *ns_find_texture(const std::string &name) const;
+  TextureCollection ns_find_all_textures(const std::string &name) const;
+  PT(Texture) ns_make_texture(const std::string &extension) const;
 
   void resolve_filename(Filename &new_filename, const Filename &orig_filename,
                         bool read_mipmaps, const LoaderOptions &options);
@@ -144,13 +157,30 @@ private:
                        bool read_mipmaps, const LoaderOptions &options);
   PT(Texture) post_load(Texture *tex);
 
+  bool ns_register_filter(TexturePoolFilter *tex_filter);
+  bool ns_unregister_filter(TexturePoolFilter *tex_filter);
+  void ns_clear_filters();
+
+  bool ns_is_filter_registered(TexturePoolFilter *tex_filter);
+
   void load_filters();
 
   static TexturePool *_global_ptr;
 
   Mutex _lock;
-  typedef pmap<Filename, PT(Texture)> Textures;
-  Textures _textures;  // indexed by fullpath
+  Mutex _filter_lock;
+
+  struct LookupKey {
+    Filename _fullpath;
+    Filename _alpha_fullpath;
+    int _primary_file_num_channels = 0;
+    int _alpha_file_channel = 0;
+    Texture::TextureType _texture_type = Texture::TT_2d_texture;
+
+    INLINE bool operator < (const LookupKey &other) const;
+  };
+  typedef pmap<LookupKey, PT(Texture)> Textures;
+  Textures _textures;
   typedef pmap<Filename, Filename> RelpathLookup;
   RelpathLookup _relpath_lookup;
 
@@ -159,11 +189,13 @@ private:
   PT(Texture) _normalization_cube_map;
   PT(Texture) _alpha_scale_map;
 
-  typedef pmap<string, MakeTextureFunc *> TypeRegistry;
+  typedef pmap<std::string, MakeTextureFunc *> TypeRegistry;
   TypeRegistry _type_registry;
 
   typedef pvector<TexturePoolFilter *> FilterRegistry;
   FilterRegistry _filter_registry;
+
+  friend class Extension<TexturePool>;
 };
 
 #include "texturePool.I"

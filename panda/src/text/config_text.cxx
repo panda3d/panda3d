@@ -27,6 +27,12 @@
 #include "dconfig.h"
 #include "config_express.h"
 
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDA_TEXT)
+  #error Buildsystem error: BUILDING_PANDA_TEXT not defined
+#endif
+
+using std::wstring;
+
 Configure(config_text);
 NotifyCategoryDef(text, "");
 
@@ -47,6 +53,18 @@ ConfigVariableBool text_dynamic_merge
           "as the text is assembled, or false to wait for the flatten "
           "operation.  Usually it's a performance "
           "advantage to keep this true.  See TextNode::set_flatten_flags()."));
+
+ConfigVariableBool text_kerning
+("text-kerning", false,
+ PRC_DESC("Set this true to enable kerning when the font provides kerning "
+          "tables.  This can result in more aesthetically pleasing spacing "
+          "between individual glyphs.  Has no effect when text-use-harfbuzz "
+          "is true, since HarfBuzz offers superior kerning support."));
+
+ConfigVariableBool text_use_harfbuzz
+("text-use-harfbuzz", false,
+ PRC_DESC("Set this true to enable HarfBuzz support, which offers superior "
+          "text shaping and better support for non-Latin text."));
 
 ConfigVariableInt text_anisotropic_degree
 ("text-anisotropic-degree", 1,
@@ -130,14 +148,14 @@ ConfigVariableInt text_embed_graphic_key
 
 wstring
 get_text_soft_hyphen_output() {
-  static wstring *text_soft_hyphen_output = NULL;
+  static wstring *text_soft_hyphen_output = nullptr;
   static ConfigVariableString
     cv("text-soft-hyphen-output", "-",
        PRC_DESC("This is the string that is output, encoded in the default "
                 "encoding, to represent the hyphen character that is "
                 "introduced when the line is broken at a soft-hyphen key."));
 
-  if (text_soft_hyphen_output == NULL) {
+  if (text_soft_hyphen_output == nullptr) {
     TextEncoder encoder;
     text_soft_hyphen_output = new wstring(encoder.decode_text(cv));
   }
@@ -153,7 +171,7 @@ ConfigVariableDouble text_hyphen_ratio
 
 wstring
 get_text_never_break_before() {
-  static wstring *text_never_break_before = NULL;
+  static wstring *text_never_break_before = nullptr;
   static ConfigVariableString
     cv("text-never-break-before", ",.-:?!;",
        PRC_DESC("This string represents a list of individual characters "
@@ -161,7 +179,7 @@ get_text_never_break_before() {
                 "following a forced break.  Typically these will be "
                 "punctuation characters."));
 
-  if (text_never_break_before == NULL) {
+  if (text_never_break_before == nullptr) {
     TextEncoder encoder;
     text_never_break_before = new wstring(encoder.decode_text(cv));
   }

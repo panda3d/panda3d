@@ -33,24 +33,21 @@ class FrameBufferProperties;
  * This graphics pipe represents the interface for creating OpenGL graphics
  * windows on a Cocoa-based (e.g.  Mac OS X) client.
  */
-class CocoaGraphicsPipe : public GraphicsPipe {
+class EXPCL_PANDA_COCOADISPLAY CocoaGraphicsPipe : public GraphicsPipe {
 public:
-  CocoaGraphicsPipe();
-  CocoaGraphicsPipe(CGDirectDisplayID display);
-  CocoaGraphicsPipe(NSScreen *screen);
+  CocoaGraphicsPipe(CGDirectDisplayID display = CGMainDisplayID());
   virtual ~CocoaGraphicsPipe();
 
   INLINE CGDirectDisplayID get_display_id() const;
-  INLINE NSScreen *get_nsscreen() const;
 
-  virtual string get_interface_name() const;
+  virtual std::string get_interface_name() const;
   static PT(GraphicsPipe) pipe_constructor();
 
 public:
   virtual PreferredWindowThread get_preferred_window_thread() const;
 
 protected:
-  virtual PT(GraphicsOutput) make_output(const string &name,
+  virtual PT(GraphicsOutput) make_output(const std::string &name,
                                          const FrameBufferProperties &fb_prop,
                                          const WindowProperties &win_prop,
                                          int flags,
@@ -64,11 +61,8 @@ protected:
 private:
   void load_display_information();
 
-  // _display and _screen refer to the same thing, NSScreen being the tiny
-  // Cocoa wrapper around the Quartz display ID.  NSScreen isn't generally
-  // useful, but we need it when creating the window.
+  // This is the Quartz display identifier.
   CGDirectDisplayID _display;
-  NSScreen *_screen;
 
   friend class CocoaGraphicsWindow;
 

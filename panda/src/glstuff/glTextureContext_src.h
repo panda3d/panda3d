@@ -33,13 +33,16 @@ public:
   virtual void evict_lru();
   void reset_data();
 
+  virtual uint64_t get_native_id() const;
+  virtual uint64_t get_native_buffer_id() const;
+
 #ifndef OPENGLES
   void make_handle_resident();
   GLuint64 get_handle();
 #endif
 
 #ifdef OPENGLES_1
-  static CONSTEXPR bool needs_barrier(GLbitfield barrier) { return false; };
+  static constexpr bool needs_barrier(GLbitfield barrier) { return false; };
 #else
   bool needs_barrier(GLbitfield barrier);
   void mark_incoherent(bool wrote);

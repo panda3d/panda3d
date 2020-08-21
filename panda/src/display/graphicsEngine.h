@@ -52,7 +52,7 @@ class Texture;
  */
 class EXPCL_PANDA_DISPLAY GraphicsEngine : public ReferenceCount {
 PUBLISHED:
-  GraphicsEngine(Pipeline *pipeline = NULL);
+  explicit GraphicsEngine(Pipeline *pipeline = nullptr);
   BLOCKING ~GraphicsEngine();
 
   void set_threading_model(const GraphicsThreadingModel &threading_model);
@@ -75,21 +75,21 @@ PUBLISHED:
   MAKE_PROPERTY(default_loader, get_default_loader, set_default_loader);
 
   GraphicsOutput *make_output(GraphicsPipe *pipe,
-                              const string &name, int sort,
+                              const std::string &name, int sort,
                               const FrameBufferProperties &fb_prop,
                               const WindowProperties &win_prop,
-                              int flags, GraphicsStateGuardian *gsg = NULL,
-                              GraphicsOutput *host = NULL);
+                              int flags, GraphicsStateGuardian *gsg = nullptr,
+                              GraphicsOutput *host = nullptr);
 
   // Syntactic shorthand versions of make_output
   INLINE GraphicsOutput *make_buffer(GraphicsOutput *host,
-                                     const string &name, int sort,
+                                     const std::string &name, int sort,
                                      int x_size, int y_size);
   INLINE GraphicsOutput *make_buffer(GraphicsStateGuardian *gsg,
-                                     const string &name, int sort,
+                                     const std::string &name, int sort,
                                      int x_size, int y_size);
   INLINE GraphicsOutput *make_parasite(GraphicsOutput *host,
-                                       const string &name, int sort,
+                                       const std::string &name, int sort,
                                        int x_size, int y_size);
 
   bool add_window(GraphicsOutput *window, int sort);
@@ -123,11 +123,15 @@ public:
     TS_do_flip,
     TS_do_release,
     TS_do_windows,
+    TS_do_compute,
+    TS_do_extract,
+    TS_do_screenshot,
     TS_terminate,
     TS_done
   };
 
   void texture_uploaded(Texture *tex);
+  PT(Texture) do_get_screenshot(DisplayRegion *region, GraphicsStateGuardian *gsg);
 
 public:
   static void do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
@@ -142,14 +146,15 @@ private:
 
   void set_window_sort(GraphicsOutput *window, int sort);
 
-  void cull_and_draw_together(const Windows &wlist, Thread *current_thread);
+  void cull_and_draw_together(Windows wlist, Thread *current_thread);
   void cull_and_draw_together(GraphicsOutput *win, DisplayRegion *dr,
                               Thread *current_thread);
 
-  void cull_to_bins(const Windows &wlist, Thread *current_thread);
-  void cull_to_bins(GraphicsOutput *win, DisplayRegion *dr, Thread *current_thread);
+  void cull_to_bins(Windows wlist, Thread *current_thread);
+  void cull_to_bins(GraphicsOutput *win, GraphicsStateGuardian *gsg,
+                    DisplayRegion *dr, SceneSetup *scene_setup,
+                    CullResult *cull_result, Thread *current_thread);
   void draw_bins(const Windows &wlist, Thread *current_thread);
-  void draw_bins(GraphicsOutput *win, DisplayRegion *dr, Thread *current_thread);
   void make_contexts(const Windows &wlist, Thread *current_thread);
 
   void process_events(const Windows &wlist, Thread *current_thread);
@@ -162,20 +167,18 @@ private:
 
   PT(SceneSetup) setup_scene(GraphicsStateGuardian *gsg,
                              DisplayRegionPipelineReader *dr);
-  void do_draw(CullResult *cull_result, SceneSetup *scene_setup,
-               GraphicsOutput *win, DisplayRegion *dr, Thread *current_thread);
+  void do_draw(GraphicsOutput *win, GraphicsStateGuardian *gsg,
+               DisplayRegion *dr, Thread *current_thread);
 
-  void do_add_window(GraphicsOutput *window,
-                     const GraphicsThreadingModel &threading_model);
-  void do_add_gsg(GraphicsStateGuardian *gsg, GraphicsPipe *pipe,
-                  const GraphicsThreadingModel &threading_model);
+  void do_add_window(GraphicsOutput *window);
+  void do_add_gsg(GraphicsStateGuardian *gsg, GraphicsPipe *pipe);
   void do_remove_window(GraphicsOutput *window, Thread *current_thread);
   void do_resort_windows();
   void terminate_threads(Thread *current_thread);
   void auto_adjust_capabilities(GraphicsStateGuardian *gsg);
 
 #ifdef DO_PSTATS
-  typedef map<TypeHandle, PStatCollector> CyclerTypeCounters;
+  typedef std::map<TypeHandle, PStatCollector> CyclerTypeCounters;
   CyclerTypeCounters _all_cycler_types;
   CyclerTypeCounters _dirty_cycler_types;
   static void pstats_count_cycler_type(TypeHandle type, int count, void *data);
@@ -261,7 +264,7 @@ private:
 
   class WindowRenderer {
   public:
-    WindowRenderer(const string &name);
+    WindowRenderer(const std::string &name);
 
     void add_gsg(GraphicsStateGuardian *gsg);
     void add_window(Windows &wlist, GraphicsOutput *window);
@@ -292,7 +295,7 @@ private:
 
   class RenderThread : public Thread, public WindowRenderer {
   public:
-    RenderThread(const string &name, GraphicsEngine *engine);
+    RenderThread(const std::string &name, GraphicsEngine *engine);
     virtual void thread_main();
 
     GraphicsEngine *_engine;
@@ -300,18 +303,29 @@ private:
     ConditionVar _cv_start;
     ConditionVar _cv_done;
     ThreadState _thread_state;
+
+    // These are stored for extract_texture_data and dispatch_compute.
+    GraphicsStateGuardian *_gsg;
+    PT(Texture) _texture;
+    const RenderState *_state;
+    DisplayRegion *_region;
+    LVecBase3i _work_groups;
+    bool _result;
   };
 
-  WindowRenderer *get_window_renderer(const string &name, int pipeline_stage);
+  WindowRenderer *get_window_renderer(const std::string &name, int pipeline_stage);
 
   Pipeline *_pipeline;
   Windows _windows;
   bool _windows_sorted;
+
+  // This lock protects the next two fields.
+  Mutex _new_windows_lock;
   unsigned int _window_sort_index;
-  bool _needs_open_windows;
+  pvector<PT(GraphicsOutput)> _new_windows;
 
   WindowRenderer _app;
-  typedef pmap<string, PT(RenderThread) > Threads;
+  typedef pmap<std::string, PT(RenderThread) > Threads;
   Threads _threads;
   GraphicsThreadingModel _threading_model;
   bool _auto_flip;
@@ -387,8 +401,8 @@ private:
   static PStatCollector _test_sphere_pcollector;
   static PStatCollector _volume_box_pcollector;
   static PStatCollector _test_box_pcollector;
-  static PStatCollector _volume_tube_pcollector;
-  static PStatCollector _test_tube_pcollector;
+  static PStatCollector _volume_capsule_pcollector;
+  static PStatCollector _test_capsule_pcollector;
   static PStatCollector _volume_inv_sphere_pcollector;
   static PStatCollector _test_inv_sphere_pcollector;
   static PStatCollector _volume_geom_pcollector;

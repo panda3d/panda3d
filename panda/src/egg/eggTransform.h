@@ -26,7 +26,7 @@
  * This may be either a 3-d transform, and therefore described by a 4x4
  * matrix, or a 2-d transform, described by a 3x3 matrix.
  */
-class EXPCL_PANDAEGG EggTransform {
+class EXPCL_PANDA_EGG EggTransform {
 PUBLISHED:
   EggTransform();
   EggTransform(const EggTransform &copy);
@@ -82,8 +82,8 @@ PUBLISHED:
   INLINE const LMatrix3d &get_component_mat3(int n) const;
   INLINE const LMatrix4d &get_component_mat4(int n) const;
 
-  void write(ostream &out, int indent_level,
-             const string &label) const;
+  void write(std::ostream &out, int indent_level,
+             const std::string &label) const;
 
 protected:
   void internal_clear_transform();

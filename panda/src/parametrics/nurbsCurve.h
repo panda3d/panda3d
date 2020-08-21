@@ -85,12 +85,12 @@ public:
 
   virtual NurbsCurveInterface *get_nurbs_interface();
   virtual bool convert_to_nurbs(ParametricCurve *nc) const;
-  virtual void write(ostream &out, int indent_level = 0) const;
+  virtual void write(std::ostream &out, int indent_level = 0) const;
 
 protected:
   virtual int append_cv_impl(const LVecBase4 &v);
-  virtual bool format_egg(ostream &out, const string &name,
-                          const string &curve_type, int indent_level) const;
+  virtual bool format_egg(std::ostream &out, const std::string &name,
+                          const std::string &curve_type, int indent_level) const;
 
   int find_cv(PN_stdfloat t);
 

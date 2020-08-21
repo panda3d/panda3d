@@ -30,6 +30,8 @@ NotifyCategoryDecl(text, EXPCL_PANDA_TEXT, EXPTP_PANDA_TEXT);
 
 extern ConfigVariableBool text_flatten;
 extern ConfigVariableBool text_dynamic_merge;
+extern ConfigVariableBool text_kerning;
+extern ConfigVariableBool text_use_harfbuzz;
 extern ConfigVariableInt text_anisotropic_degree;
 extern ConfigVariableInt text_texture_margin;
 extern ConfigVariableDouble text_poly_margin;
@@ -38,14 +40,14 @@ extern ConfigVariableBool text_small_caps;
 extern EXPCL_PANDA_TEXT ConfigVariableDouble text_small_caps_scale;
 extern ConfigVariableFilename text_default_font;
 extern EXPCL_PANDA_TEXT ConfigVariableDouble text_tab_width;
-extern ConfigVariableInt text_push_properties_key;
-extern ConfigVariableInt text_pop_properties_key;
+extern EXPCL_PANDA_TEXT ConfigVariableInt text_push_properties_key;
+extern EXPCL_PANDA_TEXT ConfigVariableInt text_pop_properties_key;
 extern ConfigVariableInt text_soft_hyphen_key;
 extern ConfigVariableInt text_soft_break_key;
 extern ConfigVariableInt text_embed_graphic_key;
-extern wstring get_text_soft_hyphen_output();
+extern std::wstring get_text_soft_hyphen_output();
 extern ConfigVariableDouble text_hyphen_ratio;
-extern wstring get_text_never_break_before();
+extern std::wstring get_text_never_break_before();
 extern ConfigVariableInt text_max_never_break;
 extern EXPCL_PANDA_TEXT ConfigVariableDouble text_default_underscore_height;
 

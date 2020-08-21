@@ -27,7 +27,7 @@ TypeHandle CConstrainTransformInterval::_type_handle;
  * local transform will be copied unaltered.
  */
 CConstrainTransformInterval::
-CConstrainTransformInterval(const string &name, double duration,
+CConstrainTransformInterval(const std::string &name, double duration,
                             const NodePath &node, const NodePath &target,
                             bool wrt) :
   CConstraintInterval(name, duration),
@@ -72,7 +72,7 @@ priv_step(double t) {
  *
  */
 void CConstrainTransformInterval::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_name() << ":";
   out << " dur " << get_duration();
 }

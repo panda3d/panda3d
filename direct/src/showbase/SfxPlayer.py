@@ -1,4 +1,5 @@
-"""Undocumented Module"""
+"""Contains the SfxPlayer class, a thin utility class for playing sounds at
+a particular location."""
 
 __all__ = ['SfxPlayer']
 
@@ -52,6 +53,8 @@ class SfxPlayer:
                 d = node.getDistance(listenerNode)
             else:
                 d = node.getDistance(base.cam)
+        if not cutoff:
+            cutoff = self.cutoffDistance
         if d == None or d > cutoff:
             volume = 0
         else:
@@ -69,9 +72,6 @@ class SfxPlayer:
             self, sfx, looping = 0, interrupt = 1, volume = None,
             time = 0.0, node=None, listenerNode = None, cutoff = None):
         if sfx:
-            if not cutoff:
-                cutoff = self.cutoffDistance
-
             self.setFinalVolume(sfx, node, volume, listenerNode, cutoff)
 
             # don't start over if it's already playing, unless
@@ -95,6 +95,3 @@ class SfxPlayer:
             if node is not None:
                 finalVolume *= node.getNetAudioVolume()
             sfx.setVolume(finalVolume)
-
-
-

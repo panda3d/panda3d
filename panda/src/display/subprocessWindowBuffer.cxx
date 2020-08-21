@@ -18,7 +18,9 @@
 #include <unistd.h>
 
 #include <iostream>
-using namespace std;
+
+using std::cerr;
+using std::string;
 
 const char SubprocessWindowBuffer::
 _magic_number[SubprocessWindowBuffer::magic_number_length] = "pNdaSWB";
@@ -95,12 +97,12 @@ new_buffer(int &fd, size_t &mmap_size, string &filename,
   mmap_size = 0;
   fd = -1;
 
-  filename = tmpnam(NULL);
+  filename = tmpnam(nullptr);
 
   fd = open(filename.c_str(), O_RDWR | O_CREAT | O_EXCL, 0600);
   if (fd == -1) {
     perror(filename.c_str());
-    return NULL;
+    return nullptr;
   }
 
   // Create a temporary object to determine the required size.
@@ -115,14 +117,14 @@ new_buffer(int &fd, size_t &mmap_size, string &filename,
     write(fd, zero, zero_size);
   }
 
-  void *shared_mem = mmap(NULL, mmap_size, PROT_READ | PROT_WRITE,
+  void *shared_mem = mmap(nullptr, mmap_size, PROT_READ | PROT_WRITE,
                           MAP_SHARED, fd, 0);
   if (shared_mem == (void *)-1) {
     // Failure to map.
     close(fd);
     fd = -1;
     mmap_size = 0;
-    return NULL;
+    return nullptr;
   }
 
   // Now create the actual object in the shared-memory buffer.
@@ -161,7 +163,7 @@ open_buffer(int &fd, size_t &mmap_size, const string &filename) {
   fd = open(filename.c_str(), O_RDWR);
   if (fd == -1) {
     perror(filename.c_str());
-    return NULL;
+    return nullptr;
   }
 
   // Check that the disk file is large enough.
@@ -170,19 +172,19 @@ open_buffer(int &fd, size_t &mmap_size, const string &filename) {
     cerr << filename << " not large enough.\n";
     close(fd);
     fd = -1;
-    return NULL;
+    return nullptr;
   }
 
   // First, map enough memory to read the buffer object.
   size_t initial_size = sizeof(SubprocessWindowBuffer);
-  void *shared_mem = mmap(NULL, initial_size, PROT_READ,
+  void *shared_mem = mmap(nullptr, initial_size, PROT_READ,
                           MAP_SHARED, fd, 0);
   if (shared_mem == (void *)-1) {
     perror("mmap");
     cerr << "Couldn't map.\n";
     close(fd);
     fd = -1;
-    return NULL;
+    return nullptr;
   }
 
   SubprocessWindowBuffer *temp = (SubprocessWindowBuffer *)shared_mem;
@@ -191,7 +193,7 @@ open_buffer(int &fd, size_t &mmap_size, const string &filename) {
     munmap(shared_mem, initial_size);
     close(fd);
     fd = -1;
-    return NULL;
+    return nullptr;
   }
 
 
@@ -204,15 +206,15 @@ open_buffer(int &fd, size_t &mmap_size, const string &filename) {
     cerr << filename << " not large enough.\n";
     close(fd);
     fd = -1;
-    return NULL;
+    return nullptr;
   }
 
-  shared_mem = mmap(NULL, mmap_size, PROT_READ | PROT_WRITE,
+  shared_mem = mmap(nullptr, mmap_size, PROT_READ | PROT_WRITE,
                     MAP_SHARED, fd, 0);
   if (shared_mem == (void *)-1) {
     perror("mmap");
     cerr << "Couldn't map 2.\n";
-    return NULL;
+    return nullptr;
   }
 
   // Now that we've successfully opened and mapped the file, we can safely

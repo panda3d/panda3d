@@ -25,7 +25,7 @@
  * divisor, which is meaningful only for the numeric type elements (and
  * represents a fixed-point numeric convention).
  */
-class DCSimpleParameter : public DCParameter {
+class EXPCL_DIRECT_DCPARSER DCSimpleParameter : public DCParameter {
 public:
   DCSimpleParameter(DCSubatomicType type, unsigned int divisor = 1);
   DCSimpleParameter(const DCSimpleParameter &copy);
@@ -60,8 +60,10 @@ public:
                           bool &pack_error, bool &range_error) const;
   virtual void pack_uint64(DCPackData &pack_data, uint64_t value,
                            bool &pack_error, bool &range_error) const;
-  virtual void pack_string(DCPackData &pack_data, const string &value,
+  virtual void pack_string(DCPackData &pack_data, const std::string &value,
                            bool &pack_error, bool &range_error) const;
+  virtual void pack_blob(DCPackData &pack_data, const vector_uchar &value,
+                         bool &pack_error, bool &range_error) const;
   virtual bool pack_default_value(DCPackData &pack_data, bool &pack_error) const;
 
   virtual void unpack_double(const char *data, size_t length, size_t &p,
@@ -75,14 +77,16 @@ public:
   virtual void unpack_uint64(const char *data, size_t length, size_t &p,
                              uint64_t &value, bool &pack_error, bool &range_error) const;
   virtual void unpack_string(const char *data, size_t length, size_t &p,
-                             string &value, bool &pack_error, bool &range_error) const;
+                             std::string &value, bool &pack_error, bool &range_error) const;
+  virtual void unpack_blob(const char *data, size_t length, size_t &p,
+                           vector_uchar &value, bool &pack_error, bool &range_error) const;
   virtual bool unpack_validate(const char *data, size_t length, size_t &p,
                                bool &pack_error, bool &range_error) const;
   virtual bool unpack_skip(const char *data, size_t length, size_t &p,
                            bool &pack_error) const;
 
-  virtual void output_instance(ostream &out, bool brief, const string &prename,
-                               const string &name, const string &postname) const;
+  virtual void output_instance(std::ostream &out, bool brief, const std::string &prename,
+                               const std::string &name, const std::string &postname) const;
   virtual void generate_hash(HashGenerator &hashgen) const;
 
 protected:

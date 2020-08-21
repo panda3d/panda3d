@@ -22,7 +22,7 @@
  */
 class EXPCL_PANDA_GOBJ GeomLines : public GeomPrimitive {
 PUBLISHED:
-  GeomLines(UsageHint usage_hint);
+  explicit GeomLines(UsageHint usage_hint);
   GeomLines(const GeomLines &copy);
   virtual ~GeomLines();
   ALLOC_DELETED_CHAIN(GeomLines);
@@ -30,6 +30,8 @@ PUBLISHED:
 public:
   virtual PT(GeomPrimitive) make_copy() const;
   virtual PrimitiveType get_primitive_type() const;
+
+  CPT(GeomPrimitive) make_adjacency() const;
 
   virtual int get_num_vertices_per_primitive() const;
   virtual int get_min_num_vertices_per_primitive() const;

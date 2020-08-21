@@ -93,7 +93,7 @@ case_insensitive() const {
  * Formats the nth component of the path to the indicated output stream.
  */
 INLINE void FindApproxPath::
-output_component(ostream &out, int index) const {
+output_component(std::ostream &out, int index) const {
   nassertv(index >= 0 && index < (int)_path.size());
   out << _path[index];
 }

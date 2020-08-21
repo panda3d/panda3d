@@ -21,6 +21,8 @@
 #include "indent.h"
 #include "dcast.h"
 
+using std::string;
+
 TypeHandle ButtonThrower::_type_handle;
 
 
@@ -204,7 +206,7 @@ clear_throw_buttons() {
  * Throw all events for button events found in the data element.
  */
 void ButtonThrower::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   DataNode::write(out, indent_level);
   if (_throw_buttons_active) {
     indent(out, indent_level)
@@ -310,7 +312,7 @@ do_general_event(const ButtonEvent &button_event, const string &button_name) {
     break;
 
   case ButtonEvent::T_keystroke:
-    event->add_parameter(wstring(1, button_event._keycode));
+    event->add_parameter(std::wstring(1, button_event._keycode));
     break;
 
   case ButtonEvent::T_candidate:

@@ -61,7 +61,7 @@ setup(const NodePath &ready, const NodePath &depressed,
  * PGButtons.  The click event is the concatenation of this string followed by
  * get_id().
  */
-INLINE string PGButton::
+INLINE std::string PGButton::
 get_click_prefix() {
   return "click-";
 }
@@ -70,7 +70,7 @@ get_click_prefix() {
  * Returns the event name that will be thrown when the button is clicked
  * normally.
  */
-INLINE string PGButton::
+INLINE std::string PGButton::
 get_click_event(const ButtonHandle &button) const {
   LightReMutexHolder holder(_lock);
   return get_click_prefix() + button.get_name() + "-" + get_id();

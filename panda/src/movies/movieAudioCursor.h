@@ -48,10 +48,10 @@ PUBLISHED:
   virtual int ready() const;
   virtual void seek(double offset);
   void read_samples(int n, Datagram *dg);
-  string read_samples(int n);
+  vector_uchar read_samples(int n);
 
 public:
-  virtual void read_samples(int n, int16_t *data);
+  virtual int read_samples(int n, int16_t *data);
 
 protected:
   PT(MovieAudio) _source;

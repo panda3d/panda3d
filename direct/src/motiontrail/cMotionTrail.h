@@ -69,7 +69,7 @@ public:
  * coordinate of the texture corresponds to time and the v coordinate
  * corresponds to the "shape" of the motion trail.
  */
-class EXPCL_DIRECT CMotionTrail : public TypedReferenceCount {
+class EXPCL_DIRECT_MOTIONTRAIL CMotionTrail : public TypedReferenceCount {
 PUBLISHED:
   CMotionTrail();
   ~CMotionTrail();

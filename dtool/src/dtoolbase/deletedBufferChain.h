@@ -55,7 +55,7 @@ enum DeletedChainFlag {
  *
  * Use MemoryHook to get a new DeletedBufferChain of a particular size.
  */
-class EXPCL_DTOOL DeletedBufferChain {
+class EXPCL_DTOOL_DTOOLBASE DeletedBufferChain {
 protected:
   DeletedBufferChain(size_t buffer_size);
 

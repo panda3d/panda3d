@@ -29,9 +29,9 @@ enum PathStore {
   PS_keep,       // Don't change the filename at all.
 };
 
-string format_path_store(PathStore unit);
+std::string format_path_store(PathStore unit);
 
-ostream &operator << (ostream &out, PathStore unit);
-PathStore string_path_store(const string &str);
+std::ostream &operator << (std::ostream &out, PathStore unit);
+PathStore string_path_store(const std::string &str);
 
 #endif

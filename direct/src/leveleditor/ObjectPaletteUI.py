@@ -69,4 +69,4 @@ class ObjectPaletteUI(wx.Panel):
         return cmp(index1, index2)
 
     def getSelected(self):
-        return self.tree.GetItemPyData(self.tree.GetSelection())
+        return self.tree.GetItemData(self.tree.GetSelection())

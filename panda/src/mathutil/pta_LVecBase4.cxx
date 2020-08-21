@@ -13,11 +13,6 @@
 
 #include "pta_LVecBase4.h"
 
-// Tell GCC that we'll take care of the instantiation explicitly here.
-#ifdef __GNUC__
-#pragma implementation
-#endif
-
 template class PointerToBase<ReferenceCountedVector<UnalignedLVecBase4f> >;
 template class PointerToArrayBase<UnalignedLVecBase4f>;
 template class PointerToArray<UnalignedLVecBase4f>;

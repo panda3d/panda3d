@@ -24,6 +24,9 @@ int pixel_count_smooth_multitex2;
 int pixel_count_smooth_multitex3;
 #endif  // DO_PSTATS
 
+using std::max;
+using std::min;
+
 ZBuffer *
 ZB_open(int xsize, int ysize, int mode,
         int nb_colors,
@@ -34,8 +37,8 @@ ZB_open(int xsize, int ysize, int mode,
   int size;
 
   zb = (ZBuffer *)gl_malloc(sizeof(ZBuffer));
-  if (zb == NULL)
-    return NULL;
+  if (zb == nullptr)
+    return nullptr;
   memset(zb, 0, sizeof(ZBuffer));
 
   /* xsize must be a multiple of 4 */
@@ -68,12 +71,12 @@ ZB_open(int xsize, int ysize, int mode,
   size = zb->xsize * zb->ysize * sizeof(ZPOINT);
 
   zb->zbuf = (ZPOINT *)gl_malloc(size);
-  if (zb->zbuf == NULL)
+  if (zb->zbuf == nullptr)
     goto error;
 
-  if (frame_buffer == NULL) {
+  if (frame_buffer == nullptr) {
     zb->pbuf = (PIXEL *)gl_malloc(zb->ysize * zb->linesize);
-    if (zb->pbuf == NULL) {
+    if (zb->pbuf == nullptr) {
       gl_free(zb->zbuf);
       goto error;
     }
@@ -86,7 +89,7 @@ ZB_open(int xsize, int ysize, int mode,
   return zb;
  error:
   gl_free(zb);
-  return NULL;
+  return nullptr;
 }
 
 void
@@ -107,7 +110,7 @@ void
 ZB_resize(ZBuffer * zb, void *frame_buffer, int xsize, int ysize) {
   int size;
 
-  nassertv(zb != NULL);
+  nassertv(zb != nullptr);
 
   /* xsize must be a multiple of 4 */
   xsize = (xsize + 3) & ~3;
@@ -123,7 +126,7 @@ ZB_resize(ZBuffer * zb, void *frame_buffer, int xsize, int ysize) {
   if (zb->frame_buffer_allocated)
     gl_free(zb->pbuf);
 
-  if (frame_buffer == NULL) {
+  if (frame_buffer == nullptr) {
     zb->pbuf = (PIXEL *)gl_malloc(zb->ysize * zb->linesize);
     zb->frame_buffer_allocated = 1;
   } else {

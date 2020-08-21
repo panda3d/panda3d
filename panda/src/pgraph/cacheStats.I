@@ -17,7 +17,7 @@
 INLINE void CacheStats::
 maybe_report(const char *name) {
 #ifndef NDEBUG
-  if (_cache_report) {
+  if (UNLIKELY(_cache_report)) {
     double now = ClockObject::get_global_clock()->get_real_time();
     if (now - _last_reset < _cache_report_interval) {
       return;

@@ -16,6 +16,10 @@
 #include "zStream.h"
 #include <algorithm>
 
+using std::min;
+using std::streampos;
+using std::streamsize;
+
 /**
  * Opens the indicated filename for writing.  Returns true if successful,
  * false on failure.
@@ -32,12 +36,12 @@ open(const FileReference *file) {
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   _vfile = vfs->create_file(_filename);
-  if (_vfile == (VirtualFile *)NULL) {
+  if (_vfile == nullptr) {
     // No such file.
     return false;
   }
   _out = _vfile->open_write_file(true, true);
-  _owns_out = (_out != (ostream *)NULL);
+  _owns_out = (_out != nullptr);
   return _owns_out && !_out->fail();
 }
 
@@ -47,7 +51,7 @@ open(const FileReference *file) {
  * are responsible for closing or deleting it when you are done.
  */
 bool DatagramOutputFile::
-open(ostream &out, const Filename &filename) {
+open(std::ostream &out, const Filename &filename) {
   close();
 
   _out = &out;
@@ -72,7 +76,7 @@ close() {
     VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
     vfs->close_write_file(_out);
   }
-  _out = (ostream *)NULL;
+  _out = nullptr;
   _owns_out = false;
 
   _file.clear();
@@ -89,8 +93,8 @@ close() {
  * written.
  */
 bool DatagramOutputFile::
-write_header(const string &header) {
-  nassertr(_out != (ostream *)NULL, false);
+write_header(const std::string &header) {
+  nassertr(_out != nullptr, false);
   nassertr(!_wrote_first_datagram, false);
 
   _out->write(header.data(), header.size());
@@ -104,7 +108,7 @@ write_header(const string &header) {
  */
 bool DatagramOutputFile::
 put_datagram(const Datagram &data) {
-  nassertr(_out != (ostream *)NULL, false);
+  nassertr(_out != nullptr, false);
   _wrote_first_datagram = true;
 
   // First, write the size of the upcoming datagram.
@@ -137,16 +141,16 @@ put_datagram(const Datagram &data) {
  */
 bool DatagramOutputFile::
 copy_datagram(SubfileInfo &result, const Filename &filename) {
-  nassertr(_out != (ostream *)NULL, false);
+  nassertr(_out != nullptr, false);
   _wrote_first_datagram = true;
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   PT(VirtualFile) vfile = vfs->get_file(filename);
-  if (vfile == NULL) {
+  if (vfile == nullptr) {
     return false;
   }
-  istream *in = vfile->open_read_file(true);
-  if (in == NULL) {
+  std::istream *in = vfile->open_read_file(true);
+  if (in == nullptr) {
     return false;
   }
 
@@ -206,7 +210,7 @@ copy_datagram(SubfileInfo &result, const Filename &filename) {
  */
 bool DatagramOutputFile::
 copy_datagram(SubfileInfo &result, const SubfileInfo &source) {
-  nassertr(_out != (ostream *)NULL, false);
+  nassertr(_out != nullptr, false);
   _wrote_first_datagram = true;
 
   pifstream in;
@@ -261,7 +265,7 @@ copy_datagram(SubfileInfo &result, const SubfileInfo &source) {
  */
 bool DatagramOutputFile::
 is_error() {
-  if (_out == (ostream *)NULL) {
+  if (_out == nullptr) {
     return true;
   }
 
@@ -277,7 +281,7 @@ is_error() {
  */
 void DatagramOutputFile::
 flush() {
-  if (_out != (ostream *)NULL) {
+  if (_out != nullptr) {
     _out->flush();
   }
 }
@@ -311,7 +315,7 @@ get_file() {
  */
 streampos DatagramOutputFile::
 get_file_pos() {
-  if (_out == (ostream *)NULL) {
+  if (_out == nullptr) {
     return 0;
   }
   return _out->tellp();

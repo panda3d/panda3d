@@ -107,7 +107,7 @@ add_blend(const TransformBlend &blend) {
     // latest.
     const TransformBlend &added_blend = _blends[new_position];
     _blend_index[&added_blend] = new_position;
-    _max_simultaneous_transforms = max(_max_simultaneous_transforms,
+    _max_simultaneous_transforms = std::max(_max_simultaneous_transforms,
                                        (int)blend.get_num_transforms());
 
     // We can't compute this one as we go, so set it to a special value to
@@ -122,7 +122,7 @@ add_blend(const TransformBlend &blend) {
  *
  */
 void TransformBlendTable::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   for (size_t i = 0; i < _blends.size(); ++i) {
     indent(out, indent_level)
       << i << ". " << _blends[i] << "\n";
@@ -158,7 +158,7 @@ rebuild_index() {
     for (size_t ti = 0; ti < blend.get_num_transforms(); ++ti) {
       transforms.insert(blend.get_transform(ti));
     }
-    _max_simultaneous_transforms = max((size_t)_max_simultaneous_transforms,
+    _max_simultaneous_transforms = std::max((size_t)_max_simultaneous_transforms,
                                        blend.get_num_transforms());
   }
 
@@ -179,7 +179,7 @@ recompute_modified(TransformBlendTable::CData *cdata, Thread *current_thread) {
   UpdateSeq seq;
   Blends::const_iterator bi;
   for (bi = _blends.begin(); bi != _blends.end(); ++bi) {
-    seq = max(seq, (*bi).get_modified(current_thread));
+    seq = std::max(seq, (*bi).get_modified(current_thread));
   }
 
   cdata->_modified = seq;

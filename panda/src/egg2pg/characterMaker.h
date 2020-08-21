@@ -42,20 +42,20 @@ class PandaNode;
  * Converts an EggGroup hierarchy, beginning with a group with <Dart> set, to
  * a character node with joints.
  */
-class EXPCL_PANDAEGG CharacterMaker {
+class EXPCL_PANDA_EGG2PG CharacterMaker {
 public:
   CharacterMaker(EggGroup *root, EggLoader &loader, bool structured = false);
 
   Character *make_node();
 
-  string get_name() const;
+  std::string get_name() const;
   PartGroup *egg_to_part(EggNode *egg_node) const;
   VertexTransform *egg_to_transform(EggNode *egg_node);
   int egg_to_index(EggNode *egg_node) const;
-  PandaNode *part_to_node(PartGroup *part, const string &name) const;
+  PandaNode *part_to_node(PartGroup *part, const std::string &name) const;
 
-  int create_slider(const string &name);
-  VertexSlider *egg_to_slider(const string &name);
+  int create_slider(const std::string &name);
+  VertexSlider *egg_to_slider(const std::string &name);
 
 private:
   CharacterJointBundle *make_bundle();
@@ -78,7 +78,7 @@ private:
   VertexTransforms _vertex_transforms;
   PT(VertexTransform) _identity_transform;
 
-  typedef pmap<string, PT(VertexSlider) > VertexSliders;
+  typedef pmap<std::string, PT(VertexSlider) > VertexSliders;
   VertexSliders _vertex_sliders;
 
   EggLoader &_loader;

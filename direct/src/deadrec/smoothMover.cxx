@@ -95,7 +95,7 @@ mark_position() {
       LVector3 pos_delta = _sample._pos - _smooth_pos;
       LVecBase3 hpr_delta = _sample._hpr - _smooth_hpr;
       double age = timestamp - _smooth_timestamp;
-      age = min(age, _max_position_age);
+      age = std::min(age, _max_position_age);
 
       set_smooth_pos(_sample._pos, _sample._hpr, timestamp);
       if (age != 0.0) {
@@ -272,13 +272,13 @@ compute_smooth_position(double timestamp) {
 
   // Find the newest of the points before the indicated time.  Assume that
   // this will be no older than _last_point_before.
-  i = max(0, _last_point_before);
+  i = std::max(0, _last_point_before);
   while (i < num_points && _points[i]._timestamp < timestamp) {
     point_before = i;
     timestamp_before = _points[i]._timestamp;
     ++i;
   }
-  point_way_before = max(point_before - 1, -1);
+  point_way_before = std::max(point_before - 1, -1);
 
   // Now the next point is presumably the oldest point after the indicated
   // time.
@@ -527,7 +527,7 @@ get_latest_position() {
  *
  */
 void SmoothMover::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "SmoothMover, " << _points.size() << " sample points.";
 }
 
@@ -535,7 +535,7 @@ output(ostream &out) const {
  *
  */
 void SmoothMover::
-write(ostream &out) const {
+write(std::ostream &out) const {
   out << "SmoothMover, " << _points.size() << " sample points:\n";
   int num_points = _points.size();
   for (int i = 0; i < num_points; i++) {

@@ -54,7 +54,7 @@ public:
   void join();
   void preempt();
 
-  string get_unique_id() const;
+  std::string get_unique_id() const;
 
   static void prepare_for_exit();
 
@@ -63,7 +63,7 @@ public:
 
   INLINE static void bind_thread(Thread *thread);
   INLINE static bool is_threading_supported();
-  INLINE static bool is_true_threads();
+  static bool is_true_threads();
   INLINE static bool is_simple_threads();
   INLINE static void sleep(double seconds);
   INLINE static void yield();
@@ -75,7 +75,7 @@ public:
 
   INLINE double get_wake_time() const;
 
-  INLINE static void write_status(ostream &out);
+  INLINE static void write_status(std::ostream &out);
 
 private:
   static void st_begin_thread(void *data);

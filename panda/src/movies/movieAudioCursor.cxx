@@ -45,14 +45,14 @@ MovieAudioCursor::
  * read.  Your buffer must be equal in size to N * channels.  Multiple-channel
  * audio will be interleaved.
  */
-void MovieAudioCursor::
+int MovieAudioCursor::
 read_samples(int n, int16_t *data) {
 
   // This is the null implementation, which generates pure silence.  Normally,
   // this method will be overridden by a subclass.
 
   if (n <= 0) {
-    return;
+    return 0;
   }
 
   int desired = n * _audio_channels;
@@ -60,6 +60,7 @@ read_samples(int n, int16_t *data) {
     data[i] = 0;
   }
   _samples_read += n;
+  return n;
 }
 
 /**
@@ -92,23 +93,28 @@ read_samples(int n, Datagram *dg) {
  * This is not particularly efficient, but it may be a convenient way to
  * manipulate samples in python.
  */
-string MovieAudioCursor::
+vector_uchar MovieAudioCursor::
 read_samples(int n) {
-  ostringstream result;
+  vector_uchar result;
   int16_t tmp[4096];
   while (n > 0) {
     int blocksize = (4096 / _audio_channels);
-    if (blocksize > n) blocksize = n;
-    int words = blocksize * _audio_channels;
-    read_samples(blocksize, tmp);
-    for (int i=0; i<words; i++) {
-      int16_t word = tmp[i];
-      result.put((char)(word & 255));
-      result.put((char)((word>>8) & 255));
+    if (blocksize > n) {
+      blocksize = n;
     }
-    n -= blocksize;
+    int nread = read_samples(blocksize, tmp);
+    if (nread == 0) {
+      return result;
+    }
+    int words = nread * _audio_channels;
+    for (int i = 0; i < words; ++i) {
+      int16_t word = tmp[i];
+      result.push_back((uint8_t)(word & 255u));
+      result.push_back((uint8_t)((word >> 8) & 255u));
+    }
+    n -= nread;
   }
-  return result.str();
+  return result;
 }
 
 

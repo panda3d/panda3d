@@ -17,6 +17,9 @@
 #include "string_utils.h"
 #include "pandaNode.h"
 
+using std::ostream;
+using std::string;
+
 
 /**
  * Returns true if the indicated node matches this component, false otherwise.

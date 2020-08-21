@@ -19,7 +19,7 @@ MenuDef(int thread_index, int collector_index, bool show_level) :
   _thread_index(thread_index),
   _collector_index(collector_index),
   _show_level(show_level),
-  _monitor(NULL)
+  _monitor(nullptr)
 {
 }
 

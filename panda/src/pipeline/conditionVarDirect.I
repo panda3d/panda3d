@@ -25,32 +25,6 @@ ConditionVarDirect(MutexDirect &mutex) :
 }
 
 /**
- *
- */
-INLINE ConditionVarDirect::
-~ConditionVarDirect() {
-}
-
-/**
- * Do not attempt to copy condition variables.
- */
-INLINE ConditionVarDirect::
-ConditionVarDirect(const ConditionVarDirect &copy) :
-  _mutex(copy._mutex),
-  _impl(_mutex._impl)
-{
-  nassertv(false);
-}
-
-/**
- * Do not attempt to copy condition variables.
- */
-INLINE void ConditionVarDirect::
-operator = (const ConditionVarDirect &copy) {
-  nassertv(false);
-}
-
-/**
  * Returns the mutex associated with this condition variable.
  */
 INLINE MutexDirect &ConditionVarDirect::
@@ -102,13 +76,22 @@ wait(double timeout) {
  * predict which one.  It is possible that more than one thread will be woken
  * up.
  *
- * The caller must be holding the mutex associated with the condition variable
- * before making this call, which will not release the mutex.
- *
  * If no threads are waiting, this is a no-op: the notify event is lost.
  */
 INLINE void ConditionVarDirect::
 notify() {
   TAU_PROFILE("ConditionVarDirect::notify()", " ", TAU_USER);
   _impl.notify();
+}
+
+/**
+ * Informs all of the other threads who are currently blocked on wait() that
+ * the relevant condition has changed.
+ *
+ * If no threads are waiting, this is a no-op: the notify event is lost.
+ */
+INLINE void ConditionVarDirect::
+notify_all() {
+  TAU_PROFILE("ConditionVarDirect::notify()", " ", TAU_USER);
+  _impl.notify_all();
 }

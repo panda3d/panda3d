@@ -35,7 +35,7 @@ CollisionHandlerFluidPusher() {
  */
 void CollisionHandlerFluidPusher::
 add_entry(CollisionEntry *entry) {
-  nassertv(entry != (CollisionEntry *)NULL);
+  nassertv(entry != nullptr);
   // skip over CollisionHandlerPhysical::add_entry, since it filters out
   // collidees by orientation; our collider can change direction mid-frame, so
   // it may collide with something that would have been filtered out
@@ -72,7 +72,7 @@ handle_entries() {
     PosB = collider's current position
     M = movement vector (PosB - PosA)
     BV = bounding sphere that includes collider at PosA and PosB
-    CS = 'collision set', all 'collidables' within BV (collision polys, tubes, etc)
+    CS = 'collision set', all 'collidables' within BV (collision polys, capsules, etc)
 
     VARIABLES
     N = movement vector since most recent collision (or start of frame)
@@ -154,24 +154,24 @@ handle_entries() {
 
       // unit vector pointing out to the right relative to the direction of
       // motion, looking into the direction of motion
-      const LVector3 right_unit(LVector3::up().cross(reverse_vec));
+      //const LVector3 right_unit(LVector3::up().cross(reverse_vec));
 
       // iterate until the mover runs out of movement or gets stuck
       while (true) {
-        const CollisionEntry *C = 0;
+        const CollisionEntry *C = nullptr;
         // find the first (earliest) collision
         Entries::const_iterator cei;
         for (cei = entries.begin(); cei != entries.end(); ++cei) {
           const CollisionEntry *entry = (*cei);
-          nassertr(entry != (CollisionEntry *)NULL, false);
-          if (entry->collided() && ((C == 0) || (entry->get_t() < C->get_t()))) {
+          nassertr(entry != nullptr, false);
+          if (entry->collided() && ((C == nullptr) || (entry->get_t() < C->get_t()))) {
             nassertr(from_node_path == entry->get_from_node_path(), false);
             C = entry;
           }
         }
 
         // if no collisions, we're done
-        if (C == 0) {
+        if (C == nullptr) {
           break;
         }
 
@@ -213,11 +213,11 @@ handle_entries() {
         prev_trans = prev_trans->set_pos(contact_pos);
         from_node_path.set_prev_transform(wrt_node, prev_trans);
 
-        {
+        /*{
           const LPoint3 new_pos(from_node_path.get_pos(wrt_node));
           CPT(TransformState) new_prev_trans(from_node_path.get_prev_transform(wrt_node));
           const LPoint3 new_prev_pos(new_prev_trans->get_pos());
-        }
+        }*/
 
         // recalculate the position delta
         N = from_node_path.get_pos_delta(wrt_node);
@@ -227,13 +227,13 @@ handle_entries() {
         Entries new_entries;
         for (ei = entries.begin(); ei != entries.end(); ++ei) {
           CollisionEntry *entry = (*ei);
-          nassertr(entry != (CollisionEntry *)NULL, false);
+          nassertr(entry != nullptr, false);
           // skip the one we just collided against
           if (entry != C) {
             entry->_from_node_path = from_node_path;
             entry->reset_collided();
             PT(CollisionEntry) result = entry->get_from()->test_intersection(**ei);
-            if (result != (CollisionEntry *)NULL && result != (CollisionEntry *)0) {
+            if (result != nullptr && result != nullptr) {
               new_entries.push_back(result);
             }
           }

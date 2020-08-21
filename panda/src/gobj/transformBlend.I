@@ -128,7 +128,7 @@ get_num_transforms() const {
  */
 INLINE const VertexTransform *TransformBlend::
 get_transform(size_t n) const {
-  nassertr(n < _entries.size(), NULL);
+  nassertr(n < _entries.size(), nullptr);
   return _entries[n]._transform;
 }
 
@@ -140,6 +140,17 @@ INLINE PN_stdfloat TransformBlend::
 get_weight(size_t n) const {
   nassertr(n < _entries.size(), 0.0f);
   return _entries[n]._weight;
+}
+
+/**
+ * Removes the nth transform stored in the blend object.
+ */
+INLINE void TransformBlend::
+remove_transform(size_t n) {
+  nassertv(n < _entries.size());
+  _entries.erase(_entries.begin() + n);
+  Thread *current_thread = Thread::get_current_thread();
+  clear_result(current_thread);
 }
 
 /**
@@ -365,8 +376,8 @@ CData(const TransformBlend::CData &copy) :
 {
 }
 
-INLINE ostream &
-operator << (ostream &out, const TransformBlend &obj) {
+INLINE std::ostream &
+operator << (std::ostream &out, const TransformBlend &obj) {
   obj.output(out);
   return out;
 }

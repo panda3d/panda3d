@@ -16,15 +16,16 @@
  */
 INLINE AnimateVerticesRequest::
 AnimateVerticesRequest(GeomVertexData *geom_vertex_data) :
-  _geom_vertex_data(geom_vertex_data),
-  _is_ready(false)
+  _geom_vertex_data(geom_vertex_data)
 {
 }
 
 /**
  * Returns true if this request has completed, false if it is still pending.
+ * Equivalent to `req.done() and not req.cancelled()`.
+ * @see done()
  */
 INLINE bool AnimateVerticesRequest::
 is_ready() const {
-  return _is_ready;
+  return (FutureState)AtomicAdjust::get(_future_state) == FS_finished;
 }

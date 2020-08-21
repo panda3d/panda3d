@@ -83,25 +83,6 @@ get_unique() const {
 }
 
 /**
- * Returns the variant of this RenderAttrib that's most relevant for
- * associating with an auto-generated shader.  This should be a new
- * RenderAttrib of the same type as this one, with any superfluous data set to
- * neutral.  Only the parts of the attrib that contribute to the shader should
- * be reflected in the returned attrib.  The idea is to associate the auto-
- * generated shader with the most neutral form of all states, to allow it to
- * be shared across as many RenderState objects as possible.
- *
- * If this RenderAttrib is completely irrelevant to the auto-shader, this
- * should return NULL to indicate that the attrib won't be assocaited with the
- * shader at all.  In this case the attrib does not contribute to the shader
- * meaningfully.
- */
-INLINE CPT(RenderAttrib) RenderAttrib::
-get_auto_shader_attrib(const RenderState *state) const {
-  return get_auto_shader_attrib_impl(state);
-}
-
-/**
  * Calculates a suitable hash value for phash_map.
  */
 INLINE void RenderAttrib::

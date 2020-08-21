@@ -39,8 +39,7 @@ protected:
   virtual bool post_command_line();
 
 private:
-  ofstream _output_stream;
-  ostream *_output_ptr;
+  std::ofstream _output_stream;
 };
 
 #endif

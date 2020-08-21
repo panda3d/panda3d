@@ -54,7 +54,7 @@ public:
 
 PUBLISHED:
   INLINE int get_slot(TypeHandle type_handle) const;
-  static CONSTEXPR int get_max_slots();
+  static constexpr int get_max_slots() { return _max_slots; }
 
   INLINE int get_num_slots() const;
   INLINE TypeHandle get_slot_type(int slot) const;

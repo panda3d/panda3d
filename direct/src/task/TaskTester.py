@@ -24,7 +24,8 @@ def taskCallback(task):
     spawnNewTask()
     return Task.done
 
-taskMgr.removeTasksMatching("taskTester*")
+if __name__ == '__main__':
+    taskMgr.removeTasksMatching("taskTester*")
 
-for i in range(numTasks):
-    spawnNewTask()
+    for i in range(numTasks):
+        spawnNewTask()

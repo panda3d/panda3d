@@ -48,7 +48,7 @@ public:
   GtkStatsMonitor(GtkStatsServer *server);
   virtual ~GtkStatsMonitor();
 
-  virtual string get_monitor_name();
+  virtual std::string get_monitor_name();
 
   virtual void initialized();
   virtual void got_hello();
@@ -100,7 +100,7 @@ private:
   int _next_chart_index;
   GtkWidget *_frame_rate_menu_item;
   GtkWidget *_frame_rate_label;
-  string _window_title;
+  std::string _window_title;
   int _time_units;
   double _scroll_speed;
   bool _pause;

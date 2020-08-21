@@ -18,6 +18,8 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 
+using std::string;
+
 bool PNMFileType::_did_init_pnm = false;
 TypeHandle PNMFileType::_type_handle;
 
@@ -91,8 +93,8 @@ matches_magic_number(const string &) const {
  * returns NULL.
  */
 PNMReader *PNMFileType::
-make_reader(istream *, bool, const string &) {
-  return NULL;
+make_reader(std::istream *, bool, const string &) {
+  return nullptr;
 }
 
 /**
@@ -101,8 +103,8 @@ make_reader(istream *, bool, const string &) {
  * NULL.
  */
 PNMWriter *PNMFileType::
-make_writer(ostream *, bool) {
-  return NULL;
+make_writer(std::ostream *, bool) {
+  return nullptr;
 }
 
 /**

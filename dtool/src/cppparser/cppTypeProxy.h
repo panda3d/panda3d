@@ -33,20 +33,20 @@ public:
   virtual bool is_tbd() const;
 
   bool has_typedef_name() const;
-  string get_typedef_name(CPPScope *scope = NULL) const;
+  std::string get_typedef_name(CPPScope *scope = nullptr) const;
 
-  virtual string get_simple_name() const;
-  virtual string get_local_name(CPPScope *scope = NULL) const;
-  virtual string get_fully_scoped_name() const;
-  virtual string get_preferred_name() const;
+  virtual std::string get_simple_name() const;
+  virtual std::string get_local_name(CPPScope *scope = nullptr) const;
+  virtual std::string get_fully_scoped_name() const;
+  virtual std::string get_preferred_name() const;
 
   virtual bool is_incomplete() const;
 
-  virtual void output_instance(ostream &out, int indent_level,
+  virtual void output_instance(std::ostream &out, int indent_level,
                                CPPScope *scope,
-                               bool complete, const string &prename,
-                               const string &name) const;
-  virtual void output(ostream &out, int indent_level, CPPScope *scope,
+                               bool complete, const std::string &prename,
+                               const std::string &name) const;
+  virtual void output(std::ostream &out, int indent_level, CPPScope *scope,
                       bool complete) const;
 
   virtual SubType get_subtype() const;

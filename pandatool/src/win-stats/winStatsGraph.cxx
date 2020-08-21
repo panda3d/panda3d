@@ -30,8 +30,8 @@ WinStatsGraph(WinStatsMonitor *monitor) :
 {
   _window = 0;
   _graph_window = 0;
-  _sizewe_cursor = LoadCursor(NULL, IDC_SIZEWE);
-  _hand_cursor = LoadCursor(NULL, IDC_HAND);
+  _sizewe_cursor = LoadCursor(nullptr, IDC_SIZEWE);
+  _hand_cursor = LoadCursor(nullptr, IDC_HAND);
   _bitmap = 0;
   _bitmap_dc = 0;
 
@@ -59,7 +59,7 @@ WinStatsGraph(WinStatsMonitor *monitor) :
  */
 WinStatsGraph::
 ~WinStatsGraph() {
-  _monitor = (WinStatsMonitor *)NULL;
+  _monitor = nullptr;
   release_bitmap();
 
   DeleteObject(_dark_pen);
@@ -142,8 +142,8 @@ set_pause(bool pause) {
  */
 void WinStatsGraph::
 user_guide_bars_changed() {
-  InvalidateRect(_window, NULL, TRUE);
-  InvalidateRect(_graph_window, NULL, TRUE);
+  InvalidateRect(_window, nullptr, TRUE);
+  InvalidateRect(_graph_window, nullptr, TRUE);
 }
 
 /**
@@ -160,8 +160,8 @@ clicked_label(int collector_index) {
 void WinStatsGraph::
 close() {
   WinStatsMonitor *monitor = _monitor;
-  _monitor = (WinStatsMonitor *)NULL;
-  if (monitor != (WinStatsMonitor *)NULL) {
+  _monitor = nullptr;
+  if (monitor != nullptr) {
     monitor->remove_graph(this);
   }
 }
@@ -228,7 +228,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
   case WM_SIZE:
     move_label_stack();
-    InvalidateRect(hwnd, NULL, TRUE);
+    InvalidateRect(hwnd, nullptr, TRUE);
     break;
 
   case WM_SIZING:
@@ -286,7 +286,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       int16_t x = LOWORD(lparam);
       _left_margin += (x - _drag_start_x);
       _drag_start_x = x;
-      InvalidateRect(hwnd, NULL, TRUE);
+      InvalidateRect(hwnd, nullptr, TRUE);
       move_label_stack();
       return 0;
 
@@ -294,7 +294,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       int16_t x = LOWORD(lparam);
       _right_margin += (_drag_start_x - x);
       _drag_start_x = x;
-      InvalidateRect(hwnd, NULL, TRUE);
+      InvalidateRect(hwnd, nullptr, TRUE);
       return 0;
     }
     break;
@@ -467,8 +467,8 @@ move_graph_window(int graph_left, int graph_top, int graph_xsize, int graph_ysiz
 void WinStatsGraph::
 setup_bitmap(int xsize, int ysize) {
   release_bitmap();
-  _bitmap_xsize = max(xsize, 0);
-  _bitmap_ysize = max(ysize, 0);
+  _bitmap_xsize = std::max(xsize, 0);
+  _bitmap_ysize = std::max(ysize, 0);
 
   HDC hdc = GetDC(_graph_window);
   _bitmap_dc = CreateCompatibleDC(hdc);
@@ -505,16 +505,16 @@ create_graph_window() {
     return;
   }
 
-  HINSTANCE application = GetModuleHandle(NULL);
+  HINSTANCE application = GetModuleHandle(nullptr);
   register_graph_window_class(application);
 
-  string window_title = "graph";
+  std::string window_title = "graph";
   DWORD window_style = WS_CHILD | WS_CLIPSIBLINGS;
 
   _graph_window =
     CreateWindow(_graph_window_class_name, window_title.c_str(), window_style,
                  0, 0, 0, 0,
-                 _window, NULL, application, 0);
+                 _window, nullptr, application, 0);
   if (!_graph_window) {
     nout << "Could not create graph window!\n";
     exit(1);
@@ -539,9 +539,9 @@ register_graph_window_class(HINSTANCE application) {
   wc.style = CS_DBLCLKS;
   wc.lpfnWndProc = (WNDPROC)static_graph_window_proc;
   wc.hInstance = application;
-  wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-  wc.hbrBackground = NULL;
-  wc.lpszMenuName = NULL;
+  wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
+  wc.hbrBackground = nullptr;
+  wc.lpszMenuName = nullptr;
   wc.lpszClassName = _graph_window_class_name;
 
   // Reserve space to associate the this pointer with the window.
@@ -561,7 +561,7 @@ register_graph_window_class(HINSTANCE application) {
 LONG WINAPI WinStatsGraph::
 static_graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   WinStatsGraph *self = (WinStatsGraph *)GetWindowLongPtr(hwnd, 0);
-  if (self != (WinStatsGraph *)NULL && self->_graph_window == hwnd) {
+  if (self != nullptr && self->_graph_window == hwnd) {
     return self->graph_window_proc(hwnd, msg, wparam, lparam);
   } else {
     return DefWindowProc(hwnd, msg, wparam, lparam);

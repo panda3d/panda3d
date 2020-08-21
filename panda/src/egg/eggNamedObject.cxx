@@ -22,7 +22,7 @@ TypeHandle EggNamedObject::_type_handle;
  *
  */
 void EggNamedObject::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type();
   if (has_name()) {
     out << " " << get_name();
@@ -36,7 +36,7 @@ output(ostream &out) const {
  * "<Group>".
  */
 void EggNamedObject::
-write_header(ostream &out, int indent_level, const char *egg_keyword) const {
+write_header(std::ostream &out, int indent_level, const char *egg_keyword) const {
   indent(out, indent_level) << egg_keyword << " ";
 
   if (has_name()) {

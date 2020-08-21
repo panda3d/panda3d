@@ -47,12 +47,11 @@ PUBLISHED:
   MAKE_PROPERTY(color, get_color);
 
 public:
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 protected:
   virtual int compare_to_impl(const RenderAttrib *other) const;
   virtual size_t get_hash_impl() const;
-  virtual CPT(RenderAttrib) get_auto_shader_attrib_impl(const RenderState *state) const;
 
 private:
   void quantize_color();
@@ -70,6 +69,7 @@ PUBLISHED:
   virtual int get_slot() const {
     return get_class_slot();
   }
+  MAKE_PROPERTY(class_slot, get_class_slot);
 
 public:
   static void register_with_read_factory();
@@ -88,7 +88,7 @@ public:
     register_type(_type_handle, "ColorAttrib",
                   RenderAttrib::get_class_type());
     _attrib_slot = register_slot(_type_handle, 100,
-      new ColorAttrib(T_off, LColor(1, 1, 1, 1)));
+      new ColorAttrib(T_vertex, LColor::zero()));
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

@@ -27,15 +27,20 @@ StateMunger::
  */
 CPT(RenderState) StateMunger::
 munge_state(const RenderState *state) {
-  int mi = _state_map.find(state);
+  RenderState::MungedStates &munged_states = state->_munged_states;
+
+  int id = get_gsg()->_id;
+  int mi = munged_states.find(id);
   if (mi != -1) {
-    if (!_state_map.get_data(mi).was_deleted()) {
-      return _state_map.get_data(mi).p();
+    if (auto munged_state = munged_states.get_data(mi).lock()) {
+      return munged_state;
+    } else {
+      munged_states.remove_element(mi);
     }
   }
 
   CPT(RenderState) result = munge_state_impl(state);
-  _state_map.store(state, result.p());
+  munged_states.store(id, result);
 
   return result;
 }

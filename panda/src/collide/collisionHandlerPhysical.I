@@ -74,7 +74,7 @@ set_target(const NodePath &target, DriveInterface *drive_interface) {
  */
 INLINE void CollisionHandlerPhysical::ColliderDef::
 updated_transform() {
-  if (_drive_interface != (DriveInterface *)NULL) {
+  if (_drive_interface != nullptr) {
     _drive_interface->set_mat(_target.get_mat());
     _drive_interface->force_dgraph();
   }

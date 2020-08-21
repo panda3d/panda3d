@@ -11,8 +11,8 @@
  * @date 2010-02-09
  */
 
-#ifndef __BULLET_TRIANGLE_MESH_H__
-#define __BULLET_TRIANGLE_MESH_H__
+#ifndef BULLETTRIANGLEMESH_H
+#define BULLETTRIANGLEMESH_H
 
 #include "pandabase.h"
 
@@ -30,10 +30,9 @@
  *
  */
 class EXPCL_PANDABULLET BulletTriangleMesh : public TypedWritableReferenceCount {
-
 PUBLISHED:
   BulletTriangleMesh();
-  INLINE ~BulletTriangleMesh();
+  ~BulletTriangleMesh() = default;
 
   void add_triangle(const LPoint3 &p0,
                     const LPoint3 &p1,
@@ -49,17 +48,40 @@ PUBLISHED:
   void set_welding_distance(PN_stdfloat distance);
   void preallocate(int num_verts, int num_indices);
 
-  int get_num_triangles() const;
+  size_t get_num_triangles() const;
   PN_stdfloat get_welding_distance() const;
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
 public:
-  INLINE btTriangleMesh *ptr() const;
+  size_t get_num_vertices() const;
+  LPoint3 get_vertex(size_t index) const;
+
+  LVecBase3i get_triangle(size_t index) const;
+
+  size_t do_get_num_triangles() const;
+  void do_add_triangle(const LPoint3 &p0,
+                       const LPoint3 &p1,
+                       const LPoint3 &p2,
+                       bool remove_duplicate_vertices=false);
+
+PUBLISHED:
+  MAKE_PROPERTY(welding_distance, get_welding_distance, set_welding_distance);
+
+  MAKE_SEQ_PROPERTY(vertices, get_num_vertices, get_vertex);
+  MAKE_SEQ_PROPERTY(triangles, get_num_triangles, get_triangle);
+
+public:
+  INLINE btStridingMeshInterface *ptr() const;
 
 private:
-  btTriangleMesh *_mesh;
+  unsigned int find_or_add_vertex(const LVecBase3 &p);
+
+  btTriangleIndexVertexArray _mesh;
+  btAlignedObjectArray<btVector3> _vertices;
+  btAlignedObjectArray<unsigned int> _indices;
+  PN_stdfloat _welding_distance;
 
 public:
   static void register_with_read_factory();
@@ -90,8 +112,8 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const BulletTriangleMesh &obj);
+INLINE std::ostream &operator << (std::ostream &out, const BulletTriangleMesh &obj);
 
 #include "bulletTriangleMesh.I"
 
-#endif // __BULLET_TRIANGLE_MESH_H__
+#endif // BULLETTRIANGLEMESH_H

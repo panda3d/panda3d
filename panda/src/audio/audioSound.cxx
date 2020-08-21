@@ -14,6 +14,8 @@
 
 #include "audioSound.h"
 
+using std::ostream;
+
 TypeHandle AudioSound::_type_handle;
 
 /**
@@ -79,23 +81,6 @@ get_speaker_mix(int speaker) {
 void AudioSound::
 set_speaker_mix(PN_stdfloat frontleft, PN_stdfloat frontright, PN_stdfloat center, PN_stdfloat sub, PN_stdfloat backleft, PN_stdfloat backright, PN_stdfloat sideleft, PN_stdfloat  sideright) {
     // intentionally blank
-}
-
-/**
- * For use only with Miles.
- */
-PN_stdfloat AudioSound::
-get_speaker_level(int index) {
-  // intentionally blank
-  return 0.0;
-}
-
-/**
- * For use only with Miles.
- */
-void AudioSound::
-set_speaker_levels(PN_stdfloat level1, PN_stdfloat level2, PN_stdfloat level3, PN_stdfloat level4, PN_stdfloat level5, PN_stdfloat level6, PN_stdfloat level7, PN_stdfloat level8, PN_stdfloat level9) {
-  // intentionally blank
 }
 
 /**

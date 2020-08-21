@@ -306,7 +306,7 @@ almost_equal(const FLOATNAME(LMatrix4) &other, FLOATTYPE threshold) const {
  *
  */
 void FLOATNAME(LMatrix4)::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "[ "
       << MAYBE_ZERO(_m(0, 0)) << " "
       << MAYBE_ZERO(_m(0, 1)) << " "
@@ -334,7 +334,7 @@ output(ostream &out) const {
  *
  */
 void FLOATNAME(LMatrix4)::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << MAYBE_ZERO(_m(0, 0)) << " "
     << MAYBE_ZERO(_m(0, 1)) << " "

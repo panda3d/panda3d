@@ -24,7 +24,7 @@
  * motion to your class, do NOT derive from this.  Derive from Physical
  * instead.
  */
-class EXPCL_PANDAPHYSICS PhysicsObject : public TypedReferenceCount {
+class EXPCL_PANDA_PHYSICS PhysicsObject : public TypedReferenceCount {
 public:
   typedef pvector<PT(PhysicsObject)> Vector;
 
@@ -87,17 +87,17 @@ PUBLISHED:
   virtual LMatrix4 get_lcs() const;
   virtual PhysicsObject *make_copy() const;
 
-  #ifndef NDEBUG
-    void set_name(const string &name) {
-      _name = name;
-    }
-    const string& get_name() {
-      return _name;
-    }
-  #endif
+#if !defined(NDEBUG) || !defined(CPPPARSER)
+  void set_name(const std::string &name) {
+    _name = name;
+  }
+  const std::string &get_name() {
+    return _name;
+  }
+#endif
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, unsigned int indent=0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent=0) const;
 
 private:
   // physical
@@ -115,9 +115,7 @@ private:
   bool _process_me;
   bool _oriented;
 
-  #ifndef NDEBUG
-    string _name;
-  #endif
+  std::string _name;
 
 public:
   static TypeHandle get_class_type() {

@@ -31,7 +31,7 @@ public:
   INLINE_MATHUTIL BoundingLine();
 
 PUBLISHED:
-  INLINE_MATHUTIL BoundingLine(const LPoint3 &a, const LPoint3 &b);
+  INLINE_MATHUTIL explicit BoundingLine(const LPoint3 &a, const LPoint3 &b);
   ALLOC_DELETED_CHAIN(BoundingLine);
 
 public:
@@ -40,7 +40,7 @@ public:
   virtual LPoint3 get_approx_center() const;
   virtual void xform(const LMatrix4 &mat);
 
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 PUBLISHED:
   INLINE_MATHUTIL const LPoint3 &get_point_a() const;

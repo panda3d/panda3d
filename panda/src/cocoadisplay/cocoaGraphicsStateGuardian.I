@@ -19,3 +19,21 @@ INLINE const FrameBufferProperties &CocoaGraphicsStateGuardian::
 get_fb_properties() const {
   return _fbprops;
 }
+
+/**
+ * Locks the context.
+ */
+INLINE void CocoaGraphicsStateGuardian::
+lock_context() {
+  nassertv(_context != nil);
+  CGLLockContext((CGLContextObj) [_context CGLContextObj]);
+}
+
+/**
+ * Unlocks the context.
+ */
+INLINE void CocoaGraphicsStateGuardian::
+unlock_context() {
+  nassertv(_context != nil);
+  CGLUnlockContext((CGLContextObj) [_context CGLContextObj]);
+}

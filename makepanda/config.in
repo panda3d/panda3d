@@ -31,7 +31,7 @@ fullscreen #f
 
 # The framebuffer-hardware flag forces it to use an accelerated driver.
 # The framebuffer-software flag forces it to use a software renderer.
-# If you don't set either, it will use whatever's available.
+# If you set both to false, it will use whatever's available.
 
 framebuffer-hardware #t
 framebuffer-software #f
@@ -89,7 +89,7 @@ hardware-animated-vertices #f
 
 # Enable the model-cache, but only for models, not textures.
 
-model-cache-dir $HOME/.panda3d/cache
+model-cache-dir $XDG_CACHE_HOME/panda3d
 model-cache-textures #f
 
 # This option specifies the default profiles for Cg shaders.

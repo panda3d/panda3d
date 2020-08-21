@@ -10,8 +10,8 @@
  * @author Ben Buchwald <bb2@alumni.cmu.edu>
  */
 
-#ifndef __OPENAL_AUDIO_MANAGER_H__
-#define __OPENAL_AUDIO_MANAGER_H__
+#ifndef OPENALAUDIOMANAGER_H
+#define OPENALAUDIOMANAGER_H
 
 #include "pandabase.h"
 
@@ -51,10 +51,10 @@ class EXPCL_OPENAL_AUDIO OpenALAudioManager : public AudioManager {
 
   virtual bool is_valid();
 
-  virtual PT(AudioSound) get_sound(const string&,     bool positional = false, int mode=SM_heuristic);
+  virtual PT(AudioSound) get_sound(const Filename &, bool positional = false, int mode=SM_heuristic);
   virtual PT(AudioSound) get_sound(MovieAudio *sound, bool positional = false, int mode=SM_heuristic);
 
-  virtual void uncache_sound(const string&);
+  virtual void uncache_sound(const Filename &);
   virtual void clear_cache();
   virtual void set_cache_limit(unsigned int count);
   virtual unsigned int get_cache_limit() const;
@@ -84,11 +84,14 @@ class EXPCL_OPENAL_AUDIO OpenALAudioManager : public AudioManager {
                                                 PN_stdfloat *fx, PN_stdfloat *fy, PN_stdfloat *fz,
                                                 PN_stdfloat *ux, PN_stdfloat *uy, PN_stdfloat *uz);
 
-  // Control the "relative distance factor" for 3D spacialized audio in units-
-  // per-foot.  Default is 1.0 OpenAL has no distance factor but we use this
-  // as a scale on the minmax distances of sounds to preserve FMOD
-  // compatibility.  Also, adjusts the speed of sound to compensate for unit
-  // difference.
+
+  // Control the "relative scale that sets the distance factor" units for 3D
+  // spacialized audio. This is a float in units-per-meter. Default value is
+  // 1.0, which means that Panda units are understood as meters; for e.g.
+  // feet, set 3.28. This factor is applied only to Fmod and OpenAL at the
+  // moment.
+  // OpenAL in fact has no distance factor like Fmod, but works with the speed
+  // of sound instead, so we use this factor to scale the speed of sound.
   virtual void audio_3d_set_distance_factor(PN_stdfloat factor);
   virtual PN_stdfloat audio_3d_get_distance_factor() const;
 
@@ -111,7 +114,7 @@ class EXPCL_OPENAL_AUDIO OpenALAudioManager : public AudioManager {
   virtual void update();
 
 private:
-  string select_audio_device();
+  std::string select_audio_device();
 
   void make_current() const;
 
@@ -125,6 +128,8 @@ private:
   void increment_client_count(SoundData *sd);
   void decrement_client_count(SoundData *sd);
   void discard_excess_cache(int limit);
+
+  void delete_buffer(ALuint buffer);
 
   void starting_sound(OpenALAudioSound* audio);
   void stopping_sound(OpenALAudioSound* audio);
@@ -170,7 +175,7 @@ private:
   };
 
 
-  typedef phash_map<string, SoundData *> SampleCache;
+  typedef phash_map<std::string, SoundData *> SampleCache;
   SampleCache _sample_cache;
 
   typedef phash_set<PT(OpenALAudioSound)> SoundsPlaying;
@@ -237,4 +242,4 @@ private:
 
 EXPCL_OPENAL_AUDIO AudioManager *Create_OpenALAudioManager();
 
-#endif /* __OPENAL_AUDIO_MANAGER_H__ */
+#endif /* OPENALAUDIOMANAGER_H */

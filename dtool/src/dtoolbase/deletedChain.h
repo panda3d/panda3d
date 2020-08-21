@@ -77,7 +77,7 @@ public:
 // Place this macro within a class definition to define appropriate operator
 // new and delete methods that take advantage of DeletedChain.
 #define ALLOC_DELETED_CHAIN(Type)                            \
-  inline void *operator new(size_t size) {                   \
+  inline void *operator new(size_t size) RETURNS_ALIGNED(MEMORY_HOOK_ALIGNMENT) { \
     return (void *)StaticDeletedChain< Type >::allocate(size, get_type_handle(Type)); \
   }                                                          \
   inline void *operator new(size_t size, void *ptr) {        \
@@ -85,7 +85,9 @@ public:
     return ptr;                                              \
   }                                                          \
   inline void operator delete(void *ptr) {                   \
-    StaticDeletedChain< Type >::deallocate((Type *)ptr, get_type_handle(Type)); \
+    if (ptr != nullptr) {                                    \
+      StaticDeletedChain< Type >::deallocate((Type *)ptr, get_type_handle(Type)); \
+    }                                                        \
   }                                                          \
   inline void operator delete(void *, void *) {              \
   }                                                          \
@@ -96,7 +98,7 @@ public:
 // Use this variant of the above macro in cases in which the compiler fails to
 // unify the static template pointers properly, to prevent leaks.
 #define ALLOC_DELETED_CHAIN_DECL(Type)                       \
-  inline void *operator new(size_t size) {                   \
+  inline void *operator new(size_t size) RETURNS_ALIGNED(MEMORY_HOOK_ALIGNMENT) { \
     return (void *)_deleted_chain.allocate(size, get_type_handle(Type)); \
   }                                                          \
   inline void *operator new(size_t size, void *ptr) {        \
@@ -104,7 +106,9 @@ public:
     return ptr;                                              \
   }                                                          \
   inline void operator delete(void *ptr) {                   \
-    _deleted_chain.deallocate((Type *)ptr, get_type_handle(Type)); \
+    if (ptr != nullptr) {                                    \
+      _deleted_chain.deallocate((Type *)ptr, get_type_handle(Type)); \
+    }                                                        \
   }                                                          \
   inline void operator delete(void *, void *) {              \
   }                                                          \
@@ -122,11 +126,11 @@ public:
 
 #define ALLOC_DELETED_CHAIN(Type)                            \
   inline static bool validate_ptr(const void *ptr) {         \
-    return (ptr != NULL);                                    \
+    return (ptr != nullptr);                                    \
   }
 #define ALLOC_DELETED_CHAIN_DECL(Type)                       \
   inline static bool validate_ptr(const void *ptr) {         \
-    return (ptr != NULL);                                    \
+    return (ptr != nullptr);                                    \
   }
 #define ALLOC_DELETED_CHAIN_DEF(Type)
 

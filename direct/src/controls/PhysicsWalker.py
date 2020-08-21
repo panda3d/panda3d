@@ -2,15 +2,17 @@
 PhysicsWalker.py is for avatars.
 
 A walker control such as this one provides:
-    - creation of the collision nodes
-    - handling the keyboard and mouse input for avatar movement
-    - moving the avatar
+
+- creation of the collision nodes
+- handling the keyboard and mouse input for avatar movement
+- moving the avatar
 
 it does not:
-    - play sounds
-    - play animations
 
-although it does send messeges that allow a listener to play sounds or
+- play sounds
+- play animations
+
+although it does send messages that allow a listener to play sounds or
 animations based on walker events.
 """
 
@@ -66,51 +68,6 @@ class PhysicsWalker(DirectObject.DirectObject):
 
         self.isAirborne = 0
         self.highMark = 0
-
-    """
-    def spawnTest(self):
-        assert self.debugPrint("\n\nspawnTest()\n")
-        if not self.wantDebugIndicator:
-            return
-        from pandac.PandaModules import *
-        from direct.interval.IntervalGlobal import *
-        from toontown.coghq import MovingPlatform
-
-        if hasattr(self, "platform"):
-            # Remove the prior instantiation:
-            self.moveIval.pause()
-            del self.moveIval
-            self.platform.destroy()
-            del self.platform
-
-        model = loader.loadModel('phase_9/models/cogHQ/platform1')
-        fakeId = id(self)
-        self.platform = MovingPlatform.MovingPlatform()
-        self.platform.setupCopyModel(fakeId, model, 'platformcollision')
-        self.platformRoot = render.attachNewNode("physicsWalker-spawnTest-%s"%fakeId)
-        self.platformRoot.setPos(base.localAvatar, Vec3(0.0, 3.0, 1.0))
-        self.platformRoot.setHpr(base.localAvatar, Vec3.zero())
-        self.platform.reparentTo(self.platformRoot)
-
-        startPos = Vec3(0.0, -15.0, 0.0)
-        endPos = Vec3(0.0, 15.0, 0.0)
-        distance = Vec3(startPos-endPos).length()
-        duration = distance/4
-        self.moveIval = Sequence(
-            WaitInterval(0.3),
-            LerpPosInterval(self.platform, duration,
-                            endPos, startPos=startPos,
-                            name='platformOut%s' % fakeId,
-                            fluid = 1),
-            WaitInterval(0.3),
-            LerpPosInterval(self.platform, duration,
-                            startPos, startPos=endPos,
-                            name='platformBack%s' % fakeId,
-                            fluid = 1),
-            name='platformIval%s' % fakeId,
-            )
-        self.moveIval.loop()
-    """
 
     def setWalkSpeed(self, forward, jump, reverse, rotate):
         assert self.debugPrint("setWalkSpeed()")

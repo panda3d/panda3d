@@ -126,7 +126,7 @@ get_num_columns() const {
  */
 INLINE const GeomVertexColumn *GeomVertexArrayFormat::
 get_column(int i) const {
-  nassertr(i >= 0 && i < (int)_columns.size(), NULL);
+  nassertr(i >= 0 && i < (int)_columns.size(), nullptr);
   consider_sort_columns();
   return _columns[(size_t)i];
 }
@@ -136,7 +136,7 @@ get_column(int i) const {
  */
 INLINE bool GeomVertexArrayFormat::
 has_column(const InternalName *name) const {
-  return (get_column(name) != (GeomVertexColumn *)NULL);
+  return (get_column(name) != nullptr);
 }
 
 /**
@@ -144,7 +144,7 @@ has_column(const InternalName *name) const {
  */
 INLINE GeomVertexArrayFormat::Registry *GeomVertexArrayFormat::
 get_registry() {
-  if (_registry == (Registry *)NULL) {
+  if (_registry == nullptr) {
     make_registry();
   }
   return _registry;
@@ -160,8 +160,8 @@ consider_sort_columns() const {
   }
 }
 
-INLINE ostream &
-operator << (ostream &out, const GeomVertexArrayFormat &obj) {
+INLINE std::ostream &
+operator << (std::ostream &out, const GeomVertexArrayFormat &obj) {
   obj.output(out);
   return out;
 }

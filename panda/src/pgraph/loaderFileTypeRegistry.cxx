@@ -21,6 +21,8 @@
 
 #include <algorithm>
 
+using std::string;
+
 LoaderFileTypeRegistry *LoaderFileTypeRegistry::_global_ptr;
 
 /**
@@ -112,6 +114,41 @@ register_deferred_type(const string &extension, const string &library) {
 }
 
 /**
+ * Removes a type previously registered using register_type.
+ */
+void LoaderFileTypeRegistry::
+unregister_type(LoaderFileType *type) {
+  Types::iterator it = find(_types.begin(), _types.end(), type);
+  if (it == _types.end()) {
+    if (loader_cat.is_debug()) {
+      loader_cat.debug()
+        << "Attempt to unregister LoaderFileType " << type->get_name()
+        << " (" << type->get_type() << "), which was not registered.\n";
+    }
+    return;
+  }
+
+  _types.erase(it);
+
+  {
+    std::string dcextension = downcase(type->get_extension());
+    Extensions::iterator ei = _extensions.find(dcextension);
+    if (ei != _extensions.end() && ei->second == type) {
+      _extensions.erase(ei);
+    }
+  }
+
+  vector_string words;
+  extract_words(type->get_additional_extensions(), words);
+  for (const std::string &word : words) {
+    Extensions::iterator ei = _extensions.find(downcase(word));
+    if (ei != _extensions.end() && ei->second == type) {
+      _extensions.erase(ei);
+    }
+  }
+}
+
+/**
  * Returns the total number of types registered.
  */
 int LoaderFileTypeRegistry::
@@ -124,7 +161,7 @@ get_num_types() const {
  */
 LoaderFileType *LoaderFileTypeRegistry::
 get_type(int n) const {
-  nassertr(n >= 0 && n < (int)_types.size(), NULL);
+  nassertr(n >= 0 && n < (int)_types.size(), nullptr);
   return _types[n];
 }
 
@@ -152,16 +189,16 @@ get_type_from_extension(const string &extension) {
       _deferred_types.erase(di);
 
       loader_cat->info()
-        << "loading file type module: " << name << endl;
+        << "loading file type module: " << name << std::endl;
       void *tmp = load_dso(get_plugin_path().get_value(), dlname);
-      if (tmp == (void *)NULL) {
+      if (tmp == nullptr) {
         loader_cat->warning()
           << "Unable to load " << dlname.to_os_specific() << ": "
-          << load_dso_error() << endl;
-        return NULL;
+          << load_dso_error() << std::endl;
+        return nullptr;
       } else if (loader_cat.is_debug()) {
         loader_cat.debug()
-          << "done loading file type module: " << name << endl;
+          << "done loading file type module: " << name << std::endl;
       }
 
       // Now try again to find the LoaderFileType.
@@ -172,7 +209,7 @@ get_type_from_extension(const string &extension) {
   if (ei == _extensions.end()) {
     // Nothing matches that extension, even after we've checked for a deferred
     // type description.
-    return NULL;
+    return nullptr;
   }
 
   return (*ei).second;
@@ -183,7 +220,7 @@ get_type_from_extension(const string &extension) {
  * per line.
  */
 void LoaderFileTypeRegistry::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   if (_types.empty()) {
     indent(out, indent_level) << "(No file types are known).\n";
   } else {
@@ -192,7 +229,7 @@ write(ostream &out, int indent_level) const {
       LoaderFileType *type = (*ti);
       string name = type->get_name();
       indent(out, indent_level) << name;
-      indent(out, max(30 - (int)name.length(), 0)) << " ";
+      indent(out, std::max(30 - (int)name.length(), 0)) << " ";
 
       bool comma = false;
       if (!type->get_extension().empty()) {
@@ -231,7 +268,7 @@ write(ostream &out, int indent_level) const {
  */
 LoaderFileTypeRegistry *LoaderFileTypeRegistry::
 get_global_ptr() {
-  if (_global_ptr == (LoaderFileTypeRegistry *)NULL) {
+  if (_global_ptr == nullptr) {
     _global_ptr = new LoaderFileTypeRegistry;
   }
   return _global_ptr;

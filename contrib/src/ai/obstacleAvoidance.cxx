@@ -13,6 +13,8 @@
 
 #include "obstacleAvoidance.h"
 
+#include "aiWorld.h"
+
 ObstacleAvoidance::
 ObstacleAvoidance(AICharacter *ai_char, float feeler_length) {
   _ai_char = ai_char;
@@ -36,7 +38,6 @@ obstacle_detection() {
   double distance = 0x7fff ;
   double expanded_radius = 0;
   LVecBase3 to_obstacle;
-  LVecBase3 prev_avoidance;
   for(unsigned int i = 0; i < _ai_char->_world->_obstacles.size(); ++i) {
     PT(BoundingVolume) bounds = _ai_char->_world->_obstacles[i].get_bounds();
     CPT(BoundingSphere) bsphere = bounds->as_bounding_sphere();

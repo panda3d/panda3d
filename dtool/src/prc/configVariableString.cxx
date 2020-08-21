@@ -12,17 +12,16 @@
  */
 
 #include "configVariableString.h"
+#include "mutexImpl.h"
+
+static MutexImpl string_lock;
 
 /**
  * Refreshes the variable's cached value.
  */
 void ConfigVariableString::
 reload_cache() {
-  // NB. MSVC doesn't guarantee that this mutex is initialized in a
-  // thread-safe manner.  But chances are that the first time this is called
-  // is at static init time, when there is no risk of data races.
-  static MutexImpl lock;
-  lock.acquire();
+  string_lock.lock();
 
   // We check again for cache validity since another thread may have beaten
   // us to the punch while we were waiting for the lock.
@@ -31,5 +30,5 @@ reload_cache() {
     mark_cache_valid(_local_modified);
   }
 
-  lock.release();
+  string_lock.unlock();
 }

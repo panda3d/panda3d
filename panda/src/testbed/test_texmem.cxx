@@ -49,7 +49,7 @@ event_T(const Event *, void *data) {
   static const int tex_x_size = 256;
   static const int tex_y_size = 256;
 
-  cerr << "Loading " << num_quads_side * num_quads_side << " textures at "
+  std::cerr << "Loading " << num_quads_side * num_quads_side << " textures at "
        << tex_x_size << ", " << tex_y_size << "\n";
 
   PNMImage white_center(tex_x_size / 4, tex_y_size / 4);
@@ -92,7 +92,7 @@ event_T(const Event *, void *data) {
       card.set_texture(tex);
     }
   }
-  cerr << "Done.\n";
+  std::cerr << "Done.\n";
 }
 
 int
@@ -102,7 +102,7 @@ main(int argc, char *argv[]) {
   framework.set_window_title("Panda Viewer");
 
   WindowFramework *window = framework.open_window();
-  if (window != (WindowFramework *)NULL) {
+  if (window != nullptr) {
     // We've successfully opened a window.
 
     window->enable_keyboard();

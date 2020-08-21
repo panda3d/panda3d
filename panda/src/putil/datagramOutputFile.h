@@ -21,41 +21,46 @@
 #include "fileReference.h"
 #include "virtualFile.h"
 #include "virtualFileSystem.h"
-#include "config_util.h"
+#include "config_putil.h"
 
 /**
  * This class can be used to write a binary file that consists of an arbitrary
  * header followed by a number of datagrams.
  */
 class EXPCL_PANDA_PUTIL DatagramOutputFile : public DatagramSink {
-public:
+PUBLISHED:
   INLINE DatagramOutputFile();
   INLINE ~DatagramOutputFile();
 
   bool open(const FileReference *file);
   INLINE bool open(const Filename &filename);
-  bool open(ostream &out, const Filename &filename = Filename());
-  INLINE ostream &get_stream();
+  bool open(std::ostream &out, const Filename &filename = Filename());
 
   void close();
 
-  bool write_header(const string &header);
+  bool write_header(const std::string &header);
   virtual bool put_datagram(const Datagram &data);
   virtual bool copy_datagram(SubfileInfo &result, const Filename &filename);
   virtual bool copy_datagram(SubfileInfo &result, const SubfileInfo &source);
   virtual bool is_error();
   virtual void flush();
 
+public:
   virtual const Filename &get_filename();
   virtual const FileReference *get_file();
-  virtual streampos get_file_pos();
+  virtual std::streampos get_file_pos();
+
+  INLINE std::ostream &get_stream();
+
+PUBLISHED:
+  MAKE_PROPERTY(stream, get_stream);
 
 private:
   bool _wrote_first_datagram;
   bool _error;
   CPT(FileReference) _file;
   PT(VirtualFile) _vfile;
-  ostream *_out;
+  std::ostream *_out;
   bool _owns_out;
   Filename _filename;
 };

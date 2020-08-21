@@ -34,14 +34,14 @@ class PhysicsManager;
  * Defines a set of physically modeled attributes.  If you want physics
  * applied to your class, derive it from this.
  */
-class EXPCL_PANDAPHYSICS Physical : public TypedReferenceCount {
+class EXPCL_PANDA_PHYSICS Physical : public TypedReferenceCount {
 public:
   // typedef pvector<PT(PhysicsObject)> PhysicsObjectVector;
   typedef pvector<PT(LinearForce)> LinearForceVector;
   typedef pvector<PT(AngularForce)> AngularForceVector;
 
 PUBLISHED:
-  Physical(int total_objects = 1, bool pre_alloc = false);
+  explicit Physical(int total_objects = 1, bool pre_alloc = false);
   Physical(const Physical& copy);
 
   virtual ~Physical();
@@ -73,14 +73,14 @@ PUBLISHED:
 
   const PhysicsObjectCollection get_objects() const;
 
-  virtual void output(ostream &out = cout) const;
+  virtual void output(std::ostream &out = std::cout) const;
   virtual void write_physics_objects(
-    ostream &out = cout, unsigned int indent=0) const;
+    std::ostream &out = std::cout, int indent=0) const;
   virtual void write_linear_forces(
-    ostream &out = cout, unsigned int indent=0) const;
+    std::ostream &out = std::cout, int indent=0) const;
   virtual void write_angular_forces(
-    ostream &out = cout, unsigned int indent=0) const;
-  virtual void write(ostream &out = cout, unsigned int indent=0) const;
+    std::ostream &out = std::cout, int indent=0) const;
+  virtual void write(std::ostream &out = std::cout, int indent=0) const;
 
 public:
   INLINE const PhysicsObject::Vector &get_object_vector() const;

@@ -28,44 +28,6 @@ ConditionVar(Mutex &mutex) :
 }
 
 /**
- *
- */
-INLINE ConditionVar::
-~ConditionVar() {
-}
-
-/**
- * Do not attempt to copy condition variables.
- */
-INLINE ConditionVar::
-ConditionVar(const ConditionVar &copy) :
-#ifdef DEBUG_THREADS
-  ConditionVarDebug(copy.get_mutex())
-#else
-  ConditionVarDirect(copy.get_mutex())
-#endif  // DEBUG_THREADS
-{
-  nassertv(false);
-}
-
-/**
- * Do not attempt to copy condition variables.
- */
-INLINE void ConditionVar::
-operator = (const ConditionVar &copy) {
-  nassertv(false);
-}
-
-/**
- * The notify_all() method is specifically *not* provided by ConditionVar.
- * Use ConditionVarFull if you need to call this method.
- */
-INLINE void ConditionVar::
-notify_all() {
-  nassertv(false);
-}
-
-/**
  * Returns the mutex associated with this condition variable.
  */
 INLINE Mutex &ConditionVar::

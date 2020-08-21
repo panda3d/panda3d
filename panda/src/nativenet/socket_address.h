@@ -32,7 +32,7 @@ public:
   INLINE const struct sockaddr &GetAddressInfo() const { return _addr; }
 
 PUBLISHED:
-  INLINE Socket_Address(unsigned short port = 0);
+  INLINE explicit Socket_Address(unsigned short port = 0);
   INLINE Socket_Address(const Socket_Address &inaddr);
 
   INLINE virtual ~Socket_Address();

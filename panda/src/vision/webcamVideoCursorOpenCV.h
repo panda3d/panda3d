@@ -22,6 +22,7 @@
 #include "movieVideoCursor.h"
 
 class WebcamVideoOpenCV;
+struct CvCapture;
 
 /**
  * The Video4Linux implementation of webcams.

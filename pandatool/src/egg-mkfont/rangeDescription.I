@@ -55,7 +55,7 @@ Range(int from_code, int to_code) :
 {
 }
 
-INLINE ostream &operator << (ostream &out, const RangeDescription &range) {
+INLINE std::ostream &operator << (std::ostream &out, const RangeDescription &range) {
   range.output(out);
   return out;
 }

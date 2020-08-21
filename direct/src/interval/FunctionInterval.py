@@ -77,7 +77,10 @@ class FunctionInterval(Interval.Interval):
 
     @staticmethod
     def makeUniqueName(func, suffix = ''):
-        name = 'Func-%s-%d' % (getattr(func, '__name__', str(func)), FunctionInterval.functionIntervalNum)
+        func_name = getattr(func, '__name__', None)
+        if func_name is None:
+            func_name = str(func)
+        name = 'Func-%s-%d' % (func_name, FunctionInterval.functionIntervalNum)
         FunctionInterval.functionIntervalNum += 1
         if suffix:
             name = '%s-%s' % (name, str(suffix))

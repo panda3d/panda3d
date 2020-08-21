@@ -10,3 +10,25 @@
  * @author drose
  * @date 2003-10-20
  */
+
+/**
+ * Gets the value of the channel.  This will return the value explicitly
+ * specified by set_value() unless a value node was specified using
+ * set_value_node().
+ */
+INLINE PN_stdfloat AnimChannelScalarDynamic::
+get_value() const {
+  if (_value_node != nullptr) {
+    return _value->get_pos()[0];
+  } else {
+    return _float_value;
+  }
+}
+
+/**
+ * Returns the node that was set via set_value_node(), if any.
+ */
+INLINE PandaNode *AnimChannelScalarDynamic::
+get_value_node() const {
+  return _value_node;
+}

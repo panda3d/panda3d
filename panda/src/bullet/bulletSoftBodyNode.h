@@ -11,8 +11,8 @@
  * @date 2010-12-27
  */
 
-#ifndef __BULLET_SOFT_BODY_NODE_H__
-#define __BULLET_SOFT_BODY_NODE_H__
+#ifndef BULLETSOFTBODYNODE_H
+#define BULLETSOFTBODYNODE_H
 
 #include "pandabase.h"
 
@@ -29,6 +29,7 @@
 #include "nurbsSurfaceEvaluator.h"
 #include "pta_LVecBase3.h"
 
+class BulletRigidBodyNode;
 class BulletSoftBodyConfig;
 class BulletSoftBodyControl;
 class BulletSoftBodyMaterial;
@@ -43,12 +44,19 @@ PUBLISHED:
   INLINE ~BulletSoftBodyNodeElement();
   INLINE static BulletSoftBodyNodeElement empty();
 
-  INLINE LPoint3 get_pos() const;
-  INLINE LVector3 get_velocity() const;
-  INLINE LVector3 get_normal() const;
-  INLINE PN_stdfloat get_inv_mass() const;
-  INLINE PN_stdfloat get_area() const;
-  INLINE int is_attached() const;
+  LPoint3 get_pos() const;
+  LVector3 get_velocity() const;
+  LVector3 get_normal() const;
+  PN_stdfloat get_inv_mass() const;
+  PN_stdfloat get_area() const;
+  int is_attached() const;
+
+  MAKE_PROPERTY(pos, get_pos);
+  MAKE_PROPERTY(velocity, get_velocity);
+  MAKE_PROPERTY(normal, get_normal);
+  MAKE_PROPERTY(inv_mass, get_inv_mass);
+  MAKE_PROPERTY(area, get_area);
+  MAKE_PROPERTY(attached, is_attached);
 
 public:
   BulletSoftBodyNodeElement(btSoftBody::Node &node);
@@ -71,7 +79,7 @@ PUBLISHED:
   BulletSoftBodyConfig get_cfg();
   BulletSoftBodyWorldInfo get_world_info();
 
-  void generate_bending_constraints(int distance, BulletSoftBodyMaterial *material=NULL);
+  void generate_bending_constraints(int distance, BulletSoftBodyMaterial *material=nullptr);
   void randomize_constraints();
 
   // Mass, volume, density
@@ -139,7 +147,7 @@ PUBLISHED:
     PN_stdfloat erp=1.0,
     PN_stdfloat cfm=1.0,
     PN_stdfloat split=1.0,
-    BulletSoftBodyControl *control=NULL);
+    BulletSoftBodyControl *control=nullptr);
 
   // Materials
   int get_num_materials() const;
@@ -203,11 +211,19 @@ PUBLISHED:
       const char *face,
       const char *node);
 
+  MAKE_PROPERTY(cfg, get_cfg);
+  MAKE_PROPERTY(world_info, get_world_info);
+  MAKE_PROPERTY(wind_velocity, get_wind_velocity, set_wind_velocity);
+  MAKE_PROPERTY(aabb, get_aabb);
+  MAKE_PROPERTY(num_clusters, get_num_clusters);
+  MAKE_SEQ_PROPERTY(materials, get_num_materials, get_material);
+  MAKE_SEQ_PROPERTY(nodes, get_num_nodes, get_node);
+
 public:
   virtual btCollisionObject *get_object() const;
 
-  void sync_p2b();
-  void sync_b2p();
+  void do_sync_p2b();
+  void do_sync_b2p();
 
 protected:
   virtual void transform_changed();
@@ -224,6 +240,9 @@ private:
 
   static int get_point_index(LVecBase3 p, PTA_LVecBase3 points);
   static int next_line(const char *buffer);
+
+  BoundingBox do_get_aabb() const;
+  int do_get_closest_node_index(LVecBase3 point, bool local);
 
 public:
   static TypeHandle get_class_type() {
@@ -248,4 +267,4 @@ private:
 
 #include "bulletSoftBodyNode.I"
 
-#endif // __BULLET_SOFT_BODY_NODE_H__
+#endif // BULLETSOFTBODYNODE_H

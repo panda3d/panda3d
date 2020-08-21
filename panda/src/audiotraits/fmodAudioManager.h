@@ -62,8 +62,8 @@
  * of the code.
  */
 
-#ifndef __FMOD_AUDIO_MANAGER_H__
-#define __FMOD_AUDIO_MANAGER_H__
+#ifndef FMODAUDIOMANAGER_H
+#define FMODAUDIOMANAGER_H
 
 // First the includes.
 #include "pandabase.h"
@@ -88,11 +88,11 @@ public:
 
   virtual bool is_valid();
 
-  virtual PT(AudioSound) get_sound(const string&, bool positional = false, int mode=SM_heuristic);
+  virtual PT(AudioSound) get_sound(const Filename &, bool positional = false, int mode=SM_heuristic);
   virtual PT(AudioSound) get_sound(MovieAudio *,  bool positional = false, int mode=SM_heuristic);
 
-  virtual int getSpeakerSetup();
-  virtual void setSpeakerSetup(SpeakerModeCategory cat);
+  virtual int get_speaker_setup();
+  virtual void set_speaker_setup(SpeakerModeCategory cat);
 
   virtual void set_volume(PN_stdfloat);
   virtual PN_stdfloat get_volume() const;
@@ -123,9 +123,11 @@ public:
                                                 PN_stdfloat *fx, PN_stdfloat *fy, PN_stdfloat *fz,
                                                 PN_stdfloat *ux, PN_stdfloat *uy, PN_stdfloat *uz);
 
-  // Control the "relative distance factor" for 3D spacialized audio.  Default
-  // is 1.0 Fmod uses meters internally, so give a float in Units-per meter
-  // Don't know what Miles uses.
+  // Control the "relative scale that sets the distance factor" units for 3D
+  // spacialized audio. This is a float in units-per-meter. Default value is
+  // 1.0, which means that Panda units are understood as meters; for e.g.
+  // feet, set 3.28. This factor is applied only to Fmod and OpenAL at the
+  // moment.
   virtual void audio_3d_set_distance_factor(PN_stdfloat factor);
   virtual PN_stdfloat audio_3d_get_distance_factor() const;
 
@@ -144,7 +146,7 @@ public:
   virtual void set_concurrent_sound_limit(unsigned int limit = 0);
   virtual unsigned int get_concurrent_sound_limit() const;
   virtual void reduce_sounds_playing_to(unsigned int count);
-  virtual void uncache_sound(const string&);
+  virtual void uncache_sound(const Filename &);
   virtual void clear_cache();
   virtual void set_cache_limit(unsigned int count);
   virtual unsigned int get_cache_limit() const;
@@ -175,7 +177,7 @@ private:
   FMOD_VECTOR _up;
 
   // DLS info for MIDI files
-  string _dlsname;
+  std::string _dlsname;
   FMOD_CREATESOUNDEXINFO _midi_info;
 
   bool _is_valid;
@@ -210,4 +212,4 @@ private:
 EXPCL_FMOD_AUDIO AudioManager *Create_FmodAudioManager();
 
 
-#endif /* __FMOD_AUDIO_MANAGER_H__ */
+#endif /* FMODAUDIOMANAGER_H */

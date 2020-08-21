@@ -16,7 +16,7 @@
 
 #include "pandatoolbase.h"
 
-void vrml_init_parser(istream &in, const string &filename);
+void vrml_init_parser(std::istream &in, const std::string &filename);
 void vrml_cleanup_parser();
 int vrmlyyparse();
 

@@ -22,7 +22,7 @@
  */
 class EXPCL_PANDA_GOBJ GeomTriangles : public GeomPrimitive {
 PUBLISHED:
-  GeomTriangles(UsageHint usage_hint);
+  explicit GeomTriangles(UsageHint usage_hint);
   GeomTriangles(const GeomTriangles &copy);
   virtual ~GeomTriangles();
   ALLOC_DELETED_CHAIN(GeomTriangles);
@@ -30,6 +30,8 @@ PUBLISHED:
 public:
   virtual PT(GeomPrimitive) make_copy() const;
   virtual PrimitiveType get_primitive_type() const;
+
+  CPT(GeomPrimitive) make_adjacency() const;
 
   virtual int get_num_vertices_per_primitive() const;
 

@@ -26,9 +26,9 @@
  */
 class EXPCL_PANDA_COLLIDE CollisionBox : public CollisionSolid {
 PUBLISHED:
-  INLINE CollisionBox(const LPoint3 &center,
-                      PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
-  INLINE CollisionBox(const LPoint3 &min, const LPoint3 &max);
+  INLINE explicit CollisionBox(const LPoint3 &center,
+                               PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
+  INLINE explicit CollisionBox(const LPoint3 &min, const LPoint3 &max);
 
   virtual LPoint3 get_collision_origin() const;
 
@@ -46,7 +46,7 @@ public:
   virtual PStatCollector &get_volume_pcollector();
   virtual PStatCollector &get_test_pcollector();
 
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
   INLINE static void flush_level();
   void setup_box();
@@ -76,13 +76,24 @@ protected:
   virtual PT(CollisionEntry)
     test_intersection_from_sphere(const CollisionEntry &entry) const;
   virtual PT(CollisionEntry)
+    test_intersection_from_line(const CollisionEntry &entry) const;
+  virtual PT(CollisionEntry)
     test_intersection_from_ray(const CollisionEntry &entry) const;
   virtual PT(CollisionEntry)
     test_intersection_from_segment(const CollisionEntry &entry) const;
   virtual PT(CollisionEntry)
+    test_intersection_from_parabola(const CollisionEntry &entry) const;
+  virtual PT(CollisionEntry)
+    test_intersection_from_capsule(const CollisionEntry &entry) const;
+  virtual PT(CollisionEntry)
     test_intersection_from_box(const CollisionEntry &entry) const;
 
   virtual void fill_viz_geom();
+
+protected:
+  bool intersects_line(double &t1, double &t2,
+                       const LPoint3 &from, const LVector3 &delta,
+                       PN_stdfloat inflate_size=0) const;
 
 private:
   LPoint3 _center;
@@ -130,7 +141,6 @@ public:
   INLINE void calc_to_3d_mat(LMatrix4 &to_3d_mat, int plane) const;
   INLINE void rederive_to_3d_mat(LMatrix4 &to_3d_mat, int plane) const;
   INLINE static LPoint3 to_3d(const LVecBase2 &point2d, const LMatrix4 &to_3d_mat);
-  LPoint3 legacy_to_3d(const LVecBase2 &point2d, int axis) const;
   bool clip_polygon(Points &new_points, const Points &source_points,
                     const LPlane &plane,int plane_no) const;
   bool apply_clip_plane(Points &new_points, const ClipPlaneAttrib *cpa,

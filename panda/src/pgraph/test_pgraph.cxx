@@ -17,13 +17,15 @@
 #include "findApproxLevelEntry.h"
 #include "clockObject.h"
 
+using std::cerr;
+
 NodePath
-build_tree(const string &name, int depth) {
+build_tree(const std::string &name, int depth) {
   NodePath node(name);
   if (depth > 1) {
     for (int i = 0; i < 3; i++) {
       char letter = 'a' + i;
-      string child_name = name + string(1, letter);
+      std::string child_name = name + std::string(1, letter);
       NodePath child = build_tree(child_name, depth - 1);
       child.reparent_to(node);
     }

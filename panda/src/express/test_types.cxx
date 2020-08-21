@@ -19,6 +19,9 @@
 
 #include "pnotify.h"
 
+using std::cerr;
+using std::string;
+
 class ThatThingie : public TypedObject, public ReferenceCount {
 public:
   ThatThingie(const string &name) : _name(name) {

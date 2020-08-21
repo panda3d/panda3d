@@ -47,8 +47,8 @@ GtkStatsPianoRoll(GtkStatsMonitor *monitor, int thread_index) :
 
   const PStatClientData *client_data =
     GtkStatsGraph::_monitor->get_client_data();
-  string thread_name = client_data->get_thread_name(_thread_index);
-  string window_title = thread_name + " thread piano roll";
+  std::string thread_name = client_data->get_thread_name(_thread_index);
+  std::string window_title = thread_name + " thread piano roll";
   gtk_window_set_title(GTK_WINDOW(_window), window_title.c_str());
 
   gtk_widget_show_all(_window);
@@ -441,7 +441,7 @@ draw_guide_label(const PStatGraph::GuideBar &bar) {
   }
 
   int x = height_to_pixel(bar._height);
-  const string &label = bar._label;
+  const std::string &label = bar._label;
 
   PangoLayout *layout = gtk_widget_create_pango_layout(_window, label.c_str());
   int width, height;

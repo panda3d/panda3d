@@ -20,11 +20,11 @@
  */
 DeletedBufferChain::
 DeletedBufferChain(size_t buffer_size) {
-  _deleted_chain = NULL;
+  _deleted_chain = nullptr;
   _buffer_size = buffer_size;
 
   // We must allocate at least this much space for bookkeeping reasons.
-  _buffer_size = max(_buffer_size, sizeof(ObjectNode));
+  _buffer_size = std::max(_buffer_size, sizeof(ObjectNode));
 }
 
 /**
@@ -39,15 +39,15 @@ allocate(size_t size, TypeHandle type_handle) {
   assert(size <= _buffer_size);
 
   // Determine how much space to allocate.
-  const size_t alloc_size = _buffer_size + flag_reserved_bytes + MemoryHook::get_memory_alignment() - 1;
+  const size_t alloc_size = _buffer_size + flag_reserved_bytes + MEMORY_HOOK_ALIGNMENT - 1;
 
   ObjectNode *obj;
 
-  _lock.acquire();
-  if (_deleted_chain != (ObjectNode *)NULL) {
+  _lock.lock();
+  if (_deleted_chain != nullptr) {
     obj = _deleted_chain;
     _deleted_chain = _deleted_chain->_next;
-    _lock.release();
+    _lock.unlock();
 
 #ifdef USE_DELETEDCHAINFLAG
     assert(obj->_flag == (AtomicAdjust::Integer)DCF_deleted);
@@ -64,15 +64,15 @@ allocate(size_t size, TypeHandle type_handle) {
 
     return ptr;
   }
-  _lock.release();
+  _lock.unlock();
 
   // If we get here, the deleted_chain is empty; we have to allocate a new
   // object from the system pool.
 
   // Allocate memory, and make sure the object starts at the proper alignment.
   void *mem = NeverFreeMemory::alloc(alloc_size);
-  intptr_t pad = (-(intptr_t)flag_reserved_bytes - (intptr_t)mem) % MemoryHook::get_memory_alignment();
-  obj = (ObjectNode *)((uintptr_t)mem + pad);
+  uintptr_t aligned = ((uintptr_t)mem + flag_reserved_bytes + MEMORY_HOOK_ALIGNMENT - 1) & ~(MEMORY_HOOK_ALIGNMENT - 1);
+  obj = (ObjectNode *)(aligned - flag_reserved_bytes);
 
 #ifdef USE_DELETEDCHAINFLAG
   obj->_flag = DCF_alive;
@@ -81,7 +81,7 @@ allocate(size_t size, TypeHandle type_handle) {
   void *ptr = node_to_buffer(obj);
 
 #ifndef NDEBUG
-  assert(((uintptr_t)ptr % MemoryHook::get_memory_alignment()) == 0);
+  assert(((uintptr_t)ptr % MEMORY_HOOK_ALIGNMENT) == 0);
 #endif
 
 #ifdef DO_MEMORY_USAGE
@@ -103,11 +103,11 @@ deallocate(void *ptr, TypeHandle type_handle) {
 #ifdef USE_DELETED_CHAIN
   // TAU_PROFILE("void DeletedBufferChain::deallocate(void *, TypeHandle)", "
   // ", TAU_USER);
-  assert(ptr != (void *)NULL);
+  assert(ptr != nullptr);
 
 #ifdef DO_MEMORY_USAGE
-  type_handle.dec_memory_usage(TypeHandle::MC_deleted_chain_active,
-                               _buffer_size + flag_reserved_bytes);
+  const size_t alloc_size = _buffer_size + flag_reserved_bytes + MEMORY_HOOK_ALIGNMENT - 1;
+  type_handle.dec_memory_usage(TypeHandle::MC_deleted_chain_active, alloc_size);
   // type_handle.inc_memory_usage(TypeHandle::MC_deleted_chain_inactive,
   // _buffer_size + flag_reserved_bytes);
 
@@ -126,12 +126,12 @@ deallocate(void *ptr, TypeHandle type_handle) {
   assert(orig_flag == (AtomicAdjust::Integer)DCF_alive);
 #endif  // USE_DELETEDCHAINFLAG
 
-  _lock.acquire();
+  _lock.lock();
 
   obj->_next = _deleted_chain;
   _deleted_chain = obj;
 
-  _lock.release();
+  _lock.unlock();
 
 #else  // USE_DELETED_CHAIN
   PANDA_FREE_SINGLE(ptr);

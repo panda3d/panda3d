@@ -37,6 +37,7 @@ public:
   INLINE ~ConditionVarSpinlockImpl();
 
   void wait();
+  void wait(double timeout);
   INLINE void notify();
   INLINE void notify_all();
 

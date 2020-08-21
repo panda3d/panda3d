@@ -21,7 +21,7 @@ TypeHandle GeomDrawCallbackData::_type_handle;
  *
  */
 void GeomDrawCallbackData::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << "(" << (void *)_obj << ", " << (void *)_gsg
       << ", " << _force << ")";
 }
@@ -39,13 +39,13 @@ output(ostream &out) const {
 void GeomDrawCallbackData::
 upcall() {
   // Go ahead and draw the object, if we have one.
-  if (_obj->_geom != (Geom *)NULL) {
+  if (_obj->_geom != nullptr) {
     if (_lost_state) {
       // Tell the GSG to forget its state.
       _gsg->clear_state_and_transform();
     }
 
-    _obj->_geom->draw(_gsg, _obj->_munger, _obj->_munged_data, _force,
+    _obj->_geom->draw(_gsg, _obj->_munged_data, _force,
                       Thread::get_current_thread());
   }
 }

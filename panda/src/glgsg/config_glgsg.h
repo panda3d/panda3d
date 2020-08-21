@@ -18,9 +18,9 @@
 #include "notifyCategoryProxy.h"
 #include "dconfig.h"
 
-ConfigureDecl(config_glgsg, EXPCL_PANDAGL, EXPTP_PANDAGL);
-NotifyCategoryDecl(glgsg, EXPCL_PANDAGL, EXPTP_PANDAGL);
+ConfigureDecl(config_glgsg, EXPCL_PANDA_GLGSG, EXPTP_PANDA_GLGSG);
+NotifyCategoryDecl(glgsg, EXPCL_PANDA_GLGSG, EXPTP_PANDA_GLGSG);
 
-extern EXPCL_PANDAGL void init_libglgsg();
+extern EXPCL_PANDA_GLGSG void init_libglgsg();
 
 #endif

@@ -28,8 +28,11 @@ class PathFollow;
 class PathFind;
 class ObstacleAvoidance;
 
-typedef list<Flee, allocator<Flee> > ListFlee;
-typedef list<Evade, allocator<Evade> > ListEvade;
+#include "flee.h"
+#include "evade.h"
+
+typedef std::list<Flee, std::allocator<Flee> > ListFlee;
+typedef std::list<Evade, std::allocator<Evade> > ListEvade;
 
 /**
  * This class implements all the steering behaviors of the AI framework, such
@@ -113,21 +116,21 @@ public:
   ~AIBehaviors();
 
   bool is_on(_behavior_type bt);
-  bool is_on(string ai_type); // special cases for pathfollow and pathfinding
+  bool is_on(std::string ai_type); // special cases for pathfollow and pathfinding
   bool is_off(_behavior_type bt);
-  bool is_off(string ai_type); // special cases for pathfollow and pathfinding
-  void turn_on(string ai_type);
-  void turn_off(string ai_type);
+  bool is_off(std::string ai_type); // special cases for pathfollow and pathfinding
+  void turn_on(std::string ai_type);
+  void turn_off(std::string ai_type);
 
   bool is_conflict();
 
-  void accumulate_force(string force_type, LVecBase3 force);
+  void accumulate_force(std::string force_type, LVecBase3 force);
   LVecBase3 calculate_prioritized();
 
   void flock_activate();
   LVecBase3 do_flock();
 
-  int char_to_int(string ai_type);
+  int char_to_int(std::string ai_type);
 
 PUBLISHED:
   void seek(NodePath target_object, float seek_wt = 1.0);
@@ -150,21 +153,21 @@ PUBLISHED:
 
   void path_follow(float follow_wt);
   void add_to_path(LVecBase3 pos);
-  void start_follow(string type = "normal");
+  void start_follow(std::string type = "normal");
 
   // should have different function names.
   void init_path_find(const char* navmesh_filename);
-  void path_find_to(LVecBase3 pos, string type = "normal");
-  void path_find_to(NodePath target, string type = "normal");
+  void path_find_to(LVecBase3 pos, std::string type = "normal");
+  void path_find_to(NodePath target, std::string type = "normal");
   void add_static_obstacle(NodePath obstacle);
   void add_dynamic_obstacle(NodePath obstacle);
 
 
-  void remove_ai(string ai_type);
-  void pause_ai(string ai_type);
-  void resume_ai(string ai_type);
+  void remove_ai(std::string ai_type);
+  void pause_ai(std::string ai_type);
+  void resume_ai(std::string ai_type);
 
-  string behavior_status(string ai_type);
+  std::string behavior_status(std::string ai_type);
 };
 
 #endif

@@ -27,8 +27,8 @@ class EXPCL_PANDA_GOBJ SavedContext : public TypedObject {
 public:
   INLINE SavedContext();
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
 PUBLISHED:
   static TypeHandle get_class_type() {
@@ -49,7 +49,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-inline ostream &operator << (ostream &out, const SavedContext &context) {
+inline std::ostream &operator << (std::ostream &out, const SavedContext &context) {
   context.output(out);
   return out;
 }

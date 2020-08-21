@@ -45,6 +45,8 @@
 
 #define MAXCOLORS 256
 
+using std::ostream;
+
 /*
  * Utilities
  */
@@ -276,7 +278,7 @@ BMPwriterow(
         unsigned        x;
 
         if (indexed) {
-          if ((b = pm_bitinit(fp, "w")) == (BITSTREAM) 0)
+          if ((b = pm_bitinit(fp, "w")) == nullptr)
             {
               return -1;
             }
@@ -580,7 +582,7 @@ write_data(xel *array, xelval *) {
     // Quietly generate a 24-bit image.
     BMPEncode24(_file, classv, _x_size, _y_size, pixels, _maxval);
 
-  } else if (chv == (colorhist_vector) 0) {
+  } else if (chv == nullptr) {
     if (bmp_bpp != 0) {
       // Even though we asked for fewer bits, we have to settle for 24-bit.
       pnmimage_bmp_cat.info()

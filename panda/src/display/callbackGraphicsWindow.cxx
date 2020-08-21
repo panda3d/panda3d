@@ -24,12 +24,12 @@ TypeHandle CallbackGraphicsWindow::RenderCallbackData::_type_handle;
  */
 CallbackGraphicsWindow::
 CallbackGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
-                       const string &name,
+                       const std::string &name,
                        const FrameBufferProperties &fb_prop,
                        const WindowProperties &win_prop,
                        int flags,
                        GraphicsStateGuardian *gsg) :
-  GraphicsWindow(engine, pipe, name, fb_prop, win_prop, flags, gsg, NULL)
+  GraphicsWindow(engine, pipe, name, fb_prop, win_prop, flags, gsg, nullptr)
 {
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, this);
@@ -47,28 +47,13 @@ CallbackGraphicsWindow::
 ~CallbackGraphicsWindow() {
 }
 
-
-/**
- * Returns a writable reference to the nth input device (mouse).  This is
- * intended to be used for the window implementation to record mouse and
- * keyboard input information for the Panda system.
- */
-GraphicsWindowInputDevice &CallbackGraphicsWindow::
-get_input_device(int device) {
-  LightMutexHolder holder(_input_lock);
-  nassertr(device >= 0 && device < (int)_input_devices.size(), _input_devices[0]);
-  return _input_devices[device];
-}
-
 /**
  * Adds a new input device (mouse) to the window with the indicated name.
  * Returns the index of the new device.
  */
 int CallbackGraphicsWindow::
-create_input_device(const string &name) {
-  GraphicsWindowInputDevice device =
-    GraphicsWindowInputDevice::pointer_and_keyboard(this, name);
-  return add_input_device(device);
+create_input_device(const std::string &name) {
+  return add_input_device(GraphicsWindowInputDevice::pointer_and_keyboard(this, name));
 }
 
 /**
@@ -80,7 +65,7 @@ create_input_device(const string &name) {
 bool CallbackGraphicsWindow::
 begin_frame(FrameMode mode, Thread *current_thread) {
   bool result = false;
-  if (_render_callback != NULL) {
+  if (_render_callback != nullptr) {
     RenderCallbackData data(this, RCT_begin_frame, mode);
     _render_callback->do_callback(&data);
     result = data.get_render_flag();
@@ -105,7 +90,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
  */
 void CallbackGraphicsWindow::
 end_frame(FrameMode mode, Thread *current_thread) {
-  if (_render_callback != NULL) {
+  if (_render_callback != nullptr) {
     // In case the callback or the application hosting the OpenGL context
     // wants to do more rendering, let's give it a blank slate.
     _gsg->set_state_and_transform(RenderState::make_empty(), _gsg->get_internal_transform());
@@ -138,7 +123,7 @@ end_frame(FrameMode mode, Thread *current_thread) {
  */
 void CallbackGraphicsWindow::
 begin_flip() {
-  if (_render_callback != NULL) {
+  if (_render_callback != nullptr) {
     RenderCallbackData data(this, RCT_begin_flip, FM_render);
     _render_callback->do_callback(&data);
   } else {
@@ -155,7 +140,7 @@ begin_flip() {
  */
 void CallbackGraphicsWindow::
 end_flip() {
-  if (_render_callback != NULL) {
+  if (_render_callback != nullptr) {
     RenderCallbackData data(this, RCT_end_flip, FM_render);
     _render_callback->do_callback(&data);
   } else {
@@ -172,7 +157,7 @@ end_flip() {
  */
 void CallbackGraphicsWindow::
 process_events() {
-  if (_events_callback != NULL) {
+  if (_events_callback != nullptr) {
     EventsCallbackData data(this);
     _events_callback->do_callback(&data);
   } else {
@@ -186,7 +171,7 @@ process_events() {
  */
 void CallbackGraphicsWindow::
 set_properties_now(WindowProperties &properties) {
-  if (_properties_callback != NULL) {
+  if (_properties_callback != nullptr) {
     PropertiesCallbackData data(this, properties);
     _properties_callback->do_callback(&data);
   } else {

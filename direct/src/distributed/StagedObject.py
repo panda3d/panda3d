@@ -17,7 +17,6 @@ class StagedObject:
         call any "handle" functions.
         """
         self.__state = initState
-        pass
 
     def goOnStage(self, *args, **kw):
         """
@@ -29,8 +28,6 @@ class StagedObject:
 
         if not self.isOnStage():
             self.handleOnStage(*args, **kw)
-            pass
-        pass
 
     def handleOnStage(self):
         """
@@ -39,7 +36,6 @@ class StagedObject:
         Don't forget to call down to this one, though.
         """
         self.__state = StagedObject.ON
-        pass
 
     def goOffStage(self, *args, **kw):
         """
@@ -51,8 +47,6 @@ class StagedObject:
 
         if not self.isOffStage():
             self.handleOffStage(*args, **kw)
-            pass
-        pass
 
     def handleOffStage(self):
         """
@@ -61,7 +55,6 @@ class StagedObject:
         Don't forget to call down to this one, though.
         """
         self.__state = StagedObject.OFF
-        pass
 
     def isOnStage(self):
         return self.__state == StagedObject.ON

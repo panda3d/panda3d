@@ -20,7 +20,7 @@ TypeHandle XFileDataNode::_type_handle;
  *
  */
 XFileDataNode::
-XFileDataNode(XFile *x_file, const string &name,
+XFileDataNode(XFile *x_file, const std::string &name,
               XFileTemplate *xtemplate) :
   XFileNode(x_file, name),
   _template(xtemplate)
@@ -46,7 +46,7 @@ is_object() const {
  * object must be of type XFileDataNode.
  */
 bool XFileDataNode::
-is_standard_object(const string &template_name) const {
+is_standard_object(const std::string &template_name) const {
   if (_template->is_standard() &&
       _template->get_name() == template_name) {
     return true;
@@ -59,7 +59,7 @@ is_standard_object(const string &template_name) const {
  * Returns a string that represents the type of object this data object
  * represents.
  */
-string XFileDataNode::
+std::string XFileDataNode::
 get_type_name() const {
   return _template->get_name();
 }

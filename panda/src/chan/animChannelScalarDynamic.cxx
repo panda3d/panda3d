@@ -41,7 +41,7 @@ AnimChannelScalarDynamic(AnimGroup *parent, const AnimChannelScalarDynamic &copy
   AnimChannelScalar(parent, copy),
   _value_node(copy._value_node),
   _value(copy._value),
-  _last_value(NULL),
+  _last_value(nullptr),
   _value_changed(true),
   _float_value(copy._float_value)
 {
@@ -51,7 +51,7 @@ AnimChannelScalarDynamic(AnimGroup *parent, const AnimChannelScalarDynamic &copy
  *
  */
 AnimChannelScalarDynamic::
-AnimChannelScalarDynamic(const string &name)
+AnimChannelScalarDynamic(const std::string &name)
   : AnimChannelScalar(name)
 {
   _last_value = _value = TransformState::make_identity();
@@ -66,7 +66,7 @@ AnimChannelScalarDynamic(const string &name)
  */
 bool AnimChannelScalarDynamic::
 has_changed(int, double, int, double) {
-  if (_value_node != (PandaNode *)NULL) {
+  if (_value_node != nullptr) {
     _value = _value_node->get_transform();
     bool has_changed = (_value != _last_value);
     _last_value = _value;
@@ -84,16 +84,12 @@ has_changed(int, double, int, double) {
  */
 void AnimChannelScalarDynamic::
 get_value(int, PN_stdfloat &value) {
-  if (_value_node != (PandaNode *)NULL) {
-    value = _value->get_pos()[0];
-
-  } else {
-    value = _float_value;
-  }
+  value = get_value();
 }
 
 /**
- * Explicitly sets the value.
+ * Explicitly sets the value.  This will remove any node assigned via
+ * set_value_node().
  */
 void AnimChannelScalarDynamic::
 set_value(PN_stdfloat value) {
@@ -104,17 +100,18 @@ set_value(PN_stdfloat value) {
 
 /**
  * Specifies a node whose transform will be queried each frame to implicitly
- * specify the transform of this joint.
+ * specify the transform of this joint.  This will override the values set by
+ * set_value().
  */
 void AnimChannelScalarDynamic::
 set_value_node(PandaNode *value_node) {
-  if (_value_node == (PandaNode *)NULL) {
+  if (_value_node == nullptr) {
     _last_value = TransformState::make_pos(LVecBase3(_float_value, 0.0f, 0.0f));
   }
 
   _value_node = value_node;
 
-  if (_value_node != (PandaNode *)NULL) {
+  if (_value_node != nullptr) {
     _value = _value_node->get_transform();
   }
 }

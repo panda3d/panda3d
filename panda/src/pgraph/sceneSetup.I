@@ -16,7 +16,7 @@
  */
 INLINE SceneSetup::
 SceneSetup() {
-  _display_region = NULL;
+  _display_region = nullptr;
   _viewport_width = 0;
   _viewport_height = 0;
   _inverted = false;
@@ -175,11 +175,28 @@ get_cull_center() const {
 INLINE PT(BoundingVolume) SceneSetup::
 get_cull_bounds() const {
   PT(BoundingVolume) bounds = _camera_node->get_cull_bounds();
-  if (bounds != (BoundingVolume *)NULL) {
+  if (bounds != nullptr) {
     return bounds;
   }
 
   return _lens->make_bounds();
+}
+
+/**
+ * Returns the camera's cull bounds transformed to world space, or null if
+ * view frustum culling is disabled.
+ */
+INLINE void SceneSetup::
+set_view_frustum(PT(GeometricBoundingVolume) view_frustum) {
+  _view_frustum = std::move(view_frustum);
+}
+
+/**
+ * Returns the initial state as set by a previous call to set_initial_state().
+ */
+INLINE GeometricBoundingVolume *SceneSetup::
+get_view_frustum() const {
+  return _view_frustum;
 }
 
 /**

@@ -29,7 +29,7 @@ class CPPInstance;
  */
 class EXPCL_INTERROGATEDB InterrogateFunction : public InterrogateComponent {
 public:
-  InterrogateFunction(InterrogateModuleDef *def = NULL);
+  InterrogateFunction(InterrogateModuleDef *def = nullptr);
   InterrogateFunction(const InterrogateFunction &copy);
   void operator = (const InterrogateFunction &copy);
 
@@ -41,13 +41,13 @@ public:
   INLINE TypeIndex get_class() const;
 
   INLINE bool has_scoped_name() const;
-  INLINE const string &get_scoped_name() const;
+  INLINE const std::string &get_scoped_name() const;
 
   INLINE bool has_comment() const;
-  INLINE const string &get_comment() const;
+  INLINE const std::string &get_comment() const;
 
   INLINE bool has_prototype() const;
-  INLINE const string &get_prototype() const;
+  INLINE const std::string &get_prototype() const;
 
   INLINE int number_of_c_wrappers() const;
   INLINE FunctionWrapperIndex get_c_wrapper(int n) const;
@@ -55,8 +55,8 @@ public:
   INLINE int number_of_python_wrappers() const;
   INLINE FunctionWrapperIndex get_python_wrapper(int n) const;
 
-  void output(ostream &out) const;
-  void input(istream &in);
+  void output(std::ostream &out) const;
+  void input(std::istream &in);
 
   void remap_indices(const IndexRemapper &remap);
 
@@ -73,12 +73,12 @@ private:
   };
 
   int _flags;
-  string _scoped_name;
-  string _comment;
-  string _prototype;
+  std::string _scoped_name;
+  std::string _comment;
+  std::string _prototype;
   TypeIndex _class;
 
-  typedef vector<FunctionWrapperIndex> Wrappers;
+  typedef std::vector<FunctionWrapperIndex> Wrappers;
   Wrappers _c_wrappers;
   Wrappers _python_wrappers;
 
@@ -92,9 +92,9 @@ public:
   // This must be a pointer, rather than a concrete map, so we don't risk
   // trying to create a map in one DLL and access it in another.  Silly
   // Windows.
-  typedef map<string, CPPInstance *> Instances;
+  typedef std::map<std::string, CPPInstance *> Instances;
   Instances *_instances;
-  string _expression;
+  std::string _expression;
 
   friend class InterrogateBuilder;
   friend class InterfaceMakerC;
@@ -103,8 +103,8 @@ public:
   friend class FunctionRemap;
 };
 
-INLINE ostream &operator << (ostream &out, const InterrogateFunction &function);
-INLINE istream &operator >> (istream &in, InterrogateFunction &function);
+INLINE std::ostream &operator << (std::ostream &out, const InterrogateFunction &function);
+INLINE std::istream &operator >> (std::istream &in, InterrogateFunction &function);
 
 #include "interrogateFunction.I"
 

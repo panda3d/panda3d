@@ -17,6 +17,11 @@ ConfigVariableInt gl_version
   ("gl-version", "",
    PRC_DESC("Set this to get an OpenGL context with a specific version."));
 
+ConfigVariableBool gl_forward_compatible
+  ("gl-forward-compatible", false,
+   PRC_DESC("Setting this to true will request a forward-compatible OpenGL "
+            "context, which will not support the fixed-function pipeline."));
+
 ConfigVariableBool gl_support_fbo
   ("gl-support-fbo", true,
    PRC_DESC("Configure this false if your GL's implementation of "
@@ -312,6 +317,13 @@ ConfigVariableEnum<CoordinateSystem> gl_coordinate_system
             "best to leave this to yup-right.  However, if you are "
             "creating a shader-only application, it may be easier and "
             "more efficient to set this to default."));
+
+ConfigVariableBool gl_depth_zero_to_one
+  ("gl-depth-zero-to-one", false,
+   PRC_DESC("Normally, OpenGL uses an NDC coordinate space wherein the Z "
+            "ranges from -1 to 1.  This setting can be used to instead use a "
+            "range from 0 to 1, matching other graphics APIs.  This setting "
+            "requires OpenGL 4.5, or NVIDIA GeForce 8+ hardware."));
 
 extern ConfigVariableBool gl_parallel_arrays;
 

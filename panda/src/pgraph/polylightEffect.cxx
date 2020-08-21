@@ -22,6 +22,8 @@
 
 #include <math.h>
 
+using std::endl;
+
 TypeHandle PolylightEffect::_type_handle;
 
 /**
@@ -136,9 +138,9 @@ do_poly_light(const SceneSetup *scene, const CullTraverserData *data, const Tran
     if (light->is_enabled()) { // if enabled get all the properties
       PN_stdfloat light_radius = light->get_radius();
       // Calculate the distance of the node from the light dist =
-      // light_iter->second->get_distance(data->_node_path.get_node_path());
+      // light_iter->second->get_distance(data->get_node_path());
       const NodePath lightnp = *light_iter;
-      LPoint3 relative_point = data->_node_path.get_node_path().get_relative_point(lightnp, light->get_pos());
+      LPoint3 relative_point = data->get_node_path().get_relative_point(lightnp, light->get_pos());
 
       if (_effect_center[2]) {
         dist = (relative_point - _effect_center).length(); // this counts height difference
@@ -155,7 +157,7 @@ do_poly_light(const SceneSetup *scene, const CullTraverserData *data, const Tran
         // LPoint3 camera_position = camera.get_relative_point(lightnp,
         // light->get_pos());
         LPoint3 camera_position = lightnp.get_relative_point(camera, LPoint3(0,0,0));
-        LPoint3 avatar_position = lightnp.get_relative_point(data->_node_path.get_node_path(), LPoint3(0,0,0));
+        LPoint3 avatar_position = lightnp.get_relative_point(data->get_node_path(), LPoint3(0,0,0));
         LVector3 light_camera = camera_position  - light_position;
         LVector3 light_avatar = avatar_position - light_position;
         light_camera.normalize();
@@ -263,7 +265,7 @@ do_poly_light(const SceneSetup *scene, const CullTraverserData *data, const Tran
 
   if (num_lights) {
     // was_under_polylight = true;
-    // data->_node_path.get_node_path().set_color_scale_off();
+    // data->get_node_path().set_color_scale_off();
     if (polylight_info)
       pgraph_cat.debug() << "num lights = " << num_lights << endl;
 
@@ -320,8 +322,8 @@ do_poly_light(const SceneSetup *scene, const CullTraverserData *data, const Tran
   else {
     if (was_under_polylight) {
       // under no polylight influence...so clear the color scale
-      // data->_node_path.get_node_path().clear_color_scale();
-      // data->_node_path.get_node_path().set_color_scale(scene_color);
+      // data->get_node_path().clear_color_scale();
+      // data->get_node_path().set_color_scale(scene_color);
       was_under_polylight = false;
     }
   }
@@ -334,7 +336,7 @@ do_poly_light(const SceneSetup *scene, const CullTraverserData *data, const Tran
  *
  */
 void PolylightEffect::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":";
 
   LightGroup::const_iterator li;
@@ -461,8 +463,8 @@ has_light(const NodePath &light) const {
   return (li != _lightgroup.end());
 }
 
-ostream &
-operator << (ostream &out, PolylightEffect::ContribType ct) {
+std::ostream &
+operator << (std::ostream &out, PolylightEffect::ContribType ct) {
   switch (ct) {
   case PolylightEffect::CT_proximal:
     return out << "proximal";

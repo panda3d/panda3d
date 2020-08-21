@@ -40,10 +40,9 @@ do_task() {
       // become a kind of a leak (if the texture is never rendered again on
       // this GSG, we'll just end up carrying the texture memory in RAM
       // forever, instead of dumping it as soon as it gets prepared).
-      _texture->prepare(_pgo);
+      _pgo->enqueue_texture(_texture);
     }
   }
-  _is_ready = true;
 
   // Don't continue the task; we're done.
   return DS_done;

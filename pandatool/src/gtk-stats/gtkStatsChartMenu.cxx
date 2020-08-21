@@ -48,7 +48,7 @@ get_menu_widget() {
 void GtkStatsChartMenu::
 add_to_menu_bar(GtkWidget *menu_bar, int position) {
   const PStatClientData *client_data = _monitor->get_client_data();
-  string thread_name;
+  std::string thread_name;
   if (_thread_index == 0) {
     // A special case for the main thread.
     thread_name = "Graphs";
@@ -142,7 +142,7 @@ add_view(GtkWidget *parent_menu, const PStatViewLevel *view_level,
   int collector = view_level->get_collector();
 
   const PStatClientData *client_data = _monitor->get_client_data();
-  string collector_name = client_data->get_collector_name(collector);
+  std::string collector_name = client_data->get_collector_name(collector);
 
   GtkStatsMonitor::MenuDef smd(_thread_index, collector, show_level);
   const GtkStatsMonitor::MenuDef *menu_def = _monitor->add_menu(smd);
@@ -158,7 +158,7 @@ add_view(GtkWidget *parent_menu, const PStatViewLevel *view_level,
   if (num_children > 1) {
     // If the collector has more than one child, add a menu entry to go
     // directly to each of its children.
-    string submenu_name = collector_name + " components";
+    std::string submenu_name = collector_name + " components";
 
     GtkWidget *submenu_item = gtk_menu_item_new_with_label(submenu_name.c_str());
     gtk_widget_show(submenu_item);
@@ -185,7 +185,7 @@ handle_menu(gpointer data) {
   const GtkStatsMonitor::MenuDef *menu_def = (GtkStatsMonitor::MenuDef *)data;
   GtkStatsMonitor *monitor = menu_def->_monitor;
 
-  if (monitor == NULL) {
+  if (monitor == nullptr) {
     return;
   }
 

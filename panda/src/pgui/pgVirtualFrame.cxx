@@ -21,7 +21,7 @@ TypeHandle PGVirtualFrame::_type_handle;
  *
  */
 PGVirtualFrame::
-PGVirtualFrame(const string &name) : PGItem(name)
+PGVirtualFrame(const std::string &name) : PGItem(name)
 {
   _has_clip_frame = false;
   _clip_frame.set(0.0f, 0.0f, 0.0f, 0.0f);

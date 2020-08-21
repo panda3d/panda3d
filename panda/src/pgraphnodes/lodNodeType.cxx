@@ -15,6 +15,10 @@
 #include "string_utils.h"
 #include "config_pgraph.h"
 
+using std::istream;
+using std::ostream;
+using std::string;
+
 ostream &
 operator << (ostream &out, LODNodeType lnt) {
   switch (lnt) {

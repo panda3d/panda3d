@@ -37,8 +37,8 @@
 class EXPCL_PANDA_TEXT TextGraphic {
 PUBLISHED:
   INLINE TextGraphic();
-  INLINE TextGraphic(const NodePath &model, const LVecBase4 &frame);
-  INLINE TextGraphic(const NodePath &model, PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_stdfloat top);
+  INLINE explicit TextGraphic(const NodePath &model, const LVecBase4 &frame);
+  INLINE explicit TextGraphic(const NodePath &model, PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_stdfloat top);
 
   INLINE NodePath get_model() const;
   INLINE void set_model(const NodePath &model);

@@ -32,6 +32,8 @@
 #include <maya/MGlobal.h>
 #include "post_maya_include.h"
 
+using std::string;
+
 /**
  *
  */
@@ -41,10 +43,10 @@ MayaNodeTree(MayaToEggConverter *converter) :
 {
   _root = new MayaNodeDesc(this);
   _fps = 0.0;
-  _egg_data = (EggData *)NULL;
-  _egg_root = (EggGroupNode *)NULL;
-  _skeleton_node = (EggGroupNode *)NULL;
-  _morph_node = (EggGroupNode *)NULL;
+  _egg_data = nullptr;
+  _egg_root = nullptr;
+  _skeleton_node = nullptr;
+  _morph_node = nullptr;
 }
 
 /**
@@ -259,7 +261,7 @@ get_num_nodes() const {
  */
 MayaNodeDesc *MayaNodeTree::
 get_node(int n) const {
-  nassertr(n >= 0 && n < (int)_nodes.size(), NULL);
+  nassertr(n >= 0 && n < (int)_nodes.size(), nullptr);
   return _nodes[n];
 }
 
@@ -270,10 +272,10 @@ void MayaNodeTree::
 clear() {
   _root = new MayaNodeDesc(this);
   _fps = 0.0;
-  _egg_data = (EggData *)NULL;
-  _egg_root = (EggGroupNode *)NULL;
-  _skeleton_node = (EggGroupNode *)NULL;
-  _morph_node = (EggGroupNode *)NULL;
+  _egg_data = nullptr;
+  _egg_root = nullptr;
+  _skeleton_node = nullptr;
+  _morph_node = nullptr;
   _nodes_by_path.clear();
   _nodes.clear();
 }
@@ -303,13 +305,13 @@ clear_egg(EggData *egg_data, EggGroupNode *egg_root,
  */
 EggGroup *MayaNodeTree::
 get_egg_group(MayaNodeDesc *node_desc) {
-  nassertr(_egg_root != (EggGroupNode *)NULL, NULL);
+  nassertr(_egg_root != nullptr, nullptr);
 
-  if (node_desc->_egg_group == (EggGroup *)NULL) {
+  if (node_desc->_egg_group == nullptr) {
     // We need to make a new group node.
     EggGroup *egg_group;
 
-    nassertr(node_desc->_parent != (MayaNodeDesc *)NULL, NULL);
+    nassertr(node_desc->_parent != nullptr, nullptr);
     egg_group = new EggGroup(node_desc->get_name());
     if (node_desc->is_joint()) {
       if (_converter->get_animation_convert() == AC_model ||
@@ -318,7 +320,7 @@ get_egg_group(MayaNodeDesc *node_desc) {
       }
     }
 
-    MayaEggGroupUserData *parent_user_data = NULL;
+    MayaEggGroupUserData *parent_user_data = nullptr;
 
     if (node_desc->_parent == _root) {
       // The parent is the root.
@@ -330,7 +332,7 @@ get_egg_group(MayaNodeDesc *node_desc) {
       parent_egg_group->add_child(egg_group);
 
       if (parent_egg_group->has_user_data()) {
-        DCAST_INTO_R(parent_user_data, parent_egg_group->get_user_data(), NULL);
+        DCAST_INTO_R(parent_user_data, parent_egg_group->get_user_data(), nullptr);
       }
     }
 
@@ -406,7 +408,7 @@ get_egg_group(MayaNodeDesc *node_desc) {
       // And "vertex-color" and "double-sided" have meaning only to this
       // converter.
       MayaEggGroupUserData *user_data;
-      if (parent_user_data == (MayaEggGroupUserData *)NULL) {
+      if (parent_user_data == nullptr) {
         user_data = new MayaEggGroupUserData;
       } else {
         // Inherit the flags from above.
@@ -443,12 +445,12 @@ get_egg_group(MayaNodeDesc *node_desc) {
  */
 EggTable *MayaNodeTree::
 get_egg_table(MayaNodeDesc *node_desc) {
-  nassertr(_skeleton_node != (EggGroupNode *)NULL, NULL);
-  nassertr(node_desc->is_joint(), NULL);
+  nassertr(_skeleton_node != nullptr, nullptr);
+  nassertr(node_desc->is_joint(), nullptr);
 
-  if (node_desc->_egg_table == (EggTable *)NULL) {
+  if (node_desc->_egg_table == nullptr) {
     // We need to make a new table node.
-    nassertr(node_desc->_parent != (MayaNodeDesc *)NULL, NULL);
+    nassertr(node_desc->_parent != nullptr, nullptr);
 
     EggTable *egg_table = new EggTable(node_desc->get_name());
     node_desc->_anim = new EggXfmSAnim("xform", _egg_data->get_coordinate_system());
@@ -487,9 +489,9 @@ get_egg_anim(MayaNodeDesc *node_desc) {
  */
 EggSAnimData *MayaNodeTree::
 get_egg_slider(MayaBlendDesc *blend_desc) {
-  nassertr(_morph_node != (EggGroupNode *)NULL, NULL);
+  nassertr(_morph_node != nullptr, nullptr);
 
-  if (blend_desc->_anim == (EggSAnimData *)NULL) {
+  if (blend_desc->_anim == nullptr) {
     // We need to make a new anim table.
     EggSAnimData *egg_anim = new EggSAnimData(blend_desc->get_name());
     egg_anim->set_fps(_fps);
@@ -553,7 +555,7 @@ get_num_blend_descs() const {
  */
 MayaBlendDesc *MayaNodeTree::
 get_blend_desc(int n) const {
-  nassertr(n >= 0 && n < (int)_blend_descs.size(), NULL);
+  nassertr(n >= 0 && n < (int)_blend_descs.size(), nullptr);
   return _blend_descs[n];
 }
 
@@ -583,7 +585,7 @@ r_build_node(const string &path) {
 
   // Otherwise, we have to create it.  Do this recursively, so we create each
   // node along the path.
-  MayaNodeDesc *node_desc = NULL;
+  MayaNodeDesc *node_desc = nullptr;
 
   // mayaegg_cat.info() << "path: " << path << endl;
   if (path.empty()) {
@@ -610,8 +612,8 @@ r_build_node(const string &path) {
 
     if (node_desc != _root) {
       MayaNodeDesc *parent_node_desc = r_build_node(parent_path);
-      if (parent_node_desc == (MayaNodeDesc *)NULL)
-        mayaegg_cat.info() << "empty parent: " << local_name << endl;
+      if (parent_node_desc == nullptr)
+        mayaegg_cat.info() << "empty parent: " << local_name << std::endl;
       node_desc = new MayaNodeDesc(this, parent_node_desc, local_name);
       _nodes.push_back(node_desc);
     }

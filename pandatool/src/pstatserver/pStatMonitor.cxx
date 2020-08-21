@@ -15,6 +15,8 @@
 
 #include "pStatCollectorDef.h"
 
+using std::string;
+
 
 /**
  *

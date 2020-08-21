@@ -44,8 +44,8 @@ public:
   int get_num_collectors() const;
   bool has_collector(int index) const;
   const PStatCollectorDef &get_collector_def(int index) const;
-  string get_collector_name(int index) const;
-  string get_collector_fullname(int index) const;
+  std::string get_collector_name(int index) const;
+  std::string get_collector_fullname(int index) const;
   bool set_collector_has_level(int index, int thread_index, bool flag);
   bool get_collector_has_level(int index, int thread_index) const;
 
@@ -54,14 +54,14 @@ public:
 
   int get_num_threads() const;
   bool has_thread(int index) const;
-  string get_thread_name(int index) const;
+  std::string get_thread_name(int index) const;
   const PStatThreadData *get_thread_data(int index) const;
 
   int get_child_distance(int parent, int child) const;
 
 
   void add_collector(PStatCollectorDef *def);
-  void define_thread(int thread_index, const string &name = string());
+  void define_thread(int thread_index, const std::string &name = std::string());
 
   void record_new_frame(int thread_index, int frame_number,
                         PStatFrameData *frame_data);
@@ -87,7 +87,7 @@ private:
 
   class Thread {
   public:
-    string _name;
+    std::string _name;
     PT(PStatThreadData) _data;
   };
   typedef pvector<Thread> Threads;

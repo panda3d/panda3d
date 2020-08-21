@@ -22,21 +22,21 @@
  * A connected fan of triangles.  This does not normally appear in an egg
  * file; it is typically generated as a result of meshing.
  */
-class EXPCL_PANDAEGG EggTriangleFan : public EggCompositePrimitive {
+class EXPCL_PANDA_EGG EggTriangleFan : public EggCompositePrimitive {
 PUBLISHED:
-  INLINE EggTriangleFan(const string &name = "");
+  INLINE explicit EggTriangleFan(const std::string &name = "");
   INLINE EggTriangleFan(const EggTriangleFan &copy);
   INLINE EggTriangleFan &operator = (const EggTriangleFan &copy);
   virtual ~EggTriangleFan();
 
-  virtual EggTriangleFan *make_copy() const OVERRIDE;
+  virtual EggTriangleFan *make_copy() const override;
 
-  virtual void write(ostream &out, int indent_level) const;
-  virtual void apply_first_attribute();
+  virtual void write(std::ostream &out, int indent_level) const override;
+  virtual void apply_first_attribute() override;
 
 protected:
-  virtual int get_num_lead_vertices() const;
-  virtual bool do_triangulate(EggGroupNode *container) const;
+  virtual int get_num_lead_vertices() const override;
+  virtual bool do_triangulate(EggGroupNode *container) const override;
 
 public:
   static TypeHandle get_class_type() {
@@ -47,10 +47,13 @@ public:
     register_type(_type_handle, "EggTriangleFan",
                   EggCompositePrimitive::get_class_type());
   }
-  virtual TypeHandle get_type() const {
+  virtual TypeHandle get_type() const override {
     return get_class_type();
   }
-  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+  virtual TypeHandle force_init_type() override {
+    init_type();
+    return get_class_type();
+  }
 
 private:
   static TypeHandle _type_handle;

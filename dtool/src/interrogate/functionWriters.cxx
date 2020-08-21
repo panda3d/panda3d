@@ -41,7 +41,7 @@ FunctionWriters::
  */
 FunctionWriter *FunctionWriters::
 add_writer(FunctionWriter *writer) {
-  pair<Writers::iterator, bool> result = _writers.insert(writer);
+  std::pair<Writers::iterator, bool> result = _writers.insert(writer);
   if (!result.second) {
     // Already there; delete the pointer.
     delete writer;
@@ -55,7 +55,7 @@ add_writer(FunctionWriter *writer) {
  * Generates prototypes for all of the functions.
  */
 void FunctionWriters::
-write_prototypes(ostream &out) {
+write_prototypes(std::ostream &out) {
   Writers::iterator wi;
   for (wi = _writers.begin(); wi != _writers.end(); ++wi) {
     FunctionWriter *writer = (*wi);
@@ -67,7 +67,7 @@ write_prototypes(ostream &out) {
  * Generates all of the functions.
  */
 void FunctionWriters::
-write_code(ostream &out) {
+write_code(std::ostream &out) {
   Writers::iterator wi;
   for (wi = _writers.begin(); wi != _writers.end(); ++wi) {
     FunctionWriter *writer = (*wi);

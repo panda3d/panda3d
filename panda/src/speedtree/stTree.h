@@ -28,15 +28,14 @@ class SpeedTreeNode;
 class EXPCL_PANDASPEEDTREE STTree : public TypedReferenceCount, public Namable {
 PUBLISHED:
   STTree(const Filename &fullpath);
-private:
-  STTree(const STTree &copy);
+  STTree(const STTree &copy) = delete;
 
 PUBLISHED:
   INLINE const Filename &get_fullpath() const;
 
   INLINE bool is_valid() const;
 
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 public:
   INLINE const SpeedTree::CTreeRender *get_tree() const;
@@ -65,7 +64,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const STTree &tree) {
+INLINE std::ostream &operator << (std::ostream &out, const STTree &tree) {
   tree.output(out);
   return out;
 }

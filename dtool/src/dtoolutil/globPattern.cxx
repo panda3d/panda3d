@@ -12,7 +12,10 @@
  */
 
 #include "globPattern.h"
+#include "string_utils.h"
 #include <ctype.h>
+
+using std::string;
 
 /**
  * Returns true if the pattern includes any special globbing characters, or
@@ -99,7 +102,7 @@ match_files(vector_string &results, const Filename &cwd) const {
     pattern = source;
   } else {
     pattern = source.substr(0, slash);
-    suffix = source.substr(slash + 1);
+    suffix = source.substr(slash);
   }
 
   GlobPattern glob(pattern);
@@ -118,9 +121,19 @@ r_match_files(const Filename &prefix, const string &suffix,
   size_t slash = suffix.find('/');
   if (slash == string::npos) {
     next_pattern = suffix;
+  } else if (slash + 1 == suffix.size()) {
+    // If the slash is at the end, we need to keep it, since it indicates that
+    // we only want to match directories.
+    next_pattern = suffix.substr(0, slash);
+    next_suffix = "/";
   } else {
     next_pattern = suffix.substr(0, slash);
     next_suffix = suffix.substr(slash + 1);
+  }
+
+  if (_pattern == "**" && next_pattern == "**") {
+    // Collapse consecutive globstar patterns.
+    return r_match_files(prefix, next_suffix, results, cwd);
   }
 
   Filename parent_dir;
@@ -136,19 +149,24 @@ r_match_files(const Filename &prefix, const string &suffix,
   if (!has_glob_characters()) {
     // If there are no special characters in the pattern, it's a literal
     // match.
+    Filename fn(parent_dir, _pattern);
     if (suffix.empty()) {
       // Time to stop.
-      Filename single_filename(parent_dir, _pattern);
-      if (single_filename.exists()) {
+      if (fn.exists()) {
         results.push_back(Filename(prefix, _pattern));
         return 1;
       }
       return 0;
+    } else if (fn.is_directory()) {
+      // If the pattern ends with a slash, match a directory only.
+      if (suffix == "/") {
+        results.push_back(Filename(prefix, _pattern + "/"));
+        return 1;
+      } else {
+        return next_glob.r_match_files(Filename(prefix, _pattern),
+                                       next_suffix, results, cwd);
+      }
     }
-
-    return next_glob.r_match_files(Filename(prefix, _pattern),
-                                   next_suffix, results, cwd);
-
   }
 
   // If there *are* special glob characters, we must attempt to match the
@@ -164,24 +182,168 @@ r_match_files(const Filename &prefix, const string &suffix,
   // the pattern.
   int num_matched = 0;
 
-  vector_string::const_iterator fi;
-  for (fi = dir_files.begin(); fi != dir_files.end(); ++fi) {
-    const string &local_file = (*fi);
+  // A globstar pattern matches zero or more directories.
+  if (_pattern == "**") {
+    // Try to match this directory (as if the globstar wasn't there)
+    if (suffix.empty()) {
+      // This is a directory.  Add it.
+      results.push_back(Filename(prefix));
+      num_matched++;
+    } else if (suffix == "/") {
+      // Keep the trailing slash, but be sure not to duplicate it.
+      results.push_back(Filename(prefix, ""));
+      num_matched++;
+    } else {
+      num_matched += next_glob.r_match_files(prefix, next_suffix, results, cwd);
+    }
+    next_suffix = suffix;
+    next_glob = *this;
+  }
+
+  for (const string &local_file : dir_files) {
     if (_pattern[0] == '.' || (local_file.empty() || local_file[0] != '.')) {
       if (matches(local_file)) {
         // We have a match; continue.
-        if (suffix.empty()) {
+        if (Filename(parent_dir, local_file).is_directory()) {
+          if (suffix.empty() && _pattern != "**") {
+            results.push_back(Filename(prefix, local_file));
+            num_matched++;
+          } else if (suffix == "/" && _pattern != "**") {
+            results.push_back(Filename(prefix, local_file + "/"));
+            num_matched++;
+          } else {
+            num_matched += next_glob.r_match_files(Filename(prefix, local_file),
+                                                   next_suffix, results, cwd);
+          }
+        } else if (suffix.empty()) {
           results.push_back(Filename(prefix, local_file));
           num_matched++;
-        } else {
-          num_matched += next_glob.r_match_files(Filename(prefix, local_file),
-                                                 next_suffix, results, cwd);
         }
       }
     }
   }
 
   return num_matched;
+}
+
+/**
+ * Treats the GlobPattern as a filename pattern, and returns true if the given
+ * filename matches the pattern.  Unlike matches(), this will not match slash
+ * characters for single asterisk characters, and it will ignore path
+ * components that only contain a dot.
+ */
+bool GlobPattern::
+matches_file(Filename candidate) const {
+  if (_pattern.empty()) {
+    // Special case.
+    return candidate.empty();
+  }
+
+  // Either both must be absolute, or both must be relative.
+  if ((_pattern[0] != '/') != candidate.is_local()) {
+    return false;
+  }
+
+  return r_matches_file(_pattern, candidate);
+}
+
+/**
+ * The recursive implementation of matches_file().
+ */
+bool GlobPattern::
+r_matches_file(const string &pattern, const Filename &candidate) const {
+  // Split off the next bit of pattern.
+  std::string next_pattern;
+  GlobPattern glob;
+  glob.set_case_sensitive(get_case_sensitive());
+  glob.set_nomatch_chars(get_nomatch_chars());
+
+  bool pattern_end;
+  size_t slash = pattern.find('/');
+  if (slash == string::npos) {
+    glob.set_pattern(pattern);
+    pattern_end = true;
+  } else {
+    glob.set_pattern(pattern.substr(0, slash));
+    next_pattern = pattern.substr(slash + 1);
+    pattern_end = false;
+
+    if (slash == 0 || (slash == 1 && pattern[0] == '.')) {
+      // Ignore // and /./ in patterns
+      return r_matches_file(next_pattern, candidate);
+    }
+  }
+
+  // Also split off the next component in the candidate filename.
+  std::string part;
+  Filename next_candidate;
+
+  bool candidate_end;
+  size_t fn_slash = ((const std::string &)candidate).find('/');
+  if (fn_slash == string::npos) {
+    part = candidate;
+    candidate_end = true;
+  } else {
+    part = candidate.substr(0, fn_slash);
+    next_candidate = candidate.substr(fn_slash + 1);
+    candidate_end = false;
+
+    // Ignore // and /./ in filenames.
+    if (fn_slash == 0 || part == ".") {
+      return r_matches_file(pattern, next_candidate);
+    }
+  }
+
+  // Now check if the current part matches the current pattern.
+  bool part_matches;
+  if (glob.get_pattern() == "**") {
+    // This matches any number of parts.
+    if (pattern_end) {
+      // We might as well stop checking here; it matches whatever might come.
+      return true;
+    }
+    // We branch out to three options: either we match nothing, we match this
+    // part only, or we match this part and maybe more.
+    return r_matches_file(next_pattern, candidate)
+        || (!candidate_end && r_matches_file(next_pattern, next_candidate))
+        || (!candidate_end && r_matches_file(pattern, next_candidate));
+  }
+  else if (glob.get_pattern() == "*" && _nomatch_chars.empty()) {
+    // Matches any part (faster version of below)
+    part_matches = true;
+  }
+  else if ((glob.get_pattern() == "." && part.empty())
+        || (glob.get_pattern().empty() && part == ".")) {
+    // So that /path/. matches /path/, and vice versa.
+    part_matches = true;
+  }
+  else if (glob.has_glob_characters()) {
+    part_matches = glob.matches(part);
+  }
+  else if (get_case_sensitive()) {
+    part_matches = (part == glob.get_pattern());
+  }
+  else {
+    part_matches = (cmp_nocase(part, glob.get_pattern()) == 0);
+  }
+
+  if (!part_matches) {
+    // It doesn't match, so we end our search here.
+    return false;
+  }
+
+  if (candidate_end && pattern_end) {
+    // We've reached the end of both candidate and pattern, so it matches.
+    return true;
+  }
+
+  if (pattern_end != candidate_end) {
+    // One of them has ended, but the other hasn't, so it's not a match.
+    return false;
+  }
+
+  // It matches; move on to the next part.
+  return r_matches_file(next_pattern, next_candidate);
 }
 
 /**

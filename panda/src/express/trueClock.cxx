@@ -17,9 +17,12 @@
 
 #include <math.h>  // for fabs()
 
-TrueClock *TrueClock::_global_ptr = NULL;
+using std::max;
+using std::min;
 
-#if defined(WIN32_VC) || defined(WIN64_VC)
+TrueClock *TrueClock::_global_ptr = nullptr;
+
+#ifdef _WIN32
 
 // The Win32 implementation.
 
@@ -110,27 +113,15 @@ get_short_raw_time() {
 /**
  *
  */
-typedef BOOL (WINAPI * PFNSETPROCESSAFFINITYMASK)(HANDLE, DWORD_PTR);
-typedef BOOL (WINAPI * PFNGETPROCESSAFFINITYMASK)(HANDLE, DWORD_PTR*, DWORD_PTR*);
-
 bool TrueClock::
 set_cpu_affinity(uint32_t mask) const {
-  HMODULE hker = GetModuleHandle("kernel32");
-  if (hker != 0) {
-    PFNGETPROCESSAFFINITYMASK gp = (PFNGETPROCESSAFFINITYMASK)
-      GetProcAddress(hker, "GetProcessAffinityMask");
-    PFNSETPROCESSAFFINITYMASK sp = (PFNSETPROCESSAFFINITYMASK)
-      GetProcAddress(hker, "SetProcessAffinityMask");
-    if (gp != 0 && sp != 0) {
-      DWORD proc_mask;
-      DWORD sys_mask;
-      if (gp(GetCurrentProcess(), (PDWORD_PTR)&proc_mask, (PDWORD_PTR)&sys_mask)) {
-        // make sure we don't reference CPUs that don't exist
-        proc_mask = mask & sys_mask;
-        if (proc_mask) {
-          return sp(GetCurrentProcess(), proc_mask) != 0;
-        }
-      }
+  DWORD proc_mask;
+  DWORD sys_mask;
+  if (GetProcessAffinityMask(GetCurrentProcess(), (PDWORD_PTR)&proc_mask, (PDWORD_PTR)&sys_mask)) {
+    // make sure we don't reference CPUs that don't exist
+    proc_mask = mask & sys_mask;
+    if (proc_mask) {
+      return SetProcessAffinityMask(GetCurrentProcess(), proc_mask) != 0;
     }
   }
   return false;
@@ -169,7 +160,7 @@ TrueClock() {
     if (_has_high_res) {
       if (int_frequency <= 0) {
         clock_cat.error()
-          << "TrueClock::get_real_time() - frequency is negative!" << endl;
+          << "TrueClock::get_real_time() - frequency is negative!" << std::endl;
         _has_high_res = false;
 
       } else {
@@ -198,7 +189,7 @@ TrueClock() {
 
   if (!_has_high_res) {
     clock_cat.warning()
-      << "No high resolution clock available." << endl;
+      << "No high resolution clock available." << std::endl;
   }
 }
 
@@ -480,7 +471,7 @@ set_time_scale(double time, double new_time_scale) {
   _time_scale = new_time_scale;
 }
 
-#else  // !WIN32_VC
+#else  // !_WIN32
 
 // The Posix implementation.
 
@@ -501,7 +492,7 @@ get_long_time() {
 #ifdef GETTIMEOFDAY_ONE_PARAM
   result = gettimeofday(&tv);
 #else
-  result = gettimeofday(&tv, (struct timezone *)NULL);
+  result = gettimeofday(&tv, nullptr);
 #endif
 
   if (result < 0) {
@@ -527,7 +518,7 @@ get_short_raw_time() {
 #ifdef GETTIMEOFDAY_ONE_PARAM
   result = gettimeofday(&tv);
 #else
-  result = gettimeofday(&tv, (struct timezone *)NULL);
+  result = gettimeofday(&tv, nullptr);
 #endif
 
   if (result < 0) {
@@ -561,7 +552,7 @@ TrueClock() {
 #ifdef GETTIMEOFDAY_ONE_PARAM
   result = gettimeofday(&tv);
 #else
-  result = gettimeofday(&tv, (struct timezone *)NULL);
+  result = gettimeofday(&tv, nullptr);
 #endif
 
   if (result < 0) {

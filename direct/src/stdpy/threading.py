@@ -35,10 +35,14 @@ __all__ = [
     'Event',
     'Timer',
     'local',
-    'current_thread', 'currentThread',
-    'enumerate', 'active_count', 'activeCount',
+    'current_thread',
+    'main_thread',
+    'enumerate', 'active_count',
     'settrace', 'setprofile', 'stack_size',
+    'TIMEOUT_MAX',
     ]
+
+TIMEOUT_MAX = _thread.TIMEOUT_MAX
 
 local = _thread._local
 _newname = _thread._newname
@@ -83,7 +87,7 @@ class Thread(ThreadBase):
     object.  The wrapper is designed to emulate Python's own
     threading.Thread object. """
 
-    def __init__(self, group=None, target=None, name=None, args=(), kwargs={}):
+    def __init__(self, group=None, target=None, name=None, args=(), kwargs={}, daemon=None):
         ThreadBase.__init__(self)
 
         assert group is None
@@ -95,10 +99,21 @@ class Thread(ThreadBase):
             name = _newname()
 
         current = current_thread()
-        self.__dict__['daemon'] = current.daemon
+        if daemon is not None:
+            self.__dict__['daemon'] = daemon
+        else:
+            self.__dict__['daemon'] = current.daemon
         self.__dict__['name'] = name
 
-        self.__thread = core.PythonThread(self.run, None, name, name)
+        def call_run():
+            # As soon as the thread is done, break the circular reference.
+            try:
+                self.run()
+            finally:
+                self.__thread = None
+                _thread._remove_thread_id(self.ident)
+
+        self.__thread = core.PythonThread(call_run, None, name, name)
         threadId = _thread._add_thread(self.__thread, weakref.proxy(self))
         self.__dict__['ident'] = threadId
 
@@ -109,16 +124,17 @@ class Thread(ThreadBase):
             _thread._remove_thread_id(self.ident)
 
     def is_alive(self):
-        return self.__thread.isStarted()
+        thread = self.__thread
+        return thread is not None and thread.is_started()
 
-    def isAlive(self):
-        return self.__thread.isStarted()
+    isAlive = is_alive
 
     def start(self):
-        if self.__thread.isStarted():
+        thread = self.__thread
+        if thread is None or thread.is_started():
             raise RuntimeError
 
-        if not self.__thread.start(core.TPNormal, True):
+        if not thread.start(core.TPNormal, True):
             raise RuntimeError
 
     def run(self):
@@ -132,8 +148,12 @@ class Thread(ThreadBase):
     def join(self, timeout = None):
         # We don't support a timed join here, sorry.
         assert timeout is None
-        self.__thread.join()
-        self.__thread = None
+        thread = self.__thread
+        if thread is not None:
+            thread.join()
+            # Clear the circular reference.
+            self.__thread = None
+            _thread._remove_thread_id(self.ident)
 
     def setName(self, name):
         self.__dict__['name'] = name
@@ -184,17 +204,6 @@ class Lock(core.Mutex):
     def __init__(self, name = "PythonLock"):
         core.Mutex.__init__(self, name)
 
-    def acquire(self, blocking = True):
-        if blocking:
-            core.Mutex.acquire(self)
-            return True
-        else:
-            return core.Mutex.tryAcquire(self)
-
-    __enter__ = acquire
-
-    def __exit__(self, t, v, tb):
-        self.release()
 
 class RLock(core.ReMutex):
     """ This class provides a wrapper around Panda's ReMutex object.
@@ -203,18 +212,6 @@ class RLock(core.ReMutex):
 
     def __init__(self, name = "PythonRLock"):
         core.ReMutex.__init__(self, name)
-
-    def acquire(self, blocking = True):
-        if blocking:
-            core.ReMutex.acquire(self)
-            return True
-        else:
-            return core.ReMutex.tryAcquire(self)
-
-    __enter__ = acquire
-
-    def __exit__(self, t, v, tb):
-        self.release()
 
 
 class Condition(core.ConditionVarFull):
@@ -285,7 +282,7 @@ class BoundedSemaphore(Semaphore):
         Semaphore.__init__(value)
 
     def release(self):
-        if self.getCount() > value:
+        if self.getCount() > self.__max:
             raise ValueError
 
         Semaphore.release(self)
@@ -295,7 +292,7 @@ class Event:
     object. """
 
     def __init__(self):
-        self.__lock = core.Lock("Python Event")
+        self.__lock = core.Mutex("Python Event")
         self.__cvar = core.ConditionVarFull(self.__lock)
         self.__flag = False
 
@@ -308,7 +305,7 @@ class Event:
         self.__lock.acquire()
         try:
             self.__flag = True
-            self.__cvar.signalAll()
+            self.__cvar.notifyAll()
 
         finally:
             self.__lock.release()
@@ -379,6 +376,10 @@ def current_thread():
     t = core.Thread.getCurrentThread()
     return _thread._get_thread_wrapper(t, _create_thread_wrapper)
 
+def main_thread():
+    t = core.Thread.getMainThread()
+    return _thread._get_thread_wrapper(t, _create_thread_wrapper)
+
 currentThread = current_thread
 
 def enumerate():
@@ -386,7 +387,7 @@ def enumerate():
     _thread._threadsLock.acquire()
     try:
         for thread, locals, wrapper in list(_thread._threads.values()):
-            if wrapper and thread.isStarted():
+            if wrapper and wrapper.is_alive():
                 tlist.append(wrapper)
         return tlist
     finally:
@@ -394,6 +395,7 @@ def enumerate():
 
 def active_count():
     return len(enumerate())
+
 activeCount = active_count
 
 _settrace_func = None

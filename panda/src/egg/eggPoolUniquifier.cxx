@@ -33,7 +33,7 @@ EggPoolUniquifier() {
  * Returns the category name into which the given node should be collected, or
  * the empty string if the node's name should be left alone.
  */
-string EggPoolUniquifier::
+std::string EggPoolUniquifier::
 get_category(EggNode *node) {
   if (node->is_of_type(EggTexture::get_class_type())) {
     return "tex";
@@ -43,5 +43,5 @@ get_category(EggNode *node) {
     return "vpool";
   }
 
-  return string();
+  return std::string();
 }

@@ -28,7 +28,7 @@ CullBin(const CullBin &copy) :
  *
  */
 INLINE CullBin::
-CullBin(const string &name, CullBin::BinType bin_type,
+CullBin(const std::string &name, CullBin::BinType bin_type,
         GraphicsStateGuardianBase *gsg,
         const PStatCollector &draw_region_pcollector) :
   _name(name),
@@ -42,7 +42,7 @@ CullBin(const string &name, CullBin::BinType bin_type,
 /**
  *
  */
-INLINE const string &CullBin::
+INLINE const std::string &CullBin::
 get_name() const {
   return _name;
 }

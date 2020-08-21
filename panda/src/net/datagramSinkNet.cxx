@@ -32,7 +32,7 @@ DatagramSinkNet(ConnectionManager *manager, int num_threads) :
  */
 bool DatagramSinkNet::
 put_datagram(const Datagram &data) {
-  if (_target == (Connection *)NULL) {
+  if (_target == nullptr) {
     return false;
   }
   return send(data, _target, true);
@@ -44,7 +44,7 @@ put_datagram(const Datagram &data) {
  */
 bool DatagramSinkNet::
 is_error() {
-  return (_target == (Connection *)NULL || _target->get_socket() == (Socket_IP *)NULL);
+  return (_target == nullptr || _target->get_socket() == nullptr);
 }
 
 /**
@@ -53,7 +53,7 @@ is_error() {
  */
 void DatagramSinkNet::
 flush() {
-  if (_target != (Connection *)NULL) {
+  if (_target != nullptr) {
     _target->flush();
   }
 }

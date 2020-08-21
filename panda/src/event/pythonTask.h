@@ -20,40 +20,47 @@
 
 #ifdef HAVE_PYTHON
 #include "py_panda.h"
+#include "extension.h"
 
 /**
- * This class exists to allow association of a Python function with the
- * AsyncTaskManager.
+ * This class exists to allow association of a Python function or coroutine
+ * with the AsyncTaskManager.
  */
-class PythonTask : public AsyncTask {
+class PythonTask final : public AsyncTask {
 PUBLISHED:
-  PythonTask(PyObject *function = Py_None, const string &name = string());
+  PythonTask(PyObject *function = Py_None, const std::string &name = std::string());
   virtual ~PythonTask();
   ALLOC_DELETED_CHAIN(PythonTask);
 
   void set_function(PyObject *function);
-  PyObject *get_function();
+  INLINE PyObject *get_function();
 
   void set_args(PyObject *args, bool append_task);
   PyObject *get_args();
 
   void set_upon_death(PyObject *upon_death);
-  PyObject *get_upon_death();
+  INLINE PyObject *get_upon_death();
 
   void set_owner(PyObject *owner);
-  PyObject *get_owner();
+  INLINE PyObject *get_owner() const;
 
+  INLINE void set_result(PyObject *result);
+
+public:
+  // This is exposed only for the result() function in asyncFuture_ext.cxx
+  // to use, which is why it is not published.
+  PyObject *get_result() const;
+  //PyObject *exception() const;
+
+PUBLISHED:
   int __setattr__(PyObject *self, PyObject *attr, PyObject *v);
   int __delattr__(PyObject *self, PyObject *attr);
-  PyObject *__getattr__(PyObject *attr) const;
+  PyObject *__getattribute__(PyObject *self, PyObject *attr) const;
 
   int __traverse__(visitproc visit, void *arg);
   int __clear__();
 
 PUBLISHED:
-  // The name of this task.
-  MAKE_PROPERTY(name, get_name, set_name);
-
   // The amount of seconds that have elapsed since the task was started,
   // according to the task manager's clock.
   MAKE_PROPERTY(time, get_elapsed_time);
@@ -78,15 +85,13 @@ PUBLISHED:
   // according to the task manager's clock.
   MAKE_PROPERTY(frame, get_elapsed_frames);
 
-  // This is a number guaranteed to be unique for each different AsyncTask
-  // object in the universe.
-  MAKE_PROPERTY(id, get_task_id);
-
   // This is a special variable to hold the instance dictionary in which
   // custom variables may be stored.
   PyObject *__dict__;
 
 protected:
+  virtual bool cancel();
+
   virtual bool is_runnable();
   virtual DoneStatus do_task();
   DoneStatus do_python_task();
@@ -102,12 +107,23 @@ private:
 private:
   PyObject *_function;
   PyObject *_args;
-  bool _append_task;
   PyObject *_upon_death;
   PyObject *_owner;
-  bool _registered_to_owner;
+
+  PyObject *_exception;
+  PyObject *_exc_value;
+  PyObject *_exc_traceback;
 
   PyObject *_generator;
+  PyObject *_future_done;
+
+  bool _append_task;
+  bool _ignore_return;
+  bool _registered_to_owner;
+  mutable bool _retrieved_exception;
+  bool _must_cancel = false;
+
+  friend class Extension<AsyncFuture>;
 
 public:
   static TypeHandle get_class_type() {

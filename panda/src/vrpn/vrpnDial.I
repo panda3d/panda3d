@@ -14,7 +14,7 @@
 /**
  * Returns the name of the dial device that was used to create this VrpnDial.
  */
-INLINE const string &VrpnDial::
+INLINE const std::string &VrpnDial::
 get_dial_name() const {
   return _dial_name;
 }
@@ -26,13 +26,4 @@ get_dial_name() const {
 INLINE bool VrpnDial::
 is_empty() const {
   return _devices.empty();
-}
-
-/**
- * Polls the connected device.  Normally you should not call this directly;
- * this will be called by the VrpnClient.
- */
-INLINE void VrpnDial::
-poll() {
-  _dial->mainloop();
 }

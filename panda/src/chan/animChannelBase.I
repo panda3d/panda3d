@@ -17,7 +17,7 @@
  * created as part of a hierarchy.
  */
 INLINE AnimChannelBase::
-AnimChannelBase(const string &name)
+AnimChannelBase(const std::string &name)
   : AnimGroup(name)
 {
   _last_frame = -1;
@@ -40,7 +40,7 @@ AnimChannelBase(AnimGroup *parent, const AnimChannelBase &copy) :
  * in the previously-created hierarchy.
  */
 INLINE AnimChannelBase::
-AnimChannelBase(AnimGroup *parent, const string &name)
+AnimChannelBase(AnimGroup *parent, const std::string &name)
   : AnimGroup(parent, name)
 {
   _last_frame = -1;

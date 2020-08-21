@@ -67,7 +67,7 @@ remove_attrib(TypeHandle type) const {
  */
 INLINE bool RenderState::
 has_attrib(TypeHandle type) const {
-  return get_attrib(type) != (RenderAttrib *)NULL;
+  return get_attrib(type) != nullptr;
 }
 
 /**
@@ -76,7 +76,7 @@ has_attrib(TypeHandle type) const {
  */
 INLINE bool RenderState::
 has_attrib(int slot) const {
-  return get_attrib(slot) != (RenderAttrib *)NULL;
+  return get_attrib(slot) != nullptr;
 }
 
 /**
@@ -105,7 +105,7 @@ get_attrib(int slot) const {
  */
 INLINE const RenderAttrib *RenderState::
 get_attrib_def(int slot) const {
-  if (_attributes[slot]._attrib != (RenderAttrib *)NULL) {
+  if (_attributes[slot]._attrib != nullptr) {
     return _attributes[slot]._attrib;
   }
   RenderAttribRegistry *reg = RenderAttribRegistry::quick_get_global_ptr();
@@ -237,7 +237,7 @@ get_invert_composition_cache_num_entries() const {
 INLINE size_t RenderState::
 get_composition_cache_size() const {
   LightReMutexHolder holder(*_states_lock);
-  return _composition_cache.get_size();
+  return _composition_cache.get_num_entries();
 }
 
 /**
@@ -251,9 +251,6 @@ get_composition_cache_size() const {
 INLINE const RenderState *RenderState::
 get_composition_cache_source(size_t n) const {
   LightReMutexHolder holder(*_states_lock);
-  if (!_composition_cache.has_element(n)) {
-    return NULL;
-  }
   return _composition_cache.get_key(n);
 }
 
@@ -270,9 +267,6 @@ get_composition_cache_source(size_t n) const {
 INLINE const RenderState *RenderState::
 get_composition_cache_result(size_t n) const {
   LightReMutexHolder holder(*_states_lock);
-  if (!_composition_cache.has_element(n)) {
-    return NULL;
-  }
   return _composition_cache.get_data(n)._result;
 }
 
@@ -288,7 +282,7 @@ get_composition_cache_result(size_t n) const {
 INLINE size_t RenderState::
 get_invert_composition_cache_size() const {
   LightReMutexHolder holder(*_states_lock);
-  return _invert_composition_cache.get_size();
+  return _invert_composition_cache.get_num_entries();
 }
 
 /**
@@ -302,9 +296,6 @@ get_invert_composition_cache_size() const {
 INLINE const RenderState *RenderState::
 get_invert_composition_cache_source(size_t n) const {
   LightReMutexHolder holder(*_states_lock);
-  if (!_invert_composition_cache.has_element(n)) {
-    return NULL;
-  }
   return _invert_composition_cache.get_key(n);
 }
 
@@ -322,9 +313,6 @@ get_invert_composition_cache_source(size_t n) const {
 INLINE const RenderState *RenderState::
 get_invert_composition_cache_result(size_t n) const {
   LightReMutexHolder holder(*_states_lock);
-  if (!_invert_composition_cache.has_element(n)) {
-    return NULL;
-  }
   return _invert_composition_cache.get_data(n)._result;
 }
 
@@ -460,9 +448,9 @@ operator = (const Attribute &copy) {
 INLINE int RenderState::Attribute::
 compare_to(const Attribute &other) const {
   if (_attrib != other._attrib) {
-    if (_attrib == NULL) {
+    if (_attrib == nullptr) {
       return -1;
-    } else if (other._attrib == NULL) {
+    } else if (other._attrib == nullptr) {
       return 1;
     }
 
@@ -493,24 +481,63 @@ flush_level() {
   _cache_counter.flush_level();
 }
 
+/**
+ * Overrides this method to update PStats appropriately.
+ */
+INLINE void RenderState::
+cache_ref_only() const {
+#ifdef DO_PSTATS
+  int old_referenced_bits = get_referenced_bits();
+  NodeCachedReferenceCount::cache_ref_only();
+  consider_update_pstats(old_referenced_bits);
+#else  // DO_PSTATS
+  NodeCachedReferenceCount::cache_ref_only();
+#endif  // DO_PSTATS
+}
+
+/**
+ * Overrides this method to update PStats appropriately.
+ */
+INLINE void RenderState::
+cache_unref_only() const {
+#ifdef DO_PSTATS
+  int old_referenced_bits = get_referenced_bits();
+  NodeCachedReferenceCount::cache_unref_only();
+  consider_update_pstats(old_referenced_bits);
+#else  // DO_PSTATS
+  NodeCachedReferenceCount::cache_unref_only();
+#endif  // DO_PSTATS
+}
+
 #ifndef CPPPARSER
 /**
- * Handy templated version of get_attrib that costs to the right type.
+ * Handy templated version of get_attrib that casts to the right type.
  * Returns true if the attribute was present, false otherwise.
  */
 template<class AttribType>
 INLINE bool RenderState::
 get_attrib(const AttribType *&attrib) const {
   attrib = (const AttribType *)get_attrib((int)AttribType::get_class_slot());
-  return (attrib != (const AttribType *)NULL);
+  return (attrib != nullptr);
+}
+template<class AttribType>
+INLINE bool RenderState::
+get_attrib(CPT(AttribType) &attrib) const {
+  attrib = (const AttribType *)get_attrib((int)AttribType::get_class_slot());
+  return (attrib != nullptr);
 }
 
 /**
- * Handy templated version of get_attrib_def that costs to the right type.
+ * Handy templated version of get_attrib_def that casts to the right type.
  */
 template<class AttribType>
 INLINE void RenderState::
 get_attrib_def(const AttribType *&attrib) const {
+  attrib = (const AttribType *)get_attrib_def((int)AttribType::get_class_slot());
+}
+template<class AttribType>
+INLINE void RenderState::
+get_attrib_def(CPT(AttribType) &attrib) const {
   attrib = (const AttribType *)get_attrib_def((int)AttribType::get_class_slot());
 }
 #endif  // CPPPARSER
@@ -522,7 +549,8 @@ INLINE void RenderState::
 check_hash() const {
   // This pretends to be a const function, even though it's not, because it
   // only updates a transparent cache value.
-  if ((_flags & F_hash_known) == 0) {
+  if ((_flags & F_hash_known) != 0) {
+  } else {
     ((RenderState *)this)->calc_hash();
   }
 }
@@ -533,7 +561,7 @@ check_hash() const {
  */
 INLINE bool RenderState::
 do_cache_unref() const {
-  cache_unref_only();
+  NodeCachedReferenceCount::cache_unref_only();
   return unref();
 }
 

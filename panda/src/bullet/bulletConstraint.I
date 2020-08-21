@@ -34,7 +34,7 @@ set_breaking_threshold(PN_stdfloat threshold) {
  * Returns the applied impluse limit for breaking the constraint.
  */
 INLINE PN_stdfloat BulletConstraint::
-set_breaking_threshold() const {
+get_breaking_threshold() const {
 
   return (PN_stdfloat)ptr()->getBreakingImpulseThreshold();
 }

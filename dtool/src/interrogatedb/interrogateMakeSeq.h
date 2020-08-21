@@ -25,35 +25,35 @@ class IndexRemapper;
  */
 class EXPCL_INTERROGATEDB InterrogateMakeSeq : public InterrogateComponent {
 public:
-  INLINE InterrogateMakeSeq(InterrogateModuleDef *def = NULL);
+  INLINE InterrogateMakeSeq(InterrogateModuleDef *def = nullptr);
   INLINE InterrogateMakeSeq(const InterrogateMakeSeq &copy);
   INLINE void operator = (const InterrogateMakeSeq &copy);
 
   INLINE bool has_scoped_name() const;
-  INLINE const string &get_scoped_name() const;
+  INLINE const std::string &get_scoped_name() const;
 
   INLINE bool has_comment() const;
-  INLINE const string &get_comment() const;
+  INLINE const std::string &get_comment() const;
 
   INLINE FunctionIndex get_length_getter() const;
   INLINE FunctionIndex get_element_getter() const;
 
-  void output(ostream &out) const;
-  void input(istream &in);
+  void output(std::ostream &out) const;
+  void input(std::istream &in);
 
   void remap_indices(const IndexRemapper &remap);
 
 private:
-  string _scoped_name;
-  string _comment;
+  std::string _scoped_name;
+  std::string _comment;
   FunctionIndex _length_getter;
   FunctionIndex _element_getter;
 
   friend class InterrogateBuilder;
 };
 
-INLINE ostream &operator << (ostream &out, const InterrogateMakeSeq &make_seq);
-INLINE istream &operator >> (istream &in, InterrogateMakeSeq &make_seq);
+INLINE std::ostream &operator << (std::ostream &out, const InterrogateMakeSeq &make_seq);
+INLINE std::istream &operator >> (std::istream &in, InterrogateMakeSeq &make_seq);
 
 #include "interrogateMakeSeq.I"
 

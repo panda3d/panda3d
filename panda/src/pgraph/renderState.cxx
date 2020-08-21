@@ -36,11 +36,13 @@
 #include "thread.h"
 #include "renderAttribRegistry.h"
 
-LightReMutex *RenderState::_states_lock = NULL;
-RenderState::States *RenderState::_states = NULL;
-const RenderState *RenderState::_empty_state = NULL;
+using std::ostream;
+
+LightReMutex *RenderState::_states_lock = nullptr;
+RenderState::States RenderState::_states;
+const RenderState *RenderState::_empty_state = nullptr;
 UpdateSeq RenderState::_last_cycle_detect;
-int RenderState::_garbage_index = 0;
+size_t RenderState::_garbage_index = 0;
 
 PStatCollector RenderState::_cache_update_pcollector("*:State Cache:Update");
 PStatCollector RenderState::_garbage_collect_pcollector("*:State Cache:Garbage Collect");
@@ -64,17 +66,20 @@ TypeHandle RenderState::_type_handle;
 RenderState::
 RenderState() :
   _flags(0),
-  _auto_shader_state(NULL),
   _lock("RenderState")
 {
-  if (_states == (States *)NULL) {
+  if (_states_lock == nullptr) {
     init_states();
   }
   _saved_entry = -1;
   _last_mi = -1;
   _cache_stats.add_num_states(1);
-  _read_overrides = NULL;
-  _generated_shader = NULL;
+  _read_overrides = nullptr;
+  _generated_shader = nullptr;
+
+#ifdef DO_MEMORY_USAGE
+  MemoryUsage::update_type(this, this);
+#endif
 }
 
 /**
@@ -84,7 +89,6 @@ RenderState::
 RenderState(const RenderState &copy) :
   _filled_slots(copy._filled_slots),
   _flags(0),
-  _auto_shader_state(NULL),
   _lock("RenderState")
 {
   // Copy over the attributes.
@@ -95,16 +99,12 @@ RenderState(const RenderState &copy) :
   _saved_entry = -1;
   _last_mi = -1;
   _cache_stats.add_num_states(1);
-  _read_overrides = NULL;
-  _generated_shader = NULL;
-}
+  _read_overrides = nullptr;
+  _generated_shader = nullptr;
 
-/**
- * RenderStates are not meant to be copied.
- */
-void RenderState::
-operator = (const RenderState &) {
-  nassertv(false);
+#ifdef DO_MEMORY_USAGE
+  MemoryUsage::update_type(this, this);
+#endif
 }
 
 /**
@@ -122,14 +122,6 @@ RenderState::
   // unref() should have cleared these.
   nassertv(_saved_entry == -1);
   nassertv(_composition_cache.is_empty() && _invert_composition_cache.is_empty());
-
-  // Make sure the _auto_shader_state cache pointer is cleared.
-  if (_auto_shader_state != (const RenderState *)NULL) {
-    if (_auto_shader_state != this) {
-      cache_unref_delete(_auto_shader_state);
-    }
-    _auto_shader_state = NULL;
-  }
 
   // If this was true at the beginning of the destructor, but is no longer
   // true now, probably we've been double-deleted.
@@ -179,7 +171,7 @@ compare_sort(const RenderState &other) const {
   int num_sorted_slots = reg->get_num_sorted_slots();
   for (int n = 0; n < num_sorted_slots; ++n) {
     int slot = reg->get_sorted_slot(n);
-    nassertr((_attributes[slot]._attrib != NULL) == _filled_slots.get_bit(slot), 0);
+    nassertr((_attributes[slot]._attrib != nullptr) == _filled_slots.get_bit(slot), 0);
 
     const RenderAttrib *a = _attributes[slot]._attrib;
     const RenderAttrib *b = other._attributes[slot]._attrib;
@@ -224,7 +216,7 @@ cull_callback(CullTraverser *trav, const CullTraverserData &data) const {
   int slot = mask.get_lowest_on_bit();
   while (slot >= 0) {
     const Attribute &attrib = _attributes[slot];
-    nassertr(attrib._attrib != NULL, false);
+    nassertr(attrib._attrib != nullptr, false);
     if (!attrib._attrib->cull_callback(trav, data)) {
       return false;
     }
@@ -372,7 +364,7 @@ compose(const RenderState *other) const {
   int index = _composition_cache.find(other);
   if (index != -1) {
     Composition &comp = ((RenderState *)this)->_composition_cache.modify_data(index);
-    if (comp._result == (const RenderState *)NULL) {
+    if (comp._result == nullptr) {
       // Well, it wasn't cached already, but we already had an entry (probably
       // created for the reverse direction), so use the same entry to store
       // the new result.
@@ -400,14 +392,14 @@ compose(const RenderState *other) const {
   CPT(RenderState) result = do_compose(other);
 
   _cache_stats.add_total_size(1);
-  _cache_stats.inc_adds(_composition_cache.get_size() == 0);
+  _cache_stats.inc_adds(_composition_cache.is_empty());
 
   ((RenderState *)this)->_composition_cache[other]._result = result;
 
   if (other != this) {
     _cache_stats.add_total_size(1);
-    _cache_stats.inc_adds(other->_composition_cache.get_size() == 0);
-    ((RenderState *)other)->_composition_cache[this]._result = NULL;
+    _cache_stats.inc_adds(other->_composition_cache.is_empty());
+    ((RenderState *)other)->_composition_cache[this]._result = nullptr;
   }
 
   if (result != (const RenderState *)this) {
@@ -461,7 +453,7 @@ invert_compose(const RenderState *other) const {
   int index = _invert_composition_cache.find(other);
   if (index != -1) {
     Composition &comp = ((RenderState *)this)->_invert_composition_cache.modify_data(index);
-    if (comp._result == (const RenderState *)NULL) {
+    if (comp._result == nullptr) {
       // Well, it wasn't cached already, but we already had an entry (probably
       // created for the reverse direction), so use the same entry to store
       // the new result.
@@ -489,13 +481,13 @@ invert_compose(const RenderState *other) const {
   CPT(RenderState) result = do_invert_compose(other);
 
   _cache_stats.add_total_size(1);
-  _cache_stats.inc_adds(_invert_composition_cache.get_size() == 0);
+  _cache_stats.inc_adds(_invert_composition_cache.is_empty());
   ((RenderState *)this)->_invert_composition_cache[other]._result = result;
 
   if (other != this) {
     _cache_stats.add_total_size(1);
-    _cache_stats.inc_adds(other->_invert_composition_cache.get_size() == 0);
-    ((RenderState *)other)->_invert_composition_cache[this]._result = NULL;
+    _cache_stats.inc_adds(other->_invert_composition_cache.is_empty());
+    ((RenderState *)other)->_invert_composition_cache[this]._result = nullptr;
   }
 
   if (result != (const RenderState *)this) {
@@ -569,7 +561,7 @@ set_attrib(const RenderAttrib *attrib, int override) const {
  */
 CPT(RenderState) RenderState::
 remove_attrib(int slot) const {
-  if (_attributes[slot]._attrib == NULL) {
+  if (_attributes[slot]._attrib == nullptr) {
     // Already removed.
     return this;
   }
@@ -580,7 +572,7 @@ remove_attrib(int slot) const {
   }
 
   RenderState *new_state = new RenderState(*this);
-  new_state->_attributes[slot].set(NULL, 0);
+  new_state->_attributes[slot].set(nullptr, 0);
   new_state->_filled_slots.clear_bit(slot);
   return return_new(new_state);
 }
@@ -599,8 +591,8 @@ adjust_all_priorities(int adjustment) const {
   int slot = mask.get_lowest_on_bit();
   while (slot >= 0) {
     Attribute &attrib = new_state->_attributes[slot];
-    nassertr(attrib._attrib != (RenderAttrib *)NULL, this);
-    attrib._override = max(attrib._override + adjustment, 0);
+    nassertr(attrib._attrib != nullptr, this);
+    attrib._override = std::max(attrib._override + adjustment, 0);
 
     mask.clear_bit(slot);
     slot = mask.get_lowest_on_bit();
@@ -617,7 +609,7 @@ adjust_all_priorities(int adjustment) const {
  */
 bool RenderState::
 unref() const {
-  if (!state_cache || garbage_collect_states) {
+  if (garbage_collect_states || !state_cache) {
     // If we're not using the cache at all, or if we're relying on garbage
     // collection, just allow the pointer to unref normally.
     return ReferenceCount::unref();
@@ -658,24 +650,6 @@ unref() const {
 }
 
 /**
- * Returns the base RenderState that should have the generated_shader stored
- * within it, for generated shader states.  The returned object might be the
- * same as this object, or it might be a different RenderState with certain
- * attributes removed, or set to their default values.
- *
- * The point is to avoid needless regeneration of the shader attrib by storing
- * the generated shader on a common RenderState object, with all irrelevant
- * attributes removed.
- */
-const RenderState *RenderState::
-get_auto_shader_state() const {
-  if (_auto_shader_state == (const RenderState *)NULL) {
-    ((RenderState *)this)->assign_auto_shader_state();
-  }
-  return _auto_shader_state;
-}
-
-/**
  *
  */
 void RenderState::
@@ -692,7 +666,7 @@ output(ostream &out) const {
     int slot = mask.get_lowest_on_bit();
     while (slot >= 0) {
       const Attribute &attrib = _attributes[slot];
-      nassertv(attrib._attrib != (RenderAttrib *)NULL);
+      nassertv(attrib._attrib != nullptr);
       out << sep << attrib._attrib->get_type();
       sep = " ";
 
@@ -717,7 +691,7 @@ write(ostream &out, int indent_level) const {
   int slot = mask.get_lowest_on_bit();
   while (slot >= 0) {
     const Attribute &attrib = _attributes[slot];
-    nassertv(attrib._attrib != (RenderAttrib *)NULL);
+    nassertv(attrib._attrib != nullptr);
     attrib._attrib->write(out, indent_level);
 
     mask.clear_bit(slot);
@@ -742,11 +716,8 @@ get_max_priority() {
  */
 int RenderState::
 get_num_states() {
-  if (_states == (States *)NULL) {
-    return 0;
-  }
   LightReMutexHolder holder(*_states_lock);
-  return _states->get_num_entries();
+  return _states.get_num_entries();
 }
 
 /**
@@ -764,9 +735,6 @@ get_num_states() {
  */
 int RenderState::
 get_num_unused_states() {
-  if (_states == (States *)NULL) {
-    return 0;
-  }
   LightReMutexHolder holder(*_states_lock);
 
   // First, we need to count the number of times each RenderState object is
@@ -774,40 +742,33 @@ get_num_unused_states() {
   typedef pmap<const RenderState *, int> StateCount;
   StateCount state_count;
 
-  int size = _states->get_size();
-  for (int si = 0; si < size; ++si) {
-    if (!_states->has_element(si)) {
-      continue;
-    }
-    const RenderState *state = _states->get_key(si);
+  size_t size = _states.get_num_entries();
+  for (size_t si = 0; si < size; ++si) {
+    const RenderState *state = _states.get_key(si);
 
-    int i;
-    int cache_size = state->_composition_cache.get_size();
+    size_t i;
+    size_t cache_size = state->_composition_cache.get_num_entries();
     for (i = 0; i < cache_size; ++i) {
-      if (state->_composition_cache.has_element(i)) {
-        const RenderState *result = state->_composition_cache.get_data(i)._result;
-        if (result != (const RenderState *)NULL && result != state) {
-          // Here's a RenderState that's recorded in the cache.  Count it.
-          pair<StateCount::iterator, bool> ir =
-            state_count.insert(StateCount::value_type(result, 1));
-          if (!ir.second) {
-            // If the above insert operation fails, then it's already in the
-            // cache; increment its value.
-            (*(ir.first)).second++;
-          }
+      const RenderState *result = state->_composition_cache.get_data(i)._result;
+      if (result != nullptr && result != state) {
+        // Here's a RenderState that's recorded in the cache.  Count it.
+        std::pair<StateCount::iterator, bool> ir =
+          state_count.insert(StateCount::value_type(result, 1));
+        if (!ir.second) {
+          // If the above insert operation fails, then it's already in the
+          // cache; increment its value.
+          (*(ir.first)).second++;
         }
       }
     }
-    cache_size = state->_invert_composition_cache.get_size();
+    cache_size = state->_invert_composition_cache.get_num_entries();
     for (i = 0; i < cache_size; ++i) {
-      if (state->_invert_composition_cache.has_element(i)) {
-        const RenderState *result = state->_invert_composition_cache.get_data(i)._result;
-        if (result != (const RenderState *)NULL && result != state) {
-          pair<StateCount::iterator, bool> ir =
-            state_count.insert(StateCount::value_type(result, 1));
-          if (!ir.second) {
-            (*(ir.first)).second++;
-          }
+      const RenderState *result = state->_invert_composition_cache.get_data(i)._result;
+      if (result != nullptr && result != state) {
+        std::pair<StateCount::iterator, bool> ir =
+          state_count.insert(StateCount::value_type(result, 1));
+        if (!ir.second) {
+          (*(ir.first)).second++;
         }
       }
     }
@@ -854,13 +815,10 @@ get_num_unused_states() {
  */
 int RenderState::
 clear_cache() {
-  if (_states == (States *)NULL) {
-    return 0;
-  }
   LightReMutexHolder holder(*_states_lock);
 
   PStatTimer timer(_cache_update_pcollector);
-  int orig_size = _states->get_num_entries();
+  int orig_size = _states.get_num_entries();
 
   // First, we need to copy the entire set of states to a temporary vector,
   // reference-counting each object.  That way we can walk through the copy,
@@ -871,12 +829,9 @@ clear_cache() {
     TempStates temp_states;
     temp_states.reserve(orig_size);
 
-    int size = _states->get_size();
-    for (int si = 0; si < size; ++si) {
-      if (!_states->has_element(si)) {
-        continue;
-      }
-      const RenderState *state = _states->get_key(si);
+    size_t size = _states.get_num_entries();
+    for (size_t si = 0; si < size; ++si) {
+      const RenderState *state = _states.get_key(si);
       temp_states.push_back(state);
     }
 
@@ -886,28 +841,24 @@ clear_cache() {
     for (ti = temp_states.begin(); ti != temp_states.end(); ++ti) {
       RenderState *state = (RenderState *)(*ti).p();
 
-      int i;
-      int cache_size = (int)state->_composition_cache.get_size();
+      size_t i;
+      size_t cache_size = (int)state->_composition_cache.get_num_entries();
       for (i = 0; i < cache_size; ++i) {
-        if (state->_composition_cache.has_element(i)) {
-          const RenderState *result = state->_composition_cache.get_data(i)._result;
-          if (result != (const RenderState *)NULL && result != state) {
-            result->cache_unref();
-            nassertr(result->get_ref_count() > 0, 0);
-          }
+        const RenderState *result = state->_composition_cache.get_data(i)._result;
+        if (result != nullptr && result != state) {
+          result->cache_unref();
+          nassertr(result->get_ref_count() > 0, 0);
         }
       }
       _cache_stats.add_total_size(-(int)state->_composition_cache.get_num_entries());
       state->_composition_cache.clear();
 
-      cache_size = (int)state->_invert_composition_cache.get_size();
+      cache_size = (int)state->_invert_composition_cache.get_num_entries();
       for (i = 0; i < cache_size; ++i) {
-        if (state->_invert_composition_cache.has_element(i)) {
-          const RenderState *result = state->_invert_composition_cache.get_data(i)._result;
-          if (result != (const RenderState *)NULL && result != state) {
-            result->cache_unref();
-            nassertr(result->get_ref_count() > 0, 0);
-          }
+        const RenderState *result = state->_invert_composition_cache.get_data(i)._result;
+        if (result != nullptr && result != state) {
+          result->cache_unref();
+          nassertr(result->get_ref_count() > 0, 0);
         }
       }
       _cache_stats.add_total_size(-(int)state->_invert_composition_cache.get_num_entries());
@@ -919,7 +870,7 @@ clear_cache() {
     // the various objects' caches will go away.
   }
 
-  int new_size = _states->get_num_entries();
+  int new_size = _states.get_num_entries();
   return orig_size - new_size;
 }
 
@@ -935,60 +886,83 @@ int RenderState::
 garbage_collect() {
   int num_attribs = RenderAttrib::garbage_collect();
 
-  if (_states == (States *)NULL || !garbage_collect_states) {
+  if (!garbage_collect_states) {
     return num_attribs;
   }
+
   LightReMutexHolder holder(*_states_lock);
 
   PStatTimer timer(_garbage_collect_pcollector);
-  int orig_size = _states->get_num_entries();
+  size_t orig_size = _states.get_num_entries();
 
   // How many elements to process this pass?
-  int size = _states->get_size();
-  int num_this_pass = int(size * garbage_collect_states_rate);
+  size_t size = orig_size;
+  size_t num_this_pass = std::max(0, int(size * garbage_collect_states_rate));
   if (num_this_pass <= 0) {
     return num_attribs;
   }
-  num_this_pass = min(num_this_pass, size);
-  int stop_at_element = (_garbage_index + num_this_pass) % size;
 
-  int num_elements = 0;
-  int si = _garbage_index;
+  bool break_and_uniquify = (auto_break_cycles && uniquify_transforms);
+
+  size_t si = _garbage_index;
+  if (si >= size) {
+    si = 0;
+  }
+
+  num_this_pass = std::min(num_this_pass, size);
+  size_t stop_at_element = (si + num_this_pass) % size;
+
   do {
-    if (_states->has_element(si)) {
-      ++num_elements;
-      RenderState *state = (RenderState *)_states->get_key(si);
-      if (auto_break_cycles && uniquify_states) {
-        if (state->get_cache_ref_count() > 0 &&
-            state->get_ref_count() == state->get_cache_ref_count()) {
-          // If we have removed all the references to this state not in the
-          // cache, leaving only references in the cache, then we need to
-          // check for a cycle involving this RenderState and break it if it
-          // exists.
-          state->detect_and_break_cycles();
-        }
+    RenderState *state = (RenderState *)_states.get_key(si);
+    if (break_and_uniquify) {
+      if (state->get_cache_ref_count() > 0 &&
+          state->get_ref_count() == state->get_cache_ref_count()) {
+        // If we have removed all the references to this state not in the
+        // cache, leaving only references in the cache, then we need to
+        // check for a cycle involving this RenderState and break it if it
+        // exists.
+        state->detect_and_break_cycles();
       }
+    }
 
-      if (state->get_ref_count() == 1) {
-        // This state has recently been unreffed to 1 (the one we added when
-        // we stored it in the cache).  Now it's time to delete it.  This is
-        // safe, because we're holding the _states_lock, so it's not possible
-        // for some other thread to find the state in the cache and ref it
-        // while we're doing this.
-        state->release_new();
-        state->remove_cache_pointers();
-        state->cache_unref();
-        delete state;
+    if (!state->unref_if_one()) {
+      // This state has recently been unreffed to 1 (the one we added when
+      // we stored it in the cache).  Now it's time to delete it.  This is
+      // safe, because we're holding the _states_lock, so it's not possible
+      // for some other thread to find the state in the cache and ref it
+      // while we're doing this.  Also, we've just made sure to unref it to 0,
+      // to ensure that another thread can't get it via a weak pointer.
+
+      state->release_new();
+      state->remove_cache_pointers();
+      state->cache_unref_only();
+      delete state;
+
+      // When we removed it from the hash map, it swapped the last element
+      // with the one we just removed.  So the current index contains one we
+      // still need to visit.
+      --size;
+      --si;
+      if (stop_at_element > 0) {
+        --stop_at_element;
       }
     }
 
     si = (si + 1) % size;
   } while (si != stop_at_element);
   _garbage_index = si;
-  nassertr(_states->validate(), 0);
 
-  int new_size = _states->get_num_entries();
-  return orig_size - new_size + num_attribs;
+  nassertr(_states.get_num_entries() == size, 0);
+
+#ifdef _DEBUG
+  nassertr(_states.validate(), 0);
+#endif
+
+  // If we just cleaned up a lot of states, see if we can reduce the table in
+  // size.  This will help reduce iteration overhead in the future.
+  _states.consider_shrink_table();
+
+  return (int)orig_size - (int)size + num_attribs;
 }
 
 /**
@@ -999,13 +973,11 @@ void RenderState::
 clear_munger_cache() {
   LightReMutexHolder holder(*_states_lock);
 
-  int size = _states->get_size();
-  for (int si = 0; si < size; ++si) {
-    if (!_states->has_element(si)) {
-      continue;
-    }
-    RenderState *state = (RenderState *)(_states->get_key(si));
+  size_t size = _states.get_num_entries();
+  for (size_t si = 0; si < size; ++si) {
+    RenderState *state = (RenderState *)(_states.get_key(si));
     state->_mungers.clear();
+    state->_munged_states.clear();
     state->_last_mi = -1;
   }
 }
@@ -1025,21 +997,15 @@ clear_munger_cache() {
  */
 void RenderState::
 list_cycles(ostream &out) {
-  if (_states == (States *)NULL) {
-    return;
-  }
   LightReMutexHolder holder(*_states_lock);
 
   typedef pset<const RenderState *> VisitedStates;
   VisitedStates visited;
   CompositionCycleDesc cycle_desc;
 
-  int size = _states->get_size();
-  for (int si = 0; si < size; ++si) {
-    if (!_states->has_element(si)) {
-      continue;
-    }
-    const RenderState *state = _states->get_key(si);
+  size_t size = _states.get_num_entries();
+  for (size_t si = 0; si < size; ++si) {
+    const RenderState *state = _states.get_key(si);
 
     bool inserted = visited.insert(state).second;
     if (inserted) {
@@ -1105,20 +1071,12 @@ list_cycles(ostream &out) {
  */
 void RenderState::
 list_states(ostream &out) {
-  if (_states == (States *)NULL) {
-    out << "0 states:\n";
-    return;
-  }
   LightReMutexHolder holder(*_states_lock);
 
-  out << _states->get_num_entries() << " states:\n";
-
-  int size = _states->get_size();
-  for (int si = 0; si < size; ++si) {
-    if (!_states->has_element(si)) {
-      continue;
-    }
-    const RenderState *state = _states->get_key(si);
+  size_t size = _states.get_num_entries();
+  out << size << " states:\n";
+  for (size_t si = 0; si < size; ++si) {
+    const RenderState *state = _states.get_key(si);
     state->write(out, 2);
   }
 }
@@ -1131,39 +1089,29 @@ list_states(ostream &out) {
  */
 bool RenderState::
 validate_states() {
-  if (_states == (States *)NULL) {
-    return true;
-  }
-
   PStatTimer timer(_state_validate_pcollector);
 
   LightReMutexHolder holder(*_states_lock);
-  if (_states->is_empty()) {
+  if (_states.is_empty()) {
     return true;
   }
 
-  if (!_states->validate()) {
+  if (!_states.validate()) {
     pgraph_cat.error()
       << "RenderState::_states cache is invalid!\n";
     return false;
   }
 
-  int size = _states->get_size();
-  int si = 0;
-  while (si < size && !_states->has_element(si)) {
-    ++si;
-  }
+  size_t size = _states.get_num_entries();
+  size_t si = 0;
   nassertr(si < size, false);
-  nassertr(_states->get_key(si)->get_ref_count() >= 0, false);
-  int snext = si;
+  nassertr(_states.get_key(si)->get_ref_count() >= 0, false);
+  size_t snext = si;
   ++snext;
-  while (snext < size && !_states->has_element(snext)) {
-    ++snext;
-  }
   while (snext < size) {
-    nassertr(_states->get_key(snext)->get_ref_count() >= 0, false);
-    const RenderState *ssi = _states->get_key(si);
-    const RenderState *ssnext = _states->get_key(snext);
+    nassertr(_states.get_key(snext)->get_ref_count() >= 0, false);
+    const RenderState *ssi = _states.get_key(si);
+    const RenderState *ssnext = _states.get_key(snext);
     int c = ssi->compare_to(*ssnext);
     int ci = ssnext->compare_to(*ssi);
     if ((ci < 0) != (c > 0) ||
@@ -1181,9 +1129,6 @@ validate_states() {
     }
     si = snext;
     ++snext;
-    while (snext < size && !_states->has_element(snext)) {
-      ++snext;
-    }
   }
 
   return true;
@@ -1236,7 +1181,7 @@ validate_filled_slots() const {
   int max_slots = reg->get_max_slots();
   for (int slot = 1; slot < max_slots; ++slot) {
     const Attribute &attribute = _attributes[slot];
-    if (attribute._attrib != (RenderAttrib *)NULL) {
+    if (attribute._attrib != nullptr) {
       mask.set_bit(slot);
     }
   }
@@ -1255,7 +1200,7 @@ do_calc_hash() {
   int slot = mask.get_lowest_on_bit();
   while (slot >= 0) {
     const Attribute &attrib = _attributes[slot];
-    nassertv(attrib._attrib != (RenderAttrib *)NULL);
+    nassertv(attrib._attrib != nullptr);
     _hash = pointer_hash::add_hash(_hash, attrib._attrib);
     _hash = int_hash::add_hash(_hash, attrib._override);
 
@@ -1267,54 +1212,6 @@ do_calc_hash() {
 }
 
 /**
- * Sets _auto_shader_state to the appropriate RenderState object pointer,
- * either the same pointer as this object, or some other (simpler)
- * RenderState.
- */
-void RenderState::
-assign_auto_shader_state() {
-  CPT(RenderState) state = do_calc_auto_shader_state();
-
-  {
-    LightReMutexHolder holder(*_states_lock);
-    if (_auto_shader_state == (const RenderState *)NULL) {
-      _auto_shader_state = state;
-      if (_auto_shader_state != this) {
-        _auto_shader_state->cache_ref();
-      }
-    }
-  }
-}
-
-/**
- * Returns the appropriate RenderState that should be used to store the auto
- * shader pointer for nodes that shader this RenderState.
- */
-CPT(RenderState) RenderState::
-do_calc_auto_shader_state() {
-  RenderState *state = new RenderState;
-
-  SlotMask mask = _filled_slots;
-  int slot = mask.get_lowest_on_bit();
-  while (slot >= 0) {
-    const Attribute &attrib = _attributes[slot];
-    nassertr(attrib._attrib != (RenderAttrib *)NULL, this);
-    CPT(RenderAttrib) new_attrib = attrib._attrib->get_auto_shader_attrib(this);
-    if (new_attrib != NULL) {
-      nassertr(new_attrib->get_slot() == slot, this);
-      state->_attributes[slot].set(new_attrib, 0);
-      state->_filled_slots.set_bit(slot);
-    }
-
-    mask.clear_bit(slot);
-    slot = mask.get_lowest_on_bit();
-  }
-
-  return return_new(state);
-}
-
-
-/**
  * This function is used to share a common RenderState pointer for all
  * equivalent RenderState objects.
  *
@@ -1323,12 +1220,12 @@ do_calc_auto_shader_state() {
  */
 CPT(RenderState) RenderState::
 return_new(RenderState *state) {
-  nassertr(state != (RenderState *)NULL, state);
+  nassertr(state != nullptr, state);
 
   // Make sure we don't have anything in the 0 slot.  If we did, that would
   // indicate an uninitialized slot number.
 #ifndef NDEBUG
-  if (state->_attributes[0]._attrib != (RenderAttrib *)NULL) {
+  if (state->_attributes[0]._attrib != nullptr) {
     const RenderAttrib *attrib = state->_attributes[0]._attrib;
     if (attrib->get_type() == TypeHandle::none()) {
       ((RenderAttrib *)attrib)->force_init_type();
@@ -1345,7 +1242,7 @@ return_new(RenderState *state) {
     }
   }
 #endif
-  state->_attributes[0]._attrib = NULL;
+  state->_attributes[0]._attrib = nullptr;
   state->_filled_slots.clear_bit(0);
 
 #ifndef NDEBUG
@@ -1369,7 +1266,7 @@ return_new(RenderState *state) {
  */
 CPT(RenderState) RenderState::
 return_unique(RenderState *state) {
-  nassertr(state != (RenderState *)NULL, NULL);
+  nassertr(state != nullptr, nullptr);
 
   if (!state_cache) {
     return state;
@@ -1384,7 +1281,7 @@ return_unique(RenderState *state) {
   LightReMutexHolder holder(*_states_lock);
 
   if (state->_saved_entry != -1) {
-    // This state is already in the cache.  nassertr(_states->find(state) ==
+    // This state is already in the cache.  nassertr(_states.find(state) ==
     // state->_saved_entry, pt_state);
     return state;
   }
@@ -1396,14 +1293,14 @@ return_unique(RenderState *state) {
     int slot = mask.get_lowest_on_bit();
     while (slot >= 0) {
       Attribute &attrib = state->_attributes[slot];
-      nassertd(attrib._attrib != (RenderAttrib *)NULL) continue;
+      nassertd(attrib._attrib != nullptr) continue;
       attrib._attrib = attrib._attrib->get_unique();
       mask.clear_bit(slot);
       slot = mask.get_lowest_on_bit();
     }
   }
 
-  int si = _states->find(state);
+  int si = _states.find(state);
   if (si != -1) {
     // There's an equivalent state already in the set.  Return it.  The state
     // that was passed may be newly created and therefore may not be
@@ -1411,7 +1308,7 @@ return_unique(RenderState *state) {
     if (state->get_ref_count() == 0) {
       delete state;
     }
-    return _states->get_key(si);
+    return _states.get_key(si);
   }
 
   // Not already in the set; add it.
@@ -1421,7 +1318,7 @@ return_unique(RenderState *state) {
     // deleted while it's in it.
     state->cache_ref();
   }
-  si = _states->store(state, Empty());
+  si = _states.store(state, nullptr);
 
   // Save the index and return the input state.
   state->_saved_entry = si;
@@ -1447,12 +1344,12 @@ do_compose(const RenderState *other) const {
     const Attribute &b = other->_attributes[slot];
     Attribute &result = new_state->_attributes[slot];
 
-    if (a._attrib == NULL) {
-      nassertr(b._attrib != NULL, this);
+    if (a._attrib == nullptr) {
+      nassertr(b._attrib != nullptr, this);
       // B wins.
       result = b;
 
-    } else if (b._attrib == NULL) {
+    } else if (b._attrib == nullptr) {
       // A wins.
       result = a;
 
@@ -1501,12 +1398,12 @@ do_invert_compose(const RenderState *other) const {
     const Attribute &b = other->_attributes[slot];
     Attribute &result = new_state->_attributes[slot];
 
-    if (a._attrib == NULL) {
-      nassertr(b._attrib != NULL, this);
+    if (a._attrib == nullptr) {
+      nassertr(b._attrib != nullptr, this);
       // B wins.
       result = b;
 
-    } else if (b._attrib == NULL) {
+    } else if (b._attrib == nullptr) {
       // A wins.  Invert it.
       RenderAttribRegistry *reg = RenderAttribRegistry::quick_get_global_ptr();
       result.set(a._attrib->invert_compose(reg->get_slot_default(slot)), 0);
@@ -1531,7 +1428,7 @@ detect_and_break_cycles() {
   PStatTimer timer(_state_break_cycles_pcollector);
 
   ++_last_cycle_detect;
-  if (r_detect_cycles(this, this, 1, _last_cycle_detect, NULL)) {
+  if (r_detect_cycles(this, this, 1, _last_cycle_detect, nullptr)) {
     // Ok, we have a cycle.  This will be a leak unless we break the cycle by
     // freeing the cache on this object.
     if (pgraph_cat.is_debug()) {
@@ -1542,7 +1439,7 @@ detect_and_break_cycles() {
     ((RenderState *)this)->remove_cache_pointers();
   } else {
     ++_last_cycle_detect;
-    if (r_detect_reverse_cycles(this, this, 1, _last_cycle_detect, NULL)) {
+    if (r_detect_reverse_cycles(this, this, 1, _last_cycle_detect, nullptr)) {
       if (pgraph_cat.is_debug()) {
         pgraph_cat.debug()
           << "Breaking cycle involving " << (*this) << "\n";
@@ -1575,41 +1472,37 @@ r_detect_cycles(const RenderState *start_state,
   }
   ((RenderState *)current_state)->_cycle_detect = this_seq;
 
-  int i;
-  int cache_size = current_state->_composition_cache.get_size();
+  size_t i;
+  size_t cache_size = current_state->_composition_cache.get_num_entries();
   for (i = 0; i < cache_size; ++i) {
-    if (current_state->_composition_cache.has_element(i)) {
-      const RenderState *result = current_state->_composition_cache.get_data(i)._result;
-      if (result != (const RenderState *)NULL) {
-        if (r_detect_cycles(start_state, result, length + 1,
-                            this_seq, cycle_desc)) {
-          // Cycle detected.
-          if (cycle_desc != (CompositionCycleDesc *)NULL) {
-            const RenderState *other = current_state->_composition_cache.get_key(i);
-            CompositionCycleDescEntry entry(other, result, false);
-            cycle_desc->push_back(entry);
-          }
-          return true;
+    const RenderState *result = current_state->_composition_cache.get_data(i)._result;
+    if (result != nullptr) {
+      if (r_detect_cycles(start_state, result, length + 1,
+                          this_seq, cycle_desc)) {
+        // Cycle detected.
+        if (cycle_desc != nullptr) {
+          const RenderState *other = current_state->_composition_cache.get_key(i);
+          CompositionCycleDescEntry entry(other, result, false);
+          cycle_desc->push_back(entry);
         }
+        return true;
       }
     }
   }
 
-  cache_size = current_state->_invert_composition_cache.get_size();
+  cache_size = current_state->_invert_composition_cache.get_num_entries();
   for (i = 0; i < cache_size; ++i) {
-    if (current_state->_invert_composition_cache.has_element(i)) {
-      const RenderState *result = current_state->_invert_composition_cache.get_data(i)._result;
-      if (result != (const RenderState *)NULL) {
-        if (r_detect_cycles(start_state, result, length + 1,
-                            this_seq, cycle_desc)) {
-          // Cycle detected.
-          if (cycle_desc != (CompositionCycleDesc *)NULL) {
-            const RenderState *other = current_state->_invert_composition_cache.get_key(i);
-            CompositionCycleDescEntry entry(other, result, true);
-            cycle_desc->push_back(entry);
-          }
-          return true;
+    const RenderState *result = current_state->_invert_composition_cache.get_data(i)._result;
+    if (result != nullptr) {
+      if (r_detect_cycles(start_state, result, length + 1,
+                          this_seq, cycle_desc)) {
+        // Cycle detected.
+        if (cycle_desc != nullptr) {
+          const RenderState *other = current_state->_invert_composition_cache.get_key(i);
+          CompositionCycleDescEntry entry(other, result, true);
+          cycle_desc->push_back(entry);
         }
+        return true;
       }
     }
   }
@@ -1638,52 +1531,48 @@ r_detect_reverse_cycles(const RenderState *start_state,
   }
   ((RenderState *)current_state)->_cycle_detect = this_seq;
 
-  int i;
-  int cache_size = current_state->_composition_cache.get_size();
+  size_t i;
+  size_t cache_size = current_state->_composition_cache.get_num_entries();
   for (i = 0; i < cache_size; ++i) {
-    if (current_state->_composition_cache.has_element(i)) {
-      const RenderState *other = current_state->_composition_cache.get_key(i);
-      if (other != current_state) {
-        int oi = other->_composition_cache.find(current_state);
-        nassertr(oi != -1, false);
+    const RenderState *other = current_state->_composition_cache.get_key(i);
+    if (other != current_state) {
+      int oi = other->_composition_cache.find(current_state);
+      nassertr(oi != -1, false);
 
-        const RenderState *result = other->_composition_cache.get_data(oi)._result;
-        if (result != (const RenderState *)NULL) {
-          if (r_detect_reverse_cycles(start_state, result, length + 1,
-                                      this_seq, cycle_desc)) {
-            // Cycle detected.
-            if (cycle_desc != (CompositionCycleDesc *)NULL) {
-              const RenderState *other = current_state->_composition_cache.get_key(i);
-              CompositionCycleDescEntry entry(other, result, false);
-              cycle_desc->push_back(entry);
-            }
-            return true;
+      const RenderState *result = other->_composition_cache.get_data(oi)._result;
+      if (result != nullptr) {
+        if (r_detect_reverse_cycles(start_state, result, length + 1,
+                                    this_seq, cycle_desc)) {
+          // Cycle detected.
+          if (cycle_desc != nullptr) {
+            const RenderState *other = current_state->_composition_cache.get_key(i);
+            CompositionCycleDescEntry entry(other, result, false);
+            cycle_desc->push_back(entry);
           }
+          return true;
         }
       }
     }
   }
 
-  cache_size = current_state->_invert_composition_cache.get_size();
+  cache_size = current_state->_invert_composition_cache.get_num_entries();
   for (i = 0; i < cache_size; ++i) {
-    if (current_state->_invert_composition_cache.has_element(i)) {
-      const RenderState *other = current_state->_invert_composition_cache.get_key(i);
-      if (other != current_state) {
-        int oi = other->_invert_composition_cache.find(current_state);
-        nassertr(oi != -1, false);
+    const RenderState *other = current_state->_invert_composition_cache.get_key(i);
+    if (other != current_state) {
+      int oi = other->_invert_composition_cache.find(current_state);
+      nassertr(oi != -1, false);
 
-        const RenderState *result = other->_invert_composition_cache.get_data(oi)._result;
-        if (result != (const RenderState *)NULL) {
-          if (r_detect_reverse_cycles(start_state, result, length + 1,
-                                      this_seq, cycle_desc)) {
-            // Cycle detected.
-            if (cycle_desc != (CompositionCycleDesc *)NULL) {
-              const RenderState *other = current_state->_invert_composition_cache.get_key(i);
-              CompositionCycleDescEntry entry(other, result, false);
-              cycle_desc->push_back(entry);
-            }
-            return true;
+      const RenderState *result = other->_invert_composition_cache.get_data(oi)._result;
+      if (result != nullptr) {
+        if (r_detect_reverse_cycles(start_state, result, length + 1,
+                                    this_seq, cycle_desc)) {
+          // Cycle detected.
+          if (cycle_desc != nullptr) {
+            const RenderState *other = current_state->_invert_composition_cache.get_key(i);
+            CompositionCycleDescEntry entry(other, result, false);
+            cycle_desc->push_back(entry);
           }
+          return true;
         }
       }
     }
@@ -1704,10 +1593,8 @@ release_new() {
   nassertv(_states_lock->debug_is_locked());
 
   if (_saved_entry != -1) {
-    // nassertv(_states->find(this) == _saved_entry);
-    _saved_entry = _states->find(this);
-    _states->remove_element(_saved_entry);
     _saved_entry = -1;
+    nassertv_always(_states.remove(this));
   }
 }
 
@@ -1721,14 +1608,6 @@ release_new() {
 void RenderState::
 remove_cache_pointers() {
   nassertv(_states_lock->debug_is_locked());
-
-  // First, make sure the _auto_shader_state cache pointer is cleared.
-  if (_auto_shader_state != (const RenderState *)NULL) {
-    if (_auto_shader_state != this) {
-      cache_unref_delete(_auto_shader_state);
-    }
-    _auto_shader_state = NULL;
-  }
 
   // Fortunately, since we added CompositionCache records in pairs, we know
   // exactly the set of RenderState objects that have us in their cache: it's
@@ -1753,13 +1632,8 @@ remove_cache_pointers() {
 
   // There are lots of ways to do this loop wrong.  Be very careful if you
   // need to modify it for any reason.
-  int i = 0;
+  size_t i = 0;
   while (!_composition_cache.is_empty()) {
-    // Scan for the next used slot in the table.
-    while (!_composition_cache.has_element(i)) {
-      ++i;
-    }
-
     // It is possible that the "other" RenderState object is currently within
     // its own destructor.  We therefore can't use a PT() to hold its pointer;
     // that could end up calling its destructor twice.  Fortunately, we don't
@@ -1795,7 +1669,7 @@ remove_cache_pointers() {
         // It's finally safe to let our held pointers go away.  This may have
         // cascading effects as other RenderState objects are destructed, but
         // there will be no harm done if they destruct now.
-        if (ocomp._result != (const RenderState *)NULL && ocomp._result != other) {
+        if (ocomp._result != nullptr && ocomp._result != other) {
           cache_unref_delete(ocomp._result);
         }
       }
@@ -1803,7 +1677,7 @@ remove_cache_pointers() {
 
     // It's finally safe to let our held pointers go away.  (See comment
     // above.)
-    if (comp._result != (const RenderState *)NULL && comp._result != this) {
+    if (comp._result != nullptr && comp._result != this) {
       cache_unref_delete(comp._result);
     }
   }
@@ -1811,10 +1685,6 @@ remove_cache_pointers() {
   // A similar bit of code for the invert cache.
   i = 0;
   while (!_invert_composition_cache.is_empty()) {
-    while (!_invert_composition_cache.has_element(i)) {
-      ++i;
-    }
-
     RenderState *other = (RenderState *)_invert_composition_cache.get_key(i);
     nassertv(other != this);
     Composition comp = _invert_composition_cache.get_data(i);
@@ -1828,12 +1698,12 @@ remove_cache_pointers() {
         other->_invert_composition_cache.remove_element(oi);
         _cache_stats.add_total_size(-1);
         _cache_stats.inc_dels();
-        if (ocomp._result != (const RenderState *)NULL && ocomp._result != other) {
+        if (ocomp._result != nullptr && ocomp._result != other) {
           cache_unref_delete(ocomp._result);
         }
       }
     }
-    if (comp._result != (const RenderState *)NULL && comp._result != this) {
+    if (comp._result != nullptr && comp._result != this) {
       cache_unref_delete(comp._result);
     }
   }
@@ -1850,7 +1720,7 @@ determine_bin_index() {
     return;
   }
 
-  string bin_name;
+  std::string bin_name;
   _draw_order = 0;
 
   const CullBinAttrib *bin;
@@ -1905,7 +1775,7 @@ determine_cull_callback() {
   int slot = mask.get_lowest_on_bit();
   while (slot >= 0) {
     const Attribute &attrib = _attributes[slot];
-    nassertv(attrib._attrib != (RenderAttrib *)NULL);
+    nassertv(attrib._attrib != nullptr);
     if (attrib._attrib->has_cull_callback()) {
       _flags |= F_has_cull_callback;
       break;
@@ -1961,8 +1831,6 @@ update_pstats(int old_referenced_bits, int new_referenced_bits) {
  */
 void RenderState::
 init_states() {
-  _states = new States;
-
   // TODO: we should have a global Panda mutex to allow us to safely create
   // _states_lock without a startup race condition.  For the meantime, this is
   // OK because we guarantee that this method is called at static init time,
@@ -1975,7 +1843,7 @@ init_states() {
   // is declared globally, and lives forever.
   RenderState *state = new RenderState;
   state->local_object();
-  state->_saved_entry = _states->store(state, Empty());
+  state->_saved_entry = _states.store(state, nullptr);
   _empty_state = state;
 }
 
@@ -2005,7 +1873,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   int slot = mask.get_lowest_on_bit();
   while (slot >= 0) {
     const Attribute &attrib = _attributes[slot];
-    nassertv(attrib._attrib != (RenderAttrib *)NULL);
+    nassertv(attrib._attrib != nullptr);
     manager->write_pointer(dg, attrib._attrib);
     dg.add_int32(attrib._override);
 
@@ -2029,7 +1897,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
     int override = (*_read_overrides)[i];
 
     RenderAttrib *attrib = DCAST(RenderAttrib, p_list[pi++]);
-    if (attrib != (RenderAttrib *)NULL) {
+    if (attrib != nullptr) {
       int slot = attrib->get_slot();
       if (slot > 0 && slot < reg->get_max_slots()) {
         _attributes[slot].set(attrib, override);
@@ -2040,7 +1908,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   }
 
   delete _read_overrides;
-  _read_overrides = NULL;
+  _read_overrides = nullptr;
 
   return pi;
 }

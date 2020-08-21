@@ -1,9 +1,12 @@
-"""Undocumented Module"""
+"""Contains the TaskThreaded and TaskThread classes."""
 
 __all__ = ['TaskThreaded', 'TaskThread']
 
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.task import Task
+
+from .PythonUtil import SerialNumGen
+
 
 class TaskThreaded:
     """ derive from this if you need to do a bunch of CPU-intensive

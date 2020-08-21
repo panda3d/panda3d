@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
 
   // Get the current working directory and make sure it's a string
   Filename cwd = ExecutionEnvironment::get_cwd();
-  string s_cwd = (string)cwd.to_os_specific();
+  std::string s_cwd = (std::string)cwd.to_os_specific();
   NetDatagram datagram;
 
   // First part of the datagram is the argc

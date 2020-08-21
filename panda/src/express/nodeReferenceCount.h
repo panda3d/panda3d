@@ -30,7 +30,7 @@
  * See also CachedTypedWritableReferenceCount, which is similar in principle,
  * as well as NodeCachedReferenceCount, which combines both of these.
  */
-class EXPCL_PANDAEXPRESS NodeReferenceCount : public ReferenceCount {
+class EXPCL_PANDA_EXPRESS NodeReferenceCount : public ReferenceCount {
 protected:
   INLINE NodeReferenceCount();
   INLINE NodeReferenceCount(const NodeReferenceCount &copy);

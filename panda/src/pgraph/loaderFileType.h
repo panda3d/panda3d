@@ -38,9 +38,9 @@ public:
   virtual ~LoaderFileType();
 
 PUBLISHED:
-  virtual string get_name() const=0;
-  virtual string get_extension() const=0;
-  virtual string get_additional_extensions() const;
+  virtual std::string get_name() const=0;
+  virtual std::string get_extension() const=0;
+  virtual std::string get_additional_extensions() const;
   virtual bool supports_compressed() const;
 
   virtual bool get_allow_disk_cache(const LoaderOptions &options) const;

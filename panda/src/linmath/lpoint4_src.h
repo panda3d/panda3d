@@ -16,14 +16,14 @@
  */
 class EXPCL_PANDA_LINMATH FLOATNAME(LPoint4) : public FLOATNAME(LVecBase4) {
 PUBLISHED:
-  INLINE_LINMATH FLOATNAME(LPoint4)() DEFAULT_CTOR;
+  INLINE_LINMATH FLOATNAME(LPoint4)() = default;
   INLINE_LINMATH FLOATNAME(LPoint4)(const FLOATNAME(LVecBase4) &copy);
   INLINE_LINMATH FLOATNAME(LPoint4)(FLOATTYPE fill_value);
   INLINE_LINMATH FLOATNAME(LPoint4)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z, FLOATTYPE w);
   INLINE_LINMATH FLOATNAME(LPoint4)(const FLOATNAME(LVecBase3) &copy, FLOATTYPE w);
 
-  EXTENSION(INLINE_LINMATH PyObject *__getattr__(PyObject *self, const string &attr_name) const);
-  EXTENSION(INLINE_LINMATH int __setattr__(PyObject *self, const string &attr_name, PyObject *assign));
+  EXTENSION(INLINE_LINMATH PyObject *__getattr__(PyObject *self, const std::string &attr_name) const);
+  EXTENSION(INLINE_LINMATH int __setattr__(PyObject *self, const std::string &attr_name, PyObject *assign));
 
   INLINE_LINMATH static const FLOATNAME(LPoint4) &zero();
   INLINE_LINMATH static const FLOATNAME(LPoint4) &unit_x();
@@ -59,7 +59,7 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LPoint4) project(const FLOATNAME(LVecBase4) &onto) const;
 #endif
 
-  EXTENSION(INLINE_LINMATH string __repr__() const);
+  EXTENSION(INLINE_LINMATH std::string __repr__() const);
 
 public:
   static TypeHandle get_class_type() {

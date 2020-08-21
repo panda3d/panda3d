@@ -18,6 +18,8 @@
 #include "throw_event.h"
 #include "eventParameter.h"
 
+using std::string;
+
 AtomicAdjust::Integer AsyncTask::_next_task_id;
 PStatCollector AsyncTask::_show_code_pcollector("App:Show code");
 TypeHandle AsyncTask::_type_handle;
@@ -34,9 +36,8 @@ AsyncTask(const string &name) :
   _sort(0),
   _priority(0),
   _state(S_inactive),
-  _servicing_thread(NULL),
-  _manager(NULL),
-  _chain(NULL),
+  _servicing_thread(nullptr),
+  _chain(nullptr),
   _start_time(0.0),
   _start_frame(0),
   _dt(0.0),
@@ -60,19 +61,38 @@ AsyncTask(const string &name) :
  */
 AsyncTask::
 ~AsyncTask() {
-  nassertv(_state == S_inactive && _manager == NULL && _chain == NULL);
+  nassertv(_state == S_inactive && _manager == nullptr && _chain == nullptr);
 }
 
 /**
  * Removes the task from its active manager, if any, and makes the state
  * S_inactive (or possible S_servicing_removed).  This is a no-op if the state
  * is already S_inactive.
+ *
+ * If the task is a coroutine that is currently awaiting a future, this will
+ * fail, but see also cancel().
  */
-void AsyncTask::
+bool AsyncTask::
 remove() {
-  if (_manager != (AsyncTaskManager *)NULL) {
-    _manager->remove(this);
+  AsyncTaskManager *manager = _manager;
+  if (manager != nullptr) {
+    nassertr(_chain->_manager == manager, false);
+    if (task_cat.is_debug()) {
+      task_cat.debug()
+        << "Removing " << *this << "\n";
+    }
+    MutexHolder holder(manager->_lock);
+    if (_chain->do_remove(this, true)) {
+      return true;
+    } else {
+      if (task_cat.is_debug()) {
+        task_cat.debug()
+          << "  (unable to remove " << *this << ")\n";
+      }
+      return false;
+    }
   }
+  return false;
 }
 
 /**
@@ -85,7 +105,7 @@ remove() {
  */
 double AsyncTask::
 get_wake_time() const {
-  if (_manager != (AsyncTaskManager *)NULL) {
+  if (_manager != nullptr) {
     MutexHolder holder(_manager->_lock);
     if (_state == S_sleeping) {
       return _wake_time;
@@ -107,7 +127,7 @@ get_wake_time() const {
  */
 void AsyncTask::
 recalc_wake_time() {
-  if (_manager != (AsyncTaskManager *)NULL) {
+  if (_manager != nullptr) {
     MutexHolder holder(_manager->_lock);
     if (_state == S_sleeping) {
       double now = _manager->_clock->get_frame_time();
@@ -129,7 +149,7 @@ recalc_wake_time() {
 double AsyncTask::
 get_elapsed_time() const {
   nassertr(_state != S_inactive, 0.0);
-  nassertr(_manager != (AsyncTaskManager *)NULL, 0.0);
+  nassertr(_manager != nullptr, 0.0);
   return _manager->_clock->get_frame_time() - _start_time;
 }
 
@@ -142,7 +162,7 @@ get_elapsed_time() const {
 int AsyncTask::
 get_elapsed_frames() const {
   nassertr(_state != S_inactive, 0);
-  nassertr(_manager != (AsyncTaskManager *)NULL, 0);
+  nassertr(_manager != nullptr, 0);
   return _manager->_clock->get_frame_count() - _start_frame;
 }
 
@@ -151,7 +171,7 @@ get_elapsed_frames() const {
  */
 void AsyncTask::
 set_name(const string &name) {
-  if (_manager != (AsyncTaskManager *)NULL) {
+  if (_manager != nullptr) {
     MutexHolder holder(_manager->_lock);
     if (Namable::get_name() != name) {
       // Changing an active task's name requires moving it around on its name
@@ -172,7 +192,7 @@ set_name(const string &name) {
   size_t end = name.size();
   size_t colon = name.find(':');
   if (colon != string::npos) {
-    end = min(end, colon);
+    end = std::min(end, colon);
   }
 
   // If the name ends with a hyphen followed by a string of digits, we strip
@@ -232,7 +252,7 @@ get_name_prefix() const {
 void AsyncTask::
 set_task_chain(const string &chain_name) {
   if (chain_name != _chain_name) {
-    if (_manager != (AsyncTaskManager *)NULL) {
+    if (_manager != nullptr) {
       MutexHolder holder(_manager->_lock);
       if (_state == S_active) {
         // Changing chains on an "active" (i.e.  enqueued) task means removing
@@ -241,7 +261,7 @@ set_task_chain(const string &chain_name) {
         PT(AsyncTaskManager) manager = _manager;
 
         AsyncTaskChain *chain_a = manager->do_find_task_chain(_chain_name);
-        nassertv(chain_a != (AsyncTaskChain *)NULL);
+        nassertv(chain_a != nullptr);
         chain_a->do_remove(this);
         _chain_name = chain_name;
 
@@ -275,14 +295,14 @@ set_task_chain(const string &chain_name) {
 void AsyncTask::
 set_sort(int sort) {
   if (sort != _sort) {
-    if (_manager != (AsyncTaskManager *)NULL) {
+    if (_manager != nullptr) {
       MutexHolder holder(_manager->_lock);
       if (_state == S_active && _sort >= _chain->_current_sort) {
         // Changing sort on an "active" (i.e.  enqueued) task means removing
         // it and re-inserting it into the queue.
         PT(AsyncTask) hold_task = this;
         AsyncTaskChain *chain = _manager->do_find_task_chain(_chain_name);
-        nassertv(chain != (AsyncTaskChain *)NULL);
+        nassertv(chain != nullptr);
         chain->do_remove(this);
         _sort = sort;
         chain->do_add(this);
@@ -320,14 +340,14 @@ set_sort(int sort) {
 void AsyncTask::
 set_priority(int priority) {
   if (priority != _priority) {
-    if (_manager != (AsyncTaskManager *)NULL) {
+    if (_manager != nullptr) {
       MutexHolder holder(_manager->_lock);
       if (_state == S_active && _sort >= _chain->_current_sort) {
         // Changing priority on an "active" (i.e.  enqueued) task means
         // removing it and re-inserting it into the queue.
         PT(AsyncTask) hold_task = this;
         AsyncTaskChain *chain = _manager->do_find_task_chain(_chain_name);
-        nassertv(chain != (AsyncTaskChain *)NULL);
+        nassertv(chain != nullptr);
         chain->do_remove(this);
         _priority = priority;
         chain->do_add(this);
@@ -349,7 +369,7 @@ set_priority(int priority) {
  *
  */
 void AsyncTask::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type();
   if (has_name()) {
     out << " " << get_name();
@@ -363,7 +383,7 @@ output(ostream &out) const {
 void AsyncTask::
 jump_to_task_chain(AsyncTaskManager *manager) {
   AsyncTaskChain *chain_b = manager->do_find_task_chain(_chain_name);
-  if (chain_b == (AsyncTaskChain *)NULL) {
+  if (chain_b == nullptr) {
     task_cat.warning()
       << "Creating implicit AsyncTaskChain " << _chain_name
       << " for " << manager->get_type() << " "
@@ -379,14 +399,31 @@ jump_to_task_chain(AsyncTaskManager *manager) {
  */
 AsyncTask::DoneStatus AsyncTask::
 unlock_and_do_task() {
-  nassertr(_manager != (AsyncTaskManager *)NULL, DS_done);
+  nassertr(_manager != nullptr, DS_done);
   PT(ClockObject) clock = _manager->get_clock();
 
+  // Indicate that this task is now the current task running on the thread.
   Thread *current_thread = Thread::get_current_thread();
-  record_task(current_thread);
+  nassertr(current_thread->_current_task == nullptr, DS_interrupt);
+
+#ifdef __GNUC__
+  __attribute__((unused))
+#endif
+  void *ptr = AtomicAdjust::compare_and_exchange_ptr
+    (current_thread->_current_task, nullptr, (TypedReferenceCount *)this);
+
+  // If the return value is other than nullptr, someone else must have
+  // assigned the task first, in another thread.  That shouldn't be possible.
+
+  // But different versions of gcc appear to have problems compiling these
+  // assertions correctly.
+#ifndef __GNUC__
+  nassertr(ptr == nullptr, DS_interrupt);
+  nassertr(current_thread->_current_task == this, DS_interrupt);
+#endif  // __GNUC__
 
   // It's important to release the lock while the task is being serviced.
-  _manager->_lock.release();
+  _manager->_lock.unlock();
 
   double start = clock->get_real_time();
   _task_pcollector.start();
@@ -395,17 +432,42 @@ unlock_and_do_task() {
   double end = clock->get_real_time();
 
   // Now reacquire the lock (so we can return with the lock held).
-  _manager->_lock.acquire();
+  _manager->_lock.lock();
 
   _dt = end - start;
-  _max_dt = max(_dt, _max_dt);
+  _max_dt = std::max(_dt, _max_dt);
   _total_dt += _dt;
 
   _chain->_time_in_frame += _dt;
 
-  clear_task(current_thread);
+  // Now indicate that this is no longer the current task.
+  nassertr(current_thread->_current_task == this, status);
+
+  ptr = AtomicAdjust::compare_and_exchange_ptr
+    (current_thread->_current_task, (TypedReferenceCount *)this, nullptr);
+
+  // If the return value is other than this, someone else must have assigned
+  // the task first, in another thread.  That shouldn't be possible.
+
+  // But different versions of gcc appear to have problems compiling these
+  // assertions correctly.
+#ifndef __GNUC__
+  nassertr(ptr == this, DS_interrupt);
+  nassertr(current_thread->_current_task == nullptr, DS_interrupt);
+#endif  // __GNUC__
 
   return status;
+}
+
+/**
+ * Cancels this task.  This is equivalent to remove(), except for coroutines,
+ * for which it will throw an exception into any currently pending await.
+ */
+bool AsyncTask::
+cancel() {
+  bool result = remove();
+  nassertr(done(), false);
+  return result;
 }
 
 /**
@@ -477,23 +539,17 @@ upon_birth(AsyncTaskManager *manager) {
  * task has been removed because it exited normally (returning DS_done), or
  * false if it was removed for some other reason (e.g.
  * AsyncTaskManager::remove()).  By the time this method is called, _manager
- * has been cleared, so the parameter manager indicates the original
+ * may have been cleared, so the parameter manager indicates the original
  * AsyncTaskManager that owned this task.
- *
- * The normal behavior is to throw the done_event only if clean_exit is true.
  *
  * This function is called with the lock *not* held.
  */
 void AsyncTask::
 upon_death(AsyncTaskManager *manager, bool clean_exit) {
-  if (clean_exit && !_done_event.empty()) {
-    PT_Event event = new Event(_done_event);
-    event->add_parameter(EventParameter(this));
-    throw_event(event);
-  }
+  //NB. done_event is now being thrown in AsyncFuture::notify_done().
 
-  // Also throw a generic remove event for the manager.
-  if (manager != (AsyncTaskManager *)NULL) {
+  // Throw a generic remove event for the manager.
+  if (manager != nullptr) {
     string remove_name = manager->get_name() + "-removeTask";
     PT_Event event = new Event(remove_name);
     event->add_parameter(EventParameter(this));

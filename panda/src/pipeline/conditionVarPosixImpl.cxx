@@ -26,7 +26,7 @@ wait(double timeout) {
   // TAU_PROFILE("ConditionVarPosixImpl::wait()", " ", TAU_USER);
 
   struct timeval now;
-  gettimeofday(&now, NULL);
+  gettimeofday(&now, nullptr);
 
   // Convert from timeval to timespec
   struct timespec ts;

@@ -34,7 +34,7 @@ make_instance(TypeHandle handle, const FactoryParams &params) {
  */
 template<class Type>
 INLINE Type *Factory<Type>::
-make_instance(const string &type_name, const FactoryParams &params) {
+make_instance(const std::string &type_name, const FactoryParams &params) {
   return (Type *)FactoryBase::make_instance(type_name, params);
 }
 
@@ -60,7 +60,7 @@ make_instance_more_general(TypeHandle handle, const FactoryParams &params) {
  */
 template<class Type>
 INLINE Type *Factory<Type>::
-make_instance_more_general(const string &type_name,
+make_instance_more_general(const std::string &type_name,
                            const FactoryParams &params) {
   return (Type *)FactoryBase::make_instance_more_general(type_name, params);
 }

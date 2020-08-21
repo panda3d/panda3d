@@ -19,7 +19,7 @@ struct InternalBufferData {
   CPT(GeomVertexArrayDataHandle) _handle;
   Py_ssize_t _num_rows;
   Py_ssize_t _stride;
-  string _format;
+  std::string _format;
 };
 
 /**
@@ -28,7 +28,6 @@ struct InternalBufferData {
  */
 int Extension<GeomVertexArrayData>::
 __getbuffer__(PyObject *self, Py_buffer *view, int flags) {
-#if PY_VERSION_HEX >= 0x02060000
   PT(GeomVertexArrayDataHandle) handle = _this->modify_handle();
   CPT(GeomVertexArrayFormat) format = handle->get_array_format();
 
@@ -54,7 +53,7 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) {
 
   view->internal = (void*) data;
 
-  if (self != NULL) {
+  if (self != nullptr) {
     Py_INCREF(self);
   }
   view->obj = self;
@@ -62,25 +61,22 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) {
   view->len = row_size * handle->get_num_rows();
   view->readonly = 0;
   view->itemsize = row_size;
-  view->format = NULL;
+  view->format = nullptr;
   if ((flags & PyBUF_FORMAT) == PyBUF_FORMAT) {
     view->format = (char*) data->_format.c_str();
   }
   view->ndim = 1;
-  view->shape = NULL;
+  view->shape = nullptr;
   if ((flags & PyBUF_ND) == PyBUF_ND) {
     view->shape = &data->_num_rows;
   }
-  view->strides = NULL;
+  view->strides = nullptr;
   if ((flags & PyBUF_STRIDES) == PyBUF_STRIDES) {
     view->strides = &data->_stride;
   }
-  view->suboffsets = NULL;
+  view->suboffsets = nullptr;
 
   return 0;
-#else
-  return -1;
-#endif
 }
 
 /**
@@ -88,7 +84,6 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) {
  */
 int Extension<GeomVertexArrayData>::
 __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
-#if PY_VERSION_HEX >= 0x02060000
   if ((flags & PyBUF_WRITABLE) == PyBUF_WRITABLE) {
       PyErr_SetString(PyExc_BufferError,
                       "Object is not writable.");
@@ -120,7 +115,7 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
 
   view->internal = (void*) data;
 
-  if (self != NULL) {
+  if (self != nullptr) {
     Py_INCREF(self);
   }
   view->obj = self;
@@ -128,25 +123,22 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
   view->len = row_size * handle->get_num_rows();
   view->readonly = 1;
   view->itemsize = row_size;
-  view->format = NULL;
+  view->format = nullptr;
   if ((flags & PyBUF_FORMAT) == PyBUF_FORMAT) {
     view->format = (char*) data->_format.c_str();
   }
   view->ndim = 1;
-  view->shape = NULL;
+  view->shape = nullptr;
   if ((flags & PyBUF_ND) == PyBUF_ND) {
     view->shape = &data->_num_rows;
   }
-  view->strides = NULL;
+  view->strides = nullptr;
   if ((flags & PyBUF_STRIDES) == PyBUF_STRIDES) {
     view->strides = &data->_stride;
   }
-  view->suboffsets = NULL;
+  view->suboffsets = nullptr;
 
   return 0;
-#else
-  return -1;
-#endif
 }
 
 /**
@@ -154,16 +146,14 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
  */
 void Extension<GeomVertexArrayData>::
 __releasebuffer__(PyObject *self, Py_buffer *view) const {
-#if PY_VERSION_HEX >= 0x02060000
   // Note: PyBuffer_Release automatically decrements view->obj.
   InternalBufferData *data;
   data = (InternalBufferData *) view->internal;
-  if (data == NULL) {
+  if (data == nullptr) {
     return;
   }
   delete data;
-  view->internal = NULL;
-#endif
+  view->internal = nullptr;
 }
 
 /**
@@ -172,11 +162,6 @@ __releasebuffer__(PyObject *self, Py_buffer *view) const {
  */
 void Extension<GeomVertexArrayDataHandle>::
 copy_data_from(PyObject *buffer) {
-
-#if PY_VERSION_HEX < 0x02060000
-  PyErr_SetString(PyExc_TypeError, "buffer interface not supported before Python 2.6");
-
-#else
   if (!PyObject_CheckBuffer(buffer)) {
     PyErr_SetString(PyExc_TypeError, "buffer object expected");
     return;
@@ -191,7 +176,6 @@ copy_data_from(PyObject *buffer) {
   _this->copy_data_from((const unsigned char *) view.buf, view.len);
 
   PyBuffer_Release(&view);
-#endif
 }
 
 /**
@@ -201,11 +185,6 @@ copy_data_from(PyObject *buffer) {
  */
 void Extension<GeomVertexArrayDataHandle>::
 copy_subdata_from(size_t to_start, size_t to_size, PyObject *buffer) {
-
-#if PY_VERSION_HEX < 0x02060000
-  PyErr_SetString(PyExc_TypeError, "buffer interface not supported before Python 2.6");
-
-#else
   if (!PyObject_CheckBuffer(buffer)) {
     PyErr_SetString(PyExc_TypeError, "buffer object expected");
     return;
@@ -222,7 +201,6 @@ copy_subdata_from(size_t to_start, size_t to_size, PyObject *buffer) {
                            0, (size_t) view.len);
 
   PyBuffer_Release(&view);
-#endif
 }
 
 /**
@@ -234,11 +212,6 @@ void Extension<GeomVertexArrayDataHandle>::
 copy_subdata_from(size_t to_start, size_t to_size,
                   PyObject *buffer,
                   size_t from_start, size_t from_size) {
-
-#if PY_VERSION_HEX < 0x02060000
-  PyErr_SetString(PyExc_TypeError, "buffer interface not supported before Python 2.6");
-
-#else
   if (!PyObject_CheckBuffer(buffer)) {
     PyErr_SetString(PyExc_TypeError, "buffer object expected");
     return;
@@ -251,15 +224,14 @@ copy_subdata_from(size_t to_start, size_t to_size,
   }
 
   size_t from_buffer_orig_size = (size_t) view.len;
-  from_start = min(from_start, from_buffer_orig_size);
-  from_size = min(from_size, from_buffer_orig_size - from_start);
+  from_start = std::min(from_start, from_buffer_orig_size);
+  from_size = std::min(from_size, from_buffer_orig_size - from_start);
 
   _this->copy_subdata_from(to_start, to_size,
                            (const unsigned char *) view.buf,
                            from_start, from_size);
 
   PyBuffer_Release(&view);
-#endif
 }
 
 #endif  // HAVE_PYTHON

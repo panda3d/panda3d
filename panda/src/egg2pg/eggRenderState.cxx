@@ -59,54 +59,54 @@ fill_state(EggPrimitive *egg_prim) {
   bool has_depth_offset = false;
   int depth_offset = 0;
   bool has_bin = false;
-  string bin;
+  std::string bin;
 
   EggRenderMode *render_mode;
   render_mode = egg_prim->determine_alpha_mode();
-  if (render_mode != (EggRenderMode *)NULL) {
+  if (render_mode != nullptr) {
     am = render_mode->get_alpha_mode();
   }
   render_mode = egg_prim->determine_depth_write_mode();
-  if (render_mode != (EggRenderMode *)NULL) {
+  if (render_mode != nullptr) {
     dwm = render_mode->get_depth_write_mode();
   }
   render_mode = egg_prim->determine_depth_test_mode();
-  if (render_mode != (EggRenderMode *)NULL) {
+  if (render_mode != nullptr) {
     dtm = render_mode->get_depth_test_mode();
   }
   render_mode = egg_prim->determine_visibility_mode();
-  if (render_mode != (EggRenderMode *)NULL) {
+  if (render_mode != nullptr) {
     vm = render_mode->get_visibility_mode();
   }
   render_mode = egg_prim->determine_draw_order();
-  if (render_mode != (EggRenderMode *)NULL) {
+  if (render_mode != nullptr) {
     has_draw_order = true;
     draw_order = render_mode->get_draw_order();
   }
   render_mode = egg_prim->determine_depth_offset();
-  if (render_mode != (EggRenderMode *)NULL) {
+  if (render_mode != nullptr) {
     has_depth_offset = true;
     depth_offset = render_mode->get_depth_offset();
   }
   render_mode = egg_prim->determine_bin();
-  if (render_mode != (EggRenderMode *)NULL) {
+  if (render_mode != nullptr) {
     has_bin = true;
     bin = render_mode->get_bin();
   }
 
   // add_attrib(TextureAttrib::make_off());
   int num_textures = egg_prim->get_num_textures();
-  CPT(RenderAttrib) texture_attrib = NULL;
-  CPT(RenderAttrib) tex_gen_attrib = NULL;
-  CPT(RenderAttrib) tex_mat_attrib = NULL;
+  CPT(RenderAttrib) texture_attrib = nullptr;
+  CPT(RenderAttrib) tex_gen_attrib = nullptr;
+  CPT(RenderAttrib) tex_mat_attrib = nullptr;
   TexMats tex_mats;
 
   for (int i = 0; i < num_textures; i++) {
     PT_EggTexture egg_tex = egg_prim->get_texture(i);
 
     const TextureDef &def = _loader._textures[egg_tex];
-    if (def._texture != (const RenderAttrib *)NULL) {
-      if (texture_attrib == (RenderAttrib *)NULL) {
+    if (def._texture != nullptr) {
+      if (texture_attrib == nullptr) {
         texture_attrib = def._texture;
       } else {
         texture_attrib = texture_attrib->compose(def._texture);
@@ -115,7 +115,7 @@ fill_state(EggPrimitive *egg_prim) {
       if (egg_tex->affects_polygon_alpha()) {
         const TextureAttrib *tex_attrib = DCAST(TextureAttrib, def._texture);
         Texture *tex = tex_attrib->get_texture();
-        nassertv(tex != (Texture *)NULL);
+        nassertv(tex != nullptr);
 
         Texture::Format format = tex->get_format();
         if (Texture::has_alpha(format) && !Texture::has_binary_alpha(format)) {
@@ -139,7 +139,7 @@ fill_state(EggPrimitive *egg_prim) {
       bool has_tex_gen = false;
       if (egg_tex->get_tex_gen() != EggTexture::TG_unspecified) {
         has_tex_gen = true;
-        if (tex_gen_attrib == (const RenderAttrib *)NULL) {
+        if (tex_gen_attrib == nullptr) {
           tex_gen_attrib = TexGenAttrib::make();
         }
         tex_gen_attrib = DCAST(TexGenAttrib, tex_gen_attrib)->
@@ -151,7 +151,7 @@ fill_state(EggPrimitive *egg_prim) {
       // of textures that share this same set of UV's per each unique texture
       // matrix.  Whew!)
       CPT(InternalName) uv_name;
-      if (egg_tex->has_uv_name() && egg_tex->get_uv_name() != string("default")) {
+      if (egg_tex->has_uv_name() && egg_tex->get_uv_name() != std::string("default")) {
         uv_name = InternalName::get_texcoord_name(egg_tex->get_uv_name());
       } else {
         uv_name = InternalName::get_texcoord();
@@ -228,15 +228,15 @@ fill_state(EggPrimitive *egg_prim) {
     }
   }
 
-  if (texture_attrib != (RenderAttrib *)NULL) {
+  if (texture_attrib != nullptr) {
     add_attrib(texture_attrib);
   }
 
-  if (tex_gen_attrib != (RenderAttrib *)NULL) {
+  if (tex_gen_attrib != nullptr) {
     add_attrib(tex_gen_attrib);
   }
 
-  if (tex_mat_attrib != (RenderAttrib *)NULL) {
+  if (tex_mat_attrib != nullptr) {
     add_attrib(tex_mat_attrib);
   }
 
@@ -580,7 +580,7 @@ apply_tex_mat(CPT(RenderAttrib) tex_mat_attrib,
   if (egg_tex->has_transform()) {
     CPT(TransformState) transform = _loader.make_transform(egg_tex);
 
-    if (tex_mat_attrib == (const RenderAttrib *)NULL) {
+    if (tex_mat_attrib == nullptr) {
       tex_mat_attrib = TexMatrixAttrib::make();
     }
     tex_mat_attrib = DCAST(TexMatrixAttrib, tex_mat_attrib)->

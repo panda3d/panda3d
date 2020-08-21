@@ -14,6 +14,16 @@
 /**
  *
  */
+INLINE XFileNode::
+XFileNode(XFile *x_file) :
+  Namable(),
+  _x_file(x_file)
+{
+}
+
+/**
+ *
+ */
 INLINE XFile *XFileNode::
 get_x_file() const {
   return _x_file;
@@ -34,7 +44,7 @@ get_num_children() const {
  */
 INLINE XFileNode *XFileNode::
 get_child(int n) const {
-  nassertr(n >= 0 && n < (int)_children.size(), NULL);
+  nassertr(n >= 0 && n < (int)_children.size(), nullptr);
   return _children[n];
 }
 
@@ -55,6 +65,6 @@ get_num_objects() const {
  */
 INLINE XFileDataNode *XFileNode::
 get_object(int n) const {
-  nassertr(n >= 0 && n < (int)_objects.size(), NULL);
+  nassertr(n >= 0 && n < (int)_objects.size(), nullptr);
   return _objects[n];
 }

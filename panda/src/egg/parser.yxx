@@ -57,6 +57,10 @@
 #define YYINITDEPTH 1000
 #define YYMAXDEPTH 1000
 
+using std::istream;
+using std::ostringstream;
+using std::string;
+
 // We need a stack of EggObject pointers.  Each time we encounter a
 // nested EggObject of some kind, we'll allocate a new one of these
 // and push it onto the stack.  At any given time, the top of the
@@ -93,10 +97,6 @@ static Groups groups;
 // We need to be able to save the index number requested for a vertex
 // temporarily.
 static int vertex_index;
-
-// We need to hold a matrix for a little bit while parsing the
-// <Transform> entries.
-static LMatrix3d matrix_2d;
 
 
 ////////////////////////////////////////////////////////////////////
@@ -903,7 +903,7 @@ vertex_pool:
         VERTEXPOOL required_name
 {
   string name = $2;
-  EggVertexPool *pool = NULL;
+  EggVertexPool *pool = nullptr;
 
   VertexPools::const_iterator vpi = vertex_pools.find(name);
   if (vpi != vertex_pools.end()) {
@@ -971,14 +971,14 @@ vertex:
   if (vertex_index < 0) {
     ostringstream errmsg;
     errmsg << "Ignoring invalid vertex index " << vertex_index
-           << " in vertex pool " << pool->get_name() << ends;
+           << " in vertex pool " << pool->get_name() << std::ends;
     eggyywarning(errmsg);
     vertex_index = -1;
 
   } else if (pool->has_vertex(vertex_index)) {
     ostringstream errmsg;
     errmsg << "Ignoring duplicate vertex index " << vertex_index
-           << " in vertex pool " << pool->get_name() << ends;
+           << " in vertex pool " << pool->get_name() << std::ends;
     eggyywarning(errmsg);
     vertex_index = -1;
   }
@@ -1098,6 +1098,14 @@ vertex_uv_body:
     eggyywarning("Ignoring repeated tangent");
   } else {
     DCAST(EggVertexUV, egg_stack.back())->set_tangent(LNormald($4, $5, $6));
+  }
+}
+        | vertex_uv_body TANGENT '{' real real real real '}'
+{
+  if (DCAST(EggVertexUV, egg_stack.back())->has_tangent()) {
+    eggyywarning("Ignoring repeated tangent");
+  } else {
+    DCAST(EggVertexUV, egg_stack.back())->set_tangent4(LVecBase4d($4, $5, $6, $7));
   }
 }
         | vertex_uv_body BINORMAL '{' real real real '}'
@@ -1545,7 +1553,7 @@ group_body:
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   if (group->get_group_type() != EggGroup::GT_instance) {
     eggyyerror("<Ref> valid only within <Instance>");
-  } else if ($4 != (EggObject *)NULL) {
+  } else if ($4 != nullptr) {
     group->add_group_ref(DCAST(EggGroup, $4));
   }
 }
@@ -1785,7 +1793,7 @@ matrix4_body:
 group_vertex_ref:
         VERTEXREF '{' integer_list group_vertex_membership REF '{' vertex_pool_name '}' '}'
 {
-  if ($7 != (EggVertexPool *)NULL) {
+  if ($7 != nullptr) {
     EggVertexPool *pool = DCAST(EggVertexPool, $7);
     EggGroup *group = DCAST(EggGroup, egg_stack.back());
     PTA_double nums = $3;
@@ -1794,10 +1802,10 @@ group_vertex_ref:
     for (int i = 0; i < (int)nums.size(); i++) {
       int index = (int)nums[i];
       EggVertex *vertex = pool->get_forward_vertex(index);
-      if (vertex == NULL) {
+      if (vertex == nullptr) {
         ostringstream errmsg;
         errmsg << "No vertex " << index << " in pool " << pool->get_name()
-               << ends;
+               << std::ends;
         eggyyerror(errmsg);
       } else {
         group->ref_vertex(vertex, membership);
@@ -2316,7 +2324,7 @@ nurbs_curve_body:
 primitive_tref_body:
         texture_name
 {
-  if ($1 != (EggTexture *)NULL) {
+  if ($1 != nullptr) {
     EggTexture *texture = DCAST(EggTexture, $1);
     DCAST(EggPrimitive, egg_stack.back())->add_texture(texture);
   }
@@ -2333,7 +2341,7 @@ primitive_tref_body:
 primitive_texture_body:
         required_name
 {
-  EggTexture *texture = NULL;
+  EggTexture *texture = nullptr;
 
   // Defining a texture on-the-fly.
   Filename filename = $1;
@@ -2345,7 +2353,7 @@ primitive_texture_body:
     texture = new EggTexture(tref_name, filename);
     textures[tref_name] = texture;
 
-    if (egg_top_node != NULL) {
+    if (egg_top_node != nullptr) {
       egg_top_node->add_child(texture);
     }
 
@@ -2358,7 +2366,7 @@ primitive_texture_body:
     }
   }
 
-  nassertr(texture != NULL, 0);
+  nassertr(texture != nullptr, 0);
   DCAST(EggPrimitive, egg_stack.back())->add_texture(texture);
 }
         ;
@@ -2373,7 +2381,7 @@ primitive_texture_body:
 primitive_material_body:
         material_name
 {
-  if ($1 != (EggMaterial *)NULL) {
+  if ($1 != nullptr) {
     EggMaterial *material = DCAST(EggMaterial, $1);
     DCAST(EggPrimitive, egg_stack.back())->set_material(material);
   }
@@ -2466,7 +2474,7 @@ primitive_bface_body:
 primitive_vertex_ref:
         VERTEXREF '{' integer_list REF '{' vertex_pool_name '}' '}'
 {
-  if ($6 != (EggVertexPool *)NULL) {
+  if ($6 != nullptr) {
     EggVertexPool *pool = DCAST(EggVertexPool, $6);
     EggPrimitive *prim = DCAST(EggPrimitive, egg_stack.back());
     PTA_double nums = $3;
@@ -2474,10 +2482,10 @@ primitive_vertex_ref:
     for (int i = 0; i < (int)nums.size(); i++) {
       int index = (int)nums[i];
       EggVertex *vertex = pool->get_forward_vertex(index);
-      if (vertex == NULL) {
+      if (vertex == nullptr) {
         ostringstream errmsg;
         errmsg << "No vertex " << index << " in pool " << pool->get_name()
-               << ends;
+               << std::ends;
         eggyyerror(errmsg);
       } else {
         prim->add_vertex(vertex);

@@ -12,16 +12,18 @@
  */
 
 #include "config_gsgbase.h"
-#include "displayRegionBase.h"
 #include "graphicsOutputBase.h"
 #include "graphicsStateGuardianBase.h"
 
 #include "dconfig.h"
 
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDA_GSGBASE)
+  #error Buildsystem error: BUILDING_PANDA_GSGBASE not defined
+#endif
+
 Configure(config_gsgbase);
 
 ConfigureFn(config_gsgbase) {
-  DisplayRegionBase::init_type();
   GraphicsOutputBase::init_type();
   GraphicsStateGuardianBase::init_type();
 }

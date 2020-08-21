@@ -47,14 +47,14 @@ TypeHandle CullTraverser::_type_handle;
  */
 CullTraverser::
 CullTraverser() :
-  _gsg(NULL),
+  _gsg(nullptr),
   _current_thread(Thread::get_current_thread())
 {
   _camera_mask = DrawMask::all_on();
   _has_tag_state_key = false;
   _initial_state = RenderState::make_empty();
-  _cull_handler = (CullHandler *)NULL;
-  _portal_clipper = (PortalClipper *)NULL;
+  _cull_handler = nullptr;
+  _portal_clipper = nullptr;
   _effective_incomplete_render = true;
 }
 
@@ -97,6 +97,8 @@ set_scene(SceneSetup *scene_setup, GraphicsStateGuardianBase *gsg,
   _camera_mask = camera->get_camera_mask();
 
   _effective_incomplete_render = _gsg->get_incomplete_render() && dr_incomplete_render;
+
+  _view_frustum = scene_setup->get_view_frustum();
 }
 
 /**
@@ -104,19 +106,17 @@ set_scene(SceneSetup *scene_setup, GraphicsStateGuardianBase *gsg,
  */
 void CullTraverser::
 traverse(const NodePath &root) {
-  nassertv(_cull_handler != (CullHandler *)NULL);
-  nassertv(_scene_setup != (SceneSetup *)NULL);
+  nassertv(_cull_handler != nullptr);
+  nassertv(_scene_setup != nullptr);
 
   if (allow_portal_cull) {
     // This _view_frustum is in cull_center space Erik: obsolete?
     // PT(GeometricBoundingVolume) vf = _view_frustum;
 
-    GeometricBoundingVolume *local_frustum = NULL;
+    GeometricBoundingVolume *local_frustum = nullptr;
     PT(BoundingVolume) bv = _scene_setup->get_lens()->make_bounds();
-    if (bv != (BoundingVolume *)NULL &&
-        bv->is_of_type(GeometricBoundingVolume::get_class_type())) {
-
-      local_frustum = DCAST(GeometricBoundingVolume, bv);
+    if (bv != nullptr) {
+      local_frustum = bv->as_geometric_bounding_volume();
     }
 
     // This local_frustum is in camera space
@@ -199,18 +199,17 @@ traverse_below(CullTraverserData &data) {
   PandaNode::Children children = node_reader->get_children();
   node_reader->release();
   int num_children = children.get_num_children();
-  if (node->has_selective_visibility()) {
+  if (!node->has_selective_visibility()) {
+    for (int i = 0; i < num_children; ++i) {
+      CullTraverserData next_data(data, children.get_child(i));
+      do_traverse(next_data);
+    }
+  } else {
     int i = node->get_first_visible_child();
     while (i < num_children) {
       CullTraverserData next_data(data, children.get_child(i));
       do_traverse(next_data);
       i = node->get_next_visible_child(i);
-    }
-
-  } else {
-    for (int i = 0; i < num_children; i++) {
-      CullTraverserData next_data(data, children.get_child(i));
-      do_traverse(next_data);
     }
   }
 }
@@ -232,7 +231,7 @@ draw_bounding_volume(const BoundingVolume *vol,
                      const TransformState *internal_transform) const {
   PT(Geom) bounds_viz = make_bounds_viz(vol);
 
-  if (bounds_viz != (Geom *)NULL) {
+  if (bounds_viz != nullptr) {
     _geoms_pcollector.add_level(2);
     CullableObject *outer_viz =
       new CullableObject(bounds_viz, get_bounds_outer_viz_state(),
@@ -240,7 +239,7 @@ draw_bounding_volume(const BoundingVolume *vol,
     _cull_handler->record_object(outer_viz, this);
 
     CullableObject *inner_viz =
-      new CullableObject(bounds_viz, get_bounds_inner_viz_state(),
+      new CullableObject(std::move(bounds_viz), get_bounds_inner_viz_state(),
                          internal_transform);
     _cull_handler->record_object(inner_viz, this);
   }
@@ -267,10 +266,10 @@ show_bounds(CullTraverserData &data, bool tight) {
   if (tight) {
     PT(Geom) bounds_viz = make_tight_bounds_viz(node);
 
-    if (bounds_viz != (Geom *)NULL) {
+    if (bounds_viz != nullptr) {
       _geoms_pcollector.add_level(1);
       CullableObject *outer_viz =
-        new CullableObject(bounds_viz, get_bounds_outer_viz_state(),
+        new CullableObject(std::move(bounds_viz), get_bounds_outer_viz_state(),
                            internal_transform);
       _cull_handler->record_object(outer_viz, this);
     }
@@ -281,7 +280,7 @@ show_bounds(CullTraverserData &data, bool tight) {
     if (node->is_geom_node()) {
       // Also show the bounding volumes of included Geoms.
       internal_transform = internal_transform->compose(node->get_transform());
-      GeomNode *gnode = DCAST(GeomNode, node);
+      GeomNode *gnode = (GeomNode *)node;
       int num_geoms = gnode->get_num_geoms();
       for (int i = 0; i < num_geoms; ++i) {
         draw_bounding_volume(gnode->get_geom(i)->get_bounds(),
@@ -334,29 +333,31 @@ make_bounds_viz(const BoundingVolume *vol) {
     const BoundingHexahedron *fvol = DCAST(BoundingHexahedron, vol);
 
     PT(GeomVertexData) vdata = new GeomVertexData
-      ("bounds", GeomVertexFormat::get_v3(),
-       Geom::UH_stream);
-    GeomVertexWriter vertex(vdata, InternalName::get_vertex());
+      ("bounds", GeomVertexFormat::get_v3(), Geom::UH_stream);
+    vdata->unclean_set_num_rows(8);
 
-    for (int i = 0; i < 8; ++i ) {
-      vertex.add_data3(fvol->get_point(i));
+    {
+      GeomVertexWriter vertex(vdata, InternalName::get_vertex());
+      for (int i = 0; i < 8; ++i) {
+        vertex.set_data3(fvol->get_point(i));
+      }
     }
 
     PT(GeomLines) lines = new GeomLines(Geom::UH_stream);
-    lines->add_vertices(0, 1); lines->close_primitive();
-    lines->add_vertices(1, 2); lines->close_primitive();
-    lines->add_vertices(2, 3); lines->close_primitive();
-    lines->add_vertices(3, 0); lines->close_primitive();
+    lines->add_vertices(0, 1);
+    lines->add_vertices(1, 2);
+    lines->add_vertices(2, 3);
+    lines->add_vertices(3, 0);
 
-    lines->add_vertices(4, 5); lines->close_primitive();
-    lines->add_vertices(5, 6); lines->close_primitive();
-    lines->add_vertices(6, 7); lines->close_primitive();
-    lines->add_vertices(7, 4); lines->close_primitive();
+    lines->add_vertices(4, 5);
+    lines->add_vertices(5, 6);
+    lines->add_vertices(6, 7);
+    lines->add_vertices(7, 4);
 
-    lines->add_vertices(0, 4); lines->close_primitive();
-    lines->add_vertices(1, 5); lines->close_primitive();
-    lines->add_vertices(2, 6); lines->close_primitive();
-    lines->add_vertices(3, 7); lines->close_primitive();
+    lines->add_vertices(0, 4);
+    lines->add_vertices(1, 5);
+    lines->add_vertices(2, 6);
+    lines->add_vertices(3, 7);
 
     geom = new Geom(vdata);
     geom->add_primitive(lines);
@@ -368,39 +369,29 @@ make_bounds_viz(const BoundingVolume *vol) {
     box.local_object();
 
     PT(GeomVertexData) vdata = new GeomVertexData
-      ("bounds", GeomVertexFormat::get_v3(),
-       Geom::UH_stream);
-    GeomVertexWriter vertex(vdata, InternalName::get_vertex());
+      ("bounds", GeomVertexFormat::get_v3(), Geom::UH_stream);
+    vdata->unclean_set_num_rows(8);
 
-    for (int i = 0; i < 8; ++i ) {
-      vertex.add_data3(box.get_point(i));
+    {
+      GeomVertexWriter vertex(vdata, InternalName::get_vertex());
+      for (int i = 0; i < 8; ++i) {
+        vertex.set_data3(box.get_point(i));
+      }
     }
 
     PT(GeomTriangles) tris = new GeomTriangles(Geom::UH_stream);
     tris->add_vertices(0, 4, 5);
-    tris->close_primitive();
     tris->add_vertices(0, 5, 1);
-    tris->close_primitive();
     tris->add_vertices(4, 6, 7);
-    tris->close_primitive();
     tris->add_vertices(4, 7, 5);
-    tris->close_primitive();
     tris->add_vertices(6, 2, 3);
-    tris->close_primitive();
     tris->add_vertices(6, 3, 7);
-    tris->close_primitive();
     tris->add_vertices(2, 0, 1);
-    tris->close_primitive();
     tris->add_vertices(2, 1, 3);
-    tris->close_primitive();
     tris->add_vertices(1, 5, 7);
-    tris->close_primitive();
     tris->add_vertices(1, 7, 3);
-    tris->close_primitive();
     tris->add_vertices(2, 6, 4);
-    tris->close_primitive();
     tris->add_vertices(2, 4, 0);
-    tris->close_primitive();
 
     geom = new Geom(vdata);
     geom->add_primitive(tris);
@@ -430,19 +421,21 @@ make_tight_bounds_viz(PandaNode *node) const {
                           _current_thread);
   if (found_any) {
     PT(GeomVertexData) vdata = new GeomVertexData
-      ("bounds", GeomVertexFormat::get_v3(),
-      Geom::UH_stream);
-    GeomVertexWriter vertex(vdata, InternalName::get_vertex(),
-                            _current_thread);
+      ("bounds", GeomVertexFormat::get_v3(), Geom::UH_stream);
+    vdata->unclean_set_num_rows(8);
 
-    vertex.add_data3(n[0], n[1], n[2]);
-    vertex.add_data3(n[0], n[1], x[2]);
-    vertex.add_data3(n[0], x[1], n[2]);
-    vertex.add_data3(n[0], x[1], x[2]);
-    vertex.add_data3(x[0], n[1], n[2]);
-    vertex.add_data3(x[0], n[1], x[2]);
-    vertex.add_data3(x[0], x[1], n[2]);
-    vertex.add_data3(x[0], x[1], x[2]);
+    {
+      GeomVertexWriter vertex(vdata, InternalName::get_vertex(),
+                              _current_thread);
+      vertex.set_data3(n[0], n[1], n[2]);
+      vertex.set_data3(n[0], n[1], x[2]);
+      vertex.set_data3(n[0], x[1], n[2]);
+      vertex.set_data3(n[0], x[1], x[2]);
+      vertex.set_data3(x[0], n[1], n[2]);
+      vertex.set_data3(x[0], n[1], x[2]);
+      vertex.set_data3(x[0], x[1], n[2]);
+      vertex.set_data3(x[0], x[1], x[2]);
+    }
 
     PT(GeomLinestrips) strip = new GeomLinestrips(Geom::UH_stream);
 
@@ -498,8 +491,8 @@ CPT(RenderState) CullTraverser::
 get_bounds_outer_viz_state() {
   // Once someone asks for this pointer, we hold its reference count and never
   // free it.
-  static CPT(RenderState) state = (const RenderState *)NULL;
-  if (state == (const RenderState *)NULL) {
+  static CPT(RenderState) state = nullptr;
+  if (state == nullptr) {
     state = RenderState::make
       (ColorAttrib::make_flat(LColor(0.3, 1.0f, 0.5f, 1.0f)),
        RenderModeAttrib::make(RenderModeAttrib::M_wireframe),
@@ -516,8 +509,8 @@ CPT(RenderState) CullTraverser::
 get_bounds_inner_viz_state() {
   // Once someone asks for this pointer, we hold its reference count and never
   // free it.
-  static CPT(RenderState) state = (const RenderState *)NULL;
-  if (state == (const RenderState *)NULL) {
+  static CPT(RenderState) state = nullptr;
+  if (state == nullptr) {
     state = RenderState::make
       (ColorAttrib::make_flat(LColor(0.15f, 0.5f, 0.25f, 1.0f)),
        RenderModeAttrib::make(RenderModeAttrib::M_wireframe),
@@ -533,8 +526,8 @@ CPT(RenderState) CullTraverser::
 get_depth_offset_state() {
   // Once someone asks for this pointer, we hold its reference count and never
   // free it.
-  static CPT(RenderState) state = (const RenderState *)NULL;
-  if (state == (const RenderState *)NULL) {
+  static CPT(RenderState) state = nullptr;
+  if (state == nullptr) {
     state = RenderState::make
       (DepthOffsetAttrib::make(1));
   }

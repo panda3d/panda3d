@@ -15,14 +15,14 @@
  *
  */
 INLINE TypedWritable::
-TypedWritable() : _bam_writers(NULL) {
+TypedWritable() : _bam_writers(nullptr) {
 }
 
 /**
  *
  */
 INLINE TypedWritable::
-TypedWritable(const TypedWritable &) : _bam_writers(NULL) {
+TypedWritable(const TypedWritable &) : _bam_writers(nullptr) {
 }
 
 /**
@@ -53,22 +53,21 @@ get_bam_modified() const {
   return _bam_modified;
 }
 
-
 /**
  * Converts the TypedWritable object into a single stream of data using a
- * BamWriter, and returns that data as a string string.  Returns empty string
- * on failure.
+ * BamWriter, and returns that data as a bytes object.  Returns an empty bytes
+ * object on failure.
  *
  * This is a convenience method particularly useful for cases when you are
  * only serializing a single object.  If you have many objects to process, it
  * is more efficient to use the same BamWriter to serialize all of them
  * together.
  */
-INLINE string TypedWritable::
+INLINE vector_uchar TypedWritable::
 encode_to_bam_stream() const {
-  string data;
+  vector_uchar data;
   if (!encode_to_bam_stream(data)) {
-    return string();
+    data.clear();
   }
   return data;
 }

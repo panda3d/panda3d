@@ -35,7 +35,7 @@ AtomicAdjust::Integer _num_net_count_incremented = 0;
 
 class MyThread : public Thread {
 public:
-  MyThread(const string &name) : Thread(name, name)
+  MyThread(const std::string &name) : Thread(name, name)
   {
   }
 
@@ -73,7 +73,7 @@ main(int argc, char *argv[]) {
 
   for (int i = 1; i < number_of_threads; ++i) {
     char name = 'a' + i;
-    PT(MyThread) thread = new MyThread(string(1, name));
+    PT(MyThread) thread = new MyThread(std::string(1, name));
     threads.push_back(thread);
     thread->start(TP_normal, true);
   }

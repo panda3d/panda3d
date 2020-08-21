@@ -27,7 +27,7 @@ check_latest() {
  * name, or 0 if no type has this name.
  */
 INLINE TypeIndex InterrogateDatabase::
-lookup_type_by_name(const string &name) {
+lookup_type_by_name(const std::string &name) {
   check_latest();
   return lookup(name, _types_by_name, LT_type_name,
                 &InterrogateDatabase::freshen_types_by_name);
@@ -38,7 +38,7 @@ lookup_type_by_name(const string &name) {
  * scoped name, or 0 if no type has this name.
  */
 INLINE TypeIndex InterrogateDatabase::
-lookup_type_by_scoped_name(const string &name) {
+lookup_type_by_scoped_name(const std::string &name) {
   check_latest();
   return lookup(name, _types_by_scoped_name, LT_type_scoped_name,
                 &InterrogateDatabase::freshen_types_by_scoped_name);
@@ -49,7 +49,7 @@ lookup_type_by_scoped_name(const string &name) {
  * true name, or 0 if no type has this name.
  */
 INLINE TypeIndex InterrogateDatabase::
-lookup_type_by_true_name(const string &name) {
+lookup_type_by_true_name(const std::string &name) {
   check_latest();
   return lookup(name, _types_by_true_name, LT_type_true_name,
                 &InterrogateDatabase::freshen_types_by_true_name);
@@ -60,7 +60,7 @@ lookup_type_by_true_name(const string &name) {
  * given name, or 0 if no manifest has this name.
  */
 INLINE ManifestIndex InterrogateDatabase::
-lookup_manifest_by_name(const string &name) {
+lookup_manifest_by_name(const std::string &name) {
   check_latest();
   return lookup(name, _manifests_by_name, LT_manifest_name,
                 &InterrogateDatabase::freshen_manifests_by_name);
@@ -71,7 +71,7 @@ lookup_manifest_by_name(const string &name) {
  * given name, or 0 if no element has this name.
  */
 INLINE ElementIndex InterrogateDatabase::
-lookup_element_by_name(const string &name) {
+lookup_element_by_name(const std::string &name) {
   check_latest();
   return lookup(name, _elements_by_name, LT_element_name,
                 &InterrogateDatabase::freshen_elements_by_name);
@@ -82,7 +82,7 @@ lookup_element_by_name(const string &name) {
  * given scoped name, or 0 if no element has this name.
  */
 INLINE ElementIndex InterrogateDatabase::
-lookup_element_by_scoped_name(const string &name) {
+lookup_element_by_scoped_name(const std::string &name) {
   check_latest();
   return lookup(name, _elements_by_scoped_name, LT_element_scoped_name,
                 &InterrogateDatabase::freshen_elements_by_scoped_name);

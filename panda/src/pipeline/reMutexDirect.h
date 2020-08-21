@@ -17,8 +17,7 @@
 #include "pandabase.h"
 #include "mutexTrueImpl.h"
 #include "conditionVarImpl.h"
-
-class Thread;
+#include "thread.h"
 
 #ifndef DEBUG_THREADS
 
@@ -30,10 +29,15 @@ class Thread;
 class EXPCL_PANDA_PIPELINE ReMutexDirect {
 protected:
   INLINE ReMutexDirect();
-  INLINE ~ReMutexDirect();
-private:
-  INLINE ReMutexDirect(const ReMutexDirect &copy);
-  INLINE void operator = (const ReMutexDirect &copy);
+  ReMutexDirect(const ReMutexDirect &copy) = delete;
+  ~ReMutexDirect() = default;
+
+  void operator = (const ReMutexDirect &copy) = delete;
+
+public:
+  INLINE void lock();
+  INLINE bool try_lock();
+  INLINE void unlock();
 
 PUBLISHED:
   BLOCKING INLINE void acquire() const;
@@ -45,25 +49,25 @@ PUBLISHED:
 
   INLINE bool debug_is_locked() const;
 
-  INLINE void set_name(const string &name);
+  INLINE void set_name(const std::string &name);
   INLINE void clear_name();
   INLINE bool has_name() const;
-  INLINE string get_name() const;
+  INLINE std::string get_name() const;
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
 private:
 #ifdef HAVE_REMUTEXTRUEIMPL
-  ReMutexImpl _impl;
+  mutable ReMutexTrueImpl _impl;
 
 #else
   // If we don't have a reentrant mutex, we have to hand-roll one.
-  INLINE void do_acquire();
-  void do_acquire(Thread *current_thread);
-  INLINE bool do_try_acquire();
-  bool do_try_acquire(Thread *current_thread);
+  INLINE void do_lock();
+  void do_lock(Thread *current_thread);
+  INLINE bool do_try_lock();
+  bool do_try_lock(Thread *current_thread);
   void do_elevate_lock();
-  void do_release();
+  void do_unlock(Thread *current_thread = Thread::get_current_thread());
 
   Thread *_locking_thread;
   int _lock_count;
@@ -75,8 +79,8 @@ private:
   friend class LightReMutexDirect;
 };
 
-INLINE ostream &
-operator << (ostream &out, const ReMutexDirect &m) {
+INLINE std::ostream &
+operator << (std::ostream &out, const ReMutexDirect &m) {
   m.output(out);
   return out;
 }

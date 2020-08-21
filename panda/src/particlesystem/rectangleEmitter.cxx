@@ -76,7 +76,7 @@ assign_initial_velocity(LVector3& vel) {
  * Write a string representation of this instance to <out>.
  */
 void RectangleEmitter::
-output(ostream &out) const {
+output(std::ostream &out) const {
   #ifndef NDEBUG //[
   out<<"RectangleEmitter";
   #endif //] NDEBUG
@@ -86,7 +86,7 @@ output(ostream &out) const {
  * Write a string representation of this instance to <out>.
  */
 void RectangleEmitter::
-write(ostream &out, int indent) const {
+write(std::ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"RectangleEmitter:\n";
   out.width(indent+2); out<<""; out<<"_vmin "<<_vmin<<"\n";

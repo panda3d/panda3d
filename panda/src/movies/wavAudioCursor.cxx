@@ -94,7 +94,7 @@ TypeHandle WavAudioCursor::_type_handle;
  * pointer positioned at the start of the data.
  */
 WavAudioCursor::
-WavAudioCursor(WavAudio *src, istream *stream) :
+WavAudioCursor(WavAudio *src, std::istream *stream) :
   MovieAudioCursor(src),
   _is_valid(false),
   _stream(stream),
@@ -103,10 +103,11 @@ WavAudioCursor(WavAudio *src, istream *stream) :
   _data_pos(0),
   _data_size(0)
 {
-  nassertv(stream != NULL);
+  nassertv(stream != nullptr);
 
   // Beginning of "RIFF" chunk.
-  if (_reader.extract_bytes(4) != "RIFF") {
+  unsigned char magic[4];
+  if (_reader.extract_bytes(magic, 4) != 4 || memcmp(magic, "RIFF", 4) != 0) {
     movies_cat.error()
       << ".wav file is not a valid RIFF file.\n";
     return;
@@ -114,7 +115,7 @@ WavAudioCursor(WavAudio *src, istream *stream) :
 
   unsigned int chunk_size = _reader.get_uint32();
 
-  if (_reader.extract_bytes(4) != "WAVE") {
+  if (_reader.extract_bytes(magic, 4) != 4 || memcmp(magic, "WAVE", 4) != 0) {
     movies_cat.error()
       << ".wav file is a RIFF file but does not start with a WAVE chunk.\n";
     return;
@@ -126,10 +127,10 @@ WavAudioCursor(WavAudio *src, istream *stream) :
 
   while ((!have_fmt || !have_data) && _stream->good() && (bytes_read + 8) < chunk_size) {
 
-    string subchunk_id = _reader.extract_bytes(4);
+    _reader.extract_bytes(magic, 4);
     unsigned int subchunk_size = _reader.get_uint32();
 
-    if (subchunk_id == "fmt ") {
+    if (memcmp(magic, "fmt ", 4) == 0) {
       // The format chunk specifies information about the storage.
       nassertv(subchunk_size >= 16);
       have_fmt = true;
@@ -202,7 +203,7 @@ WavAudioCursor(WavAudio *src, istream *stream) :
         _reader.skip_bytes(subchunk_size - read_bytes);
       }
 
-    } else if (subchunk_id == "data") {
+    } else if (memcmp(magic, "data", 4) == 0) {
       // The data chunk contains the actual sammples.
       if (!have_fmt) {
         movies_cat.error()
@@ -278,7 +279,7 @@ WavAudioCursor(WavAudio *src, istream *stream) :
  */
 WavAudioCursor::
 ~WavAudioCursor() {
-  if (_stream != NULL) {
+  if (_stream != nullptr) {
     VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
     vfs->close_read_file(_stream);
   }
@@ -290,30 +291,64 @@ WavAudioCursor::
  */
 void WavAudioCursor::
 seek(double t) {
-  t = max(t, 0.0);
-  streampos pos = _data_start + (streampos) min((size_t) (t * _byte_rate), _data_size);
+  t = std::max(t, 0.0);
+  std::streampos pos = _data_start + (std::streampos) std::min((size_t) (t * _byte_rate), _data_size);
+
+  std::streambuf *buf = _stream->rdbuf();
 
   if (_can_seek_fast) {
-    _stream->seekg(pos);
-    if (_stream->tellg() != pos) {
+    if (buf->pubseekpos(pos, std::ios::in) != pos) {
       // Clearly, we can't seek fast.  Fall back to the case below.
       _can_seek_fast = false;
     }
   }
 
-  if (!_can_seek_fast) {
-    streampos current = _stream->tellg();
+  // Get the current position of the cursor in the file.
+  std::streampos current = buf->pubseekoff(0, std::ios::cur, std::ios::in);
 
+  if (!_can_seek_fast) {
     if (pos > current) {
       // It is ahead of our current position.  Skip ahead.
-      _reader.skip_bytes(pos - current);
+      _stream->ignore(pos - current);
+      current = pos;
 
     } else if (pos < current) {
-      // We'll have to reopen the file.  TODO
+      // Can we seek to the beginning?  Some streams, such as ZStream, let us
+      // rewind the stream.
+      if (buf->pubseekpos(0, std::ios::in) == (std::streampos)0) {
+        if (pos > _data_start && movies_cat.is_info()) {
+          Filename fn = get_source()->get_filename();
+          movies_cat.info()
+            << "Unable to seek backwards in " << fn.get_basename()
+            << "; seeking to beginning and skipping " << pos << " bytes.\n";
+        }
+        _stream->ignore(pos);
+        current = pos;
+      } else {
+        // No; close and reopen the file.
+        Filename fn = get_source()->get_filename();
+        movies_cat.warning()
+          << "Unable to seek backwards in " << fn.get_basename()
+          << "; reopening and skipping " << pos << " bytes.\n";
+
+        VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+        std::istream *stream = vfs->open_read_file(get_source()->get_filename(), true);
+        if (stream != nullptr) {
+          vfs->close_read_file(_stream);
+          stream->ignore(pos);
+          _stream = stream;
+          _reader = StreamReader(stream, false);
+          current = pos;
+        } else {
+          movies_cat.error()
+            << "Unable to reopen " << fn << ".\n";
+          _can_seek = false;
+        }
+      }
     }
   }
 
-  _data_pos = _stream->tellg() - _data_start;
+  _data_pos = (size_t)current - _data_start;
   _last_seek = _data_pos / _byte_rate;
   _samples_read = 0;
 }
@@ -323,13 +358,13 @@ seek(double t) {
  * read.  Your buffer must be equal in size to N * channels.  Multiple-channel
  * audio will be interleaved.
  */
-void WavAudioCursor::
+int WavAudioCursor::
 read_samples(int n, int16_t *data) {
   int desired = n * _audio_channels;
-  int read_samples = min(desired, ((int) (_data_size - _data_pos)) / _bytes_per_sample);
+  int read_samples = std::min(desired, ((int) (_data_size - _data_pos)) / _bytes_per_sample);
 
   if (read_samples <= 0) {
-    return;
+    return 0;
   }
 
   switch (_format) {
@@ -420,8 +455,10 @@ read_samples(int n, int16_t *data) {
   // Fill the rest of the buffer with silence.
   if (read_samples < desired) {
     memset(data + read_samples, 0, (desired - read_samples) * 2);
+    n = read_samples / _audio_channels;
   }
 
   _data_pos = _stream->tellg() - _data_start;
-  _samples_read += read_samples / _audio_channels;
+  _samples_read += n;
+  return n;
 }

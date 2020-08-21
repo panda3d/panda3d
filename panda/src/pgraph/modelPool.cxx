@@ -18,14 +18,14 @@
 #include "virtualFileSystem.h"
 
 
-ModelPool *ModelPool::_global_ptr = (ModelPool *)NULL;
+ModelPool *ModelPool::_global_ptr = nullptr;
 
 /**
  * Lists the contents of the model pool to the indicated output stream.  Helps
  * with debugging.
  */
 void ModelPool::
-write(ostream &out) {
+write(std::ostream &out) {
   get_ptr()->ns_list_contents(out);
 }
 
@@ -37,7 +37,7 @@ ns_has_model(const Filename &filename) {
   LightMutexHolder holder(_lock);
   Models::const_iterator ti;
   ti = _models.find(filename);
-  if (ti != _models.end() && (*ti).second != (ModelRoot *)NULL) {
+  if (ti != _models.end() && (*ti).second != nullptr) {
     // This model was previously loaded.
     return true;
   }
@@ -71,7 +71,7 @@ ns_get_model(const Filename &filename, bool verify) {
         << "ModelPool found " << cached_model << " for " << filename << "\n";
     }
 
-    if (cached_model == NULL) {
+    if (cached_model == nullptr) {
       // This filename was previously attempted, but it did not exist (or the
       // model could not be loaded for some reason).
       if (cache_check_timestamps) {
@@ -89,7 +89,7 @@ ns_get_model(const Filename &filename, bool verify) {
         // Compare the timestamp to the file on-disk.
         VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
         PT(VirtualFile) vfile = vfs->get_file(cached_model->get_fullpath());
-        if (vfile == NULL) {
+        if (vfile == nullptr) {
           // The file has disappeared!  Look further along the model-path.
           got_cached_model = false;
 
@@ -109,7 +109,7 @@ ns_get_model(const Filename &filename, bool verify) {
     }
     return cached_model;
   } else {
-    return NULL;
+    return nullptr;
   }
 }
 
@@ -121,7 +121,7 @@ ns_load_model(const Filename &filename, const LoaderOptions &options) {
 
   // First check if it has already been loaded and is still current.
   PT(ModelRoot) cached_model = ns_get_model(filename, true);
-  if (cached_model != (ModelRoot *)NULL) {
+  if (cached_model != nullptr) {
     return cached_model;
   }
 
@@ -239,7 +239,7 @@ ns_garbage_collect() {
   Models::iterator ti;
   for (ti = _models.begin(); ti != _models.end(); ++ti) {
     ModelRoot *node = (*ti).second;
-    if (node == (ModelRoot *)NULL ||
+    if (node == nullptr ||
         node->get_model_ref_count() == 1) {
       if (loader_cat.is_debug()) {
         loader_cat.debug()
@@ -259,7 +259,7 @@ ns_garbage_collect() {
  * The nonstatic implementation of list_contents().
  */
 void ModelPool::
-ns_list_contents(ostream &out) const {
+ns_list_contents(std::ostream &out) const {
   LightMutexHolder holder(_lock);
 
   out << "model pool contents:\n";
@@ -267,7 +267,7 @@ ns_list_contents(ostream &out) const {
   Models::const_iterator ti;
   int num_models = 0;
   for (ti = _models.begin(); ti != _models.end(); ++ti) {
-    if ((*ti).second != NULL) {
+    if ((*ti).second != nullptr) {
       ++num_models;
       out << (*ti).first << "\n"
           << "  (count = " << (*ti).second->get_model_ref_count()
@@ -285,7 +285,7 @@ ns_list_contents(ostream &out) const {
  */
 ModelPool *ModelPool::
 get_ptr() {
-  if (_global_ptr == (ModelPool *)NULL) {
+  if (_global_ptr == nullptr) {
     _global_ptr = new ModelPool;
   }
   return _global_ptr;

@@ -50,6 +50,13 @@
 #include <ctype.h>
 #include <algorithm>
 
+using std::cerr;
+using std::istream;
+using std::map;
+using std::ostream;
+using std::ostringstream;
+using std::string;
+
 InterrogateBuilder builder;
 std::string EXPORT_IMPORT_PREFIX;
 
@@ -74,7 +81,7 @@ add_source_file(const string &filename) {
 void InterrogateBuilder::
 read_command_file(istream &in) {
   string line;
-  getline(in, line);
+  std::getline(in, line);
   while (!in.fail() && !in.eof()) {
     // Strip out the comment.
     size_t hash = line.find('#');
@@ -110,7 +117,7 @@ read_command_file(istream &in) {
 
       do_command(command, params);
     }
-    getline(in, line);
+    std::getline(in, line);
   }
 }
 
@@ -122,7 +129,7 @@ do_command(const string &command, const string &params) {
 
   if (command == "forcevisible") {
     CPPType *type = parser.parse_type(params);
-    if (type == (CPPType *)NULL) {
+    if (type == nullptr) {
       nout << "Unknown type: allowtype " << params << "\n";
     } else {
       type = type->resolve_type(&parser, &parser);
@@ -132,7 +139,7 @@ do_command(const string &command, const string &params) {
   } else if (command == "forcetype") {
     // forcetype explicitly exports the given type.
     CPPType *type = parser.parse_type(params);
-    if (type == (CPPType *)NULL) {
+    if (type == nullptr) {
       nout << "Unknown type: forcetype " << params << "\n";
     } else {
       type = type->resolve_type(&parser, &parser);
@@ -153,7 +160,7 @@ do_command(const string &command, const string &params) {
       string new_name = params.substr(space + 1);
 
       CPPType *type = parser.parse_type(orig_name);
-      if (type == (CPPType *)NULL) {
+      if (type == nullptr) {
         nout << "Unknown type: renametype " << orig_name << "\n";
       } else {
         type = type->resolve_type(&parser, &parser);
@@ -164,7 +171,7 @@ do_command(const string &command, const string &params) {
   } else if (command == "ignoretype") {
     // ignoretype explicitly ignores the given type.
     CPPType *type = parser.parse_type(params);
-    if (type == (CPPType *)NULL) {
+    if (type == nullptr) {
       nout << "Unknown type: ignoretype " << params << "\n";
     } else {
       type = type->resolve_type(&parser, &parser);
@@ -185,7 +192,7 @@ do_command(const string &command, const string &params) {
       string constructor = params.substr(space + 1);
 
       CPPType *type = parser.parse_type(class_name);
-      if (type == (CPPType *)NULL) {
+      if (type == nullptr) {
         nout << "Unknown type: defconstruct " << class_name << "\n";
       } else {
         type = type->resolve_type(&parser, &parser);
@@ -254,10 +261,10 @@ build() {
        ci != _forcetype.end();
        ++ci) {
     CPPType *type = parser.parse_type(*ci);
-    if (type == NULL) {
+    if (type == nullptr) {
       cerr << "Failure to parse forcetype " << *ci << "\n";
     }
-    assert(type != (CPPType *)NULL);
+    assert(type != nullptr);
     get_type(type, true);
   }
 
@@ -274,7 +281,7 @@ build() {
         scan_function(inst);
       } else {
         // Here's a data element declaration.
-        scan_element(inst, (CPPStructType *)NULL, &parser);
+        scan_element(inst, nullptr, &parser);
       }
 
     } else if ((*di)->get_subtype() == CPPDeclaration::ST_typedef) {
@@ -323,7 +330,7 @@ build() {
  */
 void InterrogateBuilder::
 write_code(ostream &out_code,ostream * out_include, InterrogateModuleDef *def) {
-  typedef vector<InterfaceMaker *> InterfaceMakers;
+  typedef std::vector<InterfaceMaker *> InterfaceMakers;
   InterfaceMakers makers;
 
   if (build_c_wrappers) {
@@ -381,9 +388,6 @@ write_code(ostream &out_code,ostream * out_include, InterrogateModuleDef *def) {
   declaration_bodies << "#include <sstream>\n";
 
   if (build_python_native) {
-    if (library_name.size() > 1) {
-      declaration_bodies << "#define PANDA_LIBRARY_NAME_" << library_name << "\n";
-    }
     declaration_bodies << "#include \"py_panda.h\"\n";
     declaration_bodies << "#include \"extension.h\"\n";
     declaration_bodies << "#include \"dcast.h\"\n";
@@ -443,7 +447,7 @@ write_code(ostream &out_code,ostream * out_include, InterrogateModuleDef *def) {
   }
 
   // Now collect all the function wrappers.
-  vector<FunctionRemap *> remaps;
+  std::vector<FunctionRemap *> remaps;
   for (mi = makers.begin(); mi != makers.end(); ++mi) {
     (*mi)->get_function_remaps(remaps);
   }
@@ -457,7 +461,7 @@ write_code(ostream &out_code,ostream * out_include, InterrogateModuleDef *def) {
   int num_wrappers = 0;
   map<int, FunctionRemap *> wrappers_by_index;
 
-  vector<FunctionRemap *>::iterator ri;
+  std::vector<FunctionRemap *>::iterator ri;
   for (ri = remaps.begin(); ri != remaps.end(); ++ri) {
     FunctionRemap *remap = (*ri);
     wrappers_by_index[remap->_wrapper_index] = remap;
@@ -511,7 +515,7 @@ write_code(ostream &out_code,ostream * out_include, InterrogateModuleDef *def) {
         << "  \"" << def->library_name << "\",  /* library_name */\n"
         << "  \"" << def->library_hash_name << "\",  /* library_hash_name */\n"
         << "  \"" << def->module_name << "\",  /* module_name */\n";
-    if (def->database_filename != (const char *)NULL) {
+    if (def->database_filename != nullptr) {
       out_code << "  \"" << def->database_filename
           << "\",  /* database_filename */\n";
     } else {
@@ -522,7 +526,7 @@ write_code(ostream &out_code,ostream * out_include, InterrogateModuleDef *def) {
       out_code << "  _in_unique_names,\n"
           << "  " << num_wrappers << ",  /* num_unique_names */\n";
     } else {
-      out_code << "  (InterrogateUniqueNameDef *)0,  /* unique_names */\n"
+      out_code << "  nullptr,  /* unique_names */\n"
           << "  0,  /* num_unique_names */\n";
     }
 
@@ -530,7 +534,7 @@ write_code(ostream &out_code,ostream * out_include, InterrogateModuleDef *def) {
       out_code << "  _in_fptrs,\n"
           << "  " << num_wrappers << ",  /* num_fptrs */\n";
     } else {
-      out_code << "  (void **)0,  /* fptrs */\n"
+      out_code << "  nullptr,  /* fptrs */\n"
           << "  0,  /* num_fptrs */\n";
     }
 
@@ -649,13 +653,13 @@ get_preferred_name(CPPType *type) {
  */
 string InterrogateBuilder::
 hash_string(const string &name, int shift_offset) {
-  int hash = 0;
+  unsigned int hash = 0;
 
-  int shift = 0;
+  unsigned int shift = 0;
   string::const_iterator ni;
   for (ni = name.begin(); ni != name.end(); ++ni) {
-    int c = (int)(unsigned char)(*ni);
-    int shifted_c = (c << shift) & 0xffffff;
+    unsigned int c = (unsigned char)*ni;
+    unsigned int shifted_c = (c << shift) & 0xffffff;
     if (shift > 16) {
       // We actually want a circular shift, not an arithmetic shift.
       shifted_c |= ((c >> (24 - shift)) & 0xff) ;
@@ -668,10 +672,9 @@ hash_string(const string &name, int shift_offset) {
   // bits back at the bottom, to scramble up the bits a bit.  This helps
   // reduce hash conflicts from names that are similar to each other, by
   // separating adjacent hash codes.
-  int prime = 4999;
-  int low_order = (hash * prime) & 0xffffff;
-  int high_order = (int)((double)hash * (double)prime / (double)(1 << 24));
-  hash = low_order ^ high_order;
+  const unsigned int prime = 4999;
+  unsigned long long product = (unsigned long long)hash * prime;
+  hash = (product ^ (product >> 24)) & 0xffffff;
 
   // Also add in the additional_number, times some prime factor.  hash = (hash
   // + additional_number * 1657) & 0xffffff;
@@ -683,10 +686,9 @@ hash_string(const string &name, int shift_offset) {
   // deal, since we have to resolve hash conflicts anyway.
 
   string result;
-  int extract_h = hash;
   for (int i = 0; i < 4; i++) {
-    int value = (extract_h & 0x3f);
-    extract_h >>= 6;
+    unsigned int value = (hash & 0x3f);
+    hash >>= 6;
     if (value < 26) {
       result += (char)('A' + value);
 
@@ -921,17 +923,17 @@ bool InterrogateBuilder::
 is_inherited_published(CPPInstance *function, CPPStructType *struct_type) {
   nassertr(struct_type->_derivation.size() == 1, false);
   CPPStructType *base = struct_type->_derivation[0]._base->as_struct_type();
-  nassertr(base != (CPPStructType *)NULL, false);
+  nassertr(base != nullptr, false);
 
   CPPScope *base_scope = base->get_scope();
   CPPDeclaration *symbol = base_scope->find_symbol(function->get_simple_name(), true);
-  if (symbol == (CPPDeclaration *)NULL) {
+  if (symbol == nullptr) {
     // Couldn't find the inherited function.
     return false;
   }
 
   CPPFunctionGroup *fgroup = symbol->as_function_group();
-  if (fgroup == (CPPFunctionGroup *)NULL) {
+  if (fgroup == nullptr) {
     // Weird, it wasn't a function.
     return false;
   }
@@ -960,7 +962,7 @@ is_inherited_published(CPPInstance *function, CPPStructType *struct_type) {
  * purpose of this function.
  */
 void InterrogateBuilder::
-remap_indices(vector<FunctionRemap *> &remaps) {
+remap_indices(std::vector<FunctionRemap *> &remaps) {
   IndexRemapper index_remap;
   InterrogateDatabase::get_ptr()->remap_indices(1, index_remap);
 
@@ -976,7 +978,7 @@ remap_indices(vector<FunctionRemap *> &remaps) {
     (*fi).second = index_remap.map_from((*fi).second);
   }
 
-  vector<FunctionRemap *>::iterator ri;
+  std::vector<FunctionRemap *>::iterator ri;
   for (ri = remaps.begin(); ri != remaps.end(); ++ri) {
     FunctionRemap *remap = (*ri);
     remap->_wrapper_index = index_remap.map_from(remap->_wrapper_index);
@@ -1000,22 +1002,22 @@ scan_function(CPPFunctionGroup *fgroup) {
  */
 void InterrogateBuilder::
 scan_function(CPPInstance *function) {
-  assert(function != (CPPInstance *)NULL);
-  assert(function->_type != (CPPType *)NULL &&  function->_type->as_function_type() != (CPPFunctionType *)NULL);
+  assert(function != nullptr);
+  assert(function->_type != nullptr &&  function->_type->as_function_type() != nullptr);
 
   CPPFunctionType *ftype =  function->_type->resolve_type(&parser, &parser)->as_function_type();
-  assert(ftype != (CPPFunctionType *)NULL);
+  assert(ftype != nullptr);
 
   CPPScope *scope = &parser;
   if (function->is_scoped()) {
     scope = function->get_scope(&parser, &parser);
-    if (scope == (CPPScope *)NULL) {
+    if (scope == nullptr) {
       // Invalid scope.
       nout << "Invalid scope: " << *function->_ident << "\n";
       return;
     }
 
-    if (scope->get_struct_type() != (CPPStructType *)NULL) {
+    if (scope->get_struct_type() != nullptr) {
       // Wait, this is a method, not a function.  This must be the declaration
       // for the method (since it's appearing out-of-scope).  We don't need to
       // define a new method for it, but we'd like to update the comment, if
@@ -1070,7 +1072,7 @@ scan_function(CPPInstance *function) {
   }
 
   get_function(function, "",
-               (CPPStructType *)NULL, scope,
+               nullptr, scope,
                InterrogateFunction::F_global);
 }
 
@@ -1079,7 +1081,7 @@ scan_function(CPPInstance *function) {
  */
 void InterrogateBuilder::
 scan_struct_type(CPPStructType *type) {
-  if (type == (CPPStructType *)NULL) {
+  if (type == nullptr) {
     return;
   }
 
@@ -1129,7 +1131,7 @@ scan_struct_type(CPPStructType *type) {
  */
 void InterrogateBuilder::
 scan_enum_type(CPPEnumType *type) {
-  if (type == (CPPEnumType *)NULL) {
+  if (type == nullptr) {
     return;
   }
 
@@ -1163,7 +1165,7 @@ scan_enum_type(CPPEnumType *type) {
  */
 void InterrogateBuilder::
 scan_typedef_type(CPPTypedefType *type) {
-  if (type == (CPPTypedefType *)NULL) {
+  if (type == nullptr) {
     return;
   }
 
@@ -1202,7 +1204,7 @@ scan_typedef_type(CPPTypedefType *type) {
   }
 
   CPPStructType *struct_type = wrapped_type->as_struct_type();
-  if (struct_type == (CPPStructType *)NULL) {
+  if (struct_type == nullptr) {
     // We only export typedefs to structs, for now.
     return;
   }
@@ -1247,7 +1249,7 @@ scan_typedef_type(CPPTypedefType *type) {
  */
 void InterrogateBuilder::
 scan_manifest(CPPManifest *manifest) {
-  if (manifest == (CPPManifest *)NULL) {
+  if (manifest == nullptr) {
     return;
   }
 
@@ -1278,7 +1280,7 @@ scan_manifest(CPPManifest *manifest) {
   imanifest._definition = manifest->expand();
 
   CPPType *type = manifest->determine_type();
-  if (type != (CPPType *)NULL) {
+  if (type != nullptr) {
     imanifest._flags |= InterrogateManifest::F_has_type;
     imanifest._type = get_type(type, false);
 
@@ -1292,8 +1294,8 @@ scan_manifest(CPPManifest *manifest) {
     } else {
       // We have a more complex expression.  Generate a getter function.
       FunctionIndex getter =
-        get_getter(type, manifest->_name, (CPPStructType *)NULL, &parser,
-                   (CPPInstance *)NULL);
+        get_getter(type, manifest->_name, nullptr, &parser,
+                   nullptr);
 
       if (getter != 0) {
         imanifest._flags |= InterrogateManifest::F_has_getter;
@@ -1313,7 +1315,7 @@ scan_manifest(CPPManifest *manifest) {
 ElementIndex InterrogateBuilder::
 scan_element(CPPInstance *element, CPPStructType *struct_type,
              CPPScope *scope) {
-  if (element == (CPPInstance *)NULL) {
+  if (element == nullptr) {
     return 0;
   }
 
@@ -1336,7 +1338,7 @@ scan_element(CPPInstance *element, CPPStructType *struct_type,
     return 0;
   }
 
-  if (struct_type == NULL &&
+  if (struct_type == nullptr &&
       (element->_file._source != CPPFile::S_local ||
        in_ignorefile(element->_file._filename_as_referenced))) {
     // The element is defined in some other package or in an ignorable file.
@@ -1368,7 +1370,7 @@ scan_element(CPPInstance *element, CPPStructType *struct_type,
   ielement._scoped_name = descope(element->get_local_name(&parser));
 
   // See if there happens to be a comment before the element.
-  if (element->_leading_comment != (CPPCommentBlock *)NULL) {
+  if (element->_leading_comment != nullptr) {
     ielement._comment = trim_blanks(element->_leading_comment->_comment);
   }
 
@@ -1382,7 +1384,8 @@ scan_element(CPPInstance *element, CPPStructType *struct_type,
     // We can only generate a getter and a setter if we can talk about the
     // type it is.
 
-    if (parameter_type->as_struct_type() != (CPPStructType *)NULL) {
+    if (parameter_type->as_struct_type() != nullptr &&
+        !parameter_type->is_trivial()) {
       // Wrap the type in a const reference.
       parameter_type = TypeManager::wrap_const_reference(parameter_type);
     }
@@ -1407,7 +1410,7 @@ scan_element(CPPInstance *element, CPPStructType *struct_type,
     }
   }
 
-  if (struct_type == (CPPStructType *)NULL) {
+  if (struct_type == nullptr) {
     // This is a global data element: not a data member.
     ielement._flags |= InterrogateElement::F_global;
   }
@@ -1432,9 +1435,9 @@ get_getter(CPPType *expr_type, string expression,
 
   // Unroll the "const" from the expr_type, since that doesn't matter for a
   // return type.
-  while (expr_type->as_const_type() != (CPPConstType *)NULL) {
+  while (expr_type->as_const_type() != nullptr) {
     expr_type = expr_type->as_const_type()->_wrapped_around;
-    assert(expr_type != (CPPType *)NULL);
+    assert(expr_type != nullptr);
   }
 
   // We can't return an array from a function, but we can decay it into a
@@ -1453,10 +1456,10 @@ get_getter(CPPType *expr_type, string expression,
 
   int getter_flags = InterrogateFunction::F_getter;
 
-  if (struct_type != (CPPStructType *)NULL) {
+  if (struct_type != nullptr) {
     // This is a data member for some class.
-    assert(element != (CPPInstance *)NULL);
-    assert(scope != (CPPScope *)NULL);
+    assert(element != nullptr);
+    assert(scope != nullptr);
 
     if ((element->_storage_class & CPPInstance::SC_static) != 0) {
       // This is a static data member; therefore, the synthesized getter is
@@ -1487,8 +1490,8 @@ get_getter(CPPType *expr_type, string expression,
 
   ostringstream desc;
   desc << "getter for ";
-  if (element != (CPPInstance *)NULL) {
-    element->_initializer = (CPPExpression *)NULL;
+  if (element != nullptr) {
+    element->_initializer = nullptr;
     element->output(desc, 0, &parser, false);
     desc << ";";
   } else {
@@ -1530,10 +1533,10 @@ get_setter(CPPType *expr_type, string expression,
 
   int setter_flags = InterrogateFunction::F_setter;
 
-  if (struct_type != (CPPStructType *)NULL) {
+  if (struct_type != nullptr) {
     // This is a data member for some class.
-    assert(element != (CPPInstance *)NULL);
-    assert(scope != (CPPScope *)NULL);
+    assert(element != nullptr);
+    assert(scope != nullptr);
 
     if ((element->_storage_class & CPPInstance::SC_static) != 0) {
       // This is a static data member; therefore, the synthesized setter is
@@ -1560,8 +1563,8 @@ get_setter(CPPType *expr_type, string expression,
 
   ostringstream desc;
   desc << "setter for ";
-  if (element != (CPPInstance *)NULL) {
-    element->_initializer = (CPPExpression *)NULL;
+  if (element != nullptr) {
+    element->_initializer = nullptr;
     element->output(desc, 0, &parser, false);
     desc << ";";
   } else {
@@ -1590,7 +1593,7 @@ get_cast_function(CPPType *to_type, CPPType *from_type,
   CPPStructType *struct_type = from_type->as_struct_type();
   CPPScope *scope = &parser;
 
-  if (struct_type != (CPPStructType *)NULL) {
+  if (struct_type != nullptr) {
     // We'll make this a method of the from type.
     scope = struct_type->get_scope();
 
@@ -1666,14 +1669,14 @@ get_function(CPPInstance *function, string description,
   function->_type = ftype;
 
   if ((ftype->_flags & CPPFunctionType::F_constructor) &&
-      struct_type != (CPPStructType *)NULL &&
+      struct_type != nullptr &&
       struct_type->is_abstract()) {
     // This is a constructor for an abstract class; forget it.
     return 0;
   }
 
   TypeIndex class_index = 0;
-  if (struct_type != (CPPStructType *)NULL) {
+  if (struct_type != nullptr) {
     class_index = get_type(struct_type, false);
   }
 
@@ -1696,12 +1699,10 @@ get_function(CPPInstance *function, string description,
     InterrogateFunction &ifunction =
       InterrogateDatabase::get_ptr()->update_function(index);
 
-    nassertr(&ifunction != NULL, 0);
-
     ifunction._flags |= flags;
 
     // Also, make sure this particular signature is defined.
-    pair<InterrogateFunction::Instances::iterator, bool> result =
+    std::pair<InterrogateFunction::Instances::iterator, bool> result =
       ifunction._instances->insert(InterrogateFunction::Instances::value_type(function_signature, function));
 
     InterrogateFunction::Instances::iterator ii = result.first;
@@ -1716,7 +1717,7 @@ get_function(CPPInstance *function, string description,
     }
 
     // Also set the comment.
-    if (function->_leading_comment != (CPPCommentBlock *)NULL) {
+    if (function->_leading_comment != nullptr) {
       string comment = trim_blanks(function->_leading_comment->_comment);
       if (!ifunction._comment.empty()) {
         ifunction._comment += "\n\n";
@@ -1724,7 +1725,7 @@ get_function(CPPInstance *function, string description,
       ifunction._comment += comment;
 
       // And update the particular wrapper comment.
-      if ((*ii).second->_leading_comment == NULL ||
+      if ((*ii).second->_leading_comment == nullptr ||
           function->_leading_comment->_comment.length() >
           (*ii).second->_leading_comment->_comment.length()) {
         (*ii).second->_leading_comment = function->_leading_comment;
@@ -1744,7 +1745,7 @@ get_function(CPPInstance *function, string description,
   ifunction->_scoped_name = descope(function->get_local_name(&parser));
   ifunction->_instances = new InterrogateFunction::Instances;
 
-  if (function->_leading_comment != (CPPCommentBlock *)NULL) {
+  if (function->_leading_comment != nullptr) {
     ifunction->_comment = trim_blanks(function->_leading_comment->_comment);
   }
 
@@ -1753,7 +1754,7 @@ get_function(CPPInstance *function, string description,
   prototype << ";";
   ifunction->_prototype = prototype.str();
 
-  if (struct_type != (CPPStructType *)NULL) {
+  if (struct_type != nullptr) {
     // The function is a method.
     ifunction->_flags |= InterrogateFunction::F_method;
     ifunction->_class = class_index;
@@ -1798,30 +1799,39 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CP
   }
 
   string property_name = make_property->get_local_name(&parser);
+  InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
 
   // First, check to see if it's already there.
+  ElementIndex index = 0;
   PropertiesByName::const_iterator tni =
     _properties_by_name.find(property_name);
   if (tni != _properties_by_name.end()) {
-    ElementIndex index = (*tni).second;
-    return index;
+    index = (*tni).second;
+    const InterrogateElement &ielem = idb->get_element(index);
+    if (ielem._make_property == make_property) {
+      // This is the same property.
+      return index;
+    }
+
+    // It is possible to have property definitions with the same name, but
+    // they cannot define conflicting interfaces.
+    if ((ielem.is_sequence() || ielem.is_mapping()) !=
+        (make_property->_type != CPPMakeProperty::T_normal)) {
+      cerr << "Conflicting property definitions for " << property_name << "!\n";
+      return index;
+    }
   }
 
   // If we have a length function (ie. this is a sequence property), we should
   // find the function that will give us the length.
   FunctionIndex length_function = 0;
-  bool is_seq = false;
-
-  CPPFunctionGroup::Instances::const_iterator fi;
   CPPFunctionGroup *fgroup = make_property->_length_function;
-  if (fgroup != NULL) {
-    is_seq = true;
-
+  if (fgroup != nullptr) {
+    CPPFunctionGroup::Instances::const_iterator fi;
     for (fi = fgroup->_instances.begin(); fi != fgroup->_instances.end(); ++fi) {
       CPPInstance *function = (*fi);
-      CPPFunctionType *ftype =
-        function->_type->as_function_type();
-      if (ftype != NULL) {
+      CPPFunctionType *ftype = function->_type->as_function_type();
+      if (ftype != nullptr) {
         length_function = get_function(function, "", struct_type,
                                        struct_type->get_scope(), 0);
         if (length_function != 0) {
@@ -1837,25 +1847,45 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CP
   }
 
   // Find the getter so we can get its return type.
-  CPPInstance *getter = NULL;
-  CPPType *return_type = NULL;
+  CPPInstance *getter = nullptr;
+  CPPType *return_type = nullptr;
+
+  // How many arguments we expect the getter to have.
+  size_t num_args = (size_t)(make_property->_type != CPPMakeProperty::T_normal);
 
   fgroup = make_property->_get_function;
-  if (fgroup != NULL) {
+  if (fgroup != nullptr) {
     CPPFunctionGroup::Instances::const_iterator fi;
     for (fi = fgroup->_instances.begin(); fi != fgroup->_instances.end(); ++fi) {
       CPPInstance *function = (*fi);
       CPPFunctionType *ftype = function->_type->as_function_type();
-      if (ftype == NULL) {
+      if (ftype == nullptr) {
         continue;
       }
 
+      const CPPParameterList::Parameters &params = ftype->_parameters->_parameters;
+
+      size_t expected_num_args = 0;
+      size_t index_arg = 0;
+
+      if (make_property->_type != CPPMakeProperty::T_normal) {
+        ++expected_num_args;
+      }
+
+      if (!params.empty() && params[0]->get_simple_name() == "self" &&
+          TypeManager::is_pointer_to_PyObject(params[0]->_type)) {
+        // Taking a PyObject *self argument.
+        expected_num_args += 1;
+        index_arg += 1;
+      }
+
       // The getter must either take no arguments, or all defaults.
-      if (ftype->_parameters->_parameters.size() == (size_t)is_seq ||
-          (ftype->_parameters->_parameters.size() > (size_t)is_seq &&
-           ftype->_parameters->_parameters[(size_t)is_seq]->_initializer != NULL)) {
+      if (params.size() == expected_num_args ||
+          (params.size() > expected_num_args &&
+           params[expected_num_args]->_initializer != nullptr)) {
         // If this is a sequence getter, it must take an index argument.
-        if (is_seq && !TypeManager::is_integer(ftype->_parameters->_parameters[0]->_type)) {
+        if (make_property->_type == CPPMakeProperty::T_sequence &&
+            !TypeManager::is_integer(params[index_arg]->_type)) {
           continue;
         }
 
@@ -1870,7 +1900,7 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CP
       }
     }
 
-    if (getter == NULL || return_type == NULL) {
+    if (getter == nullptr || return_type == nullptr) {
       cerr << "No instance of getter '"
            << fgroup->_name << "' is suitable!\n";
       return 0;
@@ -1878,22 +1908,23 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CP
   }
 
   // Find the "hasser".
-  CPPInstance *hasser = NULL;
+  CPPInstance *hasser = nullptr;
 
   fgroup = make_property->_has_function;
-  if (fgroup != NULL) {
+  if (fgroup != nullptr) {
     CPPFunctionGroup::Instances::const_iterator fi;
     for (fi = fgroup->_instances.begin(); fi != fgroup->_instances.end(); ++fi) {
       CPPInstance *function = (*fi);
       CPPFunctionType *ftype =
         function->_type->as_function_type();
-      if (ftype != NULL && TypeManager::is_bool(ftype->_return_type)) {
+      if (ftype != nullptr && (TypeManager::is_integer(ftype->_return_type) ||
+                               TypeManager::is_pointer(ftype->_return_type))) {
         hasser = function;
         break;
       }
     }
 
-    if (hasser == NULL || return_type == NULL) {
+    if (hasser == nullptr) {
       cerr << "No instance of has-function '"
            << fgroup->_name << "' is suitable!\n";
       return 0;
@@ -1901,76 +1932,156 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CP
   }
 
   // And the "deleter".
-  CPPInstance *deleter = NULL;
+  CPPInstance *deleter = nullptr;
 
   fgroup = make_property->_del_function;
-  if (fgroup != NULL) {
+  if (fgroup != nullptr) {
     CPPFunctionGroup::Instances::const_iterator fi;
     for (fi = fgroup->_instances.begin(); fi != fgroup->_instances.end(); ++fi) {
       CPPInstance *function = (*fi);
       CPPFunctionType *ftype = function->_type->as_function_type();
-      if (ftype != NULL && ftype->_parameters->_parameters.size() == (size_t)is_seq) {
-        deleter = function;
-        break;
+      if (ftype != nullptr) {
+        const CPPParameterList::Parameters &params = ftype->_parameters->_parameters;
+        if (params.size() == num_args ||
+            (params.size() > num_args && params[num_args]->_initializer != nullptr)) {
+          deleter = function;
+          break;
+        }
       }
     }
 
-    if (deleter == NULL || return_type == NULL) {
+    if (deleter == nullptr) {
       cerr << "No instance of delete-function '"
            << fgroup->_name << "' is suitable!\n";
       return 0;
     }
   }
 
-  InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
-  // It isn't here, so we'll have to define it.
-  ElementIndex index = idb->get_next_index();
-  _properties_by_name[property_name] = index;
+  // And the "inserter".
+  CPPInstance *inserter = nullptr;
 
-  InterrogateElement iproperty;
-  iproperty._name = make_property->get_simple_name();
-  iproperty._scoped_name = descope(make_property->get_local_name(&parser));
+  fgroup = make_property->_insert_function;
+  if (fgroup != nullptr) {
+    CPPFunctionGroup::Instances::const_iterator fi;
+    for (fi = fgroup->_instances.begin(); fi != fgroup->_instances.end(); ++fi) {
+      CPPInstance *function = (*fi);
+      CPPFunctionType *ftype = function->_type->as_function_type();
+      if (ftype != nullptr && ftype->_parameters->_parameters.size() == 2) {
+        inserter = function;
+        break;
+      }
+    }
 
-  if (return_type != NULL) {
-    iproperty._type = get_type(TypeManager::unwrap_reference(return_type), false);
+    if (inserter == nullptr) {
+      cerr << "No instance of insert-function '"
+           << fgroup->_name << "' is suitable!\n";
+      return 0;
+    }
+  }
+
+  // And the function that returns a key by index.
+  CPPInstance *getkey_function = nullptr;
+
+  fgroup = make_property->_get_key_function;
+  if (fgroup != nullptr) {
+    CPPFunctionGroup::Instances::const_iterator fi;
+    for (fi = fgroup->_instances.begin(); fi != fgroup->_instances.end(); ++fi) {
+      CPPInstance *function = (*fi);
+      CPPFunctionType *ftype = function->_type->as_function_type();
+      if (ftype != nullptr) {
+        getkey_function = function;
+        break;
+      }
+    }
+
+    if (getkey_function == nullptr) {
+      cerr << "No instance of get-key-function '"
+           << fgroup->_name << "' is suitable!\n";
+      return 0;
+    }
+  }
+
+  if (index == 0) {
+    // It isn't here, so we'll have to define it.
+    index = idb->get_next_index();
+    _properties_by_name[property_name] = index;
+
+    InterrogateElement iproperty;
+    iproperty._name = make_property->get_simple_name();
+    iproperty._scoped_name = descope(make_property->get_local_name(&parser));
+    idb->add_element(index, iproperty);
+  }
+
+  InterrogateElement &iproperty = idb->update_element(index);
+
+  if (return_type != nullptr) {
+    TypeIndex return_index = get_type(TypeManager::unwrap_reference(return_type), false);
+    if (iproperty._type != 0 && iproperty._type != return_index) {
+      cerr << "Property " << property_name << " has inconsistent element type!\n";
+    }
+    iproperty._type = return_index;
   } else {
     iproperty._type = 0;
   }
 
-  if (length_function != 0) {
+  if (make_property->_type & CPPMakeProperty::T_sequence) {
     iproperty._flags |= InterrogateElement::F_sequence;
+    iproperty._length_function = length_function;
+    assert(length_function != 0);
+  }
+
+  if (make_property->_type & CPPMakeProperty::T_mapping) {
+    iproperty._flags |= InterrogateElement::F_mapping;
     iproperty._length_function = length_function;
   }
 
-  if (getter != NULL) {
+  if (getter != nullptr) {
     iproperty._flags |= InterrogateElement::F_has_getter;
     iproperty._getter = get_function(getter, "", struct_type,
-                                     struct_type->get_scope(), 0);
+                                    struct_type->get_scope(), 0);
     nassertr(iproperty._getter, 0);
   }
 
-  if (hasser != NULL) {
+  if (hasser != nullptr) {
     iproperty._flags |= InterrogateElement::F_has_has_function;
     iproperty._has_function = get_function(hasser, "", struct_type,
                                            struct_type->get_scope(), 0);
     nassertr(iproperty._has_function, 0);
   }
 
-  if (deleter != NULL) {
+  if (deleter != nullptr) {
     iproperty._flags |= InterrogateElement::F_has_del_function;
     iproperty._del_function = get_function(deleter, "", struct_type,
                                           struct_type->get_scope(), 0);
     nassertr(iproperty._del_function, 0);
   }
 
+  if (inserter != nullptr) {
+    iproperty._flags |= InterrogateElement::F_has_insert_function;
+    iproperty._insert_function = get_function(inserter, "", struct_type,
+                                              struct_type->get_scope(), 0);
+    nassertr(iproperty._insert_function, 0);
+  }
+
+  if (getkey_function != nullptr) {
+    iproperty._flags |= InterrogateElement::F_has_getkey_function;
+    iproperty._getkey_function = get_function(getkey_function, "", struct_type,
+                                              struct_type->get_scope(), 0);
+    nassertr(iproperty._getkey_function, 0);
+  }
+
   // See if there happens to be a comment before the MAKE_PROPERTY macro.
-  if (make_property->_leading_comment != (CPPCommentBlock *)NULL) {
+  if (make_property->_leading_comment != nullptr) {
     iproperty._comment = trim_blanks(make_property->_leading_comment->_comment);
+
+  } else if (getter->_leading_comment != nullptr) {
+    // Take the comment from the getter.
+    iproperty._comment = trim_blanks(getter->_leading_comment->_comment);
   }
 
   // Now look for setters.
   fgroup = make_property->_set_function;
-  if (fgroup != NULL) {
+  if (fgroup != nullptr) {
     CPPFunctionGroup::Instances::const_iterator fi;
     for (fi = fgroup->_instances.begin(); fi != fgroup->_instances.end(); ++fi) {
       CPPInstance *function = (*fi);
@@ -1983,7 +2094,7 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CP
   }
 
   fgroup = make_property->_clear_function;
-  if (fgroup != NULL) {
+  if (fgroup != nullptr) {
     CPPFunctionGroup::Instances::const_iterator fi;
     for (fi = fgroup->_instances.begin(); fi != fgroup->_instances.end(); ++fi) {
       CPPInstance *function = (*fi);
@@ -1995,7 +2106,6 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CP
     }
   }
 
-  idb->add_element(index, iproperty);
   return index;
 }
 
@@ -2020,12 +2130,12 @@ get_make_seq(CPPMakeSeq *make_seq, CPPStructType *struct_type) {
 
   CPPFunctionGroup::Instances::const_iterator fi;
   CPPFunctionGroup *fgroup = make_seq->_length_getter;
-  if (fgroup != NULL) {
+  if (fgroup != nullptr) {
     for (fi = fgroup->_instances.begin(); fi != fgroup->_instances.end(); ++fi) {
       CPPInstance *function = (*fi);
       CPPFunctionType *ftype =
         function->_type->as_function_type();
-      if (ftype != NULL) {
+      if (ftype != nullptr) {
         length_getter = get_function(function, "", struct_type,
                                      struct_type->get_scope(), 0);
         if (length_getter != 0) {
@@ -2044,12 +2154,12 @@ get_make_seq(CPPMakeSeq *make_seq, CPPStructType *struct_type) {
   }
 
   fgroup = make_seq->_element_getter;
-  if (fgroup != NULL) {
+  if (fgroup != nullptr) {
     for (fi = fgroup->_instances.begin(); fi != fgroup->_instances.end(); ++fi) {
       CPPInstance *function = (*fi);
       CPPFunctionType *ftype =
         function->_type->as_function_type();
-      if (ftype != NULL && ftype->_parameters->_parameters.size() >= 1 &&
+      if (ftype != nullptr && ftype->_parameters->_parameters.size() >= 1 &&
           TypeManager::is_integer(ftype->_parameters->_parameters[0]->_type)) {
         // It really doesn't matter whether we grab the const or non-const
         // version, since they should all return the same function anyway.
@@ -2083,7 +2193,7 @@ get_make_seq(CPPMakeSeq *make_seq, CPPStructType *struct_type) {
   imake_seq._element_getter = element_getter;
 
   // See if there happens to be a comment before the MAKE_SEQ macro.
-  if (make_seq->_leading_comment != (CPPCommentBlock *)NULL) {
+  if (make_seq->_leading_comment != nullptr) {
     imake_seq._comment = trim_blanks(make_seq->_leading_comment->_comment);
   }
 
@@ -2137,6 +2247,10 @@ get_type(CPPType *type, bool global) {
   if (type->is_template()) {
     // Can't do anything with a template type.
     return 0;
+  }
+
+  if (type->get_subtype() == CPPType::ST_tbd) {
+    type = type->resolve_type(&parser, &parser);
   }
 
   TypeIndex index = 0;
@@ -2208,21 +2322,21 @@ get_type(CPPType *type, bool global) {
   itype._true_name = true_name;
   itype._cpptype = type;
 
-  if (type->_declaration != (CPPTypeDeclaration *)NULL) {
+  if (type->_declaration != nullptr) {
     // This type has a declaration; does the declaration have a comment?
     CPPTypeDeclaration *decl = type->_declaration;
-    if (decl->_leading_comment != (CPPCommentBlock *)NULL) {
+    if (decl->_leading_comment != nullptr) {
       itype._comment = trim_blanks(decl->_leading_comment->_comment);
     }
   }
 
-  CPPScope *scope = NULL;
+  CPPScope *scope = nullptr;
   // If it's an extension type or typedef, it might be scoped.
   if (CPPTypedefType *td_type = type->as_typedef_type()) {
     scope = td_type->_ident->get_scope(&parser, &parser);
 
   } else if (CPPExtensionType *ext_type = type->as_extension_type()) {
-    if (ext_type->_ident != (CPPIdentifier *)NULL) {
+    if (ext_type->_ident != nullptr) {
       scope = ext_type->_ident->get_scope(&parser, &parser);
 
     } else if (CPPEnumType *enum_type = ext_type->as_enum_type()) {
@@ -2232,11 +2346,11 @@ get_type(CPPType *type, bool global) {
 
   }
 
-  if (scope != (CPPScope *)NULL) {
-    while (scope->as_template_scope() != (CPPTemplateScope *)NULL) {
+  if (scope != nullptr) {
+    while (scope->as_template_scope() != nullptr) {
       assert(scope->get_parent_scope() != scope);
       scope = scope->get_parent_scope();
-      assert(scope != (CPPScope *)NULL);
+      assert(scope != nullptr);
     }
     itype._cppscope = scope;
 
@@ -2246,7 +2360,7 @@ get_type(CPPType *type, bool global) {
         descope(scope->get_local_name(&parser) + "::" + itype._name);
       CPPStructType *struct_type = scope->get_struct_type();
 
-      if (struct_type != (CPPStructType *)NULL) {
+      if (struct_type != nullptr) {
         itype._flags |= InterrogateType::F_nested;
         itype._outer_class = get_type(struct_type, false);
       }
@@ -2256,28 +2370,28 @@ get_type(CPPType *type, bool global) {
   if (forced || !in_ignoretype(true_name)) {
     itype._flags |= InterrogateType::F_fully_defined;
 
-    if (type->as_simple_type() != (CPPSimpleType *)NULL) {
+    if (type->as_simple_type() != nullptr) {
       define_atomic_type(itype, type->as_simple_type());
 
-    } else if (type->as_pointer_type() != (CPPPointerType *)NULL) {
+    } else if (type->as_pointer_type() != nullptr) {
       define_wrapped_type(itype, type->as_pointer_type());
 
-    } else if (type->as_const_type() != (CPPConstType *)NULL) {
+    } else if (type->as_const_type() != nullptr) {
       define_wrapped_type(itype, type->as_const_type());
 
-    } else if (type->as_struct_type() != (CPPStructType *)NULL) {
+    } else if (type->as_struct_type() != nullptr) {
       define_struct_type(itype, type->as_struct_type(), index, forced);
 
-    } else if (type->as_enum_type() != (CPPEnumType *)NULL) {
+    } else if (type->as_enum_type() != nullptr) {
       define_enum_type(itype, type->as_enum_type());
 
-    } else if (type->as_extension_type() != (CPPExtensionType *)NULL) {
+    } else if (type->as_extension_type() != nullptr) {
       define_extension_type(itype, type->as_extension_type());
 
-    } else if (type->as_typedef_type() != (CPPTypedefType *)NULL) {
+    } else if (type->as_typedef_type() != nullptr) {
       define_typedef_type(itype, type->as_typedef_type());
 
-    } else if (type->as_array_type() != (CPPArrayType *)NULL) {
+    } else if (type->as_array_type() != nullptr) {
       define_array_type(itype, type->as_array_type());
 
     } else {
@@ -2346,6 +2460,10 @@ define_atomic_type(InterrogateType &itype, CPPSimpleType *cpptype) {
     itype._atomic_token = AT_void;
     break;
 
+  case CPPSimpleType::T_nullptr:
+    itype._atomic_token = AT_null;
+    break;
+
   default:
     nout << "Type \"" << *cpptype << "\" has invalid CPPSimpleType: "
          << (int)cpptype->_type << "\n";
@@ -2400,7 +2518,7 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
   }
 
   cpptype = TypeManager::resolve_type(cpptype)->as_struct_type();
-  assert(cpptype != (CPPStructType *)NULL);
+  assert(cpptype != nullptr);
   bool has_virt_methods = cpptype->is_polymorphic();
 
   switch (cpptype->_type) {
@@ -2418,6 +2536,10 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
 
   default:
     break;
+  }
+
+  if (cpptype->is_final()) {
+    itype._flags |= InterrogateType::F_final;
   }
 
   if (cpptype->_file.is_c_file()) {
@@ -2465,10 +2587,10 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
     const CPPStructType::Base &base = (*bi);
     if (base._vis <= V_public) {
       CPPType *base_type = TypeManager::resolve_type(base._base, scope);
-      TypeIndex base_index = get_type(base_type, true);
+      TypeIndex base_index = get_type(base_type, false);
 
       if (base_index == 0) {
-        if (base_type != NULL) {
+        if (base_type != nullptr) {
           nout << *cpptype << " reports a derivation from invalid type " << *base_type << ".\n";
         } else {
           nout << *cpptype << " reports a derivation from an invalid type.\n";
@@ -2501,7 +2623,7 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
           // (For many compilers, this does not require a pointer change.)
           generate_casts = true;
 
-        } else if (has_virt_methods && (base_type->as_struct_type() == (CPPStructType *)NULL || !base_type->as_struct_type()->is_polymorphic())) {
+        } else if (has_virt_methods && (base_type->as_struct_type() == nullptr || !base_type->as_struct_type()->is_polymorphic())) {
           // Finally, if this class has virtual methods, but its parent
           // doesn't, then we have to upcast (because this class will require
           // space for a virtual function table pointer, while the parent
@@ -2550,17 +2672,17 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
       CPPType *type = (*di)->as_type_declaration()->_type;
 
       if ((*di)->_vis <= min_vis || in_forcetype(type->get_local_name(&parser))) {
-        if (type->as_struct_type() != (CPPStructType *)NULL ||
-            type->as_enum_type() != (CPPEnumType *)NULL) {
+        if (type->as_struct_type() != nullptr ||
+            type->as_enum_type() != nullptr) {
           // Here's a nested class or enum definition.
           type->_vis = (*di)->_vis;
 
           CPPExtensionType *nested_type = type->as_extension_type();
-          assert(nested_type != (CPPExtensionType *)NULL);
+          assert(nested_type != nullptr);
 
           // For now, we don't allow anonymous structs.
-          if (nested_type->_ident != (CPPIdentifier *)NULL ||
-              nested_type->as_enum_type() != (CPPEnumType *)NULL) {
+          if (nested_type->_ident != nullptr ||
+              nested_type->as_enum_type() != nullptr) {
             TypeIndex nested_index = get_type(nested_type, false);
             itype._nested_types.push_back(nested_index);
           }
@@ -2586,7 +2708,7 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
       }
 
       CPPStructType *struct_type = wrapped_type->as_struct_type();
-      if (struct_type != (CPPStructType *)NULL) {
+      if (struct_type != nullptr) {
         // We only export typedefs to structs, for now.
 
         if (type->_vis <= min_vis) {
@@ -2597,7 +2719,9 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
 
     } else if ((*di)->get_subtype() == CPPDeclaration::ST_make_property) {
       ElementIndex element_index = get_make_property((*di)->as_make_property(), cpptype, scope);
-      itype._elements.push_back(element_index);
+      if (find(itype._elements.begin(), itype._elements.end(), element_index) == itype._elements.end()) {
+        itype._elements.push_back(element_index);
+      }
 
     } else if ((*di)->get_subtype() == CPPDeclaration::ST_make_seq) {
       MakeSeqIndex make_seq_index = get_make_seq((*di)->as_make_seq(), cpptype);
@@ -2607,7 +2731,7 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
 
   // See if we need to generate an implicit default constructor.
   CPPFunctionGroup *constructor = cpptype->get_constructor();
-  if (constructor == (CPPFunctionGroup *)NULL && cpptype->is_default_constructible()) {
+  if (constructor == nullptr && cpptype->is_default_constructible()) {
     // Make a default constructor.
     CPPType *void_type = TypeManager::get_void_type();
     CPPParameterList *params = new CPPParameterList;
@@ -2627,11 +2751,11 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
 
   // See if we need to generate an implicit copy constructor.
   CPPInstance *copy_constructor = cpptype->get_copy_constructor();
-  if (copy_constructor == (CPPInstance *)NULL &&
+  if (copy_constructor == nullptr &&
       cpptype->is_copy_constructible()) {
     // Make an implicit copy constructor.
     CPPType *const_ref_type = TypeManager::wrap_const_reference(cpptype);
-    CPPInstance *param = new CPPInstance(const_ref_type, NULL);
+    CPPInstance *param = new CPPInstance(const_ref_type, nullptr);
 
     CPPType *void_type = TypeManager::get_void_type();
     CPPParameterList *params = new CPPParameterList;
@@ -2698,7 +2822,7 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
  */
 void InterrogateBuilder::
 update_function_comment(CPPInstance *function, CPPScope *scope) {
-  if (function->_leading_comment == (CPPCommentBlock *)NULL) {
+  if (function->_leading_comment == nullptr) {
     // No comment anyway.  Forget it.
     return;
   }
@@ -2743,7 +2867,7 @@ update_function_comment(CPPInstance *function, CPPScope *scope) {
     InterrogateFunction::Instances::iterator ii =
       ifunction._instances->find(function_signature);
     if (ii != ifunction._instances->end()) {
-      if ((*ii).second->_leading_comment == NULL ||
+      if ((*ii).second->_leading_comment == nullptr ||
           function->_leading_comment->_comment.length() >
           (*ii).second->_leading_comment->_comment.length()) {
         (*ii).second->_leading_comment = function->_leading_comment;
@@ -2772,9 +2896,9 @@ define_method(CPPFunctionGroup *fgroup, InterrogateType &itype,
 void InterrogateBuilder::
 define_method(CPPInstance *function, InterrogateType &itype,
               CPPStructType *struct_type, CPPScope *scope) {
-  assert(function != (CPPInstance *)NULL);
-  assert(function->_type != (CPPType *)NULL &&
-         function->_type->as_function_type() != (CPPFunctionType *)NULL);
+  assert(function != nullptr);
+  assert(function->_type != nullptr &&
+         function->_type->as_function_type() != nullptr);
   CPPFunctionType *ftype =
     function->_type->resolve_type(scope, &parser)->as_function_type();
 
@@ -2794,7 +2918,7 @@ define_method(CPPInstance *function, InterrogateType &itype,
   // specifically flag get_class_type() as published.
   bool force_publish = false;
   if (function->get_simple_name() == "get_class_type" &&
-      (function->_storage_class && CPPInstance::SC_static) != 0 &&
+      (function->_storage_class & CPPInstance::SC_static) != 0 &&
       function->_vis <= V_public) {
     force_publish = true;
   }
@@ -2895,7 +3019,7 @@ define_enum_type(InterrogateType &itype, CPPEnumType *cpptype) {
   itype._flags |= InterrogateType::F_enum;
 
   CPPScope *scope = cpptype->_parent_scope;
-  if (cpptype->_ident != (CPPIdentifier *)NULL) {
+  if (cpptype->_ident != nullptr) {
     scope = cpptype->_ident->get_scope(&parser, &parser);
   }
 
@@ -2932,11 +3056,11 @@ define_enum_type(InterrogateType &itype, CPPEnumType *cpptype) {
     evalue._name = element->get_simple_name();
     evalue._scoped_name = descope(element->get_local_name(&parser));
 
-    if (element->_leading_comment != (CPPCommentBlock *)NULL) {
+    if (element->_leading_comment != nullptr) {
       evalue._comment = trim_blanks(element->_leading_comment->_comment);
     }
 
-    if (element->_initializer != (CPPExpression *)NULL) {
+    if (element->_initializer != nullptr) {
       CPPExpression::Result result = element->_initializer->evaluate();
 
       if (result._type == CPPExpression::RT_error) {
@@ -2972,7 +3096,7 @@ define_array_type(InterrogateType &itype, CPPArrayType *cpptype) {
   itype._flags |= InterrogateType::F_array;
   itype._wrapped_type = get_type(cpptype->_element_type, false);
 
-  if (cpptype->_bounds == NULL) {
+  if (cpptype->_bounds == nullptr) {
     // This indicates an unsized array.
     itype._array_size = -1;
   } else {

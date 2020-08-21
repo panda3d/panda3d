@@ -53,7 +53,7 @@ make_default() {
  *
  */
 void LogicOpAttrib::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":" << get_operation();
 }
 
@@ -86,14 +86,6 @@ get_hash_impl() const {
   size_t hash = 0;
   hash = int_hash::add_hash(hash, (int)_op);
   return hash;
-}
-
-/**
- *
- */
-CPT(RenderAttrib) LogicOpAttrib::
-get_auto_shader_attrib_impl(const RenderState *state) const {
-  return RenderAttribRegistry::quick_get_global_ptr()->get_slot_default(_attrib_slot);
 }
 
 /**
@@ -146,8 +138,8 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 /**
  *
  */
-ostream &
-operator << (ostream &out, LogicOpAttrib::Operation op) {
+std::ostream &
+operator << (std::ostream &out, LogicOpAttrib::Operation op) {
   switch (op) {
   case LogicOpAttrib::O_none:
     return out << "none";

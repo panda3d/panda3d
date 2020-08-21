@@ -27,7 +27,7 @@ TypeHandle ComputeNode::_type_handle;
  * assign a shader using a ShaderAttrib.
  */
 ComputeNode::
-ComputeNode(const string &name) :
+ComputeNode(const std::string &name) :
   PandaNode(name),
   _dispatcher(new ComputeNode::Dispatcher)
 {
@@ -93,7 +93,7 @@ add_for_draw(CullTraverser *trav, CullTraverserData &data) {
   // CullableObject for the Dispatcher.  We don't need to pass any Geoms,
   // however.
   CullableObject *object =
-    new CullableObject(NULL, data._state,
+    new CullableObject(nullptr, data._state,
                        data.get_internal_transform(trav));
   object->set_draw_callback(_dispatcher);
   trav->get_cull_handler()->record_object(object, trav);
@@ -105,7 +105,7 @@ add_for_draw(CullTraverser *trav, CullTraverserData &data) {
  * classes to include some information relevant to the class.
  */
 void ComputeNode::
-output(ostream &out) const {
+output(std::ostream &out) const {
   PandaNode::output(out);
 }
 

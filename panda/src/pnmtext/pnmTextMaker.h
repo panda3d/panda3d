@@ -34,10 +34,10 @@ class PNMTextGlyph;
  */
 class EXPCL_PANDA_PNMTEXT PNMTextMaker : public FreetypeFont {
 PUBLISHED:
-  PNMTextMaker(const Filename &font_filename, int face_index);
-  PNMTextMaker(const char *font_data, int data_length, int face_index);
+  explicit PNMTextMaker(const Filename &font_filename, int face_index);
+  explicit PNMTextMaker(const char *font_data, int data_length, int face_index);
+  explicit PNMTextMaker(const FreetypeFont &copy);
   PNMTextMaker(const PNMTextMaker &copy);
-  PNMTextMaker(const FreetypeFont &copy);
   ~PNMTextMaker();
 
   enum Alignment {
@@ -63,12 +63,12 @@ PUBLISHED:
   INLINE void set_distance_field_radius(int radius);
   INLINE int get_distance_field_radius() const;
 
-  INLINE int generate_into(const string &text,
+  INLINE int generate_into(const std::string &text,
                            PNMImage &dest_image, int x, int y);
-  int generate_into(const wstring &text,
+  int generate_into(const std::wstring &text,
                     PNMImage &dest_image, int x, int y);
-  INLINE int calc_width(const string &text);
-  int calc_width(const wstring &text);
+  INLINE int calc_width(const std::string &text);
+  int calc_width(const std::wstring &text);
 
   PNMTextGlyph *get_glyph(int character);
 

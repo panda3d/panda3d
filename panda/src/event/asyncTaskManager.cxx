@@ -22,7 +22,9 @@
 #include "config_event.h"
 #include <algorithm>
 
-AsyncTaskManager *AsyncTaskManager::_global_ptr = NULL;
+using std::string;
+
+AsyncTaskManager *AsyncTaskManager::_global_ptr = nullptr;
 
 TypeHandle AsyncTaskManager::_type_handle;
 
@@ -114,7 +116,7 @@ get_num_task_chains() const {
 AsyncTaskChain *AsyncTaskManager::
 get_task_chain(int n) const {
   MutexHolder holder(_lock);
-  nassertr(n >= 0 && n < (int)_task_chains.size(), NULL);
+  nassertr(n >= 0 && n < (int)_task_chains.size(), nullptr);
   return _task_chains[n];
 }
 
@@ -196,19 +198,19 @@ add(AsyncTask *task) {
       }
     }
 
-    nassertv(task->_manager == NULL &&
+    nassertv(task->_manager == nullptr &&
              task->_state == AsyncTask::S_inactive);
     nassertv(!do_has_task(task));
 
-    _lock.release();
+    _lock.unlock();
     task->upon_birth(this);
-    _lock.acquire();
-    nassertv(task->_manager == NULL &&
+    _lock.lock();
+    nassertv(task->_manager == nullptr &&
              task->_state == AsyncTask::S_inactive);
     nassertv(!do_has_task(task));
 
     AsyncTaskChain *chain = do_find_task_chain(task->_chain_name);
-    if (chain == (AsyncTaskChain *)NULL) {
+    if (chain == nullptr) {
       task_cat.warning()
         << "Creating implicit AsyncTaskChain " << task->_chain_name
         << " for " << get_type() << " " << get_name() << "\n";
@@ -257,7 +259,7 @@ find_task(const string &name) const {
     return (*tbni);
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -307,25 +309,20 @@ find_tasks_matching(const GlobPattern &pattern) const {
  */
 bool AsyncTaskManager::
 remove(AsyncTask *task) {
-  // We pass this up to the multi-task remove() flavor.  Do we care about the
-  // tiny cost of creating an AsyncTaskCollection here?  Probably not.
-  AsyncTaskCollection tasks;
-  tasks.add_task(task);
-  return remove(tasks) != 0;
+  return task->remove();
 }
 
 /**
  * Removes all of the tasks in the AsyncTaskCollection.  Returns the number of
  * tasks removed.
  */
-int AsyncTaskManager::
+size_t AsyncTaskManager::
 remove(const AsyncTaskCollection &tasks) {
   MutexHolder holder(_lock);
-  int num_removed = 0;
+  size_t num_removed = 0;
 
-  int num_tasks = tasks.get_num_tasks();
-  int i;
-  for (i = 0; i < num_tasks; ++i) {
+  size_t num_tasks = tasks.get_num_tasks();
+  for (size_t i = 0; i < num_tasks; ++i) {
     PT(AsyncTask) task = tasks.get_task(i);
 
     if (task->_manager != this) {
@@ -337,10 +334,7 @@ remove(const AsyncTaskCollection &tasks) {
         task_cat.debug()
           << "Removing " << *task << "\n";
       }
-      if (task->_chain->do_remove(task)) {
-        _lock.release();
-        task->upon_death(this, false);
-        _lock.acquire();
+      if (task->_chain->do_remove(task, true)) {
         ++num_removed;
       } else {
         if (task_cat.is_debug()) {
@@ -486,6 +480,12 @@ poll() {
   for (unsigned int i = 0; i < _task_chains.size(); ++i) {
     AsyncTaskChain *chain = _task_chains[i];
     chain->do_poll();
+
+    if (chain->_state == AsyncTaskChain::S_interrupted) {
+      // If a task returned DS_interrupt, we need to interrupt the entire
+      // manager, since an exception state may have been set.
+      break;
+    }
   }
 
   // Just in case the clock was ticked explicitly by one of our polling
@@ -516,7 +516,7 @@ get_next_wake_time() const {
         got_any = true;
         next_wake_time = time;
       } else {
-        next_wake_time = min(time, next_wake_time);
+        next_wake_time = std::min(time, next_wake_time);
       }
     }
   }
@@ -528,7 +528,7 @@ get_next_wake_time() const {
  *
  */
 void AsyncTaskManager::
-output(ostream &out) const {
+output(std::ostream &out) const {
   MutexHolder holder(_lock);
   do_output(out);
 }
@@ -537,7 +537,7 @@ output(ostream &out) const {
  *
  */
 void AsyncTaskManager::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   MutexHolder holder(_lock);
   indent(out, indent_level)
     << get_type() << " " << get_name() << "\n";
@@ -584,7 +584,7 @@ do_find_task_chain(const string &name) {
     return (*tci);
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -637,7 +637,7 @@ do_has_task(AsyncTask *task) const {
  *
  */
 void AsyncTaskManager::
-do_output(ostream &out) const {
+do_output(std::ostream &out) const {
   out << get_type() << " " << get_name()
       << "; " << _num_tasks << " tasks";
 }
@@ -647,8 +647,9 @@ do_output(ostream &out) const {
  */
 void AsyncTaskManager::
 make_global_ptr() {
-  nassertv(_global_ptr == (AsyncTaskManager *)NULL);
+  nassertv(_global_ptr == nullptr);
 
+  init_memory_hook();
   _global_ptr = new AsyncTaskManager("TaskManager");
   _global_ptr->ref();
 }

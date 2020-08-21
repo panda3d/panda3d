@@ -78,7 +78,7 @@ operator < (const IffId &other) const {
 /**
  * Returns the four-character name of the Id, for outputting.
  */
-INLINE string IffId::
+INLINE std::string IffId::
 get_name() const {
-  return string(_id._c, 4);
+  return std::string(_id._c, 4);
 }

@@ -16,6 +16,9 @@
 #include "clockObject.h"
 #include "indent.h"
 
+using std::cerr;
+using std::ostream;
+
 static const int HIGH_PRIORITY_SCALE = 4;
 static const int LOW_PRIORITY_RANGE = 25;
 
@@ -23,7 +26,7 @@ static const int LOW_PRIORITY_RANGE = 25;
  *
  */
 AdaptiveLru::
-AdaptiveLru(const string &name, size_t max_size) :
+AdaptiveLru(const std::string &name, size_t max_size) :
   Namable(name)
 {
   _total_size = 0;
@@ -55,10 +58,10 @@ AdaptiveLru::
   // to disk unnecessarily).
 
   while (_static_list._next != &_static_list) {
-    nassertv(_static_list._next != (LinkedListNode *)NULL);
+    nassertv(_static_list._next != nullptr);
     AdaptiveLruPage *page = (AdaptiveLruPage *)(AdaptiveLruPageStaticList *)_static_list._next;
 
-    page->_lru = NULL;
+    page->_lru = nullptr;
     ((AdaptiveLruPageDynamicList *)page)->remove_from_list();
     ((AdaptiveLruPageStaticList *)page)->remove_from_list();
   }
@@ -114,12 +117,16 @@ update_page(AdaptiveLruPage *page) {
 
       update_frames = (_current_frame_identifier - page->_update_frame_identifier);
       if (update_frames > 0) {
-        PN_stdfloat update_average_frame_utilization =
-          (PN_stdfloat) (page->_update_total_usage) / (PN_stdfloat)update_frames;
+        if (page->_update_total_usage > 0) {
+          PN_stdfloat update_average_frame_utilization =
+            (PN_stdfloat) (page->_update_total_usage) / (PN_stdfloat)update_frames;
 
-        page->_average_frame_utilization =
-          calculate_exponential_moving_average(update_average_frame_utilization,
-                                               page->_average_frame_utilization);
+          page->_average_frame_utilization =
+            calculate_exponential_moving_average(update_average_frame_utilization,
+                                                 page->_average_frame_utilization);
+        } else {
+          page->_average_frame_utilization *= 1.0f - _weight;
+        }
 
         target_priority = page->_priority;
         if (page->_average_frame_utilization >= 1.0f) {
@@ -152,7 +159,7 @@ update_page(AdaptiveLruPage *page) {
   }
 
   if (target_priority != page->_priority) {
-    page->_priority = min(max(target_priority, 0), LPP_TotalPriorities - 1);
+    page->_priority = std::min(std::max(target_priority, 0), LPP_TotalPriorities - 1);
     ((AdaptiveLruPageDynamicList *)page)->remove_from_list();
     ((AdaptiveLruPageDynamicList *)page)->insert_before(&_page_array[page->_priority]);
   }
@@ -166,19 +173,19 @@ update_page(AdaptiveLruPage *page) {
  */
 void AdaptiveLruPage::
 enqueue_lru(AdaptiveLru *lru) {
-  if (lru != _lru && _lru != (AdaptiveLru *)NULL) {
+  if (lru != _lru && _lru != nullptr) {
     // It was previously on a different LRU.  Remove it first.
     _lru->do_remove_page(this);
-    _lru = NULL;
+    _lru = nullptr;
   }
 
   if (lru == _lru) {
-    if (_lru != (AdaptiveLru *)NULL) {
+    if (_lru != nullptr) {
       // It's already on this LRU.  Access it.
       _lru->do_access_page(this);
     }
   } else {
-    nassertv(lru != (AdaptiveLru *)NULL);
+    nassertv(lru != nullptr);
     // Add it to a new LRU.
     _lru = lru;
 
@@ -277,7 +284,7 @@ write(ostream &out, int indent_level) const {
  */
 void AdaptiveLru::
 do_add_page(AdaptiveLruPage *page) {
-  nassertv(page != (AdaptiveLruPage *)NULL && page->_lru == this);
+  nassertv(page != nullptr && page->_lru == this);
   LightMutexHolder holder(_lock);
 
   _total_size += page->_lru_size;
@@ -290,7 +297,7 @@ do_add_page(AdaptiveLruPage *page) {
  */
 void AdaptiveLru::
 do_remove_page(AdaptiveLruPage *page) {
-  nassertv(page != (AdaptiveLruPage *)NULL && page->_lru == this);
+  nassertv(page != nullptr && page->_lru == this);
   LightMutexHolder holder(_lock);
 
   _total_size -= page->_lru_size;
@@ -303,7 +310,7 @@ do_remove_page(AdaptiveLruPage *page) {
  */
 void AdaptiveLru::
 do_access_page(AdaptiveLruPage *page) {
-  nassertv(page != (AdaptiveLruPage *)NULL && page->_lru == this);
+  nassertv(page != nullptr && page->_lru == this);
   LightMutexHolder holder(_lock);
 
   if (page->_current_frame_identifier == _current_frame_identifier) {
@@ -356,9 +363,9 @@ do_evict_to(size_t target_size, bool hard_evict) {
 
         } else {
           // We must release the lock while we call evict_lru().
-          _lock.release();
+          _lock.unlock();
           page->evict_lru();
-          _lock.acquire();
+          _lock.lock();
 
           if (_total_size <= target_size) {
             // We've evicted enough to satisfy our target.
@@ -443,7 +450,7 @@ do_validate() {
  */
 AdaptiveLruPage::
 AdaptiveLruPage(size_t lru_size) :
-  _lru(NULL),
+  _lru(nullptr),
   _lru_size(lru_size),
   _priority(0),
   _first_frame_identifier(0),
@@ -451,7 +458,6 @@ AdaptiveLruPage(size_t lru_size) :
   _update_frame_identifier(0),
   _current_frame_usage(0),
   _last_frame_usage(0),
-  _total_usage(0),
   _update_total_usage(0),
   _average_frame_utilization(1.0f)
 {
@@ -462,7 +468,7 @@ AdaptiveLruPage(size_t lru_size) :
  */
 AdaptiveLruPage::
 AdaptiveLruPage(const AdaptiveLruPage &copy) :
-  _lru(NULL),
+  _lru(nullptr),
   _lru_size(copy._lru_size),
   _priority(0),
   _first_frame_identifier(0),
@@ -470,7 +476,6 @@ AdaptiveLruPage(const AdaptiveLruPage &copy) :
   _update_frame_identifier(0),
   _current_frame_usage(0),
   _last_frame_usage(0),
-  _total_usage(0),
   _update_total_usage(0),
   _average_frame_utilization(1.0f)
 {
@@ -489,7 +494,7 @@ operator = (const AdaptiveLruPage &copy) {
  */
 AdaptiveLruPage::
 ~AdaptiveLruPage() {
-  if (_lru != NULL) {
+  if (_lru != nullptr) {
     dequeue_lru();
   }
 }
@@ -531,7 +536,7 @@ write(ostream &out, int indent_level) const {
  */
 unsigned int AdaptiveLruPage::
 get_num_frames() const {
-  if (_lru == (AdaptiveLru *)NULL) {
+  if (_lru == nullptr) {
     return 0;
   }
   return _lru->_current_frame_identifier - _first_frame_identifier;
@@ -543,7 +548,7 @@ get_num_frames() const {
  */
 unsigned int AdaptiveLruPage::
 get_num_inactive_frames() const {
-  if (_lru == (AdaptiveLru *)NULL) {
+  if (_lru == nullptr) {
     return 0;
   }
   return _lru->_current_frame_identifier - _current_frame_identifier;

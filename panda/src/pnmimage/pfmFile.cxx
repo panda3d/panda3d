@@ -24,6 +24,11 @@
 #include "string_utils.h"
 #include "look_at.h"
 
+using std::istream;
+using std::max;
+using std::min;
+using std::ostream;
+
 /**
  *
  */
@@ -118,7 +123,7 @@ read(const Filename &fullpath) {
 
   Filename filename = Filename::binary_filename(fullpath);
   PT(VirtualFile) file = vfs->get_file(filename);
-  if (file == (VirtualFile *)NULL) {
+  if (file == nullptr) {
     // No such file.
     pnmimage_cat.error()
       << "Could not find " << fullpath << "\n";
@@ -147,7 +152,7 @@ read(const Filename &fullpath) {
 bool PfmFile::
 read(istream &in, const Filename &fullpath) {
   PNMReader *reader = make_reader(&in, false, fullpath);
-  if (reader == (PNMReader *)NULL) {
+  if (reader == nullptr) {
     clear();
     return false;
   }
@@ -163,7 +168,7 @@ bool PfmFile::
 read(PNMReader *reader) {
   clear();
 
-  if (reader == NULL) {
+  if (reader == nullptr) {
     return false;
   }
 
@@ -230,7 +235,7 @@ write(ostream &out, const Filename &fullpath) {
   }
 
   PNMWriter *writer = make_writer(&out, false, fullpath);
-  if (writer == (PNMWriter *)NULL) {
+  if (writer == nullptr) {
     return false;
   }
 
@@ -244,7 +249,7 @@ write(ostream &out, const Filename &fullpath) {
  */
 bool PfmFile::
 write(PNMWriter *writer) {
-  if (writer == NULL) {
+  if (writer == nullptr) {
     return false;
   }
 
@@ -341,7 +346,8 @@ load(const PNMImage &pnmimage) {
     break;
 
   default:
-    nassertr(false, false);
+    nassert_raise("unexpected channel count");
+    return false;
   }
   return true;
 }
@@ -405,7 +411,8 @@ store(PNMImage &pnmimage) const {
     break;
 
   default:
-    nassertr(false, false);
+    nassert_raise("unexpected channel count");
+    return false;
   }
   return true;
 }
@@ -872,7 +879,8 @@ set_no_data_nan(int num_channels) {
       _has_point = has_point_nan_4;
       break;
     default:
-      nassertv(false);
+      nassert_raise("unexpected channel count");
+      break;
     }
   } else {
     clear_no_data_value();
@@ -904,7 +912,8 @@ set_no_data_value(const LPoint4f &no_data_value) {
     _has_point = has_point_4;
     break;
   default:
-    nassertv(false);
+    nassert_raise("unexpected channel count");
+    break;
   }
 }
 
@@ -933,7 +942,8 @@ set_no_data_threshold(const LPoint4f &no_data_value) {
     _has_point = has_point_threshold_4;
     break;
   default:
-    nassertv(false);
+    nassert_raise("unexpected channel count");
+    break;
   }
 }
 
@@ -1116,7 +1126,8 @@ quick_filter_from(const PfmFile &from) {
     break;
 
   default:
-    nassertv(false);
+    nassert_raise("unexpected channel count");
+    return;
   }
 
   new_data.push_back(0.0);
@@ -1721,35 +1732,32 @@ compute_planar_bounds(const LPoint2f &center, PN_float32 point_dist, PN_float32 
 
   // Now determine the minmax.
   PN_float32 min_x, min_y, min_z, max_x, max_y, max_z;
-  bool got_point = false;
   if (points_only) {
-    LPoint3f points[4] = {
+    const LPoint3f points[4] = {
       p0 * rinv,
       p1 * rinv,
       p2 * rinv,
       p3 * rinv,
     };
-    for (int i = 0; i < 4; ++i) {
-      const LPoint3f &point = points[i];
-      if (!got_point) {
-        min_x = point[0];
-        min_y = point[1];
-        min_z = point[2];
-        max_x = point[0];
-        max_y = point[1];
-        max_z = point[2];
-        got_point = true;
-      } else {
-        min_x = min(min_x, point[0]);
-        min_y = min(min_y, point[1]);
-        min_z = min(min_z, point[2]);
-        max_x = max(max_x, point[0]);
-        max_y = max(max_y, point[1]);
-        max_z = max(max_z, point[2]);
-      }
-    }
+    const LPoint3f &point = points[0];
+    min_x = point[0];
+    min_y = point[1];
+    min_z = point[2];
+    max_x = point[0];
+    max_y = point[1];
+    max_z = point[2];
 
+    for (int i = 1; i < 4; ++i) {
+      const LPoint3f &point = points[i];
+      min_x = min(min_x, point[0]);
+      min_y = min(min_y, point[1]);
+      min_z = min(min_z, point[2]);
+      max_x = max(max_x, point[0]);
+      max_y = max(max_y, point[1]);
+      max_z = max(max_z, point[2]);
+    }
   } else {
+    bool got_point = false;
     for (int yi = 0; yi < _y_size; ++yi) {
       for (int xi = 0; xi < _x_size; ++xi) {
         if (!has_point(xi, yi)) {
@@ -1774,6 +1782,14 @@ compute_planar_bounds(const LPoint2f &center, PN_float32 point_dist, PN_float32 
           max_z = max(max_z, point[2]);
         }
       }
+    }
+    if (!got_point) {
+      min_x = 0.0f;
+      min_y = 0.0f;
+      min_z = 0.0f;
+      max_x = 0.0f;
+      max_y = 0.0f;
+      max_z = 0.0f;
     }
   }
 
@@ -1816,7 +1832,8 @@ compute_planar_bounds(const LPoint2f &center, PN_float32 point_dist, PN_float32 
     break;
 
   default:
-    nassertr(false, NULL);
+    nassert_raise("invalid coordinate system");
+    return nullptr;
   }
 
   // Rotate the bounding volume back into the original space of the screen.
@@ -1869,7 +1886,8 @@ compute_sample_point(LPoint3f &result,
     break;
 
   default:
-    nassertv(false);
+    nassert_raise("unexpected channel count");
+    break;
   }
 }
 

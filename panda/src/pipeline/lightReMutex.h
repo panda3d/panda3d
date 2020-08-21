@@ -33,13 +33,13 @@ class EXPCL_PANDA_PIPELINE LightReMutex : public LightReMutexDirect
 PUBLISHED:
   INLINE LightReMutex();
 public:
-  INLINE LightReMutex(const char *name);
+  INLINE explicit LightReMutex(const char *name);
 PUBLISHED:
-  INLINE LightReMutex(const string &name);
-  INLINE ~LightReMutex();
-private:
-  INLINE LightReMutex(const LightReMutex &copy);
-  INLINE void operator = (const LightReMutex &copy);
+  INLINE explicit LightReMutex(const std::string &name);
+  LightReMutex(const LightReMutex &copy) = delete;
+  ~LightReMutex() = default;
+
+  LightReMutex &operator = (const LightReMutex &copy) = delete;
 };
 
 #include "lightReMutex.I"

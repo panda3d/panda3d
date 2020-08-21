@@ -35,18 +35,17 @@ NodePointerToBase(const NodePointerToBase<T> &copy) {
 template<class T>
 INLINE NodePointerToBase<T>::
 ~NodePointerToBase() {
-  reassign((To *)NULL);
+  reassign(nullptr);
 }
 
-#ifdef USE_MOVE_SEMANTICS
 /**
  *
  */
 template<class T>
 INLINE NodePointerToBase<T>::
-NodePointerToBase(NodePointerToBase<T> &&from) NOEXCEPT {
+NodePointerToBase(NodePointerToBase<T> &&from) noexcept {
   _void_ptr = from._void_ptr;
-  from._void_ptr = (void *)NULL;
+  from._void_ptr = nullptr;
 }
 
 /**
@@ -57,18 +56,17 @@ NodePointerToBase(NodePointerToBase<T> &&from) NOEXCEPT {
  */
 template<class T>
 INLINE void NodePointerToBase<T>::
-reassign(NodePointerToBase<T> &&from) NOEXCEPT {
+reassign(NodePointerToBase<T> &&from) noexcept {
   To *old_ptr = (To *)this->_void_ptr;
 
   this->_void_ptr = from._void_ptr;
-  from._void_ptr = NULL;
+  from._void_ptr = nullptr;
 
   // Now delete the old pointer.
-  if (old_ptr != (To *)NULL) {
+  if (old_ptr != nullptr) {
     node_unref_delete(old_ptr);
   }
 }
-#endif  // USE_MOVE_SEMANTICS
 
 /**
  * This is the main work of the NodePointerTo family.  When the pointer is
@@ -85,7 +83,7 @@ reassign(To *ptr) {
     To *old_ptr = (To *)_void_ptr;
 
     _void_ptr = (void *)ptr;
-    if (ptr != (To *)NULL) {
+    if (ptr != nullptr) {
       ptr->node_ref();
 #ifdef DO_MEMORY_USAGE
       if (MemoryUsage::get_track_memory_usage()) {
@@ -104,7 +102,7 @@ reassign(To *ptr) {
     }
 
     // Now delete the old pointer.
-    if (old_ptr != (To *)NULL) {
+    if (old_ptr != nullptr) {
       node_unref_delete(old_ptr);
     }
   }
@@ -127,7 +125,7 @@ reassign(const NodePointerToBase<To> &copy) {
 template<class T>
 INLINE void NodePointerToBase<T>::
 clear() {
-  reassign((To *)NULL);
+  reassign(nullptr);
 }
 
 /**
@@ -136,9 +134,9 @@ clear() {
  */
 template<class T>
 INLINE void NodePointerToBase<T>::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << _void_ptr;
-  if (_void_ptr != (void *)NULL) {
+  if (_void_ptr != nullptr) {
     out << ":" << ((To *)_void_ptr)->get_node_ref_count() << "/"
         << ((To *)_void_ptr)->get_ref_count();
   }

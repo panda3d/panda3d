@@ -35,13 +35,17 @@
  * sequences are numeric and are monotonically increasing.
  */
 class EXPCL_PANDA_PUTIL UpdateSeq {
+private:
+  constexpr UpdateSeq(unsigned int seq);
+
 PUBLISHED:
-  INLINE UpdateSeq();
-  INLINE static UpdateSeq initial();
-  INLINE static UpdateSeq old();
-  INLINE static UpdateSeq fresh();
+  constexpr UpdateSeq();
+  constexpr static UpdateSeq initial() { return UpdateSeq(SC_initial); }
+  constexpr static UpdateSeq old() { return UpdateSeq(SC_old); }
+  constexpr static UpdateSeq fresh() { return UpdateSeq(SC_fresh); }
 
   INLINE UpdateSeq(const UpdateSeq &copy);
+  constexpr UpdateSeq(const UpdateSeq &&from) noexcept;
   INLINE UpdateSeq &operator = (const UpdateSeq &copy);
 
   INLINE void clear();
@@ -64,7 +68,7 @@ PUBLISHED:
   INLINE AtomicAdjust::Integer get_seq() const;
   MAKE_PROPERTY(seq, get_seq);
 
-  INLINE void output(ostream &out) const;
+  INLINE void output(std::ostream &out) const;
 
 private:
   INLINE static bool priv_is_special(AtomicAdjust::Integer seq);
@@ -72,7 +76,7 @@ private:
   INLINE static bool priv_le(AtomicAdjust::Integer a, AtomicAdjust::Integer b);
 
 private:
-  enum SpecialCases {
+  enum SpecialCases : unsigned int {
     SC_initial = 0,
     SC_old = 1,
     SC_fresh = ~(unsigned int)0,
@@ -81,7 +85,7 @@ private:
   AtomicAdjust::Integer _seq;
 };
 
-INLINE ostream &operator << (ostream &out, const UpdateSeq &value);
+INLINE std::ostream &operator << (std::ostream &out, const UpdateSeq &value);
 
 #include "updateSeq.I"
 

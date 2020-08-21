@@ -30,7 +30,7 @@
  * zero, this value can only be meaningfully used to measure elapsed time, by
  * sampling it at two different times and subtracting.
  */
-class EXPCL_PANDAEXPRESS TrueClock {
+class EXPCL_PANDA_EXPRESS TrueClock {
 PUBLISHED:
   // get_long_time() returns the most accurate timer we have over a long
   // interval.  It may not be very precise for measuring short intervals, but
@@ -64,7 +64,7 @@ protected:
 
   static TrueClock *_global_ptr;
 
-#ifdef WIN32
+#ifdef _WIN32
   double correct_time(double time);
   void set_time_scale(double time, double new_time_scale);
 

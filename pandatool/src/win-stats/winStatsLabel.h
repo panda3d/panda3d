@@ -16,6 +16,9 @@
 
 #include "pandatoolbase.h"
 
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN 1
+#endif
 #include <windows.h>
 
 class WinStatsMonitor;
@@ -59,7 +62,7 @@ private:
   WinStatsGraph *_graph;
   int _thread_index;
   int _collector_index;
-  string _text;
+  std::string _text;
   HWND _window;
   COLORREF _bg_color;
   COLORREF _fg_color;

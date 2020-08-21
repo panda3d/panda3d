@@ -58,9 +58,9 @@ class PNMFileType;
 class EXPCL_PANDA_PNMIMAGE PNMImage : public PNMImageHeader {
 PUBLISHED:
   INLINE PNMImage();
-  explicit PNMImage(const Filename &filename, PNMFileType *type = NULL);
+  explicit PNMImage(const Filename &filename, PNMFileType *type = nullptr);
   INLINE explicit PNMImage(int x_size, int y_size, int num_channels = 3,
-                           xelval maxval = 255, PNMFileType *type = NULL,
+                           xelval maxval = 255, PNMFileType *type = nullptr,
                            ColorSpace color_space = CS_linear);
   INLINE PNMImage(const PNMImage &copy);
   INLINE void operator = (const PNMImage &copy);
@@ -68,14 +68,16 @@ PUBLISHED:
   INLINE ~PNMImage();
 
   INLINE xelval clamp_val(int input_value) const;
+  INLINE xel to_val(const LRGBColorf &input_value) const;
   INLINE xelval to_val(float input_value) const;
   INLINE xelval to_alpha_val(float input_value) const;
+  INLINE LRGBColorf from_val(const xel &input_value) const;
   INLINE float from_val(xelval input_value) const;
   INLINE float from_alpha_val(xelval input_value) const;
 
   void clear();
   void clear(int x_size, int y_size, int num_channels = 3,
-             xelval maxval = 255, PNMFileType *type = NULL,
+             xelval maxval = 255, PNMFileType *type = nullptr,
              ColorSpace color_space = CS_linear);
 
   void copy_from(const PNMImage &copy);
@@ -100,16 +102,16 @@ PUBLISHED:
   INLINE int get_read_y_size() const;
   INLINE ColorSpace get_color_space() const;
 
-  BLOCKING bool read(const Filename &filename, PNMFileType *type = NULL,
+  BLOCKING bool read(const Filename &filename, PNMFileType *type = nullptr,
                      bool report_unknown_type = true);
-  BLOCKING bool read(istream &data, const string &filename = string(),
-                     PNMFileType *type = NULL,
+  BLOCKING bool read(std::istream &data, const std::string &filename = std::string(),
+                     PNMFileType *type = nullptr,
                      bool report_unknown_type = true);
   BLOCKING bool read(PNMReader *reader);
 
-  BLOCKING bool write(const Filename &filename, PNMFileType *type = NULL) const;
-  BLOCKING bool write(ostream &data, const string &filename = string(),
-                      PNMFileType *type = NULL) const;
+  BLOCKING bool write(const Filename &filename, PNMFileType *type = nullptr) const;
+  BLOCKING bool write(std::ostream &data, const std::string &filename = std::string(),
+                      PNMFileType *type = nullptr) const;
   BLOCKING bool write(PNMWriter *writer) const;
 
   INLINE bool is_valid() const;
@@ -124,8 +126,8 @@ PUBLISHED:
   void make_grayscale(float rc, float gc, float bc);
   INLINE void make_rgb();
 
-  void premultiply_alpha();
-  void unpremultiply_alpha();
+  BLOCKING void premultiply_alpha();
+  BLOCKING void unpremultiply_alpha();
 
   BLOCKING void reverse_rows();
   BLOCKING void flip(bool flip_x, bool flip_y, bool transpose);
@@ -244,27 +246,28 @@ PUBLISHED:
   // The bodies for the non-inline *_filter() functions can be found in the
   // file pnm-image-filter.cxx.
 
-  INLINE void box_filter(float radius = 1.0);
-  INLINE void gaussian_filter(float radius = 1.0);
+  BLOCKING INLINE void box_filter(float radius = 1.0);
+  BLOCKING INLINE void gaussian_filter(float radius = 1.0);
 
-  void unfiltered_stretch_from(const PNMImage &copy);
-  void box_filter_from(float radius, const PNMImage &copy);
-  void gaussian_filter_from(float radius, const PNMImage &copy);
-  void quick_filter_from(const PNMImage &copy,
-                         int xborder = 0, int yborder = 0);
+  BLOCKING void unfiltered_stretch_from(const PNMImage &copy);
+  BLOCKING void box_filter_from(float radius, const PNMImage &copy);
+  BLOCKING void gaussian_filter_from(float radius, const PNMImage &copy);
+  BLOCKING void quick_filter_from(const PNMImage &copy,
+                                  int xborder = 0, int yborder = 0);
 
   void make_histogram(Histogram &hist);
-  void perlin_noise_fill(float sx, float sy, int table_size = 256,
-                         unsigned long seed = 0);
+  void quantize(size_t max_colors);
+  BLOCKING void perlin_noise_fill(float sx, float sy, int table_size = 256,
+                                  unsigned long seed = 0);
   void perlin_noise_fill(StackedPerlinNoise2 &perlin);
 
   void remix_channels(const LMatrix4 &conv);
-  INLINE void gamma_correct(float from_gamma, float to_gamma);
-  INLINE void gamma_correct_alpha(float from_gamma, float to_gamma);
-  INLINE void apply_exponent(float gray_exponent);
-  INLINE void apply_exponent(float gray_exponent, float alpha_exponent);
-  INLINE void apply_exponent(float red_exponent, float green_exponent, float blue_exponent);
-  void apply_exponent(float red_exponent, float green_exponent, float blue_exponent, float alpha_exponent);
+  BLOCKING INLINE void gamma_correct(float from_gamma, float to_gamma);
+  BLOCKING INLINE void gamma_correct_alpha(float from_gamma, float to_gamma);
+  BLOCKING INLINE void apply_exponent(float gray_exponent);
+  BLOCKING INLINE void apply_exponent(float gray_exponent, float alpha_exponent);
+  BLOCKING INLINE void apply_exponent(float red_exponent, float green_exponent, float blue_exponent);
+  BLOCKING void apply_exponent(float red_exponent, float green_exponent, float blue_exponent, float alpha_exponent);
 
   LRGBColorf get_average_xel() const;
   LColorf get_average_xel_a() const;
@@ -345,6 +348,9 @@ private:
 
   void setup_rc();
   void setup_encoding();
+
+  void r_quantize(pmap<xel, xel> &color_map, size_t max_colors,
+                  xel *colors, size_t num_colors);
 
 PUBLISHED:
   PNMImage operator ~() const;

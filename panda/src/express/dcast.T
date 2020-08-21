@@ -1,24 +1,20 @@
-// Filename: dcast.T
-// Created by:  drose (06Aug01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file dcast.T
+ * @author drose
+ * @date 2001-08-06
+ */
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: _dcast_get_typehandle
-//  Description: Returns the TypeHandle associated with the type of
-//               the parameter, if it can be determined.  This is a
-//               support function for _dcast, below.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the TypeHandle associated with the type of the parameter, if it can
+ * be determined.  This is a support function for _dcast, below.
+ */
 template<class WantType>
 INLINE TypeHandle
 _dcast_get_typehandle(WantType *) {
@@ -38,16 +34,13 @@ _dcast_get_typehandle(WantType *) {
   return handle;
 }
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: _dcast
-//  Description: The implementation of the DCAST macro, this checks
-//               the actual type of the pointer before performing a
-//               downcast operation.  In NDEBUG mode, it simply
-//               downcasts.
-//
-//               This flavor of _dcast works on non-const pointers.
-////////////////////////////////////////////////////////////////////
+/**
+ * The implementation of the DCAST macro, this checks the actual type of the
+ * pointer before performing a downcast operation.  In NDEBUG mode, it simply
+ * downcasts.
+ *
+ * This flavor of _dcast works on non-const pointers.
+ */
 template<class WantType>
 INLINE WantType *
 _dcast(WantType *, TypedObject *ptr) {
@@ -61,15 +54,13 @@ _dcast(WantType *, TypedObject *ptr) {
   return (WantType *)ptr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: _dcast
-//  Description: The implementation of the DCAST macro, this checks
-//               the actual type of the pointer before performing a
-//               downcast operation.  In NDEBUG mode, it simply
-//               downcasts.
-//
-//               This flavor of _dcast works on const pointers.
-////////////////////////////////////////////////////////////////////
+/**
+ * The implementation of the DCAST macro, this checks the actual type of the
+ * pointer before performing a downcast operation.  In NDEBUG mode, it simply
+ * downcasts.
+ *
+ * This flavor of _dcast works on const pointers.
+ */
 template<class WantType>
 INLINE const WantType *
 _dcast(WantType *, const TypedObject *ptr) {
@@ -83,12 +74,10 @@ _dcast(WantType *, const TypedObject *ptr) {
   return (const WantType *)ptr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: _dcast_ref
-//  Description: Similar to the above, with a pointer reference as the
-//               first parameter.  Just for fiddly compiler reasons;
-//               the reference isn't used.
-////////////////////////////////////////////////////////////////////
+/**
+ * Similar to the above, with a pointer reference as the first parameter.
+ * Just for fiddly compiler reasons; the reference isn't used.
+*/
 template<class WantType>
 INLINE WantType *
 _dcast_ref(WantType *&, TypedObject *ptr) {

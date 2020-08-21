@@ -15,7 +15,7 @@
  *
  */
 INLINE EggTable::
-EggTable(const string &name) : EggGroupNode(name) {
+EggTable(const std::string &name) : EggGroupNode(name) {
   _type = TT_table;
 }
 

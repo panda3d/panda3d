@@ -41,10 +41,11 @@ PUBLISHED:
 
   void add_curve(ParametricCurve *curve);
   void add_curve(ParametricCurve *curve, int index);
+  void insert_curve(size_t index, ParametricCurve *curve);
   int add_curves(PandaNode *node);
   bool remove_curve(ParametricCurve *curve);
-  void remove_curve(int index);
-  void set_curve(int index, ParametricCurve *curve);
+  void remove_curve(size_t index);
+  void set_curve(size_t index, ParametricCurve *curve);
   bool has_curve(ParametricCurve *curve) const;
   void clear();
   void clear_timewarps();
@@ -90,11 +91,11 @@ PUBLISHED:
   bool stitch(const ParametricCurveCollection *a,
               const ParametricCurveCollection *b);
 
-  void output(ostream &out) const;
-  void write(ostream &out, int indent_level = 0) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent_level = 0) const;
 
   bool write_egg(Filename filename, CoordinateSystem cs = CS_default);
-  bool write_egg(ostream &out, const Filename &filename, CoordinateSystem cs);
+  bool write_egg(std::ostream &out, const Filename &filename, CoordinateSystem cs);
 
 public:
   int r_add_curves(PandaNode *node);
@@ -114,8 +115,8 @@ private:
   DrawerList _drawers;
 };
 
-INLINE ostream &
-operator << (ostream &out, const ParametricCurveCollection &col) {
+INLINE std::ostream &
+operator << (std::ostream &out, const ParametricCurveCollection &col) {
   col.output(out);
   return out;
 }

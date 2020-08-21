@@ -25,7 +25,7 @@ class CLP(GraphicsStateGuardian);
 /**
  * xyz
  */
-class EXPCL_GL CLP(CgShaderContext) : public ShaderContext {
+class EXPCL_GL CLP(CgShaderContext) final : public ShaderContext {
 public:
   friend class CLP(GraphicsStateGuardian);
 
@@ -33,24 +33,25 @@ public:
   ~CLP(CgShaderContext)();
   ALLOC_DELETED_CHAIN(CLP(CgShaderContext));
 
-  INLINE bool valid(void);
-  void bind() OVERRIDE;
-  void unbind() OVERRIDE;
+  bool valid(void) override;
+  void bind() override;
+  void unbind() override;
 
   void set_state_and_transform(const RenderState *state,
                                const TransformState *modelview_transform,
-                               const TransformState *projection_transform);
+                               const TransformState *camera_transform,
+                               const TransformState *projection_transform) override;
 
-  void issue_parameters(int altered) OVERRIDE;
+  void issue_parameters(int altered) override;
   void update_transform_table(const TransformTable *table);
   void update_slider_table(const SliderTable *table);
-  void disable_shader_vertex_arrays() OVERRIDE;
-  bool update_shader_vertex_arrays(ShaderContext *prev, bool force) OVERRIDE;
-  void disable_shader_texture_bindings() OVERRIDE;
-  void update_shader_texture_bindings(ShaderContext *prev) OVERRIDE;
+  void disable_shader_vertex_arrays() override;
+  bool update_shader_vertex_arrays(ShaderContext *prev, bool force) override;
+  void disable_shader_texture_bindings() override;
+  void update_shader_texture_bindings(ShaderContext *prev) override;
 
-  INLINE bool uses_standard_vertex_arrays(void);
-  INLINE bool uses_custom_vertex_arrays(void);
+  bool uses_standard_vertex_arrays(void) override { return false; }
+  bool uses_custom_vertex_arrays(void) override { return true; }
 
   // Special values for location to indicate conventional attrib slots.
   enum ConventionalAttrib {
@@ -67,16 +68,19 @@ private:
   GLuint _glsl_program;
 
   pvector<GLint> _attributes;
+  BitMask32 _used_generic_attribs;
   GLint _color_attrib_index;
   CGparameter _transform_table_param;
   CGparameter _slider_table_param;
   long _transform_table_size;
   long _slider_table_size;
 
+  LMatrix4 *_mat_part_cache = nullptr;
   pvector<CGparameter> _cg_parameter_map;
 
   WCPT(RenderState) _state_rs;
   CPT(TransformState) _modelview_transform;
+  CPT(TransformState) _camera_transform;
   CPT(TransformState) _projection_transform;
   GLint _frame_number;
 
@@ -93,10 +97,10 @@ public:
     register_type(_type_handle, CLASSPREFIX_QUOTED "CgShaderContext",
                   ShaderContext::get_class_type());
   }
-  virtual TypeHandle get_type() const {
+  virtual TypeHandle get_type() const override {
     return get_class_type();
   }
-  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+  virtual TypeHandle force_init_type() override {init_type(); return get_class_type();}
 
 private:
   static TypeHandle _type_handle;

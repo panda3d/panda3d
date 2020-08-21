@@ -12,6 +12,30 @@
  */
 
 /**
+ * If debug markers are enabled, pushes the beginning of a group marker.
+ */
+INLINE void CLP(GraphicsStateGuardian)::
+push_group_marker(const std::string &marker) {
+#if !defined(NDEBUG) && !defined(OPENGLES_1)
+  if (_glPushGroupMarker != nullptr) {
+    _glPushGroupMarker(marker.size(), marker.data());
+  }
+#endif
+}
+
+/**
+ * If debug markers are enabled, closes a group debug marker.
+ */
+INLINE void CLP(GraphicsStateGuardian)::
+pop_group_marker() {
+#if !defined(NDEBUG) && !defined(OPENGLES_1)
+  if (_glPopGroupMarker != nullptr) {
+    _glPopGroupMarker();
+  }
+#endif
+}
+
+/**
  * Checks for any outstanding error codes and outputs them, if found.  If
  * NDEBUG is defined, this function does nothing.  The return value is true if
  * everything is ok, or false if we should shut down.
@@ -93,7 +117,7 @@ clear_my_errors(int line, const char *source_file) {
 /**
  * Returns the GL vendor string reported by the driver.
  */
-INLINE const string &CLP(GraphicsStateGuardian)::
+INLINE const std::string &CLP(GraphicsStateGuardian)::
 get_gl_vendor() const {
   return _gl_vendor;
 }
@@ -101,7 +125,7 @@ get_gl_vendor() const {
 /**
  * Returns the GL renderer string reported by the driver.
  */
-INLINE const string &CLP(GraphicsStateGuardian)::
+INLINE const std::string &CLP(GraphicsStateGuardian)::
 get_gl_renderer() const {
   return _gl_renderer;
 }
@@ -109,7 +133,7 @@ get_gl_renderer() const {
 /**
  * Returns the GL version string reported by the driver.
  */
-INLINE const string &CLP(GraphicsStateGuardian)::
+INLINE const std::string &CLP(GraphicsStateGuardian)::
 get_gl_version() const {
   return _gl_version;
 }
@@ -131,6 +155,33 @@ get_gl_version_minor() const {
 }
 
 /**
+ * Returns whether a core profile or a compatibility mode is considered.
+ */
+/*INLINE bool CLP(GraphicsStateGuardian)::
+has_core_profile() const {
+  return _core_profile;
+}*/
+
+/**
+ * Returns whether the fixed function pipeline is supported.
+ */
+INLINE bool CLP(GraphicsStateGuardian)::
+has_fixed_function_pipeline() const {
+#ifndef SUPPORT_FIXED_FUNCTION
+  return false;
+#elif defined(OPENGLES_1)
+  return true;
+#elif defined(OPENGLES)
+  return false;
+#else
+  // Otherwise, we can just check whether we are using a core profile or a
+  // compatibility mode. The variable _core_profile is already taking into
+  // account if a GL < 3.2 is considered (becoming false)
+  return !_core_profile;
+#endif
+}
+
+/**
  * Calls glFinish() if the config variable gl-finish is set True.
  */
 INLINE void CLP(GraphicsStateGuardian)::
@@ -147,7 +198,7 @@ maybe_gl_finish() const {
  * otherwise.  The extension name is case-sensitive.
  */
 INLINE bool CLP(GraphicsStateGuardian)::
-has_extension(const string &extension) const {
+has_extension(const std::string &extension) const {
   bool has_ext = (_extensions.find(extension) != _extensions.end());
 #ifndef NDEBUG
   if (GLCAT.is_debug()) {
@@ -363,7 +414,7 @@ enable_line_smooth(bool val) {
 INLINE void CLP(GraphicsStateGuardian)::
 enable_point_smooth(bool val) {
 #ifdef SUPPORT_FIXED_FUNCTION
-  if (_point_smooth_enabled != val) {
+  if (has_fixed_function_pipeline() && _point_smooth_enabled != val) {
     _state_mask.clear_bit(TransparencyAttrib::get_class_slot());
     _point_smooth_enabled = val;
     if (val) {
@@ -464,13 +515,13 @@ enable_stencil_test(bool val) {
     if (val) {
 #ifdef GSG_VERBOSE
       GLCAT.spam()
-        << "glEnable(GL_STENCIL_TEST)" << endl;
+        << "glEnable(GL_STENCIL_TEST)" << std::endl;
 #endif
       glEnable(GL_STENCIL_TEST);
     } else {
 #ifdef GSG_VERBOSE
       GLCAT.spam()
-        << "glDisable(GL_STENCIL_TEST)" << endl;
+        << "glDisable(GL_STENCIL_TEST)" << std::endl;
 #endif
       glDisable(GL_STENCIL_TEST);
     }
@@ -487,13 +538,13 @@ enable_blend(bool val) {
     if (val) {
 #ifdef GSG_VERBOSE
       GLCAT.spam()
-        << "glEnable(GL_BLEND)" << endl;
+        << "glEnable(GL_BLEND)" << std::endl;
 #endif
       glEnable(GL_BLEND);
     } else {
 #ifdef GSG_VERBOSE
       GLCAT.spam()
-        << "glDisable(GL_BLEND)" << endl;
+        << "glDisable(GL_BLEND)" << std::endl;
 #endif
       glDisable(GL_BLEND);
     }
@@ -510,13 +561,13 @@ enable_depth_test(bool val) {
     if (val) {
 #ifdef GSG_VERBOSE
       GLCAT.spam()
-        << "glEnable(GL_DEPTH_TEST)" << endl;
+        << "glEnable(GL_DEPTH_TEST)" << std::endl;
 #endif
       glEnable(GL_DEPTH_TEST);
     } else {
 #ifdef GSG_VERBOSE
       GLCAT.spam()
-        << "glDisable(GL_DEPTH_TEST)" << endl;
+        << "glDisable(GL_DEPTH_TEST)" << std::endl;
 #endif
       glDisable(GL_DEPTH_TEST);
     }
@@ -534,13 +585,13 @@ enable_fog(bool val) {
     if (val) {
 #ifdef GSG_VERBOSE
       GLCAT.spam()
-        << "glEnable(GL_FOG)" << endl;
+        << "glEnable(GL_FOG)" << std::endl;
 #endif
       glEnable(GL_FOG);
     } else {
 #ifdef GSG_VERBOSE
       GLCAT.spam()
-        << "glDisable(GL_FOG)" << endl;
+        << "glDisable(GL_FOG)" << std::endl;
 #endif
       glDisable(GL_FOG);
     }
@@ -559,13 +610,13 @@ enable_alpha_test(bool val) {
     if (val) {
 #ifdef GSG_VERBOSE
       GLCAT.spam()
-        << "glEnable(GL_ALPHA_TEST)" << endl;
+        << "glEnable(GL_ALPHA_TEST)" << std::endl;
 #endif
       glEnable(GL_ALPHA_TEST);
     } else {
 #ifdef GSG_VERBOSE
       GLCAT.spam()
-        << "glDisable(GL_ALPHA_TEST)" << endl;
+        << "glDisable(GL_ALPHA_TEST)" << std::endl;
 #endif
       glDisable(GL_ALPHA_TEST);
     }
@@ -583,7 +634,7 @@ enable_polygon_offset(bool val) {
     if (val) {
 #ifdef GSG_VERBOSE
       GLCAT.spam()
-        << "glEnable(GL_POLYGON_OFFSET_*)" << endl;
+        << "glEnable(GL_POLYGON_OFFSET_*)" << std::endl;
 #endif
       glEnable(GL_POLYGON_OFFSET_FILL);
       // glEnable(GL_POLYGON_OFFSET_LINE);   not widely supported anyway
@@ -591,7 +642,7 @@ enable_polygon_offset(bool val) {
     } else {
 #ifdef GSG_VERBOSE
       GLCAT.spam()
-        << "glDisable(GL_POLYGON_OFFSET_*)" << endl;
+        << "glDisable(GL_POLYGON_OFFSET_*)" << std::endl;
 #endif
       glDisable(GL_POLYGON_OFFSET_FILL);
       // glDisable(GL_POLYGON_OFFSET_LINE);   not widely supported anyway

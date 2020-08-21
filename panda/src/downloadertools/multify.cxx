@@ -21,6 +21,11 @@
 #include <stdio.h>
 #include <time.h>
 
+using std::cerr;
+using std::cout;
+using std::endl;
+using std::string;
+
 
 bool create = false;           // -c
 bool append = false;           // -r
@@ -245,7 +250,7 @@ const string &
 get_password() {
   if (!got_password) {
     cerr << "Enter password: ";
-    getline(cin, password);
+    std::getline(std::cin, password);
     got_password = true;
   }
 
@@ -610,7 +615,7 @@ format_timestamp(bool record_timestamp, time_t timestamp) {
     return "  (no date) ";
   }
 
-  time_t now = time(NULL);
+  time_t now = time(nullptr);
   struct tm *tm_p = localtime(&timestamp);
 
   if (timestamp > now || (now - timestamp > 86400 * 365)) {
@@ -634,8 +639,8 @@ list_files(const vector_string &params) {
   // We happen to know that we can read the index without doing a seek.
   // So this is the only place where we accept a .pz/.gz compressed .mf.
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  istream *istr = vfs->open_read_file(multifile_name, true);
-  if (istr == NULL) {
+  std::istream *istr = vfs->open_read_file(multifile_name, true);
+  if (istr == nullptr) {
     cerr << "Unable to open " << multifile_name << " for reading.\n";
     return false;
   }
@@ -650,7 +655,7 @@ list_files(const vector_string &params) {
 
   int i;
   if (verbose) {
-    cout << num_subfiles << " subfiles:\n" << flush;
+    cout << num_subfiles << " subfiles:\n" << std::flush;
     for (i = 0; i < num_subfiles; i++) {
       string subfile_name = multifile->get_subfile_name(i);
       if (is_named(subfile_name, params)) {

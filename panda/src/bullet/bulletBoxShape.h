@@ -11,8 +11,8 @@
  * @date 2010-01-24
  */
 
-#ifndef __BULLET_BOX_SHAPE_H__
-#define __BULLET_BOX_SHAPE_H__
+#ifndef BULLETBOXSHAPE_H
+#define BULLETBOXSHAPE_H
 
 #include "pandabase.h"
 
@@ -29,12 +29,11 @@
 class EXPCL_PANDABULLET BulletBoxShape : public BulletShape {
 private:
   // Only used by make_from_bam
-  INLINE BulletBoxShape() : _shape(NULL) {};
+  INLINE BulletBoxShape();
 
 PUBLISHED:
-  BulletBoxShape(const LVecBase3 &halfExtents);
-  INLINE BulletBoxShape(const BulletBoxShape &copy);
-  INLINE void operator = (const BulletBoxShape &copy);
+  explicit BulletBoxShape(const LVecBase3 &halfExtents);
+  BulletBoxShape(const BulletBoxShape &copy);
   INLINE ~BulletBoxShape();
 
   LVecBase3 get_half_extents_without_margin() const;
@@ -42,11 +41,15 @@ PUBLISHED:
 
   static BulletBoxShape *make_from_solid(const CollisionBox *solid);
 
+  MAKE_PROPERTY(half_extents_with_margin, get_half_extents_with_margin);
+  MAKE_PROPERTY(half_extents_without_margin, get_half_extents_without_margin);
+
 public:
   virtual btCollisionShape *ptr() const;
 
 private:
   btBoxShape *_shape;
+  LVecBase3 _half_extents;
 
 public:
   static void register_with_read_factory();
@@ -79,4 +82,4 @@ private:
 
 #include "bulletBoxShape.I"
 
-#endif // __BULLET_BOX_SHAPE_H__
+#endif // BULLETBOXSHAPE_H

@@ -52,12 +52,11 @@ PUBLISHED:
   MAKE_PROPERTY(mode, get_mode);
 
 public:
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 protected:
   virtual int compare_to_impl(const RenderAttrib *other) const;
   virtual size_t get_hash_impl() const;
-  virtual CPT(RenderAttrib) get_auto_shader_attrib_impl(const RenderState *state) const;
 
 private:
   Mode _mode;
@@ -73,6 +72,7 @@ PUBLISHED:
   virtual int get_slot() const {
     return get_class_slot();
   }
+  MAKE_PROPERTY(class_slot, get_class_slot);
 
 public:
   static void register_with_read_factory();
@@ -97,8 +97,8 @@ private:
   static int _attrib_slot;
 };
 
-EXPCL_PANDA_PGRAPH ostream &operator << (ostream &out, RescaleNormalAttrib::Mode mode);
-EXPCL_PANDA_PGRAPH istream &operator >> (istream &in, RescaleNormalAttrib::Mode &mode);
+EXPCL_PANDA_PGRAPH std::ostream &operator << (std::ostream &out, RescaleNormalAttrib::Mode mode);
+EXPCL_PANDA_PGRAPH std::istream &operator >> (std::istream &in, RescaleNormalAttrib::Mode &mode);
 
 #include "rescaleNormalAttrib.I"
 

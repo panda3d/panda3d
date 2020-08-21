@@ -93,7 +93,7 @@ has_max_num_bits() {
  */
 INLINE int SparseArray::
 get_max_num_bits() {
-  nassertr(false, 0);
+  nassert_raise("SparseArray has no maximum bit count");
   return 0;
 }
 

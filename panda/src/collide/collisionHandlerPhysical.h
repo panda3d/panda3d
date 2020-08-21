@@ -62,7 +62,7 @@ protected:
   class ColliderDef {
   public:
     INLINE void set_target(const NodePath &target,
-                           DriveInterface *drive_interface = NULL);
+                           DriveInterface *drive_interface = nullptr);
     INLINE void updated_transform();
 
     NodePath _target;

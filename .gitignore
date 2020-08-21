@@ -4,10 +4,12 @@
 /targetroot/
 /dstroot/
 
-# Core dumps
+# Core dumps and traces
 core
 core.*
 vgcore.*
+*.core
+*.trace
 
 # Editor files/directories
 *.save
@@ -22,6 +24,10 @@ vgcore.*
 *.o
 *.gch
 *.pch
+/+DESC
+/+MANIFEST
+/pkg-plist
+/debug.ks
 
 # Produced installer/executables
 /*.exe
@@ -31,6 +37,8 @@ vgcore.*
 /*.pkg
 /*.dmg
 /*.whl
+/*.txz
+/*.apk
 
 # CMake
 /build/
@@ -46,7 +54,18 @@ CTestTestfile.cmake
 Thumbs.db
 ehthumbs.db
 
+# macOS
+.DS_Store
+
 # Python
-__pycache__
+__pycache__/
 *.pyc
 *.pyo
+
+# Test tool cache directories
+.tox/
+.cache/
+.pytest_cache/
+/.settings/
+/.cproject
+/.project

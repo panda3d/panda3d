@@ -38,6 +38,7 @@ PUBLISHED:
     INLINE_LINMATH FLOATTYPE operator [](int i) const;
     INLINE_LINMATH FLOATTYPE &operator [](int i);
     INLINE_LINMATH static int size();
+    INLINE_LINMATH operator const FLOATNAME(LVecBase3) &() const;
   public:
     FLOATTYPE *_row;
     friend class FLOATNAME(LMatrix3);
@@ -48,20 +49,23 @@ PUBLISHED:
   PUBLISHED:
     INLINE_LINMATH FLOATTYPE operator [](int i) const;
     INLINE_LINMATH static int size();
+    INLINE_LINMATH operator const FLOATNAME(LVecBase3) &() const;
   public:
     const FLOATTYPE *_row;
     friend class FLOATNAME(LMatrix3);
   };
 
-  INLINE_LINMATH FLOATNAME(LMatrix3)();
-  INLINE_LINMATH FLOATNAME(LMatrix3)(const FLOATNAME(LMatrix3) &other);
+  INLINE_LINMATH FLOATNAME(LMatrix3)() = default;
+  INLINE_LINMATH FLOATNAME(LMatrix3)(const FLOATNAME(LMatrix3) &other) = default;
   INLINE_LINMATH FLOATNAME(LMatrix3) &operator = (
-      const FLOATNAME(LMatrix3) &other);
+      const FLOATNAME(LMatrix3) &other) = default;
   INLINE_LINMATH FLOATNAME(LMatrix3) &operator = (FLOATTYPE fill_value);
-  INLINE_LINMATH FLOATNAME(LMatrix3)(
-    FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02,
-    FLOATTYPE e10, FLOATTYPE e11, FLOATTYPE e12,
-    FLOATTYPE e20, FLOATTYPE e21, FLOATTYPE e22);
+  INLINE_LINMATH FLOATNAME(LMatrix3)(FLOATTYPE, FLOATTYPE, FLOATTYPE,
+                                     FLOATTYPE, FLOATTYPE, FLOATTYPE,
+                                     FLOATTYPE, FLOATTYPE, FLOATTYPE);
+  INLINE_LINMATH FLOATNAME(LMatrix3)(const FLOATNAME(LVecBase3) &,
+                                     const FLOATNAME(LVecBase3) &,
+                                     const FLOATNAME(LVecBase3) &);
   ALLOC_DELETED_CHAIN(FLOATNAME(LMatrix3));
 
   EXTENSION(INLINE_LINMATH PyObject *__reduce__(PyObject *self) const);
@@ -285,9 +289,9 @@ PUBLISHED:
 
   INLINE_LINMATH bool almost_equal(const FLOATNAME(LMatrix3) &other) const;
 
-  void output(ostream &out) const;
-  void write(ostream &out, int indent_level = 0) const;
-  EXTENSION(INLINE_LINMATH string __repr__() const);
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent_level = 0) const;
+  EXTENSION(INLINE_LINMATH std::string __repr__() const);
 
   INLINE_LINMATH void generate_hash(ChecksumHashGenerator &hashgen) const;
   void generate_hash(
@@ -327,7 +331,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const FLOATNAME(LMatrix3) &mat) {
+INLINE std::ostream &operator << (std::ostream &out, const FLOATNAME(LMatrix3) &mat) {
   mat.output(out);
   return out;
 }

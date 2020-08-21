@@ -29,7 +29,7 @@
 class EXPCL_PANDA_MATHUTIL BoundingBox : public FiniteBoundingVolume {
 PUBLISHED:
   INLINE_MATHUTIL BoundingBox();
-  INLINE_MATHUTIL BoundingBox(const LPoint3 &min, const LPoint3 &max);
+  INLINE_MATHUTIL explicit BoundingBox(const LPoint3 &min, const LPoint3 &max);
   ALLOC_DELETED_CHAIN(BoundingBox);
 
 public:
@@ -42,7 +42,7 @@ public:
   virtual LPoint3 get_approx_center() const;
   virtual void xform(const LMatrix4 &mat);
 
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 
 PUBLISHED:

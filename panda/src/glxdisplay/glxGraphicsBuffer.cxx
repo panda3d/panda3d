@@ -27,7 +27,7 @@ TypeHandle glxGraphicsBuffer::_type_handle;
  */
 glxGraphicsBuffer::
 glxGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe,
-                  const string &name,
+                  const std::string &name,
                   const FrameBufferProperties &fb_prop,
                   const WindowProperties &win_prop,
                   int flags,
@@ -64,14 +64,17 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   PStatTimer timer(_make_current_pcollector, current_thread);
 
   begin_frame_spam(mode);
-  if (_gsg == (GraphicsStateGuardian *)NULL ||
+  if (_gsg == nullptr ||
       _pbuffer == None) {
     return false;
   }
 
   glxGraphicsStateGuardian *glxgsg;
   DCAST_INTO_R(glxgsg, _gsg, false);
-  glXMakeCurrent(_display, _pbuffer, glxgsg->_context);
+  {
+    LightReMutexHolder holder(glxGraphicsPipe::_x_mutex);
+    glXMakeCurrent(_display, _pbuffer, glxgsg->_context);
+  }
 
   // Now that we have made the context current to a window, we can reset the
   // GSG state if this is the first time it has been used.  (We can't just
@@ -105,7 +108,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 void glxGraphicsBuffer::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
-  nassertv(_gsg != (GraphicsStateGuardian *)NULL);
+  nassertv(_gsg != nullptr);
 
   if (mode == FM_render) {
     copy_to_textures();
@@ -124,8 +127,9 @@ end_frame(FrameMode mode, Thread *current_thread) {
  */
 void glxGraphicsBuffer::
 close_buffer() {
-  if (_gsg != (GraphicsStateGuardian *)NULL) {
-    glXMakeCurrent(_display, None, NULL);
+  if (_gsg != nullptr) {
+    LightReMutexHolder holder(glxGraphicsPipe::_x_mutex);
+    glXMakeCurrent(_display, None, nullptr);
 
     if (_pbuffer != None) {
       glxGraphicsStateGuardian *glxgsg;
@@ -152,9 +156,9 @@ open_buffer() {
 
   // GSG CreationInitialization
   glxGraphicsStateGuardian *glxgsg;
-  if (_gsg == 0) {
+  if (_gsg == nullptr) {
     // There is no old gsg.  Create a new one.
-    glxgsg = new glxGraphicsStateGuardian(_engine, _pipe, NULL);
+    glxgsg = new glxGraphicsStateGuardian(_engine, _pipe, nullptr);
     glxgsg->choose_pixel_format(_fb_properties, glx_pipe->get_display(), glx_pipe->get_screen(), true, false);
     _gsg = glxgsg;
   } else {
@@ -178,6 +182,8 @@ open_buffer() {
   }
 
   nassertr(glxgsg->_supports_pbuffer, false);
+
+  LightReMutexHolder holder(glxGraphicsPipe::_x_mutex);
 
   static const int max_attrib_list = 32;
   int attrib_list[max_attrib_list];

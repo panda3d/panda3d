@@ -11,6 +11,8 @@
 #define CLIP_ZMIN   (1<<4)
 #define CLIP_ZMAX   (1<<5)
 
+using std::min;
+
 void gl_transform_to_viewport(GLContext *c,GLVertex *v)
 {
   PN_stdfloat winv;

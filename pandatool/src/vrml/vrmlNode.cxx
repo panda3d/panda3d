@@ -39,11 +39,11 @@ get_value(const char *field_name) const {
 
   // That field was not defined.  Get the default value.
   const VrmlNodeType::NameTypeRec *field = _type->hasField(field_name);
-  if (field != NULL) {
+  if (field != nullptr) {
     return field->dflt;
   }
 
-  cerr << "No such field defined for type " << _type->getName() << ": "
+  std::cerr << "No such field defined for type " << _type->getName() << ": "
        << field_name << "\n";
   exit(1);
   // Just to make the compiler happy.
@@ -52,7 +52,7 @@ get_value(const char *field_name) const {
 }
 
 void VrmlNode::
-output(ostream &out, int indent_level) const {
+output(std::ostream &out, int indent_level) const {
   out << _type->getName() << " {\n";
   Fields::const_iterator fi;
   for (fi = _fields.begin(); fi != _fields.end(); ++fi) {
@@ -64,13 +64,13 @@ output(ostream &out, int indent_level) const {
 
 
 void Declaration::
-output(ostream &out, int indent) const {
+output(std::ostream &out, int indent) const {
   VrmlFieldValue v;
   v._sfnode = _node;
   output_value(out, v, SFNODE, indent);
 }
 
-ostream &operator << (ostream &out, const VrmlScene &scene) {
+std::ostream &operator << (std::ostream &out, const VrmlScene &scene) {
   VrmlScene::const_iterator si;
   for (si = scene.begin(); si != scene.end(); ++si) {
     out << (*si) << "\n";

@@ -49,13 +49,13 @@ get_joint_type() const {
 INLINE void OdeJoint::
 set_feedback(bool flag) {
   if (flag) {
-    if (dJointGetFeedback(_id) != NULL) {
+    if (dJointGetFeedback(_id) != nullptr) {
       return;
     }
     OdeJointFeedback* feedback = new OdeJointFeedback;
     dJointSetFeedback(_id, (dJointFeedback*) feedback);
   } else if (dJointFeedback* feedback = dJointGetFeedback(_id)) {
-    dJointSetFeedback(_id, NULL);
+    dJointSetFeedback(_id, nullptr);
     delete feedback;
   }
 }

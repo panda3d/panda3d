@@ -42,8 +42,8 @@ PUBLISHED:
   MAKE_SEQ(get_entries, get_num_entries, get_entry);
   MAKE_SEQ_PROPERTY(entries, get_num_entries, get_entry);
 
-  void output(ostream &out) const;
-  void write(ostream &out, int indent_level = 0) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent_level = 0) const;
 
 private:
   typedef pvector< PT(CollisionEntry) > Entries;
@@ -67,7 +67,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const CollisionHandlerQueue &chq) {
+INLINE std::ostream &operator << (std::ostream &out, const CollisionHandlerQueue &chq) {
   chq.output(out);
   return out;
 }

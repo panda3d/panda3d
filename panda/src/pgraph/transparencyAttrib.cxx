@@ -44,7 +44,7 @@ make_default() {
  *
  */
 void TransparencyAttrib::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":";
   switch (get_mode()) {
   case M_none:
@@ -107,14 +107,6 @@ get_hash_impl() const {
   size_t hash = 0;
   hash = int_hash::add_hash(hash, (int)_mode);
   return hash;
-}
-
-/**
- *
- */
-CPT(RenderAttrib) TransparencyAttrib::
-get_auto_shader_attrib_impl(const RenderState *state) const {
-  return this;
 }
 
 /**

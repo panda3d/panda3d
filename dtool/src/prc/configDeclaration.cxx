@@ -16,6 +16,12 @@
 #include "config_prc.h"
 #include "pstrtod.h"
 #include "string_utils.h"
+#include "executionEnvironment.h"
+#include "mutexImpl.h"
+
+using std::string;
+
+static MutexImpl this_prc_dir_lock;
 
 /**
  * Use the ConfigPage::make_declaration() interface to create a new
@@ -130,10 +136,40 @@ set_double_word(size_t n, double value) {
 }
 
 /**
+ * Interprets the string value as a filename and returns it, with any
+ * variables expanded.
+ */
+Filename ConfigDeclaration::
+get_filename_value() const {
+  string str = _string_value;
+
+  // Are there any variables to be expanded?
+  if (str.find('$') != string::npos) {
+    Filename page_filename(_page->get_name());
+    Filename page_dirname = page_filename.get_dirname();
+
+    // Since we are about to set THIS_PRC_DIR globally, we need to ensure that
+    // no two threads call this method at the same time.
+    this_prc_dir_lock.lock();
+    ExecutionEnvironment::shadow_environment_variable("THIS_PRC_DIR", page_dirname.to_os_specific());
+    str = ExecutionEnvironment::expand_string(str);
+    ExecutionEnvironment::clear_shadow("THIS_PRC_DIR");
+    this_prc_dir_lock.unlock();
+  }
+
+  Filename fn;
+  if (!str.empty()) {
+    fn = Filename::from_os_specific(str);
+    fn.make_true_case();
+  }
+  return fn;
+}
+
+/**
  *
  */
 void ConfigDeclaration::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_variable()->get_name() << " " << get_string_value();
 }
 
@@ -141,7 +177,7 @@ output(ostream &out) const {
  *
  */
 void ConfigDeclaration::
-write(ostream &out) const {
+write(std::ostream &out) const {
   out << get_variable()->get_name() << " " << get_string_value();
   // if (!get_variable()->is_used()) { out << "  (not used)"; }
   out << "\n";

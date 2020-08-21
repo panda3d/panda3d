@@ -12,7 +12,7 @@
  */
 
 #include "bamReader_ext.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "pythonThread.h"
 
 #ifdef HAVE_PYTHON
@@ -28,7 +28,7 @@ extern Dtool_PyTypedObject Dtool_TypedWritable;
  */
 static TypedWritable *factory_callback(const FactoryParams &params){
   PyObject *func = (PyObject *)params.get_user_data();
-  nassertr(func != NULL, NULL);
+  nassertr(func != nullptr, nullptr);
 
 #if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
   // Use PyGILState to protect this asynchronous call.
@@ -51,7 +51,7 @@ static TypedWritable *factory_callback(const FactoryParams &params){
   Py_DECREF(py_scan);
   Py_DECREF(py_manager);
 
-  if (result == (PyObject *)NULL) {
+  if (result == nullptr) {
     util_cat.error()
       << "Exception occurred in Python factory function\n";
 
@@ -59,7 +59,7 @@ static TypedWritable *factory_callback(const FactoryParams &params){
     util_cat.error()
       << "Python factory function returned None\n";
     Py_DECREF(result);
-    result = NULL;
+    result = nullptr;
   }
 
 #if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
@@ -67,15 +67,15 @@ static TypedWritable *factory_callback(const FactoryParams &params){
 #endif
 
   // Unwrap the returned TypedWritable object.
-  if (result == (PyObject *)NULL) {
-    return (TypedWritable *)NULL;
+  if (result == nullptr) {
+    return nullptr;
   } else {
-    void *object = NULL;
+    void *object = nullptr;
     Dtool_Call_ExtractThisPointer(result, Dtool_TypedWritable, &object);
 
     TypedWritable *ptr = (TypedWritable *)object;
     ReferenceCount *ref_count = ptr->as_reference_count();
-    if (ref_count != NULL) {
+    if (ref_count != nullptr) {
       // If the Python pointer is the last reference to it, make sure that the
       // object isn't destroyed.  We do this by calling unref(), which
       // decreases the reference count without destroying the object.
@@ -109,7 +109,7 @@ get_file_version() const {
  */
 void Extension<BamReader>::
 register_factory(TypeHandle handle, PyObject *func) {
-  nassertv(func != NULL);
+  nassertv(func != nullptr);
 
   if (!PyCallable_Check(func)) {
     Dtool_Raise_TypeError("second argument to register_factory must be callable");

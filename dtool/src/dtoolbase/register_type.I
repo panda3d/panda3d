@@ -19,43 +19,47 @@
  * Register() and record_derivation() yourself.
  */
 INLINE void
-register_type(TypeHandle &type_handle, const string &name) {
+register_type(TypeHandle &type_handle, const std::string &name) {
   TypeRegistry::ptr()->register_type(type_handle, name);
 }
 INLINE void
-register_type(TypeHandle &type_handle, const string &name,
+register_type(TypeHandle &type_handle, const std::string &name,
               TypeHandle parent1) {
-  if (TypeRegistry::ptr()->register_type(type_handle, name)) {
-    TypeRegistry::ptr()->record_derivation(type_handle, parent1);
+  TypeRegistry *registry = TypeRegistry::ptr();
+  if (registry->register_type(type_handle, name)) {
+    registry->record_derivation(type_handle, parent1);
   }
 }
 INLINE void
-register_type(TypeHandle &type_handle, const string &name,
+register_type(TypeHandle &type_handle, const std::string &name,
               TypeHandle parent1, TypeHandle parent2) {
-  if (TypeRegistry::ptr()->register_type(type_handle, name)) {
-    TypeRegistry::ptr()->record_derivation(type_handle, parent1);
-    TypeRegistry::ptr()->record_derivation(type_handle, parent2);
+  TypeRegistry *registry = TypeRegistry::ptr();
+  if (registry->register_type(type_handle, name)) {
+    registry->record_derivation(type_handle, parent1);
+    registry->record_derivation(type_handle, parent2);
   }
 }
 INLINE void
-register_type(TypeHandle &type_handle, const string &name,
+register_type(TypeHandle &type_handle, const std::string &name,
               TypeHandle parent1, TypeHandle parent2,
               TypeHandle parent3) {
-  if (TypeRegistry::ptr()->register_type(type_handle, name)) {
-    TypeRegistry::ptr()->record_derivation(type_handle, parent1);
-    TypeRegistry::ptr()->record_derivation(type_handle, parent2);
-    TypeRegistry::ptr()->record_derivation(type_handle, parent3);
+  TypeRegistry *registry = TypeRegistry::ptr();
+  if (registry->register_type(type_handle, name)) {
+    registry->record_derivation(type_handle, parent1);
+    registry->record_derivation(type_handle, parent2);
+    registry->record_derivation(type_handle, parent3);
   }
 }
 INLINE void
-register_type(TypeHandle &type_handle, const string &name,
+register_type(TypeHandle &type_handle, const std::string &name,
               TypeHandle parent1, TypeHandle parent2,
               TypeHandle parent3, TypeHandle parent4) {
-  if (TypeRegistry::ptr()->register_type(type_handle, name)) {
-    TypeRegistry::ptr()->record_derivation(type_handle, parent1);
-    TypeRegistry::ptr()->record_derivation(type_handle, parent2);
-    TypeRegistry::ptr()->record_derivation(type_handle, parent3);
-    TypeRegistry::ptr()->record_derivation(type_handle, parent4);
+  TypeRegistry *registry = TypeRegistry::ptr();
+  if (registry->register_type(type_handle, name)) {
+    registry->record_derivation(type_handle, parent1);
+    registry->record_derivation(type_handle, parent2);
+    registry->record_derivation(type_handle, parent3);
+    registry->record_derivation(type_handle, parent4);
   }
 }
 
@@ -66,45 +70,45 @@ register_type(TypeHandle &type_handle, const string &name,
  * reference.
  */
 INLINE TypeHandle
-register_dynamic_type(const string &name) {
+register_dynamic_type(const std::string &name) {
   return TypeRegistry::ptr()->register_dynamic_type(name);
 }
 INLINE TypeHandle
-register_dynamic_type(const string &name, TypeHandle parent1) {
-  TypeHandle type_handle =
-    TypeRegistry::ptr()->register_dynamic_type(name);
-  TypeRegistry::ptr()->record_derivation(type_handle, parent1);
+register_dynamic_type(const std::string &name, TypeHandle parent1) {
+  TypeRegistry *registry = TypeRegistry::ptr();
+  TypeHandle type_handle = registry->register_dynamic_type(name);
+  registry->record_derivation(type_handle, parent1);
   return type_handle;
 }
 INLINE TypeHandle
-register_dynamic_type(const string &name,
+register_dynamic_type(const std::string &name,
                       TypeHandle parent1, TypeHandle parent2) {
-  TypeHandle type_handle =
-    TypeRegistry::ptr()->register_dynamic_type(name);
-  TypeRegistry::ptr()->record_derivation(type_handle, parent1);
-  TypeRegistry::ptr()->record_derivation(type_handle, parent2);
+  TypeRegistry *registry = TypeRegistry::ptr();
+  TypeHandle type_handle = registry->register_dynamic_type(name);
+  registry->record_derivation(type_handle, parent1);
+  registry->record_derivation(type_handle, parent2);
   return type_handle;
 }
 INLINE TypeHandle
-register_dynamic_type(const string &name,
+register_dynamic_type(const std::string &name,
                       TypeHandle parent1, TypeHandle parent2,
                       TypeHandle parent3) {
-  TypeHandle type_handle =
-    TypeRegistry::ptr()->register_dynamic_type(name);
-  TypeRegistry::ptr()->record_derivation(type_handle, parent1);
-  TypeRegistry::ptr()->record_derivation(type_handle, parent2);
-  TypeRegistry::ptr()->record_derivation(type_handle, parent3);
+  TypeRegistry *registry = TypeRegistry::ptr();
+  TypeHandle type_handle = registry->register_dynamic_type(name);
+  registry->record_derivation(type_handle, parent1);
+  registry->record_derivation(type_handle, parent2);
+  registry->record_derivation(type_handle, parent3);
   return type_handle;
 }
 INLINE TypeHandle
-register_dynamic_type(const string &name,
+register_dynamic_type(const std::string &name,
                       TypeHandle parent1, TypeHandle parent2,
                       TypeHandle parent3, TypeHandle parent4) {
-  TypeHandle type_handle =
-    TypeRegistry::ptr()->register_dynamic_type(name);
-  TypeRegistry::ptr()->record_derivation(type_handle, parent1);
-  TypeRegistry::ptr()->record_derivation(type_handle, parent2);
-  TypeRegistry::ptr()->record_derivation(type_handle, parent3);
-  TypeRegistry::ptr()->record_derivation(type_handle, parent4);
+  TypeRegistry *registry = TypeRegistry::ptr();
+  TypeHandle type_handle = registry->register_dynamic_type(name);
+  registry->record_derivation(type_handle, parent1);
+  registry->record_derivation(type_handle, parent2);
+  registry->record_derivation(type_handle, parent3);
+  registry->record_derivation(type_handle, parent4);
   return type_handle;
 }

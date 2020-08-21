@@ -1,5 +1,5 @@
 #include "zgl.h"
-#include "string.h"
+#include <string.h>
 
 void gl_eval_viewport(GLContext * c) {
   GLViewport *v = &c->viewport;

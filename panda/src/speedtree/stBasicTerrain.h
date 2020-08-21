@@ -33,7 +33,7 @@ PUBLISHED:
   void clear();
 
   bool setup_terrain(const Filename &terrain_filename);
-  bool setup_terrain(istream &in, const Filename &pathname);
+  bool setup_terrain(std::istream &in, const Filename &pathname);
 
   INLINE void set_height_map(const Filename &height_map);
   INLINE const Filename &get_height_map() const;
@@ -49,8 +49,8 @@ PUBLISHED:
                              PN_stdfloat start_x, PN_stdfloat start_y,
                              PN_stdfloat size_xy, int num_xy) const;
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level = 0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level = 0) const;
 
 protected:
   bool read_height_map();
@@ -59,7 +59,7 @@ protected:
   INLINE PN_stdfloat interpolate(PN_stdfloat a, PN_stdfloat b, PN_stdfloat t);
 
 private:
-  static void read_quoted_filename(Filename &result, istream &in,
+  static void read_quoted_filename(Filename &result, std::istream &in,
                                    const Filename &dirname);
 
 protected:

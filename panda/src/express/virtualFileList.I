@@ -46,7 +46,7 @@ get_num_files() const {
  */
 INLINE VirtualFile *VirtualFileList::
 get_file(size_t n) const {
-  nassertr(n < _files.size(), NULL);
+  nassertr(n < _files.size(), nullptr);
   return _files[n];
 }
 
@@ -55,7 +55,7 @@ get_file(size_t n) const {
  */
 INLINE VirtualFile *VirtualFileList::
 operator [](size_t n) const {
-  nassertr(n < _files.size(), NULL);
+  nassertr(n < _files.size(), nullptr);
   return _files[n];
 }
 

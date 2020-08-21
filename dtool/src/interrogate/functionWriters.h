@@ -31,8 +31,8 @@ public:
 
   FunctionWriter *add_writer(FunctionWriter *writer);
 
-  void write_prototypes(ostream &out);
-  void write_code(ostream &out);
+  void write_prototypes(std::ostream &out);
+  void write_code(std::ostream &out);
 
 protected:
   class IndirectCompareTo {
@@ -42,7 +42,7 @@ protected:
     }
   };
 
-  typedef set<FunctionWriter *, IndirectCompareTo> Writers;
+  typedef std::set<FunctionWriter *, IndirectCompareTo> Writers;
   Writers _writers;
 };
 

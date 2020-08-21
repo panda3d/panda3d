@@ -118,7 +118,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _timestamp = scan.get_float64();
   _frame = scan.get_uint32();
   _table_changed = scan.get_bool();
-  _table = (RecorderTable *)NULL;
+  _table = nullptr;
   if (_table_changed) {
     manager->read_pointer(scan);
   }

@@ -31,7 +31,7 @@ class DatagramIterator;
  * but it may be used anywhere a list of ButtonEvents is desired.
  */
 class EXPCL_PANDA_EVENT ButtonEventList : public ParamValueBase {
-public:
+PUBLISHED:
   INLINE ButtonEventList();
   INLINE ButtonEventList(const ButtonEventList &copy);
   INLINE void operator = (const ButtonEventList &copy);
@@ -44,8 +44,8 @@ public:
   void add_events(const ButtonEventList &other);
   void update_mods(ModifierButtons &mods) const;
 
-  virtual void output(ostream &out) const;
-  void write(ostream &out, int indent_level = 0) const;
+  virtual void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent_level = 0) const;
 
 private:
   typedef pvector<ButtonEvent> Events;
@@ -79,7 +79,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const ButtonEventList &buttonlist) {
+INLINE std::ostream &operator << (std::ostream &out, const ButtonEventList &buttonlist) {
   buttonlist.output(out);
   return out;
 }

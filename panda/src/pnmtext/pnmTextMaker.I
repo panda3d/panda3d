@@ -122,7 +122,7 @@ get_distance_field_radius() const {
  * position; the return value is the total width in pixels.
  */
 INLINE int PNMTextMaker::
-generate_into(const string &text, PNMImage &dest_image, int x, int y) {
+generate_into(const std::string &text, PNMImage &dest_image, int x, int y) {
   TextEncoder encoder;
   encoder.set_text(text);
   return generate_into(encoder.get_wtext(), dest_image, x, y);
@@ -132,7 +132,7 @@ generate_into(const string &text, PNMImage &dest_image, int x, int y) {
  * Returns the width in pixels of the indicated line of text.
  */
 INLINE int PNMTextMaker::
-calc_width(const string &text) {
+calc_width(const std::string &text) {
   TextEncoder encoder;
   encoder.set_text(text);
   return calc_width(encoder.get_wtext());

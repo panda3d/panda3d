@@ -15,6 +15,11 @@
 #include "panda_getopt.h"
 #include "preprocess_argv.h"
 
+using std::cerr;
+using std::cin;
+using std::cout;
+using std::endl;
+
 void
 usage() {
   cerr

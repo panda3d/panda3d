@@ -51,7 +51,7 @@ test_intersection(const CollisionEntry &entry) const {
  *
  */
 void CollisionLine::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "line, o (" << get_origin() << "), d (" << get_direction() << ")";
 }
 

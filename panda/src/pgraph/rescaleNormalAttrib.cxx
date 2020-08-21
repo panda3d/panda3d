@@ -22,6 +22,10 @@
 #include "configVariableEnum.h"
 #include "config_pgraph.h"
 
+using std::istream;
+using std::ostream;
+using std::string;
+
 TypeHandle RescaleNormalAttrib::_type_handle;
 int RescaleNormalAttrib::_attrib_slot;
 CPT(RenderAttrib) RescaleNormalAttrib::_attribs[RescaleNormalAttrib::M_auto + 1];
@@ -78,19 +82,6 @@ get_hash_impl() const {
   size_t hash = 0;
   hash = int_hash::add_hash(hash, (int)_mode);
   return hash;
-}
-
-/**
- *
- */
-CPT(RenderAttrib) RescaleNormalAttrib::
-get_auto_shader_attrib_impl(const RenderState *state) const {
-  // We currently only support M_normalize in the ShaderGenerator.
-  if (_mode == M_none || _mode == M_normalize) {
-    return this;
-  } else {
-    return RescaleNormalAttrib::make(M_normalize);
-  }
 }
 
 /**

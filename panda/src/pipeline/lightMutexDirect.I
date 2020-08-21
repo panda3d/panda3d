@@ -12,33 +12,33 @@
  */
 
 /**
- *
- */
-INLINE LightMutexDirect::
-LightMutexDirect() {
-}
-
-/**
- *
- */
-INLINE LightMutexDirect::
-~LightMutexDirect() {
-}
-
-/**
- * Do not attempt to copy lightMutexes.
- */
-INLINE LightMutexDirect::
-LightMutexDirect(const LightMutexDirect &copy) {
-  nassertv(false);
-}
-
-/**
- * Do not attempt to copy lightMutexes.
+ * Alias for acquire() to match C++11 semantics.
+ * @see acquire()
  */
 INLINE void LightMutexDirect::
-operator = (const LightMutexDirect &copy) {
-  nassertv(false);
+lock() {
+  TAU_PROFILE("void LightMutexDirect::acquire()", " ", TAU_USER);
+  _impl.lock();
+}
+
+/**
+ * Alias for try_acquire() to match C++11 semantics.
+ * @see try_acquire()
+ */
+INLINE bool LightMutexDirect::
+try_lock() {
+  TAU_PROFILE("void LightMutexDirect::try_acquire()", " ", TAU_USER);
+  return _impl.try_lock();
+}
+
+/**
+ * Alias for release() to match C++11 semantics.
+ * @see release()
+ */
+INLINE void LightMutexDirect::
+unlock() {
+  TAU_PROFILE("void LightMutexDirect::unlock()", " ", TAU_USER);
+  _impl.unlock();
 }
 
 /**
@@ -55,7 +55,7 @@ operator = (const LightMutexDirect &copy) {
 INLINE void LightMutexDirect::
 acquire() const {
   TAU_PROFILE("void LightMutexDirect::acquire()", " ", TAU_USER);
-  ((LightMutexDirect *)this)->_impl.acquire();
+  _impl.lock();
 }
 
 /**
@@ -68,7 +68,7 @@ acquire() const {
 INLINE void LightMutexDirect::
 release() const {
   TAU_PROFILE("void LightMutexDirect::release()", " ", TAU_USER);
-  ((LightMutexDirect *)this)->_impl.release();
+  _impl.unlock();
 }
 
 /**
@@ -86,7 +86,7 @@ debug_is_locked() const {
  * The lightMutex name is only defined when compiling in DEBUG_THREADS mode.
  */
 INLINE void LightMutexDirect::
-set_name(const string &) {
+set_name(const std::string &) {
 }
 
 /**
@@ -107,7 +107,7 @@ has_name() const {
 /**
  * The lightMutex name is only defined when compiling in DEBUG_THREADS mode.
  */
-INLINE string LightMutexDirect::
+INLINE std::string LightMutexDirect::
 get_name() const {
-  return string();
+  return std::string();
 }

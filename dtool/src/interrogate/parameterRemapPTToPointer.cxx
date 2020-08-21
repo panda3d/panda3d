@@ -21,6 +21,8 @@
 #include "cppDeclaration.h"
 #include "pnotify.h"
 
+using std::string;
+
 /**
  *
  */
@@ -29,23 +31,23 @@ ParameterRemapPTToPointer(CPPType *orig_type) :
   ParameterRemap(orig_type)
 {
   CPPStructType *pt_type = TypeManager::unwrap(_orig_type)->as_struct_type();
-  assert(pt_type != (CPPStructType *)NULL);
+  assert(pt_type != nullptr);
 
   // A horrible hack around a CPPParser bug.  We don't trust the CPPStructType
   // pointer we were given; instead, we ask CPPParser to parse a new type of
   // the same name.  This has a better chance of fully resolving templates.
   string name = pt_type->get_local_name(&parser);
   CPPType *new_type = parser.parse_type(name);
-  if (new_type == (CPPType *)NULL) {
+  if (new_type == nullptr) {
     nout << "Type " << name << " is unknown to parser.\n";
   } else {
     new_type = new_type->resolve_type(&parser, &parser);
     pt_type = new_type->as_struct_type();
-    assert(pt_type != (CPPStructType *)NULL);
+    assert(pt_type != nullptr);
   }
 
   _pointer_type = TypeManager::get_pointer_type(pt_type);
-  if (_pointer_type == (CPPType *)NULL) {
+  if (_pointer_type == nullptr) {
     // If we couldn't figure out the pointer type, forget it.
     nout << "Couldn't figure out pointer type for " << *pt_type << "\n";
     _is_valid = false;
@@ -64,7 +66,7 @@ ParameterRemapPTToPointer(CPPType *orig_type) :
  * type to the original type, for passing into the actual C++ function.
  */
 void ParameterRemapPTToPointer::
-pass_parameter(ostream &out, const string &variable_name) {
+pass_parameter(std::ostream &out, const string &variable_name) {
   out << variable_name;
 }
 

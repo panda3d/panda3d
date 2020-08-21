@@ -31,7 +31,7 @@ class BufferContext;
  */
 class EXPCL_PANDA_GOBJ BufferResidencyTracker {
 public:
-  BufferResidencyTracker(const string &pgo_name, const string &type_name);
+  BufferResidencyTracker(const std::string &pgo_name, const std::string &type_name);
   ~BufferResidencyTracker();
 
   void begin_frame(Thread *current_thread);
@@ -43,7 +43,7 @@ public:
   INLINE BufferContextChain &get_inactive_resident();
   INLINE BufferContextChain &get_active_resident();
 
-  void write(ostream &out, int indent_level) const;
+  void write(std::ostream &out, int indent_level) const;
 
 private:
   void move_inactive(BufferContextChain &inactive, BufferContextChain &active);

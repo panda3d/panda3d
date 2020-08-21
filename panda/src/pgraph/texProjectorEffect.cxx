@@ -39,7 +39,7 @@ CPT(RenderEffect) TexProjectorEffect::
 make() {
   // We make it a special case and store a pointer to the empty effect forever
   // once we find it the first time, as an optimization.
-  if (_empty_effect == (RenderEffect *)NULL) {
+  if (_empty_effect == nullptr) {
     _empty_effect = return_new(new TexProjectorEffect);
   }
 
@@ -142,7 +142,7 @@ get_lens_index(TextureStage *stage) const {
  *
  */
 void TexProjectorEffect::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":";
 
   Stages::const_iterator mi;
@@ -189,18 +189,18 @@ cull_callback(CullTraverser *trav, CullTraverserData &data,
 
     CPT(TransformState) transform = def._from.get_transform(def._to);
 
-    if (def._to_lens_node != (LensNode *)NULL &&
-        def._to_lens_node->get_lens() != (Lens *)NULL) {
+    if (def._to_lens_node != nullptr &&
+        def._to_lens_node->get_lens() != nullptr) {
 
       // Get the lens's projection matrix, as a TransformState.
       Lens *lens = def._to_lens_node->get_lens(def._lens_index);
-      if (lens != NULL) {
+      if (lens != nullptr) {
         CPT(TransformState) projmat = TransformState::make_mat(lens->get_projection_mat());
 
         // We need a special transform to convert the -0.5, 0.5 centering of
         // the lens's projection matrix to UV's in the range of (0, 1).
         static CPT(TransformState) fixmat;
-        if (fixmat == (TransformState *)NULL) {
+        if (fixmat == nullptr) {
           fixmat = TransformState::make_pos_hpr_scale
             (LVecBase3(0.5f, 0.5f, 0.0f),
              LVecBase3(0.0f, 0.0f, 0.0f),
@@ -357,6 +357,6 @@ set_to(const NodePath &to) {
   if (!_to.is_empty() && _to.node()->is_of_type(LensNode::get_class_type())) {
     DCAST_INTO_V(_to_lens_node, _to.node());
   } else {
-    _to_lens_node = (LensNode *)NULL;
+    _to_lens_node = nullptr;
   }
 }

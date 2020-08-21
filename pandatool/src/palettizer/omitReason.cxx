@@ -13,8 +13,8 @@
 
 #include "omitReason.h"
 
-ostream &
-operator << (ostream &out, OmitReason omit) {
+std::ostream &
+operator << (std::ostream &out, OmitReason omit) {
   switch (omit) {
   case OR_none:
     return out << "none";

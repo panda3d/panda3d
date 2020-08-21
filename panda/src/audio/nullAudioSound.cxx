@@ -14,6 +14,8 @@
 
 #include "nullAudioSound.h"
 
+using std::string;
+
 TypeHandle NullAudioSound::_type_handle;
 
 namespace {

@@ -11,8 +11,8 @@
  * @date 2010-01-24
  */
 
-#ifndef __BULLET_CONE_SHAPE_H__
-#define __BULLET_CONE_SHAPE_H__
+#ifndef BULLETCONESHAPE_H
+#define BULLETCONESHAPE_H
 
 #include "pandabase.h"
 
@@ -24,21 +24,37 @@
  *
  */
 class EXPCL_PANDABULLET BulletConeShape : public BulletShape {
+private:
+  // Only used by make_from_bam
+  INLINE BulletConeShape();
 
 PUBLISHED:
-  BulletConeShape(PN_stdfloat radius, PN_stdfloat height, BulletUpAxis up=Z_up);
-  INLINE BulletConeShape(const BulletConeShape &copy);
-  INLINE void operator = (const BulletConeShape &copy);
+  explicit BulletConeShape(PN_stdfloat radius, PN_stdfloat height, BulletUpAxis up=Z_up);
+  BulletConeShape(const BulletConeShape &copy);
   INLINE ~BulletConeShape();
 
   INLINE PN_stdfloat get_radius() const;
   INLINE PN_stdfloat get_height() const;
+
+  MAKE_PROPERTY(radius, get_radius);
+  MAKE_PROPERTY(height, get_height);
 
 public:
   virtual btCollisionShape *ptr() const;
 
 private:
   btConeShape *_shape;
+  PN_stdfloat _radius;
+  PN_stdfloat _height;
+  BulletUpAxis _up;
+
+public:
+  static void register_with_read_factory();
+  virtual void write_datagram(BamWriter *manager, Datagram &dg);
+
+protected:
+  static TypedWritable *make_from_bam(const FactoryParams &params);
+  void fillin(DatagramIterator &scan, BamReader *manager);
 
 public:
   static TypeHandle get_class_type() {
@@ -63,4 +79,4 @@ private:
 
 #include "bulletConeShape.I"
 
-#endif // __BULLET_CONE_SHAPE_H__
+#endif // BULLETCONESHAPE_H

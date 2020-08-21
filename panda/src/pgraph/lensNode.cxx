@@ -26,10 +26,10 @@ TypeHandle LensNode::_type_handle;
  *
  */
 LensNode::
-LensNode(const string &name, Lens *lens) :
+LensNode(const std::string &name, Lens *lens) :
   PandaNode(name)
 {
-  if (lens == NULL) {
+  if (lens == nullptr) {
     lens = new PerspectiveLens;
   }
   set_lens(0, lens);
@@ -84,7 +84,7 @@ set_lens(int index, Lens *lens) {
   _lenses[index]._lens = lens;
   _lenses[index]._is_active = true;
 
-  if (_shown_frustum != (PandaNode *)NULL) {
+  if (_shown_frustum != nullptr) {
     show_frustum();
   }
 }
@@ -111,7 +111,7 @@ set_lens_active(int index, bool flag) {
 
   _lenses[index]._is_active = flag;
 
-  if (_shown_frustum != (PandaNode *)NULL) {
+  if (_shown_frustum != nullptr) {
     show_frustum();
   }
   return true;
@@ -124,9 +124,9 @@ set_lens_active(int index, bool flag) {
 bool LensNode::
 is_in_view(int index, const LPoint3 &pos) {
   Lens *lens = get_lens(index);
-  nassertr(lens != (Lens *)NULL, false);
+  nassertr(lens != nullptr, false);
   PT(BoundingVolume) bv = lens->make_bounds();
-  if (bv == (BoundingVolume *)NULL) {
+  if (bv == nullptr) {
     return false;
   }
   GeometricBoundingVolume *gbv = DCAST(GeometricBoundingVolume, bv);
@@ -140,7 +140,7 @@ is_in_view(int index, const LPoint3 &pos) {
  */
 void LensNode::
 show_frustum() {
-  if (_shown_frustum != (PandaNode *)NULL) {
+  if (_shown_frustum != nullptr) {
     hide_frustum();
   }
   PT(GeomNode) geom_node = new GeomNode("frustum");
@@ -150,7 +150,7 @@ show_frustum() {
   for (Lenses::const_iterator li = _lenses.begin();
        li != _lenses.end();
        ++li) {
-    if ((*li)._is_active && (*li)._lens != (Lens *)NULL) {
+    if ((*li)._is_active && (*li)._lens != nullptr) {
       geom_node->add_geom((*li)._lens->make_geometry());
     }
   }
@@ -161,9 +161,9 @@ show_frustum() {
  */
 void LensNode::
 hide_frustum() {
-  if (_shown_frustum != (PandaNode *)NULL) {
+  if (_shown_frustum != nullptr) {
     remove_child(_shown_frustum);
-    _shown_frustum = (PandaNode *)NULL;
+    _shown_frustum = nullptr;
   }
 }
 
@@ -171,14 +171,14 @@ hide_frustum() {
  *
  */
 void LensNode::
-output(ostream &out) const {
+output(std::ostream &out) const {
   PandaNode::output(out);
 
   out << " (";
   for (Lenses::const_iterator li = _lenses.begin();
        li != _lenses.end();
        ++li) {
-    if ((*li)._is_active && (*li)._lens != (Lens *)NULL) {
+    if ((*li)._is_active && (*li)._lens != nullptr) {
       out << " ";
       (*li)._lens->output(out);
     }
@@ -190,13 +190,13 @@ output(ostream &out) const {
  *
  */
 void LensNode::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   PandaNode::write(out, indent_level);
 
   for (Lenses::const_iterator li = _lenses.begin();
        li != _lenses.end();
        ++li) {
-    if ((*li)._is_active && (*li)._lens != (Lens *)NULL) {
+    if ((*li)._is_active && (*li)._lens != nullptr) {
       (*li)._lens->write(out, indent_level + 2);
     }
   }
@@ -245,7 +245,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
     (*li)._lens = DCAST(Lens, p_list[pi++]);
   }
 
-  if (_shown_frustum != (PandaNode *)NULL) {
+  if (_shown_frustum != nullptr) {
     show_frustum();
   }
 

@@ -66,6 +66,23 @@ set_transform(size_t n, const VertexTransform *transform) {
 }
 
 /**
+ * Inserts a new transform to the table at the given index position.  If the
+ * index is beyond the end of the table, appends it to the end.  Only valid
+ * for unregistered tables.
+ *
+ * This does not automatically uniquify the pointer; if the transform is
+ * already present in the table, it will be added twice.
+ */
+void TransformTable::
+insert_transform(size_t n, const VertexTransform *transform) {
+  nassertv(!_is_registered);
+  if (n > _transforms.size()) {
+    n = _transforms.size();
+  }
+  _transforms.insert(_transforms.begin() + n, transform);
+}
+
+/**
  * Removes the nth transform.  Only valid for unregistered tables.
  */
 void TransformTable::
@@ -94,7 +111,7 @@ add_transform(const VertexTransform *transform) {
  *
  */
 void TransformTable::
-write(ostream &out) const {
+write(std::ostream &out) const {
   for (size_t i = 0; i < _transforms.size(); ++i) {
     out << i << ". " << *_transforms[i] << "\n";
   }
@@ -204,7 +221,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _transforms.reserve(num_transforms);
   for (size_t i = 0; i < num_transforms; ++i) {
     manager->read_pointer(scan);
-    _transforms.push_back(NULL);
+    _transforms.push_back(nullptr);
   }
 
   manager->read_cdata(scan, _cycler);

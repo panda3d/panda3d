@@ -37,12 +37,12 @@ class TxaLine {
 public:
   TxaLine();
 
-  bool parse(const string &line);
+  bool parse(const std::string &line);
 
   bool match_egg(EggFile *egg_file) const;
   bool match_texture(TextureImage *texture) const;
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
 private:
   typedef pvector<GlobPattern> Patterns;
@@ -93,7 +93,7 @@ private:
   PNMFileType *_alpha_type;
 };
 
-INLINE ostream &operator << (ostream &out, const TxaLine &line) {
+INLINE std::ostream &operator << (std::ostream &out, const TxaLine &line) {
   line.output(out);
   return out;
 }

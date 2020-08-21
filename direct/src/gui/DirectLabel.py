@@ -1,4 +1,8 @@
-"""Undocumented Module"""
+"""Contains the DirectLabel class.
+
+See the :ref:`directlabel` page in the programming manual for a more in-depth
+explanation and an example of how to use this class.
+"""
 
 __all__ = ['DirectLabel']
 

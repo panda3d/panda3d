@@ -18,6 +18,10 @@
 #include "graphicsEngine.h"
 #include "config_display.h"
 #include "nativeWindowHandle.h"
+#include "mouseButton.h"
+#include "throw_event.h"
+
+using std::string;
 
 TypeHandle SubprocessWindow::_type_handle;
 
@@ -35,13 +39,12 @@ SubprocessWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                  GraphicsOutput *host) :
   GraphicsWindow(engine, pipe, name, fb_prop, win_prop, flags, gsg, host)
 {
-  GraphicsWindowInputDevice device =
-    GraphicsWindowInputDevice::pointer_and_keyboard(this, "keyboard/mouse");
-  _input_devices.push_back(device);
+  _input = GraphicsWindowInputDevice::pointer_and_keyboard(this, "keyboard/mouse");
+  _input_devices.push_back(_input.p());
 
   // This will be an offscreen buffer that we use to render the actual
   // contents.
-  _buffer = NULL;
+  _buffer = nullptr;
 
   // Create a texture to receive the contents of the framebuffer from the
   // offscreen buffer.
@@ -50,7 +53,7 @@ SubprocessWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   _fd = -1;
   _mmap_size = 0;
   _filename = string();
-  _swbuffer = NULL;
+  _swbuffer = nullptr;
   _last_event_flags = 0;
 }
 
@@ -59,8 +62,8 @@ SubprocessWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
  */
 SubprocessWindow::
 ~SubprocessWindow() {
-  nassertv(_buffer == NULL);
-  nassertv(_swbuffer == NULL);
+  nassertv(_buffer == nullptr);
+  nassertv(_swbuffer == nullptr);
 }
 
 /**
@@ -74,14 +77,14 @@ void SubprocessWindow::
 process_events() {
   GraphicsWindow::process_events();
 
-  if (_swbuffer != NULL) {
+  if (_swbuffer != nullptr) {
     SubprocessWindowBuffer::Event swb_event;
     while (_swbuffer->get_event(swb_event)) {
       // Deal with this event.
       if (swb_event._flags & SubprocessWindowBuffer::EF_mouse_position) {
-        _input_devices[0].set_pointer_in_window(swb_event._x, swb_event._y);
+        _input->set_pointer_in_window(swb_event._x, swb_event._y);
       } else if ((swb_event._flags & SubprocessWindowBuffer::EF_has_mouse) == 0) {
-        _input_devices[0].set_pointer_out_of_window();
+        _input->set_pointer_out_of_window();
       }
 
       unsigned int diff = swb_event._flags ^ _last_event_flags;
@@ -108,14 +111,14 @@ process_events() {
         int keycode;
         button = translate_key(keycode, swb_event._code, swb_event._flags);
         if (keycode != 0 && swb_event._type != SubprocessWindowBuffer::ET_button_up) {
-          _input_devices[0].keystroke(keycode);
+          _input->keystroke(keycode);
         }
       }
 
       if (swb_event._type == SubprocessWindowBuffer::ET_button_up) {
-        _input_devices[0].button_up(button);
+        _input->button_up(button);
       } else if (swb_event._type == SubprocessWindowBuffer::ET_button_down) {
-        _input_devices[0].button_down(button);
+        _input->button_down(button);
       }
     }
   }
@@ -129,7 +132,7 @@ process_events() {
  */
 bool SubprocessWindow::
 begin_frame(FrameMode mode, Thread *current_thread) {
-  if (_swbuffer == NULL || _buffer == NULL) {
+  if (_swbuffer == nullptr || _buffer == nullptr) {
     return false;
   }
 
@@ -164,8 +167,8 @@ end_frame(FrameMode mode, Thread *current_thread) {
  */
 void SubprocessWindow::
 begin_flip() {
-  nassertv(_buffer != (GraphicsBuffer *)NULL);
-  if (_swbuffer == NULL) {
+  nassertv(_buffer != nullptr);
+  if (_swbuffer == nullptr) {
     return;
   }
 
@@ -225,9 +228,9 @@ void SubprocessWindow::
 set_properties_now(WindowProperties &properties) {
   Filename filename;
   WindowHandle *window_handle = properties.get_parent_window();
-  if (window_handle != NULL) {
+  if (window_handle != nullptr) {
     WindowHandle::OSHandle *os_handle = window_handle->get_os_handle();
-    if (os_handle != NULL) {
+    if (os_handle != nullptr) {
       if (os_handle->is_of_type(NativeWindowHandle::SubprocessHandle::get_class_type())) {
         NativeWindowHandle::SubprocessHandle *subprocess_handle = DCAST(NativeWindowHandle::SubprocessHandle, os_handle);
         filename = subprocess_handle->get_filename();
@@ -299,30 +302,30 @@ open_window() {
  */
 void SubprocessWindow::
 internal_close_window() {
-  if (_swbuffer != NULL) {
+  if (_swbuffer != nullptr) {
     SubprocessWindowBuffer::close_buffer
       (_fd, _mmap_size, _filename.to_os_specific(), _swbuffer);
     _fd = -1;
     _filename = string();
 
-    _swbuffer = NULL;
+    _swbuffer = nullptr;
   }
 
-  if (_buffer != NULL) {
+  if (_buffer != nullptr) {
     _buffer->request_close();
     _buffer->process_events();
     _engine->remove_window(_buffer);
-    _buffer = NULL;
+    _buffer = nullptr;
   }
 
   // Tell our parent window (if any) that we're no longer its child.
-  if (_window_handle != (WindowHandle *)NULL &&
-      _parent_window_handle != (WindowHandle *)NULL) {
+  if (_window_handle != nullptr &&
+      _parent_window_handle != nullptr) {
     _parent_window_handle->detach_child(_window_handle);
   }
 
-  _window_handle = NULL;
-  _parent_window_handle = NULL;
+  _window_handle = nullptr;
+  _parent_window_handle = nullptr;
   _is_valid = false;
 }
 
@@ -332,7 +335,7 @@ internal_close_window() {
  */
 bool SubprocessWindow::
 internal_open_window() {
-  nassertr(_buffer == NULL, false);
+  nassertr(_buffer == nullptr, false);
 
   // Create a buffer with the same properties as the window.
   int flags = _creation_flags;
@@ -342,7 +345,7 @@ internal_open_window() {
   GraphicsOutput *buffer =
     _engine->make_output(_pipe, _name, 0, _fb_properties, win_props,
                          flags, _gsg, _host);
-  if (buffer != NULL) {
+  if (buffer != nullptr) {
     _buffer = DCAST(GraphicsBuffer, buffer);
     // However, the buffer is not itself intended to be rendered.  We only
     // render it indirectly, via callbacks in here.
@@ -363,9 +366,9 @@ internal_open_window() {
   _gsg = _buffer->get_gsg();
 
   WindowHandle *window_handle = _properties.get_parent_window();
-  if (window_handle != NULL) {
+  if (window_handle != nullptr) {
     WindowHandle::OSHandle *os_handle = window_handle->get_os_handle();
-    if (os_handle != NULL) {
+    if (os_handle != nullptr) {
       if (os_handle->is_of_type(NativeWindowHandle::SubprocessHandle::get_class_type())) {
         NativeWindowHandle::SubprocessHandle *subprocess_handle = DCAST(NativeWindowHandle::SubprocessHandle, os_handle);
         _filename = subprocess_handle->get_filename();
@@ -384,7 +387,7 @@ internal_open_window() {
   _swbuffer = SubprocessWindowBuffer::open_buffer
     (_fd, _mmap_size, _filename.to_os_specific());
 
-  if (_swbuffer == NULL) {
+  if (_swbuffer == nullptr) {
     close(_fd);
     _fd = -1;
     _filename = string();
@@ -404,7 +407,7 @@ internal_open_window() {
   _window_handle = NativeWindowHandle::make_subprocess(_filename);
 
   // And tell our parent window that we're now its child.
-  if (_parent_window_handle != (WindowHandle *)NULL) {
+  if (_parent_window_handle != nullptr) {
     _parent_window_handle->attach_child(_window_handle);
   }
 
@@ -552,9 +555,9 @@ translate_key(int &keycode, int os_code, unsigned int flags) const {
 void SubprocessWindow::
 transition_button(unsigned int flags, ButtonHandle button) {
   if (flags) {
-    _input_devices[0].button_down(button);
+    _input->button_down(button);
   } else {
-    _input_devices[0].button_up(button);
+    _input->button_up(button);
   }
 }
 

@@ -44,8 +44,8 @@ INLINE unsigned char decode_sRGB_uchar(unsigned char val) {
  */
 INLINE unsigned char decode_sRGB_uchar(float val) {
   return (val <= 0.04045f)
-    ? (unsigned char)(max(0.f, val) * (255.f / 12.92f) + 0.5f)
-    : (unsigned char)(cpow((min(val, 1.f) + 0.055f) * (1.f / 1.055f), 2.4f) * 255.f + 0.5f);
+    ? (unsigned char)(std::max(0.f, val) * (255.f / 12.92f) + 0.5f)
+    : (unsigned char)(cpow((std::min(val, 1.f) + 0.055f) * (1.f / 1.055f), 2.4f) * 255.f + 0.5f);
 }
 
 /**
@@ -99,8 +99,8 @@ encode_sRGB_uchar(float val) {
   return encode_sRGB_uchar_sse2(val);
 #else
   return (val < 0.0031308f)
-    ? (unsigned char) (max(0.f, val) * 3294.6f + 0.5f)
-    : (unsigned char) (269.025f * cpow(min(val, 1.f), 0.41666f) - 13.525f);
+    ? (unsigned char) (std::max(0.f, val) * 3294.6f + 0.5f)
+    : (unsigned char) (269.025f * cpow(std::min(val, 1.f), 0.41666f) - 13.525f);
 #endif
 }
 
@@ -152,4 +152,18 @@ encode_sRGB_uchar(const LColorf &color, xel &into, xelval &into_alpha) {
 
   into_alpha = (xelval) (color[3] * 255.f + 0.5f);
 #endif
+}
+
+
+/**
+ * Double-precision versions of the above.
+ */
+INLINE void
+encode_sRGB_uchar(const LColord &color, xel &into) {
+  return encode_sRGB_uchar(LCAST(float, color), into);
+}
+
+INLINE void
+encode_sRGB_uchar(const LColord &color, xel &into, xelval &into_alpha) {
+  return encode_sRGB_uchar(LCAST(float, color), into, into_alpha);
 }

@@ -29,12 +29,12 @@ TextureAttrib() {
 INLINE TextureAttrib::
 TextureAttrib(const TextureAttrib &copy) :
   _on_stages(copy._on_stages),
-  _render_stages(copy._render_stages),
-  _render_ff_stages(copy._render_ff_stages),
+  _render_stages(),
+  _render_ff_stages(),
   _next_implicit_sort(copy._next_implicit_sort),
   _off_stages(copy._off_stages),
   _off_all_stages(copy._off_all_stages),
-  _sort_seq(copy._sort_seq),
+  _sort_seq(UpdateSeq::old()),
   _filtered_seq(UpdateSeq::old())
 {
 }
@@ -60,7 +60,7 @@ is_off() const {
 INLINE Texture *TextureAttrib::
 get_texture() const {
   if (_on_stages.empty()) {
-    return NULL;
+    return nullptr;
   }
   check_sorted();
   return get_on_texture(filter_to_max(1)->get_on_stage(0));
@@ -80,7 +80,7 @@ get_num_on_stages() const {
  */
 INLINE TextureStage *TextureAttrib::
 get_on_stage(int n) const {
-  nassertr(n >= 0 && n < (int)_render_stages.size(), (TextureStage *)NULL);
+  nassertr(n >= 0 && n < (int)_render_stages.size(), nullptr);
   return _render_stages[n]->_stage;
 }
 
@@ -101,7 +101,7 @@ get_num_on_ff_stages() const {
  */
 INLINE TextureStage *TextureAttrib::
 get_on_ff_stage(int n) const {
-  nassertr(n >= 0 && n < (int)_render_ff_stages.size(), (TextureStage *)NULL);
+  nassertr(n >= 0 && n < (int)_render_ff_stages.size(), nullptr);
   return _render_ff_stages[n]->_stage;
 }
 
@@ -137,7 +137,7 @@ get_on_texture(TextureStage *stage) const {
   if (si != _on_stages.end()) {
     return (*si)._texture;
   }
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -183,7 +183,7 @@ get_num_off_stages() const {
  */
 INLINE TextureStage *TextureAttrib::
 get_off_stage(int n) const {
-  nassertr(n >= 0 && n < (int)_off_stages.size(), (TextureStage *)NULL);
+  nassertr(n >= 0 && n < (int)_off_stages.size(), nullptr);
   return _off_stages[n]._stage;
 }
 

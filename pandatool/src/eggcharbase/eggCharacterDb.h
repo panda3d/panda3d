@@ -29,6 +29,7 @@
 */
 
 class EggJointPointer;
+class LMatrix4d;
 
 /**
  * This class is used during joint optimization or restructuring to store the

@@ -80,7 +80,6 @@ class World(DirectObject):
         self.teapot = loader.loadModel('teapot')
         self.teapot.reparentTo(render)
         self.teapot.setPos(0, -20, 10)
-        self.teapot.setShaderInput("texDisable", 1, 1, 1, 1)
         self.teapotMovement = self.teapot.hprInterval(50, LPoint3(0, 360, 360))
         self.teapotMovement.loop()
 

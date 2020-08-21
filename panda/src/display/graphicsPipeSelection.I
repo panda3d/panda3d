@@ -26,7 +26,7 @@ get_num_aux_modules() const {
  */
 INLINE GraphicsPipeSelection *GraphicsPipeSelection::
 get_global_ptr() {
-  if (_global_ptr == (GraphicsPipeSelection *)NULL) {
+  if (_global_ptr == nullptr) {
     _global_ptr = new GraphicsPipeSelection;
   }
   return _global_ptr;

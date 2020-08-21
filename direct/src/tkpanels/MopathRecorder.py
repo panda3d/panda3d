@@ -4,6 +4,7 @@ __all__ = ['MopathRecorder']
 
 # Import Tkinter, Pmw, and the dial code from this directory tree.
 from panda3d.core import *
+from direct.showbase import ShowBaseGlobal
 from direct.showbase.DirectObject import DirectObject
 from direct.showbase.TkGlobal import *
 from direct.tkwidgets.AppShell import *
@@ -11,17 +12,13 @@ from direct.directtools.DirectGlobals import *
 from direct.directtools.DirectUtil import *
 from direct.directtools.DirectGeometry import *
 from direct.directtools.DirectSelection import *
-import Pmw, os, sys
+import Pmw, os
 from direct.tkwidgets import Dial
 from direct.tkwidgets import Floater
 from direct.tkwidgets import Slider
 from direct.tkwidgets import EntryScale
 from direct.tkwidgets import VectorWidgets
-
-if sys.version_info >= (3, 0):
-    from tkinter.filedialog import *
-else:
-    from tkFileDialog import *
+from tkinter.filedialog import *
 
 
 PRF_UTILITIES = [
@@ -859,7 +856,7 @@ class MopathRecorder(AppShell, DirectObject):
         if self.getVariable('Style', 'Marker').get():
             self.playbackMarker.reparentTo(self.recorderNodePath)
         else:
-            self.playbackMarker.reparentTo(hidden)
+            self.playbackMarker.reparentTo(ShowBaseGlobal.hidden)
 
     def setNumSegs(self, value):
         self.numSegs = int(value)
@@ -1644,7 +1641,7 @@ class MopathRecorder(AppShell, DirectObject):
             initialdir = path,
             title = 'Load Nurbs Curve',
             parent = self.parent)
-        if mopathFilename:
+        if mopathFilename and mopathFilename != 'None':
             self.reset()
             nodePath = loader.loadModel(
                 Filename.fromOsSpecific(mopathFilename))

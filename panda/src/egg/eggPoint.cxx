@@ -41,7 +41,7 @@ cleanup() {
  * Writes the point to the indicated output stream in Egg format.
  */
 void EggPoint::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   write_header(out, indent_level, "<PointLight>");
 
   if (has_thick()) {

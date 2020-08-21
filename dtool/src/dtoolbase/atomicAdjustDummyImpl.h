@@ -24,14 +24,14 @@
  * require multiprogramming, and therefore don't require special atomic
  * operations.
  */
-class EXPCL_DTOOL AtomicAdjustDummyImpl {
+class EXPCL_DTOOL_DTOOLBASE AtomicAdjustDummyImpl {
 public:
   typedef long Integer;
   typedef void *Pointer;
 
   ALWAYS_INLINE static void inc(TVOLATILE Integer &var);
   ALWAYS_INLINE static bool dec(TVOLATILE Integer &var);
-  ALWAYS_INLINE static void add(TVOLATILE Integer &var, Integer delta);
+  ALWAYS_INLINE static Integer add(TVOLATILE Integer &var, Integer delta);
   ALWAYS_INLINE static Integer set(TVOLATILE Integer &var, Integer new_value);
   ALWAYS_INLINE static Integer get(const TVOLATILE Integer &var);
 

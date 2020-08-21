@@ -29,14 +29,14 @@
 #include "get_x11.h"
 #include "pnmImage.h"
 #include "pnmFileTypeRegistry.h"
+#include "evdevInputDevice.h"
 
-#include <errno.h>
-#include <fcntl.h>
 #include <sys/time.h>
+#include <fcntl.h>
 
-#ifdef PHAVE_LINUX_INPUT_H
-#include <linux/input.h>
-#endif
+using std::istream;
+using std::ostringstream;
+using std::string;
 
 struct _XcursorFile {
   void *closure;
@@ -86,8 +86,6 @@ static int xcursor_seek(XcursorFile *file, long offset, int whence) {
 
 TypeHandle x11GraphicsWindow::_type_handle;
 
-#define test_bit(bit, array) ((array)[(bit)/8] & (1<<((bit)&7)))
-
 /**
  *
  */
@@ -105,9 +103,9 @@ x11GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   DCAST_INTO_V(x11_pipe, _pipe);
   _display = x11_pipe->get_display();
   _screen = x11_pipe->get_screen();
-  _xwindow = (X11_Window)NULL;
-  _ic = (XIC)NULL;
-  _visual_info = NULL;
+  _xwindow = (X11_Window)nullptr;
+  _ic = (XIC)nullptr;
+  _visual_info = nullptr;
   _orig_size_id = -1;
 
   if (x11_pipe->_have_xrandr) {
@@ -119,12 +117,13 @@ x11GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
 
   _awaiting_configure = false;
   _dga_mouse_enabled = false;
+  _raw_mouse_enabled = false;
   _override_redirect = False;
   _wm_delete_window = x11_pipe->_wm_delete_window;
 
-  GraphicsWindowInputDevice device =
-    GraphicsWindowInputDevice::pointer_and_keyboard(this, "keyboard_mouse");
+  PT(GraphicsWindowInputDevice) device = GraphicsWindowInputDevice::pointer_and_keyboard(this, "keyboard_mouse");
   add_input_device(device);
+  _input = device;
 }
 
 /**
@@ -132,11 +131,46 @@ x11GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
  */
 x11GraphicsWindow::
 ~x11GraphicsWindow() {
-  pmap<Filename, X11_Cursor>::iterator it;
-
-  for (it = _cursor_filenames.begin(); it != _cursor_filenames.end(); it++) {
-    XFreeCursor(_display, it->second);
+  if (!_cursor_filenames.empty()) {
+    LightReMutexHolder holder(x11GraphicsPipe::_x_mutex);
+    for (auto item : _cursor_filenames) {
+      XFreeCursor(_display, item.second);
+    }
   }
+}
+
+/**
+ * Returns the MouseData associated with the nth input device's pointer.  This
+ * is deprecated; use get_pointer_device().get_pointer() instead, or for raw
+ * mice, use the InputDeviceManager interface.
+ */
+MouseData x11GraphicsWindow::
+get_pointer(int device) const {
+  MouseData result;
+  {
+    LightMutexHolder holder(_input_lock);
+    nassertr(device >= 0 && device < (int)_input_devices.size(), MouseData());
+
+    result = ((const GraphicsWindowInputDevice *)_input_devices[device].p())->get_pointer();
+
+    // We recheck this immediately to get the most up-to-date value, but we
+    // won't bother waiting for the lock if we can't.
+    if (device == 0 && !_dga_mouse_enabled && !_raw_mouse_enabled &&
+        result._in_window && x11GraphicsPipe::_x_mutex.try_lock()) {
+      XEvent event;
+      if (_xwindow != None &&
+          XQueryPointer(_display, _xwindow, &event.xbutton.root,
+          &event.xbutton.window, &event.xbutton.x_root, &event.xbutton.y_root,
+          &event.xbutton.x, &event.xbutton.y, &event.xbutton.state)) {
+        double time = ClockObject::get_global_clock()->get_real_time();
+        result._xpos = event.xbutton.x;
+        result._ypos = event.xbutton.y;
+        ((GraphicsWindowInputDevice *)_input_devices[0].p())->set_pointer_in_window(result._xpos, result._ypos, time);
+      }
+      x11GraphicsPipe::_x_mutex.release();
+    }
+  }
+  return result;
 }
 
 /**
@@ -153,28 +187,41 @@ move_pointer(int device, int x, int y) {
   // Probably not an issue.
   if (device == 0) {
     // Move the system mouse pointer.
-    if (!_properties.get_foreground() ||
-        !_input_devices[0].get_pointer().get_in_window()) {
+    PointerData md = _input->get_pointer();
+    if (!_properties.get_foreground() || !md.get_in_window()) {
       // If the window doesn't have input focus, or the mouse isn't currently
       // within the window, forget it.
       return false;
     }
 
-    const MouseData &md = _input_devices[0].get_pointer();
     if (!md.get_in_window() || md.get_x() != x || md.get_y() != y) {
       if (!_dga_mouse_enabled) {
+        LightReMutexHolder holder(x11GraphicsPipe::_x_mutex);
         XWarpPointer(_display, None, _xwindow, 0, 0, 0, 0, x, y);
       }
-      _input_devices[0].set_pointer_in_window(x, y);
+      _input->set_pointer_in_window(x, y);
     }
     return true;
   } else {
-    // Move a raw mouse.
-    if ((device < 1)||(device >= _input_devices.size())) {
-      return false;
-    }
-    _input_devices[device].set_pointer_in_window(x, y);
-    return true;
+    // Can't move a raw mouse.
+    return false;
+  }
+}
+
+/**
+ * Clears the entire framebuffer before rendering, according to the settings
+ * of get_color_clear_active() and get_depth_clear_active() (inherited from
+ * DrawableRegion).
+ *
+ * This function is called only within the draw thread.
+ */
+void x11GraphicsWindow::
+clear(Thread *current_thread) {
+  if (is_any_clear_active()) {
+    // Evidently the NVIDIA driver may call glXCreateNewContext inside
+    // prepare_display_region, so we need to hold the X11 lock.
+    LightReMutexHolder holder(x11GraphicsPipe::_x_mutex);
+    GraphicsOutput::clear(current_thread);
   }
 }
 
@@ -189,7 +236,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   PStatTimer timer(_make_current_pcollector, current_thread);
 
   begin_frame_spam(mode);
-  if (_gsg == (GraphicsStateGuardian *)NULL) {
+  if (_gsg == nullptr) {
     return false;
   }
   if (_awaiting_configure) {
@@ -220,7 +267,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 void x11GraphicsWindow::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
-  nassertv(_gsg != (GraphicsStateGuardian *)NULL);
+  nassertv(_gsg != nullptr);
 
   if (mode == FM_render) {
     // end_render_texture();
@@ -252,8 +299,6 @@ process_events() {
     return;
   }
 
-  poll_raw_mice();
-
   XEvent event;
   XKeyEvent keyrelease_event;
   bool got_keyrelease_event = false;
@@ -264,11 +309,10 @@ process_events() {
   WindowProperties properties;
   bool changed_properties = false;
 
-  while (XCheckIfEvent(_display, &event, check_event, (char *)this)) {
-    if (XFilterEvent(&event, None)) {
-      continue;
-    }
+  XPropertyEvent property_event;
+  bool got_net_wm_state_change = false;
 
+  while (XCheckIfEvent(_display, &event, check_event, (char *)this)) {
     if (got_keyrelease_event) {
       // If a keyrelease event is immediately followed by a matching keypress
       // event, that's just key repeat and we should treat the two events
@@ -279,26 +323,59 @@ process_events() {
       if (event.type == KeyPress &&
           event.xkey.keycode == keyrelease_event.keycode &&
           (event.xkey.time - keyrelease_event.time <= 1)) {
-        // In particular, we only generate down messages for the repeated
-        // keys, not down-and-up messages.
-        handle_keystroke(event.xkey);
+        if (!XFilterEvent(&event, None)) {
+          // In particular, we only generate down messages for the repeated
+          // keys, not down-and-up messages.
+          handle_keystroke(event.xkey);
 
-        // We thought about not generating the keypress event, but we need
-        // that repeat for backspace.  Rethink later.
-        handle_keypress(event.xkey);
+          // We thought about not generating the keypress event, but we need
+          // that repeat for backspace.  Rethink later.
+          handle_keypress(event.xkey);
+        }
         continue;
 
       } else {
         // This keyrelease event is not immediately followed by a matching
         // keypress event, so it's a genuine release.
+        ButtonHandle raw_button = map_raw_button(keyrelease_event.keycode);
+        if (raw_button != ButtonHandle::none()) {
+          _input->raw_button_up(raw_button);
+        }
+
         handle_keyrelease(keyrelease_event);
       }
+    }
+
+    // Send out a raw key press event before we do XFilterEvent, which will
+    // filter out dead keys and such.
+    if (event.type == KeyPress) {
+      ButtonHandle raw_button = map_raw_button(event.xkey.keycode);
+      if (raw_button != ButtonHandle::none()) {
+        _input->raw_button_down(raw_button);
+      }
+    }
+
+    if (XFilterEvent(&event, None)) {
+      continue;
     }
 
     ButtonHandle button;
 
     switch (event.type) {
     case ReparentNotify:
+      break;
+
+    case PropertyNotify:
+      //std::cout << "PropertyNotify event: atom = " << event.xproperty.atom << std::endl;
+      x11GraphicsPipe *x11_pipe;
+      DCAST_INTO_V(x11_pipe, _pipe);
+      if (event.xproperty.atom == x11_pipe->_net_wm_state) {
+        // currently we're only interested in the net_wm_state type of
+        // changes and only need to gather property informations once at
+        // the end after the while loop
+        property_event = event.xproperty;
+        got_net_wm_state_change = true;
+      }
       break;
 
     case ConfigureNotify:
@@ -311,26 +388,57 @@ process_events() {
     case ButtonPress:
       // This refers to the mouse buttons.
       button = get_mouse_button(event.xbutton);
-      if (!_dga_mouse_enabled) {
-        _input_devices[0].set_pointer_in_window(event.xbutton.x, event.xbutton.y);
+      if (_properties.get_mouse_mode() != WindowProperties::M_relative) {
+        _input->set_pointer_in_window(event.xbutton.x, event.xbutton.y);
       }
-      _input_devices[0].button_down(button);
+      _input->button_down(button);
       break;
 
     case ButtonRelease:
       button = get_mouse_button(event.xbutton);
-      if (!_dga_mouse_enabled) {
-        _input_devices[0].set_pointer_in_window(event.xbutton.x, event.xbutton.y);
+      if (_properties.get_mouse_mode() != WindowProperties::M_relative) {
+        _input->set_pointer_in_window(event.xbutton.x, event.xbutton.y);
       }
-      _input_devices[0].button_up(button);
+      _input->button_up(button);
       break;
 
     case MotionNotify:
-      if (_dga_mouse_enabled) {
-        const MouseData &md = _input_devices[0].get_raw_pointer();
-        _input_devices[0].set_pointer_in_window(md.get_x() + event.xmotion.x_root, md.get_y() + event.xmotion.y_root);
-      } else {
-        _input_devices[0].set_pointer_in_window(event.xmotion.x, event.xmotion.y);
+      if (!_raw_mouse_enabled) {
+        if (_dga_mouse_enabled) {
+          PointerData md = _input->get_pointer();
+          _input->set_pointer_in_window(md.get_x() + event.xmotion.x_root, md.get_y() + event.xmotion.y_root);
+        } else {
+          _input->set_pointer_in_window(event.xmotion.x, event.xmotion.y);
+        }
+      }
+      break;
+
+    case GenericEvent:
+      if (_raw_mouse_enabled) {
+        XGenericEventCookie *cookie = &event.xcookie;
+        XGetEventData(_display, cookie);
+
+        x11GraphicsPipe *x11_pipe;
+        DCAST_INTO_V(x11_pipe, _pipe);
+
+        if (cookie->evtype == XI_RawMotion &&
+            cookie->extension == x11_pipe->_xi_opcode) {
+          const XIRawEvent *raw_event = (const XIRawEvent *)cookie->data;
+          const double *values = raw_event->raw_values;
+
+          double x = 0, y = 0;
+          if (XIMaskIsSet(raw_event->valuators.mask, 0)) {
+            x = values[0];
+          }
+          if (XIMaskIsSet(raw_event->valuators.mask, 1)) {
+            y = values[1];
+          }
+
+          PointerData md = _input->get_pointer();
+          _input->set_pointer_in_window(md.get_x() + x, md.get_y() + y);
+        }
+
+        XFreeEventData(_display, cookie);
       }
       break;
 
@@ -348,16 +456,16 @@ process_events() {
       break;
 
     case EnterNotify:
-      if (_dga_mouse_enabled) {
-        const MouseData &md = _input_devices[0].get_raw_pointer();
-        _input_devices[0].set_pointer_in_window(md.get_x(), md.get_y());
+      if (_properties.get_mouse_mode() == WindowProperties::M_relative) {
+        PointerData md = _input->get_pointer();
+        _input->set_pointer_in_window(md.get_x(), md.get_y());
       } else {
-        _input_devices[0].set_pointer_in_window(event.xcrossing.x, event.xcrossing.y);
+        _input->set_pointer_in_window(event.xcrossing.x, event.xcrossing.y);
       }
       break;
 
     case LeaveNotify:
-      _input_devices[0].set_pointer_out_of_window();
+      _input->set_pointer_out_of_window();
       break;
 
     case FocusIn:
@@ -366,7 +474,7 @@ process_events() {
       break;
 
     case FocusOut:
-      _input_devices[0].focus_lost();
+      _input->focus_lost();
       properties.set_foreground(false);
       changed_properties = true;
       break;
@@ -446,6 +554,89 @@ process_events() {
         XConfigureWindow(_display, _xwindow, value_mask, &changes);
       }
     }
+
+    // If the window was reconfigured, we may need to re-confine the mouse
+    // pointer.  See GitHub bug #280.
+    if (_properties.get_mouse_mode() == WindowProperties::M_confined) {
+      X11_Cursor cursor = None;
+      if (_properties.get_cursor_hidden()) {
+        x11GraphicsPipe *x11_pipe;
+        DCAST_INTO_V(x11_pipe, _pipe);
+        cursor = x11_pipe->get_hidden_cursor();
+      }
+
+      XGrabPointer(_display, _xwindow, True, 0, GrabModeAsync, GrabModeAsync,
+                   _xwindow, cursor, CurrentTime);
+    }
+
+    changed_properties = true;
+  }
+
+  if (properties.has_foreground() &&
+      (_properties.get_mouse_mode() != WindowProperties::M_absolute)) {
+       x11GraphicsPipe *x11_pipe;
+       DCAST_INTO_V(x11_pipe, _pipe);
+
+      // Focus has changed, let's let go of the pointer if we've grabbed or re-grab it if needed
+      if (properties.get_foreground()) {
+        // Window is going to the foreground, re-grab the pointer
+        X11_Cursor cursor = None;
+        if (_properties.get_cursor_hidden()) {
+            cursor = x11_pipe->get_hidden_cursor();
+        }
+
+        XGrabPointer(_display, _xwindow, True, 0, GrabModeAsync, GrabModeAsync,
+                    _xwindow, cursor, CurrentTime);
+        if (_dga_mouse_enabled) {
+          x11_pipe->enable_dga_mouse();
+        }
+      }
+      else {
+        // window is leaving the foreground, ungrab the pointer
+        if (_dga_mouse_enabled) {
+          x11_pipe->disable_dga_mouse();
+        } else if (_properties.get_mouse_mode() == WindowProperties::M_confined) {
+          XUngrabPointer(_display, CurrentTime);
+        }
+      }
+  }
+
+  if (got_net_wm_state_change) {
+    // some wm state properties have been changed, check their values
+    // once in this part instead of multiple times in the while loop
+
+    // Check if this window is maximized or not
+    bool is_maximized = false;
+    Atom wmState = property_event.atom;
+    Atom type;
+    int format;
+    unsigned long nItem, bytesAfter;
+    unsigned char *new_window_properties = NULL;
+    // gather all properties from the active dispplay and window
+    XGetWindowProperty(_display, _xwindow, wmState, 0, LONG_MAX, false, AnyPropertyType, &type, &format, &nItem, &bytesAfter, &new_window_properties);
+    if (nItem > 0) {
+      x11GraphicsPipe *x11_pipe;
+      DCAST_INTO_V(x11_pipe, _pipe);
+      // run through all found items
+      for (unsigned long iItem = 0; iItem < nItem; ++iItem) {
+        unsigned long item = reinterpret_cast<unsigned long *>(new_window_properties)[iItem];
+        // check if the item is one of the maximized states
+        if (item == x11_pipe->_net_wm_state_maximized_horz ||
+            item == x11_pipe->_net_wm_state_maximized_vert) {
+          // The window was maximized
+          is_maximized = true;
+        }
+      }
+    }
+
+    // Debug entry
+    if (x11display_cat.is_debug()) {
+      x11display_cat.debug()
+        << "set maximized to: " << is_maximized << "\n";
+    }
+
+    // Now make sure the property will get stored correctly
+    properties.set_maximized(is_maximized);
     changed_properties = true;
   }
 
@@ -456,6 +647,11 @@ process_events() {
   if (got_keyrelease_event) {
     // This keyrelease event is not immediately followed by a matching
     // keypress event, so it's a genuine release.
+    ButtonHandle raw_button = map_raw_button(keyrelease_event.keycode);
+    if (raw_button != ButtonHandle::none()) {
+      _input->raw_button_up(raw_button);
+    }
+
     handle_keyrelease(keyrelease_event);
   }
 }
@@ -474,7 +670,7 @@ process_events() {
  */
 void x11GraphicsWindow::
 set_properties_now(WindowProperties &properties) {
-  if (_pipe == (GraphicsPipe *)NULL) {
+  if (_pipe == nullptr) {
     // If the pipe is null, we're probably closing down.
     GraphicsWindow::set_properties_now(properties);
     return;
@@ -483,25 +679,73 @@ set_properties_now(WindowProperties &properties) {
   x11GraphicsPipe *x11_pipe;
   DCAST_INTO_V(x11_pipe, _pipe);
 
+  LightReMutexHolder holder(x11GraphicsPipe::_x_mutex);
+
   // We're either going into or out of fullscreen, or are in fullscreen and
   // are changing the resolution.
   bool is_fullscreen = _properties.has_fullscreen() && _properties.get_fullscreen();
   bool want_fullscreen = properties.has_fullscreen() ? properties.get_fullscreen() : is_fullscreen;
 
+  if (want_fullscreen && properties.has_origin()) {
+    // If we're fullscreen, reject changes to the origin.
+    properties.clear_origin();
+  }
+
   if (is_fullscreen != want_fullscreen || (is_fullscreen && properties.has_size())) {
     if (want_fullscreen) {
-      if (x11_pipe->_have_xrandr) {
-        XRRScreenConfiguration* conf = _XRRGetScreenInfo(_display, x11_pipe->get_root());
+      // OK, first figure out which CRTC the window is on.  It may be on more
+      // than one, actually, so grab a point in the center in order to figure
+      // out which one it's more-or-less mostly on.
+      LPoint2i center(0, 0);
+      if (_properties.has_origin()) {
+        center = _properties.get_origin();
+        if (_properties.has_size()) {
+          center += _properties.get_size() / 2;
+        }
+      }
+      int x, y, width, height;
+      x11_pipe->find_fullscreen_crtc(center, x, y, width, height);
+
+      // Which size should we go fullscreen in?
+      int reqsizex, reqsizey;
+      if (properties.has_size()) {
+        reqsizex = properties.get_x_size();
+        reqsizey = properties.get_y_size();
+      } else if (_properties.has_size()) {
+        reqsizex = _properties.get_x_size();
+        reqsizey = _properties.get_y_size();
+      } else {
+        reqsizex = width;
+        reqsizey = height;
+      }
+
+      // Are we passing in pipe.display_width/height?  This is actually the
+      // size of the virtual desktop, which may not be a real resolution, so
+      // if that is passed in, we have to assume that the user means to just
+      // fullscreen without changing the screen resolution.
+      if ((reqsizex == x11_pipe->get_display_width() &&
+           reqsizey == x11_pipe->get_display_height())
+          || (width == reqsizex && height == reqsizey)
+          || !x11_pipe->_have_xrandr) {
+
+        // Cover the current CRTC.
+        properties.set_origin(x, y);
+        properties.set_size(width, height);
+
+        if (x11display_cat.is_debug()) {
+          x11display_cat.debug()
+            << "Setting window to fullscreen on CRTC "
+            << width << "x" << height << "+" << x << "+" << y << "\n";
+        }
+      } else {
+        // We may need to change the screen resolution.  The code below is
+        // suboptimal; in the future, we probably want to only touch the CRTC
+        // that the window is on.
+        XRRScreenConfiguration *conf = _XRRGetScreenInfo(_display, _xwindow ? _xwindow : x11_pipe->get_root());
         SizeID old_size_id = x11_pipe->_XRRConfigCurrentConfiguration(conf, &_orig_rotation);
         SizeID new_size_id = (SizeID) -1;
-        int num_sizes = 0, reqsizex, reqsizey;
-        if (properties.has_size()) {
-          reqsizex = properties.get_x_size();
-          reqsizey = properties.get_y_size();
-        } else {
-          reqsizex = _properties.get_x_size();
-          reqsizey = _properties.get_y_size();
-        }
+        int num_sizes = 0;
+
         XRRScreenSize *xrrs;
         xrrs = x11_pipe->_XRRSizes(_display, 0, &num_sizes);
         for (int i = 0; i < num_sizes; ++i) {
@@ -514,21 +758,29 @@ set_properties_now(WindowProperties &properties) {
           x11display_cat.error()
             << "Videocard has no supported display resolutions at specified res ("
             << reqsizex << " x " << reqsizey << ")\n";
-        } else {
-          if (new_size_id != old_size_id) {
 
+          // Just go fullscreen at native resolution, then.
+          properties.set_origin(x, y);
+          properties.set_size(width, height);
+        } else {
+          if (x11display_cat.is_debug()) {
+            x11display_cat.debug()
+              << "Switching to fullscreen with resolution "
+              << reqsizex << "x" << reqsizey << "\n";
+          }
+
+          if (new_size_id != old_size_id) {
             _XRRSetScreenConfig(_display, conf, x11_pipe->get_root(), new_size_id, _orig_rotation, CurrentTime);
             if (_orig_size_id == (SizeID) -1) {
               // Remember the original resolution so we can switch back to it.
               _orig_size_id = old_size_id;
             }
+
+            // Since the above changes the entire screen configuration, we
+            // have to set the origin to 0, 0.
+            properties.set_origin(0, 0);
           }
         }
-      } else {
-        // If we don't have Xrandr support, we fake the fullscreen support by
-        // setting the window size to the desktop size.
-        properties.set_size(x11_pipe->get_display_width(),
-                            x11_pipe->get_display_height());
       }
     } else {
       // Change the resolution back to what it was.  Don't remove the SizeID
@@ -592,6 +844,12 @@ set_properties_now(WindowProperties &properties) {
   if (properties.has_fullscreen()) {
     _properties.set_fullscreen(properties.get_fullscreen());
     properties.clear_fullscreen();
+  }
+
+  // Same for maximized.
+  if (properties.has_maximized()) {
+    _properties.set_maximized(properties.get_maximized());
+    properties.clear_maximized();
   }
 
   // The size and position of an already-open window are changed via explicit
@@ -683,6 +941,12 @@ set_properties_now(WindowProperties &properties) {
     } else {
       XDefineCursor(_display, _xwindow, None);
     }
+
+    // Regrab the mouse if we changed the cursor, otherwise it won't update.
+    if (!properties.has_mouse_mode() &&
+        _properties.get_mouse_mode() != WindowProperties::M_absolute) {
+      properties.set_mouse_mode(_properties.get_mouse_mode());
+    }
   }
 
   if (properties.has_foreground()) {
@@ -699,8 +963,12 @@ set_properties_now(WindowProperties &properties) {
     case WindowProperties::M_absolute:
       XUngrabPointer(_display, CurrentTime);
       if (_dga_mouse_enabled) {
-        x11_pipe->disable_relative_mouse();
+        x11_pipe->disable_dga_mouse();
         _dga_mouse_enabled = false;
+      }
+      if (_raw_mouse_enabled) {
+        x11_pipe->disable_raw_mouse();
+        _raw_mouse_enabled = false;
       }
       _properties.set_mouse_mode(WindowProperties::M_absolute);
       properties.clear_mouse_mode();
@@ -720,24 +988,23 @@ set_properties_now(WindowProperties &properties) {
               GrabModeAsync, _xwindow, cursor, CurrentTime) != GrabSuccess) {
             x11display_cat.error() << "Failed to grab pointer!\n";
           } else {
-            x11_pipe->enable_relative_mouse();
+            if (x11_pipe->enable_dga_mouse()) {
+              _dga_mouse_enabled = true;
+            } else {
+              _raw_mouse_enabled = _raw_mouse_enabled || x11_pipe->enable_raw_mouse();
+            }
 
             _properties.set_mouse_mode(WindowProperties::M_relative);
             properties.clear_mouse_mode();
-            _dga_mouse_enabled = true;
 
-            // Get the real mouse position, so we can addsubtract our relative
+            // Get the real mouse position, so we can add/subtract our relative
             // coordinates later.
             XEvent event;
             XQueryPointer(_display, _xwindow, &event.xbutton.root,
               &event.xbutton.window, &event.xbutton.x_root, &event.xbutton.y_root,
               &event.xbutton.x, &event.xbutton.y, &event.xbutton.state);
-            _input_devices[0].set_pointer_in_window(event.xbutton.x, event.xbutton.y);
+            _input->set_pointer_in_window(event.xbutton.x, event.xbutton.y);
           }
-        } else {
-          x11display_cat.info()
-            << "XF86DGA extension not available, cannot enable relative mouse mode\n";
-          _dga_mouse_enabled = false;
         }
       }
       break;
@@ -748,8 +1015,12 @@ set_properties_now(WindowProperties &properties) {
         DCAST_INTO_V(x11_pipe, _pipe);
 
         if (_dga_mouse_enabled) {
-          x11_pipe->disable_relative_mouse();
+          x11_pipe->disable_dga_mouse();
           _dga_mouse_enabled = false;
+        }
+        if (_raw_mouse_enabled) {
+          x11_pipe->disable_raw_mouse();
+          _raw_mouse_enabled = false;
         }
         X11_Cursor cursor = None;
         if (_properties.get_cursor_hidden()) {
@@ -799,18 +1070,19 @@ mouse_mode_relative() {
  */
 void x11GraphicsWindow::
 close_window() {
-  if (_gsg != (GraphicsStateGuardian *)NULL) {
+  if (_gsg != nullptr) {
     _gsg.clear();
   }
 
-  if (_ic != (XIC)NULL) {
+  LightReMutexHolder holder(x11GraphicsPipe::_x_mutex);
+  if (_ic != (XIC)nullptr) {
     XDestroyIC(_ic);
-    _ic = (XIC)NULL;
+    _ic = (XIC)nullptr;
   }
 
-  if (_xwindow != (X11_Window)NULL) {
+  if (_xwindow != (X11_Window)nullptr) {
     XDestroyWindow(_display, _xwindow);
-    _xwindow = (X11_Window)NULL;
+    _xwindow = (X11_Window)nullptr;
 
     // This may be necessary if we just closed the last X window in an
     // application, so the server hears the close request.
@@ -821,7 +1093,7 @@ close_window() {
   // typecast!
   if (_orig_size_id != (SizeID) -1) {
     X11_Window root;
-    if (_pipe != NULL) {
+    if (_pipe != nullptr) {
       x11GraphicsPipe *x11_pipe;
       DCAST_INTO_V(x11_pipe, _pipe);
       root = x11_pipe->get_root();
@@ -844,7 +1116,7 @@ close_window() {
  */
 bool x11GraphicsWindow::
 open_window() {
-  if (_visual_info == NULL) {
+  if (_visual_info == nullptr) {
     // No X visual for this fbconfig; how can we open the window?
     x11display_cat.error()
       << "No X visual: cannot open window.\n";
@@ -861,41 +1133,16 @@ open_window() {
     _properties.set_size(100, 100);
   }
 
-  if (_properties.get_fullscreen() && x11_pipe->_have_xrandr) {
-    XRRScreenConfiguration* conf = _XRRGetScreenInfo(_display, x11_pipe->get_root());
-    if (_orig_size_id == (SizeID) -1) {
-      _orig_size_id = x11_pipe->_XRRConfigCurrentConfiguration(conf, &_orig_rotation);
-    }
-    int num_sizes, new_size_id = -1;
-    XRRScreenSize *xrrs;
-    xrrs = x11_pipe->_XRRSizes(_display, 0, &num_sizes);
-    for (int i = 0; i < num_sizes; ++i) {
-      if (xrrs[i].width == _properties.get_x_size() &&
-          xrrs[i].height == _properties.get_y_size()) {
-        new_size_id = i;
-      }
-    }
-    if (new_size_id == -1) {
-      x11display_cat.error()
-        << "Videocard has no supported display resolutions at specified res ("
-        << _properties.get_x_size() << " x " << _properties.get_y_size() <<")\n";
-      _orig_size_id = -1;
-      return false;
-    }
-    if (new_size_id != _orig_size_id) {
-      _XRRSetScreenConfig(_display, conf, x11_pipe->get_root(), new_size_id, _orig_rotation, CurrentTime);
-    } else {
-      _orig_size_id = -1;
-    }
-  }
+  // Make sure we are not making X11 calls from other threads.
+  LightReMutexHolder holder(x11GraphicsPipe::_x_mutex);
 
   X11_Window parent_window = x11_pipe->get_root();
   WindowHandle *window_handle = _properties.get_parent_window();
-  if (window_handle != NULL) {
+  if (window_handle != nullptr) {
     x11display_cat.info()
       << "Got parent_window " << *window_handle << "\n";
     WindowHandle::OSHandle *os_handle = window_handle->get_os_handle();
-    if (os_handle != NULL) {
+    if (os_handle != nullptr) {
       x11display_cat.info()
         << "os_handle type " << os_handle->get_type() << "\n";
 
@@ -915,7 +1162,8 @@ open_window() {
     KeyPressMask | KeyReleaseMask |
     EnterWindowMask | LeaveWindowMask |
     PointerMotionMask |
-    FocusChangeMask | StructureNotifyMask;
+    FocusChangeMask | StructureNotifyMask |
+    PropertyChangeMask;
 
   // Initialize window attributes
   XSetWindowAttributes wa;
@@ -952,13 +1200,11 @@ open_window() {
   // can wait until we have an X server that actually supports these to test
   // it on.
   XIM im = x11_pipe->get_im();
-  _ic = NULL;
+  _ic = nullptr;
   if (im) {
-    _ic = XCreateIC
-      (im,
-       XNInputStyle, XIMPreeditNothing | XIMStatusNothing,
-       (void*)NULL);
-    if (_ic == (XIC)NULL) {
+    _ic = XCreateIC(im, XNInputStyle, XIMPreeditNothing | XIMStatusNothing,
+                    XNClientWindow, _xwindow, nullptr);
+    if (_ic == (XIC)nullptr) {
       x11display_cat.warning()
         << "Couldn't create input context.\n";
     }
@@ -988,7 +1234,7 @@ open_window() {
   _window_handle = NativeWindowHandle::make_x11(_xwindow);
 
   // And tell our parent window that we're now its child.
-  if (_parent_window_handle != (WindowHandle *)NULL) {
+  if (_parent_window_handle != nullptr) {
     _parent_window_handle->attach_child(_window_handle);
   }
 
@@ -1004,6 +1250,8 @@ open_window() {
  * If already_mapped is true, the window has already been mapped (manifested)
  * on the display.  This means we may need to use a different action in some
  * cases.
+ *
+ * Assumes the X11 lock is held.
  */
 void x11GraphicsWindow::
 set_wm_properties(const WindowProperties &properties, bool already_mapped) {
@@ -1012,7 +1260,7 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
 
   // Name the window if there is a name
   XTextProperty window_name;
-  XTextProperty *window_name_p = (XTextProperty *)NULL;
+  XTextProperty *window_name_p = nullptr;
   if (properties.has_title()) {
     const char *name = properties.get_title().c_str();
     if (XStringListToTextProperty((char **)&name, 1, &window_name) != 0) {
@@ -1022,18 +1270,13 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
 
   // The size hints request a window of a particular size andor a particular
   // placement onscreen.
-  XSizeHints *size_hints_p = NULL;
+  XSizeHints *size_hints_p = nullptr;
   if (properties.has_origin() || properties.has_size()) {
     size_hints_p = XAllocSizeHints();
-    if (size_hints_p != (XSizeHints *)NULL) {
+    if (size_hints_p != nullptr) {
       if (properties.has_origin()) {
-        if (_properties.get_fullscreen()) {
-          size_hints_p->x = 0;
-          size_hints_p->y = 0;
-        } else {
-          size_hints_p->x = properties.get_x_origin();
-          size_hints_p->y = properties.get_y_origin();
-        }
+        size_hints_p->x = properties.get_x_origin();
+        size_hints_p->y = properties.get_y_origin();
         size_hints_p->flags |= USPosition;
       }
       LVecBase2i size = _properties.get_size();
@@ -1055,9 +1298,9 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
 
   // The window manager hints include requests to the window manager other
   // than those specific to window geometry.
-  XWMHints *wm_hints_p = NULL;
+  XWMHints *wm_hints_p = nullptr;
   wm_hints_p = XAllocWMHints();
-  if (wm_hints_p != (XWMHints *)NULL) {
+  if (wm_hints_p != nullptr) {
     if (properties.has_minimized() && properties.get_minimized()) {
       wm_hints_p->initial_state = IconicState;
     } else {
@@ -1088,6 +1331,18 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
   SetAction set_data[max_set_data];
   int next_set_data = 0;
 
+  if (properties.has_maximized()) {
+    if (properties.get_maximized()) {
+      state_data[next_state_data++] = x11_pipe->_net_wm_state_maximized_vert;
+      set_data[next_set_data++] = SetAction(x11_pipe->_net_wm_state_maximized_vert, 1);
+      state_data[next_state_data++] = x11_pipe->_net_wm_state_maximized_horz;
+      set_data[next_set_data++] = SetAction(x11_pipe->_net_wm_state_maximized_horz, 1);
+    } else {
+      set_data[next_set_data++] = SetAction(x11_pipe->_net_wm_state_maximized_vert, 0);
+      set_data[next_set_data++] = SetAction(x11_pipe->_net_wm_state_maximized_horz, 0);
+    }
+  }
+
   if (properties.has_fullscreen()) {
     if (properties.get_fullscreen()) {
       // For a "fullscreen" request, we pass this through, hoping the window
@@ -1114,7 +1369,7 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
   // For other users, we'll totally punt and just set the window's Class to
   // "Undecorated", and let the user configure hisher window manager not to
   // put a border around windows of this class.
-  XClassHint *class_hints_p = NULL;
+  XClassHint *class_hints_p = nullptr;
   if (!x_wm_class.empty()) {
     // Unless the user wanted to use his own WM_CLASS, of course.
     class_hints_p = XAllocClassHint();
@@ -1169,6 +1424,14 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
                   XA_CARDINAL, 32, PropModeReplace,
                   (unsigned char *)&pid, 1);
 
+  // Disable compositing effects in fullscreen mode.
+  if (properties.has_fullscreen()) {
+    int32_t compositor = properties.get_fullscreen() ? 1 : 0;
+    XChangeProperty(_display, _xwindow, x11_pipe->_net_wm_bypass_compositor,
+                    XA_CARDINAL, 32, PropModeReplace,
+                    (unsigned char *)&compositor, 1);
+  }
+
   XChangeProperty(_display, _xwindow, x11_pipe->_net_wm_window_type,
                   XA_ATOM, 32, PropModeReplace,
                   (unsigned char *)type_data, next_type_data);
@@ -1205,15 +1468,15 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
   }
 
   XSetWMProperties(_display, _xwindow, window_name_p, window_name_p,
-                   NULL, 0, size_hints_p, wm_hints_p, class_hints_p);
+                   nullptr, 0, size_hints_p, wm_hints_p, class_hints_p);
 
-  if (size_hints_p != (XSizeHints *)NULL) {
+  if (size_hints_p != nullptr) {
     XFree(size_hints_p);
   }
-  if (wm_hints_p != (XWMHints *)NULL) {
+  if (wm_hints_p != nullptr) {
     XFree(wm_hints_p);
   }
-  if (class_hints_p != (XClassHint *)NULL) {
+  if (class_hints_p != nullptr) {
     XFree(class_hints_p);
   }
 
@@ -1244,6 +1507,7 @@ setup_colormap(XVisualInfo *visual) {
 
 /**
  * Adds raw mice to the _input_devices list.
+ * @deprecated obtain raw devices via the device manager instead.
  */
 void x11GraphicsWindow::
 open_raw_mice() {
@@ -1252,66 +1516,43 @@ open_raw_mice() {
   bool any_mice = false;
 
   for (int i=0; i<64; i++) {
-    uint8_t evtypes[EV_MAX/8 + 1];
     ostringstream fnb;
     fnb << "/dev/input/event" << i;
     string fn = fnb.str();
     int fd = open(fn.c_str(), O_RDONLY | O_NONBLOCK, 0);
     if (fd >= 0) {
-      any_present = true;
-      char name[256];
-      char phys[256];
-      char uniq[256];
-      if ((ioctl(fd, EVIOCGNAME(sizeof(name)), name) < 0)||
-          (ioctl(fd, EVIOCGPHYS(sizeof(phys)), phys) < 0)||
-          (ioctl(fd, EVIOCGPHYS(sizeof(uniq)), uniq) < 0)||
-          (ioctl(fd, EVIOCGBIT(0, EV_MAX), &evtypes) < 0)) {
-        close(fd);
-        x11display_cat.error() <<
-          "Opening raw mice: ioctl failed on " << fn << "\n";
-      } else {
-        if (test_bit(EV_REL, evtypes) || test_bit(EV_ABS, evtypes)) {
-          for (char *p=name; *p; p++) {
-            if (((*p<'a')||(*p>'z')) && ((*p<'A')||(*p>'Z')) && ((*p<'0')||(*p>'9'))) {
-              *p = '_';
-            }
-          }
-          for (char *p=uniq; *p; p++) {
-            if (((*p<'a')||(*p>'z')) && ((*p<'A')||(*p>'Z')) && ((*p<'0')||(*p>'9'))) {
-              *p = '_';
-            }
-          }
-          string full_id = ((string)name) + "." + uniq;
-          MouseDeviceInfo inf;
-          inf._fd = fd;
-          inf._input_device_index = _input_devices.size();
-          inf._io_buffer = "";
-          _mouse_device_info.push_back(inf);
-          GraphicsWindowInputDevice device =
-            GraphicsWindowInputDevice::pointer_only(this, full_id);
-          add_input_device(device);
-          x11display_cat.info() << "Raw mouse " <<
-            inf._input_device_index << " detected: " << full_id << "\n";
-          any_mice = true;
-        } else {
-          close(fd);
-        }
+      EvdevInputDevice *device = new EvdevInputDevice(nullptr, fd);
+      nassertd(device != NULL) continue;
+
+      if (device->has_pointer()) {
+        add_input_device(device);
+
+        x11display_cat.info()
+          << "Raw mouse " << _input_devices.size()
+          << " detected: " << device->get_name() << "\n";
+
+        any_mice = true;
+        any_present = true;
       }
     } else {
-      if ((errno == ENOENT)||(errno == ENOTDIR)) {
+      if (errno == ENOENT || errno == ENOTDIR) {
         break;
       } else {
         any_present = true;
-        x11display_cat.error() <<
-          "Opening raw mice: " << strerror(errno) << " " << fn << "\n";
+        x11display_cat.error()
+          << "Opening raw mice: " << strerror(errno) << " " << fn << "\n";
       }
     }
   }
 
-  if (!any_present) {
+  if (any_mice) {
+    _properties.set_raw_mice(true);
+
+  } else if (!any_present) {
     x11display_cat.error() <<
       "Opening raw mice: files not found: /dev/input/event*\n";
-  } else if (!any_mice) {
+
+  } else {
     x11display_cat.error() <<
       "Opening raw mice: no mouse devices detected in /dev/input/event*\n";
   }
@@ -1322,73 +1563,12 @@ open_raw_mice() {
 }
 
 /**
- * Reads events from the raw mouse device files.
- */
-void x11GraphicsWindow::
-poll_raw_mice() {
-#ifdef PHAVE_LINUX_INPUT_H
-  for (int di = 0; di < _mouse_device_info.size(); ++di) {
-    MouseDeviceInfo &inf = _mouse_device_info[di];
-
-    // Read all bytes into buffer.
-    if (inf._fd >= 0) {
-      while (1) {
-        char tbuf[1024];
-        int nread = read(inf._fd, tbuf, sizeof(tbuf));
-        if (nread > 0) {
-          inf._io_buffer += string(tbuf, nread);
-        } else {
-          if ((nread < 0) && ((errno == EWOULDBLOCK) || (errno==EAGAIN))) {
-            break;
-          }
-          close(inf._fd);
-          inf._fd = -1;
-          break;
-        }
-      }
-    }
-
-    // Process events.
-    int nevents = inf._io_buffer.size() / sizeof(struct input_event);
-    if (nevents == 0) {
-      continue;
-    }
-    const input_event *events = (const input_event *)(inf._io_buffer.c_str());
-    GraphicsWindowInputDevice &dev = _input_devices[inf._input_device_index];
-    int x = dev.get_raw_pointer().get_x();
-    int y = dev.get_raw_pointer().get_y();
-    for (int i = 0; i < nevents; i++) {
-      if (events[i].type == EV_REL) {
-        if (events[i].code == REL_X) x += events[i].value;
-        if (events[i].code == REL_Y) y += events[i].value;
-      } else if (events[i].type == EV_ABS) {
-        if (events[i].code == ABS_X) x = events[i].value;
-        if (events[i].code == ABS_Y) y = events[i].value;
-      } else if (events[i].type == EV_KEY) {
-        if ((events[i].code >= BTN_MOUSE) && (events[i].code < BTN_MOUSE + 8)) {
-          int btn = events[i].code - BTN_MOUSE;
-          dev.set_pointer_in_window(x, y);
-          if (events[i].value) {
-            dev.button_down(MouseButton::button(btn));
-          } else {
-            dev.button_up(MouseButton::button(btn));
-          }
-        }
-      }
-    }
-    inf._io_buffer.erase(0, nevents * sizeof(struct input_event));
-    dev.set_pointer_in_window(x, y);
-  }
-#endif
-}
-
-/**
  * Generates a keystroke corresponding to the indicated X KeyPress event.
  */
 void x11GraphicsWindow::
 handle_keystroke(XKeyEvent &event) {
-  if (!_dga_mouse_enabled) {
-    _input_devices[0].set_pointer_in_window(event.x, event.y);
+  if (_properties.get_mouse_mode() != WindowProperties::M_relative) {
+    _input->set_pointer_in_window(event.x, event.y);
   }
 
   if (_ic) {
@@ -1396,7 +1576,7 @@ handle_keystroke(XKeyEvent &event) {
     static const int buffer_size = 256;
     wchar_t buffer[buffer_size];
     Status status;
-    int len = XwcLookupString(_ic, &event, buffer, buffer_size, NULL,
+    int len = XwcLookupString(_ic, &event, buffer, buffer_size, nullptr,
                               &status);
     if (status == XBufferOverflow) {
       x11display_cat.error()
@@ -1405,14 +1585,14 @@ handle_keystroke(XKeyEvent &event) {
 
     // Now each of the returned wide characters represents a keystroke.
     for (int i = 0; i < len; i++) {
-      _input_devices[0].keystroke(buffer[i]);
+      _input->keystroke(buffer[i]);
     }
 
   } else {
     // Without an input context, just get the ascii keypress.
     ButtonHandle button = get_button(event, true);
     if (button.has_ascii_equivalent()) {
-      _input_devices[0].keystroke(button.get_ascii_equivalent());
+      _input->keystroke(button.get_ascii_equivalent());
     }
   }
 }
@@ -1422,31 +1602,26 @@ handle_keystroke(XKeyEvent &event) {
  */
 void x11GraphicsWindow::
 handle_keypress(XKeyEvent &event) {
-  if (!_dga_mouse_enabled) {
-    _input_devices[0].set_pointer_in_window(event.x, event.y);
+  if (_properties.get_mouse_mode() != WindowProperties::M_relative) {
+    _input->set_pointer_in_window(event.x, event.y);
   }
 
   // Now get the raw unshifted button.
   ButtonHandle button = get_button(event, false);
   if (button != ButtonHandle::none()) {
     if (button == KeyboardButton::lcontrol() || button == KeyboardButton::rcontrol()) {
-      _input_devices[0].button_down(KeyboardButton::control());
+      _input->button_down(KeyboardButton::control());
     }
     if (button == KeyboardButton::lshift() || button == KeyboardButton::rshift()) {
-      _input_devices[0].button_down(KeyboardButton::shift());
+      _input->button_down(KeyboardButton::shift());
     }
     if (button == KeyboardButton::lalt() || button == KeyboardButton::ralt()) {
-      _input_devices[0].button_down(KeyboardButton::alt());
+      _input->button_down(KeyboardButton::alt());
     }
     if (button == KeyboardButton::lmeta() || button == KeyboardButton::rmeta()) {
-      _input_devices[0].button_down(KeyboardButton::meta());
+      _input->button_down(KeyboardButton::meta());
     }
-    _input_devices[0].button_down(button);
-  }
-
-  ButtonHandle raw_button = map_raw_button(event.keycode);
-  if (raw_button != ButtonHandle::none()) {
-    _input_devices[0].raw_button_down(raw_button);
+    _input->button_down(button);
   }
 }
 
@@ -1455,31 +1630,26 @@ handle_keypress(XKeyEvent &event) {
  */
 void x11GraphicsWindow::
 handle_keyrelease(XKeyEvent &event) {
-  if (!_dga_mouse_enabled) {
-    _input_devices[0].set_pointer_in_window(event.x, event.y);
+  if (_properties.get_mouse_mode() != WindowProperties::M_relative) {
+    _input->set_pointer_in_window(event.x, event.y);
   }
 
   // Now get the raw unshifted button.
   ButtonHandle button = get_button(event, false);
   if (button != ButtonHandle::none()) {
     if (button == KeyboardButton::lcontrol() || button == KeyboardButton::rcontrol()) {
-      _input_devices[0].button_up(KeyboardButton::control());
+      _input->button_up(KeyboardButton::control());
     }
     if (button == KeyboardButton::lshift() || button == KeyboardButton::rshift()) {
-      _input_devices[0].button_up(KeyboardButton::shift());
+      _input->button_up(KeyboardButton::shift());
     }
     if (button == KeyboardButton::lalt() || button == KeyboardButton::ralt()) {
-      _input_devices[0].button_up(KeyboardButton::alt());
+      _input->button_up(KeyboardButton::alt());
     }
     if (button == KeyboardButton::lmeta() || button == KeyboardButton::rmeta()) {
-      _input_devices[0].button_up(KeyboardButton::meta());
+      _input->button_up(KeyboardButton::meta());
     }
-    _input_devices[0].button_up(button);
-  }
-
-  ButtonHandle raw_button = map_raw_button(event.keycode);
-  if (raw_button != ButtonHandle::none()) {
-    _input_devices[0].raw_button_up(raw_button);
+    _input->button_up(button);
   }
 }
 
@@ -1560,7 +1730,7 @@ get_button(XKeyEvent &key_event, bool allow_shift) {
     // this in just the ASCII set, because we handle international keyboards
     // elsewhere (via an input context).
     if ((key_event.state & (ShiftMask | LockMask)) != 0) {
-      if (key >= XK_a and key <= XK_z) {
+      if (key >= XK_a && key <= XK_z) {
         key += (XK_A - XK_a);
       }
     }
@@ -1891,7 +2061,7 @@ map_button(KeySym key) const {
   }
   if (x11display_cat.is_debug()) {
     x11display_cat.debug()
-      << "Unrecognized keysym 0x" << hex << key << dec << "\n";
+      << "Unrecognized keysym 0x" << std::hex << key << std::dec << "\n";
   }
   return ButtonHandle::none();
 }
@@ -1901,117 +2071,16 @@ map_button(KeySym key) const {
  */
 ButtonHandle x11GraphicsWindow::
 map_raw_button(KeyCode key) const {
-  switch (key) {
-  case 9:  return KeyboardButton::escape();
-  case 10: return KeyboardButton::ascii_key('1');
-  case 11: return KeyboardButton::ascii_key('2');
-  case 12: return KeyboardButton::ascii_key('3');
-  case 13: return KeyboardButton::ascii_key('4');
-  case 14: return KeyboardButton::ascii_key('5');
-  case 15: return KeyboardButton::ascii_key('6');
-  case 16: return KeyboardButton::ascii_key('7');
-  case 17: return KeyboardButton::ascii_key('8');
-  case 18: return KeyboardButton::ascii_key('9');
-  case 19: return KeyboardButton::ascii_key('0');
-  case 20: return KeyboardButton::ascii_key('-');
-  case 21: return KeyboardButton::ascii_key('=');
-  case 22: return KeyboardButton::backspace();
-  case 23: return KeyboardButton::tab();
-  case 24: return KeyboardButton::ascii_key('q');
-  case 25: return KeyboardButton::ascii_key('w');
-  case 26: return KeyboardButton::ascii_key('e');
-  case 27: return KeyboardButton::ascii_key('r');
-  case 28: return KeyboardButton::ascii_key('t');
-  case 29: return KeyboardButton::ascii_key('y');
-  case 30: return KeyboardButton::ascii_key('u');
-  case 31: return KeyboardButton::ascii_key('i');
-  case 32: return KeyboardButton::ascii_key('o');
-  case 33: return KeyboardButton::ascii_key('p');
-  case 34: return KeyboardButton::ascii_key('[');
-  case 35: return KeyboardButton::ascii_key(']');
-  case 36: return KeyboardButton::enter();
-  case 37: return KeyboardButton::lcontrol();
-  case 38: return KeyboardButton::ascii_key('a');
-  case 39: return KeyboardButton::ascii_key('s');
-  case 40: return KeyboardButton::ascii_key('d');
-  case 41: return KeyboardButton::ascii_key('f');
-  case 42: return KeyboardButton::ascii_key('g');
-  case 43: return KeyboardButton::ascii_key('h');
-  case 44: return KeyboardButton::ascii_key('j');
-  case 45: return KeyboardButton::ascii_key('k');
-  case 46: return KeyboardButton::ascii_key('l');
-  case 47: return KeyboardButton::ascii_key(';');
-  case 48: return KeyboardButton::ascii_key('\'');
-  case 49: return KeyboardButton::ascii_key('`');
-  case 50: return KeyboardButton::lshift();
-  case 51: return KeyboardButton::ascii_key('\\');
-  case 52: return KeyboardButton::ascii_key('z');
-  case 53: return KeyboardButton::ascii_key('x');
-  case 54: return KeyboardButton::ascii_key('c');
-  case 55: return KeyboardButton::ascii_key('v');
-  case 56: return KeyboardButton::ascii_key('b');
-  case 57: return KeyboardButton::ascii_key('n');
-  case 58: return KeyboardButton::ascii_key('m');
-  case 59: return KeyboardButton::ascii_key(',');
-  case 60: return KeyboardButton::ascii_key('.');
-  case 61: return KeyboardButton::ascii_key('/');
-  case 62: return KeyboardButton::rshift();
-  case 63: return KeyboardButton::ascii_key('*');
-  case 64: return KeyboardButton::lalt();
-  case 65: return KeyboardButton::space();
-  case 66: return KeyboardButton::caps_lock();
-  case 67: return KeyboardButton::f1();
-  case 68: return KeyboardButton::f2();
-  case 69: return KeyboardButton::f3();
-  case 70: return KeyboardButton::f4();
-  case 71: return KeyboardButton::f5();
-  case 72: return KeyboardButton::f6();
-  case 73: return KeyboardButton::f7();
-  case 74: return KeyboardButton::f8();
-  case 75: return KeyboardButton::f9();
-  case 76: return KeyboardButton::f10();
-  case 77: return KeyboardButton::num_lock();
-  case 78: return KeyboardButton::scroll_lock();
-  case 79: return KeyboardButton::ascii_key('7');
-  case 80: return KeyboardButton::ascii_key('8');
-  case 81: return KeyboardButton::ascii_key('9');
-  case 82: return KeyboardButton::ascii_key('-');
-  case 83: return KeyboardButton::ascii_key('4');
-  case 84: return KeyboardButton::ascii_key('5');
-  case 85: return KeyboardButton::ascii_key('6');
-  case 86: return KeyboardButton::ascii_key('+');
-  case 87: return KeyboardButton::ascii_key('1');
-  case 88: return KeyboardButton::ascii_key('2');
-  case 89: return KeyboardButton::ascii_key('3');
-  case 90: return KeyboardButton::ascii_key('0');
-  case 91: return KeyboardButton::ascii_key('.');
-
-  case 95: return KeyboardButton::f11();
-  case 96: return KeyboardButton::f12();
-
-  case 104: return KeyboardButton::enter();
-  case 105: return KeyboardButton::rcontrol();
-  case 106: return KeyboardButton::ascii_key('/');
-  case 107: return KeyboardButton::print_screen();
-  case 108: return KeyboardButton::ralt();
-
-  case 110: return KeyboardButton::home();
-  case 111: return KeyboardButton::up();
-  case 112: return KeyboardButton::page_up();
-  case 113: return KeyboardButton::left();
-  case 114: return KeyboardButton::right();
-  case 115: return KeyboardButton::end();
-  case 116: return KeyboardButton::down();
-  case 117: return KeyboardButton::page_down();
-  case 118: return KeyboardButton::insert();
-  case 119: return KeyboardButton::del();
-
-  case 127: return KeyboardButton::pause();
-
-  case 133: return KeyboardButton::lmeta();
-  case 134: return KeyboardButton::rmeta();
-  case 135: return KeyboardButton::menu();
+#ifdef PHAVE_LINUX_INPUT_H
+  // Most X11 servers are configured to use the evdev driver, which
+  // adds 8 to the underlying evdev keycodes (not sure why).
+  // In any case, this means we can use the same mapping as our raw
+  // input code, which uses evdev directly.
+  int index = key - 8;
+  if (index > 0 && index < 128) {
+    return EvdevInputDevice::map_button(index);
   }
+#endif
   return ButtonHandle::none();
 }
 
@@ -2045,19 +2114,48 @@ get_keyboard_map() const {
   // XkbGetMap(_display, XkbAllMapComponentsMask, XkbUseCoreKbd);
   ButtonMap *map = new ButtonMap;
 
+  LightReMutexHolder holder(x11GraphicsPipe::_x_mutex);
+
   for (int k = 9; k <= 135; ++k) {
+    if (k >= 78 && k <= 91) {
+      // Ignore numpad keys for now.  These are not mapped to separate button
+      // handles in Panda, so we don't want their mappings to conflict with
+      // the regular numeric keys.
+      continue;
+    }
+
     ButtonHandle raw_button = map_raw_button(k);
     if (raw_button == ButtonHandle::none()) {
       continue;
     }
 
-    KeySym sym = XKeycodeToKeysym(_display, k, 0);
+    KeySym sym = XkbKeycodeToKeysym(_display, k, 0, 0);
     ButtonHandle button = map_button(sym);
-    if (button == ButtonHandle::none()) {
+    std::string label;
+
+    // Compose a label for some keys; I have not yet been able to find an API
+    // that does this effectively.
+    if (sym >= XK_a && sym <= XK_z) {
+      label = toupper((char)sym);
+    }
+    else if (sym >= XK_F1 && sym <= XK_F35) {
+      label = "F" + format_string(sym - XK_F1 + 1);
+    }
+    else if (sym >= XK_exclamdown && sym <= XK_ydiaeresis) {
+      // A latin-1 symbol.  Translate this to the label.
+      char buffer[255];
+      int nbytes = XkbTranslateKeySym(_display, &sym, 0, buffer, 255, 0);
+      if (nbytes > 0) {
+        label.assign(buffer, nbytes);
+      }
+    }
+
+    if (button == ButtonHandle::none() && label.empty()) {
+      // No label and no mapping; this is useless.
       continue;
     }
 
-    map->map_button(raw_button, button);
+    map->map_button(raw_button, button, label);
   }
 
   return map;
@@ -2071,8 +2169,10 @@ Bool x11GraphicsWindow::
 check_event(X11_Display *display, XEvent *event, char *arg) {
   const x11GraphicsWindow *self = (x11GraphicsWindow *)arg;
 
-  // We accept any event that is sent to our window.
-  return (event->xany.window == self->_xwindow);
+  // We accept any event that is sent to our window.  However, we have to let
+  // raw mouse events through, since they're not associated with any window.
+  return (event->xany.window == self->_xwindow ||
+    (event->type == GenericEvent && self->_raw_mouse_enabled));
 }
 
 /**
@@ -2112,7 +2212,7 @@ get_cursor(const Filename &filename) {
 
   // Open the file through the virtual file system.
   istream *str = vfs->open_read_file(resolved, true);
-  if (str == NULL) {
+  if (str == nullptr) {
     x11display_cat.warning()
       << "Could not open cursor file " << filename << "\n";
     return None;
@@ -2126,7 +2226,13 @@ get_cursor(const Filename &filename) {
       << "Could not read from cursor file " << filename << "\n";
     return None;
   }
-  str->seekg(0, istream::beg);
+
+  // Put back the read bytes. Do not use seekg, because this will
+  // corrupt the stream if it points to encrypted/compressed file
+  str->putback(magic[3]);
+  str->putback(magic[2]);
+  str->putback(magic[1]);
+  str->putback(magic[0]);
 
   X11_Cursor h = None;
   if (memcmp(magic, "Xcur", 4) == 0) {
@@ -2140,7 +2246,7 @@ get_cursor(const Filename &filename) {
     xcfile.seek = &xcursor_seek;
 
     XcursorImages *images = x11_pipe->_XcursorXcFileLoadImages(&xcfile, x11_pipe->_xcursor_size);
-    if (images != NULL) {
+    if (images != nullptr) {
       h = x11_pipe->_XcursorImagesLoadCursor(_display, images);
       x11_pipe->_XcursorImagesDestroy(images);
     }
@@ -2200,13 +2306,13 @@ read_ico(istream &ico) {
   size_t colorCount, bitsPerPixel;
   IcoHeader header;
   IcoInfoHeader infoHeader;
-  IcoEntry *entries = NULL;
-  IcoColor color, *palette = NULL;
+  IcoEntry *entries = nullptr;
+  IcoColor color, *palette = nullptr;
 
   size_t xorBmpSize, andBmpSize;
   char *curXor, *curAnd;
-  char *xorBmp = NULL, *andBmp = NULL;
-  XcursorImage *image = NULL;
+  char *xorBmp = nullptr, *andBmp = nullptr;
+  XcursorImage *image = nullptr;
   X11_Cursor ret = None;
 
   int def_size = x11_pipe->_xcursor_size;
@@ -2252,7 +2358,7 @@ read_ico(istream &ico) {
     size_t num_pixels = (size_t)img.get_x_size() * (size_t)img.get_y_size();
     unsigned int *dest = image->pixels;
 
-    if (alpha != NULL) {
+    if (alpha != nullptr) {
       for (size_t p = 0; p < num_pixels; ++p) {
         *dest++ = (*alpha << 24U) | (ptr->r << 16U) | (ptr->g << 8U) | (ptr->b);
         ++ptr;
@@ -2280,9 +2386,11 @@ read_ico(istream &ico) {
       if (!ico.good()) goto cleanup;
     }
 
+    int and_stride = ((infoHeader.width >> 3) + 3) & ~0x03;
+
     // Read in the pixel data.
     xorBmpSize = (infoHeader.width * (infoHeader.height / 2) * bitsPerPixel) / 8;
-    andBmpSize = (infoHeader.width * (infoHeader.height / 2)) / 8;
+    andBmpSize = and_stride * (infoHeader.height / 2);
     curXor = xorBmp = new char[xorBmpSize];
     curAnd = andBmp = new char[andBmpSize];
     ico.read(xorBmp, xorBmpSize);
@@ -2330,21 +2438,15 @@ read_ico(istream &ico) {
       // Pack each of the three bytes into a single color, BGR -> 0RGB
       for (i = image->height - 1; i >= 0; i--) {
         for (j = 0; j < image->width; j++) {
-          image->pixels[(i * image->width) + j] = (*(curXor + 2) << 16) +
-                                                  (*(curXor + 1) << 8) + (*curXor);
+          shift = 7 - (j & 0x7);
+          uint32_t alpha = (curAnd[j >> 3] & (1 << shift)) ? 0 : 0xff000000U;
+          image->pixels[(i * image->width) + j] = (uint8_t)curXor[0]
+                                                | ((uint8_t)curXor[1] << 8u)
+                                                | ((uint8_t)curXor[2] << 16u)
+                                                | alpha;
           curXor += 3;
         }
-
-        // Set the alpha byte properly according to the andBmp.
-        for (j = 0; j < image->width; j += 8) {
-          for (k = 0; k < 8; k++) {
-            shift = 7 - k;
-            image->pixels[(i * image->width) + j + k] |=
-              ((*curAnd & (1 << shift)) >> shift) ? 0x0 : (0xff << 24);
-          }
-
-          curAnd++;
-        }
+        curAnd += and_stride;
       }
       break;
 

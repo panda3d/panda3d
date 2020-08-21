@@ -33,12 +33,11 @@ public:
   PyObject *__reduce_persist__(PyObject *self, PyObject *pickler) const;
 
   static PyObject *find_global_decode(PyObject *this_class, const char *func_name);
-
 };
 
 BEGIN_PUBLISH
-PyObject *py_decode_TypedWritable_from_bam_stream(PyObject *this_class, const string &data);
-PyObject *py_decode_TypedWritable_from_bam_stream_persist(PyObject *unpickler, PyObject *this_class, const string &data);
+PyObject *py_decode_TypedWritable_from_bam_stream(PyObject *this_class, const vector_uchar &data);
+PyObject *py_decode_TypedWritable_from_bam_stream_persist(PyObject *unpickler, PyObject *this_class, const vector_uchar &data);
 END_PUBLISH
 
 #endif  // HAVE_PYTHON

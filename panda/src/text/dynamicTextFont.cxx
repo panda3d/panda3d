@@ -28,7 +28,7 @@
 #endif
 
 #include "config_text.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "config_express.h"
 #include "virtualFileSystem.h"
 #include "geomVertexData.h"
@@ -43,6 +43,10 @@
 #include "colorAttrib.h"
 #include "textureAttrib.h"
 #include "transparencyAttrib.h"
+
+#ifdef HAVE_HARFBUZZ
+#include <hb-ft.h>
+#endif
 
 TypeHandle DynamicTextFont::_type_handle;
 
@@ -114,7 +118,8 @@ DynamicTextFont(const DynamicTextFont &copy) :
   _has_outline(copy._has_outline),
   _tex_format(copy._tex_format),
   _needs_image_processing(copy._needs_image_processing),
-  _preferred_page(0)
+  _preferred_page(0),
+  _hb_font(nullptr)
 {
 }
 
@@ -123,6 +128,11 @@ DynamicTextFont(const DynamicTextFont &copy) :
  */
 DynamicTextFont::
 ~DynamicTextFont() {
+#ifdef HAVE_HARFBUZZ
+  if (_hb_font != nullptr) {
+    hb_font_destroy(_hb_font);
+  }
+#endif
 }
 
 /**
@@ -152,7 +162,7 @@ get_num_pages() const {
  */
 DynamicTextPage *DynamicTextFont::
 get_page(int n) const {
-  nassertr(n >= 0 && n < (int)_pages.size(), (DynamicTextPage *)NULL);
+  nassertr(n >= 0 && n < (int)_pages.size(), nullptr);
   return _pages[n];
 }
 
@@ -169,7 +179,7 @@ garbage_collect() {
   Cache::iterator ci;
   for (ci = _cache.begin(); ci != _cache.end(); ++ci) {
     const TextGlyph *glyph = (*ci).second;
-    if (glyph == (TextGlyph *)NULL || glyph->get_ref_count() > 1) {
+    if (glyph == nullptr || glyph->get_ref_count() > 1) {
       // Keep this one.
       new_cache.insert(new_cache.end(), (*ci));
     } else {
@@ -203,13 +213,20 @@ clear() {
   _cache.clear();
   _pages.clear();
   _empty_glyphs.clear();
+
+#ifdef HAVE_HARFBUZZ
+  if (_hb_font != nullptr) {
+    hb_font_destroy(_hb_font);
+    _hb_font = nullptr;
+  }
+#endif
 }
 
 /**
  *
  */
 void DynamicTextFont::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   static const int max_glyph_name = 1024;
   char glyph_name[max_glyph_name];
 
@@ -250,7 +267,7 @@ write(ostream &out, int indent_level) const {
 bool DynamicTextFont::
 get_glyph(int character, CPT(TextGlyph) &glyph) {
   if (!_is_valid) {
-    glyph = (TextGlyph *)NULL;
+    glyph = nullptr;
     return false;
   }
 
@@ -278,6 +295,81 @@ get_glyph(int character, CPT(TextGlyph) &glyph) {
   return (glyph_index != 0);
 }
 
+/**
+ * Returns the amount by which to offset the second glyph when it directly
+ * follows the first glyph.  This is an additional offset that is added on top
+ * of the advance.
+ */
+PN_stdfloat DynamicTextFont::
+get_kerning(int first, int second) const {
+  if (!_is_valid) {
+    return 0;
+  }
+
+  FT_Face face = acquire_face();
+  if (!FT_HAS_KERNING(face)) {
+    release_face(face);
+    return 0;
+  }
+
+  int first_index = FT_Get_Char_Index(face, first);
+  int second_index = FT_Get_Char_Index(face, second);
+
+  FT_Vector delta;
+  FT_Get_Kerning(face, first_index, second_index, FT_KERNING_DEFAULT, &delta);
+  release_face(face);
+
+  return delta.x / (_font_pixels_per_unit * 64);
+}
+
+/**
+ * Like get_glyph, but uses a glyph index.
+ */
+bool DynamicTextFont::
+get_glyph_by_index(int character, int glyph_index, CPT(TextGlyph) &glyph) {
+  if (!_is_valid) {
+    glyph = nullptr;
+    return false;
+  }
+
+  Cache::iterator ci = _cache.find(glyph_index);
+  if (ci != _cache.end()) {
+    glyph = (*ci).second;
+  } else {
+    FT_Face face = acquire_face();
+    glyph = make_glyph(character, face, glyph_index);
+    _cache.insert(Cache::value_type(glyph_index, glyph.p()));
+    release_face(face);
+  }
+
+  if (glyph.is_null()) {
+    glyph = get_invalid_glyph();
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * If Panda was compiled with HarfBuzz enabled, returns a HarfBuzz font for
+ * this font.
+ */
+hb_font_t *DynamicTextFont::
+get_hb_font() const {
+#ifdef HAVE_HARFBUZZ
+  if (_hb_font != nullptr) {
+    return _hb_font;
+  }
+
+  FT_Face face = acquire_face();
+  _hb_font = hb_ft_font_create(face, nullptr);
+  release_face(face);
+
+  return _hb_font;
+#else
+  return nullptr;
+#endif
+}
 
 /**
  * Called from both constructors to set up some initial values.
@@ -302,6 +394,8 @@ initialize() {
   _winding_order = WO_default;
 
   _preferred_page = 0;
+
+  _hb_font = nullptr;
 }
 
 /**
@@ -393,7 +487,7 @@ determine_tex_format() {
 CPT(TextGlyph) DynamicTextFont::
 make_glyph(int character, FT_Face face, int glyph_index) {
   if (!load_glyph(face, glyph_index, false)) {
-    return (TextGlyph *)NULL;
+    return nullptr;
   }
 
   FT_GlyphSlot slot = face->glyph;
@@ -405,7 +499,7 @@ make_glyph(int character, FT_Face face, int glyph_index) {
     // is the empty bitmap, we return NULL, and use Panda's invalid glyph in
     // its place.  We do this to guarantee that every invalid glyph is visible
     // as *something*.
-    return NULL;
+    return nullptr;
   }
 
   PN_stdfloat advance = slot->advance.x / 64.0;
@@ -579,7 +673,7 @@ make_glyph(int character, FT_Face face, int glyph_index) {
     }
 
     DynamicTextPage *page = glyph->get_page();
-    if (page != NULL) {
+    if (page != nullptr) {
       int bitmap_top = (int)floor(tex_y_orig + outline * _scale_factor + 0.5f);
       int bitmap_left = (int)floor(tex_x_orig - outline * _scale_factor + 0.5f);
 
@@ -632,7 +726,7 @@ copy_bitmap_to_texture(const FT_Bitmap &bitmap, DynamicTextGlyph *glyph) {
     for (int yi = 0; yi < (int)bitmap.rows; yi++) {
 
       unsigned char *texture_row = glyph->get_row(yi);
-      nassertv(texture_row != (unsigned char *)NULL);
+      nassertv(texture_row != nullptr);
       memcpy(texture_row, buffer_row, bitmap.width);
       buffer_row += bitmap.pitch;
     }
@@ -643,7 +737,7 @@ copy_bitmap_to_texture(const FT_Bitmap &bitmap, DynamicTextGlyph *glyph) {
     unsigned char *buffer_row = bitmap.buffer;
     for (int yi = 0; yi < (int)bitmap.rows; yi++) {
       unsigned char *texture_row = glyph->get_row(yi);
-      nassertv(texture_row != (unsigned char *)NULL);
+      nassertv(texture_row != nullptr);
 
       int bit = 0x80;
       unsigned char *b = buffer_row;
@@ -670,7 +764,7 @@ copy_bitmap_to_texture(const FT_Bitmap &bitmap, DynamicTextGlyph *glyph) {
     unsigned char *buffer_row = bitmap.buffer;
     for (int yi = 0; yi < (int)bitmap.rows; yi++) {
       unsigned char *texture_row = glyph->get_row(yi);
-      nassertv(texture_row != (unsigned char *)NULL);
+      nassertv(texture_row != nullptr);
       for (int xi = 0; xi < (int)bitmap.width; xi++) {
         texture_row[xi] = (int)(buffer_row[xi] * 255) / (bitmap.num_grays - 1);
       }
@@ -694,7 +788,7 @@ copy_pnmimage_to_texture(const PNMImage &image, DynamicTextGlyph *glyph) {
     nassertv(glyph->_page->get_num_components() == 1);
     for (int yi = 0; yi < image.get_y_size(); yi++) {
       unsigned char *texture_row = glyph->get_row(yi);
-      nassertv(texture_row != (unsigned char *)NULL);
+      nassertv(texture_row != nullptr);
       for (int xi = 0; xi < image.get_x_size(); xi++) {
         texture_row[xi] = image.get_gray_val(xi, yi);
       }
@@ -759,7 +853,7 @@ blend_pnmimage_to_texture(const PNMImage &image, DynamicTextGlyph *glyph,
 
     for (int yi = 0; yi < image.get_y_size(); yi++) {
       unsigned char *texture_row = glyph->get_row(yi);
-      nassertv(texture_row != (unsigned char *)NULL);
+      nassertv(texture_row != nullptr);
       for (int xi = 0; xi < image.get_x_size(); xi++) {
         unsigned char *tr = texture_row + xi;
         PN_stdfloat t = (PN_stdfloat)image.get_gray(xi, yi);
@@ -772,7 +866,7 @@ blend_pnmimage_to_texture(const PNMImage &image, DynamicTextGlyph *glyph,
 
     for (int yi = 0; yi < image.get_y_size(); yi++) {
       unsigned char *texture_row = glyph->get_row(yi);
-      nassertv(texture_row != (unsigned char *)NULL);
+      nassertv(texture_row != nullptr);
       for (int xi = 0; xi < image.get_x_size(); xi++) {
         unsigned char *tr = texture_row + xi * 2;
         PN_stdfloat t = (PN_stdfloat)image.get_gray(xi, yi);
@@ -786,7 +880,7 @@ blend_pnmimage_to_texture(const PNMImage &image, DynamicTextGlyph *glyph,
 
     for (int yi = 0; yi < image.get_y_size(); yi++) {
       unsigned char *texture_row = glyph->get_row(yi);
-      nassertv(texture_row != (unsigned char *)NULL);
+      nassertv(texture_row != nullptr);
       for (int xi = 0; xi < image.get_x_size(); xi++) {
         unsigned char *tr = texture_row + xi * 3;
         PN_stdfloat t = (PN_stdfloat)image.get_gray(xi, yi);
@@ -801,7 +895,7 @@ blend_pnmimage_to_texture(const PNMImage &image, DynamicTextGlyph *glyph,
 
     for (int yi = 0; yi < image.get_y_size(); yi++) {
       unsigned char *texture_row = glyph->get_row(yi);
-      nassertv(texture_row != (unsigned char *)NULL);
+      nassertv(texture_row != nullptr);
       for (int xi = 0; xi < image.get_x_size(); xi++) {
         unsigned char *tr = texture_row + xi * 4;
         PN_stdfloat t = (PN_stdfloat)image.get_gray(xi, yi);
@@ -837,7 +931,7 @@ slot_glyph(int character, int x_size, int y_size, PN_stdfloat advance) {
     do {
       DynamicTextPage *page = _pages[pi];
       DynamicTextGlyph *glyph = page->slot_glyph(character, x_size, y_size, _texture_margin, advance);
-      if (glyph != (DynamicTextGlyph *)NULL) {
+      if (glyph != nullptr) {
         // Once we found a page to hold the glyph, that becomes our new
         // preferred page.
         _preferred_page = pi;
@@ -849,7 +943,7 @@ slot_glyph(int character, int x_size, int y_size, PN_stdfloat advance) {
         text_cat.error()
           << "Glyph of size " << x_size << " by " << y_size
           << " pixels won't fit on an empty page.\n";
-        return (DynamicTextGlyph *)NULL;
+        return nullptr;
       }
 
       pi = (pi + 1) % _pages.size();
@@ -878,7 +972,7 @@ slot_glyph(int character, int x_size, int y_size, PN_stdfloat advance) {
 void DynamicTextFont::
 render_wireframe_contours(TextGlyph *glyph) {
   PT(GeomVertexData) vdata = new GeomVertexData
-    (string(), GeomVertexFormat::get_v3(),
+    (std::string(), GeomVertexFormat::get_v3(),
      Geom::UH_static);
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
 
@@ -909,7 +1003,7 @@ render_wireframe_contours(TextGlyph *glyph) {
 void DynamicTextFont::
 render_polygon_contours(TextGlyph *glyph, bool face, bool extrude) {
   PT(GeomVertexData) vdata = new GeomVertexData
-    (string(), GeomVertexFormat::get_v3n3(),
+    (std::string(), GeomVertexFormat::get_v3n3(),
      Geom::UH_static);
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
   GeomVertexWriter normal(vdata, InternalName::get_normal());
@@ -978,7 +1072,6 @@ render_polygon_contours(TextGlyph *glyph, bool face, bool extrude) {
     // create more vertices--they don't share the same normals.
     for (ci = _contours.begin(); ci != _contours.end(); ++ci) {
       const Contour &contour = (*ci);
-      Points::const_iterator pi;
 
       for (size_t i = 0; i < contour._points.size(); ++i) {
         const ContourPoint &cp = contour._points[i];

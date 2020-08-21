@@ -30,10 +30,8 @@
 #include "lightMutex.h"
 #include "deletedChain.h"
 #include "simpleHashMap.h"
-#include "weakKeyHashMap.h"
 #include "cacheStats.h"
 #include "renderAttribRegistry.h"
-#include "graphicsStateGuardianBase.h"
 
 class FactoryParams;
 class ShaderAttrib;
@@ -52,11 +50,12 @@ protected:
 
 private:
   RenderState(const RenderState &copy);
-  void operator = (const RenderState &copy);
 
 public:
   virtual ~RenderState();
   ALLOC_DELETED_CHAIN(RenderState);
+
+  RenderState &operator = (const RenderState &copy) = delete;
 
   typedef RenderAttribRegistry::SlotMask SlotMask;
 
@@ -109,6 +108,8 @@ PUBLISHED:
   INLINE int get_override(TypeHandle type) const;
   INLINE int get_override(int slot) const;
 
+  MAKE_MAP_PROPERTY(attribs, has_attrib, get_attrib);
+
   INLINE CPT(RenderState) get_unique() const;
 
   virtual bool unref() const;
@@ -130,10 +131,8 @@ PUBLISHED:
   EXTENSION(PyObject *get_composition_cache() const);
   EXTENSION(PyObject *get_invert_composition_cache() const);
 
-  const RenderState *get_auto_shader_state() const;
-
-  void output(ostream &out) const;
-  void write(ostream &out, int indent_level) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent_level) const;
 
   static int get_max_priority();
 
@@ -142,8 +141,8 @@ PUBLISHED:
   static int clear_cache();
   static void clear_munger_cache();
   static int garbage_collect();
-  static void list_cycles(ostream &out);
-  static void list_states(ostream &out);
+  static void list_cycles(std::ostream &out);
+  static void list_states(std::ostream &out);
   static bool validate_states();
   EXTENSION(static PyObject *get_states());
 
@@ -163,8 +162,17 @@ public:
   template<class AttribType>
   INLINE bool get_attrib(const AttribType *&attrib) const;
   template<class AttribType>
+  INLINE bool get_attrib(CPT(AttribType) &attrib) const;
+  template<class AttribType>
   INLINE void get_attrib_def(const AttribType *&attrib) const;
+  template<class AttribType>
+  INLINE void get_attrib_def(CPT(AttribType) &attrib) const;
 #endif  // CPPPARSER
+
+  INLINE void cache_ref_only() const;
+
+protected:
+  INLINE void cache_unref_only() const;
 
 private:
   INLINE void check_hash() const;
@@ -173,8 +181,6 @@ private:
   INLINE bool do_node_unref() const;
   INLINE void calc_hash();
   void do_calc_hash();
-  void assign_auto_shader_state();
-  CPT(RenderState) do_calc_auto_shader_state();
 
   class CompositionCycleDescEntry {
   public:
@@ -223,16 +229,15 @@ public:
   // declare this as a ShaderAttrib because that would create a circular
   // include-file dependency problem.  Aaargh.
   mutable CPT(RenderAttrib) _generated_shader;
+  mutable UpdateSeq _generated_shader_seq;
 
 private:
   // This mutex protects _states.  It also protects any modification to the
   // cache, which is encoded in _composition_cache and
   // _invert_composition_cache.
   static LightReMutex *_states_lock;
-  class Empty {
-  };
-  typedef SimpleHashMap<const RenderState *, Empty, indirect_compare_to_hash<const RenderState *> > States;
-  static States *_states;
+  typedef SimpleHashMap<const RenderState *, std::nullptr_t, indirect_compare_to_hash<const RenderState *> > States;
+  static States _states;
   static const RenderState *_empty_state;
 
   // This iterator records the entry corresponding to this RenderState object
@@ -268,9 +273,14 @@ private:
   // in the RenderState pointer than vice-versa, since there are likely to be
   // far fewer GSG's than RenderStates.  The code to manage this map lives in
   // GraphicsStateGuardian::get_geom_munger().
-  typedef WeakKeyHashMap<GraphicsStateGuardianBase, PT(GeomMunger) > Mungers;
+  typedef SimpleHashMap<size_t, PT(GeomMunger), size_t_hash> Mungers;
   mutable Mungers _mungers;
   mutable int _last_mi;
+
+  // Similarly, this is a cache of munged states.  This map is managed by
+  // StateMunger::munge_state().
+  typedef SimpleHashMap<size_t, WCPT(RenderState), size_t_hash> MungedStates;
+  mutable MungedStates _munged_states;
 
   // This is used to mark nodes as we visit them to detect cycles.
   UpdateSeq _cycle_detect;
@@ -278,7 +288,7 @@ private:
 
   // This keeps track of our current position through the garbage collection
   // cycle.
-  static int _garbage_index;
+  static size_t _garbage_index;
 
   static PStatCollector _cache_update_pcollector;
   static PStatCollector _garbage_collect_pcollector;
@@ -316,8 +326,6 @@ private:
   int _bin_index;
   int _draw_order;
   size_t _hash;
-
-  const RenderState *_auto_shader_state;
 
   enum Flags {
     F_checked_bin_index       = 0x000001,
@@ -366,9 +374,15 @@ private:
   friend class GraphicsStateGuardian;
   friend class RenderAttribRegistry;
   friend class Extension<RenderState>;
+  friend class ShaderGenerator;
+  friend class StateMunger;
 };
 
-INLINE ostream &operator << (ostream &out, const RenderState &state) {
+// We can safely redefine this as a no-op.
+template<>
+INLINE void PointerToBase<RenderState>::update_type(To *ptr) {}
+
+INLINE std::ostream &operator << (std::ostream &out, const RenderState &state) {
   state.output(out);
   return out;
 }

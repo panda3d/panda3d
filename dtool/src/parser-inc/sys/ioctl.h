@@ -1,0 +1,3 @@
+struct winsize;
+struct termio;
+

@@ -17,6 +17,9 @@
 #include <algorithm>
 #include <iterator>
 
+using std::ostream;
+using std::string;
+
 /**
  *
  */
@@ -114,13 +117,6 @@ write(ostream &out, int indent_level) const {
 }
 
 /**
- * Creates an empty search path.
- */
-DSearchPath::
-DSearchPath() {
-}
-
-/**
  *
  */
 DSearchPath::
@@ -134,30 +130,6 @@ DSearchPath(const string &path, const string &separator) {
 DSearchPath::
 DSearchPath(const Filename &directory) {
   append_directory(directory);
-}
-
-/**
- *
- */
-DSearchPath::
-DSearchPath(const DSearchPath &copy) :
-  _directories(copy._directories)
-{
-}
-
-/**
- *
- */
-void DSearchPath::
-operator = (const DSearchPath &copy) {
-  _directories = copy._directories;
-}
-
-/**
- *
- */
-DSearchPath::
-~DSearchPath() {
 }
 
 /**
@@ -220,8 +192,8 @@ append_path(const string &path, const string &separator) {
  */
 void DSearchPath::
 append_path(const DSearchPath &path) {
-  copy(path._directories.begin(), path._directories.end(),
-       back_inserter(_directories));
+  std::copy(path._directories.begin(), path._directories.end(),
+            std::back_inserter(_directories));
 }
 
 /**
@@ -232,8 +204,8 @@ void DSearchPath::
 prepend_path(const DSearchPath &path) {
   if (!path._directories.empty()) {
     Directories new_directories = path._directories;
-    copy(_directories.begin(), _directories.end(),
-         back_inserter(new_directories));
+    std::copy(_directories.begin(), _directories.end(),
+              std::back_inserter(new_directories));
     _directories.swap(new_directories);
   }
 }

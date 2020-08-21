@@ -16,7 +16,7 @@
 #ifdef HAVE_FREETYPE
 
 #include "config_pnmtext.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "config_express.h"
 #include "virtualFileSystem.h"
 #include "nurbsCurveEvaluator.h"
@@ -24,6 +24,10 @@
 
 #undef interface  // I don't know where this symbol is defined, but it interferes with FreeType.
 #include FT_OUTLINE_H
+
+using std::istream;
+using std::ostream;
+using std::string;
 
 // This constant determines how big a particular point size font appears to
 // be.  By convention, 10 points is 1 unit (e.g.  1 foot) high.
@@ -37,7 +41,7 @@ const PN_stdfloat FreetypeFont::_points_per_inch = 72.0f;
  */
 FreetypeFont::
 FreetypeFont() {
-  _face = NULL;
+  _face = nullptr;
 
   _point_size = text_point_size;
   _requested_pixels_per_unit = text_pixels_per_unit;
@@ -183,7 +187,7 @@ load_font(const char *font_data, int data_length, int face_index) {
  */
 void FreetypeFont::
 unload_font() {
-  _face = NULL;
+  _face = nullptr;
 }
 
 /**
@@ -297,7 +301,7 @@ copy_bitmap_to_pnmimage(const FT_Bitmap &bitmap, PNMImage &image) {
  */
 bool FreetypeFont::
 reset_scale() {
-  if (_face == NULL) {
+  if (_face == nullptr) {
     return false;
   }
 
@@ -461,7 +465,7 @@ render_distance_field(PNMImage &image, int outline, int min_x, int min_y) {
               }
 
             } else {
-              dist_sq = min((p - begin).length_squared(), (p - end).length_squared());
+              dist_sq = std::min((p - begin).length_squared(), (p - end).length_squared());
               if (begin[1] <= p[1]) {
                 if (end[1] > p[1]) {
                   if ((v[0] * (p[1] - begin[1]) > v[1] * (p[0] - begin[0]))) {
@@ -503,7 +507,7 @@ render_distance_field(PNMImage &image, int outline, int min_x, int min_y) {
             }
           }
 
-          min_dist_sq = min(min_dist_sq, dist_sq);
+          min_dist_sq = std::min(min_dist_sq, dist_sq);
         }
       }
       // Determine the sign based on whether we're inside the contour.

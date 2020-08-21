@@ -78,6 +78,8 @@ set_color(const LColor &color) {
 /**
  * Returns true if the color was specified as a temperature in kelvins, and
  * get_color_temperature is defined.
+ *
+ * @since 1.10.0
  */
 INLINE bool Light::
 has_color_temperature() const {
@@ -87,6 +89,8 @@ has_color_temperature() const {
 /**
  * Returns the basic color temperature of the light, assuming
  * has_color_temperature() returns true.
+ *
+ * @since 1.10.0
  */
 INLINE PN_stdfloat Light::
 get_color_temperature() const {

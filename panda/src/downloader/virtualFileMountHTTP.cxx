@@ -17,6 +17,8 @@
 
 #ifdef HAVE_OPENSSL
 
+using std::string;
+
 TypeHandle VirtualFileMountHTTP::_type_handle;
 
 
@@ -166,7 +168,7 @@ make_virtual_file(const Filename &local_filename,
     new VirtualFileHTTP(this, local_filename, implicit_pz_file, open_flags);
   vfile->set_original_filename(original_filename);
 
-  return vfile.p();
+  return vfile;
 }
 
 /**
@@ -174,9 +176,9 @@ make_virtual_file(const Filename &local_filename,
  * istream on success (which you should eventually delete when you are done
  * reading). Returns NULL on failure.
  */
-istream *VirtualFileMountHTTP::
+std::istream *VirtualFileMountHTTP::
 open_read_file(const Filename &) const {
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -184,8 +186,8 @@ open_read_file(const Filename &) const {
  * file.  Pass in the stream that was returned by open_read_file(); some
  * implementations may require this stream to determine the size.
  */
-streamsize VirtualFileMountHTTP::
-get_file_size(const Filename &, istream *) const {
+std::streamsize VirtualFileMountHTTP::
+get_file_size(const Filename &, std::istream *) const {
   return 0;
 }
 
@@ -193,7 +195,7 @@ get_file_size(const Filename &, istream *) const {
  * Returns the current size on disk (or wherever it is) of the file before it
  * has been opened.
  */
-streamsize VirtualFileMountHTTP::
+std::streamsize VirtualFileMountHTTP::
 get_file_size(const Filename &) const {
   return 0;
 }
@@ -227,7 +229,7 @@ scan_directory(vector_string &, const Filename &) const {
  *
  */
 void VirtualFileMountHTTP::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << _root;
 }
 
@@ -238,7 +240,7 @@ output(ostream &out) const {
 PT(HTTPChannel) VirtualFileMountHTTP::
 get_channel() {
   PT(HTTPChannel) channel;
-  _channels_lock.acquire();
+  _channels_lock.lock();
 
   if (!_channels.empty()) {
     // If we have some channels sitting around, grab one.  Grab the one on the
@@ -251,7 +253,7 @@ get_channel() {
     channel = _http->make_channel(true);
   }
 
-  _channels_lock.release();
+  _channels_lock.unlock();
   return channel;
 }
 
@@ -262,9 +264,9 @@ get_channel() {
  */
 void VirtualFileMountHTTP::
 recycle_channel(HTTPChannel *channel) {
-  _channels_lock.acquire();
+  _channels_lock.lock();
   _channels.push_back(channel);
-  _channels_lock.release();
+  _channels_lock.unlock();
 }
 
 #endif  // HAVE_OPENSSL

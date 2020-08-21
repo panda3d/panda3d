@@ -182,7 +182,7 @@ clear_size() {
  * Specifies the title that should be assigned to the window.
  */
 INLINE void WindowProperties::
-set_title(const string &title) {
+set_title(const std::string &title) {
   _title = title;
   _specified |= S_title;
 }
@@ -190,7 +190,7 @@ set_title(const string &title) {
 /**
  * Returns the window's title.
  */
-INLINE const string &WindowProperties::
+INLINE const std::string &WindowProperties::
 get_title() const {
   nassertr(has_title(), _title);
   return _title;
@@ -210,7 +210,7 @@ has_title() const {
 INLINE void WindowProperties::
 clear_title() {
   _specified &= ~S_title;
-  _title = string();
+  _title = std::string();
 }
 
 /**
@@ -405,6 +405,45 @@ INLINE void WindowProperties::
 clear_minimized() {
   _specified &= ~S_minimized;
   _flags &= ~F_minimized;
+}
+
+/**
+ * Specifies whether the window should be created maximized (true), or normal
+ * (false).
+ */
+INLINE void WindowProperties::
+set_maximized(bool maximized) {
+  if (maximized) {
+    _flags |= F_maximized;
+  } else {
+    _flags &= ~F_maximized;
+  }
+  _specified |= S_maximized;
+}
+
+/**
+ * Returns true if the window is maximized.
+ */
+INLINE bool WindowProperties::
+get_maximized() const {
+  return (_flags & F_maximized) != 0;
+}
+
+/**
+ * Returns true if set_maximized() has been specified.
+ */
+INLINE bool WindowProperties::
+has_maximized() const {
+  return ((_specified & S_maximized) != 0);
+}
+
+/**
+ * Removes the maximized specification from the properties.
+ */
+INLINE void WindowProperties::
+clear_maximized() {
+  _specified &= ~S_maximized;
+  _flags &= ~F_maximized;
 }
 
 /**
@@ -726,12 +765,12 @@ has_parent_window() const {
 INLINE void WindowProperties::
 clear_parent_window() {
   _specified &= ~S_parent_window;
-  _parent_window = NULL;
+  _parent_window = nullptr;
 }
 
 
-INLINE ostream &
-operator << (ostream &out, const WindowProperties &properties) {
+INLINE std::ostream &
+operator << (std::ostream &out, const WindowProperties &properties) {
   properties.output(out);
   return out;
 }

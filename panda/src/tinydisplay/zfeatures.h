@@ -7,7 +7,7 @@
 #define BIG_ENDIAN     4321
 
 #if (defined(__i386__) || defined(__i386)) || \
-     defined(__ia64__) || defined(WIN32) || \
+     defined(__ia64__) || defined(_WIN32) || \
     (defined(__alpha__) || defined(__alpha)) || \
      defined(__arm__) || \
     (defined(__mips__) && defined(__MIPSEL__)) || \
@@ -38,5 +38,11 @@
 
 /* Number of simultaneous texture stages supported (multitexture). */
 #define MAX_TEXTURE_STAGES 3
+
+#ifdef __GNUC__
+#define UNUSED __attribute__((unused))
+#else
+#define UNUSED
+#endif
 
 #endif /* _tgl_features_h_ */

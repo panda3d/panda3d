@@ -11,8 +11,8 @@
  * @date 2010-04-10
  */
 
-#ifndef __BULLET_CONTACT_CALLBACKS_H__
-#define __BULLET_CONTACT_CALLBACKS_H__
+#ifndef BULLETCONTACTCALLBACKS_H
+#define BULLETCONTACTCALLBACKS_H
 
 #include "pandabase.h"
 
@@ -26,7 +26,7 @@
 #include "eventParameter.h"
 #include "pandaNode.h"
 
-struct UserPersitentData {
+struct UserPersistentData {
   PT(PandaNode) node0;
   PT(PandaNode) node1;
 };
@@ -51,7 +51,7 @@ contact_added_callback(btManifoldPoint &cp,
                        int id1,
                        int index1) {
 
-  if (cp.m_userPersistentData == NULL) {
+  if (cp.m_userPersistentData == nullptr) {
 
 #if BT_BULLET_VERSION >= 281
     PT(PandaNode) node0 = (PandaNode *)wrap0->getCollisionObject()->getUserPointer();
@@ -61,10 +61,12 @@ contact_added_callback(btManifoldPoint &cp,
     PT(PandaNode) node1 = (PandaNode *)obj1->getUserPointer();
 #endif
 
-    bullet_cat.debug() << "contact added: " << cp.m_userPersistentData << endl;
+    if (bullet_cat.is_debug()) {
+      bullet_cat.debug() << "contact added: " << cp.m_userPersistentData << std::endl;
+    }
 
     // Gather persistent data
-    UserPersitentData *data = new UserPersitentData();
+    UserPersistentData *data = new UserPersistentData();
     data->node0 = node0;
     data->node1 = node1;
 
@@ -123,10 +125,11 @@ contact_processed_callback(btManifoldPoint &cp,
  */
 static bool
 contact_destroyed_callback(void *userPersistentData) {
+  if (bullet_cat.is_debug()) {
+    bullet_cat.debug() << "contact removed: " << userPersistentData << std::endl;
+  }
 
-  bullet_cat.debug() << "contact removed: " << userPersistentData << endl;
-
-  UserPersitentData *data = (UserPersitentData *)userPersistentData;
+  UserPersistentData *data = (UserPersistentData *)userPersistentData;
 
   // Send event
   if (bullet_enable_contact_events) {
@@ -144,4 +147,4 @@ contact_destroyed_callback(void *userPersistentData) {
   return false;
 }
 
-#endif // __BULLET_CONTACT_CALLBACKS_H__
+#endif // BULLETCONTACTCALLBACKS_H

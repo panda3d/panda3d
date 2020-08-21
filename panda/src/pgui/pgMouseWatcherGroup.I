@@ -25,5 +25,5 @@ PGMouseWatcherGroup(PGTop *top) : _top(top) {
 INLINE void PGMouseWatcherGroup::
 clear_top(PGTop *top) {
   nassertv(_top == top);
-  _top = (PGTop *)NULL;
+  _top = nullptr;
 }

@@ -24,7 +24,7 @@ MaterialAttrib() {
  */
 INLINE bool MaterialAttrib::
 is_off() const {
-  return _material == (const Material *)NULL;
+  return _material == nullptr;
 }
 
 /**

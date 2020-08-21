@@ -22,7 +22,7 @@ TypeHandle BindAnimRequest::_type_handle;
  *
  */
 BindAnimRequest::
-BindAnimRequest(const string &name,
+BindAnimRequest(const std::string &name,
                 const Filename &filename, const LoaderOptions &options,
                 Loader *loader,
                 AnimControl *control, int hierarchy_match_flags,
@@ -51,7 +51,7 @@ do_task() {
   }
 
   PT(PandaNode) model = get_model();
-  if (model == (PandaNode *)NULL) {
+  if (model == nullptr) {
     // Couldn't load the file.
     _control->fail_anim(part);
     return DS_done;
@@ -59,7 +59,7 @@ do_task() {
   _control->set_anim_model(model);
 
   AnimBundle *anim = AnimBundleNode::find_anim_bundle(model);
-  if (anim == (AnimBundle *)NULL) {
+  if (anim == nullptr) {
     // No anim bundle.
     _control->fail_anim(part);
     return DS_done;

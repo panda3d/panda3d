@@ -23,7 +23,7 @@
  * of static functions, which are used to wrap calls to Bob Jenkins' public-
  * domain hash generation function (defined in lookup3.c).
  */
-class EXPCL_DTOOL AddHash {
+class EXPCL_DTOOL_DTOOLBASE AddHash {
 public:
   INLINE static size_t add_hash(size_t start, const uint32_t *words, size_t num_words);
   static size_t add_hash(size_t start, const uint8_t *bytes, size_t num_bytes);

@@ -61,7 +61,7 @@ setup(HWND parent_window) {
   for (li = _labels.begin(); li != _labels.end(); ++li) {
     WinStatsLabel *label = (*li);
     label->setup(_window);
-    _ideal_width = max(_ideal_width, label->get_ideal_width());
+    _ideal_width = std::max(_ideal_width, label->get_ideal_width());
   }
 }
 
@@ -192,7 +192,7 @@ add_label(WinStatsMonitor *monitor, WinStatsGraph *graph,
     label->setup(_window);
     label->set_pos(0, yp, _width);
   }
-  _ideal_width = max(_ideal_width, label->get_ideal_width());
+  _ideal_width = std::max(_ideal_width, label->get_ideal_width());
 
   int label_index = (int)_labels.size();
   _labels.push_back(label);
@@ -235,13 +235,13 @@ create_window(HWND parent_window) {
     return;
   }
 
-  HINSTANCE application = GetModuleHandle(NULL);
+  HINSTANCE application = GetModuleHandle(nullptr);
   register_window_class(application);
 
   _window =
     CreateWindow(_window_class_name, "label stack", WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
                  0, 0, 0, 0,
-                 parent_window, NULL, application, 0);
+                 parent_window, nullptr, application, 0);
   if (!_window) {
     nout << "Could not create Label Stack window!\n";
     exit(1);
@@ -266,8 +266,8 @@ register_window_class(HINSTANCE application) {
   wc.style = 0;
   wc.lpfnWndProc = (WNDPROC)static_window_proc;
   wc.hInstance = application;
-  wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-  wc.lpszMenuName = NULL;
+  wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
+  wc.lpszMenuName = nullptr;
   wc.lpszClassName = _window_class_name;
 
   // Reserve space to associate the this pointer with the window.
@@ -287,7 +287,7 @@ register_window_class(HINSTANCE application) {
 LONG WINAPI WinStatsLabelStack::
 static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   WinStatsLabelStack *self = (WinStatsLabelStack *)GetWindowLongPtr(hwnd, 0);
-  if (self != (WinStatsLabelStack *)NULL && self->_window == hwnd) {
+  if (self != nullptr && self->_window == hwnd) {
     return self->window_proc(hwnd, msg, wparam, lparam);
   } else {
     return DefWindowProc(hwnd, msg, wparam, lparam);

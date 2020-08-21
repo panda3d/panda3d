@@ -14,13 +14,12 @@
 #include "typedWritable.h"
 #include "bamWriter.h"
 #include "bamReader.h"
-#include "datagramOutputFile.h"
-#include "datagramInputFile.h"
+#include "datagramBuffer.h"
 #include "lightMutexHolder.h"
 #include "bam.h"
 
 TypeHandle TypedWritable::_type_handle;
-TypedWritable* const TypedWritable::Null = (TypedWritable*)0L;
+TypedWritable* const TypedWritable::Null = nullptr;
 
 /**
  *
@@ -31,15 +30,15 @@ TypedWritable::
   BamWriterLink *link;
   do {
     link = (BamWriterLink *)AtomicAdjust::get_ptr(_bam_writers);
-    if (link == (BamWriterLink *)NULL) {
+    if (link == nullptr) {
       // List is unlocked and empty - no writers to remove.
       return;
     }
     link = (BamWriterLink *)(((uintptr_t)link) & ~(uintptr_t)0x1);
   } while (link != AtomicAdjust::
-    compare_and_exchange_ptr(_bam_writers, (void *)link, (void *)NULL));
+    compare_and_exchange_ptr(_bam_writers, (void *)link, nullptr));
 
-  while (link != (BamWriterLink *)NULL) {
+  while (link != nullptr) {
     BamWriterLink *next_link = link->_next;
     link->_writer->object_destructs(this);
     delete link;
@@ -120,7 +119,7 @@ finalize(BamReader *) {
  */
 ReferenceCount *TypedWritable::
 as_reference_count() {
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -134,52 +133,43 @@ as_reference_count() {
  * together.
  */
 bool TypedWritable::
-encode_to_bam_stream(string &data, BamWriter *writer) const {
+encode_to_bam_stream(vector_uchar &data, BamWriter *writer) const {
   data.clear();
-  ostringstream stream;
 
-  // We use nested scoping to ensure the destructors get called in the right
-  // order.
-  {
-    DatagramOutputFile dout;
-    if (!dout.open(stream)) {
+  DatagramBuffer buffer;
+  if (writer == nullptr) {
+    // Create our own writer.
+
+    if (!buffer.write_header(_bam_header)) {
       return false;
     }
 
-    if (writer == NULL) {
-      // Create our own writer.
+    BamWriter writer(&buffer);
+    if (!writer.init()) {
+      return false;
+    }
 
-      if (!dout.write_header(_bam_header)) {
-        return false;
-      }
-
-      BamWriter writer(&dout);
-      if (!writer.init()) {
-        return false;
-      }
-
-      if (!writer.write_object(this)) {
-        return false;
-      }
-    } else {
-      // Use the existing writer.
-      writer->set_target(&dout);
-      bool result = writer->write_object(this);
-      writer->set_target(NULL);
-      if (!result) {
-        return false;
-      }
+    if (!writer.write_object(this)) {
+      return false;
+    }
+  } else {
+    // Use the existing writer.
+    writer->set_target(&buffer);
+    bool result = writer->write_object(this);
+    writer->set_target(nullptr);
+    if (!result) {
+      return false;
     }
   }
 
-  data = stream.str();
+  buffer.swap_data(data);
   return true;
 }
 
 /**
- * Reads the string created by a previous call to encode_to_bam_stream(), and
- * extracts the single object on that string.  Returns true on success, false
- * on on error.
+ * Reads the bytes created by a previous call to encode_to_bam_stream(), and
+ * extracts the single object on those bytes.  Returns true on success, false
+ * on error.
  *
  * This variant sets the TypedWritable and ReferenceCount pointers separately;
  * both are pointers to the same object.  The reference count is not
@@ -198,18 +188,14 @@ encode_to_bam_stream(string &data, BamWriter *writer) const {
  */
 bool TypedWritable::
 decode_raw_from_bam_stream(TypedWritable *&ptr, ReferenceCount *&ref_ptr,
-                           const string &data, BamReader *reader) {
-  istringstream stream(data);
+                           vector_uchar data, BamReader *reader) {
 
-  DatagramInputFile din;
-  if (!din.open(stream)) {
-    return false;
-  }
+  DatagramBuffer buffer(std::move(data));
 
-  if (reader == NULL) {
+  if (reader == nullptr) {
     // Create a local reader.
-    string head;
-    if (!din.read_header(head, _bam_header.size())) {
+    std::string head;
+    if (!buffer.read_header(head, _bam_header.size())) {
       return false;
     }
 
@@ -217,7 +203,7 @@ decode_raw_from_bam_stream(TypedWritable *&ptr, ReferenceCount *&ref_ptr,
       return false;
     }
 
-    BamReader reader(&din);
+    BamReader reader(&buffer);
     if (!reader.init()) {
       return false;
     }
@@ -230,7 +216,7 @@ decode_raw_from_bam_stream(TypedWritable *&ptr, ReferenceCount *&ref_ptr,
       return false;
     }
 
-    if (ref_ptr == NULL) {
+    if (ref_ptr == nullptr) {
       // Can't support non-reference-counted objects.
       return false;
     }
@@ -241,27 +227,27 @@ decode_raw_from_bam_stream(TypedWritable *&ptr, ReferenceCount *&ref_ptr,
 
   } else {
     // Use the existing reader.
-    reader->set_source(&din);
+    reader->set_source(&buffer);
     if (!reader->read_object(ptr, ref_ptr)) {
-      reader->set_source(NULL);
+      reader->set_source(nullptr);
       return false;
     }
 
     if (!reader->resolve()) {
-      reader->set_source(NULL);
+      reader->set_source(nullptr);
       return false;
     }
 
-    if (ref_ptr == NULL) {
+    if (ref_ptr == nullptr) {
       // Can't support non-reference-counted objects.
-      reader->set_source(NULL);
+      reader->set_source(nullptr);
       return false;
     }
 
     // This BamReader isn't going away, but we have to balance the unref()
     // below.
     ref_ptr->ref();
-    reader->set_source(NULL);
+    reader->set_source(nullptr);
   }
 
 
@@ -279,7 +265,7 @@ decode_raw_from_bam_stream(TypedWritable *&ptr, ReferenceCount *&ref_ptr,
  */
 void TypedWritable::
 add_bam_writer(BamWriter *writer) {
-  nassertv(writer != (BamWriter *)NULL);
+  nassertv(writer != nullptr);
 
   BamWriterLink *begin;
   BamWriterLink *new_link = new BamWriterLink;
@@ -303,7 +289,7 @@ add_bam_writer(BamWriter *writer) {
  */
 void TypedWritable::
 remove_bam_writer(BamWriter *writer) {
-  nassertv(writer != (BamWriter *)NULL);
+  nassertv(writer != nullptr);
 
   BamWriterLink *begin;
 
@@ -312,7 +298,7 @@ remove_bam_writer(BamWriter *writer) {
   do {
     begin = (BamWriterLink *)AtomicAdjust::get_ptr(_bam_writers);
     begin = (BamWriterLink *)(((uintptr_t)begin) & ~(uintptr_t)0x1);
-    if (begin == NULL) {
+    if (begin == nullptr) {
       // The list is empty, nothing to remove.
       return;
     }
@@ -321,21 +307,21 @@ remove_bam_writer(BamWriter *writer) {
                        (void *)((uintptr_t)begin | (uintptr_t)0x1)));
 
   // Find the writer in the list.
-  BamWriterLink *prev_link = (BamWriterLink *)NULL;
+  BamWriterLink *prev_link = nullptr;
   BamWriterLink *link = begin;
 
-  while (link != NULL && link->_writer != writer) {
+  while (link != nullptr && link->_writer != writer) {
     prev_link = link;
     link = link->_next;
   }
 
-  if (link == (BamWriterLink *)NULL) {
+  if (link == nullptr) {
     // Not found.  Just unlock and leave.
     _bam_writers = (void *)begin;
     return;
   }
 
-  if (prev_link == (BamWriterLink *)NULL) {
+  if (prev_link == nullptr) {
     // It's the first link.  Replace and unlock in one atomic op.
     _bam_writers = (void *)link->_next;
   } else {

@@ -75,6 +75,9 @@ private:
 
 #include "memoryInfo.I"
 
+#else
+class MemoryInfo;
+
 #endif  // DO_MEMORY_USAGE
 
 #endif

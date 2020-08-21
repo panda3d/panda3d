@@ -23,7 +23,7 @@
  * that attempt to move into solid walls.  This also puts forces onto the
  * physics objects
  */
-class EXPCL_PANDAPHYSICS PhysicsCollisionHandler :
+class EXPCL_PANDA_PHYSICS PhysicsCollisionHandler :
     public CollisionHandlerPusher {
 PUBLISHED:
   PhysicsCollisionHandler();

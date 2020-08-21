@@ -207,7 +207,7 @@ get_winding_order() const {
  */
 INLINE FT_Face FreetypeFont::
 acquire_face() const {
-  nassertr(_face != NULL, NULL);
+  nassertr(_face != nullptr, nullptr);
   return _face->acquire_face(_char_size, _dpi, _pixel_width, _pixel_height);
 }
 
@@ -217,7 +217,7 @@ acquire_face() const {
  */
 INLINE void FreetypeFont::
 release_face(FT_Face face) const {
-  nassertv(_face != NULL);
+  nassertv(_face != nullptr);
   _face->release_face(face);
 }
 

@@ -41,9 +41,9 @@ public:
   CPPExtensionType(Type type, CPPIdentifier *ident, CPPScope *current_scope,
                    const CPPFile &file);
 
-  virtual string get_simple_name() const;
-  virtual string get_local_name(CPPScope *scope = NULL) const;
-  virtual string get_fully_scoped_name() const;
+  virtual std::string get_simple_name() const;
+  virtual std::string get_local_name(CPPScope *scope = nullptr) const;
+  virtual std::string get_fully_scoped_name() const;
 
   virtual bool is_incomplete() const;
   virtual bool is_tbd() const;
@@ -52,6 +52,7 @@ public:
   virtual bool is_constructible(const CPPType *type) const;
   virtual bool is_default_constructible() const;
   virtual bool is_copy_constructible() const;
+  virtual bool is_copy_assignable() const;
 
   virtual CPPDeclaration *substitute_decl(SubstDecl &subst,
                                           CPPScope *current_scope,
@@ -63,7 +64,7 @@ public:
   virtual bool is_equivalent(const CPPType &other) const;
 
 
-  virtual void output(ostream &out, int indent_level, CPPScope *scope,
+  virtual void output(std::ostream &out, int indent_level, CPPScope *scope,
                       bool complete) const;
   virtual SubType get_subtype() const;
 
@@ -74,6 +75,6 @@ public:
   CPPExpression *_alignment;
 };
 
-ostream &operator << (ostream &out, CPPExtensionType::Type type);
+std::ostream &operator << (std::ostream &out, CPPExtensionType::Type type);
 
 #endif

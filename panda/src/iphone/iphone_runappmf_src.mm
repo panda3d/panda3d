@@ -15,7 +15,6 @@
 #include <fcntl.h>
 #include <iostream>
 #include <unistd.h>
-using namespace std;
 
 #include "pnotify.h"
 

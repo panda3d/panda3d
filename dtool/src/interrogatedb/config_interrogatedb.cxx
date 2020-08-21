@@ -17,7 +17,7 @@
 #include "configVariableSearchPath.h"
 #include "dconfig.h"
 
-#if defined(WIN32_VC) && defined(_DEBUG)
+#if defined(_MSC_VER) && defined(_DEBUG)
 // _DEBUG assumes you are linking to msvcrt70d.dll, not msvcrt70.dll
 #define USE_WIN32_DBGHEAP
 #include <crtdbg.h>

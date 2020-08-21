@@ -27,7 +27,7 @@
  * materials from an egg file and sort them all together; it can also manage
  * the creation of unique materials and the assignment of unique MRef names.
  */
-class EXPCL_PANDAEGG EggMaterialCollection {
+class EXPCL_PANDA_EGG EggMaterialCollection {
 
   // This is a bit of private interface stuff that must be here as a forward
   // reference.  This allows us to define the EggMaterialCollection as an STL
@@ -90,7 +90,7 @@ PUBLISHED:
   EggMaterial *create_unique_material(const EggMaterial &copy, int eq);
 
   // Find a material with a particular MRef name.
-  EggMaterial *find_mref(const string &mref_name) const;
+  EggMaterial *find_mref(const std::string &mref_name) const;
 
 private:
   Materials _materials;

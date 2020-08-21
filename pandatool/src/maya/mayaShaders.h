@@ -21,7 +21,6 @@
 #include "mayaShaderColorDef.h"
 
 class MayaShader;
-class MObject;
 
 /**
  * Collects the set of MayaShaders that have been encountered so far.
@@ -37,13 +36,13 @@ public:
   MayaShader *get_shader(int n) const;
 
   MayaFileToUVSetMap _file_to_uvset;
-  pvector<string> _uvset_names;
+  pvector<std::string> _uvset_names;
   void clear();
   void bind_uvsets(MObject mesh);
-  string find_uv_link(const string &match);
+  std::string find_uv_link(const std::string &match);
 
 private:
-  typedef pmap<string, MayaShader *> Shaders;
+  typedef pmap<std::string, MayaShader *> Shaders;
   Shaders _shaders;
   typedef pvector<MayaShader *> ShadersInOrder;
   ShadersInOrder _shaders_in_order;

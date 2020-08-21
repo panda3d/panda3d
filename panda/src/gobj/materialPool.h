@@ -40,9 +40,9 @@ PUBLISHED:
   INLINE static void release_all_materials();
 
   INLINE static int garbage_collect();
-  INLINE static void list_contents(ostream &out);
+  INLINE static void list_contents(std::ostream &out);
 
-  static void write(ostream &out);
+  static void write(std::ostream &out);
 
 private:
   INLINE MaterialPool();
@@ -52,7 +52,7 @@ private:
   void ns_release_all_materials();
 
   int ns_garbage_collect();
-  void ns_list_contents(ostream &out) const;
+  void ns_list_contents(std::ostream &out) const;
 
   static MaterialPool *get_global_ptr();
 

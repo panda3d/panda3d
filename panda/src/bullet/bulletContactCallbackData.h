@@ -11,8 +11,8 @@
  * @date 2012-11-22
  */
 
-#ifndef __BULLET_CONTACT_CALLBACK_DATA_H__
-#define __BULLET_CONTACT_CALLBACK_DATA_H__
+#ifndef BULLETCONTACTCALLBACKDATA_H
+#define BULLETCONTACTCALLBACKDATA_H
 
 #include "pandabase.h"
 #include "callbackData.h"
@@ -40,6 +40,14 @@ PUBLISHED:
   INLINE int get_part_id1() const;
   INLINE int get_index0() const;
   INLINE int get_index1() const;
+
+  MAKE_PROPERTY(manifold, get_manifold);
+  MAKE_PROPERTY(node0, get_node0);
+  MAKE_PROPERTY(node1, get_node1);
+  MAKE_PROPERTY(part_id0, get_part_id0);
+  MAKE_PROPERTY(part_id1, get_part_id1);
+  MAKE_PROPERTY(index0, get_index0);
+  MAKE_PROPERTY(index1, get_index1);
 
 private:
   BulletManifoldPoint &_mp;
@@ -73,4 +81,4 @@ private:
 
 #include "bulletContactCallbackData.I"
 
-#endif // __BULLET_CONTACT_CALLBACK_DATA_H__
+#endif // BULLETCONTACTCALLBACKDATA_H

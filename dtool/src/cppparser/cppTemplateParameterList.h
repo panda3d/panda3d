@@ -33,7 +33,7 @@ class CPPTemplateParameterList {
 public:
   CPPTemplateParameterList();
 
-  string get_string() const;
+  std::string get_string() const;
   void build_subst_decl(const CPPTemplateParameterList &formal_params,
                         CPPDeclaration::SubstDecl &subst,
                         CPPScope *current_scope, CPPScope *global_scope) const;
@@ -49,16 +49,16 @@ public:
                                             CPPScope *current_scope,
                                             CPPScope *global_scope);
 
-  void output(ostream &out, CPPScope *scope) const;
-  void write_formal(ostream &out, CPPScope *scope) const;
+  void output(std::ostream &out, CPPScope *scope) const;
+  void write_formal(std::ostream &out, CPPScope *scope) const;
 
-  typedef vector<CPPDeclaration *> Parameters;
+  typedef std::vector<CPPDeclaration *> Parameters;
   Parameters _parameters;
 };
 
-inline ostream &
-operator << (ostream &out, const CPPTemplateParameterList &plist) {
-  plist.output(out, (CPPScope *)NULL);
+inline std::ostream &
+operator << (std::ostream &out, const CPPTemplateParameterList &plist) {
+  plist.output(out, nullptr);
   return out;
 }
 

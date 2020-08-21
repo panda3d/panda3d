@@ -26,7 +26,7 @@
 #include "configVariableSearchPath.h"
 #include "nodePath.h"
 
-ConfigureDecl(config_showbase, EXPCL_DIRECT, EXPTP_DIRECT);
+ConfigureDecl(config_showbase, EXPCL_DIRECT_SHOWBASE, EXPTP_DIRECT_SHOWBASE);
 
 class CollisionTraverser;
 class Camera;
@@ -34,24 +34,23 @@ class GraphicsEngine;
 
 BEGIN_PUBLISH
 
-EXPCL_DIRECT ConfigVariableSearchPath &get_particle_path();
+EXPCL_DIRECT_SHOWBASE ConfigVariableSearchPath &get_particle_path();
 
-EXPCL_DIRECT void throw_new_frame();
+EXPCL_DIRECT_SHOWBASE void throw_new_frame();
 
-EXPCL_DIRECT DConfig &get_config_showbase();
-EXPCL_DIRECT void init_app_for_gui();
+EXPCL_DIRECT_SHOWBASE void init_app_for_gui();
 
 // klunky interface since we cant pass array from python->C++
-EXPCL_DIRECT void add_fullscreen_testsize(int xsize, int ysize);
-EXPCL_DIRECT void runtest_fullscreen_sizes(GraphicsWindow *win);
-EXPCL_DIRECT bool query_fullscreen_testresult(int xsize, int ysize);
+EXPCL_DIRECT_SHOWBASE void add_fullscreen_testsize(int xsize, int ysize);
+EXPCL_DIRECT_SHOWBASE void runtest_fullscreen_sizes(GraphicsWindow *win);
+EXPCL_DIRECT_SHOWBASE bool query_fullscreen_testresult(int xsize, int ysize);
 
 // to handle windows stickykeys
-EXPCL_DIRECT void store_accessibility_shortcut_keys();
-EXPCL_DIRECT void allow_accessibility_shortcut_keys(bool allowKeys);
+EXPCL_DIRECT_SHOWBASE void store_accessibility_shortcut_keys();
+EXPCL_DIRECT_SHOWBASE void allow_accessibility_shortcut_keys(bool allowKeys);
 
 #ifdef IS_OSX
-EXPCL_DIRECT void activate_osx_application();
+EXPCL_DIRECT_SHOWBASE void activate_osx_application();
 #endif
 
 END_PUBLISH

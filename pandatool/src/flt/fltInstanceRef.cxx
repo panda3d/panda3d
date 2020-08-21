@@ -42,10 +42,10 @@ get_instance() const {
  * flt file, use FltHeader::write_flt().
  */
 void FltInstanceRef::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << "instance";
   FltInstanceDefinition *def = _header->get_instance(_instance_index);
-  if (def != (FltInstanceDefinition *)NULL) {
+  if (def != nullptr) {
     def->write_children(out, indent_level + 2);
     indent(out, indent_level) << "}\n";
   } else {

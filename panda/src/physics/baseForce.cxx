@@ -21,7 +21,7 @@ TypeHandle BaseForce::_type_handle;
  */
 BaseForce::
 BaseForce(bool active) :
-  _force_node(NULL),
+  _force_node(nullptr),
   _active(active)
 {
 }
@@ -34,7 +34,7 @@ BaseForce(const BaseForce &copy) :
   TypedReferenceCount(copy)
 {
   _active = copy._active;
-  _force_node = (ForceNode *) NULL;
+  _force_node = nullptr;
 }
 
 /**
@@ -48,7 +48,7 @@ BaseForce::
  * Write a string representation of this instance to <out>.
  */
 void BaseForce::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "BaseForce (id " << this << ")";
 }
 
@@ -56,7 +56,7 @@ output(ostream &out) const {
  * Write a string representation of this instance to <out>.
  */
 void BaseForce::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << "BaseForce (id " << this << "):\n";
 

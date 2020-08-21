@@ -27,7 +27,7 @@
  * limits to the size of the files that may be written with this system; and
  * "files" written here are not automatically persistent between sessions.
  */
-class EXPCL_PANDAEXPRESS VirtualFileMountRamdisk : public VirtualFileMount {
+class EXPCL_PANDA_EXPRESS VirtualFileMountRamdisk : public VirtualFileMount {
 PUBLISHED:
   VirtualFileMountRamdisk();
 
@@ -42,38 +42,38 @@ public:
   virtual bool is_regular_file(const Filename &file) const;
   virtual bool is_writable(const Filename &file) const;
 
-  virtual istream *open_read_file(const Filename &file) const;
-  virtual ostream *open_write_file(const Filename &file, bool truncate);
-  virtual ostream *open_append_file(const Filename &file);
-  virtual iostream *open_read_write_file(const Filename &file, bool truncate);
-  virtual iostream *open_read_append_file(const Filename &file);
+  virtual std::istream *open_read_file(const Filename &file) const;
+  virtual std::ostream *open_write_file(const Filename &file, bool truncate);
+  virtual std::ostream *open_append_file(const Filename &file);
+  virtual std::iostream *open_read_write_file(const Filename &file, bool truncate);
+  virtual std::iostream *open_read_append_file(const Filename &file);
 
-  virtual streamsize get_file_size(const Filename &file, istream *stream) const;
-  virtual streamsize get_file_size(const Filename &file) const;
+  virtual std::streamsize get_file_size(const Filename &file, std::istream *stream) const;
+  virtual std::streamsize get_file_size(const Filename &file) const;
   virtual time_t get_timestamp(const Filename &file) const;
 
   virtual bool scan_directory(vector_string &contents,
                               const Filename &dir) const;
 
-  virtual bool atomic_compare_and_exchange_contents(const Filename &file, string &orig_contents, const string &old_contents, const string &new_contents);
-  virtual bool atomic_read_contents(const Filename &file, string &contents) const;
+  virtual bool atomic_compare_and_exchange_contents(const Filename &file, std::string &orig_contents, const std::string &old_contents, const std::string &new_contents);
+  virtual bool atomic_read_contents(const Filename &file, std::string &contents) const;
 
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 private:
   class FileBase;
   class File;
   class Directory;
 
-  class FileBase : public TypedReferenceCount {
+  class EXPCL_PANDA_EXPRESS FileBase : public TypedReferenceCount {
   public:
-    INLINE FileBase(const string &basename);
+    INLINE FileBase(const std::string &basename);
     virtual ~FileBase();
     INLINE bool operator < (const FileBase &other) const;
 
     virtual bool is_directory() const;
 
-    string _basename;
+    std::string _basename;
     time_t _timestamp;
 
   public:
@@ -94,11 +94,11 @@ private:
     static TypeHandle _type_handle;
   };
 
-  class File : public FileBase {
+  class EXPCL_PANDA_EXPRESS File : public FileBase {
   public:
-    INLINE File(const string &basename);
+    INLINE File(const std::string &basename);
 
-    stringstream _data;
+    std::stringstream _data;
     StreamWrapper _wrapper;
 
   public:
@@ -121,16 +121,16 @@ private:
 
   typedef pset<PT(FileBase), indirect_less<FileBase *> > Files;
 
-  class Directory : public FileBase {
+  class EXPCL_PANDA_EXPRESS Directory : public FileBase {
   public:
-    INLINE Directory(const string &basename);
+    INLINE Directory(const std::string &basename);
 
     virtual bool is_directory() const;
 
-    PT(FileBase) do_find_file(const string &filename) const;
-    PT(File) do_create_file(const string &filename);
-    PT(Directory) do_make_directory(const string &filename);
-    PT(FileBase) do_delete_file(const string &filename);
+    PT(FileBase) do_find_file(const std::string &filename) const;
+    PT(File) do_create_file(const std::string &filename);
+    PT(Directory) do_make_directory(const std::string &filename);
+    PT(FileBase) do_delete_file(const std::string &filename);
     bool do_scan_directory(vector_string &contents) const;
 
     Files _files;

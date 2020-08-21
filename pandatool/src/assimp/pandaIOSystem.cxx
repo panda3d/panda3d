@@ -72,14 +72,14 @@ Open(const char *file, const char *mode) {
   Filename fn = Filename::from_os_specific(file);
 
   if (mode[0] == 'r') {
-    istream *stream = _vfs->open_read_file(file, true);
-    if (stream == NULL) {
-      return NULL;
+    std::istream *stream = _vfs->open_read_file(file, true);
+    if (stream == nullptr) {
+      return nullptr;
     }
     return new PandaIOStream(*stream);
 
   } else {
-    nassertr(false, NULL); // Not implemented on purpose.
-    return NULL;
+    nassert_raise("write mode not implemented");
+    return nullptr;
   }
 }

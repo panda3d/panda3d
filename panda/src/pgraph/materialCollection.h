@@ -36,7 +36,7 @@ PUBLISHED:
   bool has_material(Material *material) const;
   void clear();
 
-  Material *find_material(const string &name) const;
+  Material *find_material(const std::string &name) const;
 
   int get_num_materials() const;
   Material *get_material(int index) const;
@@ -45,15 +45,15 @@ PUBLISHED:
   INLINE void operator += (const MaterialCollection &other);
   INLINE MaterialCollection operator + (const MaterialCollection &other) const;
 
-  void output(ostream &out) const;
-  void write(ostream &out, int indent_level = 0) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent_level = 0) const;
 
 private:
   typedef PTA(PT(Material)) Materials;
   Materials _materials;
 };
 
-INLINE ostream &operator << (ostream &out, const MaterialCollection &col) {
+INLINE std::ostream &operator << (std::ostream &out, const MaterialCollection &col) {
   col.output(out);
   return out;
 }

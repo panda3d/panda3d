@@ -14,6 +14,10 @@
 #include "notifySeverity.h"
 #include "pnotify.h"
 
+using std::istream;
+using std::ostream;
+using std::string;
+
 ostream &
 operator << (ostream &out, NotifySeverity severity) {
   switch (severity) {

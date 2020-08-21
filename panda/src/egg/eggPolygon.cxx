@@ -146,7 +146,7 @@ is_planar() const {
 PT(EggPolygon) EggPolygon::
 triangulate_in_place(bool convex_also) {
   EggGroupNode *parent = get_parent();
-  nassertr(parent != (EggGroupNode *)NULL, this);
+  nassertr(parent != nullptr, this);
 
   PT(EggPolygon) save_me = this;
   parent->remove_child(this);
@@ -159,7 +159,7 @@ triangulate_in_place(bool convex_also) {
  * Writes the polygon to the indicated output stream in Egg format.
  */
 void EggPolygon::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   write_header(out, indent_level, "<Polygon>");
   write_body(out, indent_level+2);
   indent(out, indent_level) << "}\n";

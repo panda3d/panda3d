@@ -45,6 +45,14 @@ size() {
 }
 
 /**
+ *
+ */
+INLINE_LINMATH FLOATNAME(LMatrix3)::Row::
+operator const FLOATNAME(LVecBase3) &() const {
+  return *(const FLOATNAME(LVecBase3) *)_row;
+}
+
+/**
  * Defines a row-level constant accessor to the matrix.
  */
 INLINE_LINMATH FLOATNAME(LMatrix3)::CRow::
@@ -69,6 +77,14 @@ size() {
 }
 
 /**
+ *
+ */
+INLINE_LINMATH FLOATNAME(LMatrix3)::CRow::
+operator const FLOATNAME(LVecBase3) &() const {
+  return *(const FLOATNAME(LVecBase3) *)_row;
+}
+
+/**
  * Returns an identity matrix.
  *
  * This function definition must appear first, since some inline functions
@@ -77,31 +93,6 @@ size() {
 INLINE_LINMATH const FLOATNAME(LMatrix3) &FLOATNAME(LMatrix3)::
 ident_mat() {
   return _ident_mat;
-}
-
-/**
- *
- */
-INLINE_LINMATH FLOATNAME(LMatrix3)::
-FLOATNAME(LMatrix3)() {
-}
-
-/**
- *
- */
-INLINE_LINMATH FLOATNAME(LMatrix3)::
-FLOATNAME(LMatrix3)(const FLOATNAME(LMatrix3) &copy) : _m(copy._m) {
-}
-
-/**
- *
- */
-INLINE_LINMATH FLOATNAME(LMatrix3) &FLOATNAME(LMatrix3)::
-operator = (const FLOATNAME(LMatrix3) &copy) {
-  TAU_PROFILE("void LMatrix3::operator = (const LMatrix3 &)", " ", TAU_USER);
-
-  _m = copy._m;
-  return *this;
 }
 
 /**
@@ -130,6 +121,26 @@ FLOATNAME(LMatrix3)(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02,
   _m(2, 0) = e20;
   _m(2, 1) = e21;
   _m(2, 2) = e22;
+}
+
+/**
+ * Constructs the matrix from three individual rows.
+ */
+INLINE_LINMATH FLOATNAME(LMatrix3)::
+FLOATNAME(LMatrix3)(const FLOATNAME(LVecBase3) &row0,
+                    const FLOATNAME(LVecBase3) &row1,
+                    const FLOATNAME(LVecBase3) &row2) {
+  TAU_PROFILE("LMatrix3::LMatrix3(const LVecBase3 &, ...)", " ", TAU_USER);
+
+  _m(0, 0) = row0._v(0);
+  _m(0, 1) = row0._v(1);
+  _m(0, 2) = row0._v(2);
+  _m(1, 0) = row1._v(0);
+  _m(1, 1) = row1._v(1);
+  _m(1, 2) = row1._v(2);
+  _m(2, 0) = row2._v(0);
+  _m(2, 1) = row2._v(1);
+  _m(2, 2) = row2._v(2);
 }
 
 /**

@@ -26,8 +26,8 @@ class EXPCL_PANDASPEEDTREE LoaderFileTypeStf : public LoaderFileType {
 public:
   LoaderFileTypeStf();
 
-  virtual string get_name() const;
-  virtual string get_extension() const;
+  virtual std::string get_name() const;
+  virtual std::string get_extension() const;
   virtual bool supports_compressed() const;
 
   virtual PT(PandaNode) load_file(const Filename &path, const LoaderOptions &options,

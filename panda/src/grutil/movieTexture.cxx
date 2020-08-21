@@ -25,8 +25,9 @@
 #include "bamCacheRecord.h"
 #include "bamReader.h"
 #include "bamWriter.h"
-#include "math.h"
 #include "audioSound.h"
+
+#include <math.h>
 
 TypeHandle MovieTexture::_type_handle;
 
@@ -35,7 +36,7 @@ TypeHandle MovieTexture::_type_handle;
  * do_load_one.
  */
 MovieTexture::
-MovieTexture(const string &name) :
+MovieTexture(const std::string &name) :
   Texture(name)
 {
 }
@@ -48,7 +49,7 @@ MovieTexture(MovieVideo *video) :
   Texture(video->get_name())
 {
   Texture::CDWriter cdata_tex(Texture::_cycler, true);
-  do_load_one(cdata_tex, video->open(), NULL, 0, LoaderOptions());
+  do_load_one(cdata_tex, video->open(), nullptr, 0, LoaderOptions());
 }
 
 /**
@@ -90,17 +91,6 @@ CData(const CData &copy) :
 CycleData *MovieTexture::CData::
 make_copy() const {
   return new CData(*this);
-}
-
-/**
- * Use MovieTexture::make_copy() to make a duplicate copy of an existing
- * MovieTexture.
- */
-MovieTexture::
-MovieTexture(const MovieTexture &copy) :
-  Texture(copy)
-{
-  nassertv(false);
 }
 
 /**
@@ -152,6 +142,7 @@ void MovieTexture::
 do_recalculate_image_properties(CData *cdata, Texture::CData *cdata_tex, const LoaderOptions &options) {
   int x_max = 1;
   int y_max = 1;
+  bool rgb = false;
   bool alpha = false;
   double len = 0.0;
 
@@ -161,7 +152,8 @@ do_recalculate_image_properties(CData *cdata, Texture::CData *cdata_tex, const L
       if (t->size_x() > x_max) x_max = t->size_x();
       if (t->size_y() > y_max) y_max = t->size_y();
       if (t->length() > len) len = t->length();
-      if (t->get_num_components() == 4) alpha=true;
+      if (t->get_num_components() >= 3) rgb=true;
+      if (t->get_num_components() == 4 || t->get_num_components() == 2) alpha=true;
     }
     t = cdata->_pages[i]._alpha;
     if (t) {
@@ -178,15 +170,16 @@ do_recalculate_image_properties(CData *cdata, Texture::CData *cdata_tex, const L
 
   do_adjust_this_size(cdata_tex, x_max, y_max, get_name(), true);
 
-  do_reconsider_image_properties(cdata_tex, x_max, y_max, alpha?4:3,
+  int num_components = (rgb ? 3 : 1) + alpha;
+  do_reconsider_image_properties(cdata_tex, x_max, y_max, num_components,
                                  T_unsigned_byte, cdata->_pages.size(),
                                  options);
   cdata_tex->_orig_file_x_size = cdata->_video_width;
   cdata_tex->_orig_file_y_size = cdata->_video_height;
 
   do_set_pad_size(cdata_tex,
-                  max(cdata_tex->_x_size - cdata_tex->_orig_file_x_size, 0),
-                  max(cdata_tex->_y_size - cdata_tex->_orig_file_y_size, 0),
+                  std::max(cdata_tex->_x_size - cdata_tex->_orig_file_x_size, 0),
+                  std::max(cdata_tex->_y_size - cdata_tex->_orig_file_y_size, 0),
                   0);
 }
 
@@ -196,7 +189,7 @@ do_recalculate_image_properties(CData *cdata, Texture::CData *cdata_tex, const L
  */
 bool MovieTexture::
 do_adjust_this_size(const Texture::CData *cdata_tex,
-                    int &x_size, int &y_size, const string &name,
+                    int &x_size, int &y_size, const std::string &name,
                     bool for_padding) const {
   AutoTextureScale ats = do_get_auto_texture_scale(cdata_tex);
   if (ats != ATS_none) {
@@ -222,7 +215,7 @@ do_read_one(Texture::CData *cdata_tex,
   }
   nassertr(z >= 0 && z < cdata_tex->_z_size * cdata_tex->_num_views, false);
 
-  if (record != (BamCacheRecord *)NULL) {
+  if (record != nullptr) {
     record->add_dependent_file(fullpath);
   }
 
@@ -230,12 +223,12 @@ do_read_one(Texture::CData *cdata_tex,
   PT(MovieVideoCursor) alpha;
 
   color = MovieVideo::get(fullpath)->open();
-  if (color == 0) {
+  if (color == nullptr) {
     return false;
   }
   if (!alpha_fullpath.empty()) {
     alpha = MovieVideo::get(alpha_fullpath)->open();
-    if (alpha == 0) {
+    if (alpha == nullptr) {
       return false;
     }
   }
@@ -293,7 +286,18 @@ do_load_one(Texture::CData *cdata_tex,
  */
 bool MovieTexture::
 do_load_one(Texture::CData *cdata_tex,
-            const PNMImage &pnmimage, const string &name, int z, int n,
+            const PNMImage &pnmimage, const std::string &name, int z, int n,
+            const LoaderOptions &options) {
+  grutil_cat.error() << "You cannot load a static image into a MovieTexture\n";
+  return false;
+}
+
+/**
+ * Loading a static image into a MovieTexture is an error.
+ */
+bool MovieTexture::
+do_load_one(Texture::CData *cdata_tex,
+            const PfmFile &pfm, const std::string &name, int z, int n,
             const LoaderOptions &options) {
   grutil_cat.error() << "You cannot load a static image into a MovieTexture\n";
   return false;
@@ -337,7 +341,7 @@ cull_callback(CullTraverser *, const CullTraverserData &) const {
     // compute a new one.
     double offset;
     int true_loop_count = 1;
-    if (cdata->_synchronize != 0) {
+    if (cdata->_synchronize != nullptr) {
       offset = cdata->_synchronize->get_time();
     } else {
       // Calculate the cursor position modulo the length of the movie.
@@ -369,11 +373,11 @@ cull_callback(CullTraverser *, const CullTraverserData &) const {
       MovieVideoCursor *alpha = page._alpha;
       size_t i = pi - cdata->_pages.begin();
 
-      if (color != NULL && alpha != NULL) {
+      if (color != nullptr && alpha != nullptr) {
         color->apply_to_texture_rgb(page._cbuffer, (MovieTexture*)this, i);
         alpha->apply_to_texture_alpha(page._abuffer, (MovieTexture*)this, i, cdata_tex->_alpha_file_channel);
 
-      } else if (color != NULL) {
+      } else if (color != nullptr) {
         color->apply_to_texture(page._cbuffer, (MovieTexture*)this, i);
       }
 
@@ -398,7 +402,7 @@ cull_callback(CullTraverser *, const CullTraverserData &) const {
  * independently of the original.
  */
 PT(Texture) MovieTexture::
-make_copy_impl() {
+make_copy_impl() const {
   Texture::CDReader cdata_tex(Texture::_cycler);
   CDReader cdata(_cycler);
   PT(MovieTexture) copy = new MovieTexture(get_name());
@@ -406,7 +410,7 @@ make_copy_impl() {
   CDWriter cdata_copy(copy->_cycler, true);
   copy->do_assign(cdata_copy, cdata_copy_tex, this, cdata, cdata_tex);
 
-  return copy.p();
+  return copy;
 }
 
 /**
@@ -531,7 +535,7 @@ play() {
 void MovieTexture::
 set_time(double t) {
   CDWriter cdata(_cycler);
-  t = min(cdata->_video_length, max(0.0, t));
+  t = std::min(cdata->_video_length, std::max(0.0, t));
   if (cdata->_playing) {
     double now = ClockObject::get_global_clock()->get_frame_time();
     cdata->_clock = t - (now * cdata->_play_rate);
@@ -645,7 +649,7 @@ synchronize_to(AudioSound *s) {
 void MovieTexture::
 unsynchronize() {
   CDWriter cdata(_cycler);
-  cdata->_synchronize = 0;
+  cdata->_synchronize = nullptr;
 }
 
 
@@ -668,12 +672,12 @@ do_update_frames(const CData *cdata) const {
     MovieVideoCursor *color = page._color;
     MovieVideoCursor *alpha = page._alpha;
 
-    if (color != NULL && page._cbuffer == NULL) {
+    if (color != nullptr && page._cbuffer == nullptr) {
       if (color->set_time(cdata->_offset, cdata->_true_loop_count)) {
         ((VideoPage &)page)._cbuffer = color->fetch_buffer();
       }
     }
-    if (alpha != NULL && page._abuffer == NULL) {
+    if (alpha != nullptr && page._abuffer == nullptr) {
       if (alpha->set_time(cdata->_offset, cdata->_true_loop_count)) {
         ((VideoPage &)page)._abuffer = alpha->fetch_buffer();
       }
@@ -693,15 +697,15 @@ do_update_frames(const CData *cdata) const {
   PT(MovieVideoCursor::Buffer) newest;
   for (pi = cdata->_pages.begin(); pi != cdata->_pages.end(); ++pi) {
     const VideoPage &page = (*pi);
-    if (page._cbuffer == NULL) {
-      if (page._color != NULL) {
+    if (page._cbuffer == nullptr) {
+      if (page._color != nullptr) {
         // This page isn't ready at all.
         in_sync = false;
       }
     } else {
-      nassertr(page._color != NULL, true);
+      nassertr(page._color != nullptr, true);
       any_frames = true;
-      if (newest == NULL) {
+      if (newest == nullptr) {
         newest = page._cbuffer;
       } else {
         int ref = newest->compare_timestamp(page._cbuffer);
@@ -715,14 +719,14 @@ do_update_frames(const CData *cdata) const {
         }
       }
     }
-    if (page._abuffer == NULL) {
-      if (page._alpha != NULL) {
+    if (page._abuffer == nullptr) {
+      if (page._alpha != nullptr) {
         in_sync = false;
       }
     } else {
-      nassertr(page._alpha != NULL, true);
+      nassertr(page._alpha != nullptr, true);
       any_frames = true;
-      if (newest == NULL) {
+      if (newest == nullptr) {
         newest = page._abuffer;
       } else {
         int ref = newest->compare_timestamp(page._abuffer);
@@ -745,15 +749,15 @@ do_update_frames(const CData *cdata) const {
   if (!in_sync) {
     // If we're not in sync, throw away pages that are older than the newest
     // available frame.
-    if (newest != NULL) {
+    if (newest != nullptr) {
       Pages::const_iterator pi;
       for (pi = cdata->_pages.begin(); pi != cdata->_pages.end(); ++pi) {
         const VideoPage &page = (*pi);
-        if (page._cbuffer != NULL && newest->compare_timestamp(page._cbuffer) > 0) {
+        if (page._cbuffer != nullptr && newest->compare_timestamp(page._cbuffer) > 0) {
           ((VideoPage &)page)._cbuffer.clear();
           any_dropped = true;
         }
-        if (page._abuffer != NULL && newest->compare_timestamp(page._abuffer) > 0) {
+        if (page._abuffer != nullptr && newest->compare_timestamp(page._abuffer) > 0) {
           ((VideoPage &)page)._abuffer.clear();
           any_dropped = true;
         }

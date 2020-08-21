@@ -47,8 +47,8 @@ CData(const VertexSlider::CData &copy) :
 {
 }
 
-INLINE ostream &
-operator << (ostream &out, const VertexSlider &obj) {
+INLINE std::ostream &
+operator << (std::ostream &out, const VertexSlider &obj) {
   obj.output(out);
   return out;
 }

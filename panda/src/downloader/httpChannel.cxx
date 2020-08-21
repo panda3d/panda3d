@@ -27,11 +27,19 @@
 
 #ifdef HAVE_OPENSSL
 
-#if defined(WIN32_VC) || defined(WIN64_VC)
-  #include <WinSock2.h>
+#include "openSSLWrapper.h"
+
+#ifdef _WIN32
+  #include <winsock2.h>
   #include <windows.h>  // for select()
   #undef X509_NAME
-#endif  // WIN32_VC
+#endif  // _WIN32
+
+using std::istream;
+using std::min;
+using std::ostream;
+using std::ostringstream;
+using std::string;
 
 TypeHandle HTTPChannel::_type_handle;
 
@@ -98,18 +106,19 @@ HTTPChannel(HTTPClient *client) :
   _response_type = RT_none;
   _http_version = _client->get_http_version();
   _http_version_string = _client->get_http_version_string();
+  _content_type = "application/x-www-form-urlencoded";
   _state = S_new;
   _done_state = S_new;
   _started_download = false;
   _sent_so_far = 0;
-  _body_stream = NULL;
+  _body_stream = nullptr;
   _owns_body_stream = false;
-  _sbio = NULL;
+  _sbio = nullptr;
   _cipher_list = _client->get_cipher_list();
   _last_status_code = 0;
   _last_run_time = 0.0f;
-  _download_to_ramfile = NULL;
-  _download_to_stream = NULL;
+  _download_to_ramfile = nullptr;
+  _download_to_stream = nullptr;
 }
 
 /**
@@ -247,7 +256,7 @@ will_close_connection() const {
  * requests which can change their minds midstream about how much data they're
  * sending you.
  */
-streamsize HTTPChannel::
+std::streamsize HTTPChannel::
 get_file_size() const {
   if (_got_file_size) {
     return _file_size;
@@ -546,7 +555,7 @@ open_read_body() {
   reset_body_stream();
 
   if ((_state != S_read_header && _state != S_begin_body) || _source.is_null()) {
-    return NULL;
+    return nullptr;
   }
 
   string transfer_coding = downcase(get_header_value("Transfer-Encoding"));
@@ -585,7 +594,7 @@ open_read_body() {
  */
 void HTTPChannel::
 close_read_body(istream *stream) const {
-  if (stream != (istream *)NULL) {
+  if (stream != nullptr) {
     // For some reason--compiler bug in gcc 3.2?--explicitly deleting the
     // stream pointer does not call the appropriate global delete function;
     // instead apparently calling the system delete function.  So we call the
@@ -674,7 +683,7 @@ download_to_file(const Filename &filename, bool subdocument_resumes) {
  */
 bool HTTPChannel::
 download_to_ram(Ramfile *ramfile, bool subdocument_resumes) {
-  nassertr(ramfile != (Ramfile *)NULL, false);
+  nassertr(ramfile != nullptr, false);
   reset_download_to();
   ramfile->_pos = 0;
   _download_to_ramfile = ramfile;
@@ -759,11 +768,11 @@ download_to_stream(ostream *strm, bool subdocument_resumes) {
 SocketStream *HTTPChannel::
 get_connection() {
   if (!is_connection_ready()) {
-    return NULL;
+    return nullptr;
   }
 
   BioStream *stream = _source->get_stream();
-  _source->set_stream(NULL);
+  _source->set_stream(nullptr);
 
   // We're now passing ownership of the connection to the caller.
   if (downloader_cat.is_debug()) {
@@ -811,7 +820,7 @@ body_stream_destructs(ISocketStream *stream) {
         break;
       }
     }
-    _body_stream = NULL;
+    _body_stream = nullptr;
     _owns_body_stream = false;
   }
 }
@@ -884,7 +893,7 @@ reached_done_state() {
   } else {
     // Oops, we have to download the body now.
     open_read_body();
-    if (_body_stream == (ISocketStream *)NULL) {
+    if (_body_stream == nullptr) {
       if (downloader_cat.is_debug()) {
         downloader_cat.debug()
           << _NOTIFY_HTTP_CHANNEL_ID
@@ -921,7 +930,7 @@ run_try_next_proxy() {
 
     // Now try the next proxy in sequence.
     _proxy = _proxies[_proxy_next_index];
-    _proxy_auth = (HTTPAuthorization *)NULL;
+    _proxy_auth = nullptr;
     _proxy_next_index++;
     close_connection();
     reconsider_proxy();
@@ -1020,7 +1029,7 @@ run_connecting_wait() {
     tv.tv_sec = 0;
     tv.tv_usec = 0;
   }
-  int errcode = select(fd + 1, NULL, &wset, NULL, &tv);
+  int errcode = select(fd + 1, nullptr, &wset, nullptr, &tv);
   if (errcode < 0) {
     downloader_cat.warning()
       << _NOTIFY_HTTP_CHANNEL_ID
@@ -1135,7 +1144,7 @@ run_http_proxy_reading_header() {
     // 407: not authorized to proxy.  Try to get the authorization.
     string authenticate_request = get_header_value("Proxy-Authenticate");
     _proxy_auth = _client->generate_auth(_proxy, true, authenticate_request);
-    if (_proxy_auth != (HTTPAuthorization *)NULL) {
+    if (_proxy_auth != nullptr) {
       _proxy_realm = _proxy_auth->get_realm();
       _proxy_username = _client->select_username(_proxy, true, _proxy_realm);
       if (!_proxy_username.empty()) {
@@ -1444,9 +1453,9 @@ run_setup_ssl() {
   _sbio = BIO_new_ssl(_client->get_ssl_ctx(), true);
   BIO_push(_sbio, *_bio);
 
-  SSL *ssl = NULL;
+  SSL *ssl = nullptr;
   BIO_get_ssl(_sbio, &ssl);
-  nassertr(ssl != (SSL *)NULL, false);
+  nassertr(ssl != nullptr, false);
 
   // We only take one word at a time from the _cipher_list.  If that
   // connection fails, then we take the next word.
@@ -1472,6 +1481,14 @@ run_setup_ssl() {
     _status_entry._status_code = SC_ssl_internal_failure;
     _state = S_failure;
     return false;
+  }
+
+  string hostname = _request.get_url().get_server();
+  result = SSL_set_tlsext_host_name(ssl, hostname.c_str());
+  if (result == 0) {
+    downloader_cat.error()
+      << _NOTIFY_HTTP_CHANNEL_ID
+      << "Could not set TLS SNI hostname to '" << hostname << "'\n";
   }
 
 /*
@@ -1500,7 +1517,7 @@ run_setup_ssl() {
     const char *name;
     int pri = 0;
     name = SSL_get_cipher_list(ssl, pri);
-    while (name != NULL) {
+    while (name != nullptr) {
       downloader_cat.spam()
         << _NOTIFY_HTTP_CHANNEL_ID
         << "  " << pri + 1 << ". " << name << "\n";
@@ -1574,16 +1591,16 @@ run_ssl_handshake() {
     return false;
   }
 
-  SSL *ssl = NULL;
+  SSL *ssl = nullptr;
   BIO_get_ssl(_sbio, &ssl);
-  nassertr(ssl != (SSL *)NULL, false);
+  nassertr(ssl != nullptr, false);
 
   if (!_nonblocking) {
     SSL_set_mode(ssl, SSL_MODE_AUTO_RETRY);
   }
 
   const SSL_CIPHER *cipher = SSL_get_current_cipher(ssl);
-  if (cipher == (const SSL_CIPHER *)NULL) {
+  if (cipher == nullptr) {
     downloader_cat.warning()
       << _NOTIFY_HTTP_CHANNEL_ID
       << "No current cipher on SSL connection.\n";
@@ -1598,10 +1615,10 @@ run_ssl_handshake() {
   // Now that we've made an SSL handshake, we can use the SSL bio to do all of
   // our communication henceforth.
   _bio->set_bio(_sbio);
-  _sbio = NULL;
+  _sbio = nullptr;
 
   X509 *cert = SSL_get_peer_certificate(ssl);
-  if (cert == (X509 *)NULL) {
+  if (cert == nullptr) {
     downloader_cat.info()
       << _NOTIFY_HTTP_CHANNEL_ID
       << "No certificate was presented by server.\n";
@@ -1626,7 +1643,7 @@ run_ssl_handshake() {
     if (downloader_cat.is_spam()) {
       downloader_cat.spam()
         << _NOTIFY_HTTP_CHANNEL_ID
-        << "Received certificate from server:\n" << flush;
+        << "Received certificate from server:\n" << std::flush;
       X509_print_fp(stderr, cert);
       fflush(stderr);
     }
@@ -1914,7 +1931,7 @@ run_reading_header() {
     string authenticate_request = get_header_value("Proxy-Authenticate");
     _proxy_auth =
       _client->generate_auth(_proxy, true, authenticate_request);
-    if (_proxy_auth != (HTTPAuthorization *)NULL) {
+    if (_proxy_auth != nullptr) {
       _proxy_realm = _proxy_auth->get_realm();
       _proxy_username = _client->select_username(_proxy, true, _proxy_realm);
       if (!_proxy_username.empty()) {
@@ -1931,7 +1948,7 @@ run_reading_header() {
     // 401: not authorized to remote server.  Try to get the authorization.
     string authenticate_request = get_header_value("WWW-Authenticate");
     _www_auth = _client->generate_auth(_request.get_url(), false, authenticate_request);
-    if (_www_auth != (HTTPAuthorization *)NULL) {
+    if (_www_auth != nullptr) {
       _www_realm = _www_auth->get_realm();
       _www_username = _client->select_username(_request.get_url(), false, _www_realm);
       if (!_www_username.empty()) {
@@ -2079,7 +2096,7 @@ run_begin_body() {
 
   } else {
     open_read_body();
-    if (_body_stream == (ISocketStream *)NULL) {
+    if (_body_stream == nullptr) {
       if (downloader_cat.is_debug()) {
         downloader_cat.debug()
           << _NOTIFY_HTTP_CHANNEL_ID
@@ -2121,7 +2138,7 @@ run_reading_body() {
   }
 
   // Skip the body we've already started.
-  if (_body_stream == NULL || !_owns_body_stream) {
+  if (_body_stream == nullptr || !_owns_body_stream) {
     // Whoops, we're not in skip-body mode.  Better reset.
     if (downloader_cat.is_debug()) {
       downloader_cat.debug()
@@ -2133,14 +2150,14 @@ run_reading_body() {
   }
 
   string line;
-  getline(*_body_stream, line);
+  std::getline(*_body_stream, line);
   while (!_body_stream->fail() && !_body_stream->eof()) {
     if (downloader_cat.is_spam()) {
       downloader_cat.spam()
         << _NOTIFY_HTTP_CHANNEL_ID
         << "skip: " << line << "\n";
     }
-    getline(*_body_stream, line);
+    std::getline(*_body_stream, line);
   }
 
   if (!_body_stream->is_closed()) {
@@ -2221,7 +2238,7 @@ run_read_trailer() {
  */
 bool HTTPChannel::
 run_download_to_file() {
-  nassertr(_body_stream != (ISocketStream *)NULL && _owns_body_stream, false);
+  nassertr(_body_stream != nullptr && _owns_body_stream, false);
 
   bool do_throttle = _wanted_nonblocking && _download_throttle;
 
@@ -2282,8 +2299,8 @@ run_download_to_file() {
  */
 bool HTTPChannel::
 run_download_to_ram() {
-  nassertr(_body_stream != (ISocketStream *)NULL && _owns_body_stream, false);
-  nassertr(_download_to_ramfile != (Ramfile *)NULL, false);
+  nassertr(_body_stream != nullptr && _owns_body_stream, false);
+  nassertr(_download_to_ramfile != nullptr, false);
 
   bool do_throttle = _wanted_nonblocking && _download_throttle;
 
@@ -2332,7 +2349,7 @@ run_download_to_ram() {
  */
 bool HTTPChannel::
 run_download_to_stream() {
-  nassertr(_body_stream != (ISocketStream *)NULL && _owns_body_stream, false);
+  nassertr(_body_stream != nullptr && _owns_body_stream, false);
 
   bool do_throttle = _wanted_nonblocking && _download_throttle;
 
@@ -2437,7 +2454,7 @@ begin_request(HTTPEnum::Method method, const DocumentSpec &url,
   // Changing the proxy is grounds for dropping the old connection, if any.
   if (_proxy != new_proxy) {
     _proxy = new_proxy;
-    _proxy_auth = (HTTPAuthorization *)NULL;
+    _proxy_auth = nullptr;
     if (downloader_cat.is_debug()) {
       downloader_cat.debug()
         << _NOTIFY_HTTP_CHANNEL_ID
@@ -2479,16 +2496,16 @@ begin_request(HTTPEnum::Method method, const DocumentSpec &url,
     // underneath this.
     reset_to_new();
     _bio = new BioPtr(_request.get_url());
-    if (_bio->get_bio() != NULL) {
+    if (_bio->get_bio() != nullptr) {
       // Successfully opened the file.
       _source = new BioStreamPtr(new BioStream(_bio));
       _status_entry._status_code = 200;
       _state = S_start_direct_file_read;
 
       // Get the file size.
-      FILE *fp = NULL;
+      FILE *fp = nullptr;
       BIO_get_fp(_bio->get_bio(), &fp);
-      if (fp != NULL) {
+      if (fp != nullptr) {
         if (fseek(fp, 0, SEEK_END) == 0) {
           _file_size = ftell(fp);
           _got_file_size = true;
@@ -2652,7 +2669,7 @@ open_download_file() {
   if (_download_dest == DD_file) {
     VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
     _download_to_stream = vfs->open_write_file(_download_to_filename, false, !_subdocument_resumes);
-    if (_download_to_stream == NULL) {
+    if (_download_to_stream == nullptr) {
       downloader_cat.info()
         << _NOTIFY_HTTP_CHANNEL_ID
         << "Could not open " << _download_to_filename << " for writing.\n";
@@ -2667,7 +2684,7 @@ open_download_file() {
       // Windows doesn't complain if you try to seek past the end of file--it
       // happily appends enough zero bytes to make the difference.  Blecch.
       // That means we need to get the file size first to check it ourselves.
-      _download_to_stream->seekp(0, ios::end);
+      _download_to_stream->seekp(0, std::ios::end);
       if (_first_byte_delivered > (size_t)_download_to_stream->tellp()) {
         downloader_cat.info()
           << _NOTIFY_HTTP_CHANNEL_ID
@@ -2705,7 +2722,7 @@ open_download_file() {
       // Windows doesn't complain if you try to seek past the end of file--it
       // happily appends enough zero bytes to make the difference.  Blecch.
       // That means we need to get the file size first to check it ourselves.
-      _download_to_stream->seekp(0, ios::end);
+      _download_to_stream->seekp(0, std::ios::end);
       if (_first_byte_delivered > (size_t)_download_to_stream->tellp()) {
         downloader_cat.info()
           << _NOTIFY_HTTP_CHANNEL_ID
@@ -2745,7 +2762,7 @@ bool HTTPChannel::
 server_getline(string &str) {
   nassertr(!_source.is_null(), false);
   int ch = (*_source)->get();
-  while (!(*_source)->eof() && !(*_source)->fail()) {
+  while (ch != EOF && !(*_source)->fail()) {
     switch (ch) {
     case '\n':
       // end-of-line character, we're done.
@@ -2833,7 +2850,7 @@ bool HTTPChannel::
 server_get(string &str, size_t num_bytes) {
   nassertr(!_source.is_null(), false);
   int ch = (*_source)->get();
-  while (!(*_source)->eof() && !(*_source)->fail()) {
+  while (ch != EOF && !(*_source)->fail()) {
     _working_get += (char)ch;
     if (_working_get.length() >= num_bytes) {
       str = _working_get;
@@ -3328,8 +3345,8 @@ validate_server_name(X509 *cert) {
   // According to RFC 2818, we should check the DNS name(s) in the
   // subjectAltName extension first, if that extension exists.
   STACK_OF(GENERAL_NAME) *subject_alt_names =
-    (STACK_OF(GENERAL_NAME) *)X509_get_ext_d2i(cert, NID_subject_alt_name, NULL, NULL);
-  if (subject_alt_names != NULL) {
+    (STACK_OF(GENERAL_NAME) *)X509_get_ext_d2i(cert, NID_subject_alt_name, nullptr, nullptr);
+  if (subject_alt_names != nullptr) {
     int num_alts = sk_GENERAL_NAME_num(subject_alt_names);
     for (int i = 0; i < num_alts; ++i) {
       // Get the ith alt name.
@@ -3337,13 +3354,13 @@ validate_server_name(X509 *cert) {
         sk_GENERAL_NAME_value(subject_alt_names, i);
 
       if (alt_name->type == GEN_DNS) {
-        char *buffer = NULL;
+        char *buffer = nullptr;
         int len = ASN1_STRING_to_UTF8((unsigned char**)&buffer,
                                       alt_name->d.ia5);
         if (len > 0) {
           cert_names.push_back(string(buffer, len));
         }
-        if (buffer != NULL) {
+        if (buffer != nullptr) {
           OPENSSL_free(buffer);
         }
       }
@@ -3354,7 +3371,7 @@ validate_server_name(X509 *cert) {
     // If there were no DNS names, use the common name instead.
 
     X509_NAME *xname = X509_get_subject_name(cert);
-    if (xname != NULL) {
+    if (xname != nullptr) {
       string common_name = get_x509_name_component(xname, NID_commonName);
       cert_names.push_back(common_name);
     }
@@ -3433,7 +3450,7 @@ string HTTPChannel::
 get_x509_name_component(X509_NAME *name, int nid) {
   ASN1_OBJECT *obj = OBJ_nid2obj(nid);
 
-  if (obj == NULL) {
+  if (obj == nullptr) {
     // Unknown nid.  See opensslobjects.h.
     return string();
   }
@@ -3456,7 +3473,7 @@ void HTTPChannel::
 make_header() {
   _proxy_auth = _client->select_auth(_proxy, true, _proxy_realm);
   _proxy_username = string();
-  if (_proxy_auth != (HTTPAuthorization *)NULL) {
+  if (_proxy_auth != nullptr) {
     _proxy_realm = _proxy_auth->get_realm();
     _proxy_username = _client->select_username(_proxy, true, _proxy_realm);
   }
@@ -3471,7 +3488,7 @@ make_header() {
 
   _www_auth = _client->select_auth(_request.get_url(), false, _www_realm);
   _www_username = string();
-  if (_www_auth != (HTTPAuthorization *)NULL) {
+  if (_www_auth != nullptr) {
     _www_realm = _www_auth->get_realm();
     _www_username = _client->select_username(_request.get_url(), false, _www_realm);
   }
@@ -3614,7 +3631,7 @@ make_header() {
 
   if (!_body.empty()) {
     stream
-      << "Content-Type: application/x-www-form-urlencoded\r\n"
+      << "Content-Type: " << _content_type << "\r\n"
       << "Content-Length: " << _body.length() << "\r\n";
   }
 
@@ -3631,7 +3648,7 @@ void HTTPChannel::
 make_proxy_request_text() {
   _proxy_request_text = _proxy_header;
 
-  if (_proxy_auth != (HTTPAuthorization *)NULL && !_proxy_username.empty()) {
+  if (_proxy_auth != nullptr && !_proxy_username.empty()) {
     _proxy_request_text += "Proxy-Authorization: ";
     _proxy_request_text +=
       _proxy_auth->generate(HTTPEnum::M_connect, _request.get_url().get_server_and_port(),
@@ -3651,14 +3668,14 @@ make_request_text() {
   _request_text = _header;
 
   if (_proxy_serves_document &&
-      _proxy_auth != (HTTPAuthorization *)NULL && !_proxy_username.empty()) {
+      _proxy_auth != nullptr && !_proxy_username.empty()) {
     _request_text += "Proxy-Authorization: ";
     _request_text +=
       _proxy_auth->generate(_method, _request.get_url().get_url(), _proxy_username, _body);
     _request_text += "\r\n";
   }
 
-  if (_www_auth != (HTTPAuthorization *)NULL && !_www_username.empty()) {
+  if (_www_auth != nullptr && !_www_username.empty()) {
     string authorization =
     _request_text += "Authorization: ";
     _request_text +=
@@ -3700,7 +3717,7 @@ reset_url(const URLSpec &old_url, const URLSpec &new_url) {
  */
 void HTTPChannel::
 store_header_field(const string &field_name, const string &field_value) {
-  pair<Headers::iterator, bool> insert_result =
+  std::pair<Headers::iterator, bool> insert_result =
     _headers.insert(Headers::value_type(field_name, field_value));
 
   if (!insert_result.second) {
@@ -3756,14 +3773,14 @@ reset_download_to() {
  */
 void HTTPChannel::
 close_download_stream() {
-  if (_download_to_stream != NULL) {
+  if (_download_to_stream != nullptr) {
     _download_to_stream->flush();
     if (_download_dest == DD_file) {
       VirtualFileSystem::close_write_file(_download_to_stream);
     }
   }
-  _download_to_ramfile = (Ramfile *)NULL;
-  _download_to_stream = NULL;
+  _download_to_ramfile = nullptr;
+  _download_to_stream = nullptr;
 }
 
 
@@ -3788,12 +3805,12 @@ reset_to_new() {
 void HTTPChannel::
 reset_body_stream() {
   if (_owns_body_stream) {
-    if (_body_stream != (ISocketStream *)NULL) {
+    if (_body_stream != nullptr) {
       close_read_body(_body_stream);
-      nassertv(_body_stream == (ISocketStream *)NULL && !_owns_body_stream);
+      nassertv(_body_stream == nullptr && !_owns_body_stream);
     }
   } else {
-    _body_stream = NULL;
+    _body_stream = nullptr;
   }
 }
 

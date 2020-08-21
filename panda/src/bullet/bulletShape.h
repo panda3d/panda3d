@@ -11,14 +11,14 @@
  * @date 2010-01-23
  */
 
-#ifndef __BULLET_SHAPE_H__
-#define __BULLET_SHAPE_H__
+#ifndef BULLETSHAPE_H
+#define BULLETSHAPE_H
 
 #include "pandabase.h"
 
 #include "bullet_includes.h"
 
-#include "typedReferenceCount.h"
+#include "typedWritableReferenceCount.h"
 #include "boundingSphere.h"
 
 /**
@@ -31,13 +31,13 @@ protected:
 PUBLISHED:
   INLINE virtual ~BulletShape();
 
-  INLINE bool is_polyhedral() const;
-  INLINE bool is_convex() const;
-  INLINE bool is_convex_2d() const;
-  INLINE bool is_concave() const;
-  INLINE bool is_infinite() const;
-  INLINE bool is_non_moving() const;
-  INLINE bool is_soft_body() const;
+  bool is_polyhedral() const;
+  bool is_convex() const;
+  bool is_convex_2d() const;
+  bool is_concave() const;
+  bool is_infinite() const;
+  bool is_non_moving() const;
+  bool is_soft_body() const;
 
   void set_margin(PN_stdfloat margin);
   const char *get_name() const;
@@ -46,11 +46,22 @@ PUBLISHED:
 
   BoundingSphere get_shape_bounds() const;
 
+  MAKE_PROPERTY(polyhedral, is_polyhedral);
+  MAKE_PROPERTY(convex, is_convex);
+  MAKE_PROPERTY(convex_2d, is_convex_2d);
+  MAKE_PROPERTY(concave, is_concave);
+  MAKE_PROPERTY(infinite, is_infinite);
+  MAKE_PROPERTY(non_moving, is_non_moving);
+  MAKE_PROPERTY(soft_body, is_soft_body);
+  MAKE_PROPERTY(margin, get_margin, set_margin);
+  MAKE_PROPERTY(name, get_name);
+  MAKE_PROPERTY(shape_bounds, get_shape_bounds);
+
 public:
   virtual btCollisionShape *ptr() const = 0;
-
   LVecBase3 get_local_scale() const;
   void set_local_scale(const LVecBase3 &scale);
+  void do_set_local_scale(const LVecBase3 &scale);
 
 public:
   static TypeHandle get_class_type() {
@@ -75,4 +86,4 @@ private:
 
 #include "bulletShape.I"
 
-#endif // __BULLET_SHAPE_H__
+#endif // BULLETSHAPE_H

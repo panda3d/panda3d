@@ -39,7 +39,7 @@ UserDataAudioCursor(UserDataAudio *src) :
 UserDataAudioCursor::
 ~UserDataAudioCursor() {
   UserDataAudio *source = (UserDataAudio*)(MovieAudio*)_source;
-  source->_cursor = NULL;
+  source->_cursor = nullptr;
 }
 
 /**
@@ -47,12 +47,12 @@ UserDataAudioCursor::
  * read.  Your buffer must be equal in size to N * channels.  Multiple-channel
  * audio will be interleaved.
  */
-void UserDataAudioCursor::
+int UserDataAudioCursor::
 read_samples(int n, int16_t *data) {
   UserDataAudio *source = (UserDataAudio*)(MovieAudio*)_source;
 
-  if(source->_remove_after_read) {
-    source->read_samples(n, data);
+  if (source->_remove_after_read) {
+    n = source->read_samples(n, data);
   }
   else {
     int offset = _samples_read * _audio_channels;
@@ -66,9 +66,12 @@ read_samples(int n, int16_t *data) {
     for (int i=avail; i<desired; i++) {
       data[i] = 0;
     }
+
+    n = avail / _audio_channels;
   }
 
   _samples_read += n;
+  return n;
 }
 
 /**

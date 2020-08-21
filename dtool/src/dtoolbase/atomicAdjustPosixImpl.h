@@ -26,7 +26,7 @@
 /**
  * Uses POSIX to implement atomic adjustments.
  */
-class EXPCL_DTOOL AtomicAdjustPosixImpl {
+class EXPCL_DTOOL_DTOOLBASE AtomicAdjustPosixImpl {
 public:
   // In Posix, "long" is generally the native word size (32- or 64-bit), which
   // is what we'd prefer.
@@ -35,7 +35,7 @@ public:
 
   INLINE static void inc(TVOLATILE Integer &var);
   INLINE static bool dec(TVOLATILE Integer &var);
-  INLINE static void add(TVOLATILE Integer &var, Integer delta);
+  INLINE static Integer add(TVOLATILE Integer &var, Integer delta);
   INLINE static Integer set(TVOLATILE Integer &var, Integer new_value);
   INLINE static Integer get(const TVOLATILE Integer &var);
 

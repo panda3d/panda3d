@@ -52,7 +52,7 @@ class GeomMunger;
  * standard and/or user-defined columns in your custom GeomVertexFormat
  * constructions.
  */
-class EXPCL_PANDA_GOBJ GeomVertexFormat FINAL : public TypedWritableReferenceCount, public GeomEnums {
+class EXPCL_PANDA_GOBJ GeomVertexFormat final : public TypedWritableReferenceCount, public GeomEnums {
 PUBLISHED:
   GeomVertexFormat();
   GeomVertexFormat(const GeomVertexArrayFormat *array_format);
@@ -92,6 +92,7 @@ PUBLISHED:
   int get_array_with(const InternalName *name) const;
   const GeomVertexColumn *get_column(const InternalName *name) const;
   INLINE bool has_column(const InternalName *name) const;
+  const InternalName *get_column_name(size_t i) const;
 
   MAKE_SEQ(get_columns, get_num_columns, get_column);
 
@@ -120,14 +121,17 @@ PUBLISHED:
   MAKE_SEQ(get_morph_bases, get_num_morphs, get_morph_base);
   MAKE_SEQ(get_morph_deltas, get_num_morphs, get_morph_delta);
 
-  MAKE_SEQ_PROPERTY(arrays, get_num_arrays, get_array, set_array, remove_array);
-  MAKE_SEQ_PROPERTY(columns, get_num_columns, get_column);
+  MAKE_SEQ_PROPERTY(arrays, get_num_arrays, get_array, set_array, remove_array, insert_array);
   MAKE_SEQ_PROPERTY(points, get_num_points, get_point);
   MAKE_SEQ_PROPERTY(vectors, get_num_vectors, get_vector);
 
-  void output(ostream &out) const;
-  void write(ostream &out, int indent_level = 0) const;
-  void write_with_data(ostream &out, int indent_level,
+  // We also define this as a mapping interface, for lookups by name.
+  MAKE_MAP_PROPERTY(columns, has_column, get_column);
+  MAKE_MAP_KEYS_SEQ(columns, get_num_columns, get_column_name);
+
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent_level = 0) const;
+  void write_with_data(std::ostream &out, int indent_level,
                        const GeomVertexData *data) const;
 
   INLINE static const GeomVertexFormat *get_empty();
@@ -285,7 +289,7 @@ private:
   friend class GeomMunger;
 };
 
-INLINE ostream &operator << (ostream &out, const GeomVertexFormat &obj);
+INLINE std::ostream &operator << (std::ostream &out, const GeomVertexFormat &obj);
 
 #include "geomVertexFormat.I"
 

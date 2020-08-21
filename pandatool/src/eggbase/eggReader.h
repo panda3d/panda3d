@@ -51,7 +51,7 @@ protected:
 private:
   Filename _tex_dirname;
   bool _got_tex_dirname;
-  string _tex_extension;
+  std::string _tex_extension;
   bool _got_tex_extension;
   PNMFileType *_tex_type;
   double _delod;

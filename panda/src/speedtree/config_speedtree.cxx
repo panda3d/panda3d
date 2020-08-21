@@ -21,6 +21,10 @@
 #include "loaderFileTypeRegistry.h"
 #include "dconfig.h"
 
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDASPEEDTREE)
+  #error Buildsystem error: BUILDING_PANDASPEEDTREE not defined
+#endif
+
 ConfigureDef(config_speedtree);
 NotifyCategoryDef(speedtree, "");
 
@@ -296,7 +300,7 @@ public:
   }
 
   void Free(void *block) {
-    if (block != NULL) {
+    if (block != nullptr) {
       PANDA_FREE_ARRAY(block);
     }
   }

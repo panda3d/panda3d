@@ -42,12 +42,11 @@ class EXPCL_PANDA_PGRAPH RenderEffects : public TypedWritableReferenceCount {
 protected:
   RenderEffects();
 
-private:
-  RenderEffects(const RenderEffects &copy);
-  void operator = (const RenderEffects &copy);
-
 public:
+  RenderEffects(const RenderEffects &copy) = delete;
   virtual ~RenderEffects();
+
+  RenderEffects &operator = (const RenderEffects &copy) = delete;
 
   bool safe_to_transform() const;
   virtual CPT(TransformState) prepare_flatten_transform(const TransformState *net_transform) const;
@@ -58,8 +57,12 @@ PUBLISHED:
   bool operator < (const RenderEffects &other) const;
 
   INLINE bool is_empty() const;
-  INLINE int get_num_effects() const;
-  INLINE const RenderEffect *get_effect(int n) const;
+  INLINE size_t get_num_effects() const;
+  INLINE const RenderEffect *get_effect(size_t n) const;
+
+  INLINE size_t size() const;
+  INLINE const RenderEffect *operator [] (size_t n) const;
+  INLINE const RenderEffect *operator [] (TypeHandle type) const;
 
   int find_effect(TypeHandle type) const;
 
@@ -82,11 +85,11 @@ PUBLISHED:
 
   virtual bool unref() const;
 
-  void output(ostream &out) const;
-  void write(ostream &out, int indent_level) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent_level) const;
 
   static int get_num_states();
-  static void list_states(ostream &out);
+  static void list_states(std::ostream &out);
   static bool validate_states();
 
 public:
@@ -102,7 +105,7 @@ public:
   INLINE bool has_adjust_transform() const;
   void adjust_transform(CPT(TransformState) &net_transform,
                         CPT(TransformState) &node_transform,
-                        PandaNode *node) const;
+                        const PandaNode *node) const;
 
   static void init_states();
 
@@ -194,7 +197,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const RenderEffects &state) {
+INLINE std::ostream &operator << (std::ostream &out, const RenderEffects &state) {
   state.output(out);
   return out;
 }

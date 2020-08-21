@@ -73,16 +73,18 @@ clear_in_patterns() {
  * longer detected, the out_pattern event is thrown.
  */
 INLINE void CollisionHandlerEvent::
-add_in_pattern(const string &in_pattern) {
+add_in_pattern(const std::string &in_pattern) {
   _in_patterns.push_back(in_pattern);
 }
 
 /**
  * This method is deprecated; it completely replaces all the in patterns that
  * have previously been set with the indicated pattern.
+ *
+ * @deprecated Use add_in_pattern() instead.
  */
 INLINE void CollisionHandlerEvent::
-set_in_pattern(const string &in_pattern) {
+set_in_pattern(const std::string &in_pattern) {
   clear_in_patterns();
   add_in_pattern(in_pattern);
 }
@@ -99,9 +101,9 @@ get_num_in_patterns() const {
  * Returns the nth pattern string that indicates how the event names are
  * generated for each collision detected.  See add_in_pattern().
  */
-INLINE string CollisionHandlerEvent::
+INLINE std::string CollisionHandlerEvent::
 get_in_pattern(int n) const {
-  nassertr(n >= 0 && n < (int)_in_patterns.size(), string());
+  nassertr(n >= 0 && n < (int)_in_patterns.size(), std::string());
   return _in_patterns[n];
 }
 
@@ -126,16 +128,18 @@ clear_again_patterns() {
  * longer detected, the out_pattern event is thrown.
  */
 INLINE void CollisionHandlerEvent::
-add_again_pattern(const string &again_pattern) {
+add_again_pattern(const std::string &again_pattern) {
   _again_patterns.push_back(again_pattern);
 }
 
 /**
  * This method is deprecated; it completely replaces all the in patterns that
  * have previously been set with the indicated pattern.
+ *
+ * @deprecated Use add_again_pattern() instead.
  */
 INLINE void CollisionHandlerEvent::
-set_again_pattern(const string &again_pattern) {
+set_again_pattern(const std::string &again_pattern) {
   clear_again_patterns();
   add_again_pattern(again_pattern);
 }
@@ -152,9 +156,9 @@ get_num_again_patterns() const {
  * Returns the nth pattern string that indicates how the event names are
  * generated for each collision detected.  See add_again_pattern().
  */
-INLINE string CollisionHandlerEvent::
+INLINE std::string CollisionHandlerEvent::
 get_again_pattern(int n) const {
-  nassertr(n >= 0 && n < (int)_again_patterns.size(), string());
+  nassertr(n >= 0 && n < (int)_again_patterns.size(), std::string());
   return _again_patterns[n];
 }
 
@@ -177,16 +181,18 @@ clear_out_patterns() {
  * longer detected, the out_pattern event is thrown.
  */
 INLINE void CollisionHandlerEvent::
-add_out_pattern(const string &out_pattern) {
+add_out_pattern(const std::string &out_pattern) {
   _out_patterns.push_back(out_pattern);
 }
 
 /**
  * This method is deprecated; it completely replaces all the in patterns that
  * have previously been set with the indicated pattern.
+ *
+ * @deprecated Use add_out_pattern() instead.
  */
 INLINE void CollisionHandlerEvent::
-set_out_pattern(const string &out_pattern) {
+set_out_pattern(const std::string &out_pattern) {
   clear_out_patterns();
   add_out_pattern(out_pattern);
 }
@@ -203,8 +209,8 @@ get_num_out_patterns() const {
  * Returns the nth pattern string that indicates how the event names are
  * generated for each collision detected.  See add_out_pattern().
  */
-INLINE string CollisionHandlerEvent::
+INLINE std::string CollisionHandlerEvent::
 get_out_pattern(int n) const {
-  nassertr(n >= 0 && n < (int)_out_patterns.size(), string());
+  nassertr(n >= 0 && n < (int)_out_patterns.size(), std::string());
   return _out_patterns[n];
 }

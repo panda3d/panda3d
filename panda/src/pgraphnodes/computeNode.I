@@ -72,6 +72,21 @@ set_dispatch(size_t n, const LVecBase3i &dispatch) {
 }
 
 /**
+ * Inserts a dispatch command with the given number of work groups in the X,
+ * Y, and Z dimensions at the given position in the list of dispatch commands.
+ * Any of these values may be set to 1 if the respective dimension should not
+ * be used.
+ */
+INLINE void ComputeNode::
+insert_dispatch(size_t n, const LVecBase3i &dispatch) {
+  Dispatcher::CDWriter cdata(_dispatcher->_cycler);
+  if (n > cdata->_dispatches.size()) {
+    n = cdata->_dispatches.size();
+  }
+  cdata->_dispatches.insert(cdata->_dispatches.begin(), dispatch);
+}
+
+/**
  * Erases the given dispatch index from the list.
  */
 INLINE void ComputeNode::

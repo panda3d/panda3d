@@ -27,7 +27,7 @@ has_shader(const Filename &filename) {
  */
 INLINE bool ShaderPool::
 verify_shader(const Filename &filename) {
-  return load_shader(filename) != (Shader *)NULL;
+  return load_shader(filename) != nullptr;
 }
 
 /**
@@ -84,7 +84,7 @@ garbage_collect() {
  * Lists the contents of the shader pool to the indicated output stream.
  */
 INLINE void ShaderPool::
-list_contents(ostream &out) {
+list_contents(std::ostream &out) {
   get_ptr()->ns_list_contents(out);
 }
 

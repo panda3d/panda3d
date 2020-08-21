@@ -87,6 +87,15 @@ get_axial_rotate() const {
 }
 
 /**
+ * Returns true if this billboard always appears at a fixed distance from the
+ * camera.
+ */
+INLINE bool BillboardEffect::
+get_fixed_depth() const {
+  return _fixed_depth;
+}
+
+/**
  * Returns the distance toward the camera (or the look_at_point) the billboard
  * is moved towards, after rotating.  This can be used to ensure the billboard
  * is not obscured by nearby geometry.

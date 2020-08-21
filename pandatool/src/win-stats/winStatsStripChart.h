@@ -20,6 +20,9 @@
 #include "pStatStripChart.h"
 #include "pointerTo.h"
 
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN 1
+#endif
 #include <windows.h>
 
 class WinStatsMonitor;
@@ -73,7 +76,7 @@ private:
   static LONG WINAPI static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
   int _brush_origin;
-  string _net_value_text;
+  std::string _net_value_text;
 
   HWND _smooth_check_box;
   static size_t _check_box_height, _check_box_width;

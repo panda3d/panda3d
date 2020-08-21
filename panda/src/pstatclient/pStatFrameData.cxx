@@ -13,7 +13,7 @@
 
 #include "pStatFrameData.h"
 #include "pStatClientVersion.h"
-#include "config_pstats.h"
+#include "config_pstatclient.h"
 
 #include "datagram.h"
 #include "datagramIterator.h"
@@ -25,7 +25,7 @@
  */
 void PStatFrameData::
 sort_time() {
-  stable_sort(_time_data.begin(), _time_data.end());
+  std::stable_sort(_time_data.begin(), _time_data.end());
 }
 
 /**

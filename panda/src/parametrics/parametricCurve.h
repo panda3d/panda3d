@@ -93,7 +93,7 @@ PUBLISHED:
   virtual bool stitch(const ParametricCurve *a, const ParametricCurve *b);
 
   bool write_egg(Filename filename, CoordinateSystem cs = CS_default);
-  bool write_egg(ostream &out, const Filename &filename, CoordinateSystem cs);
+  bool write_egg(std::ostream &out, const Filename &filename, CoordinateSystem cs);
 
 public:
   struct BezierSeg {
@@ -117,8 +117,8 @@ protected:
   void invalidate(PN_stdfloat t1, PN_stdfloat t2);
   void invalidate_all();
 
-  virtual bool format_egg(ostream &out, const string &name,
-                          const string &curve_type, int indent_level) const;
+  virtual bool format_egg(std::ostream &out, const std::string &name,
+                          const std::string &curve_type, int indent_level) const;
 
 private:
   PN_stdfloat r_calc_length(PN_stdfloat t1, PN_stdfloat t2,

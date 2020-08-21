@@ -22,14 +22,14 @@
  * This is a convenience class to specialize ConfigVariable as a 64-bit
  * integer type.
  */
-class EXPCL_DTOOLCONFIG ConfigVariableInt64 : public ConfigVariable {
+class EXPCL_DTOOL_PRC ConfigVariableInt64 : public ConfigVariable {
 PUBLISHED:
-  INLINE ConfigVariableInt64(const string &name);
-  INLINE ConfigVariableInt64(const string &name, int64_t default_value,
-                             const string &description = string(),
+  INLINE ConfigVariableInt64(const std::string &name);
+  INLINE ConfigVariableInt64(const std::string &name, int64_t default_value,
+                             const std::string &description = std::string(),
                              int flags = 0);
-  INLINE ConfigVariableInt64(const string &name, const string &default_value,
-                             const string &description = string(),
+  INLINE ConfigVariableInt64(const std::string &name, const std::string &default_value,
+                             const std::string &description = std::string(),
                              int flags = 0);
 
   INLINE void operator = (int64_t value);

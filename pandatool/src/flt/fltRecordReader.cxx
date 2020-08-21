@@ -22,12 +22,12 @@
  *
  */
 FltRecordReader::
-FltRecordReader(istream &in) :
+FltRecordReader(std::istream &in) :
   _in(in)
 {
   _opcode = FO_none;
   _record_length = 0;
-  _iterator = (DatagramIterator *)NULL;
+  _iterator = nullptr;
   _state = S_begin;
   _next_error = FE_ok;
   _next_opcode = FO_none;
@@ -42,10 +42,8 @@ FltRecordReader(istream &in) :
  */
 FltRecordReader::
 ~FltRecordReader() {
-  if (_iterator != (DatagramIterator *)NULL) {
-    delete _iterator;
-    _iterator = (DatagramIterator *)NULL;
-  }
+  delete _iterator;
+  _iterator = nullptr;
 }
 
 /**
@@ -101,9 +99,9 @@ advance(bool ok_eof) {
     assert(!flt_error_abort);
     return FE_read_error;
   }
-  if (_iterator != (DatagramIterator *)NULL) {
+  if (_iterator != nullptr) {
     delete _iterator;
-    _iterator = (DatagramIterator *)NULL;
+    _iterator = nullptr;
   }
 
   if (_next_error == FE_end_of_file) {
@@ -131,20 +129,21 @@ advance(bool ok_eof) {
 
   // And now read the full record based on the length.
   int length = _next_record_length - header_size;
-  char *buffer = new char[length];
   if (length > 0) {
-    _in.read(buffer, length);
-  }
-  _datagram = Datagram(buffer, length);
-  delete[] buffer;
-
-  if (_in.eof()) {
-    _state = S_eof;
-    assert(!flt_error_abort);
-    return FE_end_of_file;
+    vector_uchar data((size_t)length);
+    _in.read((char *)&data[0], length);
+    _datagram = Datagram(std::move(data));
+  } else {
+    _datagram = Datagram();
   }
 
   if (_in.fail()) {
+    if (_in.eof()) {
+      _state = S_eof;
+      assert(!flt_error_abort);
+      return FE_end_of_file;
+    }
+
     _state = S_error;
     assert(!flt_error_abort);
     return FE_read_error;
@@ -162,20 +161,20 @@ advance(bool ok_eof) {
     _record_length += _next_record_length;
     length = _next_record_length - header_size;
 
-    buffer = new char[length];
     if (length > 0) {
+      char *buffer = new char[length];
       _in.read(buffer, length);
-    }
-    _datagram.append_data(buffer, length);
-    delete[] buffer;
-
-    if (_in.eof()) {
-      _state = S_eof;
-      assert(!flt_error_abort);
-      return FE_end_of_file;
+      _datagram.append_data(buffer, length);
+      delete[] buffer;
     }
 
     if (_in.fail()) {
+      if (_in.eof()) {
+        _state = S_eof;
+        assert(!flt_error_abort);
+        return FE_end_of_file;
+      }
+
       _state = S_error;
       assert(!flt_error_abort);
       return FE_read_error;
@@ -221,11 +220,11 @@ read_next_header() {
   char bytes[header_size];
   _in.read(bytes, header_size);
 
-  if (_in.eof()) {
-    _next_error = FE_end_of_file;
-    return;
-
-  } else if (_in.fail()) {
+  if (_in.fail()) {
+    if (_in.eof()) {
+      _next_error = FE_end_of_file;
+      return;
+    }
     _next_error = FE_read_error;
     return;
   }

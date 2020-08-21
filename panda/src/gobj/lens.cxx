@@ -23,6 +23,9 @@
 #include "config_gobj.h"
 #include "plane.h"
 
+using std::max;
+using std::min;
+
 TypeHandle Lens::_type_handle;
 TypeHandle Lens::CData::_type_handle;
 
@@ -41,7 +44,7 @@ Lens::
 Lens(const Lens &copy) : _cycler(copy._cycler) {
   // We don't copy the _geom_data.  That's unique to each Lens.
   CDWriter cdata(_cycler, true);
-  cdata->_geom_data = NULL;
+  cdata->_geom_data = nullptr;
 }
 
 /**
@@ -53,7 +56,7 @@ operator = (const Lens &copy) {
 
   // We don't copy the _geom_data.  That's unique to each Lens.
   CDWriter cdata(_cycler, true);
-  cdata->_geom_data = NULL;
+  cdata->_geom_data = nullptr;
 }
 
 /**
@@ -577,7 +580,7 @@ make_geometry() {
   if (num_segments == 0) {
     // Can't do a frustum.
     cdata->_geom_data.clear();
-    return (Geom *)NULL;
+    return nullptr;
   }
 
   // Now string together the line segments.
@@ -627,7 +630,7 @@ make_geometry() {
   PT(Geom) geom = new Geom(cdata->_geom_data);
   geom->add_primitive(line);
 
-  return geom.p();
+  return geom;
 }
 
 /**
@@ -648,25 +651,25 @@ make_bounds() const {
   // Upper left.
   corner.set(-1.0f, 1.0f, 0.0f);
   if (!do_extrude(cdata, corner, nul, ful)) {
-    return (BoundingVolume *)NULL;
+    return nullptr;
   }
 
   // Upper right.
   corner.set(1.0f, 1.0f, 0.0f);
   if (!do_extrude(cdata, corner, nur, fur)) {
-    return (BoundingVolume *)NULL;
+    return nullptr;
   }
 
   // Lower right.
   corner.set(1.0f, -1.0f, 0.0f);
   if (!do_extrude(cdata, corner, nlr, flr)) {
-    return (BoundingVolume *)NULL;
+    return nullptr;
   }
 
   // Lower left.
   corner.set(-1.0f, -1.0f, 0.0f);
   if (!do_extrude(cdata, corner, nll, fll)) {
-    return (BoundingVolume *)NULL;
+    return nullptr;
   }
 
   return new BoundingHexahedron(fll, flr, fur, ful, nll, nlr, nur, nul);
@@ -676,7 +679,7 @@ make_bounds() const {
  *
  */
 void Lens::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type();
 }
 
@@ -684,7 +687,7 @@ output(ostream &out) const {
  *
  */
 void Lens::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << get_type() << " fov = " << get_fov() << "\n";
 }
 
@@ -1218,8 +1221,8 @@ do_project(const CData *cdata, const LPoint3 &point3d, LPoint3 &point2d) const {
   point2d.set(full[0] * recip_full3, full[1] * recip_full3, full[2] * recip_full3);
   return
     (full[3] > 0.0f) &&
-    (point2d[0] >= -1.0f) && (point2d[0] <= 1.0f) &&
-    (point2d[1] >= -1.0f) && (point2d[1] <= 1.0f);
+    (point2d[0] >= -1.0f - NEARLY_ZERO(PN_stdfloat)) && (point2d[0] <= 1.0f + NEARLY_ZERO(PN_stdfloat)) &&
+    (point2d[1] >= -1.0f - NEARLY_ZERO(PN_stdfloat)) && (point2d[1] <= 1.0f + NEARLY_ZERO(PN_stdfloat));
 }
 
 /**
@@ -1613,7 +1616,7 @@ do_define_geom_data(CData *cdata) {
     num_segments = lens_geom_segments;
   }
 
-  if (cdata->_geom_data == (GeomVertexData *)NULL) {
+  if (cdata->_geom_data == nullptr) {
     cdata->_geom_data = new GeomVertexData
       ("lens", GeomVertexFormat::get_v3(),
        Geom::UH_dynamic);

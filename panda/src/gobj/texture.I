@@ -175,6 +175,8 @@ setup_cube_map(int size, ComponentType component_type, Format format) {
  * is not the same as the z_size.  Follow up with read() or load() to fill the
  * texture properties and image data, or use set_clear_color to let the
  * texture be cleared to a solid color.
+ *
+ * @since 1.10.0
  */
 INLINE void Texture::
 setup_cube_map_array(int num_cube_maps) {
@@ -189,6 +191,8 @@ setup_cube_map_array(int num_cube_maps) {
  *
  * The num_cube_maps given here is multiplied by six to become the z_size of
  * the image.
+ *
+ * @since 1.10.0
  */
 INLINE void Texture::
 setup_cube_map_array(int size, int num_cube_maps, ComponentType component_type, Format format) {
@@ -279,12 +283,12 @@ clear_clear_color() {
  * Returns the raw image data for a single pixel if it were set to the clear
  * color.
  */
-INLINE string Texture::
+INLINE vector_uchar Texture::
 get_clear_data() const {
   CDReader cdata(_cycler);
-  unsigned char data[16];
-  size_t size = do_get_clear_data(cdata, data);
-  return string((char *)data, size);
+  vector_uchar data(16);
+  data.resize(do_get_clear_data(cdata, &data[0]));
+  return data;
 }
 
 /**
@@ -1544,7 +1548,14 @@ INLINE size_t Texture::
 get_ram_mipmap_image_size(int n) const {
   CDReader cdata(_cycler);
   if (n >= 0 && n < (int)cdata->_ram_images.size()) {
-    return cdata->_ram_images[n]._image.size();
+    if (cdata->_ram_images[n]._pointer_image == nullptr) {
+      return cdata->_ram_images[n]._image.size();
+    } else {
+      // Calculate it based on the given page size.
+      return do_get_ram_mipmap_page_size(cdata, n) *
+             do_get_expected_mipmap_z_size(cdata, n) *
+             cdata->_num_views;
+    }
   }
   return 0;
 }
@@ -2140,7 +2151,7 @@ rescale_texture() {
  * power-2.
  */
 INLINE bool Texture::
-adjust_this_size(int &x_size, int &y_size, const string &name,
+adjust_this_size(int &x_size, int &y_size, const std::string &name,
                  bool for_padding) const {
   CDReader cdata(_cycler);
   return do_adjust_this_size(cdata, x_size, y_size, name, for_padding);
@@ -2318,12 +2329,90 @@ get_unsigned_short(const unsigned char *&p) {
 }
 
 /**
+ * This is used by store() to retrieve the next consecutive component value
+ * from the indicated element of the array, which is taken to be an array of
+ * unsigned ints.
+ */
+INLINE double Texture::
+get_unsigned_int(const unsigned char *&p) {
+  union {
+    unsigned int ui;
+    uchar uc[4];
+  } v;
+  v.uc[0] = (*p++);
+  v.uc[1] = (*p++);
+  v.uc[2] = (*p++);
+  v.uc[3] = (*p++);
+  return (double)v.ui / 4294967295.0;
+}
+
+/**
+ * This is used by store() to retrieve the next consecutive component value
+ * from the indicated element of the array, which is taken to be an array of
+ * unsigned ints with the value packed in the 24 least significant bits.
+ */
+INLINE double Texture::
+get_unsigned_int_24(const unsigned char *&p) {
+  union {
+    uint32_t ui;
+    uint8_t uc[4];
+  } v;
+  v.uc[0] = (*p++);
+  v.uc[1] = (*p++);
+  v.uc[2] = (*p++);
+  v.uc[3] = (*p++);
+  return (double)(v.ui & 0xffffff) / (double)0xffffff;
+}
+
+/**
+ * This is used by store() to retrieve the next consecutive component value
+ * from the indicated element of the array, which is taken to be an array of
+ * floats.
+ */
+INLINE double Texture::
+get_float(const unsigned char *&p) {
+  double v = *((float *)p);
+  p += 4;
+  return v;
+}
+
+/**
+ * This is used by store() to retrieve the next consecutive component value
+ * from the indicated element of the array, which is taken to be an array of
+ * half-floats.
+ */
+INLINE double Texture::
+get_half_float(const unsigned char *&p) {
+  union {
+    uint32_t ui;
+    float uf;
+  } v;
+  uint16_t in = *(uint16_t *)p;
+  p += 2;
+  uint32_t t1 = in & 0x7fff; // Non-sign bits
+  uint32_t t2 = in & 0x8000; // Sign bit
+  uint32_t t3 = in & 0x7c00; // Exponent
+  t1 <<= 13; // Align mantissa on MSB
+  t2 <<= 16; // Shift sign bit into position
+  if (t3 != 0x7c00) {
+    t1 += 0x38000000; // Adjust bias
+    t1 = (t3 == 0 ? 0 : t1); // Denormals-as-zero
+  } else {
+    // Infinity / NaN
+    t1 |= 0x7f800000;
+  }
+  t1 |= t2; // Re-insert sign bit
+  v.ui = t1;
+  return v.uf;
+}
+
+/**
  * Returns true if the indicated filename ends in .txo or .txo.pz or .txo.gz,
  * false otherwise.
  */
 INLINE bool Texture::
 is_txo_filename(const Filename &fullpath) {
-  string extension = fullpath.get_extension();
+  std::string extension = fullpath.get_extension();
 #ifdef HAVE_ZLIB
   if (extension == "pz" || extension == "gz") {
     extension = Filename(fullpath.get_basename_wo_extension()).get_extension();
@@ -2338,7 +2427,7 @@ is_txo_filename(const Filename &fullpath) {
  */
 INLINE bool Texture::
 is_dds_filename(const Filename &fullpath) {
-  string extension = fullpath.get_extension();
+  std::string extension = fullpath.get_extension();
 #ifdef HAVE_ZLIB
   if (extension == "pz" || extension == "gz") {
     extension = Filename(fullpath.get_basename_wo_extension()).get_extension();
@@ -2353,7 +2442,7 @@ is_dds_filename(const Filename &fullpath) {
  */
 INLINE bool Texture::
 is_ktx_filename(const Filename &fullpath) {
-  string extension = fullpath.get_extension();
+  std::string extension = fullpath.get_extension();
 #ifdef HAVE_ZLIB
   if (extension == "pz" || extension == "gz") {
     extension = Filename(fullpath.get_basename_wo_extension()).get_extension();
@@ -2392,6 +2481,6 @@ inc_simple_image_modified() {
 INLINE Texture::RamImage::
 RamImage() :
   _page_size(0),
-  _pointer_image(NULL)
+  _pointer_image(nullptr)
 {
 }

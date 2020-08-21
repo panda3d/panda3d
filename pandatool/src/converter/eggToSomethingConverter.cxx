@@ -20,7 +20,7 @@
  */
 EggToSomethingConverter::
 EggToSomethingConverter() {
-  _egg_data = (EggData *)NULL;
+  _egg_data = nullptr;
   _error = false;
 }
 
@@ -29,7 +29,7 @@ EggToSomethingConverter() {
  */
 EggToSomethingConverter::
 EggToSomethingConverter(const EggToSomethingConverter &copy) {
-  _egg_data = (EggData *)NULL;
+  _egg_data = nullptr;
   _error = false;
 }
 
@@ -54,9 +54,9 @@ set_egg_data(EggData *egg_data) {
  * Returns a space-separated list of extension, in addition to the one
  * returned by get_extension(), that are recognized by this converter.
  */
-string EggToSomethingConverter::
+std::string EggToSomethingConverter::
 get_additional_extensions() const {
-  return string();
+  return std::string();
 }
 
 /**

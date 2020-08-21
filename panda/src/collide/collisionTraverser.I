@@ -40,7 +40,7 @@ get_respect_prev_transform() const {
  */
 INLINE bool CollisionTraverser::
 has_recorder() const {
-  return _recorder != (CollisionRecorder *)NULL;
+  return _recorder != nullptr;
 }
 
 /**
@@ -58,7 +58,7 @@ get_recorder() const {
  */
 INLINE void CollisionTraverser::
 clear_recorder() {
-  set_recorder((CollisionRecorder *)NULL);
+  set_recorder(nullptr);
 }
 
 #endif  // DO_COLLISION_RECORDING

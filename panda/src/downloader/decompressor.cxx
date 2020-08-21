@@ -34,9 +34,9 @@
  */
 Decompressor::
 Decompressor() {
-  _source = NULL;
-  _decompress = NULL;
-  _dest = NULL;
+  _source = nullptr;
+  _decompress = nullptr;
+  _dest = nullptr;
 }
 
 /**
@@ -54,7 +54,7 @@ Decompressor::
  */
 int Decompressor::
 initiate(const Filename &source_file) {
-  string extension = source_file.get_extension();
+  std::string extension = source_file.get_extension();
   if (extension == "pz" || extension == "gz") {
     Filename dest_file = source_file;
     dest_file = source_file.get_fullpath_wo_extension();
@@ -64,7 +64,7 @@ initiate(const Filename &source_file) {
   if (downloader_cat.is_debug()) {
     downloader_cat.debug()
       << "Unknown file extension for decompressor: ."
-      << extension << endl;
+      << extension << std::endl;
   }
   return EU_error_abort;
 }
@@ -90,14 +90,14 @@ initiate(const Filename &source_file, const Filename &dest_file) {
   }
 
   // Determine source file length
-  source_pfstream->seekg(0, ios::end);
+  source_pfstream->seekg(0, std::ios::end);
   _source_length = source_pfstream->tellg();
   if (_source_length == 0) {
     downloader_cat.warning()
       << "Zero length file: " << source_file << "\n";
     return EU_error_file_empty;
   }
-  source_pfstream->seekg(0, ios::beg);
+  source_pfstream->seekg(0, std::ios::beg);
 
   // Open destination file
   Filename dest_filename(dest_file);
@@ -137,7 +137,7 @@ initiate(const Filename &source_file, const Filename &dest_file) {
  */
 int Decompressor::
 run() {
-  if (_decompress == (istream *)NULL) {
+  if (_decompress == nullptr) {
     // Hmm, we were already done.
     return EU_success;
   }
@@ -183,7 +183,7 @@ decompress(const Filename &source_file) {
     return false;
 
   int ch = _decompress->get();
-  while (!_decompress->eof() && !_decompress->fail()) {
+  while (ch != EOF && !_decompress->fail()) {
     _dest->put(ch);
     ch = _decompress->get();
   }
@@ -201,13 +201,13 @@ decompress(const Filename &source_file) {
  */
 bool Decompressor::
 decompress(Ramfile &source_and_dest_file) {
-  istringstream source(source_and_dest_file._data);
-  ostringstream dest;
+  std::istringstream source(source_and_dest_file._data);
+  std::ostringstream dest;
 
   IDecompressStream decompress(&source, false);
 
   int ch = decompress.get();
-  while (!decompress.eof() && !decompress.fail()) {
+  while (ch != EOF && !decompress.fail()) {
     dest.put(ch);
     ch = decompress.get();
   }
@@ -222,7 +222,7 @@ decompress(Ramfile &source_and_dest_file) {
  */
 PN_stdfloat Decompressor::
 get_progress() const {
-  if (_decompress == (istream *)NULL) {
+  if (_decompress == nullptr) {
     // Hmm, we were already done.
     return 1.0f;
   }
@@ -240,17 +240,17 @@ get_progress() const {
  */
 void Decompressor::
 cleanup() {
-  if (_source != (istream *)NULL) {
+  if (_source != nullptr) {
     delete _source;
-    _source = NULL;
+    _source = nullptr;
   }
-  if (_dest != (ostream *)NULL) {
+  if (_dest != nullptr) {
     delete _dest;
-    _dest = NULL;
+    _dest = nullptr;
   }
-  if (_decompress != (istream *)NULL) {
+  if (_decompress != nullptr) {
     delete _decompress;
-    _decompress = NULL;
+    _decompress = nullptr;
   }
 }
 

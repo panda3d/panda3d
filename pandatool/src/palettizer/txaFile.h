@@ -31,15 +31,15 @@ class TxaFile {
 public:
   TxaFile();
 
-  bool read(istream &in, const string &filename);
+  bool read(std::istream &in, const std::string &filename);
 
   bool match_egg(EggFile *egg_file) const;
   bool match_texture(TextureImage *texture) const;
 
-  void write(ostream &out) const;
+  void write(std::ostream &out) const;
 
 private:
-  static int get_line_or_semicolon(istream &in, string &line);
+  static int get_line_or_semicolon(std::istream &in, std::string &line);
 
   bool parse_group_line(const vector_string &words);
   bool parse_palette_line(const vector_string &words);

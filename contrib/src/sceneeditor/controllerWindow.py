@@ -4,8 +4,14 @@
 #################################################################
 
 from direct.tkwidgets.AppShell import AppShell
-from Tkinter import Frame, Label, Button
-import string, Pmw, Tkinter
+import sys, Pmw
+
+if sys.version_info >= (3, 0):
+    from tkinter import Frame, Label, Button
+    import tkinter
+else:
+    from Tkinter import Frame, Label, Button
+    import Tkinter as tkinter
 
 # Define the Category
 KEYBOARD = 'Keyboard-'
@@ -75,11 +81,11 @@ class controllerWindow(AppShell):
         self.cotrollerTypeEntry = self.createcomponent(
             'Controller Type', (), None,
             Pmw.ComboBox, (frame,),
-            labelpos = Tkinter.W, label_text='Controller Type:', entry_width = 20,entry_state = Tkinter.DISABLED,
+            labelpos = tkinter.W, label_text='Controller Type:', entry_width = 20,entry_state = tkinter.DISABLED,
             selectioncommand = self.setControllerType,
             scrolledlist_items = self.controllerList)
-        self.cotrollerTypeEntry.pack(side=Tkinter.LEFT)
-        frame.pack(side=Tkinter.TOP, fill=Tkinter.X, expand=False, pady = 3)
+        self.cotrollerTypeEntry.pack(side=tkinter.LEFT)
+        frame.pack(side=tkinter.TOP, fill=tkinter.X, expand=False, pady = 3)
         self.cotrollerTypeEntry.selectitem('Keyboard', setentry=True)
 
         self.inputZone = Pmw.Group(mainFrame, tag_pyclass = None)
@@ -102,7 +108,7 @@ class controllerWindow(AppShell):
         keyboardPage = self.objNotebook.add('Keyboard')
         tarckerPage = self.objNotebook.add('Tracker')
         self.objNotebook.selectpage('Keyboard')
-        self.objNotebook.pack(side = Tkinter.TOP, fill='both',expand=False)
+        self.objNotebook.pack(side = tkinter.TOP, fill='both',expand=False)
         # Put this here so it isn't called right away
         self.objNotebook['raisecommand'] = self.updateControlInfo
 
@@ -113,11 +119,11 @@ class controllerWindow(AppShell):
         widget = self.createcomponent(
             'Target Type', (), None,
             Pmw.ComboBox, (Interior,),
-            labelpos = Tkinter.W, label_text='Target Object:', entry_width = 20, entry_state = Tkinter.DISABLED,
+            labelpos = tkinter.W, label_text='Target Object:', entry_width = 20, entry_state = tkinter.DISABLED,
             selectioncommand = self.setTargetObj,
             scrolledlist_items = self.listOfObj)
-        widget.pack(side=Tkinter.LEFT, padx=3)
-        Interior.pack(side=Tkinter.TOP, fill=Tkinter.X, expand=True, pady = 5)
+        widget.pack(side=tkinter.LEFT, padx=3)
+        Interior.pack(side=tkinter.TOP, fill=tkinter.X, expand=True, pady = 5)
         widget.selectitem(self.nameOfNode, setentry=True)
         self.widgetsDict[KEYBOARD+'ObjList'] = widget
 
@@ -126,411 +132,411 @@ class controllerWindow(AppShell):
         settingFrame = inputZone.interior()
 
         Interior = Frame(settingFrame)
-        widget = Label(Interior, text = 'Assign a Key For:').pack(side=Tkinter.LEFT, expand = False)
-        Interior.pack(side=Tkinter.TOP, fill=Tkinter.X, expand=True,pady = 6 )
+        widget = Label(Interior, text = 'Assign a Key For:').pack(side=tkinter.LEFT, expand = False)
+        Interior.pack(side=tkinter.TOP, fill=tkinter.X, expand=True,pady = 6 )
 
         Interior = Frame(settingFrame)
-        widget = Label(Interior, text = 'Forward   :', width = 20, anchor = Tkinter.W).pack(side=Tkinter.LEFT, expand = False)
+        widget = Label(Interior, text = 'Forward   :', width = 20, anchor = tkinter.W).pack(side=tkinter.LEFT, expand = False)
         widget = self.createcomponent(
             'Forward key', (), None,
             Pmw.EntryField, (Interior,),
             value = self.keyboardMapDict['KeyForward'],
-            labelpos = Tkinter.W, label_text='Key :', entry_width = 10)
-        widget.pack(side=Tkinter.LEFT, expand = False)
+            labelpos = tkinter.W, label_text='Key :', entry_width = 10)
+        widget.pack(side=tkinter.LEFT, expand = False)
         self.widgetsDict[KEYBOARD+'KeyForward'] = widget
-        widget = Label(Interior, text = '   ').pack(side=Tkinter.LEFT, expand = False)
+        widget = Label(Interior, text = '   ').pack(side=tkinter.LEFT, expand = False)
         widget = self.createcomponent(
             'Forward Speed', (), None,
             Pmw.EntryField, (Interior,),
             value = self.keyboardSpeedDict['SpeedForward'],
-            labelpos = Tkinter.W, label_text='Speed :', entry_width = 10)
-        widget.pack(side=Tkinter.LEFT, expand = False)
+            labelpos = tkinter.W, label_text='Speed :', entry_width = 10)
+        widget.pack(side=tkinter.LEFT, expand = False)
         self.widgetsDict[KEYBOARD+'SpeedForward'] = widget
-        widget = Label(Interior, text = 'Per Second').pack(side=Tkinter.LEFT, expand = False)
-        Interior.pack(side=Tkinter.TOP, fill=Tkinter.X, expand=True, pady = 4 )
+        widget = Label(Interior, text = 'Per Second').pack(side=tkinter.LEFT, expand = False)
+        Interior.pack(side=tkinter.TOP, fill=tkinter.X, expand=True, pady = 4 )
 
         Interior = Frame(settingFrame)
-        widget = Label(Interior, text = 'Backward  :', width = 20, anchor = Tkinter.W).pack(side=Tkinter.LEFT, expand = False)
+        widget = Label(Interior, text = 'Backward  :', width = 20, anchor = tkinter.W).pack(side=tkinter.LEFT, expand = False)
         widget = self.createcomponent(
             'Backward key', (), None,
             Pmw.EntryField, (Interior,),
             value = self.keyboardMapDict['KeyBackward'],
-            labelpos = Tkinter.W, label_text='Key :', entry_width = 10)
-        widget.pack(side=Tkinter.LEFT, expand = False)
+            labelpos = tkinter.W, label_text='Key :', entry_width = 10)
+        widget.pack(side=tkinter.LEFT, expand = False)
         self.widgetsDict[KEYBOARD+'KeyBackward'] = widget
-        widget = Label(Interior, text = '   ').pack(side=Tkinter.LEFT, expand = False)
+        widget = Label(Interior, text = '   ').pack(side=tkinter.LEFT, expand = False)
         widget = self.createcomponent(
             'Backward Speed', (), None,
             Pmw.EntryField, (Interior,),
             value = self.keyboardSpeedDict['SpeedBackward'],
-            labelpos = Tkinter.W, label_text='Speed :', entry_width = 10)
-        widget.pack(side=Tkinter.LEFT, expand = False)
+            labelpos = tkinter.W, label_text='Speed :', entry_width = 10)
+        widget.pack(side=tkinter.LEFT, expand = False)
         self.widgetsDict[KEYBOARD+'SpeedBackward'] = widget
-        widget = Label(Interior, text = 'Per Second').pack(side=Tkinter.LEFT, expand = False)
-        Interior.pack(side=Tkinter.TOP, fill=Tkinter.X, expand=True, pady = 4 )
+        widget = Label(Interior, text = 'Per Second').pack(side=tkinter.LEFT, expand = False)
+        Interior.pack(side=tkinter.TOP, fill=tkinter.X, expand=True, pady = 4 )
 
         Interior = Frame(settingFrame)
-        widget = Label(Interior, text = 'Right     :', width = 20, anchor = Tkinter.W).pack(side=Tkinter.LEFT, expand = False)
+        widget = Label(Interior, text = 'Right     :', width = 20, anchor = tkinter.W).pack(side=tkinter.LEFT, expand = False)
         widget = self.createcomponent(
             'Right key', (), None,
             Pmw.EntryField, (Interior,),
             value = self.keyboardMapDict['KeyRight'],
-            labelpos = Tkinter.W, label_text='Key :', entry_width = 10)
-        widget.pack(side=Tkinter.LEFT, expand = False)
+            labelpos = tkinter.W, label_text='Key :', entry_width = 10)
+        widget.pack(side=tkinter.LEFT, expand = False)
         self.widgetsDict[KEYBOARD+'KeyRight'] = widget
-        widget = Label(Interior, text = '   ').pack(side=Tkinter.LEFT, expand = False)
+        widget = Label(Interior, text = '   ').pack(side=tkinter.LEFT, expand = False)
         widget = self.createcomponent(
             'Right Speed', (), None,
             Pmw.EntryField, (Interior,),
             value = self.keyboardSpeedDict['SpeedRight'],
-            labelpos = Tkinter.W, label_text='Speed :', entry_width = 10)
-        widget.pack(side=Tkinter.LEFT, expand = False)
+            labelpos = tkinter.W, label_text='Speed :', entry_width = 10)
+        widget.pack(side=tkinter.LEFT, expand = False)
         self.widgetsDict[KEYBOARD+'SpeedRight'] = widget
-        widget = Label(Interior, text = 'Per Second').pack(side=Tkinter.LEFT, expand = False)
-        Interior.pack(side=Tkinter.TOP, fill=Tkinter.X, expand=True, pady = 4 )
+        widget = Label(Interior, text = 'Per Second').pack(side=tkinter.LEFT, expand = False)
+        Interior.pack(side=tkinter.TOP, fill=tkinter.X, expand=True, pady = 4 )
 
         Interior = Frame(settingFrame)
-        widget = Label(Interior, text = 'Left      :', width = 20, anchor = Tkinter.W).pack(side=Tkinter.LEFT, expand = False)
+        widget = Label(Interior, text = 'Left      :', width = 20, anchor = tkinter.W).pack(side=tkinter.LEFT, expand = False)
         widget = self.createcomponent(
             'Left key', (), None,
             Pmw.EntryField, (Interior,),
             value = self.keyboardMapDict['KeyLeft'],
-            labelpos = Tkinter.W, label_text='Key :', entry_width = 10)
-        widget.pack(side=Tkinter.LEFT, expand = False)
+            labelpos = tkinter.W, label_text='Key :', entry_width = 10)
+        widget.pack(side=tkinter.LEFT, expand = False)
         self.widgetsDict[KEYBOARD+'KeyLeft'] = widget
-        widget = Label(Interior, text = '   ').pack(side=Tkinter.LEFT, expand = False)
+        widget = Label(Interior, text = '   ').pack(side=tkinter.LEFT, expand = False)
         widget = self.createcomponent(
             'Left Speed', (), None,
             Pmw.EntryField, (Interior,),
             value = self.keyboardSpeedDict['SpeedLeft'],
-            labelpos = Tkinter.W, label_text='Speed :', entry_width = 10)
-        widget.pack(side=Tkinter.LEFT, expand = False)
+            labelpos = tkinter.W, label_text='Speed :', entry_width = 10)
+        widget.pack(side=tkinter.LEFT, expand = False)
         self.widgetsDict[KEYBOARD+'SpeedLeft'] = widget
-        widget = Label(Interior, text = 'Per Second').pack(side=Tkinter.LEFT, expand = False)
-        Interior.pack(side=Tkinter.TOP, fill=Tkinter.X, expand=True, pady = 4 )
+        widget = Label(Interior, text = 'Per Second').pack(side=tkinter.LEFT, expand = False)
+        Interior.pack(side=tkinter.TOP, fill=tkinter.X, expand=True, pady = 4 )
 
         Interior = Frame(settingFrame)
-        widget = Label(Interior, text = 'Up        :', width = 20, anchor = Tkinter.W).pack(side=Tkinter.LEFT, expand = False)
+        widget = Label(Interior, text = 'Up        :', width = 20, anchor = tkinter.W).pack(side=tkinter.LEFT, expand = False)
         widget = self.createcomponent(
             'Up key', (), None,
             Pmw.EntryField, (Interior,),
             value = self.keyboardMapDict['KeyUp'],
-            labelpos = Tkinter.W, label_text='Key :', entry_width = 10)
-        widget.pack(side=Tkinter.LEFT, expand = False)
+            labelpos = tkinter.W, label_text='Key :', entry_width = 10)
+        widget.pack(side=tkinter.LEFT, expand = False)
         self.widgetsDict[KEYBOARD+'KeyUp'] = widget
-        widget = Label(Interior, text = '   ').pack(side=Tkinter.LEFT, expand = False)
+        widget = Label(Interior, text = '   ').pack(side=tkinter.LEFT, expand = False)
         widget = self.createcomponent(
             'Up Speed', (), None,
             Pmw.EntryField, (Interior,),
             value = self.keyboardSpeedDict['SpeedUp'],
-            labelpos = Tkinter.W, label_text='Speed :', entry_width = 10)
-        widget.pack(side=Tkinter.LEFT, expand = False)
+            labelpos = tkinter.W, label_text='Speed :', entry_width = 10)
+        widget.pack(side=tkinter.LEFT, expand = False)
         self.widgetsDict[KEYBOARD+'SpeedUp'] = widget
-        widget = Label(Interior, text = 'Per Second').pack(side=Tkinter.LEFT, expand = False)
-        Interior.pack(side=Tkinter.TOP, fill=Tkinter.X, expand=True, pady = 4 )
+        widget = Label(Interior, text = 'Per Second').pack(side=tkinter.LEFT, expand = False)
+        Interior.pack(side=tkinter.TOP, fill=tkinter.X, expand=True, pady = 4 )
 
         Interior = Frame(settingFrame)
-        widget = Label(Interior, text = 'Down      :', width = 20, anchor = Tkinter.W).pack(side=Tkinter.LEFT, expand = False)
+        widget = Label(Interior, text = 'Down      :', width = 20, anchor = tkinter.W).pack(side=tkinter.LEFT, expand = False)
         widget = self.createcomponent(
             'Down key', (), None,
             Pmw.EntryField, (Interior,),
             value = self.keyboardMapDict['KeyDown'],
-            labelpos = Tkinter.W, label_text='Key :', entry_width = 10)
-        widget.pack(side=Tkinter.LEFT, expand = False)
+            labelpos = tkinter.W, label_text='Key :', entry_width = 10)
+        widget.pack(side=tkinter.LEFT, expand = False)
         self.widgetsDict[KEYBOARD+'KeyDown'] = widget
-        widget = Label(Interior, text = '   ').pack(side=Tkinter.LEFT, expand = False)
+        widget = Label(Interior, text = '   ').pack(side=tkinter.LEFT, expand = False)
         widget = self.createcomponent(
             'Down Speed', (), None,
             Pmw.EntryField, (Interior,),
             value = self.keyboardSpeedDict['SpeedDown'],
-            labelpos = Tkinter.W, label_text='Speed :', entry_width = 10)
-        widget.pack(side=Tkinter.LEFT, expand = False)
+            labelpos = tkinter.W, label_text='Speed :', entry_width = 10)
+        widget.pack(side=tkinter.LEFT, expand = False)
         self.widgetsDict[KEYBOARD+'SpeedDown'] = widget
-        widget = Label(Interior, text = 'Per Second').pack(side=Tkinter.LEFT, expand = False)
-        Interior.pack(side=Tkinter.TOP, fill=Tkinter.X, expand=True, pady = 4 )
+        widget = Label(Interior, text = 'Per Second').pack(side=tkinter.LEFT, expand = False)
+        Interior.pack(side=tkinter.TOP, fill=tkinter.X, expand=True, pady = 4 )
 
         Interior = Frame(settingFrame)
-        widget = Label(Interior, text = 'Turn Right:', width = 20, anchor = Tkinter.W).pack(side=Tkinter.LEFT, expand = False)
+        widget = Label(Interior, text = 'Turn Right:', width = 20, anchor = tkinter.W).pack(side=tkinter.LEFT, expand = False)
         widget = self.createcomponent(
             'Turn Right key', (), None,
             Pmw.EntryField, (Interior,),
             value = self.keyboardMapDict['KeyTurnRight'],
-            labelpos = Tkinter.W, label_text='Key :', entry_width = 10)
-        widget.pack(side=Tkinter.LEFT, expand = False)
+            labelpos = tkinter.W, label_text='Key :', entry_width = 10)
+        widget.pack(side=tkinter.LEFT, expand = False)
         self.widgetsDict[KEYBOARD+'KeyTurnRight'] = widget
-        widget = Label(Interior, text = '   ').pack(side=Tkinter.LEFT, expand = False)
+        widget = Label(Interior, text = '   ').pack(side=tkinter.LEFT, expand = False)
         widget = self.createcomponent(
             'Turn Right Speed', (), None,
             Pmw.EntryField, (Interior,),
             value = self.keyboardSpeedDict['SpeedTurnRight'],
-            labelpos = Tkinter.W, label_text='Speed :', entry_width = 10)
-        widget.pack(side=Tkinter.LEFT, expand = False)
+            labelpos = tkinter.W, label_text='Speed :', entry_width = 10)
+        widget.pack(side=tkinter.LEFT, expand = False)
         self.widgetsDict[KEYBOARD+'SpeedTurnRight'] = widget
-        widget = Label(Interior, text = 'Per Second').pack(side=Tkinter.LEFT, expand = False)
-        Interior.pack(side=Tkinter.TOP, fill=Tkinter.X, expand=True, pady = 4 )
+        widget = Label(Interior, text = 'Per Second').pack(side=tkinter.LEFT, expand = False)
+        Interior.pack(side=tkinter.TOP, fill=tkinter.X, expand=True, pady = 4 )
 
         Interior = Frame(settingFrame)
-        widget = Label(Interior, text = 'Turn Left :', width = 20, anchor = Tkinter.W).pack(side=Tkinter.LEFT, expand = False)
+        widget = Label(Interior, text = 'Turn Left :', width = 20, anchor = tkinter.W).pack(side=tkinter.LEFT, expand = False)
         widget = self.createcomponent(
             'Turn Left key', (), None,
             Pmw.EntryField, (Interior,),
             value = self.keyboardMapDict['KeyTurnLeft'],
-            labelpos = Tkinter.W, label_text='Key :', entry_width = 10)
-        widget.pack(side=Tkinter.LEFT, expand = False)
+            labelpos = tkinter.W, label_text='Key :', entry_width = 10)
+        widget.pack(side=tkinter.LEFT, expand = False)
         self.widgetsDict[KEYBOARD+'KeyTurnLeft'] = widget
-        widget = Label(Interior, text = '   ').pack(side=Tkinter.LEFT, expand = False)
+        widget = Label(Interior, text = '   ').pack(side=tkinter.LEFT, expand = False)
         widget = self.createcomponent(
             'Turn Left Speed', (), None,
             Pmw.EntryField, (Interior,),
             value = self.keyboardSpeedDict['SpeedTurnLeft'],
-            labelpos = Tkinter.W, label_text='Speed :', entry_width = 10)
-        widget.pack(side=Tkinter.LEFT, expand = False)
+            labelpos = tkinter.W, label_text='Speed :', entry_width = 10)
+        widget.pack(side=tkinter.LEFT, expand = False)
         self.widgetsDict[KEYBOARD+'SpeedTurnLeft'] = widget
-        widget = Label(Interior, text = 'Per Second').pack(side=Tkinter.LEFT, expand = False)
-        Interior.pack(side=Tkinter.TOP, fill=Tkinter.X, expand=True, pady = 4 )
+        widget = Label(Interior, text = 'Per Second').pack(side=tkinter.LEFT, expand = False)
+        Interior.pack(side=tkinter.TOP, fill=tkinter.X, expand=True, pady = 4 )
 
         Interior = Frame(settingFrame)
-        widget = Label(Interior, text = 'Turn UP   :', width = 20, anchor = Tkinter.W).pack(side=Tkinter.LEFT, expand = False)
+        widget = Label(Interior, text = 'Turn UP   :', width = 20, anchor = tkinter.W).pack(side=tkinter.LEFT, expand = False)
         widget = self.createcomponent(
             'Turn UP key', (), None,
             Pmw.EntryField, (Interior,),
             value = self.keyboardMapDict['KeyTurnUp'],
-            labelpos = Tkinter.W, label_text='Key :', entry_width = 10)
-        widget.pack(side=Tkinter.LEFT, expand = False)
+            labelpos = tkinter.W, label_text='Key :', entry_width = 10)
+        widget.pack(side=tkinter.LEFT, expand = False)
         self.widgetsDict[KEYBOARD+'KeyTurnUp'] = widget
-        widget = Label(Interior, text = '   ').pack(side=Tkinter.LEFT, expand = False)
+        widget = Label(Interior, text = '   ').pack(side=tkinter.LEFT, expand = False)
         widget = self.createcomponent(
             'Turn UP Speed', (), None,
             Pmw.EntryField, (Interior,),
             value = self.keyboardSpeedDict['SpeedTurnUp'],
-            labelpos = Tkinter.W, label_text='Speed :', entry_width = 10)
-        widget.pack(side=Tkinter.LEFT, expand = False)
+            labelpos = tkinter.W, label_text='Speed :', entry_width = 10)
+        widget.pack(side=tkinter.LEFT, expand = False)
         self.widgetsDict[KEYBOARD+'SpeedTurnUp'] = widget
-        widget = Label(Interior, text = 'Per Second').pack(side=Tkinter.LEFT, expand = False)
-        Interior.pack(side=Tkinter.TOP, fill=Tkinter.X, expand=True, pady = 4 )
+        widget = Label(Interior, text = 'Per Second').pack(side=tkinter.LEFT, expand = False)
+        Interior.pack(side=tkinter.TOP, fill=tkinter.X, expand=True, pady = 4 )
 
         Interior = Frame(settingFrame)
-        widget = Label(Interior, text = 'Turn Down :', width = 20, anchor = Tkinter.W).pack(side=Tkinter.LEFT, expand = False)
+        widget = Label(Interior, text = 'Turn Down :', width = 20, anchor = tkinter.W).pack(side=tkinter.LEFT, expand = False)
         widget = self.createcomponent(
             'Turn Down key', (), None,
             Pmw.EntryField, (Interior,),
             value = self.keyboardMapDict['KeyTurnDown'],
-            labelpos = Tkinter.W, label_text='Key :', entry_width = 10)
-        widget.pack(side=Tkinter.LEFT, expand = False)
+            labelpos = tkinter.W, label_text='Key :', entry_width = 10)
+        widget.pack(side=tkinter.LEFT, expand = False)
         self.widgetsDict[KEYBOARD+'KeyTurnDown'] = widget
-        widget = Label(Interior, text = '   ').pack(side=Tkinter.LEFT, expand = False)
+        widget = Label(Interior, text = '   ').pack(side=tkinter.LEFT, expand = False)
         widget = self.createcomponent(
             'Turn Down Speed', (), None,
             Pmw.EntryField, (Interior,),
             value = self.keyboardSpeedDict['SpeedTurnDown'],
-            labelpos = Tkinter.W, label_text='Speed :', entry_width = 10)
-        widget.pack(side=Tkinter.LEFT, expand = False)
+            labelpos = tkinter.W, label_text='Speed :', entry_width = 10)
+        widget.pack(side=tkinter.LEFT, expand = False)
         self.widgetsDict[KEYBOARD+'SpeedTurnDown'] = widget
-        widget = Label(Interior, text = 'Per Second').pack(side=Tkinter.LEFT, expand = False)
-        Interior.pack(side=Tkinter.TOP, fill=Tkinter.X, expand=True, pady = 4 )
+        widget = Label(Interior, text = 'Per Second').pack(side=tkinter.LEFT, expand = False)
+        Interior.pack(side=tkinter.TOP, fill=tkinter.X, expand=True, pady = 4 )
 
         Interior = Frame(settingFrame)
-        widget = Label(Interior, text = 'Roll Right:', width = 20, anchor = Tkinter.W).pack(side=Tkinter.LEFT, expand = False)
+        widget = Label(Interior, text = 'Roll Right:', width = 20, anchor = tkinter.W).pack(side=tkinter.LEFT, expand = False)
         widget = self.createcomponent(
             'Roll Right key', (), None,
             Pmw.EntryField, (Interior,),
             value = self.keyboardMapDict['KeyRollRight'],
-            labelpos = Tkinter.W, label_text='Key :', entry_width = 10)
-        widget.pack(side=Tkinter.LEFT, expand = False)
+            labelpos = tkinter.W, label_text='Key :', entry_width = 10)
+        widget.pack(side=tkinter.LEFT, expand = False)
         self.widgetsDict[KEYBOARD+'KeyRollRight'] = widget
-        widget = Label(Interior, text = '   ').pack(side=Tkinter.LEFT, expand = False)
+        widget = Label(Interior, text = '   ').pack(side=tkinter.LEFT, expand = False)
         widget = self.createcomponent(
             'Roll Right Speed', (), None,
             Pmw.EntryField, (Interior,),
             value = self.keyboardSpeedDict['SpeedRollRight'],
-            labelpos = Tkinter.W, label_text='Speed :', entry_width = 10)
-        widget.pack(side=Tkinter.LEFT, expand = False)
+            labelpos = tkinter.W, label_text='Speed :', entry_width = 10)
+        widget.pack(side=tkinter.LEFT, expand = False)
         self.widgetsDict[KEYBOARD+'SpeedRollRight'] = widget
-        widget = Label(Interior, text = 'Per Second').pack(side=Tkinter.LEFT, expand = False)
-        Interior.pack(side=Tkinter.TOP, fill=Tkinter.X, expand=True, pady = 4 )
+        widget = Label(Interior, text = 'Per Second').pack(side=tkinter.LEFT, expand = False)
+        Interior.pack(side=tkinter.TOP, fill=tkinter.X, expand=True, pady = 4 )
 
         Interior = Frame(settingFrame)
-        widget = Label(Interior, text = 'Roll Left :', width = 20, anchor = Tkinter.W).pack(side=Tkinter.LEFT, expand = False)
+        widget = Label(Interior, text = 'Roll Left :', width = 20, anchor = tkinter.W).pack(side=tkinter.LEFT, expand = False)
         widget = self.createcomponent(
             'Roll Left key', (), None,
             Pmw.EntryField, (Interior,),
             value = self.keyboardMapDict['KeyRollLeft'],
-            labelpos = Tkinter.W, label_text='Key :', entry_width = 10)
-        widget.pack(side=Tkinter.LEFT, expand = False)
+            labelpos = tkinter.W, label_text='Key :', entry_width = 10)
+        widget.pack(side=tkinter.LEFT, expand = False)
         self.widgetsDict[KEYBOARD+'KeyRollLeft'] = widget
-        widget = Label(Interior, text = '   ').pack(side=Tkinter.LEFT, expand = False)
+        widget = Label(Interior, text = '   ').pack(side=tkinter.LEFT, expand = False)
         widget = self.createcomponent(
             'Roll Left Speed', (), None,
             Pmw.EntryField, (Interior,),
             value = self.keyboardSpeedDict['SpeedRollLeft'],
-            labelpos = Tkinter.W, label_text='Speed :', entry_width = 10)
-        widget.pack(side=Tkinter.LEFT, expand = False)
+            labelpos = tkinter.W, label_text='Speed :', entry_width = 10)
+        widget.pack(side=tkinter.LEFT, expand = False)
         self.widgetsDict[KEYBOARD+'SpeedRollLeft'] = widget
-        widget = Label(Interior, text = 'Per Second').pack(side=Tkinter.LEFT, expand = False)
-        Interior.pack(side=Tkinter.TOP, fill=Tkinter.X, expand=True, pady = 4 )
+        widget = Label(Interior, text = 'Per Second').pack(side=tkinter.LEFT, expand = False)
+        Interior.pack(side=tkinter.TOP, fill=tkinter.X, expand=True, pady = 4 )
 
         Interior = Frame(settingFrame)
-        widget = Label(Interior, text = 'Scale UP :', width = 20, anchor = Tkinter.W).pack(side=Tkinter.LEFT, expand = False)
+        widget = Label(Interior, text = 'Scale UP :', width = 20, anchor = tkinter.W).pack(side=tkinter.LEFT, expand = False)
         widget = self.createcomponent(
             'Scale UP key', (), None,
             Pmw.EntryField, (Interior,),
             value = self.keyboardMapDict['KeyScaleUp'],
-            labelpos = Tkinter.W, label_text='Key :', entry_width = 10)
-        widget.pack(side=Tkinter.LEFT, expand = False)
+            labelpos = tkinter.W, label_text='Key :', entry_width = 10)
+        widget.pack(side=tkinter.LEFT, expand = False)
         self.widgetsDict[KEYBOARD+'KeyScaleUp'] = widget
-        widget = Label(Interior, text = '   ').pack(side=Tkinter.LEFT, expand = False)
+        widget = Label(Interior, text = '   ').pack(side=tkinter.LEFT, expand = False)
         widget = self.createcomponent(
             'Scale UP Speed', (), None,
             Pmw.EntryField, (Interior,),
             value = self.keyboardSpeedDict['SpeedScaleUp'],
-            labelpos = Tkinter.W, label_text='Speed :', entry_width = 10)
-        widget.pack(side=Tkinter.LEFT, expand = False)
+            labelpos = tkinter.W, label_text='Speed :', entry_width = 10)
+        widget.pack(side=tkinter.LEFT, expand = False)
         self.widgetsDict[KEYBOARD+'SpeedScaleUp'] = widget
-        widget = Label(Interior, text = 'Per Second').pack(side=Tkinter.LEFT, expand = False)
-        Interior.pack(side=Tkinter.TOP, fill=Tkinter.X, expand=True, pady = 4 )
+        widget = Label(Interior, text = 'Per Second').pack(side=tkinter.LEFT, expand = False)
+        Interior.pack(side=tkinter.TOP, fill=tkinter.X, expand=True, pady = 4 )
 
         Interior = Frame(settingFrame)
-        widget = Label(Interior, text = 'Scale Down:', width = 20, anchor = Tkinter.W).pack(side=Tkinter.LEFT, expand = False)
+        widget = Label(Interior, text = 'Scale Down:', width = 20, anchor = tkinter.W).pack(side=tkinter.LEFT, expand = False)
         widget = self.createcomponent(
             'Scale Down key', (), None,
             Pmw.EntryField, (Interior,),
             value = self.keyboardMapDict['KeyScaleDown'],
-            labelpos = Tkinter.W, label_text='Key :', entry_width = 10)
-        widget.pack(side=Tkinter.LEFT, expand = False)
+            labelpos = tkinter.W, label_text='Key :', entry_width = 10)
+        widget.pack(side=tkinter.LEFT, expand = False)
         self.widgetsDict[KEYBOARD+'KeyScaleDown'] = widget
-        widget = Label(Interior, text = '   ').pack(side=Tkinter.LEFT, expand = False)
+        widget = Label(Interior, text = '   ').pack(side=tkinter.LEFT, expand = False)
         widget = self.createcomponent(
             'Scale Down Speed', (), None,
             Pmw.EntryField, (Interior,),
             value = self.keyboardSpeedDict['SpeedScaleDown'],
-            labelpos = Tkinter.W, label_text='Speed :', entry_width = 10)
-        widget.pack(side=Tkinter.LEFT, expand = False)
+            labelpos = tkinter.W, label_text='Speed :', entry_width = 10)
+        widget.pack(side=tkinter.LEFT, expand = False)
         self.widgetsDict[KEYBOARD+'SpeedScaleDown'] = widget
-        widget = Label(Interior, text = 'Per Second').pack(side=Tkinter.LEFT, expand = False)
-        Interior.pack(side=Tkinter.TOP, fill=Tkinter.X, expand=True, pady = 4 )
+        widget = Label(Interior, text = 'Per Second').pack(side=tkinter.LEFT, expand = False)
+        Interior.pack(side=tkinter.TOP, fill=tkinter.X, expand=True, pady = 4 )
 
         Interior = Frame(settingFrame)
-        widget = Label(Interior, text = 'Scale X UP :', width = 20, anchor = Tkinter.W).pack(side=Tkinter.LEFT, expand = False)
+        widget = Label(Interior, text = 'Scale X UP :', width = 20, anchor = tkinter.W).pack(side=tkinter.LEFT, expand = False)
         widget = self.createcomponent(
             'Scale X UP key', (), None,
             Pmw.EntryField, (Interior,),
             value = self.keyboardMapDict['KeyScaleXUp'],
-            labelpos = Tkinter.W, label_text='Key :', entry_width = 10)
-        widget.pack(side=Tkinter.LEFT, expand = False)
+            labelpos = tkinter.W, label_text='Key :', entry_width = 10)
+        widget.pack(side=tkinter.LEFT, expand = False)
         self.widgetsDict[KEYBOARD+'KeyScaleXUp'] = widget
-        widget = Label(Interior, text = '   ').pack(side=Tkinter.LEFT, expand = False)
+        widget = Label(Interior, text = '   ').pack(side=tkinter.LEFT, expand = False)
         widget = self.createcomponent(
             'Scale X UP Speed', (), None,
             Pmw.EntryField, (Interior,),
             value = self.keyboardSpeedDict['SpeedScaleXUp'],
-            labelpos = Tkinter.W, label_text='Speed :', entry_width = 10)
-        widget.pack(side=Tkinter.LEFT, expand = False)
+            labelpos = tkinter.W, label_text='Speed :', entry_width = 10)
+        widget.pack(side=tkinter.LEFT, expand = False)
         self.widgetsDict[KEYBOARD+'SpeedScaleXUp'] = widget
-        widget = Label(Interior, text = 'Per Second').pack(side=Tkinter.LEFT, expand = False)
-        Interior.pack(side=Tkinter.TOP, fill=Tkinter.X, expand=True, pady = 4 )
+        widget = Label(Interior, text = 'Per Second').pack(side=tkinter.LEFT, expand = False)
+        Interior.pack(side=tkinter.TOP, fill=tkinter.X, expand=True, pady = 4 )
 
         Interior = Frame(settingFrame)
-        widget = Label(Interior, text = 'Scale X Down:', width = 20, anchor = Tkinter.W).pack(side=Tkinter.LEFT, expand = False)
+        widget = Label(Interior, text = 'Scale X Down:', width = 20, anchor = tkinter.W).pack(side=tkinter.LEFT, expand = False)
         widget = self.createcomponent(
             'Scale X Down key', (), None,
             Pmw.EntryField, (Interior,),
             value = self.keyboardMapDict['KeyScaleXDown'],
-            labelpos = Tkinter.W, label_text='Key :', entry_width = 10)
-        widget.pack(side=Tkinter.LEFT, expand = False)
+            labelpos = tkinter.W, label_text='Key :', entry_width = 10)
+        widget.pack(side=tkinter.LEFT, expand = False)
         self.widgetsDict[KEYBOARD+'KeyScaleXDown'] = widget
-        widget = Label(Interior, text = '   ').pack(side=Tkinter.LEFT, expand = False)
+        widget = Label(Interior, text = '   ').pack(side=tkinter.LEFT, expand = False)
         widget = self.createcomponent(
             'Scale Down X Speed', (), None,
             Pmw.EntryField, (Interior,),
             value = self.keyboardSpeedDict['SpeedScaleXDown'],
-            labelpos = Tkinter.W, label_text='Speed :', entry_width = 10)
-        widget.pack(side=Tkinter.LEFT, expand = False)
+            labelpos = tkinter.W, label_text='Speed :', entry_width = 10)
+        widget.pack(side=tkinter.LEFT, expand = False)
         self.widgetsDict[KEYBOARD+'SpeedScaleXDown'] = widget
-        widget = Label(Interior, text = 'Per Second').pack(side=Tkinter.LEFT, expand = False)
-        Interior.pack(side=Tkinter.TOP, fill=Tkinter.X, expand=True, pady = 4 )
+        widget = Label(Interior, text = 'Per Second').pack(side=tkinter.LEFT, expand = False)
+        Interior.pack(side=tkinter.TOP, fill=tkinter.X, expand=True, pady = 4 )
 
         Interior = Frame(settingFrame)
-        widget = Label(Interior, text = 'Scale Y UP :', width = 20, anchor = Tkinter.W).pack(side=Tkinter.LEFT, expand = False)
+        widget = Label(Interior, text = 'Scale Y UP :', width = 20, anchor = tkinter.W).pack(side=tkinter.LEFT, expand = False)
         widget = self.createcomponent(
             'Scale Y UP key', (), None,
             Pmw.EntryField, (Interior,),
             value = self.keyboardMapDict['KeyScaleYUp'],
-            labelpos = Tkinter.W, label_text='Key :', entry_width = 10)
-        widget.pack(side=Tkinter.LEFT, expand = False)
+            labelpos = tkinter.W, label_text='Key :', entry_width = 10)
+        widget.pack(side=tkinter.LEFT, expand = False)
         self.widgetsDict[KEYBOARD+'KeyScaleYUp'] = widget
-        widget = Label(Interior, text = '   ').pack(side=Tkinter.LEFT, expand = False)
+        widget = Label(Interior, text = '   ').pack(side=tkinter.LEFT, expand = False)
         widget = self.createcomponent(
             'Scale Y UP Speed', (), None,
             Pmw.EntryField, (Interior,),
             value = self.keyboardSpeedDict['SpeedScaleYUp'],
-            labelpos = Tkinter.W, label_text='Speed :', entry_width = 10)
-        widget.pack(side=Tkinter.LEFT, expand = False)
+            labelpos = tkinter.W, label_text='Speed :', entry_width = 10)
+        widget.pack(side=tkinter.LEFT, expand = False)
         self.widgetsDict[KEYBOARD+'SpeedScaleYUp'] = widget
-        widget = Label(Interior, text = 'Per Second').pack(side=Tkinter.LEFT, expand = False)
-        Interior.pack(side=Tkinter.TOP, fill=Tkinter.X, expand=True, pady = 4 )
+        widget = Label(Interior, text = 'Per Second').pack(side=tkinter.LEFT, expand = False)
+        Interior.pack(side=tkinter.TOP, fill=tkinter.X, expand=True, pady = 4 )
 
         Interior = Frame(settingFrame)
-        widget = Label(Interior, text = 'Scale Y Down:', width = 20, anchor = Tkinter.W).pack(side=Tkinter.LEFT, expand = False)
+        widget = Label(Interior, text = 'Scale Y Down:', width = 20, anchor = tkinter.W).pack(side=tkinter.LEFT, expand = False)
         widget = self.createcomponent(
             'Scale Y Down key', (), None,
             Pmw.EntryField, (Interior,),
             value = self.keyboardMapDict['KeyScaleYDown'],
-            labelpos = Tkinter.W, label_text='Key :', entry_width = 10)
-        widget.pack(side=Tkinter.LEFT, expand = False)
+            labelpos = tkinter.W, label_text='Key :', entry_width = 10)
+        widget.pack(side=tkinter.LEFT, expand = False)
         self.widgetsDict[KEYBOARD+'KeyScaleYDown'] = widget
-        widget = Label(Interior, text = '   ').pack(side=Tkinter.LEFT, expand = False)
+        widget = Label(Interior, text = '   ').pack(side=tkinter.LEFT, expand = False)
         widget = self.createcomponent(
             'Scale Down XY Speed', (), None,
             Pmw.EntryField, (Interior,),
             value = self.keyboardSpeedDict['SpeedScaleYDown'],
-            labelpos = Tkinter.W, label_text='Speed :', entry_width = 10)
-        widget.pack(side=Tkinter.LEFT, expand = False)
+            labelpos = tkinter.W, label_text='Speed :', entry_width = 10)
+        widget.pack(side=tkinter.LEFT, expand = False)
         self.widgetsDict[KEYBOARD+'SpeedScaleYDown'] = widget
-        widget = Label(Interior, text = 'Per Second').pack(side=Tkinter.LEFT, expand = False)
-        Interior.pack(side=Tkinter.TOP, fill=Tkinter.X, expand=True, pady = 4 )
+        widget = Label(Interior, text = 'Per Second').pack(side=tkinter.LEFT, expand = False)
+        Interior.pack(side=tkinter.TOP, fill=tkinter.X, expand=True, pady = 4 )
 
         Interior = Frame(settingFrame)
-        widget = Label(Interior, text = 'Scale Z UP :', width = 20, anchor = Tkinter.W).pack(side=Tkinter.LEFT, expand = False)
+        widget = Label(Interior, text = 'Scale Z UP :', width = 20, anchor = tkinter.W).pack(side=tkinter.LEFT, expand = False)
         widget = self.createcomponent(
             'Scale Z UP key', (), None,
             Pmw.EntryField, (Interior,),
             value = self.keyboardMapDict['KeyScaleZUp'],
-            labelpos = Tkinter.W, label_text='Key :', entry_width = 10)
-        widget.pack(side=Tkinter.LEFT, expand = False)
+            labelpos = tkinter.W, label_text='Key :', entry_width = 10)
+        widget.pack(side=tkinter.LEFT, expand = False)
         self.widgetsDict[KEYBOARD+'KeyScaleZUp'] = widget
-        widget = Label(Interior, text = '   ').pack(side=Tkinter.LEFT, expand = False)
+        widget = Label(Interior, text = '   ').pack(side=tkinter.LEFT, expand = False)
         widget = self.createcomponent(
             'Scale Z UP Speed', (), None,
             Pmw.EntryField, (Interior,),
             value = self.keyboardSpeedDict['SpeedScaleZUp'],
-            labelpos = Tkinter.W, label_text='Speed :', entry_width = 10)
-        widget.pack(side=Tkinter.LEFT, expand = False)
+            labelpos = tkinter.W, label_text='Speed :', entry_width = 10)
+        widget.pack(side=tkinter.LEFT, expand = False)
         self.widgetsDict[KEYBOARD+'SpeedScaleZUp'] = widget
-        widget = Label(Interior, text = 'Per Second').pack(side=Tkinter.LEFT, expand = False)
-        Interior.pack(side=Tkinter.TOP, fill=Tkinter.X, expand=True, pady = 4 )
+        widget = Label(Interior, text = 'Per Second').pack(side=tkinter.LEFT, expand = False)
+        Interior.pack(side=tkinter.TOP, fill=tkinter.X, expand=True, pady = 4 )
 
         Interior = Frame(settingFrame)
-        widget = Label(Interior, text = 'Scale Z Down:', width = 20, anchor = Tkinter.W).pack(side=Tkinter.LEFT, expand = False)
+        widget = Label(Interior, text = 'Scale Z Down:', width = 20, anchor = tkinter.W).pack(side=tkinter.LEFT, expand = False)
         widget = self.createcomponent(
             'Scale Z Down key', (), None,
             Pmw.EntryField, (Interior,),
             value = self.keyboardMapDict['KeyScaleZDown'],
-            labelpos = Tkinter.W, label_text='Key :', entry_width = 10)
-        widget.pack(side=Tkinter.LEFT, expand = False)
+            labelpos = tkinter.W, label_text='Key :', entry_width = 10)
+        widget.pack(side=tkinter.LEFT, expand = False)
         self.widgetsDict[KEYBOARD+'KeyScaleZDown'] = widget
-        widget = Label(Interior, text = '   ').pack(side=Tkinter.LEFT, expand = False)
+        widget = Label(Interior, text = '   ').pack(side=tkinter.LEFT, expand = False)
         widget = self.createcomponent(
             'Scale Down Z Speed', (), None,
             Pmw.EntryField, (Interior,),
             value = self.keyboardSpeedDict['SpeedScaleZDown'],
-            labelpos = Tkinter.W, label_text='Speed :', entry_width = 10)
-        widget.pack(side=Tkinter.LEFT, expand = False)
+            labelpos = tkinter.W, label_text='Speed :', entry_width = 10)
+        widget.pack(side=tkinter.LEFT, expand = False)
         self.widgetsDict[KEYBOARD+'SpeedScaleZDown'] = widget
-        widget = Label(Interior, text = 'Per Second').pack(side=Tkinter.LEFT, expand = False)
-        Interior.pack(side=Tkinter.TOP, fill=Tkinter.X, expand=True, pady = 4 )
+        widget = Label(Interior, text = 'Per Second').pack(side=tkinter.LEFT, expand = False)
+        Interior.pack(side=tkinter.TOP, fill=tkinter.X, expand=True, pady = 4 )
 
-        assignFrame.pack(side=Tkinter.TOP, expand=True, fill = Tkinter.X)
-        keyboardPage.pack(side=Tkinter.TOP, expand=True, fill = Tkinter.X)
+        assignFrame.pack(side=tkinter.TOP, expand=True, fill = tkinter.X)
+        keyboardPage.pack(side=tkinter.TOP, expand=True, fill = tkinter.X)
 
         ####################################################################
         ####################################################################
@@ -539,12 +545,12 @@ class controllerWindow(AppShell):
         ####################################################################
         # Pack the mainFrame
         frame = Frame(mainFrame)
-        widget = Button(frame, text='OK', width = 13, command=self.ok_press).pack(side=Tkinter.RIGHT)
-        widget = Button(frame, text='Enable Control', width = 13, command=self.enableControl).pack(side=Tkinter.LEFT)
-        widget = Button(frame, text='Disable Control', width = 13, command=self.disableControl).pack(side=Tkinter.LEFT)
-        widget = Button(frame, text='Save & Keep', width = 13, command=self.saveKeepControl).pack(side=Tkinter.LEFT)
-        frame.pack(side = Tkinter.BOTTOM, expand=1, fill = Tkinter.X)
-        mainFrame.pack(expand=1, fill = Tkinter.BOTH)
+        widget = Button(frame, text='OK', width = 13, command=self.ok_press).pack(side=tkinter.RIGHT)
+        widget = Button(frame, text='Enable Control', width = 13, command=self.enableControl).pack(side=tkinter.LEFT)
+        widget = Button(frame, text='Disable Control', width = 13, command=self.disableControl).pack(side=tkinter.LEFT)
+        widget = Button(frame, text='Save & Keep', width = 13, command=self.saveKeepControl).pack(side=tkinter.LEFT)
+        frame.pack(side = tkinter.BOTTOM, expand=1, fill = tkinter.X)
+        mainFrame.pack(expand=1, fill = tkinter.BOTH)
 
     def onDestroy(self, event):
         # Check if user wish to keep the control after the window closed.
@@ -688,7 +694,7 @@ class controllerWindow(AppShell):
                 self.keyboardMapDict[index] = self.widgetsDict['Keyboard-'+index].getvalue()
             for index in self.keyboardSpeedDict:
                 self.keyboardSpeedDict[index] = float(self.widgetsDict['Keyboard-'+index].getvalue())
-            print self.nodePath
+            print(self.nodePath)
             messenger.send('ControlW_saveSetting', ['Keyboard', [self.nodePath, self.keyboardMapDict, self.keyboardSpeedDict]])
         return
 

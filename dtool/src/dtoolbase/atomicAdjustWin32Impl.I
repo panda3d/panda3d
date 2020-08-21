@@ -40,17 +40,21 @@ dec(TVOLATILE AtomicAdjustWin32Impl::Integer &var) {
 
 /**
  * Atomically computes var += delta.  It is legal for delta to be negative.
+ * Returns the result of the addition.
  */
-INLINE void AtomicAdjustWin32Impl::
+INLINE AtomicAdjustWin32Impl::Integer AtomicAdjustWin32Impl::
 add(TVOLATILE AtomicAdjustWin32Impl::Integer &var, AtomicAdjustWin32Impl::Integer delta) {
   assert((((size_t)&var) & (sizeof(Integer) - 1)) == 0);
 #ifdef _WIN64
-  InterlockedAdd64(&var, delta);
+  return InterlockedAdd64(&var, delta);
 #else
-  AtomicAdjustWin32Impl::Integer orig_value = var;
-  while (compare_and_exchange(var, orig_value, orig_value + delta) != orig_value) {
+  Integer orig_value = var;
+  Integer new_value = orig_value + delta;
+  while (compare_and_exchange(var, orig_value, new_value) != orig_value) {
     orig_value = var;
+    new_value = orig_value + delta;
   }
+  return new_value;
 #endif  // _WIN64
 }
 

@@ -25,11 +25,13 @@
 #include <maya/MFnAnimCurve.h>
 #include "post_maya_include.h"
 
-#ifdef WIN32_VC
+#ifdef _WIN32
 #include <direct.h>  // for chdir()
 #endif
 
-MayaApi *MayaApi::_global_api = (MayaApi *)NULL;
+using std::string;
+
+MayaApi *MayaApi::_global_api = nullptr;
 
 // We need this bogus object just to force the application to link with
 // OpenMayaAnim.lib; otherwise, Maya will complain (when compiled on Windows)
@@ -125,7 +127,7 @@ MayaApi::
     // Maya code.
     MLibrary::cleanup();
   }
-  _global_api = (MayaApi *)NULL;
+  _global_api = nullptr;
 }
 
 /**
@@ -141,7 +143,7 @@ MayaApi::
  */
 PT(MayaApi) MayaApi::
 open_api(string program_name, bool view_license, bool revertdir) {
-  if (_global_api == (MayaApi *)NULL) {
+  if (_global_api == nullptr) {
     // We need to create a new MayaApi object.
     if (program_name.empty()) {
       program_name = ExecutionEnvironment::get_binary_name();
@@ -224,7 +226,7 @@ is_valid() const {
   return _is_valid;
 }
 
-#ifdef WIN32
+#ifdef _WIN32
 static string
 back_to_front_slash(const string &str) {
   string result = str;
@@ -255,7 +257,7 @@ read(const Filename &filename) {
 
   string dirname = _cwd.to_os_specific();
   if (maya_cat.is_debug()) {
-    maya_cat.debug() << "cwd(read:before): " << dirname.c_str() << endl;
+    maya_cat.debug() << "cwd(read:before): " << dirname.c_str() << std::endl;
   }
 
   MFileIO::newFile(true);
@@ -293,7 +295,7 @@ write(const Filename &filename) {
 
   string dirname = _cwd.to_os_specific();
   if (maya_cat.is_debug()) {
-    maya_cat.debug() << "cwd(write:before): " << dirname.c_str() << endl;
+    maya_cat.debug() << "cwd(write:before): " << dirname.c_str() << std::endl;
   }
 
   const char *type = "mayaBinary";

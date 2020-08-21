@@ -48,8 +48,8 @@ find_all_files(const Filename &filename) const {
  * searches that.
  */
 INLINE Filename DSearchPath::
-search_path(const Filename &filename, const string &path,
-            const string &separator) {
+search_path(const Filename &filename, const std::string &path,
+            const std::string &separator) {
   DSearchPath search(path, separator);
   return search.find_file(filename);
 }

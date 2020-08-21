@@ -29,7 +29,7 @@
  *
  * Seeking is not supported.
  */
-class EXPCL_PANDAEXPRESS IBioStream : public ISocketStream {
+class EXPCL_PANDA_DOWNLOADER IBioStream : public ISocketStream {
 public:
   INLINE IBioStream();
   INLINE IBioStream(BioPtr *source);
@@ -51,7 +51,7 @@ private:
  *
  * Seeking is not supported.
  */
-class EXPCL_PANDAEXPRESS OBioStream : public OSocketStream {
+class EXPCL_PANDA_DOWNLOADER OBioStream : public OSocketStream {
 public:
   INLINE OBioStream();
   INLINE OBioStream(BioPtr *source);
@@ -69,7 +69,7 @@ private:
  * A bi-directional stream object that reads and writes data to an OpenSSL BIO
  * object.
  */
-class EXPCL_PANDAEXPRESS BioStream : public SocketStream {
+class EXPCL_PANDA_DOWNLOADER BioStream : public SocketStream {
 public:
   INLINE BioStream();
   INLINE BioStream(BioPtr *source);

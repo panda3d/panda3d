@@ -104,7 +104,7 @@ pstrtod(const char *nptr, char **endptr) {
 
     if (!found_digits) {
       // Not a valid float.
-      if (endptr != NULL) {
+      if (endptr != nullptr) {
         *endptr = (char *)nptr;
       }
       return 0.0;
@@ -139,7 +139,7 @@ pstrtod(const char *nptr, char **endptr) {
     value = -value;
   }
 
-  if (endptr != NULL) {
+  if (endptr != nullptr) {
     *endptr = (char *)p;
   }
   return value;
@@ -154,5 +154,5 @@ pstrtod(const char *nptr, char **endptr) {
  */
 double
 patof(const char *str) {
-  return pstrtod(str, (char **)NULL);
+  return pstrtod(str, nullptr);
 }

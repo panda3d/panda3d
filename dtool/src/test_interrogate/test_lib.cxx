@@ -34,7 +34,7 @@ int stupid_global;
 Configure(test_lib);
 
 ConfigureFn(test_lib) {
-  cerr << "In test_lib configure function!" << endl;
+  std::cerr << "In test_lib configure function!" << std::endl;
 }
 
 ConfigureLibSym;

@@ -44,8 +44,8 @@ DynamicTextGlyph::
  */
 unsigned char *DynamicTextGlyph::
 get_row(int y) {
-  nassertr(y >= 0 && y < _y_size - _margin * 2, (unsigned char *)NULL);
-  nassertr(_page != (DynamicTextPage *)NULL, (unsigned char *)NULL);
+  nassertr(y >= 0 && y < _y_size - _margin * 2, nullptr);
+  nassertr(_page != nullptr, nullptr);
 
   // First, offset y by the glyph's start.
   y += _y + _margin;
@@ -66,7 +66,7 @@ get_row(int y) {
  */
 void DynamicTextGlyph::
 erase(DynamicTextFont *font) {
-  nassertv(_page != (DynamicTextPage *)NULL);
+  nassertv(_page != nullptr);
   nassertv(_page->has_ram_image());
 
   // The glyph covers the pixels from (_x, _y) over the rectangle (_x_size,
@@ -84,7 +84,7 @@ erase(DynamicTextFont *font) {
  */
 bool DynamicTextGlyph::
 is_whitespace() const {
-  return (_page == (DynamicTextPage *)NULL);
+  return (_page == nullptr);
 }
 
 #endif  // HAVE_FREETYPE

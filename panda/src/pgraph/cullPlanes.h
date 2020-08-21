@@ -64,7 +64,7 @@ public:
   CPT(CullPlanes) remove_plane(const NodePath &clip_plane) const;
   CPT(CullPlanes) remove_occluder(const NodePath &occluder) const;
 
-  void write(ostream &out) const;
+  void write(std::ostream &out) const;
 
 private:
   typedef pmap<NodePath, PT(BoundingPlane) > Planes;
@@ -73,6 +73,10 @@ private:
   typedef pmap<NodePath, PT(BoundingHexahedron) > Occluders;
   Occluders _occluders;
 };
+
+// We can safely redefine this as a no-op.
+template<>
+INLINE void PointerToBase<CullPlanes>::update_type(To *ptr) {}
 
 #include "cullPlanes.I"
 

@@ -54,7 +54,7 @@ main(int argc, char *argv[]) {
   framework.set_window_title("LOD Test");
 
   WindowFramework *window = framework.open_window();
-  if (window != (WindowFramework *)NULL) {
+  if (window != nullptr) {
     // We've successfully opened a window.
 
     window->enable_keyboard();
@@ -69,7 +69,7 @@ main(int argc, char *argv[]) {
 
     // Open another window too.
     WindowFramework *window2 = framework.open_window();
-    if (window2 != (WindowFramework *)NULL) {
+    if (window2 != nullptr) {
       window2->enable_keyboard();
       window2->setup_trackball();
       framework.get_models().instance_to(window2->get_render());

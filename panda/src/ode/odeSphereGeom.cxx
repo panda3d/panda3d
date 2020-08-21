@@ -23,7 +23,7 @@ OdeSphereGeom(dGeomID id) :
 
 OdeSphereGeom::
 OdeSphereGeom(dReal radius) :
-  OdeGeom(dCreateSphere(0, radius)) {
+  OdeGeom(dCreateSphere(nullptr, radius)) {
 }
 
 OdeSphereGeom::

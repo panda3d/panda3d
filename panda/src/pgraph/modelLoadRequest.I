@@ -38,21 +38,24 @@ get_loader() const {
 }
 
 /**
- * Returns true if this request has completed, false if it is still pending.
- * When this returns true, you may retrieve the model loaded by calling
- * get_model().
+ * Returns true if this request has completed, false if it is still pending or
+ * if it has been cancelled.  When this returns true, you may retrieve the
+ * model loaded by calling get_model().
+ * Equivalent to `req.done() and not req.cancelled()`.
+ * @see done()
  */
 INLINE bool ModelLoadRequest::
 is_ready() const {
-  return _is_ready;
+  return (FutureState)AtomicAdjust::get(_future_state) == FS_finished;
 }
 
 /**
- * Returns the model that was loaded asynchronously, if any, or NULL if there
- * was an error.  It is an error to call this unless is_ready() returns true.
+ * Returns the model that was loaded asynchronously, if any, or null if there
+ * was an error.  It is an error to call this unless done() returns true.
+ * @deprecated Use result() instead.
  */
 INLINE PandaNode *ModelLoadRequest::
 get_model() const {
-  nassertr(_is_ready, NULL);
-  return _model;
+  nassertr_always(done(), nullptr);
+  return (PandaNode *)_result;
 }

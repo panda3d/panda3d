@@ -15,9 +15,11 @@
 #include "eventQueue.h"
 #include "config_event.h"
 
+using std::string;
+
 TypeHandle EventHandler::_type_handle;
 
-EventHandler *EventHandler::_global_event_handler = NULL;
+EventHandler *EventHandler::_global_event_handler = nullptr;
 
 
 /**
@@ -25,6 +27,26 @@ EventHandler *EventHandler::_global_event_handler = NULL;
  */
 EventHandler::
 EventHandler(EventQueue *ev_queue) : _queue(*ev_queue) {
+}
+
+/**
+ * Returns a pending future that will be marked as done when the event is next
+ * fired.
+ */
+AsyncFuture *EventHandler::
+get_future(const string &event_name) {
+  Futures::iterator fi;
+  fi = _futures.find(event_name);
+
+  // If we already have a future, but someone cancelled it, we need to create
+  // a new future instead.
+  if (fi != _futures.end() && !fi->second->cancelled()) {
+    return fi->second;
+  } else {
+    AsyncFuture *fut = new AsyncFuture;
+    _futures[event_name] = fut;
+    return fut;
+  }
 }
 
 /**
@@ -44,7 +66,7 @@ process_events() {
  */
 void EventHandler::
 dispatch_event(const Event *event) {
-  nassertv(event != (Event *)NULL);
+  nassertv(event != nullptr);
 
   // Is the event name defined in the hook table?  It will be if anyone has
   // ever assigned a hook to this particular event name.
@@ -62,7 +84,7 @@ dispatch_event(const Event *event) {
         event_cat->spam()
           << "calling callback 0x" << (void*)(*fi)
           << " for event '" << event->get_name() << "'"
-          << endl;
+          << std::endl;
       }
       (*fi)(event);
     }
@@ -81,6 +103,18 @@ dispatch_event(const Event *event) {
       ((*cfi).first)(event, (*cfi).second);
     }
   }
+
+  // Finally, check for futures that need to be triggered.
+  Futures::iterator fi;
+  fi = _futures.find(event->get_name());
+
+  if (fi != _futures.end()) {
+    AsyncFuture *fut = (*fi).second;
+    if (!fut->done()) {
+      fut->set_result((TypedReferenceCount *)event);
+    }
+    _futures.erase(fi);
+  }
 }
 
 
@@ -88,7 +122,7 @@ dispatch_event(const Event *event) {
  *
  */
 void EventHandler::
-write(ostream &out) const {
+write(std::ostream &out) const {
   Hooks::const_iterator hi;
   hi = _hooks.begin();
 
@@ -133,7 +167,7 @@ add_hook(const string &event_name, EventFunction *function) {
   if (event_cat.is_debug()) {
     event_cat.debug()
       << "adding hook for event '" << event_name
-      << "' with function 0x" << (void*)function << endl;
+      << "' with function 0x" << (void*)function << std::endl;
   }
   assert(!event_name.empty());
   assert(function);
@@ -174,6 +208,46 @@ has_hook(const string &event_name) const {
   chi = _cbhooks.find(event_name);
   if (chi != _cbhooks.end()) {
     if (!(*chi).second.empty()) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+
+/**
+ * Returns true if there is the hook added on the indicated event name and
+ * function pointer, false otherwise.
+ */
+bool EventHandler::
+has_hook(const string &event_name, EventFunction *function) const {
+  assert(!event_name.empty());
+  Hooks::const_iterator hi;
+  hi = _hooks.find(event_name);
+  if (hi != _hooks.end()) {
+    const Functions& functions = (*hi).second;
+    if (functions.find(function) != functions.end()) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+
+/**
+ * Returns true if there is the hook added on the indicated event name,
+ * function pointer and callback data, false otherwise.
+ */
+bool EventHandler::
+has_hook(const string &event_name, EventCallbackFunction *function, void *data) const {
+  assert(!event_name.empty());
+  CallbackHooks::const_iterator chi;
+  chi = _cbhooks.find(event_name);
+  if (chi != _cbhooks.end()) {
+    const CallbackFunctions& cbfunctions = (*chi).second;
+    if (cbfunctions.find(CallbackFunction(function, data)) != cbfunctions.end()) {
       return true;
     }
   }
@@ -277,6 +351,7 @@ remove_all_hooks() {
  */
 void EventHandler::
 make_global_event_handler() {
+  init_memory_hook();
   _global_event_handler = new EventHandler(EventQueue::get_global_event_queue());
 }
 
@@ -285,7 +360,7 @@ make_global_event_handler() {
  *
  */
 void EventHandler::
-write_hook(ostream &out, const EventHandler::Hooks::value_type &hook) const {
+write_hook(std::ostream &out, const EventHandler::Hooks::value_type &hook) const {
   if (!hook.second.empty()) {
     out << hook.first << " has " << hook.second.size() << " functions.\n";
   }
@@ -295,7 +370,7 @@ write_hook(ostream &out, const EventHandler::Hooks::value_type &hook) const {
  *
  */
 void EventHandler::
-write_cbhook(ostream &out, const EventHandler::CallbackHooks::value_type &hook) const {
+write_cbhook(std::ostream &out, const EventHandler::CallbackHooks::value_type &hook) const {
   if (!hook.second.empty()) {
     out << hook.first << " has " << hook.second.size() << " callback functions.\n";
   }

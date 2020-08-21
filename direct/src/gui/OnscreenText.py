@@ -1,10 +1,13 @@
-"""OnscreenText module: contains the OnscreenText class"""
+"""OnscreenText module: contains the OnscreenText class.
+
+See the :ref:`onscreentext` page in the programming manual for explanation of
+this class.
+"""
 
 __all__ = ['OnscreenText', 'Plain', 'ScreenTitle', 'ScreenPrompt', 'NameConfirm', 'BlackOnWhite']
 
 from panda3d.core import *
 from . import DirectGuiGlobals as DGG
-import sys
 
 ## These are the styles of text we might commonly see.  They set the
 ## overall appearance of the text according to one of a number of
@@ -35,12 +38,13 @@ class OnscreenText(NodePath):
                  font = None,
                  parent = None,
                  sort = 0,
-                 mayChange = True):
+                 mayChange = True,
+                 direction = None):
         """
         Make a text node from string, put it into the 2d sg and set it
         up with all the indicated parameters.
 
-        The parameters are as follows:
+        Parameters:
 
           text: the actual text to display.  This may be omitted and
               specified later via setText() if you don't have it
@@ -95,6 +99,9 @@ class OnscreenText(NodePath):
           mayChange: pass true if the text or its properties may need
               to be changed at runtime, false if it is static once
               created (which leads to better memory optimization).
+
+          direction: this can be set to 'ltr' or 'rtl' to override the
+              direction of the text.
         """
         if parent == None:
             parent = aspect2d
@@ -192,6 +199,17 @@ class OnscreenText(NodePath):
             textNode.setFrameColor(frame[0], frame[1], frame[2], frame[3])
             textNode.setFrameAsMargin(0.1, 0.1, 0.1, 0.1)
 
+        if direction is not None:
+            if isinstance(direction, str):
+                direction = direction.lower()
+                if direction == 'rtl':
+                    direction = TextProperties.D_rtl
+                elif direction == 'ltr':
+                    direction = TextProperties.D_ltr
+                else:
+                    raise ValueError('invalid direction')
+            textNode.setDirection(direction)
+
         # Create a transform for the text for our scale and position.
         # We'd rather do it here, on the text itself, rather than on
         # our NodePath, so we have one fewer transforms in the scene
@@ -262,34 +280,15 @@ class OnscreenText(NodePath):
         self.textNode.clearText()
 
     def setText(self, text):
-        if sys.version_info >= (3, 0):
-            assert not isinstance(text, bytes)
-            self.unicodeText = True
-        else:
-            self.unicodeText = isinstance(text, unicode)
-
-        if self.unicodeText:
-            self.textNode.setWtext(text)
-        else:
-            self.textNode.setText(text)
+        assert not isinstance(text, bytes)
+        self.textNode.setWtext(text)
 
     def appendText(self, text):
-        if sys.version_info >= (3, 0):
-            assert not isinstance(text, bytes)
-            self.unicodeText = True
-        else:
-            self.unicodeText = isinstance(text, unicode)
-
-        if self.unicodeText:
-            self.textNode.appendWtext(text)
-        else:
-            self.textNode.appendText(text)
+        assert not isinstance(text, bytes)
+        self.textNode.appendWtext(text)
 
     def getText(self):
-        if self.unicodeText:
-            return self.textNode.getWtext()
-        else:
-            return self.textNode.getText()
+        return self.textNode.getWtext()
 
     text = property(getText, setText)
 

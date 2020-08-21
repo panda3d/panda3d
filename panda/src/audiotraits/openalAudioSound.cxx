@@ -38,17 +38,17 @@ OpenALAudioSound(OpenALAudioManager* manager,
                  bool positional,
                  int mode) :
   _movie(movie),
-  _sd(NULL),
+  _sd(nullptr),
   _playing_loops(0),
   _playing_rate(0.0),
   _loops_completed(0),
   _source(0),
   _manager(manager),
-  _volume(manager->get_volume()),
+  _volume(1.0f),
   _balance(0),
   _play_rate(1.0),
   _positional(positional),
-  _min_dist(3.28f),
+  _min_dist(1.0f),
   _max_dist(1000000000.0f),
   _drop_off_factor(1.0f),
   _length(0.0),
@@ -69,8 +69,8 @@ OpenALAudioSound(OpenALAudioManager* manager,
 
   ReMutexHolder holder(OpenALAudioManager::_lock);
 
-  require_sound_data();
-  if (_manager == NULL) {
+  if (!require_sound_data()) {
+    cleanup();
     return;
   }
 
@@ -80,7 +80,7 @@ OpenALAudioSound(OpenALAudioManager* manager,
       audio_warning("stereo sound " << movie->get_filename() << " will not be spatialized");
     }
   }
-  release_sound_data();
+  release_sound_data(false);
 }
 
 
@@ -99,18 +99,17 @@ OpenALAudioSound::
 void OpenALAudioSound::
 cleanup() {
   ReMutexHolder holder(OpenALAudioManager::_lock);
-  if (_manager == 0) {
+  if (!is_valid()) {
     return;
   }
-  if (_source) {
+  if (is_playing()) {
     stop();
   }
-  if (_sd) {
-    _manager->decrement_client_count(_sd);
-    _sd = 0;
+  if (has_sound_data()) {
+    release_sound_data(true);
   }
   _manager->release_sound(this);
-  _manager = 0;
+  _manager = nullptr;
 }
 
 /**
@@ -119,7 +118,8 @@ cleanup() {
 void OpenALAudioSound::
 play() {
   ReMutexHolder holder(OpenALAudioManager::_lock);
-  if (_manager == 0) return;
+
+  if (!is_valid()) return;
 
   PN_stdfloat px,py,pz,vx,vy,vz;
 
@@ -130,11 +130,13 @@ play() {
 
   stop();
 
-  require_sound_data();
-  if (_manager == 0) return;
-  _manager->starting_sound(this);
+  if (!require_sound_data()) {
+    cleanup();
+    return;
+  }
 
-  if (!_source) {
+  _manager->starting_sound(this);
+  if (!is_playing()) {
     return;
   }
 
@@ -193,10 +195,13 @@ play() {
 void OpenALAudioSound::
 stop() {
   ReMutexHolder holder(OpenALAudioManager::_lock);
-  if (_manager==0) return;
 
-  if (_source) {
+  if (!is_valid()) return;
+
+  if (is_playing()) {
     _manager->make_current();
+
+    nassertv(has_sound_data());
 
     alGetError(); // clear errors
     alSourceStop(_source);
@@ -206,15 +211,14 @@ stop() {
     for (int i=0; i<((int)(_stream_queued.size())); i++) {
       ALuint buffer = _stream_queued[i]._buffer;
       if (buffer != _sd->_sample) {
-        alDeleteBuffers(1, &buffer);
-        al_audio_errcheck("deleting a buffer");
+        _manager->delete_buffer(buffer);
       }
     }
     _stream_queued.resize(0);
   }
 
   _manager->stopping_sound(this);
-  release_sound_data();
+  release_sound_data(false);
 }
 
 /**
@@ -223,6 +227,9 @@ stop() {
 void OpenALAudioSound::
 finished() {
   ReMutexHolder holder(OpenALAudioManager::_lock);
+
+  if (!is_valid()) return;
+
   stop();
   _current_time = _length;
   if (!_finished_event.empty()) {
@@ -253,7 +260,8 @@ get_loop() const {
 void OpenALAudioSound::
 set_loop_count(unsigned long loop_count) {
   ReMutexHolder holder(OpenALAudioManager::_lock);
-  if (_manager==0) return;
+
+  if (!is_valid()) return;
 
   if (loop_count >= 1000000000) {
     loop_count = 0;
@@ -280,9 +288,14 @@ void OpenALAudioSound::
 restart_stalled_audio() {
   ReMutexHolder holder(OpenALAudioManager::_lock);
   ALenum status;
+
+  if (!is_valid()) return;
+  nassertv(is_playing());
+
   if (_stream_queued.size() == 0) {
     return;
   }
+
   alGetError();
   alGetSourcei(_source, AL_SOURCE_STATE, &status);
   if (status != AL_PLAYING) {
@@ -296,6 +309,9 @@ restart_stalled_audio() {
 void OpenALAudioSound::
 queue_buffer(ALuint buffer, int samples, int loop_index, double time_offset) {
   ReMutexHolder holder(OpenALAudioManager::_lock);
+
+  nassertv(is_playing());
+
   // Now push the buffer into the stream queue.
   alGetError();
   alSourceQueueBuffers(_source,1,&buffer);
@@ -319,6 +335,8 @@ queue_buffer(ALuint buffer, int samples, int loop_index, double time_offset) {
 ALuint OpenALAudioSound::
 make_buffer(int samples, int channels, int rate, unsigned char *data) {
   ReMutexHolder holder(OpenALAudioManager::_lock);
+
+  nassertr(is_playing(), 0);
 
   // Allocate a buffer to hold the data.
   alGetError();
@@ -352,8 +370,9 @@ int OpenALAudioSound::
 read_stream_data(int bytelen, unsigned char *buffer) {
   ReMutexHolder holder(OpenALAudioManager::_lock);
 
+  nassertr(has_sound_data(), 0);
+
   MovieAudioCursor *cursor = _sd->_stream;
-  double length = cursor->length();
   int channels = cursor->audio_channels();
   int rate = cursor->audio_rate();
   int space = bytelen / (channels * 2);
@@ -361,7 +380,7 @@ read_stream_data(int bytelen, unsigned char *buffer) {
 
   while (space && (_loops_completed < _playing_loops)) {
     double t = cursor->tell();
-    double remain = length - t;
+    double remain = cursor->length() - t;
     if (remain > 60.0) {
       remain = 60.0;
     }
@@ -383,9 +402,20 @@ read_stream_data(int bytelen, unsigned char *buffer) {
     if (samples > _sd->_stream->ready()) {
       samples = _sd->_stream->ready();
     }
-    cursor->read_samples(samples, (int16_t *)buffer);
-    size_t hval = AddHash::add_hash(0, (uint8_t*)buffer, samples*channels*2);
-    audio_debug("Streaming " << cursor->get_source()->get_name() << " at " << t << " hash " << hval);
+    samples = cursor->read_samples(samples, (int16_t *)buffer);
+    if (audio_cat.is_debug()) {
+      size_t hval = AddHash::add_hash(0, (uint8_t*)buffer, samples*channels*2);
+      audio_debug("Streaming " << cursor->get_source()->get_name() << " at " << t << " hash " << hval);
+    }
+    if (samples == 0) {
+      _loops_completed += 1;
+      cursor->seek(0.0);
+      if (_playing_loops >= 1000000000) {
+        // Prevent infinite loop if endlessly looping empty sound
+        return fill;
+      }
+      continue;
+    }
     fill += samples;
     space -= samples;
     buffer += (samples * channels * 2);
@@ -402,6 +432,9 @@ read_stream_data(int bytelen, unsigned char *buffer) {
 void OpenALAudioSound::
 correct_calibrated_clock(double rtc, double t) {
   ReMutexHolder holder(OpenALAudioManager::_lock);
+
+  nassertv(is_playing());
+
   double cc = (rtc - _calibrated_clock_base) * _calibrated_clock_scale;
   double diff = cc-t;
   _calibrated_clock_decavg = (_calibrated_clock_decavg * 0.95) + (diff * 0.05);
@@ -433,25 +466,50 @@ correct_calibrated_clock(double rtc, double t) {
 void OpenALAudioSound::
 pull_used_buffers() {
   ReMutexHolder holder(OpenALAudioManager::_lock);
+
+  if (!is_valid()) return;
+  nassertv(is_playing());
+  nassertv(has_sound_data());
+
   while (_stream_queued.size()) {
     ALuint buffer = 0;
-    alGetError();
+    ALint num_buffers = 0;
+    alGetSourcei(_source, AL_BUFFERS_PROCESSED, &num_buffers);
+    if (num_buffers <= 0) {
+      break;
+    }
     alSourceUnqueueBuffers(_source, 1, &buffer);
     int err = alGetError();
     if (err == AL_NO_ERROR) {
       if (_stream_queued[0]._buffer != buffer) {
-        audio_error("corruption in stream queue");
-        cleanup();
-        return;
-      }
-      _stream_queued.pop_front();
-      if (_stream_queued.size()) {
-        double al = _stream_queued[0]._time_offset + _stream_queued[0]._loop_index * _length;
-        double rtc = TrueClock::get_global_ptr()->get_short_time();
-        correct_calibrated_clock(rtc, al);
-      }
-      if (buffer != _sd->_sample) {
-        alDeleteBuffers(1,&buffer);
+        // This is certainly atypical: most implementations of OpenAL unqueue
+        // buffers in FIFO order. However, some (e.g. Apple's) can unqueue
+        // buffers out-of-order if playback is interrupted. So, we don't freak
+        // out unless `buffer` isn't in _stream_queued at all.
+        bool found_culprit = false;
+        for (auto it = _stream_queued.begin(); it != _stream_queued.end(); ++it) {
+          if (it->_buffer == buffer) {
+            // Phew. Found it. Just remove that.
+            _stream_queued.erase(it);
+            found_culprit = true;
+            break;
+          }
+        }
+        if (!found_culprit) {
+          audio_error("corruption in stream queue");
+          cleanup();
+          return;
+        }
+      } else {
+        _stream_queued.pop_front();
+        if (_stream_queued.size()) {
+          double al = _stream_queued[0]._time_offset + _stream_queued[0]._loop_index * _length;
+          double rtc = TrueClock::get_global_ptr()->get_short_time();
+          correct_calibrated_clock(rtc, al);
+        }
+        if (buffer != _sd->_sample) {
+          _manager->delete_buffer(buffer);
+        }
       }
     } else {
       break;
@@ -467,6 +525,10 @@ void OpenALAudioSound::
 push_fresh_buffers() {
   ReMutexHolder holder(OpenALAudioManager::_lock);
   static unsigned char data[65536];
+
+  if (!is_valid()) return;
+  nassertv(is_playing());
+  nassertv(has_sound_data());
 
   if (_sd->_sample) {
     while ((_loops_completed < _playing_loops) &&
@@ -493,22 +555,27 @@ push_fresh_buffers() {
         break;
       }
       ALuint buffer = make_buffer(samples, channels, rate, data);
-      if (_manager == 0) return;
+      if (!is_valid() || !buffer) return;
       queue_buffer(buffer, samples, loop_index, time_offset);
-      if (_manager == 0) return;
+      if (!is_valid()) return;
       fill += samples;
     }
   }
 }
 
 /**
- * The next time you call play, the sound will start from the specified
- * offset.
+ * Sets the offset within the sound.  If the sound is currently playing, its
+ * position is updated immediately.
  */
 void OpenALAudioSound::
 set_time(PN_stdfloat time) {
   ReMutexHolder holder(OpenALAudioManager::_lock);
   _start_time = time;
+
+  if (is_playing()) {
+    // Ensure that the position is updated immediately.
+    play();
+  }
 }
 
 /**
@@ -517,7 +584,7 @@ set_time(PN_stdfloat time) {
 PN_stdfloat OpenALAudioSound::
 get_time() const {
   ReMutexHolder holder(OpenALAudioManager::_lock);
-  if (_manager == 0) {
+  if (!is_valid()) {
     return 0.0;
   }
   return _current_time;
@@ -529,7 +596,9 @@ get_time() const {
 void OpenALAudioSound::
 cache_time(double rtc) {
   ReMutexHolder holder(OpenALAudioManager::_lock);
-  assert(_source != 0);
+
+  nassertv(is_playing());
+
   double t=get_calibrated_clock(rtc);
   double max = _length * _playing_loops;
   if (t >= max) {
@@ -547,7 +616,7 @@ set_volume(PN_stdfloat volume) {
   ReMutexHolder holder(OpenALAudioManager::_lock);
   _volume=volume;
 
-  if (_source) {
+  if (is_playing()) {
     volume*=_manager->get_volume();
     _manager->make_current();
     alGetError(); // clear errors
@@ -591,7 +660,7 @@ void OpenALAudioSound::
 set_play_rate(PN_stdfloat play_rate) {
   ReMutexHolder holder(OpenALAudioManager::_lock);
   _play_rate = play_rate;
-  if (_source) {
+  if (is_playing()) {
     alSourcef(_source, AL_PITCH, play_rate);
   }
 }
@@ -633,7 +702,7 @@ set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx
   _velocity[1] = vz;
   _velocity[2] = -vy;
 
-  if (_source) {
+  if (is_playing()) {
     _manager->make_current();
 
     alGetError(); // clear errors
@@ -669,11 +738,11 @@ set_3d_min_distance(PN_stdfloat dist) {
   ReMutexHolder holder(OpenALAudioManager::_lock);
   _min_dist = dist;
 
-  if (_source) {
+  if (is_playing()) {
     _manager->make_current();
 
     alGetError(); // clear errors
-    alSourcef(_source,AL_REFERENCE_DISTANCE,_min_dist*_manager->audio_3d_get_distance_factor());
+    alSourcef(_source,AL_REFERENCE_DISTANCE,_min_dist);
     al_audio_errcheck("alSourcefv(_source,AL_REFERENCE_DISTANCE)");
   }
 }
@@ -694,11 +763,11 @@ set_3d_max_distance(PN_stdfloat dist) {
   ReMutexHolder holder(OpenALAudioManager::_lock);
   _max_dist = dist;
 
-  if (_source) {
+  if (is_playing()) {
     _manager->make_current();
 
     alGetError(); // clear errors
-    alSourcef(_source,AL_MAX_DISTANCE,_max_dist*_manager->audio_3d_get_distance_factor());
+    alSourcef(_source,AL_MAX_DISTANCE,_max_dist);
     al_audio_errcheck("alSourcefv(_source,AL_MAX_DISTANCE)");
   }
 }
@@ -719,7 +788,7 @@ set_3d_drop_off_factor(PN_stdfloat factor) {
   ReMutexHolder holder(OpenALAudioManager::_lock);
   _drop_off_factor = factor;
 
-  if (_source) {
+  if (is_playing()) {
     _manager->make_current();
 
     alGetError(); // clear errors
@@ -737,13 +806,16 @@ get_3d_drop_off_factor() const {
 }
 
 /**
- * Sets whether the sound is marked "active".  By default, the active flag
+ * Sets whether the sound is marked "active".  By default, the active flag is
  * true for all sounds.  If the active flag is set to false for any particular
  * sound, the sound will not be heard.
  */
 void OpenALAudioSound::
 set_active(bool active) {
   ReMutexHolder holder(OpenALAudioManager::_lock);
+
+  if (!is_valid()) return;
+
   if (_active!=active) {
     _active=active;
     if (_active) {
@@ -779,14 +851,14 @@ get_active() const {
  *
  */
 void OpenALAudioSound::
-set_finished_event(const string& event) {
+set_finished_event(const std::string& event) {
   _finished_event = event;
 }
 
 /**
  *
  */
-const string& OpenALAudioSound::
+const std::string& OpenALAudioSound::
 get_finished_event() const {
   return _finished_event;
 }
@@ -794,7 +866,7 @@ get_finished_event() const {
 /**
  * Get name of sound file
  */
-const string& OpenALAudioSound::
+const std::string& OpenALAudioSound::
 get_name() const {
   return _basename;
 }
@@ -807,7 +879,7 @@ get_name() const {
 AudioSound::SoundStatus OpenALAudioSound::
 status() const {
   ReMutexHolder holder(OpenALAudioManager::_lock);
-  if (_source==0) {
+  if (!is_playing()) {
     return AudioSound::READY;
   }
   if ((_loops_completed >= _playing_loops)&&(_stream_queued.size()==0)) {

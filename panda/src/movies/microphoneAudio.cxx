@@ -69,6 +69,6 @@ get_num_options() {
 PT(MicrophoneAudio) MicrophoneAudio::
 get_option(int n) {
   find_all_microphones();
-  nassertr((n >= 0) && (n < (int)_all_microphones.size()), NULL);
+  nassertr((n >= 0) && (n < (int)_all_microphones.size()), nullptr);
   return _all_microphones[n];
 }

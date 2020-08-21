@@ -15,13 +15,17 @@
 #include "config_assimp.h"
 #include "assimpLoader.h"
 
+#include <assimp/cimport.h>
+
+using std::string;
+
 TypeHandle LoaderFileTypeAssimp::_type_handle;
 
 /**
  *
  */
 LoaderFileTypeAssimp::
-LoaderFileTypeAssimp() : _loader(new AssimpLoader) {
+LoaderFileTypeAssimp() {
 }
 
 /**
@@ -29,9 +33,6 @@ LoaderFileTypeAssimp() : _loader(new AssimpLoader) {
  */
 LoaderFileTypeAssimp::
 ~LoaderFileTypeAssimp() {
-  if (_loader != NULL) {
-    delete _loader;
-  }
 }
 
 /**
@@ -56,9 +57,22 @@ get_extension() const {
  */
 string LoaderFileTypeAssimp::
 get_additional_extensions() const {
-  string exts;
-  _loader->get_extensions(exts);
-  return exts;
+  aiString aexts;
+  aiGetExtensionList(&aexts);
+
+  // The format is like: *.mdc;*.mdl;*.mesh.xml;*.mot
+  std::string ext;
+  char *sub = strtok(aexts.data, ";");
+  while (sub != nullptr) {
+    ext += sub + 2;
+    sub = strtok(nullptr, ";");
+
+    if (sub != nullptr) {
+      ext += ' ';
+    }
+  }
+
+  return ext;
 }
 
 /**
@@ -80,10 +94,13 @@ load_file(const Filename &path, const LoaderOptions &options,
   assimp_cat.info()
     << "Reading " << path << "\n";
 
-  if (!_loader->read(path)) {
-    return NULL;
+  AssimpLoader loader;
+  loader.local_object();
+
+  if (!loader.read(path)) {
+    return nullptr;
   }
 
-  _loader->build_graph();
-  return DCAST(PandaNode, _loader->_root);
+  loader.build_graph();
+  return DCAST(PandaNode, loader._root);
 }

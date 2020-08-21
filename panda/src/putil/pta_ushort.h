@@ -34,9 +34,4 @@ EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL, ConstPointerToArray<
 typedef PointerToArray<unsigned short> PTA_ushort;
 typedef ConstPointerToArray<unsigned short> CPTA_ushort;
 
-// Tell GCC that we'll take care of the instantiation explicitly here.
-#ifdef __GNUC__
-#pragma interface
-#endif
-
 #endif

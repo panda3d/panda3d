@@ -51,7 +51,6 @@ extern EXPCL_PANDA_GOBJ ConfigVariableBool connect_triangle_strips;
 extern EXPCL_PANDA_GOBJ ConfigVariableBool preserve_triangle_strips;
 extern EXPCL_PANDA_GOBJ ConfigVariableBool dump_generated_shaders;
 extern EXPCL_PANDA_GOBJ ConfigVariableBool cache_generated_shaders;
-extern EXPCL_PANDA_GOBJ ConfigVariableBool enforce_attrib_lock;
 extern EXPCL_PANDA_GOBJ ConfigVariableBool vertices_float64;
 extern EXPCL_PANDA_GOBJ ConfigVariableInt vertex_column_alignment;
 extern EXPCL_PANDA_GOBJ ConfigVariableBool vertex_animation_align_16;
@@ -88,6 +87,7 @@ extern EXPCL_PANDA_GOBJ ConfigVariableDouble async_load_delay;
 extern EXPCL_PANDA_GOBJ ConfigVariableInt lens_geom_segments;
 extern EXPCL_PANDA_GOBJ ConfigVariableBool stereo_lens_old_convergence;
 
+extern EXPCL_PANDA_GOBJ ConfigVariableBool basic_shaders_only;
 extern EXPCL_PANDA_GOBJ ConfigVariableString cg_glsl_version;
 extern EXPCL_PANDA_GOBJ ConfigVariableBool glsl_preprocess;
 extern EXPCL_PANDA_GOBJ ConfigVariableInt glsl_include_recursion_limit;

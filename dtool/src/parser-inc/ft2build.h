@@ -29,6 +29,7 @@ class FT_Library;
 class FT_Bitmap;
 class FT_Vector;
 class FT_Span;
+class FT_Outline;
 
 #endif
 

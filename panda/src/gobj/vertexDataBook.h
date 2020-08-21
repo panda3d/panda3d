@@ -29,7 +29,7 @@ class VertexDataBlock;
  */
 class EXPCL_PANDA_GOBJ VertexDataBook {
 PUBLISHED:
-  VertexDataBook(size_t block_size);
+  explicit VertexDataBook(size_t block_size);
   ~VertexDataBook();
 
   INLINE VertexDataBlock *alloc(size_t size);

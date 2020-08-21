@@ -28,11 +28,11 @@
 /**
  *
  */
-string ThreadDummyImpl::
+std::string ThreadDummyImpl::
 get_unique_id() const {
   // In a single-threaded application, this is just the unique process ID.
-  ostringstream strm;
-#ifdef WIN32
+  std::ostringstream strm;
+#ifdef _WIN32
   strm << GetCurrentProcessId();
 #else
   strm << getpid();

@@ -24,7 +24,7 @@ class EggVertex;
 
 /**
  * A program to generate an egg file representing a tube model, similar in
- * shape to a CollisionTube.
+ * shape to a CollisionCapsule.
  */
 class EggMakeTube : public EggMakeSomething {
 public:

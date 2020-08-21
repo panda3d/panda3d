@@ -15,8 +15,8 @@
 #define ASYNCTASK_H
 
 #include "pandabase.h"
-
-#include "asyncTaskBase.h"
+#include "asyncFuture.h"
+#include "namable.h"
 #include "pmutex.h"
 #include "conditionVar.h"
 #include "pStatCollector.h"
@@ -29,9 +29,9 @@ class AsyncTaskChain;
  * Normally, you would subclass from this class, and override do_task(), to
  * define the functionality you wish to have the task perform.
  */
-class EXPCL_PANDA_EVENT AsyncTask : public AsyncTaskBase {
+class EXPCL_PANDA_EVENT AsyncTask : public AsyncFuture, public Namable {
 public:
-  AsyncTask(const string &name = string());
+  AsyncTask(const std::string &name = std::string());
   ALLOC_DELETED_CHAIN(AsyncTask);
 
 PUBLISHED:
@@ -45,6 +45,7 @@ PUBLISHED:
     DS_exit,      // stop the enclosing sequence
     DS_pause,     // pause, then exit (useful within a sequence)
     DS_interrupt, // interrupt the task manager, but run task again
+    DS_await,     // await a different task's completion
   };
 
   enum State {
@@ -54,13 +55,14 @@ PUBLISHED:
     S_servicing_removed,  // Still servicing, but wants removal from manager.
     S_sleeping,
     S_active_nested,      // active within a sequence.
+    S_awaiting,           // Waiting for a dependent task to complete
   };
 
   INLINE State get_state() const;
   INLINE bool is_alive() const;
   INLINE AsyncTaskManager *get_manager() const;
 
-  void remove();
+  bool remove();
 
   INLINE void set_delay(double delay);
   INLINE void clear_delay();
@@ -74,14 +76,14 @@ PUBLISHED:
   INLINE int get_start_frame() const;
   int get_elapsed_frames() const;
 
-  void set_name(const string &name);
+  void set_name(const std::string &name);
   INLINE void clear_name();
-  string get_name_prefix() const;
+  std::string get_name_prefix() const;
 
   INLINE AtomicAdjust::Integer get_task_id() const;
 
-  void set_task_chain(const string &chain_name);
-  INLINE const string &get_task_chain() const;
+  void set_task_chain(const std::string &chain_name);
+  INLINE const std::string &get_task_chain() const;
 
   void set_sort(int sort);
   INLINE int get_sort() const;
@@ -89,18 +91,41 @@ PUBLISHED:
   void set_priority(int priority);
   INLINE int get_priority() const;
 
-  INLINE void set_done_event(const string &done_event);
-  INLINE const string &get_done_event() const;
+  INLINE void set_done_event(const std::string &done_event);
 
   INLINE double get_dt() const;
   INLINE double get_max_dt() const;
   INLINE double get_average_dt() const;
 
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
+
+PUBLISHED:
+  MAKE_PROPERTY(state, get_state);
+  MAKE_PROPERTY(alive, is_alive);
+  MAKE_PROPERTY(manager, get_manager);
+
+  // The name of this task.
+  MAKE_PROPERTY(name, get_name, set_name);
+
+  // This is a number guaranteed to be unique for each different AsyncTask
+  // object in the universe.
+  MAKE_PROPERTY(id, get_task_id);
+
+  MAKE_PROPERTY(task_chain, get_task_chain, set_task_chain);
+  MAKE_PROPERTY(sort, get_sort, set_sort);
+  MAKE_PROPERTY(priority, get_priority, set_priority);
+  MAKE_PROPERTY(done_event, get_done_event, set_done_event);
+
+  MAKE_PROPERTY(dt, get_dt);
+  MAKE_PROPERTY(max_dt, get_max_dt);
+  MAKE_PROPERTY(average_dt, get_average_dt);
 
 protected:
   void jump_to_task_chain(AsyncTaskManager *manager);
   DoneStatus unlock_and_do_task();
+
+  virtual bool cancel();
+  virtual bool is_task() const final {return true;}
 
   virtual bool is_runnable();
   virtual DoneStatus do_task();
@@ -109,17 +134,16 @@ protected:
 
 protected:
   AtomicAdjust::Integer _task_id;
-  string _chain_name;
+  std::string _chain_name;
   double _delay;
   bool _has_delay;
   double _wake_time;
   int _sort;
   int _priority;
-  string _done_event;
+  unsigned int _implicit_sort;
 
   State _state;
   Thread *_servicing_thread;
-  AsyncTaskManager *_manager;
   AsyncTaskChain *_chain;
 
   double _start_time;
@@ -135,14 +159,16 @@ protected:
   static PStatCollector _show_code_pcollector;
   PStatCollector _task_pcollector;
 
+  friend class PythonTask;
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
-    AsyncTaskBase::init_type();
+    AsyncFuture::init_type();
     register_type(_type_handle, "AsyncTask",
-                  AsyncTaskBase::get_class_type());
+                  AsyncFuture::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -152,12 +178,13 @@ public:
 private:
   static TypeHandle _type_handle;
 
+  friend class AsyncFuture;
   friend class AsyncTaskManager;
   friend class AsyncTaskChain;
   friend class AsyncTaskSequence;
 };
 
-INLINE ostream &operator << (ostream &out, const AsyncTask &task) {
+INLINE std::ostream &operator << (std::ostream &out, const AsyncTask &task) {
   task.output(out);
   return out;
 };

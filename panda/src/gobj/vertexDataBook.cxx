@@ -141,7 +141,7 @@ do_alloc(size_t size) {
     // This is why we've already computed pnext.
     VertexDataBlock *block = page->do_alloc(size);
 
-    if (block != (VertexDataBlock *)NULL) {
+    if (block != nullptr) {
       // This page worked.
       return block;
     }

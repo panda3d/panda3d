@@ -3,14 +3,14 @@
 //Cg profile arbvp1 arbfp1
 
 void vshader(float4 vtx_position : POSITION,
-             float4 vtx_normal : NORMAL,
-            out float4 l_position : POSITION,
-            out float3 l_color : TEXCOORD0,   
-            uniform float4x4 mat_modelproj,
-            uniform float4x4 itp_modelview)
+             float3 vtx_normal : NORMAL,
+             out float4 l_position : POSITION,
+             out float3 l_color : TEXCOORD0,
+             uniform float4x4 mat_modelproj,
+             uniform float4x4 itp_modelview)
 {
-  l_position=mul(mat_modelproj, vtx_position);
-  l_color=(float3)mul(itp_modelview, vtx_normal);
+  l_position = mul(mat_modelproj, vtx_position);
+  l_color = (float3)mul(itp_modelview, float4(vtx_normal, 0));
 }
 
 void fshader(float3 l_color: TEXCOORD0,
@@ -18,8 +18,6 @@ void fshader(float3 l_color: TEXCOORD0,
 {
   l_color = normalize(l_color);
   l_color = l_color/2;
-  o_color.rgb = l_color + float4(0.5, 0.5, 0.5, 0.5);
+  o_color.rgb = l_color.rgb + float3(0.5, 0.5, 0.5);
   o_color.a = 1;
 }
-
-

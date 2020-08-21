@@ -1,4 +1,5 @@
-"""Undocumented Module"""
+"""Defines the DirectObject class, a convenient class to inherit from if the
+object needs to be able to respond to events."""
 
 __all__ = ['DirectObject']
 
@@ -93,10 +94,22 @@ class DirectObject:
         if hasattr(self, '_taskList'):
             tasks = [task.name for task in self._taskList.values()]
         if len(events) or len(tasks):
-            estr = choice(len(events), 'listening to events: %s' % events, '')
-            andStr = choice(len(events) and len(tasks), ' and ', '')
-            tstr = choice(len(tasks), '%srunning tasks: %s' % (andStr, tasks), '')
+            estr = ('listening to events: %s' % events if len(events) else '')
+            andStr = (' and ' if len(events) and len(tasks) else '')
+            tstr = ('%srunning tasks: %s' % (andStr, tasks) if len(tasks) else '')
             notify = directNotify.newCategory('LeakDetect')
-            func = choice(getRepository()._crashOnProactiveLeakDetect,
-                          self.notify.error, self.notify.warning)
+            crash = getattr(getRepository(), '_crashOnProactiveLeakDetect', False)
+            func = (self.notify.error if crash else self.notify.warning)
             func('destroyed %s instance is still %s%s' % (self.__class__.__name__, estr, tstr))
+
+    #snake_case alias:
+    add_task = addTask
+    do_method_later = doMethodLater
+    detect_leaks = detectLeaks
+    accept_once = acceptOnce
+    ignore_all = ignoreAll
+    get_all_accepting = getAllAccepting
+    is_ignoring = isIgnoring
+    remove_all_tasks = removeAllTasks
+    remove_task = removeTask
+    is_accepting = isAccepting

@@ -2,17 +2,13 @@
 
 __all__ = ['Valuator', 'ValuatorGroup', 'ValuatorGroupPanel']
 
-from panda3d.core import Vec4
 from direct.showbase.DirectObject import *
 from direct.showbase.TkGlobal import *
 from . import WidgetPropertiesDialog
 import Pmw
 from direct.directtools.DirectUtil import getTkColorString
-
-if sys.version_info >= (3, 0):
-    from tkinter.colorchooser import askcolor
-else:
-    from tkColorChooser import askcolor
+from panda3d.core import Vec4
+from tkinter.colorchooser import askcolor
 
 VALUATOR_MINI = 'mini'
 VALUATOR_FULL = 'full'
@@ -656,42 +652,35 @@ def rgbPanel(nodePath, callback = None, style = 'mini'):
     pButton.pack(expand = 1, fill = BOTH)
 
     # Update menu
-    menu = vgp.component('menubar').component('Valuator Group-menu')
     menubar = vgp.component('menubar')
-    menuName = "Valuator Group"
+    menubar.deletemenuitems('Valuator Group', 1, 1)
+
     # Some helper functions
     # Clear color
-    menu.insert_command(index = 1, label = 'Clear Color',
-                        command = lambda: nodePath.clearColor())
-    menubar._menuInfo[menuName][1].append("")
-    menubar._menuInfo[menuName][1][2] = menubar._menuInfo[menuName][1][1]
-    menubar._menuInfo[menuName][1][1] = ""
+    menubar.addmenuitem(
+        'Valuator Group', 'command',
+        label='Clear Color', command=lambda: nodePath.clearColor())
     # Set Clear Transparency
-    menu.insert_command(index = 2, label = 'Set Transparency',
-                        command = lambda: nodePath.setTransparency(1))
-    menubar._menuInfo[menuName][1].append("")
-    menubar._menuInfo[menuName][1][3] = menubar._menuInfo[menuName][1][2]
-    menubar._menuInfo[menuName][1][2] = ""
-    menu.insert_command(
-        index = 3, label = 'Clear Transparency',
-        command = lambda: nodePath.clearTransparency())
-    menubar._menuInfo[menuName][1].append("")
-    menubar._menuInfo[menuName][1][4] = menubar._menuInfo[menuName][1][3]
-    menubar._menuInfo[menuName][1][3] = ""
+    menubar.addmenuitem(
+        'Valuator Group', 'command',
+        label='Set Transparency', command=lambda: nodePath.setTransparency(1))
+    menubar.addmenuitem(
+        'Valuator Group', 'command',
+        label='Clear Transparency', command=lambda: nodePath.clearTransparency())
 
 
     # System color picker
-    menu.insert_command(index = 4, label = 'Popup Color Picker',
-                        command = popupColorPicker)
-    menubar._menuInfo[menuName][1].append("")
-    menubar._menuInfo[menuName][1][5] = menubar._menuInfo[menuName][1][4]
-    menubar._menuInfo[menuName][1][4] = ""
+    menubar.addmenuitem(
+        'Valuator Group', 'command',
+        label='Popup Color Picker', command=popupColorPicker)
 
-    menu.insert_command(index = 5, label = 'Print to log',
-                        command = printToLog)
-    menubar._menuInfo[menuName][1].append("")
-    menubar._menuInfo[menuName][1][6] = menubar._menuInfo[menuName][1][5]
-    menubar._menuInfo[menuName][1][5] = ""
+    menubar.addmenuitem(
+        'Valuator Group', 'command',
+        label='Print to log', command=printToLog)
+
+    menubar.addmenuitem(
+        'Valuator Group', 'command', 'Dismiss Valuator Group panel',
+        label='Dismiss', command=vgp.destroy)
 
     def setNodePathColor(color):
         nodePath.setColor(color[0]/255.0, color[1]/255.0,
@@ -741,24 +730,23 @@ def lightRGBPanel(light, style = 'mini'):
     # Update menu button
     vgp.component('menubar').component('Valuator Group-button')['text'] = (
         'Light Control Panel')
+
     # Add a print button which will also serve as a color tile
     pButton = Button(vgp.interior(), text = 'Print to Log',
                      bg = getTkColorString(initColor),
                      command = printToLog)
     pButton.pack(expand = 1, fill = BOTH)
+
     # Update menu
-    menu = vgp.component('menubar').component('Valuator Group-menu')
+    menubar = vgp.component('menubar')
     # System color picker
-    menu.insert_command(index = 1, label = 'Popup Color Picker',
-                        command = popupColorPicker)
-    menubar._menuInfo[menuName][1].append("")
-    menubar._menuInfo[menuName][1][2] = menubar._menuInfo[menuName][1][1]
-    menubar._menuInfo[menuName][1][1] = ""
-    menu.insert_command(index = 2, label = 'Print to log',
-                        command = printToLog)
-    menubar._menuInfo[menuName][1].append("")
-    menubar._menuInfo[menuName][1][3] = menubar._menuInfo[menuName][1][2]
-    menubar._menuInfo[menuName][1][2] = ""
+    menubar.addmenuitem(
+        'Valuator Group', 'command',
+        label='Popup Color Picker', command=popupColorPicker)
+    menubar.addmenuitem(
+        'Valuator Group', 'command',
+        label='Print to log', command=printToLog)
+
     def setLightColor(color):
         light.setColor(Vec4(color[0]/255.0, color[1]/255.0,
                             color[2]/255.0, color[3]/255.0))

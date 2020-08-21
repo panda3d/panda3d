@@ -32,7 +32,7 @@ public:
                  bool binary_output);
   virtual ~WithOutputFile();
 
-  ostream &get_output();
+  std::ostream &get_output();
   void close_output();
   bool has_output_filename() const;
   Filename get_output_filename() const;
@@ -47,13 +47,13 @@ protected:
   bool _allow_last_param;
   bool _allow_stdout;
   bool _binary_output;
-  string _preferred_extension;
+  std::string _preferred_extension;
   bool _got_output_filename;
   Filename _output_filename;
 
 private:
-  ofstream _output_stream;
-  ostream *_output_ptr;
+  std::ofstream _output_stream;
+  std::ostream *_output_ptr;
   bool _owns_output_ptr;
 };
 

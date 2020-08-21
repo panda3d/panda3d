@@ -18,12 +18,13 @@
 #include "load_dso.h"
 #include "config_display.h"
 #include "typeRegistry.h"
-#include "pset.h"
-#include "config_util.h"
+#include "config_putil.h"
 
 #include <algorithm>
 
-GraphicsPipeSelection *GraphicsPipeSelection::_global_ptr = NULL;
+using std::string;
+
+GraphicsPipeSelection *GraphicsPipeSelection::_global_ptr = nullptr;
 
 /**
  *
@@ -59,8 +60,8 @@ GraphicsPipeSelection() : _lock("GraphicsPipeSelection") {
 
   // Also get the set of modules named in the various aux-display Config
   // variables.  We'll want to know this when we call load_modules() later.
-  int num_aux = aux_display.get_num_unique_values();
-  for (int i = 0; i < num_aux; i++) {
+  size_t num_aux = aux_display.get_num_unique_values();
+  for (size_t i = 0; i < num_aux; ++i) {
     string name = aux_display.get_unique_value(i);
     if (name != _default_display_module) {
       _display_modules.push_back(name);
@@ -121,10 +122,8 @@ print_pipe_types() const {
   load_default_module();
 
   LightMutexHolder holder(_lock);
-  nout << "Known pipe types:" << endl;
-  PipeTypes::const_iterator pi;
-  for (pi = _pipe_types.begin(); pi != _pipe_types.end(); ++pi) {
-    const PipeType &pipe_type = (*pi);
+  nout << "Known pipe types:" << std::endl;
+  for (const PipeType &pipe_type : _pipe_types) {
     nout << "  " << pipe_type._type << "\n";
   }
   if (_display_modules.empty()) {
@@ -171,7 +170,7 @@ make_pipe(const string &type_name, const string &module_name) {
   }
 
   if (type == TypeHandle::none()) {
-    return NULL;
+    return nullptr;
   }
 
   return make_pipe(type);
@@ -185,27 +184,24 @@ make_pipe(const string &type_name, const string &module_name) {
 PT(GraphicsPipe) GraphicsPipeSelection::
 make_pipe(TypeHandle type) {
   LightMutexHolder holder(_lock);
-  PipeTypes::const_iterator ti;
 
   // First, look for an exact match of the requested type.
-  for (ti = _pipe_types.begin(); ti != _pipe_types.end(); ++ti) {
-    const PipeType &ptype = (*ti);
+  for (const PipeType &ptype : _pipe_types) {
     if (ptype._type == type) {
       // Here's an exact match.
       PT(GraphicsPipe) pipe = (*ptype._constructor)();
-      if (pipe != (GraphicsPipe *)NULL) {
+      if (pipe != nullptr) {
         return pipe;
       }
     }
   }
 
   // Now look for a more-specific type.
-  for (ti = _pipe_types.begin(); ti != _pipe_types.end(); ++ti) {
-    const PipeType &ptype = (*ti);
+  for (const PipeType &ptype : _pipe_types) {
     if (ptype._type.is_derived_from(type)) {
       // Here's an approximate match.
       PT(GraphicsPipe) pipe = (*ptype._constructor)();
-      if (pipe != (GraphicsPipe *)NULL) {
+      if (pipe != nullptr) {
         return pipe;
       }
     }
@@ -213,19 +209,18 @@ make_pipe(TypeHandle type) {
 
   // Couldn't find any match; load the default module and try again.
   load_default_module();
-  for (ti = _pipe_types.begin(); ti != _pipe_types.end(); ++ti) {
-    const PipeType &ptype = (*ti);
+  for (const PipeType &ptype : _pipe_types) {
     if (ptype._type.is_derived_from(type)) {
       // Here's an approximate match.
       PT(GraphicsPipe) pipe = (*ptype._constructor)();
-      if (pipe != (GraphicsPipe *)NULL) {
+      if (pipe != nullptr) {
         return pipe;
       }
     }
   }
 
   // Couldn't find a matching pipe type.
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -242,7 +237,7 @@ make_module_pipe(const string &module_name) {
 
   TypeHandle pipe_type = load_named_module(module_name);
   if (pipe_type == TypeHandle::none()) {
-    return NULL;
+    return nullptr;
   }
 
   return make_pipe(pipe_type);
@@ -258,17 +253,15 @@ make_default_pipe() {
   load_default_module();
 
   LightMutexHolder holder(_lock);
-  PipeTypes::const_iterator ti;
 
   if (!_default_pipe_name.empty()) {
     // First, look for an exact match of the default type name from the
     // Configrc file (excepting case and hyphenunderscore).
-    for (ti = _pipe_types.begin(); ti != _pipe_types.end(); ++ti) {
-      const PipeType &ptype = (*ti);
+    for (const PipeType &ptype : _pipe_types) {
       if (cmp_nocase_uh(ptype._type.get_name(), _default_pipe_name) == 0) {
         // Here's an exact match.
         PT(GraphicsPipe) pipe = (*ptype._constructor)();
-        if (pipe != (GraphicsPipe *)NULL) {
+        if (pipe != nullptr) {
           return pipe;
         }
       }
@@ -276,13 +269,12 @@ make_default_pipe() {
 
     // No match; look for a substring match.
     string preferred_name = downcase(_default_pipe_name);
-    for (ti = _pipe_types.begin(); ti != _pipe_types.end(); ++ti) {
-      const PipeType &ptype = (*ti);
+    for (const PipeType &ptype : _pipe_types) {
       string ptype_name = downcase(ptype._type.get_name());
       if (ptype_name.find(preferred_name) != string::npos) {
         // Here's a substring match.
         PT(GraphicsPipe) pipe = (*ptype._constructor)();
-        if (pipe != (GraphicsPipe *)NULL) {
+        if (pipe != nullptr) {
           return pipe;
         }
       }
@@ -290,16 +282,15 @@ make_default_pipe() {
   }
 
   // Couldn't find a matching pipe type; choose the first one on the list.
-  for (ti = _pipe_types.begin(); ti != _pipe_types.end(); ++ti) {
-    const PipeType &ptype = (*ti);
+  for (const PipeType &ptype : _pipe_types) {
     PT(GraphicsPipe) pipe = (*ptype._constructor)();
-    if (pipe != (GraphicsPipe *)NULL) {
+    if (pipe != nullptr) {
       return pipe;
     }
   }
 
   // Nothing.  Probably the list was empty.
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -308,9 +299,8 @@ make_default_pipe() {
  */
 void GraphicsPipeSelection::
 load_aux_modules() {
-  DisplayModules::iterator di;
-  for (di = _display_modules.begin(); di != _display_modules.end(); ++di) {
-    load_named_module(*di);
+  for (const string &module : _display_modules) {
+    load_named_module(module);
   }
 
   _display_modules.clear();
@@ -325,7 +315,7 @@ load_aux_modules() {
  */
 bool GraphicsPipeSelection::
 add_pipe_type(TypeHandle type, PipeConstructorFunc *func) {
-  nassertr(func != NULL, false);
+  nassertr(func != nullptr, false);
 
   if (!type.is_derived_from(GraphicsPipe::get_class_type())) {
     display_cat->warning()
@@ -335,9 +325,7 @@ add_pipe_type(TypeHandle type, PipeConstructorFunc *func) {
 
   // First, make sure we don't already have a GraphicsPipe of this type.
   LightMutexHolder holder(_lock);
-  PipeTypes::const_iterator ti;
-  for (ti = _pipe_types.begin(); ti != _pipe_types.end(); ++ti) {
-    const PipeType &ptype = (*ti);
+  for (const PipeType &ptype : _pipe_types) {
     if (ptype._type == type) {
       display_cat->warning()
         << "Attempt to register GraphicsPipe type " << type
@@ -373,8 +361,8 @@ do_load_default_module() {
   load_named_module(_default_display_module);
 
   DisplayModules::iterator di =
-    find(_display_modules.begin(), _display_modules.end(),
-         _default_display_module);
+    std::find(_display_modules.begin(), _display_modules.end(),
+              _default_display_module);
   if (di != _display_modules.end()) {
     _display_modules.erase(di);
   }
@@ -406,11 +394,12 @@ load_named_module(const string &name) {
   // We have not yet loaded this module.  Load it now.
   Filename dlname = Filename::dso_filename("lib" + name + ".so");
   display_cat.info()
-    << "loading display module: " << dlname.to_os_specific() << endl;
+    << "loading display module: " << dlname.to_os_specific() << std::endl;
   void *handle = load_dso(get_plugin_path().get_value(), dlname);
-  if (handle == (void *)NULL) {
+  if (handle == nullptr) {
+    std::string error = load_dso_error();
     display_cat.warning()
-      << "Unable to load: " << load_dso_error() << endl;
+      << "Unable to load " << dlname.get_basename() << ": " << error << std::endl;
     return TypeHandle::none();
   }
 
@@ -425,7 +414,7 @@ load_named_module(const string &name) {
 
   TypeHandle pipe_type = TypeHandle::none();
 
-  if (dso_symbol == (void *)NULL) {
+  if (dso_symbol == nullptr) {
     // Couldn't find the module function.
     display_cat.warning()
       << "Unable to find " << symbol_name << " in " << dlname.get_basename()

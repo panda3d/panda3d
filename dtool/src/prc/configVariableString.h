@@ -20,14 +20,14 @@
 /**
  * This is a convenience class to specialize ConfigVariable as a string type.
  */
-class EXPCL_DTOOLCONFIG ConfigVariableString : public ConfigVariable {
+class EXPCL_DTOOL_PRC ConfigVariableString : public ConfigVariable {
 PUBLISHED:
-  INLINE ConfigVariableString(const string &name);
-  INLINE ConfigVariableString(const string &name, const string &default_value,
-                              const string &description = string(), int flags = 0);
+  INLINE ConfigVariableString(const std::string &name);
+  INLINE ConfigVariableString(const std::string &name, const std::string &default_value,
+                              const std::string &description = std::string(), int flags = 0);
 
-  INLINE void operator = (const string &value);
-  INLINE operator const string & () const;
+  INLINE void operator = (const std::string &value);
+  INLINE operator const std::string & () const;
 
   // These methods help the ConfigVariableString act like a C++ string object.
   INLINE const char *c_str() const;
@@ -36,25 +36,25 @@ PUBLISHED:
   INLINE char operator [] (size_t n) const;
 
   // Comparison operators are handy.
-  INLINE bool operator == (const string &other) const;
-  INLINE bool operator != (const string &other) const;
-  INLINE bool operator < (const string &other) const;
+  INLINE bool operator == (const std::string &other) const;
+  INLINE bool operator != (const std::string &other) const;
+  INLINE bool operator < (const std::string &other) const;
 
-  INLINE void set_value(const string &value);
-  INLINE const string &get_value() const;
-  INLINE string get_default_value() const;
+  INLINE void set_value(const std::string &value);
+  INLINE const std::string &get_value() const;
+  INLINE std::string get_default_value() const;
   MAKE_PROPERTY(value, get_value, set_value);
   MAKE_PROPERTY(default_value, get_default_value);
 
-  INLINE string get_word(size_t n) const;
-  INLINE void set_word(size_t n, const string &value);
+  INLINE std::string get_word(size_t n) const;
+  INLINE void set_word(size_t n, const std::string &value);
 
 private:
   void reload_cache();
 
 private:
   AtomicAdjust::Integer _local_modified;
-  string _cache;
+  std::string _cache;
 };
 
 #include "configVariableString.I"

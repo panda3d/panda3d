@@ -23,7 +23,7 @@ OdeBoxGeom(dGeomID id) :
 
 OdeBoxGeom::
 OdeBoxGeom(dReal lx, dReal ly, dReal lz) :
-  OdeGeom(dCreateBox(0, lx, ly, lz)) {
+  OdeGeom(dCreateBox(nullptr, lx, ly, lz)) {
 }
 
 OdeBoxGeom::

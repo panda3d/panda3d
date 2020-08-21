@@ -11,7 +11,7 @@
  * @date 2000-07-04
  */
 
-#if defined(WIN32_VC) || defined(WIN64_VC)
+#ifdef _WIN32
 
 /**
  *
@@ -21,7 +21,7 @@ get_short_time() {
   bool is_paranoid_clock = get_paranoid_clock();
 
   if (is_paranoid_clock) {
-    _lock.acquire();
+    _lock.lock();
   }
 
   double time = get_short_raw_time();
@@ -30,13 +30,13 @@ get_short_time() {
     // Check for rollforwards, rollbacks, and compensate for Speed Gear type
     // programs by verifying against the time of day clock.
     time = correct_time(time);
-    _lock.release();
+    _lock.unlock();
   }
 
   return time;
 }
 
-#else  // WIN32_VC
+#else  // _WIN32
 
 /**
  *
@@ -46,7 +46,7 @@ get_short_time() {
   return get_short_raw_time();
 }
 
-#endif  // WIN32_VC
+#endif  // _WIN32
 
 
 /**
@@ -66,7 +66,7 @@ get_error_count() const {
  */
 INLINE TrueClock *TrueClock::
 get_global_ptr() {
-  if (_global_ptr == (TrueClock *)NULL) {
+  if (_global_ptr == nullptr) {
     _global_ptr = new TrueClock;
   }
   return _global_ptr;

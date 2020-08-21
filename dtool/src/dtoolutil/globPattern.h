@@ -29,9 +29,9 @@
  * the pattern or not.  It can be used, for example, to scan a directory for
  * all files matching a particular pattern.
  */
-class EXPCL_DTOOL GlobPattern {
+class EXPCL_DTOOL_DTOOLUTIL GlobPattern {
 PUBLISHED:
-  INLINE GlobPattern(const string &pattern = string());
+  INLINE GlobPattern(const std::string &pattern = std::string());
   INLINE GlobPattern(const GlobPattern &copy);
   INLINE void operator = (const GlobPattern &copy);
 
@@ -39,48 +39,50 @@ PUBLISHED:
   INLINE bool operator != (const GlobPattern &other) const;
   INLINE bool operator < (const GlobPattern &other) const;
 
-  INLINE void set_pattern(const string &pattern);
-  INLINE const string &get_pattern() const;
+  INLINE void set_pattern(const std::string &pattern);
+  INLINE const std::string &get_pattern() const;
   MAKE_PROPERTY(pattern, get_pattern, set_pattern);
 
   INLINE void set_case_sensitive(bool case_sensitive);
   INLINE bool get_case_sensitive() const;
   MAKE_PROPERTY(case_sensitive, get_case_sensitive, set_case_sensitive);
 
-  INLINE void set_nomatch_chars(const string &nomatch_chars);
-  INLINE const string &get_nomatch_chars() const;
+  INLINE void set_nomatch_chars(const std::string &nomatch_chars);
+  INLINE const std::string &get_nomatch_chars() const;
   MAKE_PROPERTY(nomatch_chars, get_nomatch_chars, set_nomatch_chars);
 
-  INLINE bool matches(const string &candidate) const;
+  INLINE bool matches(const std::string &candidate) const;
+  bool matches_file(Filename candidate) const;
 
-  INLINE void output(ostream &out) const;
+  INLINE void output(std::ostream &out) const;
 
   bool has_glob_characters() const;
-  string get_const_prefix() const;
+  std::string get_const_prefix() const;
   int match_files(vector_string &results, const Filename &cwd = Filename()) const;
 #ifdef HAVE_PYTHON
   EXTENSION(PyObject *match_files(const Filename &cwd = Filename()) const);
 #endif
 
 private:
-  bool matches_substr(string::const_iterator pi,
-                      string::const_iterator pend,
-                      string::const_iterator ci,
-                      string::const_iterator cend) const;
+  bool matches_substr(std::string::const_iterator pi,
+                      std::string::const_iterator pend,
+                      std::string::const_iterator ci,
+                      std::string::const_iterator cend) const;
 
-  bool matches_set(string::const_iterator &pi,
-                   string::const_iterator pend,
+  bool matches_set(std::string::const_iterator &pi,
+                   std::string::const_iterator pend,
                    char ch) const;
 
-  int r_match_files(const Filename &prefix, const string &suffix,
+  int r_match_files(const Filename &prefix, const std::string &suffix,
                     vector_string &results, const Filename &cwd);
+  bool r_matches_file(const std::string &suffix, const Filename &candidate) const;
 
-  string _pattern;
+  std::string _pattern;
   bool _case_sensitive;
-  string _nomatch_chars;
+  std::string _nomatch_chars;
 };
 
-INLINE ostream &operator << (ostream &out, const GlobPattern &glob) {
+INLINE std::ostream &operator << (std::ostream &out, const GlobPattern &glob) {
   glob.output(out);
   return out;
 }

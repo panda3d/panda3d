@@ -15,6 +15,8 @@
 
 #ifdef HAVE_PYTHON
 
+#include "bamWriter.h"
+
 #ifndef CPPPARSER
 extern Dtool_PyTypedObject Dtool_BamWriter;
 #endif  // CPPPARSER
@@ -28,7 +30,7 @@ extern Dtool_PyTypedObject Dtool_BamWriter;
  */
 PyObject *Extension<TypedWritable>::
 __reduce__(PyObject *self) const {
-  return __reduce_persist__(self, NULL);
+  return __reduce_persist__(self, nullptr);
 }
 
 /**
@@ -49,75 +51,75 @@ __reduce_persist__(PyObject *self, PyObject *pickler) const {
   // Check that we have a decode_from_bam_stream python method.  If not, we
   // can't use this interface.
   PyObject *method = PyObject_GetAttrString(self, "decode_from_bam_stream");
-  if (method == NULL) {
-    ostringstream stream;
+  if (method == nullptr) {
+    std::ostringstream stream;
     stream << "Cannot pickle objects of type " << _this->get_type() << "\n";
-    string message = stream.str();
+    std::string message = stream.str();
     PyErr_SetString(PyExc_TypeError, message.c_str());
-    return NULL;
+    return nullptr;
   }
   Py_DECREF(method);
 
-  BamWriter *writer = NULL;
-  if (pickler != NULL) {
+  BamWriter *writer = nullptr;
+  if (pickler != nullptr) {
     PyObject *py_writer = PyObject_GetAttrString(pickler, "bamWriter");
-    if (py_writer == NULL) {
+    if (py_writer == nullptr) {
       // It's OK if there's no bamWriter.
       PyErr_Clear();
     } else {
-      DTOOL_Call_ExtractThisPointerForType(py_writer, &Dtool_BamWriter, (void **)&writer);
+      DtoolInstance_GetPointer(py_writer, writer, Dtool_BamWriter);
       Py_DECREF(py_writer);
     }
   }
 
   // First, streamify the object, if possible.
-  string bam_stream;
+  vector_uchar bam_stream;
   if (!_this->encode_to_bam_stream(bam_stream, writer)) {
-    ostringstream stream;
+    std::ostringstream stream;
     stream << "Could not bamify object of type " << _this->get_type() << "\n";
-    string message = stream.str();
+    std::string message = stream.str();
     PyErr_SetString(PyExc_TypeError, message.c_str());
-    return NULL;
+    return nullptr;
   }
 
   // Start by getting this class object.
   PyObject *this_class = PyObject_Type(self);
-  if (this_class == NULL) {
-    return NULL;
+  if (this_class == nullptr) {
+    return nullptr;
   }
 
   PyObject *func;
-  if (writer != NULL) {
+  if (writer != nullptr) {
     // The modified pickle support: call the "persistent" version of this
     // function, which receives the unpickler itself as an additional
     // parameter.
     func = find_global_decode(this_class, "py_decode_TypedWritable_from_bam_stream_persist");
-    if (func == NULL) {
+    if (func == nullptr) {
       PyErr_SetString(PyExc_TypeError, "Couldn't find py_decode_TypedWritable_from_bam_stream_persist()");
       Py_DECREF(this_class);
-      return NULL;
+      return nullptr;
     }
 
   } else {
     // The traditional pickle support: call the non-persistent version of this
     // function.
-
     func = find_global_decode(this_class, "py_decode_TypedWritable_from_bam_stream");
-    if (func == NULL) {
+    if (func == nullptr) {
       PyErr_SetString(PyExc_TypeError, "Couldn't find py_decode_TypedWritable_from_bam_stream()");
       Py_DECREF(this_class);
-      return NULL;
+      return nullptr;
     }
   }
 
-#if PY_MAJOR_VERSION >= 3
-  PyObject *result = Py_BuildValue("(O(Oy#))", func, this_class, bam_stream.data(), (Py_ssize_t) bam_stream.size());
-#else
-  PyObject *result = Py_BuildValue("(O(Os#))", func, this_class, bam_stream.data(), (Py_ssize_t) bam_stream.size());
-#endif
-  Py_DECREF(func);
-  Py_DECREF(this_class);
-  return result;
+  // PyTuple_SET_ITEM conveniently borrows the reference it is passed.
+  PyObject *args = PyTuple_New(2);
+  PyTuple_SET_ITEM(args, 0, this_class);
+  PyTuple_SET_ITEM(args, 1, Dtool_WrapValue(bam_stream));
+
+  PyObject *tuple = PyTuple_New(2);
+  PyTuple_SET_ITEM(tuple, 0, func);
+  PyTuple_SET_ITEM(tuple, 1, args);
+  return tuple;
 }
 
 /**
@@ -131,34 +133,35 @@ __reduce_persist__(PyObject *self, PyObject *pickler) const {
  */
 PyObject *Extension<TypedWritable>::
 find_global_decode(PyObject *this_class, const char *func_name) {
-  PyObject *module_name = PyObject_GetAttrString(this_class, "__module__");
-  if (module_name != NULL) {
+  // Get the module in which BamWriter is defined.
+  PyObject *module_name = PyObject_GetAttrString((PyObject *)&Dtool_BamWriter, "__module__");
+  if (module_name != nullptr) {
     // borrowed reference
     PyObject *sys_modules = PyImport_GetModuleDict();
-    if (sys_modules != NULL) {
+    if (sys_modules != nullptr) {
       // borrowed reference
       PyObject *module = PyDict_GetItem(sys_modules, module_name);
-      if (module != NULL) {
+      if (module != nullptr) {
         PyObject *func = PyObject_GetAttrString(module, (char *)func_name);
-        if (func != NULL) {
+        if (func != nullptr) {
           Py_DECREF(module_name);
           return func;
         }
       }
     }
+    Py_DECREF(module_name);
   }
-  Py_DECREF(module_name);
 
   PyObject *bases = PyObject_GetAttrString(this_class, "__bases__");
-  if (bases != NULL) {
+  if (bases != nullptr) {
     if (PySequence_Check(bases)) {
       Py_ssize_t size = PySequence_Size(bases);
       for (Py_ssize_t i = 0; i < size; ++i) {
         PyObject *base = PySequence_GetItem(bases, i);
-        if (base != NULL) {
+        if (base != nullptr) {
           PyObject *func = find_global_decode(base, func_name);
           Py_DECREF(base);
-          if (func != NULL) {
+          if (func != nullptr) {
             Py_DECREF(bases);
             return func;
           }
@@ -168,7 +171,7 @@ find_global_decode(PyObject *this_class, const char *func_name) {
     Py_DECREF(bases);
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -178,8 +181,8 @@ find_global_decode(PyObject *this_class, const char *func_name) {
  * properly handle self-referential BAM objects.
  */
 PyObject *
-py_decode_TypedWritable_from_bam_stream(PyObject *this_class, const string &data) {
-  return py_decode_TypedWritable_from_bam_stream_persist(NULL, this_class, data);
+py_decode_TypedWritable_from_bam_stream(PyObject *this_class, const vector_uchar &data) {
+  return py_decode_TypedWritable_from_bam_stream_persist(nullptr, this_class, data);
 }
 
 /**
@@ -192,12 +195,12 @@ py_decode_TypedWritable_from_bam_stream(PyObject *this_class, const string &data
  * direct/src/stdpy.
  */
 PyObject *
-py_decode_TypedWritable_from_bam_stream_persist(PyObject *pickler, PyObject *this_class, const string &data) {
+py_decode_TypedWritable_from_bam_stream_persist(PyObject *pickler, PyObject *this_class, const vector_uchar &data) {
 
-  PyObject *py_reader = NULL;
-  if (pickler != NULL) {
+  PyObject *py_reader = nullptr;
+  if (pickler != nullptr) {
     py_reader = PyObject_GetAttrString(pickler, "bamReader");
-    if (py_reader == NULL) {
+    if (py_reader == nullptr) {
       // It's OK if there's no bamReader.
       PyErr_Clear();
     }
@@ -210,34 +213,36 @@ py_decode_TypedWritable_from_bam_stream_persist(PyObject *pickler, PyObject *thi
   // decode_from_bam_stream appropriate to this class.
 
   PyObject *func = PyObject_GetAttrString(this_class, "decode_from_bam_stream");
-  if (func == NULL) {
-    return NULL;
+  if (func == nullptr) {
+    Py_XDECREF(py_reader);
+    return nullptr;
+  }
+
+  PyObject *bytes = Dtool_WrapValue(data);
+  if (bytes == nullptr) {
+    Py_DECREF(func);
+    Py_XDECREF(py_reader);
+    return nullptr;
   }
 
   PyObject *result;
-  if (py_reader != NULL){
-#if PY_MAJOR_VERSION >= 3
-    result = PyObject_CallFunction(func, (char *)"(y#O)", data.data(), (Py_ssize_t) data.size(), py_reader);
-#else
-    result = PyObject_CallFunction(func, (char *)"(s#O)", data.data(), (Py_ssize_t) data.size(), py_reader);
-#endif
+  if (py_reader != nullptr) {
+    result = PyObject_CallFunctionObjArgs(func, bytes, py_reader, nullptr);
     Py_DECREF(py_reader);
   } else {
-#if PY_MAJOR_VERSION >= 3
-    result = PyObject_CallFunction(func, (char *)"(y#)", data.data(), (Py_ssize_t) data.size());
-#else
-    result = PyObject_CallFunction(func, (char *)"(s#)", data.data(), (Py_ssize_t) data.size());
-#endif
+    result = PyObject_CallFunctionObjArgs(func, bytes, nullptr);
   }
+  Py_DECREF(bytes);
+  Py_DECREF(func);
 
-  if (result == NULL) {
-    return NULL;
+  if (result == nullptr) {
+    return nullptr;
   }
 
   if (result == Py_None) {
     Py_DECREF(result);
     PyErr_SetString(PyExc_ValueError, "Could not unpack bam stream");
-    return NULL;
+    return nullptr;
   }
 
   return result;

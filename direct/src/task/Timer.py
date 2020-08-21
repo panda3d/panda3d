@@ -1,4 +1,4 @@
-"""Undocumented Module"""
+"""Contains the Timer class."""
 
 __all__ = ['Timer']
 

@@ -24,8 +24,8 @@
  * If the name is nonempty, the new name is the original name, followed by the
  * NameUniquifier's "separator" string, followed by a number.
  */
-INLINE string NameUniquifier::
-add_name(const string &name) {
+INLINE std::string NameUniquifier::
+add_name(const std::string &name) {
   return add_name_body(name, name);
 }
 
@@ -42,7 +42,7 @@ add_name(const string &name) {
  * If the prefix is nonempty, the new name is the prefix, followed by the
  * NameUniquifier's "separator" string, followed by a number.
  */
-INLINE string NameUniquifier::
-add_name(const string &name, const string &prefix) {
+INLINE std::string NameUniquifier::
+add_name(const std::string &name, const std::string &prefix) {
   return add_name_body(name, prefix);
 }

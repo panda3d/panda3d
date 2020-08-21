@@ -38,18 +38,18 @@ GtkStatsGraph::
 GtkStatsGraph(GtkStatsMonitor *monitor) :
   _monitor(monitor)
 {
-  _parent_window = NULL;
-  _window = NULL;
-  _graph_window = NULL;
-  _scale_area = NULL;
+  _parent_window = nullptr;
+  _window = nullptr;
+  _graph_window = nullptr;
+  _scale_area = nullptr;
 
   GtkWidget *parent_window = monitor->get_window();
 
   GdkDisplay *display = gdk_drawable_get_display(parent_window->window);
   _hand_cursor = gdk_cursor_new_for_display(display, GDK_HAND2);
 
-  _pixmap = 0;
-  _pixmap_gc = 0;
+  _pixmap = nullptr;
+  _pixmap_gc = nullptr;
 
   _pixmap_xsize = 0;
   _pixmap_ysize = 0;
@@ -91,7 +91,7 @@ GtkStatsGraph(GtkStatsMonitor *monitor) :
        G_CALLBACK(motion_notify_event_callback), this);
 
   // A Frame to hold the graph.
-  GtkWidget *graph_frame = gtk_frame_new(NULL);
+  GtkWidget *graph_frame = gtk_frame_new(nullptr);
   gtk_frame_set_shadow_type(GTK_FRAME(graph_frame), GTK_SHADOW_IN);
   gtk_container_add(GTK_CONTAINER(graph_frame), _graph_window);
 
@@ -127,7 +127,7 @@ GtkStatsGraph(GtkStatsMonitor *monitor) :
  */
 GtkStatsGraph::
 ~GtkStatsGraph() {
-  _monitor = (GtkStatsMonitor *)NULL;
+  _monitor = nullptr;
   release_pixmap();
 
   Brushes::iterator bi;
@@ -138,9 +138,9 @@ GtkStatsGraph::
 
   _label_stack.clear_labels();
 
-  if (_window != (GtkWidget *)NULL) {
+  if (_window != nullptr) {
     GtkWidget *window = _window;
-    _window = NULL;
+    _window = nullptr;
     gtk_widget_destroy(window);
   }
 }
@@ -204,7 +204,7 @@ set_pause(bool pause) {
  */
 void GtkStatsGraph::
 user_guide_bars_changed() {
-  if (_scale_area != NULL) {
+  if (_scale_area != nullptr) {
     gtk_widget_queue_draw(_scale_area);
   }
   gtk_widget_queue_draw(_graph_window);
@@ -224,12 +224,12 @@ clicked_label(int collector_index) {
 void GtkStatsGraph::
 close() {
   _label_stack.clear_labels(false);
-  if (_window != (GtkWidget *)NULL) {
-    _window = NULL;
+  if (_window != nullptr) {
+    _window = nullptr;
 
     GtkStatsMonitor *monitor = _monitor;
-    _monitor = (GtkStatsMonitor *)NULL;
-    if (monitor != (GtkStatsMonitor *)NULL) {
+    _monitor = nullptr;
+    if (monitor != nullptr) {
       monitor->remove_graph(this);
     }
   }
@@ -328,7 +328,7 @@ handle_motion(GtkWidget *widget, int graph_x, int graph_y) {
     gdk_window_set_cursor(_window->window, _hand_cursor);
 
   } else {
-    gdk_window_set_cursor(_window->window, NULL);
+    gdk_window_set_cursor(_window->window, nullptr);
   }
 
   return TRUE;
@@ -341,8 +341,8 @@ void GtkStatsGraph::
 setup_pixmap(int xsize, int ysize) {
   release_pixmap();
 
-  _pixmap_xsize = max(xsize, 0);
-  _pixmap_ysize = max(ysize, 0);
+  _pixmap_xsize = std::max(xsize, 0);
+  _pixmap_ysize = std::max(ysize, 0);
 
   _pixmap = gdk_pixmap_new(_graph_window->window, _pixmap_xsize, _pixmap_ysize, -1);
   // g_object_ref(_pixmap);   Should this be ref_sink?
@@ -359,7 +359,7 @@ setup_pixmap(int xsize, int ysize) {
  */
 void GtkStatsGraph::
 release_pixmap() {
-  if (_pixmap != NULL) {
+  if (_pixmap != nullptr) {
     g_object_unref(_pixmap);
     g_object_unref(_pixmap_gc);
   }
@@ -391,7 +391,7 @@ gboolean GtkStatsGraph::
 graph_expose_callback(GtkWidget *widget, GdkEventExpose *event, gpointer data) {
   GtkStatsGraph *self = (GtkStatsGraph *)data;
 
-  if (self->_pixmap != NULL) {
+  if (self->_pixmap != nullptr) {
     gdk_draw_drawable(self->_graph_window->window,
           self->_graph_window->style->fg_gc[0],
           self->_pixmap, 0, 0, 0, 0,

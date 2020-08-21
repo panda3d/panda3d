@@ -18,14 +18,14 @@
 // headers from the SpeedTree API, needed in this directory.
 
 #include "speedtree_parameters.h"
-#include "Core/Core.h"
-#include "Forest/Forest.h"
+#include <Core/Core.h>
+#include <Forest/Forest.h>
 
 #if defined(SPEEDTREE_OPENGL)
-  #include "Renderers/OpenGL/OpenGLRenderer.h"
+  #include <Renderers/OpenGL/OpenGLRenderer.h>
 #elif defined(SPEEDTREE_DIRECTX9)
   #undef Configure
-  #include "Renderers/DirectX9/DirectX9Renderer.h"
+  #include <Renderers/DirectX9/DirectX9Renderer.h>
 #else
   #error Unexpected graphics API.
 #endif

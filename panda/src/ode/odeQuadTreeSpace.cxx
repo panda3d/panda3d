@@ -38,7 +38,7 @@ OdeQuadTreeSpace::
 OdeQuadTreeSpace(const LPoint3f &center,
                  const LVecBase3f &extents,
                  const int depth) :
-  OdeSpace(dQuadTreeSpaceCreate(0,
+  OdeSpace(dQuadTreeSpaceCreate(nullptr,
                                 LVec3_to_sdVector4(center).vec,
                                 LVec3_to_sdVector4(extents).vec,
                                 depth)) {

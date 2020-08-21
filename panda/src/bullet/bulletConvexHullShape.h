@@ -11,8 +11,8 @@
  * @date 2010-01-26
  */
 
-#ifndef __BULLET_CONVEX_HULL_SHAPE_H__
-#define __BULLET_CONVEX_HULL_SHAPE_H__
+#ifndef BULLETCONVEXHULLSHAPE_H
+#define BULLETCONVEXHULLSHAPE_H
 
 #include "pandabase.h"
 
@@ -22,6 +22,7 @@
 #include "luse.h"
 #include "geom.h"
 #include "pta_LVecBase3.h"
+#include "transformState.h"
 
 /**
  *
@@ -29,8 +30,7 @@
 class EXPCL_PANDABULLET BulletConvexHullShape : public BulletShape {
 PUBLISHED:
   BulletConvexHullShape();
-  INLINE BulletConvexHullShape(const BulletConvexHullShape &copy);
-  INLINE void operator = (const BulletConvexHullShape &copy);
+  BulletConvexHullShape(const BulletConvexHullShape &copy);
   INLINE ~BulletConvexHullShape();
 
   void add_point(const LPoint3 &p);
@@ -75,4 +75,4 @@ private:
 
 #include "bulletConvexHullShape.I"
 
-#endif // __BULLET_CONVEX_HULL_SHAPE_H__
+#endif // BULLETCONVEXHULLSHAPE_H

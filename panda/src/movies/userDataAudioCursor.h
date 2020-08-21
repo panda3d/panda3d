@@ -33,7 +33,7 @@ PUBLISHED:
   virtual ~UserDataAudioCursor();
 
 public:
-  virtual void read_samples(int n, int16_t *data);
+  virtual int read_samples(int n, int16_t *data);
   virtual int ready() const;
   virtual void seek(double offset);
 

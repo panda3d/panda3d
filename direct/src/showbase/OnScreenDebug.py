@@ -1,4 +1,4 @@
-"""Undocumented Module"""
+"""Contains the OnScreenDebug class."""
 
 __all__ = ['OnScreenDebug']
 

@@ -32,7 +32,7 @@ get_num_children() const {
  */
 INLINE EggJointData *EggJointData::
 get_child(int n) const {
-  nassertr(n >= 0 && n < (int)_children.size(), (EggJointData *)NULL);
+  nassertr(n >= 0 && n < (int)_children.size(), nullptr);
   return _children[n];
 }
 
@@ -41,9 +41,9 @@ get_child(int n) const {
  * if no joint has that name.
  */
 INLINE EggJointData *EggJointData::
-find_joint(const string &name) {
+find_joint(const std::string &name) {
   EggJointData *joint = find_joint_exact(name);
-  if (joint == (EggJointData *)NULL) {
+  if (joint == nullptr) {
     joint = find_joint_matches(name);
   }
   return joint;

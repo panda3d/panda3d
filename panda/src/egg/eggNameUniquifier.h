@@ -56,7 +56,7 @@ class EggNode;
  * hierarchy.  It is an abstract class; to use it you must subclass off of it.
  * See the comment above.
  */
-class EXPCL_PANDAEGG EggNameUniquifier : public EggObject {
+class EXPCL_PANDA_EGG EggNameUniquifier : public EggObject {
 PUBLISHED:
   EggNameUniquifier();
   ~EggNameUniquifier();
@@ -65,19 +65,19 @@ PUBLISHED:
 
   void uniquify(EggNode *node);
 
-  EggNode *get_node(const string &category, const string &name) const;
-  bool has_name(const string &category, const string &name) const;
-  bool add_name(const string &category, const string &name,
-                EggNode *node = NULL);
+  EggNode *get_node(const std::string &category, const std::string &name) const;
+  bool has_name(const std::string &category, const std::string &name) const;
+  bool add_name(const std::string &category, const std::string &name,
+                EggNode *node = nullptr);
 
-  virtual string get_category(EggNode *node)=0;
-  virtual string filter_name(EggNode *node);
-  virtual string generate_name(EggNode *node,
-                               const string &category, int index);
+  virtual std::string get_category(EggNode *node)=0;
+  virtual std::string filter_name(EggNode *node);
+  virtual std::string generate_name(EggNode *node,
+                               const std::string &category, int index);
 
 private:
-  typedef pmap<string, EggNode *> UsedNames;
-  typedef pmap<string, UsedNames> Categories;
+  typedef pmap<std::string, EggNode *> UsedNames;
+  typedef pmap<std::string, UsedNames> Categories;
 
   Categories _categories;
   int _index;

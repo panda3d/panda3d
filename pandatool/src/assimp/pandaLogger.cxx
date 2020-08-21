@@ -13,9 +13,9 @@
 
 #include "pandaLogger.h"
 
-#include "DefaultLogger.hpp"
+#include <assimp/DefaultLogger.hpp>
 
-PandaLogger *PandaLogger::_ptr = NULL;
+PandaLogger *PandaLogger::_ptr = nullptr;
 
 /**
  * Makes sure there's a global PandaLogger object and makes sure that it is
@@ -23,7 +23,7 @@ PandaLogger *PandaLogger::_ptr = NULL;
  */
 void PandaLogger::
 set_default() {
-  if (_ptr == NULL) {
+  if (_ptr == nullptr) {
     _ptr = new PandaLogger;
   }
   if (_ptr != Assimp::DefaultLogger::get()) {
@@ -35,7 +35,9 @@ set_default() {
  *
  */
 void PandaLogger::OnDebug(const char *message) {
-  assimp_cat.debug() << message << "\n";
+  if (assimp_cat.is_debug()) {
+    assimp_cat.debug() << message << "\n";
+  }
 }
 
 /**

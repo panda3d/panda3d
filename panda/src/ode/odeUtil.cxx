@@ -28,7 +28,7 @@ get_connecting_joint(const OdeBody &body1, const OdeBody &body2) {
  */
 OdeJointCollection OdeUtil::
 get_connecting_joint_list(const OdeBody &body1, const OdeBody &body2) {
-  const int max_possible_joints = min(body1.get_num_joints(), body1.get_num_joints());
+  const int max_possible_joints = std::min(body1.get_num_joints(), body1.get_num_joints());
 
   dJointID *joint_list = (dJointID *)PANDA_MALLOC_ARRAY(max_possible_joints * sizeof(dJointID));
   int num_joints = dConnectingJointList(body1.get_id(), body2.get_id(),

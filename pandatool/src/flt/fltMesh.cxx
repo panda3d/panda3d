@@ -95,7 +95,7 @@ build_record(FltRecordWriter &writer) const {
  */
 FltError FltMesh::
 write_ancillary(FltRecordWriter &writer) const {
-  if (_vpool != (FltLocalVertexPool *)NULL) {
+  if (_vpool != nullptr) {
     if (!_vpool->build_record(writer)) {
       assert(!flt_error_abort);
       return FE_bad_data;

@@ -30,8 +30,8 @@ class ParameterRemapToString : public ParameterRemap {
 public:
   ParameterRemapToString(CPPType *orig_type);
 
-  virtual void pass_parameter(ostream &out, const string &variable_name);
-  virtual string get_return_expr(const string &expression);
+  virtual void pass_parameter(std::ostream &out, const std::string &variable_name);
+  virtual std::string get_return_expr(const std::string &expression);
 
   virtual bool new_type_is_atomic_string();
 };
@@ -48,8 +48,8 @@ class ParameterRemapToWString : public ParameterRemap {
 public:
   ParameterRemapToWString(CPPType *orig_type);
 
-  virtual void pass_parameter(ostream &out, const string &variable_name);
-  virtual string get_return_expr(const string &expression);
+  virtual void pass_parameter(std::ostream &out, const std::string &variable_name);
+  virtual std::string get_return_expr(const std::string &expression);
 
   virtual bool new_type_is_atomic_string();
 };

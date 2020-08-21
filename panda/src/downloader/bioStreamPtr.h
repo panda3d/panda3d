@@ -19,20 +19,14 @@
 // This module is not compiled if OpenSSL is not available.
 #ifdef HAVE_OPENSSL
 
-#ifndef OPENSSL_NO_KRB5
-#define OPENSSL_NO_KRB5
-#endif
-
 #include "bioStream.h"
 #include "referenceCount.h"
-#include "openSSLWrapper.h"  // must be included before any other openssl.
-#include "openssl/ssl.h"
 
 /**
  * A wrapper around an BioStream object to make a reference-counting pointer
  * to it.
  */
-class EXPCL_PANDAEXPRESS BioStreamPtr : public ReferenceCount {
+class EXPCL_PANDA_DOWNLOADER BioStreamPtr : public ReferenceCount {
 public:
   INLINE BioStreamPtr(BioStream *stream);
   virtual ~BioStreamPtr();

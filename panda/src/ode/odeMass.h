@@ -66,7 +66,7 @@ PUBLISHED:
   INLINE LPoint3f get_center() const;
   INLINE LMatrix3f get_inertial_tensor() const;
 
-  virtual void write(ostream &out = cout, unsigned int indent=0) const;
+  virtual void write(std::ostream &out = std::cout, unsigned int indent=0) const;
 
 public:
   dMass* get_mass_ptr();

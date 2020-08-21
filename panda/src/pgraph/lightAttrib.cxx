@@ -29,7 +29,7 @@ int LightAttrib::_attrib_slot;
 CPT(RenderAttrib) LightAttrib::_all_off_attrib;
 TypeHandle LightAttrib::_type_handle;
 
-// This STL Function object is used in filter_to_max(), below, to sort a list
+// This STL Function object is used in sort_on_lights(), below, to sort a list
 // of Lights in reverse order by priority.  In the case of two lights with
 // equal priority, the class priority is compared.
 class CompareLightPriorities {
@@ -38,7 +38,7 @@ public:
     nassertr(!a.is_empty() && !b.is_empty(), a < b);
     Light *la = a.node()->as_light();
     Light *lb = b.node()->as_light();
-    nassertr(la != (Light *)NULL && lb != (Light *)NULL, a < b);
+    nassertr(la != nullptr && lb != nullptr, a < b);
 
     if (la->get_priority() != lb->get_priority()) {
       return la->get_priority() > lb->get_priority();
@@ -48,11 +48,48 @@ public:
 };
 
 /**
+ * Use LightAttrib::make() to construct a new LightAttrib object.  The copy
+ * constructor is only defined to facilitate methods like add_on_light().
+ */
+LightAttrib::
+LightAttrib(const LightAttrib &copy) :
+  _on_lights(copy._on_lights),
+  _off_lights(copy._off_lights),
+  _off_all_lights(copy._off_all_lights),
+  _sort_seq(UpdateSeq::old())
+{
+  // Increase the attrib_ref of all the lights in this attribute.
+  Lights::const_iterator it;
+  for (it = _on_lights.begin(); it != _on_lights.end(); ++it) {
+    Light *lobj = (*it).node()->as_light();
+    nassertd(lobj != nullptr) continue;
+    lobj->attrib_ref();
+  }
+}
+
+/**
+ * Destructor.
+ */
+LightAttrib::
+~LightAttrib() {
+  // Call attrib_unref() on all on lights.
+  Lights::const_iterator it;
+  for (it = _on_lights.begin(); it != _on_lights.end(); ++it) {
+    const NodePath &np = *it;
+    if (!np.is_empty()) {
+      Light *lobj = np.node()->as_light();
+      if (lobj != nullptr) {
+        lobj->attrib_unref();
+      }
+    }
+  }
+}
+
+/**
  * Constructs a new LightAttrib object that turns on (or off, according to op)
  * the indicated light(s).
  *
- * This method is now deprecated.  Use add_on_light() or add_off_light()
- * instead.
+ * @deprecated Use add_on_light() or add_off_light() instead.
  */
 CPT(RenderAttrib) LightAttrib::
 make(LightAttrib::Operation op, Light *light) {
@@ -78,7 +115,7 @@ make(LightAttrib::Operation op, Light *light) {
     return attrib;
   }
 
-  nassertr(false, make());
+  nassert_raise("invalid operation");
   return make();
 }
 
@@ -86,8 +123,7 @@ make(LightAttrib::Operation op, Light *light) {
  * Constructs a new LightAttrib object that turns on (or off, according to op)
  * the indicate light(s).
  *
- * This method is now deprecated.  Use add_on_light() or add_off_light()
- * instead.
+ * @deprecated Use add_on_light() or add_off_light() instead.
  */
 CPT(RenderAttrib) LightAttrib::
 make(LightAttrib::Operation op, Light *light1, Light *light2) {
@@ -116,7 +152,7 @@ make(LightAttrib::Operation op, Light *light1, Light *light2) {
     return attrib;
   }
 
-  nassertr(false, make());
+  nassert_raise("invalid operation");
   return make();
 }
 
@@ -124,8 +160,7 @@ make(LightAttrib::Operation op, Light *light1, Light *light2) {
  * Constructs a new LightAttrib object that turns on (or off, according to op)
  * the indicate light(s).
  *
- * This method is now deprecated.  Use add_on_light() or add_off_light()
- * instead.
+ * @deprecated Use add_on_light() or add_off_light() instead.
  */
 CPT(RenderAttrib) LightAttrib::
 make(LightAttrib::Operation op, Light *light1, Light *light2,
@@ -158,7 +193,7 @@ make(LightAttrib::Operation op, Light *light1, Light *light2,
     return attrib;
   }
 
-  nassertr(false, make());
+  nassert_raise("invalid operation");
   return make();
 }
 
@@ -166,8 +201,7 @@ make(LightAttrib::Operation op, Light *light1, Light *light2,
  * Constructs a new LightAttrib object that turns on (or off, according to op)
  * the indicate light(s).
  *
- * This method is now deprecated.  Use add_on_light() or add_off_light()
- * instead.
+ * @deprecated Use add_on_light() or add_off_light() instead.
  */
 CPT(RenderAttrib) LightAttrib::
 make(LightAttrib::Operation op, Light *light1, Light *light2,
@@ -203,7 +237,7 @@ make(LightAttrib::Operation op, Light *light1, Light *light2,
     return attrib;
   }
 
-  nassertr(false, make());
+  nassert_raise("invalid operation");
   return make();
 }
 
@@ -219,13 +253,13 @@ make_default() {
 /**
  * Returns the basic operation type of the LightAttrib.  If this is O_set, the
  * lights listed here completely replace any lights that were already on.  If
- * this is O_add, the lights here are added to the set of of lights that were
+ * this is O_add, the lights here are added to the set of lights that were
  * already on, and if O_remove, the lights here are removed from the set of
  * lights that were on.
  *
- * This method is now deprecated.  LightAttribs nowadays have a separate list
- * of on_lights and off_lights, so this method doesn't make sense.  Query the
- * lists independently.
+ * @deprecated LightAttribs nowadays have a separate list of on_lights and
+ * off_lights, so this method no longer makes sense.  Query the lists
+ * independently.
  */
 LightAttrib::Operation LightAttrib::
 get_operation() const {
@@ -246,9 +280,9 @@ get_operation() const {
 /**
  * Returns the number of lights listed in the attribute.
  *
- * This method is now deprecated.  LightAttribs nowadays have a separate list
- * of on_lights and off_lights, so this method doesn't make sense.  Query the
- * lists independently.
+ * @deprecated LightAttribs nowadays have a separate list of on_lights and
+ * off_lights, so this method no longer makes sense.  Query the lists
+ * independently.
  */
 int LightAttrib::
 get_num_lights() const {
@@ -265,9 +299,9 @@ get_num_lights() const {
 /**
  * Returns the nth light listed in the attribute.
  *
- * This method is now deprecated.  LightAttribs nowadays have a separate list
- * of on_lights and off_lights, so this method doesn't make sense.  Query the
- * lists independently.
+ * @deprecated LightAttribs nowadays have a separate list of on_lights and
+ * off_lights, so this method no longer makes sense.  Query the lists
+ * independently.
  */
 Light *LightAttrib::
 get_light(int n) const {
@@ -285,9 +319,9 @@ get_light(int n) const {
  * Returns true if the indicated light is listed in the attrib, false
  * otherwise.
  *
- * This method is now deprecated.  LightAttribs nowadays have a separate list
- * of on_lights and off_lights, so this method doesn't make sense.  Query the
- * lists independently.
+ * @deprecated LightAttribs nowadays have a separate list of on_lights and
+ * off_lights, so this method no longer makes sense.  Query the lists
+ * independently.
  */
 bool LightAttrib::
 has_light(Light *light) const {
@@ -305,8 +339,7 @@ has_light(Light *light) const {
  * Returns a new LightAttrib, just like this one, but with the indicated light
  * added to the list of lights.
  *
- * This method is now deprecated.  Use add_on_light() or add_off_light()
- * instead.
+ * @deprecated Use add_on_light() or add_off_light() instead.
  */
 CPT(RenderAttrib) LightAttrib::
 add_light(Light *light) const {
@@ -324,8 +357,7 @@ add_light(Light *light) const {
  * Returns a new LightAttrib, just like this one, but with the indicated light
  * removed from the list of lights.
  *
- * This method is now deprecated.  Use remove_on_light() or remove_off_light()
- * instead.
+ * @deprecated Use remove_on_light() or remove_off_light() instead.
  */
 CPT(RenderAttrib) LightAttrib::
 remove_light(Light *light) const {
@@ -346,7 +378,7 @@ CPT(RenderAttrib) LightAttrib::
 make() {
   // We make it a special case and store a pointer to the empty attrib forever
   // once we find it the first time, as an optimization.
-  if (_empty_attrib == (RenderAttrib *)NULL) {
+  if (_empty_attrib == nullptr) {
     _empty_attrib = return_new(new LightAttrib);
   }
 
@@ -361,7 +393,7 @@ CPT(RenderAttrib) LightAttrib::
 make_all_off() {
   // We make it a special case and store a pointer to the off attrib forever
   // once we find it the first time, as an optimization.
-  if (_all_off_attrib == (RenderAttrib *)NULL) {
+  if (_all_off_attrib == nullptr) {
     LightAttrib *attrib = new LightAttrib;
     attrib->_off_all_lights = true;
     _all_off_attrib = return_new(attrib);
@@ -376,14 +408,17 @@ make_all_off() {
  */
 CPT(RenderAttrib) LightAttrib::
 add_on_light(const NodePath &light) const {
-  nassertr(!light.is_empty() && light.node()->as_light() != (Light *)NULL, this);
-  LightAttrib *attrib = new LightAttrib(*this);
-  attrib->_on_lights.insert(light);
-  attrib->_off_lights.erase(light);
+  nassertr(!light.is_empty(), this);
+  Light *lobj = light.node()->as_light();
+  nassertr(lobj != nullptr, this);
 
-  pair<Lights::iterator, bool> insert_result =
+  LightAttrib *attrib = new LightAttrib(*this);
+
+  std::pair<Lights::iterator, bool> insert_result =
     attrib->_on_lights.insert(Lights::value_type(light));
   if (insert_result.second) {
+    lobj->attrib_ref();
+
     // Also ensure it is removed from the off_lights list.
     attrib->_off_lights.erase(light);
   }
@@ -397,9 +432,14 @@ add_on_light(const NodePath &light) const {
  */
 CPT(RenderAttrib) LightAttrib::
 remove_on_light(const NodePath &light) const {
-  nassertr(!light.is_empty() && light.node()->as_light() != (Light *)NULL, this);
+  nassertr(!light.is_empty(), this);
+  Light *lobj = light.node()->as_light();
+  nassertr(lobj != nullptr, this);
+
   LightAttrib *attrib = new LightAttrib(*this);
-  attrib->_on_lights.erase(light);
+  if (attrib->_on_lights.erase(light)) {
+    lobj->attrib_unref();
+  }
   return return_new(attrib);
 }
 
@@ -409,12 +449,17 @@ remove_on_light(const NodePath &light) const {
  */
 CPT(RenderAttrib) LightAttrib::
 add_off_light(const NodePath &light) const {
-  nassertr(!light.is_empty() && light.node()->as_light() != (Light *)NULL, this);
+  nassertr(!light.is_empty(), this);
+  Light *lobj = light.node()->as_light();
+  nassertr(lobj != nullptr, this);
+
   LightAttrib *attrib = new LightAttrib(*this);
   if (!_off_all_lights) {
     attrib->_off_lights.insert(light);
   }
-  attrib->_on_lights.erase(light);
+  if (attrib->_on_lights.erase(light)) {
+    lobj->attrib_unref();
+  }
   return return_new(attrib);
 }
 
@@ -424,84 +469,10 @@ add_off_light(const NodePath &light) const {
  */
 CPT(RenderAttrib) LightAttrib::
 remove_off_light(const NodePath &light) const {
-  nassertr(!light.is_empty() && light.node()->as_light() != (Light *)NULL, this);
+  nassertr(!light.is_empty() && light.node()->as_light() != nullptr, this);
   LightAttrib *attrib = new LightAttrib(*this);
   attrib->_off_lights.erase(light);
   return return_new(attrib);
-}
-
-/**
- * Returns a new LightAttrib, very much like this one, but with the number of
- * on_lights reduced to be no more than max_lights.  The number of off_lights
- * in the new LightAttrib is undefined.
- *
- * The number of AmbientLights is not included in the count.  All
- * AmbientLights in the original attrib are always included in the result,
- * regardless of the value of max_lights.
- */
-CPT(LightAttrib) LightAttrib::
-filter_to_max(int max_lights) const {
-  if (max_lights < 0 || (int)_on_lights.size() <= max_lights) {
-    // Trivial case: this LightAttrib qualifies.
-    return this;
-  }
-
-  // Since check_filtered() will clear the _filtered list if we are out of
-  // date, we should call it first.
-  check_filtered();
-
-  Filtered::const_iterator fi;
-  fi = _filtered.find(max_lights);
-  if (fi != _filtered.end()) {
-    // Easy case: we have already computed this for this particular
-    // LightAttrib.
-    return (*fi).second;
-  }
-
-  // Harder case: we have to compute it now.  We must choose the n lights with
-  // the highest priority in our list of lights.
-  Lights priority_lights, ambient_lights;
-
-  // Separate the list of lights into ambient lights and other lights.
-  Lights::const_iterator li;
-  for (li = _on_lights.begin(); li != _on_lights.end(); ++li) {
-    const NodePath &np = (*li);
-    nassertr(!np.is_empty() && np.node()->as_light() != (Light *)NULL, this);
-    if (np.node()->is_ambient_light()) {
-      ambient_lights.push_back(np);
-    } else {
-      priority_lights.push_back(np);
-    }
-  }
-
-  // This sort function uses the STL function object defined above.
-  sort(priority_lights.begin(), priority_lights.end(),
-       CompareLightPriorities());
-
-  // Now lop off all of the lights after the first max_lights.
-  if ((int)priority_lights.size() > max_lights) {
-    priority_lights.erase(priority_lights.begin() + max_lights,
-                          priority_lights.end());
-  }
-
-  // Put the ambient lights back into the list.
-  for (li = ambient_lights.begin(); li != ambient_lights.end(); ++li) {
-    priority_lights.push_back(*li);
-  }
-
-  // And re-sort the ov_set into its proper order.
-  priority_lights.sort();
-
-  // Now create a new attrib reflecting these lights.
-  PT(LightAttrib) attrib = new LightAttrib;
-  attrib->_on_lights.swap(priority_lights);
-
-  CPT(RenderAttrib) new_attrib = return_new(attrib);
-
-  // Finally, record this newly-created attrib in the map for next time.
-  CPT(LightAttrib) light_attrib = (const LightAttrib *)new_attrib.p();
-  ((LightAttrib *)this)->_filtered[max_lights] = light_attrib;
-  return light_attrib;
 }
 
 /**
@@ -511,29 +482,42 @@ filter_to_max(int max_lights) const {
  */
 NodePath LightAttrib::
 get_most_important_light() const {
-  NodePath best;
+  check_sorted();
 
-  CompareLightPriorities compare;
+  if (_num_non_ambient_lights > 0) {
+    return _sorted_on_lights[0];
+  } else {
+    return NodePath();
+  }
+}
+
+/**
+ * Returns the total contribution of all the ambient lights.
+ */
+LColor LightAttrib::
+get_ambient_contribution() const {
+  check_sorted();
+
+  LVecBase4 total(0);
 
   Lights::const_iterator li;
-  for (li = _on_lights.begin(); li != _on_lights.end(); ++li) {
+  li = _sorted_on_lights.begin() + _num_non_ambient_lights;
+  for (; li != _sorted_on_lights.end(); ++li) {
     const NodePath &np = (*li);
-    nassertr(!np.is_empty() && np.node()->as_light() != (Light *)NULL, NodePath());
-    if (!np.node()->is_ambient_light()) {
-      if (best.is_empty() || compare(np, best)) {
-        best = np;
-      }
-    }
+    Light *light = np.node()->as_light();
+    nassertd(light != nullptr && light->is_ambient_light()) continue;
+
+    total += light->get_color();
   }
 
-  return best;
+  return total;
 }
 
 /**
  *
  */
 void LightAttrib::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":";
   if (_off_lights.empty()) {
     if (_on_lights.empty()) {
@@ -582,7 +566,7 @@ output(ostream &out) const {
  *
  */
 void LightAttrib::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << get_type() << ":";
   if (_off_lights.empty()) {
     if (_on_lights.empty()) {
@@ -744,8 +728,8 @@ compose_impl(const RenderAttrib *other) const {
 
   // Create a new LightAttrib that will hold the result.
   LightAttrib *new_attrib = new LightAttrib;
-  back_insert_iterator<Lights> result =
-    back_inserter(new_attrib->_on_lights);
+  std::back_insert_iterator<Lights> result =
+    std::back_inserter(new_attrib->_on_lights);
 
   while (ai != _on_lights.end() &&
          bi != ta->_on_lights.end() &&
@@ -843,6 +827,17 @@ compose_impl(const RenderAttrib *other) const {
     ++result;
   }
 
+  // Increase the attrib_ref of all the lights in this new attribute.
+  Lights::const_iterator it;
+  for (it = new_attrib->_on_lights.begin(); it != new_attrib->_on_lights.end(); ++it) {
+    Light *lobj = (*it).node()->as_light();
+    nassertd(lobj != nullptr) continue;
+    lobj->attrib_ref();
+  }
+
+  // This is needed since _sorted_on_lights is not yet populated.
+  new_attrib->_sort_seq = UpdateSeq::old();
+
   return return_new(new_attrib);
 }
 
@@ -861,21 +856,42 @@ invert_compose_impl(const RenderAttrib *other) const {
 }
 
 /**
- *
- */
-CPT(RenderAttrib) LightAttrib::
-get_auto_shader_attrib_impl(const RenderState *state) const {
-  return this;
-}
-
-/**
- * This is patterned after TextureAttrib::sort_on_stages(), but since lights
- * don't actually require sorting, this only empties the _filtered map.
+ * Makes sure the lights are sorted in order of priority.  Also counts the
+ * number of non-ambient lights.
  */
 void LightAttrib::
 sort_on_lights() {
   _sort_seq = Light::get_sort_seq();
-  _filtered.clear();
+
+  // Separate the list of lights into ambient lights and other lights.
+  _sorted_on_lights.clear();
+  OrderedLights ambient_lights;
+
+  Lights::const_iterator li;
+  for (li = _on_lights.begin(); li != _on_lights.end(); ++li) {
+    const NodePath &np = (*li);
+    nassertd(!np.is_empty() && np.node()->as_light() != nullptr) continue;
+
+    if (!np.node()->is_ambient_light()) {
+      _sorted_on_lights.push_back(np);
+    } else {
+      ambient_lights.push_back(np);
+    }
+  }
+
+  // Remember how many lights were non-ambient lights, which makes it easier
+  // to traverse through the list of non-ambient lights.
+  _num_non_ambient_lights = _sorted_on_lights.size();
+
+  // This sort function uses the STL function object defined above.
+  sort(_sorted_on_lights.begin(), _sorted_on_lights.end(),
+       CompareLightPriorities());
+
+  // Now insert the ambient lights back at the end.  We don't really care
+  // about their relative priorities, because their contribution will simply
+  // be summed up in the end anyway.
+  _sorted_on_lights.insert(_sorted_on_lights.end(),
+                           ambient_lights.begin(), ambient_lights.end());
 }
 
 /**
@@ -945,7 +961,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 
   } else {
     BamAuxData *aux = (BamAuxData *)manager->get_aux_data(this, "lights");
-    nassertr(aux != NULL, pi);
+    nassertr(aux != nullptr, pi);
 
     int i;
     aux->_off_list.reserve(aux->_num_off_lights);
@@ -992,12 +1008,16 @@ finalize(BamReader *manager) {
         // If it's in the registry, replace it.
         _on_lights[i] = areg->get_node(n);
       }
+
+      Light *lobj = _on_lights[i].node()->as_light();
+      nassertd(lobj != nullptr) continue;
+      lobj->attrib_ref();
     }
 
   } else {
     // Now it's safe to convert our saved PandaNodes into NodePaths.
     BamAuxData *aux = (BamAuxData *)manager->get_aux_data(this, "lights");
-    nassertv(aux != NULL);
+    nassertv(aux != nullptr);
     nassertv(aux->_num_off_lights == (int)aux->_off_list.size());
     nassertv(aux->_num_on_lights == (int)aux->_on_list.size());
 
@@ -1024,10 +1044,15 @@ finalize(BamReader *manager) {
       if (n != -1) {
         // If it's in the registry, add that NodePath.
         _on_lights.push_back(areg->get_node(n));
+        node = _on_lights.back().node();
       } else {
         // Otherwise, add any arbitrary NodePath.  Complain if it's ambiguous.
         _on_lights.push_back(NodePath(node));
       }
+
+      Light *lobj = node->as_light();
+      nassertd(lobj != nullptr) continue;
+      lobj->attrib_ref();
     }
   }
 
@@ -1085,4 +1110,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     aux->_num_on_lights = scan.get_uint16();
     manager->read_pointers(scan, aux->_num_on_lights);
   }
+
+  _sorted_on_lights.clear();
+  _sort_seq = UpdateSeq::old();
 }

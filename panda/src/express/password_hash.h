@@ -22,9 +22,9 @@
 
 BEGIN_PUBLISH
 
-EXPCL_PANDAEXPRESS string password_hash(const string &password,
-                                        const string &salt,
-                                        int iters, int keylen);
+EXPCL_PANDA_EXPRESS std::string password_hash(const std::string &password,
+                                              const std::string &salt,
+                                              int iters, int keylen);
 
 END_PUBLISH
 

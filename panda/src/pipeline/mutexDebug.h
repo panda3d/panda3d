@@ -29,11 +29,16 @@
  */
 class EXPCL_PANDA_PIPELINE MutexDebug : public Namable {
 protected:
-  MutexDebug(const string &name, bool allow_recursion, bool lightweight);
+  MutexDebug(const std::string &name, bool allow_recursion, bool lightweight);
+  MutexDebug(const MutexDebug &copy) = delete;
   virtual ~MutexDebug();
-private:
-  INLINE MutexDebug(const MutexDebug &copy);
-  INLINE void operator = (const MutexDebug &copy);
+
+  void operator = (const MutexDebug &copy) = delete;
+
+public:
+  INLINE void lock();
+  INLINE bool try_lock();
+  INLINE void unlock();
 
 PUBLISHED:
   BLOCKING INLINE void acquire(Thread *current_thread = Thread::get_current_thread()) const;
@@ -42,8 +47,8 @@ PUBLISHED:
   INLINE void release() const;
   INLINE bool debug_is_locked() const;
 
-  virtual void output(ostream &out) const;
-  void output_with_holder(ostream &out) const;
+  virtual void output(std::ostream &out) const;
+  void output_with_holder(std::ostream &out) const;
 
   typedef void VoidFunc();
 
@@ -52,9 +57,9 @@ public:
   static void decrement_pstats();
 
 private:
-  void do_acquire(Thread *current_thread);
-  bool do_try_acquire(Thread *current_thread);
-  void do_release();
+  void do_lock(Thread *current_thread);
+  bool do_try_lock(Thread *current_thread);
+  void do_unlock();
   bool do_debug_is_locked() const;
 
   void report_deadlock(Thread *current_thread);
@@ -78,11 +83,10 @@ private:
   static MutexTrueImpl *_global_lock;
 
   friend class ConditionVarDebug;
-  friend class ConditionVarFullDebug;
 };
 
-INLINE ostream &
-operator << (ostream &out, const MutexDebug &m) {
+INLINE std::ostream &
+operator << (std::ostream &out, const MutexDebug &m) {
   m.output(out);
   return out;
 }

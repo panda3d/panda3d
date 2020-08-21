@@ -12,6 +12,8 @@
  */
 
 #include "pStatClient.h"
+#include "pStatCollector.h"
+#include "pStatThread.h"
 
 #ifdef DO_PSTATS
 // This file only defines anything interesting if DO_PSTATS is defined.
@@ -19,13 +21,13 @@
 #include "pStatClientImpl.h"
 #include "pStatClientControlMessage.h"
 #include "pStatServerControlMessage.h"
-#include "pStatCollector.h"
-#include "pStatThread.h"
-#include "config_pstats.h"
+#include "config_pstatclient.h"
 #include "pStatProperties.h"
 #include "thread.h"
 #include "clockObject.h"
 #include "neverFreeMemory.h"
+
+using std::string;
 
 PStatCollector PStatClient::_heap_total_size_pcollector("System memory:Heap");
 PStatCollector PStatClient::_heap_overhead_size_pcollector("System memory:Heap:Overhead");
@@ -44,7 +46,7 @@ PStatCollector PStatClient::_clock_wait_pcollector("Wait:Clock Wait:Sleep");
 PStatCollector PStatClient::_clock_busy_wait_pcollector("Wait:Clock Wait:Spin");
 PStatCollector PStatClient::_thread_block_pcollector("Wait:Thread block");
 
-PStatClient *PStatClient::_global_pstats = NULL;
+PStatClient *PStatClient::_global_pstats = nullptr;
 
 
 // This class is used to report memory usage per TypeHandle.  We create one of
@@ -73,13 +75,13 @@ PerThreadData() {
 PStatClient::
 PStatClient() :
   _lock("PStatClient::_lock"),
-  _impl(NULL)
+  _impl(nullptr)
 {
-  _collectors = NULL;
+  _collectors = nullptr;
   _collectors_size = 0;
   _num_collectors = 0;
 
-  _threads = NULL;
+  _threads = nullptr;
   _threads_size = 0;
   _num_threads = 0;
 
@@ -334,7 +336,7 @@ main_tick() {
               // Not used.
               break;
             }
-            ostringstream strm;
+            std::ostringstream strm;
             strm << "System memory:" << category << ":" << type;
             col = PStatCollector(strm.str());
           }
@@ -457,7 +459,7 @@ client_disconnect() {
   if (has_impl()) {
     _impl->client_disconnect();
     delete _impl;
-    _impl = NULL;
+    _impl = nullptr;
   }
 
   ThreadPointer *threads = (ThreadPointer *)_threads;
@@ -508,7 +510,7 @@ client_resume_after_pause() {
  */
 PStatClient *PStatClient::
 get_global_pstats() {
-  if (_global_pstats == (PStatClient *)NULL) {
+  if (_global_pstats == nullptr) {
     _global_pstats = new PStatClient;
 
     ClockObject::_start_clock_wait = start_clock_wait;
@@ -1054,7 +1056,9 @@ add_collector(PStatClient::Collector *collector) {
     // the lock.
     int new_collectors_size = (_collectors_size == 0) ? 128 : _collectors_size * 2;
     CollectorPointer *new_collectors = new CollectorPointer[new_collectors_size];
-    memcpy(new_collectors, _collectors, _num_collectors * sizeof(CollectorPointer));
+    if (_collectors != nullptr) {
+      memcpy(new_collectors, _collectors, _num_collectors * sizeof(CollectorPointer));
+    }
     AtomicAdjust::set_ptr(_collectors, new_collectors);
     AtomicAdjust::set(_collectors_size, new_collectors_size);
 
@@ -1089,7 +1093,9 @@ add_thread(PStatClient::InternalThread *thread) {
     // the lock.
     int new_threads_size = (_threads_size == 0) ? 128 : _threads_size * 2;
     ThreadPointer *new_threads = new ThreadPointer[new_threads_size];
-    memcpy(new_threads, _threads, _num_threads * sizeof(ThreadPointer));
+    if (_threads != nullptr) {
+      memcpy(new_threads, _threads, _num_threads * sizeof(ThreadPointer));
+    }
     // We assume that assignment to a pointer and to an int are each atomic.
     AtomicAdjust::set_ptr(_threads, new_threads);
     AtomicAdjust::set(_threads_size, new_threads_size);
@@ -1129,7 +1135,7 @@ deactivate_hook(Thread *thread) {
   // We shouldn't use a mutex here, because this code is only called during
   // the SIMPLE_THREADS case, so a mutex isn't necessary; and because we are
   // called during a context switch, so a mutex might be dangerous.
-  if (_impl == NULL) {
+  if (_impl == nullptr) {
     return;
   }
   int thread_index = thread->get_pstats_index();
@@ -1154,7 +1160,7 @@ activate_hook(Thread *thread) {
   // We shouldn't use a mutex here, because this code is only called during
   // the SIMPLE_THREADS case, so a mutex isn't necessary; and because we are
   // called during a context switch, so a mutex might be dangerous.
-  if (_impl == NULL) {
+  if (_impl == nullptr) {
     return;
   }
 
@@ -1173,7 +1179,7 @@ activate_hook(Thread *thread) {
 void PStatClient::Collector::
 make_def(const PStatClient *client, int this_index) {
   ReMutexHolder holder(client->_lock);
-  if (_def == (PStatCollectorDef *)NULL) {
+  if (_def == nullptr) {
     _def = new PStatCollectorDef(this_index, _name);
     if (_parent_index != this_index) {
       const PStatCollectorDef *parent_def =
@@ -1205,7 +1211,7 @@ InternalThread(Thread *thread) :
  */
 PStatClient::InternalThread::
 InternalThread(const string &name, const string &sync_name) :
-  _thread(NULL),
+  _thread(nullptr),
   _name(name),
   _sync_name(sync_name),
   _is_active(false),
@@ -1214,6 +1220,156 @@ InternalThread(const string &name, const string &sync_name) :
   _thread_active(true),
   _thread_lock(string("PStatClient::InternalThread ") + name)
 {
+}
+
+#else  // DO_PSTATS
+
+void PStatClient::
+set_client_name(const std::string &name) {
+}
+
+std::string PStatClient::
+get_client_name() const {
+  return std::string();
+}
+
+void PStatClient::
+set_max_rate(double rate) {
+}
+
+double PStatClient::
+get_max_rate() const {
+  return 0.0;
+}
+
+PStatCollector PStatClient::
+get_collector(int index) const {
+  return PStatCollector();
+}
+
+std::string PStatClient::
+get_collector_name(int index) const {
+  return std::string();
+}
+
+std::string PStatClient::
+get_collector_fullname(int index) const {
+  return std::string();
+}
+
+PStatThread PStatClient::
+get_thread(int index) const {
+  return PStatThread((PStatClient *)this, 0);
+}
+
+double PStatClient::
+get_real_time() const {
+  return 0.0;
+}
+
+PStatThread PStatClient::
+get_main_thread() const {
+  return PStatThread((PStatClient *)this, 0);
+}
+
+PStatThread PStatClient::
+get_current_thread() const {
+  return get_main_thread();
+}
+
+PStatCollector PStatClient::
+make_collector_with_relname(int parent_index, std::string relname) {
+  return PStatCollector();
+}
+
+PStatThread PStatClient::
+make_thread(Thread *thread) {
+  return PStatThread((PStatClient *)this, 0);
+}
+
+void PStatClient::
+main_tick() {
+}
+
+void PStatClient::
+thread_tick(const std::string &) {
+}
+
+void PStatClient::
+client_main_tick() {
+}
+
+void PStatClient::
+client_thread_tick(const std::string &sync_name) {
+}
+
+bool PStatClient::
+client_connect(std::string hostname, int port) {
+  return false;
+}
+
+void PStatClient::
+client_disconnect() {
+  return;
+}
+
+bool PStatClient::
+client_is_connected() const {
+  return false;
+}
+
+void PStatClient::
+client_resume_after_pause() {
+  return;
+}
+
+PStatClient *PStatClient::
+get_global_pstats() {
+  static PStatClient global_pstats;
+  return &global_pstats;
+}
+
+bool PStatClient::
+is_active(int collector_index, int thread_index) const {
+  return false;
+}
+
+bool PStatClient::
+is_started(int collector_index, int thread_index) const {
+  return false;
+}
+
+void PStatClient::
+start(int collector_index, int thread_index) {
+}
+
+void PStatClient::
+start(int collector_index, int thread_index, double as_of) {
+}
+
+void PStatClient::
+stop(int collector_index, int thread_index) {
+}
+
+void PStatClient::
+stop(int collector_index, int thread_index, double as_of) {
+}
+
+void PStatClient::
+clear_level(int collector_index, int thread_index) {
+}
+
+void PStatClient::
+set_level(int collector_index, int thread_index, double level) {
+}
+
+void PStatClient::
+add_level(int collector_index, int thread_index, double increment) {
+}
+
+double PStatClient::
+get_level(int collector_index, int thread_index) const {
+  return 0.0;
 }
 
 #endif // DO_PSTATS

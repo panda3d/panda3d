@@ -76,8 +76,8 @@ PUBLISHED:
 
   MAKE_PROPERTY2(data, has_data, get_data, set_data, clear_data);
 
-  void output(ostream &out) const;
-  void write(ostream &out, int indent_level = 0) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent_level = 0) const;
 
 private:
   // This class is used to sort BamCacheRecords by access time.
@@ -86,19 +86,19 @@ private:
     INLINE bool operator () (const BamCacheRecord *a, const BamCacheRecord *b) const;
   };
 
-  static string format_timestamp(time_t timestamp);
+  static std::string format_timestamp(time_t timestamp);
 
   Filename _source_pathname;
   Filename _cache_filename;
   time_t _recorded_time;
-  streamsize _record_size;  // this is accurate only in the index file.
+  std::streamsize _record_size;  // this is accurate only in the index file.
   time_t _source_timestamp;  // Not record to the cache file.
 
   class DependentFile {
   public:
     Filename _pathname;
     time_t _timestamp;
-    streamsize _size;
+    std::streamsize _size;
   };
 
   typedef pvector<DependentFile> DependentFiles;
@@ -145,7 +145,7 @@ private:
   friend class BamCacheRecord::SortByAccessTime;
 };
 
-INLINE ostream &operator << (ostream &out, const BamCacheRecord &record) {
+INLINE std::ostream &operator << (std::ostream &out, const BamCacheRecord &record) {
   record.output(out);
   return out;
 }

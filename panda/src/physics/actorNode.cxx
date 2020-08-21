@@ -23,7 +23,7 @@ TypeHandle ActorNode::_type_handle;
  * Constructor
  */
 ActorNode::
-ActorNode(const string &name) :
+ActorNode(const std::string &name) :
     PhysicalNode(name) {
   _contact_vector = LVector3::zero();
   add_physical(new Physical(1, true));
@@ -120,7 +120,7 @@ transform_changed() {
  * Write a string representation of this instance to <out>.
  */
 void ActorNode::
-write(ostream &out, unsigned int indent) const {
+write(std::ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"ActorNode:\n";
   out.width(indent+2); out<<""; out<<"_ok_to_callback "<<_ok_to_callback<<"\n";

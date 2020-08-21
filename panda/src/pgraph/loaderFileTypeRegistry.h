@@ -33,30 +33,37 @@ public:
   ~LoaderFileTypeRegistry();
 
   void register_type(LoaderFileType *type);
-  void register_deferred_type(const string &extension, const string &library);
+  void register_deferred_type(const std::string &extension, const std::string &library);
+
+  void unregister_type(LoaderFileType *type);
 
 PUBLISHED:
+  EXTENSION(void register_type(PyObject *type));
+  EXTENSION(void register_deferred_type(PyObject *entry_point));
+
+  EXTENSION(void unregister_type(PyObject *type));
+
   int get_num_types() const;
   LoaderFileType *get_type(int n) const;
   MAKE_SEQ(get_types, get_num_types, get_type);
   MAKE_SEQ_PROPERTY(types, get_num_types, get_type);
-  LoaderFileType *get_type_from_extension(const string &extension);
+  LoaderFileType *get_type_from_extension(const std::string &extension);
 
-  void write(ostream &out, int indent_level = 0) const;
+  void write(std::ostream &out, int indent_level = 0) const;
 
   static LoaderFileTypeRegistry *get_global_ptr();
 
 private:
-  void record_extension(const string &extension, LoaderFileType *type);
+  void record_extension(const std::string &extension, LoaderFileType *type);
 
 private:
   typedef pvector<LoaderFileType *> Types;
   Types _types;
 
-  typedef pmap<string, LoaderFileType *> Extensions;
+  typedef pmap<std::string, LoaderFileType *> Extensions;
   Extensions _extensions;
 
-  typedef pmap<string, string> DeferredTypes;
+  typedef pmap<std::string, std::string> DeferredTypes;
   DeferredTypes _deferred_types;
 
   static LoaderFileTypeRegistry *_global_ptr;

@@ -1,20 +1,19 @@
-/* A Bison parser, made by GNU Bison 2.4.2.  */
+/* A Bison parser, made by GNU Bison 3.2.2.  */
 
-/* Skeleton interface for Bison's Yacc-like parsers in C
-   
-      Copyright (C) 1984, 1989-1990, 2000-2006, 2009-2010 Free Software
-   Foundation, Inc.
-   
+/* Bison interface for Yacc-like parsers in C
+
+   Copyright (C) 1984, 1989-1990, 2000-2015, 2018 Free Software Foundation, Inc.
+
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation, either version 3 of the License, or
    (at your option) any later version.
-   
+
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-   
+
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
@@ -27,107 +26,118 @@
    special exception, which will cause the skeleton and the resulting
    Bison output files to be licensed under the GNU General Public
    License without this special exception.
-   
+
    This special exception was added by the Free Software Foundation in
    version 2.2 of Bison.  */
 
+/* Undocumented macros, especially those whose name start with YY_,
+   are private implementation details.  Do not rely on them.  */
 
-/* Tokens.  */
+#ifndef YY_EGGYY_BUILT_TMP_PARSER_YXX_H_INCLUDED
+# define YY_EGGYY_BUILT_TMP_PARSER_YXX_H_INCLUDED
+/* Debug traces.  */
+#ifndef YYDEBUG
+# define YYDEBUG 0
+#endif
+#if YYDEBUG
+extern int eggyydebug;
+#endif
+
+/* Token type.  */
 #ifndef YYTOKENTYPE
 # define YYTOKENTYPE
-   /* Put the tokens into the symbol table, so that GDB and other debuggers
-      know about them.  */
-   enum yytokentype {
-     EGG_NUMBER = 258,
-     EGG_ULONG = 259,
-     EGG_STRING = 260,
-     ANIMPRELOAD = 261,
-     BEZIERCURVE = 262,
-     BFACE = 263,
-     BILLBOARD = 264,
-     BILLBOARDCENTER = 265,
-     BINORMAL = 266,
-     BUNDLE = 267,
-     CLOSED = 268,
-     COLLIDE = 269,
-     COMMENT = 270,
-     COMPONENT = 271,
-     COORDSYSTEM = 272,
-     CV = 273,
-     DART = 274,
-     DNORMAL = 275,
-     DRGBA = 276,
-     DUV = 277,
-     DXYZ = 278,
-     DCS = 279,
-     DISTANCE = 280,
-     DTREF = 281,
-     DYNAMICVERTEXPOOL = 282,
-     EXTERNAL_FILE = 283,
-     GROUP = 284,
-     DEFAULTPOSE = 285,
-     JOINT = 286,
-     KNOTS = 287,
-     INCLUDE = 288,
-     INSTANCE = 289,
-     LINE = 290,
-     LOOP = 291,
-     MATERIAL = 292,
-     MATRIX3 = 293,
-     MATRIX4 = 294,
-     MODEL = 295,
-     MREF = 296,
-     NORMAL = 297,
-     NURBSCURVE = 298,
-     NURBSSURFACE = 299,
-     OBJECTTYPE = 300,
-     ORDER = 301,
-     OUTTANGENT = 302,
-     PATCH = 303,
-     POINTLIGHT = 304,
-     POLYGON = 305,
-     REF = 306,
-     RGBA = 307,
-     ROTATE = 308,
-     ROTX = 309,
-     ROTY = 310,
-     ROTZ = 311,
-     SANIM = 312,
-     SCALAR = 313,
-     SCALE = 314,
-     SEQUENCE = 315,
-     SHADING = 316,
-     SWITCH = 317,
-     SWITCHCONDITION = 318,
-     TABLE = 319,
-     TABLE_V = 320,
-     TAG = 321,
-     TANGENT = 322,
-     TEXLIST = 323,
-     TEXTURE = 324,
-     TLENGTHS = 325,
-     TRANSFORM = 326,
-     TRANSLATE = 327,
-     TREF = 328,
-     TRIANGLEFAN = 329,
-     TRIANGLESTRIP = 330,
-     TRIM = 331,
-     TXT = 332,
-     UKNOTS = 333,
-     UV = 334,
-     AUX = 335,
-     VKNOTS = 336,
-     VERTEX = 337,
-     VERTEXANIM = 338,
-     VERTEXPOOL = 339,
-     VERTEXREF = 340,
-     XFMANIM = 341,
-     XFMSANIM = 342,
-     START_EGG = 343,
-     START_GROUP_BODY = 344,
-     START_TEXTURE_BODY = 345,
-     START_PRIMITIVE_BODY = 346
-   };
+  enum yytokentype
+  {
+    EGG_NUMBER = 258,
+    EGG_ULONG = 259,
+    EGG_STRING = 260,
+    ANIMPRELOAD = 261,
+    BEZIERCURVE = 262,
+    BFACE = 263,
+    BILLBOARD = 264,
+    BILLBOARDCENTER = 265,
+    BINORMAL = 266,
+    BUNDLE = 267,
+    CLOSED = 268,
+    COLLIDE = 269,
+    COMMENT = 270,
+    COMPONENT = 271,
+    COORDSYSTEM = 272,
+    CV = 273,
+    DART = 274,
+    DNORMAL = 275,
+    DRGBA = 276,
+    DUV = 277,
+    DXYZ = 278,
+    DCS = 279,
+    DISTANCE = 280,
+    DTREF = 281,
+    DYNAMICVERTEXPOOL = 282,
+    EXTERNAL_FILE = 283,
+    GROUP = 284,
+    DEFAULTPOSE = 285,
+    JOINT = 286,
+    KNOTS = 287,
+    INCLUDE = 288,
+    INSTANCE = 289,
+    LINE = 290,
+    LOOP = 291,
+    MATERIAL = 292,
+    MATRIX3 = 293,
+    MATRIX4 = 294,
+    MODEL = 295,
+    MREF = 296,
+    NORMAL = 297,
+    NURBSCURVE = 298,
+    NURBSSURFACE = 299,
+    OBJECTTYPE = 300,
+    ORDER = 301,
+    OUTTANGENT = 302,
+    PATCH = 303,
+    POINTLIGHT = 304,
+    POLYGON = 305,
+    REF = 306,
+    RGBA = 307,
+    ROTATE = 308,
+    ROTX = 309,
+    ROTY = 310,
+    ROTZ = 311,
+    SANIM = 312,
+    SCALAR = 313,
+    SCALE = 314,
+    SEQUENCE = 315,
+    SHADING = 316,
+    SWITCH = 317,
+    SWITCHCONDITION = 318,
+    TABLE = 319,
+    TABLE_V = 320,
+    TAG = 321,
+    TANGENT = 322,
+    TEXLIST = 323,
+    TEXTURE = 324,
+    TLENGTHS = 325,
+    TRANSFORM = 326,
+    TRANSLATE = 327,
+    TREF = 328,
+    TRIANGLEFAN = 329,
+    TRIANGLESTRIP = 330,
+    TRIM = 331,
+    TXT = 332,
+    UKNOTS = 333,
+    UV = 334,
+    AUX = 335,
+    VKNOTS = 336,
+    VERTEX = 337,
+    VERTEXANIM = 338,
+    VERTEXPOOL = 339,
+    VERTEXREF = 340,
+    XFMANIM = 341,
+    XFMSANIM = 342,
+    START_EGG = 343,
+    START_GROUP_BODY = 344,
+    START_TEXTURE_BODY = 345,
+    START_PRIMITIVE_BODY = 346
+  };
 #endif
 /* Tokens.  */
 #define EGG_NUMBER 258
@@ -220,15 +230,11 @@
 #define START_TEXTURE_BODY 345
 #define START_PRIMITIVE_BODY 346
 
+/* Value type.  */
 
-
-
-#if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-
-# define yystype YYSTYPE /* obsolescent; will be withdrawn */
-# define YYSTYPE_IS_DECLARED 1
-#endif
 
 extern YYSTYPE eggyylval;
 
+int eggyyparse (void);
 
+#endif /* !YY_EGGYY_BUILT_TMP_PARSER_YXX_H_INCLUDED  */

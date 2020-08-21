@@ -20,7 +20,8 @@ CullTraverserData(const NodePath &start,
                   const RenderState *state,
                   GeometricBoundingVolume *view_frustum,
                   Thread *current_thread) :
-  _node_path(start),
+  _next(nullptr),
+  _start(start._head),
   _node_reader(start.node(), current_thread),
   _net_transform(net_transform),
   _state(state),
@@ -30,39 +31,8 @@ CullTraverserData(const NodePath &start,
   _portal_depth(0)
 {
   // Only update the bounding volume if we're going to end up needing it.
-  bool check_bounds = (view_frustum != (GeometricBoundingVolume *)NULL);
+  bool check_bounds = (view_frustum != nullptr);
   _node_reader.check_cached(check_bounds);
-}
-
-/**
- *
- */
-INLINE CullTraverserData::
-CullTraverserData(const CullTraverserData &copy) :
-  _node_path(copy._node_path),
-  _node_reader(copy._node_reader),
-  _net_transform(copy._net_transform),
-  _state(copy._state),
-  _view_frustum(copy._view_frustum),
-  _cull_planes(copy._cull_planes),
-  _draw_mask(copy._draw_mask),
-  _portal_depth(copy._portal_depth)
-{
-}
-
-/**
- *
- */
-INLINE void CullTraverserData::
-operator = (const CullTraverserData &copy) {
-  _node_path = copy._node_path;
-  _node_reader = copy._node_reader;
-  _net_transform = copy._net_transform;
-  _state = copy._state;
-  _view_frustum = copy._view_frustum;
-  _cull_planes = copy._cull_planes;
-  _draw_mask = copy._draw_mask;
-  _portal_depth = copy._portal_depth;
 }
 
 /**
@@ -71,7 +41,10 @@ operator = (const CullTraverserData &copy) {
  */
 INLINE CullTraverserData::
 CullTraverserData(const CullTraverserData &parent, PandaNode *child) :
-  _node_path(parent._node_path, child),
+  _next(&parent),
+#ifdef _DEBUG
+  _start(nullptr),
+#endif
   _node_reader(child, parent._node_reader.get_current_thread()),
   _net_transform(parent._net_transform),
   _state(parent._state),
@@ -82,15 +55,8 @@ CullTraverserData(const CullTraverserData &parent, PandaNode *child) :
 {
   // Only update the bounding volume if we're going to end up needing it.
   bool check_bounds = !_cull_planes->is_empty() ||
-                    (_view_frustum != (GeometricBoundingVolume *)NULL);
+                    (_view_frustum != nullptr);
   _node_reader.check_cached(check_bounds);
-}
-
-/**
- *
- */
-INLINE CullTraverserData::
-~CullTraverserData() {
 }
 
 /**
@@ -98,7 +64,7 @@ INLINE CullTraverserData::
  */
 INLINE PandaNode *CullTraverserData::
 node() const {
-  return _node_path.node();
+  return (PandaNode *)_node_reader.get_node();
 }
 
 /**
@@ -115,6 +81,18 @@ node_reader() {
 INLINE const PandaNodePipelineReader *CullTraverserData::
 node_reader() const {
   return &_node_reader;
+}
+
+/**
+ * Constructs and returns an actual NodePath that represents the same path we
+ * have just traversed.
+ */
+INLINE NodePath CullTraverserData::
+get_node_path() const {
+  NodePath result;
+  result._head = r_get_node_path();
+  nassertr(result._head != nullptr, NodePath::fail());
+  return result;
 }
 
 /**
@@ -162,7 +140,7 @@ is_in_view(const DrawMask &camera_mask) {
     return false;
   }
 
-  if (_view_frustum == (GeometricBoundingVolume *)NULL &&
+  if (_view_frustum == nullptr &&
       _cull_planes->is_empty()) {
     // If the transform is valid, but we don't have a frustum or any clip
     // planes or occluders, it's always in.

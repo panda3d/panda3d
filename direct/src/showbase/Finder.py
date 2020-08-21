@@ -1,4 +1,4 @@
-"""Undocumented Module"""
+"""Contains various utility functions."""
 
 __all__ = ['findClass', 'rebindClass', 'copyFuncs', 'replaceMessengerFunc', 'replaceTaskMgrFunc', 'replaceStateFunc', 'replaceCRFunc', 'replaceAIRFunc', 'replaceIvalFunc']
 

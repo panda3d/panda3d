@@ -11,8 +11,8 @@
  * @date 2000-08-25
  */
 
-INLINE ostream &
-operator << (ostream &out, const FltPackedColor &color) {
+INLINE std::ostream &
+operator << (std::ostream &out, const FltPackedColor &color) {
   color.output(out);
   return out;
 }

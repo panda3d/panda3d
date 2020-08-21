@@ -11,8 +11,8 @@
  * @date 2010-11-19
  */
 
-#ifndef __BULLET_RIGID_BODY_NODE_H__
-#define __BULLET_RIGID_BODY_NODE_H__
+#ifndef BULLETRIGIDBODYNODE_H
+#define BULLETRIGIDBODYNODE_H
 
 #include "pandabase.h"
 
@@ -50,10 +50,10 @@ PUBLISHED:
   void set_angular_velocity(const LVector3 &velocity);
 
   // Damping
-  INLINE PN_stdfloat get_linear_damping() const;
-  INLINE PN_stdfloat get_angular_damping() const;
-  INLINE void set_linear_damping(PN_stdfloat value);
-  INLINE void set_angular_damping(PN_stdfloat value);
+  PN_stdfloat get_linear_damping() const;
+  PN_stdfloat get_angular_damping() const;
+  void set_linear_damping(PN_stdfloat value);
+  void set_angular_damping(PN_stdfloat value);
 
   // Forces
   void clear_forces();
@@ -86,19 +86,41 @@ PUBLISHED:
   // Special
   bool pick_dirty_flag();
 
+  MAKE_PROPERTY(mass, get_mass, set_mass);
+  MAKE_PROPERTY(inv_mass, get_inv_mass);
+  MAKE_PROPERTY(inertia, get_inertia, set_inertia);
+  MAKE_PROPERTY(inv_inertia_diag_local, get_inv_inertia_diag_local);
+  MAKE_PROPERTY(inv_inertia_tensor_world, get_inv_inertia_tensor_world);
+  MAKE_PROPERTY(linear_velocity, get_linear_velocity, set_linear_velocity);
+  MAKE_PROPERTY(angular_velocity, get_angular_velocity, set_angular_velocity);
+  MAKE_PROPERTY(linear_damping, get_linear_damping, set_linear_damping);
+  MAKE_PROPERTY(angular_damping, get_angular_damping, set_angular_damping);
+  MAKE_PROPERTY(total_force, get_total_force);
+  MAKE_PROPERTY(total_torque, get_total_torque);
+  MAKE_PROPERTY(linear_sleep_threshold, get_linear_sleep_threshold, set_linear_sleep_threshold);
+  MAKE_PROPERTY(angular_sleep_threshold, get_angular_sleep_threshold, set_angular_sleep_threshold);
+  MAKE_PROPERTY(gravity, get_gravity, set_gravity);
+  MAKE_PROPERTY(linear_factor, get_linear_factor, set_linear_factor);
+  MAKE_PROPERTY(angular_factor, get_angular_factor, set_angular_factor);
+
 public:
   virtual btCollisionObject *get_object() const;
 
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
-  void sync_p2b();
-  void sync_b2p();
+  void do_sync_p2b();
+  void do_sync_b2p();
 
 protected:
+  virtual void parents_changed();
   virtual void transform_changed();
 
 private:
-  virtual void shape_changed();
+  virtual void do_shape_changed();
+  void do_transform_changed();
+
+  void do_set_mass(PN_stdfloat mass);
+  PN_stdfloat do_get_mass() const;
 
   // The motion state is used for synchronisation between Bullet and the
   // Panda3D scene graph.
@@ -160,4 +182,4 @@ private:
 
 #include "bulletRigidBodyNode.I"
 
-#endif // __BULLET_RIGID_BODY_NODE_H__
+#endif // BULLETRIGIDBODYNODE_H

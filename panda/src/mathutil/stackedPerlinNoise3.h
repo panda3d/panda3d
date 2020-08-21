@@ -25,9 +25,9 @@
 class EXPCL_PANDA_MATHUTIL StackedPerlinNoise3 {
 PUBLISHED:
   INLINE StackedPerlinNoise3();
-  StackedPerlinNoise3(double sx, double sy, double sz, int num_levels = 3,
-                      double scale_factor = 4.0f, double amp_scale = 0.5f,
-                      int table_size = 256, unsigned long seed = 0);
+  explicit StackedPerlinNoise3(double sx, double sy, double sz, int num_levels = 3,
+                               double scale_factor = 4.0f, double amp_scale = 0.5f,
+                               int table_size = 256, unsigned long seed = 0);
   StackedPerlinNoise3(const StackedPerlinNoise3 &copy);
   void operator = (const StackedPerlinNoise3 &copy);
 

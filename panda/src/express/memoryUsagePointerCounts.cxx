@@ -12,9 +12,6 @@
  */
 
 #include "memoryUsagePointerCounts.h"
-
-#ifdef DO_MEMORY_USAGE
-
 #include "memoryInfo.h"
 
 /**
@@ -22,6 +19,7 @@
  */
 void MemoryUsagePointerCounts::
 add_info(MemoryInfo *info) {
+#ifdef DO_MEMORY_USAGE
   _count++;
 
   if (info->is_size_known()) {
@@ -29,13 +27,15 @@ add_info(MemoryInfo *info) {
   } else {
     _unknown_size_count++;
   }
+#endif
 }
 
 /**
  *
  */
 void MemoryUsagePointerCounts::
-output(ostream &out) const {
+output(std::ostream &out) const {
+#ifdef DO_MEMORY_USAGE
   out << _count << " pointers";
   if (_unknown_size_count < _count) {
     out << ", ";
@@ -48,6 +48,7 @@ output(ostream &out) const {
       out << " (" << _unknown_size_count << " of unknown size)";
     }
   }
+#endif
 }
 
 /**
@@ -55,7 +56,8 @@ output(ostream &out) const {
  * units.
  */
 void MemoryUsagePointerCounts::
-output_bytes(ostream &out, size_t size) {
+output_bytes(std::ostream &out, size_t size) {
+#ifdef DO_MEMORY_USAGE
   if (size < 4 * 1024) {
     out << size << " bytes";
 
@@ -65,6 +67,5 @@ output_bytes(ostream &out, size_t size) {
   } else {
     out << size / (1024 * 1024) << " Mb";
   }
+#endif
 }
-
-#endif  // DO_MEMORY_USAGE

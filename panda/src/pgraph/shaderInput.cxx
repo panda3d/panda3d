@@ -15,18 +15,13 @@
 #include "paramNodePath.h"
 #include "paramTexture.h"
 
-TypeHandle ShaderInput::_type_handle;
-
 /**
  * Returns a static ShaderInput object with name NULL, priority zero, type
  * INVALID, and all value-fields cleared.
  */
-const ShaderInput *ShaderInput::
+const ShaderInput &ShaderInput::
 get_blank() {
-  static CPT(ShaderInput) blank;
-  if (blank == 0) {
-    blank = new ShaderInput(NULL, 0);
-  }
+  static ShaderInput blank(nullptr, 0);
   return blank;
 }
 
@@ -35,7 +30,7 @@ get_blank() {
  */
 ShaderInput::
 ShaderInput(CPT_InternalName name, const NodePath &np, int priority) :
-  _name(MOVE(name)),
+  _name(std::move(name)),
   _type(M_nodepath),
   _priority(priority),
   _value(new ParamNodePath(np))
@@ -47,7 +42,7 @@ ShaderInput(CPT_InternalName name, const NodePath &np, int priority) :
  */
 ShaderInput::
 ShaderInput(CPT_InternalName name, Texture *tex, bool read, bool write, int z, int n, int priority) :
-  _name(MOVE(name)),
+  _name(std::move(name)),
   _type(M_texture_image),
   _priority(priority),
   _value(new ParamTextureImage(tex, read, write, z, n))
@@ -59,7 +54,7 @@ ShaderInput(CPT_InternalName name, Texture *tex, bool read, bool write, int z, i
  */
 ShaderInput::
 ShaderInput(CPT_InternalName name, Texture *tex, const SamplerState &sampler, int priority) :
-  _name(MOVE(name)),
+  _name(std::move(name)),
   _type(M_texture_sampler),
   _priority(priority),
   _value(new ParamTextureSampler(tex, sampler))
@@ -67,10 +62,34 @@ ShaderInput(CPT_InternalName name, Texture *tex, const SamplerState &sampler, in
 }
 
 /**
+ *
+ */
+size_t ShaderInput::
+add_hash(size_t hash) const {
+  hash = int_hash::add_hash(hash, _type);
+  hash = pointer_hash::add_hash(hash, _name);
+  hash = int_hash::add_hash(hash, _priority);
+
+  switch (_type) {
+  case M_invalid:
+    return hash;
+
+  case M_vector:
+    return _stored_vector.add_hash(hash);
+
+  case M_numeric:
+    return pointer_hash::add_hash(hash, _stored_ptr._ptr);
+
+  default:
+    return pointer_hash::add_hash(hash, _value);
+  }
+}
+
+/**
  * Warning: no error checking is done.  This *will* crash if get_value_type()
  * is not M_nodepath.
  */
-const NodePath &ShaderInput::
+NodePath ShaderInput::
 get_nodepath() const {
   return DCAST(ParamNodePath, _value)->get_value();
 }
@@ -91,7 +110,7 @@ get_texture() const {
     return DCAST(Texture, _value);
 
   default:
-    return NULL;
+    return nullptr;
   }
 }
 

@@ -18,7 +18,7 @@
 #define FCOLLADA_UTILS_H
 
 #include "pre_fcollada_include.h"
-#include "FCollada.h"
+#include <FCollada.h>
 
 // Useful conversion stuff
 inline LVecBase3d TO_VEC3(FMVector3 v) {
@@ -33,6 +33,6 @@ inline LColor TO_COLOR(FMVector4 v) {
 #define FROM_VEC3(v) (FMVector3(v[0], v[1], v[2]))
 #define FROM_VEC4(v) (FMVector4(v[0], v[1], v[2], v[3]))
 #define FROM_MAT4(v) (FMMatrix44(v.getData()))
-#define FROM_FSTRING(fs) (string(fs.c_str()))
+#define FROM_FSTRING(fs) (std::string(fs.c_str()))
 
 #endif

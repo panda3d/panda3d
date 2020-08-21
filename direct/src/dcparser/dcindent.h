@@ -29,8 +29,8 @@
  * stream itself.  Useful for indenting a series of lines of text by a given
  * amount.
  */
-ostream &
-indent(ostream &out, int indent_level);
+std::ostream &
+indent(std::ostream &out, int indent_level);
 
 #endif  // WITHIN_PANDA
 

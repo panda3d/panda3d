@@ -59,7 +59,7 @@ run() {
   Objects objects;
   TypedWritable *object = bam_file.read_object();
 
-  if (object != (TypedWritable *)NULL &&
+  if (object != nullptr &&
       object->is_exact_type(BamCacheRecord::get_class_type())) {
     // Here's a special case: if the first object in the file is a
     // BamCacheRecord, it's really a cache data file and not a true bam file;
@@ -68,10 +68,10 @@ run() {
     object = bam_file.read_object();
   }
 
-  while (object != (TypedWritable *)NULL || !bam_file.is_eof()) {
-    if (object != (TypedWritable *)NULL) {
+  while (object != nullptr || !bam_file.is_eof()) {
+    if (object != nullptr) {
       ReferenceCount *ref_ptr = object->as_reference_count();
-      if (ref_ptr != NULL) {
+      if (ref_ptr != nullptr) {
         ref_ptr->ref();
       }
       objects.push_back(object);

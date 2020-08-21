@@ -36,7 +36,7 @@ get_num_trees() const {
  */
 INLINE const STTree *SpeedTreeNode::
 get_tree(int n) const {
-  nassertr(n >= 0 && n < (int)_trees.size(), NULL);
+  nassertr(n >= 0 && n < (int)_trees.size(), nullptr);
   InstanceList *instance_list = _trees[n];
   return instance_list->get_tree();
 }
@@ -47,7 +47,9 @@ get_tree(int n) const {
  */
 INLINE const SpeedTreeNode::InstanceList &SpeedTreeNode::
 get_instance_list(int n) const {
-  nassertr(n >= 0 && n < (int)_trees.size(), *(InstanceList *)NULL);
+  // TODO: This should be nassertr instead of assert, but there's nothing we
+  // can really return when the assert fails.
+  assert(n >= 0 && n < (int)_trees.size());
   InstanceList *instance_list = _trees[n];
   return *instance_list;
 }
@@ -57,7 +59,7 @@ get_instance_list(int n) const {
  */
 INLINE STTree *SpeedTreeNode::
 modify_tree(int n) {
-  nassertr(n >= 0 && n < (int)_trees.size(), NULL);
+  nassertr(n >= 0 && n < (int)_trees.size(), nullptr);
   InstanceList *instance_list = _trees[n];
   _needs_repopulate = true;
   return (STTree *)instance_list->get_tree();
@@ -68,7 +70,7 @@ modify_tree(int n) {
  */
 INLINE void SpeedTreeNode::
 clear_terrain() {
-  set_terrain(NULL);
+  set_terrain(nullptr);
 }
 
 /**
@@ -77,7 +79,7 @@ clear_terrain() {
  */
 INLINE bool SpeedTreeNode::
 has_terrain() const {
-  return _terrain != (STTerrain *)NULL;
+  return _terrain != nullptr;
 }
 
 /**

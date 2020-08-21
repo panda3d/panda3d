@@ -25,13 +25,16 @@
 #include "geomTristrips.h"
 #include "geomVertexWriter.h"
 
+using std::max;
+using std::min;
+
 // Specifies the UV range of textures applied to the frame.  Maybe we'll have
 // a reason to make this a parameter of the frame style one day, but for now
 // it's hardcoded to fit the entire texture over the rectangular frame.
 static const LVecBase4 uv_range = LVecBase4(0.0f, 1.0f, 0.0f, 1.0f);
 
-ostream &
-operator << (ostream &out, PGFrameStyle::Type type) {
+std::ostream &
+operator << (std::ostream &out, PGFrameStyle::Type type) {
   switch (type) {
   case PGFrameStyle::T_none:
     return out << "none";
@@ -92,7 +95,7 @@ get_internal_frame(const LVecBase4 &frame) const {
  *
  */
 void PGFrameStyle::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << _type << " color = " << _color << " width = " << _width;
   if (_visible_scale != LVecBase2(1.0f, 1.0f)) {
     out << "visible_scale = " << get_visible_scale();
@@ -191,7 +194,7 @@ generate_into(const NodePath &parent, const LVecBase4 &frame,
     break;
   }
 
-  if (new_node != (PandaNode *)NULL && _color[3] != 1.0f) {
+  if (new_node != nullptr && _color[3] != 1.0f) {
     // We've got some alpha on the color; we need transparency.
     new_node->set_attrib(TransparencyAttrib::make(TransparencyAttrib::M_alpha));
   }
@@ -254,7 +257,7 @@ generate_flat_geom(const LVecBase4 &frame) {
   geom->add_primitive(strip);
   gnode->add_geom(geom, state);
 
-  return gnode.p();
+  return gnode;
 }
 
 /**
@@ -428,7 +431,7 @@ generate_bevel_geom(const LVecBase4 &frame, bool in) {
   }
   gnode->add_geom(geom, state);
 
-  return gnode.p();
+  return gnode;
 }
 
 /**
@@ -660,7 +663,7 @@ generate_groove_geom(const LVecBase4 &frame, bool in) {
   }
   gnode->add_geom(geom, state);
 
-  return gnode.p();
+  return gnode;
 }
 
 /**
@@ -800,5 +803,5 @@ generate_texture_border_geom(const LVecBase4 &frame) {
   geom->add_primitive(strip);
   gnode->add_geom(geom, state);
 
-  return gnode.p();
+  return gnode;
 }

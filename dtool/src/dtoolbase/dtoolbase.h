@@ -21,19 +21,7 @@
 
 #include "dtool_config.h"
 
-/* Make sure WIN32 and WIN32_VC are defined when using MSVC */
-#if defined(_WIN32) || defined(_WIN64)
-#ifndef WIN32
-#define WIN32
-#endif
 #ifdef _MSC_VER
-#ifndef WIN32_VC
-#define WIN32_VC
-#endif
-#endif
-#endif
-
-#ifdef WIN32_VC
 /* These warning pragmas must appear before anything else for VC++ to
    respect them.  Sheesh. */
 
@@ -58,22 +46,22 @@
 #pragma warning (disable : 4267)
 /* C4577: 'noexcept' used with no exception handling mode specified */
 #pragma warning (disable : 4577)
+#endif  /* _MSC_VER */
 
-#if _MSC_VER >= 1300
- #if _MSC_VER >= 1310
-   #define USING_MSVC7_1
-// #pragma message("VC 7.1")
- #else
-// #pragma message("VC 7.0")
- #endif
-#define USING_MSVC7
-#else
-// #pragma message("VC 6.0")
+/* Windows likes to define min() and max() macros, which will conflict with
+   std::min() and std::max() respectively, unless we do this: */
+#ifdef _WIN32
+#ifndef NOMINMAX
+#define NOMINMAX
 #endif
-#endif  /* WIN32_VC */
+#endif
 
 #ifndef __has_builtin
 #define __has_builtin(x) 0
+#endif
+
+#ifndef __has_attribute
+#define __has_attribute(x) 0
 #endif
 
 // Use NODEFAULT to optimize a switch() stmt to tell MSVC to automatically go
@@ -81,14 +69,34 @@
 // 'assume at least one of the cases is always true')
 #ifdef _DEBUG
 #define NODEFAULT  default: assert(0); break;
-#elif defined(_MSC_VER)
-#define NODEFAULT  default: __assume(0);   // special VC keyword
 #elif __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 5) || __has_builtin(__builtin_unreachable)
 #define NODEFAULT  default: __builtin_unreachable();
+#elif defined(_MSC_VER)
+#define NODEFAULT  default: __assume(0);   // special VC keyword
 #else
 #define NODEFAULT
 #endif
 
+// Use this to hint the compiler that a memory address is aligned.
+#if __has_builtin(__builtin_assume_aligned) || __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7)
+#define ASSUME_ALIGNED(x, y) (__builtin_assume_aligned(x, y))
+#else
+#define ASSUME_ALIGNED(x, y) (x)
+#endif
+
+#if __has_attribute(assume_aligned) || __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 9)
+#define RETURNS_ALIGNED(x) __attribute__((assume_aligned(x)))
+#else
+#define RETURNS_ALIGNED(x)
+#endif
+
+#ifdef __GNUC__
+#define LIKELY(x) __builtin_expect(!!(x), 1)
+#define UNLIKELY(x) __builtin_expect(!!(x), 0)
+#else
+#define LIKELY(x) (x)
+#define UNLIKELY(x) (x)
+#endif
 
 /*
   include win32 defns for everything up to WinServer2003, and assume
@@ -98,7 +106,7 @@
 #ifdef _WIN32_WINNT
 #undef _WIN32_WINNT
 #endif
-#define _WIN32_WINNT 0x0502
+#define _WIN32_WINNT 0x0600
 
 #ifdef __cplusplus
 #ifndef __STDC_LIMIT_MACROS
@@ -111,19 +119,17 @@
 
 // This is a workaround for a glibc bug that is triggered by clang when
 // compiling with -ffast-math.
-#ifdef __clang__
+#if defined(__clang__) && defined(__GLIBC__)
 #include <sys/cdefs.h>
 #ifndef __extern_always_inline
 #define __extern_always_inline extern __always_inline
 #endif
 #endif
 
-#ifdef HAVE_PYTHON
 // Instead of including the Python headers, which will implicitly add a linker
 // flag to link in Python, we'll just excerpt the forward declaration of
 // PyObject.
 typedef struct _object PyObject;
-#endif
 
 #ifndef HAVE_EIGEN
 // If we don't have the Eigen library, don't define LINMATH_ALIGN.
@@ -184,10 +190,6 @@ typedef struct _object PyObject;
 
 #ifdef PHAVE_LIMITS_H
 #include <limits.h>
-#endif
-
-#ifdef PHAVE_MINMAX_H
-#include <minmax.h>
 #endif
 
 #ifdef PHAVE_SYS_TIME_H
@@ -328,7 +330,7 @@ typedef struct _object PyObject;
 
 #ifdef __WORDSIZE
 #define NATIVE_WORDSIZE __WORDSIZE
-#elif defined(_LP64)
+#elif defined(_LP64) || defined(_WIN64)
 #define NATIVE_WORDSIZE 64
 #else
 #define NATIVE_WORDSIZE 32
@@ -394,6 +396,35 @@ typedef struct _object PyObject;
 
 #endif
 
+#ifdef LINMATH_ALIGN
+/* We require 16-byte alignment of certain structures, to support SSE2.  We
+   don't strictly have to align everything, but it's just easier to do so. */
+#if defined(HAVE_EIGEN) && defined(__AVX__) && defined(STDFLOAT_DOUBLE)
+/* Eigen uses AVX instructions, but let's only enable this when compiling with
+   double precision, so that we can keep our ABI a bit more stable. */
+#define MEMORY_HOOK_ALIGNMENT 32
+#else
+#define MEMORY_HOOK_ALIGNMENT 16
+#endif
+/* Otherwise, align to two words.  This seems to be pretty standard to the
+   point where some code may rely on this being the case. */
+#elif defined(IS_OSX) || NATIVE_WORDSIZE >= 64
+#define MEMORY_HOOK_ALIGNMENT 16
+#else
+#define MEMORY_HOOK_ALIGNMENT 8
+#endif
+
+#ifdef HAVE_EIGEN
+/* Make sure that Eigen doesn't assume alignment guarantees we don't offer. */
+#define EIGEN_MAX_ALIGN_BYTES MEMORY_HOOK_ALIGNMENT
+#ifndef EIGEN_MPL2_ONLY
+#define EIGEN_MPL2_ONLY 1
+#endif
+#if !defined(_DEBUG) && !defined(EIGEN_NO_DEBUG)
+#define EIGEN_NO_DEBUG 1
+#endif
+#endif
+
 /* Determine our memory-allocation requirements. */
 #if defined(USE_MEMORY_PTMALLOC2) || defined(USE_MEMORY_DLMALLOC) || defined(DO_MEMORY_USAGE) || defined(MEMORY_HOOK_DO_ALIGN)
 /* In this case we have some custom memory management requirements. */
@@ -423,6 +454,8 @@ typedef struct _object PyObject;
 #define MAKE_PROPERTY2(property_name, ...) __make_property2(property_name, __VA_ARGS__)
 #define MAKE_SEQ(seq_name, num_name, element_name) __make_seq(seq_name, num_name, element_name)
 #define MAKE_SEQ_PROPERTY(property_name, ...) __make_seq_property(property_name, __VA_ARGS__)
+#define MAKE_MAP_PROPERTY(property_name, ...) __make_map_property(property_name, __VA_ARGS__)
+#define MAKE_MAP_KEYS_SEQ(property_name, ...) __make_map_keys_seq(property_name, __VA_ARGS__)
 #define EXTENSION(x) __extension x
 #define EXTEND __extension
 #else
@@ -433,12 +466,14 @@ typedef struct _object PyObject;
 #define MAKE_PROPERTY2(property_name, ...)
 #define MAKE_SEQ(seq_name, num_name, element_name)
 #define MAKE_SEQ_PROPERTY(property_name, ...)
+#define MAKE_MAP_PROPERTY(property_name, ...)
+#define MAKE_MAP_KEYS_SEQ(property_name, ...)
 #define EXTENSION(x)
 #define EXTEND
 #endif
 
 /* These symbols are used in dtoolsymbols.h and pandasymbols.h. */
-#if defined(WIN32_VC) && !defined(CPPPARSER) && !defined(LINK_ALL_STATIC)
+#if defined(_WIN32) && !defined(CPPPARSER) && !defined(LINK_ALL_STATIC)
 #define EXPORT_CLASS __declspec(dllexport)
 #define IMPORT_CLASS __declspec(dllimport)
 #elif __GNUC__ >= 4 && !defined(CPPPARSER) && !defined(LINK_ALL_STATIC)

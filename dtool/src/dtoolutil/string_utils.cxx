@@ -17,6 +17,9 @@
 
 #include <ctype.h>
 
+using std::string;
+using std::wstring;
+
 // Case-insensitive string comparison, from Stroustrup's C++ third edition.
 // Works like strcmp().
 int

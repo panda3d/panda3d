@@ -82,7 +82,11 @@ enum AtomicToken {
   // string means whatever the native string representation is.
   AT_string = 7,
 
-  AT_longlong = 8
+  AT_longlong = 8,
+
+  // This is not a type that C has, but C++ and many scripting languages do;
+  // it indicates a null value, or the absence of any value.
+  AT_null = 9,
 };
 
 EXPCL_INTERROGATEDB void interrogate_add_search_directory(const char *dirname);
@@ -148,6 +152,9 @@ EXPCL_INTERROGATEDB bool interrogate_element_has_getter(ElementIndex element);
 EXPCL_INTERROGATEDB FunctionIndex interrogate_element_getter(ElementIndex element);
 EXPCL_INTERROGATEDB bool interrogate_element_has_setter(ElementIndex element);
 EXPCL_INTERROGATEDB FunctionIndex interrogate_element_setter(ElementIndex element);
+
+EXPCL_INTERROGATEDB bool interrogate_element_is_sequence(ElementIndex element);
+EXPCL_INTERROGATEDB bool interrogate_element_is_mapping(ElementIndex element);
 
 // Global Data
 
@@ -363,6 +370,7 @@ EXPCL_INTERROGATEDB TypeIndex interrogate_get_type(int n);
 EXPCL_INTERROGATEDB TypeIndex interrogate_get_type_by_name(const char *type_name);
 EXPCL_INTERROGATEDB TypeIndex interrogate_get_type_by_scoped_name(const char *type_name);
 EXPCL_INTERROGATEDB TypeIndex interrogate_get_type_by_true_name(const char *type_name);
+EXPCL_INTERROGATEDB bool interrogate_type_is_global(TypeIndex type);
 EXPCL_INTERROGATEDB const char *interrogate_type_name(TypeIndex type);
 EXPCL_INTERROGATEDB const char *interrogate_type_scoped_name(TypeIndex type);
 EXPCL_INTERROGATEDB const char *interrogate_type_true_name(TypeIndex type);

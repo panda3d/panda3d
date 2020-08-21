@@ -24,7 +24,7 @@ TypeHandle NodeCullCallbackData::_type_handle;
  *
  */
 void NodeCullCallbackData::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << "(" << (void *)_trav << ", " << (void *)&_data << ")";
 }
 
@@ -41,15 +41,15 @@ void NodeCullCallbackData::
 upcall() {
   PandaNode *node = _data.node();
   if (node->is_of_type(CallbackNode::get_class_type())) {
-    CallbackNode *cbnode = DCAST(CallbackNode, _data.node());
+    CallbackNode *cbnode = (CallbackNode *)node;
 
     // OK, render this node.  Rendering a CallbackNode means creating a
     // CullableObject for the draw_callback, if any.  We don't need to pass
     // any Geoms, however.
     CallbackObject *cbobj = cbnode->get_draw_callback();
-    if (cbobj != (CallbackObject *)NULL) {
+    if (cbobj != nullptr) {
       CullableObject *object =
-        new CullableObject(NULL, _data._state,
+        new CullableObject(nullptr, _data._state,
                            _data.get_internal_transform(_trav));
       object->set_draw_callback(cbobj);
       _trav->get_cull_handler()->record_object(object, _trav);

@@ -116,8 +116,9 @@ class Interval(DirectObject):
         return self.currT
 
     def start(self, startT = 0.0, endT = -1.0, playRate = 1.0):
+        """ Starts the interval.  Returns an awaitable. """
         self.setupPlay(startT, endT, playRate, 0)
-        self.__spawnTask()
+        return self.__spawnTask()
 
     def loop(self, startT = 0.0, endT = -1.0, playRate = 1.0):
         self.setupPlay(startT, endT, playRate, 1)
@@ -427,6 +428,7 @@ class Interval(DirectObject):
         task = Task(self.__playTask)
         task.interval = self
         taskMgr.add(task, taskName)
+        return task
 
     def __removeTask(self):
         # Kill old task(s), including those from a similarly-named but
@@ -452,12 +454,9 @@ class Interval(DirectObject):
         """
         # Don't use a regular import, to prevent ModuleFinder from picking
         # it up as a dependency when building a .p3d package.
-        import importlib, sys
+        import importlib
         EntryScale = importlib.import_module('direct.tkwidgets.EntryScale')
-        if sys.version_info >= (3, 0):
-            tkinter = importlib.import_module('tkinter')
-        else:
-            tkinter = importlib.import_module('Tkinter')
+        tkinter = importlib.import_module('tkinter')
 
         if tl == None:
             tl = tkinter.Toplevel()

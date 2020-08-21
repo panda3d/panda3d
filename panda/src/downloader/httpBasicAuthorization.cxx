@@ -15,6 +15,8 @@
 
 #ifdef HAVE_OPENSSL
 
+using std::string;
+
 const string HTTPBasicAuthorization::_mechanism = "basic";
 
 /**

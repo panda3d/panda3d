@@ -12,8 +12,8 @@
  * Prior system by: cary
  */
 
-#ifndef __AUDIO_MANAGER_H__
-#define __AUDIO_MANAGER_H__
+#ifndef AUDIOMANAGER_H
+#define AUDIOMANAGER_H
 
 #include "config_audio.h"
 #include "audioSound.h"
@@ -62,8 +62,8 @@ PUBLISHED:
     SM_stream,
   };
 
-  virtual int getSpeakerSetup();
-  virtual void setSpeakerSetup(SpeakerModeCategory cat);
+  virtual int get_speaker_setup();
+  virtual void set_speaker_setup(SpeakerModeCategory cat);
   virtual bool configure_filters(FilterProperties *config);
 
   // Create an AudioManager for each category of sounds you have.  E.g.
@@ -86,7 +86,7 @@ PUBLISHED:
   virtual bool is_valid() = 0;
 
   // Get a sound:
-  virtual PT(AudioSound) get_sound(const string& file_name, bool positional = false, int mode=SM_heuristic) = 0;
+  virtual PT(AudioSound) get_sound(const Filename &file_name, bool positional = false, int mode=SM_heuristic) = 0;
   virtual PT(AudioSound) get_sound(MovieAudio *source, bool positional = false, int mode=SM_heuristic) = 0;
 
   PT(AudioSound) get_null_sound();
@@ -95,7 +95,7 @@ PUBLISHED:
   // doesn't break any connection between AudioSounds that have already given
   // by get_sound() from this manager.  It's only affecting whether the
   // AudioManager keeps a copy of the sound in its poolcache.
-  virtual void uncache_sound(const string& file_name) = 0;
+  virtual void uncache_sound(const Filename &file_name) = 0;
   virtual void clear_cache() = 0;
   virtual void set_cache_limit(unsigned int count) = 0;
   virtual unsigned int get_cache_limit() const = 0;
@@ -154,9 +154,10 @@ PUBLISHED:
                                                 PN_stdfloat *ux, PN_stdfloat *uy, PN_stdfloat *uz);
 
   // Control the "relative scale that sets the distance factor" units for 3D
-  // spacialized audio.  Default is 1.0 Fmod uses meters internally, so give a
-  // float in Units-per meter Don't know what Miles uses.  Default is 1.0
-  // which is adjust in panda to be feet.
+  // spacialized audio. This is a float in units-per-meter. Default value is
+  // 1.0, which means that Panda units are understood as meters; for e.g.
+  // feet, set 3.28. This factor is applied only to Fmod and OpenAL at the
+  // moment.
   virtual void audio_3d_set_distance_factor(PN_stdfloat factor);
   virtual PN_stdfloat audio_3d_get_distance_factor() const;
 
@@ -172,12 +173,10 @@ PUBLISHED:
   virtual PN_stdfloat audio_3d_get_drop_off_factor() const;
 
   static Filename get_dls_pathname();
+  MAKE_PROPERTY(dls_pathname, get_dls_pathname);
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out) const;
-
-  // set_speaker_configuration is a Miles only method.
-  virtual void set_speaker_configuration(LVecBase3 *speaker1, LVecBase3 *speaker2=NULL, LVecBase3 *speaker3=NULL, LVecBase3 *speaker4=NULL, LVecBase3 *speaker5=NULL, LVecBase3 *speaker6=NULL, LVecBase3 *speaker7=NULL, LVecBase3 *speaker8=NULL, LVecBase3 *speaker9=NULL);
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out) const;
 
 public:
   static void register_AudioManager_creator(Create_AudioManager_proc* proc);
@@ -212,12 +211,12 @@ private:
   static TypeHandle _type_handle;
 };
 
-inline ostream &
-operator << (ostream &out, const AudioManager &mgr) {
+inline std::ostream &
+operator << (std::ostream &out, const AudioManager &mgr) {
   mgr.output(out);
   return out;
 }
 
 #include "audioManager.I"
 
-#endif /* __AUDIO_MANAGER_H__ */
+#endif /* AUDIOMANAGER_H */

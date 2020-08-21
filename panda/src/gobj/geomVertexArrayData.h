@@ -92,10 +92,10 @@ PUBLISHED:
   MAKE_PROPERTY(data_size_bytes, get_data_size_bytes);
   MAKE_PROPERTY(modified, get_modified);
 
-  void output(ostream &out) const;
-  void write(ostream &out, int indent_level = 0) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent_level = 0) const;
 
-  INLINE bool request_resident() const;
+  INLINE bool request_resident(Thread *current_thread = Thread::get_current_thread()) const;
 
   INLINE CPT(GeomVertexArrayDataHandle) get_handle(Thread *current_thread = Thread::get_current_thread()) const;
   INLINE PT(GeomVertexArrayDataHandle) modify_handle(Thread *current_thread = Thread::get_current_thread());
@@ -124,6 +124,7 @@ public:
 
 private:
   INLINE void set_lru_size(size_t lru_size);
+  INLINE void mark_used();
 
   void clear_prepared(PreparedGraphicsObjects *prepared_objects);
   void reverse_data_endianness(unsigned char *dest,
@@ -149,7 +150,8 @@ private:
   // This is the data that must be cycled between pipeline stages.
   class EXPCL_PANDA_GOBJ CData : public CycleData {
   public:
-    INLINE CData();
+    INLINE CData(UsageHint usage_hint = UH_unspecified);
+    INLINE CData(CData &&from) noexcept;
     INLINE CData(const CData &copy);
     INLINE void operator = (const CData &copy);
 
@@ -230,6 +232,7 @@ private:
   friend class GeomVertexData;
   friend class PreparedGraphicsObjects;
   friend class GeomVertexArrayDataHandle;
+  friend class GeomPrimitivePipelineReader;
 };
 
 /**
@@ -246,23 +249,29 @@ private:
  */
 class EXPCL_PANDA_GOBJ GeomVertexArrayDataHandle : public ReferenceCount, public GeomEnums {
 private:
+  INLINE GeomVertexArrayDataHandle(CPT(GeomVertexArrayData) object,
+                                   Thread *current_thread);
   INLINE GeomVertexArrayDataHandle(const GeomVertexArrayData *object,
-                                   Thread *current_thread,
-                                   const GeomVertexArrayData::CData *_cdata,
-                                   bool writable);
-  INLINE GeomVertexArrayDataHandle(const GeomVertexArrayDataHandle &);
-  INLINE void operator = (const GeomVertexArrayDataHandle &);
+                                   Thread *current_thread);
+  INLINE GeomVertexArrayDataHandle(PT(GeomVertexArrayData) object,
+                                   Thread *current_thread);
+  INLINE GeomVertexArrayDataHandle(GeomVertexArrayData *object,
+                                   Thread *current_thread);
 
 PUBLISHED:
   INLINE ~GeomVertexArrayDataHandle();
 
 public:
+  GeomVertexArrayDataHandle(const GeomVertexArrayDataHandle &) = delete;
+
   ALLOC_DELETED_CHAIN_DECL(GeomVertexArrayDataHandle);
+
+  GeomVertexArrayDataHandle &operator = (const GeomVertexArrayDataHandle &) = delete;
 
   INLINE Thread *get_current_thread() const;
 
-  INLINE const unsigned char *get_read_pointer(bool force) const;
-  unsigned char *get_write_pointer();
+  INLINE const unsigned char *get_read_pointer(bool force) const RETURNS_ALIGNED(MEMORY_HOOK_ALIGNMENT);
+  unsigned char *get_write_pointer() RETURNS_ALIGNED(MEMORY_HOOK_ALIGNMENT);
 
 PUBLISHED:
   INLINE const GeomVertexArrayData *get_object() const;
@@ -307,16 +316,16 @@ PUBLISHED:
                                    PyObject *buffer,
                                    size_t from_start, size_t from_size));
 
-  INLINE string get_data() const;
-  void set_data(const string &data);
-  INLINE string get_subdata(size_t start, size_t size) const;
-  void set_subdata(size_t start, size_t size, const string &data);
+  INLINE vector_uchar get_data() const;
+  void set_data(const vector_uchar &data);
+  INLINE vector_uchar get_subdata(size_t start, size_t size) const;
+  void set_subdata(size_t start, size_t size, const vector_uchar &data);
 
   INLINE void mark_used() const;
 
 private:
   PT(GeomVertexArrayData) _object;
-  Thread *_current_thread;
+  Thread *const _current_thread;
   GeomVertexArrayData::CData *_cdata;
   bool _writable;
 
@@ -333,10 +342,15 @@ public:
 private:
   static TypeHandle _type_handle;
 
+  friend class Geom;
+  friend class GeomPrimitive;
+  friend class GeomVertexData;
+  friend class GeomVertexDataPipelineReader;
+  friend class GeomVertexDataPipelineWriter;
   friend class GeomVertexArrayData;
 };
 
-INLINE ostream &operator << (ostream &out, const GeomVertexArrayData &obj);
+INLINE std::ostream &operator << (std::ostream &out, const GeomVertexArrayData &obj);
 
 #include "geomVertexArrayData.I"
 

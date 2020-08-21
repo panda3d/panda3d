@@ -10,6 +10,8 @@
 #include "movieTypeRegistry.cxx"
 #include "movieVideo.cxx"
 #include "movieVideoCursor.cxx"
+#include "opusAudio.cxx"
+#include "opusAudioCursor.cxx"
 #include "userDataAudio.cxx"
 #include "userDataAudioCursor.cxx"
 #include "vorbisAudio.cxx"

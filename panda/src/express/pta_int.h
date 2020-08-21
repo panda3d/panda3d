@@ -26,17 +26,12 @@
  * pta again.
  */
 
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS, PointerToBase<ReferenceCountedVector<int> >)
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS, PointerToArrayBase<int>)
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS, PointerToArray<int>)
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS, ConstPointerToArray<int>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_EXPRESS, EXPTP_PANDA_EXPRESS, PointerToBase<ReferenceCountedVector<int> >)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_EXPRESS, EXPTP_PANDA_EXPRESS, PointerToArrayBase<int>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_EXPRESS, EXPTP_PANDA_EXPRESS, PointerToArray<int>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_EXPRESS, EXPTP_PANDA_EXPRESS, ConstPointerToArray<int>)
 
 typedef PointerToArray<int> PTA_int;
 typedef ConstPointerToArray<int> CPTA_int;
-
-// Tell GCC that we'll take care of the instantiation explicitly here.
-#ifdef __GNUC__
-#pragma interface
-#endif
 
 #endif

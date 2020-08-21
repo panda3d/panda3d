@@ -1,9 +1,9 @@
-"""Undocumented Module"""
+"""Contains the Audio3DManager class."""
 
 __all__ = ['Audio3DManager']
 
-from panda3d.core import Vec3, VBase3
-from direct.task import Task
+from panda3d.core import Vec3, VBase3, WeakNodePath, ClockObject
+from direct.task.TaskManagerGlobal import Task, taskMgr
 #
 class Audio3DManager:
 
@@ -35,7 +35,7 @@ class Audio3DManager:
     def setDistanceFactor(self, factor):
         """
         Control the scale that sets the distance units for 3D spacialized audio.
-        Default is 1.0 which is adjust in panda to be feet.
+        Default is 1.0 which is adjust in panda to be meters.
         When you change this, don't forget that this effects the scale of setSoundMinDistance
         """
         self.audio_manager.audio3dSetDistanceFactor(factor)
@@ -43,7 +43,7 @@ class Audio3DManager:
     def getDistanceFactor(self):
         """
         Control the scale that sets the distance units for 3D spacialized audio.
-        Default is 1.0 which is adjust in panda to be feet.
+        Default is 1.0 which is adjust in panda to be meters.
         """
         return self.audio_manager.audio3dGetDistanceFactor()
 
@@ -122,9 +122,11 @@ class Audio3DManager:
         This is relative to the sound root (probably render).
         Default: VBase3(0, 0, 0)
         """
+        if isinstance(velocity, tuple) and len(velocity) == 3:
+            velocity = VBase3(*velocity)
         if not isinstance(velocity, VBase3):
             raise TypeError("Invalid argument 1, expected <VBase3>")
-        self.vel_dict[sound]=velocity
+        self.vel_dict[sound] = velocity
 
     def setSoundVelocityAuto(self, sound):
         """
@@ -139,14 +141,22 @@ class Audio3DManager:
         """
         Get the velocity of the sound.
         """
-        if (sound in self.vel_dict):
+        if sound in self.vel_dict:
             vel = self.vel_dict[sound]
-            if (vel!=None):
+            if vel is not None:
                 return vel
-            else:
-                for known_object in list(self.sound_dict.keys()):
-                    if self.sound_dict[known_object].count(sound):
-                        return known_object.getPosDelta(self.root)/globalClock.getDt()
+
+            for known_object in list(self.sound_dict.keys()):
+                if self.sound_dict[known_object].count(sound):
+                    node_path = known_object.getNodePath()
+                    if not node_path:
+                        # The node has been deleted.
+                        del self.sound_dict[known_object]
+                        continue
+
+                    clock = ClockObject.getGlobalClock()
+                    return node_path.getPosDelta(self.root) / clock.getDt()
+
         return VBase3(0, 0, 0)
 
     def setListenerVelocity(self, velocity):
@@ -155,9 +165,11 @@ class Audio3DManager:
         This is relative to the sound root (probably render).
         Default: VBase3(0, 0, 0)
         """
+        if isinstance(velocity, tuple) and len(velocity) == 3:
+            velocity = VBase3(*velocity)
         if not isinstance(velocity, VBase3):
             raise TypeError("Invalid argument 0, expected <VBase3>")
-        self.listener_vel=velocity
+        self.listener_vel = velocity
 
     def setListenerVelocityAuto(self):
         """
@@ -172,16 +184,18 @@ class Audio3DManager:
         """
         Get the velocity of the listener.
         """
-        if (self.listener_vel!=None):
+        if self.listener_vel is not None:
             return self.listener_vel
-        elif (self.listener_target!=None):
-            return self.listener_target.getPosDelta(self.root)/globalClock.getDt()
+        elif self.listener_target is not None:
+            clock = ClockObject.getGlobalClock()
+            return self.listener_target.getPosDelta(self.root) / clock.getDt()
         else:
             return VBase3(0, 0, 0)
 
     def attachSoundToObject(self, sound, object):
         """
-        Sound will come from the location of the object it is attached to
+        Sound will come from the location of the object it is attached to.
+        If the object is deleted, the sound will automatically be removed.
         """
         # sound is an AudioSound
         # object is any Panda object with coordinates
@@ -197,7 +211,7 @@ class Audio3DManager:
                     del self.sound_dict[known_object]
 
         if object not in self.sound_dict:
-            self.sound_dict[object] = []
+            self.sound_dict[WeakNodePath(object)] = []
 
         self.sound_dict[object].append(sound)
         return 1
@@ -258,14 +272,18 @@ class Audio3DManager:
             if self.audio_manager.getActive()==0:
                 return Task.cont
 
-        for known_object in list(self.sound_dict.keys()):
-            tracked_sound = 0
-            while tracked_sound < len(self.sound_dict[known_object]):
-                sound = self.sound_dict[known_object][tracked_sound]
-                pos = known_object.getPos(self.root)
+        for known_object, sounds in list(self.sound_dict.items()):
+            node_path = known_object.getNodePath()
+            if not node_path:
+                # The node has been deleted.
+                del self.sound_dict[known_object]
+                continue
+
+            pos = node_path.getPos(self.root)
+
+            for sound in sounds:
                 vel = self.getSoundVelocity(sound)
                 sound.set3dAttributes(pos[0], pos[1], pos[2], vel[0], vel[1], vel[2])
-                tracked_sound += 1
 
         # Update the position of the listener based on the object
         # to which it is attached
@@ -288,4 +306,28 @@ class Audio3DManager:
         for object in list(self.sound_dict.keys()):
             for sound in self.sound_dict[object]:
                 self.detachSound(sound)
+
+    #snake_case alias:
+    get_doppler_factor = getDopplerFactor
+    set_listener_velocity_auto = setListenerVelocityAuto
+    attach_listener = attachListener
+    set_distance_factor = setDistanceFactor
+    attach_sound_to_object = attachSoundToObject
+    get_drop_off_factor = getDropOffFactor
+    set_doppler_factor = setDopplerFactor
+    get_sounds_on_object = getSoundsOnObject
+    set_sound_velocity_auto = setSoundVelocityAuto
+    get_sound_max_distance = getSoundMaxDistance
+    load_sfx = loadSfx
+    get_distance_factor = getDistanceFactor
+    set_listener_velocity = setListenerVelocity
+    set_sound_max_distance = setSoundMaxDistance
+    get_sound_velocity = getSoundVelocity
+    get_listener_velocity = getListenerVelocity
+    set_sound_velocity = setSoundVelocity
+    set_sound_min_distance = setSoundMinDistance
+    get_sound_min_distance = getSoundMinDistance
+    detach_listener = detachListener
+    set_drop_off_factor = setDropOffFactor
+    detach_sound = detachSound
 

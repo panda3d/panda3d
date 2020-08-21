@@ -1,3 +1,9 @@
+"""The Python specialization of the particle system.
+
+See the :ref:`particle-effects` section in the manual for an explanation
+of the particle system.
+"""
+
 from panda3d.core import *
 
 from panda3d.physics import PhysicalNode
@@ -28,6 +34,7 @@ from . import SpriteParticleRendererExt
 
 from direct.directnotify.DirectNotifyGlobal import directNotify
 import sys
+
 
 class Particles(ParticleSystem):
     notify = directNotify.newCategory('Particles')
@@ -575,7 +582,6 @@ class Particles(ParticleSystem):
 
         return dict(zip(('min','median','max'),[l*s/b for l,s,b in zip(litterRange,lifespanRange,birthRateRange)]))
 
-
     def accelerate(self,time,stepCount = 1,stepTime=0.0):
         if time > 0.0:
             if stepTime == 0.0:
@@ -594,3 +600,17 @@ class Particles(ParticleSystem):
                 base.physicsMgr.doPhysics(remainder,self)
 
             self.render()
+
+    # Snake-case aliases.
+    is_enabled = isEnabled
+    set_factory = setFactory
+    set_renderer = setRenderer
+    set_emitter = setEmitter
+    add_force = addForce
+    remove_force = removeForce
+    set_render_node_path = setRenderNodePath
+    get_factory = getFactory
+    get_emitter = getEmitter
+    get_renderer = getRenderer
+    print_params = printParams
+    get_pool_size_ranges = getPoolSizeRanges

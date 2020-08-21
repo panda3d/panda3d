@@ -30,6 +30,10 @@
 #include "geomLinestrips.h"
 #include "geomPoints.h"
 
+using std::endl;
+using std::max;
+using std::min;
+
 TypeHandle PortalClipper::_type_handle;
 
 /**
@@ -39,7 +43,7 @@ PortalClipper::
 PortalClipper(GeometricBoundingVolume *frustum, SceneSetup *scene_setup):
 _reduced_viewport_min(-1,-1),
 _reduced_viewport_max(1,1),
-_clip_state(NULL)
+_clip_state(nullptr)
 {
   _previous = new GeomNode("my_frustum");
 
@@ -140,7 +144,7 @@ draw_current_portal()
 void PortalClipper::
 draw_lines() {
   if (!_list.empty()) {
-    _created_data = NULL;
+    _created_data = nullptr;
 
     PT(GeomVertexData) vdata = new GeomVertexData
       ("portal", GeomVertexFormat::get_v3cp(), Geom::UH_static);
@@ -200,20 +204,24 @@ prepare_portal(const NodePath &node_path)
 {
   // Get the Portal Node from this node_path
   PandaNode *node = node_path.node();
-  _portal_node = NULL;
+  _portal_node = nullptr;
   if (node->is_of_type(PortalNode::get_class_type())) {
     _portal_node = DCAST(PortalNode, node);
   }
 
   // Get the geometry from the portal
-  portal_cat.spam() << *_portal_node << endl;
+  if (portal_cat.is_spam()) {
+    portal_cat.spam() << *_portal_node << endl;
+  }
 
   // Get the camera transformation matrix
   CPT(TransformState) ctransform = node_path.get_transform(_scene_setup->get_cull_center());
   // CPT(TransformState) ctransform =
   // node_path.get_transform(_scene_setup->get_camera_path());
   LMatrix4 cmat = ctransform->get_mat();
-  portal_cat.spam() << cmat << endl;
+  if (portal_cat.is_spam()) {
+    portal_cat.spam() << cmat << endl;
+  }
 
   LVertex temp[4];
   temp[0] = _portal_node->get_vertex(0);
@@ -221,11 +229,13 @@ prepare_portal(const NodePath &node_path)
   temp[2] = _portal_node->get_vertex(2);
   temp[3] = _portal_node->get_vertex(3);
 
-  portal_cat.spam() << "before transformation to camera space" << endl;
-  portal_cat.spam() << temp[0] << endl;
-  portal_cat.spam() << temp[1] << endl;
-  portal_cat.spam() << temp[2] << endl;
-  portal_cat.spam() << temp[3] << endl;
+  if (portal_cat.is_spam()) {
+    portal_cat.spam() << "before transformation to camera space" << endl;
+    portal_cat.spam() << temp[0] << endl;
+    portal_cat.spam() << temp[1] << endl;
+    portal_cat.spam() << temp[2] << endl;
+    portal_cat.spam() << temp[3] << endl;
+  }
 
   temp[0] = temp[0]*cmat;
   temp[1] = temp[1]*cmat;
@@ -234,15 +244,19 @@ prepare_portal(const NodePath &node_path)
 
   LPlane portal_plane(temp[0], temp[1], temp[2]);
   if (!is_facing_view(portal_plane)) {
-    portal_cat.debug() << "portal failed 1st level test (isn't facing the camera)\n";
+    if (portal_cat.is_debug()) {
+      portal_cat.debug() << "portal failed 1st level test (isn't facing the camera)\n";
+    }
     return false;
   }
 
-  portal_cat.spam() << "after transformation to camera space" << endl;
-  portal_cat.spam() << temp[0] << endl;
-  portal_cat.spam() << temp[1] << endl;
-  portal_cat.spam() << temp[2] << endl;
-  portal_cat.spam() << temp[3] << endl;
+  if (portal_cat.is_spam()) {
+    portal_cat.spam() << "after transformation to camera space" << endl;
+    portal_cat.spam() << temp[0] << endl;
+    portal_cat.spam() << temp[1] << endl;
+    portal_cat.spam() << temp[2] << endl;
+    portal_cat.spam() << temp[3] << endl;
+  }
 
   // check if the portal intersects with the cameras 0 point (center of
   // projection). In that case the portal will invert itself.  portals
@@ -266,7 +280,9 @@ prepare_portal(const NodePath &node_path)
     (temp[1][forward_axis] * forward[forward_axis] <= 0) ||
     (temp[2][forward_axis] * forward[forward_axis] <= 0) ||
     (temp[3][forward_axis] * forward[forward_axis] <= 0)) {
-    portal_cat.debug() << "portal intersects with center of projection.." << endl;
+    if (portal_cat.is_debug()) {
+      portal_cat.debug() << "portal intersects with center of projection.." << endl;
+    }
     return true;
   }
 
@@ -277,11 +293,13 @@ prepare_portal(const NodePath &node_path)
   lens->project(temp[2], projected_coords[2]);
   lens->project(temp[3], projected_coords[3]);
 
-  portal_cat.spam() << "after projection to 2d" << endl;
-  portal_cat.spam() << projected_coords[0] << endl;
-  portal_cat.spam() << projected_coords[1] << endl;
-  portal_cat.spam() << projected_coords[2] << endl;
-  portal_cat.spam() << projected_coords[3] << endl;
+  if (portal_cat.is_spam()) {
+    portal_cat.spam() << "after projection to 2d" << endl;
+    portal_cat.spam() << projected_coords[0] << endl;
+    portal_cat.spam() << projected_coords[1] << endl;
+    portal_cat.spam() << projected_coords[2] << endl;
+    portal_cat.spam() << projected_coords[3] << endl;
+  }
 
   // calculate axis aligned bounding box of the portal
   PN_stdfloat min_x, max_x, min_y, max_y;
@@ -290,7 +308,9 @@ prepare_portal(const NodePath &node_path)
   min_y = min(min(min(projected_coords[0][1], projected_coords[1][1]), projected_coords[2][1]), projected_coords[3][1]);
   max_y = max(max(max(projected_coords[0][1], projected_coords[1][1]), projected_coords[2][1]), projected_coords[3][1]);
 
-  portal_cat.spam() << "min_x " << min_x << ";max_x " << max_x << ";min_y " << min_y << ";max_y " << max_y << endl;
+  if (portal_cat.is_spam()) {
+    portal_cat.spam() << "min_x " << min_x << ";max_x " << max_x << ";min_y " << min_y << ";max_y " << max_y << endl;
+  }
 
   // clip the minima and maxima against the viewport
   min_x = max(min_x, _reduced_viewport_min[0]);
@@ -298,11 +318,15 @@ prepare_portal(const NodePath &node_path)
   max_x = min(max_x, _reduced_viewport_max[0]);
   max_y = min(max_y, _reduced_viewport_max[1]);
 
-  portal_cat.spam() << "after clipping: min_x " << min_x << ";max_x " << max_x << ";min_y " << min_y << ";max_y " << max_y << endl;
+  if (portal_cat.is_spam()) {
+    portal_cat.spam() << "after clipping: min_x " << min_x << ";max_x " << max_x << ";min_y " << min_y << ";max_y " << max_y << endl;
+  }
 
   if ((min_x >= max_x) || (min_y >= max_y)) {
+    if (portal_cat.is_debug()) {
       portal_cat.debug() << "portal got clipped away \n";
-      return false;
+    }
+    return false;
   }
 
   // here we know the portal is in view and we have its clipped extents
@@ -321,7 +345,9 @@ prepare_portal(const NodePath &node_path)
   _reduced_frustum = new BoundingHexahedron(far_point[0], far_point[1], far_point[2], far_point[3],
                                             near_point[0], near_point[1], near_point[2], near_point[3]);
 
-  portal_cat.debug() << *_reduced_frustum << endl;
+  if (portal_cat.is_debug()) {
+    portal_cat.debug() << *_reduced_frustum << endl;
+  }
 
   // do debug rendering, if requested
   if (debug_portal_cull) {

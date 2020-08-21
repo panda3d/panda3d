@@ -45,7 +45,7 @@ TypeHandle LODNode::_type_handle;
  * variable.
  */
 PT(LODNode) LODNode::
-make_default_lod(const string &name) {
+make_default_lod(const std::string &name) {
   switch (default_lod_type.get_value()) {
   case LNT_pop:
     return new LODNode(name);
@@ -146,7 +146,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   LPoint3 center = cdata->_center * rel_transform->get_mat();
   PN_stdfloat dist2 = center.dot(center);
 
-  int num_children = min(get_num_children(), (int)cdata->_switch_vector.size());
+  int num_children = std::min(get_num_children(), (int)cdata->_switch_vector.size());
   for (int index = 0; index < num_children; ++index) {
     const Switch &sw = cdata->_switch_vector[index];
     bool in_range;
@@ -160,7 +160,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
     if (in_range) {
       // This switch level is in range.  Draw its children.
       PandaNode *child = get_child(index);
-      if (child != (PandaNode *)NULL) {
+      if (child != nullptr) {
         CullTraverserData next_data(data, child);
         trav->traverse(next_data);
       }
@@ -176,7 +176,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
  *
  */
 void LODNode::
-output(ostream &out) const {
+output(std::ostream &out) const {
   PandaNode::output(out);
   CDReader cdata(_cycler);
   out << " center(" << cdata->_center << ") ";
@@ -330,7 +330,7 @@ compute_child(CullTraverser *trav, CullTraverserData &data) {
          * trav->get_scene()->get_camera_node()->get_lod_scale())) {
       if (pgraph_cat.is_debug()) {
         pgraph_cat.debug()
-          << data._node_path << " at distance " << sqrt(dist2)
+          << data.get_node_path() << " at distance " << sqrt(dist2)
           << ", selected child " << index << "\n";
       }
 
@@ -340,7 +340,7 @@ compute_child(CullTraverser *trav, CullTraverserData &data) {
 
   if (pgraph_cat.is_debug()) {
     pgraph_cat.debug()
-      << data._node_path << " at distance " << sqrt(dist2)
+      << data.get_node_path() << " at distance " << sqrt(dist2)
       << ", no children in range.\n";
   }
 
@@ -384,7 +384,7 @@ show_switches_cull_callback(CullTraverser *trav, CullTraverserData &data) {
         // wireframe mode.
         if (index < get_num_children()) {
           PandaNode *child = get_child(index);
-          if (child != (PandaNode *)NULL) {
+          if (child != nullptr) {
             CullTraverserData next_data3(data, child);
             next_data3._state = next_data3._state->compose(sw.get_viz_model_state());
             trav->traverse(next_data3);
@@ -393,20 +393,14 @@ show_switches_cull_callback(CullTraverser *trav, CullTraverserData &data) {
 
         // And draw the spindle in this color.
         CullTraverserData next_data2(data, sw.get_spindle_viz());
-        next_data2.apply_transform_and_state(trav, viz_transform,
-                                             RenderState::make_empty(),
-                                             RenderEffects::make_empty(),
-                                             ClipPlaneAttrib::make());
+        next_data2.apply_transform(viz_transform);
         trav->traverse(next_data2);
       }
 
       // Draw the rings for this switch level.  We do this after we have drawn
       // the geometry and the spindle.
       CullTraverserData next_data(data, sw.get_ring_viz());
-      next_data.apply_transform_and_state(trav, viz_transform,
-                                          RenderState::make_empty(),
-                                          RenderEffects::make_empty(),
-                                          ClipPlaneAttrib::make());
+      next_data.apply_transform(viz_transform);
       trav->traverse(next_data);
     }
   }
@@ -530,7 +524,7 @@ do_verify_child_bounds(const LODNode::CData *cdata, int index,
   if (index < get_num_children()) {
     const Switch &sw = cdata->_switch_vector[index];
     PandaNode *child = get_child(index);
-    if (child != (PandaNode *)NULL) {
+    if (child != nullptr) {
       UpdateSeq seq;
       CPT(BoundingVolume) bv = child->get_bounds(seq);
 
@@ -599,7 +593,7 @@ do_verify_child_bounds(const LODNode::CData *cdata, int index,
       // should definitely fit entirely within a bounding sphere that contains
       // all the points of the child.
       LPoint3 box_center = (min_point + max_point) / 2.0f;
-      PN_stdfloat box_radius = min(min(max_point[0] - box_center[0],
+      PN_stdfloat box_radius = std::min(std::min(max_point[0] - box_center[0],
                                  max_point[1] - box_center[1]),
                              max_point[2] - box_center[2]);
 
@@ -648,9 +642,9 @@ do_auto_verify_lods(CullTraverser *trav, CullTraverserData &data) {
       PN_stdfloat suggested_radius;
       if (!do_verify_child_bounds(cdata, index, suggested_radius)) {
         const Switch &sw = cdata->_switch_vector[index];
-        ostringstream strm;
+        std::ostringstream strm;
         strm
-          << "Level " << index << " geometry of " << data._node_path
+          << "Level " << index << " geometry of " << data.get_node_path()
           << " is larger than its switch radius; suggest radius of "
           << suggested_radius << " instead of " << sw.get_in()
           << " (configure verify-lods 0 to ignore this error)";

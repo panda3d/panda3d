@@ -22,20 +22,26 @@
 #include "bamCacheRecord.h"
 
 // This symbol is predefined by the Panda3D build system to select whether we
-// are using the OpenCV 2.3 or later interface, or if it is not defined, we
-// are using the original interface.
-#ifdef OPENCV_VER_23
+// are using the OpenCV 3.x or later interface.
+#if defined(OPENCV_VER_3)
+
+#include <opencv2/core.hpp>
+#include <opencv2/videoio/videoio_c.h>
+
+// This checks for 2.3 or later.
+#elif defined(OPENCV_VER_23)
 
 #include <opencv2/core/core.hpp>
-// #include <opencv2videovideo.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
+// If neither of those are predefined, assume 1.x.
 #else
+
 #include <cv.h>
 #include <cxcore.h>
 #include <highgui.h>
 
-#endif  // OPENCV_VER_23
+#endif  // OPENCV_VER_3
 
 TypeHandle OpenCVTexture::_type_handle;
 
@@ -43,21 +49,9 @@ TypeHandle OpenCVTexture::_type_handle;
  * Sets up the texture to read frames from a camera
  */
 OpenCVTexture::
-OpenCVTexture(const string &name) :
+OpenCVTexture(const std::string &name) :
   VideoTexture(name)
 {
-}
-
-/**
- * Use OpenCVTexture::make_copy() to make a duplicate copy of an existing
- * OpenCVTexture.
- */
-OpenCVTexture::
-OpenCVTexture(const OpenCVTexture &copy) :
-  VideoTexture(copy),
-  _pages(copy._pages)
-{
-  nassertv(false);
 }
 
 /**
@@ -82,7 +76,7 @@ consider_update() {
     } else {
       // Loop through the pages to see if there's any camera stream to update.
       Texture::CDWriter cdata(Texture::_cycler, false);
-      int max_z = max(cdata->_z_size, (int)_pages.size());
+      int max_z = std::max(cdata->_z_size, (int)_pages.size());
       for (int z = 0; z < max_z; ++z) {
         VideoPage &page = _pages[z];
         if (!page._color.is_from_file() || !page._alpha.is_from_file()) {
@@ -104,13 +98,13 @@ consider_update() {
  * independently of the original.
  */
 PT(Texture) OpenCVTexture::
-make_copy_impl() {
+make_copy_impl() const {
   Texture::CDReader cdata_tex(Texture::_cycler);
   PT(OpenCVTexture) copy = new OpenCVTexture(get_name());
   Texture::CDWriter cdata_copy_tex(copy->Texture::_cycler, true);
   copy->do_assign(cdata_copy_tex, this, cdata_tex);
 
-  return copy.p();
+  return copy;
 }
 
 /**
@@ -270,7 +264,7 @@ make_texture() {
  */
 void OpenCVTexture::
 do_update_frame(Texture::CData *cdata, int frame) {
-  int max_z = max(cdata->_z_size, (int)_pages.size());
+  int max_z = std::max(cdata->_z_size, (int)_pages.size());
   for (int z = 0; z < max_z; ++z) {
     do_update_frame(cdata, frame, z);
   }
@@ -383,7 +377,7 @@ do_read_one(Texture::CData *cdata,
             int z, int n, int primary_file_num_channels, int alpha_file_channel,
             const LoaderOptions &options,
             bool header_only, BamCacheRecord *record) {
-  if (record != (BamCacheRecord *)NULL) {
+  if (record != nullptr) {
     record->add_dependent_file(fullpath);
   }
 
@@ -458,7 +452,7 @@ do_read_one(Texture::CData *cdata,
  */
 bool OpenCVTexture::
 do_load_one(Texture::CData *cdata,
-            const PNMImage &pnmimage, const string &name,
+            const PNMImage &pnmimage, const std::string &name,
             int z, int n, const LoaderOptions &options) {
   if (z <= (int)_pages.size()) {
     VideoPage &page = do_modify_page(cdata, z);
@@ -491,7 +485,7 @@ register_with_read_factory() {
  */
 OpenCVTexture::VideoStream::
 VideoStream() :
-  _capture(NULL),
+  _capture(nullptr),
   _camera_index(-1),
   _next_frame(0)
 {
@@ -502,7 +496,7 @@ VideoStream() :
  */
 OpenCVTexture::VideoStream::
 VideoStream(const OpenCVTexture::VideoStream &copy) :
-  _capture(NULL),
+  _capture(nullptr),
   _camera_index(-1)
 {
   // Rather than copying the _capture pointer, we must open a new stream that
@@ -553,7 +547,7 @@ get_frame_data(int frame,
 
   _next_frame = frame + 1;
   IplImage *image = cvQueryFrame(_capture);
-  if (image == NULL) {
+  if (image == nullptr) {
     return false;
   }
 
@@ -593,9 +587,9 @@ bool OpenCVTexture::VideoStream::
 read(const Filename &filename) {
   clear();
 
-  string os_specific = filename.to_os_specific();
+  std::string os_specific = filename.to_os_specific();
   _capture = cvCaptureFromFile(os_specific.c_str());
-  if (_capture == NULL) {
+  if (_capture == nullptr) {
     return false;
   }
   _filename = filename;
@@ -611,7 +605,7 @@ from_camera(int camera_index) {
   clear();
 
   _capture = cvCaptureFromCAM(camera_index);
-  if (_capture == NULL) {
+  if (_capture == nullptr) {
     return false;
   }
   _camera_index = camera_index;
@@ -623,9 +617,9 @@ from_camera(int camera_index) {
  */
 void OpenCVTexture::VideoStream::
 clear() {
-  if (_capture != NULL) {
+  if (_capture != nullptr) {
     cvReleaseCapture(&_capture);
-    _capture = NULL;
+    _capture = nullptr;
   }
   _filename = Filename();
   _camera_index = -1;

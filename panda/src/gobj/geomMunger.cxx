@@ -18,7 +18,7 @@
 #include "lightReMutexHolder.h"
 #include "pStatTimer.h"
 
-GeomMunger::Registry *GeomMunger::_registry = NULL;
+GeomMunger::Registry *GeomMunger::_registry = nullptr;
 TypeHandle GeomMunger::_type_handle;
 
 PStatCollector GeomMunger::_munge_pcollector("*:Munge");
@@ -116,7 +116,7 @@ munge_geom(CPT(Geom) &geom, CPT(GeomVertexData) &data,
     // Now check that it's fresh.
     Geom::CDCacheReader cdata(entry->_cycler, current_thread);
     if (cdata->_source == geom &&
-        cdata->_geom_result != (Geom *)NULL &&
+        cdata->_geom_result != nullptr &&
         geom->get_modified(current_thread) <= cdata->_geom_result->get_modified(current_thread) &&
         data->get_modified(current_thread) <= cdata->_data_result->get_modified(current_thread)) {
       // The cache entry is still good; use it.
@@ -145,14 +145,11 @@ munge_geom(CPT(Geom) &geom, CPT(GeomVertexData) &data,
   munge_geom_impl(geom, data, current_thread);
 
   // Record the new result in the cache.
-  if (entry == (Geom::CacheEntry *)NULL) {
+  if (entry == nullptr) {
     // Create a new entry for the result.
-#ifdef USE_MOVE_SEMANTICS
     // We don't need the key anymore, move the pointers into the CacheEntry.
-    entry = new Geom::CacheEntry(orig_geom, move(key));
-#else
-    entry = new Geom::CacheEntry(orig_geom, key);
-#endif
+    entry = new Geom::CacheEntry(orig_geom, std::move(key));
+
     {
       LightMutexHolder holder(orig_geom->_cache_lock);
       bool inserted = orig_geom->_cache.insert(Geom::Cache::value_type(&entry->_key, entry)).second;
@@ -182,8 +179,8 @@ munge_geom(CPT(Geom) &geom, CPT(GeomVertexData) &data,
 CPT(GeomVertexFormat) GeomMunger::
 do_munge_format(const GeomVertexFormat *format,
                 const GeomVertexAnimationSpec &animation) {
-  nassertr(_is_registered, NULL);
-  nassertr(format->is_registered(), NULL);
+  nassertr(_is_registered, nullptr);
+  nassertr(format->is_registered(), nullptr);
 
   LightMutexHolder holder(_formats_lock);
 
@@ -198,11 +195,11 @@ do_munge_format(const GeomVertexFormat *format,
 
   // We have to munge this format for the first time.
   CPT(GeomVertexFormat) derived_format = munge_format_impl(format, animation);
-  nassertr(derived_format->is_registered(), NULL);
+  nassertr(derived_format->is_registered(), nullptr);
 
   // Store the answer in the map, so we can quickly get it next time.
   bool inserted = formats.insert(Formats::value_type(format, derived_format)).second;
-  nassertr(inserted, NULL);
+  nassertr(inserted, nullptr);
 
   return derived_format;
 }
@@ -221,7 +218,7 @@ munge_format_impl(const GeomVertexFormat *orig, const GeomVertexAnimationSpec &)
  */
 CPT(GeomVertexData) GeomMunger::
 munge_data_impl(const GeomVertexData *data) {
-  nassertr(_is_registered, NULL);
+  nassertr(_is_registered, nullptr);
 
   CPT(GeomVertexFormat) orig_format = data->get_format();
   CPT(GeomVertexFormat) new_format =
@@ -250,8 +247,8 @@ munge_geom_impl(CPT(Geom) &, CPT(GeomVertexData) &, Thread *) {
  */
 CPT(GeomVertexFormat) GeomMunger::
 do_premunge_format(const GeomVertexFormat *format) {
-  nassertr(_is_registered, NULL);
-  nassertr(format->is_registered(), NULL);
+  nassertr(_is_registered, nullptr);
+  nassertr(format->is_registered(), nullptr);
 
   LightMutexHolder holder(_formats_lock);
 
@@ -264,11 +261,11 @@ do_premunge_format(const GeomVertexFormat *format) {
 
   // We have to munge this format for the first time.
   CPT(GeomVertexFormat) derived_format = premunge_format_impl(format);
-  nassertr(derived_format->is_registered(), NULL);
+  nassertr(derived_format->is_registered(), nullptr);
 
   // Store the answer in the map, so we can quickly get it next time.
   bool inserted = _premunge_formats.insert(Formats::value_type(format, derived_format)).second;
-  nassertr(inserted, NULL);
+  nassertr(inserted, nullptr);
 
   return derived_format;
 }
@@ -287,7 +284,7 @@ premunge_format_impl(const GeomVertexFormat *orig) {
  */
 CPT(GeomVertexData) GeomMunger::
 premunge_data_impl(const GeomVertexData *data) {
-  nassertr(_is_registered, NULL);
+  nassertr(_is_registered, nullptr);
 
   CPT(GeomVertexFormat) orig_format = data->get_format();
   CPT(GeomVertexFormat) new_format = premunge_format(orig_format);
@@ -335,7 +332,7 @@ geom_compare_to_impl(const GeomMunger *other) const {
  */
 void GeomMunger::
 make_registry() {
-  if (_registry == (Registry *)NULL) {
+  if (_registry == nullptr) {
     _registry = new Registry;
   }
 }
@@ -381,7 +378,7 @@ do_unregister() {
  *
  */
 void GeomMunger::CacheEntry::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "munger " << _munger;
 }
 

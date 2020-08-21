@@ -23,8 +23,6 @@ TypeHandle ReferenceCount::_type_handle;
  */
 bool ReferenceCount::
 do_test_ref_count_integrity() const {
-  nassertr(this != NULL, false);
-
   // If this assertion fails, we're trying to delete an object that was just
   // deleted.  Possibly you used a real pointer instead of a PointerTo at some
   // point, and the object was deleted when the PointerTo went out of scope.
@@ -58,8 +56,8 @@ void ReferenceCount::
 create_weak_list() {
   WeakReferenceList *weak_list = new WeakReferenceList;
   void *orig =
-    AtomicAdjust::compare_and_exchange_ptr(_weak_list, NULL, weak_list);
-  if (orig != (void *)NULL) {
+    AtomicAdjust::compare_and_exchange_ptr(_weak_list, nullptr, weak_list);
+  if (orig != nullptr) {
     // Someone else created it first.
     delete weak_list;
   }

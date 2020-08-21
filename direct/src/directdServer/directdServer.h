@@ -29,6 +29,6 @@ public:
   void run_server(int port);
 
 protected:
-  void read_command(string& cmd);
-  virtual void handle_command(const string& cmd);
+  void read_command(std::string& cmd);
+  virtual void handle_command(const std::string& cmd);
 };

@@ -29,7 +29,7 @@
  */
 class EXPCL_PANDA_DEVICE ClientDialDevice : public ClientDevice {
 protected:
-  INLINE ClientDialDevice(ClientBase *client, const string &device_name);
+  INLINE ClientDialDevice(ClientBase *client, const std::string &device_name);
 
 public:
   INLINE int get_num_dials() const;

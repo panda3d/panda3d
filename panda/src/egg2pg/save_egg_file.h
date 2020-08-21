@@ -25,7 +25,7 @@ BEGIN_PUBLISH
  * A convenience function; converts the indicated scene graph to an egg file
  * and writes it to disk.
  */
-EXPCL_PANDAEGG bool
+EXPCL_PANDA_EGG2PG bool
 save_egg_file(const Filename &filename, PandaNode *node,
               CoordinateSystem cs = CS_default);
 
@@ -33,7 +33,7 @@ save_egg_file(const Filename &filename, PandaNode *node,
  * Another convenience function; works like save_egg_file() but populates an
  * EggData instead of writing the results to disk.
  */
-EXPCL_PANDAEGG bool
+EXPCL_PANDA_EGG2PG bool
 save_egg_data(EggData *data, PandaNode *node);
 END_PUBLISH
 

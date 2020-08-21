@@ -20,6 +20,10 @@
 #include "pnmFileTypeRegistry.h"
 #include "bamReader.h"
 
+using std::istream;
+using std::ostream;
+using std::string;
+
 static const char * const extensions_PNM[] = {
   "pbm", "pgm", "ppm", "pnm"
 };
@@ -127,21 +131,21 @@ pm_allocarray(int const cols, int const rows, int const size )  {
   char * rowheap;
 
   rowIndex = (char **)PANDA_MALLOC_ARRAY((rows + 1) * sizeof(char *));
-  if ( rowIndex == NULL )
+  if ( rowIndex == nullptr )
     pm_error("out of memory allocating row index (%u rows) for an array",
              rows);
   rowheap = (char *)PANDA_MALLOC_ARRAY( rows * cols * size );
-  if ( rowheap == NULL ) {
+  if ( rowheap == nullptr ) {
     /* We couldn't get the whole heap in one block, so try fragmented
        format.
     */
     int row;
 
-    rowIndex[rows] = NULL;   /* Declare it fragmented format */
+    rowIndex[rows] = nullptr;   /* Declare it fragmented format */
 
     for (row = 0; row < rows; ++row) {
       rowIndex[row] = pm_allocrow(cols, size);
-      if (rowIndex[row] == NULL)
+      if (rowIndex[row] == nullptr)
         pm_error("out of memory allocating Row %u "
                  "(%u columns, %u bytes per tuple) "
                  "of an array", row, cols, size);
@@ -163,7 +167,7 @@ pm_freearray(char ** const rowIndex,
 
   void * const rowheap = rowIndex[rows];
 
-  if (rowheap != NULL) {
+  if (rowheap != nullptr) {
     PANDA_FREE_ARRAY(rowheap);
   } else {
     int row;
@@ -189,7 +193,7 @@ pm_getuint(istream * const ifP) {
     'unsigned int'), issue an error message to stderr and abort the
     program.
     -----------------------------------------------------------------------------*/
-  char ch;
+  int ch;
   unsigned int i;
 
   // skip whitespace

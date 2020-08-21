@@ -23,7 +23,7 @@ TypeHandle MouseInterfaceNode::_type_handle;
  *
  */
 MouseInterfaceNode::
-MouseInterfaceNode(const string &name) :
+MouseInterfaceNode(const std::string &name) :
   DataNode(name)
 {
   _button_events_input = define_input("button_events", ButtonEventList::get_class_type());
@@ -117,10 +117,10 @@ watch_button(const ButtonHandle &button) {
 const ButtonEventList *MouseInterfaceNode::
 check_button_events(const DataNodeTransmit &input,
                     bool &required_buttons_match) {
-  const ButtonEventList *button_events = NULL;
+  const ButtonEventList *button_events = nullptr;
 
   if (input.has_data(_button_events_input)) {
-    DCAST_INTO_R(button_events, input.get_data(_button_events_input).get_ptr(), NULL);
+    DCAST_INTO_R(button_events, input.get_data(_button_events_input).get_ptr(), nullptr);
     button_events->update_mods(_current_button_state);
   }
 

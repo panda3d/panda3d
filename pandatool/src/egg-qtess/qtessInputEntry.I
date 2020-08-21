@@ -23,7 +23,7 @@ QtessInputEntry(const QtessInputEntry &copy) {
  *
  */
 INLINE void QtessInputEntry::
-add_node_name(const string &name) {
+add_node_name(const std::string &name) {
   _node_names.push_back(GlobPattern(name));
 }
 
@@ -42,7 +42,7 @@ set_importance(double i) {
 INLINE void QtessInputEntry::
 set_match_uu() {
   _type = T_match_uu;
-  _constrain_u = NULL;
+  _constrain_u = nullptr;
 }
 
 /**
@@ -51,7 +51,7 @@ set_match_uu() {
 INLINE void QtessInputEntry::
 set_match_vv() {
   _type = T_match_vv;
-  _constrain_v = NULL;
+  _constrain_v = nullptr;
 }
 
 /**
@@ -60,7 +60,7 @@ set_match_vv() {
 INLINE void QtessInputEntry::
 set_match_uv() {
   _type = T_match_uv;
-  _constrain_u = NULL;
+  _constrain_u = nullptr;
 }
 
 /**
@@ -69,7 +69,7 @@ set_match_uv() {
 INLINE void QtessInputEntry::
 set_match_vu() {
   _type = T_match_vu;
-  _constrain_v = NULL;
+  _constrain_v = nullptr;
 }
 
 /**
@@ -120,7 +120,7 @@ set_num_tris(int nt) {
  */
 INLINE void QtessInputEntry::
 set_uv(int u, int v) {
-  set_uv(u, v, NULL, 0);
+  set_uv(u, v, nullptr, 0);
 }
 
 /**
@@ -150,7 +150,7 @@ get_num_surfaces() const {
 }
 
 
-INLINE ostream &operator << (ostream &out, const QtessInputEntry &entry) {
+INLINE std::ostream &operator << (std::ostream &out, const QtessInputEntry &entry) {
   entry.output(out);
   return out;
 }

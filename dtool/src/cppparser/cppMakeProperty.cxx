@@ -18,17 +18,19 @@
  *
  */
 CPPMakeProperty::
-CPPMakeProperty(CPPIdentifier *ident,
-                CPPFunctionGroup *getter, CPPFunctionGroup *setter,
+CPPMakeProperty(CPPIdentifier *ident, Type type,
                 CPPScope *current_scope, const CPPFile &file) :
   CPPDeclaration(file),
   _ident(ident),
-  _length_function(NULL),
-  _has_function(NULL),
-  _get_function(getter),
-  _set_function(setter),
-  _clear_function(NULL),
-  _del_function(NULL)
+  _type(type),
+  _length_function(nullptr),
+  _has_function(nullptr),
+  _get_function(nullptr),
+  _set_function(nullptr),
+  _clear_function(nullptr),
+  _del_function(nullptr),
+  _insert_function(nullptr),
+  _get_key_function(nullptr)
 {
   _ident->_native_scope = current_scope;
 }
@@ -36,27 +38,7 @@ CPPMakeProperty(CPPIdentifier *ident,
 /**
  *
  */
-CPPMakeProperty::
-CPPMakeProperty(CPPIdentifier *ident,
-                CPPFunctionGroup *hasser, CPPFunctionGroup *getter,
-                CPPFunctionGroup *setter, CPPFunctionGroup *clearer,
-                CPPScope *current_scope, const CPPFile &file) :
-  CPPDeclaration(file),
-  _ident(ident),
-  _length_function(NULL),
-  _has_function(hasser),
-  _get_function(getter),
-  _set_function(setter),
-  _clear_function(clearer),
-  _del_function(NULL)
-{
-  _ident->_native_scope = current_scope;
-}
-
-/**
- *
- */
-string CPPMakeProperty::
+std::string CPPMakeProperty::
 get_simple_name() const {
   return _ident->get_simple_name();
 }
@@ -64,7 +46,7 @@ get_simple_name() const {
 /**
  *
  */
-string CPPMakeProperty::
+std::string CPPMakeProperty::
 get_local_name(CPPScope *scope) const {
   return _ident->get_local_name(scope);
 }
@@ -72,7 +54,7 @@ get_local_name(CPPScope *scope) const {
 /**
  *
  */
-string CPPMakeProperty::
+std::string CPPMakeProperty::
 get_fully_scoped_name() const {
   return _ident->get_fully_scoped_name();
 }
@@ -81,39 +63,43 @@ get_fully_scoped_name() const {
  *
  */
 void CPPMakeProperty::
-output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
-  if (_length_function != NULL) {
+output(std::ostream &out, int indent_level, CPPScope *scope, bool complete) const {
+  if (_length_function != nullptr) {
     out << "__make_seq_property";
   } else {
     out << "__make_property";
   }
 
-  if (_has_function != NULL) {
+  if (_has_function != nullptr) {
     out.put('2');
   }
 
   out << "(" << _ident->get_local_name(scope);
 
-  if (_length_function != NULL) {
+  if (_length_function != nullptr) {
     out << ", " << _length_function->_name;
   }
 
-  if (_has_function != NULL) {
+  if (_has_function != nullptr) {
     out << ", " << _has_function->_name;
   }
 
   out << ", " << _get_function->_name;
 
-  if (_set_function != NULL) {
+  if (_set_function != nullptr) {
     out << ", " << _set_function->_name;
   }
 
-  if (_clear_function != NULL) {
+  if (_clear_function != nullptr) {
     out << ", " << _clear_function->_name;
   }
 
-  if (_del_function != NULL) {
+  if (_del_function != nullptr) {
     out << ", " << _del_function->_name;
+  }
+
+  if (_insert_function != nullptr) {
+    out << ", " << _insert_function->_name;
   }
 
   out << ");";

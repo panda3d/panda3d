@@ -15,6 +15,8 @@
 #include "string_utils.h"
 #include "indent.h"
 
+using std::string;
+
 TypeHandle XFileDataObjectString::_type_handle;
 
 /**
@@ -31,7 +33,7 @@ XFileDataObjectString(const XFileDataDef *data_def, const string &value) :
  * Writes a suitable representation of this node to an .x file in text mode.
  */
 void XFileDataObjectString::
-output_data(ostream &out) const {
+output_data(std::ostream &out) const {
   enquote_string(out);
 }
 
@@ -39,7 +41,7 @@ output_data(ostream &out) const {
  * Writes a suitable representation of this node to an .x file in text mode.
  */
 void XFileDataObjectString::
-write_data(ostream &out, int indent_level, const char *separator) const {
+write_data(std::ostream &out, int indent_level, const char *separator) const {
   indent(out, indent_level);
   enquote_string(out);
   out << separator << "\n";
@@ -66,7 +68,7 @@ get_string_value() const {
  * special characters as needed.
  */
 void XFileDataObjectString::
-enquote_string(ostream &out) const {
+enquote_string(std::ostream &out) const {
   // Actually, the XFile spec doesn't tell us how to escape special characters
   // within quotation marks.  We'll just take a stab in the dark here.
 

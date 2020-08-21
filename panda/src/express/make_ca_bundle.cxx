@@ -15,13 +15,17 @@
 #include "openSSLWrapper.h"
 #include <stdio.h>
 
+using std::cerr;
+using std::stringstream;
+using std::string;
+
 static const char *source_filename = "ca-bundle.crt";
 static const char *target_filename = "ca_bundle_data_src.c";
 
 int
 main(int argc, char *argv[]) {
   FILE *fin = fopen(source_filename, "r");
-  if (fin == NULL) {
+  if (fin == nullptr) {
     cerr << "Couldn't open " << source_filename << " for reading.\n";
     return 1;
   }
@@ -33,7 +37,7 @@ main(int argc, char *argv[]) {
   // function, or it will get confused.
   ERR_clear_error();
   STACK_OF(X509_INFO) *inf;
-  inf = PEM_X509_INFO_read(fin, NULL, NULL, NULL);
+  inf = PEM_X509_INFO_read(fin, nullptr, nullptr, nullptr);
 
   if (!inf) {
     // Could not scan certificates.
@@ -45,7 +49,7 @@ main(int argc, char *argv[]) {
        << " entries.\n";
 
   // Now convert the certificates to DER form.
-  stringstream der_stream;
+  std::stringstream der_stream;
 
   int cert_count = 0;
   int num_entries = sk_X509_INFO_num(inf);
@@ -55,7 +59,7 @@ main(int argc, char *argv[]) {
     if (itmp->x509) {
       X509 *cert = itmp->x509;
 
-      int der_len = i2d_X509(cert, NULL);
+      int der_len = i2d_X509(cert, nullptr);
       unsigned char *der_buf = new unsigned char[der_len];
       unsigned char *p = der_buf;
       i2d_X509(cert, &p);
@@ -70,7 +74,7 @@ main(int argc, char *argv[]) {
 
   // Now write the data to the .c file, in a compilable form, similar to
   // bin2c.
-  ofstream out;
+  std::ofstream out;
   Filename target = Filename::text_filename(string(target_filename));
   if (!target.open_write(out)) {
     cerr << "Couldn't open " << target_filename << " for writing.\n";
@@ -78,7 +82,7 @@ main(int argc, char *argv[]) {
   }
 
   der_stream.seekg(0);
-  istream &in = der_stream;
+  std::istream &in = der_stream;
 
   string table_type = "const unsigned char ";
   string length_type = "const int ";
@@ -99,12 +103,12 @@ main(int argc, char *argv[]) {
       << " * in DER form, for compiling into OpenSSLWrapper.\n"
       << " */\n\n"
       << static_keyword << table_type << table_name << "[] = {";
-  out << hex << setfill('0');
+  out << std::hex << std::setfill('0');
   int count = 0;
   int col = 0;
   unsigned int ch;
   ch = in.get();
-  while (!in.fail() && !in.eof()) {
+  while (!in.fail() && ch != EOF) {
     if (col == 0) {
       out << "\n  ";
     } else if (col == col_width) {
@@ -113,14 +117,14 @@ main(int argc, char *argv[]) {
     } else {
       out << ", ";
     }
-    out << "0x" << setw(2) << ch;
+    out << "0x" << std::setw(2) << ch;
     col++;
     count++;
     ch = in.get();
   }
   out << "\n};\n\n"
       << static_keyword << length_type << table_name << "_len = "
-      << dec << count << ";\n\n";
+      << std::dec << count << ";\n\n";
 
   cerr << "Wrote " << cert_count << " certificates to "
        << target_filename << "\n";

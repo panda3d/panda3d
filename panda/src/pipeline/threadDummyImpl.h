@@ -24,7 +24,7 @@
 
 class Thread;
 
-#ifdef WIN32
+#ifdef _WIN32
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN 1
 #endif
@@ -45,7 +45,7 @@ public:
   INLINE void join();
   INLINE void preempt();
 
-  string get_unique_id() const;
+  std::string get_unique_id() const;
 
   INLINE static void prepare_for_exit();
 

@@ -322,7 +322,7 @@ get_color_scenegraph() const {
 
   const RenderAttrib *attrib =
     PandaNode::get_attrib(ColorAttrib::get_class_type());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != nullptr) {
     const ColorAttrib *ca = DCAST(ColorAttrib, attrib);
     if (ca->get_color_type() == ColorAttrib::T_flat) {
       return ca->get_color();

@@ -21,14 +21,6 @@ BioPtr(BIO *bio) : _bio(bio) {
 /**
  *
  */
-INLINE bool BioPtr::
-should_retry() const {
-  return (_bio != NULL) && BIO_should_retry(_bio);
-}
-
-/**
- *
- */
 INLINE BIO &BioPtr::
 operator *() const {
   return *_bio;
@@ -69,7 +61,7 @@ get_bio() const {
 /**
  * Returns the name of the server we are (or should be) connected to.
  */
-INLINE const string &BioPtr::
+INLINE const std::string &BioPtr::
 get_server_name() const {
   return _server_name;
 }

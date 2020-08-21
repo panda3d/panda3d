@@ -29,7 +29,7 @@ class PNMImage;
  */
 class EXPCL_PANDA_PNMIMAGE PNMPainter {
 PUBLISHED:
-  PNMPainter(PNMImage &image, int xo = 0, int yo = 0);
+  explicit PNMPainter(PNMImage &image, int xo = 0, int yo = 0);
   INLINE ~PNMPainter();
 
   INLINE void set_pen(PNMBrush *pen);

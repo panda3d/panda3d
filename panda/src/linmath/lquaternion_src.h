@@ -57,6 +57,8 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LMatrix3) operator *(const FLOATNAME(LMatrix3) &);
   INLINE_LINMATH FLOATNAME(LMatrix4) operator *(const FLOATNAME(LMatrix4) &);
 
+  FLOATNAME(LQuaternion) __pow__(FLOATTYPE) const;
+
   INLINE_LINMATH bool almost_equal(
       const FLOATNAME(LQuaternion) &other) const;
   INLINE_LINMATH bool almost_equal(
@@ -66,7 +68,7 @@ PUBLISHED:
   INLINE_LINMATH bool almost_same_direction(
       const FLOATNAME(LQuaternion) &other, FLOATTYPE threshold) const;
 
-  INLINE_LINMATH void output(ostream&) const;
+  INLINE_LINMATH void output(std::ostream&) const;
 
   void extract_to_matrix(FLOATNAME(LMatrix3) &m) const;
   void extract_to_matrix(FLOATNAME(LMatrix4) &m) const;
@@ -125,7 +127,7 @@ private:
 };
 
 
-INLINE ostream& operator<<(ostream& os, const FLOATNAME(LQuaternion)& q) {
+INLINE std::ostream& operator<<(std::ostream& os, const FLOATNAME(LQuaternion)& q) {
   q.output(os);
   return os;
 }

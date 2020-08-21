@@ -12,29 +12,28 @@
  */
 
 #include "clockObject.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "configVariableEnum.h"
 #include "string_utils.h"
 #include "thread.h"
+
+using std::istream;
+using std::ostream;
+using std::string;
 
 void (*ClockObject::_start_clock_wait)() = ClockObject::dummy_clock_wait;
 void (*ClockObject::_start_clock_busy_wait)() = ClockObject::dummy_clock_wait;
 void (*ClockObject::_stop_clock_wait)() = ClockObject::dummy_clock_wait;
 
-ClockObject *ClockObject::_global_clock;
+AtomicAdjust::Pointer ClockObject::_global_clock = nullptr;
 TypeHandle ClockObject::_type_handle;
 
 /**
  *
  */
 ClockObject::
-ClockObject() : _ticks(get_class_type()) {
+ClockObject(Mode mode) : _ticks(get_class_type()), _mode(mode) {
   _true_clock = TrueClock::get_global_ptr();
-
-  // Each clock except for the application global clock is created in M_normal
-  // mode.  The application global clock is later reset to respect clock_mode,
-  // which comes from the Config.prc file.
-  _mode = M_normal;
 
   _start_short_time = _true_clock->get_short_time();
   _start_long_time = _true_clock->get_long_time();
@@ -356,7 +355,7 @@ tick(Thread *current_thread) {
     // In case someone munged the clock last frame and sent us backward in
     // time, clamp the previous time to the current time to make sure we don't
     // report anything strange (or wait interminably).
-    old_time = min(old_time, _actual_frame_time);
+    old_time = std::min(old_time, _actual_frame_time);
 
     ++cdata->_frame_count;
 
@@ -380,7 +379,7 @@ tick(Thread *current_thread) {
         double wait_until_time = old_time + 1.0 / _user_frame_rate;
         wait_until(wait_until_time);
         cdata->_dt = _actual_frame_time - old_time;
-        cdata->_reported_frame_time = max(_actual_frame_time, wait_until_time);
+        cdata->_reported_frame_time = std::max(_actual_frame_time, wait_until_time);
       }
       break;
 
@@ -523,7 +522,7 @@ wait_until(double want_time) {
  */
 void ClockObject::
 make_global_clock() {
-  nassertv(_global_clock == (ClockObject *)NULL);
+  nassertv(_global_clock == nullptr);
 
   ConfigVariableEnum<ClockObject::Mode> clock_mode
     ("clock-mode", ClockObject::M_normal,
@@ -532,9 +531,13 @@ make_global_clock() {
               "effects like simulated reduced frame rate.  See "
               "ClockObject::set_mode()."));
 
-  _global_clock = new ClockObject;
-  _global_clock->set_mode(clock_mode);
-  _global_clock->ref();
+  ClockObject *clock = new ClockObject(clock_mode);
+  clock->local_object();
+
+  if (AtomicAdjust::compare_and_exchange_ptr(_global_clock, nullptr, clock) != nullptr) {
+    // Another thread beat us to it.
+    delete clock;
+  }
 }
 
 /**

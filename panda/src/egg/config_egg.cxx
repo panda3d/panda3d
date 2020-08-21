@@ -58,6 +58,10 @@
 
 #include "dconfig.h"
 
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDA_EGG)
+  #error Buildsystem error: BUILDING_PANDA_EGG not defined
+#endif
+
 Configure(config_egg);
 NotifyCategoryDef(egg, "");
 

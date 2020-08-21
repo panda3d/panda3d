@@ -52,7 +52,7 @@ change_strip(EggMesherStrip *from, EggMesherStrip *to) {
  * Formats the edge for output in some sensible way.
  */
 void EggMesherEdge::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "Edge [" << _vi_a << " to " << _vi_b << "], "
       << _strips.size() << " strips:";
 
@@ -61,7 +61,7 @@ output(ostream &out) const {
     out << " " << (*si)->_index;
   }
 
-  if (_opposite!=NULL) {
+  if (_opposite!=nullptr) {
     out << " opposite "
         << _opposite->_strips.size() << " strips:";
 

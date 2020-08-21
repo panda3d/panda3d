@@ -19,6 +19,7 @@
 #include "interrogateComponent.h"
 
 class IndexRemapper;
+class CPPMakeProperty;
 
 /**
  * An internal representation of a data element, like a data member or a
@@ -26,17 +27,17 @@ class IndexRemapper;
  */
 class EXPCL_INTERROGATEDB InterrogateElement : public InterrogateComponent {
 public:
-  INLINE InterrogateElement(InterrogateModuleDef *def = NULL);
+  INLINE InterrogateElement(InterrogateModuleDef *def = nullptr);
   INLINE InterrogateElement(const InterrogateElement &copy);
   INLINE void operator = (const InterrogateElement &copy);
 
   INLINE bool is_global() const;
 
   INLINE bool has_scoped_name() const;
-  INLINE const string &get_scoped_name() const;
+  INLINE const std::string &get_scoped_name() const;
 
   INLINE bool has_comment() const;
-  INLINE const string &get_comment() const;
+  INLINE const std::string &get_comment() const;
 
   INLINE TypeIndex get_type() const;
   INLINE bool has_getter() const;
@@ -49,11 +50,16 @@ public:
   INLINE FunctionIndex get_clear_function() const;
   INLINE bool has_del_function() const;
   INLINE FunctionIndex get_del_function() const;
+  INLINE bool has_insert_function() const;
+  INLINE FunctionIndex get_insert_function() const;
+  INLINE bool has_getkey_function() const;
+  INLINE FunctionIndex get_getkey_function() const;
   INLINE bool is_sequence() const;
   INLINE FunctionIndex get_length_function() const;
+  INLINE bool is_mapping() const;
 
-  void output(ostream &out) const;
-  void input(istream &in);
+  void output(std::ostream &out) const;
+  void input(std::istream &in);
 
   void remap_indices(const IndexRemapper &remap);
 
@@ -67,11 +73,13 @@ private:
     F_has_del_function= 0x0020,
     F_sequence        = 0x0040,
     F_mapping         = 0x0080,
+    F_has_insert_function= 0x0100,
+    F_has_getkey_function= 0x0200,
   };
 
   int _flags;
-  string _scoped_name;
-  string _comment;
+  std::string _scoped_name;
+  std::string _comment;
   TypeIndex _type;
   FunctionIndex _length_function;
   FunctionIndex _getter;
@@ -79,12 +87,16 @@ private:
   FunctionIndex _has_function;
   FunctionIndex _clear_function;
   FunctionIndex _del_function;
+  FunctionIndex _insert_function;
+  FunctionIndex _getkey_function;
+
+  CPPMakeProperty *_make_property;
 
   friend class InterrogateBuilder;
 };
 
-INLINE ostream &operator << (ostream &out, const InterrogateElement &element);
-INLINE istream &operator >> (istream &in, InterrogateElement &element);
+INLINE std::ostream &operator << (std::ostream &out, const InterrogateElement &element);
+INLINE std::istream &operator >> (std::istream &in, InterrogateElement &element);
 
 #include "interrogateElement.I"
 

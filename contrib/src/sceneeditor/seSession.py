@@ -13,10 +13,8 @@ from direct.directtools.DirectGlobals import *
 from direct.directtools.DirectUtil import*
 from direct.interval.IntervalGlobal import *
 from seCameraControl import *
-#from seManipulation import *
 from direct.directtools.DirectManipulation import *
 from seSelection import *
-#from seGrid import *
 from direct.directtools.DirectGrid import *
 from seGeometry import *
 from direct.tkpanels import Placer
@@ -483,7 +481,7 @@ class SeSession(DirectObject):  ### Customized DirectSession
 
     def isNotCycle(self, nodePath, parent):
         if nodePath.get_key() == parent.get_key():
-            print 'DIRECT.reparent: Invalid parent'
+            print('DIRECT.reparent: Invalid parent')
             return 0
         elif parent.hasParent():
             return self.isNotCycle(nodePath, parent.getParent())
@@ -523,7 +521,7 @@ class SeSession(DirectObject):  ### Customized DirectSession
             nodePath = self.selected.last
         if nodePath:
             # Now toggle node path's visibility state
-            if nodePath.isHidden():
+            if nodePath.is_hidden():
                 nodePath.show()
             else:
                 nodePath.hide()
@@ -738,8 +736,8 @@ class SeSession(DirectObject):  ### Customized DirectSession
         hprB = base.camera.getHpr()
         posE = Point3((radius*-1.41)+center.getX(), (radius*-1.41)+center.getY(), (radius*1.41)+center.getZ())
         hprE = Point3(-45, -38, 0)
-        print posB, hprB
-        print posE, hprE
+        print(posB, hprB)
+        print(posE, hprE)
         posInterval1 = base.camera.posInterval(time, posE, bakeInStart = 1)
         posInterval2 = base.camera.posInterval(time, posB, bakeInStart = 1)
 

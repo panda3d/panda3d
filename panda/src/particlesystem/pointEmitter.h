@@ -19,7 +19,7 @@
 /**
  * Describes a planar ring region in which particles are generated.
  */
-class EXPCL_PANDAPHYSICS PointEmitter : public BaseParticleEmitter {
+class EXPCL_PANDA_PARTICLESYSTEM PointEmitter : public BaseParticleEmitter {
 PUBLISHED:
   PointEmitter();
   PointEmitter(const PointEmitter &copy);
@@ -30,8 +30,8 @@ PUBLISHED:
   INLINE void set_location(const LPoint3& p);
   INLINE LPoint3 get_location() const;
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent=0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent=0) const;
 
 private:
   LPoint3 _location;

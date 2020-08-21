@@ -12,50 +12,28 @@
  */
 
 /**
+ * Returns true if this light defines a specular color, false if the specular
+ * color is derived automatically from the light color.
+ */
+INLINE bool LightLensNode::
+has_specular_color() const {
+  return _has_specular_color;
+}
+
+/**
  * Returns whether this light is configured to cast shadows or not.
  */
 INLINE bool LightLensNode::
-is_shadow_caster() {
+is_shadow_caster() const {
   return _shadow_caster;
 }
 
 /**
- * Sets the flag indicating whether this light should cast shadows or not.
- * This is the variant without buffer size, meaning that the current buffer
- * size will be kept (512x512 is the default). Note that enabling shadows will
- * require the shader generator to be enabled on the scene.
+ * Returns the sort of the shadow buffer to be created for this light source.
  */
-INLINE void LightLensNode::
-set_shadow_caster(bool caster) {
-  if (_shadow_caster && !caster) {
-    clear_shadow_buffers();
-  }
-  _shadow_caster = caster;
-  set_active(caster);
-}
-
-/**
- * Sets the flag indicating whether this light should cast shadows or not.
- * The xsize and ysize parameters specify the size of the shadow buffer that
- * will be set up, the sort parameter specifies the sort.  Note that enabling
- * shadows will require the shader generator to be enabled on the scene.
- */
-INLINE void LightLensNode::
-set_shadow_caster(bool caster, int buffer_xsize, int buffer_ysize, int buffer_sort) {
-  if ((_shadow_caster && !caster) || buffer_xsize != _sb_size[0] || buffer_ysize != _sb_size[1]) {
-    clear_shadow_buffers();
-  }
-  _shadow_caster = caster;
-  _sb_size.set(buffer_xsize, buffer_ysize);
-
-  if (buffer_sort != _sb_sort) {
-    ShadowBuffers::iterator it;
-    for(it = _sbuffers.begin(); it != _sbuffers.end(); ++it) {
-      (*it).second->set_sort(buffer_sort);
-    }
-    _sb_sort = buffer_sort;
-  }
-  set_active(caster);
+INLINE int LightLensNode::
+get_shadow_buffer_sort() const {
+  return _sb_sort;
 }
 
 /**
@@ -73,8 +51,9 @@ INLINE void LightLensNode::
 set_shadow_buffer_size(const LVecBase2i &size) {
   if (size != _sb_size) {
     clear_shadow_buffers();
+    _sb_size = size;
+    setup_shadow_map();
   }
-  _sb_size = size;
 }
 
 /**
@@ -86,8 +65,16 @@ INLINE GraphicsOutputBase *LightLensNode::
 get_shadow_buffer(GraphicsStateGuardianBase *gsg) {
   ShadowBuffers::iterator it = _sbuffers.find(gsg);
   if (it == _sbuffers.end()) {
-    return NULL;
+    return nullptr;
   } else {
     return (*it).second;
   }
+}
+
+/**
+ * Marks this light as having been used by the auto shader.
+ */
+INLINE void LightLensNode::
+mark_used_by_auto_shader() const {
+  _used_by_auto_shader = true;
 }

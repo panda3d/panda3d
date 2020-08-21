@@ -11,8 +11,8 @@
  * @date 2011-01-19
  */
 
-#ifndef __BULLET_HELPER_H__
-#define __BULLET_HELPER_H__
+#ifndef BULLETHELPER_H
+#define BULLETHELPER_H
 
 #include "pandabase.h"
 
@@ -22,6 +22,8 @@
 #include "collisionNode.h"
 #include "nodePath.h"
 #include "nodePathCollection.h"
+
+class BulletSoftBodyNode;
 
 /**
  *
@@ -43,13 +45,16 @@ PUBLISHED:
 
   // Geom utils
   static PT(Geom) make_geom_from_faces(BulletSoftBodyNode *node,
-      const GeomVertexFormat *format=NULL,
+      const GeomVertexFormat *format=nullptr,
       bool two_sided=false);
 
   static PT(Geom) make_geom_from_links(BulletSoftBodyNode *node,
-      const GeomVertexFormat *format=NULL);
+      const GeomVertexFormat *format=nullptr);
 
   static void make_texcoords_for_patch(Geom *geom, int resx, int resy);
+
+  MAKE_PROPERTY(sb_index, get_sb_index);
+  MAKE_PROPERTY(sb_flip, get_sb_flip);
 
 private:
   static PT(InternalName) _sb_index;
@@ -65,4 +70,4 @@ private:
 
 #include "bulletHelper.I"
 
-#endif // __BULLET_HELPER_H__
+#endif // BULLETHELPER_H

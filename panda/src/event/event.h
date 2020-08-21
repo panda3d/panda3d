@@ -32,15 +32,15 @@ class EventReceiver;
  */
 class EXPCL_PANDA_EVENT Event : public TypedReferenceCount {
 PUBLISHED:
-  Event(const string &event_name, EventReceiver *receiver = NULL);
+  Event(const std::string &event_name, EventReceiver *receiver = nullptr);
   Event(const Event &copy);
   void operator = (const Event &copy);
   ~Event();
 
-  INLINE void set_name(const string &name);
+  INLINE void set_name(const std::string &name);
   INLINE void clear_name();
   INLINE bool has_name() const;
-  INLINE const string &get_name() const;
+  INLINE const std::string &get_name() const;
 
   void add_parameter(const EventParameter &obj);
 
@@ -53,7 +53,7 @@ PUBLISHED:
   void set_receiver(EventReceiver *receiver);
   void clear_receiver();
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
   MAKE_PROPERTY(name, get_name, set_name);
   MAKE_SEQ_PROPERTY(parameters, get_num_parameters, get_parameter);
@@ -65,7 +65,7 @@ protected:
   EventReceiver *_receiver;
 
 private:
-  string _name;
+  std::string _name;
 
 public:
   static TypeHandle get_class_type() {
@@ -85,7 +85,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const Event &n);
+INLINE std::ostream &operator << (std::ostream &out, const Event &n);
 
 #include "event.I"
 

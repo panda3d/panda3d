@@ -1,0 +1,251 @@
+/* dtool_config.h.  Generated automatically by CMake. */
+#ifndef DTOOL_CONFIG_H
+#define DTOOL_CONFIG_H
+
+/* Define if we have Eigen available. */
+#cmakedefine HAVE_EIGEN
+#cmakedefine LINMATH_ALIGN
+
+/* Define if we have Python installed.  */
+#cmakedefine HAVE_PYTHON
+#cmakedefine USE_DEBUG_PYTHON
+/* Define if we have Python as a framework (Mac OS X).  */
+#cmakedefine PYTHON_FRAMEWORK
+
+/* Define if we have OpenAL installed as a framework. */
+#cmakedefine HAVE_OPENAL_FRAMEWORK
+
+/* Define if we have Freetype 2.0 or better available. */
+#cmakedefine HAVE_FREETYPE
+
+/* Define if we want to compile in a default font. */
+#cmakedefine COMPILE_IN_DEFAULT_FONT
+
+/* Define to use doubles for most numbers, intead of single-precision floats. */
+#cmakedefine STDFLOAT_DOUBLE
+
+/* Define if we have built libRocket available and built with Python support. */
+#cmakedefine HAVE_ROCKET_PYTHON
+
+/* Define if we have ARToolKit available. */
+#cmakedefine HAVE_ARTOOLKIT
+
+/* Define if we have libvorbisfile available. */
+#cmakedefine HAVE_VORBIS
+
+/* Define if we have libopus available. */
+#cmakedefine HAVE_OPUS
+
+/* Define if we have OpenSSL installed.  */
+#cmakedefine HAVE_OPENSSL
+
+/* Define if we have libjpeg installed.  */
+#cmakedefine HAVE_JPEG
+
+/* Define to build video-for-linux. */
+#cmakedefine HAVE_VIDEO4LINUX
+
+/* Define if we have libpng installed.  */
+#cmakedefine HAVE_PNG
+
+/* Define if we have libtiff installed.  */
+#cmakedefine HAVE_TIFF
+
+/* Define if we have OpenEXR installed.  */
+#cmakedefine HAVE_OPENEXR
+
+/* Define if we want to build these other image file formats. */
+#cmakedefine HAVE_SGI_RGB
+#cmakedefine HAVE_TGA
+#cmakedefine HAVE_IMG
+#cmakedefine HAVE_SOFTIMAGE_PIC
+#cmakedefine HAVE_BMP
+#cmakedefine HAVE_PNM
+
+/* Define if we have CG installed.  */
+#cmakedefine HAVE_CG
+
+/* Define if we have zlib installed.  */
+#cmakedefine HAVE_ZLIB
+
+/* Define if we have OpenGL installed and want to build for GL.  */
+#cmakedefine MIN_GL_VERSION_MAJOR
+#cmakedefine MIN_GL_VERSION_MINOR
+
+/* Define if we have OpenCV installed and want to build for OpenCV.  */
+#cmakedefine HAVE_OPENCV
+
+/* The choice of generic vs. the specific dxerr library largely
+   depends on which SDK you have installed. */
+#cmakedefine USE_GENERIC_DXERR_LIBRARY
+
+/* Define if we have the SDL library. */
+#cmakedefine HAVE_SDL
+
+/* Define if we have X11. */
+#cmakedefine HAVE_X11
+
+/* Define if we want to compile the threading code.  */
+#cmakedefine HAVE_THREADS
+
+/* Define if we want to use fast, user-space simulated threads.  */
+#cmakedefine SIMPLE_THREADS
+
+/* Define to enable deadlock detection, mutex recursion checks, etc. */
+#cmakedefine DEBUG_THREADS
+
+/* Define to implement mutexes and condition variables via a user-space spinlock. */
+#cmakedefine MUTEX_SPINLOCK
+
+/* Define to enable the PandaFileStream implementation of pfstream etc. */
+#cmakedefine USE_PANDAFILESTREAM
+
+/* Define if we want to compile the net code.  */
+#cmakedefine HAVE_NET
+
+/* Define if we want to compile the audio code.  */
+#cmakedefine HAVE_AUDIO
+
+/* Define if we want to use PStats.  */
+#cmakedefine DO_PSTATS
+
+/* Define if we want to type-check downcasts.  */
+#cmakedefine DO_DCAST
+
+/* Define if we want to provide collision system recording and
+   visualization tools. */
+#cmakedefine DO_COLLISION_RECORDING
+
+/* Define if we want to enable track-memory-usage.  */
+#cmakedefine DO_MEMORY_USAGE
+
+/* Define if we want to enable min-lag and max-lag.  */
+#cmakedefine SIMULATE_NETWORK_DELAY
+
+/* Define if we want to allow immediate mode OpenGL rendering.  */
+#cmakedefine SUPPORT_IMMEDIATE_MODE
+
+/* Define if we want to support fixed-function OpenGL rendering. */
+#cmakedefine SUPPORT_FIXED_FUNCTION
+
+/* Define for either of the alternative malloc schemes. */
+#cmakedefine USE_MEMORY_DLMALLOC
+#cmakedefine USE_MEMORY_PTMALLOC2
+
+/* Define if we want to compile in support for pipelining.  */
+#cmakedefine DO_PIPELINING
+
+/* Define if we want to keep Notify debug messages around, or undefine
+   to compile them out.  */
+#cmakedefine NOTIFY_DEBUG
+
+/* The compiled-in character(s) to expect to separate different
+   components of a path list (e.g. $PRC_PATH). */
+#define DEFAULT_PATHSEP "@DEFAULT_PATHSEP@"
+
+/* Many of the prc variables are exported by
+   dtool/src/prc/prc_parameters.h.pp, instead of here.  Only those prc
+   variables that must be visible outside of the prc directory are
+   exported here. */
+
+/* Define if you want to save the descriptions for ConfigVariables. */
+#cmakedefine PRC_SAVE_DESCRIPTIONS
+
+
+/* Define if your processor stores words with the most significant
+   byte first (like Motorola and SPARC, unlike Intel and VAX).  */
+#cmakedefine WORDS_BIGENDIAN
+
+/* Define if we can trust the compiler not to insert extra bytes in
+   structs between base structs and derived structs. */
+#cmakedefine SIMPLE_STRUCT_POINTERS
+
+/* Define if we have Dinkumware STL installed.  */
+#cmakedefine HAVE_DINKUM
+
+/* Define if we have STL hash_map etc. available  */
+#cmakedefine HAVE_STL_HASH
+
+/* Define if you have the getopt function.  */
+#cmakedefine HAVE_GETOPT
+
+/* Define if you have the getopt_long_only function.  */
+#cmakedefine HAVE_GETOPT_LONG_ONLY
+
+/* Define if getopt appears in getopt.h.  */
+#cmakedefine PHAVE_GETOPT_H
+
+/* Do the system headers define key ios typedefs like ios::openmode
+   and ios::fmtflags? */
+#cmakedefine HAVE_IOS_TYPEDEFS
+
+/* Define if you have the <io.h> header file.  */
+#cmakedefine PHAVE_IO_H
+
+/* Define if you have the <iostream> header file.  */
+#cmakedefine PHAVE_IOSTREAM
+
+/* Define if you have the <malloc.h> header file.  */
+#cmakedefine PHAVE_MALLOC_H
+
+/* Define if you have the <sys/malloc.h> header file.  */
+#cmakedefine PHAVE_SYS_MALLOC_H
+
+/* Define if you have the <alloca.h> header file.  */
+#cmakedefine PHAVE_ALLOCA_H
+
+/* Define if you have the <locale.h> header file.  */
+#cmakedefine PHAVE_LOCALE_H
+
+/* Define if you have the <string.h> header file.  */
+#cmakedefine PHAVE_STRING_H
+
+/* Define if you have the <stdlib.h> header file.  */
+#cmakedefine PHAVE_STDLIB_H
+
+/* Define if you have the <limits.h> header file.  */
+#cmakedefine PHAVE_LIMITS_H
+
+/* Define if you have the <sstream> header file.  */
+#cmakedefine PHAVE_SSTREAM
+
+/* Define if you have the <new> header file.  */
+#cmakedefine PHAVE_NEW
+
+/* Define if you have the <sys/types.h> header file.  */
+#cmakedefine PHAVE_SYS_TYPES_H
+
+/* Define if you have the <sys/time.h> header file.  */
+#cmakedefine PHAVE_SYS_TIME_H
+
+/* Define if you have the <unistd.h> header file.  */
+#cmakedefine PHAVE_UNISTD_H
+
+/* Do we have <linux/input.h> ? This enables us to use raw mouse input. */
+#cmakedefine PHAVE_LINUX_INPUT_H
+
+/* Do we have <stdint.h>? */
+#cmakedefine PHAVE_STDINT_H
+
+/* Do we have Posix threads? */
+#cmakedefine HAVE_POSIX_THREADS
+
+/* Is the code being compiled with the Tau profiler's instrumentor? */
+#cmakedefine USE_TAU
+
+// To activate the DELETED_CHAIN macros.
+#cmakedefine USE_DELETED_CHAIN
+
+// If we are to build the native net interfaces.
+#cmakedefine WANT_NATIVE_NET
+
+/* Static linkage instead of the normal dynamic linkage? */
+#cmakedefine LINK_ALL_STATIC
+
+/* Platform-identifying defines. */
+#cmakedefine IS_OSX
+#cmakedefine IS_LINUX
+#cmakedefine IS_FREEBSD
+#cmakedefine BUILD_IPHONE
+
+#endif

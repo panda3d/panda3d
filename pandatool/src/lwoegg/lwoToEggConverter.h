@@ -43,8 +43,8 @@ public:
 
   virtual SomethingToEggConverter *make_copy();
 
-  virtual string get_name() const;
-  virtual string get_extension() const;
+  virtual std::string get_name() const;
+  virtual std::string get_extension() const;
 
   virtual bool convert_file(const Filename &filename);
   bool convert_lwo(const LwoHeader *lwo_header);
@@ -53,7 +53,7 @@ public:
   CLwoLayer *get_layer(int number) const;
   CLwoClip *get_clip(int number) const;
 
-  CLwoSurface *get_surface(const string &name) const;
+  CLwoSurface *get_surface(const std::string &name) const;
 
   bool _make_materials;
 
@@ -83,7 +83,7 @@ private:
   typedef pvector<CLwoPolygons *> Polygons;
   Polygons _polygons;
 
-  typedef pmap<string, CLwoSurface *> Surfaces;
+  typedef pmap<std::string, CLwoSurface *> Surfaces;
   Surfaces _surfaces;
 };
 

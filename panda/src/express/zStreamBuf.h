@@ -24,19 +24,19 @@
 /**
  * The streambuf object that implements IDecompressStream and OCompressStream.
  */
-class EXPCL_PANDAEXPRESS ZStreamBuf : public streambuf {
+class EXPCL_PANDA_EXPRESS ZStreamBuf : public std::streambuf {
 public:
   ZStreamBuf();
   virtual ~ZStreamBuf();
 
-  void open_read(istream *source, bool owns_source);
+  void open_read(std::istream *source, bool owns_source);
   void close_read();
 
-  void open_write(ostream *dest, bool owns_dest, int compression_level);
+  void open_write(std::ostream *dest, bool owns_dest, int compression_level);
   void close_write();
 
-  virtual streampos seekoff(streamoff off, ios_seekdir dir, ios_openmode which);
-  virtual streampos seekpos(streampos pos, ios_openmode which);
+  virtual std::streampos seekoff(std::streamoff off, ios_seekdir dir, ios_openmode which);
+  virtual std::streampos seekpos(std::streampos pos, ios_openmode which);
 
 protected:
   virtual int overflow(int c);
@@ -49,10 +49,10 @@ private:
   void show_zlib_error(const char *function, int error_code, z_stream &z);
 
 private:
-  istream *_source;
+  std::istream *_source;
   bool _owns_source;
 
-  ostream *_dest;
+  std::ostream *_dest;
   bool _owns_dest;
 
   z_stream _z_source;

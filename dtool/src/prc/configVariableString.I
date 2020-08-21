@@ -15,7 +15,7 @@
  *
  */
 INLINE ConfigVariableString::
-ConfigVariableString(const string &name) :
+ConfigVariableString(const std::string &name) :
   ConfigVariable(name, VT_string),
   _local_modified(initial_invalid_cache())
 {
@@ -26,12 +26,12 @@ ConfigVariableString(const string &name) :
  *
  */
 INLINE ConfigVariableString::
-ConfigVariableString(const string &name, const string &default_value,
-                     const string &description, int flags) :
+ConfigVariableString(const std::string &name, const std::string &default_value,
+                     const std::string &description, int flags) :
 #ifdef PRC_SAVE_DESCRIPTIONS
   ConfigVariable(name, VT_string, description, flags),
 #else
-  ConfigVariable(name, VT_string, string(), flags),
+  ConfigVariable(name, VT_string, std::string(), flags),
 #endif
   _local_modified(initial_invalid_cache())
 {
@@ -43,7 +43,7 @@ ConfigVariableString(const string &name, const string &default_value,
  * Reassigns the variable's local value.
  */
 INLINE void ConfigVariableString::
-operator = (const string &value) {
+operator = (const std::string &value) {
   set_value(value);
 }
 
@@ -51,7 +51,7 @@ operator = (const string &value) {
  * Returns the variable's value.
  */
 INLINE ConfigVariableString::
-operator const string & () const {
+operator const std::string & () const {
   return get_value();
 }
 
@@ -92,7 +92,7 @@ operator [] (size_t n) const {
  *
  */
 INLINE bool ConfigVariableString::
-operator == (const string &other) const {
+operator == (const std::string &other) const {
   return get_value() == other;
 }
 
@@ -100,7 +100,7 @@ operator == (const string &other) const {
  *
  */
 INLINE bool ConfigVariableString::
-operator != (const string &other) const {
+operator != (const std::string &other) const {
   return get_value() != other;
 }
 
@@ -108,7 +108,7 @@ operator != (const string &other) const {
  *
  */
 INLINE bool ConfigVariableString::
-operator < (const string &other) const {
+operator < (const std::string &other) const {
   return get_value() < other;
 }
 
@@ -116,14 +116,14 @@ operator < (const string &other) const {
  * Reassigns the variable's local value.
  */
 INLINE void ConfigVariableString::
-set_value(const string &value) {
+set_value(const std::string &value) {
   set_string_value(value);
 }
 
 /**
  * Returns the variable's value.
  */
-INLINE const string &ConfigVariableString::
+INLINE const std::string &ConfigVariableString::
 get_value() const {
   TAU_PROFILE("const string &ConfigVariableString::get_value() const", " ", TAU_USER);
   if (!is_cache_valid(_local_modified)) {
@@ -135,19 +135,19 @@ get_value() const {
 /**
  * Returns the variable's default value.
  */
-INLINE string ConfigVariableString::
+INLINE std::string ConfigVariableString::
 get_default_value() const {
   const ConfigDeclaration *decl = ConfigVariable::get_default_value();
-  if (decl != (ConfigDeclaration *)NULL) {
+  if (decl != nullptr) {
     return decl->get_string_value();
   }
-  return string();
+  return std::string();
 }
 
 /**
  * Returns the variable's nth value.
  */
-INLINE string ConfigVariableString::
+INLINE std::string ConfigVariableString::
 get_word(size_t n) const {
   return get_string_word(n);
 }
@@ -157,6 +157,6 @@ get_word(size_t n) const {
  * variable's overall value.
  */
 INLINE void ConfigVariableString::
-set_word(size_t n, const string &value) {
+set_word(size_t n, const std::string &value) {
   set_string_word(n, value);
 }

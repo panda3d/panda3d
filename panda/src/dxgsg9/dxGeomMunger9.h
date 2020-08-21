@@ -28,7 +28,7 @@
  */
 class EXPCL_PANDADX DXGeomMunger9 : public StandardMunger, public WeakPointerCallback {
 public:
-  INLINE DXGeomMunger9(GraphicsStateGuardian *gsg, const RenderState *state);
+  DXGeomMunger9(GraphicsStateGuardian *gsg, const RenderState *state);
   virtual ~DXGeomMunger9();
   ALLOC_DELETED_CHAIN(DXGeomMunger9);
 

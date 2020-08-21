@@ -14,44 +14,56 @@
 #include "aiWorld.h"
 
 AIWorld::AIWorld(NodePath render) {
-  _ai_char_pool = new AICharPool();
-  _render = render;
+  _render = std::move(render);
 }
 
 AIWorld::~AIWorld() {
 }
 
 void AIWorld::add_ai_char(AICharacter *ai_char) {
-  _ai_char_pool->append(ai_char);
+  _ai_char_pool.push_back(ai_char);
   ai_char->_window_render = _render;
   ai_char->_world = this;
 }
 
-void AIWorld::remove_ai_char(string name) {
-  _ai_char_pool->del(name);
-  remove_ai_char_from_flock(name);
+void AIWorld::remove_ai_char(std::string name) {
+  AICharPool::iterator it;
+  for (it = _ai_char_pool.begin(); it != _ai_char_pool.end(); ++it) {
+    AICharacter *ai_char = *it;
+    if (ai_char->_name == name) {
+      nassertv(ai_char->_world == this);
+      ai_char->_world = nullptr;
+      _ai_char_pool.erase(it);
+      break;
+    }
+  }
+
+  remove_ai_char_from_flock(std::move(name));
 }
 
-void AIWorld::remove_ai_char_from_flock(string name) {
-  AICharPool::node *ai_pool;
-  ai_pool = _ai_char_pool->_head;
-  while((ai_pool) != NULL) {
-    for(unsigned int i = 0; i < _flock_pool.size(); ++i) {
-      if(ai_pool->_ai_char->_ai_char_flock_id == _flock_pool[i]->get_id()) {
-        for(unsigned int j = 0; j<_flock_pool[i]->_ai_char_list.size(); ++j) {
-          if(_flock_pool[i]->_ai_char_list[j]->_name == name) {
-            _flock_pool[i]->_ai_char_list.erase(_flock_pool[i]->_ai_char_list.begin() + j);
+void AIWorld::remove_ai_char_from_flock(std::string name) {
+  for (AICharacter *ai_char : _ai_char_pool) {
+    for (Flock *flock : _flock_pool) {
+      if (ai_char->_ai_char_flock_id == flock->get_id()) {
+        for (size_t j = 0; j < flock->_ai_char_list.size(); ++j) {
+          if (flock->_ai_char_list[j]->_name == name) {
+            flock->_ai_char_list.erase(flock->_ai_char_list.begin() + j);
             return;
           }
         }
       }
     }
-    ai_pool = ai_pool->_next;
   }
 }
 
+/**
+ * This function prints the names of the AI characters that have been added to
+ * the AIWorld.  Useful for debugging purposes.
+ */
 void AIWorld::print_list() {
-  _ai_char_pool->print_list();
+  for (AICharacter *ai_char : _ai_char_pool) {
+    std::cout << ai_char->_name << std::endl;
+  }
 }
 
 /**
@@ -59,12 +71,8 @@ void AIWorld::print_list() {
  * characters which have been added to the AIWorld.
  */
 void AIWorld::update() {
-  AICharPool::node *ai_pool;
-  ai_pool = _ai_char_pool->_head;
-
-  while((ai_pool)!=NULL) {
-    ai_pool->_ai_char->update();
-    ai_pool = ai_pool->_next;
+  for (AICharacter *ai_char : _ai_char_pool) {
+    ai_char->update();
   }
 }
 
@@ -91,7 +99,7 @@ Flock AIWorld::get_flock(unsigned int flock_id) {
       return *_flock_pool[i];
     }
   }
-  Flock *null_flock = NULL;
+  Flock *null_flock = nullptr;
   return *null_flock;
 }
 
@@ -104,7 +112,7 @@ void AIWorld::remove_flock(unsigned int flock_id) {
        for(unsigned int j = 0; j < _flock_pool[i]->_ai_char_list.size(); ++j) {
          _flock_pool[i]->_ai_char_list[j]->get_ai_behaviors()->turn_off("flock_activate");
          _flock_pool[i]->_ai_char_list[j]->get_ai_behaviors()->turn_off("flock");
-         _flock_pool[i]->_ai_char_list[j]->get_ai_behaviors()->_flock_group = NULL;
+         _flock_pool[i]->_ai_char_list[j]->get_ai_behaviors()->_flock_group = nullptr;
        }
        _flock_pool.erase(_flock_pool.begin() + i);
        break;
@@ -139,86 +147,6 @@ void AIWorld::flock_on(unsigned int flock_id) {
        }
        break;
     }
-  }
-}
-
-AICharPool::AICharPool() {
-  _head = NULL;
-}
-
-AICharPool::~AICharPool() {
-}
-
-void AICharPool::append(AICharacter *ai_ch) {
-  node *q;
-  node *t;
-
-  if(_head == NULL) {
-    q = new node();
-    q->_ai_char = ai_ch;
-    q->_next = NULL;
-    _head = q;
-  }
-  else {
-    q = _head;
-    while( q->_next != NULL) {
-      q = q->_next;
-    }
-
-    t = new node();
-    t->_ai_char = ai_ch;
-    t->_next = NULL;
-    q->_next = t;
-  }
-}
-
-void AICharPool::del(string name) {
-  node *q;
-  node *r;
-  q = _head;
-
-  if(_head==NULL) {
-    return;
-  }
-
-  // Only one node in the linked list
-  if(q->_next == NULL) {
-    if(q->_ai_char->_name == name) {
-      _head = NULL;
-      delete q;
-    }
-    return;
-  }
-
-  r = q;
-  while( q != NULL) {
-    if( q->_ai_char->_name == name) {
-      // Special case
-      if(q == _head) {
-        _head = q->_next;
-        delete q;
-        return;
-      }
-
-      r->_next = q->_next;
-      delete q;
-      return;
-    }
-    r = q;
-    q = q->_next;
-  }
-}
-
-/**
- * This function prints the ai characters in the AICharPool.  Used for
- * debugging purposes.
- */
-void AICharPool::print_list() {
-  node* q;
-  q = _head;
-  while(q != NULL) {
-    cout<<q->_ai_char->_name<<endl;
-    q = q->_next;
   }
 }
 

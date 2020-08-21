@@ -27,20 +27,20 @@
  * when compiling without support for more specific libraries that are more
  * full-featured, such as libpng or libjpeg.
  */
-class EXPCL_PANDA_PNMIMAGETYPES PNMFileTypeStbImage : public PNMFileType {
+class PNMFileTypeStbImage : public PNMFileType {
 public:
   PNMFileTypeStbImage();
 
-  virtual string get_name() const;
+  virtual std::string get_name() const;
 
   virtual int get_num_extensions() const;
-  virtual string get_extension(int n) const;
+  virtual std::string get_extension(int n) const;
 
   virtual bool has_magic_number() const;
-  virtual bool matches_magic_number(const string &magic_number) const;
+  virtual bool matches_magic_number(const std::string &magic_number) const;
 
-  virtual PNMReader *make_reader(istream *file, bool owns_file = true,
-                                 const string &magic_number = string());
+  virtual PNMReader *make_reader(std::istream *file, bool owns_file = true,
+                                 const std::string &magic_number = std::string());
 
 public:
   static void register_with_read_factory();

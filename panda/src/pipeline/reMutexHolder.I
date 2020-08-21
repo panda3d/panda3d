@@ -44,7 +44,7 @@ ReMutexHolder(const ReMutex &mutex, Thread *current_thread) {
 INLINE ReMutexHolder::
 ReMutexHolder(ReMutex *&mutex) {
 #if defined(HAVE_THREADS) || defined(DEBUG_THREADS)
-  if (mutex == (ReMutex *)NULL) {
+  if (mutex == nullptr) {
     mutex = new ReMutex;
   }
   _mutex = mutex;
@@ -60,20 +60,4 @@ INLINE ReMutexHolder::
 #if defined(HAVE_THREADS) || defined(DEBUG_THREADS)
   _mutex->release();
 #endif
-}
-
-/**
- * Do not attempt to copy ReMutexHolders.
- */
-INLINE ReMutexHolder::
-ReMutexHolder(const ReMutexHolder &copy) {
-  nassertv(false);
-}
-
-/**
- * Do not attempt to copy ReMutexHolders.
- */
-INLINE void ReMutexHolder::
-operator = (const ReMutexHolder &copy) {
-  nassertv(false);
 }

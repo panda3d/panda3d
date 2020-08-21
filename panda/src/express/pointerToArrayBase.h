@@ -37,12 +37,13 @@
 template <class Element>
 class ReferenceCountedVector : public NodeReferenceCount, public pvector<Element> {
 public:
-  typedef TYPENAME pvector<Element>::iterator iterator;
-  typedef TYPENAME pvector<Element>::size_type size_type;
+  typedef typename pvector<Element>::iterator iterator;
+  typedef typename pvector<Element>::size_type size_type;
 
   INLINE ReferenceCountedVector(TypeHandle type_handle);
   INLINE ReferenceCountedVector(size_type initial_size, TypeHandle type_handle);
   INLINE ReferenceCountedVector(const Element *begin, const Element *end, TypeHandle type_handle);
+  INLINE ReferenceCountedVector(pvector<Element> &&from);
   ALLOC_DELETED_CHAIN(ReferenceCountedVector<Element>);
 
   INLINE size_type size() const;
@@ -67,15 +68,12 @@ public:
 template <class Element>
 class PointerToArrayBase : public PointerToBase<ReferenceCountedVector<Element> > {
 public:
-  typedef TYPENAME PointerToBase<ReferenceCountedVector<Element> >::To To;
+  typedef typename PointerToBase<ReferenceCountedVector<Element> >::To To;
 
 protected:
   INLINE PointerToArrayBase(ReferenceCountedVector<Element> *ptr);
   INLINE PointerToArrayBase(const PointerToArrayBase<Element> &copy);
-
-#ifdef USE_MOVE_SEMANTICS
-  INLINE PointerToArrayBase(PointerToArrayBase<Element> &&from) NOEXCEPT;
-#endif
+  INLINE PointerToArrayBase(PointerToArrayBase<Element> &&from) noexcept;
 
 PUBLISHED:
   INLINE ~PointerToArrayBase();

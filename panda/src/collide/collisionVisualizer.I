@@ -31,6 +31,7 @@ SolidInfo() {
  */
 INLINE void CollisionVisualizer::
 set_point_scale(PN_stdfloat point_scale) {
+  LightMutexHolder holder(_lock);
   _point_scale = point_scale;
 }
 
@@ -39,6 +40,7 @@ set_point_scale(PN_stdfloat point_scale) {
  */
 INLINE PN_stdfloat CollisionVisualizer::
 get_point_scale() const {
+  LightMutexHolder holder(_lock);
   return _point_scale;
 }
 
@@ -51,6 +53,7 @@ get_point_scale() const {
  */
 INLINE void CollisionVisualizer::
 set_normal_scale(PN_stdfloat normal_scale) {
+  LightMutexHolder holder(_lock);
   _normal_scale = normal_scale;
 }
 
@@ -59,6 +62,7 @@ set_normal_scale(PN_stdfloat normal_scale) {
  */
 INLINE PN_stdfloat CollisionVisualizer::
 get_normal_scale() const {
+  LightMutexHolder holder(_lock);
   return _normal_scale;
 }
 

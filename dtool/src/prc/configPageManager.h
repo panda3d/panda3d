@@ -28,7 +28,7 @@ class ConfigPage;
  * A global object that maintains the set of ConfigPages everywhere in the
  * world, and keeps them in sorted order.
  */
-class EXPCL_DTOOLCONFIG ConfigPageManager : public ConfigFlags {
+class EXPCL_DTOOL_PRC ConfigPageManager : public ConfigFlags {
 protected:
   ConfigPageManager();
   ~ConfigPageManager();
@@ -41,15 +41,15 @@ PUBLISHED:
   INLINE DSearchPath &get_search_path();
 
   INLINE size_t get_num_prc_patterns() const;
-  INLINE string get_prc_pattern(size_t n) const;
+  INLINE std::string get_prc_pattern(size_t n) const;
 
   INLINE size_t get_num_prc_encrypted_patterns() const;
-  INLINE string get_prc_encrypted_pattern(size_t n) const;
+  INLINE std::string get_prc_encrypted_pattern(size_t n) const;
 
   INLINE size_t get_num_prc_executable_patterns() const;
-  INLINE string get_prc_executable_pattern(size_t n) const;
+  INLINE std::string get_prc_executable_pattern(size_t n) const;
 
-  ConfigPage *make_explicit_page(const string &name);
+  ConfigPage *make_explicit_page(const std::string &name);
   bool delete_explicit_page(ConfigPage *page);
 
   INLINE size_t get_num_implicit_pages() const;
@@ -58,8 +58,8 @@ PUBLISHED:
   INLINE size_t get_num_explicit_pages() const;
   INLINE ConfigPage *get_explicit_page(size_t n) const;
 
-  void output(ostream &out) const;
-  void write(ostream &out) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out) const;
 
   static ConfigPageManager *get_global_ptr();
 
@@ -76,7 +76,7 @@ private:
 
   void config_initialized();
 
-  typedef vector<ConfigPage *> Pages;
+  typedef std::vector<ConfigPage *> Pages;
   Pages _implicit_pages;
   Pages _explicit_pages;
   bool _pages_sorted;
@@ -87,7 +87,7 @@ private:
 
   DSearchPath _search_path;
 
-  typedef vector<GlobPattern> Globs;
+  typedef std::vector<GlobPattern> Globs;
   Globs _prc_patterns;
   Globs _prc_encrypted_patterns;
   Globs _prc_executable_patterns;
@@ -105,12 +105,12 @@ private:
     int _file_flags;
     Filename _filename;
   };
-  typedef vector<ConfigFile> ConfigFiles;
+  typedef std::vector<ConfigFile> ConfigFiles;
 
   static ConfigPageManager *_global_ptr;
 };
 
-INLINE ostream &operator << (ostream &out, const ConfigPageManager &pageMgr);
+INLINE std::ostream &operator << (std::ostream &out, const ConfigPageManager &pageMgr);
 
 #include "configPageManager.I"
 

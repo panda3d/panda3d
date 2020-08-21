@@ -14,7 +14,7 @@
 /**
  * Returns the name of the variable.
  */
-INLINE const string &ConfigVariableCore::
+INLINE const std::string &ConfigVariableCore::
 get_name() const {
   return _name;
 }
@@ -40,7 +40,7 @@ get_value_type() const {
 /**
  * Returns the brief description of this variable, if it has been defined.
  */
-INLINE const string &ConfigVariableCore::
+INLINE const std::string &ConfigVariableCore::
 get_description() const {
   return _description;
 }
@@ -118,7 +118,7 @@ set_used() {
  */
 INLINE bool ConfigVariableCore::
 has_local_value() const {
-  return _local_value != (ConfigDeclaration *)NULL;
+  return _local_value != nullptr;
 }
 
 /**
@@ -141,7 +141,7 @@ get_num_references() const {
 INLINE const ConfigDeclaration *ConfigVariableCore::
 get_reference(size_t n) const {
   check_sort_declarations();
-  nassertr(n < _declarations.size(), (ConfigDeclaration *)NULL);
+  nassertr(n < _declarations.size(), nullptr);
   return _declarations[n];
 }
 
@@ -167,7 +167,7 @@ get_num_trusted_references() const {
 INLINE const ConfigDeclaration *ConfigVariableCore::
 get_trusted_reference(size_t n) const {
   check_sort_declarations();
-  nassertr(n < _trusted_declarations.size(), (ConfigDeclaration *)NULL);
+  nassertr(n < _trusted_declarations.size(), nullptr);
   return _trusted_declarations[n];
 }
 
@@ -188,7 +188,7 @@ get_num_unique_references() const {
 INLINE const ConfigDeclaration *ConfigVariableCore::
 get_unique_reference(size_t n) const {
   check_sort_declarations();
-  nassertr(n < _unique_declarations.size(), (ConfigDeclaration *)NULL);
+  nassertr(n < _unique_declarations.size(), nullptr);
   return _unique_declarations[n];
 }
 
@@ -208,8 +208,8 @@ check_sort_declarations() const {
   }
 }
 
-INLINE ostream &
-operator << (ostream &out, const ConfigVariableCore &variable) {
+INLINE std::ostream &
+operator << (std::ostream &out, const ConfigVariableCore &variable) {
   variable.output(out);
   return out;
 }

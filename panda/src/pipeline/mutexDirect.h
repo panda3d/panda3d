@@ -29,11 +29,16 @@ class Thread;
  */
 class EXPCL_PANDA_PIPELINE MutexDirect {
 protected:
-  INLINE MutexDirect();
-  INLINE ~MutexDirect();
-private:
-  INLINE MutexDirect(const MutexDirect &copy);
-  INLINE void operator = (const MutexDirect &copy);
+  MutexDirect() = default;
+  MutexDirect(const MutexDirect &copy) = delete;
+  ~MutexDirect() = default;
+
+  void operator = (const MutexDirect &copy) = delete;
+
+public:
+  INLINE void lock();
+  INLINE bool try_lock();
+  INLINE void unlock();
 
 PUBLISHED:
   BLOCKING INLINE void acquire() const;
@@ -41,22 +46,21 @@ PUBLISHED:
   INLINE void release() const;
   INLINE bool debug_is_locked() const;
 
-  INLINE void set_name(const string &name);
+  INLINE void set_name(const std::string &name);
   INLINE void clear_name();
   INLINE bool has_name() const;
-  INLINE string get_name() const;
+  INLINE std::string get_name() const;
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
 private:
-  MutexTrueImpl _impl;
+  mutable MutexTrueImpl _impl;
 
   friend class ConditionVarDirect;
-  friend class ConditionVarFullDirect;
 };
 
-INLINE ostream &
-operator << (ostream &out, const MutexDirect &m) {
+INLINE std::ostream &
+operator << (std::ostream &out, const MutexDirect &m) {
   m.output(out);
   return out;
 }

@@ -24,6 +24,8 @@
 #include "interrogateFunction.h"
 #include "cppFunctionType.h"
 
+using std::ostream;
+
 /**
  *
  */
@@ -115,7 +117,7 @@ synthesize_this_parameter() {
 /**
  * Returns the prefix string used to generate wrapper function names.
  */
-string InterfaceMakerC::
+std::string InterfaceMakerC::
 get_wrapper_prefix() {
   return "_inC";
 }
@@ -124,7 +126,7 @@ get_wrapper_prefix() {
  * Returns the prefix string used to generate unique symbolic names, which are
  * not necessarily C-callable function names.
  */
-string InterfaceMakerC::
+std::string InterfaceMakerC::
 get_unique_prefix() {
   return "c";
 }
@@ -189,7 +191,7 @@ write_function_instance(ostream &out, InterfaceMaker::Function *func,
   out << "/*\n"
       << " * C wrapper for\n"
       << " * ";
-  remap->write_orig_prototype(out, 0);
+  remap->write_orig_prototype(out, 0, false, remap->_num_default_parameters);
   out << "\n"
       << " */\n";
 
@@ -206,7 +208,7 @@ write_function_instance(ostream &out, InterfaceMaker::Function *func,
     write_spam_message(out, remap);
   }
 
-  string return_expr =
+  std::string return_expr =
     remap->call_function(out, 2, true, "param0");
   return_expr = manage_return_value(out, 2, remap, return_expr);
   if (!return_expr.empty()) {

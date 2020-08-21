@@ -41,9 +41,9 @@ LoaderFileType::
  * Returns a space-separated list of extension, in addition to the one
  * returned by get_extension(), that are recognized by this loader.
  */
-string LoaderFileType::
+std::string LoaderFileType::
 get_additional_extensions() const {
-  return string();
+  return std::string();
 }
 
 /**
@@ -101,7 +101,7 @@ load_file(const Filename &path, const LoaderOptions &options,
           BamCacheRecord *record) const {
   loader_cat.error()
     << get_type() << " cannot read PandaNode objects.\n";
-  return NULL;
+  return nullptr;
 }
 
 /**

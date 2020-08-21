@@ -37,7 +37,7 @@ class BamReader;
  */
 class EXPCL_PANDA_MOVIES MovieVideo : public TypedWritableReferenceCount, public Namable {
 PUBLISHED:
-  MovieVideo(const string &name = "Blank Video");
+  MovieVideo(const std::string &name = "Blank Video");
   virtual ~MovieVideo();
   virtual PT(MovieVideoCursor) open();
   static PT(MovieVideo) get(const Filename &name);

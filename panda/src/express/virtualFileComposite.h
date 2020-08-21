@@ -23,7 +23,7 @@
  * one directory on different mount points.  The resulting directory appears
  * to be the union of all the individual simple directories.
  */
-class EXPCL_PANDAEXPRESS VirtualFileComposite : public VirtualFile {
+class EXPCL_PANDA_EXPRESS VirtualFileComposite : public VirtualFile {
 public:
   INLINE VirtualFileComposite(VirtualFileSystem *file_system,
                               const Filename &filename);
@@ -38,7 +38,7 @@ public:
 
 protected:
   virtual bool scan_local_directory(VirtualFileList *file_list,
-                                    const ov_set<string> &mount_points) const;
+                                    const ov_set<std::string> &mount_points) const;
 
 private:
   VirtualFileSystem *_file_system;

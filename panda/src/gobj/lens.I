@@ -142,7 +142,7 @@ project(const LPoint3 &point3d, LPoint3 &point2d) const {
  * to automatically track changes to camera fov, etc.  in the application.
  */
 INLINE void Lens::
-set_change_event(const string &event) {
+set_change_event(const std::string &event) {
   CDWriter cdata(_cycler, true);
   cdata->_change_event = event;
 }
@@ -151,7 +151,7 @@ set_change_event(const string &event) {
  * Returns the name of the event that will be generated whenever any
  * properties of this particular Lens have changed.
  */
-INLINE const string &Lens::
+INLINE const std::string &Lens::
 get_change_event() const {
   CDReader cdata(_cycler);
   return cdata->_change_event;
@@ -667,9 +667,11 @@ do_get_film_offset(const CData *cdata) const {
  */
 INLINE void Lens::
 do_set_near(CData *cdata, PN_stdfloat near_distance) {
-  cdata->_near_distance = near_distance;
-  do_adjust_comp_flags(cdata, CF_projection_mat | CF_projection_mat_inv, 0);
-  do_throw_change_event(cdata);
+  if (near_distance != cdata->_near_distance) {
+    cdata->_near_distance = near_distance;
+    do_adjust_comp_flags(cdata, CF_projection_mat | CF_projection_mat_inv, 0);
+    do_throw_change_event(cdata);
+  }
 }
 
 /**
@@ -685,9 +687,11 @@ do_get_near(const CData *cdata) const {
  */
 INLINE void Lens::
 do_set_far(CData *cdata, PN_stdfloat far_distance) {
-  cdata->_far_distance = far_distance;
-  do_adjust_comp_flags(cdata, CF_projection_mat | CF_projection_mat_inv, 0);
-  do_throw_change_event(cdata);
+  if (far_distance != cdata->_far_distance) {
+    cdata->_far_distance = far_distance;
+    do_adjust_comp_flags(cdata, CF_projection_mat | CF_projection_mat_inv, 0);
+    do_throw_change_event(cdata);
+  }
 }
 
 /**
@@ -703,14 +707,16 @@ do_get_far(const CData *cdata) const {
  */
 INLINE void Lens::
 do_set_near_far(CData *cdata, PN_stdfloat near_distance, PN_stdfloat far_distance) {
-  cdata->_near_distance = near_distance;
-  cdata->_far_distance = far_distance;
-  do_adjust_comp_flags(cdata, CF_projection_mat | CF_projection_mat_inv, 0);
-  do_throw_change_event(cdata);
+  if (near_distance != cdata->_near_distance || far_distance != cdata->_far_distance) {
+    cdata->_near_distance = near_distance;
+    cdata->_far_distance = far_distance;
+    do_adjust_comp_flags(cdata, CF_projection_mat | CF_projection_mat_inv, 0);
+    do_throw_change_event(cdata);
+  }
 }
 
-INLINE ostream &
-operator << (ostream &out, const Lens &lens) {
+INLINE std::ostream &
+operator << (std::ostream &out, const Lens &lens) {
   lens.output(out);
   return out;
 }

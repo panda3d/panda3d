@@ -29,7 +29,7 @@ BEGIN_PUBLISH
  * the object is invalid.  If there is vertex color, it will be applied to
  * values 0 - 3 of the extended vertex values.
  */
-EXPCL_PANDAEGG PT(NurbsSurfaceEvaluator)
+EXPCL_PANDA_EGG2PG PT(NurbsSurfaceEvaluator)
 make_nurbs_surface(EggNurbsSurface *egg_surface, const LMatrix4d &mat);
 
 /**
@@ -38,7 +38,7 @@ make_nurbs_surface(EggNurbsSurface *egg_surface, const LMatrix4d &mat);
  * object is invalid.  If there is vertex color, it will be applied to values
  * 0 - 3 of the extended vertex values.
  */
-EXPCL_PANDAEGG PT(NurbsCurveEvaluator)
+EXPCL_PANDA_EGG2PG PT(NurbsCurveEvaluator)
 make_nurbs_curve(EggNurbsCurve *egg_curve, const LMatrix4d &mat);
 
 END_PUBLISH

@@ -21,6 +21,10 @@
 #include "geom.h"
 #include <ctype.h>
 
+using std::istream;
+using std::ostream;
+using std::string;
+
 TypeHandle TextFont::_type_handle;
 
 /**
@@ -55,6 +59,16 @@ TextFont::
 }
 
 /**
+ * Returns the amount by which to offset the second glyph when it directly
+ * follows the first glyph.  This is an additional offset that is added on top
+ * of the advance.
+ */
+PN_stdfloat TextFont::
+get_kerning(int first, int second) const {
+  return 0;
+}
+
+/**
  *
  */
 void TextFont::
@@ -76,7 +90,7 @@ write(ostream &out, int indent_level) const {
  */
 TextGlyph *TextFont::
 get_invalid_glyph() {
-  if (_invalid_glyph == (TextGlyph *)NULL) {
+  if (_invalid_glyph == nullptr) {
     make_invalid_glyph();
   }
   return _invalid_glyph;

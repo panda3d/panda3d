@@ -75,7 +75,7 @@ private:
 
 private:
   int _brush_origin;
-  string _net_value_text;
+  std::string _net_value_text;
 
   GtkWidget *_top_hbox;
   GtkWidget *_smooth_check_box;

@@ -17,15 +17,8 @@
  *
  */
 INLINE ShaderInput::
-~ShaderInput() {
-}
-
-/**
- *
- */
-INLINE ShaderInput::
 ShaderInput(CPT_InternalName name, int priority) :
-  _name(MOVE(name)),
+  _name(std::move(name)),
   _type(M_invalid),
   _priority(priority)
 {
@@ -36,7 +29,7 @@ ShaderInput(CPT_InternalName name, int priority) :
  */
 INLINE ShaderInput::
 ShaderInput(CPT_InternalName name, Texture *tex, int priority) :
-  _name(MOVE(name)),
+  _name(std::move(name)),
   _type(M_texture),
   _priority(priority),
   _value(tex)
@@ -48,7 +41,7 @@ ShaderInput(CPT_InternalName name, Texture *tex, int priority) :
  */
 INLINE ShaderInput::
 ShaderInput(CPT_InternalName name, ParamValueBase *param, int priority) :
-  _name(MOVE(name)),
+  _name(std::move(name)),
   _type(M_param),
   _priority(priority),
   _value(param)
@@ -60,7 +53,7 @@ ShaderInput(CPT_InternalName name, ParamValueBase *param, int priority) :
  */
 INLINE ShaderInput::
 ShaderInput(CPT_InternalName name, ShaderBuffer *buf, int priority) :
-  _name(MOVE(name)),
+  _name(std::move(name)),
   _type(M_buffer),
   _priority(priority),
   _value(buf)
@@ -72,7 +65,7 @@ ShaderInput(CPT_InternalName name, ShaderBuffer *buf, int priority) :
  */
 INLINE ShaderInput::
 ShaderInput(CPT_InternalName name, const PTA_float &ptr, int priority) :
-  _name(MOVE(name)),
+  _name(std::move(name)),
   _type(M_numeric),
   _priority(priority),
   _stored_ptr(ptr)
@@ -84,7 +77,7 @@ ShaderInput(CPT_InternalName name, const PTA_float &ptr, int priority) :
  */
 INLINE ShaderInput::
 ShaderInput(CPT_InternalName name, const PTA_LVecBase4f &ptr, int priority) :
-  _name(MOVE(name)),
+  _name(std::move(name)),
   _type(M_numeric),
   _priority(priority),
   _stored_ptr(ptr)
@@ -96,7 +89,7 @@ ShaderInput(CPT_InternalName name, const PTA_LVecBase4f &ptr, int priority) :
  */
 INLINE ShaderInput::
 ShaderInput(CPT_InternalName name, const PTA_LVecBase3f &ptr, int priority) :
-  _name(MOVE(name)),
+  _name(std::move(name)),
   _type(M_numeric),
   _priority(priority),
   _stored_ptr(ptr)
@@ -108,7 +101,7 @@ ShaderInput(CPT_InternalName name, const PTA_LVecBase3f &ptr, int priority) :
  */
 INLINE ShaderInput::
 ShaderInput(CPT_InternalName name, const PTA_LVecBase2f &ptr, int priority) :
-  _name(MOVE(name)),
+  _name(std::move(name)),
   _type(M_numeric),
   _priority(priority),
   _stored_ptr(ptr)
@@ -120,7 +113,7 @@ ShaderInput(CPT_InternalName name, const PTA_LVecBase2f &ptr, int priority) :
  */
 INLINE ShaderInput::
 ShaderInput(CPT_InternalName name, const LVecBase4f &vec, int priority) :
-  _name(MOVE(name)),
+  _name(std::move(name)),
   _type(M_vector),
   _priority(priority),
   _stored_ptr(vec),
@@ -133,7 +126,7 @@ ShaderInput(CPT_InternalName name, const LVecBase4f &vec, int priority) :
  */
 INLINE ShaderInput::
 ShaderInput(CPT_InternalName name, const LVecBase3f &vec, int priority) :
-  _name(MOVE(name)),
+  _name(std::move(name)),
   _type(M_vector),
   _priority(priority),
   _stored_ptr(vec),
@@ -146,7 +139,7 @@ ShaderInput(CPT_InternalName name, const LVecBase3f &vec, int priority) :
  */
 INLINE ShaderInput::
 ShaderInput(CPT_InternalName name, const LVecBase2f &vec, int priority) :
-  _name(MOVE(name)),
+  _name(std::move(name)),
   _type(M_vector),
   _priority(priority),
   _stored_ptr(vec),
@@ -159,7 +152,7 @@ ShaderInput(CPT_InternalName name, const LVecBase2f &vec, int priority) :
  */
 INLINE ShaderInput::
 ShaderInput(CPT_InternalName name, const PTA_LMatrix4f &ptr, int priority) :
-  _name(MOVE(name)),
+  _name(std::move(name)),
   _type(M_numeric),
   _priority(priority),
   _stored_ptr(ptr)
@@ -171,7 +164,7 @@ ShaderInput(CPT_InternalName name, const PTA_LMatrix4f &ptr, int priority) :
  */
 INLINE ShaderInput::
 ShaderInput(CPT_InternalName name, const PTA_LMatrix3f &ptr, int priority) :
-  _name(MOVE(name)),
+  _name(std::move(name)),
   _type(M_numeric),
   _priority(priority),
   _stored_ptr(ptr)
@@ -183,7 +176,7 @@ ShaderInput(CPT_InternalName name, const PTA_LMatrix3f &ptr, int priority) :
  */
 INLINE ShaderInput::
 ShaderInput(CPT_InternalName name, const LMatrix4f &mat, int priority) :
-  _name(MOVE(name)),
+  _name(std::move(name)),
   _type(M_numeric),
   _priority(priority),
   _stored_ptr(mat)
@@ -195,7 +188,7 @@ ShaderInput(CPT_InternalName name, const LMatrix4f &mat, int priority) :
  */
 INLINE ShaderInput::
 ShaderInput(CPT_InternalName name, const LMatrix3f &mat, int priority) :
-  _name(MOVE(name)),
+  _name(std::move(name)),
   _type(M_numeric),
   _priority(priority),
   _stored_ptr(mat)
@@ -207,7 +200,7 @@ ShaderInput(CPT_InternalName name, const LMatrix3f &mat, int priority) :
  */
 INLINE ShaderInput::
 ShaderInput(CPT_InternalName name, const PTA_double &ptr, int priority) :
-  _name(MOVE(name)),
+  _name(std::move(name)),
   _type(M_numeric),
   _priority(priority),
   _stored_ptr(ptr)
@@ -219,7 +212,7 @@ ShaderInput(CPT_InternalName name, const PTA_double &ptr, int priority) :
  */
 INLINE ShaderInput::
 ShaderInput(CPT_InternalName name, const PTA_LVecBase4d &ptr, int priority) :
-  _name(MOVE(name)),
+  _name(std::move(name)),
   _type(M_numeric),
   _priority(priority),
   _stored_ptr(ptr)
@@ -231,7 +224,7 @@ ShaderInput(CPT_InternalName name, const PTA_LVecBase4d &ptr, int priority) :
  */
 INLINE ShaderInput::
 ShaderInput(CPT_InternalName name, const PTA_LVecBase3d &ptr, int priority) :
-  _name(MOVE(name)),
+  _name(std::move(name)),
   _type(M_numeric),
   _priority(priority),
   _stored_ptr(ptr)
@@ -243,7 +236,7 @@ ShaderInput(CPT_InternalName name, const PTA_LVecBase3d &ptr, int priority) :
  */
 INLINE ShaderInput::
 ShaderInput(CPT_InternalName name, const PTA_LVecBase2d &ptr, int priority) :
-  _name(MOVE(name)),
+  _name(std::move(name)),
   _type(M_numeric),
   _priority(priority),
   _stored_ptr(ptr)
@@ -255,7 +248,7 @@ ShaderInput(CPT_InternalName name, const PTA_LVecBase2d &ptr, int priority) :
  */
 INLINE ShaderInput::
 ShaderInput(CPT_InternalName name, const LVecBase4d &vec, int priority) :
-  _name(MOVE(name)),
+  _name(std::move(name)),
   _type(M_numeric),
   _priority(priority),
   _stored_ptr(vec),
@@ -268,7 +261,7 @@ ShaderInput(CPT_InternalName name, const LVecBase4d &vec, int priority) :
  */
 INLINE ShaderInput::
 ShaderInput(CPT_InternalName name, const LVecBase3d &vec, int priority) :
-  _name(MOVE(name)),
+  _name(std::move(name)),
   _type(M_numeric),
   _priority(priority),
   _stored_ptr(vec),
@@ -281,7 +274,7 @@ ShaderInput(CPT_InternalName name, const LVecBase3d &vec, int priority) :
  */
 INLINE ShaderInput::
 ShaderInput(CPT_InternalName name, const LVecBase2d &vec, int priority) :
-  _name(MOVE(name)),
+  _name(std::move(name)),
   _type(M_numeric),
   _priority(priority),
   _stored_ptr(vec),
@@ -294,7 +287,7 @@ ShaderInput(CPT_InternalName name, const LVecBase2d &vec, int priority) :
  */
 INLINE ShaderInput::
 ShaderInput(CPT_InternalName name, const PTA_LMatrix4d &ptr, int priority) :
-  _name(MOVE(name)),
+  _name(std::move(name)),
   _type(M_numeric),
   _priority(priority),
   _stored_ptr(ptr)
@@ -306,7 +299,7 @@ ShaderInput(CPT_InternalName name, const PTA_LMatrix4d &ptr, int priority) :
  */
 INLINE ShaderInput::
 ShaderInput(CPT_InternalName name, const PTA_LMatrix3d &ptr, int priority) :
-  _name(MOVE(name)),
+  _name(std::move(name)),
   _type(M_numeric),
   _priority(priority),
   _stored_ptr(ptr)
@@ -318,7 +311,7 @@ ShaderInput(CPT_InternalName name, const PTA_LMatrix3d &ptr, int priority) :
  */
 INLINE ShaderInput::
 ShaderInput(CPT_InternalName name, const LMatrix4d &mat, int priority) :
-  _name(MOVE(name)),
+  _name(std::move(name)),
   _type(M_numeric),
   _priority(priority),
   _stored_ptr(mat)
@@ -330,7 +323,7 @@ ShaderInput(CPT_InternalName name, const LMatrix4d &mat, int priority) :
  */
 INLINE ShaderInput::
 ShaderInput(CPT_InternalName name, const LMatrix3d &mat, int priority) :
-  _name(MOVE(name)),
+  _name(std::move(name)),
   _type(M_numeric),
   _priority(priority),
   _stored_ptr(mat)
@@ -342,7 +335,7 @@ ShaderInput(CPT_InternalName name, const LMatrix3d &mat, int priority) :
  */
 INLINE ShaderInput::
 ShaderInput(CPT_InternalName name, const PTA_int &ptr, int priority) :
-  _name(MOVE(name)),
+  _name(std::move(name)),
   _type(M_numeric),
   _priority(priority),
   _stored_ptr(ptr)
@@ -354,7 +347,7 @@ ShaderInput(CPT_InternalName name, const PTA_int &ptr, int priority) :
  */
 INLINE ShaderInput::
 ShaderInput(CPT_InternalName name, const PTA_LVecBase4i &ptr, int priority) :
-  _name(MOVE(name)),
+  _name(std::move(name)),
   _type(M_numeric),
   _priority(priority),
   _stored_ptr(ptr)
@@ -366,7 +359,7 @@ ShaderInput(CPT_InternalName name, const PTA_LVecBase4i &ptr, int priority) :
  */
 INLINE ShaderInput::
 ShaderInput(CPT_InternalName name, const PTA_LVecBase3i &ptr, int priority) :
-  _name(MOVE(name)),
+  _name(std::move(name)),
   _type(M_numeric),
   _priority(priority),
   _stored_ptr(ptr)
@@ -378,7 +371,7 @@ ShaderInput(CPT_InternalName name, const PTA_LVecBase3i &ptr, int priority) :
  */
 INLINE ShaderInput::
 ShaderInput(CPT_InternalName name, const PTA_LVecBase2i &ptr, int priority) :
-  _name(MOVE(name)),
+  _name(std::move(name)),
   _type(M_numeric),
   _priority(priority),
   _stored_ptr(ptr)
@@ -390,7 +383,7 @@ ShaderInput(CPT_InternalName name, const PTA_LVecBase2i &ptr, int priority) :
  */
 INLINE ShaderInput::
 ShaderInput(CPT_InternalName name, const LVecBase4i &vec, int priority) :
-  _name(MOVE(name)),
+  _name(std::move(name)),
   _type(M_numeric),
   _priority(priority),
   _stored_ptr(vec),
@@ -403,7 +396,7 @@ ShaderInput(CPT_InternalName name, const LVecBase4i &vec, int priority) :
  */
 INLINE ShaderInput::
 ShaderInput(CPT_InternalName name, const LVecBase3i &vec, int priority) :
-  _name(MOVE(name)),
+  _name(std::move(name)),
   _type(M_numeric),
   _priority(priority),
   _stored_ptr(vec),
@@ -416,12 +409,107 @@ ShaderInput(CPT_InternalName name, const LVecBase3i &vec, int priority) :
  */
 INLINE ShaderInput::
 ShaderInput(CPT_InternalName name, const LVecBase2i &vec, int priority) :
-  _name(MOVE(name)),
+  _name(std::move(name)),
   _type(M_numeric),
   _priority(priority),
   _stored_ptr(vec),
   _stored_vector((int)vec.get_x(), (int)vec.get_y(), 0.0, 0.0)
 {
+}
+
+/**
+ *
+ */
+INLINE ShaderInput::
+operator bool () const {
+  return _type != M_invalid;
+}
+
+/**
+ *
+ */
+INLINE bool ShaderInput::
+operator == (const ShaderInput &other) const {
+  if (_type != other._type || _name != other._name || _priority != other._priority) {
+    return false;
+  }
+  switch (_type) {
+  case M_invalid:
+    return true;
+
+  case M_vector:
+    return _stored_vector == other._stored_vector;
+
+  case M_numeric:
+    return _stored_ptr._ptr == other._stored_ptr._ptr;
+
+  default:
+    return _value == other._value;
+  }
+}
+
+/**
+ *
+ */
+INLINE bool ShaderInput::
+operator != (const ShaderInput &other) const {
+  if (_type != other._type || _name != other._name || _priority != other._priority) {
+    return true;
+  }
+  switch (_type) {
+  case M_invalid:
+    return false;
+
+  case M_vector:
+    return _stored_vector != other._stored_vector;
+
+  case M_numeric:
+    return _stored_ptr._ptr != other._stored_ptr._ptr;
+
+  default:
+    return _value != other._value;
+  }
+}
+
+/**
+ *
+ */
+INLINE bool ShaderInput::
+operator < (const ShaderInput &other) const {
+  if (_type != other._type) {
+    return (_type < other._type);
+  }
+  if (_name != other._name) {
+    return (_name < other._name);
+  }
+  if (_priority != other._priority) {
+    return (_priority < other._priority);
+  }
+  switch (_type) {
+  case M_invalid:
+    return false;
+
+  case M_vector:
+    if (_stored_vector[0] != other._stored_vector[0]) {
+      return _stored_vector[0] < other._stored_vector[0];
+    }
+    if (_stored_vector[1] != other._stored_vector[1]) {
+      return _stored_vector[1] < other._stored_vector[1];
+    }
+    if (_stored_vector[2] != other._stored_vector[2]) {
+      return _stored_vector[2] < other._stored_vector[2];
+    }
+    if (_stored_vector[3] != other._stored_vector[3]) {
+      return _stored_vector[3] < other._stored_vector[3];
+    }
+    return false;
+
+  case M_numeric:
+    return _stored_ptr._ptr < other._stored_ptr._ptr;
+
+  default:
+    return _value < other._value;
+  }
 }
 
 /**
@@ -470,4 +558,12 @@ get_ptr() const {
 INLINE ParamValueBase *ShaderInput::
 get_param() const {
   return DCAST(ParamValueBase, _value);
+}
+
+/**
+ *
+ */
+INLINE TypedWritableReferenceCount *ShaderInput::
+get_value() const {
+  return _value.p();
 }

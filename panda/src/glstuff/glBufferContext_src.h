@@ -21,7 +21,8 @@
 class EXPCL_GL CLP(BufferContext) : public BufferContext, public AdaptiveLruPage {
 public:
   INLINE CLP(BufferContext)(CLP(GraphicsStateGuardian) *glgsg,
-                            PreparedGraphicsObjects *pgo);
+                            PreparedGraphicsObjects *pgo,
+                            TypedWritableReferenceCount *object);
   ALLOC_DELETED_CHAIN(CLP(BufferContext));
 
   virtual void evict_lru();

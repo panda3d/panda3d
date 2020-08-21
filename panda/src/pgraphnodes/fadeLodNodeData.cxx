@@ -20,7 +20,7 @@ TypeHandle FadeLODNodeData::_type_handle;
  *
  */
 void FadeLODNodeData::
-output(ostream &out) const {
+output(std::ostream &out) const {
   AuxSceneData::output(out);
   if (_fade_mode != FM_solid) {
     out << " fading " << _fade_out << " to " << _fade_in << " since "

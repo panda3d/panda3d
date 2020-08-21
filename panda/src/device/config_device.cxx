@@ -21,11 +21,18 @@
 #include "clientDialDevice.h"
 #include "clientTrackerDevice.h"
 #include "dialNode.h"
-#include "mouseAndKeyboard.h"
+#include "evdevInputDevice.h"
+#include "inputDevice.h"
+#include "linuxJoystickDevice.h"
 #include "trackerNode.h"
 #include "virtualMouse.h"
+#include "xInputDevice.h"
 
 #include "dconfig.h"
+
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDA_DEVICE)
+  #error Buildsystem error: BUILDING_PANDA_DEVICE not defined
+#endif
 
 Configure(config_device);
 NotifyCategoryDef(device, "");
@@ -60,7 +67,16 @@ init_libdevice() {
   ClientDialDevice::init_type();
   ClientTrackerDevice::init_type();
   DialNode::init_type();
-  MouseAndKeyboard::init_type();
+  InputDevice::init_type();
   TrackerNode::init_type();
   VirtualMouse::init_type();
+
+#ifdef PHAVE_LINUX_INPUT_H
+  EvdevInputDevice::init_type();
+  LinuxJoystickDevice::init_type();
+#endif
+
+#ifdef _WIN32
+  XInputDevice::init_type();
+#endif
 }

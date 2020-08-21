@@ -19,7 +19,7 @@ ConditionVarPosixImpl(MutexPosixImpl &mutex) :
   _mutex(mutex)
 {
   TAU_PROFILE("ConditionVarPosixImpl::ConditionVarPosixImpl()", " ", TAU_USER);
-  int result = pthread_cond_init(&_cvar, NULL);
+  int result = pthread_cond_init(&_cvar, nullptr);
   nassertv(result == 0);
 }
 

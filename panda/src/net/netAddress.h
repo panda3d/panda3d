@@ -30,20 +30,20 @@ PUBLISHED:
   bool set_any(int port);
   bool set_localhost(int port);
   bool set_broadcast(int port);
-  bool set_host(const string &hostname, int port);
+  bool set_host(const std::string &hostname, int port);
 
   void clear();
 
   int get_port() const;
   void set_port(int port);
-  string get_ip_string() const;
+  std::string get_ip_string() const;
   bool is_any() const;
   uint32_t get_ip() const;
   uint8_t get_ip_component(int n) const;
 
   const Socket_Address &get_addr() const;
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
   size_t get_hash() const;
   bool operator == (const NetAddress &other) const;
@@ -53,7 +53,7 @@ private:
   Socket_Address _addr;
 };
 
-INLINE ostream &operator << (ostream &out, const NetAddress &addr) {
+INLINE std::ostream &operator << (std::ostream &out, const NetAddress &addr) {
   addr.output(out);
   return out;
 }

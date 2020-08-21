@@ -4,7 +4,6 @@ from panda3d.core import *
 from panda3d.direct import *
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.distributed.DistributedObjectBase import DistributedObjectBase
-from direct.showbase.PythonUtil import StackTrace
 #from PyDatagram import PyDatagram
 #from PyDatagramIterator import PyDatagramIterator
 
@@ -27,11 +26,12 @@ ESNum2Str = {
     ESGenerated: 'ESGenerated',
     }
 
+
 class DistributedObject(DistributedObjectBase):
     """
     The Distributed Object class is the base class for all network based
     (i.e. distributed) objects.  These will usually (always?) have a
-    dclass entry in a *.dc file.
+    dclass entry in a \\*.dc file.
     """
     notify = directNotify.newCategory("DistributedObject")
 
@@ -259,7 +259,10 @@ class DistributedObject(DistributedObjectBase):
     def _destroyDO(self):
         # after this is called, the object is no longer a DistributedObject
         # but may still be used as a DelayDeleted object
-        self.destroyDoStackTrace = StackTrace()
+        if __debug__:
+            # StackTrace is omitted in packed versions
+            from direct.showbase.PythonUtil import StackTrace
+            self.destroyDoStackTrace = StackTrace()
         # check for leftover cached data that was not retrieved or flushed by this object
         # this will catch typos in the data name in calls to get/setCachedData
         if hasattr(self, '_cachedData'):

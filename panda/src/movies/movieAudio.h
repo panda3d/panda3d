@@ -25,7 +25,7 @@ class MovieAudioCursor;
   // Non-release build:
   #define movies_debug(msg) \
   if (movies_cat.is_debug()) { \
-      movies_cat->debug() << msg << endl; \
+      movies_cat->debug() << msg << std::endl; \
   } else {}
 #else //][
   // Release build:
@@ -43,7 +43,7 @@ class MovieAudioCursor;
  */
 class EXPCL_PANDA_MOVIES MovieAudio : public TypedWritableReferenceCount, public Namable {
  PUBLISHED:
-  MovieAudio(const string &name = "Blank Audio");
+  explicit MovieAudio(const std::string &name = "Blank Audio");
   virtual ~MovieAudio();
   virtual PT(MovieAudioCursor) open();
   static PT(MovieAudio) get(const Filename &name);

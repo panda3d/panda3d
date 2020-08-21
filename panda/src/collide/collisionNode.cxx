@@ -37,7 +37,7 @@ TypeHandle CollisionNode::_type_handle;
  *
  */
 CollisionNode::
-CollisionNode(const string &name) :
+CollisionNode(const std::string &name) :
   PandaNode(name),
   _from_collide_mask(get_default_collide_mask()),
   _collider_sort(0)
@@ -58,6 +58,7 @@ CollisionNode::
 CollisionNode(const CollisionNode &copy) :
   PandaNode(copy),
   _from_collide_mask(copy._from_collide_mask),
+  _collider_sort(copy._collider_sort),
   _solids(copy._solids)
 {
 }
@@ -142,7 +143,7 @@ combine_with(PandaNode *other) {
     }
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -184,7 +185,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   for (si = _solids.begin(); si != _solids.end(); ++si) {
     CPT(CollisionSolid) solid = (*si).get_read_pointer();
     PT(PandaNode) node = solid->get_viz(trav, data, false);
-    if (node != (PandaNode *)NULL) {
+    if (node != nullptr) {
       CullTraverserData next_data(data, node);
 
       // We don't want to inherit the render state from above for these guys.
@@ -196,7 +197,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   if (respect_prev_transform) {
     // Determine the previous frame's position, relative to the current
     // position.
-    NodePath node_path = data._node_path.get_node_path();
+    NodePath node_path = data.get_node_path();
     CPT(TransformState) transform = node_path.get_net_transform()->invert_compose(node_path.get_net_prev_transform());
 
     if (!transform->is_identity()) {
@@ -206,7 +207,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
       for (si = _solids.begin(); si != _solids.end(); ++si) {
         CPT(CollisionSolid) solid = (*si).get_read_pointer();
         PT(PandaNode) node = solid->get_viz(trav, data, false);
-        if (node != (PandaNode *)NULL) {
+        if (node != nullptr) {
           CullTraverserData next_data(data, node);
 
           next_data._net_transform =
@@ -252,7 +253,7 @@ is_collision_node() const {
  * classes to include some information relevant to the class.
  */
 void CollisionNode::
-output(ostream &out) const {
+output(std::ostream &out) const {
   PandaNode::output(out);
   out << " (" << _solids.size() << " solids)";
 }
@@ -331,8 +332,8 @@ CPT(RenderState) CollisionNode::
 get_last_pos_state() {
   // Once someone asks for this pointer, we hold its reference count and never
   // free it.
-  static CPT(RenderState) state = (const RenderState *)NULL;
-  if (state == (const RenderState *)NULL) {
+  static CPT(RenderState) state = nullptr;
+  if (state == nullptr) {
     state = RenderState::make
       (ColorScaleAttrib::make(LVecBase4(1.0f, 1.0f, 1.0f, 0.5f)),
        TransparencyAttrib::make(TransparencyAttrib::M_alpha));
@@ -422,7 +423,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   for(int i = 0; i < num_solids; i++) {
     manager->read_pointer(scan);
     // Push back a NULL for each solid, for now.  We'll fill them in later.
-    _solids.push_back((CollisionSolid *)NULL);
+    _solids.push_back(nullptr);
   }
 
   _from_collide_mask.set_word(scan.get_uint32());

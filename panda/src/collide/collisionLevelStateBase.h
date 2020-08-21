@@ -51,7 +51,7 @@ public:
 
   INLINE CollisionLevelStateBase(const NodePath &node_path);
   INLINE CollisionLevelStateBase(const CollisionLevelStateBase &parent,
-                             PandaNode *child);
+                                 PandaNode *child);
   INLINE CollisionLevelStateBase(const CollisionLevelStateBase &copy);
   INLINE void operator = (const CollisionLevelStateBase &copy);
 

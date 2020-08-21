@@ -13,21 +13,7 @@
 
 #include "factoryBase.h"
 #include "indent.h"
-#include "config_util.h"
-
-/**
- *
- */
-FactoryBase::
-FactoryBase() {
-}
-
-/**
- *
- */
-FactoryBase::
-~FactoryBase() {
-}
+#include "config_putil.h"
 
 /**
  * Attempts to create a new instance of some class of the indicated type, or
@@ -37,10 +23,10 @@ FactoryBase::
  */
 TypedObject *FactoryBase::
 make_instance(TypeHandle handle, const FactoryParams &params) {
-  TypedObject *instance = (TypedObject *)NULL;
+  TypedObject *instance = nullptr;
 
   instance = make_instance_exact(handle, params);
-  if (instance == (TypedObject *)NULL) {
+  if (instance == nullptr) {
     // Can't create an exact instance; try for a derived type.
     instance = make_instance_more_specific(handle, params);
   }
@@ -49,7 +35,7 @@ make_instance(TypeHandle handle, const FactoryParams &params) {
     util_cat.debug()
       << "make_instance(" << handle << ", params) returns "
       << (void *)instance;
-    if (instance != (TypedObject *)NULL) {
+    if (instance != nullptr) {
       util_cat.debug(false)
         << ", of type " << instance->get_type();
     }
@@ -67,15 +53,15 @@ TypedObject *FactoryBase::
 make_instance_more_general(TypeHandle handle, const FactoryParams &params) {
   TypedObject *object = make_instance_exact(handle, params);
 
-  if (object == (TypedObject *)NULL) {
+  if (object == nullptr) {
     // Recursively search through the entire inheritance tree until we find
     // something we know about.
     if (handle.get_num_parent_classes() == 0) {
-      return NULL;
+      return nullptr;
     }
 
     int num_parents = handle.get_num_parent_classes();
-    for (int i = 0; i < num_parents && object == (TypedObject *)NULL; i++) {
+    for (int i = 0; i < num_parents && object == nullptr; i++) {
       object = make_instance_more_general(handle.get_parent_class(i), params);
     }
   }
@@ -84,7 +70,7 @@ make_instance_more_general(TypeHandle handle, const FactoryParams &params) {
     util_cat.debug()
       << "make_instance(" << handle << ", params) returns "
       << (void *)object;
-    if (object != (TypedObject *)NULL) {
+    if (object != nullptr) {
       util_cat.debug(false)
         << ", of type " << object->get_type();
     }
@@ -134,7 +120,7 @@ find_registered_type(TypeHandle handle) {
 void FactoryBase::
 register_factory(TypeHandle handle, BaseCreateFunc *func, void *user_data) {
   nassertv(handle != TypeHandle::none());
-  nassertv(func != (BaseCreateFunc *)NULL);
+  nassertv(func != nullptr);
 
   Creator creator;
   creator._func = func;
@@ -145,7 +131,7 @@ register_factory(TypeHandle handle, BaseCreateFunc *func, void *user_data) {
 /**
  * Returns the number of different types the Factory knows how to create.
  */
-int FactoryBase::
+size_t FactoryBase::
 get_num_types() const {
   return _creators.size();
 }
@@ -156,8 +142,8 @@ get_num_types() const {
  * Normally you wouldn't need to traverse the list of the Factory's types.
  */
 TypeHandle FactoryBase::
-get_type(int n) const {
-  nassertr(n >= 0 && n < get_num_types(), TypeHandle::none());
+get_type(size_t n) const {
+  nassertr(n < get_num_types(), TypeHandle::none());
   Creators::const_iterator ci;
   for (ci = _creators.begin(); ci != _creators.end(); ++ci) {
     if (n == 0) {
@@ -193,7 +179,7 @@ add_preferred(TypeHandle handle) {
 /**
  * Returns the number of types added to the preferred-type list.
  */
-int FactoryBase::
+size_t FactoryBase::
 get_num_preferred() const {
   return _preferred.size();
 }
@@ -202,8 +188,8 @@ get_num_preferred() const {
  * Returns the nth type added to the preferred-type list.
  */
 TypeHandle FactoryBase::
-get_preferred(int n) const {
-  nassertr(n >= 0 && n < get_num_preferred(), TypeHandle::none());
+get_preferred(size_t n) const {
+  nassertr(n < get_num_preferred(), TypeHandle::none());
   return _preferred[n];
 }
 
@@ -212,26 +198,11 @@ get_preferred(int n) const {
  * output stream, one per line.
  */
 void FactoryBase::
-write_types(ostream &out, int indent_level) const {
+write_types(std::ostream &out, int indent_level) const {
   Creators::const_iterator ci;
   for (ci = _creators.begin(); ci != _creators.end(); ++ci) {
     indent(out, indent_level) << (*ci).first << "\n";
   }
-}
-
-
-/**
- * Don't copy Factories.
- */
-FactoryBase::
-FactoryBase(const FactoryBase &) {
-}
-
-/**
- * Don't copy Factories.
- */
-void FactoryBase::
-operator = (const FactoryBase &) {
 }
 
 /**
@@ -243,11 +214,11 @@ TypedObject *FactoryBase::
 make_instance_exact(TypeHandle handle, FactoryParams params) {
   Creators::const_iterator ci = _creators.find(handle);
   if (ci == _creators.end()) {
-    return NULL;
+    return nullptr;
   }
 
   Creator creator = (*ci).second;
-  nassertr(creator._func != (BaseCreateFunc *)NULL, NULL);
+  nassertr(creator._func != nullptr, nullptr);
   params._user_data = creator._user_data;
   return (*creator._func)(params);
 }
@@ -262,12 +233,10 @@ make_instance_more_specific(TypeHandle handle, FactoryParams params) {
   // First, walk through the established preferred list.  Maybe one of these
   // qualifies.
 
-  Preferred::const_iterator pi;
-  for (pi = _preferred.begin(); pi != _preferred.end(); ++pi) {
-    TypeHandle ptype = (*pi);
+  for (TypeHandle ptype : _preferred) {
     if (ptype.is_derived_from(handle)) {
       TypedObject *object = make_instance_exact(ptype, params);
-      if (object != (TypedObject *)NULL) {
+      if (object != nullptr) {
         return object;
       }
     }
@@ -280,14 +249,14 @@ make_instance_more_specific(TypeHandle handle, FactoryParams params) {
     TypeHandle ctype = (*ci).first;
     if (ctype.is_derived_from(handle)) {
       Creator creator = (*ci).second;
-      nassertr(creator._func != (BaseCreateFunc *)NULL, NULL);
+      nassertr(creator._func != nullptr, nullptr);
       params._user_data = creator._user_data;
       TypedObject *object = (*creator._func)(params);
-      if (object != (TypedObject *)NULL) {
+      if (object != nullptr) {
         return object;
       }
     }
   }
 
-  return NULL;
+  return nullptr;
 }

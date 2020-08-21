@@ -20,7 +20,7 @@
  * Describes a particle that has angular characteristics (velocity,
  * orientation).
  */
-class EXPCL_PANDAPHYSICS OrientedParticle : public BaseParticle {
+class EXPCL_PANDA_PARTICLESYSTEM OrientedParticle : public BaseParticle {
 public:
   OrientedParticle(int lifespan = 0, bool alive = false);
   OrientedParticle(const OrientedParticle &copy);
@@ -35,8 +35,8 @@ public:
   virtual void update();
   virtual void die();
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent=0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent=0) const;
 };
 
 #include "orientedParticle.I"

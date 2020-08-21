@@ -32,7 +32,7 @@ AnimChannelFixed(AnimGroup *parent, const AnimChannelFixed<SwitchType> &copy) :
  */
 template<class SwitchType>
 INLINE AnimChannelFixed<SwitchType>::
-AnimChannelFixed(const string &name, const ValueType &value)
+AnimChannelFixed(const std::string &name, const ValueType &value)
   : AnimChannel<SwitchType>(name),
     _value(value) {
 }
@@ -63,7 +63,7 @@ get_value(int, ValueType &value) {
  */
 template<class SwitchType>
 void AnimChannelFixed<SwitchType>::
-output(ostream &out) const {
+output(std::ostream &out) const {
   AnimChannel<SwitchType>::output(out);
   out << " = " << _value;
 }

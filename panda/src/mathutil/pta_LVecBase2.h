@@ -79,9 +79,4 @@ typedef PTA_LVecBase2d PTAVecBase2d;
 typedef CPTA_LVecBase2d CPTAVecBase2d;
 #endif  // CPPPARSER
 
-// Tell GCC that we'll take care of the instantiation explicitly here.
-#ifdef __GNUC__
-#pragma interface
-#endif
-
 #endif

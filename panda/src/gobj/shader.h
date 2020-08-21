@@ -18,6 +18,7 @@
 
 #include "pandabase.h"
 #include "config_gobj.h"
+
 #include "typedWritableReferenceCount.h"
 #include "namable.h"
 #include "graphicsStateGuardianBase.h"
@@ -31,7 +32,10 @@
 #include "pta_LVecBase4.h"
 #include "pta_LVecBase3.h"
 #include "pta_LVecBase2.h"
+#include "pStatCollector.h"
 #include "epvector.h"
+#include "asyncFuture.h"
+#include "bamCacheRecord.h"
 
 #ifdef HAVE_CG
 // I don't want to include the Cg header file into panda as a whole.  Instead,
@@ -40,8 +44,6 @@ typedef struct _CGcontext   *CGcontext;
 typedef struct _CGprogram   *CGprogram;
 typedef struct _CGparameter *CGparameter;
 #endif
-
-class BamCacheRecord;
 
 /**
 
@@ -53,6 +55,7 @@ PUBLISHED:
     SL_Cg,
     SL_GLSL,
     SL_HLSL,
+    SL_SPIR_V,
   };
 
   enum ShaderType {
@@ -83,7 +86,7 @@ PUBLISHED:
   };
 
   static PT(Shader) load(const Filename &file, ShaderLanguage lang = SL_none);
-  static PT(Shader) make(const string &body, ShaderLanguage lang = SL_none);
+  static PT(Shader) make(std::string body, ShaderLanguage lang = SL_none);
   static PT(Shader) load(ShaderLanguage lang,
                          const Filename &vertex, const Filename &fragment,
                          const Filename &geometry = "",
@@ -91,15 +94,15 @@ PUBLISHED:
                          const Filename &tess_evaluation = "");
   static PT(Shader) load_compute(ShaderLanguage lang, const Filename &fn);
   static PT(Shader) make(ShaderLanguage lang,
-                         const string &vertex, const string &fragment,
-                         const string &geometry = "",
-                         const string &tess_control = "",
-                         const string &tess_evaluation = "");
-  static PT(Shader) make_compute(ShaderLanguage lang, const string &body);
+                         std::string vertex, std::string fragment,
+                         std::string geometry = "",
+                         std::string tess_control = "",
+                         std::string tess_evaluation = "");
+  static PT(Shader) make_compute(ShaderLanguage lang, std::string body);
 
   INLINE Filename get_filename(ShaderType type = ST_none) const;
   INLINE void set_filename(ShaderType type, const Filename &filename);
-  INLINE const string &get_text(ShaderType type = ST_none) const;
+  INLINE const std::string &get_text(ShaderType type = ST_none) const;
   INLINE bool get_error_flag() const;
   INLINE ShaderLanguage get_language() const;
 
@@ -109,7 +112,7 @@ PUBLISHED:
   INLINE bool get_cache_compiled_shader() const;
   INLINE void set_cache_compiled_shader(bool flag);
 
-  void prepare(PreparedGraphicsObjects *prepared_objects);
+  PT(AsyncFuture) prepare(PreparedGraphicsObjects *prepared_objects);
   bool is_prepared(PreparedGraphicsObjects *prepared_objects) const;
   bool release(PreparedGraphicsObjects *prepared_objects);
   int release_all();
@@ -202,6 +205,17 @@ public:
     // Hack for text rendering.  Don't use in user shaders.
     SMO_tex_is_alpha_i,
 
+    SMO_transform_i,
+    SMO_slider_i,
+
+    SMO_light_source_i_packed,
+
+    // Texture scale component of texture matrix.
+    SMO_texscale_i,
+
+    // Color of an M_blend texture stage.
+    SMO_texcolor_i,
+
     SMO_INVALID
   };
 
@@ -287,7 +301,7 @@ public:
   enum ShaderStateDep {
     SSD_NONE          = 0x000,
     SSD_general       = 0x001,
-    SSD_transform     = 0x002,
+    SSD_transform    = 0x2002,
     SSD_color         = 0x004,
     SSD_colorscale    = 0x008,
     SSD_material      = 0x010,
@@ -299,6 +313,7 @@ public:
     SSD_frame         = 0x400,
     SSD_projection    = 0x800,
     SSD_texture      = 0x1000,
+    SSD_view_transform= 0x2000,
   };
 
   enum ShaderBug {
@@ -314,9 +329,17 @@ public:
   };
 
   struct ShaderArgId {
-    string     _name;
+    std::string     _name;
     ShaderType _type;
     int        _seqno;
+  };
+
+  enum ShaderPtrType {
+    SPT_float,
+    SPT_double,
+    SPT_int,
+    SPT_uint,
+    SPT_unknown
   };
 
   struct ShaderArgInfo {
@@ -326,15 +349,8 @@ public:
     ShaderArgType     _type;
     ShaderArgDir      _direction;
     bool              _varying;
-    bool              _integer;
+    ShaderPtrType     _numeric_type;
     NotifyCategory   *_cat;
-  };
-
-  enum ShaderPtrType {
-    SPT_float,
-    SPT_double,
-    SPT_int,
-    SPT_unknown
   };
 
   // Container structure for data of parameters ShaderPtrSpec.
@@ -386,15 +402,30 @@ public:
     INLINE void read_datagram(DatagramIterator &source);
   };
 
+  /**
+   * Describes a matrix making up a single part of the ShaderMatInput cache.
+   * The cache is made up of a continuous array of matrices, as described by
+   * a successive list of ShaderMatPart (each of which takes up _count matrices)
+   */
+  struct ShaderMatPart {
+    ShaderMatInput _part;
+    PT(InternalName) _arg;
+    int _count = 1;
+    int _dep = SSD_NONE;
+  };
+
+  /**
+   * Describes a shader input that is sourced from the render state.
+   */
   struct ShaderMatSpec {
-    LMatrix4          _cache[2];
-    LMatrix4          _value;
+    size_t _cache_offset[2];
     ShaderArgId       _id;
     ShaderMatFunc     _func;
     ShaderMatInput    _part[2];
     PT(InternalName)  _arg[2];
-    int               _dep[2];
-    int               _index;
+    LMatrix4          _value;
+    int               _dep = SSD_NONE;
+    int               _index = 0;
     ShaderMatPiece    _piece;
   };
 
@@ -412,7 +443,7 @@ public:
     PT(InternalName)  _name;
     int               _append_uv;
     int               _elements;
-    bool              _integer;
+    ShaderPtrType     _numeric_type;
   };
 
   struct ShaderPtrSpec {
@@ -424,7 +455,7 @@ public:
     ShaderPtrType     _type;
   };
 
-  class ShaderCaps {
+  class EXPCL_PANDA_GOBJ ShaderCaps {
   public:
     void clear();
     INLINE bool operator == (const ShaderCaps &other) const;
@@ -451,12 +482,9 @@ public:
   class ShaderFile : public ReferenceCount {
   public:
     INLINE ShaderFile() {};
-    INLINE ShaderFile(const string &shared);
-    INLINE ShaderFile(const string &vertex,
-                      const string &fragment,
-                      const string &geometry,
-                      const string &tess_control,
-                      const string &tess_evaluation);
+    INLINE ShaderFile(std::string shared);
+    INLINE ShaderFile(std::string vertex, std::string fragment, std::string geometry,
+                      std::string tess_control, std::string tess_evaluation);
 
     INLINE void write_datagram(Datagram &dg) const;
     INLINE void read_datagram(DatagramIterator &source);
@@ -465,13 +493,13 @@ public:
 
   public:
     bool _separate;
-    string _shared;
-    string _vertex;
-    string _fragment;
-    string _geometry;
-    string _tess_control;
-    string _tess_evaluation;
-    string _compute;
+    std::string _shared;
+    std::string _vertex;
+    std::string _fragment;
+    std::string _geometry;
+    std::string _tess_control;
+    std::string _tess_evaluation;
+    std::string _compute;
   };
 
 public:
@@ -479,12 +507,12 @@ public:
   // implementations that need to do so.  Don't use them when you use separate
   // shader programs.
   void parse_init();
-  void parse_line(string &result, bool rt, bool lt);
-  void parse_upto(string &result, string pattern, bool include);
-  void parse_rest(string &result);
+  void parse_line(std::string &result, bool rt, bool lt);
+  void parse_upto(std::string &result, std::string pattern, bool include);
+  void parse_rest(std::string &result);
   bool parse_eof();
 
-  void cp_report_error(ShaderArgInfo &arg, const string &msg);
+  void cp_report_error(ShaderArgInfo &arg, const std::string &msg);
   bool cp_errchk_parameter_words(ShaderArgInfo &arg, int len);
   bool cp_errchk_parameter_in(ShaderArgInfo &arg);
   bool cp_errchk_parameter_ptr(ShaderArgInfo &p);
@@ -496,12 +524,13 @@ public:
                     vector_string &pieces, int &next);
   bool cp_parse_delimiter(ShaderArgInfo &arg,
                           vector_string &pieces, int &next);
-  string cp_parse_non_delimiter(vector_string &pieces, int &next);
+  std::string cp_parse_non_delimiter(vector_string &pieces, int &next);
   bool cp_parse_coord_sys(ShaderArgInfo &arg,
                           vector_string &pieces, int &next,
                           ShaderMatSpec &spec, bool fromflag);
   int cp_dependency(ShaderMatInput inp);
-  void cp_optimize_mat_spec(ShaderMatSpec &spec);
+  void cp_add_mat_spec(ShaderMatSpec &spec);
+  size_t cp_get_mat_cache_size() const;
 
 #ifdef HAVE_CG
   void cg_recurse_parameters(CGparameter parameter,
@@ -514,7 +543,12 @@ public:
   void clear_parameters();
 
   void set_compiled(unsigned int format, const char *data, size_t length);
-  bool get_compiled(unsigned int &format, string &binary) const;
+  bool get_compiled(unsigned int &format, std::string &binary) const;
+
+  static void set_default_caps(const ShaderCaps &caps);
+
+  INLINE PStatCollector &get_prepare_shader_pcollector();
+  INLINE const std::string &get_debug_name() const;
 
 private:
 #ifdef HAVE_CG
@@ -560,7 +594,9 @@ public:
   epvector<ShaderMatSpec> _mat_spec;
   pvector<ShaderTexSpec> _tex_spec;
   pvector<ShaderVarSpec> _var_spec;
-  int _mat_deps;
+  pvector<ShaderMatPart> _mat_parts;
+  int _mat_deps = 0;
+  int _mat_cache_size = 0;
 
   bool _error_flag;
   ShaderFile _text;
@@ -583,7 +619,7 @@ protected:
   PT(BamCacheRecord) _record;
   bool _cache_compiled_shader;
   unsigned int _compiled_format;
-  string _compiled_binary;
+  std::string _compiled_binary;
 
   static ShaderCaps _default_caps;
   static int _shaders_generated;
@@ -599,17 +635,27 @@ protected:
   typedef pmap <PreparedGraphicsObjects *, ShaderContext *> Contexts;
   Contexts _contexts;
 
+  PStatCollector _prepare_shader_pcollector;
+  std::string _debug_name;
+
 private:
   void clear_prepared(PreparedGraphicsObjects *prepared_objects);
 
   Shader(ShaderLanguage lang);
 
-  bool read(const ShaderFile &sfile, BamCacheRecord *record = NULL);
-  bool do_read_source(string &into, const Filename &fn, BamCacheRecord *record);
-  bool r_preprocess_source(ostream &out, const Filename &fn,
-                           const Filename &source_dir,
-                           set<Filename> &open_files,
-                           BamCacheRecord *record, int depth = 0);
+  bool read(const ShaderFile &sfile, BamCacheRecord *record = nullptr);
+  bool load(const ShaderFile &sbody, BamCacheRecord *record = nullptr);
+  bool do_read_source(std::string &into, const Filename &fn, BamCacheRecord *record);
+  bool do_load_source(std::string &into, const std::string &source, BamCacheRecord *record);
+  bool r_preprocess_include(std::ostream &out, const Filename &fn,
+                            const Filename &source_dir,
+                            std::set<Filename> &open_files,
+                            BamCacheRecord *record, int depth);
+  bool r_preprocess_source(std::ostream &out, std::istream &in,
+                           const Filename &fn, const Filename &full_fn,
+                           std::set<Filename> &open_files,
+                           BamCacheRecord *record,
+                           int fileno = 0, int depth = 0);
 
   bool check_modified() const;
 

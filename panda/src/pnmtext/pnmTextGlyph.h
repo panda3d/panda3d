@@ -24,7 +24,7 @@
  */
 class EXPCL_PANDA_PNMTEXT PNMTextGlyph {
 PUBLISHED:
-  PNMTextGlyph(double advance);
+  explicit PNMTextGlyph(double advance);
   ~PNMTextGlyph();
 
   INLINE int get_advance() const;

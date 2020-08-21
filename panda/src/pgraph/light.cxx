@@ -70,6 +70,8 @@ is_ambient_light() const {
  *
  * The default value is 6500 K, corresponding to a perfectly white light
  * assuming a D65 white point.
+ *
+ * @since 1.10.0
  */
 void Light::
 set_color_temperature(PN_stdfloat temperature) {
@@ -155,6 +157,20 @@ const LVecBase3 &Light::
 get_attenuation() const {
   static const LVecBase3 no_atten(1, 0, 0);
   return no_atten;
+}
+
+/**
+ * This is called when the light is added to a LightAttrib.
+ */
+void Light::
+attrib_ref() {
+}
+
+/**
+ * This is called when the light is removed from a LightAttrib.
+ */
+void Light::
+attrib_unref() {
 }
 
 /**

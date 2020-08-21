@@ -20,6 +20,10 @@
 #include "dconfig.h"
 #include "pandaSystem.h"
 
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDA_WGLDISPLAY)
+  #error Buildsystem error: BUILDING_PANDA_WGLDISPLAY not defined
+#endif
+
 Configure(config_wgldisplay);
 NotifyCategoryDef(wgldisplay, "display");
 

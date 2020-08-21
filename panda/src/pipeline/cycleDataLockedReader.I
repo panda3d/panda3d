@@ -28,7 +28,7 @@ CycleDataLockedReader(const PipelineCycler<CycleDataType> &cycler,
   _current_thread(current_thread)
 {
   _pointer = _cycler->read(_current_thread);
-  nassertv(_pointer != (const CycleDataType *)NULL);
+  nassertv(_pointer != nullptr);
 }
 
 /**
@@ -41,8 +41,21 @@ CycleDataLockedReader(const CycleDataLockedReader<CycleDataType> &copy) :
   _current_thread(copy._current_thread),
   _pointer(copy._pointer)
 {
-  nassertv(_pointer != (const CycleDataType *)NULL);
+  nassertv(_pointer != nullptr);
   _cycler->increment_read(_pointer);
+}
+
+/**
+ *
+ */
+template<class CycleDataType>
+INLINE CycleDataLockedReader<CycleDataType>::
+CycleDataLockedReader(CycleDataLockedReader<CycleDataType> &&from) noexcept :
+  _cycler(from._cycler),
+  _current_thread(from._current_thread),
+  _pointer(from._pointer)
+{
+  from._pointer = nullptr;
 }
 
 /**
@@ -51,28 +64,14 @@ CycleDataLockedReader(const CycleDataLockedReader<CycleDataType> &copy) :
 template<class CycleDataType>
 INLINE void CycleDataLockedReader<CycleDataType>::
 operator = (const CycleDataLockedReader<CycleDataType> &copy) {
-  nassertv(_pointer == (CycleDataType *)NULL);
+  nassertv(_pointer == nullptr);
   nassertv(_current_thread == copy._current_thread);
 
   _cycler = copy._cycler;
   _pointer = copy._pointer;
 
-  nassertv(_pointer != (const CycleDataType *)NULL);
+  nassertv(_pointer != nullptr);
   _cycler->increment_read(_pointer);
-}
-
-#ifdef USE_MOVE_SEMANTICS
-/**
- *
- */
-template<class CycleDataType>
-INLINE CycleDataLockedReader<CycleDataType>::
-CycleDataLockedReader(CycleDataLockedReader<CycleDataType> &&from) NOEXCEPT :
-  _cycler(from._cycler),
-  _current_thread(from._current_thread),
-  _pointer(from._pointer)
-{
-  from._pointer = NULL;
 }
 
 /**
@@ -80,16 +79,15 @@ CycleDataLockedReader(CycleDataLockedReader<CycleDataType> &&from) NOEXCEPT :
  */
 template<class CycleDataType>
 INLINE void CycleDataLockedReader<CycleDataType>::
-operator = (CycleDataLockedReader<CycleDataType> &&from) NOEXCEPT {
-  nassertv(_pointer == (CycleDataType *)NULL);
+operator = (CycleDataLockedReader<CycleDataType> &&from) noexcept {
+  nassertv(_pointer == nullptr);
   nassertv(_current_thread == from._current_thread);
 
   _cycler = from._cycler;
   _pointer = from._pointer;
 
-  from._pointer = NULL;
+  from._pointer = nullptr;
 }
-#endif  // USE_MOVE_SEMANTICS
 
 /**
  *
@@ -97,7 +95,7 @@ operator = (CycleDataLockedReader<CycleDataType> &&from) NOEXCEPT {
 template<class CycleDataType>
 INLINE CycleDataLockedReader<CycleDataType>::
 ~CycleDataLockedReader() {
-  if (_pointer != NULL) {
+  if (_pointer != nullptr) {
     _cycler->release_read(_pointer);
   }
 }
@@ -108,7 +106,7 @@ INLINE CycleDataLockedReader<CycleDataType>::
 template<class CycleDataType>
 INLINE const CycleDataType *CycleDataLockedReader<CycleDataType>::
 operator -> () const {
-  nassertr(_pointer != (const CycleDataType *)NULL, _cycler->cheat());
+  nassertr(_pointer != nullptr, _cycler->cheat());
   return _pointer;
 }
 
@@ -119,7 +117,7 @@ operator -> () const {
 template<class CycleDataType>
 INLINE CycleDataLockedReader<CycleDataType>::
 operator const CycleDataType * () const {
-  nassertr(_pointer != (const CycleDataType *)NULL, _cycler->cheat());
+  nassertr(_pointer != nullptr, _cycler->cheat());
   return _pointer;
 }
 
@@ -133,8 +131,8 @@ template<class CycleDataType>
 INLINE const CycleDataType *CycleDataLockedReader<CycleDataType>::
 take_pointer() {
   const CycleDataType *pointer = _pointer;
-  _pointer = (CycleDataType *)NULL;
-  nassertr(pointer != (const CycleDataType *)NULL, _cycler->cheat());
+  _pointer = nullptr;
+  nassertr(pointer != nullptr, _cycler->cheat());
   return pointer;
 }
 
@@ -177,6 +175,18 @@ template<class CycleDataType>
 INLINE void CycleDataLockedReader<CycleDataType>::
 operator = (const CycleDataLockedReader<CycleDataType> &copy) {
   _pointer = copy._pointer;
+}
+
+/**
+ *
+ */
+template<class CycleDataType>
+INLINE void CycleDataLockedReader<CycleDataType>::
+operator = (CycleDataLockedReader<CycleDataType> &&from) noexcept {
+  nassertv(_pointer == nullptr);
+
+  _pointer = from._pointer;
+  from._pointer = nullptr;
 }
 
 /**

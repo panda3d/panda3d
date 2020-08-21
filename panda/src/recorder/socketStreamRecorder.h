@@ -41,7 +41,7 @@ class EXPCL_PANDA_RECORDER SocketStreamRecorder : public RecorderBase,
                                                   public ReferenceCount {
 PUBLISHED:
   INLINE SocketStreamRecorder();
-  INLINE SocketStreamRecorder(SocketStream *stream, bool owns_stream);
+  INLINE explicit SocketStreamRecorder(SocketStream *stream, bool owns_stream);
   INLINE ~SocketStreamRecorder();
 
   bool receive_datagram(Datagram &dg);
@@ -74,9 +74,9 @@ public:
   static void register_with_read_factory();
   virtual void write_recorder(BamWriter *manager, Datagram &dg);
 
-  INLINE virtual int get_ref_count() const FINAL { return ReferenceCount::get_ref_count(); };
-  INLINE virtual void ref() const FINAL { ReferenceCount::ref(); };
-  INLINE virtual bool unref() const FINAL { return ReferenceCount::unref(); };
+  INLINE virtual int get_ref_count() const final { return ReferenceCount::get_ref_count(); };
+  INLINE virtual void ref() const final { ReferenceCount::ref(); };
+  INLINE virtual bool unref() const final { return ReferenceCount::unref(); };
 
 protected:
   static RecorderBase *make_recorder(const FactoryParams &params);

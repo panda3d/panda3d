@@ -39,6 +39,8 @@
 
 #include <algorithm>
 
+using std::string;
+
 TypeHandle EggGroupNode::_type_handle;
 
 
@@ -79,7 +81,7 @@ EggGroupNode::
  * Egg format.
  */
 void EggGroupNode::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   iterator i;
 
   // Since joints tend to reference vertex pools, which sometimes appear later
@@ -230,7 +232,7 @@ get_next_child() {
   if (_gnc_iterator != end()) {
     return *_gnc_iterator++;
   }
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -241,7 +243,7 @@ EggNode *EggGroupNode::
 add_child(EggNode *node) {
   test_ref_count_integrity();
   PT(EggNode) ptnode = node;
-  if (node->_parent != NULL) {
+  if (node->_parent != nullptr) {
     node->_parent->remove_child(node);
   }
   prepare_add_child(node);
@@ -300,7 +302,7 @@ find_child(const string &name) const {
     }
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -738,7 +740,7 @@ triangulate_polygons(int flags) {
     }
   }
 
-  num_produced += max(0, (int)(_children.size() - children_copy.size()));
+  num_produced += std::max(0, (int)(_children.size() - children_copy.size()));
   return num_produced;
 }
 
@@ -1177,7 +1179,7 @@ rebuild_vertex_pools(EggVertexPools &vertex_pools, unsigned int max_vertices,
       // vertex pools we've already created already have a copy of each one of
       // the vertices.
       bool found_pool = false;
-      EggVertexPool *best_pool = NULL;
+      EggVertexPool *best_pool = nullptr;
       int best_new_vertices = 0;
 
       Vertices new_vertices;
@@ -1198,7 +1200,7 @@ rebuild_vertex_pools(EggVertexPools &vertex_pools, unsigned int max_vertices,
           EggVertex *vertex = (*vi);
           EggVertex *new_vertex = vertex_pool->find_matching_vertex(*vertex);
           new_vertices.push_back(new_vertex);
-          if (new_vertex == (EggVertex *)NULL) {
+          if (new_vertex == nullptr) {
             ++num_new_vertices;
           }
         }
@@ -1212,7 +1214,7 @@ rebuild_vertex_pools(EggVertexPools &vertex_pools, unsigned int max_vertices,
           // We would have to add some vertices to this pool, so this vertex
           // pool qualifies only if the number of vertices we have to add
           // would still keep it within our limit.
-          if (best_pool == (EggVertexPool *)NULL ||
+          if (best_pool == nullptr ||
               num_new_vertices < best_new_vertices) {
             // This is currently our most favorable vertex pool.
             best_pool = vertex_pool;
@@ -1222,7 +1224,7 @@ rebuild_vertex_pools(EggVertexPools &vertex_pools, unsigned int max_vertices,
       }
 
       if (!found_pool) {
-        if (best_pool == (EggVertexPool *)NULL) {
+        if (best_pool == nullptr) {
           // There was no vertex pool that qualified.  We will have to create
           // a new vertex pool.
           best_pool = new EggVertexPool("");
@@ -1245,7 +1247,7 @@ rebuild_vertex_pools(EggVertexPools &vertex_pools, unsigned int max_vertices,
       nassertv(new_vertices.size() == vertices.size());
       for (vi = new_vertices.begin(); vi != new_vertices.end(); ++vi) {
         EggVertex *new_vertex = (*vi);
-        nassertv(new_vertex != (EggVertex *)NULL);
+        nassertv(new_vertex != nullptr);
         prim->add_vertex(new_vertex);
       }
 
@@ -1545,7 +1547,7 @@ r_load_externals(const DSearchPath &searchpath, CoordinateSystem coordsys,
         if (ext_data.read(filename)) {
           // The external file was read correctly.  Add its contents into the
           // tree at this point.
-          if (record != (BamCacheRecord *)NULL) {
+          if (record != nullptr) {
             record->add_dependent_file(filename);
           }
 
@@ -1577,11 +1579,11 @@ r_load_externals(const DSearchPath &searchpath, CoordinateSystem coordsys,
  */
 void EggGroupNode::
 prepare_add_child(EggNode *node) {
-  nassertv(node != (EggNode *)NULL);
+  nassertv(node != nullptr);
   test_ref_count_integrity();
   node->test_ref_count_integrity();
   // Make sure the node is not already a child of some other group.
-  nassertv(node->get_parent() == NULL);
+  nassertv(node->get_parent() == nullptr);
   nassertv(node->get_depth() == 0);
   node->_parent = this;
 
@@ -1599,11 +1601,11 @@ prepare_add_child(EggNode *node) {
  */
 void EggGroupNode::
 prepare_remove_child(EggNode *node) {
-  nassertv(node != (EggNode *)NULL);
+  nassertv(node != nullptr);
   // Make sure the node is in fact a child of this group.
   nassertv(node->get_parent() == this);
   nassertv(node->get_depth() == get_depth() + 1);
-  node->_parent = NULL;
+  node->_parent = nullptr;
 
   node->update_under(-(get_depth() + 1));
 }
@@ -1867,7 +1869,7 @@ do_compute_tangent_binormal(const TBNVertexValue &value,
 
     EggVertex new_vertex(*vertex);
     EggVertexUV *uv_obj = new_vertex.modify_uv_obj(value._uv_name);
-    nassertv(uv_obj != (EggVertexUV *)NULL);
+    nassertv(uv_obj != nullptr);
     uv_obj->set_tangent(tangent);
     uv_obj->set_binormal(binormal);
 

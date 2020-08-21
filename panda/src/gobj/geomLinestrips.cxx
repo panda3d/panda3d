@@ -18,6 +18,9 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 #include "graphicsStateGuardianBase.h"
+#include "geomLinestripsAdjacency.h"
+
+using std::map;
 
 TypeHandle GeomLinestrips::_type_handle;
 
@@ -85,6 +88,86 @@ get_geom_rendering() const {
 }
 
 /**
+ * Adds adjacency information to this primitive.  May return null if this type
+ * of geometry does not support adjacency information.
+ */
+CPT(GeomPrimitive) GeomLinestrips::
+make_adjacency() const {
+  Thread *current_thread = Thread::get_current_thread();
+  PT(GeomLinestripsAdjacency) adj = new GeomLinestripsAdjacency(get_usage_hint());
+
+  GeomPrimitivePipelineReader from(this, current_thread);
+  int num_vertices = from.get_num_vertices();
+  CPTA_int ends = get_ends();
+
+  const int num_unused = 1;
+
+  // First, build a map of each vertex to its next vertex, and another map
+  // doing the exact reverse.
+  map<int, int> forward_map, reverse_map;
+  int vi = -num_unused;
+  int li = 0;
+  while (li < (int)ends.size()) {
+    // Skip unused vertices between linestrips.
+    vi += num_unused;
+    int end = ends[li];
+    nassertr(vi + 1 <= end, nullptr);
+    int v0 = from.get_vertex(vi++);
+    while (vi < end) {
+      int v1 = from.get_vertex(vi++);
+      forward_map[v0] = v1;
+      reverse_map[v1] = v0;
+      v0 = v1;
+    }
+    ++li;
+  }
+  nassertr(vi == num_vertices, nullptr);
+
+  // Now build up the new vertex data.  For each linestrip, we prepend and
+  // append the appropriate connecting vertices.
+  vi = -num_unused;
+  li = 0;
+  while (li < (int)ends.size()) {
+    // Skip unused vertices between linestrips.
+    vi += num_unused;
+    int end = ends[li];
+    nassertr(vi + 1 <= end, nullptr);
+
+    // Look for the line segment connected to the beginning of this strip.
+    int v0 = from.get_vertex(vi++);
+    auto it = reverse_map.find(v0);
+    if (it != reverse_map.end()) {
+      adj->add_vertex(it->second);
+    } else {
+      // Um, no adjoining line segment?  Just repeat the vertex, I guess.
+      adj->add_vertex(v0);
+    }
+
+    // Add the actual vertices in the strip.
+    adj->add_vertex(v0);
+    int v1 = v0;
+    while (vi < end) {
+      v1 = from.get_vertex(vi++);
+      adj->add_vertex(v1);
+    }
+
+    // Do the same for the last vertex in the strip.
+    it = forward_map.find(v1);
+    if (it != forward_map.end()) {
+      adj->add_vertex(it->second);
+    } else {
+      adj->add_vertex(v1);
+    }
+
+    adj->close_primitive();
+    ++li;
+  }
+  nassertr(vi == num_vertices, nullptr);
+
+  return adj;
+}
+
+/**
  * Returns the minimum number of vertices that must be added before
  * close_primitive() may legally be called.
  */
@@ -137,7 +220,7 @@ decompose_impl() const {
     // Skip unused vertices between tristrips.
     vi += num_unused;
     int end = ends[li];
-    nassertr(vi + 1 <= end, lines.p());
+    nassertr(vi + 1 <= end, lines);
     int v0 = get_vertex(vi);
     ++vi;
     while (vi < end) {
@@ -150,9 +233,9 @@ decompose_impl() const {
     }
     ++li;
   }
-  nassertr(vi == get_num_vertices(), NULL);
+  nassertr(vi == get_num_vertices(), nullptr);
 
-  return lines.p();
+  return lines;
 }
 
 /**
@@ -181,7 +264,7 @@ rotate_impl() const {
       begin = end;
     }
 
-    nassertr(to.is_at_end(), NULL);
+    nassertr(to.is_at_end(), nullptr);
 
   } else {
     // Nonindexed case.
@@ -198,7 +281,7 @@ rotate_impl() const {
       begin = end;
     }
 
-    nassertr(to.is_at_end(), NULL);
+    nassertr(to.is_at_end(), nullptr);
   }
   return new_vertices;
 }

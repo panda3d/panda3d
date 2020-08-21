@@ -3,12 +3,8 @@ from wx.lib.agw import fourwaysplitter as FWS
 
 from panda3d.core import *
 from direct.showbase.ShowBase import *
+from direct.showbase import ShowBaseGlobal
 from direct.directtools.DirectGlobals import *
-
-try:
-    base
-except NameError:
-    base = ShowBase(False, windowType = 'none')
 
 from .WxAppShell import *
 from .ViewPort import *
@@ -18,6 +14,7 @@ ID_TOP_VIEW = 402
 ID_FRONT_VIEW = 403
 ID_LEFT_VIEW = 404
 ID_PERSP_VIEW = 405
+
 
 class WxPandaShell(WxAppShell):
     """ Class for Panda3D LevelEditor """
@@ -37,6 +34,10 @@ class WxPandaShell(WxAppShell):
         }
 
     def __init__(self, fStartDirect = False):
+        base = getattr(ShowBaseGlobal, 'base', None)
+        if not base:
+            base = ShowBase(False, windowType='none')
+
         fDirect = (base.config.GetBool('want-directtools', 0) or
                    (base.config.GetString("cluster-mode", '') != ''))
 
@@ -202,15 +203,15 @@ class WxPandaShell(WxAppShell):
         """A step in the WX event loop. You can either call this yourself or use as task."""
         while self.evtLoop.Pending():
           self.evtLoop.Dispatch()
-        self.wxApp.ProcessIdle()
+        self.evtLoop.ProcessIdle()
         if task != None: return task.cont
 
     def appInit(self):
         """Overridden from WxAppShell.py."""
         # Create a new event loop (to overide default wxEventLoop)
-        self.evtLoop = wx.EventLoop()
-        self.oldLoop = wx.EventLoop.GetActive()
-        wx.EventLoop.SetActive(self.evtLoop)
+        self.evtLoop = wx.GUIEventLoop()
+        self.oldLoop = wx.GUIEventLoop.GetActive()
+        wx.GUIEventLoop.SetActive(self.evtLoop)
         taskMgr.add(self.wxStep, "evtLoopTask")
 
     def onViewChange(self, evt, viewIdx):
@@ -237,5 +238,3 @@ class WxPandaShell(WxAppShell):
             self.currentView = self.perspView
 
         return self.currentView
-
-

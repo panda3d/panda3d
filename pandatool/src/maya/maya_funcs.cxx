@@ -31,6 +31,9 @@
 #include <maya/MMatrix.h>
 #include "post_maya_include.h"
 
+using std::endl;
+using std::string;
+
 /**
  * Gets the named MPlug associated, if any.
  */

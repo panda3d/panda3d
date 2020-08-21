@@ -24,7 +24,7 @@
  * Datagram.  Elements may be retrieved one at a time; it is up to the caller
  * to know the correct type and order of each element.
  */
-class EXPCL_PANDAEXPRESS DatagramIterator {
+class EXPCL_PANDA_EXPRESS DatagramIterator {
 public:
   INLINE void assign(Datagram &datagram, size_t offset = 0);
 
@@ -55,24 +55,27 @@ PUBLISHED:
   INLINE PN_float32 get_be_float32();
   INLINE PN_float64 get_be_float64();
 
-  string get_string();
-  string get_string32();
-  string get_z_string();
-  string get_fixed_string(size_t size);
-  wstring get_wstring();
+  std::string get_string();
+  std::string get_string32();
+  std::string get_z_string();
+  std::string get_fixed_string(size_t size);
+  std::wstring get_wstring();
+
+  INLINE vector_uchar get_blob();
+  INLINE vector_uchar get_blob32();
 
   INLINE void skip_bytes(size_t size);
-  string extract_bytes(size_t size);
+  vector_uchar extract_bytes(size_t size);
   size_t extract_bytes(unsigned char *into, size_t size);
 
-  INLINE string get_remaining_bytes() const;
+  INLINE vector_uchar get_remaining_bytes() const;
   INLINE size_t get_remaining_size() const;
 
   INLINE const Datagram &get_datagram() const;
   INLINE size_t get_current_index() const;
 
-  void output(ostream &out) const;
-  void write(ostream &out, unsigned int indent=0) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, unsigned int indent=0) const;
 
 private:
   const Datagram *_datagram;
@@ -104,9 +107,9 @@ generic_read_datagram(float &result, DatagramIterator &source);
 INLINE void
 generic_read_datagram(double &result, DatagramIterator &source);
 INLINE void
-generic_read_datagram(string &result, DatagramIterator &source);
+generic_read_datagram(std::string &result, DatagramIterator &source);
 INLINE void
-generic_read_datagram(wstring &result, DatagramIterator &source);
+generic_read_datagram(std::wstring &result, DatagramIterator &source);
 
 #include "datagramIterator.I"
 

@@ -51,7 +51,7 @@
 // OpenGL ES 2 has no fixed-function pipeline.
 #undef SUPPORT_FIXED_FUNCTION
 
-#ifdef IS_OSX
+#ifdef BUILD_IPHONE
   #include <OpenGLES/ES2/gl.h>
 // #include <OpenGLESES2glext.h>
 #else

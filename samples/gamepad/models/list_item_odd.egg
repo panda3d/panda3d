@@ -1,0 +1,33 @@
+<Comment> {
+  "egg-texture-cards -o list_item_odd.egg -g -1,1,-0.5,0.5 -p 1,30 li_ready_odd.png"
+}
+<Texture> li_ready_odd {
+  li_ready_odd.png
+}
+<Group> {
+  <VertexPool> vpool {
+    <Vertex> 0 {
+      -1 0.5 0
+      <UV> { 0 1 }
+    }
+    <Vertex> 1 {
+      -1 -0.5 0
+      <UV> { 0 0 }
+    }
+    <Vertex> 2 {
+      1 -0.5 0
+      <UV> { 1 0 }
+    }
+    <Vertex> 3 {
+      1 0.5 0
+      <UV> { 1 1 }
+    }
+  }
+  <Group> li_ready_odd {
+    <Polygon> {
+      <RGBA> { 1 1 1 1 }
+      <TRef> { li_ready_odd }
+      <VertexRef> { 0 1 2 3 <Ref> { vpool } }
+    }
+  }
+}

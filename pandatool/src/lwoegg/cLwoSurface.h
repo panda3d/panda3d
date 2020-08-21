@@ -41,7 +41,7 @@ public:
   CLwoSurface(LwoToEggConverter *converter, const LwoSurface *surface);
   ~CLwoSurface();
 
-  INLINE const string &get_name() const;
+  INLINE const std::string &get_name() const;
 
   void apply_properties(EggPrimitive *egg_prim,
                         vector_PT_EggVertex &egg_vertices,
@@ -50,7 +50,7 @@ public:
   bool check_material();
 
   INLINE bool has_named_uvs() const;
-  INLINE const string &get_uv_name() const;
+  INLINE const std::string &get_uv_name() const;
 
 
   enum Flags {

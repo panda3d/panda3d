@@ -72,7 +72,7 @@ get_collision_origin() const {
  *
  */
 void CollisionRay::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "ray, o (" << get_origin() << "), d (" << get_direction() << ")";
 }
 

@@ -39,7 +39,7 @@ public:
                               bool force_to_0, Thread *current_thread = Thread::get_current_thread());
 
   INLINE CycleDataStageWriter(const CycleDataStageWriter<CycleDataType> &copy);
-  INLINE void operator = (const CycleDataStageWriter<CycleDataType> &copy);
+  INLINE CycleDataStageWriter(CycleDataStageWriter<CycleDataType> &&from) noexcept;
 
   INLINE CycleDataStageWriter(PipelineCycler<CycleDataType> &cycler, int stage,
                               CycleDataLockedStageReader<CycleDataType> &take_from);
@@ -47,12 +47,10 @@ public:
                               CycleDataLockedStageReader<CycleDataType> &take_from,
                               bool force_to_0);
 
-#if defined(USE_MOVE_SEMANTICS) && defined(DO_PIPELINING)
-  INLINE CycleDataStageWriter(CycleDataStageWriter<CycleDataType> &&from) NOEXCEPT;
-  INLINE void operator = (CycleDataStageWriter<CycleDataType> &&from) NOEXCEPT;
-#endif
-
   INLINE ~CycleDataStageWriter();
+
+  INLINE void operator = (const CycleDataStageWriter<CycleDataType> &copy);
+  INLINE void operator = (CycleDataStageWriter<CycleDataType> &&from) noexcept;
 
   INLINE CycleDataType *operator -> ();
   INLINE const CycleDataType *operator -> () const;

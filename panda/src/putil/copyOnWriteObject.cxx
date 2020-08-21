@@ -30,7 +30,7 @@ unref() const {
   bool is_zero = CachedTypedWritableReferenceCount::unref();
   if (get_ref_count() == get_cache_ref_count()) {
     ((CopyOnWriteObject *)this)->_lock_status = LS_unlocked;
-    ((CopyOnWriteObject *)this)->_locking_thread = NULL;
+    ((CopyOnWriteObject *)this)->_locking_thread = nullptr;
     ((CopyOnWriteObject *)this)->_lock_cvar.notify();
   }
   return is_zero;
@@ -48,7 +48,7 @@ cache_ref_only() const {
   CachedTypedWritableReferenceCount::cache_ref_only();
   if (get_ref_count() == get_cache_ref_count()) {
     ((CopyOnWriteObject *)this)->_lock_status = LS_unlocked;
-    ((CopyOnWriteObject *)this)->_locking_thread = NULL;
+    ((CopyOnWriteObject *)this)->_locking_thread = nullptr;
     ((CopyOnWriteObject *)this)->_lock_cvar.notify();
   }
 }

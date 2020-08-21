@@ -23,9 +23,9 @@
  */
 MemoryInfo::
 MemoryInfo() {
-  _void_ptr = (void *)NULL;
-  _ref_ptr = (ReferenceCount *)NULL;
-  _typed_ptr = (TypedObject *)NULL;
+  _void_ptr = nullptr;
+  _ref_ptr = nullptr;
+  _typed_ptr = nullptr;
   _size = 0;
   _static_type = TypeHandle::none();
   _dynamic_type = TypeHandle::none();
@@ -79,7 +79,7 @@ determine_dynamic_type() {
       _static_type != TypeHandle::none()) {
     // See if we know enough now to infer the dynamic type from the pointer.
 
-    if (_typed_ptr == (TypedObject *)NULL) {
+    if (_typed_ptr == nullptr) {
       // If our static type is known to inherit from TypedReferenceCount, then
       // we can directly downcast to get the TypedObject pointer.
       if (_static_type.is_derived_from(TypedReferenceCount::get_class_type())) {
@@ -87,7 +87,7 @@ determine_dynamic_type() {
       }
     }
 
-    if (_typed_ptr != (TypedObject *)NULL) {
+    if (_typed_ptr != nullptr) {
       // If we have a TypedObject pointer, we can determine the type.  This
       // might still not return the exact type, particularly if we are being
       // called within the destructor or constructor of this object.

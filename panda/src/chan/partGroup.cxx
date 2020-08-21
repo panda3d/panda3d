@@ -25,6 +25,8 @@
 
 #include <algorithm>
 
+using std::ostream;
+
 TypeHandle PartGroup::_type_handle;
 
 /**
@@ -32,11 +34,11 @@ TypeHandle PartGroup::_type_handle;
  * to delete it subsequently is to delete the entire hierarchy.
  */
 PartGroup::
-PartGroup(PartGroup *parent, const string &name) :
+PartGroup(PartGroup *parent, const std::string &name) :
   Namable(name),
   _children(get_class_type())
 {
-  nassertv(parent != NULL);
+  nassertv(parent != nullptr);
 
   parent->_children.push_back(this);
 }
@@ -102,7 +104,7 @@ get_num_children() const {
  */
 PartGroup *PartGroup::
 get_child(int n) const {
-  nassertr(n >= 0 && n < (int)_children.size(), NULL);
+  nassertr(n >= 0 && n < (int)_children.size(), nullptr);
   return _children[n];
 }
 
@@ -113,7 +115,7 @@ get_child(int n) const {
  * find_child().
  */
 PartGroup *PartGroup::
-get_child_named(const string &name) const {
+get_child_named(const std::string &name) const {
   Children::const_iterator ci;
   for (ci = _children.begin(); ci != _children.end(); ++ci) {
     PartGroup *child = (*ci);
@@ -122,7 +124,7 @@ get_child_named(const string &name) const {
     }
   }
 
-  return (PartGroup *)NULL;
+  return nullptr;
 }
 
 /**
@@ -131,7 +133,7 @@ get_child_named(const string &name) const {
  * this PartGroup; see also get_child_named().
  */
 PartGroup *PartGroup::
-find_child(const string &name) const {
+find_child(const std::string &name) const {
   Children::const_iterator ci;
   for (ci = _children.begin(); ci != _children.end(); ++ci) {
     PartGroup *child = (*ci);
@@ -139,12 +141,12 @@ find_child(const string &name) const {
       return child;
     }
     PartGroup *result = child->find_child(name);
-    if (result != (PartGroup *)NULL) {
+    if (result != nullptr) {
       return result;
     }
   }
 
-  return (PartGroup *)NULL;
+  return nullptr;
 }
 
 // An STL object to sort a list of children into alphabetical order.
@@ -163,7 +165,7 @@ public:
  */
 void PartGroup::
 sort_descendants() {
-  stable_sort(_children.begin(), _children.end(), PartGroupAlphabeticalOrder());
+  std::stable_sort(_children.begin(), _children.end(), PartGroupAlphabeticalOrder());
 
   Children::iterator ci;
   for (ci = _children.begin(); ci != _children.end(); ++ci) {
@@ -243,7 +245,7 @@ clear_forced_channel() {
  */
 AnimChannelBase *PartGroup::
 get_forced_channel() const {
-  return NULL;
+  return nullptr;
 }
 
 
@@ -314,14 +316,14 @@ check_hierarchy(const AnimGroup *anim, const PartGroup *,
       // to differ meaninglessly here.  Any differences here remain
       // unreported.
       if (anim->get_num_children() == get_num_children() + 1 &&
-          anim->get_child_named("morph") != NULL &&
-          get_child_named("morph") == NULL) {
+          anim->get_child_named("morph") != nullptr &&
+          get_child_named("morph") == nullptr) {
         // Anim has "morph" and model does not, but there are no other
         // differences.
 
       } else if (get_num_children() == anim->get_num_children() + 1 &&
-                 get_child_named("morph") != NULL &&
-                 anim->get_child_named("morph") == NULL) {
+                 get_child_named("morph") != nullptr &&
+                 anim->get_child_named("morph") == nullptr) {
         // Model has "morph" and anim does not, but there are no other
         // differences.
 
@@ -562,7 +564,7 @@ bind_hierarchy(AnimGroup *anim, int channel_index, int &joint_index,
 
   int i = 0, j = 0;
   int part_num_children = get_num_children();
-  int anim_num_children = (anim == NULL) ? 0 : anim->get_num_children();
+  int anim_num_children = (anim == nullptr) ? 0 : anim->get_num_children();
 
   while (i < part_num_children && j < anim_num_children) {
     PartGroup *pc = get_child(i);
@@ -570,7 +572,7 @@ bind_hierarchy(AnimGroup *anim, int channel_index, int &joint_index,
 
     if (pc->get_name() < ac->get_name()) {
       // Here's a part, not in the anim.  Bind it to the special NULL anim.
-      pc->bind_hierarchy(NULL, channel_index, joint_index, is_included,
+      pc->bind_hierarchy(nullptr, channel_index, joint_index, is_included,
                          bound_joints, subset);
       i++;
 
@@ -590,7 +592,7 @@ bind_hierarchy(AnimGroup *anim, int channel_index, int &joint_index,
   // Now pick up any more parts, not in the anim.
   while (i < part_num_children) {
     PartGroup *pc = get_child(i);
-    pc->bind_hierarchy(NULL, channel_index, joint_index, is_included,
+    pc->bind_hierarchy(nullptr, channel_index, joint_index, is_included,
                        bound_joints, subset);
     i++;
   }
@@ -652,7 +654,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _children.reserve(num_children);
   for (int i = 0; i < num_children; i++) {
     manager->read_pointer(scan);
-    _children.push_back(NULL);
+    _children.push_back(nullptr);
   }
 }
 

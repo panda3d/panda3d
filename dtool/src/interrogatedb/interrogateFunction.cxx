@@ -25,7 +25,7 @@ InterrogateFunction(InterrogateModuleDef *def) :
 {
   _flags = 0;
   _class = 0;
-  _instances = (Instances *)NULL;
+  _instances = nullptr;
 }
 
 /**
@@ -58,7 +58,7 @@ operator = (const InterrogateFunction &copy) {
  * Formats the InterrogateFunction data for output to a data file.
  */
 void InterrogateFunction::
-output(ostream &out) const {
+output(std::ostream &out) const {
   InterrogateComponent::output(out);
   out << _flags << " "
       << _class << " ";
@@ -73,7 +73,7 @@ output(ostream &out) const {
  * Reads the data file as previously formatted by output().
  */
 void InterrogateFunction::
-input(istream &in) {
+input(std::istream &in) {
   InterrogateComponent::input(in);
   in >> _flags >> _class;
   idf_input_string(in, _scoped_name);

@@ -48,11 +48,23 @@ add_int(int num) {
  * Adds a string to the hash, by breaking it down into a sequence of integers.
  */
 void HashGenerator::
-add_string(const string &str) {
+add_string(const std::string &str) {
   add_int(str.length());
-  string::const_iterator si;
+  std::string::const_iterator si;
   for (si = str.begin(); si != str.end(); ++si) {
     add_int(*si);
+  }
+}
+
+/**
+ * Adds a blob to the hash, by breaking it down into a sequence of integers.
+ */
+void HashGenerator::
+add_blob(const vector_uchar &bytes) {
+  add_int(bytes.size());
+  vector_uchar::const_iterator bi;
+  for (bi = bytes.begin(); bi != bytes.end(); ++bi) {
+    add_int(*bi);
   }
 }
 

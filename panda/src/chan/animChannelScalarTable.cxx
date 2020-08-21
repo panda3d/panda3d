@@ -47,7 +47,7 @@ AnimChannelScalarTable(AnimGroup *parent, const AnimChannelScalarTable &copy) :
  *
  */
 AnimChannelScalarTable::
-AnimChannelScalarTable(AnimGroup *parent, const string &name) :
+AnimChannelScalarTable(AnimGroup *parent, const std::string &name) :
   AnimChannelScalar(parent, name),
   _table(get_class_type())
 {
@@ -104,7 +104,7 @@ set_table(const CPTA_stdfloat &table) {
   if (table.size() > 1 && (int)table.size() < num_frames) {
     // The new table has an invalid number of frames--it doesn't match the
     // bundle's requirement.
-    nassertv(false);
+    nassert_raise("mismatched number of frames");
     return;
   }
 
@@ -115,7 +115,7 @@ set_table(const CPTA_stdfloat &table) {
  * Writes a brief description of the table and all of its descendants.
  */
 void AnimChannelScalarTable::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << get_type() << " " << get_name() << " " << _table.size();
 

@@ -57,10 +57,10 @@ public:
   int _token_index;
 #endif
 
-  void warning(const string &message);
-  void warning(const string &message, const YYLTYPE &loc);
-  void error(const string &message);
-  void error(const string &message, const YYLTYPE &loc);
+  void warning(const std::string &message);
+  void warning(const std::string &message, const YYLTYPE &loc);
+  void error(const std::string &message);
+  void error(const std::string &message, const YYLTYPE &loc);
   void show_line(const YYLTYPE &loc);
 
   CPPCommentBlock *get_comment_before(int line, CPPFile file);
@@ -69,11 +69,11 @@ public:
   int get_warning_count() const;
   int get_error_count() const;
 
-  typedef map<string, CPPManifest *> Manifests;
+  typedef std::map<std::string, CPPManifest *> Manifests;
   Manifests _manifests;
 
   typedef pvector<CPPManifest *> ManifestStack;
-  map<string, ManifestStack> _manifest_stack;
+  std::map<std::string, ManifestStack> _manifest_stack;
 
   pvector<CPPFile::Source> _quote_include_kind;
   DSearchPath _quote_include_path;
@@ -82,14 +82,14 @@ public:
 
   CPPComments _comments;
 
-  typedef set<CPPFile> ParsedFiles;
+  typedef std::set<CPPFile> ParsedFiles;
   ParsedFiles _parsed_files;
 
-  typedef set<string> Includes;
+  typedef std::set<std::string> Includes;
   Includes _quote_includes;
   Includes _angle_includes;
 
-  set<Filename> _explicit_files;
+  std::set<Filename> _explicit_files;
 
   // This is normally true, to indicate that the preprocessor should decode
   // identifiers like foo::bar<snarf> into a single IDENTIFIER,
@@ -109,14 +109,14 @@ public:
 
 protected:
   bool init_cpp(const CPPFile &file);
-  bool init_const_expr(const string &expr);
-  bool init_type(const string &type);
+  bool init_const_expr(const std::string &expr);
+  bool init_type(const std::string &type);
   bool push_file(const CPPFile &file);
-  bool push_string(const string &input, bool lock_position);
+  bool push_string(const std::string &input, bool lock_position);
 
-  string expand_manifests(const string &input_expr, bool expand_undefined,
+  std::string expand_manifests(const std::string &input_expr, bool expand_undefined,
                           const YYLTYPE &loc);
-  CPPExpression *parse_expr(const string &expr, CPPScope *current_scope,
+  CPPExpression *parse_expr(const std::string &expr, CPPScope *current_scope,
                             CPPScope *global_scope, const YYLTYPE &loc);
 
 private:
@@ -130,43 +130,43 @@ private:
   int skip_digit_separator(int c);
   int process_directive(int c);
 
-  int get_preprocessor_command(int c, string &command);
-  int get_preprocessor_args(int c, string &args);
+  int get_preprocessor_command(int c, std::string &command);
+  int get_preprocessor_args(int c, std::string &args);
 
-  void handle_define_directive(const string &args, const YYLTYPE &loc);
-  void handle_undef_directive(const string &args, const YYLTYPE &loc);
-  void handle_ifdef_directive(const string &args, const YYLTYPE &loc);
-  void handle_ifndef_directive(const string &args, const YYLTYPE &loc);
-  void handle_if_directive(const string &args, const YYLTYPE &loc);
-  void handle_include_directive(const string &args, const YYLTYPE &loc);
-  void handle_pragma_directive(const string &args, const YYLTYPE &loc);
-  void handle_error_directive(const string &args, const YYLTYPE &loc);
+  void handle_define_directive(const std::string &args, const YYLTYPE &loc);
+  void handle_undef_directive(const std::string &args, const YYLTYPE &loc);
+  void handle_ifdef_directive(const std::string &args, const YYLTYPE &loc);
+  void handle_ifndef_directive(const std::string &args, const YYLTYPE &loc);
+  void handle_if_directive(const std::string &args, const YYLTYPE &loc);
+  void handle_include_directive(const std::string &args, const YYLTYPE &loc);
+  void handle_pragma_directive(const std::string &args, const YYLTYPE &loc);
+  void handle_error_directive(const std::string &args, const YYLTYPE &loc);
 
   void skip_false_if_block(bool consider_elifs);
-  bool is_manifest_defined(const string &manifest_name);
+  bool is_manifest_defined(const std::string &manifest_name);
   bool find_include(Filename &filename, bool angle_quotes, CPPFile::Source &source);
 
   CPPToken get_quoted_char(int c);
   CPPToken get_quoted_string(int c);
   CPPToken get_identifier(int c);
-  CPPToken get_literal(int token, YYLTYPE loc, const string &str,
+  CPPToken get_literal(int token, YYLTYPE loc, const std::string &str,
                        const YYSTYPE &result = YYSTYPE());
   CPPToken expand_manifest(const CPPManifest *manifest);
-  void extract_manifest_args(const string &name, int num_args,
+  void extract_manifest_args(const std::string &name, int num_args,
                              int va_arg, vector_string &args);
-  void expand_defined_function(string &expr, size_t q, size_t &p);
-  void expand_has_include_function(string &expr, size_t q, size_t &p, YYLTYPE loc);
-  void expand_manifest_inline(string &expr, size_t q, size_t &p,
+  void expand_defined_function(std::string &expr, size_t q, size_t &p);
+  void expand_has_include_function(std::string &expr, size_t q, size_t &p, YYLTYPE loc);
+  void expand_manifest_inline(std::string &expr, size_t q, size_t &p,
                               const CPPManifest *manifest);
-  void extract_manifest_args_inline(const string &name, int num_args,
+  void extract_manifest_args_inline(const std::string &name, int num_args,
                                     int va_arg, vector_string &args,
-                                    const string &expr, size_t &p);
+                                    const std::string &expr, size_t &p);
 
   CPPToken get_number(int c);
-  static int check_keyword(const string &name);
+  static int check_keyword(const std::string &name);
   int scan_escape_sequence(int c);
-  string scan_quoted(int c);
-  string scan_raw(int c);
+  std::string scan_quoted(int c);
+  std::string scan_raw(int c);
 
   bool should_ignore_manifest(const CPPManifest *manifest) const;
   bool should_ignore_preprocessor() const;
@@ -186,14 +186,14 @@ private:
     ~InputFile();
 
     bool open(const CPPFile &file);
-    bool connect_input(const string &input);
+    bool connect_input(const std::string &input);
     int get();
     int peek();
 
     const CPPManifest *_ignore_manifest;
     CPPFile _file;
-    string _input;
-    istream *_in;
+    std::string _input;
+    std::istream *_in;
     int _line_number;
     int _col_number;
     int _next_line_number;
@@ -204,7 +204,7 @@ private:
 
   // This must be a list and not a vector because we don't have a good copy
   // constructor defined for InputFile.
-  typedef list<InputFile> Files;
+  typedef std::list<InputFile> Files;
   Files _files;
 
   enum State {
@@ -222,7 +222,7 @@ private:
   bool _last_cpp_comment;
   bool _save_comments;
 
-  vector<CPPToken> _saved_tokens;
+  std::vector<CPPToken> _saved_tokens;
 
   int _warning_count;
   int _error_count;

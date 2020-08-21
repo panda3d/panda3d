@@ -29,7 +29,7 @@
 /**
  * Pure virtual particle renderer base class
  */
-class EXPCL_PANDAPHYSICS BaseParticleRenderer : public ReferenceCount {
+class EXPCL_PANDA_PARTICLESYSTEM BaseParticleRenderer : public ReferenceCount {
 PUBLISHED:
   enum ParticleRendererAlphaMode {
     PR_ALPHA_NONE,
@@ -62,8 +62,8 @@ PUBLISHED:
   void set_ignore_scale(bool ignore_scale);
   INLINE bool get_ignore_scale() const;
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent=0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent=0) const;
 
 public:
   virtual BaseParticleRenderer *make_copy() = 0;

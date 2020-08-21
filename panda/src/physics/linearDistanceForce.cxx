@@ -47,7 +47,7 @@ LinearDistanceForce::
  * Write a string representation of this instance to <out>.
  */
 void LinearDistanceForce::
-output(ostream &out) const {
+output(std::ostream &out) const {
   #ifndef NDEBUG //[
   out<<"LinearDistanceForce";
   #endif //] NDEBUG
@@ -57,7 +57,7 @@ output(ostream &out) const {
  * Write a string representation of this instance to <out>.
  */
 void LinearDistanceForce::
-write(ostream &out, unsigned int indent) const {
+write(std::ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"LinearDistanceForce:\n";
   out.width(indent+2); out<<""; out<<"_force_center "<<_force_center<<"\n";

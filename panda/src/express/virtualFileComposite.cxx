@@ -57,7 +57,7 @@ is_directory() const {
  */
 bool VirtualFileComposite::
 scan_local_directory(VirtualFileList *file_list,
-                     const ov_set<string> &mount_points) const {
+                     const ov_set<std::string> &mount_points) const {
   bool any_ok = false;
   Components::const_iterator ci;
   for (ci = _components.begin(); ci != _components.end(); ++ci) {

@@ -98,8 +98,8 @@ operator < (const MemoryUsagePointerCounts &other) const {
   return false;
 }
 
-INLINE ostream &
-operator << (ostream &out, const MemoryUsagePointerCounts &c) {
+INLINE std::ostream &
+operator << (std::ostream &out, const MemoryUsagePointerCounts &c) {
   c.output(out);
   return out;
 }

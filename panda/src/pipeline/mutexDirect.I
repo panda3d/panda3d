@@ -12,33 +12,33 @@
  */
 
 /**
- *
- */
-INLINE MutexDirect::
-MutexDirect() {
-}
-
-/**
- *
- */
-INLINE MutexDirect::
-~MutexDirect() {
-}
-
-/**
- * Do not attempt to copy mutexes.
- */
-INLINE MutexDirect::
-MutexDirect(const MutexDirect &copy) {
-  nassertv(false);
-}
-
-/**
- * Do not attempt to copy mutexes.
+ * Alias for acquire() to match C++11 semantics.
+ * @see acquire()
  */
 INLINE void MutexDirect::
-operator = (const MutexDirect &copy) {
-  nassertv(false);
+lock() {
+  TAU_PROFILE("void MutexDirect::acquire()", " ", TAU_USER);
+  _impl.lock();
+}
+
+/**
+ * Alias for try_acquire() to match C++11 semantics.
+ * @see try_acquire()
+ */
+INLINE bool MutexDirect::
+try_lock() {
+  TAU_PROFILE("void MutexDirect::try_acquire()", " ", TAU_USER);
+  return _impl.try_lock();
+}
+
+/**
+ * Alias for release() to match C++11 semantics.
+ * @see release()
+ */
+INLINE void MutexDirect::
+unlock() {
+  TAU_PROFILE("void MutexDirect::unlock()", " ", TAU_USER);
+  _impl.unlock();
 }
 
 /**
@@ -54,17 +54,19 @@ operator = (const MutexDirect &copy) {
 INLINE void MutexDirect::
 acquire() const {
   TAU_PROFILE("void MutexDirect::acquire()", " ", TAU_USER);
-  ((MutexDirect *)this)->_impl.acquire();
+  _impl.lock();
 }
 
 /**
  * Returns immediately, with a true value indicating the mutex has been
  * acquired, and false indicating it has not.
+ *
+ * @deprecated Python users should use acquire(False), C++ users try_lock()
  */
 INLINE bool MutexDirect::
 try_acquire() const {
   TAU_PROFILE("void MutexDirect::acquire(bool)", " ", TAU_USER);
-  return ((MutexDirect *)this)->_impl.try_acquire();
+  return _impl.try_lock();
 }
 
 /**
@@ -77,7 +79,7 @@ try_acquire() const {
 INLINE void MutexDirect::
 release() const {
   TAU_PROFILE("void MutexDirect::release()", " ", TAU_USER);
-  ((MutexDirect *)this)->_impl.release();
+  _impl.unlock();
 }
 
 /**
@@ -95,7 +97,7 @@ debug_is_locked() const {
  * The mutex name is only defined when compiling in DEBUG_THREADS mode.
  */
 INLINE void MutexDirect::
-set_name(const string &) {
+set_name(const std::string &) {
 }
 
 /**
@@ -116,7 +118,7 @@ has_name() const {
 /**
  * The mutex name is only defined when compiling in DEBUG_THREADS mode.
  */
-INLINE string MutexDirect::
+INLINE std::string MutexDirect::
 get_name() const {
-  return string();
+  return std::string();
 }

@@ -25,9 +25,9 @@ class DXFFile;
  * ordered by name.  This is used as a lookup within DXFFile to locate the
  * layer associated with a particular entity.
  */
-class DXFLayerMap : public pmap<string, DXFLayer *> {
+class DXFLayerMap : public pmap<std::string, DXFLayer *> {
 public:
-  DXFLayer *get_layer(const string &name, DXFFile *dxffile);
+  DXFLayer *get_layer(const std::string &name, DXFFile *dxffile);
 };
 
 #endif

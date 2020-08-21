@@ -54,13 +54,16 @@
 #define __glext_h_
 #define ES1_GLEXT_H_GUARD
 
-#ifdef IS_OSX
+#ifdef BUILD_IPHONE
   #include <OpenGLES/ES1/gl.h>
 // #include <OpenGLESES1glext.h>
 #else
   #include <GLES/gl.h>
 // #include <GLESglext.h>
 #endif
+
+// Some implementations (Arch Linux) set this in glext.h
+typedef char GLchar;
 
 #include "panda_esglext.h"
 

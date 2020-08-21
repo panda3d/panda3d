@@ -23,7 +23,7 @@ TypeHandle EggCoordinateSystem::_type_handle;
  * Egg format.
  */
 void EggCoordinateSystem::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   if (get_value() != CS_default &&
       get_value() != CS_invalid) {
     indent(out, indent_level)

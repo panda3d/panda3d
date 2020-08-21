@@ -25,9 +25,9 @@
 /**
  * This is a type of ostream that writes each line to the Android log.
  */
-class AndroidLogStream : public ostream {
+class AndroidLogStream : public std::ostream {
 private:
-  class AndroidLogStreamBuf : public streambuf {
+  class AndroidLogStreamBuf : public std::streambuf {
   public:
     AndroidLogStreamBuf(int priority);
     virtual ~AndroidLogStreamBuf();
@@ -40,15 +40,15 @@ private:
     void write_char(char c);
 
     int _priority;
-    string _tag;
-    string _data;
+    std::string _tag;
+    std::string _data;
   };
 
   AndroidLogStream(int priority);
 
 public:
   virtual ~AndroidLogStream();
-  static ostream &out(NotifySeverity severity);
+  static std::ostream &out(NotifySeverity severity);
 };
 
 #endif  // ANDROID

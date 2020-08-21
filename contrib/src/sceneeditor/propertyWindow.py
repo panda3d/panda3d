@@ -12,7 +12,6 @@ from direct.tkwidgets import Dial
 from direct.tkwidgets import Slider
 from direct.tkwidgets import VectorWidgets
 from panda3d.core import *
-from Tkinter import *
 import Pmw
 
 class propertyWindow(AppShell,Pmw.MegaWidget):
@@ -108,7 +107,7 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
 
         self.curveFrame = None
         #### If nodePath has been binded with any curves
-        if self.info.has_key('curveList'):
+        if 'curveList' in self.info:
             self.createCurveFrame(self.contentFrame)
 
         ## Set all stuff done
@@ -271,7 +270,7 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
         # And, it will set the call back function to setNodeColorVec()
         #################################################################
         color = self.nodePath.getColor()
-        print color
+        print(color)
         self.nodeColor = VectorWidgets.ColorEntry(
             contentFrame, text = 'Node Color', value=[color.getX()*255,
                                                       color.getY()*255,
@@ -725,7 +724,7 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
         # But, not directly removed be this function.
         # This function will send out a message to notice dataHolder to remove this animation
         #################################################################
-        print anim
+        print(anim)
         widget = self.widgetsDict[anim]
         self.accept('animRemovedFromNode',self.redrawAnimProperty)
         messenger.send('PW_removeAnimFromNode',[self.name, anim])
@@ -1046,41 +1045,41 @@ class propertyWindow(AppShell,Pmw.MegaWidget):
             command = self.toggleHprSnap)
         self.hprSnapButton.pack(fill = X, expand = 0, pady=3)
 
-        self.xyzSnap.set(base.direct.grid.getXyzSnap())
-        self.hprSnap.set(base.direct.grid.getHprSnap())
+        self.xyzSnap.set(SEditor.grid.getXyzSnap())
+        self.hprSnap.set(SEditor.grid.getHprSnap())
 
         self.gridSpacing = Floater.Floater(
             gridPage,
             text = 'Grid Spacing',
             min = 0.1,
-            value = base.direct.grid.getGridSpacing())
-        self.gridSpacing['command'] = base.direct.grid.setGridSpacing
+            value = SEditor.grid.getGridSpacing())
+        self.gridSpacing['command'] = SEditor.grid.setGridSpacing
         self.gridSpacing.pack(fill = X, expand = 0, pady=3)
 
         self.gridSize = Floater.Floater(
             gridPage,
             text = 'Grid Size',
             min = 1.0,
-            value = base.direct.grid.getGridSize())
-        self.gridSize['command'] = base.direct.grid.setGridSize
+            value = SEditor.grid.getGridSize())
+        self.gridSize['command'] = SEditor.grid.setGridSize
         self.gridSize.pack(fill = X, expand = 0, pady=3)
 
         self.gridSnapAngle = Dial.AngleDial(
             gridPage,
             text = 'Snap Angle',
             style = 'mini',
-            value = base.direct.grid.getSnapAngle())
-        self.gridSnapAngle['command'] = base.direct.grid.setSnapAngle
+            value = SEditor.grid.getSnapAngle())
+        self.gridSnapAngle['command'] = SEditor.grid.setSnapAngle
         self.gridSnapAngle.pack(fill = X, expand = 0, pady=3)
 
         return
 
     def toggleXyzSnap(self):
-        base.direct.grid.setXyzSnap(self.xyzSnap.get())
+        SEditor.grid.setXyzSnap(self.xyzSnap.get())
         return
 
     def toggleHprSnap(self):
-        base.direct.grid.setHprSnap(self.hprSnap.get())
+        SEditor.grid.setHprSnap(self.hprSnap.get())
         return
 
 

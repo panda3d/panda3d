@@ -41,7 +41,7 @@ AnimChannelMatrixDynamic(AnimGroup *parent, const AnimChannelMatrixDynamic &copy
   AnimChannelMatrix(parent, copy),
   _value_node(copy._value_node),
   _value(copy._value),
-  _last_value(NULL)
+  _last_value(nullptr)
 {
 }
 
@@ -49,11 +49,11 @@ AnimChannelMatrixDynamic(AnimGroup *parent, const AnimChannelMatrixDynamic &copy
  *
  */
 AnimChannelMatrixDynamic::
-AnimChannelMatrixDynamic(const string &name)
+AnimChannelMatrixDynamic(const std::string &name)
   : AnimChannelMatrix(name)
 {
   _value = TransformState::make_identity();
-  _last_value = NULL;  // This is impossible; thus, has_changed() will
+  _last_value = nullptr;  // This is impossible; thus, has_changed() will
                        // always return true the first time.
 }
 
@@ -64,7 +64,7 @@ AnimChannelMatrixDynamic(const string &name)
  */
 bool AnimChannelMatrixDynamic::
 has_changed(int, double, int, double) {
-  if (_value_node != (PandaNode *)NULL) {
+  if (_value_node != nullptr) {
     _value = _value_node->get_transform();
   }
   bool has_changed = (_value != _last_value);
@@ -77,7 +77,7 @@ has_changed(int, double, int, double) {
  */
 void AnimChannelMatrixDynamic::
 get_value(int, LMatrix4 &mat) {
-  if (_value_node != (PandaNode *)NULL) {
+  if (_value_node != nullptr) {
     _value = _value_node->get_transform();
   }
   mat = _value->get_mat();
@@ -89,7 +89,7 @@ get_value(int, LMatrix4 &mat) {
  */
 void AnimChannelMatrixDynamic::
 get_value_no_scale_shear(int, LMatrix4 &mat) {
-  if (_value_node != (PandaNode *)NULL) {
+  if (_value_node != nullptr) {
     _value = _value_node->get_transform();
   }
   if (_value->has_scale() || _value->has_shear()) {
@@ -105,7 +105,7 @@ get_value_no_scale_shear(int, LMatrix4 &mat) {
  */
 void AnimChannelMatrixDynamic::
 get_scale(int, LVecBase3 &scale) {
-  if (_value_node != (PandaNode *)NULL) {
+  if (_value_node != nullptr) {
     _value = _value_node->get_transform();
   }
   scale = _value->get_scale();
@@ -117,7 +117,7 @@ get_scale(int, LVecBase3 &scale) {
  */
 void AnimChannelMatrixDynamic::
 get_hpr(int, LVecBase3 &hpr) {
-  if (_value_node != (PandaNode *)NULL) {
+  if (_value_node != nullptr) {
     _value = _value_node->get_transform();
   }
   hpr = _value->get_hpr();
@@ -130,7 +130,7 @@ get_hpr(int, LVecBase3 &hpr) {
  */
 void AnimChannelMatrixDynamic::
 get_quat(int, LQuaternion &quat) {
-  if (_value_node != (PandaNode *)NULL) {
+  if (_value_node != nullptr) {
     _value = _value_node->get_transform();
   }
   quat = _value->get_quat();
@@ -142,7 +142,7 @@ get_quat(int, LQuaternion &quat) {
  */
 void AnimChannelMatrixDynamic::
 get_pos(int, LVecBase3 &pos) {
-  if (_value_node != (PandaNode *)NULL) {
+  if (_value_node != nullptr) {
     _value = _value_node->get_transform();
   }
   pos = _value->get_pos();
@@ -154,7 +154,7 @@ get_pos(int, LVecBase3 &pos) {
  */
 void AnimChannelMatrixDynamic::
 get_shear(int, LVecBase3 &shear) {
-  if (_value_node != (PandaNode *)NULL) {
+  if (_value_node != nullptr) {
     _value = _value_node->get_transform();
   }
   shear = _value->get_shear();
@@ -186,7 +186,7 @@ set_value(const TransformState *value) {
 void AnimChannelMatrixDynamic::
 set_value_node(PandaNode *value_node) {
   _value_node = value_node;
-  if (_value_node != (PandaNode *)NULL) {
+  if (_value_node != nullptr) {
     _value = _value_node->get_transform();
   }
 }

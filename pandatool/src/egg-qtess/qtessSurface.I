@@ -14,7 +14,7 @@
 /**
  *
  */
-INLINE const string &QtessSurface::
+INLINE const std::string &QtessSurface::
 get_name() const {
   return _egg_surface->get_name();
 }
@@ -24,7 +24,7 @@ get_name() const {
  */
 INLINE bool QtessSurface::
 is_valid() const {
-  return (_nurbs != (NurbsSurfaceEvaluator *)NULL);
+  return (_nurbs != nullptr);
 }
 
 /**
@@ -126,7 +126,7 @@ get_joint_membership_index(EggGroup *joint) {
  * Dxyz morph offset should be stored.
  */
 INLINE int QtessSurface::
-get_dxyz_index(const string &morph_name) {
+get_dxyz_index(const std::string &morph_name) {
   MorphTable::iterator mti = _dxyz_table.find(morph_name);
   if (mti != _dxyz_table.end()) {
     return (*mti).second;
@@ -142,7 +142,7 @@ get_dxyz_index(const string &morph_name) {
  * Drgba morph offset should be stored.
  */
 INLINE int QtessSurface::
-get_drgba_index(const string &morph_name) {
+get_drgba_index(const std::string &morph_name) {
   MorphTable::iterator mti = _drgba_table.find(morph_name);
   if (mti != _drgba_table.end()) {
     return (*mti).second;

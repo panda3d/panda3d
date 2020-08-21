@@ -23,7 +23,7 @@ OdeSimpleSpace(dSpaceID id) :
 
 OdeSimpleSpace::
 OdeSimpleSpace() :
-  OdeSpace(dSimpleSpaceCreate(0)) {
+  OdeSpace(dSimpleSpaceCreate(nullptr)) {
 }
 
 OdeSimpleSpace::

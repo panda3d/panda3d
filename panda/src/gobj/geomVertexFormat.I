@@ -11,8 +11,8 @@
  * @date 2005-03-07
  */
 
-INLINE ostream &
-operator << (ostream &out, const GeomVertexFormat &obj) {
+INLINE std::ostream &
+operator << (std::ostream &out, const GeomVertexFormat &obj) {
   obj.output(out);
   return out;
 }
@@ -88,7 +88,7 @@ get_num_arrays() const {
  */
 INLINE const GeomVertexArrayFormat *GeomVertexFormat::
 get_array(size_t array) const {
-  nassertr(array < _arrays.size(), NULL);
+  nassertr(array < _arrays.size(), nullptr);
   return _arrays[array];
 }
 
@@ -97,7 +97,7 @@ get_array(size_t array) const {
  */
 INLINE bool GeomVertexFormat::
 has_column(const InternalName *name) const {
-  return (get_column(name) != (GeomVertexColumn *)NULL);
+  return (get_column(name) != nullptr);
 }
 
 /**
@@ -120,8 +120,8 @@ get_num_points() const {
  */
 INLINE const InternalName *GeomVertexFormat::
 get_point(size_t n) const {
-  nassertr(_is_registered, NULL);
-  nassertr(n < _points.size(), NULL);
+  nassertr(_is_registered, nullptr);
+  nassertr(n < _points.size(), nullptr);
   return _points[n];
 }
 
@@ -146,8 +146,8 @@ get_num_vectors() const {
  */
 INLINE const InternalName *GeomVertexFormat::
 get_vector(size_t n) const {
-  nassertr(_is_registered, NULL);
-  nassertr(n < _vectors.size(), NULL);
+  nassertr(_is_registered, nullptr);
+  nassertr(n < _vectors.size(), nullptr);
   return _vectors[n];
 }
 
@@ -171,8 +171,8 @@ get_num_texcoords() const {
  */
 INLINE const InternalName *GeomVertexFormat::
 get_texcoord(size_t n) const {
-  nassertr(_is_registered, NULL);
-  nassertr(n < _texcoords.size(), NULL);
+  nassertr(_is_registered, nullptr);
+  nassertr(n < _texcoords.size(), nullptr);
   return _texcoords[n];
 }
 
@@ -198,8 +198,8 @@ get_num_morphs() const {
  */
 INLINE const InternalName *GeomVertexFormat::
 get_morph_slider(size_t n) const {
-  nassertr(_is_registered, NULL);
-  nassertr(n < _morphs.size(), NULL);
+  nassertr(_is_registered, nullptr);
+  nassertr(n < _morphs.size(), nullptr);
 
   return _morphs[n]._slider;
 }
@@ -213,8 +213,8 @@ get_morph_slider(size_t n) const {
  */
 INLINE const InternalName *GeomVertexFormat::
 get_morph_base(size_t n) const {
-  nassertr(_is_registered, NULL);
-  nassertr(n < _morphs.size(), NULL);
+  nassertr(_is_registered, nullptr);
+  nassertr(n < _morphs.size(), nullptr);
 
   return _morphs[n]._base;
 }
@@ -229,8 +229,8 @@ get_morph_base(size_t n) const {
  */
 INLINE const InternalName *GeomVertexFormat::
 get_morph_delta(size_t n) const {
-  nassertr(_is_registered, NULL);
-  nassertr(n < _morphs.size(), NULL);
+  nassertr(_is_registered, nullptr);
+  nassertr(n < _morphs.size(), nullptr);
 
   return _morphs[n]._delta;
 }
@@ -373,7 +373,7 @@ get_vertex_array_index() const {
  */
 INLINE const GeomVertexColumn *GeomVertexFormat::
 get_vertex_column() const {
-  nassertr(_is_registered, NULL);
+  nassertr(_is_registered, nullptr);
   return _vertex_column;
 }
 
@@ -397,7 +397,7 @@ get_normal_array_index() const {
  */
 INLINE const GeomVertexColumn *GeomVertexFormat::
 get_normal_column() const {
-  nassertr(_is_registered, NULL);
+  nassertr(_is_registered, nullptr);
   return _normal_column;
 }
 
@@ -421,7 +421,7 @@ get_color_array_index() const {
  */
 INLINE const GeomVertexColumn *GeomVertexFormat::
 get_color_column() const {
-  nassertr(_is_registered, NULL);
+  nassertr(_is_registered, nullptr);
   return _color_column;
 }
 
@@ -430,7 +430,7 @@ get_color_column() const {
  */
 INLINE GeomVertexFormat::Registry *GeomVertexFormat::
 get_registry() {
-  if (_registry == (Registry *)NULL) {
+  if (_registry == nullptr) {
     make_registry();
   }
   return _registry;

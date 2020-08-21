@@ -19,6 +19,7 @@
 #include "pvector.h"
 #include "lightMutex.h"
 #include "updateSeq.h"
+#include "vector_uchar.h"
 
 class BamReader;
 class BamWriter;
@@ -62,12 +63,12 @@ PUBLISHED:
   EXTENSION(PyObject *__reduce__(PyObject *self) const);
   EXTENSION(PyObject *__reduce_persist__(PyObject *self, PyObject *pickler) const);
 
-  INLINE string encode_to_bam_stream() const;
-  bool encode_to_bam_stream(string &data, BamWriter *writer = NULL) const;
+  INLINE vector_uchar encode_to_bam_stream() const;
+  bool encode_to_bam_stream(vector_uchar &data, BamWriter *writer = nullptr) const;
   static bool decode_raw_from_bam_stream(TypedWritable *&ptr,
                                          ReferenceCount *&ref_ptr,
-                                         const string &data,
-                                         BamReader *reader = NULL);
+                                         vector_uchar data,
+                                         BamReader *reader = nullptr);
 
 private:
   void add_bam_writer(BamWriter *writer);

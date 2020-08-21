@@ -14,12 +14,15 @@
 #include "pandatoolbase.h"
 
 #include "winStatsServer.h"
-#include "config_pstats.h"
+#include "config_pstatclient.h"
 
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN 1
+#endif
 #include <windows.h>
 
 static const char *toplevel_class_name = "pstats";
-static WinStatsServer *server = NULL;
+static WinStatsServer *server = nullptr;
 
 /**
  *
@@ -62,14 +65,14 @@ create_toplevel_window(HINSTANCE application) {
 
   DWORD window_style = WS_POPUP | WS_SYSMENU | WS_ICONIC;
 
-  ostringstream strm;
+  std::ostringstream strm;
   strm << "PStats " << pstats_port;
-  string window_name = strm.str();
+  std::string window_name = strm.str();
 
   HWND toplevel_window =
     CreateWindow(toplevel_class_name, window_name.c_str(), window_style,
                  CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
-                 NULL, NULL, application, 0);
+                 nullptr, nullptr, application, 0);
   if (!toplevel_window) {
     nout << "Could not create toplevel window!\n";
     exit(1);
@@ -79,7 +82,7 @@ create_toplevel_window(HINSTANCE application) {
 }
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
-  HINSTANCE application = GetModuleHandle(NULL);
+  HINSTANCE application = GetModuleHandle(nullptr);
   HWND toplevel_window = create_toplevel_window(application);
 
   ShowWindow(toplevel_window, SW_SHOWMINIMIZED);
@@ -87,24 +90,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
   // Create the server object.
   server = new WinStatsServer;
   if (!server->listen()) {
-    ostringstream stream;
+    std::ostringstream stream;
     stream
       << "Unable to open port " << pstats_port
       << ".  Try specifying a different\n"
       << "port number using pstats-port in your Config file.";
-    string str = stream.str();
+    std::string str = stream.str();
     MessageBox(toplevel_window, str.c_str(), "PStats error",
                MB_OK | MB_ICONEXCLAMATION);
     exit(1);
   }
 
   // Set up a timer to poll the pstats every so often.
-  SetTimer(toplevel_window, 1, 200, NULL);
+  SetTimer(toplevel_window, 1, 200, nullptr);
 
   // Now get lost in the Windows message loop.
   MSG msg;
   int retval;
-  retval = GetMessage(&msg, NULL, 0, 0);
+  retval = GetMessage(&msg, nullptr, 0, 0);
   while (retval != 0) {
     if (retval == -1) {
       nout << "Error processing message queue.\n";
@@ -112,7 +115,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     }
     TranslateMessage(&msg);
     DispatchMessage(&msg);
-    retval = GetMessage(&msg, NULL, 0, 0);
+    retval = GetMessage(&msg, nullptr, 0, 0);
   }
 
   return (0);
@@ -123,5 +126,5 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 // doesn't squelch the stderr output.
 
 int main(int argc, char *argv[]) {
-  return WinMain(NULL, NULL, NULL, 0);
+  return WinMain(nullptr, nullptr, nullptr, 0);
 }

@@ -22,7 +22,6 @@
 #include "lightMutex.h"
 #include "vector_string.h"
 
-class HardwareChannel;
 class GraphicsWindow;
 
 /**
@@ -42,10 +41,10 @@ PUBLISHED:
   MAKE_SEQ_PROPERTY(pipe_types, get_num_pipe_types, get_pipe_type);
   void print_pipe_types() const;
 
-  PT(GraphicsPipe) make_pipe(const string &type_name,
-                             const string &module_name = string());
+  PT(GraphicsPipe) make_pipe(const std::string &type_name,
+                             const std::string &module_name = std::string());
   PT(GraphicsPipe) make_pipe(TypeHandle type);
-  PT(GraphicsPipe) make_module_pipe(const string &module_name);
+  PT(GraphicsPipe) make_module_pipe(const std::string &module_name);
   PT(GraphicsPipe) make_default_pipe();
 
   INLINE int get_num_aux_modules() const;
@@ -60,15 +59,15 @@ public:
 private:
   INLINE void load_default_module() const;
   void do_load_default_module();
-  TypeHandle load_named_module(const string &name);
+  TypeHandle load_named_module(const std::string &name);
 
   class LoadedModule {
   public:
-    string _module_name;
+    std::string _module_name;
     void *_module_handle;
     TypeHandle _default_pipe_type;
   };
-  typedef pmap<string, LoadedModule> LoadedModules;
+  typedef pmap<std::string, LoadedModule> LoadedModules;
   LoadedModules _loaded_modules;
   LightMutex _loaded_modules_lock;
 
@@ -84,8 +83,8 @@ private:
 
   typedef vector_string DisplayModules;
   DisplayModules _display_modules;
-  string _default_display_module;
-  string _default_pipe_name;
+  std::string _default_display_module;
+  std::string _default_pipe_name;
   bool _default_module_loaded;
 
   static GraphicsPipeSelection *_global_ptr;

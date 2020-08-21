@@ -21,11 +21,11 @@
 
 NotifyCategoryDecl(pnmimage, EXPCL_PANDA_PNMIMAGE, EXPTP_PANDA_PNMIMAGE);
 
-extern ConfigVariableBool pfm_force_littleendian;
-extern ConfigVariableBool pfm_reverse_dimensions;
-extern ConfigVariableBool pfm_resize_gaussian;
-extern ConfigVariableBool pfm_resize_quick;
-extern ConfigVariableDouble pfm_resize_radius;
+extern EXPCL_PANDA_PNMIMAGE ConfigVariableBool pfm_force_littleendian;
+extern EXPCL_PANDA_PNMIMAGE ConfigVariableBool pfm_reverse_dimensions;
+extern EXPCL_PANDA_PNMIMAGE ConfigVariableBool pfm_resize_gaussian;
+extern EXPCL_PANDA_PNMIMAGE ConfigVariableBool pfm_resize_quick;
+extern EXPCL_PANDA_PNMIMAGE ConfigVariableDouble pfm_resize_radius;
 
 extern EXPCL_PANDA_PNMIMAGE void init_libpnmimage();
 

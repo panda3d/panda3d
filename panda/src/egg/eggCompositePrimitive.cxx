@@ -57,7 +57,7 @@ get_shading() const {
     if (!first_component->has_normal()) {
       first_component = this;
     }
-    for (int i = 1; i < get_num_components(); i++) {
+    for (size_t i = 1; i < get_num_components(); ++i) {
       const EggAttributes *component = get_component(i);
       if (!component->has_normal()) {
         component = this;
@@ -74,7 +74,7 @@ get_shading() const {
     if (!first_component->has_color()) {
       first_component = this;
     }
-    for (int i = 1; i < get_num_components(); i++) {
+    for (size_t i = 1; i < get_num_components(); ++i) {
       const EggAttributes *component = get_component(i);
       if (!component->has_color()) {
         component = this;
@@ -100,7 +100,7 @@ get_shading() const {
 PT(EggCompositePrimitive) EggCompositePrimitive::
 triangulate_in_place() {
   EggGroupNode *parent = get_parent();
-  nassertr(parent != (EggGroupNode *)NULL, this);
+  nassertr(parent != nullptr, this);
 
   PT(EggCompositePrimitive) save_me = this;
   parent->remove_child(this);
@@ -171,7 +171,7 @@ unify_attributes(EggPrimitive::Shading shading) {
         }
 
         EggVertexPool *vertex_pool = orig_vertex->get_pool();
-        nassertv(vertex_pool != (EggVertexPool *)NULL);
+        nassertv(vertex_pool != nullptr);
         vertex = vertex_pool->create_unique_vertex(*vertex);
         vertex->copy_grefs_from(*orig_vertex);
         replace(pi, vertex);
@@ -200,7 +200,7 @@ unify_attributes(EggPrimitive::Shading shading) {
           vertex->clear_color();
 
           EggVertexPool *vertex_pool = orig_vertex->get_pool();
-          nassertv(vertex_pool != (EggVertexPool *)NULL);
+          nassertv(vertex_pool != nullptr);
           vertex = vertex_pool->create_unique_vertex(*vertex);
           vertex->copy_grefs_from(*orig_vertex);
           replace(pi, vertex);
@@ -248,7 +248,7 @@ unify_attributes(EggPrimitive::Shading shading) {
         }
 
         EggVertexPool *vertex_pool = orig_vertex->get_pool();
-        nassertv(vertex_pool != (EggVertexPool *)NULL);
+        nassertv(vertex_pool != nullptr);
         vertex = vertex_pool->create_unique_vertex(*vertex);
         vertex->copy_grefs_from(*orig_vertex);
         replace(pi, vertex);
@@ -295,7 +295,7 @@ apply_last_attribute() {
   // The first component gets applied to the third vertex, and so on from
   // there.
   int num_lead_vertices = get_num_lead_vertices();
-  for (int i = 0; i < get_num_components(); i++) {
+  for (size_t i = 0; i < get_num_components(); ++i) {
     EggAttributes *component = get_component(i);
     do_apply_flat_attribute(i + num_lead_vertices, component);
   }
@@ -313,7 +313,7 @@ void EggCompositePrimitive::
 apply_first_attribute() {
   // The first component gets applied to the first vertex, and so on from
   // there.
-  for (int i = 0; i < get_num_components(); i++) {
+  for (size_t i = 0; i < get_num_components(); ++i) {
     EggAttributes *component = get_component(i);
     do_apply_flat_attribute(i, component);
   }
@@ -330,7 +330,7 @@ post_apply_flat_attribute() {
     int num_lead_vertices = get_num_lead_vertices();
     for (int i = 0; i < (int)size(); i++) {
       EggVertex *vertex = get_vertex(i);
-      EggAttributes *component = get_component(max(i - num_lead_vertices, 0));
+      EggAttributes *component = get_component(std::max(i - num_lead_vertices, 0));
 
       // Use set_normal() instead of copy_normal(), to avoid getting the
       // morphs--we don't want them here, since we're just putting a bogus
@@ -376,7 +376,7 @@ prepare_add_vertex(EggVertex *vertex, int i, int n) {
 
   int num_lead_vertices = get_num_lead_vertices();
   if (n >= num_lead_vertices + 1) {
-    i = max(i - num_lead_vertices, 0);
+    i = std::max(i - num_lead_vertices, 0);
     nassertv(i <= (int)_components.size());
     _components.insert(_components.begin() + i, new EggAttributes(*this));
   }
@@ -400,7 +400,7 @@ prepare_remove_vertex(EggVertex *vertex, int i, int n) {
 
   int num_lead_vertices = get_num_lead_vertices();
   if (n >= num_lead_vertices + 1) {
-    i = max(i - num_lead_vertices, 0);
+    i = std::max(i - num_lead_vertices, 0);
     nassertv(i < (int)_components.size());
     delete _components[i];
     _components.erase(_components.begin() + i);
@@ -428,10 +428,10 @@ do_triangulate(EggGroupNode *container) const {
  * indicated output stream in Egg format.
  */
 void EggCompositePrimitive::
-write_body(ostream &out, int indent_level) const {
+write_body(std::ostream &out, int indent_level) const {
   EggPrimitive::write_body(out, indent_level);
 
-  for (int i = 0; i < get_num_components(); i++) {
+  for (size_t i = 0; i < get_num_components(); ++i) {
     const EggAttributes *attrib = get_component(i);
     if (attrib->compare_to(*this) != 0 &&
         (attrib->has_color() || attrib->has_normal())) {

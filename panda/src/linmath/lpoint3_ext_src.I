@@ -14,9 +14,9 @@
 /**
  *
  */
-INLINE_LINMATH string Extension<FLOATNAME(LPoint3)>::
+INLINE_LINMATH std::string Extension<FLOATNAME(LPoint3)>::
 __repr__() const {
-  ostringstream out;
+  std::ostringstream out;
   out << "LPoint3" << FLOATTOKEN << "("
       << MAYBE_ZERO(_this->_v(0)) << ", "
       << MAYBE_ZERO(_this->_v(1)) << ", "
@@ -28,7 +28,7 @@ __repr__() const {
  * This is used to implement swizzle masks.
  */
 INLINE_LINMATH PyObject *Extension<FLOATNAME(LPoint3)>::
-__getattr__(PyObject *self, const string &attr_name) const {
+__getattr__(PyObject *self, const std::string &attr_name) const {
 #ifndef CPPPARSER
   extern struct Dtool_PyTypedObject FLOATNAME(Dtool_LPoint2);
   extern struct Dtool_PyTypedObject FLOATNAME(Dtool_LPoint3);
@@ -36,7 +36,7 @@ __getattr__(PyObject *self, const string &attr_name) const {
 #endif
 
   // Validate the attribute name.
-  for (string::const_iterator it = attr_name.begin(); it < attr_name.end(); it++) {
+  for (std::string::const_iterator it = attr_name.begin(); it < attr_name.end(); it++) {
     if (*it < 'x' || *it > 'z') {
       return Dtool_Raise_AttributeError(self, attr_name.c_str());
     }
@@ -76,7 +76,7 @@ __getattr__(PyObject *self, const string &attr_name) const {
  * This is used to implement write masks.
  */
 INLINE_LINMATH int Extension<FLOATNAME(LPoint3)>::
-__setattr__(PyObject *self, const string &attr_name, PyObject *assign) {
+__setattr__(PyObject *self, const std::string &attr_name, PyObject *assign) {
   // Upcall to LVecBase2.
   return invoke_extension<FLOATNAME(LVecBase3)>(_this).__setattr__(self, attr_name, assign);
 }

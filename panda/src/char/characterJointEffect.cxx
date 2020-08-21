@@ -87,10 +87,11 @@ safe_to_combine() const {
  *
  */
 void CharacterJointEffect::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type();
-  if (_character.is_valid_pointer()) {
-    out << "(" << _character->get_name() << ")";
+  PT(Character) character = get_character();
+  if (character != nullptr) {
+    out << "(" << character->get_name() << ")";
   } else {
     out << "(**invalid**)";
   }
@@ -122,8 +123,10 @@ void CharacterJointEffect::
 cull_callback(CullTraverser *trav, CullTraverserData &data,
               CPT(TransformState) &node_transform,
               CPT(RenderState) &) const {
-  CPT(TransformState) dummy_transform = TransformState::make_identity();
-  adjust_transform(dummy_transform, node_transform, data.node());
+  if (auto character = _character.lock()) {
+    character->update();
+  }
+  node_transform = data.node()->get_transform();
 }
 
 /**
@@ -147,9 +150,9 @@ has_adjust_transform() const {
 void CharacterJointEffect::
 adjust_transform(CPT(TransformState) &net_transform,
                  CPT(TransformState) &node_transform,
-                 PandaNode *node) const {
-  if (_character.is_valid_pointer()) {
-    _character->update();
+                 const PandaNode *node) const {
+  if (auto character = _character.lock()) {
+    character->update();
   }
   node_transform = node->get_transform();
 }
@@ -200,11 +203,8 @@ void CharacterJointEffect::
 write_datagram(BamWriter *manager, Datagram &dg) {
   RenderEffect::write_datagram(manager, dg);
 
-  if (_character.is_valid_pointer()) {
-    manager->write_pointer(dg, _character);
-  } else {
-    manager->write_pointer(dg, NULL);
-  }
+  PT(Character) character = get_character();
+  manager->write_pointer(dg, character);
 }
 
 /**

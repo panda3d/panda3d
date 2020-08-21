@@ -25,7 +25,7 @@ get_first() {
   // This method is declared non-inline so we can include bufferContext.h,
   // which is necessary for proper downcasting of the _next pointer.
   if (_next == this) {
-    return NULL;
+    return nullptr;
   }
   return (BufferContext *)_next;
 }
@@ -54,7 +54,7 @@ take_from(BufferContextChain &other) {
  *
  */
 void BufferContextChain::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << _count << " objects, consuming " << _total_size << " bytes:\n";
 

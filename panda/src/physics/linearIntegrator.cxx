@@ -53,7 +53,7 @@ integrate(Physical *physical, LinearForceVector &forces,
     PhysicsObject *current_object = *current_object_iter;
 
     // bail out if this object doesn't exist or doesn't want to be processed.
-    if (current_object == (PhysicsObject *) NULL) {
+    if (current_object == nullptr) {
       continue;
     }
 
@@ -68,7 +68,7 @@ integrate(Physical *physical, LinearForceVector &forces,
  * Write a string representation of this instance to <out>.
  */
 void LinearIntegrator::
-output(ostream &out) const {
+output(std::ostream &out) const {
   #ifndef NDEBUG //[
   out<<"LinearIntegrator";
   #endif //] NDEBUG
@@ -78,7 +78,7 @@ output(ostream &out) const {
  * Write a string representation of this instance to <out>.
  */
 void LinearIntegrator::
-write(ostream &out, unsigned int indent) const {
+write(std::ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"LinearIntegrator:\n";
   out.width(indent+2); out<<""; out<<"_max_linear_dt "<<_max_linear_dt<<" (class static)\n";

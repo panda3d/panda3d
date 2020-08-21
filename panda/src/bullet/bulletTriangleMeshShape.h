@@ -11,14 +11,15 @@
  * @date 2010-02-09
  */
 
-#ifndef __BULLET_TRIANGLE_MESH_SHAPE_H__
-#define __BULLET_TRIANGLE_MESH_SHAPE_H__
+#ifndef BULLET_TRIANGLE_MESH_SHAPE_H
+#define BULLET_TRIANGLE_MESH_SHAPE_H
 
 #include "pandabase.h"
 
 #include "bullet_includes.h"
 #include "bulletShape.h"
 
+#include "factoryParams.h"
 #include "luse.h"
 
 class BulletTriangleMesh;
@@ -31,15 +32,17 @@ private:
   INLINE BulletTriangleMeshShape();
 
 PUBLISHED:
-  BulletTriangleMeshShape(BulletTriangleMesh *mesh, bool dynamic, bool compress=true, bool bvh=true);
-  INLINE BulletTriangleMeshShape(const BulletTriangleMeshShape &copy);
-  INLINE void operator = (const BulletTriangleMeshShape &copy);
+  explicit BulletTriangleMeshShape(BulletTriangleMesh *mesh, bool dynamic, bool compress=true, bool bvh=true);
+  BulletTriangleMeshShape(const BulletTriangleMeshShape &copy);
   INLINE ~BulletTriangleMeshShape();
 
   void refit_tree(const LPoint3 &aabb_min, const LPoint3 &aabb_max);
 
   INLINE bool is_static() const;
   INLINE bool is_dynamic() const;
+
+  MAKE_PROPERTY(static, is_static);
+  MAKE_PROPERTY(dynamic, is_dynamic);
 
 public:
   virtual btCollisionShape *ptr() const;
@@ -49,6 +52,9 @@ private:
   btGImpactMeshShape *_gimpact_shape;
 
   PT(BulletTriangleMesh) _mesh;
+
+  // Stored temporarily during bam read.
+  PN_stdfloat _margin;
 
   bool _dynamic : 1;
   bool _compress : 1;
@@ -87,4 +93,4 @@ private:
 
 #include "bulletTriangleMeshShape.I"
 
-#endif // __BULLET_TRIANGLE_MESH_SHAPE_H__
+#endif // BULLET_TRIANGLE_MESH_SHAPE_H

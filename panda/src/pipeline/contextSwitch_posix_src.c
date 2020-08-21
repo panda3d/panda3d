@@ -1,8 +1,4 @@
-/* Filename: contextSwitch_posix_src.c
- * Created by:  drose (15Apr10)
- *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- *
+/**
  * PANDA 3D SOFTWARE
  * Copyright (c) Carnegie Mellon University.  All rights reserved.
  *
@@ -10,7 +6,10 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+ * @file contextSwitch_posix_src.c
+ * @author drose
+ * @date 2010-04-15
+ */
 
 /* This is the implementation of user-space context switching using
    posix threads to manage the different execution contexts.  This
@@ -44,7 +43,7 @@ struct ThreadContext {
   pthread_mutex_t _ready_mutex;
   pthread_cond_t _ready_cvar;
   int _ready_flag;
-  
+
   /* This is set FALSE while the thread is alive, and TRUE if the
      thread is to be terminated when it next wakes up. */
   int _terminated;
@@ -83,19 +82,19 @@ thread_main(void *data) {
 }
 
 void
-init_thread_context(struct ThreadContext *context, 
+init_thread_context(struct ThreadContext *context,
                     unsigned char *stack, size_t stack_size,
                     ThreadFunction *thread_func, void *data) {
   context->_thread_func = thread_func;
   context->_data = data;
 
-  pthread_attr_t attr; 
-  pthread_attr_init(&attr); 
+  pthread_attr_t attr;
+  pthread_attr_init(&attr);
   pthread_attr_setstacksize(&attr, stack_size);
-  pthread_attr_setscope(&attr, PTHREAD_SCOPE_SYSTEM); 
+  pthread_attr_setscope(&attr, PTHREAD_SCOPE_SYSTEM);
 
-  pthread_create(&(context->_thread), &attr, thread_main, context); 
-  pthread_attr_destroy(&attr); 
+  pthread_create(&(context->_thread), &attr, thread_main, context);
+  pthread_attr_destroy(&attr);
 }
 
 void
@@ -142,7 +141,7 @@ switch_to_thread_context(struct ThreadContext *from_context,
     /* We've been rudely terminated.  Exit gracefully. */
     pthread_exit(NULL);
   }
-  
+
   /* Now we have been signaled again, and we're ready to resume the
      thread. */
   longjmp(from_context->_jmp_context, 1);
@@ -164,7 +163,7 @@ alloc_thread_context() {
   pthread_mutexattr_init(&attr);
   // The symbol PTHREAD_MUTEX_DEFAULT isn't always available?
   //  pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_DEFAULT);
-  int result = pthread_mutex_init(&context->_ready_mutex, &attr);
+  pthread_mutex_init(&context->_ready_mutex, &attr);
   pthread_mutexattr_destroy(&attr);
 
   pthread_cond_init(&context->_ready_cvar, NULL);

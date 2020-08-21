@@ -21,6 +21,14 @@
 #include "nullAudioSound.h"
 #include "string_utils.h"
 
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDA_AUDIO)
+  #error Buildsystem error: BUILDING_PANDA_AUDIO not defined
+#endif
+
+using std::istream;
+using std::ostream;
+using std::string;
+
 Configure(config_audio);
 NotifyCategoryDef(audio, "");
 
@@ -92,11 +100,6 @@ ConfigVariableEnum<FmodSpeakerMode> fmod_speaker_mode
           "Options: raw, mono, stereo, quad, surround, 5.1 and 7.1. "));
 
 
-// Config variables for Miles:
-
-ConfigVariableBool audio_software_midi
-("audio-software-midi", true);
-
 ConfigVariableFilename audio_dls_file
 ("audio-dls-file", Filename(),
  PRC_DESC("Specifies a DLS file that defines an instrument set to load "
@@ -104,24 +107,6 @@ ConfigVariableFilename audio_dls_file
           "interface will try to use the system default DLS file, if "
           "one is available; the likely success of this depends on the "
           "operating system."));
-
-ConfigVariableBool audio_play_midi
-("audio-play-midi", true);
-
-ConfigVariableBool audio_play_wave
-("audio-play-wave", true);
-
-ConfigVariableBool audio_play_mp3
-("audio-play-mp3", true);
-
-ConfigVariableInt audio_output_rate
-("audio-output-rate", 22050);
-
-ConfigVariableInt audio_output_bits
-("audio-output-bits", 16);
-
-ConfigVariableInt audio_output_channels
-("audio-output-channels", 2);
 
 ConfigureFn(config_audio) {
   FilterProperties::init_type();

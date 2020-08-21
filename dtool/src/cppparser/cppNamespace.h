@@ -29,12 +29,12 @@ public:
   CPPNamespace(CPPIdentifier *ident, CPPScope *scope,
                const CPPFile &file);
 
-  string get_simple_name() const;
-  string get_local_name(CPPScope *scope = NULL) const;
-  string get_fully_scoped_name() const;
+  std::string get_simple_name() const;
+  std::string get_local_name(CPPScope *scope = nullptr) const;
+  std::string get_fully_scoped_name() const;
   CPPScope *get_scope() const;
 
-  virtual void output(ostream &out, int indent_level, CPPScope *scope,
+  virtual void output(std::ostream &out, int indent_level, CPPScope *scope,
                       bool complete) const;
   virtual SubType get_subtype() const;
 

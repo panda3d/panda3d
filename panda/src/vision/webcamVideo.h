@@ -28,15 +28,16 @@ PUBLISHED:
   static int             get_num_options();
   static PT(WebcamVideo) get_option(int n);
   MAKE_SEQ(get_options, get_num_options, get_option);
+  MAKE_SEQ_PROPERTY(options, get_num_options, get_option);
 
   INLINE int get_size_x() const;
   INLINE int get_size_y() const;
   INLINE double get_fps() const;
-  INLINE const string &get_pixel_format() const;
+  INLINE const std::string &get_pixel_format() const;
 
   virtual PT(MovieVideoCursor) open() = 0;
 
-  INLINE void output(ostream &out) const;
+  INLINE void output(std::ostream &out) const;
 
 public:
   static void find_all_webcams();
@@ -45,7 +46,7 @@ protected:
   int _size_x;
   int _size_y;
   double _fps;
-  string _pixel_format;
+  std::string _pixel_format;
 
   static pvector<PT(WebcamVideo)> _all_webcams;
 
@@ -67,7 +68,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const WebcamVideo &n);
+INLINE std::ostream &operator << (std::ostream &out, const WebcamVideo &n);
 
 #include "webcamVideo.I"
 

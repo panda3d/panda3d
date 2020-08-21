@@ -24,11 +24,14 @@
 
 #include <time.h>
 
-#include "openssl/err.h"
-#include "openssl/pem.h"
-#include "openssl/rand.h"
-#include "openssl/bio.h"
-#include "openssl/evp.h"
+#include <openssl/err.h>
+#include <openssl/pem.h>
+#include <openssl/rand.h>
+#include <openssl/bio.h>
+#include <openssl/evp.h>
+
+using std::cerr;
+using std::string;
 
 string progname = PROGNAME;
 
@@ -77,7 +80,7 @@ read_prc_line(const string &line, string &data) {
  * indicated string.
  */
 void
-read_file(istream &in, string &data) {
+read_file(std::istream &in, string &data) {
   // We avoid getline() here because of its notorious problem with last lines
   // that lack a trailing newline character.
   static const size_t buffer_size = 1024;
@@ -92,7 +95,7 @@ read_file(istream &in, string &data) {
 
     // Look for the first line in the buffer..
     char *newline = (char *)memchr((void *)buffer, '\n', count);
-    if (newline == NULL) {
+    if (newline == nullptr) {
       // The buffer was one long line.  Huh.
       prev_line += string(buffer, count);
 
@@ -104,7 +107,7 @@ read_file(istream &in, string &data) {
       // Now look for the next line, etc.
       char *start = newline + 1;
       newline = (char *)memchr((void *)start, '\n', buffer_end - start);
-      while (newline != NULL) {
+      while (newline != nullptr) {
         length = newline - start;
         read_prc_line(string(start, length + 1), data);
         start = newline + 1;
@@ -129,7 +132,7 @@ read_file(istream &in, string &data) {
  * Outputs the indicated data stream as a series of hex digits.
  */
 void
-output_hex(ostream &out, const unsigned char *data, size_t size) {
+output_hex(std::ostream &out, const unsigned char *data, size_t size) {
 }
 
 /**
@@ -155,10 +158,10 @@ sign_prc(Filename filename, bool no_comments, EVP_PKEY *pkey) {
   }
 
   // Append the comments before the signature (these get signed too).
-  ostringstream strm;
+  std::ostringstream strm;
   strm << "##!\n";
   if (!no_comments) {
-    time_t now = time(NULL);
+    time_t now = time(nullptr);
     struct tm *t = localtime(&now);
     char formatted[128];
     strftime(formatted, 128, "%I:%M %p %B %d, %Y", t);
@@ -203,7 +206,7 @@ sign_prc(Filename filename, bool no_comments, EVP_PKEY *pkey) {
   }
   cerr << "Rewriting " << filename << "\n";
 
-  out << data << hex << setfill('0');
+  out << data << std::hex << std::setfill('0');
   static const size_t row_width = 32;
   for (size_t p = 0; p < sig_size; p += row_width) {
     out << "##!sig ";
@@ -214,11 +217,11 @@ sign_prc(Filename filename, bool no_comments, EVP_PKEY *pkey) {
        end = p+row_width;
 
     for (size_t q = p; q < end; q++) {
-      out << setw(2) << (unsigned int)sig_data[q];
+      out << std::setw(2) << (unsigned int)sig_data[q];
     }
     out << "\n";
   }
-  out << dec;
+  out << std::dec;
 
   delete[] sig_data;
 }
@@ -265,7 +268,7 @@ usage() {
 int
 main(int argc, char **argv) {
   preprocess_argv(argc, argv);
-  if (argv[0] != NULL && *argv[0]) {
+  if (argv[0] != nullptr && *argv[0]) {
     // Get the program name from the command-line arguments, if the OS
     // provides it.
     Filename progfile = Filename::from_os_specific(argv[0]);
@@ -318,16 +321,16 @@ main(int argc, char **argv) {
   OpenSSL_add_all_algorithms();
 
   // Convert the compiled-in data to an EVP_PKEY.
-  const char *pp = NULL;
+  const char *pp = nullptr;
   if (got_pass_phrase) {
     pp = pass_phrase.c_str();
   }
 
   BIO *mbio = BIO_new_mem_buf((void *)KEY_DATA, KEY_LENGTH);
-  EVP_PKEY *pkey = PEM_read_bio_PrivateKey(mbio, NULL, NULL, (void *)pp);
+  EVP_PKEY *pkey = PEM_read_bio_PrivateKey(mbio, nullptr, nullptr, (void *)pp);
   BIO_free(mbio);
 
-  if (pkey == (EVP_PKEY *)NULL) {
+  if (pkey == nullptr) {
     // Actually, we're not 100% sure this was the problem, but we can't really
     // tell why it failed, and we're 99% sure anyway.
     cerr << "Invalid pass phrase.\n";

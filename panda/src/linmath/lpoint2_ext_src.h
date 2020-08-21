@@ -18,9 +18,9 @@
 template<>
 class Extension<FLOATNAME(LPoint2)> : public ExtensionBase<FLOATNAME(LPoint2)> {
 public:
-  INLINE_LINMATH PyObject *__getattr__(PyObject *self, const string &attr_name) const;
-  INLINE_LINMATH int __setattr__(PyObject *self, const string &attr_name, PyObject *assign);
-  INLINE_LINMATH string __repr__() const;
+  INLINE_LINMATH PyObject *__getattr__(PyObject *self, const std::string &attr_name) const;
+  INLINE_LINMATH int __setattr__(PyObject *self, const std::string &attr_name, PyObject *assign);
+  INLINE_LINMATH std::string __repr__() const;
 };
 
 #include "lpoint2_ext_src.I"

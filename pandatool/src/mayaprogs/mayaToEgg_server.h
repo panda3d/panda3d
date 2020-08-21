@@ -43,7 +43,7 @@ public:
 
 
 protected:
-  static bool dispatch_transform_type(const string &opt, const string &arg, void *var);
+  static bool dispatch_transform_type(const std::string &opt, const std::string &arg, void *var);
   typedef pset< PT(Connection) > Clients;
   Clients _clients;
 

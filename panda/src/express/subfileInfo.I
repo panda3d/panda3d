@@ -25,7 +25,7 @@ SubfileInfo() :
  *
  */
 INLINE SubfileInfo::
-SubfileInfo(const FileReference *file, streampos start, streamsize size) :
+SubfileInfo(const FileReference *file, std::streampos start, std::streamsize size) :
   _file(file),
   _start(start),
   _size(size)
@@ -36,7 +36,7 @@ SubfileInfo(const FileReference *file, streampos start, streamsize size) :
  *
  */
 INLINE SubfileInfo::
-SubfileInfo(const Filename &filename, streampos start, streamsize size) :
+SubfileInfo(const Filename &filename, std::streampos start, std::streamsize size) :
   _file(new FileReference(filename)),
   _start(start),
   _size(size)
@@ -70,7 +70,7 @@ operator = (const SubfileInfo &copy) {
  */
 INLINE bool SubfileInfo::
 is_empty() const {
-  return _file == (FileReference *)NULL;
+  return _file == nullptr;
 }
 
 /**
@@ -86,7 +86,7 @@ get_file() const {
  */
 INLINE const Filename &SubfileInfo::
 get_filename() const {
-  if (_file != (FileReference *)NULL) {
+  if (_file != nullptr) {
     return _file->get_filename();
   }
   static const Filename empty_filename;
@@ -96,7 +96,7 @@ get_filename() const {
 /**
  * Returns the offset within the file at which this file data begins.
  */
-INLINE streampos SubfileInfo::
+INLINE std::streampos SubfileInfo::
 get_start() const {
   return _start;
 }
@@ -105,13 +105,13 @@ get_start() const {
  * Returns the number of consecutive bytes, beginning at get_start(), that
  * correspond to this file data.
  */
-INLINE streamsize SubfileInfo::
+INLINE std::streamsize SubfileInfo::
 get_size() const {
   return _size;
 }
 
-INLINE ostream &
-operator << (ostream &out, const SubfileInfo &info) {
+INLINE std::ostream &
+operator << (std::ostream &out, const SubfileInfo &info) {
   info.output(out);
   return out;
 }

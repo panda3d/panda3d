@@ -28,9 +28,6 @@
 template <class FloatType, int NumRows, int NumCols>
 class LSimpleMatrix {
 public:
-  INLINE LSimpleMatrix();
-  INLINE LSimpleMatrix(const LSimpleMatrix<FloatType, NumRows, NumCols> &copy);
-  INLINE void operator = (const LSimpleMatrix<FloatType, NumRows, NumCols> &copy);
   INLINE const FloatType &operator () (int row, int col) const;
   INLINE FloatType &operator () (int row, int col);
   INLINE const FloatType &operator () (int col) const;
@@ -58,7 +55,7 @@ private:
 #endif  // HAVE_EIGEN
 
 // This is as good a place as any to define this alignment macro.
-#if defined(LINMATH_ALIGN) && defined(HAVE_EIGEN) && defined(__AVX__)
+#if defined(LINMATH_ALIGN) && defined(HAVE_EIGEN) && defined(__AVX__) && defined(STDFLOAT_DOUBLE)
 #define ALIGN_LINMATH ALIGN_32BYTE
 #elif defined(LINMATH_ALIGN)
 #define ALIGN_LINMATH ALIGN_16BYTE

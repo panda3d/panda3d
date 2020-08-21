@@ -18,6 +18,8 @@
 
 #include FT_OUTLINE_H
 
+using std::wstring;
+
 /**
  * The constructor expects the name of some font file that FreeType can read,
  * along with face_index, indicating which font within the file to load
@@ -171,7 +173,7 @@ make_glyph(int glyph_index) {
   FT_Face face = acquire_face();
   if (!load_glyph(face, glyph_index)) {
     release_face(face);
-    return (PNMTextGlyph *)NULL;
+    return nullptr;
   }
 
   FT_GlyphSlot slot = face->glyph;

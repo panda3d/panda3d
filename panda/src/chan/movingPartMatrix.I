@@ -24,7 +24,7 @@ MovingPartMatrix(const MovingPartMatrix &copy) :
  *
  */
 INLINE MovingPartMatrix::
-MovingPartMatrix(PartGroup *parent, const string &name,
+MovingPartMatrix(PartGroup *parent, const std::string &name,
                  const LMatrix4 &default_value)
   : MovingPart<ACMatrixSwitchType>(parent, name, default_value) {
 }

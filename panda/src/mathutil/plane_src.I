@@ -138,6 +138,37 @@ dist_to_plane(const FLOATNAME(LPoint3) &point) const {
 }
 
 /**
+ * Normalizes the plane in place.  Returns true if the plane was normalized,
+ * false if the plane had a zero-length normal vector.
+ */
+INLINE_MATHUTIL bool FLOATNAME(LPlane)::
+normalize() {
+  FLOATTYPE l2 = get_normal().length_squared();
+  if (l2 == (FLOATTYPE)0.0f) {
+    return false;
+
+  } else if (!IS_THRESHOLD_EQUAL(l2, 1.0f, NEARLY_ZERO(FLOATTYPE) * NEARLY_ZERO(FLOATTYPE))) {
+    (*this) /= csqrt(l2);
+  }
+
+  return true;
+}
+
+/**
+ * Normalizes the plane and returns the normalized plane as a copy.  If the
+ * plane's normal was a zero-length vector, the same plane is returned.
+ */
+INLINE_MATHUTIL FLOATNAME(LPlane) FLOATNAME(LPlane)::
+normalized() const {
+  FLOATTYPE l2 = get_normal().length_squared();
+  if (l2 != (FLOATTYPE)0.0f) {
+    return (*this) / csqrt(l2);
+  } else {
+    return (*this);
+  }
+}
+
+/**
  * Returns the point within the plane nearest to the indicated point in space.
  */
 INLINE_MATHUTIL FLOATNAME(LPoint3) FLOATNAME(LPlane)::
@@ -202,8 +233,8 @@ intersects_line(FLOATTYPE &t,
   return true;
 }
 
-INLINE_MATHUTIL ostream &
-operator << (ostream &out, const FLOATNAME(LPlane) &p) {
+INLINE_MATHUTIL std::ostream &
+operator << (std::ostream &out, const FLOATNAME(LPlane) &p) {
   p.output(out);
   return out;
 }

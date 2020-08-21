@@ -20,14 +20,20 @@ TypeHandle VertexBufferContext::_type_handle;
  *
  */
 void VertexBufferContext::
-output(ostream &out) const {
-  out << *get_data() << ", " << get_data_size_bytes();
+output(std::ostream &out) const {
+  GeomVertexArrayData *data = get_data();
+  if (data != nullptr) {
+    out << *data;
+  } else {
+    out << "NULL";
+  }
+  out << ", " << get_data_size_bytes();
 }
 
 /**
  *
  */
 void VertexBufferContext::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   SavedContext::write(out, indent_level);
 }

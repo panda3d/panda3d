@@ -30,21 +30,20 @@
  * requests are being run (presumably on multiple CPUs/cores), to ensure that
  * the data has been computed by the time it's needed.
  */
-class EXPCL_PANDA_PGRAPH AnimateVerticesRequest : public AsyncTask {
+class EXPCL_PANDA_GOBJ AnimateVerticesRequest : public AsyncTask {
 public:
   ALLOC_DELETED_CHAIN(AnimateVerticesRequest);
 
 PUBLISHED:
-  INLINE AnimateVerticesRequest(GeomVertexData *geom_vertex_data);
+  INLINE explicit AnimateVerticesRequest(GeomVertexData *geom_vertex_data);
 
   INLINE bool is_ready() const;
 
 protected:
-    virtual AsyncTask::DoneStatus do_task();
+  virtual AsyncTask::DoneStatus do_task();
 
 private:
   PT(GeomVertexData) _geom_vertex_data;
-  bool _is_ready;
 
 public:
   static TypeHandle get_class_type() {

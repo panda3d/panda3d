@@ -1,0 +1,384 @@
+<CoordinateSystem> { Y-Up }
+
+<Texture> xbone-icons {
+  xbone-icons.png
+  <Scalar> format { rgba }
+  <Scalar> alpha { dual }
+}
+
+<VertexPool> vpool {
+  <Vertex> 0 {
+    -0.5 0.5 0
+    <UV> { 0.00390625 0.9921875 }
+  }
+  <Vertex> 1 {
+    -0.5 -0.5 0
+    <UV> { 0.00390625 0.7578125 }
+  }
+  <Vertex> 2 {
+    0.5 -0.5 0
+    <UV> { 0.12109375 0.7578125 }
+  }
+  <Vertex> 3 {
+    0.5 0.5 0
+    <UV> { 0.12109375 0.9921875 }
+  }
+  <Vertex> 4 {
+    -0.5 0.5 0
+    <UV> { 0.12890625 0.9921875 }
+  }
+  <Vertex> 5 {
+    -0.5 -0.5 0
+    <UV> { 0.12890625 0.7578125 }
+  }
+  <Vertex> 6 {
+    0.5 -0.5 0
+    <UV> { 0.24609375 0.7578125 }
+  }
+  <Vertex> 7 {
+    0.5 0.5 0
+    <UV> { 0.24609375 0.9921875 }
+  }
+  <Vertex> 8 {
+    -0.5 0.5 0
+    <UV> { 0.25390625 0.9921875 }
+  }
+  <Vertex> 9 {
+    -0.5 -0.5 0
+    <UV> { 0.25390625 0.7578125 }
+  }
+  <Vertex> 10 {
+    0.5 -0.5 0
+    <UV> { 0.37109375 0.7578125 }
+  }
+  <Vertex> 11 {
+    0.5 0.5 0
+    <UV> { 0.37109375 0.9921875 }
+  }
+  <Vertex> 12 {
+    -0.5 0.5 0
+    <UV> { 0.37890625 0.9921875 }
+  }
+  <Vertex> 13 {
+    -0.5 -0.5 0
+    <UV> { 0.37890625 0.7578125 }
+  }
+  <Vertex> 14 {
+    0.5 -0.5 0
+    <UV> { 0.49609375 0.7578125 }
+  }
+  <Vertex> 15 {
+    0.5 0.5 0
+    <UV> { 0.49609375 0.9921875 }
+  }
+  <Vertex> 16 {
+    -0.5 0.5 0
+    <UV> { 0.50390625 0.9921875 }
+  }
+  <Vertex> 17 {
+    -0.5 -0.5 0
+    <UV> { 0.50390625 0.7578125 }
+  }
+  <Vertex> 18 {
+    0.5 -0.5 0
+    <UV> { 0.62109375 0.7578125 }
+  }
+  <Vertex> 19 {
+    0.5 0.5 0
+    <UV> { 0.62109375 0.9921875 }
+  }
+  <Vertex> 20 {
+    -0.5 0.5 0
+    <UV> { 0.62890625 0.9921875 }
+  }
+  <Vertex> 21 {
+    -0.5 -0.5 0
+    <UV> { 0.62890625 0.7578125 }
+  }
+  <Vertex> 22 {
+    0.5 -0.5 0
+    <UV> { 0.74609375 0.7578125 }
+  }
+  <Vertex> 23 {
+    0.5 0.5 0
+    <UV> { 0.74609375 0.9921875 }
+  }
+  <Vertex> 24 {
+    -0.5 0.5 0
+    <UV> { 0.75390625 0.9921875 }
+  }
+  <Vertex> 25 {
+    -0.5 -0.5 0
+    <UV> { 0.75390625 0.7578125 }
+  }
+  <Vertex> 26 {
+    0.5 -0.5 0
+    <UV> { 0.87109375 0.7578125 }
+  }
+  <Vertex> 27 {
+    0.5 0.5 0
+    <UV> { 0.87109375 0.9921875 }
+  }
+  <Vertex> 28 {
+    -0.5 0.5 0
+    <UV> { 0.87890625 0.9921875 }
+  }
+  <Vertex> 29 {
+    -0.5 -0.5 0
+    <UV> { 0.87890625 0.7578125 }
+  }
+  <Vertex> 30 {
+    0.5 -0.5 0
+    <UV> { 0.99609375 0.7578125 }
+  }
+  <Vertex> 31 {
+    0.5 0.5 0
+    <UV> { 0.99609375 0.9921875 }
+  }
+  <Vertex> 32 {
+    -0.5 0.5 0
+    <UV> { 0.12890625 0.7421875 }
+  }
+  <Vertex> 33 {
+    -0.5 -0.5 0
+    <UV> { 0.12890625 0.5078125 }
+  }
+  <Vertex> 34 {
+    0.5 -0.5 0
+    <UV> { 0.24609375 0.5078125 }
+  }
+  <Vertex> 35 {
+    0.5 0.5 0
+    <UV> { 0.24609375 0.7421875 }
+  }
+  <Vertex> 36 {
+    -0.5 0.5 0
+    <UV> { 0.00390625 0.7421875 }
+  }
+  <Vertex> 37 {
+    -0.5 -0.5 0
+    <UV> { 0.00390625 0.5078125 }
+  }
+  <Vertex> 38 {
+    0.5 -0.5 0
+    <UV> { 0.12109375 0.5078125 }
+  }
+  <Vertex> 39 {
+    0.5 0.5 0
+    <UV> { 0.12109375 0.7421875 }
+  }
+  <Vertex> 40 {
+    -0.5 0.5 0
+    <UV> { 0.25390625 0.7421875 }
+  }
+  <Vertex> 41 {
+    -0.5 -0.5 0
+    <UV> { 0.25390625 0.5078125 }
+  }
+  <Vertex> 42 {
+    0.5 -0.5 0
+    <UV> { 0.37109375 0.5078125 }
+  }
+  <Vertex> 43 {
+    0.5 0.5 0
+    <UV> { 0.37109375 0.7421875 }
+  }
+  <Vertex> 44 {
+    -0.5 0.5 0
+    <UV> { 0.37890625 0.7421875 }
+  }
+  <Vertex> 45 {
+    -0.5 -0.5 0
+    <UV> { 0.37890625 0.5078125 }
+  }
+  <Vertex> 46 {
+    0.5 -0.5 0
+    <UV> { 0.49609375 0.5078125 }
+  }
+  <Vertex> 47 {
+    0.5 0.5 0
+    <UV> { 0.49609375 0.7421875 }
+  }
+  <Vertex> 48 {
+    -0.5 0.5 0
+    <UV> { 0.62890625 0.7421875 }
+  }
+  <Vertex> 49 {
+    -0.5 -0.5 0
+    <UV> { 0.62890625 0.5078125 }
+  }
+  <Vertex> 50 {
+    0.5 -0.5 0
+    <UV> { 0.74609375 0.5078125 }
+  }
+  <Vertex> 51 {
+    0.5 0.5 0
+    <UV> { 0.74609375 0.7421875 }
+  }
+  <Vertex> 52 {
+    -0.5 0.5 0
+    <UV> { 0.50390625 0.7421875 }
+  }
+  <Vertex> 53 {
+    -0.5 -0.5 0
+    <UV> { 0.50390625 0.5078125 }
+  }
+  <Vertex> 54 {
+    0.5 -0.5 0
+    <UV> { 0.62109375 0.5078125 }
+  }
+  <Vertex> 55 {
+    0.5 0.5 0
+    <UV> { 0.62109375 0.7421875 }
+  }
+  <Vertex> 56 {
+    -0.5 0.5 0
+    <UV> { 0.75390625 0.7421875 }
+  }
+  <Vertex> 57 {
+    -0.5 -0.5 0
+    <UV> { 0.75390625 0.5078125 }
+  }
+  <Vertex> 58 {
+    0.5 -0.5 0
+    <UV> { 0.87109375 0.5078125 }
+  }
+  <Vertex> 59 {
+    0.5 0.5 0
+    <UV> { 0.87109375 0.7421875 }
+  }
+  <Vertex> 60 {
+    -0.5 0.5 0
+    <UV> { 0.87890625 0.7421875 }
+  }
+  <Vertex> 61 {
+    -0.5 -0.5 0
+    <UV> { 0.87890625 0.5078125 }
+  }
+  <Vertex> 62 {
+    0.5 -0.5 0
+    <UV> { 0.99609375 0.5078125 }
+  }
+  <Vertex> 63 {
+    0.5 0.5 0
+    <UV> { 0.99609375 0.7421875 }
+  }
+  <Vertex> 64 {
+    -0.5 0.5 0
+    <UV> { 0.00390625 0.4921875 }
+  }
+  <Vertex> 65 {
+    -0.5 -0.5 0
+    <UV> { 0.00390625 0.2578125 }
+  }
+  <Vertex> 66 {
+    0.5 -0.5 0
+    <UV> { 0.12109375 0.2578125 }
+  }
+  <Vertex> 67 {
+    0.5 0.5 0
+    <UV> { 0.12109375 0.4921875 }
+  }
+}
+<Group> face_a {
+  <Polygon> {
+    <TRef> { xbone-icons }
+    <VertexRef> { 0 1 2 3 <Ref> { vpool } }
+  }
+}
+<Group> face_b {
+  <Polygon> {
+    <TRef> { xbone-icons }
+    <VertexRef> { 4 5 6 7 <Ref> { vpool } }
+  }
+}
+<Group> dpad {
+  <Polygon> {
+    <TRef> { xbone-icons }
+    <VertexRef> { 8 9 10 11 <Ref> { vpool } }
+  }
+}
+<Group> dpad_down {
+  <Polygon> {
+    <TRef> { xbone-icons }
+    <VertexRef> { 12 13 14 15 <Ref> { vpool } }
+  }
+}
+<Group> dpad_left {
+  <Polygon> {
+    <TRef> { xbone-icons }
+    <VertexRef> { 16 17 18 19 <Ref> { vpool } }
+  }
+}
+<Group> dpad_right {
+  <Polygon> {
+    <TRef> { xbone-icons }
+    <VertexRef> { 20 21 22 23 <Ref> { vpool } }
+  }
+}
+<Group> dpad_up {
+  <Polygon> {
+    <TRef> { xbone-icons }
+    <VertexRef> { 24 25 26 27 <Ref> { vpool } }
+  }
+}
+<Group> XboxOne_LB {
+  <Polygon> {
+    <TRef> { xbone-icons }
+    <VertexRef> { 28 29 30 31 <Ref> { vpool } }
+  }
+}
+<Group> lstick {
+  <Polygon> {
+    <TRef> { xbone-icons }
+    <VertexRef> { 32 33 34 35 <Ref> { vpool } }
+  }
+}
+<Group> ltrigger {
+  <Polygon> {
+    <TRef> { xbone-icons }
+    <VertexRef> { 36 37 38 39 <Ref> { vpool } }
+  }
+}
+<Group> start {
+  <Polygon> {
+    <TRef> { xbone-icons }
+    <VertexRef> { 40 41 42 43 <Ref> { vpool } }
+  }
+}
+<Group> rshoulder {
+  <Polygon> {
+    <TRef> { xbone-icons }
+    <VertexRef> { 44 45 46 47 <Ref> { vpool } }
+  }
+}
+<Group> rstick {
+  <Polygon> {
+    <TRef> { xbone-icons }
+    <VertexRef> { 48 49 50 51 <Ref> { vpool } }
+  }
+}
+<Group> rtrigger {
+  <Polygon> {
+    <TRef> { xbone-icons }
+    <VertexRef> { 52 53 54 55 <Ref> { vpool } }
+  }
+}
+<Group> back {
+  <Polygon> {
+    <TRef> { xbone-icons }
+    <VertexRef> { 56 57 58 59 <Ref> { vpool } }
+  }
+}
+<Group> face_x {
+  <Polygon> {
+    <TRef> { xbone-icons }
+    <VertexRef> { 60 61 62 63 <Ref> { vpool } }
+  }
+}
+<Group> face_y {
+  <Polygon> {
+    <TRef> { xbone-icons }
+    <VertexRef> { 64 65 66 67 <Ref> { vpool } }
+  }
+}

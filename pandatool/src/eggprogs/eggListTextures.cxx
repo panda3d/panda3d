@@ -48,10 +48,10 @@ run() {
     Filename fullpath = (*ti)->get_fullpath();
     PNMImageHeader header;
     if (header.read_header(fullpath)) {
-      cout << fullpath.get_basename() << " : "
+      std::cout << fullpath.get_basename() << " : "
            << header.get_x_size() << " " << header.get_y_size() << "\n";
     } else {
-      cout << fullpath.get_basename() << " : unknown\n";
+      std::cout << fullpath.get_basename() << " : unknown\n";
     }
   }
 }

@@ -1,4 +1,5 @@
-from pandac.PandaModules import *
+from panda3d.core import *
+from direct.showbase.PythonUtil import Functor
 from . import ObjectGlobals as OG
 
 class ActionMgr:

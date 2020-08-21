@@ -175,7 +175,7 @@ void WinStatsLabel::
 set_highlight(bool highlight) {
   if (_highlight != highlight) {
     _highlight = highlight;
-    InvalidateRect(_window, NULL, TRUE);
+    InvalidateRect(_window, nullptr, TRUE);
   }
 }
 
@@ -194,7 +194,7 @@ void WinStatsLabel::
 set_mouse_within(bool mouse_within) {
   if (_mouse_within != mouse_within) {
     _mouse_within = mouse_within;
-    InvalidateRect(_window, NULL, TRUE);
+    InvalidateRect(_window, nullptr, TRUE);
   }
 }
 
@@ -207,13 +207,13 @@ create_window(HWND parent_window) {
     return;
   }
 
-  HINSTANCE application = GetModuleHandle(NULL);
+  HINSTANCE application = GetModuleHandle(nullptr);
   register_window_class(application);
 
   _window =
     CreateWindow(_window_class_name, _text.c_str(), WS_CHILD | WS_CLIPSIBLINGS,
                  0, 0, 0, 0,
-                 parent_window, NULL, application, 0);
+                 parent_window, nullptr, application, 0);
   if (!_window) {
     nout << "Could not create Label window!\n";
     exit(1);
@@ -238,9 +238,9 @@ register_window_class(HINSTANCE application) {
   wc.style = CS_DBLCLKS | CS_HREDRAW | CS_VREDRAW;
   wc.lpfnWndProc = (WNDPROC)static_window_proc;
   wc.hInstance = application;
-  wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-  wc.hbrBackground = NULL;
-  wc.lpszMenuName = NULL;
+  wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
+  wc.hbrBackground = nullptr;
+  wc.lpszMenuName = nullptr;
   wc.lpszClassName = _window_class_name;
 
   // Reserve space to associate the this pointer with the window.
@@ -260,7 +260,7 @@ register_window_class(HINSTANCE application) {
 LONG WINAPI WinStatsLabel::
 static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   WinStatsLabel *self = (WinStatsLabel *)GetWindowLongPtr(hwnd, 0);
-  if (self != (WinStatsLabel *)NULL && self->_window == hwnd) {
+  if (self != nullptr && self->_window == hwnd) {
     return self->window_proc(hwnd, msg, wparam, lparam);
   } else {
     return DefWindowProc(hwnd, msg, wparam, lparam);

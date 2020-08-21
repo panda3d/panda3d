@@ -20,7 +20,7 @@
  * Formats the InterrogateElement data for output to a data file.
  */
 void InterrogateElement::
-output(ostream &out) const {
+output(std::ostream &out) const {
   InterrogateComponent::output(out);
   out << _flags << " "
       << _type << " "
@@ -29,7 +29,9 @@ output(ostream &out) const {
       << _has_function << " "
       << _clear_function << " "
       << _del_function << " "
-      << _length_function << " ";
+      << _length_function << " "
+      << _insert_function << " "
+      << _getkey_function << " ";
   idf_output_string(out, _scoped_name);
   idf_output_string(out, _comment, '\n');
 }
@@ -38,13 +40,16 @@ output(ostream &out) const {
  * Reads the data file as previously formatted by output().
  */
 void InterrogateElement::
-input(istream &in) {
+input(std::istream &in) {
   InterrogateComponent::input(in);
   in >> _flags >> _type >> _getter >> _setter;
   if (InterrogateDatabase::get_file_minor_version() >= 1) {
     in >> _has_function >> _clear_function;
     if (InterrogateDatabase::get_file_minor_version() >= 2) {
       in >> _del_function >> _length_function;
+      if (InterrogateDatabase::get_file_minor_version() >= 3) {
+        in >> _insert_function >> _getkey_function;
+      }
     }
   }
   idf_input_string(in, _scoped_name);
@@ -63,5 +68,7 @@ remap_indices(const IndexRemapper &remap) {
   _has_function = remap.map_from(_has_function);
   _clear_function = remap.map_from(_clear_function);
   _del_function = remap.map_from(_del_function);
+  _insert_function = remap.map_from(_insert_function);
+  _getkey_function = remap.map_from(_getkey_function);
   _length_function = remap.map_from(_length_function);
 }

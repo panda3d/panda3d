@@ -43,6 +43,8 @@ public:
     F_volatile_method   = 0x4000,
     F_lvalue_method     = 0x8000,
     F_rvalue_method     = 0x10000,
+    F_copy_assignment_operator = 0x20000,
+    F_move_assignment_operator = 0x40000,
   };
 
   CPPFunctionType(CPPType *return_type, CPPParameterList *parameters,
@@ -67,18 +69,18 @@ public:
   virtual bool is_tbd() const;
   virtual bool is_trivial() const;
 
-  virtual void output(ostream &out, int indent_level, CPPScope *scope,
+  virtual void output(std::ostream &out, int indent_level, CPPScope *scope,
                       bool complete) const;
-  void output(ostream &out, int indent_level, CPPScope *scope,
+  void output(std::ostream &out, int indent_level, CPPScope *scope,
               bool complete, int num_default_parameters) const;
-  virtual void output_instance(ostream &out, int indent_level,
+  virtual void output_instance(std::ostream &out, int indent_level,
                                CPPScope *scope,
-                               bool complete, const string &prename,
-                               const string &name) const;
-  void output_instance(ostream &out, int indent_level,
+                               bool complete, const std::string &prename,
+                               const std::string &name) const;
+  void output_instance(std::ostream &out, int indent_level,
                        CPPScope *scope,
-                       bool complete, const string &prename,
-                       const string &name,
+                       bool complete, const std::string &prename,
+                       const std::string &name,
                        int num_default_parameters) const;
   int get_num_default_parameters() const;
 

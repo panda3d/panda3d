@@ -23,7 +23,7 @@
 #include "thread.h"
 #include "pmutex.h"
 #include "mutexHolder.h"
-#include "conditionVarFull.h"
+#include "conditionVar.h"
 #include "pvector.h"
 #include "pdeque.h"
 #include "pStatCollector.h"
@@ -47,7 +47,7 @@
  */
 class EXPCL_PANDA_EVENT AsyncTaskManager : public TypedReferenceCount, public Namable {
 PUBLISHED:
-  AsyncTaskManager(const string &name);
+  explicit AsyncTaskManager(const std::string &name);
   BLOCKING virtual ~AsyncTaskManager();
 
   BLOCKING void cleanup();
@@ -59,25 +59,25 @@ PUBLISHED:
   int get_num_task_chains() const;
   AsyncTaskChain *get_task_chain(int n) const;
   MAKE_SEQ(get_task_chains, get_num_task_chains, get_task_chain);
-  AsyncTaskChain *make_task_chain(const string &name);
-  AsyncTaskChain *find_task_chain(const string &name);
-  BLOCKING bool remove_task_chain(const string &name);
+  AsyncTaskChain *make_task_chain(const std::string &name);
+  AsyncTaskChain *find_task_chain(const std::string &name);
+  BLOCKING bool remove_task_chain(const std::string &name);
 
   void add(AsyncTask *task);
   bool has_task(AsyncTask *task) const;
 
-  AsyncTask *find_task(const string &name) const;
-  AsyncTaskCollection find_tasks(const string &name) const;
+  AsyncTask *find_task(const std::string &name) const;
+  AsyncTaskCollection find_tasks(const std::string &name) const;
   AsyncTaskCollection find_tasks_matching(const GlobPattern &pattern) const;
 
   bool remove(AsyncTask *task);
-  int remove(const AsyncTaskCollection &tasks);
+  size_t remove(const AsyncTaskCollection &tasks);
 
   BLOCKING void wait_for_tasks();
   BLOCKING void stop_threads();
   void start_threads();
 
-  INLINE int get_num_tasks() const;
+  INLINE size_t get_num_tasks() const;
 
   AsyncTaskCollection get_tasks() const;
   AsyncTaskCollection get_active_tasks() const;
@@ -90,21 +90,21 @@ PUBLISHED:
   double get_next_wake_time() const;
   MAKE_PROPERTY(next_wake_time, get_next_wake_time);
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level = 0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level = 0) const;
 
   INLINE static AsyncTaskManager *get_global_ptr();
 
 protected:
-  AsyncTaskChain *do_make_task_chain(const string &name);
-  AsyncTaskChain *do_find_task_chain(const string &name);
+  AsyncTaskChain *do_make_task_chain(const std::string &name);
+  AsyncTaskChain *do_find_task_chain(const std::string &name);
 
   INLINE void add_task_by_name(AsyncTask *task);
   void remove_task_by_name(AsyncTask *task);
 
   bool do_has_task(AsyncTask *task) const;
 
-  virtual void do_output(ostream &out) const;
+  virtual void do_output(std::ostream &out) const;
 
 private:
   static void make_global_ptr();
@@ -126,11 +126,11 @@ protected:
   typedef ov_set<PT(AsyncTaskChain), IndirectCompareNames<AsyncTaskChain> > TaskChains;
   TaskChains _task_chains;
 
-  int _num_tasks;
+  size_t _num_tasks;
   TasksByName _tasks_by_name;
   PT(ClockObject) _clock;
 
-  ConditionVarFull _frame_cvar;  // Signalled when the clock ticks.
+  ConditionVar _frame_cvar;  // Signalled when the clock ticks.
 
   static AsyncTaskManager* _global_ptr;
 
@@ -151,13 +151,15 @@ public:
 private:
   static TypeHandle _type_handle;
 
+  friend class AsyncFuture;
   friend class AsyncTaskChain;
   friend class AsyncTaskChain::AsyncTaskChainThread;
   friend class AsyncTask;
   friend class AsyncTaskSequence;
+  friend class PythonTask;
 };
 
-INLINE ostream &operator << (ostream &out, const AsyncTaskManager &manager) {
+INLINE std::ostream &operator << (std::ostream &out, const AsyncTaskManager &manager) {
   manager.output(out);
   return out;
 };

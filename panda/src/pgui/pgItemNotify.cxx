@@ -23,7 +23,7 @@ PGItemNotify::
     // Disconnect all of the items that are connected to this object.
     PGItem *item = (*_items.begin());
     nassertv(item->get_notify() == this);
-    (*_items.begin())->set_notify(NULL);
+    (*_items.begin())->set_notify(nullptr);
   }
 }
 

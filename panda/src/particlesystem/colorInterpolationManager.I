@@ -231,7 +231,7 @@ get_segment(const int seg_id) {
     if( seg_id == (*iter)->get_id() )
       return (*iter);
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -239,14 +239,14 @@ get_segment(const int seg_id) {
  * time.
  */
 
-INLINE string ColorInterpolationManager::
+INLINE std::string ColorInterpolationManager::
 get_segment_id_list() {
   pvector<PT(ColorInterpolationSegment)>::iterator iter;
-  ostringstream output;
+  std::ostringstream output;
 
   for(iter = _i_segs.begin();iter != _i_segs.end();++iter)
     output << (*iter)->get_id() << " ";
 
-  string str = output.str();
+  std::string str = output.str();
   return str.substr(0, str.length()-1);
 }

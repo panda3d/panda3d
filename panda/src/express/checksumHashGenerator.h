@@ -22,14 +22,14 @@
  * This is a specific kind of HashGenerator that simply adds up all of the
  * ints.  Nothing fancy, and pretty quick.
  */
-class EXPCL_PANDAEXPRESS ChecksumHashGenerator : public HashGeneratorBase {
+class EXPCL_PANDA_EXPRESS ChecksumHashGenerator : public HashGeneratorBase {
 public:
   INLINE void add_int(long num);
   INLINE void add_bool(bool flag);
   INLINE void add_fp(float num, float threshold);
   INLINE void add_fp(double num, double threshold);
   INLINE void add_pointer(void *ptr);
-  void add_string(const string &str);
+  void add_string(const std::string &str);
 };
 
 #include "checksumHashGenerator.I"

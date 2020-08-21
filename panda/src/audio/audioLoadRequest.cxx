@@ -21,8 +21,7 @@ TypeHandle AudioLoadRequest::_type_handle;
  */
 AsyncTask::DoneStatus AudioLoadRequest::
 do_task() {
-  _sound = _audio_manager->get_sound(_filename, _positional);
-  _is_ready = true;
+  set_result(_audio_manager->get_sound(_filename, _positional));
 
   // Don't continue the task; we're done.
   return DS_done;

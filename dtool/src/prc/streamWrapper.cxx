@@ -13,6 +13,8 @@
 
 #include "streamWrapper.h"
 
+using std::streamsize;
+
 /**
  *
  */
@@ -23,7 +25,7 @@ IStreamWrapper::
     // stream pointer does not call the appropriate global delete function;
     // instead apparently calling the system delete function.  So we call the
     // delete function by hand instead.
-#if !defined(WIN32_VC) && !defined(USE_MEMORY_NOWRAPPERS) && defined(REDEFINE_GLOBAL_OPERATOR_NEW)
+#if !defined(_WIN32) && !defined(USE_MEMORY_NOWRAPPERS) && defined(REDEFINE_GLOBAL_OPERATOR_NEW)
     _istream->~istream();
     (*global_operator_delete)(_istream);
 #else
@@ -121,7 +123,7 @@ streamsize IStreamWrapper::
 seek_gpos_eof() {
   streamsize pos;
   acquire();
-  _istream->seekg(0, ios::end);
+  _istream->seekg(0, std::ios::end);
   pos = _istream->tellg();
   release();
 
@@ -138,7 +140,7 @@ OStreamWrapper::
     // stream pointer does not call the appropriate global delete function;
     // instead apparently calling the system delete function.  So we call the
     // delete function by hand instead.
-#if !defined(WIN32_VC) && !defined(USE_MEMORY_NOWRAPPERS) && defined(REDEFINE_GLOBAL_OPERATOR_NEW)
+#if !defined(_WIN32) && !defined(USE_MEMORY_NOWRAPPERS) && defined(REDEFINE_GLOBAL_OPERATOR_NEW)
     _ostream->~ostream();
     (*global_operator_delete)(_ostream);
 #else
@@ -182,13 +184,13 @@ seek_write(streamsize pos, const char *buffer, streamsize num_bytes,
   _ostream->clear();
   _ostream->seekp(pos);
 
-#ifdef WIN32_VC
+#ifdef _MSC_VER
   if (_ostream->fail() && _stringstream_hack && pos == 0) {
     // Ignore an unsuccessful attempt to seekp(0) if _stringstream_hack is
     // true.
     _ostream->clear();
   }
-#endif // WIN32_VC
+#endif // _MSC_VER
 
   _ostream->write(buffer, num_bytes);
   fail = _ostream->fail();
@@ -204,15 +206,15 @@ void OStreamWrapper::
 seek_eof_write(const char *buffer, streamsize num_bytes, bool &fail) {
   acquire();
   _ostream->clear();
-  _ostream->seekp(0, ios::end);
+  _ostream->seekp(0, std::ios::end);
 
-#ifdef WIN32_VC
+#ifdef _MSC_VER
   if (_ostream->fail() && _stringstream_hack) {
     // Ignore an unsuccessful attempt to seekp(0) if _stringstream_hack is
     // true.
     _ostream->clear();
   }
-#endif // WIN32_VC
+#endif // _MSC_VER
 
   _ostream->write(buffer, num_bytes);
   fail = _ostream->fail();
@@ -228,9 +230,9 @@ streamsize OStreamWrapper::
 seek_ppos_eof() {
   streamsize pos;
   acquire();
-  _ostream->seekp(0, ios::end);
+  _ostream->seekp(0, std::ios::end);
 
-#ifdef WIN32_VC
+#ifdef _MSC_VER
   if (_ostream->fail() && _stringstream_hack) {
     // Ignore an unsuccessful attempt to seekp(0) if _stringstream_hack is
     // true.
@@ -238,7 +240,7 @@ seek_ppos_eof() {
     release();
     return 0;
   }
-#endif // WIN32_VC
+#endif // _MSC_VER
 
   pos = _ostream->tellp();
   release();
@@ -256,7 +258,7 @@ StreamWrapper::
     // stream pointer does not call the appropriate global delete function;
     // instead apparently calling the system delete function.  So we call the
     // delete function by hand instead.
-#if !defined(WIN32_VC) && !defined(USE_MEMORY_NOWRAPPERS) && defined(REDEFINE_GLOBAL_OPERATOR_NEW)
+#if !defined(_WIN32) && !defined(USE_MEMORY_NOWRAPPERS) && defined(REDEFINE_GLOBAL_OPERATOR_NEW)
     _iostream->~iostream();
     (*global_operator_delete)(_iostream);
 #else

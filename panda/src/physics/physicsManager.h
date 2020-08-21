@@ -33,7 +33,7 @@
  * Physics don't get much higher-level than this.  Attach as many Physicals
  * (particle systems, etc..) as you want, pick an integrator and go.
  */
-class EXPCL_PANDAPHYSICS PhysicsManager {
+class EXPCL_PANDA_PHYSICS PhysicsManager {
 public:
   // NOTE that the physicals container is NOT reference counted.  this does
   // indeed mean that you are NOT supposed to use this as a primary storage
@@ -71,13 +71,13 @@ PUBLISHED:
   void do_physics(PN_stdfloat dt, Physical *p);
   void init_random_seed();
 
-  virtual void output(ostream &out) const;
-  virtual void write_physicals(ostream &out, unsigned int indent=0) const;
-  virtual void write_linear_forces(ostream &out, unsigned int indent=0) const;
-  virtual void write_angular_forces(ostream &out, unsigned int indent=0) const;
-  virtual void write(ostream &out, unsigned int indent=0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write_physicals(std::ostream &out, int indent=0) const;
+  virtual void write_linear_forces(std::ostream &out, int indent=0) const;
+  virtual void write_angular_forces(std::ostream &out, int indent=0) const;
+  virtual void write(std::ostream &out, int indent=0) const;
 
-  virtual void debug_output(ostream &out, unsigned int indent=0) const;
+  virtual void debug_output(std::ostream &out, int indent=0) const;
 
 public:
   friend class Physical;

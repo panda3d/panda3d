@@ -32,7 +32,7 @@ CPPMakeSeq(CPPIdentifier *ident,
 /**
  *
  */
-string CPPMakeSeq::
+std::string CPPMakeSeq::
 get_simple_name() const {
   return _ident->get_simple_name();
 }
@@ -40,7 +40,7 @@ get_simple_name() const {
 /**
  *
  */
-string CPPMakeSeq::
+std::string CPPMakeSeq::
 get_local_name(CPPScope *scope) const {
   return _ident->get_local_name(scope);
 }
@@ -48,7 +48,7 @@ get_local_name(CPPScope *scope) const {
 /**
  *
  */
-string CPPMakeSeq::
+std::string CPPMakeSeq::
 get_fully_scoped_name() const {
   return _ident->get_fully_scoped_name();
 }
@@ -57,7 +57,7 @@ get_fully_scoped_name() const {
  *
  */
 void CPPMakeSeq::
-output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
+output(std::ostream &out, int indent_level, CPPScope *scope, bool complete) const {
   out << "__make_seq(" << _ident->get_local_name(scope)
       << ", " << _length_getter->_name
       << ", " << _element_getter->_name

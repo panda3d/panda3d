@@ -36,8 +36,8 @@ PUBLISHED:
 
   INLINE static int garbage_collect();
 
-  INLINE static void list_contents(ostream &out);
-  static void write(ostream &out);
+  INLINE static void list_contents(std::ostream &out);
+  static void write(std::ostream &out);
 
 private:
   INLINE ShaderPool();
@@ -48,7 +48,7 @@ private:
   void ns_release_shader(const Filename &orig_filename);
   void ns_release_all_shaders();
   int ns_garbage_collect();
-  void ns_list_contents(ostream &out) const;
+  void ns_list_contents(std::ostream &out) const;
 
   void resolve_filename(Filename &new_filename, const Filename &orig_filename);
 

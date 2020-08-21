@@ -19,7 +19,7 @@
 INLINE WorkingNodePath::
 WorkingNodePath(const NodePath &start) {
   nassertv(!start.is_empty());
-  _next = (WorkingNodePath *)NULL;
+  _next = nullptr;
   _start = start._head;
   _node = start.node();
 }
@@ -33,8 +33,8 @@ WorkingNodePath(const WorkingNodePath &copy) :
   _start(copy._start),
   _node(copy._node)
 {
-  nassertv(_next != (WorkingNodePath *)NULL ||
-           _start != (NodePathComponent *)NULL);
+  nassertv(_next != nullptr ||
+           _start != nullptr);
 }
 
 /**
@@ -43,10 +43,10 @@ WorkingNodePath(const WorkingNodePath &copy) :
  * traversal to the next node.
  */
 INLINE WorkingNodePath::
-WorkingNodePath(const WorkingNodePath &parent, PandaNode *child) {
-  _next = &parent;
-  _start = (NodePathComponent *)NULL;
-  _node = child;
+WorkingNodePath(const WorkingNodePath &parent, PandaNode *child) :
+  _next(&parent),
+  _start(nullptr),
+  _node(child) {
   nassertv(_node != _next->_node);
 }
 
@@ -66,8 +66,8 @@ operator = (const WorkingNodePath &copy) {
   _start = copy._start;
   _node = copy._node;
 
-  nassertv(_next != (WorkingNodePath *)NULL ||
-           _start != (NodePathComponent *)NULL);
+  nassertv(_next != nullptr ||
+           _start != nullptr);
 }
 
 /**
@@ -78,7 +78,7 @@ INLINE NodePath WorkingNodePath::
 get_node_path() const {
   NodePath result;
   result._head = r_get_node_path();
-  nassertr(result._head != (NodePathComponent *)NULL, NodePath::fail());
+  nassertr(result._head != nullptr, NodePath::fail());
   return result;
 }
 
@@ -90,8 +90,8 @@ node() const {
   return _node;
 }
 
-INLINE ostream &
-operator << (ostream &out, const WorkingNodePath &node_path) {
+INLINE std::ostream &
+operator << (std::ostream &out, const WorkingNodePath &node_path) {
   node_path.output(out);
   return out;
 }

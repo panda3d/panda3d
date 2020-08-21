@@ -23,12 +23,18 @@
 #include "movieTypeRegistry.h"
 #include "movieVideo.h"
 #include "movieVideoCursor.h"
+#include "opusAudio.h"
+#include "opusAudioCursor.h"
 #include "userDataAudio.h"
 #include "userDataAudioCursor.h"
 #include "vorbisAudio.h"
 #include "vorbisAudioCursor.h"
 #include "wavAudio.h"
 #include "wavAudioCursor.h"
+
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDA_MOVIES)
+  #error Buildsystem error: BUILDING_PANDA_MOVIES not defined
+#endif
 
 ConfigureDef(config_movies);
 NotifyCategoryDef(movies, "");
@@ -50,6 +56,11 @@ ConfigVariableList load_video_type
           "import when a new, unknown video type is loaded.  This may be "
           "either the name of a module, or a space-separate list of filename "
           "extensions, followed by the name of the module."));
+
+ConfigVariableBool opus_enable_seek
+("opus-enable-seek", true,
+ PRC_DESC("Set this to false if you're having trouble with seeking while "
+          "using the Opus decoder."));
 
 ConfigVariableBool vorbis_enable_seek
 ("vorbis-enable-seek", true,
@@ -91,6 +102,11 @@ init_libmovies() {
   WavAudio::init_type();
   WavAudioCursor::init_type();
 
+#ifdef HAVE_OPUS
+  OpusAudio::init_type();
+  OpusAudioCursor::init_type();
+#endif
+
 #ifdef HAVE_VORBIS
   VorbisAudio::init_type();
   VorbisAudioCursor::init_type();
@@ -99,6 +115,10 @@ init_libmovies() {
   MovieTypeRegistry *reg = MovieTypeRegistry::get_global_ptr();
   reg->register_audio_type(&FlacAudio::make, "flac");
   reg->register_audio_type(&WavAudio::make, "wav wave");
+
+#ifdef HAVE_OPUS
+  reg->register_audio_type(&OpusAudio::make, "opus");
+#endif
 
 #ifdef HAVE_VORBIS
   reg->register_audio_type(&VorbisAudio::make, "ogg oga");

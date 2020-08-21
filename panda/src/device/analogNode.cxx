@@ -23,17 +23,17 @@ TypeHandle AnalogNode::_type_handle;
  *
  */
 AnalogNode::
-AnalogNode(ClientBase *client, const string &device_name) :
+AnalogNode(ClientBase *client, const std::string &device_name) :
   DataNode(device_name)
 {
   _xy_output = define_output("xy", EventStoreVec2::get_class_type());
-  _xy = new EventStoreVec2(LPoint2(0.0f, 0.0f));
+  _xy = new EventStoreVec2(LPoint2(0));
 
-  nassertv(client != (ClientBase *)NULL);
+  nassertv(client != nullptr);
   PT(ClientDevice) device =
     client->get_device(ClientAnalogDevice::get_class_type(), device_name);
 
-  if (device == (ClientDevice *)NULL) {
+  if (device == nullptr) {
     device_cat.warning()
       << "Unable to open analog device " << device_name << "\n";
     return;
@@ -46,7 +46,21 @@ AnalogNode(ClientBase *client, const string &device_name) :
     return;
   }
 
-  _analog = DCAST(ClientAnalogDevice, device);
+  _analog = device;
+}
+
+/**
+ *
+ */
+AnalogNode::
+AnalogNode(InputDevice *device) :
+  DataNode(device->get_name()),
+  _analog(device)
+{
+  _xy_output = define_output("xy", EventStoreVec2::get_class_type());
+  _xy = new EventStoreVec2(LPoint2(0));
+
+  nassertv(device != nullptr);
 }
 
 /**
@@ -63,13 +77,11 @@ AnalogNode::
  *
  */
 void AnalogNode::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   DataNode::write(out, indent_level);
 
-  if (_analog != (ClientAnalogDevice *)NULL) {
-    _analog->acquire();
-    _analog->write_controls(out, indent_level + 2);
-    _analog->unlock();
+  if (_analog != nullptr) {
+    _analog->write_axes(out, indent_level + 2);
   }
 }
 
@@ -88,19 +100,18 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &,
     _analog->poll();
 
     LPoint2 out(0.0f, 0.0f);
-
-    _analog->acquire();
     for (int i = 0; i < max_outputs; i++) {
-      if (_outputs[i]._index >= 0 &&
-          _analog->is_control_known(_outputs[i]._index)) {
-        if (_outputs[i]._flip) {
-          out[i] = -_analog->get_control_state(_outputs[i]._index);
-        } else {
-          out[i] = _analog->get_control_state(_outputs[i]._index);
+      if (_outputs[i]._index >= 0) {
+        InputDevice::AxisState state = _analog->get_axis(_outputs[i]._index);
+        if (state.known) {
+          if (_outputs[i]._flip) {
+            out[i] = -state.value;
+          } else {
+            out[i] = state.value;
+          }
         }
       }
     }
-    _analog->unlock();
     _xy->set_value(out);
     output.set_data(_xy_output, EventParameter(_xy));
   }

@@ -18,7 +18,7 @@
  */
 INLINE GeomVertexWriter::
 GeomVertexWriter(Thread *current_thread) :
-  _vertex_data(NULL),
+  _vertex_data(nullptr),
   _current_thread(current_thread)
 {
   initialize();
@@ -48,7 +48,7 @@ GeomVertexWriter(GeomVertexData *vertex_data, CPT_InternalName name,
   _current_thread(current_thread)
 {
   initialize();
-  set_column(MOVE(name));
+  set_column(std::move(name));
 }
 
 /**
@@ -199,7 +199,7 @@ get_current_thread() const {
  */
 INLINE bool GeomVertexWriter::
 set_column(int column) {
-  if (_vertex_data != (GeomVertexData *)NULL) {
+  if (_vertex_data != nullptr) {
     GeomVertexDataPipelineWriter writer(_vertex_data, true, _current_thread);
     writer.check_array_writers();
     const GeomVertexFormat *format = writer.get_format();
@@ -207,7 +207,7 @@ set_column(int column) {
                              format->get_column(column),
                              &writer);
   }
-  if (_array_data != (GeomVertexArrayData *)NULL) {
+  if (_array_data != nullptr) {
     return set_array_column(_array_data->get_array_format()->get_column(column));
   }
   return false;
@@ -223,7 +223,7 @@ set_column(int column) {
  */
 INLINE bool GeomVertexWriter::
 set_column(CPT_InternalName name) {
-  if (_vertex_data != (GeomVertexData *)NULL) {
+  if (_vertex_data != nullptr) {
     GeomVertexDataPipelineWriter writer(_vertex_data, true, _current_thread);
     writer.check_array_writers();
     const GeomVertexFormat *format = writer.get_format();
@@ -231,7 +231,7 @@ set_column(CPT_InternalName name) {
                              format->get_column(name),
                              &writer);
   }
-  if (_array_data != (GeomVertexArrayData *)NULL) {
+  if (_array_data != nullptr) {
     return set_array_column(_array_data->get_array_format()->get_column(name));
   }
   return false;
@@ -251,7 +251,7 @@ clear() {
  */
 INLINE bool GeomVertexWriter::
 has_column() const {
-  return (_packer != (GeomVertexColumn::Packer *)NULL);
+  return (_packer != nullptr);
 }
 
 /**
@@ -268,10 +268,10 @@ get_array() const {
  */
 INLINE const GeomVertexColumn *GeomVertexWriter::
 get_column() const {
-  if (_packer != (GeomVertexColumn::Packer *)NULL) {
+  if (_packer != nullptr) {
     return _packer->_column;
   }
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -297,6 +297,7 @@ set_row_unsafe(int row) {
  */
 INLINE void GeomVertexWriter::
 set_row(int row) {
+  nassertv(row >= 0);
   _start_row = row;
   if (has_column()) {
     set_pointer(_start_row);
@@ -1376,19 +1377,19 @@ inc_add_pointer() {
     // Reset the data pointer.
     int write_row = get_write_row();
 
-    if (_vertex_data != (GeomVertexData *)NULL) {
+    if (_vertex_data != nullptr) {
       // If we have a whole GeomVertexData, we must set the length of all its
       // arrays at once.
-      _handle = NULL;
+      _handle = nullptr;
       GeomVertexDataPipelineWriter writer(_vertex_data, true, _current_thread);
       writer.check_array_writers();
-      writer.set_num_rows(max(write_row + 1, writer.get_num_rows()));
+      writer.set_num_rows(std::max(write_row + 1, writer.get_num_rows()));
       _handle = writer.get_array_writer(_array);
 
     } else {
       // Otherwise, we can get away with modifying only the one array we're
       // using.
-      _handle->set_num_rows(max(write_row + 1, _handle->get_num_rows()));
+      _handle->set_num_rows(std::max(write_row + 1, _handle->get_num_rows()));
     }
 
     set_pointer(write_row);

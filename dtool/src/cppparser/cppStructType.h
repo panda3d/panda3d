@@ -56,10 +56,13 @@ public:
   virtual bool is_constructible(const CPPType *arg_type) const;
   virtual bool is_default_constructible() const;
   virtual bool is_copy_constructible() const;
+  virtual bool is_copy_assignable() const;
   virtual bool is_destructible() const;
   bool is_default_constructible(CPPVisibility min_vis) const;
   bool is_copy_constructible(CPPVisibility min_vis) const;
-  bool is_move_constructible(CPPVisibility min_vis) const;
+  bool is_move_constructible(CPPVisibility min_vis  = V_public) const;
+  bool is_copy_assignable(CPPVisibility min_vis) const;
+  bool is_move_assignable(CPPVisibility min_vis = V_public) const;
   bool is_destructible(CPPVisibility min_vis) const;
   virtual bool is_convertible_to(const CPPType *other) const;
 
@@ -69,18 +72,21 @@ public:
   CPPInstance *get_default_constructor() const;
   CPPInstance *get_copy_constructor() const;
   CPPInstance *get_move_constructor() const;
+  CPPFunctionGroup *get_assignment_operator() const;
+  CPPInstance *get_copy_assignment_operator() const;
+  CPPInstance *get_move_assignment_operator() const;
   CPPInstance *get_destructor() const;
 
   virtual CPPDeclaration *
   instantiate(const CPPTemplateParameterList *actual_params,
               CPPScope *current_scope, CPPScope *global_scope,
-              CPPPreprocessor *error_sink = NULL) const;
+              CPPPreprocessor *error_sink = nullptr) const;
 
   virtual CPPDeclaration *substitute_decl(SubstDecl &subst,
                                           CPPScope *current_scope,
                                           CPPScope *global_scope);
 
-  virtual void output(ostream &out, int indent_level, CPPScope *scope,
+  virtual void output(std::ostream &out, int indent_level, CPPScope *scope,
                       bool complete) const;
   virtual SubType get_subtype() const;
 
@@ -92,17 +98,17 @@ public:
 
   class Base {
   public:
-    void output(ostream &out) const;
+    void output(std::ostream &out) const;
 
     CPPType *_base;
     CPPVisibility _vis;
     bool _is_virtual;
   };
 
-  typedef vector<Base> Derivation;
+  typedef std::vector<Base> Derivation;
   Derivation _derivation;
 
-  typedef list<CPPInstance *> VFunctions;
+  typedef std::list<CPPInstance *> VFunctions;
   void get_virtual_funcs(VFunctions &funcs) const;
   void get_pure_virtual_funcs(VFunctions &funcs) const;
 
@@ -111,11 +117,11 @@ protected:
   virtual bool is_less(const CPPDeclaration *other) const;
 
   bool _subst_decl_recursive_protect;
-  typedef vector<CPPTypeProxy *> Proxies;
+  typedef std::vector<CPPTypeProxy *> Proxies;
   Proxies _proxies;
 };
 
-inline ostream &operator << (ostream &out, const CPPStructType::Base &base) {
+inline std::ostream &operator << (std::ostream &out, const CPPStructType::Base &base) {
   base.output(out);
   return out;
 }

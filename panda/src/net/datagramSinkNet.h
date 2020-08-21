@@ -25,7 +25,7 @@
  */
 class EXPCL_PANDA_NET DatagramSinkNet : public DatagramSink, public ConnectionWriter {
 PUBLISHED:
-  DatagramSinkNet(ConnectionManager *manager, int num_threads);
+  explicit DatagramSinkNet(ConnectionManager *manager, int num_threads);
 
   INLINE void set_target(Connection *connection);
   INLINE Connection *get_target() const;

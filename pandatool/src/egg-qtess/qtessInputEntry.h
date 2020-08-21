@@ -32,11 +32,11 @@ public:
     T_min_u, T_min_v
   };
 
-  QtessInputEntry(const string &name = string());
+  QtessInputEntry(const std::string &name = std::string());
   INLINE QtessInputEntry(const QtessInputEntry &copy);
   void operator = (const QtessInputEntry &copy);
 
-  INLINE void add_node_name(const string &name);
+  INLINE void add_node_name(const std::string &name);
   INLINE void set_importance(double i);
   INLINE void set_match_uu();
   INLINE void set_match_vv();
@@ -48,7 +48,7 @@ public:
   INLINE void set_omit();
   INLINE void set_num_tris(int nt);
   INLINE void set_uv(int u, int v);
-  void set_uv(int u, int v, const string params[], int num_params);
+  void set_uv(int u, int v, const std::string params[], int num_params);
   INLINE void set_per_isoparam(double pi);
   INLINE void set_per_score(double pi);
   void add_extra_u_isoparam(double u);
@@ -58,9 +58,9 @@ public:
   INLINE int get_num_surfaces() const;
   int count_tris(double tri_factor = 1.0, int attempts = 0);
 
-  static void output_extra(ostream &out, const pvector<double> &iso, char axis);
-  void output(ostream &out) const;
-  void write(ostream &out, int indent_level) const;
+  static void output_extra(std::ostream &out, const pvector<double> &iso, char axis);
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent_level) const;
 
   bool _auto_place, _auto_distribute;
   double _curvature_ratio;
@@ -83,7 +83,7 @@ private:
   double _num_patches;
 };
 
-INLINE ostream &operator << (ostream &out, const QtessInputEntry &entry);
+INLINE std::ostream &operator << (std::ostream &out, const QtessInputEntry &entry);
 
 #include "qtessInputEntry.I"
 

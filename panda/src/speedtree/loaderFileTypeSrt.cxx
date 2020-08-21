@@ -27,7 +27,7 @@ LoaderFileTypeSrt() {
 /**
  *
  */
-string LoaderFileTypeSrt::
+std::string LoaderFileTypeSrt::
 get_name() const {
   return "SpeedTree compiled tree";
 }
@@ -35,7 +35,7 @@ get_name() const {
 /**
  *
  */
-string LoaderFileTypeSrt::
+std::string LoaderFileTypeSrt::
 get_extension() const {
   return "srt";
 }
@@ -57,16 +57,16 @@ load_file(const Filename &path, const LoaderOptions &,
           BamCacheRecord *record) const {
   if (!path.is_regular_file()) {
     // Quietly fail if the file doesn't exist.  The Loader expects this.
-    return NULL;
+    return nullptr;
   }
 
   PT(STTree) tree = new STTree(path);
   if (!tree->is_valid()) {
-    return NULL;
+    return nullptr;
   }
 
   PT(SpeedTreeNode) st = new SpeedTreeNode(path.get_basename());
   st->add_instance(tree, STTransform());
 
-  return st.p();
+  return st;
 }

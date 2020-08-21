@@ -21,7 +21,7 @@
 INLINE bool DeletedBufferChain::
 validate(void *ptr) {
   TAU_PROFILE("bool DeletedBufferChain::validate(void *)", " ", TAU_USER);
-  if (ptr == (void *)NULL) {
+  if (ptr == nullptr) {
     return false;
   }
 

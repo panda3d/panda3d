@@ -28,7 +28,7 @@
  * a disk file or to system logging utilities.  It's a very handy thing to set
  * Notify to refer to when running in batch mode.
  */
-class EXPCL_PANDAEXPRESS MultiplexStream : public ostream {
+class EXPCL_PANDA_DOWNLOADER MultiplexStream : public std::ostream {
 PUBLISHED:
   INLINE MultiplexStream();
 
@@ -36,7 +36,7 @@ PUBLISHED:
   INLINE MultiplexStream(const MultiplexStream &copy) = delete;
 #endif
 
-  INLINE void add_ostream(ostream *out, bool delete_later = false);
+  INLINE void add_ostream(std::ostream *out, bool delete_later = false);
   INLINE bool add_stdio_file(FILE *file, bool close_when_done);
   INLINE void add_standard_output();
   INLINE bool add_file(Filename file);

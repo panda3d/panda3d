@@ -11,8 +11,8 @@
  * @date 2010-01-23
  */
 
-#ifndef __BULLET_UTILS_H__
-#define __BULLET_UTILS_H__
+#ifndef BULLET_UTILS_H
+#define BULLET_UTILS_H
 
 #include "pandabase.h"
 
@@ -44,6 +44,8 @@ EXPCL_PANDABULLET CPT(TransformState) btTrans_to_TransformState(
 EXPCL_PANDABULLET btTransform TransformState_to_btTrans(
   CPT(TransformState) ts);
 
+EXPCL_PANDABULLET void get_node_transform(btTransform &trans, PandaNode *node);
+
 // UpAxis
 BEGIN_PUBLISH
 
@@ -60,4 +62,4 @@ END_PUBLISH
 
 #include "bullet_utils.I"
 
-#endif // __BULLET_UTILS_H__
+#endif // BULLET_UTILS_H

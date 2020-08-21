@@ -20,18 +20,18 @@
 
 #include <string>
 
-void egg_init_lexer(istream &in, const string &filename);
+void egg_init_lexer(std::istream &in, const std::string &filename);
 void egg_start_group_body();
 void egg_start_texture_body();
 void egg_start_primitive_body();
 int egg_error_count();
 int egg_warning_count();
 
-void eggyyerror(const string &msg);
-void eggyyerror(ostringstream &strm);
+void eggyyerror(const std::string &msg);
+void eggyyerror(std::ostringstream &strm);
 
-void eggyywarning(const string &msg);
-void eggyywarning(ostringstream &strm);
+void eggyywarning(const std::string &msg);
+void eggyywarning(std::ostringstream &strm);
 
 int eggyylex();
 

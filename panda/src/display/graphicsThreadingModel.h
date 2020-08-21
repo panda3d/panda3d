@@ -22,17 +22,17 @@
  */
 class EXPCL_PANDA_DISPLAY GraphicsThreadingModel {
 PUBLISHED:
-  GraphicsThreadingModel(const string &model = string());
+  GraphicsThreadingModel(const std::string &model = std::string());
   INLINE GraphicsThreadingModel(const GraphicsThreadingModel &copy);
   INLINE void operator = (const GraphicsThreadingModel &copy);
 
-  string get_model() const;
-  INLINE const string &get_cull_name() const;
-  INLINE void set_cull_name(const string &cull_name);
+  std::string get_model() const;
+  INLINE const std::string &get_cull_name() const;
+  INLINE void set_cull_name(const std::string &cull_name);
   INLINE int get_cull_stage() const;
 
-  INLINE const string &get_draw_name() const;
-  INLINE void set_draw_name(const string &cull_name);
+  INLINE const std::string &get_draw_name() const;
+  INLINE void set_draw_name(const std::string &cull_name);
   INLINE int get_draw_stage() const;
 
   INLINE bool get_cull_sorting() const;
@@ -40,20 +40,20 @@ PUBLISHED:
 
   INLINE bool is_single_threaded() const;
   INLINE bool is_default() const;
-  INLINE void output(ostream &out) const;
+  INLINE void output(std::ostream &out) const;
 
 private:
   void update_stages();
 
 private:
-  string _cull_name;
+  std::string _cull_name;
   int _cull_stage;
-  string _draw_name;
+  std::string _draw_name;
   int _draw_stage;
   bool _cull_sorting;
 };
 
-INLINE ostream &operator << (ostream &out, const GraphicsThreadingModel &threading_model);
+INLINE std::ostream &operator << (std::ostream &out, const GraphicsThreadingModel &threading_model);
 
 #include "graphicsThreadingModel.I"
 

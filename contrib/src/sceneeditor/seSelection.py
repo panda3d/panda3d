@@ -70,7 +70,7 @@ class SelectedNodePaths(DirectObject):
         """ Select the specified node path.  Multiselect as required """
         # Do nothing if nothing selected
         if not nodePath:
-            print 'Nothing selected!!'
+            print('Nothing selected!!')
             return None
 
         # Reset selected objects and highlight if multiSelect is false
@@ -124,7 +124,7 @@ class SelectedNodePaths(DirectObject):
         Return a list of all selected node paths.  No verification of
         connectivity is performed on the members of the list
         """
-        return self.selectedDict.values()[:]
+        return list(self.selectedDict.values())
 
     def __getitem__(self,index):
         return self.getSelectedAsList()[index]
@@ -141,7 +141,7 @@ class SelectedNodePaths(DirectObject):
             return None
 
     def getDeselectedAsList(self):
-        return self.deselectedDict.values()[:]
+        return list(self.deselectedDict.values())
 
     def getDeselectedDict(self, id):
         """
@@ -208,14 +208,14 @@ class SelectedNodePaths(DirectObject):
         selected = self.last
         # Toggle visibility of selected node paths
         if selected:
-            if selected.isHidden():
+            if selected.is_hidden():
                 selected.show()
             else:
                 selected.hide()
 
     def toggleVisAll(self):
         # Toggle viz for all selected node paths
-        self.forEachSelectedNodePathDo(NodePath.toggleVis)
+        self.forEachSelectedNodePathDo(self.toggleVis)
 
     def isolateSelected(self):
         selected = self.last
@@ -379,7 +379,7 @@ class DirectBoundingBox:
         return '%.2f %.2f %.2f' % (vec[0], vec[1], vec[2])
 
     def __repr__(self):
-        return (`self.__class__` +
+        return (repr(self.__class__) +
                 '\nNodePath:\t%s\n' % self.nodePath.getName() +
                 'Min:\t\t%s\n' % self.vecAsString(self.min) +
                 'Max:\t\t%s\n' % self.vecAsString(self.max) +

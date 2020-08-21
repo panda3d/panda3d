@@ -17,6 +17,8 @@
 #include "xLexerDefs.h"
 #include "config_xfile.h"
 
+using std::string;
+
 TypeHandle XFileDataNodeTemplate::_type_handle;
 
 /**
@@ -127,7 +129,7 @@ add_element(XFileDataObject *element) {
  * Writes a suitable representation of this node to an .x file in text mode.
  */
 void XFileDataNodeTemplate::
-write_text(ostream &out, int indent_level) const {
+write_text(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << _template->get_name();
   if (has_name()) {
@@ -149,7 +151,7 @@ write_text(ostream &out, int indent_level) const {
  * Writes a suitable representation of this node to an .x file in text mode.
  */
 void XFileDataNodeTemplate::
-write_data(ostream &out, int indent_level, const char *separator) const {
+write_data(std::ostream &out, int indent_level, const char *separator) const {
   if (!_nested_elements.empty()) {
     bool indented = false;
     for (size_t i = 0; i < _nested_elements.size() - 1; i++) {
@@ -205,7 +207,7 @@ get_num_elements() const {
  */
 XFileDataObject *XFileDataNodeTemplate::
 get_element(int n) {
-  nassertr(n >= 0 && n < (int)_nested_elements.size(), NULL);
+  nassertr(n >= 0 && n < (int)_nested_elements.size(), nullptr);
   return _nested_elements[n];
 }
 
@@ -222,5 +224,5 @@ get_element(const string &name) {
   xfile_cat.warning()
     << "\"" << name << "\" not a member of " << _template->get_name()
     << "\n";
-  return NULL;
+  return nullptr;
 }
