@@ -699,7 +699,7 @@ PT(NavMesh) NavMeshBuilder::build() {
     mesh_params.ch = _cfg.ch;
     mesh_params.build_bv_tree = true;
 
-    mesh_params.RC_MESH_NULL_IDX = RC_MESH_NULL_IDX;
+    mesh_params.border_index = RC_MESH_NULL_IDX;
     
     _nav_mesh_obj = new NavMesh(mesh_params);
 

@@ -44,7 +44,7 @@ PUBLISHED:
   unsigned int *detail_meshes;  // size: poly_count * 4
   float *detail_verts;          // size: detail_vert_count * 3
   unsigned char *detail_tris;   // size: detail_tri_count * 4
-  int RC_MESH_NULL_IDX = 65535;
+  int border_index = 65535;
   int input_model_coordinate_system = 0;
 
 };
@@ -70,7 +70,7 @@ private:
   LMatrix4 mat_from_z = LMatrix4::convert_mat(CS_zup_right, CS_default);
   LMatrix4 mat_to_y = LMatrix4::convert_mat(CS_default, CS_yup_right);
   LMatrix4 mat_to_z = LMatrix4::convert_mat(CS_default, CS_zup_right);
-  int RC_MESH_NULL_IDX;
+  int border_index;
   
 public:
   bool init_nav_mesh();
