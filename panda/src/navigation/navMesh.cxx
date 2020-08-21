@@ -76,7 +76,7 @@ NavMesh::NavMesh(NavMeshParams mesh_params):
   _params.ch = mesh_params.ch;
   _params.buildBvTree = mesh_params.build_bv_tree;
   
-  RC_MESH_NULL_IDX = mesh_params.RC_MESH_NULL_IDX;
+  border_index = mesh_params.border_index;
   
   init_nav_mesh();
 }
@@ -159,10 +159,10 @@ PT(GeomNode) NavMesh::draw_nav_mesh_geom() {
     // Iterate the vertices.
     //unsigned short vi[3];  // The vertex indices.
     for (int j = 0; j < nvp; ++j) {
-      if (p[j] == RC_MESH_NULL_IDX) {
+      if (p[j] == border_index) {
         break;// End of vertices.
       }
-      if (p[j + nvp] == RC_MESH_NULL_IDX) {
+      if (p[j + nvp] == border_index) {
         prim->add_vertex(p[j]);
         // The edge beginning with this vertex is a solid border.
       }
@@ -259,8 +259,8 @@ write_datagram(BamWriter *manager, Datagram &dg) {
     dg.add_uint8(_params.detailTris[i]);
   }
 
-  //RC_MESH_NULL_IDX
-  dg.add_int32(RC_MESH_NULL_IDX);
+  //border_index
+  dg.add_int32(border_index);
 
 }
 
@@ -348,8 +348,8 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     detail_tris[i] = scan.get_uint8();
   }
 
-  //RC_MESH_NULL_IDX
-  RC_MESH_NULL_IDX = scan.get_int32();
+  //border_index
+  border_index = scan.get_int32();
 
   memset(&(_params), 0, sizeof(_params));
 
