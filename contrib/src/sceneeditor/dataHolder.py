@@ -868,12 +868,12 @@ class dataHolder:
         # This function will return a list which contains all objects' names in the scene.
         # It means which won't have any kinds of animation, blend animation or Mopath data inside.
         ###########################################################################
-        list = ['camera'] # Default object you can select camera
-        list = list + self.ModelDic.keys() \
-               + self.ActorDic.keys() + self.collisionDict.keys() \
-               + self.dummyDict.keys() + self.particleNodes.keys() \
-               + self.lightManager.getLightList()
-        return list
+        lst = ['camera'] # Default object you can select camera
+        lst = lst + list(self.ModelDic.keys()) \
+               + list(self.ActorDic.keys()) + list(self.collisionDict.keys()) \
+               + list(self.dummyDict.keys()) + list(self.particleNodes.keys()) \
+               + list(self.lightManager.getLightList())
+        return lst
 
     def getObjFromSceneByName(self, name):
         ###########################################################################

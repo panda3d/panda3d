@@ -410,7 +410,7 @@ class SeSession(DirectObject):  ### Customized DirectSession
             self.widget.setScalingFactor(dnp.getRadius())
             # Spawn task to have object handles follow the selected object
             taskMgr.remove('followSelectedNodePath')
-            t = Task.Task(self.followSelectedNodePathTask)
+            t = Task(self.followSelectedNodePathTask)
             t.dnp = dnp
             taskMgr.add(t, 'followSelectedNodePath')
             # Send an message marking the event

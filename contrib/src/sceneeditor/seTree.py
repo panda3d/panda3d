@@ -221,7 +221,7 @@ class TreeNode:
             self.children[key] = child
             self.kidKeys.append(key)
         # Remove unused children
-        for key in self.children.keys():
+        for key in self.children.copy().keys():
             if key not in self.kidKeys:
                 del(self.children[key])
         cx = x+20

@@ -846,7 +846,7 @@ class LoadAnimPanel(AppShell):
         else:
             self.animList.append(name)
         self.AnimName_1.setlist(self.animList)
-        print self.animDic
+        print(self.animDic)
         return
 
     def ok_press(self):
@@ -859,7 +859,6 @@ class LoadAnimPanel(AppShell):
         #################################################################
         messenger.send('AW_AnimationLoad',[self.Actor,self.animDic])
         messenger.send('ANIMPANEL_AnimationLoad'+self.Actor.getName(),[self.animDic])
-        #print self.animDic
         self.quit()
         return
 """

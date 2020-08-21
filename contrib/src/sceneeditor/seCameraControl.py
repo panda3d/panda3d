@@ -71,6 +71,7 @@ class DirectCameraControl(DirectObject):
             ['-', self.zoomCam, -2.0, t],
             ['_', self.zoomCam, -2.0, t],
             ]
+        self.useMayaCamControls = False
 
     def toggleMarkerVis(self):
         if base.direct.cameraControl.coaMarker.isHidden():
