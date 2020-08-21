@@ -83,6 +83,11 @@ output(std::ostream &out) {
         out << "\\\x22";
         break;
 
+      case '\t':
+        // Certain versions of the Windows CRT classify tab as printable.
+        out << "\\t";
+        break;
+
       default:
         out << *si;
       }

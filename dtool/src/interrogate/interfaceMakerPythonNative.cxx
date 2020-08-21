@@ -8019,6 +8019,10 @@ output_quoted(ostream &out, int indent_level, const std::string &str,
         << '"';
       continue;
 
+    case '\t':
+      out << "\\t";
+      break;
+
     default:
       if (!isprint(*si)) {
         out << "\\" << oct << std::setw(3) << std::setfill('0') << (unsigned int)(*si)
