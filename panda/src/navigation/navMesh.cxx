@@ -143,7 +143,7 @@ PT(GeomNode) NavMesh::draw_nav_mesh_geom() {
     //vertex.add_data3(x, -z, y); //if origingally model is z-up
     //vertex.add_data3(x, y, z); //if originally model is y-up
     
-    colour.add_data4((float)rand() / RAND_MAX, (float)rand() / RAND_MAX, (float)rand() / RAND_MAX, 1);
+    colour.add_data4(0, 0, 1, 1);
   }
 
   PT(GeomNode) node;

@@ -13,6 +13,7 @@
 
 
 #include "navMeshNode.h"
+#include "omniBoundingVolume.h"
 #include <iostream>
 
 TypeHandle NavMeshNode::_type_handle;
@@ -25,6 +26,8 @@ NavMeshNode::NavMeshNode(const std::string &name, PT(NavMesh) nav_mesh):
 {
   _nav_mesh = nav_mesh;
   set_cull_callback();
+  // CollisionNodes are hidden by default.
+  set_overall_hidden(true);
 }
 
 NavMeshNode::NavMeshNode(const std::string &name):
@@ -52,31 +55,32 @@ NavMeshNode::~NavMeshNode() {}
  */
 bool NavMeshNode::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
-  // Append our collision vizzes to the drawing, even though they're not
+  // Append our navigation mesh vizzes to the drawing, even though they're not
   // actually part of the scene graph.
   PT(PandaNode) node = _nav_mesh->draw_nav_mesh_geom();
+  
   if(node != nullptr) {
   	CullTraverserData next_data(data, node);
   	next_data._state = RenderState::make_empty();
   	trav->traverse(next_data);
   }
-  // Solids::const_iterator si;
-  // for (si = _solids.begin(); si != _solids.end(); ++si) {
-  //   CPT(CollisionSolid) solid = (*si).get_read_pointer();
-  //   PT(PandaNode) node = solid->get_viz(trav, data, false);
-  //   if (node != nullptr) {
-  //     CullTraverserData next_data(data, node);
-
-  //     // We don't want to inherit the render state from above for these guys.
-  //     next_data._state = RenderState::make_empty();
-  //     trav->traverse(next_data);
-  //   }
-  // }
-
-  
 
   // Now carry on to render our child nodes.
   return true;
+}
+
+/**
+ * Called when needed to recompute the node's _internal_bound object.  Nodes
+ * that contain anything of substance should redefine this to do the right
+ * thing.
+ */
+void NavMeshNode::
+compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
+                        int &internal_vertices,
+                        int pipeline_stage,
+                        Thread *current_thread) const {
+  internal_bounds = new OmniBoundingVolume;
+  internal_vertices = 0;
 }
 
 /**
