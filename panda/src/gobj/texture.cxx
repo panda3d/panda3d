@@ -10059,10 +10059,6 @@ do_write_datagram_rawdata(CData *cdata, BamWriter *manager, Datagram &me) {
   me.add_uint8(cdata->_component_width);
   me.add_uint8(cdata->_ram_image_compression);
 
-  if(manager->get_file_minor_ver() >= 46) {
-    me.add_uint8(manager->get_tex_compression_format());
-  }
-
   if (cdata->_ram_images.empty() && cdata->_has_clear_color &&
       manager->get_file_minor_ver() < 45) {
     // For older .bam versions that don't support clear colors, make up a RAM
