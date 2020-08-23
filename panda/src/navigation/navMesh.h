@@ -22,6 +22,9 @@
 #include "pandaSystem.h"
 #include "lmatrix.h"
 
+/**
+ * NavMeshParams class stores all the parameters of a navigation mesh.
+ */
 class EXPCL_NAVIGATION NavMeshParams {
 PUBLISHED:
   int vert_count;
@@ -49,6 +52,12 @@ PUBLISHED:
 
 };
 
+
+/**
+ * NavMesh class stores the navigation mesh. The navigation mesh 
+ * can be obtained using NavMeshBuilder class or can be generated 
+ * using the NavMeshParams class by the user. 
+ */
 class EXPCL_NAVIGATION NavMesh: public TypedWritableReferenceCount
 {
 PUBLISHED:

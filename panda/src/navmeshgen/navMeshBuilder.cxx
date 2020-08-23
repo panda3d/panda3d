@@ -296,10 +296,6 @@ void NavMeshBuilder::process_vertex_data(const GeomVertexData *vdata, int &vcap)
       LVecBase3 vec = mat_to_y.xform_point(v);
       add_vertex(vec[0], vec[1], vec[2], vcap);
       
-      //add_vertex(x, z, -y, vcap); //if input model is originally z-up
-      //add_vertex(x, y, z, vcap); //if input model is originally y-up
-
-      //_vertex_map[v] = index_temp++;
       LVector3 xvx = { v[0],v[2],-v[1] };
       _vertex_map[v] = index_temp++;
       _vertex_vector.push_back(v);
@@ -347,19 +343,12 @@ void NavMeshBuilder::process_geom_node(GeomNode *geomnode, int &vcap, int &tcap)
  */
 void NavMeshBuilder::cleanup()
 {
-  delete[] _triareas;
-  _triareas = 0;
-  rcFreeHeightField(_solid);
-  _solid = 0;
-  rcFreeCompactHeightfield(_chf);
-  _chf = 0;
-  rcFreeContourSet(_cset);
-  _cset = 0;
-  rcFreePolyMesh(_pmesh);
-  _pmesh = 0;
-  rcFreePolyMeshDetail(_dmesh);
-  _dmesh = 0;
-  
+  _triareas = nullptr;
+  _solid = nullptr;
+  _chf = nullptr;
+  _cset = nullptr;
+  _pmesh = nullptr;
+  _dmesh = nullptr;
 }
 
 /**
