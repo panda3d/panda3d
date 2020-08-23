@@ -71,7 +71,7 @@ PUBLISHED:
   };
 
   // Level of compression for textures in the .bam
-  enum BamTexCompressionFormat{
+  enum BamTexCompressionFormat {
     BTC_off,
     BTC_zlib,
   };

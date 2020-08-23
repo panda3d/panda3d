@@ -137,13 +137,13 @@ init() {
     _tex_compression_format = (BamTexCompressionFormat)scan.get_uint8();
   }
 
-  if(_tex_compression_format == BTC_zlib) {
 #ifndef HAVE_ZLIB
+  if(_tex_compression_format == BTC_zlib) {
     bam_cat.error()
       << "This program can not decompress using zlib"
       << std::endl;
-#endif
   }
+#endif
 
   if (scan.get_current_index() > header.get_length()) {
     bam_cat.error()
