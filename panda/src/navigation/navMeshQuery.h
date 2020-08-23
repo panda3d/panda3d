@@ -22,6 +22,11 @@
 #include "pandaSystem.h"
 #include "nodePath.h"
 
+/**
+ * NavMeshQuery class contains the functions to query the navigation mesh stored 
+ * in a NavMesh object. The queries include functions to find the paths from one 
+ * point to another over the mesh.
+ */
 class EXPCL_NAVIGATION NavMeshQuery
 {
 

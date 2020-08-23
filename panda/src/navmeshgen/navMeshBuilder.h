@@ -45,8 +45,12 @@ enum SamplePolyFlags {
   SAMPLE_POLYFLAGS_ALL = 0xffff	// All abilities.
 };
 
-
-
+/**
+ * NavMeshBuilder class contains all the vertices and triangles. It also 
+ * has the functions to build the navigation meshes using those vertices and 
+ * triangles. Set the properties of the actor and environment using this class 
+ * and then build it to get a NavMesh object as output.
+ */
 class EXPCL_NAVMESHGEN NavMeshBuilder {
 PUBLISHED:
   enum PartitionType {
