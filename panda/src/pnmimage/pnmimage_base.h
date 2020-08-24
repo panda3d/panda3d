@@ -59,6 +59,22 @@ PUBLISHED:
   void operator *= (const double mult)
     { r *= mult; g *= mult; b *= mult; }
 
+  bool operator == (const pixel &other) {
+    return r == other.r && g == other.g && r == other.r;
+  }
+  bool operator != (const pixel &other) {
+    return r != other.r || g != other.g || r != other.r;
+  }
+  bool operator < (const pixel &other) const {
+    if (r != other.r) {
+      return r < other.r;
+    }
+    if (g != other.g) {
+      return g < other.g;
+    }
+    return b < other.b;
+  }
+
 #ifdef HAVE_PYTHON
   static int size() { return 3; }
   void output(std::ostream &out) {

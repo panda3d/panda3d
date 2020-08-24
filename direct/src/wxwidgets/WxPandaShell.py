@@ -3,12 +3,8 @@ from wx.lib.agw import fourwaysplitter as FWS
 
 from panda3d.core import *
 from direct.showbase.ShowBase import *
+from direct.showbase import ShowBaseGlobal
 from direct.directtools.DirectGlobals import *
-
-try:
-    base
-except NameError:
-    base = ShowBase(False, windowType = 'none')
 
 from .WxAppShell import *
 from .ViewPort import *
@@ -18,6 +14,7 @@ ID_TOP_VIEW = 402
 ID_FRONT_VIEW = 403
 ID_LEFT_VIEW = 404
 ID_PERSP_VIEW = 405
+
 
 class WxPandaShell(WxAppShell):
     """ Class for Panda3D LevelEditor """
@@ -37,6 +34,10 @@ class WxPandaShell(WxAppShell):
         }
 
     def __init__(self, fStartDirect = False):
+        base = getattr(ShowBaseGlobal, 'base', None)
+        if not base:
+            base = ShowBase(False, windowType='none')
+
         fDirect = (base.config.GetBool('want-directtools', 0) or
                    (base.config.GetString("cluster-mode", '') != ''))
 
@@ -237,5 +238,3 @@ class WxPandaShell(WxAppShell):
             self.currentView = self.perspView
 
         return self.currentView
-
-

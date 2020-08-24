@@ -26,11 +26,7 @@ read(size_t length) {
   length = std::min(length, data_length - _this->_pos);
   _this->_pos = std::min(_this->_pos + length, data_length);
 
-#if PY_MAJOR_VERSION >= 3
   return PyBytes_FromStringAndSize((char *)data, length);
-#else
-  return PyString_FromStringAndSize((char *)data, length);
-#endif
 }
 
 /**
@@ -44,11 +40,7 @@ read(size_t length) {
 PyObject *Extension<Ramfile>::
 readline() {
   std::string line = _this->readline();
-#if PY_MAJOR_VERSION >= 3
   return PyBytes_FromStringAndSize(line.data(), line.size());
-#else
-  return PyString_FromStringAndSize(line.data(), line.size());
-#endif
 }
 
 /**
@@ -64,11 +56,7 @@ readlines() {
 
   std::string line = _this->readline();
   while (!line.empty()) {
-#if PY_MAJOR_VERSION >= 3
     PyObject *py_line = PyBytes_FromStringAndSize(line.data(), line.size());
-#else
-    PyObject *py_line = PyString_FromStringAndSize(line.data(), line.size());
-#endif
 
     PyList_Append(lst, py_line);
     Py_DECREF(py_line);
@@ -83,11 +71,7 @@ readlines() {
  */
 PyObject *Extension<Ramfile>::
 get_data() const {
-#if PY_MAJOR_VERSION >= 3
   return PyBytes_FromStringAndSize(_this->_data.data(), _this->_data.size());
-#else
-  return PyString_FromStringAndSize(_this->_data.data(), _this->_data.size());
-#endif
 }
 
 #endif

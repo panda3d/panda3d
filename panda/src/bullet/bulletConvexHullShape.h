@@ -11,8 +11,8 @@
  * @date 2010-01-26
  */
 
-#ifndef __BULLET_CONVEX_HULL_SHAPE_H__
-#define __BULLET_CONVEX_HULL_SHAPE_H__
+#ifndef BULLETCONVEXHULLSHAPE_H
+#define BULLETCONVEXHULLSHAPE_H
 
 #include "pandabase.h"
 
@@ -75,4 +75,4 @@ private:
 
 #include "bulletConvexHullShape.I"
 
-#endif // __BULLET_CONVEX_HULL_SHAPE_H__
+#endif // BULLETCONVEXHULLSHAPE_H

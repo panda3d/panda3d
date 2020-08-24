@@ -14,6 +14,7 @@ module, and so it is therefore layered on top of Panda's thread
 implementation. """
 
 import sys as _sys
+import atexit as _atexit
 
 from direct.stdpy import thread as _thread
 from direct.stdpy.thread import stack_size, _newname, _local as local
@@ -395,8 +396,12 @@ class Thread(_Verbose):
     # operation on/with a NoneType
     __exc_info = _sys.exc_info
 
+    # Set to True when the _shutdown handler is registered as atexit function.
+    # Protected by _active_limbo_lock.
+    __registered_atexit = False
+
     def __init__(self, group=None, target=None, name=None,
-                 args=(), kwargs=None, verbose=None):
+                 args=(), kwargs=None, verbose=None, daemon=None):
         assert group is None, "group argument must be None for now"
         _Verbose.__init__(self, verbose)
         if kwargs is None:
@@ -405,7 +410,10 @@ class Thread(_Verbose):
         self.__name = str(name or _newname())
         self.__args = args
         self.__kwargs = kwargs
-        self.__daemonic = self._set_daemon()
+        if daemon is not None:
+            self.__daemonic = daemon
+        else:
+            self.__daemonic = self._set_daemon()
         self.__started = False
         self.__stopped = False
         self.__block = Condition(Lock())
@@ -436,6 +444,14 @@ class Thread(_Verbose):
             self._note("%s.start(): starting thread", self)
         _active_limbo_lock.acquire()
         _limbo[self] = self
+
+        # If we are starting a non-daemon thread, we need to call join() on it
+        # when the interpreter exits.  Python will call _shutdown() on the
+        # built-in threading module automatically, but not on our module.
+        if not self.__daemonic and not Thread.__registered_atexit:
+            _atexit.register(_shutdown)
+            Thread.__registered_atexit = True
+
         _active_limbo_lock.release()
         _start_new_thread(self.__bootstrap, ())
         self.__started = True
@@ -599,6 +615,9 @@ class Thread(_Verbose):
         assert not self.__started, "cannot set daemon status of active thread"
         self.__daemonic = daemonic
 
+    name = property(getName, setName)
+    daemon = property(isDaemon, setDaemon)
+
 # The timer class was contributed by Itamar Shtull-Trauring
 
 def Timer(*args, **kwargs):
@@ -670,7 +689,7 @@ class _MainThread(Thread):
 class _DummyThread(Thread):
 
     def __init__(self):
-        Thread.__init__(self, name=_newname("Dummy-%d"))
+        Thread.__init__(self, name=_newname("Dummy-%d"), daemon=True)
 
         # Thread.__block consumes an OS-level locking primitive, which
         # can never be used by a _DummyThread.  Since a _DummyThread

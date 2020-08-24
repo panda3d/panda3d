@@ -150,7 +150,11 @@ triangulate() {
   }
   */
 
+  int attempts = 0;
+
   while (construct_trapezoids(num_segments) != 0) {
+    nassertv_always(attempts++ < 100);
+
     // If there's an error, re-shuffle the index and try again.
     Randomizer randomizer;
     for (i = 0; i < num_segments; ++i) {
@@ -2185,6 +2189,8 @@ triangulate_single_polygon(int nvert, int posmax, int side) {
       endv = mchain[posmax].vnum;
     }
 
+  int num_triangles = 0;
+
   while ((v != endv) || (ri > 1))
     {
       // cerr << " v = " << v << " ri = " << ri << " rc = " << rc.size() << "
@@ -2199,8 +2205,13 @@ triangulate_single_polygon(int nvert, int posmax, int side) {
                                     vert[rc[ri]].pt);
           if ( crossResult >= 0 )  /* could be convex corner or straight */
             {
-              if ( crossResult > 0)  /* convex corner: cut it off */
+              if (crossResult > 0) {  /* convex corner: cut it off */
                 _result.push_back(Triangle(this, rc[ri - 1], rc[ri], v));
+                if (++num_triangles >= nvert - 2) {
+                  // We can't generate more than this number of triangles.
+                  return;
+                }
+              }
               /* else : perfectly straight, will be abandoned anyway */
               ri--;
               rc.pop_back();

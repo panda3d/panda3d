@@ -507,8 +507,10 @@ add_for_draw(CullTraverser *trav, CullTraverserData &data) {
       << " draw_mask = " << data._draw_mask << "\n";
   }
 
+  Thread *current_thread = trav->get_current_thread();
+
   // Get all the Geoms, with no decalling.
-  Geoms geoms = get_geoms(trav->get_current_thread());
+  Geoms geoms = get_geoms(current_thread);
   int num_geoms = geoms.get_num_geoms();
   trav->_geoms_pcollector.add_level(num_geoms);
   CPT(TransformState) internal_transform = data.get_internal_transform(trav);
@@ -532,9 +534,9 @@ add_for_draw(CullTraverser *trav, CullTraverserData &data) {
     if (num_geoms > 1) {
       if (data._view_frustum != nullptr) {
         // Cull the individual Geom against the view frustum.
-        CPT(BoundingVolume) geom_volume = geom->get_bounds();
+        CPT(BoundingVolume) geom_volume = geom->get_bounds(current_thread);
         const GeometricBoundingVolume *geom_gbv =
-          DCAST(GeometricBoundingVolume, geom_volume);
+          geom_volume->as_geometric_bounding_volume();
 
         int result = data._view_frustum->contains(geom_gbv);
         if (result == BoundingVolume::IF_no_intersection) {
@@ -544,9 +546,9 @@ add_for_draw(CullTraverser *trav, CullTraverserData &data) {
       }
       if (!data._cull_planes->is_empty()) {
         // Also cull the Geom against the cull planes.
-        CPT(BoundingVolume) geom_volume = geom->get_bounds();
+        CPT(BoundingVolume) geom_volume = geom->get_bounds(current_thread);
         const GeometricBoundingVolume *geom_gbv =
-          DCAST(GeometricBoundingVolume, geom_volume);
+          geom_volume->as_geometric_bounding_volume();
         int result;
         data._cull_planes->do_cull(result, state, geom_gbv);
         if (result == BoundingVolume::IF_no_intersection) {

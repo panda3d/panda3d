@@ -1,6 +1,16 @@
 """Contains the BufferViewer class, which is used as a debugging aid
 when debugging render-to-texture effects.  It shows different views at
-the bottom of the screen showing the various render targets."""
+the bottom of the screen showing the various render targets.
+
+When using ShowBase, the normal way to enable the BufferViewer is using the
+following code::
+
+    base.bufferViewer.toggleEnable()
+
+Or, you can enable the following variable in your Config.prc::
+
+    show-buffers true
+"""
 
 __all__ = ['BufferViewer']
 
@@ -10,6 +20,7 @@ from direct.task.TaskManagerGlobal import taskMgr
 from direct.directnotify.DirectNotifyGlobal import *
 from direct.showbase.DirectObject import DirectObject
 import math
+
 
 class BufferViewer(DirectObject):
     notify = directNotify.newCategory('BufferViewer')
@@ -100,11 +111,13 @@ class BufferViewer(DirectObject):
 
     def setPosition(self, pos):
         """Set the position of the cards.  The valid values are:
-        * llcorner - put them in the lower-left  corner of the window
-        * lrcorner - put them in the lower-right corner of the window
-        * ulcorner - put them in the upper-left  corner of the window
-        * urcorner - put them in the upper-right corner of the window
-        * window   - put them in a separate window
+
+        - *llcorner* - put them in the lower-left  corner of the window
+        - *lrcorner* - put them in the lower-right corner of the window
+        - *ulcorner* - put them in the upper-left  corner of the window
+        - *urcorner* - put them in the upper-right corner of the window
+        - *window* - put them in a separate window
+
         The initial value is 'lrcorner'."""
         valid=["llcorner","lrcorner","ulcorner","urcorner","window"]
         if (valid.count(pos)==0):
@@ -119,11 +132,13 @@ class BufferViewer(DirectObject):
 
     def setLayout(self, lay):
         """Set the layout of the cards.  The valid values are:
-        * vline - display them in a vertical line
-        * hline - display them in a horizontal line
-        * vgrid - display them in a vertical grid
-        * hgrid - display them in a horizontal grid
-        * cycle - display one card at a time, using selectCard/advanceCard
+
+        - *vline* - display them in a vertical line
+        - *hline* - display them in a horizontal line
+        - *vgrid* - display them in a vertical grid
+        - *hgrid* - display them in a horizontal grid
+        - *cycle* - display one card at a time, using selectCard/advanceCard
+
         The default value is 'hline'."""
         valid=["vline","hline","vgrid","hgrid","cycle"]
         if (valid.count(lay)==0):
@@ -442,3 +457,21 @@ class BufferViewer(DirectObject):
                     cards[index] = placer
 
         return Task.cont
+
+    # Snake-case aliases, for people who prefer these.
+    advance_card = advanceCard
+    analyze_texture_set = analyzeTextureSet
+    is_enabled = isEnabled
+    is_valid_texture_set = isValidTextureSet
+    maintain_readout = maintainReadout
+    make_frame = makeFrame
+    refresh_readout = refreshReadout
+    select_card = selectCard
+    set_card_size = setCardSize
+    set_exclude = setExclude
+    set_include = setInclude
+    set_layout = setLayout
+    set_position = setPosition
+    set_render_parent = setRenderParent
+    set_sort = setSort
+    toggle_enable = toggleEnable

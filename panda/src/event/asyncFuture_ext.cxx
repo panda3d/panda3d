@@ -102,7 +102,7 @@ static PyObject *get_done_result(const AsyncFuture *future) {
           if (value != nullptr) {
             return value;
           }
-          PyErr_Restore(nullptr, nullptr, nullptr);
+          PyErr_Clear();
           Py_DECREF(wrap);
         }
       }
@@ -117,23 +117,7 @@ static PyObject *get_done_result(const AsyncFuture *future) {
     }
   } else {
     // If the future was cancelled, we should raise an exception.
-    static PyObject *exc_type = nullptr;
-    if (exc_type == nullptr) {
-      // Get the CancelledError that asyncio uses, too.
-      PyObject *module = PyImport_ImportModule("concurrent.futures._base");
-      if (module != nullptr) {
-        exc_type = PyObject_GetAttrString(module, "CancelledError");
-        Py_DECREF(module);
-      }
-      // If we can't get that, we should pretend and make our own.
-      if (exc_type == nullptr) {
-        exc_type = PyErr_NewExceptionWithDoc((char*)"concurrent.futures._base.CancelledError",
-                                             (char*)"The Future was cancelled.",
-                                             nullptr, nullptr);
-      }
-    }
-    Py_INCREF(exc_type);
-    PyErr_Restore(exc_type, nullptr, nullptr);
+    PyErr_SetNone(Extension<AsyncFuture>::get_cancelled_error_type());
     return nullptr;
   }
 }
@@ -154,8 +138,7 @@ static PyObject *gen_next(PyObject *self) {
   } else {
     PyObject *result = get_done_result(future);
     if (result != nullptr) {
-      Py_INCREF(PyExc_StopIteration);
-      PyErr_Restore(PyExc_StopIteration, result, nullptr);
+      PyErr_SetObject(PyExc_StopIteration, result);
     }
     return nullptr;
   }
@@ -213,20 +196,29 @@ result(PyObject *timeout) const {
       static PyObject *exc_type = nullptr;
       if (exc_type == nullptr) {
         // Get the TimeoutError that asyncio uses, too.
+#if PY_VERSION_HEX >= 0x03080000
+        PyObject *module = PyImport_ImportModule("asyncio.exceptions");
+#else
         PyObject *module = PyImport_ImportModule("concurrent.futures._base");
+#endif
         if (module != nullptr) {
           exc_type = PyObject_GetAttrString(module, "TimeoutError");
           Py_DECREF(module);
         }
         // If we can't get that, we should pretend and make our own.
         if (exc_type == nullptr) {
+#if PY_VERSION_HEX >= 0x03080000
+          exc_type = PyErr_NewExceptionWithDoc((char*)"asyncio.exceptions.TimeoutError",
+                                               (char*)"The operation exceeded the given deadline.",
+                                               nullptr, nullptr);
+#else
           exc_type = PyErr_NewExceptionWithDoc((char*)"concurrent.futures._base.TimeoutError",
                                                (char*)"The operation exceeded the given deadline.",
                                                nullptr, nullptr);
+#endif
         }
       }
-      Py_INCREF(exc_type);
-      PyErr_Restore(exc_type, nullptr, nullptr);
+      PyErr_SetNone(exc_type);
       return nullptr;
     }
   }
@@ -288,13 +280,11 @@ gather(PyObject *args) {
         futures.push_back(fut);
         continue;
       }
-#if PY_VERSION_HEX >= 0x03050000
     } else if (PyCoro_CheckExact(item)) {
       // We allow passing in a coroutine instead of a future.  This causes it
       // to be scheduled as a task.
       futures.push_back(new PythonTask(item));
       continue;
-#endif
     }
     return Dtool_Raise_ArgTypeError(item, i, "gather", "coroutine, task or future");
   }
@@ -306,6 +296,39 @@ gather(PyObject *args) {
   } else {
     return PyErr_NoMemory();
   }
+}
+
+/**
+ * Returns a borrowed reference to the CancelledError exception type.
+ */
+PyObject *Extension<AsyncFuture>::
+get_cancelled_error_type() {
+  static PyObject *exc_type = nullptr;
+  if (exc_type == nullptr) {
+    // Get the CancelledError that asyncio uses, too.
+#if PY_VERSION_HEX >= 0x03080000
+    PyObject *module = PyImport_ImportModule("asyncio.exceptions");
+#else
+    PyObject *module = PyImport_ImportModule("concurrent.futures._base");
+#endif
+    if (module != nullptr) {
+      exc_type = PyObject_GetAttrString(module, "CancelledError");
+      Py_DECREF(module);
+    }
+    // If we can't get that, we should pretend and make our own.
+    if (exc_type == nullptr) {
+#if PY_VERSION_HEX >= 0x03080000
+      exc_type = PyErr_NewExceptionWithDoc((char *)"asyncio.exceptions.CancelledError",
+                                            (char *)"The Future or Task was cancelled.",
+                                            PyExc_BaseException, nullptr);
+#else
+      exc_type = PyErr_NewExceptionWithDoc((char *)"concurrent.futures._base.CancelledError",
+                                            (char *)"The Future was cancelled.",
+                                            nullptr, nullptr);
+#endif
+    }
+  }
+  return exc_type;
 }
 
 #endif

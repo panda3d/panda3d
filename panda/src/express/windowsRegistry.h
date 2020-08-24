@@ -17,7 +17,7 @@
 #include "pandabase.h"
 
 // This class is only defined on Windows builds.
-#ifdef WIN32_VC
+#ifdef _WIN32
 
 /**
  * This class provides a hook to Python to read and write strings and integers
@@ -56,6 +56,6 @@ private:
   static std::string format_message(int error_code);
 };
 
-#endif  // WIN32_VC
+#endif  // _WIN32
 
 #endif

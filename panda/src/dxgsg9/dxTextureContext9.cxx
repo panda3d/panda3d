@@ -844,9 +844,11 @@ create_texture(DXScreenData &scrn) {
   tex->set_anisotropic_degree(aniso_degree);
 
 #ifdef _DEBUG
-  dxgsg9_cat.spam()
-    << "create_texture: setting aniso degree for " << tex->get_name()
-    << " to: " << aniso_degree << endl;
+  if (dxgsg9_cat.is_spam()) {
+    dxgsg9_cat.spam()
+      << "create_texture: setting aniso degree for " << tex->get_name()
+      << " to: " << aniso_degree << endl;
+  }
 #endif
 
   UINT mip_level_count;
@@ -2012,8 +2014,10 @@ fill_d3d_texture_pixels(DXScreenData &scrn, bool compress_texture) {
       // on the fly
       int miplevel_count = _d3d_texture->GetLevelCount();
       if (miplevel_count <= tex->get_num_loadable_ram_mipmap_images()) {
-        dxgsg9_cat.debug()
-          << "Using pre-calculated mipmap levels for texture  " << tex->get_name() << "\n";
+        if (dxgsg9_cat.is_debug()) {
+          dxgsg9_cat.debug()
+            << "Using pre-calculated mipmap levels for texture " << tex->get_name() << "\n";
+        }
 
         for (int mip_level = 1; mip_level < miplevel_count; ++mip_level) {
           hr = fill_d3d_texture_mipmap_pixels(mip_level, di, source_format);

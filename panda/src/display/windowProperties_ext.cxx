@@ -66,11 +66,7 @@ __init__(PyObject *self, PyObject *args, PyObject *kwds) {
         PyObject *key_repr = PyObject_Repr(key);
         PyErr_Format(PyExc_TypeError,
                      "%.100s is an invalid keyword argument for WindowProperties()",
-#if PY_MAJOR_VERSION >= 3
                      PyUnicode_AsUTF8(key_repr)
-#else
-                     PyString_AsString(key_repr)
-#endif
                     );
         Py_DECREF(key_repr);
         return;

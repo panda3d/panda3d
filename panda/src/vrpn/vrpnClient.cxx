@@ -61,6 +61,24 @@ VrpnClient::
 }
 
 /**
+ * Returns true if everything seems to be kosher with the server (even if
+ * there is no connection), or false otherwise.
+ */
+bool VrpnClient::
+is_valid() const {
+  return (_connection->doing_okay() != 0);
+}
+
+/**
+ * Returns true if the connection is established successfully, false
+ * otherwise.
+ */
+bool VrpnClient::
+is_connected() const {
+  return (_connection->connected() != 0);
+}
+
+/**
  * Writes a list of the active devices that the VrpnClient is currently
  * polling each frame.
  */

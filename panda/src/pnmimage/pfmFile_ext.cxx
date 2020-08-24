@@ -77,7 +77,6 @@ get_points() const {
  */
 int Extension<PfmFile>::
 __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
-#if PY_VERSION_HEX >= 0x02060000
   if ((flags & PyBUF_WRITABLE) == PyBUF_WRITABLE) {
       PyErr_SetString(PyExc_BufferError,
                       "Object is not writable.");
@@ -117,9 +116,6 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
   view->suboffsets = nullptr;
 
   return 0;
-#else
-  return -1;
-#endif
 }
 
 #endif  // HAVE_PYTHON

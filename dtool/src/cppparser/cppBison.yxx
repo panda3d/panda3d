@@ -1220,6 +1220,35 @@ constructor_prototype:
 
   $$ = new CPPInstance(type, ii, 0, @1.file);
 }
+/* This is a hack to support functions with the identifier enveloped by a
+   pair of parentheses. */
+        | TYPENAME_IDENTIFIER '(' IDENTIFIER ')' '('
+{
+  // Create a scope for this function.
+  CPPScope *scope = new CPPScope($3->get_scope(current_scope, global_scope),
+                                 $3->_names.back(), V_private);
+
+  // It still needs to be able to pick up any template arguments, if this is
+  // a definition for a method template.  Add a fake "using" declaration to
+  // accomplish this.
+  scope->_using.insert(current_scope);
+
+  push_scope(scope);
+}
+        function_parameter_list ')' function_post
+{
+  pop_scope();
+  CPPType *type = $1->find_type(current_scope, global_scope, false, current_lexer);
+  if (type == nullptr) {
+    yyerror(string("internal error resolving type ") + $1->get_fully_scoped_name(), @1);
+  }
+  assert(type != nullptr);
+
+  CPPInstanceIdentifier *ii = new CPPInstanceIdentifier($3);
+  ii->add_func_modifier($7, $9);
+
+  $$ = new CPPInstance(type, ii, 0, @1.file);
+}
         | TYPENAME_IDENTIFIER '('
 {
   // Create a scope for this function.
@@ -1862,7 +1891,7 @@ instance_identifier_and_maybe_trailing_return_type:
   }
   $$ = $1;
 }
-        | instance_identifier ':' INTEGER
+        | instance_identifier ':' const_expr
 {
   // Bitfield definition.
   $1->_bit_width = $3;
@@ -3249,17 +3278,9 @@ no_angle_bracket_const_expr:
 {
   $$ = new CPPExpression(CPPExpression::sizeof_func($3));
 }
-        | KW_SIZEOF '(' IDENTIFIER ')' %prec UNARY
+        | KW_SIZEOF no_angle_bracket_const_expr %prec UNARY
 {
-  CPPDeclaration *arg = $3->find_symbol(current_scope, global_scope, current_lexer);
-  if (arg == nullptr) {
-    yyerror("undefined sizeof argument: " + $3->get_fully_scoped_name(), @3);
-  } else if (arg->get_subtype() == CPPDeclaration::ST_instance) {
-    CPPInstance *inst = arg->as_instance();
-    $$ = new CPPExpression(CPPExpression::sizeof_func(inst->_type));
-  } else {
-    $$ = new CPPExpression(CPPExpression::sizeof_func(arg->as_type()));
-  }
+  $$ = new CPPExpression(CPPExpression::sizeof_func($2));
 }
         | KW_SIZEOF ELLIPSIS '(' name ')' %prec UNARY
 {
@@ -3373,9 +3394,9 @@ no_angle_bracket_const_expr:
 {
   $$ = new CPPExpression('f', $1);
 }
-        | no_angle_bracket_const_expr '.' no_angle_bracket_const_expr
+        | no_angle_bracket_const_expr '.' name
 {
-  $$ = new CPPExpression('.', $1, $3);
+  $$ = new CPPExpression('.', $1, new CPPExpression($3, current_scope, global_scope, current_lexer));
 }
         | no_angle_bracket_const_expr POINTSAT no_angle_bracket_const_expr
 {
@@ -3513,17 +3534,9 @@ const_expr:
 {
   $$ = new CPPExpression(CPPExpression::sizeof_func($3));
 }
-        | KW_SIZEOF '(' IDENTIFIER ')' %prec UNARY
+        | KW_SIZEOF const_expr %prec UNARY
 {
-  CPPDeclaration *arg = $3->find_symbol(current_scope, global_scope, current_lexer);
-  if (arg == nullptr) {
-    yyerror("undefined sizeof argument: " + $3->get_fully_scoped_name(), @3);
-  } else if (arg->get_subtype() == CPPDeclaration::ST_instance) {
-    CPPInstance *inst = arg->as_instance();
-    $$ = new CPPExpression(CPPExpression::sizeof_func(inst->_type));
-  } else {
-    $$ = new CPPExpression(CPPExpression::sizeof_func(arg->as_type()));
-  }
+  $$ = new CPPExpression(CPPExpression::sizeof_func($2));
 }
         | KW_SIZEOF ELLIPSIS '(' name ')' %prec UNARY
 {
@@ -3675,9 +3688,9 @@ const_expr:
 {
   $$ = new CPPExpression('f', $1);
 }
-        | const_expr '.' const_expr
+        | const_expr '.' name
 {
-  $$ = new CPPExpression('.', $1, $3);
+  $$ = new CPPExpression('.', $1, new CPPExpression($3, current_scope, global_scope, current_lexer));
 }
         | const_expr POINTSAT const_expr
 {
@@ -3857,17 +3870,9 @@ formal_const_expr:
 {
   $$ = new CPPExpression(CPPExpression::sizeof_func($3));
 }
-        | KW_SIZEOF '(' IDENTIFIER ')' %prec UNARY
+        | KW_SIZEOF formal_const_expr %prec UNARY
 {
-  CPPDeclaration *arg = $3->find_symbol(current_scope, global_scope, current_lexer);
-  if (arg == nullptr) {
-    yyerror("undefined sizeof argument: " + $3->get_fully_scoped_name(), @3);
-  } else if (arg->get_subtype() == CPPDeclaration::ST_instance) {
-    CPPInstance *inst = arg->as_instance();
-    $$ = new CPPExpression(CPPExpression::sizeof_func(inst->_type));
-  } else {
-    $$ = new CPPExpression(CPPExpression::sizeof_func(arg->as_type()));
-  }
+  $$ = new CPPExpression(CPPExpression::sizeof_func($2));
 }
         | KW_SIZEOF ELLIPSIS '(' name ')' %prec UNARY
 {
@@ -4015,9 +4020,9 @@ formal_const_expr:
 {
   $$ = new CPPExpression('f', $1);
 }
-        | formal_const_expr '.' const_expr
+        | formal_const_expr '.' name
 {
-  $$ = new CPPExpression('.', $1, $3);
+  $$ = new CPPExpression('.', $1, new CPPExpression($3, current_scope, global_scope, current_lexer));
 }
         | formal_const_expr POINTSAT const_expr
 {

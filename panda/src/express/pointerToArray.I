@@ -297,7 +297,7 @@ erase(iterator first, iterator last) {
   ((To *)(this->_void_ptr))->erase(first, last);
 }
 
-#if !defined(WIN32_VC) && !defined(WIN64_VC)
+#ifndef _WIN32
 /**
  *
  */
@@ -844,7 +844,7 @@ back() const {
   return ((To *)(this->_void_ptr))->back();
 }
 
-#if !defined(WIN32_VC) && !defined(WIN64_VC)
+#ifndef _WIN32
 /**
  *
  */

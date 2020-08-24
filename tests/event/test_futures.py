@@ -3,11 +3,10 @@ import pytest
 import time
 import sys
 
-if sys.version_info >= (3,):
-    from concurrent.futures._base import TimeoutError, CancelledError
+if sys.version_info >= (3, 8):
+    from asyncio.exceptions import TimeoutError, CancelledError
 else:
-    TimeoutError = Exception
-    CancelledError = Exception
+    from concurrent.futures._base import TimeoutError, CancelledError
 
 
 def test_future_cancelled():

@@ -36,12 +36,8 @@ EggComponentData(EggCharacterCollection *collection,
  */
 EggComponentData::
 ~EggComponentData() {
-  BackPointers::iterator bpi;
-  for (bpi = _back_pointers.begin(); bpi != _back_pointers.end(); ++bpi) {
-    EggBackPointer *back = (*bpi);
-    if (back != nullptr) {
-      delete back;
-    }
+  for (EggBackPointer *back : _back_pointers) {
+    delete back;
   }
 }
 

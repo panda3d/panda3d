@@ -1843,10 +1843,10 @@ get_character_glyphs(int character, const TextProperties *properties,
   // Maybe we should remap the character to something else--e.g.  a small
   // capital.
   const UnicodeLatinMap::Entry *map_entry =
-    UnicodeLatinMap::look_up(character);
+    UnicodeLatinMap::look_up((char32_t)character);
   if (map_entry != nullptr) {
     if (properties->get_small_caps() &&
-        map_entry->_toupper_character != character) {
+        map_entry->_toupper_character != (char32_t)character) {
       character = map_entry->_toupper_character;
       map_entry = UnicodeLatinMap::look_up(character);
       glyph_scale = properties->get_small_caps_scale();
@@ -1871,7 +1871,7 @@ get_character_glyphs(int character, const TextProperties *properties,
       got_glyph = font->get_glyph(map_entry->_ascii_equiv, glyph);
     }
 
-    if (!got_glyph && map_entry->_toupper_character != character) {
+    if (!got_glyph && map_entry->_toupper_character != (char32_t)character) {
       // If we still couldn't find it, try the uppercase equivalent.
       character = map_entry->_toupper_character;
       map_entry = UnicodeLatinMap::look_up(character);

@@ -164,7 +164,6 @@ private:
 
   void do_set_control_effect(AnimControl *control, PN_stdfloat effect, CData *cdata);
   PN_stdfloat do_get_control_effect(AnimControl *control, const CData *cdata) const;
-  void recompute_net_blend(CData *cdata);
   void clear_and_stop_intersecting(AnimControl *control, CData *cdata);
 
   COWPT(AnimPreloadTable) _anim_preload;
@@ -196,7 +195,6 @@ private:
     LMatrix4 _root_xform;
     AnimControl *_last_control_set;
     ChannelBlend _blend;
-    PN_stdfloat _net_blend;
     bool _anim_changed;
     double _last_update;
   };

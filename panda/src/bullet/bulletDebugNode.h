@@ -11,8 +11,8 @@
  * @date 2010-01-23
  */
 
-#ifndef __BULLET_DEBUG_NODE_H__
-#define __BULLET_DEBUG_NODE_H__
+#ifndef BULLETDEBUGNODE_H
+#define BULLETDEBUGNODE_H
 
 #include "pandabase.h"
 
@@ -74,7 +74,7 @@ private:
     UnalignedLVecBase4 _color;
   };
 
-  class DebugDraw : public btIDebugDraw {
+  class EXPCL_PANDABULLET DebugDraw : public btIDebugDraw {
 
   public:
     DebugDraw() {};
@@ -151,4 +151,4 @@ private:
 
 #include "bulletDebugNode.I"
 
-#endif // __BULLET_DEBUG_NODE_H__
+#endif // BULLETDEBUGNODE_H

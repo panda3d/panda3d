@@ -21,9 +21,7 @@
 
 #import <Foundation/NSAutoreleasePool.h>
 #import <AppKit/NSApplication.h>
-#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
 #import <AppKit/NSRunningApplication.h>
-#endif
 
 #include <mach-o/arch.h>
 
@@ -53,8 +51,10 @@ CocoaGraphicsPipe(CGDirectDisplayID display) : _display(display) {
   _display_height = CGDisplayPixelsHigh(_display);
   load_display_information();
 
-  cocoadisplay_cat.debug()
-    << "Creating CocoaGraphicsPipe for display ID " << _display << "\n";
+  if (cocoadisplay_cat.is_debug()) {
+    cocoadisplay_cat.debug()
+      << "Creating CocoaGraphicsPipe for display ID " << _display << "\n";
+  }
 }
 
 /**
@@ -68,7 +68,6 @@ load_display_information() {
 
   // Display modes
   size_t num_modes = 0;
-#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
   CFArrayRef modes = CGDisplayCopyAllDisplayModes(_display, NULL);
   if (modes != NULL) {
     num_modes = CFArrayGetCount(modes);
@@ -114,33 +113,6 @@ load_display_information() {
   if (modes != NULL) {
     CFRelease(modes);
   }
-
-#else
-  CFArrayRef modes = CGDisplayAvailableModes(_display);
-  if (modes != NULL) {
-    num_modes = CFArrayGetCount(modes);
-    _display_information->_total_display_modes = num_modes;
-    _display_information->_display_mode_array = new DisplayMode[num_modes];
-  }
-
-  for (size_t i = 0; i < num_modes; ++i) {
-    CFDictionaryRef mode = (CFDictionaryRef) CFArrayGetValueAtIndex(modes, i);
-
-    CFNumberGetValue((CFNumberRef) CFDictionaryGetValue(mode, kCGDisplayWidth),
-      kCFNumberIntType, &_display_information->_display_mode_array[i].width);
-
-    CFNumberGetValue((CFNumberRef) CFDictionaryGetValue(mode, kCGDisplayHeight),
-      kCFNumberIntType, &_display_information->_display_mode_array[i].height);
-
-    CFNumberGetValue((CFNumberRef) CFDictionaryGetValue(mode, kCGDisplayBitsPerPixel),
-      kCFNumberIntType, &_display_information->_display_mode_array[i].bits_per_pixel);
-
-    CFNumberGetValue((CFNumberRef) CFDictionaryGetValue(mode, kCGDisplayRefreshRate),
-      kCFNumberIntType, &_display_information->_display_mode_array[i].refresh_rate);
-
-    _display_information->_display_mode_array[i].fullscreen_only = false;
-  }
-#endif
 
   // Get processor information
   const NXArchInfo *ainfo = NXGetLocalArchInfo();

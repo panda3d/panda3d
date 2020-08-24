@@ -11,6 +11,7 @@ import struct
 import io
 import distutils.sysconfig as sysconf
 import zipfile
+import importlib
 
 from . import pefile
 
@@ -35,21 +36,15 @@ isDebugBuild = (python.lower().endswith('_d'))
 # NB. if encodings are removed, be sure to remove them from the shortcut in
 # deploy-stub.c.
 startupModules = [
-    'imp', 'encodings', 'encodings.*',
+    'imp', 'encodings', 'encodings.*', 'io', 'marshal', 'importlib.machinery',
+    'importlib.util',
 ]
-if sys.version_info >= (3, 0):
-    # Modules specific to Python 3
-    startupModules += ['io', 'marshal', 'importlib.machinery', 'importlib.util']
-else:
-    # Modules specific to Python 2
-    startupModules += []
 
 # These are some special init functions for some built-in Python modules that
 # deviate from the standard naming convention.  A value of None means that a
 # dummy entry should be written to the inittab.
 builtinInitFuncs = {
     'builtins': None,
-    '__builtin__': None,
     'sys': None,
     'exceptions': None,
     '_warnings': '_PyWarnings_Init',
@@ -75,6 +70,7 @@ hiddenImports = {
     'datetime': ['_strptime'],
     'keyring.backends': ['keyring.backends.*'],
     'matplotlib.font_manager': ['encodings.mac_roman'],
+    'matplotlib.backends._backend_tk': ['tkinter'],
     'direct.particles': ['direct.particles.ParticleManagerGlobal'],
     'numpy.core._multiarray_umath': [
         'numpy.core._internal',
@@ -82,12 +78,6 @@ hiddenImports = {
         'numpy.core._methods',
     ],
 }
-
-if sys.version_info >= (3,):
-    hiddenImports['matplotlib.backends._backend_tk'] = ['tkinter']
-else:
-    hiddenImports['matplotlib.backends._backend_tk'] = ['Tkinter']
-
 
 # These are overrides for specific modules.
 overrideModules = {
@@ -649,6 +639,51 @@ okMissing = [
     'direct.extensions_native.extensions_darwin',
     ]
 
+# Since around macOS 10.15, Apple's codesigning process has become more strict.
+# Appending data to the end of a Mach-O binary is now explicitly forbidden. The
+# solution is to embed our own segment into the binary so it can be properly
+# signed.
+mach_header_64_layout = '<IIIIIIII'
+
+# Each load command is guaranteed to start with the command identifier and
+# command size. We'll call this the "lc header".
+lc_header_layout = '<II'
+
+# Each Mach-O segment is made up of sections. We need to change both the segment
+# and section information, so we'll need to know the layout of a section as
+# well.
+section64_header_layout = '<16s16sQQIIIIIIII'
+
+# These are all of the load commands we'll need to modify parts of.
+LC_SEGMENT_64 = 0x19
+LC_DYLD_INFO_ONLY = 0x80000022
+LC_SYMTAB = 0x02
+LC_DYSYMTAB = 0x0B
+LC_FUNCTION_STARTS = 0x26
+LC_DATA_IN_CODE = 0x29
+
+lc_layouts = {
+    LC_SEGMENT_64: '<II16sQQQQIIII',
+    LC_DYLD_INFO_ONLY: '<IIIIIIIIIIII',
+    LC_SYMTAB: '<IIIIII',
+    LC_DYSYMTAB: '<IIIIIIIIIIIIIIIIIIII',
+    LC_FUNCTION_STARTS: '<IIII',
+    LC_DATA_IN_CODE: '<IIII',
+}
+
+# All of our modifications involve sliding some offsets, since we need to insert
+# our data in the middle of the binary (we can't just put the data at the end
+# since __LINKEDIT must be the last segment).
+lc_indices_to_slide = {
+    b'__PANDA': [4, 6],
+    b'__LINKEDIT': [3, 5],
+    LC_DYLD_INFO_ONLY: [2, 4, 8, 10],
+    LC_SYMTAB: [2, 4],
+    LC_DYSYMTAB: [14],
+    LC_FUNCTION_STARTS: [2],
+    LC_DATA_IN_CODE: [2],
+}
+
 class Freezer:
     class ModuleDef:
         def __init__(self, moduleName, filename = None,
@@ -785,7 +820,7 @@ class Freezer:
         # already-imported modules.  (Some of them might do their own
         # special path mangling.)
         for moduleName, module in list(sys.modules.items()):
-            if module and hasattr(module, '__path__'):
+            if module and getattr(module, '__path__', None) is not None:
                 path = list(getattr(module, '__path__'))
                 if path:
                     modulefinder.AddPackagePath(moduleName, path[0])
@@ -800,29 +835,36 @@ class Freezer:
                     self.moduleSuffixes[i] = (suffix[0], 'rb', imp.PY_SOURCE)
         else:
             self.moduleSuffixes = [('.py', 'rb', 1), ('.pyc', 'rb', 2)]
+
+            abi_version = '{0}{1}'.format(*sys.version_info)
+            abi_flags = ''
+            if sys.version_info < (3, 8):
+                abi_flags += 'm'
+
             if 'linux' in self.platform:
                 self.moduleSuffixes += [
-                    ('.cpython-{0}{1}m-x86_64-linux-gnu.so'.format(*sys.version_info), 'rb', 3),
-                    ('.cpython-{0}{1}m-i686-linux-gnu.so'.format(*sys.version_info), 'rb', 3),
+                    ('.cpython-{0}{1}-x86_64-linux-gnu.so'.format(abi_version, abi_flags), 'rb', 3),
+                    ('.cpython-{0}{1}-i686-linux-gnu.so'.format(abi_version, abi_flags), 'rb', 3),
                     ('.abi{0}.so'.format(sys.version_info[0]), 'rb', 3),
                     ('.so', 'rb', 3),
                 ]
             elif 'win' in self.platform:
+                # ABI flags are not appended on Windows.
                 self.moduleSuffixes += [
-                    ('.cp{0}{1}-win_amd64.pyd'.format(*sys.version_info), 'rb', 3),
-                    ('.cp{0}{1}-win32.pyd'.format(*sys.version_info), 'rb', 3),
+                    ('.cp{0}-win_amd64.pyd'.format(abi_version), 'rb', 3),
+                    ('.cp{0}-win32.pyd'.format(abi_version), 'rb', 3),
                     ('.pyd', 'rb', 3),
                 ]
             elif 'mac' in self.platform:
                 self.moduleSuffixes += [
-                    ('.cpython-{0}{1}m-darwin.so'.format(*sys.version_info), 'rb', 3),
+                    ('.cpython-{0}{1}-darwin.so'.format(abi_version, abi_flags), 'rb', 3),
                     ('.abi{0}.so'.format(sys.version_info[0]), 'rb', 3),
                     ('.so', 'rb', 3),
                 ]
             else: # FreeBSD et al.
                 self.moduleSuffixes += [
-                    ('.cpython-{0}{1}m.so'.format(*sys.version_info), 'rb', 3),
-                    ('.abi{0}.so'.format(*sys.version_info), 'rb', 3),
+                    ('.cpython-{0}{1}.so'.format(abi_version, abi_flags), 'rb', 3),
+                    ('.abi{0}.so'.format(sys.version_info[0]), 'rb', 3),
                     ('.so', 'rb', 3),
                 ]
 
@@ -845,7 +887,7 @@ class Freezer:
         allowChildren is true, the children of the indicated module
         may still be included."""
 
-        assert self.mf == None
+        assert self.mf is None
 
         self.modules[moduleName] = self.ModuleDef(
             moduleName, exclude = True,
@@ -879,7 +921,7 @@ class Freezer:
             print("couldn't import %s" % (moduleName))
             module = None
 
-        if module != None:
+        if module is not None:
             for symbol in moduleName.split('.')[1:]:
                 module = getattr(module, symbol)
             if hasattr(module, '__path__'):
@@ -894,7 +936,7 @@ class Freezer:
         if '.' in baseName:
             parentName, baseName = moduleName.rsplit('.', 1)
             path = self.getModulePath(parentName)
-            if path == None:
+            if path is None:
                 return None
 
         try:
@@ -918,7 +960,7 @@ class Freezer:
             print("couldn't import %s" % (moduleName))
             module = None
 
-        if module != None:
+        if module is not None:
             for symbol in moduleName.split('.')[1:]:
                 module = getattr(module, symbol)
             if hasattr(module, '__all__'):
@@ -931,7 +973,7 @@ class Freezer:
         if '.' in baseName:
             parentName, baseName = moduleName.rsplit('.', 1)
             path = self.getModulePath(parentName)
-            if path == None:
+            if path is None:
                 return None
 
         try:
@@ -988,9 +1030,9 @@ class Freezer:
         for parentName, newParentName in parentNames:
             modules = self.getModuleStar(parentName)
 
-            if modules == None:
+            if modules is None:
                 # It's actually a regular module.
-                mdef[newParentName] = self.ModuleDef(
+                mdefs[newParentName] = self.ModuleDef(
                     parentName, implicit = implicit, guess = guess,
                     fromSource = fromSource, text = text)
 
@@ -1024,7 +1066,7 @@ class Freezer:
         directories within a particular directory.
         """
 
-        assert self.mf == None
+        assert self.mf is None
 
         if not newName:
             newName = moduleName
@@ -1046,7 +1088,7 @@ class Freezer:
         to done(), you may not add any more modules until you call
         reset(). """
 
-        assert self.mf == None
+        assert self.mf is None
 
         # If we are building an exe, we also need to implicitly
         # bring in Python's startup modules.
@@ -1291,7 +1333,8 @@ class Freezer:
         for moduleName, module in list(self.mf.modules.items()):
             if module.__code__:
                 origPathname = module.__code__.co_filename
-                replace_paths.append((origPathname, moduleName))
+                if origPathname:
+                    replace_paths.append((origPathname, moduleName))
         self.mf.replace_paths = replace_paths
 
         # Now that we have built up the replacement mapping, go back
@@ -1303,11 +1346,7 @@ class Freezer:
 
     def __addPyc(self, multifile, filename, code, compressionLevel):
         if code:
-            data = imp.get_magic() + b'\0\0\0\0'
-
-            if sys.version_info >= (3, 0):
-                data += b'\0\0\0\0'
-
+            data = imp.get_magic() + b'\0\0\0\0\0\0\0\0'
             data += marshal.dumps(code)
 
             stream = StringStream(data)
@@ -1664,10 +1703,7 @@ class Freezer:
                     # initmodule or PyInit_module function.
                     modname = mod.split('.')[-1]
                     libfile = modname + '.lib'
-                    if sys.version_info >= (3, 0):
-                        symbolName = 'PyInit_' + modname
-                    else:
-                        symbolName = 'init' + modname
+                    symbolName = 'PyInit_' + modname
                     os.system('lib /nologo /def /export:%s /name:%s.pyd /out:%s' % (symbolName, modname, libfile))
                     extraLink.append(libfile)
                     cleanFiles += [libfile, modname + '.exp']
@@ -1686,6 +1722,8 @@ class Freezer:
 
     def generateRuntimeFromStub(self, target, stub_file, use_console, fields={},
                                 log_append=False):
+        self.__replacePaths()
+
         # We must have a __main__ module to make an exe file.
         if not self.__writingModule('__main__'):
             message = "Can't generate an executable without a __main__ module."
@@ -1771,10 +1809,7 @@ class Freezer:
                     code = 'import sys;del sys.modules["%s"];import sys,os,imp;imp.load_dynamic("%s",os.path.join(sys.path[0], "%s%s"))' % (moduleName, moduleName, moduleName, modext)
                 else:
                     code = 'import sys;del sys.modules["%s"];import sys,os,imp;imp.load_dynamic("%s",os.path.join(os.path.dirname(sys.executable), "%s%s"))' % (moduleName, moduleName, moduleName, modext)
-                if sys.version_info >= (3, 2):
-                    code = compile(code, moduleName, 'exec', optimize=2)
-                else:
-                    code = compile(code, moduleName, 'exec')
+                code = compile(code, moduleName, 'exec', optimize=2)
                 code = marshal.dumps(code)
                 moduleList.append((moduleName, len(pool), len(code)))
                 pool += code
@@ -1812,20 +1847,35 @@ class Freezer:
             # Align to page size, so that it can be mmapped.
             blob_align = 4096
 
-        # Add padding before the blob if necessary.
-        blob_offset = len(stub_data)
-        if (blob_offset & (blob_align - 1)) != 0:
-            pad = (blob_align - (blob_offset & (blob_align - 1)))
-            stub_data += (b'\0' * pad)
-            blob_offset += pad
-        assert (blob_offset % blob_align) == 0
-        assert blob_offset == len(stub_data)
-
         # Also determine the total blob size now.  Add padding to the end.
         blob_size = pool_offset + len(pool)
-        if blob_size & 31 != 0:
-            pad = (32 - (blob_size & 31))
+        if blob_size & (blob_align - 1) != 0:
+            pad = (blob_align - (blob_size & (blob_align - 1)))
             blob_size += pad
+
+        # TODO: Support creating custom sections in universal binaries.
+        append_blob = True
+        if self.platform.startswith('macosx') and len(bitnesses) == 1:
+            # If our deploy-stub has a __PANDA segment, we know we're meant to
+            # put our blob there rather than attach it to the end.
+            load_commands = self._parse_macho_load_commands(stub_data)
+            if b'__PANDA' in load_commands.keys():
+                append_blob = False
+
+        if self.platform.startswith("macosx") and not append_blob:
+            # Take this time to shift any Mach-O structures around to fit our
+            # blob. We don't need to worry about aligning the offset since the
+            # compiler already took care of that when creating the segment.
+            blob_offset = self._shift_macho_structures(stub_data, load_commands, blob_size)
+        else:
+            # Add padding before the blob if necessary.
+            blob_offset = len(stub_data)
+            if (blob_offset & (blob_align - 1)) != 0:
+                pad = (blob_align - (blob_offset & (blob_align - 1)))
+                stub_data += (b'\0' * pad)
+                blob_offset += pad
+            assert (blob_offset % blob_align) == 0
+            assert blob_offset == len(stub_data)
 
         # Calculate the offsets for the variables.  These are pointers,
         # relative to the beginning of the blob.
@@ -1906,9 +1956,13 @@ class Freezer:
             blob += struct.pack('<Q', blob_offset)
 
         with open(target, 'wb') as f:
-            f.write(stub_data)
-            assert f.tell() == blob_offset
-            f.write(blob)
+            if append_blob:
+                f.write(stub_data)
+                assert f.tell() == blob_offset
+                f.write(blob)
+            else:
+                stub_data[blob_offset:blob_offset + blob_size] = blob
+                f.write(stub_data)
 
         os.chmod(target, 0o755)
         return target
@@ -2166,7 +2220,9 @@ class Freezer:
                     symoff += nlist_size
                     name = strings[strx : strings.find(b'\0', strx)]
 
-                    if name == b'_' + symbol_name:
+                    # If the entry's type has any bits at 0xe0 set, it's a debug
+                    # symbol, and will point us to the wrong place.
+                    if name == b'_' + symbol_name and type & 0xe0 == 0:
                         # Find out in which segment this is.
                         for vmaddr, vmsize, fileoff in segments:
                             # Is it defined in this segment?
@@ -2175,6 +2231,59 @@ class Freezer:
                                 # Yes, so return the symbol offset.
                                 return fileoff + rel
                         print("Could not find memory address for symbol %s" % (symbol_name))
+
+    def _parse_macho_load_commands(self, macho_data):
+        """Returns the list of load commands from macho_data."""
+        mach_header_64 = list(
+            struct.unpack_from(mach_header_64_layout, macho_data, 0))
+
+        num_load_commands = mach_header_64[4]
+
+        load_commands = {}
+
+        curr_lc_offset = struct.calcsize(mach_header_64_layout)
+        for i in range(num_load_commands):
+            lc = struct.unpack_from(lc_header_layout, macho_data, curr_lc_offset)
+            layout = lc_layouts.get(lc[0])
+            if layout:
+                # Make it a list since we want to mutate it.
+                lc = list(struct.unpack_from(layout, macho_data, curr_lc_offset))
+
+                if lc[0] == LC_SEGMENT_64:
+                    stripped_name = lc[2].rstrip(b'\0')
+                    if stripped_name in [b'__PANDA', b'__LINKEDIT']:
+                        load_commands[stripped_name] = (curr_lc_offset, lc)
+                else:
+                    load_commands[lc[0]] = (curr_lc_offset, lc)
+
+            curr_lc_offset += lc[1]
+
+        return load_commands
+
+    def _shift_macho_structures(self, macho_data, load_commands, blob_size):
+        """Given the stub and the size of our blob, make room for it and edit
+        all of the necessary structures to keep the binary valid. Returns the
+        offset where the blob should be placed."""
+
+        for lc_key in load_commands.keys():
+            for index in lc_indices_to_slide[lc_key]:
+                load_commands[lc_key][1][index] += blob_size
+
+            if lc_key == b'__PANDA':
+                section_header_offset = load_commands[lc_key][0] + struct.calcsize(lc_layouts[LC_SEGMENT_64])
+                section_header = list(struct.unpack_from(section64_header_layout, macho_data, section_header_offset))
+                section_header[3] = blob_size
+                struct.pack_into(section64_header_layout, macho_data, section_header_offset, *section_header)
+
+            layout = LC_SEGMENT_64 if lc_key in [b'__PANDA', b'__LINKEDIT'] else lc_key
+            struct.pack_into(lc_layouts[layout], macho_data, load_commands[lc_key][0], *load_commands[lc_key][1])
+
+        blob_offset = load_commands[b'__PANDA'][1][5]
+
+        # Write in some null bytes until we write in the actual blob.
+        macho_data[blob_offset:blob_offset] = b'\0' * blob_size
+
+        return blob_offset
 
     def makeModuleDef(self, mangledName, code):
         result = ''
@@ -2213,6 +2322,10 @@ class Freezer:
             return False
 
         return True
+
+
+_PKG_NAMESPACE_DIRECTORY = object()
+
 
 class PandaModuleFinder(modulefinder.ModuleFinder):
 
@@ -2262,7 +2375,7 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
                 except KeyError:
                     return None
 
-                if sys.version_info >= (3, 0) and 'b' not in mode:
+                if 'b' not in mode:
                     return io.TextIOWrapper(fp, encoding='utf8')
                 return fp
 
@@ -2271,6 +2384,44 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
             fn = os.path.join(dirname, fn)
 
         return None
+
+    def _dir_exists(self, path):
+        """Returns True if the given directory exists, either on disk or inside
+        a wheel."""
+
+        if os.path.isdir(path):
+            return True
+
+        # Is there a zip file along the path?
+        dir, dirname = os.path.split(path.rstrip(os.path.sep + '/'))
+        fn = dirname
+        while dirname:
+            if os.path.isfile(dir):
+                # Okay, this is actually a file.  Is it a zip file?
+                if dir in self._zip_files:
+                    # Yes, and we've previously opened this.
+                    zip = self._zip_files[dir]
+                elif zipfile.is_zipfile(dir):
+                    zip = zipfile.ZipFile(dir)
+                    self._zip_files[dir] = zip
+                else:
+                    # It's a different kind of file.  Stop looking.
+                    return None
+
+                # (Most) zip files do not store directories; check instead for a
+                # file whose path starts with this directory name.
+                prefix = fn.replace(os.path.sep, '/') + '/'
+                for name in zip.namelist():
+                    if name.startswith(prefix):
+                        return True
+
+                return False
+
+            # Look at the parent directory.
+            dir, dirname = os.path.split(dir)
+            fn = os.path.join(dirname, fn)
+
+        return False
 
     def load_module(self, fqname, fp, pathname, file_info):
         """Copied from ModuleFinder.load_module with fixes to handle sending bytes
@@ -2284,6 +2435,12 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
             self.msgout(2, "load_module ->", m)
             return m
 
+        if type is _PKG_NAMESPACE_DIRECTORY:
+            m = self.add_module(fqname)
+            m.__code__ = compile('', '', 'exec')
+            m.__path__ = pathname
+            return m
+
         if type == imp.PY_SOURCE:
             if fqname in overrideModules:
                 # This module has a custom override.
@@ -2294,12 +2451,23 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
             code += b'\n' if isinstance(code, bytes) else '\n'
             co = compile(code, pathname, 'exec')
         elif type == imp.PY_COMPILED:
-            try:
-                marshal_data = importlib._bootstrap_external._validate_bytecode_header(fp.read())
-            except ImportError as exc:
-                self.msgout(2, "raise ImportError: " + str(exc), pathname)
-                raise
-            co = marshal.loads(marshal_data)
+            if sys.version_info >= (3, 7):
+                try:
+                    data = fp.read()
+                    importlib._bootstrap_external._classify_pyc(data, fqname, {})
+                except ImportError as exc:
+                    self.msgout(2, "raise ImportError: " + str(exc), pathname)
+                    raise
+
+                co = marshal.loads(memoryview(data)[16:])
+            else:
+                try:
+                    marshal_data = importlib._bootstrap_external._validate_bytecode_header(fp.read())
+                except ImportError as exc:
+                    self.msgout(2, "raise ImportError: " + str(exc), pathname)
+                    raise
+
+                co = marshal.loads(marshal_data)
         else:
             co = None
 
@@ -2365,7 +2533,20 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
 
             path = self.path
 
+            if fullname == 'distutils' and hasattr(sys, 'real_prefix'):
+                # The PyPI version of virtualenv inserts a special version of
+                # distutils that does some bizarre stuff that won't work in our
+                # deployed application.  Force it to find the regular one.
+                try:
+                    fp, fn, stuff = self.find_module('opcode')
+                    if fn:
+                        path = [os.path.dirname(fn)] + path
+                except ImportError:
+                    pass
+
         # Look for the module on the search path.
+        ns_dirs = []
+
         for dir_path in path:
             basename = os.path.join(dir_path, name.split('.')[-1])
 
@@ -2382,6 +2563,10 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
                 if self._open_file(init, mode):
                     return (None, basename, ('', '', imp.PKG_DIRECTORY))
 
+            # This may be a namespace package.
+            if self._dir_exists(basename):
+                ns_dirs.append(basename)
+
         # It wasn't found through the normal channels.  Maybe it's one of
         # ours, or maybe it's frozen?
         if not path:
@@ -2389,6 +2574,11 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
             if p3extend_frozen and p3extend_frozen.is_frozen_module(name):
                 # It's a frozen module.
                 return (None, name, ('', '', imp.PY_FROZEN))
+
+        # If we found folders on the path with this module name without an
+        # __init__.py file, we should consider this a namespace package.
+        if ns_dirs:
+            return (None, ns_dirs, ('', '', _PKG_NAMESPACE_DIRECTORY))
 
         raise ImportError(name)
 

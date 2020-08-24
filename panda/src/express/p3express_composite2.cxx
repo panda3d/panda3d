@@ -4,6 +4,8 @@
 #include "pta_float.cxx"
 #include "ramfile.cxx"
 #include "referenceCount.cxx"
+#include "stringStreamBuf.cxx"
+#include "stringStream.cxx"
 #include "subfileInfo.cxx"
 #include "subStream.cxx"
 #include "subStreamBuf.cxx"

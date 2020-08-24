@@ -496,6 +496,7 @@ prepare_vertex_buffer(GeomVertexArrayData *data) {
     }
     #endif
 
+    dvbc->update_data_size_bytes(num_bytes);
     return dvbc;
   } else {
     dxgsg9_cat.error()
@@ -533,14 +534,42 @@ apply_vertex_buffer(VertexBufferContext *vbc,
         return false;
       }
 
-      PStatTimer timer(_load_vertex_buffer_pcollector, reader->get_current_thread());
 
-      #if 0
       if (dvbc->changed_size(reader)) {
-        // We have to destroy the old vertex buffer and create a new one.
-        dvbc->create_vbuffer(*_screen, reader);
+        // Destroy and recreate the buffer.
+        if (dvbc->_vbuffer != nullptr) {
+          dvbc->_vbuffer->Release();
+          dvbc->_vbuffer = nullptr;
+        }
+
+        DWORD usage;
+        D3DPOOL pool;
+        if (_screen->_managed_vertex_buffers) {
+          pool = D3DPOOL_MANAGED;
+          usage = D3DUSAGE_WRITEONLY;
+        } else {
+          pool = D3DPOOL_DEFAULT;
+          usage = D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC;
+        }
+
+        PStatTimer timer(_create_vertex_buffer_pcollector, Thread::get_current_thread());
+
+        HRESULT hr;
+        int attempts = 0;
+        do {
+          hr = _screen->_d3d_device->CreateVertexBuffer(num_bytes, usage, dvbc->_fvf, pool, &dvbc->_vbuffer, nullptr);
+          attempts++;
+        } while (check_dx_allocation(hr, num_bytes, attempts));
+
+        if (FAILED(hr)) {
+          dvbc->_vbuffer = nullptr;
+          dxgsg9_cat.error()
+            << "CreateVertexBuffer failed" << D3DERRORSTRING(hr);
+          return false;
+        }
       }
-      #endif
+
+      PStatTimer timer(_load_vertex_buffer_pcollector, reader->get_current_thread());
 
       HRESULT hr;
       BYTE *local_pointer;
@@ -586,8 +615,10 @@ release_vertex_buffer(VertexBufferContext *vbc) {
   }
   #endif
 
-  dvbc->_vbuffer->Release();
-  dvbc->_vbuffer = nullptr;
+  if (dvbc->_vbuffer != nullptr) {
+    dvbc->_vbuffer->Release();
+    dvbc->_vbuffer = nullptr;
+  }
 
   delete dvbc;
 }
@@ -970,8 +1001,10 @@ begin_frame(Thread *current_thread) {
   GraphicsStateGuardian::begin_frame(current_thread);
 
   if (_d3d_device == nullptr) {
-    dxgsg9_cat.debug()
-      << this << "::begin_frame(): no device.\n";
+    if (dxgsg9_cat.is_debug()) {
+      dxgsg9_cat.debug()
+        << this << "::begin_frame(): no device.\n";
+    }
     return false;
   }
 
@@ -1924,9 +1957,11 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
                                 tex_level_0, &src_rect,
                                 filter);
   if (FAILED(hr)) {
-    dxgsg9_cat.debug()
-      << "StretchRect failed in framebuffer_copy_to_texture"
-      << D3DERRORSTRING(hr);
+    if (dxgsg9_cat.is_debug()) {
+      dxgsg9_cat.debug()
+        << "StretchRect failed in framebuffer_copy_to_texture"
+        << D3DERRORSTRING(hr);
+    }
     okflag = false;
   }
 
@@ -2368,7 +2403,7 @@ reset() {
   hr = _d3d_device->CreateQuery(D3DQUERYTYPE_OCCLUSION, nullptr);
   _supports_occlusion_query = !FAILED(hr);
 
-  if (dxgsg9_cat.is_error()) {
+  if (dxgsg9_cat.is_debug()) {
     dxgsg9_cat.debug()
       << "\nHwTransformAndLight = " << ((d3d_caps.DevCaps & D3DDEVCAPS_HWTRANSFORMANDLIGHT) != 0)
       << "\nMaxTextureWidth = " << d3d_caps.MaxTextureWidth
@@ -4597,8 +4632,10 @@ reset_d3d_device(D3DPRESENT_PARAMETERS *presentation_params,
   // release the old swapchain and create a new one
   if (_screen && _screen->_swap_chain) {
     _screen->_swap_chain->Release();
-    wdxdisplay9_cat.debug()
-      << "swap chain " << _screen->_swap_chain << " is released\n";
+    if (wdxdisplay9_cat.is_debug()) {
+      wdxdisplay9_cat.debug()
+        << "swap chain " << _screen->_swap_chain << " is released\n";
+    }
     _screen->_swap_chain = nullptr;
     hr = _d3d_device->CreateAdditionalSwapChain(presentation_params, &_screen->_swap_chain);
   }
@@ -4718,7 +4755,10 @@ create_swap_chain(DXScreenData *new_context) {
   HRESULT hr;
   hr = new_context->_d3d_device->CreateAdditionalSwapChain(&new_context->_presentation_params, &new_context->_swap_chain);
   if (FAILED(hr)) {
-    wdxdisplay9_cat.debug() << "Swapchain creation failed :"<<D3DERRORSTRING(hr)<<"\n";
+    if (wdxdisplay9_cat.is_debug()) {
+      wdxdisplay9_cat.debug()
+        << "Swapchain creation failed :" << D3DERRORSTRING(hr) << "\n";
+    }
     return false;
   }
   return true;
@@ -4733,7 +4773,10 @@ release_swap_chain(DXScreenData *new_context) {
   if (new_context->_swap_chain) {
     hr = new_context->_swap_chain->Release();
     if (FAILED(hr)) {
-      wdxdisplay9_cat.debug() << "Swapchain release failed:" << D3DERRORSTRING(hr) << "\n";
+      if (wdxdisplay9_cat.is_debug()) {
+        wdxdisplay9_cat.debug()
+          << "Swapchain release failed:" << D3DERRORSTRING(hr) << "\n";
+      }
       return false;
     }
   }
@@ -5240,6 +5283,7 @@ calc_fb_properties(DWORD cformat, DWORD dformat,
 #define GAMMA_1 (255.0 * 256.0)
 
 static bool _gamma_table_initialized = false;
+static bool _gamma_changed = false;
 static unsigned short _original_gamma_table [256 * 3];
 
 void _create_gamma_table_dx9 (PN_stdfloat gamma, unsigned short *original_red_table, unsigned short *original_green_table, unsigned short *original_blue_table, unsigned short *red_table, unsigned short *green_table, unsigned short *blue_table) {
@@ -5337,6 +5381,7 @@ static_set_gamma(bool restore, PN_stdfloat gamma) {
 
     if (SetDeviceGammaRamp (hdc, ramp)) {
       set = true;
+      _gamma_changed = !restore;
     }
 
     ReleaseDC (nullptr, hdc);
@@ -5374,7 +5419,9 @@ restore_gamma() {
 void DXGraphicsStateGuardian9::
 atexit_function(void) {
   set_cg_device(nullptr);
-  static_set_gamma(true, 1.0f);
+  if (_gamma_changed) {
+    static_set_gamma(true, 1.0f);
+  }
 }
 
 /**

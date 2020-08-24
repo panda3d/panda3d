@@ -16,7 +16,7 @@
 #include <stdlib.h>
 #include "typeRegistry.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 
 // Windows case.
 #ifndef WIN32_LEAN_AND_MEAN
@@ -191,7 +191,7 @@ ptr_to_alloc(void *ptr, size_t &size) {
  */
 MemoryHook::
 MemoryHook() {
-#ifdef WIN32
+#ifdef _WIN32
 
   // Windows case.
   SYSTEM_INFO sysinfo;
@@ -487,7 +487,7 @@ heap_trim(size_t pad) {
   _lock.unlock();
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
   // Also, on Windows we have _heapmin().
   if (_heapmin() == 0) {
     trimmed = true;
@@ -516,7 +516,7 @@ mmap_alloc(size_t size, bool allow_exec) {
   _total_mmap_size += size;
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 
   // Windows case.
   void *ptr = VirtualAlloc(nullptr, size, MEM_COMMIT | MEM_RESERVE,
@@ -571,7 +571,7 @@ mmap_free(void *ptr, size_t size) {
   _total_mmap_size -= size;
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
   VirtualFree(ptr, 0, MEM_RELEASE);
 #else
   munmap(ptr, size);

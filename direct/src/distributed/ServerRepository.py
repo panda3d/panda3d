@@ -137,7 +137,7 @@ class ServerRepository:
 
         # An allocator object that assigns the next doIdBase to each
         # client.
-        self.idAllocator = UniqueIdAllocator(0, 0xffffffff / self.doIdRange)
+        self.idAllocator = UniqueIdAllocator(0, 0xffffffff // self.doIdRange)
 
         self.dcFile = DCFile()
         self.dcSuffix = ''
@@ -225,6 +225,7 @@ class ServerRepository:
             searchPath = getModelPath().getValue()
             for dcFileName in dcFileNames:
                 pathname = Filename(dcFileName)
+                vfs = VirtualFileSystem.getGlobalPtr()
                 vfs.resolveFilename(pathname, searchPath)
                 readResult = dcFile.read(pathname)
                 if not readResult:
@@ -628,7 +629,7 @@ class ServerRepository:
         del self.clientsByConnection[client.connection]
         del self.clientsByDoIdBase[client.doIdBase]
 
-        id = client.doIdBase / self.doIdRange
+        id = client.doIdBase // self.doIdRange
         self.idAllocator.free(id)
 
         self.qcr.removeConnection(client.connection)
@@ -689,7 +690,7 @@ class ServerRepository:
     def clientHardDisconnectTask(self, task):
         """ client did not tell us he was leaving but we lost connection to
         him, so we need to update our data and tell others """
-        for client in self.clientsByConnection.values():
+        for client in list(self.clientsByConnection.values()):
             if not self.qcr.isConnectionOk(client.connection):
                 self.handleClientDisconnect(client)
         return Task.cont

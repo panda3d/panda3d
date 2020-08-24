@@ -2,28 +2,24 @@ import sys
 import pytest
 from panda3d.core import TextEncoder
 
-if sys.version_info >= (3, 0):
-    unichr = chr
-    xrange = range
-
 
 def valid_characters():
     """Generator yielding all valid Unicode code points."""
 
-    for i in xrange(0xd800):
-        yield unichr(i)
+    for i in range(0xd800):
+        yield chr(i)
 
-    for i in xrange(0xe000, sys.maxunicode + 1):
+    for i in range(0xe000, sys.maxunicode + 1):
         if i != 0xfeff and i & 0xfffe != 0xfffe:
-            yield unichr(i)
+            yield chr(i)
 
 
 def test_text_decode_iso8859():
     encoder = TextEncoder()
     encoder.set_encoding(TextEncoder.E_iso8859)
 
-    for i in xrange(255):
-        enc = unichr(i).encode('latin-1')
+    for i in range(255):
+        enc = chr(i).encode('latin-1')
         assert len(enc) == 1
 
         dec = encoder.decode_text(enc)
@@ -60,8 +56,8 @@ def test_text_encode_iso8859():
     encoder = TextEncoder()
     encoder.set_encoding(TextEncoder.E_iso8859)
 
-    for i in xrange(255):
-        c = unichr(i)
+    for i in range(255):
+        c = chr(i)
         enc = encoder.encode_wtext(c)
         assert enc == c.encode('latin-1')
 

@@ -1,5 +1,5 @@
-#ifndef __SOCKET_IP_H__
-#define __SOCKET_IP_H__
+#ifndef SOCKET_IP_H
+#define SOCKET_IP_H
 
 #include "pandabase.h"
 #include "socket_portable.h"
@@ -56,7 +56,6 @@ private:
   friend class Socket_TCP_Listen;
   friend class Socket_UDP_Incoming;
   friend class Socket_UDP_Outgoing;
-  friend class Socket_TCP_SSL;
 
 public:
   static TypeHandle get_class_type() {
@@ -259,4 +258,4 @@ GetPeerName(void) const {
   return Socket_Address(name);
 }
 
-#endif //__SOCKET_IP_H__
+#endif //SOCKET_IP_H

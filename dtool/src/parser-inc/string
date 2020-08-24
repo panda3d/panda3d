@@ -26,6 +26,7 @@
 
 namespace std {
   template<class charT> struct char_traits;
+  template<class T> class allocator;
 
   template<> struct char_traits<char> {
     using char_type = char;
@@ -51,7 +52,7 @@ namespace std {
     using state_type = mbstate_t;
   };
 
-  template<class ctype>
+  template<class CharT, class Traits = std::char_traits<CharT>, class Allocator = std::allocator<CharT> >
   class basic_string {
   public:
     struct iterator;
@@ -63,17 +64,17 @@ namespace std {
     static const size_t npos = -1;
 
     basic_string();
-    basic_string(const basic_string<ctype> &copy);
-    void operator = (const basic_string<ctype> &copy);
-    basic_string(const ctype *string);
+    basic_string(const basic_string<CharT> &copy);
+    void operator = (const basic_string<CharT> &copy);
+    basic_string(const CharT *string);
     ~basic_string();
 
-    const ctype *c_str() const;
+    const CharT *c_str() const;
     size_t length() const;
 
-    ctype at(size_t pos) const;
-    ctype operator[](size_t pos) const;
-    ctype &operator[](size_t pos);
+    CharT at(size_t pos) const;
+    CharT operator[](size_t pos) const;
+    CharT &operator[](size_t pos);
   };
 
   typedef basic_string<char> string;

@@ -209,33 +209,13 @@ HTTPDate(const string &format) {
     return;
   }
 
-  // Everything checks out; convert the date.  rdb made this an if 0 check as
-  // timegm is a nonstandard extension so it fails in some situations even if
-  // the compiler defines __GNUC__
-#if 0
-
-  _time = timegm(&t);
-
-#else  // __GNUC__
-  // Without the GNU extension timegm, we have to use mktime() instead.
+  // Everything checks out; convert the date.
   _time = mktime(&t);
 
   if (_time != (time_t)-1) {
     // Unfortunately, mktime() assumes local time; convert this back to GMT.
-#if defined(IS_FREEBSD)
-    time_t now = time(nullptr);
-    struct tm *tp = localtime(&now);
-    _time -= tp->tm_gmtoff;
-#elif defined(_WIN32)
-    long int timezone;
-    _get_timezone(&timezone);
-    _time -= timezone;
-#else
-    extern long int timezone;
-    _time -= timezone;
-#endif
+    _time += (mktime(localtime(&_time)) - mktime(gmtime(&_time)));
   }
-#endif  // __GNUC__
 }
 
 /**

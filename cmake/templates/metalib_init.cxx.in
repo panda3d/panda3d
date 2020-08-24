@@ -1,0 +1,9 @@
+#include "dtoolbase.h"
+
+@component_init_headers@
+
+EXPORT_CLASS void
+@init_func@() {
+@component_init_funcs@
+}
+@export_definitions@

@@ -101,7 +101,7 @@ int ScissorAttrib::
 compare_to_impl(const RenderAttrib *other) const {
   const ScissorAttrib *ta = (const ScissorAttrib *)other;
 
-  if (!_off && !ta->_off) {
+  if (_off && ta->_off) {
     return 0;
   }
 

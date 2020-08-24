@@ -21,6 +21,10 @@
 
 #include <ctype.h>
 
+#ifdef PHAVE_ATOMIC
+#include <atomic>
+#endif
+
 #ifdef BUILD_IPHONE
 #include <fcntl.h>
 #endif
@@ -351,7 +355,7 @@ assert_failure(const char *expression, int line,
     // Make sure the error message has been flushed to the output.
     nout.flush();
 
-#ifdef WIN32
+#ifdef _MSC_VER
     // How to trigger an exception in VC++ that offers to take us into the
     // debugger?  abort() doesn't do it.  We used to be able to assert(false),
     // but in VC++ 7 that just throws an exception, and an uncaught exception
@@ -369,9 +373,9 @@ assert_failure(const char *expression, int line,
     int *ptr = nullptr;
     *ptr = 1;
 
-#else  // WIN32
+#else  // _MSC_VER
     abort();
-#endif  // WIN32
+#endif  // _MSC_VER
   }
 
   return true;
@@ -422,28 +426,31 @@ string_severity(const string &str) {
  */
 void Notify::
 config_initialized() {
-  static bool already_initialized = false;
-  if (already_initialized) {
-    nout << "Notify::config_initialized() called more than once.\n";
-    return;
-  }
-  already_initialized = true;
+  // We allow this to be called more than once to allow the user to specify a
+  // notify-output even after the initial import of Panda3D modules.  However,
+  // it cannot be changed after the first time it is set.
 
-  if (_ostream_ptr == &cerr) {
-    ConfigVariableFilename notify_output
+  if (_global_ptr == nullptr || _global_ptr->_ostream_ptr == &cerr) {
+    static ConfigVariableFilename notify_output
       ("notify-output", "",
        "The filename to which to write all the output of notify");
 
-    if (!notify_output.empty()) {
-      if (notify_output == "stdout") {
-        cout.setf(std::ios::unitbuf);
-        set_ostream_ptr(&cout, false);
+    // We use this to ensure that only one thread can initialize the output.
+    static std::atomic_flag initialized = ATOMIC_FLAG_INIT;
 
-      } else if (notify_output == "stderr") {
-        set_ostream_ptr(&cerr, false);
+    std::string value = notify_output.get_value();
+    if (!value.empty() && !initialized.test_and_set()) {
+      Notify *ptr = Notify::ptr();
+
+      if (value == "stdout") {
+        cout.setf(std::ios::unitbuf);
+        ptr->set_ostream_ptr(&cout, false);
+
+      } else if (value == "stderr") {
+        ptr->set_ostream_ptr(&cerr, false);
 
       } else {
-        Filename filename = notify_output;
+        Filename filename = value;
         filename.set_text();
 #ifdef BUILD_IPHONE
         // On the iPhone, route everything through cerr, and then send cerr to
@@ -457,7 +464,7 @@ config_initialized() {
           dup2(logfile_fd, STDERR_FILENO);
           close(logfile_fd);
 
-          set_ostream_ptr(&cerr, false);
+          ptr->set_ostream_ptr(&cerr, false);
         }
 #else
         pofstream *out = new pofstream;
@@ -466,7 +473,7 @@ config_initialized() {
           delete out;
         } else {
           out->setf(std::ios::unitbuf);
-          set_ostream_ptr(out, true);
+          ptr->set_ostream_ptr(out, true);
         }
 #endif  // BUILD_IPHONE
       }

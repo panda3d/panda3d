@@ -26,15 +26,14 @@ class DoHierarchy:
 
     def getDoIds(self, getDo, parentId, zoneId=None, classType=None):
         """
-        Moved from DoCollectionManager
-        ==============================
-        parentId is any distributed object id.
-        zoneId is a uint32, defaults to None (all zones).  Try zone 2 if
-            you're not sure which zone to use (0 is a bad/null zone and
-            1 has had reserved use in the past as a no messages zone, while
-            2 has traditionally been a global, uber, misc stuff zone).
-        dclassType is a distributed class type filter, defaults
-            to None (no filter).
+        Args:
+            parentId: any distributed object id.
+            zoneId: a uint32, defaults to None (all zones).  Try zone 2 if
+                you're not sure which zone to use (0 is a bad/null zone and
+                1 has had reserved use in the past as a no messages zone, while
+                2 has traditionally been a global, uber, misc stuff zone).
+            dclassType: a distributed class type filter, defaults to None
+                (no filter).
 
         If dclassName is None then all objects in the zone are returned;
         otherwise the list is filtered to only include objects of that type.

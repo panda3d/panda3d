@@ -73,6 +73,15 @@ unmark(VrpnTrackerDevice *device) {
 }
 
 /**
+ * Polls the connected device.  Normally you should not call this directly;
+ * this will be called by the VrpnClient.
+ */
+void VrpnTracker::
+poll() {
+  _tracker->mainloop();
+}
+
+/**
  *
  */
 void VrpnTracker::

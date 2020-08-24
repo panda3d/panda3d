@@ -1,4 +1,8 @@
-"""Contains the DirectScrolledFrame class."""
+"""Contains the DirectScrolledFrame class.
+
+See the :ref:`directscrolledframe` page in the programming manual for a more
+in-depth explanation and an example of how to use this class.
+"""
 
 __all__ = ['DirectScrolledFrame']
 
@@ -33,7 +37,7 @@ class DirectScrolledFrame(DirectFrame):
             ('canvasSize',     (-1, 1, -1, 1),        self.setCanvasSize),
             ('manageScrollBars', 1,                self.setManageScrollBars),
             ('autoHideScrollBars', 1,              self.setAutoHideScrollBars),
-            ('scrollBarWidth', 0.08,               None),
+            ('scrollBarWidth', 0.08,               self.setScrollBarWidth),
             ('borderWidth',    (0.01, 0.01),       self.setBorderWidth),
             )
 
@@ -72,11 +76,21 @@ class DirectScrolledFrame(DirectFrame):
         # Call option initialization functions
         self.initialiseoptions(DirectScrolledFrame)
 
+    def setScrollBarWidth(self):
+        if self.fInit: return
+
+        w = self['scrollBarWidth']
+        self.verticalScroll["frameSize"] = (-w / 2.0, w / 2.0, self.verticalScroll["frameSize"][2], self.verticalScroll["frameSize"][3])
+        self.horizontalScroll["frameSize"] = (self.horizontalScroll["frameSize"][0], self.horizontalScroll["frameSize"][1], -w / 2.0, w / 2.0)
+
     def setCanvasSize(self):
         f = self['canvasSize']
         self.guiItem.setVirtualFrame(f[0], f[1], f[2], f[3])
 
     def getCanvas(self):
+        """Returns the NodePath of the virtual canvas.  Nodes parented to this
+        canvas will show inside the scrolled area.
+        """
         return self.canvas
 
     def setManageScrollBars(self):

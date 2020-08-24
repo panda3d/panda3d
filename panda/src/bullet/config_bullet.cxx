@@ -207,7 +207,9 @@ init_libbullet() {
 
   // Initialize notification category
   bullet_cat.init();
-  bullet_cat.debug() << "initialize module" << std::endl;
+  if (bullet_cat.is_debug()) {
+    bullet_cat.debug() << "initialize module" << std::endl;
+  }
 
   // Register the Bullet system
   PandaSystem *ps = PandaSystem::get_global_ptr();

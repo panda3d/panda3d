@@ -259,7 +259,7 @@ PUBLISHED:
   typedef bool TextureCallback(TextureContext *tc, void *callback_arg);
   void traverse_prepared_textures(TextureCallback *func, void *callback_arg);
 
-#ifndef NDEBUG
+#if !defined(NDEBUG) || !defined(CPPPARSER)
   void set_flash_texture(Texture *tex);
   void clear_flash_texture();
   Texture *get_flash_texture() const;
@@ -293,6 +293,7 @@ public:
   virtual TextureContext *prepare_texture(Texture *tex, int view);
   virtual bool update_texture(TextureContext *tc, bool force);
   virtual void release_texture(TextureContext *tc);
+  virtual void release_textures(const pvector<TextureContext *> &contexts);
   virtual bool extract_texture_data(Texture *tex);
 
   virtual SamplerContext *prepare_sampler(const SamplerState &sampler);
@@ -306,12 +307,15 @@ public:
 
   virtual VertexBufferContext *prepare_vertex_buffer(GeomVertexArrayData *data);
   virtual void release_vertex_buffer(VertexBufferContext *vbc);
+  virtual void release_vertex_buffers(const pvector<BufferContext *> &contexts);
 
   virtual IndexBufferContext *prepare_index_buffer(GeomPrimitive *data);
   virtual void release_index_buffer(IndexBufferContext *ibc);
+  virtual void release_index_buffers(const pvector<BufferContext *> &contexts);
 
   virtual BufferContext *prepare_shader_buffer(ShaderBuffer *data);
   virtual void release_shader_buffer(BufferContext *ibc);
+  virtual void release_shader_buffers(const pvector<BufferContext *> &contexts);
 
   virtual void begin_occlusion_query();
   virtual PT(OcclusionQueryContext) end_occlusion_query();
@@ -332,10 +336,12 @@ public:
 
   virtual void clear(DrawableRegion *clearable);
 
-  const LMatrix4 *fetch_specified_value(Shader::ShaderMatSpec &spec, int altered);
-  const LMatrix4 *fetch_specified_part(Shader::ShaderMatInput input, InternalName *name,
-                                       LMatrix4 &t, int index);
-  const LMatrix4 *fetch_specified_member(const NodePath &np, CPT_InternalName member, LMatrix4 &t);
+  void update_shader_matrix_cache(Shader *shader, LMatrix4 *cache, int altered);
+  const LMatrix4 *fetch_specified_value(Shader::ShaderMatSpec &spec, const LMatrix4 *cache, int altered);
+  void fetch_specified_part(Shader::ShaderMatInput input, InternalName *name,
+                            LMatrix4 *into, int count = 1);
+  void fetch_specified_member(const NodePath &np, CPT_InternalName member,
+                              LMatrix4 &t);
   PT(Texture) fetch_specified_texture(Shader::ShaderTexSpec &spec,
                                       SamplerState &sampler, int &view);
   const Shader::ShaderPtrData *fetch_ptr_parameter(const Shader::ShaderPtrSpec& spec);
@@ -652,6 +658,8 @@ protected:
 
 #ifndef NDEBUG
   PT(Texture) _flash_texture;
+#else
+  PT(Texture) _flash_texture_unused;
 #endif
 
 public:

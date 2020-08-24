@@ -249,7 +249,10 @@ clear_colliders() {
 }
 
 /**
- *
+ * Perform the traversal. Begins at the indicated root and detects all
+ * collisions with any of its collider objects against nodes at or below the
+ * indicated root, calling the appropriate CollisionHandler for each detected
+ * collision.
  */
 void CollisionTraverser::
 traverse(const NodePath &root) {
@@ -353,7 +356,7 @@ traverse(const NodePath &root) {
   CollisionHeightfield::flush_level();
 }
 
-#ifdef DO_COLLISION_RECORDING
+#if defined(DO_COLLISION_RECORDING) || !defined(CPPPARSER)
 /**
  * Uses the indicated CollisionRecorder object to start recording the
  * intersection tests made by each subsequent call to traverse() on this
@@ -372,6 +375,7 @@ traverse(const NodePath &root) {
  */
 void CollisionTraverser::
 set_recorder(CollisionRecorder *recorder) {
+#ifdef DO_COLLISION_RECORDING
   if (recorder != _recorder) {
     // Remove the old recorder, if any.
     if (_recorder != nullptr) {
@@ -391,6 +395,7 @@ set_recorder(CollisionRecorder *recorder) {
       _recorder->_trav = this;
     }
   }
+#endif
 }
 
 /**
@@ -399,13 +404,17 @@ set_recorder(CollisionRecorder *recorder) {
  * should be any node in the scene graph; typically, the top node (e.g.
  * render).  The CollisionVisualizer will be attached to this node.
  */
-CollisionVisualizer *CollisionTraverser::
+PandaNode *CollisionTraverser::
 show_collisions(const NodePath &root) {
+#ifdef DO_COLLISION_RECORDING
   hide_collisions();
   CollisionVisualizer *viz = new CollisionVisualizer("show_collisions");
   _collision_visualizer_np = root.attach_new_node(viz);
   set_recorder(viz);
   return viz;
+#else
+  return nullptr;
+#endif
 }
 
 /**
@@ -413,10 +422,12 @@ show_collisions(const NodePath &root) {
  */
 void CollisionTraverser::
 hide_collisions() {
+#ifdef DO_COLLISION_RECORDING
   if (!_collision_visualizer_np.is_empty()) {
     _collision_visualizer_np.remove_node();
   }
   clear_recorder();
+#endif
 }
 
 #endif  // DO_COLLISION_RECORDING
@@ -1283,15 +1294,15 @@ compare_collider_to_geom(CollisionEntry &entry, const Geom *geom,
             if (CollisionPolygon::verify_points(v[0], v[1], v[2])) {
               bool within_solid_bounds = true;
               if (from_node_gbv != nullptr) {
-                PT(BoundingSphere) sphere = new BoundingSphere;
-                sphere->around(v, v + 3);
-                within_solid_bounds = (sphere->contains(from_node_gbv) != 0);
+                BoundingSphere sphere;
+                sphere.around(v, v + 3);
+                within_solid_bounds = (sphere.contains(from_node_gbv) != 0);
 #ifdef DO_PSTATS
                 CollisionGeom::_volume_pcollector.add_level(1);
 #endif  // DO_PSTATS
               }
               if (within_solid_bounds) {
-                PT(CollisionGeom) cgeom = new CollisionGeom(LVecBase3(v[0]), LVecBase3(v[1]), LVecBase3(v[2]));
+                PT(CollisionGeom) cgeom = new CollisionGeom(v[0], v[1], v[2]);
                 entry._into = cgeom;
                 entry.test_intersection((*ci).second, this);
               }
@@ -1313,15 +1324,15 @@ compare_collider_to_geom(CollisionEntry &entry, const Geom *geom,
             if (CollisionPolygon::verify_points(v[0], v[1], v[2])) {
               bool within_solid_bounds = true;
               if (from_node_gbv != nullptr) {
-                PT(BoundingSphere) sphere = new BoundingSphere;
-                sphere->around(v, v + 3);
-                within_solid_bounds = (sphere->contains(from_node_gbv) != 0);
+                BoundingSphere sphere;
+                sphere.around(v, v + 3);
+                within_solid_bounds = (sphere.contains(from_node_gbv) != 0);
 #ifdef DO_PSTATS
                 CollisionGeom::_volume_pcollector.add_level(1);
 #endif  // DO_PSTATS
               }
               if (within_solid_bounds) {
-                PT(CollisionGeom) cgeom = new CollisionGeom(LVecBase3(v[0]), LVecBase3(v[1]), LVecBase3(v[2]));
+                PT(CollisionGeom) cgeom = new CollisionGeom(v[0], v[1], v[2]);
                 entry._into = cgeom;
                 entry.test_intersection((*ci).second, this);
               }

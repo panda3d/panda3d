@@ -187,7 +187,7 @@ mount_loop(const Filename &virtual_filename, const Filename &mount_point,
 
 /**
  * Adds the given VirtualFileMount object to the mount list.  This is a lower-
- * level function that the other flavors of mount(); it requires you to create
+ * level function than the other flavors of mount(); it requires you to create
  * a VirtualFileMount object specifically.
  */
 bool VirtualFileSystem::
@@ -497,8 +497,7 @@ make_directory_full(const Filename &filename) {
   // Now make the last one, and check the return value.
   PT(VirtualFile) result = do_get_file(filename, OF_make_directory);
   _lock.unlock();
-  nassertr_always(result != nullptr, false);
-  return result->is_directory();
+  return (result != nullptr) ? result->is_directory() : false;
 }
 
 /**
@@ -870,7 +869,7 @@ close_read_file(istream *stream) {
     // stream pointer does not call the appropriate global delete function;
     // instead apparently calling the system delete function.  So we call the
     // delete function by hand instead.
-#if (!defined(WIN32_VC) && !defined(WIN64_VC)) && !defined(USE_MEMORY_NOWRAPPERS) && defined(REDEFINE_GLOBAL_OPERATOR_NEW)
+#if defined(__GNUC__) && !defined(USE_MEMORY_NOWRAPPERS) && defined(REDEFINE_GLOBAL_OPERATOR_NEW)
     stream->~istream();
     (*global_operator_delete)(stream);
 #else
@@ -929,7 +928,7 @@ open_append_file(const Filename &filename) {
 void VirtualFileSystem::
 close_write_file(ostream *stream) {
   if (stream != nullptr) {
-#if (!defined(WIN32_VC) && !defined(WIN64_VC)) && !defined(USE_MEMORY_NOWRAPPERS) && defined(REDEFINE_GLOBAL_OPERATOR_NEW)
+#if defined(__GNUC__) && !defined(USE_MEMORY_NOWRAPPERS) && defined(REDEFINE_GLOBAL_OPERATOR_NEW)
     stream->~ostream();
     (*global_operator_delete)(stream);
 #else
@@ -985,7 +984,7 @@ open_read_append_file(const Filename &filename) {
 void VirtualFileSystem::
 close_read_write_file(iostream *stream) {
   if (stream != nullptr) {
-#if (!defined(WIN32_VC) && !defined(WIN64_VC)) && !defined(USE_MEMORY_NOWRAPPERS) && defined(REDEFINE_GLOBAL_OPERATOR_NEW)
+#if defined(__GNUC__) && !defined(USE_MEMORY_NOWRAPPERS) && defined(REDEFINE_GLOBAL_OPERATOR_NEW)
     stream->~iostream();
     (*global_operator_delete)(stream);
 #else

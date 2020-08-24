@@ -9,16 +9,11 @@ __all__ = ['AnimPanel', 'ActorControl']
 # Import Tkinter, Pmw, and the floater code from this directory tree.
 from direct.tkwidgets.AppShell import *
 from direct.showbase.TkGlobal import *
-import Pmw, sys, os
+import Pmw, os
 from direct.task import Task
 from panda3d.core import Filename, getModelPath
-
-if sys.version_info >= (3, 0):
-    from tkinter.simpledialog import askfloat
-    from tkinter.filedialog import askopenfilename
-else:
-    from tkSimpleDialog import askfloat
-    from tkFileDialog import askopenfilename
+from tkinter.simpledialog import askfloat
+from tkinter.filedialog import askopenfilename
 
 
 FRAMES = 0
@@ -276,7 +271,7 @@ class AnimPanel(AppShell):
             title = 'Load Animation',
             parent = self.component('hull')
             )
-        if not animFilename:
+        if not animFilename or animFilename == 'None':
             # no file selected, canceled
             return
 

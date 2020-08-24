@@ -25,7 +25,7 @@ using std::string;
 #include <sys/param.h>  // for realpath
 #endif  // __APPLE__
 
-#ifdef WIN32_VC
+#ifdef _WIN32
 // Windows requires this for getcwd().
 #include <direct.h>
 #define getcwd _getcwd
@@ -80,7 +80,7 @@ extern char **environ;
 // GLOBAL_ARGCGLOBAL_ARGV that we can read at static init time to determine
 // our command-line arguments.
 
-#if !defined(WIN32_VC) && defined(HAVE_GLOBAL_ARGV) && defined(PROTOTYPE_GLOBAL_ARGV)
+#if !defined(_WIN32) && defined(HAVE_GLOBAL_ARGV) && defined(PROTOTYPE_GLOBAL_ARGV)
 extern char **GLOBAL_ARGV;
 extern int GLOBAL_ARGC;
 #endif
@@ -101,7 +101,7 @@ static const char *const libp3dtool_filenames[] = {
   // libp3dtool dynamic library - no guesswork needed.
   LIBP3DTOOL_FILENAMES
 
-#elif defined(WIN32_VC)
+#elif defined(_WIN32)
 
 #ifdef _DEBUG
   "libp3dtool_d.dll",
@@ -200,7 +200,7 @@ expand_string(const string &str) {
  */
 Filename ExecutionEnvironment::
 get_cwd() {
-#ifdef WIN32_VC
+#ifdef _WIN32
   // getcwd() requires us to allocate a dynamic buffer and grow it on demand.
   static size_t bufsize = 1024;
   static wchar_t *buffer = nullptr;
@@ -223,7 +223,7 @@ get_cwd() {
   Filename cwd = Filename::from_os_specific_w(buffer);
   cwd.make_true_case();
   return cwd;
-#else  // WIN32_VC
+#else  // _WIN32
   // getcwd() requires us to allocate a dynamic buffer and grow it on demand.
   static size_t bufsize = 1024;
   static char *buffer = nullptr;
@@ -246,7 +246,7 @@ get_cwd() {
   Filename cwd = Filename::from_os_specific(buffer);
   cwd.make_true_case();
   return cwd;
-#endif  // WIN32_VC
+#endif  // _WIN32
 }
 
 /**
@@ -415,7 +415,11 @@ ns_set_environment_variable(const string &var, const string &value) {
   // putenv() requires us to malloc a new C-style string.
   char *put = (char *)malloc(putstr.length() + 1);
   strcpy(put, putstr.c_str());
+#ifdef _MSC_VER
+  _putenv(put);
+#else
   putenv(put);
+#endif
 }
 
 /**
@@ -585,7 +589,7 @@ read_args() {
   // the p3dtool library.
 
 #ifndef LINK_ALL_STATIC
-#if defined(WIN32_VC)
+#if defined(_WIN32)
   for (const char *filename : libp3dtool_filenames) {
     if (!_dtool_name.empty()) break;
 
@@ -704,7 +708,7 @@ read_args() {
   // Now, we need to fill in _binary_name.  This contains the full path to the
   // currently running executable.
 
-#ifdef WIN32_VC
+#ifdef _WIN32
   if (_binary_name.empty()) {
     static const DWORD buffer_size = 1024;
     wchar_t buffer[buffer_size];
@@ -766,7 +770,7 @@ read_args() {
   // Next we need to fill in _args, which is a vector containing the command-
   // line arguments that the executable was invoked with.
 
-#if defined(WIN32_VC)
+#if defined(_WIN32)
 
   // We cannot rely on __argv when Python is linked in Unicode mode.  Instead,
   // let's use GetCommandLine.
@@ -801,21 +805,25 @@ read_args() {
 #elif defined(IS_FREEBSD)
   // In FreeBSD, we can use sysctl to determine the command-line arguments.
 
-  size_t bufsize = 4096;
-  char buffer[4096];
+  size_t bufsize = 0;
   int mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_ARGS, 0};
   mib[3] = getpid();
-  if (sysctl(mib, 4, (void*) buffer, &bufsize, nullptr, 0) == -1) {
+  if (sysctl(mib, 4, nullptr, &bufsize, nullptr, 0) == -1) {
     perror("sysctl");
   } else {
-    if (_binary_name.empty()) {
-      _binary_name = buffer;
-    }
-    size_t idx = strlen(buffer) + 1;
-    while (idx < bufsize) {
-      _args.push_back((char*)(buffer + idx));
-      size_t newidx = strlen(buffer + idx);
-      idx += newidx + 1;
+    char *buffer = (char *)alloca(bufsize);
+    if (sysctl(mib, 4, buffer, &bufsize, nullptr, 0) == -1) {
+      perror("sysctl");
+    } else {
+      if (_binary_name.empty()) {
+        _binary_name = buffer;
+      }
+      size_t idx = strlen(buffer) + 1;
+      while (idx < bufsize) {
+        _args.push_back((char*)(buffer + idx));
+        size_t newidx = strlen(buffer + idx);
+        idx += newidx + 1;
+      }
     }
   }
 

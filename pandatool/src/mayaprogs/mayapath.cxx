@@ -106,6 +106,8 @@ struct MayaVerInfo maya_versions[] = {
   { "MAYA20165", "2016.5"},
   { "MAYA2017", "2017"},
   { "MAYA2018", "2018"},
+  { "MAYA2019", "2019"},
+  { "MAYA2020", "2020"},
   { 0, 0 },
 };
 
@@ -193,26 +195,22 @@ int
 main(int argc, char *argv[]) {
   // First, get the command line and append _bin, so we will actually run
   // maya2egg_bin.exe, egg2maya_bin.exe, etc.
-  Filename command = Filename::from_os_specific(argv[0]);
-  if (!command.is_fully_qualified()) {
-    DSearchPath path;
-    path.append_path(ExecutionEnvironment::get_environment_variable("PATH"));
-#ifdef _WIN32
-    command.set_extension("exe");
-#endif
-    command.resolve_filename(path);
+  Filename command = ExecutionEnvironment::get_binary_name();
+
+  if (command.empty() || command == "unknown" || !command.exists()) {
+    command = Filename::from_os_specific(argv[0]);
+
+    if (!command.is_fully_qualified()) {
+      DSearchPath path;
+      path.append_path(ExecutionEnvironment::get_environment_variable("PATH"));
+  #ifdef _WIN32
+      command.set_extension("exe");
+  #endif
+      command.resolve_filename(path);
+    }
   }
 
-#ifdef _WIN32
-  if (command.get_extension() == "exe") {
-    command.set_extension("");
-  }
-#endif
-
-  command = command.get_fullpath() + string("_bin");
-#ifdef _WIN32
-  command.set_extension("exe");
-#endif
+  command.set_basename_wo_extension(command.get_basename_wo_extension() + "_bin");
   string os_command = command.to_os_specific();
 
   // First start with $PANDA_MAYA_LOCATION.  If it is set, it overrides
@@ -349,7 +347,7 @@ main(int argc, char *argv[]) {
     putenv(putenv_cstr);
   }
 
-#ifdef WIN32
+#ifdef _WIN32
   string sep = ";";
 #else
   string sep = ":";
@@ -441,11 +439,6 @@ main(int argc, char *argv[]) {
   }
 
 #endif // IS_OSX
-
-  // When this is set, Panda3D will try not to use any functions from the
-  // CPython API.  This is necessary because Maya links with its own copy of
-  // Python, which may be incompatible with ours.
-  putenv((char *)"PANDA_INCOMPATIBLE_PYTHON=1");
 
   // Now that we have set up the environment variables properly, chain to the
   // actual maya2egg_bin (or whichever) executable.

@@ -532,9 +532,7 @@ private:
   };
   PT(PythonTagData) _python_tag_data;
 
-#ifndef NDEBUG
-  unsigned int _unexpected_change_flags;
-#endif // !NDEBUG
+  unsigned int _unexpected_change_flags = 0;
 
   // This is the data that must be cycled between pipeline stages.
 
@@ -567,11 +565,6 @@ private:
     // likely to change as often: tags, collide mask.
 
     INLINE void set_fancy_bit(int bits, bool value);
-
-#ifdef HAVE_PYTHON
-    void inc_py_refs();
-    void dec_py_refs();
-#endif
 
     CPT(RenderEffects) _effects;
 

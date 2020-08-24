@@ -11,8 +11,8 @@
  * @date 2010-12-01
  */
 
-#ifndef __BULLET_CLOSEST_HIT_SWEEP_RESULT_H__
-#define __BULLET_CLOSEST_HIT_SWEEP_RESULT_H__
+#ifndef BULLETCLOSESTHITSWEEPRESULT_H
+#define BULLETCLOSESTHITSWEEPRESULT_H
 
 #include "pandabase.h"
 
@@ -61,4 +61,4 @@ private:
 
 #include "bulletClosestHitSweepResult.I"
 
-#endif // __BULLET_CLOSEST_HIT_SWEEP_RESULT_H__
+#endif // BULLETCLOSESTHITSWEEPRESULT_H
