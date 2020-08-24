@@ -16,6 +16,7 @@
 #include "notifyCategoryProxy.h"
 
 #include "uniqueIdAllocator.h"
+#include "mutexHolder.h"
 
 using std::endl;
 
@@ -84,6 +85,8 @@ UniqueIdAllocator::
  */
 uint32_t UniqueIdAllocator::
 allocate() {
+  MutexHolder holder(_lock);
+
   if (_next_free == IndexEnd) {
     // ...all ids allocated.
     uniqueIdAllocator_warning("allocate Error: no more free ids.");
@@ -115,6 +118,8 @@ allocate() {
  */
 void UniqueIdAllocator::
 initial_reserve_id(uint32_t id) {
+  MutexHolder holder(_lock);
+
   nassertv(id >= _min && id <= _max); // Attempt to reserve out-of-range id.
   uint32_t index = id - _min; // Convert to _table index.
 
@@ -175,6 +180,8 @@ initial_reserve_id(uint32_t id) {
  */
 bool UniqueIdAllocator::
 is_allocated(uint32_t id) {
+  MutexHolder holder(_lock);
+
   if (id < _min || id > _max) {
     // This id is out of range, not allocated.
     return false;
@@ -190,6 +197,8 @@ is_allocated(uint32_t id) {
  */
 void UniqueIdAllocator::
 free(uint32_t id) {
+  MutexHolder holder(_lock);
+
   uniqueIdAllocator_debug("free("<<id<<")");
 
   nassertv(id >= _min && id <= _max); // Attempt to free out-of-range id.
@@ -234,6 +243,8 @@ output(std::ostream &out) const {
  */
 void UniqueIdAllocator::
 write(std::ostream &out) const {
+  MutexHolder holder(_lock);
+
   out << "_min: " << _min << "; _max: " << _max
       << ";\n_next_free: " << int32_t(_next_free)
       << "; _last_free: " << int32_t(_last_free)
