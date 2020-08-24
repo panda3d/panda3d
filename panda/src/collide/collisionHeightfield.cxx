@@ -298,8 +298,6 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   PN_stdfloat dist_min = FLT_MAX;
 
   bool intersected = false;
-  #define in_box(x, y, node) (x >= node.area.min[0] && y >= node.area.min[1] \
-                           && x <= node.area.max[0] && y <= node.area.max[1])
   for (size_t i = 0; i < intersections.size(); i++) {
     QuadTreeNode node = _nodes[intersections[i].node_index];
     // Iterate through the circle's area and find triangle intersections,
@@ -308,7 +306,11 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
       for (int dy = -radius; dy <= radius; dy++) {
         int x = dx + center[0];
         int y = dy + center[1];
-        if (!in_box(x, y, node)) continue;
+        if (x < node.area.min[0] || y < node.area.min[1] ||
+            x > node.area.max[0] || y > node.area.max[1]) {
+          // point not contained in rectangle
+          continue;
+        }
         if (dx * dx + dy * dy > radius_2) continue;
 
         vector<Triangle> triangles = get_triangles(x, y);
@@ -325,7 +327,6 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
       }
     }
   }
-  #undef in_box
   if (intersected) {
     PT(CollisionEntry) new_entry = new CollisionEntry(entry);
     LVector3 v(center - closest_point);
@@ -690,28 +691,27 @@ get_triangles(int x, int y) const {
     return triangles;
 
   Triangle t;
-  int y2 = cols - 1 - y;
-  bool odd = (x + y2) % 2;
-  #define in_bounds(x, y) (x >= 0 && y >= 0 && x < rows && y < cols)
-  #define get_point(dx, dy) LPoint3(x + dx, y - dy, get_height(x + dx, y2 + dy))
-  t.p1 = get_point(0, 0);
+  int heightfield_y = cols - 1 - y;
+  bool odd = (x + heightfield_y) & 1;
+  t.p1 = LPoint3(x, y, get_height(x, heightfield_y));
   for (int dx = -1; dx <= 1; dx += 2) {
     for (int dy = -1; dy <= 1; dy += 2) {
-      if (!in_bounds(x + dx, y2 + dy)) continue;
+      int x2 = x + dx;
+      int y2 = y - dy;
+      int heightfield_y2 = heightfield_y + dy;
+      if (x2 < 0 || heightfield_y2 < 0 || x2 >= rows || heightfield_y2 >= cols) continue;
       if (odd) {
-        t.p2 = get_point(dx, 0);
-        t.p3 = get_point(0, dy);
+        t.p2 = LPoint3(x2, y, get_height(x2, heightfield_y));
+        t.p3 = LPoint3(x, y2, get_height(x, heightfield_y2));
       } else {
-        t.p2 = get_point(dx, dy);
-        t.p3 = get_point(dx, 0);
+        t.p2 = LPoint3(x2, y2, get_height(x2, heightfield_y2));
+        t.p3 = LPoint3(x2, y, get_height(x2, heightfield_y));
         triangles.push_back(t);
-        t.p3 = get_point(0, dy);
+        t.p3 = LPoint3(x, y2, get_height(x, heightfield_y2));
         triangles.push_back(t);
       }
     }
   }
-  #undef in_bounds
-  #undef get_point
 
   return triangles;
 }
