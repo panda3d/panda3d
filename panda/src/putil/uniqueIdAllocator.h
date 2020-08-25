@@ -16,7 +16,7 @@
 
 #include "pandabase.h"
 #include "numeric_types.h"
-#include "pmutex.h"
+#include "lightMutex.h"
 
 /**
  * Manage a set of ID values from min to max inclusive.  The ID numbers that
@@ -89,8 +89,8 @@ protected:
   uint32_t _free;
 
 private:
-  // A simple mutex lock to make usage safe in multi-threaded scenarios.
-  Mutex _lock;
+  // A light mutex lock to make usage safe in multi-threaded scenarios.
+  LightMutex _lock;
 };
 
 #endif //]
