@@ -70,7 +70,7 @@ PUBLISHED:
     BTM_rawdata
   };
 
-  // Level of compression for textures in the .bam
+  // Format of compression for textures in the .bam
   enum BamTexCompressionFormat {
     BTC_off,
     BTC_zlib,
