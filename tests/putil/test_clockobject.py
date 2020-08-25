@@ -5,13 +5,13 @@ import sys
 
 # We must account for clock inaccuracy
 if sys.platform == 'win32' or sys.platform == 'cygwin':
-    # Assume 17 milliseconds inaccuracy on Windows (worst case)
-    # 16 milliseconds plus 1 millisecond for execution time
-    CLOCK_INACCURACY = 0.017
+    # Assume 19 milliseconds inaccuracy on Windows (worst case)
+    # 16 milliseconds plus 3 milliseconds for execution time
+    CLOCK_INACCURACY = 0.019
 else:
-    # On other platforms, assume 1 milliseconds, allowing for execution time
-    # (1000 times higher than their actual 1 microsecond accuracy)
-    CLOCK_INACCURACY = 0.001
+    # On other platforms, assume 5 milliseconds, allowing for execution time
+    # (5000 times higher than their actual 1 microsecond accuracy)
+    CLOCK_INACCURACY = 0.005
 
 
 def test_clock_get_frame_time(clockobj):
