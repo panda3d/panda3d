@@ -1,7 +1,8 @@
-import math
 import time
 import sys
 
+# Epsilon for taking floating point calculation inaccuracies in mind
+EPSILON = 1e-06
 
 # We must account for clock inaccuracy
 if sys.platform == 'win32' or sys.platform == 'cygwin':
@@ -29,13 +30,13 @@ def test_clock_jump_frame_time(clockobj):
 def test_clock_get_real_time(clockobj):
     current_time = clockobj.get_real_time()
     time.sleep(0.4)
-    assert math.isclose(clockobj.get_real_time() - current_time, 0.4, abs_tol=CLOCK_INACCURACY)
+    assert clockobj.get_real_time() - current_time + EPSILON >= 0.4 - CLOCK_INACCURACY
 
 
 def test_clock_get_long_time(clockobj):
     current_time = clockobj.get_long_time()
     time.sleep(0.4)
-    assert math.isclose(clockobj.get_long_time() - current_time, 0.4, abs_tol=CLOCK_INACCURACY)
+    assert clockobj.get_long_time() - current_time + EPSILON >= 0.4 - CLOCK_INACCURACY
 
 
 def test_clock_get_dt(clockobj):
@@ -50,4 +51,4 @@ def test_clock_reset(clockobj):
     clockobj.reset()
     assert clockobj.get_dt() == 0
     assert clockobj.get_frame_time() == 0
-    assert clockobj.get_real_time() <= CLOCK_INACCURACY
+    assert clockobj.get_real_time() - EPSILON <= CLOCK_INACCURACY
