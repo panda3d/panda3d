@@ -11,8 +11,8 @@
  * @date 2010-01-23
  */
 
-#ifndef __BULLET_UTILS_H__
-#define __BULLET_UTILS_H__
+#ifndef BULLET_UTILS_H
+#define BULLET_UTILS_H
 
 #include "pandabase.h"
 
@@ -62,4 +62,4 @@ END_PUBLISH
 
 #include "bullet_utils.I"
 
-#endif // __BULLET_UTILS_H__
+#endif // BULLET_UTILS_H

@@ -24,14 +24,14 @@ class Loader(DirectObject):
 
     _loadedPythonFileTypes = False
 
-    class Callback:
+    class _Callback:
         """Returned by loadModel when used asynchronously.  This class is
         modelled after Future, and can be awaited."""
 
         # This indicates that this class behaves like a Future.
         _asyncio_future_blocking = False
 
-        class ResultAwaiter(object):
+        class _ResultAwaiter(object):
             """Reinvents generators because of PEP 479, sigh.  See #513."""
 
             __slots__ = 'requestList', 'index'
@@ -126,9 +126,9 @@ class Loader(DirectObject):
                 self._asyncio_future_blocking = True
 
             if self.gotList:
-                return self.ResultAwaiter([self])
+                return self._ResultAwaiter([self])
             else:
-                return self.ResultAwaiter(self.requestList)
+                return self._ResultAwaiter(self.requestList)
 
         def __aiter__(self):
             """ This allows using `async for` to iterate asynchronously over
@@ -138,7 +138,7 @@ class Loader(DirectObject):
             requestList = self.requestList
             assert requestList is not None, "Request was cancelled."
 
-            return self.ResultAwaiter(requestList)
+            return self._ResultAwaiter(requestList)
 
     # special methods
     def __init__(self, base):
@@ -308,7 +308,7 @@ class Loader(DirectObject):
             # requested models have been loaded, we'll invoke the
             # callback (passing it the models on the parameter list).
 
-            cb = Loader.Callback(self, len(modelList), gotList, callback, extraArgs)
+            cb = Loader._Callback(self, len(modelList), gotList, callback, extraArgs)
             i = 0
             for modelPath in modelList:
                 request = self.loader.makeAsyncRequest(Filename(modelPath), loaderOptions)
@@ -476,7 +476,7 @@ class Loader(DirectObject):
             # requested models have been saved, we'll invoke the
             # callback (passing it the models on the parameter list).
 
-            cb = Loader.Callback(self, len(modelList), gotList, callback, extraArgs)
+            cb = Loader._Callback(self, len(modelList), gotList, callback, extraArgs)
             i = 0
             for modelPath, node in modelList:
                 request = self.loader.makeAsyncSaveRequest(Filename(modelPath), loaderOptions, node)
@@ -1013,7 +1013,7 @@ class Loader(DirectObject):
             # requested sounds have been loaded, we'll invoke the
             # callback (passing it the sounds on the parameter list).
 
-            cb = Loader.Callback(self, len(soundList), gotList, callback, extraArgs)
+            cb = Loader._Callback(self, len(soundList), gotList, callback, extraArgs)
             for i, soundPath in enumerate(soundList):
                 request = AudioLoadRequest(manager, soundPath, positional)
                 request.setDoneEvent(self.hook)
@@ -1078,7 +1078,7 @@ class Loader(DirectObject):
             callback = self.__asyncFlattenDone
             gotList = True
 
-        cb = Loader.Callback(self, len(modelList), gotList, callback, extraArgs)
+        cb = Loader._Callback(self, len(modelList), gotList, callback, extraArgs)
         i = 0
         for model in modelList:
             request = ModelFlattenRequest(model.node())

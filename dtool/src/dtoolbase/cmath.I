@@ -351,7 +351,7 @@ cnan(double v) {
 #if __FINITE_MATH_ONLY__
   // GCC's isnan breaks when using -ffast-math.
   union { double d; uint64_t x; } u = { v };
-  return ((u.x << 1) > 0xff70000000000000ull);
+  return ((u.x << 1) > 0xffe0000000000000ull);
 #elif !defined(_WIN32)
   return std::isnan(v);
 #else
@@ -383,7 +383,7 @@ cinf(double v) {
 #if __FINITE_MATH_ONLY__
   // GCC's isinf breaks when using -ffast-math.
   union { double d; uint64_t x; } u = { v };
-  return ((u.x << 1) == 0xff70000000000000ull);
+  return ((u.x << 1) == 0xffe0000000000000ull);
 #elif !defined(_WIN32)
   return std::isinf(v);
 #else

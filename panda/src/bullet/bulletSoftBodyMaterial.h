@@ -11,8 +11,8 @@
  * @date 2011-03-19
  */
 
-#ifndef __BULLET_SOFT_BODY_MATERIAL_H__
-#define __BULLET_SOFT_BODY_MATERIAL_H__
+#ifndef BULLETSOFTBODYMATERIAL_H
+#define BULLETSOFTBODYMATERIAL_H
 
 #include "pandabase.h"
 
@@ -31,13 +31,13 @@ PUBLISHED:
 
   PN_stdfloat get_linear_stiffness() const;
   void set_linear_stiffness(PN_stdfloat value);
-  
+
   PN_stdfloat get_angular_stiffness() const;
   void set_angular_stiffness(PN_stdfloat value);
 
   PN_stdfloat get_volume_preservation() const;
   void set_volume_preservation(PN_stdfloat value);
-  
+
   MAKE_PROPERTY(linear_stiffness, get_linear_stiffness, set_linear_stiffness);
   MAKE_PROPERTY(angular_stiffness, get_angular_stiffness, set_angular_stiffness);
   MAKE_PROPERTY(volume_preservation, get_volume_preservation, set_volume_preservation);
@@ -53,4 +53,4 @@ private:
 
 #include "bulletSoftBodyMaterial.I"
 
-#endif // __BULLET_SOFT_BODY_MATERIAL_H__
+#endif // BULLETSOFTBODYMATERIAL_H

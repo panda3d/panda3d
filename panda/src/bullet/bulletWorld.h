@@ -11,8 +11,8 @@
  * @date 2010-01-23
  */
 
-#ifndef __BULLET_WORLD_H__
-#define __BULLET_WORLD_H__
+#ifndef BULLETWORLD_H
+#define BULLETWORLD_H
 
 #include "pandabase.h"
 
@@ -318,4 +318,4 @@ operator >> (std::istream &in, BulletWorld::FilterAlgorithm &algorithm);
 
 #include "bulletWorld.I"
 
-#endif // __BULLET_WORLD_H__
+#endif // BULLETWORLD_H

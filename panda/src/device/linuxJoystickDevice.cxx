@@ -234,6 +234,8 @@ open_device() {
             add_button(GamepadButton::hat_left());
             add_button(GamepadButton::hat_right());
           }
+          _buttons[_dpad_left_button]._state = S_up;
+          _buttons[_dpad_left_button+1]._state = S_up;
           axis = Axis::none;
         }
         break;
@@ -250,6 +252,8 @@ open_device() {
             add_button(GamepadButton::hat_up());
             add_button(GamepadButton::hat_down());
           }
+          _buttons[_dpad_up_button]._state = S_up;
+          _buttons[_dpad_up_button+1]._state = S_up;
           axis = Axis::none;
         }
         break;

@@ -2,14 +2,6 @@ from panda3d import core
 import pytest
 import tempfile
 
-@pytest.fixture(scope='function')
-def pool():
-    "This fixture ensures the pool is properly emptied"
-    pool = core.TexturePool
-    pool.release_all_textures()
-    yield pool
-    pool.release_all_textures()
-
 
 def write_image(filename, channels):
     img = core.PNMImage(1, 1, channels)
@@ -17,40 +9,108 @@ def write_image(filename, channels):
     assert img.write(filename)
 
 
-@pytest.fixture(scope='session')
-def image_rgb_path():
-    "Generates an RGB image."
-
-    file = tempfile.NamedTemporaryFile(suffix='-rgb.png')
+def yield_image(suffix, channels):
+    file = tempfile.NamedTemporaryFile(suffix=suffix)
     path = core.Filename.from_os_specific(file.name)
     path.make_true_case()
-    write_image(path, 3)
+    write_image(path, channels)
     yield path
     file.close()
 
 
-@pytest.fixture(scope='session')
-def image_rgba_path():
-    "Generates an RGBA image."
+def register_filter(pool, tex_filter):
+    assert pool.get_num_filters() == 0
+    assert pool.register_filter(tex_filter)
+    assert pool.get_num_filters() == 1
 
-    file = tempfile.NamedTemporaryFile(suffix='-rgba.png')
-    path = core.Filename.from_os_specific(file.name)
-    path.make_true_case()
-    write_image(path, 4)
-    yield path
-    file.close()
+
+def yield_registered_filter(filter_type):
+    tex_filter = filter_type()
+    yield tex_filter
+
+    p = core.TexturePool.get_global_ptr()
+
+    if p.is_filter_registered(tex_filter):
+        p.unregister_filter(tex_filter)
+
+
+@pytest.fixture(scope='function')
+def pool():
+    "This fixture ensures the pool is properly emptied"
+    pool = core.TexturePool.get_global_ptr()
+    pool.release_all_textures()
+    yield pool
+    pool.release_all_textures()
 
 
 @pytest.fixture(scope='session')
 def image_gray_path():
     "Generates a grayscale image."
+    yield from yield_image('-gray.png', channels=1)
 
-    file = tempfile.NamedTemporaryFile(suffix='-gray.png')
-    path = core.Filename.from_os_specific(file.name)
-    path.make_true_case()
-    write_image(path, 1)
-    yield path
-    file.close()
+
+@pytest.fixture(scope='session')
+def image_rgb_path():
+    "Generates an RGB image."
+    yield from yield_image('-rgb.png', channels=3)
+
+
+@pytest.fixture(scope='session')
+def image_rgba_path():
+    "Generates an RGBA image."
+    yield from yield_image('-rgba.png', channels=4)
+
+
+@pytest.fixture(scope='function')
+def pre_filter():
+    "Creates a texture pool preload filter."
+    class PreLoadTextureFilter(object):
+
+        def pre_load(self, orig_filename, orig_alpha_filename,
+                     primary_file_num_channels, alpha_file_channel,
+                     read_mipmaps, options):
+            return core.Texture('preloaded')
+
+    yield from yield_registered_filter(PreLoadTextureFilter)
+
+
+@pytest.fixture(scope='function')
+def post_filter():
+    "Creates a texture pool postload filter."
+    class PostLoadTextureFilter(object):
+
+        def post_load(self, tex):
+            tex.set_name('postloaded')
+            return tex
+
+    yield from yield_registered_filter(PostLoadTextureFilter)
+
+
+@pytest.fixture(scope='function')
+def mix_filter():
+    "Creates a texture pool mix filter."
+    class MixTextureFilter(object):
+
+        def pre_load(self, orig_filename, orig_alpha_filename,
+                     primary_file_num_channels, alpha_file_channel,
+                     read_mipmaps, options):
+            return core.Texture('preloaded')
+
+        def post_load(self, tex):
+            tex.set_name(tex.get_name() + '-postloaded')
+            return tex
+
+    yield from yield_registered_filter(MixTextureFilter)
+
+
+@pytest.fixture(scope='function')
+def invalid_filter():
+    "Creates an invalid texture filter."
+    class InvalidTextureFilter(object):
+        pass
+
+    tex_filter = InvalidTextureFilter()
+    yield tex_filter
 
 
 def test_load_texture_rgba(pool, image_rgba_path):
@@ -200,3 +260,123 @@ def test_reload_texture_without_alpha(pool, image_rgb_path, image_gray_path):
 
     tex = pool.load_texture(image_rgb_path)
     assert tex.num_components == 3
+
+
+def test_empty_texture_filters(pool):
+    assert pool.get_num_filters() == 0
+
+
+def test_register_pre_texture_filter(pool, pre_filter):
+    register_filter(pool, pre_filter)
+
+
+def test_register_post_texture_filter(pool, post_filter):
+    register_filter(pool, post_filter)
+
+
+def test_register_mix_texture_filter(pool, mix_filter):
+    register_filter(pool, mix_filter)
+
+
+def test_register_invalid_texture_filter(pool, invalid_filter):
+    assert pool.get_num_filters() == 0
+
+    with pytest.raises(TypeError):
+        pool.register_filter(invalid_filter)
+
+    assert pool.get_num_filters() == 0
+
+
+def test_register_null_texture_filter(pool):
+    assert pool.get_num_filters() == 0
+
+    with pytest.raises(TypeError):
+        pool.register_filter(None)
+
+    assert pool.get_num_filters() == 0
+
+
+def test_register_all_texture_filters(pool, pre_filter, post_filter, mix_filter):
+    assert pool.get_num_filters() == 0
+    assert pool.register_filter(pre_filter)
+    assert pool.register_filter(post_filter)
+    assert pool.register_filter(mix_filter)
+    assert pool.get_num_filters() == 3
+
+
+def test_unregister_texture_filter(pool, mix_filter):
+    register_filter(pool, mix_filter)
+    assert pool.unregister_filter(mix_filter)
+    assert pool.get_num_filters() == 0
+
+
+def test_clear_texture_filters(pool, pre_filter, post_filter):
+    assert pool.get_num_filters() == 0
+    assert pool.register_filter(pre_filter)
+    assert pool.register_filter(post_filter)
+    assert pool.get_num_filters() == 2
+
+    pool.clear_filters()
+    assert pool.get_num_filters() == 0
+
+
+def test_double_register_texture_filter(pool, mix_filter):
+    register_filter(pool, mix_filter)
+    assert not pool.register_filter(mix_filter)
+    assert pool.get_num_filters() == 1
+
+
+def test_double_unregister_texture_filter(pool, mix_filter):
+    register_filter(pool, mix_filter)
+    assert pool.unregister_filter(mix_filter)
+    assert not pool.unregister_filter(mix_filter)
+    assert pool.get_num_filters() == 0
+
+
+def test_is_texture_filter_registered(pool, pre_filter, mix_filter):
+    assert not pool.is_filter_registered(mix_filter)
+    assert pool.register_filter(mix_filter)
+    assert pool.is_filter_registered(mix_filter)
+    assert not pool.is_filter_registered(pre_filter)
+
+
+def test_get_texture_filter(pool, pre_filter):
+    assert not pool.get_filter(0)
+
+    assert pool.register_filter(pre_filter)
+    tex_filter = pool.get_filter(0)
+    assert isinstance(tex_filter, core.TexturePoolFilter)
+
+    assert not pool.get_filter(1)
+
+
+def test_texture_pre_filter(pool, pre_filter):
+    register_filter(pool, pre_filter)
+
+    texture = pool.load_texture('nonexistent')
+    assert isinstance(texture, core.Texture)
+    assert texture.get_name() == 'preloaded'
+
+
+def test_texture_post_filter(pool, post_filter, image_rgb_path):
+    register_filter(pool, post_filter)
+
+    texture = pool.load_texture(image_rgb_path, 3)
+    assert isinstance(texture, core.Texture)
+    assert texture.get_name() == 'postloaded'
+
+
+def test_texture_mix_filter(pool, mix_filter):
+    register_filter(pool, mix_filter)
+
+    texture = pool.load_texture('nonexistent')
+    assert isinstance(texture, core.Texture)
+    assert texture.get_name() == 'preloaded-postloaded'
+
+
+def test_no_texture_filter_option(pool, pre_filter, image_rgb_path):
+    register_filter(pool, pre_filter)
+
+    texture = pool.load_texture(image_rgb_path, 3, False, core.LoaderOptions(0, core.LoaderOptions.TF_no_filters))
+    assert isinstance(texture, core.Texture)
+    assert texture.get_name() != 'preloaded'
