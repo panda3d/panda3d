@@ -11,6 +11,9 @@
  * @date 2019-07-01
  */
 
+#include "collisionBox.h"
+#include "collisionRay.h"
+#include "collisionSphere.h"
 #include "collisionHeightfield.h"
 #include "collisionHandler.h"
 #include "collisionEntry.h"
@@ -21,6 +24,9 @@
 #include "datagramIterator.h"
 #include "bamReader.h"
 #include "bamWriter.h"
+#include "geom.h"
+#include "geomTriangles.h"
+#include "geomVertexWriter.h"
 #include <queue>
 #include <algorithm>
 
