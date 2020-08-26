@@ -9,7 +9,6 @@ from panda3d.core import PointLight,DirectionalLight
 from panda3d.core import LPoint3
 from panda3d.core import PTA_LVecBase3
 from panda3d.core import LVecBase3
-from direct.actor.Actor import Actor
 from panda3d.core import LineSegs
 from panda3d.core import NodePath
 import math
@@ -20,7 +19,6 @@ class MyApp(ShowBase):
 
     def __init__(self):
         ShowBase.__init__(self)
-
 
         # Setting up light for better view.
         plight = PointLight('plight')
@@ -43,23 +41,17 @@ class MyApp(ShowBase):
         self.scene.flatten_light()
         self.scene.setPos(-8, 42, 0)
         
-        #mouseclick
-        #self.disableMouse()
+        # mouseclick
         self.camera.setPos(0, 60, 500)
         self.camera.lookAt(0, 0, 0)
         z = 0
         self.plane = Plane(Vec3(0, 0, 1), Point3(0, 0, z))
-        # self.model = loader.loadModel("jack")
-        # self.model.reparentTo(render)
         cm = CardMaker("blah")
         cm.setFrame(-100, 100, -100, 100)
-        #self.scene.attachNewNode(cm.generate()).lookAt(0, 0, -1)
         taskMgr.add(self.__getMousePos, "_YourClass__getMousePos")
-        #mouseclick end 
+        # mouseclick end 
 
-
-        #Here start commenting
-        #NavMeshBuilder is a class that is responsible for building the polygon meshes and navigation meshes.
+        # NavMeshBuilder is a class that is responsible for building the polygon meshes and navigation meshes.
         self.builder = navmeshgen.NavMeshBuilder()
         self.structBuilder = navmeshgen.BuildSettings()
         self.structBuilder.cell_size = 1;
@@ -69,30 +61,21 @@ class MyApp(ShowBase):
         #self.builder.setActorRadius(5)
         self.builder.set_actor_height(10)
         self.navmesh = self.builder.build()
-
-        # Code to attach the polymesh generated to the scene graph
-        self.node1 = self.navmesh.drawNavMeshGeom()
-        # self.node = self.scene.attachNewNode(self.node1)
-        # self.node.setColor(0,0,1)
         
         self.navmeshnode = navigation.NavMeshNode("firstnavmeshnode",self.navmesh)
         self.navmeshnodepath = self.scene.attachNewNode(self.navmeshnode)
-        print("writing BAM")
+
+        self.accept("s",self.navmeshnodepath.show)
+        self.accept("h",self.navmeshnodepath.hide)
+
+        # uncomment below line to write to bam
         #self.navmeshnodepath.write_bam_file("firstnavmeshnode.bam")
 
-
-        # print("start read")
+        # uncomment below line to read from bam 
         #self.navmesh = loader.loadModel("firstnavmeshnode.bam")
-        #print(type(self.navmesh))
+        
         self.tempActor = Actor("models/panda", {"walk" : "models/panda-walk"})
         self.tempActor.reparentTo(self.scene)
-        
-        # print(type(self.navmesh.node().getNavMesh()))
-        # self.node1 = self.navmesh.node().drawNavMeshGeom()
-        # self.node = self.scene.attachNewNode(self.node1)
-        # self.node.setColor(0,0,1)
-        
-        
 
         self.pos1 = self.tempActor.getPos()
         self.pos2 = self.pos1
@@ -126,15 +109,14 @@ class MyApp(ShowBase):
             nearPoint = Point3()
             farPoint = Point3()
             base.camLens.extrude(mpos, nearPoint, farPoint)
+            
             if self.plane.intersectsLine(pos3d,
                 self.scene.getRelativePoint(camera, nearPoint),
                 self.scene.getRelativePoint(camera, farPoint)):
-                #print("Mouse ray intersects ground plane at ", pos3d)
-                #print("pos2 ", self.pos2)
+                
                 if abs(self.pos2[0]-pos3d[0]) < 1:
-                    #print("not running", self.pos2[0]-pos3d[0])
                     return task.again
-                #print("running it")
+                
                 self.pos2 = pos3d
                 
                 self.pos1 = self.pandaActor.get_pos()
@@ -146,37 +128,30 @@ class MyApp(ShowBase):
                 path = self.query.findPath(self.pos1, self.pos2);
                 print("path.size(): ", len(path));
                 self.pathLine = LineSegs()
-                #self.pathLine.reset()
                 self.pathLine.setColor(0,1,0)
                 self.pathLine.setThickness(5)
 
                 self.pathLine2 = LineSegs()
-                #self.pathLine2.reset()
                 self.pathLine2.setColor(1,1,0)
                 self.pathLine2.setThickness(5)
 
-                
                 for i in range(len(path)):
                     self.pathLine.drawTo(path[i])
 
                 self.pathLine.drawTo(self.pos2)
                 self.lineNode = self.pathLine.create()
                 self.lineNodePath.remove_node()
-                #self.lineNodePath = NodePath()
                 self.lineNodePath = self.scene.attachNewNode(self.lineNode)
                 self.lineNodePath.setZ(1)
 
                 path = self.query.findStraightPath(self.pos1, self.pos2, 0);
                 print("path.size(): ", len(path));
 
-                
                 for i in range(len(path)):
                     self.pathLine2.drawTo(path[i])
-
                 
                 self.lineNode2 = self.pathLine2.create()
                 self.lineNodePath2.remove_node()
-                #self.lineNodePath2 = NodePath()
                 self.lineNodePath2 = self.scene.attachNewNode(self.lineNode2)
                 self.lineNodePath2.setZ(2)
                 
@@ -204,8 +179,6 @@ class MyApp(ShowBase):
                 self.pandaSequence.start()
                 self.pos1 = self.pos2
         return task.again
-
-
 
 app = MyApp()
 app.run()
