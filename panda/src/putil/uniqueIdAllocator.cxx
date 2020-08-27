@@ -194,20 +194,32 @@ is_allocated(uint32_t id) {
 /**
  * Free an allocated index (index must be between _min and _max that were
  * passed to the constructor).
+ *
+ * Returns true if the index has been freed successfully.
  */
-void UniqueIdAllocator::
+bool UniqueIdAllocator::
 free(uint32_t id) {
   LightMutexHolder holder(_lock);
 
   uniqueIdAllocator_debug("free("<<id<<")");
 
-  nassertv(id >= _min && id <= _max); // Attempt to free out-of-range id.
+  if (id < _min || id > _max) {
+    // Attempt to free out-of-range id.
+    return false;
+  }
+
   uint32_t index = id - _min; // Convert to _table index.
-  nassertv(_table[index] == IndexAllocated); // Attempt to free non-allocated id.
+
+  if (_table[index] != IndexAllocated) {
+    // Attempt to free non-allocated id.
+    return false;
+  }
+
   if (_next_free != IndexEnd) {
-    nassertv(_table[_last_free] == IndexEnd);
+    nassertr(_table[_last_free] == IndexEnd, false);
     _table[_last_free] = index;
   }
+
   _table[index] = IndexEnd; // Mark this element as the end of the list.
   _last_free = index;
 
@@ -217,6 +229,7 @@ free(uint32_t id) {
   }
 
   ++_free;
+  return true;
 }
 
 
