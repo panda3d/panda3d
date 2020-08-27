@@ -10316,6 +10316,13 @@ do_fillin_body(CData *cdata, DatagramIterator &scan, BamReader *manager) {
       cdata->_clear_color.read_datagram(scan);
     }
   }
+
+#ifndef HAVE_ZLIB
+  if (manager->get_tex_compression_format() == BamEnums::BTC_zlib) {
+    gobj_cat.error()
+      << "Texture can't be decompressed using zlib because zlib isn't present\n";
+  }
+#endif
 }
 
 /**

@@ -136,6 +136,9 @@ init() {
   if(_file_minor >= 46) {
     _tex_compression_format = (BamTexCompressionFormat)scan.get_uint8();
   }
+  else {
+    _tex_compression_format = BamEnums::BTC_off;
+  }
 
 #ifndef HAVE_ZLIB
   if(_tex_compression_format == BTC_zlib) {
