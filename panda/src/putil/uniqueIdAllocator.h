@@ -46,7 +46,7 @@ PUBLISHED:
 
   bool is_allocated(uint32_t index);
 
-  void free(uint32_t index);
+  bool free(uint32_t index);
   PN_stdfloat fraction_used() const;
 
   void output(std::ostream &out) const;
