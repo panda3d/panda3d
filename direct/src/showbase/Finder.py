@@ -22,8 +22,7 @@ def findClass(className):
             # the matching class and a good module namespace to redefine
             # our class in.
             if (classObj and
-                ((type(classObj) == types.ClassType) or
-                 (type(classObj) == types.TypeType)) and
+                (type(classObj) == type) and
                 (classObj.__module__ == moduleName)):
                 return [classObj, module.__dict__]
     return None

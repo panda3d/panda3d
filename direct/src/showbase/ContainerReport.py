@@ -2,7 +2,9 @@ from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.PythonUtil import Queue, invertDictLossless
 from direct.showbase.PythonUtil import safeRepr
 from direct.showbase.Job import Job
+from direct.showbase.ContainerLeakDetector import deadEndTypes
 import types
+import io
 
 class ContainerReport(Job):
     notify = directNotify.newCategory("ContainerReport")
@@ -84,15 +86,7 @@ class ContainerReport(Job):
             except:
                 pass
 
-            if type(parentObj) in (types.StringType, types.UnicodeType):
-                continue
-
-            if type(parentObj) in (types.ModuleType, types.InstanceType):
-                child = parentObj.__dict__
-                if self._examine(child):
-                    assert (self._queue.back() is child)
-                    self._instanceDictIds.add(id(child))
-                    self._id2pathStr[id(child)] = str(self._id2pathStr[id(parentObj)])
+            if type(parentObj) in (str, bytes):
                 continue
 
             if type(parentObj) is dict:
@@ -124,7 +118,16 @@ class ContainerReport(Job):
                 del attr
                 continue
 
-            if type(parentObj) is not types.FileType:
+            if hasattr(parentObj, '__dict__'):
+                # Instance of a class
+                child = parentObj.__dict__
+                if self._examine(child):
+                    assert (self._queue.back() is child)
+                    self._instanceDictIds.add(id(child))
+                    self._id2pathStr[id(child)] = str(self._id2pathStr[id(parentObj)])
+                continue
+
+            if not isinstance(parentObj, io.TextIOWrapper):
                 try:
                     itr = iter(parentObj)
                 except:
@@ -159,7 +162,10 @@ class ContainerReport(Job):
                 childName = None
                 child = None
                 for childName in childNames:
-                    child = getattr(parentObj, childName)
+                    try:
+                        child = getattr(parentObj, childName)
+                    except:
+                        continue
                     if id(child) not in self._visitedIds:
                         self._visitedIds.add(id(child))
                         if self._examine(child):
@@ -196,11 +202,7 @@ class ContainerReport(Job):
             self._type2id2len[type(obj)][objId] = length
     def _examine(self, obj):
         # return False if it's an object that can't contain or lead to other objects
-        if type(obj) in (types.BooleanType, types.BuiltinFunctionType,
-                         types.BuiltinMethodType, types.ComplexType,
-                         types.FloatType, types.IntType, types.LongType,
-                         types.NoneType, types.NotImplementedType,
-                         types.TypeType, types.CodeType, types.FunctionType):
+        if type(obj) in deadEndTypes:
             return False
         # if it's an internal object, ignore it
         if id(obj) in ContainerReport.PrivateIds:
@@ -243,7 +245,7 @@ class ContainerReport(Job):
             for i in self._outputType(type, **kArgs):
                 yield None
         otherTypes = list(set(self._type2id2len.keys()).difference(set(initialTypes)))
-        otherTypes.sort()
+        otherTypes.sort(key=lambda obj: obj.__name__)
         for type in otherTypes:
             for i in self._outputType(type, **kArgs):
                 yield None

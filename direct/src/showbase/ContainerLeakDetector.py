@@ -5,13 +5,21 @@ from direct.showbase.Job import Job
 import types, weakref, random, sys
 import builtins
 
-deadEndTypes = (bool, types.BuiltinFunctionType,
-                types.BuiltinMethodType, complex,
-                float, int,
-                type(None), type(NotImplemented),
-                type, types.CodeType, types.FunctionType,
-                bytes, str, tuple)
+deadEndTypes = [
+    types.BuiltinFunctionType, types.BuiltinMethodType,
+    types.CodeType, types.FunctionType,
+    types.GeneratorType, types.CoroutineType,
+    types.AsyncGeneratorType,
+    bool, complex, float, int, type,
+    bytes, str, list, tuple,
+    type(None), type(NotImplemented)
+]
 
+if sys.version_info >= (3, 6):
+    if sys.version_info >= (3, 8):
+        deadEndTypes.append(types.CellType)
+
+    deadEndTypes.append(types.AsyncGeneratorType)
 
 def _createContainerLeak():
     def leakContainer(task=None):

@@ -36,9 +36,7 @@ class FunctionInterval(Interval.Interval):
                 if type(ival.function) == types.MethodType:
                     if ival.function.__func__ == oldFunction:
                         # print 'found: ', ival.function, oldFunction
-                        ival.function = types.MethodType(newFunction,
-                                                         ival.function.__self__,
-                                                         ival.function.__self__.__class__)
+                        ival.function = types.MethodType(newFunction, ival.function.__self__)
                         count += 1
             return count
 

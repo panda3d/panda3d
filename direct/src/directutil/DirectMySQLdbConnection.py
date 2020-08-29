@@ -68,7 +68,6 @@ class DirectMySQLdbConnection(Connection):
         """
 
         ### DCR: use methods rather than inline-defined functions to prevent memory leaks
-        string_literal = self._get_string_literal(db)
         self.unicode_literal = unicode_literal = self._get_unicode_literal(db)
         self.string_decoder = string_decoder = self._get_string_decoder()
         if not charset:
@@ -83,8 +82,8 @@ class DirectMySQLdbConnection(Connection):
             self.converter[FIELD_TYPE.VAR_STRING].insert(-1, (None, string_decoder))
             self.converter[FIELD_TYPE.BLOB].insert(-1, (None, string_decoder))
 
-        self.encoders[types.StringType] = string_literal
-        self.encoders[types.UnicodeType] = unicode_literal
+        self.encoders[str] = unicode_literal
+        self.encoders[bytes] = db.string_literal
         self._transactional = self.server_capabilities & CLIENT.TRANSACTIONS
         if self._transactional:
             # PEP-249 requires autocommit to be initially off
@@ -92,13 +91,8 @@ class DirectMySQLdbConnection(Connection):
         self.messages = []
 
     ### DCR: make inline-defined functions into member methods to avoid garbage
-    def _string_literal(self, db, obj, dummy=None):
-        return db.string_literal(obj)
-    def _get_string_literal(self, db):
-        return Functor(self._string_literal, db)
-
-    def _unicode_literal(self, db, u, dummy=None):
-        return db.literal(u.encode(unicode_literal.charset))
+    def _unicode_literal(self, db, obj, dummy=None):
+        return db.string_literal(obj.encode(db.encoding))
     def _get_unicode_literal(self, db):
         return Functor(self._unicode_literal, db)
 

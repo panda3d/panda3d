@@ -7,7 +7,6 @@ from direct.showbase.PythonUtil import fastRepr
 from direct.showbase.PythonUtil import AlphabetCounter
 from direct.showbase.Job import Job
 import gc
-import types
 
 GarbageCycleCountAnnounceEvent = 'announceGarbageCycleDesc2num'
 
@@ -212,7 +211,7 @@ class GarbageReport(Job):
                     startIndex = 0
                     # + 1 to include a reference back to the first object
                     endIndex = numObjs + 1
-                    if type(objs[-1]) is types.InstanceType and type(objs[0]) is dict:
+                    if hasattr(objs[-1], '__dict__') and type(objs[0]) is dict:
                         startIndex -= 1
                         endIndex -= 1
 
@@ -221,7 +220,8 @@ class GarbageReport(Job):
                             numToSkip -= 1
                             continue
                         obj = objs[index]
-                        if type(obj) is types.InstanceType:
+                        if hasattr(obj, '__dict__'):
+                            # Instance of a class
                             if not objAlreadyRepresented:
                                 cycleBySyntax += '%s' % obj.__class__.__name__
                             cycleBySyntax += '.'
