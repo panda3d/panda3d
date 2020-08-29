@@ -9,7 +9,6 @@ deadEndTypes = [
     types.BuiltinFunctionType, types.BuiltinMethodType,
     types.CodeType, types.FunctionType,
     types.GeneratorType, types.CoroutineType,
-    types.AsyncGeneratorType,
     bool, complex, float, int, type,
     bytes, str, list, tuple,
     type(None), type(NotImplemented)
