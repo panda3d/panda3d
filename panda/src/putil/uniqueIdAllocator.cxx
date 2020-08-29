@@ -195,7 +195,9 @@ is_allocated(uint32_t id) {
  * Free an allocated index (index must be between _min and _max that were
  * passed to the constructor).
  *
- * Returns true if the index has been freed successfully.
+ * Since 1.11.0, returns true if the index has been freed successfully
+ * or false if the index has not been allocated yet, instead of
+ * triggering an assertion.
  */
 bool UniqueIdAllocator::
 free(uint32_t id) {
