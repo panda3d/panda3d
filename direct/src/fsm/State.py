@@ -224,18 +224,3 @@ class State(DirectObject):
     def __str__(self):
         return "State: name = %s, enter = %s, exit = %s, trans = %s, children = %s" %\
                (self.__name, self.__enterFunc, self.__exitFunc, self.__transitions, self.__FSMList)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
