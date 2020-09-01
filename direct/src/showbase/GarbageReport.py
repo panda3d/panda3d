@@ -211,9 +211,6 @@ class GarbageReport(Job):
                     startIndex = 0
                     # + 1 to include a reference back to the first object
                     endIndex = numObjs + 1
-                    if hasattr(objs[-1], '__dict__') and type(objs[0]) is dict:
-                        startIndex -= 1
-                        endIndex -= 1
 
                     for index in range(startIndex, endIndex):
                         if numToSkip:
