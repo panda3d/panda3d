@@ -14,7 +14,7 @@
 #ifndef STTERRAIN_H
 #define STTERRAIN_H
 
-#include "pandabase.h"
+#include "contribbase.h"
 #include "typedReferenceCount.h"
 #include "namable.h"
 #include "geomVertexData.h"
