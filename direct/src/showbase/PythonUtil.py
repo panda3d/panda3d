@@ -1600,7 +1600,10 @@ def appendStr(obj, st):
             return s
         oldStr = Functor(stringer, str(obj))
         stringer = None
-    obj.__str__ = types.MethodType(Functor(appendedStr, oldStr, st), obj, obj.__class__)
+    if sys.version_info >= (3, 0):
+        obj.__str__ = types.MethodType(Functor(appendedStr, oldStr, st), obj)
+    else:
+        obj.__str__ = types.MethodType(Functor(appendedStr, oldStr, st), obj, obj.__class__)
     appendedStr = None
     return obj
 

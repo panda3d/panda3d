@@ -4,6 +4,7 @@ __all__ = ['State']
 
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.DirectObject import DirectObject
+import sys
 
 
 class State(DirectObject):
@@ -32,16 +33,24 @@ class State(DirectObject):
                 if type(enterFunc) == types.MethodType:
                     if enterFunc.__func__ == oldFunction:
                         # print 'found: ', enterFunc, oldFunction
-                        state.setEnterFunc(types.MethodType(newFunction,
-                                                            enterFunc.__self__,
-                                                            enterFunc.__self__.__class__))
+                        if sys.version_info >= (3, 0):
+                            state.setEnterFunc(types.MethodType(newFunction,
+                                                                enterFunc.__self__))
+                        else:
+                            state.setEnterFunc(types.MethodType(newFunction,
+                                                                enterFunc.__self__,
+                                                                enterFunc.__self__.__class__))
                         count += 1
                 if type(exitFunc) == types.MethodType:
                     if exitFunc.__func__ == oldFunction:
                         # print 'found: ', exitFunc, oldFunction
-                        state.setExitFunc(types.MethodType(newFunction,
-                                                           exitFunc.__self__,
-                                                           exitFunc.__self__.__class__))
+                        if sys.version_info >= (3, 0):
+                            state.setExitFunc(types.MethodType(newFunction,
+                                                               exitFunc.__self__))
+                        else:
+                            state.setExitFunc(types.MethodType(newFunction,
+                                                               exitFunc.__self__,
+                                                               exitFunc.__self__.__class__))
                         count += 1
             return count
 

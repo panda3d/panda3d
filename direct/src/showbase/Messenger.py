@@ -8,6 +8,7 @@ __all__ = ['Messenger']
 from .PythonUtil import *
 from direct.directnotify import DirectNotifyGlobal
 import types
+import sys
 
 from direct.stdpy.threading import Lock
 
@@ -464,8 +465,11 @@ class Messenger:
                 #       'oldMethod: ' + repr(oldMethod) + '\n' +
                 #       'newFunction: ' + repr(newFunction) + '\n')
                 if (function == oldMethod):
-                    newMethod = types.MethodType(
-                        newFunction, method.__self__, method.__self__.__class__)
+                    if sys.version_info >= (3, 0):
+                        newMethod = types.MethodType(newFunction, method.__self__)
+                    else:
+                        newMethod = types.MethodType(
+                            newFunction, method.__self__, method.__self__.__class__)
                     params[0] = newMethod
                     # Found it retrun true
                     retFlag += 1
