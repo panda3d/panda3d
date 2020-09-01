@@ -203,11 +203,6 @@ press(const MouseWatcherParameter &param, bool background) {
 
       ButtonHandle button = param.get_button();
 
-      if (button == KeyboardButton::tab()) {
-        // Tab. Ignore the entry.
-        return;
-      }
-
       if (button == MouseButton::one() ||
           button == MouseButton::two() ||
           button == MouseButton::three() ||
@@ -326,7 +321,7 @@ keystroke(const MouseWatcherParameter &param, bool background) {
 
       int keycode = param.get_keycode();
 
-      if (!isascii(keycode) || isprint(keycode)) {
+      if ((!isascii(keycode) || isprint(keycode)) && keycode != '\t') {
         // A normal visible character.  Add a new character to the text entry,
         // if there's room.
         if (!_candidate_wtext.empty()) {
