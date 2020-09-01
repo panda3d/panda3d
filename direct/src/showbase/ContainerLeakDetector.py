@@ -15,9 +15,6 @@ deadEndTypes = [
 ]
 
 if sys.version_info >= (3, 6):
-    if sys.version_info >= (3, 8):
-        deadEndTypes.append(types.CellType)
-
     deadEndTypes.append(types.AsyncGeneratorType)
 
 def _createContainerLeak():
@@ -549,6 +546,23 @@ class FindContainers(Job):
                 parentObjRef = curObjRef
                 # if we hit a dead end, start over from another container
                 curObjRef = None
+
+                # types.CellType was added in Python 3.8
+                if sys.version_info >= (3, 8) and type(curObj) == types.CellType:
+                    child = curObj.cell_contents
+                    hasLength = self._hasLength(child)
+                    notDeadEnd = not self._isDeadEnd(child)
+                    if hasLength or notDeadEnd:
+                        objRef = ObjectRef(Indirection(evalStr='.cell_contents'),
+                                           id(child), parentObjRef)
+                        yield None
+                        if hasLength:
+                            for i in self._addContainerGen(child, objRef):
+                                yield None
+                        if notDeadEnd:
+                            self._addDiscoveredStartRef(child, objRef)
+                            curObjRef = objRef
+                    continue
 
                 if hasattr(curObj, '__dict__'):
                     child = curObj.__dict__

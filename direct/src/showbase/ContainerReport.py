@@ -4,6 +4,7 @@ from direct.showbase.PythonUtil import safeRepr
 from direct.showbase.Job import Job
 from direct.showbase.ContainerLeakDetector import deadEndTypes
 import types
+import sys
 import io
 
 class ContainerReport(Job):
@@ -116,6 +117,15 @@ class ContainerReport(Job):
                                     self._id2pathStr[id(attr)] = self._id2pathStr[id(parentObj)] + '[%s]' % safeRepr(key)
                 del key
                 del attr
+                continue
+
+            # types.CellType was added in Python 3.8
+            if sys.version_info >= (3, 8) and type(parentObj) == types.CellType:
+                child = parentObj.cell_contents
+                if self._examine(child):
+                    assert (self._queue.back() is child)
+                    self._instanceDictIds.add(id(child))
+                    self._id2pathStr[id(child)] = str(self._id2pathStr[id(parentObj)]) + '.cell_contents'
                 continue
 
             if hasattr(parentObj, '__dict__'):
