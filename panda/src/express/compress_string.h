@@ -19,7 +19,7 @@
 #if defined(HAVE_ZLIB) or defined(HAVE_LZ4)
 
 #include "filename.h"
-#include "streamBase.h"
+#include "streamZlib.h"
 
 BEGIN_PUBLISH
 
