@@ -13,8 +13,7 @@
 
 #include "compress_string.h"
 
-#ifdef HAVE_ZLIB
-#include "zStream.h"
+#if defined(HAVE_ZLIB) or defined(HAVE_LZ4)
 #include "virtualFileSystem.h"
 #include "config_express.h"
 
@@ -29,11 +28,10 @@ using std::string;
  * through 9).  Returns the compressed string.
  */
 string
-compress_string(const string &source, int compression_level) {
+compress_string(const string &source, CompressionAlgorithm compression_algo, int compression_level) {
   ostringstream dest;
-
   {
-    OCompressStream compress;
+    OCompressStream compress(compression_algo);
     compress.open(&dest, false, compression_level);
     compress.write(source.data(), source.length());
 
@@ -71,7 +69,7 @@ decompress_string(const string &source) {
  * value is bool on success, or false on failure.
  */
 EXPCL_PANDA_EXPRESS bool
-compress_file(const Filename &source, const Filename &dest, int compression_level) {
+compress_file(const Filename &source, const Filename &dest, CompressionAlgorithm compression_algo, int compression_level) {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   Filename source_filename = source;
   if (!source_filename.is_binary_or_text()) {
@@ -92,7 +90,7 @@ compress_file(const Filename &source, const Filename &dest, int compression_leve
     return false;
   }
 
-  bool result = compress_stream(*source_stream, *dest_stream, compression_level);
+  bool result = compress_stream(*source_stream, *dest_stream, compression_algo, compression_level);
   vfs->close_read_file(source_stream);
   vfs->close_write_file(dest_stream);
   return result;
@@ -142,8 +140,8 @@ decompress_file(const Filename &source, const Filename &dest) {
  * The return value is bool on success, or false on failure.
  */
 bool
-compress_stream(istream &source, ostream &dest, int compression_level) {
-  OCompressStream compress;
+compress_stream(istream &source, ostream &dest, CompressionAlgorithm compression_algo, int compression_level) {
+  OCompressStream compress(compression_algo);
   compress.open(&dest, false, compression_level);
 
   static const size_t buffer_size = 4096;
@@ -162,7 +160,8 @@ compress_stream(istream &source, ostream &dest, int compression_level) {
 }
 
 /**
- * Decompresss the data from the previously-compressed source stream.  The
+ * Decompresss the data from the previously-compressed source stream. The user
+ * have to know which algorithm was used in this compressed source stream. The
  * source stream is read from its current position to the end-of-file, and the
  * decompressed results are written to the dest stream.  The return value is
  * bool on success, or false on failure.
@@ -171,8 +170,8 @@ compress_stream(istream &source, ostream &dest, int compression_level) {
  * may simply be a garbage or truncated string.
  */
 bool
-decompress_stream(istream &source, ostream &dest) {
-  IDecompressStream decompress(&source, false);
+decompress_stream(istream &source, ostream &dest, CompressionAlgorithm compression_algo) {
+  IDecompressStream decompress(&source, compression_algo, false);
 
   static const size_t buffer_size = 4096;
   char buffer[buffer_size];
@@ -188,4 +187,4 @@ decompress_stream(istream &source, ostream &dest) {
   return (!decompress.fail() || decompress.eof()) && (!dest.fail());
 }
 
-#endif // HAVE_ZLIB
+#endif // HAVE_ZLIB || HAVE_LZ4

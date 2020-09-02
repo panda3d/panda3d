@@ -129,6 +129,13 @@ init_libexpress() {
   }
 #endif
 
+#ifdef HAVE_LZ4
+  {
+    PandaSystem *ps = PandaSystem::get_global_ptr();
+    ps->add_system("lz4");
+  }
+#endif
+
   // This is a fine place to ensure that the numeric types have been chosen
   // correctly.
   nassertv(sizeof(int8_t) == 1 && sizeof(uint8_t) == 1);

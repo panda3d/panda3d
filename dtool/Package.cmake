@@ -341,6 +341,15 @@ package_option(ZLIB
 package_status(ZLIB "zlib")
 
 
+# lz4
+find_package(LZ4 QUIET)
+
+package_option(LZ4
+  "Enables support for compression of texture in .bam."
+  IMPORTED_AS LZ4::LZ4)
+
+package_status(LZ4 "lz4")
+
 #
 # ------------ Image formats ------------
 #

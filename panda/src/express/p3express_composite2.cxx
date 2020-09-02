@@ -28,5 +28,5 @@
 #include "weakPointerToVoid.cxx"
 #include "weakReferenceList.cxx"
 #include "windowsRegistry.cxx"
-#include "zStream.cxx"
-#include "zStreamBuf.cxx"
+#include "streamZlib.cxx"
+#include "streamBufZlib.cxx"

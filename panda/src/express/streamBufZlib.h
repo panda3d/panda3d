@@ -15,6 +15,7 @@
 #define ZSTREAMBUF_H
 
 #include "pandabase.h"
+#include "streamBufBase.h"
 
 // This module is not compiled if zlib is not available.
 #ifdef HAVE_ZLIB
@@ -22,18 +23,18 @@
 #include <zlib.h>
 
 /**
- * The streambuf object that implements IDecompressStream and OCompressStream.
+ * The streambuf object that implements IDecompressStreamZlib and OCompressStreamZlib.
  */
-class EXPCL_PANDA_EXPRESS ZStreamBuf : public std::streambuf {
+class EXPCL_PANDA_EXPRESS StreamBufZlib final : public StreamBufBase {
 public:
-  ZStreamBuf();
-  virtual ~ZStreamBuf();
+  StreamBufZlib();
+  virtual ~StreamBufZlib();
 
-  void open_read(std::istream *source, bool owns_source);
-  void close_read();
+  void open_read(std::istream *source, bool owns_source) override;
+  void close_read() override;
 
   void open_write(std::ostream *dest, bool owns_dest, int compression_level);
-  void close_write();
+  void close_write() override;
 
   virtual std::streampos seekoff(std::streamoff off, ios_seekdir dir, ios_openmode which);
   virtual std::streampos seekpos(std::streampos pos, ios_openmode which);

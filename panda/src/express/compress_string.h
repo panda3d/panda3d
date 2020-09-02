@@ -11,19 +11,20 @@
  * @date 2009-08-09
  */
 
-#ifndef COMPRESS_STRING_H
-#define COMPRESS_STRING_H
+#ifndef COMPRESS_STRING_ZLIB_H
+#define COMPRESS_STRING_ZLIB_H
 
 #include "pandabase.h"
 
-#ifdef HAVE_ZLIB
+#if defined(HAVE_ZLIB) or defined(HAVE_LZ4)
 
 #include "filename.h"
+#include "streamBase.h"
 
 BEGIN_PUBLISH
 
 EXPCL_PANDA_EXPRESS std::string
-compress_string(const std::string &source, int compression_level);
+compress_string(const std::string &source, CompressionAlgorithm compression_algo, int compression_level);
 
 EXPCL_PANDA_EXPRESS std::string
 decompress_string(const std::string &source);
@@ -34,12 +35,12 @@ EXPCL_PANDA_EXPRESS bool
 decompress_file(const Filename &source, const Filename &dest);
 
 EXPCL_PANDA_EXPRESS bool
-compress_stream(std::istream &source, std::ostream &dest, int compression_level);
+compress_stream(std::istream &source, std::ostream &dest, CompressionAlgorithm compression_algo, int compression_level);
 EXPCL_PANDA_EXPRESS bool
-decompress_stream(std::istream &source, std::ostream &dest);
+decompress_stream(std::istream &source, std::ostream &dest, CompressionAlgorithm compression_algo);
 
 END_PUBLISH
 
-#endif  // HAVE_ZLIB
+#endif  // HAVE_ZLIB || HAVE_LZ4
 
 #endif

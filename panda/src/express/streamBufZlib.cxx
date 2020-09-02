@@ -6,14 +6,15 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * @file zStreamBuf.cxx
+ * @file StreamBufZlib.cxx
  * @author drose
  * @date 2002-08-05
  */
 
-#include "zStreamBuf.h"
+#include "streamBufZlib.h"
 
 #ifdef HAVE_ZLIB
+#include <zlib.h>
 
 #include "pnotify.h"
 #include "config_express.h"
@@ -37,45 +38,23 @@ do_zlib_free(voidpf opaque, voidpf address) {
 /**
  *
  */
-ZStreamBuf::
-ZStreamBuf() {
-  _source = nullptr;
-  _owns_source = false;
-  _dest = nullptr;
-  _owns_dest = false;
-
-#ifdef PHAVE_IOSTREAM
-  _buffer = (char *)PANDA_MALLOC_ARRAY(4096);
-  char *ebuf = _buffer + 4096;
-  setg(_buffer, ebuf, ebuf);
-  setp(_buffer, ebuf);
-
-#else
-  allocate();
-  setg(base(), ebuf(), ebuf());
-  setp(base(), ebuf());
-#endif
+StreamBufZlib::
+StreamBufZlib() : StreamBufBase() {
 }
 
 /**
  *
  */
-ZStreamBuf::
-~ZStreamBuf() {
-  close_read();
-  close_write();
-#ifdef PHAVE_IOSTREAM
-  PANDA_FREE_ARRAY(_buffer);
-#endif
+StreamBufZlib::
+~StreamBufZlib() {
 }
 
 /**
  *
  */
-void ZStreamBuf::
+void StreamBufZlib::
 open_read(std::istream *source, bool owns_source) {
-  _source = source;
-  _owns_source = owns_source;
+  StreamBufBase::open_read(source, owns_source);
 
   _z_source.next_in = Z_NULL;
   _z_source.avail_in = 0;
@@ -102,7 +81,7 @@ open_read(std::istream *source, bool owns_source) {
 /**
  *
  */
-void ZStreamBuf::
+void StreamBufZlib::
 close_read() {
   if (_source != nullptr) {
 
@@ -123,10 +102,9 @@ close_read() {
 /**
  *
  */
-void ZStreamBuf::
+void StreamBufZlib::
 open_write(std::ostream *dest, bool owns_dest, int compression_level) {
-  _dest = dest;
-  _owns_dest = owns_dest;
+  StreamBufBase::open_write(dest, owns_dest);
 
   _z_dest.next_in = Z_NULL;
   _z_dest.avail_in = 0;
@@ -153,7 +131,7 @@ open_write(std::ostream *dest, bool owns_dest, int compression_level) {
 /**
  *
  */
-void ZStreamBuf::
+void StreamBufZlib::
 close_write() {
   if (_dest != nullptr) {
     size_t n = pptr() - pbase();
@@ -175,10 +153,10 @@ close_write() {
 }
 
 /**
- * Implements seeking within the stream.  ZStreamBuf only allows seeking back
+ * Implements seeking within the stream.  StreamBufZlib only allows seeking back
  * to the beginning of the stream.
  */
-streampos ZStreamBuf::
+streampos StreamBufZlib::
 seekoff(streamoff off, ios_seekdir dir, ios_openmode which) {
   if (which != ios::in) {
     // We can only do this with the input stream.
@@ -219,10 +197,10 @@ seekoff(streamoff off, ios_seekdir dir, ios_openmode which) {
 }
 
 /**
- * Implements seeking within the stream.  ZStreamBuf only allows seeking back
+ * Implements seeking within the stream.  StreamBufZlib only allows seeking back
  * to the beginning of the stream.
  */
-streampos ZStreamBuf::
+streampos StreamBufZlib::
 seekpos(streampos pos, ios_openmode which) {
   return seekoff(pos, ios::beg, which);
 }
@@ -231,7 +209,7 @@ seekpos(streampos pos, ios_openmode which) {
  * Called by the system ostream implementation when its internal buffer is
  * filled, plus one character.
  */
-int ZStreamBuf::
+int StreamBufZlib::
 overflow(int ch) {
   size_t n = pptr() - pbase();
   if (n != 0) {
@@ -252,7 +230,7 @@ overflow(int ch) {
  * Called by the system iostream implementation to implement a flush
  * operation.
  */
-int ZStreamBuf::
+int StreamBufZlib::
 sync() {
   if (_source != nullptr) {
     size_t n = egptr() - gptr();
@@ -273,7 +251,7 @@ sync() {
  * Called by the system istream implementation when its internal buffer needs
  * more characters.
  */
-int ZStreamBuf::
+int StreamBufZlib::
 underflow() {
   // Sometimes underflow() is called even if the buffer is not empty.
   if (gptr() >= egptr()) {
@@ -305,7 +283,7 @@ underflow() {
 /**
  * Gets some characters from the source stream.
  */
-size_t ZStreamBuf::
+size_t StreamBufZlib::
 read_chars(char *start, size_t length) {
   _z_source.next_out = (Bytef *)start;
   _z_source.avail_out = length;
@@ -349,7 +327,7 @@ read_chars(char *start, size_t length) {
  * Sends some characters to the dest stream.  The flush parameter is passed to
  * deflate().
  */
-void ZStreamBuf::
+void StreamBufZlib::
 write_chars(const char *start, size_t length, int flush) {
   static const size_t compress_buffer_size = 4096;
   char compress_buffer[compress_buffer_size];
@@ -394,7 +372,7 @@ write_chars(const char *start, size_t length, int flush) {
 /**
  * Reports a recent error code returned by zlib.
  */
-void ZStreamBuf::
+void StreamBufZlib::
 show_zlib_error(const char *function, int error_code, z_stream &z) {
   std::stringstream error_line;
 
