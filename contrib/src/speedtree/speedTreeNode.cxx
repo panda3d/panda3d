@@ -11,7 +11,7 @@
  * @date 2009-03-13
  */
 
-#include "pandabase.h"
+#include "contribbase.h"
 #include "speedTreeNode.h"
 #include "stBasicTerrain.h"
 #include "virtualFileSystem.h"

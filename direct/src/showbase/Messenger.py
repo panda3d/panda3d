@@ -464,8 +464,7 @@ class Messenger:
                 #       'oldMethod: ' + repr(oldMethod) + '\n' +
                 #       'newFunction: ' + repr(newFunction) + '\n')
                 if (function == oldMethod):
-                    newMethod = types.MethodType(
-                        newFunction, method.__self__, method.__self__.__class__)
+                    newMethod = types.MethodType(newFunction, method.__self__)
                     params[0] = newMethod
                     # Found it retrun true
                     retFlag += 1
