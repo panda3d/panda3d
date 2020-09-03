@@ -124,19 +124,21 @@ set_root_node(TypedWritable *root_node) {
 /**
  * Returns the format of compression for textures written to the .bam.
  */
-INLINE BamEnums::BamTexCompressionFormat BamWriter::
-get_tex_compression_format() const {
-  return _tex_compression_format;
+INLINE BamEnums::BamTextureCompressionFormat BamWriter::
+get_texture_compression_format() const {
+  return _texture_compression_format;
 }
 
 /**
  * Sets the format of compression for textures, potentially overriding
- * the config variable "compress_texture_to_bam". If no ZLIB is found
- * at compile time, then _tex_compression_level will always be BTC_off.
+ * the config variable "bam_texture_compression_format". If no ZLIB is found
+ * at compile time, then _texture_compression_level will always be BTC_off.
  */
 INLINE void BamWriter::
-set_tex_compression_format(BamEnums::BamTexCompressionFormat format) {
+set_texture_compression_format(BamEnums::BamTextureCompressionFormat format) {
 #ifdef HAVE_ZLIB
-  if(_file_minor >= 46) _tex_compression_format = format;
+  if (_file_minor >= 46) {
+    _texture_compression_format = format;
+  }
 #endif
 }

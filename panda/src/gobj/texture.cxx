@@ -10082,7 +10082,7 @@ do_write_datagram_rawdata(CData *cdata, BamWriter *manager, Datagram &me) {
       me.add_uint32(cdata->_ram_images[n]._page_size);
 
       // Only write the size of the image data written to bam.
-      if(manager->get_tex_compression_format() == BamEnums::BTC_zlib) {
+      if (manager->get_texture_compression_format() == BamEnums::BTC_zlib) {
         string raw_image = cdata->_ram_images[n]._image.get_data();
         string compressed_image = compress_string(raw_image, 6);
         me.add_uint32(compressed_image.length());
@@ -10318,7 +10318,7 @@ do_fillin_body(CData *cdata, DatagramIterator &scan, BamReader *manager) {
   }
 
 #ifndef HAVE_ZLIB
-  if (manager->get_tex_compression_format() == BamEnums::BTC_zlib) {
+  if (manager->get_texture_compression_format() == BamEnums::BTC_zlib) {
     gobj_cat.error()
       << "Texture can't be decompressed using zlib because zlib isn't present\n";
   }
@@ -10382,7 +10382,7 @@ do_fillin_rawdata(CData *cdata, DatagramIterator &scan, BamReader *manager) {
     PTA_uchar image_data = PTA_uchar::empty_array(read_size, get_class_type());
     scan.extract_bytes(image_data.p(), read_size);
 
-    if(manager->get_tex_compression_format() == BamEnums::BTC_zlib) {
+    if (manager->get_texture_compression_format() == BamEnums::BTC_zlib) {
       string decompressed = decompress_string(image_data.get_data());
       image_data.resize(decompressed.length());
       image_data.set_data(decompressed);

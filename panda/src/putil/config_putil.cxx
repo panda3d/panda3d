@@ -89,8 +89,8 @@ ConfigVariableEnum<BamEnums::BamTextureMode> bam_texture_mode
  PRC_DESC("Set this to specify how textures should be written into Bam files."
           "See the panda source or documentation for available options."));
 
-ConfigVariableEnum<BamEnums::BamTexCompressionFormat> bam_tex_compression_format
-("bam-tex-compression-format",
+ConfigVariableEnum<BamEnums::BamTextureCompressionFormat> bam_texture_compression_format
+("bam-texture-compression-format",
  #ifndef HAVE_ZLIB
    BamEnums::BTC_off,
  #else

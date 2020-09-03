@@ -98,9 +98,9 @@ get_file_endian() const {
 /**
  * Returns the format of compression for textures in the .bam.
  */
-INLINE BamEnums::BamTexCompressionFormat BamReader::
-get_tex_compression_format() const {
-  return _tex_compression_format;
+INLINE BamEnums::BamTextureCompressionFormat BamReader::
+get_texture_compression_format() const {
+  return _texture_compression_format;
 }
 
 /**

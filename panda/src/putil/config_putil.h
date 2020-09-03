@@ -39,7 +39,7 @@ extern EXPCL_PANDA_PUTIL ConfigVariableInt bam_version;
 extern EXPCL_PANDA_PUTIL ConfigVariableEnum<BamEnums::BamEndian> bam_endian;
 extern EXPCL_PANDA_PUTIL ConfigVariableBool bam_stdfloat_double;
 extern EXPCL_PANDA_PUTIL ConfigVariableEnum<BamEnums::BamTextureMode> bam_texture_mode;
-extern EXPCL_PANDA_PUTIL ConfigVariableEnum<BamEnums::BamTexCompressionFormat> bam_tex_compression_format;
+extern EXPCL_PANDA_PUTIL ConfigVariableEnum<BamEnums::BamTextureCompressionFormat> bam_texture_compression_format;
 
 BEGIN_PUBLISH
 EXPCL_PANDA_PUTIL ConfigVariableSearchPath &get_model_path();

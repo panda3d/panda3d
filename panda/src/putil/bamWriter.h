@@ -87,8 +87,8 @@ PUBLISHED:
   INLINE TypedWritable *get_root_node() const;
   INLINE void set_root_node(TypedWritable *root_node);
 
-  INLINE BamEnums::BamTexCompressionFormat get_tex_compression_format() const;
-  INLINE void set_tex_compression_format(BamEnums::BamTexCompressionFormat level);
+  INLINE BamEnums::BamTextureCompressionFormat get_texture_compression_format() const;
+  INLINE void set_texture_compression_format(BamEnums::BamTextureCompressionFormat level);
 
 PUBLISHED:
   MAKE_PROPERTY(target, get_target, set_target);
@@ -97,7 +97,7 @@ PUBLISHED:
   MAKE_PROPERTY(file_stdfloat_double, get_file_stdfloat_double);
   MAKE_PROPERTY(file_texture_mode, get_file_texture_mode);
   MAKE_PROPERTY(root_node, get_root_node, set_root_node);
-  MAKE_PROPERTY(tex_compression_format, get_tex_compression_format, set_tex_compression_format);
+  MAKE_PROPERTY(texture_compression_format, get_texture_compression_format, set_texture_compression_format);
 
 public:
   // Functions to support classes that write themselves to the Bam.
@@ -192,7 +192,7 @@ private:
   DatagramSink *_target;
   bool _needs_init;
 
-  BamTexCompressionFormat _tex_compression_format;
+  BamTextureCompressionFormat _texture_compression_format;
 
   friend class TypedWritable;
 };

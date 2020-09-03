@@ -144,7 +144,7 @@ PUBLISHED:
   INLINE int get_file_minor_ver() const;
   INLINE BamEndian get_file_endian() const;
   INLINE bool get_file_stdfloat_double() const;
-  INLINE BamTexCompressionFormat get_tex_compression_format() const;
+  INLINE BamTextureCompressionFormat get_texture_compression_format() const;
 
   INLINE int get_current_major_ver() const;
   INLINE int get_current_minor_ver() const;
@@ -336,7 +336,7 @@ private:
   int _file_major, _file_minor;
   BamEndian _file_endian;
   bool _file_stdfloat_double;
-  BamTexCompressionFormat _tex_compression_format;
+  BamTextureCompressionFormat _texture_compression_format;
   static const int _cur_major;
   static const int _cur_minor;
 };
