@@ -21,7 +21,7 @@
 #include "colorAttrib.h"
 #include "cullBinAttrib.h"
 #include "transparencyAttrib.h"
-#include "zStream.h"
+#include "streamZlib.h"
 
 PT(TextFont) TextProperties::_default_font;
 bool TextProperties::_loaded_default_font = false;
@@ -472,7 +472,7 @@ load_default_font() {
 #ifdef HAVE_ZLIB
   // The font data is stored compressed; decompress it on-the-fly.
   std::istringstream inz(data);
-  IDecompressStream in(&inz, false);
+  IDecompressStreamZlib in(&inz, false);
 
 #else
   // The font data is stored uncompressed, so just load it.

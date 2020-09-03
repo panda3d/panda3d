@@ -126,7 +126,7 @@ initiate(const Filename &source_file, const Filename &dest_file) {
   }
 
   // Now create the decompressor stream.
-  _decompress = new IDecompressStream(_source, false);
+  _decompress = new IDecompressStreamZlib(_source, false);
   return EU_success;
 }
 
@@ -204,7 +204,7 @@ decompress(Ramfile &source_and_dest_file) {
   std::istringstream source(source_and_dest_file._data);
   std::ostringstream dest;
 
-  IDecompressStream decompress(&source, false);
+  IDecompressStreamZlib decompress(&source, false);
 
   int ch = decompress.get();
   while (ch != EOF && !decompress.fail()) {

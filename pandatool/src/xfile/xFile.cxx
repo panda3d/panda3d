@@ -18,7 +18,7 @@
 #include "xFileDataNodeTemplate.h"
 #include "config_xfile.h"
 #include "standard_templates.h"
-#include "zStream.h"
+#include "streamZlib.h"
 #include "virtualFileSystem.h"
 #include "dcast.h"
 
@@ -145,7 +145,7 @@ write(Filename filename) const {
   if (filename.get_extension() == "pz") {
     // The filename ends in .pz, which means to automatically compress the X
     // file that we write.
-    OCompressStream compressor(&out, false);
+    OCompressStreamZlib compressor(&out, false);
     return write(compressor);
   }
 #endif  // HAVE_ZLIB
@@ -452,7 +452,7 @@ get_standard_templates() {
 #ifdef HAVE_ZLIB
     // The data is stored compressed; decompress it on-the-fly.
     istringstream inz(data);
-    IDecompressStream in(&inz, false);
+    IDecompressStreamZlib in(&inz, false);
 
 #else
     // The data is stored uncompressed, so just load it.

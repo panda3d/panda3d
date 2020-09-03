@@ -27,7 +27,7 @@
 #include "vrmlNodeType.h"
 #include "vrmlNode.h"
 #include "standard_nodes.h"
-#include "zStream.h"
+#include "streamZlib.h"
 #include "virtualFileSystem.h"
 
 using std::istream;
@@ -61,7 +61,7 @@ get_standard_nodes() {
 #ifdef HAVE_ZLIB
   // The data is stored compressed; decompress it on-the-fly.
   istringstream inz(data);
-  IDecompressStream in(&inz, false);
+  IDecompressStreamZlib in(&inz, false);
 
 #else
   // The data is stored uncompressed, so just load it.

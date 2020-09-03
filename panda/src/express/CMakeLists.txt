@@ -64,7 +64,11 @@ set(P3EXPRESS_HEADERS
   weakPointerToVoid.I weakPointerToVoid.h
   weakReferenceList.I weakReferenceList.h
   windowsRegistry.h
-  zStream.I zStream.h zStreamBuf.h
+  StreamBufBase.h
+  StreamZlib.I StreamZlib.h
+  StreamBufZlib.h
+  StreamLz4.I StreamLz4.h
+  StreamBufLz4.h
 )
 
 set(P3EXPRESS_SOURCES
@@ -117,7 +121,11 @@ set(P3EXPRESS_SOURCES
   weakPointerToVoid.cxx
   weakReferenceList.cxx
   windowsRegistry.cxx
-  zStream.cxx zStreamBuf.cxx
+  StreamBufBase.cxx
+  StreamBufZlib.cxx
+  StreamBufLz4.cxx
+  StreamZlib.cxx
+  StreamLz4.cxx
 )
 
 if(ANDROID)

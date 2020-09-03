@@ -11,25 +11,17 @@
  * @date 2002-08-05
  */
 
-#ifndef STREAM_BASE_H
-#define STREAM_BASE_H
+#ifndef STREAM_ZLIB_H
+#define STREAM_ZLIB_H
 
 #include <memory>
 
 #include "pandabase.h"
 
 // This module is not compiled if zlib is not available.
-#if defined(HAVE_ZLIB) or defined(HAVE_LZ4)
+#ifdef HAVE_ZLIB
 
-#include "streamBufBase.h"
 #include "streamBufZlib.h"
-#include "streamBufLz4.h"
-
-enum CompressionAlgorithm
-{
-    CA_zlib,
-    CA_lz4
-};
 
 /**
  * An input stream object that uses zlib to decompress (inflate) the input
@@ -41,21 +33,20 @@ enum CompressionAlgorithm
  *
  * Seeking is not supported.
  */
-class EXPCL_PANDA_EXPRESS IDecompressStream : public std::istream {
+class EXPCL_PANDA_EXPRESS IDecompressStreamZlib : public std::istream {
 PUBLISHED:
-  INLINE IDecompressStream() = delete;
-  INLINE IDecompressStream(CompressionAlgorithm compression_algo);
-  INLINE explicit IDecompressStream(std::istream *source, bool owns_source, CompressionAlgorithm compression_algo);
+  INLINE IDecompressStreamZlib();
+  INLINE explicit IDecompressStreamZlib(std::istream *source, bool owns_source);
 
 #if _MSC_VER >= 1800
   INLINE IDecompressStream(const IDecompressStream &copy) = delete;
 #endif
 
-  INLINE IDecompressStream &open(std::istream *source, bool owns_source);
-  INLINE IDecompressStream &close();
+  INLINE IDecompressStreamZlib &open(std::istream *source, bool owns_source);
+  INLINE IDecompressStreamZlib &close();
 
 private:
-  std::shared_ptr<StreamBufBase> _buf_ptr;
+  StreamBufZlib _buf;
 };
 
 /**
@@ -68,31 +59,27 @@ private:
  *
  * Seeking is not supported.
  */
-class EXPCL_PANDA_EXPRESS OCompressStream : public std::ostream {
+class EXPCL_PANDA_EXPRESS OCompressStreamZlib : public std::ostream {
 PUBLISHED:
-  INLINE OCompressStream() = delete;
-  INLINE OCompressStream(CompressionAlgorithm compression_algo);
-  INLINE explicit OCompressStream(std::ostream *dest, bool owns_dest,
-                                  CompressionAlgorithm compression_algo,
+  INLINE OCompressStreamZlib();
+  INLINE explicit OCompressStreamZlib(std::ostream *dest, bool owns_dest,
                                   int compression_level = 6);
 
 #if _MSC_VER >= 1800
   INLINE OCompressStream(const OCompressStream &copy) = delete;
 #endif
 
-  INLINE OCompressStream &open(std::ostream *dest, bool owns_dest,
+  INLINE OCompressStreamZlib &open(std::ostream *dest, bool owns_dest,
                                int compression_level = 6);
-  INLINE OCompressStream &close();
+  INLINE OCompressStreamZlib &close();
 
 private:
-  std::shared_ptr<StreamBufBase> _buf_ptr;
+  StreamBufZlib _buf;
 };
-
-std::shared_ptr<StreamBufBase> create_buf_ptr(CompressionAlgorithm compression_algo);
 
 #include "streamZlib.I"
 
-#endif  // HAVE_ZLIB || HAVE_LZ4
+#endif  // HAVE_ZLIB
 
 
 #endif

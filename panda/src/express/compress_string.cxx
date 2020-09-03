@@ -11,6 +11,8 @@
  * @date 2009-08-09
  */
 
+#include <memory>
+
 #include "compress_string.h"
 
 #if defined(HAVE_ZLIB) or defined(HAVE_LZ4)
@@ -25,17 +27,17 @@ using std::string;
 
 /**
  * Compress the indicated source string at the given compression level (1
- * through 9).  Returns the compressed string.
+ * through 9 for zlib and 1 through 12 for lz4).  Returns the compressed string.
  */
 string
 compress_string(const string &source, CompressionAlgorithm compression_algo, int compression_level) {
   ostringstream dest;
   {
-    OCompressStream compress(compression_algo);
-    compress.open(&dest, false, compression_level);
-    compress.write(source.data(), source.length());
+    std::shared_ptr<ostream> compress = create_Ostream(compression_algo);
+    compress->open(&dest, false, compression_level);
+    compress->write(source.data(), source.length());
 
-    if (compress.fail()) {
+    if (compress->fail()) {
       return string();
     }
   }
@@ -51,11 +53,11 @@ compress_string(const string &source, CompressionAlgorithm compression_algo, int
  * value may simply be a garbage or truncated string.
  */
 string
-decompress_string(const string &source) {
+decompress_string(const string &source, CompressionAlgorithm compression_algo) {
   istringstream source_stream(source);
   ostringstream dest_stream;
 
-  if (!decompress_stream(source_stream, dest_stream)) {
+  if (!decompress_stream(source_stream, dest_stream, compression_algo)) {
     return string();
   }
 
@@ -106,7 +108,7 @@ compress_file(const Filename &source, const Filename &dest, CompressionAlgorithm
  * may simply be a garbage or truncated string.
  */
 EXPCL_PANDA_EXPRESS bool
-decompress_file(const Filename &source, const Filename &dest) {
+decompress_file(const Filename &source, const Filename &dest, CompressionAlgorithm compression_algo) {
   Filename source_filename = Filename::binary_filename(source);
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   istream *source_stream = vfs->open_read_file(source_filename, false);
@@ -127,7 +129,7 @@ decompress_file(const Filename &source, const Filename &dest) {
     return false;
   }
 
-  bool result = decompress_stream(*source_stream, *dest_stream);
+  bool result = decompress_stream(*source_stream, *dest_stream, compression_algo);
   vfs->close_read_file(source_stream);
   vfs->close_write_file(dest_stream);
   return result;
@@ -141,8 +143,8 @@ decompress_file(const Filename &source, const Filename &dest) {
  */
 bool
 compress_stream(istream &source, ostream &dest, CompressionAlgorithm compression_algo, int compression_level) {
-  OCompressStream compress(compression_algo);
-  compress.open(&dest, false, compression_level);
+  std::shared_ptr<ostream> compress = create_Ostream(compression_algo);
+  compress->open(&dest, false, compression_level);
 
   static const size_t buffer_size = 4096;
   char buffer[buffer_size];
@@ -150,13 +152,13 @@ compress_stream(istream &source, ostream &dest, CompressionAlgorithm compression
   source.read(buffer, buffer_size);
   size_t count = source.gcount();
   while (count != 0) {
-    compress.write(buffer, count);
+    compress->write(buffer, count);
     source.read(buffer, buffer_size);
     count = source.gcount();
   }
-  compress.close();
+  compress->close();
 
-  return (!source.fail() || source.eof()) && (!compress.fail());
+  return (!source.fail() || source.eof()) && (!compress->fail());
 }
 
 /**
@@ -171,20 +173,59 @@ compress_stream(istream &source, ostream &dest, CompressionAlgorithm compression
  */
 bool
 decompress_stream(istream &source, ostream &dest, CompressionAlgorithm compression_algo) {
-  IDecompressStream decompress(&source, compression_algo, false);
+  std::shared_ptr<istream> decompress = create_Istream(compression_algo);
 
   static const size_t buffer_size = 4096;
   char buffer[buffer_size];
 
-  decompress.read(buffer, buffer_size);
+  decompress->read(buffer, buffer_size);
   size_t count = decompress.gcount();
   while (count != 0) {
     dest.write(buffer, count);
-    decompress.read(buffer, buffer_size);
-    count = decompress.gcount();
+    decompress->read(buffer, buffer_size);
+    count = decompress->gcount();
   }
 
-  return (!decompress.fail() || decompress.eof()) && (!dest.fail());
+  return (!decompress->fail() || decompress->eof()) && (!dest.fail());
+}
+
+std::shared_ptr<std::istream> create_Istream(CompressionAlgorithm compression_algo)
+{
+  if(compression_algo == CompressionAlgorithm::CA_zlib) {
+#ifndef HAVE_ZLIB
+    express_cat.error() << "zlib not present; could not decompress using zlib.\n"
+#else
+    return std::make_shared<IDecompressStreamZlib>();
+#endif
+  }
+
+
+  if(compression_algo == CompressionAlgorithm::CA_zlib) {
+#ifndef HAVE_LZ4
+    express_cat.error() << "lz4 not present; could not decompress using zlib.\n"
+#else
+    return std::make_shared<IDecompressStreamLz4>();
+#endif
+  }
+}
+
+std::shared_ptr<std::ostream> create_Ostream(CompressionAlgorithm compression_algo)
+{
+  if(compression_algo == CompressionAlgorithm::CA_zlib) {
+#ifndef HAVE_ZLIB
+    express_cat.error() << "zlib not present; could not compress using zlib.\n"
+#else
+    return std::make_shared<OCompressStreamZlib>();
+#endif
+  }
+
+  if(compression_algo == CompressionAlgorithm::CA_zlib) {
+#ifndef HAVE_LZ4
+    express_cat.error() << "lz4 not present; could not compress using zlib.\n";
+#else
+    return std::make_shared<OCompressStreamLz4>();
+#endif
+  }
 }
 
 #endif // HAVE_ZLIB || HAVE_LZ4

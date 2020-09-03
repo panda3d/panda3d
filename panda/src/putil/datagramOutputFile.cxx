@@ -13,7 +13,7 @@
 
 #include "datagramOutputFile.h"
 #include "streamWriter.h"
-#include "zStream.h"
+#include "streamZlib.h"
 #include <algorithm>
 
 using std::min;

@@ -74,6 +74,7 @@ PUBLISHED:
   enum BamTexCompressionFormat {
     BTC_off,
     BTC_zlib,
+    BTC_lz4,
   };
 };
 

@@ -89,7 +89,7 @@ get_output() {
 
 #ifdef HAVE_ZLIB
       if (pz_file) {
-        _output_ptr = new OCompressStream(_output_ptr, _owns_output_ptr);
+        _output_ptr = new OCompressStreamZlib(_output_ptr, _owns_output_ptr);
         _owns_output_ptr = true;
       }
 #endif  // HAVE_ZLIB

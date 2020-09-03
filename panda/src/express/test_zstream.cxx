@@ -12,7 +12,7 @@
  */
 
 #include "pandabase.h"
-#include "zStream.h"
+#include "streamZlib.h"
 #include "filename.h"
 
 #include <zlib.h>
@@ -23,7 +23,7 @@ using std::istream;
 
 void
 stream_decompress(istream &source) {
-  IDecompressStream zstream(&source, false);
+  IDecompressStreamZlib zstream(&source, false);
 
   int ch = zstream.get();
   while (!zstream.eof() && !zstream.fail()) {
@@ -34,7 +34,7 @@ stream_decompress(istream &source) {
 
 void
 stream_compress(istream &source) {
-  OCompressStream zstream(&cout, false);
+  OCompressStreamZlib zstream(&cout, false);
 
   int ch = source.get();
   while (!source.eof() && !source.fail()) {

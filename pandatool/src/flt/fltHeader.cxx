@@ -16,7 +16,7 @@
 #include "fltRecordWriter.h"
 #include "fltUnsupportedRecord.h"
 #include "config_flt.h"
-#include "zStream.h"
+#include "streamZlib.h"
 #include "nearly_zero.h"
 #include "virtualFileSystem.h"
 
@@ -247,7 +247,7 @@ write_flt(Filename filename) {
   if (filename.get_extension() == "pz") {
     // The filename ends in .pz, which means to automatically compress the flt
     // file that we write.
-    OCompressStream compressor(&out, false);
+    OCompressStreamZlib compressor(&out, false);
     return write_flt(compressor);
   }
 #endif  // HAVE_ZLIB

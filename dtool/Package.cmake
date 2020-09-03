@@ -72,6 +72,7 @@ if(THIRDPARTY_DIRECTORY)
     HarfBuzz
     JPEG
     LibSquish
+    LZ4
     ODE
     Ogg
     OpenAL

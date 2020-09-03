@@ -42,7 +42,7 @@
 #include "decalEffect.h"
 #include "dcast.h"
 #include "bamFile.h"
-#include "zStream.h"
+#include "streamZlib.h"
 #include "pStatCollector.h"
 #include "pStatTimer.h"
 #include "boundingSphere.h"

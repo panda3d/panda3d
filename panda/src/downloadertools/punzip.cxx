@@ -75,7 +75,7 @@ main(int argc, char **argv) {
       return 1;
     }
 
-    bool success = decompress_stream(cin, cout);
+    bool success = decompress_stream(cin, cout, CompressionAlgorithm::CA_zlib);
     if (!success) {
       cerr << "Failure compressing standard input\n";
       return 1;
@@ -124,7 +124,7 @@ main(int argc, char **argv) {
 
         } else {
           cerr << dest_file << "\n";
-          bool success = decompress_stream(read_stream, write_stream);
+          bool success = decompress_stream(read_stream, write_stream, CompressionAlgorithm::CA_zlib);
 
           read_stream.close();
           write_stream.close();

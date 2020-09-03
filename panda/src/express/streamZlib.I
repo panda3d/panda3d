@@ -14,27 +14,25 @@
 /**
  *
  */
-INLINE IDecompressStream::
-IDecompressStream(CompressionAlgorithm compression_algo) : std::istream(_buf_ptr) {
-    _buf_ptr = create_buf_ptr(compression_algo);
+INLINE IDecompressStreamZlib::
+IDecompressStreamZlib() : std::istream(&_buf) {
 }
 
 /**
  *
  */
-INLINE IDecompressStream::
-IDecompressStream(std::istream *source, bool owns_source, CompressionAlgorithm compression_algo) : std::istream(_buf_ptr) {
-  _buf_ptr = create_buf_ptr(compression_algo);
+INLINE IDecompressStreamZlib::
+IDecompressStreamZlib(std::istream *source, bool owns_source) : std::istream(&_buf) {
   open(source, owns_source);
 }
 
 /**
  *
  */
-INLINE IDecompressStream &IDecompressStream::
+INLINE IDecompressStreamZlib &IDecompressStreamZlib::
 open(std::istream *source, bool owns_source) {
   clear((ios_iostate)0);
-  _buf_ptr->open_read(source, owns_source);
+  _buf.open_read(source, owns_source);
   return *this;
 }
 
@@ -42,9 +40,9 @@ open(std::istream *source, bool owns_source) {
  * Resets the ZStream to empty, but does not actually close the source istream
  * unless owns_source was true.
  */
-INLINE IDecompressStream &IDecompressStream::
+INLINE IDecompressStreamZlib &IDecompressStreamZlib::
 close() {
-  _buf_ptr->close_read();
+  _buf.close_read();
   return *this;
 }
 
@@ -52,16 +50,16 @@ close() {
 /**
  *
  */
-INLINE OCompressStream::
-OCompressStream(CompressionAlgorithm compression_algo) : std::ostream(_buf_ptr) {
+INLINE OCompressStreamZlib::
+OCompressStreamZlib() : std::ostream(&_buf) {
 }
 
 /**
  *
  */
-INLINE OCompressStream::
-OCompressStream(std::ostream *dest, bool owns_dest, CompressionAlgorithm compression_algo, int compression_level) :
-  std::ostream(_buf_ptr)
+INLINE OCompressStreamZlib::
+OCompressStreamZlib(std::ostream *dest, bool owns_dest, int compression_level) :
+  std::ostream(&_buf)
 {
   open(dest, owns_dest, compression_level);
 }
@@ -69,10 +67,10 @@ OCompressStream(std::ostream *dest, bool owns_dest, CompressionAlgorithm compres
 /**
  *
  */
-INLINE OCompressStream &OCompressStream::
+INLINE OCompressStreamZlib &OCompressStreamZlib::
 open(std::ostream *dest, bool owns_dest, int compression_level) {
   clear((ios_iostate)0);
-  _buf_ptr->open_write(dest, owns_dest, compression_level);
+  _buf.open_write(dest, owns_dest, compression_level);
   return *this;
 }
 
@@ -80,22 +78,8 @@ open(std::ostream *dest, bool owns_dest, int compression_level) {
  * Resets the ZStream to empty, but does not actually close the dest ostream
  * unless owns_dest was true.
  */
-INLINE OCompressStream &OCompressStream::
+INLINE OCompressStreamZlib &OCompressStreamZlib::
 close() {
-  _buf_ptr->close_write();
+  _buf.close_write();
   return *this;
-}
-
-/**
- * Factory function for creating the shared_ptr of StreamBuf.
- */
-std::shared_ptr<StreamBufBase> create_buf_ptr(CompressionAlgorithm compression_algo)
-{
-    switch (compression_algo) {
-        case CA_zlib:
-          return std::make_shared<StreamBufZlib>();
-          break;
-        case CA_lz4:
-          return std::make_shared<StreamBufLZ4>();
-    }
 }

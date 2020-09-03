@@ -131,6 +131,9 @@ operator << (ostream &out, BamEnums::BamTexCompressionFormat btc) {
 
   case BamEnums::BTC_zlib:
     return out << "zlib";
+
+  case BamEnums::BTC_lz4:
+    return out << "lz4";
   }
 
   return out << "**invalid BamEnums::BamTexCompressionFormat (" << (int)btc << ")**";
@@ -145,6 +148,8 @@ operator >> (istream &in, BamEnums::BamTexCompressionFormat &btc) {
     btc = BamEnums::BTC_off;
   } else if (cmp_nocase(word, "zlib") == 0) {
     btc = BamEnums::BTC_zlib;
+  } else if (cmp_nocase(word, "lz4") == 0) {
+    btc = BamEnums::BTC_lz4;
   } else {
     util_cat->error() << "Invalid BamEnums::BamTexCompressionFormat value: " << word << "\n";
     btc = BamEnums::BTC_off;

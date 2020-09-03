@@ -195,7 +195,7 @@ open_read_file(const Filename &file, bool do_uncompress) const {
 #ifdef HAVE_ZLIB
   if (result != nullptr && do_uncompress) {
     // We have to slip in a layer to decompress the file on the fly.
-    IDecompressStream *wrapper = new IDecompressStream(result, true);
+    IDecompressStreamZlib *wrapper = new IDecompressStreamZlib(result, true);
     result = wrapper;
   }
 #endif  // HAVE_ZLIB
@@ -238,7 +238,7 @@ open_write_file(const Filename &file, bool do_compress, bool truncate) {
 #ifdef HAVE_ZLIB
   if (result != nullptr && do_compress) {
     // We have to slip in a layer to compress the file on the fly.
-    OCompressStream *wrapper = new OCompressStream(result, true);
+    OCompressStreamZlib *wrapper = new OCompressStreamZlib(result, true);
     result = wrapper;
   }
 #endif  // HAVE_ZLIB

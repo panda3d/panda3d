@@ -22,7 +22,7 @@
 #include "eggTable.h"
 #include "indent.h"
 #include "fftCompressor.h"
-#include "zStream.h"
+#include "streamZlib.h"
 
 using std::string;
 
@@ -264,7 +264,7 @@ score_reparent_to(EggJointData *new_parent, EggCharacterDb &db) {
   // The FFTCompressor does minimal run-length encoding, but to really get an
   // accurate measure we should zlib-compress the resulting stream.
   std::ostringstream sstr;
-  OCompressStream zstr(&sstr, false);
+  OCompressStreamZlib zstr(&sstr, false);
   zstr.write((const char *)dg.get_data(), dg.get_length());
   zstr.flush();
   return sstr.str().length();

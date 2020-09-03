@@ -24,15 +24,15 @@ using std::streamoff;
 using std::streampos;
 
 #if !defined(USE_MEMORY_NOWRAPPERS) && !defined(CPPPARSER)
-// Define functions that hook zlib into panda's memory allocation system.
-static void *
+// Define functions that hook lz4 into panda's memory allocation system.?
+/*static void *
 do_lz4_alloc(voidpf opaque, U64 items, U64 size) {
   return PANDA_MALLOC_ARRAY(items * size);
 }
 static void
 do_lz4_free(voidpf opaque, voidpf address) {
   PANDA_FREE_ARRAY(address);
-}
+}*/
 #endif  //  !USE_MEMORY_NOWRAPPERS
 
 /**

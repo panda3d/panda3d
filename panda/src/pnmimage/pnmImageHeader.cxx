@@ -18,7 +18,7 @@
 #include "pnmWriter.h"
 #include "config_pnmimage.h"
 #include "virtualFileSystem.h"
-#include "zStream.h"
+#include "streamZlib.h"
 
 using std::istream;
 using std::ostream;
