@@ -2532,6 +2532,9 @@ class ParticlePanel(AppShell):
     def addForce(self, f):
         if self.forceGroup == None:
             self.createNewForceGroup()
+        if self.forceGroup == None:
+            # user probably canceled the action
+            return
         self.forceGroup.addForce(f)
         self.addForceWidget(self.forceGroup, f)
 
