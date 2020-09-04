@@ -22,8 +22,8 @@ from direct.tkwidgets.AppShell import*
 from SideWindow import*
 from duplicateWindow import*
 from lightingPanel import *
-#from seMopathRecorder import *
-from direct.tkpanels.MopathRecorder import MopathRecorder
+from seMopathRecorder import *
+#from direct.tkpanels.MopathRecorder import MopathRecorder
 from seSession import SeSession as DirectSession
 #from quad import *
 from direct.tkpanels.Placer import *
