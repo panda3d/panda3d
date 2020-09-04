@@ -17,7 +17,7 @@ from direct.tkwidgets.AppShell import AppShell
 #from direct.directtools.DirectGlobals import *
 #from direct.directtools.DirectUtil import *
 from seGeometry import *
-from seSelection import *
+from direct.directtools.DirectSelection import *
 from direct.task.Task import Task
 from direct.tkwidgets.Dial import AngleDial
 from direct.tkwidgets.Floater import Floater

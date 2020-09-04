@@ -5,6 +5,7 @@ from direct.showbase.TkGlobal import*
 import Pmw
 from direct.tkwidgets import Dial
 from direct.tkwidgets import Floater
+import sys
 
 if sys.version_info >= (3, 0):
     from tkinter.filedialog import askopenfilename
@@ -28,7 +29,6 @@ from direct.actor import Actor
 ###############################
 import os
 import string
-import sys
 
 from direct.particles import Particles
 from direct.particles import ParticleEffect
