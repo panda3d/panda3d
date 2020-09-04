@@ -5,7 +5,7 @@ import wx
 import os
 
 from panda3d.core import *
-from .ProtoObjs import *
+from ProtoObjs import *
 
 class ProtoDropTarget(wx.PyDropTarget):
    """Implements drop target functionality to receive files, bitmaps and text"""

@@ -7,8 +7,8 @@ import os, time, copy
 from direct.task import Task
 from direct.actor.Actor import Actor
 from panda3d.core import *
-from .ActionMgr import *
-from . import ObjectGlobals as OG
+from ActionMgr import *
+import ObjectGlobals as OG
 
 # python wrapper around a panda.NodePath object
 class PythonNodePath(NodePath):

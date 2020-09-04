@@ -5,7 +5,7 @@ import wx
 
 from direct.interval.IntervalGlobal import *
 from direct.actor.Actor import *
-from . import ObjectGlobals as OG
+import ObjectGlobals as OG
 
 
 class CurveAnimUI(wx.Dialog):

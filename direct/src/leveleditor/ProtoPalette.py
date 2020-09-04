@@ -2,7 +2,7 @@
 Palette for Prototyping
 """
 
-from .ProtoPaletteBase import *
+from ProtoPaletteBase import *
 import os
 
 class ProtoPalette(ProtoPaletteBase):

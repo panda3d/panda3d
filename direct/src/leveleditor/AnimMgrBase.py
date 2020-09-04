@@ -6,8 +6,8 @@ import os, math
 
 from direct.interval.IntervalGlobal import *
 from panda3d.core import VBase3
-from . import ObjectGlobals as OG
-from . import AnimGlobals as AG
+import ObjectGlobals as OG
+import AnimGlobals as AG
 
 class AnimMgrBase:
     """ AnimMgr will create, manage, update animations in the scene """

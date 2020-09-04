@@ -4,7 +4,7 @@ Defines Layer UI
 import wx
 from panda3d.core import *
 
-from . import ObjectGlobals as OG
+import ObjectGlobals as OG
 
 class LayerEditorUI(wx.Panel):
     def __init__(self, parent, editor):

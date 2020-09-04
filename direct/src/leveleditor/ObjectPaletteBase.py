@@ -1,5 +1,5 @@
 import copy
-from . import ObjectGlobals as OG
+import ObjectGlobals as OG
 
 class ObjectGen:
     """ Base class for obj definitions """

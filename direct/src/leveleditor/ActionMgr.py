@@ -1,6 +1,6 @@
 from panda3d.core import *
 from direct.showbase.PythonUtil import Functor
-from . import ObjectGlobals as OG
+import ObjectGlobals as OG
 
 class ActionMgr:
     def __init__(self):
