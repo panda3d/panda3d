@@ -170,6 +170,7 @@ static const string default_vshader =
   "out vec2 texcoord;\n"
   "out vec4 color;\n"
 #else
+  "#version 100\n"
   "precision mediump float;\n"
   "attribute vec4 p3d_Vertex;\n"
   "attribute vec4 p3d_Color;\n"
@@ -240,6 +241,7 @@ static const string default_fshader =
   "uniform sampler2D p3d_Texture0;\n"
   "uniform vec4 p3d_TexAlphaOnly;\n"
 #else
+  "#version 100\n"
   "precision mediump float;\n"
   "varying vec2 texcoord;\n"
   "varying lowp vec4 color;\n"
