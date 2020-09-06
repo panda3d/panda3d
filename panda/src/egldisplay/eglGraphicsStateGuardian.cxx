@@ -223,6 +223,20 @@ choose_pixel_format(const FrameBufferProperties &properties,
     int err = eglGetError();
     if (_context && err == EGL_SUCCESS) {
       if (_visual) {
+        // This is set during window creation, but for now we have to pretend
+        // that we can honor the request, if we support the extension.
+        if (properties.get_srgb_color()) {
+          const char *extensions = eglQueryString(_egl_display, EGL_EXTENSIONS);
+          if (extensions != nullptr) {
+            vector_string tokens;
+            extract_words(extensions, tokens);
+
+            if (std::find(tokens.begin(), tokens.end(), "EGL_KHR_gl_colorspace") != tokens.end()) {
+              best_props.set_srgb_color(true);
+            }
+          }
+        }
+
         _fbprops = best_props;
         delete[] configs;
         return;
