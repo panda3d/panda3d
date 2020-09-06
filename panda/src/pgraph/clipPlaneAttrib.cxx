@@ -22,7 +22,6 @@
 #include "attribNodeRegistry.h"
 #include <iterator>
 
-// TODO
 CPT(RenderAttrib) ClipPlaneAttrib::_empty_attrib;
 CPT(RenderAttrib) ClipPlaneAttrib::_all_off_attrib;
 TypeHandle ClipPlaneAttrib::_type_handle;

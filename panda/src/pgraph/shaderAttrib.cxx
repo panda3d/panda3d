@@ -34,6 +34,7 @@ using std::ostringstream;
 
 TypeHandle ShaderAttrib::_type_handle;
 int ShaderAttrib::_attrib_slot;
+bool ShaderAttrib::_is_in_use;
 
 /**
  * Constructs a new ShaderAttrib object that disables the use of shaders (it
