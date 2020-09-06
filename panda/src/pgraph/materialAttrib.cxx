@@ -20,6 +20,7 @@
 
 TypeHandle MaterialAttrib::_type_handle;
 int MaterialAttrib::_attrib_slot;
+bool MaterialAttrib::_is_in_use;
 
 /**
  * Constructs a new MaterialAttrib object suitable for rendering the indicated
@@ -27,6 +28,7 @@ int MaterialAttrib::_attrib_slot;
  */
 CPT(RenderAttrib) MaterialAttrib::
 make(Material *material) {
+  MaterialAttrib::first_use();
   MaterialAttrib *attrib = new MaterialAttrib;
   attrib->_material = material;
   material->set_attrib_lock();
@@ -39,6 +41,7 @@ make(Material *material) {
  */
 CPT(RenderAttrib) MaterialAttrib::
 make_off() {
+  MaterialAttrib::first_use();
   MaterialAttrib *attrib = new MaterialAttrib;
   return return_new(attrib);
 }
@@ -141,6 +144,8 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
  */
 TypedWritable *MaterialAttrib::
 make_from_bam(const FactoryParams &params) {
+  MaterialAttrib::first_use();
+
   MaterialAttrib *attrib = new MaterialAttrib;
   DatagramIterator scan;
   BamReader *manager;
@@ -160,4 +165,12 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
   // Read the _material pointer.
   manager->read_pointer(scan);
+}
+
+void MaterialAttrib::
+first_use() {
+  if (!_is_in_use) {
+    _is_in_use = true;
+    _attrib_slot = register_slot(_type_handle, 100, new MaterialAttrib);
+  }
 }

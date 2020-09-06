@@ -21,6 +21,7 @@
 
 TypeHandle RenderModeAttrib::_type_handle;
 int RenderModeAttrib::_attrib_slot;
+bool RenderModeAttrib::_is_in_use;
 
 /**
  * Constructs a new RenderModeAttrib object that specifies whether to draw
@@ -43,6 +44,8 @@ int RenderModeAttrib::_attrib_slot;
 CPT(RenderAttrib) RenderModeAttrib::
 make(RenderModeAttrib::Mode mode, PN_stdfloat thickness,
      bool perspective, const LColor &wireframe_color) {
+  RenderModeAttrib::first_use();
+
   RenderModeAttrib *attrib = new RenderModeAttrib(mode, thickness, perspective, wireframe_color);
   return return_new(attrib);
 }
@@ -53,7 +56,9 @@ make(RenderModeAttrib::Mode mode, PN_stdfloat thickness,
  */
 CPT(RenderAttrib) RenderModeAttrib::
 make_default() {
-  return return_new(new RenderModeAttrib(M_filled, 1.0f, false));
+  RenderModeAttrib::first_use();
+  RenderModeAttrib *default_attrib = new RenderModeAttrib(M_filled, 1.0, false);
+  return return_new(default_attrib);
 }
 
 /**
@@ -203,6 +208,8 @@ write_datagram(BamWriter *manager, Datagram &dg) {
  */
 TypedWritable *RenderModeAttrib::
 make_from_bam(const FactoryParams &params) {
+  RenderModeAttrib::first_use();
+
   RenderModeAttrib *attrib = new RenderModeAttrib(M_filled, 1.0f, false);
   DatagramIterator scan;
   BamReader *manager;
@@ -227,5 +234,13 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
   if (_mode == M_filled_wireframe) {
     _wireframe_color.read_datagram(scan);
+  }
+}
+
+void RenderModeAttrib::
+first_use() {
+  if (!_is_in_use) {
+    _is_in_use = true;
+    _attrib_slot = register_slot(_type_handle, 100, new RenderModeAttrib(M_filled, 1.0, false));
   }
 }

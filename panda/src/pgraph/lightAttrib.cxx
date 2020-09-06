@@ -26,6 +26,7 @@
 
 CPT(RenderAttrib) LightAttrib::_empty_attrib;
 int LightAttrib::_attrib_slot;
+bool LightAttrib::_is_in_use;
 CPT(RenderAttrib) LightAttrib::_all_off_attrib;
 TypeHandle LightAttrib::_type_handle;
 
@@ -95,6 +96,7 @@ CPT(RenderAttrib) LightAttrib::
 make(LightAttrib::Operation op, Light *light) {
   pgraph_cat.warning()
     << "Using deprecated LightAttrib interface.\n";
+  LightAttrib::first_use();
 
   CPT(RenderAttrib) attrib;
 
@@ -1068,6 +1070,8 @@ finalize(BamReader *manager) {
  */
 TypedWritable *LightAttrib::
 make_from_bam(const FactoryParams &params) {
+  LightAttrib::first_use();
+
   LightAttrib *attrib = new LightAttrib;
   DatagramIterator scan;
   BamReader *manager;
@@ -1113,4 +1117,12 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
   _sorted_on_lights.clear();
   _sort_seq = UpdateSeq::old();
+}
+
+void LightAttrib::
+first_use() {
+  if (!_is_in_use) {
+    _is_in_use = true;
+    _attrib_slot = register_slot(_type_handle, 20, new LightAttrib);
+  }
 }

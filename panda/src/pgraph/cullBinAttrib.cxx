@@ -19,6 +19,7 @@
 
 TypeHandle CullBinAttrib::_type_handle;
 int CullBinAttrib::_attrib_slot;
+bool CullBinAttrib::_is_in_use;
 
 /**
  * Constructs a new CullBinAttrib assigning geometry into the named bin.  If
@@ -29,6 +30,8 @@ int CullBinAttrib::_attrib_slot;
  */
 CPT(RenderAttrib) CullBinAttrib::
 make(const std::string &bin_name, int draw_order) {
+  CullBinAttrib::first_use();
+
   CullBinAttrib *attrib = new CullBinAttrib;
   attrib->_bin_name = bin_name;
   attrib->_draw_order = draw_order;
@@ -41,6 +44,7 @@ make(const std::string &bin_name, int draw_order) {
  */
 CPT(RenderAttrib) CullBinAttrib::
 make_default() {
+  CullBinAttrib::first_use();
   return return_new(new CullBinAttrib);
 }
 
@@ -120,6 +124,8 @@ write_datagram(BamWriter *manager, Datagram &dg) {
  */
 TypedWritable *CullBinAttrib::
 make_from_bam(const FactoryParams &params) {
+  CullBinAttrib::first_use();
+
   CullBinAttrib *attrib = new CullBinAttrib;
   DatagramIterator scan;
   BamReader *manager;
@@ -140,4 +146,12 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
   _bin_name = scan.get_string();
   _draw_order = scan.get_int32();
+}
+
+void CullBinAttrib::
+first_use() {
+  if (!_is_in_use) {
+    _is_in_use = true;
+    _attrib_slot = register_slot(_type_handle, 100, new CullBinAttrib);
+  }
 }

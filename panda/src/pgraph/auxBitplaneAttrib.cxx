@@ -21,6 +21,7 @@
 
 TypeHandle AuxBitplaneAttrib::_type_handle;
 int AuxBitplaneAttrib::_attrib_slot;
+bool AuxBitplaneAttrib::_is_in_use;
 CPT(RenderAttrib) AuxBitplaneAttrib::_default;
 
 /**
@@ -28,6 +29,8 @@ CPT(RenderAttrib) AuxBitplaneAttrib::_default;
  */
 CPT(RenderAttrib) AuxBitplaneAttrib::
 make() {
+  AuxBitplaneAttrib::first_use();
+
   if (_default == nullptr) {
     AuxBitplaneAttrib *attrib = new AuxBitplaneAttrib(0);
     _default = return_new(attrib);
@@ -40,6 +43,7 @@ make() {
  */
 CPT(RenderAttrib) AuxBitplaneAttrib::
 make(int outputs) {
+  AuxBitplaneAttrib::first_use();
   AuxBitplaneAttrib *attrib = new AuxBitplaneAttrib(outputs);
   return return_new(attrib);
 }
@@ -50,6 +54,7 @@ make(int outputs) {
  */
 CPT(RenderAttrib) AuxBitplaneAttrib::
 make_default() {
+  AuxBitplaneAttrib::first_use();
   return return_new(new AuxBitplaneAttrib(0));
 }
 
@@ -123,6 +128,8 @@ write_datagram(BamWriter *manager, Datagram &dg) {
  */
 TypedWritable *AuxBitplaneAttrib::
 make_from_bam(const FactoryParams &params) {
+  AuxBitplaneAttrib::first_use();
+
   AuxBitplaneAttrib *attrib = new AuxBitplaneAttrib(0);
   DatagramIterator scan;
   BamReader *manager;
@@ -142,4 +149,12 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   RenderAttrib::fillin(scan, manager);
 
   _outputs = scan.get_int32();
+}
+
+void AuxBitplaneAttrib::
+first_use() {
+  if (!_is_in_use) {
+    _is_in_use = true;
+    _attrib_slot = register_slot(_type_handle, 100, new AuxBitplaneAttrib(0));
+  }
 }

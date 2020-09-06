@@ -23,6 +23,7 @@ using std::ostream;
 
 TypeHandle ColorBlendAttrib::_type_handle;
 int ColorBlendAttrib::_attrib_slot;
+bool ColorBlendAttrib::_is_in_use;
 
 /**
  * Constructs a new ColorBlendAttrib object that disables special-effect
@@ -30,6 +31,7 @@ int ColorBlendAttrib::_attrib_slot;
  */
 CPT(RenderAttrib) ColorBlendAttrib::
 make_off() {
+  ColorBlendAttrib::first_use();
   ColorBlendAttrib *attrib = new ColorBlendAttrib;
   return return_new(attrib);
 }
@@ -41,6 +43,7 @@ make_off() {
  */
 CPT(RenderAttrib) ColorBlendAttrib::
 make(ColorBlendAttrib::Mode mode) {
+  ColorBlendAttrib::first_use();
   ColorBlendAttrib *attrib = new ColorBlendAttrib(mode, O_one, O_one,
                                                   mode, O_one, O_one,
                                                   LColor::zero());
@@ -56,6 +59,7 @@ CPT(RenderAttrib) ColorBlendAttrib::
 make(ColorBlendAttrib::Mode mode,
      ColorBlendAttrib::Operand a, ColorBlendAttrib::Operand b,
      const LColor &color) {
+  ColorBlendAttrib::first_use();
   ColorBlendAttrib *attrib = new ColorBlendAttrib(mode, a, b, mode, a, b, color);
   return return_new(attrib);
 }
@@ -71,6 +75,7 @@ make(ColorBlendAttrib::Mode mode,
      ColorBlendAttrib::Mode alpha_mode,
      ColorBlendAttrib::Operand alpha_a, ColorBlendAttrib::Operand alpha_b,
      const LColor &color) {
+  ColorBlendAttrib::first_use();
   ColorBlendAttrib *attrib = new ColorBlendAttrib(mode, a, b,
                                                   alpha_mode, alpha_a, alpha_b,
                                                   color);
@@ -83,6 +88,7 @@ make(ColorBlendAttrib::Mode mode,
  */
 CPT(RenderAttrib) ColorBlendAttrib::
 make_default() {
+  ColorBlendAttrib::first_use();
   return return_new(new ColorBlendAttrib);
 }
 
@@ -343,4 +349,12 @@ operator << (ostream &out, ColorBlendAttrib::Operand operand) {
   }
 
   return out << "**invalid ColorBlendAttrib::Operand(" << (int)operand << ")**";
+}
+
+void ColorBlendAttrib::
+first_use() {
+  if (!_is_in_use) {
+      _is_in_use = true;
+      _attrib_slot = register_slot(_type_handle, 100, new ColorBlendAttrib);
+    }
 }

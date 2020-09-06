@@ -21,6 +21,7 @@
 
 TypeHandle DepthOffsetAttrib::_type_handle;
 int DepthOffsetAttrib::_attrib_slot;
+bool DepthOffsetAttrib::_is_in_use;
 
 /**
  * Constructs a new DepthOffsetAttrib object that indicates the relative
@@ -43,6 +44,7 @@ CPT(RenderAttrib) DepthOffsetAttrib::
 make(int offset, PN_stdfloat min_value, PN_stdfloat max_value) {
   nassertr(min_value >= 0.0f && min_value <= 1.0f, nullptr);
   nassertr(max_value >= 0.0f && max_value <= 1.0f, nullptr);
+  DepthOffsetAttrib::first_use();
   DepthOffsetAttrib *attrib = new DepthOffsetAttrib(offset, min_value, max_value);
   return return_new(attrib);
 }
@@ -53,6 +55,7 @@ make(int offset, PN_stdfloat min_value, PN_stdfloat max_value) {
  */
 CPT(RenderAttrib) DepthOffsetAttrib::
 make_default() {
+  DepthOffsetAttrib::first_use();
   return return_new(new DepthOffsetAttrib(0, 0.0f, 1.0f));
 }
 
@@ -175,6 +178,8 @@ write_datagram(BamWriter *manager, Datagram &dg) {
  */
 TypedWritable *DepthOffsetAttrib::
 make_from_bam(const FactoryParams &params) {
+  DepthOffsetAttrib::first_use();
+
   DepthOffsetAttrib *attrib = new DepthOffsetAttrib(0, 0.0f, 1.0f);
   DatagramIterator scan;
   BamReader *manager;
@@ -199,5 +204,14 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   if (manager->get_file_minor_ver() >= 31) {
     _min_value = scan.get_stdfloat();
     _max_value = scan.get_stdfloat();
+  }
+}
+
+void DepthOffsetAttrib::
+first_use() {
+  if (!_is_in_use) {
+    _is_in_use = true;
+    _attrib_slot = register_slot(_type_handle, 100,
+                                 new DepthOffsetAttrib(0, 0, 1));
   }
 }

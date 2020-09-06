@@ -21,12 +21,14 @@
 
 TypeHandle TransparencyAttrib::_type_handle;
 int TransparencyAttrib::_attrib_slot;
+bool TransparencyAttrib::_is_in_use;
 
 /**
  * Constructs a new TransparencyAttrib object.
  */
 CPT(RenderAttrib) TransparencyAttrib::
 make(TransparencyAttrib::Mode mode) {
+  TransparencyAttrib::first_use();
   TransparencyAttrib *attrib = new TransparencyAttrib(mode);
   return return_new(attrib);
 }
@@ -135,6 +137,8 @@ write_datagram(BamWriter *manager, Datagram &dg) {
  */
 TypedWritable *TransparencyAttrib::
 make_from_bam(const FactoryParams &params) {
+  TransparencyAttrib::first_use();
+
   TransparencyAttrib *attrib = new TransparencyAttrib;
   DatagramIterator scan;
   BamReader *manager;
@@ -154,4 +158,12 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   RenderAttrib::fillin(scan, manager);
 
   _mode = (Mode)scan.get_int8();
+}
+
+void TransparencyAttrib::
+first_use() {
+  if (!_is_in_use) {
+    _is_in_use = true;
+    _attrib_slot = register_slot(_type_handle, 100, new TransparencyAttrib);
+  }
 }

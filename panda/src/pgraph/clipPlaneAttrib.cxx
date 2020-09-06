@@ -22,10 +22,12 @@
 #include "attribNodeRegistry.h"
 #include <iterator>
 
+// TODO
 CPT(RenderAttrib) ClipPlaneAttrib::_empty_attrib;
 CPT(RenderAttrib) ClipPlaneAttrib::_all_off_attrib;
 TypeHandle ClipPlaneAttrib::_type_handle;
 int ClipPlaneAttrib::_attrib_slot;
+bool ClipPlaneAttrib::_is_in_use;
 
 // This STL Function object is used in filter_to_max(), below, to sort a list
 // of PlaneNodes in reverse order by priority.
@@ -203,6 +205,7 @@ make(ClipPlaneAttrib::Operation op, PlaneNode *plane1, PlaneNode *plane2,
  */
 CPT(RenderAttrib) ClipPlaneAttrib::
 make_default() {
+  ClipPlaneAttrib::first_use();
   return return_new(new ClipPlaneAttrib);
 }
 
@@ -332,6 +335,8 @@ remove_plane(PlaneNode *plane) const {
  */
 CPT(RenderAttrib) ClipPlaneAttrib::
 make() {
+  ClipPlaneAttrib::first_use();
+
   // We make it a special case and store a pointer to the empty attrib forever
   // once we find it the first time, as an optimization.
   if (_empty_attrib == nullptr) {
@@ -347,6 +352,8 @@ make() {
  */
 CPT(RenderAttrib) ClipPlaneAttrib::
 make_all_off() {
+  ClipPlaneAttrib::first_use();
+
   // We make it a special case and store a pointer to the off attrib forever
   // once we find it the first time, as an optimization.
   if (_all_off_attrib == nullptr) {
@@ -1005,6 +1012,8 @@ finalize(BamReader *manager) {
  */
 TypedWritable *ClipPlaneAttrib::
 make_from_bam(const FactoryParams &params) {
+  ClipPlaneAttrib::first_use();
+
   ClipPlaneAttrib *attrib = new ClipPlaneAttrib;
   DatagramIterator scan;
   BamReader *manager;
@@ -1046,5 +1055,13 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
     aux->_num_on_planes = scan.get_uint16();
     manager->read_pointers(scan, aux->_num_on_planes);
+  }
+}
+
+void ClipPlaneAttrib::
+first_use() {
+  if (!_is_in_use) {
+    _is_in_use = true;
+    _attrib_slot = register_slot(_type_handle, 100, new ClipPlaneAttrib);
   }
 }

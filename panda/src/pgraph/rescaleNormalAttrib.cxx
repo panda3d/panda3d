@@ -28,6 +28,7 @@ using std::string;
 
 TypeHandle RescaleNormalAttrib::_type_handle;
 int RescaleNormalAttrib::_attrib_slot;
+bool RescaleNormalAttrib::_is_in_use;
 CPT(RenderAttrib) RescaleNormalAttrib::_attribs[RescaleNormalAttrib::M_auto + 1];
 
 /**
@@ -37,6 +38,8 @@ CPT(RenderAttrib) RescaleNormalAttrib::_attribs[RescaleNormalAttrib::M_auto + 1]
  */
 CPT(RenderAttrib) RescaleNormalAttrib::
 make(RescaleNormalAttrib::Mode mode) {
+  RescaleNormalAttrib::first_use();
+
   if (_attribs[mode].is_null()) {
     // Don't bother with return_new, since this is the only way a
     // RescaleNormalAttrib can be made anyway.
@@ -110,6 +113,8 @@ write_datagram(BamWriter *manager, Datagram &dg) {
  */
 TypedWritable *RescaleNormalAttrib::
 make_from_bam(const FactoryParams &params) {
+  RescaleNormalAttrib::first_use();
+
   RescaleNormalAttrib *attrib = new RescaleNormalAttrib(M_none);
   DatagramIterator scan;
   BamReader *manager;
@@ -139,23 +144,7 @@ init_type() {
   RenderAttrib::init_type();
   register_type(_type_handle, "RescaleNormalAttrib",
                 RenderAttrib::get_class_type());
-
-  // This is defined here, since we have otherwise no guarantee that the
-  // config var has already been constructed by the time we call init_type()
-  // at static init time.
-  static ConfigVariableEnum<RescaleNormalAttrib::Mode> rescale_normals
-  ("rescale-normals", RescaleNormalAttrib::M_auto,
-   PRC_DESC("Specifies the kind of RescaleNormalAttrib that should be "
-            "created for the top of the scene graph.  This can automatically "
-            "ensure that your lighting normals are unit-length, which may be "
-            "particularly necessary in the presence of scales in the scene "
-            "graph.  Turning it off ('none') may produce a small performance "
-            "benefit."));
-
-  Mode mode = rescale_normals;
-  RescaleNormalAttrib *attrib = new RescaleNormalAttrib(mode);
-  _attrib_slot = register_slot(_type_handle, 100, attrib);
-  _attribs[mode] = attrib;
+  RescaleNormalAttrib::_is_in_use = false;
 }
 
 /**
@@ -207,4 +196,28 @@ operator >> (istream &in, RescaleNormalAttrib::Mode &mode) {
   }
 
   return in;
+}
+
+void RescaleNormalAttrib::
+first_use() {
+  if (!_is_in_use) {
+    _is_in_use = true;
+
+    // This is defined here, since we have otherwise no guarantee that the
+    // config var has already been constructed by the time we call init_type()
+    // at static init time.
+    static ConfigVariableEnum<RescaleNormalAttrib::Mode> rescale_normals
+    ("rescale-normals", RescaleNormalAttrib::M_auto,
+     PRC_DESC("Specifies the kind of RescaleNormalAttrib that should be "
+              "created for the top of the scene graph.  This can automatically "
+              "ensure that your lighting normals are unit-length, which may be "
+              "particularly necessary in the presence of scales in the scene "
+              "graph.  Turning it off ('none') may produce a small performance "
+              "benefit."));
+
+    Mode mode = rescale_normals;
+    RescaleNormalAttrib *attrib = new RescaleNormalAttrib(mode);
+    _attrib_slot = register_slot(_type_handle, 100, attrib);
+    _attribs[mode] = attrib;
+  }
 }

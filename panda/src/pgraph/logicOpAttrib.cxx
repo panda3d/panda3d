@@ -21,6 +21,7 @@
 
 TypeHandle LogicOpAttrib::_type_handle;
 int LogicOpAttrib::_attrib_slot;
+bool LogicOpAttrib::_is_in_use;
 
 /**
  * Constructs a new LogicOpAttrib object that disables special-effect
@@ -36,6 +37,7 @@ make_off() {
  */
 CPT(RenderAttrib) LogicOpAttrib::
 make(LogicOpAttrib::Operation op) {
+  LogicOpAttrib::first_use();
   LogicOpAttrib *attrib = new LogicOpAttrib(op);
   return return_new(attrib);
 }
@@ -46,6 +48,7 @@ make(LogicOpAttrib::Operation op) {
  */
 CPT(RenderAttrib) LogicOpAttrib::
 make_default() {
+  LogicOpAttrib::first_use();
   return RenderAttribRegistry::quick_get_global_ptr()->get_slot_default(_attrib_slot);
 }
 
@@ -114,6 +117,8 @@ write_datagram(BamWriter *manager, Datagram &dg) {
  */
 TypedWritable *LogicOpAttrib::
 make_from_bam(const FactoryParams &params) {
+  LogicOpAttrib::first_use();
+
   LogicOpAttrib *attrib = new LogicOpAttrib(O_none);
   DatagramIterator scan;
   BamReader *manager;
@@ -133,6 +138,14 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   RenderAttrib::fillin(scan, manager);
 
   _op = (Operation)scan.get_uint8();
+}
+
+void LogicOpAttrib::
+first_use() {
+  if (!_is_in_use) {
+    _is_in_use = true;
+    _attrib_slot = register_slot(_type_handle, 100, new LogicOpAttrib(O_none));
+  }
 }
 
 /**

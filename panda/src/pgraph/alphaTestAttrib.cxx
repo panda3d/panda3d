@@ -22,6 +22,7 @@
 
 TypeHandle AlphaTestAttrib::_type_handle;
 int AlphaTestAttrib::_attrib_slot;
+bool AlphaTestAttrib::_is_in_use;
 
 /**
  * Constructs a new AlphaTestAttrib object.
@@ -29,6 +30,8 @@ int AlphaTestAttrib::_attrib_slot;
 CPT(RenderAttrib) AlphaTestAttrib::
 make(PandaCompareFunc mode, PN_stdfloat reference_value) {
   assert((reference_value >=0.0f) && (reference_value <=1.0f));
+
+  AlphaTestAttrib::first_use();
   AlphaTestAttrib *attrib = new AlphaTestAttrib(mode,reference_value);
   return return_new(attrib);
 }
@@ -39,6 +42,7 @@ make(PandaCompareFunc mode, PN_stdfloat reference_value) {
  */
 CPT(RenderAttrib) AlphaTestAttrib::
 make_default() {
+  AlphaTestAttrib::first_use();
   return return_new(new AlphaTestAttrib);
 }
 
@@ -121,6 +125,8 @@ write_datagram(BamWriter *manager, Datagram &dg) {
  */
 TypedWritable *AlphaTestAttrib::
 make_from_bam(const FactoryParams &params) {
+  AlphaTestAttrib::first_use();
+
   AlphaTestAttrib *attrib = new AlphaTestAttrib;
   DatagramIterator scan;
   BamReader *manager;
@@ -141,4 +147,16 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
   _mode = (PandaCompareFunc)scan.get_int8();
   _reference_alpha = scan.get_stdfloat();
+}
+
+/**
+ * This internal function is called by make and all make_*; If the render attrib
+ * is being used for the first time, then register a slot for it.
+ */
+void AlphaTestAttrib::
+first_use() {
+  if (!_is_in_use) {
+    _is_in_use = true;
+    _attrib_slot = register_slot(_type_handle, 100, new AlphaTestAttrib);
+  }
 }

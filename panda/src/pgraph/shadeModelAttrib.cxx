@@ -21,6 +21,7 @@
 
 TypeHandle ShadeModelAttrib::_type_handle;
 int ShadeModelAttrib::_attrib_slot;
+bool ShadeModelAttrib::_is_in_use;
 
 /**
  * Constructs a new ShadeModelAttrib object that specifies whether to draw
@@ -28,6 +29,7 @@ int ShadeModelAttrib::_attrib_slot;
  */
 CPT(RenderAttrib) ShadeModelAttrib::
 make(ShadeModelAttrib::Mode mode) {
+  ShadeModelAttrib::first_use();
   ShadeModelAttrib *attrib = new ShadeModelAttrib(mode);
   return return_new(attrib);
 }
@@ -38,6 +40,7 @@ make(ShadeModelAttrib::Mode mode) {
  */
 CPT(RenderAttrib) ShadeModelAttrib::
 make_default() {
+  ShadeModelAttrib::first_use();
   return return_new(new ShadeModelAttrib(M_smooth));
 }
 
@@ -134,6 +137,8 @@ write_datagram(BamWriter *manager, Datagram &dg) {
  */
 TypedWritable *ShadeModelAttrib::
 make_from_bam(const FactoryParams &params) {
+  ShadeModelAttrib::first_use();
+
   ShadeModelAttrib *attrib = new ShadeModelAttrib(M_smooth);
   DatagramIterator scan;
   BamReader *manager;
@@ -153,4 +158,12 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   RenderAttrib::fillin(scan, manager);
 
   _mode = (Mode)scan.get_int8();
+}
+
+void ShadeModelAttrib::
+first_use() {
+  if (!_is_in_use) {
+    _is_in_use = true;
+    _attrib_slot = register_slot(_type_handle, 100, new ShadeModelAttrib(M_smooth));
+  }
 }

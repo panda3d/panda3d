@@ -124,6 +124,7 @@ public:
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
+  static void first_use();
 
 public:
   static TypeHandle get_class_type() {
@@ -133,7 +134,7 @@ public:
     RenderAttrib::init_type();
     register_type(_type_handle, "TexGenAttrib",
                   RenderAttrib::get_class_type());
-    _attrib_slot = register_slot(_type_handle, 100, new TexGenAttrib);
+    TexGenAttrib::_is_in_use = false;
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -143,6 +144,7 @@ public:
 private:
   static TypeHandle _type_handle;
   static int _attrib_slot;
+  static bool _is_in_use;
 };
 
 #include "texGenAttrib.I"

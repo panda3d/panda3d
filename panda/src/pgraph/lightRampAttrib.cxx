@@ -21,6 +21,7 @@
 
 TypeHandle LightRampAttrib::_type_handle;
 int LightRampAttrib::_attrib_slot;
+bool LightRampAttrib::_is_in_use;
 CPT(RenderAttrib) LightRampAttrib::_default;
 
 /**
@@ -43,6 +44,8 @@ make_default() {
  */
 CPT(RenderAttrib) LightRampAttrib::
 make_identity() {
+  LightRampAttrib::first_use();
+
   LightRampAttrib *attrib = new LightRampAttrib();
   attrib->_mode = LRT_identity;
   return return_new(attrib);
@@ -62,6 +65,8 @@ make_identity() {
  */
 CPT(RenderAttrib) LightRampAttrib::
 make_single_threshold(PN_stdfloat thresh0, PN_stdfloat val0) {
+  LightRampAttrib::first_use();
+
   LightRampAttrib *attrib = new LightRampAttrib();
   attrib->_mode = LRT_single_threshold;
   attrib->_threshold[0] = thresh0;
@@ -85,6 +90,8 @@ make_single_threshold(PN_stdfloat thresh0, PN_stdfloat val0) {
  */
 CPT(RenderAttrib) LightRampAttrib::
 make_double_threshold(PN_stdfloat thresh0, PN_stdfloat val0, PN_stdfloat thresh1, PN_stdfloat val1) {
+  LightRampAttrib::first_use();
+
   LightRampAttrib *attrib = new LightRampAttrib();
   attrib->_mode = LRT_double_threshold;
   attrib->_threshold[0] = thresh0;
@@ -115,6 +122,8 @@ make_double_threshold(PN_stdfloat thresh0, PN_stdfloat val0, PN_stdfloat thresh1
  */
 CPT(RenderAttrib) LightRampAttrib::
 make_hdr0() {
+  LightRampAttrib::first_use();
+
   LightRampAttrib *attrib = new LightRampAttrib();
   attrib->_mode = LRT_hdr0;
   return return_new(attrib);
@@ -141,6 +150,8 @@ make_hdr0() {
  */
 CPT(RenderAttrib) LightRampAttrib::
 make_hdr1() {
+  LightRampAttrib::first_use();
+
   LightRampAttrib *attrib = new LightRampAttrib();
   attrib->_mode = LRT_hdr1;
   return return_new(attrib);
@@ -167,6 +178,7 @@ make_hdr1() {
  */
 CPT(RenderAttrib) LightRampAttrib::
 make_hdr2() {
+  LightRampAttrib::first_use();
   LightRampAttrib *attrib = new LightRampAttrib();
   attrib->_mode = LRT_hdr2;
   return return_new(attrib);
@@ -286,6 +298,8 @@ write_datagram(BamWriter *manager, Datagram &dg) {
  */
 TypedWritable *LightRampAttrib::
 make_from_bam(const FactoryParams &params) {
+  LightRampAttrib::first_use();
+
   LightRampAttrib *attrib = new LightRampAttrib;
   DatagramIterator scan;
   BamReader *manager;
@@ -310,5 +324,13 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   }
   for (int i=0; i<2; i++) {
     _threshold[i] = scan.get_stdfloat();
+  }
+}
+
+void LightRampAttrib::
+first_use() {
+  if (!_is_in_use) {
+    _is_in_use = true;
+    _attrib_slot = register_slot(_type_handle, 100, new LightRampAttrib);
   }
 }

@@ -21,12 +21,14 @@
 
 TypeHandle DepthTestAttrib::_type_handle;
 int DepthTestAttrib::_attrib_slot;
+bool DepthTestAttrib::_is_in_use;
 
 /**
  * Constructs a new DepthTestAttrib object.
  */
 CPT(RenderAttrib) DepthTestAttrib::
 make(DepthTestAttrib::PandaCompareFunc mode) {
+  DepthTestAttrib::first_use();
   DepthTestAttrib *attrib = new DepthTestAttrib(mode);
   return return_new(attrib);
 }
@@ -37,6 +39,7 @@ make(DepthTestAttrib::PandaCompareFunc mode) {
  */
 CPT(RenderAttrib) DepthTestAttrib::
 make_default() {
+  DepthTestAttrib::first_use();
   return return_new(new DepthTestAttrib);
 }
 
@@ -107,6 +110,8 @@ write_datagram(BamWriter *manager, Datagram &dg) {
  */
 TypedWritable *DepthTestAttrib::
 make_from_bam(const FactoryParams &params) {
+  DepthTestAttrib::first_use();
+
   DepthTestAttrib *attrib = new DepthTestAttrib;
   DatagramIterator scan;
   BamReader *manager;
@@ -126,4 +131,12 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   RenderAttrib::fillin(scan, manager);
 
   _mode = (PandaCompareFunc)scan.get_int8();
+}
+
+void DepthTestAttrib::
+first_use() {
+  if (!_is_in_use) {
+    _is_in_use = true;
+    _attrib_slot = register_slot(_type_handle, 100, new DepthTestAttrib);
+  }
 }

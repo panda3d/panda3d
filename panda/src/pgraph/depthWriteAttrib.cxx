@@ -21,12 +21,14 @@
 
 TypeHandle DepthWriteAttrib::_type_handle;
 int DepthWriteAttrib::_attrib_slot;
+bool DepthWriteAttrib::_is_in_use;
 
 /**
  * Constructs a new DepthWriteAttrib object.
  */
 CPT(RenderAttrib) DepthWriteAttrib::
 make(DepthWriteAttrib::Mode mode) {
+  DepthWriteAttrib::first_use();
   DepthWriteAttrib *attrib = new DepthWriteAttrib(mode);
   return return_new(attrib);
 }
@@ -37,6 +39,7 @@ make(DepthWriteAttrib::Mode mode) {
  */
 CPT(RenderAttrib) DepthWriteAttrib::
 make_default() {
+  DepthWriteAttrib::first_use();
   return return_new(new DepthWriteAttrib);
 }
 
@@ -114,6 +117,8 @@ write_datagram(BamWriter *manager, Datagram &dg) {
  */
 TypedWritable *DepthWriteAttrib::
 make_from_bam(const FactoryParams &params) {
+  DepthWriteAttrib::first_use();
+
   DepthWriteAttrib *attrib = new DepthWriteAttrib;
   DatagramIterator scan;
   BamReader *manager;
@@ -133,4 +138,12 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   RenderAttrib::fillin(scan, manager);
 
   _mode = (Mode)scan.get_int8();
+}
+
+void DepthWriteAttrib::
+first_use() {
+  if (!_is_in_use) {
+    _is_in_use = true;
+    _attrib_slot = register_slot(_type_handle, 100, new DepthWriteAttrib);
+  }
 }

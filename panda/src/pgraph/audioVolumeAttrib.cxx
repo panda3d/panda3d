@@ -23,6 +23,7 @@
 CPT(RenderAttrib) AudioVolumeAttrib::_identity_attrib;
 TypeHandle AudioVolumeAttrib::_type_handle;
 int AudioVolumeAttrib::_attrib_slot;
+bool AudioVolumeAttrib::_is_in_use;
 
 /**
  * Use AudioVolumeAttrib::make() to construct a new AudioVolumeAttrib object.
@@ -41,6 +42,8 @@ AudioVolumeAttrib(bool off, PN_stdfloat volume) :
  */
 CPT(RenderAttrib) AudioVolumeAttrib::
 make_identity() {
+  AudioVolumeAttrib::first_use();
+
   // We make identity a special case and store a pointer forever once we find
   // it the first time.
   if (_identity_attrib == nullptr) {
@@ -57,7 +60,14 @@ make_identity() {
  */
 CPT(RenderAttrib) AudioVolumeAttrib::
 make(PN_stdfloat volume) {
+  AudioVolumeAttrib::first_use();
   AudioVolumeAttrib *attrib = new AudioVolumeAttrib(false, volume);
+
+  if (!::_is_in_use) {
+    ::_is_in_use = true;
+    _attrib_slot = register_slot(_type_handle, 100, default_attrib);
+  }
+
   return return_new(attrib);
 }
 
@@ -68,6 +78,7 @@ make(PN_stdfloat volume) {
  */
 CPT(RenderAttrib) AudioVolumeAttrib::
 make_off() {
+  AudioVolumeAttrib::first_use();
   AudioVolumeAttrib *attrib =
     new AudioVolumeAttrib(true, 1.0f);
   return return_new(attrib);
@@ -79,6 +90,7 @@ make_off() {
  */
 CPT(RenderAttrib) AudioVolumeAttrib::
 make_default() {
+  AudioVolumeAttrib::first_use();
   return return_new(new AudioVolumeAttrib(false, 1.0f));
 }
 
@@ -225,6 +237,8 @@ write_datagram(BamWriter *manager, Datagram &dg) {
  */
 TypedWritable *AudioVolumeAttrib::
 make_from_bam(const FactoryParams &params) {
+  AudioVolumeAttrib::first_use();
+
   AudioVolumeAttrib *attrib = new AudioVolumeAttrib(false, 1.0f);
   DatagramIterator scan;
   BamReader *manager;
@@ -247,4 +261,12 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _volume = scan.get_stdfloat();
   nassertv(_volume >= 0.f);
   _has_volume = !IS_NEARLY_EQUAL(_volume, 1.0f);
+}
+
+void AudioVolumeAttrib::
+first_use() {
+  if (!_is_in_use) {
+    _is_in_use = true;
+    _attrib_slot = register_slot(_type_handle, 100, new AudioVolumeAttrib(false, 1));
+  }
 }

@@ -21,6 +21,7 @@
 
 TypeHandle CullFaceAttrib::_type_handle;
 int CullFaceAttrib::_attrib_slot;
+bool CullFaceAttrib::_is_in_use;
 
 /**
  * Constructs a new CullFaceAttrib object that specifies how to cull geometry.
@@ -33,6 +34,7 @@ int CullFaceAttrib::_attrib_slot;
  */
 CPT(RenderAttrib) CullFaceAttrib::
 make(CullFaceAttrib::Mode mode) {
+  CullFaceAttrib::first_use();
   CullFaceAttrib *attrib = new CullFaceAttrib(mode, false);
   return return_new(attrib);
 }
@@ -45,6 +47,7 @@ make(CullFaceAttrib::Mode mode) {
  */
 CPT(RenderAttrib) CullFaceAttrib::
 make_reverse() {
+  CullFaceAttrib::first_use();
   CullFaceAttrib *attrib = new CullFaceAttrib(M_cull_unchanged, true);
   return return_new(attrib);
 }
@@ -55,6 +58,7 @@ make_reverse() {
  */
 CPT(RenderAttrib) CullFaceAttrib::
 make_default() {
+  CullFaceAttrib::first_use();
   return return_new(new CullFaceAttrib(M_cull_clockwise, false));
 }
 
@@ -263,4 +267,13 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
   _mode = (Mode)scan.get_int8();
   _reverse = scan.get_bool();
+}
+
+void CullFaceAttrib::
+first_use() {
+  if (!_is_in_use) {
+    _is_in_use = true;
+    _attrib_slot = register_slot(_type_handle, 100,
+                                 new CullFaceAttrib(M_cull_clockwise, false));
+  }
 }

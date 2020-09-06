@@ -24,6 +24,7 @@ using std::min;
 
 TypeHandle ScissorAttrib::_type_handle;
 int ScissorAttrib::_attrib_slot;
+bool ScissorAttrib::_is_in_use;
 CPT(RenderAttrib) ScissorAttrib::_off_attrib;
 
 /**
@@ -47,6 +48,8 @@ ScissorAttrib(const LVecBase4 &frame) :
  */
 CPT(RenderAttrib) ScissorAttrib::
 make_off() {
+  ScissorAttrib::first_use();
+
   if (_off_attrib != nullptr) {
     return _off_attrib;
   }
@@ -63,6 +66,7 @@ make_off() {
  */
 CPT(RenderAttrib) ScissorAttrib::
 make(const LVecBase4 &frame) {
+  ScissorAttrib::first_use();
   ScissorAttrib *attrib = new ScissorAttrib(frame);
   return return_new(attrib);
 }
@@ -192,6 +196,8 @@ write_datagram(BamWriter *manager, Datagram &dg) {
  */
 TypedWritable *ScissorAttrib::
 make_from_bam(const FactoryParams &params) {
+  ScissorAttrib::first_use();
+
   ScissorAttrib *attrib = new ScissorAttrib(LVecBase4(0.0f, 1.0f, 0.0f, 1.0f));
   DatagramIterator scan;
   BamReader *manager;
@@ -215,5 +221,15 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
   if (manager->get_file_minor_ver() >= 34) {
     _off = scan.get_bool();
+  }
+}
+
+void ScissorAttrib::
+first_use() {
+  if (!_is_in_use) {
+    _is_in_use = true;
+    ScissorAttrib *attrib = new ScissorAttrib(LVecBase4(0, 1, 0, 1));
+    attrib->_off = true;
+    _attrib_slot = register_slot(_type_handle, 100, attrib);
   }
 }

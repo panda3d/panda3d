@@ -21,6 +21,7 @@
 
 TypeHandle StencilAttrib::_type_handle;
 int StencilAttrib::_attrib_slot;
+bool StencilAttrib::_is_in_use;
 
 const char *StencilAttrib::
 stencil_render_state_name_array[StencilAttrib::SRS_total] =
@@ -71,6 +72,7 @@ StencilAttrib() {
  */
 CPT(RenderAttrib) StencilAttrib::
 make_off() {
+  StencilAttrib::first_use();
   StencilAttrib *attrib = new StencilAttrib;
   return return_new(attrib);
 }
@@ -81,6 +83,7 @@ make_off() {
  */
 CPT(RenderAttrib) StencilAttrib::
 make_default() {
+  StencilAttrib::first_use();
   return return_new(new StencilAttrib);
 }
 
@@ -98,6 +101,8 @@ make(
   unsigned int read_mask,
   unsigned int write_mask)
 {
+  StencilAttrib::first_use();
+
   StencilAttrib *attrib = new StencilAttrib;
 
   if (!front_enable) {
@@ -140,6 +145,8 @@ make_2_sided(
   StencilOperation back_stencil_pass_z_fail_operation,
   StencilOperation back_stencil_pass_z_pass_operation)
 {
+  StencilAttrib::first_use();
+
   StencilAttrib *attrib = new StencilAttrib;
 
   if (!front_enable) {
@@ -183,6 +190,8 @@ make_with_clear(
   bool clear,
   unsigned int clear_value)
 {
+  StencilAttrib::first_use();
+
   StencilAttrib *attrib = new StencilAttrib;
 
   if (!front_enable) {
@@ -230,6 +239,8 @@ make_2_sided_with_clear(
   bool clear,
   unsigned int clear_value)
 {
+  StencilAttrib::first_use();
+
   StencilAttrib *attrib = new StencilAttrib;
 
   if (!front_enable) {
@@ -368,6 +379,8 @@ write_datagram(BamWriter *manager, Datagram &dg) {
  */
 TypedWritable *StencilAttrib::
 make_from_bam(const FactoryParams &params) {
+  StencilAttrib::first_use();
+
   StencilAttrib *attrib = new StencilAttrib;
   DatagramIterator scan;
   BamReader *manager;
@@ -410,5 +423,13 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     for (int index = 0; index < SRS_total; ++index) {
       _stencil_render_states[index] = scan.get_uint32();
     }
+  }
+}
+
+void StencilAttrib::
+first_use() {
+  if (!_is_in_use) {
+    _is_in_use = true;
+    _attrib_slot = register_slot(_type_handle, 100, new StencilAttrib);
   }
 }

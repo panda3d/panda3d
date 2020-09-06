@@ -22,6 +22,7 @@
 
 TypeHandle ColorScaleAttrib::_type_handle;
 int ColorScaleAttrib::_attrib_slot;
+bool ColorScaleAttrib::_is_in_use;
 CPT(RenderAttrib) ColorScaleAttrib::_identity_attrib;
 
 /**
@@ -43,6 +44,8 @@ ColorScaleAttrib(bool off, const LVecBase4 &scale) :
  */
 CPT(RenderAttrib) ColorScaleAttrib::
 make_identity() {
+  ColorScaleAttrib::first_use();
+
   // We make identity a special case and store a pointer forever once we find
   // it the first time.
   if (_identity_attrib == nullptr) {
@@ -59,6 +62,7 @@ make_identity() {
  */
 CPT(RenderAttrib) ColorScaleAttrib::
 make(const LVecBase4 &scale) {
+  ColorScaleAttrib::first_use();
   ColorScaleAttrib *attrib = new ColorScaleAttrib(false, scale);
   return return_new(attrib);
 }
@@ -70,6 +74,7 @@ make(const LVecBase4 &scale) {
  */
 CPT(RenderAttrib) ColorScaleAttrib::
 make_off() {
+  ColorScaleAttrib::first_use();
   ColorScaleAttrib *attrib =
     new ColorScaleAttrib(true, LVecBase4(1.0f, 1.0f, 1.0f, 1.0f));
   return return_new(attrib);
@@ -81,6 +86,7 @@ make_off() {
  */
 CPT(RenderAttrib) ColorScaleAttrib::
 make_default() {
+  ColorScaleAttrib::first_use();
   return return_new(new ColorScaleAttrib(false, LVecBase4(1.0f, 1.0f, 1.0f, 1.0f)));
 }
 
@@ -271,6 +277,8 @@ write_datagram(BamWriter *manager, Datagram &dg) {
  */
 TypedWritable *ColorScaleAttrib::
 make_from_bam(const FactoryParams &params) {
+  ColorScaleAttrib::first_use();
+
   ColorScaleAttrib *attrib = new ColorScaleAttrib(false, LVecBase4(1.0f, 1.0f, 1.0f, 1.0f));
   DatagramIterator scan;
   BamReader *manager;
@@ -295,4 +303,13 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _has_scale = !_scale.almost_equal(LVecBase4(1.0f, 1.0f, 1.0f, 1.0f));
   _has_rgb_scale = !LVecBase3(_scale[0], _scale[1], _scale[2]).almost_equal(LVecBase3(1.0f, 1.0f, 1.0f));
   _has_alpha_scale = !IS_NEARLY_EQUAL(_scale[3], 1.0f);
+}
+
+void ColorScaleAttrib::
+first_use() {
+  if (!_is_in_use) {
+    _is_in_use = true;
+    _attrib_slot = register_slot(_type_handle, 100,
+      new ColorScaleAttrib(false, LVecBase4(1, 1, 1, 1)));
+  }
 }

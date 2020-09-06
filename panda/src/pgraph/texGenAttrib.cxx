@@ -23,6 +23,7 @@
 CPT(RenderAttrib) TexGenAttrib::_empty_attrib;
 TypeHandle TexGenAttrib::_type_handle;
 int TexGenAttrib::_attrib_slot;
+bool TexGenAttrib::_is_in_use;
 
 /**
  *
@@ -36,6 +37,8 @@ TexGenAttrib::
  */
 CPT(RenderAttrib) TexGenAttrib::
 make() {
+  TexGenAttrib::first_use();
+
   // We make it a special case and store a pointer to the empty attrib forever
   // once we find it the first time, as an optimization.
   if (_empty_attrib == nullptr) {
@@ -59,6 +62,7 @@ make(TextureStage *stage, TexGenAttrib::Mode mode) {
  */
 CPT(RenderAttrib) TexGenAttrib::
 make_default() {
+  TexGenAttrib::first_use();
   return return_new(new TexGenAttrib);
 }
 
@@ -525,6 +529,8 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
  */
 TypedWritable *TexGenAttrib::
 make_from_bam(const FactoryParams &params) {
+  TexGenAttrib::first_use();
+
   TexGenAttrib *attrib = new TexGenAttrib;
   DatagramIterator scan;
   BamReader *manager;
@@ -554,5 +560,13 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     manager->read_pointer(scan);
     Mode mode = (Mode)scan.get_uint8();
     _read_modes.push_back(mode);
+  }
+}
+
+void TexGenAttrib::
+first_use() {
+  if (!_is_in_use) {
+    _is_in_use = true;
+    _attrib_slot = register_slot(_type_handle, 100, new TexGenAttrib);
   }
 }

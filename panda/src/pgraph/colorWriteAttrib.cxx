@@ -21,12 +21,14 @@
 
 TypeHandle ColorWriteAttrib::_type_handle;
 int ColorWriteAttrib::_attrib_slot;
+bool ColorWriteAttrib::_is_in_use;
 
 /**
  * Constructs a new ColorWriteAttrib object.
  */
 CPT(RenderAttrib) ColorWriteAttrib::
 make(unsigned int channels) {
+  ColorWriteAttrib::first_use();
   ColorWriteAttrib *attrib = new ColorWriteAttrib(channels);
   return return_new(attrib);
 }
@@ -37,6 +39,7 @@ make(unsigned int channels) {
  */
 CPT(RenderAttrib) ColorWriteAttrib::
 make_default() {
+  ColorWriteAttrib::first_use();
   return return_new(new ColorWriteAttrib);
 }
 
@@ -121,6 +124,8 @@ write_datagram(BamWriter *manager, Datagram &dg) {
  */
 TypedWritable *ColorWriteAttrib::
 make_from_bam(const FactoryParams &params) {
+  ColorWriteAttrib::first_use();
+
   ColorWriteAttrib *attrib = new ColorWriteAttrib;
   DatagramIterator scan;
   BamReader *manager;
@@ -140,4 +145,12 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   RenderAttrib::fillin(scan, manager);
 
   _channels = scan.get_uint8();
+}
+
+void ColorWriteAttrib::
+first_use() {
+  if (!_is_in_use) {
+    _is_in_use = true;
+    _attrib_slot = register_slot(_type_handle, 100, new ColorWriteAttrib);
+  }
 }

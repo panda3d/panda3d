@@ -25,7 +25,7 @@ CPT(RenderAttrib) TextureAttrib::_empty_attrib;
 CPT(RenderAttrib) TextureAttrib::_all_off_attrib;
 TypeHandle TextureAttrib::_type_handle;
 int TextureAttrib::_attrib_slot;
-
+bool TextureAttrib::_is_in_use;
 
 /**
  * Constructs a new TextureAttrib object suitable for rendering the indicated
@@ -33,6 +33,7 @@ int TextureAttrib::_attrib_slot;
  */
 CPT(RenderAttrib) TextureAttrib::
 make(Texture *texture) {
+  TextureAttrib::first_use();
   return DCAST(TextureAttrib, make())->add_on_stage(TextureStage::get_default(), texture);
 }
 
@@ -50,6 +51,8 @@ make_off() {
  */
 CPT(RenderAttrib) TextureAttrib::
 make() {
+  TextureAttrib::first_use();
+
   // We make it a special case and store a pointer to the empty attrib forever
   // once we find it the first time, as an optimization.
   if (_empty_attrib == nullptr) {
@@ -65,6 +68,7 @@ make() {
  */
 CPT(RenderAttrib) TextureAttrib::
 make_all_off() {
+  TextureAttrib::first_use();
   // We make it a special case and store a pointer to the off attrib forever
   // once we find it the first time, as an optimization.
   if (_all_off_attrib == nullptr) {
@@ -866,6 +870,8 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
  */
 TypedWritable *TextureAttrib::
 make_from_bam(const FactoryParams &params) {
+  TextureAttrib::first_use();
+
   TextureAttrib *attrib = new TextureAttrib;
   DatagramIterator scan;
   BamReader *manager;
@@ -929,6 +935,14 @@ fillin(DatagramIterator &scan, BamReader *manager) {
         (*si)._sampler.read_datagram(scan, manager);
       }
     }
+  }
+}
+
+void TextureAttrib::
+first_use() {
+  if (!_is_in_use) {
+    _is_in_use = true;
+    _attrib_slot = register_slot(_type_handle, 30, new TextureAttrib);
   }
 }
 

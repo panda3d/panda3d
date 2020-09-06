@@ -23,6 +23,7 @@
 CPT(RenderAttrib) TexMatrixAttrib::_empty_attrib;
 TypeHandle TexMatrixAttrib::_type_handle;
 int TexMatrixAttrib::_attrib_slot;
+bool TexMatrixAttrib::_is_in_use;
 
 /**
  *
@@ -36,6 +37,8 @@ TexMatrixAttrib::
  */
 CPT(RenderAttrib) TexMatrixAttrib::
 make() {
+  TexMatrixAttrib::first_use();
+
   // We make it a special case and store a pointer to the empty attrib forever
   // once we find it the first time, as an optimization.
   if (_empty_attrib == nullptr) {
@@ -77,6 +80,7 @@ make(TextureStage *stage, const TransformState *transform) {
  */
 CPT(RenderAttrib) TexMatrixAttrib::
 make_default() {
+  TexMatrixAttrib::first_use();
   return return_new(new TexMatrixAttrib);
 }
 
@@ -479,6 +483,8 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
  */
 TypedWritable *TexMatrixAttrib::
 make_from_bam(const FactoryParams &params) {
+  TexMatrixAttrib::first_use();
+
   TexMatrixAttrib *attrib = new TexMatrixAttrib;
   DatagramIterator scan;
   BamReader *manager;
@@ -509,5 +515,13 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     StageNode sn(nullptr);
     sn._override = override;
     _stages.push_back(sn);
+  }
+}
+
+void TexMatrixAttrib::
+first_use() {
+  if (!_is_in_use) {
+    _is_in_use = true;
+    _attrib_slot = register_slot(_type_handle, 100, new TexMatrixAttrib);
   }
 }
