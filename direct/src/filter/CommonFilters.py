@@ -341,6 +341,11 @@ class CommonFilters:
                 elif gamma != 1.0:
                     text += "  o_color.rgb = pow(o_color.rgb, %ff);\n" % (gamma)
 
+            if ("SrgbEncode" in configuration):
+                text += "  o_color.r = (o_color.r < 0.0031308) ? (o_color.r * 12.92) : (1.055 * pow(o_color.r, 0.41666) - 0.055);\n"
+                text += "  o_color.g = (o_color.g < 0.0031308) ? (o_color.g * 12.92) : (1.055 * pow(o_color.g, 0.41666) - 0.055);\n"
+                text += "  o_color.b = (o_color.b < 0.0031308) ? (o_color.b * 12.92) : (1.055 * pow(o_color.b, 0.41666) - 0.055);\n"
+
             if ("Inverted" in configuration):
                 text += "  o_color = float4(1, 1, 1, 1) - o_color;\n"
             text += "}\n"
@@ -547,6 +552,32 @@ class CommonFilters:
             return self.reconfigure((old_gamma != 1.0), "GammaAdjust")
         return True
 
+    def setSrgbEncode(self, force=False):
+        """ Applies the inverse sRGB EOTF to the output, unless the window
+        already has an sRGB framebuffer, in which case this filter refuses to
+        apply, to prevent accidental double-application.
+
+        Set the force argument to True to force it to be applied in all cases.
+
+        .. versionadded:: 1.10.7
+        """
+        new_enable = force or not self.manager.win.getFbProperties().getSrgbColor()
+        old_enable = self.configuration.get("SrgbEncode", False)
+        if new_enable and not old_enable:
+            self.configuration["SrgbEncode"] = True
+            return self.reconfigure(True, "SrgbEncode")
+        elif not new_enable and old_enable:
+            del self.configuration["SrgbEncode"]
+        return new_enable
+
+    def delSrgbEncode(self):
+        """ Reverses the effects of setSrgbEncode. """
+        if ("SrgbEncode" in self.configuration):
+            old_enable = self.configuration["SrgbEncode"]
+            del self.configuration["SrgbEncode"]
+            return self.reconfigure(old_enable, "SrgbEncode")
+        return True
+
     #snake_case alias:
     del_cartoon_ink = delCartoonInk
     set_half_pixel_shift = setHalfPixelShift
@@ -555,7 +586,6 @@ class CommonFilters:
     del_inverted = delInverted
     del_view_glow = delViewGlow
     set_volumetric_lighting = setVolumetricLighting
-    del_gamma_adjust = delGammaAdjust
     set_bloom = setBloom
     set_view_glow = setViewGlow
     set_ambient_occlusion = setAmbientOcclusion
@@ -566,3 +596,6 @@ class CommonFilters:
     del_blur_sharpen = delBlurSharpen
     del_volumetric_lighting = delVolumetricLighting
     set_gamma_adjust = setGammaAdjust
+    del_gamma_adjust = delGammaAdjust
+    set_srgb_encode = setSrgbEncode
+    del_srgb_encode = delSrgbEncode
