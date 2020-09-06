@@ -55,12 +55,6 @@ CPT(RenderAttrib) AntialiasAttrib::
 make(unsigned short mode) {
   AntialiasAttrib::first_use();
   AntialiasAttrib *attrib = new AntialiasAttrib(mode);
-
-  if (!::_is_in_use) {
-    ::_is_in_use = true;
-    _attrib_slot = register_slot(_type_handle, 100, default_attrib);
-  }
-
   return return_new(attrib);
 }
 

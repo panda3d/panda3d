@@ -150,8 +150,8 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 }
 
 /**
- * This internal function is called by make and all make_*; If the render attrib
- * is being used for the first time, then register a slot for it.
+ * This internal function is called by make and all make_*; it registers a slot for
+ * for AlphaTestAttrib when user creates the first AlphaTestAttrib object.
  */
 void AlphaTestAttrib::
 first_use() {
