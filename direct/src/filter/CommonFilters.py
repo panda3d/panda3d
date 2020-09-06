@@ -27,6 +27,7 @@ from panda3d.core import LVecBase4, LPoint2
 from panda3d.core import Filename
 from panda3d.core import AuxBitplaneAttrib
 from panda3d.core import Texture, Shader, ATSNone
+from panda3d.core import FrameBufferProperties
 import os
 
 CARTOON_BODY="""
@@ -177,7 +178,15 @@ class CommonFilters:
                 self.textures[tex].setWrapU(Texture.WMClamp)
                 self.textures[tex].setWrapV(Texture.WMClamp)
 
-            self.finalQuad = self.manager.renderSceneInto(textures = self.textures, auxbits=auxbits)
+            fbprops = None
+            clamping = None
+            if "HighDynamicRange" in configuration:
+                fbprops = FrameBufferProperties()
+                fbprops.setFloatColor(True)
+                fbprops.setSrgbColor(False)
+                clamping = False
+
+            self.finalQuad = self.manager.renderSceneInto(textures = self.textures, auxbits=auxbits, fbprops=fbprops, clamping=clamping)
             if (self.finalQuad == None):
                 self.cleanup()
                 return False
@@ -255,6 +264,17 @@ class CommonFilters:
             texcoordSets = list(enumerate(texcoordPadding.keys()))
 
             text = "//Cg\n"
+            if "HighDynamicRange" in configuration:
+                text += "static const float3x3 aces_input_mat = {\n"
+                text += "  {0.59719, 0.35458, 0.04823},\n"
+                text += "  {0.07600, 0.90834, 0.01566},\n"
+                text += "  {0.02840, 0.13383, 0.83777},\n"
+                text += "};\n"
+                text += "static const float3x3 aces_output_mat = {\n"
+                text += "  { 1.60475, -0.53108, -0.07367},\n"
+                text += "  {-0.10208,  1.10813, -0.00605},\n"
+                text += "  {-0.00327, -0.07276,  1.07602},\n"
+                text += "};\n"
             text += "void vshader(float4 vtx_position : POSITION,\n"
             text += "  out float4 l_position : POSITION,\n"
 
@@ -301,6 +321,10 @@ class CommonFilters:
             if ("VolumetricLighting" in configuration):
                 text += "  uniform float4 k_casterpos,\n"
                 text += "  uniform float4 k_vlparams,\n"
+
+            if ("ExposureAdjust" in configuration):
+                text += "  uniform float k_exposure,\n"
+
             text += "  out float4 o_color : COLOR)\n"
             text += "{\n"
             text += "  o_color = tex2D(k_txcolor, %s);\n" % (texcoords["color"])
@@ -331,6 +355,14 @@ class CommonFilters:
                 text += "    decay *= k_vlparams.y;\n"
                 text += "  }\n"
                 text += "  o_color += float4(vlcolor * k_vlparams.z, 1);\n"
+
+            if ("ExposureAdjust" in configuration):
+                text += "  o_color.rgb *= k_exposure;\n"
+
+            # With thanks to Stephen Hill!
+            if ("HighDynamicRange" in configuration):
+                text += "  float3 aces_color = mul(aces_input_mat, o_color.rgb);\n"
+                text += "  o_color.rgb = saturate(mul(aces_output_mat, (aces_color * (aces_color + 0.0245786f) - 0.000090537f) / (aces_color * (0.983729f * aces_color + 0.4329510f) + 0.238081f)));\n"
 
             if ("GammaAdjust" in configuration):
                 gamma = configuration["GammaAdjust"]
@@ -390,6 +422,11 @@ class CommonFilters:
                 config = configuration["AmbientOcclusion"]
                 self.ssao[0].setShaderInput("params1", config.numsamples, -float(config.amount) / config.numsamples, config.radius, 0)
                 self.ssao[0].setShaderInput("params2", config.strength, config.falloff, 0, 0)
+
+        if (changed == "ExposureAdjust") or fullrebuild:
+            if ("ExposureAdjust" in configuration):
+                stops = configuration["ExposureAdjust"]
+                self.finalQuad.setShaderInput("exposure", 2 ** stops)
 
         self.update()
         return True
@@ -578,6 +615,47 @@ class CommonFilters:
             return self.reconfigure(old_enable, "SrgbEncode")
         return True
 
+    def setHighDynamicRange(self):
+        """ Enables HDR rendering by using a floating-point framebuffer,
+        disabling color clamping on the main scene, and applying a tone map
+        operator (ACES).
+
+        It may also be necessary to use setExposureAdjust to perform exposure
+        compensation on the scene, depending on the lighting intensity.
+
+        .. versionadded:: 1.10.7
+        """
+
+        fullrebuild = (("HighDynamicRange" in self.configuration) is False)
+        self.configuration["HighDynamicRange"] = 1
+        return self.reconfigure(fullrebuild, "HighDynamicRange")
+
+    def delHighDynamicRange(self):
+        if ("HighDynamicRange" in self.configuration):
+            del self.configuration["HighDynamicRange"]
+            return self.reconfigure(True, "HighDynamicRange")
+        return True
+
+    def setExposureAdjust(self, stops):
+        """ Sets a relative exposure adjustment to multiply with the result of
+        rendering the scene, in stops.  A value of 0 means no adjustment, a
+        positive value will result in a brighter image.  Useful in conjunction
+        with HDR, see setHighDynamicRange.
+
+        .. versionadded:: 1.10.7
+        """
+        old_stops = self.configuration.get("ExposureAdjust")
+        if old_stops != stops:
+            self.configuration["ExposureAdjust"] = stops
+            return self.reconfigure(old_stops is None, "ExposureAdjust")
+        return True
+
+    def delExposureAdjust(self):
+        if ("ExposureAdjust" in self.configuration):
+            del self.configuration["ExposureAdjust"]
+            return self.reconfigure(True, "ExposureAdjust")
+        return True
+
     #snake_case alias:
     del_cartoon_ink = delCartoonInk
     set_half_pixel_shift = setHalfPixelShift
@@ -599,3 +677,7 @@ class CommonFilters:
     del_gamma_adjust = delGammaAdjust
     set_srgb_encode = setSrgbEncode
     del_srgb_encode = delSrgbEncode
+    set_exposure_adjust = setExposureAdjust
+    del_exposure_adjust = delExposureAdjust
+    set_high_dynamic_range = setHighDynamicRange
+    del_high_dynamic_range = delHighDynamicRange
