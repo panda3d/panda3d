@@ -120,9 +120,9 @@ get_properties(FrameBufferProperties &properties,
   properties.set_depth_bits(depth_size);
   properties.set_multisamples(samples);
 
-  // Set both hardware and software bits, indicating not-yet-known.
-  properties.set_force_software(1);
-  properties.set_force_hardware(1);
+  // "slow" likely indicates no hardware acceleration.
+  properties.set_force_software(slow);
+  properties.set_force_hardware(!slow);
 }
 
 /**
@@ -255,17 +255,9 @@ reset() {
   GLESGraphicsStateGuardian::reset();
 #endif
 
-  // If "Mesa" is present, assume software.  However, if "Mesa DRI" is found,
-  // it's actually a Mesa-based OpenGL layer running over a hardware driver.
-  if (_gl_renderer == "Software Rasterizer" ||
-      (_gl_renderer.find("Mesa") != std::string::npos &&
-       _gl_renderer.find("Mesa DRI") == std::string::npos)) {
-    // It's Mesa, therefore probably a software context.
+  if (_gl_renderer == "Software Rasterizer") {
     _fbprops.set_force_software(1);
     _fbprops.set_force_hardware(0);
-  } else {
-    _fbprops.set_force_hardware(1);
-    _fbprops.set_force_software(0);
   }
 }
 
