@@ -144,6 +144,7 @@ init_type() {
   RenderAttrib::init_type();
   register_type(_type_handle, "RescaleNormalAttrib",
                 RenderAttrib::get_class_type());
+  RescaleNormalAttrib::_attrib_slot = -1;
   RescaleNormalAttrib::_is_in_use = false;
 }
 
@@ -198,6 +199,10 @@ operator >> (istream &in, RescaleNormalAttrib::Mode &mode) {
   return in;
 }
 
+/**
+ * This internal function is called by make and all make_*; it registers a slot for
+ * for RescaleAttrib when user creates the first RescaleAttrib object.
+ */
 void RescaleNormalAttrib::
 first_use() {
   if (!_is_in_use) {

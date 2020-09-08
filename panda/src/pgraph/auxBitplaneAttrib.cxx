@@ -151,6 +151,10 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _outputs = scan.get_int32();
 }
 
+/**
+ * This internal function is called by make and all make_*; it registers a slot for
+ * for AuxBitplaneAttrib when user creates the first AuxBitplaneAttrib object.
+ */
 void AuxBitplaneAttrib::
 first_use() {
   if (!_is_in_use) {

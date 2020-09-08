@@ -247,6 +247,8 @@ write_datagram(BamWriter *manager, Datagram &dg) {
  */
 TypedWritable *CullFaceAttrib::
 make_from_bam(const FactoryParams &params) {
+  CullFaceAttrib::first_use();
+
   CullFaceAttrib *attrib = new CullFaceAttrib(M_cull_none, false);
   DatagramIterator scan;
   BamReader *manager;
@@ -269,6 +271,10 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _reverse = scan.get_bool();
 }
 
+/**
+ * This internal function is called by make and all make_*; it registers a slot for
+ * for CullFaceAttrib when user creates the first CullFaceAttrib object.
+ */
 void CullFaceAttrib::
 first_use() {
   if (!_is_in_use) {

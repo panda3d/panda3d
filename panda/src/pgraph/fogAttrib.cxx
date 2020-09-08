@@ -20,6 +20,7 @@
 
 TypeHandle FogAttrib::_type_handle;
 int FogAttrib::_attrib_slot;
+bool FogAttrib::_is_in_use;
 
 /**
  * Constructs a new FogAttrib object suitable for rendering the indicated fog
@@ -162,4 +163,12 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
   // Read the _fog pointer.
   manager->read_pointer(scan);
+}
+
+void FogAttrib::
+first_use() {
+  if (!_is_in_use) {
+    _is_in_use = true;
+    _attrib_slot = register_slot(_type_handle, 100, new FogAttrib);
+  }
 }

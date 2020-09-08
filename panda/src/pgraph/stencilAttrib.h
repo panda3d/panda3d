@@ -174,6 +174,7 @@ public:
     RenderAttrib::init_type();
     register_type(_type_handle, "StencilAttrib",
                   RenderAttrib::get_class_type());
+    StencilAttrib::_attrib_slot = -1;
     StencilAttrib::_is_in_use = false;
   }
   virtual TypeHandle get_type() const {

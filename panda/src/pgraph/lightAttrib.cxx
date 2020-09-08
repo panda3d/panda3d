@@ -1119,6 +1119,10 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _sort_seq = UpdateSeq::old();
 }
 
+/**
+ * This internal function is called by make and all make_*; it registers a slot for
+ * for LightAttrib when user creates the first LightAttrib object.
+ */
 void LightAttrib::
 first_use() {
   if (!_is_in_use) {

@@ -147,6 +147,10 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _channels = scan.get_uint8();
 }
 
+/**
+ * This internal function is called by make and all make_*; it registers a slot for
+ * for ColorWriteAttrib when user creates the first ColorWriteAttrib object.
+ */
 void ColorWriteAttrib::
 first_use() {
   if (!_is_in_use) {

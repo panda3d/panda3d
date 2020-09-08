@@ -31,6 +31,8 @@ CPT(RenderAttrib) ColorAttrib::_vertex;
  */
 CPT(RenderAttrib) ColorAttrib::
 make_vertex() {
+  ColorAttrib::first_use();
+
   if (_vertex != nullptr) {
     return _vertex;
   }
@@ -212,6 +214,10 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   quantize_color();
 }
 
+/**
+ * This internal function is called by make and all make_*; it registers a slot for
+ * for ColorAttrib when user creates the first ColorAttrib object.
+ */
 void ColorAttrib::
 first_use() {
   if (!ColorAttrib::_is_in_use) {

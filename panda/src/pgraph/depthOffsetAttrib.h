@@ -105,6 +105,7 @@ public:
     RenderAttrib::init_type();
     register_type(_type_handle, "DepthOffsetAttrib",
                   RenderAttrib::get_class_type());
+    DepthOffsetAttrib::_attrib_slot = -1;
     DepthOffsetAttrib::_is_in_use = false;
   }
   virtual TypeHandle get_type() const {

@@ -104,6 +104,7 @@ public:
     RenderAttrib::init_type();
     register_type(_type_handle, "AuxBitplaneAttrib",
                   RenderAttrib::get_class_type());
+    AuxBitplaneAttrib::_attrib_slot = -1;
     AuxBitplaneAttrib::_is_in_use = false;
   }
   virtual TypeHandle get_type() const {

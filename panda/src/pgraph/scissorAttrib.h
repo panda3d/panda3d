@@ -89,6 +89,7 @@ public:
     RenderAttrib::init_type();
     register_type(_type_handle, "ScissorAttrib",
                   RenderAttrib::get_class_type());
+    ScissorAttrib::_attrib_slot = -1;
     ScissorAttrib::_is_in_use = false;
   }
   virtual TypeHandle get_type() const {

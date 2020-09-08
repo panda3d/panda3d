@@ -167,6 +167,10 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   manager->read_pointer(scan);
 }
 
+/**
+ * This internal function is called by make and all make_*; it registers a slot for
+ * for MaterialAttrib when user creates the first MaterialAttrib object.
+ */
 void MaterialAttrib::
 first_use() {
   if (!_is_in_use) {

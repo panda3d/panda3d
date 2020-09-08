@@ -121,6 +121,7 @@ public:
     RenderAttrib::init_type();
     register_type(_type_handle, "TexMatrixAttrib",
                   RenderAttrib::get_class_type());
+    TexMatrixAttrib::_attrib_slot = -1;
     TexMatrixAttrib::_is_in_use = false;
   }
   virtual TypeHandle get_type() const {

@@ -224,6 +224,10 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   }
 }
 
+/**
+ * This internal function is called by make and all make_*; it registers a slot for
+ * for ScissorAttrib when user creates the first ScissorAttrib object.
+ */
 void ScissorAttrib::
 first_use() {
   if (!_is_in_use) {

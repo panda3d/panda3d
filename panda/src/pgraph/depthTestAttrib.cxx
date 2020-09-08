@@ -133,6 +133,10 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _mode = (PandaCompareFunc)scan.get_int8();
 }
 
+/**
+ * This internal function is called by make and all make_*; it registers a slot for
+ * for DepthTestAttrib when user creates the first DepthTestAttrib object.
+ */
 void DepthTestAttrib::
 first_use() {
   if (!_is_in_use) {

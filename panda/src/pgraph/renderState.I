@@ -96,15 +96,23 @@ get_attrib(TypeHandle type) const {
  */
 ALWAYS_INLINE const RenderAttrib *RenderState::
 get_attrib(int slot) const {
+  if (slot == -1) {
+    return nullptr;
+  }
   return _attributes[slot]._attrib;
 }
 
 /**
  * Returns the RenderAttrib with the indicated slot index, or the default
- * attrib for that slot if there is no such RenderAttrib in the state.
+ * attrib for that slot if there is no such RenderAttrib in the state. If
+ * no object of the RenderAttrib has been created before, return nullptr.
  */
 INLINE const RenderAttrib *RenderState::
 get_attrib_def(int slot) const {
+  if (slot == -1) {
+    return nullptr;
+  }
+
   if (_attributes[slot]._attrib != nullptr) {
     return _attributes[slot]._attrib;
   }

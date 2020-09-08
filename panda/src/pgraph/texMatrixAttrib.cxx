@@ -518,6 +518,10 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   }
 }
 
+/**
+ * This internal function is called by make and all make_*; it registers a slot for
+ * for TexMatrixAttrib when user creates the first TexMatrixAttrib object.
+ */
 void TexMatrixAttrib::
 first_use() {
   if (!_is_in_use) {

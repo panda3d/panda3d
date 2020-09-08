@@ -140,6 +140,10 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _op = (Operation)scan.get_uint8();
 }
 
+/**
+ * This internal function is called by make and all make_*; it registers a slot for
+ * for LogicOpAttrib when user creates the first LogicOpAttrib object.
+ */
 void LogicOpAttrib::
 first_use() {
   if (!_is_in_use) {

@@ -305,6 +305,10 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _has_alpha_scale = !IS_NEARLY_EQUAL(_scale[3], 1.0f);
 }
 
+/**
+ * This internal function is called by make and all make_*; it registers a slot for
+ * for ColorScaleAttrib when user creates the first ColorScaleAttrib object.
+ */
 void ColorScaleAttrib::
 first_use() {
   if (!_is_in_use) {

@@ -351,6 +351,10 @@ operator << (ostream &out, ColorBlendAttrib::Operand operand) {
   return out << "**invalid ColorBlendAttrib::Operand(" << (int)operand << ")**";
 }
 
+/**
+ * This internal function is called by make and all make_*; it registers a slot for
+ * for ColorBlendAttrib when user creates the first ColorBlendAttrib object.
+ */
 void ColorBlendAttrib::
 first_use() {
   if (!_is_in_use) {

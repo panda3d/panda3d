@@ -111,6 +111,7 @@ public:
     RenderAttrib::init_type();
     register_type(_type_handle, "RenderModeAttrib",
                   RenderAttrib::get_class_type());
+    RenderModeAttrib::_attrib_slot = -1;
     RenderModeAttrib::_is_in_use = false;
   }
   virtual TypeHandle get_type() const {

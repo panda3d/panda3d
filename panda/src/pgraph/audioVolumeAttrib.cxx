@@ -257,6 +257,10 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _has_volume = !IS_NEARLY_EQUAL(_volume, 1.0f);
 }
 
+/**
+ * This internal function is called by make and all make_*; it registers a slot for
+ * for AudioVolumeAttrib when user creates the first AudioVolumeAttrib object.
+ */
 void AudioVolumeAttrib::
 first_use() {
   if (!_is_in_use) {

@@ -159,6 +159,7 @@ public:
     RenderAttrib::init_type();
     register_type(_type_handle, "ClipPlaneAttrib",
                   RenderAttrib::get_class_type());
+    ClipPlaneAttrib::_attrib_slot = -1;
     ClipPlaneAttrib::_is_in_use = false;
   }
   virtual TypeHandle get_type() const {

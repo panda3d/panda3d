@@ -33,7 +33,6 @@ bool TextureAttrib::_is_in_use;
  */
 CPT(RenderAttrib) TextureAttrib::
 make(Texture *texture) {
-  TextureAttrib::first_use();
   return DCAST(TextureAttrib, make())->add_on_stage(TextureStage::get_default(), texture);
 }
 
@@ -69,6 +68,7 @@ make() {
 CPT(RenderAttrib) TextureAttrib::
 make_all_off() {
   TextureAttrib::first_use();
+
   // We make it a special case and store a pointer to the off attrib forever
   // once we find it the first time, as an optimization.
   if (_all_off_attrib == nullptr) {
@@ -938,6 +938,10 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   }
 }
 
+/**
+ * This internal function is called by make and all make_*; it registers a slot for
+ * for TextureAttrib when user creates the first TextureAttrib object.
+ */
 void TextureAttrib::
 first_use() {
   if (!_is_in_use) {

@@ -238,6 +238,10 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _mode = scan.get_uint16();
 }
 
+/**
+ * This internal function is called by make and all make_*; it registers a slot for
+ * for AntialiasAttrib when user creates the first AntialiasAttrib object.
+ */
 void AntialiasAttrib::
 first_use() {
   if (!_is_in_use) {
@@ -264,5 +268,6 @@ init_type() {
   RenderAttrib::init_type();
   register_type(_type_handle, "AntialiasAttrib",
                 RenderAttrib::get_class_type());
+  AntialiasAttrib::_attrib_slot = -1;
   AntialiasAttrib::_is_in_use = false;
 }

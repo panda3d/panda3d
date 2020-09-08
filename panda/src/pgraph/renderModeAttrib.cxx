@@ -237,6 +237,10 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   }
 }
 
+/**
+ * This internal function is called by make and all make_*; it registers a slot for
+ * for RenderModeAttrib when user creates the first RenderModeAttrib object.
+ */
 void RenderModeAttrib::
 first_use() {
   if (!_is_in_use) {

@@ -140,6 +140,10 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _mode = (Mode)scan.get_int8();
 }
 
+/**
+ * This internal function is called by make and all make_*; it registers a slot for
+ * for DepthWriteAttrib when user creates the first DepthWriteAttrib object.
+ */
 void DepthWriteAttrib::
 first_use() {
   if (!_is_in_use) {
