@@ -28,6 +28,7 @@ bool FogAttrib::_is_in_use;
  */
 CPT(RenderAttrib) FogAttrib::
 make(Fog *fog) {
+  FogAttrib::first_use();
   FogAttrib *attrib = new FogAttrib;
   attrib->_fog = fog;
   return return_new(attrib);
@@ -39,6 +40,7 @@ make(Fog *fog) {
  */
 CPT(RenderAttrib) FogAttrib::
 make_default() {
+  FogAttrib::first_use();
   return return_new(new FogAttrib);
 }
 
@@ -47,6 +49,7 @@ make_default() {
  */
 CPT(RenderAttrib) FogAttrib::
 make_off() {
+  FogAttrib::first_use();
   FogAttrib *attrib = new FogAttrib;
   return return_new(attrib);
 }
@@ -143,6 +146,8 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
  */
 TypedWritable *FogAttrib::
 make_from_bam(const FactoryParams &params) {
+  FogAttrib::first_use();
+
   FogAttrib *attrib = new FogAttrib;
   DatagramIterator scan;
   BamReader *manager;

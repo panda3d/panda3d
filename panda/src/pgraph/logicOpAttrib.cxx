@@ -29,6 +29,7 @@ bool LogicOpAttrib::_is_in_use;
  */
 CPT(RenderAttrib) LogicOpAttrib::
 make_off() {
+  LogicOpAttrib::first_use();
   return RenderAttribRegistry::quick_get_global_ptr()->get_slot_default(_attrib_slot);
 }
 

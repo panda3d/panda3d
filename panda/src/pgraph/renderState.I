@@ -112,7 +112,6 @@ get_attrib_def(int slot) const {
   if (slot == -1) {
     return nullptr;
   }
-
   if (_attributes[slot]._attrib != nullptr) {
     return _attributes[slot]._attrib;
   }

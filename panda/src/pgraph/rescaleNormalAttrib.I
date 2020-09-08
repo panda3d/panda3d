@@ -28,6 +28,7 @@ RescaleNormalAttrib(RescaleNormalAttrib::Mode mode) :
  */
 INLINE CPT(RenderAttrib) RescaleNormalAttrib::
 make_default() {
+  RescaleNormalAttrib::first_use();
   return RenderAttribRegistry::quick_get_global_ptr()->get_slot_default(_attrib_slot);
 }
 
