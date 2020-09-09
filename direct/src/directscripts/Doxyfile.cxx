@@ -789,6 +789,7 @@ RECURSIVE              = YES
 EXCLUDE                = dtool/src/parser-inc \
                          dtool/src/cppparser \
                          dtool/src/interrogate \
+                         direct/src/directscripts \
                          direct/src/plugin \
                          direct/src/plugin_standalone \
                          direct/src/plugin_npapi \
