@@ -3992,12 +3992,6 @@ prepare_lens() {
   }
 #endif
 
-#ifndef OPENGLES_1
-  if (_current_shader_context) {
-    _current_shader_context->issue_parameters(Shader::SSD_transform);
-  }
-#endif
-
   return true;
 }
 
@@ -11205,9 +11199,10 @@ set_state_and_transform(const RenderState *target,
     do_issue_transform();
   }
 
-  if (target == _state_rs && (_state_mask | _inv_state_mask).is_all_on()) {
-    return;
-  }
+  //XXX the _inv_state_mask system does not appear to be used at the moment.
+  //if (target == _state_rs && (_state_mask | _inv_state_mask).is_all_on()) {
+  //  return;
+  //}
   _target_rs = target;
 
 #ifndef OPENGLES_1
