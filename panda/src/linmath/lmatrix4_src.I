@@ -1349,7 +1349,7 @@ invert_in_place() {
 }
 
 /**
- * Computes (*this) += other * weight.
+ * Computes `(*this) += other * weight`.
  */
 INLINE_LINMATH void FLOATNAME(LMatrix4)::
 accumulate(const FLOATNAME(LMatrix4) &other, FLOATTYPE weight) {

@@ -110,8 +110,8 @@ PUBLISHED:
   virtual void set_3d_max_distance(PN_stdfloat dist);
   virtual PN_stdfloat get_3d_max_distance() const;
 
-  // *_speaker_mix and *_speaker_level(s) serve the same purpose.
-  // *_speaker_mix is for use with FMOD. *_speaker_level(s) is for use with
+  // speaker_mix and speaker_level(s) serve the same purpose.
+  // speaker_mix is for use with FMOD. speaker_level(s) is for use with
   // Miles.  Both interfaces exist because of a significant difference in the
   // two APIs.  Hopefully the difference can be reconciled into a single
   // interface at some point.
