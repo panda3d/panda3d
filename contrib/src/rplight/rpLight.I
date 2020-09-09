@@ -148,7 +148,7 @@ inline void RPLight::assign_slot(int slot) {
  *   changed. This will cause all shadow sources to be updated, emitting a
  *   shadow update. Be careful when calling this method if you don't want all
  *   sources to get updated. If you only have to invalidate a single shadow source,
- *   use get_shadow_source(n)->set_needs_update(true).
+ *   use `get_shadow_source(n)->set_needs_update(true)`.
  */
 inline void RPLight::invalidate_shadows() {
   for (size_t i = 0; i < _shadow_sources.size(); ++i) {
@@ -296,14 +296,14 @@ inline bool RPLight::get_casts_shadows() const {
 }
 
 /**
- * @brief Sets the lights shadow map resolution
- * @details This sets the lights shadow map resolution. This has no effect
+ * @brief Sets the light's shadow map resolution
+ * @details This sets the light's shadow map resolution. This has no effect
  *   when the light is not told to cast shadows (Use RPLight::set_casts_shadows).
  *
- *   When calling this on a light with multiple shadow sources (e.g. PointLight),
- *   this controls the resolution of each source. If the light has 6 shadow sources,
- *   and you use a resolution of 512x512, the lights shadow map will occur a
- *   space of 6 * 512x512 maps in the shadow atlas.
+ *   When calling this on a light with multiple shadow sources (e.g.
+ *   RPPointLight), this controls the resolution of each source. If the light
+ *   has 6 shadow sources, and you use a resolution of 512x512, the light's
+ *   shadow map will occupy a space of 6 * 512x512 maps in the shadow atlas.
  *
  * @param resolution Resolution of the shadow map in pixels
  */
@@ -326,14 +326,14 @@ inline size_t RPLight::get_shadow_map_resolution() const {
 }
 
 /**
- * @brief Sets the ies profile
+ * @brief Sets the IES profile
  * @details This sets the ies profile of the light. The parameter should be a
  *   handle previously returned by RenderPipeline.load_ies_profile. Using a
  *   value of -1 indicates no ies profile.
  *
- *   Notice that for ies profiles which cover a whole range, you should use
- *   PointLights, whereas for ies profiles which only cover the lower hemisphere
- *   you should use SpotLights for the best performance.
+ *   Notice that for IES profiles which cover a whole range, you should use an
+ *   RPPointLight, whereas for ies profiles which only cover the lower
+ *   hemisphere you should use an RPSpotLight for the best performance.
  *
  * @param profile IES Profile handle
  */
@@ -343,8 +343,8 @@ inline void RPLight::set_ies_profile(int profile) {
 }
 
 /**
- * @brief Returns the lights ies profile
- * @details This returns the ies profile of a light, previously set with
+ * @brief Returns the light's IES profile
+ * @details This returns the IES profile of a light, previously set with
  *   RPLight::set_ies_profile. In case no ies profile was set, returns -1.
  *
  * @return IES Profile handle
@@ -354,20 +354,20 @@ inline int RPLight::get_ies_profile() const {
 }
 
 /**
- * @brief Returns whether the light has an ies profile assigned
- * @details This returns whether the light has an ies profile assigned,
+ * @brief Returns whether the light has an IES profile assigned
+ * @details This returns whether the light has an IES profile assigned,
  *   previously done with RPLight::set_ies_profile.
  *
- * @return true if the light has an ies profile assigned, false otherwise
+ * @return true if the light has an IES profile assigned, false otherwise
  */
 inline bool RPLight::has_ies_profile() const {
   return _ies_profile >= 0;
 }
 
 /**
- * @brief Clears the ies profile
- * @details This clears the ies profile of the light, telling it to no longer
- *   use an ies profile, and instead use the default attenuation.
+ * @brief Clears the IES profile
+ * @details This clears the IES profile of the light, telling it to no longer
+ *   use an IES profile, and instead use the default attenuation.
  */
 inline void RPLight::clear_ies_profile() {
   set_ies_profile(-1);
@@ -377,7 +377,7 @@ inline void RPLight::clear_ies_profile() {
  * @brief Sets the near plane of the light
  * @details This sets the near plane of all shadow sources of the light. It has
  *   no effects if the light does not cast shadows. This prevents artifacts from
- *   objects near to the light. It behaves like Lens::set_near_plane.
+ *   objects near to the light. It behaves like Lens::set_near().
  *
  *   It can also help increasing shadow map precision, low near planes will
  *   cause the precision to suffer. Try setting the near plane as big as possible.
@@ -394,7 +394,7 @@ inline void RPLight::set_near_plane(float near_plane) {
 
 /**
  * @brief Returns the near plane of the light
- * @details This returns the lights near plane, previously set with
+ * @details This returns the light's near plane, previously set with
  *   RPLight::set_near_plane. If the light does not cast shadows, this value
  *   is meaningless.
  *
