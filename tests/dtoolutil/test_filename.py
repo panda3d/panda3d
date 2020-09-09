@@ -15,10 +15,9 @@ def test_filename_open():
     open(fn, 'rb')
 
 
-@pytest.mark.skipif(sys.version_info < (3, 4), reason="Requires Python 3.4")
 def test_filename_ctor_pathlib():
     pathlib = pytest.importorskip('pathlib')
 
     path = pathlib.Path(__file__)
     fn = Filename(path)
-    assert fn.to_os_specific_w() == str(path)
+    assert fn.to_os_specific_w().lower() == str(path).lower()

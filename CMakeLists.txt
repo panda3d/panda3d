@@ -40,7 +40,6 @@ endif()
 
 if(IS_MULTICONFIG)
   message(STATUS "Using multi-configuration generator")
-  set(CMAKE_CONFIGURATION_TYPES ${_configs})
 else()
   # Set the default CMAKE_BUILD_TYPE before calling project().
   if(NOT CMAKE_BUILD_TYPE)
@@ -80,6 +79,7 @@ include(GNUInstallDirs)     # Defines CMAKE_INSTALL_<dir> variables
 
 # Include global modules needed for configure scripts
 include(PackageConfig)      # Defines package_option
+include(PerConfigOption)    # Defines per_config_option
 
 # Configure Panda3D
 include(dtool/CompilerFlags.cmake)

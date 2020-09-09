@@ -81,10 +81,8 @@ TransformState::
   set_destructing();
 
   // Free the inverse matrix computation, if it has been stored.
-  if (_inv_mat != nullptr) {
-    delete _inv_mat;
-    _inv_mat = nullptr;
-  }
+  delete _inv_mat;
+  _inv_mat = nullptr;
 
   LightReMutexHolder holder(*_states_lock);
 

@@ -2,9 +2,14 @@
 :class:`~.ShowBase.ShowBase` instance, as an alternative to using the builtin
 scope.
 
-Note that you cannot directly import `base` from this module since ShowBase
-may not have been created yet; instead, ShowBase dynamically adds itself to
-this module's scope when instantiated."""
+Many of the variables contained in this module are also automatically written
+to the :mod:`builtins` module when ShowBase is instantiated, making them
+available to any Python code.  Importing them from this module instead can make
+it easier to see where these variables are coming from.
+
+Note that you cannot directly import :data:`~builtins.base` from this module
+since ShowBase may not have been created yet; instead, ShowBase dynamically
+adds itself to this module's scope when instantiated."""
 
 __all__ = []
 
@@ -17,8 +22,8 @@ from . import DConfig as config
 
 __dev__ = config.GetBool('want-dev', __debug__)
 
-#: The global instance of the :class:`~panda3d.core.VirtualFileSystem`, as
-#: obtained using :meth:`panda3d.core.VirtualFileSystem.getGlobalPtr()`.
+#: The global instance of the :ref:`virtual-file-system`, as obtained using
+#: :meth:`panda3d.core.VirtualFileSystem.getGlobalPtr()`.
 vfs = VirtualFileSystem.getGlobalPtr()
 
 #: The default Panda3D output stream for notifications and logging, as
@@ -72,13 +77,8 @@ def inspect(anObject):
     return Inspector.inspect(anObject)
 
 
-import sys
-if sys.version_info >= (3, 0):
-    import builtins
-else:
-    import __builtin__ as builtins
+import builtins
 builtins.inspect = inspect
-del sys
 
 # this also appears in AIBaseGlobal
 if (not __debug__) and __dev__:

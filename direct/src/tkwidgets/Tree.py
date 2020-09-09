@@ -24,10 +24,6 @@ from direct.showbase.TkGlobal import *
 from panda3d.core import *
 
 
-if sys.version_info < (3, 0):
-    FileNotFoundError = IOError
-
-
 class TreeNode:
 
     def __init__(self, canvas, parent, item, menuList = []):

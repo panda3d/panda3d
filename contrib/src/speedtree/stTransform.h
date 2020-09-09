@@ -14,7 +14,7 @@
 #ifndef STTRANSFORM_H
 #define STTRANSFORM_H
 
-#include "pandabase.h"
+#include "contribbase.h"
 #include "transformState.h"
 #include "speedtree_api.h"
 #include "deg_2_rad.h"

@@ -269,9 +269,7 @@ record_new_frame(int frame_number, PStatFrameData *frame_data) {
          (_frames.front() == nullptr ||
           _frames.front()->is_empty() ||
           _frames.front()->get_start() < oldest_allowable_time)) {
-    if (_frames.front() != nullptr) {
-      delete _frames.front();
-    }
+    delete _frames.front();
     _frames.pop_front();
     _first_frame_number++;
   }

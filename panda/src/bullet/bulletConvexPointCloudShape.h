@@ -11,8 +11,8 @@
  * @date 2010-01-30
  */
 
-#ifndef __BULLET_CONVEX_POINT_CLOUD_SHAPE_H__
-#define __BULLET_CONVEX_POINT_CLOUD_SHAPE_H__
+#ifndef BULLETCONVEXPOINTCLOUDSHAPE_H
+#define BULLETCONVEXPOINTCLOUDSHAPE_H
 
 #include "pandabase.h"
 
@@ -78,4 +78,4 @@ private:
 
 #include "bulletConvexPointCloudShape.I"
 
-#endif // __BULLET_CONVEX_POINT_CLOUD_SHAPE_H__
+#endif // BULLETCONVEXPOINTCLOUDSHAPE_H

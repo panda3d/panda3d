@@ -11,8 +11,8 @@
  * @date 2010-01-23
  */
 
-#ifndef __BULLET_INCLUDES_H__
-#define __BULLET_INCLUDES_H__
+#ifndef BULLET_INCLUDES_H
+#define BULLET_INCLUDES_H
 
 #include "pandabase.h"
 
@@ -35,4 +35,4 @@
 #include <BulletSoftBody/btSoftRigidDynamicsWorld.h>
 #endif
 
-#endif // __BULLET_INCLUDES_H__
+#endif // BULLET_INCLUDES_H

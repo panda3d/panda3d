@@ -77,7 +77,9 @@ DCClass(DCFile *dc_file, const string &name, bool is_struct, bool bogus_class) :
   _number = -1;
   _constructor = nullptr;
 
+#ifdef WITHIN_PANDA
   _python_class_defs = nullptr;
+#endif
 }
 
 /**
@@ -85,9 +87,7 @@ DCClass(DCFile *dc_file, const string &name, bool is_struct, bool bogus_class) :
  */
 DCClass::
 ~DCClass() {
-  if (_constructor != nullptr) {
-    delete _constructor;
-  }
+  delete _constructor;
 
   Fields::iterator fi;
   for (fi = _fields.begin(); fi != _fields.end(); ++fi) {

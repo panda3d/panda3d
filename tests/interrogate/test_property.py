@@ -2,11 +2,7 @@ import sys
 import pytest
 from panda3d import core
 from contextlib import contextmanager
-
-if sys.version_info >= (3, 3):
-    import collections.abc as collections_abc
-else:
-    import _abcoll as collections_abc
+import collections.abc as collections_abc
 
 
 @contextmanager
@@ -122,11 +118,6 @@ def test_seq_property_getitem():
     assert prop[-2] == item_b
     assert prop[-3] == item_a
 
-    # Long index
-    if sys.version_info[0] < 3:
-        assert prop[long(1)] == item_b
-        assert prop[long(-1)] == item_b
-
     # Out of bounds access
     with pytest.raises(IndexError):
         prop[-4]
@@ -175,13 +166,6 @@ def test_seq_property_setitem():
     prop[-2] = item_b
     prop[-3] = item_c
     assert tuple(prop) == (item_c, item_b, item_a)
-
-    # Long index
-    if sys.version_info[0] < 3:
-        prop[long(1)] = item_b
-        assert prop[1] == item_b
-        prop[long(-1)] = item_b
-        assert prop[-1] == item_b
 
     # Out of bounds access
     with pytest.raises(IndexError):

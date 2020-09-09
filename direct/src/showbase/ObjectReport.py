@@ -16,11 +16,8 @@ from direct.showbase import DirectObject, ObjectPool, GarbageReport
 from direct.showbase.PythonUtil import makeList, Sync
 import gc
 import sys
+import builtins
 
-if sys.version_info >= (3, 0):
-    import builtins
-else:
-    import __builtin__ as builtins
 
 class ExclusiveObjectPool(DirectObject.DirectObject):
     # ObjectPool specialization that excludes particular objects

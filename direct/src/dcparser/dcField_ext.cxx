@@ -266,22 +266,14 @@ get_pystr(PyObject *value) {
 
   PyObject *str = PyObject_Str(value);
   if (str != nullptr) {
-#if PY_MAJOR_VERSION >= 3
     std::string result = PyUnicode_AsUTF8(str);
-#else
-    std::string result = PyString_AsString(str);
-#endif
     Py_DECREF(str);
     return result;
   }
 
   PyObject *repr = PyObject_Repr(value);
   if (repr != nullptr) {
-#if PY_MAJOR_VERSION >= 3
     std::string result = PyUnicode_AsUTF8(repr);
-#else
-    std::string result = PyString_AsString(repr);
-#endif
     Py_DECREF(repr);
     return result;
   }
@@ -289,11 +281,7 @@ get_pystr(PyObject *value) {
   if (value->ob_type != nullptr) {
     PyObject *typestr = PyObject_Str((PyObject *)(value->ob_type));
     if (typestr != nullptr) {
-#if PY_MAJOR_VERSION >= 3
       std::string result = PyUnicode_AsUTF8(typestr);
-#else
-      std::string result = PyString_AsString(typestr);
-#endif
       Py_DECREF(typestr);
       return result;
     }

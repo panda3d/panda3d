@@ -37,16 +37,13 @@ import os
 import sys
 import random
 import time
+import builtins
+import importlib
+import functools
 
 __report_indent = 3
 
 from panda3d.core import ConfigVariableBool
-
-if sys.version_info >= (3, 0):
-    import builtins
-    xrange = range
-else:
-    import __builtin__ as builtins
 
 
 """
@@ -58,41 +55,6 @@ def Functor(function, *args, **kArgs):
         return function(*(argsCopy + cArgs), **kArgs)
     return functor
 """
-
-try:
-    import importlib
-except ImportError:
-    # Backward compatibility for Python 2.6.
-    def _resolve_name(name, package, level):
-        if not hasattr(package, 'rindex'):
-            raise ValueError("'package' not set to a string")
-        dot = len(package)
-        for x in xrange(level, 1, -1):
-            try:
-                dot = package.rindex('.', 0, dot)
-            except ValueError:
-                raise ValueError("attempted relative import beyond top-level "
-                                  "package")
-        return "%s.%s" % (package[:dot], name)
-
-    def import_module(name, package=None):
-        if name.startswith('.'):
-            if not package:
-                raise TypeError("relative imports require the 'package' argument")
-            level = 0
-            for character in name:
-                if character != '.':
-                    break
-                level += 1
-            name = _resolve_name(name[level:], package, level)
-        __import__(name)
-        return sys.modules[name]
-
-    imp = import_module('imp')
-    importlib = imp.new_module("importlib")
-    importlib._resolve_name = _resolve_name
-    importlib.import_module = import_module
-    sys.modules['importlib'] = importlib
 
 
 class Functor:
@@ -506,7 +468,7 @@ def replace(list, old, new, all=0):
         return 1
     else:
         numReplaced = 0
-        for i in xrange(len(list)):
+        for i in range(len(list)):
             if list[i] == old:
                 numReplaced += 1
                 list[i] = new
@@ -1599,7 +1561,7 @@ def appendStr(obj, st):
             return s
         oldStr = Functor(stringer, str(obj))
         stringer = None
-    obj.__str__ = types.MethodType(Functor(appendedStr, oldStr, st), obj, obj.__class__)
+    obj.__str__ = types.MethodType(Functor(appendedStr, oldStr, st), obj)
     appendedStr = None
     return obj
 
@@ -1659,16 +1621,13 @@ def itype(obj):
     # version of type that gives more complete information about instance types
     global dtoolSuperBase
     t = type(obj)
-    if sys.version_info < (3, 0) and t is types.InstanceType:
-        return "<type 'instance' of <class %s>>" % (obj.__class__)
-    else:
-        # C++ object instances appear to be types via type()
-        # check if this is a C++ object
-        if dtoolSuperBase is None:
-            _getDtoolSuperBase()
-        if isinstance(obj, dtoolSuperBase):
-            return "<type 'instance' of %s>" % (obj.__class__)
-        return t
+    # C++ object instances appear to be types via type()
+    # check if this is a C++ object
+    if dtoolSuperBase is None:
+        _getDtoolSuperBase()
+    if isinstance(obj, dtoolSuperBase):
+        return "<type 'instance' of %s>" % (obj.__class__)
+    return t
 
 def deeptype(obj, maxLen=100, _visitedIds=None):
     if _visitedIds is None:
@@ -1728,7 +1687,7 @@ def getNumberedTypedString(items, maxLen=5000, numPrefix=''):
     first = True
     s = ''
     snip = '<SNIP>'
-    for i in xrange(len(items)):
+    for i in range(len(items)):
         if not first:
             s += '\n'
         first = False
@@ -1759,7 +1718,7 @@ def getNumberedTypedSortedString(items, maxLen=5000, numPrefix=''):
     first = True
     s = ''
     strs.sort()
-    for i in xrange(len(strs)):
+    for i in range(len(strs)):
         if not first:
             s += '\n'
         first = False
@@ -1777,7 +1736,7 @@ def printNumberedTyped(items, maxLen=5000):
         n //= 10
     digits = digits
     format = '%0' + '%s' % digits + 'i:%s \t%s'
-    for i in xrange(len(items)):
+    for i in range(len(items)):
         objStr = fastRepr(items[i])
         if len(objStr) > maxLen:
             snip = '<SNIP>'
@@ -1792,7 +1751,7 @@ def printNumberedTypesGen(items, maxLen=5000):
         n //= 10
     digits = digits
     format = '%0' + '%s' % digits + 'i:%s'
-    for i in xrange(len(items)):
+    for i in range(len(items)):
         print(format % (i, itype(items[i])))
         yield None
 
@@ -2104,7 +2063,7 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
             if not rArgs:
                 rArgs = '()'
             else:
-                rArgs = '(' + reduce(str.__add__,rArgs)[:-2] + ')'
+                rArgs = '(' + functools.reduce(str.__add__,rArgs)[:-2] + ')'
 
 
             outStr = '%s%s' % (f.__name__, rArgs)
@@ -2287,14 +2246,14 @@ def makeFlywheelGen(objects, countList=None, countFunc=None, scale=None):
             countList.append(countFunc(object))
     if scale is not None:
         # scale the counts if we've got a scale factor
-        for i in xrange(len(countList)):
+        for i in range(len(countList)):
             yield None
             if countList[i] > 0:
                 countList[i] = max(1, int(countList[i] * scale))
     # create a dict for the flywheel to use during its iteration to efficiently select
     # the objects for the sequence
     index2objectAndCount = {}
-    for i in xrange(len(countList)):
+    for i in range(len(countList)):
         yield None
         index2objectAndCount[i] = [objects[i], countList[i]]
     # create the flywheel generator
@@ -2387,7 +2346,7 @@ class MiniLog:
         if not rArgs:
             rArgs = '()'
         else:
-            rArgs = '(' + reduce(str.__add__,rArgs)[:-2] + ')'
+            rArgs = '(' + functools.reduce(str.__add__,rArgs)[:-2] + ')'
 
         line = '%s%s' % (funcName, rArgs)
         self.appendFunctionCall(line)
@@ -2540,7 +2499,7 @@ if __debug__ and __name__ == '__main__':
     def testAlphabetCounter():
         tempList = []
         ac = AlphabetCounter()
-        for i in xrange(26*3):
+        for i in range(26*3):
             tempList.append(ac.next())
         assert tempList == [ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
                             'AA','AB','AC','AD','AE','AF','AG','AH','AI','AJ','AK','AL','AM','AN','AO','AP','AQ','AR','AS','AT','AU','AV','AW','AX','AY','AZ',
@@ -2551,7 +2510,7 @@ if __debug__ and __name__ == '__main__':
         num += 26 # AAZ
         num += 1 # ABA
         num += 2 # ABC
-        for i in xrange(num):
+        for i in range(num):
             x = ac.next()
         assert x == 'ABC'
     testAlphabetCounter()

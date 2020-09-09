@@ -1,5 +1,5 @@
-#ifndef __MEMBUFFER_GM_H__
-#define __MEMBUFFER_GM_H__
+#ifndef MEMBUFFER_H
+#define MEMBUFFER_H
 
 class EXPCL_PANDA_NATIVENET MemBuffer {
 public:
@@ -25,4 +25,4 @@ protected:
 
 #include "membuffer.I"
 
-#endif //__MEMBUFFER_GM_H__
+#endif // MEMBUFFER_H

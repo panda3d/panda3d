@@ -9,7 +9,7 @@ from __future__ import print_function
 
 __all__ = []
 
-import os, sys
+import os
 from distutils import sysconfig
 import panda3d, pandac
 from panda3d.interrogatedb import *
@@ -309,13 +309,8 @@ if __name__ == "__main__":
     processModule(handle, "core")
 
     # Determine the suffix for the extension modules.
-    if sys.version_info >= (3, 0):
-        import _imp
-        ext_suffix = _imp.extension_suffixes()[0]
-    elif sys.platform == "win32":
-        ext_suffix = ".pyd"
-    else:
-        ext_suffix = ".so"
+    import _imp
+    ext_suffix = _imp.extension_suffixes()[0]
 
     for lib in os.listdir(os.path.dirname(panda3d.__file__)):
         if lib.endswith(ext_suffix) and not lib.startswith('core.'):

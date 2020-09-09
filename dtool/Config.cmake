@@ -22,7 +22,16 @@ if(CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
   set(IS_FREEBSD 1)
 endif()
 
-set(PER_CONFIG_OPTIONS)
+# Define the type of build we are setting up.
+
+set(_configs Standard Release RelWithDebInfo Debug MinSizeRel)
+if(DEFINED CMAKE_CXX_FLAGS_COVERAGE)
+  list(APPEND _configs Coverage)
+endif()
+
+if(IS_MULTICONFIG)
+  set(CMAKE_CONFIGURATION_TYPES ${_configs})
+endif()
 
 # Are we building with static or dynamic linking?
 option(BUILD_SHARED_LIBS
@@ -134,7 +143,7 @@ identified by PRC_ENCRYPTED_PATTERNS.")
 # that case, config will execute the file if it appears to be
 # executable; otherwise, it will simply read it.
 
-set(PRC_EXECUTABLE_PATTERNS "" CACHE STRING 
+set(PRC_EXECUTABLE_PATTERNS "" CACHE STRING
   "The filename(s) to search for, and execute, in the above paths.
 Normally this is empty.")
 
@@ -193,10 +202,9 @@ set(PRC_INC_TRUST_LEVEL "0" CACHE STRING
 # Similarly, the descriptions are normally saved only in a
 # development build, not in a release build.  Set this value true to
 # explicitly save them anyway.
-#XXX only for release-release builds
-option(PRC_SAVE_DESCRIPTIONS
+per_config_option(PRC_SAVE_DESCRIPTIONS
   "Define if you want to save the descriptions for ConfigVariables."
-  ON)
+  Debug Standard)
 
 mark_as_advanced(DEFAULT_PRC_DIR PRC_DIR_ENVVARS PRC_PATH_ENVVARS
   PRC_PATTERNS PRC_ENCRYPTED_PATTERNS PRC_ENCRYPTION_KEY
@@ -243,49 +251,46 @@ debugging information." OFF)
 mark_as_advanced(INTERROGATE_OPTIONS)
 
 #
-# The following options have to do with the memory allocation system
-# that will be used by Panda3D.
+# The following options have to do with optional debugging features.
 #
 
-option(DO_MEMORY_USAGE
+per_config_option(DO_MEMORY_USAGE
   "Do you want to compile in support for tracking memory usage?  This
 enables you to define the variable 'track-memory-usage' at runtime
 to help track memory leaks, and also report total memory usage on
 PStats.  There is some small overhead for having this ability
-available, even if it is unused." OFF)
-list(APPEND PER_CONFIG_OPTIONS DO_MEMORY_USAGE)
-set(DO_MEMORY_USAGE_Debug ON CACHE BOOL "")
+available, even if it is unused." Debug Standard)
 
-option(SIMULATE_NETWORK_DELAY
+per_config_option(DO_COLLISION_RECORDING
+  "Do you want to enable debugging features for the collision system?"
+  Debug Standard)
+
+per_config_option(DO_PSTATS
+  "Enable support for performance profiling using PStats?"
+  Debug Standard)
+
+per_config_option(DO_DCAST
+  "Add safe typecast checking?  This adds significant overhead."
+  Debug Standard)
+
+per_config_option(SIMULATE_NETWORK_DELAY
   "This option compiles in support for simulating network delay via
 the min-lag and max-lag prc variables.  It adds a tiny bit of
 overhead even when it is not activated, so it is typically enabled
-only in a development build." OFF)
-list(APPEND PER_CONFIG_OPTIONS SIMULATE_NETWORK_DELAY)
-set(SIMULATE_NETWORK_DELAY_Debug ON CACHE BOOL "")
+only in a development build."
+  Debug)
 
-option(SUPPORT_IMMEDIATE_MODE
-  "This option compiles in support for immediate-mode OpenGL
-rendering.  Since this is normally useful only for researching
-buggy drivers, and since there is a tiny bit of per-primitive
-overhead to have this option available even if it is unused, it is
-by default enabled only in a development build.  This has no effect
-on DirectX rendering." OFF)
-list(APPEND PER_CONFIG_OPTIONS SUPPORT_IMMEDIATE_MODE)
-set(SUPPORT_IMMEDIATE_MODE_Debug ON CACHE BOOL "")
-
-option(NOTIFY_DEBUG
+per_config_option(NOTIFY_DEBUG
   "Do you want to include the 'debug' and 'spam' Notify messages?
 Normally, these are stripped out when we build for release, but sometimes it's
-useful to keep them around. Turn this setting on to achieve that." OFF)
-list(APPEND PER_CONFIG_OPTIONS NOTIFY_DEBUG)
-set(NOTIFY_DEBUG_Debug ON CACHE BOOL "")
-set(NOTIFY_DEBUG_Standard ON CACHE BOOL "")
+useful to keep them around. Turn this setting on to achieve that."
+  Debug Standard)
 
-option(SUPPORT_FIXED_FUNCTION
-  "This option compiles in support for the fixed-function OpenGL
-pipeline.  It is only really useful to turn this off if you are targeting
-an OpenGL ES 2 system." ON)
+mark_as_advanced(SIMULATE_NETWORK_DELAY DO_MEMORY_USAGE DO_DCAST)
+
+#
+# The following options have to do with the memory allocation system.
+#
 
 option(USE_MEMORY_DLMALLOC
   "This is an optional alternative memory-allocation scheme
@@ -313,8 +318,7 @@ calls to malloc() and free() for frequently-created and -deleted
 objects.  There's usually no reason to set this false, unless you
 suspect a bug in Panda's memory management code." ON)
 
-mark_as_advanced(DO_MEMORY_USAGE SIMULATE_NETWORK_DELAY
-  SUPPORT_IMMEDIATE_MODE USE_MEMORY_DLMALLOC USE_MEMORY_PTMALLOC2
+mark_as_advanced(USE_MEMORY_DLMALLOC USE_MEMORY_PTMALLOC2
   MEMORY_HOOK_DO_ALIGN USE_DELETED_CHAIN)
 
 
@@ -368,11 +372,11 @@ mark_as_advanced(ANDROID_NDK_HOME ANDROID_ABI ANDROID_STL
 
 # By default, we'll assume the user only wants to run with Debug
 # python if he has to--that is, on Windows when building a debug build.
-set(USE_DEBUG_PYTHON OFF)
 if(WIN32)
-  set(USE_DEBUG_PYTHON_Debug ON)
+  per_config_option(USE_DEBUG_PYTHON "" Debug)
+else()
+  option(USE_DEBUG_PYTHON "" OFF)
 endif()
-list(APPEND PER_CONFIG_OPTIONS USE_DEBUG_PYTHON)
 
 cmake_dependent_option(HAVE_VIDEO4LINUX
   "Set this to enable webcam support on Linux." ON
@@ -394,15 +398,27 @@ version and below, which may reduce runtime portability to other
 systems, but it will avoid issues with getting extension function
 pointers.")
 
+option(SUPPORT_FIXED_FUNCTION
+  "This option compiles in support for the fixed-function OpenGL pipeline.
+It is only really useful to turn this off to save space if you are building
+an application that only needs to use an OpenGL 3.2+ context and only uses
+custom GLSL shaders." ON)
+
+option(SUPPORT_IMMEDIATE_MODE
+  "This option compiles in support for immediate-mode OpenGL
+rendering.  Since this is normally useful only for researching
+buggy drivers, and since there is a tiny bit of per-primitive
+overhead to have this option available even if it is unused, it is
+by default enabled only in a development build.  This has no effect
+on DirectX rendering." OFF)
+
+mark_as_advanced(SUPPORT_FIXED_FUNCTION)
 
 # Should build tinydisplay?
 #option(HAVE_TINYDISPLAY
 #  "Builds TinyDisplay, a light software renderer based on TinyGL,
 #that is built into Panda. TinyDisplay is not as full-featured as Mesa
 #but is many times faster." ON)
-#option(HAVE_TINYDISPLAY_MinSizeRel "" OFF)
-#list(APPEND PER_CONFIG_OPTIONS HAVE_TINYDISPLAY)
-
 
 # Is SDL installed, and where?
 set(Threads_FIND_QUIETLY TRUE) # Fix for builtin FindSDL
@@ -466,9 +482,6 @@ build (such as, for instance, for the iPhone)." ON)
 option(HAVE_AUDIO
   "Do you want to build the audio interface?" ON)
 
-option(DO_PSTATS
-  "Enable the pstats client?" ON)
-
 option(USE_PANDAFILESTREAM
   "Enable the PandaFileStream implementation of pfstream etc.?" ON)
 
@@ -481,16 +494,12 @@ option(HAVE_IMG "Enable support for loading IMG images." ON)
 option(HAVE_SOFTIMAGE_PIC "Enable support for loading SOFTIMAGE PIC images." ON)
 option(HAVE_BMP "Enable support for loading BMP images." ON)
 option(HAVE_PNM "Enable support for loading PNM images." ON)
-
-foreach(adv_image_format
-  HAVE_SGI_RGB HAVE_TGA HAVE_IMG HAVE_SOFTIMAGE_PIC HAVE_BMP HAVE_PNM)
-
-  option(${adv_image_format}_MinSizeRel "" OFF)
-  list(APPEND PER_CONFIG_OPTIONS ${adv_image_format})
-
-  mark_as_advanced(${adv_image_format} ${adv_image_format}_MinSizeRel)
-
-endforeach(adv_image_format)
+option(HAVE_SGI_RGB "" ON)
+option(HAVE_TGA "" ON)
+option(HAVE_IMG "" ON)
+option(HAVE_SOFTIMAGE_PIC "" ON)
+option(HAVE_BMP "" ON)
+option(HAVE_PNM "" ON)
 
 # How to invoke bison and flex.  Panda takes advantage of some
 # bison/flex features, and therefore specifically requires bison and
@@ -528,9 +537,9 @@ slightly slow down Panda for the single CPU case."
   IMPORTED_AS Threads::Threads)
 
 # Configure debug threads
-option(DEBUG_THREADS "If on, enables debugging of thread and sync operations (i.e. mutexes, deadlocks)" OFF)
-list(APPEND PER_CONFIG_OPTIONS DEBUG_THREADS)
-set(DEBUG_THREADS_Debug ON CACHE BOOL "")
+option(DEBUG_THREADS
+  "If on, enables debugging of thread and sync operations (i.e. mutexes,
+deadlocks).  Very slow, disabled by default." OFF)
 
 option(SIMPLE_THREADS
   "If on, compile with simulated threads.  Threads, by default, use
@@ -540,7 +549,6 @@ On the other hand, compiling in this full OS-provided support can
 impose some substantial runtime overhead, making the application
 run slower on a single-CPU machine. This settings avoid the overhead,
 but still gain some of the basic functionality of threads." OFF)
-list(APPEND PER_CONFIG_OPTIONS SIMPLE_THREADS)
 
 option(OS_SIMPLE_THREADS
   "If on, OS threading constructs will be used to perform context switches.
@@ -549,7 +557,6 @@ normal SIMPLE_THREADS optimizations still apply, and the normal
 SIMPLE_THREADS scheduler is used to switch between threads (instead
 of the OS scheduler).  This may be more portable and more reliable,
 but it is a hybrid between user-space threads and os-provided threads." ON)
-list(APPEND PER_CONFIG_OPTIONS OS_SIMPLE_THREADS)
 
 ### Configure pipelining ###
 option(DO_PIPELINING "If on, compile with pipelined rendering." ON)
@@ -559,8 +566,6 @@ option(COMPILE_IN_DEFAULT_FONT
   "If on, compiles in a default font, so that every TextNode will always
 have a font available without requiring the user to specify one.
 When turned off, the generated library will save a few kilobytes." ON)
-list(APPEND PER_CONFIG_OPTIONS COMPILE_IN_DEFAULT_FONT)
-set(COMPILE_IN_DEFAULT_FONT_MinSizeRel OFF CACHE BOOL "")
 
 option(STDFLOAT_DOUBLE
   "Define this true to compile a special version of Panda to use a

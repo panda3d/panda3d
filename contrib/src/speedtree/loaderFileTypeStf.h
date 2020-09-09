@@ -14,7 +14,7 @@
 #ifndef LOADERFILETYPESTF_H
 #define LOADERFILETYPESTF_H
 
-#include "pandabase.h"
+#include "contribbase.h"
 
 #include "loaderFileType.h"
 

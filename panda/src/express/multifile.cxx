@@ -337,7 +337,7 @@ close() {
       if (!_read->unref()) {
         delete _read;
       }
-    } else if (_write != nullptr) {
+    } else {
       delete _write;
     }
   }

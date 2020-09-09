@@ -230,10 +230,7 @@ class VFSLoader:
         #print >>sys.stderr, "importing frozen %s" % (fullname)
         module = imp.load_module(fullname, None, fullname,
                                  ('', '', imp.PY_FROZEN))
-
-        # Workaround for bug in Python 2.
-        if getattr(module, '__path__', None) == fullname:
-            module.__path__ = []
+        module.__path__ = []
         return module
 
     def _read_code(self):
@@ -288,13 +285,8 @@ class VFSLoader:
         if data[:4] != imp.get_magic():
             raise ValueError("Bad magic number in %s" % (vfile))
 
-        if sys.version_info >= (3, 0):
-            t = int.from_bytes(data[4:8], 'little')
-            data = data[12:]
-        else:
-            t = ord(data[4]) + (ord(data[5]) << 8) + \
-               (ord(data[6]) << 16) + (ord(data[7]) << 24)
-            data = data[8:]
+        t = int.from_bytes(data[4:8], 'little')
+        data = data[12:]
 
         if not timestamp or t == timestamp:
             return marshal.loads(data)
@@ -320,14 +312,8 @@ class VFSLoader:
             pass
         else:
             f.write(imp.get_magic())
-            if sys.version_info >= (3, 0):
-                f.write((self.timestamp & 0xffffffff).to_bytes(4, 'little'))
-                f.write(b'\0\0\0\0')
-            else:
-                f.write(chr(self.timestamp & 0xff) +
-                        chr((self.timestamp >> 8) & 0xff) +
-                        chr((self.timestamp >> 16) & 0xff) +
-                        chr((self.timestamp >> 24) & 0xff))
+            f.write((self.timestamp & 0xffffffff).to_bytes(4, 'little'))
+            f.write(b'\0\0\0\0')
             f.write(marshal.dumps(code))
             f.close()
 

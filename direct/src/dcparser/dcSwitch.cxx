@@ -42,21 +42,15 @@ DCSwitch::
   nassertv(_key_parameter != nullptr);
   delete _key_parameter;
 
-  Cases::iterator ci;
-  for (ci = _cases.begin(); ci != _cases.end(); ++ci) {
-    SwitchCase *dcase = (*ci);
+  for (SwitchCase *dcase : _cases) {
     delete dcase;
   }
 
-  CaseFields::iterator fi;
-  for (fi = _case_fields.begin(); fi != _case_fields.end(); ++fi) {
-    SwitchFields *fields = (*fi);
+  for (SwitchFields *fields : _case_fields) {
     delete fields;
   }
 
-  Fields::iterator ni;
-  for (ni = _nested_fields.begin(); ni != _nested_fields.end(); ++ni) {
-    DCField *field = (*ni);
+  for (DCField *field : _nested_fields) {
     delete field;
   }
 }

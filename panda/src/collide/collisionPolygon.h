@@ -32,15 +32,17 @@ PUBLISHED:
                           const LVecBase3 &c);
   INLINE CollisionPolygon(const LVecBase3 &a, const LVecBase3 &b,
                           const LVecBase3 &c, const LVecBase3 &d);
-  INLINE CollisionPolygon(const LPoint3 *begin, const LPoint3 *end);
 
 private:
   INLINE CollisionPolygon();
 
 public:
+  INLINE CollisionPolygon(const LPoint3 *begin, const LPoint3 *end);
   CollisionPolygon(const CollisionPolygon &copy);
 
   virtual CollisionSolid *make_copy();
+
+  static bool verify_points(const LPoint3 *begin, const LPoint3 *end);
 
 PUBLISHED:
   virtual LPoint3 get_collision_origin() const;
@@ -53,7 +55,6 @@ PUBLISHED:
   INLINE static bool verify_points(const LPoint3 &a, const LPoint3 &b,
                                    const LPoint3 &c, const LPoint3 &d);
   static bool verify_points(const LPoint3 &a, const LPoint3 &b, const LPoint3 &c);
-  static bool verify_points(const LPoint3 *begin, const LPoint3 *end);
 
   bool is_valid() const;
   bool is_concave() const;
@@ -124,7 +125,7 @@ private:
                     const Points &points) const;
 
   bool point_is_inside(const LPoint2 &p, const Points &points) const;
-  PN_stdfloat dist_to_polygon(const LPoint2 &p, const Points &points) const;
+  PN_stdfloat dist_to_polygon(const LPoint2 &p, LPoint2 &edge_p, const Points &points) const;
   void project(const LVector3 &axis, PN_stdfloat &center, PN_stdfloat &extent) const;
 
   void setup_points(const LPoint3 *begin, const LPoint3 *end);

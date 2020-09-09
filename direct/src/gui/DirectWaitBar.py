@@ -9,12 +9,6 @@ __all__ = ['DirectWaitBar']
 from panda3d.core import *
 from . import DirectGuiGlobals as DGG
 from .DirectFrame import *
-import sys
-
-if sys.version_info >= (3, 0):
-    stringType = str
-else:
-    stringType = basestring
 
 """
 import DirectWaitBar
@@ -102,7 +96,7 @@ class DirectWaitBar(DirectFrame):
         """Updates the bar texture, which you can set using bar['barTexture']."""
         # this must be a single texture (or a string).
         texture = self['barTexture']
-        if isinstance(texture, stringType):
+        if isinstance(texture, str):
             texture = loader.loadTexture(texture)
         if texture:
             self.barStyle.setTexture(texture)

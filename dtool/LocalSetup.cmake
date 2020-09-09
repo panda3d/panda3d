@@ -186,11 +186,14 @@ message("")
 # Generate dtool_config.h
 if(IS_MULTICONFIG)
   foreach(config ${CMAKE_CONFIGURATION_TYPES})
-    foreach(option ${PER_CONFIG_OPTIONS})
+    string(TOUPPER "${config}" config_upper)
+    foreach(option ${_PER_CONFIG_OPTIONS})
       # Check for the presence of a config-specific option, and override what's
       # in the cache if there is.
-      if(DEFINED ${option}_${config})
-        set(${option} ${${option}_${config}})
+      if(DEFINED "${option}_${config_upper}")
+        set(${option} ${${option}_${config_upper}})
+      else()
+        message(FATAL_ERROR "${option}_${config_upper} is not defined")
       endif()
     endforeach(option)
 
@@ -199,7 +202,7 @@ if(IS_MULTICONFIG)
 
     # unset() does not unset CACHE variables by default, just normal variables.
     # By doing this we're reverting back to what was in the cache.
-    foreach(option ${PER_CONFIG_OPTIONS})
+    foreach(option ${_PER_CONFIG_OPTIONS})
       unset(${option})
     endforeach(option)
   endforeach(config)

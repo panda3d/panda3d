@@ -11,8 +11,8 @@
  * @date 2010-11-19
  */
 
-#ifndef __BULLET_BODY_NODE_H__
-#define __BULLET_BODY_NODE_H__
+#ifndef BULLETBODYNODE_H
+#define BULLETBODYNODE_H
 
 #include "pandabase.h"
 
@@ -56,7 +56,7 @@ PUBLISHED:
   // Static and kinematic
   bool is_static() const;
   bool is_kinematic() const;
-  
+
   INLINE void set_static(bool value);
   INLINE void set_kinematic(bool value);
 
@@ -201,4 +201,4 @@ private:
 
 #include "bulletBodyNode.I"
 
-#endif // __BULLET_BODY_NODE_H__
+#endif // BULLETBODYNODE_H

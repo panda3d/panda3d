@@ -208,6 +208,10 @@ get_properties_advanced(FrameBufferProperties &properties,
                              ivalue_list[green_bits_i],
                              ivalue_list[blue_bits_i],
                              ivalue_list[alpha_bits_i]);
+
+    if (ivalue_list[pixel_type_i] == WGL_TYPE_RGBA_FLOAT_ARB) {
+      properties.set_float_color(true);
+    }
   }
 
   if (ivalue_list[double_buffer_i]) {
@@ -372,8 +376,11 @@ choose_pixel_format(const FrameBufferProperties &properties,
 
   iattrib_list[ni++] = WGL_SUPPORT_OPENGL_ARB;
   iattrib_list[ni++] = true;
-  iattrib_list[ni++] = WGL_PIXEL_TYPE_ARB;
-  iattrib_list[ni++] = WGL_TYPE_RGBA_ARB;
+
+  if (!properties.get_float_color()) {
+    iattrib_list[ni++] = WGL_PIXEL_TYPE_ARB;
+    iattrib_list[ni++] = WGL_TYPE_RGBA_ARB;
+  }
 
   if (need_pbuffer) {
     iattrib_list[ni++] = WGL_DRAW_TO_PBUFFER_ARB;

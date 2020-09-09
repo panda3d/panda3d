@@ -48,13 +48,7 @@ register_deferred_type(PyObject *entry_point) {
 
   const char *name_str;
   Py_ssize_t name_len;
-#if PY_MAJOR_VERSION >= 3
   name_str = PyUnicode_AsUTF8AndSize(name, &name_len);
-#else
-  if (PyString_AsStringAndSize(name, (char **)&name_str, &name_len) == -1) {
-    name_str = nullptr;
-  }
-#endif
   Py_DECREF(name);
 
   if (name_str == nullptr) {

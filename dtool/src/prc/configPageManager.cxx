@@ -722,27 +722,6 @@ void ConfigPageManager::
 config_initialized() {
   Notify::config_initialized();
 
-#ifndef NDEBUG
-  ConfigVariableString panda_package_version
-    ("panda-package-version", "local_dev",
-     PRC_DESC("This can be used to specify the value returned by "
-              "PandaSystem::get_package_version_str(), in development mode only, "
-              "and only if another value has not already been compiled in.  This "
-              "is intended for developer convenience, to masquerade a development "
-              "build of Panda as a different runtime version.  Use with caution."));
-  ConfigVariableString panda_package_host_url
-    ("panda-package-host-url", "",
-     PRC_DESC("This can be used to specify the value returned by "
-              "PandaSystem::get_package_host_url(), in development mode only, "
-              "and only if another value has not already been compiled in.  This "
-              "is intended for developer convenience, to masquerade a development "
-              "build of Panda as a different runtime version.  Use with caution."));
-
-  PandaSystem *panda_sys = PandaSystem::get_global_ptr();
-  panda_sys->set_package_version_string(panda_package_version);
-  panda_sys->set_package_host_url(panda_package_host_url);
-#endif  // NDEBUG
-
   // Also set up some other low-level things.
   ConfigVariableEnum<TextEncoder::Encoding> text_encoding
     ("text-encoding", TextEncoder::E_utf8,

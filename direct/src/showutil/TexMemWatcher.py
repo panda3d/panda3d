@@ -327,7 +327,10 @@ class TexMemWatcher(DirectObject):
 
         if self.dynamicLimit:
             # Choose a suitable limit by rounding to the next power of two.
-            self.limit = Texture.upToPower2(self.totalSize)
+            limit = 1
+            while limit < self.totalSize:
+                limit *= 2
+            self.limit = limit
 
         # Set our GSG to limit itself to no more textures than we
         # expect to display onscreen, so we don't go crazy with
@@ -883,7 +886,7 @@ class TexMemWatcher(DirectObject):
             matches.append((match, tp))
 
         if matches:
-            return max(matches)[1]
+            return max(matches, key=lambda match: match[0])[1]
         return None
 
     def findHolePieces(self, area):
@@ -937,7 +940,7 @@ class TexMemWatcher(DirectObject):
     def findLargestHole(self):
         holes = self.findAvailableHoles(0)
         if holes:
-            return max(holes)[1]
+            return max(holes, key=lambda hole: hole[0])[1]
         return None
 
     def findAvailableHoles(self, area, w = None, h = None):
