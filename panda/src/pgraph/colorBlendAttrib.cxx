@@ -193,6 +193,8 @@ write_datagram(BamWriter *manager, Datagram &dg) {
  */
 TypedWritable *ColorBlendAttrib::
 make_from_bam(const FactoryParams &params) {
+  ColorBlendAttrib::first_use();
+
   ColorBlendAttrib *attrib = new ColorBlendAttrib;
   DatagramIterator scan;
   BamReader *manager;

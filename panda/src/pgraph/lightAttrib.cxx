@@ -96,7 +96,6 @@ CPT(RenderAttrib) LightAttrib::
 make(LightAttrib::Operation op, Light *light) {
   pgraph_cat.warning()
     << "Using deprecated LightAttrib interface.\n";
-  LightAttrib::first_use();
 
   CPT(RenderAttrib) attrib;
 
@@ -249,6 +248,7 @@ make(LightAttrib::Operation op, Light *light1, Light *light2,
  */
 CPT(RenderAttrib) LightAttrib::
 make_default() {
+  LightAttrib::first_use();
   return return_new(new LightAttrib);
 }
 
@@ -378,6 +378,8 @@ remove_light(Light *light) const {
  */
 CPT(RenderAttrib) LightAttrib::
 make() {
+  LightAttrib::first_use();
+
   // We make it a special case and store a pointer to the empty attrib forever
   // once we find it the first time, as an optimization.
   if (_empty_attrib == nullptr) {
@@ -393,6 +395,8 @@ make() {
  */
 CPT(RenderAttrib) LightAttrib::
 make_all_off() {
+  LightAttrib::first_use();
+
   // We make it a special case and store a pointer to the off attrib forever
   // once we find it the first time, as an optimization.
   if (_all_off_attrib == nullptr) {

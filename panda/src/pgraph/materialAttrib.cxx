@@ -52,6 +52,7 @@ make_off() {
  */
 CPT(RenderAttrib) MaterialAttrib::
 make_default() {
+  MaterialAttrib::first_use();
   return return_new(new MaterialAttrib);
 }
 

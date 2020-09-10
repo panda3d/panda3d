@@ -30,6 +30,8 @@ CPT(RenderAttrib) LightRampAttrib::_default;
  */
 CPT(RenderAttrib) LightRampAttrib::
 make_default() {
+  LightRampAttrib::first_use();
+
   if (_default == nullptr) {
     LightRampAttrib *attrib = new LightRampAttrib();
     _default = return_new(attrib);

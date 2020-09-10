@@ -561,7 +561,7 @@ set_attrib(const RenderAttrib *attrib, int override) const {
  */
 CPT(RenderState) RenderState::
 remove_attrib(int slot) const {
-  if (slot == -1) {
+  if (slot < 0) {
     // The attribute was never used.
     return this;
   }
