@@ -608,32 +608,31 @@ reset() {
   // Build _inv_state_mask as a mask of 1's where we don't care, and 0's where
   // we do care, about the state.  _inv_state_mask =
   // RenderState::SlotMask::all_on();
-  _inv_state_mask.clear_bit(ShaderAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(AlphaTestAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(AntialiasAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(ClipPlaneAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(ColorAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(ColorScaleAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(CullFaceAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(DepthOffsetAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(DepthTestAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(DepthWriteAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(RenderModeAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(RescaleNormalAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(ShadeModelAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(TransparencyAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(ColorWriteAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(ColorBlendAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(LogicOpAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(TextureAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(TexGenAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(TexMatrixAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(MaterialAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(LightAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(StencilAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(FogAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(ScissorAttrib::get_class_slot());
-
+  clear_bit_if_exists<ShaderAttrib>(_inv_state_mask);
+  clear_bit_if_exists<AlphaTestAttrib>(_inv_state_mask);
+  clear_bit_if_exists<AntialiasAttrib>(_inv_state_mask);
+  clear_bit_if_exists<ClipPlaneAttrib>(_inv_state_mask);
+  clear_bit_if_exists<ColorAttrib>(_inv_state_mask);
+  clear_bit_if_exists<ColorScaleAttrib>(_inv_state_mask);
+  clear_bit_if_exists<CullFaceAttrib>(_inv_state_mask);
+  clear_bit_if_exists<DepthOffsetAttrib>(_inv_state_mask);
+  clear_bit_if_exists<DepthTestAttrib>(_inv_state_mask);
+  clear_bit_if_exists<DepthWriteAttrib>(_inv_state_mask);
+  clear_bit_if_exists<RenderModeAttrib>(_inv_state_mask);
+  clear_bit_if_exists<RescaleNormalAttrib>(_inv_state_mask);
+  clear_bit_if_exists<ShadeModelAttrib>(_inv_state_mask);
+  clear_bit_if_exists<TransparencyAttrib>(_inv_state_mask);
+  clear_bit_if_exists<ColorWriteAttrib>(_inv_state_mask);
+  clear_bit_if_exists<ColorBlendAttrib>(_inv_state_mask);
+  clear_bit_if_exists<LogicOpAttrib>(_inv_state_mask);
+  clear_bit_if_exists<TextureAttrib>(_inv_state_mask);
+  clear_bit_if_exists<TexGenAttrib>(_inv_state_mask);
+  clear_bit_if_exists<TexMatrixAttrib>(_inv_state_mask);
+  clear_bit_if_exists<MaterialAttrib>(_inv_state_mask);
+  clear_bit_if_exists<LightAttrib>(_inv_state_mask);
+  clear_bit_if_exists<StencilAttrib>(_inv_state_mask);
+  clear_bit_if_exists<FogAttrib>(_inv_state_mask);
+  clear_bit_if_exists<ScissorAttrib>(_inv_state_mask);
   // Output the vendor and version strings.
   query_gl_version();
 

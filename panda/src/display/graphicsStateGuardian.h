@@ -755,10 +755,29 @@ public:
     register_type(_type_handle, "GraphicsStateGuardian",
                   GraphicsStateGuardianBase::get_class_type());
   }
+
   virtual TypeHandle get_type() const {
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+
+  template<class AttribType>
+  static void clear_bit_if_exists(RenderState::SlotMask& mask)
+  {
+    if (AttribType::get_class_slot() >= 0) {
+      mask.clear_bit(AttribType::get_class_slot());
+    }
+  }
+
+  template<class AttribType>
+  const RenderAttrib* force_get_attrib_def(CPT(RenderState) rs_ptr)
+  {
+    if (AttribType::get_class_slot() < 0) {
+      AttribType::make_default();
+    }
+    return rs_ptr->get_attrib_def(AttribType::get_class_slot());
+  }
+
 
 private:
   static TypeHandle _type_handle;

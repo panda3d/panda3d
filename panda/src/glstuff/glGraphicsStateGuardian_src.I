@@ -397,7 +397,7 @@ INLINE void CLP(GraphicsStateGuardian)::
 enable_line_smooth(bool val) {
 #ifndef OPENGLES_2
   if (_line_smooth_enabled != val) {
-    _state_mask.clear_bit(TransparencyAttrib::get_class_slot());
+    clear_bit_if_exists<TransparencyAttrib>(_state_mask);
     _line_smooth_enabled = val;
     if (val) {
       glEnable(GL_LINE_SMOOTH);
@@ -415,7 +415,7 @@ INLINE void CLP(GraphicsStateGuardian)::
 enable_point_smooth(bool val) {
 #ifdef SUPPORT_FIXED_FUNCTION
   if (has_fixed_function_pipeline() && _point_smooth_enabled != val) {
-    _state_mask.clear_bit(TransparencyAttrib::get_class_slot());
+    clear_bit_if_exists<TransparencyAttrib>(_state_mask);
     _point_smooth_enabled = val;
     if (val) {
       glEnable(GL_POINT_SMOOTH);

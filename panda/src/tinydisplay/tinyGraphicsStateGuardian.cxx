@@ -91,16 +91,16 @@ reset() {
 
   // Build _inv_state_mask as a mask of 1's where we don't care, and 0's where
   // we do care, about the state.
-  _inv_state_mask.clear_bit(ColorAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(ColorScaleAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(CullFaceAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(DepthOffsetAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(RenderModeAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(RescaleNormalAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(TextureAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(MaterialAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(LightAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(ScissorAttrib::get_class_slot());
+  clear_bit_if_exists<ColorAttrib>(_inv_state_mask);
+  clear_bit_if_exists<ColorScaleAttrib>(_inv_state_mask);
+  clear_bit_if_exists<CullFaceAttrib>(_inv_state_mask);
+  clear_bit_if_exists<DepthOffsetAttrib>(_inv_state_mask);
+  clear_bit_if_exists<RenderModeAttrib>(_inv_state_mask);
+  clear_bit_if_exists<RescaleNormalAttrib>(_inv_state_mask);
+  clear_bit_if_exists<TextureAttrib>(_inv_state_mask);
+  clear_bit_if_exists<MaterialAttrib>(_inv_state_mask);
+  clear_bit_if_exists<LightAttrib>(_inv_state_mask);
+  clear_bit_if_exists<ScissorAttrib>(_inv_state_mask);
 
   if (_c != nullptr) {
     glClose(_c);
@@ -570,8 +570,8 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   GenTexcoordFunc *texgen_func[MAX_TEXTURE_STAGES];
   TexCoordData tcdata[MAX_TEXTURE_STAGES];
 
-  const TexGenAttrib *target_tex_gen = DCAST(TexGenAttrib, _target_rs->get_attrib_def(TexGenAttrib::get_class_slot()));
-  const TexMatrixAttrib *target_tex_matrix = DCAST(TexMatrixAttrib, _target_rs->get_attrib_def(TexMatrixAttrib::get_class_slot()));
+  const TexGenAttrib *target_tex_gen = DCAST(TexGenAttrib, force_get_attrib_def<TexGenAttrib>(_target_rs));
+  const TexMatrixAttrib *target_tex_matrix = DCAST(TexMatrixAttrib, force_get_attrib_def<TexMatrixAttrib>(_target_rs));
 
   int max_stage_index = _target_texture->get_num_on_ff_stages();
   for (int si = 0; si < max_stage_index; ++si) {
@@ -750,14 +750,14 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   bool srgb_blend = _current_properties->get_srgb_color();
 
   int depth_write_state = 0;  // zon
-  const DepthWriteAttrib *target_depth_write = DCAST(DepthWriteAttrib, _target_rs->get_attrib_def(DepthWriteAttrib::get_class_slot()));
+  const DepthWriteAttrib *target_depth_write = DCAST(DepthWriteAttrib, force_get_attrib_def<DepthWriteAttrib>(_target_rs));
   if (target_depth_write->get_mode() != DepthWriteAttrib::M_on) {
     depth_write_state = 1;  // zoff
   }
 
   int color_write_state = 0;  // cstore
 
-  const ColorWriteAttrib *target_color_write = DCAST(ColorWriteAttrib, _target_rs->get_attrib_def(ColorWriteAttrib::get_class_slot()));
+  const ColorWriteAttrib *target_color_write = DCAST(ColorWriteAttrib, force_get_attrib_def<ColorWriteAttrib>(_target_rs));
   unsigned int color_channels =
     target_color_write->get_channels() & _color_write_mask;
 
@@ -780,7 +780,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     color_write_state = 2;   // cgeneral
   }
 
-  const TransparencyAttrib *target_transparency = DCAST(TransparencyAttrib, _target_rs->get_attrib_def(TransparencyAttrib::get_class_slot()));
+  const TransparencyAttrib *target_transparency = DCAST(TransparencyAttrib, force_get_attrib_def<TransparencyAttrib>(_target_rs));
   switch (target_transparency->get_mode()) {
   case TransparencyAttrib::M_alpha:
   case TransparencyAttrib::M_dual:
@@ -823,7 +823,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     break;
   }
 
-  const ColorBlendAttrib *target_color_blend = DCAST(ColorBlendAttrib, _target_rs->get_attrib_def(ColorBlendAttrib::get_class_slot()));
+  const ColorBlendAttrib *target_color_blend = DCAST(ColorBlendAttrib, force_get_attrib_def<ColorBlendAttrib>(_target_rs));
   if (target_color_blend->get_mode() == ColorBlendAttrib::M_add) {
     // If we have a color blend set that we can support, it overrides the
     // transparency set.
@@ -849,7 +849,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   }
 
   int alpha_test_state = 0;   // anone
-  const AlphaTestAttrib *target_alpha_test = DCAST(AlphaTestAttrib, _target_rs->get_attrib_def(AlphaTestAttrib::get_class_slot()));
+  const AlphaTestAttrib *target_alpha_test = DCAST(AlphaTestAttrib, force_get_attrib_def<AlphaTestAttrib>(_target_rs));
   switch (target_alpha_test->get_mode()) {
   case AlphaTestAttrib::M_none:
   case AlphaTestAttrib::M_never:
@@ -874,13 +874,13 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
 
   int depth_test_state = 1;    // zless
   _c->depth_test = 1;  // set this for ZB_line
-  const DepthTestAttrib *target_depth_test = DCAST(DepthTestAttrib, _target_rs->get_attrib_def(DepthTestAttrib::get_class_slot()));
+  const DepthTestAttrib *target_depth_test = DCAST(DepthTestAttrib, force_get_attrib_def<DepthTestAttrib>(_target_rs));
   if (target_depth_test->get_mode() == DepthTestAttrib::M_none) {
     depth_test_state = 0;      // zless
     _c->depth_test = 0;
   }
 
-  const ShadeModelAttrib *target_shade_model = DCAST(ShadeModelAttrib, _target_rs->get_attrib_def(ShadeModelAttrib::get_class_slot()));
+  const ShadeModelAttrib *target_shade_model = DCAST(ShadeModelAttrib, force_get_attrib_def<ShadeModelAttrib>(_target_rs));
   ShadeModelAttrib::Mode shade_model = target_shade_model->get_mode();
   if (!needs_normal && !needs_color) {
     // With no per-vertex lighting, and no per-vertex colors, we might as well
@@ -1735,7 +1735,7 @@ void TinyGraphicsStateGuardian::
 do_issue_light() {
   int num_enabled = 0;
 
-  const LightAttrib *target_light = DCAST(LightAttrib, _target_rs->get_attrib_def(LightAttrib::get_class_slot()));
+  const LightAttrib *target_light = DCAST(LightAttrib, force_get_attrib_def<LightAttrib>(_target_rs));
   if (display_cat.is_spam()) {
     display_cat.spam()
       << "do_issue_light: " << target_light << "\n";
@@ -1982,7 +1982,7 @@ do_issue_transform() {
  */
 void TinyGraphicsStateGuardian::
 do_issue_render_mode() {
-  const RenderModeAttrib *target_render_mode = DCAST(RenderModeAttrib, _target_rs->get_attrib_def(RenderModeAttrib::get_class_slot()));
+  const RenderModeAttrib *target_render_mode = DCAST(RenderModeAttrib, force_get_attrib_def<RenderModeAttrib>(_target_rs));
 
   _filled_flat = false;
 
@@ -2020,7 +2020,7 @@ do_issue_render_mode() {
  */
 void TinyGraphicsStateGuardian::
 do_issue_rescale_normal() {
-  const RescaleNormalAttrib *target_rescale_normal = DCAST(RescaleNormalAttrib, _target_rs->get_attrib_def(RescaleNormalAttrib::get_class_slot()));
+  const RescaleNormalAttrib *target_rescale_normal = DCAST(RescaleNormalAttrib, force_get_attrib_def<RescaleNormalAttrib>(_target_rs));
   RescaleNormalAttrib::Mode mode = target_rescale_normal->get_mode();
 
   _auto_rescale_normal = false;
@@ -2053,7 +2053,7 @@ do_issue_rescale_normal() {
  */
 void TinyGraphicsStateGuardian::
 do_issue_depth_offset() {
-  const DepthOffsetAttrib *target_depth_offset = DCAST(DepthOffsetAttrib, _target_rs->get_attrib_def(DepthOffsetAttrib::get_class_slot()));
+  const DepthOffsetAttrib *target_depth_offset = DCAST(DepthOffsetAttrib, force_get_attrib_def<DepthOffsetAttrib>(_target_rs));
   int offset = target_depth_offset->get_offset();
   _c->zbias = offset;
 
@@ -2073,7 +2073,7 @@ do_issue_depth_offset() {
  */
 void TinyGraphicsStateGuardian::
 do_issue_cull_face() {
-  const CullFaceAttrib *target_cull_face = DCAST(CullFaceAttrib, _target_rs->get_attrib_def(CullFaceAttrib::get_class_slot()));
+  const CullFaceAttrib *target_cull_face = DCAST(CullFaceAttrib, force_get_attrib_def<CullFaceAttrib>(_target_rs));
   CullFaceAttrib::Mode mode = target_cull_face->get_effective_mode();
 
   switch (mode) {
@@ -2102,7 +2102,7 @@ void TinyGraphicsStateGuardian::
 do_issue_material() {
   static Material empty;
 
-  const MaterialAttrib *target_material = DCAST(MaterialAttrib, _target_rs->get_attrib_def(MaterialAttrib::get_class_slot()));
+  const MaterialAttrib *target_material = DCAST(MaterialAttrib, force_get_attrib_def<MaterialAttrib>(_target_rs));
 
   const Material *material;
   if (target_material == nullptr ||
@@ -2327,7 +2327,7 @@ do_issue_texture() {
  */
 void TinyGraphicsStateGuardian::
 do_issue_scissor() {
-  const ScissorAttrib *target_scissor = DCAST(ScissorAttrib, _target_rs->get_attrib_def(ScissorAttrib::get_class_slot()));
+  const ScissorAttrib *target_scissor = DCAST(ScissorAttrib, force_get_attrib_def<ScissorAttrib>(_target_rs));
   const LVecBase4 &frame = target_scissor->get_frame();
   set_scissor(frame[0], frame[1], frame[2], frame[3]);
 }
