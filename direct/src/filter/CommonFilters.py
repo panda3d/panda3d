@@ -1,7 +1,8 @@
 """
 
 Class CommonFilters implements certain common image
-postprocessing filters.
+postprocessing filters.  See the :ref:`common-image-filters` page for
+more information about how to use these filters.
 
 It is not ideal that these filters are all included in a single
 monolithic module.  Unfortunately, when you want to apply two filters

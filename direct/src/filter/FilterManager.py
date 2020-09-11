@@ -3,6 +3,8 @@
 The FilterManager is a convenience class that helps with the creation
 of render-to-texture buffers for image postprocessing applications.
 
+See :ref:`generalized-image-filters` for information on how to use this class.
+
 Still need to implement:
 
 * Make sure sort-order of buffers is correct.
