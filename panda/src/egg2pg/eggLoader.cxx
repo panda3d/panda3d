@@ -900,6 +900,7 @@ load_texture(TextureDef &def, EggTexture *egg_tex) {
   case EggTexture::F_rgb8:
   case EggTexture::F_rgb5:
   case EggTexture::F_rgb332:
+  case EggTexture::F_srgb:
     wanted_channels = 3;
     wanted_alpha = false;
     break;
@@ -910,6 +911,7 @@ load_texture(TextureDef &def, EggTexture *egg_tex) {
   case EggTexture::F_rgba8:
   case EggTexture::F_rgba4:
   case EggTexture::F_rgba5:
+  case EggTexture::F_srgb_alpha:
     wanted_channels = 4;
     wanted_alpha = true;
     break;
@@ -1259,6 +1261,10 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
     case EggTexture::F_rgb332:
       tex->set_format(Texture::F_rgb332);
       break;
+    case EggTexture::F_srgb:
+    case EggTexture::F_srgb_alpha:
+      tex->set_format(Texture::F_srgb);
+      break;
 
     case EggTexture::F_unspecified:
       break;
@@ -1295,6 +1301,9 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
       break;
     case EggTexture::F_rgba5:
       tex->set_format(Texture::F_rgba5);
+      break;
+    case EggTexture::F_srgb_alpha:
+      tex->set_format(Texture::F_srgb_alpha);
       break;
 
     case EggTexture::F_unspecified:
