@@ -400,8 +400,10 @@ int Py_FrozenMain(int argc, char **argv)
 {
     char *p;
     int n, sts = 1;
-    int inspect = 0;
     int unbuffered = 0;
+#ifndef NDEBUG
+    int inspect = 0;
+#endif
 
 #if PY_MAJOR_VERSION >= 3 && !defined(WIN_UNICODE)
     int i;
@@ -433,8 +435,10 @@ int Py_FrozenMain(int argc, char **argv)
     Py_NoSiteFlag = 0;
     Py_NoUserSiteDirectory = 1;
 
+#ifndef NDEBUG
     if ((p = Py_GETENV("PYTHONINSPECT")) && *p != '\0')
         inspect = 1;
+#endif
     if ((p = Py_GETENV("PYTHONUNBUFFERED")) && *p != '\0')
         unbuffered = 1;
 
@@ -603,8 +607,10 @@ int Py_FrozenMain(int argc, char **argv)
     else
         sts = 0;
 
+#ifndef NDEBUG
     if (inspect && isatty((int)fileno(stdin)))
         sts = PyRun_AnyFile(stdin, "<stdin>") != 0;
+#endif
 
 #ifdef MS_WINDOWS
     PyWinFreeze_ExeTerm();
