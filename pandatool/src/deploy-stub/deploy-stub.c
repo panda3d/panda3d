@@ -28,6 +28,8 @@
 #  if PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION < 5
 #    define Py_DecodeLocale _Py_char2wchar
 #  endif
+
+#  include "structmember.h"
 #endif
 
 /* Leave room for future expansion.  We only read pointer 0, but there are
@@ -343,6 +345,51 @@ static int setup_logging(const char *path, int append) {
 #endif
 }
 
+/**
+ * Sets the line_buffering property on a TextIOWrapper object.
+ */
+#if PY_MAJOR_VERSION >= 3
+static int enable_line_buffering(PyObject *file) {
+#if PY_VERSION_HEX >= 0x03070000
+  /* Python 3.7 has a useful reconfigure() method. */
+  PyObject *kwargs = _PyDict_NewPresized(1);
+  PyDict_SetItemString(kwargs, "line_buffering", Py_True);
+  PyObject *args = PyTuple_New(0);
+
+  PyObject *method = PyObject_GetAttrString(file, "reconfigure");
+  if (method != NULL) {
+    PyObject *result = PyObject_Call(method, args, kwargs);
+    Py_DECREF(method);
+    if (result != NULL) {
+      Py_DECREF(result);
+    } else {
+      PyErr_Clear();
+      return 0;
+    }
+  }
+  Py_DECREF(kwargs);
+  Py_DECREF(args);
+#else
+  /* Older versions just don't expose a way to reconfigure(), but it's still
+     safe to override the property; we just have to use a hack to do it,
+     because it's officially marked "readonly". */
+
+  PyTypeObject *type = Py_TYPE(file);
+  PyMemberDef *member = type->tp_members;
+
+  while (member != NULL && member->name != NULL) {
+    if (strcmp(member->name, "line_buffering") == 0) {
+      *((char *)file + member->offset) = 1;
+      return 1;
+    }
+    ++member;
+  }
+  fflush(stdout);
+#endif
+  return 1;
+}
+#endif
+
 /* Main program */
 
 #ifdef WIN_UNICODE
@@ -479,6 +526,24 @@ int Py_FrozenMain(int argc, char **argv)
       sys_stream = PySys_GetObject("stderr");
       if (sys_stream && PyFile_Check(sys_stream)) {
         PyFile_SetEncodingAndErrors(sys_stream, "mbcs", NULL);
+      }
+    }
+#endif
+
+#if defined(MS_WINDOWS) && PY_VERSION_HEX >= 0x03040000
+    /* Ensure that line buffering is enabled on the output streams. */
+    if (!unbuffered) {
+      /* Python 3.7 has a useful reconfigure() method. */
+      PyObject *sys_stream;
+      sys_stream = PySys_GetObject("__stdout__");
+      if (sys_stream && !enable_line_buffering(sys_stream)) {
+        fprintf(stderr, "Failed to enable line buffering on sys.stdout\n");
+        fflush(stderr);
+      }
+      sys_stream = PySys_GetObject("__stderr__");
+      if (sys_stream && !enable_line_buffering(sys_stream)) {
+        fprintf(stderr, "Failed to enable line buffering on sys.stderr\n");
+        fflush(stderr);
       }
     }
 #endif
