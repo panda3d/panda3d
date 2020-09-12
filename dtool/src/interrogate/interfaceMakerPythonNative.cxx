@@ -6545,7 +6545,9 @@ write_make_seq(ostream &out, Object *obj, const std::string &ClassName,
     "\n";
 
   if ((elem_getter->_args_type & AT_varargs) == AT_varargs) {
+    out << "#if defined(Py_TRACE_REFS) || PY_VERSION_HEX < 0x03090000\n";
     out << "  _Py_ForgetReference((PyObject *)&args);\n";
+    out << "#endif\n";
   }
 
   out <<
