@@ -2169,9 +2169,11 @@ def SdkLocatePython(prefer_thirdparty_python=False):
 
         # Determine which version it is by checking which dll is in the directory.
         if (GetOptimize() <= 2):
-            py_dlls = glob.glob(SDK["PYTHON"] + "/python[0-9][0-9]_d.dll")
+            py_dlls = glob.glob(SDK["PYTHON"] + "/python[0-9][0-9]_d.dll") + \
+                      glob.glob(SDK["PYTHON"] + "/python[0-9][0-9][0-9]_d.dll")
         else:
-            py_dlls = glob.glob(SDK["PYTHON"] + "/python[0-9][0-9].dll")
+            py_dlls = glob.glob(SDK["PYTHON"] + "/python[0-9][0-9].dll") + \
+                      glob.glob(SDK["PYTHON"] + "/python[0-9][0-9][0-9].dll")
 
         if len(py_dlls) == 0:
             exit("Could not find the Python dll in %s." % (SDK["PYTHON"]))
@@ -2179,24 +2181,29 @@ def SdkLocatePython(prefer_thirdparty_python=False):
             exit("Found multiple Python dlls in %s." % (SDK["PYTHON"]))
 
         py_dll = os.path.basename(py_dlls[0])
-        ver = py_dll[6] + "." + py_dll[7]
+        py_dllver = py_dll.strip(".DHLNOPTY_dhlnopty")
+        ver = py_dllver[0] + '.' + py_dllver[1:]
 
         SDK["PYTHONVERSION"] = "python" + ver
         os.environ["PYTHONHOME"] = SDK["PYTHON"]
 
-        if sys.version[:3] != ver:
-            Warn("running makepanda with Python %s, but building Panda3D with Python %s." % (sys.version[:3], ver))
+        running_ver = '%d.%d' % sys.version_info[:2]
+        if ver != running_ver:
+            Warn("running makepanda with Python %s, but building Panda3D with Python %s." % (running_ver, ver))
 
     elif CrossCompiling() or (prefer_thirdparty_python and os.path.isdir(os.path.join(GetThirdpartyDir(), "python"))):
         tp_python = os.path.join(GetThirdpartyDir(), "python")
 
         if GetTarget() == 'darwin':
-            py_libs = glob.glob(tp_python + "/lib/libpython[0-9].[0-9].dylib")
+            py_libs = glob.glob(tp_python + "/lib/libpython[0-9].[0-9].dylib") + \
+                      glob.glob(tp_python + "/lib/libpython[0-9].[0-9][0-9].dylib")
         else:
-            py_libs = glob.glob(tp_python + "/lib/libpython[0-9].[0-9].so")
+            py_libs = glob.glob(tp_python + "/lib/libpython[0-9].[0-9].so") + \
+                      glob.glob(tp_python + "/lib/libpython[0-9].[0-9][0-9].so")
 
         if len(py_libs) == 0:
-            py_libs = glob.glob(tp_python + "/lib/libpython[0-9].[0-9].a")
+            py_libs = glob.glob(tp_python + "/lib/libpython[0-9].[0-9].a") + \
+                      glob.glob(tp_python + "/lib/libpython[0-9].[0-9][0-9].a")
 
         if len(py_libs) == 0:
             exit("Could not find the Python library in %s." % (tp_python))
@@ -2204,7 +2211,8 @@ def SdkLocatePython(prefer_thirdparty_python=False):
             exit("Found multiple Python libraries in %s." % (tp_python))
 
         py_lib = os.path.basename(py_libs[0])
-        SDK["PYTHONVERSION"] = "python" + py_lib[9] + "." + py_lib[11]
+        py_libver = py_lib.strip('.abdhilnopsty')
+        SDK["PYTHONVERSION"] = "python" + py_libver
         SDK["PYTHONEXEC"] = tp_python + "/bin/" + SDK["PYTHONVERSION"]
         SDK["PYTHON"] = tp_python + "/include/" + SDK["PYTHONVERSION"]
 
@@ -2250,9 +2258,9 @@ def SdkLocatePython(prefer_thirdparty_python=False):
             exit("Host Python version (%s) must be the same as target Python version (%s)!" % (host_version, SDK["PYTHONVERSION"]))
 
     if GetVerbose():
-        print("Using Python %s build located at %s" % (SDK["PYTHONVERSION"][6:9], SDK["PYTHON"]))
+        print("Using Python %s build located at %s" % (SDK["PYTHONVERSION"][6:], SDK["PYTHON"]))
     else:
-        print("Using Python %s" % (SDK["PYTHONVERSION"][6:9]))
+        print("Using Python %s" % (SDK["PYTHONVERSION"][6:]))
 
 def SdkLocateVisualStudio(version=(10,0)):
     if (GetHost() != "windows"): return
@@ -3578,7 +3586,7 @@ def GetCurrentPythonVersionInfo():
 
     from distutils.sysconfig import get_python_lib
     return {
-        "version": SDK["PYTHONVERSION"][6:9],
+        "version": SDK["PYTHONVERSION"][6:],
         "soabi": GetPythonABI(),
         "ext_suffix": GetExtensionSuffix(),
         "executable": sys.executable,
