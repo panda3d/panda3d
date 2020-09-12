@@ -25,7 +25,7 @@
 #if PY_MAJOR_VERSION >= 3
 #  include <locale.h>
 
-#  if PY_MINOR_VERSION < 5
+#  if PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION < 5
 #    define Py_DecodeLocale _Py_char2wchar
 #  endif
 #endif
@@ -550,7 +550,7 @@ int Py_FrozenMain(int argc, char **argv)
 error:
     if (argv_copy2) {
         for (i = 0; i < argc; i++) {
-#if PY_MINOR_VERSION >= 4
+#if PY_MAJOR_VERSION > 3 || PY_MINOR_VERSION >= 4
             PyMem_RawFree(argv_copy2[i]);
 #else
             PyMem_Free(argv_copy2[i]);
