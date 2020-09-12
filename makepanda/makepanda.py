@@ -1122,7 +1122,7 @@ def CompileCxx(obj,src,opts):
 
             if (optlevel==1): cmd += " /MDd /Zi /RTCs /GS"
             if (optlevel==2): cmd += " /MDd /Zi"
-            if (optlevel==3): cmd += " /MD /Zi /GS- /Ox /Ob2 /Oi /Ot /fp:fast"
+            if (optlevel==3): cmd += " /MD /Zi /GS- /O2 /Ob2 /Oi /Ot /fp:fast"
             if (optlevel==4):
                 cmd += " /MD /Zi /GS- /O2 /Ob2 /Oi /Ot /fp:fast /DFORCE_INLINING /DNDEBUG /GL"
                 cmd += " /Oy /Zp16"      # jean-claude add /Zp16 insures correct static alignment for SSEx
