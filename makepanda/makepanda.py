@@ -1113,7 +1113,7 @@ def CompileCxx(obj,src,opts):
             cmd += "/Fo" + obj + " /nologo /c"
             if GetTargetArch() == 'x86':
                 # x86 (32 bit) MSVC 2015+ defaults to /arch:SSE2
-                if not PkgSkip("SSE2") or 'SSE2' in opts:   # x86 with SSE2 case
+                if not PkgSkip("SSE2") or 'SSE2' in opts:   # x86 with SSE2
                     cmd += " /arch:SSE2"    # let's still be explicit and pass in /arch:SSE2
                 else:                                       # x86 without SSE2
                     cmd += " /arch:IA32"
