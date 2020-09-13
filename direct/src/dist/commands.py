@@ -213,6 +213,7 @@ class build_apps(setuptools.Command):
             'dciman32.dll', 'comdlg32.dll', 'comctl32.dll', 'ole32.dll',
             'oleaut32.dll', 'gdiplus.dll', 'winmm.dll', 'iphlpapi.dll',
             'msvcrt.dll', 'kernelbase.dll', 'msimg32.dll', 'msacm32.dll',
+            'setupapi.dll', 'version.dll',
 
             # manylinux1/linux
             'libdl.so.*', 'libstdc++.so.*', 'libm.so.*', 'libgcc_s.so.*',
@@ -230,6 +231,12 @@ class build_apps(setuptools.Command):
             '/usr/lib/libedit.*.dylib',
             '/System/Library/**',
         ]
+
+        if sys.version_info >= (3, 5):
+            # Python 3.5+ requires at least Windows Vista to run anyway, so we
+            # shouldn't warn about DLLs that are shipped with Vista.
+            self.exclude_dependencies += ['bcrypt.dll']
+
         self.package_data_dirs = {}
 
         # We keep track of the zip files we've opened.
@@ -1350,17 +1357,22 @@ class bdist_apps(setuptools.Command):
         nsi.write('Section "" SecCore\n')
         nsi.write('  SetOutPath "$INSTDIR"\n')
         curdir = ""
+        nsi_dir = p3d.Filename.fromOsSpecific(build_cmd.build_base)
+        build_root_dir = p3d.Filename.fromOsSpecific(build_dir)
         for root, dirs, files in os.walk(build_dir):
             for name in files:
                 basefile = p3d.Filename.fromOsSpecific(os.path.join(root, name))
                 file = p3d.Filename(basefile)
                 file.makeAbsolute()
-                file.makeRelativeTo(build_dir)
-                outdir = file.getDirname().replace('/', '\\')
+                file.makeRelativeTo(nsi_dir)
+                outdir = p3d.Filename(basefile)
+                outdir.makeAbsolute()
+                outdir.makeRelativeTo(build_root_dir)
+                outdir = outdir.getDirname().replace('/', '\\')
                 if curdir != outdir:
                     nsi.write('  SetOutPath "$INSTDIR\\%s"\n' % outdir)
                     curdir = outdir
-                nsi.write('  File "%s"\n' % (basefile.toOsSpecific()))
+                nsi.write('  File "%s"\n' % (file.toOsSpecific()))
         nsi.write('  SetOutPath "$INSTDIR"\n')
         nsi.write('  WriteUninstaller "$INSTDIR\\Uninstall.exe"\n')
         nsi.write('  ; Start menu items\n')
