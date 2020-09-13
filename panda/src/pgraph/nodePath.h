@@ -940,6 +940,12 @@ PUBLISHED:
 
   INLINE void list_tags() const;
 
+  INLINE void set_user_data(TypedReferenceCount *data);
+  INLINE void clear_user_data();
+  INLINE bool has_user_data() const;
+  INLINE TypedReferenceCount *get_user_data() const;
+  MAKE_PROPERTY(user_data, get_user_data, set_user_data);
+
   INLINE void set_name(const std::string &name);
   INLINE std::string get_name() const;
   MAKE_PROPERTY(name, get_name, set_name);

@@ -2076,6 +2076,42 @@ list_tags() const {
 }
 
 /**
+ * Stores on the node a pointer to some data that is meaningful to the user.
+ */
+INLINE void NodePath::
+set_user_data(TypedReferenceCount *data) {
+  nassertv_always(!is_empty());
+  node()->set_user_data(data);
+}
+
+/**
+ * Clears the user data pointer stored on the node.
+ */
+INLINE void NodePath::
+clear_user_data() {
+  nassertv_always(!is_empty());
+  node()->clear_user_data();
+}
+
+/**
+ * Returns true if the node has a user data pointer, false if it does not.
+ */
+INLINE bool NodePath::
+has_user_data() const {
+  nassertr_always(!is_empty(), false);
+  return node()->has_user_data();
+}
+
+/**
+ * Returns the user data pointer that was stored on the node.
+ */
+INLINE TypedReferenceCount *NodePath::
+get_user_data() const {
+  nassertr_always(!is_empty(), nullptr);
+  return node()->get_user_data();
+}
+
+/**
  * Changes the name of the referenced node.
  */
 INLINE void NodePath::

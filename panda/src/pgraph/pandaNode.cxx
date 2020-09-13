@@ -159,6 +159,7 @@ PandaNode(const PandaNode &copy) :
 
     cdata->_effects = copy_cdata->_effects;
     cdata->_tag_data = copy_cdata->_tag_data;
+    cdata->_user_data = copy_cdata->_user_data;
     cdata->_draw_control_mask = copy_cdata->_draw_control_mask;
     cdata->_draw_show_mask = copy_cdata->_draw_show_mask;
     cdata->_into_collide_mask = copy_cdata->_into_collide_mask;
@@ -1390,6 +1391,7 @@ copy_all_properties(PandaNode *other) {
     cdataw->_prev_transform = cdatar->_prev_transform;
     cdataw->_state = cdatar->_state;
     cdataw->_effects = cdatar->_effects;
+    cdataw->_user_data = cdatar->_user_data;
     cdataw->_draw_control_mask = cdatar->_draw_control_mask;
     cdataw->_draw_show_mask = cdatar->_draw_show_mask;
 
@@ -3568,6 +3570,19 @@ set_scene_root_func(SceneRootFunc *func) {
 }
 
 /**
+ * Stores on the node a pointer to some data that is meaningful to the user.
+ */
+void PandaNode::
+set_user_data(TypedReferenceCount *data) {
+  Thread *current_thread = Thread::get_current_thread();
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
+    CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
+    cdata->_user_data = data;
+  }
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
+}
+
+/**
  * Tells the BamReader how to create objects of type PandaNode.
  */
 void PandaNode::
@@ -3667,6 +3682,7 @@ CData() :
   _prev_transform(TransformState::make_identity()),
 
   _effects(RenderEffects::make_empty()),
+  _user_data(nullptr),
   _draw_control_mask(DrawMask::all_off()),
   _draw_show_mask(DrawMask::all_on()),
   _into_collide_mask(CollideMask::all_off()),
@@ -3698,6 +3714,7 @@ CData(const PandaNode::CData &copy) :
 
   _effects(copy._effects),
   _tag_data(copy._tag_data),
+  _user_data(copy._user_data),
   _draw_control_mask(copy._draw_control_mask),
   _draw_show_mask(copy._draw_show_mask),
   _into_collide_mask(copy._into_collide_mask),
