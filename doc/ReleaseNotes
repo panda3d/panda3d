@@ -52,6 +52,7 @@ Deployment
 * Fix libffi-7.dll not being included in official wheels
 * PYTHONINSPECT mechanism is no longer enabled when building with optimizations
 * A few unnecessary warning messages are squelched
+* Windows builds now include previously missing CRT dlls
 
 API
 * Add pickle support to Datagram class
