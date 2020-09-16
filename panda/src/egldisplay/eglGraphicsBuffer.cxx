@@ -172,7 +172,7 @@ open_buffer() {
     }
   }
 
-  if (eglgsg->_fbconfig == None) {
+  if (eglgsg->_fbconfig == nullptr) {
     // If we didn't use an fbconfig to create the GSG, we can't create a
     // PBuffer.
     return false;
