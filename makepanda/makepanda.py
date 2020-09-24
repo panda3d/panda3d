@@ -3418,11 +3418,11 @@ TargetAdd('p3pandabase_pandabase.obj', opts=OPTS, input='pandabase.cxx')
 # DIRECTORY: panda/src/express/
 #
 
-OPTS=['DIR:panda/src/express', 'BUILDING:PANDAEXPRESS', 'OPENSSL', 'ZLIB']
+OPTS=['DIR:panda/src/express', 'BUILDING:PANDAEXPRESS', 'OPENSSL', 'ZLIB', 'LZ4']
 TargetAdd('p3express_composite1.obj', opts=OPTS, input='p3express_composite1.cxx')
 TargetAdd('p3express_composite2.obj', opts=OPTS, input='p3express_composite2.cxx')
 
-OPTS=['DIR:panda/src/express', 'OPENSSL', 'ZLIB']
+OPTS=['DIR:panda/src/express', 'OPENSSL', 'ZLIB', 'LZ4']
 IGATEFILES=GetDirectoryContents('panda/src/express', ["*.h", "*_composite*.cxx"])
 TargetAdd('libp3express.in', opts=OPTS, input=IGATEFILES)
 TargetAdd('libp3express.in', opts=['IMOD:panda3d.core', 'ILIB:libp3express', 'SRCDIR:panda/src/express'])

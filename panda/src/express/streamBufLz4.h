@@ -20,6 +20,7 @@
 // This module is not compiled if lz4 is not available.
 //#ifdef HAVE_LZ4
 
+#include <lz4.h>
 #include <lz4frame.h>
 
 /**
@@ -33,7 +34,7 @@ public:
   void open_read(std::istream *source, bool owns_source);
   void close_read();
 
-  void open_write(std::ostream *dest, bool owns_dest, int compression_level);
+  void open_write(std::ostream *dest, bool owns_dest, int compression_level = 6);
   void close_write();
 
   virtual std::streampos seekoff(std::streamoff off, ios_seekdir dir, ios_openmode which);

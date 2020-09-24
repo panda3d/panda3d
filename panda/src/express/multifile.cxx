@@ -2086,7 +2086,7 @@ open_read_subfile(Subfile *subfile) {
 #else  // HAVE_ZLIB
     // Oops, the subfile is compressed.  So actually, return an
     // IDecompressStream that wraps around the ISubStream.
-    IDecompressStreamZlib *wrapper = new IDecompressStreamZlib(stream, true);
+    IDecompressStreamZlib *wrapper = new IDecompressStreamZlib(stream, true, CompressionAlgorithm::CA_zlib);
     stream = wrapper;
 #endif  // HAVE_ZLIB
   }
@@ -2690,7 +2690,7 @@ write_data(ostream &write, istream *read, streampos fpos,
 #else  // HAVE_ZLIB
     if ((_flags & SF_compressed) != 0) {
       // Write it compressed.
-      putter = new OCompressStreamZlib(putter, delete_putter, _compression_level);
+      putter = new OCompressStreamZlib(putter, delete_putter, CompressionAlgorithm::CA_zlib);
       delete_putter = true;
     }
 #endif  // HAVE_ZLIB

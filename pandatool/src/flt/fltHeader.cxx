@@ -247,7 +247,7 @@ write_flt(Filename filename) {
   if (filename.get_extension() == "pz") {
     // The filename ends in .pz, which means to automatically compress the flt
     // file that we write.
-    OCompressStreamZlib compressor(&out, false);
+    OCompressStreamZlib compressor(&out, false, CompressionAlgorithm::CA_zlib);
     return write_flt(compressor);
   }
 #endif  // HAVE_ZLIB

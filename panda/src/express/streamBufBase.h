@@ -30,7 +30,7 @@ public:
   void virtual open_read(std::istream *source, bool owns_source);
   void virtual close_read();
 
-  void virtual open_write(std::ostream *dest, bool owns_dest);
+  void virtual open_write(std::ostream *dest, bool owns_dest, int compression_level = 6);
   void virtual close_write();
 
   virtual std::streampos seekoff(std::streamoff off, ios_seekdir dir, ios_openmode which);

@@ -472,7 +472,7 @@ load_default_font() {
 #ifdef HAVE_ZLIB
   // The font data is stored compressed; decompress it on-the-fly.
   std::istringstream inz(data);
-  IDecompressStreamZlib in(&inz, false);
+  IDecompressStreamZlib in(&inz, false, CompressionAlgorithm::CA_zlib);
 
 #else
   // The font data is stored uncompressed, so just load it.

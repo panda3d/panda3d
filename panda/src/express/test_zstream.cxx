@@ -23,7 +23,7 @@ using std::istream;
 
 void
 stream_decompress(istream &source) {
-  IDecompressStreamZlib zstream(&source, false);
+  IDecompressStreamZlib zstream(&source, false, CompressionAlgorithm::CA_zlib);
 
   int ch = zstream.get();
   while (!zstream.eof() && !zstream.fail()) {
@@ -34,7 +34,7 @@ stream_decompress(istream &source) {
 
 void
 stream_compress(istream &source) {
-  OCompressStreamZlib zstream(&cout, false);
+  OCompressStreamZlib zstream(&cout, false, CompressionAlgorithm::CA_zlib);
 
   int ch = source.get();
   while (!source.eof() && !source.fail()) {

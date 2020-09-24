@@ -14,7 +14,7 @@
 #include "virtualFileMount.h"
 #include "virtualFileSimple.h"
 #include "virtualFileSystem.h"
-#include "zStream.h"
+#include "streamZlib.h"
 
 using std::iostream;
 using std::istream;
@@ -195,7 +195,7 @@ open_read_file(const Filename &file, bool do_uncompress) const {
 #ifdef HAVE_ZLIB
   if (result != nullptr && do_uncompress) {
     // We have to slip in a layer to decompress the file on the fly.
-    IDecompressStreamZlib *wrapper = new IDecompressStreamZlib(result, true);
+    IDecompressStreamZlib *wrapper = new IDecompressStreamZlib(result, true, CompressionAlgorithm::CA_zlib);
     result = wrapper;
   }
 #endif  // HAVE_ZLIB
@@ -238,7 +238,7 @@ open_write_file(const Filename &file, bool do_compress, bool truncate) {
 #ifdef HAVE_ZLIB
   if (result != nullptr && do_compress) {
     // We have to slip in a layer to compress the file on the fly.
-    OCompressStreamZlib *wrapper = new OCompressStreamZlib(result, true);
+    OCompressStreamZlib *wrapper = new OCompressStreamZlib(result, true, CompressionAlgorithm::CA_zlib);
     result = wrapper;
   }
 #endif  // HAVE_ZLIB

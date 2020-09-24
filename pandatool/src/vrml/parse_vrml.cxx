@@ -61,7 +61,7 @@ get_standard_nodes() {
 #ifdef HAVE_ZLIB
   // The data is stored compressed; decompress it on-the-fly.
   istringstream inz(data);
-  IDecompressStreamZlib in(&inz, false);
+  IDecompressStreamZlib in(&inz, false, CompressionAlgorithm::CA_zlib);
 
 #else
   // The data is stored uncompressed, so just load it.

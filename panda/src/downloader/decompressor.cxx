@@ -20,7 +20,7 @@
 #include "error_utils.h"
 #include "filename.h"
 #include "ramfile.h"
-#include "zStream.h"
+#include "streamZlib.h"
 #include "config_express.h"
 #include "trueClock.h"
 
@@ -126,7 +126,7 @@ initiate(const Filename &source_file, const Filename &dest_file) {
   }
 
   // Now create the decompressor stream.
-  _decompress = new IDecompressStreamZlib(_source, false);
+  _decompress = new IDecompressStreamZlib(_source, false, CompressionAlgorithm::CA_zlib);
   return EU_success;
 }
 

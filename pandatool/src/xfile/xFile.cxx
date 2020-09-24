@@ -145,7 +145,7 @@ write(Filename filename) const {
   if (filename.get_extension() == "pz") {
     // The filename ends in .pz, which means to automatically compress the X
     // file that we write.
-    OCompressStreamZlib compressor(&out, false);
+    OCompressStreamZlib compressor(&out, false, CompressionAlgorithm::CA_zlib);
     return write(compressor);
   }
 #endif  // HAVE_ZLIB
@@ -452,7 +452,7 @@ get_standard_templates() {
 #ifdef HAVE_ZLIB
     // The data is stored compressed; decompress it on-the-fly.
     istringstream inz(data);
-    IDecompressStreamZlib in(&inz, false);
+    IDecompressStreamZlib in(&inz, false, CompressionAlgorithm::CA_zlib);
 
 #else
     // The data is stored uncompressed, so just load it.

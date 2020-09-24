@@ -18,6 +18,7 @@
 #if defined(HAVE_ZLIB) or defined(HAVE_LZ4)
 #include "virtualFileSystem.h"
 #include "config_express.h"
+#include "streamZlib.h"
 
 using std::istream;
 using std::istringstream;
@@ -33,11 +34,11 @@ string
 compress_string(const string &source, CompressionAlgorithm compression_algo, int compression_level) {
   ostringstream dest;
   {
-    std::shared_ptr<ostream> compress = create_Ostream(compression_algo);
-    compress->open(&dest, false, compression_level);
-    compress->write(source.data(), source.length());
+    OCompressStreamZlib compress(compression_algo);
+    compress.open(&dest, false, compression_level);
+    compress.write(source.data(), source.length());
 
-    if (compress->fail()) {
+    if (compress.fail()) {
       return string();
     }
   }
@@ -143,8 +144,8 @@ decompress_file(const Filename &source, const Filename &dest, CompressionAlgorit
  */
 bool
 compress_stream(istream &source, ostream &dest, CompressionAlgorithm compression_algo, int compression_level) {
-  std::shared_ptr<ostream> compress = create_Ostream(compression_algo);
-  compress->open(&dest, false, compression_level);
+  OCompressStreamZlib compress(compression_algo);
+  compress.open(&dest, false, compression_level);
 
   static const size_t buffer_size = 4096;
   char buffer[buffer_size];
@@ -152,13 +153,13 @@ compress_stream(istream &source, ostream &dest, CompressionAlgorithm compression
   source.read(buffer, buffer_size);
   size_t count = source.gcount();
   while (count != 0) {
-    compress->write(buffer, count);
+    compress.write(buffer, count);
     source.read(buffer, buffer_size);
     count = source.gcount();
   }
-  compress->close();
+  compress.close();
 
-  return (!source.fail() || source.eof()) && (!compress->fail());
+  return (!source.fail() || source.eof()) && (!compress.fail());
 }
 
 /**
@@ -173,22 +174,22 @@ compress_stream(istream &source, ostream &dest, CompressionAlgorithm compression
  */
 bool
 decompress_stream(istream &source, ostream &dest, CompressionAlgorithm compression_algo) {
-  std::shared_ptr<istream> decompress = create_Istream(compression_algo);
+  IDecompressStreamZlib decompress(compression_algo);
 
   static const size_t buffer_size = 4096;
   char buffer[buffer_size];
 
-  decompress->read(buffer, buffer_size);
+  decompress.read(buffer, buffer_size);
   size_t count = decompress.gcount();
   while (count != 0) {
     dest.write(buffer, count);
-    decompress->read(buffer, buffer_size);
-    count = decompress->gcount();
+    decompress.read(buffer, buffer_size);
+    count = decompress.gcount();
   }
 
-  return (!decompress->fail() || decompress->eof()) && (!dest.fail());
+  return (!decompress.fail() || decompress.eof()) && (!dest.fail());
 }
-
+/*
 std::shared_ptr<std::istream> create_Istream(CompressionAlgorithm compression_algo)
 {
   if(compression_algo == CompressionAlgorithm::CA_zlib) {
@@ -227,5 +228,6 @@ std::shared_ptr<std::ostream> create_Ostream(CompressionAlgorithm compression_al
 #endif
   }
 }
+*/
 
 #endif // HAVE_ZLIB || HAVE_LZ4

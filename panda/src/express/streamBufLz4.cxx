@@ -13,11 +13,12 @@
 
 #include <string.h>
 
-#include "streamBufLz4.h"
-
 
 #include "pnotify.h"
 #include "config_express.h"
+
+//#ifdef HAVE_LZ4
+#include "streamBufLz4.h"
 
 using std::ios;
 using std::streamoff;
@@ -142,7 +143,7 @@ seekoff(streamoff off, ios_seekdir dir, ios_openmode which) {
 
   // Determine the current position.
   size_t n = egptr() - gptr();
-  streampos gpos = _lz4_compression_ctx.total_out - n;
+  streampos gpos = _lz4_compression_ctx->total_out - n;
 
   // Implement tellg() and seeks to current position.
   if ((dir == ios::cur && off == 0) ||
@@ -159,8 +160,8 @@ seekoff(streamoff off, ios_seekdir dir, ios_openmode which) {
 
   if (_source->rdbuf()->pubseekpos(0, ios::in) == (streampos)0) {
     _source->clear();
-    _lz4_decompression_ctx.tmpIn = nullptr;
-    _lz4_decompression_ctx.tmpInSize = 0;
+    _lz4_decompression_ctx->tmpIn = nullptr;
+    _lz4_decompression_ctx->tmpInSize = 0;
     LZ4F_resetDecompressionContext(_lz4_decompression_ctx);
     return 0;
   }
@@ -298,7 +299,7 @@ write_chars(const char *start, size_t length, int flush) {
 
   while(true)
   {
-      size_t compressed_length = min(length - (current - start), (size_t)4096);
+      size_t compressed_length = std::min(length - (current - start), (size_t)4096);
       size_t result = LZ4F_compressUpdate(_lz4_compression_ctx, compress_buffer, compress_buffer_size,
                                        current, compressed_length, nullptr);
       if (LZ4F_isError(result)) {
@@ -320,8 +321,6 @@ show_lz4_error(const char *function, int error_code) {
 
   error_line
     << "lz4 error in " << function << ": " << LZ4F_getErrorName(error_code);
-  }
-
   express_cat.warning() << error_line.str() << "\n";
 }
 

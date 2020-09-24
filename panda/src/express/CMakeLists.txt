@@ -64,11 +64,10 @@ set(P3EXPRESS_HEADERS
   weakPointerToVoid.I weakPointerToVoid.h
   weakReferenceList.I weakReferenceList.h
   windowsRegistry.h
-  StreamBufBase.h
-  StreamZlib.I StreamZlib.h
-  StreamBufZlib.h
-  StreamLz4.I StreamLz4.h
-  StreamBufLz4.h
+  streamBufBase.h
+  streamZlib.I streamZlib.h
+  streamBufZlib.h
+  streamBufLz4.h
 )
 
 set(P3EXPRESS_SOURCES
@@ -151,7 +150,7 @@ composite_sources(p3express P3EXPRESS_SOURCES)
 add_component_library(p3express SYMBOL BUILDING_PANDA_EXPRESS
   ${P3EXPRESS_SOURCES} ${P3EXPRESS_HEADERS})
 target_link_libraries(p3express p3pandabase p3interrogatedb p3prc p3dtool
-  PKG::ZLIB PKF::LZ4 PKG::OPENSSL)
+  PKG::ZLIB PKG::LZ4 PKG::OPENSSL)
 target_interrogate(p3express ALL EXTENSIONS ${P3EXPRESS_IGATEEXT})
 
 if(REPORT_OPENSSL_ERRORS)

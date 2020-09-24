@@ -25,12 +25,6 @@
 #include "streamLz4.h"
 #endif
 
-enum CompressionAlgorithm
-{
-  CA_zlib,
-  CA_lz4,
-};
-
 #if defined (HAVE_ZLIB) or defined (HAVE_LZ4)
 
 BEGIN_PUBLISH

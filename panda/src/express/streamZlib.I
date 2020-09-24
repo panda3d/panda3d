@@ -11,18 +11,70 @@
  * @date 2002-08-05
  */
 
-/**
+#include "streamBufLz4.h"
+#include "streamBufZlib.h"
+
+/*
  *
  */
-INLINE IDecompressStreamZlib::
-IDecompressStreamZlib() : std::istream(&_buf) {
+std::shared_ptr<StreamBufBase>& IDecompressStreamZlib::
+initialize_streambuf(std::shared_ptr<StreamBufBase> &buf_ptr, CompressionAlgorithm compression_algo) {
+#ifdef HAVE_ZLIB
+  if (compression_algo == CompressionAlgorithm::CA_zlib) {
+    buf_ptr = std::make_shared<StreamBufZlib>();
+    return buf_ptr;
+  }
+#endif
+
+#ifdef HAVE_LZ4
+  if (algorithm == CompressionAlgorithm::CA_lz4) {
+    buf_ptr = std::make_shared<StreamBufLz4>();
+    return buf_ptr;
+  }
+#endif
+
+  express_cat.error()
+      << "Can't create streambuf object for IDecompressStream because the algorithm isn't available";
+}
+
+
+/*
+ *
+ */
+std::shared_ptr<StreamBufBase>& OCompressStreamZlib::
+initialize_streambuf(std::shared_ptr<StreamBufBase> &buf_ptr, CompressionAlgorithm algorithm) {
+#ifdef HAVE_ZLIB
+  if (algorithm == CompressionAlgorithm::CA_zlib) {
+    buf_ptr = std::make_shared<StreamBufZlib>();
+    return buf_ptr;
+  }
+#endif
+
+#ifdef HAVE_LZ4
+  if (algorithm == CompressionAlgorithm::CA_lz4) {
+    buf_ptr = std::make_shared<StreamBufLz4>();
+    return buf_ptr;
+  }
+#endif
+
+  express_cat.error()
+      << "Can't create streambuf object for OCompressStream because the algorithm isn't available";
 }
 
 /**
  *
  */
 INLINE IDecompressStreamZlib::
-IDecompressStreamZlib(std::istream *source, bool owns_source) : std::istream(&_buf) {
+IDecompressStreamZlib(CompressionAlgorithm compression_algo) :
+  std::istream(IDecompressStreamZlib::initialize_streambuf(_buf_ptr, compression_algo).get()) {
+}
+
+/**
+ *
+ */
+INLINE IDecompressStreamZlib::
+IDecompressStreamZlib(std::istream *source, bool owns_source, CompressionAlgorithm compression_algo) :
+  std::istream(IDecompressStreamZlib::initialize_streambuf(_buf_ptr, compression_algo).get()) {
   open(source, owns_source);
 }
 
@@ -32,7 +84,7 @@ IDecompressStreamZlib(std::istream *source, bool owns_source) : std::istream(&_b
 INLINE IDecompressStreamZlib &IDecompressStreamZlib::
 open(std::istream *source, bool owns_source) {
   clear((ios_iostate)0);
-  _buf.open_read(source, owns_source);
+  _buf_ptr->open_read(source, owns_source);
   return *this;
 }
 
@@ -42,7 +94,7 @@ open(std::istream *source, bool owns_source) {
  */
 INLINE IDecompressStreamZlib &IDecompressStreamZlib::
 close() {
-  _buf.close_read();
+  _buf_ptr->close_read();
   return *this;
 }
 
@@ -51,15 +103,16 @@ close() {
  *
  */
 INLINE OCompressStreamZlib::
-OCompressStreamZlib() : std::ostream(&_buf) {
+OCompressStreamZlib(CompressionAlgorithm compression_algo) :
+  std::ostream(OCompressStreamZlib::initialize_streambuf(_buf_ptr, compression_algo).get()) {
 }
 
 /**
  *
  */
 INLINE OCompressStreamZlib::
-OCompressStreamZlib(std::ostream *dest, bool owns_dest, int compression_level) :
-  std::ostream(&_buf)
+OCompressStreamZlib(std::ostream *dest, bool owns_dest, CompressionAlgorithm compression_algo, int compression_level) :
+  std::ostream(OCompressStreamZlib::initialize_streambuf(_buf_ptr, compression_algo).get())
 {
   open(dest, owns_dest, compression_level);
 }
@@ -70,16 +123,16 @@ OCompressStreamZlib(std::ostream *dest, bool owns_dest, int compression_level) :
 INLINE OCompressStreamZlib &OCompressStreamZlib::
 open(std::ostream *dest, bool owns_dest, int compression_level) {
   clear((ios_iostate)0);
-  _buf.open_write(dest, owns_dest, compression_level);
+  _buf_ptr->open_write(dest, owns_dest, compression_level);
   return *this;
 }
 
 /**
- * Resets the ZStream to empty, but does not actually close the dest ostream
+ * Resets the OCompressStream to empty, but does not actually close the dest ostream
  * unless owns_dest was true.
  */
 INLINE OCompressStreamZlib &OCompressStreamZlib::
 close() {
-  _buf.close_write();
+  _buf_ptr->close_write();
   return *this;
 }

@@ -33,7 +33,7 @@ public:
   void open_read(std::istream *source, bool owns_source) override;
   void close_read() override;
 
-  void open_write(std::ostream *dest, bool owns_dest, int compression_level);
+  void open_write(std::ostream *dest, bool owns_dest, int compression_level = 6);
   void close_write() override;
 
   virtual std::streampos seekoff(std::streamoff off, ios_seekdir dir, ios_openmode which);

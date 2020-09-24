@@ -264,7 +264,7 @@ score_reparent_to(EggJointData *new_parent, EggCharacterDb &db) {
   // The FFTCompressor does minimal run-length encoding, but to really get an
   // accurate measure we should zlib-compress the resulting stream.
   std::ostringstream sstr;
-  OCompressStreamZlib zstr(&sstr, false);
+  OCompressStreamZlib zstr(&sstr, false, CompressionAlgorithm::CA_zlib);
   zstr.write((const char *)dg.get_data(), dg.get_length());
   zstr.flush();
   return sstr.str().length();

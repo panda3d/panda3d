@@ -343,11 +343,11 @@ package_status(ZLIB "zlib")
 
 
 # lz4
-find_package(LZ4 QUIET)
-
+find_package(LZ4 REQUIRED) # TO DO : make this quiet
+message(ERROR "print ${LZ4_LIBRARIES}")
 package_option(LZ4
   "Enables support for compression of texture in .bam."
-  IMPORTED_AS LZ4::LZ4)
+  DEFAULT ON)
 
 package_status(LZ4 "lz4")
 

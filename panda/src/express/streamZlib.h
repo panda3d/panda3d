@@ -21,7 +21,13 @@
 // This module is not compiled if zlib is not available.
 #ifdef HAVE_ZLIB
 
-#include "streamBufZlib.h"
+#include "streamBufBase.h"
+
+enum CompressionAlgorithm
+{
+  CA_zlib,
+  CA_lz4,
+};
 
 /**
  * An input stream object that uses zlib to decompress (inflate) the input
@@ -35,8 +41,8 @@
  */
 class EXPCL_PANDA_EXPRESS IDecompressStreamZlib : public std::istream {
 PUBLISHED:
-  INLINE IDecompressStreamZlib();
-  INLINE explicit IDecompressStreamZlib(std::istream *source, bool owns_source);
+  INLINE IDecompressStreamZlib(CompressionAlgorithm compression_algo);
+  INLINE explicit IDecompressStreamZlib(std::istream *source, bool owns_source, CompressionAlgorithm compression_algo);
 
 #if _MSC_VER >= 1800
   INLINE IDecompressStream(const IDecompressStream &copy) = delete;
@@ -45,8 +51,10 @@ PUBLISHED:
   INLINE IDecompressStreamZlib &open(std::istream *source, bool owns_source);
   INLINE IDecompressStreamZlib &close();
 
+  static std::shared_ptr<StreamBufBase>& initialize_streambuf(std::shared_ptr<StreamBufBase> &buf_ptr, CompressionAlgorithm compression_algo);
+
 private:
-  StreamBufZlib _buf;
+  std::shared_ptr<StreamBufBase> _buf_ptr;
 };
 
 /**
@@ -61,9 +69,9 @@ private:
  */
 class EXPCL_PANDA_EXPRESS OCompressStreamZlib : public std::ostream {
 PUBLISHED:
-  INLINE OCompressStreamZlib();
+  INLINE OCompressStreamZlib(CompressionAlgorithm compression_algo);
   INLINE explicit OCompressStreamZlib(std::ostream *dest, bool owns_dest,
-                                  int compression_level = 6);
+                                      CompressionAlgorithm compression_algo, int compression_level = 6);
 
 #if _MSC_VER >= 1800
   INLINE OCompressStream(const OCompressStream &copy) = delete;
@@ -73,8 +81,10 @@ PUBLISHED:
                                int compression_level = 6);
   INLINE OCompressStreamZlib &close();
 
+  static std::shared_ptr<StreamBufBase>& initialize_streambuf(std::shared_ptr<StreamBufBase> &buf_ptr, CompressionAlgorithm algorithm);
+
 private:
-  StreamBufZlib _buf;
+  std::shared_ptr<StreamBufBase> _buf_ptr;
 };
 
 #include "streamZlib.I"
