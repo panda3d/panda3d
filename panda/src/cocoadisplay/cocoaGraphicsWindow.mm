@@ -1732,6 +1732,19 @@ handle_key_event(NSEvent *event) {
     return;
   }
 
+  // If UCKeyTranslate could not map the key into a valid unicode character or
+  // reserved symbol (See NSEvent.h), it returns 0x10 as translated character.
+  // This happens e.g.e with the combination Fn+F1.. keys.
+  // In that case, as fallback, we use charactersIgnoringModifiers to retrieve
+  // the character without modifiers.
+  if (c == 0x10) {
+    NSString *str = [event charactersIgnoringModifiers];
+    if (str == nil || [str length] != 1) {
+      return;
+    }
+    c = [str characterAtIndex: 0];
+  }
+
   ButtonHandle button = map_key(c);
 
   if (button == ButtonHandle::none()) {

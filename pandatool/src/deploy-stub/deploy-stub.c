@@ -24,6 +24,8 @@
 
 #include <locale.h>
 
+#include "structmember.h"
+
 /* Leave room for future expansion.  We only read pointer 0, but there are
    other pointers that are being read by configPageManager.cxx. */
 #define MAX_NUM_POINTERS 24
@@ -335,6 +337,49 @@ static int setup_logging(const char *path, int append) {
 #endif
 }
 
+/**
+ * Sets the line_buffering property on a TextIOWrapper object.
+ */
+static int enable_line_buffering(PyObject *file) {
+#if PY_VERSION_HEX >= 0x03070000
+  /* Python 3.7 has a useful reconfigure() method. */
+  PyObject *kwargs = _PyDict_NewPresized(1);
+  PyDict_SetItemString(kwargs, "line_buffering", Py_True);
+  PyObject *args = PyTuple_New(0);
+
+  PyObject *method = PyObject_GetAttrString(file, "reconfigure");
+  if (method != NULL) {
+    PyObject *result = PyObject_Call(method, args, kwargs);
+    Py_DECREF(method);
+    if (result != NULL) {
+      Py_DECREF(result);
+    } else {
+      PyErr_Clear();
+      return 0;
+    }
+  }
+  Py_DECREF(kwargs);
+  Py_DECREF(args);
+#else
+  /* Older versions just don't expose a way to reconfigure(), but it's still
+     safe to override the property; we just have to use a hack to do it,
+     because it's officially marked "readonly". */
+
+  PyTypeObject *type = Py_TYPE(file);
+  PyMemberDef *member = type->tp_members;
+
+  while (member != NULL && member->name != NULL) {
+    if (strcmp(member->name, "line_buffering") == 0) {
+      *((char *)file + member->offset) = 1;
+      return 1;
+    }
+    ++member;
+  }
+  fflush(stdout);
+#endif
+  return 1;
+}
+
 /* Main program */
 
 #ifdef WIN_UNICODE
@@ -345,8 +390,10 @@ int Py_FrozenMain(int argc, char **argv)
 {
     char *p;
     int n, sts = 1;
-    int inspect = 0;
     int unbuffered = 0;
+#ifndef NDEBUG
+    int inspect = 0;
+#endif
 
 #ifndef WIN_UNICODE
     int i;
@@ -378,8 +425,10 @@ int Py_FrozenMain(int argc, char **argv)
     Py_NoSiteFlag = 0;
     Py_NoUserSiteDirectory = 1;
 
+#ifndef NDEBUG
     if ((p = Py_GETENV("PYTHONINSPECT")) && *p != '\0')
         inspect = 1;
+#endif
     if ((p = Py_GETENV("PYTHONUNBUFFERED")) && *p != '\0')
         unbuffered = 1;
 
@@ -420,6 +469,23 @@ int Py_FrozenMain(int argc, char **argv)
     Py_Initialize();
 #ifdef MS_WINDOWS
     PyWinFreeze_ExeInit();
+#endif
+
+#ifdef MS_WINDOWS
+    /* Ensure that line buffering is enabled on the output streams. */
+    if (!unbuffered) {
+      PyObject *sys_stream;
+      sys_stream = PySys_GetObject("__stdout__");
+      if (sys_stream && !enable_line_buffering(sys_stream)) {
+        fprintf(stderr, "Failed to enable line buffering on sys.stdout\n");
+        fflush(stderr);
+      }
+      sys_stream = PySys_GetObject("__stderr__");
+      if (sys_stream && !enable_line_buffering(sys_stream)) {
+        fprintf(stderr, "Failed to enable line buffering on sys.stderr\n");
+        fflush(stderr);
+      }
+    }
 #endif
 
     if (Py_VerboseFlag)
@@ -473,8 +539,10 @@ int Py_FrozenMain(int argc, char **argv)
     else
         sts = 0;
 
+#ifndef NDEBUG
     if (inspect && isatty((int)fileno(stdin)))
         sts = PyRun_AnyFile(stdin, "<stdin>") != 0;
+#endif
 
 #ifdef MS_WINDOWS
     PyWinFreeze_ExeTerm();
