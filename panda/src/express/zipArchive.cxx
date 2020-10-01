@@ -146,7 +146,7 @@ open_write(std::ostream *stream, bool owns_pointer) {
   close();
   _write = stream;
   _owns_stream = owns_pointer;
-  _write->seekp(0, ios::beg);
+  _write->seekp(0, std::ios::beg);
   _index_start = 0;
   _file_end = 0;
   _index_changed = true;
@@ -205,10 +205,10 @@ open_read_write(std::iostream *stream, bool owns_pointer) {
   _read = new StreamWrapper(stream, owns_pointer);
   _write = stream;
   _owns_stream = true;  // Because we own the StreamWrapper, above.
-  _write->seekp(0, ios::beg);
+  _write->seekp(0, std::ios::beg);
 
   // Check whether the read stream is empty.
-  stream->seekg(0, ios::end);
+  stream->seekg(0, std::ios::end);
   if (stream->tellg() == (streampos)0) {
     // The read stream is empty, which is always valid.
     _index_changed = true;
@@ -914,7 +914,7 @@ compare_subfile(int index, const Filename &filename) {
 
   if (filename.is_binary()) {
     // Check the file size.
-    in2.seekg(0, ios::end);
+    in2.seekg(0, std::ios::end);
     streampos file_size = in2.tellg();
 
     if (file_size != (streampos)get_subfile_length(index)) {
@@ -1600,7 +1600,7 @@ read_header(std::istream &read) {
   if (extra_length < 4) {
     reader.skip_bytes(extra_length);
   } else if (extra_length > 0) {
-    for (int i = 0; i < extra_length;) {
+    for (size_t i = 0; i < extra_length;) {
       size_t length = reader.get_uint16();
       i += 4;
       reader.skip_bytes(length);
