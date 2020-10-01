@@ -1643,7 +1643,7 @@ def CompileFlex(wobj,wsrc,opts):
             oscmd(flex +    " -P" + pre + " -o"+wdst+" "+wsrc)
 
     # Finally, compile the generated source file.
-    CompileCxx(wobj,wdst,opts)
+    CompileCxx(wobj, wdst, opts + ["FLEX"])
 
 ########################################################################
 ##
