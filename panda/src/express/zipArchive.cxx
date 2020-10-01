@@ -1495,7 +1495,7 @@ read_index(std::istream &read) {
         _data_length = reader.get_uint64();
         size_left -= 8;
       }
-      if (_header_start == 0xffffffffu && size_left >= 8) {
+      if ((uint64_t)_header_start == 0xffffffffu && size_left >= 8) {
         _header_start = reader.get_uint64();
         size_left -= 8;
       }
