@@ -1,4 +1,3 @@
-from __future__ import print_function
 from panda3d.core import TrueClock
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.PythonUtil import (

@@ -4,8 +4,6 @@ See the :ref:`distribution` section of the programming manual for information
 on how to use these commands.
 """
 
-from __future__ import print_function
-
 import collections
 import os
 import plistlib
@@ -31,9 +29,6 @@ import panda3d.core as p3d
 
 
 if sys.version_info < (3, 0):
-    # Python 3 defines these subtypes of IOError, but Python 2 doesn't.
-    FileNotFoundError = IOError
-
     # Warn the user.  They might be using Python 2 by accident.
     print("=================================================================")
     print("WARNING: You are using Python 2, which has reached the end of its")
@@ -218,6 +213,7 @@ class build_apps(setuptools.Command):
             'dciman32.dll', 'comdlg32.dll', 'comctl32.dll', 'ole32.dll',
             'oleaut32.dll', 'gdiplus.dll', 'winmm.dll', 'iphlpapi.dll',
             'msvcrt.dll', 'kernelbase.dll', 'msimg32.dll', 'msacm32.dll',
+            'setupapi.dll', 'version.dll',
 
             # manylinux1/linux
             'libdl.so.*', 'libstdc++.so.*', 'libm.so.*', 'libgcc_s.so.*',
@@ -235,6 +231,12 @@ class build_apps(setuptools.Command):
             '/usr/lib/libedit.*.dylib',
             '/System/Library/**',
         ]
+
+        if sys.version_info >= (3, 5):
+            # Python 3.5+ requires at least Windows Vista to run anyway, so we
+            # shouldn't warn about DLLs that are shipped with Vista.
+            self.exclude_dependencies += ['bcrypt.dll']
+
         self.package_data_dirs = {}
 
         # We keep track of the zip files we've opened.
@@ -374,12 +376,13 @@ class build_apps(setuptools.Command):
                     os.remove(os.path.join(whldir, whl))
 
         pip_args = [
+            '--disable-pip-version-check',
             'download',
             '-d', whldir,
             '-r', self.requirements_path,
             '--only-binary', ':all:',
             '--platform', platform,
-            '--abi', abi_tag
+            '--abi', abi_tag,
         ]
 
         if self.use_optimized_wheels:
@@ -623,12 +626,16 @@ class build_apps(setuptools.Command):
                     rootdir = wf.split(os.path.sep, 1)[0]
                     search_path.append(os.path.join(whl, rootdir, '.libs'))
 
+                    # Also look for eg. numpy.libs or Pillow.libs in the root
+                    whl_name = os.path.basename(whl).split('-', 1)[0]
+                    search_path.append(os.path.join(whl, whl_name + '.libs'))
+
                     # Also look for more specific per-package cases, defined in
                     # PACKAGE_LIB_DIRS at the top of this file.
-                    whl_name = os.path.basename(whl).split('-', 1)[0]
                     extra_dirs = PACKAGE_LIB_DIRS.get(whl_name, [])
                     for extra_dir in extra_dirs:
                         search_path.append(os.path.join(whl, extra_dir.replace('/', os.path.sep)))
+
             return search_path
 
         def create_runtime(appname, mainscript, use_console):
@@ -1015,7 +1022,10 @@ class build_apps(setuptools.Command):
         source_dir = os.path.dirname(source_path)
         target_dir = os.path.dirname(target_path)
         base = os.path.basename(target_path)
-        self.copy_dependencies(target_path, target_dir, search_path + [source_dir], base)
+
+        if source_dir not in search_path:
+            search_path = search_path + [source_dir]
+        self.copy_dependencies(target_path, target_dir, search_path, base)
 
     def copy_dependencies(self, target_path, target_dir, search_path, referenced_by):
         """ Copies the dependencies of target_path into target_dir. """
@@ -1030,8 +1040,7 @@ class build_apps(setuptools.Command):
             pe = pefile.PEFile()
             pe.read(fp)
             for lib in pe.imports:
-                if not lib.lower().startswith('api-ms-win-'):
-                    deps.append(lib)
+                deps.append(lib)
 
         elif magic == b'\x7FELF':
             # Elf magic.  Used on (among others) Linux and FreeBSD.
@@ -1350,17 +1359,22 @@ class bdist_apps(setuptools.Command):
         nsi.write('Section "" SecCore\n')
         nsi.write('  SetOutPath "$INSTDIR"\n')
         curdir = ""
+        nsi_dir = p3d.Filename.fromOsSpecific(build_cmd.build_base)
+        build_root_dir = p3d.Filename.fromOsSpecific(build_dir)
         for root, dirs, files in os.walk(build_dir):
             for name in files:
                 basefile = p3d.Filename.fromOsSpecific(os.path.join(root, name))
                 file = p3d.Filename(basefile)
                 file.makeAbsolute()
-                file.makeRelativeTo(build_dir)
-                outdir = file.getDirname().replace('/', '\\')
+                file.makeRelativeTo(nsi_dir)
+                outdir = p3d.Filename(basefile)
+                outdir.makeAbsolute()
+                outdir.makeRelativeTo(build_root_dir)
+                outdir = outdir.getDirname().replace('/', '\\')
                 if curdir != outdir:
                     nsi.write('  SetOutPath "$INSTDIR\\%s"\n' % outdir)
                     curdir = outdir
-                nsi.write('  File "%s"\n' % (basefile.toOsSpecific()))
+                nsi.write('  File "%s"\n' % (file.toOsSpecific()))
         nsi.write('  SetOutPath "$INSTDIR"\n')
         nsi.write('  WriteUninstaller "$INSTDIR\\Uninstall.exe"\n')
         nsi.write('  ; Start menu items\n')

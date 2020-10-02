@@ -218,6 +218,7 @@ private:
   friend class AsyncTask;
   friend class AsyncTaskManager;
   friend class AsyncTaskSortWakeTime;
+  friend class PythonTask;
 };
 
 INLINE std::ostream &operator << (std::ostream &out, const AsyncTaskChain &chain) {

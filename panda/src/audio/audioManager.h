@@ -106,13 +106,11 @@ PUBLISHED:
   virtual void set_volume(PN_stdfloat volume) = 0;
   virtual PN_stdfloat get_volume() const = 0;
 
-/*
- * Turn the manager on or off.  If you play a sound while the manager is
- * inactive, it won't start.  If you deactivate the manager while sounds are
- * playing, they'll stop.  If you activate the manager while looping sounds
- * are playing (those that have a loop_count of zero), they will start playing
- * from the beginning of their loop.  inits to true.
- */
+  // Turn the manager on or off.  If you play a sound while the manager is
+  // inactive, it won't start.  If you deactivate the manager while sounds are
+  // playing, they'll stop.  If you activate the manager while looping sounds
+  // are playing (those that have a loop_count of zero), they will start
+  // playing from the beginning of their loop.  Defaults to true.
   virtual void set_active(bool flag) = 0;
   virtual bool get_active() const = 0;
 

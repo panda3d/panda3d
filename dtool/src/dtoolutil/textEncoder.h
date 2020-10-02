@@ -36,6 +36,7 @@ PUBLISHED:
     E_iso8859,
     E_utf8,
     E_utf16be,
+    E_cp437,
 
     // Deprecated alias for E_utf16be
     E_unicode = E_utf16be,

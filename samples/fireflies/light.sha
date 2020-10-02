@@ -14,7 +14,6 @@ void vshader(float4 vtx_position : POSITION,
 }
 
 void fshader(float4 l_pos: TEXCOORD0,
-             float4 l_scale: TEXCOORD1,
              uniform sampler2D k_texnormal : TEXUNIT0,
              uniform sampler2D k_texalbedo : TEXUNIT1,
              uniform sampler2D k_texdepth  : TEXUNIT2,

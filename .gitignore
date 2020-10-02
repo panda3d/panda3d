@@ -3,6 +3,7 @@
 /thirdparty/
 /targetroot/
 /dstroot/
+/sdks/
 
 # Core dumps and traces
 core

@@ -818,6 +818,7 @@ public:
   PFNGLGETCOMPRESSEDTEXIMAGEPROC _glGetCompressedTexImage;
 
   bool _supports_bgr;
+  bool _supports_bgra_read;
   bool _supports_packed_dabc;
   bool _supports_packed_ufloat;
 

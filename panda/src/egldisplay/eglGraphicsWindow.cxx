@@ -12,6 +12,9 @@
  */
 
 #include "eglGraphicsWindow.h"
+
+#ifdef HAVE_X11
+
 #include "eglGraphicsStateGuardian.h"
 #include "config_egldisplay.h"
 #include "eglGraphicsPipe.h"
@@ -26,6 +29,14 @@
 #include "lightReMutexHolder.h"
 #include "nativeWindowHandle.h"
 #include "get_x11.h"
+
+#ifndef EGL_GL_COLORSPACE_KHR
+#define EGL_GL_COLORSPACE_KHR 0x309D
+#endif
+
+#ifndef EGL_GL_COLORSPACE_SRGB_KHR
+#define EGL_GL_COLORSPACE_SRGB_KHR 0x3089
+#endif
 
 TypeHandle eglGraphicsWindow::_type_handle;
 
@@ -44,7 +55,7 @@ eglGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
 {
   eglGraphicsPipe *egl_pipe;
   DCAST_INTO_V(egl_pipe, _pipe);
-  _egl_display = egl_pipe->_egl_display;
+  _egl_display = egl_pipe->get_egl_display();
   _egl_surface = 0;
 }
 
@@ -206,7 +217,7 @@ open_window() {
   if (_gsg == 0) {
     // There is no old gsg.  Create a new one.
     eglgsg = new eglGraphicsStateGuardian(_engine, _pipe, nullptr);
-    eglgsg->choose_pixel_format(_fb_properties, egl_pipe->get_display(), egl_pipe->get_screen(), false, false);
+    eglgsg->choose_pixel_format(_fb_properties, egl_pipe, true, false, false);
     _gsg = eglgsg;
   } else {
     // If the old gsg has the wrong pixel format, create a new one that shares
@@ -214,7 +225,7 @@ open_window() {
     DCAST_INTO_R(eglgsg, _gsg, false);
     if (!eglgsg->get_fb_properties().subsumes(_fb_properties)) {
       eglgsg = new eglGraphicsStateGuardian(_engine, _pipe, eglgsg);
-      eglgsg->choose_pixel_format(_fb_properties, egl_pipe->get_display(), egl_pipe->get_screen(), false, false);
+      eglgsg->choose_pixel_format(_fb_properties, egl_pipe, true, false, false);
       _gsg = eglgsg;
     }
   }
@@ -233,7 +244,16 @@ open_window() {
     return false;
   }
 
-  _egl_surface = eglCreateWindowSurface(_egl_display, eglgsg->_fbconfig, (NativeWindowType) _xwindow, nullptr);
+  EGLint attribs[4];
+  EGLint *attribs_p = nullptr;
+  if (eglgsg->get_fb_properties().get_srgb_color()) {
+    attribs[0] = EGL_GL_COLORSPACE_KHR;
+    attribs[1] = EGL_GL_COLORSPACE_SRGB_KHR;
+    attribs[2] = EGL_NONE;
+    attribs[3] = EGL_NONE;
+    attribs_p = attribs;
+  }
+  _egl_surface = eglCreateWindowSurface(_egl_display, eglgsg->_fbconfig, (NativeWindowType) _xwindow, attribs_p);
   if (eglGetError() != EGL_SUCCESS) {
     egldisplay_cat.error()
       << "Failed to create window surface.\n";
@@ -258,3 +278,5 @@ open_window() {
 
   return true;
 }
+
+#endif  // HAVE_X11

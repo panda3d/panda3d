@@ -132,6 +132,7 @@ private:
   void adjust_z_order(WindowProperties::ZOrder last_z_order,
                       WindowProperties::ZOrder this_z_order);
   void initialize_input_devices();
+  bool enable_raw_input();
   void handle_raw_input(HRAWINPUT hraw);
   void track_mouse_leaving(HWND hwnd);
   bool confine_cursor();
@@ -190,6 +191,7 @@ private:
   bool _ralt_down;
 
   GraphicsWindowInputDevice *_input;
+  bool _raw_input_enabled = false;
 
   // following adds support platform specfic window processing functions.
   typedef pset<GraphicsWindowProc*> WinProcClasses;

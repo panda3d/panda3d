@@ -24,7 +24,7 @@ Installing Panda3D
 ==================
 
 The latest Panda3D SDK can be downloaded from
-[this page](https://www.panda3d.org/download/sdk-1-10-6/).
+[this page](https://www.panda3d.org/download/sdk-1-10-7/).
 If you are familiar with installing Python packages, you can use
 the following command:
 
@@ -64,8 +64,8 @@ depending on whether you are on a 32-bit or 64-bit system, or you can
 [click here](https://github.com/rdb/panda3d-thirdparty) for instructions on
 building them from source.
 
-- https://www.panda3d.org/download/panda3d-1.10.6/panda3d-1.10.6-tools-win64.zip
-- https://www.panda3d.org/download/panda3d-1.10.6/panda3d-1.10.6-tools-win32.zip
+- https://www.panda3d.org/download/panda3d-1.10.7/panda3d-1.10.7-tools-win64.zip
+- https://www.panda3d.org/download/panda3d-1.10.7/panda3d-1.10.7-tools-win32.zip
 
 After acquiring these dependencies, you can build Panda3D from the command
 prompt using the following command.  Change the `--msvc-version` option based
@@ -100,7 +100,7 @@ for you to install, depending on your distribution).
 The following command illustrates how to build Panda3D with some common
 options:
 ```bash
-python makepanda/makepanda.py --everything --installer --no-egl --no-gles --no-gles2 --no-opencv
+python3 makepanda/makepanda.py --everything --installer --no-egl --no-gles --no-gles2 --no-opencv
 ```
 
 You will probably see some warnings saying that it's unable to find several
@@ -113,7 +113,7 @@ If you are on Ubuntu, this command should cover the most frequently
 used third-party packages:
 
 ```bash
-sudo apt-get install build-essential pkg-config fakeroot python-dev libpng-dev libjpeg-dev libtiff-dev zlib1g-dev libssl-dev libx11-dev libgl1-mesa-dev libxrandr-dev libxxf86dga-dev libxcursor-dev bison flex libfreetype6-dev libvorbis-dev libeigen3-dev libopenal-dev libode-dev libbullet-dev nvidia-cg-toolkit libgtk2.0-dev libassimp-dev libopenexr-dev
+sudo apt-get install build-essential pkg-config fakeroot python3-dev libpng-dev libjpeg-dev libtiff-dev zlib1g-dev libssl-dev libx11-dev libgl1-mesa-dev libxrandr-dev libxxf86dga-dev libxcursor-dev bison flex libfreetype6-dev libvorbis-dev libeigen3-dev libopenal-dev libode-dev libbullet-dev nvidia-cg-toolkit libgtk2.0-dev libassimp-dev libopenexr-dev
 ```
 
 Once Panda3D has built, you can either install the .deb or .rpm package that
@@ -136,7 +136,7 @@ macOS
 -----
 
 On macOS, you will need to download a set of precompiled thirdparty packages in order to
-compile Panda3D, which can be acquired from [here](https://www.panda3d.org/download/panda3d-1.10.6/panda3d-1.10.6-tools-mac.tar.gz).
+compile Panda3D, which can be acquired from [here](https://www.panda3d.org/download/panda3d-1.10.7/panda3d-1.10.7-tools-mac.tar.gz).
 
 After placing the thirdparty directory inside the panda3d source directory,
 you may build Panda3D using a command like the following:

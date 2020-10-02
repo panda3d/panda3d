@@ -94,12 +94,12 @@ class DirectObject:
         if hasattr(self, '_taskList'):
             tasks = [task.name for task in self._taskList.values()]
         if len(events) or len(tasks):
-            estr = choice(len(events), 'listening to events: %s' % events, '')
-            andStr = choice(len(events) and len(tasks), ' and ', '')
-            tstr = choice(len(tasks), '%srunning tasks: %s' % (andStr, tasks), '')
+            estr = ('listening to events: %s' % events if len(events) else '')
+            andStr = (' and ' if len(events) and len(tasks) else '')
+            tstr = ('%srunning tasks: %s' % (andStr, tasks) if len(tasks) else '')
             notify = directNotify.newCategory('LeakDetect')
-            func = choice(getRepository()._crashOnProactiveLeakDetect,
-                          self.notify.error, self.notify.warning)
+            crash = getattr(getRepository(), '_crashOnProactiveLeakDetect', False)
+            func = (self.notify.error if crash else self.notify.warning)
             func('destroyed %s instance is still %s%s' % (self.__class__.__name__, estr, tstr))
 
     #snake_case alias:

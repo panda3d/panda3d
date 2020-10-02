@@ -15,6 +15,8 @@
 
 #ifdef HAVE_PYTHON
 
+#include "vector_string.h"
+
 /**
  * Extracts the indicated number of bytes in the stream and returns them as a
  * string (or bytes, in Python 3).  Returns empty string at end-of-file.
@@ -23,12 +25,24 @@ PyObject *Extension<StreamReader>::
 extract_bytes(size_t size) {
   std::istream *in = _this->get_istream();
   if (in->eof() || in->fail() || size == 0) {
+    // Note that this is only safe to call with size 0 while the GIL is held.
     return PyBytes_FromStringAndSize(nullptr, 0);
   }
 
   PyObject *bytes = PyBytes_FromStringAndSize(nullptr, size);
-  in->read(PyBytes_AS_STRING(bytes), size);
+  char *buffer = (char *)PyBytes_AS_STRING(bytes);
+
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+  PyThreadState *_save;
+  Py_UNBLOCK_THREADS
+#endif  // HAVE_THREADS && !SIMPLE_THREADS
+
+  in->read(buffer, size);
   size_t read_bytes = in->gcount();
+
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+  Py_BLOCK_THREADS
+#endif  // HAVE_THREADS && !SIMPLE_THREADS
 
   if (read_bytes == size || _PyBytes_Resize(&bytes, read_bytes) == 0) {
     return bytes;
@@ -47,6 +61,11 @@ extract_bytes(size_t size) {
  */
 PyObject *Extension<StreamReader>::
 readline() {
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+  PyThreadState *_save;
+  Py_UNBLOCK_THREADS
+#endif  // HAVE_THREADS && !SIMPLE_THREADS
+
   std::istream *in = _this->get_istream();
 
   std::string line;
@@ -60,6 +79,10 @@ readline() {
     ch = in->get();
   }
 
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+  Py_BLOCK_THREADS
+#endif  // HAVE_THREADS && !SIMPLE_THREADS
+
   return PyBytes_FromStringAndSize(line.data(), line.size());
 }
 
@@ -69,18 +92,46 @@ readline() {
  */
 PyObject *Extension<StreamReader>::
 readlines() {
-  PyObject *lst = PyList_New(0);
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+  PyThreadState *_save;
+  Py_UNBLOCK_THREADS
+#endif  // HAVE_THREADS && !SIMPLE_THREADS
+
+  std::istream *in = _this->get_istream();
+  vector_string lines;
+
+  while (true) {
+    std::string line;
+    int ch = in->get();
+    while (ch != EOF && !in->fail()) {
+      line += ch;
+      if (ch == '\n' || in->eof()) {
+        // Here's the newline character.
+        break;
+      }
+      ch = in->get();
+    }
+
+    if (line.empty()) {
+      break;
+    }
+
+    lines.push_back(std::move(line));
+  }
+
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+  Py_BLOCK_THREADS
+#endif  // HAVE_THREADS && !SIMPLE_THREADS
+
+  PyObject *lst = PyList_New(lines.size());
   if (lst == nullptr) {
     return nullptr;
   }
 
-  PyObject *py_line = readline();
-
-  while (PyBytes_GET_SIZE(py_line) > 0) {
-    PyList_Append(lst, py_line);
-    Py_DECREF(py_line);
-
-    py_line = readline();
+  Py_ssize_t i = 0;
+  for (const std::string &line : lines) {
+    PyObject *py_line = PyBytes_FromStringAndSize(line.data(), line.size());
+    PyList_SET_ITEM(lst, i++, py_line);
   }
 
   return lst;

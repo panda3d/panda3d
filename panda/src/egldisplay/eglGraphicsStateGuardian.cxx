@@ -25,19 +25,11 @@ TypeHandle eglGraphicsStateGuardian::_type_handle;
 eglGraphicsStateGuardian::
 eglGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
        eglGraphicsStateGuardian *share_with) :
-#ifdef OPENGLES_2
-  GLES2GraphicsStateGuardian(engine, pipe)
-#else
-  GLESGraphicsStateGuardian(engine, pipe)
-#endif
+  BaseGraphicsStateGuardian(engine, pipe)
 {
   _share_context=0;
   _context=0;
-  _display=0;
   _egl_display=0;
-  _screen=0;
-  _visual=0;
-  _visuals=0;
   _fbconfig=0;
 
   if (share_with != nullptr) {
@@ -51,9 +43,6 @@ eglGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
  */
 eglGraphicsStateGuardian::
 ~eglGraphicsStateGuardian() {
-  if (_visuals != nullptr) {
-    XFree(_visuals);
-  }
   if (_context != (EGLContext)nullptr) {
     if (!eglDestroyContext(_egl_display, _context)) {
       egldisplay_cat.error() << "Failed to destroy EGL context: "
@@ -108,11 +97,6 @@ get_properties(FrameBufferProperties &properties,
     slow = true;
   }
 
-  if ((surface_type & EGL_WINDOW_BIT)==0) {
-    // We insist on having a context that will support an onscreen window.
-    return;
-  }
-
   properties.set_back_buffers(1);
   properties.set_rgb_color(1);
   properties.set_rgba_bits(red_size, green_size, blue_size, alpha_size);
@@ -120,9 +104,9 @@ get_properties(FrameBufferProperties &properties,
   properties.set_depth_bits(depth_size);
   properties.set_multisamples(samples);
 
-  // Set both hardware and software bits, indicating not-yet-known.
-  properties.set_force_software(1);
-  properties.set_force_hardware(1);
+  // "slow" likely indicates no hardware acceleration.
+  properties.set_force_software(slow);
+  properties.set_force_hardware(!slow);
 }
 
 /**
@@ -131,26 +115,23 @@ get_properties(FrameBufferProperties &properties,
  */
 void eglGraphicsStateGuardian::
 choose_pixel_format(const FrameBufferProperties &properties,
-        X11_Display *display,
-        int screen, bool need_pbuffer, bool need_pixmap) {
+                    eglGraphicsPipe *egl_pipe, bool need_window,
+                    bool need_pbuffer, bool need_pixmap) {
 
-  _display = display;
-  _egl_display = eglGetDisplay((NativeDisplayType) display);
-  _screen = screen;
+  _egl_display = egl_pipe->get_egl_display();
   _context = 0;
   _fbconfig = 0;
-  _visual = 0;
-  _visuals = 0;
   _fbprops.clear();
 
   int attrib_list[] = {
-#ifdef OPENGLES_1
+#if defined(OPENGLES_1)
     EGL_RENDERABLE_TYPE, EGL_OPENGL_ES_BIT,
-#endif
-#ifdef OPENGLES_2
+#elif defined(OPENGLES_2)
     EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+#else
+    EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT,
 #endif
-    EGL_SURFACE_TYPE, EGL_DONT_CARE,
+    EGL_SURFACE_TYPE, need_window ? EGL_WINDOW_BIT : EGL_DONT_CARE,
     EGL_NONE
   };
 
@@ -206,23 +187,70 @@ choose_pixel_format(const FrameBufferProperties &properties,
       best_props = fbprops;
     }
   }
-  int depth = DefaultDepth(_display, _screen);
-  _visual = new XVisualInfo;
-  XMatchVisualInfo(_display, _screen, depth, TrueColor, _visual);
+#ifdef HAVE_X11
+  X11_Display *display = egl_pipe->get_display();
+  if (display) {
+    int screen = egl_pipe->get_screen();
+    int depth = DefaultDepth(display, screen);
+    _visual = new XVisualInfo;
+    XMatchVisualInfo(display, screen, depth, TrueColor, _visual);
+  }
+#endif
 
   if (best_quality > 0) {
     egldisplay_cat.debug()
       << "Chosen config " << best_result << ": " << best_props << "\n";
     _fbconfig = configs[best_result];
+
+    EGLint attribs[32];
+    int n = 0;
+
 #ifdef OPENGLES_2
-    EGLint context_attribs[] = {EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE};
-    _context = eglCreateContext(_egl_display, _fbconfig, _share_context, context_attribs);
-#else
-    _context = eglCreateContext(_egl_display, _fbconfig, _share_context, nullptr);
+    attribs[n++] = EGL_CONTEXT_CLIENT_VERSION;
+    attribs[n++] = 2;
+#elif defined(OPENGLES_1)
+#else  // Regular OpenGL
+    if (gl_version.get_num_words() > 0) {
+      attribs[n++] = EGL_CONTEXT_MAJOR_VERSION;
+      attribs[n++] = gl_version[0];
+      if (gl_version.get_num_words() > 1) {
+        attribs[n++] = EGL_CONTEXT_MINOR_VERSION;
+        attribs[n++] = gl_version[1];
+      }
+    }
+    if (gl_debug) {
+      attribs[n++] = EGL_CONTEXT_OPENGL_DEBUG;
+      attribs[n++] = EGL_TRUE;
+    }
+    if (gl_forward_compatible) {
+      attribs[n++] = EGL_CONTEXT_OPENGL_FORWARD_COMPATIBLE;
+      attribs[n++] = EGL_TRUE;
+    }
 #endif
+    attribs[n] = EGL_NONE;
+
+    _context = eglCreateContext(_egl_display, _fbconfig, _share_context, (n > 0) ? attribs : nullptr);
+
     int err = eglGetError();
     if (_context && err == EGL_SUCCESS) {
-      if (_visual) {
+#ifdef HAVE_X11
+      if (!display || _visual)
+#endif
+      {
+        // This is set during window creation, but for now we have to pretend
+        // that we can honor the request, if we support the extension.
+        if (properties.get_srgb_color()) {
+          const char *extensions = eglQueryString(_egl_display, EGL_EXTENSIONS);
+          if (extensions != nullptr) {
+            vector_string tokens;
+            extract_words(extensions, tokens);
+
+            if (std::find(tokens.begin(), tokens.end(), "EGL_KHR_gl_colorspace") != tokens.end()) {
+              best_props.set_srgb_color(true);
+            }
+          }
+        }
+
         _fbprops = best_props;
         delete[] configs;
         return;
@@ -234,8 +262,9 @@ choose_pixel_format(const FrameBufferProperties &properties,
       << get_egl_error_string(err) << "\n";
     _fbconfig = 0;
     _context = 0;
+#ifdef HAVE_X11
     _visual = 0;
-    _visuals = 0;
+#endif
   }
 
   egldisplay_cat.error() <<
@@ -249,23 +278,11 @@ choose_pixel_format(const FrameBufferProperties &properties,
  */
 void eglGraphicsStateGuardian::
 reset() {
-#ifdef OPENGLES_2
-  GLES2GraphicsStateGuardian::reset();
-#else
-  GLESGraphicsStateGuardian::reset();
-#endif
+  BaseGraphicsStateGuardian::reset();
 
-  // If "Mesa" is present, assume software.  However, if "Mesa DRI" is found,
-  // it's actually a Mesa-based OpenGL layer running over a hardware driver.
-  if (_gl_renderer == "Software Rasterizer" ||
-      (_gl_renderer.find("Mesa") != std::string::npos &&
-       _gl_renderer.find("Mesa DRI") == std::string::npos)) {
-    // It's Mesa, therefore probably a software context.
+  if (_gl_renderer == "Software Rasterizer") {
     _fbprops.set_force_software(1);
     _fbprops.set_force_hardware(0);
-  } else {
-    _fbprops.set_force_hardware(1);
-    _fbprops.set_force_software(0);
   }
 }
 
@@ -289,13 +306,11 @@ egl_is_at_least_version(int major_version, int minor_version) const {
  */
 void eglGraphicsStateGuardian::
 gl_flush() const {
+#ifdef HAVE_X11
   // This call requires synchronization with X.
   LightReMutexHolder holder(eglGraphicsPipe::_x_mutex);
-#ifdef OPENGLES_2
-  GLES2GraphicsStateGuardian::gl_flush();
-#else
-  GLESGraphicsStateGuardian::gl_flush();
 #endif
+  BaseGraphicsStateGuardian::gl_flush();
 }
 
 /**
@@ -303,13 +318,11 @@ gl_flush() const {
  */
 GLenum eglGraphicsStateGuardian::
 gl_get_error() const {
+#ifdef HAVE_X11
   // This call requires synchronization with X.
   LightReMutexHolder holder(eglGraphicsPipe::_x_mutex);
-#ifdef OPENGLES_2
-  return GLES2GraphicsStateGuardian::gl_get_error();
-#else
-  return GLESGraphicsStateGuardian::gl_get_error();
 #endif
+  return BaseGraphicsStateGuardian::gl_get_error();
 }
 
 /**
@@ -317,11 +330,7 @@ gl_get_error() const {
  */
 void eglGraphicsStateGuardian::
 query_gl_version() {
-#ifdef OPENGLES_2
-  GLES2GraphicsStateGuardian::query_gl_version();
-#else
-  GLESGraphicsStateGuardian::query_gl_version();
-#endif
+  BaseGraphicsStateGuardian::query_gl_version();
 
   // Calling eglInitialize on an already-initialized display will just provide
   // us the version numbers.
@@ -336,9 +345,12 @@ query_gl_version() {
 #ifdef OPENGLES_2
   if (gles2gsg_cat.is_debug()) {
     gles2gsg_cat.debug()
-#else
+#elif defined(OPENGLES_1)
   if (glesgsg_cat.is_debug()) {
     glesgsg_cat.debug()
+#else
+  if (glgsg_cat.is_debug()) {
+    glgsg_cat.debug()
 #endif
       << "EGL_VERSION = " << _egl_version_major << "." << _egl_version_minor
       << "\n";

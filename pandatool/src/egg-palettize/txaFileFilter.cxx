@@ -30,8 +30,7 @@ NotifyCategoryDef(txafile, "");
 Configure(config_txaFileFilter);
 ConfigureFn(config_txaFileFilter) {
   TxaFileFilter::init_type();
-  TexturePool *pool = TexturePool::get_global_ptr();
-  pool->register_filter(new TxaFileFilter);
+  TexturePool::register_filter(new TxaFileFilter);
 }
 
 TypeHandle TxaFileFilter::_type_handle;

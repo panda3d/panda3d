@@ -663,7 +663,7 @@ get_proxies_for_url(const URLSpec &url) const {
  * Specifies the username:password string corresponding to a particular server
  * and/or realm, when demanded by the server.  Either or both of the server or
  * realm may be empty; if so, they match anything.  Also, the server may be
- * set to the special string "*proxy", which will match any proxy server.
+ * set to the special string `"*proxy"`, which will match any proxy server.
  *
  * If the username is set to the empty string, this clears the password for
  * the particular server/realm pair.

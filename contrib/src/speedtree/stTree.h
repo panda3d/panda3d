@@ -14,7 +14,7 @@
 #ifndef STTREE_H
 #define STTREE_H
 
-#include "pandabase.h"
+#include "contribbase.h"
 #include "typedReferenceCount.h"
 #include "namable.h"
 #include "speedtree_api.h"

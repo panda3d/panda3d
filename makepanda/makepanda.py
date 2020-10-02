@@ -9,8 +9,8 @@
 ########################################################################
 
 import sys
-if sys.version_info < (3, 5):
-    print("This version of Python is not supported, use version 3.5 or higher.")
+if sys.version_info < (3, 6):
+    print("This version of Python is not supported, use version 3.6 or higher.")
     exit(1)
 
 try:
@@ -168,7 +168,7 @@ def parseopts(args):
     # Options for which to display a deprecation warning.
     removedopts = [
         "use-touchinput", "no-touchinput", "no-awesomium", "no-directscripts",
-        "no-carbon", "universal", "no-physx", "no-rocket"
+        "no-carbon", "universal", "no-physx", "no-rocket", "host"
         ]
 
     # All recognized options.
@@ -1133,8 +1133,12 @@ def CompileCxx(obj,src,opts):
             cmd += "/DWINVER=0x600 "
 
             cmd += "/Fo" + obj + " /nologo /c"
-            if GetTargetArch() != 'x64' and (not PkgSkip("SSE2") or 'SSE2' in opts):
-                cmd += " /arch:SSE2"
+            if GetTargetArch() == 'x86':
+                # x86 (32 bit) MSVC 2015+ defaults to /arch:SSE2
+                if not PkgSkip("SSE2") or 'SSE2' in opts:   # x86 with SSE2
+                    cmd += " /arch:SSE2"    # let's still be explicit and pass in /arch:SSE2
+                else:                                       # x86 without SSE2
+                    cmd += " /arch:IA32"
             for x in ipath: cmd += " /I" + x
             for (opt,dir) in INCDIRECTORIES:
                 if (opt=="ALWAYS") or (opt in opts): cmd += " /I" + BracketNameWithQuotes(dir)
@@ -1469,7 +1473,7 @@ def CompileFlex(wobj,wsrc,opts):
             oscmd(flex +    " -P" + pre + " -o"+wdst+" "+wsrc)
 
     # Finally, compile the generated source file.
-    CompileCxx(wobj,wdst,opts)
+    CompileCxx(wobj, wdst, opts + ["FLEX"])
 
 ########################################################################
 ##
@@ -2422,6 +2426,9 @@ def WriteConfigSettings():
         if int(platform.mac_ver()[0][3]) <= 4:
             dtool_config["PHAVE_UCONTEXT_H"] = 'UNDEF'
 
+    if PkgSkip("X11"):
+        dtool_config["HAVE_GLX"] = 'UNDEF'
+
     if (GetTarget() == "freebsd"):
         dtool_config["IS_LINUX"] = 'UNDEF'
         dtool_config["HAVE_VIDEO4LINUX"] = 'UNDEF'
@@ -3178,7 +3185,7 @@ if (PkgSkip("BULLET")==0):
     CopyAllHeaders('panda/metalibs/pandabullet')
 
 if (PkgSkip("SPEEDTREE")==0):
-    CopyAllHeaders('panda/src/speedtree')
+    CopyAllHeaders('contrib/src/speedtree')
 
 if (PkgSkip("DIRECT")==0):
     CopyAllHeaders('direct/src/directbase')
@@ -4584,13 +4591,33 @@ if (GetTarget() == 'windows' and PkgSkip("GL")==0):
 # DIRECTORY: panda/src/egldisplay/
 #
 
-if (PkgSkip("EGL")==0 and PkgSkip("GLES")==0 and PkgSkip("X11")==0):
+# If we're not compiling with any windowing system at all, but we do have EGL,
+# we can use that to create a headless libpandagl instead.
+if not PkgSkip("EGL") and not PkgSkip("GL") and PkgSkip("X11") and GetTarget() not in ('windows', 'darwin'):
+  DefSymbol('EGL', 'HAVE_EGL', '')
+  OPTS=['DIR:panda/src/egldisplay', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGL', 'GL', 'EGL']
+  TargetAdd('pandagl_egldisplay_composite1.obj', opts=OPTS, input='p3egldisplay_composite1.cxx')
+  OPTS=['DIR:panda/metalibs/pandagl', 'BUILDING:PANDAGL', 'GL', 'EGL']
+  TargetAdd('pandagl_pandagl.obj', opts=OPTS, input='pandagl.cxx')
+  TargetAdd('libpandagl.dll', input='pandagl_pandagl.obj')
+  TargetAdd('libpandagl.dll', input='p3glgsg_config_glgsg.obj')
+  TargetAdd('libpandagl.dll', input='p3glgsg_glgsg.obj')
+  TargetAdd('libpandagl.dll', input='pandagl_egldisplay_composite1.obj')
+  TargetAdd('libpandagl.dll', input=COMMON_PANDA_LIBS)
+  TargetAdd('libpandagl.dll', opts=['MODULE', 'GL', 'EGL', 'CGGL'])
+
+#
+# DIRECTORY: panda/src/egldisplay/
+#
+
+if (PkgSkip("EGL")==0 and PkgSkip("GLES")==0):
   DefSymbol('GLES', 'OPENGLES_1', '')
   OPTS=['DIR:panda/src/egldisplay', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGLES',  'GLES', 'EGL']
   TargetAdd('pandagles_egldisplay_composite1.obj', opts=OPTS, input='p3egldisplay_composite1.cxx')
   OPTS=['DIR:panda/metalibs/pandagles', 'BUILDING:PANDAGLES', 'GLES', 'EGL']
   TargetAdd('pandagles_pandagles.obj', opts=OPTS, input='pandagles.cxx')
-  TargetAdd('libpandagles.dll', input='p3x11display_composite1.obj')
+  if not PkgSkip("X11"):
+    TargetAdd('libpandagles.dll', input='p3x11display_composite1.obj')
   TargetAdd('libpandagles.dll', input='pandagles_pandagles.obj')
   TargetAdd('libpandagles.dll', input='p3glesgsg_config_glesgsg.obj')
   TargetAdd('libpandagles.dll', input='p3glesgsg_glesgsg.obj')
@@ -4602,13 +4629,14 @@ if (PkgSkip("EGL")==0 and PkgSkip("GLES")==0 and PkgSkip("X11")==0):
 # DIRECTORY: panda/src/egldisplay/
 #
 
-if (PkgSkip("EGL")==0 and PkgSkip("GLES2")==0 and PkgSkip("X11")==0):
+if (PkgSkip("EGL")==0 and PkgSkip("GLES2")==0):
   DefSymbol('GLES2', 'OPENGLES_2', '')
   OPTS=['DIR:panda/src/egldisplay', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGLES2',  'GLES2', 'EGL']
   TargetAdd('pandagles2_egldisplay_composite1.obj', opts=OPTS, input='p3egldisplay_composite1.cxx')
   OPTS=['DIR:panda/metalibs/pandagles2', 'BUILDING:PANDAGLES2', 'GLES2', 'EGL']
   TargetAdd('pandagles2_pandagles2.obj', opts=OPTS, input='pandagles2.cxx')
-  TargetAdd('libpandagles2.dll', input='p3x11display_composite1.obj')
+  if not PkgSkip("X11"):
+    TargetAdd('libpandagles2.dll', input='p3x11display_composite1.obj')
   TargetAdd('libpandagles2.dll', input='pandagles2_pandagles2.obj')
   TargetAdd('libpandagles2.dll', input='p3gles2gsg_config_gles2gsg.obj')
   TargetAdd('libpandagles2.dll', input='p3gles2gsg_gles2gsg.obj')
@@ -4776,15 +4804,15 @@ if (PkgSkip("PANDAPHYSICS")==0):
   PyTargetAdd('physics.pyd', input=COMMON_PANDA_LIBS)
 
 #
-# DIRECTORY: panda/src/speedtree/
+# DIRECTORY: contrib/src/speedtree/
 #
 
 if (PkgSkip("SPEEDTREE")==0):
-  OPTS=['DIR:panda/src/speedtree', 'BUILDING:PANDASPEEDTREE', 'SPEEDTREE']
+  OPTS=['DIR:contrib/src/speedtree', 'BUILDING:PANDASPEEDTREE', 'SPEEDTREE']
   TargetAdd('pandaspeedtree_composite1.obj', opts=OPTS, input='pandaspeedtree_composite1.cxx')
-  IGATEFILES=GetDirectoryContents('panda/src/speedtree', ["*.h", "*_composite*.cxx"])
+  IGATEFILES=GetDirectoryContents('contrib/src/speedtree', ["*.h", "*_composite*.cxx"])
   TargetAdd('libpandaspeedtree.in', opts=OPTS, input=IGATEFILES)
-  TargetAdd('libpandaspeedtree.in', opts=['IMOD:libpandaspeedtree', 'ILIB:libpandaspeedtree', 'SRCDIR:panda/src/speedtree'])
+  TargetAdd('libpandaspeedtree.in', opts=['IMOD:libpandaspeedtree', 'ILIB:libpandaspeedtree', 'SRCDIR:contrib/src/speedtree'])
 
   PyTargetAdd('libpandaspeedtree_module.obj', input='libpandaspeedtree.in')
   PyTargetAdd('libpandaspeedtree_module.obj', opts=OPTS)

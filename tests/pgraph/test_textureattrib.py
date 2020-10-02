@@ -9,6 +9,19 @@ tex2 = core.Texture("tex2")
 tex3 = core.Texture("tex3")
 
 
+def test_textureattrib_compose_empty():
+    # Tests a case in which a child node does not alter the original.
+    tattr1 = core.TextureAttrib.make()
+    tattr1 = tattr1.add_on_stage(stage1, tex1)
+
+    tattr2 = core.TextureAttrib.make()
+
+    tattr3 = tattr1.compose(tattr2)
+    assert tattr3.get_num_on_stages() == 1
+
+    assert stage1 in tattr3.on_stages
+
+
 def test_textureattrib_compose_add():
     # Tests a case in which a child node adds another texture.
     tattr1 = core.TextureAttrib.make()
@@ -22,6 +35,21 @@ def test_textureattrib_compose_add():
 
     assert stage1 in tattr3.on_stages
     assert stage2 in tattr3.on_stages
+
+
+def test_textureattrib_compose_override():
+    # Tests a case in which a child node overrides a texture.
+    tattr1 = core.TextureAttrib.make()
+    tattr1 = tattr1.add_on_stage(stage1, tex1)
+
+    tattr2 = core.TextureAttrib.make()
+    tattr2 = tattr2.add_on_stage(stage1, tex2)
+
+    tattr3 = tattr1.compose(tattr2)
+    assert tattr3.get_num_on_stages() == 1
+
+    assert stage1 in tattr3.on_stages
+    assert tattr3.get_on_texture(stage1) == tex2
 
 
 def test_textureattrib_compose_subtract():
@@ -75,6 +103,37 @@ def test_textureattrib_compose_alloff():
     assert tattr3.get_num_on_stages() == 0
     assert tattr3.get_num_off_stages() == 0
     assert tattr3.has_all_off()
+
+
+def test_textureattrib_implicit_sort():
+    # Tests that two TextureStages with same sort retain insertion order.
+    tattr1 = core.TextureAttrib.make()
+    tattr1 = tattr1.add_on_stage(stage1, tex1)
+    tattr1 = tattr1.add_on_stage(stage2, tex2)
+
+    assert tattr1.get_on_stage(0) == stage1
+    assert tattr1.get_on_stage(1) == stage2
+
+    tattr2 = core.TextureAttrib.make()
+    tattr2 = tattr2.add_on_stage(stage2, tex2)
+    tattr2 = tattr2.add_on_stage(stage1, tex1)
+
+    assert tattr2.get_on_stage(0) == stage2
+    assert tattr2.get_on_stage(1) == stage1
+
+    assert tattr1.compare_to(tattr2) == -tattr2.compare_to(tattr1)
+
+
+def test_textureattrib_replace():
+    # Test that replacing a texture doesn't create a unique TextureAttrib.
+    tattr1 = core.TextureAttrib.make()
+    tattr1 = tattr1.add_on_stage(stage1, tex1)
+
+    tattr2 = tattr1.add_on_stage(stage1, tex1)
+
+    assert tattr1.get_num_on_stages() == 1
+    assert tattr2.get_num_on_stages() == 1
+    assert tattr1.compare_to(tattr2) == 0
 
 
 def test_textureattrib_compare():
