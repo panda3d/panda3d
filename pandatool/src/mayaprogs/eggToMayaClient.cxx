@@ -11,22 +11,12 @@
  * @date 2020-10-01
  */
 
-#include "eggToMayaClient.h"
-
-/**
- * Initializes the EggToMayaClient.
- */
-EggToMayaClient::
-EggToMayaClient() :
-    EggToSomething("Maya", ".mb", true, false)
-{
-}
+#include "mayaConversionClient.h"
 
 /**
  * Entrypoint for egg2maya_client.
  */
 int main(int argc, char *argv[]) {
-    EggToMayaClient client;
-    client.parse_command_line(argc, argv);
+    MayaConversionClient client;
     return client.main(argc, argv, MayaConversionServer::ConversionType::CT_egg_to_maya);
 }
