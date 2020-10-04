@@ -50,7 +50,7 @@ connect(NetAddress server) {
   // Attempt to open a connection
   _conn = _qManager->open_TCP_client_connection(server, 0);
 
-  if (!_conn || !_conn.is_null()) {
+  if (!_conn ||  _conn.is_null()) {
     // This connection could not be opened
     return false;
   }
