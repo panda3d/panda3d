@@ -1,11 +1,11 @@
 if(NOT HAVE_AUDIO)
   return()
-elseif(NOT HAVE_FMODEX AND NOT HAVE_OPENAL)
+elseif(NOT HAVE_FMODCORE AND NOT HAVE_OPENAL)
   message(SEND_ERROR
     "You must have an audio backend for audio support! Turn off HAVE_AUDIO to ignore this.")
 endif()
 
-if(HAVE_FMODEX)
+if(HAVE_FMODCORE)
   set(P3FMOD_HEADERS
     config_fmodAudio.h
     fmodAudioManager.h
@@ -19,7 +19,7 @@ if(HAVE_FMODEX)
   composite_sources(p3fmod_audio P3FMOD_SOURCES)
   add_library(p3fmod_audio ${MODULE_TYPE} ${P3FMOD_HEADERS} ${P3FMOD_SOURCES})
   set_target_properties(p3fmod_audio PROPERTIES DEFINE_SYMBOL BUILDING_FMOD_AUDIO)
-  target_link_libraries(p3fmod_audio panda PKG::FMODEX)
+  target_link_libraries(p3fmod_audio panda PKG::FMODCORE)
 
   install(TARGETS p3fmod_audio
     EXPORT FMOD COMPONENT FMOD
