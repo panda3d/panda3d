@@ -11,6 +11,9 @@
  * @date 2003-01-22
  * Prior system by: cary
  * @author Stan Rosenbaum "Staque" - Spring 2006
+ * @author Brian Lach
+ * @date 2020-10-04
+ * Updated to FMOD Core.
  */
 
 #include "pandabase.h"
@@ -46,6 +49,8 @@ PN_stdfloat FmodAudioManager::_doppler_factor = 1;
 PN_stdfloat FmodAudioManager::_distance_factor = 1;
 PN_stdfloat FmodAudioManager::_drop_off_factor = 1;
 
+#define FMOD_MIN_SAMPLE_RATE 80000
+#define FMOD_MAX_SAMPLE_RATE 192000
 
 // Central dispatcher for audio errors.
 
@@ -72,7 +77,7 @@ FmodAudioManager() {
   ReMutexHolder holder(_lock);
   FMOD_RESULT result;
 
-  // We need a varible temporary to check the FMOD Version.
+  // We need a temporary variable to check the FMOD version.
   unsigned int      version;
 
   _all_managers.insert(this);
@@ -107,31 +112,55 @@ FmodAudioManager() {
     result = FMOD::System_Create(&_system);
     fmod_audio_errcheck("FMOD::System_Create()", result);
 
-    // Let check the Version of FMOD to make sure the Headers and Libraries
+    // Let check the version of FMOD to make sure the headers and libraries
     // are correct.
     result = _system->getVersion(&version);
     fmod_audio_errcheck("_system->getVersion()", result);
 
     if (version < FMOD_VERSION){
-      audio_error("You are using an old version of FMOD.  This program requires:" << FMOD_VERSION);
+      audio_error("You are using an old version of FMOD.  This program requires: " << FMOD_VERSION);
     }
 
-    // Set speaker mode.
-    if (fmod_speaker_mode.get_value() == FSM_unspecified) {
+    // Determine the sample rate and speaker mode for the system.  We will use
+    // the default configuration that FMOD chooses unless the user specifies
+    // custom values via config variables.
+
+    int sample_rate;
+    FMOD_SPEAKERMODE speaker_mode;
+    int num_raw_speakers;
+    _system->getSoftwareFormat(&sample_rate,
+                               &speaker_mode,
+                               &num_raw_speakers);
+
+    if (fmod_mixer_sample_rate != -1) {
+      if (fmod_mixer_sample_rate >= FMOD_MIN_SAMPLE_RATE &&
+          fmod_mixer_sample_rate <= FMOD_MAX_SAMPLE_RATE) {
+            sample_rate = fmod_mixer_sample_rate;
+      } else {
+        fmodAudio_cat.warning()
+          << "fmod-mixer-sample-rate had an out-of-range value: "
+          << fmod_mixer_sample_rate
+          << ". Valid range is [" << FMOD_MIN_SAMPLE_RATE << ", "
+          << FMOD_MAX_SAMPLE_RATE << "]\n";
+      }
+    }
+
+    if (fmod_speaker_mode == FSM_unspecified) {
       if (fmod_use_surround_sound) {
         // fmod-use-surround-sound is the old variable, now replaced by fmod-
         // speaker-mode.  This is for backward compatibility.
-        result = _system->setSpeakerMode(FMOD_SPEAKERMODE_5POINT1);
-        fmod_audio_errcheck("_system->setSpeakerMode()", result);
+        speaker_mode = FMOD_SPEAKERMODE_5POINT1;
       }
     } else {
-      FMOD_SPEAKERMODE speakerMode;
-      speakerMode = (FMOD_SPEAKERMODE) fmod_speaker_mode.get_value();
-      result = _system->setSpeakerMode(speakerMode);
-      fmod_audio_errcheck("_system->setSpeakerMode()", result);
+      speaker_mode = (FMOD_SPEAKERMODE)fmod_speaker_mode.get_value();
     }
 
-    // Now we Initialize the System.
+    // Set the mixer and speaker format.
+    result = _system->setSoftwareFormat(sample_rate, speaker_mode,
+                                        num_raw_speakers);
+    fmod_audio_errcheck("_system->setSoftwareFormat()", result);
+
+    // Now initialize the system.
     int nchan = fmod_number_of_sound_channels;
     int flags = FMOD_INIT_NORMAL;
 
@@ -258,73 +287,69 @@ make_dsp(const FilterProperties::FilterConfig &conf) {
 
   switch (conf._type) {
   case FilterProperties::FT_lowpass:
-    res1 = dsp->setParameter(FMOD_DSP_LOWPASS_CUTOFF,     conf._a);
-    res2 = dsp->setParameter(FMOD_DSP_LOWPASS_RESONANCE,  conf._b);
+    res1 = dsp->setParameterFloat(FMOD_DSP_LOWPASS_CUTOFF,     conf._a);
+    res2 = dsp->setParameterFloat(FMOD_DSP_LOWPASS_RESONANCE,  conf._b);
     break;
   case FilterProperties::FT_highpass:
-    res1 = dsp->setParameter(FMOD_DSP_HIGHPASS_CUTOFF,    conf._a);
-    res2 = dsp->setParameter(FMOD_DSP_HIGHPASS_RESONANCE, conf._b);
+    res1 = dsp->setParameterFloat(FMOD_DSP_HIGHPASS_CUTOFF,    conf._a);
+    res2 = dsp->setParameterFloat(FMOD_DSP_HIGHPASS_RESONANCE, conf._b);
     break;
   case FilterProperties::FT_echo:
-    res1 = dsp->setParameter(FMOD_DSP_ECHO_DRYMIX,        conf._a);
-    res2 = dsp->setParameter(FMOD_DSP_ECHO_WETMIX,        conf._b);
-    res3 = dsp->setParameter(FMOD_DSP_ECHO_DELAY,         conf._c);
-    res4 = dsp->setParameter(FMOD_DSP_ECHO_DECAYRATIO,    conf._d);
+    res1 = dsp->setParameterFloat(FMOD_DSP_ECHO_DRYLEVEL,        conf._a);
+    res2 = dsp->setParameterFloat(FMOD_DSP_ECHO_WETLEVEL,        conf._b);
+    res3 = dsp->setParameterFloat(FMOD_DSP_ECHO_DELAY,         conf._c);
+    res4 = dsp->setParameterFloat(FMOD_DSP_ECHO_FEEDBACK,    conf._d);
     break;
   case FilterProperties::FT_flange:
-    res1 = dsp->setParameter(FMOD_DSP_FLANGE_DRYMIX,      conf._a);
-    res2 = dsp->setParameter(FMOD_DSP_FLANGE_WETMIX,      conf._b);
-    res3 = dsp->setParameter(FMOD_DSP_FLANGE_DEPTH,       conf._c);
-    res4 = dsp->setParameter(FMOD_DSP_FLANGE_RATE,        conf._d);
+    res1 = dsp->setParameterFloat(FMOD_DSP_FLANGE_MIX,      conf._a);
+    res2 = dsp->setParameterFloat(FMOD_DSP_FLANGE_DEPTH,       conf._b);
+    res3 = dsp->setParameterFloat(FMOD_DSP_FLANGE_RATE,        conf._c);
     break;
   case FilterProperties::FT_distort:
-    res1 = dsp->setParameter(FMOD_DSP_DISTORTION_LEVEL,   conf._a);
+    res1 = dsp->setParameterFloat(FMOD_DSP_DISTORTION_LEVEL,   conf._a);
     break;
   case FilterProperties::FT_normalize:
-    res1 = dsp->setParameter(FMOD_DSP_NORMALIZE_FADETIME,  conf._a);
-    res2 = dsp->setParameter(FMOD_DSP_NORMALIZE_THRESHHOLD,conf._b);
-    res3 = dsp->setParameter(FMOD_DSP_NORMALIZE_MAXAMP,    conf._c);
+    res1 = dsp->setParameterFloat(FMOD_DSP_NORMALIZE_FADETIME,  conf._a);
+    res2 = dsp->setParameterFloat(FMOD_DSP_NORMALIZE_THRESHHOLD,conf._b);
+    res3 = dsp->setParameterFloat(FMOD_DSP_NORMALIZE_MAXAMP,    conf._c);
     break;
   case FilterProperties::FT_parameq:
-    res1 = dsp->setParameter(FMOD_DSP_PARAMEQ_CENTER,     conf._a);
-    res2 = dsp->setParameter(FMOD_DSP_PARAMEQ_BANDWIDTH,  conf._b);
-    res3 = dsp->setParameter(FMOD_DSP_PARAMEQ_GAIN,       conf._c);
+    res1 = dsp->setParameterFloat(FMOD_DSP_PARAMEQ_CENTER,     conf._a);
+    res2 = dsp->setParameterFloat(FMOD_DSP_PARAMEQ_BANDWIDTH,  conf._b);
+    res3 = dsp->setParameterFloat(FMOD_DSP_PARAMEQ_GAIN,       conf._c);
     break;
   case FilterProperties::FT_pitchshift:
-    res1 = dsp->setParameter(FMOD_DSP_PITCHSHIFT_PITCH,   conf._a);
-    res2 = dsp->setParameter(FMOD_DSP_PITCHSHIFT_FFTSIZE, conf._b);
-    res3 = dsp->setParameter(FMOD_DSP_PITCHSHIFT_OVERLAP, conf._c);
+    res1 = dsp->setParameterFloat(FMOD_DSP_PITCHSHIFT_PITCH,   conf._a);
+    res2 = dsp->setParameterFloat(FMOD_DSP_PITCHSHIFT_FFTSIZE, conf._b);
+    res3 = dsp->setParameterFloat(FMOD_DSP_PITCHSHIFT_OVERLAP, conf._c);
+    res4 = dsp->setParameterFloat(FMOD_DSP_PITCHSHIFT_MAXCHANNELS, conf._d);
     break;
   case FilterProperties::FT_chorus:
-    res1 = dsp->setParameter(FMOD_DSP_CHORUS_DRYMIX,      conf._a);
-    res2 = dsp->setParameter(FMOD_DSP_CHORUS_WETMIX1,     conf._b);
-    res3 = dsp->setParameter(FMOD_DSP_CHORUS_WETMIX2,     conf._c);
-    res4 = dsp->setParameter(FMOD_DSP_CHORUS_WETMIX3,     conf._d);
-    res5 = dsp->setParameter(FMOD_DSP_CHORUS_DELAY,       conf._e);
-    res6 = dsp->setParameter(FMOD_DSP_CHORUS_RATE,        conf._f);
-    res7 = dsp->setParameter(FMOD_DSP_CHORUS_DEPTH,       conf._g);
+    res1 = dsp->setParameterFloat(FMOD_DSP_CHORUS_MIX,      conf._a);
+    res6 = dsp->setParameterFloat(FMOD_DSP_CHORUS_RATE,        conf._b);
+    res7 = dsp->setParameterFloat(FMOD_DSP_CHORUS_DEPTH,       conf._c);
     break;
   case FilterProperties::FT_sfxreverb:
-    res1 = dsp->setParameter(FMOD_DSP_SFXREVERB_DRYLEVEL, conf._a);
-    res2 = dsp->setParameter(FMOD_DSP_SFXREVERB_ROOM,     conf._b);
-    res3 = dsp->setParameter(FMOD_DSP_SFXREVERB_ROOMHF,   conf._c);
-    res4 = dsp->setParameter(FMOD_DSP_SFXREVERB_DECAYTIME,conf._d);
-    res5 = dsp->setParameter(FMOD_DSP_SFXREVERB_DECAYHFRATIO,    conf._e);
-    res6 = dsp->setParameter(FMOD_DSP_SFXREVERB_REFLECTIONSLEVEL,conf._f);
-    res7 = dsp->setParameter(FMOD_DSP_SFXREVERB_REFLECTIONSDELAY,conf._g);
-    res8 = dsp->setParameter(FMOD_DSP_SFXREVERB_REVERBLEVEL,     conf._h);
-    res9 = dsp->setParameter(FMOD_DSP_SFXREVERB_REVERBDELAY,     conf._i);
-    res10 = dsp->setParameter(FMOD_DSP_SFXREVERB_DIFFUSION,      conf._j);
-    res11 = dsp->setParameter(FMOD_DSP_SFXREVERB_DENSITY,        conf._k);
-    res12 = dsp->setParameter(FMOD_DSP_SFXREVERB_HFREFERENCE,    conf._l);
-    res13 = dsp->setParameter(FMOD_DSP_SFXREVERB_ROOMLF,         conf._m);
-    res14 = dsp->setParameter(FMOD_DSP_SFXREVERB_LFREFERENCE,    conf._n);
+    res1 = dsp->setParameterFloat(FMOD_DSP_SFXREVERB_DRYLEVEL, conf._a);
+    res2 = dsp->setParameterFloat(FMOD_DSP_SFXREVERB_EARLYDELAY, conf._b);
+    res3 = dsp->setParameterFloat(FMOD_DSP_SFXREVERB_LATEDELAY, conf._c);
+    res4 = dsp->setParameterFloat(FMOD_DSP_SFXREVERB_HFREFERENCE, conf._d);
+    res5 = dsp->setParameterFloat(FMOD_DSP_SFXREVERB_HFDECAYRATIO, conf._e);
+    res6 = dsp->setParameterFloat(FMOD_DSP_SFXREVERB_DIFFUSION, conf._f);
+    res7 = dsp->setParameterFloat(FMOD_DSP_SFXREVERB_DENSITY, conf._g);
+    res8 = dsp->setParameterFloat(FMOD_DSP_SFXREVERB_LOWSHELFFREQUENCY, conf._h);
+    res9 = dsp->setParameterFloat(FMOD_DSP_SFXREVERB_LOWSHELFGAIN, conf._i);
+    res10 = dsp->setParameterFloat(FMOD_DSP_SFXREVERB_HIGHCUT, conf._j);
+    res11 = dsp->setParameterFloat(FMOD_DSP_SFXREVERB_EARLYLATEMIX, conf._k);
+    res12 = dsp->setParameterFloat(FMOD_DSP_SFXREVERB_WETLEVEL, conf._l);
+    res13 = dsp->setParameterFloat(FMOD_DSP_SFXREVERB_DRYLEVEL, conf._m);
     break;
   case FilterProperties::FT_compress:
-    res1 = dsp->setParameter(FMOD_DSP_COMPRESSOR_THRESHOLD, conf._a);
-    res2 = dsp->setParameter(FMOD_DSP_COMPRESSOR_ATTACK,    conf._b);
-    res3 = dsp->setParameter(FMOD_DSP_COMPRESSOR_RELEASE,   conf._c);
-    res4 = dsp->setParameter(FMOD_DSP_COMPRESSOR_GAINMAKEUP,conf._d);
+    res1 = dsp->setParameterFloat(FMOD_DSP_COMPRESSOR_THRESHOLD, conf._a);
+    res2 = dsp->setParameterFloat(FMOD_DSP_COMPRESSOR_ATTACK,    conf._b);
+    res3 = dsp->setParameterFloat(FMOD_DSP_COMPRESSOR_RELEASE,   conf._c);
+    res4 = dsp->setParameterFloat(FMOD_DSP_COMPRESSOR_GAINMAKEUP,conf._d);
+    res5 = dsp->setParameterFloat(FMOD_DSP_COMPRESSOR_RATIO, conf._e);
     break;
   }
 
@@ -372,15 +397,15 @@ update_dsp_chain(FMOD::DSP *head, FilterProperties *config) {
     if (userdata != USER_DSP_MAGIC) {
       break;
     }
-    result = prev->remove();
-    fmod_audio_errcheck("prev->remove()", result);
+    result = head->disconnectFrom(prev);
+    fmod_audio_errcheck("head->disconnectFrom()", result);
     result = prev->release();
     fmod_audio_errcheck("prev->release()", result);
   }
 
   for (int i=0; i<(int)(conf.size()); i++) {
     FMOD::DSP *dsp = make_dsp(conf[i]);
-    result = _channelgroup->addDSP(dsp, nullptr);
+    result = _channelgroup->addDSP(i, dsp);
     fmod_audio_errcheck("_channelgroup->addDSP()", result);
   }
 }
@@ -396,7 +421,7 @@ configure_filters(FilterProperties *config) {
   ReMutexHolder holder(_lock);
   FMOD_RESULT result;
   FMOD::DSP *head;
-  result = _channelgroup->getDSPHead(&head);
+  result = _channelgroup->getDSP(0, &head);
   if (result != 0) {
     audio_error("Getting DSP head: " << FMOD_ErrorString(result) );
     return false;
@@ -450,42 +475,37 @@ int FmodAudioManager::
 get_speaker_setup() {
   ReMutexHolder holder(_lock);
   FMOD_RESULT result;
-  FMOD_SPEAKERMODE speakerMode;
-  int returnMode;
 
-  result = _system->getSpeakerMode( &speakerMode );
+  int ret;
+
+  int sample_rate;
+  FMOD_SPEAKERMODE speaker_mode;
+  int num_raw_speakers;
+  result = _system->getSoftwareFormat(&sample_rate,
+                                      &speaker_mode,
+                                      &num_raw_speakers);
   fmod_audio_errcheck("_system->getSpeakerMode()", result);
 
-  switch (speakerMode) {
-    case  FMOD_SPEAKERMODE_RAW:
-      returnMode = 0;
-      break;
-    case  FMOD_SPEAKERMODE_MONO:
-      returnMode = 1;
-      break;
-    case  FMOD_SPEAKERMODE_STEREO:
-      returnMode = 2;
-      break;
-    case  FMOD_SPEAKERMODE_QUAD:
-      returnMode = 3;
-      break;
-    case  FMOD_SPEAKERMODE_SURROUND:
-      returnMode = 4;
-      break;
-    case  FMOD_SPEAKERMODE_5POINT1:
-      returnMode = 5;
-      break;
-    case  FMOD_SPEAKERMODE_7POINT1:
-      returnMode = 6;
-      break;
-    case  FMOD_SPEAKERMODE_MAX:
-      returnMode = 7;
-      break;
-    default:
-      returnMode = -1;
-    }
-
-  return returnMode;
+  switch (speaker_mode) {
+  case FMOD_SPEAKERMODE_RAW:
+    return 0;
+  case FMOD_SPEAKERMODE_MONO:
+    return 1;
+  case FMOD_SPEAKERMODE_STEREO:
+    return 2;
+  case FMOD_SPEAKERMODE_QUAD:
+    return 3;
+  case FMOD_SPEAKERMODE_SURROUND:
+    return 4;
+  case FMOD_SPEAKERMODE_5POINT1:
+    return 5;
+  case FMOD_SPEAKERMODE_7POINT1:
+    return 6;
+  case FMOD_SPEAKERMODE_MAX:
+    return 7;
+  default:
+    return 8;
+  }
 }
 
 /**
@@ -503,11 +523,13 @@ get_speaker_setup() {
  */
 void FmodAudioManager::
 set_speaker_setup(AudioManager::SpeakerModeCategory cat) {
-  ReMutexHolder holder(_lock);
-  FMOD_RESULT result;
-  FMOD_SPEAKERMODE speakerModeType = (FMOD_SPEAKERMODE)cat;
-  result = _system->setSpeakerMode( speakerModeType);
-  fmod_audio_errcheck("_system->setSpeakerMode()", result);
+  ///ReMutexHolder holder(_lock);
+  //FMOD_RESULT result;
+  //FMOD_SPEAKERMODE speakerModeType = (FMOD_SPEAKERMODE)cat;
+  //result = _system->setSpeakerMode( speakerModeType);
+  //fmod_audio_errcheck("_system->setSpeakerMode()", result);
+  fmodAudio_cat.warning()
+    << "FmodAudioManager::set_speaker_setup() doesn't do anything\n";
 }
 
 /**
@@ -804,4 +826,13 @@ get_cache_limit() const {
   audio_debug("FmodAudioManager::get_cache_limit() returning ");
   // return _cache_limit;
   return 0;
+}
+
+FMOD_RESULT FmodAudioManager::
+get_speaker_mode(FMOD_SPEAKERMODE &mode) const {
+  int num_samples;
+  int num_raw_speakers;
+
+  return _system->getSoftwareFormat(&num_samples, &mode,
+                                    &num_raw_speakers);
 }

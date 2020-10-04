@@ -13,6 +13,9 @@
  * @date 2003-10-22
  * Prior system by: cary
  * @author Stan Rosenbaum "Staque" - Spring 2006
+ * @author Brian Lach
+ * @date 2020-10-04
+ * Updated to FMOD Core.
  */
 
 #include "pandabase.h"
@@ -82,12 +85,12 @@ FmodAudioSound(AudioManager *manager, VirtualFile *file, bool positional) {
   _file_name.set_binary();
 
   // Get the Speaker Mode [Important for later on.]
-  result = _manager->_system->getSpeakerMode( &_speakermode );
+  result = _manager->get_speaker_mode( _speakermode );
   fmod_audio_errcheck("_system->getSpeakerMode()", result);
 
   {
     bool preload = (fmod_audio_preload_threshold < 0) || (file->get_file_size() < fmod_audio_preload_threshold);
-    int flags = FMOD_SOFTWARE;
+    int flags = FMOD_DEFAULT | FMOD_ACCURATETIME;
     flags |= positional ? FMOD_3D : FMOD_2D;
 
     FMOD_CREATESOUNDEXINFO sound_info;
@@ -158,10 +161,11 @@ FmodAudioSound(AudioManager *manager, VirtualFile *file, bool positional) {
         name_or_data = (const char *)file;
         sound_info.fileoffset = 0;
         sound_info.length = (unsigned int)info.get_size();
-        sound_info.useropen = open_callback;
-        sound_info.userclose = close_callback;
-        sound_info.userread = read_callback;
-        sound_info.userseek = seek_callback;
+        sound_info.fileuseropen = open_callback;
+        sound_info.fileuserdata = file;
+        sound_info.fileuserclose = close_callback;
+        sound_info.fileuserread = read_callback;
+        sound_info.fileuserseek = seek_callback;
         flags |= FMOD_CREATESTREAM;
         if (fmodAudio_cat.is_debug()) {
           fmodAudio_cat.debug()
@@ -194,7 +198,7 @@ FmodAudioSound(AudioManager *manager, VirtualFile *file, bool positional) {
     sound_info.numchannels = 1;
     sound_info.defaultfrequency = 8000;
     sound_info.format = FMOD_SOUND_FORMAT_PCM16;
-    int flags = FMOD_SOFTWARE | FMOD_OPENMEMORY | FMOD_OPENRAW;
+    int flags = FMOD_OPENMEMORY | FMOD_OPENRAW;
 
     result = _manager->_system->createSound( blank_data, flags, &sound_info, &_sound);
     fmod_audio_errcheck("createSound (blank)", result);
@@ -210,8 +214,10 @@ FmodAudioSound(AudioManager *manager, VirtualFile *file, bool positional) {
   // '_sampleFrequency' variable here, for the 'set_play_rate()' and
   // 'get_play_rate()' methods later;
 
-  result = _sound->getDefaults( &_sampleFrequency, &_volume , &_balance, &_priority);
+  result = _sound->getDefaults( &_sampleFrequency, &_priority);
   fmod_audio_errcheck("_sound->getDefaults()", result);
+  result = _channel->getVolume(&_volume);
+  result = _
 }
 
 
@@ -427,7 +433,7 @@ start_playing() {
   }
 
   if (_channel == 0) {
-    result = _manager->_system->playSound(FMOD_CHANNEL_FREE, _sound, true, &_channel);
+    result = _manager->_system->playSound(_sound, _manager->_channelgroup, true, &_channel);
     fmod_audio_errcheck("_system->playSound()", result);
     result = _channel->setChannelGroup(_manager->_channelgroup);
     fmod_audio_errcheck("_channel->setChannelGroup()", result);
@@ -679,7 +685,7 @@ get_speaker_mix(int speaker) {
   float sideleft;
   float sideright;
 
-  result = _channel->getSpeakerMix( &frontleft, &frontright, &center, &sub, &backleft, &backright, &sideleft, &sideright );
+  result = _channel->getMix( &frontleft, &frontright, &center, &sub, &backleft, &backright, &sideleft, &sideright );
   fmod_audio_errcheck("_channel->getSpeakerMix()", result);
 
   switch(speaker) {
@@ -739,7 +745,7 @@ set_speaker_mix_or_balance_on_channel() {
     if ( _speakermode == FMOD_SPEAKERMODE_STEREO ) {
       result = _channel->setPan( _balance );
     } else {
-      result = _channel->setSpeakerMix( _mix[AudioManager::SPK_frontleft],
+      result = _channel->setMix( _mix[AudioManager::SPK_frontleft],
                                         _mix[AudioManager::SPK_frontright],
                                         _mix[AudioManager::SPK_center],
                                         _mix[AudioManager::SPK_sub],
@@ -781,7 +787,7 @@ set_priority(int priority) {
 
   _priority = priority;
 
-  result = _sound->setDefaults( _sampleFrequency, _volume , _balance, _priority);
+  result = _sound->setDefaults( _sampleFrequency, _priority);
   fmod_audio_errcheck("_sound->setDefaults()", result);
 }
 
@@ -883,13 +889,14 @@ get_finished_event() const {
  */
 FMOD_RESULT F_CALLBACK FmodAudioSound::
 sound_end_callback(FMOD_CHANNEL *  channel,
-                   FMOD_CHANNEL_CALLBACKTYPE  type,
+                   FMOD_CHANNELCONTROL_TYPE controltype,
+                   FMOD_CHANNELCONTROL_CALLBACK_TYPE  type,
                    void *commanddata1,
                    void *commanddata2) {
   // Fortunately, this callback is made synchronously rather than
   // asynchronously (it is triggered during System::update()), so we don't
   // have to worry about thread-related issues here.
-  if (type == FMOD_CHANNEL_CALLBACKTYPE_END) {
+  if (type == FMOD_CHANNELCONTROL_CALLBACK_END) {
     FMOD::Channel *fc = (FMOD::Channel *)channel;
     void *userdata = nullptr;
     FMOD_RESULT result = fc->getUserData(&userdata);
@@ -904,8 +911,8 @@ sound_end_callback(FMOD_CHANNEL *  channel,
  * A hook into Panda's virtual file system.
  */
 FMOD_RESULT F_CALLBACK FmodAudioSound::
-open_callback(const char *name, int, unsigned int *file_size,
-              void **handle, void **user_data) {
+open_callback(const char *name, unsigned int *file_size,
+              void **handle, void *user_data) {
   // We actually pass in the VirtualFile pointer as the "name".
   VirtualFile *file = (VirtualFile *)name;
   if (file == nullptr) {
@@ -920,7 +927,6 @@ open_callback(const char *name, int, unsigned int *file_size,
 
   (*file_size) = file->get_file_size(str);
   (*handle) = (void *)str;
-  (*user_data) = (void *)file;
 
   // Explicitly ref the VirtualFile since we're storing it in a void pointer
   // instead of a PT(VirtualFile).

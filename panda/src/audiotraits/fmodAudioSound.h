@@ -11,6 +11,9 @@
  * @date 2003-01-22
  * Prior system by: cary
  * @author Stan Rosenbaum "Staque" - Spring 2006
+ * @author Brian Lach
+ * @date 2020-10-04
+ * Updated to FMOD Core.
  *
  * [FIRST READ FmodAudioManager for an Introduction if you haven't
  * already].
@@ -186,14 +189,15 @@ public:
   PT(FmodAudioSound) _self_ref;
 
   static FMOD_RESULT F_CALLBACK
-  sound_end_callback(FMOD_CHANNEL *  channel,
-                     FMOD_CHANNEL_CALLBACKTYPE  type,
+  sound_end_callback(FMOD_CHANNELCONTROL *  channel,
+                     FMOD_CHANNELCONTROL_TYPE controltype,
+                     FMOD_CHANNELCONTROL_CALLBACK_TYPE  type,
                      void *commanddata1,
                      void *commanddata2);
 
   static FMOD_RESULT F_CALLBACK
-  open_callback(const char *name, int unicode, unsigned int *file_size,
-                void **handle, void **user_data);
+  open_callback(const char *name, unsigned int *file_size,
+                void **handle, void *user_data);
 
   static FMOD_RESULT F_CALLBACK
   close_callback(void *handle, void *user_data);

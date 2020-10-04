@@ -13,6 +13,9 @@
  * @date 2003-10-22
  * Prior system by: cary
  * @author Stan Rosenbaum "Staque" - Spring 2006
+ * @author Brian Lach
+ * @date 2020-10-04
+ * Updated to FMOD Core.
  *
  * Hello, all future Panda audio code people! This is my errata
  * documentation to help any future programmer maintain FMOD and PANDA.
@@ -150,6 +153,8 @@ public:
   virtual void clear_cache();
   virtual void set_cache_limit(unsigned int count);
   virtual unsigned int get_cache_limit() const;
+
+  FMOD_RESULT get_speaker_mode(FMOD_SPEAKERMODE &mode) const;
 
 private:
   FMOD::DSP *make_dsp(const FilterProperties::FilterConfig &conf);

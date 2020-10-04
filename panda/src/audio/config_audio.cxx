@@ -99,6 +99,11 @@ ConfigVariableEnum<FmodSpeakerMode> fmod_speaker_mode
  PRC_DESC("Sets the speaker configuration that the FMOD sound system will use. "
           "Options: raw, mono, stereo, quad, surround, 5.1 and 7.1. "));
 
+ConfigVariableInt fmod_mixer_sample_rate
+("fmod-mixer-sampler-rate", -1,
+ PRC_DESC("Sets the sample rate in hertz of the FMOD software mixer. "
+          "Specify -1 to let FMOD pick a sensible default."));
+
 
 ConfigVariableFilename audio_dls_file
 ("audio-dls-file", Filename(),
