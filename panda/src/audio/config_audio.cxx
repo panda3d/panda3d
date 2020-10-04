@@ -100,7 +100,7 @@ ConfigVariableEnum<FmodSpeakerMode> fmod_speaker_mode
           "Options: raw, mono, stereo, quad, surround, 5.1 and 7.1. "));
 
 ConfigVariableInt fmod_mixer_sample_rate
-("fmod-mixer-sampler-rate", -1,
+("fmod-mixer-sample-rate", -1,
  PRC_DESC("Sets the sample rate in hertz of the FMOD software mixer. "
           "Specify -1 to let FMOD pick a sensible default."));
 
@@ -125,6 +125,8 @@ ConfigureFn(config_audio) {
 ostream &
 operator << (ostream &out, FmodSpeakerMode sm) {
   switch (sm) {
+  case FSM_default:
+    return out << "default";
   case FSM_raw:
     return out << "raw";
   case FSM_mono:
@@ -139,6 +141,8 @@ operator << (ostream &out, FmodSpeakerMode sm) {
     return out << "5.1";
   case FSM_7point1:
     return out << "7.1";
+  case FSM_7point1point4:
+    return out << "7.1.4";
   case FSM_unspecified:
     return out;
   }
@@ -153,6 +157,8 @@ operator >> (istream &in, FmodSpeakerMode &sm) {
 
   if (word.size() == 0) {
     sm = FSM_unspecified;
+  } else if (cmp_nocase(word, "default") == 0) {
+    sm = FSM_default;
   } else if (cmp_nocase(word, "raw") == 0) {
     sm = FSM_raw;
   } else if (cmp_nocase(word, "mono") == 0) {
@@ -169,6 +175,9 @@ operator >> (istream &in, FmodSpeakerMode &sm) {
   } else if (cmp_nocase(word, "7point1") == 0 ||
              cmp_nocase(word, "7.1") == 0) {
     sm = FSM_7point1;
+  } else if (cmp_nocase(word, "7point1point4") == 0 ||
+             cmp_nocase(word, "7.1.4") == 0) {
+    sm = FSM_7point1point4;
 
   } else {
     audio_cat->error() << "Invalid FmodSpeakerMode value: " << word << "\n";

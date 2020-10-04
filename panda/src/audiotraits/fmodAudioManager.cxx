@@ -132,10 +132,14 @@ FmodAudioManager() {
                                &speaker_mode,
                                &num_raw_speakers);
 
-    if (fmod_mixer_sample_rate != -1) {
-      if (fmod_mixer_sample_rate >= FMOD_MIN_SAMPLE_RATE &&
-          fmod_mixer_sample_rate <= FMOD_MAX_SAMPLE_RATE) {
+    fmodAudio_cat.debug()
+      << "fmod-mixer-sample-rate: " << fmod_mixer_sample_rate << "\n";
+    if (fmod_mixer_sample_rate.get_value() != -1) {
+      if (fmod_mixer_sample_rate.get_value() >= FMOD_MIN_SAMPLE_RATE &&
+          fmod_mixer_sample_rate.get_value() <= FMOD_MAX_SAMPLE_RATE) {
             sample_rate = fmod_mixer_sample_rate;
+            fmodAudio_cat.debug()
+              << "Using user specified sample rate\n";
       } else {
         fmodAudio_cat.warning()
           << "fmod-mixer-sample-rate had an out-of-range value: "
