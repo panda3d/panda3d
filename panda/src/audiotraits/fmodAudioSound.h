@@ -179,6 +179,8 @@ public:
   bool _paused;
   PN_stdfloat _start_time;
 
+  bool _is_midi;
+
   std::string _finished_event;
 
   // This reference-counting pointer is set to this while the sound is

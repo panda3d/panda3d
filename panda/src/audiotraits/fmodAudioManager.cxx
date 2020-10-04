@@ -191,6 +191,7 @@ FmodAudioManager() {
 #ifdef IS_OSX
   // Here's a big kludge.  Don't ever let FMOD try to load this OSX-provided
   // file; it crashes messily if you do.
+  // FIXME: Is this still true on FMOD Core?
   if (dls_pathname == "/System/Library/Components/CoreAudio.component/Contents/Resources/gs_instruments.dls") {
     dls_pathname = "";
   }

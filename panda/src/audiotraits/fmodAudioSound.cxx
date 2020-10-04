@@ -50,6 +50,9 @@ FmodAudioSound(AudioManager *manager, VirtualFile *file, bool positional) {
   _active = manager->get_active();
   _paused = false;
   _start_time = 0.0;
+  _volume = 1.0;
+
+  _is_midi = false;
 
   // Local Variables that are needed.
   FMOD_RESULT result;
@@ -90,7 +93,7 @@ FmodAudioSound(AudioManager *manager, VirtualFile *file, bool positional) {
 
   {
     bool preload = (fmod_audio_preload_threshold < 0) || (file->get_file_size() < fmod_audio_preload_threshold);
-    int flags = FMOD_DEFAULT | FMOD_ACCURATETIME;
+    int flags = FMOD_DEFAULT;
     flags |= positional ? FMOD_3D : FMOD_2D;
 
     FMOD_CREATESOUNDEXINFO sound_info;
@@ -104,6 +107,9 @@ FmodAudioSound(AudioManager *manager, VirtualFile *file, bool positional) {
       if (sound_info.dlsname != nullptr) {
         audio_debug("Using DLS file " << sound_info.dlsname);
       }
+      _is_midi = true;
+      // Need this flag so we can correctly query the length of MIDIs.
+      flags |= FMOD_ACCURATETIME;
     }
 
     const char *name_or_data = _file_name.c_str();
@@ -217,7 +223,8 @@ FmodAudioSound(AudioManager *manager, VirtualFile *file, bool positional) {
   result = _sound->getDefaults( &_sampleFrequency, &_priority);
   fmod_audio_errcheck("_sound->getDefaults()", result);
   result = _channel->getVolume(&_volume);
-  result = _
+  // FIXME
+  //result = _
 }
 
 
@@ -523,9 +530,18 @@ void FmodAudioSound::
 set_play_rate_on_channel() {
   ReMutexHolder holder(FmodAudioManager::_lock);
   FMOD_RESULT result;
-  PN_stdfloat frequency = _sampleFrequency * _playrate;
 
-  if (_channel != 0) {
+  // If this is a MIDI sequence, simply adjust the speed at which the song is
+  // played.  This makes the song play faster without increasing the pitch.
+  if (_is_midi) {
+    //result = _sound->setMusicSpeed(_playrate);
+    //fmod_audio_errcheck("_sound->setMusicSpeed()", result);
+
+  } else if (_channel != 0) {
+    // We have to adjust the frequency for non-sequence sounds.  The sound will
+    // play faster, but will also have an increase in pitch.
+
+    PN_stdfloat frequency = _sampleFrequency * _playrate;
     result = _channel->setFrequency( frequency );
     if (result == FMOD_ERR_INVALID_HANDLE || result == FMOD_ERR_CHANNEL_STOLEN) {
       _channel = 0;
@@ -685,8 +701,9 @@ get_speaker_mix(int speaker) {
   float sideleft;
   float sideright;
 
-  result = _channel->getMix( &frontleft, &frontright, &center, &sub, &backleft, &backright, &sideleft, &sideright );
-  fmod_audio_errcheck("_channel->getSpeakerMix()", result);
+  // FIXME
+  //result = _channel->getMix( &frontleft, &frontright, &center, &sub, &backleft, &backright, &sideleft, &sideright );
+  //fmod_audio_errcheck("_channel->getSpeakerMix()", result);
 
   switch(speaker) {
   case AudioManager::SPK_frontleft:  return frontleft;
@@ -734,6 +751,9 @@ set_speaker_mix(PN_stdfloat frontleft, PN_stdfloat frontright, PN_stdfloat cente
  */
 void FmodAudioSound::
 set_speaker_mix_or_balance_on_channel() {
+  // FIXME
+
+#if 0
   ReMutexHolder holder(FmodAudioManager::_lock);
   FMOD_RESULT result;
   FMOD_MODE soundMode;
@@ -761,6 +781,7 @@ set_speaker_mix_or_balance_on_channel() {
       fmod_audio_errcheck("_channel->setSpeakerMix()/setPan()", result);
     }
   }
+#endif
 }
 
 /**
@@ -836,9 +857,13 @@ set_active(bool active) {
         if (get_loop_count() == 0) {
           // ...we're pausing a looping sound.
           _paused = true;
-          _start_time = get_time();
+          // We have to do this because stop() resets _start_time.
+          int time = get_time();
+          stop();
+          _start_time = time;
+        } else {
+          stop();
         }
-        stop();
       }
     }
   }
@@ -888,7 +913,7 @@ get_finished_event() const {
  * associated FmodAudioSound.
  */
 FMOD_RESULT F_CALLBACK FmodAudioSound::
-sound_end_callback(FMOD_CHANNEL *  channel,
+sound_end_callback(FMOD_CHANNELCONTROL *  channel,
                    FMOD_CHANNELCONTROL_TYPE controltype,
                    FMOD_CHANNELCONTROL_CALLBACK_TYPE  type,
                    void *commanddata1,
@@ -897,7 +922,7 @@ sound_end_callback(FMOD_CHANNEL *  channel,
   // asynchronously (it is triggered during System::update()), so we don't
   // have to worry about thread-related issues here.
   if (type == FMOD_CHANNELCONTROL_CALLBACK_END) {
-    FMOD::Channel *fc = (FMOD::Channel *)channel;
+    FMOD::ChannelControl *fc = (FMOD::ChannelControl *)channel;
     void *userdata = nullptr;
     FMOD_RESULT result = fc->getUserData(&userdata);
     fmod_audio_errcheck("channel->getUserData()", result);
