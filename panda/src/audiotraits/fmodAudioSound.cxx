@@ -858,7 +858,7 @@ set_active(bool active) {
           // ...we're pausing a looping sound.
           _paused = true;
           // We have to do this because stop() resets _start_time.
-          int time = get_time();
+          PN_stdfloat time = get_time();
           stop();
           _start_time = time;
         } else {
