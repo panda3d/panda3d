@@ -338,9 +338,6 @@ run() {
     _input_units = converter.get_input_units();
   }
 
-  // Add the command line comment at the top of the egg file
-  append_command_comment(_data);
-
   // Write output file
   write_egg_file();
   close_output();
