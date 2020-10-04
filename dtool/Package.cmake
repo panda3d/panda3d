@@ -67,7 +67,7 @@ if(THIRDPARTY_DIRECTORY)
     Eigen3
     FCollada
     FFMPEG
-    FMODEx
+    FMODCore
     Freetype
     HarfBuzz
     JPEG
@@ -501,16 +501,16 @@ package_status(OPUS "Opus")
 # ------------ Audio libraries ------------
 #
 
-# FMOD Ex
-find_package(FMODEx QUIET)
+# FMOD Core
+find_package(FMODCore QUIET)
 
-package_option(FMODEx
-  "This enables support for the FMOD Ex sound library,
+package_option(FMODCore
+  "This enables support for the FMOD Core sound library,
   from Firelight Technologies. This audio library is free for non-commercial
   use."
   LICENSE "FMOD")
 
-package_status(FMODEx "FMOD Ex sound library")
+package_status(FMODCore "FMOD Core sound library")
 
 # OpenAL
 find_package(OpenAL QUIET)
