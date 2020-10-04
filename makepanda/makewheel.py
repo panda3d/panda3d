@@ -531,8 +531,8 @@ def makewheel(version, output_dir, platform=None):
         if not LocateBinary("patchelf"):
             raise Exception("patchelf is required when building a Linux wheel.")
 
-    if sys.version_info < (3, 5):
-        raise Exception("Python 3.5 is required to produce a wheel.")
+    if sys.version_info < (3, 6):
+        raise Exception("Python 3.6 is required to produce a wheel.")
 
     if platform is None:
         # Determine the platform from the build.

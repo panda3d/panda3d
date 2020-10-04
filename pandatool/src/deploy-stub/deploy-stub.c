@@ -73,36 +73,6 @@ static struct _inittab extensions[] = {
 static wchar_t *log_pathw = NULL;
 #endif
 
-#if defined(_WIN32) && PY_VERSION_HEX < 0x03060000
-static int supports_code_page(UINT cp) {
-  if (cp == 0) {
-    cp = GetACP();
-  }
-
-  /* Shortcut, because we know that these encodings are bundled by default--
-   * see FreezeTool.py and Python's encodings/aliases.py */
-  if (cp != 0 && cp != 1252 && cp != 367 && cp != 437 && cp != 850 && cp != 819) {
-    const struct _frozen *moddef;
-    char codec[100];
-
-    /* Check if the codec was frozen into the program.  We can't check this
-     * using _PyCodec_Lookup, since Python hasn't been initialized yet. */
-    PyOS_snprintf(codec, sizeof(codec), "encodings.cp%u", (unsigned int)cp);
-
-    moddef = PyImport_FrozenModules;
-    while (moddef->name) {
-      if (strcmp(moddef->name, codec) == 0) {
-        return 1;
-      }
-      ++moddef;
-    }
-    return 0;
-  }
-
-  return 1;
-}
-#endif
-
 /**
  * Sets the main_dir field of the blobinfo structure, but only if it wasn't
  * already set.
@@ -405,19 +375,6 @@ int Py_FrozenMain(int argc, char **argv)
     if (argc > 0) {
         argv_copy = (wchar_t **)alloca(sizeof(wchar_t *) * argc);
         argv_copy2 = (wchar_t **)alloca(sizeof(wchar_t *) * argc);
-    }
-#endif
-
-#if defined(MS_WINDOWS) && PY_VERSION_HEX >= 0x03040000 && PY_VERSION_HEX < 0x03060000
-    if (!supports_code_page(GetConsoleOutputCP()) ||
-        !supports_code_page(GetConsoleCP())) {
-      /* Revert to the active codepage, and tell Python to use the 'mbcs'
-       * encoding (which always uses the active codepage).  In 99% of cases,
-       * this will be the same thing anyway. */
-      UINT acp = GetACP();
-      SetConsoleCP(acp);
-      SetConsoleOutputCP(acp);
-      Py_SetStandardStreamEncoding("mbcs", NULL);
     }
 #endif
 

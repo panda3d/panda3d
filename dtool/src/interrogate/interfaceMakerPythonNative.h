@@ -115,6 +115,9 @@ private:
 
     // This raises a KeyError on falsey (or -1) return value.
     RF_raise_keyerror = 0x4000,
+
+    // Invert boolean return value.
+    RF_invert_bool = 0x8000,
   };
 
   class SlottedFunctionDef {

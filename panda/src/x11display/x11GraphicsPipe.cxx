@@ -384,7 +384,7 @@ x11GraphicsPipe::
 /**
  * Enables raw mouse mode for this display.  Returns false if unsupported.
  */
-INLINE bool x11GraphicsPipe::
+bool x11GraphicsPipe::
 enable_raw_mouse() {
   if (_num_raw_mouse_windows > 0) {
     // Already enabled by another window.
