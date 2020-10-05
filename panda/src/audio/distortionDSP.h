@@ -25,6 +25,7 @@ PUBLISHED:
 
   INLINE void set_level(float level);
   INLINE float get_level() const;
+  MAKE_PROPERTY(level, get_level, set_level);
 
 private:
   float _level;
