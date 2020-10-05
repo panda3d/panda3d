@@ -18,12 +18,12 @@
 #include "config_audio.h"
 #include "audioSound.h"
 #include "luse.h"
-#include "filterProperties.h"
 #include "movieAudio.h"
 #include "atomicAdjust.h"
 
 typedef AudioManager *Create_AudioManager_proc();
 
+class DSP;
 
 class EXPCL_PANDA_AUDIO AudioManager : public TypedReferenceCount {
 PUBLISHED:
@@ -64,7 +64,14 @@ PUBLISHED:
 
   virtual int get_speaker_setup();
   virtual void set_speaker_setup(SpeakerModeCategory cat);
-  virtual bool configure_filters(FilterProperties *config);
+
+  // DSP methods
+  INLINE bool add_dsp_to_head(DSP *dsp);
+  INLINE bool add_dsp_to_tail(DSP *dsp);
+  virtual bool insert_dsp(int index, DSP *dsp);
+  virtual bool remove_dsp(DSP *dsp);
+  virtual void remove_all_dsps();
+  virtual int get_num_dsps() const;
 
   // Create an AudioManager for each category of sounds you have.  E.g.
   // MySoundEffects = create_AudioManager::AudioManager(); MyMusicManager =

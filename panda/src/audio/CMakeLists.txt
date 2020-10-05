@@ -8,8 +8,19 @@ set(P3AUDIO_HEADERS
   audioLoadRequest.h audioLoadRequest.I
   audioManager.h audioManager.I
   audioSound.h audioSound.I
+  chorusDSP.h chorusDSP.I
+  compressorDSP.h compressorDSP.I
+  distortionDSP.h distortionDSP.I
+  dsp.h dsp.I
+  echoDSP.h echoDSP.I
+  faderDSP.h faderDSP.I
+  flangeDSP.h flangeDSP.I
+  highpassDSP.h highpassDSP.I
+  limiterDSP.h limiterDSP.I
+  lowpassDSP.h lowpassDSP.I
   nullAudioManager.h
   nullAudioSound.h
+  oscillatorDSP.h oscillatorDSP.I
 )
 
 set(P3AUDIO_SOURCES
@@ -18,8 +29,19 @@ set(P3AUDIO_SOURCES
   audioLoadRequest.cxx
   audioManager.cxx
   audioSound.cxx
+  chorusDSP.cxx
+  compressorDSP.cxx
+  distortionDSP.cxx
+  dsp.cxx
+  echoDSP.cxx
+  faderDSP.cxx
+  flangeDSP.cxx
+  highpassDSP.cxx
+  limiterDSP.cxx
+  lowpassDSP.cxx
   nullAudioManager.cxx
   nullAudioSound.cxx
+  oscillatorDSP.cxx
 )
 
 composite_sources(p3audio P3AUDIO_SOURCES)

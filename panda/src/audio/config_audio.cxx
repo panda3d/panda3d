@@ -17,8 +17,19 @@
 #include "audioLoadRequest.h"
 #include "audioManager.h"
 #include "audioSound.h"
+#include "chorusDSP.h"
+#include "compressorDSP.h"
+#include "distortionDSP.h"
+#include "dsp.h"
+#include "echoDSP.h"
+#include "faderDSP.h"
+#include "flangeDSP.h"
+#include "highpassDSP.h"
+#include "limiterDSP.h"
+#include "lowpassDSP.h"
 #include "nullAudioManager.h"
 #include "nullAudioSound.h"
+#include "oscillatorDSP.h"
 #include "string_utils.h"
 
 #if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDA_AUDIO)
@@ -120,6 +131,18 @@ ConfigureFn(config_audio) {
   AudioSound::init_type();
   NullAudioManager::init_type();
   NullAudioSound::init_type();
+
+  ChorusDSP::init_type();
+  CompressorDSP::init_type();
+  DistortionDSP::init_type();
+  DSP::init_type();
+  EchoDSP::init_type();
+  FaderDSP::init_type();
+  FlangeDSP::init_type();
+  HighpassDSP::init_type();
+  LimiterDSP::init_type();
+  LowpassDSP::init_type();
+  OscillatorDSP::init_type();
 }
 
 ostream &

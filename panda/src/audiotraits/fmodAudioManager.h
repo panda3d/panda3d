@@ -73,6 +73,7 @@
 #include "pset.h"
 
 #include "audioManager.h"
+#include "dsp.h"
 
 // The includes needed for FMOD
 #include <fmod.hpp>
@@ -88,6 +89,11 @@ class EXPCL_FMOD_AUDIO FmodAudioManager : public AudioManager {
 public:
   FmodAudioManager();
   virtual ~FmodAudioManager();
+
+  virtual bool insert_dsp(int index, DSP *dsp);
+  virtual bool remove_dsp(DSP *dsp);
+  virtual void remove_all_dsps();
+  virtual int get_num_dsps() const;
 
   virtual bool is_valid();
 
@@ -157,11 +163,10 @@ public:
   FMOD_RESULT get_speaker_mode(FMOD_SPEAKERMODE &mode) const;
 
 private:
-  FMOD::DSP *make_dsp(const FilterProperties::FilterConfig &conf);
-  void update_dsp_chain(FMOD::DSP *head, FilterProperties *config);
-  virtual bool configure_filters(FilterProperties *config);
+  void configure_dsp(DSP *panda_dsp, FMOD::DSP *dsp);
+  FMOD_DSP_TYPE get_fmod_dsp_type(DSP::DSPType panda_type) const;
 
- private:
+private:
   // This global lock protects all access to FMod library interfaces.
   static ReMutex _lock;
 
@@ -191,6 +196,9 @@ private:
   // The set of all sounds.  Needed only to implement stop_all_sounds.
   typedef pset<FmodAudioSound *> SoundSet;
   SoundSet _all_sounds;
+
+  typedef pmap<PT(DSP), FMOD::DSP *> FmodDSPs;
+  FmodDSPs _dsps;
 
   FMOD_OUTPUTTYPE _saved_outputtype;
 
