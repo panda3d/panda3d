@@ -461,17 +461,15 @@ void FmodAudioManager::
 remove_all_dsps() {
   FMOD_RESULT ret;
   FMOD::DSP *dsp;
-  int num_dsps = get_num_dsps();
-  for (int i = 0; i < num_dsps; i++) {
-    ret = _channelgroup->getDSP(i, &dsp);
-    fmod_audio_errcheck("_channelgroup->getDSP()", ret);
 
-    if (dsp) {
-      ret = _channelgroup->removeDSP(dsp);
-      fmod_audio_errcheck("_channelgroup->removeDSP()", ret);
-      ret = dsp->release();
-      fmod_audio_errcheck("dsp->release()", ret);
-    }
+  for (auto itr = _dsps.begin(); itr != _dsps.end(); itr++) {
+    dsp = itr->second;
+
+    ret = _channelgroup->removeDSP(dsp);
+    fmod_audio_errcheck("_channelgroup->removeDSP()", ret);
+
+    ret = dsp->release();
+    fmod_audio_errcheck("dsp->release()", ret);
   }
 
   _dsps.clear();
@@ -482,10 +480,11 @@ remove_all_dsps() {
  */
 int FmodAudioManager::
 get_num_dsps() const {
-  int count;
-  FMOD_RESULT ret = _channelgroup->getNumDSPs(&count);
-  fmod_audio_errcheck("_channelgroup->getNumDSPs()", ret);
-  return count;
+  // Can't use _channelgroup->getNumDSPs() because that includes DSPs that are
+  // created internally by FMOD.  We want to return the number of user-created
+  // DSPs.
+
+  return (int)_dsps.size();
 }
 
 /**
