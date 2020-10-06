@@ -21,6 +21,7 @@ set(P3AUDIO_HEADERS
   nullAudioManager.h
   nullAudioSound.h
   oscillatorDSP.h oscillatorDSP.I
+  sfxReverbDSP.h sfxReverbDSP.I
 )
 
 set(P3AUDIO_SOURCES
@@ -42,6 +43,7 @@ set(P3AUDIO_SOURCES
   nullAudioManager.cxx
   nullAudioSound.cxx
   oscillatorDSP.cxx
+  sfxReverbDSP.cxx
 )
 
 composite_sources(p3audio P3AUDIO_SOURCES)

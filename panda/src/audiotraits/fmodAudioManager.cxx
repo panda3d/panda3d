@@ -42,6 +42,7 @@
 #include "limiterDSP.h"
 #include "lowpassDSP.h"
 #include "oscillatorDSP.h"
+#include "sfxReverbDSP.h"
 
 // FMOD Headers.
 #include <fmod.hpp>
@@ -293,6 +294,8 @@ get_fmod_dsp_type(DSP::DSPType panda_type) const {
     return FMOD_DSP_TYPE_LIMITER;
   case DSP::DT_oscillator:
     return FMOD_DSP_TYPE_OSCILLATOR;
+  case DSP::DT_sfxreverb:
+    return FMOD_DSP_TYPE_SFXREVERB;
   default:
     return FMOD_DSP_TYPE_UNKNOWN;
   }
@@ -385,6 +388,24 @@ configure_dsp(DSP *dsp_conf, FMOD::DSP *dsp) {
       OscillatorDSP *osc_conf = DCAST(OscillatorDSP, dsp_conf);
       dsp->setParameterInt(FMOD_DSP_OSCILLATOR_TYPE, osc_conf->get_oscillator_type());
       dsp->setParameterFloat(FMOD_DSP_OSCILLATOR_RATE, osc_conf->get_rate());
+    }
+    break;
+  case DSP::DT_sfxreverb:
+    {
+      SFXReverbDSP *sfx_conf = DCAST(SFXReverbDSP, dsp_conf);
+      dsp->setParameterFloat(FMOD_DSP_SFXREVERB_DECAYTIME, sfx_conf->get_decay_time());
+      dsp->setParameterFloat(FMOD_DSP_SFXREVERB_EARLYDELAY, sfx_conf->get_early_delay());
+      dsp->setParameterFloat(FMOD_DSP_SFXREVERB_LATEDELAY, sfx_conf->get_late_delay());
+      dsp->setParameterFloat(FMOD_DSP_SFXREVERB_HFREFERENCE, sfx_conf->get_hf_reference());
+      dsp->setParameterFloat(FMOD_DSP_SFXREVERB_HFDECAYRATIO, sfx_conf->get_hf_decay_ratio());
+      dsp->setParameterFloat(FMOD_DSP_SFXREVERB_DIFFUSION, sfx_conf->get_diffusion());
+      dsp->setParameterFloat(FMOD_DSP_SFXREVERB_DENSITY, sfx_conf->get_density());
+      dsp->setParameterFloat(FMOD_DSP_SFXREVERB_LOWSHELFFREQUENCY, sfx_conf->get_low_shelf_frequency());
+      dsp->setParameterFloat(FMOD_DSP_SFXREVERB_LOWSHELFGAIN, sfx_conf->get_low_shelf_gain());
+      dsp->setParameterFloat(FMOD_DSP_SFXREVERB_HIGHCUT, sfx_conf->get_highcut());
+      dsp->setParameterFloat(FMOD_DSP_SFXREVERB_EARLYLATEMIX, sfx_conf->get_early_late_mix());
+      dsp->setParameterFloat(FMOD_DSP_SFXREVERB_WETLEVEL, sfx_conf->get_wetlevel());
+      dsp->setParameterFloat(FMOD_DSP_SFXREVERB_DRYLEVEL, sfx_conf->get_drylevel());
     }
     break;
   }

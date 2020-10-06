@@ -30,6 +30,7 @@
 #include "nullAudioManager.h"
 #include "nullAudioSound.h"
 #include "oscillatorDSP.h"
+#include "sfxReverbDSP.h"
 #include "string_utils.h"
 
 #if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDA_AUDIO)
@@ -143,6 +144,7 @@ ConfigureFn(config_audio) {
   LimiterDSP::init_type();
   LowpassDSP::init_type();
   OscillatorDSP::init_type();
+  SFXReverbDSP::init_type();
 }
 
 ostream &
