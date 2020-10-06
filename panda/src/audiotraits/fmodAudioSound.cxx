@@ -218,8 +218,12 @@ FmodAudioSound(AudioManager *manager, VirtualFile *file, bool positional) {
   result = _sound->getDefaults(&_sampleFrequency, &_priority);
   fmod_audio_errcheck("_sound->getDefaults()", result);
   result = _channel->getVolume(&_volume);
-  // FIXME
-  //result = _
+
+  // Store off the original length of the sound without any play rate changes
+  // applied.  We need this to figure out the loop points of MIDIs that have
+  // been sped up.
+  result = _sound->getLength(&_length, FMOD_TIMEUNIT_MS);
+  fmod_audio_errcheck("_sound->getLength()", result);
 }
 
 
@@ -358,19 +362,19 @@ PN_stdfloat FmodAudioSound::
 get_time() const {
   ReMutexHolder holder(FmodAudioManager::_lock);
   FMOD_RESULT result;
-  unsigned int current_time;
+  unsigned int current_time_ms;
 
   if (!_channel) {
     return 0.0f;
   }
 
-  result = _channel->getPosition(&current_time, FMOD_TIMEUNIT_MS);
+  result = _channel->getPosition(&current_time_ms, FMOD_TIMEUNIT_MS);
   if (result == FMOD_ERR_INVALID_HANDLE || result == FMOD_ERR_CHANNEL_STOLEN) {
     return 0.0f;
   }
   fmod_audio_errcheck("_channel->getPosition()", result);
 
-  return ((double)current_time) / 1000.0;
+  return current_time_ms * 0.001;
 }
 
 /**
@@ -514,6 +518,11 @@ set_play_rate_on_channel() {
     // played.  This makes the song play faster without increasing the pitch.
     result = _sound->setMusicSpeed(_playrate);
     fmod_audio_errcheck("_sound->setMusicSpeed()", result);
+
+    // We have to manually fix up the loop points when changing the speed of a
+    // MIDI because FMOD does not handle this for us.
+    result = _sound->setLoopPoints(0, FMOD_TIMEUNIT_MS, _length / _playrate, FMOD_TIMEUNIT_MS);
+    fmod_audio_errcheck("_sound->setLoopPoints()", result);
 
   } else if (_channel) {
     // We have to adjust the frequency for non-sequence sounds.  The sound will

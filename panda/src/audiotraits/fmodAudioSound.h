@@ -153,7 +153,7 @@ public:
   float _mix[AudioManager::SPK_COUNT];
 
   float _sampleFrequency;
-  mutable float _length;   //in seconds.
+  unsigned int _length;
 
   FMOD_SPEAKERMODE  _speakermode;
 
