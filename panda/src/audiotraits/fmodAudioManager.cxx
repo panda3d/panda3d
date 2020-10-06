@@ -22,6 +22,7 @@
 #include "dcast.h"
 
 // Panda headers.
+#include "clockObject.h"
 #include "config_audio.h"
 #include "config_putil.h"
 #include "fmodAudioManager.h"
@@ -61,6 +62,8 @@ PN_stdfloat FmodAudioManager::_doppler_factor = 1;
 PN_stdfloat FmodAudioManager::_distance_factor = 1;
 PN_stdfloat FmodAudioManager::_drop_off_factor = 1;
 
+int FmodAudioManager::_last_update_frame = -1;
+
 #define FMOD_MIN_SAMPLE_RATE 80000
 #define FMOD_MAX_SAMPLE_RATE 192000
 
@@ -94,7 +97,11 @@ FmodAudioManager() {
 
   _all_managers.insert(this);
 
-  // Init 3D attributes
+  _concurrent_sound_limit = 0;
+
+  ////////////////////////////////////////////////////////////
+  // Initialize the 3D listener (camera) attributes.
+  //
   _position.x = 0;
   _position.y = 0;
   _position.z = 0;
@@ -111,6 +118,8 @@ FmodAudioManager() {
   _up.y = 0;
   _up.z = 0;
 
+  ////////////////////////////////////////////////////////////
+
   _active = true;
 
   _saved_outputtype = FMOD_OUTPUTTYPE_AUTODETECT;
@@ -124,7 +133,7 @@ FmodAudioManager() {
     result = FMOD::System_Create(&_system);
     fmod_audio_errcheck("FMOD::System_Create()", result);
 
-    // Let check the version of FMOD to make sure the headers and libraries
+    // Lets check the version of FMOD to make sure the headers and libraries
     // are correct.
     result = _system->getVersion(&version);
     fmod_audio_errcheck("_system->getVersion()", result);
@@ -233,7 +242,8 @@ FmodAudioManager::
   // Be sure to delete associated sounds before deleting the manager!
   FMOD_RESULT result;
 
-  // Release Sounds Next
+  // Release all of our sounds
+  _sounds_playing.clear();
   _all_sounds.clear();
 
   // Release all DSPs
@@ -241,6 +251,11 @@ FmodAudioManager::
 
   // Remove me from the managers list.
   _all_managers.erase(this);
+
+  if (_channelgroup) {
+    _channelgroup->release();
+    _channelgroup = nullptr;
+  }
 
   if (_all_managers.empty()) {
     result = _system->release();
@@ -623,9 +638,8 @@ set_wavwriter(bool outputwav) {
   }
 }
 
-
 /**
- * Turn on/off Warning: not implemented.
+ * Turn on/off.
  */
 void FmodAudioManager::
 set_active(bool active) {
@@ -634,7 +648,7 @@ set_active(bool active) {
     _active = active;
 
     // Tell our AudioSounds to adjust:
-    for (SoundSet::iterator i = _all_sounds.begin();
+    for (AllSounds::iterator i = _all_sounds.begin();
          i != _all_sounds.end();
          ++i) {
       (*i)->set_active(_active);
@@ -659,10 +673,10 @@ stop_all_sounds() {
   // We have to walk through this list with some care, since stopping a sound
   // may also remove it from the set (if there are no other references to the
   // sound).
-  SoundSet::iterator i;
+  AllSounds::iterator i;
   i = _all_sounds.begin();
   while (i != _all_sounds.end()) {
-    SoundSet::iterator next = i;
+    AllSounds::iterator next = i;
     ++next;
 
     (*i)->stop();
@@ -676,7 +690,18 @@ stop_all_sounds() {
 void FmodAudioManager::
 update() {
   ReMutexHolder holder(_lock);
-  _system->update();
+
+  // Call finished() and release our reference to sounds that have finished
+  // playing.
+  update_sounds();
+
+  // Update the FMOD system, but make sure we only do it once per frame.
+  ClockObject *clock = ClockObject::get_global_clock();
+  int current_frame = clock->get_frame_count();
+  if (current_frame != _last_update_frame) {
+    _system->update();
+    _last_update_frame = current_frame;
+  }
 }
 
 /**
@@ -727,7 +752,6 @@ audio_3d_get_listener_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *
 
 }
 
-
 /**
  * Set units per meter (Fmod uses meters internally for its sound-
  * spacialization calculations)
@@ -743,8 +767,6 @@ audio_3d_set_distance_factor(PN_stdfloat factor) {
 
   result = _system->set3DSettings( _doppler_factor, _distance_factor, _drop_off_factor);
   fmod_audio_errcheck("_system->set3DSettings()", result);
-
-
 }
 
 /**
@@ -772,7 +794,6 @@ audio_3d_set_doppler_factor(PN_stdfloat factor) {
 
   result = _system->set3DSettings( _doppler_factor, _distance_factor, _drop_off_factor);
   fmod_audio_errcheck("_system->set3DSettings()", result);
-
 }
 
 /**
@@ -811,35 +832,50 @@ audio_3d_get_drop_off_factor() const {
   audio_debug("FmodAudioManager::audio_3d_get_drop_off_factor()");
 
   return _drop_off_factor;
-
 }
 
-
-
 /**
- * NOT USED FOR FMOD-EX!!!
+ *
  */
 void FmodAudioManager::
 set_concurrent_sound_limit(unsigned int limit) {
-
+  ReMutexHolder holder(_lock);
+  _concurrent_sound_limit = limit;
+  reduce_sounds_playing_to(_concurrent_sound_limit);
 }
 
 /**
- * NOT USED FOR FMOD-EX!!!
+ *
  */
 unsigned int FmodAudioManager::
 get_concurrent_sound_limit() const {
-  return 1000000;
+  return _concurrent_sound_limit;
 }
 
 /**
- * NOT USED FOR FMOD-EX!!!
+ *
  */
 void FmodAudioManager::
 reduce_sounds_playing_to(unsigned int count) {
+  ReMutexHolder holder(_lock);
 
+  // first give all sounds that have finished a chance to stop, so that these
+  // get stopped first
+  update_sounds();
+
+  int limit = _sounds_playing.size() - count;
+  while (limit-- > 0) {
+    SoundsPlaying::iterator sound = _sounds_playing.begin();
+    nassertv(sound != _sounds_playing.end());
+    // When the user stops a sound, there is still a PT in the user's hand.
+    // When we stop a sound here, however, this can remove the last PT.  This
+    // can cause an ugly recursion where stop calls the destructor, and the
+    // destructor calls stop.  To avoid this, we create a temporary PT, stop
+    // the sound, and then release the PT.
+    PT(FmodAudioSound) s = (*sound);
+    s->stop();
+  }
 }
-
 
 /**
  * NOT USED FOR FMOD-EX!!! Clears a sound out of the sound cache.
@@ -847,9 +883,7 @@ reduce_sounds_playing_to(unsigned int count) {
 void FmodAudioManager::
 uncache_sound(const Filename &file_name) {
   audio_debug("FmodAudioManager::uncache_sound(\""<<file_name<<"\")");
-
 }
-
 
 /**
  * NOT USED FOR FMOD-EX!!! Clear out the sound cache.
@@ -857,7 +891,6 @@ uncache_sound(const Filename &file_name) {
 void FmodAudioManager::
 clear_cache() {
   audio_debug("FmodAudioManager::clear_cache()");
-
 }
 
 /**
@@ -866,7 +899,6 @@ clear_cache() {
 void FmodAudioManager::
 set_cache_limit(unsigned int count) {
   audio_debug("FmodAudioManager::set_cache_limit(count="<<count<<")");
-
 }
 
 /**
@@ -886,4 +918,58 @@ get_speaker_mode(FMOD_SPEAKERMODE &mode) const {
 
   return _system->getSoftwareFormat(&num_samples, &mode,
                                     &num_raw_speakers);
+}
+
+/**
+ * Inform the manager that a sound is about to play.  The manager will add
+ * this sound to the table of sounds that are playing.
+ */
+void FmodAudioManager::
+starting_sound(FmodAudioSound *sound) {
+  ReMutexHolder holder(_lock);
+
+  // first give all sounds that have finished a chance to stop, so that these
+  // get stopped first
+  update_sounds();
+
+  if (_concurrent_sound_limit) {
+    reduce_sounds_playing_to(_concurrent_sound_limit-1); // because we're about to add one
+  }
+
+  _sounds_playing.insert(sound);
+}
+
+/**
+ * Inform the manager that a sound is finished or someone called stop on the
+ * sound (this should not be called if a sound is only paused).
+ */
+void FmodAudioManager::
+stopping_sound(FmodAudioSound *sound) {
+  ReMutexHolder holder(_lock);
+
+  _sounds_playing.erase(sound); // This could case the sound to destruct.
+}
+
+void FmodAudioManager::
+update_sounds() {
+  ReMutexHolder holder(_lock);
+
+  // See if any of our playing sounds have ended we must first collect a
+  // seperate list of finished sounds and then iterated over those again
+  // calling their finished method.  We can't call finished() within a loop
+  // iterating over _sounds_playing since finished() modifies _sounds_playing
+  SoundsPlaying sounds_finished;
+
+  SoundsPlaying::iterator i = _sounds_playing.begin();
+  for (; i != _sounds_playing.end(); ++i) {
+    FmodAudioSound *sound = (*i);
+    if (sound->status() != AudioSound::PLAYING) {
+      sounds_finished.insert(*i);
+    }
+  }
+
+  i = sounds_finished.begin();
+  for (; i != sounds_finished.end(); ++i) {
+    (**i).finished();
+  }
 }

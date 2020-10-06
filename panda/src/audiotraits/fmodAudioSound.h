@@ -78,7 +78,7 @@ class VirtualFile;
 class EXPCL_FMOD_AUDIO FmodAudioSound : public AudioSound {
 public:
   FmodAudioSound(AudioManager *manager, VirtualFile *file, bool positional);
-  ~FmodAudioSound();
+  virtual ~FmodAudioSound();
 
   // For best compatibility, set the loop_count, start_time, volume, and
   // balance, prior to calling play().  You may set them while they're
@@ -183,20 +183,6 @@ public:
 
   std::string _finished_event;
 
-  // This reference-counting pointer is set to this while the sound is
-  // playing, and cleared when we get an indication that the sound has
-  // stopped.  This prevents a sound from destructing while it is playing.  We
-  // use a PT instead of managing the reference counts by hand to help guard
-  // against accidental reference count leaks or other mismanagement.
-  PT(FmodAudioSound) _self_ref;
-
-  static FMOD_RESULT F_CALLBACK
-  sound_end_callback(FMOD_CHANNELCONTROL *  channel,
-                     FMOD_CHANNELCONTROL_TYPE controltype,
-                     FMOD_CHANNELCONTROL_CALLBACK_TYPE  type,
-                     void *commanddata1,
-                     void *commanddata2);
-
   static FMOD_RESULT F_CALLBACK
   open_callback(const char *name, unsigned int *file_size,
                 void **handle, void *user_data);
@@ -210,9 +196,6 @@ public:
 
   static FMOD_RESULT F_CALLBACK
   seek_callback(void *handle, unsigned int pos, void *user_data);
-
-
-  // These are needed for Panda's Pointer System.  DO NOT ERASE!
 
  public:
   static TypeHandle get_class_type() {
@@ -232,8 +215,6 @@ public:
 
  private:
   static TypeHandle _type_handle;
-
-  // DONE
 };
 
 #include "fmodAudioSound.I"

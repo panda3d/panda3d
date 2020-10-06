@@ -40,7 +40,6 @@ TypeHandle FmodAudioSound::_type_handle;
  * Constructor All sound will DEFAULT load as a 2D sound unless otherwise
  * specified.
  */
-
 FmodAudioSound::
 FmodAudioSound(AudioManager *manager, VirtualFile *file, bool positional) {
   ReMutexHolder holder(FmodAudioManager::_lock);
@@ -88,7 +87,7 @@ FmodAudioSound(AudioManager *manager, VirtualFile *file, bool positional) {
   _file_name.set_binary();
 
   // Get the Speaker Mode [Important for later on.]
-  result = _manager->get_speaker_mode( _speakermode );
+  result = _manager->get_speaker_mode(_speakermode);
   fmod_audio_errcheck("_system->getSpeakerMode()", result);
 
   {
@@ -206,7 +205,7 @@ FmodAudioSound(AudioManager *manager, VirtualFile *file, bool positional) {
     sound_info.format = FMOD_SOUND_FORMAT_PCM16;
     int flags = FMOD_OPENMEMORY | FMOD_OPENRAW;
 
-    result = _manager->_system->createSound( blank_data, flags, &sound_info, &_sound);
+    result = _manager->_system->createSound(blank_data, flags, &sound_info, &_sound);
     fmod_audio_errcheck("createSound (blank)", result);
   }
 
@@ -220,7 +219,7 @@ FmodAudioSound(AudioManager *manager, VirtualFile *file, bool positional) {
   // '_sampleFrequency' variable here, for the 'set_play_rate()' and
   // 'get_play_rate()' methods later;
 
-  result = _sound->getDefaults( &_sampleFrequency, &_priority);
+  result = _sound->getDefaults(&_sampleFrequency, &_priority);
   fmod_audio_errcheck("_sound->getDefaults()", result);
   result = _channel->getVolume(&_volume);
   // FIXME
@@ -236,14 +235,14 @@ FmodAudioSound::
   ReMutexHolder holder(FmodAudioManager::_lock);
   FMOD_RESULT result;
 
-  // Remove me from table of all sounds.
-  _manager->_all_sounds.erase(this);
-
-  // The Release Sound
+  // Release the sound.  There is no need to release the channel, it will be
+  // reused for future sounds.
   result = _sound->release();
   fmod_audio_errcheck("_sound->release()", result);
-}
 
+  fmodAudio_cat.debug()
+    << "Released FmodAudioSound\n";
+}
 
 /**
  * Plays a sound.
@@ -265,42 +264,32 @@ stop() {
     result =_channel->stop();
     if (result == FMOD_ERR_INVALID_HANDLE || result == FMOD_ERR_CHANNEL_STOLEN) {
       _channel = 0;
-    } else if (result == FMOD_OK) {
-      _self_ref.clear();
     } else {
       fmod_audio_errcheck("_channel->stop()", result);
     }
   }
   _start_time = 0.0;
+
+  _manager->stopping_sound(this);
 }
 
-
 /**
- * Turns looping on and off
+ * Turns looping on or off.
  */
 void FmodAudioSound::
 set_loop(bool loop) {
-  if (loop) {
-    set_loop_count(0);
-  } else {
-    set_loop_count(1);
-  }
+  set_loop_count(loop ? 0 : 1);
 }
 
 /**
- * Returns whether looping is on or off
+ * Returns whether looping is on or off.
  */
 bool FmodAudioSound::
 get_loop() const {
-  if (get_loop_count() == 1) {
-    return false;
-  } else {
-    return true;
-  }
+  return get_loop_count() != 1;
 }
 
 /**
- *
  * Panda uses 0 to mean loop forever.  Fmod uses negative numbers to mean loop
  * forever.  (0 means don't loop, 1 means play twice, etc.  We must convert!
  */
@@ -313,17 +302,17 @@ set_loop_count(unsigned long loop_count) {
   FMOD_RESULT result;
 
   if (loop_count == 0) {
-    result = _sound->setLoopCount( -1 );
+    result = _sound->setLoopCount(-1);
     fmod_audio_errcheck("_sound->setLoopCount()", result);
     result =_sound->setMode(FMOD_LOOP_NORMAL);
     fmod_audio_errcheck("_sound->setMode()", result);
   } else if (loop_count == 1) {
-    result = _sound->setLoopCount( 1 );
+    result = _sound->setLoopCount(1);
     fmod_audio_errcheck("_sound->setLoopCount()", result);
     result =_sound->setMode(FMOD_LOOP_OFF);
     fmod_audio_errcheck("_sound->setMode()", result);
   } else {
-    result = _sound->setLoopCount( loop_count );
+    result = _sound->setLoopCount(loop_count);
     fmod_audio_errcheck("_sound->setLoopCount()", result);
     result =_sound->setMode(FMOD_LOOP_NORMAL);
     fmod_audio_errcheck("_sound->setMode()", result);
@@ -341,7 +330,7 @@ get_loop_count() const {
   FMOD_RESULT result;
   int loop_count;
 
-  result = _sound->getLoopCount( &loop_count );
+  result = _sound->getLoopCount(&loop_count);
   fmod_audio_errcheck("_sound->getLoopCount()", result);
 
   if (loop_count <= 0) {
@@ -379,7 +368,7 @@ get_time() const {
     return 0.0f;
   }
 
-  result = _channel->getPosition( &current_time , FMOD_TIMEUNIT_MS );
+  result = _channel->getPosition(&current_time, FMOD_TIMEUNIT_MS);
   if (result == FMOD_ERR_INVALID_HANDLE || result == FMOD_ERR_CHANNEL_STOLEN) {
     return 0.0f;
   }
@@ -419,11 +408,13 @@ start_playing() {
     return;
   }
 
-  int startTime = (int)(_start_time * 1000);
+  _manager->starting_sound(this);
+
+  int start_time_ms = (int)(_start_time * 1000);
 
   if (_channel != 0) {
     // try backing up current sound.
-    result = _channel->setPosition( startTime , FMOD_TIMEUNIT_MS );
+    result = _channel->setPosition(start_time_ms, FMOD_TIMEUNIT_MS);
     if (result == FMOD_ERR_INVALID_HANDLE || result == FMOD_ERR_CHANNEL_STOLEN) {
       _channel = 0;
 
@@ -446,21 +437,16 @@ start_playing() {
     fmod_audio_errcheck("_channel->setChannelGroup()", result);
     result = _channel->setUserData(this);
     fmod_audio_errcheck("_channel->setUserData()", result);
-    result = _channel->setCallback(sound_end_callback);
-    fmod_audio_errcheck("_channel->setCallback()", result);
-    result = _channel->setPosition( startTime , FMOD_TIMEUNIT_MS );
+    result = _channel->setPosition(start_time_ms , FMOD_TIMEUNIT_MS);
     fmod_audio_errcheck("_channel->setPosition()", result);
 
     set_volume_on_channel();
     set_play_rate_on_channel();
     set_speaker_mix_or_balance_on_channel();
-    // add_dsp_on_channel();
     set_3d_attributes_on_channel();
 
     result = _channel->setPaused(false);
     fmod_audio_errcheck("_channel->setPaused()", result);
-
-    _self_ref = this;
   }
 }
 
@@ -473,7 +459,7 @@ set_volume_on_channel() {
   FMOD_RESULT result;
 
   if (_channel != 0) {
-    result = _channel->setVolume( _volume );
+    result = _channel->setVolume(_volume);
     if (result == FMOD_ERR_INVALID_HANDLE || result == FMOD_ERR_CHANNEL_STOLEN) {
       _channel = 0;
     } else {
@@ -542,7 +528,7 @@ set_play_rate_on_channel() {
     // play faster, but will also have an increase in pitch.
 
     PN_stdfloat frequency = _sampleFrequency * _playrate;
-    result = _channel->setFrequency( frequency );
+    result = _channel->setFrequency(frequency);
     if (result == FMOD_ERR_INVALID_HANDLE || result == FMOD_ERR_CHANNEL_STOLEN) {
       _channel = 0;
     } else {
@@ -568,7 +554,7 @@ length() const {
   FMOD_RESULT result;
   unsigned int length;
 
-  result = _sound->getLength( &length, FMOD_TIMEUNIT_MS );
+  result = _sound->getLength(&length, FMOD_TIMEUNIT_MS);
   fmod_audio_errcheck("_sound->getLength()", result);
 
   return ((double)length) / 1000.0;
@@ -612,7 +598,7 @@ set_3d_attributes_on_channel() {
   fmod_audio_errcheck("_sound->getMode()", result);
 
   if ((_channel != 0) && (soundMode & FMOD_3D)) {
-    result = _channel->set3DAttributes( &_location, &_velocity );
+    result = _channel->set3DAttributes(&_location, &_velocity);
     if (result == FMOD_ERR_INVALID_HANDLE || result == FMOD_ERR_CHANNEL_STOLEN) {
       _channel = 0;
     } else {
@@ -641,7 +627,7 @@ set_3d_min_distance(PN_stdfloat dist) {
 
   _min_dist = dist;
 
-  result = _sound->set3DMinMaxDistance( dist, _max_dist );
+  result = _sound->set3DMinMaxDistance(dist, _max_dist);
   fmod_audio_errcheck("_sound->set3DMinMaxDistance()", result);
 }
 
@@ -663,7 +649,7 @@ set_3d_max_distance(PN_stdfloat dist) {
 
   _max_dist = dist;
 
-  result = _sound->set3DMinMaxDistance( _min_dist, dist );
+  result = _sound->set3DMinMaxDistance(_min_dist, dist);
   fmod_audio_errcheck("_sound->set3DMinMaxDistance()", result);
 }
 
@@ -808,7 +794,7 @@ set_priority(int priority) {
 
   _priority = priority;
 
-  result = _sound->setDefaults( _sampleFrequency, _priority);
+  result = _sound->setDefaults(_sampleFrequency, _priority);
   fmod_audio_errcheck("_sound->setDefaults()", result);
 }
 
@@ -821,11 +807,11 @@ status() const {
   FMOD_RESULT result;
   bool playingState;
 
-  if ( _channel == 0 ) {
+  if (_channel == 0) {
     return READY;
   }
 
-  result = _channel->isPlaying( &playingState );
+  result = _channel->isPlaying(&playingState);
   if ((result == FMOD_OK) && (playingState == true)) {
     return PLAYING;
   } else {
@@ -869,7 +855,6 @@ set_active(bool active) {
   }
 }
 
-
 /**
  * Returns whether the sound has been marked "active".
  */
@@ -883,7 +868,9 @@ get_active() const {
  */
 void FmodAudioSound::
 finished() {
-  audio_error("finished: not implemented under FMOD-EX");
+  ReMutexHolder holder(FmodAudioManager::_lock);
+
+  stop();
 }
 
 /**
@@ -898,38 +885,11 @@ set_finished_event(const string& event) {
 
 /**
  * NOT USED ANYMORE!!! Return the string the finished event is referenced by
- *
-
- *
  */
 const string& FmodAudioSound::
 get_finished_event() const {
   audio_error("get_finished_event: not implemented under FMOD-EX");
   return _finished_event;
-}
-
-/**
- * When fmod finishes playing a sound, decrements the reference count of the
- * associated FmodAudioSound.
- */
-FMOD_RESULT F_CALLBACK FmodAudioSound::
-sound_end_callback(FMOD_CHANNELCONTROL *  channel,
-                   FMOD_CHANNELCONTROL_TYPE controltype,
-                   FMOD_CHANNELCONTROL_CALLBACK_TYPE  type,
-                   void *commanddata1,
-                   void *commanddata2) {
-  // Fortunately, this callback is made synchronously rather than
-  // asynchronously (it is triggered during System::update()), so we don't
-  // have to worry about thread-related issues here.
-  if (type == FMOD_CHANNELCONTROL_CALLBACK_END) {
-    FMOD::ChannelControl *fc = (FMOD::ChannelControl *)channel;
-    void *userdata = nullptr;
-    FMOD_RESULT result = fc->getUserData(&userdata);
-    fmod_audio_errcheck("channel->getUserData()", result);
-    FmodAudioSound *fsound = (FmodAudioSound*)userdata;
-    fsound->_self_ref = fsound;
-  }
-  return FMOD_OK;
 }
 
 /**
