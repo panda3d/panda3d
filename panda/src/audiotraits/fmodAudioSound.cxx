@@ -433,10 +433,6 @@ start_playing() {
   if (_channel == 0) {
     result = _manager->_system->playSound(_sound, _manager->_channelgroup, true, &_channel);
     fmod_audio_errcheck("_system->playSound()", result);
-    result = _channel->setChannelGroup(_manager->_channelgroup);
-    fmod_audio_errcheck("_channel->setChannelGroup()", result);
-    result = _channel->setUserData(this);
-    fmod_audio_errcheck("_channel->setUserData()", result);
     result = _channel->setPosition(start_time_ms , FMOD_TIMEUNIT_MS);
     fmod_audio_errcheck("_channel->setPosition()", result);
 

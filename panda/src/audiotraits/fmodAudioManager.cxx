@@ -416,9 +416,6 @@ insert_dsp(int index, DSP *panda_dsp) {
   ret = _system->createDSPByType(fmod_type, &dsp);
   fmod_audio_errcheck("_system->createDSPByType()", ret);
 
-  ret = dsp->setUserData(USER_DSP_MAGIC);
-  fmod_audio_errcheck("dsp->setUserData()", ret);
-
   ret = _channelgroup->addDSP(index, dsp);
   fmod_audio_errcheck("_channelgroup->addDSP()", ret);
 
