@@ -50,13 +50,10 @@ FmodAudioSound(AudioManager *manager, VirtualFile *file, bool positional) {
   _paused = false;
   _start_time = 0.0;
   _volume = 1.0;
-
+  _playrate = 1.0;
   _is_midi = false;
 
-  // Local Variables that are needed.
-  FMOD_RESULT result;
-
-  // Inits 3D Attributes
+  // 3D attributes of the sound.
   _location.x = 0;
   _location.y = 0;
   _location.z = 0;
@@ -68,21 +65,20 @@ FmodAudioSound(AudioManager *manager, VirtualFile *file, bool positional) {
   _min_dist = 1.0;
   _max_dist = 1000000000.0;
 
-  // Play Rate Variable
-  _playrate = 1;
-
-  // These set the Speaker Levels to a default if you are using a MultiChannel
-  // Setup.
+  // These set the speaker levels to a default if you are using a multichannel
+  // setup.
   for (int i=0; i<AudioManager::SPK_COUNT; i++) {
     _mix[i] = 1.0;
   }
+
+  FMOD_RESULT result;
 
   // Assign the values we need
   FmodAudioManager *fmanager;
   DCAST_INTO_V(fmanager, manager);
   _manager = fmanager;
 
-  _channel = 0;
+  _channel = nullptr;
   _file_name = file->get_original_filename();
   _file_name.set_binary();
 
@@ -260,10 +256,10 @@ stop() {
   ReMutexHolder holder(FmodAudioManager::_lock);
   FMOD_RESULT result;
 
-  if (_channel != 0) {
+  if (_channel) {
     result =_channel->stop();
     if (result == FMOD_ERR_INVALID_HANDLE || result == FMOD_ERR_CHANNEL_STOLEN) {
-      _channel = 0;
+      _channel = nullptr;
     } else {
       fmod_audio_errcheck("_channel->stop()", result);
     }
@@ -364,7 +360,7 @@ get_time() const {
   FMOD_RESULT result;
   unsigned int current_time;
 
-  if (_channel == 0) {
+  if (!_channel) {
     return 0.0f;
   }
 
@@ -412,11 +408,11 @@ start_playing() {
 
   int start_time_ms = (int)(_start_time * 1000);
 
-  if (_channel != 0) {
+  if (_channel) {
     // try backing up current sound.
     result = _channel->setPosition(start_time_ms, FMOD_TIMEUNIT_MS);
     if (result == FMOD_ERR_INVALID_HANDLE || result == FMOD_ERR_CHANNEL_STOLEN) {
-      _channel = 0;
+      _channel = nullptr;
 
     } else {
       fmod_audio_errcheck("_channel->setPosition()", result);
@@ -425,12 +421,12 @@ start_playing() {
       result = _channel->isPlaying(&playing);
       fmod_audio_errcheck("_channel->isPlaying()", result);
       if (result != FMOD_OK || !playing) {
-        _channel = 0;
+        _channel = nullptr;
       }
     }
   }
 
-  if (_channel == 0) {
+  if (!_channel) {
     result = _manager->_system->playSound(_sound, _manager->_channelgroup, true, &_channel);
     fmod_audio_errcheck("_system->playSound()", result);
     result = _channel->setPosition(start_time_ms , FMOD_TIMEUNIT_MS);
@@ -454,10 +450,10 @@ set_volume_on_channel() {
   ReMutexHolder holder(FmodAudioManager::_lock);
   FMOD_RESULT result;
 
-  if (_channel != 0) {
+  if (_channel) {
     result = _channel->setVolume(_volume);
     if (result == FMOD_ERR_INVALID_HANDLE || result == FMOD_ERR_CHANNEL_STOLEN) {
-      _channel = 0;
+      _channel = nullptr;
     } else {
       fmod_audio_errcheck("_channel->setVolume()", result);
     }
@@ -513,20 +509,20 @@ set_play_rate_on_channel() {
   ReMutexHolder holder(FmodAudioManager::_lock);
   FMOD_RESULT result;
 
-  // If this is a MIDI sequence, simply adjust the speed at which the song is
-  // played.  This makes the song play faster without increasing the pitch.
   if (_is_midi) {
-    //result = _sound->setMusicSpeed(_playrate);
-    //fmod_audio_errcheck("_sound->setMusicSpeed()", result);
+    // If this is a MIDI sequence, simply adjust the speed at which the song is
+    // played.  This makes the song play faster without increasing the pitch.
+    result = _sound->setMusicSpeed(_playrate);
+    fmod_audio_errcheck("_sound->setMusicSpeed()", result);
 
-  } else if (_channel != 0) {
+  } else if (_channel) {
     // We have to adjust the frequency for non-sequence sounds.  The sound will
     // play faster, but will also have an increase in pitch.
 
     PN_stdfloat frequency = _sampleFrequency * _playrate;
     result = _channel->setFrequency(frequency);
     if (result == FMOD_ERR_INVALID_HANDLE || result == FMOD_ERR_CHANNEL_STOLEN) {
-      _channel = 0;
+      _channel = nullptr;
     } else {
       fmod_audio_errcheck("_channel->setFrequency()", result);
     }
@@ -593,10 +589,10 @@ set_3d_attributes_on_channel() {
   result = _sound->getMode(&soundMode);
   fmod_audio_errcheck("_sound->getMode()", result);
 
-  if ((_channel != 0) && (soundMode & FMOD_3D)) {
+  if ((_channel) && (soundMode & FMOD_3D)) {
     result = _channel->set3DAttributes(&_location, &_velocity);
     if (result == FMOD_ERR_INVALID_HANDLE || result == FMOD_ERR_CHANNEL_STOLEN) {
-      _channel = 0;
+      _channel = nullptr;
     } else {
       fmod_audio_errcheck("_channel->set3DAttributes()", result);
     }
@@ -669,7 +665,7 @@ get_3d_max_distance() const {
 PN_stdfloat FmodAudioSound::
 get_speaker_mix(int speaker) {
   ReMutexHolder holder(FmodAudioManager::_lock);
-  if (_channel == 0) {
+  if (!_channel) {
     return 0.0;
   }
 
@@ -803,7 +799,7 @@ status() const {
   FMOD_RESULT result;
   bool playingState;
 
-  if (_channel == 0) {
+  if (!_channel) {
     return READY;
   }
 

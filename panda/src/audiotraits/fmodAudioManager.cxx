@@ -70,7 +70,7 @@ int FmodAudioManager::_last_update_frame = -1;
 // Central dispatcher for audio errors.
 
 void fmod_audio_errcheck(const char *context, FMOD_RESULT result) {
-  if (result != 0) {
+  if (result != FMOD_OK) {
     audio_error(context << ": " << FMOD_ErrorString(result) );
   }
 }
@@ -124,7 +124,7 @@ FmodAudioManager() {
 
   _saved_outputtype = FMOD_OUTPUTTYPE_AUTODETECT;
 
-  if (_system == nullptr) {
+  if (!_system) {
     // Create the global FMOD System object.  This one object must be shared
     // by all FmodAudioManagers (this is particularly true on OSX, but the
     // FMOD documentation is unclear as to whether this is the intended design
@@ -531,7 +531,7 @@ get_sound(MovieAudio *source, bool positional, int) {
 }
 
 /**
- * This is to query if you are using a MultiChannel Setup.
+ * This is to query if you are using a multichannel setup.
  */
 int FmodAudioManager::
 get_speaker_setup() {
