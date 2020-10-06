@@ -924,6 +924,11 @@ void FmodAudioManager::
 starting_sound(FmodAudioSound *sound) {
   ReMutexHolder holder(_lock);
 
+  // If the sound is already in there, don't do anything.
+  if (_sounds_playing.find(sound) != _sounds_playing.end()) {
+    return;
+  }
+
   // first give all sounds that have finished a chance to stop, so that these
   // get stopped first
   update_sounds();
