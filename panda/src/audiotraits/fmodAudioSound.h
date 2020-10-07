@@ -130,7 +130,7 @@ public:
   AudioSound::SoundStatus status() const;
 
   virtual PN_stdfloat get_speaker_mix(int speaker);
-  virtual void set_speaker_mix(PN_stdfloat frontleft, PN_stdfloat frontright, PN_stdfloat center, PN_stdfloat sub, PN_stdfloat backleft, PN_stdfloat backright, PN_stdfloat sideleft, PN_stdfloat  sideright);
+  virtual void set_speaker_mix(int speaker, PN_stdfloat mix);
 
   void set_active(bool active=true);
   bool get_active() const;
@@ -139,7 +139,7 @@ public:
   void set_finished_event(const std::string& event);
   const std::string& get_finished_event() const;
 
- private:
+private:
   PT(FmodAudioManager) _manager;
   FMOD::Sound      *_sound;
   FMOD::Channel    *_channel;
@@ -152,7 +152,7 @@ public:
   int   _priority;
   float _mix[AudioManager::SPK_COUNT];
 
-  float _sampleFrequency;
+  float _sample_frequency;
   unsigned int _length;
 
   FMOD_SPEAKERMODE  _speakermode;

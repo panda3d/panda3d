@@ -82,7 +82,13 @@
 
 class FmodAudioSound;
 
-extern void fmod_audio_errcheck(const char *context, FMOD_RESULT n);
+extern void _fmod_audio_errcheck(const char *context, FMOD_RESULT n);
+
+#ifdef NDEBUG
+#define fmod_audio_errcheck(context, n)
+#else
+#define fmod_audio_errcheck(context, n) _fmod_audio_errcheck(context, n)
+#endif // NDEBUG
 
 class EXPCL_FMOD_AUDIO FmodAudioManager : public AudioManager {
   friend class FmodAudioSound;

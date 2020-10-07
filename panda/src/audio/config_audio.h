@@ -33,7 +33,7 @@ extern EXPCL_PANDA_AUDIO ConfigVariableInt audio_cache_limit;
 extern EXPCL_PANDA_AUDIO ConfigVariableDouble audio_volume;
 extern EXPCL_PANDA_AUDIO ConfigVariableFilename audio_dls_file;
 
-// We Need This one.
+// We need this one.
 extern EXPCL_PANDA_AUDIO ConfigVariableString audio_library_name;
 
 // Config vars for Fmod:

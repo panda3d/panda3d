@@ -70,7 +70,7 @@ int FmodAudioManager::_last_update_frame = -1;
 
 // Central dispatcher for audio errors.
 
-void fmod_audio_errcheck(const char *context, FMOD_RESULT result) {
+void _fmod_audio_errcheck(const char *context, FMOD_RESULT result) {
   if (result != FMOD_OK) {
     audio_error(context << ": " << FMOD_ErrorString(result) );
   }
@@ -571,23 +571,25 @@ get_speaker_setup() {
 
   switch (speaker_mode) {
   case FMOD_SPEAKERMODE_RAW:
-    return 0;
+    return AudioManager::SPEAKERMODE_raw;
   case FMOD_SPEAKERMODE_MONO:
-    return 1;
+    return AudioManager::SPEAKERMODE_mono;
   case FMOD_SPEAKERMODE_STEREO:
-    return 2;
+    return AudioManager::SPEAKERMODE_stereo;
   case FMOD_SPEAKERMODE_QUAD:
-    return 3;
+    return AudioManager::SPEAKERMODE_quad;
   case FMOD_SPEAKERMODE_SURROUND:
-    return 4;
+    return AudioManager::SPEAKERMODE_surround;
   case FMOD_SPEAKERMODE_5POINT1:
-    return 5;
+    return AudioManager::SPEAKERMODE_5point1;
   case FMOD_SPEAKERMODE_7POINT1:
-    return 6;
+    return AudioManager::SPEAKERMODE_7point1;
+  case FMOD_SPEAKERMODE_7POINT1POINT4:
+    return AudioManager::SPEAKERMODE_7point1point4;
   case FMOD_SPEAKERMODE_MAX:
-    return 7;
+    return AudioManager::SPEAKERMODE_max;
   default:
-    return 8;
+    return AudioManager::SPEAKERMODE_COUNT;
   }
 }
 

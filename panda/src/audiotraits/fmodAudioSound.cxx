@@ -67,7 +67,7 @@ FmodAudioSound(AudioManager *manager, VirtualFile *file, bool positional) {
 
   // These set the speaker levels to a default if you are using a multichannel
   // setup.
-  for (int i=0; i<AudioManager::SPK_COUNT; i++) {
+  for (int i = 0; i < AudioManager::SPK_COUNT; i++) {
     _mix[i] = 1.0;
   }
 
@@ -215,7 +215,7 @@ FmodAudioSound(AudioManager *manager, VirtualFile *file, bool positional) {
   // '_sampleFrequency' variable here, for the 'set_play_rate()' and
   // 'get_play_rate()' methods later;
 
-  result = _sound->getDefaults(&_sampleFrequency, &_priority);
+  result = _sound->getDefaults(&_sample_frequency, &_priority);
   fmod_audio_errcheck("_sound->getDefaults()", result);
   result = _channel->getVolume(&_volume);
 
@@ -528,7 +528,7 @@ set_play_rate_on_channel() {
     // We have to adjust the frequency for non-sequence sounds.  The sound will
     // play faster, but will also have an increase in pitch.
 
-    PN_stdfloat frequency = _sampleFrequency * _playrate;
+    PN_stdfloat frequency = _sample_frequency * _playrate;
     result = _channel->setFrequency(frequency);
     if (result == FMOD_ERR_INVALID_HANDLE || result == FMOD_ERR_CHANNEL_STOLEN) {
       _channel = nullptr;
@@ -674,56 +674,33 @@ get_3d_max_distance() const {
 PN_stdfloat FmodAudioSound::
 get_speaker_mix(int speaker) {
   ReMutexHolder holder(FmodAudioManager::_lock);
-  if (!_channel) {
+  if (!_channel || speaker < 0 || speaker >= AudioManager::SPK_COUNT) {
     return 0.0;
   }
 
+  int in, out;
+  float mix[32][32];
   FMOD_RESULT result;
-  float frontleft;
-  float frontright;
-  float center;
-  float sub;
-  float backleft;
-  float backright;
-  float sideleft;
-  float sideright;
+  // First query the number of output speakers and input channels
+  result = _channel->getMixMatrix(nullptr, &out, &in, 32);
+  fmod_audio_errcheck("_channel->getMixMatrix()", result);
+  // Now get the actual mix matrix
+  result = _channel->getMixMatrix((float *)mix, &out, &in, 32);
+  fmod_audio_errcheck("_channel->getMixMatrix()", result);
 
-  // FIXME
-  //result = _channel->getMix( &frontleft, &frontright, &center, &sub, &backleft, &backright, &sideleft, &sideright );
-  //fmod_audio_errcheck("_channel->getSpeakerMix()", result);
-
-  switch(speaker) {
-  case AudioManager::SPK_frontleft:  return frontleft;
-  case AudioManager::SPK_frontright: return frontright;
-  case AudioManager::SPK_center:     return center;
-  case AudioManager::SPK_sub:        return sub;
-  case AudioManager::SPK_backleft:   return backleft;
-  case AudioManager::SPK_backright:  return backright;
-  case AudioManager::SPK_sideleft:   return sideleft;
-  case AudioManager::SPK_sideright:  return sideright;
-  default: return 0.0;
-  }
+  return mix[speaker][0];
 }
 
 /**
- * This sets the speaker mix for Surround Sound sytems.  It required 8
- * parameters which match up to the following:
- *
- * * 1 = Front Left * 2 = Front Right * 3 = Center * 4 = Subwoofer * 5 = Back
- * Left * 6 = Back Right * 7 = Side Left * 8 = Side Right
- *
+ * Sets the mix value of a speaker.
  */
 void FmodAudioSound::
-set_speaker_mix(PN_stdfloat frontleft, PN_stdfloat frontright, PN_stdfloat center, PN_stdfloat sub, PN_stdfloat backleft, PN_stdfloat backright, PN_stdfloat sideleft, PN_stdfloat  sideright) {
+set_speaker_mix(int speaker, PN_stdfloat mix) {
+  nassertv(speaker >= 0 && speaker < AudioManager::SPK_COUNT);
+
   ReMutexHolder holder(FmodAudioManager::_lock);
-  _mix[AudioManager::SPK_frontleft]  = frontleft;
-  _mix[AudioManager::SPK_frontright] = frontright;
-  _mix[AudioManager::SPK_center]     = center;
-  _mix[AudioManager::SPK_sub]        = sub;
-  _mix[AudioManager::SPK_backleft]   = backleft;
-  _mix[AudioManager::SPK_backright]  = backright;
-  _mix[AudioManager::SPK_sideleft]   = sideleft;
-  _mix[AudioManager::SPK_sideright]  = sideright;
+
+  _mix[speaker] = mix;
 
   set_speaker_mix_or_balance_on_channel();
 }
@@ -738,9 +715,6 @@ set_speaker_mix(PN_stdfloat frontleft, PN_stdfloat frontright, PN_stdfloat cente
  */
 void FmodAudioSound::
 set_speaker_mix_or_balance_on_channel() {
-  // FIXME
-
-#if 0
   ReMutexHolder holder(FmodAudioManager::_lock);
   FMOD_RESULT result;
   FMOD_MODE soundMode;
@@ -748,27 +722,26 @@ set_speaker_mix_or_balance_on_channel() {
   result = _sound->getMode(&soundMode);
   fmod_audio_errcheck("_sound->getMode()", result);
 
-  if ((_channel != 0) && (( soundMode & FMOD_3D ) == 0)) {
-    if ( _speakermode == FMOD_SPEAKERMODE_STEREO ) {
-      result = _channel->setPan( _balance );
+  if (_channel && (( soundMode & FMOD_3D ) == 0)) {
+    if (_speakermode == FMOD_SPEAKERMODE_STEREO) {
+      result = _channel->setPan(_balance);
     } else {
-      result = _channel->setMix( _mix[AudioManager::SPK_frontleft],
-                                        _mix[AudioManager::SPK_frontright],
-                                        _mix[AudioManager::SPK_center],
-                                        _mix[AudioManager::SPK_sub],
-                                        _mix[AudioManager::SPK_backleft],
-                                        _mix[AudioManager::SPK_backright],
-                                        _mix[AudioManager::SPK_sideleft],
-                                        _mix[AudioManager::SPK_sideright]
-                                        );
+      result = _channel->setMixLevelsOutput(
+        _mix[AudioManager::SPK_front_left],
+        _mix[AudioManager::SPK_front_right],
+        _mix[AudioManager::SPK_front_center],
+        _mix[AudioManager::SPK_sub],
+        _mix[AudioManager::SPK_surround_left],
+        _mix[AudioManager::SPK_surround_right],
+        _mix[AudioManager::SPK_back_left],
+        _mix[AudioManager::SPK_back_right]);
     }
     if (result == FMOD_ERR_INVALID_HANDLE || result == FMOD_ERR_CHANNEL_STOLEN) {
-      _channel = 0;
+      _channel = nullptr;
     } else {
       fmod_audio_errcheck("_channel->setSpeakerMix()/setPan()", result);
     }
   }
-#endif
 }
 
 /**
@@ -795,7 +768,7 @@ set_priority(int priority) {
 
   _priority = priority;
 
-  result = _sound->setDefaults(_sampleFrequency, _priority);
+  result = _sound->setDefaults(_sample_frequency, _priority);
   fmod_audio_errcheck("_sound->setDefaults()", result);
 }
 
