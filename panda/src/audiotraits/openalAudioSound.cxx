@@ -831,9 +831,9 @@ set_active(bool active) {
         if (_loop_count==0) {
           // ...we're pausing a looping sound.
           _paused=true;
-          // Store off the current time so we can resume from where we paused.
-          _start_time = get_time();
         }
+        // Store off the current time so we can resume from where we paused.
+        _start_time = get_time();
         stop();
       }
     }
