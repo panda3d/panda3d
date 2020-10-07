@@ -52,6 +52,7 @@ FmodAudioSound(AudioManager *manager, VirtualFile *file, bool positional) {
   _volume = 1.0;
   _playrate = 1.0;
   _is_midi = false;
+  _length = 0;
 
   // 3D attributes of the sound.
   _location.x = 0;
@@ -268,7 +269,6 @@ stop() {
       fmod_audio_errcheck("_channel->stop()", result);
     }
   }
-  _start_time = 0.0;
 
   _manager->stopping_sound(this);
 }
@@ -444,6 +444,8 @@ start_playing() {
     result = _channel->setPaused(false);
     fmod_audio_errcheck("_channel->setPaused()", result);
   }
+
+  _start_time = 0.0;
 }
 
 /**
@@ -817,13 +819,10 @@ set_active(bool active) {
         if (get_loop_count() == 0) {
           // ...we're pausing a looping sound.
           _paused = true;
-          // We have to do this because stop() resets _start_time.
-          PN_stdfloat time = get_time();
-          stop();
-          _start_time = time;
-        } else {
-          stop();
         }
+        // Store off the current time so we can resume from where we paused.
+        _start_time = get_time();
+        stop();
       }
     }
   }
