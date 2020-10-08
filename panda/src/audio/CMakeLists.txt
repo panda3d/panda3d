@@ -22,6 +22,8 @@ set(P3AUDIO_HEADERS
   nullAudioManager.h
   nullAudioSound.h
   oscillatorDSP.h oscillatorDSP.I
+  paramEQDSP.h paramEQDSP.I
+  pitchShiftDSP.h pitchShiftDSP.I
   sfxReverbDSP.h sfxReverbDSP.I
 )
 
@@ -45,6 +47,8 @@ set(P3AUDIO_SOURCES
   nullAudioManager.cxx
   nullAudioSound.cxx
   oscillatorDSP.cxx
+  paramEQDSP.cxx
+  pitchShiftDSP.cxx
   sfxReverbDSP.cxx
 )
 

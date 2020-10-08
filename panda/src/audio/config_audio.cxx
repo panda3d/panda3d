@@ -31,6 +31,8 @@
 #include "nullAudioManager.h"
 #include "nullAudioSound.h"
 #include "oscillatorDSP.h"
+#include "paramEQDSP.h"
+#include "pitchShiftDSP.h"
 #include "sfxReverbDSP.h"
 #include "string_utils.h"
 
@@ -146,6 +148,8 @@ ConfigureFn(config_audio) {
   LowpassDSP::init_type();
   NormalizeDSP::init_type();
   OscillatorDSP::init_type();
+  ParamEQDSP::init_type();
+  PitchShiftDSP::init_type();
   SFXReverbDSP::init_type();
 }
 

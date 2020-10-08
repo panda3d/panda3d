@@ -42,6 +42,8 @@
 #include "lowpassDSP.h"
 #include "normalizeDSP.h"
 #include "oscillatorDSP.h"
+#include "paramEQDSP.h"
+#include "pitchShiftDSP.h"
 #include "sfxReverbDSP.h"
 
 // FMOD Headers.
@@ -820,6 +822,10 @@ get_fmod_dsp_type(DSP::DSPType panda_type) {
     return FMOD_DSP_TYPE_LIMITER;
   case DSP::DT_oscillator:
     return FMOD_DSP_TYPE_OSCILLATOR;
+  case DSP::DT_parameq:
+    return FMOD_DSP_TYPE_PARAMEQ;
+  case DSP::DT_pitchshift:
+    return FMOD_DSP_TYPE_PITCHSHIFT;
   case DSP::DT_sfxreverb:
     return FMOD_DSP_TYPE_SFXREVERB;
   case DSP::DT_normalize:
@@ -967,6 +973,21 @@ configure_dsp(DSP *dsp_conf, FMOD::DSP *dsp) {
       OscillatorDSP *osc_conf = DCAST(OscillatorDSP, dsp_conf);
       dsp->setParameterInt(FMOD_DSP_OSCILLATOR_TYPE, osc_conf->get_oscillator_type());
       dsp->setParameterFloat(FMOD_DSP_OSCILLATOR_RATE, osc_conf->get_rate());
+    }
+    break;
+  case DSP::DT_parameq:
+    {
+      ParamEQDSP *peq_conf = DCAST(ParamEQDSP, dsp_conf);
+      dsp->setParameterFloat(FMOD_DSP_PARAMEQ_CENTER, peq_conf->get_center());
+      dsp->setParameterFloat(FMOD_DSP_PARAMEQ_BANDWIDTH, peq_conf->get_bandwith());
+      dsp->setParameterFloat(FMOD_DSP_PARAMEQ_GAIN, peq_conf->get_gain());
+    }
+    break;
+  case DSP::DT_pitchshift:
+    {
+      PitchShiftDSP *ps_conf = DCAST(PitchShiftDSP, dsp_conf);
+      dsp->setParameterFloat(FMOD_DSP_PITCHSHIFT_PITCH, ps_conf->get_pitch());
+      dsp->setParameterFloat(FMOD_DSP_PITCHSHIFT_FFTSIZE, (float)ps_conf->get_fft_size());
     }
     break;
   case DSP::DT_sfxreverb:
