@@ -16,6 +16,10 @@
 
 #include "dsp.h"
 
+/**
+ * DSP filter that bends the pitch of a sound without changing the playback
+ * speed.
+ */
 class EXPCL_PANDA_AUDIO PitchShiftDSP : public DSP {
 PUBLISHED:
   INLINE PitchShiftDSP(float pitch = 1, int fft_size = 1024);
