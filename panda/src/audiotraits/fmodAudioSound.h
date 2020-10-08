@@ -60,8 +60,8 @@
  * about.
  */
 
-#ifndef __FMOD_AUDIO_SOUND_H__
-#define __FMOD_AUDIO_SOUND_H__
+#ifndef FMODAUDIOSOUND_H
+#define FMODAUDIOSOUND_H
 
 #include "pandabase.h"
 
@@ -218,4 +218,4 @@ private:
 
 #include "fmodAudioSound.I"
 
-#endif /* __FMOD_AUDIO_SOUND_H__ */
+#endif // FMODAUDIOSOUND_H
