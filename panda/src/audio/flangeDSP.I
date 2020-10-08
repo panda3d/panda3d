@@ -28,6 +28,7 @@ FlangeDSP(float mix, float depth, float rate) :
 INLINE void FlangeDSP::
 set_mix(float mix) {
   _mix = mix;
+  on_values_changed();
 }
 
 /**
@@ -44,6 +45,7 @@ get_mix() const {
 INLINE void FlangeDSP::
 set_depth(float depth) {
   _depth = depth;
+  on_values_changed();
 }
 
 /**
@@ -60,6 +62,7 @@ get_depth() const {
 INLINE void FlangeDSP::
 set_rate(float rate) {
   _rate = rate;
+  on_values_changed();
 }
 
 /**

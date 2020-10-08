@@ -27,6 +27,7 @@ OscillatorDSP(OscillatorDSP::OscillatorType type, float rate) :
 INLINE void OscillatorDSP::
 set_oscillator_type(OscillatorDSP::OscillatorType type) {
   _osc_type = type;
+  on_values_changed();
 }
 
 /**
@@ -43,6 +44,7 @@ get_oscillator_type() const {
 INLINE void OscillatorDSP::
 set_rate(float rate) {
   _rate = rate;
+  on_values_changed();
 }
 
 /**

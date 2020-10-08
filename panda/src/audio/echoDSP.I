@@ -29,6 +29,7 @@ EchoDSP(float delay, float feedback, float drylevel, float wetlevel) :
 INLINE void EchoDSP::
 set_delay(float delay) {
   _delay = delay;
+  on_values_changed();
 }
 
 /**
@@ -45,6 +46,7 @@ get_delay() const {
 INLINE void EchoDSP::
 set_feedback(float feedback) {
   _feedback = feedback;
+  on_values_changed();
 }
 
 /**
@@ -61,6 +63,7 @@ get_feedback() const {
 INLINE void EchoDSP::
 set_drylevel(float drylevel) {
   _drylevel = drylevel;
+  on_values_changed();
 }
 
 /**
@@ -77,6 +80,7 @@ get_drylevel() const {
 INLINE void EchoDSP::
 set_wetlevel(float wetlevel) {
   _wetlevel = wetlevel;
+  on_values_changed();
 }
 
 /**

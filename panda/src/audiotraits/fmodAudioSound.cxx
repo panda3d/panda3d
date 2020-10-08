@@ -31,19 +31,16 @@
 #include "virtualFileSystem.h"
 #include "vector_uchar.h"
 
-using std::istream;
-using std::string;
-
-TypeHandle FmodAudioSound::_type_handle;
+TypeHandle FMODAudioSound::_type_handle;
 
 /**
  * Constructor All sound will DEFAULT load as a 2D sound unless otherwise
  * specified.
  */
-FmodAudioSound::
-FmodAudioSound(AudioManager *manager, VirtualFile *file, bool positional) {
-  ReMutexHolder holder(FmodAudioManager::_lock);
-  audio_debug("FmodAudioSound::FmodAudioSound() Creating new sound, filename: "
+FMODAudioSound::
+FMODAudioSound(AudioManager *manager, VirtualFile *file, bool positional) {
+  ReMutexHolder holder(FMODAudioManager::_lock);
+  audio_debug("FMODAudioSound::FMODAudioSound() Creating new sound, filename: "
               << file->get_original_filename());
 
   _active = manager->get_active();
@@ -75,7 +72,7 @@ FmodAudioSound(AudioManager *manager, VirtualFile *file, bool positional) {
   FMOD_RESULT result;
 
   // Assign the values we need
-  FmodAudioManager *fmanager;
+  FMODAudioManager *fmanager;
   DCAST_INTO_V(fmanager, manager);
   _manager = fmanager;
 
@@ -96,7 +93,7 @@ FmodAudioSound(AudioManager *manager, VirtualFile *file, bool positional) {
     memset(&sound_info, 0, sizeof(sound_info));
     sound_info.cbsize = sizeof(sound_info);
 
-    string ext = downcase(_file_name.get_extension());
+    std::string ext = downcase(_file_name.get_extension());
     if (ext == "mid") {
       // Get the MIDI parameters.
       memcpy(&sound_info, &_manager->_midi_info, sizeof(sound_info));
@@ -109,7 +106,7 @@ FmodAudioSound(AudioManager *manager, VirtualFile *file, bool positional) {
     }
 
     const char *name_or_data = _file_name.c_str();
-    string os_filename;
+    std::string os_filename;
 
     vector_uchar mem_buffer;
     SubfileInfo info;
@@ -213,7 +210,7 @@ FmodAudioSound(AudioManager *manager, VirtualFile *file, bool positional) {
 
   // This is just to collect the defaults of the sound, so we don't Have to
   // query FMOD everytime for the info.  It is also important we get the
-  // '_sampleFrequency' variable here, for the 'set_play_rate()' and
+  // '_sample_frequency' variable here, for the 'set_play_rate()' and
   // 'get_play_rate()' methods later;
 
   result = _sound->getDefaults(&_sample_frequency, &_priority);
@@ -231,9 +228,9 @@ FmodAudioSound(AudioManager *manager, VirtualFile *file, bool positional) {
 /**
  * DESTRUCTOR!!!
  */
-FmodAudioSound::
-~FmodAudioSound() {
-  ReMutexHolder holder(FmodAudioManager::_lock);
+FMODAudioSound::
+~FMODAudioSound() {
+  ReMutexHolder holder(FMODAudioManager::_lock);
   FMOD_RESULT result;
 
   // Release the sound.  There is no need to release the channel, it will be
@@ -242,13 +239,13 @@ FmodAudioSound::
   fmod_audio_errcheck("_sound->release()", result);
 
   fmodAudio_cat.debug()
-    << "Released FmodAudioSound\n";
+    << "Released FMODAudioSound\n";
 }
 
 /**
  * Plays a sound.
  */
-void FmodAudioSound::
+void FMODAudioSound::
 play() {
   start_playing();
 }
@@ -256,9 +253,9 @@ play() {
 /**
  * Stop a sound
  */
-void FmodAudioSound::
+void FMODAudioSound::
 stop() {
-  ReMutexHolder holder(FmodAudioManager::_lock);
+  ReMutexHolder holder(FMODAudioManager::_lock);
   FMOD_RESULT result;
 
   if (_channel) {
@@ -276,7 +273,7 @@ stop() {
 /**
  * Turns looping on or off.
  */
-void FmodAudioSound::
+void FMODAudioSound::
 set_loop(bool loop) {
   set_loop_count(loop ? 0 : 1);
 }
@@ -284,7 +281,7 @@ set_loop(bool loop) {
 /**
  * Returns whether looping is on or off.
  */
-bool FmodAudioSound::
+bool FMODAudioSound::
 get_loop() const {
   return get_loop_count() != 1;
 }
@@ -293,10 +290,10 @@ get_loop() const {
  * Panda uses 0 to mean loop forever.  Fmod uses negative numbers to mean loop
  * forever.  (0 means don't loop, 1 means play twice, etc.  We must convert!
  */
-void FmodAudioSound::
+void FMODAudioSound::
 set_loop_count(unsigned long loop_count) {
-  ReMutexHolder holder(FmodAudioManager::_lock);
-  audio_debug("FmodAudioSound::set_loop_count()   Setting the sound's loop count to: " << loop_count);
+  ReMutexHolder holder(FMODAudioManager::_lock);
+  audio_debug("FMODAudioSound::set_loop_count()   Setting the sound's loop count to: " << loop_count);
 
   // LOCALS
   FMOD_RESULT result;
@@ -318,15 +315,15 @@ set_loop_count(unsigned long loop_count) {
     fmod_audio_errcheck("_sound->setMode()", result);
   }
 
-  audio_debug("FmodAudioSound::set_loop_count()   Sound's loop count should be set to: " << loop_count);
+  audio_debug("FMODAudioSound::set_loop_count()   Sound's loop count should be set to: " << loop_count);
 }
 
 /**
  * Return how many times a sound will loop.
  */
-unsigned long FmodAudioSound::
+unsigned long FMODAudioSound::
 get_loop_count() const {
-  ReMutexHolder holder(FmodAudioManager::_lock);
+  ReMutexHolder holder(FMODAudioManager::_lock);
   FMOD_RESULT result;
   int loop_count;
 
@@ -344,9 +341,9 @@ get_loop_count() const {
  * Sets the time at which the next play() operation will begin.  If we are
  * already playing, skips to that time immediatey.
  */
-void FmodAudioSound::
+void FMODAudioSound::
 set_time(PN_stdfloat start_time) {
-  ReMutexHolder holder(FmodAudioManager::_lock);
+  ReMutexHolder holder(FMODAudioManager::_lock);
   _start_time = start_time;
 
   if (status() == PLAYING) {
@@ -358,9 +355,9 @@ set_time(PN_stdfloat start_time) {
 /**
  * Gets the play position within the sound
  */
-PN_stdfloat FmodAudioSound::
+PN_stdfloat FMODAudioSound::
 get_time() const {
-  ReMutexHolder holder(FmodAudioManager::_lock);
+  ReMutexHolder holder(FMODAudioManager::_lock);
   FMOD_RESULT result;
   unsigned int current_time_ms;
 
@@ -380,9 +377,9 @@ get_time() const {
 /**
  * 0.0 to 1.0 scale of volume converted to Fmod's internal 0.0 to 255.0 scale.
  */
-void FmodAudioSound::
+void FMODAudioSound::
 set_volume(PN_stdfloat vol) {
-  ReMutexHolder holder(FmodAudioManager::_lock);
+  ReMutexHolder holder(FMODAudioManager::_lock);
   _volume = vol;
   set_volume_on_channel();
 }
@@ -390,7 +387,7 @@ set_volume(PN_stdfloat vol) {
 /**
  * Gets the current volume of a sound.  1 is Max.  O is Min.
  */
-PN_stdfloat FmodAudioSound::
+PN_stdfloat FMODAudioSound::
 get_volume() const {
   return _volume;
 }
@@ -398,9 +395,9 @@ get_volume() const {
 /**
  * Starts the sound playing at _start_time.
  */
-void FmodAudioSound::
+void FMODAudioSound::
 start_playing() {
-  ReMutexHolder holder(FmodAudioManager::_lock);
+  ReMutexHolder holder(FMODAudioManager::_lock);
   FMOD_RESULT result;
 
   if (!_active) {
@@ -451,9 +448,9 @@ start_playing() {
 /**
  * Set the volume on a prepared Sound channel.
  */
-void FmodAudioSound::
+void FMODAudioSound::
 set_volume_on_channel() {
-  ReMutexHolder holder(FmodAudioManager::_lock);
+  ReMutexHolder holder(FMODAudioManager::_lock);
   FMOD_RESULT result;
 
   if (_channel) {
@@ -469,9 +466,9 @@ set_volume_on_channel() {
 /**
  * -1.0 to 1.0 scale
  */
-void FmodAudioSound::
+void FMODAudioSound::
 set_balance(PN_stdfloat bal) {
-  ReMutexHolder holder(FmodAudioManager::_lock);
+  ReMutexHolder holder(FMODAudioManager::_lock);
   _balance = bal;
   set_speaker_mix_or_balance_on_channel();
 }
@@ -480,7 +477,7 @@ set_balance(PN_stdfloat bal) {
  * -1.0 to 1.0 scale -1 should be all the way left.  1 is all the way to the
  * right.
  */
-PN_stdfloat FmodAudioSound::
+PN_stdfloat FMODAudioSound::
 get_balance() const {
   return _balance;
 }
@@ -492,9 +489,9 @@ get_balance() const {
  * sound plays backwards.  But rememeber if the sound is not playing, you must
  * set the sound's time to its end to hear a song play backwards.
  */
-void FmodAudioSound::
+void FMODAudioSound::
 set_play_rate(PN_stdfloat rate) {
-  ReMutexHolder holder(FmodAudioManager::_lock);
+  ReMutexHolder holder(FMODAudioManager::_lock);
   _playrate = rate;
   set_play_rate_on_channel();
 }
@@ -502,7 +499,7 @@ set_play_rate(PN_stdfloat rate) {
 /**
  *
  */
-PN_stdfloat FmodAudioSound::
+PN_stdfloat FMODAudioSound::
 get_play_rate() const {
   return _playrate;
 }
@@ -510,9 +507,9 @@ get_play_rate() const {
 /**
  * Set the play rate on a prepared Sound channel.
  */
-void FmodAudioSound::
+void FMODAudioSound::
 set_play_rate_on_channel() {
-  ReMutexHolder holder(FmodAudioManager::_lock);
+  ReMutexHolder holder(FMODAudioManager::_lock);
   FMOD_RESULT result;
 
   if (_is_midi) {
@@ -543,7 +540,7 @@ set_play_rate_on_channel() {
 /**
  * Get name of sound file
  */
-const string& FmodAudioSound::
+const std::string& FMODAudioSound::
 get_name() const {
   return _file_name;
 }
@@ -551,9 +548,9 @@ get_name() const {
 /**
  * Get length FMOD returns the time in MS  so we have to convert to seconds.
  */
-PN_stdfloat FmodAudioSound::
+PN_stdfloat FMODAudioSound::
 length() const {
-  ReMutexHolder holder(FmodAudioManager::_lock);
+  ReMutexHolder holder(FMODAudioManager::_lock);
   FMOD_RESULT result;
   unsigned int length;
 
@@ -574,9 +571,9 @@ length() const {
  * decide to do any 3D audio work in here you have to keep it in mind.  I told
  * you, so you can't say I didn't.
  */
-void FmodAudioSound::
+void FMODAudioSound::
 set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz) {
-  ReMutexHolder holder(FmodAudioManager::_lock);
+  ReMutexHolder holder(FMODAudioManager::_lock);
   _location.x = px;
   _location.y = pz;
   _location.z = py;
@@ -591,9 +588,9 @@ set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx
 /**
  *
  */
-void FmodAudioSound::
+void FMODAudioSound::
 set_3d_attributes_on_channel() {
-  ReMutexHolder holder(FmodAudioManager::_lock);
+  ReMutexHolder holder(FMODAudioManager::_lock);
   FMOD_RESULT result;
   FMOD_MODE soundMode;
 
@@ -614,7 +611,7 @@ set_3d_attributes_on_channel() {
  * Get position and velocity of this sound Currently unimplemented.  Get the
  * attributes of the attached object.
  */
-void FmodAudioSound::
+void FMODAudioSound::
 get_3d_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *pz, PN_stdfloat *vx, PN_stdfloat *vy, PN_stdfloat *vz) {
   audio_error("get3dAttributes: Currently unimplemented. Get the attributes of the attached object.");
 }
@@ -623,9 +620,9 @@ get_3d_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *pz, PN_stdfloat
  * Set the distance that this sound begins to fall off.  Also affects the rate
  * it falls off.
  */
-void FmodAudioSound::
+void FMODAudioSound::
 set_3d_min_distance(PN_stdfloat dist) {
-  ReMutexHolder holder(FmodAudioManager::_lock);
+  ReMutexHolder holder(FMODAudioManager::_lock);
   FMOD_RESULT result;
 
   _min_dist = dist;
@@ -637,7 +634,7 @@ set_3d_min_distance(PN_stdfloat dist) {
 /**
  * Get the distance that this sound begins to fall off
  */
-PN_stdfloat FmodAudioSound::
+PN_stdfloat FMODAudioSound::
 get_3d_min_distance() const {
   return _min_dist;
 }
@@ -645,9 +642,9 @@ get_3d_min_distance() const {
 /**
  * Set the distance that this sound stops falling off
  */
-void FmodAudioSound::
+void FMODAudioSound::
 set_3d_max_distance(PN_stdfloat dist) {
-  ReMutexHolder holder(FmodAudioManager::_lock);
+  ReMutexHolder holder(FMODAudioManager::_lock);
   FMOD_RESULT result;
 
   _max_dist = dist;
@@ -659,7 +656,7 @@ set_3d_max_distance(PN_stdfloat dist) {
 /**
  * Get the distance that this sound stops falling off
  */
-PN_stdfloat FmodAudioSound::
+PN_stdfloat FMODAudioSound::
 get_3d_max_distance() const {
   return _max_dist;
 }
@@ -673,9 +670,9 @@ get_3d_max_distance() const {
  * BTW This will also work in Stereo speaker systems, but since PANDA/FMOD has
  * a balance [pan] function what is the point?
  */
-PN_stdfloat FmodAudioSound::
+PN_stdfloat FMODAudioSound::
 get_speaker_mix(int speaker) {
-  ReMutexHolder holder(FmodAudioManager::_lock);
+  ReMutexHolder holder(FMODAudioManager::_lock);
   if (!_channel || speaker < 0 || speaker >= AudioManager::SPK_COUNT) {
     return 0.0;
   }
@@ -696,11 +693,11 @@ get_speaker_mix(int speaker) {
 /**
  * Sets the mix value of a speaker.
  */
-void FmodAudioSound::
+void FMODAudioSound::
 set_speaker_mix(int speaker, PN_stdfloat mix) {
   nassertv(speaker >= 0 && speaker < AudioManager::SPK_COUNT);
 
-  ReMutexHolder holder(FmodAudioManager::_lock);
+  ReMutexHolder holder(FMODAudioManager::_lock);
 
   _mix[speaker] = mix;
 
@@ -715,9 +712,9 @@ set_speaker_mix(int speaker, PN_stdfloat mix) {
  * 'set_balace()' will override any previous speaker balance setups.  It all
  * depends on which was called last.
  */
-void FmodAudioSound::
+void FMODAudioSound::
 set_speaker_mix_or_balance_on_channel() {
-  ReMutexHolder holder(FmodAudioManager::_lock);
+  ReMutexHolder holder(FMODAudioManager::_lock);
   FMOD_RESULT result;
   FMOD_MODE soundMode;
 
@@ -750,9 +747,9 @@ set_speaker_mix_or_balance_on_channel() {
  * Sets the priority of a sound.  This is what FMOD uses to determine is a
  * sound will play if all the other real channels have been used up.
  */
-int FmodAudioSound::
+int FMODAudioSound::
 get_priority() {
-  audio_debug("FmodAudioSound::get_priority()");
+  audio_debug("FMODAudioSound::get_priority()");
   return _priority;
 }
 
@@ -760,11 +757,11 @@ get_priority() {
  * Sets the Sound Priority [Whether is will be played over other sound when
  * real audio channels become short.
  */
-void FmodAudioSound::
+void FMODAudioSound::
 set_priority(int priority) {
-  ReMutexHolder holder(FmodAudioManager::_lock);
+  ReMutexHolder holder(FMODAudioManager::_lock);
 
-  audio_debug("FmodAudioSound::set_priority()");
+  audio_debug("FMODAudioSound::set_priority()");
 
   FMOD_RESULT result;
 
@@ -777,9 +774,9 @@ set_priority(int priority) {
 /**
  * Get status of the sound.
  */
-AudioSound::SoundStatus FmodAudioSound::
+AudioSound::SoundStatus FMODAudioSound::
 status() const {
-  ReMutexHolder holder(FmodAudioManager::_lock);
+  ReMutexHolder holder(FMODAudioManager::_lock);
   FMOD_RESULT result;
   bool playingState;
 
@@ -800,9 +797,9 @@ status() const {
  * true for all sounds.  If the active flag is set to false for any particular
  * sound, the sound will not be heard.
  */
-void FmodAudioSound::
+void FMODAudioSound::
 set_active(bool active) {
-  ReMutexHolder holder(FmodAudioManager::_lock);
+  ReMutexHolder holder(FMODAudioManager::_lock);
   if (_active != active) {
     _active = active;
     if (_active) {
@@ -831,7 +828,7 @@ set_active(bool active) {
 /**
  * Returns whether the sound has been marked "active".
  */
-bool FmodAudioSound::
+bool FMODAudioSound::
 get_active() const {
   return _active;
 }
@@ -839,9 +836,9 @@ get_active() const {
 /**
  * Not implemented.
  */
-void FmodAudioSound::
+void FMODAudioSound::
 finished() {
-  ReMutexHolder holder(FmodAudioManager::_lock);
+  ReMutexHolder holder(FMODAudioManager::_lock);
 
   stop();
 }
@@ -851,24 +848,24 @@ finished() {
  * by in python by an accept method
  *
  */
-void FmodAudioSound::
-set_finished_event(const string& event) {
-  audio_error("set_finished_event: not implemented under FMOD-EX");
+void FMODAudioSound::
+set_finished_event(const std::string& event) {
+  audio_error("set_finished_event: not implemented under FMOD");
 }
 
 /**
  * NOT USED ANYMORE!!! Return the string the finished event is referenced by
  */
-const string& FmodAudioSound::
+const std::string& FMODAudioSound::
 get_finished_event() const {
-  audio_error("get_finished_event: not implemented under FMOD-EX");
+  audio_error("get_finished_event: not implemented under FMOD");
   return _finished_event;
 }
 
 /**
  * A hook into Panda's virtual file system.
  */
-FMOD_RESULT F_CALLBACK FmodAudioSound::
+FMOD_RESULT F_CALLBACK FMODAudioSound::
 open_callback(const char *name, unsigned int *file_size,
               void **handle, void *user_data) {
   // We actually pass in the VirtualFile pointer as the "name".
@@ -881,7 +878,7 @@ open_callback(const char *name, unsigned int *file_size,
       << "open_callback(" << *file << ")\n";
   }
 
-  istream *str = file->open_read_file(true);
+  std::istream *str = file->open_read_file(true);
 
   (*file_size) = file->get_file_size(str);
   (*handle) = (void *)str;
@@ -896,7 +893,7 @@ open_callback(const char *name, unsigned int *file_size,
 /**
  * A hook into Panda's virtual file system.
  */
-FMOD_RESULT F_CALLBACK FmodAudioSound::
+FMOD_RESULT F_CALLBACK FMODAudioSound::
 close_callback(void *handle, void *user_data) {
   VirtualFile *file = (VirtualFile *)user_data;
   if (fmodAudio_cat.is_spam()) {
@@ -906,7 +903,7 @@ close_callback(void *handle, void *user_data) {
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
 
-  istream *str = (istream *)handle;
+  std::istream *str = (std::istream *)handle;
   vfs->close_read_file(str);
 
   // Explicitly unref the VirtualFile pointer.
@@ -918,7 +915,7 @@ close_callback(void *handle, void *user_data) {
 /**
  * A hook into Panda's virtual file system.
  */
-FMOD_RESULT F_CALLBACK FmodAudioSound::
+FMOD_RESULT F_CALLBACK FMODAudioSound::
 read_callback(void *handle, void *buffer, unsigned int size_bytes,
               unsigned int *bytes_read, void *user_data) {
   VirtualFile *file = (VirtualFile *)user_data;
@@ -927,7 +924,7 @@ read_callback(void *handle, void *buffer, unsigned int size_bytes,
       << "read_callback(" << *file << ", " << size_bytes << ")\n";
   }
 
-  istream *str = (istream *)handle;
+  std::istream *str = (std::istream *)handle;
   str->read((char *)buffer, size_bytes);
   (*bytes_read) = str->gcount();
 
@@ -953,7 +950,7 @@ read_callback(void *handle, void *buffer, unsigned int size_bytes,
 /**
  * A hook into Panda's virtual file system.
  */
-FMOD_RESULT F_CALLBACK FmodAudioSound::
+FMOD_RESULT F_CALLBACK FMODAudioSound::
 seek_callback(void *handle, unsigned int pos, void *user_data) {
   VirtualFile *file = (VirtualFile *)user_data;
   if (fmodAudio_cat.is_spam()) {
@@ -961,7 +958,7 @@ seek_callback(void *handle, unsigned int pos, void *user_data) {
       << "seek_callback(" << *file << ", " << pos << ")\n";
   }
 
-  istream *str = (istream *)handle;
+  std::istream *str = (std::istream *)handle;
   str->clear();
   str->seekg(pos);
 

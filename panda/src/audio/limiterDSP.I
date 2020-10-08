@@ -30,6 +30,7 @@ LimiterDSP(float release_time, float ceiling, float maximizer_gain,
 INLINE void LimiterDSP::
 set_release_time(float time) {
   _release_time = time;
+  on_values_changed();
 }
 
 /**
@@ -46,6 +47,7 @@ get_release_time() const {
 INLINE void LimiterDSP::
 set_ceiling(float ceiling) {
   _ceiling = ceiling;
+  on_values_changed();
 }
 
 /**
@@ -62,6 +64,7 @@ get_ceiling() const {
 INLINE void LimiterDSP::
 set_maximizer_gain(float gain) {
   _maximizer_gain = gain;
+  on_values_changed();
 }
 
 /**
@@ -79,6 +82,7 @@ get_maximizer_gain() const {
 INLINE void LimiterDSP::
 set_linked(bool linked) {
   _linked = linked;
+  on_values_changed();
 }
 
 /**

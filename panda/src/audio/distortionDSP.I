@@ -26,6 +26,7 @@ DistortionDSP(float level) :
 INLINE void DistortionDSP::
 set_level(float level) {
   _level = level;
+  on_values_changed();
 }
 
 /**

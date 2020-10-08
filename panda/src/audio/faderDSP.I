@@ -26,6 +26,7 @@ FaderDSP(float gain) :
 INLINE void FaderDSP::
 set_gain(float gain) {
   _gain = gain;
+  on_values_changed();
 }
 
 /**

@@ -15,7 +15,7 @@
  * @date 2020-10-04
  * Updated to FMOD Core.
  *
- * [FIRST READ FmodAudioManager for an Introduction if you haven't
+ * [FIRST READ FMODAudioManager for an Introduction if you haven't
  * already].
  *
  * Hello, all future Panda audio code people! This is my errata
@@ -45,7 +45,7 @@
  * up the basic audio classes to handle only the idea of a SOUND. The
  * idea of a Channel really wasn't prevalent as in more modern Audio
  * APIs. With this rewrite of PANDA to use the FMOD-EX API, the PANDA
- * FmodAudioSound Class, now has to handle two different parts of the
+ * FMODAudioSound Class, now has to handle two different parts of the
  * FMOD-EX API in order to play a sound.
  *
  * SOUND: The object the handles the audio data in form of WAV, AIF,
@@ -56,7 +56,7 @@
  * you go to play a sound, which I will explain in more detail in that
  * part of the code. All that you have to know right now is that
  * Channels in FMOD do not exist unless they are playing a sound. And
- * in the PANDA FmodAudioSound API class there is only ONE dedicated
+ * in the PANDA FMODAudioSound API class there is only ONE dedicated
  * channel per sound.  Otherwise there is really nothing to worry
  * about.
  */
@@ -75,10 +75,10 @@
 
 class VirtualFile;
 
-class EXPCL_FMOD_AUDIO FmodAudioSound : public AudioSound {
+class EXPCL_FMOD_AUDIO FMODAudioSound : public AudioSound {
 public:
-  FmodAudioSound(AudioManager *manager, VirtualFile *file, bool positional);
-  virtual ~FmodAudioSound();
+  FMODAudioSound(AudioManager *manager, VirtualFile *file, bool positional);
+  virtual ~FMODAudioSound();
 
   // For best compatibility, set the loop_count, start_time, volume, and
   // balance, prior to calling play().  You may set them while they're
@@ -140,7 +140,7 @@ public:
   const std::string& get_finished_event() const;
 
 private:
-  PT(FmodAudioManager) _manager;
+  PT(FMODAudioManager) _manager;
   FMOD::Sound      *_sound;
   FMOD::Channel    *_channel;
 
@@ -203,7 +203,7 @@ private:
   }
   static void init_type() {
     AudioSound::init_type();
-    register_type(_type_handle, "FmodAudioSound", AudioSound::get_class_type());
+    register_type(_type_handle, "FMODAudioSound", AudioSound::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

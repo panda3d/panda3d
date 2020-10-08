@@ -33,6 +33,7 @@ CompressorDSP(float threshold, float ratio, float attack, float release,
 INLINE void CompressorDSP::
 set_threshold(float threshold) {
   _threshold = threshold;
+  on_values_changed();
 }
 
 /**
@@ -49,6 +50,7 @@ get_threshold() const {
 INLINE void CompressorDSP::
 set_ratio(float ratio) {
   _ratio = ratio;
+  on_values_changed();
 }
 
 /**
@@ -65,6 +67,7 @@ get_ratio() const {
 INLINE void CompressorDSP::
 set_attack(float attack) {
   _attack = attack;
+  on_values_changed();
 }
 
 /**
@@ -81,6 +84,7 @@ get_attack() const {
 INLINE void CompressorDSP::
 set_release(float release) {
   _release = release;
+  on_values_changed();
 }
 
 /**
@@ -97,6 +101,7 @@ get_release() const {
 INLINE void CompressorDSP::
 set_gainmakeup(float gainmakeup) {
   _gainmakeup = gainmakeup;
+  on_values_changed();
 }
 
 /**
@@ -114,6 +119,7 @@ get_gainmakeup() const {
 INLINE void CompressorDSP::
 set_linked(bool linked) {
   _linked = linked;
+  on_values_changed();
 }
 
 /**

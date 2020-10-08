@@ -44,6 +44,7 @@ SFXReverbDSP(float decay_time, float early_delay, float late_delay,
 INLINE void SFXReverbDSP::
 set_decay_time(float time) {
   _decay_time = time;
+  on_values_changed();
 }
 
 /**
@@ -62,6 +63,7 @@ get_decay_time() const {
 INLINE void SFXReverbDSP::
 set_early_delay(float delay) {
   _early_delay = delay;
+  on_values_changed();
 }
 
 /**
@@ -81,6 +83,7 @@ get_early_delay() const {
 INLINE void SFXReverbDSP::
 set_late_delay(float delay) {
   _late_delay = delay;
+  on_values_changed();
 }
 
 /**
@@ -100,6 +103,7 @@ get_late_delay() const {
 INLINE void SFXReverbDSP::
 set_hf_reference(float ref) {
   _hf_reference = ref;
+  on_values_changed();
 }
 
 /**
@@ -118,6 +122,7 @@ get_hf_reference() const {
 INLINE void SFXReverbDSP::
 set_hf_decay_ratio(float ratio) {
   _hf_decay_ratio = ratio;
+  on_values_changed();
 }
 
 /**
@@ -136,6 +141,7 @@ get_hf_decay_ratio() const {
 INLINE void SFXReverbDSP::
 set_diffusion(float diffusion) {
   _diffusion = diffusion;
+  on_values_changed();
 }
 
 /**
@@ -154,6 +160,7 @@ get_diffusion() const {
 INLINE void SFXReverbDSP::
 set_density(float density) {
   _density = density;
+  on_values_changed();
 }
 
 /**
@@ -172,6 +179,7 @@ get_density() const {
 INLINE void SFXReverbDSP::
 set_low_shelf_frequency(float freq) {
   _low_shelf_freq = freq;
+  on_values_changed();
 }
 
 /**
@@ -190,6 +198,7 @@ get_low_shelf_frequency() const {
 INLINE void SFXReverbDSP::
 set_low_shelf_gain(float gain) {
   _low_shelf_gain = gain;
+  on_values_changed();
 }
 
 /**
@@ -208,6 +217,7 @@ get_low_shelf_gain() const {
 INLINE void SFXReverbDSP::
 set_highcut(float highcut) {
   _highcut = highcut;
+  on_values_changed();
 }
 
 /**
@@ -226,6 +236,7 @@ get_highcut() const {
 INLINE void SFXReverbDSP::
 set_early_late_mix(float mix) {
   _early_late_mix = mix;
+  on_values_changed();
 }
 
 /**
@@ -244,6 +255,7 @@ get_early_late_mix() const {
 INLINE void SFXReverbDSP::
 set_wetlevel(float level) {
   _wetlevel = level;
+  on_values_changed();
 }
 
 /**
@@ -262,6 +274,7 @@ get_wetlevel() const {
 INLINE void SFXReverbDSP::
 set_drylevel(float level) {
   _drylevel = level;
+  on_values_changed();
 }
 
 /**

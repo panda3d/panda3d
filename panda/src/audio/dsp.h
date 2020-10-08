@@ -53,11 +53,17 @@ PUBLISHED:
 protected:
   DSP(DSPType type);
 
+  INLINE void on_values_changed();
+
 public:
   virtual ~DSP();
 
+  INLINE bool is_dirty() const;
+  INLINE void clear_dirty();
+
 protected:
   DSPType _dsp_type;
+  bool _dirty;
 
 public:
   static TypeHandle get_class_type() {

@@ -27,6 +27,7 @@ HighpassDSP(float cutoff, float resonance) :
 INLINE void HighpassDSP::
 set_cutoff(float cutoff) {
   _cutoff = cutoff;
+  on_values_changed();
 }
 
 /**
@@ -43,6 +44,7 @@ get_cutoff() const {
 INLINE void HighpassDSP::
 set_resonance(float resonance) {
   _resonance = resonance;
+  on_values_changed();
 }
 
 /**

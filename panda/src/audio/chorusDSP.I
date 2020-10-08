@@ -29,6 +29,7 @@ ChorusDSP(float mix, float rate, float depth) :
 INLINE void ChorusDSP::
 set_mix(float mix) {
   _mix = mix;
+  on_values_changed();
 }
 
 /**
@@ -46,6 +47,7 @@ get_mix() const {
 INLINE void ChorusDSP::
 set_rate(float rate) {
   _rate = rate;
+  on_values_changed();
 }
 
 /**
@@ -62,6 +64,7 @@ get_rate() const {
 INLINE void ChorusDSP::
 set_depth(float depth) {
   _depth = depth;
+  on_values_changed();
 }
 
 /**
