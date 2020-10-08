@@ -299,7 +299,7 @@ get_generic() {
  */
 INLINE PT(SFXReverbDSP) SFXReverbDSP::
 get_padded_cell() {
-  return new SFXReverbDSP(170,    1,   2, 5000,  10, 100, 100, 250, 0,   160,  84,  -7.8f);
+  return new SFXReverbDSP(170, 1, 2, 5000, 10, 100, 100, 250, 0, 160, 84, -7.8f);
 }
 
 /**
@@ -307,7 +307,7 @@ get_padded_cell() {
  */
 INLINE PT(SFXReverbDSP) SFXReverbDSP::
 get_room() {
-  return new SFXReverbDSP(400,    2,   3, 5000,  83, 100, 100, 250, 0,  6050,  88,  -9.4f);
+  return new SFXReverbDSP(400, 2, 3, 5000, 83, 100, 100, 250, 0, 6050, 88, -9.4f);
 }
 
 /**
@@ -315,7 +315,7 @@ get_room() {
  */
 INLINE PT(SFXReverbDSP) SFXReverbDSP::
 get_bathroom() {
-  return new SFXReverbDSP(1500,    7,  11, 5000,  54, 100,  60, 250, 0,  2900,  83,   0.5f);
+  return new SFXReverbDSP(1500, 7, 11, 5000, 54, 100, 60, 250, 0, 2900, 83, 0.5f);
 }
 
 /**
@@ -323,7 +323,7 @@ get_bathroom() {
  */
 INLINE PT(SFXReverbDSP) SFXReverbDSP::
 get_living_room() {
-  return new SFXReverbDSP(500,    3,   4, 5000,  10, 100, 100, 250, 0,   160,  58, -19.0f);
+  return new SFXReverbDSP(500, 3, 4, 5000, 10, 100, 100, 250, 0, 160, 58, -19.0f);
 }
 
 /**
@@ -331,7 +331,7 @@ get_living_room() {
  */
 INLINE PT(SFXReverbDSP) SFXReverbDSP::
 get_stone_room() {
-  return new SFXReverbDSP(2300,   12,  17, 5000,  64, 100, 100, 250, 0,  7800,  71,  -8.5f);
+  return new SFXReverbDSP(2300, 12, 17, 5000, 64, 100, 100, 250, 0, 7800, 71, -8.5f);
 }
 
 /**
@@ -339,7 +339,7 @@ get_stone_room() {
  */
 INLINE PT(SFXReverbDSP) SFXReverbDSP::
 get_auditorium() {
-  return new SFXReverbDSP(4300,   20,  30, 5000,  59, 100, 100, 250, 0,  5850,  64, -11.7f);
+  return new SFXReverbDSP(4300, 20, 30, 5000, 59, 100, 100, 250, 0, 5850, 64, -11.7f);
 }
 
 /**
@@ -347,7 +347,7 @@ get_auditorium() {
  */
 INLINE PT(SFXReverbDSP) SFXReverbDSP::
 get_concert_hall() {
-  return new SFXReverbDSP(3900,   20,  29, 5000,  70, 100, 100, 250, 0,  5650,  80,  -9.8f);
+  return new SFXReverbDSP(3900, 20, 29, 5000, 70, 100, 100, 250, 0, 5650, 80, -9.8f);
 }
 
 /**
@@ -355,7 +355,7 @@ get_concert_hall() {
  */
 INLINE PT(SFXReverbDSP) SFXReverbDSP::
 get_cave() {
-  return new SFXReverbDSP(2900,   15,  22, 5000, 100, 100, 100, 250, 0, 20000,  59, -11.3f);
+  return new SFXReverbDSP(2900, 15, 22, 5000, 100, 100, 100, 250, 0, 20000, 59, -11.3f);
 }
 
 /**
@@ -363,7 +363,7 @@ get_cave() {
  */
 INLINE PT(SFXReverbDSP) SFXReverbDSP::
 get_arena() {
-  return new SFXReverbDSP(7200,   20,  30, 5000,  33, 100, 100, 250, 0,  4500,  80,  -9.6f);
+  return new SFXReverbDSP(7200, 20, 30, 5000, 33, 100, 100, 250, 0, 4500, 80, -9.6f);
 }
 
 /**
@@ -371,7 +371,7 @@ get_arena() {
  */
 INLINE PT(SFXReverbDSP) SFXReverbDSP::
 get_hangar() {
-  return new SFXReverbDSP(10000,   20,  30, 5000,  23, 100, 100, 250, 0,  3400,  72,  -7.4f);
+  return new SFXReverbDSP(10000, 20, 30, 5000, 23, 100, 100, 250, 0, 3400, 72, -7.4f);
 }
 
 /**
@@ -379,7 +379,7 @@ get_hangar() {
  */
 INLINE PT(SFXReverbDSP) SFXReverbDSP::
 get_carpetted_hallway() {
-  return new SFXReverbDSP(300,    2,  30, 5000,  10, 100, 100, 250, 0,   500,  56, -24.0f);
+  return new SFXReverbDSP(300, 2, 30, 5000, 10, 100, 100, 250, 0, 500, 56, -24.0f);
 }
 
 /**
@@ -387,7 +387,7 @@ get_carpetted_hallway() {
  */
 INLINE PT(SFXReverbDSP) SFXReverbDSP::
 get_hallway() {
-  return new SFXReverbDSP(1500,    7,  11, 5000,  59, 100, 100, 250, 0,  7800,  87,  -5.5f);
+  return new SFXReverbDSP(1500, 7, 11, 5000, 59, 100, 100, 250, 0, 7800, 87, -5.5f);
 }
 
 /**
@@ -395,7 +395,7 @@ get_hallway() {
  */
 INLINE PT(SFXReverbDSP) SFXReverbDSP::
 get_stone_corridor() {
-  return new SFXReverbDSP(270,   13,  20, 5000,  79, 100, 100, 250, 0,  9000,  86,  -6.0f);
+  return new SFXReverbDSP(270, 13, 20, 5000, 79, 100, 100, 250, 0, 9000, 86, -6.0f);
 }
 
 /**
@@ -403,7 +403,7 @@ get_stone_corridor() {
  */
 INLINE PT(SFXReverbDSP) SFXReverbDSP::
 get_alley() {
-  return new SFXReverbDSP(1500,    7,  11, 5000,  86, 100, 100, 250, 0,  8300,  80,  -9.8f);
+  return new SFXReverbDSP(1500, 7, 11, 5000, 86, 100, 100, 250, 0, 8300, 80, -9.8f);
 }
 
 /**
@@ -411,7 +411,7 @@ get_alley() {
  */
 INLINE PT(SFXReverbDSP) SFXReverbDSP::
 get_forest() {
-  return new SFXReverbDSP(1500,  162,  88, 5000,  54,  79, 100, 250, 0,   760,  94, -12.3f);
+  return new SFXReverbDSP(1500, 162, 88, 5000, 54, 79, 100, 250, 0, 760, 94, -12.3f);
 }
 
 /**
@@ -419,7 +419,7 @@ get_forest() {
  */
 INLINE PT(SFXReverbDSP) SFXReverbDSP::
 get_city() {
-  return new SFXReverbDSP(1500,    7,  11, 5000,  67,  50, 100, 250, 0,  4050,  66, -26.0f);
+  return new SFXReverbDSP(1500, 7, 11, 5000, 67, 50, 100, 250, 0, 4050, 66, -26.0f);
 }
 
 /**
@@ -427,7 +427,7 @@ get_city() {
  */
 INLINE PT(SFXReverbDSP) SFXReverbDSP::
 get_mountains() {
-  return new SFXReverbDSP(1500,  300, 100, 5000,  21,  27, 100, 250, 0,  1220,  82, -24.0f);
+  return new SFXReverbDSP(1500, 300, 100, 5000, 21, 27, 100, 250, 0, 1220, 82, -24.0f);
 }
 
 /**
@@ -435,7 +435,7 @@ get_mountains() {
  */
 INLINE PT(SFXReverbDSP) SFXReverbDSP::
 get_quarry() {
-  return new SFXReverbDSP(1500,   61,  25, 5000,  83, 100, 100, 250, 0,  3400, 100,  -5.0f);
+  return new SFXReverbDSP(1500, 61, 25, 5000, 83, 100, 100, 250, 0, 3400, 100, -5.0f);
 }
 
 /**
@@ -443,7 +443,7 @@ get_quarry() {
  */
 INLINE PT(SFXReverbDSP) SFXReverbDSP::
 get_plain() {
-  return new SFXReverbDSP(1500,  179, 100, 5000,  50,  21, 100, 250, 0,  1670,  65, -28.0f);
+  return new SFXReverbDSP(1500, 179, 100, 5000, 50, 21, 100, 250, 0, 1670, 65, -28.0f);
 }
 
 /**
@@ -451,7 +451,7 @@ get_plain() {
  */
 INLINE PT(SFXReverbDSP) SFXReverbDSP::
 get_parking_lot() {
-  return new SFXReverbDSP(1700,    8,  12, 5000, 100, 100, 100, 250, 0, 20000,  56, -19.5f);
+  return new SFXReverbDSP(1700, 8, 12, 5000, 100, 100, 100, 250, 0, 20000, 56, -19.5f);
 }
 
 /**
@@ -459,7 +459,7 @@ get_parking_lot() {
  */
 INLINE PT(SFXReverbDSP) SFXReverbDSP::
 get_sewer_pipe() {
-  return new SFXReverbDSP(2800,   14,  21, 5000,  14,  80,  60, 250, 0,  3400,  66,   1.2f);
+  return new SFXReverbDSP(2800, 14, 21, 5000, 14, 80, 60, 250, 0, 3400, 66, 1.2f);
 }
 
 /**
@@ -467,5 +467,5 @@ get_sewer_pipe() {
  */
 INLINE PT(SFXReverbDSP) SFXReverbDSP::
 get_underwater() {
-  return new SFXReverbDSP(1500,    7,  11, 5000,  10, 100, 100, 250, 0,   500,  92,   7.0f);
+  return new SFXReverbDSP(1500, 7, 11, 5000, 10, 100, 100, 250, 0, 500, 92, 7.0f);
 }

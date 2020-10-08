@@ -27,8 +27,6 @@ PUBLISHED:
     DT_unknown = -1,
     DT_chorus,
     DT_compressor,
-    DT_convolution_reverb,
-    DT_delay,
     DT_distortion,
     DT_echo,
     DT_fader,
@@ -36,15 +34,11 @@ PUBLISHED:
     DT_highpass,
     DT_limiter,
     DT_lowpass,
-    DT_multiband_eq,
     DT_normalize,
     DT_oscillator,
-    DT_pan,
     DT_parameq,
     DT_pitchshift,
     DT_sfxreverb,
-    DT_three_eq,
-    DT_tremolo,
   };
 
   INLINE DSPType get_dsp_type() const;

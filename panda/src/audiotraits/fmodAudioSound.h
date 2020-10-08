@@ -11,9 +11,8 @@
  * @date 2003-01-22
  * Prior system by: cary
  * @author Stan Rosenbaum "Staque" - Spring 2006
- * @author Brian Lach
+ * @author lachbr
  * @date 2020-10-04
- * Updated to FMOD Core.
  *
  * [FIRST READ FMODAudioManager for an Introduction if you haven't
  * already].

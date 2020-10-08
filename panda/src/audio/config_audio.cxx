@@ -27,6 +27,7 @@
 #include "highpassDSP.h"
 #include "limiterDSP.h"
 #include "lowpassDSP.h"
+#include "normalizeDSP.h"
 #include "nullAudioManager.h"
 #include "nullAudioSound.h"
 #include "oscillatorDSP.h"
@@ -143,6 +144,7 @@ ConfigureFn(config_audio) {
   HighpassDSP::init_type();
   LimiterDSP::init_type();
   LowpassDSP::init_type();
+  NormalizeDSP::init_type();
   OscillatorDSP::init_type();
   SFXReverbDSP::init_type();
 }

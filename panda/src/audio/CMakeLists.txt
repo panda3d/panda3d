@@ -18,6 +18,7 @@ set(P3AUDIO_HEADERS
   highpassDSP.h highpassDSP.I
   limiterDSP.h limiterDSP.I
   lowpassDSP.h lowpassDSP.I
+  normalizeDSP.h normalizeDSP.I
   nullAudioManager.h
   nullAudioSound.h
   oscillatorDSP.h oscillatorDSP.I
@@ -40,6 +41,7 @@ set(P3AUDIO_SOURCES
   highpassDSP.cxx
   limiterDSP.cxx
   lowpassDSP.cxx
+  normalizeDSP.cxx
   nullAudioManager.cxx
   nullAudioSound.cxx
   oscillatorDSP.cxx

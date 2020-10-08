@@ -13,9 +13,8 @@
  * @date 2003-10-22
  * Prior system by: cary
  * @author Stan Rosenbaum "Staque" - Spring 2006
- * @author Brian Lach
+ * @author lachbr
  * @date 2020-10-04
- * Updated to FMOD Core.
  */
 
 #include "pandabase.h"

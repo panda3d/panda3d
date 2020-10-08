@@ -23,7 +23,7 @@ class EXPCL_PANDA_AUDIO CompressorDSP : public DSP {
 PUBLISHED:
   INLINE CompressorDSP(float threshold = 0, float ratio = 2.5,
                        float attack = 20, float release = 100,
-                       float gainmakeup = 0, bool linked = false);
+                       float gainmakeup = 0);
 
   INLINE void set_threshold(float threshold);
   INLINE float get_threshold() const;
@@ -45,17 +45,12 @@ PUBLISHED:
   INLINE float get_gainmakeup() const;
   MAKE_PROPERTY(gainmakeup, get_gainmakeup, set_gainmakeup);
 
-  INLINE void set_linked(bool linked);
-  INLINE bool get_linked() const;
-  MAKE_PROPERTY(linked, get_linked, set_linked);
-
 private:
   float _threshold;
   float _ratio;
   float _attack;
   float _release;
   float _gainmakeup;
-  bool _linked;
 
 public:
   static TypeHandle get_class_type() {

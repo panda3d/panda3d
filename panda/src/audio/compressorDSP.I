@@ -16,14 +16,13 @@
  */
 INLINE CompressorDSP::
 CompressorDSP(float threshold, float ratio, float attack, float release,
-              float gainmakeup, bool linked) :
+              float gainmakeup) :
   DSP(DSP::DT_compressor),
   _threshold(threshold),
   _ratio(ratio),
   _attack(attack),
   _release(release),
-  _gainmakeup(gainmakeup),
-  _linked(linked)
+  _gainmakeup(gainmakeup)
 {
 }
 
@@ -110,23 +109,4 @@ set_gainmakeup(float gainmakeup) {
 INLINE float CompressorDSP::
 get_gainmakeup() const {
   return _gainmakeup;
-}
-
-/**
- * Sets whether or not this is an independent (false) or linked (true)
- * compressor.
- */
-INLINE void CompressorDSP::
-set_linked(bool linked) {
-  _linked = linked;
-  on_values_changed();
-}
-
-/**
- * Returns whether or not this is an independent (false) or linked (true)
- * compressor.
- */
-INLINE bool CompressorDSP::
-get_linked() const {
-  return _linked;
 }

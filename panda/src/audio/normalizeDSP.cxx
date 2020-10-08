@@ -6,18 +6,11 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * @file dsp.cxx
+ * @file normalizeDSP.cxx
  * @author lachbr
- * @date 2020-10-04
+ * @date 2020-10-08
  */
 
-#include "dsp.h"
+#include "normalizeDSP.h"
 
-TypeHandle DSP::_type_handle;
-
-/**
- *
- */
-DSP::
-~DSP() {
-}
+TypeHandle NormalizeDSP::_type_handle;

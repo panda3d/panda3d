@@ -15,13 +15,11 @@
  *
  */
 INLINE LimiterDSP::
-LimiterDSP(float release_time, float ceiling, float maximizer_gain,
-           bool linked) :
+LimiterDSP(float release_time, float ceiling, float maximizer_gain) :
   DSP(DSP::DT_limiter),
   _release_time(release_time),
   _ceiling(ceiling),
-  _maximizer_gain(maximizer_gain),
-  _linked(linked) {
+  _maximizer_gain(maximizer_gain) {
 }
 
 /**
@@ -73,23 +71,4 @@ set_maximizer_gain(float gain) {
 INLINE float LimiterDSP::
 get_maximizer_gain() const {
   return _maximizer_gain;
-}
-
-/**
- * Sets whether or not the processing mode is limited (false, limiter per channel)
- * or linked (true).
- */
-INLINE void LimiterDSP::
-set_linked(bool linked) {
-  _linked = linked;
-  on_values_changed();
-}
-
-/**
- * Returns whether or not the processing mode is limited (false, limiter per channel)
- * or linked (true).
- */
-INLINE bool LimiterDSP::
-get_linked() const {
-  return _linked;
 }

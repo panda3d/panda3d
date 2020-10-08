@@ -11,9 +11,8 @@
  * @date 2003-01-22
  * Prior system by: cary
  * @author Stan Rosenbaum "Staque" - Spring 2006
- * @author Brian Lach
+ * @author lachbr
  * @date 2020-10-04
- * Updated to FMOD Core.
  */
 
 #include "pandabase.h"
@@ -41,6 +40,7 @@
 #include "highpassDSP.h"
 #include "limiterDSP.h"
 #include "lowpassDSP.h"
+#include "normalizeDSP.h"
 #include "oscillatorDSP.h"
 #include "sfxReverbDSP.h"
 
@@ -804,8 +804,6 @@ get_fmod_dsp_type(DSP::DSPType panda_type) {
     return FMOD_DSP_TYPE_CHORUS;
   case DSP::DT_compressor:
     return FMOD_DSP_TYPE_COMPRESSOR;
-  case DSP::DT_delay:
-    return FMOD_DSP_TYPE_DELAY;
   case DSP::DT_distortion:
     return FMOD_DSP_TYPE_DISTORTION;
   case DSP::DT_echo:
@@ -824,6 +822,8 @@ get_fmod_dsp_type(DSP::DSPType panda_type) {
     return FMOD_DSP_TYPE_OSCILLATOR;
   case DSP::DT_sfxreverb:
     return FMOD_DSP_TYPE_SFXREVERB;
+  case DSP::DT_normalize:
+    return FMOD_DSP_TYPE_NORMALIZE;
   default:
     return FMOD_DSP_TYPE_UNKNOWN;
   }
@@ -901,7 +901,6 @@ configure_dsp(DSP *dsp_conf, FMOD::DSP *dsp) {
       dsp->setParameterFloat(FMOD_DSP_COMPRESSOR_ATTACK, comp_conf->get_attack());
       dsp->setParameterFloat(FMOD_DSP_COMPRESSOR_RELEASE, comp_conf->get_release());
       dsp->setParameterFloat(FMOD_DSP_COMPRESSOR_GAINMAKEUP, comp_conf->get_gainmakeup());
-      dsp->setParameterBool(FMOD_DSP_COMPRESSOR_LINKED, comp_conf->get_linked());
     }
     break;
   case DSP::DT_distortion:
@@ -946,7 +945,6 @@ configure_dsp(DSP *dsp_conf, FMOD::DSP *dsp) {
       dsp->setParameterFloat(FMOD_DSP_LIMITER_RELEASETIME, lim_conf->get_release_time());
       dsp->setParameterFloat(FMOD_DSP_LIMITER_CEILING, lim_conf->get_ceiling());
       dsp->setParameterFloat(FMOD_DSP_LIMITER_MAXIMIZERGAIN, lim_conf->get_maximizer_gain());
-      dsp->setParameterBool(FMOD_DSP_LIMITER_MODE, lim_conf->get_linked());
     }
     break;
   case DSP::DT_lowpass:
@@ -954,6 +952,14 @@ configure_dsp(DSP *dsp_conf, FMOD::DSP *dsp) {
       LowpassDSP *lp_conf = DCAST(LowpassDSP, dsp_conf);
       dsp->setParameterFloat(FMOD_DSP_LOWPASS_CUTOFF, lp_conf->get_cutoff());
       dsp->setParameterFloat(FMOD_DSP_LOWPASS_RESONANCE, lp_conf->get_resonance());
+    }
+    break;
+  case DSP::DT_normalize:
+    {
+      NormalizeDSP *norm_conf = DCAST(NormalizeDSP, dsp_conf);
+      dsp->setParameterFloat(FMOD_DSP_NORMALIZE_FADETIME, norm_conf->get_fade_time());
+      dsp->setParameterFloat(FMOD_DSP_NORMALIZE_THRESHHOLD, norm_conf->get_threshold());
+      dsp->setParameterFloat(FMOD_DSP_NORMALIZE_MAXAMP, norm_conf->get_max_amp());
     }
     break;
   case DSP::DT_oscillator:
@@ -1085,6 +1091,9 @@ stopping_sound(FMODAudioSound *sound) {
   _sounds_playing.erase(sound); // This could case the sound to destruct.
 }
 
+/**
+ * Calls finished() on any sounds that have finished playing.
+ */
 void FMODAudioManager::
 update_sounds() {
   ReMutexHolder holder(_lock);

@@ -22,7 +22,7 @@
 class EXPCL_PANDA_AUDIO LimiterDSP : public DSP {
 PUBLISHED:
   INLINE LimiterDSP(float release_time = 10, float ceiling = 0,
-                    float maximizer_gain = 0, bool linked = false);
+                    float maximizer_gain = 0);
 
   INLINE void set_release_time(float time);
   INLINE float get_release_time() const;
@@ -36,15 +36,10 @@ PUBLISHED:
   INLINE float get_maximizer_gain() const;
   MAKE_PROPERTY(maximizer_gain, get_maximizer_gain, set_maximizer_gain);
 
-  INLINE void set_linked(bool linked);
-  INLINE bool get_linked() const;
-  MAKE_PROPERTY(linked, get_linked, set_linked);
-
 private:
   float _release_time;
   float _ceiling;
   float _maximizer_gain;
-  bool _linked;
 
 public:
   static TypeHandle get_class_type() {
