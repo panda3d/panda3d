@@ -58,6 +58,9 @@ get_slot_sort(int slot) const {
  */
 INLINE const RenderAttrib *RenderAttribRegistry::
 get_slot_default(int slot) const {
+  if (slot == -1) {
+    return nullptr;
+  }
   nassertr(slot >= 0 && slot < (int)_registry.size(), 0);
   return _registry[slot]._default_attrib;
 }

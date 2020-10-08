@@ -21,6 +21,7 @@
 
 TypeHandle ColorAttrib::_type_handle;
 int ColorAttrib::_attrib_slot;
+bool ColorAttrib::_is_in_use;
 CPT(RenderAttrib) ColorAttrib::_off;
 CPT(RenderAttrib) ColorAttrib::_vertex;
 
@@ -30,6 +31,8 @@ CPT(RenderAttrib) ColorAttrib::_vertex;
  */
 CPT(RenderAttrib) ColorAttrib::
 make_vertex() {
+  ColorAttrib::first_use();
+
   if (_vertex != nullptr) {
     return _vertex;
   }
@@ -44,6 +47,7 @@ make_vertex() {
  */
 CPT(RenderAttrib) ColorAttrib::
 make_flat(const LColor &color) {
+  ColorAttrib::first_use();
   ColorAttrib *attrib = new ColorAttrib(T_flat, color);
   return return_new(attrib);
 }
@@ -54,6 +58,8 @@ make_flat(const LColor &color) {
  */
 CPT(RenderAttrib) ColorAttrib::
 make_off() {
+  ColorAttrib::first_use();
+
   if (_off != nullptr) {
     return _off;
   }
@@ -183,6 +189,8 @@ write_datagram(BamWriter *manager, Datagram &dg) {
  */
 TypedWritable *ColorAttrib::
 make_from_bam(const FactoryParams &params) {
+  ColorAttrib::first_use();
+
   ColorAttrib *attrib = new ColorAttrib(T_off, LColor::zero());
   DatagramIterator scan;
   BamReader *manager;
@@ -204,4 +212,17 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _type = (Type)scan.get_int8();
   _color.read_datagram(scan);
   quantize_color();
+}
+
+/**
+ * This internal function is called by make and all make_*; it registers a slot for
+ * for ColorAttrib when user creates the first ColorAttrib object.
+ */
+void ColorAttrib::
+first_use() {
+  if (!ColorAttrib::_is_in_use) {
+    ColorAttrib::_is_in_use = true;
+    _attrib_slot = register_slot(_type_handle, 100,
+      new ColorAttrib(T_vertex, LColor::zero()));
+  }
 }

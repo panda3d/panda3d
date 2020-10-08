@@ -2215,29 +2215,29 @@ reset() {
 
   // Build _inv_state_mask as a mask of 1's where we don't care, and 0's where
   // we do care, about the state.
-  _inv_state_mask.clear_bit(ShaderAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(AlphaTestAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(ClipPlaneAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(ColorAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(ColorScaleAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(CullFaceAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(DepthOffsetAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(DepthTestAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(DepthWriteAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(RenderModeAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(RescaleNormalAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(ShadeModelAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(TransparencyAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(ColorWriteAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(ColorBlendAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(TextureAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(TexGenAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(TexMatrixAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(MaterialAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(LightAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(StencilAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(FogAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(ScissorAttrib::get_class_slot());
+  clear_bit_if_exists<ShaderAttrib>(_inv_state_mask);
+  clear_bit_if_exists<AlphaTestAttrib>(_inv_state_mask);
+  clear_bit_if_exists<ClipPlaneAttrib>(_inv_state_mask);
+  clear_bit_if_exists<ColorAttrib>(_inv_state_mask);
+  clear_bit_if_exists<ColorScaleAttrib>(_inv_state_mask);
+  clear_bit_if_exists<CullFaceAttrib>(_inv_state_mask);
+  clear_bit_if_exists<DepthOffsetAttrib>(_inv_state_mask);
+  clear_bit_if_exists<DepthTestAttrib>(_inv_state_mask);
+  clear_bit_if_exists<DepthWriteAttrib>(_inv_state_mask);
+  clear_bit_if_exists<RenderModeAttrib>(_inv_state_mask);
+  clear_bit_if_exists<RescaleNormalAttrib>(_inv_state_mask);
+  clear_bit_if_exists<ShadeModelAttrib>(_inv_state_mask);
+  clear_bit_if_exists<TransparencyAttrib>(_inv_state_mask);
+  clear_bit_if_exists<ColorWriteAttrib>(_inv_state_mask);
+  clear_bit_if_exists<ColorBlendAttrib>(_inv_state_mask);
+  clear_bit_if_exists<TextureAttrib>(_inv_state_mask);
+  clear_bit_if_exists<TexGenAttrib>(_inv_state_mask);
+  clear_bit_if_exists<TexMatrixAttrib>(_inv_state_mask);
+  clear_bit_if_exists<MaterialAttrib>(_inv_state_mask);
+  clear_bit_if_exists<LightAttrib>(_inv_state_mask);
+  clear_bit_if_exists<StencilAttrib>(_inv_state_mask);
+  clear_bit_if_exists<FogAttrib>(_inv_state_mask);
+  clear_bit_if_exists<ScissorAttrib>(_inv_state_mask);
 
   // D3DRS_POINTSPRITEENABLE doesn't seem to support remapping the texture
   // coordinates via a texture matrix, so we don't advertise
@@ -2820,7 +2820,7 @@ do_issue_alpha_test() {
   if (_target_shader->get_flag(ShaderAttrib::F_subsume_alpha_test)) {
     set_render_state(D3DRS_ALPHATESTENABLE, FALSE);
   } else {
-    const AlphaTestAttrib *target_alpha_test = DCAST(AlphaTestAttrib, _target_rs->get_attrib_def(AlphaTestAttrib::get_class_slot()));
+    const AlphaTestAttrib *target_alpha_test = DCAST(AlphaTestAttrib, force_get_attrib_def<AlphaTestAttrib>(_target_rs));
     AlphaTestAttrib::PandaCompareFunc mode = target_alpha_test->get_mode();
     if (mode == AlphaTestAttrib::M_none) {
       set_render_state(D3DRS_ALPHATESTENABLE, FALSE);
@@ -2964,7 +2964,7 @@ do_issue_rescale_normal() {
  */
 void DXGraphicsStateGuardian9::
 do_issue_depth_test() {
-  const DepthTestAttrib *target_depth_test = DCAST(DepthTestAttrib, _target_rs->get_attrib_def(DepthTestAttrib::get_class_slot()));
+  const DepthTestAttrib *target_depth_test = DCAST(DepthTestAttrib, force_get_attrib_def<DepthTestAttrib>(_target_rs));
   DepthTestAttrib::PandaCompareFunc mode = target_depth_test->get_mode();
   if (mode == DepthTestAttrib::M_none) {
     set_render_state(D3DRS_ZENABLE, D3DZB_FALSE);
@@ -2979,7 +2979,7 @@ do_issue_depth_test() {
  */
 void DXGraphicsStateGuardian9::
 do_issue_depth_write() {
-  const DepthWriteAttrib *target_depth_write = DCAST(DepthWriteAttrib, _target_rs->get_attrib_def(DepthWriteAttrib::get_class_slot()));
+  const DepthWriteAttrib *target_depth_write = DCAST(DepthWriteAttrib, force_get_attrib_def<DepthWriteAttrib>(_target_rs));
   DepthWriteAttrib::Mode mode = target_depth_write->get_mode();
   if (mode == DepthWriteAttrib::M_on) {
     set_render_state(D3DRS_ZWRITEENABLE, TRUE);
@@ -2993,7 +2993,7 @@ do_issue_depth_write() {
  */
 void DXGraphicsStateGuardian9::
 do_issue_cull_face() {
-  const CullFaceAttrib *target_cull_face = DCAST(CullFaceAttrib, _target_rs->get_attrib_def(CullFaceAttrib::get_class_slot()));
+  const CullFaceAttrib *target_cull_face = DCAST(CullFaceAttrib, force_get_attrib_def<CullFaceAttrib>(_target_rs));
   _cull_face_mode = target_cull_face->get_effective_mode();
 
   switch (_cull_face_mode) {
@@ -3027,7 +3027,7 @@ do_issue_cull_face() {
  */
 void DXGraphicsStateGuardian9::
 do_issue_fog() {
-  const FogAttrib *target_fog = DCAST(FogAttrib, _target_rs->get_attrib_def(FogAttrib::get_class_slot()));
+  const FogAttrib *target_fog = DCAST(FogAttrib, force_get_attrib_def<FogAttrib>(_target_rs));
   if (!target_fog->is_off()) {
     set_render_state(D3DRS_FOGENABLE, TRUE);
     Fog *fog = target_fog->get_fog();
@@ -3043,7 +3043,7 @@ do_issue_fog() {
  */
 void DXGraphicsStateGuardian9::
 do_issue_depth_offset() {
-  const DepthOffsetAttrib *target_depth_offset = DCAST(DepthOffsetAttrib, _target_rs->get_attrib_def(DepthOffsetAttrib::get_class_slot()));
+  const DepthOffsetAttrib *target_depth_offset = DCAST(DepthOffsetAttrib, force_get_attrib_def<DepthOffsetAttrib>(_target_rs));
   int offset = target_depth_offset->get_offset();
 
   if (_supports_depth_bias && !dx_broken_depth_bias) {
@@ -3066,7 +3066,7 @@ do_issue_depth_offset() {
  */
 void DXGraphicsStateGuardian9::
 do_issue_shade_model() {
-  const ShadeModelAttrib *target_shade_model = DCAST(ShadeModelAttrib, _target_rs->get_attrib_def(ShadeModelAttrib::get_class_slot()));
+  const ShadeModelAttrib *target_shade_model = DCAST(ShadeModelAttrib, force_get_attrib_def<ShadeModelAttrib>(_target_rs));
   switch (target_shade_model->get_mode()) {
   case ShadeModelAttrib::M_smooth:
     set_render_state(D3DRS_SHADEMODE, D3DSHADE_GOURAUD);
@@ -3481,7 +3481,7 @@ void DXGraphicsStateGuardian9::
 do_issue_material() {
   static Material empty;
   const Material *material;
-  const MaterialAttrib *target_material = DCAST(MaterialAttrib, _target_rs->get_attrib_def(MaterialAttrib::get_class_slot()));
+  const MaterialAttrib *target_material = DCAST(MaterialAttrib, force_get_attrib_def<MaterialAttrib>(_target_rs));
   if (target_material->is_off()) {
     material = &empty;
   } else {
@@ -3632,7 +3632,7 @@ update_standard_texture_bindings() {
     int texcoord_dimensions = 2;
 
     CPT(TransformState) tex_mat = TransformState::make_identity();
-    const TexMatrixAttrib *target_tex_matrix = DCAST(TexMatrixAttrib, _target_rs->get_attrib_def(TexMatrixAttrib::get_class_slot()));
+    const TexMatrixAttrib *target_tex_matrix = DCAST(TexMatrixAttrib, force_get_attrib_def<TexMatrixAttrib>(_target_rs));
     if (target_tex_matrix->has_stage(stage)) {
       tex_mat = target_tex_matrix->get_transform(stage);
     }
@@ -3811,7 +3811,8 @@ do_issue_blending() {
   // Handle the color_write attrib.  If color_write is off, then all the other
   // blending-related stuff doesn't matter.  If the device doesn't support
   // color-write, we use blending tricks to effectively disable color write.
-  const ColorWriteAttrib *target_color_write = DCAST(ColorWriteAttrib, _target_rs->get_attrib_def(ColorWriteAttrib::get_class_slot()));
+
+  const ColorWriteAttrib *target_color_write = DCAST(ColorWriteAttrib, force_get_attrib_def<ColorWriteAttrib>(_target_rs));
   unsigned int color_channels =
     target_color_write->get_channels() & _color_write_mask;
   if (_target_shader->get_flag(ShaderAttrib::F_disable_alpha_write)) {
@@ -5209,7 +5210,7 @@ do_issue_stencil() {
  */
 void DXGraphicsStateGuardian9::
 do_issue_scissor() {
-  const ScissorAttrib *target_scissor = DCAST(ScissorAttrib, _target_rs->get_attrib_def(ScissorAttrib::get_class_slot()));
+  const ScissorAttrib *target_scissor = DCAST(ScissorAttrib, force_get_attrib_def<ScissorAttrib>(_target_rs));
   const LVecBase4 &frame = target_scissor->get_frame();
 
   RECT r;

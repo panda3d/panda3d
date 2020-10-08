@@ -368,6 +368,15 @@ public:
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
 
+  template<class Attrib>
+  static int force_get_slot()
+  {
+    if (Attrib::get_slot() < -1) {
+      Attrib::make_default();
+    }
+    return Attrib::get_slot();
+  }
+
 private:
   static TypeHandle _type_handle;
 

@@ -1152,6 +1152,14 @@ public:
     return _type_handle;
   }
 
+  template<class Attrib>
+  static void clear_bit_if_exists(RenderState::SlotMask& mask)
+  {
+    if (Attrib::get_class_slot() >= 0) {
+      mask.clear_bit(Attrib::get_class_slot());
+    }
+  }
+
 public:
   static void init_type() {
     GraphicsStateGuardian::init_type();

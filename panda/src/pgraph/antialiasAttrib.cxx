@@ -22,6 +22,7 @@
 
 TypeHandle AntialiasAttrib::_type_handle;
 int AntialiasAttrib::_attrib_slot;
+bool AntialiasAttrib::_is_in_use;
 
 /**
  * Constructs a new AntialiasAttrib object.
@@ -52,6 +53,7 @@ int AntialiasAttrib::_attrib_slot;
  */
 CPT(RenderAttrib) AntialiasAttrib::
 make(unsigned short mode) {
+  AntialiasAttrib::first_use();
   AntialiasAttrib *attrib = new AntialiasAttrib(mode);
   return return_new(attrib);
 }
@@ -62,6 +64,7 @@ make(unsigned short mode) {
  */
 CPT(RenderAttrib) AntialiasAttrib::
 make_default() {
+  AntialiasAttrib::first_use();
   return RenderAttribRegistry::quick_get_global_ptr()->get_slot_default(_attrib_slot);
 }
 
@@ -212,6 +215,8 @@ write_datagram(BamWriter *manager, Datagram &dg) {
  */
 TypedWritable *AntialiasAttrib::
 make_from_bam(const FactoryParams &params) {
+  AntialiasAttrib::first_use();
+
   AntialiasAttrib *attrib = new AntialiasAttrib(M_none);
   DatagramIterator scan;
   BamReader *manager;
@@ -234,6 +239,28 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 }
 
 /**
+ * This internal function is called by make and all make_*; it registers a slot for
+ * for AntialiasAttrib when user creates the first AntialiasAttrib object.
+ */
+void AntialiasAttrib::
+first_use() {
+  if (!_is_in_use) {
+    _is_in_use = true;
+
+    // This is defined here, since we have otherwise no guarantee that the
+    // config var has already been constructed by the time we call init_type()
+    // at static init time.
+    static ConfigVariableBool default_antialias_enable
+    ("default-antialias-enable", false,
+     PRC_DESC("Set this true to enable the M_auto antialiasing mode for all "
+              "nodes by default."));
+
+    _attrib_slot = register_slot(_type_handle, 100,
+      new AntialiasAttrib(default_antialias_enable ? M_auto : M_none));
+  }
+}
+
+/**
  *
  */
 void AntialiasAttrib::
@@ -241,15 +268,6 @@ init_type() {
   RenderAttrib::init_type();
   register_type(_type_handle, "AntialiasAttrib",
                 RenderAttrib::get_class_type());
-
-  // This is defined here, since we have otherwise no guarantee that the
-  // config var has already been constructed by the time we call init_type()
-  // at static init time.
-  static ConfigVariableBool default_antialias_enable
-  ("default-antialias-enable", false,
-   PRC_DESC("Set this true to enable the M_auto antialiasing mode for all "
-            "nodes by default."));
-
-  _attrib_slot = register_slot(_type_handle, 100,
-    new AntialiasAttrib(default_antialias_enable ? M_auto : M_none));
+  AntialiasAttrib::_attrib_slot = -1;
+  AntialiasAttrib::_is_in_use = false;
 }

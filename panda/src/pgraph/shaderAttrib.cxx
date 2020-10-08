@@ -34,6 +34,7 @@ using std::ostringstream;
 
 TypeHandle ShaderAttrib::_type_handle;
 int ShaderAttrib::_attrib_slot;
+bool ShaderAttrib::_is_in_use;
 
 /**
  * Constructs a new ShaderAttrib object that disables the use of shaders (it
@@ -41,6 +42,8 @@ int ShaderAttrib::_attrib_slot;
  */
 CPT(RenderAttrib) ShaderAttrib::
 make_off() {
+  ShaderAttrib::first_use();
+
   static CPT(RenderAttrib) _off_attrib;
   if (_off_attrib == nullptr) {
     ShaderAttrib *attrib = new ShaderAttrib;
@@ -55,6 +58,8 @@ make_off() {
  */
 CPT(RenderAttrib) ShaderAttrib::
 make(const Shader *shader, int priority) {
+  ShaderAttrib::first_use();
+
   static CPT(RenderAttrib) _null_attrib;
   if (_null_attrib == nullptr) {
     ShaderAttrib *attrib = new ShaderAttrib;
@@ -74,6 +79,7 @@ make(const Shader *shader, int priority) {
  */
 CPT(RenderAttrib) ShaderAttrib::
 make_default() {
+  ShaderAttrib::first_use();
   return return_new(new ShaderAttrib);
 }
 
@@ -794,4 +800,12 @@ compose_impl(const RenderAttrib *other) const {
 void ShaderAttrib::
 register_with_read_factory() {
   // IMPLEMENT ME
+}
+
+void ShaderAttrib::
+first_use() {
+  if (!_is_in_use) {
+    _is_in_use = true;
+    _attrib_slot = register_slot(_type_handle, 10, new ShaderAttrib);
+  }
 }

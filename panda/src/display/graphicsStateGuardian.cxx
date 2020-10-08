@@ -1018,7 +1018,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
   }
   case Shader::SMO_attr_material: {
     const MaterialAttrib *target_material = (const MaterialAttrib *)
-      _target_rs->get_attrib_def(MaterialAttrib::get_class_slot());
+      force_get_attrib_def<MaterialAttrib>(_target_rs);
     // Material matrix contains AMBIENT, DIFFUSE, EMISSION, SPECULAR+SHININESS
     if (target_material->is_off()) {
       into[0].set(1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0);
@@ -1038,7 +1038,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
   }
   case Shader::SMO_attr_material2: {
     const MaterialAttrib *target_material = (const MaterialAttrib *)
-      _target_rs->get_attrib_def(MaterialAttrib::get_class_slot());
+      force_get_attrib_def<MaterialAttrib>(_target_rs);
     if (target_material->is_off()) {
       into[0].set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1);
       return;
@@ -1050,7 +1050,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
   }
   case Shader::SMO_attr_color: {
     const ColorAttrib *target_color = (const ColorAttrib *)
-      _target_rs->get_attrib_def(ColorAttrib::get_class_slot());
+      force_get_attrib_def<ColorAttrib>(_target_rs);
     if (target_color->get_color_type() != ColorAttrib::T_flat) {
       into[0] = LMatrix4::ones_mat();
       return;
@@ -1061,7 +1061,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
   }
   case Shader::SMO_attr_colorscale: {
     const ColorScaleAttrib *target_color = (const ColorScaleAttrib *)
-      _target_rs->get_attrib_def(ColorScaleAttrib::get_class_slot());
+      force_get_attrib_def<ColorScaleAttrib>(_target_rs);
     if (target_color->is_identity()) {
       into[0] = LMatrix4::ones_mat();
       return;
@@ -1072,7 +1072,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
   }
   case Shader::SMO_attr_fog: {
     const FogAttrib *target_fog = (const FogAttrib *)
-      _target_rs->get_attrib_def(FogAttrib::get_class_slot());
+      force_get_attrib_def<FogAttrib>(_target_rs);
     Fog *fog = target_fog->get_fog();
     if (fog == nullptr) {
       into[0].set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1);
@@ -1086,7 +1086,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
   }
   case Shader::SMO_attr_fogcolor: {
     const FogAttrib *target_fog = (const FogAttrib *)
-      _target_rs->get_attrib_def(FogAttrib::get_class_slot());
+      force_get_attrib_def<FogAttrib>(_target_rs);
     Fog *fog = target_fog->get_fog();
     if (fog == nullptr) {
       into[0] = LMatrix4::ones_mat();
@@ -1180,7 +1180,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
   case Shader::SMO_light_ambient: {
     LColor cur_ambient_light(0.0f, 0.0f, 0.0f, 0.0f);
     const LightAttrib *target_light = (const LightAttrib *)
-      _target_rs->get_attrib_def(LightAttrib::get_class_slot());
+      force_get_attrib_def<LightAttrib>(_target_rs);
 
     if (!target_light->has_any_on_light()) {
       // There are no lights at all.  This means, to follow the fixed-
@@ -2728,7 +2728,7 @@ do_issue_clip_plane() {
   int num_on_planes = 0;
 
   const ClipPlaneAttrib *target_clip_plane = (const ClipPlaneAttrib *)
-    _target_rs->get_attrib_def(ClipPlaneAttrib::get_class_slot());
+    force_get_attrib_def<ClipPlaneAttrib>(_target_rs);
 
   if (target_clip_plane != nullptr) {
     CPT(ClipPlaneAttrib) new_plane = target_clip_plane->filter_to_max(_max_clip_planes);
@@ -2785,7 +2785,7 @@ do_issue_clip_plane() {
 void GraphicsStateGuardian::
 do_issue_color() {
   const ColorAttrib *target_color = (const ColorAttrib *)
-    _target_rs->get_attrib_def(ColorAttrib::get_class_slot());
+    force_get_attrib_def<ColorAttrib>(_target_rs);
 
   switch (target_color->get_color_type()) {
   case ColorAttrib::T_flat:
@@ -2814,8 +2814,8 @@ do_issue_color() {
   }
 
   if (_color_scale_via_lighting) {
-    _state_mask.clear_bit(LightAttrib::get_class_slot());
-    _state_mask.clear_bit(MaterialAttrib::get_class_slot());
+    clear_bit_if_exists<LightAttrib>(_state_mask);
+    clear_bit_if_exists<MaterialAttrib>(_state_mask);
 
     determine_light_color_scale();
   }
@@ -2829,25 +2829,25 @@ do_issue_color_scale() {
   // If the previous color scale had set a special texture, clear the texture
   // now.
   if (_has_texture_alpha_scale) {
-    _state_mask.clear_bit(TextureAttrib::get_class_slot());
+    clear_bit_if_exists<TextureAttrib>(_state_mask);
   }
 
   const ColorScaleAttrib *target_color_scale = (const ColorScaleAttrib *)
-    _target_rs->get_attrib_def(ColorScaleAttrib::get_class_slot());
+    force_get_attrib_def<ColorScaleAttrib>(_target_rs);
 
   _color_scale_enabled = target_color_scale->has_scale();
   _current_color_scale = target_color_scale->get_scale();
   _has_texture_alpha_scale = false;
 
   if (_color_blend_involves_color_scale) {
-    _state_mask.clear_bit(TransparencyAttrib::get_class_slot());
+    clear_bit_if_exists<TransparencyAttrib>(_state_mask);
   }
   if (_texture_involves_color_scale) {
-    _state_mask.clear_bit(TextureAttrib::get_class_slot());
+    clear_bit_if_exists<TextureAttrib>(_state_mask);
   }
   if (_color_scale_via_lighting) {
-    _state_mask.clear_bit(LightAttrib::get_class_slot());
-    _state_mask.clear_bit(MaterialAttrib::get_class_slot());
+    clear_bit_if_exists<LightAttrib>(_state_mask);
+    clear_bit_if_exists<MaterialAttrib>(_state_mask);
 
     determine_light_color_scale();
   }
@@ -2856,8 +2856,8 @@ do_issue_color_scale() {
       _vertex_colors_enabled && target_color_scale->has_alpha_scale()) {
     // This color scale will set a special texture--so again, clear the
     // texture.
-    _state_mask.clear_bit(TextureAttrib::get_class_slot());
-    _state_mask.clear_bit(TexMatrixAttrib::get_class_slot());
+    clear_bit_if_exists<TextureAttrib>(_state_mask);
+    clear_bit_if_exists<TexMatrixAttrib>(_state_mask);
 
     _has_texture_alpha_scale = true;
   }
@@ -3188,9 +3188,9 @@ end_bind_clip_planes() {
 void GraphicsStateGuardian::
 determine_target_texture() {
   const TextureAttrib *target_texture = (const TextureAttrib *)
-    _target_rs->get_attrib_def(TextureAttrib::get_class_slot());
+    force_get_attrib_def<TextureAttrib>(_target_rs);
   const TexGenAttrib *target_tex_gen = (const TexGenAttrib *)
-    _target_rs->get_attrib_def(TexGenAttrib::get_class_slot());
+    force_get_attrib_def<TexGenAttrib>(_target_rs);
 
   nassertv(target_texture != nullptr &&
            target_tex_gen != nullptr);
@@ -3220,7 +3220,7 @@ determine_target_shader() {
     _target_shader = (const ShaderAttrib *)_target_rs->_generated_shader.p();
   } else {
     _target_shader = (const ShaderAttrib *)
-      _target_rs->get_attrib_def(ShaderAttrib::get_class_slot());
+      force_get_attrib_def<ShaderAttrib>(_target_rs);
   }
 }
 

@@ -76,6 +76,9 @@ has_attrib(TypeHandle type) const {
  */
 INLINE bool RenderState::
 has_attrib(int slot) const {
+  if (slot < 0) {
+    return false;
+  }
   return get_attrib(slot) != nullptr;
 }
 
@@ -87,6 +90,9 @@ INLINE const RenderAttrib *RenderState::
 get_attrib(TypeHandle type) const {
   RenderAttribRegistry *reg = RenderAttribRegistry::get_global_ptr();
   int slot = reg->get_slot(type);
+  if (slot < 0) {
+    return nullptr;
+  }
   return _attributes[slot]._attrib;
 }
 
@@ -96,15 +102,22 @@ get_attrib(TypeHandle type) const {
  */
 ALWAYS_INLINE const RenderAttrib *RenderState::
 get_attrib(int slot) const {
+  if (slot < 0) {
+    return nullptr;
+  }
   return _attributes[slot]._attrib;
 }
 
 /**
  * Returns the RenderAttrib with the indicated slot index, or the default
  * attrib for that slot if there is no such RenderAttrib in the state.
+ * If the user has never created a RenderAttrib object before, return nullptr.
  */
 INLINE const RenderAttrib *RenderState::
 get_attrib_def(int slot) const {
+  if (slot < 0) {
+    return nullptr;
+  }
   if (_attributes[slot]._attrib != nullptr) {
     return _attributes[slot]._attrib;
   }
@@ -129,6 +142,9 @@ get_override(TypeHandle type) const {
  */
 INLINE int RenderState::
 get_override(int slot) const {
+  if (slot < 0) {
+    return 0;
+  }
   return _attributes[slot]._override;
 }
 
@@ -533,11 +549,13 @@ get_attrib(CPT(AttribType) &attrib) const {
 template<class AttribType>
 INLINE void RenderState::
 get_attrib_def(const AttribType *&attrib) const {
+  AttribType::make_default();
   attrib = (const AttribType *)get_attrib_def((int)AttribType::get_class_slot());
 }
 template<class AttribType>
 INLINE void RenderState::
 get_attrib_def(CPT(AttribType) &attrib) const {
+  AttribType::make_default();
   attrib = (const AttribType *)get_attrib_def((int)AttribType::get_class_slot());
 }
 #endif  // CPPPARSER

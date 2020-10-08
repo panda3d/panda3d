@@ -178,7 +178,8 @@ public:
     RenderAttrib::init_type();
     register_type(_type_handle, "ShaderAttrib",
                   RenderAttrib::get_class_type());
-    _attrib_slot = register_slot(_type_handle, 10, new ShaderAttrib);
+    ShaderAttrib::_attrib_slot = -1;
+    ShaderAttrib::_is_in_use = false;
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -188,6 +189,8 @@ public:
 private:
   static TypeHandle _type_handle;
   static int _attrib_slot;
+  static bool _is_in_use;
+  static void first_use();
 };
 
 
