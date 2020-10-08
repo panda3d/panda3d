@@ -45,6 +45,7 @@ FMODAudioSound(AudioManager *manager, VirtualFile *file, bool positional) {
   _active = manager->get_active();
   _paused = false;
   _start_time = 0.0;
+  _balance = 0.0;
   _volume = 1.0;
   _playrate = 1.0;
   _is_midi = false;
