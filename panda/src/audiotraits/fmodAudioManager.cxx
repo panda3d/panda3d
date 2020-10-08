@@ -154,14 +154,12 @@ FMODAudioManager() {
                                &speaker_mode,
                                &num_raw_speakers);
 
-    fmodAudio_cat.debug()
-      << "fmod-mixer-sample-rate: " << fmod_mixer_sample_rate << "\n";
+    audio_debug("fmod-mixer-sample-rate: " << fmod_mixer_sample_rate);
     if (fmod_mixer_sample_rate.get_value() != -1) {
       if (fmod_mixer_sample_rate.get_value() >= FMOD_MIN_SAMPLE_RATE &&
           fmod_mixer_sample_rate.get_value() <= FMOD_MAX_SAMPLE_RATE) {
             sample_rate = fmod_mixer_sample_rate;
-            fmodAudio_cat.debug()
-              << "Using user specified sample rate\n";
+            audio_debug("Using user specified sample rate");
       } else {
         fmodAudio_cat.warning()
           << "fmod-mixer-sample-rate had an out-of-range value: "
@@ -845,9 +843,8 @@ create_fmod_dsp(DSP *panda_dsp) {
     return nullptr;
   }
 
-  fmodAudio_cat.debug()
-    << "Creating new DSP instance of type "
-    << panda_dsp->get_type().get_name() << "\n";
+  audio_debug("Creating new DSP instance of type "
+              << panda_dsp->get_type().get_name());
 
   FMOD_RESULT result;
   FMOD::DSP *dsp;
@@ -994,14 +991,12 @@ void FMODAudioManager::
 add_manager_to_dsp(DSP *dsp, FMODAudioManager *mgr) {
   auto itr = _dsp_managers.find(dsp);
   if (itr == _dsp_managers.end()) {
-    fmodAudio_cat.debug()
-      << "Adding manager to DSP\n";
+    audio_debug("Adding first manager to DSP");
     _dsp_managers[dsp] = { mgr };
     return;
   }
 
-  fmodAudio_cat.debug()
-    << "Adding manager to DSP\n";
+  audio_debug("Adding new manager to DSP");
 
   itr->second.insert(mgr);
 }
@@ -1020,12 +1015,10 @@ remove_manager_from_dsp(DSP *dsp, FMODAudioManager *mgr) {
 
   itr->second.erase(mgr);
 
-  fmodAudio_cat.debug()
-    << "Removed manager from DSP\n";
+  audio_debug("Removed manager from DSP");
 
   if (itr->second.size() == 0) {
-    fmodAudio_cat.debug()
-      << "DSP has no more managers\n";
+    audio_debug("DSP has no more managers");
     _dsp_managers.erase(itr);
   }
 }
@@ -1040,10 +1033,7 @@ update_dirty_dsps() {
     const ManagerList &managers = itr->second;
 
     if (panda_dsp->is_dirty()) {
-      if (fmodAudio_cat.is_debug()) {
-        fmodAudio_cat.debug()
-        << "Updating dirty " << panda_dsp->get_type().get_name() << "\n";
-      }
+      audio_debug("Updating dirty " << panda_dsp->get_type().get_name());
 
       for (auto mitr = managers.begin(); mitr != managers.end(); mitr++) {
         FMODAudioManager *manager = *mitr;

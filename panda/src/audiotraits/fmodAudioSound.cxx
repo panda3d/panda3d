@@ -238,8 +238,7 @@ FMODAudioSound::
   result = _sound->release();
   fmod_audio_errcheck("_sound->release()", result);
 
-  fmodAudio_cat.debug()
-    << "Released FMODAudioSound\n";
+  audio_debug("Released FMODAudioSound\n");
 }
 
 /**
