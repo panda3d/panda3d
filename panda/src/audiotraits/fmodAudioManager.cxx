@@ -141,7 +141,7 @@ FMODAudioManager() {
     result = _system->getVersion(&version);
     fmod_audio_errcheck("_system->getVersion()", result);
 
-    if (version < FMOD_VERSION){
+    if (version < FMOD_VERSION) {
       audio_error("You are using an old version of FMOD.  This program requires: " << FMOD_VERSION);
     }
 
@@ -160,8 +160,8 @@ FMODAudioManager() {
     if (fmod_mixer_sample_rate.get_value() != -1) {
       if (fmod_mixer_sample_rate.get_value() >= FMOD_MIN_SAMPLE_RATE &&
           fmod_mixer_sample_rate.get_value() <= FMOD_MAX_SAMPLE_RATE) {
-            sample_rate = fmod_mixer_sample_rate;
-            audio_debug("Using user specified sample rate");
+          sample_rate = fmod_mixer_sample_rate;
+          audio_debug("Using user specified sample rate");
       } else {
         fmodAudio_cat.warning()
           << "fmod-mixer-sample-rate had an out-of-range value: "
@@ -415,8 +415,6 @@ int FMODAudioManager::
 get_speaker_setup() {
   ReMutexHolder holder(_lock);
   FMOD_RESULT result;
-
-  int ret;
 
   int sample_rate;
   FMOD_SPEAKERMODE speaker_mode;
