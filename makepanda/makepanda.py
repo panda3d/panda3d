@@ -681,10 +681,7 @@ if (COMPILER == "MSVC"):
         LibName("ODE",      GetThirdpartyDir() + "ode/lib/ode_single.lib")
         DefSymbol("ODE",    "dSINGLE", "")
     if (PkgSkip("FMODCORE")==0):
-        if (GetTargetArch() == 'x64'):
-            LibName("FMODCORE",   GetThirdpartyDir() + "fmod/lib/fmod64_vc.lib")
-        else:
-            LibName("FMODCORE",   GetThirdpartyDir() + "fmod/lib/fmod_vc.lib")
+        LibName("FMODCORE",   GetThirdpartyDir() + "fmod/lib/fmod_vc.lib")
     if (PkgSkip("VORBIS")==0):
         for lib in ('ogg', 'vorbis', 'vorbisfile'):
             path = GetThirdpartyDir() + "vorbis/lib/lib{0}_static.lib".format(lib)
