@@ -477,7 +477,7 @@ def MakeInstallerOSX(version, python_versions=[], installdir=None, **kwargs):
     #    oscmd("mkdir -p dstroot/openal/Developer/Panda3D/lib")
     #    oscmd("cp -R %s/lib/libp3openal_audio.* dstroot/openal/Developer/Panda3D/lib/" % outputdir)
 
-    if not PkgSkip("FMODCORE"):
+    if not PkgSkip("FMOD"):
         oscmd("mkdir -p dstroot/fmod/%s/lib" % installdir)
         oscmd("cp -R %s/lib/libp3fmod_audio.* dstroot/fmod/%s/lib/" % (outputdir, installdir))
         oscmd("cp -R %s/lib/libfmod* dstroot/fmod/%s/lib/" % (outputdir, installdir))
@@ -565,7 +565,7 @@ def MakeInstallerOSX(version, python_versions=[], installdir=None, **kwargs):
         pkgs.append("pybindings" + version_info["version"])
     if not PkgSkip("FFMPEG"):    pkgs.append("ffmpeg")
     #if not PkgSkip("OPENAL"):    pkgs.append("openal")
-    if not PkgSkip("FMODCORE"):    pkgs.append("fmod")
+    if not PkgSkip("FMOD"):      pkgs.append("fmod")
 
     for pkg in pkgs:
         identifier = "org.panda3d.panda3d.%s.pkg" % pkg
@@ -626,7 +626,7 @@ def MakeInstallerOSX(version, python_versions=[], installdir=None, **kwargs):
         dist.write('        <line choice="samples"/>\n')
     if not PkgSkip("FFMPEG"):
         dist.write('        <line choice="ffmpeg"/>\n')
-    if not PkgSkip("FMODCORE"):
+    if not PkgSkip("FMOD"):
         dist.write('        <line choice="fmod"/>\n')
     dist.write('        <line choice="headers"/>\n')
     dist.write('    </choices-outline>\n')
@@ -667,7 +667,7 @@ def MakeInstallerOSX(version, python_versions=[], installdir=None, **kwargs):
     #    dist.write('        <pkg-ref id="org.panda3d.panda3d.openal.pkg"/>\n')
     #    dist.write('    </choice>\n')
 
-    if not PkgSkip("FMODCORE"):
+    if not PkgSkip("FMOD"):
         dist.write('    <choice id="fmod" title="FMOD Plug-In" tooltip="FMOD audio output plug-in" description="This package contains the FMOD audio plug-in, which is a commercial library for playing sounds.  It is an optional component as Panda3D can use the open-source alternative OpenAL instead.">\n')
         dist.write('        <pkg-ref id="org.panda3d.panda3d.fmod.pkg"/>\n')
         dist.write('    </choice>\n')
@@ -997,7 +997,7 @@ if __name__ == "__main__":
 
     # Read out whether we should set PkgSkip("PYTHON") and some others.
     # Temporary hack; needs better solution.
-    pkg_list = "PYTHON", "NVIDIACG", "FFMPEG", "OPENAL", "FMODCORE", "PVIEW", "NVIDIACG", "VORBIS", "OPUS"
+    pkg_list = "PYTHON", "NVIDIACG", "FFMPEG", "OPENAL", "FMOD", "PVIEW", "NVIDIACG", "VORBIS", "OPUS"
     PkgListSet(pkg_list)
     for pkg in pkg_list:
         dat_path = "dtool_have_%s.dat" % (pkg.lower())

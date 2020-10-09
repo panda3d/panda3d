@@ -67,7 +67,7 @@ if(THIRDPARTY_DIRECTORY)
     Eigen3
     FCollada
     FFMPEG
-    FMODCore
+    FMOD
     Freetype
     HarfBuzz
     JPEG
@@ -106,8 +106,6 @@ if(THIRDPARTY_DIRECTORY)
       set(_package "ffmpeg") # These are also part of FFmpeg
     elseif(_package STREQUAL "vorbisfile")
       set(_package "vorbis")
-    elseif(_package STREQUAL "fmodcore")
-      set(_package "fmod")
     endif()
 
     # Set search path
@@ -504,15 +502,15 @@ package_status(OPUS "Opus")
 #
 
 # FMOD Core
-find_package(FMODCore QUIET)
+find_package(FMOD QUIET)
 
-package_option(FMODCore
-  "This enables support for the FMOD Core sound library,
+package_option(FMOD
+  "This enables support for the FMOD sound library,
   from Firelight Technologies. This audio library is free for non-commercial
   use."
   LICENSE "FMOD")
 
-package_status(FMODCore "FMOD Core sound library")
+package_status(FMOD "FMOD sound library")
 
 # OpenAL
 find_package(OpenAL QUIET)
