@@ -704,6 +704,28 @@ set_speaker_mix(int speaker, PN_stdfloat mix) {
 }
 
 /**
+ * Sets the mix values for all speakers.
+ */
+void FMODAudioSound::
+set_speaker_mix(PN_stdfloat frontleft, PN_stdfloat frontright,
+                PN_stdfloat center, PN_stdfloat sub,
+                PN_stdfloat backleft, PN_stdfloat backright,
+                PN_stdfloat sideleft, PN_stdfloat sideright) {
+  ReMutexHolder holder(FMODAudioManager::_lock);
+
+  _mix[AudioManager::SPK_front_left] = frontleft;
+  _mix[AudioManager::SPK_front_right] = frontright;
+  _mix[AudioManager::SPK_front_center] = center;
+  _mix[AudioManager::SPK_sub] = sub;
+  _mix[AudioManager::SPK_surround_left] = sideleft;
+  _mix[AudioManager::SPK_surround_right] = sideright;
+  _mix[AudioManager::SPK_back_left] = backleft;
+  _mix[AudioManager::SPK_back_right] = backright;
+
+  set_speaker_mix_or_balance_on_channel();
+}
+
+/**
  * This is simply a safety catch.  If you are using a Stero speaker setup
  * Panda will only pay attention to 'set_balance()' command when setting
  * speaker balances.  Other wise it will use 'set_speaker_mix'. I put this in,

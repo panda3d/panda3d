@@ -130,6 +130,10 @@ public:
 
   virtual PN_stdfloat get_speaker_mix(int speaker);
   virtual void set_speaker_mix(int speaker, PN_stdfloat mix);
+  virtual void set_speaker_mix(PN_stdfloat frontleft, PN_stdfloat frontright,
+                               PN_stdfloat center, PN_stdfloat sub,
+                               PN_stdfloat backleft, PN_stdfloat backright,
+                               PN_stdfloat sideleft, PN_stdfloat sideright);
 
   void set_active(bool active=true);
   bool get_active() const;
@@ -166,7 +170,6 @@ private:
   void set_volume_on_channel();
   void set_balance_on_channel();
   void set_play_rate_on_channel();
-  void set_speaker_mix_on_channel();
   void set_3d_attributes_on_channel();
   // void add_dsp_on_channel();
   void set_speaker_mix_or_balance_on_channel();

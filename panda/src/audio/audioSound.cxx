@@ -76,10 +76,21 @@ get_speaker_mix(int speaker) {
 }
 
 /**
- * For use only with FMOD.
+ * For use only with FMOD. Sets the mix values of a speaker.
  */
 void AudioSound::
 set_speaker_mix(int speaker, PN_stdfloat mix) {
+  // intentionally blank
+}
+
+/**
+ * For use only with FMOD. Sets the mix values for all speakers.
+ */
+void AudioSound::
+set_speaker_mix(PN_stdfloat frontleft, PN_stdfloat frontright,
+                PN_stdfloat center, PN_stdfloat sub,
+                PN_stdfloat backleft, PN_stdfloat backright,
+                PN_stdfloat sideleft, PN_stdfloat sideright) {
   // intentionally blank
 }
 
