@@ -112,7 +112,7 @@ ConfigVariableBool fmod_use_surround_sound
 ConfigVariableEnum<FmodSpeakerMode> fmod_speaker_mode
 ("fmod-speaker-mode", FSM_unspecified,
  PRC_DESC("Sets the speaker configuration that the FMOD sound system will use. "
-          "Options: raw, mono, stereo, quad, surround, 5.1 and 7.1. "));
+          "Options: default, raw, mono, stereo, quad, surround, 5.1, 7.1, and 7.1.4."));
 
 ConfigVariableInt fmod_mixer_sample_rate
 ("fmod-mixer-sample-rate", -1,
