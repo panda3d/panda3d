@@ -106,6 +106,8 @@ if(THIRDPARTY_DIRECTORY)
       set(_package "ffmpeg") # These are also part of FFmpeg
     elseif(_package STREQUAL "vorbisfile")
       set(_package "vorbis")
+    elseif(_package STREQUAL "fmodcore")
+      set(_package "fmod")
     endif()
 
     # Set search path
