@@ -7,7 +7,8 @@
  * with this source code in a file named "LICENSE."
  *
  * @file mayaConversionServer.cxx
- * @author cbrunner, Derzsi Dániel
+ * @author cbrunner
+ * @author Derzsi Dániel
  * @date 2020-10-01
  */
 
@@ -26,9 +27,10 @@
  */
 MayaConversionServer::
 MayaConversionServer() {
-  qManager = new QueuedConnectionManager();
-  qListener = new QueuedConnectionListener(qManager, 0);
-  qReader = new QueuedConnectionReader(qManager, 0);
+  _qManager = new QueuedConnectionManager();
+  _qListener = new QueuedConnectionListener(_qManager, 0);
+  _qReader = new QueuedConnectionReader(_qManager, 0);
+  _cWriter = new ConnectionWriter(_qManager, 0);
 }
 
 /**
@@ -36,9 +38,10 @@ MayaConversionServer() {
  */
 MayaConversionServer::
 ~MayaConversionServer() {
-  delete qManager;
-  delete qReader;
-  delete qListener;
+  delete _qManager;
+  delete _qReader;
+  delete _qListener;
+  delete _cWriter;
 }
 
 /**
@@ -48,39 +51,44 @@ MayaConversionServer::
 void MayaConversionServer::
 poll() {
   // Listen for new connections
-  qListener->poll();
+  _qListener->poll();
 
   // If we have a new connection from a client create a new connection pointer
   // and add it to the reader list
-  if (qListener->new_connection_available()) {
-    PT(Connection) con;
-    PT(Connection) rv;
+  if (_qListener->new_connection_available()) {
+    PT(Connection) rendezvous;
+    PT(Connection) connection;
     NetAddress address;
-    if (qListener->get_new_connection(rv, address, con)) {
-      qReader->add_connection(con);
-      _clients.insert(con);
+
+    if (_qListener->get_new_connection(rendezvous, address, connection)) {
+      _qReader->add_connection(connection);
+      _clients.insert(connection);
     }
   }
 
   // Check for reset clients
-  if (qManager->reset_connection_available()) {
+  if (_qManager->reset_connection_available()) {
     PT(Connection) connection;
-    if (qManager->get_reset_connection(connection)) {
+
+    if (_qManager->get_reset_connection(connection)) {
       _clients.erase(connection);
-      qManager->close_connection(connection);
+      _qManager->close_connection(connection);
     }
   }
 
   // Poll the readers (created above) and if they have data process it
-  qReader->poll();
+  _qReader->poll();
 
-  if (qReader->data_available()) {
-    // Grab the incomming data and unpack it
+  if (_qReader->data_available()) {
+    // Grab the incoming data and unpack it
     NetDatagram datagram;
-    if (qReader->get_data(datagram)) {
+
+    if (_qReader->get_data(datagram)) {
       DatagramIterator data(datagram);
+
       // First data should be the "argc" (argument count) from the client
       int argc = data.get_uint8();
+
       // Now we have to get clever because the rest of the data comes as
       // strings and parse_command_line() expects arguments of the standard
       // argc, argv*[] variety.  First, we need a string vector to hold all
@@ -91,8 +99,7 @@ poll() {
       std::vector<char *> buffers;
 
       // Get the strings from the datagram and put them into the string vector
-      int i;
-      for ( i = 0; i < argc; i++ ) {
+      for (int i = 0; i < argc; i++) {
         vargv.push_back(data.get_string().c_str());
       }
 
@@ -102,26 +109,28 @@ poll() {
 
       // We allocate some memory to hold the pointers to the pointers we're
       // going to pass in to parse_command_line().
-      char ** cargv = (char**) malloc(sizeof(char**) * argc);
+      char **cargv = (char**) malloc(sizeof(char**) * argc);
 
       // Loop through the string arguments we got from the datagram and
       // convert them to const char *'s.  parse_command_line() expects char
       // *'s, so we have to copy these const versions into fresh char *, since
       // there is no casting from const char * to char *.
-      for ( i = 0; i < argc; i++) {
+      for (int i = 0; i < argc; i++) {
         // string to const char *
-        const char * cptr = vargv[i].c_str();
+        const char *cptr = vargv[i].c_str();
         // memory allocated for a new char * of size of the string
-        char * buffer = (char*) malloc(vargv[i].capacity()+1);
+        char *buffer = (char *) malloc(vargv[i].capacity() + 1);
+
         // Copy the const char * to the char *
         strcpy(buffer, cptr);
         // put this into the arry we defined above.  This is what will
         // eventually be passed to parse_command_line()
         cargv[i] = buffer;
-        // keep track of the pointers to the  allocated memory for cleanup
+        // keep track of the pointers to the allocated memory for cleanup
         // later
         buffers.push_back(buffer);
       }
+
       // Change to the client's current dir
 #ifdef _WIN64
       _chdir(cwd.c_str());
@@ -136,28 +145,46 @@ poll() {
       // Next, we'll need to read the conversion type.
       // Are we converting from egg to maya or from maya to egg?
       int conversion_type = data.get_uint8();
+      bool converted = false;
 
       switch (conversion_type) {
         case ConversionType::CT_maya_to_egg:
         {
           MayaToEgg egg;
+
           // Pass in the 'new' argc and argv we got from the client
           if (egg.parse_command_line(argc, cargv, false) == ProgramBase::ExitCode::EC_not_exited) {
             // Actually run the damn thing
-            egg.run();
+            converted = egg.run();
           }
+
           break;
         }
         case ConversionType::CT_egg_to_maya:
         {
           EggToMaya maya;
+          maya.set_exit_on_failure(false);
+
           // Pass in the 'new' argc and argv we got from the client
           if (maya.parse_command_line(argc, cargv, false) == ProgramBase::ExitCode::EC_not_exited) {
             // Actually run the damn thing
-            maya.run();
+            converted = maya.run();
           }
+
           break;
         }
+      }
+
+      // Let's send the result back to the client
+      NetDatagram response;
+
+      // The first and only part of the response is the success value
+      response.add_bool(converted);
+
+      // Send the response
+      if (!_cWriter->send(response, datagram.get_connection())) {
+        // Looks like we couldn't send the response
+        nout << "Could not send response to the client.\n";
       }
 
       std::cout.flush();
@@ -176,7 +203,7 @@ poll() {
 
     Clients::iterator ci;
     for (ci = _clients.begin(); ci != _clients.end(); ++ci) {
-      qManager->close_connection(*ci);
+      _qManager->close_connection(*ci);
     }
   } // qReader->data_available
 } // poll
@@ -187,7 +214,7 @@ poll() {
 void MayaConversionServer::
 listen() {
   // Open a rendezvous port for receiving new connections from the client
-  PT(Connection) rend = this->qManager->open_TCP_server_rendezvous(4242, 100);
+  PT(Connection) rend = _qManager->open_TCP_server_rendezvous(4242, 100);
 
   if (rend.is_null()) {
     nout << "Port opening failed!\n";
@@ -197,7 +224,7 @@ listen() {
   nout << "Server opened on port 4242, waiting for requests...\n";
 
   // Add this connection to the listeners list
-  this->qListener->add_connection(rend);
+  _qListener->add_connection(rend);
 
   // Main loop.  Keep polling for connections, but don't eat up all the CPU.
   while (true) {

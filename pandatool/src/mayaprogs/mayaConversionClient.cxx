@@ -13,6 +13,7 @@
 
 #include "mayaConversionClient.h"
 #include "mayaConversionServer.h"
+#include "datagramIterator.h"
 
 /**
  * Initializes the Maya conversion client.
@@ -92,8 +93,45 @@ queue(Filename working_directory, int argc, char *argv[], MayaConversionServer::
   // Lastly, add the conversion type
   datagram.add_uint8(conversion_type);
 
-  // Send it and close the connection
-  return _cWriter->send(datagram, _conn) && _conn->flush();
+  // Send the conversion request
+  if (!_cWriter->send(datagram, _conn) || !_conn->flush()) {
+    nout << "Failed to send workload to server process.\n";
+    return false;
+  }
+
+  // Wait for a response
+  while (_conn->get_socket()->Active() && !_qReader->data_available()) {
+    _qReader->poll();
+  }
+
+  if (!_qReader->data_available()) {
+    // No response has been given by the server.
+    nout << "No response has been given by the conversion server.\n";
+    return false;
+  }
+
+  NetDatagram response;
+
+  // Let's read the response now!
+  if (!_qReader->get_data(response)) {
+    nout << "The conversion response could not be read.\n";
+    return false;
+  }
+
+  // Iterate through the response.
+  DatagramIterator response_data(response);
+
+  // Read the first and only argument.
+  // Did our conversion request succeed?
+  bool converted = response_data.get_bool();
+
+  if (!converted) {
+    nout << "The server reported that the conversion has failed.\n"
+         << "Please check the server logs for further information.\n";
+    return false;
+  }
+
+  return true;
 }
 
 /**
@@ -145,10 +183,10 @@ main(int argc, char *argv[], MayaConversionServer::ConversionType conversion_typ
   }
 
   if (!queue(ExecutionEnvironment::get_cwd(), argc, argv, conversion_type)) {
-    nout << "Failed to send workload to server process.\n";
     return 1;
   }
 
+  nout << "Conversion successful!\n";
   close();
   return 0;
 }

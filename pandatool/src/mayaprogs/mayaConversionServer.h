@@ -17,6 +17,7 @@
 #include "queuedConnectionManager.h"
 #include "queuedConnectionListener.h"
 #include "queuedConnectionReader.h"
+#include "connectionWriter.h"
 
 /**
  * The Maya conversion server listens for incoming requests to
@@ -48,9 +49,10 @@ protected:
   typedef pset< PT(Connection) > Clients;
   Clients _clients;
 
-  QueuedConnectionManager *qManager;
-  QueuedConnectionListener *qListener;
-  QueuedConnectionReader *qReader;
+  QueuedConnectionManager *_qManager;
+  QueuedConnectionListener *_qListener;
+  QueuedConnectionReader *_qReader;
+  ConnectionWriter *_cWriter;
 };
 
 #endif
