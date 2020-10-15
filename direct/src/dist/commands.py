@@ -1369,7 +1369,6 @@ class bdist_apps(setuptools.Command):
             for i in apps
         ]
 
-        fullname = self.distribution.get_fullname()
         shortname = self.distribution.get_name()
 
         # Create the .nsi installer script
@@ -1379,7 +1378,7 @@ class bdist_apps(setuptools.Command):
 
         # Some global info
         nsi.write('Name "%s"\n' % shortname)
-        nsi.write('OutFile "%s"\n' % (fullname+'.exe'))
+        nsi.write('OutFile "%s"\n' % os.path.join(self.dist_dir, basename+'.exe'))
         if is_64bit:
             nsi.write('InstallDir "$PROGRAMFILES64\\%s"\n' % shortname)
         else:
