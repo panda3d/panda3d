@@ -1439,7 +1439,7 @@ def CompileCxx(obj,src,opts):
                 #cmd += ' -fpic
                 pass
             # try pic for everything with clang 10+
-            cmd += ' -fpic
+            cmd += ' -fpic'
 
 
         cmd = cmd.rstrip()
