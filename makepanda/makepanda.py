@@ -1436,8 +1436,10 @@ def CompileCxx(obj,src,opts):
             cmd = cmd.replace(' -fpic','')
             if PkgSkip("PYTHON"):
                 # dlopen ffi support
-                cmd += ' -fPIC'
-
+                #cmd += ' -fpic
+                pass
+            # try pic for everything with clang 10+
+            cmd += ' -fpic
 
 
         cmd = cmd.rstrip()
@@ -1877,7 +1879,7 @@ def CompileLink(dll, obj, opts):
             cmd += ' -lc -lm'
 
         elif GetTarget() == 'emscripten':
-            cmd += " -s WARN_ON_UNDEFINED_SYMBOLS=1"
+            cmd += "-fPIC -s WARN_ON_UNDEFINED_SYMBOLS=1"
             if GetOrigExt(dll) == ".exe":
                 cmd += " --memory-init-file 0"
 
