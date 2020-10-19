@@ -629,10 +629,36 @@ open_window() {
   if (_properties.get_fullscreen()) {
     // Change the display mode.
 #if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
-    CGDisplayModeRef mode;
+    CFMutableArrayRef modes;
+
+    modes = find_display_modes(_properties.get_x_size(),
+                               _properties.get_y_size());
+
+    if (CFArrayGetCount(modes) > 0) {
+      bool switched = false;
+      for (CFIndex i = 0; i < CFArrayGetCount(modes); i++) {
+        CGDisplayModeRef mode = (CGDisplayModeRef) CFArrayGetValueAtIndex(modes, i);
+        if (do_switch_fullscreen(mode)) {
+          switched = true;
+          break;
+        }
+      }
+      CFRelease(modes);
+
+      if (!switched) {
+        cocoadisplay_cat.error()
+          << "Failed to change display mode.\n";
+        return false;
+      }
+
+    } else {
+      cocoadisplay_cat.error()
+        << "Could not find a suitable display mode!\n";
+      CFRelease(modes);
+      return false;
+    }
 #else
     CFDictionaryRef mode;
-#endif
 
     mode = find_display_mode(_properties.get_x_size(),
                              _properties.get_y_size());
@@ -647,6 +673,7 @@ open_window() {
         << "Failed to change display mode.\n";
       return false;
     }
+#endif
   }
 
   // Make the context current.
@@ -793,11 +820,52 @@ set_properties_now(WindowProperties &properties) {
         }
 
 #if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
-        CGDisplayModeRef mode;
+        CFMutableArrayRef modes;
+
+        modes = find_display_modes(width, height);
+
+        if (CFArrayGetCount(modes) > 0) {
+          bool switched = false;
+          for (CFIndex i = 0; i < CFArrayGetCount(modes); i++) {
+            CGDisplayModeRef mode = (CGDisplayModeRef) CFArrayGetValueAtIndex(modes, i);
+            if (do_switch_fullscreen(mode)) {
+              switched = true;
+              break;
+            }
+          }
+
+          if (switched) {
+            if (_window != nil) {
+              // For some reason, setting the style mask makes it give up its
+              // first-responder status.
+              if ([_window respondsToSelector:@selector(setStyleMask:)]) {
+                [_window setStyleMask:NSBorderlessWindowMask];
+              }
+              [_window makeFirstResponder:_view];
+              [_window setLevel:NSMainMenuWindowLevel+1];
+              [_window makeKeyAndOrderFront:nil];
+            }
+
+            // We've already set the size property this way; clear it.
+            properties.clear_size();
+            _properties.set_size(width, height);
+            properties.clear_origin();
+            _properties.set_origin(0, 0);
+            properties.clear_fullscreen();
+            _properties.set_fullscreen(true);
+
+          } else {
+            cocoadisplay_cat.error()
+              << "Failed to change display mode.\n";
+          }
+        } else {
+          cocoadisplay_cat.error()
+            << "Could not find a suitable display mode with size " << width
+            << "x" << height << "!\n";
+        }
+        CFRelease(modes);
 #else
         CFDictionaryRef mode;
-#endif
-
         mode = find_display_mode(width, height);
 
         if (mode == NULL) {
@@ -829,6 +897,7 @@ set_properties_now(WindowProperties &properties) {
           cocoadisplay_cat.error()
             << "Failed to change display mode.\n";
         }
+#endif
 
       } else {
         do_switch_fullscreen(NULL);
@@ -875,11 +944,38 @@ set_properties_now(WindowProperties &properties) {
 
     } else {
 #if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
-      CGDisplayModeRef mode = find_display_mode(width, height);
+    CFMutableArrayRef modes;
+
+    modes = find_display_modes(width, height);
+
+    if (CFArrayGetCount(modes) > 0) {
+      bool switched = false;
+      for (CFIndex i = 0; i < CFArrayGetCount(modes); i++) {
+        CGDisplayModeRef mode = (CGDisplayModeRef) CFArrayGetValueAtIndex(modes, i);
+        if (do_switch_fullscreen(mode)) {
+          switched = true;
+          break;
+        }
+      }
+
+      if (switched) {
+        // Yay!  Our resolution has changed.
+        _properties.set_size(width, height);
+        properties.clear_size();
+      } else {
+        cocoadisplay_cat.error()
+          << "Failed to change display mode.\n";
+      }
+
+    } else {
+      cocoadisplay_cat.error()
+        << "Could not find a suitable display mode with size " << width
+        << "x" << height << "!\n";
+    }
+    CFRelease(modes);
+
 #else
       CFDictionaryRef mode = find_display_mode(width, height);
-#endif
-
       if (mode == NULL) {
         cocoadisplay_cat.error()
           << "Could not find a suitable display mode with size " << width
@@ -894,6 +990,8 @@ set_properties_now(WindowProperties &properties) {
         cocoadisplay_cat.error()
           << "Failed to change display mode.\n";
       }
+#endif
+
     }
   }
 
@@ -1105,8 +1203,8 @@ set_properties_now(WindowProperties &properties) {
  * NULL if none was found.
  */
 #if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
-CGDisplayModeRef CocoaGraphicsWindow::
-find_display_mode(int width, int height) {
+CFMutableArrayRef CocoaGraphicsWindow::
+find_display_modes(int width, int height) {
   CFDictionaryRef options = NULL;
   // On macOS 10.15+ (Catalina), we want to select the display mode with the
   // samescaling factor as the current view to avoid cropping or scaling issues.
@@ -1126,6 +1224,9 @@ find_display_mode(int width, int height) {
                                  &kCFTypeDictionaryValueCallBacks);
   }
 #endif
+  CFMutableArrayRef valid_modes;
+  valid_modes = CFArrayCreateMutable(NULL, 0, &kCFTypeArrayCallBacks);
+
   CFArrayRef modes = CGDisplayCopyAllDisplayModes(_display, options);
   if (options != NULL) {
     CFRelease(options);
@@ -1145,7 +1246,8 @@ find_display_mode(int width, int height) {
   if (floor(NSAppKitVersionNumber) <= NSAppKitVersionNumber10_14 &&
       CGDisplayModeGetWidth(mode) == width &&
       CGDisplayModeGetHeight(mode) == height) {
-    return mode;
+    CFArrayAppendValue(valid_modes, mode);
+    return valid_modes;
   }
 
   current_pixel_encoding = CGDisplayModeCopyPixelEncoding(mode);
@@ -1176,17 +1278,14 @@ find_display_mode(int width, int height) {
 #endif
         CFStringCompare(pixel_encoding, current_pixel_encoding, 0) == kCFCompareEqualTo) {
 
-      CFRetain(mode);
-      CFRelease(pixel_encoding);
-      CFRelease(current_pixel_encoding);
-      CFRelease(modes);
-      return mode;
+      CFArrayAppendValue(valid_modes, mode);
     }
+    CFRelease(pixel_encoding);
   }
 
   CFRelease(current_pixel_encoding);
   CFRelease(modes);
-  return NULL;
+  return valid_modes;
 }
 #else // Version for pre-10.6.
 CFDictionaryRef CocoaGraphicsWindow::
