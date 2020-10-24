@@ -103,6 +103,9 @@ FMODAudioSound(AudioManager *manager, VirtualFile *file, bool positional) {
       _is_midi = true;
       // Need this flag so we can correctly query the length of MIDIs.
       flags |= FMOD_ACCURATETIME;
+    } else if (ext == "mp3") {
+      // Need this flag so we can correctly query the length of MP3s.
+      flags |= FMOD_ACCURATETIME;
     }
 
     const char *name_or_data = _file_name.c_str();
