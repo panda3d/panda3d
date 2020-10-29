@@ -291,8 +291,6 @@ protected:
 
   PT(Shader) _current_shader;
   DXShaderContext9 *_current_shader_context;
-  PT(Shader) _vertex_array_shader;
-  DXShaderContext9 *_vertex_array_shader_context;
   PT(Shader) _texture_binding_shader;
   DXShaderContext9 *_texture_binding_shader_context;
 

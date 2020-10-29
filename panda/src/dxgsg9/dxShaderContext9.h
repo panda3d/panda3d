@@ -62,31 +62,39 @@ public:
   DXShaderContext9(Shader *s, GSG *gsg);
   ~DXShaderContext9();
 
+  bool compile_module(const ShaderModule *module, DWORD *&data);
+  bool query_constants(const ShaderModule *module, DWORD *data);
+
+  INLINE bool uses_vertex_color();
+
   INLINE bool valid(GSG *gsg);
   bool bind(GSG *gsg);
   void unbind(GSG *gsg);
   void issue_parameters(GSG *gsg, int altered);
   void issue_transform(GSG *gsg);
-  void disable_shader_vertex_arrays(GSG *gsg);
-  bool update_shader_vertex_arrays(DXShaderContext9 *prev, GSG *gsg,
-                                   bool force);
   void disable_shader_texture_bindings(GSG *gsg);
   void update_shader_texture_bindings(DXShaderContext9 *prev, GSG *gsg);
 
-  class VertexElementArray* _vertex_element_array;
-  LPDIRECT3DVERTEXDECLARATION9 _vertex_declaration;
-
-  int _num_bound_streams;
-
-  // FOR DEBUGGING
-  std::string _name;
+  LPDIRECT3DVERTEXDECLARATION9 get_vertex_declaration(GSG *gsg, const GeomVertexFormat *format);
 
 private:
-#ifdef HAVE_CG
-  CGprogram _cg_program;
-  pvector <CGparameter> _cg_parameter_map;
-#endif
+  IDirect3DVertexShader9 *_vertex_shader = nullptr;
+  IDirect3DPixelShader9 *_pixel_shader = nullptr;
 
+  struct ConstantRegister {
+    int vreg = -1;
+    int freg = -1;
+    D3DXREGISTER_SET set;
+    UINT count = 0;
+  };
+
+  bool _uses_vertex_color = false;
+  int _half_pixel_register = -1;
+  pvector<ConstantRegister> _register_map;
+
+  pmap<CPT(GeomVertexFormat), LPDIRECT3DVERTEXDECLARATION9> _vertex_declarations;
+
+  int _frame_number = -1;
   LMatrix4 *_mat_part_cache = nullptr;
 
 private:

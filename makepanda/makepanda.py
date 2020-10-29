@@ -760,6 +760,11 @@ if (COMPILER == "MSVC"):
     LibName("SPIRV-CROSS-GLSL", GetThirdpartyDir() + "spirv-cross/lib/spirv-cross-core.lib")
     LibName("SPIRV-CROSS-GLSL", GetThirdpartyDir() + "spirv-cross/lib/spirv-cross-glsl.lib")
 
+    IncDirectory("SPIRV-CROSS-HLSL", GetThirdpartyDir() + "spirv-cross/include")
+    LibName("SPIRV-CROSS-HLSL", GetThirdpartyDir() + "spirv-cross/lib/spirv-cross-core.lib")
+    LibName("SPIRV-CROSS-HLSL", GetThirdpartyDir() + "spirv-cross/lib/spirv-cross-hlsl.lib")
+    LibName("SPIRV-CROSS-HLSL", GetThirdpartyDir() + "spirv-cross/lib/spirv-cross-glsl.lib") # sic
+
 if (COMPILER=="GCC"):
     if GetTarget() != "darwin":
         PkgDisable("COCOA")
@@ -818,6 +823,7 @@ if (COMPILER=="GCC"):
     SmartPkgEnable("GLSLANG",   "",          ("glslang", "SPIRV", "OSDependent", "OGLCompiler", "HLSL"), "glslang/Public/ShaderLang.h")
     SmartPkgEnable("SPIRV-TOOLS", "",        ("SPIRV-Tools", "SPIRV-Tools-opt"), "spirv-tools/optimizer.hpp")
     SmartPkgEnable("SPIRV-CROSS-GLSL", "",   ("spirv-cross-core", "spirv-cross-glsl"), "spirv_cross/spirv_cross.hpp")
+    SmartPkgEnable("SPIRV-CROSS-HLSL", "",   ("spirv-cross-core", "spirv-cross-hlsl"), "spirv_cross/spirv_cross.hpp")
 
     # Copy freetype libraries to be specified after harfbuzz libraries as well,
     # because there's a circular dependency between the two libraries.
@@ -898,6 +904,8 @@ if (COMPILER=="GCC"):
 
         LibName("SPIRV-CROSS-GLSL", "-Wl,--exclude-libs,libspirv-cross-core.a")
         LibName("SPIRV-CROSS-GLSL", "-Wl,--exclude-libs,libspirv-cross-glsl.a")
+        LibName("SPIRV-CROSS-HLSL", "-Wl,--exclude-libs,libspirv-cross-core.a")
+        LibName("SPIRV-CROSS-HLSL", "-Wl,--exclude-libs,libspirv-cross-hlsl.a")
 
     if PkgSkip("FFMPEG") or GetTarget() == "darwin":
         cv_lib = ChooseLib(("opencv_core", "cv"), "OPENCV")
@@ -4359,7 +4367,7 @@ if (GetTarget() == 'windows'):
 #
 
 if GetTarget() == 'windows' and PkgSkip("DX9")==0:
-  OPTS=['DIR:panda/src/dxgsg9', 'BUILDING:PANDADX', 'DX9',  'NVIDIACG', 'CGDX9']
+  OPTS=['DIR:panda/src/dxgsg9', 'BUILDING:PANDADX', 'DX9',  'NVIDIACG', 'CGDX9', 'SPIRV-CROSS-HLSL']
   TargetAdd('p3dxgsg9_dxGraphicsStateGuardian9.obj', opts=OPTS, input='dxGraphicsStateGuardian9.cxx')
   TargetAdd('p3dxgsg9_composite1.obj', opts=OPTS, input='p3dxgsg9_composite1.cxx')
   OPTS=['DIR:panda/metalibs/pandadx9', 'BUILDING:PANDADX', 'DX9',  'NVIDIACG', 'CGDX9']
@@ -4369,7 +4377,7 @@ if GetTarget() == 'windows' and PkgSkip("DX9")==0:
   TargetAdd('libpandadx9.dll', input='p3dxgsg9_composite1.obj')
   TargetAdd('libpandadx9.dll', input='libp3windisplay.dll')
   TargetAdd('libpandadx9.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandadx9.dll', opts=['MODULE', 'ADVAPI', 'WINGDI', 'WINKERNEL', 'WINUSER', 'WINMM', 'DX9',  'NVIDIACG', 'CGDX9'])
+  TargetAdd('libpandadx9.dll', opts=['MODULE', 'ADVAPI', 'WINGDI', 'WINKERNEL', 'WINUSER', 'WINMM', 'DX9',  'NVIDIACG', 'CGDX9', 'SPIRV-CROSS-HLSL'])
 
 #
 # DIRECTORY: panda/src/egg/

@@ -410,31 +410,8 @@ ShaderContext *DXGraphicsStateGuardian9::
 prepare_shader(Shader *se) {
   PStatTimer timer(_prepare_shader_pcollector);
 
-  switch (se->get_language()) {
-  case Shader::SL_GLSL:
-    dxgsg9_cat.error()
-      << "Tried to load GLSL shader, but GLSL shaders not supported by Direct3D 9.\n";
-    return nullptr;
-
-  case Shader::SL_Cg:
-#ifdef HAVE_CG
-    if (_supports_basic_shaders) {
-      return new DXShaderContext9(se, this);
-    } else {
-      dxgsg9_cat.error()
-        << "Tried to load Cg shader, but basic shaders not supported.\n";
-      return nullptr;
-    }
-#else
-    dxgsg9_cat.error()
-      << "Tried to load Cg shader, but Cg support not compiled in.\n";
-    return nullptr;
-#endif
-
-  default:
-    dxgsg9_cat.error()
-      << "Tried to load shader with unsupported shader language!\n";
-    return nullptr;
+  if (_supports_basic_shaders) {
+    return new DXShaderContext9(se, this);
   }
 
   return nullptr;
@@ -1088,11 +1065,13 @@ void DXGraphicsStateGuardian9::
 end_scene() {
   GraphicsStateGuardian::end_scene();
 
-  if (_vertex_array_shader_context != 0) {
-    _vertex_array_shader_context->disable_shader_vertex_arrays(this);
-    _vertex_array_shader = nullptr;
-    _vertex_array_shader_context = nullptr;
+  // Unbind streams.
+  _d3d_device->SetVertexDeclaration(nullptr);
+  for (int array_index = 0; array_index < _num_bound_streams; ++array_index) {
+    _d3d_device->SetStreamSource(array_index, nullptr, 0, 0);
   }
+  _num_bound_streams = 0;
+
   if (_texture_binding_shader_context != 0) {
     _texture_binding_shader_context->disable_shader_texture_bindings(this);
     _texture_binding_shader = nullptr;
@@ -1187,6 +1166,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   nassertr(_data_reader != nullptr, false);
 
   const GeomVertexFormat *format = _data_reader->get_format();
+  LPDIRECT3DDEVICE9 device = _d3d_device;
 
   const GeomVertexAnimationSpec &animation =
     data_reader->get_format()->get_animation();
@@ -1225,7 +1205,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
         LMatrix4 mat;
         table->get_transform(i)->mult_matrix(mat, _internal_transform->get_mat());
         const D3DMATRIX *d3d_mat = (const D3DMATRIX *)mat.get_data();
-        _d3d_device->SetTransform(D3DTS_WORLDMATRIX(i), d3d_mat);
+        device->SetTransform(D3DTS_WORLDMATRIX(i), d3d_mat);
       }
 
       // Setting the first animation matrix steps on the world matrix, so we
@@ -1244,7 +1224,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
 
     if (_transform_stale && !_data_reader->is_vertex_transformed()) {
       const D3DMATRIX *d3d_mat = (const D3DMATRIX *)_internal_transform->get_mat().get_data();
-      _d3d_device->SetTransform(D3DTS_WORLD, d3d_mat);
+      device->SetTransform(D3DTS_WORLD, d3d_mat);
       _transform_stale = false;
     }
   }
@@ -1257,7 +1237,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     // It's tempting just to use the D3DFVF_XYZRHW specification on these
     // vertices, but that turns out to be a bigger hammer than we want: that
     // also prevents lighting calculations and user clip planes.
-    _d3d_device->SetTransform(D3DTS_WORLD, &_d3d_ident_mat);
+    device->SetTransform(D3DTS_WORLD, &_d3d_ident_mat);
     static const LMatrix4f rescale_mat
       (1, 0, 0, 0,
        0, 1, 0, 0,
@@ -1265,34 +1245,70 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
        0, 0, 0.5, 1);
     _transform_stale = true;
 
-    _d3d_device->SetTransform(D3DTS_PROJECTION, (const D3DMATRIX *)rescale_mat.get_data());
+    device->SetTransform(D3DTS_PROJECTION, (const D3DMATRIX *)rescale_mat.get_data());
   }
 
-  if (_current_shader_context == 0 /*|| !_current_shader_context->uses_custom_vertex_arrays()*/) {
-    // No shader, or a non-Cg shader.
-    if (_vertex_array_shader_context != 0) {
-      _vertex_array_shader_context->disable_shader_vertex_arrays(this);
-    }
+  if (_current_shader_context == nullptr) {
+    // No shader.
+    device->SetVertexDeclaration(nullptr);
     if (!update_standard_vertex_arrays(force)) {
       return false;
     }
   } else {
-    // Cg shader.
-    if (_vertex_array_shader_context == 0) {
-      disable_standard_vertex_arrays();
-      if (!_current_shader_context->update_shader_vertex_arrays(nullptr, this, force)) {
-        return false;
+    // Set the vertex declaration for the shader.
+    LPDIRECT3DVERTEXDECLARATION9 decl =
+      _current_shader_context->get_vertex_declaration(this, format);
+    if (decl == nullptr) {
+      return false;
+    }
+
+    HRESULT hr = device->SetVertexDeclaration(decl);
+    if (FAILED(hr)) {
+      dxgsg9_cat.error()
+        << "SetVertexDeclaration failed: " << D3DERRORSTRING(hr);
+      return false;
+    }
+
+    // Prepare and bind the vertex buffers.
+    size_t num_arrays = _data_reader->get_num_arrays();
+    size_t i;
+    for (i = 0; i < num_arrays; ++i) {
+      const GeomVertexArrayDataHandle *array_reader = _data_reader->get_array_reader(i);
+
+      // Get the vertex buffer for this array.
+      DXVertexBufferContext9 *dvbc;
+      if (!setup_array_data(dvbc, array_reader, force)) {
+        dxgsg9_cat.error() << "Unable to setup vertex buffer for array " << i << "\n";
+        _d3d_device->SetStreamSource(i, nullptr, 0, 0);
+        continue;
       }
-    } else {
-      if (!_current_shader_context->
-          update_shader_vertex_arrays(_vertex_array_shader_context, this, force)) {
-        return false;
+
+      // Bind this array as the data source for the corresponding stream.
+      const GeomVertexArrayFormat *array_format = array_reader->get_array_format();
+      hr = device->SetStreamSource(i, dvbc->_vbuffer, 0, array_format->get_stride());
+      if (FAILED(hr)) {
+        dxgsg9_cat.error() << "SetStreamSource failed" << D3DERRORSTRING(hr);
       }
     }
-  }
 
-  _vertex_array_shader = _current_shader;
-  _vertex_array_shader_context = _current_shader_context;
+    if (format->get_color_array_index() < 0 && _current_shader_context->uses_vertex_color()) {
+      // Has no vertex colors, so bind a vertex buffer containing a single
+      // white color.
+      LPDIRECT3DVERTEXBUFFER9 vbuffer = get_white_vbuffer();
+      hr = device->SetStreamSource(i, vbuffer, 0, 0);
+      if (FAILED(hr)) {
+        dxgsg9_cat.error() << "SetStreamSource failed" << D3DERRORSTRING(hr);
+      }
+      ++i;
+    }
+
+    // Unbind any other streams.
+    for (; i < _num_bound_streams; ++i) {
+      _d3d_device->SetStreamSource(i, nullptr, 0, 0);
+    }
+
+    _num_bound_streams = num_arrays;
+  }
 
   return true;
 }
@@ -1309,24 +1325,24 @@ update_standard_vertex_arrays(bool force) {
   int fvf = 0;
   HRESULT hr;
 
-  int number_of_arrays = _data_reader->get_num_arrays();
-  for ( int array_index = 0; array_index < number_of_arrays; ++array_index ) {
-    const GeomVertexArrayDataHandle* array_reader = _data_reader->get_array_reader( array_index );
-    if ( array_reader == nullptr ) {
+  int num_arrays = _data_reader->get_num_arrays();
+  for (int array_index = 0; array_index < num_arrays; ++array_index) {
+    const GeomVertexArrayDataHandle *array_reader = _data_reader->get_array_reader(array_index);
+    if (array_reader == nullptr) {
       dxgsg9_cat.error() << "Unable to get reader for array " << array_index << "\n";
       return false;
     }
 
     // Get the vertex buffer for this array.
-    DXVertexBufferContext9* dvbc;
+    DXVertexBufferContext9 *dvbc;
     if (!setup_array_data(dvbc, array_reader, force)) {
       dxgsg9_cat.error() << "Unable to setup vertex buffer for array " << array_index << "\n";
       return false;
     }
 
     // Bind this array as the data source for the corresponding stream.
-    const GeomVertexArrayFormat* array_format = array_reader->get_array_format();
-    hr = _d3d_device->SetStreamSource( array_index, dvbc->_vbuffer, 0, array_format->get_stride() );
+    const GeomVertexArrayFormat *array_format = array_reader->get_array_format();
+    hr = _d3d_device->SetStreamSource(array_index, dvbc->_vbuffer, 0, array_format->get_stride());
     if (FAILED(hr)) {
       dxgsg9_cat.error() << "SetStreamSource failed" << D3DERRORSTRING(hr);
       return false;
@@ -1336,7 +1352,13 @@ update_standard_vertex_arrays(bool force) {
     fvf |= dvbc->_fvf;
   }
 
-  hr = _d3d_device->SetFVF( fvf );
+  for (int array_index = num_arrays; array_index < _num_bound_streams; ++array_index) {
+    _d3d_device->SetStreamSource(array_index, nullptr, 0, 0);
+  }
+
+  _num_bound_streams = num_arrays;
+
+  hr = _d3d_device->SetFVF(fvf);
   if (FAILED(hr)) {
     dxgsg9_cat.error() << "SetFVF failed" << D3DERRORSTRING(hr);
     return false;
@@ -1353,9 +1375,8 @@ update_standard_vertex_arrays(bool force) {
  */
 void DXGraphicsStateGuardian9::
 disable_standard_vertex_arrays() {
-  for ( int array_index = 0; array_index < _num_bound_streams; ++array_index )
-  {
-    _d3d_device->SetStreamSource( array_index, nullptr, 0, 0 );
+  for (int array_index = 0; array_index < _num_bound_streams; ++array_index) {
+    _d3d_device->SetStreamSource(array_index, nullptr, 0, 0);
   }
   _num_bound_streams = 0;
 }
@@ -2274,6 +2295,7 @@ reset() {
   _pixel_shader_version_minor = D3DSHADER_VERSION_MINOR (d3d_caps.PixelShaderVersion);
 
   _supports_hlsl = (_pixel_shader_version_major != 0);
+  _supports_basic_shaders = _supports_hlsl;
 
   _vertex_shader_profile = (char *) D3DXGetVertexShaderProfile (_d3d_device);
   _pixel_shader_profile = (char *) D3DXGetPixelShaderProfile (_d3d_device);
@@ -2711,8 +2733,6 @@ reset() {
 
   _current_shader = nullptr;
   _current_shader_context = nullptr;
-  _vertex_array_shader = nullptr;
-  _vertex_array_shader_context = nullptr;
   _texture_binding_shader = nullptr;
   _texture_binding_shader_context = nullptr;
 
