@@ -903,7 +903,7 @@ make_block(const ShaderType::Struct *block_type, const pvector<int> &member_loca
             record_type_pointer(type_pointer_id, storage_class, type_id);
 
             it = _instructions.insert(it, spv::OpTypePointer,
-              {type_pointer_id, storage_class, type_id});
+              {type_pointer_id, (uint32_t)storage_class, type_id});
             ++it;
           }
         }
@@ -1007,7 +1007,7 @@ make_block(const ShaderType::Struct *block_type, const pvector<int> &member_loca
   // Insert all the type pointers for the access chains.
   for (uint32_t id : insert_type_pointers) {
     it = _instructions.insert(it, spv::OpTypePointer,
-      {id, _defs[id]._storage_class, _defs[id]._type_id});
+      {id, (uint32_t)_defs[id]._storage_class, _defs[id]._type_id});
     ++it;
   }
 
@@ -1045,7 +1045,7 @@ define_type_pointer(const ShaderType *type, spv::StorageClass storage_class) {
 
   record_type_pointer(type_pointer_id, storage_class, type_id);
   _instructions.insert(it, spv::OpTypePointer,
-    {type_pointer_id, storage_class, type_id});
+    {type_pointer_id, (uint32_t)storage_class, type_id});
 
   // Depending on the storage class, we may need to make sure it is laid out.
   if (storage_class == spv::StorageClassStorageBuffer ||
@@ -1093,7 +1093,7 @@ r_define_variable(InstructionIterator &it, const ShaderType *type, spv::StorageC
   it = _instructions.insert(it, spv::OpVariable, {
     type_pointer_id,
     variable_id,
-    storage_class,
+    (uint32_t)storage_class,
   });
   ++it;
 
@@ -1134,7 +1134,7 @@ r_define_type_pointer(InstructionIterator &it, const ShaderType *type, spv::Stor
   record_type_pointer(type_pointer_id, storage_class, type_id);
 
   _instructions.insert(it, spv::OpTypePointer,
-    {type_pointer_id, storage_class, type_id});
+    {type_pointer_id, (uint32_t)storage_class, type_id});
   ++it;
 
   return type_pointer_id;

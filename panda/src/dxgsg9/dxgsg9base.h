@@ -58,7 +58,6 @@
 
 #define D3D_MAXTEXTURESTAGES 8
 
-typedef enum {VertexShader,PixelShader} ShaderType;
 typedef DWORD DXShaderHandle;
 
 #define ISPOW2(X) (((X) & ((X)-1))==0)
