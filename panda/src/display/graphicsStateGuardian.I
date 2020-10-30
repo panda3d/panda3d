@@ -738,6 +738,14 @@ set_shader_model(ShaderModel shader_model) {
 }
 
 /**
+ * Returns a bitmask of the supported shader capabilities.
+ */
+INLINE int GraphicsStateGuardian::
+get_supported_shader_capabilities() const {
+  return _supported_shader_caps;
+}
+
+/**
  * Returns true if this particular GSG can implement (or would prefer to
  * implement) set color and/or color scale using materials and/or ambient
  * lights, or false if we need to actually munge the color.

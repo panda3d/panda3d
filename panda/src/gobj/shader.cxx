@@ -2805,6 +2805,23 @@ prepare_now(PreparedGraphicsObjects *prepared_objects,
     return (*ci).second;
   }
 
+  int supported_caps = gsg->get_supported_shader_capabilities();
+  int unsupported_caps = _used_caps & ~supported_caps;
+  if (unsupported_caps != 0) {
+    std::ostream &out = shader_cat.error()
+      << "Cannot load shader because the graphics back-end does not support ";
+
+    if (supported_caps == 0) {
+      out << "shaders.";
+    } else {
+      out << "these capabilities: ";
+      ShaderModule::output_capabilities(out, unsupported_caps);
+    }
+    out << std::endl;
+
+    return nullptr;
+  }
+
   ShaderContext *tc = prepared_objects->prepare_shader_now(this, gsg);
   _contexts[prepared_objects] = tc;
 

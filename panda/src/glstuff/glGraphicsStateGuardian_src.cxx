@@ -6231,16 +6231,6 @@ prepare_shader(Shader *se) {
 
 #ifndef OPENGLES_1
   if (_supports_glsl) {
-    int unsupported_caps = se->get_used_capabilities() & ~_supported_shader_caps;
-    if (unsupported_caps != 0) {
-      std::ostream &out = GLCAT.error()
-        << "Cannot load shader because the graphics back-end does not support "
-           "these capabilities: ";
-
-      ShaderModule::output_capabilities(out, unsupported_caps);
-      out << std::endl;
-    }
-
     push_group_marker(std::string("Prepare Shader ") + se->get_debug_name());
     ShaderContext *result = new CLP(ShaderContext)(this, se);
     pop_group_marker();

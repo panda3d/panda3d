@@ -227,6 +227,9 @@ PUBLISHED:
   INLINE void set_shader_model(ShaderModel shader_model);
   MAKE_PROPERTY(shader_model, get_shader_model, set_shader_model);
 
+  INLINE int get_supported_shader_capabilities() const;
+  MAKE_PROPERTY(supported_shader_capabilities, get_supported_shader_capabilities);
+
   virtual int get_supported_geom_rendering() const;
 
   INLINE bool get_color_scale_via_lighting() const;
