@@ -38,14 +38,6 @@
 #include "shaderModule.h"
 #include "copyOnWritePointer.h"
 
-#ifdef HAVE_CG
-// I don't want to include the Cg header file into panda as a whole.  Instead,
-// I'll just excerpt some opaque declarations.
-typedef struct _CGcontext   *CGcontext;
-typedef struct _CGprogram   *CGprogram;
-typedef struct _CGparameter *CGparameter;
-#endif
-
 class BamCacheRecord;
 class ShaderModuleGlsl;
 class ShaderCompiler;
@@ -93,6 +85,10 @@ PUBLISHED:
     bit_AutoShaderShadow = 4, // bit for AS_shadow
   };
 
+private:
+  Shader(ShaderLanguage lang);
+
+PUBLISHED:
   static PT(Shader) load(const Filename &file, ShaderLanguage lang = SL_none);
   static PT(Shader) make(std::string body, ShaderLanguage lang = SL_none);
   static PT(Shader) load(ShaderLanguage lang,
@@ -415,30 +411,6 @@ public:
     ScalarType        _type;
   };
 
-  class EXPCL_PANDA_GOBJ ShaderCaps {
-  public:
-    void clear();
-    INLINE bool operator == (const ShaderCaps &other) const;
-    INLINE ShaderCaps();
-
-  public:
-    bool _supports_glsl;
-
-#ifdef HAVE_CG
-    int _active_vprofile;
-    int _active_fprofile;
-    int _active_gprofile;
-    int _active_tprofile;
-
-    int _ultimate_vprofile;
-    int _ultimate_fprofile;
-    int _ultimate_gprofile;
-    int _ultimate_tprofile;
-
-    pset <ShaderBug> _bug_list;
-#endif
-  };
-
   class ShaderFile : public ReferenceCount {
   public:
     INLINE ShaderFile() {};
@@ -483,41 +455,8 @@ public:
   void set_compiled(unsigned int format, const char *data, size_t length);
   bool get_compiled(unsigned int &format, std::string &binary) const;
 
-  static void set_default_caps(const ShaderCaps &caps);
-
   INLINE PStatCollector &get_prepare_shader_pcollector();
   INLINE const std::string &get_debug_name() const;
-
-private:
-#ifdef HAVE_CG
-  ScalarType cg_scalar_type(int type);
-  const ::ShaderType *cg_parameter_type(CGparameter p);
-
-  CGprogram cg_compile_entry_point(const char *entry, const ShaderCaps &caps,
-                                   CGcontext context, ShaderType type);
-
-  bool cg_analyze_entry_point(CGprogram prog, ShaderType type);
-
-  bool cg_analyze_shader(const ShaderCaps &caps);
-  bool cg_compile_shader(const ShaderCaps &caps, CGcontext context);
-  void cg_release_resources();
-  void cg_report_errors();
-
-  ShaderCaps _cg_last_caps;
-  static CGcontext  _cg_context;
-  CGprogram  _cg_vprogram;
-  CGprogram  _cg_fprogram;
-  CGprogram  _cg_gprogram;
-
-  int _cg_vprofile;
-  int _cg_fprofile;
-  int _cg_gprofile;
-
-public:
-  bool cg_compile_for(const ShaderCaps &caps, CGcontext context,
-                      CGprogram &combined_program, pvector<CGparameter> &map);
-
-#endif
 
 public:
   pvector<ShaderPtrSpec> _ptr_spec;
@@ -551,7 +490,6 @@ protected:
   unsigned int _compiled_format;
   std::string _compiled_binary;
 
-  static ShaderCaps _default_caps;
   static int _shaders_generated;
 
   typedef pmap<ShaderFile, PT(Shader)> ShaderTable;
@@ -570,8 +508,6 @@ protected:
 
 private:
   void clear_prepared(PreparedGraphicsObjects *prepared_objects);
-
-  Shader(ShaderLanguage lang);
 
   bool read(const ShaderFile &sfile, BamCacheRecord *record = nullptr);
   bool load(const ShaderFile &sbody, BamCacheRecord *record = nullptr);

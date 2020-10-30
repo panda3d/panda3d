@@ -65,9 +65,6 @@
 #include "wdxGraphicsBuffer9.h"
 #include "config_pgraph.h"
 #include "shaderGenerator.h"
-#ifdef HAVE_CG
-#include <Cg/cgD3D9.h>
-#endif
 
 #include <mmsystem.h>
 
@@ -87,10 +84,6 @@ D3DMATRIX DXGraphicsStateGuardian9::_d3d_ident_mat;
 
 unsigned char *DXGraphicsStateGuardian9::_temp_buffer = nullptr;
 unsigned char *DXGraphicsStateGuardian9::_safe_buffer_start = nullptr;
-
-#ifdef HAVE_CG
-LPDIRECT3DDEVICE9 DXGraphicsStateGuardian9::_cg_device = nullptr;
-#endif
 
 #define __D3DLIGHT_RANGE_MAX ((PN_stdfloat)sqrt(FLT_MAX))  //for some reason this is missing in dx9 hdrs
 
@@ -154,10 +147,6 @@ DXGraphicsStateGuardian9(GraphicsEngine *engine, GraphicsPipe *pipe) :
 
   _supports_stream_offset = false;
 
-#ifdef HAVE_CG
-  _cg_context = 0;
-#endif
-
   get_gamma_table();
   atexit (atexit_function);
 }
@@ -175,8 +164,6 @@ DXGraphicsStateGuardian9::
   if (IS_VALID_PTR(_d3d_device)) {
     _d3d_device->SetTexture(0, nullptr);  // this frees reference to the old texture
   }
-
-  free_nondx_resources();
 }
 
 /**
@@ -2331,53 +2318,6 @@ reset() {
 
   _auto_detect_shader_model = _shader_model;
 
-#ifdef HAVE_CG
-  set_cg_device(_d3d_device);
-
-  _cg_context = cgCreateContext();
-
-  if (cgD3D9IsProfileSupported(CG_PROFILE_PS_2_0) &&
-      cgD3D9IsProfileSupported(CG_PROFILE_VS_2_0)) {
-    _supports_basic_shaders = true;
-    _shader_caps._active_vprofile = (int)cgD3D9GetLatestVertexProfile();
-    _shader_caps._active_fprofile = (int)cgD3D9GetLatestPixelProfile();
-    _shader_caps._ultimate_vprofile = (int)CG_PROFILE_VS_3_0;
-    _shader_caps._ultimate_fprofile = (int)CG_PROFILE_PS_3_0;
-/*
-    _shader_caps._active_vprofile = (int)CG_PROFILE_VS_2_0;
-    _shader_caps._active_fprofile = (int)CG_PROFILE_PS_2_0;
-    _shader_caps._ultimate_vprofile = (int)CG_PROFILE_VS_2_0;
-    _shader_caps._ultimate_fprofile = (int)CG_PROFILE_PS_2_0;
-*/
-  }
-
-  if (dxgsg9_cat.is_debug()) {
-    CGprofile vertex_profile;
-    CGprofile pixel_profile;
-
-    vertex_profile = cgD3D9GetLatestVertexProfile();
-    pixel_profile = cgD3D9GetLatestPixelProfile();
-
-    const char *vertex_profile_str =
-      cgGetProfileString(vertex_profile);
-    const char *pixel_profile_str =
-      cgGetProfileString(pixel_profile);
-
-    if (vertex_profile_str == nullptr) {
-      vertex_profile_str = "(null)";
-    }
-    if (pixel_profile_str == nullptr) {
-      pixel_profile_str = "(null)";
-    }
-
-    dxgsg9_cat.debug()
-      << "\nCg latest vertex profile = " << vertex_profile_str << "  id = " << vertex_profile
-      << "\nCg latest pixel profile = " << pixel_profile_str << "  id = " << pixel_profile
-      << "\nshader model = " << _shader_model
-      << "\n";
-  }
-#endif
-
   _supports_stream_offset = (d3d_caps.DevCaps2 & D3DDEVCAPS2_STREAMOFFSET) != 0;
   _screen->_supports_dynamic_textures = ((d3d_caps.Caps2 & D3DCAPS2_DYNAMICTEXTURES) != 0);
   _screen->_supports_automatic_mipmap_generation = ((d3d_caps.Caps2 & D3DCAPS2_CANAUTOGENMIPMAP) != 0);
@@ -4041,19 +3981,6 @@ close_gsg() {
 }
 
 /**
- * Frees some memory that was explicitly allocated within the dxgsg.
- */
-void DXGraphicsStateGuardian9::
-free_nondx_resources() {
-#ifdef HAVE_CG
-  if (_cg_context) {
-    cgDestroyContext(_cg_context);
-    _cg_context = 0;
-  }
-#endif
-}
-
-/**
  * setup for re-calling dx_init(), this is not the final exit cleanup routine
  * (see dx_cleanup)
  */
@@ -4079,8 +4006,6 @@ free_d3d_device() {
   if (_d3d_device != nullptr) {
     RELEASE(_d3d_device, dxgsg9, "d3dDevice", RELEASE_DOWN_TO_ZERO);
   }
-
-  free_nondx_resources();
 
   // obviously we dont release ID3D9, just ID3DDevice9
 }
@@ -4318,7 +4243,6 @@ set_context(DXScreenData *new_context) {
   _swap_chain = _screen->_swap_chain;   //copy this one field for speed of deref
 
   _screen->_dxgsg9 = this;
-  set_cg_device(_d3d_device);
 }
 
 /**
@@ -4533,7 +4457,6 @@ dx_cleanup() {
     return;
   }
 
-  free_nondx_resources();
   PRINT_REFCNT(dxgsg9, _d3d_device);
 
   // Do a safe check for releasing the D3DDEVICE. RefCount should be zero.  if
@@ -5438,43 +5361,9 @@ restore_gamma() {
  */
 void DXGraphicsStateGuardian9::
 atexit_function(void) {
-  set_cg_device(nullptr);
   if (_gamma_changed) {
     static_set_gamma(true, 1.0f);
   }
-}
-
-/**
- * Returns true if this particular GSG supports the specified Cg Shader
- * Profile.
- */
-bool DXGraphicsStateGuardian9::
-get_supports_cg_profile(const std::string &name) const {
-#ifndef HAVE_CG
-  return false;
-#else
-  CGprofile profile = cgGetProfile(name.c_str());
-
-  if (profile == CG_PROFILE_UNKNOWN) {
-    dxgsg9_cat.error() << name <<", unknown Cg-profile\n";
-    return false;
-  }
-  return cgD3D9IsProfileSupported(cgGetProfile(name.c_str())) != 0;
-#endif  // HAVE_CG
-}
-
-/**
- * Sets the global Cg device pointer.  TODO: make this thread-safe somehow.
- * Maybe Cg is inherently not thread-safe.
- */
-void DXGraphicsStateGuardian9::
-set_cg_device(LPDIRECT3DDEVICE9 cg_device) {
-#ifdef HAVE_CG
-  if (_cg_device != cg_device) {
-    cgD3D9SetDevice(cg_device);
-    _cg_device = cg_device;
-  }
-#endif // HAVE_CG
 }
 
 /**

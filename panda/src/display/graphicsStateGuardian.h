@@ -648,8 +648,6 @@ protected:
 
   static PT(TextureStage) _alpha_scale_texture_stage;
 
-  Shader::ShaderCaps _shader_caps;
-
   PN_stdfloat _gamma;
   Texture::QualityLevel _texture_quality_override;
 

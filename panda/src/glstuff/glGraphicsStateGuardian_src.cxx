@@ -67,10 +67,6 @@
 #include "samplerState.h"
 #include "displayInformation.h"
 
-#if defined(HAVE_CG) && !defined(OPENGLES)
-#include <Cg/cgGL.h>
-#endif
-
 #include <algorithm>
 
 using std::dec;
@@ -508,10 +504,6 @@ CLP(GraphicsStateGuardian)(GraphicsEngine *engine, GraphicsPipe *pipe) :
 
 #ifndef OPENGLES
   _shader_point_size = false;
-#endif
-
-#ifdef HAVE_CG
-  _cg_context = 0;
 #endif
 
 #ifdef DO_PSTATS
@@ -1840,19 +1832,6 @@ reset() {
 #endif
 
   _supports_basic_shaders = _supports_glsl;
-
-#if defined(HAVE_CG) && !defined(OPENGLES)
-  if (_supports_glsl) {
-    _shader_caps._active_vprofile = (int)CG_PROFILE_GLSLV;
-    _shader_caps._active_fprofile = (int)CG_PROFILE_GLSLF;
-    if (get_supports_geometry_shaders()) {
-      _shader_caps._active_gprofile = (int)CG_PROFILE_GLSLG;
-    }
-    _shader_caps._ultimate_vprofile = (int)CG_PROFILE_GLSLV;
-    _shader_caps._ultimate_fprofile = (int)CG_PROFILE_GLSLF;
-    _shader_caps._ultimate_gprofile = (int)CG_PROFILE_GLSLG;
-  }
-#endif  // HAVE_CG
 
 #ifndef OPENGLES_1
 #ifdef OPENGLES
@@ -4489,13 +4468,6 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
             disable_standard_vertex_arrays();
           }
         }
-#ifdef HAVE_CG
-        else if (_vertex_array_shader_context->is_of_type(CLP(CgShaderContext)::get_class_type())) {
-          // The previous shader was a Cg shader, which can leave a messy
-          // situation.
-          _vertex_array_shader_context->disable_shader_vertex_arrays();
-        }
-#endif
       }
 #endif  // SUPPORT_FIXED_FUNCTION
       // Now update the vertex arrays for the current shader.
@@ -6296,11 +6268,6 @@ release_shader(ShaderContext *sc) {
   if (sc->is_of_type(CLP(ShaderContext)::get_class_type())) {
     ((CLP(ShaderContext) *)sc)->release_resources();
   }
-#if defined(HAVE_CG) && !defined(OPENGLES_2)
-  else if (sc->is_of_type(CLP(CgShaderContext)::get_class_type())) {
-    ((CLP(CgShaderContext) *)sc)->release_resources();
-  }
-#endif
 #endif
 
   delete sc;
@@ -11692,19 +11659,6 @@ set_state_and_transform(const RenderState *target,
 }
 
 /**
- * Frees some memory that was explicitly allocated within the glgsg.
- */
-void CLP(GraphicsStateGuardian)::
-free_pointers() {
-#if defined(HAVE_CG) && !defined(OPENGLES)
-  if (_cg_context != 0) {
-    cgDestroyContext(_cg_context);
-    _cg_context = 0;
-  }
-#endif
-}
-
-/**
  * This is called by set_state_and_transform() when the texture state has
  * changed.
  */
@@ -14724,25 +14678,6 @@ do_point_size() {
   report_my_gl_errors();
 }
 #endif
-
-/**
- * Returns true if this particular GSG supports the specified Cg Shader
- * Profile.
- */
-bool CLP(GraphicsStateGuardian)::
-get_supports_cg_profile(const string &name) const {
-#if !defined(HAVE_CG) || defined(OPENGLES)
-  return false;
-#else
-  CGprofile profile = cgGetProfile(name.c_str());
-
-  if (profile == CG_PROFILE_UNKNOWN) {
-    GLCAT.error() << name << ", unknown Cg-profile\n";
-    return false;
-  }
-  return (cgGLIsProfileSupported(profile) != 0);
-#endif
-}
 
 /**
  * Binds a framebuffer object.

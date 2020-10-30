@@ -302,9 +302,6 @@ def MakeInstallerLinux(version, debversion=None, rpmrelease=1,
             recommends += ", python-pmw, python3-tk (>= %s)" % (python3_ver)
             provides += ", python3-panda3d"
 
-        if not PkgSkip("NVIDIACG"):
-            depends += ", nvidia-cg-toolkit"
-
         # Write back the dependencies, and delete the dummy set-up.
         txt = txt.replace("DEPENDS", depends.strip(', '))
         txt = txt.replace("RECOMMENDS", recommends.strip(', '))
@@ -994,7 +991,7 @@ if __name__ == "__main__":
 
     # Read out whether we should set PkgSkip("PYTHON") and some others.
     # Temporary hack; needs better solution.
-    pkg_list = "PYTHON", "NVIDIACG", "FFMPEG", "OPENAL", "FMODEX", "PVIEW", "NVIDIACG", "VORBIS", "OPUS"
+    pkg_list = "PYTHON", "FFMPEG", "OPENAL", "FMODEX", "PVIEW", "VORBIS", "OPUS"
     PkgListSet(pkg_list)
     for pkg in pkg_list:
         dat_path = "dtool_have_%s.dat" % (pkg.lower())

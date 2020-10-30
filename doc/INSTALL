@@ -136,7 +136,6 @@ it will show you the available command-line options:
   --use-gles2       --no-gles2     (enable/disable use of GLES2)
   --use-dx9         --no-dx9       (enable/disable use of DX9)
   --use-tinydisplay   --no-tinydisplay (enable/disable use of TINYDISPLAY)
-  --use-nvidiacg    --no-nvidiacg  (enable/disable use of NVIDIACG)
   --use-egl         --no-egl       (enable/disable use of EGL)
   --use-eigen       --no-eigen     (enable/disable use of EIGEN)
   --use-openal      --no-openal    (enable/disable use of OPENAL)

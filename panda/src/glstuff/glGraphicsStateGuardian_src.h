@@ -436,7 +436,6 @@ public:
                                        const TransformState *transform);
 
   void bind_fbo(GLuint fbo);
-  virtual bool get_supports_cg_profile(const std::string &name) const;
   void finish();
 
 protected:
@@ -507,8 +506,6 @@ protected:
   virtual void bind_clip_plane(const NodePath &plane, int plane_id);
   virtual void end_bind_clip_planes();
 #endif
-
-  virtual void free_pointers();
 
 #ifndef OPENGLES_1
   INLINE void enable_vertex_attrib_array(GLuint index);
@@ -692,10 +689,6 @@ protected:
 #endif
 
   GLfloat _max_line_width;
-
-#ifdef HAVE_CG
-  CGcontext _cg_context;
-#endif
 
 #ifdef SUPPORT_IMMEDIATE_MODE
   CLP(ImmediateModeSender) _sender;
@@ -1168,7 +1161,6 @@ private:
   friend class CLP(IndexBufferContext);
   friend class CLP(BufferContext);
   friend class CLP(ShaderContext);
-  friend class CLP(CgShaderContext);
   friend class CLP(GraphicsBuffer);
   friend class CLP(OcclusionQueryContext);
   friend class CLP(TimerQueryContext);

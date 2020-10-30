@@ -214,9 +214,6 @@ private:
   void remap_locations(spv::StorageClass storage_class, const pmap<int, int> &locations);
   void strip();
 
-private:
-  int _index;
-
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
