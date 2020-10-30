@@ -24,36 +24,9 @@
 class VertexElementArray;
 class DXGraphicsStateGuardian9;
 
-// Caution: adding HLSL support is going to be tricky, as the parsing needs to
-// be done in the cull thread, which cannot use the DX API.  - Josh
-//
-//
-// typedef struct
-// {
-//   int vertex_shader;
-//   int total_constant_descriptions;
-//   D3DXCONSTANT_DESC *constant_description_array;
-// }
-// DX_PARAMETER;
-//
-// typedef struct
-// {
-//   int state;
-//   union
-//   {
-//     DIRECT_3D_VERTEX_SHADER direct_3d_vertex_shader;
-//     DIRECT_3D_PIXEL_SHADER direct_3d_pixel_shader;
-//   };
-//   LPD3DXCONSTANTTABLE constant_table;
-//   D3DXCONSTANTTABLE_DESC constant_table_description;
-//
-//   int total_semantics;
-//   D3DXSEMANTIC *semantic_array;
-// }
-// DIRECT_3D_SHADER;
-
 /**
- * xyz
+ * Shader back-end for DX9.  We only support SPIR-V shaders, which are
+ * transpiled to HLSL by spirv-cross, then compiled using D3DXCompileShader.
  */
 class EXPCL_PANDADX DXShaderContext9 : public ShaderContext {
 public:
@@ -78,6 +51,10 @@ public:
   LPDIRECT3DVERTEXDECLARATION9 get_vertex_declaration(GSG *gsg, const GeomVertexFormat *format);
 
 private:
+  bool r_query_constants(Shader::Stage stage, BYTE *offset,
+                         D3DXSHADER_TYPEINFO &typeinfo, int &loc,
+                         int reg_set, int &reg_idx, int reg_end);
+
   IDirect3DVertexShader9 *_vertex_shader = nullptr;
   IDirect3DPixelShader9 *_pixel_shader = nullptr;
 

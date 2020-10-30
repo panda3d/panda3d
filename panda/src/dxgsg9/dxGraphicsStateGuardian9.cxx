@@ -2281,8 +2281,14 @@ reset() {
   _pixel_shader_version_major = D3DSHADER_VERSION_MAJOR (d3d_caps.PixelShaderVersion);
   _pixel_shader_version_minor = D3DSHADER_VERSION_MINOR (d3d_caps.PixelShaderVersion);
 
-  _supports_hlsl = (_pixel_shader_version_major != 0);
+  // We require at least shader model 3.
+  _supports_hlsl = (_pixel_shader_version_major >= 3);
   _supports_basic_shaders = _supports_hlsl;
+
+  _supported_shader_caps = 0;
+  if (_supports_basic_shaders) {
+    _supported_shader_caps = ShaderModule::C_integer;
+  }
 
   _vertex_shader_profile = (char *) D3DXGetVertexShaderProfile (_d3d_device);
   _pixel_shader_profile = (char *) D3DXGetPixelShaderProfile (_d3d_device);
