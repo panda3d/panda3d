@@ -347,15 +347,6 @@ get_supported_geom_rendering() const {
 }
 
 /**
- * Returns true if this particular GSG supports the specified Cg Shader
- * Profile.
- */
-bool GraphicsStateGuardian::
-get_supports_cg_profile(const string &name) const {
-  return false;
-}
-
-/**
  * Changes the coordinate system in effect on this particular gsg.  This is
  * also called the "external" coordinate system, since it is the coordinate
  * system used by the scene graph, external to to GSG.

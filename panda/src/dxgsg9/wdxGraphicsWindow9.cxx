@@ -240,8 +240,6 @@ close_window() {
     _gsg.clear();
   }
 
-  DXGraphicsStateGuardian9::set_cg_device(nullptr);
-
   _dxgsg->release_swap_chain(&_wcontext);
   WinGraphicsWindow::close_window();
 }
