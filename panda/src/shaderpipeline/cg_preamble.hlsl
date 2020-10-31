@@ -17,15 +17,32 @@
  * and types that were supported in Cg but are not available in HLSL.
  */
 
-// Cg accepts this type and these functions, despite being GLSL
-typedef sampler2D sampler2DShadow;
+// We implement shadow samplers by mapping them to DX10 syntax, since there is
+// no syntax for them in DX9.
+typedef Texture1D sampler1DShadow;
+typedef Texture2D sampler2DShadow;
+typedef TextureCube samplerCubeShadow;
 
-float4 shadow2D(sampler2D samp, float3 s) {
-  return tex2D(samp, s.xy).r > s.z;
+SamplerComparisonState __builtin_shadow_sampler;
+
+float4 shadow1D(sampler1DShadow samp, float3 s) {
+  return samp.SampleCmp(__builtin_shadow_sampler, s.x, s.z);
 }
 
-float4 shadow2DProj(sampler2D samp, float4 s) {
-  return tex2Dproj(samp, s).r > s.z / s.w;
+float4 shadow1DProj(sampler1DShadow samp, float4 s) {
+  return samp.SampleCmp(__builtin_shadow_sampler, s.x / s.w, s.z / s.w);
+}
+
+float4 shadow2D(sampler2DShadow samp, float3 s) {
+  return samp.SampleCmp(__builtin_shadow_sampler, s.xy, s.z);
+}
+
+float4 shadow2DProj(sampler2DShadow samp, float4 s) {
+  return samp.SampleCmp(__builtin_shadow_sampler, s.xy / s.w, s.z / s.w);
+}
+
+float4 shadowCube(samplerCubeShadow samp, float4 s) {
+  return samp.SampleCmp(__builtin_shadow_sampler, s.xyz, s.w);
 }
 
 // Redefine overloads for built-in texturing functions to match the Cg
@@ -36,7 +53,15 @@ float4 f4tex1D(sampler1D samp, float s) {
 }
 
 float4 f4tex1D(sampler1D samp, float2 s) {
-  return tex1D(samp, s.x).r > s.y;
+  return tex1D(samp, s.x);
+}
+
+float4 f4tex1D(sampler1DShadow samp, float2 s) {
+  return samp.SampleCmp(__builtin_shadow_sampler, s.x, s.y);
+}
+
+float4 f4tex1D(sampler1DShadow samp, float2 s, int texelOff) {
+  return samp.SampleCmp(__builtin_shadow_sampler, s.x, s.y, texelOff);
 }
 
 float4 f4tex1D(sampler1D samp, float s, float dx, float dy) {
@@ -44,7 +69,7 @@ float4 f4tex1D(sampler1D samp, float s, float dx, float dy) {
 }
 
 float4 f4tex1D(sampler1D samp, float2 s, float dx, float dy) {
-  return tex1D(samp, s.x, dx, dy).r > s.y;
+  return tex1D(samp, s.x, dx, dy);
 }
 
 float4 f4tex1Dproj(sampler1D samp, float2 s) {
@@ -52,7 +77,15 @@ float4 f4tex1Dproj(sampler1D samp, float2 s) {
 }
 
 float4 f4tex1Dproj(sampler1D samp, float3 s) {
-  return tex1Dproj(samp, s.xxxz).r > s.y / s.z;
+  return tex1Dproj(samp, s.xxxz);
+}
+
+float4 f4tex1Dproj(sampler1DShadow samp, float3 s) {
+  return samp.SampleCmp(__builtin_shadow_sampler, s.x / s.z, s.y / s.z);
+}
+
+float4 f4tex1Dproj(sampler1DShadow samp, float3 s, int texelOff) {
+  return samp.SampleCmp(__builtin_shadow_sampler, s.x / s.z, s.y / s.z, texelOff);
 }
 
 float4 f4tex1Dproj(sampler1D samp, float2 s, float dx, float dy) {
@@ -60,7 +93,7 @@ float4 f4tex1Dproj(sampler1D samp, float2 s, float dx, float dy) {
 }
 
 float4 f4tex1Dproj(sampler1D samp, float3 s, float dx, float dy) {
-  return tex1D(samp, s.x / s.z).r > s.y / s.z;
+  return tex1D(samp, s.x / s.z);
 }
 
 float4 f4tex2D(sampler2D samp, float2 s) {
@@ -68,7 +101,15 @@ float4 f4tex2D(sampler2D samp, float2 s) {
 }
 
 float4 f4tex2D(sampler2D samp, float3 s) {
-  return tex2D(samp, s.xy).r > s.z;
+  return tex2D(samp, s.xy);
+}
+
+float4 f4tex2D(sampler2DShadow samp, float3 s) {
+  return samp.SampleCmp(__builtin_shadow_sampler, s.xy, s.z);
+}
+
+float4 f4tex2D(sampler2DShadow samp, float3 s, int texelOff) {
+  return samp.SampleCmp(__builtin_shadow_sampler, s.xy, s.z, texelOff);
 }
 
 float4 f4tex2D(sampler2D samp, float2 s, float2 dx, float2 dy) {
@@ -76,7 +117,7 @@ float4 f4tex2D(sampler2D samp, float2 s, float2 dx, float2 dy) {
 }
 
 float4 f4tex2D(sampler2D samp, float3 s, float2 dx, float2 dy) {
-  return tex2D(samp, s.xy, dx, dy).r > s.z;
+  return tex2D(samp, s.xy, dx, dy);
 }
 
 float4 f4tex2Dproj(sampler2D samp, float3 s) {
@@ -84,7 +125,15 @@ float4 f4tex2Dproj(sampler2D samp, float3 s) {
 }
 
 float4 f4tex2Dproj(sampler2D samp, float4 s) {
-  return tex2Dproj(samp, s).r > s.z / s.w;
+  return tex2Dproj(samp, s);
+}
+
+float4 f4tex2Dproj(sampler2DShadow samp, float4 s) {
+  return samp.SampleCmp(__builtin_shadow_sampler, s.xy / s.w, s.z / s.w);
+}
+
+float4 f4tex2Dproj(sampler2DShadow samp, float4 s, int texelOff) {
+  return samp.SampleCmp(__builtin_shadow_sampler, s.xy / s.w, s.z / s.w, texelOff);
 }
 
 float4 f4tex2Dproj(sampler2D samp, float3 s, float2 dx, float2 dy) {
@@ -92,7 +141,7 @@ float4 f4tex2Dproj(sampler2D samp, float3 s, float2 dx, float2 dy) {
 }
 
 float4 f4tex2Dproj(sampler2D samp, float4 s, float2 dx, float2 dy) {
-  return tex2D(samp, s.xy / s.w, dx, dy).r > s.z / s.w;
+  return tex2D(samp, s.xy / s.w, dx, dy);
 }
 
 float4 f4texCUBE(samplerCUBE samp, float3 s) {
@@ -100,7 +149,11 @@ float4 f4texCUBE(samplerCUBE samp, float3 s) {
 }
 
 float4 f4texCUBE(samplerCUBE samp, float4 s) {
-  return texCUBE(samp, s.xyz).r > s.w;
+  return texCUBE(samp, s.xyz);
+}
+
+float4 f4texCUBE(samplerCubeShadow samp, float4 s) {
+  return samp.SampleCmp(__builtin_shadow_sampler, s.xyz, s.w);
 }
 
 float4 f4texCUBE(samplerCUBE samp, float3 s, float3 dx, float3 dy) {
@@ -108,7 +161,7 @@ float4 f4texCUBE(samplerCUBE samp, float3 s, float3 dx, float3 dy) {
 }
 
 float4 f4texCUBE(samplerCUBE samp, float4 s, float3 dx, float3 dy) {
-  return texCUBE(samp, s.xyz, dx, dy).r > s.w;
+  return texCUBE(samp, s.xyz, dx, dy);
 }
 
 #define f1tex1D(x, y) (f4tex1D((x), (y)).r)

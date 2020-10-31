@@ -369,6 +369,10 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
     extern const char cg_preamble[];
     shader.setPreamble(cg_preamble);
 
+    // We map shadow samplers to DX10 syntax, but those use separate samplers/
+    // images, so we need to ask glslang to kindly combine these back.
+    shader.setTextureSamplerTransformMode(EShTexSampTransUpgradeTextureRemoveSampler);
+
     shader.setEnvInput(glslang::EShSource::EShSourceHlsl, (EShLanguage)stage, glslang::EShClient::EShClientOpenGL, 120);
   } else {
     shader.setEnvInput(glslang::EShSource::EShSourceGlsl, (EShLanguage)stage, glslang::EShClient::EShClientOpenGL, 450);
