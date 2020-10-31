@@ -98,12 +98,12 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words) :
   for (uint32_t id = 0; id < _instructions.get_id_bound(); ++id) {
     const Definition &def = writer.get_definition(id);
 
-    if (def._used && def._type != nullptr &&
+    if (def.is_used() && def._type != nullptr &&
         def._type->contains_scalar_type(ShaderType::ST_double)) {
       _used_caps |= C_double;
     }
 
-    if (def._dtype == DT_variable && def._builtin == spv::BuiltInMax) {
+    if (def._dtype == DT_variable && !def.is_builtin()) {
       Variable var;
       var.type = def._type;
       var.name = InternalName::make(def._name);
@@ -117,6 +117,24 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words) :
         _outputs.push_back(std::move(var));
       }
       else if (def._storage_class == spv::StorageClassUniformConstant) {
+        if (def._flags & DF_dref_sampled) {
+          // Image variable sampled with depth ref.  Make sure this is actually
+          // a shadow sampler; this isn't always done by the compiler, and the
+          // spec isn't clear that this is necessary, but it helps spirv-cross
+          // properly generate shadow samplers.
+          const ShaderType::SampledImage *sampled_image_type;
+          DCAST_INTO_V(sampled_image_type, def._type);
+
+          if (!sampled_image_type->is_shadow()) {
+            // No, change the type of this variable.
+            var.type = ShaderType::register_type(ShaderType::SampledImage(
+              sampled_image_type->get_texture_type(),
+              sampled_image_type->get_sampled_type(),
+              true));
+
+            writer.set_variable_type(id, var.type);
+          }
+        }
         _parameters.push_back(std::move(var));
       }
 
@@ -125,7 +143,7 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words) :
         _used_caps |= C_integer;
       }
     }
-    else if (def._dtype == DT_variable && def._used &&
+    else if (def._dtype == DT_variable && def.is_used() &&
              def._storage_class == spv::StorageClassInput) {
       // Built-in input variable.
       switch (def._builtin) {
@@ -413,7 +431,11 @@ clear() {
   _location = -1;
   _builtin = spv::BuiltInMax;
   _constant = 0;
+  _type_id = 0;
+  _array_stride = 0;
+  _origin_id = 0;
   _members.clear();
+  _flags = 0;
 }
 
 /**
@@ -480,8 +502,8 @@ assign_locations(Stage stage) {
 
   for (const Definition &def : _defs) {
     if (def._dtype == DT_variable) {
-      if (def._location < 0) {
-        if (def._builtin == spv::BuiltInMax &&
+      if (!def.has_location()) {
+        if (!def.is_builtin() &&
             (def._storage_class == spv::StorageClassInput ||
              def._storage_class == spv::StorageClassOutput ||
              def._storage_class == spv::StorageClassUniformConstant)) {
@@ -510,9 +532,7 @@ assign_locations(Stage stage) {
   InstructionIterator it = _instructions.begin_annotations();
   for (uint32_t id = 0; id < _defs.size(); ++id) {
     Definition &def = _defs[id];
-    if (def._dtype == DT_variable &&
-        def._location < 0 &&
-        def._builtin == spv::BuiltInMax) {
+    if (def._dtype == DT_variable && !def.has_location() && !def.is_builtin()) {
       int location;
       if (def._storage_class == spv::StorageClassInput) {
         int num_locations = def._type->get_num_interface_locations();
@@ -609,7 +629,7 @@ bind_descriptor_set(uint32_t set, const vector_int &locations) {
       Definition &def = _defs[op.args[0]];
 
       auto lit = std::find(locations.begin(), locations.end(), def._location);
-      if (lit != locations.end() && def._location >= 0) {
+      if (lit != locations.end() && def.has_location()) {
         if (op.args[1] == spv::DecorationBinding) {
           op.args[2] = std::distance(locations.begin(), lit);
         }
@@ -754,10 +774,10 @@ flatten_struct(uint32_t type_id) {
   // Insert decorations for the individual members.
   it = _instructions.begin_annotations();
   for (uint32_t var_id : member_ids) {
-    int location = _defs[var_id]._location;
-    if (location >= 0) {
+    const Definition &var_def = get_definition(var_id);
+    if (var_def.has_location()) {
       it = _instructions.insert(it,
-        spv::OpDecorate, {var_id, spv::DecorationLocation, (uint32_t)location});
+        spv::OpDecorate, {var_id, spv::DecorationLocation, (uint32_t)var_def._location});
     }
   }
 
@@ -812,7 +832,7 @@ make_block(const ShaderType::Struct *block_type, const pvector<int> &member_loca
         type_pointer_map[def._type_id] = id;
       }
     }
-    else if (def._dtype == DT_variable && def._location >= 0 &&
+    else if (def._dtype == DT_variable && def.has_location() &&
              def._storage_class == spv::StorageClassUniformConstant) {
 
       auto lit = std::find(member_locations.begin(), member_locations.end(), def._location);
@@ -1012,6 +1032,126 @@ make_block(const ShaderType::Struct *block_type, const pvector<int> &member_loca
   }
 
   return block_var_id;
+}
+
+/**
+ * Changes the type of the given variable.  Does not check that the existing
+ * usage of the variable in the shader is valid with the new type - it only
+ * changes the types of loads and copies.
+ */
+void ShaderModuleSpirV::InstructionWriter::
+set_variable_type(uint32_t variable_id, const ShaderType *type) {
+  Definition &def = modify_definition(variable_id);
+  nassertv(def._dtype == DT_variable);
+
+  if (shader_cat.is_debug()) {
+    shader_cat.debug()
+      << "Changing type of variable " << variable_id << " (" << def._name
+      << ") from " << *def._type << " to " << *type << "\n";
+  }
+
+  pset<uint32_t> pointer_ids, object_ids;
+  pointer_ids.insert(variable_id);
+
+  def._type = type;
+
+  uint32_t type_pointer_id = 0;
+  uint32_t type_id = 0;
+
+  // We remove the variable and redefine it at the end (before the function
+  // block), which is the easiest way to make really sure that the order of type
+  // definitions is correct.
+
+  bool inserted = false;
+  InstructionIterator it = _instructions.end_annotations();
+  while (it != _instructions.end()) {
+    Instruction op = *it;
+
+    switch (op.opcode) {
+    case spv::OpVariable:
+      // Erase the variable.
+      if (op.args[1] == variable_id) {
+        it = _instructions.erase(it);
+        continue;
+      }
+      break;
+
+    case spv::OpFunction:
+      // Insert the new variable here, right before the function section.
+      if (!inserted) {
+        type_pointer_id = r_define_type_pointer(it, type, def._storage_class);
+        type_id = _defs[type_pointer_id]._type_id;
+
+        it = _instructions.insert(it, spv::OpVariable, {
+          type_pointer_id,
+          variable_id,
+          (uint32_t)def._storage_class,
+        });
+        ++it;
+        inserted = true;
+      }
+      break;
+
+    case spv::OpLoad:
+    case spv::OpAtomicLoad:
+    case spv::OpAtomicExchange:
+    case spv::OpAtomicCompareExchange:
+    case spv::OpAtomicCompareExchangeWeak:
+    case spv::OpAtomicIIncrement:
+    case spv::OpAtomicIDecrement:
+    case spv::OpAtomicIAdd:
+    case spv::OpAtomicISub:
+    case spv::OpAtomicSMin:
+    case spv::OpAtomicUMin:
+    case spv::OpAtomicSMax:
+    case spv::OpAtomicUMax:
+    case spv::OpAtomicAnd:
+    case spv::OpAtomicOr:
+    case spv::OpAtomicXor:
+    case spv::OpAtomicFAddEXT:
+      nassertd(inserted) break;
+
+      // These loads turn a pointer into a dereferenced object.
+      if (pointer_ids.count(op.args[2])) {
+        op.args[0] = type_id;
+        _defs[op.args[1]]._type = type;
+        _defs[op.args[1]]._type_id = type_id;
+        object_ids.insert(op.args[1]);
+      }
+      break;
+
+    case spv::OpCopyObject:
+      nassertd(inserted) break;
+
+      // This clones a pointer or object verbatim, so keep following the chain.
+      if (pointer_ids.count(op.args[2])) {
+        op.args[0] = type_pointer_id;
+        _defs[op.args[1]]._type = type;
+        _defs[op.args[1]]._type_id = type_pointer_id;
+        pointer_ids.insert(op.args[1]);
+      }
+      if (object_ids.count(op.args[2])) {
+        op.args[0] = type_id;
+        _defs[op.args[1]]._type = type;
+        _defs[op.args[1]]._type_id = type_id;
+        object_ids.insert(op.args[1]);
+      }
+      break;
+
+    default:
+      break;
+    }
+
+    ++it;
+  }
+  nassertv(inserted);
+
+  // Mark the type pointer and type as used if this variable was already marked
+  // used.
+  if (def.is_used()) {
+    _defs[type_pointer_id]._flags |= DF_used;
+    _defs[type_id]._flags |= DF_used;
+  }
 }
 
 /**
@@ -1283,10 +1423,58 @@ r_define_type(InstructionIterator &it, const ShaderType *type) {
     it = _instructions.insert(it, spv::OpTypeSampler, {id});
   }
   else if (const ShaderType::SampledImage *sampled_image_type = type->as_sampled_image()) {
-    uint32_t image_type = r_define_type(it,
-      ShaderType::register_type(ShaderType::Image(sampled_image_type->get_texture_type(), sampled_image_type->get_sampled_type(), ShaderType::Image::Access::unknown)));
+    // We insert the image type here as well, because there are some specifics
+    // about the image definition that we need to get right.
+    uint32_t image_id = _instructions.allocate_id();
+    uint32_t args[8] = {
+      image_id,
+      r_define_type(it, ShaderType::register_type(ShaderType::Scalar(sampled_image_type->get_sampled_type()))),
+      0, // Dimensionality, see below
+      sampled_image_type->is_shadow() ? (uint32_t)1 : (uint32_t)0, // Depthness
+      0, // Arrayness, see below
+      0, // Multisample not supported
+      1, // Sampled
+      spv::ImageFormatUnknown,
+    };
 
-    it = _instructions.insert(it, spv::OpTypeSampledImage, {id, image_type});
+    switch (sampled_image_type->get_texture_type()) {
+    case Texture::TT_1d_texture:
+      args[2] = spv::Dim1D;
+      args[4] = 0;
+      break;
+    case Texture::TT_2d_texture:
+      args[2] = spv::Dim2D;
+      args[4] = 0;
+      break;
+    case Texture::TT_3d_texture:
+      args[2] = spv::Dim3D;
+      args[4] = 0;
+      break;
+    case Texture::TT_2d_texture_array:
+      args[2] = spv::Dim2D;
+      args[4] = 1;
+      break;
+    case Texture::TT_cube_map:
+      args[2] = spv::DimCube;
+      args[4] = 0;
+      break;
+    case Texture::TT_buffer_texture:
+      args[2] = spv::DimBuffer;
+      args[4] = 0;
+      break;
+    case Texture::TT_cube_map_array:
+      args[2] = spv::DimCube;
+      args[4] = 1;
+      break;
+    case Texture::TT_1d_texture_array:
+      args[2] = spv::Dim1D;
+      args[4] = 1;
+      break;
+    }
+
+    it = _instructions.insert(it, spv::OpTypeImage, args, 8);
+    ++it;
+    it = _instructions.insert(it, spv::OpTypeSampledImage, {id, image_id});
   }
   else {
     it = _instructions.insert(it, spv::OpTypeVoid, {id});
@@ -1518,6 +1706,12 @@ parse_instruction(const Instruction &op) {
 
       record_type(op.args[0], ShaderType::register_type(
         ShaderType::Image(texture_type, sampled_type->get_scalar_type(), access)));
+
+      // We don't record the "depth" flag on the image type (because no shader
+      // language actually does that), so we have to store it somewhere else.
+      if (op.args[3] == 1) {
+        _defs[op.args[0]]._flags |= DF_depth_image;
+      }
     }
     break;
 
@@ -1528,8 +1722,9 @@ parse_instruction(const Instruction &op) {
 
   case spv::OpTypeSampledImage:
     if (const ShaderType::Image *image = _defs[op.args[1]]._type->as_image()) {
+      bool shadow = (_defs[op.args[1]]._flags & DF_depth_image) != 0;
       record_type(op.args[0], ShaderType::register_type(
-        ShaderType::SampledImage(image->get_texture_type(), image->get_sampled_type())));
+        ShaderType::SampledImage(image->get_texture_type(), image->get_sampled_type(), shadow)));
     } else {
       shader_cat.error()
         << "OpTypeSampledImage must refer to an image type!\n";
@@ -1577,10 +1772,14 @@ parse_instruction(const Instruction &op) {
     record_constant(op.args[1], op.args[0], op.args + 2, op.nargs - 2);
     break;
 
+  case spv::OpFunctionParameter:
+    record_function_parameter(op.args[1], op.args[0]);
+    break;
+
   case spv::OpFunctionCall:
     // Mark all arguments as used.
     for (size_t i = 3; i < op.nargs; ++i) {
-      _defs[op.args[i]]._used = true;
+      mark_used(op.args[i]);
     }
     break;
 
@@ -1590,10 +1789,6 @@ parse_instruction(const Instruction &op) {
 
   case spv::OpImageTexelPointer:
   case spv::OpLoad:
-  case spv::OpAccessChain:
-  case spv::OpInBoundsAccessChain:
-  case spv::OpPtrAccessChain:
-  case spv::OpCopyObject:
   case spv::OpAtomicLoad:
   case spv::OpAtomicExchange:
   case spv::OpAtomicCompareExchange:
@@ -1610,12 +1805,22 @@ parse_instruction(const Instruction &op) {
   case spv::OpAtomicOr:
   case spv::OpAtomicXor:
   case spv::OpAtomicFlagTestAndSet:
-    _defs[op.args[2]]._used = true;
+    record_object(op.args[1], op.args[0], op.args[2]);
+
+    // A load from the pointer is enough for us to consider it "used", for now.
+    mark_used(op.args[1]);
+    break;
+
+  case spv::OpAccessChain:
+  case spv::OpInBoundsAccessChain:
+  case spv::OpPtrAccessChain:
+  case spv::OpCopyObject:
+    record_object(op.args[1], op.args[0], op.args[2]);
     break;
 
   case spv::OpCopyMemory:
   case spv::OpCopyMemorySized:
-    _defs[op.args[1]]._used = true;
+    mark_used(op.args[1]);
     break;
 
   case spv::OpDecorate:
@@ -1649,6 +1854,57 @@ parse_instruction(const Instruction &op) {
 
     default:
       break;
+    }
+    break;
+
+  case spv::OpCompositeConstruct:
+    //XXX Not sure that we even need this, since it's probably not possible to
+    // construct a composite from pointers?
+    for (size_t i = 2; i < op.nargs; ++i) {
+      mark_used(op.args[i]);
+    }
+    break;
+
+  case spv::OpCompositeInsert:
+    mark_used(op.args[2]);
+    break;
+
+  case spv::OpImageSampleImplicitLod:
+  case spv::OpImageSampleExplicitLod:
+  case spv::OpImageSampleProjImplicitLod:
+  case spv::OpImageSampleProjExplicitLod:
+  case spv::OpImageFetch:
+  case spv::OpImageGather:
+  case spv::OpImageSparseSampleImplicitLod:
+  case spv::OpImageSparseSampleExplicitLod:
+  case spv::OpImageSparseSampleProjImplicitLod:
+  case spv::OpImageSparseSampleProjExplicitLod:
+  case spv::OpImageSparseGather:
+    // Indicate that this variable was sampled with a non-dref sampler.
+    {
+      uint32_t var_id = _defs[op.args[2]]._origin_id;
+      if (var_id != 0) {
+        _defs[var_id]._flags |= DF_non_dref_sampled;
+      }
+    }
+    break;
+
+  case spv::OpImageSampleDrefImplicitLod:
+  case spv::OpImageSampleDrefExplicitLod:
+  case spv::OpImageSampleProjDrefImplicitLod:
+  case spv::OpImageSampleProjDrefExplicitLod:
+  case spv::OpImageDrefGather:
+  case spv::OpImageSparseSampleDrefImplicitLod:
+  case spv::OpImageSparseSampleDrefExplicitLod:
+  case spv::OpImageSparseSampleProjDrefImplicitLod:
+  case spv::OpImageSparseSampleProjDrefExplicitLod:
+  case spv::OpImageSparseDrefGather:
+    // Indicate that this variable was sampled with a dref sampler.
+    {
+      uint32_t var_id = _defs[op.args[2]]._origin_id;
+      if (var_id != 0) {
+        _defs[var_id]._flags |= DF_dref_sampled;
+      }
     }
     break;
 
@@ -1720,13 +1976,15 @@ record_variable(uint32_t id, uint32_t type_pointer_id, spv::StorageClass storage
   Definition &def = modify_definition(id);
   def._dtype = DT_variable;
   def._type = type_def._type;
+  def._type_id = type_pointer_id;
   def._storage_class = storage_class;
+  def._origin_id = id;
 
   if (shader_cat.is_debug() && storage_class == spv::StorageClassUniformConstant) {
     shader_cat.debug()
       << "Defined uniform " << id << ": " << def._name;
 
-    if (def._location >= 0) {
+    if (def.has_location()) {
       shader_cat.debug(false) << " (location " << def._location << ")";
     }
 
@@ -1738,6 +1996,20 @@ record_variable(uint32_t id, uint32_t type_pointer_id, spv::StorageClass storage
       shader_cat.debug(false) << "unknown type\n";
     }
   }
+}
+
+/**
+ * Records that the given function parameter.
+ */
+void ShaderModuleSpirV::InstructionWriter::
+record_function_parameter(uint32_t id, uint32_t type_id) {
+  const Definition &type_def = get_definition(type_id);
+  nassertv(type_def._dtype == DT_type || type_def._dtype == DT_type_pointer);
+
+  Definition &def = modify_definition(id);
+  def._dtype = DT_function_parameter;
+  def._type = type_def._type;
+  def._origin_id = id;
 }
 
 /**
@@ -1767,4 +2039,47 @@ record_ext_inst_import(uint32_t id, const char *import) {
   Definition &def = modify_definition(id);
   def._dtype = DT_ext_inst;
   def._name.assign(import);
+}
+
+/**
+ * Record a generic object.  We mostly use this to record the chain of loads and
+ * copies so that e can figure out whether (and how) a given variable is used.
+ */
+void ShaderModuleSpirV::InstructionWriter::
+record_object(uint32_t id, uint32_t type_id, uint32_t from_id) {
+  const Definition &type_def = get_definition(type_id);
+  const Definition &from_def = get_definition(from_id);
+
+  Definition &def = modify_definition(id);
+  def._dtype = DT_object;
+  def._type = type_def._type;
+  def._type_id = type_id;
+  def._origin_id = from_def._origin_id;
+}
+
+/**
+ * Called for a variable, or any id whose value (indirectly) originates from a
+ * variable, to mark the variable and any types used thereby as "used".
+ */
+void ShaderModuleSpirV::InstructionWriter::
+mark_used(uint32_t id) {
+  uint32_t origin_id = _defs[id]._origin_id;
+  if (origin_id != 0) {
+    Definition &origin_def = _defs[origin_id];
+    if (!origin_def.is_used()) {
+      origin_def._flags |= DF_used;
+
+      // Also mark the type pointer as used.
+      if (origin_def._type_id != 0) {
+        Definition &type_pointer_def = _defs[origin_def._type_id];
+        type_pointer_def._flags |= DF_used;
+
+        // And the type that references.
+        if (type_pointer_def._type_id != 0) {
+          Definition &type_def = _defs[type_pointer_def._type_id];
+          type_def._flags |= DF_used;
+        }
+      }
+    }
+  }
 }

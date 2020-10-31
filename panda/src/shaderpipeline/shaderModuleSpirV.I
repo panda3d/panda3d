@@ -326,3 +326,29 @@ INLINE uint32_t ShaderModuleSpirV::InstructionStream::
 allocate_id() {
   return _words[3]++;
 }
+
+/**
+ * For a variable or function parameter, returns true if its value has been
+ * loaded or passed into a function call.  For a type or type pointer, returns
+ * true if it is the type of at least one variable that is marked "used".
+ */
+INLINE bool ShaderModuleSpirV::Definition::
+is_used() const {
+  return (_flags & DF_used) != 0;
+}
+
+/**
+ * Returns true if this has the BuiltIn decoration.  See also has_builtin().
+ */
+INLINE bool ShaderModuleSpirV::Definition::
+is_builtin() const {
+  return _builtin != spv::BuiltInMax;
+}
+
+/**
+ * Returns true if this has a Location decoration.
+ */
+INLINE bool ShaderModuleSpirV::Definition::
+has_location() const {
+  return _location >= 0;
+}

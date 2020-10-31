@@ -413,10 +413,12 @@ private:
  */
 class EXPCL_PANDA_GOBJ ShaderType::SampledImage final : public ShaderType {
 public:
-  INLINE SampledImage(Texture::TextureType texture_type, ScalarType sampled_type);
+  INLINE SampledImage(Texture::TextureType texture_type, ScalarType sampled_type,
+                      bool shadow = false);
 
   INLINE Texture::TextureType get_texture_type() const;
   INLINE ScalarType get_sampled_type() const;
+  INLINE bool is_shadow() const;
 
   virtual void output(std::ostream &out) const override;
   virtual int compare_to_impl(const ShaderType &other) const override;
@@ -426,6 +428,7 @@ public:
 private:
   Texture::TextureType _texture_type;
   ScalarType _sampled_type;
+  bool _shadow = false;
 
 public:
   static TypeHandle get_class_type() {

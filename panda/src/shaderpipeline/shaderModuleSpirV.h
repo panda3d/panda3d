@@ -121,6 +121,20 @@ public:
     DT_variable,
     DT_constant,
     DT_ext_inst,
+    DT_function_parameter,
+    DT_object, // generic object not listed above
+  };
+
+  enum DefinitionFlags {
+    DF_used = 1,
+
+    // Set for image types that have the "depth" flag set
+    DF_depth_image = 2,
+
+    // Set on variables to indicate that they were used by a texture sample op,
+    // respectively one with and without depth comparison
+    DF_dref_sampled = 4,
+    DF_non_dref_sampled = 8,
   };
 
   /**
@@ -148,12 +162,16 @@ public:
     uint32_t _constant = 0;
     uint32_t _type_id = 0;
     uint32_t _array_stride = 0;
+    uint32_t _origin_id = 0; // set for loads, tracks original variable ID
     MemberDefinitions _members;
-    bool _used = false;
+    int _flags = 0;
 
-    // Only defined for DT_variable.
+    // Only defined for DT_variable and DT_type_pointer.
     spv::StorageClass _storage_class;
 
+    INLINE bool is_used() const;
+    INLINE bool is_builtin() const;
+    INLINE bool has_location() const;
     bool has_builtin() const;
     const MemberDefinition &get_member(uint32_t i) const;
     MemberDefinition &modify_member(uint32_t i);
@@ -183,6 +201,8 @@ public:
     uint32_t make_block(const ShaderType::Struct *block_type, const pvector<int> &locations,
                         spv::StorageClass storage_class, uint32_t binding=0, uint32_t set=0);
 
+    void set_variable_type(uint32_t id, const ShaderType *type);
+
     uint32_t define_variable(const ShaderType *type, spv::StorageClass storage_class);
     uint32_t define_type_pointer(const ShaderType *type, spv::StorageClass storage_class);
     uint32_t define_type(const ShaderType *type);
@@ -199,8 +219,12 @@ public:
     void record_type(uint32_t id, const ShaderType *type);
     void record_type_pointer(uint32_t id, spv::StorageClass storage_class, uint32_t type_id);
     void record_variable(uint32_t id, uint32_t type_pointer_id, spv::StorageClass storage_class);
+    void record_function_parameter(uint32_t id, uint32_t type_id);
     void record_constant(uint32_t id, uint32_t type_id, const uint32_t *words, uint32_t nwords);
     void record_ext_inst_import(uint32_t id, const char *import);
+    void record_object(uint32_t id, uint32_t type_id, uint32_t from_id);
+
+    void mark_used(uint32_t id);
 
     InstructionStream &_instructions;
     Definitions _defs;

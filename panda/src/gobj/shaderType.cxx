@@ -550,6 +550,9 @@ output(std::ostream &out) const {
     out << 'u';
   }
   out << "sampler" << texture_type_suffixes[_texture_type];
+  if (_shadow) {
+    out << "Shadow";
+  }
 }
 
 /**
@@ -563,7 +566,11 @@ compare_to_impl(const ShaderType &other) const {
     return (_texture_type > other_sampled_image._texture_type)
          - (_texture_type < other_sampled_image._texture_type);
   }
-  return (_sampled_type > other_sampled_image._sampled_type)
-       - (_sampled_type < other_sampled_image._sampled_type);
+  if (_sampled_type != other_sampled_image._sampled_type) {
+    return (_sampled_type > other_sampled_image._sampled_type)
+         - (_sampled_type < other_sampled_image._sampled_type);
+  }
+  return (_shadow > other_sampled_image._shadow)
+       - (_shadow < other_sampled_image._shadow);
 }
 #endif  // CPPPARSER
