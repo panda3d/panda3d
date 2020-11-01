@@ -118,11 +118,12 @@ public:
     DT_none,
     DT_type,
     DT_type_pointer,
-    DT_variable,
+    DT_global,
     DT_constant,
     DT_ext_inst,
     DT_function_parameter,
-    DT_object, // generic object not listed above
+    DT_function,
+    DT_local,
   };
 
   enum DefinitionFlags {
@@ -163,10 +164,11 @@ public:
     uint32_t _type_id = 0;
     uint32_t _array_stride = 0;
     uint32_t _origin_id = 0; // set for loads, tracks original variable ID
+    uint32_t _function_id = 0;
     MemberDefinitions _members;
     int _flags = 0;
 
-    // Only defined for DT_variable and DT_type_pointer.
+    // Only defined for DT_global and DT_type_pointer.
     spv::StorageClass _storage_class;
 
     INLINE bool is_used() const;
@@ -215,14 +217,15 @@ public:
     uint32_t r_define_constant(InstructionIterator &it, const ShaderType *type, uint32_t constant);
     void r_annotate_struct_layout(InstructionIterator &it, uint32_t type_id);
 
-    void parse_instruction(const Instruction &op);
+    void parse_instruction(const Instruction &op, uint32_t &current_function_id);
     void record_type(uint32_t id, const ShaderType *type);
     void record_type_pointer(uint32_t id, spv::StorageClass storage_class, uint32_t type_id);
-    void record_variable(uint32_t id, uint32_t type_pointer_id, spv::StorageClass storage_class);
-    void record_function_parameter(uint32_t id, uint32_t type_id);
+    void record_global(uint32_t id, uint32_t type_pointer_id, spv::StorageClass storage_class);
+    void record_function_parameter(uint32_t id, uint32_t type_id, uint32_t function_id);
     void record_constant(uint32_t id, uint32_t type_id, const uint32_t *words, uint32_t nwords);
     void record_ext_inst_import(uint32_t id, const char *import);
-    void record_object(uint32_t id, uint32_t type_id, uint32_t from_id);
+    void record_function(uint32_t id, uint32_t type_id);
+    void record_local(uint32_t id, uint32_t type_id, uint32_t from_id, uint32_t function_id);
 
     void mark_used(uint32_t id);
 

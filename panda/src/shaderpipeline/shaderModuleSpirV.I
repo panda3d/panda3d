@@ -330,7 +330,8 @@ allocate_id() {
 /**
  * For a variable or function parameter, returns true if its value has been
  * loaded or passed into a function call.  For a type or type pointer, returns
- * true if it is the type of at least one variable that is marked "used".
+ * true if it is the type of at least one variable that is marked "used".  For
+ * a function, returns true if it is called at least once.
  */
 INLINE bool ShaderModuleSpirV::Definition::
 is_used() const {

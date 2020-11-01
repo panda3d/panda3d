@@ -408,7 +408,8 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
     program.addShader(&shader);
     if (!program.link(messages)) {
       shader_cat.error()
-        << "Failed to link " << filename << "\n";
+        << "Failed to link " << filename << ":\n"
+        << program.getInfoLog();
       return nullptr;
     }
 
