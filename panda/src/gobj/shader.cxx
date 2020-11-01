@@ -61,6 +61,22 @@ Shader(ShaderLanguage lang) :
 }
 
 /**
+ * Delete the compiled code, if it exists.
+ */
+Shader::
+~Shader() {
+  release_all();
+  // Note: don't try to erase ourselves from the table.  It currently keeps a
+  // reference forever, and so the only place where this constructor is called
+  // is in the destructor of the table itself.
+  /*if (_loaded) {
+    _load_table.erase(_filename);
+  } else {
+    _make_table.erase(_text);
+  }*/
+}
+
+/**
  * Generate an error message including a description of the specified
  * parameter.  Always returns false.
  */
@@ -2422,22 +2438,6 @@ get_compiler(ShaderLanguage lang) const {
 }
 
 /**
- * Delete the compiled code, if it exists.
- */
-Shader::
-~Shader() {
-  release_all();
-  // Note: don't try to erase ourselves from the table.  It currently keeps a
-  // reference forever, and so the only place where this constructor is called
-  // is in the destructor of the table itself.
-  /*if (_loaded) {
-    _load_table.erase(_filename);
-  } else {
-    _make_table.erase(_text);
-  }*/
-}
-
-/**
  * Loads the shader with the given filename.
  */
 PT(Shader) Shader::
@@ -2567,7 +2567,7 @@ load_compute(ShaderLanguage lang, const Filename &fn) {
   }
 
   PT(Shader) shader = new Shader(lang);
-  if (!shader->do_read_source(Stage::compute, fullpath, record)) {
+  if (!shader->read(sfile)) {
     return nullptr;
   }
 
