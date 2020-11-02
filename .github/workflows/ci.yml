@@ -182,37 +182,6 @@ jobs:
       run: cmake --build . --config ${{ matrix.config }} --parallel 4
       # END A
 
-    - name: Setup Python (Python 3.5)
-      if: contains(matrix.python, 'YES')
-      uses: actions/setup-python@v1
-      with:
-        python-version: 3.5
-    - name: Configure (Python 3.5)
-      if: contains(matrix.python, 'YES')
-      working-directory: build
-      shell: bash
-      run: >
-        cmake -DWANT_PYTHON_VERSION=3.5
-        -DPython_FIND_REGISTRY=NEVER -DPython_ROOT=$pythonLocation .
-    - name: Build (Python 3.5)
-      if: contains(matrix.python, 'YES')
-      # BEGIN A
-      working-directory: build
-      run: cmake --build . --config ${{ matrix.config }} --parallel 4
-      # END A
-    - name: Test (Python 3.5)
-      # BEGIN B
-      if: contains(matrix.python, 'YES')
-      working-directory: build
-      shell: bash
-      env:
-        PYTHONPATH: ${{ matrix.config }}
-      run: |
-        PYTHON_EXECUTABLE=$(grep 'Python_EXECUTABLE:' CMakeCache.txt | sed 's/.*=//')
-        $PYTHON_EXECUTABLE -m pip install pytest
-        $PYTHON_EXECUTABLE -m pytest ../tests
-      # END B
-
     - name: Setup Python (Python 3.6)
       if: contains(matrix.python, 'YES')
       uses: actions/setup-python@v1

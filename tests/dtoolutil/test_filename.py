@@ -20,4 +20,4 @@ def test_filename_ctor_pathlib():
 
     path = pathlib.Path(__file__)
     fn = Filename(path)
-    assert fn.to_os_specific_w() == str(path)
+    assert fn.to_os_specific_w().lower() == str(path).lower()

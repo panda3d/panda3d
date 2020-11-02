@@ -11,8 +11,8 @@
  * @date 2010-03-01
  */
 
-#ifndef __BULLET_SLIDER_CONSTRAINT_H__
-#define __BULLET_SLIDER_CONSTRAINT_H__
+#ifndef BULLETSLIDERCONSTRAINT_H
+#define BULLETSLIDERCONSTRAINT_H
 
 #include "pandabase.h"
 
@@ -117,4 +117,4 @@ private:
 
 #include "bulletSliderConstraint.I"
 
-#endif // __BULLET_SLIDER_CONSTRAINT_H__
+#endif // BULLETSLIDERCONSTRAINT_H

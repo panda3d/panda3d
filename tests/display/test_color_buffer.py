@@ -46,6 +46,16 @@ def material_attrib(request):
         return core.MaterialAttrib.make(mat)
 
 
+@pytest.fixture(scope='session')
+def light_attrib():
+    light = core.AmbientLight('amb')
+    light.color = (1, 1, 1, 1)
+    light_attrib = core.LightAttrib.make()
+    light_attrib = light_attrib.add_on_light(core.NodePath(light))
+
+    return light_attrib
+
+
 @pytest.fixture(scope='module', params=[False, True], ids=["srgb:off", "srgb:on"])
 def color_region(request, graphics_pipe):
     """Creates and returns a DisplayRegion with a depth buffer."""
@@ -297,3 +307,63 @@ def test_scaled_color_off_vertex(color_region, shader_attrib, material_attrib):
     result = render_color_pixel(color_region, state, vertex_color=TEST_COLOR)
     assert result.almost_equal(TEST_COLOR_SCALE, FUZZ)
 
+
+def test_color_transparency(color_region, shader_attrib, light_attrib):
+    mat = core.Material()
+    mat.diffuse = (1, 1, 1, 0.75)
+    material_attrib = core.MaterialAttrib.make(mat)
+
+    state = core.RenderState.make(
+        core.TransparencyAttrib.make(core.TransparencyAttrib.M_alpha),
+        light_attrib,
+        shader_attrib,
+        material_attrib,
+    )
+    result = render_color_pixel(color_region, state)
+    assert result.x == pytest.approx(0.75, 0.1)
+
+
+def test_color_transparency_flat(color_region, shader_attrib, light_attrib):
+    mat = core.Material()
+    mat.diffuse = (1, 1, 1, 0.75)
+    material_attrib = core.MaterialAttrib.make(mat)
+
+    state = core.RenderState.make(
+        core.TransparencyAttrib.make(core.TransparencyAttrib.M_alpha),
+        core.ColorAttrib.make_flat(TEST_COLOR),
+        light_attrib,
+        shader_attrib,
+        material_attrib,
+    )
+    result = render_color_pixel(color_region, state)
+    assert result.x == pytest.approx(0.75, 0.1)
+
+
+def test_color_transparency_vertex(color_region, shader_attrib, light_attrib):
+    mat = core.Material()
+    mat.diffuse = (1, 1, 1, 0.75)
+    material_attrib = core.MaterialAttrib.make(mat)
+
+    state = core.RenderState.make(
+        core.TransparencyAttrib.make(core.TransparencyAttrib.M_alpha),
+        core.ColorAttrib.make_vertex(),
+        light_attrib,
+        shader_attrib,
+        material_attrib,
+    )
+    result = render_color_pixel(color_region, state, vertex_color=(1, 1, 1, 0.5))
+    assert result.x == pytest.approx(0.75, 0.1)
+
+
+def test_color_transparency_no_light(color_region, shader_attrib):
+    mat = core.Material()
+    mat.diffuse = (1, 1, 1, 0.75)
+    material_attrib = core.MaterialAttrib.make(mat)
+
+    state = core.RenderState.make(
+        core.TransparencyAttrib.make(core.TransparencyAttrib.M_alpha),
+        shader_attrib,
+        material_attrib,
+    )
+    result = render_color_pixel(color_region, state)
+    assert result.x == pytest.approx(1.0, 0.1)

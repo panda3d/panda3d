@@ -1493,7 +1493,9 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     // Combine in alpha, which bypasses lighting calculations.  Use of lerp
     // here is a workaround for a radeon driver bug.
     if (key._calc_primary_alpha) {
-      if (key._color_type == ColorAttrib::T_vertex) {
+      if (key._material_flags & Material::F_diffuse) {
+        text << "\t result.a = attr_material[1].w;\n";
+      } else if (key._color_type == ColorAttrib::T_vertex) {
         text << "\t result.a = l_color.a;\n";
       } else if (key._color_type == ColorAttrib::T_flat) {
         text << "\t result.a = attr_color.a;\n";

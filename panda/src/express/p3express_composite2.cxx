@@ -20,6 +20,7 @@
 #include "virtualFileMountMultifile.cxx"
 #include "virtualFileMountRamdisk.cxx"
 #include "virtualFileMountSystem.cxx"
+#include "virtualFileMountZip.cxx"
 #include "virtualFileSimple.cxx"
 #include "virtualFileSystem.cxx"
 #include "weakPointerCallback.cxx"
@@ -30,3 +31,4 @@
 #include "windowsRegistry.cxx"
 #include "zStream.cxx"
 #include "zStreamBuf.cxx"
+#include "zipArchive.cxx"

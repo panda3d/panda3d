@@ -1,5 +1,5 @@
 """This defines the Messenger class, which is responsible for most of the
-event handling that happens on the Python side.
+:ref:`event handling <event-handlers>` that happens on the Python side.
 """
 
 __all__ = ['Messenger']
@@ -464,8 +464,7 @@ class Messenger:
                 #       'oldMethod: ' + repr(oldMethod) + '\n' +
                 #       'newFunction: ' + repr(newFunction) + '\n')
                 if (function == oldMethod):
-                    newMethod = types.MethodType(
-                        newFunction, method.__self__, method.__self__.__class__)
+                    newMethod = types.MethodType(newFunction, method.__self__)
                     params[0] = newMethod
                     # Found it retrun true
                     retFlag += 1
