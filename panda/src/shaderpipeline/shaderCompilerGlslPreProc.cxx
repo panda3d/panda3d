@@ -57,7 +57,7 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
 
   std::ostringstream sstr;
   std::set<Filename> open_files;
-  if (r_preprocess_source(module, sstr, in, filename, Filename(), open_files, record)) {
+  if (r_preprocess_source(module, sstr, in, filename, filename, open_files, record)) {
     into = sstr.str();
 
     // Strip trailing whitespace.

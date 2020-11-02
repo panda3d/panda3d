@@ -159,7 +159,7 @@ public:
 
     vector_uchar *data = new vector_uchar;
     if (!vf->read_file(*data, true)) {
-      static const std::string error_msg("failed to find file");
+      static const std::string error_msg("failed to read file");
       return new IncludeResult("", error_msg.data(), error_msg.size(), nullptr);
     }
 
@@ -189,7 +189,7 @@ public:
 
     vector_uchar *data = new vector_uchar;
     if (!vf->read_file(*data, true)) {
-      static const std::string error_msg("failed to find file");
+      static const std::string error_msg("failed to read file");
       return new IncludeResult("", error_msg.data(), error_msg.size(), nullptr);
     }
 
@@ -282,18 +282,31 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
   }
 
   bool is_cg = false;
-  bool add_include_directive = false;
   int glsl_version = 110;
 
   // Look for a special //Cg header.  Otherwise, it's a GLSL shader.
   if (check_cg_header(code)) {
     is_cg = true;
   }
-  else if (!preprocess_glsl(code, glsl_version, add_include_directive)) {
-    return nullptr;
+  else {
+    pset<Filename> once_files;
+    if (!preprocess_glsl(code, glsl_version, filename, once_files, record)) {
+      return nullptr;
+    }
   }
 
   if (!is_cg && glsl_version < 330 && glsl_version != 150) {
+    if (glsl_version != 100 && glsl_version != 110 && glsl_version != 120 &&
+        glsl_version != 130 && glsl_version != 140 && glsl_version != 300) {
+      shader_cat.error()
+        << "Invalid GLSL version " << glsl_version << ".\n";
+      return nullptr;
+    }
+
+    shader_cat.warning()
+      << "Support for GLSL " << glsl_version << " is deprecated.  Some "
+         "features may not work.  Minimum supported version is GLSL 330.\n";
+
     // Fall back to GlslPreProc handler.  Cleaner way to do this?
     static ShaderCompilerGlslPreProc preprocessor;
 
@@ -377,11 +390,7 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
   } else {
     shader.setEnvInput(glslang::EShSource::EShSourceGlsl, (EShLanguage)stage, glslang::EShClient::EShClientOpenGL, 450);
 
-    if (add_include_directive) {
-      shader.setPreamble(
-        "#extension GL_GOOGLE_include_directive : require\n"
-      );
-    }
+    shader.setPreamble("#extension GL_GOOGLE_cpp_style_line_directive : require\n");
   }
   shader.setEnvClient(glslang::EShClient::EShClientOpenGL, glslang::EShTargetOpenGL_450);
   shader.setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_0);
@@ -401,7 +410,7 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
 
   // I don't know why we need to pretend to link it into a program.  One would
   // think one can just do shader->getIntermediate() and convert that to SPIR-V,
-  // but that generates shaders that are ever-so-subtly wrong.
+  // but that generates shaders that are ever-so-subtly wrong, see: glslang#2418
   ShaderModuleSpirV::InstructionStream stream;
   {
     glslang::TProgram program;
@@ -419,10 +428,10 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
     spv::SpvBuildLogger logger;
     glslang::SpvOptions spvOptions;
     spvOptions.generateDebugInfo = true;
-    spvOptions.disableOptimizer = false;
+    spvOptions.disableOptimizer = true;
     spvOptions.optimizeSize = false;
     spvOptions.disassemble = false;
-    spvOptions.validate = true;
+    spvOptions.validate = false;
     glslang::GlslangToSpv(*ir, stream, &logger, &spvOptions);
 
     std::string messages = logger.getAllMessages();
@@ -451,8 +460,11 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
     opt.RegisterLegalizationPasses();
   }
 
+  // We skip validation because of the `uniform bool` bug, see SPIRV-Tools#3387
   std::vector<uint32_t> optimized;
-  if (!opt.Run(stream.get_data(), stream.get_data_size(), &optimized)) {
+  spvtools::ValidatorOptions validator_options;
+  if (!opt.Run(stream.get_data(), stream.get_data_size(), &optimized,
+               validator_options, true)) {
     return nullptr;
   }
 
@@ -482,9 +494,8 @@ check_cg_header(const vector_uchar &code) {
  * Returns false if any errors occurred.
  */
 bool ShaderCompilerGlslang::
-preprocess_glsl(vector_uchar &code, int &glsl_version, bool &uses_pragma_include) {
-  glsl_version = 110;
-
+preprocess_glsl(vector_uchar &code, int &glsl_version, const Filename &source_filename,
+                pset<Filename> &once_files, BamCacheRecord *record) {
   // Make sure it ends with a newline.  This makes parsing easier.
   if (!code.empty() && code.back() != (unsigned char)'\n') {
     code.push_back((unsigned char)'\n');
@@ -492,10 +503,12 @@ preprocess_glsl(vector_uchar &code, int &glsl_version, bool &uses_pragma_include
 
   char *p = (char *)&code[0];
   char *end = (char *)&code[0] + code.size();
-  bool has_code = false;
+  int lineno = 1;
+  bool had_include = false;
 
   while (p < end) {
     if (isspace(*p)) {
+      if (*p == '\n') ++lineno;
       ++p;
       continue;
     }
@@ -506,26 +519,42 @@ preprocess_glsl(vector_uchar &code, int &glsl_version, bool &uses_pragma_include
       if (*p == '/') {
         // Skip till end of line.
         do { ++p; } while (*p != '\n');
+        ++lineno;
       }
       else if (*p == '*') {
         // Skip till */
-        do { ++p; } while ((p + 1) < end && (p[0] != '*' || p[1] != '/'));
+        do {
+          ++p;
+          if (*p == '\n') ++lineno;
+        } while ((p + 1) < end && (p[0] != '*' || p[1] != '/'));
+        ++p;
+      }
+      else if (*p == '\n') {
+        ++lineno;
       }
     }
     else if (*p == '#') {
-      // Check for a preprocessor directive.
+      // Skip whitespace after # to find start of preprocessor directive.
+      char *line_start = p;
       do { ++p; } while (isspace(*p) && *p != '\n');
+
+      // Read directive keyword
       char *directive = p;
       do { ++p; } while (!isspace(*p));
       size_t directive_size = p - directive;
-      do { ++p; } while (isspace(*p) && *p != '\n');
+
+      // Skip whitespace until we reach EOL or beginning of argument
+      while (isspace(*p) && *p != '\n') {
+        ++p;
+      }
 
       if (directive_size == 7 && strncmp(directive, "version", directive_size) == 0) {
         glsl_version = strtol(p, &p, 10);
 
-        if (!isspace(*p)) {
-          shader_cat.error()
-            << "Invalid version number in #version directive\n";
+        if (!isspace(*p) || glsl_version <= 0) {
+          shader_cat.error(false)
+            << "ERROR: " << source_filename << ":" << lineno
+            << ": invalid version number in #version directive\n";
           return false;
         }
 
@@ -541,55 +570,200 @@ preprocess_glsl(vector_uchar &code, int &glsl_version, bool &uses_pragma_include
       else if (directive_size == 6 && glsl_preprocess &&
                strncmp(directive, "pragma", directive_size) == 0) {
         if (strncmp(p, "include", 7) == 0 && !isalnum(p[7]) && p[7] != '_') {
-          // Turn this into a normal include directive (by replacing the word
-          // "pragma" with spaces) and enable the GL_GOOGLE_include_directive
-          // extension using the preamble.
-          memset(directive, ' ', directive_size);
-          uses_pragma_include = true;
-          has_code = true;
+          // We insert the included file ourselves, so that we can still handle
+          // any `#pragma include` in included files.  This implementation is
+          // probably fairly inefficient, but that's okay, because this is just
+          // here to support a deprecated behavior.
 
           static bool warned = false;
           if (!warned) {
             warned = true;
-            shader_cat.warning()
-              << "#pragma include is deprecated, use the "
+            shader_cat.warning(false)
+              << "WARNING: " << source_filename << ":" << lineno
+              << ": #pragma include is deprecated, use the "
                  "GL_GOOGLE_include_directive extension instead.\n";
           }
+
+          p += 7;
+          while (isspace(*p) && *p != '\n') { ++p; }
+
+          char quote = *p;
+          if (quote != '"' && quote != '<') {
+            shader_cat.error(false)
+              << "ERROR: " << source_filename << ":" << lineno
+              << ": expected < or \" after #pragma include\n";
+            return false;
+          }
+
+          *p = '"';
+          char *fn_start = ++p;
+          if (quote == '<') {
+            quote = '>';
+          }
+          while (*p != quote && *p != '\n') {
+            ++p;
+          }
+          if (*p != quote) {
+            shader_cat.error(false)
+              << "ERROR: " << source_filename << ":" << lineno
+              << ": malformed #pragma include, expected " << quote << " before EOL\n";
+            return false;
+          }
+
+          Filename fn = std::string(fn_start, p);
+          DSearchPath path(get_model_path());
+          if (quote == '"') {
+            // A regular include, with double quotes.  Probably a local file.
+            if (!source_filename.empty()) {
+              path.prepend_directory(source_filename.get_dirname());
+            }
+          } else {
+            *p = '"';
+          }
+
+          // Expect EOL.
+          do { ++p; } while (isspace(*p) && *p != '\n');
+          if (*p != '\n') {
+            shader_cat.error(false)
+              << "ERROR: " << source_filename << ":" << lineno
+              << ": unexpected '" << *p << "' before EOL\n";
+            return false;
+          }
+          ++lineno;
+          ++p;
+
+          VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+          PT(VirtualFile) vf = vfs->find_file(fn, path);
+          if (vf == nullptr) {
+            shader_cat.error(false)
+              << "ERROR: " << source_filename << ":" << lineno
+              << ": failed to find included file: " << fn << "\n";
+            return false;
+          }
+
+          Filename full_fn = vf->get_filename();
+          if (once_files.count(full_fn)) {
+            continue;
+          }
+
+          vector_uchar inc_code;
+          if (!vf->read_file(inc_code, true)) {
+            shader_cat.error(false)
+              << "ERROR: " << source_filename << ":" << lineno
+              << ": failed to read included file: " << fn << "\n";
+            return false;
+          }
+
+          int nested_glsl_version = 0;
+          if (!preprocess_glsl(inc_code, nested_glsl_version, full_fn, once_files, record)) {
+            return false;
+          }
+          if (nested_glsl_version != 0) {
+            shader_cat.error(false)
+              << "ERROR: " << fn
+              << ": included file should not specify #version\n";
+            return false;
+          }
+
+          // Replace this line with the next:
+          // #pragma include "test.glsl"
+          // #line 1         "test.glsl"
+          // We know that the second one must be less long than the first one,
+          // so we overwrite everything up to the quote with spaces.
+          memcpy(line_start, "#line 1", 7);
+          memset(line_start + 7, ' ', fn_start - line_start - 8);
+
+          // Restore the #line number by appending it to the included code.
+          std::ostringstream line_str;
+          line_str << "#line " << lineno << " \"" << source_filename << "\"\n";
+          std::string line = line_str.str();
+          std::copy((unsigned char *)line.data(), (unsigned char *)line.data() + line.size(),
+                    std::back_inserter(inc_code));
+
+          // Insert the code bytes and reposition the pointer after it.
+          size_t offset = p - (char *)&code[0];
+          code.insert(code.begin() + offset, inc_code.begin(), inc_code.end());
+          p = (char *)&code[0] + offset + inc_code.size();
+          end = (char *)&code[0] + code.size();
+          had_include = true;
+          continue;
+        }
+        else if (strncmp(p, "once", 4) == 0 && isspace(p[4])) {
+          // Expect EOL.
+          p += 4;
+          while (isspace(*p) && *p != '\n') {
+            ++p;
+          }
+          if (*p != '\n') {
+            shader_cat.error(false)
+              << "ERROR: " << source_filename << ":" << lineno
+              << ": unexpected '" << *p << "' before EOL\n";
+            return false;
+          }
+
+          if (source_filename.empty()) {
+            shader_cat.warning(false)
+              << "WARNING: " << source_filename << ":" << lineno
+              << ": ignoring #pragma once in main file\n";
+          } else {
+            once_files.insert(source_filename);
+          }
+
+          // Blank out the whole line to avoid glslang warning.
+          memset(line_start, ' ', p - line_start);
+          ++lineno;
+          ++p;
+          continue;
+        }
+        else if (strncmp(p, "optionNV", 8) == 0 && isspace(p[8])) {
+          // glslang struggles to parse this pragma, so blank it out.
+          static bool warned = false;
+          if (!warned) {
+            warned = true;
+            shader_cat.warning(false)
+              << "WARNING: " << source_filename << ":" << lineno
+              << ": #pragma optionNV is ignored.\n";
+          }
+
+          p += 8;
+          while (*p != '\n') {
+            ++p;
+          }
+          memset(line_start, ' ', p - line_start);
+          ++lineno;
+          ++p;
+          continue;
         }
       }
-      else {
-        has_code = true;
+      else if (directive_size == 5 && strncmp(directive, "endif", directive_size) == 0) {
+        // Check for an #endif after an include.  We have to restore the line
+        // number in case the include happened under an #if block.  Again, this
+        // is inefficient, but it doesn't matter.
+        if (had_include) {
+          while (*p != '\n') { ++p; }
+          ++lineno;
+          ++p;
+
+          std::ostringstream line_str;
+          line_str << "#line " << lineno << " \"" << source_filename << "\"\n";
+          std::string line = line_str.str();
+
+          size_t offset = p - (char *)&code[0];
+          code.insert(code.begin() + offset, (unsigned char *)line.data(),
+                      (unsigned char *)line.data() + line.size());
+
+          p = (char *)&code[0] + offset + line.size();
+          end = (char *)&code[0] + code.size();
+          continue;
+        }
       }
 
       // Skip the rest of the line.
       while (*p != '\n') { ++p; }
-    }
-    else {
-      has_code = true;
+      ++lineno;
     }
 
     ++p;
-  }
-
-  if (!has_code) {
-    shader_cat.error()
-      << "Shader contains no code\n";
-    return false;
-  }
-
-  if (glsl_version < 330 && glsl_version != 150) {
-    if (glsl_version == 100 || glsl_version == 110 || glsl_version == 120 ||
-        glsl_version == 130 || glsl_version == 140 || glsl_version == 300) {
-      shader_cat.warning()
-        << "Support for GLSL " << glsl_version << " is deprecated.  Some "
-           "features may not work.  Minimum supported version is GLSL 330.\n";
-      return true;
-    }
-    else {
-      shader_cat.error()
-        << "Invalid GLSL version " << glsl_version << ".\n";
-      return false;
-    }
   }
 
   return true;

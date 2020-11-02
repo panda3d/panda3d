@@ -35,7 +35,10 @@ public:
 
 private:
   static bool check_cg_header(const vector_uchar &code);
-  static bool preprocess_glsl(vector_uchar &code, int &glsl_version, bool &uses_pragma_include);
+  static bool preprocess_glsl(vector_uchar &code, int &glsl_version,
+                              const Filename &source_filename,
+                              pset<Filename> &once_files,
+                              BamCacheRecord *record = nullptr);
   static bool postprocess_glsl150(ShaderModuleSpirV::InstructionStream &stream);
 
 public:
