@@ -122,10 +122,9 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words) :
           // a shadow sampler; this isn't always done by the compiler, and the
           // spec isn't clear that this is necessary, but it helps spirv-cross
           // properly generate shadow samplers.
-          const ShaderType::SampledImage *sampled_image_type;
-          DCAST_INTO_V(sampled_image_type, def._type);
-
-          if (!sampled_image_type->is_shadow()) {
+          const ShaderType::SampledImage *sampled_image_type =
+            def._type->as_sampled_image();
+          if (sampled_image_type != nullptr && !sampled_image_type->is_shadow()) {
             // No, change the type of this variable.
             var.type = ShaderType::register_type(ShaderType::SampledImage(
               sampled_image_type->get_texture_type(),
