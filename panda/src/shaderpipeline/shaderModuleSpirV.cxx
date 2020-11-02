@@ -15,6 +15,10 @@
 #include "string_utils.h"
 #include "shaderType.h"
 
+#ifndef NDEBUG
+#include <glslang/SPIRV/disassemble.h>
+#endif
+
 TypeHandle ShaderModuleSpirV::_type_handle;
 
 /**
@@ -169,6 +173,13 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words) :
       }
     }
   }
+
+#ifndef NDEBUG
+  if (shader_cat.is_spam()) {
+    spv::Disassemble(shader_cat.spam()
+      << "Disassembly for " << *this << ":\n", _instructions);
+  }
+#endif
 
   // We no longer need the debugging information, so it can be safely stripped
   // from the module.
