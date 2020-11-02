@@ -607,20 +607,20 @@ read(const ShaderFile &sfile, BamCacheRecord *record) {
         !do_read_source(Stage::vertex, sfile._vertex, record)) {
       return false;
     }
-    if (!sfile._fragment.empty() &&
-        !do_read_source(Stage::fragment, sfile._fragment, record)) {
-      return false;
-    }
-    if (!sfile._geometry.empty() &&
-        !do_read_source(Stage::geometry, sfile._geometry, record)) {
-      return false;
-    }
     if (!sfile._tess_control.empty() &&
         !do_read_source(Stage::tess_control, sfile._tess_control, record)) {
       return false;
     }
     if (!sfile._tess_evaluation.empty() &&
         !do_read_source(Stage::tess_evaluation, sfile._tess_evaluation, record)) {
+      return false;
+    }
+    if (!sfile._geometry.empty() &&
+        !do_read_source(Stage::geometry, sfile._geometry, record)) {
+      return false;
+    }
+    if (!sfile._fragment.empty() &&
+        !do_read_source(Stage::fragment, sfile._fragment, record)) {
       return false;
     }
     if (!sfile._compute.empty() &&
@@ -710,20 +710,20 @@ load(const ShaderFile &sbody, BamCacheRecord *record) {
         !do_load_source(Stage::vertex, sbody._vertex, record)) {
       return false;
     }
-    if (!sbody._fragment.empty() &&
-        !do_load_source(Stage::fragment, sbody._fragment, record)) {
-      return false;
-    }
-    if (!sbody._geometry.empty() &&
-        !do_load_source(Stage::geometry, sbody._geometry, record)) {
-      return false;
-    }
     if (!sbody._tess_control.empty() &&
         !do_load_source(Stage::tess_control, sbody._tess_control, record)) {
       return false;
     }
     if (!sbody._tess_evaluation.empty() &&
         !do_load_source(Stage::tess_evaluation, sbody._tess_evaluation, record)) {
+      return false;
+    }
+    if (!sbody._geometry.empty() &&
+        !do_load_source(Stage::geometry, sbody._geometry, record)) {
+      return false;
+    }
+    if (!sbody._fragment.empty() &&
+        !do_load_source(Stage::fragment, sbody._fragment, record)) {
       return false;
     }
     if (!sbody._compute.empty() &&
