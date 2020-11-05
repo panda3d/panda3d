@@ -304,8 +304,8 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
     }
 
     shader_cat.warning()
-      << "Support for GLSL " << glsl_version << " is deprecated.  Some "
-         "features may not work.  Minimum supported version is GLSL 330.\n";
+      << filename << " uses deprecated GLSL version " << glsl_version
+      << ".  Some features may not work.  Minimum supported version is 330.\n";
 
     // Fall back to GlslPreProc handler.  Cleaner way to do this?
     static ShaderCompilerGlslPreProc preprocessor;
@@ -448,6 +448,10 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
 
   // Special validation for features in GLSL 330 that are not in GLSL 150.
   if (glsl_version == 150 && !postprocess_glsl150(stream)) {
+    return nullptr;
+  }
+
+  if (is_cg && !postprocess_cg(stream)) {
     return nullptr;
   }
 
@@ -807,6 +811,32 @@ postprocess_glsl150(ShaderModuleSpirV::InstructionStream &stream) {
         << "floatBitsToInt, floatBitsToUint, intBitsToFloat, uintBitsToFloat"
            " require #version 330 or #extension GL_ARB_shader_bit_encoding.\n";
       return false;
+    }
+  }
+
+  return true;
+}
+
+/**
+ * Does any postprocessing needed for Cg.
+ */
+bool ShaderCompilerGlslang::
+postprocess_cg(ShaderModuleSpirV::InstructionStream &stream) {
+  pset<uint32_t> glsl_imports;
+
+  for (ShaderModuleSpirV::Instruction op : stream) {
+    if (op.opcode == spv::OpExtInstImport) {
+      if (strcmp((const char*)&op.args[1], "GLSL.std.450") == 0) {
+        glsl_imports.insert(op.args[0]);
+      }
+    }
+    else if (op.opcode == spv::OpExtInst) {
+      // glslang maps round() to roundEven(), which is correct for SM 4.0+ but
+      // not supported on pre-DX10 hardware, and Cg made no guarantee of
+      // round-to-even behavior to begin with, so we switch it back to round().
+      if (glsl_imports.count(op.args[2]) && op.args[3] == 2) {
+        op.args[3] = 1;
+      }
     }
   }
 

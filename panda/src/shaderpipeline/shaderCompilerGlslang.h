@@ -40,6 +40,7 @@ private:
                               pset<Filename> &once_files,
                               BamCacheRecord *record = nullptr);
   static bool postprocess_glsl150(ShaderModuleSpirV::InstructionStream &stream);
+  static bool postprocess_cg(ShaderModuleSpirV::InstructionStream &stream);
 
 public:
   static TypeHandle get_class_type() {
