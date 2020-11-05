@@ -956,8 +956,14 @@ update_shader_texture_bindings(DXShaderContext9 *prev, GSG *gsg) {
       tex = tex->load_related(spec._suffix);
     }
 
-    if (tex->get_texture_type() != spec._desired_type) {
-      continue;
+    Texture::TextureType tex_type = tex->get_texture_type();
+    if (tex_type != spec._desired_type) {
+      // Permit binding 2D texture to a 1D target, if it is one pixel high.
+      if (tex_type != Texture::TT_2d_texture ||
+          spec._desired_type != Texture::TT_1d_texture ||
+          tex->get_y_size() != 1) {
+        continue;
+      }
     }
 
     int texunit = reg.freg;
