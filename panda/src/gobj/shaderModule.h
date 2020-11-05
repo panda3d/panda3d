@@ -97,45 +97,56 @@ public:
    * driver to check whether cross-compilation is possible, or whether certain
    * transformation steps may need to be applied.
    */
-  enum Capabilities {
+  enum Capabilities : uint64_t {
+    C_basic_shader = 1 << 0,
+    C_vertex_texture = 1 << 1,
+    C_sampler_shadow = 1 << 2, // 1D and 2D only
+
+    // GLSL 1.20
+    C_invariant = 1 << 3,
+    C_matrix_non_square = 1 << 4,
+
     // GLSL 1.30
-    C_integer = 1 << 0,
-    C_texture_fetch = 1 << 1, // texelFetch, textureSize, etc.
-    C_buffer_texture = 1 << 2,
-    C_vertex_id = 1 << 3,
-    C_round_even = 1 << 4,
+    C_integer = 1 << 5,
+    C_texture_lod = 1 << 6, // textureLod, textureGrad, etc.
+    C_texture_fetch = 1 << 7, // texelFetch, textureSize, etc.
+    C_sampler_cube_shadow = 1 << 8,
+    C_vertex_id = 1 << 9,
+    C_round_even = 1 << 10, // roundEven function, also in SM 4.0
 
-    // GLSL 1.40
-    C_instance_id = 1 << 5,
+    // GLSL 1.40 / SM 4.0
+    C_instance_id = 1 << 11,
+    C_buffer_texture = 1 << 12, // ES 3.20
 
-    // GLSL 1.50
-    C_geometry_shader = 1 << 6,
-    C_primitive_id = 1 << 7,
+    // GLSL 1.50 / SM 4.0
+    C_geometry_shader = 1 << 13,
+    C_primitive_id = 1 << 14,
 
-    // GLSL 3.30 / ARB_shader_bit_encoding
-    C_bit_encoding = 1 << 8,
+    // GLSL 3.30 / ES 3.00 / SM 4.0
+    C_bit_encoding = 1 << 15,
 
-    // GLSL 4.00
-    C_double = 1 << 9,
-    C_cube_map_array = 1 << 10,
-    C_tessellation_shader = 1 << 11,
-    C_sample_variables = 1 << 12,
-    C_extended_arithmetic = 1 << 13,
-    C_texture_query_lod = 1 << 14,
+    // GLSL 4.00 / ES 3.20 / SM 5.0
+    C_texture_gather = 1 << 16,
+    C_double = 1 << 17,
+    C_cube_map_array = 1 << 18,
+    C_tessellation_shader = 1 << 19,
+    C_sample_variables = 1 << 20,
+    C_extended_arithmetic = 1 << 21,
+    C_texture_query_lod = 1 << 22, // not in ES
 
-    // GLSL 4.20
-    C_image_load_store = 1 << 15,
+    // GLSL 4.20 / ES 3.10 / SM 5.0
+    C_image_load_store = 1 << 23,
 
-    // GLSL 4.30
-    C_compute_shader = 1 << 16,
-    C_texture_query_levels = 1 << 17,
+    // GLSL 4.30 / ES 3.10 / SM 5.0
+    C_compute_shader = 1 << 24,
+    C_texture_query_levels = 1 << 25, // not in ES
 
     // GLSL 4.40 / ARB_enhanced_layouts
-    C_enhanced_layouts = 1 << 18,
+    C_enhanced_layouts = 1 << 26,
 
     // GLSL 4.50
-    C_derivative_control = 1 << 19,
-    C_texture_query_samples = 1 << 20,
+    C_derivative_control = 1 << 27,
+    C_texture_query_samples = 1 << 28,
   };
 
   static std::string format_stage(Stage stage);

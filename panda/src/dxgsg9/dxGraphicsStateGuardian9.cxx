@@ -395,13 +395,10 @@ extract_texture_data(Texture *tex) {
  */
 ShaderContext *DXGraphicsStateGuardian9::
 prepare_shader(Shader *se) {
+  nassertr(supports_basic_shaders(), nullptr);
+
   PStatTimer timer(_prepare_shader_pcollector);
-
-  if (_supports_basic_shaders) {
-    return new DXShaderContext9(se, this);
-  }
-
-  return nullptr;
+  return new DXShaderContext9(se, this);
 }
 
 /**
@@ -2283,11 +2280,14 @@ reset() {
 
   // We require at least shader model 3.
   _supports_hlsl = (_pixel_shader_version_major >= 3);
-  _supports_basic_shaders = _supports_hlsl;
 
   _supported_shader_caps = 0;
-  if (_supports_basic_shaders) {
-    _supported_shader_caps = ShaderModule::C_integer;
+  if (_supports_hlsl) {
+    _supported_shader_caps = ShaderModule::C_basic_shader
+                           | ShaderModule::C_vertex_texture
+                           | ShaderModule::C_sampler_shadow
+                           | ShaderModule::C_integer
+                           | ShaderModule::C_texture_lod;
   }
 
   _vertex_shader_profile = (char *) D3DXGetVertexShaderProfile (_d3d_device);

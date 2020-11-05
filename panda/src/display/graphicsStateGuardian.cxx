@@ -240,7 +240,6 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   _supports_depth_stencil = false;
   _supports_shadow_filter = false;
   _supports_sampler_objects = false;
-  _supports_basic_shaders = false;
   _supports_glsl = false;
   _supports_hlsl = false;
   _supports_spir_v = false;
@@ -3548,7 +3547,7 @@ ensure_generated_shader(const RenderState *state) {
 
   if (shader_attrib->auto_shader()) {
     if (_shader_generator == nullptr) {
-      if (!_supports_basic_shaders) {
+      if (!get_supports_basic_shaders()) {
         return;
       }
       _shader_generator = new ShaderGenerator(this);

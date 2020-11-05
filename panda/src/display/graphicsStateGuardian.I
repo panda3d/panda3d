@@ -568,11 +568,11 @@ get_supports_sampler_objects() const {
 }
 
 /**
- * Returns true if this particular GSG supports arbfp1+arbvp1 or above.
+ * Returns true if this particular GSG supports vertex and fragment shaders.
  */
 INLINE bool GraphicsStateGuardian::
 get_supports_basic_shaders() const {
-  return _supports_basic_shaders;
+  return (_supported_shader_caps & ShaderModule::C_basic_shader) != 0;
 }
 
 /**

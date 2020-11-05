@@ -621,7 +621,6 @@ protected:
   bool _supports_luminance_texture;
   bool _supports_shadow_filter;
   bool _supports_sampler_objects;
-  bool _supports_basic_shaders;
   bool _supports_glsl;
   bool _supports_hlsl;
   bool _supports_spir_v;

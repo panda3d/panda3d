@@ -48,8 +48,8 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words) :
         const Definition &def = writer.get_definition(op.args[2]);
         nassertv(def._dtype == DT_ext_inst);
         if (def._name == "GLSL.std.450" && op.args[3] == 2) {
-          // We mark the use of the GLSL roundEven() function, which is not
-          // supported by HLSL and requires GLSL 1.30.
+          // We mark the use of the GLSL roundEven() function, which requires
+          // GLSL 1.30 or HLSL SM 4.0.
           _used_caps |= C_round_even;
         }
       }
@@ -72,6 +72,10 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words) :
       switch ((spv::Capability)op.args[0]) {
       case spv::CapabilityFloat64:
         _used_caps |= C_double;
+        break;
+
+      case spv::CapabilityImageGatherExtended:
+        _used_caps |= C_texture_gather;
         break;
 
       case spv::CapabilityImageCubeArray:
@@ -172,6 +176,13 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words) :
         break;
       }
     }
+    else if (def._dtype == DT_type && def._type != nullptr) {
+      if (const ShaderType::Matrix *matrix_type = def._type->as_matrix()) {
+        if (matrix_type->get_num_rows() != matrix_type->get_num_columns()) {
+          _used_caps |= C_matrix_non_square;
+        }
+      }
+    }
   }
 
 #ifndef NDEBUG
@@ -189,15 +200,59 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words) :
   for (InstructionIterator it = _instructions.begin_functions(); it != _instructions.end(); ++it) {
     Instruction op = *it;
     switch (op.opcode) {
+    case spv::OpDecorate:
+      if ((spv::Decoration)op.args[1] == spv::DecorationInvariant) {
+        _used_caps |= C_invariant;
+      }
+      break;
+
     case spv::OpImageRead:
     case spv::OpImageWrite:
       _used_caps |= C_image_load_store;
+      break;
+
+    case spv::OpImageSampleExplicitLod:
+    case spv::OpImageSampleProjExplicitLod:
+      _used_caps |= C_texture_lod;
+      // fall through
+    case spv::OpImageSampleImplicitLod:
+    case spv::OpImageSampleProjImplicitLod:
+      if (stage == Stage::vertex) {
+        _used_caps |= C_vertex_texture;
+      }
+      break;
+
+    case spv::OpImageSampleDrefExplicitLod:
+    case spv::OpImageSampleProjDrefExplicitLod:
+      _used_caps |= C_texture_lod;
+      // fall through
+    case spv::OpImageSampleDrefImplicitLod:
+    case spv::OpImageSampleProjDrefImplicitLod:
+      _used_caps |= C_sampler_shadow;
+
+      {
+        const Definition &sampler_def = writer.get_definition(op.args[2]);
+        if (sampler_def._type != nullptr) {
+          const ShaderType::SampledImage *sampler = sampler_def._type->as_sampled_image();
+          if (sampler != nullptr &&
+              sampler->get_texture_type() == Texture::TT_cube_map) {
+            _used_caps |= C_sampler_cube_shadow;
+          }
+        }
+      }
+      if (stage == Stage::vertex) {
+        _used_caps |= C_vertex_texture;
+      }
       break;
 
     case spv::OpImageFetch:
     case spv::OpImageQuerySizeLod:
     case spv::OpImageQuerySize:
       _used_caps |= C_texture_fetch;
+      break;
+
+    case spv::OpImageGather:
+      _used_caps |= C_texture_gather;
       break;
 
     case spv::OpImageQueryLod:

@@ -2819,6 +2819,9 @@ prepare_now(PreparedGraphicsObjects *prepared_objects,
     }
     out << std::endl;
 
+    // Insert nullptr so that we don't spam this error next time.
+    _contexts[prepared_objects] = nullptr;
+
     return nullptr;
   }
 
