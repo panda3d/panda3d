@@ -1850,10 +1850,34 @@ reset() {
   }
 #endif
 
+#ifndef OPENGLES_1
+  _supports_program_interface_query = false;
+
+  if (is_at_least_gl_version(4, 3) || is_at_least_gles_version(3, 1)
+#ifndef OPENGLES
+      || has_extension("GL_ARB_program_interface_query")
+#endif
+      ) {
+
+    _glGetProgramInterfaceiv = (PFNGLGETPROGRAMINTERFACEIVPROC)
+       get_extension_func("glGetProgramInterfaceiv");
+    _glGetProgramResourceName = (PFNGLGETPROGRAMRESOURCENAMEPROC)
+       get_extension_func("glGetProgramResourceName");
+    _glGetProgramResourceiv = (PFNGLGETPROGRAMRESOURCEIVPROC)
+       get_extension_func("glGetProgramResourceiv");
+
+    if (_glGetProgramInterfaceiv != nullptr &&
+        _glGetProgramResourceName != nullptr &&
+        _glGetProgramResourceiv != nullptr) {
+      _supports_program_interface_query = true;
+    }
+  }
+#endif
+
   // Check for SPIR-V support.
 #ifndef OPENGLES
   _supports_spir_v = false;
-  if (has_extension("GL_ARB_gl_spirv")) {
+  if (_supports_program_interface_query && has_extension("GL_ARB_gl_spirv")) {
     _glShaderBinary = (PFNGLSHADERBINARYPROC)
       get_extension_func("glShaderBinary");
     _glSpecializeShader = (PFNGLSPECIALIZESHADERARBPROC)
@@ -2125,13 +2149,7 @@ reset() {
 #ifndef OPENGLES
   // Check for SSBOs.
   if (is_at_least_gl_version(4, 3) || has_extension("ARB_shader_storage_buffer_object")) {
-    _supports_shader_buffers = true;
-    _glGetProgramInterfaceiv = (PFNGLGETPROGRAMINTERFACEIVPROC)
-       get_extension_func("glGetProgramInterfaceiv");
-    _glGetProgramResourceName = (PFNGLGETPROGRAMRESOURCENAMEPROC)
-       get_extension_func("glGetProgramResourceName");
-    _glGetProgramResourceiv = (PFNGLGETPROGRAMRESOURCEIVPROC)
-       get_extension_func("glGetProgramResourceiv");
+    _supports_shader_buffers = _supports_program_interface_query;
   } else
 #endif
   {
