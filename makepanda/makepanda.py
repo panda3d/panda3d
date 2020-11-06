@@ -817,7 +817,7 @@ if (COMPILER=="GCC"):
     SmartPkgEnable("OPUS",      "opusfile",  ("opusfile", "opus", "ogg"), ("ogg/ogg.h", "opus/opusfile.h", "opus"))
     SmartPkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
     SmartPkgEnable("PNG",       "libpng",    ("png"), "png.h", tool = "libpng-config")
-    SmartPkgEnable("GLSLANG",   "",          ("glslang", "SPIRV", "OSDependent", "OGLCompiler", "HLSL"), "glslang/Public/ShaderLang.h")
+    SmartPkgEnable("GLSLANG",   "",          ("MachineIndependent", "GenericCodeGen", "SPIRV", "OSDependent", "OGLCompiler", "HLSL"), "glslang/Public/ShaderLang.h")
     SmartPkgEnable("SPIRV-TOOLS", "",        ("SPIRV-Tools", "SPIRV-Tools-opt"), "spirv-tools/optimizer.hpp")
     SmartPkgEnable("SPIRV-CROSS-GLSL", "",   ("spirv-cross-core", "spirv-cross-glsl"), "spirv_cross/spirv_cross.hpp")
     SmartPkgEnable("SPIRV-CROSS-HLSL", "",   ("spirv-cross-core", "spirv-cross-hlsl"), "spirv_cross/spirv_cross.hpp")
