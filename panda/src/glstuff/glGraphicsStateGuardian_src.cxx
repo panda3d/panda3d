@@ -3533,7 +3533,7 @@ reset() {
       GLint num_binary_formats = 0;
       glGetIntegerv(GL_NUM_SHADER_BINARY_FORMATS, &num_binary_formats);
 
-      if (num_binary_formats >= 0) {
+      if (num_binary_formats > 0) {
         GLCAT.debug()
           << "Supported shader binary formats:\n";
         GLCAT.debug() << " ";
@@ -3548,7 +3548,7 @@ reset() {
         }
         GLCAT.debug(false) << "\n";
       } else {
-        GLCAT.debug() << "No program binary formats supported.\n";
+        GLCAT.debug() << "No shader binary formats supported.\n";
       }
     } else {
       GLCAT.debug() << "Shader binary loading not supported.\n";
@@ -3565,7 +3565,7 @@ reset() {
     // gp5fp - OpenGL fragment profile for GeForce 400 Series and up
     _shader_model = SM_50;
   }
-  else if (_glsl_version >= 300 || has_extension("GL_NV_gpu_program4")) {
+  else if (_glsl_version >= 330 || has_extension("GL_NV_gpu_program4")) {
     // gp4fp - OpenGL fragment profile for G8x (GeForce 8xxx and up)
     _shader_model = SM_40;
   }
@@ -3611,6 +3611,10 @@ reset() {
   _auto_detect_shader_model = _shader_model;
 
   if (GLCAT.is_debug()) {
+    std::ostream &out = GLCAT.debug();
+    out << "shader caps = ";
+    ShaderModule::output_capabilities(out, _supported_shader_caps);
+    out << "\n";
     GLCAT.debug() << "shader model = " << _shader_model << "\n";
   }
 
