@@ -1708,9 +1708,10 @@ reset() {
 
   if (is_at_least_gles_version(3, 1)) {
     _supported_shader_caps |=
-      ShaderModule::C_compute_shader |
+      ShaderModule::C_texture_gather |
+      ShaderModule::C_extended_arithmetic |
       ShaderModule::C_image_load_store |
-      ShaderModule::C_extended_arithmetic;
+      ShaderModule::C_compute_shader;
   }
 
   if (is_at_least_gles_version(3, 2)) {
@@ -1813,6 +1814,7 @@ reset() {
 
     if (_glsl_version >= 400) {
       _supported_shader_caps |=
+        ShaderModule::C_texture_gather |
         ShaderModule::C_double |
         ShaderModule::C_cube_map_array |
         ShaderModule::C_tessellation_shader |
@@ -1821,6 +1823,10 @@ reset() {
         ShaderModule::C_texture_query_lod;
     }
     else {
+      // This extension is very limited, should we break up C_texture_gather?
+      //if (has_extension("GL_ARB_texture_gather")) {
+      //  _supported_shader_caps |= ShaderModule::C_texture_gather;
+      //}
       if (has_extension("GL_ARB_gpu_shader_fp64")) {
         _supported_shader_caps |= ShaderModule::C_double;
       }
