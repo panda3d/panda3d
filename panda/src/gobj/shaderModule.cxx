@@ -171,6 +171,9 @@ output_capabilities(std::ostream &out, int caps) {
   if (caps & C_bit_encoding) {
     out << "bit_encoding ";
   }
+  if (caps & C_texture_gather) {
+    out << "texture_gather ";
+  }
   if (caps & C_double) {
     out << "double ";
   }
