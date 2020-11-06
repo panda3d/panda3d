@@ -108,7 +108,7 @@ public:
 
     // GLSL 1.30
     C_integer = 1 << 5,
-    C_texture_lod = 1 << 6, // textureLod, textureGrad, etc.
+    C_texture_lod = 1 << 6, // textureLod in vshader doesn't count, textureGrad does
     C_texture_fetch = 1 << 7, // texelFetch, textureSize, etc.
     C_sampler_cube_shadow = 1 << 8,
     C_vertex_id = 1 << 9,

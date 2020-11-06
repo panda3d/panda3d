@@ -213,7 +213,10 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words) :
 
     case spv::OpImageSampleExplicitLod:
     case spv::OpImageSampleProjExplicitLod:
-      _used_caps |= C_texture_lod;
+      if (stage != Stage::vertex) {
+        // TODO: check grad
+        _used_caps |= C_texture_lod;
+      }
       // fall through
     case spv::OpImageSampleImplicitLod:
     case spv::OpImageSampleProjImplicitLod:
@@ -224,7 +227,10 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words) :
 
     case spv::OpImageSampleDrefExplicitLod:
     case spv::OpImageSampleProjDrefExplicitLod:
-      _used_caps |= C_texture_lod;
+      if (stage != Stage::vertex) {
+        // TODO: check grad
+        _used_caps |= C_texture_lod;
+      }
       // fall through
     case spv::OpImageSampleDrefImplicitLod:
     case spv::OpImageSampleProjDrefImplicitLod:

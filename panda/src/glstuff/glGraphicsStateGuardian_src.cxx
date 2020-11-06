@@ -1682,11 +1682,11 @@ reset() {
   _supported_shader_caps =
       ShaderModule::C_basic_shader |
       ShaderModule::C_vertex_texture |
-      ShaderModule::C_sampler_shadow |
       ShaderModule::C_invariant;
 
   if (is_at_least_gles_version(3, 0)) {
     _supported_shader_caps |=
+      ShaderModule::C_sampler_shadow |
       ShaderModule::C_matrix_non_square |
       ShaderModule::C_integer |
       ShaderModule::C_texture_lod |
@@ -1696,6 +1696,14 @@ reset() {
       ShaderModule::C_round_even |
       ShaderModule::C_instance_id |
       ShaderModule::C_bit_encoding;
+  }
+  else {
+    if (has_extension("GL_EXT_shadow_samplers")) {
+      _supported_shader_caps |= ShaderModule::C_sampler_shadow;
+    }
+    if (has_extension("GL_EXT_shader_texture_lod")) {
+      _supported_shader_caps |= ShaderModule::C_texture_lod;
+    }
   }
 
   if (is_at_least_gles_version(3, 1)) {
@@ -1766,6 +1774,21 @@ reset() {
         ShaderModule::C_sampler_cube_shadow |
         ShaderModule::C_vertex_id |
         ShaderModule::C_round_even;
+    }
+    else {
+      if (has_extension("GL_ARB_shader_texture_lod")) {
+        _supported_shader_caps |= ShaderModule::C_texture_lod;
+      }
+      if (has_extension("GL_EXT_gpu_shader4")) {
+        // These are in principle supported, but SPIRV-Cross might need to be
+        // changed to be able to leverage these.  Most cards that have this
+        // extension also support GLSL 1.30, so it might not be worth adding.
+        _supported_shader_caps |=
+          //ShaderModule::C_integer |
+          //ShaderModule::C_texture_fetch |
+          //ShaderModule::C_sampler_cube_shadow |
+          ShaderModule::C_round_even;
+      }
     }
 
     // OpenGL 3.1
