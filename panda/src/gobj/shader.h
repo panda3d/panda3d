@@ -513,7 +513,7 @@ private:
   bool load(const ShaderFile &sbody, BamCacheRecord *record = nullptr);
   bool do_read_source(ShaderModule::Stage stage, const Filename &fn, BamCacheRecord *record);
   bool do_read_source(ShaderModule::Stage stage, std::istream &in,
-                      const Filename &source_filename, BamCacheRecord *record);
+                      const Filename &fullpath, BamCacheRecord *record);
   bool do_load_source(ShaderModule::Stage stage, const std::string &source, BamCacheRecord *record);
 
 public:

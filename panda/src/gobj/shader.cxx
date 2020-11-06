@@ -806,7 +806,7 @@ do_read_source(Stage stage, const Filename &fn, BamCacheRecord *record) {
   }
 
   shader_cat.info() << "Reading shader file: " << fn << "\n";
-  if (!do_read_source(stage, *in, fn, record)) {
+  if (!do_read_source(stage, *in, fullpath, record)) {
     vf->close_read_file(in);
     return false;
   }
@@ -833,17 +833,17 @@ do_read_source(Stage stage, const Filename &fn, BamCacheRecord *record) {
  */
 bool Shader::
 do_read_source(ShaderModule::Stage stage, std::istream &in,
-               const Filename &source_filename, BamCacheRecord *record) {
+               const Filename &fullpath, BamCacheRecord *record) {
   ShaderCompiler *compiler = get_compiler(_language);
   nassertr(compiler != nullptr, false);
 
-  PT(ShaderModule) module = compiler->compile_now(stage, in, source_filename, record);
+  PT(ShaderModule) module = compiler->compile_now(stage, in, fullpath, record);
   if (!module) {
     return false;
   }
 
-  if (!source_filename.empty()) {
-    module->set_source_filename(source_filename);
+  if (!fullpath.empty()) {
+    module->set_source_filename(fullpath);
   }
 
   if (has_stage(stage)) {

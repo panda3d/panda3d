@@ -274,7 +274,7 @@ get_languages() const {
  */
 PT(ShaderModule) ShaderCompilerGlslang::
 compile_now(ShaderModule::Stage stage, std::istream &in,
-            const std::string &filename, BamCacheRecord *record) const {
+            const Filename &fullpath, BamCacheRecord *record) const {
 
   vector_uchar code;
   if (!VirtualFile::simple_read_file(&in, code)) {
@@ -290,8 +290,22 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
   }
   else {
     pset<Filename> once_files;
-    if (!preprocess_glsl(code, glsl_version, filename, once_files, record)) {
+    if (!preprocess_glsl(code, glsl_version, fullpath, once_files, record)) {
       return nullptr;
+    }
+  }
+
+  // Create a name that's easier to read in error messages.
+  std::string filename;
+  if (fullpath.empty()) {
+    filename = "created-shader";
+  } else {
+    Filename fullpath_rel = fullpath;
+    if (fullpath_rel.make_relative_to(ExecutionEnvironment::get_environment_variable("MAIN_DIR")) &&
+        fullpath_rel.length() < fullpath.length()) {
+      filename = fullpath_rel;
+    } else {
+      filename = fullpath;
     }
   }
 
@@ -299,7 +313,7 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
     if (glsl_version != 100 && glsl_version != 110 && glsl_version != 120 &&
         glsl_version != 130 && glsl_version != 140 && glsl_version != 300) {
       shader_cat.error()
-        << "Invalid GLSL version " << glsl_version << ".\n";
+        << filename << " uses invalid GLSL version " << glsl_version << ".\n";
       return nullptr;
     }
 
@@ -311,7 +325,7 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
     static ShaderCompilerGlslPreProc preprocessor;
 
     std::istringstream stream(std::string((const char *)&code[0], code.size()));
-    return preprocessor.compile_now(stage, stream, filename, record);
+    return preprocessor.compile_now(stage, stream, fullpath, record);
   }
 
   static bool is_initialized = false;
@@ -351,7 +365,7 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
 
   const char *string = (const char *)code.data();
   const int length = (int)code.size();
-  const char *fname = filename.c_str();
+  const char *fname = fullpath.c_str();
   shader.setStringsWithLengthsAndNames(&string, &length, &fname, 1);
   shader.setEntryPoint("main");
 

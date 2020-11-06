@@ -30,7 +30,7 @@ public:
   virtual std::string get_name() const override;
   virtual ShaderLanguages get_languages() const override;
   virtual PT(ShaderModule) compile_now(Stage stage, std::istream &in,
-                                       const std::string &filename = "created-shader",
+                                       const Filename &fullpath,
                                        BamCacheRecord *record = nullptr) const override;
 
 private:
