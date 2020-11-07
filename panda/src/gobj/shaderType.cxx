@@ -36,6 +36,19 @@ const ShaderType::Scalar *ShaderType::double_type;
 const ShaderType::Sampler *ShaderType::sampler_type;
 
 /**
+ * If this type is an array, puts the element type in the first argument and the
+ * number of elements in the second argument, and returns true.  If not, puts
+ * the current type in the first argument, and 1 in the second argument, and
+ * returns false.
+ */
+bool ShaderType::
+unwrap_array(const ShaderType *&element_type, uint32_t &num_elements) const {
+  element_type = this;
+  num_elements = 1;
+  return false;
+}
+
+/**
  *
  */
 void ShaderType::
@@ -397,6 +410,19 @@ get_num_parameter_locations() const {
     total += member.type->get_num_parameter_locations();
   }
   return total;
+}
+
+/**
+ * If this type is an array, puts the element type in the first argument and the
+ * number of elements in the second argument, and returns true.  If not, puts
+ * the current type in the first argument, and 1 in the second argument, and
+ * returns false.
+ */
+bool ShaderType::Array::
+unwrap_array(const ShaderType *&element_type, uint32_t &num_elements) const {
+  element_type = _element_type;
+  num_elements = _num_elements;
+  return true;
 }
 
 /**

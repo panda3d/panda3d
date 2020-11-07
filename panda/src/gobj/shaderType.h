@@ -72,6 +72,7 @@ PUBLISHED:
 
 public:
   virtual bool is_aggregate_type() const { return false; }
+  virtual bool unwrap_array(const ShaderType *&element_type, uint32_t &num_elements) const;
   virtual bool contains_scalar_type(ScalarType type) const { return false; }
   virtual bool as_scalar_type(ScalarType &type,
                               uint32_t &num_elements,
@@ -292,6 +293,8 @@ public:
 
   INLINE const ShaderType *get_element_type() const;
   INLINE uint32_t get_num_elements() const;
+
+  virtual bool unwrap_array(const ShaderType *&element_type, uint32_t &num_elements) const override;
 
   virtual bool contains_scalar_type(ScalarType type) const override;
   virtual bool as_scalar_type(ScalarType &type, uint32_t &num_elements,

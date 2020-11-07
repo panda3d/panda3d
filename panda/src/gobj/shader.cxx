@@ -1415,8 +1415,56 @@ bind_parameter(const Parameter &param) {
       bind._arg[0] = nullptr;
       bind._part[1] = SMO_identity;
       bind._arg[1] = nullptr;
-      bind._piece = SMP_row3;
+
+      if (type->as_vector()->get_num_components() == 3) {
+        bind._piece = Shader::SMP_row3x3;
+      } else {
+        bind._piece = Shader::SMP_row3;
+      }
       cp_add_mat_spec(bind);
+      return true;
+    }
+    if (pieces[1] == "Color") {
+      if (!expect_float_vector(name, type, 3, 4)) {
+        return false;
+      }
+      ShaderMatSpec bind;
+      bind._id = param;
+      bind._func = Shader::SMF_first;
+      bind._part[0] = Shader::SMO_attr_color;
+      bind._arg[0] = nullptr;
+      bind._part[1] = Shader::SMO_identity;
+      bind._arg[1] = nullptr;
+
+      if (type->as_vector()->get_num_components() == 3) {
+        bind._piece = Shader::SMP_row3x3;
+      } else {
+        bind._piece = Shader::SMP_row3;
+      }
+      cp_add_mat_spec(bind);
+      return true;
+    }
+    if (pieces[1] == "ClipPlane") {
+      const ::ShaderType *element_type;
+      uint32_t num_elements;
+      type->unwrap_array(element_type, num_elements);
+      if (!expect_float_vector(name, element_type, 4, 4)) {
+        return false;
+      }
+      Shader::ShaderMatSpec bind;
+      bind._id = param;
+      bind._piece = Shader::SMP_row3;
+      bind._func = Shader::SMF_first;
+      bind._part[0] = Shader::SMO_apiview_clipplane_i;
+      bind._arg[0] = nullptr;
+      bind._part[1] = Shader::SMO_identity;
+      bind._arg[1] = nullptr;
+
+      for (uint32_t i = 0; i < num_elements; ++i) {
+        bind._index = i;
+        cp_add_mat_spec(bind);
+        ++bind._id._location;
+      }
       return true;
     }
     if (pieces[1] == "TexAlphaOnly") {
@@ -1431,6 +1479,75 @@ bind_parameter(const Parameter &param) {
       bind._piece = SMP_row3;
       cp_add_mat_spec(bind);
       return true;
+    }
+    if (pieces[1] == "Fog") {
+      ShaderMatSpec bind;
+      bind._id = param;
+      bind._func = SMF_first;
+      bind._arg[0] = nullptr;
+      bind._part[1] = SMO_identity;
+      bind._arg[1] = nullptr;
+
+      const ::ShaderType::Struct *struct_type = type->as_struct();
+      if (struct_type == nullptr) {
+        return report_parameter_error(name, type, "expected struct");
+      }
+
+      bool success = true;
+      for (size_t i = 0; i < struct_type->get_num_members(); ++i) {
+        const ::ShaderType::Struct::Member &member = struct_type->get_member(i);
+
+        CPT(InternalName) fqname = ((InternalName *)name.p())->append(member.name);
+        bind._id._location = param._location + i;
+        bind._id._name = fqname->get_name();
+        bind._id._type = member.type;
+
+        if (member.name == "color") {
+          if (expect_float_vector(fqname, member.type, 3, 4)) {
+            bind._part[0] = SMO_attr_fogcolor;
+            if (member.type->as_vector()->get_num_components() == 3) {
+              bind._piece = Shader::SMP_row3x3;
+            } else {
+              bind._piece = Shader::SMP_row3;
+            }
+            cp_add_mat_spec(bind);
+            continue;
+          }
+        } else if (member.name == "density") {
+          if (expect_float_vector(fqname, member.type, 1, 1)) {
+            bind._part[0] = SMO_attr_fog;
+            bind._piece = SMP_row3x1;
+            cp_add_mat_spec(bind);
+            continue;
+          }
+        } else if (member.name == "start") {
+          if (expect_float_vector(fqname, member.type, 1, 1)) {
+            bind._part[0] = SMO_attr_fog;
+            bind._piece = SMP_cell13;
+            cp_add_mat_spec(bind);
+            continue;
+          }
+        } else if (member.name == "end") {
+          if (expect_float_vector(fqname, member.type, 1, 1)) {
+            bind._part[0] = SMO_attr_fog;
+            bind._piece = SMP_cell14;
+            cp_add_mat_spec(bind);
+            continue;
+          }
+        } else if (member.name == "scale") {
+          if (expect_float_vector(fqname, member.type, 1, 1)) {
+            bind._part[0] = SMO_attr_fog;
+            bind._piece = SMP_cell15;
+            cp_add_mat_spec(bind);
+            continue;
+          }
+        } else {
+          report_parameter_error(fqname, member.type, "unrecognized fog attribute");
+        }
+        success = false;
+      }
+
+      return success;
     }
     if (pieces[1] == "LightModel") {
       const ::ShaderType::Struct *struct_type = type->as_struct();
