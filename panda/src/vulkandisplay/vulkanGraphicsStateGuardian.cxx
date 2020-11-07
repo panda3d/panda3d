@@ -340,18 +340,6 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   _uniform_buffer_size = uniform_buffer_size;
   _uniform_buffer_offset_alignment = limits.minUniformBufferOffsetAlignment;
 
-  // Load the default shader.  Temporary hack.
-  static PT(Shader) default_shader;
-  if (default_shader.is_null()) {
-    default_shader = Shader::make(Shader::SL_GLSL, default_vshader, default_fshader);
-    nassertv(default_shader);
-  }
-  if (_default_sc == nullptr) {
-    ShaderContext *sc = default_shader->prepare_now(get_prepared_objects(), this);
-    nassertv(sc);
-    _default_sc = DCAST(VulkanShaderContext, sc);
-  }
-
   // Fill in the features supported by this physical device.
   _is_hardware = (pipe->_gpu_properties.deviceType != VK_PHYSICAL_DEVICE_TYPE_CPU);
 
@@ -405,7 +393,6 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   _supports_depth_stencil = true;
   _supports_shadow_filter = true;
   _supports_sampler_objects = true;
-  _supports_basic_shaders = true;
   _supports_glsl = false;
   _supports_hlsl = false;
   _supports_framebuffer_multisample = true;
@@ -417,18 +404,34 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   _supports_geometry_instancing = true;
   _supports_indirect_draw = true;
 
-  _supported_shader_caps |=
+  _supported_shader_caps =
+    ShaderModule::C_basic_shader |
+    ShaderModule::C_vertex_texture |
+    ShaderModule::C_sampler_shadow |
+    ShaderModule::C_invariant |
+    ShaderModule::C_matrix_non_square |
     ShaderModule::C_integer |
+    ShaderModule::C_texture_lod |
     ShaderModule::C_texture_fetch |
-    ShaderModule::C_buffer_texture |
+    ShaderModule::C_sampler_cube_shadow |
     ShaderModule::C_vertex_id |
     ShaderModule::C_round_even |
-    ShaderModule::C_compute_shader |
     ShaderModule::C_instance_id |
-    ShaderModule::C_primitive_id;
+    ShaderModule::C_buffer_texture |
+    ShaderModule::C_bit_encoding |
+    ShaderModule::C_texture_gather |
+    ShaderModule::C_extended_arithmetic |
+    ShaderModule::C_texture_query_lod |
+    ShaderModule::C_compute_shader |
+    ShaderModule::C_texture_query_levels |
+    ShaderModule::C_enhanced_layouts |
+    ShaderModule::C_derivative_control |
+    ShaderModule::C_texture_query_samples;
 
   if (features.geometryShader) {
-    _supported_shader_caps |= ShaderModule::C_geometry_shader;
+    _supported_shader_caps |=
+      ShaderModule::C_geometry_shader |
+      ShaderModule::C_primitive_id;
   }
 
   if (features.tessellationShader) {
@@ -441,6 +444,14 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
 
   if (features.imageCubeArray) {
     _supported_shader_caps |= ShaderModule::C_cube_map_array;
+  }
+
+  if (features.sampleRateShading) {
+    _supported_shader_caps |= ShaderModule::C_sample_variables;
+  }
+
+  if (features.vertexPipelineStoresAndAtomics && features.fragmentStoresAndAtomics) {
+    _supported_shader_caps |= ShaderModule::C_image_load_store;
   }
 
   _max_color_targets = limits.maxColorAttachments;
@@ -462,6 +473,18 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
 
   if (features.largePoints) {
     _supported_geom_rendering |= Geom::GR_point_uniform_size;
+  }
+
+  // Load the default shader.  Temporary hack.
+  static PT(Shader) default_shader;
+  if (default_shader.is_null()) {
+    default_shader = Shader::make(Shader::SL_GLSL, default_vshader, default_fshader);
+    nassertv(default_shader);
+  }
+  if (_default_sc == nullptr) {
+    ShaderContext *sc = default_shader->prepare_now(get_prepared_objects(), this);
+    nassertv(sc);
+    _default_sc = DCAST(VulkanShaderContext, sc);
   }
 
   _is_valid = true;

@@ -74,6 +74,22 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
         query_uniform_locations(module._module);
       }
     }
+    else {
+      // We still need to query which uniform locations are actually in use,
+      // because the GL driver may have optimized some out.
+      GLint num_active_uniforms = 0;
+      glgsg->_glGetProgramInterfaceiv(_glsl_program, GL_UNIFORM, GL_ACTIVE_RESOURCES, &num_active_uniforms);
+
+      for (GLint i = 0; i < num_active_uniforms; ++i) {
+        GLenum prop = GL_LOCATION;
+        GLint location;
+        glgsg->_glGetProgramResourceiv(_glsl_program, GL_UNIFORM, i, 1, &prop, 1, nullptr, &location);
+        if (location >= 0) {
+          set_uniform_location(location, location);
+        }
+      }
+      _remap_uniform_locations = true;
+    }
 
     // Rebind the texture and image inputs.
     size_t num_textures = s->_tex_spec.size();
@@ -84,9 +100,19 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
       GLint location = get_uniform_location(spec._id._location);
       if (location < 0) {
         // Not used.  Optimize it out.
+        if (GLCAT.is_debug()) {
+          GLCAT.debug()
+            << "Uniform " << *spec._id._name << " is unused, unbinding\n";
+        }
         s->_tex_spec.erase(s->_tex_spec.begin() + i);
         --num_textures;
         continue;
+      }
+
+      if (GLCAT.is_debug()) {
+        GLCAT.debug()
+          << "Uniform " << *spec._id._name << " is bound to location "
+          << location << " (texture binding " << i << ")\n";
       }
 
       _glgsg->_glUniform1i(location, (int)i);
@@ -98,17 +124,22 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
       Shader::ShaderImgSpec &spec = s->_img_spec[i];
       nassertd(spec._id._location >= 0) continue;
 
-      if (GLCAT.is_debug()) {
-        GLCAT.debug()
-          << "Active uniform " << spec._id._name << " is bound to location " << spec._id._location << " (image binding " << i << ")\n";
-      }
-
       GLint location = get_uniform_location(spec._id._location);
       if (location < 0) {
         // Not used.  Optimize it out.
+        if (GLCAT.is_debug()) {
+          GLCAT.debug()
+            << "Uniform " << *spec._id._name << " is unused, unbinding\n";
+        }
         s->_img_spec.erase(s->_img_spec.begin() + i);
         --num_images;
         continue;
+      }
+
+      if (GLCAT.is_debug()) {
+        GLCAT.debug()
+          << "Uniform " << *spec._id._name << " is bound to location "
+          << location << " (image binding " << i << ")\n";
       }
 
       ImageInput input = {spec._name, nullptr, spec._writable};
@@ -118,26 +149,48 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
       ++i;
     }
 
-    if (_remap_uniform_locations) {
-      for (auto it = s->_mat_spec.begin(); it != s->_mat_spec.end();) {
-        const Shader::ShaderMatSpec &spec = *it;
-        if (get_uniform_location(spec._id._location) < 0) {
-          // Not used.  Optimize it out.
-          it = s->_mat_spec.erase(it);
-          continue;
+    for (auto it = s->_mat_spec.begin(); it != s->_mat_spec.end();) {
+      const Shader::ShaderMatSpec &spec = *it;
+
+      GLint location = get_uniform_location(spec._id._location);
+      if (location < 0) {
+        // Not used.  Optimize it out.
+        if (GLCAT.is_debug()) {
+          GLCAT.debug()
+            << "Uniform " << *spec._id._name << " is unused, unbinding\n";
         }
-        ++it;
+        it = s->_mat_spec.erase(it);
+        continue;
       }
 
-      for (auto it = s->_ptr_spec.begin(); it != s->_ptr_spec.end();) {
-        const Shader::ShaderPtrSpec &spec = *it;
-        if (get_uniform_location(spec._id._location) < 0) {
-          // Not used.  Optimize it out.
-          it = s->_ptr_spec.erase(it);
-          continue;
-        }
-        ++it;
+      if (GLCAT.is_debug()) {
+        GLCAT.debug()
+          << "Uniform " << *spec._id._name << " is bound to location "
+          << location << "\n";
       }
+      ++it;
+    }
+
+    for (auto it = s->_ptr_spec.begin(); it != s->_ptr_spec.end();) {
+      const Shader::ShaderPtrSpec &spec = *it;
+
+      GLint location = get_uniform_location(spec._id._location);
+      if (location < 0) {
+        // Not used.  Optimize it out.
+        if (GLCAT.is_debug()) {
+          GLCAT.debug()
+            << "Uniform " << *spec._id._name << " is unused, unbinding\n";
+        }
+        it = s->_ptr_spec.erase(it);
+        continue;
+      }
+
+      if (GLCAT.is_debug()) {
+        GLCAT.debug()
+          << "Uniform " << *spec._id._name << " is bound to location "
+          << location << "\n";
+      }
+      ++it;
     }
 
     if (s->_frame_number_loc >= 0) {
@@ -3282,7 +3335,6 @@ attach_shader(const ShaderModule *module) {
       const char *text_str = text.c_str();
       _glgsg->_glShaderSource(handle, 1, &text_str, nullptr);
       needs_compile = true;
-      _remap_uniform_locations = true;
     }
   } else
 #endif

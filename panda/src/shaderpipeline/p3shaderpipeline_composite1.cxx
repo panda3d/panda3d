@@ -4,5 +4,4 @@
 #include "shaderCompiler.cxx"
 #include "shaderCompilerGlslang.cxx"
 #include "shaderCompilerGlslPreProc.cxx"
-#include "shaderCompilerCg.cxx"
 #include "shaderCompilerRegistry.cxx"

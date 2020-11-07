@@ -171,13 +171,17 @@ set(P3GOBJ_IGATEEXT
   texture_ext.h
   textureCollection_ext.cxx
   textureCollection_ext.h
+  texturePool_ext.cxx
+  texturePool_ext.h
+  pythonTexturePoolFilter.cxx
+  pythonTexturePoolFilter.h
 )
 
 composite_sources(p3gobj P3GOBJ_SOURCES)
 add_component_library(p3gobj NOINIT SYMBOL BUILDING_PANDA_GOBJ
   ${P3GOBJ_HEADERS} ${P3GOBJ_SOURCES})
 target_link_libraries(p3gobj p3gsgbase p3pnmimage
-  PKG::ZLIB PKG::SQUISH PKG::CG)
+  PKG::ZLIB PKG::SQUISH)
 target_interrogate(p3gobj ALL EXTENSIONS ${P3GOBJ_IGATEEXT})
 
 if(HAVE_SQUISH)

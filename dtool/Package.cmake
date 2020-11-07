@@ -63,7 +63,6 @@ if(THIRDPARTY_DIRECTORY)
     ARToolKit
     Assimp
     Bullet
-    Cg
     Eigen3
     FCollada
     FFMPEG
@@ -92,9 +91,7 @@ if(THIRDPARTY_DIRECTORY)
 
     # Some packages in the thirdparty dir have different subdirectory names from
     # the name of the CMake package
-    if(_package STREQUAL "cg")
-      set(_package "nvidiacg")
-    elseif(_package STREQUAL "eigen3")
+    if(_package STREQUAL "eigen3")
       set(_package "eigen")
     elseif(_package STREQUAL "ogg")
       set(_package "vorbis") # It's in the same install dir here
@@ -648,31 +645,6 @@ package_option(DX9
   FOUND_AS Direct3D9)
 
 package_status(DX9 "Direct3D 9.x")
-
-# Nvidia Cg
-find_package(Cg QUIET)
-
-package_option(CG
-  "Enable support for Nvidia Cg Shading Language"
-  LICENSE "Nvidia")
-package_option(CGGL
-  "Enable support for Nvidia Cg's OpenGL API."
-  LICENSE "Nvidia")
-package_option(CGD3D9
-  "Enable support for Nvidia Cg's Direct3D 9 API."
-  LICENSE "Nvidia")
-
-if(HAVE_CGGL AND HAVE_CGD3D9)
-  set(cg_apis "supporting OpenGL and Direct3D 9")
-elseif(HAVE_CGGL)
-  set(cg_apis "supporting OpenGL")
-elseif(HAVE_CGDX9)
-  set(cg_apis "supporting Direct3D 9")
-else()
-  set(cg_apis "WITHOUT rendering backend support")
-endif()
-package_status(CG "Nvidia Cg Shading Language" "${cg_apis}")
-
 
 #
 # ------------ Display APIs ------------

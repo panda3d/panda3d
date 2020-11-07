@@ -41,7 +41,7 @@ PUBLISHED:
   virtual PT(ShaderModule) compile_now(Stage stage, const Filename &path,
                                        BamCacheRecord *record = nullptr) const;
   virtual PT(ShaderModule) compile_now(Stage stage, std::istream &in,
-                                       const std::string &filename = "created-shader",
+                                       const Filename &fullpath,
                                        BamCacheRecord *record = nullptr) const=0;
 
 public:

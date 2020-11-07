@@ -213,6 +213,12 @@ typedef GLuint (APIENTRYP PFNGLGETUNIFORMBLOCKINDEXPROC) (GLuint program, const 
 typedef void (APIENTRYP PFNGLGETACTIVEUNIFORMBLOCKIVPROC) (GLuint program, GLuint uniformBlockIndex, GLenum pname, GLint *params);
 typedef void (APIENTRYP PFNGLGETACTIVEUNIFORMBLOCKNAMEPROC) (GLuint program, GLuint uniformBlockIndex, GLsizei bufSize, GLsizei *length, GLchar *uniformBlockName);
 typedef void (APIENTRYP PFNGLUNIFORMBLOCKBINDINGPROC) (GLuint program, GLuint uniformBlockIndex, GLuint uniformBlockBinding);
+typedef void (APIENTRYP PFNGLGETPROGRAMINTERFACEIVPROC) (GLuint program, GLenum programInterface, GLenum pname, GLint *params);
+typedef GLuint (APIENTRYP PFNGLGETPROGRAMRESOURCEINDEXPROC) (GLuint program, GLenum programInterface, const GLchar *name);
+typedef void (APIENTRYP PFNGLGETPROGRAMRESOURCENAMEPROC) (GLuint program, GLenum programInterface, GLuint index, GLsizei bufSize, GLsizei *length, GLchar *name);
+typedef void (APIENTRYP PFNGLGETPROGRAMRESOURCEIVPROC) (GLuint program, GLenum programInterface, GLuint index, GLsizei propCount, const GLenum *props, GLsizei count, GLsizei *length, GLint *params);
+typedef GLint (APIENTRYP PFNGLGETPROGRAMRESOURCELOCATIONPROC) (GLuint program, GLenum programInterface, const GLchar *name);
+typedef GLint (APIENTRYP PFNGLGETPROGRAMRESOURCELOCATIONINDEXPROC) (GLuint program, GLenum programInterface, const GLchar *name);
 typedef void (APIENTRYP PFNGLGENSAMPLERSPROC) (GLsizei count, GLuint *samplers);
 typedef void (APIENTRYP PFNGLDELETESAMPLERSPROC) (GLsizei count, const GLuint *samplers);
 typedef void (APIENTRYP PFNGLBINDSAMPLERPROC) (GLuint unit, GLuint sampler);
@@ -436,7 +442,6 @@ public:
                                        const TransformState *transform);
 
   void bind_fbo(GLuint fbo);
-  virtual bool get_supports_cg_profile(const std::string &name) const;
   void finish();
 
 protected:
@@ -507,8 +512,6 @@ protected:
   virtual void bind_clip_plane(const NodePath &plane, int plane_id);
   virtual void end_bind_clip_planes();
 #endif
-
-  virtual void free_pointers();
 
 #ifndef OPENGLES_1
   INLINE void enable_vertex_attrib_array(GLuint index);
@@ -692,10 +695,6 @@ protected:
 #endif
 
   GLfloat _max_line_width;
-
-#ifdef HAVE_CG
-  CGcontext _cg_context;
-#endif
 
 #ifdef SUPPORT_IMMEDIATE_MODE
   CLP(ImmediateModeSender) _sender;
@@ -1062,10 +1061,15 @@ public:
   PFNGLMAKETEXTUREHANDLENONRESIDENTPROC _glMakeTextureHandleNonResident;
   PFNGLUNIFORMHANDLEUI64PROC _glUniformHandleui64;
   PFNGLUNIFORMHANDLEUI64VPROC _glUniformHandleui64v;
+#endif  // !OPENGLES
+
+#ifndef OPENGLES_1
   PFNGLGETPROGRAMINTERFACEIVPROC _glGetProgramInterfaceiv;
   PFNGLGETPROGRAMRESOURCENAMEPROC _glGetProgramResourceName;
   PFNGLGETPROGRAMRESOURCEIVPROC _glGetProgramResourceiv;
-#endif  // !OPENGLES
+
+  bool _supports_program_interface_query;
+#endif
 
   GLenum _edge_clamp;
   GLenum _border_clamp;
@@ -1168,7 +1172,6 @@ private:
   friend class CLP(IndexBufferContext);
   friend class CLP(BufferContext);
   friend class CLP(ShaderContext);
-  friend class CLP(CgShaderContext);
   friend class CLP(GraphicsBuffer);
   friend class CLP(OcclusionQueryContext);
   friend class CLP(TimerQueryContext);

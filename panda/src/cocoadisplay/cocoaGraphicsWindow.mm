@@ -1690,20 +1690,19 @@ handle_key_event(NSEvent *event) {
     return;
   }
 
+  TISInputSourceRef input_source = TISCopyCurrentKeyboardLayoutInputSource();
+  CFDataRef layout_data = (CFDataRef)TISGetInputSourceProperty(input_source, kTISPropertyUnicodeKeyLayoutData);
+  const UCKeyboardLayout *layout = (const UCKeyboardLayout *)CFDataGetBytePtr(layout_data);
+
   if ([event type] == NSKeyDown) {
     // Translate it to a unicode character for keystrokes.  I would use
     // interpretKeyEvents and insertText, but that doesn't handle dead keys.
-    TISInputSourceRef input_source = TISCopyCurrentKeyboardLayoutInputSource();
-    CFDataRef layout_data = (CFDataRef)TISGetInputSourceProperty(input_source, kTISPropertyUnicodeKeyLayoutData);
-    const UCKeyboardLayout *layout = (const UCKeyboardLayout *)CFDataGetBytePtr(layout_data);
-
     UInt32 modifier_state = (modifierFlags >> 16) & 0xFF;
     UniChar ustr[8];
     UniCharCount length;
 
     UCKeyTranslate(layout, [event keyCode], kUCKeyActionDown, modifier_state,
                    LMGetKbdType(), 0, &_dead_key_state, sizeof(ustr), &length, ustr);
-    CFRelease(input_source);
 
     for (int i = 0; i < length; ++i) {
       UniChar c = ustr[i];
@@ -1719,17 +1718,38 @@ handle_key_event(NSEvent *event) {
     }
   }
 
-  NSString *str = [event charactersIgnoringModifiers];
-  if (str == nil || [str length] == 0) {
+  // [NSEvent charactersIgnoringModifiers] doesn't ignore the shift key, so we
+  // need to do what that method is doing manually.
+  _dead_key_state = 0;
+  UniChar c;
+  UniCharCount length;
+  UCKeyTranslate(layout, [event keyCode], kUCKeyActionDisplay,
+    0, LMGetKbdType(), kUCKeyTranslateNoDeadKeysMask, &_dead_key_state,
+    sizeof(c), &length, &c);
+  CFRelease(input_source);
+
+  if (length != 1) {
     return;
   }
-  nassertv_always([str length] == 1);
-  unichar c = [str characterAtIndex: 0];
+
+  // If UCKeyTranslate could not map the key into a valid unicode character or
+  // reserved symbol (See NSEvent.h), it returns 0x10 as translated character.
+  // This happens e.g.e with the combination Fn+F1.. keys.
+  // In that case, as fallback, we use charactersIgnoringModifiers to retrieve
+  // the character without modifiers.
+  if (c == 0x10) {
+    NSString *str = [event charactersIgnoringModifiers];
+    if (str == nil || [str length] != 1) {
+      return;
+    }
+    c = [str characterAtIndex: 0];
+  }
 
   ButtonHandle button = map_key(c);
 
   if (button == ButtonHandle::none()) {
     // That done, continue trying to find out the button handle.
+    NSString *str = [[NSString alloc] initWithCharacters:&c length:length];
     if ([str canBeConvertedToEncoding: NSASCIIStringEncoding]) {
       // Nhm, ascii character perhaps?
       str = [str lowercaseString];

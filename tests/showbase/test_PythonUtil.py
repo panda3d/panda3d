@@ -146,14 +146,6 @@ def test_weighted_choice():
     # Assert that we got 'item1'.
     assert item == items[0]
 
-    # Test PythonUtil.weightedChoice() with an invalid sum.
-    # This time, we're using 2000 so that regardless of the random
-    # number, we will still reach the very last item.
-    item = PythonUtil.weightedChoice(choicelist, sum=100000)
-
-    # Assert that we got 'item8', since we would get the last item.
-    assert item == items[-1]
-
     # Create a bogus random function.
     rnd = lambda: 0.5
 

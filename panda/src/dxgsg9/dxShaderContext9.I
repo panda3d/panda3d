@@ -12,6 +12,14 @@
  */
 
 /**
+ * Returns true if the shader needs vertex colors.
+ */
+INLINE bool DXShaderContext9::
+uses_vertex_color() {
+  return _uses_vertex_color;
+}
+
+/**
  * Returns true if the shader is "valid", ie, if the compilation was
  * successful.  The compilation could fail if there is a syntax error in the
  * shader, or if the current video card isn't shader-capable, or if no shader
@@ -19,9 +27,5 @@
  */
 INLINE bool DXShaderContext9::
 valid(GSG *gsg) {
-#ifdef HAVE_CG
-  return (_cg_program != 0);
-#else
-  return false;
-#endif
+  return _vertex_shader != nullptr && _pixel_shader != nullptr;
 }

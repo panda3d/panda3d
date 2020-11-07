@@ -54,7 +54,7 @@ compile_now(ShaderModule::Stage stage, const Filename &fn, BamCacheRecord *recor
   }
 
   // The default implementation calls the version that takes an istream.
-  PT(ShaderModule) module = compile_now(stage, *in, fn, record);
+  PT(ShaderModule) module = compile_now(stage, *in, vf->get_filename(), record);
   vf->close_read_file(in);
   return module;
 }

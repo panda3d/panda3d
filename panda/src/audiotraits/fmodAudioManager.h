@@ -62,8 +62,8 @@
  * of the code.
  */
 
-#ifndef __FMOD_AUDIO_MANAGER_H__
-#define __FMOD_AUDIO_MANAGER_H__
+#ifndef FMODAUDIOMANAGER_H
+#define FMODAUDIOMANAGER_H
 
 // First the includes.
 #include "pandabase.h"
@@ -212,4 +212,4 @@ private:
 EXPCL_FMOD_AUDIO AudioManager *Create_FmodAudioManager();
 
 
-#endif /* __FMOD_AUDIO_MANAGER_H__ */
+#endif /* FMODAUDIOMANAGER_H */

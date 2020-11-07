@@ -1051,11 +1051,17 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     const ShaderKey::LightInfo &light = key._lights[i];
     if (light._flags & ShaderKey::LF_has_shadows) {
       if (light._type.is_derived_from(PointLight::get_class_type())) {
-        text << "\t uniform samplerCUBE shadow_" << i << ",\n";
-      } else if (_use_shadow_filter) {
-        text << "\t uniform sampler2DShadow shadow_" << i << ",\n";
+        if (_use_shadow_filter) {
+          text << "\t uniform samplerCubeShadow shadow_" << i << ",\n";
+        } else {
+          text << "\t uniform samplerCUBE shadow_" << i << ",\n";
+        }
       } else {
-        text << "\t uniform sampler2D shadow_" << i << ",\n";
+        if (_use_shadow_filter) {
+          text << "\t uniform sampler2DShadow shadow_" << i << ",\n";
+        } else {
+          text << "\t uniform sampler2D shadow_" << i << ",\n";
+        }
       }
       if (lightcoord_fregs[i] != nullptr) {
         text << "\t in float4 l_lightcoord" << i << " : " << lightcoord_fregs[i] << ",\n";
@@ -1352,7 +1358,11 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       if (light._flags & ShaderKey::LF_has_shadows) {
         text << "\t ldist = max(abs(l_lightcoord" << i << ".x), max(abs(l_lightcoord" << i << ".y), abs(l_lightcoord" << i << ".z)));\n";
         text << "\t ldist = ((latten.w+lpoint.w)/(latten.w-lpoint.w))+((-2*latten.w*lpoint.w)/(ldist * (latten.w-lpoint.w)));\n";
-        text << "\t lshad = texCUBE(shadow_" << i << ", l_lightcoord" << i << ".xyz).r >= ldist * 0.5 + 0.5;\n";
+        if (_use_shadow_filter) {
+          text << "\t lshad = shadowCube(shadow_" << i << ", float4(l_lightcoord" << i << ".xyz, ldist * 0.5 + 0.5)).r;\n";
+        } else {
+          text << "\t lshad = texCUBE(shadow_" << i << ", l_lightcoord" << i << ".xyz).r >= ldist * 0.5 + 0.5;\n";
+        }
         text << "\t lcolor *= lshad;\n";
         text << "\t lspec *= lshad;\n";
       }
@@ -1483,7 +1493,9 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     // Combine in alpha, which bypasses lighting calculations.  Use of lerp
     // here is a workaround for a radeon driver bug.
     if (key._calc_primary_alpha) {
-      if (key._color_type == ColorAttrib::T_vertex) {
+      if (key._material_flags & Material::F_diffuse) {
+        text << "\t result.a = attr_material[1].w;\n";
+      } else if (key._color_type == ColorAttrib::T_vertex) {
         text << "\t result.a = l_color.a;\n";
       } else if (key._color_type == ColorAttrib::T_flat) {
         text << "\t result.a = attr_color.a;\n";

@@ -11,8 +11,8 @@
  * @date 2007-03-01
  */
 
-#ifndef __SOCKET_UDP_H__
-#define __SOCKET_UDP_H__
+#ifndef SOCKET_UDP_H
+#define SOCKET_UDP_H
 
 #include "socket_udp_incoming.h"
 #include "vector_uchar.h"
@@ -117,4 +117,4 @@ SendTo(const vector_uchar &data, const Socket_Address &address) {
   return SendTo((char*) data.data(), data.size(), address);
 }
 
-#endif //__SOCKET_UDP_H__
+#endif //SOCKET_UDP_H

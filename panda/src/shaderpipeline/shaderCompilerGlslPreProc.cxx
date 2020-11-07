@@ -51,13 +51,27 @@ get_languages() const {
  */
 PT(ShaderModule) ShaderCompilerGlslPreProc::
 compile_now(ShaderModule::Stage stage, std::istream &in,
-            const std::string &filename, BamCacheRecord *record) const {
+            const Filename &fullpath, BamCacheRecord *record) const {
   PT(ShaderModuleGlsl) module = new ShaderModuleGlsl(stage);
   std::string &into = module->_raw_source;
 
+  // Create a name that's easier to read in error messages.
+  std::string filename;
+  if (fullpath.empty()) {
+    filename = "created-shader";
+  } else {
+    Filename fullpath_rel = fullpath;
+    if (fullpath_rel.make_relative_to(ExecutionEnvironment::get_environment_variable("MAIN_DIR")) &&
+        fullpath_rel.length() < fullpath.length()) {
+      filename = fullpath_rel;
+    } else {
+      filename = fullpath;
+    }
+  }
+
   std::ostringstream sstr;
   std::set<Filename> open_files;
-  if (r_preprocess_source(module, sstr, in, filename, Filename(), open_files, record)) {
+  if (r_preprocess_source(module, sstr, in, filename, fullpath, open_files, record)) {
     into = sstr.str();
 
     // Strip trailing whitespace.

@@ -11,8 +11,8 @@
  * @date 2010-11-21
  */
 
-#ifndef __BULLET_CHARACTER_CONTROLLER_NODE_H__
-#define __BULLET_CHARACTER_CONTROLLER_NODE_H__
+#ifndef BULLETCHARACTERCONTROLLERNODE_H
+#define BULLETCHARACTERCONTROLLERNODE_H
 
 #include "pandabase.h"
 
@@ -45,7 +45,7 @@ PUBLISHED:
   void set_fall_speed(PN_stdfloat fall_speed);
   void set_jump_speed(PN_stdfloat jump_speed);
   void set_max_jump_height(PN_stdfloat max_jump_height);
-  
+
   void set_max_slope(PN_stdfloat max_slope);
   PN_stdfloat get_max_slope() const;
 
@@ -110,4 +110,4 @@ private:
 
 #include "bulletCharacterControllerNode.I"
 
-#endif // __BULLET_CHARACTER_CONTROLLER_NODE_H__
+#endif // BULLETCHARACTERCONTROLLERNODE_H

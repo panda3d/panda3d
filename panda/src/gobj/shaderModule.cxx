@@ -19,7 +19,7 @@ TypeHandle ShaderModule::_type_handle;
  *
  */
 ShaderModule::
-ShaderModule(Stage stage) : _stage(stage) {
+ShaderModule(Stage stage) : _stage(stage), _used_caps(C_basic_shader) {
   switch (stage) {
   case Stage::tess_control:
   case Stage::tess_evaluation:
@@ -123,14 +123,32 @@ format_stage(Stage stage) {
  */
 void ShaderModule::
 output_capabilities(std::ostream &out, int caps) {
+  if (caps & C_basic_shader) {
+    out << "basic_shader ";
+  }
+  if (caps & C_vertex_texture) {
+    out << "vertex_texture ";
+  }
+  if (caps & C_sampler_shadow) {
+    out << "sampler_shadow ";
+  }
+  if (caps & C_invariant) {
+    out << "invariant ";
+  }
+  if (caps & C_matrix_non_square) {
+    out << "matrix_non_square ";
+  }
   if (caps & C_integer) {
     out << "integer ";
+  }
+  if (caps & C_texture_lod) {
+    out << "texture_lod ";
   }
   if (caps & C_texture_fetch) {
     out << "texture_fetch ";
   }
-  if (caps & C_buffer_texture) {
-    out << "buffer_texture ";
+  if (caps & C_sampler_cube_shadow) {
+    out << "sampler_cube_shadow ";
   }
   if (caps & C_vertex_id) {
     out << "vertex_id ";
@@ -141,6 +159,9 @@ output_capabilities(std::ostream &out, int caps) {
   if (caps & C_instance_id) {
     out << "instance_id ";
   }
+  if (caps & C_buffer_texture) {
+    out << "buffer_texture ";
+  }
   if (caps & C_geometry_shader) {
     out << "geometry_shader ";
   }
@@ -149,6 +170,9 @@ output_capabilities(std::ostream &out, int caps) {
   }
   if (caps & C_bit_encoding) {
     out << "bit_encoding ";
+  }
+  if (caps & C_texture_gather) {
+    out << "texture_gather ";
   }
   if (caps & C_double) {
     out << "double ";

@@ -14,7 +14,7 @@
 #ifndef CONFIG_SPEEDTREE_H
 #define CONFIG_SPEEDTREE_H
 
-#include "pandabase.h"
+#include "contribbase.h"
 #include "notifyCategoryProxy.h"
 #include "configVariableBool.h"
 #include "configVariableDouble.h"

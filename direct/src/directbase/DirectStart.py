@@ -4,7 +4,7 @@ opening a graphical window and setting up the scene graph.
 This example demonstrates its use:
 
    import direct.directbase.DirectStart
-   run()
+   base.run()
 
 While it may be considered useful for quick prototyping in the interactive
 Python shell, using it in applications is not considered good style.

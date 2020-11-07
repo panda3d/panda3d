@@ -62,9 +62,6 @@
 #cmakedefine HAVE_BMP
 #cmakedefine HAVE_PNM
 
-/* Define if we have CG installed.  */
-#cmakedefine HAVE_CG
-
 /* Define if we have zlib installed.  */
 #cmakedefine HAVE_ZLIB
 

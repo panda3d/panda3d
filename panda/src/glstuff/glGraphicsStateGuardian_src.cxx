@@ -67,10 +67,6 @@
 #include "samplerState.h"
 #include "displayInformation.h"
 
-#if defined(HAVE_CG) && !defined(OPENGLES)
-#include <Cg/cgGL.h>
-#endif
-
 #include <algorithm>
 
 using std::dec;
@@ -166,6 +162,7 @@ static const string default_vshader =
   "out vec2 texcoord;\n"
   "out vec4 color;\n"
 #else
+  "#version 100\n"
   "precision mediump float;\n"
   "attribute vec4 p3d_Vertex;\n"
   "attribute vec4 p3d_Color;\n"
@@ -228,6 +225,7 @@ static const string default_fshader =
   "uniform sampler2D p3d_Texture0;\n"
   "uniform vec4 p3d_TexAlphaOnly;\n"
 #else
+  "#version 100\n"
   "precision mediump float;\n"
   "varying vec2 texcoord;\n"
   "varying lowp vec4 color;\n"
@@ -510,10 +508,6 @@ CLP(GraphicsStateGuardian)(GraphicsEngine *engine, GraphicsPipe *pipe) :
   _shader_point_size = false;
 #endif
 
-#ifdef HAVE_CG
-  _cg_context = 0;
-#endif
-
 #ifdef DO_PSTATS
   if (gl_finish) {
     GLCAT.warning()
@@ -591,10 +585,10 @@ reset() {
   GraphicsStateGuardian::reset();
 
   // Build _inv_state_mask as a mask of 1's where we don't care, and 0's where
-  // we do care, about the state.  _inv_state_mask =
-  // RenderState::SlotMask::all_on();
+  // we do care, about the state.
+#ifndef OPENGLES_1
   _inv_state_mask.clear_bit(ShaderAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(AlphaTestAttrib::get_class_slot());
+#endif
   _inv_state_mask.clear_bit(AntialiasAttrib::get_class_slot());
   _inv_state_mask.clear_bit(ClipPlaneAttrib::get_class_slot());
   _inv_state_mask.clear_bit(ColorAttrib::get_class_slot());
@@ -604,20 +598,29 @@ reset() {
   _inv_state_mask.clear_bit(DepthTestAttrib::get_class_slot());
   _inv_state_mask.clear_bit(DepthWriteAttrib::get_class_slot());
   _inv_state_mask.clear_bit(RenderModeAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(RescaleNormalAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(ShadeModelAttrib::get_class_slot());
   _inv_state_mask.clear_bit(TransparencyAttrib::get_class_slot());
   _inv_state_mask.clear_bit(ColorWriteAttrib::get_class_slot());
   _inv_state_mask.clear_bit(ColorBlendAttrib::get_class_slot());
+#if !defined(OPENGLES) || defined(OPENGLES_1)
   _inv_state_mask.clear_bit(LogicOpAttrib::get_class_slot());
+#endif
   _inv_state_mask.clear_bit(TextureAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(TexGenAttrib::get_class_slot());
   _inv_state_mask.clear_bit(TexMatrixAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(MaterialAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(LightAttrib::get_class_slot());
   _inv_state_mask.clear_bit(StencilAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(FogAttrib::get_class_slot());
   _inv_state_mask.clear_bit(ScissorAttrib::get_class_slot());
+
+  // We only care about this state if we are using the fixed-function pipeline.
+#ifdef SUPPORT_FIXED_FUNCTION
+  if (has_fixed_function_pipeline()) {
+    _inv_state_mask.clear_bit(AlphaTestAttrib::get_class_slot());
+    _inv_state_mask.clear_bit(RescaleNormalAttrib::get_class_slot());
+    _inv_state_mask.clear_bit(ShadeModelAttrib::get_class_slot());
+    _inv_state_mask.clear_bit(TexGenAttrib::get_class_slot());
+    _inv_state_mask.clear_bit(MaterialAttrib::get_class_slot());
+    _inv_state_mask.clear_bit(LightAttrib::get_class_slot());
+    _inv_state_mask.clear_bit(FogAttrib::get_class_slot());
+  }
+#endif
 
   // Output the vendor and version strings.
   query_gl_version();
@@ -1670,36 +1673,59 @@ reset() {
   }
 
   // Check for GLSL support.
-  _supported_shader_caps = 0;
 #if defined(OPENGLES_1)
   _supports_glsl = false;
+  _supported_shader_caps = 0;
 
 #elif defined(OPENGLES)
   _supports_glsl = true;
+  _supported_shader_caps =
+      ShaderModule::C_basic_shader |
+      ShaderModule::C_vertex_texture |
+      ShaderModule::C_invariant;
 
   if (is_at_least_gles_version(3, 0)) {
     _supported_shader_caps |=
+      ShaderModule::C_sampler_shadow |
+      ShaderModule::C_matrix_non_square |
       ShaderModule::C_integer |
+      ShaderModule::C_texture_lod |
       ShaderModule::C_texture_fetch |
+      ShaderModule::C_sampler_cube_shadow |
       ShaderModule::C_vertex_id |
       ShaderModule::C_round_even |
-      ShaderModule::C_instance_id;
+      ShaderModule::C_instance_id |
+      ShaderModule::C_bit_encoding;
+  }
+  else {
+    if (has_extension("GL_EXT_shadow_samplers")) {
+      _supported_shader_caps |= ShaderModule::C_sampler_shadow;
+    }
+    if (has_extension("GL_EXT_shader_texture_lod")) {
+      _supported_shader_caps |= ShaderModule::C_texture_lod;
+    }
   }
 
   if (is_at_least_gles_version(3, 1)) {
     _supported_shader_caps |=
-      ShaderModule::C_compute_shader |
+      ShaderModule::C_texture_gather |
+      ShaderModule::C_extended_arithmetic |
       ShaderModule::C_image_load_store |
-      ShaderModule::C_extended_arithmetic;
+      ShaderModule::C_compute_shader;
   }
 
   if (is_at_least_gles_version(3, 2)) {
     _supported_shader_caps |=
+      ShaderModule::C_double |
+      ShaderModule::C_cube_map_array |
+      ShaderModule::C_tessellation_shader |
       ShaderModule::C_sample_variables |
       ShaderModule::C_buffer_texture;
 
     if (has_extension("GL_EXT_geometry_shader")) {
-      _supported_shader_caps |= ShaderModule::C_geometry_shader;
+      _supported_shader_caps |=
+        ShaderModule::C_geometry_shader |
+        ShaderModule::C_primitive_id;
     }
     if (has_extension("GL_EXT_tessellation_shader")) {
       _supported_shader_caps |= ShaderModule::C_tessellation_shader;
@@ -1716,6 +1742,7 @@ reset() {
 
 #else
   _supports_glsl = (_glsl_version >= 100);
+  _supported_shader_caps = 0;
 
   // Test support for shader features.
   if (_supports_glsl) {
@@ -1727,34 +1754,58 @@ reset() {
     // 4.0 guarantees support for 4.00
     // 4.1 guarantees support for 4.10
     // 4.x guarantees support for 1.40-4.x0 (for x >= 2)
+    _supported_shader_caps |=
+      ShaderModule::C_basic_shader |
+      ShaderModule::C_vertex_texture |
+      ShaderModule::C_sampler_shadow;
 
-    if (_glsl_version >= 130) { // OpenGL 3.0
+    // OpenGL 2.1
+    if (_glsl_version >= 120) {
+      _supported_shader_caps |=
+        ShaderModule::C_invariant |
+        ShaderModule::C_matrix_non_square;
+    }
+
+    // OpenGL 3.0
+    if (_glsl_version >= 130) {
       _supported_shader_caps |=
         ShaderModule::C_integer |
+        ShaderModule::C_texture_lod |
         ShaderModule::C_texture_fetch |
-        ShaderModule::C_buffer_texture |
+        ShaderModule::C_sampler_cube_shadow |
         ShaderModule::C_vertex_id |
         ShaderModule::C_round_even;
     }
-
-    if (_glsl_version >= 140) { // OpenGL 3.1
-      _supported_shader_caps |= ShaderModule::C_instance_id;
+    else {
+      if (has_extension("GL_ARB_shader_texture_lod")) {
+        _supported_shader_caps |= ShaderModule::C_texture_lod;
+      }
+      if (has_extension("GL_EXT_gpu_shader4")) {
+        // These are in principle supported, but SPIRV-Cross might need to be
+        // changed to be able to leverage these.  Most cards that have this
+        // extension also support GLSL 1.30, so it might not be worth adding.
+        _supported_shader_caps |=
+          //ShaderModule::C_integer |
+          //ShaderModule::C_texture_fetch |
+          //ShaderModule::C_sampler_cube_shadow |
+          ShaderModule::C_round_even;
+      }
     }
 
-    if (_glsl_version >= 150) { // OpenGL 3.2
+    // OpenGL 3.1
+    if (_glsl_version >= 140 || has_extension("GL_ARB_draw_instanced")) {
+      _supported_shader_caps |= ShaderModule::C_instance_id;
+    }
+    if (_glsl_version >= 140 || has_extension("GL_ARB_texture_buffer_object")) {
+      _supported_shader_caps |= ShaderModule::C_buffer_texture;
+    }
+
+    // OpenGL 3.2
+    if (_glsl_version >= 150 || has_extension("GL_ARB_geometry_shader4")) {
       _supported_shader_caps |=
         ShaderModule::C_geometry_shader |
         ShaderModule::C_primitive_id;
       _supported_geom_rendering |= Geom::GR_adjacency;
-    }
-    else {
-      if (has_extension("GL_ARB_draw_instanced")) {
-        _supported_shader_caps |= ShaderModule::C_instance_id;
-      }
-      if (has_extension("GL_ARB_geometry_shader4")) {
-        _supported_shader_caps |= ShaderModule::C_geometry_shader;
-        _supported_geom_rendering |= Geom::GR_adjacency;
-      }
     }
 
     if (_glsl_version >= 330 || has_extension("GL_ARB_shader_bit_encoding")) {
@@ -1763,6 +1814,7 @@ reset() {
 
     if (_glsl_version >= 400) {
       _supported_shader_caps |=
+        ShaderModule::C_texture_gather |
         ShaderModule::C_double |
         ShaderModule::C_cube_map_array |
         ShaderModule::C_tessellation_shader |
@@ -1771,6 +1823,10 @@ reset() {
         ShaderModule::C_texture_query_lod;
     }
     else {
+      // This extension is very limited, should we break up C_texture_gather?
+      //if (has_extension("GL_ARB_texture_gather")) {
+      //  _supported_shader_caps |= ShaderModule::C_texture_gather;
+      //}
       if (has_extension("GL_ARB_gpu_shader_fp64")) {
         _supported_shader_caps |= ShaderModule::C_double;
       }
@@ -1823,10 +1879,34 @@ reset() {
   }
 #endif
 
+#ifndef OPENGLES_1
+  _supports_program_interface_query = false;
+
+  if (is_at_least_gl_version(4, 3) || is_at_least_gles_version(3, 1)
+#ifndef OPENGLES
+      || has_extension("GL_ARB_program_interface_query")
+#endif
+      ) {
+
+    _glGetProgramInterfaceiv = (PFNGLGETPROGRAMINTERFACEIVPROC)
+       get_extension_func("glGetProgramInterfaceiv");
+    _glGetProgramResourceName = (PFNGLGETPROGRAMRESOURCENAMEPROC)
+       get_extension_func("glGetProgramResourceName");
+    _glGetProgramResourceiv = (PFNGLGETPROGRAMRESOURCEIVPROC)
+       get_extension_func("glGetProgramResourceiv");
+
+    if (_glGetProgramInterfaceiv != nullptr &&
+        _glGetProgramResourceName != nullptr &&
+        _glGetProgramResourceiv != nullptr) {
+      _supports_program_interface_query = true;
+    }
+  }
+#endif
+
   // Check for SPIR-V support.
 #ifndef OPENGLES
   _supports_spir_v = false;
-  if (has_extension("GL_ARB_gl_spirv")) {
+  if (_supports_program_interface_query && has_extension("GL_ARB_gl_spirv")) {
     _glShaderBinary = (PFNGLSHADERBINARYPROC)
       get_extension_func("glShaderBinary");
     _glSpecializeShader = (PFNGLSPECIALIZESHADERARBPROC)
@@ -1838,21 +1918,6 @@ reset() {
     }
   }
 #endif
-
-  _supports_basic_shaders = _supports_glsl;
-
-#if defined(HAVE_CG) && !defined(OPENGLES)
-  if (_supports_glsl) {
-    _shader_caps._active_vprofile = (int)CG_PROFILE_GLSLV;
-    _shader_caps._active_fprofile = (int)CG_PROFILE_GLSLF;
-    if (get_supports_geometry_shaders()) {
-      _shader_caps._active_gprofile = (int)CG_PROFILE_GLSLG;
-    }
-    _shader_caps._ultimate_vprofile = (int)CG_PROFILE_GLSLV;
-    _shader_caps._ultimate_fprofile = (int)CG_PROFILE_GLSLF;
-    _shader_caps._ultimate_gprofile = (int)CG_PROFILE_GLSLG;
-  }
-#endif  // HAVE_CG
 
 #ifndef OPENGLES_1
 #ifdef OPENGLES
@@ -1986,23 +2051,6 @@ reset() {
       _glPatchParameteri = (PFNGLPATCHPARAMETERIPROC)
          get_extension_func("glPatchParameteri");
     }
-  } else if (_supports_basic_shaders) {
-    // We don't support GLSL, but we support ARB programs.
-    _glDisableVertexAttribArray = (PFNGLDISABLEVERTEXATTRIBARRAYPROC)
-      get_extension_func("glDisableVertexAttribArrayARB");
-    _glEnableVertexAttribArray = (PFNGLENABLEVERTEXATTRIBARRAYPROC)
-      get_extension_func("glEnableVertexAttribArrayARB");
-
-    _glVertexAttrib4fv = (PFNGLVERTEXATTRIB4FVPROC)
-       get_extension_func("glVertexAttrib4fvARB");
-    _glVertexAttrib4dv = (PFNGLVERTEXATTRIB4DVPROC)
-       get_extension_func("glVertexAttrib4dvARB");
-    _glVertexAttribPointer = (PFNGLVERTEXATTRIBPOINTERPROC)
-       get_extension_func("glVertexAttribPointerARB");
-
-    _glBindFragDataLocation = nullptr;
-    _glVertexAttribIPointer = nullptr;
-    _glVertexAttribLPointer = nullptr;
   }
 #endif
 
@@ -2130,13 +2178,7 @@ reset() {
 #ifndef OPENGLES
   // Check for SSBOs.
   if (is_at_least_gl_version(4, 3) || has_extension("ARB_shader_storage_buffer_object")) {
-    _supports_shader_buffers = true;
-    _glGetProgramInterfaceiv = (PFNGLGETPROGRAMINTERFACEIVPROC)
-       get_extension_func("glGetProgramInterfaceiv");
-    _glGetProgramResourceName = (PFNGLGETPROGRAMRESOURCENAMEPROC)
-       get_extension_func("glGetProgramResourceName");
-    _glGetProgramResourceiv = (PFNGLGETPROGRAMRESOURCEIVPROC)
-       get_extension_func("glGetProgramResourceiv");
+    _supports_shader_buffers = _supports_program_interface_query;
   } else
 #endif
   {
@@ -3497,7 +3539,7 @@ reset() {
       GLint num_binary_formats = 0;
       glGetIntegerv(GL_NUM_SHADER_BINARY_FORMATS, &num_binary_formats);
 
-      if (num_binary_formats >= 0) {
+      if (num_binary_formats > 0) {
         GLCAT.debug()
           << "Supported shader binary formats:\n";
         GLCAT.debug() << " ";
@@ -3512,7 +3554,7 @@ reset() {
         }
         GLCAT.debug(false) << "\n";
       } else {
-        GLCAT.debug() << "No program binary formats supported.\n";
+        GLCAT.debug() << "No shader binary formats supported.\n";
       }
     } else {
       GLCAT.debug() << "Shader binary loading not supported.\n";
@@ -3529,7 +3571,7 @@ reset() {
     // gp5fp - OpenGL fragment profile for GeForce 400 Series and up
     _shader_model = SM_50;
   }
-  else if (_glsl_version >= 300 || has_extension("GL_NV_gpu_program4")) {
+  else if (_glsl_version >= 330 || has_extension("GL_NV_gpu_program4")) {
     // gp4fp - OpenGL fragment profile for G8x (GeForce 8xxx and up)
     _shader_model = SM_40;
   }
@@ -3575,6 +3617,10 @@ reset() {
   _auto_detect_shader_model = _shader_model;
 
   if (GLCAT.is_debug()) {
+    std::ostream &out = GLCAT.debug();
+    out << "shader caps = ";
+    ShaderModule::output_capabilities(out, _supported_shader_caps);
+    out << "\n";
     GLCAT.debug() << "shader model = " << _shader_model << "\n";
   }
 
@@ -4021,12 +4067,6 @@ prepare_lens() {
     report_my_gl_errors();
 
     do_point_size();
-  }
-#endif
-
-#ifndef OPENGLES_1
-  if (_current_shader_context) {
-    _current_shader_context->issue_parameters(Shader::SSD_transform);
   }
 #endif
 
@@ -4489,13 +4529,6 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
             disable_standard_vertex_arrays();
           }
         }
-#ifdef HAVE_CG
-        else if (_vertex_array_shader_context->is_of_type(CLP(CgShaderContext)::get_class_type())) {
-          // The previous shader was a Cg shader, which can leave a messy
-          // situation.
-          _vertex_array_shader_context->disable_shader_vertex_arrays();
-        }
-#endif
       }
 #endif  // SUPPORT_FIXED_FUNCTION
       // Now update the vertex arrays for the current shader.
@@ -6258,30 +6291,15 @@ prepare_shader(Shader *se) {
   PStatGPUTimer timer(this, se->get_prepare_shader_pcollector());
 
 #ifndef OPENGLES_1
-  if (_supports_glsl) {
-    int unsupported_caps = se->get_used_capabilities() & ~_supported_shader_caps;
-    if (unsupported_caps != 0) {
-      std::ostream &out = GLCAT.error()
-        << "Cannot load shader because the graphics back-end does not support "
-           "these capabilities: ";
+  push_group_marker(std::string("Prepare Shader ") + se->get_debug_name());
+  ShaderContext *result = new CLP(ShaderContext)(this, se);
+  pop_group_marker();
 
-      ShaderModule::output_capabilities(out, unsupported_caps);
-      out << std::endl;
-    }
-
-    push_group_marker(std::string("Prepare Shader ") + se->get_debug_name());
-    ShaderContext *result = new CLP(ShaderContext)(this, se);
-    pop_group_marker();
-
-    if (result->valid()) {
-      return result;
-    }
-
-    delete result;
-  } else {
-    GLCAT.error()
-      << "Tried to load shader, but shaders are not supported.\n";
+  if (result->valid()) {
+    return result;
   }
+
+  delete result;
 #endif  // OPENGLES_1
 
   return nullptr;
@@ -6296,11 +6314,6 @@ release_shader(ShaderContext *sc) {
   if (sc->is_of_type(CLP(ShaderContext)::get_class_type())) {
     ((CLP(ShaderContext) *)sc)->release_resources();
   }
-#if defined(HAVE_CG) && !defined(OPENGLES_2)
-  else if (sc->is_of_type(CLP(CgShaderContext)::get_class_type())) {
-    ((CLP(CgShaderContext) *)sc)->release_resources();
-  }
-#endif
 #endif
 
   delete sc;
@@ -10530,11 +10543,9 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
 
 #ifndef OPENGLES_1
   case Texture::F_srgb:
-#ifndef OPENGLES
-    return GL_SRGB8;
-#endif
+    return _supports_texture_srgb ? GL_SRGB8 : GL_RGB8;
   case Texture::F_srgb_alpha:
-    return GL_SRGB8_ALPHA8;
+    return _supports_texture_srgb ? GL_SRGB8_ALPHA8 : GL_RGBA8;
 #endif
 #ifndef OPENGLES
   case Texture::F_sluminance:
@@ -11416,7 +11427,8 @@ set_state_and_transform(const RenderState *target,
   _state_pcollector.add_level(1);
   PStatGPUTimer timer1(this, _draw_set_state_pcollector);
 
-  if (transform != _internal_transform) {
+  bool transform_changed = transform != _internal_transform;
+  if (transform_changed) {
     // PStatGPUTimer timer(this, _draw_set_state_transform_pcollector);
     _transform_state_pcollector.add_level(1);
     _internal_transform = transform;
@@ -11424,6 +11436,16 @@ set_state_and_transform(const RenderState *target,
   }
 
   if (target == _state_rs && (_state_mask | _inv_state_mask).is_all_on()) {
+#ifndef OPENGLES_1
+    if (transform_changed) {
+      // The state has not changed, but the transform has. Set the new
+      // transform on the shader, if we have one.
+      if (_current_shader_context != nullptr) {
+        _current_shader_context->set_state_and_transform(_state_rs, transform,
+          _scene_setup->get_camera_transform(), _projection_mat);
+      }
+    }
+#endif
     return;
   }
   _target_rs = target;
@@ -11436,10 +11458,12 @@ set_state_and_transform(const RenderState *target,
     do_issue_shader();
     _state_shader = _target_shader;
     _state_mask.clear_bit(TextureAttrib::get_class_slot());
+    _state_mask.set_bit(ShaderAttrib::get_class_slot());
   }
   else if (!has_fixed_function_pipeline() && _current_shader == nullptr) { // In the case of OpenGL ES 2.x, we need to glUseShader before we draw anything.
     do_issue_shader();
     _state_mask.clear_bit(TextureAttrib::get_class_slot());
+    _state_mask.set_bit(ShaderAttrib::get_class_slot());
   }
 
   // Update all of the state that is bound to the shader program.
@@ -11689,19 +11713,6 @@ set_state_and_transform(const RenderState *target,
   _state_rs = _target_rs;
   maybe_gl_finish();
   report_my_gl_errors();
-}
-
-/**
- * Frees some memory that was explicitly allocated within the glgsg.
- */
-void CLP(GraphicsStateGuardian)::
-free_pointers() {
-#if defined(HAVE_CG) && !defined(OPENGLES)
-  if (_cg_context != 0) {
-    cgDestroyContext(_cg_context);
-    _cg_context = 0;
-  }
-#endif
 }
 
 /**
@@ -13023,11 +13034,20 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
     int num_levels = 1;
     CPTA_uchar image = tex->get_ram_mipmap_image(mipmap_bias);
 
+    bool can_generate = _supports_generate_mipmap;
+#if defined(OPENGLES) && !defined(OPENGLES_1)
+    // OpenGL ES doesn't support generating mipmaps for sRGB textures, so we
+    // have to do this on the CPU, unless we have a special extension.
+    if (internal_format == GL_SRGB8 || internal_format == GL_SRGB8_ALPHA8) {
+      can_generate = has_extension("GL_NV_generate_mipmap_sRGB");
+    }
+#endif
+
     if (image.is_null()) {
       // We don't even have a RAM image, so we have no choice but to let
       // mipmaps be generated on the GPU.
       if (uses_mipmaps) {
-        if (_supports_generate_mipmap) {
+        if (can_generate) {
           num_levels = tex->get_expected_num_mipmap_levels() - mipmap_bias;
           gtc->_generate_mipmaps = true;
         } else {
@@ -13043,7 +13063,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
 
         if (num_levels <= 1) {
           // No RAM mipmap levels available.  Should we generate some?
-          if (!_supports_generate_mipmap || !driver_generate_mipmaps ||
+          if (!can_generate || !driver_generate_mipmaps ||
               image_compression != Texture::CM_off) {
             // Yes, the GL can't or won't generate them, so we need to.  Note
             // that some drivers (nVidia) will *corrupt memory* if you ask
@@ -13056,7 +13076,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
         if (num_levels <= 1) {
           // We don't have mipmap levels in RAM.  Ask the GL to generate them
           // if it can.
-          if (_supports_generate_mipmap) {
+          if (can_generate) {
             num_levels = tex->get_expected_num_mipmap_levels() - mipmap_bias;
             gtc->_generate_mipmaps = true;
           } else {
@@ -14322,9 +14342,7 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
 
 #ifndef OPENGLES_1
   case GL_SRGB:
-#ifndef OPENGLES
   case GL_SRGB8:
-#endif
     format = Texture::F_srgb;
     break;
   case GL_SRGB_ALPHA:
@@ -14724,25 +14742,6 @@ do_point_size() {
   report_my_gl_errors();
 }
 #endif
-
-/**
- * Returns true if this particular GSG supports the specified Cg Shader
- * Profile.
- */
-bool CLP(GraphicsStateGuardian)::
-get_supports_cg_profile(const string &name) const {
-#if !defined(HAVE_CG) || defined(OPENGLES)
-  return false;
-#else
-  CGprofile profile = cgGetProfile(name.c_str());
-
-  if (profile == CG_PROFILE_UNKNOWN) {
-    GLCAT.error() << name << ", unknown Cg-profile\n";
-    return false;
-  }
-  return (cgGLIsProfileSupported(profile) != 0);
-#endif
-}
 
 /**
  * Binds a framebuffer object.

@@ -33,15 +33,13 @@ class State(DirectObject):
                     if enterFunc.__func__ == oldFunction:
                         # print 'found: ', enterFunc, oldFunction
                         state.setEnterFunc(types.MethodType(newFunction,
-                                                            enterFunc.__self__,
-                                                            enterFunc.__self__.__class__))
+                                                            enterFunc.__self__))
                         count += 1
                 if type(exitFunc) == types.MethodType:
                     if exitFunc.__func__ == oldFunction:
                         # print 'found: ', exitFunc, oldFunction
                         state.setExitFunc(types.MethodType(newFunction,
-                                                           exitFunc.__self__,
-                                                           exitFunc.__self__.__class__))
+                                                           exitFunc.__self__))
                         count += 1
             return count
 
@@ -215,18 +213,3 @@ class State(DirectObject):
     def __str__(self):
         return "State: name = %s, enter = %s, exit = %s, trans = %s, children = %s" %\
                (self.__name, self.__enterFunc, self.__exitFunc, self.__transitions, self.__FSMList)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

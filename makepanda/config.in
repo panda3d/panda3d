@@ -91,10 +91,3 @@ hardware-animated-vertices #f
 
 model-cache-dir $XDG_CACHE_HOME/panda3d
 model-cache-textures #f
-
-# This option specifies the default profiles for Cg shaders.
-# Setting it to #t makes them arbvp1 and arbfp1, since these
-# seem to be most reliable. Setting it to #f makes Panda use
-# the latest profile available.
-
-basic-shaders-only #f

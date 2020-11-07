@@ -25,11 +25,6 @@
 #include "shaderModuleGlsl.h"
 #include "shaderCompilerRegistry.h"
 #include "shaderCompiler.h"
-#include "shaderCompilerCg.h"
-
-#ifdef HAVE_CG
-#include <Cg/cg.h>
-#endif
 
 using std::istream;
 using std::move;
@@ -40,13 +35,7 @@ using std::string;
 TypeHandle Shader::_type_handle;
 Shader::ShaderTable Shader::_load_table;
 Shader::ShaderTable Shader::_make_table;
-Shader::ShaderCaps Shader::_default_caps;
 int Shader::_shaders_generated;
-
-#ifdef HAVE_CG
-CGcontext Shader::_cg_context = 0;
-
-#endif
 
 /**
  * Determine whether the source file hints at being a Cg shader
@@ -55,6 +44,36 @@ static bool has_cg_header(const std::string &shader_text) {
   size_t newline_pos = shader_text.find('\n');
   std::string search_str = shader_text.substr(0, newline_pos);
   return search_str.rfind("//Cg") != std::string::npos;
+}
+
+/**
+ * Construct a Shader that will be filled in using fillin() or read() later.
+ */
+Shader::
+Shader(ShaderLanguage lang) :
+  _error_flag(false),
+  _parse(0),
+  _loaded(false),
+  _language(lang),
+  _mat_deps(0),
+  _cache_compiled_shader(false)
+{
+}
+
+/**
+ * Delete the compiled code, if it exists.
+ */
+Shader::
+~Shader() {
+  release_all();
+  // Note: don't try to erase ourselves from the table.  It currently keeps a
+  // reference forever, and so the only place where this constructor is called
+  // is in the destructor of the table itself.
+  /*if (_loaded) {
+    _load_table.erase(_filename);
+  } else {
+    _make_table.erase(_text);
+  }*/
 }
 
 /**
@@ -569,824 +588,6 @@ get_compiled(unsigned int &format, string &binary) const {
 }
 
 /**
- * Called by the graphics back-end to specify the caps with which we will
- * likely want to be compiling our shaders.
- */
-void Shader::
-set_default_caps(const ShaderCaps &caps) {
-  _default_caps = caps;
-}
-
-#ifdef HAVE_CG
-/**
- *
- */
-::ShaderType::ScalarType Shader::
-cg_scalar_type(int type) {
-  switch (type) {
-  case CG_UINT:
-  case CG_ULONG:
-  case CG_USHORT:
-  case CG_UCHAR:
-    return ScalarType::ST_uint;
-
-  case CG_BOOL:
-    return ScalarType::ST_bool;
-
-  case CG_INT:
-  case CG_LONG:
-  case CG_SHORT:
-  case CG_CHAR:
-    return ScalarType::ST_int;
-
-  default:
-    return ScalarType::ST_float;
-  }
-  return ScalarType::ST_unknown;
-}
-
-/**
- *
- */
-const ::ShaderType *Shader::
-cg_parameter_type(CGparameter p) {
-  switch (cgGetParameterClass(p)) {
-  case CG_PARAMETERCLASS_SCALAR:
-    return ::ShaderType::register_type(::ShaderType::Scalar(
-      cg_scalar_type(cgGetParameterBaseType(p))));
-
-  case CG_PARAMETERCLASS_VECTOR:
-    return ::ShaderType::register_type(::ShaderType::Vector(
-      cg_scalar_type(cgGetParameterBaseType(p)),
-      cgGetParameterColumns(p)));
-
-  case CG_PARAMETERCLASS_MATRIX:
-    return ::ShaderType::register_type(::ShaderType::Matrix(
-      cg_scalar_type(cgGetParameterBaseType(p)),
-      cgGetParameterRows(p),
-      cgGetParameterColumns(p)));
-
-  case CG_PARAMETERCLASS_STRUCT:
-    {
-      ::ShaderType::Struct type;
-      CGparameter member = cgGetFirstStructParameter(p);
-      while (member) {
-        type.add_member(
-          cg_parameter_type(member),
-          cgGetParameterName(p)
-        );
-        member = cgGetNextParameter(member);
-      }
-      return ::ShaderType::register_type(std::move(type));
-    }
-
-  case CG_PARAMETERCLASS_ARRAY:
-    return ::ShaderType::register_type(::ShaderType::Array(
-      cg_parameter_type(cgGetArrayParameter(p, 0)),
-      cgGetArraySize(p, 0)));
-
-  case CG_PARAMETERCLASS_SAMPLER:
-    {
-      Texture::TextureType texture_type;
-      switch (cgGetParameterType(p)) {
-      case CG_SAMPLER1D:
-      case 1313: // CG_SAMPLER1DSHADOW
-        texture_type = Texture::TT_1d_texture;
-        break;
-      case CG_SAMPLER2D:
-      case 1314: // CG_SAMPLER2DSHADOW
-        texture_type = Texture::TT_2d_texture;
-        break;
-      case CG_SAMPLER3D:
-        texture_type = Texture::TT_3d_texture;
-        break;
-      case CG_SAMPLER2DARRAY:
-        texture_type = Texture::TT_2d_texture_array;
-        break;
-      case CG_SAMPLERCUBE:
-        texture_type = Texture::TT_cube_map;
-        break;
-      case CG_SAMPLERBUF:
-        texture_type = Texture::TT_buffer_texture;
-        break;
-      case CG_SAMPLERCUBEARRAY:
-        texture_type = Texture::TT_cube_map_array;
-        break;
-      default:
-        return nullptr;
-      }
-      return ::ShaderType::register_type(::ShaderType::SampledImage(texture_type, ::ShaderType::ST_float));
-    }
-
-  default:
-    break;
-  }
-
-  return nullptr;
-}
-
-/**
- * xyz
- */
-void Shader::
-cg_release_resources() {
-  if (_cg_vprogram != 0) {
-    cgDestroyProgram(_cg_vprogram);
-    _cg_vprogram = 0;
-  }
-  if (_cg_fprogram != 0) {
-    cgDestroyProgram(_cg_fprogram);
-    _cg_fprogram = 0;
-  }
-  if (_cg_gprogram != 0) {
-    cgDestroyProgram(_cg_gprogram);
-    _cg_gprogram = 0;
-  }
-}
-
-/**
- * xyz
- */
-CGprogram Shader::
-cg_compile_entry_point(const char *entry, const ShaderCaps &caps,
-                       CGcontext context, ShaderType type) {
-  CGprogram prog;
-  CGerror err;
-  const char *compiler_args[100];
-  const string text = get_text(type);
-  int nargs = 0;
-
-  int active, ultimate;
-
-  switch (type) {
-  case ST_vertex:
-    active   = caps._active_vprofile;
-    ultimate = caps._ultimate_vprofile;
-    break;
-
-  case ST_fragment:
-    active   = caps._active_fprofile;
-    ultimate = caps._ultimate_fprofile;
-    break;
-
-  case ST_geometry:
-    active   = caps._active_gprofile;
-    ultimate = caps._ultimate_gprofile;
-    break;
-
-  case ST_tess_evaluation:
-  case ST_tess_control:
-    active   = caps._active_tprofile;
-    ultimate = caps._ultimate_tprofile;
-    break;
-
-  case ST_none:
-  default:
-    active   = CG_PROFILE_UNKNOWN;
-    ultimate = CG_PROFILE_UNKNOWN;
-  };
-
-  if (type == ST_fragment && caps._bug_list.count(SBUG_ati_draw_buffers)) {
-    compiler_args[nargs++] = "-po";
-    compiler_args[nargs++] = "ATI_draw_buffers";
-  }
-
-  string version_arg;
-  if (!cg_glsl_version.empty() && active != CG_PROFILE_UNKNOWN &&
-      cgGetProfileProperty((CGprofile) active, CG_IS_GLSL_PROFILE)) {
-
-    version_arg = "version=";
-    version_arg += cg_glsl_version;
-
-    compiler_args[nargs++] = "-po";
-    compiler_args[nargs++] = version_arg.c_str();
-  }
-
-  compiler_args[nargs] = 0;
-
-  cgGetError();
-
-  if ((active != (int)CG_PROFILE_UNKNOWN) && (active != ultimate)) {
-    // Print out some debug information about what we're doing.
-    if (shader_cat.is_debug()) {
-      shader_cat.debug()
-        << "Compiling Cg shader " << get_filename(type) << " with entry point " << entry
-        << " and active profile " << cgGetProfileString((CGprofile) active) << "\n";
-
-      if (nargs > 0) {
-        shader_cat.debug() << "Using compiler arguments:";
-        for (int i = 0; i < nargs; ++i) {
-          shader_cat.debug(false) << " " << compiler_args[i];
-        }
-        shader_cat.debug(false) << "\n";
-      }
-    }
-
-    // Compile the shader with the active profile.
-    prog = cgCreateProgram(context, CG_SOURCE, text.c_str(),
-                           (CGprofile)active, entry, (const char **)compiler_args);
-    err = cgGetError();
-    if (err == CG_NO_ERROR) {
-      return prog;
-    }
-    if (prog != 0) {
-      cgDestroyProgram(prog);
-    }
-    if (shader_cat.is_debug()) {
-      shader_cat.debug()
-        << "Compilation with active profile failed: " << cgGetErrorString(err) << "\n";
-      if (err == CG_COMPILER_ERROR) {
-        const char *listing = cgGetLastListing(context);
-        if (listing != nullptr) {
-          shader_cat.debug(false) << listing;
-        }
-      }
-    }
-  }
-
-  if (shader_cat.is_debug()) {
-    shader_cat.debug()
-      << "Compiling Cg shader " << get_filename(type) << " with entry point " << entry
-      << " and ultimate profile " << cgGetProfileString((CGprofile) ultimate) << "\n";
-  }
-
-  // The active profile failed, so recompile it with the ultimate profile.
-  prog = cgCreateProgram(context, CG_SOURCE, text.c_str(),
-                         (CGprofile)ultimate, entry, nullptr);
-
-  // Extract the output listing.
-  err = cgGetError();
-  const char *listing = cgGetLastListing(context);
-
-  if (err == CG_NO_ERROR && listing != nullptr && strlen(listing) > 1) {
-    shader_cat.warning()
-      << "Encountered warnings during compilation of " << get_filename(type)
-      << ":\n" << listing;
-
-  } else if (err == CG_COMPILER_ERROR) {
-    shader_cat.error()
-      << "Failed to compile Cg shader " << get_filename(type);
-    if (listing != nullptr) {
-      shader_cat.error(false) << ":\n" << listing;
-    } else {
-      shader_cat.error(false) << "!\n";
-    }
-  }
-
-  if (err == CG_NO_ERROR) {
-    return prog;
-  }
-
-  if (shader_cat.is_debug()) {
-    shader_cat.debug()
-      << "Compilation with ultimate profile failed: " << cgGetErrorString(err) << "\n";
-  }
-
-  if (prog != 0) {
-    cgDestroyProgram(prog);
-  }
-  return 0;
-}
-
-/**
- * Compiles a Cg shader for a given set of capabilities.  If successful, the
- * shader is stored in the instance variables _cg_context, _cg_vprogram,
- * _cg_fprogram.
- */
-bool Shader::
-cg_compile_shader(const ShaderCaps &caps, CGcontext context) {
-  _cg_last_caps = caps;
-
-  if (!_text._separate || !_text._vertex.empty()) {
-    _cg_vprogram = cg_compile_entry_point("vshader", caps, context, ST_vertex);
-    if (_cg_vprogram == 0) {
-      cg_release_resources();
-      return false;
-    }
-    _cg_vprofile = cgGetProgramProfile(_cg_vprogram);
-  }
-
-  if (!_text._separate || !_text._fragment.empty()) {
-    _cg_fprogram = cg_compile_entry_point("fshader", caps, context, ST_fragment);
-    if (_cg_fprogram == 0) {
-      cg_release_resources();
-      return false;
-    }
-    _cg_fprofile = cgGetProgramProfile(_cg_fprogram);
-  }
-
-  if ((_text._separate && !_text._geometry.empty()) || (!_text._separate && _text._shared.find("gshader") != string::npos)) {
-    _cg_gprogram = cg_compile_entry_point("gshader", caps, context, ST_geometry);
-    if (_cg_gprogram == 0) {
-      cg_release_resources();
-      return false;
-    }
-    _cg_gprofile = cgGetProgramProfile(_cg_gprogram);
-  }
-
-  if (_cg_vprogram == 0 && _cg_fprogram == 0 && _cg_gprogram == 0) {
-    shader_cat.error() << "Shader must at least have one program!\n";
-    cg_release_resources();
-    return false;
-  }
-
-  // This is present to work around a bug in the Cg compiler for Direct3D 9.
-  // It generates "texld_sat" instructions that the result in an
-  // D3DXERR_INVALIDDATA error when trying to load the shader, since the _sat
-  // modifier may not be used on tex* instructions.
-  if (_cg_fprofile == CG_PROFILE_PS_2_0 ||
-      _cg_fprofile == CG_PROFILE_PS_2_X ||
-      _cg_fprofile == CG_PROFILE_PS_3_0) {
-    vector_string lines;
-    tokenize(cgGetProgramString(_cg_fprogram, CG_COMPILED_PROGRAM), lines, "\n");
-
-    ostringstream out;
-    int num_modified = 0;
-
-    for (size_t i = 0; i < lines.size(); ++i) {
-      const string &line = lines[i];
-
-      size_t space = line.find(' ');
-      if (space == string::npos) {
-        out << line << '\n';
-        continue;
-      }
-
-      string instr = line.substr(0, space);
-
-      // Look for a texld instruction with _sat modifier.
-      if (instr.compare(0, 5, "texld") == 0 &&
-          instr.compare(instr.size() - 4, 4, "_sat") == 0) {
-        // Which destination register are we operating on?
-        string reg = line.substr(space + 1, line.find(',', space) - space - 1);
-
-        // Move the saturation operation to a separate instruction.
-        instr.resize(instr.size() - 4);
-        out << instr << ' ' << line.substr(space + 1) << '\n';
-        out << "mov_sat " << reg << ", " << reg << '\n';
-        ++num_modified;
-      } else {
-        out << line << '\n';
-      }
-    }
-
-    if (num_modified > 0) {
-      string result = out.str();
-      CGprogram new_program;
-      new_program = cgCreateProgram(context, CG_OBJECT, result.c_str(),
-                                    (CGprofile)_cg_fprofile, "fshader",
-                                    nullptr);
-      if (new_program) {
-        cgDestroyProgram(_cg_fprogram);
-        _cg_fprogram = new_program;
-
-        if (shader_cat.is_debug()) {
-          shader_cat.debug()
-            << "Replaced " << num_modified << " invalid texld_sat instruction"
-            << ((num_modified == 1) ? "" : "s") << " in compiled shader\n";
-        }
-      } else {
-        shader_cat.warning()
-          << "Failed to load shader with fixed texld_sat instructions: "
-          << cgGetErrorString(cgGetError()) << "\n";
-      }
-    }
-  }
-
-  // DEBUG: output the generated program
-  if (shader_cat.is_debug()) {
-    const char *vertex_program;
-    const char *fragment_program;
-    const char *geometry_program;
-
-    if (_cg_vprogram != 0) {
-      shader_cat.debug()
-        << "Cg vertex profile: " << cgGetProfileString((CGprofile)_cg_vprofile) << "\n";
-      vertex_program = cgGetProgramString(_cg_vprogram, CG_COMPILED_PROGRAM);
-      shader_cat.spam() << vertex_program << "\n";
-    }
-    if (_cg_fprogram != 0) {
-      shader_cat.debug()
-        << "Cg fragment profile: " << cgGetProfileString((CGprofile)_cg_fprofile) << "\n";
-      fragment_program = cgGetProgramString(_cg_fprogram, CG_COMPILED_PROGRAM);
-      shader_cat.spam() << fragment_program << "\n";
-    }
-    if (_cg_gprogram != 0) {
-      shader_cat.debug()
-        << "Cg geometry profile: " << cgGetProfileString((CGprofile)_cg_gprofile) << "\n";
-      geometry_program = cgGetProgramString(_cg_gprogram, CG_COMPILED_PROGRAM);
-      shader_cat.spam() << geometry_program << "\n";
-    }
-  }
-
-  return true;
-}
-
-/**
- *
- */
-bool Shader::
-cg_analyze_entry_point(CGprogram prog, ShaderType type) {
-  bool success = true;
-
-  CGparameter parameter = cgGetFirstParameter(prog, CG_PROGRAM);
-  while (parameter) {
-    if (cgIsParameterReferenced(parameter)) {
-      const ::ShaderType *arg_type = cg_parameter_type(parameter);
-
-      CGenum vbl = cgGetParameterVariability(parameter);
-
-      if (cgGetParameterDirection(parameter) == CG_IN) {
-        CPT(InternalName) name = InternalName::make(cgGetParameterName(parameter));
-
-        if (vbl == CG_VARYING && type == ST_vertex) {
-          success &= bind_vertex_input(name, arg_type, -1);
-        }
-        else if (vbl == CG_UNIFORM) {
-          Parameter param;
-          param._name = name;
-          param._type = arg_type;
-          success &= bind_parameter(param);
-        }
-      }
-    } else if (shader_cat.is_debug()) {
-      shader_cat.debug()
-        << "Parameter " << cgGetParameterName(parameter)
-        << " is unreferenced within shader " << get_filename(type) << "\n";
-    }
-
-    parameter = cgGetNextParameter(parameter);
-  }
-
-  return success;
-}
-
-/**
- * This subroutine analyzes the parameters of a Cg shader.  The output is
- * stored in instance variables: _mat_spec, _var_spec, and _tex_spec.
- *
- * In order to do this, it is necessary to compile the shader.  It would be a
- * waste of CPU time to compile the shader, analyze the parameters, and then
- * discard the compiled shader.  This would force us to compile it again
- * later, when we need to build the ShaderContext.  Instead, we cache the
- * compiled Cg program in instance variables.  Later, a ShaderContext can pull
- * the compiled shader from these instance vars.
- *
- * To compile a shader, you need to first choose a profile.  There are two
- * contradictory objectives:
- *
- * 1. If you don't use the gsg's active profile, then the cached compiled
- * shader will not be useful to the ShaderContext.
- *
- * 2. If you use too weak a profile, then the shader may not compile.  So to
- * guarantee success, you should use the ultimate profile.
- *
- * To resolve this conflict, we try the active profile first, and if that
- * doesn't work, we try the ultimate profile.
- *
- */
-bool Shader::
-cg_analyze_shader(const ShaderCaps &caps) {
-
-  // Make sure we have a context for analyzing the shader.
-  if (_cg_context == 0) {
-    _cg_context = cgCreateContext();
-    if (_cg_context == 0) {
-      shader_cat.error()
-        << "Could not create a Cg context object: "
-        << cgGetErrorString(cgGetError()) << "\n";
-      return false;
-    }
-  }
-
-  if (!cg_compile_shader(caps, _cg_context)) {
-    return false;
-  }
-
-  if (_cg_fprogram != 0) {
-     if (!cg_analyze_entry_point(_cg_fprogram, ST_fragment)) {
-      cg_release_resources();
-      clear_parameters();
-      return false;
-    }
-  }
-
-  if (_var_spec.size() != 0) {
-    shader_cat.error() << "Cannot use vtx parameters in an fshader\n";
-    cg_release_resources();
-    clear_parameters();
-    return false;
-  }
-
-  if (_cg_vprogram != 0) {
-    if (!cg_analyze_entry_point(_cg_vprogram, ST_vertex)) {
-      cg_release_resources();
-      clear_parameters();
-      return false;
-    }
-  }
-
-  if (_cg_gprogram != 0) {
-    if (!cg_analyze_entry_point(_cg_gprogram, ST_geometry)) {
-      cg_release_resources();
-      clear_parameters();
-      return false;
-    }
-  }
-
-  // Assign locations to all parameters.  GLCgShaderContext relies on the fact
-  // that the varyings start at location 0.
-  int location = 0;
-  for (size_t i = 0; i < _var_spec.size(); ++i) {
-    _var_spec[i]._id._location = location++;
-  }
-  for (size_t i = 0; i < _mat_spec.size(); ++i) {
-    _mat_spec[i]._id._location = location++;
-  }
-  for (size_t i = 0; i < _tex_spec.size(); ++i) {
-    _tex_spec[i]._id._location = location++;
-  }
-
-  for (size_t i = 0; i < _ptr_spec.size(); ++i) {
-    _ptr_spec[i]._id._location = location++;
-  }
-
-  /*
-  // The following code is present to work around a bug in the Cg compiler.
-  // It does not generate correct code for shadow map lookups when using arbfp1.
-  // This is a particularly onerous limitation, given that arbfp1 is the only
-  // Cg target that works on radeons.  I suspect this is an intentional
-  // omission on nvidia's part.  The following code fetches the output listing,
-  // detects the error, repairs the code, and resumbits the repaired code to Cg.
-  if ((_cg_fprofile == CG_PROFILE_ARBFP1) && (gsghint->_supports_shadow_filter)) {
-    bool shadowunit[32];
-    bool anyshadow = false;
-    memset(shadowunit, 0, sizeof(shadowunit));
-    vector_string lines;
-    tokenize(cgGetProgramString(_cg_program[SHADER_type_frag],
-                                CG_COMPILED_PROGRAM), lines, "\n");
-    // figure out which texture units contain shadow maps.
-    for (int lineno=0; lineno<(int)lines.size(); lineno++) {
-      if (lines[lineno].compare(0,21,"#var sampler2DSHADOW ")) {
-        continue;
-      }
-      vector_string fields;
-      tokenize(lines[lineno], fields, ":");
-      if (fields.size()!=5) {
-        continue;
-      }
-      vector_string words;
-      tokenize(trim(fields[2]), words, " ");
-      if (words.size()!=2) {
-        continue;
-      }
-      int unit = atoi(words[1].c_str());
-      if ((unit < 0)||(unit >= 32)) {
-        continue;
-      }
-      anyshadow = true;
-      shadowunit[unit] = true;
-    }
-    // modify all TEX statements that use the relevant texture units.
-    if (anyshadow) {
-      for (int lineno=0; lineno<(int)lines.size(); lineno++) {
-        if (lines[lineno].compare(0,4,"TEX ")) {
-          continue;
-        }
-        vector_string fields;
-        tokenize(lines[lineno], fields, ",");
-        if ((fields.size()!=4)||(trim(fields[3]) != "2D;")) {
-          continue;
-        }
-        vector_string texunitf;
-        tokenize(trim(fields[2]), texunitf, "[]");
-        if ((texunitf.size()!=3)||(texunitf[0] != "texture")||(texunitf[2]!="")) {
-          continue;
-        }
-        int unit = atoi(texunitf[1].c_str());
-        if ((unit < 0) || (unit >= 32) || (shadowunit[unit]==false)) {
-          continue;
-        }
-        lines[lineno] = fields[0]+","+fields[1]+","+fields[2]+", SHADOW2D;";
-      }
-      string result = "!!ARBfp1.0\nOPTION ARB_fragment_program_shadow;\n";
-      for (int lineno=1; lineno<(int)lines.size(); lineno++) {
-        result += (lines[lineno] + "\n");
-      }
-      _cg_program[2] = _cg_program[SHADER_type_frag];
-      _cg_program[SHADER_type_frag] =
-        cgCreateProgram(_cg_context, CG_OBJECT, result.c_str(),
-                        _cg_profile[SHADER_type_frag], "fshader", (const char**)NULL);
-      cg_report_errors(s->get_name(), _cg_context);
-      if (_cg_program[SHADER_type_frag]==0) {
-        release_resources();
-        return false;
-      }
-    }
-  }
-  */
-
-  cg_release_resources();
-  return true;
-}
-
-/**
- * This routine is used by the ShaderContext constructor to compile the
- * shader.  The CGprogram objects are turned over to the ShaderContext, we no
- * longer own them.
- */
-bool Shader::
-cg_compile_for(const ShaderCaps &caps, CGcontext context,
-               CGprogram &combined_program, pvector<CGparameter> &map) {
-
-  // Initialize the return values to empty.
-  combined_program = 0;
-  map.clear();
-
-  // Make sure the shader is compiled for the target caps.  Most of the time,
-  // it will already be - this is usually a no-op.
-
-  _default_caps = caps;
-  if (!cg_compile_shader(caps, context)) {
-    return false;
-  }
-
-  // If the compile routine used the ultimate profile instead of the active
-  // one, it means the active one isn't powerful enough to compile the shader.
-  if (_cg_vprogram != 0 && _cg_vprofile != caps._active_vprofile) {
-    shader_cat.error() << "Cg vertex program not supported by profile "
-      << cgGetProfileString((CGprofile) caps._active_vprofile) << ": "
-      << get_filename(ST_vertex) << ". Try choosing a different profile.\n";
-    return false;
-  }
-  if (_cg_fprogram != 0 && _cg_fprofile != caps._active_fprofile) {
-    shader_cat.error() << "Cg fragment program not supported by profile "
-      << cgGetProfileString((CGprofile) caps._active_fprofile) << ": "
-      << get_filename(ST_fragment) << ". Try choosing a different profile.\n";
-    return false;
-  }
-  if (_cg_gprogram != 0 && _cg_gprofile != caps._active_gprofile) {
-    shader_cat.error() << "Cg geometry program not supported by profile "
-      << cgGetProfileString((CGprofile) caps._active_gprofile) << ": "
-      << get_filename(ST_geometry) << ". Try choosing a different profile.\n";
-    return false;
-  }
-
-  // Gather the programs we will be combining.
-  pvector<CGprogram> programs;
-  if (_cg_vprogram != 0) {
-    programs.push_back(_cg_vprogram);
-  }
-  if (_cg_fprogram != 0) {
-    programs.push_back(_cg_fprogram);
-  }
-  if (_cg_gprogram != 0) {
-    programs.push_back(_cg_gprogram);
-  }
-
-  // Combine the programs.  This can be more optimal than loading them
-  // individually, and it is even necessary for some profiles (particularly
-  // GLSL profiles on non-NVIDIA GPUs).
-  combined_program = cgCombinePrograms(programs.size(), &programs[0]);
-
-  // Build a parameter map.
-  size_t n_mat = _mat_spec.size();
-  size_t n_tex = _tex_spec.size();
-  size_t n_var = _var_spec.size();
-  size_t n_ptr = _ptr_spec.size();
-
-  map.resize(n_mat + n_tex + n_var + n_ptr);
-
-  // This is a bit awkward, we have to go in and seperate out the combined
-  // program, since all the parameter bindings have changed.
-  CGprogram programs_by_type[ST_COUNT];
-  for (int i = 0; i < cgGetNumProgramDomains(combined_program); ++i) {
-    // Conveniently, the CGdomain enum overlaps with ShaderType.
-    CGprogram program = cgGetProgramDomainProgram(combined_program, i);
-    programs_by_type[cgGetProgramDomain(program)] = program;
-  }
-
-  /*for (size_t i = 0; i < n_mat; ++i) {
-    const Parameter &id = _mat_spec[i]._id;
-    map[id._location] = cgGetNamedParameter(programs_by_type[id._type], id._name.c_str());
-
-    if (shader_cat.is_debug()) {
-      const char *resource = cgGetParameterResourceName(map[id._location]);
-      if (resource != nullptr) {
-        shader_cat.debug() << "Uniform parameter " << id._name
-                           << " is bound to resource " << resource << "\n";
-      }
-    }
-  }
-
-  for (size_t i = 0; i < n_tex; ++i) {
-    const Parameter &id = _tex_spec[i]._id;
-    CGparameter p = cgGetNamedParameter(programs_by_type[id._type], id._name.c_str());
-
-    if (shader_cat.is_debug()) {
-      const char *resource = cgGetParameterResourceName(p);
-      if (resource != nullptr) {
-        shader_cat.debug() << "Texture parameter " << id._name
-                          << " is bound to resource " << resource << "\n";
-      }
-    }
-    map[id._location] = p;
-  }
-
-  for (size_t i = 0; i < n_var; ++i) {
-    const Parameter &id = _var_spec[i]._id;
-    CGparameter p = cgGetNamedParameter(programs_by_type[id._type], id._name.c_str());
-
-    const char *resource = cgGetParameterResourceName(p);
-    if (shader_cat.is_debug() && resource != nullptr) {
-      if (cgGetParameterResource(p) == CG_GLSL_ATTRIB) {
-        shader_cat.debug()
-          << "Varying parameter " << id._name << " is bound to GLSL attribute "
-          << resource << "\n";
-      } else {
-        shader_cat.debug()
-          << "Varying parameter " << id._name << " is bound to resource "
-          << resource << " (" << cgGetParameterResource(p)
-          << ", index " << cgGetParameterResourceIndex(p) << ")\n";
-      }
-    }
-
-    map[id._location] = p;
-  }
-
-  for (size_t i = 0; i < n_ptr; ++i) {
-    const Parameter &id = _ptr_spec[i]._id;
-    map[id._location] = cgGetNamedParameter(programs_by_type[id._type], id._name.c_str());
-
-    if (shader_cat.is_debug()) {
-      const char *resource = cgGetParameterResourceName(map[id._location]);
-      if (resource != nullptr) {
-        shader_cat.debug() << "Uniform ptr parameter " << id._name
-                           << " is bound to resource " << resource << "\n";
-      }
-    }
-  }*/
-
-  // Transfer ownership of the compiled shader.
-  if (_cg_vprogram != 0) {
-    cgDestroyProgram(_cg_vprogram);
-    _cg_vprogram = 0;
-  }
-  if (_cg_fprogram != 0) {
-    cgDestroyProgram(_cg_fprogram);
-    _cg_fprogram = 0;
-  }
-  if (_cg_gprogram != 0) {
-    cgDestroyProgram(_cg_gprogram);
-    _cg_gprogram = 0;
-  }
-
-  _cg_last_caps.clear();
-
-  return true;
-}
-#endif  // HAVE_CG
-
-/**
- * Construct a Shader that will be filled in using fillin() or read() later.
- */
-Shader::
-Shader(ShaderLanguage lang) :
-  _error_flag(false),
-  _parse(0),
-  _loaded(false),
-  _language(lang),
-  _mat_deps(0),
-  _cache_compiled_shader(false)
-{
-#ifdef HAVE_CG
-  _cg_vprogram = 0;
-  _cg_fprogram = 0;
-  _cg_gprogram = 0;
-  _cg_vprofile = CG_PROFILE_UNKNOWN;
-  _cg_fprofile = CG_PROFILE_UNKNOWN;
-  _cg_gprofile = CG_PROFILE_UNKNOWN;
-  if (_default_caps._ultimate_vprofile == 0 || _default_caps._ultimate_vprofile == CG_PROFILE_UNKNOWN) {
-    if (basic_shaders_only) {
-      _default_caps._active_vprofile = CG_PROFILE_ARBVP1;
-      _default_caps._active_fprofile = CG_PROFILE_ARBFP1;
-      _default_caps._active_gprofile = CG_PROFILE_UNKNOWN;
-    } else {
-      _default_caps._active_vprofile = CG_PROFILE_UNKNOWN;
-      _default_caps._active_fprofile = CG_PROFILE_UNKNOWN;
-      _default_caps._active_gprofile = CG_PROFILE_UNKNOWN;
-    }
-    _default_caps._ultimate_vprofile = cgGetProfile("glslv");
-    _default_caps._ultimate_fprofile = cgGetProfile("glslf");
-    _default_caps._ultimate_gprofile = cgGetProfile("glslg");
-    if (_default_caps._ultimate_gprofile == CG_PROFILE_UNKNOWN) {
-      _default_caps._ultimate_gprofile = cgGetProfile("gp4gp");
-    }
-  }
-#endif
-}
-
-/**
  * Reads the shader from the given filename(s). Returns a boolean indicating
  * success or failure.
  */
@@ -1406,20 +607,20 @@ read(const ShaderFile &sfile, BamCacheRecord *record) {
         !do_read_source(Stage::vertex, sfile._vertex, record)) {
       return false;
     }
-    if (!sfile._fragment.empty() &&
-        !do_read_source(Stage::fragment, sfile._fragment, record)) {
-      return false;
-    }
-    if (!sfile._geometry.empty() &&
-        !do_read_source(Stage::geometry, sfile._geometry, record)) {
-      return false;
-    }
     if (!sfile._tess_control.empty() &&
         !do_read_source(Stage::tess_control, sfile._tess_control, record)) {
       return false;
     }
     if (!sfile._tess_evaluation.empty() &&
         !do_read_source(Stage::tess_evaluation, sfile._tess_evaluation, record)) {
+      return false;
+    }
+    if (!sfile._geometry.empty() &&
+        !do_read_source(Stage::geometry, sfile._geometry, record)) {
+      return false;
+    }
+    if (!sfile._fragment.empty() &&
+        !do_read_source(Stage::fragment, sfile._fragment, record)) {
       return false;
     }
     if (!sfile._compute.empty() &&
@@ -1509,20 +710,20 @@ load(const ShaderFile &sbody, BamCacheRecord *record) {
         !do_load_source(Stage::vertex, sbody._vertex, record)) {
       return false;
     }
-    if (!sbody._fragment.empty() &&
-        !do_load_source(Stage::fragment, sbody._fragment, record)) {
-      return false;
-    }
-    if (!sbody._geometry.empty() &&
-        !do_load_source(Stage::geometry, sbody._geometry, record)) {
-      return false;
-    }
     if (!sbody._tess_control.empty() &&
         !do_load_source(Stage::tess_control, sbody._tess_control, record)) {
       return false;
     }
     if (!sbody._tess_evaluation.empty() &&
         !do_load_source(Stage::tess_evaluation, sbody._tess_evaluation, record)) {
+      return false;
+    }
+    if (!sbody._geometry.empty() &&
+        !do_load_source(Stage::geometry, sbody._geometry, record)) {
+      return false;
+    }
+    if (!sbody._fragment.empty() &&
+        !do_load_source(Stage::fragment, sbody._fragment, record)) {
       return false;
     }
     if (!sbody._compute.empty() &&
@@ -1605,7 +806,7 @@ do_read_source(Stage stage, const Filename &fn, BamCacheRecord *record) {
   }
 
   shader_cat.info() << "Reading shader file: " << fn << "\n";
-  if (!do_read_source(stage, *in, fn, record)) {
+  if (!do_read_source(stage, *in, fullpath, record)) {
     vf->close_read_file(in);
     return false;
   }
@@ -1632,34 +833,17 @@ do_read_source(Stage stage, const Filename &fn, BamCacheRecord *record) {
  */
 bool Shader::
 do_read_source(ShaderModule::Stage stage, std::istream &in,
-               const Filename &source_filename, BamCacheRecord *record) {
+               const Filename &fullpath, BamCacheRecord *record) {
   ShaderCompiler *compiler = get_compiler(_language);
   nassertr(compiler != nullptr, false);
 
-  PT(ShaderModule) module = compiler->compile_now(stage, in, source_filename, record);
+  PT(ShaderModule) module = compiler->compile_now(stage, in, fullpath, record);
   if (!module) {
     return false;
   }
 
-//  if (_language == SL_Cg) {
-//#ifdef HAVE_CG
-//    ShaderCompilerCg *cg_compiler = DCAST(ShaderCompilerCg, compiler);
-//    cg_compiler->get_profile_from_header(_text._shared, _default_caps);
-//
-//    if (!cg_analyze_shader(_default_caps)) {
-//      shader_cat.error()
-//        << "Shader encountered an error.\n";
-//      return false;
-//    }
-//#else
-//    shader_cat.error()
-//      << "Tried to load Cg shader, but no Cg support is enabled.\n";
-//    return false;
-//#endif
-//  }
-
-  if (!source_filename.empty()) {
-    module->set_source_filename(source_filename);
+  if (!fullpath.empty()) {
+    module->set_source_filename(fullpath);
   }
 
   if (has_stage(stage)) {
@@ -2237,8 +1421,56 @@ bind_parameter(const Parameter &param) {
       bind._arg[0] = nullptr;
       bind._part[1] = SMO_identity;
       bind._arg[1] = nullptr;
-      bind._piece = SMP_row3;
+
+      if (type->as_vector()->get_num_components() == 3) {
+        bind._piece = Shader::SMP_row3x3;
+      } else {
+        bind._piece = Shader::SMP_row3;
+      }
       cp_add_mat_spec(bind);
+      return true;
+    }
+    if (pieces[1] == "Color") {
+      if (!expect_float_vector(name, type, 3, 4)) {
+        return false;
+      }
+      ShaderMatSpec bind;
+      bind._id = param;
+      bind._func = Shader::SMF_first;
+      bind._part[0] = Shader::SMO_attr_color;
+      bind._arg[0] = nullptr;
+      bind._part[1] = Shader::SMO_identity;
+      bind._arg[1] = nullptr;
+
+      if (type->as_vector()->get_num_components() == 3) {
+        bind._piece = Shader::SMP_row3x3;
+      } else {
+        bind._piece = Shader::SMP_row3;
+      }
+      cp_add_mat_spec(bind);
+      return true;
+    }
+    if (pieces[1] == "ClipPlane") {
+      const ::ShaderType *element_type;
+      uint32_t num_elements;
+      type->unwrap_array(element_type, num_elements);
+      if (!expect_float_vector(name, element_type, 4, 4)) {
+        return false;
+      }
+      Shader::ShaderMatSpec bind;
+      bind._id = param;
+      bind._piece = Shader::SMP_row3;
+      bind._func = Shader::SMF_first;
+      bind._part[0] = Shader::SMO_apiview_clipplane_i;
+      bind._arg[0] = nullptr;
+      bind._part[1] = Shader::SMO_identity;
+      bind._arg[1] = nullptr;
+
+      for (uint32_t i = 0; i < num_elements; ++i) {
+        bind._index = i;
+        cp_add_mat_spec(bind);
+        ++bind._id._location;
+      }
       return true;
     }
     if (pieces[1] == "TexAlphaOnly") {
@@ -2253,6 +1485,75 @@ bind_parameter(const Parameter &param) {
       bind._piece = SMP_row3;
       cp_add_mat_spec(bind);
       return true;
+    }
+    if (pieces[1] == "Fog") {
+      ShaderMatSpec bind;
+      bind._id = param;
+      bind._func = SMF_first;
+      bind._arg[0] = nullptr;
+      bind._part[1] = SMO_identity;
+      bind._arg[1] = nullptr;
+
+      const ::ShaderType::Struct *struct_type = type->as_struct();
+      if (struct_type == nullptr) {
+        return report_parameter_error(name, type, "expected struct");
+      }
+
+      bool success = true;
+      for (size_t i = 0; i < struct_type->get_num_members(); ++i) {
+        const ::ShaderType::Struct::Member &member = struct_type->get_member(i);
+
+        CPT(InternalName) fqname = ((InternalName *)name.p())->append(member.name);
+        bind._id._location = param._location + i;
+        bind._id._name = fqname->get_name();
+        bind._id._type = member.type;
+
+        if (member.name == "color") {
+          if (expect_float_vector(fqname, member.type, 3, 4)) {
+            bind._part[0] = SMO_attr_fogcolor;
+            if (member.type->as_vector()->get_num_components() == 3) {
+              bind._piece = Shader::SMP_row3x3;
+            } else {
+              bind._piece = Shader::SMP_row3;
+            }
+            cp_add_mat_spec(bind);
+            continue;
+          }
+        } else if (member.name == "density") {
+          if (expect_float_vector(fqname, member.type, 1, 1)) {
+            bind._part[0] = SMO_attr_fog;
+            bind._piece = SMP_row3x1;
+            cp_add_mat_spec(bind);
+            continue;
+          }
+        } else if (member.name == "start") {
+          if (expect_float_vector(fqname, member.type, 1, 1)) {
+            bind._part[0] = SMO_attr_fog;
+            bind._piece = SMP_cell13;
+            cp_add_mat_spec(bind);
+            continue;
+          }
+        } else if (member.name == "end") {
+          if (expect_float_vector(fqname, member.type, 1, 1)) {
+            bind._part[0] = SMO_attr_fog;
+            bind._piece = SMP_cell14;
+            cp_add_mat_spec(bind);
+            continue;
+          }
+        } else if (member.name == "scale") {
+          if (expect_float_vector(fqname, member.type, 1, 1)) {
+            bind._part[0] = SMO_attr_fog;
+            bind._piece = SMP_cell15;
+            cp_add_mat_spec(bind);
+            continue;
+          }
+        } else {
+          report_parameter_error(fqname, member.type, "unrecognized fog attribute");
+        }
+        success = false;
+      }
+
+      return success;
     }
     if (pieces[1] == "LightModel") {
       const ::ShaderType::Struct *struct_type = type->as_struct();
@@ -3266,22 +2567,6 @@ get_compiler(ShaderLanguage lang) const {
 }
 
 /**
- * Delete the compiled code, if it exists.
- */
-Shader::
-~Shader() {
-  release_all();
-  // Note: don't try to erase ourselves from the table.  It currently keeps a
-  // reference forever, and so the only place where this constructor is called
-  // is in the destructor of the table itself.
-  /*if (_loaded) {
-    _load_table.erase(_filename);
-  } else {
-    _make_table.erase(_text);
-  }*/
-}
-
-/**
  * Loads the shader with the given filename.
  */
 PT(Shader) Shader::
@@ -3411,7 +2696,7 @@ load_compute(ShaderLanguage lang, const Filename &fn) {
   }
 
   PT(Shader) shader = new Shader(lang);
-  if (!shader->do_read_source(Stage::compute, fullpath, record)) {
+  if (!shader->read(sfile)) {
     return nullptr;
   }
 
@@ -3649,6 +2934,26 @@ prepare_now(PreparedGraphicsObjects *prepared_objects,
     return (*ci).second;
   }
 
+  int supported_caps = gsg->get_supported_shader_capabilities();
+  int unsupported_caps = _used_caps & ~supported_caps;
+  if (unsupported_caps != 0) {
+    std::ostream &out = shader_cat.error()
+      << "Cannot load shader because the graphics back-end does not support ";
+
+    if (supported_caps == 0) {
+      out << "shaders.";
+    } else {
+      out << "these capabilities: ";
+      ShaderModule::output_capabilities(out, unsupported_caps);
+    }
+    out << std::endl;
+
+    // Insert nullptr so that we don't spam this error next time.
+    _contexts[prepared_objects] = nullptr;
+
+    return nullptr;
+  }
+
   ShaderContext *tc = prepared_objects->prepare_shader_now(this, gsg);
   _contexts[prepared_objects] = tc;
 
@@ -3701,23 +3006,6 @@ release_all() {
   _contexts.clear();
 
   return num_freed;
-}
-
-/**
- *
- */
-void Shader::ShaderCaps::
-clear() {
-  _supports_glsl = false;
-
-#ifdef HAVE_CG
-  _active_vprofile = CG_PROFILE_UNKNOWN;
-  _active_fprofile = CG_PROFILE_UNKNOWN;
-  _active_gprofile = CG_PROFILE_UNKNOWN;
-  _ultimate_vprofile = CG_PROFILE_UNKNOWN;
-  _ultimate_fprofile = CG_PROFILE_UNKNOWN;
-  _ultimate_gprofile = CG_PROFILE_UNKNOWN;
-#endif
 }
 
 /**

@@ -224,32 +224,6 @@ set_cache_compiled_shader(bool flag) {
 /**
  *
  */
-INLINE Shader::ShaderCaps::
-ShaderCaps() {
-  clear();
-}
-
-/**
- *
- */
-INLINE bool Shader::ShaderCaps::
-operator == (const ShaderCaps &other) const {
-#ifdef HAVE_CG
-  if ((_active_vprofile != other._active_vprofile) ||
-      (_active_fprofile != other._active_fprofile) ||
-      (_active_gprofile != other._active_gprofile) ||
-      (_ultimate_vprofile != other._ultimate_vprofile) ||
-      (_ultimate_fprofile != other._ultimate_fprofile) ||
-      (_ultimate_gprofile != other._ultimate_gprofile)) {
-     return false;
-  }
-#endif
-  return true;
-}
-
-/**
- *
- */
 INLINE Shader::ShaderPtrData::
 ShaderPtrData() :
   _ptr(nullptr),

@@ -14,7 +14,7 @@
 #ifndef SPEEDTREENODE_H
 #define SPEEDTREENODE_H
 
-#include "pandabase.h"
+#include "contribbase.h"
 #include "pandaNode.h"
 #include "pointerTo.h"
 #include "stTree.h"

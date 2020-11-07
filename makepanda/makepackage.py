@@ -158,10 +158,13 @@ def MakeInstallerNSIS(version, file, title, installdir, compressor="lzma", **kwa
     # Are we shipping a version of Python?
     if os.path.isfile(os.path.join(outputdir, "python", "python.exe")):
         py_dlls = glob.glob(os.path.join(outputdir, "python", "python[0-9][0-9].dll")) \
-                + glob.glob(os.path.join(outputdir, "python", "python[0-9][0-9]_d.dll"))
+                + glob.glob(os.path.join(outputdir, "python", "python[0-9][0-9]_d.dll")) \
+                + glob.glob(os.path.join(outputdir, "python", "python[0-9][0-9][0-9].dll")) \
+                + glob.glob(os.path.join(outputdir, "python", "python[0-9][0-9][0-9]_d.dll"))
         assert py_dlls
         py_dll = os.path.basename(py_dlls[0])
-        pyver = py_dll[6] + "." + py_dll[7]
+        py_dllver = py_dll.strip(".DHLNOPTY_dhlnopty")
+        pyver = py_dllver[0] + '.' + py_dllver[1:]
 
         if GetTargetArch() != 'x64':
             pyver += '-32'
@@ -301,9 +304,6 @@ def MakeInstallerLinux(version, debversion=None, rpmrelease=1,
             depends += ", python%s" % (python3_ver)
             recommends += ", python-pmw, python3-tk (>= %s)" % (python3_ver)
             provides += ", python3-panda3d"
-
-        if not PkgSkip("NVIDIACG"):
-            depends += ", nvidia-cg-toolkit"
 
         # Write back the dependencies, and delete the dummy set-up.
         txt = txt.replace("DEPENDS", depends.strip(', '))
@@ -723,7 +723,7 @@ def MakeInstallerFreeBSD(version, python_versions=[], **kwargs):
         oscmd("rm -f %s/tmp/python_dep" % outputdir)
 
         if "PYTHONVERSION" in SDK:
-            pyver_nodot = SDK["PYTHONVERSION"][6:9:2]
+            pyver_nodot = SDK["PYTHONVERSION"][6:].rstrip('dmu').replace('.', '')
         else:
             pyver_nodot = "%d%d" % (sys.version_info[:2])
 
@@ -994,7 +994,7 @@ if __name__ == "__main__":
 
     # Read out whether we should set PkgSkip("PYTHON") and some others.
     # Temporary hack; needs better solution.
-    pkg_list = "PYTHON", "NVIDIACG", "FFMPEG", "OPENAL", "FMODEX", "PVIEW", "NVIDIACG", "VORBIS", "OPUS"
+    pkg_list = "PYTHON", "FFMPEG", "OPENAL", "FMODEX", "PVIEW", "VORBIS", "OPUS"
     PkgListSet(pkg_list)
     for pkg in pkg_list:
         dat_path = "dtool_have_%s.dat" % (pkg.lower())

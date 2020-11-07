@@ -9,8 +9,8 @@
 ########################################################################
 
 import sys
-if sys.version_info < (3, 5):
-    print("This version of Python is not supported, use version 3.5 or higher.")
+if sys.version_info < (3, 6):
+    print("This version of Python is not supported, use version 3.6 or higher.")
     exit(1)
 
 try:
@@ -74,7 +74,6 @@ if "MACOSX_DEPLOYMENT_TARGET" in os.environ:
 PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "GL", "VULKAN"] + DXVERSIONS + ["TINYDISPLAY",       # 3D graphics
   "EGL", "GLES", "GLES2",                              # OpenGL (ES) integration
-  "NVIDIACG",                                          # Shaders
   "EIGEN",                                             # Linear algebra acceleration
   "OPENAL", "FMODEX",                                  # Audio playback
   "VORBIS", "OPUS", "FFMPEG", "SWSCALE", "SWRESAMPLE", # Audio decoding
@@ -169,7 +168,8 @@ def parseopts(args):
     # Options for which to display a deprecation warning.
     removedopts = [
         "use-touchinput", "no-touchinput", "no-awesomium", "no-directscripts",
-        "no-carbon", "universal", "no-physx", "no-rocket", "host"
+        "no-carbon", "universal", "no-physx", "no-rocket", "host",
+        "no-nvidiacg", "no-cggl",
         ]
 
     # All recognized options.
@@ -243,7 +243,7 @@ def parseopts(args):
             elif (option[2:] in removedopts):
                 Warn("Ignoring removed option %s" % (option))
             else:
-                for pkg in PkgListGet() + ['CGGL']:
+                for pkg in PkgListGet():
                     if option == "--use-" + pkg.lower():
                         PkgEnable(pkg)
                         break
@@ -645,9 +645,6 @@ if (COMPILER == "MSVC"):
     if (PkgSkip("ZLIB")==0):     LibName("ZLIB",     GetThirdpartyDir() + "zlib/lib/zlibstatic.lib")
     if (PkgSkip("VRPN")==0):     LibName("VRPN",     GetThirdpartyDir() + "vrpn/lib/vrpn.lib")
     if (PkgSkip("VRPN")==0):     LibName("VRPN",     GetThirdpartyDir() + "vrpn/lib/quat.lib")
-    if (PkgSkip("NVIDIACG")==0): LibName("CGGL",     GetThirdpartyDir() + "nvidiacg/lib/cgGL.lib")
-    if (PkgSkip("NVIDIACG")==0): LibName("CGDX9",    GetThirdpartyDir() + "nvidiacg/lib/cgD3D9.lib")
-    if (PkgSkip("NVIDIACG")==0): LibName("NVIDIACG", GetThirdpartyDir() + "nvidiacg/lib/cg.lib")
     if (PkgSkip("FREETYPE")==0): LibName("FREETYPE", GetThirdpartyDir() + "freetype/lib/freetype.lib")
     if (PkgSkip("HARFBUZZ")==0):
         LibName("HARFBUZZ", GetThirdpartyDir() + "harfbuzz/lib/harfbuzz.lib")
@@ -753,6 +750,8 @@ if (COMPILER == "MSVC"):
     LibName("GLSLANG", GetThirdpartyDir() + "glslang/lib/HLSL.lib")
     LibName("GLSLANG", GetThirdpartyDir() + "glslang/lib/OGLCompiler.lib")
     LibName("GLSLANG", GetThirdpartyDir() + "glslang/lib/OSDependent.lib")
+    LibName("GLSLANG", GetThirdpartyDir() + "glslang/lib/MachineIndependent.lib")
+    LibName("GLSLANG", GetThirdpartyDir() + "glslang/lib/GenericCodeGen.lib")
     LibName("GLSLANG", GetThirdpartyDir() + "glslang/lib/SPIRV.lib")
 
     IncDirectory("SPIRV-TOOLS", GetThirdpartyDir() + "spirv-tools/include")
@@ -762,6 +761,11 @@ if (COMPILER == "MSVC"):
     IncDirectory("SPIRV-CROSS-GLSL", GetThirdpartyDir() + "spirv-cross/include")
     LibName("SPIRV-CROSS-GLSL", GetThirdpartyDir() + "spirv-cross/lib/spirv-cross-core.lib")
     LibName("SPIRV-CROSS-GLSL", GetThirdpartyDir() + "spirv-cross/lib/spirv-cross-glsl.lib")
+
+    IncDirectory("SPIRV-CROSS-HLSL", GetThirdpartyDir() + "spirv-cross/include")
+    LibName("SPIRV-CROSS-HLSL", GetThirdpartyDir() + "spirv-cross/lib/spirv-cross-core.lib")
+    LibName("SPIRV-CROSS-HLSL", GetThirdpartyDir() + "spirv-cross/lib/spirv-cross-hlsl.lib")
+    LibName("SPIRV-CROSS-HLSL", GetThirdpartyDir() + "spirv-cross/lib/spirv-cross-glsl.lib") # sic
 
 if (COMPILER=="GCC"):
     if GetTarget() != "darwin":
@@ -807,7 +811,6 @@ if (COMPILER=="GCC"):
     SmartPkgEnable("GLES",      "glesv1_cm", ("GLESv1_CM"), ("GLES/gl.h"), framework = "OpenGLES")
     SmartPkgEnable("GLES2",     "glesv2",    ("GLESv2"), ("GLES2/gl2.h")) #framework = "OpenGLES"?
     SmartPkgEnable("EGL",       "egl",       ("EGL"), ("EGL/egl.h"))
-    SmartPkgEnable("NVIDIACG",  "",          ("Cg"), "Cg/cg.h", framework = "Cg")
     SmartPkgEnable("ODE",       "",          ("ode"), "ode/ode.h", tool = "ode-config")
     SmartPkgEnable("OPENAL",    "openal",    ("openal"), "AL/al.h", framework = "OpenAL")
     SmartPkgEnable("SQUISH",    "",          ("squish"), "squish.h")
@@ -820,9 +823,10 @@ if (COMPILER=="GCC"):
     SmartPkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
     SmartPkgEnable("PNG",       "libpng",    ("png"), "png.h", tool = "libpng-config")
     SmartPkgEnable("VULKAN",    "",          ("vulkan"), "vulkan/vulkan.h")
-    SmartPkgEnable("GLSLANG",   "",          ("glslang", "SPIRV", "OSDependent", "OGLCompiler", "HLSL"), "glslang/Public/ShaderLang.h")
+    SmartPkgEnable("GLSLANG",   "",          ("MachineIndependent", "GenericCodeGen", "SPIRV", "OSDependent", "OGLCompiler", "HLSL"), "glslang/Public/ShaderLang.h")
     SmartPkgEnable("SPIRV-TOOLS", "",        ("SPIRV-Tools", "SPIRV-Tools-opt"), "spirv-tools/optimizer.hpp")
     SmartPkgEnable("SPIRV-CROSS-GLSL", "",   ("spirv-cross-core", "spirv-cross-glsl"), "spirv_cross/spirv_cross.hpp")
+    SmartPkgEnable("SPIRV-CROSS-HLSL", "",   ("spirv-cross-core", "spirv-cross-hlsl"), "spirv_cross/spirv_cross.hpp")
 
     # Copy freetype libraries to be specified after harfbuzz libraries as well,
     # because there's a circular dependency between the two libraries.
@@ -903,6 +907,8 @@ if (COMPILER=="GCC"):
 
         LibName("SPIRV-CROSS-GLSL", "-Wl,--exclude-libs,libspirv-cross-core.a")
         LibName("SPIRV-CROSS-GLSL", "-Wl,--exclude-libs,libspirv-cross-glsl.a")
+        LibName("SPIRV-CROSS-HLSL", "-Wl,--exclude-libs,libspirv-cross-core.a")
+        LibName("SPIRV-CROSS-HLSL", "-Wl,--exclude-libs,libspirv-cross-hlsl.a")
 
     if PkgSkip("FFMPEG") or GetTarget() == "darwin":
         cv_lib = ChooseLib(("opencv_core", "cv"), "OPENCV")
@@ -951,9 +957,6 @@ if (COMPILER=="GCC"):
         LibName("OPENSSL", "-Wl,--exclude-libs,libcrypto.a")
 
     if GetTarget() != 'darwin':
-        # CgGL is covered by the Cg framework, and we don't need X11 components on OSX
-        if not PkgSkip("NVIDIACG"):
-            SmartPkgEnable("CGGL", "", ("CgGL"), "Cg/cgGL.h", thirdparty_dir = "nvidiacg")
         SmartPkgEnable("X11", "x11", "X11", ("X11", "X11/Xlib.h", "X11/XKBlib.h"))
 
     if GetHost() != "darwin":
@@ -1148,8 +1151,12 @@ def CompileCxx(obj,src,opts):
             cmd += "/DWINVER=0x600 "
 
             cmd += "/Fo" + obj + " /nologo /c"
-            if GetTargetArch() != 'x64' and (not PkgSkip("SSE2") or 'SSE2' in opts):
-                cmd += " /arch:SSE2"
+            if GetTargetArch() == 'x86':
+                # x86 (32 bit) MSVC 2015+ defaults to /arch:SSE2
+                if not PkgSkip("SSE2") or 'SSE2' in opts:   # x86 with SSE2
+                    cmd += " /arch:SSE2"    # let's still be explicit and pass in /arch:SSE2
+                else:                                       # x86 without SSE2
+                    cmd += " /arch:IA32"
             for x in ipath: cmd += " /I" + x
             for (opt,dir) in INCDIRECTORIES:
                 if (opt=="ALWAYS") or (opt in opts): cmd += " /I" + BracketNameWithQuotes(dir)
@@ -1159,10 +1166,10 @@ def CompileCxx(obj,src,opts):
 
             if (optlevel==1): cmd += " /MDd /Zi /RTCs /GS"
             if (optlevel==2): cmd += " /MDd /Zi"
-            if (optlevel==3): cmd += " /MD /Zi /GS- /O2 /Ob2 /Oi /Ot /fp:fast"
+            if (optlevel==3): cmd += " /MD /Zi /GS- /O2 /fp:fast"
             if (optlevel==4):
-                cmd += " /MD /Zi /GS- /Ox /Ob2 /Oi /Ot /fp:fast /DFORCE_INLINING /DNDEBUG /GL"
-                cmd += " /Oy /Zp16"      # jean-claude add /Zp16 insures correct static alignment for SSEx
+                cmd += " /MD /Zi /GS- /O2 /fp:fast /DFORCE_INLINING /DNDEBUG /GL"
+                cmd += " /Zp16"      # jean-claude add /Zp16 insures correct static alignment for SSEx
 
             cmd += " /Fd" + os.path.splitext(obj)[0] + ".pdb"
 
@@ -1467,7 +1474,7 @@ def CompileFlex(wobj,wsrc,opts):
             oscmd(flex +    " -P" + pre + " -o"+wdst+" "+wsrc)
 
     # Finally, compile the generated source file.
-    CompileCxx(wobj,wdst,opts)
+    CompileCxx(wobj, wdst, opts + ["FLEX"])
 
 ########################################################################
 ##
@@ -2317,9 +2324,6 @@ DTOOL_CONFIG=[
     ("HAVE_NET",                       'UNDEF',                  'UNDEF'),
     ("WANT_NATIVE_NET",                '1',                      '1'),
     ("SIMULATE_NETWORK_DELAY",         'UNDEF',                  'UNDEF'),
-    ("HAVE_CG",                        'UNDEF',                  'UNDEF'),
-    ("HAVE_CGGL",                      'UNDEF',                  'UNDEF'),
-    ("HAVE_CGDX9",                     'UNDEF',                  'UNDEF'),
     ("HAVE_ARTOOLKIT",                 'UNDEF',                  'UNDEF'),
     ("HAVE_DIRECTCAM",                 'UNDEF',                  'UNDEF'),
     ("HAVE_SQUISH",                    'UNDEF',                  'UNDEF'),
@@ -2371,11 +2375,6 @@ def WriteConfigSettings():
                 dtool_config["HAVE_"+x] = 'UNDEF'
 
     dtool_config["HAVE_NET"] = '1'
-
-    if (PkgSkip("NVIDIACG")==0):
-        dtool_config["HAVE_CG"] = '1'
-        dtool_config["HAVE_CGGL"] = '1'
-        dtool_config["HAVE_CGDX9"] = '1'
 
     if GetTarget() not in ("linux", "android"):
         dtool_config["HAVE_PROC_SELF_EXE"] = 'UNDEF'
@@ -3140,7 +3139,7 @@ if (PkgSkip("BULLET")==0):
     CopyAllHeaders('panda/metalibs/pandabullet')
 
 if (PkgSkip("SPEEDTREE")==0):
-    CopyAllHeaders('panda/src/speedtree')
+    CopyAllHeaders('contrib/src/speedtree')
 
 if (PkgSkip("DIRECT")==0):
     CopyAllHeaders('direct/src/directbase')
@@ -3659,13 +3658,12 @@ TargetAdd('libp3pstatclient.in', opts=['IMOD:panda3d.core', 'ILIB:libp3pstatclie
 # DIRECTORY: panda/src/gobj/
 #
 
-OPTS=['DIR:panda/src/gobj', 'BUILDING:PANDA',  'NVIDIACG', 'ZLIB', 'SQUISH', 'VULKAN']
+OPTS=['DIR:panda/src/gobj', 'BUILDING:PANDA',  'ZLIB', 'SQUISH', 'VULKAN']
 TargetAdd('p3gobj_composite1.obj', opts=OPTS, input='p3gobj_composite1.cxx')
 TargetAdd('p3gobj_composite2.obj', opts=OPTS+['BIGOBJ'], input='p3gobj_composite2.cxx')
 
-OPTS=['DIR:panda/src/gobj', 'NVIDIACG', 'ZLIB', 'SQUISH']
+OPTS=['DIR:panda/src/gobj', 'ZLIB', 'SQUISH']
 IGATEFILES=GetDirectoryContents('panda/src/gobj', ["*.h", "*_composite*.cxx"])
-if ("cgfx_states.h" in IGATEFILES): IGATEFILES.remove("cgfx_states.h")
 TargetAdd('libp3gobj.in', opts=OPTS, input=IGATEFILES)
 TargetAdd('libp3gobj.in', opts=['IMOD:panda3d.core', 'ILIB:libp3gobj', 'SRCDIR:panda/src/gobj'])
 PyTargetAdd('p3gobj_ext_composite.obj', opts=OPTS, input='p3gobj_ext_composite.cxx')
@@ -3953,7 +3951,7 @@ TargetAdd('libp3dxml.in', opts=['IMOD:panda3d.core', 'ILIB:libp3dxml', 'SRCDIR:p
 
 OPTS=['DIR:panda/metalibs/panda', 'BUILDING:PANDA', 'JPEG', 'PNG', 'HARFBUZZ',
     'TIFF', 'OPENEXR', 'ZLIB', 'FREETYPE', 'FFTW', 'ADVAPI', 'WINSOCK2',
-    'SQUISH', 'NVIDIACG', 'VORBIS', 'OPUS', 'WINUSER', 'WINMM', 'WINGDI', 'IPHLPAPI',
+    'SQUISH', 'VORBIS', 'OPUS', 'WINUSER', 'WINMM', 'WINGDI', 'IPHLPAPI',
     'SETUPAPI', 'IOKIT', 'GLSLANG', 'SPIRV-TOOLS']
 
 TargetAdd('panda_panda.obj', opts=OPTS, input='panda.cxx')
@@ -4217,7 +4215,7 @@ if (PkgSkip('PANDAFX')==0):
   OPTS=['DIR:panda/src/distort', 'BUILDING:PANDAFX']
   TargetAdd('p3distort_composite1.obj', opts=OPTS, input='p3distort_composite1.cxx')
 
-  OPTS=['DIR:panda/metalibs/pandafx', 'DIR:panda/src/distort', 'NVIDIACG']
+  OPTS=['DIR:panda/metalibs/pandafx', 'DIR:panda/src/distort']
   IGATEFILES=GetDirectoryContents('panda/src/distort', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3distort.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3distort.in', opts=['IMOD:panda3d.fx', 'ILIB:libp3distort', 'SRCDIR:panda/src/distort'])
@@ -4227,15 +4225,15 @@ if (PkgSkip('PANDAFX')==0):
 #
 
 if (PkgSkip('PANDAFX')==0):
-  OPTS=['DIR:panda/metalibs/pandafx', 'DIR:panda/src/distort', 'BUILDING:PANDAFX',  'NVIDIACG']
+  OPTS=['DIR:panda/metalibs/pandafx', 'DIR:panda/src/distort', 'BUILDING:PANDAFX']
   TargetAdd('pandafx_pandafx.obj', opts=OPTS, input='pandafx.cxx')
 
   TargetAdd('libpandafx.dll', input='pandafx_pandafx.obj')
   TargetAdd('libpandafx.dll', input='p3distort_composite1.obj')
   TargetAdd('libpandafx.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandafx.dll', opts=['ADVAPI',  'NVIDIACG'])
+  TargetAdd('libpandafx.dll', opts=['ADVAPI'])
 
-  OPTS=['DIR:panda/metalibs/pandafx', 'DIR:panda/src/distort', 'NVIDIACG']
+  OPTS=['DIR:panda/metalibs/pandafx', 'DIR:panda/src/distort']
   PyTargetAdd('fx_module.obj', input='libp3distort.in')
   PyTargetAdd('fx_module.obj', opts=OPTS)
   PyTargetAdd('fx_module.obj', opts=['IMOD:panda3d.fx', 'ILIB:fx', 'IMPORT:panda3d.core'])
@@ -4365,17 +4363,17 @@ if (GetTarget() == 'windows'):
 #
 
 if GetTarget() == 'windows' and PkgSkip("DX9")==0:
-  OPTS=['DIR:panda/src/dxgsg9', 'BUILDING:PANDADX', 'DX9',  'NVIDIACG', 'CGDX9']
+  OPTS=['DIR:panda/src/dxgsg9', 'BUILDING:PANDADX', 'DX9', 'SPIRV-CROSS-HLSL']
   TargetAdd('p3dxgsg9_dxGraphicsStateGuardian9.obj', opts=OPTS, input='dxGraphicsStateGuardian9.cxx')
   TargetAdd('p3dxgsg9_composite1.obj', opts=OPTS, input='p3dxgsg9_composite1.cxx')
-  OPTS=['DIR:panda/metalibs/pandadx9', 'BUILDING:PANDADX', 'DX9',  'NVIDIACG', 'CGDX9']
+  OPTS=['DIR:panda/metalibs/pandadx9', 'BUILDING:PANDADX', 'DX9']
   TargetAdd('pandadx9_pandadx9.obj', opts=OPTS, input='pandadx9.cxx')
   TargetAdd('libpandadx9.dll', input='pandadx9_pandadx9.obj')
   TargetAdd('libpandadx9.dll', input='p3dxgsg9_dxGraphicsStateGuardian9.obj')
   TargetAdd('libpandadx9.dll', input='p3dxgsg9_composite1.obj')
   TargetAdd('libpandadx9.dll', input='libp3windisplay.dll')
   TargetAdd('libpandadx9.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandadx9.dll', opts=['MODULE', 'ADVAPI', 'WINGDI', 'WINKERNEL', 'WINUSER', 'WINMM', 'DX9',  'NVIDIACG', 'CGDX9'])
+  TargetAdd('libpandadx9.dll', opts=['MODULE', 'ADVAPI', 'WINGDI', 'WINKERNEL', 'WINUSER', 'WINMM', 'DX9', 'SPIRV-CROSS-HLSL'])
 
 #
 # DIRECTORY: panda/src/egg/
@@ -4437,7 +4435,7 @@ TargetAdd('libp3framework.dll', opts=['ADVAPI'])
 #
 
 if (PkgSkip("GL")==0):
-  OPTS=['DIR:panda/src/glgsg', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGL', 'GL', 'NVIDIACG', 'SPIRV-CROSS-GLSL']
+  OPTS=['DIR:panda/src/glgsg', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGL', 'GL', 'SPIRV-CROSS-GLSL', 'GLSLANG']
   TargetAdd('p3glgsg_config_glgsg.obj', opts=OPTS, input='config_glgsg.cxx')
   TargetAdd('p3glgsg_glgsg.obj', opts=OPTS, input='glgsg.cxx')
 
@@ -4504,10 +4502,10 @@ if (GetTarget() not in ['windows', 'darwin'] and PkgSkip("X11")==0):
 #
 
 if (GetTarget() not in ['windows', 'darwin'] and PkgSkip("GL")==0 and PkgSkip("X11")==0):
-  OPTS=['DIR:panda/src/glxdisplay', 'BUILDING:PANDAGL',  'GL', 'NVIDIACG', 'CGGL']
+  OPTS=['DIR:panda/src/glxdisplay', 'BUILDING:PANDAGL', 'GL']
   TargetAdd('p3glxdisplay_composite1.obj', opts=OPTS, input='p3glxdisplay_composite1.cxx')
 
-  OPTS=['DIR:panda/metalibs/pandagl', 'BUILDING:PANDAGL',  'GL', 'NVIDIACG', 'CGGL', 'SPIRV-CROSS-GLSL']
+  OPTS=['DIR:panda/metalibs/pandagl', 'BUILDING:PANDAGL', 'GL', 'SPIRV-CROSS-GLSL']
   TargetAdd('pandagl_pandagl.obj', opts=OPTS, input='pandagl.cxx')
   TargetAdd('libpandagl.dll', input='p3x11display_composite1.obj')
   TargetAdd('libpandagl.dll', input='pandagl_pandagl.obj')
@@ -4515,16 +4513,16 @@ if (GetTarget() not in ['windows', 'darwin'] and PkgSkip("GL")==0 and PkgSkip("X
   TargetAdd('libpandagl.dll', input='p3glgsg_glgsg.obj')
   TargetAdd('libpandagl.dll', input='p3glxdisplay_composite1.obj')
   TargetAdd('libpandagl.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandagl.dll', opts=['MODULE', 'GL', 'NVIDIACG', 'CGGL', 'X11', 'SPIRV-CROSS-GLSL'])
+  TargetAdd('libpandagl.dll', opts=['MODULE', 'GL', 'X11', 'SPIRV-CROSS-GLSL'])
 
 #
 # DIRECTORY: panda/src/cocoadisplay/
 #
 
 if (GetTarget() == 'darwin' and PkgSkip("COCOA")==0 and PkgSkip("GL")==0):
-  OPTS=['DIR:panda/src/cocoadisplay', 'BUILDING:PANDAGL', 'GL', 'NVIDIACG', 'CGGL']
+  OPTS=['DIR:panda/src/cocoadisplay', 'BUILDING:PANDAGL', 'GL']
   TargetAdd('p3cocoadisplay_composite1.obj', opts=OPTS, input='p3cocoadisplay_composite1.mm')
-  OPTS=['DIR:panda/metalibs/pandagl', 'BUILDING:PANDAGL', 'GL', 'NVIDIACG', 'CGGL']
+  OPTS=['DIR:panda/metalibs/pandagl', 'BUILDING:PANDAGL', 'GL']
   TargetAdd('pandagl_pandagl.obj', opts=OPTS, input='pandagl.cxx')
   TargetAdd('libpandagl.dll', input='pandagl_pandagl.obj')
   TargetAdd('libpandagl.dll', input='p3glgsg_config_glgsg.obj')
@@ -4533,16 +4531,16 @@ if (GetTarget() == 'darwin' and PkgSkip("COCOA")==0 and PkgSkip("GL")==0):
   if (PkgSkip('PANDAFX')==0):
     TargetAdd('libpandagl.dll', input='libpandafx.dll')
   TargetAdd('libpandagl.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandagl.dll', opts=['MODULE', 'GL', 'NVIDIACG', 'CGGL', 'COCOA', 'CARBON', 'QUARTZ'])
+  TargetAdd('libpandagl.dll', opts=['MODULE', 'GL', 'COCOA', 'CARBON', 'QUARTZ'])
 
 #
 # DIRECTORY: panda/src/wgldisplay/
 #
 
 if (GetTarget() == 'windows' and PkgSkip("GL")==0):
-  OPTS=['DIR:panda/src/wgldisplay', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGL',  'NVIDIACG', 'CGGL']
+  OPTS=['DIR:panda/src/wgldisplay', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGL', 'GLSLANG']
   TargetAdd('p3wgldisplay_composite1.obj', opts=OPTS, input='p3wgldisplay_composite1.cxx')
-  OPTS=['DIR:panda/metalibs/pandagl', 'BUILDING:PANDAGL',  'NVIDIACG', 'CGGL']
+  OPTS=['DIR:panda/metalibs/pandagl', 'BUILDING:PANDAGL']
   TargetAdd('pandagl_pandagl.obj', opts=OPTS, input='pandagl.cxx')
   TargetAdd('libpandagl.dll', input='pandagl_pandagl.obj')
   TargetAdd('libpandagl.dll', input='p3glgsg_config_glgsg.obj')
@@ -4552,7 +4550,7 @@ if (GetTarget() == 'windows' and PkgSkip("GL")==0):
   if (PkgSkip('PANDAFX')==0):
     TargetAdd('libpandagl.dll', input='libpandafx.dll')
   TargetAdd('libpandagl.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandagl.dll', opts=['MODULE', 'WINGDI', 'GL', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM',  'NVIDIACG', 'CGGL', 'SPIRV-CROSS-GLSL'])
+  TargetAdd('libpandagl.dll', opts=['MODULE', 'WINGDI', 'GL', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM', 'SPIRV-CROSS-GLSL', 'GLSLANG'])
 
 #
 # DIRECTORY: panda/src/egldisplay/
@@ -4571,7 +4569,7 @@ if not PkgSkip("EGL") and not PkgSkip("GL") and PkgSkip("X11") and GetTarget() n
   TargetAdd('libpandagl.dll', input='p3glgsg_glgsg.obj')
   TargetAdd('libpandagl.dll', input='pandagl_egldisplay_composite1.obj')
   TargetAdd('libpandagl.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandagl.dll', opts=['MODULE', 'GL', 'EGL', 'CGGL'])
+  TargetAdd('libpandagl.dll', opts=['MODULE', 'GL', 'EGL'])
 
 #
 # DIRECTORY: panda/src/egldisplay/
@@ -4773,15 +4771,15 @@ if (PkgSkip("PANDAPHYSICS")==0):
   PyTargetAdd('physics.pyd', input=COMMON_PANDA_LIBS)
 
 #
-# DIRECTORY: panda/src/speedtree/
+# DIRECTORY: contrib/src/speedtree/
 #
 
 if (PkgSkip("SPEEDTREE")==0):
-  OPTS=['DIR:panda/src/speedtree', 'BUILDING:PANDASPEEDTREE', 'SPEEDTREE']
+  OPTS=['DIR:contrib/src/speedtree', 'BUILDING:PANDASPEEDTREE', 'SPEEDTREE']
   TargetAdd('pandaspeedtree_composite1.obj', opts=OPTS, input='pandaspeedtree_composite1.cxx')
-  IGATEFILES=GetDirectoryContents('panda/src/speedtree', ["*.h", "*_composite*.cxx"])
+  IGATEFILES=GetDirectoryContents('contrib/src/speedtree', ["*.h", "*_composite*.cxx"])
   TargetAdd('libpandaspeedtree.in', opts=OPTS, input=IGATEFILES)
-  TargetAdd('libpandaspeedtree.in', opts=['IMOD:libpandaspeedtree', 'ILIB:libpandaspeedtree', 'SRCDIR:panda/src/speedtree'])
+  TargetAdd('libpandaspeedtree.in', opts=['IMOD:libpandaspeedtree', 'ILIB:libpandaspeedtree', 'SRCDIR:contrib/src/speedtree'])
 
   PyTargetAdd('libpandaspeedtree_module.obj', input='libpandaspeedtree.in')
   PyTargetAdd('libpandaspeedtree_module.obj', opts=OPTS)
@@ -4792,9 +4790,9 @@ if (PkgSkip("SPEEDTREE")==0):
   TargetAdd('libpandaspeedtree.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libpandaspeedtree.dll', opts=['SPEEDTREE'])
   if SDK["SPEEDTREEAPI"] == 'OpenGL':
-      TargetAdd('libpandaspeedtree.dll', opts=['GL', 'NVIDIACG', 'CGGL'])
+      TargetAdd('libpandaspeedtree.dll', opts=['GL'])
   elif SDK["SPEEDTREEAPI"] == 'DirectX9':
-      TargetAdd('libpandaspeedtree.dll', opts=['DX9',  'NVIDIACG', 'CGDX9'])
+      TargetAdd('libpandaspeedtree.dll', opts=['DX9'])
 
 #
 # DIRECTORY: panda/src/testbed/

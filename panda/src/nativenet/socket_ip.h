@@ -1,5 +1,5 @@
-#ifndef __SOCKET_IP_H__
-#define __SOCKET_IP_H__
+#ifndef SOCKET_IP_H
+#define SOCKET_IP_H
 
 #include "pandabase.h"
 #include "socket_portable.h"
@@ -258,4 +258,4 @@ GetPeerName(void) const {
   return Socket_Address(name);
 }
 
-#endif //__SOCKET_IP_H__
+#endif //SOCKET_IP_H

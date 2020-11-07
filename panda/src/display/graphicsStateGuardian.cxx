@@ -240,7 +240,6 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   _supports_depth_stencil = false;
   _supports_shadow_filter = false;
   _supports_sampler_objects = false;
-  _supports_basic_shaders = false;
   _supports_glsl = false;
   _supports_hlsl = false;
   _supports_spir_v = false;
@@ -346,15 +345,6 @@ get_supports_multisample() const {
 int GraphicsStateGuardian::
 get_supported_geom_rendering() const {
   return _supported_geom_rendering;
-}
-
-/**
- * Returns true if this particular GSG supports the specified Cg Shader
- * Profile.
- */
-bool GraphicsStateGuardian::
-get_supports_cg_profile(const string &name) const {
-  return false;
 }
 
 /**
@@ -2623,6 +2613,7 @@ reset() {
   _state_rs = RenderState::make_empty();
   _target_rs = nullptr;
   _state_mask.clear();
+  _inv_state_mask = RenderState::SlotMask::all_on();
   _internal_transform = _cs_transform;
   _scene_null = new SceneSetup;
   _scene_setup = _scene_null;
@@ -3522,9 +3513,13 @@ get_dummy_shadow_map(Texture::TextureType texture_type) const {
       dummy_cube = new Texture("dummy-shadow-cube");
       dummy_cube->setup_cube_map(1, Texture::T_unsigned_byte, Texture::F_depth_component);
       dummy_cube->set_clear_color(1);
-      // Note: cube map shadow filtering doesn't seem to work in Cg.
-      dummy_cube->set_minfilter(SamplerState::FT_linear);
-      dummy_cube->set_magfilter(SamplerState::FT_linear);
+      if (get_supports_shadow_filter()) {
+        dummy_cube->set_minfilter(SamplerState::FT_shadow);
+        dummy_cube->set_magfilter(SamplerState::FT_shadow);
+      } else {
+        dummy_cube->set_minfilter(SamplerState::FT_linear);
+        dummy_cube->set_magfilter(SamplerState::FT_linear);
+      }
     }
     return dummy_cube;
   }
@@ -3571,7 +3566,7 @@ ensure_generated_shader(const RenderState *state) {
 
   if (shader_attrib->auto_shader()) {
     if (_shader_generator == nullptr) {
-      if (!_supports_basic_shaders) {
+      if (!get_supports_basic_shaders()) {
         return;
       }
       _shader_generator = new ShaderGenerator(this);

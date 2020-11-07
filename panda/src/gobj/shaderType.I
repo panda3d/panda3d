@@ -205,9 +205,10 @@ is_writable() const {
  * Constructs a sampled image type.
  */
 INLINE ShaderType::SampledImage::
-SampledImage(Texture::TextureType type, ScalarType sampled_type) :
+SampledImage(Texture::TextureType type, ScalarType sampled_type, bool shadow) :
   _texture_type(type),
-  _sampled_type(sampled_type) {
+  _sampled_type(sampled_type),
+  _shadow(shadow) {
 }
 
 /**
@@ -224,4 +225,12 @@ get_texture_type() const {
 INLINE ShaderType::ScalarType ShaderType::SampledImage::
 get_sampled_type() const {
   return _sampled_type;
+}
+
+/**
+ * Returns true if this sampler performs a depth comparison.
+ */
+INLINE bool ShaderType::SampledImage::
+is_shadow() const {
+  return _shadow;
 }

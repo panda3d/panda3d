@@ -165,9 +165,6 @@ public:
   void restore_gamma();
   static void atexit_function(void);
 
-  static void set_cg_device(LPDIRECT3DDEVICE9 cg_device);
-  virtual bool get_supports_cg_profile(const std::string &name) const;
-
   LPDIRECT3DVERTEXBUFFER9 get_white_vbuffer();
 
 protected:
@@ -200,7 +197,6 @@ protected:
   virtual void bind_clip_plane(const NodePath &plane, int plane_id);
 
   virtual void close_gsg();
-  void free_nondx_resources();
   void free_d3d_device();
 
   void set_draw_buffer(const RenderBuffer &rb);
@@ -291,8 +287,6 @@ protected:
 
   PT(Shader) _current_shader;
   DXShaderContext9 *_current_shader_context;
-  PT(Shader) _vertex_array_shader;
-  DXShaderContext9 *_vertex_array_shader_context;
   PT(Shader) _texture_binding_shader;
   DXShaderContext9 *_texture_binding_shader_context;
 
@@ -365,11 +359,6 @@ protected:
   std::list <wdxGraphicsBuffer9 **> _graphics_buffer_list;
 
   int _supports_gamma_calibration;
-
-#ifdef HAVE_CG
-  CGcontext _cg_context;
-  static LPDIRECT3DDEVICE9 _cg_device;
-#endif
 
 public:
   virtual TypeHandle get_type() const {

@@ -65,9 +65,6 @@
 #include "wdxGraphicsBuffer9.h"
 #include "config_pgraph.h"
 #include "shaderGenerator.h"
-#ifdef HAVE_CG
-#include <Cg/cgD3D9.h>
-#endif
 
 #include <mmsystem.h>
 
@@ -87,10 +84,6 @@ D3DMATRIX DXGraphicsStateGuardian9::_d3d_ident_mat;
 
 unsigned char *DXGraphicsStateGuardian9::_temp_buffer = nullptr;
 unsigned char *DXGraphicsStateGuardian9::_safe_buffer_start = nullptr;
-
-#ifdef HAVE_CG
-LPDIRECT3DDEVICE9 DXGraphicsStateGuardian9::_cg_device = nullptr;
-#endif
 
 #define __D3DLIGHT_RANGE_MAX ((PN_stdfloat)sqrt(FLT_MAX))  //for some reason this is missing in dx9 hdrs
 
@@ -154,10 +147,6 @@ DXGraphicsStateGuardian9(GraphicsEngine *engine, GraphicsPipe *pipe) :
 
   _supports_stream_offset = false;
 
-#ifdef HAVE_CG
-  _cg_context = 0;
-#endif
-
   get_gamma_table();
   atexit (atexit_function);
 }
@@ -175,8 +164,6 @@ DXGraphicsStateGuardian9::
   if (IS_VALID_PTR(_d3d_device)) {
     _d3d_device->SetTexture(0, nullptr);  // this frees reference to the old texture
   }
-
-  free_nondx_resources();
 }
 
 /**
@@ -408,36 +395,10 @@ extract_texture_data(Texture *tex) {
  */
 ShaderContext *DXGraphicsStateGuardian9::
 prepare_shader(Shader *se) {
+  nassertr(supports_basic_shaders(), nullptr);
+
   PStatTimer timer(_prepare_shader_pcollector);
-
-  switch (se->get_language()) {
-  case Shader::SL_GLSL:
-    dxgsg9_cat.error()
-      << "Tried to load GLSL shader, but GLSL shaders not supported by Direct3D 9.\n";
-    return nullptr;
-
-  case Shader::SL_Cg:
-#ifdef HAVE_CG
-    if (_supports_basic_shaders) {
-      return new DXShaderContext9(se, this);
-    } else {
-      dxgsg9_cat.error()
-        << "Tried to load Cg shader, but basic shaders not supported.\n";
-      return nullptr;
-    }
-#else
-    dxgsg9_cat.error()
-      << "Tried to load Cg shader, but Cg support not compiled in.\n";
-    return nullptr;
-#endif
-
-  default:
-    dxgsg9_cat.error()
-      << "Tried to load shader with unsupported shader language!\n";
-    return nullptr;
-  }
-
-  return nullptr;
+  return new DXShaderContext9(se, this);
 }
 
 /**
@@ -1088,11 +1049,13 @@ void DXGraphicsStateGuardian9::
 end_scene() {
   GraphicsStateGuardian::end_scene();
 
-  if (_vertex_array_shader_context != 0) {
-    _vertex_array_shader_context->disable_shader_vertex_arrays(this);
-    _vertex_array_shader = nullptr;
-    _vertex_array_shader_context = nullptr;
+  // Unbind streams.
+  _d3d_device->SetVertexDeclaration(nullptr);
+  for (int array_index = 0; array_index < _num_bound_streams; ++array_index) {
+    _d3d_device->SetStreamSource(array_index, nullptr, 0, 0);
   }
+  _num_bound_streams = 0;
+
   if (_texture_binding_shader_context != 0) {
     _texture_binding_shader_context->disable_shader_texture_bindings(this);
     _texture_binding_shader = nullptr;
@@ -1187,6 +1150,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   nassertr(_data_reader != nullptr, false);
 
   const GeomVertexFormat *format = _data_reader->get_format();
+  LPDIRECT3DDEVICE9 device = _d3d_device;
 
   const GeomVertexAnimationSpec &animation =
     data_reader->get_format()->get_animation();
@@ -1225,7 +1189,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
         LMatrix4 mat;
         table->get_transform(i)->mult_matrix(mat, _internal_transform->get_mat());
         const D3DMATRIX *d3d_mat = (const D3DMATRIX *)mat.get_data();
-        _d3d_device->SetTransform(D3DTS_WORLDMATRIX(i), d3d_mat);
+        device->SetTransform(D3DTS_WORLDMATRIX(i), d3d_mat);
       }
 
       // Setting the first animation matrix steps on the world matrix, so we
@@ -1244,7 +1208,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
 
     if (_transform_stale && !_data_reader->is_vertex_transformed()) {
       const D3DMATRIX *d3d_mat = (const D3DMATRIX *)_internal_transform->get_mat().get_data();
-      _d3d_device->SetTransform(D3DTS_WORLD, d3d_mat);
+      device->SetTransform(D3DTS_WORLD, d3d_mat);
       _transform_stale = false;
     }
   }
@@ -1257,7 +1221,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     // It's tempting just to use the D3DFVF_XYZRHW specification on these
     // vertices, but that turns out to be a bigger hammer than we want: that
     // also prevents lighting calculations and user clip planes.
-    _d3d_device->SetTransform(D3DTS_WORLD, &_d3d_ident_mat);
+    device->SetTransform(D3DTS_WORLD, &_d3d_ident_mat);
     static const LMatrix4f rescale_mat
       (1, 0, 0, 0,
        0, 1, 0, 0,
@@ -1265,34 +1229,70 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
        0, 0, 0.5, 1);
     _transform_stale = true;
 
-    _d3d_device->SetTransform(D3DTS_PROJECTION, (const D3DMATRIX *)rescale_mat.get_data());
+    device->SetTransform(D3DTS_PROJECTION, (const D3DMATRIX *)rescale_mat.get_data());
   }
 
-  if (_current_shader_context == 0 /*|| !_current_shader_context->uses_custom_vertex_arrays()*/) {
-    // No shader, or a non-Cg shader.
-    if (_vertex_array_shader_context != 0) {
-      _vertex_array_shader_context->disable_shader_vertex_arrays(this);
-    }
+  if (_current_shader_context == nullptr) {
+    // No shader.
+    device->SetVertexDeclaration(nullptr);
     if (!update_standard_vertex_arrays(force)) {
       return false;
     }
   } else {
-    // Cg shader.
-    if (_vertex_array_shader_context == 0) {
-      disable_standard_vertex_arrays();
-      if (!_current_shader_context->update_shader_vertex_arrays(nullptr, this, force)) {
-        return false;
+    // Set the vertex declaration for the shader.
+    LPDIRECT3DVERTEXDECLARATION9 decl =
+      _current_shader_context->get_vertex_declaration(this, format);
+    if (decl == nullptr) {
+      return false;
+    }
+
+    HRESULT hr = device->SetVertexDeclaration(decl);
+    if (FAILED(hr)) {
+      dxgsg9_cat.error()
+        << "SetVertexDeclaration failed: " << D3DERRORSTRING(hr);
+      return false;
+    }
+
+    // Prepare and bind the vertex buffers.
+    size_t num_arrays = _data_reader->get_num_arrays();
+    size_t i;
+    for (i = 0; i < num_arrays; ++i) {
+      const GeomVertexArrayDataHandle *array_reader = _data_reader->get_array_reader(i);
+
+      // Get the vertex buffer for this array.
+      DXVertexBufferContext9 *dvbc;
+      if (!setup_array_data(dvbc, array_reader, force)) {
+        dxgsg9_cat.error() << "Unable to setup vertex buffer for array " << i << "\n";
+        _d3d_device->SetStreamSource(i, nullptr, 0, 0);
+        continue;
       }
-    } else {
-      if (!_current_shader_context->
-          update_shader_vertex_arrays(_vertex_array_shader_context, this, force)) {
-        return false;
+
+      // Bind this array as the data source for the corresponding stream.
+      const GeomVertexArrayFormat *array_format = array_reader->get_array_format();
+      hr = device->SetStreamSource(i, dvbc->_vbuffer, 0, array_format->get_stride());
+      if (FAILED(hr)) {
+        dxgsg9_cat.error() << "SetStreamSource failed" << D3DERRORSTRING(hr);
       }
     }
-  }
 
-  _vertex_array_shader = _current_shader;
-  _vertex_array_shader_context = _current_shader_context;
+    if (format->get_color_array_index() < 0 && _current_shader_context->uses_vertex_color()) {
+      // Has no vertex colors, so bind a vertex buffer containing a single
+      // white color.
+      LPDIRECT3DVERTEXBUFFER9 vbuffer = get_white_vbuffer();
+      hr = device->SetStreamSource(i, vbuffer, 0, 0);
+      if (FAILED(hr)) {
+        dxgsg9_cat.error() << "SetStreamSource failed" << D3DERRORSTRING(hr);
+      }
+      ++i;
+    }
+
+    // Unbind any other streams.
+    for (; i < _num_bound_streams; ++i) {
+      _d3d_device->SetStreamSource(i, nullptr, 0, 0);
+    }
+
+    _num_bound_streams = num_arrays;
+  }
 
   return true;
 }
@@ -1309,24 +1309,24 @@ update_standard_vertex_arrays(bool force) {
   int fvf = 0;
   HRESULT hr;
 
-  int number_of_arrays = _data_reader->get_num_arrays();
-  for ( int array_index = 0; array_index < number_of_arrays; ++array_index ) {
-    const GeomVertexArrayDataHandle* array_reader = _data_reader->get_array_reader( array_index );
-    if ( array_reader == nullptr ) {
+  int num_arrays = _data_reader->get_num_arrays();
+  for (int array_index = 0; array_index < num_arrays; ++array_index) {
+    const GeomVertexArrayDataHandle *array_reader = _data_reader->get_array_reader(array_index);
+    if (array_reader == nullptr) {
       dxgsg9_cat.error() << "Unable to get reader for array " << array_index << "\n";
       return false;
     }
 
     // Get the vertex buffer for this array.
-    DXVertexBufferContext9* dvbc;
+    DXVertexBufferContext9 *dvbc;
     if (!setup_array_data(dvbc, array_reader, force)) {
       dxgsg9_cat.error() << "Unable to setup vertex buffer for array " << array_index << "\n";
       return false;
     }
 
     // Bind this array as the data source for the corresponding stream.
-    const GeomVertexArrayFormat* array_format = array_reader->get_array_format();
-    hr = _d3d_device->SetStreamSource( array_index, dvbc->_vbuffer, 0, array_format->get_stride() );
+    const GeomVertexArrayFormat *array_format = array_reader->get_array_format();
+    hr = _d3d_device->SetStreamSource(array_index, dvbc->_vbuffer, 0, array_format->get_stride());
     if (FAILED(hr)) {
       dxgsg9_cat.error() << "SetStreamSource failed" << D3DERRORSTRING(hr);
       return false;
@@ -1336,7 +1336,13 @@ update_standard_vertex_arrays(bool force) {
     fvf |= dvbc->_fvf;
   }
 
-  hr = _d3d_device->SetFVF( fvf );
+  for (int array_index = num_arrays; array_index < _num_bound_streams; ++array_index) {
+    _d3d_device->SetStreamSource(array_index, nullptr, 0, 0);
+  }
+
+  _num_bound_streams = num_arrays;
+
+  hr = _d3d_device->SetFVF(fvf);
   if (FAILED(hr)) {
     dxgsg9_cat.error() << "SetFVF failed" << D3DERRORSTRING(hr);
     return false;
@@ -1353,9 +1359,8 @@ update_standard_vertex_arrays(bool force) {
  */
 void DXGraphicsStateGuardian9::
 disable_standard_vertex_arrays() {
-  for ( int array_index = 0; array_index < _num_bound_streams; ++array_index )
-  {
-    _d3d_device->SetStreamSource( array_index, nullptr, 0, 0 );
+  for (int array_index = 0; array_index < _num_bound_streams; ++array_index) {
+    _d3d_device->SetStreamSource(array_index, nullptr, 0, 0);
   }
   _num_bound_streams = 0;
 }
@@ -2273,7 +2278,17 @@ reset() {
   _pixel_shader_version_major = D3DSHADER_VERSION_MAJOR (d3d_caps.PixelShaderVersion);
   _pixel_shader_version_minor = D3DSHADER_VERSION_MINOR (d3d_caps.PixelShaderVersion);
 
-  _supports_hlsl = (_pixel_shader_version_major != 0);
+  // We require at least shader model 3.
+  _supports_hlsl = (_pixel_shader_version_major >= 3);
+
+  _supported_shader_caps = 0;
+  if (_supports_hlsl) {
+    _supported_shader_caps = ShaderModule::C_basic_shader
+                           | ShaderModule::C_vertex_texture
+                           | ShaderModule::C_sampler_shadow
+                           | ShaderModule::C_integer
+                           | ShaderModule::C_texture_lod;
+  }
 
   _vertex_shader_profile = (char *) D3DXGetVertexShaderProfile (_d3d_device);
   _pixel_shader_profile = (char *) D3DXGetPixelShaderProfile (_d3d_device);
@@ -2308,53 +2323,6 @@ reset() {
   }
 
   _auto_detect_shader_model = _shader_model;
-
-#ifdef HAVE_CG
-  set_cg_device(_d3d_device);
-
-  _cg_context = cgCreateContext();
-
-  if (cgD3D9IsProfileSupported(CG_PROFILE_PS_2_0) &&
-      cgD3D9IsProfileSupported(CG_PROFILE_VS_2_0)) {
-    _supports_basic_shaders = true;
-    _shader_caps._active_vprofile = (int)cgD3D9GetLatestVertexProfile();
-    _shader_caps._active_fprofile = (int)cgD3D9GetLatestPixelProfile();
-    _shader_caps._ultimate_vprofile = (int)CG_PROFILE_VS_3_0;
-    _shader_caps._ultimate_fprofile = (int)CG_PROFILE_PS_3_0;
-/*
-    _shader_caps._active_vprofile = (int)CG_PROFILE_VS_2_0;
-    _shader_caps._active_fprofile = (int)CG_PROFILE_PS_2_0;
-    _shader_caps._ultimate_vprofile = (int)CG_PROFILE_VS_2_0;
-    _shader_caps._ultimate_fprofile = (int)CG_PROFILE_PS_2_0;
-*/
-  }
-
-  if (dxgsg9_cat.is_debug()) {
-    CGprofile vertex_profile;
-    CGprofile pixel_profile;
-
-    vertex_profile = cgD3D9GetLatestVertexProfile();
-    pixel_profile = cgD3D9GetLatestPixelProfile();
-
-    const char *vertex_profile_str =
-      cgGetProfileString(vertex_profile);
-    const char *pixel_profile_str =
-      cgGetProfileString(pixel_profile);
-
-    if (vertex_profile_str == nullptr) {
-      vertex_profile_str = "(null)";
-    }
-    if (pixel_profile_str == nullptr) {
-      pixel_profile_str = "(null)";
-    }
-
-    dxgsg9_cat.debug()
-      << "\nCg latest vertex profile = " << vertex_profile_str << "  id = " << vertex_profile
-      << "\nCg latest pixel profile = " << pixel_profile_str << "  id = " << pixel_profile
-      << "\nshader model = " << _shader_model
-      << "\n";
-  }
-#endif
 
   _supports_stream_offset = (d3d_caps.DevCaps2 & D3DDEVCAPS2_STREAMOFFSET) != 0;
   _screen->_supports_dynamic_textures = ((d3d_caps.Caps2 & D3DCAPS2_DYNAMICTEXTURES) != 0);
@@ -2711,8 +2679,6 @@ reset() {
 
   _current_shader = nullptr;
   _current_shader_context = nullptr;
-  _vertex_array_shader = nullptr;
-  _vertex_array_shader_context = nullptr;
   _texture_binding_shader = nullptr;
   _texture_binding_shader_context = nullptr;
 
@@ -3223,11 +3189,14 @@ set_state_and_transform(const RenderState *target,
     _state_mask.set_bit(color_blend_slot);
   }
 
-  if (_target_shader != _state_shader) {
+  int shader_slot = ShaderAttrib::get_class_slot();
+  if (_target_shader != _state_shader ||
+      !_state_mask.get_bit(shader_slot)) {
     // PStatTimer timer(_draw_set_state_shader_pcollector);
     do_issue_shader();
     _state_shader = _target_shader;
     _state_mask.clear_bit(TextureAttrib::get_class_slot());
+    _state_mask.set_bit(shader_slot);
   }
 
   int texture_slot = TextureAttrib::get_class_slot();
@@ -4021,19 +3990,6 @@ close_gsg() {
 }
 
 /**
- * Frees some memory that was explicitly allocated within the dxgsg.
- */
-void DXGraphicsStateGuardian9::
-free_nondx_resources() {
-#ifdef HAVE_CG
-  if (_cg_context) {
-    cgDestroyContext(_cg_context);
-    _cg_context = 0;
-  }
-#endif
-}
-
-/**
  * setup for re-calling dx_init(), this is not the final exit cleanup routine
  * (see dx_cleanup)
  */
@@ -4059,8 +4015,6 @@ free_d3d_device() {
   if (_d3d_device != nullptr) {
     RELEASE(_d3d_device, dxgsg9, "d3dDevice", RELEASE_DOWN_TO_ZERO);
   }
-
-  free_nondx_resources();
 
   // obviously we dont release ID3D9, just ID3DDevice9
 }
@@ -4298,7 +4252,6 @@ set_context(DXScreenData *new_context) {
   _swap_chain = _screen->_swap_chain;   //copy this one field for speed of deref
 
   _screen->_dxgsg9 = this;
-  set_cg_device(_d3d_device);
 }
 
 /**
@@ -4513,7 +4466,6 @@ dx_cleanup() {
     return;
   }
 
-  free_nondx_resources();
   PRINT_REFCNT(dxgsg9, _d3d_device);
 
   // Do a safe check for releasing the D3DDEVICE. RefCount should be zero.  if
@@ -5418,43 +5370,9 @@ restore_gamma() {
  */
 void DXGraphicsStateGuardian9::
 atexit_function(void) {
-  set_cg_device(nullptr);
   if (_gamma_changed) {
     static_set_gamma(true, 1.0f);
   }
-}
-
-/**
- * Returns true if this particular GSG supports the specified Cg Shader
- * Profile.
- */
-bool DXGraphicsStateGuardian9::
-get_supports_cg_profile(const std::string &name) const {
-#ifndef HAVE_CG
-  return false;
-#else
-  CGprofile profile = cgGetProfile(name.c_str());
-
-  if (profile == CG_PROFILE_UNKNOWN) {
-    dxgsg9_cat.error() << name <<", unknown Cg-profile\n";
-    return false;
-  }
-  return cgD3D9IsProfileSupported(cgGetProfile(name.c_str())) != 0;
-#endif  // HAVE_CG
-}
-
-/**
- * Sets the global Cg device pointer.  TODO: make this thread-safe somehow.
- * Maybe Cg is inherently not thread-safe.
- */
-void DXGraphicsStateGuardian9::
-set_cg_device(LPDIRECT3DDEVICE9 cg_device) {
-#ifdef HAVE_CG
-  if (_cg_device != cg_device) {
-    cgD3D9SetDevice(cg_device);
-    _cg_device = cg_device;
-  }
-#endif // HAVE_CG
 }
 
 /**

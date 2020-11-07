@@ -227,8 +227,10 @@ PUBLISHED:
   INLINE void set_shader_model(ShaderModel shader_model);
   MAKE_PROPERTY(shader_model, get_shader_model, set_shader_model);
 
+  INLINE int get_supported_shader_capabilities() const;
+  MAKE_PROPERTY(supported_shader_capabilities, get_supported_shader_capabilities);
+
   virtual int get_supported_geom_rendering() const;
-  virtual bool get_supports_cg_profile(const std::string &name) const;
 
   INLINE bool get_color_scale_via_lighting() const;
   INLINE bool get_alpha_scale_via_texture() const;
@@ -619,7 +621,6 @@ protected:
   bool _supports_luminance_texture;
   bool _supports_shadow_filter;
   bool _supports_sampler_objects;
-  bool _supports_basic_shaders;
   bool _supports_glsl;
   bool _supports_hlsl;
   bool _supports_spir_v;
@@ -647,8 +648,6 @@ protected:
   int _supported_shader_caps;
 
   static PT(TextureStage) _alpha_scale_texture_stage;
-
-  Shader::ShaderCaps _shader_caps;
 
   PN_stdfloat _gamma;
   Texture::QualityLevel _texture_quality_override;

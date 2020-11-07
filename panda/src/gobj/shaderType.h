@@ -72,6 +72,7 @@ PUBLISHED:
 
 public:
   virtual bool is_aggregate_type() const { return false; }
+  virtual bool unwrap_array(const ShaderType *&element_type, uint32_t &num_elements) const;
   virtual bool contains_scalar_type(ScalarType type) const { return false; }
   virtual bool as_scalar_type(ScalarType &type,
                               uint32_t &num_elements,
@@ -293,6 +294,8 @@ public:
   INLINE const ShaderType *get_element_type() const;
   INLINE uint32_t get_num_elements() const;
 
+  virtual bool unwrap_array(const ShaderType *&element_type, uint32_t &num_elements) const override;
+
   virtual bool contains_scalar_type(ScalarType type) const override;
   virtual bool as_scalar_type(ScalarType &type, uint32_t &num_elements,
                               uint32_t &num_rows, uint32_t &num_columns) const override;
@@ -413,10 +416,12 @@ private:
  */
 class EXPCL_PANDA_GOBJ ShaderType::SampledImage final : public ShaderType {
 public:
-  INLINE SampledImage(Texture::TextureType texture_type, ScalarType sampled_type);
+  INLINE SampledImage(Texture::TextureType texture_type, ScalarType sampled_type,
+                      bool shadow = false);
 
   INLINE Texture::TextureType get_texture_type() const;
   INLINE ScalarType get_sampled_type() const;
+  INLINE bool is_shadow() const;
 
   virtual void output(std::ostream &out) const override;
   virtual int compare_to_impl(const ShaderType &other) const override;
@@ -426,6 +431,7 @@ public:
 private:
   Texture::TextureType _texture_type;
   ScalarType _sampled_type;
+  bool _shadow = false;
 
 public:
   static TypeHandle get_class_type() {

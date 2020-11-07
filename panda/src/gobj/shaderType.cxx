@@ -36,6 +36,19 @@ const ShaderType::Scalar *ShaderType::double_type;
 const ShaderType::Sampler *ShaderType::sampler_type;
 
 /**
+ * If this type is an array, puts the element type in the first argument and the
+ * number of elements in the second argument, and returns true.  If not, puts
+ * the current type in the first argument, and 1 in the second argument, and
+ * returns false.
+ */
+bool ShaderType::
+unwrap_array(const ShaderType *&element_type, uint32_t &num_elements) const {
+  element_type = this;
+  num_elements = 1;
+  return false;
+}
+
+/**
  *
  */
 void ShaderType::
@@ -400,6 +413,19 @@ get_num_parameter_locations() const {
 }
 
 /**
+ * If this type is an array, puts the element type in the first argument and the
+ * number of elements in the second argument, and returns true.  If not, puts
+ * the current type in the first argument, and 1 in the second argument, and
+ * returns false.
+ */
+bool ShaderType::Array::
+unwrap_array(const ShaderType *&element_type, uint32_t &num_elements) const {
+  element_type = _element_type;
+  num_elements = _num_elements;
+  return true;
+}
+
+/**
  * Returns true if this type contains the given scalar type.
  */
 bool ShaderType::Array::
@@ -550,6 +576,9 @@ output(std::ostream &out) const {
     out << 'u';
   }
   out << "sampler" << texture_type_suffixes[_texture_type];
+  if (_shadow) {
+    out << "Shadow";
+  }
 }
 
 /**
@@ -563,7 +592,11 @@ compare_to_impl(const ShaderType &other) const {
     return (_texture_type > other_sampled_image._texture_type)
          - (_texture_type < other_sampled_image._texture_type);
   }
-  return (_sampled_type > other_sampled_image._sampled_type)
-       - (_sampled_type < other_sampled_image._sampled_type);
+  if (_sampled_type != other_sampled_image._sampled_type) {
+    return (_sampled_type > other_sampled_image._sampled_type)
+         - (_sampled_type < other_sampled_image._sampled_type);
+  }
+  return (_shadow > other_sampled_image._shadow)
+       - (_shadow < other_sampled_image._shadow);
 }
 #endif  // CPPPARSER

@@ -30,13 +30,17 @@ public:
   virtual std::string get_name() const override;
   virtual ShaderLanguages get_languages() const override;
   virtual PT(ShaderModule) compile_now(Stage stage, std::istream &in,
-                                       const std::string &filename = "created-shader",
+                                       const Filename &fullpath,
                                        BamCacheRecord *record = nullptr) const override;
 
 private:
   static bool check_cg_header(const vector_uchar &code);
-  static bool preprocess_glsl(vector_uchar &code, int &glsl_version, bool &uses_pragma_include);
+  static bool preprocess_glsl(vector_uchar &code, int &glsl_version,
+                              const Filename &source_filename,
+                              pset<Filename> &once_files,
+                              BamCacheRecord *record = nullptr);
   static bool postprocess_glsl150(ShaderModuleSpirV::InstructionStream &stream);
+  static bool postprocess_cg(ShaderModuleSpirV::InstructionStream &stream);
 
 public:
   static TypeHandle get_class_type() {
