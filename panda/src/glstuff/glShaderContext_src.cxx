@@ -81,11 +81,16 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
       glgsg->_glGetProgramInterfaceiv(_glsl_program, GL_UNIFORM, GL_ACTIVE_RESOURCES, &num_active_uniforms);
 
       for (GLint i = 0; i < num_active_uniforms; ++i) {
-        GLenum prop = GL_LOCATION;
-        GLint location;
-        glgsg->_glGetProgramResourceiv(_glsl_program, GL_UNIFORM, i, 1, &prop, 1, nullptr, &location);
+        GLenum props[2] = {GL_LOCATION, GL_ARRAY_SIZE};
+        GLint values[2];
+        glgsg->_glGetProgramResourceiv(_glsl_program, GL_UNIFORM, i, 2, props, 2, nullptr, values);
+        GLint location = values[0];
         if (location >= 0) {
-          set_uniform_location(location, location);
+          GLint array_size = values[1];
+          while (array_size--) {
+            set_uniform_location(location, location);
+            ++location;
+          }
         }
       }
       _remap_uniform_locations = true;
