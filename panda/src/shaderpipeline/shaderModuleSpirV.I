@@ -249,7 +249,7 @@ insert_arg(const iterator &it, uint16_t arg_index, uint32_t arg) {
   assert(offset >= 0 && (size_t)offset <= _words.size());
 
   uint16_t wcount = _words[offset] >> spv::WordCountShift;
-  nassertr(arg_index < wcount - 1, it);
+  nassertr(arg_index < wcount, it);
 
   spv::Op op = (spv::Op)(_words[offset] & spv::OpCodeMask);
   _words[offset] = op | ((wcount + 1) << spv::WordCountShift);

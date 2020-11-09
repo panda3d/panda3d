@@ -904,8 +904,8 @@ make_block(const ShaderType::Struct *block_type, const pvector<int> &member_loca
   pvector<uint32_t> insert_type_pointers;
 
   // Find the variables we should replace with members of this block by looking
-  // at the at the locations.  Collect a map of defined type pointers while
-  // we're at it, so we don't unnecessarily duplicate them.
+  // at the locations.  Collect a map of defined type pointers while we're at
+  // it, so we don't unnecessarily duplicate them.
   pmap<uint32_t, uint32_t> member_indices;
   pmap<uint32_t, uint32_t> type_pointer_map;
 
@@ -984,7 +984,8 @@ make_block(const ShaderType::Struct *block_type, const pvector<int> &member_loca
       // Store integer constants that are already defined in the file that may
       // be useful for defining our struct indices.
       if (op.args[2] < num_members &&
-          (_defs[op.args[0]]._type == ShaderType::int_type || _defs[op.args[0]]._type == ShaderType::uint_type)) {
+          (_defs[op.args[0]]._type == ShaderType::int_type ||
+           _defs[op.args[0]]._type == ShaderType::uint_type)) {
         member_constant_ids[op.args[2]] = op.args[1];
       }
       break;
@@ -1433,8 +1434,18 @@ r_define_type(InstructionIterator &it, const ShaderType *type) {
   }
   else if (const ShaderType::Array *array_type = type->as_array()) {
     uint32_t element_type = r_define_type(it, array_type->get_element_type());
+
+    // Doesn't matter whether we pick uint or int, prefer whatever is
+    // already defined.
+    const ShaderType *constant_type =
+      _type_map.count(ShaderType::uint_type)
+        ? ShaderType::uint_type
+        : ShaderType::int_type;
+
+    uint32_t constant_id = r_define_constant(it, constant_type, array_type->get_num_elements());
+
     it = _instructions.insert(it, spv::OpTypeArray,
-      {id, element_type, array_type->get_num_elements()});
+      {id, element_type, constant_id});
   }
   else if (const ShaderType::Image *image_type = type->as_image()) {
     uint32_t args[9] = {
@@ -1596,6 +1607,21 @@ r_annotate_struct_layout(InstructionIterator &it, uint32_t type_id) {
 
   const ShaderType::Struct *struct_type = type->as_struct();
   if (struct_type == nullptr) {
+    // If this is an array of structs, recurse.
+    if (const ShaderType::Array *array_type = type->as_array()) {
+      // Also make sure there's an ArrayStride decoration for this array.
+      Definition &array_def = _defs[type_id];
+
+      if (array_def._array_stride == 0) {
+        array_def._array_stride = array_type->get_stride_bytes();
+        it = _instructions.insert(it, spv::OpDecorate,
+          {type_id, spv::DecorationArrayStride, array_def._array_stride});
+        ++it;
+      }
+
+      uint32_t element_type_id = _type_map[array_type->get_element_type()];
+      r_annotate_struct_layout(it, element_type_id);
+    }
     return;
   }
 
