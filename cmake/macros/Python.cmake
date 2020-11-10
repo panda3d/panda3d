@@ -48,8 +48,11 @@ function(add_python_target target)
   string(REPLACE "." "/" slash_namespace "${namespace}")
 
   add_library(${target} ${MODULE_TYPE} ${sources})
-  target_link_libraries(${target} PKG::PYTHON)
-
+  if (ANDROID)
+    target_link_libraries(${target} "python${PYMAJOR}.${PYMINOR}" "ffi" "z"  "bz2" "lzma")
+  else()
+    target_link_libraries(${target} PKG::PYTHON)
+  endif()
   if(BUILD_SHARED_LIBS)
     set(_outdir "${PANDA_OUTPUT_DIR}/${slash_namespace}")
 
