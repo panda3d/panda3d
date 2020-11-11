@@ -15,11 +15,7 @@ set(P3GLES2GSG_SOURCES
 composite_sources(p3gles2gsg P3GLES2GSG_SOURCES)
 add_component_library(p3gles2gsg SYMBOL BUILDING_PANDAGLES2 ${P3GLE2SGSG_HEADERS} ${P3GLES2GSG_SOURCES})
 
-if (ANDROID)
-    target_link_libraries(p3gles2gsg p3glstuff panda PKG::GLES2)
-else()
-    target_link_libraries(p3gles2gsg p3glstuff panda PKG::GLES2)
-endif()
+target_link_libraries(p3gles2gsg p3glstuff panda PKG::GLES2)
 
 if(NOT BUILD_METALIBS)
   install(TARGETS p3gles2gsg
