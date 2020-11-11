@@ -93,7 +93,6 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
           }
         }
       }
-      _remap_uniform_locations = true;
     }
 
     // Rebind the texture and image inputs.

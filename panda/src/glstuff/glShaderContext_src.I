@@ -19,14 +19,10 @@ INLINE GLint CLP(ShaderContext)::
 get_uniform_location(int seqno) const {
   nassertr(seqno >= 0, -1);
 
-  if (_remap_uniform_locations) {
-    if ((size_t)seqno < _uniform_location_map.size()) {
-      return _uniform_location_map[(size_t)seqno];
-    } else {
-      return -1;
-    }
+  if ((size_t)seqno < _uniform_location_map.size()) {
+    return _uniform_location_map[(size_t)seqno];
   } else {
-    return (GLint)seqno;
+    return -1;
   }
 }
 
