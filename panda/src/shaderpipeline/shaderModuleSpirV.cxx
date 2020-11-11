@@ -607,75 +607,64 @@ assign_locations(Stage stage) {
     Definition &def = _defs[id];
     if (def._dtype == DT_global && !def.has_location() && !def.is_builtin()) {
       int location;
+      int num_locations;
+      const char *sc_str;
+
       if (def._storage_class == spv::StorageClassInput) {
-        int num_locations = def._type->get_num_interface_locations();
+        num_locations = def._type->get_num_interface_locations();
         if (num_locations == 0) {
           continue;
         }
 
-        if (stage == Stage::vertex && !input_locations.get_bit(0)) {
-          if (def._name == "vertex" || def._name == "p3d_Vertex" ||
-              def._name == "vtx_position") {
-            // Prefer assigning the vertex column to location 0.
-            location = 0;
-          } else if (!input_locations.get_bit(1)) {
-            location = 1;
-          } else {
-            location = input_locations.get_next_higher_different_bit(1);
-          }
+        if (stage == Stage::vertex && !input_locations.get_bit(0) &&
+            def._name != "vertex" && def._name != "p3d_Vertex" &&
+            def._name != "vtx_position") {
+          // Leave location 0 open for the vertex attribute.
+          location = input_locations.find_off_range(num_locations, 1);
         } else {
-          location = input_locations.get_lowest_off_bit();
+          location = input_locations.find_off_range(num_locations);
         }
-        input_locations.set_bit(location);
+        input_locations.set_range(location, num_locations);
 
-        if (shader_cat.is_debug()) {
-          shader_cat.debug()
-            << "Assigning " << def._name << " to input location " << location << "\n";
-        }
+        sc_str = "input";
       }
       else if (def._storage_class == spv::StorageClassOutput) {
-        int num_locations = def._type->get_num_interface_locations();
+        num_locations = def._type->get_num_interface_locations();
         if (num_locations == 0) {
           continue;
         }
 
-        location = output_locations.get_lowest_off_bit();
-        output_locations.set_bit(location);
+        location = output_locations.find_off_range(num_locations);
+        output_locations.set_range(location, num_locations);
 
-        if (shader_cat.is_debug()) {
-          shader_cat.debug()
-            << "Assigning " << def._name << " to output location " << location << "\n";
-        }
+        sc_str = "output";
       }
       else if (def._storage_class == spv::StorageClassUniformConstant) {
-        int num_locations = def._type->get_num_parameter_locations();
+        num_locations = def._type->get_num_parameter_locations();
         if (num_locations == 0) {
           continue;
         }
 
-        location = uniform_locations.get_lowest_off_bit();
-        while (num_locations > 1 && uniform_locations.has_any_of(location, num_locations)) {
-          // Not enough bits free, try the next open range.
-          int next_bit = uniform_locations.get_next_higher_different_bit(location);
-          assert(next_bit > location);
-          location = uniform_locations.get_next_higher_different_bit(next_bit);
-          assert(location >= 0);
-        }
+        location = uniform_locations.find_off_range(num_locations);
         uniform_locations.set_range(location, num_locations);
 
-        if (shader_cat.is_debug()) {
-          if (num_locations == 1) {
-            shader_cat.debug()
-              << "Assigning " << def._name << " to uniform location " << location << "\n";
-          } else {
-            shader_cat.debug()
-              << "Assigning " << def._name << " to uniform locations " << location
-              << ".." << (location + num_locations - 1) << "\n";
-          }
-        }
+        sc_str = "uniform";
       }
       else {
         continue;
+      }
+      nassertd(location >= 0) continue;
+
+      if (shader_cat.is_debug()) {
+        if (num_locations == 1) {
+          shader_cat.debug()
+            << "Assigning " << def._name << " to " << sc_str << " location "
+            << location << "\n";
+        } else {
+          shader_cat.debug()
+            << "Assigning " << def._name << " to " << sc_str << " locations "
+            << location << ".." << (location + num_locations - 1) << "\n";
+        }
       }
 
       def._location = location;

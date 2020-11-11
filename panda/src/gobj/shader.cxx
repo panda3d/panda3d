@@ -958,14 +958,8 @@ link() {
         int num_locations = var.type->get_num_parameter_locations();
         if (used_locations.has_any_of(var.get_location(), num_locations)) {
           // This location is already used.  Find another free location.
-          int location = used_locations.get_lowest_off_bit();
-          while (num_locations > 1 && used_locations.has_any_of(location, num_locations)) {
-            // This free space isn't big enough to fit all the needed locations.
-            int next_bit = used_locations.get_next_higher_different_bit(location);
-            nassertr(next_bit > location, false);
-            location = used_locations.get_next_higher_different_bit(next_bit);
-            nassertr(location > next_bit, false);
-          }
+          int location = used_locations.find_off_range(num_locations);
+          nassertr(location >= 0, false);
           used_locations.set_range(location, num_locations);
           remap[var.get_location()] = location;
           it->second._location = location;
