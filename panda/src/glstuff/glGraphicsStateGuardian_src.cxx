@@ -1786,7 +1786,7 @@ reset() {
         // extension also support GLSL 1.30, so it might not be worth adding.
         _supported_shader_caps |=
           //ShaderModule::C_integer |
-          //ShaderModule::C_texture_fetch |
+          ShaderModule::C_texture_fetch |
           //ShaderModule::C_sampler_cube_shadow |
           ShaderModule::C_round_even;
       }

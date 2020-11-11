@@ -3248,6 +3248,7 @@ attach_shader(const ShaderModule *module) {
 #else
       options.es = false;
 #endif
+      options.vertex.support_nonzero_base_instance = false;
       compiler.set_common_options(options);
 
       // At this time, SPIRV-Cross doesn't add this extension automatically.
