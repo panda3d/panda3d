@@ -73,14 +73,8 @@ PUBLISHED:
 
 protected:
   // Shader register allocation:
-
-  bool _use_generic_attr;
-  int _vcregs_used;
-  int _fcregs_used;
-  int _vtregs_used;
   int _ftregs_used;
   void reset_register_allocator();
-  const char *alloc_vreg();
   const char *alloc_freg();
 
   bool _use_shadow_filter;
