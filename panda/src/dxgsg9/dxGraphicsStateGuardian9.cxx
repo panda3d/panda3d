@@ -395,7 +395,7 @@ extract_texture_data(Texture *tex) {
  */
 ShaderContext *DXGraphicsStateGuardian9::
 prepare_shader(Shader *se) {
-  nassertr(supports_basic_shaders(), nullptr);
+  nassertr(get_supports_basic_shaders(), nullptr);
 
   PStatTimer timer(_prepare_shader_pcollector);
   return new DXShaderContext9(se, this);
