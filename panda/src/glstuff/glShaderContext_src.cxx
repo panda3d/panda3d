@@ -2363,6 +2363,24 @@ issue_parameters(int altered) {
       case Shader::SMP_cell13:
         _glgsg->_glUniform1fv(p, 1, data+13);
         continue;
+      case Shader::SMP_upper3x4:
+        _glgsg->_glUniformMatrix3x4fv(p, 1, GL_FALSE, data);
+        continue;
+      case Shader::SMP_upper4x3:
+        {
+          GLfloat data2[] = {data[0], data[1], data[2], data[4], data[5], data[6], data[8], data[9], data[10], data[12], data[13], data[14]};
+          _glgsg->_glUniformMatrix4x3fv(p, 1, GL_FALSE, data2);
+          continue;
+        }
+      case Shader::SMP_transpose3x4:
+        {
+          GLfloat data2[] = {data[0], data[4], data[8], data[12], data[1], data[5], data[9], data[13], data[2], data[6], data[10], data[14]};
+          _glgsg->_glUniformMatrix3x4fv(p, 1, GL_FALSE, data2);
+          continue;
+        }
+      case Shader::SMP_transpose4x3:
+        _glgsg->_glUniformMatrix4x3fv(p, 1, GL_TRUE, data);
+        continue;
       }
     }
   }

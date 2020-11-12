@@ -143,10 +143,11 @@ expect_float_matrix(const InternalName *name, const ::ShaderType *type, int lo, 
     num_columns = matrix->get_num_columns();
     scalar_type = matrix->get_scalar_type();
   }
-  if (scalar_type != ScalarType::ST_float || num_rows != num_columns ||
-      (int)num_rows < lo || (int)num_rows > hi) {
+  if (scalar_type != ScalarType::ST_float ||
+      (int)num_rows < lo || (int)num_rows > hi ||
+      (int)num_columns < lo || (int)num_columns > hi) {
 
-    std::string msg = "expected square floating-point matrix of ";
+    std::string msg = "expected floating-point matrix of ";
     if (lo < hi) {
       msg += "at least ";
     }
@@ -461,6 +462,10 @@ cp_add_mat_spec(ShaderMatSpec &spec) {
     case SMP_transpose: spec._piece = SMP_whole; break;
     case SMP_upper3x3: spec._piece = SMP_transpose3x3; break;
     case SMP_transpose3x3: spec._piece = SMP_upper3x3; break;
+    case SMP_upper3x4: spec._piece = SMP_transpose3x4; break;
+    case SMP_transpose3x4: spec._piece = SMP_upper3x4; break;
+    case SMP_upper4x3: spec._piece = SMP_transpose4x3; break;
+    case SMP_transpose4x3: spec._piece = SMP_upper4x3; break;
     default: break;
     }
   }
@@ -1185,8 +1190,15 @@ bind_parameter(const Parameter &param) {
         return false;
       }
 
-      if (type->as_matrix()->get_num_rows() >= 4) {
-        bind._piece = transpose ? SMP_transpose : SMP_whole;
+      const ::ShaderType::Matrix *matrix = type->as_matrix();
+      if (matrix->get_num_rows() >= 4) {
+        if (matrix->get_num_columns() >= 4) {
+          bind._piece = transpose ? SMP_transpose : SMP_whole;
+        } else {
+          bind._piece = transpose ? SMP_transpose4x3 : SMP_upper4x3;
+        }
+      } else if (matrix->get_num_columns() >= 4) {
+        bind._piece = transpose ? SMP_transpose3x4 : SMP_upper3x4;
       } else {
         bind._piece = transpose ? SMP_upper3x3 : SMP_transpose3x3;
       }
@@ -1844,16 +1856,38 @@ bind_parameter(const Parameter &param) {
     bind._id = param;
     bind._func = SMF_compose;
 
-    if (pieces[0] == "trans" || pieces[0] == "tpose") {
+    if (pieces[0] == "trans") {
       if (!expect_float_matrix(name, type, 3, 4)) {
         return false;
       }
       const ::ShaderType::Matrix *matrix = type->as_matrix();
-      if (matrix->get_num_rows() == 4) {
-        bind._piece = (pieces[0][1] == 'p') ? SMP_transpose : SMP_whole;
+      if (matrix->get_num_rows() >= 4) {
+        if (matrix->get_num_columns() >= 4) {
+          bind._piece = SMP_whole;
+        } else {
+          bind._piece = SMP_upper4x3;
+        }
+      } else if (matrix->get_num_columns() >= 4) {
+        bind._piece = SMP_upper3x4;
+      } else {
+        bind._piece = SMP_upper3x3;
       }
-      else {
-        bind._piece = (pieces[0][1] == 'p') ? SMP_transpose3x3 : SMP_upper3x3;
+    }
+    else if (pieces[0] == "tpose") {
+      if (!expect_float_matrix(name, type, 3, 4)) {
+        return false;
+      }
+      const ::ShaderType::Matrix *matrix = type->as_matrix();
+      if (matrix->get_num_rows() >= 4) {
+        if (matrix->get_num_columns() >= 4) {
+          bind._piece = SMP_transpose;
+        } else {
+          bind._piece = SMP_transpose4x3;
+        }
+      } else if (matrix->get_num_columns() >= 4) {
+        bind._piece = SMP_transpose3x4;
+      } else {
+        bind._piece = SMP_transpose3x3;
       }
     }
     else if (pieces[0] == "row3") {

@@ -758,8 +758,12 @@ issue_parameters(GSG *gsg, int altered) {
 
       switch (spec._piece) {
       case Shader::SMP_whole:
+      case Shader::SMP_upper3x4:
+      case Shader::SMP_upper4x3:
         break;
       case Shader::SMP_transpose:
+      case Shader::SMP_transpose3x4:
+      case Shader::SMP_transpose4x3:
         scratch[0] = data[0];
         scratch[1] = data[4];
         scratch[2] = data[8];

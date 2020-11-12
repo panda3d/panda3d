@@ -2286,6 +2286,7 @@ reset() {
     _supported_shader_caps = ShaderModule::C_basic_shader
                            | ShaderModule::C_vertex_texture
                            | ShaderModule::C_sampler_shadow
+                           | ShaderModule::C_matrix_non_square
                            | ShaderModule::C_integer
                            | ShaderModule::C_texture_lod;
   }

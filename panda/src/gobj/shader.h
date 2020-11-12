@@ -257,6 +257,10 @@ public:
     SMP_cell15,
     SMP_cell14,
     SMP_cell13,
+    SMP_upper3x4,
+    SMP_upper4x3,
+    SMP_transpose3x4,
+    SMP_transpose4x3,
   };
 
   enum ShaderStateDep {

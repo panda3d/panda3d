@@ -1988,6 +1988,13 @@ reset() {
     _glVertexAttribPointer = (PFNGLVERTEXATTRIBPOINTERPROC)
        get_extension_func("glVertexAttribPointer");
 
+    if (is_at_least_gl_version(2, 1)) {
+      _glUniformMatrix3x4fv = (PFNGLUNIFORMMATRIX3X4FVPROC)
+         get_extension_func("glUniformMatrix3x4fv");
+      _glUniformMatrix4x3fv = (PFNGLUNIFORMMATRIX4X3FVPROC)
+         get_extension_func("glUniformMatrix4x3fv");
+    }
+
     if (is_at_least_gl_version(3, 0)) {
       _glBindFragDataLocation = (PFNGLBINDFRAGDATALOCATIONPROC)
          get_extension_func("glBindFragDataLocation");
@@ -2074,6 +2081,23 @@ reset() {
   _glVertexAttrib4dv = null_glVertexAttrib4dv;
   _glVertexAttribPointer = glVertexAttribPointer;
   _glVertexAttribLPointer = nullptr;
+
+  if (is_at_least_gles_version(3, 0)) {
+    _glUniformMatrix3x4fv = (PFNGLUNIFORMMATRIX3X4FVPROC)
+       get_extension_func("glUniformMatrix3x4fv");
+    _glUniformMatrix4x3fv = (PFNGLUNIFORMMATRIX4X3FVPROC)
+       get_extension_func("glUniformMatrix4x3fv");
+  }
+  else if (has_extension("GL_NV_non_square_matrices")) {
+    _glUniformMatrix3x4fv = (PFNGLUNIFORMMATRIX3X4FVPROC)
+       get_extension_func("glUniformMatrix3x4fvNV");
+    _glUniformMatrix4x3fv = (PFNGLUNIFORMMATRIX4X3FVPROC)
+       get_extension_func("glUniformMatrix4x3fvNV");
+  }
+  else {
+    _glUniformMatrix3x4fv = nullptr;
+    _glUniformMatrix4x3fv = nullptr;
+  }
 
   if (is_at_least_gles_version(3, 0)) {
     _glVertexAttribIPointer = (PFNGLVERTEXATTRIBIPOINTERPROC)
