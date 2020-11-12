@@ -382,6 +382,7 @@ public:
     int               _dep = SSD_NONE;
     int               _index = 0;
     ShaderMatPiece    _piece;
+    ScalarType        _scalar_type = ScalarType::ST_float;
   };
 
   struct ShaderTexSpec {

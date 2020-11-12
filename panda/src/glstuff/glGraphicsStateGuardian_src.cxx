@@ -187,11 +187,20 @@ static const string default_vshader_fp64 =
   "in dvec2 p3d_MultiTexCoord0;\n"
   "out vec2 texcoord;\n"
   "out vec4 color;\n"
-  "uniform mat4 p3d_ModelViewMatrix;\n"
+#ifdef STDFLOAT_DOUBLE
+  "uniform dmat3x4 p3d_ModelViewMatrixTranspose;\n"
+  "uniform dmat4 p3d_ProjectionMatrix;\n"
+#else
+  "uniform mat3x4 p3d_ModelViewMatrixTranspose;\n"
   "uniform mat4 p3d_ProjectionMatrix;\n"
+#endif
   "uniform vec4 p3d_ColorScale;\n"
   "void main(void) {\n" // Apply proj & modelview in two steps, more precise
-  "  gl_Position = vec4(dmat4(p3d_ProjectionMatrix) * (dmat4(p3d_ModelViewMatrix) * dvec4(p3d_Vertex, 1)));\n"
+#ifdef STDFLOAT_DOUBLE
+  "  gl_Position = vec4(p3d_ProjectionMatrix * dvec4(dvec4(p3d_Vertex, 1) * p3d_ModelViewMatrixTranspose, 1));\n"
+#else
+  "  gl_Position = vec4(dmat4(p3d_ProjectionMatrix) * dvec4(dvec4(p3d_Vertex, 1) * dmat3x4(p3d_ModelViewMatrixTranspose), 1));\n"
+#endif
   "  texcoord = vec2(p3d_MultiTexCoord0);\n"
   "  color = p3d_Color * p3d_ColorScale;\n"
   "}\n";
@@ -2027,6 +2036,28 @@ reset() {
       _glBindFragDataLocation = nullptr;
       _glVertexAttribIPointer = nullptr;
     }
+
+    if (is_at_least_gl_version(4, 0)) {
+      _glUniform4d = (PFNGLUNIFORM4DPROC)
+         get_extension_func("glUniform4d");
+      _glUniform1dv = (PFNGLUNIFORM1DVPROC)
+         get_extension_func("glUniform1dv");
+      _glUniform2dv = (PFNGLUNIFORM2DVPROC)
+         get_extension_func("glUniform2dv");
+      _glUniform3dv = (PFNGLUNIFORM3DVPROC)
+         get_extension_func("glUniform3dv");
+      _glUniform4dv = (PFNGLUNIFORM4DVPROC)
+         get_extension_func("glUniform4dv");
+      _glUniformMatrix3dv = (PFNGLUNIFORMMATRIX3DVPROC)
+         get_extension_func("glUniformMatrix3dv");
+      _glUniformMatrix4dv = (PFNGLUNIFORMMATRIX4DVPROC)
+         get_extension_func("glUniformMatrix4dv");
+      _glUniformMatrix3x4dv = (PFNGLUNIFORMMATRIX3X4DVPROC)
+         get_extension_func("glUniformMatrix3x4dv");
+      _glUniformMatrix4x3dv = (PFNGLUNIFORMMATRIX4X3DVPROC)
+         get_extension_func("glUniformMatrix4x3dv");
+    }
+
     if (is_at_least_gl_version(4, 1) ||
         has_extension("GL_ARB_vertex_attrib_64bit")) {
       _glVertexAttribLPointer = (PFNGLVERTEXATTRIBLPOINTERPROC)

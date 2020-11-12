@@ -143,7 +143,7 @@ expect_float_matrix(const InternalName *name, const ::ShaderType *type, int lo, 
     num_columns = matrix->get_num_columns();
     scalar_type = matrix->get_scalar_type();
   }
-  if (scalar_type != ScalarType::ST_float ||
+  if ((scalar_type != ScalarType::ST_float && scalar_type != ScalarType::ST_double) ||
       (int)num_rows < lo || (int)num_rows > hi ||
       (int)num_columns < lo || (int)num_columns > hi) {
 
@@ -1202,6 +1202,7 @@ bind_parameter(const Parameter &param) {
       } else {
         bind._piece = transpose ? SMP_upper3x3 : SMP_transpose3x3;
       }
+      bind._scalar_type = matrix->get_scalar_type();
 
       if (matrix_name == "ModelViewProjectionMatrix") {
         if (inverse) {
@@ -1650,6 +1651,7 @@ bind_parameter(const Parameter &param) {
               return false;
             }
             bind._piece = SMP_whole;
+            bind._scalar_type = member.type->as_matrix()->get_scalar_type();
           }
           else if (member.name == "shadowMatrix") {
             // Only supported for backward compatibility: includes the model
@@ -1664,6 +1666,7 @@ bind_parameter(const Parameter &param) {
             bind._arg[0] = nullptr;
             bind._part[1] = SMO_light_source_i_attrib;
             bind._arg[1] = InternalName::make("shadowViewMatrix");
+            bind._scalar_type = member.type->as_matrix()->get_scalar_type();
 
             static bool warned = false;
             if (!warned) {
@@ -1695,6 +1698,7 @@ bind_parameter(const Parameter &param) {
             bind._arg[0] = InternalName::make(member.name);
             bind._part[1] = SMO_identity;
             bind._arg[1] = nullptr;
+            bind._scalar_type = vector->get_scalar_type();
           }
           for (bind._index = 0; bind._index < (int)array->get_num_elements(); ++bind._index) {
             cp_add_mat_spec(bind);
@@ -1817,6 +1821,7 @@ bind_parameter(const Parameter &param) {
       bind._part[0] = SMO_view_to_apiview;
       bind._arg[0] = nullptr;
       bind._index = atoi(pieces[2].c_str());
+      bind._scalar_type = type->as_matrix()->get_scalar_type();
 
       cp_add_mat_spec(bind);
       return true;
@@ -1872,6 +1877,7 @@ bind_parameter(const Parameter &param) {
       } else {
         bind._piece = SMP_upper3x3;
       }
+      bind._scalar_type = matrix->get_scalar_type();
     }
     else if (pieces[0] == "tpose") {
       if (!expect_float_matrix(name, type, 3, 4)) {
@@ -1889,6 +1895,7 @@ bind_parameter(const Parameter &param) {
       } else {
         bind._piece = SMP_transpose3x3;
       }
+      bind._scalar_type = matrix->get_scalar_type();
     }
     else if (pieces[0] == "row3") {
       // We can exceptionally support row3 to have any number of components.
@@ -1908,6 +1915,7 @@ bind_parameter(const Parameter &param) {
       else {
         bind._piece = SMP_row3;
       }
+      bind._scalar_type = vector->get_scalar_type();
     }
     else {
       if (!expect_float_vector(name, type, 4, 4)) {
@@ -1922,6 +1930,7 @@ bind_parameter(const Parameter &param) {
       else {
         nassertr(false, false);
       }
+      bind._scalar_type = type->as_vector()->get_scalar_type();
     }
 
     int next = 1;
@@ -1981,6 +1990,7 @@ bind_parameter(const Parameter &param) {
         bind._arg[0] = nullptr;
         bind._part[1] = SMO_identity;
         bind._arg[1] = nullptr;
+        bind._scalar_type = type->as_matrix()->get_scalar_type();
       }
       else if (pieces[1] == "color") {
         if (!expect_float_vector(name, type, 3, 4)) {
@@ -2048,6 +2058,7 @@ bind_parameter(const Parameter &param) {
         bind._part[1] = SMO_identity;
         bind._arg[1] = nullptr;
         bind._index = atoi(pieces[1].c_str() + 5);
+        bind._scalar_type = type->as_matrix()->get_scalar_type();
       }
       else if (pieces[1].compare(0, 5, "lspec") == 0) {
         if (!expect_float_vector(name, type, 3, 4)) {
@@ -2131,6 +2142,7 @@ bind_parameter(const Parameter &param) {
         bind._part[0] = SMO_slight_x;
       }
       bind._arg[0] = InternalName::make(pieces[next]);
+      bind._scalar_type = type->as_matrix()->get_scalar_type();
       next += 1;
       if (pieces[next] != "to" && pieces[next] != "rel") {
         return report_parameter_error(name, type, "expected 'to' or 'rel'");
@@ -2160,6 +2172,7 @@ bind_parameter(const Parameter &param) {
       bind._part[1] = SMO_identity;
       bind._arg[1] = nullptr;
       bind._index = atoi(pieces[1].c_str());
+      bind._scalar_type = type->as_matrix()->get_scalar_type();
 
       cp_add_mat_spec(bind);
       return true;
@@ -2408,6 +2421,7 @@ bind_parameter(const Parameter &param) {
       bind._arg[0] = name;
       bind._part[1] = SMO_identity;
       bind._arg[1] = nullptr;
+      bind._scalar_type = matrix->get_scalar_type();
       cp_add_mat_spec(bind);
       return true;
     }
@@ -2420,6 +2434,7 @@ bind_parameter(const Parameter &param) {
       bind._arg[0] = name;
       bind._part[1] = SMO_identity;
       bind._arg[1] = nullptr;
+      bind._scalar_type = matrix->get_scalar_type();
       cp_add_mat_spec(bind);
       return true;
     }
@@ -2440,7 +2455,7 @@ bind_parameter(const Parameter &param) {
       uint32_t dim[3];
       if (_language == SL_GLSL &&
           member.type->as_scalar_type(scalar_type, dim[0], dim[1], dim[2]) &&
-          scalar_type == ScalarType::ST_float &&
+          (scalar_type == ScalarType::ST_float || scalar_type == ScalarType::ST_double) &&
           dim[0] == 1) {
         // It might be something like an attribute of a shader input, like a
         // light parameter.  It might also just be a custom struct parameter.
@@ -2450,6 +2465,7 @@ bind_parameter(const Parameter &param) {
         bind._id._name = fqname;
         bind._id._type = member.type;
         bind._id._location = location;
+        bind._scalar_type = scalar_type;
         if (member.name == "shadowMatrix" && dim[1] == 4 && dim[2] == 4) {
           // Special exception for shadowMatrix, which is deprecated because it
           // includes the model transformation.  It is far more efficient to do

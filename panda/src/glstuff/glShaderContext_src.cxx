@@ -2283,11 +2283,61 @@ issue_parameters(int altered) {
         break;
 
       case ShaderType::ST_double:
-        GLCAT.error() << "Passing double-precision shader inputs to shaders is not currently supported\n";
+#ifdef OPENGLES
+          GLCAT.error()
+            << "Passing double-precision shader inputs to shaders is not supported in OpenGL ES.\n";
 
-        // Deactivate it to make sure the user doesn't get flooded with this
-        // error.
-        set_uniform_location(spec._id._location, -1);
+          // Deactivate it to make sure the user doesn't get flooded with this
+          // error.
+          set_uniform_location(spec._id._location, -1);
+#else
+        {
+          double *data = nullptr;
+
+          switch (ptr_data._type) {
+          case ShaderType::ST_int:
+            // Convert int data to double data.
+            data = (double*) alloca(sizeof(double) * array_size * dim);
+            for (int i = 0; i < (array_size * dim); ++i) {
+              data[i] = (double)(((int*)ptr_data._ptr)[i]);
+            }
+            break;
+
+          case ShaderType::ST_uint:
+            // Convert unsigned int data to double data.
+            data = (double*) alloca(sizeof(double) * array_size * dim);
+            for (int i = 0; i < (array_size * dim); ++i) {
+              data[i] = (double)(((unsigned int*)ptr_data._ptr)[i]);
+            }
+            break;
+
+          case ShaderType::ST_double:
+            data = (double*)ptr_data._ptr;
+            break;
+
+          case ShaderType::ST_float:
+            // Upgrade float data to double data.
+            data = (double*) alloca(sizeof(double) * array_size * dim);
+            for (int i = 0; i < (array_size * dim); ++i) {
+              data[i] = (double)(((float*)ptr_data._ptr)[i]);
+            }
+            break;
+
+          default:
+            nassertd(false) continue;
+          }
+
+          switch (dim) {
+          case 1: _glgsg->_glUniform1dv(p, array_size, data); continue;
+          case 2: _glgsg->_glUniform2dv(p, array_size, data); continue;
+          case 3: _glgsg->_glUniform3dv(p, array_size, data); continue;
+          case 4: _glgsg->_glUniform4dv(p, array_size, data); continue;
+          case 9: _glgsg->_glUniformMatrix3dv(p, array_size, GL_FALSE, data); continue;
+          case 16: _glgsg->_glUniformMatrix4dv(p, array_size, GL_FALSE, data); continue;
+          }
+          nassertd(false) continue;
+        }
+#endif
         break;
 
       default:
@@ -2306,82 +2356,160 @@ issue_parameters(int altered) {
 
       const LMatrix4 *val = _glgsg->fetch_specified_value(spec, _mat_part_cache, altered);
       if (!val) continue;
-#ifndef STDFLOAT_DOUBLE
-      // In this case, the data is already single-precision.
-      const PN_float32 *data = val->get_data();
-#else
-      // In this case, we have to convert it.
-      LMatrix4f valf = LCAST(PN_float32, *val);
-      const PN_float32 *data = valf.get_data();
-#endif
 
       GLint p = get_uniform_location(spec._id._location);
       if (p < 0) {
         continue;
       }
 
-      switch (spec._piece) {
-      case Shader::SMP_whole: _glgsg->_glUniformMatrix4fv(p, 1, GL_FALSE, data); continue;
-      case Shader::SMP_transpose: _glgsg->_glUniformMatrix4fv(p, 1, GL_TRUE, data); continue;
-      case Shader::SMP_col0: _glgsg->_glUniform4f(p, data[0], data[4], data[ 8], data[12]); continue;
-      case Shader::SMP_col1: _glgsg->_glUniform4f(p, data[1], data[5], data[ 9], data[13]); continue;
-      case Shader::SMP_col2: _glgsg->_glUniform4f(p, data[2], data[6], data[10], data[14]); continue;
-      case Shader::SMP_col3: _glgsg->_glUniform4f(p, data[3], data[7], data[11], data[15]); continue;
-      case Shader::SMP_row0: _glgsg->_glUniform4fv(p, 1, data+ 0); continue;
-      case Shader::SMP_row1: _glgsg->_glUniform4fv(p, 1, data+ 4); continue;
-      case Shader::SMP_row2: _glgsg->_glUniform4fv(p, 1, data+ 8); continue;
-      case Shader::SMP_row3: _glgsg->_glUniform4fv(p, 1, data+12); continue;
-      case Shader::SMP_row3x1: _glgsg->_glUniform1fv(p, 1, data+12); continue;
-      case Shader::SMP_row3x2: _glgsg->_glUniform2fv(p, 1, data+12); continue;
-      case Shader::SMP_row3x3: _glgsg->_glUniform3fv(p, 1, data+12); continue;
-      case Shader::SMP_upper3x3:
-        {
+      if (spec._scalar_type == ShaderType::ST_float) {
 #ifndef STDFLOAT_DOUBLE
-          LMatrix3f upper3 = val->get_upper_3();
+        // In this case, the data is already single-precision.
+        const PN_float32 *data = val->get_data();
 #else
-          LMatrix3f upper3 = valf.get_upper_3();
+        // In this case, we have to convert it.
+        LMatrix4f valf = LCAST(PN_float32, *val);
+        const PN_float32 *data = valf.get_data();
 #endif
-          _glgsg->_glUniformMatrix3fv(p, 1, false, upper3.get_data());
-          continue;
-        }
-      case Shader::SMP_transpose3x3:
-        {
+
+        switch (spec._piece) {
+        case Shader::SMP_whole: _glgsg->_glUniformMatrix4fv(p, 1, GL_FALSE, data); continue;
+        case Shader::SMP_transpose: _glgsg->_glUniformMatrix4fv(p, 1, GL_TRUE, data); continue;
+        case Shader::SMP_col0: _glgsg->_glUniform4f(p, data[0], data[4], data[ 8], data[12]); continue;
+        case Shader::SMP_col1: _glgsg->_glUniform4f(p, data[1], data[5], data[ 9], data[13]); continue;
+        case Shader::SMP_col2: _glgsg->_glUniform4f(p, data[2], data[6], data[10], data[14]); continue;
+        case Shader::SMP_col3: _glgsg->_glUniform4f(p, data[3], data[7], data[11], data[15]); continue;
+        case Shader::SMP_row0: _glgsg->_glUniform4fv(p, 1, data+ 0); continue;
+        case Shader::SMP_row1: _glgsg->_glUniform4fv(p, 1, data+ 4); continue;
+        case Shader::SMP_row2: _glgsg->_glUniform4fv(p, 1, data+ 8); continue;
+        case Shader::SMP_row3: _glgsg->_glUniform4fv(p, 1, data+12); continue;
+        case Shader::SMP_row3x1: _glgsg->_glUniform1fv(p, 1, data+12); continue;
+        case Shader::SMP_row3x2: _glgsg->_glUniform2fv(p, 1, data+12); continue;
+        case Shader::SMP_row3x3: _glgsg->_glUniform3fv(p, 1, data+12); continue;
+        case Shader::SMP_upper3x3:
+          {
 #ifndef STDFLOAT_DOUBLE
-          LMatrix3f upper3 = val->get_upper_3();
+            LMatrix3f upper3 = val->get_upper_3();
 #else
-          LMatrix3f upper3 = valf.get_upper_3();
+            LMatrix3f upper3 = valf.get_upper_3();
 #endif
-          _glgsg->_glUniformMatrix3fv(p, 1, true, upper3.get_data());
+            _glgsg->_glUniformMatrix3fv(p, 1, false, upper3.get_data());
+            continue;
+          }
+        case Shader::SMP_transpose3x3:
+          {
+#ifndef STDFLOAT_DOUBLE
+            LMatrix3f upper3 = val->get_upper_3();
+#else
+            LMatrix3f upper3 = valf.get_upper_3();
+#endif
+            _glgsg->_glUniformMatrix3fv(p, 1, true, upper3.get_data());
+            continue;
+          }
+        case Shader::SMP_cell15:
+          _glgsg->_glUniform1fv(p, 1, data+15);
+          continue;
+        case Shader::SMP_cell14:
+          _glgsg->_glUniform1fv(p, 1, data+14);
+          continue;
+        case Shader::SMP_cell13:
+          _glgsg->_glUniform1fv(p, 1, data+13);
+          continue;
+        case Shader::SMP_upper3x4:
+          _glgsg->_glUniformMatrix3x4fv(p, 1, GL_FALSE, data);
+          continue;
+        case Shader::SMP_upper4x3:
+          {
+            GLfloat data2[] = {data[0], data[1], data[2], data[4], data[5], data[6], data[8], data[9], data[10], data[12], data[13], data[14]};
+            _glgsg->_glUniformMatrix4x3fv(p, 1, GL_FALSE, data2);
+            continue;
+          }
+        case Shader::SMP_transpose3x4:
+          {
+            GLfloat data2[] = {data[0], data[4], data[8], data[12], data[1], data[5], data[9], data[13], data[2], data[6], data[10], data[14]};
+            _glgsg->_glUniformMatrix3x4fv(p, 1, GL_FALSE, data2);
+            continue;
+          }
+        case Shader::SMP_transpose4x3:
+          _glgsg->_glUniformMatrix4x3fv(p, 1, GL_TRUE, data);
           continue;
         }
-      case Shader::SMP_cell15:
-        _glgsg->_glUniform1fv(p, 1, data+15);
-        continue;
-      case Shader::SMP_cell14:
-        _glgsg->_glUniform1fv(p, 1, data+14);
-        continue;
-      case Shader::SMP_cell13:
-        _glgsg->_glUniform1fv(p, 1, data+13);
-        continue;
-      case Shader::SMP_upper3x4:
-        _glgsg->_glUniformMatrix3x4fv(p, 1, GL_FALSE, data);
-        continue;
-      case Shader::SMP_upper4x3:
-        {
-          GLfloat data2[] = {data[0], data[1], data[2], data[4], data[5], data[6], data[8], data[9], data[10], data[12], data[13], data[14]};
-          _glgsg->_glUniformMatrix4x3fv(p, 1, GL_FALSE, data2);
-          continue;
-        }
-      case Shader::SMP_transpose3x4:
-        {
-          GLfloat data2[] = {data[0], data[4], data[8], data[12], data[1], data[5], data[9], data[13], data[2], data[6], data[10], data[14]};
-          _glgsg->_glUniformMatrix3x4fv(p, 1, GL_FALSE, data2);
-          continue;
-        }
-      case Shader::SMP_transpose4x3:
-        _glgsg->_glUniformMatrix4x3fv(p, 1, GL_TRUE, data);
-        continue;
       }
+#ifndef OPENGLES
+      else {
+#ifdef STDFLOAT_DOUBLE
+        // In this case, the data is already double-precision.
+        const double *data = val->get_data();
+#else
+        // In this case, we have to convert it.
+        LMatrix4d vald = LCAST(double, *val);
+        const double *data = vald.get_data();
+#endif
+
+        switch (spec._piece) {
+        case Shader::SMP_whole: _glgsg->_glUniformMatrix4dv(p, 1, GL_FALSE, data); continue;
+        case Shader::SMP_transpose: _glgsg->_glUniformMatrix4dv(p, 1, GL_TRUE, data); continue;
+        case Shader::SMP_col0: _glgsg->_glUniform4f(p, data[0], data[4], data[ 8], data[12]); continue;
+        case Shader::SMP_col1: _glgsg->_glUniform4f(p, data[1], data[5], data[ 9], data[13]); continue;
+        case Shader::SMP_col2: _glgsg->_glUniform4f(p, data[2], data[6], data[10], data[14]); continue;
+        case Shader::SMP_col3: _glgsg->_glUniform4f(p, data[3], data[7], data[11], data[15]); continue;
+        case Shader::SMP_row0: _glgsg->_glUniform4dv(p, 1, data+ 0); continue;
+        case Shader::SMP_row1: _glgsg->_glUniform4dv(p, 1, data+ 4); continue;
+        case Shader::SMP_row2: _glgsg->_glUniform4dv(p, 1, data+ 8); continue;
+        case Shader::SMP_row3: _glgsg->_glUniform4dv(p, 1, data+12); continue;
+        case Shader::SMP_row3x1: _glgsg->_glUniform1dv(p, 1, data+12); continue;
+        case Shader::SMP_row3x2: _glgsg->_glUniform2dv(p, 1, data+12); continue;
+        case Shader::SMP_row3x3: _glgsg->_glUniform3dv(p, 1, data+12); continue;
+        case Shader::SMP_upper3x3:
+          {
+#ifdef STDFLOAT_DOUBLE
+            LMatrix3d upper3 = val->get_upper_3();
+#else
+            LMatrix3d upper3 = vald.get_upper_3();
+#endif
+            _glgsg->_glUniformMatrix3dv(p, 1, false, upper3.get_data());
+            continue;
+          }
+        case Shader::SMP_transpose3x3:
+          {
+#ifdef STDFLOAT_DOUBLE
+            LMatrix3d upper3 = val->get_upper_3();
+#else
+            LMatrix3d upper3 = vald.get_upper_3();
+#endif
+            _glgsg->_glUniformMatrix3dv(p, 1, true, upper3.get_data());
+            continue;
+          }
+        case Shader::SMP_cell15:
+          _glgsg->_glUniform1dv(p, 1, data+15);
+          continue;
+        case Shader::SMP_cell14:
+          _glgsg->_glUniform1dv(p, 1, data+14);
+          continue;
+        case Shader::SMP_cell13:
+          _glgsg->_glUniform1dv(p, 1, data+13);
+          continue;
+        case Shader::SMP_upper3x4:
+          _glgsg->_glUniformMatrix3x4dv(p, 1, GL_FALSE, data);
+          continue;
+        case Shader::SMP_upper4x3:
+          {
+            GLdouble data2[] = {data[0], data[1], data[2], data[4], data[5], data[6], data[8], data[9], data[10], data[12], data[13], data[14]};
+            _glgsg->_glUniformMatrix4x3dv(p, 1, GL_FALSE, data2);
+            continue;
+          }
+        case Shader::SMP_transpose3x4:
+          {
+            GLdouble data2[] = {data[0], data[4], data[8], data[12], data[1], data[5], data[9], data[13], data[2], data[6], data[10], data[14]};
+            _glgsg->_glUniformMatrix3x4dv(p, 1, GL_FALSE, data2);
+            continue;
+          }
+        case Shader::SMP_transpose4x3:
+          _glgsg->_glUniformMatrix4x3dv(p, 1, GL_TRUE, data);
+          continue;
+        }
+      }
+#endif  // OPENGLES
     }
   }
 
