@@ -164,6 +164,8 @@ public:
   virtual bool as_scalar_type(ScalarType &type, uint32_t &num_elements,
                               uint32_t &num_rows, uint32_t &num_columns) const override;
 
+  virtual int get_num_interface_locations() const override;
+
   const Vector *as_vector() const override { return this; }
 
   virtual void output(std::ostream &out) const override;

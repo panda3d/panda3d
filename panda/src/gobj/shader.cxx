@@ -1013,9 +1013,13 @@ bind_vertex_input(const InternalName *name, const ::ShaderType *type, int locati
   bind._name = nullptr;
   bind._append_uv = -1;
 
-  //FIXME: other types, matrices
-  bind._elements = 1;
-  bind._scalar_type = ScalarType::ST_float;
+  //FIXME: matrices
+  uint32_t dim[3];
+  if (!type->as_scalar_type(bind._scalar_type, dim[0], dim[1], dim[2])) {
+    shader_cat.error()
+      << "Unrecognized type " << *type << " for vertex input " << *name << "\n";
+  }
+  bind._elements = dim[0];
 
   if (shader_cat.is_debug()) {
     shader_cat.debug()
