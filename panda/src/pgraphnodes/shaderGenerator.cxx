@@ -751,7 +751,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     text << "\t out float4 l_color : COLOR0,\n";
   }
   if (need_world_position || need_world_normal) {
-    text << "\t uniform float4x4 trans_model_to_world,\n";
+    text << "\t uniform float3x4 trans_model_to_world,\n";
   }
   if (need_world_position) {
     world_position_freg = alloc_freg();
@@ -762,14 +762,14 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     text << "\t out float4 l_world_normal : " << world_normal_freg << ",\n";
   }
   if (need_eye_position) {
-    text << "\t uniform float4x4 trans_model_to_view,\n";
+    text << "\t uniform float3x4 trans_model_to_view,\n";
     eye_position_freg = alloc_freg();
     text << "\t out float4 l_eye_position : " << eye_position_freg << ",\n";
   } else if (need_tangents) {
-    text << "\t uniform float4x4 trans_model_to_view,\n";
+    text << "\t uniform float3x4 trans_model_to_view,\n";
   }
   if (need_eye_normal) {
-    text << "\t uniform float4x4 tpose_view_to_model,\n";
+    text << "\t uniform float3x3 tpose_view_to_model,\n";
     if (!pack_eye_normal)  {
       eye_normal_freg = alloc_freg();
       text << "\t out float3 l_eye_normal : " << eye_normal_freg << ",\n";
@@ -851,13 +851,13 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     text << "\t l_hpos = l_position;\n";
   }
   if (need_world_position) {
-    text << "\t l_world_position = mul(trans_model_to_world, vtx_position);\n";
+    text << "\t l_world_position = float4(mul(trans_model_to_world, vtx_position), 1);\n";
   }
   if (need_world_normal) {
-    text << "\t l_world_normal = mul(trans_model_to_world, float4(vtx_normal, 0));\n";
+    text << "\t l_world_normal = float4(mul(trans_model_to_world, float4(vtx_normal, 0)), 0);\n";
   }
   if (need_eye_position) {
-    text << "\t l_eye_position = mul(trans_model_to_view, vtx_position);\n";
+    text << "\t l_eye_position = float4(mul(trans_model_to_view, vtx_position), 1);\n";
   }
   pmap<const InternalName *, const char *>::const_iterator it;
   for (it = texcoord_fregs.begin(); it != texcoord_fregs.end(); ++it) {
@@ -891,12 +891,12 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   if (need_eye_normal) {
     if (pack_eye_normal) {
       // We can pack the normal into the w channels of these unused varyings.
-      text << "\t float3 eye_normal = normalize(mul((float3x3)tpose_view_to_model, vtx_normal));\n";
+      text << "\t float3 eye_normal = normalize(mul(tpose_view_to_model, vtx_normal));\n";
       text << "\t l_tangent.w = eye_normal.x;\n";
       text << "\t l_binormal.w = eye_normal.y;\n";
       text << "\t l_eye_position.w = eye_normal.z;\n";
     } else {
-      text << "\t l_eye_normal = normalize(mul((float3x3)tpose_view_to_model, vtx_normal));\n";
+      text << "\t l_eye_normal = normalize(mul(tpose_view_to_model, vtx_normal));\n";
     }
   }
   text << "}\n\n";
