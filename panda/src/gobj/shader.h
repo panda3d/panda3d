@@ -472,7 +472,13 @@ public:
   pvector<ShaderMatPart> _mat_parts;
   int _mat_deps = 0;
   int _mat_cache_size = 0;
+
+  // These are here because we don't support passing these via ShaderMatSpec yet
   int _frame_number_loc = -1;
+  int _transform_table_loc = -1;
+  uint32_t _transform_table_size = 0;
+  int _slider_table_loc = -1;
+  uint32_t _slider_table_size = 0;
 
   bool _error_flag;
   ShaderFile _text;

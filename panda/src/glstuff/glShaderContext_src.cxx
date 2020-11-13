@@ -214,16 +214,13 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
 
     // Temporary hacks until array inputs are integrated into the rest of
     // the shader input system.
-    //_transform_table_index = _shader->_transform_table_index;
-    //_transform_table_size = _shader->_transform_table_size;
-    //_slider_table_index = _shader->_slider_table_index;
-    //_slider_table_size = _shader->_slider_table_size;
-
-    if (_transform_table_size > 0 && _transform_table_index == -1) {
-      _transform_table_index = _glgsg->_glGetUniformLocation(_glsl_program, "p3d_TransformTable");
+    if (_shader->_transform_table_loc >= 0) {
+      _transform_table_index = get_uniform_location(_shader->_transform_table_loc);
+      _transform_table_size = _shader->_transform_table_size;
     }
-    if (_slider_table_size > 0 && _slider_table_index == -1) {
-      _slider_table_index = _glgsg->_glGetUniformLocation(_glsl_program, "p3d_SliderTable");
+    if (_shader->_slider_table_loc >= 0) {
+      _slider_table_index = get_uniform_location(_shader->_slider_table_loc);
+      _slider_table_size = _shader->_slider_table_size;
     }
   } else {
     _remap_uniform_locations = false;
@@ -2544,7 +2541,8 @@ update_transform_table(const TransformTable *table) {
   }
 
   _glgsg->_glUniformMatrix4fv(_transform_table_index, _transform_table_size,
-                              GL_FALSE, (float *)matrices);
+                              (_shader->get_language() == Shader::SL_Cg),
+                              (float *)matrices);
 }
 
 /**

@@ -1709,6 +1709,36 @@ bind_parameter(const Parameter &param) {
 
       return true;
     }
+    if (pieces[1] == "TransformTable") {
+      const ::ShaderType *element_type;
+      uint32_t num_elements;
+      type->unwrap_array(element_type, num_elements);
+
+      const ::ShaderType::Matrix *matrix = element_type->as_matrix();
+      if (matrix == nullptr ||
+          matrix->get_num_rows() != 4 ||
+          matrix->get_num_columns() != 4 ||
+          matrix->get_scalar_type() != ScalarType::ST_float) {
+        return report_parameter_error(name, type, "expected mat4[]");
+      }
+
+      _transform_table_loc = param._location;
+      _transform_table_size = num_elements;
+      return true;
+    }
+    if (pieces[1] == "SliderTable") {
+      const ::ShaderType *element_type;
+      uint32_t num_elements;
+      type->unwrap_array(element_type, num_elements);
+
+      if (element_type != ::ShaderType::float_type) {
+        return report_parameter_error(name, type, "expected float");
+      }
+
+      _slider_table_loc = param._location;
+      _slider_table_size = num_elements;
+      return true;
+    }
 
     return report_parameter_error(name, type, "unrecognized parameter name");
   }
@@ -2377,7 +2407,24 @@ bind_parameter(const Parameter &param) {
     }
 
     if (pieces[0] == "tbl") {
-      // Handled elsewhere.
+      const ::ShaderType *element_type;
+      uint32_t num_elements;
+      if (!expect_num_words(name, type, 2) ||
+          !type->unwrap_array(element_type, num_elements)) {
+        return report_parameter_error(name, type, "expected array");
+      }
+
+      if (pieces[1] == "transforms") {
+        _transform_table_loc = param._location;
+        _transform_table_size = num_elements;
+      }
+      else if (pieces[1] == "sliders") {
+        _slider_table_loc = param._location;
+        _slider_table_size = num_elements;
+      }
+      else {
+        return report_parameter_error(name, type, "unrecognized parameter name");
+      }
       return true;
     }
 
