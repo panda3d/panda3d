@@ -99,6 +99,9 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words) :
     writer.flatten_struct(type_id);
   }
 
+  // Remove unused variables before assigning locations.
+  writer.remove_unused_variables();
+
   // Add in location decorations for any inputs that are missing it.
   writer.assign_locations(stage);
 
@@ -705,6 +708,72 @@ bind_descriptor_set(uint32_t set, const vector_int &locations) {
         }
       }
     }
+  }
+}
+
+/**
+ * Removes unused variables.
+ */
+void ShaderModuleSpirV::InstructionWriter::
+remove_unused_variables() {
+  pset<uint32_t> delete_ids;
+
+  for (uint32_t id = 0; id < _instructions.get_id_bound(); ++id) {
+    Definition &def = modify_definition(id);
+
+    if ((def._dtype == DT_global || def._dtype == DT_local) && !def.is_used()) {
+      delete_ids.insert(id);
+      if (shader_cat.is_debug() && !def._name.empty()) {
+        shader_cat.debug()
+          << "Removing unused variable " << def._name << " (" << id << ")\n";
+      }
+      def.clear();
+    }
+  }
+
+  if (delete_ids.empty()) {
+    return;
+  }
+
+  InstructionIterator it = _instructions.begin();
+  while (it != _instructions.end()) {
+    Instruction op = *it;
+
+    switch (op.opcode) {
+    case spv::OpName:
+    case spv::OpMemberName:
+    case spv::OpDecorate:
+    case spv::OpMemberDecorate:
+      // Delete decorations on the variable.
+      if (op.nargs >= 1 && delete_ids.count(op.args[0])) {
+        it = _instructions.erase(it);
+        continue;
+      }
+      break;
+
+    case spv::OpVariable:
+      if (op.nargs >= 2 && delete_ids.count(op.args[1])) {
+        it = _instructions.erase(it);
+      }
+      break;
+
+    case spv::OpAccessChain:
+    case spv::OpInBoundsAccessChain:
+    case spv::OpPtrAccessChain:
+    case spv::OpCopyObject:
+    case spv::OpBitcast:
+      // Delete these uses of unused variable
+      if (delete_ids.count(op.args[2])) {
+        delete_ids.insert(op.args[1]);
+        it = _instructions.erase(it);
+      }
+      break;
+
+    default:
+      break;
+    }
+
+    ++it;
   }
 }
 
