@@ -1698,7 +1698,7 @@ bind_parameter(const Parameter &param) {
             bind._arg[0] = InternalName::make(member.name);
             bind._part[1] = SMO_identity;
             bind._arg[1] = nullptr;
-            bind._scalar_type = vector->get_scalar_type();
+            bind._scalar_type = ScalarType::ST_float;
           }
           for (bind._index = 0; bind._index < (int)array->get_num_elements(); ++bind._index) {
             cp_add_mat_spec(bind);
@@ -1945,7 +1945,7 @@ bind_parameter(const Parameter &param) {
       else {
         bind._piece = SMP_row3;
       }
-      bind._scalar_type = vector->get_scalar_type();
+      bind._scalar_type = ScalarType::ST_float;
     }
     else {
       if (!expect_float_vector(name, type, 4, 4)) {
