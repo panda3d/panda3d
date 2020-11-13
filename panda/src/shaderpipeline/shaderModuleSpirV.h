@@ -205,6 +205,7 @@ public:
 
     void set_variable_type(uint32_t id, const ShaderType *type);
 
+    uint32_t find_type_pointer(const ShaderType *type, spv::StorageClass storage_class);
     uint32_t define_variable(const ShaderType *type, spv::StorageClass storage_class);
     uint32_t define_type_pointer(const ShaderType *type, spv::StorageClass storage_class);
     uint32_t define_type(const ShaderType *type);
