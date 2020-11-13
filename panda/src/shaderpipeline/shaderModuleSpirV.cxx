@@ -112,6 +112,11 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words) :
     }
 
     if (def._dtype == DT_global && !def.is_builtin()) {
+      // Ignore empty structs/arrays.
+      if (def._type->get_num_interface_locations() == 0) {
+        continue;
+      }
+
       Variable var;
       var.type = def._type;
       var.name = InternalName::make(def._name);
