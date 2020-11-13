@@ -69,6 +69,8 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
 
   // Is this a SPIR-V shader?  If so, we've already done the reflection.
   if (!_needs_reflection) {
+    _remap_uniform_locations = true;
+
     if (_needs_query_uniform_locations) {
       for (const Module &module : _modules) {
         query_uniform_locations(module._module);
@@ -224,6 +226,7 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
       _slider_table_index = _glgsg->_glGetUniformLocation(_glsl_program, "p3d_SliderTable");
     }
   } else {
+    _remap_uniform_locations = false;
     reflect_program();
   }
 

@@ -84,6 +84,7 @@ private:
   Modules _modules;
   bool _needs_reflection = false;
   bool _needs_query_uniform_locations = false;
+  bool _remap_uniform_locations = false;
 
   WCPT(RenderState) _state_rs;
   CPT(TransformState) _modelview_transform;
