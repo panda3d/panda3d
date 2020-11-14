@@ -15,6 +15,8 @@
 #include "string_utils.h"
 #include "shaderType.h"
 
+#include "GLSL.std.450.h"
+
 #ifndef NDEBUG
 #include <glslang/SPIRV/disassemble.h>
 #endif
@@ -47,7 +49,7 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words) :
       {
         const Definition &def = writer.get_definition(op.args[2]);
         nassertv(def._dtype == DT_ext_inst);
-        if (def._name == "GLSL.std.450" && op.args[3] == 2) {
+        if (def._name == "GLSL.std.450" && op.args[3] == GLSLstd450RoundEven) {
           // We mark the use of the GLSL roundEven() function, which requires
           // GLSL 1.30 or HLSL SM 4.0.
           _used_caps |= C_round_even;
@@ -1912,6 +1914,32 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
   switch (op.opcode) {
   case spv::OpExtInstImport:
     record_ext_inst_import(op.args[0], (const char*)&op.args[1]);
+    break;
+
+  case spv::OpExtInst:
+    {
+      const Definition &def = get_definition(op.args[2]);
+      nassertv(def._dtype == DT_ext_inst);
+      if (def._name == "GLSL.std.450") {
+        // These standard functions take pointers as arguments.
+        switch (op.args[3]) {
+        case GLSLstd450Modf:
+        case GLSLstd450Frexp:
+          mark_used(op.args[5]);
+          break;
+
+        case GLSLstd450InterpolateAtCentroid:
+          mark_used(op.args[4]);
+          break;
+
+        case GLSLstd450InterpolateAtSample:
+        case GLSLstd450InterpolateAtOffset:
+          mark_used(op.args[4]);
+          mark_used(op.args[5]);
+          break;
+        }
+      }
+    }
     break;
 
   case spv::OpName:
