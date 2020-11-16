@@ -97,7 +97,7 @@ jobs:
 
         brew install ccache
 
-        echo "##[set-env name=thirdpartyOption;]-D THIRDPARTY_DIRECTORY=../panda3d-1.10.5/thirdparty" -DHAVE_CG=OFF
+        echo "thirdpartyOption=-D THIRDPARTY_DIRECTORY=../panda3d-1.10.5/thirdparty -DHAVE_CG=OFF" >> $GITHUB_ENV
 
     - name: Install dependencies (Ubuntu)
       if: startsWith(matrix.os, 'ubuntu')
@@ -132,7 +132,7 @@ jobs:
           Expand-Archive -Path thirdparty-tools.zip
         }
 
-        echo "##[set-env name=thirdpartyOption;]-D THIRDPARTY_DIRECTORY=../thirdparty-tools/panda3d-1.10.5/thirdparty"
+        echo "thirdpartyOption=-D THIRDPARTY_DIRECTORY=../thirdparty-tools/panda3d-1.10.5/thirdparty" >> $GITHUB_ENV
 
     - name: ccache (non-Windows)
       if: runner.os != 'Windows'
@@ -162,7 +162,8 @@ jobs:
 
         if ${{ runner.os != 'Windows' }}; then
           compilerLauncher=$(echo -DCMAKE_C{,XX}_COMPILER_LAUNCHER=ccache)
-          echo "##[set-env name=CCACHE_DIR;]$(dirname $PWD)/ccache"
+          export CCACHE_DIR="$(dirname $PWD)/ccache"
+          echo "CCACHE_DIR=$(dirname $PWD)/ccache" >> $GITHUB_ENV
         fi
 
         cmake
