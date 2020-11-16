@@ -6,6 +6,7 @@ set(P3CHAR_HEADERS
   characterSlider.h
   characterVertexSlider.I characterVertexSlider.h
   config_char.h
+  ikEffector.I ikEffector.h
   jointVertexTransform.I jointVertexTransform.h
 )
 
@@ -16,6 +17,7 @@ set(P3CHAR_SOURCES
   characterSlider.cxx
   characterVertexSlider.cxx
   config_char.cxx
+  ikEffector.cxx
   jointVertexTransform.cxx
 )
 

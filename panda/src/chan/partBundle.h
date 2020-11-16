@@ -146,6 +146,10 @@ PUBLISHED:
   bool force_update();
 
 public:
+  virtual bool do_update(PartBundle *root, const CycleData *root_cdata,
+                         PartGroup *parent, bool parent_changed,
+                         bool anim_changed, Thread *current_thread);
+
   // The following functions aren't really part of the public interface;
   // they're just public so we don't have to declare a bunch of friends.
   virtual void control_activated(AnimControl *control);

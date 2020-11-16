@@ -522,6 +522,45 @@ force_update() {
   return any_changed;
 }
 
+/**
+ * Recursively update this particular part and all of its descendents for the
+ * current frame.  This is not really public and is not intended to be called
+ * directly; it is called from the top of the tree by PartBundle::update().
+ *
+ * The return value is true if any part has changed, false otherwise.
+ */
+bool PartBundle::
+do_update(PartBundle *root, const CycleData *cdata, PartGroup *,
+          bool parent_changed, bool anim_changed, Thread *current_thread) {
+
+  bool any_changed = PartGroup::do_update(this, cdata, this, parent_changed, anim_changed, current_thread);
+
+  LPoint3 root_pos = ((CData *)cdata)->_root_xform.get_row3(3);
+  if (r_init_ik(root_pos)) {
+    int num_iterations = 0;
+    int max_iterations = ik_max_iterations;
+    PN_stdfloat error;
+    do {
+      LPoint3 root_pos_copy(root_pos);
+      r_reverse_ik(root_pos_copy);
+      error = (root_pos_copy - root_pos).length_squared();
+
+      r_forward_ik(root_pos);
+      ++num_iterations;
+    }
+    while (!IS_NEARLY_ZERO(error) && num_iterations < max_iterations);
+
+    if (chan_cat.is_debug()) {
+      chan_cat.debug()
+        << "IK solver ran for " << num_iterations << " iterations, error="
+        << error << "\n";
+    }
+
+    r_apply_ik(((CData *)cdata)->_root_xform);
+  }
+
+  return any_changed;
+}
 
 /**
  * Called by the AnimControl whenever it starts an animation.  This is just a

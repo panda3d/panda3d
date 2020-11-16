@@ -1,5 +1,5 @@
 #include "characterJointEffect.cxx"
 #include "characterSlider.cxx"
 #include "characterVertexSlider.cxx"
+#include "ikEffector.cxx"
 #include "jointVertexTransform.cxx"
-

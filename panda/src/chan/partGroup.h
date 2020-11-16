@@ -100,6 +100,11 @@ public:
   virtual void do_xform(const LMatrix4 &mat, const LMatrix4 &inv_mat);
   virtual void determine_effective_channels(const CycleData *root_cdata);
 
+  virtual bool r_init_ik(const LPoint3 &parent_pos);
+  virtual void r_forward_ik(const LPoint3 &parent_pos);
+  virtual bool r_reverse_ik(LPoint3 &out_pos);
+  virtual void r_apply_ik(const LMatrix4 &parent_net_transform);
+
 protected:
   void write_descendants(std::ostream &out, int indent_level) const;
   void write_descendants_with_value(std::ostream &out, int indent_level) const;

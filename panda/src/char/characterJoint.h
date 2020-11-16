@@ -49,6 +49,11 @@ public:
                                 Thread *current_thread);
   virtual void do_xform(const LMatrix4 &mat, const LMatrix4 &inv_mat);
 
+  bool r_init_ik(const LPoint3 &parent_pos);
+  void r_forward_ik(const LPoint3 &parent_pos);
+  bool r_reverse_ik(LPoint3 &out_pos);
+  void r_apply_ik(const LMatrix4 &parent_net_transform);
+
 PUBLISHED:
   bool add_net_transform(PandaNode *node);
   bool remove_net_transform(PandaNode *node);
@@ -113,6 +118,11 @@ public:
   // in its neutral pose) to transform it from its neutral position to its
   // animated position.
   LMatrix4 _skinning_matrix;
+
+  // Used by IK calculations.
+  LPoint3 _ik_pos;
+  PN_stdfloat _ik_length;
+  PN_stdfloat _ik_weight;
 
 public:
   virtual TypeHandle get_type() const {

@@ -1326,6 +1326,22 @@ class Actor(DirectObject, NodePath):
         if not anyGood:
             self.notify.warning("Cannot freeze joint %s" % (jointName))
 
+    def addEndEffector(self, node, partName, jointName, lodName="lodRoot"):
+        subpartDef = self.__subpartDict.get(partName, Actor.SubpartDef(partName))
+        trueName = subpartDef.truePartName
+        for bundleDict in self.__partBundleDict.values():
+            bundle = bundleDict[trueName].getBundle()
+            joint = bundle.findChild(jointName)
+            if node is None and joint and isinstance(joint, CharacterJoint):
+                node = self.attachNewNode(ModelNode(jointName))
+                mat = Mat4()
+                joint.getNetTransform(mat)
+                node.setMat(mat)
+
+            IKEffector(joint, node.node())
+
+        return node
+
     def releaseJoint(self, partName, jointName):
         """Undoes a previous call to controlJoint() or freezeJoint()
         and restores the named joint to its normal animation. """

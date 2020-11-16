@@ -101,6 +101,11 @@ PRC_DESC("This specifies the priority assign to an asynchronous bind "
          "model loads).  A higher number here makes the animations "
          "load sooner."));
 
+ConfigVariableInt ik_max_iterations
+("ik-max-iterations", 8,
+ PRC_DESC("Set this to limit the number of iterations for the IK solver."));
+
+
 ConfigureFn(config_chan) {
   AnimBundle::init_type();
   AnimBundleNode::init_type();

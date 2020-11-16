@@ -182,7 +182,189 @@ do_xform(const LMatrix4 &mat, const LMatrix4 &inv_mat) {
   MovingPartMatrix::do_xform(mat, inv_mat);
 }
 
+/**
+ * Recursively initializes the joint for IK, calculating the current net
+ * position and lengths.  Returns true if there were any effectors under this
+ * node, false otherwise.
+ */
+bool CharacterJoint::
+r_init_ik(const LPoint3 &parent_pos) {
+  _ik_pos = _net_transform.get_row3(3);
+  _ik_length = (_ik_pos - parent_pos).length();
 
+  if (PartGroup::r_init_ik(_ik_pos)) {
+    _ik_weight = 1;
+    return true;
+  } else {
+    _ik_weight = 0;
+    return false;
+  }
+}
+
+/**
+ * Executes a forward IK pass on the given points (which are set up by
+ * r_setup_ik_points).
+ */
+void CharacterJoint::
+r_forward_ik(const LPoint3 &parent_pos) {
+  LVector3 delta = _ik_pos - parent_pos;
+  PN_stdfloat dist = delta.length();
+
+  if (!IS_NEARLY_ZERO(dist)) {
+    LVector3 dir = delta / dist;
+
+    _ik_pos = parent_pos + dir * _ik_length;
+  }
+  else {
+    // It has length 0, so we just inherit the parent position.
+    _ik_pos = parent_pos;
+  }
+
+  for (PartGroup *child : _children) {
+    child->r_forward_ik(_ik_pos);
+  }
+}
+
+/**
+ * Executes a reverse IK pass on the given points (which are set up by
+ * r_setup_ik_points).  Returns true if there were any effectors under this
+ * joint, in which case the new position of this joint is stored in out_pos.
+ */
+bool CharacterJoint::
+r_reverse_ik(LPoint3 &parent_pos) {
+  LPoint3 effective_pos(0);
+  int num_effectors = 0;
+
+  for (PartGroup *child : _children) {
+    LPoint3 desired_pos = _ik_pos;
+    if (!child->r_reverse_ik(desired_pos)) {
+      // No effectors under this joint, so it's not of interest to the reverse
+      // pass.
+      continue;
+    }
+
+    effective_pos += desired_pos;
+    ++num_effectors;
+  }
+
+  if (num_effectors == 0) {
+    return false;
+  }
+
+  _ik_pos = effective_pos * (1.0 / num_effectors);
+
+  PN_stdfloat base_length = _ik_length;
+  if (IS_NEARLY_ZERO(base_length)) {
+    parent_pos = _ik_pos;
+  } else {
+    LVector3 delta = _ik_pos - parent_pos;
+    PN_stdfloat length = delta.length();
+    LVector3 dir = delta / length;
+    parent_pos = _ik_pos - dir * base_length;
+  }
+
+  return true;
+}
+
+/**
+ * Recursively applies the IK position changes computed by r_forward_ik and
+ * r_reverse_ik onto _net_transform.
+ */
+void CharacterJoint::
+r_apply_ik(const LMatrix4 &parent_net_transform) {
+  _net_transform = _value * parent_net_transform;
+
+  // We can only apply one rotation to this joint, so when there are multiple
+  // children, we have a problem.  What we do is figure out which children have
+  // effectors under them (ik_weight > 0), and rotate to their average.
+  LVector3 cur_vec(0, 0, 0);
+  LVector3 new_vec(0, 0, 0);
+  PN_stdfloat total_weight = 0;
+
+  LMatrix4 inverse_xform;
+  inverse_xform.invert_from(_net_transform);
+
+  for (PartGroup *child : _children) {
+    if (!child->is_character_joint()) {
+      continue;
+    }
+
+    CharacterJoint *child_joint = (CharacterJoint *)child;
+    //if (child_joint->_ik_weight == 0) {
+    //  continue;
+    //}
+
+    // Get current position of joint relative to parent
+    LPoint3 cur_pos = child_joint->_value.get_row3(3);
+    cur_vec += cur_pos.normalized();
+
+    // Get desired position relative to parent
+    LPoint3 child_pos = child_joint->_ik_pos;
+    LPoint3 rel_pos = inverse_xform.xform_point(child_pos);
+    new_vec += rel_pos.normalized();
+
+    total_weight += 1;
+  }
+
+  if (total_weight > 0) {
+    PN_stdfloat factor = 1.0 / total_weight;
+    cur_vec *= factor;
+    new_vec *= factor;
+
+    LVector3 w = cur_vec.cross(new_vec);
+    if (w.length_squared() != 0) {
+      w.normalize();
+      PN_stdfloat angle = new_vec.signed_angle_deg(cur_vec, w);
+      if (!IS_NEARLY_ZERO(angle)) {
+        LMatrix3 r = LMatrix3::rotate_mat(-angle, w);
+
+        _value.set_upper_3(r * _value.get_upper_3());
+      }
+    }
+    else if (cur_vec.dot(new_vec) < 0) {
+      // Exactly antiparallel.  We have an infinite number of axes around which we
+      // could rotate to get the desired matrix.  Can we pick one arbitrarily?
+
+      w = new_vec.cross(LVector3(1, 0, 0));
+      if (IS_NEARLY_ZERO(w.length_squared())) {
+        w = new_vec.cross(LVector3(0, 1, 0));
+      }
+
+      LMatrix3 r = LMatrix3::rotate_mat(-180, w);
+
+      _value.set_upper_3(r * _value.get_upper_3());
+    }
+  }
+
+  //TODO: don't duplicate all the logic from update_internals.
+  _net_transform = _value * parent_net_transform;
+
+  Thread *current_thread = Thread::get_current_thread();
+  if (!_net_transform_nodes.empty()) {
+    CPT(TransformState) t = TransformState::make_mat(_net_transform);
+
+    NodeList::iterator ai;
+    for (ai = _net_transform_nodes.begin();
+         ai != _net_transform_nodes.end();
+         ++ai) {
+      PandaNode *node = *ai;
+      node->set_transform(t, current_thread);
+    }
+  }
+
+  _skinning_matrix = _initial_net_transform_inverse * _net_transform;
+
+  // Also tell our related JointVertexTransforms that we've changed their
+  // underlying matrix.
+  VertexTransforms::iterator vti;
+  for (vti = _vertex_transforms.begin(); vti != _vertex_transforms.end(); ++vti) {
+    (*vti)->mark_modified(current_thread);
+  }
+
+  for (PartGroup *child : _children) {
+    child->r_apply_ik(_net_transform);
+  }
+}
 
 /**
  * Adds the indicated node to the list of nodes that will be updated each

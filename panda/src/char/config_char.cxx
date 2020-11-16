@@ -18,6 +18,7 @@
 #include "characterJointEffect.h"
 #include "characterSlider.h"
 #include "characterVertexSlider.h"
+#include "ikEffector.h"
 #include "jointVertexTransform.h"
 #include "dconfig.h"
 
@@ -61,6 +62,7 @@ init_libchar() {
   CharacterJointEffect::init_type();
   CharacterSlider::init_type();
   CharacterVertexSlider::init_type();
+  IKEffector::init_type();
   JointVertexTransform::init_type();
 
   // Registration of writeable object's creation functions with BamReader's
