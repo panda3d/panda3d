@@ -21,6 +21,7 @@
 #include "typedObject.h"
 #include "indent.h"
 #include "pointerToArray.h"
+#include "extension.h"
 
 #include "checksumHashGenerator.h"
 
@@ -125,6 +126,9 @@ PUBLISHED:
   void operator <<= (int shift);
   void operator >>= (int shift);
 
+  EXTENSION(PyObject *__getstate__() const);
+  EXTENSION(void __setstate__(PyObject *state));
+
 public:
   void generate_hash(ChecksumHashGenerator &hashgen) const;
 
@@ -137,6 +141,8 @@ private:
   typedef PTA(MaskType) Array;
   Array _array;
   int _highest_bits;  // Either 0 or 1.
+
+  friend class Extension<BitArray>;
 
 public:
   void write_datagram(BamWriter *manager, Datagram &dg) const;
