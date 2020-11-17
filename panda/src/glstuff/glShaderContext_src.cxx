@@ -2529,6 +2529,10 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
           _glgsg->_glVertexAttrib4fv(p, _glgsg->_scene_graph_color.get_data());
 #endif
         }
+        else if (name == InternalName::get_transform_index() &&
+                 _glgsg->_glVertexAttribI4ui != nullptr) {
+          _glgsg->_glVertexAttribI4ui(p, 0, 1, 2, 3);
+        }
       }
     }
 
