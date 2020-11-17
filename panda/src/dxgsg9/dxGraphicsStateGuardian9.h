@@ -352,8 +352,6 @@ protected:
   char *_vertex_shader_profile;
   char *_pixel_shader_profile;
 
-  int _vertex_shader_maximum_constants;
-
   bool _supports_stream_offset;
 
   std::list <wdxGraphicsBuffer9 **> _graphics_buffer_list;

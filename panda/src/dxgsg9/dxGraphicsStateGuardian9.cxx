@@ -143,8 +143,6 @@ DXGraphicsStateGuardian9(GraphicsEngine *engine, GraphicsPipe *pipe) :
   _vertex_shader_profile = 0;
   _pixel_shader_profile = 0;
 
-  _vertex_shader_maximum_constants = 0;
-
   _supports_stream_offset = false;
 
   get_gamma_table();
@@ -2313,7 +2311,7 @@ reset() {
   _vertex_shader_profile = (char *) D3DXGetVertexShaderProfile (_d3d_device);
   _pixel_shader_profile = (char *) D3DXGetPixelShaderProfile (_d3d_device);
 
-  _vertex_shader_maximum_constants = d3d_caps.MaxVertexShaderConst;
+  _max_vertex_shader_parameter_vectors = d3d_caps.MaxVertexShaderConst;
 
   switch (_pixel_shader_version_major)
   {
@@ -2417,7 +2415,7 @@ reset() {
       << "\nD3DPRASTERCAPS_SLOPESCALEDEPTHBIAS = " << ((d3d_caps.RasterCaps & D3DPRASTERCAPS_SLOPESCALEDEPTHBIAS) != 0)
       << "\nVertexShaderVersion = " << _vertex_shader_version_major << "." << _vertex_shader_version_minor
       << "\nPixelShaderVersion = " << _pixel_shader_version_major << "." << _pixel_shader_version_minor
-      << "\nMaxVertexShaderConst = " << _vertex_shader_maximum_constants
+      << "\nMaxVertexShaderConst = " << _max_vertex_shader_parameter_vectors
       << "\nsupports_stream_offset = " << _supports_stream_offset
       << "\nsupports_dynamic_textures = " << _screen->_supports_dynamic_textures
       << "\nsupports_automatic_mipmap_generation = " << _screen->_supports_automatic_mipmap_generation

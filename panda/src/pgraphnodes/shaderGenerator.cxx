@@ -80,6 +80,21 @@ ShaderGenerator(const GraphicsStateGuardianBase *gsg) {
   // Do we want to use the ARB_shadow extension?  This also allows us to use
   // hardware shadows PCF.
   _use_shadow_filter = gsg->get_supports_shadow_filter();
+
+  // How many joints can we pass to the shader?  On older hardware (and DX9)
+  // we are limited to 256 vectors, giving us only 85 3x4 matrices.
+  if (gsg->_max_vertex_shader_parameter_vectors >= 500) {
+    _num_indexed_transforms = 120;
+  }
+  else if (gsg->_max_vertex_shader_parameter_vectors >= 250) {
+    _num_indexed_transforms = 80;
+  }
+  else if (gsg->_max_vertex_shader_parameter_vectors >= 128) {
+    _num_indexed_transforms = 36;
+  }
+  else {
+    _num_indexed_transforms = 4;
+  }
 }
 
 /**
@@ -806,7 +821,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       key._anim_spec.get_num_transforms() > 0) {
     int num_transforms;
     if (key._anim_spec.get_indexed_transforms()) {
-      num_transforms = 120;
+      num_transforms = _num_indexed_transforms;
     } else {
       num_transforms = key._anim_spec.get_num_transforms();
     }

@@ -254,6 +254,7 @@ public:
   static void remove_gsg(GraphicsStateGuardianBase *gsg);
 
   size_t _id;
+  size_t _max_vertex_shader_parameter_vectors = 0;
 
 private:
   struct GSGList {

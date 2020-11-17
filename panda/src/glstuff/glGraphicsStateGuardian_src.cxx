@@ -3491,6 +3491,32 @@ reset() {
   }
 #endif
 
+  _max_vertex_shader_parameter_vectors = 0;
+#ifndef OPENGLES
+  if (is_at_least_gl_version(2, 0) || has_extension("GL_ARB_vertex_shader")) {
+    GLint max_vertex_uniform_components = 0;
+    glGetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, &max_vertex_uniform_components);
+    _max_vertex_shader_parameter_vectors = max_vertex_uniform_components / 4;
+
+    if (GLCAT.is_debug()) {
+      GLCAT.debug()
+        << "max vertex uniform components = " << max_vertex_uniform_components << "\n";
+    }
+  }
+#endif
+#ifdef OPENGLES_2
+  {
+    GLint max_vertex_uniform_vectors = 0;
+    glGetIntegerv(GL_MAX_VERTEX_UNIFORM_VECTORS, &max_vertex_uniform_vectors);
+    _max_vertex_shader_parameter_vectors = max_vertex_uniform_vectors;
+
+    if (GLCAT.is_debug()) {
+      GLCAT.debug()
+        << "max vertex uniform vectors = " << max_vertex_uniform_vectors << "\n";
+    }
+  }
+#endif
+
   _current_vbuffer_index = 0;
   _current_ibuffer_index = 0;
   _current_vao_index = 0;

@@ -78,6 +78,7 @@ protected:
   const char *alloc_freg();
 
   bool _use_shadow_filter;
+  int _num_indexed_transforms;
 
   // RenderState analysis information.  Created by analyze_renderstate:
 
