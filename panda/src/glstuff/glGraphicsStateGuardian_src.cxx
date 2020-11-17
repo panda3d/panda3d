@@ -154,22 +154,12 @@ null_glBlendColor(GLclampf, GLclampf, GLclampf, GLclampf) {
 // default shader just applies a single texture, which is good enough for
 // drawing GUIs and such.
 static const string default_vshader =
-#ifndef OPENGLES
   "#version 330\n"
   "in vec4 p3d_Vertex;\n"
   "in vec4 p3d_Color;\n"
   "in vec2 p3d_MultiTexCoord0;\n"
   "out vec2 texcoord;\n"
   "out vec4 color;\n"
-#else
-  "#version 100\n"
-  "precision mediump float;\n"
-  "attribute vec4 p3d_Vertex;\n"
-  "attribute vec4 p3d_Color;\n"
-  "attribute vec2 p3d_MultiTexCoord0;\n"
-  "varying vec2 texcoord;\n"
-  "varying lowp vec4 color;\n"
-#endif
   "uniform mat4 p3d_ModelViewProjectionMatrix;\n"
   "uniform vec4 p3d_ColorScale;\n"
   "void main(void) {\n"
@@ -207,31 +197,16 @@ static const string default_vshader_fp64 =
 #endif
 
 static const string default_fshader =
-#ifndef OPENGLES
   "#version 330\n"
   "in vec2 texcoord;\n"
   "in vec4 color;\n"
   "out vec4 p3d_FragColor;\n"
   "uniform sampler2D p3d_Texture0;\n"
   "uniform vec4 p3d_TexAlphaOnly;\n"
-#else
-  "#version 100\n"
-  "precision mediump float;\n"
-  "varying vec2 texcoord;\n"
-  "varying lowp vec4 color;\n"
-  "uniform lowp sampler2D p3d_Texture0;\n"
-  "uniform lowp vec4 p3d_TexAlphaOnly;\n"
-#endif
   "void main(void) {\n"
-#ifndef OPENGLES
   "  p3d_FragColor = texture(p3d_Texture0, texcoord);\n"
   "  p3d_FragColor += p3d_TexAlphaOnly;\n" // Hack for text rendering
   "  p3d_FragColor *= color;\n"
-#else
-  "  gl_FragColor = texture2D(p3d_Texture0, texcoord);\n"
-  "  gl_FragColor += p3d_TexAlphaOnly;\n" // Hack for text rendering
-  "  gl_FragColor *= color;\n"
-#endif
   "}\n";
 #endif
 

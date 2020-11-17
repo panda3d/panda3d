@@ -3354,10 +3354,10 @@ attach_shader(const ShaderModule *module) {
   }
 
   bool needs_compile = false;
-#ifndef OPENGLES
   if (module->is_of_type(ShaderModuleSpirV::get_class_type())) {
     ShaderModuleSpirV *spv = (ShaderModuleSpirV *)module;
 
+#ifndef OPENGLES
     if (_glgsg->_supports_spir_v) {
       // Load a SPIR-V binary.
       if (GLCAT.is_debug()) {
@@ -3411,7 +3411,9 @@ attach_shader(const ShaderModule *module) {
       }
       _glgsg->_glSpecializeShader(handle, "main", 0, nullptr, nullptr);
     }
-    else {
+    else
+#endif  // !OPENGLES
+    {
       // Compile to GLSL using SPIRV-Cross.
       if (GLCAT.is_debug()) {
         GLCAT.debug()
@@ -3520,9 +3522,8 @@ attach_shader(const ShaderModule *module) {
       _glgsg->_glShaderSource(handle, 1, &text_str, nullptr);
       needs_compile = true;
     }
-  } else
-#endif
-  if (module->is_of_type(ShaderModuleGlsl::get_class_type())) {
+  }
+  else if (module->is_of_type(ShaderModuleGlsl::get_class_type())) {
     // Legacy preprocessed GLSL.
     if (GLCAT.is_debug()) {
       GLCAT.debug()
