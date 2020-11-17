@@ -4428,7 +4428,7 @@ TargetAdd('libp3framework.dll', opts=['ADVAPI'])
 #
 
 if (PkgSkip("GL")==0):
-  OPTS=['DIR:panda/src/glgsg', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGL', 'GL', 'SPIRV-CROSS-GLSL', 'GLSLANG']
+  OPTS=['DIR:panda/src/glgsg', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGL', 'GL', 'SPIRV-CROSS-GLSL']
   TargetAdd('p3glgsg_config_glgsg.obj', opts=OPTS, input='config_glgsg.cxx')
   TargetAdd('p3glgsg_glgsg.obj', opts=OPTS, input='glgsg.cxx')
 
@@ -4446,7 +4446,7 @@ if (PkgSkip("GLES")==0):
 #
 
 if (PkgSkip("GLES2")==0):
-  OPTS=['DIR:panda/src/gles2gsg', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGLES2', 'GLES2']
+  OPTS=['DIR:panda/src/gles2gsg', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGLES2', 'GLES2', 'SPIRV-CROSS-GLSL']
   TargetAdd('p3gles2gsg_config_gles2gsg.obj', opts=OPTS, input='config_gles2gsg.cxx')
   TargetAdd('p3gles2gsg_gles2gsg.obj', opts=OPTS, input='gles2gsg.cxx')
 
@@ -4524,7 +4524,7 @@ if (GetTarget() == 'darwin' and PkgSkip("COCOA")==0 and PkgSkip("GL")==0):
   if (PkgSkip('PANDAFX')==0):
     TargetAdd('libpandagl.dll', input='libpandafx.dll')
   TargetAdd('libpandagl.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandagl.dll', opts=['MODULE', 'GL', 'COCOA', 'CARBON', 'QUARTZ'])
+  TargetAdd('libpandagl.dll', opts=['MODULE', 'GL', 'COCOA', 'CARBON', 'QUARTZ', 'SPIRV-CROSS-GLSL'])
 
 #
 # DIRECTORY: panda/src/wgldisplay/
@@ -4543,7 +4543,7 @@ if (GetTarget() == 'windows' and PkgSkip("GL")==0):
   if (PkgSkip('PANDAFX')==0):
     TargetAdd('libpandagl.dll', input='libpandafx.dll')
   TargetAdd('libpandagl.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandagl.dll', opts=['MODULE', 'WINGDI', 'GL', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM', 'SPIRV-CROSS-GLSL', 'GLSLANG'])
+  TargetAdd('libpandagl.dll', opts=['MODULE', 'WINGDI', 'GL', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM', 'SPIRV-CROSS-GLSL'])
 
 #
 # DIRECTORY: panda/src/egldisplay/
@@ -4562,7 +4562,7 @@ if not PkgSkip("EGL") and not PkgSkip("GL") and PkgSkip("X11") and GetTarget() n
   TargetAdd('libpandagl.dll', input='p3glgsg_glgsg.obj')
   TargetAdd('libpandagl.dll', input='pandagl_egldisplay_composite1.obj')
   TargetAdd('libpandagl.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandagl.dll', opts=['MODULE', 'GL', 'EGL'])
+  TargetAdd('libpandagl.dll', opts=['MODULE', 'GL', 'EGL', 'SPIRV-CROSS-GLSL'])
 
 #
 # DIRECTORY: panda/src/egldisplay/
@@ -4600,7 +4600,7 @@ if (PkgSkip("EGL")==0 and PkgSkip("GLES2")==0):
   TargetAdd('libpandagles2.dll', input='p3gles2gsg_gles2gsg.obj')
   TargetAdd('libpandagles2.dll', input='pandagles2_egldisplay_composite1.obj')
   TargetAdd('libpandagles2.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandagles2.dll', opts=['MODULE', 'GLES2', 'EGL', 'X11'])
+  TargetAdd('libpandagles2.dll', opts=['MODULE', 'GLES2', 'EGL', 'X11', 'SPIRV-CROSS-GLSL'])
 
 #
 # DIRECTORY: panda/src/ode/
