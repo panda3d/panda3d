@@ -893,6 +893,77 @@ issue_parameters(GSG *gsg, int altered) {
 }
 
 /**
+ * Changes the active transform and slider table, used for hardware skinning.
+ */
+void DXShaderContext9::
+update_tables(GSG *gsg, const GeomVertexDataPipelineReader *data_reader) {
+  int loc = _shader->_transform_table_loc;
+  if (loc >= 0) {
+    ConstantRegister &reg = _register_map[(size_t)loc];
+
+    // reg.count is the number of registers, which is 4 per matrix.  However,
+    // due to optimization, the last row of the last matrix may be cut off.
+    size_t num_matrices = (reg.count + 3) / 4;
+    LMatrix4f *matrices = (LMatrix4f *)alloca(num_matrices * sizeof(LMatrix4f));
+
+    size_t i = 0;
+    const TransformTable *table = data_reader->get_transform_table();
+    if (table != nullptr) {
+      bool transpose = (_shader->get_language() == Shader::SL_Cg);
+      size_t num_transforms = std::min(num_matrices, table->get_num_transforms());
+      for (; i < num_transforms; ++i) {
+#ifdef STDFLOAT_DOUBLE
+        LMatrix4 matrix;
+        table->get_transform(i)->get_matrix(matrix);
+        if (transpose) {
+          matrix.transpose_in_place();
+        }
+        matrices[i] = LCAST(float, matrix);
+#else
+        table->get_transform(i)->get_matrix(matrices[i]);
+        if (transpose) {
+          matrices[i].transpose_in_place();
+        }
+#endif
+      }
+    }
+    for (; i < num_matrices; ++i) {
+      matrices[i] = LMatrix4f::ident_mat();
+    }
+
+    if (reg.vreg >= 0) {
+      gsg->_d3d_device->SetVertexShaderConstantF(reg.vreg, (float *)matrices, reg.count);
+    }
+    if (reg.freg >= 0) {
+      gsg->_d3d_device->SetPixelShaderConstantF(reg.freg, (float *)matrices, reg.count);
+    }
+  }
+
+  loc = _shader->_slider_table_loc;
+  if (loc >= 0) {
+    ConstantRegister &reg = _register_map[(size_t)loc];
+
+    LVecBase4f *sliders = (LVecBase4f *)alloca(reg.count * sizeof(LVecBase4f));
+    memset(sliders, 0, reg.count * sizeof(LVecBase4f));
+
+    const SliderTable *table = data_reader->get_slider_table();
+    if (table != nullptr) {
+      size_t num_sliders = std::min((size_t)reg.count, table->get_num_sliders());
+      for (size_t i = 0; i < num_sliders; ++i) {
+        sliders[i] = table->get_slider(i)->get_slider();
+      }
+    }
+
+    if (reg.vreg >= 0) {
+      gsg->_d3d_device->SetVertexShaderConstantF(reg.vreg, (float *)sliders, reg.count);
+    }
+    if (reg.freg >= 0) {
+      gsg->_d3d_device->SetPixelShaderConstantF(reg.freg, (float *)sliders, reg.count);
+    }
+  }
+}
+
+/**
  * Disable all the texture bindings used by this shader.
  */
 void DXShaderContext9::
@@ -1046,19 +1117,20 @@ get_vertex_declaration(GSG *gsg, const GeomVertexFormat *format) {
     elements[i].Stream = array_index;
     elements[i].Offset = column->get_start();
 
+    bool normalized = (column->get_contents() == GeomEnums::C_color);
     int num_components = column->get_num_components();
     switch (column->get_numeric_type()) {
     case GeomEnums::NT_uint8:
-      elements[i].Type = D3DDECLTYPE_UBYTE4N;
+      elements[i].Type = normalized ? D3DDECLTYPE_UBYTE4N : D3DDECLTYPE_UBYTE4;
       break;
     case GeomEnums::NT_uint16:
       elements[i].Type = (num_components > 2) ? D3DDECLTYPE_USHORT4N : D3DDECLTYPE_USHORT2N;
       break;
     case GeomEnums::NT_packed_dcba:
-      elements[i].Type = D3DDECLTYPE_D3DCOLOR;
+      elements[i].Type = normalized ? D3DDECLTYPE_UBYTE4N : D3DDECLTYPE_UBYTE4;
       break;
     case GeomEnums::NT_packed_dabc:
-      elements[i].Type = D3DDECLTYPE_D3DCOLOR;
+      elements[i].Type = normalized ? D3DDECLTYPE_D3DCOLOR : D3DDECLTYPE_UBYTE4;
       break;
 #ifndef STDFLOAT_DOUBLE
     case GeomEnums::NT_stdfloat:
@@ -1067,7 +1139,9 @@ get_vertex_declaration(GSG *gsg, const GeomVertexFormat *format) {
       elements[i].Type = D3DDECLTYPE_FLOAT1 + num_components - 1;
       break;
     case GeomEnums::NT_int16:
-      elements[i].Type = (num_components > 2) ? D3DDECLTYPE_SHORT4N : D3DDECLTYPE_SHORT2N;
+      elements[i].Type = (num_components > 2)
+        ? (normalized ? D3DDECLTYPE_SHORT4N : D3DDECLTYPE_SHORT4)
+        : (normalized ? D3DDECLTYPE_SHORT2N : D3DDECLTYPE_SHORT2);
       break;
     default:
       continue;

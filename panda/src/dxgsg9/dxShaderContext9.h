@@ -44,7 +44,7 @@ public:
   bool bind(GSG *gsg);
   void unbind(GSG *gsg);
   void issue_parameters(GSG *gsg, int altered);
-  void issue_transform(GSG *gsg);
+  void update_tables(GSG *gsg, const GeomVertexDataPipelineReader *data_reader);
   void disable_shader_texture_bindings(GSG *gsg);
   void update_shader_texture_bindings(DXShaderContext9 *prev, GSG *gsg);
 

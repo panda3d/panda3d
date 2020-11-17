@@ -1154,7 +1154,8 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
 
   const GeomVertexAnimationSpec &animation =
     data_reader->get_format()->get_animation();
-  if (animation.get_animation_type() == Geom::AT_hardware) {
+  if (animation.get_animation_type() == Geom::AT_hardware &&
+      _current_shader_context == nullptr) {
     // Set up vertex blending.
     switch (animation.get_num_transforms()) {
     case 1:
@@ -1292,6 +1293,9 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     }
 
     _num_bound_streams = num_arrays;
+
+    // Update transform/slider tables.
+    _current_shader_context->update_tables(this, _data_reader);
   }
 
   return true;
