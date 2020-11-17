@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/panda3d/panda3d.svg?branch=master)](https://travis-ci.org/panda3d/panda3d)
+[![Build Status](https://api.travis-ci.org/panda3d/panda3d.svg?branch=release/1.10.x)](https://travis-ci.org/panda3d/panda3d)
 [![OpenCollective](https://opencollective.com/panda3d/backers/badge.svg)](https://opencollective.com/panda3d)
 [![OpenCollective](https://opencollective.com/panda3d/sponsors/badge.svg)](https://opencollective.com/panda3d)
 
