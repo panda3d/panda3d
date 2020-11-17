@@ -133,7 +133,7 @@ DXGraphicsStateGuardian9(GraphicsEngine *engine, GraphicsPipe *pipe) :
 
   _last_fvf = 0;
   _num_bound_streams = 0;
-  _white_vbuffer = nullptr;
+  _color_vbuffer = nullptr;
 
   _vertex_shader_version_major = 0;
   _vertex_shader_version_minor = 0;
@@ -1277,9 +1277,19 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     }
 
     if (format->get_color_array_index() < 0 && _current_shader_context->uses_vertex_color()) {
-      // Has no vertex colors, so bind a vertex buffer containing a single
-      // white color.
-      LPDIRECT3DVERTEXBUFFER9 vbuffer = get_white_vbuffer();
+      // Has no vertex colors, so bind a vertex buffer with stride 0 and write
+      // our desired color value to it.
+      LPDIRECT3DVERTEXBUFFER9 vbuffer = get_color_vbuffer();
+      D3DCOLOR *local_pointer;
+      hr = vbuffer->Lock(0, sizeof(D3DCOLOR), (void **) &local_pointer, D3DLOCK_DISCARD);
+      if (FAILED(hr)) {
+        dxgsg9_cat.error()
+          << "VertexBuffer::Lock failed" << D3DERRORSTRING(hr);
+        return false;
+      }
+      *local_pointer = LColor_to_D3DCOLOR(_scene_graph_color);
+      vbuffer->Unlock();
+
       hr = device->SetStreamSource(i, vbuffer, 0, 0);
       if (FAILED(hr)) {
         dxgsg9_cat.error() << "SetStreamSource failed" << D3DERRORSTRING(hr);
@@ -4538,9 +4548,9 @@ reset_d3d_device(D3DPRESENT_PARAMETERS *presentation_params,
     release_all_vertex_buffers();
     release_all_index_buffers();
 
-    if (_white_vbuffer != nullptr) {
-      _white_vbuffer->Release();
-      _white_vbuffer = nullptr;
+    if (_color_vbuffer != nullptr) {
+      _color_vbuffer->Release();
+      _color_vbuffer = nullptr;
     }
 
     // must be called before reset
@@ -5384,9 +5394,9 @@ atexit_function(void) {
  * Returns a vertex buffer containing only a full-white color.
  */
 LPDIRECT3DVERTEXBUFFER9 DXGraphicsStateGuardian9::
-get_white_vbuffer() {
-  if (_white_vbuffer != nullptr) {
-    return _white_vbuffer;
+get_color_vbuffer() {
+  if (_color_vbuffer != nullptr) {
+    return _color_vbuffer;
   }
 
   LPDIRECT3DVERTEXBUFFER9 vbuffer;
@@ -5410,7 +5420,7 @@ get_white_vbuffer() {
   *local_pointer = D3DCOLOR_ARGB(255, 255, 255, 255);
 
   vbuffer->Unlock();
-  _white_vbuffer = vbuffer;
+  _color_vbuffer = vbuffer;
   return vbuffer;
 }
 

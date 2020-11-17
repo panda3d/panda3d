@@ -101,7 +101,6 @@ compile_module(const ShaderModule *module, DWORD *&data) {
     }
     else if (spec._name == InternalName::get_normal()) {
       compiler.add_vertex_attribute_remap({idx, "NORMAL"});
-      _uses_vertex_color = true;
     }
     else if (spec._name == InternalName::get_tangent()) {
       compiler.add_vertex_attribute_remap({idx, "TANGENT"});
@@ -111,6 +110,7 @@ compile_module(const ShaderModule *module, DWORD *&data) {
     }
     else if (spec._name == InternalName::get_color()) {
       compiler.add_vertex_attribute_remap({idx, "COLOR"});
+      _uses_vertex_color = true;
     }
     else {
       // The rest gets mapped to TEXCOORD + location.
