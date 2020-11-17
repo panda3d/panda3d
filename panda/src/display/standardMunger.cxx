@@ -123,8 +123,9 @@ munge_data_impl(const GeomVertexData *data) {
   }
 
   GeomVertexAnimationSpec animation = new_data->get_format()->get_animation();
-  if (_shader_skinning || (_auto_shader && hardware_animated_vertices &&
-      !basic_shaders_only && animation.get_animation_type() == AT_panda)) {
+  if ((_shader_skinning && animation.get_animation_type() != AT_none) ||
+      (_auto_shader && hardware_animated_vertices &&
+       !basic_shaders_only && animation.get_animation_type() == AT_panda)) {
     animation.set_hardware(4, true);
 
   } else if (hardware_animated_vertices &&

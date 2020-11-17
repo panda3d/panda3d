@@ -659,7 +659,7 @@ copy_from(const GeomVertexData *source, bool keep_data_objects,
             for (size_t i = 0; i < blend.get_num_transforms(); i++) {
               int index = add_transform(transform_table, blend.get_transform(i),
                                         already_added);
-              nassertv(index <= 4);
+              nassertv(index < 4);
               weights[index] = blend.get_weight(i);
             }
             if (weight.has_column()) {
