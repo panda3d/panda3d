@@ -901,41 +901,74 @@ update_tables(GSG *gsg, const GeomVertexDataPipelineReader *data_reader) {
   if (loc >= 0) {
     ConstantRegister &reg = _register_map[(size_t)loc];
 
-    // reg.count is the number of registers, which is 4 per matrix.  However,
-    // due to optimization, the last row of the last matrix may be cut off.
-    size_t num_matrices = (reg.count + 3) / 4;
-    LMatrix4f *matrices = (LMatrix4f *)alloca(num_matrices * sizeof(LMatrix4f));
-
-    size_t i = 0;
+    float *data;
     const TransformTable *table = data_reader->get_transform_table();
-    if (table != nullptr) {
-      bool transpose = (_shader->get_language() == Shader::SL_Cg);
-      size_t num_transforms = std::min(num_matrices, table->get_num_transforms());
-      for (; i < num_transforms; ++i) {
+    if (!_shader->_transform_table_reduced) {
+      // reg.count is the number of registers, which is 4 per matrix.  However,
+      // due to optimization, the last row of the last matrix may be cut off.
+      size_t num_matrices = (reg.count + 3) / 4;
+      data = (float *)alloca(num_matrices * sizeof(LMatrix4f));
+      LMatrix4f *matrices = (LMatrix4f *)data;
+
+      size_t i = 0;
+      if (table != nullptr) {
+        bool transpose = (_shader->get_language() == Shader::SL_Cg);
+        size_t num_transforms = std::min(num_matrices, table->get_num_transforms());
+        for (; i < num_transforms; ++i) {
 #ifdef STDFLOAT_DOUBLE
-        LMatrix4 matrix;
-        table->get_transform(i)->get_matrix(matrix);
-        if (transpose) {
-          matrix.transpose_in_place();
-        }
-        matrices[i] = LCAST(float, matrix);
+          LMatrix4 matrix;
+          table->get_transform(i)->get_matrix(matrix);
+          if (transpose) {
+            matrix.transpose_in_place();
+          }
+          matrices[i] = LCAST(float, matrix);
 #else
-        table->get_transform(i)->get_matrix(matrices[i]);
-        if (transpose) {
-          matrices[i].transpose_in_place();
-        }
+          table->get_transform(i)->get_matrix(matrices[i]);
+          if (transpose) {
+            matrices[i].transpose_in_place();
+          }
 #endif
+        }
+      }
+      for (; i < num_matrices; ++i) {
+        matrices[i] = LMatrix4f::ident_mat();
       }
     }
-    for (; i < num_matrices; ++i) {
-      matrices[i] = LMatrix4f::ident_mat();
+    else {
+      // Reduced 3x4 matrix, used by shader generator
+      size_t num_matrices = (reg.count + 2) / 3;
+      data = (float *)alloca(num_matrices * sizeof(LVecBase4f) * 3);
+      LVecBase4f *vectors = (LVecBase4f *)data;
+
+      size_t i = 0;
+      if (table != nullptr) {
+        size_t num_transforms = std::min(num_matrices, table->get_num_transforms());
+        for (; i < num_transforms; ++i) {
+          LMatrix4f matrix;
+#ifdef STDFLOAT_DOUBLE
+          LMatrix4d matrixd;
+          table->get_transform(i)->get_matrix(matrixd);
+          matrix = LCAST(float, matrixd);
+#else
+          table->get_transform(i)->get_matrix(matrix);
+#endif
+          vectors[i * 3 + 0] = matrix.get_col(0);
+          vectors[i * 3 + 1] = matrix.get_col(1);
+          vectors[i * 3 + 2] = matrix.get_col(2);
+        }
+      }
+      for (; i < num_matrices; ++i) {
+        vectors[i * 3 + 0].set(1, 0, 0, 0);
+        vectors[i * 3 + 1].set(0, 1, 0, 0);
+        vectors[i * 3 + 2].set(0, 0, 1, 0);
+      }
     }
 
     if (reg.vreg >= 0) {
-      gsg->_d3d_device->SetVertexShaderConstantF(reg.vreg, (float *)matrices, reg.count);
+      gsg->_d3d_device->SetVertexShaderConstantF(reg.vreg, data, reg.count);
     }
     if (reg.freg >= 0) {
-      gsg->_d3d_device->SetPixelShaderConstantF(reg.freg, (float *)matrices, reg.count);
+      gsg->_d3d_device->SetPixelShaderConstantF(reg.freg, data, reg.count);
     }
   }
 

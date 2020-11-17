@@ -810,7 +810,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     } else {
       num_transforms = key._anim_spec.get_num_transforms();
     }
-    text << "\t uniform float4x4 tbl_transforms[" << num_transforms << "],\n";
+    text << "\t uniform float3x4 tbl_transforms[" << num_transforms << "],\n";
     text << "\t in float4 vtx_transform_weight : BLENDWEIGHT,\n";
     if (key._anim_spec.get_indexed_transforms()) {
       text << "\t in uint4 vtx_transform_index : BLENDINDICES,\n";
@@ -828,7 +828,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       text << "\t const uint4 vtx_transform_index = uint4(0, 1, 2, 3);\n";
     }
 
-    text << "\t float4x4 vtxmat = tbl_transforms[vtx_transform_index.x] * vtx_transform_weight.x";
+    text << "\t float3x4 vtxmat = tbl_transforms[vtx_transform_index.x] * vtx_transform_weight.x";
     if (key._anim_spec.get_num_transforms() > 1) {
       text << "\n\t                 + tbl_transforms[vtx_transform_index.y] * vtx_transform_weight.y";
     }
@@ -839,7 +839,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       text << "\n\t                 + tbl_transforms[vtx_transform_index.w] * vtx_transform_weight.w";
     }
     text << ";\n";
-    text << "\t vtx_position = mul(vtxmat, vtx_position);\n";
+    text << "\t vtx_position = float4(mul(vtxmat, vtx_position), 1);\n";
     if (need_world_normal || need_eye_normal) {
       text << "\t vtx_normal = mul((float3x3)vtxmat, vtx_normal);\n";
     }

@@ -2521,28 +2521,60 @@ issue_parameters(int altered) {
  */
 void CLP(ShaderContext)::
 update_transform_table(const TransformTable *table) {
-  LMatrix4f *matrices = (LMatrix4f *)alloca(_transform_table_size * 64);
+  size_t num_matrices = (size_t)_transform_table_size;
 
-  size_t i = 0;
-  if (table != nullptr) {
-    size_t num_transforms = min((size_t)_transform_table_size, table->get_num_transforms());
-    for (; i < num_transforms; ++i) {
+  if (!_shader->_transform_table_reduced) {
+    LMatrix4f *matrices = (LMatrix4f *)alloca(num_matrices * sizeof(LMatrix4f));
+
+    size_t i = 0;
+    if (table != nullptr) {
+      size_t num_transforms = min(num_matrices, table->get_num_transforms());
+      for (; i < num_transforms; ++i) {
 #ifdef STDFLOAT_DOUBLE
-      LMatrix4 matrix;
-      table->get_transform(i)->get_matrix(matrix);
-      matrices[i] = LCAST(float, matrix);
+        LMatrix4 matrix;
+        table->get_transform(i)->get_matrix(matrix);
+        matrices[i] = LCAST(float, matrix);
 #else
-      table->get_transform(i)->get_matrix(matrices[i]);
+        table->get_transform(i)->get_matrix(matrices[i]);
 #endif
+      }
     }
+    for (; i < num_matrices; ++i) {
+      matrices[i] = LMatrix4f::ident_mat();
+    }
+    _glgsg->_glUniformMatrix4fv(_transform_table_index, _transform_table_size,
+                                (_shader->get_language() == Shader::SL_Cg),
+                                (float *)matrices);
   }
-  for (; i < (size_t)_transform_table_size; ++i) {
-    matrices[i] = LMatrix4f::ident_mat();
-  }
+  else {
+    // Reduced 3x4 matrix, used by shader generator
+    LVecBase4f *vectors = (LVecBase4f *)alloca(_transform_table_size * sizeof(LVecBase4f) * 3);
 
-  _glgsg->_glUniformMatrix4fv(_transform_table_index, _transform_table_size,
-                              (_shader->get_language() == Shader::SL_Cg),
-                              (float *)matrices);
+    size_t i = 0;
+    if (table != nullptr) {
+      size_t num_transforms = std::min(num_matrices, table->get_num_transforms());
+      for (; i < num_transforms; ++i) {
+        LMatrix4f matrix;
+#ifdef STDFLOAT_DOUBLE
+        LMatrix4d matrixd;
+        table->get_transform(i)->get_matrix(matrixd);
+        matrix = LCAST(float, matrixd);
+#else
+        table->get_transform(i)->get_matrix(matrix);
+#endif
+        vectors[i * 3 + 0] = matrix.get_col(0);
+        vectors[i * 3 + 1] = matrix.get_col(1);
+        vectors[i * 3 + 2] = matrix.get_col(2);
+      }
+    }
+    for (; i < num_matrices; ++i) {
+      vectors[i * 3 + 0].set(1, 0, 0, 0);
+      vectors[i * 3 + 1].set(0, 1, 0, 0);
+      vectors[i * 3 + 2].set(0, 0, 1, 0);
+    }
+    _glgsg->_glUniformMatrix3x4fv(_transform_table_index, _transform_table_size,
+                                  GL_FALSE, (float *)vectors);
+  }
 }
 
 /**

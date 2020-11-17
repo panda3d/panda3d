@@ -477,6 +477,7 @@ public:
   int _frame_number_loc = -1;
   int _transform_table_loc = -1;
   uint32_t _transform_table_size = 0;
+  bool _transform_table_reduced = false;
   int _slider_table_loc = -1;
   uint32_t _slider_table_size = 0;
 

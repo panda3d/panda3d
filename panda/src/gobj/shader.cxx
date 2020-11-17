@@ -1724,6 +1724,7 @@ bind_parameter(const Parameter &param) {
 
       _transform_table_loc = param._location;
       _transform_table_size = num_elements;
+      _transform_table_reduced = false;
       return true;
     }
     if (pieces[1] == "SliderTable") {
@@ -2415,8 +2416,17 @@ bind_parameter(const Parameter &param) {
       }
 
       if (pieces[1] == "transforms") {
+        const ::ShaderType::Matrix *matrix = element_type->as_matrix();
+        if (matrix == nullptr ||
+            matrix->get_num_rows() < 3 ||
+            matrix->get_num_columns() != 4 ||
+            matrix->get_scalar_type() != ScalarType::ST_float) {
+          return report_parameter_error(name, type, "expected float3x4[] or float4x4[]");
+        }
+
         _transform_table_loc = param._location;
         _transform_table_size = num_elements;
+        _transform_table_reduced = (matrix->get_num_rows() == 3);
       }
       else if (pieces[1] == "sliders") {
         _slider_table_loc = param._location;
