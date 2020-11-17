@@ -62,7 +62,7 @@ PUBLISHED:
   void clear_colliders();
   MAKE_SEQ_PROPERTY(colliders, get_num_colliders, get_collider);
 
-  void traverse(const NodePath &root);
+  BLOCKING void traverse(const NodePath &root);
 
 #if defined(DO_COLLISION_RECORDING) || !defined(CPPPARSER)
   void set_recorder(CollisionRecorder *recorder);

@@ -242,7 +242,11 @@ class VersionInfoResource(object):
         length, value_length = unpack('<HH', data[0:4])
         offset = 40 + value_length + (value_length & 1)
         dwords = array('I')
-        dwords.fromstring(bytes(data[40:offset]))
+        if sys.version_info >= (3, 2):
+            dwords.frombytes(bytes(data[40:offset]))
+        else:
+            dwords.fromstring(bytes(data[40:offset]))
+
         if len(dwords) > 0:
             self.signature = dwords[0]
         if len(dwords) > 1:
