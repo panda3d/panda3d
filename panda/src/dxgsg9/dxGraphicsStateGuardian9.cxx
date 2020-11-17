@@ -1241,8 +1241,9 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     }
   } else {
     // Set the vertex declaration for the shader.
+    BitMask32 used_streams;
     LPDIRECT3DVERTEXDECLARATION9 decl =
-      _current_shader_context->get_vertex_declaration(this, format);
+      _current_shader_context->get_vertex_declaration(this, format, used_streams);
     if (decl == nullptr) {
       return false;
     }
@@ -1259,6 +1260,10 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     size_t i;
     for (i = 0; i < num_arrays; ++i) {
       const GeomVertexArrayDataHandle *array_reader = _data_reader->get_array_reader(i);
+      if (!used_streams.get_bit(i)) {
+        _d3d_device->SetStreamSource(i, nullptr, 0, 0);
+        continue;
+      }
 
       // Get the vertex buffer for this array.
       DXVertexBufferContext9 *dvbc;
@@ -1302,7 +1307,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
       _d3d_device->SetStreamSource(i, nullptr, 0, 0);
     }
 
-    _num_bound_streams = num_arrays;
+    _num_bound_streams = used_streams.get_highest_on_bit() + 1;
 
     // Update transform/slider tables.
     _current_shader_context->update_tables(this, _data_reader);

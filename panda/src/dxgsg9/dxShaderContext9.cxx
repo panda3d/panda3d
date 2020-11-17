@@ -376,7 +376,7 @@ release_resources() {
   }
 
   for (const auto &it : _vertex_declarations) {
-    it.second->Release();
+    it.second.first->Release();
   }
   _vertex_declarations.clear();
 }
@@ -1063,14 +1063,17 @@ update_shader_texture_bindings(DXShaderContext9 *prev, GSG *gsg) {
  * given GeomVertexFormat.
  */
 LPDIRECT3DVERTEXDECLARATION9 DXShaderContext9::
-get_vertex_declaration(GSG *gsg, const GeomVertexFormat *format) {
+get_vertex_declaration(GSG *gsg, const GeomVertexFormat *format, BitMask32 &used_streams) {
   // Look up the GeomVertexFormat in the cache.
   auto it = _vertex_declarations.find(format);
   if (it != _vertex_declarations.end()) {
     // We've previously rendered geometry with this GeomVertexFormat, so we
     // already have a vertex declaration.
-    return it->second;
+    used_streams = it->second.second;
+    return it->second.first;
   }
+
+  used_streams = 0;
 
   D3DVERTEXELEMENT9 *elements = (D3DVERTEXELEMENT9 *)
     alloca(sizeof(D3DVERTEXELEMENT9) * (_shader->_var_spec.size() + 1));
@@ -1152,6 +1155,7 @@ get_vertex_declaration(GSG *gsg, const GeomVertexFormat *format) {
       elements[i].Usage = D3DDECLUSAGE_POSITIONT;
     }
 
+    used_streams.set_bit(array_index);
     ++i;
   }
 
@@ -1164,6 +1168,7 @@ get_vertex_declaration(GSG *gsg, const GeomVertexFormat *format) {
     elements[i].Method = D3DDECLMETHOD_DEFAULT;
     elements[i].Usage = D3DDECLUSAGE_COLOR;
     elements[i].UsageIndex = 0;
+    used_streams.set_bit(format->get_num_arrays());
     ++i;
   }
 
@@ -1205,6 +1210,6 @@ get_vertex_declaration(GSG *gsg, const GeomVertexFormat *format) {
     return nullptr;
   }
 
-  _vertex_declarations[format] = decl;
+  _vertex_declarations[format] = std::make_pair(decl, used_streams);
   return decl;
 }
