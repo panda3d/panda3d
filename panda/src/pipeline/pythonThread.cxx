@@ -38,11 +38,11 @@ PythonThread(PyObject *function, PyObject *args,
 
   set_args(args);
 
-#ifndef SIMPLE_THREADS
+#if !defined(SIMPLE_THREADS) && defined(WITH_THREAD) && PY_VERSION_HEX < 0x03090000
   // Ensure that the Python threading system is initialized and ready to go.
-#ifdef WITH_THREAD  // This symbol defined within Python.h
+  // WITH_THREAD symbol defined within Python.h
+  // PyEval_InitThreads is now a deprecated no-op in Python 3.9+
   PyEval_InitThreads();
-#endif
 #endif
 }
 
