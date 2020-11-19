@@ -2038,13 +2038,17 @@ def SdkLocatePython(prefer_thirdparty_python=False):
     abiflags = getattr(sys, 'abiflags', '')
 
     if GetTarget() == 'windows':
-        sdkdir = GetThirdpartyBase() + "/win-python"
-        sdkdir += "%d.%d" % sys.version_info[:2]
+        if PkgHasCustomLocation("PYTHON"):
+            # Check our custom location instead (--python-libdir, --python-incdir)
+            sdkdir = FindOptDirectory("PYTHON")
+        else:
+            sdkdir = GetThirdpartyBase() + "/win-python"
+            sdkdir += "%d.%d" % sys.version_info[:2]
 
-        if GetOptimize() <= 2:
-            sdkdir += "-dbg"
-        if GetTargetArch() == 'x64':
-            sdkdir += "-x64"
+            if GetOptimize() <= 2:
+                sdkdir += "-dbg"
+            if GetTargetArch() == 'x64':
+                sdkdir += "-x64"
 
         SDK["PYTHON"] = sdkdir
         SDK["PYTHONEXEC"] = SDK["PYTHON"].replace('\\', '/') + "/python"
@@ -2744,6 +2748,40 @@ def LibDirectory(opt, dir):
 
 def FrameworkDirectory(opt, dir):
     FRAMEWORKDIRECTORIES.append((opt, dir))
+
+def FindIncDirectory(opt):
+    # Find the include directory associated with this module
+    for mod, dir in INCDIRECTORIES:
+        if mod == opt:
+            return dir
+
+def FindLibDirectory(opt):
+    # Find the library directory associated with this module
+    for mod, dir in LIBDIRECTORIES:
+        if mod == opt:
+            return dir
+
+def FindOptDirectory(opt):
+    # Find the common directory associated with this module
+    # using the include and library directories as a guide
+    include_dir = FindIncDirectory(opt)
+    lib_dir = FindLibDirectory(opt)
+
+    if include_dir and lib_dir:
+        # The module's common directory is the common prefix of
+        # its include and library directory
+        common_dir = os.path.commonprefix([include_dir, lib_dir])
+
+        if common_dir:
+            return os.path.abspath(common_dir)
+    elif include_dir:
+        # The module's common directory is the parent of the include
+        # directory
+        return os.path.abspath(os.path.join(include_dir, os.pardir))
+    elif lib_dir:
+        # The module's common directory is the parent of the library
+        # directory
+        return os.path.abspath(os.path.join(lib_dir, os.pardir))
 
 def LibName(opt, name):
     # Check to see if the lib file actually exists for the thirdparty library given
