@@ -2041,6 +2041,11 @@ def SdkLocatePython(prefer_thirdparty_python=False):
         if PkgHasCustomLocation("PYTHON"):
             # Check our custom location instead (--python-libdir, --python-incdir)
             sdkdir = FindOptDirectory("PYTHON")
+
+            if sdkdir is None:
+                exit("Could not find a Python installation using these command line options.")
+
+            sdkdir = sdkdir.replace('\\', '/')
         else:
             sdkdir = GetThirdpartyBase() + "/win-python"
             sdkdir += "%d.%d" % sys.version_info[:2]
@@ -2051,7 +2056,8 @@ def SdkLocatePython(prefer_thirdparty_python=False):
                 sdkdir += "-x64"
 
         SDK["PYTHON"] = sdkdir
-        SDK["PYTHONEXEC"] = SDK["PYTHON"].replace('\\', '/') + "/python"
+        SDK["PYTHONEXEC"] = SDK["PYTHON"] + "/python"
+
         if (GetOptimize() <= 2):
             SDK["PYTHONEXEC"] += "_d.exe"
         else:
@@ -2753,13 +2759,13 @@ def FindIncDirectory(opt):
     # Find the include directory associated with this module
     for mod, dir in INCDIRECTORIES:
         if mod == opt:
-            return dir
+            return os.path.abspath(dir)
 
 def FindLibDirectory(opt):
     # Find the library directory associated with this module
     for mod, dir in LIBDIRECTORIES:
         if mod == opt:
-            return dir
+            return os.path.abspath(dir)
 
 def FindOptDirectory(opt):
     # Find the common directory associated with this module
