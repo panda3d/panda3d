@@ -56,6 +56,7 @@ set(P3EXPRESS_HEADERS
   virtualFileMountMultifile.h virtualFileMountMultifile.I
   virtualFileMountRamdisk.h virtualFileMountRamdisk.I
   virtualFileMountSystem.h virtualFileMountSystem.I
+  virtualFileMountZip.h virtualFileMountZip.I
   virtualFileSimple.h virtualFileSimple.I
   virtualFileSystem.h virtualFileSystem.I
   weakPointerCallback.I weakPointerCallback.h
@@ -110,6 +111,7 @@ set(P3EXPRESS_SOURCES
   virtualFileMountMultifile.cxx
   virtualFileMountRamdisk.cxx
   virtualFileMountSystem.cxx
+  virtualFileMountZip.cxx
   virtualFileSimple.cxx virtualFileSystem.cxx
   weakPointerCallback.cxx
   weakPointerTo.cxx

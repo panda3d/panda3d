@@ -18,6 +18,7 @@
 #include "virtualFileMountMultifile.h"
 #include "virtualFileMountRamdisk.h"
 #include "virtualFileMountSystem.h"
+#include "virtualFileMountZip.h"
 #include "streamWrapper.h"
 #include "dSearchPath.h"
 #include "dcast.h"

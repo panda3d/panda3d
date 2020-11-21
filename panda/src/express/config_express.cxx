@@ -26,6 +26,7 @@
 #include "virtualFileMountMultifile.h"
 #include "virtualFileMountRamdisk.h"
 #include "virtualFileMountSystem.h"
+#include "virtualFileMountZip.h"
 #include "virtualFileSimple.h"
 #include "fileReference.h"
 #include "temporaryFile.h"
