@@ -166,7 +166,7 @@ CLP(CgShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderConte
             if (cgGetParameterSemantic(p)) {
               GLCAT.error(false) << " : " << cgGetParameterSemantic(p);
             }
-            GLCAT.error(false) << " should be declared as float4, not float3!\n";
+            GLCAT.error(false) << " should be declared as float3, not float4!\n";
           }
           break;
         case 3:  // gl_Color
