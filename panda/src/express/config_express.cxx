@@ -117,6 +117,7 @@ init_libexpress() {
   VirtualFileMountMultifile::init_type();
   VirtualFileMountRamdisk::init_type();
   VirtualFileMountSystem::init_type();
+  VirtualFileMountZip::init_type();
   VirtualFileSimple::init_type();
   FileReference::init_type();
   TemporaryFile::init_type();
