@@ -65,11 +65,16 @@ set(P3COLLIDE_SOURCES
   config_collide.cxx
 )
 
+set(P3COLLIDE_IGATEEXT
+  collisionPolygon_ext.cxx
+  collisionPolygon_ext.h
+)
+
 composite_sources(p3collide P3COLLIDE_SOURCES)
 add_component_library(p3collide SYMBOL BUILDING_PANDA_COLLIDE
   ${P3COLLIDE_HEADERS} ${P3COLLIDE_SOURCES})
 target_link_libraries(p3collide p3tform)
-target_interrogate(p3collide ALL)
+target_interrogate(p3collide ALL EXTENSIONS ${P3COLLIDE_IGATEEXT})
 
 if(NOT BUILD_METALIBS)
   install(TARGETS p3collide
