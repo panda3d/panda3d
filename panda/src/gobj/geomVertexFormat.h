@@ -72,6 +72,7 @@ PUBLISHED:
   MAKE_PROPERTY(animation, get_animation, set_animation);
 
   CPT(GeomVertexFormat) get_post_animated_format() const;
+  CPT(GeomVertexFormat) get_post_instanced_format() const;
   CPT(GeomVertexFormat) get_union_format(const GeomVertexFormat *other) const;
 
   INLINE size_t get_num_arrays() const;
@@ -222,7 +223,8 @@ private:
   typedef pvector<MorphRecord> Morphs;
   Morphs _morphs;
 
-  const GeomVertexFormat *_post_animated_format;
+  const GeomVertexFormat *_post_animated_format = nullptr;
+  const GeomVertexFormat *_post_instanced_format = nullptr;
 
   // This is the global registry of all currently-in-use formats.
   typedef pset<GeomVertexFormat *, IndirectCompareTo<GeomVertexFormat> > Formats;

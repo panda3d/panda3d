@@ -2498,8 +2498,12 @@ finish_decal() {
 bool GraphicsStateGuardian::
 begin_draw_primitives(const GeomPipelineReader *geom_reader,
                       const GeomVertexDataPipelineReader *data_reader,
-                      bool force) {
+                      size_t num_instances, bool force) {
   _data_reader = data_reader;
+
+  if (num_instances == 0) {
+    return false;
+  }
 
   // Always draw if we have a shader, since the shader might use a different
   // mechanism for fetching vertex data.

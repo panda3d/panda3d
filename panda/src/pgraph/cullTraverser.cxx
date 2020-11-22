@@ -271,10 +271,10 @@ show_bounds(CullTraverserData &data, bool tight) {
       CullableObject *outer_viz =
         new CullableObject(std::move(bounds_viz), get_bounds_outer_viz_state(),
                            internal_transform);
+      outer_viz->_instances = data._instances;
       _cull_handler->record_object(outer_viz, this);
     }
-
-  } else {
+  } else if (data._instances == nullptr) {
     draw_bounding_volume(node->get_bounds(), internal_transform);
 
     if (node->is_geom_node()) {
@@ -285,6 +285,22 @@ show_bounds(CullTraverserData &data, bool tight) {
       for (int i = 0; i < num_geoms; ++i) {
         draw_bounding_volume(gnode->get_geom(i)->get_bounds(),
                              internal_transform);
+      }
+    }
+  } else {
+    // Draw bounds for every instance.
+    for (const InstanceList::Instance &instance : *data._instances) {
+      CPT(TransformState) transform = internal_transform->compose(instance.get_transform());
+      draw_bounding_volume(node->get_bounds(), transform);
+
+      if (node->is_geom_node()) {
+        // Also show the bounding volumes of included Geoms.
+        transform = transform->compose(node->get_transform());
+        GeomNode *gnode = (GeomNode *)node;
+        int num_geoms = gnode->get_num_geoms();
+        for (int i = 0; i < num_geoms; ++i) {
+          draw_bounding_volume(gnode->get_geom(i)->get_bounds(), transform);
+        }
       }
     }
   }
