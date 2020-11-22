@@ -608,10 +608,10 @@ reset() {
   GraphicsStateGuardian::reset();
 
   // Build _inv_state_mask as a mask of 1's where we don't care, and 0's where
-  // we do care, about the state.  _inv_state_mask =
-  // RenderState::SlotMask::all_on();
+  // we do care, about the state.
+#ifndef OPENGLES_1
   _inv_state_mask.clear_bit(ShaderAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(AlphaTestAttrib::get_class_slot());
+#endif
   _inv_state_mask.clear_bit(AntialiasAttrib::get_class_slot());
   _inv_state_mask.clear_bit(ClipPlaneAttrib::get_class_slot());
   _inv_state_mask.clear_bit(ColorAttrib::get_class_slot());
@@ -621,20 +621,29 @@ reset() {
   _inv_state_mask.clear_bit(DepthTestAttrib::get_class_slot());
   _inv_state_mask.clear_bit(DepthWriteAttrib::get_class_slot());
   _inv_state_mask.clear_bit(RenderModeAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(RescaleNormalAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(ShadeModelAttrib::get_class_slot());
   _inv_state_mask.clear_bit(TransparencyAttrib::get_class_slot());
   _inv_state_mask.clear_bit(ColorWriteAttrib::get_class_slot());
   _inv_state_mask.clear_bit(ColorBlendAttrib::get_class_slot());
+#if !defined(OPENGLES) || defined(OPENGLES_1)
   _inv_state_mask.clear_bit(LogicOpAttrib::get_class_slot());
+#endif
   _inv_state_mask.clear_bit(TextureAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(TexGenAttrib::get_class_slot());
   _inv_state_mask.clear_bit(TexMatrixAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(MaterialAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(LightAttrib::get_class_slot());
   _inv_state_mask.clear_bit(StencilAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(FogAttrib::get_class_slot());
   _inv_state_mask.clear_bit(ScissorAttrib::get_class_slot());
+
+  // We only care about this state if we are using the fixed-function pipeline.
+#ifdef SUPPORT_FIXED_FUNCTION
+  if (has_fixed_function_pipeline()) {
+    _inv_state_mask.clear_bit(AlphaTestAttrib::get_class_slot());
+    _inv_state_mask.clear_bit(RescaleNormalAttrib::get_class_slot());
+    _inv_state_mask.clear_bit(ShadeModelAttrib::get_class_slot());
+    _inv_state_mask.clear_bit(TexGenAttrib::get_class_slot());
+    _inv_state_mask.clear_bit(MaterialAttrib::get_class_slot());
+    _inv_state_mask.clear_bit(LightAttrib::get_class_slot());
+    _inv_state_mask.clear_bit(FogAttrib::get_class_slot());
+  }
+#endif
 
   // Output the vendor and version strings.
   query_gl_version();
@@ -1911,6 +1920,8 @@ reset() {
          get_extension_func("glUniform3uiv");
       _glUniform4uiv = (PFNGLUNIFORM4UIVPROC)
          get_extension_func("glUniform4uiv");
+      _glVertexAttribI4ui = (PFNGLVERTEXATTRIBI4UIPROC)
+         get_extension_func("glVertexAttribI4ui");
 
     } else if (has_extension("GL_EXT_gpu_shader4")) {
       _glBindFragDataLocation = (PFNGLBINDFRAGDATALOCATIONPROC)
@@ -1925,10 +1936,13 @@ reset() {
          get_extension_func("glUniform3uivEXT");
       _glUniform4uiv = (PFNGLUNIFORM4UIVPROC)
          get_extension_func("glUniform4uivEXT");
+      _glVertexAttribI4ui = (PFNGLVERTEXATTRIBI4UIPROC)
+         get_extension_func("glVertexAttribI4uiEXT");
 
     } else {
       _glBindFragDataLocation = nullptr;
       _glVertexAttribIPointer = nullptr;
+      _glVertexAttribI4ui = nullptr;
     }
     if (is_at_least_gl_version(4, 1) ||
         has_extension("GL_ARB_vertex_attrib_64bit")) {
@@ -1957,8 +1971,11 @@ reset() {
        get_extension_func("glVertexAttribPointerARB");
 
     _glBindFragDataLocation = nullptr;
+    _glVertexAttribI4ui = nullptr;
     _glVertexAttribIPointer = nullptr;
     _glVertexAttribLPointer = nullptr;
+  } else {
+    _glVertexAttribI4ui = nullptr;
   }
 #endif
 
@@ -2005,8 +2022,11 @@ reset() {
   if (is_at_least_gles_version(3, 0)) {
     _glVertexAttribIPointer = (PFNGLVERTEXATTRIBIPOINTERPROC)
       get_extension_func("glVertexAttribIPointer");
+    _glVertexAttribI4ui = (PFNGLVERTEXATTRIBI4UIPROC)
+      get_extension_func("glVertexAttribI4ui");
   } else {
     _glVertexAttribIPointer = nullptr;
+    _glVertexAttribI4ui = nullptr;
   }
 
   if (has_extension("GL_EXT_blend_func_extended")) {
@@ -11392,17 +11412,27 @@ set_state_and_transform(const RenderState *target,
   _state_pcollector.add_level(1);
   PStatGPUTimer timer1(this, _draw_set_state_pcollector);
 
-  if (transform != _internal_transform) {
+  bool transform_changed = transform != _internal_transform;
+  if (transform_changed) {
     // PStatGPUTimer timer(this, _draw_set_state_transform_pcollector);
     _transform_state_pcollector.add_level(1);
     _internal_transform = transform;
     do_issue_transform();
   }
 
-  //XXX the _inv_state_mask system does not appear to be used at the moment.
-  //if (target == _state_rs && (_state_mask | _inv_state_mask).is_all_on()) {
-  //  return;
-  //}
+  if (target == _state_rs && (_state_mask | _inv_state_mask).is_all_on()) {
+#ifndef OPENGLES_1
+    if (transform_changed) {
+      // The state has not changed, but the transform has. Set the new
+      // transform on the shader, if we have one.
+      if (_current_shader_context != nullptr) {
+        _current_shader_context->set_state_and_transform(_state_rs, transform,
+          _scene_setup->get_camera_transform(), _projection_mat);
+      }
+    }
+#endif
+    return;
+  }
   _target_rs = target;
 
 #ifndef OPENGLES_1
@@ -11413,10 +11443,12 @@ set_state_and_transform(const RenderState *target,
     do_issue_shader();
     _state_shader = _target_shader;
     _state_mask.clear_bit(TextureAttrib::get_class_slot());
+    _state_mask.set_bit(ShaderAttrib::get_class_slot());
   }
   else if (!has_fixed_function_pipeline() && _current_shader == nullptr) { // In the case of OpenGL ES 2.x, we need to glUseShader before we draw anything.
     do_issue_shader();
     _state_mask.clear_bit(TextureAttrib::get_class_slot());
+    _state_mask.set_bit(ShaderAttrib::get_class_slot());
   }
 
   // Update all of the state that is bound to the shader program.

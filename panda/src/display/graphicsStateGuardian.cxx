@@ -2616,6 +2616,7 @@ reset() {
   _state_rs = RenderState::make_empty();
   _target_rs = nullptr;
   _state_mask.clear();
+  _inv_state_mask = RenderState::SlotMask::all_on();
   _internal_transform = _cs_transform;
   _scene_null = new SceneSetup;
   _scene_setup = _scene_null;
