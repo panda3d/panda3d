@@ -1002,18 +1002,55 @@ set_properties_now(WindowProperties &properties) {
 
   // TODO: support raw mice.
 
-  if (properties.has_cursor_hidden()) {
-    if (properties.get_cursor_hidden() != _properties.get_cursor_hidden()) {
-      if (properties.get_cursor_hidden() && _input->get_pointer().get_in_window()) {
-        [NSCursor hide];
-        _mouse_hidden = true;
-      } else if (_mouse_hidden) {
-        [NSCursor unhide];
-        _mouse_hidden = false;
-      }
-      _properties.set_cursor_hidden(properties.get_cursor_hidden());
+  if (properties.has_cursor_filename() || properties.has_cursor_type()) {
+    //First apply in local properties
+    Filename cursor_filename;
+    if (properties.has_cursor_filename()) {
+      cursor_filename = properties.get_cursor_filename();
+      _properties.set_cursor_filename(cursor_filename);
+      properties.clear_cursor_filename();
     }
-    properties.clear_cursor_hidden();
+    WindowProperties::CursorType cursor_type;
+    if (properties.has_cursor_type()) {
+      cursor_type = properties.get_cursor_type();
+      _properties.set_cursor_type(cursor_type);
+      properties.clear_cursor_type();
+    }
+
+    NSCursor* cursor = nil;
+    //Then use file if no type set, or custom type is set
+    if (!_properties.has_cursor_type()) {
+      cursor = load_cursor(_properties.get_cursor_filename());
+    } else {
+    //If another type is set, set it instead
+      switch(_properties.get_cursor_type()){
+      case WindowProperties::CT_default:
+        cursor = [NSCursor arrowCursor]; break;
+      case WindowProperties::CT_cross:
+        cursor = [NSCursor crosshairCursor]; break;
+      case WindowProperties::CT_hand:
+        cursor = [NSCursor openHandCursor]; break;
+      case WindowProperties::CT_text:
+        cursor = [NSCursor iBeamCursor]; break;
+      case WindowProperties::CT_hidden:
+        if(_input->get_pointer().get_in_window()) {
+          [NSCursor hide];
+          _mouse_hidden = true;
+        } else {
+          [NSCursor unhide];
+          _mouse_hidden = false;
+        }
+        break;
+      case WindowProperties::CT_custom:
+        cursor = load_cursor(_properties.get_cursor_filename());
+        break;
+      }
+    }
+    if (_cursor != nil && cursor != nil) {
+      [_cursor release];
+      _cursor = cursor;
+      [[_view window] invalidateCursorRectsForView:_view];
+    }
   }
 
   if (properties.has_icon_filename()) {
@@ -1028,34 +1065,6 @@ set_properties_now(WindowProperties &properties) {
       _properties.set_icon_filename(icon_filename);
       properties.clear_icon_filename();
     }
-  }
-
-  if (properties.has_cursor_filename()) {
-    Filename cursor_filename = properties.get_cursor_filename();
-
-    if (cursor_filename.empty()) {
-      // Release the existing cursor.
-      if (_cursor != nil) {
-        [_cursor release];
-        _cursor = nil;
-      }
-      properties.set_cursor_filename(cursor_filename);
-      properties.clear_cursor_filename();
-    } else {
-      NSCursor *cursor = load_cursor(cursor_filename);
-      if (cursor != nil) {
-        // Replace the existing cursor.
-        if (_cursor != nil) {
-          [_cursor release];
-        }
-        _cursor = cursor;
-        _properties.set_cursor_filename(cursor_filename);
-        properties.clear_cursor_filename();
-      }
-    }
-    // This will ensure that NSView's resetCursorRects gets called, which sets
-    // the appropriate cursor rects.
-    [[_view window] invalidateCursorRectsForView:_view];
   }
 
   if (properties.has_z_order() && _window != nil) {
