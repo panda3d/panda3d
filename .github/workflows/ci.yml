@@ -198,7 +198,7 @@ jobs:
       shell: bash
       run: >
         cmake -DWANT_PYTHON_VERSION=3.6
-        -DPython_FIND_REGISTRY=NEVER -DPython_ROOT=$pythonLocation .
+        -DPython_FIND_REGISTRY=NEVER -DPython_ROOT="$pythonLocation" .
     - name: Build (Python 3.6)
       if: contains(matrix.python, 'YES')
       # BEGIN A
@@ -230,7 +230,7 @@ jobs:
       shell: bash
       run: >
         cmake -DWANT_PYTHON_VERSION=3.7
-        -DPython_FIND_REGISTRY=NEVER -DPython_ROOT=$pythonLocation .
+        -DPython_FIND_REGISTRY=NEVER -DPython_ROOT="$pythonLocation" .
     - name: Build (Python 3.7)
       if: contains(matrix.python, 'YES')
       # BEGIN A
@@ -262,7 +262,7 @@ jobs:
       shell: bash
       run: >
         cmake -DWANT_PYTHON_VERSION=3.8
-        -DPython_FIND_REGISTRY=NEVER -DPython_ROOT=$pythonLocation .
+        -DPython_FIND_REGISTRY=NEVER -DPython_ROOT="$pythonLocation" .
     - name: Build (Python 3.8)
       if: contains(matrix.python, 'YES')
       # BEGIN A
@@ -294,7 +294,7 @@ jobs:
       shell: bash
       run: >
         cmake -DWANT_PYTHON_VERSION=3.9
-        -DPython_FIND_REGISTRY=NEVER -DPython_ROOT=$pythonLocation .
+        -DPython_FIND_REGISTRY=NEVER -DPython_ROOT="$pythonLocation" .
     - name: Build (Python 3.9)
       if: contains(matrix.python, 'YES')
       # BEGIN A
@@ -366,8 +366,9 @@ jobs:
       with:
         python-version: 3.9
     - name: Build Python 3.9
+      shell: bash
       run: |
-        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir=$pythonLocation/include --python-libdir=$pythonLocation/lib --verbose --threads=4
+        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4
     - name: Test Python 3.9
       shell: bash
       run: |
@@ -378,8 +379,9 @@ jobs:
       with:
         python-version: 3.8
     - name: Build Python 3.8
+      shell: bash
       run: |
-        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir=$pythonLocation/include --python-libdir=$pythonLocation/lib --verbose --threads=4
+        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4
     - name: Test Python 3.8
       shell: bash
       run: |
@@ -390,8 +392,9 @@ jobs:
       with:
         python-version: 3.7
     - name: Build Python 3.7
+      shell: bash
       run: |
-        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir=$pythonLocation/include --python-libdir=$pythonLocation/lib --verbose --threads=4
+        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4
     - name: Test Python 3.7
       shell: bash
       run: |

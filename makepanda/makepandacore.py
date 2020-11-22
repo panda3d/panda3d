@@ -2044,8 +2044,6 @@ def SdkLocatePython(prefer_thirdparty_python=False):
 
             if sdkdir is None:
                 exit("Could not find a Python installation using these command line options.")
-
-            sdkdir = sdkdir.replace('\\', '/')
         else:
             sdkdir = GetThirdpartyBase() + "/win-python"
             sdkdir += "%d.%d" % sys.version_info[:2]
@@ -2055,6 +2053,7 @@ def SdkLocatePython(prefer_thirdparty_python=False):
             if GetTargetArch() == 'x64':
                 sdkdir += "-x64"
 
+        sdkdir = sdkdir.replace('\\', '/')
         SDK["PYTHON"] = sdkdir
         SDK["PYTHONEXEC"] = SDK["PYTHON"] + "/python"
 
