@@ -31,11 +31,11 @@
 template<>
 class Extension<CollisionPolygon> : public ExtensionBase<CollisionPolygon> {
 public:
-    bool verify_points(PyObject *points);
-    void setup_points(PyObject *points);
+  static bool verify_points(PyObject *points);
+  void setup_points(PyObject *points);
 
 private:
-    pvector<LPoint3f> convert_points(PyObject *points);
+  static pvector<LPoint3> convert_points(PyObject *points);
 };
 
 #endif  // HAVE_PYTHON

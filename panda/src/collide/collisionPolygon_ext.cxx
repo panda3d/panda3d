@@ -17,7 +17,11 @@
 
 #include "collisionPolygon.h"
 
+#ifdef STDFLOAT_DOUBLE
+extern struct Dtool_PyTypedObject Dtool_LPoint3d;
+#else
 extern struct Dtool_PyTypedObject Dtool_LPoint3f;
+#endif
 
 /**
  * Verifies that the indicated Python list of points will define a
@@ -25,11 +29,11 @@ extern struct Dtool_PyTypedObject Dtool_LPoint3f;
  */
 bool Extension<CollisionPolygon>::
 verify_points(PyObject *points) {
-  pvector<LPoint3f> vec = convert_points(points);
-  LPoint3f *verts_begin = &vec[0];
-  LPoint3f *verts_end = verts_begin + vec.size();
+  const pvector<LPoint3> vec = convert_points(points);
+  const LPoint3 *verts_begin = &vec[0];
+  const LPoint3 *verts_end = verts_begin + vec.size();
 
-  return _this->verify_points(verts_begin, verts_end);
+  return CollisionPolygon::verify_points(verts_begin, verts_end);
 }
 
 /**
@@ -38,22 +42,22 @@ verify_points(PyObject *points) {
  */
 void Extension<CollisionPolygon>::
 setup_points(PyObject *points) {
-  pvector<LPoint3f> vec = convert_points(points);
-  LPoint3f *verts_begin = &vec[0];
-  LPoint3f *verts_end = verts_begin + vec.size();
+  const pvector<LPoint3> vec = convert_points(points);
+  const LPoint3 *verts_begin = &vec[0];
+  const LPoint3 *verts_end = verts_begin + vec.size();
 
   _this->setup_points(verts_begin, verts_end);
 }
 
 /**
- * Converts a Python sequence to a list of LPoint3f objects.
+ * Converts a Python sequence to a list of LPoint3 objects.
  */
-pvector<LPoint3f> Extension<CollisionPolygon>::
+pvector<LPoint3> Extension<CollisionPolygon>::
 convert_points(PyObject *points) {
-  pvector<LPoint3f> vec;
+  pvector<LPoint3> vec;
   PyObject *seq = PySequence_Fast(points, "function expects a sequence");
 
-  if (seq == nullptr) {
+  if (!seq) {
     return vec;
   }
 
@@ -64,8 +68,14 @@ convert_points(PyObject *points) {
   vec.reserve(len);
 
   for (Py_ssize_t i = 0; i < len; ++i) {
+#ifdef STDFLOAT_DOUBLE
+    if (ptr = DtoolInstance_UPCAST(items[i], Dtool_LPoint3d)) {
+#else
     if (ptr = DtoolInstance_UPCAST(items[i], Dtool_LPoint3f)) {
-      vec.push_back(*(LPoint3f *)ptr);
+#endif
+      vec.push_back(*(LPoint3 *)ptr);
+    } else {
+      collide_cat.warning() << "Argument must be of LPoint3 type.\n";
     }
   }
 

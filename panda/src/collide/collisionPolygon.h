@@ -59,7 +59,7 @@ PUBLISHED:
   bool is_valid() const;
   bool is_concave() const;
 
-  EXTENSION(bool verify_points(PyObject *points));
+  EXTENSION(static bool verify_points(PyObject *points));
   EXTENSION(void setup_points(PyObject *points));
 
 PUBLISHED:
