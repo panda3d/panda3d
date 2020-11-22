@@ -21,7 +21,7 @@ def test_collision_polygon_verify_colinear_points():
 
 
 def test_collision_polygon_verify_points():
-    # Those should be regular, colinear points
+    # Those should be regular, non-colinear points
     assert core.CollisionPolygon.verify_points([core.LPoint3(1, 0, 0), core.LPoint3(0, 1, 0), core.LPoint3(0, 0, 1)])
     assert core.CollisionPolygon.verify_points([core.LPoint3(10, 2, 8), core.LPoint3(7, 1, 3), core.LPoint3(5, 9, 6)])
     assert core.CollisionPolygon.verify_points([core.LPoint3(3, -8, -7), core.LPoint3(9, 10, 8), core.LPoint3(7, 0, 10), core.LPoint3(-6, -2, 3)])
