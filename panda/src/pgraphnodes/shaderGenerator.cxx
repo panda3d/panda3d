@@ -1094,7 +1094,9 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     text << "\t uniform float4 clipplane_" << i << ",\n";
   }
 
-  text << "\t uniform float4 attr_ambient,\n";
+  if (key._lighting) {
+    text << "\t uniform float4 attr_ambient,\n";
+  }
   text << "\t uniform float4 attr_colorscale\n";
   text << ") {\n";
 
