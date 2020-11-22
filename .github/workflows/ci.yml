@@ -92,12 +92,18 @@ jobs:
     - name: Install dependencies (macOS)
       if: runner.os == 'macOS'
       run: |
-        curl -O https://www.panda3d.org/download/panda3d-1.10.5/panda3d-1.10.5-tools-mac.tar.gz
-        tar -xf panda3d-1.10.5-tools-mac.tar.gz
+        curl -O https://www.panda3d.org/download/panda3d-1.10.7/panda3d-1.10.7-tools-mac.tar.gz
+        tar -xf panda3d-1.10.7-tools-mac.tar.gz
+        mv panda3d-1.10.7/thirdparty thirdparty
+        rmdir panda3d-1.10.7
+
+        mkdir -p build/Frameworks
+        cp -R thirdparty/darwin-libs-a/nvidiacg/Cg.framework build/Frameworks/Cg.framework
+
+        mkdir -p "build/${{ matrix.config }}/Frameworks"
+        cp -R thirdparty/darwin-libs-a/nvidiacg/Cg.framework "build/${{ matrix.config }}/Frameworks/Cg.framework"
 
         brew install ccache
-
-        echo "##[set-env name=thirdpartyOption;]-D THIRDPARTY_DIRECTORY=../panda3d-1.10.5/thirdparty" -DHAVE_CG=OFF
 
     - name: Install dependencies (Ubuntu)
       if: startsWith(matrix.os, 'ubuntu')
@@ -120,19 +126,18 @@ jobs:
       if: runner.os == 'Windows'
       uses: actions/cache@v1
       with:
-        path: thirdparty-tools
-        key: ci-cmake-${{ runner.OS }}-thirdparty-v1.10.5-r1
+        path: thirdparty
+        key: ci-cmake-${{ runner.OS }}-thirdparty-v1.10.7-r1
     - name: Install dependencies (Windows)
       if: runner.os == 'Windows'
       shell: powershell
       run: |
-        if (!(Test-Path thirdparty-tools/panda3d-1.10.5)) {
+        if (!(Test-Path thirdparty/win-libs-vc14-x64)) {
           $wc = New-Object System.Net.WebClient
-          $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.5/panda3d-1.10.5-tools-win64.zip", "thirdparty-tools.zip")
+          $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.7/panda3d-1.10.7-tools-win64.zip", "thirdparty-tools.zip")
           Expand-Archive -Path thirdparty-tools.zip
+          Move-Item -Path thirdparty-tools/panda3d-1.10.7/thirdparty -Destination .
         }
-
-        echo "##[set-env name=thirdpartyOption;]-D THIRDPARTY_DIRECTORY=../thirdparty-tools/panda3d-1.10.5/thirdparty"
 
     - name: ccache (non-Windows)
       if: runner.os != 'Windows'
@@ -146,15 +151,15 @@ jobs:
       env:
         CMAKE_GENERATOR: "${{ matrix.generator }}"
       run: >
-        mkdir build
+        mkdir -p build
 
         cd build
 
         if ${{ matrix.compiler == 'Clang' }}; then
           if [[ "$CMAKE_GENERATOR" == *Studio*2019* ]]; then
-            export CMAKE_GENERATOR_TOOLSET=ClangCL thirdpartyOption="$thirdpartyOption -DHAVE_HARFBUZZ=NO"
+            export CMAKE_GENERATOR_TOOLSET=ClangCL
           elif [[ "$CMAKE_GENERATOR" == *Studio* ]]; then
-            export CMAKE_GENERATOR_TOOLSET=LLVM thirdpartyOption="$thirdpartyOption -DHAVE_HARFBUZZ=NO"
+            export CMAKE_GENERATOR_TOOLSET=LLVM
           else
             export CC=clang CXX=clang++
           fi
@@ -162,7 +167,8 @@ jobs:
 
         if ${{ runner.os != 'Windows' }}; then
           compilerLauncher=$(echo -DCMAKE_C{,XX}_COMPILER_LAUNCHER=ccache)
-          echo "##[set-env name=CCACHE_DIR;]$(dirname $PWD)/ccache"
+          export CCACHE_DIR="$(dirname $PWD)/ccache"
+          echo "CCACHE_DIR=$(dirname $PWD)/ccache" >> $GITHUB_ENV
         fi
 
         cmake
@@ -172,7 +178,6 @@ jobs:
         -D BUILD_METALIBS=${{ matrix.metalibs }}
         -D HAVE_PYTHON=${{ matrix.python }}
         -D HAVE_EIGEN=${{ matrix.eigen }}
-        ${thirdpartyOption:-}
         ..
 
     - name: Build (no Python)
@@ -313,16 +318,16 @@ jobs:
       shell: powershell
       run: |
         $wc = New-Object System.Net.WebClient
-        $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.5/panda3d-1.10.5-tools-win64.zip", "thirdparty-tools.zip")
+        $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.7/panda3d-1.10.7-tools-win64.zip", "thirdparty-tools.zip")
         Expand-Archive -Path thirdparty-tools.zip
-        Move-Item -Path thirdparty-tools/panda3d-1.10.5/thirdparty -Destination .
+        Move-Item -Path thirdparty-tools/panda3d-1.10.7/thirdparty -Destination .
     - name: Get thirdparty packages (macOS)
       if: runner.os == 'macOS'
       run: |
-        curl -O https://www.panda3d.org/download/panda3d-1.10.5/panda3d-1.10.5-tools-mac.tar.gz
-        tar -xf panda3d-1.10.5-tools-mac.tar.gz
-        mv panda3d-1.10.5/thirdparty thirdparty
-        rmdir panda3d-1.10.5
+        curl -O https://www.panda3d.org/download/panda3d-1.10.7/panda3d-1.10.7-tools-mac.tar.gz
+        tar -xf panda3d-1.10.7-tools-mac.tar.gz
+        mv panda3d-1.10.7/thirdparty thirdparty
+        rmdir panda3d-1.10.7
         (cd thirdparty/darwin-libs-a && rm -rf rocket)
     - name: Set up Python 3.8
       uses: actions/setup-python@v1
