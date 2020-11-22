@@ -9764,15 +9764,22 @@ get_external_image_format(Texture *tex) const {
 
   case Texture::F_rgba:
   case Texture::F_rgbm:
-  case Texture::F_rgba4:
-  case Texture::F_rgba5:
   case Texture::F_rgba8:
   case Texture::F_rgba12:
+    return _supports_bgr ? GL_BGRA : GL_RGBA;
+
+  case Texture::F_rgba4:
+  case Texture::F_rgba5:
   case Texture::F_rgba16:
   case Texture::F_rgba32:
   case Texture::F_srgb_alpha:
   case Texture::F_rgb10_a2:
+#ifdef OPENGLES
+    // OpenGL ES doesn't have sized BGRA formats.
+    return GL_RGBA;
+#else
     return _supports_bgr ? GL_BGRA : GL_RGBA;
+#endif
 
   case Texture::F_luminance:
 #ifdef OPENGLES
@@ -10293,9 +10300,9 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
 
 #ifdef OPENGLES
   case Texture::F_rgba8:
-    return GL_RGBA8_OES;
+    return _supports_bgr ? GL_BGRA : GL_RGBA8_OES;
   case Texture::F_rgba12:
-    return force_sized ? GL_RGBA8 : GL_RGBA;
+    return _supports_bgr ? GL_BGRA : (force_sized ? GL_RGBA8 : GL_RGBA);
 #else
   case Texture::F_rgba8:
     if (Texture::is_unsigned(tex->get_component_type())) {
@@ -13785,7 +13792,11 @@ upload_simple_texture(CLP(TextureContext) *gtc) {
   Texture *tex = gtc->get_texture();
   nassertr(tex != nullptr, false);
 
+#ifdef OPENGLES
+  GLenum internal_format = GL_BGRA;
+#else
   GLenum internal_format = GL_RGBA;
+#endif
   GLenum external_format = GL_BGRA;
 
   const unsigned char *image_ptr = tex->get_simple_ram_image();
@@ -13799,6 +13810,9 @@ upload_simple_texture(CLP(TextureContext) *gtc) {
     // If the GL doesn't claim to support BGR, we may have to reverse the
     // component ordering of the image.
     external_format = GL_RGBA;
+#ifdef OPENGLES
+    internal_format = GL_RGBA;
+#endif
     image_ptr = fix_component_ordering(bgr_image, image_ptr, image_size,
                                        external_format, tex);
   }
