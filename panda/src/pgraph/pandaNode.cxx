@@ -2316,6 +2316,59 @@ compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
 }
 
 /**
+ * Returns a BoundingVolume that represents the external contents of the node.
+ * This should encompass the internal bounds, but also the bounding volumes of
+ * of all this node's children, which are passed in.
+ */
+void PandaNode::
+compute_external_bounds(CPT(BoundingVolume) &external_bounds,
+                        BoundingVolume::BoundsType btype,
+                        const BoundingVolume **volumes, size_t num_volumes,
+                        int pipeline_stage, Thread *current_thread) const {
+
+  CPT(TransformState) transform = get_transform(current_thread);
+  PT(GeometricBoundingVolume) gbv;
+
+  if (btype == BoundingVolume::BT_box) {
+    gbv = new BoundingBox;
+  }
+  else if (btype == BoundingVolume::BT_sphere || !transform->is_identity()) {
+    gbv = new BoundingSphere;
+  }
+  else {
+    // If all of the child volumes are a BoundingBox, and we have no
+    // transform, then our volume is also a BoundingBox.
+    bool all_box = true;
+
+    for (size_t i = 0; i < num_volumes; ++i) {
+      if (volumes[i]->as_bounding_box() == nullptr) {
+        all_box = false;
+      }
+    }
+
+    if (all_box) {
+      gbv = new BoundingBox;
+    } else {
+      gbv = new BoundingSphere;
+    }
+  }
+
+  if (num_volumes > 0) {
+    const BoundingVolume **child_begin = &volumes[0];
+    const BoundingVolume **child_end = child_begin + num_volumes;
+    ((BoundingVolume *)gbv)->around(child_begin, child_end);
+
+    // If we have a transform, apply it to the bounding volume we just
+    // computed.
+    if (!transform->is_identity()) {
+      gbv->xform(transform->get_mat());
+    }
+  }
+
+  external_bounds = gbv;
+}
+
+/**
  * Called after a scene graph update that either adds or remove parents from
  * this node, this just provides a hook for derived PandaNode objects that
  * need to update themselves based on the set of parents the node has.
@@ -3263,7 +3316,6 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
 #endif
     int child_volumes_i = 0;
 
-    bool all_box = true;
     CPT(BoundingVolume) internal_bounds = nullptr;
 
     if (update_bounds) {
@@ -3276,9 +3328,6 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
 #endif
         nassertr(child_volumes_i < num_children + 1, CDStageWriter(_cycler, pipeline_stage, cdata));
         child_volumes[child_volumes_i++] = internal_bounds;
-        if (internal_bounds->as_bounding_box() == nullptr) {
-          all_box = false;
-        }
       }
     }
 
@@ -3374,9 +3423,6 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
 #endif
             nassertr(child_volumes_i < num_children + 1, CDStageWriter(_cycler, pipeline_stage, cdata));
             child_volumes[child_volumes_i++] = child_cdataw->_external_bounds;
-            if (child_cdataw->_external_bounds->as_bounding_box() == nullptr) {
-              all_box = false;
-            }
           }
           num_vertices += child_cdataw->_nested_vertices;
         }
@@ -3429,9 +3475,6 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
 #endif
             nassertr(child_volumes_i < num_children + 1, CDStageWriter(_cycler, pipeline_stage, cdata));
             child_volumes[child_volumes_i++] = child_cdata->_external_bounds;
-            if (child_cdata->_external_bounds->as_bounding_box() == nullptr) {
-              all_box = false;
-            }
           }
           num_vertices += child_cdata->_nested_vertices;
         }
@@ -3485,38 +3528,17 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
         if (update_bounds) {
           cdataw->_nested_vertices = num_vertices;
 
-          CPT(TransformState) transform = get_transform(current_thread);
-          PT(GeometricBoundingVolume) gbv;
-
           BoundingVolume::BoundsType btype = cdataw->_bounds_type;
           if (btype == BoundingVolume::BT_default) {
             btype = bounds_type;
           }
 
-          if (btype == BoundingVolume::BT_box ||
-              (btype != BoundingVolume::BT_sphere && all_box && transform->is_identity())) {
-            // If all of the child volumes are a BoundingBox, and we have no
-            // transform, then our volume is also a BoundingBox.
+          compute_external_bounds(cdataw->_external_bounds, btype,
+                                  child_volumes, child_volumes_i,
+                                  pipeline_stage, current_thread);
 
-            gbv = new BoundingBox;
-          } else {
-            // Otherwise, it's a sphere.
-            gbv = new BoundingSphere;
-          }
+          nassertr(cdataw->_external_bounds != nullptr, cdataw);
 
-          if (child_volumes_i > 0) {
-            const BoundingVolume **child_begin = &child_volumes[0];
-            const BoundingVolume **child_end = child_begin + child_volumes_i;
-            ((BoundingVolume *)gbv)->around(child_begin, child_end);
-
-            // If we have a transform, apply it to the bounding volume we just
-            // computed.
-            if (!transform->is_identity()) {
-              gbv->xform(transform->get_mat());
-            }
-          }
-
-          cdataw->_external_bounds = gbv;
           cdataw->_last_bounds_update = next_update;
         }
 

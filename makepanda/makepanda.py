@@ -3829,6 +3829,7 @@ OPTS=['DIR:panda/src/collide']
 IGATEFILES=GetDirectoryContents('panda/src/collide', ["*.h", "*_composite*.cxx"])
 TargetAdd('libp3collide.in', opts=OPTS, input=IGATEFILES)
 TargetAdd('libp3collide.in', opts=['IMOD:panda3d.core', 'ILIB:libp3collide', 'SRCDIR:panda/src/collide'])
+PyTargetAdd('p3collide_ext_composite.obj', opts=OPTS, input='p3collide_ext_composite.cxx')
 
 #
 # DIRECTORY: panda/src/parametrics/
@@ -4073,6 +4074,7 @@ PyTargetAdd('core.pyd', input='p3event_pythonTask.obj')
 PyTargetAdd('core.pyd', input='p3gobj_ext_composite.obj')
 PyTargetAdd('core.pyd', input='p3pgraph_ext_composite.obj')
 PyTargetAdd('core.pyd', input='p3display_ext_composite.obj')
+PyTargetAdd('core.pyd', input='p3collide_ext_composite.obj')
 
 PyTargetAdd('core.pyd', input='core_module.obj')
 if not GetLinkAllStatic() and GetTarget() != 'emscripten':

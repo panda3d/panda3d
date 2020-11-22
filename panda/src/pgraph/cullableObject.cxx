@@ -39,6 +39,7 @@ PStatCollector CullableObject::_munge_geom_pcollector("*:Munge:Geom");
 PStatCollector CullableObject::_munge_sprites_pcollector("*:Munge:Sprites");
 PStatCollector CullableObject::_munge_sprites_verts_pcollector("*:Munge:Sprites:Verts");
 PStatCollector CullableObject::_munge_sprites_prims_pcollector("*:Munge:Sprites:Prims");
+PStatCollector CullableObject::_munge_instances_pcollector("*:Munge:Instances");
 PStatCollector CullableObject::_sw_sprites_pcollector("SW Sprites");
 
 TypeHandle CullableObject::_type_handle;
@@ -173,6 +174,23 @@ munge_geom(GraphicsStateGuardianBase *gsg, GeomMunger *munger,
       std::swap(_munged_data, animated_vertices);
     }
 
+    if (sattr != nullptr) {
+      if (_instances != nullptr &&
+          sattr->get_flag(ShaderAttrib::F_hardware_instancing)) {
+        // We are under an InstancedNode, and the shader implements hardware.
+        // Munge the instance list into the vertex data.
+        munge_instances(current_thread);
+        _num_instances = _instances->size();
+        _instances = nullptr;
+      } else {
+        // No, use the instance count from the ShaderAttrib.
+        int count = sattr->get_instance_count();
+        _num_instances = (count > 0) ? (size_t)count : 1;
+      }
+    } else {
+      _num_instances = 1;
+    }
+
 #ifndef NDEBUG
     if (show_vertex_animation) {
       GeomVertexDataPipelineReader data_reader(_munged_data, current_thread);
@@ -202,6 +220,22 @@ output(std::ostream &out) const {
   } else {
     out << "(null)";
   }
+}
+
+/**
+ * Returns a GeomVertexData that represents the results of computing the
+ * instance arrays for this data.
+ */
+void CullableObject::
+munge_instances(Thread *current_thread) {
+  PStatTimer timer(_munge_instances_pcollector, current_thread);
+
+  PT(GeomVertexData) instanced_data = new GeomVertexData(*_munged_data);
+  const GeomVertexArrayFormat *array_format = GeomVertexArrayFormat::get_instance_array_format();
+
+  CPT(GeomVertexArrayData) new_array = _instances->get_array_data(array_format);
+  instanced_data->insert_array((size_t)-1, new_array);
+  _munged_data = instanced_data;
 }
 
 /**

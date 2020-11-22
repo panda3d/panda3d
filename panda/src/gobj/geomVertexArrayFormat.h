@@ -123,6 +123,8 @@ PUBLISHED:
 public:
   int compare_to(const GeomVertexArrayFormat &other) const;
 
+  static const GeomVertexArrayFormat *get_instance_array_format();
+
 private:
   class Registry;
   INLINE static Registry *get_registry();
