@@ -171,6 +171,23 @@ PUBLISHED:
   MAKE_PROPERTY2(cursor_filename, has_cursor_filename, get_cursor_filename,
                                   set_cursor_filename, clear_cursor_filename);
 
+  enum CursorType
+  {
+    CT_hidden,
+    CT_default,
+    CT_cross,
+    CT_hand,
+    CT_text,
+    CT_custom,
+  };
+
+  INLINE void set_cursor_type(const CursorType cursor_type);
+  INLINE CursorType get_cursor_type() const;
+  INLINE bool has_cursor_type() const;
+  INLINE void clear_cursor_type();
+  MAKE_PROPERTY2(cursor_type, has_cursor_type, get_cursor_type,
+                              set_cursor_type, clear_cursor_type);
+
   INLINE void set_z_order(ZOrder z_order);
   INLINE ZOrder get_z_order() const;
   INLINE bool has_z_order() const;
@@ -210,6 +227,7 @@ private:
     S_parent_window        = 0x04000,
     S_raw_mice             = 0x08000,
     S_maximized            = 0x10000,
+    S_cursor_type          = 0x20000,
   };
 
   // This bitmask represents the truefalse settings for various boolean flags
@@ -233,6 +251,7 @@ private:
   std::string _title;
   Filename _cursor_filename;
   Filename _icon_filename;
+  CursorType _cursor_type;
   ZOrder _z_order;
   int _flags;
   PT(WindowHandle) _parent_window;

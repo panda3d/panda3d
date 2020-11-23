@@ -634,6 +634,42 @@ clear_cursor_filename() {
 }
 
 /**
+ * Specifies the cursor type to be used when it is within the
+ * window, including the hidden cursor. cursor_filename has
+ * precedence.
+ */
+INLINE void WindowProperties::
+set_cursor_type(const CursorType cursor_type) {
+    _cursor_type = cursor_type;
+    _specified |= S_cursor_type;
+}
+
+/**
+ * Returns the cursor type associated with the window.
+ */
+INLINE WindowProperties::CursorType WindowProperties::
+get_cursor_type() const {
+  return _cursor_type;
+}
+
+/**
+ * Returns true if set_cursor_type() has been specified.
+ */
+INLINE bool WindowProperties::
+has_cursor_type() const {
+  return ((_specified & S_cursor_type) != 0);
+}
+
+/**
+ * Removes the cursor_type specification from the properties.
+ */
+INLINE void WindowProperties::
+clear_cursor_type() {
+  _specified &= ~S_cursor_type;
+}
+
+
+/**
  * Specifies the relative ordering of the window with respect to other
  * windows.  If the z_order is Z_top, the window will always be on top of
  * other windows; if it is Z_bottom, it will always be below other windows.
