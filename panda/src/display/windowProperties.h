@@ -150,13 +150,6 @@ PUBLISHED:
   INLINE void clear_open();
   MAKE_PROPERTY2(open, has_open, get_open, set_open, clear_open);
 
-  INLINE void set_cursor_hidden(bool cursor_hidden);
-  INLINE bool get_cursor_hidden() const;
-  INLINE bool has_cursor_hidden() const;
-  INLINE void clear_cursor_hidden();
-  MAKE_PROPERTY2(cursor_hidden, has_cursor_hidden, get_cursor_hidden,
-                                set_cursor_hidden, clear_cursor_hidden);
-
   INLINE void set_icon_filename(const Filename &icon_filename);
   INLINE const Filename &get_icon_filename() const;
   INLINE bool has_icon_filename() const;
@@ -218,16 +211,15 @@ private:
     S_foreground           = 0x00020,
     S_minimized            = 0x00040,
     S_open                 = 0x00080,
-    S_cursor_hidden        = 0x00100,
-    S_fixed_size           = 0x00200,
-    S_z_order              = 0x00400,
-    S_icon_filename        = 0x00800,
-    S_cursor_filename      = 0x01000,
-    S_mouse_mode           = 0x02000,
-    S_parent_window        = 0x04000,
-    S_raw_mice             = 0x08000,
-    S_maximized            = 0x10000,
-    S_cursor_type          = 0x20000,
+    S_fixed_size           = 0x00100,
+    S_z_order              = 0x00200,
+    S_icon_filename        = 0x00400,
+    S_cursor_filename      = 0x00800,
+    S_mouse_mode           = 0x01000,
+    S_parent_window        = 0x02000,
+    S_raw_mice             = 0x04000,
+    S_maximized            = 0x08000,
+    S_cursor_type          = 0x10000,
   };
 
   // This bitmask represents the truefalse settings for various boolean flags
@@ -239,7 +231,6 @@ private:
     F_minimized      = S_minimized,
     F_maximized      = S_maximized,
     F_open           = S_open,
-    F_cursor_hidden  = S_cursor_hidden,
     F_fixed_size     = S_fixed_size,
     F_raw_mice       = S_raw_mice,
   };

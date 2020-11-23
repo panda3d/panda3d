@@ -2395,7 +2395,7 @@ update_cursor_window(WinGraphicsWindow *to_window) {
 
   } else {
     const WindowProperties &to_props = to_window->get_properties();
-    hide_cursor = to_props.get_cursor_hidden();
+    hide_cursor = (to_props.get_cursor_type() == WindowProperties::CT_hidden);
 
     // We are entering a graphics window; we should save and disable the
     // Win2000 effects.  These don't work at all well over a 3-D window.
@@ -2427,7 +2427,7 @@ update_cursor_window(WinGraphicsWindow *to_window) {
 /**
  * Hides or shows the mouse cursor according to the indicated parameter.  This
  * is normally called when the mouse wanders into or out of a window with the
- * cursor_hidden properties.
+ * CT_hidden cursor type.
  */
 void WinGraphicsWindow::
 hide_or_show_cursor(bool hide_cursor) {

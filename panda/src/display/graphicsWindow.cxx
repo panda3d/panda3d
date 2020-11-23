@@ -55,7 +55,6 @@ GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   _properties.set_fullscreen(false);
   _properties.set_minimized(false);
   _properties.set_maximized(false);
-  _properties.set_cursor_hidden(false);
 
   request_properties(WindowProperties::get_default());
   request_properties(win_prop);

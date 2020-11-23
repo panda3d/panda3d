@@ -525,44 +525,6 @@ clear_open() {
 }
 
 /**
- * Specifies whether the mouse cursor should be visible.
- */
-INLINE void WindowProperties::
-set_cursor_hidden(bool cursor_hidden) {
-  if (cursor_hidden) {
-    _flags |= F_cursor_hidden;
-  } else {
-    _flags &= ~F_cursor_hidden;
-  }
-  _specified |= S_cursor_hidden;
-}
-
-/**
- * Returns true if the mouse cursor is invisible.
- */
-INLINE bool WindowProperties::
-get_cursor_hidden() const {
-  return (_flags & F_cursor_hidden) != 0;
-}
-
-/**
- * Returns true if set_cursor_hidden() has been specified.
- */
-INLINE bool WindowProperties::
-has_cursor_hidden() const {
-  return ((_specified & S_cursor_hidden) != 0);
-}
-
-/**
- * Removes the cursor_hidden specification from the properties.
- */
-INLINE void WindowProperties::
-clear_cursor_hidden() {
-  _specified &= ~S_cursor_hidden;
-  _flags &= ~F_cursor_hidden;
-}
-
-/**
  * Specifies the file that contains the icon to associate with the window when
  * it is minimized.
  */

@@ -411,9 +411,6 @@ open_window() {
   if (!_properties.has_z_order()) {
     _properties.set_z_order(WindowProperties::Z_normal);
   }
-  if (!_properties.has_cursor_hidden()) {
-    _properties.set_cursor_hidden(false);
-  }
 
   // Check if we have a parent view.
   NSView *parent_nsview = nil;
@@ -1614,7 +1611,6 @@ handle_close_event() {
 
   WindowProperties properties;
   properties.set_open(false);
-  properties.set_cursor_hidden(false);
   system_changed_properties(properties);
 
   GraphicsWindow::close_window();
@@ -1882,7 +1878,7 @@ handle_mouse_moved_event(bool in_window, double x, double y, bool absolute) {
     _input->set_pointer_out_of_window();
   }
 
-  if (in_window != _mouse_hidden && _properties.get_cursor_hidden()) {
+  if (in_window != _mouse_hidden && _properties.get_cursor_type() == WindowProperties::CT_hidden) {
     // Hide the cursor if the mouse enters the window, and unhide it when the
     // mouse leaves the window.
     if (in_window) {

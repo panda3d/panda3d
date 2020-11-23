@@ -560,7 +560,7 @@ process_events() {
     // pointer.  See GitHub bug #280.
     if (_properties.get_mouse_mode() == WindowProperties::M_confined) {
       X11_Cursor cursor = None;
-      if (_properties.get_cursor_hidden()) {
+      if (_properties.get_cursor_type() == WindowProperties::CT_hidden) {
         x11GraphicsPipe *x11_pipe;
         DCAST_INTO_V(x11_pipe, _pipe);
         cursor = x11_pipe->get_hidden_cursor();
@@ -582,7 +582,7 @@ process_events() {
       if (properties.get_foreground()) {
         // Window is going to the foreground, re-grab the pointer
         X11_Cursor cursor = None;
-        if (_properties.get_cursor_hidden()) {
+        if (_properties.get_cursor_type() == WindowProperties::CT_hidden) {
             cursor = x11_pipe->get_hidden_cursor();
         }
 
@@ -991,7 +991,7 @@ set_properties_now(WindowProperties &properties) {
       if (!_dga_mouse_enabled) {
         if (x11_pipe->supports_relative_mouse()) {
           X11_Cursor cursor = None;
-          if (_properties.get_cursor_hidden()) {
+          if (_properties.get_cursor_type() == WindowProperties::CT_hidden) {
             x11GraphicsPipe *x11_pipe;
             DCAST_INTO_V(x11_pipe, _pipe);
             cursor = x11_pipe->get_hidden_cursor();
@@ -1036,7 +1036,7 @@ set_properties_now(WindowProperties &properties) {
           _raw_mouse_enabled = false;
         }
         X11_Cursor cursor = None;
-        if (_properties.get_cursor_hidden()) {
+        if (_properties.get_cursor_type() == WindowProperties::CT_hidden) {
           cursor = x11_pipe->get_hidden_cursor();
         }
 
@@ -1223,7 +1223,7 @@ open_window() {
     }
   }
 
-  if (_properties.get_cursor_hidden()) {
+  if (_properties.get_cursor_type() == WindowProperties::CT_hidden) {
     XDefineCursor(_display, _xwindow, x11_pipe->get_hidden_cursor());
 
   } else if (_properties.has_cursor_filename() && !_properties.get_cursor_filename().empty()) {
