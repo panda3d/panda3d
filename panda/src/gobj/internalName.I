@@ -367,6 +367,17 @@ get_view() {
 }
 
 /**
+ * Returns the standard InternalName "instance_matrix".
+ */
+INLINE PT(InternalName) InternalName::
+get_instance_matrix() {
+  if (_instance_matrix == nullptr) {
+    _instance_matrix = InternalName::make("instance_matrix");
+  }
+  return _instance_matrix;
+}
+
+/**
  *
  */
 INLINE std::ostream &

@@ -1018,13 +1018,12 @@ bind_vertex_input(const InternalName *name, const ::ShaderType *type, int locati
   bind._name = nullptr;
   bind._append_uv = -1;
 
-  //FIXME: matrices
   uint32_t dim[3];
   if (!type->as_scalar_type(bind._scalar_type, dim[0], dim[1], dim[2])) {
     shader_cat.error()
       << "Unrecognized type " << *type << " for vertex input " << *name << "\n";
   }
-  bind._elements = dim[0];
+  bind._elements = dim[0] * dim[1];
 
   if (shader_cat.is_debug()) {
     shader_cat.debug()
@@ -1059,6 +1058,13 @@ bind_vertex_input(const InternalName *name, const ::ShaderType *type, int locati
     else if (name_str.compare(4, 13, "MultiTexCoord") == 0 && name_str.size() > 17) {
       bind._name = InternalName::get_texcoord();
       bind._append_uv = atoi(name_str.substr(17).c_str());
+    }
+    else if (name_str == "p3d_InstanceMatrix") {
+      bind._name = InternalName::get_instance_matrix();
+
+      if (dim[1] != 4 || dim[2] != 3) {
+        return report_parameter_error(name, type, "expected mat4x3");
+      }
     }
     else {
       shader_cat.error()

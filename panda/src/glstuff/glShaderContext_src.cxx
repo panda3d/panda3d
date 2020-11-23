@@ -2773,6 +2773,18 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
                  _glgsg->_glVertexAttribI4ui != nullptr) {
           _glgsg->_glVertexAttribI4ui(p, 0, 1, 2, 3);
         }
+        else if (name == InternalName::get_instance_matrix()) {
+          const LMatrix4 &ident_mat = LMatrix4::ident_mat();
+
+          for (int i = 0; i < bind._elements; ++i) {
+#ifdef STDFLOAT_DOUBLE
+            _glgsg->_glVertexAttrib4dv(p, ident_mat.get_data() + i * 4);
+#else
+            _glgsg->_glVertexAttrib4fv(p, ident_mat.get_data() + i * 4);
+#endif
+            ++p;
+          }
+        }
       }
     }
 
