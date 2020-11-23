@@ -209,7 +209,7 @@ set_array(size_t i, const GeomVertexArrayData *array) {
 }
 
 /**
- * Removes the array wit hthe given index from the GeomVertexData.
+ * Removes the array with the given index from the GeomVertexData.
  */
 INLINE void GeomVertexData::
 remove_array(size_t i) {
