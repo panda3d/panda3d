@@ -238,6 +238,7 @@ class build_apps(setuptools.Command):
             self.exclude_dependencies += ['bcrypt.dll']
 
         self.package_data_dirs = {}
+        self.hidden_imports = {}
 
         # We keep track of the zip files we've opened.
         self._zip_files = {}
@@ -271,6 +272,10 @@ class build_apps(setuptools.Command):
         self.platforms = _parse_list(self.platforms)
         self.plugins = _parse_list(self.plugins)
         self.extra_prc_files = _parse_list(self.extra_prc_files)
+        self.hidden_imports = {
+            key: _parse_list(value)
+            for key, value in _parse_dict(self.hidden_imports).items()
+        }
 
         if self.default_prc_dir is None:
             self.default_prc_dir = '<auto>etc' if not self.embed_prc_data else ''
@@ -639,7 +644,11 @@ class build_apps(setuptools.Command):
             return search_path
 
         def create_runtime(appname, mainscript, use_console):
-            freezer = FreezeTool.Freezer(platform=platform, path=path)
+            freezer = FreezeTool.Freezer(
+                platform=platform,
+                path=path,
+                hiddenImports=self.hidden_imports
+            )
             freezer.addModule('__main__', filename=mainscript)
             freezer.addModule('site', filename='site.py', text=SITE_PY)
             for incmod in self.include_modules.get(appname, []) + self.include_modules.get('*', []):
