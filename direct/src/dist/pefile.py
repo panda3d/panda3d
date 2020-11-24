@@ -9,6 +9,7 @@ from struct import Struct, unpack, pack, pack_into
 from collections import namedtuple
 from array import array
 import time
+import sys
 from io import BytesIO
 
 
