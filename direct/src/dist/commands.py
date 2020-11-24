@@ -7,6 +7,7 @@ on how to use these commands.
 import collections
 import os
 import plistlib
+import pkg_resources
 import sys
 import subprocess
 import zipfile
@@ -1350,6 +1351,10 @@ class bdist_apps(setuptools.Command):
 
         tmp = self.DEFAULT_INSTALLER_FUNCS.copy()
         tmp.update(self.installer_functions)
+        tmp.update({
+            entrypoint.name: entrypoint.load()
+            for entrypoint in pkg_resources.iter_entry_points('panda3d.bdist_apps.installers')
+        })
         self.installer_functions = tmp
 
     def get_archive_basedir(self):
