@@ -400,14 +400,6 @@ class build_apps(setuptools.Command):
         if self.default_prc_dir is None:
             self.default_prc_dir = '<auto>etc' if not self.embed_prc_data else ''
 
-        num_gui_apps = len(self.gui_apps)
-        num_console_apps = len(self.console_apps)
-
-        if not self.macos_main_app:
-            if num_gui_apps > 1:
-                assert False, 'macos_main_app must be defined if more than one gui_app is defined'
-            elif num_gui_apps == 1:
-                self.macos_main_app = list(self.gui_apps.keys())[0]
 
         use_pipenv = (
             'Pipfile' in os.path.basename(self.requirements_path) or
@@ -436,9 +428,6 @@ class build_apps(setuptools.Command):
                         self.optimized_wheel_index += '/opt'
 
             assert self.optimized_wheel_index, 'An index for optimized wheels must be defined if use_optimized_wheels is set'
-
-        assert os.path.exists(self.requirements_path), 'Requirements.txt path does not exist: {}'.format(self.requirements_path)
-        assert num_gui_apps + num_console_apps != 0, 'Must specify at least one app in either gui_apps or console_apps'
 
         self.exclude_dependencies = [p3d.GlobPattern(i) for i in self.exclude_dependencies]
         for glob in self.exclude_dependencies:
@@ -484,6 +473,25 @@ class build_apps(setuptools.Command):
 
             iconobj.generateMissingImages()
             self.icon_objects[app] = iconobj
+
+        # Run entry points from packages to modify options
+        _ = [
+            entrypoint.load()(self)
+            for entrypoint in pkg_resources.iter_entry_points('panda3d.build_apps.modify_options')
+        ]
+
+        # Perform checks now that entry points have had a chance to modify options
+        num_gui_apps = len(self.gui_apps)
+        num_console_apps = len(self.console_apps)
+
+        if not self.macos_main_app:
+            if num_gui_apps > 1:
+                assert False, 'macos_main_app must be defined if more than one gui_app is defined'
+            elif num_gui_apps == 1:
+                self.macos_main_app = list(self.gui_apps.keys())[0]
+
+        assert os.path.exists(self.requirements_path), 'Requirements.txt path does not exist: {}'.format(self.requirements_path)
+        assert num_gui_apps + num_console_apps != 0, 'Must specify at least one app in either gui_apps or console_apps'
 
     def run(self):
         self.announce('Building platforms: {0}'.format(','.join(self.platforms)), distutils.log.INFO)
