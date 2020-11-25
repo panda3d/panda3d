@@ -294,7 +294,7 @@ def parseopts(args):
         try:
             maj, min = OSXTARGET.strip().split('.')
             OSXTARGET = int(maj), int(min)
-            assert OSXTARGET[0] == 10
+            assert OSXTARGET[0] >= 10
         except:
             usage("Invalid setting for OSXTARGET")
     else:
@@ -313,10 +313,10 @@ def parseopts(args):
             maj, min = platform.mac_ver()[0].split('.')[:2]
             osxver = int(maj), int(min)
 
-        if osxver[1] < 15:
+        if osxver[0] == 10 and osxver[1] < 15:
             OSX_ARCHS.append("i386")
 
-        if osxver[1] < 6:
+        if osxver[0] == 10 and osxver[1] < 6:
             OSX_ARCHS.append("ppc")
         else:
             OSX_ARCHS.append("x86_64")
@@ -2645,9 +2645,6 @@ def WriteConfigSettings():
         dtool_config["HAVE_VIDEO4LINUX"] = 'UNDEF'
         dtool_config["PHAVE_LINUX_INPUT_H"] = 'UNDEF'
         dtool_config["IS_OSX"] = '1'
-        # 10.4 had a broken ucontext implementation
-        if int(platform.mac_ver()[0][3]) <= 4:
-            dtool_config["PHAVE_UCONTEXT_H"] = 'UNDEF'
 
     if (GetTarget() == "freebsd"):
         dtool_config["IS_LINUX"] = 'UNDEF'
