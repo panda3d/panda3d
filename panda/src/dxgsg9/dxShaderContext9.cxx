@@ -84,6 +84,7 @@ compile_module(const ShaderModule *module, DWORD *&data) {
   spirv_cross::CompilerHLSL compiler(std::vector<uint32_t>(spv->get_data(), spv->get_data() + spv->get_data_size()));
   spirv_cross::CompilerHLSL::Options options;
   options.shader_model = 30;
+  options.flatten_matrix_vertex_input_semantics = true;
   compiler.set_hlsl_options(options);
 
   // Bind certain known attributes to specific semantics.
@@ -110,14 +111,16 @@ compile_module(const ShaderModule *module, DWORD *&data) {
     }
     else if (spec._name == InternalName::get_color()) {
       compiler.add_vertex_attribute_remap({idx, "COLOR"});
-      _uses_vertex_color = true;
     }
     else {
       // The rest gets mapped to TEXCOORD + location.
-      char buffer[16];
-      sprintf(buffer, "TEXCOORD%d", (int)texcoord_index);
-      compiler.add_vertex_attribute_remap({idx, buffer});
-      ++texcoord_index;
+      for (size_t i = 0; i < spec._elements; ++i) {
+        char buffer[16];
+        sprintf(buffer, "TEXCOORD%d", (int)texcoord_index);
+        compiler.add_vertex_attribute_remap({idx, buffer});
+        ++texcoord_index;
+        ++idx;
+      }
     }
   }
 
@@ -1107,105 +1110,138 @@ get_vertex_declaration(GSG *gsg, const GeomVertexFormat *format, BitMask32 &used
   }
 
   used_streams = 0;
-
-  D3DVERTEXELEMENT9 *elements = (D3DVERTEXELEMENT9 *)
-    alloca(sizeof(D3DVERTEXELEMENT9) * (_shader->_var_spec.size() + 1));
-
   int texcoord_index = 0;
+  size_t const num_arrays = format->get_num_arrays();
+  std::vector<D3DVERTEXELEMENT9> elements;
 
-  size_t i = 0;
   for (const Shader::ShaderVarSpec &spec : _shader->_var_spec) {
-    elements[i].Method = D3DDECLMETHOD_DEFAULT;
-    elements[i].UsageIndex = 0;
-
+    D3DDECLUSAGE usage;
     if (spec._name == InternalName::get_vertex()) {
-      elements[i].Usage = D3DDECLUSAGE_POSITION;
+      usage = D3DDECLUSAGE_POSITION;
     }
     else if (spec._name == InternalName::get_transform_weight()) {
-      elements[i].Usage = D3DDECLUSAGE_BLENDWEIGHT;
+      usage = D3DDECLUSAGE_BLENDWEIGHT;
     }
     else if (spec._name == InternalName::get_transform_index()) {
-      elements[i].Usage = D3DDECLUSAGE_BLENDINDICES;
+      usage = D3DDECLUSAGE_BLENDINDICES;
     }
     else if (spec._name == InternalName::get_normal()) {
-      elements[i].Usage = D3DDECLUSAGE_NORMAL;
+      usage = D3DDECLUSAGE_NORMAL;
     }
     else if (spec._name == InternalName::get_tangent()) {
-      elements[i].Usage = D3DDECLUSAGE_TANGENT;
+      usage = D3DDECLUSAGE_TANGENT;
     }
     else if (spec._name == InternalName::get_binormal()) {
-      elements[i].Usage = D3DDECLUSAGE_BINORMAL;
+      usage = D3DDECLUSAGE_BINORMAL;
     }
     else if (spec._name == InternalName::get_color()) {
-      elements[i].Usage = D3DDECLUSAGE_COLOR;
+      usage = D3DDECLUSAGE_COLOR;
     }
     else {
-      elements[i].Usage = D3DDECLUSAGE_TEXCOORD;
-      elements[i].UsageIndex = texcoord_index++;
+      usage = D3DDECLUSAGE_TEXCOORD;
     }
 
     int array_index;
     const GeomVertexColumn *column;
     if (!format->get_array_info(spec._name, array_index, column)) {
+      // Certain missing ones need to be gotten from the "constant vbuffer",
+      // rather than receive the default value of (0, 0, 0, 1).
+      if (spec._name == InternalName::get_color()) {
+        elements.push_back({
+          (WORD)num_arrays,
+          (WORD)0,
+          (BYTE)D3DDECLTYPE_D3DCOLOR,
+          (BYTE)D3DDECLMETHOD_DEFAULT,
+          (BYTE)D3DDECLUSAGE_COLOR,
+          (BYTE)0,
+        });
+        used_streams.set_bit(num_arrays);
+      }
+      else if (spec._name == InternalName::get_transform_index()) {
+        elements.push_back({
+          (WORD)num_arrays,
+          (WORD)4,
+          (BYTE)D3DDECLTYPE_UBYTE4,
+          (BYTE)D3DDECLMETHOD_DEFAULT,
+          (BYTE)D3DDECLUSAGE_BLENDINDICES,
+          (BYTE)0,
+        });
+        used_streams.set_bit(num_arrays);
+      }
+      else if (spec._name == InternalName::get_instance_matrix()) {
+        // Binding the last row isn't necessary; the default is (0, 0, 0, 1)
+        for (size_t ei = 0; ei < 3 && ei < spec._elements; ++ei) {
+          elements.push_back({
+            (WORD)num_arrays,
+            (WORD)(8 + 4 * ei),
+            (BYTE)D3DDECLTYPE_UBYTE4N,
+            (BYTE)D3DDECLMETHOD_DEFAULT,
+            (BYTE)D3DDECLUSAGE_TEXCOORD,
+            (BYTE)(texcoord_index + ei),
+          });
+        }
+        used_streams.set_bit(num_arrays);
+        texcoord_index += spec._elements;
+      }
+      else if (usage == D3DDECLUSAGE_TEXCOORD) {
+        texcoord_index += spec._elements;
+      }
       continue;
     }
+    used_streams.set_bit(array_index);
 
-    elements[i].Stream = array_index;
-    elements[i].Offset = column->get_start();
-
+    if (column->get_contents() == GeomEnums::C_clip_point &&
+        column->get_name() == InternalName::get_vertex()) {
+      usage = D3DDECLUSAGE_POSITIONT;
+    }
+    size_t offset = column->get_start();
     bool normalized = (column->get_contents() == GeomEnums::C_color);
     int num_components = column->get_num_components();
+
+    D3DDECLTYPE type;
     switch (column->get_numeric_type()) {
     case GeomEnums::NT_uint8:
-      elements[i].Type = normalized ? D3DDECLTYPE_UBYTE4N : D3DDECLTYPE_UBYTE4;
+      type = normalized ? D3DDECLTYPE_UBYTE4N : D3DDECLTYPE_UBYTE4;
       break;
     case GeomEnums::NT_uint16:
-      elements[i].Type = (num_components > 2) ? D3DDECLTYPE_USHORT4N : D3DDECLTYPE_USHORT2N;
+      type = (num_components > 2) ? D3DDECLTYPE_USHORT4N : D3DDECLTYPE_USHORT2N;
       break;
     case GeomEnums::NT_packed_dcba:
-      elements[i].Type = normalized ? D3DDECLTYPE_UBYTE4N : D3DDECLTYPE_UBYTE4;
+      type = normalized ? D3DDECLTYPE_UBYTE4N : D3DDECLTYPE_UBYTE4;
       break;
     case GeomEnums::NT_packed_dabc:
-      elements[i].Type = normalized ? D3DDECLTYPE_D3DCOLOR : D3DDECLTYPE_UBYTE4;
+      type = normalized ? D3DDECLTYPE_D3DCOLOR : D3DDECLTYPE_UBYTE4;
       break;
 #ifndef STDFLOAT_DOUBLE
     case GeomEnums::NT_stdfloat:
 #endif
     case GeomEnums::NT_float32:
-      elements[i].Type = D3DDECLTYPE_FLOAT1 + num_components - 1;
+      type = (D3DDECLTYPE)(D3DDECLTYPE_FLOAT1 + num_components - 1);
       break;
     case GeomEnums::NT_int16:
-      elements[i].Type = (num_components > 2)
+      type = (num_components > 2)
         ? (normalized ? D3DDECLTYPE_SHORT4N : D3DDECLTYPE_SHORT4)
         : (normalized ? D3DDECLTYPE_SHORT2N : D3DDECLTYPE_SHORT2);
       break;
     default:
+      dxgsg9_cat.error()
+        << "Unsupported numeric type " << column->get_numeric_type()
+        << " for vertex column " << *spec._name << "\n";
       continue;
     }
 
-    if (column->get_contents() == GeomEnums::C_clip_point &&
-        column->get_name() == InternalName::get_vertex()) {
-      elements[i].Usage = D3DDECLUSAGE_POSITIONT;
+    for (size_t ei = 0; ei < spec._elements; ++ei) {
+      elements.push_back({
+        (WORD)array_index,
+        (WORD)offset,
+        (BYTE)type,
+        (BYTE)D3DDECLMETHOD_DEFAULT,
+        (BYTE)usage,
+        (BYTE)((usage == D3DDECLUSAGE_TEXCOORD) ? texcoord_index++ : 0),
+      });
+      offset += column->get_element_stride();
     }
-
-    used_streams.set_bit(array_index);
-    ++i;
   }
-
-  if (format->get_color_array_index() < 0 && _uses_vertex_color) {
-    // This format lacks a vertex color column, so we make room for an extra
-    // stream that contains the vertex color.
-    elements[i].Stream = format->get_num_arrays();
-    elements[i].Offset = 0;
-    elements[i].Type = D3DDECLTYPE_D3DCOLOR;
-    elements[i].Method = D3DDECLMETHOD_DEFAULT;
-    elements[i].Usage = D3DDECLUSAGE_COLOR;
-    elements[i].UsageIndex = 0;
-    used_streams.set_bit(format->get_num_arrays());
-    ++i;
-  }
-
-  elements[i] = D3DDECL_END();
 
   // Sort the elements, as D3D seems to require them to be in order.
   struct less_than {
@@ -1216,7 +1252,7 @@ get_vertex_declaration(GSG *gsg, const GeomVertexFormat *format, BitMask32 &used
       return a.Offset < b.Offset;
     }
   };
-  std::sort(elements, elements + i, less_than());
+  std::sort(elements.begin(), elements.end(), less_than());
 
   // CreateVertexDeclaration is fickle so it helps to have some good debugging
   // info here.
@@ -1226,20 +1262,23 @@ get_vertex_declaration(GSG *gsg, const GeomVertexFormat *format, BitMask32 &used
     dxgsg9_cat.debug()
       << "Creating vertex declaration for format " << *format << ":\n";
 
-    for (D3DVERTEXELEMENT9 *element = elements; element->Stream != 0xFF; ++element) {
+    for (const D3DVERTEXELEMENT9 &element : elements) {
       dxgsg9_cat.debug()
-        << "  {" << element->Stream << ", " << element->Offset << ", "
-        << "D3DDECLTYPE_" << types[element->Type] << ", "
+        << "  {" << element.Stream << ", " << element.Offset << ", "
+        << "D3DDECLTYPE_" << types[element.Type] << ", "
         << "D3DDECLMETHOD_DEFAULT, "
-        << "D3DDECLUSAGE_" << usages[element->Usage] << ", "
-        << (int)element->UsageIndex << "}\n";
+        << "D3DDECLUSAGE_" << usages[element.Usage] << ", "
+        << (int)element.UsageIndex << "}\n";
     }
   }
 
+  elements.push_back(D3DDECL_END());
+
   LPDIRECT3DVERTEXDECLARATION9 decl;
-  HRESULT result = gsg->_d3d_device->CreateVertexDeclaration(elements, &decl);
+  HRESULT result = gsg->_d3d_device->CreateVertexDeclaration(elements.data(), &decl);
   if (FAILED(result)) {
-    dxgsg9_cat.error() << "CreateVertexDeclaration failed" << D3DERRORSTRING(result);
+    dxgsg9_cat.error()
+      << "CreateVertexDeclaration failed" << D3DERRORSTRING(result);
     return nullptr;
   }
 

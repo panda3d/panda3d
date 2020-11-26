@@ -65,7 +65,6 @@ private:
     UINT count = 0;
   };
 
-  bool _uses_vertex_color = false;
   int _half_pixel_register = -1;
   pvector<ConstantRegister> _register_map;
 

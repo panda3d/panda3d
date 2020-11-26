@@ -165,7 +165,7 @@ public:
   void restore_gamma();
   static void atexit_function(void);
 
-  LPDIRECT3DVERTEXBUFFER9 get_color_vbuffer();
+  LPDIRECT3DVERTEXBUFFER9 get_constant_vbuffer(const LColor &color);
 
 protected:
   void do_issue_transform();
@@ -309,7 +309,9 @@ protected:
 
   DWORD _last_fvf;
   int _num_bound_streams;
-  LPDIRECT3DVERTEXBUFFER9 _color_vbuffer;
+  bool _instancing_enabled;
+  LPDIRECT3DVERTEXBUFFER9 _constant_vbuffer;
+  D3DCOLOR _constant_vbuffer_color;
 
   // Cache the data necessary to bind each particular light each frame, so if
   // we bind a given light multiple times, we only have to compute its data
