@@ -241,6 +241,7 @@ class build_apps(setuptools.Command):
             'dciman32.dll', 'comdlg32.dll', 'comctl32.dll', 'ole32.dll',
             'oleaut32.dll', 'gdiplus.dll', 'winmm.dll', 'iphlpapi.dll',
             'msvcrt.dll', 'kernelbase.dll', 'msimg32.dll', 'msacm32.dll',
+            'setupapi.dll', 'version.dll',
 
             # manylinux1/linux
             'libdl.so.*', 'libstdc++.so.*', 'libm.so.*', 'libgcc_s.so.*',
@@ -258,7 +259,14 @@ class build_apps(setuptools.Command):
             '/usr/lib/libedit.*.dylib',
             '/System/Library/**',
         ]
+
+        if sys.version_info >= (3, 5):
+            # Python 3.5+ requires at least Windows Vista to run anyway, so we
+            # shouldn't warn about DLLs that are shipped with Vista.
+            self.exclude_dependencies += ['bcrypt.dll']
+
         self.package_data_dirs = {}
+        self.hidden_imports = {}
 
         # We keep track of the zip files we've opened.
         self._zip_files = {}
@@ -292,6 +300,10 @@ class build_apps(setuptools.Command):
         self.platforms = _parse_list(self.platforms)
         self.plugins = _parse_list(self.plugins)
         self.extra_prc_files = _parse_list(self.extra_prc_files)
+        self.hidden_imports = {
+            key: _parse_list(value)
+            for key, value in _parse_dict(self.hidden_imports).items()
+        }
 
         if self.default_prc_dir is None:
             self.default_prc_dir = '<auto>etc' if not self.embed_prc_data else ''
@@ -397,12 +409,13 @@ class build_apps(setuptools.Command):
                     os.remove(os.path.join(whldir, whl))
 
         pip_args = [
+            '--disable-pip-version-check',
             'download',
             '-d', whldir,
             '-r', self.requirements_path,
             '--only-binary', ':all:',
             '--platform', platform,
-            '--abi', abi_tag
+            '--abi', abi_tag,
         ]
 
         if self.use_optimized_wheels:
@@ -689,16 +702,24 @@ class build_apps(setuptools.Command):
                     rootdir = wf.split(os.path.sep, 1)[0]
                     search_path.append(os.path.join(whl, rootdir, '.libs'))
 
+                    # Also look for eg. numpy.libs or Pillow.libs in the root
+                    whl_name = os.path.basename(whl).split('-', 1)[0]
+                    search_path.append(os.path.join(whl, whl_name + '.libs'))
+
                     # Also look for more specific per-package cases, defined in
                     # PACKAGE_LIB_DIRS at the top of this file.
-                    whl_name = os.path.basename(whl).split('-', 1)[0]
                     extra_dirs = PACKAGE_LIB_DIRS.get(whl_name, [])
                     for extra_dir in extra_dirs:
                         search_path.append(os.path.join(whl, extra_dir.replace('/', os.path.sep)))
+
             return search_path
 
         def create_runtime(appname, mainscript, use_console):
-            freezer = FreezeTool.Freezer(platform=platform, path=path)
+            freezer = FreezeTool.Freezer(
+                platform=platform,
+                path=path,
+                hiddenImports=self.hidden_imports
+            )
             freezer.addModule('__main__', filename=mainscript)
             freezer.addModule('site', filename='site.py', text=SITE_PY)
             for incmod in self.include_modules.get(appname, []) + self.include_modules.get('*', []):
@@ -1085,7 +1106,10 @@ class build_apps(setuptools.Command):
         source_dir = os.path.dirname(source_path)
         target_dir = os.path.dirname(target_path)
         base = os.path.basename(target_path)
-        self.copy_dependencies(target_path, target_dir, search_path + [source_dir], base)
+
+        if source_dir not in search_path:
+            search_path = search_path + [source_dir]
+        self.copy_dependencies(target_path, target_dir, search_path, base)
 
     def copy_dependencies(self, target_path, target_dir, search_path, referenced_by):
         """ Copies the dependencies of target_path into target_dir. """
@@ -1100,8 +1124,7 @@ class build_apps(setuptools.Command):
             pe = pefile.PEFile()
             pe.read(fp)
             for lib in pe.imports:
-                if not lib.lower().startswith('api-ms-win-'):
-                    deps.append(lib)
+                deps.append(lib)
 
         elif magic == b'\x7FELF':
             # Elf magic.  Used on (among others) Linux and FreeBSD.
@@ -1372,7 +1395,6 @@ class bdist_apps(setuptools.Command):
             for i in apps
         ]
 
-        fullname = self.distribution.get_fullname()
         shortname = self.distribution.get_name()
 
         # Create the .nsi installer script
@@ -1382,7 +1404,7 @@ class bdist_apps(setuptools.Command):
 
         # Some global info
         nsi.write('Name "%s"\n' % shortname)
-        nsi.write('OutFile "%s"\n' % (fullname+'.exe'))
+        nsi.write('OutFile "%s"\n' % os.path.join(self.dist_dir, basename+'.exe'))
         if is_64bit:
             nsi.write('InstallDir "$PROGRAMFILES64\\%s"\n' % shortname)
         else:
@@ -1420,17 +1442,22 @@ class bdist_apps(setuptools.Command):
         nsi.write('Section "" SecCore\n')
         nsi.write('  SetOutPath "$INSTDIR"\n')
         curdir = ""
+        nsi_dir = p3d.Filename.fromOsSpecific(build_cmd.build_base)
+        build_root_dir = p3d.Filename.fromOsSpecific(build_dir)
         for root, dirs, files in os.walk(build_dir):
             for name in files:
                 basefile = p3d.Filename.fromOsSpecific(os.path.join(root, name))
                 file = p3d.Filename(basefile)
                 file.makeAbsolute()
-                file.makeRelativeTo(build_dir)
-                outdir = file.getDirname().replace('/', '\\')
+                file.makeRelativeTo(nsi_dir)
+                outdir = p3d.Filename(basefile)
+                outdir.makeAbsolute()
+                outdir.makeRelativeTo(build_root_dir)
+                outdir = outdir.getDirname().replace('/', '\\')
                 if curdir != outdir:
                     nsi.write('  SetOutPath "$INSTDIR\\%s"\n' % outdir)
                     curdir = outdir
-                nsi.write('  File "%s"\n' % (basefile.toOsSpecific()))
+                nsi.write('  File "%s"\n' % (file.toOsSpecific()))
         nsi.write('  SetOutPath "$INSTDIR"\n')
         nsi.write('  WriteUninstaller "$INSTDIR\\Uninstall.exe"\n')
         nsi.write('  ; Start menu items\n')

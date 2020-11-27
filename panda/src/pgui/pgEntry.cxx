@@ -321,7 +321,7 @@ keystroke(const MouseWatcherParameter &param, bool background) {
 
       int keycode = param.get_keycode();
 
-      if (!isascii(keycode) || isprint(keycode)) {
+      if ((!isascii(keycode) || isprint(keycode)) && keycode != '\t') {
         // A normal visible character.  Add a new character to the text entry,
         // if there's room.
         if (!_candidate_wtext.empty()) {

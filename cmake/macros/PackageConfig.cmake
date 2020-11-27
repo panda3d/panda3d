@@ -145,6 +145,8 @@ function(package_option name)
     endif()
   endif()
 
+  option("HAVE_${name}" "${cache_string}" "${default}")
+
   # If it was set by the user but not found, display an error.
   string(TOUPPER "${found_as}" FOUND_AS)
   if(HAVE_${name} AND NOT ${found_as}_FOUND AND NOT ${FOUND_AS}_FOUND)
@@ -180,9 +182,7 @@ function(package_option name)
       "$<TARGET_PROPERTY:PKG::${name},INTERFACE_INCLUDE_DIRECTORIES>")
   endif()
 
-  # Create the option, and if it actually is enabled, populate the INTERFACE
-  # library created above
-  option("HAVE_${name}" "${cache_string}" "${default}")
+  # If the option actually is enabled, populate the INTERFACE library created above
   if(HAVE_${name})
     set(use_variables ON)
 

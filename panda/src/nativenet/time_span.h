@@ -1,5 +1,5 @@
-#ifndef __TIME_SPAN_H__
-#define __TIME_SPAN_H__
+#ifndef TIME_SPAN_H
+#define TIME_SPAN_H
 
 /**
  *
@@ -373,4 +373,4 @@ Format(char *pFormat) const {
   return std::string(szBuffer);
 }
 
-#endif //__TIME_SPAN_H__
+#endif //TIME_SPAN_H

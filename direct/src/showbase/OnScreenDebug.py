@@ -38,9 +38,9 @@ class OnScreenDebug:
             print("failed to load OnScreenDebug font %s" % fontPath)
             font = TextNode.getDefaultFont()
         self.onScreenText = OnscreenText.OnscreenText(
-                pos = (-1.0, 0.9), fg=fgColor, bg=bgColor,
-                scale = (fontScale, fontScale, 0.0), align = TextNode.ALeft,
-                mayChange = 1, font = font)
+                parent = base.a2dTopLeft, pos = (0.0, -0.1),
+                fg=fgColor, bg=bgColor, scale = (fontScale, fontScale, 0.0),
+                align = TextNode.ALeft, mayChange = 1, font = font)
         # Make sure readout is never lit or drawn in wireframe
         DirectUtil.useDirectRenderStyle(self.onScreenText)
 

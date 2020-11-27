@@ -142,6 +142,7 @@ output(std::ostream &out) const {
  */
 INLINE bool PStatCollector::
 is_active() {
+  nassertr(_client != nullptr, false);
 #ifndef HAVE_THREADS
   return _client->is_active(_index, 0);
 #else  // HAVE_THREADS
@@ -155,6 +156,7 @@ is_active() {
  */
 INLINE bool PStatCollector::
 is_started() {
+  nassertr(_client != nullptr, false);
 #ifndef HAVE_THREADS
   return _client->is_started(_index, 0);
 #else  // HAVE_THREADS
@@ -168,6 +170,7 @@ is_started() {
  */
 INLINE void PStatCollector::
 start() {
+  nassertv(_client != nullptr);
 #ifndef HAVE_THREADS
   _client->start(_index, 0);
 #else  // HAVE_THREADS
@@ -181,6 +184,7 @@ start() {
  */
 INLINE void PStatCollector::
 stop() {
+  nassertv(_client != nullptr);
 #ifndef HAVE_THREADS
   _client->stop(_index, 0);
 #else  // HAVE_THREADS
@@ -262,6 +266,7 @@ sub_level_now(double decrement) {
 INLINE void PStatCollector::
 flush_level() {
   if (_level != 0.0f) {
+    nassertv(_client != nullptr);
     _client->add_level(_index, 0, _level);
     _level = 0.0f;
   }

@@ -39,6 +39,7 @@ import random
 import time
 import builtins
 import importlib
+import functools
 
 __report_indent = 3
 
@@ -1560,7 +1561,7 @@ def appendStr(obj, st):
             return s
         oldStr = Functor(stringer, str(obj))
         stringer = None
-    obj.__str__ = types.MethodType(Functor(appendedStr, oldStr, st), obj, obj.__class__)
+    obj.__str__ = types.MethodType(Functor(appendedStr, oldStr, st), obj)
     appendedStr = None
     return obj
 
@@ -2062,7 +2063,7 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
             if not rArgs:
                 rArgs = '()'
             else:
-                rArgs = '(' + reduce(str.__add__,rArgs)[:-2] + ')'
+                rArgs = '(' + functools.reduce(str.__add__,rArgs)[:-2] + ')'
 
 
             outStr = '%s%s' % (f.__name__, rArgs)
@@ -2345,7 +2346,7 @@ class MiniLog:
         if not rArgs:
             rArgs = '()'
         else:
-            rArgs = '(' + reduce(str.__add__,rArgs)[:-2] + ')'
+            rArgs = '(' + functools.reduce(str.__add__,rArgs)[:-2] + ')'
 
         line = '%s%s' % (funcName, rArgs)
         self.appendFunctionCall(line)

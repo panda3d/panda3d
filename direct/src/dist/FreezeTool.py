@@ -61,7 +61,7 @@ except ImportError:
     def pytest_imports():
         return []
 
-hiddenImports = {
+defaultHiddenImports = {
     'pytest': pytest_imports(),
     'pkg_resources': [
         'pkg_resources.*.*',
@@ -751,7 +751,7 @@ class Freezer:
             return 'ModuleDef(%s)' % (', '.join(args))
 
     def __init__(self, previous = None, debugLevel = 0,
-                 platform = None, path=None):
+                 platform = None, path=None, hiddenImports=None):
         # Normally, we are freezing for our own platform.  Change this
         # if untrue.
         self.platform = platform or PandaSystem.getPlatform()
@@ -824,6 +824,11 @@ class Freezer:
                 path = list(getattr(module, '__path__'))
                 if path:
                     modulefinder.AddPackagePath(moduleName, path[0])
+
+        # Module with non-obvious dependencies
+        self.hiddenImports = defaultHiddenImports.copy()
+        if hiddenImports is not None:
+            self.hiddenImports.update(hiddenImports)
 
         # Suffix/extension for Python C extension modules
         if self.platform == PandaSystem.getPlatform():
@@ -1166,7 +1171,7 @@ class Freezer:
 
         # Check if any new modules we found have "hidden" imports
         for origName in list(self.mf.modules.keys()):
-            hidden = hiddenImports.get(origName, [])
+            hidden = self.hiddenImports.get(origName, [])
             for modname in hidden:
                 if modname.endswith('.*'):
                     mdefs = self._gatherSubmodules(modname, implicit = True)
@@ -1333,7 +1338,8 @@ class Freezer:
         for moduleName, module in list(self.mf.modules.items()):
             if module.__code__:
                 origPathname = module.__code__.co_filename
-                replace_paths.append((origPathname, moduleName))
+                if origPathname:
+                    replace_paths.append((origPathname, moduleName))
         self.mf.replace_paths = replace_paths
 
         # Now that we have built up the replacement mapping, go back
@@ -1721,6 +1727,8 @@ class Freezer:
 
     def generateRuntimeFromStub(self, target, stub_file, use_console, fields={},
                                 log_append=False):
+        self.__replacePaths()
+
         # We must have a __main__ module to make an exe file.
         if not self.__writingModule('__main__'):
             message = "Can't generate an executable without a __main__ module."

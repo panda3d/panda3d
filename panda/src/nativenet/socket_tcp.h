@@ -1,5 +1,5 @@
-#ifndef __SOCKET_TCP_H__
-#define __SOCKET_TCP_H__
+#ifndef SOCKET_TCP_H
+#define SOCKET_TCP_H
 
 #include "pandabase.h"
 #include "socket_ip.h"
@@ -222,4 +222,4 @@ SendData(const vector_uchar &data) {
   return SendData((char *)data.data(), data.size());
 }
 
-#endif //__SOCKET_TCP_H__
+#endif //SOCKET_TCP_H

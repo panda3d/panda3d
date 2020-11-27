@@ -593,9 +593,7 @@ class TaskManager:
         else:
             function = method
         if (function == oldMethod):
-            newMethod = types.MethodType(newFunction,
-                                         method.__self__,
-                                         method.__self__.__class__)
+            newMethod = types.MethodType(newFunction, method.__self__)
             task.setFunction(newMethod)
             # Found a match
             return 1

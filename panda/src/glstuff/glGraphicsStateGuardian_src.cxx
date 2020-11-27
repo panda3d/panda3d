@@ -170,6 +170,7 @@ static const string default_vshader =
   "out vec2 texcoord;\n"
   "out vec4 color;\n"
 #else
+  "#version 100\n"
   "precision mediump float;\n"
   "attribute vec4 p3d_Vertex;\n"
   "attribute vec4 p3d_Color;\n"
@@ -240,6 +241,7 @@ static const string default_fshader =
   "uniform sampler2D p3d_Texture0;\n"
   "uniform vec4 p3d_TexAlphaOnly;\n"
 #else
+  "#version 100\n"
   "precision mediump float;\n"
   "varying vec2 texcoord;\n"
   "varying lowp vec4 color;\n"
@@ -606,10 +608,10 @@ reset() {
   GraphicsStateGuardian::reset();
 
   // Build _inv_state_mask as a mask of 1's where we don't care, and 0's where
-  // we do care, about the state.  _inv_state_mask =
-  // RenderState::SlotMask::all_on();
+  // we do care, about the state.
+#ifndef OPENGLES_1
   _inv_state_mask.clear_bit(ShaderAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(AlphaTestAttrib::get_class_slot());
+#endif
   _inv_state_mask.clear_bit(AntialiasAttrib::get_class_slot());
   _inv_state_mask.clear_bit(ClipPlaneAttrib::get_class_slot());
   _inv_state_mask.clear_bit(ColorAttrib::get_class_slot());
@@ -619,20 +621,29 @@ reset() {
   _inv_state_mask.clear_bit(DepthTestAttrib::get_class_slot());
   _inv_state_mask.clear_bit(DepthWriteAttrib::get_class_slot());
   _inv_state_mask.clear_bit(RenderModeAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(RescaleNormalAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(ShadeModelAttrib::get_class_slot());
   _inv_state_mask.clear_bit(TransparencyAttrib::get_class_slot());
   _inv_state_mask.clear_bit(ColorWriteAttrib::get_class_slot());
   _inv_state_mask.clear_bit(ColorBlendAttrib::get_class_slot());
+#if !defined(OPENGLES) || defined(OPENGLES_1)
   _inv_state_mask.clear_bit(LogicOpAttrib::get_class_slot());
+#endif
   _inv_state_mask.clear_bit(TextureAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(TexGenAttrib::get_class_slot());
   _inv_state_mask.clear_bit(TexMatrixAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(MaterialAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(LightAttrib::get_class_slot());
   _inv_state_mask.clear_bit(StencilAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(FogAttrib::get_class_slot());
   _inv_state_mask.clear_bit(ScissorAttrib::get_class_slot());
+
+  // We only care about this state if we are using the fixed-function pipeline.
+#ifdef SUPPORT_FIXED_FUNCTION
+  if (has_fixed_function_pipeline()) {
+    _inv_state_mask.clear_bit(AlphaTestAttrib::get_class_slot());
+    _inv_state_mask.clear_bit(RescaleNormalAttrib::get_class_slot());
+    _inv_state_mask.clear_bit(ShadeModelAttrib::get_class_slot());
+    _inv_state_mask.clear_bit(TexGenAttrib::get_class_slot());
+    _inv_state_mask.clear_bit(MaterialAttrib::get_class_slot());
+    _inv_state_mask.clear_bit(LightAttrib::get_class_slot());
+    _inv_state_mask.clear_bit(FogAttrib::get_class_slot());
+  }
+#endif
 
   // Output the vendor and version strings.
   query_gl_version();
@@ -1909,6 +1920,8 @@ reset() {
          get_extension_func("glUniform3uiv");
       _glUniform4uiv = (PFNGLUNIFORM4UIVPROC)
          get_extension_func("glUniform4uiv");
+      _glVertexAttribI4ui = (PFNGLVERTEXATTRIBI4UIPROC)
+         get_extension_func("glVertexAttribI4ui");
 
     } else if (has_extension("GL_EXT_gpu_shader4")) {
       _glBindFragDataLocation = (PFNGLBINDFRAGDATALOCATIONPROC)
@@ -1923,10 +1936,13 @@ reset() {
          get_extension_func("glUniform3uivEXT");
       _glUniform4uiv = (PFNGLUNIFORM4UIVPROC)
          get_extension_func("glUniform4uivEXT");
+      _glVertexAttribI4ui = (PFNGLVERTEXATTRIBI4UIPROC)
+         get_extension_func("glVertexAttribI4uiEXT");
 
     } else {
       _glBindFragDataLocation = nullptr;
       _glVertexAttribIPointer = nullptr;
+      _glVertexAttribI4ui = nullptr;
     }
     if (is_at_least_gl_version(4, 1) ||
         has_extension("GL_ARB_vertex_attrib_64bit")) {
@@ -1955,8 +1971,11 @@ reset() {
        get_extension_func("glVertexAttribPointerARB");
 
     _glBindFragDataLocation = nullptr;
+    _glVertexAttribI4ui = nullptr;
     _glVertexAttribIPointer = nullptr;
     _glVertexAttribLPointer = nullptr;
+  } else {
+    _glVertexAttribI4ui = nullptr;
   }
 #endif
 
@@ -2003,8 +2022,11 @@ reset() {
   if (is_at_least_gles_version(3, 0)) {
     _glVertexAttribIPointer = (PFNGLVERTEXATTRIBIPOINTERPROC)
       get_extension_func("glVertexAttribIPointer");
+    _glVertexAttribI4ui = (PFNGLVERTEXATTRIBI4UIPROC)
+      get_extension_func("glVertexAttribI4ui");
   } else {
     _glVertexAttribIPointer = nullptr;
+    _glVertexAttribI4ui = nullptr;
   }
 
   if (has_extension("GL_EXT_blend_func_extended")) {
@@ -3992,12 +4014,6 @@ prepare_lens() {
   }
 #endif
 
-#ifndef OPENGLES_1
-  if (_current_shader_context) {
-    _current_shader_context->issue_parameters(Shader::SSD_transform);
-  }
-#endif
-
   return true;
 }
 
@@ -4276,7 +4292,7 @@ end_frame(Thread *current_thread) {
 bool CLP(GraphicsStateGuardian)::
 begin_draw_primitives(const GeomPipelineReader *geom_reader,
                       const GeomVertexDataPipelineReader *data_reader,
-                      bool force) {
+                      size_t num_instances, bool force) {
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
     GLCAT.spam() << "begin_draw_primitives: " << *(data_reader->get_object()) << "\n";
@@ -4293,10 +4309,12 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   }
 #endif
 
-  if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, data_reader, force)) {
+  if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, data_reader, num_instances, force)) {
     return false;
   }
   nassertr(_data_reader != nullptr, false);
+
+  _instance_count = _supports_geometry_instancing ? num_instances : 1;
 
   _geom_display_list = 0;
 
@@ -4845,7 +4863,7 @@ draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
       }
 
 #ifndef OPENGLES_1
-      if (_supports_geometry_instancing && _instance_count > 0) {
+      if (_instance_count != 1) {
         _glDrawElementsInstanced(GL_TRIANGLES, num_vertices,
                                  get_numeric_type(reader->get_index_type()),
                                  client_pointer, _instance_count);
@@ -4861,7 +4879,7 @@ draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
       }
     } else {
 #ifndef OPENGLES_1
-      if (_supports_geometry_instancing && _instance_count > 0) {
+      if (_instance_count != 1) {
         _glDrawArraysInstanced(GL_TRIANGLES,
                                reader->get_first_vertex(),
                                num_vertices, _instance_count);
@@ -4911,7 +4929,7 @@ draw_triangles_adj(const GeomPrimitivePipelineReader *reader, bool force) {
         return false;
       }
 
-      if (_supports_geometry_instancing && _instance_count > 0) {
+      if (_instance_count != 1) {
         _glDrawElementsInstanced(GL_TRIANGLES_ADJACENCY, num_vertices,
                                  get_numeric_type(reader->get_index_type()),
                                  client_pointer, _instance_count);
@@ -4924,7 +4942,7 @@ draw_triangles_adj(const GeomPrimitivePipelineReader *reader, bool force) {
                              client_pointer);
       }
     } else {
-      if (_supports_geometry_instancing && _instance_count > 0) {
+      if (_instance_count != 1) {
         _glDrawArraysInstanced(GL_TRIANGLES_ADJACENCY,
                                reader->get_first_vertex(),
                                num_vertices, _instance_count);
@@ -4976,7 +4994,7 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force) {
           return false;
         }
 #ifndef OPENGLES_1
-        if (_supports_geometry_instancing && _instance_count > 0) {
+        if (_instance_count != 1) {
           _glDrawElementsInstanced(GL_TRIANGLE_STRIP, num_vertices,
                                    get_numeric_type(reader->get_index_type()),
                                    client_pointer, _instance_count);
@@ -4992,7 +5010,7 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force) {
         }
       } else {
 #ifndef OPENGLES_1
-        if (_supports_geometry_instancing && _instance_count > 0) {
+        if (_instance_count != 1) {
           _glDrawArraysInstanced(GL_TRIANGLE_STRIP,
                                  reader->get_first_vertex(),
                                  num_vertices, _instance_count);
@@ -5026,7 +5044,7 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force) {
         for (size_t i = 0; i < ends.size(); i++) {
           _vertices_tristrip_pcollector.add_level(ends[i] - start);
 #ifndef OPENGLES_1
-          if (_supports_geometry_instancing && _instance_count > 0) {
+          if (_instance_count != 1) {
             _glDrawElementsInstanced(GL_TRIANGLE_STRIP, ends[i] - start,
                                      get_numeric_type(reader->get_index_type()),
                                      client_pointer + start * index_stride,
@@ -5048,7 +5066,7 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force) {
         for (size_t i = 0; i < ends.size(); i++) {
           _vertices_tristrip_pcollector.add_level(ends[i] - start);
 #ifndef OPENGLES_1
-          if (_supports_geometry_instancing && _instance_count > 0) {
+          if (_instance_count != 1) {
             _glDrawArraysInstanced(GL_TRIANGLE_STRIP, first_vertex + start,
                                    ends[i] - start, _instance_count);
           } else
@@ -5106,7 +5124,7 @@ draw_tristrips_adj(const GeomPrimitivePipelineReader *reader, bool force) {
         if (!setup_primitive(client_pointer, reader, force)) {
           return false;
         }
-        if (_supports_geometry_instancing && _instance_count > 0) {
+        if (_instance_count != 1) {
           _glDrawElementsInstanced(GL_TRIANGLE_STRIP_ADJACENCY, num_vertices,
                                    get_numeric_type(reader->get_index_type()),
                                    client_pointer, _instance_count);
@@ -5119,7 +5137,7 @@ draw_tristrips_adj(const GeomPrimitivePipelineReader *reader, bool force) {
                                client_pointer);
         }
       } else {
-        if (_supports_geometry_instancing && _instance_count > 0) {
+        if (_instance_count != 1) {
           _glDrawArraysInstanced(GL_TRIANGLE_STRIP_ADJACENCY,
                                  reader->get_first_vertex(),
                                  num_vertices, _instance_count);
@@ -5152,7 +5170,7 @@ draw_tristrips_adj(const GeomPrimitivePipelineReader *reader, bool force) {
         unsigned int start = 0;
         for (size_t i = 0; i < ends.size(); i++) {
           _vertices_tristrip_pcollector.add_level(ends[i] - start);
-          if (_supports_geometry_instancing && _instance_count > 0) {
+          if (_instance_count != 1) {
             _glDrawElementsInstanced(GL_TRIANGLE_STRIP_ADJACENCY, ends[i] - start,
                                      get_numeric_type(reader->get_index_type()),
                                      client_pointer + start * index_stride,
@@ -5171,7 +5189,7 @@ draw_tristrips_adj(const GeomPrimitivePipelineReader *reader, bool force) {
         int first_vertex = reader->get_first_vertex();
         for (size_t i = 0; i < ends.size(); i++) {
           _vertices_tristrip_pcollector.add_level(ends[i] - start);
-          if (_supports_geometry_instancing && _instance_count > 0) {
+          if (_instance_count != 1) {
             _glDrawArraysInstanced(GL_TRIANGLE_STRIP_ADJACENCY, first_vertex + start,
                                    ends[i] - start, _instance_count);
           } else {
@@ -5229,7 +5247,7 @@ draw_trifans(const GeomPrimitivePipelineReader *reader, bool force) {
       for (size_t i = 0; i < ends.size(); i++) {
         _vertices_trifan_pcollector.add_level(ends[i] - start);
 #ifndef OPENGLES_1
-        if (_supports_geometry_instancing && _instance_count > 0) {
+        if (_instance_count != 1) {
           _glDrawElementsInstanced(GL_TRIANGLE_FAN, ends[i] - start,
                                    get_numeric_type(reader->get_index_type()),
                                    client_pointer + start * index_stride,
@@ -5250,7 +5268,7 @@ draw_trifans(const GeomPrimitivePipelineReader *reader, bool force) {
       for (size_t i = 0; i < ends.size(); i++) {
         _vertices_trifan_pcollector.add_level(ends[i] - start);
 #ifndef OPENGLES_1
-        if (_supports_geometry_instancing && _instance_count > 0) {
+        if (_instance_count != 1) {
           _glDrawArraysInstanced(GL_TRIANGLE_FAN, first_vertex + start,
                                  ends[i] - start, _instance_count);
         } else
@@ -5308,7 +5326,7 @@ draw_patches(const GeomPrimitivePipelineReader *reader, bool force) {
       }
 
 #ifndef OPENGLES_1
-      if (_supports_geometry_instancing && _instance_count > 0) {
+      if (_instance_count != 1) {
         _glDrawElementsInstanced(GL_PATCHES, num_vertices,
                                  get_numeric_type(reader->get_index_type()),
                                  client_pointer, _instance_count);
@@ -5324,7 +5342,7 @@ draw_patches(const GeomPrimitivePipelineReader *reader, bool force) {
       }
     } else {
 #ifndef OPENGLES_1
-      if (_supports_geometry_instancing && _instance_count > 0) {
+      if (_instance_count != 1) {
         _glDrawArraysInstanced(GL_PATCHES,
                                reader->get_first_vertex(),
                                num_vertices, _instance_count);
@@ -5374,7 +5392,7 @@ draw_lines(const GeomPrimitivePipelineReader *reader, bool force) {
         return false;
       }
 #ifndef OPENGLES_1
-      if (_supports_geometry_instancing && _instance_count > 0) {
+      if (_instance_count != 1) {
         _glDrawElementsInstanced(GL_LINES, num_vertices,
                                  get_numeric_type(reader->get_index_type()),
                                  client_pointer, _instance_count);
@@ -5390,7 +5408,7 @@ draw_lines(const GeomPrimitivePipelineReader *reader, bool force) {
       }
     } else {
 #ifndef OPENGLES_1
-      if (_supports_geometry_instancing && _instance_count > 0) {
+      if (_instance_count != 1) {
         _glDrawArraysInstanced(GL_LINES,
                                reader->get_first_vertex(),
                                num_vertices, _instance_count);
@@ -5438,7 +5456,7 @@ draw_lines_adj(const GeomPrimitivePipelineReader *reader, bool force) {
       if (!setup_primitive(client_pointer, reader, force)) {
         return false;
       }
-      if (_supports_geometry_instancing && _instance_count > 0) {
+      if (_instance_count != 1) {
         _glDrawElementsInstanced(GL_LINES_ADJACENCY, num_vertices,
                                  get_numeric_type(reader->get_index_type()),
                                  client_pointer, _instance_count);
@@ -5451,7 +5469,7 @@ draw_lines_adj(const GeomPrimitivePipelineReader *reader, bool force) {
                              client_pointer);
       }
     } else {
-      if (_supports_geometry_instancing && _instance_count > 0) {
+      if (_instance_count != 1) {
         _glDrawArraysInstanced(GL_LINES_ADJACENCY,
                                reader->get_first_vertex(),
                                num_vertices, _instance_count);
@@ -5510,7 +5528,7 @@ draw_linestrips(const GeomPrimitivePipelineReader *reader, bool force) {
         return false;
       }
 #ifndef OPENGLES_1
-      if (_supports_geometry_instancing && _instance_count > 0) {
+      if (_instance_count != 1) {
         _glDrawElementsInstanced(GL_LINE_STRIP, num_vertices,
                                  get_numeric_type(reader->get_index_type()),
                                  client_pointer, _instance_count);
@@ -5550,7 +5568,7 @@ draw_linestrips(const GeomPrimitivePipelineReader *reader, bool force) {
         for (size_t i = 0; i < ends.size(); i++) {
           _vertices_other_pcollector.add_level(ends[i] - start);
 #ifndef OPENGLES_1
-          if (_supports_geometry_instancing && _instance_count > 0) {
+          if (_instance_count != 1) {
             _glDrawElementsInstanced(GL_LINE_STRIP, ends[i] - start,
                                      get_numeric_type(reader->get_index_type()),
                                      client_pointer + start * index_stride,
@@ -5572,7 +5590,7 @@ draw_linestrips(const GeomPrimitivePipelineReader *reader, bool force) {
         for (size_t i = 0; i < ends.size(); i++) {
           _vertices_other_pcollector.add_level(ends[i] - start);
 #ifndef OPENGLES_1
-          if (_supports_geometry_instancing && _instance_count > 0) {
+          if (_instance_count != 1) {
             _glDrawArraysInstanced(GL_LINE_STRIP, first_vertex + start,
                                    ends[i] - start, _instance_count);
           } else
@@ -5630,7 +5648,7 @@ draw_linestrips_adj(const GeomPrimitivePipelineReader *reader, bool force) {
       if (!setup_primitive(client_pointer, reader, force)) {
         return false;
       }
-      if (_supports_geometry_instancing && _instance_count > 0) {
+      if (_instance_count != 1) {
         _glDrawElementsInstanced(GL_LINE_STRIP_ADJACENCY, num_vertices,
                                  get_numeric_type(reader->get_index_type()),
                                  client_pointer, _instance_count);
@@ -5665,7 +5683,7 @@ draw_linestrips_adj(const GeomPrimitivePipelineReader *reader, bool force) {
         unsigned int start = 0;
         for (size_t i = 0; i < ends.size(); i++) {
           _vertices_other_pcollector.add_level(ends[i] - start);
-          if (_supports_geometry_instancing && _instance_count > 0) {
+          if (_instance_count != 1) {
             _glDrawElementsInstanced(GL_LINE_STRIP_ADJACENCY, ends[i] - start,
                                      get_numeric_type(reader->get_index_type()),
                                      client_pointer + start * index_stride,
@@ -5684,7 +5702,7 @@ draw_linestrips_adj(const GeomPrimitivePipelineReader *reader, bool force) {
         int first_vertex = reader->get_first_vertex();
         for (size_t i = 0; i < ends.size(); i++) {
           _vertices_other_pcollector.add_level(ends[i] - start);
-          if (_supports_geometry_instancing && _instance_count > 0) {
+          if (_instance_count != 1) {
             _glDrawArraysInstanced(GL_LINE_STRIP_ADJACENCY, first_vertex + start,
                                    ends[i] - start, _instance_count);
           } else {
@@ -5731,7 +5749,7 @@ draw_points(const GeomPrimitivePipelineReader *reader, bool force) {
         return false;
       }
 #ifndef OPENGLES_1
-      if (_supports_geometry_instancing && _instance_count > 0) {
+      if (_instance_count != 1) {
         _glDrawElementsInstanced(GL_POINTS, num_vertices,
                                  get_numeric_type(reader->get_index_type()),
                                  client_pointer, _instance_count);
@@ -5747,7 +5765,7 @@ draw_points(const GeomPrimitivePipelineReader *reader, bool force) {
       }
     } else {
 #ifndef OPENGLES_1
-      if (_supports_geometry_instancing && _instance_count > 0) {
+      if (_instance_count != 1) {
         _glDrawArraysInstanced(GL_POINTS,
                                reader->get_first_vertex(),
                                num_vertices, _instance_count);
@@ -9748,15 +9766,22 @@ get_external_image_format(Texture *tex) const {
 
   case Texture::F_rgba:
   case Texture::F_rgbm:
-  case Texture::F_rgba4:
-  case Texture::F_rgba5:
   case Texture::F_rgba8:
   case Texture::F_rgba12:
+    return _supports_bgr ? GL_BGRA : GL_RGBA;
+
+  case Texture::F_rgba4:
+  case Texture::F_rgba5:
   case Texture::F_rgba16:
   case Texture::F_rgba32:
   case Texture::F_srgb_alpha:
   case Texture::F_rgb10_a2:
+#ifdef OPENGLES
+    // OpenGL ES doesn't have sized BGRA formats.
+    return GL_RGBA;
+#else
     return _supports_bgr ? GL_BGRA : GL_RGBA;
+#endif
 
   case Texture::F_luminance:
 #ifdef OPENGLES
@@ -10277,9 +10302,9 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
 
 #ifdef OPENGLES
   case Texture::F_rgba8:
-    return GL_RGBA8_OES;
+    return _supports_bgr ? GL_BGRA : GL_RGBA8_OES;
   case Texture::F_rgba12:
-    return force_sized ? GL_RGBA8 : GL_RGBA;
+    return _supports_bgr ? GL_BGRA : (force_sized ? GL_RGBA8 : GL_RGBA);
 #else
   case Texture::F_rgba8:
     if (Texture::is_unsigned(tex->get_component_type())) {
@@ -10512,11 +10537,9 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
 
 #ifndef OPENGLES_1
   case Texture::F_srgb:
-#ifndef OPENGLES
-    return GL_SRGB8;
-#endif
+    return _supports_texture_srgb ? GL_SRGB8 : GL_RGB8;
   case Texture::F_srgb_alpha:
-    return GL_SRGB8_ALPHA8;
+    return _supports_texture_srgb ? GL_SRGB8_ALPHA8 : GL_RGBA8;
 #endif
 #ifndef OPENGLES
   case Texture::F_sluminance:
@@ -11398,7 +11421,8 @@ set_state_and_transform(const RenderState *target,
   _state_pcollector.add_level(1);
   PStatGPUTimer timer1(this, _draw_set_state_pcollector);
 
-  if (transform != _internal_transform) {
+  bool transform_changed = transform != _internal_transform;
+  if (transform_changed) {
     // PStatGPUTimer timer(this, _draw_set_state_transform_pcollector);
     _transform_state_pcollector.add_level(1);
     _internal_transform = transform;
@@ -11406,22 +11430,34 @@ set_state_and_transform(const RenderState *target,
   }
 
   if (target == _state_rs && (_state_mask | _inv_state_mask).is_all_on()) {
+#ifndef OPENGLES_1
+    if (transform_changed) {
+      // The state has not changed, but the transform has. Set the new
+      // transform on the shader, if we have one.
+      if (_current_shader_context != nullptr) {
+        _current_shader_context->set_state_and_transform(_state_rs, transform,
+          _scene_setup->get_camera_transform(), _projection_mat);
+      }
+    }
+#endif
     return;
   }
   _target_rs = target;
 
 #ifndef OPENGLES_1
   determine_target_shader();
-  _instance_count = _target_shader->get_instance_count();
+  _sattr_instance_count = _target_shader->get_instance_count();
 
   if (_target_shader != _state_shader) {
     do_issue_shader();
     _state_shader = _target_shader;
     _state_mask.clear_bit(TextureAttrib::get_class_slot());
+    _state_mask.set_bit(ShaderAttrib::get_class_slot());
   }
   else if (!has_fixed_function_pipeline() && _current_shader == nullptr) { // In the case of OpenGL ES 2.x, we need to glUseShader before we draw anything.
     do_issue_shader();
     _state_mask.clear_bit(TextureAttrib::get_class_slot());
+    _state_mask.set_bit(ShaderAttrib::get_class_slot());
   }
 
   // Update all of the state that is bound to the shader program.
@@ -13005,11 +13041,20 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
     int num_levels = 1;
     CPTA_uchar image = tex->get_ram_mipmap_image(mipmap_bias);
 
+    bool can_generate = _supports_generate_mipmap;
+#if defined(OPENGLES) && !defined(OPENGLES_1)
+    // OpenGL ES doesn't support generating mipmaps for sRGB textures, so we
+    // have to do this on the CPU, unless we have a special extension.
+    if (internal_format == GL_SRGB8 || internal_format == GL_SRGB8_ALPHA8) {
+      can_generate = has_extension("GL_NV_generate_mipmap_sRGB");
+    }
+#endif
+
     if (image.is_null()) {
       // We don't even have a RAM image, so we have no choice but to let
       // mipmaps be generated on the GPU.
       if (uses_mipmaps) {
-        if (_supports_generate_mipmap) {
+        if (can_generate) {
           num_levels = tex->get_expected_num_mipmap_levels() - mipmap_bias;
           gtc->_generate_mipmaps = true;
         } else {
@@ -13025,7 +13070,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
 
         if (num_levels <= 1) {
           // No RAM mipmap levels available.  Should we generate some?
-          if (!_supports_generate_mipmap || !driver_generate_mipmaps ||
+          if (!can_generate || !driver_generate_mipmaps ||
               image_compression != Texture::CM_off) {
             // Yes, the GL can't or won't generate them, so we need to.  Note
             // that some drivers (nVidia) will *corrupt memory* if you ask
@@ -13038,7 +13083,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
         if (num_levels <= 1) {
           // We don't have mipmap levels in RAM.  Ask the GL to generate them
           // if it can.
-          if (_supports_generate_mipmap) {
+          if (can_generate) {
             num_levels = tex->get_expected_num_mipmap_levels() - mipmap_bias;
             gtc->_generate_mipmaps = true;
           } else {
@@ -13749,7 +13794,11 @@ upload_simple_texture(CLP(TextureContext) *gtc) {
   Texture *tex = gtc->get_texture();
   nassertr(tex != nullptr, false);
 
+#ifdef OPENGLES
+  GLenum internal_format = GL_BGRA;
+#else
   GLenum internal_format = GL_RGBA;
+#endif
   GLenum external_format = GL_BGRA;
 
   const unsigned char *image_ptr = tex->get_simple_ram_image();
@@ -13763,6 +13812,9 @@ upload_simple_texture(CLP(TextureContext) *gtc) {
     // If the GL doesn't claim to support BGR, we may have to reverse the
     // component ordering of the image.
     external_format = GL_RGBA;
+#ifdef OPENGLES
+    internal_format = GL_RGBA;
+#endif
     image_ptr = fix_component_ordering(bgr_image, image_ptr, image_size,
                                        external_format, tex);
   }
@@ -14304,9 +14356,7 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
 
 #ifndef OPENGLES_1
   case GL_SRGB:
-#ifndef OPENGLES
   case GL_SRGB8:
-#endif
     format = Texture::F_srgb;
     break;
   case GL_SRGB_ALPHA:

@@ -659,7 +659,7 @@ copy_from(const GeomVertexData *source, bool keep_data_objects,
             for (size_t i = 0; i < blend.get_num_transforms(); i++) {
               int index = add_transform(transform_table, blend.get_transform(i),
                                         already_added);
-              nassertv(index <= 4);
+              nassertv(index < 4);
               weights[index] = blend.get_weight(i);
             }
             if (weight.has_column()) {
@@ -2579,6 +2579,52 @@ set_array(size_t i, const GeomVertexArrayData *array) {
 
   if (_got_array_writers) {
     _array_writers[i] = new GeomVertexArrayDataHandle(_cdata->_arrays[i].get_write_pointer(), _current_thread);
+  }
+}
+
+/**
+ *
+ */
+void GeomVertexDataPipelineWriter::
+remove_array(size_t i) {
+  nassertv(i < _cdata->_arrays.size());
+
+  GeomVertexFormat *new_format = new GeomVertexFormat(*_cdata->_format);
+  new_format->remove_array(i);
+  _cdata->_format = GeomVertexFormat::register_format(new_format);
+  _cdata->_arrays.erase(_cdata->_arrays.begin() + i);
+
+  _object->clear_cache_stage();
+  _cdata->_modified = Geom::get_next_modified();
+  _cdata->_animated_vertices.clear();
+
+  if (_got_array_writers) {
+    _array_writers.erase(_array_writers.begin() + i);
+  }
+}
+
+/**
+ *
+ */
+void GeomVertexDataPipelineWriter::
+insert_array(size_t i, const GeomVertexArrayData *array) {
+  const GeomVertexArrayFormat *array_format = array->get_array_format();
+
+  if (i > _cdata->_arrays.size()) {
+    i = _cdata->_arrays.size();
+  }
+
+  GeomVertexFormat *new_format = new GeomVertexFormat(*_cdata->_format);
+  new_format->insert_array(i, array_format);
+  _cdata->_format = GeomVertexFormat::register_format(new_format);
+  _cdata->_arrays.insert(_cdata->_arrays.begin() + i, (GeomVertexArrayData *)array);
+
+  _object->clear_cache_stage();
+  _cdata->_modified = Geom::get_next_modified();
+  _cdata->_animated_vertices.clear();
+
+  if (_got_array_writers) {
+    _array_writers.insert(_array_writers.begin() + i, new GeomVertexArrayDataHandle(_cdata->_arrays[i].get_write_pointer(), _current_thread));
   }
 }
 

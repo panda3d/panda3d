@@ -24,14 +24,14 @@ class Loader(DirectObject):
 
     _loadedPythonFileTypes = False
 
-    class Callback:
+    class _Callback:
         """Returned by loadModel when used asynchronously.  This class is
         modelled after Future, and can be awaited."""
 
         # This indicates that this class behaves like a Future.
         _asyncio_future_blocking = False
 
-        class ResultAwaiter(object):
+        class _ResultAwaiter(object):
             """Reinvents generators because of PEP 479, sigh.  See #513."""
 
             __slots__ = 'requestList', 'index'
@@ -126,9 +126,9 @@ class Loader(DirectObject):
                 self._asyncio_future_blocking = True
 
             if self.gotList:
-                return self.ResultAwaiter([self])
+                return self._ResultAwaiter([self])
             else:
-                return self.ResultAwaiter(self.requestList)
+                return self._ResultAwaiter(self.requestList)
 
         def __aiter__(self):
             """ This allows using `async for` to iterate asynchronously over
@@ -138,7 +138,7 @@ class Loader(DirectObject):
             requestList = self.requestList
             assert requestList is not None, "Request was cancelled."
 
-            return self.ResultAwaiter(requestList)
+            return self._ResultAwaiter(requestList)
 
     # special methods
     def __init__(self, base):
@@ -192,21 +192,21 @@ class Loader(DirectObject):
         pathname), the return value will be a NodePath to the model
         loaded if the load was successful, or None otherwise.  If the
         input modelPath is a list of pathnames, the return value will
-        be a list of NodePaths and/or Nones.
+        be a list of `.NodePath` objects and/or Nones.
 
         loaderOptions may optionally be passed in to control details
         about the way the model is searched and loaded.  See the
-        LoaderOptions class for more.
+        `.LoaderOptions` class for more.
 
-        The default is to look in the ModelPool (RAM) cache first, and
-        return a copy from that if the model can be found there.  If
-        the bam cache is enabled (via the model-cache-dir config
+        The default is to look in the `.ModelPool` (RAM) cache first,
+        and return a copy from that if the model can be found there.
+        If the bam cache is enabled (via the `model-cache-dir` config
         variable), then that will be consulted next, and if both
         caches fail, the file will be loaded from disk.  If noCache is
         True, then neither cache will be consulted or updated.
 
         If allowInstance is True, a shared instance may be returned
-        from the ModelPool.  This is dangerous, since it is easy to
+        from the `.ModelPool`.  This is dangerous, since it is easy to
         accidentally modify the shared instance, and invalidate future
         load attempts of the same model.  Normally, you should leave
         allowInstance set to False, which will always return a unique
@@ -214,10 +214,10 @@ class Loader(DirectObject):
 
         If okMissing is True, None is returned if the model is not
         found or cannot be read, and no error message is printed.
-        Otherwise, an IOError is raised if the model is not found or
+        Otherwise, an `IOError` is raised if the model is not found or
         cannot be read (similar to attempting to open a nonexistent
-        file).  (If modelPath is a list of filenames, then IOError is
-        raised if *any* of the models could not be loaded.)
+        file).  (If modelPath is a list of filenames, then `IOError`
+        is raised if *any* of the models could not be loaded.)
 
         If callback is not None, then the model load will be performed
         asynchronously.  In this case, loadModel() will initiate a
@@ -235,7 +235,7 @@ class Loader(DirectObject):
 
         True asynchronous model loading requires Panda to have been
         compiled with threading support enabled (you can test
-        Thread.isThreadingSupported()).  In the absence of threading
+        `.Thread.isThreadingSupported()`).  In the absence of threading
         support, the asynchronous interface still exists and still
         behaves exactly as described, except that loadModel() might
         not return immediately.
@@ -308,7 +308,7 @@ class Loader(DirectObject):
             # requested models have been loaded, we'll invoke the
             # callback (passing it the models on the parameter list).
 
-            cb = Loader.Callback(self, len(modelList), gotList, callback, extraArgs)
+            cb = Loader._Callback(self, len(modelList), gotList, callback, extraArgs)
             i = 0
             for modelPath in modelList:
                 request = self.loader.makeAsyncRequest(Filename(modelPath), loaderOptions)
@@ -420,7 +420,7 @@ class Loader(DirectObject):
     def saveModel(self, modelPath, node, loaderOptions = None,
                   callback = None, extraArgs = [], priority = None,
                   blocking = None):
-        """ Saves the model (a NodePath or PandaNode) to the indicated
+        """ Saves the model (a `NodePath` or `PandaNode`) to the indicated
         filename path.  Returns true on success, false on failure.  If
         a callback is used, the model is saved asynchronously, and the
         true/false status is passed to the callback function. """
@@ -476,7 +476,7 @@ class Loader(DirectObject):
             # requested models have been saved, we'll invoke the
             # callback (passing it the models on the parameter list).
 
-            cb = Loader.Callback(self, len(modelList), gotList, callback, extraArgs)
+            cb = Loader._Callback(self, len(modelList), gotList, callback, extraArgs)
             i = 0
             for modelPath, node in modelList:
                 request = self.loader.makeAsyncSaveRequest(Filename(modelPath), loaderOptions, node)
@@ -508,8 +508,8 @@ class Loader(DirectObject):
         """
         modelPath is a string.
 
-        This loads a special model as a TextFont object, for rendering
-        text with a TextNode.  A font file must be either a special
+        This loads a special model as a `TextFont` object, for rendering
+        text with a `TextNode`.  A font file must be either a special
         egg file (or bam file) generated with egg-mkfont, which is
         considered a static font, or a standard font file (like a TTF
         file) that is supported by FreeType, which is considered a
@@ -573,7 +573,7 @@ class Loader(DirectObject):
 
         If color is not None, it should be a VBase4 specifying the
         foreground color of the font.  Specifying this option breaks
-        TextNode.setColor(), so you almost never want to use this
+        `TextNode.setColor()`, so you almost never want to use this
         option; the default (white) is the most appropriate for a
         font, as it allows text to have any arbitrary color assigned
         at generation time.  However, if you want to use a colored
@@ -695,7 +695,8 @@ class Loader(DirectObject):
         texturePath is a string.
 
         Attempt to load a texture from the given file path using
-        TexturePool class.
+        `TexturePool` class.  Returns a `Texture` object, or raises
+        `IOError` if the file could not be loaded.
 
         okMissing should be True to indicate the method should return
         None if the texture file is not found.  If it is False, the
@@ -713,17 +714,17 @@ class Loader(DirectObject):
         the texture and the number of expected mipmap images.
 
         If minfilter or magfilter is not None, they should be a symbol
-        like SamplerState.FTLinear or SamplerState.FTNearest.  (minfilter
-        may be further one of the Mipmap filter type symbols.)  These
-        specify the filter mode that will automatically be applied to
-        the texture when it is loaded.  Note that this setting may
+        like `SamplerState.FTLinear` or `SamplerState.FTNearest`.
+        (minfilter may be further one of the Mipmap filter type symbols.)
+        These specify the filter mode that will automatically be applied
+        to the texture when it is loaded.  Note that this setting may
         override the texture's existing settings, even if it has
-        already been loaded.  See egg-texture-cards for a more robust
+        already been loaded.  See `egg-texture-cards` for a more robust
         way to apply per-texture filter types and settings.
 
         If anisotropicDegree is not None, it specifies the anisotropic degree
         to apply to the texture when it is loaded.  Like minfilter and
-        magfilter, egg-texture-cards may be a more robust way to apply
+        magfilter, `egg-texture-cards` may be a more robust way to apply
         this setting.
 
         If multiview is true, it indicates to load a multiview or
@@ -769,7 +770,7 @@ class Loader(DirectObject):
         """
         texturePattern is a string that contains a sequence of one or
         more hash characters ('#'), which will be filled in with the
-        z-height number.  Returns a 3-D Texture object, suitable for
+        z-height number.  Returns a 3-D `Texture` object, suitable for
         rendering volumetric textures.
 
         okMissing should be True to indicate the method should return
@@ -826,7 +827,7 @@ class Loader(DirectObject):
         """
         texturePattern is a string that contains a sequence of one or
         more hash characters ('#'), which will be filled in with the
-        z-height number.  Returns a 2-D Texture array object, suitable
+        z-height number.  Returns a 2-D `Texture` array object, suitable
         for rendering array of textures.
 
         okMissing should be True to indicate the method should return
@@ -884,7 +885,7 @@ class Loader(DirectObject):
         texturePattern is a string that contains a sequence of one or
         more hash characters ('#'), which will be filled in with the
         face index number (0 through 6).  Returns a six-face cube map
-        Texture object.
+        `Texture` object.
 
         okMissing should be True to indicate the method should return
         None if the texture file is not found.  If it is False, the
@@ -951,8 +952,8 @@ class Loader(DirectObject):
         """Loads one or more sound files, specifically designated as a
         "sound effect" file (that is, uses the sfxManager to load the
         sound).  There is no distinction between sound effect files
-        and music files other than the particular AudioManager used to
-        load the sound file, but this distinction allows the sound
+        and music files other than the particular `AudioManager` used
+        to load the sound file, but this distinction allows the sound
         effects and/or the music files to be adjusted as a group,
         independently of the other group."""
 
@@ -965,8 +966,8 @@ class Loader(DirectObject):
         """Loads one or more sound files, specifically designated as a
         "music" file (that is, uses the musicManager to load the
         sound).  There is no distinction between sound effect files
-        and music files other than the particular AudioManager used to
-        load the sound file, but this distinction allows the sound
+        and music files other than the particular `AudioManager` used
+        to load the sound file, but this distinction allows the sound
         effects and/or the music files to be adjusted as a group,
         independently of the other group."""
         if(self.base.musicManager):
@@ -1013,7 +1014,7 @@ class Loader(DirectObject):
             # requested sounds have been loaded, we'll invoke the
             # callback (passing it the sounds on the parameter list).
 
-            cb = Loader.Callback(self, len(soundList), gotList, callback, extraArgs)
+            cb = Loader._Callback(self, len(soundList), gotList, callback, extraArgs)
             for i, soundPath in enumerate(soundList):
                 request = AudioLoadRequest(manager, soundPath, positional)
                 request.setDoneEvent(self.hook)
@@ -1052,7 +1053,7 @@ class Loader(DirectObject):
                            callback = None, extraArgs = []):
         """ Performs a model.flattenStrong() operation in a sub-thread
         (if threading is compiled into Panda).  The model may be a
-        single NodePath, or it may be a list of NodePaths.
+        single `.NodePath`, or it may be a list of NodePaths.
 
         Each model is duplicated and flattened in the sub-thread.
 
@@ -1078,7 +1079,7 @@ class Loader(DirectObject):
             callback = self.__asyncFlattenDone
             gotList = True
 
-        cb = Loader.Callback(self, len(modelList), gotList, callback, extraArgs)
+        cb = Loader._Callback(self, len(modelList), gotList, callback, extraArgs)
         i = 0
         for model in modelList:
             request = ModelFlattenRequest(model.node())

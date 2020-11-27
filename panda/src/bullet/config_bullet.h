@@ -11,8 +11,8 @@
  * @date 2010-01-23
  */
 
-#ifndef __CONFIG_BULLET_H__
-#define __CONFIG_BULLET_H__
+#ifndef CONFIG_BULLET_H
+#define CONFIG_BULLET_H
 
 #include "pandabase.h"
 #include "notifyCategoryProxy.h"
@@ -42,4 +42,4 @@ extern ConfigVariableDouble bullet_additional_damping_angular_threshold;
 
 extern EXPCL_PANDABULLET void init_libbullet();
 
-#endif // __CONFIG_BULLET_H__
+#endif // CONFIG_BULLET_H

@@ -42,6 +42,8 @@
 #include "geomDrawCallbackData.h"
 #include "geomNode.h"
 #include "geomTransformer.h"
+#include "instanceList.h"
+#include "instancedNode.h"
 #include "lensNode.h"
 #include "light.h"
 #include "lightAttrib.h"
@@ -416,6 +418,8 @@ init_libpgraph() {
   GeomDrawCallbackData::init_type();
   GeomNode::init_type();
   GeomTransformer::init_type();
+  InstanceList::init_type();
+  InstancedNode::init_type();
   LensNode::init_type();
   Light::init_type();
   LightAttrib::init_type();
@@ -484,6 +488,8 @@ init_libpgraph() {
   Fog::register_with_read_factory();
   FogAttrib::register_with_read_factory();
   GeomNode::register_with_read_factory();
+  InstanceList::register_with_read_factory();
+  InstancedNode::register_with_read_factory();
   LensNode::register_with_read_factory();
   LightAttrib::register_with_read_factory();
   LightRampAttrib::register_with_read_factory();

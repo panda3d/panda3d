@@ -68,24 +68,24 @@ class DirectSession(DirectObject):
         self.activeParent = None
 
         self.selectedNPReadout = OnscreenText.OnscreenText(
-            pos = (-1.0, -0.9), bg=Vec4(1, 1, 1, 1),
-            scale = 0.05, align = TextNode.ALeft,
+            pos = (0.1, 0.1), bg=Vec4(0, 0, 0, .2), style=3,
+            fg = (1, 1, 1, 1), scale = 0.05, align = TextNode.ALeft,
             mayChange = 1, font = self.font)
         # Make sure readout is never lit or drawn in wireframe
         useDirectRenderStyle(self.selectedNPReadout)
         self.selectedNPReadout.reparentTo(hidden)
 
         self.activeParentReadout = OnscreenText.OnscreenText(
-            pos = (-1.0, -0.975), bg=Vec4(1, 1, 1, 1),
-            scale = 0.05, align = TextNode.ALeft,
+            pos = (0.1, 0.16), bg=Vec4(0, 0, 0, .2), style = 3,
+            fg = (1, 1, 1, 1), scale = 0.05, align = TextNode.ALeft,
             mayChange = 1, font = self.font)
         # Make sure readout is never lit or drawn in wireframe
         useDirectRenderStyle(self.activeParentReadout)
         self.activeParentReadout.reparentTo(hidden)
 
         self.directMessageReadout = OnscreenText.OnscreenText(
-            pos = (-1.0, 0.9), bg=Vec4(1, 1, 1, 1),
-            scale = 0.05, align = TextNode.ALeft,
+            pos = (0.1, -0.1), bg=Vec4(0, 0, 0, .2), style = 3,
+            fg = (1, 1, 1, 1), scale = 0.05, align = TextNode.ALeft,
             mayChange = 1, font = self.font)
         # Make sure readout is never lit or drawn in wireframe
         useDirectRenderStyle(self.directMessageReadout)
@@ -698,7 +698,7 @@ class DirectSession(DirectObject):
                 self.ancestry = dnp.getAncestors()
                 self.ancestryIndex = 0
             # Update the selectedNPReadout
-            self.selectedNPReadout.reparentTo(aspect2d)
+            self.selectedNPReadout.reparentTo(base.a2dBottomLeft)
             self.selectedNPReadout.setText(
                 'Selected:' + dnp.getName())
             # Show the manipulation widget
@@ -782,7 +782,7 @@ class DirectSession(DirectObject):
         # Record new parent
         self.activeParent = nodePath
         # Update the activeParentReadout
-        self.activeParentReadout.reparentTo(aspect2d)
+        self.activeParentReadout.reparentTo(base.a2dBottomLeft)
         self.activeParentReadout.setText(
             'Active Reparent Target:' + nodePath.getName())
         # Alert everyone else
@@ -1031,7 +1031,7 @@ class DirectSession(DirectObject):
     def message(self, text):
         taskMgr.remove('hideDirectMessage')
         taskMgr.remove('hideDirectMessageLater')
-        self.directMessageReadout.reparentTo(aspect2d)
+        self.directMessageReadout.reparentTo(base.a2dTopLeft)
         self.directMessageReadout.setText(text)
         self.hideDirectMessageLater()
 

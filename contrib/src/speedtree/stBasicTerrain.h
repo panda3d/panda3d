@@ -14,7 +14,7 @@
 #ifndef STBASICTERRAIN_H
 #define STBASICTERRAIN_H
 
-#include "pandabase.h"
+#include "contribbase.h"
 #include "stTerrain.h"
 #include "luse.h"
 #include "pvector.h"

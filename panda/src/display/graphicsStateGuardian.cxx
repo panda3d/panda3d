@@ -1985,7 +1985,14 @@ fetch_specified_texture(Shader::ShaderTexSpec &spec, SamplerState &sampler,
         Light *light_obj = light.node()->as_light();
         nassertr(light_obj != nullptr, nullptr);
 
-        PT(Texture) tex = get_shadow_map(light);
+        PT(Texture) tex;
+        LightLensNode *lln = DCAST(LightLensNode, light.node());
+        if (lln != nullptr && lln->_shadow_caster) {
+          tex = get_shadow_map(light);
+        } else {
+          tex = get_dummy_shadow_map((Texture::TextureType)spec._desired_type);
+        }
+
         if (tex != nullptr) {
           sampler = tex->get_default_sampler();
         }
@@ -2491,8 +2498,12 @@ finish_decal() {
 bool GraphicsStateGuardian::
 begin_draw_primitives(const GeomPipelineReader *geom_reader,
                       const GeomVertexDataPipelineReader *data_reader,
-                      bool force) {
+                      size_t num_instances, bool force) {
   _data_reader = data_reader;
+
+  if (num_instances == 0) {
+    return false;
+  }
 
   // Always draw if we have a shader, since the shader might use a different
   // mechanism for fetching vertex data.
@@ -2609,6 +2620,7 @@ reset() {
   _state_rs = RenderState::make_empty();
   _target_rs = nullptr;
   _state_mask.clear();
+  _inv_state_mask = RenderState::SlotMask::all_on();
   _internal_transform = _cs_transform;
   _scene_null = new SceneSetup;
   _scene_setup = _scene_null;
