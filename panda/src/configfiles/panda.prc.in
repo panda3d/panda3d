@@ -2,6 +2,7 @@
 ################################# DO NOT EDIT ###########################
 
 # Some paths first...
+$<$<NOT:$<PLATFORM_ID:iOS>>:#> plugin-path $MAIN_DIR
 plugin-path $THIS_PRC_DIR/${PLUGINS_PATH}
 model-path $MAIN_DIR
 model-path $THIS_PRC_DIR/${MODELS_PARENT_PATH}

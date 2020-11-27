@@ -124,10 +124,13 @@ reload_implicit_pages() {
   const BlobInfo *blobinfo = (const BlobInfo *)GetProcAddress(GetModuleHandle(NULL), "blobinfo");
 #elif defined(RTLD_MAIN_ONLY)
   const BlobInfo *blobinfo = (const BlobInfo *)dlsym(RTLD_MAIN_ONLY, "blobinfo");
+  void (*load_blobinfo_pointers)() = (void (*)())dlsym(RTLD_MAIN_ONLY, "load_blobinfo_pointers");
 //#elif defined(RTLD_SELF)
 //  const BlobInfo *blobinfo = (const BlobInfo *)dlsym(RTLD_SELF, "blobinfo");
 #else
-  const BlobInfo *blobinfo = (const BlobInfo *)dlsym(dlopen(NULL, RTLD_NOW), "blobinfo");
+  void *handle = dlopen(NULL, RTLD_NOW);
+  const BlobInfo *blobinfo = (const BlobInfo *)dlsym(handle, "blobinfo");
+  const void (*load_blobinfo_pointers)() = dlsym(handle, "load_blobinfo_pointers");
 #endif
   if (blobinfo == nullptr) {
 #ifndef _WIN32
@@ -139,6 +142,9 @@ reload_implicit_pages() {
   }
 
   if (blobinfo != nullptr) {
+    if (blobinfo->module_table == nullptr) {
+      load_blobinfo_pointers();
+    }
     if (blobinfo->num_pointers >= 11 && blobinfo->main_dir != nullptr) {
       ExecutionEnvironment::set_environment_variable("MAIN_DIR", blobinfo->main_dir);
     } else {

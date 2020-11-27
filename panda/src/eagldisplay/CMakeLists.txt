@@ -9,7 +9,6 @@ set(P3EAGLDISPLAY_HEADERS
   eaglGraphicsWindow.h eaglGraphicsWindow.I
   eaglGraphicsBuffer.h
   pandaEAGLView.h
-  PandaViewController.h
 )
 
 set(P3EAGLDISPLAY_SOURCES
@@ -19,7 +18,6 @@ set(P3EAGLDISPLAY_SOURCES
   eaglGraphicsWindow.mm
   eaglGraphicsBuffer.mm
   pandaEAGLView.mm
-  PandaViewController.mm
 )
 
 composite_sources(p3eagldisplay P3EAGLDISPLAY_SOURCES)
@@ -27,7 +25,6 @@ add_component_library(p3eagldisplay SYMBOL BUILDING_PANDA_EAGLDISPLAY
   ${P3EAGLDISPLAY_HEADERS} ${P3EAGLDISPLAY_SOURCES})
 target_link_libraries(p3eagldisplay p3gles2gsg panda)
 
-target_include_directories(p3eagldisplay PUBLIC ${PYTHON_INCLUDE_DIRS})
 target_compile_options(p3eagldisplay PRIVATE -fobjc-arc)
 
 # Frameworks:

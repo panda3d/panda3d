@@ -1131,7 +1131,7 @@ to_os_specific() const {
   Filename standard(*this);
   standard.standardize();
 
-#ifdef IS_OSX
+#if defined(IS_OSX) || defined(IS_IOS)
   if (get_type() == T_dso) {
     std::string workname = standard.get_fullpath();
     size_t dot = workname.rfind('.');

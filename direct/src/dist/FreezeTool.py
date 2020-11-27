@@ -677,7 +677,7 @@ lc_layouts = {
 lc_indices_to_slide = {
     b'__PANDA': [4, 6],
     b'__LINKEDIT': [3, 5],
-    LC_DYLD_INFO_ONLY: [2, 4, 8, 10],
+    LC_DYLD_INFO_ONLY: [2, 4, 6, 8, 10],
     LC_SYMTAB: [2, 4],
     LC_DYSYMTAB: [14],
     LC_FUNCTION_STARTS: [2],
@@ -1801,7 +1801,7 @@ class Freezer:
             # trouble importing it as a builtin module.  Synthesize a frozen
             # module that loads it dynamically.
             if '.' in moduleName:
-                if self.platform.startswith("macosx") and not use_console:
+                if self.platform.startswith("macosx") or self.platform.startswith("ios") and not use_console:
                     # We write the Frameworks directory to sys.path[0].
                     code = 'import sys;del sys.modules["%s"];import sys,os,imp;imp.load_dynamic("%s",os.path.join(sys.path[0], "%s%s"))' % (moduleName, moduleName, moduleName, modext)
                 else:
@@ -1840,8 +1840,10 @@ class Freezer:
         if self.platform.startswith('win'):
             # We don't use mmap on Windows.  Align just for good measure.
             blob_align = 32
+        elif self.platform.startswith('ios'):
+            # Align to page size, so that it can be mmapped. Page size is 16KB on iOS, 4KB everywhere else.
+            blob_align = 16384
         else:
-            # Align to page size, so that it can be mmapped.
             blob_align = 4096
 
         # Also determine the total blob size now.  Add padding to the end.
@@ -1852,14 +1854,14 @@ class Freezer:
 
         # TODO: Support creating custom sections in universal binaries.
         append_blob = True
-        if self.platform.startswith('macosx') and len(bitnesses) == 1:
+        if self.platform.startswith('macosx') or self.platform.startswith('ios') and len(bitnesses) == 1:
             # If our deploy-stub has a __PANDA segment, we know we're meant to
             # put our blob there rather than attach it to the end.
             load_commands = self._parse_macho_load_commands(stub_data)
             if b'__PANDA' in load_commands.keys():
                 append_blob = False
 
-        if self.platform.startswith("macosx") and not append_blob:
+        if self.platform.startswith("macosx") or self.platform.startswith('ios') and not append_blob:
             # Take this time to shift any Mach-O structures around to fit our
             # blob. We don't need to worry about aligning the offset since the
             # compiler already took care of that when creating the segment.

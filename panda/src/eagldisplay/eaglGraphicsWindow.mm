@@ -23,10 +23,6 @@
 
 TypeHandle EAGLGraphicsWindow::_type_handle;
 
-PandaViewController *EAGLGraphicsWindow::next_view_controller = nil;
-TrueMutexImpl EAGLGraphicsWindow::vc_lock;
-TrueConditionVarImpl EAGLGraphicsWindow::vc_condition = TrueConditionVarImpl(EAGLGraphicsWindow::vc_lock);
-
 // See https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/ObjectiveC/Chapters/ocAssociativeReferences.html
 // for what this is doing. Since UITouches don't come with an ID (or any member
 // that can meaningfully be converted to one), we can attach our own using the
@@ -177,23 +173,13 @@ open_window() {
   // reset the GSG before it tries to use it.
   eaglgsg->lock_context();
 
-  // Create the view we're going to render into, and attach it to the supplied
-  // view controller if given.
-  PandaViewController *vc = EAGLGraphicsWindow::next_view_controller;
   dispatch_sync(dispatch_get_main_queue(), ^{
-    CGRect frame = vc ? vc.view.frame : UIScreen.mainScreen.bounds;
-    _view = [[PandaEAGLView alloc] initWithFrame:frame graphicsWindow:this];
+    UIWindow *main_window = UIApplication.sharedApplication.windows[0];
+    _view = [[PandaEAGLView alloc] initWithFrame:main_window.frame graphicsWindow:this];
+    main_window.rootViewController.view = _view;
     _backing_buffer->_layer = _view.layer;
-    _properties.set_size(frame.size.width, frame.size.height);
-    if (vc) {
-      vc.view = _view;
-    }
+    _properties.set_size(_view.frame.size.width, _view.frame.size.height);
   });
-
-  EAGLGraphicsWindow::next_view_controller = nil;
-  EAGLGraphicsWindow::vc_lock.lock();
-  EAGLGraphicsWindow::vc_condition.notify();
-  EAGLGraphicsWindow::vc_lock.unlock();
 
   [EAGLContext setCurrentContext:eaglgsg->_context];
   

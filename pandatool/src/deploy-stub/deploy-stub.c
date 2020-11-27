@@ -16,6 +16,7 @@
 #ifdef __APPLE__
 #  include <mach-o/dyld.h>
 #  include <libgen.h>
+#  include <TargetConditionals.h>
 #endif
 
 #include <stdio.h>
@@ -52,6 +53,7 @@ volatile struct {
   // The reason we initialize it to -1 is because otherwise, smart linkers may
   // end up putting it in the .bss section for zero-initialized data.
 } blobinfo = {(uint64_t)-1};
+void *blob;
 
 #ifdef MS_WINDOWS
 #  define WIN32_LEAN_AND_MEAN
@@ -99,6 +101,13 @@ static int supports_code_page(UINT cp) {
 
   return 1;
 }
+#endif
+
+#if TARGET_OS_IPHONE
+extern void ios_ensure_thread_safety();
+extern int ios_main(int argc, char *argv[]);
+
+int stored_argc;
 #endif
 
 /**
@@ -446,7 +455,11 @@ int Py_FrozenMain(int argc, char **argv)
       return 1;
     }
     const char *dir = dirname(resolved);
+#if TARGET_OS_IPHONE
+    strcpy(buffer, dir);
+#else
     sprintf(buffer, "%s/../Frameworks", dir);
+#endif
 
     PyObject *sys_path = PyList_New(1);
     PyList_SET_ITEM(sys_path, 0, PyUnicode_FromString(buffer));
@@ -455,7 +468,11 @@ int Py_FrozenMain(int argc, char **argv)
 
     // Now, store a path to the Resources directory into the main_dir pointer,
     // for ConfigPageManager to read out and assign to MAIN_DIR.
+#if TARGET_OS_IPHONE
+    strcpy(buffer, dir);
+#else
     sprintf(buffer, "%s/../Resources", dir);
+#endif
     set_main_dir(buffer);
 
     // Finally, chdir to it, so that regular Python files are read from the
@@ -491,6 +508,12 @@ error:
 #endif
     return sts;
 }
+
+#if TARGET_OS_IPHONE
+void Py_FrozenMain_Threaded(void *argv_ptr) {
+  Py_FrozenMain(stored_argc, (char **)argv_ptr);
+}
+#endif
 
 /**
  * Maps the binary blob at the given memory address to memory, and returns the
@@ -571,6 +594,41 @@ static void unmap_blob(void *blob) {
   }
 }
 
+__attribute__((__visibility__("default")))
+void *load_blobinfo_pointers() {
+    if (blob == NULL) {
+        blob = map_blob((off_t)blobinfo.blob_offset, (size_t)blobinfo.blob_size);
+        assert(blob != NULL);
+    }
+
+    // Offset the pointers in the header using the base mmap address.
+    if (blobinfo.version > 0 && blobinfo.num_pointers > 0) {
+        uint32_t i;
+        assert(blobinfo.num_pointers <= MAX_NUM_POINTERS);
+        for (i = 0; i < blobinfo.num_pointers; ++i) {
+            // Only offset if the pointer is non-NULL.  Except for the first
+            // pointer, which may never be NULL and usually (but not always)
+            // points to the beginning of the blob.
+            if (i == 0 || blobinfo.pointers[i] != 0) {
+                blobinfo.pointers[i] = (void *)((uintptr_t)blobinfo.pointers[i] + (uintptr_t)blob);
+            }
+        }
+    } else {
+        blobinfo.pointers[0] = blob;
+    }
+
+    // Offset the pointers in the module table using the base mmap address.
+    struct _frozen *moddef = blobinfo.pointers[0];
+    while (moddef->name) {
+        moddef->name = (char *)((uintptr_t)moddef->name + (uintptr_t)blob);
+        if (moddef->code != 0) {
+            moddef->code = (unsigned char *)((uintptr_t)moddef->code + (uintptr_t)blob);
+        }
+        //printf("MOD: %s %p %d\n", moddef->name, (void*)moddef->code, moddef->size);
+        moddef++;
+    }
+}
+
 /**
  * Main entry point to deploy-stub.
  */
@@ -580,9 +638,7 @@ int wmain(int argc, wchar_t *argv[]) {
 int main(int argc, char *argv[]) {
 #endif
   int retval;
-  struct _frozen *moddef;
   const char *log_filename;
-  void *blob = NULL;
   log_filename = NULL;
 
 #ifdef __APPLE__
@@ -606,37 +662,11 @@ int main(int argc, char *argv[]) {
 
   // If we have a blob offset, we have to map the blob to memory.
   if (blobinfo.version == 0 || blobinfo.blob_offset != 0) {
-    void *blob = map_blob((off_t)blobinfo.blob_offset, (size_t)blobinfo.blob_size);
-    assert(blob != NULL);
-
-    // Offset the pointers in the header using the base mmap address.
-    if (blobinfo.version > 0 && blobinfo.num_pointers > 0) {
-      uint32_t i;
-      assert(blobinfo.num_pointers <= MAX_NUM_POINTERS);
-      for (i = 0; i < blobinfo.num_pointers; ++i) {
-        // Only offset if the pointer is non-NULL.  Except for the first
-        // pointer, which may never be NULL and usually (but not always)
-        // points to the beginning of the blob.
-        if (i == 0 || blobinfo.pointers[i] != 0) {
-          blobinfo.pointers[i] = (void *)((uintptr_t)blobinfo.pointers[i] + (uintptr_t)blob);
-        }
-      }
-      if (blobinfo.num_pointers >= 12) {
-        log_filename = blobinfo.pointers[11];
-      }
-    } else {
-      blobinfo.pointers[0] = blob;
+    if (blobinfo.pointers[0] == NULL) {
+      load_blobinfo_pointers();
     }
-
-    // Offset the pointers in the module table using the base mmap address.
-    moddef = blobinfo.pointers[0];
-    while (moddef->name) {
-      moddef->name = (char *)((uintptr_t)moddef->name + (uintptr_t)blob);
-      if (moddef->code != 0) {
-        moddef->code = (unsigned char *)((uintptr_t)moddef->code + (uintptr_t)blob);
-      }
-      //printf("MOD: %s %p %d\n", moddef->name, (void*)moddef->code, moddef->size);
-      moddef++;
+    if (blobinfo.version > 0 && blobinfo.num_pointers > 0 && blobinfo.num_pointers >= 12) {
+      log_filename = blobinfo.pointers[11];
     }
   }
 
@@ -653,7 +683,19 @@ int main(int argc, char *argv[]) {
 
   // Run frozen application
   PyImport_FrozenModules = blobinfo.pointers[0];
+
+#if TARGET_OS_IPHONE
+  stored_argc = argc;
+  ios_ensure_thread_safety();
+
+  pthread_t thread_id;
+  pthread_create(&thread_id, NULL, Py_FrozenMain_Threaded, argv);
+  pthread_detach(thread_id);
+
+  retval = ios_main(argc, argv);
+#else
   retval = Py_FrozenMain(argc, argv);
+#endif
 
   fflush(stdout);
   fflush(stderr);

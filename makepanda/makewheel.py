@@ -144,7 +144,8 @@ class TargetInfo:
                  soabi='',
                  python_version=None,
                  python_root=sys.exec_prefix,
-                 sys_platform=get_host()):
+                 sys_platform=get_host(),
+                 static_panda=False):
         """
         With no arguments, it will be assumed that the target is the same as the
         host (which will be most cases).
@@ -174,6 +175,7 @@ class TargetInfo:
         self.python_version = python_version
         self.python_root = python_root
         self.sys_platform = sys_platform
+        self.static_panda = static_panda
 
         self.platform_tag = self.platform_tag.replace('-', '_').replace('.', '_')
 
@@ -234,7 +236,7 @@ class TargetInfo:
     @property
     def extension_suffix(self):
         if 'ios' in self.platform_tag:
-            return '.so'
+            return '.a' if self.static_panda else '.so'
         if self.soabi != '':
             ext = '.pyd' if self.sys_platform == 'win32' else '.so'
             return '.' + self.soabi + ext
@@ -698,6 +700,8 @@ def makewheel(version, output_dir, target_info):
     if sys.version_info < (3, 5):
         raise Exception("Python 3.5 is required to produce a wheel.")
 
+    platform = target_info.platform_tag
+
     if platform is None:
         # Determine the platform from the build.
         platform_dat = os.path.join(output_dir, 'tmp', 'platform.dat')
@@ -794,11 +798,12 @@ if __debug__:
 
     ext_suffix = target_info.extension_suffix
 
-    for file in os.listdir(panda3d_dir):
+    module_dir = libs_dir if target_info.static_panda else panda3d_dir
+    for file in os.listdir(module_dir):
         if file == '__init__.py':
             pass
-        elif file.endswith('.py') or (file.endswith(ext_suffix) and '.' not in file[:-len(ext_suffix)]):
-            source_path = os.path.join(panda3d_dir, file)
+        elif file.endswith('.py') or (file.endswith(ext_suffix) and '.' not in file[:-len(ext_suffix)]) or file.startswith('libpy'):
+            source_path = os.path.join(module_dir, file)
 
             if file.endswith('.pyd') and target_info.sys_platform == 'cygwin':
                 # Rename it to .dll for cygwin Python to be able to load it.
@@ -810,7 +815,11 @@ if __debug__:
 
     # And copy the extension modules from the Python installation into the
     # deploy_libs directory, for use by deploy-ng.
-    ext_suffix = '.pyd' if target_info.sys_platform in ('win32', 'cygwin') else '.so'
+    if target_info.static_panda:
+        ext_suffix = '.lib' if target_info.sys_platform in ('win32', 'cygwin') else '.a'
+    else:
+        ext_suffix = '.pyd' if target_info.sys_platform in ('win32', 'cygwin') else '.so'
+
     ext_mod_dir = target_info.python_ext_module_dir
 
     if not 'ios' in target_info.platform_tag:
@@ -826,20 +835,15 @@ if __debug__:
 
                 whl.write_file(target_path, source_path)
 
-    if 'ios' in target_info.platform_tag:
-        # Copy over the PandaViewController.h header file.
-        include_dir = join(output_dir, 'include/panda3d')
-        whl.write_file('deploy_libs/include/PandaViewController.h', join(include_dir, 'PandaViewController.h'))
-
     # Add plug-ins.
     for lib in PLUGIN_LIBS:
         plugin_name = 'lib' + lib
         if target_info.sys_platform in ('win32', 'cygwin'):
-            plugin_name += '.dll'
+            plugin_name += '.lib' if target_info.static_panda else '.dll'
         elif target_info.sys_platform in ('darwin', 'ios'):
-            plugin_name += '.dylib'
+            plugin_name += '.a' if target_info.static_panda else '.dylib'
         else:
-            plugin_name += '.so'
+            plugin_name += '.a' if target_info.static_panda else '.so'
         plugin_path = os.path.join(libs_dir, plugin_name)
         if os.path.isfile(plugin_path):
             whl.write_file('panda3d/' + plugin_name, plugin_path)
@@ -924,10 +928,10 @@ if __debug__:
             else:
                 raise Exception('Platform string does not specify one of ' + archs)
 
-        python_dir = os.path.abspath(join('thirdparty', 'ios-libs-%s' % arch, 'python', 'lib'))
+        python_dir = target_info.python_root
         pylib_name = ''
         for filename in os.listdir(python_dir):
-            if os.path.isfile(os.path.join(python_dir, filename)) and 'libpython' in filename and filename.endswith('dylib'):
+            if os.path.isfile(os.path.join(python_dir, filename)) and 'libpython' in filename:
                 pylib_name = filename
         pylib_path = join(python_dir, pylib_name)
     else:
@@ -958,9 +962,10 @@ if __name__ == "__main__":
     parser.add_option('', '--pyver', dest = 'python_version', help = 'Custom Python version we\'re making the wheel for.')
     parser.add_option('', '--pyroot', dest = 'python_root', help = 'Custom root of Python installation.', default = sys.exec_prefix)
     parser.add_option('', '--sysplatform', dest = 'sys_platform', help = 'Output of "sys.platform" on the target', default = get_host())
+    parser.add_option('', '--static', dest = 'static_panda', help = 'If the Panda libraries we\'re packaging are statically linked', action = 'store_true', default = False)
     (options, args) = parser.parse_args()
 
-    ti_opts = {key: options.__dict__[key] for key in ('platform_tag', 'soabi', 'python_version', 'python_root', 'sys_platform')}
+    ti_opts = {key: options.__dict__[key] for key in ('platform_tag', 'soabi', 'python_version', 'python_root', 'sys_platform', 'static_panda')}
     target_info = TargetInfo(**ti_opts)
 
     global verbose

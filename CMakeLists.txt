@@ -124,6 +124,7 @@ option(BUILD_DTOOL "Build the dtool source tree." ON)
 option(BUILD_PANDA "Build the panda source tree." ON)
 option(BUILD_DIRECT "Build the direct source tree." ON)
 option(BUILD_PANDATOOL "Build the pandatool source tree." ON)
+option(BUILD_DEPLOYSTUB "Build deploy-stub. Will also be built if BUILD_PANDATOOL is true." ON)
 option(BUILD_CONTRIB "Build the contrib source tree." ON)
 option(BUILD_MODELS "Build/install the built-in models." ON)
 
@@ -144,7 +145,7 @@ if(BUILD_DIRECT)
   add_subdirectory(direct "${CMAKE_BINARY_DIR}/direct")
 endif()
 
-if(BUILD_PANDATOOL)
+if(BUILD_PANDATOOL OR BUILD_DEPLOYSTUB)
   add_subdirectory(pandatool "${CMAKE_BINARY_DIR}/pandatool")
 endif()
 

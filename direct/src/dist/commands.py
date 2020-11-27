@@ -169,6 +169,26 @@ if os.path.isdir(tcl_dir):
 del os
 """
 
+# As of April 2020, this is required for apps to be submitted to the App Store.
+IOS_LAUNCH_STORYBOARD = u"""
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17700" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="01J-lp-oVM">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
+    </dependencies>
+    <scenes>
+        <scene sceneID="EHf-IW-A2E">
+            <objects>
+                <viewController id="01J-lp-oVM" sceneMemberID="viewController"/>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="iYj-Kq-Ea1" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="53" y="375"/>
+        </scene>
+    </scenes>
+</document>
+"""
+
 
 class build_apps(setuptools.Command):
     description = 'build Panda3D applications'
@@ -421,6 +441,46 @@ class build_apps(setuptools.Command):
             pef.write_changes()
             pef.close()
 
+    def bundle_ios_app(self, builddir):
+        appname = '{}.app'.format(self.macos_main_app)
+        appdir = os.path.join(builddir, appname)
+
+        self.announce('Bundling iOS app into {}'.format(appdir),
+                      distutils.log.INFO)
+
+        os.makedirs(appdir)
+
+        for fname in os.listdir(builddir):
+            src = os.path.join(builddir, fname)
+            if appdir in src:
+                continue
+
+            dst = appdir
+            shutil.move(src, dst)
+
+        # Write out Info.plist
+        plist = {
+            'CFBundleName': appname,
+            'CFBundleDisplayName': appname,
+            # TODO use name from setup.py/cfg
+            'CFBundleIdentifier': 'com.panda3d.app',  # TODO
+            'CFBundleVersion': '0.0.0',  # TODO get from setup.py
+            'CFBundlePackageType': 'APPL',
+            'CFBundleSignature': '',  # TODO
+            'CFBundleExecutable': self.macos_main_app,
+            'UILaunchStoryboardName': 'LaunchScreen'
+        }
+
+        with open(os.path.join(appdir, 'Info.plist'), 'wb') as f:
+            if hasattr(plistlib, 'dump'):
+                plistlib.dump(plist, f)
+            else:
+                plistlib.writePlist(plist, f)
+
+        # Write out the launch screen storyboard.
+        with open(os.path.join(appdir, 'LaunchScreen.storyboard'), 'w') as f:
+            f.write(IOS_LAUNCH_STORYBOARD)
+
     def bundle_macos_app(self, builddir):
         """Bundle built runtime into a .app for macOS"""
 
@@ -650,7 +710,7 @@ class build_apps(setuptools.Command):
             target_path = os.path.join(builddir, appname)
 
             stub_name = 'deploy-stub'
-            if platform.startswith('win') or 'macosx' in platform:
+            if platform.startswith('win') or platform.startswith('macosx') or platform.startswith('ios'):
                 if not use_console:
                     stub_name = 'deploy-stubw'
 
@@ -699,6 +759,7 @@ class build_apps(setuptools.Command):
             search_path = [builddir]
             if use_wheels:
                 search_path.append(os.path.join(p3dwhlfn, 'deploy_libs'))
+                search_path.append(os.path.join(p3dwhlfn, 'panda3d'))
             self.copy_dependencies(target_path, builddir, search_path, stub_name)
 
             freezer_extras.update(freezer.extras)
@@ -920,6 +981,9 @@ class build_apps(setuptools.Command):
         # Bundle into an .app on macOS
         if self.macos_main_app and 'macosx' in platform:
             self.bundle_macos_app(builddir)
+
+        if self.macos_main_app and 'ios' in platform:
+            self.bundle_ios_app(builddir)
 
     def add_dependency(self, name, target_dir, search_path, referenced_by):
         """ Searches for the given DLL on the search path.  If it exists,

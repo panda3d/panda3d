@@ -20,6 +20,10 @@ if(HAVE_FREETYPE)
   list(APPEND PANDA_LINK_TARGETS p3pnmtext)
 endif()
 
+# if(IS_IOS)
+#   list(APPEND PANDA_LINK_TARGETS p3ios)
+# endif()
+
 set(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME "CoreDevel")
 add_metalib(panda INIT init_libpanda panda.h COMPONENTS ${PANDA_LINK_TARGETS})
 unset(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME)

@@ -22,13 +22,6 @@ add_metalib(pandagles2 ${MODULE_TYPE}
   COMPONENTS ${PANDAGLES2_LINK_TARGETS})
 unset(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME)
 
-if(CMAKE_SYSTEM_NAME STREQUAL iOS)
-  # We won't be linking with libpython until the wrapper app itself is built,
-  # so we'll quelch the errors that get spit out when trying to build with
-  # missing symbols.
-  target_link_options(pandagles2 PRIVATE -undefined dynamic_lookup)
-endif()
-
 install(TARGETS pandagles2
   EXPORT OpenGLES2 COMPONENT OpenGLES2
   DESTINATION ${MODULE_DESTINATION}
