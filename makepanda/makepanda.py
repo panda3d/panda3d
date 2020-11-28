@@ -272,7 +272,7 @@ def parseopts(args):
         try:
             maj, min = OSXTARGET.strip().split('.')
             OSXTARGET = int(maj), int(min)
-            assert OSXTARGET[0] == 10
+            assert OSXTARGET[0] >= 10
         except:
             usage("Invalid setting for OSXTARGET")
 
@@ -2361,9 +2361,6 @@ def WriteConfigSettings():
         dtool_config["HAVE_VIDEO4LINUX"] = 'UNDEF'
         dtool_config["PHAVE_LINUX_INPUT_H"] = 'UNDEF'
         dtool_config["IS_OSX"] = '1'
-        # 10.4 had a broken ucontext implementation
-        if int(platform.mac_ver()[0][3]) <= 4:
-            dtool_config["PHAVE_UCONTEXT_H"] = 'UNDEF'
 
     if PkgSkip("X11"):
         dtool_config["HAVE_GLX"] = 'UNDEF'
