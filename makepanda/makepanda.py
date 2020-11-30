@@ -94,7 +94,7 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "GTK2",                                              # GTK2 is used for PStats on Unix
   "MFC", "WX", "FLTK",                                 # Used for web plug-in only
   "ROCKET",                                            # GUI libraries
-  "CARBON", "COCOA",                                   # Mac OS X toolkits
+  "CARBON", "COCOA",                                   # macOS toolkits
   "X11",                                               # Unix platform support
   "PANDATOOL", "PVIEW", "DEPLOYTOOLS",                 # Toolchain
   "SKEL",                                              # Example SKEL project
@@ -141,8 +141,8 @@ def usage(problem):
     print("  --outputdir X     (use the specified directory instead of 'built')")
     print("  --host URL        (set the host url (runtime build only))")
     print("  --threads N       (use the multithreaded build system. see manual)")
-    print("  --osxtarget N     (the OS X version number to build for (OS X only))")
-    print("  --universal       (build universal binaries (OS X only))")
+    print("  --osxtarget N     (the macOS version number to build for (macOS only))")
+    print("  --universal       (build universal binaries (macOS only))")
     print("  --override \"O=V\"  (override dtool_config/prc option value)")
     print("  --static          (builds libraries for static linking)")
     print("  --target X        (experimental cross-compilation (android only))")
@@ -448,6 +448,10 @@ elif target == 'darwin':
         arch_tag = 'fat64'
     elif frozenset(OSX_ARCHS) == frozenset(('x86_64', 'i386', 'ppc')):
         arch_tag = 'fat32'
+    elif frozenset(OSX_ARCHS) == frozenset(('x86_64', 'i386', 'ppc64', 'ppc')):
+        arch_tag = 'universal'
+    elif frozenset(OSX_ARCHS) == frozenset(('x86_64', 'arm64')):
+        arch_tag = 'universal2'
     else:
         raise RuntimeError('No arch tag for arch combination %s' % OSX_ARCHS)
 
@@ -911,8 +915,8 @@ if (COMPILER=="GCC"):
     elif RUNTIME:
         # We don't support Cocoa in the runtime yet.
         PkgDisable("COCOA")
-    if 'x86_64' in OSX_ARCHS:
-        # 64-bits OS X doesn't have Carbon.
+    if 'x86_64' in OSX_ARCHS or 'arm64' in OSX_ARCHS:
+        # 64-bits macOS doesn't have Carbon.
         PkgDisable("CARBON")
 
     #if (PkgSkip("PYTHON")==0):
@@ -1129,7 +1133,7 @@ if (COMPILER=="GCC"):
         if (PkgSkip(pkg)==0 and (pkg in SDK)):
             if (GetHost() == "darwin"):
                 # Sheesh, Autodesk really can't make up their mind
-                # regarding the location of the Maya devkit on OS X.
+                # regarding the location of the Maya devkit on macOS.
                 if (os.path.isdir(SDK[pkg] + "/Maya.app/Contents/lib")):
                     LibDirectory(pkg, SDK[pkg] + "/Maya.app/Contents/lib")
                 if (os.path.isdir(SDK[pkg] + "/Maya.app/Contents/MacOS")):
@@ -1689,7 +1693,7 @@ def CompileIgate(woutd,wsrc,opts):
         target_arch = GetTargetArch()
         if target_arch in ("x86_64", "amd64"):
             cmd += ' -D_LP64'
-        elif target_arch == 'aarch64':
+        elif target_arch in ('aarch64', 'arm64'):
             cmd += ' -D_LP64 -D__LP64__ -D__aarch64__'
         else:
             cmd += ' -D__i386__'
@@ -1979,7 +1983,7 @@ def CompileLink(dll, obj, opts):
         if (GetOrigExt(dll) == ".exe" and GetTarget() == 'windows' and "NOICON" not in opts):
             cmd += " " + GetOutputDir() + "/tmp/pandaIcon.res"
 
-        # Mac OS X specific flags.
+        # macOS specific flags.
         if GetTarget() == 'darwin':
             cmd += " -headerpad_max_install_names"
             if OSXTARGET is not None:
@@ -2285,7 +2289,7 @@ def Package(target, inputs, opts):
 ##########################################################################################
 
 def CompileBundle(target, inputs, opts):
-    assert GetTarget() == "darwin", 'bundles can only be made for Mac OS X'
+    assert GetTarget() == "darwin", 'bundles can only be made for macOS'
     plist = None
     resources = []
     objects = []
@@ -6637,13 +6641,13 @@ for VER in MAYAVERSIONS:
   VNUM = VER[4:]
   if not PkgSkip(VER) and not PkgSkip("PANDATOOL") and not PkgSkip("EGG"):
     if GetTarget() == 'darwin' and int(VNUM) >= 2012:
-      ARCH_OPTS = ['NOARCH:PPC', 'NOARCH:I386']
+      ARCH_OPTS = ['NOARCH:PPC', 'NOARCH:I386', 'NOARCH:ARM64']
       if len(OSX_ARCHS) != 0 and 'x86_64' not in OSX_ARCHS:
         continue
     elif GetTarget() == 'darwin' and int(VNUM) >= 2009:
-      ARCH_OPTS = ['NOARCH:PPC']
+      ARCH_OPTS = ['NOARCH:PPC', 'NOARCH:ARM64']
     elif GetTarget() == 'darwin':
-      ARCH_OPTS = ['NOARCH:X86_64']
+      ARCH_OPTS = ['NOARCH:X86_64', 'NOARCH:ARM64']
     else:
       ARCH_OPTS = []
 
