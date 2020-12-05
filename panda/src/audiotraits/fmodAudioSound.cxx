@@ -242,6 +242,8 @@ FMODAudioSound::
   fmod_audio_errcheck("_sound->release()", result);
 
   audio_debug("Released FMODAudioSound\n");
+
+  _manager->release_sound(this);
 }
 
 /**

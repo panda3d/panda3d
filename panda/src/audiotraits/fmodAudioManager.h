@@ -181,6 +181,8 @@ private:
 
   void starting_sound(FMODAudioSound *sound);
   void stopping_sound(FMODAudioSound *sound);
+  // Tell the manager that the sound dtor was called.
+  void release_sound(FMODAudioSound* sound);
 
   void update_sounds();
 
