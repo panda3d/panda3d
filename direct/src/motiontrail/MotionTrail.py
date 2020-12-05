@@ -5,14 +5,14 @@ from panda3d.direct import *
 from direct.task import Task
 from direct.showbase.DirectObject import DirectObject
 from direct.directnotify.DirectNotifyGlobal import directNotify
-
+import warnings
 
 def remove_task ( ):
     if (MotionTrail.task_added):
         total_motion_trails = len (MotionTrail.motion_trail_list)
 
         if total_motion_trails > 0:
-            print("warning: %d motion trails still exist when motion trail task is removed" % (total_motion_trails))
+            warnings.warn("%d motion trails still exist when motion trail task is removed" % (total_motion_trails)), DeprecationWarning, stacklevel=2)
 
         MotionTrail.motion_trail_list = [ ]
 

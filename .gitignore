@@ -1,3 +1,6 @@
+#Xcode files
+*..xcodeproj
+
 # makepanda directories
 /built*/
 /thirdparty/

@@ -26,14 +26,16 @@ from . import FreezeTool
 from . import pefile
 from .icon import Icon
 import panda3d.core as p3d
-
+import warnings
 
 if sys.version_info < (3, 0):
     # Warn the user.  They might be using Python 2 by accident.
-    print("=================================================================")
-    print("WARNING: You are using Python 2, which has reached the end of its")
-    print("WARNING: life as of January 1, 2020.  Please upgrade to Python 3.")
-    print("=================================================================")
+    # Do we want to leave this as this type of warning or should we switch to warnings class?
+    warnings.warn("=================================================================\n \
+                 WARNING: You are using Python 2, which has reached the end of its\n \
+                 WARNING: life as of January 1, 2020.  Please upgrade to Python 3.\n \
+                 =================================================================",
+                 DeprecationWarning)
     sys.stdout.flush()
     time.sleep(4.0)
 

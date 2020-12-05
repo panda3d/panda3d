@@ -14,6 +14,7 @@ import zipfile
 import importlib
 
 from . import pefile
+import warnings
 
 # Temporary (?) try..except to protect against unbuilt p3extend_frozen.
 try:
@@ -1957,7 +1958,7 @@ class Freezer:
 
         if append_offset:
             # This is for legacy deploy-stub.
-            print("WARNING: Could not find blob header. Is deploy-stub outdated?")
+            warnings.warn("Could not find blob header. Is deploy-stub outdated?", DeprecationWarning)
             blob += struct.pack('<Q', blob_offset)
 
         with open(target, 'wb') as f:
