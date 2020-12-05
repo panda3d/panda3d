@@ -135,6 +135,32 @@ get_post_animated_format() const {
 }
 
 /**
+ * Returns a suitable vertex format for sending the animated vertices to the
+ * graphics backend.  This is the same format as the source format, with the
+ * instancing columns added.
+ *
+ * This may only be called after the format has been registered.  The return
+ * value will have been already registered.
+ */
+CPT(GeomVertexFormat) GeomVertexFormat::
+get_post_instanced_format() const {
+  nassertr(is_registered(), nullptr);
+
+  if (_post_instanced_format == nullptr) {
+    PT(GeomVertexFormat) new_format = new GeomVertexFormat(*this);
+    new_format->add_array(GeomVertexArrayFormat::register_format(GeomVertexArrayFormat::get_instance_array_format()));
+
+    CPT(GeomVertexFormat) registered =
+      GeomVertexFormat::register_format(new_format);
+    ((GeomVertexFormat *)this)->_post_instanced_format = registered;
+  }
+
+  _post_instanced_format->test_ref_count_integrity();
+
+  return _post_instanced_format;
+}
+
+/**
  * Returns a new GeomVertexFormat that includes all of the columns defined in
  * either this GeomVertexFormat or the other one.  If any column is defined in
  * both formats with different sizes (for instance, texcoord2 vs.  texcoord3),
@@ -818,6 +844,11 @@ do_unregister() {
     unref_delete(_post_animated_format);
   }
   _post_animated_format = nullptr;
+
+  if (_post_instanced_format != nullptr) {
+    unref_delete(_post_instanced_format);
+    _post_instanced_format = nullptr;
+  }
 }
 
 /**

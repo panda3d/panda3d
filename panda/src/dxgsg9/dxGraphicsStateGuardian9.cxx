@@ -1180,8 +1180,8 @@ end_frame(Thread *current_thread) {
 bool DXGraphicsStateGuardian9::
 begin_draw_primitives(const GeomPipelineReader *geom_reader,
                       const GeomVertexDataPipelineReader *data_reader,
-                      bool force) {
-  if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, data_reader, force)) {
+                      size_t num_instances, bool force) {
+  if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, data_reader, num_instances, force)) {
     return false;
   }
   nassertr(_data_reader != nullptr, false);
@@ -3223,11 +3223,14 @@ set_state_and_transform(const RenderState *target,
     _state_mask.set_bit(color_blend_slot);
   }
 
-  if (_target_shader != _state_shader) {
+  int shader_slot = ShaderAttrib::get_class_slot();
+  if (_target_shader != _state_shader ||
+      !_state_mask.get_bit(shader_slot)) {
     // PStatTimer timer(_draw_set_state_shader_pcollector);
     do_issue_shader();
     _state_shader = _target_shader;
     _state_mask.clear_bit(TextureAttrib::get_class_slot());
+    _state_mask.set_bit(shader_slot);
   }
 
   int texture_slot = TextureAttrib::get_class_slot();

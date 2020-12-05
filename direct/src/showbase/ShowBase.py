@@ -152,6 +152,7 @@ class ShowBase(DirectObject.DirectObject):
         self.wantStats = self.config.GetBool('want-pstats', 0)
         self.wantTk = False
         self.wantWx = False
+        self.wantDirect = False
 
         #: Fill this in with a function to invoke when the user "exits"
         #: the program by closing the main window.
@@ -3264,7 +3265,12 @@ class ShowBase(DirectObject.DirectObject):
     def startDirect(self, fWantDirect = 1, fWantTk = 1, fWantWx = 0):
         self.startTk(fWantTk)
         self.startWx(fWantWx)
+
+        if self.wantDirect == fWantDirect:
+            return
+
         self.wantDirect = fWantDirect
+
         if self.wantDirect:
             # Use importlib to prevent this import from being picked up
             # by modulefinder when packaging an application.

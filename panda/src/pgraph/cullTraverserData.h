@@ -23,6 +23,7 @@
 #include "pointerTo.h"
 #include "drawMask.h"
 #include "pvector.h"
+#include "instanceList.h"
 
 class PandaNode;
 class CullTraverser;
@@ -81,6 +82,7 @@ public:
   CPT(RenderState) _state;
   PT(GeometricBoundingVolume) _view_frustum;
   CPT(CullPlanes) _cull_planes;
+  CPT(InstanceList) _instances;
   DrawMask _draw_mask;
   int _portal_depth;
 

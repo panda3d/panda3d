@@ -61,7 +61,7 @@ except ImportError:
     def pytest_imports():
         return []
 
-hiddenImports = {
+defaultHiddenImports = {
     'pytest': pytest_imports(),
     'pkg_resources': [
         'pkg_resources.*.*',
@@ -751,7 +751,7 @@ class Freezer:
             return 'ModuleDef(%s)' % (', '.join(args))
 
     def __init__(self, previous = None, debugLevel = 0,
-                 platform = None, path=None):
+                 platform = None, path=None, hiddenImports=None):
         # Normally, we are freezing for our own platform.  Change this
         # if untrue.
         self.platform = platform or PandaSystem.getPlatform()
@@ -824,6 +824,11 @@ class Freezer:
                 path = list(getattr(module, '__path__'))
                 if path:
                     modulefinder.AddPackagePath(moduleName, path[0])
+
+        # Module with non-obvious dependencies
+        self.hiddenImports = defaultHiddenImports.copy()
+        if hiddenImports is not None:
+            self.hiddenImports.update(hiddenImports)
 
         # Suffix/extension for Python C extension modules
         if self.platform == PandaSystem.getPlatform():
@@ -1166,7 +1171,7 @@ class Freezer:
 
         # Check if any new modules we found have "hidden" imports
         for origName in list(self.mf.modules.keys()):
-            hidden = hiddenImports.get(origName, [])
+            hidden = self.hiddenImports.get(origName, [])
             for modname in hidden:
                 if modname.endswith('.*'):
                     mdefs = self._gatherSubmodules(modname, implicit = True)
