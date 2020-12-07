@@ -68,10 +68,10 @@ PUBLISHED:
 
   BLOCKING void skip_bytes(size_t size);
   BLOCKING size_t extract_bytes(unsigned char *into, size_t size);
-  EXTENSION(BLOCKING PyObject *extract_bytes(size_t size));
+  EXTENSION(PyObject *extract_bytes(size_t size));
 
-  EXTENSION(BLOCKING PyObject *readline());
-  EXTENSION(BLOCKING PyObject *readlines());
+  EXTENSION(PyObject *readline());
+  EXTENSION(PyObject *readlines());
 
 public:
   BLOCKING vector_uchar extract_bytes(size_t size);

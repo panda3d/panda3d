@@ -48,10 +48,17 @@ PUBLISHED:
   INLINE IDecompressStream(const IDecompressStream &copy) = delete;
 #endif
 
+<<<<<<< HEAD:panda/src/express/streamZlib.h
   INLINE IDecompressStreamZlib &open(std::istream *source, bool owns_source);
   INLINE IDecompressStreamZlib &close();
 
   static std::shared_ptr<StreamBufBase>& initialize_streambuf(std::shared_ptr<StreamBufBase> &buf_ptr, CompressionAlgorithm compression_algo);
+=======
+  INLINE IDecompressStream &open(std::istream *source, bool owns_source,
+                                 std::streamsize source_length = -1,
+                                 bool header=true);
+  INLINE IDecompressStream &close();
+>>>>>>> c9aedc2b4479ee517ca57e5e9451998160a6254f:panda/src/express/zStream.h
 
 private:
   std::shared_ptr<StreamBufBase> _buf_ptr;
@@ -69,19 +76,33 @@ private:
  */
 class EXPCL_PANDA_EXPRESS OCompressStreamZlib : public std::ostream {
 PUBLISHED:
+<<<<<<< HEAD:panda/src/express/streamZlib.h
   INLINE OCompressStreamZlib(CompressionAlgorithm compression_algo);
   INLINE explicit OCompressStreamZlib(std::ostream *dest, bool owns_dest,
                                       CompressionAlgorithm compression_algo, int compression_level = 6);
+=======
+  INLINE OCompressStream();
+  INLINE explicit OCompressStream(std::ostream *dest, bool owns_dest,
+                                  int compression_level = 6,
+                                  bool header=true);
+>>>>>>> c9aedc2b4479ee517ca57e5e9451998160a6254f:panda/src/express/zStream.h
 
 #if _MSC_VER >= 1800
   INLINE OCompressStream(const OCompressStream &copy) = delete;
 #endif
 
+<<<<<<< HEAD:panda/src/express/streamZlib.h
   INLINE OCompressStreamZlib &open(std::ostream *dest, bool owns_dest,
                                int compression_level = 6);
   INLINE OCompressStreamZlib &close();
 
   static std::shared_ptr<StreamBufBase>& initialize_streambuf(std::shared_ptr<StreamBufBase> &buf_ptr, CompressionAlgorithm algorithm);
+=======
+  INLINE OCompressStream &open(std::ostream *dest, bool owns_dest,
+                               int compression_level = 6,
+                               bool header=true);
+  INLINE OCompressStream &close();
+>>>>>>> c9aedc2b4479ee517ca57e5e9451998160a6254f:panda/src/express/zStream.h
 
 private:
   std::shared_ptr<StreamBufBase> _buf_ptr;

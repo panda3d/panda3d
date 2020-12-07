@@ -51,6 +51,7 @@ private:
 
 private:
   std::istream *_source;
+  std::streamsize _source_bytes_left = -1;
   bool _owns_source;
 
   std::ostream *_dest;

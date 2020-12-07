@@ -487,6 +487,13 @@ reflect_attribute(int i, char *name_buffer, GLsizei name_buflen) {
       bind._name = InternalName::get_texcoord();
       bind._append_uv = atoi(noprefix.substr(13).c_str());
 
+    } else if (noprefix == "InstanceMatrix") {
+      bind._name = InternalName::get_instance_matrix();
+
+      if (param_type != GL_FLOAT_MAT4x3) {
+        GLCAT.error() << "p3d_InstanceMatrix should be mat4x3!\n";
+      }
+
     } else {
       GLCAT.error() << "Unrecognized vertex attrib '" << name_buffer << "'!\n";
       return;
@@ -498,15 +505,23 @@ reflect_attribute(int i, char *name_buffer, GLsizei name_buflen) {
 
   // Get the number of bind points for arrays and matrices.
   switch (param_type) {
+  case GL_FLOAT_MAT3x2:
   case GL_FLOAT_MAT3:
+  case GL_FLOAT_MAT3x4:
 #ifndef OPENGLES
+  case GL_DOUBLE_MAT3x2:
   case GL_DOUBLE_MAT3:
+  case GL_DOUBLE_MAT3x4:
 #endif
     bind._elements = 3 * param_size;
     break;
 
+  case GL_FLOAT_MAT4x2:
+  case GL_FLOAT_MAT4x3:
   case GL_FLOAT_MAT4:
 #ifndef OPENGLES
+  case GL_DOUBLE_MAT4x2:
+  case GL_DOUBLE_MAT4x3:
   case GL_DOUBLE_MAT4:
 #endif
     bind._elements = 4 * param_size;
@@ -2460,6 +2475,22 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
 #else
           _glgsg->_glVertexAttrib4fv(p, _glgsg->_scene_graph_color.get_data());
 #endif
+        }
+        else if (name == InternalName::get_transform_index() &&
+                 _glgsg->_glVertexAttribI4ui != nullptr) {
+          _glgsg->_glVertexAttribI4ui(p, 0, 1, 2, 3);
+        }
+        else if (name == InternalName::get_instance_matrix()) {
+          const LMatrix4 &ident_mat = LMatrix4::ident_mat();
+
+          for (int i = 0; i < bind._elements; ++i) {
+#ifdef STDFLOAT_DOUBLE
+            _glgsg->_glVertexAttrib4dv(p, ident_mat.get_data() + i * 4);
+#else
+            _glgsg->_glVertexAttrib4fv(p, ident_mat.get_data() + i * 4);
+#endif
+            ++p;
+          }
         }
       }
     }

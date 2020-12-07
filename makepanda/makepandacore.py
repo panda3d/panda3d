@@ -2038,16 +2038,25 @@ def SdkLocatePython(prefer_thirdparty_python=False):
     abiflags = getattr(sys, 'abiflags', '')
 
     if GetTarget() == 'windows':
-        sdkdir = GetThirdpartyBase() + "/win-python"
-        sdkdir += "%d.%d" % sys.version_info[:2]
+        if PkgHasCustomLocation("PYTHON"):
+            # Check our custom location instead (--python-libdir, --python-incdir)
+            sdkdir = FindOptDirectory("PYTHON")
 
-        if GetOptimize() <= 2:
-            sdkdir += "-dbg"
-        if GetTargetArch() == 'x64':
-            sdkdir += "-x64"
+            if sdkdir is None:
+                exit("Could not find a Python installation using these command line options.")
+        else:
+            sdkdir = GetThirdpartyBase() + "/win-python"
+            sdkdir += "%d.%d" % sys.version_info[:2]
 
+            if GetOptimize() <= 2:
+                sdkdir += "-dbg"
+            if GetTargetArch() == 'x64':
+                sdkdir += "-x64"
+
+        sdkdir = sdkdir.replace('\\', '/')
         SDK["PYTHON"] = sdkdir
-        SDK["PYTHONEXEC"] = SDK["PYTHON"].replace('\\', '/') + "/python"
+        SDK["PYTHONEXEC"] = SDK["PYTHON"] + "/python"
+
         if (GetOptimize() <= 2):
             SDK["PYTHONEXEC"] += "_d.exe"
         else:
@@ -2058,9 +2067,11 @@ def SdkLocatePython(prefer_thirdparty_python=False):
 
         # Determine which version it is by checking which dll is in the directory.
         if (GetOptimize() <= 2):
-            py_dlls = glob.glob(SDK["PYTHON"] + "/python[0-9][0-9]_d.dll")
+            py_dlls = glob.glob(SDK["PYTHON"] + "/python[0-9][0-9]_d.dll") + \
+                      glob.glob(SDK["PYTHON"] + "/python[0-9][0-9][0-9]_d.dll")
         else:
-            py_dlls = glob.glob(SDK["PYTHON"] + "/python[0-9][0-9].dll")
+            py_dlls = glob.glob(SDK["PYTHON"] + "/python[0-9][0-9].dll") + \
+                      glob.glob(SDK["PYTHON"] + "/python[0-9][0-9][0-9].dll")
 
         if len(py_dlls) == 0:
             exit("Could not find the Python dll in %s." % (SDK["PYTHON"]))
@@ -2068,24 +2079,29 @@ def SdkLocatePython(prefer_thirdparty_python=False):
             exit("Found multiple Python dlls in %s." % (SDK["PYTHON"]))
 
         py_dll = os.path.basename(py_dlls[0])
-        ver = py_dll[6] + "." + py_dll[7]
+        py_dllver = py_dll.strip(".DHLNOPTY_dhlnopty")
+        ver = py_dllver[0] + '.' + py_dllver[1:]
 
         SDK["PYTHONVERSION"] = "python" + ver
         os.environ["PYTHONHOME"] = SDK["PYTHON"]
 
-        if sys.version[:3] != ver:
-            Warn("running makepanda with Python %s, but building Panda3D with Python %s." % (sys.version[:3], ver))
+        running_ver = '%d.%d' % sys.version_info[:2]
+        if ver != running_ver:
+            Warn("running makepanda with Python %s, but building Panda3D with Python %s." % (running_ver, ver))
 
     elif CrossCompiling() or (prefer_thirdparty_python and os.path.isdir(os.path.join(GetThirdpartyDir(), "python"))):
         tp_python = os.path.join(GetThirdpartyDir(), "python")
 
         if GetTarget() == 'darwin':
-            py_libs = glob.glob(tp_python + "/lib/libpython[0-9].[0-9].dylib")
+            py_libs = glob.glob(tp_python + "/lib/libpython[0-9].[0-9].dylib") + \
+                      glob.glob(tp_python + "/lib/libpython[0-9].[0-9][0-9].dylib")
         else:
-            py_libs = glob.glob(tp_python + "/lib/libpython[0-9].[0-9].so")
+            py_libs = glob.glob(tp_python + "/lib/libpython[0-9].[0-9].so") + \
+                      glob.glob(tp_python + "/lib/libpython[0-9].[0-9][0-9].so")
 
         if len(py_libs) == 0:
-            py_libs = glob.glob(tp_python + "/lib/libpython[0-9].[0-9].a")
+            py_libs = glob.glob(tp_python + "/lib/libpython[0-9].[0-9].a") + \
+                      glob.glob(tp_python + "/lib/libpython[0-9].[0-9][0-9].a")
 
         if len(py_libs) == 0:
             exit("Could not find the Python library in %s." % (tp_python))
@@ -2093,7 +2109,8 @@ def SdkLocatePython(prefer_thirdparty_python=False):
             exit("Found multiple Python libraries in %s." % (tp_python))
 
         py_lib = os.path.basename(py_libs[0])
-        SDK["PYTHONVERSION"] = "python" + py_lib[9] + "." + py_lib[11]
+        py_libver = py_lib.strip('.abdhilnopsty')
+        SDK["PYTHONVERSION"] = "python" + py_libver
         SDK["PYTHONEXEC"] = tp_python + "/bin/" + SDK["PYTHONVERSION"]
         SDK["PYTHON"] = tp_python + "/include/" + SDK["PYTHONVERSION"]
 
@@ -2139,9 +2156,9 @@ def SdkLocatePython(prefer_thirdparty_python=False):
             exit("Host Python version (%s) must be the same as target Python version (%s)!" % (host_version, SDK["PYTHONVERSION"]))
 
     if GetVerbose():
-        print("Using Python %s build located at %s" % (SDK["PYTHONVERSION"][6:9], SDK["PYTHON"]))
+        print("Using Python %s build located at %s" % (SDK["PYTHONVERSION"][6:], SDK["PYTHON"]))
     else:
-        print("Using Python %s" % (SDK["PYTHONVERSION"][6:9]))
+        print("Using Python %s" % (SDK["PYTHONVERSION"][6:]))
 
 def SdkLocateVisualStudio(version=(10,0)):
     if (GetHost() != "windows"): return
@@ -2736,6 +2753,40 @@ def LibDirectory(opt, dir):
 
 def FrameworkDirectory(opt, dir):
     FRAMEWORKDIRECTORIES.append((opt, dir))
+
+def FindIncDirectory(opt):
+    # Find the include directory associated with this module
+    for mod, dir in INCDIRECTORIES:
+        if mod == opt:
+            return os.path.abspath(dir)
+
+def FindLibDirectory(opt):
+    # Find the library directory associated with this module
+    for mod, dir in LIBDIRECTORIES:
+        if mod == opt:
+            return os.path.abspath(dir)
+
+def FindOptDirectory(opt):
+    # Find the common directory associated with this module
+    # using the include and library directories as a guide
+    include_dir = FindIncDirectory(opt)
+    lib_dir = FindLibDirectory(opt)
+
+    if include_dir and lib_dir:
+        # The module's common directory is the common prefix of
+        # its include and library directory
+        common_dir = os.path.commonprefix([include_dir, lib_dir])
+
+        if common_dir:
+            return os.path.abspath(common_dir)
+    elif include_dir:
+        # The module's common directory is the parent of the include
+        # directory
+        return os.path.abspath(os.path.join(include_dir, os.pardir))
+    elif lib_dir:
+        # The module's common directory is the parent of the library
+        # directory
+        return os.path.abspath(os.path.join(lib_dir, os.pardir))
 
 def LibName(opt, name):
     # Check to see if the lib file actually exists for the thirdparty library given
@@ -3352,7 +3403,7 @@ def GetCurrentPythonVersionInfo():
 
     from distutils.sysconfig import get_python_lib
     return {
-        "version": SDK["PYTHONVERSION"][6:9],
+        "version": SDK["PYTHONVERSION"][6:].rstrip('dmu'),
         "soabi": GetPythonABI(),
         "ext_suffix": GetExtensionSuffix(),
         "executable": sys.executable,
@@ -3380,7 +3431,7 @@ def UpdatePythonVersionInfoFile(new_info):
                version_info["soabi"] == new_info["soabi"] or \
                not os.path.isfile(core_pyd) or \
                version_info["version"].split(".", 1)[0] == "2" or \
-               version_info["version"] in ("3.0", "3.1", "3.2", "3.3", "3.4"):
+               version_info["version"] in ("3.0", "3.1", "3.2", "3.3", "3.4", "3.5"):
                 json_data.remove(version_info)
 
     if not PkgSkip("PYTHON"):

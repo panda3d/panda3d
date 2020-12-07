@@ -82,7 +82,7 @@ make_variable(const string &name) {
  * Defines a variable "template" to match against dynamically-defined
  * variables that may or may not be created in the future.
  *
- * The template consists of a glob pattern, e.g.  "notify-level-*", which will
+ * The template consists of a glob pattern, e.g.  `notify-level-*`, which will
  * be tested against any config variable passed to a future call to
  * make_variable().  If the pattern matches, the returned ConfigVariableCore
  * is copied to define the new variable, instead of creating a default, empty
@@ -92,7 +92,7 @@ make_variable(const string &name) {
  * all have similar properties, and all may not be created at the same time.
  * It is especially useful to avoid cluttering up the list of available
  * variables with user-declared variables that have not been defined yet by
- * the application (e.g.  "egg-object-type-*").
+ * the application (e.g. `egg-object-type-*`).
  *
  * This method basically pre-defines all variables that match the specified
  * glob pattern.

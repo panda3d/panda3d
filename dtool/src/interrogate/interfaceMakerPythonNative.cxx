@@ -2594,6 +2594,8 @@ write_module_class(ostream &out, Object *obj) {
     out << "    return nullptr;\n";
     out << "  }\n\n";
 
+    bool have_eq = false;
+    bool have_ne = false;
     for (Function *func : obj->_methods) {
       std::set<FunctionRemap*> remaps;
       if (!func) {
@@ -2614,8 +2616,10 @@ write_module_class(ostream &out, Object *obj) {
         op_type = "Py_LE";
       } else if (fname == "operator ==") {
         op_type = "Py_EQ";
+        have_eq = true;
       } else if (fname == "operator !=") {
         op_type = "Py_NE";
+        have_ne = true;
       } else if (fname == "operator >") {
         op_type = "Py_GT";
       } else if (fname == "operator >=") {
@@ -2640,6 +2644,43 @@ write_module_class(ostream &out, Object *obj) {
     }
 
     if (has_local_richcompare) {
+      if (have_eq && !have_ne) {
+        // Generate a not-equal function from the equal function.
+        for (Function *func : obj->_methods) {
+          std::set<FunctionRemap*> remaps;
+          if (!func) {
+            continue;
+          }
+          const string &fname = func->_ifunc.get_name();
+          if (fname != "operator ==") {
+            continue;
+          }
+          for (FunctionRemap *remap : func->_remaps) {
+            if (is_remap_legal(remap) && remap->_has_this && (remap->_args_type == AT_single_arg)) {
+              remaps.insert(remap);
+            }
+          }
+          out << "  case Py_NE: // from Py_EQ\n";
+          out << "    {\n";
+
+          string expected_params;
+          write_function_forset(out, remaps, 1, 1, expected_params, 6, true, false,
+                                AT_single_arg, RF_pyobject | RF_invert_bool | RF_err_null, false);
+
+          out << "      break;\n";
+          out << "    }\n";
+        }
+      }
+      else if (!have_eq && !slots.count("tp_compare")) {
+        // Generate an equals function.
+        out << "  case Py_EQ:\n";
+        out << "    return PyBool_FromLong(DtoolInstance_Check(arg) && DtoolInstance_VOID_PTR(self) == DtoolInstance_VOID_PTR(arg));\n";
+        if (!have_ne) {
+          out << "  case Py_NE:\n";
+          out << "    return PyBool_FromLong(!DtoolInstance_Check(arg) || DtoolInstance_VOID_PTR(self) != DtoolInstance_VOID_PTR(arg));\n";
+        }
+      }
+
       // End of switch block
       out << "  }\n\n";
       out << "  if (_PyErr_OCCURRED()) {\n";
@@ -6082,8 +6123,13 @@ write_function_instance(ostream &out, FunctionRemap *remap,
       return_flags &= ~RF_pyobject;
 
     } else if (return_null && TypeManager::is_bool(remap->_return_type->get_new_type())) {
-      indent(out, indent_level)
-        << "return Dtool_Return_Bool(" << return_expr << ");\n";
+      if (return_flags & RF_invert_bool) {
+        indent(out, indent_level)
+          << "return Dtool_Return_Bool(!(" << return_expr << "));\n";
+      } else {
+        indent(out, indent_level)
+          << "return Dtool_Return_Bool(" << return_expr << ");\n";
+      }
       return_flags &= ~RF_pyobject;
 
     } else if (return_null && TypeManager::is_pointer_to_PyObject(remap->_return_type->get_new_type())) {
@@ -6438,9 +6484,14 @@ pack_return_value(ostream &out, int indent_level, FunctionRemap *remap,
       TypeManager::is_vector_unsigned_char(type)) {
     // Most types are now handled by the many overloads of Dtool_WrapValue,
     // defined in py_panda.h.
-    indent(out, indent_level)
-      << "return Dtool_WrapValue(" << return_expr << ");\n";
-
+    if (return_flags & RF_invert_bool) {
+      indent(out, indent_level)
+        << "return Dtool_WrapValue(!(" << return_expr << "));\n";
+    }
+    else {
+      indent(out, indent_level)
+        << "return Dtool_WrapValue(" << return_expr << ");\n";
+    }
   } else if (TypeManager::is_pointer(type)) {
     bool is_const = TypeManager::is_const_pointer_to_anything(type);
     bool owns_memory = remap->_return_value_needs_management;
@@ -6567,7 +6618,9 @@ write_make_seq(ostream &out, Object *obj, const std::string &ClassName,
     "\n";
 
   if ((elem_getter->_args_type & AT_varargs) == AT_varargs) {
+    out << "#if defined(Py_TRACE_REFS) || PY_VERSION_HEX < 0x03090000\n";
     out << "  _Py_ForgetReference((PyObject *)&args);\n";
+    out << "#endif\n";
   }
 
   out <<

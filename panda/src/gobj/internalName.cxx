@@ -40,6 +40,7 @@ PT(InternalName) InternalName::_world;
 PT(InternalName) InternalName::_camera;
 PT(InternalName) InternalName::_model;
 PT(InternalName) InternalName::_view;
+PT(InternalName) InternalName::_instance_matrix;
 
 TypeHandle InternalName::_type_handle;
 TypeHandle InternalName::_texcoord_type_handle;

@@ -56,6 +56,7 @@ set(P3EXPRESS_HEADERS
   virtualFileMountMultifile.h virtualFileMountMultifile.I
   virtualFileMountRamdisk.h virtualFileMountRamdisk.I
   virtualFileMountSystem.h virtualFileMountSystem.I
+  virtualFileMountZip.h virtualFileMountZip.I
   virtualFileSimple.h virtualFileSimple.I
   virtualFileSystem.h virtualFileSystem.I
   weakPointerCallback.I weakPointerCallback.h
@@ -113,6 +114,7 @@ set(P3EXPRESS_SOURCES
   virtualFileMountMultifile.cxx
   virtualFileMountRamdisk.cxx
   virtualFileMountSystem.cxx
+  virtualFileMountZip.cxx
   virtualFileSimple.cxx virtualFileSystem.cxx
   weakPointerCallback.cxx
   weakPointerTo.cxx
@@ -120,11 +122,16 @@ set(P3EXPRESS_SOURCES
   weakPointerToVoid.cxx
   weakReferenceList.cxx
   windowsRegistry.cxx
+<<<<<<< HEAD
   StreamBufBase.cxx
   StreamBufZlib.cxx
   StreamBufLz4.cxx
   StreamZlib.cxx
   StreamLz4.cxx
+=======
+  zipArchive.cxx
+  zStream.cxx zStreamBuf.cxx
+>>>>>>> c9aedc2b4479ee517ca57e5e9451998160a6254f
 )
 
 if(ANDROID)

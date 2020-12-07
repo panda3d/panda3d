@@ -92,12 +92,18 @@ jobs:
     - name: Install dependencies (macOS)
       if: runner.os == 'macOS'
       run: |
-        curl -O https://www.panda3d.org/download/panda3d-1.10.5/panda3d-1.10.5-tools-mac.tar.gz
-        tar -xf panda3d-1.10.5-tools-mac.tar.gz
+        curl -O https://www.panda3d.org/download/panda3d-1.10.7/panda3d-1.10.7-tools-mac.tar.gz
+        tar -xf panda3d-1.10.7-tools-mac.tar.gz
+        mv panda3d-1.10.7/thirdparty thirdparty
+        rmdir panda3d-1.10.7
+
+        mkdir -p build/Frameworks
+        cp -R thirdparty/darwin-libs-a/nvidiacg/Cg.framework build/Frameworks/Cg.framework
+
+        mkdir -p "build/${{ matrix.config }}/Frameworks"
+        cp -R thirdparty/darwin-libs-a/nvidiacg/Cg.framework "build/${{ matrix.config }}/Frameworks/Cg.framework"
 
         brew install ccache
-
-        echo "##[set-env name=thirdpartyOption;]-D THIRDPARTY_DIRECTORY=../panda3d-1.10.5/thirdparty" -DHAVE_CG=OFF
 
     - name: Install dependencies (Ubuntu)
       if: startsWith(matrix.os, 'ubuntu')
@@ -120,19 +126,18 @@ jobs:
       if: runner.os == 'Windows'
       uses: actions/cache@v1
       with:
-        path: thirdparty-tools
-        key: ci-cmake-${{ runner.OS }}-thirdparty-v1.10.5-r1
+        path: thirdparty
+        key: ci-cmake-${{ runner.OS }}-thirdparty-v1.10.7-r1
     - name: Install dependencies (Windows)
       if: runner.os == 'Windows'
       shell: powershell
       run: |
-        if (!(Test-Path thirdparty-tools/panda3d-1.10.5)) {
+        if (!(Test-Path thirdparty/win-libs-vc14-x64)) {
           $wc = New-Object System.Net.WebClient
-          $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.5/panda3d-1.10.5-tools-win64.zip", "thirdparty-tools.zip")
+          $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.7/panda3d-1.10.7-tools-win64.zip", "thirdparty-tools.zip")
           Expand-Archive -Path thirdparty-tools.zip
+          Move-Item -Path thirdparty-tools/panda3d-1.10.7/thirdparty -Destination .
         }
-
-        echo "##[set-env name=thirdpartyOption;]-D THIRDPARTY_DIRECTORY=../thirdparty-tools/panda3d-1.10.5/thirdparty"
 
     - name: ccache (non-Windows)
       if: runner.os != 'Windows'
@@ -146,15 +151,15 @@ jobs:
       env:
         CMAKE_GENERATOR: "${{ matrix.generator }}"
       run: >
-        mkdir build
+        mkdir -p build
 
         cd build
 
         if ${{ matrix.compiler == 'Clang' }}; then
           if [[ "$CMAKE_GENERATOR" == *Studio*2019* ]]; then
-            export CMAKE_GENERATOR_TOOLSET=ClangCL thirdpartyOption="$thirdpartyOption -DHAVE_HARFBUZZ=NO"
+            export CMAKE_GENERATOR_TOOLSET=ClangCL
           elif [[ "$CMAKE_GENERATOR" == *Studio* ]]; then
-            export CMAKE_GENERATOR_TOOLSET=LLVM thirdpartyOption="$thirdpartyOption -DHAVE_HARFBUZZ=NO"
+            export CMAKE_GENERATOR_TOOLSET=LLVM
           else
             export CC=clang CXX=clang++
           fi
@@ -162,7 +167,8 @@ jobs:
 
         if ${{ runner.os != 'Windows' }}; then
           compilerLauncher=$(echo -DCMAKE_C{,XX}_COMPILER_LAUNCHER=ccache)
-          echo "##[set-env name=CCACHE_DIR;]$(dirname $PWD)/ccache"
+          export CCACHE_DIR="$(dirname $PWD)/ccache"
+          echo "CCACHE_DIR=$(dirname $PWD)/ccache" >> $GITHUB_ENV
         fi
 
         cmake
@@ -172,7 +178,6 @@ jobs:
         -D BUILD_METALIBS=${{ matrix.metalibs }}
         -D HAVE_PYTHON=${{ matrix.python }}
         -D HAVE_EIGEN=${{ matrix.eigen }}
-        ${thirdpartyOption:-}
         ..
 
     - name: Build (no Python)
@@ -181,37 +186,6 @@ jobs:
       working-directory: build
       run: cmake --build . --config ${{ matrix.config }} --parallel 4
       # END A
-
-    - name: Setup Python (Python 3.5)
-      if: contains(matrix.python, 'YES')
-      uses: actions/setup-python@v1
-      with:
-        python-version: 3.5
-    - name: Configure (Python 3.5)
-      if: contains(matrix.python, 'YES')
-      working-directory: build
-      shell: bash
-      run: >
-        cmake -DWANT_PYTHON_VERSION=3.5
-        -DPython_FIND_REGISTRY=NEVER -DPython_ROOT=$pythonLocation .
-    - name: Build (Python 3.5)
-      if: contains(matrix.python, 'YES')
-      # BEGIN A
-      working-directory: build
-      run: cmake --build . --config ${{ matrix.config }} --parallel 4
-      # END A
-    - name: Test (Python 3.5)
-      # BEGIN B
-      if: contains(matrix.python, 'YES')
-      working-directory: build
-      shell: bash
-      env:
-        PYTHONPATH: ${{ matrix.config }}
-      run: |
-        PYTHON_EXECUTABLE=$(grep 'Python_EXECUTABLE:' CMakeCache.txt | sed 's/.*=//')
-        $PYTHON_EXECUTABLE -m pip install pytest
-        $PYTHON_EXECUTABLE -m pytest ../tests
-      # END B
 
     - name: Setup Python (Python 3.6)
       if: contains(matrix.python, 'YES')
@@ -224,7 +198,7 @@ jobs:
       shell: bash
       run: >
         cmake -DWANT_PYTHON_VERSION=3.6
-        -DPython_FIND_REGISTRY=NEVER -DPython_ROOT=$pythonLocation .
+        -DPython_FIND_REGISTRY=NEVER -DPython_ROOT="$pythonLocation" .
     - name: Build (Python 3.6)
       if: contains(matrix.python, 'YES')
       # BEGIN A
@@ -256,7 +230,7 @@ jobs:
       shell: bash
       run: >
         cmake -DWANT_PYTHON_VERSION=3.7
-        -DPython_FIND_REGISTRY=NEVER -DPython_ROOT=$pythonLocation .
+        -DPython_FIND_REGISTRY=NEVER -DPython_ROOT="$pythonLocation" .
     - name: Build (Python 3.7)
       if: contains(matrix.python, 'YES')
       # BEGIN A
@@ -288,7 +262,7 @@ jobs:
       shell: bash
       run: >
         cmake -DWANT_PYTHON_VERSION=3.8
-        -DPython_FIND_REGISTRY=NEVER -DPython_ROOT=$pythonLocation .
+        -DPython_FIND_REGISTRY=NEVER -DPython_ROOT="$pythonLocation" .
     - name: Build (Python 3.8)
       if: contains(matrix.python, 'YES')
       # BEGIN A
@@ -296,6 +270,38 @@ jobs:
       run: cmake --build . --config ${{ matrix.config }} --parallel 4
       # END A
     - name: Test (Python 3.8)
+      # BEGIN B
+      if: contains(matrix.python, 'YES')
+      working-directory: build
+      shell: bash
+      env:
+        PYTHONPATH: ${{ matrix.config }}
+      run: |
+        PYTHON_EXECUTABLE=$(grep 'Python_EXECUTABLE:' CMakeCache.txt | sed 's/.*=//')
+        $PYTHON_EXECUTABLE -m pip install pytest pytest-cov
+        export COVERAGE_FILE=.coverage.$RANDOM LLVM_PROFILE_FILE=$PWD/pid-%p.profraw
+        $PYTHON_EXECUTABLE -m pytest ../tests --cov=.
+      # END B
+
+    - name: Setup Python (Python 3.9)
+      if: contains(matrix.python, 'YES')
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.9
+    - name: Configure (Python 3.9)
+      if: contains(matrix.python, 'YES')
+      working-directory: build
+      shell: bash
+      run: >
+        cmake -DWANT_PYTHON_VERSION=3.9
+        -DPython_FIND_REGISTRY=NEVER -DPython_ROOT="$pythonLocation" .
+    - name: Build (Python 3.9)
+      if: contains(matrix.python, 'YES')
+      # BEGIN A
+      working-directory: build
+      run: cmake --build . --config ${{ matrix.config }} --parallel 4
+      # END A
+    - name: Test (Python 3.9)
       # BEGIN B
       if: contains(matrix.python, 'YES')
       working-directory: build
@@ -344,24 +350,38 @@ jobs:
       shell: powershell
       run: |
         $wc = New-Object System.Net.WebClient
-        $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.5/panda3d-1.10.5-tools-win64.zip", "thirdparty-tools.zip")
+        $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.7/panda3d-1.10.7-tools-win64.zip", "thirdparty-tools.zip")
         Expand-Archive -Path thirdparty-tools.zip
-        Move-Item -Path thirdparty-tools/panda3d-1.10.5/thirdparty -Destination .
+        Move-Item -Path thirdparty-tools/panda3d-1.10.7/thirdparty -Destination .
     - name: Get thirdparty packages (macOS)
       if: runner.os == 'macOS'
       run: |
-        curl -O https://www.panda3d.org/download/panda3d-1.10.5/panda3d-1.10.5-tools-mac.tar.gz
-        tar -xf panda3d-1.10.5-tools-mac.tar.gz
-        mv panda3d-1.10.5/thirdparty thirdparty
-        rmdir panda3d-1.10.5
+        curl -O https://www.panda3d.org/download/panda3d-1.10.7/panda3d-1.10.7-tools-mac.tar.gz
+        tar -xf panda3d-1.10.7-tools-mac.tar.gz
+        mv panda3d-1.10.7/thirdparty thirdparty
+        rmdir panda3d-1.10.7
         (cd thirdparty/darwin-libs-a && rm -rf rocket)
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.9
+    - name: Build Python 3.9
+      shell: bash
+      run: |
+        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4
+    - name: Test Python 3.9
+      shell: bash
+      run: |
+        python -m pip install pytest
+        PYTHONPATH=built LD_LIBRARY_PATH=built/lib DYLD_LIBRARY_PATH=built/lib python -m pytest
     - name: Set up Python 3.8
       uses: actions/setup-python@v1
       with:
         python-version: 3.8
     - name: Build Python 3.8
+      shell: bash
       run: |
-        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir=$pythonLocation/include --python-libdir=$pythonLocation/lib --verbose --threads=4
+        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4
     - name: Test Python 3.8
       shell: bash
       run: |
@@ -372,8 +392,9 @@ jobs:
       with:
         python-version: 3.7
     - name: Build Python 3.7
+      shell: bash
       run: |
-        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir=$pythonLocation/include --python-libdir=$pythonLocation/lib --verbose --threads=4
+        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4
     - name: Test Python 3.7
       shell: bash
       run: |

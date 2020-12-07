@@ -55,7 +55,6 @@ StreamBufZlib::
 void StreamBufZlib::
 open_read(std::istream *source, bool owns_source) {
   StreamBufBase::open_read(source, owns_source);
-
   _z_source.next_in = Z_NULL;
   _z_source.avail_in = 0;
   _z_source.next_out = Z_NULL;
@@ -70,7 +69,7 @@ open_read(std::istream *source, bool owns_source) {
   _z_source.opaque = Z_NULL;
   _z_source.msg = (char *)"no error message";
 
-  int result = inflateInit2(&_z_source, 32 + 15);
+  int result = inflateInit2(&_z_source, header ? 32 + 15 : -15);
   if (result < 0) {
     show_zlib_error("inflateInit2", result, _z_source);
     close_read();
@@ -83,6 +82,8 @@ open_read(std::istream *source, bool owns_source) {
  */
 void StreamBufZlib::
 close_read() {
+  _source_bytes_left = 0;
+
   if (_source != nullptr) {
 
     int result = inflateEnd(&_z_source);
@@ -105,7 +106,6 @@ close_read() {
 void StreamBufZlib::
 open_write(std::ostream *dest, bool owns_dest, int compression_level) {
   StreamBufBase::open_write(dest, owns_dest);
-
   _z_dest.next_in = Z_NULL;
   _z_dest.avail_in = 0;
   _z_dest.next_out = Z_NULL;
@@ -120,9 +120,10 @@ open_write(std::ostream *dest, bool owns_dest, int compression_level) {
   _z_dest.opaque = Z_NULL;
   _z_dest.msg = (char *)"no error message";
 
-  int result = deflateInit(&_z_dest, compression_level);
+  int result = deflateInit2(&_z_dest, compression_level, Z_DEFLATED,
+                            header ? 15 : -15, 8, Z_DEFAULT_STRATEGY);
   if (result < 0) {
-    show_zlib_error("deflateInit", result, _z_dest);
+    show_zlib_error("deflateInit2", result, _z_dest);
     close_write();
   }
   thread_consider_yield();
@@ -288,13 +289,22 @@ read_chars(char *start, size_t length) {
   _z_source.next_out = (Bytef *)start;
   _z_source.avail_out = length;
 
-  bool eof = (_source->eof() || _source->fail());
+  bool eof = (_source_bytes_left == 0 || _source->eof() || _source->fail());
   int flush = 0;
 
   while (_z_source.avail_out > 0) {
     if (_z_source.avail_in == 0 && !eof) {
-      _source->read(decompress_buffer, decompress_buffer_size);
-      size_t read_count = _source->gcount();
+      size_t read_count = 0;
+      if (_source_bytes_left >= 0) {
+        // Don't read more than the specified limit.
+        _source->read(decompress_buffer,
+          std::min(_source_bytes_left, (std::streamsize)decompress_buffer_size));
+        read_count = _source->gcount();
+        _source_bytes_left -= read_count;
+      } else {
+        _source->read(decompress_buffer, decompress_buffer_size);
+        read_count = _source->gcount();
+      }
       eof = (read_count == 0 || _source->eof() || _source->fail());
 
       _z_source.next_in = (Bytef *)decompress_buffer;

@@ -140,7 +140,25 @@ cull_callback(CullTraverser *trav, CullTraverserData &data,
     camera_transform = trav->get_camera_transform()->invert_compose(_look_at.get_net_transform());
   }
 
-  compute_billboard(node_transform, modelview_transform, camera_transform);
+  if (data._instances == nullptr) {
+    compute_billboard(node_transform, modelview_transform, camera_transform);
+  }
+  else {
+    // Compute the billboard effect for every instance individually.
+    InstanceList *instances = new InstanceList(*data._instances);
+    data._instances = instances;
+
+    for (InstanceList::Instance &instance : *instances) {
+      CPT(TransformState) inst_node_transform = node_transform;
+      CPT(TransformState) inst_modelview_transform = modelview_transform->compose(instance.get_transform());
+      compute_billboard(inst_node_transform, inst_modelview_transform, camera_transform);
+
+      instance.set_transform(instance.get_transform()->compose(inst_node_transform));
+    }
+
+    // We've already applied this onto the instances.
+    node_transform = TransformState::make_identity();
+  }
 }
 
 /**

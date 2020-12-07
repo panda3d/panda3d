@@ -117,8 +117,8 @@ deps: {DEPENDS}
 MACOS_SCRIPT_PREFIX = \
 """#!/bin/bash
 IFS=.
-read -a version_info <<< "`sw_vers -productVersion`'"
-if (( ${version_info[1]} < 15 )); then
+read -a version_info <<< "`sw_vers -productVersion`"
+if (( ${version_info[0]} == 10 && ${version_info[1]} < 15 )); then
 """
 
 MACOS_SCRIPT_POSTFIX = \
@@ -158,10 +158,13 @@ def MakeInstallerNSIS(version, file, title, installdir, compressor="lzma", **kwa
     # Are we shipping a version of Python?
     if os.path.isfile(os.path.join(outputdir, "python", "python.exe")):
         py_dlls = glob.glob(os.path.join(outputdir, "python", "python[0-9][0-9].dll")) \
-                + glob.glob(os.path.join(outputdir, "python", "python[0-9][0-9]_d.dll"))
+                + glob.glob(os.path.join(outputdir, "python", "python[0-9][0-9]_d.dll")) \
+                + glob.glob(os.path.join(outputdir, "python", "python[0-9][0-9][0-9].dll")) \
+                + glob.glob(os.path.join(outputdir, "python", "python[0-9][0-9][0-9]_d.dll"))
         assert py_dlls
         py_dll = os.path.basename(py_dlls[0])
-        pyver = py_dll[6] + "." + py_dll[7]
+        py_dllver = py_dll.strip(".DHLNOPTY_dhlnopty")
+        pyver = py_dllver[0] + '.' + py_dllver[1:]
 
         if GetTargetArch() != 'x64':
             pyver += '-32'
@@ -723,7 +726,7 @@ def MakeInstallerFreeBSD(version, python_versions=[], **kwargs):
         oscmd("rm -f %s/tmp/python_dep" % outputdir)
 
         if "PYTHONVERSION" in SDK:
-            pyver_nodot = SDK["PYTHONVERSION"][6:9:2]
+            pyver_nodot = SDK["PYTHONVERSION"][6:].rstrip('dmu').replace('.', '')
         else:
             pyver_nodot = "%d%d" % (sys.version_info[:2])
 

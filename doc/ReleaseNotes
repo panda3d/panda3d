@@ -1,3 +1,74 @@
+------------------------  RELEASE 1.10.7  -----------------------
+
+This is primarily a bugfix release, but includes a few new features as well.
+
+Rendering
+* Add High Dynamic Range filter with ACES tone mapping to CommonFilters
+* Add sRGB filter to CommonFilters (to be used as fallback to framebuffer-srgb)
+* Fix (shadow) buffer no longer working after host buffer is destroyed (#890)
+* Fix rare bug with shader parameters not being set right across render passes
+* Fog density passed to shader now defaults to 0 when no fog is applied
+* Don't check sampler/light type mismatch for non-shadow-casting lights (#942)
+* Shader generator now makes use of Material alpha values if present (#912)
+* Support sRGB textures and framebuffers in OpenGL ES 2 renderer
+
+Asset Loading
+* Egg files can now be loaded with sRGB texture formats automatically
+* Fix maya2egg regression not creating animations properly (#1004)
+* Fix FMOD issue reading sounds from read-write-opened multifiles (#1002)
+
+Stability
+* Fix faulty collision detection when sphere is under polygon (#907)
+* Fix PStats misreporting an exploding number of RenderState/TransformState
+* Fix memory leak when removing a task that is awaiting a non-Panda future
+* Optimize RenderState cache for case where texture is replaced repeatedly
+* PNMImage add_sub_image() / mult_sub_image() now properly adds offset (#903)
+* Fix some ServerRepository issues in Python 3
+* Fix has_tags() still returning true after clearing all Python tags (#936)
+* Fix crash in BitArray.has_any_of()
+* Fix errors in PythonUtil.detectLeaks() and PythonUtil.report()
+* Fix runtime error during ControlManager deletion (#884)
+* Some error messages in nativenet are changed to debug messages
+* Fix TexMemWatcher crash when graphics memory reaches 1 GB (#975)
+* Fix a Triangulator crash dealing with certain invalid polygons (#985)
+* Fix in MultiplexStreamBuf::Output::write_string() (#902)
+* Fix a buffer overrun on FreeBSD when extracting very long command-line args
+
+Input and Windowing
+* M_confined mouse mode on Windows now confines mouse to client rectangle
+* Fix incorrect handling of shift modifier on macOS (#959)
+* Fix erroneous dpad_*-up events when emulating a dpad on Linux (#973)
+* Fix tab handling in DirectEntry with certain versions of Windows CRT (#994)
+* Fix parented window receiving WS_POPUP style on Windows (#915)
+
+Deployment
+* macOS app bundle now performs chdir into Resources folder upon launch
+* No longer defaults to FMOD audio on macOS unless FMOD is explicitly bundled
+* Improvements to Config.prc handling (strip comments, sort files, etc.)
+* Line buffering is now used on Windows when writing to log files (#947)
+* stdout/stderr output streams are now flushed on exit (#946)
+* Build paths are now properly stripped from compiled Python code (#991)
+* Update to support a change in location of numpy/Pillow libraries (#914)
+* Fix libffi-7.dll not being included in official wheels
+* PYTHONINSPECT mechanism is no longer enabled when building with optimizations
+* A few unnecessary warning messages are squelched
+* Windows builds now include previously missing CRT dlls
+
+API
+* Add pickle support to Datagram class
+* Unexpose a crashing CollisionPolygon constructor and method (#908)
+* FilterManager has new parameter to control framebuffer clamping
+* Add snake_case aliases for functions in DirectGuiGlobals
+* Global delete operator is now safe to call with a null pointer
+* Improvements to API reference documentation
+
+Build
+* Fix issues building with development versions Python 3.9 and 3.10
+* Fix an ABI incompatibility issue with MouseWatcher in NDEBUG builds
+* Fix incorrect NaN/inf detection in double-precision release builds (#987)
+* interrogate C++ parser supports arbitrary constant expressions in bitfields
+* interrogate C++ parser supports sizeof with constant expression
+
 ------------------------  RELEASE 1.10.6  -----------------------
 
 This is a recommended bugfix release that adds additional stability fixes.
