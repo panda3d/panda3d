@@ -15,6 +15,10 @@ import marshal
 import imp
 import types
 
+# make sure modules are loaded for default encodings before hooking import system
+# file.py use TextIOWrapper that relies on the default preferred encoding
+__import__('locale').getpreferredencoding()
+
 #: The sharedPackages dictionary lists all of the "shared packages",
 #: special Python packages that automatically span multiple directories
 #: via magic in the VFSImporter.  You can make a package "shared"
