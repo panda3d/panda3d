@@ -15,8 +15,10 @@ import marshal
 import imp
 import types
 
-# make sure modules are loaded for default encodings before hooking import system
-# file.py use TextIOWrapper that relies on the default preferred encoding
+# make sure all modules are loaded for default encoding before hooking the
+# import system : direct.ftd.file uses TextIOWrapper that relies
+# on gettting the default preferred encoding. Python 3.9 has a lazy import
+# of _bootlocale in some cases.
 __import__('locale').getpreferredencoding()
 
 #: The sharedPackages dictionary lists all of the "shared packages",
