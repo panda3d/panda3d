@@ -1,6 +1,3 @@
-#Xcode files
-*..xcodeproj
-
 # makepanda directories
 /built*/
 /thirdparty/
@@ -73,3 +70,4 @@ __pycache__/
 /.settings/
 /.cproject
 /.project
+.Rproj.user
