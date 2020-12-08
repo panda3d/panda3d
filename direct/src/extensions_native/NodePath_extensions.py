@@ -1,4 +1,4 @@
-import warnings
+
 ####################################################################
 #Dtool_funcToMethod(func, class)
 #del func
@@ -11,11 +11,12 @@ of the NodePath class
 
 from panda3d.core import NodePath
 from .extension_native_helpers import Dtool_funcToMethod
+import warnings
 
 ####################################################################
 def id(self):
         """Deprecated.  Returns a unique id identifying the NodePath instance"""
-        warnings.warn("NodePath.id() is deprecated.  Use hash(NodePath) or NodePath.get_key() instead."), DeprecationWarning, stacklevel=2)
+        warnings.warn("NodePath.id() is deprecated.  Use hash(NodePath) or NodePath.get_key() instead.", DeprecationWarning, stacklevel=2)
         return self.getKey()
 
 Dtool_funcToMethod(id, NodePath)
@@ -23,7 +24,7 @@ del id
 #####################################################################
 def getChildrenAsList(self):
         """Deprecated.  Converts a node path's child NodePathCollection into a list"""
-        warnings.warn("NodePath.getChildrenAsList() is deprecated.  Use get_children() instead."), DeprecationWarning, stacklevel=2)
+        warnings.warn("NodePath.getChildrenAsList() is deprecated.  Use get_children() instead.", DeprecationWarning, stacklevel=2)
         return list(self.getChildren())
 
 Dtool_funcToMethod(getChildrenAsList, NodePath)
@@ -32,7 +33,7 @@ del getChildrenAsList
 
 def printChildren(self):
         """Deprecated.  Prints out the children of the bottom node of a node path"""
-        warnings.warn("NodePath.printChildren() is deprecated."), DeprecationWarning, stacklevel=2)
+        warnings.warn("NodePath.printChildren() is deprecated.", DeprecationWarning, stacklevel=2)
         for child in self.getChildren():
             print(child.getName())
 Dtool_funcToMethod(printChildren, NodePath)
@@ -41,7 +42,7 @@ del printChildren
 
 def removeChildren(self):
         """Deprecated.  Deletes the children of the bottom node of a node path"""
-        warnings.warn("NodePath.removeChildren() is deprecated.  Use get_children().detach() instead."), DeprecationWarning, stacklevel=2)
+        warnings.warn("NodePath.removeChildren() is deprecated.  Use get_children().detach() instead.", DeprecationWarning, stacklevel=2)
         self.getChildren().detach()
 Dtool_funcToMethod(removeChildren, NodePath)
 del removeChildren
@@ -49,7 +50,7 @@ del removeChildren
 
 def toggleVis(self):
         """Deprecated.  Toggles visibility of a nodePath"""
-        warnings.warn("NodePath.toggleVis() is deprecated.  Use is_hidden(), show() and hide() instead."), DeprecationWarning, stacklevel=2)
+        warnings.warn("NodePath.toggleVis() is deprecated.  Use is_hidden(), show() and hide() instead.", DeprecationWarning, stacklevel=2)
         if self.isHidden():
             self.show()
             return 1
@@ -62,7 +63,7 @@ del toggleVis
 
 def showSiblings(self):
         """Deprecated.  Show all the siblings of a node path"""
-        warnings.warn("NodePath.showSiblings() is deprecated."), DeprecationWarning, stacklevel=2)
+        warnings.warn("NodePath.showSiblings() is deprecated.", DeprecationWarning, stacklevel=2)
         for sib in self.getParent().getChildren():
             if sib.node() != self.node():
                 sib.show()
@@ -72,7 +73,7 @@ del showSiblings
 
 def hideSiblings(self):
         """Deprecated.  Hide all the siblings of a node path"""
-        warnings.warn("NodePath.hideSiblings() is deprecated."), DeprecationWarning, stacklevel=2)
+        warnings.warn("NodePath.hideSiblings() is deprecated.", DeprecationWarning, stacklevel=2)
         for sib in self.getParent().getChildren():
             if sib.node() != self.node():
                 sib.hide()
@@ -82,7 +83,7 @@ del hideSiblings
 
 def showAllDescendants(self):
         """Deprecated.  Show the node path and all its children"""
-        warnings.warn("NodePath.showAllDescendants() is deprecated."), DeprecationWarning, stacklevel=2)
+        warnings.warn("NodePath.showAllDescendants() is deprecated.", DeprecationWarning, stacklevel=2)
         self.show()
         for child in self.getChildren():
             child.showAllDescendants()
@@ -92,7 +93,7 @@ del showAllDescendants
 
 def isolate(self):
         """Deprecated.  Show the node path and hide its siblings"""
-        warnings.warn("NodePath.isolate() is deprecated."), DeprecationWarning, stacklevel=2)
+        warnings.warn("NodePath.isolate() is deprecated.", DeprecationWarning, stacklevel=2)
         self.showAllDescendants()
         for sib in self.getParent().getChildren():
             if sib.node() != self.node():
@@ -103,7 +104,7 @@ del isolate
 
 def remove(self):
         """Deprecated.  Remove a node path from the scene graph"""
-        warnings.warn("NodePath.remove() is deprecated.  Use remove_node() instead."), DeprecationWarning, stacklevel=2)
+        warnings.warn("NodePath.remove() is deprecated.  Use remove_node() instead.", DeprecationWarning, stacklevel=2)
         # Send message in case anyone needs to do something
         # before node is deleted
         messenger.send('preRemoveNodePath', [self])
@@ -115,7 +116,7 @@ del remove
 
 def lsNames(self):
         """Deprecated. Walk down a tree and print out the path"""
-        warnings.warn("NodePath.lsNames() is deprecated."), DeprecationWarning, stacklevel=2)
+        warnings.warn("NodePath.lsNames() is deprecated.", DeprecationWarning, stacklevel=2)
         if self.isEmpty():
             print("(empty)")
         else:
@@ -129,7 +130,7 @@ del lsNames
 #####################################################################
 def lsNamesRecurse(self, indentString=' '):
         """Deprecated.  Walk down a tree and print out the path"""
-        warnings.warn("NodePath.lsNamesRecurse() is deprecated."), DeprecationWarning, stacklevel=2)
+        warnings.warn("NodePath.lsNamesRecurse() is deprecated.", DeprecationWarning, stacklevel=2)
         for nodePath in self.getChildren():
             type = nodePath.node().getType().getName()
             name = nodePath.getName()
@@ -141,7 +142,7 @@ del lsNamesRecurse
 #####################################################################
 def reverseLsNames(self):
         """Deprecated.  Walk up a tree and print out the path to the root"""
-        warnings.warn("NodePath.reverseLsNames() is deprecated."), DeprecationWarning, stacklevel=2)
+        warnings.warn("NodePath.reverseLsNames() is deprecated.", DeprecationWarning, stacklevel=2)
         ancestors = list(self.getAncestors())
         ancestry = ancestors.reverse()
         indentString = ""
