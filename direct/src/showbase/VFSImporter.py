@@ -65,7 +65,7 @@ class VFSImporter:
         vfile = vfs.getFile(filename, True)
         if vfile:
             return VFSLoader(dir_path, vfile, filename,
-                             desc=('.py', 'r', imp.PY_SOURCE))
+                             desc=('.py', 'U' if sys.version_info < (3, 4) else 'r', imp.PY_SOURCE))
 
         # If there's no .py file, but there's a .pyc file, load that
         # anyway.
@@ -93,7 +93,7 @@ class VFSImporter:
         vfile = vfs.getFile(filename, True)
         if vfile:
             return VFSLoader(dir_path, vfile, filename, packagePath=path,
-                             desc=('.py', 'r', imp.PY_SOURCE))
+                             desc=('.py', 'U' if sys.version_info < (3, 4) else 'r', imp.PY_SOURCE))
         for ext in compiledExtensions:
             filename = Filename(path, '__init__.' + ext)
             vfile = vfs.getFile(filename, True)
@@ -181,7 +181,15 @@ class VFSLoader:
         filename = Filename(self.filename)
         filename.setExtension('py')
         filename.setText()
-        return open(self.filename, self.desc[1]).read()
+
+        if sys.version_info >= (3, 0):
+            # Use the tokenize module to detect the encoding.
+            import tokenize
+            fh = open(self.filename, 'rb')
+            encoding, lines = tokenize.detect_encoding(fh.readline)
+            return (b''.join(lines) + fh.read()).decode(encoding)
+        else:
+            return open(self.filename, self.desc[1]).read()
 
     def _import_extension_module(self, fullname):
         """ Loads the binary shared object as a Python module, and
