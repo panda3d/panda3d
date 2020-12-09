@@ -40,7 +40,7 @@ DEBUG_DEPENDENCIES = False
 # Is the current Python a 32-bit or 64-bit build?  There doesn't
 # appear to be a universal test for this.
 if sys.platform == 'darwin':
-    # On OSX, platform.architecture reports '64bit' even if it is
+    # On macOS, platform.architecture reports '64bit' even if it is
     # currently running in 32-bit mode.  But sys.maxint is a reliable
     # indicator.
     host_64 = (sys.maxsize > 0x100000000)
@@ -365,11 +365,13 @@ def SetTarget(target, arch=None):
     elif target == 'darwin':
         if arch == 'amd64':
             arch = 'x86_64'
+        if arch == 'aarch64':
+            arch = 'arm64'
 
         if arch is not None:
-            choices = ('i386', 'x86_64', 'ppc', 'ppc64')
+            choices = ('i386', 'x86_64', 'ppc', 'ppc64', 'arm64')
             if arch not in choices:
-                exit('Mac OS X architecture must be one of %s' % (', '.join(choices)))
+                exit('macOS architecture must be one of %s' % (', '.join(choices)))
 
     elif target == 'android' or target.startswith('android-'):
         if arch is None:
@@ -1297,7 +1299,7 @@ def GetThirdpartyDir():
             THIRDPARTYDIR = base + "/win-libs-vc" + vc + "/"
 
     elif (target == 'darwin'):
-        # OSX thirdparty binaries are universal, where possible.
+        # macOS thirdparty binaries are universal, where possible.
         THIRDPARTYDIR = base + "/darwin-libs-a/"
 
     elif (target == 'linux'):
@@ -3002,7 +3004,7 @@ def SetupBuildEnvironment(compiler):
             dyldpath.insert(0, os.path.join(builtdir, 'lib'))
             os.environ["DYLD_LIBRARY_PATH"] = os.pathsep.join(dyldpath)
 
-            # OS X 10.11 removed DYLD_LIBRARY_PATH, but we still need to pass
+            # macOS 10.11 removed DYLD_LIBRARY_PATH, but we still need to pass
             # on our lib directory to ppackage, so add it to PATH instead.
             os.environ["PATH"] = os.path.join(builtdir, 'lib') + ':' + os.environ.get("PATH", "")
 

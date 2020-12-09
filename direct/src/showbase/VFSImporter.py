@@ -181,7 +181,12 @@ class VFSLoader:
         filename = Filename(self.filename)
         filename.setExtension('py')
         filename.setText()
-        return open(self.filename, self.desc[1]).read()
+
+        # Use the tokenize module to detect the encoding.
+        import tokenize
+        fh = open(self.filename, 'rb')
+        encoding, lines = tokenize.detect_encoding(fh.readline)
+        return (b''.join(lines) + fh.read()).decode(encoding)
 
     def _import_extension_module(self, fullname):
         """ Loads the binary shared object as a Python module, and
