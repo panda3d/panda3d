@@ -292,7 +292,7 @@ try_load_file(const Filename &pathname, const LoaderOptions &options,
             << "Model " << pathname << " found in ModelPool.\n";
         }
         // But return a deep copy of the shared model.
-        node = node->copy_subgraph();
+        node = NodePath(node).copy_to(NodePath()).node();
       }
       return node;
     }
@@ -329,7 +329,7 @@ try_load_file(const Filename &pathname, const LoaderOptions &options,
             // from the RAM cached version.
             ModelPool::add_model(pathname, model_root);
             if ((options.get_flags() & LoaderOptions::LF_allow_instance) == 0) {
-              return model_root->copy_subgraph();
+              return NodePath(model_root).copy_to(NodePath()).node();
             }
           }
         }
@@ -398,7 +398,7 @@ try_load_file(const Filename &pathname, const LoaderOptions &options,
     // cached version.
     ModelPool::add_model(pathname, DCAST(ModelRoot, result.p()));
     if ((options.get_flags() & LoaderOptions::LF_allow_instance) == 0) {
-      result = result->copy_subgraph();
+      result = NodePath(result).copy_to(NodePath()).node();
     }
   }
 
