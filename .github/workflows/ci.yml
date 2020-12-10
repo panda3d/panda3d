@@ -92,10 +92,10 @@ jobs:
     - name: Install dependencies (macOS)
       if: runner.os == 'macOS'
       run: |
-        curl -O https://www.panda3d.org/download/panda3d-1.10.7/panda3d-1.10.7-tools-mac.tar.gz
-        tar -xf panda3d-1.10.7-tools-mac.tar.gz
-        mv panda3d-1.10.7/thirdparty thirdparty
-        rmdir panda3d-1.10.7
+        curl -O https://www.panda3d.org/download/panda3d-1.10.8/panda3d-1.10.8-tools-mac.tar.gz
+        tar -xf panda3d-1.10.8-tools-mac.tar.gz
+        mv panda3d-1.10.8/thirdparty thirdparty
+        rmdir panda3d-1.10.8
 
         mkdir -p build/Frameworks
         cp -R thirdparty/darwin-libs-a/nvidiacg/Cg.framework build/Frameworks/Cg.framework
@@ -356,10 +356,10 @@ jobs:
     - name: Get thirdparty packages (macOS)
       if: runner.os == 'macOS'
       run: |
-        curl -O https://www.panda3d.org/download/panda3d-1.10.7/panda3d-1.10.7-tools-mac.tar.gz
-        tar -xf panda3d-1.10.7-tools-mac.tar.gz
-        mv panda3d-1.10.7/thirdparty thirdparty
-        rmdir panda3d-1.10.7
+        curl -O https://www.panda3d.org/download/panda3d-1.10.8/panda3d-1.10.8-tools-mac.tar.gz
+        tar -xf panda3d-1.10.8-tools-mac.tar.gz
+        mv panda3d-1.10.8/thirdparty thirdparty
+        rmdir panda3d-1.10.8
         (cd thirdparty/darwin-libs-a && rm -rf rocket)
     - name: Set up Python 3.9
       uses: actions/setup-python@v1
