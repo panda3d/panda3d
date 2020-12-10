@@ -381,7 +381,8 @@ class WheelFile(object):
             # On macOS, if no fat wheel was requested, extract the right architecture.
             if sys.platform == "darwin" and is_fat_file(source_path) \
                 and not self.platform.endswith("_intel") \
-                and "_fat" not in self.platform:
+                and "_fat" not in self.platform \
+                and "_universal" not in self.platform:
 
                 if self.platform.endswith("_x86_64"):
                     arch = 'x86_64'

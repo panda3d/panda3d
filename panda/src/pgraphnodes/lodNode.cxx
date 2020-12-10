@@ -143,26 +143,62 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   CDReader cdata(_cycler);
 
   CPT(TransformState) rel_transform = get_rel_transform(trav, data);
-  LPoint3 center = cdata->_center * rel_transform->get_mat();
-  PN_stdfloat dist2 = center.dot(center);
+  PN_stdfloat lod_scale = cdata->_lod_scale *
+    trav->get_scene()->get_camera_node()->get_lod_scale();
 
   int num_children = std::min(get_num_children(), (int)cdata->_switch_vector.size());
-  for (int index = 0; index < num_children; ++index) {
-    const Switch &sw = cdata->_switch_vector[index];
-    bool in_range;
-    if (cdata->_got_force_switch) {
-      in_range = (cdata->_force_switch == index);
-    } else {
-      in_range = sw.in_range_2(dist2 * cdata->_lod_scale
-                   * trav->get_scene()->get_camera_node()->get_lod_scale());
+
+  if (data._instances == nullptr || cdata->_got_force_switch) {
+    LPoint3 center = cdata->_center * rel_transform->get_mat();
+    PN_stdfloat dist2 = center.dot(center);
+
+    for (int index = 0; index < num_children; ++index) {
+      const Switch &sw = cdata->_switch_vector[index];
+      bool in_range;
+      if (cdata->_got_force_switch) {
+        in_range = (cdata->_force_switch == index);
+      } else {
+        in_range = sw.in_range_2(dist2 * lod_scale);
+      }
+
+      if (in_range) {
+        // This switch level is in range.  Draw its children.
+        PandaNode *child = get_child(index);
+        if (child != nullptr) {
+          CullTraverserData next_data(data, child);
+          trav->traverse(next_data);
+        }
+      }
+    }
+  }
+  else {
+    // Figure out which instances in which switch levels should be visible.
+    size_t num_instances = data._instances->size();
+    std::unique_ptr<BitArray[]> in_range(new BitArray[num_children]);
+
+    for (size_t ii = 0; ii < num_instances; ++ii) {
+      LPoint3 inst_center = cdata->_center *
+        rel_transform->compose((*data._instances)[ii].get_transform())->get_mat();
+      PN_stdfloat dist2 = inst_center.dot(inst_center);
+
+      for (int index = 0; index < num_children; ++index) {
+        const Switch &sw = cdata->_switch_vector[index];
+        if (!sw.in_range_2(dist2 * lod_scale)) {
+          in_range[index].set_bit(ii);
+        }
+      }
     }
 
-    if (in_range) {
-      // This switch level is in range.  Draw its children.
-      PandaNode *child = get_child(index);
-      if (child != nullptr) {
-        CullTraverserData next_data(data, child);
-        trav->traverse(next_data);
+    for (int index = 0; index < num_children; ++index) {
+      CPT(InstanceList) instances = data._instances->without(in_range[index]);
+      if (!instances->empty()) {
+        // At least one instance is visible in this switch level.
+        PandaNode *child = get_child(index);
+        if (child != nullptr) {
+          CullTraverserData next_data(data, child);
+          next_data._instances = instances;
+          trav->traverse(next_data);
+        }
       }
     }
   }
@@ -321,13 +357,30 @@ compute_child(CullTraverser *trav, CullTraverserData &data) {
     return cdata->_force_switch;
   }
 
+  PN_stdfloat lod_scale = cdata->_lod_scale *
+    trav->get_scene()->get_camera_node()->get_lod_scale();
+
   CPT(TransformState) rel_transform = get_rel_transform(trav, data);
-  LPoint3 center = cdata->_center * rel_transform->get_mat();
+  LPoint3 center;
+
+  if (data._instances == nullptr) {
+    center = cdata->_center * rel_transform->get_mat();
+  }
+  else {
+    // Can't really do much with instancing in FadeLODNode; let's instead
+    // just calculate the centroid of the visible instances.
+    center = LPoint3(0);
+    for (const InstanceList::Instance &instance : *data._instances) {
+      center += cdata->_center *
+        rel_transform->compose(instance.get_transform())->get_mat();
+    }
+    center *= 1.0 / data._instances->size();
+  }
+
   PN_stdfloat dist2 = center.dot(center);
 
   for (int index = 0; index < (int)cdata->_switch_vector.size(); ++index) {
-    if (cdata->_switch_vector[index].in_range_2(dist2 * cdata->_lod_scale
-         * trav->get_scene()->get_camera_node()->get_lod_scale())) {
+    if (cdata->_switch_vector[index].in_range_2(dist2 * lod_scale)) {
       if (pgraph_cat.is_debug()) {
         pgraph_cat.debug()
           << data.get_node_path() << " at distance " << sqrt(dist2)

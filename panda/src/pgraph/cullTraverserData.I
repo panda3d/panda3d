@@ -50,6 +50,7 @@ CullTraverserData(const CullTraverserData &parent, PandaNode *child) :
   _state(parent._state),
   _view_frustum(parent._view_frustum),
   _cull_planes(parent._cull_planes),
+  _instances(parent._instances),
   _draw_mask(parent._draw_mask),
   _portal_depth(parent._portal_depth)
 {
@@ -110,7 +111,8 @@ get_modelview_transform(const CullTraverser *trav) const {
  */
 INLINE CPT(TransformState) CullTraverserData::
 get_internal_transform(const CullTraverser *trav) const {
-  return trav->get_scene()->get_cs_world_transform()->compose(_net_transform);
+  const TransformState *cs_world_transform = trav->get_scene()->get_cs_world_transform();
+  return cs_world_transform->compose(_net_transform);
 }
 
 /**

@@ -539,12 +539,45 @@ copy_to(const NodePath &other, int sort, Thread *current_thread) const {
   nassertr(other._error_type == ET_ok, fail());
 
   PandaNode *source_node = node();
-  PT(PandaNode) copy_node = source_node->copy_subgraph(current_thread);
+  PandaNode::InstanceMap inst_map;
+  PT(PandaNode) copy_node = source_node->r_copy_subgraph(inst_map, current_thread);
   nassertr(copy_node != nullptr, fail());
 
   copy_node->reset_prev_transform(current_thread);
 
-  return other.attach_new_node(copy_node, sort, current_thread);
+  NodePath result = other.attach_new_node(copy_node, sort, current_thread);
+
+  // Temporary hack fix: if this root NodePath had lights applied that are
+  // located inside this subgraph, we need to fix them.
+  const RenderState *state = source_node->get_state();
+  const LightAttrib *lattr;
+  if (state->get_attrib(lattr)) {
+    CPT(LightAttrib) new_lattr = lattr;
+
+    for (size_t i = 0; i < lattr->get_num_off_lights(); ++i) {
+      NodePath light = lattr->get_off_light(i);
+      NodePath light2 = light;
+
+      if (light2.replace_copied_nodes(*this, result, inst_map, current_thread)) {
+        new_lattr = DCAST(LightAttrib, new_lattr->replace_off_light(light, light2));
+      }
+    }
+
+    for (size_t i = 0; i < lattr->get_num_on_lights(); ++i) {
+      NodePath light = lattr->get_on_light(i);
+      NodePath light2 = light;
+
+      if (light2.replace_copied_nodes(*this, result, inst_map, current_thread)) {
+        new_lattr = DCAST(LightAttrib, new_lattr->replace_on_light(light, light2));
+      }
+    }
+
+    if (new_lattr != lattr) {
+      result.set_state(state->set_attrib(std::move(new_lattr)));
+    }
+  }
+
+  return result;
 }
 
 /**
@@ -5801,6 +5834,48 @@ decode_from_bam_stream(vector_uchar data, BamReader *reader) {
   reader->set_source(nullptr);
 
   return result;
+}
+
+/**
+ * If the given root node is an ancestor of this NodePath, replaces all
+ * components below it using the given instance map.
+ *
+ * This is a helper method used by copy_to().
+ */
+bool NodePath::
+replace_copied_nodes(const NodePath &source, const NodePath &dest,
+                     const PandaNode::InstanceMap &inst_map,
+                     Thread *current_thread) {
+  nassertr(!dest.is_empty(), false);
+
+  int pipeline_stage = current_thread->get_pipeline_stage();
+
+  pvector<PandaNode *> nodes;
+
+  NodePathComponent *comp = _head;
+  while (comp != nullptr && comp != source._head) {
+    nodes.push_back(comp->get_node());
+
+    comp = comp->get_next(pipeline_stage, current_thread);
+  }
+
+  if (comp == nullptr) {
+    // The given source NodePath isn't an ancestor of this NodePath.
+    return false;
+  }
+
+  // Start at the dest NodePath and compose the new NodePath.
+  PT(NodePathComponent) new_comp = dest._head;
+  pvector<PandaNode *>::reverse_iterator it;
+  for (it = nodes.rbegin(); it != nodes.rend(); ++it) {
+    PandaNode::InstanceMap::const_iterator iit = inst_map.find(*it);
+    nassertr_always(iit != inst_map.end(), false);
+    new_comp = PandaNode::get_component(new_comp, iit->second, pipeline_stage, current_thread);
+  }
+
+  nassertr(new_comp != nullptr, false);
+  _head = std::move(new_comp);
+  return true;
 }
 
 /**

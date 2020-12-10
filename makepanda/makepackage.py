@@ -117,8 +117,8 @@ deps: {DEPENDS}
 MACOS_SCRIPT_PREFIX = \
 """#!/bin/bash
 IFS=.
-read -a version_info <<< "`sw_vers -productVersion`'"
-if (( ${version_info[1]} < 15 )); then
+read -a version_info <<< "`sw_vers -productVersion`"
+if (( ${version_info[0]} == 10 && ${version_info[1]} < 15 )); then
 """
 
 MACOS_SCRIPT_POSTFIX = \

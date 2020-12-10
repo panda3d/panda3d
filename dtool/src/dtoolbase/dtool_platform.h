@@ -39,6 +39,8 @@
 #define DTOOL_PLATFORM "osx_i386"
 #elif defined(__x86_64)
 #define DTOOL_PLATFORM "osx_amd64"
+#elif defined(__aarch64__)
+#define DTOOL_PLATFORM "osx_aarch64"
 #endif
 
 #elif defined(__FreeBSD__)
