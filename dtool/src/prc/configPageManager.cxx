@@ -132,7 +132,7 @@ reload_implicit_pages() {
   const BlobInfo *blobinfo = (const BlobInfo *)dlsym(dlopen(NULL, RTLD_NOW), "blobinfo");
 #endif
   if (blobinfo == nullptr) {
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
     // Clear the error flag.
     dlerror();
 #endif
