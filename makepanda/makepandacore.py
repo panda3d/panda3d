@@ -3613,6 +3613,13 @@ def TargetAdd(target, dummy=0, opts=[], input=[], dep=[], ipath=None, winrc=None
                 if opt in tdep.opts and opt not in t.opts:
                     t.opts.append(opt)
 
+        elif GetTarget() == 'emscripten' and ORIG_EXT[fullinput] == '.dll' and fullinput in TARGET_TABLE:
+            # Transfer over flags like -s USE_LIBPNG=1
+            tdep = TARGET_TABLE[fullinput]
+            for opt, _ in LINKFLAGS:
+                if opt in tdep.opts and opt not in t.opts:
+                    t.opts.append(opt)
+
         if x.endswith(".in"):
             # Mark the _igate.cxx file as a dependency also.
             outbase = os.path.basename(x)[:-3]

@@ -1795,7 +1795,7 @@ def CompileLink(dll, obj, opts):
             else:
                 cmd = cxx + ' -shared'
                 # Always set soname on Android to avoid a linker warning when loading the library.
-                if "MODULE" not in opts or GetTarget() == 'android':
+                if GetTarget() == 'android' or ("MODULE" not in opts and GetTarget() != 'emscripten'):
                     cmd += " -Wl,-soname=" + os.path.basename(dll)
                 cmd += ' -o ' + dll + ' -L' + GetOutputDir() + '/lib -L' + GetOutputDir() + '/tmp'
 
@@ -1851,6 +1851,7 @@ def CompileLink(dll, obj, opts):
             cmd += " -s WARN_ON_UNDEFINED_SYMBOLS=1"
             if GetOrigExt(dll) == ".exe":
                 cmd += " --memory-init-file 0"
+                cmd += " -s EXIT_RUNTIME=1"
 
         else:
             cmd += " -pthread"
@@ -4932,8 +4933,8 @@ if (PkgSkip("PVIEW")==0):
   if GetLinkAllStatic():
     if not PkgSkip("GL"):
       TargetAdd('pview.exe', input='libpandagl.dll')
-    if GetTarget() == "emscripten" and not PkgSkip("GLES2"):
-      TargetAdd('pview.exe', input='libp3webgldisplay.dll')
+  if GetTarget() == "emscripten" and not PkgSkip("GLES2"):
+    TargetAdd('pview.exe', input='libp3webgldisplay.dll')
 
 #
 # DIRECTORY: direct/src/directbase/
