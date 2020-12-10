@@ -85,7 +85,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   WebGLGraphicsStateGuardian *webgl_gsg;
   DCAST_INTO_R(webgl_gsg, _gsg, false);
 
-  if (emscripten_is_webgl_context_lost(0)) {
+  if (emscripten_is_webgl_context_lost(webgl_gsg->_context)) {
     // The context was lost, and any GL calls we make will fail.
     return false;
   }
@@ -168,8 +168,10 @@ void WebGLGraphicsWindow::
 set_properties_now(WindowProperties &properties) {
   GraphicsWindow::set_properties_now(properties);
 
+  const char *target = "#canvas";
+
   if (properties.has_size()) {
-    emscripten_set_canvas_size(properties.get_x_size(), properties.get_y_size());
+    emscripten_set_canvas_element_size(target, properties.get_x_size(), properties.get_y_size());
     _properties.set_size(properties.get_size());
     properties.clear_size();
     set_size_and_recalc(_properties.get_x_size(), _properties.get_y_size());
@@ -180,7 +182,7 @@ set_properties_now(WindowProperties &properties) {
       properties.get_fullscreen() != _properties.get_fullscreen()) {
 
     if (properties.get_fullscreen()) {
-      EMSCRIPTEN_RESULT result = emscripten_request_fullscreen(nullptr, true);
+      EMSCRIPTEN_RESULT result = emscripten_request_fullscreen(target, true);
 
       if (result == EMSCRIPTEN_RESULT_SUCCESS) {
         _properties.set_fullscreen(true);
@@ -204,7 +206,7 @@ set_properties_now(WindowProperties &properties) {
       properties.get_mouse_mode() != _properties.get_mouse_mode()) {
 
     if (properties.get_mouse_mode() == WindowProperties::M_relative) {
-      EMSCRIPTEN_RESULT result = emscripten_request_pointerlock(nullptr, true);
+      EMSCRIPTEN_RESULT result = emscripten_request_pointerlock(target, true);
 
       if (result == EMSCRIPTEN_RESULT_SUCCESS) {
         // Great, we're in pointerlock mode.
@@ -249,7 +251,7 @@ close_window() {
   }
 
   // Clear the assigned callbacks.
-  const char *target = nullptr;
+  const char *target = "#canvas";
   emscripten_set_fullscreenchange_callback(target, nullptr, false, nullptr);
   emscripten_set_pointerlockchange_callback(target, nullptr, false, nullptr);
   emscripten_set_visibilitychange_callback(nullptr, false, nullptr);
@@ -282,7 +284,7 @@ open_window() {
   //WebGLGraphicsPipe *webgl_pipe;
   //DCAST_INTO_R(webgl_pipe, _pipe, false);
 
-  const char *target = nullptr;
+  const char *target = "#canvas";
 
   // GSG Creation/Initialization
   WebGLGraphicsStateGuardian *webgl_gsg;
@@ -293,7 +295,7 @@ open_window() {
     _gsg = webgl_gsg;
   } else {
     // If the old gsg has the wrong pixel format, create a new one.
-    //DCAST_INTO_R(webgl_gsg, _gsg, false);
+    DCAST_INTO_R(webgl_gsg, _gsg, false);
     //if (!webgl_gsg->_fb_properties.subsumes(_fb_properties)) {
     //  webgl_gsg = new WebGLGraphicsStateGuardian(_engine, _pipe);
     //  webgl_gsg->choose_pixel_format(_fb_properties, target);
@@ -302,12 +304,15 @@ open_window() {
   }
 
   if (_properties.has_size() && _properties.get_size() != LVecBase2i(1, 1)) {
-    emscripten_set_canvas_size(_properties.get_x_size(), _properties.get_y_size());
+    emscripten_set_canvas_element_size(target, _properties.get_x_size(), _properties.get_y_size());
   } else {
-    int width, height, fullscreen;
-    emscripten_get_canvas_size(&width, &height, &fullscreen);
+    int width, height;
+    emscripten_get_canvas_element_size(target, &width, &height);
     _properties.set_size(width, height);
-    _properties.set_fullscreen(fullscreen > 0);
+
+    EmscriptenFullscreenChangeEvent event;
+    emscripten_get_fullscreen_status(&event);
+    _properties.set_fullscreen(event.isFullscreen);
   }
 
   _properties.set_undecorated(true);
@@ -534,13 +539,15 @@ on_mouse_event(int type, const EmscriptenMouseEvent *event, void *user_data) {
   device = (GraphicsWindowInputDevice *)user_data;
   nassertr(device != nullptr, false);
 
+  const char *target = "#canvas";
+
   switch (type) {
   case EMSCRIPTEN_EVENT_MOUSEDOWN:
     // Don't register out-of-bounds mouse downs.
-    if (event->canvasX >= 0 && event->canvasY >= 0) {
-      int w, h, f;
-      emscripten_get_canvas_size(&w, &h, &f);
-      if (event->canvasX < w && event->canvasY < h) {
+    if (event->targetX >= 0 && event->targetY >= 0) {
+      int w, h;
+      emscripten_get_canvas_element_size(target, &w, &h);
+      if (event->targetX < w && event->targetY < h) {
         device->button_down(MouseButton::button(event->button));
         return true;
       }
@@ -561,7 +568,7 @@ on_mouse_event(int type, const EmscriptenMouseEvent *event, void *user_data) {
         device->set_pointer_in_window(md.get_x() + event->movementX,
                                       md.get_y() + event->movementY);
       } else {
-        device->set_pointer_in_window(event->canvasX, event->canvasY);
+        device->set_pointer_in_window(event->targetX, event->targetY);
       }
     }
     return true;
