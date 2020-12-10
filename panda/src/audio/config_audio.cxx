@@ -17,8 +17,23 @@
 #include "audioLoadRequest.h"
 #include "audioManager.h"
 #include "audioSound.h"
+#include "chorusDSP.h"
+#include "compressorDSP.h"
+#include "distortionDSP.h"
+#include "dsp.h"
+#include "echoDSP.h"
+#include "faderDSP.h"
+#include "flangeDSP.h"
+#include "highpassDSP.h"
+#include "limiterDSP.h"
+#include "lowpassDSP.h"
+#include "normalizeDSP.h"
 #include "nullAudioManager.h"
 #include "nullAudioSound.h"
+#include "oscillatorDSP.h"
+#include "paramEQDSP.h"
+#include "pitchShiftDSP.h"
+#include "sfxReverbDSP.h"
 #include "string_utils.h"
 
 #if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDA_AUDIO)
@@ -97,7 +112,12 @@ ConfigVariableBool fmod_use_surround_sound
 ConfigVariableEnum<FmodSpeakerMode> fmod_speaker_mode
 ("fmod-speaker-mode", FSM_unspecified,
  PRC_DESC("Sets the speaker configuration that the FMOD sound system will use. "
-          "Options: raw, mono, stereo, quad, surround, 5.1 and 7.1. "));
+          "Options: default, raw, mono, stereo, quad, surround, 5.1, 7.1, and 7.1.4."));
+
+ConfigVariableInt fmod_mixer_sample_rate
+("fmod-mixer-sample-rate", -1,
+ PRC_DESC("Sets the sample rate in hertz of the FMOD software mixer. "
+          "Specify -1 to let FMOD pick a sensible default."));
 
 
 ConfigVariableFilename audio_dls_file
@@ -115,11 +135,29 @@ ConfigureFn(config_audio) {
   AudioSound::init_type();
   NullAudioManager::init_type();
   NullAudioSound::init_type();
+
+  ChorusDSP::init_type();
+  CompressorDSP::init_type();
+  DistortionDSP::init_type();
+  DSP::init_type();
+  EchoDSP::init_type();
+  FaderDSP::init_type();
+  FlangeDSP::init_type();
+  HighpassDSP::init_type();
+  LimiterDSP::init_type();
+  LowpassDSP::init_type();
+  NormalizeDSP::init_type();
+  OscillatorDSP::init_type();
+  ParamEQDSP::init_type();
+  PitchShiftDSP::init_type();
+  SFXReverbDSP::init_type();
 }
 
 ostream &
 operator << (ostream &out, FmodSpeakerMode sm) {
   switch (sm) {
+  case FSM_default:
+    return out << "default";
   case FSM_raw:
     return out << "raw";
   case FSM_mono:
@@ -134,6 +172,8 @@ operator << (ostream &out, FmodSpeakerMode sm) {
     return out << "5.1";
   case FSM_7point1:
     return out << "7.1";
+  case FSM_7point1point4:
+    return out << "7.1.4";
   case FSM_unspecified:
     return out;
   }
@@ -148,6 +188,8 @@ operator >> (istream &in, FmodSpeakerMode &sm) {
 
   if (word.size() == 0) {
     sm = FSM_unspecified;
+  } else if (cmp_nocase(word, "default") == 0) {
+    sm = FSM_default;
   } else if (cmp_nocase(word, "raw") == 0) {
     sm = FSM_raw;
   } else if (cmp_nocase(word, "mono") == 0) {
@@ -164,6 +206,9 @@ operator >> (istream &in, FmodSpeakerMode &sm) {
   } else if (cmp_nocase(word, "7point1") == 0 ||
              cmp_nocase(word, "7.1") == 0) {
     sm = FSM_7point1;
+  } else if (cmp_nocase(word, "7point1point4") == 0 ||
+             cmp_nocase(word, "7.1.4") == 0) {
+    sm = FSM_7point1point4;
 
   } else {
     audio_cat->error() << "Invalid FmodSpeakerMode value: " << word << "\n";

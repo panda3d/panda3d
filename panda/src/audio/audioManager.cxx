@@ -186,20 +186,40 @@ set_speaker_setup(SpeakerModeCategory cat) {
 }
 
 /**
- * Configures the global DSP filter chain.
- *
- * There is no guarantee that any given configuration will be supported by the
- * implementation.  The only way to find out what's supported is to call
- * configure_filters.  If it returns true, the configuration is supported.
+ * Inserts the specified DSP filter into the DSP chain at the specified index.
+ * Returns true if the DSP filter is supported by the audio implementation,
+ * false otherwise.
  */
 bool AudioManager::
-configure_filters(FilterProperties *config) {
-  const FilterProperties::ConfigVector &conf = config->get_config();
-  if (conf.empty()) {
-    return true;
-  } else {
-    return false;
-  }
+insert_dsp(int index, DSP *dsp) {
+  // Must be implemented by audio implementation.
+  return false;
+}
+
+/**
+ * Removes the specified DSP filter from the DSP chain. Returns true if the
+ * filter was in the DSP chain and was removed, false otherwise.
+ */
+bool AudioManager::
+remove_dsp(DSP *dsp) {
+  // Must be implemented by audio implementation.
+  return false;
+}
+
+/**
+ * Removes all DSP filters from the DSP chain.
+ */
+void AudioManager::
+remove_all_dsps() {
+  // Must be implemented in audio implementation.
+}
+
+/**
+ * Returns the number of DSP filters present in the DSP chain.
+ */
+int AudioManager::
+get_num_dsps() const {
+  return 0;
 }
 
 /**

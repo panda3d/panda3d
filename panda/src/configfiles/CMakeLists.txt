@@ -15,7 +15,7 @@ endif()
 
 if(HAVE_OPENAL)
   set(AUDIO_LIBRARY_NAME p3openal_audio)
-elseif(HAVE_FMODEX)
+elseif(HAVE_FMOD)
   set(AUDIO_LIBRARY_NAME p3fmod_audio)
 else()
   set(AUDIO_LIBRARY_NAME none)

@@ -75,7 +75,7 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "GL", "GLES", "GLES2"] + DXVERSIONS + ["TINYDISPLAY", "NVIDIACG", # 3D graphics
   "EGL",                                               # OpenGL (ES) integration
   "EIGEN",                                             # Linear algebra acceleration
-  "OPENAL", "FMODEX",                                  # Audio playback
+  "OPENAL", "FMOD",                                    # Audio playback
   "VORBIS", "OPUS", "FFMPEG", "SWSCALE", "SWRESAMPLE", # Audio decoding
   "ODE", "BULLET", "PANDAPHYSICS",                     # Physics
   "SPEEDTREE",                                         # SpeedTree
@@ -680,11 +680,8 @@ if (COMPILER == "MSVC"):
     if (PkgSkip("ODE")==0):
         LibName("ODE",      GetThirdpartyDir() + "ode/lib/ode_single.lib")
         DefSymbol("ODE",    "dSINGLE", "")
-    if (PkgSkip("FMODEX")==0):
-        if (GetTargetArch() == 'x64'):
-            LibName("FMODEX",   GetThirdpartyDir() + "fmodex/lib/fmodex64_vc.lib")
-        else:
-            LibName("FMODEX",   GetThirdpartyDir() + "fmodex/lib/fmodex_vc.lib")
+    if (PkgSkip("FMOD")==0):
+        LibName("FMOD",     GetThirdpartyDir() + "fmod/lib/fmod_vc.lib")
     if (PkgSkip("VORBIS")==0):
         for lib in ('ogg', 'vorbis', 'vorbisfile'):
             path = GetThirdpartyDir() + "vorbis/lib/lib{0}_static.lib".format(lib)
@@ -779,7 +776,7 @@ if (COMPILER=="GCC"):
     SmartPkgEnable("SWSCALE",   "libswscale", "libswscale", ("libswscale/swscale.h"), target_pkg = "FFMPEG", thirdparty_dir = "ffmpeg")
     SmartPkgEnable("SWRESAMPLE","libswresample", "libswresample", ("libswresample/swresample.h"), target_pkg = "FFMPEG", thirdparty_dir = "ffmpeg")
     SmartPkgEnable("FFTW",      "fftw3",     ("fftw3"), ("fftw.h"))
-    SmartPkgEnable("FMODEX",    "",          ("fmodex"), ("fmodex", "fmodex/fmod.h"))
+    SmartPkgEnable("FMOD",      "",          ("fmod"), ("fmod", "fmod/fmod.h"))
     SmartPkgEnable("FREETYPE",  "freetype2", ("freetype"), ("freetype2", "freetype2/freetype/freetype.h"))
     SmartPkgEnable("HARFBUZZ",  "harfbuzz",  ("harfbuzz"), ("harfbuzz", "harfbuzz/hb-ft.h"))
     SmartPkgEnable("GL",        "gl",        ("GL"), ("GL/gl.h"), framework = "OpenGL")
@@ -4237,12 +4234,12 @@ if PkgSkip("FFMPEG") == 0:
 # DIRECTORY: panda/src/audiotraits/
 #
 
-if PkgSkip("FMODEX") == 0:
-  OPTS=['DIR:panda/src/audiotraits', 'BUILDING:FMOD_AUDIO',  'FMODEX']
+if PkgSkip("FMOD") == 0:
+  OPTS=['DIR:panda/src/audiotraits', 'BUILDING:FMOD_AUDIO',  'FMOD']
   TargetAdd('fmod_audio_fmod_audio_composite1.obj', opts=OPTS, input='fmod_audio_composite1.cxx')
   TargetAdd('libp3fmod_audio.dll', input='fmod_audio_fmod_audio_composite1.obj')
   TargetAdd('libp3fmod_audio.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libp3fmod_audio.dll', opts=['MODULE', 'ADVAPI', 'WINUSER', 'WINMM', 'FMODEX'])
+  TargetAdd('libp3fmod_audio.dll', opts=['MODULE', 'ADVAPI', 'WINUSER', 'WINMM', 'FMOD'])
 
 if PkgSkip("OPENAL") == 0:
   OPTS=['DIR:panda/src/audiotraits', 'BUILDING:OPENAL_AUDIO',  'OPENAL']

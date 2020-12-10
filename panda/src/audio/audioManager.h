@@ -18,12 +18,12 @@
 #include "config_audio.h"
 #include "audioSound.h"
 #include "luse.h"
-#include "filterProperties.h"
 #include "movieAudio.h"
 #include "atomicAdjust.h"
 
 typedef AudioManager *Create_AudioManager_proc();
 
+class DSP;
 
 class EXPCL_PANDA_AUDIO AudioManager : public TypedReferenceCount {
 PUBLISHED:
@@ -31,6 +31,7 @@ PUBLISHED:
   enum SpeakerModeCategory {
     // These enumerants line up one-to-one with the FMOD SPEAKERMODE
     // enumerants.
+    SPEAKERMODE_default,
     SPEAKERMODE_raw,
     SPEAKERMODE_mono,
     SPEAKERMODE_stereo,
@@ -38,21 +39,25 @@ PUBLISHED:
     SPEAKERMODE_surround,
     SPEAKERMODE_5point1,
     SPEAKERMODE_7point1,
+    SPEAKERMODE_7point1point4,
     SPEAKERMODE_max,
     SPEAKERMODE_COUNT
   };
 
-
   enum SpeakerId {
-    SPK_none,
-    SPK_frontleft,
-    SPK_frontright,
-    SPK_center,
+    SPK_none = -1,
+    SPK_front_left,
+    SPK_front_right,
+    SPK_front_center,
     SPK_sub,
-    SPK_backleft,
-    SPK_backright,
-    SPK_sideleft,
-    SPK_sideright,
+    SPK_surround_left,
+    SPK_surround_right,
+    SPK_back_left,
+    SPK_back_right,
+    SPK_top_front_left,
+    SPK_top_front_right,
+    SPK_top_back_left,
+    SPK_top_back_right,
     SPK_COUNT,
   };
 
@@ -64,7 +69,14 @@ PUBLISHED:
 
   virtual int get_speaker_setup();
   virtual void set_speaker_setup(SpeakerModeCategory cat);
-  virtual bool configure_filters(FilterProperties *config);
+
+  // DSP methods
+  INLINE bool add_dsp_to_head(DSP *dsp);
+  INLINE bool add_dsp_to_tail(DSP *dsp);
+  virtual bool insert_dsp(int index, DSP *dsp);
+  virtual bool remove_dsp(DSP *dsp);
+  virtual void remove_all_dsps();
+  virtual int get_num_dsps() const;
 
   // Create an AudioManager for each category of sounds you have.  E.g.
   // MySoundEffects = create_AudioManager::AudioManager(); MyMusicManager =

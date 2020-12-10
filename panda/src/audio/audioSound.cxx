@@ -76,28 +76,22 @@ get_speaker_mix(int speaker) {
 }
 
 /**
- * For use only with FMOD.
+ * For use only with FMOD. Sets the mix values of a speaker.
  */
 void AudioSound::
-set_speaker_mix(PN_stdfloat frontleft, PN_stdfloat frontright, PN_stdfloat center, PN_stdfloat sub, PN_stdfloat backleft, PN_stdfloat backright, PN_stdfloat sideleft, PN_stdfloat  sideright) {
+set_speaker_mix(int speaker, PN_stdfloat mix) {
   // intentionally blank
 }
 
 /**
- * Configure the local DSP filter chain.
- *
- * There is no guarantee that any given configuration will be supported by the
- * implementation.  The only way to find out what's supported is to call
- * configure_filters.  If it returns true, the configuration is supported.
+ * For use only with FMOD. Sets the mix values for all speakers.
  */
-bool AudioSound::
-configure_filters(FilterProperties *config) {
-  const FilterProperties::ConfigVector &conf = config->get_config();
-  if (conf.empty()) {
-    return true;
-  } else {
-    return false;
-  }
+void AudioSound::
+set_speaker_mix(PN_stdfloat frontleft, PN_stdfloat frontright,
+                PN_stdfloat center, PN_stdfloat sub,
+                PN_stdfloat backleft, PN_stdfloat backright,
+                PN_stdfloat sideleft, PN_stdfloat sideright) {
+  // intentionally blank
 }
 
 /**
@@ -105,8 +99,8 @@ configure_filters(FilterProperties *config) {
  */
 int AudioSound::
 get_priority() {
-    // intentionally blank
-    return 0;
+  // intentionally blank
+  return 0;
 }
 
 /**
@@ -114,8 +108,7 @@ get_priority() {
  */
 void AudioSound::
 set_priority(int priority) {
-    // intentionally blank
-    ;
+  // intentionally blank
 }
 
 /**

@@ -52,8 +52,8 @@ init_libFmodAudio() {
   }
 
   initialized = true;
-  FmodAudioManager::init_type();
-  FmodAudioSound::init_type();
+  FMODAudioManager::init_type();
+  FMODAudioSound::init_type();
 
   AudioManager::register_AudioManager_creator(&Create_FmodAudioManager);
 
@@ -66,7 +66,7 @@ init_libFmodAudio() {
 /**
  * This function is called when the dynamic library is loaded; it should
  * return the Create_AudioManager function appropriate to create a
- * FmodAudioManager.
+ * FMODAudioManager.
  */
 Create_AudioManager_proc *
 get_audio_manager_func_fmod_audio() {

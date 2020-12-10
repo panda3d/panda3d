@@ -33,13 +33,14 @@ extern EXPCL_PANDA_AUDIO ConfigVariableInt audio_cache_limit;
 extern EXPCL_PANDA_AUDIO ConfigVariableDouble audio_volume;
 extern EXPCL_PANDA_AUDIO ConfigVariableFilename audio_dls_file;
 
-// We Need This one.
+// We need this one.
 extern EXPCL_PANDA_AUDIO ConfigVariableString audio_library_name;
 
 // Config vars for Fmod:
 
 // Values match FMOD_SPEAKERMODE enum.
 enum FmodSpeakerMode {
+  FSM_default,
   FSM_raw,
   FSM_mono,
   FSM_stereo,
@@ -47,9 +48,10 @@ enum FmodSpeakerMode {
   FSM_surround,
   FSM_5point1,
   FSM_7point1,
+  FSM_7point1point4,
 
   // For backward compatibility
-  FSM_unspecified
+  FSM_unspecified,
 };
 
 EXPCL_PANDA_AUDIO std::ostream &operator << (std::ostream &out, FmodSpeakerMode sm);
@@ -58,6 +60,7 @@ EXPCL_PANDA_AUDIO std::istream &operator >> (std::istream &in, FmodSpeakerMode &
 extern EXPCL_PANDA_AUDIO ConfigVariableInt fmod_number_of_sound_channels;
 extern EXPCL_PANDA_AUDIO ConfigVariableBool fmod_use_surround_sound;
 extern EXPCL_PANDA_AUDIO ConfigVariableEnum<FmodSpeakerMode> fmod_speaker_mode;
+extern EXPCL_PANDA_AUDIO ConfigVariableInt fmod_mixer_sample_rate;
 extern EXPCL_PANDA_AUDIO ConfigVariableFilename audio_dls_file;
 
 // Config vars for OpenAL:

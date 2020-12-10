@@ -110,12 +110,14 @@ PUBLISHED:
 
   // speaker_mix is for use with FMOD.
   virtual PN_stdfloat get_speaker_mix(int speaker);
-  virtual void set_speaker_mix(PN_stdfloat frontleft, PN_stdfloat frontright, PN_stdfloat center, PN_stdfloat sub, PN_stdfloat backleft, PN_stdfloat backright, PN_stdfloat sideleft, PN_stdfloat  sideright);
+  virtual void set_speaker_mix(int speaker, PN_stdfloat mix);
+  virtual void set_speaker_mix(PN_stdfloat frontleft, PN_stdfloat frontright,
+                               PN_stdfloat center, PN_stdfloat sub,
+                               PN_stdfloat backleft, PN_stdfloat backright,
+                               PN_stdfloat sideleft, PN_stdfloat sideright);
 
   virtual int get_priority();
   virtual void set_priority(int priority);
-
-  virtual bool configure_filters(FilterProperties *config);
 
   enum SoundStatus { BAD, READY, PLAYING };
   virtual SoundStatus status() const = 0;
