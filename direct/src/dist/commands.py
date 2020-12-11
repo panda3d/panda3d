@@ -35,7 +35,7 @@ if sys.version_info < (3, 0):
                  WARNING: You are using Python 2, which has reached the end of its\n \
                  WARNING: life as of January 1, 2020.  Please upgrade to Python 3.\n \
                  =================================================================",
-                 DeprecationWarning)
+                 FutureWarning)
     sys.stdout.flush()
     time.sleep(4.0)
 

@@ -11,7 +11,7 @@ from panda3d.core import Loader as PandaLoader
 from direct.showbase.DirectObject import DirectObject
 from direct.showbase.Loader import Loader
 from direct.directnotify import DirectNotifyGlobal
-
+import warnings
 
 class Actor(DirectObject, NodePath):
     """
@@ -1659,6 +1659,7 @@ class Actor(DirectObject, NodePath):
 
         This method is deprecated.  You should use setBlend() instead.
         """
+        warnings.warn("This method is deprecated.  You should use setBlend() instead.", DeprecationWarning, stacklevel=2)
         self.setBlend(animBlend = True, blendType = blendType, partName = partName)
 
     def disableBlend(self, partName = None):
@@ -1668,6 +1669,7 @@ class Actor(DirectObject, NodePath):
 
         This method is deprecated.  You should use setBlend() instead.
         """
+        warnings.warn("This method is deprecated.  You should use setBlend() instead.", DeprecationWarning, stacklevel=2)
         self.setBlend(animBlend = False, partName = partName)
 
     def setControlEffect(self, animName, effect,

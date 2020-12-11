@@ -5,7 +5,7 @@ from direct.showbase.PhysicsManagerGlobal import *
 
 from direct.directnotify import DirectNotifyGlobal
 import sys
-
+import warnings
 
 class ForceGroup(DirectObject):
 
@@ -61,7 +61,7 @@ class ForceGroup(DirectObject):
 
     # Get/set
     def getName(self):
-        """Deprecated: access .name directly instead."""
+        warings.warn("Deprecated: access .name directly instead.", DeprecationWarning, stacklevel=2)
         return self.name
 
     def getNode(self):

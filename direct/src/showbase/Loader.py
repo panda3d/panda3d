@@ -8,7 +8,7 @@ from panda3d.core import *
 from panda3d.core import Loader as PandaLoader
 from direct.directnotify.DirectNotifyGlobal import *
 from direct.showbase.DirectObject import DirectObject
-
+import warnings
 # You can specify a phaseChecker callback to check
 # a modelPath to see if it is being loaded in the correct
 # phase
@@ -328,7 +328,7 @@ class Loader(DirectObject):
         called after cancelRequest() has been performed.
 
         This is now deprecated: call cb.cancel() instead. """
-
+        warnings.warn("This is now deprecated: call cb.cancel() instead.", DeprecationWarning, stacklevel=2)
         cb.cancel()
 
     def isRequestPending(self, cb):
@@ -337,7 +337,7 @@ class Loader(DirectObject):
         been cancelled.
 
         This is now deprecated: call cb.done() instead. """
-
+        warnings.warn("This is now deprecated: call cb.done() instead.", DeprecationWarning, stacklevel=2)
         return bool(cb.requests)
 
     def loadModelOnce(self, modelPath):
@@ -348,7 +348,8 @@ class Loader(DirectObject):
         then attempt to load it from disk. Return a nodepath to
         the model if successful or None otherwise
         """
-        Loader.notify.info("loader.loadModelOnce() is deprecated; use loader.loadModel() instead.")
+
+        warnings.warn("loader.loadModelOnce() is deprecated; use loader.loadModel() instead.", DeprecationWarning, stacklevel=2)
 
         return self.loadModel(modelPath, noCache = False)
 
@@ -359,7 +360,7 @@ class Loader(DirectObject):
         then attempt to load it from disk. Return a nodepath to
         a copy of the model if successful or None otherwise
         """
-        Loader.notify.info("loader.loadModelCopy() is deprecated; use loader.loadModel() instead.")
+        warnings.warn("loader.loadModelCopy() is deprecated; use loader.loadModel() instead.", DeprecationWarning, stacklevel=2)
 
         return self.loadModel(modelPath, loaderOptions = loaderOptions, noCache = False)
 
@@ -377,7 +378,7 @@ class Loader(DirectObject):
 
         However, if you're loading a font, see loadFont(), below.
         """
-        Loader.notify.info("loader.loadModelNode() is deprecated; use loader.loadModel() instead.")
+        warnings.warn("loader.loadModelNode() is deprecated; use loader.loadModel() instead.", DeprecationWarning, stacklevel=2)
 
         model = self.loadModel(modelPath, noCache = False)
         if model is not None:
