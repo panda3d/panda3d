@@ -71,3 +71,7 @@ __pycache__/
 /.cproject
 /.project
 .Rproj.user
+
+.Rhistory
+
+panda3d.Rproj
