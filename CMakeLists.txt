@@ -61,6 +61,16 @@ unset(_s)
 
 enable_testing()
 
+if (EMSCRIPTEN)
+
+# for dynamic linking, experimental do not use with stable emsdk
+#   set_property(GLOBAL PROPERTY TARGET_SUPPORTS_SHARED_LIBS TRUE)
+
+    set(HAVE_THREADS OFF CACHE BOOL "wasm: force threads off" FORCE)
+    set(BUILD_SHARED_LIBS OFF CACHE BOOL "wasm: force static librairies" FORCE)
+    set(HAVE_SSE2 "NO")
+endif()
+
 string(REPLACE "$(EFFECTIVE_PLATFORM_NAME)" "" PANDA_CFG_INTDIR "${CMAKE_CFG_INTDIR}")
 
 # Add generic modules to cmake module path,
