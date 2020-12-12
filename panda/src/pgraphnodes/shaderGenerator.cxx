@@ -1709,11 +1709,15 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   nassertr(shader != nullptr, nullptr);
 
   CPT(RenderAttrib) shattr = ShaderAttrib::make(shader);
+  int flags = 0;
   if (key._alpha_test_mode != RenderAttrib::M_none) {
-    shattr = DCAST(ShaderAttrib, shattr)->set_flag(ShaderAttrib::F_subsume_alpha_test, true);
+    flags |= ShaderAttrib::F_subsume_alpha_test;
   }
   if (key._disable_alpha_write) {
-    shattr = DCAST(ShaderAttrib, shattr)->set_flag(ShaderAttrib::F_disable_alpha_write, true);
+    flags |= ShaderAttrib::F_disable_alpha_write;
+  }
+  if (flags != 0) {
+    shattr = DCAST(ShaderAttrib, shattr)->set_flag(flags, true);
   }
 
   reset_register_allocator();
