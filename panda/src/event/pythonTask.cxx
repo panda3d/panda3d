@@ -266,11 +266,11 @@ exception() const {
     Py_INCREF(Py_None);
     return Py_None;
   } else if (_exc_value == nullptr || _exc_value == Py_None) {
-    return _PyObject_CallNoArg(_exception);
+    return PyObject_CallNoArgs(_exception);
   } else if (PyTuple_Check(_exc_value)) {
     return PyObject_Call(_exception, _exc_value, nullptr);
   } else {
-    return PyObject_CallFunctionObjArgs(_exception, _exc_value, nullptr);
+    return PyObject_CallOneArg(_exception, _exc_value);
   }
 }*/
 
@@ -481,7 +481,7 @@ do_python_task() {
 
   // Are we waiting for a future to finish?
   if (_future_done != nullptr) {
-    PyObject *is_done = PyObject_CallObject(_future_done, nullptr);
+    PyObject *is_done = PyObject_CallNoArgs(_future_done);
     if (!PyObject_IsTrue(is_done)) {
       // Nope, ask again next frame.
       Py_DECREF(is_done);
@@ -543,12 +543,12 @@ do_python_task() {
       // we need to be able to read the value from a StopIteration exception.
       PyObject *func = PyObject_GetAttrString(_generator, "send");
       nassertr(func != nullptr, DS_interrupt);
-      result = PyObject_CallFunctionObjArgs(func, Py_None, nullptr);
+      result = PyObject_CallOneArg(func, Py_None);
       Py_DECREF(func);
     } else {
       // Throw a CancelledError into the generator.
       _must_cancel = false;
-      PyObject *exc = _PyObject_CallNoArg(Extension<AsyncFuture>::get_cancelled_error_type());
+      PyObject *exc = PyObject_CallNoArgs(Extension<AsyncFuture>::get_cancelled_error_type());
       PyObject *func = PyObject_GetAttrString(_generator, "throw");
       result = PyObject_CallFunctionObjArgs(func, exc, nullptr);
       Py_DECREF(func);
@@ -892,7 +892,7 @@ call_function(PyObject *function) {
   if (function != Py_None) {
     this->ref();
     PyObject *self = DTool_CreatePyInstance(this, Dtool_PythonTask, true, false);
-    PyObject *result = PyObject_CallFunctionObjArgs(function, self, nullptr);
+    PyObject *result = PyObject_CallOneArg(function, self);
     Py_XDECREF(result);
     Py_DECREF(self);
   }

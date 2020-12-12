@@ -221,7 +221,7 @@ __round__(PyObject *self) const {
 #ifndef CPPPARSER
   extern struct Dtool_PyTypedObject FLOATNAME(Dtool_LVecBase2);
 #endif
-  PyObject *py_vec = _PyObject_CallNoArg((PyObject *)DtoolInstance_TYPE(self));
+  PyObject *py_vec = PyObject_CallNoArgs((PyObject *)DtoolInstance_TYPE(self));
   if (py_vec != nullptr) {
     FLOATNAME(LVecBase2) *vec = (FLOATNAME(LVecBase2) *)DtoolInstance_UPCAST(py_vec, FLOATNAME(Dtool_LVecBase2));
     nassertr(vec != nullptr, nullptr);
@@ -241,7 +241,7 @@ __floor__(PyObject *self) const {
   extern struct Dtool_PyTypedObject FLOATNAME(Dtool_LVecBase2);
 #endif
 
-  PyObject *py_vec = _PyObject_CallNoArg((PyObject *)DtoolInstance_TYPE(self));
+  PyObject *py_vec = PyObject_CallNoArgs((PyObject *)DtoolInstance_TYPE(self));
   if (py_vec != nullptr) {
     FLOATNAME(LVecBase2) *vec = (FLOATNAME(LVecBase2) *)DtoolInstance_UPCAST(py_vec, FLOATNAME(Dtool_LVecBase2));
     nassertr(vec != nullptr, nullptr);
@@ -260,7 +260,7 @@ __ceil__(PyObject *self) const {
 #ifndef CPPPARSER
   extern struct Dtool_PyTypedObject FLOATNAME(Dtool_LVecBase2);
 #endif
-  PyObject *py_vec = _PyObject_CallNoArg((PyObject *)DtoolInstance_TYPE(self));
+  PyObject *py_vec = PyObject_CallNoArgs((PyObject *)DtoolInstance_TYPE(self));
   if (py_vec != nullptr) {
     FLOATNAME(LVecBase2) *vec = (FLOATNAME(LVecBase2) *)DtoolInstance_UPCAST(py_vec, FLOATNAME(Dtool_LVecBase2));
     nassertr(vec != nullptr, nullptr);

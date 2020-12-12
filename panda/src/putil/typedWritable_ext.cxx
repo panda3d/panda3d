@@ -230,7 +230,7 @@ py_decode_TypedWritable_from_bam_stream_persist(PyObject *pickler, PyObject *thi
     result = PyObject_CallFunctionObjArgs(func, bytes, py_reader, nullptr);
     Py_DECREF(py_reader);
   } else {
-    result = PyObject_CallFunctionObjArgs(func, bytes, nullptr);
+    result = PyObject_CallOneArg(func, bytes);
   }
   Py_DECREF(bytes);
   Py_DECREF(func);
