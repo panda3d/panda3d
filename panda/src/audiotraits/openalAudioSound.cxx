@@ -217,6 +217,8 @@ stop() {
     _stream_queued.resize(0);
   }
 
+  _paused = false;
+
   _manager->stopping_sound(this);
   release_sound_data(false);
 }
@@ -813,11 +815,11 @@ set_active(bool active) {
     } else {
       // ...deactivate the sound.
       if (status()==PLAYING) {
+        stop();
         if (_loop_count==0) {
           // ...we're pausing a looping sound.
           _paused=true;
         }
-        stop();
       }
     }
   }
