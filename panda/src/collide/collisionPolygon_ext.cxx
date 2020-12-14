@@ -80,7 +80,7 @@ convert_points(pvector<LPoint3> &vec, PyObject *points) {
 
   for (Py_ssize_t i = 0; i < len; ++i) {
 #ifdef STDFLOAT_DOUBLE
-    if (DtoolInstance_Check(itemts[i]) &&
+    if (DtoolInstance_Check(items[i]) &&
         (ptr = DtoolInstance_UPCAST(items[i], Dtool_LPoint3d))) {
 #else
     if (DtoolInstance_Check(items[i]) &&
