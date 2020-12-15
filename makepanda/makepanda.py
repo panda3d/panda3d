@@ -291,12 +291,17 @@ def parseopts(args):
     elif (optimize==""): optimize = "3"
 
     if OSXTARGET:
+        parts = OSXTARGET.strip().split('.')
         try:
-            maj, min = OSXTARGET.strip().split('.')
-            OSXTARGET = int(maj), int(min)
-            assert OSXTARGET[0] >= 10
+            assert len(parts) <= 2
+            maj = int(parts[0])
+            min = 0
+            if len(parts) > 1:
+                min = int(parts[1])
+            OSXTARGET = maj, min
+            assert OSXTARGET >= (10, 4)
         except:
-            usage("Invalid setting for OSXTARGET")
+            usage("Invalid setting for --osxtarget")
     else:
         OSXTARGET = None
 
@@ -313,13 +318,16 @@ def parseopts(args):
             maj, min = platform.mac_ver()[0].split('.')[:2]
             osxver = int(maj), int(min)
 
-        if osxver[0] == 10 and osxver[1] < 15:
+        if osxver < (10, 15):
             OSX_ARCHS.append("i386")
 
-        if osxver[0] == 10 and osxver[1] < 6:
+        if osxver < (10, 6):
             OSX_ARCHS.append("ppc")
         else:
             OSX_ARCHS.append("x86_64")
+
+        if osxver >= (11, 0):
+            OSX_ARCHS.append("arm64")
 
     elif HasTargetArch():
         OSX_ARCHS.append(GetTargetArch())
