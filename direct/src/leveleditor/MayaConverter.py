@@ -1,6 +1,6 @@
 from direct.wxwidgets.WxAppShell import *
 import os
-from . import ObjectGlobals as OG
+import ObjectGlobals as OG
 
 CLOSE_STDIN = "<CLOSE STDIN>"
 

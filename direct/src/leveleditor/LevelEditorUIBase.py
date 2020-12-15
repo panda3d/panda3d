@@ -7,16 +7,16 @@ from direct.wxwidgets.WxPandaShell import *
 from direct.directtools.DirectSelection import SelectionRay
 
 #from ViewPort import *
-from .ObjectPaletteUI import *
-from .ObjectPropertyUI import *
-from .SceneGraphUI import *
-from .LayerEditorUI import *
-from .HotKeyUI import *
-from .ProtoPaletteUI import *
-from .ActionMgr import *
-from .AnimControlUI import *
-from .CurveAnimUI import *
-from .GraphEditorUI import *
+from ObjectPaletteUI import *
+from ObjectPropertyUI import *
+from SceneGraphUI import *
+from LayerEditorUI import *
+from HotKeyUI import *
+from ProtoPaletteUI import *
+from ActionMgr import *
+from AnimControlUI import *
+from CurveAnimUI import *
+from GraphEditorUI import *
 
 class PandaTextDropTarget(wx.TextDropTarget):
     def __init__(self, editor, view):

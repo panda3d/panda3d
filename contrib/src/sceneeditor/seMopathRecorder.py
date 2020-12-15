@@ -17,7 +17,7 @@ from direct.tkwidgets.AppShell import AppShell
 #from direct.directtools.DirectGlobals import *
 #from direct.directtools.DirectUtil import *
 from seGeometry import *
-from seSelection import *
+from direct.directtools.DirectSelection import *
 from direct.task.Task import Task
 from direct.tkwidgets.Dial import AngleDial
 from direct.tkwidgets.Floater import Floater
@@ -38,8 +38,8 @@ else:
 
 
 PRF_UTILITIES = [
-    'lambda: camera.lookAt(render)',
-    'lambda: camera.setZ(render, 0.0)',
+    'lambda: base.direct.camera.lookAt(render)',
+    'lambda: base.direct.camera.setZ(render, 0.0)',
     'lambda s = self: s.playbackMarker.lookAt(render)',
     'lambda s = self: s.playbackMarker.setZ(render, 0.0)',
     'lambda s = self: s.followTerrain(10.0)']
@@ -86,7 +86,7 @@ class MopathRecorder(AppShell, DirectObject):
         # The active node path's parent
         self.nodePathParent = render
         # Top level node path
-        self.recorderNodePath = self.mopathRecorderNode.attachNewNode(self.name)
+        self.recorderNodePath = base.direct.group.attachNewNode(self.name)
         # Temp CS for use in refinement/path extension
         self.tempCS = self.recorderNodePath.attachNewNode(
             'mopathRecorderTempCS')
@@ -103,21 +103,21 @@ class MopathRecorder(AppShell, DirectObject):
         self.tangentMarker = loader.loadModel('models/misc/sphere')
         self.tangentMarker.reparentTo(self.tangentGroup)
         self.tangentMarker.setScale(0.5)
-        self.tangentMarker.setColor(1,0,1,1)
+        self.tangentMarker.setColor(1, 0, 1, 1)
         self.tangentMarker.setName('Tangent Marker')
         self.tangentMarkerIds = self.getChildIds(
             self.tangentMarker.getChild(0))
         self.tangentLines = LineNodePath(self.tangentGroup)
-        self.tangentLines.setColor(VBase4(1,0,1,1))
+        self.tangentLines.setColor(VBase4(1, 0, 1, 1))
         self.tangentLines.setThickness(1)
-        self.tangentLines.moveTo(0,0,0)
-        self.tangentLines.drawTo(0,0,0)
+        self.tangentLines.moveTo(0, 0, 0)
+        self.tangentLines.drawTo(0, 0, 0)
         self.tangentLines.create()
         # Active node path dictionary
         self.nodePathDict = {}
         self.nodePathDict['marker'] = self.playbackMarker
-        self.nodePathDict['camera'] = camera
-        self.nodePathDict['widget'] = SEditor.widget
+        self.nodePathDict['camera'] = base.direct.camera
+        self.nodePathDict['widget'] = base.direct.widget
         self.nodePathDict['mopathRecorderTempCS'] = self.tempCS
         self.nodePathNames = ['marker', 'camera', 'selected']
         # ID of selected object
@@ -149,15 +149,9 @@ class MopathRecorder(AppShell, DirectObject):
         # The nurbs curves
         self.curveCollection = None
         # Curve drawers
-        self.nurbsCurveDrawer = NurbsCurveDrawer()
-        self.nurbsCurveDrawer.setCurves(ParametricCurveCollection())
-        self.nurbsCurveDrawer.setNumSegs(self.numSegs)
-        self.nurbsCurveDrawer.setShowHull(0)
-        self.nurbsCurveDrawer.setShowCvs(0)
-        self.nurbsCurveDrawer.setNumTicks(0)
-        self.nurbsCurveDrawer.setTickScale(5.0)
-        self.curveNodePath = self.recorderNodePath.attachNewNode(
-            self.nurbsCurveDrawer.getGeomNode())
+        self.nurbsCurveDrawer = RopeNode("Mopath")
+        self.nurbsCurveDrawer.set_curve(NurbsCurveEvaluator())
+        self.curveNodePath = NodePath("CurveDrawer").attachNewNode(self.nurbsCurveDrawer)
         useDirectRenderStyle(self.curveNodePath)
         # Playback variables
         self.maxT = 0.0
@@ -222,21 +216,20 @@ class MopathRecorder(AppShell, DirectObject):
             'Recorder', 'command',
             'Toggle widget visability',
             label = 'Toggle Widget Vis',
-            command = self.toggleWidgetVis)
+            command = base.direct.toggleWidgetVis)
         self.menuBar.addmenuitem(
             'Recorder', 'command',
             'Toggle widget manipulation mode',
             label = 'Toggle Widget Mode',
-            command = SEditor.manipulationControl.toggleObjectHandlesMode)
+            command = base.direct.manipulationControl.toggleObjectHandlesMode)
 
-        self.historyWidget = self.createComboBox(self.menuFrame, 'Mopath', 'Path:',
-                                                 'Select input points to fit curve to', '',
-                                                 self.selectPointSetNamed, expand = 1)
-
+        self.createComboBox(self.menuFrame, 'Mopath', 'History',
+                            'Select input points to fit curve to', '',
+                            self.selectPointSetNamed, expand = 1)
 
         self.undoButton = Button(self.menuFrame, text = 'Undo',
-                                 command = SEditor.undo)
-        if SEditor.undoList:
+                                 command = base.direct.undo)
+        if base.direct.undoList:
             self.undoButton['state'] = 'normal'
         else:
             self.undoButton['state'] = 'disabled'
@@ -244,8 +237,8 @@ class MopathRecorder(AppShell, DirectObject):
         self.bind(self.undoButton, 'Undo last operation')
 
         self.redoButton = Button(self.menuFrame, text = 'Redo',
-                                 command = SEditor.redo)
-        if SEditor.redoList:
+                                 command = base.direct.redo)
+        if base.direct.redoList:
             self.redoButton['state'] = 'normal'
         else:
             self.redoButton['state'] = 'disabled'
@@ -259,7 +252,7 @@ class MopathRecorder(AppShell, DirectObject):
         # Button to select active node path
         widget = self.createButton(frame, 'Recording', 'Node Path:',
                                    'Select Active Mopath Node Path',
-                                   lambda s = self: SEditor.select(s.nodePath),
+                                   lambda s = self: base.direct.select(s.nodePath),
                                    side = tkinter.LEFT, expand = 0)
         widget['relief'] = tkinter.FLAT
         self.nodePathMenu = Pmw.ComboBox(
@@ -281,7 +274,7 @@ class MopathRecorder(AppShell, DirectObject):
             frame, 'left',
             'Recording', 'New Curve',
             ('Next record session records a new path'),
-            self.recordingType, 'New Curve',expand = 0)
+            self.recordingType, 'New Curve', expand = 0)
         widget = self.createRadiobutton(
             frame, 'left',
             'Recording', 'Refine',
@@ -583,27 +576,27 @@ class MopathRecorder(AppShell, DirectObject):
             sfFrame, 'Style', 'Path Color',
             'Color of curve',
             command = self.setPathColor,
-            value = [255.0,255.0,255.0,255.0])
+            value = [255.0, 255.0, 255.0, 255.0])
         self.createColorEntry(
             sfFrame, 'Style', 'Knot Color',
             'Color of knots',
             command = self.setKnotColor,
-            value = [0,0,255.0,255.0])
+            value = [0, 0, 255.0, 255.0])
         self.createColorEntry(
             sfFrame, 'Style', 'CV Color',
             'Color of CVs',
             command = self.setCvColor,
-            value = [255.0,0,0,255.0])
+            value = [255.0, 0, 0, 255.0])
         self.createColorEntry(
             sfFrame, 'Style', 'Tick Color',
             'Color of Ticks',
             command = self.setTickColor,
-            value = [255.0,0,0,255.0])
+            value = [255.0, 0, 0, 255.0])
         self.createColorEntry(
             sfFrame, 'Style', 'Hull Color',
             'Color of Hull',
             command = self.setHullColor,
-            value = [255.0,128.0,128.0,255.0])
+            value = [255.0, 128.0, 128.0, 255.0])
 
         #drawFrame.pack(fill = tkinter.X)
 
@@ -654,7 +647,7 @@ class MopathRecorder(AppShell, DirectObject):
         self.mainNotebook.setnaturalsize()
 
     def pushUndo(self, fResetRedo = 1):
-        SEditor.pushUndo([self.nodePath])
+        base.direct.pushUndo([self.nodePath])
 
     def undoHook(self):
         # Reflect new changes
@@ -669,7 +662,7 @@ class MopathRecorder(AppShell, DirectObject):
         self.undoButton.configure(state = 'disabled')
 
     def pushRedo(self):
-        SEditor.pushRedo([self.nodePath])
+        base.direct.pushRedo([self.nodePath])
 
     def redoHook(self):
         # Reflect new changes
@@ -691,9 +684,9 @@ class MopathRecorder(AppShell, DirectObject):
         taskMgr.remove(self.name + '-curveEditTask')
         print(nodePath.get_key())
         if nodePath.get_key() in self.playbackMarkerIds:
-            SEditor.select(self.playbackMarker)
+            base.direct.select(self.playbackMarker)
         elif nodePath.get_key() in self.tangentMarkerIds:
-            SEditor.select(self.tangentMarker)
+            base.direct.select(self.tangentMarker)
         elif nodePath.get_key() == self.playbackMarker.get_key():
             self.tangentGroup.show()
             taskMgr.add(self.curveEditTask,
@@ -721,7 +714,7 @@ class MopathRecorder(AppShell, DirectObject):
             (nodePath.get_key() == self.tangentMarker.get_key())):
             self.tangentGroup.hide()
 
-    def curveEditTask(self,state):
+    def curveEditTask(self, state):
         if self.curveCollection != None:
             # Update curve position
             if self.manipulandumId == self.playbackMarker.get_key():
@@ -772,11 +765,11 @@ class MopathRecorder(AppShell, DirectObject):
 
     def manipulateObjectStartHook(self):
         self.manipulandumId = None
-        if SEditor.selected.last:
-            if SEditor.selected.last.get_key() == self.playbackMarker.get_key():
-                self.manipulandumId = self.playbackMarker.get_key()
-            elif SEditor.selected.last.get_key() == self.tangentMarker.get_key():
-                self.manipulandumId = self.tangentMarker.get_key()
+        if base.direct.selected.last:
+            if base.direct.selected.last.get_key() == self.playbackMarker.get_key():
+                self.manipulandumId = self.playbackMarker.id()
+            elif base.direct.selected.last.get_key() == self.tangentMarker.get_key():
+                self.manipulandumId = self.tangentMarker.id()
 
     def manipulateObjectCleanupHook(self):
         # Clear flag
@@ -793,8 +786,8 @@ class MopathRecorder(AppShell, DirectObject):
         self.trace.reparentTo(self.recorderNodePath)
         self.recorderNodePath.removeNode()
         # Make sure markers are deselected
-        SEditor.deselect(self.playbackMarker)
-        SEditor.deselect(self.tangentMarker)
+        base.direct.deselect(self.playbackMarker)
+        base.direct.deselect(self.tangentMarker)
         # Remove tasks
         taskMgr.remove(self.name + '-recordTask')
         taskMgr.remove(self.name + '-playbackTask')
@@ -1012,7 +1005,7 @@ class MopathRecorder(AppShell, DirectObject):
                     # Parent record node path to temp
                     self.nodePath.reparentTo(self.playbackNodePath)
                     # Align with temp
-                    self.nodePath.setPosHpr(0,0,0,0,0,0)
+                    self.nodePath.setPosHpr(0, 0, 0, 0, 0, 0)
                     # Set playback start to self.recordStart
                     self.playbackGoTo(self.recordStart)
                     # start flying nodePath along path
@@ -1219,7 +1212,7 @@ class MopathRecorder(AppShell, DirectObject):
             # Add Combo box entry for the initial node path
             self.addNodePath(nodePath)
         elif name == 'selected':
-            nodePath = SEditor.selected.last
+            nodePath = base.direct.selected.last
             # Add Combo box entry for this selected object
             self.addNodePath(nodePath)
         else:
@@ -1242,7 +1235,7 @@ class MopathRecorder(AppShell, DirectObject):
             else:
                 if name == 'widget':
                     # Record relationship between selected nodes and widget
-                    SEditor.selected.getWrtAll()
+                    base.direct.selected.getWrtAll()
                 if name == 'marker':
                     self.playbackMarker.show()
                     # Initialize tangent marker position
@@ -1461,7 +1454,7 @@ class MopathRecorder(AppShell, DirectObject):
         # Compute curve
         #self.computeCurves()
 
-    def setRecordStart(self,value):
+    def setRecordStart(self, value):
         self.recordStart = value
         # Someone else is adjusting values, let them take care of it
         if self.fAdjustingValues:
@@ -1596,7 +1589,7 @@ class MopathRecorder(AppShell, DirectObject):
             # Add it to the curve fitters
             self.curveFitter.addXyzHpr(adjustedTime, pos, hpr)
 
-    def setCropFrom(self,value):
+    def setCropFrom(self, value):
         self.cropFrom = value
         # Someone else is adjusting values, let them take care of it
         if self.fAdjustingValues:
@@ -1609,7 +1602,7 @@ class MopathRecorder(AppShell, DirectObject):
         self.getWidget('Playback', 'Time').set(value)
         self.fAdjustingValues = 0
 
-    def setCropTo(self,value):
+    def setCropTo(self, value):
         self.cropTo = value
         # Someone else is adjusting values, let them take care of it
         if self.fAdjustingValues:
@@ -1949,7 +1942,7 @@ class MopathRecorder(AppShell, DirectObject):
         self.cCamera = render.attachNewNode('cCamera')
         self.cCamNode = Camera('cCam')
         self.cLens = PerspectiveLens()
-        self.cLens.setFov(40,40)
+        self.cLens.setFov(40, 40)
         self.cLens.setNear(0.1)
         self.cLens.setFar(100.0)
         self.cCamNode.setLens(self.cLens)
@@ -1961,7 +1954,7 @@ class MopathRecorder(AppShell, DirectObject):
     def toggleWidgetVis(self):
         ## In order to make sure everything is going on right way...
         messenger.send('SEditor-ToggleWidgetVis')
-        SEditor.toggleWidgetVis()
+        base.direct.toggleWidgetVis()
 
 
     def bindMotionPathToNode(self):

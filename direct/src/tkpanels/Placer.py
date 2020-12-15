@@ -783,6 +783,8 @@ class Placer(AppShell):
         self.tempCS.removeNode()
         self.orbitFromCS.removeNode()
         self.orbitToCS.removeNode()
+        # send out a message to let everyone know that placer panel has been closed.
+        messenger.send('Placer_close')
 
 def place(nodePath):
     return Placer(nodePath = nodePath)

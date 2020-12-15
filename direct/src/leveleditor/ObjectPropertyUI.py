@@ -10,8 +10,8 @@ from wx.lib.scrolledpanel import ScrolledPanel
 from wx.lib.agw.cubecolourdialog import *
 from direct.wxwidgets.WxSlider import *
 from panda3d.core import *
-from . import ObjectGlobals as OG
-from . import AnimGlobals as AG
+import ObjectGlobals as OG
+import AnimGlobals as AG
 
 #----------------------------------------------------------------------
 Key = PyEmbeddedImage(

@@ -3,9 +3,9 @@ Defines Scene Graph tree UI Base
 """
 import wx
 from panda3d.core import *
-from .ActionMgr import *
+from ActionMgr import *
 
-from . import ObjectGlobals as OG
+import ObjectGlobals as OG
 
 class SceneGraphUIDropTarget(wx.TextDropTarget):
     def __init__(self, editor):

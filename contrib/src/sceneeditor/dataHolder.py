@@ -5,6 +5,7 @@ from direct.showbase.TkGlobal import*
 import Pmw
 from direct.tkwidgets import Dial
 from direct.tkwidgets import Floater
+import sys
 
 if sys.version_info >= (3, 0):
     from tkinter.filedialog import askopenfilename
@@ -28,10 +29,9 @@ from direct.actor import Actor
 ###############################
 import os
 import string
-import sys
 
-import seParticleEffect
-import seParticles
+from direct.particles import Particles
+from direct.particles import ParticleEffect
 
 ######################################################################################################
 # Data Holder
@@ -695,13 +695,17 @@ class dataHolder:
         # This function will return a Dictionary which contains the animation data in the actor "actorName".
         # The data inside is get from the actor, so, it can't be wrong...
         ###########################################################################
-        animContorlDict = self.ActorDic[actorName].getAnimControlDict()
+        animControlDict = self.ActorDic[actorName].getAnimControlDict()
         animNameList = self.ActorDic[actorName].getAnimNames()
         if len(animNameList)==0:
             return {}
         animDict = {}
         for anim in animNameList:
-            animDict[anim] = animContorlDict['lodRoot']['modelRoot'][anim][0]
+            print(animControlDict)
+            if 'lodRoot' in animControlDict:
+                animDict[anim] = animControlDict['lodRoot']['modelRoot'][anim][0]
+            else:
+                animDict[anim] = animControlDict['common']['modelRoot'][anim]
         return animDict
 
     def addDummyNode(self,nodePath):
@@ -864,12 +868,12 @@ class dataHolder:
         # This function will return a list which contains all objects' names in the scene.
         # It means which won't have any kinds of animation, blend animation or Mopath data inside.
         ###########################################################################
-        list = ['camera'] # Default object you can select camera
-        list = list + self.ModelDic.keys() \
-               + self.ActorDic.keys() + self.collisionDict.keys() \
-               + self.dummyDict.keys() + self.particleNodes.keys() \
-               + self.lightManager.getLightList()
-        return list
+        lst = ['camera'] # Default object you can select camera
+        lst = lst + list(self.ModelDic.keys()) \
+               + list(self.ActorDic.keys()) + list(self.collisionDict.keys()) \
+               + list(self.dummyDict.keys()) + list(self.particleNodes.keys()) \
+               + list(self.lightManager.getLightList())
+        return lst
 
     def getObjFromSceneByName(self, name):
         ###########################################################################
@@ -937,7 +941,7 @@ class dataHolder:
         ###########################################################################
 
         ### Ask for a filename
-        OpenFilename = askopenfilename(filetypes = [("PY","py")],title = "Load Scene")
+        OpenFilename = askopenfilename(filetypes = [("Python","*.py")],title = "Load Scene")
         if(not OpenFilename):
             return None
         f=Filename.fromOsSpecific(OpenFilename)
@@ -954,12 +958,12 @@ class dataHolder:
         # Actually import the scene... this executes the code in the scene
         ############################################################################
         self.theScene=__import__(fileName)
-        self.Scene=self.theScene.SavedScene(0,seParticleEffect,seParticles,dirName) # Specify load mode of 0 which will allow us to pass seParticle and seParticleEffect
+        self.Scene=self.theScene.SavedScene(0,ParticleEffect,Particles,dirName) # Specify load mode of 0 which will allow us to pass Particle and ParticleEffect
         messenger.send('SGE_Update Explorer',[render])
 
 
         # Lets call some important initialization methods on our scene:
-        #self.Scene.starteffects(0,seParticleEffect,seParticles,dirName)    # This special calling of start effect with mode 0 is to use seParticleEffect and seParticles
+        #self.Scene.starteffects(0,ParticleEffect,Particles,dirName)    # This special calling of start effect with mode 0 is to use ParticleEffect and Particles
 
 
         ############################################################################

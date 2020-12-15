@@ -420,7 +420,7 @@ class Particles(ParticleSystem):
             animCount = self.renderer.getNumAnims()
             for x in range(animCount):
                 anim = self.renderer.getAnim(x)
-                if(anim.getSourceType() == SpriteAnim.STTexture):
+                if(anim.getSourceType() == SpriteAnim.ST_texture):
                     file.write(targ + '.renderer.addTextureFromFile(\'%s\')\n' % (anim.getTexSource(),))
                 else:
                     file.write(targ + '.renderer.addTextureFromNode(\'%s\',\'%s\')\n' % (anim.getModelSource(), anim.getNodeSource()))

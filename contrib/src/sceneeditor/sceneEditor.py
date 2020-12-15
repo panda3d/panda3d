@@ -23,12 +23,14 @@ from SideWindow import*
 from duplicateWindow import*
 from lightingPanel import *
 from seMopathRecorder import *
-from seSession import *
-from quad import *
-from sePlacer import *
+#from direct.tkpanels.MopathRecorder import MopathRecorder
+from seSession import SeSession as DirectSession
+#from quad import *
+from direct.tkpanels.Placer import *
 from seFileSaver import *
 from propertyWindow import *
-import seParticlePanel
+from seParticlePanel import SeParticlePanel as ParticlePanel
+#from direct.tkpanels.ParticlePanel import ParticlePanel
 from collisionWindow import *
 from direct.gui.DirectGui import *
 from MetadataPanel import *
@@ -44,7 +46,7 @@ from direct.tkwidgets import Dial
 from direct.tkwidgets import Floater
 from direct.tkwidgets import Slider
 from direct.actor import Actor
-import seAnimPanel
+from direct.tkpanels import AnimPanel
 from direct.task import Task
 import math
 
@@ -247,7 +249,7 @@ class myLevelEditor(AppShell):
             ['SGE_Blend Animation Panel', self.openBlendAnimPanel],
             ['SGE_MoPath Panel', self.openMoPathPanel],
             ['SGE_Align Tool', self.openAlignPanel],
-            ['SGE_Flash', self.flash],
+            ['SGE_Flash', self.seSession.flash],
             ['SGE_madeSelection', self.selectNode],
             ['select',self.selectNode],
             ['deselect', self.deSelectNode],
@@ -273,14 +275,13 @@ class myLevelEditor(AppShell):
         #################################################################
 
         ### Create SceneEditor Ver. DirectSession
-        self.seSession = SeSession()
+        self.seSession = DirectSession()
         self.seSession.enable()
-        SEditor.camera.setPos(0,-50,10)
+        base.direct.camera.setPos(0,-50,10)
 
         self.placer=None
         self.MopathPanel = None
         self.alignPanelDict = {}
-        #self.quadview=QuadView()
 
 
         self.lightingPanel = None
@@ -753,7 +754,7 @@ class myLevelEditor(AppShell):
         # This function will be called when user select a nodePaht
         # and want to reparent other node under it. (Drom side window pop-up nemu)
         #################################################################
-        SEditor.setActiveParent(nodepath)
+        base.direct.setActiveParent(nodepath)
         return
 
     def reparentToNode(self, nodepath = None):
@@ -766,7 +767,7 @@ class myLevelEditor(AppShell):
         # which is tunned from DirectSession
         #
         #################################################################
-        SEditor.reparent(nodepath, fWrt = 1)
+        base.direct.reparent(nodepath, fWrt = 1)
         return
 
     def openPlacerPanel(self, nodePath = None):
@@ -775,7 +776,7 @@ class myLevelEditor(AppShell):
         # This function will be call when user try to open a placer panel.
         # This call will only success if there is no other placer panel been activated
         #################################################################
-        if(self.placer==None):
+        if self.placer is None:
             self.placer = Placer()
             self.menuPanel.entryconfig('Placer Panel', state=DISABLED)
         return
@@ -807,8 +808,16 @@ class myLevelEditor(AppShell):
                 return
             else:
                 Actor = AllScene.getActor(name)
-                self.animPanel[name] = seAnimPanel.AnimPanel(aNode=Actor)
+                self.animPanel[name] = AnimPanel.AnimPanel(aList=[Actor])
+                self.animPanel[name].setDestroyCallBack(lambda n=name: self.closeAnimPanel(name))
                 pass
+
+    def closeAnimPanel(self, name):
+        if AllScene.isActor(name):
+            if name in self.animPanel:
+                self.animPanel[name] = None
+                del self.animPanel[name]
+
 
     def openMoPathPanel(self, nodepath = None):
         #################################################################
@@ -962,7 +971,7 @@ class myLevelEditor(AppShell):
         # Instantiate FileSaver from seFileSaver.py and pass it the filename
         #################################################################
 
-        fileName = tkFileDialog.asksaveasfilename(filetypes = [("PY","py")],title = "Save Scene")
+        fileName = tkFileDialog.asksaveasfilename(filetypes = [("Python File","*.py")],title = "Save Scene")
         if(not fileName):
             return
         fCheck=Filename(fileName)
@@ -1215,11 +1224,11 @@ class myLevelEditor(AppShell):
             ## There already has a Particle panel!
             return
         if(len(AllScene.particleDict)==0):
-            self.particlePanel=seParticlePanel.ParticlePanel()
+            self.particlePanel=ParticlePanel()
         else:
             for effect in AllScene.particleDict:
                 theeffect=AllScene.particleDict[effect]
-            self.particlePanel=seParticlePanel.ParticlePanel(particleEffect=theeffect,effectsDict=AllScene.particleDict)
+            self.particlePanel=ParticlePanel(particleEffect=theeffect,effectsDict=AllScene.particleDict)
 
         pass
 
@@ -1424,7 +1433,8 @@ class myLevelEditor(AppShell):
             scale = self.nodeSelected.getScale()
             if ((self.oPos != pos )or(self.oScale != scale)or(self.oHpr != hpr)):
                 messenger.send('forPorpertyWindow'+self.nodeSelected.getName(),[pos, hpr, scale])
-                messenger.send('placerUpdate')
+                if self.placer is not None:
+                    self.placer.updatePlacer()
                 self.oPos = pos
                 self.oScale = scale
                 self.oHpr = hpr
@@ -1666,52 +1676,6 @@ class myLevelEditor(AppShell):
     def requestCurveList(self, nodePath,name):
         curveList = AllScene.getCurveList(nodePath)
         messenger.send('curveListFor'+name, [curveList])
-
-
-    ## Steal from DirectSession...
-    def flash(self, nodePath = 'None Given'):
-        """ Highlight an object by setting it red for a few seconds """
-        # Clean up any existing task
-        taskMgr.remove('flashNodePath')
-        # Spawn new task if appropriate
-        if nodePath == 'None Given':
-            # If nothing specified, try selected node path
-            nodePath = self.selected.last
-        if nodePath:
-            if nodePath.hasColor():
-                doneColor = nodePath.getColor()
-                flashColor = VBase4(1) - doneColor
-                flashColor.setW(1)
-            else:
-                doneColor = None
-                flashColor = VBase4(1,0,0,1)
-            # Temporarily set node path color
-            nodePath.setColor(flashColor)
-            # Clean up color in a few seconds
-            t = taskMgr.doMethodLater(1.5,
-                                      # This is just a dummy task
-                                      self.flashDummy,
-                                      'flashNodePath')
-            t.nodePath = nodePath
-            t.doneColor = doneColor
-            # This really does all the work
-            t.uponDeath = self.flashDone
-
-    def flashDummy(self, state):
-        # Real work is done in upon death function
-        return Task.done
-
-    def flashDone(self,state):
-        # Return node Path to original state
-        if state.nodePath.isEmpty():
-            # Node path doesn't exist anymore, bail
-            return
-        if state.doneColor:
-            state.nodePath.setColor(state.doneColor)
-        else:
-            state.nodePath.clearColor()
-
-
 
 
 editor = myLevelEditor(parent = base.tkRoot)

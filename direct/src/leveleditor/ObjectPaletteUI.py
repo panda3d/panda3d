@@ -2,7 +2,7 @@
 Defines ObjectPalette tree UI
 """
 import wx
-from .PaletteTreeCtrl import *
+from PaletteTreeCtrl import *
 
 
 class ObjectPaletteUI(wx.Panel):

@@ -1188,11 +1188,11 @@ class ObjectHandles(NodePath, DirectObject):
                 self.activate()
 
     def activate(self):
-        self.scalingNode.reparentTo(self)
+        self.scalingNode.show()
         self.fActive = 1
 
     def deactivate(self):
-        self.scalingNode.reparentTo(hidden)
+        self.scalingNode.hide()
         self.fActive = 0
 
     def showWidgetIfActive(self):

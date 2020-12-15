@@ -9,6 +9,7 @@ import string
 import math
 import types
 from direct.task import Task
+import sys
 
 if sys.version_info >= (3, 0):
     from tkinter.simpledialog import askfloat

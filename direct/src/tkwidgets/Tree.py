@@ -82,7 +82,8 @@ class TreeNode:
             return
         self.deselectall()
         self.selected = 1
-        self.canvas.delete(self.image_id)
+        if hasattr(self, "image_id"):
+            self.canvas.delete(self.image_id)
         self.drawicon()
         self.drawtext()
         self.item.OnSelect()
@@ -91,7 +92,8 @@ class TreeNode:
         if not self.selected:
             return
         self.selected = 0
-        self.canvas.delete(self.image_id)
+        if hasattr(self, "image_id"):
+            self.canvas.delete(self.image_id)
         self.drawicon()
         self.drawtext()
 
@@ -336,6 +338,7 @@ class TreeNode:
         return cy
 
     def drawicon(self):
+        if self.x is None or self.y is None: return
         if self.selected:
             imagename = (self.item.GetSelectedIconName() or
                          self.item.GetIconName() or
@@ -350,6 +353,7 @@ class TreeNode:
         self.canvas.tag_bind(id, "<3>", self.popupMenu)
 
     def drawtext(self):
+        if self.x is None or self.y is None: return
         textx = self.x+20-1
         texty = self.y-1
         labeltext = self.item.GetLabelText()

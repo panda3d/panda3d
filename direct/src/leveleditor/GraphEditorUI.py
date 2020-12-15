@@ -3,9 +3,9 @@ Defines Graph Editor
 """
 import wx
 import math
-from .PaletteTreeCtrl import *
-from . import ObjectGlobals as OG
-from . import AnimGlobals as AG
+from PaletteTreeCtrl import *
+import ObjectGlobals as OG
+import AnimGlobals as AG
 from wx.lib.embeddedimage import PyEmbeddedImage
 
 property =  [
