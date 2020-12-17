@@ -194,7 +194,7 @@ def parseopts(args):
     anything = 0
     optimize = ""
     target = None
-    target_arch = None
+    target_archs = []
     universal = False
     clean_build = False
     for pkg in PkgListGet():
@@ -223,7 +223,7 @@ def parseopts(args):
             elif (option=="--osxtarget"): OSXTARGET=value.strip()
             elif (option=="--universal"): universal = True
             elif (option=="--target"): target = value.strip()
-            elif (option=="--arch"): target_arch = value.strip()
+            elif (option=="--arch"): target_archs.append(value.strip())
             elif (option=="--nocolor"): DisableColors()
             elif (option=="--version"):
                 match = re.match(r'^\d+\.\d+(\.\d+)+', value)
@@ -305,8 +305,8 @@ def parseopts(args):
     else:
         OSXTARGET = None
 
-    if target is not None or target_arch is not None:
-        SetTarget(target, target_arch)
+    if target is not None or target_archs:
+        SetTarget(target, target_archs[-1] if target_archs else None)
 
     if universal:
         if target_arch:
@@ -329,8 +329,11 @@ def parseopts(args):
         if osxver >= (11, 0):
             OSX_ARCHS.append("arm64")
 
-    elif HasTargetArch():
-        OSX_ARCHS.append(GetTargetArch())
+    elif target_archs:
+        OSX_ARCHS = target_archs
+
+        if 'arm64' in target_archs and OSXTARGET and OSXTARGET < (10, 9):
+            exit("Must have at least --osxtarget 10.9 when targeting arm64")
 
     try:
         SetOptimize(int(optimize))
@@ -442,6 +445,9 @@ elif target == 'darwin':
     else:
         maj, min = platform.mac_ver()[0].split('.')[:2]
         osxver = int(maj), int(min)
+        if osxver[0] == 11:
+            # I think Python pins minor version to 0 from macOS 11 onward
+            osxver = (osxver[0], 0)
 
     arch_tag = None
     if not OSX_ARCHS:
@@ -591,7 +597,7 @@ MakeBuildTree()
 SdkLocateDirectX(STRDXSDKVERSION)
 SdkLocateMaya()
 SdkLocateMax()
-SdkLocateMacOSX(OSXTARGET)
+SdkLocateMacOSX(OSXTARGET, OSX_ARCHS)
 SdkLocatePython(RTDIST)
 SdkLocateWindows(WINDOWS_SDK)
 SdkLocatePhysX()
@@ -927,6 +933,19 @@ if (COMPILER=="GCC"):
         # 64-bits macOS doesn't have Carbon.
         PkgDisable("CARBON")
 
+    if GetTarget() == 'darwin':
+        if 'x86_64' not in OSX_ARCHS and 'i386' not in OSX_ARCHS:
+            # These support only these archs, so don't build them if we're not
+            # targeting any of the supported archs.
+            PkgDisable("FMODEX")
+            PkgDisable("NVIDIACG")
+            PkgDisable("ROCKET")
+        elif (OSX_ARCHS and 'arm64' in OSX_ARCHS) or \
+             (OSXTARGET and OSXTARGET >= (10, 14)) or \
+             (not OSXTARGET and not os.path.isfile('/usr/lib/libstdc++.6.0.9.dylib')):
+            # Also, we can't target FMOD Ex with the 10.14 SDK
+            PkgDisable("FMODEX")
+
     #if (PkgSkip("PYTHON")==0):
     #    IncDirectory("PYTHON", SDK["PYTHON"])
     if (GetHost() == "darwin"):
@@ -989,7 +1008,8 @@ if (COMPILER=="GCC"):
 
         if not PkgSkip("FFMPEG"):
             if GetTarget() == "darwin":
-                LibName("FFMPEG", "-Wl,-read_only_relocs,suppress")
+                if 'i386' in OSX_ARCHS or 'ppc' in OSX_ARCHS:
+                    LibName("FFMPEG", "-Wl,-read_only_relocs,suppress")
                 LibName("FFMPEG", "-framework VideoDecodeAcceleration")
             elif os.path.isfile(GetThirdpartyDir() + "ffmpeg/lib/libavcodec.a"):
                 # Needed when linking ffmpeg statically on Linux.
@@ -1477,6 +1497,8 @@ def CompileCxx(obj,src,opts):
             if OSXTARGET is not None:
                 cmd += " -isysroot " + SDK["MACOSX"]
                 cmd += " -mmacosx-version-min=%d.%d" % (OSXTARGET)
+            elif platform.mac_ver()[0].startswith('11.'):
+                cmd += " -mmacosx-version-min=11.0"
 
             for arch in OSX_ARCHS:
                 if 'NOARCH:' + arch.upper() not in opts:
@@ -1997,6 +2019,8 @@ def CompileLink(dll, obj, opts):
             if OSXTARGET is not None:
                 cmd += " -isysroot " + SDK["MACOSX"] + " -Wl,-syslibroot," + SDK["MACOSX"]
                 cmd += " -mmacosx-version-min=%d.%d" % (OSXTARGET)
+            elif platform.mac_ver()[0].startswith('11.'):
+                cmd += " -mmacosx-version-min=11.0"
 
             for arch in OSX_ARCHS:
                 if 'NOARCH:' + arch.upper() not in opts:
@@ -2765,8 +2789,19 @@ def WriteConfigSettings():
     conf = "/* dtool_config.h.  Generated automatically by makepanda.py */\n"
     for key in sorted(dtool_config.keys()):
         val = OverrideValue(key, dtool_config[key])
-        if (val == 'UNDEF'): conf = conf + "#undef " + key + "\n"
-        else:                conf = conf + "#define " + key + " " + val + "\n"
+
+        if key in ('HAVE_CG', 'HAVE_CGGL', 'HAVE_CGDX9') and val != 'UNDEF':
+            # These are not available for ARM, period.
+            conf = conf + "#ifdef __aarch64__\n"
+            conf = conf + "#undef " + key + "\n"
+            conf = conf + "#else\n"
+            conf = conf + "#define " + key + " " + val + "\n"
+            conf = conf + "#endif\n"
+        elif val == 'UNDEF':
+            conf = conf + "#undef " + key + "\n"
+        else:
+            conf = conf + "#define " + key + " " + val + "\n"
+
     ConditionalWriteFile(GetOutputDir() + '/include/dtool_config.h', conf)
 
     if (RTDIST or RUNTIME):
@@ -4625,14 +4660,14 @@ if (PkgSkip("VISION") == 0) and (not RUNTIME):
 #
 
 if (PkgSkip("ROCKET") == 0) and (not RUNTIME):
-  OPTS=['DIR:panda/src/rocket', 'BUILDING:ROCKET', 'ROCKET', 'PYTHON']
+  OPTS=['DIR:panda/src/rocket', 'BUILDING:ROCKET', 'ROCKET', 'PYTHON', 'NOARCH:ARM64']
   TargetAdd('p3rocket_composite1.obj', opts=OPTS, input='p3rocket_composite1.cxx')
 
   TargetAdd('libp3rocket.dll', input='p3rocket_composite1.obj')
   TargetAdd('libp3rocket.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libp3rocket.dll', opts=OPTS)
 
-  OPTS=['DIR:panda/src/rocket', 'ROCKET', 'RTTI', 'EXCEPTIONS']
+  OPTS=['DIR:panda/src/rocket', 'ROCKET', 'RTTI', 'EXCEPTIONS', 'NOARCH:ARM64']
   IGATEFILES=GetDirectoryContents('panda/src/rocket', ["rocketInputHandler.h",
     "rocketInputHandler.cxx", "rocketRegion.h", "rocketRegion.cxx", "rocketRegion_ext.h"])
   TargetAdd('libp3rocket.in', opts=OPTS, input=IGATEFILES)
@@ -4650,7 +4685,7 @@ if (PkgSkip("ROCKET") == 0) and (not RUNTIME):
   PyTargetAdd('rocket.pyd', input='libp3rocket.dll')
   PyTargetAdd('rocket.pyd', input='libp3interrogatedb.dll')
   PyTargetAdd('rocket.pyd', input=COMMON_PANDA_LIBS)
-  PyTargetAdd('rocket.pyd', opts=['ROCKET'])
+  PyTargetAdd('rocket.pyd', opts=['ROCKET', 'NOARCH:ARM64'])
 
 #
 # DIRECTORY: panda/src/p3skel
@@ -5201,10 +5236,10 @@ if (PkgSkip("BULLET")==0 and not RUNTIME):
 #
 
 if (PkgSkip("PHYSX")==0):
-  OPTS=['DIR:panda/src/physx', 'BUILDING:PANDAPHYSX', 'PHYSX', 'NOARCH:PPC']
+  OPTS=['DIR:panda/src/physx', 'BUILDING:PANDAPHYSX', 'PHYSX', 'NOARCH:PPC', 'NOARCH:ARM64']
   TargetAdd('p3physx_composite.obj', opts=OPTS, input='p3physx_composite.cxx')
 
-  OPTS=['DIR:panda/src/physx', 'PHYSX', 'NOARCH:PPC']
+  OPTS=['DIR:panda/src/physx', 'PHYSX', 'NOARCH:PPC', 'NOARCH:ARM64']
   IGATEFILES=GetDirectoryContents('panda/src/physx', ["*.h", "*_composite*.cxx"])
   TargetAdd('libpandaphysx.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libpandaphysx.in', opts=['IMOD:panda3d.physx', 'ILIB:libpandaphysx', 'SRCDIR:panda/src/physx'])
@@ -5214,15 +5249,15 @@ if (PkgSkip("PHYSX")==0):
 #
 
 if (PkgSkip("PHYSX")==0):
-  OPTS=['DIR:panda/metalibs/pandaphysx', 'BUILDING:PANDAPHYSX', 'PHYSX', 'NOARCH:PPC', 'PYTHON']
+  OPTS=['DIR:panda/metalibs/pandaphysx', 'BUILDING:PANDAPHYSX', 'PHYSX', 'NOARCH:PPC', 'NOARCH:ARM64', 'PYTHON']
   TargetAdd('pandaphysx_pandaphysx.obj', opts=OPTS, input='pandaphysx.cxx')
 
   TargetAdd('libpandaphysx.dll', input='pandaphysx_pandaphysx.obj')
   TargetAdd('libpandaphysx.dll', input='p3physx_composite.obj')
   TargetAdd('libpandaphysx.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandaphysx.dll', opts=['WINUSER', 'PHYSX', 'NOARCH:PPC', 'PYTHON'])
+  TargetAdd('libpandaphysx.dll', opts=['WINUSER', 'PHYSX', 'NOARCH:PPC', 'NOARCH:ARM64', 'PYTHON'])
 
-  OPTS=['DIR:panda/metalibs/pandaphysx', 'PHYSX', 'NOARCH:PPC']
+  OPTS=['DIR:panda/metalibs/pandaphysx', 'PHYSX', 'NOARCH:PPC', 'NOARCH:ARM64']
   PyTargetAdd('physx_module.obj', input='libpandaphysx.in')
   PyTargetAdd('physx_module.obj', opts=OPTS)
   PyTargetAdd('physx_module.obj', opts=['IMOD:panda3d.physx', 'ILIB:physx', 'IMPORT:panda3d.core'])
@@ -5232,7 +5267,7 @@ if (PkgSkip("PHYSX")==0):
   PyTargetAdd('physx.pyd', input='libpandaphysx.dll')
   PyTargetAdd('physx.pyd', input='libp3interrogatedb.dll')
   PyTargetAdd('physx.pyd', input=COMMON_PANDA_LIBS)
-  PyTargetAdd('physx.pyd', opts=['WINUSER', 'PHYSX', 'NOARCH:PPC'])
+  PyTargetAdd('physx.pyd', opts=['WINUSER', 'PHYSX', 'NOARCH:PPC', 'NOARCH:ARM64'])
 
 #
 # DIRECTORY: panda/src/physics/

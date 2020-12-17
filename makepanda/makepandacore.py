@@ -2438,10 +2438,17 @@ def SdkLocateWindows(version = '7.1'):
     else:
         print("Using Windows SDK %s" % (version))
 
-def SdkLocateMacOSX(osxtarget = None):
+def SdkLocateMacOSX(osxtarget = None, archs = []):
     if (GetHost() != "darwin"): return
     if (osxtarget != None):
-        sdkname = "MacOSX%d.%d" % osxtarget
+        if osxtarget < (11, 0) and 'arm64' in archs:
+            # Building for arm64 requires the 11.0 SDK, with which we can still
+            # target 10.9.
+            assert osxtarget >= (10, 9)
+            sdkname = "MacOSX11.0"
+        else:
+            sdkname = "MacOSX%d.%d" % osxtarget
+
         if (os.path.exists("/Library/Developer/CommandLineTools/SDKs/%s.sdk" % sdkname)):
             SDK["MACOSX"] = "/Library/Developer/CommandLineTools/SDKs/%s.sdk" % sdkname
         elif (os.path.exists("/Developer/SDKs/%su.sdk" % sdkname)):
@@ -2458,13 +2465,18 @@ def SdkLocateMacOSX(osxtarget = None):
             handle.close()
             if (os.path.exists("%s/Platforms/MacOSX.platform/Developer/SDKs/%s.sdk" % (result, sdkname))):
                 SDK["MACOSX"] = "%s/Platforms/MacOSX.platform/Developer/SDKs/%s.sdk" % (result, sdkname)
+            elif sdkname == "MacOSX11.0" and os.path.exists("/Library/Developer/CommandLineTools/SDKs/MacOSX11.1.sdk"):
+                SDK["MACOSX"] = "/Library/Developer/CommandLineTools/SDKs/MacOSX11.1.sdk"
             else:
-                exit("Couldn't find any MacOSX SDK for OSX version %s!" % sdkname)
+                exit("Couldn't find any MacOSX SDK for macOS version %s!" % sdkname)
         SDK["OSXTARGET"] = osxtarget
     else:
         SDK["MACOSX"] = ""
         maj, min = platform.mac_ver()[0].split('.')[:2]
-        SDK["OSXTARGET"] = int(maj), int(min)
+        if int(maj) == 11:
+            SDK["OSXTARGET"] = int(maj), 0
+        else:
+            SDK["OSXTARGET"] = int(maj), int(min)
 
 # Latest first
 PHYSXVERSIONINFO = [
