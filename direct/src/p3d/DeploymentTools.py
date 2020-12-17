@@ -13,9 +13,10 @@ import os, sys, subprocess, tarfile, shutil, time, zipfile, socket, getpass, str
 import gzip, plistlib
 from direct.directnotify.DirectNotifyGlobal import *
 from direct.showbase.AppRunnerGlobal import appRunner
-from panda3d.core import PandaSystem, HTTPClient, Filename, VirtualFileSystem, Multifile
+from panda3d.core import PandaSystem, Filename, VirtualFileSystem, Multifile
 from panda3d.core import TiXmlDocument, TiXmlDeclaration, TiXmlElement, readXmlStream
 from panda3d.core import PNMImage, PNMFileTypeRegistry, StringStream
+from panda3d import core
 from direct.stdpy.file import *
 from direct.p3d.HostInfo import HostInfo
 # This is important for some reason
@@ -87,7 +88,7 @@ class Standalone:
         self.tempDir.makeDir()
         self.host = HostInfo(PandaSystem.getPackageHostUrl(), appRunner = appRunner, hostDir = self.tempDir, asMirror = False, perPlatform = True)
 
-        self.http = HTTPClient.getGlobalPtr()
+        self.http = core.HTTPClient.getGlobalPtr()
         if not self.host.hasContentsFile:
             if not self.host.readContentsFile():
                 if not self.host.downloadContentsFile(self.http):
@@ -245,7 +246,7 @@ class PackageTree:
         self.hostUrl = hostUrl
         self.hostDir = Filename(hostDir)
         self.hostDir.makeDir()
-        self.http = HTTPClient.getGlobalPtr()
+        self.http = core.HTTPClient.getGlobalPtr()
 
     def getHost(self, hostUrl):
         if hostUrl in self.hosts:

@@ -6,7 +6,7 @@
 __all__ = ["HostInfo"]
 
 from panda3d.core import HashVal, Filename, PandaSystem, DocumentSpec, Ramfile
-from panda3d.core import HTTPChannel, ConfigVariableInt
+from panda3d.core import ConfigVariableInt
 from panda3d import core
 from direct.p3d.PackageInfo import PackageInfo
 from direct.p3d.FileSpec import FileSpec
@@ -230,8 +230,8 @@ class HostInfo:
                     self.notify.warning("Unable to download %s" % (url,))
                     try:
                         # Something screwed up.
-                        if statusCode == HTTPChannel.SCDownloadOpenError or \
-                           statusCode == HTTPChannel.SCDownloadWriteError:
+                        if statusCode == core.HTTPChannel.SCDownloadOpenError or \
+                           statusCode == core.HTTPChannel.SCDownloadWriteError:
                             launcher.setPandaErrorCode(2)
                         elif statusCode == 404:
                             # 404 not found
