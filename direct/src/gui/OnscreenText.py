@@ -103,8 +103,9 @@ class OnscreenText(NodePath):
           direction: this can be set to 'ltr' or 'rtl' to override the
               direction of the text.
         """
-        if parent == None:
-            parent = aspect2d
+        if parent is None:
+            from direct.showbase import ShowBaseGlobal
+            parent = ShowBaseGlobal.aspect2d
 
         # make a text node
         textNode = TextNode('')

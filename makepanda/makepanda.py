@@ -187,7 +187,7 @@ def parseopts(args):
     anything = 0
     optimize = ""
     target = None
-    target_arch = None
+    target_archs = []
     universal = False
     clean_build = False
     for pkg in PkgListGet():
@@ -214,7 +214,7 @@ def parseopts(args):
             elif (option=="--osxtarget"): OSXTARGET=value.strip()
             elif (option=="--universal"): universal = True
             elif (option=="--target"): target = value.strip()
-            elif (option=="--arch"): target_arch = value.strip()
+            elif (option=="--arch"): target_archs.append(value.strip())
             elif (option=="--nocolor"): DisableColors()
             elif (option=="--version"):
                 match = re.match(r'^\d+\.\d+(\.\d+)+', value)
@@ -273,12 +273,17 @@ def parseopts(args):
     if (optimize==""): optimize = "3"
 
     if OSXTARGET:
+        parts = OSXTARGET.strip().split('.')
         try:
-            maj, min = OSXTARGET.strip().split('.')
-            OSXTARGET = int(maj), int(min)
-            assert OSXTARGET[0] >= 10
+            assert len(parts) <= 2
+            maj = int(parts[0])
+            min = 0
+            if len(parts) > 1:
+                min = int(parts[1])
+            OSXTARGET = maj, min
+            assert OSXTARGET >= (10, 4)
         except:
-            usage("Invalid setting for OSXTARGET")
+            usage("Invalid setting for --osxtarget")
 
         if OSXTARGET < (10, 9):
             warn_prefix = "%sERROR:%s " % (GetColor("red"), GetColor())
@@ -293,11 +298,11 @@ def parseopts(args):
     else:
         OSXTARGET = None
 
-    if target is not None or target_arch is not None:
-        SetTarget(target, target_arch)
+    if target is not None or target_archs:
+        SetTarget(target, target_archs[-1] if target_archs else None)
 
     if universal:
-        if target_arch:
+        if target_archs:
             exit("--universal is incompatible with --arch")
 
         if OSXTARGET:
@@ -311,8 +316,11 @@ def parseopts(args):
         if osxver >= (11, 0):
             OSX_ARCHS.append("arm64")
 
-    elif HasTargetArch():
-        OSX_ARCHS.append(GetTargetArch())
+    elif target_archs:
+        OSX_ARCHS = target_archs
+
+        if 'arm64' in target_archs and OSXTARGET and OSXTARGET < (10, 9):
+            exit("Must have at least --osxtarget 10.9 when targeting arm64")
 
     try:
         SetOptimize(int(optimize))
@@ -411,6 +419,10 @@ elif target == 'darwin':
         osxver = int(maj), int(min)
         if osxver < (10, 9):
             osxver = (10, 9)
+
+        if osxver[0] == 11:
+            # I think Python pins minor version to 0 from macOS 11 onward
+            osxver = (osxver[0], 0)
 
     arch_tag = None
     if not OSX_ARCHS:
@@ -515,7 +527,7 @@ MakeBuildTree()
 SdkLocateDirectX(STRDXSDKVERSION)
 SdkLocateMaya()
 SdkLocateMax()
-SdkLocateMacOSX(OSXTARGET)
+SdkLocateMacOSX(OSXTARGET, OSX_ARCHS)
 SdkLocatePython(False)
 SdkLocateWindows(WINDOWS_SDK)
 SdkLocateSpeedTree()
@@ -787,6 +799,18 @@ if (COMPILER == "MSVC"):
 if (COMPILER=="GCC"):
     if GetTarget() != "darwin":
         PkgDisable("COCOA")
+
+    if GetTarget() == 'darwin':
+        if 'x86_64' not in OSX_ARCHS and 'i386' not in OSX_ARCHS:
+            # These support only these archs, so don't build them if we're not
+            # targeting any of the supported archs.
+            PkgDisable("FMODEX")
+            PkgDisable("NVIDIACG")
+        elif (OSX_ARCHS and 'arm64' in OSX_ARCHS) or \
+             (OSXTARGET and OSXTARGET >= (10, 14)) or \
+             (not OSXTARGET and not os.path.isfile('/usr/lib/libstdc++.6.0.9.dylib')):
+            # Also, we can't target FMOD Ex with the 10.14 SDK
+            PkgDisable("FMODEX")
 
     #if (PkgSkip("PYTHON")==0):
     #    IncDirectory("PYTHON", SDK["PYTHON"])
@@ -1295,6 +1319,8 @@ def CompileCxx(obj,src,opts):
             if OSXTARGET is not None:
                 cmd += " -isysroot " + SDK["MACOSX"]
                 cmd += " -mmacosx-version-min=%d.%d" % (OSXTARGET)
+            elif platform.mac_ver()[0].startswith('11.'):
+                cmd += " -mmacosx-version-min=11.0"
 
             # Use libc++ to enable C++11 features.
             cmd += " -stdlib=libc++"
@@ -1814,6 +1840,8 @@ def CompileLink(dll, obj, opts):
             if OSXTARGET is not None:
                 cmd += " -isysroot " + SDK["MACOSX"] + " -Wl,-syslibroot," + SDK["MACOSX"]
                 cmd += " -mmacosx-version-min=%d.%d" % (OSXTARGET)
+            elif platform.mac_ver()[0].startswith('11.'):
+                cmd += " -mmacosx-version-min=11.0"
 
             # Use libc++ to enable C++11 features.
             cmd += " -stdlib=libc++"
@@ -2479,8 +2507,19 @@ def WriteConfigSettings():
     conf = "/* dtool_config.h.  Generated automatically by makepanda.py */\n"
     for key in sorted(dtool_config.keys()):
         val = OverrideValue(key, dtool_config[key])
-        if (val == 'UNDEF'): conf = conf + "#undef " + key + "\n"
-        else:                conf = conf + "#define " + key + " " + val + "\n"
+
+        if key in ('HAVE_CG', 'HAVE_CGGL', 'HAVE_CGDX9') and val != 'UNDEF':
+            # These are not available for ARM, period.
+            conf = conf + "#ifdef __aarch64__\n"
+            conf = conf + "#undef " + key + "\n"
+            conf = conf + "#else\n"
+            conf = conf + "#define " + key + " " + val + "\n"
+            conf = conf + "#endif\n"
+        elif val == 'UNDEF':
+            conf = conf + "#undef " + key + "\n"
+        else:
+            conf = conf + "#define " + key + " " + val + "\n"
+
     ConditionalWriteFile(GetOutputDir() + '/include/dtool_config.h', conf)
 
     if (PkgSkip("SPEEDTREE")==0):
