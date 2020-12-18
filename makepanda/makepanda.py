@@ -309,7 +309,7 @@ def parseopts(args):
         SetTarget(target, target_archs[-1] if target_archs else None)
 
     if universal:
-        if target_arch:
+        if target_archs:
             exit("--universal is incompatible with --arch")
 
         if OSXTARGET:
