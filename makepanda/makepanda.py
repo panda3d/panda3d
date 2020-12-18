@@ -58,7 +58,6 @@ WHLVERSION=None
 RPMRELEASE="1"
 GIT_COMMIT=None
 MAJOR_VERSION=None
-OSXTARGET=None
 OSX_ARCHS=[]
 global STRDXSDKVERSION, BOOUSEINTELCOMPILER
 STRDXSDKVERSION = 'default'
@@ -68,9 +67,6 @@ BOOUSEINTELCOMPILER = False
 OPENCV_VER_23 = False
 PLATFORM = None
 COPY_PYTHON = True
-
-if "MACOSX_DEPLOYMENT_TARGET" in os.environ:
-    OSXTARGET=os.environ["MACOSX_DEPLOYMENT_TARGET"]
 
 PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "GL", "GLES", "GLES2"] + DXVERSIONS + ["TINYDISPLAY", "NVIDIACG", # 3D graphics
@@ -133,7 +129,6 @@ def usage(problem):
     print("  --distributor X   (short string identifying the distributor of the build)")
     print("  --outputdir X     (use the specified directory instead of 'built')")
     print("  --threads N       (use the multithreaded build system. see manual)")
-    print("  --osxtarget N     (the macOS version number to build for (macOS only))")
     print("  --universal       (build universal binaries (macOS 11.0+ only))")
     print("  --override \"O=V\"  (override dtool_config/prc option value)")
     print("  --static          (builds libraries for static linking)")
@@ -162,7 +157,7 @@ def usage(problem):
 
 def parseopts(args):
     global INSTALLER,WHEEL,RUNTESTS,GENMAN,DISTRIBUTOR,VERSION
-    global COMPRESSOR,THREADCOUNT,OSXTARGET,OSX_ARCHS
+    global COMPRESSOR,THREADCOUNT,OSX_ARCHS
     global DEBVERSION,WHLVERSION,RPMRELEASE,GIT_COMMIT
     global STRDXSDKVERSION, WINDOWS_SDK, MSVC_VERSION, BOOUSEINTELCOMPILER
     global COPY_PYTHON
@@ -170,12 +165,12 @@ def parseopts(args):
     # Options for which to display a deprecation warning.
     removedopts = [
         "use-touchinput", "no-touchinput", "no-awesomium", "no-directscripts",
-        "no-carbon", "no-physx", "no-rocket", "host"
+        "no-carbon", "no-physx", "no-rocket", "host", "osxtarget=",
         ]
 
     # All recognized options.
     longopts = [
-        "help","distributor=","verbose","osxtarget=","tests",
+        "help","distributor=","verbose","tests",
         "optimize=","everything","nothing","installer","wheel","rtdist","nocolor",
         "version=","lzma","no-python","threads=","outputdir=","override=",
         "static","debversion=","rpmrelease=","p3dsuffix=","rtdist-version=",
@@ -211,7 +206,6 @@ def parseopts(args):
             elif (option=="--nothing"): PkgDisableAll()
             elif (option=="--threads"): THREADCOUNT=int(value)
             elif (option=="--outputdir"): SetOutputDir(value.strip())
-            elif (option=="--osxtarget"): OSXTARGET=value.strip()
             elif (option=="--universal"): universal = True
             elif (option=="--target"): target = value.strip()
             elif (option=="--arch"): target_archs.append(value.strip())
@@ -243,7 +237,7 @@ def parseopts(args):
             elif (option=="--use-icl"): BOOUSEINTELCOMPILER = True
             elif (option=="--clean"): clean_build = True
             elif (option=="--no-copy-python"): COPY_PYTHON = False
-            elif (option[2:] in removedopts):
+            elif (option[2:] in removedopts or option[2:]+'=' in removedopts):
                 Warn("Ignoring removed option %s" % (option))
             else:
                 for pkg in PkgListGet() + ['CGGL']:
@@ -272,32 +266,6 @@ def parseopts(args):
 
     if (optimize==""): optimize = "3"
 
-    if OSXTARGET:
-        parts = OSXTARGET.strip().split('.')
-        try:
-            assert len(parts) <= 2
-            maj = int(parts[0])
-            min = 0
-            if len(parts) > 1:
-                min = int(parts[1])
-            OSXTARGET = maj, min
-            assert OSXTARGET >= (10, 4)
-        except:
-            usage("Invalid setting for --osxtarget")
-
-        if OSXTARGET < (10, 9):
-            warn_prefix = "%sERROR:%s " % (GetColor("red"), GetColor())
-            print("=========================================================================")
-            print(warn_prefix + "Support for macOS versions before 10.9 has been discontinued.")
-            print(warn_prefix + "For more information, or any questions, please visit:")
-            print("  https://github.com/panda3d/panda3d/issues/300")
-            print("=========================================================================")
-            sys.stdout.flush()
-            time.sleep(1.0)
-            sys.exit(1)
-    else:
-        OSXTARGET = None
-
     if target is not None or target_archs:
         SetTarget(target, target_archs[-1] if target_archs else None)
 
@@ -305,22 +273,10 @@ def parseopts(args):
         if target_archs:
             exit("--universal is incompatible with --arch")
 
-        if OSXTARGET:
-            osxver = OSXTARGET
-        else:
-            maj, min = platform.mac_ver()[0].split('.')[:2]
-            osxver = int(maj), int(min)
-
         OSX_ARCHS.append("x86_64")
-
-        if osxver >= (11, 0):
-            OSX_ARCHS.append("arm64")
-
+        OSX_ARCHS.append("arm64")
     elif target_archs:
         OSX_ARCHS = target_archs
-
-        if 'arm64' in target_archs and OSXTARGET and OSXTARGET < (10, 9):
-            exit("Must have at least --osxtarget 10.9 when targeting arm64")
 
     try:
         SetOptimize(int(optimize))
@@ -380,8 +336,11 @@ if ("LDFLAGS" in os.environ):
     LDFLAGS = os.environ["LDFLAGS"].strip()
 
 os.environ["MAKEPANDA"] = os.path.abspath(sys.argv[0])
-if GetHost() == "darwin" and OSXTARGET is not None:
-    os.environ["MACOSX_DEPLOYMENT_TARGET"] = "%d.%d" % OSXTARGET
+if GetHost() == "darwin":
+    if tuple(OSX_ARCHS) == ('arm64',):
+        os.environ["MACOSX_DEPLOYMENT_TARGET"] = "11.0"
+    else:
+        os.environ["MACOSX_DEPLOYMENT_TARGET"] = "10.9"
 
 ########################################################################
 ##
@@ -412,18 +371,6 @@ if target == 'windows':
         PLATFORM = 'win32'
 
 elif target == 'darwin':
-    if OSXTARGET:
-        osxver = OSXTARGET
-    else:
-        maj, min = platform.mac_ver()[0].split('.')[:2]
-        osxver = int(maj), int(min)
-        if osxver < (10, 9):
-            osxver = (10, 9)
-
-        if osxver[0] == 11:
-            # I think Python pins minor version to 0 from macOS 11 onward
-            osxver = (osxver[0], 0)
-
     arch_tag = None
     if not OSX_ARCHS:
         arch_tag = GetTargetArch()
@@ -444,7 +391,10 @@ elif target == 'darwin':
     else:
         raise RuntimeError('No arch tag for arch combination %s' % OSX_ARCHS)
 
-    PLATFORM = 'macosx-{0}.{1}-{2}'.format(osxver[0], osxver[1], arch_tag)
+    if arch_tag == 'arm64':
+        PLATFORM = 'macosx-11.0-' + arch_tag
+    else:
+        PLATFORM = 'macosx-10.9-' + arch_tag
 
 elif target == 'linux' and (os.path.isfile("/lib/libc-2.5.so") or os.path.isfile("/lib64/libc-2.5.so")) and os.path.isdir("/opt/python"):
     # This is manylinux1.  A bit of a sloppy check, though.
@@ -527,7 +477,7 @@ MakeBuildTree()
 SdkLocateDirectX(STRDXSDKVERSION)
 SdkLocateMaya()
 SdkLocateMax()
-SdkLocateMacOSX(OSXTARGET, OSX_ARCHS)
+SdkLocateMacOSX(OSX_ARCHS)
 SdkLocatePython(False)
 SdkLocateWindows(WINDOWS_SDK)
 SdkLocateSpeedTree()
@@ -807,9 +757,8 @@ if (COMPILER=="GCC"):
             PkgDisable("FMODEX")
             PkgDisable("NVIDIACG")
         elif (OSX_ARCHS and 'arm64' in OSX_ARCHS) or \
-             (OSXTARGET and OSXTARGET >= (10, 14)) or \
-             (not OSXTARGET and not os.path.isfile('/usr/lib/libstdc++.6.0.9.dylib')):
-            # Also, we can't target FMOD Ex with the 10.14 SDK
+             not os.path.isfile('/usr/lib/libstdc++.6.0.9.dylib'):
+            # Also, we can't target FMOD Ex on 10.14 and above
             PkgDisable("FMODEX")
 
     #if (PkgSkip("PYTHON")==0):
@@ -1316,11 +1265,13 @@ def CompileCxx(obj,src,opts):
         # Mac-specific flags.
         if GetTarget() == "darwin":
             cmd += " -Wno-deprecated-declarations"
-            if OSXTARGET is not None:
+            if SDK.get("MACOSX"):
                 cmd += " -isysroot " + SDK["MACOSX"]
-                cmd += " -mmacosx-version-min=%d.%d" % (OSXTARGET)
-            elif platform.mac_ver()[0].startswith('11.'):
+
+            if tuple(OSX_ARCHS) == ('arm64',):
                 cmd += " -mmacosx-version-min=11.0"
+            else:
+                cmd += " -mmacosx-version-min=10.9"
 
             # Use libc++ to enable C++11 features.
             cmd += " -stdlib=libc++"
@@ -1837,11 +1788,13 @@ def CompileLink(dll, obj, opts):
         # macOS specific flags.
         if GetTarget() == 'darwin':
             cmd += " -headerpad_max_install_names"
-            if OSXTARGET is not None:
+            if SDK.get("MACOSX"):
                 cmd += " -isysroot " + SDK["MACOSX"] + " -Wl,-syslibroot," + SDK["MACOSX"]
-                cmd += " -mmacosx-version-min=%d.%d" % (OSXTARGET)
-            elif platform.mac_ver()[0].startswith('11.'):
+
+            if tuple(OSX_ARCHS) == ('arm64',):
                 cmd += " -mmacosx-version-min=11.0"
+            else:
+                cmd += " -mmacosx-version-min=10.9"
 
             # Use libc++ to enable C++11 features.
             cmd += " -stdlib=libc++"

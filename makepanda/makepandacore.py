@@ -2345,39 +2345,36 @@ def SdkLocateWindows(version=None):
     else:
         print("Using Windows SDK %s" % (version))
 
-def SdkLocateMacOSX(osxtarget = None, archs = []):
+def SdkLocateMacOSX(archs = []):
     if (GetHost() != "darwin"): return
-    if (osxtarget != None):
-        if osxtarget < (11, 0) and 'arm64' in archs:
-            # Building for arm64 requires the 11.0 SDK, with which we can still
-            # target 10.9.
-            assert osxtarget >= (10, 9)
-            sdkname = "MacOSX11.0"
-        else:
-            sdkname = "MacOSX%d.%d" % osxtarget
 
-        if (os.path.exists("/Library/Developer/CommandLineTools/SDKs/%s.sdk" % sdkname)):
+    handle = os.popen("xcode-select -print-path")
+    xcode_dir = handle.read().strip().rstrip('/')
+    handle.close()
+
+    # Make a list of SDK versions that will work for us.
+    sdk_versions = []
+    if 'arm64' not in archs:
+        sdk_versions += ["10.9", "10.10", "10.11", "10.12", "10.13", "10.14", "10.15"]
+
+    sdk_versions += ["11.0", "11.1"]
+
+    for version in sdk_versions:
+        sdkname = "MacOSX" + version
+        if os.path.exists("/Library/Developer/CommandLineTools/SDKs/%s.sdk" % sdkname):
             SDK["MACOSX"] = "/Library/Developer/CommandLineTools/SDKs/%s.sdk" % sdkname
-        elif (os.path.exists("/Developer/SDKs/%su.sdk" % sdkname)):
-            SDK["MACOSX"] = "/Developer/SDKs/%su.sdk" % sdkname
-        elif (os.path.exists("/Developer/SDKs/%s.sdk" % sdkname)):
+            return
+        elif os.path.exists("/Developer/SDKs/%s.sdk" % sdkname):
             SDK["MACOSX"] = "/Developer/SDKs/%s.sdk" % sdkname
-        elif (os.path.exists("/Developer/SDKs/%s.0.sdk" % sdkname)):
-            SDK["MACOSX"] = "/Developer/SDKs/%s.0.sdk" % sdkname
-        elif (os.path.exists("/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/%s.sdk" % sdkname)):
+            return
+        elif os.path.exists("/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/%s.sdk" % sdkname):
             SDK["MACOSX"] = "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/%s.sdk" % sdkname
-        else:
-            handle = os.popen("xcode-select -print-path")
-            result = handle.read().strip().rstrip('/')
-            handle.close()
-            if (os.path.exists("%s/Platforms/MacOSX.platform/Developer/SDKs/%s.sdk" % (result, sdkname))):
-                SDK["MACOSX"] = "%s/Platforms/MacOSX.platform/Developer/SDKs/%s.sdk" % (result, sdkname)
-            elif sdkname == "MacOSX11.0" and os.path.exists("/Library/Developer/CommandLineTools/SDKs/MacOSX11.1.sdk"):
-                SDK["MACOSX"] = "/Library/Developer/CommandLineTools/SDKs/MacOSX11.1.sdk"
-            else:
-                exit("Couldn't find any MacOSX SDK for macOS version %s!" % sdkname)
-    else:
-        SDK["MACOSX"] = ""
+            return
+        elif xcode_dir and os.path.exists("%s/Platforms/MacOSX.platform/Developer/SDKs/%s.sdk" % (xcode_dir, sdkname)):
+            SDK["MACOSX"] = "%s/Platforms/MacOSX.platform/Developer/SDKs/%s.sdk" % (xcode_dir, sdkname)
+            return
+
+    exit("Couldn't find any suitable MacOSX SDK!")
 
 def SdkLocateSpeedTree():
     # Look for all of the SpeedTree SDK directories within the
