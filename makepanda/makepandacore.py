@@ -2352,12 +2352,11 @@ def SdkLocateMacOSX(archs = []):
     xcode_dir = handle.read().strip().rstrip('/')
     handle.close()
 
-    # Make a list of SDK versions that will work for us.
-    sdk_versions = []
+    # Make a list of SDK versions that will work for us, then grab the latest.
+    sdk_versions = ["11.1", "11.0"]
     if 'arm64' not in archs:
-        sdk_versions += ["10.9", "10.10", "10.11", "10.12", "10.13", "10.14", "10.15"]
-
-    sdk_versions += ["11.0", "11.1"]
+        # Prefer pre-10.14 for now so that we can keep building FMOD.
+        sdk_versions += ["10.13", "10.12", "10.11", "10.10", "10.9", "10.15", "10.14"]
 
     for version in sdk_versions:
         sdkname = "MacOSX" + version
