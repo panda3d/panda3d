@@ -89,14 +89,34 @@ if(APPLE)
   # When statically built for Apple, FFMPEG may have dependencies on these
   # additional frameworks and libraries.
 
+  find_library(APPLE_AUDIOTOOLBOX_LIBRARY AudioToolbox)
+  if(APPLE_AUDIOTOOLBOX_LIBRARY)
+    list(APPEND FFMPEG_LIBRARIES "${APPLE_AUDIOTOOLBOX_LIBRARY}")
+  endif()
+
+  find_library(APPLE_COREMEDIA_LIBRARY CoreMedia)
+  if(APPLE_COREMEDIA_LIBRARY)
+    list(APPEND FFMPEG_LIBRARIES "${APPLE_COREMEDIA_LIBRARY}")
+  endif()
+
   find_library(APPLE_COREVIDEO_LIBRARY CoreVideo)
   if(APPLE_COREVIDEO_LIBRARY)
     list(APPEND FFMPEG_LIBRARIES "${APPLE_COREVIDEO_LIBRARY}")
   endif()
 
+  find_library(APPLE_SECURITY_LIBRARY Security)
+  if(APPLE_SECURITY_LIBRARY)
+    list(APPEND FFMPEG_LIBRARIES "${APPLE_SECURITY_LIBRARY}")
+  endif()
+
   find_library(APPLE_VDA_LIBRARY VideoDecodeAcceleration)
   if(APPLE_VDA_LIBRARY)
     list(APPEND FFMPEG_LIBRARIES "${APPLE_VDA_LIBRARY}")
+  endif()
+
+  find_library(APPLE_VIDEOTOOLBOX_LIBRARY VideoToolbox)
+  if(APPLE_VIDEOTOOLBOX_LIBRARY)
+    list(APPEND FFMPEG_LIBRARIES "${APPLE_VIDEOTOOLBOX_LIBRARY}")
   endif()
 
   find_library(APPLE_ICONV_LIBRARY iconv)
