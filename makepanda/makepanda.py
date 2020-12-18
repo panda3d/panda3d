@@ -59,6 +59,7 @@ RPMRELEASE="1"
 GIT_COMMIT=None
 MAJOR_VERSION=None
 OSXTARGET=None
+OSX_ARCHS=[]
 global STRDXSDKVERSION, BOOUSEINTELCOMPILER
 STRDXSDKVERSION = 'default'
 WINDOWS_SDK = None
@@ -133,6 +134,7 @@ def usage(problem):
     print("  --outputdir X     (use the specified directory instead of 'built')")
     print("  --threads N       (use the multithreaded build system. see manual)")
     print("  --osxtarget N     (the macOS version number to build for (macOS only))")
+    print("  --universal       (build universal binaries (macOS 11.0+ only))")
     print("  --override \"O=V\"  (override dtool_config/prc option value)")
     print("  --static          (builds libraries for static linking)")
     print("  --target X        (experimental cross-compilation (android only))")
@@ -160,7 +162,7 @@ def usage(problem):
 
 def parseopts(args):
     global INSTALLER,WHEEL,RUNTESTS,GENMAN,DISTRIBUTOR,VERSION
-    global COMPRESSOR,THREADCOUNT,OSXTARGET
+    global COMPRESSOR,THREADCOUNT,OSXTARGET,OSX_ARCHS
     global DEBVERSION,WHLVERSION,RPMRELEASE,GIT_COMMIT
     global STRDXSDKVERSION, WINDOWS_SDK, MSVC_VERSION, BOOUSEINTELCOMPILER
     global COPY_PYTHON
@@ -168,7 +170,7 @@ def parseopts(args):
     # Options for which to display a deprecation warning.
     removedopts = [
         "use-touchinput", "no-touchinput", "no-awesomium", "no-directscripts",
-        "no-carbon", "universal", "no-physx", "no-rocket", "host"
+        "no-carbon", "no-physx", "no-rocket", "host"
         ]
 
     # All recognized options.
@@ -178,7 +180,7 @@ def parseopts(args):
         "version=","lzma","no-python","threads=","outputdir=","override=",
         "static","debversion=","rpmrelease=","p3dsuffix=","rtdist-version=",
         "directx-sdk=", "windows-sdk=", "msvc-version=", "clean", "use-icl",
-        "target=", "arch=", "git-commit=", "no-copy-python",
+        "universal", "target=", "arch=", "git-commit=", "no-copy-python",
         "cggl-incdir=", "cggl-libdir=",
         ] + removedopts
 
@@ -186,6 +188,7 @@ def parseopts(args):
     optimize = ""
     target = None
     target_arch = None
+    universal = False
     clean_build = False
     for pkg in PkgListGet():
         longopts.append("use-" + pkg.lower())
@@ -209,6 +212,7 @@ def parseopts(args):
             elif (option=="--threads"): THREADCOUNT=int(value)
             elif (option=="--outputdir"): SetOutputDir(value.strip())
             elif (option=="--osxtarget"): OSXTARGET=value.strip()
+            elif (option=="--universal"): universal = True
             elif (option=="--target"): target = value.strip()
             elif (option=="--arch"): target_arch = value.strip()
             elif (option=="--nocolor"): DisableColors()
@@ -291,6 +295,24 @@ def parseopts(args):
 
     if target is not None or target_arch is not None:
         SetTarget(target, target_arch)
+
+    if universal:
+        if target_arch:
+            exit("--universal is incompatible with --arch")
+
+        if OSXTARGET:
+            osxver = OSXTARGET
+        else:
+            maj, min = platform.mac_ver()[0].split('.')[:2]
+            osxver = int(maj), int(min)
+
+        OSX_ARCHS.append("x86_64")
+
+        if osxver >= (11, 0):
+            OSX_ARCHS.append("arm64")
+
+    elif HasTargetArch():
+        OSX_ARCHS.append(GetTargetArch())
 
     try:
         SetOptimize(int(optimize))
@@ -390,7 +412,26 @@ elif target == 'darwin':
         if osxver < (10, 9):
             osxver = (10, 9)
 
-    arch_tag = GetTargetArch()
+    arch_tag = None
+    if not OSX_ARCHS:
+        arch_tag = GetTargetArch()
+    elif len(OSX_ARCHS) == 1:
+        arch_tag = OSX_ARCHS[0]
+    elif frozenset(OSX_ARCHS) == frozenset(('i386', 'ppc')):
+        arch_tag = 'fat'
+    elif frozenset(OSX_ARCHS) == frozenset(('x86_64', 'i386')):
+        arch_tag = 'intel'
+    elif frozenset(OSX_ARCHS) == frozenset(('x86_64', 'ppc64')):
+        arch_tag = 'fat64'
+    elif frozenset(OSX_ARCHS) == frozenset(('x86_64', 'i386', 'ppc')):
+        arch_tag = 'fat32'
+    elif frozenset(OSX_ARCHS) == frozenset(('x86_64', 'i386', 'ppc64', 'ppc')):
+        arch_tag = 'universal'
+    elif frozenset(OSX_ARCHS) == frozenset(('x86_64', 'arm64')):
+        arch_tag = 'universal2'
+    else:
+        raise RuntimeError('No arch tag for arch combination %s' % OSX_ARCHS)
+
     PLATFORM = 'macosx-{0}.{1}-{2}'.format(osxver[0], osxver[1], arch_tag)
 
 elif target == 'linux' and (os.path.isfile("/lib/libc-2.5.so") or os.path.isfile("/lib64/libc-2.5.so")) and os.path.isdir("/opt/python"):
@@ -1258,8 +1299,9 @@ def CompileCxx(obj,src,opts):
             # Use libc++ to enable C++11 features.
             cmd += " -stdlib=libc++"
 
-            arch = GetTargetArch()
-            cmd += " -arch %s" % arch
+            for arch in OSX_ARCHS:
+                if 'NOARCH:' + arch.upper() not in opts:
+                    cmd += " -arch %s" % arch
 
         if "SYSROOT" in SDK:
             if GetTarget() != "android":
@@ -1776,8 +1818,9 @@ def CompileLink(dll, obj, opts):
             # Use libc++ to enable C++11 features.
             cmd += " -stdlib=libc++"
 
-            arch = GetTargetArch()
-            cmd += " -arch %s" % arch
+            for arch in OSX_ARCHS:
+                if 'NOARCH:' + arch.upper() not in opts:
+                    cmd += " -arch %s" % arch
 
         elif GetTarget() == 'android':
             arch = GetTargetArch()
