@@ -37,17 +37,19 @@ SimpleHashMap(const SimpleHashMap &copy) :
 
   // We allocate enough bytes for _table_size elements of TableEntry, plus
   // _table_size * 4 more ints at the end (for the index array).
-  size_t alloc_size = _table_size * (sizeof(TableEntry) + sizeof(int) * sparsity);
+  if (_table_size > 0) {
+    size_t alloc_size = _table_size * (sizeof(TableEntry) + sizeof(int) * sparsity);
 
-  _deleted_chain = memory_hook->get_deleted_chain(alloc_size);
-  _table = (TableEntry *)_deleted_chain->allocate(alloc_size, TypeHandle::none());
+    _deleted_chain = memory_hook->get_deleted_chain(alloc_size);
+    _table = (TableEntry *)_deleted_chain->allocate(alloc_size, TypeHandle::none());
 
-  for (size_t i = 0; i < _num_entries; ++i) {
-    new(&_table[i]) TableEntry(copy._table[i]);
+    for (size_t i = 0; i < _num_entries; ++i) {
+      new(&_table[i]) TableEntry(copy._table[i]);
+    }
+
+    // Copy the index array.
+    memcpy(get_index_array(), copy.get_index_array(), _table_size * sizeof(int) * sparsity);
   }
-
-  // Copy the index array.
-  memcpy(get_index_array(), copy.get_index_array(), _table_size * sizeof(int) * sparsity);
 }
 
 /**
@@ -84,22 +86,39 @@ template<class Key, class Value, class Compare>
 INLINE SimpleHashMap<Key, Value, Compare> &SimpleHashMap<Key, Value, Compare>::
 operator = (const SimpleHashMap<Key, Value, Compare> &copy) {
   if (this != &copy) {
+    TableEntry *old_table = _table;
+    DeletedBufferChain *old_deleted_chain = _deleted_chain;
+    size_t old_num_entries = _num_entries;
+
     _table_size = copy._table_size;
     _num_entries = copy._num_entries;
     _comp = copy._comp;
 
-    // We allocate enough bytes for _table_size elements of TableEntry, plus
-    // _table_size * 4 more ints at the end (for the index array).
-    size_t alloc_size = _table_size * (sizeof(TableEntry) + sizeof(int) * sparsity);
+    if (_table_size > 0) {
+      // We allocate enough bytes for _table_size elements of TableEntry, plus
+      // _table_size * 4 more ints at the end (for the index array).
+      size_t alloc_size = _table_size * (sizeof(TableEntry) + sizeof(int) * sparsity);
 
-    _deleted_chain = memory_hook->get_deleted_chain(alloc_size);
-    _table = (TableEntry *)_deleted_chain->allocate(alloc_size, TypeHandle::none());
-    for (size_t i = 0; i < _num_entries; ++i) {
-      new(&_table[i]) TableEntry(copy._table[i]);
+      _deleted_chain = memory_hook->get_deleted_chain(alloc_size);
+      _table = (TableEntry *)_deleted_chain->allocate(alloc_size, TypeHandle::none());
+      for (size_t i = 0; i < _num_entries; ++i) {
+        new(&_table[i]) TableEntry(copy._table[i]);
+      }
+
+      // Copy the index array.
+      memcpy(get_index_array(), copy.get_index_array(), _table_size * sizeof(int) * sparsity);
+    } else {
+      _table = nullptr;
+      _deleted_chain = nullptr;
     }
 
-    // Copy the index array.
-    memcpy(get_index_array(), copy.get_index_array(), _table_size * sizeof(int) * sparsity);
+    if (old_table != nullptr) {
+      for (size_t i = 0; i < old_num_entries; ++i) {
+        old_table[i].~TableEntry();
+      }
+
+      old_deleted_chain->deallocate(old_table, TypeHandle::none());
+    }
   }
   return *this;
 }
