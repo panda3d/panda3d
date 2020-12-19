@@ -18,14 +18,14 @@
 
 #include "pandabase.h"
 #include "typedReferenceCount.h"
+#include "graphicsStateGuardianBase.h"
+#include "shaderAttrib.h"
+#include "renderState.h"
 
 #ifdef HAVE_CG
 
-#include "graphicsStateGuardianBase.h"
 #include "graphicsOutputBase.h"
 #include "nodePath.h"
-#include "shaderAttrib.h"
-#include "renderState.h"
 #include "renderAttrib.h"
 
 #include "colorAttrib.h"
