@@ -31,6 +31,8 @@ SimpleHashMap(const Compare &comp) :
 template<class Key, class Value, class Compare>
 INLINE SimpleHashMap<Key, Value, Compare>::
 SimpleHashMap(const SimpleHashMap &copy) :
+  _table(nullptr),
+  _deleted_chain(nullptr),
   _table_size(copy._table_size),
   _num_entries(copy._num_entries),
   _comp(copy._comp) {
