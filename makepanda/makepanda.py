@@ -30,6 +30,11 @@ import time
 import os
 import sys
 
+try:
+    import zlib
+except:
+    zlib = None
+
 ########################################################################
 ##
 ## PARSING THE COMMAND LINE OPTIONS
@@ -1904,7 +1909,11 @@ def CompileEgg(eggfile, src, opts):
         oscmd(flt2egg + ' -ps keep -o ' + BracketNameWithQuotes(eggfile) + ' ' + BracketNameWithQuotes(src))
 
     if pz:
-        oscmd(pzip + ' ' + BracketNameWithQuotes(eggfile))
+        if zlib:
+            WriteBinaryFile(eggfile + '.pz', zlib.compress(ReadBinaryFile(eggfile)))
+            os.remove(eggfile)
+        else:
+            oscmd(pzip + ' ' + BracketNameWithQuotes(eggfile))
 
 ##########################################################################################
 #
