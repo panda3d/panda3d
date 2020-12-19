@@ -89,7 +89,6 @@ protected:
 
   // RenderState analysis information.  Created by analyze_renderstate:
 
-  CPT(RenderState) _state;
   struct ShaderKey {
     ShaderKey();
     bool operator < (const ShaderKey &other) const;
@@ -197,16 +196,14 @@ private:
 // If we don't have Cg, let's replace this with a stub.
 class EXPCL_PANDA_PGRAPHNODES ShaderGenerator : public TypedReferenceCount {
 PUBLISHED:
-  ShaderGenerator(const GraphicsStateGuardianBase *gsg) {}
-  virtual ~ShaderGenerator() {}
+  ShaderGenerator(const GraphicsStateGuardianBase *gsg);
+  virtual ~ShaderGenerator();
 
   virtual CPT(ShaderAttrib) synthesize_shader(const RenderState *rs,
-                                              const GeomVertexAnimationSpec &anim) {
-    return nullptr;
-  }
+                                              const GeomVertexAnimationSpec &anim);
 
-  void rehash_generated_shaders() {}
-  void clear_generated_shaders() {}
+  void rehash_generated_shaders();
+  void clear_generated_shaders();
 
 public:
   static TypeHandle get_class_type() {
