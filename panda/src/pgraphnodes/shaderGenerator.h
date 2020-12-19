@@ -18,14 +18,14 @@
 
 #include "pandabase.h"
 #include "typedReferenceCount.h"
+#include "graphicsStateGuardianBase.h"
+#include "shaderAttrib.h"
+#include "renderState.h"
 
 #ifdef HAVE_CG
 
-#include "graphicsStateGuardianBase.h"
 #include "graphicsOutputBase.h"
 #include "nodePath.h"
-#include "shaderAttrib.h"
-#include "renderState.h"
 #include "renderAttrib.h"
 
 #include "colorAttrib.h"
@@ -196,6 +196,16 @@ private:
 
 // If we don't have Cg, let's replace this with a stub.
 class EXPCL_PANDA_PGRAPHNODES ShaderGenerator : public TypedReferenceCount {
+PUBLISHED:
+  ShaderGenerator(const GraphicsStateGuardianBase *gsg);
+  virtual ~ShaderGenerator();
+
+  virtual CPT(ShaderAttrib) synthesize_shader(const RenderState *rs,
+                                              const GeomVertexAnimationSpec &anim);
+
+  void rehash_generated_shaders();
+  void clear_generated_shaders();
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

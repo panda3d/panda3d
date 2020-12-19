@@ -2028,4 +2028,28 @@ operator == (const ShaderKey &other) const {
       && _light_ramp == other._light_ramp;
 }
 
+#else
+
+// Stubs for when building without Cg support.
+ShaderGenerator::
+ShaderGenerator(const GraphicsStateGuardianBase *gsg) {
+}
+
+ShaderGenerator::
+~ShaderGenerator() {
+}
+
+void ShaderGenerator::
+rehash_generated_shaders() {
+}
+
+void ShaderGenerator::
+clear_generated_shaders() {
+}
+
+CPT(ShaderAttrib) ShaderGenerator::
+synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
+  return nullptr;
+}
+
 #endif  // HAVE_CG
