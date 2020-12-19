@@ -124,6 +124,7 @@ public:
     DT_function_parameter,
     DT_function,
     DT_local,
+    DT_spec_constant,
   };
 
   enum DefinitionFlags {
@@ -165,6 +166,7 @@ public:
     uint32_t _array_stride = 0;
     uint32_t _origin_id = 0; // set for loads, tracks original variable ID
     uint32_t _function_id = 0;
+    uint32_t _spec_id = 0;
     MemberDefinitions _members;
     int _flags = 0;
 
@@ -228,6 +230,7 @@ public:
     void record_ext_inst_import(uint32_t id, const char *import);
     void record_function(uint32_t id, uint32_t type_id);
     void record_local(uint32_t id, uint32_t type_id, uint32_t from_id, uint32_t function_id);
+    void record_spec_constant(uint32_t id, uint32_t type_id);
 
     void mark_used(uint32_t id);
 

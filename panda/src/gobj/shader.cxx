@@ -890,6 +890,7 @@ do_read_source(ShaderModule::Stage stage, std::istream &in,
   }
 
   int used_caps = module->get_used_capabilities();
+  _module_spec_consts.insert({module, ModuleSpecConstants()});
   _modules.push_back(std::move(module));
   _module_mask |= (1u << (uint32_t)stage);
   _used_caps |= used_caps;
@@ -919,6 +920,8 @@ link() {
   pmap<CPT_InternalName, Parameter> parameters_by_name;
   pvector<Parameter *> parameters;
   BitArray used_locations;
+
+  pmap<CPT_InternalName, const ::ShaderType *> spec_const_types;
 
   for (COWPT(ShaderModule) &cow_module : _modules) {
     const ShaderModule *module = cow_module.get_read_pointer();
@@ -990,6 +993,23 @@ link() {
         out << "\n";
       }
       module->remap_parameter_locations(remap);
+    }
+
+    for (const ShaderModule::SpecializationConstant &spec_const : module->_spec_constants) {
+      auto result = spec_const_types.insert({spec_const.name, spec_const.type});
+      auto &it = result.first;
+
+      if (!result.second) {
+        // Another module has already defined a spec constant with this name.
+        // Make sure they have the same type.
+        const ::ShaderType *other_type = it->second;
+        if (spec_const.type != other_type) {
+          shader_cat.error()
+            << "Specialization constant " << *spec_const.name << " in module "
+            << *module << " is declared in another stage with a mismatching type!\n";
+          return false;
+        }
+      }
     }
   }
 
@@ -2971,6 +2991,49 @@ make_compute(ShaderLanguage lang, string body) {
   }*/
 
   return shader;
+}
+
+/**
+ * Sets an unsigned integer value for the specialization constant with the
+ * indicated name.  All modules containing a specialization constant with
+ * this name will be given this value.
+ *
+ * Returns true if there was a specialization constant with this name on any of
+ * the modules, false otherwise.
+ */
+bool Shader::
+set_constant(CPT_InternalName name, unsigned int value) {
+  bool any_changed = false;
+  bool any_found = false;
+
+  // Set the value on all modules containing a spec constant with this name.
+  for (COWPT(ShaderModule) &cow_module : _modules) {
+    const ShaderModule *module = cow_module.get_read_pointer();
+
+    for (const ShaderModule::SpecializationConstant &spec_const : module->_spec_constants) {
+      if (spec_const.name == name) {
+        // Found one.
+        ModuleSpecConstants &constants = _module_spec_consts[module];
+        if (constants.set_constant(spec_const.id, value)) {
+          any_changed = true;
+        }
+        any_found = true;
+        break;
+      }
+    }
+  }
+
+  if (any_changed) {
+    if (shader_cat.is_debug()) {
+      shader_cat.debug()
+        << "Specialization constant value changed, forcing shader to "
+        << "re-prepare.\n";
+    }
+    // Force the shader to be re-prepared so the value change is picked up.
+    release_all();
+  }
+
+  return any_found;
 }
 
 /**

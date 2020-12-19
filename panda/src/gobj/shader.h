@@ -121,6 +121,11 @@ PUBLISHED:
   INLINE bool get_cache_compiled_shader() const;
   INLINE void set_cache_compiled_shader(bool flag);
 
+  INLINE bool set_constant(CPT_InternalName name, bool value);
+  INLINE bool set_constant(CPT_InternalName name, int value);
+  INLINE bool set_constant(CPT_InternalName name, float value);
+  bool set_constant(CPT_InternalName name, unsigned int value);
+
   PT(AsyncFuture) prepare(PreparedGraphicsObjects *prepared_objects);
   bool is_prepared(PreparedGraphicsObjects *prepared_objects) const;
   bool release(PreparedGraphicsObjects *prepared_objects);
@@ -439,6 +444,20 @@ public:
     std::string _compute;
   };
 
+  /**
+   * Contains external values given to the specialization constants of a single
+   * ShaderModule.
+   */
+  class ModuleSpecConstants {
+  public:
+    INLINE ModuleSpecConstants() {};
+
+    INLINE bool set_constant(uint32_t id, uint32_t value);
+  public:
+    pvector<uint32_t> _values;
+    pvector<uint32_t> _indices;
+  };
+
 protected:
   bool report_parameter_error(const InternalName *name, const ::ShaderType *type, const char *msg);
   bool expect_num_words(const InternalName *name, const ::ShaderType *type, size_t len);
@@ -486,6 +505,8 @@ public:
 
   typedef pvector<COWPT(ShaderModule)> Modules;
   Modules _modules;
+  typedef pmap<const ShaderModule *, ModuleSpecConstants> ModuleSpecConsts;
+  ModuleSpecConsts _module_spec_consts;
   uint32_t _module_mask = 0;
   int _used_caps = 0;
 

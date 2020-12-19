@@ -46,6 +46,22 @@ set_source_filename(const Filename &filename) {
 }
 
 /**
+ * Returns the SpecializationConstant at the indicated index.
+ */
+INLINE const ShaderModule::SpecializationConstant &ShaderModule::
+get_spec_constant(size_t n) const {
+  return _spec_constants[n];
+}
+
+/**
+ * Returns the number of SpecializationConstants in the module.
+ */
+INLINE size_t ShaderModule::
+get_num_spec_constants() const {
+  return _spec_constants.size();
+}
+
+/**
  * Returns the number of input variables in this shader stage.
  */
 INLINE size_t ShaderModule::

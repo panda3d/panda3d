@@ -57,6 +57,16 @@ PUBLISHED:
     int _location;
   };
 
+  /**
+   * Defines a specialization constant.
+   */
+  struct SpecializationConstant {
+  PUBLISHED:
+    const ShaderType *type;
+    CPT(InternalName) name;
+    uint32_t id;
+  };
+
 public:
   ShaderModule(Stage stage);
   virtual ~ShaderModule();
@@ -66,6 +76,9 @@ public:
 
   INLINE const Filename &get_source_filename() const;
   INLINE void set_source_filename(const Filename &);
+
+  INLINE const SpecializationConstant &get_spec_constant(size_t n) const;
+  INLINE size_t get_num_spec_constants() const;
 
   size_t get_num_inputs() const;
   const Variable &get_input(size_t i) const;
@@ -171,6 +184,9 @@ protected:
   Variables _inputs;
   Variables _outputs;
   Variables _parameters;
+
+  typedef pvector<SpecializationConstant> SpecializationConstants;
+  SpecializationConstants _spec_constants;
 
   friend class Shader;
 

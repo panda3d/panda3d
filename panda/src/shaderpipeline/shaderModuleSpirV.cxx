@@ -193,6 +193,18 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words) :
         }
       }
     }
+    else if (def._dtype == DT_spec_constant && def._type != nullptr) {
+      SpecializationConstant spec_constant;
+      spec_constant.id = def._spec_id;
+      spec_constant.name = InternalName::make(def._name);
+      spec_constant.type = def._type;
+      if (shader_cat.is_debug()) {
+        shader_cat.debug()
+          << "Found specialization constant " << def._name << " with type "
+          << *def._type << " and ID " << def._spec_id << "\n";
+      }
+      _spec_constants.push_back(spec_constant);
+    }
   }
 
 #ifndef NDEBUG
@@ -2154,6 +2166,13 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
     record_constant(op.args[1], op.args[0], op.args + 2, op.nargs - 2);
     break;
 
+  case spv::OpSpecConstantTrue:
+  case spv::OpSpecConstantFalse:
+  case spv::OpSpecConstant:
+    // A specialization constant.
+    record_spec_constant(op.args[1], op.args[0]);
+    break;
+
   case spv::OpFunction:
     if (current_function_id != 0) {
       shader_cat.error()
@@ -2300,6 +2319,10 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
 
     case spv::DecorationArrayStride:
       _defs[op.args[0]]._array_stride = op.args[2];
+      break;
+
+    case spv::DecorationSpecId:
+      _defs[op.args[0]]._spec_id = op.args[2];
       break;
 
     default:
@@ -2562,6 +2585,20 @@ record_local(uint32_t id, uint32_t type_id, uint32_t from_id, uint32_t function_
   def._function_id = function_id;
 
   nassertv(function_id != 0);
+}
+
+/**
+ * Records that the given specialization constant has been defined.
+ */
+void ShaderModuleSpirV::InstructionWriter::
+record_spec_constant(uint32_t id, uint32_t type_id) {
+  const Definition &type_def = get_definition(type_id);
+  nassertv(type_def._dtype == DT_type);
+
+  Definition &def = modify_definition(id);
+  def._dtype = DT_spec_constant;
+  def._type_id = type_id;
+  def._type = type_def._type;
 }
 
 /**
