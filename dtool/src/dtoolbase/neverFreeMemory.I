@@ -80,7 +80,11 @@ Page(void *start, size_t size) :
  */
 INLINE bool NeverFreeMemory::Page::
 operator < (const NeverFreeMemory::Page &other) const {
-  return _remaining < other._remaining;
+  if (_remaining != other._remaining) {
+    return _remaining < other._remaining;
+  } else {
+    return _next < other._next;
+  }
 }
 
 /**
