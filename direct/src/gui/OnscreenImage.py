@@ -48,8 +48,9 @@ class OnscreenImage(DirectObject, NodePath):
         # We ARE a node path.  Initially, we're an empty node path.
         NodePath.__init__(self)
 
-        if parent == None:
-            parent = aspect2d
+        if parent is None:
+            from direct.showbase import ShowBaseGlobal
+            parent = ShowBaseGlobal.aspect2d
         self.setImage(image, parent = parent, sort = sort)
 
         # Adjust pose

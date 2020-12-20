@@ -432,8 +432,8 @@ def rgbPanel(self, cb = None):
         # Don't use a regular import, to prevent ModuleFinder from picking
         # it up as a dependency when building a .p3d package.
         import importlib
-        Slider = importlib.import_module('direct.tkwidgets.Slider')
-        return Slider.rgbPanel(self, cb)
+        Valuator = importlib.import_module('direct.tkwidgets.Valuator')
+        return Valuator.rgbPanel(self, cb)
 
 Dtool_funcToMethod(rgbPanel, NodePath)
 del rgbPanel

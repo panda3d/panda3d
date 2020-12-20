@@ -157,6 +157,8 @@ PUBLISHED:
                            GraphicsStateGuardianBase *gsg);
 
 public:
+  bool is_in_view(const BoundingVolume *view_frustum, Thread *current_thread) const;
+
   bool draw(GraphicsStateGuardianBase *gsg,
             const GeomVertexData *vertex_data, size_t num_instances,
             bool force, Thread *current_thread) const;

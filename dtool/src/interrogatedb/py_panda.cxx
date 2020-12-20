@@ -755,7 +755,7 @@ PyObject *copy_from_make_copy(PyObject *self, PyObject *noargs) {
  */
 PyObject *copy_from_copy_constructor(PyObject *self, PyObject *noargs) {
   PyObject *callable = (PyObject *)Py_TYPE(self);
-  return _PyObject_FastCall(callable, &self, 1);
+  return PyObject_CallOneArg(callable, self);
 }
 
 /**

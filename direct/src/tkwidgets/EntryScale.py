@@ -5,6 +5,7 @@ EntryScale Class: Scale with a label, and a linked and validated entry
 __all__ = ['EntryScale', 'EntryScaleGroup']
 
 from direct.showbase.TkGlobal import *
+from panda3d.core import Vec4
 import Pmw
 from tkinter.simpledialog import *
 from tkinter.colorchooser import askcolor
@@ -477,17 +478,24 @@ def rgbPanel(nodePath, callback = None):
     esg.component('menubar').component('EntryScale Group-button')['text'] = (
         'RGBA Panel')
     # Update menu
-    menu = esg.component('menubar').component('EntryScale Group-menu')
+    menubar = esg.component('menubar')
+    menubar.deletemenuitems('EntryScale Group', 1, 1)
+
     # Some helper functions
     # Clear color
-    menu.insert_command(index = 1, label = 'Clear Color',
-                        command = lambda np = nodePath: np.clearColor())
-    # Set Clear Transparency
-    menu.insert_command(index = 2, label = 'Set Transparency',
-                        command = lambda np = nodePath: np.setTransparency(1))
-    menu.insert_command(
-        index = 3, label = 'Clear Transparency',
-        command = lambda np = nodePath: np.clearTransparency())
+    menubar.addmenuitem(
+        'EntryScale Group', 'command',
+        label='Clear Color', command=lambda np=nodePath: np.clearColor())
+
+    # Set/Clear Transparency
+    menubar.addmenuitem(
+        'EntryScale Group', 'command',
+        label='Set Transparency', command=lambda np=nodePath: np.setTransparency(1))
+    menubar.addmenuitem(
+        'EntryScale Group', 'command',
+        label='Clear Transparency',
+        command=lambda np=nodePath: np.clearTransparency())
+
     # System color picker
     def popupColorPicker(esg = esg):
         # Can pass in current color with: color = (255, 0, 0)
@@ -497,13 +505,27 @@ def rgbPanel(nodePath, callback = None):
             initialcolor = tuple(esg.get()[:3]))[0]
         if color:
             esg.set((color[0], color[1], color[2], esg.getAt(3)))
-    menu.insert_command(index = 4, label = 'Popup Color Picker',
-                        command = popupColorPicker)
+
+    menubar.addmenuitem(
+        'EntryScale Group', 'command',
+        label='Popup Color Picker', command=popupColorPicker)
+
     def printToLog(nodePath=nodePath):
-        c=nodePath.getColor()
-        print("Vec4(%.3f, %.3f, %.3f, %.3f)"%(c[0], c[1], c[2], c[3]))
-    menu.insert_command(index = 5, label = 'Print to log',
-                        command = printToLog)
+        c = nodePath.getColor()
+        print("Vec4(%.3f, %.3f, %.3f, %.3f)" % (c[0], c[1], c[2], c[3]))
+
+    menubar.addmenuitem(
+        'EntryScale Group', 'command',
+        label='Print to log', command=printToLog)
+
+    # Add back the Dismiss item we removed.
+    if esg['fDestroy']:
+        dismissCommand = esg.destroy
+    else:
+        dismissCommand = esg.withdraw
+    menubar.addmenuitem(
+        'EntryScale Group', 'command', 'Dismiss EntryScale Group panel',
+        label='Dismiss', command=dismissCommand)
 
     # Set callback
     def onRelease(r, g, b, a, nodePath = nodePath):

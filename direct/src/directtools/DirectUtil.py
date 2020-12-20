@@ -19,7 +19,7 @@ def getTkColorString(color):
     Print out a Tk compatible version of a color string
     """
     def toHex(intVal):
-        val = int(round(intVal))
+        val = int(intVal)
         if val < 16:
             return "0" + hex(val)[2:]
         else:

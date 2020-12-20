@@ -51,6 +51,22 @@ else()
   set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS ${_configs})
 endif()
 
+# Set defaults for macOS, must be before project().
+if(APPLE)
+  set(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "Minimum macOS version to target")
+  set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
+
+  if(CMAKE_VERSION VERSION_LESS "3.19" AND NOT CMAKE_OSX_SYSROOT)
+    # Older CMake chose SDK based on deployment target, against Apple's recommendations.
+    # However, we need to use the latest to be able to target arm64.
+    if(IS_DIRECTORY "/Library/Developer/CommandLineTools/SDKs/MacOSX11.1.sdk")
+      set(CMAKE_OSX_SYSROOT "/Library/Developer/CommandLineTools/SDKs/MacOSX11.1.sdk" CACHE STRING "")
+    elseif(IS_DIRECTORY "/Library/Developer/CommandLineTools/SDKs/MacOSX11.0.sdk")
+      set(CMAKE_OSX_SYSROOT "/Library/Developer/CommandLineTools/SDKs/MacOSX11.0.sdk" CACHE STRING "")
+    endif()
+  endif()
+endif()
+
 # Figure out the version
 set(_s "[\\t ]*") # CMake doesn't support \s*
 file(STRINGS "setup.cfg" _version REGEX "^version${_s}=${_s}")

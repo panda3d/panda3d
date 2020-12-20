@@ -1295,6 +1295,29 @@ prepare_now(PreparedGraphicsObjects *prepared_objects,
 }
 
 /**
+ * Returns true if the Geom is within the given view frustum.
+ */
+bool Geom::
+is_in_view(const BoundingVolume *view_frustum, Thread *current_thread) const {
+  CDLockedReader cdata(_cycler, current_thread);
+
+  if (cdata->_user_bounds != nullptr) {
+    const GeometricBoundingVolume *gbv = cdata->_user_bounds->as_geometric_bounding_volume();
+    return view_frustum->contains(gbv) != BoundingVolume::IF_no_intersection;
+  }
+  else if (!cdata->_internal_bounds_stale) {
+    const GeometricBoundingVolume *gbv = cdata->_internal_bounds->as_geometric_bounding_volume();
+    return view_frustum->contains(gbv) != BoundingVolume::IF_no_intersection;
+  }
+  else {
+    CDWriter cdataw(((Geom *)this)->_cycler, cdata, false);
+    compute_internal_bounds(cdataw, current_thread);
+    const GeometricBoundingVolume *gbv = cdataw->_internal_bounds->as_geometric_bounding_volume();
+    return view_frustum->contains(gbv) != BoundingVolume::IF_no_intersection;
+  }
+}
+
+/**
  * Actually draws the Geom with the indicated GSG, using the indicated vertex
  * data (which might have been pre-munged to support the GSG's needs).
  *

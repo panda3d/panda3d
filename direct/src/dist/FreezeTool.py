@@ -61,7 +61,7 @@ except ImportError:
     def pytest_imports():
         return []
 
-hiddenImports = {
+defaultHiddenImports = {
     'pytest': pytest_imports(),
     'pkg_resources': [
         'pkg_resources.*.*',
@@ -211,7 +211,7 @@ class CompilationEnvironment:
                 self.linkDll = 'link /nologo /DLL /MAP:NUL /FIXED:NO /OPT:REF /INCREMENTAL:NO /LIBPATH:"%(PSDK)s\\lib" /LIBPATH:"%(MSVC)s\\lib%(suffix64)s" /LIBPATH:"%(python)s\\libs"  /out:%(basename)s%(dllext)s.pyd %(basename)s.obj'
 
         elif self.platform.startswith('osx_'):
-            # OSX
+            # macOS
             proc = self.platform.split('_', 1)[1]
             if proc == 'i386':
                 self.arch = '-arch i386'
@@ -219,6 +219,8 @@ class CompilationEnvironment:
                 self.arch = '-arch ppc'
             elif proc == 'amd64':
                 self.arch = '-arch x86_64'
+            elif proc in ('arm64', 'aarch64'):
+                self.arch = '-arch arm64'
             self.compileObjExe = "gcc -c %(arch)s -o %(basename)s.o -O2 -I%(pythonIPath)s %(filename)s"
             self.compileObjDll = "gcc -fPIC -c %(arch)s -o %(basename)s.o -O2 -I%(pythonIPath)s %(filename)s"
             self.linkExe = "gcc %(arch)s -o %(basename)s %(basename)s.o -framework Python"
@@ -751,7 +753,7 @@ class Freezer:
             return 'ModuleDef(%s)' % (', '.join(args))
 
     def __init__(self, previous = None, debugLevel = 0,
-                 platform = None, path=None):
+                 platform = None, path=None, hiddenImports=None):
         # Normally, we are freezing for our own platform.  Change this
         # if untrue.
         self.platform = platform or PandaSystem.getPlatform()
@@ -824,6 +826,11 @@ class Freezer:
                 path = list(getattr(module, '__path__'))
                 if path:
                     modulefinder.AddPackagePath(moduleName, path[0])
+
+        # Module with non-obvious dependencies
+        self.hiddenImports = defaultHiddenImports.copy()
+        if hiddenImports is not None:
+            self.hiddenImports.update(hiddenImports)
 
         # Suffix/extension for Python C extension modules
         if self.platform == PandaSystem.getPlatform():
@@ -1166,7 +1173,7 @@ class Freezer:
 
         # Check if any new modules we found have "hidden" imports
         for origName in list(self.mf.modules.keys()):
-            hidden = hiddenImports.get(origName, [])
+            hidden = self.hiddenImports.get(origName, [])
             for modname in hidden:
                 if modname.endswith('.*'):
                     mdefs = self._gatherSubmodules(modname, implicit = True)
