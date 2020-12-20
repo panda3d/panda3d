@@ -49,8 +49,8 @@ set_source_filename(const Filename &filename) {
  * Returns the SpecializationConstant at the indicated index.
  */
 INLINE const ShaderModule::SpecializationConstant &ShaderModule::
-get_spec_constant(size_t n) const {
-  return _spec_constants[n];
+get_spec_constant(size_t i) const {
+  return _spec_constants[i];
 }
 
 /**

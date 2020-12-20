@@ -77,7 +77,7 @@ public:
   INLINE const Filename &get_source_filename() const;
   INLINE void set_source_filename(const Filename &);
 
-  INLINE const SpecializationConstant &get_spec_constant(size_t n) const;
+  INLINE const SpecializationConstant &get_spec_constant(size_t i) const;
   INLINE size_t get_num_spec_constants() const;
 
   size_t get_num_inputs() const;
@@ -101,6 +101,7 @@ PUBLISHED:
   MAKE_PROPERTY(stage, get_stage);
   MAKE_SEQ_PROPERTY(inputs, get_num_inputs, get_input);
   MAKE_SEQ_PROPERTY(outputs, get_num_outputs, get_output);
+  MAKE_SEQ_PROPERTY(spec_constants, get_num_spec_constants, get_spec_constant);
 
   virtual std::string get_ir() const=0;
 
