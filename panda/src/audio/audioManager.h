@@ -18,6 +18,7 @@
 #include "config_audio.h"
 #include "audioSound.h"
 #include "luse.h"
+#include "filterProperties.h"
 #include "movieAudio.h"
 #include "atomicAdjust.h"
 
@@ -69,6 +70,7 @@ PUBLISHED:
 
   virtual int get_speaker_setup();
   virtual void set_speaker_setup(SpeakerModeCategory cat);
+  virtual bool configure_filters(FilterProperties *config);
 
   // DSP methods
   INLINE bool add_dsp_to_head(DSP *dsp);

@@ -96,6 +96,8 @@ public:
   FMODAudioManager();
   virtual ~FMODAudioManager();
 
+  virtual bool configure_filters(FilterProperties *config);
+
   virtual bool insert_dsp(int index, DSP *dsp);
   virtual bool remove_dsp(DSP *dsp);
   virtual void remove_all_dsps();

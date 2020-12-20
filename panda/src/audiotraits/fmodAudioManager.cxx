@@ -268,6 +268,30 @@ FMODAudioManager::
 }
 
 /**
+ * Configures the global DSP filter chain.
+ *
+ * There is no guarantee that any given configuration will be supported by the
+ * implementation.  The only way to find out what's supported is to call
+ * configure_filters.  If it returns true, the configuration is supported.
+ */
+bool FMODAudioManager::
+configure_filters(FilterProperties *config) {
+  remove_all_dsps();
+
+  const FilterProperties::ConfigVector &conf = config->get_config();
+  size_t num_filters = conf.size();
+  for (size_t i = 0; i < num_filters; i++) {
+    DSP *filter = conf[i];
+    if (!add_dsp_to_tail(filter)) {
+      remove_all_dsps();
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/**
  * Inserts the specified DSP filter into the DSP chain at the specified index.
  * Returns true if the DSP filter is supported by the audio implementation,
  * false otherwise.
