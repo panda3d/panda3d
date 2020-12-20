@@ -1,5 +1,9 @@
 """
 Show how to use libRocket in Panda3D.
+
+NOTE: libRocket is only available for Python 2.7, which is itself deprecated.
+We have therefore deprecated libRocket support in Panda3D, and it will be
+removed in Panda3D 1.11.
 """
 import sys
 from panda3d.core import loadPrcFile, loadPrcFileData, Point3,Vec4, Mat4, LoaderOptions  # @UnusedImport
