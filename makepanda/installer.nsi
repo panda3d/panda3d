@@ -229,7 +229,7 @@ SectionGroup "Panda3D Libraries"
         SetDetailsPrint listonly
 
         SetOutPath $INSTDIR\models
-        File /r /x CVS "${BUILT}\models\*"
+        File /nonfatal /r /x CVS "${BUILT}\models\*"
 
         SetDetailsPrint both
         DetailPrint "Installing optional components..."

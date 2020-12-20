@@ -1135,6 +1135,18 @@ stopping_sound(FMODAudioSound *sound) {
 }
 
 /**
+ * Removes the indicated sound from the manager's list of sounds.
+ */
+void FMODAudioManager::
+release_sound(FMODAudioSound *sound) {
+  ReMutexHolder holder(_lock);
+  AllSounds::iterator ai = _all_sounds.find(sound);
+  if (ai != _all_sounds.end()) {
+    _all_sounds.erase(ai);
+  }
+}
+
+/**
  * Calls finished() on any sounds that have finished playing.
  */
 void FMODAudioManager::

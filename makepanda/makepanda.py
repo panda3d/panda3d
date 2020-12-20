@@ -272,7 +272,7 @@ def parseopts(args):
         try:
             maj, min = OSXTARGET.strip().split('.')
             OSXTARGET = int(maj), int(min)
-            assert OSXTARGET[0] == 10
+            assert OSXTARGET[0] >= 10
         except:
             usage("Invalid setting for OSXTARGET")
 
@@ -775,8 +775,8 @@ if (COMPILER=="GCC"):
     SmartPkgEnable("FFMPEG",    ffmpeg_libs, ffmpeg_libs, ("libavformat/avformat.h", "libavcodec/avcodec.h", "libavutil/avutil.h"))
     SmartPkgEnable("SWSCALE",   "libswscale", "libswscale", ("libswscale/swscale.h"), target_pkg = "FFMPEG", thirdparty_dir = "ffmpeg")
     SmartPkgEnable("SWRESAMPLE","libswresample", "libswresample", ("libswresample/swresample.h"), target_pkg = "FFMPEG", thirdparty_dir = "ffmpeg")
-    SmartPkgEnable("FFTW",      "",          ("fftw3"), ("fftw.h"))
-    SmartPkgEnable("FMOD",  "",              ("fmod"), ("fmod", "fmod/fmod.h"))
+    SmartPkgEnable("FFTW",      "fftw3",     ("fftw3"), ("fftw.h"))
+    SmartPkgEnable("FMOD",      "",          ("fmod"), ("fmod", "fmod/fmod.h"))
     SmartPkgEnable("FREETYPE",  "freetype2", ("freetype"), ("freetype2", "freetype2/freetype/freetype.h"))
     SmartPkgEnable("HARFBUZZ",  "harfbuzz",  ("harfbuzz"), ("harfbuzz", "harfbuzz/hb-ft.h"))
     SmartPkgEnable("GL",        "gl",        ("GL"), ("GL/gl.h"), framework = "OpenGL")
@@ -1123,10 +1123,10 @@ def CompileCxx(obj,src,opts):
 
             if (optlevel==1): cmd += " /MDd /Zi /RTCs /GS"
             if (optlevel==2): cmd += " /MDd /Zi"
-            if (optlevel==3): cmd += " /MD /Zi /GS- /O2 /Ob2 /Oi /Ot /fp:fast"
+            if (optlevel==3): cmd += " /MD /Zi /GS- /O2 /fp:fast"
             if (optlevel==4):
-                cmd += " /MD /Zi /GS- /Ox /Ob2 /Oi /Ot /fp:fast /DFORCE_INLINING /DNDEBUG /GL"
-                cmd += " /Oy /Zp16"      # jean-claude add /Zp16 insures correct static alignment for SSEx
+                cmd += " /MD /Zi /GS- /O2 /fp:fast /DFORCE_INLINING /DNDEBUG /GL"
+                cmd += " /Zp16"      # jean-claude add /Zp16 insures correct static alignment for SSEx
 
             cmd += " /Fd" + os.path.splitext(obj)[0] + ".pdb"
 
@@ -2358,9 +2358,6 @@ def WriteConfigSettings():
         dtool_config["HAVE_VIDEO4LINUX"] = 'UNDEF'
         dtool_config["PHAVE_LINUX_INPUT_H"] = 'UNDEF'
         dtool_config["IS_OSX"] = '1'
-        # 10.4 had a broken ucontext implementation
-        if int(platform.mac_ver()[0][3]) <= 4:
-            dtool_config["PHAVE_UCONTEXT_H"] = 'UNDEF'
 
     if PkgSkip("X11"):
         dtool_config["HAVE_GLX"] = 'UNDEF'
@@ -3826,6 +3823,7 @@ OPTS=['DIR:panda/src/collide']
 IGATEFILES=GetDirectoryContents('panda/src/collide', ["*.h", "*_composite*.cxx"])
 TargetAdd('libp3collide.in', opts=OPTS, input=IGATEFILES)
 TargetAdd('libp3collide.in', opts=['IMOD:panda3d.core', 'ILIB:libp3collide', 'SRCDIR:panda/src/collide'])
+PyTargetAdd('p3collide_ext_composite.obj', opts=OPTS, input='p3collide_ext_composite.cxx')
 
 #
 # DIRECTORY: panda/src/parametrics/
@@ -4070,6 +4068,7 @@ PyTargetAdd('core.pyd', input='p3event_pythonTask.obj')
 PyTargetAdd('core.pyd', input='p3gobj_ext_composite.obj')
 PyTargetAdd('core.pyd', input='p3pgraph_ext_composite.obj')
 PyTargetAdd('core.pyd', input='p3display_ext_composite.obj')
+PyTargetAdd('core.pyd', input='p3collide_ext_composite.obj')
 
 PyTargetAdd('core.pyd', input='core_module.obj')
 if not GetLinkAllStatic() and GetTarget() != 'emscripten':
