@@ -2843,7 +2843,7 @@ if tp_dir is not None:
             if PkgSkip(pkg):
                 continue
 
-            tp_libdir = GetThirdpartyLibDir(pkg)
+            tp_libdir = os.path.join(tp_dir, pkg.lower(), "lib")
             for lib in glob.glob(os.path.join(tp_libdir, "*.dylib")):
                 dylibs[os.path.basename(lib)] = os.path.basename(os.path.realpath(lib))
 
@@ -2863,7 +2863,7 @@ if tp_dir is not None:
                     CopyAllFiles(GetOutputDir() + "/bin/", tp_pkg + "/bin/" + SDK["PYTHONVERSION"] + "/")
 
         elif GetTarget() == 'darwin':
-            tp_libdir = GetThirdpartyLibDir(pkg)
+            tp_libdir = os.path.join(tp_pkg, "lib")
             tp_libs = glob.glob(os.path.join(tp_libdir, "*.dylib"))
 
             if not PkgSkip("PYTHON"):
