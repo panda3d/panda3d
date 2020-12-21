@@ -341,7 +341,7 @@ void TextNode::
 text_changed() {
   // Copy the text to this class, since TextEncoder doesn't store it in a
   // pipeline-cycled manner.
-  CDWriter cdata(_cycler);
+  CDWriter cdata(_cycler, true);
   cdata->_text = TextEncoder::get_text();
   cdata->_wtext = TextEncoder::get_wtext();
   invalidate_with_measure(cdata);
