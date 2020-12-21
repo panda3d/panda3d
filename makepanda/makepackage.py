@@ -509,7 +509,8 @@ def MakeInstallerOSX(version, runtime=False, python_versions=[], installdir=None
     oscmd("cp -R %s/models                dstroot/base/%s/models" % (outputdir, installdir))
     oscmd("cp -R doc/LICENSE              dstroot/base/%s/LICENSE" % installdir)
     oscmd("cp -R doc/ReleaseNotes         dstroot/base/%s/ReleaseNotes" % installdir)
-    oscmd("cp -R %s/Frameworks            dstroot/base/%s/Frameworks" % (outputdir, installdir))
+    if os.path.isdir(outputdir+"/Frameworks") and os.listdir(outputdir+"/Frameworks"):
+        oscmd("cp -R %s/Frameworks            dstroot/base/%s/Frameworks" % (outputdir, installdir))
     if os.path.isdir(outputdir+"/plugins"):
         oscmd("cp -R %s/plugins           dstroot/base/%s/plugins" % (outputdir, installdir))
 
