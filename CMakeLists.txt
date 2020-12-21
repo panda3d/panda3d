@@ -40,6 +40,7 @@ endif()
 
 if(IS_MULTICONFIG)
   message(STATUS "Using multi-configuration generator")
+  set(CMAKE_CONFIGURATION_TYPES "${_configs}" CACHE STRING "")
 else()
   # Set the default CMAKE_BUILD_TYPE before calling project().
   if(NOT CMAKE_BUILD_TYPE)
