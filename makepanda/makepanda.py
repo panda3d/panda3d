@@ -3337,6 +3337,7 @@ if tp_dir is not None:
                 JustBuilt([target], [tp_lib])
 
             for fwx in glob.glob(tp_pkg + "/*.framework"):
+                MakeDirectory(GetOutputDir() + "/Frameworks")
                 CopyTree(GetOutputDir() + "/Frameworks/" + os.path.basename(fwx), fwx)
 
         else:  # Linux / FreeBSD case.

@@ -1255,10 +1255,7 @@ def MakeBuildTree():
     MakeDirectory(OUTPUTDIR + "/pandac/input")
     MakeDirectory(OUTPUTDIR + "/panda3d")
 
-    if GetTarget() == 'darwin':
-        MakeDirectory(OUTPUTDIR + "/Frameworks")
-
-    elif GetTarget() == 'android':
+    if GetTarget() == 'android':
         MakeDirectory(OUTPUTDIR + "/classes")
 
 ########################################################################
