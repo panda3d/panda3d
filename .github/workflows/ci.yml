@@ -97,12 +97,6 @@ jobs:
         mv panda3d-1.10.8/thirdparty thirdparty
         rmdir panda3d-1.10.8
 
-        mkdir -p build/Frameworks
-        cp -R thirdparty/darwin-libs-a/nvidiacg/Cg.framework build/Frameworks/Cg.framework
-
-        mkdir -p "build/${{ matrix.config }}/Frameworks"
-        cp -R thirdparty/darwin-libs-a/nvidiacg/Cg.framework "build/${{ matrix.config }}/Frameworks/Cg.framework"
-
         brew install ccache
 
     - name: Install dependencies (Ubuntu)
