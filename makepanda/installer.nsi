@@ -92,7 +92,6 @@ LangString DESC_SecMaxPlugins ${LANG_ENGLISH} "Plug-ins for Autodesk 3ds Max (${
 LangString DESC_SecMayaPlugins ${LANG_ENGLISH} "Plug-ins and scripts for Autodesk Maya (${REGVIEW}-bit) that can be used to export models to Panda3D."
 
 var READABLE
-var MANPAGE
 
 ; See http://nsis.sourceforge.net/Check_if_a_file_exists_at_compile_time for documentation
 !macro !defineifexist _VAR_NAME _FILE_NAME
@@ -671,8 +670,8 @@ Section "Sample programs" SecSamples
 
     SetOutPath $INSTDIR
     WriteINIStr $INSTDIR\Website.url "InternetShortcut" "URL" "https://www.panda3d.org/"
-    WriteINIStr $INSTDIR\Manual.url "InternetShortcut" "URL" "https://www.panda3d.org/manual/index.php"
-    WriteINIStr $INSTDIR\Samples.url "InternetShortcut" "URL" "https://www.panda3d.org/manual/index.php/Sample_Programs_in_the_Distribution"
+    WriteINIStr $INSTDIR\Manual.url "InternetShortcut" "URL" "https://docs.panda3d.org/${MAJOR_VER}"
+    WriteINIStr $INSTDIR\Samples.url "InternetShortcut" "URL" "https://docs.panda3d.org/${MAJOR_VER}/python/more-resources/samples/index"
     SetOutPath $INSTDIR
     CreateShortCut "$SMPROGRAMS\${TITLE}\Panda3D Manual.lnk" "$INSTDIR\Manual.url" "" "$INSTDIR\pandaIcon.ico" 0 "" "" "Panda3D Manual"
     CreateShortCut "$SMPROGRAMS\${TITLE}\Panda3D Website.lnk" "$INSTDIR\Website.url" "" "$INSTDIR\pandaIcon.ico" 0 "" "" "Panda3D Website"
@@ -692,16 +691,10 @@ Section "Sample programs" SecSamples
         Call Capitalize
         Pop $R0
         StrCpy $READABLE $R0
-        Push $1
-        Push "-"
-        Push "_"
-        Call StrRep
-        Pop $R0
-        StrCpy $MANPAGE $R0
         DetailPrint "Creating shortcuts for sample program $READABLE"
         CreateDirectory "$SMPROGRAMS\${TITLE}\Sample Programs\$READABLE"
         SetOutPath $INSTDIR\samples\$1
-        WriteINIStr $INSTDIR\samples\$1\ManualPage.url "InternetShortcut" "URL" "https://www.panda3d.org/wiki/index.php/Sample_Programs:_$MANPAGE"
+        WriteINIStr $INSTDIR\samples\$1\ManualPage.url "InternetShortcut" "URL" "https://docs.panda3d.org/${MAJOR_VER}/python/more-resources/samples/$1"
         CreateShortCut "$SMPROGRAMS\${TITLE}\Sample Programs\$READABLE\Manual Page.lnk" "$INSTDIR\samples\$1\ManualPage.url" "" "$INSTDIR\pandaIcon.ico" 0 "" "" "Manual Entry on this Sample Program"
         CreateShortCut "$SMPROGRAMS\${TITLE}\Sample Programs\$READABLE\View Source Code.lnk" "$INSTDIR\samples\$1"
         iloop:

@@ -220,6 +220,7 @@ def MakeInstallerNSIS(version, file, title, installdir, runtime=False, compresso
         'BUILT'     : '..\\' + outputdir,
         'SOURCE'    : '..',
         'REGVIEW'   : regview,
+        'MAJOR_VER' : '.'.join(version.split('.')[:2]),
     }
 
     # Are we shipping a version of Python?
