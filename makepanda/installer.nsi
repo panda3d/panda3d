@@ -423,12 +423,14 @@ SectionGroup "Python modules" SecGroupPython
         !insertmacro PyBindingSection 3.7-32 .cp37-win32.pyd
         !insertmacro PyBindingSection 3.8-32 .cp38-win32.pyd
         !insertmacro PyBindingSection 3.9-32 .cp39-win32.pyd
+        !insertmacro PyBindingSection 3.10-32 .cp310-win32.pyd
     !else
         !insertmacro PyBindingSection 3.5 .cp35-win_amd64.pyd
         !insertmacro PyBindingSection 3.6 .cp36-win_amd64.pyd
         !insertmacro PyBindingSection 3.7 .cp37-win_amd64.pyd
         !insertmacro PyBindingSection 3.8 .cp38-win_amd64.pyd
         !insertmacro PyBindingSection 3.9 .cp39-win_amd64.pyd
+        !insertmacro PyBindingSection 3.10 .cp310-win_amd64.pyd
     !endif
 SectionGroupEnd
 
@@ -535,12 +537,14 @@ Function .onInit
         !insertmacro MaybeEnablePyBindingSection 3.7-32
         !insertmacro MaybeEnablePyBindingSection 3.8-32
         !insertmacro MaybeEnablePyBindingSection 3.9-32
+        !insertmacro MaybeEnablePyBindingSection 3.10-32
     !else
         !insertmacro MaybeEnablePyBindingSection 3.5
         !insertmacro MaybeEnablePyBindingSection 3.6
         !insertmacro MaybeEnablePyBindingSection 3.7
         !insertmacro MaybeEnablePyBindingSection 3.8
         !insertmacro MaybeEnablePyBindingSection 3.9
+        !insertmacro MaybeEnablePyBindingSection 3.10
     !endif
 FunctionEnd
 
@@ -854,12 +858,14 @@ Section Uninstall
         !insertmacro RemovePythonPath 3.7-32
         !insertmacro RemovePythonPath 3.8-32
         !insertmacro RemovePythonPath 3.9-32
+        !insertmacro RemovePythonPath 3.10-32
     !else
         !insertmacro RemovePythonPath 3.5
         !insertmacro RemovePythonPath 3.6
         !insertmacro RemovePythonPath 3.7
         !insertmacro RemovePythonPath 3.8
         !insertmacro RemovePythonPath 3.9
+        !insertmacro RemovePythonPath 3.10
     !endif
 
     SetDetailsPrint both
@@ -934,12 +940,14 @@ SectionEnd
     !insertmacro MUI_DESCRIPTION_TEXT ${SecPyBindings3.7-32} $(DESC_SecPyBindings3.7-32)
     !insertmacro MUI_DESCRIPTION_TEXT ${SecPyBindings3.8-32} $(DESC_SecPyBindings3.8-32)
     !insertmacro MUI_DESCRIPTION_TEXT ${SecPyBindings3.9-32} $(DESC_SecPyBindings3.9-32)
+    !insertmacro MUI_DESCRIPTION_TEXT ${SecPyBindings3.10-32} $(DESC_SecPyBindings3.10-32)
   !else
     !insertmacro MUI_DESCRIPTION_TEXT ${SecPyBindings3.5} $(DESC_SecPyBindings3.5)
     !insertmacro MUI_DESCRIPTION_TEXT ${SecPyBindings3.6} $(DESC_SecPyBindings3.6)
     !insertmacro MUI_DESCRIPTION_TEXT ${SecPyBindings3.7} $(DESC_SecPyBindings3.7)
     !insertmacro MUI_DESCRIPTION_TEXT ${SecPyBindings3.8} $(DESC_SecPyBindings3.8)
     !insertmacro MUI_DESCRIPTION_TEXT ${SecPyBindings3.9} $(DESC_SecPyBindings3.9)
+    !insertmacro MUI_DESCRIPTION_TEXT ${SecPyBindings3.10} $(DESC_SecPyBindings3.10)
   !endif
   !ifdef INCLUDE_PYVER
     !insertmacro MUI_DESCRIPTION_TEXT ${SecPython} $(DESC_SecPython)
