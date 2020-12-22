@@ -677,6 +677,7 @@ Section "Sample programs" SecSamples
     CreateShortCut "$SMPROGRAMS\${TITLE}\Panda3D Website.lnk" "$INSTDIR\Website.url" "" "$INSTDIR\pandaIcon.ico" 0 "" "" "Panda3D Website"
     CreateShortCut "$SMPROGRAMS\${TITLE}\Sample Program Manual.lnk" "$INSTDIR\Samples.url" "" "$INSTDIR\pandaIcon.ico" 0 "" "" "Sample Program Manual"
 
+    ${Unless} ${AtLeastWin8}
     FindFirst $0 $1 $INSTDIR\samples\*
     loop:
         StrCmp $1 "" done
@@ -708,6 +709,7 @@ Section "Sample programs" SecSamples
         FindNext $0 $1
         Goto loop
     done:
+    ${EndUnless}
 SectionEnd
 !endif
 
