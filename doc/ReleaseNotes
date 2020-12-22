@@ -1,3 +1,25 @@
+------------------------  RELEASE 1.10.8  -----------------------
+
+Recommended maintenance release.
+
+* Support building for macOS 11 "Big Sur" and "Apple Silicon" (arm64)
+* Fix a memory leak, particularly noticeable with multithreaded pipeline (#1077)
+* Fix problem building Windows binaries using deployment system
+* Fix DirectEntry/PGEntry flickering in the multithreaded pipeline (#1070)
+* Fix sounds resuming on reactivation if stop() was called while inactive (#559)
+* Collision traverser now releases GIL during traversal (#1033)
+* Fix crash caused by some gamepad drivers on Linux (#1066)
+* Skinning-enabled shaders can now properly render unskinned models as well
+* BitMask, SparseArray, BitArray types can now be pickled (#886)
+* VFSImporter now properly detects source file encodings in Python 3
+* Workaround for lighting bug with scenes imported using panda3d-gltf/blend2bam
+* Fix compilation error with Bullet 2.90+
+* Assimp library was updated in Windows thirdparty packages (#1020)
+* libCg is now shipped as library instead of framework on macOS (#1079)
+* Fix ability to use deployment system when compiling without OpenSSL (#1073)
+* Fix assorted issues with rgbPanel
+* Fix comparison operator of RenderEffects object
+
 ------------------------  RELEASE 1.10.7  -----------------------
 
 This is primarily a bugfix release, but includes a few new features as well.

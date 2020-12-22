@@ -153,6 +153,7 @@ def MakeInstallerNSIS(version, file, title, installdir, compressor="lzma", **kwa
         'BUILT'     : '..\\' + outputdir,
         'SOURCE'    : '..',
         'REGVIEW'   : regview,
+        'MAJOR_VER' : '.'.join(version.split('.')[:2]),
     }
 
     # Are we shipping a version of Python?
