@@ -30,6 +30,7 @@ SetCompressor ${COMPRESSOR}
 !include "MUI2.nsh"
 !include "Sections.nsh"
 !include "WinMessages.nsh"
+!include "WinVer.nsh"
 !include "WordFunc.nsh"
 !include "x64.nsh"
 
@@ -422,16 +423,32 @@ SectionGroup "Python modules" SecGroupPython
         !insertmacro PyBindingSection 3.6-32 .cp36-win32.pyd
         !insertmacro PyBindingSection 3.7-32 .cp37-win32.pyd
         !insertmacro PyBindingSection 3.8-32 .cp38-win32.pyd
+        ${If} ${AtLeastWin8}
         !insertmacro PyBindingSection 3.9-32 .cp39-win32.pyd
         !insertmacro PyBindingSection 3.10-32 .cp310-win32.pyd
+        ${EndIf}
     !else
         !insertmacro PyBindingSection 3.5 .cp35-win_amd64.pyd
         !insertmacro PyBindingSection 3.6 .cp36-win_amd64.pyd
         !insertmacro PyBindingSection 3.7 .cp37-win_amd64.pyd
         !insertmacro PyBindingSection 3.8 .cp38-win_amd64.pyd
+        ${If} ${AtLeastWin8}
         !insertmacro PyBindingSection 3.9 .cp39-win_amd64.pyd
         !insertmacro PyBindingSection 3.10 .cp310-win_amd64.pyd
+        ${EndIf}
     !endif
+
+    ; These versions of Python require Windows 8.1 or higher.
+    ${Unless} ${AtLeastWin8}
+    !ifdef SecPyBindings3.9
+        SectionSetFlags ${SecPyBindings3.9} ${SF_RO}
+        SectionSetInstTypes ${SecPyBindings3.9} 0
+    !endif
+    !ifdef SecPyBindings3.10
+        SectionSetFlags ${SecPyBindings3.10} ${SF_RO}
+        SectionSetInstTypes ${SecPyBindings3.10} 0
+    !endif
+    ${EndUnless}
 SectionGroupEnd
 
 !ifdef INCLUDE_PYVER
