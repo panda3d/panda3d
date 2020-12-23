@@ -107,6 +107,7 @@ protected:
       TF_map_height   = 0x040,
       TF_map_glow     = 0x080,
       TF_map_gloss    = 0x100,
+      TF_map_emission = 0x001000000,
       TF_uses_color   = 0x200,
       TF_uses_primary_color = 0x400,
       TF_uses_last_saved_result = 0x800,
