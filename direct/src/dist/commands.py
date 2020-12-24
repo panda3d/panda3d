@@ -459,7 +459,8 @@ class build_apps(setuptools.Command):
             abi_tag += 'u'
 
         whldir = os.path.join(whlcache, '_'.join((platform, abi_tag)))
-        os.makedirs(whldir, exist_ok=True)
+        if not os.path.isdir(whldir):
+            os.makedirs(whldir)
 
         # Remove any .zip files. These are built from a VCS and block for an
         # interactive prompt on subsequent downloads.
