@@ -16,6 +16,9 @@ Recommended maintenance release.
 * Fix compilation error with Bullet 2.90+
 * Assimp library was updated in Windows thirdparty packages (#1020)
 * libCg is now shipped as library instead of framework on macOS (#1079)
+* Add warnings to build_apps when forgetting dependencies in requirements.txt
+* Add experimental TextureStage::M_emission mode
+* Add experimental p3d_TextureNormal, p3d_TextureEmission, etc. GLSL inputs
 * Fix ability to use deployment system when compiling without OpenSSL (#1073)
 * Fix assorted issues with rgbPanel
 * Fix comparison operator of RenderEffects object
