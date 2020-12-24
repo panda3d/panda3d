@@ -995,6 +995,7 @@ class build_apps(setuptools.Command):
                    not pattern.pattern.endswith('/**'):
                     continue
 
+                pattern_dir = p3d.Filename(pattern.pattern).get_dirname()
                 if abspath.startswith(pattern_dir + '/'):
                     return True
 
