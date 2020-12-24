@@ -4,7 +4,7 @@ Recommended maintenance release.
 
 * Support building for macOS 11 "Big Sur" and "Apple Silicon" (arm64)
 * Fix a memory leak, particularly noticeable with multithreaded pipeline (#1077)
-* Fix problem building Windows binaries using deployment system
+* Fix error with build_apps not working with certain versions of Python
 * Fix DirectEntry/PGEntry flickering in the multithreaded pipeline (#1070)
 * Fix sounds resuming on reactivation if stop() was called while inactive (#559)
 * Collision traverser now releases GIL during traversal (#1033)
@@ -16,6 +16,7 @@ Recommended maintenance release.
 * Fix compilation error with Bullet 2.90+
 * Assimp library was updated in Windows thirdparty packages (#1020)
 * libCg is now shipped as library instead of framework on macOS (#1079)
+* Fix some erroneous warnings about missing modules in build_apps
 * Add warnings to build_apps when forgetting dependencies in requirements.txt
 * Add experimental TextureStage::M_emission mode
 * Add experimental p3d_TextureNormal, p3d_TextureEmission, etc. GLSL inputs
