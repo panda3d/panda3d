@@ -40,11 +40,6 @@ EXPCL_DIRECT_SHOWBASE void throw_new_frame();
 
 EXPCL_DIRECT_SHOWBASE void init_app_for_gui();
 
-// klunky interface since we cant pass array from python->C++
-EXPCL_DIRECT_SHOWBASE void add_fullscreen_testsize(int xsize, int ysize);
-EXPCL_DIRECT_SHOWBASE void runtest_fullscreen_sizes(GraphicsWindow *win);
-EXPCL_DIRECT_SHOWBASE bool query_fullscreen_testresult(int xsize, int ysize);
-
 // to handle windows stickykeys
 EXPCL_DIRECT_SHOWBASE void store_accessibility_shortcut_keys();
 EXPCL_DIRECT_SHOWBASE void allow_accessibility_shortcut_keys(bool allowKeys);
