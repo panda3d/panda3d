@@ -455,7 +455,7 @@ class WheelFile(object):
                         self.consider_add_dependency(target_dep, dep)
 
                 subprocess.call(["strip", "-s", temp.name])
-                subprocess.call(["patchelf", "--set-rpath", "$ORIGIN", temp.name])
+                subprocess.call(["patchelf", "--force-rpath", "--set-rpath", "$ORIGIN", temp.name])
 
             source_path = temp.name
 
