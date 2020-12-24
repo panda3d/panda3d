@@ -467,6 +467,9 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
         skip = true;
       }
       break;
+    case TextureStage::M_emission:
+      info._flags = ShaderKey::TF_map_emission;
+      break;
     default:
       break;
     }
@@ -743,6 +746,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
 
   int map_index_glow = -1;
   int map_index_gloss = -1;
+  int map_index_emission = -1;
 
   // Figure out whether we need to calculate any of these variables.
   bool need_world_position = (key._num_clip_planes > 0);
@@ -832,6 +836,9 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     }
     if (tex._flags & ShaderKey::TF_map_gloss) {
       map_index_gloss = i;
+    }
+    if (tex._flags & ShaderKey::TF_map_emission) {
+      map_index_emission = i;
     }
   }
   if (need_tangents) {
@@ -1446,17 +1453,17 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     }
     text << "\t // Begin view-space light summation\n";
     if (key._material_flags & Material::F_emission) {
-      if (key._texture_flags & ShaderKey::TF_map_glow) {
-        text << "\t result = attr_material[2] * saturate(2 * (tex" << map_index_glow << ".a - 0.5));\n";
-      } else {
-        text << "\t result = attr_material[2];\n";
-      }
+      text << "\t result = attr_material[2];\n";
+    } else if (key._texture_flags & (ShaderKey::TF_map_glow | ShaderKey::TF_map_emission)) {
+      text << "\t result = float4(1,1,1,0);\n";
     } else {
-      if (key._texture_flags & ShaderKey::TF_map_glow) {
-        text << "\t result = saturate(2 * (tex" << map_index_glow << ".a - 0.5));\n";
-      } else {
-        text << "\t result = float4(0,0,0,0);\n";
-      }
+      text << "\t result = float4(0,0,0,0);\n";
+    }
+    if (key._texture_flags & ShaderKey::TF_map_emission) {
+      text << "\t result.rgb *= tex" << map_index_emission << ".rgb;\n";
+    }
+    if (key._texture_flags & ShaderKey::TF_map_glow) {
+      text << "\t result *= saturate(2 * (tex" << map_index_glow << ".a - 0.5));\n";
     }
     if (key._have_separate_ambient) {
       if (key._material_flags & Material::F_ambient) {

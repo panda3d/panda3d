@@ -381,6 +381,9 @@ def SetTarget(target, arch=None):
             else:
                 arch = 'armv7a'
 
+        if arch == 'arm64':
+            arch = 'aarch64'
+
         # Did we specify an API level?
         global ANDROID_API
         target, _, api = target.partition('-')

@@ -1540,6 +1540,10 @@ make_texture_stage(const EggTexture *egg_tex) {
     stage->set_mode(TextureStage::M_normal_gloss);
     break;
 
+  case EggTexture::ET_emission:
+    stage->set_mode(TextureStage::M_emission);
+    break;
+
   case EggTexture::ET_unspecified:
     break;
   }

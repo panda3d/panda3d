@@ -261,6 +261,8 @@ ns_has_environment_variable(const string &var) const {
 
 #ifndef PREREAD_ENVIRONMENT
   return getenv(var.c_str()) != nullptr;
+#else
+  return false;
 #endif
 }
 

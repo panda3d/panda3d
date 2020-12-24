@@ -107,6 +107,7 @@ PUBLISHED:
     ET_height,
     ET_selector,
     ET_normal_gloss,
+    ET_emission,
   };
   enum CombineMode {
     CM_unspecified,
