@@ -293,43 +293,98 @@ class OnscreenText(NodePath):
 
     text = property(getText, setText)
 
+    def setTextX(self, x):
+        self.setTextPos(x, self.__pos[1])
+
     def setX(self, x):
-        self.setPos(x, self.__pos[1])
+        """
+        .. deprecated:: 1.11.0
+           Use `.setTextX()` method instead.
+        """
+        self.setTextPos(x, self.__pos[1])
+
+    def setTextY(self, y):
+        self.setTextPos(self.__pos[0], y)
 
     def setY(self, y):
-        self.setPos(self.__pos[0], y)
+        """
+        .. deprecated:: 1.11.0
+           Use `.setTextY()` method instead.
+        """
+        self.setTextPos(self.__pos[0], y)
+
+    def setTextPos(self, x, y=None):
+        """
+        Position the onscreen text in 2d screen space
+        """
+        if y is None:
+            self.__pos = tuple(x)
+        else:
+            self.__pos = (x, y)
+        self.updateTransformMat()
+
+    def getTextPos(self):
+        return self.__pos
+
+    text_pos = property(getTextPos, setTextPos)
 
     def setPos(self, x, y):
         """setPos(self, float, float)
         Position the onscreen text in 2d screen space
+
+        .. deprecated:: 1.11.0
+           Use `.setTextPos()` method or `.text_pos` property instead.
         """
         self.__pos = (x, y)
         self.updateTransformMat()
 
     def getPos(self):
+        """
+        .. deprecated:: 1.11.0
+           Use `.getTextPos()` method or `.text_pos` property instead.
+        """
         return self.__pos
 
-    pos = property(getPos, setPos)
+    pos = property(getPos)
+
+    def setTextR(self, r):
+        """setTextR(self, float)
+        Rotates the text around the screen's normal.
+        """
+        self.__roll = -r
+        self.updateTransformMat()
+
+    def getTextR(self):
+        return -self.__roll
+
+    text_r = property(getTextR, setTextR)
 
     def setRoll(self, roll):
         """setRoll(self, float)
-        Rotate the onscreen text around the screen's normal
+        Rotate the onscreen text around the screen's normal.
+
+        .. deprecated:: 1.11.0
+           Use ``setTextR(-roll)`` instead (note the negated sign).
         """
         self.__roll = roll
         self.updateTransformMat()
 
     def getRoll(self):
+        """
+        .. deprecated:: 1.11.0
+           Use ``-getTextR()`` instead (note the negated sign).
+        """
         return self.__roll
 
     roll = property(getRoll, setRoll)
 
-    def setScale(self, sx, sy = None):
-        """setScale(self, float, float)
+    def setTextScale(self, sx, sy = None):
+        """setTextScale(self, float, float)
         Scale the text in 2d space.  You may specify either a single
         uniform scale, or two scales, or a tuple of two scales.
         """
 
-        if sy == None:
+        if sy is None:
             if isinstance(sx, tuple):
                 self.__scale = sx
             else:
@@ -337,6 +392,38 @@ class OnscreenText(NodePath):
         else:
             self.__scale = (sx, sy)
         self.updateTransformMat()
+
+    def getTextScale(self):
+        return self.__scale
+
+    text_scale = property(getTextScale, setTextScale)
+
+    def setScale(self, sx, sy = None):
+        """setScale(self, float, float)
+        Scale the text in 2d space.  You may specify either a single
+        uniform scale, or two scales, or a tuple of two scales.
+
+        .. deprecated:: 1.11.0
+           Use `.setTextScale()` method or `.text_scale` property instead.
+        """
+
+        if sy is None:
+            if isinstance(sx, tuple):
+                self.__scale = sx
+            else:
+                self.__scale = (sx, sx)
+        else:
+            self.__scale = (sx, sy)
+        self.updateTransformMat()
+
+    def getScale(self):
+        """
+        .. deprecated:: 1.11.0
+           Use `.getTextScale()` method or `.text_scale` property instead.
+        """
+        return self.__scale
+
+    scale = property(getScale, setScale)
 
     def updateTransformMat(self):
         assert(isinstance(self.textNode, TextNode))
@@ -346,11 +433,6 @@ class OnscreenText(NodePath):
             Mat4.translateMat(Point3.rfu(self.__pos[0], 0, self.__pos[1]))
             )
         self.textNode.setTransform(mat)
-
-    def getScale(self):
-        return self.__scale
-
-    scale = property(getScale, setScale)
 
     def setWordwrap(self, wordwrap):
         self.__wordwrap = wordwrap

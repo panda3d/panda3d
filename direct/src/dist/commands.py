@@ -408,7 +408,8 @@ class build_apps(setuptools.Command):
             abi_tag += 'm'
 
         whldir = os.path.join(whlcache, '_'.join((platform, abi_tag)))
-        os.makedirs(whldir, exist_ok=True)
+        if not os.path.isdir(whldir):
+            os.makedirs(whldir)
 
         # Remove any .zip files. These are built from a VCS and block for an
         # interactive prompt on subsequent downloads.
@@ -946,6 +947,7 @@ class build_apps(setuptools.Command):
                    not pattern.pattern.endswith('/**'):
                     continue
 
+                pattern_dir = p3d.Filename(pattern.pattern).get_dirname()
                 if abspath.startswith(pattern_dir + '/'):
                     return True
 
