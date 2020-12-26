@@ -10,6 +10,7 @@ Recommended maintenance release.
 * Fix sounds resuming on reactivation if stop() was called while inactive (#559)
 * Collision traverser now releases GIL during traversal (#1033)
 * Fix crash caused by some gamepad drivers on Linux (#1066)
+* Add GraphicsPipe::get_display_zoom() for querying system DPI scaling
 * Skinning-enabled shaders can now properly render unskinned models as well
 * BitMask, SparseArray, BitArray types can now be pickled (#886)
 * VFSImporter now properly detects source file encodings in Python 3
