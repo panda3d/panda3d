@@ -789,6 +789,7 @@ def r_subdivideCollisions(self, solids, numSolidsInLeaves):
         return newSolids
 
 def r_constructCollisionTree(self, solidTree, parentNode, colName):
+        from panda3d.core import CollisionNode
         for item in solidTree:
             if type(item[0]) == type([]):
                 newNode = parentNode.attachNewNode('%s-branch' % colName)
