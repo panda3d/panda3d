@@ -224,7 +224,7 @@ cleanup() {
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55, 52, 0)
     avcodec_free_context(&_audio_ctx);
 #else
-    delete _audio_ctx;
+    av_free(_audio_ctx);
 #endif
   }
   _audio_ctx = nullptr;
