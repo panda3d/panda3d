@@ -756,14 +756,21 @@ if (COMPILER=="GCC"):
         PkgDisable("COCOA")
 
     if GetTarget() == 'darwin':
-        if 'x86_64' not in OSX_ARCHS and 'i386' not in OSX_ARCHS:
+        if OSX_ARCHS and 'x86_64' not in OSX_ARCHS and 'i386' not in OSX_ARCHS:
             # These support only these archs, so don't build them if we're not
             # targeting any of the supported archs.
             PkgDisable("FMODEX")
             PkgDisable("NVIDIACG")
-        elif (OSX_ARCHS and 'arm64' in OSX_ARCHS) or \
-             not os.path.isfile('/usr/lib/libstdc++.6.0.9.dylib'):
+        elif OSX_ARCHS and 'arm64' in OSX_ARCHS:
+            # We must be using the 11.0 SDK or higher, so can't build FMOD Ex
+            if not PkgSkip("FMODEX"):
+                Warn("thirdparty package fmodex is not supported when targeting arm64, excluding from build")
+            PkgDisable("FMODEX")
+        elif not os.path.isfile(SDK.get("MACOSX", "") + '/usr/lib/libstdc++.6.0.9.tbd') and \
+             not os.path.isfile(SDK.get("MACOSX", "") + '/usr/lib/libstdc++.6.0.9.dylib'):
             # Also, we can't target FMOD Ex on 10.14 and above
+            if not PkgSkip("FMODEX"):
+                Warn("thirdparty package fmodex requires one of MacOSX 10.9-10.13 SDK, excluding from build")
             PkgDisable("FMODEX")
 
     #if (PkgSkip("PYTHON")==0):
