@@ -97,9 +97,6 @@ static void update_memory_info(DisplayInformation *info) {
 }
 #endif
 
-// Temporarily declared as global float.
-static PN_stdfloat detected_display_zoom = 1.0;
-
 TypeHandle GraphicsPipe::_type_handle;
 
 /**
@@ -119,6 +116,7 @@ GraphicsPipe() :
 
   _display_width = 0;
   _display_height = 0;
+  _detected_display_zoom = 1.0;
 
   _display_information = new DisplayInformation();
 
@@ -287,15 +285,7 @@ get_display_zoom() const {
       return override;
     }
   }
-  return detected_display_zoom;
-}
-
-/**
- * Called by derived class to set the display zoom factor.
- */
-void GraphicsPipe::
-set_detected_display_zoom(PN_stdfloat zoom) {
-  detected_display_zoom = zoom;
+  return _detected_display_zoom;
 }
 
 /**
