@@ -294,6 +294,9 @@ class OnscreenText(NodePath):
     text = property(getText, setText)
 
     def setTextX(self, x):
+        """
+        .. versionadded:: 1.10.8
+        """
         self.setTextPos(x, self.__pos[1])
 
     def setX(self, x):
@@ -304,6 +307,9 @@ class OnscreenText(NodePath):
         self.setTextPos(x, self.__pos[1])
 
     def setTextY(self, y):
+        """
+        .. versionadded:: 1.10.8
+        """
         self.setTextPos(self.__pos[0], y)
 
     def setY(self, y):
@@ -316,6 +322,8 @@ class OnscreenText(NodePath):
     def setTextPos(self, x, y=None):
         """
         Position the onscreen text in 2d screen space
+
+        .. versionadded:: 1.10.8
         """
         if y is None:
             self.__pos = tuple(x)
@@ -324,6 +332,9 @@ class OnscreenText(NodePath):
         self.updateTransformMat()
 
     def getTextPos(self):
+        """
+        .. versionadded:: 1.10.8
+        """
         return self.__pos
 
     text_pos = property(getTextPos, setTextPos)
@@ -350,6 +361,8 @@ class OnscreenText(NodePath):
     def setTextR(self, r):
         """setTextR(self, float)
         Rotates the text around the screen's normal.
+
+        .. versionadded:: 1.10.8
         """
         self.__roll = -r
         self.updateTransformMat()
@@ -382,6 +395,8 @@ class OnscreenText(NodePath):
         """setTextScale(self, float, float)
         Scale the text in 2d space.  You may specify either a single
         uniform scale, or two scales, or a tuple of two scales.
+
+        .. versionadded:: 1.10.8
         """
 
         if sy is None:
@@ -394,6 +409,9 @@ class OnscreenText(NodePath):
         self.updateTransformMat()
 
     def getTextScale(self):
+        """
+        .. versionadded:: 1.10.8
+        """
         return self.__scale
 
     text_scale = property(getTextScale, setTextScale)
