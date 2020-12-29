@@ -19,7 +19,7 @@ def asTuple(self):
     Returns the vector as a tuple.
     """
     if __debug__:
-        assert not warnings.warn("VBase4.asTuple() is no longer needed and deprecated.  Use the vector directly instead.", DeprecationWarning, stacklevel=2)
+        warnings.warn("VBase4.asTuple() is no longer needed and deprecated.  Use the vector directly instead.", DeprecationWarning, stacklevel=2)
     return tuple(self)
 Dtool_funcToMethod(asTuple, VBase4)
 del asTuple

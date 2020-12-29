@@ -13,7 +13,7 @@ def remove_task ( ):
 
         if total_motion_trails > 0:
             if __debug__:
-                assert not warnings.warn("%d motion trails still exist when motion trail task is removed" % (total_motion_trails), RuntimeWarning, stacklevel=2)
+                warnings.warn("%d motion trails still exist when motion trail task is removed" % (total_motion_trails), RuntimeWarning, stacklevel=2)
 
         MotionTrail.motion_trail_list = [ ]
 

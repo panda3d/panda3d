@@ -1963,7 +1963,7 @@ class Freezer:
         if append_offset:
             # This is for legacy deploy-stub.
             if __debug__:
-                assert not warnings.warn("Could not find blob header. Is deploy-stub outdated?")
+                warnings.warn("Could not find blob header. Is deploy-stub outdated?")
             blob += struct.pack('<Q', blob_offset)
 
         with open(target, 'wb') as f:

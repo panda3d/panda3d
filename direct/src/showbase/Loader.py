@@ -329,7 +329,7 @@ class Loader(DirectObject):
 
         This is now deprecated: call cb.cancel() instead. """
         if __debug__:
-            assert not warnings.warn("This is now deprecated: call cb.cancel() instead.", DeprecationWarning, stacklevel=2)
+            warnings.warn("This is now deprecated: call cb.cancel() instead.", DeprecationWarning, stacklevel=2)
         cb.cancel()
 
     def isRequestPending(self, cb):
@@ -339,7 +339,7 @@ class Loader(DirectObject):
 
         This is now deprecated: call cb.done() instead. """
         if __debug__:
-            assert not warnings.warn("This is now deprecated: call cb.done() instead.", DeprecationWarning, stacklevel=2)
+            warnings.warn("This is now deprecated: call cb.done() instead.", DeprecationWarning, stacklevel=2)
         return bool(cb.requests)
 
     def loadModelOnce(self, modelPath):
@@ -351,7 +351,7 @@ class Loader(DirectObject):
         the model if successful or None otherwise
         """
         if __debug__:
-            assert not warnings.warn("loader.loadModelOnce() is deprecated; use loader.loadModel() instead.", DeprecationWarning, stacklevel=2)
+            warnings.warn("loader.loadModelOnce() is deprecated; use loader.loadModel() instead.", DeprecationWarning, stacklevel=2)
 
         return self.loadModel(modelPath, noCache = False)
 
@@ -363,7 +363,7 @@ class Loader(DirectObject):
         a copy of the model if successful or None otherwise
         """
         if __debug__:
-            assert not warnings.warn("loader.loadModelCopy() is deprecated; use loader.loadModel() instead.", DeprecationWarning, stacklevel=2)
+            warnings.warn("loader.loadModelCopy() is deprecated; use loader.loadModel() instead.", DeprecationWarning, stacklevel=2)
 
         return self.loadModel(modelPath, loaderOptions = loaderOptions, noCache = False)
 
@@ -382,7 +382,7 @@ class Loader(DirectObject):
         However, if you're loading a font, see loadFont(), below.
         """
         if __debug__:
-            assert not warnings.warn("loader.loadModelNode() is deprecated; use loader.loadModel() instead.", DeprecationWarning, stacklevel=2)
+            warnings.warn("loader.loadModelNode() is deprecated; use loader.loadModel() instead.", DeprecationWarning, stacklevel=2)
 
         model = self.loadModel(modelPath, noCache = False)
         if model is not None:
