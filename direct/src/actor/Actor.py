@@ -1659,7 +1659,8 @@ class Actor(DirectObject, NodePath):
 
         This method is deprecated.  You should use setBlend() instead.
         """
-        warnings.warn("This method is deprecated.  You should use setBlend() instead.", DeprecationWarning, stacklevel=2)
+        if __debug__:
+            assert not warnings.warn("This method is deprecated.  You should use setBlend() instead.", DeprecationWarning, stacklevel=2)
         self.setBlend(animBlend = True, blendType = blendType, partName = partName)
 
     def disableBlend(self, partName = None):
@@ -1669,7 +1670,8 @@ class Actor(DirectObject, NodePath):
 
         This method is deprecated.  You should use setBlend() instead.
         """
-        warnings.warn("This method is deprecated.  You should use setBlend() instead.", DeprecationWarning, stacklevel=2)
+        if __debug__:
+            assert not warnings.warn("This method is deprecated.  You should use setBlend() instead.", DeprecationWarning, stacklevel=2)
         self.setBlend(animBlend = False, partName = partName)
 
     def setControlEffect(self, animName, effect,

@@ -31,7 +31,8 @@ import warnings
 if sys.version_info < (3, 0):
     # Warn the user.  They might be using Python 2 by accident.
     # Do we want to leave this as this type of warning or should we switch to warnings class?
-    warnings.warn("=================================================================\n \
+    if __debug__:
+            assert not warnings.warn("=================================================================\n \
                  WARNING: You are using Python 2, which has reached the end of its\n \
                  WARNING: life as of January 1, 2020.  Please upgrade to Python 3.\n \
                  =================================================================",

@@ -19,7 +19,8 @@ del setT
 #####################################################################
 
 def play(self, t0 = 0.0, duration = None, scale = 1.0):
-    warnings.warn("CInterval.play() is deprecated, use start() instead", DeprecationWarning, stacklevel=2)
+    if __debug__:
+        assert not warnings.warn("CInterval.play() is deprecated, use start() instead", DeprecationWarning, stacklevel=2)
     if duration:  # None or 0 implies full length
         self.start(t0, t0 + duration, scale)
     else:
@@ -30,7 +31,8 @@ del play
 #####################################################################
 
 def stop(self):
-    warnings.warn("CInterval.stop() is deprecated, use finish() instead", DeprecationWarning, stacklevel=2)
+    if __debug__:
+        assert not warnings.warn("CInterval.stop() is deprecated, use finish() instead", DeprecationWarning, stacklevel=2)
     self.finish()
 
 Dtool_funcToMethod(stop, CInterval)
@@ -38,7 +40,8 @@ del stop
 #####################################################################
 
 def setFinalT(self):
-    warnings.warn("CInterval.setFinalT() is deprecated, use finish() instead", DeprecationWarning, stacklevel=2)
+    if __debug__:
+        assert not warnings.warn("CInterval.setFinalT() is deprecated, use finish() instead", DeprecationWarning, stacklevel=2)
     self.finish()
 
 Dtool_funcToMethod(setFinalT, CInterval)

@@ -64,7 +64,8 @@ directNotify.setDconfigLevels()
 
 def run():
     """Deprecated alias for :meth:`base.run() <.ShowBase.run>`."""
-    warnings.warn("run() is deprecated, use base.run() instead", DeprecationWarning, stacklevel=2)
+    if __debug__:
+        assert not warnings.warn("run() is deprecated, use base.run() instead", DeprecationWarning, stacklevel=2)
     base.run()
 
 

@@ -2035,7 +2035,8 @@ class ShowBase(DirectObject.DirectObject):
         """
         :deprecated: Use `.Loader.Loader.loadSfx()` instead.
         """
-        warnings.warn("base.loadSfx is deprecated, use base.loader.loadSfx instead.", DeprecationWarning, stacklevel=2)
+        if __debug__:
+            assert not warnings.warn("base.loadSfx is deprecated, use base.loader.loadSfx instead.", DeprecationWarning, stacklevel=2)
         return self.loader.loadSfx(name)
 
     # This function should only be in the loader but is here for
@@ -2045,7 +2046,8 @@ class ShowBase(DirectObject.DirectObject):
         """
         :deprecated: Use `.Loader.Loader.loadMusic()` instead.
         """
-        warnings.warn("base.loadMusic is deprecated, use base.loader.loadMusic instead.", DeprecationWarning, stacklevel=2)
+        if __debug__:
+            assert not warnings.warn("base.loadMusic is deprecated, use base.loader.loadMusic instead.", DeprecationWarning, stacklevel=2)
         return self.loader.loadMusic(name)
 
     def playSfx(
