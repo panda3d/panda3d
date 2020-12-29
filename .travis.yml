@@ -1,5 +1,9 @@
 language: cpp
 sudo: false
+branches:
+  only:
+    - release/1.10.x
+    - release/1.9.x
 matrix:
   include:
     - compiler: clang
