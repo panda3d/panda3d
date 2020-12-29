@@ -69,6 +69,11 @@ if(ANDROID)
     androidLogStream.cxx)
 endif()
 
+if(EMSCRIPTEN)
+  set(P3PRC_SOURCES ${P3PRC_SOURCES}
+    emscriptenLogStream.cxx)
+endif()
+
 if(HAVE_OPENSSL)
   list(APPEND P3PRC_SOURCES encryptStreamBuf.cxx encryptStream.cxx)
 endif()
