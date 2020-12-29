@@ -25,7 +25,8 @@ from direct.tkwidgets.Slider import Slider
 from direct.tkwidgets.EntryScale import EntryScale
 from direct.tkwidgets.VectorWidgets import Vector2Entry, Vector3Entry
 from direct.tkwidgets.VectorWidgets import ColorEntry
-import os, string, sys, Pmw
+import os, sys, Pmw
+import math
 
 if sys.version_info >= (3, 0):
     from tkinter import Button, Frame, Radiobutton, Checkbutton, Label
@@ -374,7 +375,7 @@ class MopathRecorder(AppShell, DirectObject):
         self.speedEntry.bind(
             '<Return>',
             lambda e = None, s = self: s.setSpeedScale(
-            string.atof(s.speedVar.get())))
+            float(s.speedVar.get())))
         self.speedEntry.pack(side = tkinter.LEFT, expand = 0)
         frame.pack(fill = tkinter.X, expand = 1)
 

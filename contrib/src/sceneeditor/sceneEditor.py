@@ -36,17 +36,12 @@ from seBlendAnimPanel import *
 from controllerWindow import *
 from AlignTool import *
 
-
-
-import os
-import string
 from direct.tkwidgets import Dial
 from direct.tkwidgets import Floater
 from direct.tkwidgets import Slider
 from direct.actor import Actor
 import seAnimPanel
 from direct.task import Task
-import math
 
 #################################################################
 # All scene and windows object will be stored in here.

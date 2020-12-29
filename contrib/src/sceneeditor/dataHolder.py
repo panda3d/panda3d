@@ -2,7 +2,7 @@
 # TK and PMW INTERFACE MODULES#
 ###############################
 from direct.showbase.TkGlobal import*
-import Pmw
+import Pmw, sys
 from direct.tkwidgets import Dial
 from direct.tkwidgets import Floater
 
@@ -27,7 +27,6 @@ from direct.actor import Actor
 # Core Python Modules         #
 ###############################
 import os
-import string
 import sys
 
 import seParticleEffect
