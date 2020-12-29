@@ -212,7 +212,7 @@ class CompilationEnvironment:
                 self.linkDll = 'link /nologo /DLL /MAP:NUL /FIXED:NO /OPT:REF /INCREMENTAL:NO /LIBPATH:"%(PSDK)s\\lib" /LIBPATH:"%(MSVC)s\\lib%(suffix64)s" /LIBPATH:"%(python)s\\libs"  /out:%(basename)s%(dllext)s.pyd %(basename)s.obj'
 
         elif self.platform.startswith('osx_'):
-            # OSX
+            # macOS
             proc = self.platform.split('_', 1)[1]
             if proc == 'i386':
                 self.arch = '-arch i386'
@@ -220,6 +220,8 @@ class CompilationEnvironment:
                 self.arch = '-arch ppc'
             elif proc == 'amd64':
                 self.arch = '-arch x86_64'
+            elif proc in ('arm64', 'aarch64'):
+                self.arch = '-arch arm64'
             self.compileObjExe = "gcc -c %(arch)s -o %(basename)s.o -O2 -I%(pythonIPath)s %(filename)s"
             self.compileObjDll = "gcc -fPIC -c %(arch)s -o %(basename)s.o -O2 -I%(pythonIPath)s %(filename)s"
             self.linkExe = "gcc %(arch)s -o %(basename)s %(basename)s.o -framework Python"
@@ -637,7 +639,9 @@ okMissing = [
     'EasyDialogs', 'SOCKS', 'ic', 'rourl2path', 'termios', 'vms_lib',
     'OverrideFrom23._Res', 'email', 'email.Utils', 'email.Generator',
     'email.Iterators', '_subprocess', 'gestalt', 'java.lang',
-    'direct.extensions_native.extensions_darwin',
+    'direct.extensions_native.extensions_darwin', '_manylinux',
+    'collections.Iterable', 'collections.Mapping', 'collections.MutableMapping',
+    'collections.Sequence', 'numpy_distutils',
     ]
 
 # Since around macOS 10.15, Apple's codesigning process has become more strict.
@@ -2500,6 +2504,9 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
         except ImportError as msg:
             self.msg(2, "ImportError:", str(msg))
             self._add_badmodule(name, caller)
+        except SyntaxError as msg:
+            self.msg(2, "SyntaxError:", str(msg))
+            self._add_badmodule(name, caller)
         else:
             if fromlist:
                 for sub in fromlist:
@@ -2512,6 +2519,76 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
                     except ImportError as msg:
                         self.msg(2, "ImportError:", str(msg))
                         self._add_badmodule(fullname, caller)
+
+    def scan_code(self, co, m):
+        code = co.co_code
+        # This was renamed to scan_opcodes in Python 3.6
+        if hasattr(self, 'scan_opcodes_25'):
+            scanner = self.scan_opcodes_25
+        else:
+            scanner = self.scan_opcodes
+
+        for what, args in scanner(co):
+            if what == "store":
+                name, = args
+                m.globalnames[name] = 1
+            elif what in ("import", "absolute_import"):
+                fromlist, name = args
+                have_star = 0
+                if fromlist is not None:
+                    if "*" in fromlist:
+                        have_star = 1
+                    fromlist = [f for f in fromlist if f != "*"]
+                if what == "absolute_import": level = 0
+                else: level = -1
+                self._safe_import_hook(name, m, fromlist, level=level)
+                if have_star:
+                    # We've encountered an "import *". If it is a Python module,
+                    # the code has already been parsed and we can suck out the
+                    # global names.
+                    mm = None
+                    if m.__path__:
+                        # At this point we don't know whether 'name' is a
+                        # submodule of 'm' or a global module. Let's just try
+                        # the full name first.
+                        mm = self.modules.get(m.__name__ + "." + name)
+                    if mm is None:
+                        mm = self.modules.get(name)
+                    if mm is not None:
+                        m.globalnames.update(mm.globalnames)
+                        m.starimports.update(mm.starimports)
+                        if mm.__code__ is None:
+                            m.starimports[name] = 1
+                    else:
+                        m.starimports[name] = 1
+            elif what == "relative_import":
+                level, fromlist, name = args
+                parent = self.determine_parent(m, level=level)
+                if name:
+                    self._safe_import_hook(name, m, fromlist, level=level)
+                else:
+                    self._safe_import_hook(parent.__name__, None, fromlist, level=0)
+
+                if fromlist and "*" in fromlist:
+                    if name:
+                        mm = self.modules.get(parent.__name__ + "." + name)
+                    else:
+                        mm = self.modules.get(parent.__name__)
+
+                    if mm is not None:
+                        m.globalnames.update(mm.globalnames)
+                        m.starimports.update(mm.starimports)
+                        if mm.__code__ is None:
+                            m.starimports[name] = 1
+                    else:
+                        m.starimports[name] = 1
+            else:
+                # We don't expect anything else from the generator.
+                raise RuntimeError(what)
+
+        for c in co.co_consts:
+            if isinstance(c, type(co)):
+                self.scan_code(c, m)
 
     def find_module(self, name, path=None, parent=None):
         """ Finds a module with the indicated name on the given search path

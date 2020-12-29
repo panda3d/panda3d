@@ -63,7 +63,9 @@
 #cmakedefine HAVE_PNM
 
 /* Define if we have CG installed.  */
+#ifndef __aarch64__
 #cmakedefine HAVE_CG
+#endif
 
 /* Define if we have zlib installed.  */
 #cmakedefine HAVE_ZLIB

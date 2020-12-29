@@ -190,8 +190,6 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
     }
 
     for (int index = 0; index < num_children; ++index) {
-      const Switch &sw = cdata->_switch_vector[index];
-
       CPT(InstanceList) instances = data._instances->without(in_range[index]);
       if (!instances->empty()) {
         // At least one instance is visible in this switch level.

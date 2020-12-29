@@ -82,6 +82,8 @@ if(APPLE)
   find_library(FOUNDATION_LIBRARY Foundation)
   find_library(APPKIT_LIBRARY AppKit)
   target_link_libraries(p3dtoolutil ${FOUNDATION_LIBRARY} ${APPKIT_LIBRARY})
+
+  mark_as_advanced(FOUNDATION_LIBRARY APPKIT_LIBRARY)
 endif()
 
 # These are all used by executionEnvironment.cxx/filename.cxx

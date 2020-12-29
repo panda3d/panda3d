@@ -57,7 +57,7 @@ private:
     size_t _remaining;
   };
 
-  typedef std::set<Page> Pages;
+  typedef std::multiset<Page> Pages;
   Pages _pages;
 
   size_t _total_alloc;

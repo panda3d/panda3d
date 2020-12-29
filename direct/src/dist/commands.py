@@ -7,6 +7,7 @@ on how to use these commands.
 import collections
 import os
 import plistlib
+import pkg_resources
 import sys
 import subprocess
 import zipfile
@@ -24,21 +25,10 @@ import distutils.log
 
 from . import FreezeTool
 from . import pefile
+from . import installers
 from .icon import Icon
 import panda3d.core as p3d
 import warnings
-
-if sys.version_info < (3, 0):
-    # Warn the user.  They might be using Python 2 by accident.
-    # Do we want to leave this as this type of warning or should we switch to warnings class?
-    if __debug__:
-            assert not warnings.warn("=================================================================\n \
-                 WARNING: You are using Python 2, which has reached the end of its\n \
-                 WARNING: life as of January 1, 2020.  Please upgrade to Python 3.\n \
-                 =================================================================",
-                 FutureWarning)
-    sys.stdout.flush()
-    time.sleep(4.0)
 
 
 def _parse_list(input):
@@ -216,7 +206,8 @@ class build_apps(setuptools.Command):
             'dciman32.dll', 'comdlg32.dll', 'comctl32.dll', 'ole32.dll',
             'oleaut32.dll', 'gdiplus.dll', 'winmm.dll', 'iphlpapi.dll',
             'msvcrt.dll', 'kernelbase.dll', 'msimg32.dll', 'msacm32.dll',
-            'setupapi.dll', 'version.dll',
+            'setupapi.dll', 'version.dll', 'userenv.dll', 'netapi32.dll',
+            'crypt32.dll', 'bcrypt.dll',
 
             # manylinux1/linux
             'libdl.so.*', 'libstdc++.so.*', 'libm.so.*', 'libgcc_s.so.*',
@@ -232,13 +223,44 @@ class build_apps(setuptools.Command):
             '/usr/lib/libSystem.*.dylib',
             '/usr/lib/libbz2.*.dylib',
             '/usr/lib/libedit.*.dylib',
+            '/usr/lib/libffi.dylib',
+            '/usr/lib/libauditd.0.dylib',
+            '/usr/lib/libgermantok.dylib',
+            '/usr/lib/liblangid.dylib',
+            '/usr/lib/libarchive.2.dylib',
+            '/usr/lib/libipsec.A.dylib',
+            '/usr/lib/libpanel.5.4.dylib',
+            '/usr/lib/libiodbc.2.1.18.dylib',
+            '/usr/lib/libhunspell-1.2.0.0.0.dylib',
+            '/usr/lib/libsqlite3.dylib',
+            '/usr/lib/libpam.1.dylib',
+            '/usr/lib/libtidy.A.dylib',
+            '/usr/lib/libDHCPServer.A.dylib',
+            '/usr/lib/libpam.2.dylib',
+            '/usr/lib/libXplugin.1.dylib',
+            '/usr/lib/libxslt.1.dylib',
+            '/usr/lib/libiodbcinst.2.1.18.dylib',
+            '/usr/lib/libBSDPClient.A.dylib',
+            '/usr/lib/libsandbox.1.dylib',
+            '/usr/lib/libform.5.4.dylib',
+            '/usr/lib/libbsm.0.dylib',
+            '/usr/lib/libMatch.1.dylib',
+            '/usr/lib/libresolv.9.dylib',
+            '/usr/lib/libcharset.1.dylib',
+            '/usr/lib/libxml2.2.dylib',
+            '/usr/lib/libiconv.2.dylib',
+            '/usr/lib/libScreenReader.dylib',
+            '/usr/lib/libdtrace.dylib',
+            '/usr/lib/libicucore.A.dylib',
+            '/usr/lib/libsasl2.2.dylib',
+            '/usr/lib/libpcap.A.dylib',
+            '/usr/lib/libexslt.0.dylib',
+            '/usr/lib/libcurl.4.dylib',
+            '/usr/lib/libncurses.5.4.dylib',
+            '/usr/lib/libxar.1.dylib',
+            '/usr/lib/libmenu.5.4.dylib',
             '/System/Library/**',
         ]
-
-        if sys.version_info >= (3, 5):
-            # Python 3.5+ requires at least Windows Vista to run anyway, so we
-            # shouldn't warn about DLLs that are shipped with Vista.
-            self.exclude_dependencies += ['bcrypt.dll']
 
         self.package_data_dirs = {}
         self.hidden_imports = {}
@@ -374,7 +396,8 @@ class build_apps(setuptools.Command):
             abi_tag += 'm'
 
         whldir = os.path.join(whlcache, '_'.join((platform, abi_tag)))
-        os.makedirs(whldir, exist_ok=True)
+        if not os.path.isdir(whldir):
+            os.makedirs(whldir)
 
         # Remove any .zip files. These are built from a VCS and block for an
         # interactive prompt on subsequent downloads.
@@ -494,6 +517,7 @@ class build_apps(setuptools.Command):
 
         path = sys.path[:]
         p3dwhl = None
+        wheelpaths = []
 
         if use_wheels:
             wheelpaths = self.download_wheels(platform)
@@ -772,6 +796,7 @@ class build_apps(setuptools.Command):
         for module, source_path in freezer_extras:
             if source_path is not None:
                 # Rename panda3d/core.pyd to panda3d.core.pyd
+                source_path = os.path.normpath(source_path)
                 basename = os.path.basename(source_path)
                 if '.' in module:
                     basename = module.rsplit('.', 1)[0] + '.' + basename
@@ -781,6 +806,20 @@ class build_apps(setuptools.Command):
                 if len(parts) >= 3 and '-' in parts[-2]:
                     parts = parts[:-2] + parts[-1:]
                     basename = '.'.join(parts)
+
+                # Was this not found in a wheel?  Then we may have a problem,
+                # since it may be for the current platform instead of the target
+                # platform.
+                if use_wheels:
+                    found_in_wheel = False
+                    for whl in wheelpaths:
+                        whl = os.path.normpath(whl)
+                        if source_path.lower().startswith(os.path.join(whl, '').lower()):
+                            found_in_wheel = True
+                            break
+
+                    if not found_in_wheel:
+                        self.warn('{} was not found in any downloaded wheel, is a dependency missing from requirements.txt?'.format(basename))
             else:
                 # Builtin module, but might not be builtin in wheel libs, so double check
                 if module in whl_modules:
@@ -884,6 +923,27 @@ class build_apps(setuptools.Command):
             return check_pattern(fname, include_copy_list) and \
                 not check_pattern(fname, ignore_copy_list)
 
+        def skip_directory(src):
+            # Provides a quick-out for directory checks.  NOT recursive.
+            fn = p3d.Filename.from_os_specific(os.path.normpath(src))
+            path = fn.get_fullpath()
+            fn.make_absolute()
+            abspath = fn.get_fullpath()
+
+            for pattern in ignore_copy_list:
+                if not pattern.pattern.endswith('/*') and \
+                   not pattern.pattern.endswith('/**'):
+                    continue
+
+                pattern_dir = p3d.Filename(pattern.pattern).get_dirname()
+                if abspath.startswith(pattern_dir + '/'):
+                    return True
+
+                if path.startswith(pattern_dir + '/'):
+                    return True
+
+            return False
+
         def copy_file(src, dst):
             src = os.path.normpath(src)
             dst = os.path.normpath(dst)
@@ -924,6 +984,10 @@ class build_apps(setuptools.Command):
         rootdir = os.getcwd()
         for dirname, subdirlist, filelist in os.walk(rootdir):
             dirpath = os.path.relpath(dirname, rootdir)
+            if skip_directory(dirpath):
+                self.announce('skipping directory {}'.format(dirpath))
+                continue
+
             for fname in filelist:
                 src = os.path.join(dirpath, fname)
                 dst = os.path.join(builddir, update_path(src))
@@ -1252,6 +1316,14 @@ class bdist_apps(setuptools.Command):
         # Everything else defaults to ['zip']
     }
 
+    DEFAULT_INSTALLER_FUNCS = {
+        'zip': installers.create_zip,
+        'gztar': installers.create_gztar,
+        'bztar': installers.create_bztar,
+        'xztar': installers.create_xztar,
+        'nsis': installers.create_nsis,
+    }
+
     description = 'bundle built Panda3D applications into distributable forms'
     user_options = build_apps.user_options + [
         ('dist-dir=', 'd', 'directory to put final built distributions in'),
@@ -1265,6 +1337,8 @@ class bdist_apps(setuptools.Command):
         self.installers = {}
         self.dist_dir = os.path.join(os.getcwd(), 'dist')
         self.skip_build = False
+        self.installer_functions = {}
+        self._current_platform = None
         for opt in self._build_apps_options():
             setattr(self, opt, None)
 
@@ -1276,145 +1350,19 @@ class bdist_apps(setuptools.Command):
             for key, value in _parse_dict(self.installers).items()
         }
 
-    def _get_archive_basedir(self):
+        tmp = self.DEFAULT_INSTALLER_FUNCS.copy()
+        tmp.update(self.installer_functions)
+        tmp.update({
+            entrypoint.name: entrypoint.load()
+            for entrypoint in pkg_resources.iter_entry_points('panda3d.bdist_apps.installers')
+        })
+        self.installer_functions = tmp
+
+    def get_archive_basedir(self):
         return self.distribution.get_name()
 
-    def create_zip(self, basename, build_dir):
-        import zipfile
-
-        base_dir = self._get_archive_basedir()
-
-        with zipfile.ZipFile(basename+'.zip', 'w', compression=zipfile.ZIP_DEFLATED) as zf:
-            zf.write(build_dir, base_dir)
-
-            for dirpath, dirnames, filenames in os.walk(build_dir):
-                for name in sorted(dirnames):
-                    path = os.path.normpath(os.path.join(dirpath, name))
-                    zf.write(path, path.replace(build_dir, base_dir, 1))
-                for name in filenames:
-                    path = os.path.normpath(os.path.join(dirpath, name))
-                    if os.path.isfile(path):
-                        zf.write(path, path.replace(build_dir, base_dir, 1))
-
-    def create_tarball(self, basename, build_dir, tar_compression):
-        import tarfile
-
-        base_dir = self._get_archive_basedir()
-        build_cmd = self.get_finalized_command('build_apps')
-        binary_names = list(build_cmd.console_apps.keys()) + list(build_cmd.gui_apps.keys())
-
-        def tarfilter(tarinfo):
-            if tarinfo.isdir() or os.path.basename(tarinfo.name) in binary_names:
-                tarinfo.mode = 0o755
-            else:
-                tarinfo.mode = 0o644
-            return tarinfo
-
-        with tarfile.open('{}.tar.{}'.format(basename, tar_compression), 'w|{}'.format(tar_compression)) as tf:
-            tf.add(build_dir, base_dir, filter=tarfilter)
-
-    def create_nsis(self, basename, build_dir, is_64bit):
-        # Get a list of build applications
-        build_cmd = self.get_finalized_command('build_apps')
-        apps = build_cmd.gui_apps.copy()
-        apps.update(build_cmd.console_apps)
-        apps = [
-            '{}.exe'.format(i)
-            for i in apps
-        ]
-
-        shortname = self.distribution.get_name()
-
-        # Create the .nsi installer script
-        nsifile = p3d.Filename(build_cmd.build_base, shortname + ".nsi")
-        nsifile.unlink()
-        nsi = open(nsifile.to_os_specific(), "w")
-
-        # Some global info
-        nsi.write('Name "%s"\n' % shortname)
-        nsi.write('OutFile "%s"\n' % os.path.join(self.dist_dir, basename+'.exe'))
-        if is_64bit:
-            nsi.write('InstallDir "$PROGRAMFILES64\\%s"\n' % shortname)
-        else:
-            nsi.write('InstallDir "$PROGRAMFILES\\%s"\n' % shortname)
-        nsi.write('SetCompress auto\n')
-        nsi.write('SetCompressor lzma\n')
-        nsi.write('ShowInstDetails nevershow\n')
-        nsi.write('ShowUninstDetails nevershow\n')
-        nsi.write('InstType "Typical"\n')
-
-        # Tell Vista that we require admin rights
-        nsi.write('RequestExecutionLevel admin\n')
-        nsi.write('\n')
-
-        # TODO offer run and desktop shortcut after we figure out how to deal
-        # with multiple apps
-
-        nsi.write('!include "MUI2.nsh"\n')
-        nsi.write('!define MUI_ABORTWARNING\n')
-        nsi.write('\n')
-        nsi.write('Var StartMenuFolder\n')
-        nsi.write('!insertmacro MUI_PAGE_WELCOME\n')
-        # TODO license file
-        nsi.write('!insertmacro MUI_PAGE_DIRECTORY\n')
-        nsi.write('!insertmacro MUI_PAGE_STARTMENU Application $StartMenuFolder\n')
-        nsi.write('!insertmacro MUI_PAGE_INSTFILES\n')
-        nsi.write('!insertmacro MUI_PAGE_FINISH\n')
-        nsi.write('!insertmacro MUI_UNPAGE_WELCOME\n')
-        nsi.write('!insertmacro MUI_UNPAGE_CONFIRM\n')
-        nsi.write('!insertmacro MUI_UNPAGE_INSTFILES\n')
-        nsi.write('!insertmacro MUI_UNPAGE_FINISH\n')
-        nsi.write('!insertmacro MUI_LANGUAGE "English"\n')
-
-        # This section defines the installer.
-        nsi.write('Section "" SecCore\n')
-        nsi.write('  SetOutPath "$INSTDIR"\n')
-        curdir = ""
-        nsi_dir = p3d.Filename.fromOsSpecific(build_cmd.build_base)
-        build_root_dir = p3d.Filename.fromOsSpecific(build_dir)
-        for root, dirs, files in os.walk(build_dir):
-            for name in files:
-                basefile = p3d.Filename.fromOsSpecific(os.path.join(root, name))
-                file = p3d.Filename(basefile)
-                file.makeAbsolute()
-                file.makeRelativeTo(nsi_dir)
-                outdir = p3d.Filename(basefile)
-                outdir.makeAbsolute()
-                outdir.makeRelativeTo(build_root_dir)
-                outdir = outdir.getDirname().replace('/', '\\')
-                if curdir != outdir:
-                    nsi.write('  SetOutPath "$INSTDIR\\%s"\n' % outdir)
-                    curdir = outdir
-                nsi.write('  File "%s"\n' % (file.toOsSpecific()))
-        nsi.write('  SetOutPath "$INSTDIR"\n')
-        nsi.write('  WriteUninstaller "$INSTDIR\\Uninstall.exe"\n')
-        nsi.write('  ; Start menu items\n')
-        nsi.write('  !insertmacro MUI_STARTMENU_WRITE_BEGIN Application\n')
-        nsi.write('    CreateDirectory "$SMPROGRAMS\\$StartMenuFolder"\n')
-        for app in apps:
-            nsi.write('    CreateShortCut "$SMPROGRAMS\\$StartMenuFolder\\%s.lnk" "$INSTDIR\\%s"\n' % (shortname, app))
-        nsi.write('    CreateShortCut "$SMPROGRAMS\\$StartMenuFolder\\Uninstall.lnk" "$INSTDIR\\Uninstall.exe"\n')
-        nsi.write('  !insertmacro MUI_STARTMENU_WRITE_END\n')
-        nsi.write('SectionEnd\n')
-
-        # This section defines the uninstaller.
-        nsi.write('Section Uninstall\n')
-        nsi.write('  RMDir /r "$INSTDIR"\n')
-        nsi.write('  ; Desktop icon\n')
-        nsi.write('  Delete "$DESKTOP\\%s.lnk"\n' % shortname)
-        nsi.write('  ; Start menu items\n')
-        nsi.write('  !insertmacro MUI_STARTMENU_GETFOLDER Application $StartMenuFolder\n')
-        nsi.write('  RMDir /r "$SMPROGRAMS\\$StartMenuFolder"\n')
-        nsi.write('SectionEnd\n')
-        nsi.close()
-
-        cmd = ['makensis']
-        for flag in ["V2"]:
-            cmd.append(
-                '{}{}'.format('/' if sys.platform.startswith('win') else '-', flag)
-            )
-        cmd.append(nsifile.to_os_specific())
-        subprocess.check_call(cmd)
+    def get_current_platform(self):
+        return self._current_platform
 
     def run(self):
         build_cmd = self.distribution.get_command_obj('build_apps')
@@ -1436,35 +1384,15 @@ class bdist_apps(setuptools.Command):
             build_dir = os.path.join(build_base, platform)
             basename = '{}_{}'.format(self.distribution.get_fullname(), platform)
             installers = self.installers.get(platform, self.DEFAULT_INSTALLERS.get(platform, ['zip']))
+            self._current_platform = platform
 
             for installer in installers:
                 self.announce('\nBuilding {} for platform: {}'.format(installer, platform), distutils.log.INFO)
+                if installer not in self.installer_functions:
+                    self.announce(
+                        '\tUnknown installer: {}'.format(installer),
+                        distutils.log.ERROR
+                    )
+                    continue
 
-                if installer == 'zip':
-                    self.create_zip(basename, build_dir)
-                elif installer in ('gztar', 'bztar', 'xztar'):
-                    compress = installer.replace('tar', '')
-                    if compress == 'bz':
-                        compress = 'bz2'
-
-                    self.create_tarball(basename, build_dir, compress)
-                elif installer == 'nsis':
-                    if not platform.startswith('win'):
-                        self.announce(
-                            '\tNSIS installer not supported for platform: {}'.format(platform),
-                            distutils.log.ERROR
-                        )
-                        continue
-                    try:
-                        subprocess.call(['makensis', '--version'])
-                    except OSError:
-                        self.announce(
-                            '\tCould not find makensis tool that is required to build NSIS installers',
-                            distutils.log.ERROR
-                        )
-                        # continue
-                    is_64bit = platform == 'win_amd64'
-                    self.create_nsis(basename, build_dir, is_64bit)
-
-                else:
-                    self.announce('\tUnknown installer: {}'.format(installer), distutils.log.ERROR)
+                self.installer_functions[installer](self, basename, build_dir)

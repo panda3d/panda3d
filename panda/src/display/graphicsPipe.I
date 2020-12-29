@@ -81,3 +81,11 @@ INLINE GraphicsDevice *GraphicsPipe::
 get_device() const {
   return _device;
 }
+
+/**
+ * Called by derived class to set the display zoom factor.
+ */
+INLINE void GraphicsPipe::
+set_detected_display_zoom(PN_stdfloat zoom) {
+  _detected_display_zoom = zoom;
+}

@@ -1,6 +1,26 @@
 from panda3d import core
 
 
+def test_geom_tristrips():
+    prim = core.GeomTristrips(core.GeomEnums.UH_static)
+    prim.add_vertex(0)
+    prim.add_vertex(1)
+    prim.add_vertex(2)
+    prim.add_vertex(3)
+    prim.close_primitive()
+    prim.add_vertex(0)
+    prim.add_vertex(1)
+    prim.add_vertex(2)
+    prim.close_primitive()
+
+    verts = prim.get_vertex_list()
+    assert tuple(verts) == (
+        0, 1, 2, 3,
+        3, 0,
+        0, 1, 2,
+    )
+
+
 def test_geom_triangles_adjacency():
     prim = core.GeomTriangles(core.GeomEnums.UH_static)
     prim.add_vertex(0)

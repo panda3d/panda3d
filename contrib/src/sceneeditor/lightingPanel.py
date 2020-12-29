@@ -7,15 +7,11 @@ from direct.tkwidgets.AppShell import AppShell
 from seColorEntry import *
 from direct.tkwidgets.VectorWidgets import Vector3Entry
 from direct.tkwidgets.Slider import Slider
-import sys, math, types, Pmw
+import Pmw
 from panda3d.core import *
 
-if sys.version_info >= (3, 0):
-    from tkinter import Frame, Button, Menubutton, Menu
-    import tkinter
-else:
-    from Tkinter import Frame, Button, Menubutton, Menu
-    import Tkinter as tkinter
+from tkinter import Frame, Button, Menubutton, Menu
+import tkinter
 
 
 class lightingPanel(AppShell):

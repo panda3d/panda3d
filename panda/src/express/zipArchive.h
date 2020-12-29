@@ -26,6 +26,9 @@
 #include "pvector.h"
 #include "vector_uchar.h"
 
+// Defined by Cocoa, conflicts with the definition below.
+#undef verify
+
 /**
  * A file that contains a set of files.
  */

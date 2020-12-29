@@ -447,8 +447,8 @@ def rgbPanel(self, cb = None):
         # Don't use a regular import, to prevent ModuleFinder from picking
         # it up as a dependency when building a .p3d package.
         import importlib
-        Slider = importlib.import_module('direct.tkwidgets.Slider')
-        return Slider.rgbPanel(self, cb)
+        Valuator = importlib.import_module('direct.tkwidgets.Valuator')
+        return Valuator.rgbPanel(self, cb)
 
 Dtool_funcToMethod(rgbPanel, NodePath)
 del rgbPanel
@@ -804,6 +804,7 @@ def r_subdivideCollisions(self, solids, numSolidsInLeaves):
         return newSolids
 
 def r_constructCollisionTree(self, solidTree, parentNode, colName):
+        from panda3d.core import CollisionNode
         for item in solidTree:
             if type(item[0]) == type([]):
                 newNode = parentNode.attachNewNode('%s-branch' % colName)

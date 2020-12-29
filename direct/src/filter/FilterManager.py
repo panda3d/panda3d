@@ -72,7 +72,7 @@ class FilterManager(DirectObject):
         self.camstate = self.caminit
         self.buffers = []
         self.sizes = []
-        self.nextsort = self.win.getSort() - 1000
+        self.nextsort = self.win.getSort() - 9
         self.basex = 0
         self.basey = 0
         self.accept("window-event", self.windowEvent)
@@ -361,7 +361,7 @@ class FilterManager(DirectObject):
         self.camstate = self.caminit
         self.camera.node().setInitialState(self.caminit)
         self.region.setCamera(self.camera)
-        self.nextsort = self.win.getSort() - 1000
+        self.nextsort = self.win.getSort() - 9
         self.basex = 0
         self.basey = 0
 

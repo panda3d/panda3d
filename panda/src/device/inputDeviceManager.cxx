@@ -111,6 +111,8 @@ add_device(InputDevice *device) {
  */
 void InputDeviceManager::
 remove_device(InputDevice *device) {
+  // We need to hold a reference, since remove_device decrements the refcount.
+  PT(InputDevice) device_ref = device;
   {
     LightMutexHolder holder(_lock);
     _connected_devices.remove_device(device);

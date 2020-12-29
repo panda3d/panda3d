@@ -123,6 +123,14 @@ PUBLISHED:
   virtual void output(std::ostream &out) const;
   virtual void write(std::ostream &out) const;
 
+PUBLISHED:
+  MAKE_PROPERTY(time, get_time, set_time);
+  MAKE_PROPERTY(volume, get_volume, set_volume);
+  MAKE_PROPERTY(balance, get_balance, set_balance);
+  MAKE_PROPERTY(play_rate, get_play_rate, set_play_rate);
+  MAKE_PROPERTY(active, get_active, set_active);
+  MAKE_PROPERTY(name, get_name);
+
 protected:
   AudioSound();
 

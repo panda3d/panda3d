@@ -40,7 +40,7 @@ DEBUG_DEPENDENCIES = False
 # Is the current Python a 32-bit or 64-bit build?  There doesn't
 # appear to be a universal test for this.
 if sys.platform == 'darwin':
-    # On OSX, platform.architecture reports '64bit' even if it is
+    # On macOS, platform.architecture reports '64bit' even if it is
     # currently running in 32-bit mode.  But sys.maxint is a reliable
     # indicator.
     host_64 = (sys.maxsize > 0x100000000)
@@ -365,11 +365,13 @@ def SetTarget(target, arch=None):
     elif target == 'darwin':
         if arch == 'amd64':
             arch = 'x86_64'
+        if arch == 'aarch64':
+            arch = 'arm64'
 
         if arch is not None:
-            choices = ('i386', 'x86_64', 'ppc', 'ppc64')
+            choices = ('i386', 'x86_64', 'ppc', 'ppc64', 'arm64')
             if arch not in choices:
-                exit('Mac OS X architecture must be one of %s' % (', '.join(choices)))
+                exit('macOS architecture must be one of %s' % (', '.join(choices)))
 
     elif target == 'android' or target.startswith('android-'):
         if arch is None:
@@ -378,6 +380,9 @@ def SetTarget(target, arch=None):
                 arch = host_arch
             else:
                 arch = 'armv7a'
+
+        if arch == 'arm64':
+            arch = 'aarch64'
 
         # Did we specify an API level?
         global ANDROID_API
@@ -1235,10 +1240,7 @@ def MakeBuildTree():
     MakeDirectory(OUTPUTDIR + "/pandac/input")
     MakeDirectory(OUTPUTDIR + "/panda3d")
 
-    if GetTarget() == 'darwin':
-        MakeDirectory(OUTPUTDIR + "/Frameworks")
-
-    elif GetTarget() == 'android':
+    if GetTarget() == 'android':
         MakeDirectory(OUTPUTDIR + "/classes")
 
 ########################################################################
@@ -1297,7 +1299,7 @@ def GetThirdpartyDir():
             THIRDPARTYDIR = base + "/win-libs-vc" + vc + "/"
 
     elif (target == 'darwin'):
-        # OSX thirdparty binaries are universal, where possible.
+        # macOS thirdparty binaries are universal, where possible.
         THIRDPARTYDIR = base + "/darwin-libs-a/"
 
     elif (target == 'linux'):
@@ -2343,30 +2345,40 @@ def SdkLocateWindows(version=None):
     else:
         print("Using Windows SDK %s" % (version))
 
-def SdkLocateMacOSX(osxtarget = None):
+def SdkLocateMacOSX(archs = []):
     if (GetHost() != "darwin"): return
-    if (osxtarget != None):
-        sdkname = "MacOSX%d.%d" % osxtarget
-        if (os.path.exists("/Library/Developer/CommandLineTools/SDKs/%s.sdk" % sdkname)):
+
+    handle = os.popen("xcode-select -print-path")
+    xcode_dir = handle.read().strip().rstrip('/')
+    handle.close()
+
+    # Make a list of SDK versions that will work for us, then grab the latest.
+    sdk_versions = []
+    if 'arm64' not in archs:
+        # Prefer pre-10.14 for now so that we can keep building FMOD.
+        sdk_versions += ["10.13", "10.12", "10.11", "10.10", "10.9"]
+
+    sdk_versions += ["11.1", "11.0"]
+
+    if 'arm64' not in archs:
+        sdk_versions += ["10.15", "10.14"]
+
+    for version in sdk_versions:
+        sdkname = "MacOSX" + version
+        if os.path.exists("/Library/Developer/CommandLineTools/SDKs/%s.sdk" % sdkname):
             SDK["MACOSX"] = "/Library/Developer/CommandLineTools/SDKs/%s.sdk" % sdkname
-        elif (os.path.exists("/Developer/SDKs/%su.sdk" % sdkname)):
-            SDK["MACOSX"] = "/Developer/SDKs/%su.sdk" % sdkname
-        elif (os.path.exists("/Developer/SDKs/%s.sdk" % sdkname)):
+            return
+        elif os.path.exists("/Developer/SDKs/%s.sdk" % sdkname):
             SDK["MACOSX"] = "/Developer/SDKs/%s.sdk" % sdkname
-        elif (os.path.exists("/Developer/SDKs/%s.0.sdk" % sdkname)):
-            SDK["MACOSX"] = "/Developer/SDKs/%s.0.sdk" % sdkname
-        elif (os.path.exists("/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/%s.sdk" % sdkname)):
+            return
+        elif os.path.exists("/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/%s.sdk" % sdkname):
             SDK["MACOSX"] = "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/%s.sdk" % sdkname
-        else:
-            handle = os.popen("xcode-select -print-path")
-            result = handle.read().strip().rstrip('/')
-            handle.close()
-            if (os.path.exists("%s/Platforms/MacOSX.platform/Developer/SDKs/%s.sdk" % (result, sdkname))):
-                SDK["MACOSX"] = "%s/Platforms/MacOSX.platform/Developer/SDKs/%s.sdk" % (result, sdkname)
-            else:
-                exit("Couldn't find any MacOSX SDK for OSX version %s!" % sdkname)
-    else:
-        SDK["MACOSX"] = ""
+            return
+        elif xcode_dir and os.path.exists("%s/Platforms/MacOSX.platform/Developer/SDKs/%s.sdk" % (xcode_dir, sdkname)):
+            SDK["MACOSX"] = "%s/Platforms/MacOSX.platform/Developer/SDKs/%s.sdk" % (xcode_dir, sdkname)
+            return
+
+    exit("Couldn't find any suitable MacOSX SDK!")
 
 def SdkLocateSpeedTree():
     # Look for all of the SpeedTree SDK directories within the
@@ -3002,7 +3014,7 @@ def SetupBuildEnvironment(compiler):
             dyldpath.insert(0, os.path.join(builtdir, 'lib'))
             os.environ["DYLD_LIBRARY_PATH"] = os.pathsep.join(dyldpath)
 
-            # OS X 10.11 removed DYLD_LIBRARY_PATH, but we still need to pass
+            # macOS 10.11 removed DYLD_LIBRARY_PATH, but we still need to pass
             # on our lib directory to ppackage, so add it to PATH instead.
             os.environ["PATH"] = os.path.join(builtdir, 'lib') + ':' + os.environ.get("PATH", "")
 
