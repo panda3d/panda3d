@@ -74,8 +74,6 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "(AppleClang|Clang|GCC)")
   list(APPEND _configs Coverage)
 endif()
 
-message("available configs are ${_configs}")
-
 if(IS_MULTICONFIG)
   set(CMAKE_CONFIGURATION_TYPES "${_configs}" CACHE STRING "" FORCE)
 else()
