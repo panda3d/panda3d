@@ -8,13 +8,8 @@ from direct.showbase.ShowBase import ShowBase
 ShowBase()
 
 from direct.showbase.TkGlobal import spawnTkLoop
-
-if sys.version_info >= (3, 0):
-    from tkinter import *
-    from tkinter.filedialog import *
-else:
-    from Tkinter import *
-    from tkFileDialog import *
+from tkinter import *
+from tkinter.filedialog import *
 
 from direct.directtools.DirectGlobals import *
 from direct.tkwidgets.AppShell import*

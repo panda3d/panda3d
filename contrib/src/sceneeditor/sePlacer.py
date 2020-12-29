@@ -6,14 +6,9 @@ from direct.tkwidgets.AppShell import AppShell
 from direct.tkwidgets.Dial import AngleDial
 from direct.tkwidgets.Floater import Floater
 from panda3d.core import *
-import sys, Pmw
-
-if sys.version_info >= (3, 0):
-    from tkinter import Button, Menubutton, Menu, StringVar
-    import tkinter
-else:
-    from Tkinter import Button, Menubutton, Menu, StringVar
-    import Tkinter as tkinter
+import Pmw
+from tkinter import Button, Menubutton, Menu, StringVar
+import tkinter
 
 """
 TODO:
