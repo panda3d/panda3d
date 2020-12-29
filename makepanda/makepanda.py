@@ -5769,6 +5769,8 @@ if not PkgSkip("PANDATOOL"):
 # DIRECTORY: pandatool/src/mayaprogs/
 #
 
+MAYA_BUILT = False
+
 for VER in MAYAVERSIONS:
     VNUM = VER[4:]
     if PkgSkip(VER) or PkgSkip("PANDATOOL") or PkgSkip("EGG"):
@@ -5784,6 +5786,8 @@ for VER in MAYAVERSIONS:
         ARCH_OPTS = ['NOARCH:ARM64']
     else:
         ARCH_OPTS = []
+
+    MAYA_BUILT = True
 
     OPTS=['DIR:pandatool/src/mayaprogs', 'DIR:pandatool/src/maya', 'DIR:pandatool/src/mayaegg', 'BUILDING:MISC', VER] + ARCH_OPTS
     TargetAdd('mayaeggimport'+VNUM+'_mayaeggimport.obj', opts=OPTS, input='mayaEggImport.cxx')
@@ -5822,30 +5826,31 @@ for VER in MAYAVERSIONS:
     TargetAdd('libmayapview'+VNUM+'.mll', input='libmayaegg'+VNUM+'.lib')
     TargetAdd('libmayapview'+VNUM+'.mll', input='libmaya'+VNUM+'.lib')
     TargetAdd('libmayapview'+VNUM+'.mll', input='libp3framework.dll')
-    if GetTarget() == 'windows':
-      TargetAdd('libmayapview'+VNUM+'.mll', input=COMMON_EGG2X_LIBS)
-    else:
-      TargetAdd('libmayapview'+VNUM+'.mll', input=COMMON_EGG2X_LIBS)
+    TargetAdd('libmayapview'+VNUM+'.mll', input=COMMON_EGG2X_LIBS)
     TargetAdd('libmayapview'+VNUM+'.mll', opts=['ADVAPI', VER]+ARCH_OPTS)
 
-    TargetAdd('maya2egg'+VNUM+'_mayaToEgg.obj', opts=OPTS, input='mayaToEgg.cxx')
-    TargetAdd('maya2egg'+VNUM+'_bin.exe', input='maya2egg'+VNUM+'_mayaToEgg.obj')
+    TargetAdd('mayaprogs'+VNUM+'_eggToMaya.obj', opts=OPTS, input='eggToMaya.cxx')
+    TargetAdd('mayaprogs'+VNUM+'_mayaToEgg.obj', opts=OPTS, input='mayaToEgg.cxx')
+    TargetAdd('mayaprogs_mayaConversionServer.obj', opts=OPTS, input='mayaConversionServer.cxx')
+
+    TargetAdd('maya2egg'+VNUM+'_mayaToEggBin.obj', opts=OPTS, input='mayaToEggBin.cxx')
+    TargetAdd('maya2egg'+VNUM+'_bin.exe', input='mayaprogs'+VNUM+'_eggToMaya.obj')
+    TargetAdd('maya2egg'+VNUM+'_bin.exe', input='mayaprogs'+VNUM+'_mayaToEgg.obj')
+    TargetAdd('maya2egg'+VNUM+'_bin.exe', input='mayaprogs_mayaConversionServer.obj')
+    TargetAdd('maya2egg'+VNUM+'_bin.exe', input='maya2egg'+VNUM+'_mayaToEggBin.obj')
     TargetAdd('maya2egg'+VNUM+'_bin.exe', input='libmayaegg'+VNUM+'.lib')
     TargetAdd('maya2egg'+VNUM+'_bin.exe', input='libmaya'+VNUM+'.lib')
-    if GetTarget() == 'windows':
-      TargetAdd('maya2egg'+VNUM+'_bin.exe', input=COMMON_EGG2X_LIBS)
-    else:
-      TargetAdd('maya2egg'+VNUM+'_bin.exe', input=COMMON_EGG2X_LIBS)
+    TargetAdd('maya2egg'+VNUM+'_bin.exe', input=COMMON_EGG2X_LIBS)
     TargetAdd('maya2egg'+VNUM+'_bin.exe', opts=['ADVAPI', VER]+ARCH_OPTS)
 
-    TargetAdd('egg2maya'+VNUM+'_eggToMaya.obj', opts=OPTS, input='eggToMaya.cxx')
-    TargetAdd('egg2maya'+VNUM+'_bin.exe', input='egg2maya'+VNUM+'_eggToMaya.obj')
+    TargetAdd('egg2maya'+VNUM+'_eggToMayaBin.obj', opts=OPTS, input='eggToMayaBin.cxx')
+    TargetAdd('egg2maya'+VNUM+'_bin.exe', input='mayaprogs'+VNUM+'_eggToMaya.obj')
+    TargetAdd('egg2maya'+VNUM+'_bin.exe', input='mayaprogs'+VNUM+'_mayaToEgg.obj')
+    TargetAdd('egg2maya'+VNUM+'_bin.exe', input='mayaprogs_mayaConversionServer.obj')
+    TargetAdd('egg2maya'+VNUM+'_bin.exe', input='egg2maya'+VNUM+'_eggToMayaBin.obj')
     TargetAdd('egg2maya'+VNUM+'_bin.exe', input='libmayaegg'+VNUM+'.lib')
     TargetAdd('egg2maya'+VNUM+'_bin.exe', input='libmaya'+VNUM+'.lib')
-    if GetTarget() == 'windows':
-      TargetAdd('egg2maya'+VNUM+'_bin.exe', input=COMMON_EGG2X_LIBS)
-    else:
-      TargetAdd('egg2maya'+VNUM+'_bin.exe', input=COMMON_EGG2X_LIBS)
+    TargetAdd('egg2maya'+VNUM+'_bin.exe', input=COMMON_EGG2X_LIBS)
     TargetAdd('egg2maya'+VNUM+'_bin.exe', opts=['ADVAPI', VER]+ARCH_OPTS)
 
     TargetAdd('mayasavepview'+VNUM+'_mayaSavePview.obj', opts=OPTS, input='mayaSavePview.cxx')
@@ -5863,6 +5868,19 @@ for VER in MAYAVERSIONS:
     TargetAdd('egg2maya'+VNUM+'.exe', input='libpandaexpress.dll')
     TargetAdd('egg2maya'+VNUM+'.exe', input=COMMON_DTOOL_LIBS)
     TargetAdd('egg2maya'+VNUM+'.exe', opts=['ADVAPI']+ARCH_OPTS)
+
+if MAYA_BUILT:
+    TargetAdd('mayaprogs_mayaConversionClient.obj', opts=OPTS, input='mayaConversionClient.cxx')
+
+    TargetAdd('maya2egg_mayaToEggClient.obj', opts=OPTS, input='mayaToEggClient.cxx')
+    TargetAdd('maya2egg_client.exe', input='mayaprogs_mayaConversionClient.obj')
+    TargetAdd('maya2egg_client.exe', input='maya2egg_mayaToEggClient.obj')
+    TargetAdd('maya2egg_client.exe', input=COMMON_EGG2X_LIBS)
+
+    TargetAdd('egg2maya_eggToMayaClient.obj', opts=OPTS, input='eggToMayaClient.cxx')
+    TargetAdd('egg2maya_client.exe', input='mayaprogs_mayaConversionClient.obj')
+    TargetAdd('egg2maya_client.exe', input='egg2maya_eggToMayaClient.obj')
+    TargetAdd('egg2maya_client.exe', input=COMMON_EGG2X_LIBS)
 
 #
 # DIRECTORY: contrib/src/ai/

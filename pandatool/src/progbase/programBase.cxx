@@ -268,10 +268,16 @@ write_man_page(std::ostream &out) {
 /**
  * Dispatches on each of the options on the command line, and passes the
  * remaining parameters to handle_args().  If an error on the command line is
- * detected, will automatically call show_usage() and exit(1).
+ * detected, will automatically call show_usage() and exit(1). If exit_on_complete
+ * is not set, will return the program's exit code instead of exiting.
  */
-void ProgramBase::
-parse_command_line(int argc, char **argv) {
+ProgramBase::ExitCode ProgramBase::
+parse_command_line(int argc, char **argv, bool exit_on_complete) {
+  if (!exit_on_complete) {
+    // The help option should not be available in programmatic environments.
+    remove_option("h");
+  }
+
   preprocess_argv(argc, argv);
 
   // Setting this variable to zero reinitializes the options parser This is
@@ -279,6 +285,11 @@ parse_command_line(int argc, char **argv) {
   // (mainly the MaxToEgg converter plugin)
   extern int optind;
   optind = 0;
+
+#if !defined(HAVE_GETOPT) || !defined(HAVE_GETOPT_LONG_ONLY)
+  // We're using a Panda implementation of getopt. Let's reset that as well.
+  pgetopt_reset();
+#endif
 
   _program_name = Filename::from_os_specific(argv[0]);
   int i;
@@ -310,9 +321,16 @@ parse_command_line(int argc, char **argv) {
       }
     } else {
       cerr << "Invalid number of options for -write-man!\n";
-      exit(1);
+      if (exit_on_complete) {
+        exit(1);
+      }
+      return ExitCode::EC_failure;
     }
-    exit(0);
+
+    if (exit_on_complete) {
+      exit(0);
+    }
+    return ExitCode::EC_clean_exit;
   }
 
   // Build up the long options list and the short options string for
@@ -395,7 +413,10 @@ parse_command_line(int argc, char **argv) {
     case '?':
       // Invalid option or parameter.
       show_usage();
-      exit(1);
+      if (exit_on_complete) {
+        exit(1);
+      }
+      return ExitCode::EC_failure;
 
     case '\x1':
       // A special return value from getopt() indicating a non-option
@@ -427,7 +448,10 @@ parse_command_line(int argc, char **argv) {
 
         if (!okflag) {
           show_usage();
-          exit(1);
+          if (exit_on_complete) {
+            exit(1);
+          }
+          return ExitCode::EC_failure;
         }
       }
     }
@@ -438,13 +462,21 @@ parse_command_line(int argc, char **argv) {
 
   if (!handle_args(remaining_args)) {
     show_usage();
-    exit(1);
+    if (exit_on_complete) {
+      exit(1);
+    }
+    return ExitCode::EC_failure;
   }
 
   if (!post_command_line()) {
     show_usage();
-    exit(1);
+    if (exit_on_complete) {
+      exit(1);
+    }
+    return ExitCode::EC_failure;
   }
+
+  return ExitCode::EC_not_exited;
 }
 
 /**
