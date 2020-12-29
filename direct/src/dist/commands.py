@@ -28,16 +28,6 @@ from .icon import Icon
 import panda3d.core as p3d
 
 
-if sys.version_info < (3, 0):
-    # Warn the user.  They might be using Python 2 by accident.
-    print("=================================================================")
-    print("WARNING: You are using Python 2, which has reached the end of its")
-    print("WARNING: life as of January 1, 2020.  Please upgrade to Python 3.")
-    print("=================================================================")
-    sys.stdout.flush()
-    time.sleep(4.0)
-
-
 def _parse_list(input):
     if isinstance(input, str):
         input = input.strip().replace(',', '\n')
@@ -214,7 +204,7 @@ class build_apps(setuptools.Command):
             'oleaut32.dll', 'gdiplus.dll', 'winmm.dll', 'iphlpapi.dll',
             'msvcrt.dll', 'kernelbase.dll', 'msimg32.dll', 'msacm32.dll',
             'setupapi.dll', 'version.dll', 'userenv.dll', 'netapi32.dll',
-            'crypt32.dll',
+            'crypt32.dll', 'bcrypt.dll',
 
             # manylinux1/linux
             'libdl.so.*', 'libstdc++.so.*', 'libm.so.*', 'libgcc_s.so.*',
@@ -268,11 +258,6 @@ class build_apps(setuptools.Command):
             '/usr/lib/libmenu.5.4.dylib',
             '/System/Library/**',
         ]
-
-        if sys.version_info >= (3, 5):
-            # Python 3.5+ requires at least Windows Vista to run anyway, so we
-            # shouldn't warn about DLLs that are shipped with Vista.
-            self.exclude_dependencies += ['bcrypt.dll']
 
         self.package_data_dirs = {}
         self.hidden_imports = {}
