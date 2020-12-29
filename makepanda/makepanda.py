@@ -30,6 +30,11 @@ import time
 import os
 import sys
 
+try:
+    import zlib
+except:
+    zlib = None
+
 ########################################################################
 ##
 ## PARSING THE COMMAND LINE OPTIONS
@@ -58,7 +63,7 @@ WHLVERSION=None
 RPMRELEASE="1"
 GIT_COMMIT=None
 MAJOR_VERSION=None
-OSXTARGET=None
+OSX_ARCHS=[]
 global STRDXSDKVERSION, BOOUSEINTELCOMPILER
 STRDXSDKVERSION = 'default'
 WINDOWS_SDK = None
@@ -67,9 +72,6 @@ BOOUSEINTELCOMPILER = False
 OPENCV_VER_23 = False
 PLATFORM = None
 COPY_PYTHON = True
-
-if "MACOSX_DEPLOYMENT_TARGET" in os.environ:
-    OSXTARGET=os.environ["MACOSX_DEPLOYMENT_TARGET"]
 
 PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "GL", "GLES", "GLES2"] + DXVERSIONS + ["TINYDISPLAY", "NVIDIACG", # 3D graphics
@@ -132,7 +134,7 @@ def usage(problem):
     print("  --distributor X   (short string identifying the distributor of the build)")
     print("  --outputdir X     (use the specified directory instead of 'built')")
     print("  --threads N       (use the multithreaded build system. see manual)")
-    print("  --osxtarget N     (the macOS version number to build for (macOS only))")
+    print("  --universal       (build universal binaries (macOS 11.0+ only))")
     print("  --override \"O=V\"  (override dtool_config/prc option value)")
     print("  --static          (builds libraries for static linking)")
     print("  --target X        (experimental cross-compilation (android only))")
@@ -160,7 +162,7 @@ def usage(problem):
 
 def parseopts(args):
     global INSTALLER,WHEEL,RUNTESTS,GENMAN,DISTRIBUTOR,VERSION
-    global COMPRESSOR,THREADCOUNT,OSXTARGET
+    global COMPRESSOR,THREADCOUNT,OSX_ARCHS
     global DEBVERSION,WHLVERSION,RPMRELEASE,GIT_COMMIT
     global STRDXSDKVERSION, WINDOWS_SDK, MSVC_VERSION, BOOUSEINTELCOMPILER
     global COPY_PYTHON
@@ -168,24 +170,25 @@ def parseopts(args):
     # Options for which to display a deprecation warning.
     removedopts = [
         "use-touchinput", "no-touchinput", "no-awesomium", "no-directscripts",
-        "no-carbon", "universal", "no-physx", "no-rocket", "host"
+        "no-carbon", "no-physx", "no-rocket", "host", "osxtarget=",
         ]
 
     # All recognized options.
     longopts = [
-        "help","distributor=","verbose","osxtarget=","tests",
+        "help","distributor=","verbose","tests",
         "optimize=","everything","nothing","installer","wheel","rtdist","nocolor",
         "version=","lzma","no-python","threads=","outputdir=","override=",
         "static","debversion=","rpmrelease=","p3dsuffix=","rtdist-version=",
         "directx-sdk=", "windows-sdk=", "msvc-version=", "clean", "use-icl",
-        "target=", "arch=", "git-commit=", "no-copy-python",
+        "universal", "target=", "arch=", "git-commit=", "no-copy-python",
         "cggl-incdir=", "cggl-libdir=",
         ] + removedopts
 
     anything = 0
     optimize = ""
     target = None
-    target_arch = None
+    target_archs = []
+    universal = False
     clean_build = False
     for pkg in PkgListGet():
         longopts.append("use-" + pkg.lower())
@@ -208,9 +211,9 @@ def parseopts(args):
             elif (option=="--nothing"): PkgDisableAll()
             elif (option=="--threads"): THREADCOUNT=int(value)
             elif (option=="--outputdir"): SetOutputDir(value.strip())
-            elif (option=="--osxtarget"): OSXTARGET=value.strip()
+            elif (option=="--universal"): universal = True
             elif (option=="--target"): target = value.strip()
-            elif (option=="--arch"): target_arch = value.strip()
+            elif (option=="--arch"): target_archs.append(value.strip())
             elif (option=="--nocolor"): DisableColors()
             elif (option=="--version"):
                 match = re.match(r'^\d+\.\d+(\.\d+)+', value)
@@ -239,7 +242,7 @@ def parseopts(args):
             elif (option=="--use-icl"): BOOUSEINTELCOMPILER = True
             elif (option=="--clean"): clean_build = True
             elif (option=="--no-copy-python"): COPY_PYTHON = False
-            elif (option[2:] in removedopts):
+            elif (option[2:] in removedopts or option[2:]+'=' in removedopts):
                 Warn("Ignoring removed option %s" % (option))
             else:
                 for pkg in PkgListGet() + ['CGGL']:
@@ -268,29 +271,17 @@ def parseopts(args):
 
     if (optimize==""): optimize = "3"
 
-    if OSXTARGET:
-        try:
-            maj, min = OSXTARGET.strip().split('.')
-            OSXTARGET = int(maj), int(min)
-            assert OSXTARGET[0] >= 10
-        except:
-            usage("Invalid setting for OSXTARGET")
+    if target is not None or target_archs:
+        SetTarget(target, target_archs[-1] if target_archs else None)
 
-        if OSXTARGET < (10, 9):
-            warn_prefix = "%sERROR:%s " % (GetColor("red"), GetColor())
-            print("=========================================================================")
-            print(warn_prefix + "Support for macOS versions before 10.9 has been discontinued.")
-            print(warn_prefix + "For more information, or any questions, please visit:")
-            print("  https://github.com/panda3d/panda3d/issues/300")
-            print("=========================================================================")
-            sys.stdout.flush()
-            time.sleep(1.0)
-            sys.exit(1)
-    else:
-        OSXTARGET = None
+    if universal:
+        if target_archs:
+            exit("--universal is incompatible with --arch")
 
-    if target is not None or target_arch is not None:
-        SetTarget(target, target_arch)
+        OSX_ARCHS.append("x86_64")
+        OSX_ARCHS.append("arm64")
+    elif target_archs:
+        OSX_ARCHS = target_archs
 
     try:
         SetOptimize(int(optimize))
@@ -350,8 +341,11 @@ if ("LDFLAGS" in os.environ):
     LDFLAGS = os.environ["LDFLAGS"].strip()
 
 os.environ["MAKEPANDA"] = os.path.abspath(sys.argv[0])
-if GetHost() == "darwin" and OSXTARGET is not None:
-    os.environ["MACOSX_DEPLOYMENT_TARGET"] = "%d.%d" % OSXTARGET
+if GetHost() == "darwin":
+    if tuple(OSX_ARCHS) == ('arm64',):
+        os.environ["MACOSX_DEPLOYMENT_TARGET"] = "11.0"
+    else:
+        os.environ["MACOSX_DEPLOYMENT_TARGET"] = "10.9"
 
 ########################################################################
 ##
@@ -382,16 +376,30 @@ if target == 'windows':
         PLATFORM = 'win32'
 
 elif target == 'darwin':
-    if OSXTARGET:
-        osxver = OSXTARGET
+    arch_tag = None
+    if not OSX_ARCHS:
+        arch_tag = GetTargetArch()
+    elif len(OSX_ARCHS) == 1:
+        arch_tag = OSX_ARCHS[0]
+    elif frozenset(OSX_ARCHS) == frozenset(('i386', 'ppc')):
+        arch_tag = 'fat'
+    elif frozenset(OSX_ARCHS) == frozenset(('x86_64', 'i386')):
+        arch_tag = 'intel'
+    elif frozenset(OSX_ARCHS) == frozenset(('x86_64', 'ppc64')):
+        arch_tag = 'fat64'
+    elif frozenset(OSX_ARCHS) == frozenset(('x86_64', 'i386', 'ppc')):
+        arch_tag = 'fat32'
+    elif frozenset(OSX_ARCHS) == frozenset(('x86_64', 'i386', 'ppc64', 'ppc')):
+        arch_tag = 'universal'
+    elif frozenset(OSX_ARCHS) == frozenset(('x86_64', 'arm64')):
+        arch_tag = 'universal2'
     else:
-        maj, min = platform.mac_ver()[0].split('.')[:2]
-        osxver = int(maj), int(min)
-        if osxver < (10, 9):
-            osxver = (10, 9)
+        raise RuntimeError('No arch tag for arch combination %s' % OSX_ARCHS)
 
-    arch_tag = GetTargetArch()
-    PLATFORM = 'macosx-{0}.{1}-{2}'.format(osxver[0], osxver[1], arch_tag)
+    if arch_tag == 'arm64':
+        PLATFORM = 'macosx-11.0-' + arch_tag
+    else:
+        PLATFORM = 'macosx-10.9-' + arch_tag
 
 elif target == 'linux' and (os.path.isfile("/lib/libc-2.5.so") or os.path.isfile("/lib64/libc-2.5.so")) and os.path.isdir("/opt/python"):
     # This is manylinux1.  A bit of a sloppy check, though.
@@ -474,7 +482,7 @@ MakeBuildTree()
 SdkLocateDirectX(STRDXSDKVERSION)
 SdkLocateMaya()
 SdkLocateMax()
-SdkLocateMacOSX(OSXTARGET)
+SdkLocateMacOSX(OSX_ARCHS)
 SdkLocatePython(False)
 SdkLocateWindows(WINDOWS_SDK)
 SdkLocateSpeedTree()
@@ -746,6 +754,24 @@ if (COMPILER == "MSVC"):
 if (COMPILER=="GCC"):
     if GetTarget() != "darwin":
         PkgDisable("COCOA")
+
+    if GetTarget() == 'darwin':
+        if OSX_ARCHS and 'x86_64' not in OSX_ARCHS and 'i386' not in OSX_ARCHS:
+            # These support only these archs, so don't build them if we're not
+            # targeting any of the supported archs.
+            PkgDisable("FMODEX")
+            PkgDisable("NVIDIACG")
+        elif OSX_ARCHS and 'arm64' in OSX_ARCHS:
+            # We must be using the 11.0 SDK or higher, so can't build FMOD Ex
+            if not PkgSkip("FMODEX"):
+                Warn("thirdparty package fmodex is not supported when targeting arm64, excluding from build")
+            PkgDisable("FMODEX")
+        elif not os.path.isfile(SDK.get("MACOSX", "") + '/usr/lib/libstdc++.6.0.9.tbd') and \
+             not os.path.isfile(SDK.get("MACOSX", "") + '/usr/lib/libstdc++.6.0.9.dylib'):
+            # Also, we can't target FMOD Ex on 10.14 and above
+            if not PkgSkip("FMODEX"):
+                Warn("thirdparty package fmodex requires one of MacOSX 10.9-10.13 SDK, excluding from build")
+            PkgDisable("FMODEX")
 
     #if (PkgSkip("PYTHON")==0):
     #    IncDirectory("PYTHON", SDK["PYTHON"])
@@ -1275,15 +1301,20 @@ def CompileCxx(obj,src,opts):
         # Mac-specific flags.
         if GetTarget() == "darwin":
             cmd += " -Wno-deprecated-declarations"
-            if OSXTARGET is not None:
+            if SDK.get("MACOSX"):
                 cmd += " -isysroot " + SDK["MACOSX"]
-                cmd += " -mmacosx-version-min=%d.%d" % (OSXTARGET)
+
+            if tuple(OSX_ARCHS) == ('arm64',):
+                cmd += " -mmacosx-version-min=11.0"
+            else:
+                cmd += " -mmacosx-version-min=10.9"
 
             # Use libc++ to enable C++11 features.
             cmd += " -stdlib=libc++"
 
-            arch = GetTargetArch()
-            cmd += " -arch %s" % arch
+            for arch in OSX_ARCHS:
+                if 'NOARCH:' + arch.upper() not in opts:
+                    cmd += " -arch %s" % arch
 
         if "SYSROOT" in SDK:
             if GetTarget() != "android":
@@ -1814,15 +1845,20 @@ def CompileLink(dll, obj, opts):
         # macOS specific flags.
         if GetTarget() == 'darwin':
             cmd += " -headerpad_max_install_names"
-            if OSXTARGET is not None:
+            if SDK.get("MACOSX"):
                 cmd += " -isysroot " + SDK["MACOSX"] + " -Wl,-syslibroot," + SDK["MACOSX"]
-                cmd += " -mmacosx-version-min=%d.%d" % (OSXTARGET)
+
+            if tuple(OSX_ARCHS) == ('arm64',):
+                cmd += " -mmacosx-version-min=11.0"
+            else:
+                cmd += " -mmacosx-version-min=10.9"
 
             # Use libc++ to enable C++11 features.
             cmd += " -stdlib=libc++"
 
-            arch = GetTargetArch()
-            cmd += " -arch %s" % arch
+            for arch in OSX_ARCHS:
+                if 'NOARCH:' + arch.upper() not in opts:
+                    cmd += " -arch %s" % arch
 
         elif GetTarget() == 'android':
             arch = GetTargetArch()
@@ -1942,7 +1978,11 @@ def CompileEgg(eggfile, src, opts):
         oscmd(flt2egg + ' -ps keep -o ' + BracketNameWithQuotes(eggfile) + ' ' + BracketNameWithQuotes(src))
 
     if pz:
-        oscmd(pzip + ' ' + BracketNameWithQuotes(eggfile))
+        if zlib:
+            WriteBinaryFile(eggfile + '.pz', zlib.compress(ReadBinaryFile(eggfile)))
+            os.remove(eggfile)
+        else:
+            oscmd(pzip + ' ' + BracketNameWithQuotes(eggfile))
 
 ##########################################################################################
 #
@@ -2517,8 +2557,19 @@ def WriteConfigSettings():
     conf = "/* dtool_config.h.  Generated automatically by makepanda.py */\n"
     for key in sorted(dtool_config.keys()):
         val = OverrideValue(key, dtool_config[key])
-        if (val == 'UNDEF'): conf = conf + "#undef " + key + "\n"
-        else:                conf = conf + "#define " + key + " " + val + "\n"
+
+        if key in ('HAVE_CG', 'HAVE_CGGL', 'HAVE_CGDX9') and val != 'UNDEF':
+            # These are not available for ARM, period.
+            conf = conf + "#ifdef __aarch64__\n"
+            conf = conf + "#undef " + key + "\n"
+            conf = conf + "#else\n"
+            conf = conf + "#define " + key + " " + val + "\n"
+            conf = conf + "#endif\n"
+        elif val == 'UNDEF':
+            conf = conf + "#undef " + key + "\n"
+        else:
+            conf = conf + "#define " + key + " " + val + "\n"
+
     ConditionalWriteFile(GetOutputDir() + '/include/dtool_config.h', conf)
 
     if (PkgSkip("SPEEDTREE")==0):
@@ -2876,12 +2927,17 @@ if tp_dir is not None:
     if GetTarget() == 'darwin':
         # Make a list of all the dylibs we ship, to figure out whether we should use
         # install_name_tool to correct the library reference to point to our copy.
-        for lib in glob.glob(tp_dir + "/*/lib/*.dylib"):
-            dylibs[os.path.basename(lib)] = os.path.basename(os.path.realpath(lib))
+        for pkg in PkgListGet():
+            if PkgSkip(pkg):
+                continue
 
-        if not PkgSkip("PYTHON"):
-            for lib in glob.glob(tp_dir + "/*/lib/" + SDK["PYTHONVERSION"] + "/*.dylib"):
+            tp_libdir = os.path.join(tp_dir, pkg.lower(), "lib")
+            for lib in glob.glob(os.path.join(tp_libdir, "*.dylib")):
                 dylibs[os.path.basename(lib)] = os.path.basename(os.path.realpath(lib))
+
+            if not PkgSkip("PYTHON"):
+                for lib in glob.glob(os.path.join(tp_libdir, SDK["PYTHONVERSION"], "*.dylib")):
+                    dylibs[os.path.basename(lib)] = os.path.basename(os.path.realpath(lib))
 
     for pkg in PkgListGet():
         if PkgSkip(pkg):
@@ -2895,13 +2951,14 @@ if tp_dir is not None:
                     CopyAllFiles(GetOutputDir() + "/bin/", tp_pkg + "/bin/" + SDK["PYTHONVERSION"] + "/")
 
         elif GetTarget() == 'darwin':
-            tp_libs = glob.glob(tp_pkg + "/lib/*.dylib")
+            tp_libdir = os.path.join(tp_pkg, "lib")
+            tp_libs = glob.glob(os.path.join(tp_libdir, "*.dylib"))
 
             if not PkgSkip("PYTHON"):
-                tp_libs += glob.glob(os.path.join(tp_pkg, "lib", SDK["PYTHONVERSION"], "*.dylib"))
-                tp_libs += glob.glob(os.path.join(tp_pkg, "lib", SDK["PYTHONVERSION"], "*.so"))
+                tp_libs += glob.glob(os.path.join(tp_libdir, SDK["PYTHONVERSION"], "*.dylib"))
+                tp_libs += glob.glob(os.path.join(tp_libdir, SDK["PYTHONVERSION"], "*.so"))
                 if pkg != 'PYTHON':
-                    tp_libs += glob.glob(os.path.join(tp_pkg, "lib", SDK["PYTHONVERSION"], "*.py"))
+                    tp_libs += glob.glob(os.path.join(tp_libdir, SDK["PYTHONVERSION"], "*.py"))
 
             for tp_lib in tp_libs:
                 basename = os.path.basename(tp_lib)
@@ -2942,6 +2999,7 @@ if tp_dir is not None:
                 JustBuilt([target], [tp_lib])
 
             for fwx in glob.glob(tp_pkg + "/*.framework"):
+                MakeDirectory(GetOutputDir() + "/Frameworks")
                 CopyTree(GetOutputDir() + "/Frameworks/" + os.path.basename(fwx), fwx)
 
         else:  # Linux / FreeBSD case.
@@ -5823,20 +5881,33 @@ if not PkgSkip("PANDATOOL"):
 # DIRECTORY: pandatool/src/mayaprogs/
 #
 
-for VER in MAYAVERSIONS:
-  VNUM = VER[4:]
-  if not PkgSkip(VER) and not PkgSkip("PANDATOOL") and not PkgSkip("EGG"):
-    if GetTarget() == 'darwin' and int(VNUM) < 2009:
-      # No x86_64 support.
-      continue
+MAYA_BUILT = False
 
-    OPTS=['DIR:pandatool/src/mayaprogs', 'DIR:pandatool/src/maya', 'DIR:pandatool/src/mayaegg', 'BUILDING:MISC', VER]
+for VER in MAYAVERSIONS:
+    VNUM = VER[4:]
+    if PkgSkip(VER) or PkgSkip("PANDATOOL") or PkgSkip("EGG"):
+        continue
+
+    if GetTarget() == 'darwin':
+        if int(VNUM) < 2009:
+            # No x86_64 support.
+            continue
+        if tuple(OSX_ARCHS) == ('arm64',):
+            # No arm64 support.
+            continue
+        ARCH_OPTS = ['NOARCH:ARM64']
+    else:
+        ARCH_OPTS = []
+
+    MAYA_BUILT = True
+
+    OPTS=['DIR:pandatool/src/mayaprogs', 'DIR:pandatool/src/maya', 'DIR:pandatool/src/mayaegg', 'BUILDING:MISC', VER] + ARCH_OPTS
     TargetAdd('mayaeggimport'+VNUM+'_mayaeggimport.obj', opts=OPTS, input='mayaEggImport.cxx')
     TargetAdd('mayaeggimport'+VNUM+'.mll', input='mayaegg'+VNUM+'_loader.obj')
     TargetAdd('mayaeggimport'+VNUM+'.mll', input='mayaeggimport'+VNUM+'_mayaeggimport.obj')
     TargetAdd('mayaeggimport'+VNUM+'.mll', input='libpandaegg.dll')
     TargetAdd('mayaeggimport'+VNUM+'.mll', input=COMMON_PANDA_LIBS)
-    TargetAdd('mayaeggimport'+VNUM+'.mll', opts=['ADVAPI', VER])
+    TargetAdd('mayaeggimport'+VNUM+'.mll', opts=['ADVAPI', VER]+ARCH_OPTS)
 
     TargetAdd('mayaloader'+VNUM+'_config_mayaloader.obj', opts=OPTS, input='config_mayaloader.cxx')
     TargetAdd('libp3mayaloader'+VNUM+'.dll', input='mayaloader'+VNUM+'_config_mayaloader.obj')
@@ -5860,54 +5931,68 @@ for VER in MAYAVERSIONS:
     TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libp3pandatoolbase.lib')
     TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libpandaegg.dll')
     TargetAdd('libp3mayaloader'+VNUM+'.dll', input=COMMON_PANDA_LIBS)
-    TargetAdd('libp3mayaloader'+VNUM+'.dll', opts=['ADVAPI', VER])
+    TargetAdd('libp3mayaloader'+VNUM+'.dll', opts=['ADVAPI', VER]+ARCH_OPTS)
 
     TargetAdd('mayapview'+VNUM+'_mayaPview.obj', opts=OPTS, input='mayaPview.cxx')
     TargetAdd('libmayapview'+VNUM+'.mll', input='mayapview'+VNUM+'_mayaPview.obj')
     TargetAdd('libmayapview'+VNUM+'.mll', input='libmayaegg'+VNUM+'.lib')
     TargetAdd('libmayapview'+VNUM+'.mll', input='libmaya'+VNUM+'.lib')
     TargetAdd('libmayapview'+VNUM+'.mll', input='libp3framework.dll')
-    if GetTarget() == 'windows':
-      TargetAdd('libmayapview'+VNUM+'.mll', input=COMMON_EGG2X_LIBS)
-    else:
-      TargetAdd('libmayapview'+VNUM+'.mll', input=COMMON_EGG2X_LIBS)
-    TargetAdd('libmayapview'+VNUM+'.mll', opts=['ADVAPI', VER])
+    TargetAdd('libmayapview'+VNUM+'.mll', input=COMMON_EGG2X_LIBS)
+    TargetAdd('libmayapview'+VNUM+'.mll', opts=['ADVAPI', VER]+ARCH_OPTS)
 
-    TargetAdd('maya2egg'+VNUM+'_mayaToEgg.obj', opts=OPTS, input='mayaToEgg.cxx')
-    TargetAdd('maya2egg'+VNUM+'_bin.exe', input='maya2egg'+VNUM+'_mayaToEgg.obj')
+    TargetAdd('mayaprogs'+VNUM+'_eggToMaya.obj', opts=OPTS, input='eggToMaya.cxx')
+    TargetAdd('mayaprogs'+VNUM+'_mayaToEgg.obj', opts=OPTS, input='mayaToEgg.cxx')
+    TargetAdd('mayaprogs_mayaConversionServer.obj', opts=OPTS, input='mayaConversionServer.cxx')
+
+    TargetAdd('maya2egg'+VNUM+'_mayaToEggBin.obj', opts=OPTS, input='mayaToEggBin.cxx')
+    TargetAdd('maya2egg'+VNUM+'_bin.exe', input='mayaprogs'+VNUM+'_eggToMaya.obj')
+    TargetAdd('maya2egg'+VNUM+'_bin.exe', input='mayaprogs'+VNUM+'_mayaToEgg.obj')
+    TargetAdd('maya2egg'+VNUM+'_bin.exe', input='mayaprogs_mayaConversionServer.obj')
+    TargetAdd('maya2egg'+VNUM+'_bin.exe', input='maya2egg'+VNUM+'_mayaToEggBin.obj')
     TargetAdd('maya2egg'+VNUM+'_bin.exe', input='libmayaegg'+VNUM+'.lib')
     TargetAdd('maya2egg'+VNUM+'_bin.exe', input='libmaya'+VNUM+'.lib')
-    if GetTarget() == 'windows':
-      TargetAdd('maya2egg'+VNUM+'_bin.exe', input=COMMON_EGG2X_LIBS)
-    else:
-      TargetAdd('maya2egg'+VNUM+'_bin.exe', input=COMMON_EGG2X_LIBS)
-    TargetAdd('maya2egg'+VNUM+'_bin.exe', opts=['ADVAPI', VER])
+    TargetAdd('maya2egg'+VNUM+'_bin.exe', input=COMMON_EGG2X_LIBS)
+    TargetAdd('maya2egg'+VNUM+'_bin.exe', opts=['ADVAPI', VER]+ARCH_OPTS)
 
-    TargetAdd('egg2maya'+VNUM+'_eggToMaya.obj', opts=OPTS, input='eggToMaya.cxx')
-    TargetAdd('egg2maya'+VNUM+'_bin.exe', input='egg2maya'+VNUM+'_eggToMaya.obj')
+    TargetAdd('egg2maya'+VNUM+'_eggToMayaBin.obj', opts=OPTS, input='eggToMayaBin.cxx')
+    TargetAdd('egg2maya'+VNUM+'_bin.exe', input='mayaprogs'+VNUM+'_eggToMaya.obj')
+    TargetAdd('egg2maya'+VNUM+'_bin.exe', input='mayaprogs'+VNUM+'_mayaToEgg.obj')
+    TargetAdd('egg2maya'+VNUM+'_bin.exe', input='mayaprogs_mayaConversionServer.obj')
+    TargetAdd('egg2maya'+VNUM+'_bin.exe', input='egg2maya'+VNUM+'_eggToMayaBin.obj')
     TargetAdd('egg2maya'+VNUM+'_bin.exe', input='libmayaegg'+VNUM+'.lib')
     TargetAdd('egg2maya'+VNUM+'_bin.exe', input='libmaya'+VNUM+'.lib')
-    if GetTarget() == 'windows':
-      TargetAdd('egg2maya'+VNUM+'_bin.exe', input=COMMON_EGG2X_LIBS)
-    else:
-      TargetAdd('egg2maya'+VNUM+'_bin.exe', input=COMMON_EGG2X_LIBS)
-    TargetAdd('egg2maya'+VNUM+'_bin.exe', opts=['ADVAPI', VER])
+    TargetAdd('egg2maya'+VNUM+'_bin.exe', input=COMMON_EGG2X_LIBS)
+    TargetAdd('egg2maya'+VNUM+'_bin.exe', opts=['ADVAPI', VER]+ARCH_OPTS)
 
     TargetAdd('mayasavepview'+VNUM+'_mayaSavePview.obj', opts=OPTS, input='mayaSavePview.cxx')
     TargetAdd('libmayasavepview'+VNUM+'.mll', input='mayasavepview'+VNUM+'_mayaSavePview.obj')
-    TargetAdd('libmayasavepview'+VNUM+'.mll', opts=['ADVAPI', VER])
+    TargetAdd('libmayasavepview'+VNUM+'.mll', opts=['ADVAPI', VER]+ARCH_OPTS)
 
     TargetAdd('mayapath'+VNUM+'.obj', opts=OPTS, input='mayapath.cxx')
 
     TargetAdd('maya2egg'+VNUM+'.exe', input='mayapath'+VNUM+'.obj')
     TargetAdd('maya2egg'+VNUM+'.exe', input='libpandaexpress.dll')
     TargetAdd('maya2egg'+VNUM+'.exe', input=COMMON_DTOOL_LIBS)
-    TargetAdd('maya2egg'+VNUM+'.exe', opts=['ADVAPI'])
+    TargetAdd('maya2egg'+VNUM+'.exe', opts=['ADVAPI']+ARCH_OPTS)
 
     TargetAdd('egg2maya'+VNUM+'.exe', input='mayapath'+VNUM+'.obj')
     TargetAdd('egg2maya'+VNUM+'.exe', input='libpandaexpress.dll')
     TargetAdd('egg2maya'+VNUM+'.exe', input=COMMON_DTOOL_LIBS)
-    TargetAdd('egg2maya'+VNUM+'.exe', opts=['ADVAPI'])
+    TargetAdd('egg2maya'+VNUM+'.exe', opts=['ADVAPI']+ARCH_OPTS)
+
+if MAYA_BUILT:
+    TargetAdd('mayaprogs_mayaConversionClient.obj', opts=OPTS, input='mayaConversionClient.cxx')
+
+    TargetAdd('maya2egg_mayaToEggClient.obj', opts=OPTS, input='mayaToEggClient.cxx')
+    TargetAdd('maya2egg_client.exe', input='mayaprogs_mayaConversionClient.obj')
+    TargetAdd('maya2egg_client.exe', input='maya2egg_mayaToEggClient.obj')
+    TargetAdd('maya2egg_client.exe', input=COMMON_EGG2X_LIBS)
+
+    TargetAdd('egg2maya_eggToMayaClient.obj', opts=OPTS, input='eggToMayaClient.cxx')
+    TargetAdd('egg2maya_client.exe', input='mayaprogs_mayaConversionClient.obj')
+    TargetAdd('egg2maya_client.exe', input='egg2maya_eggToMayaClient.obj')
+    TargetAdd('egg2maya_client.exe', input=COMMON_EGG2X_LIBS)
 
 #
 # DIRECTORY: contrib/src/ai/

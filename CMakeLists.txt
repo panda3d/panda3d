@@ -32,23 +32,32 @@ a CMake < 3.9. Making a guess if this is a multi-config generator.")
   endif()
 endif()
 
-# Define the type of build we are setting up.
-set(_configs Standard Release RelWithDebInfo Debug MinSizeRel)
-if(CMAKE_CXX_COMPILER_ID MATCHES "(AppleClang|Clang|GCC)")
-  list(APPEND _configs Coverage)
-endif()
-
+# Set the default CMAKE_BUILD_TYPE before calling project().
 if(IS_MULTICONFIG)
   message(STATUS "Using multi-configuration generator")
 else()
-  # Set the default CMAKE_BUILD_TYPE before calling project().
   if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Standard CACHE STRING "Choose the type of build." FORCE)
     message(STATUS "Using default build type ${CMAKE_BUILD_TYPE}")
   else()
     message(STATUS "Using build type ${CMAKE_BUILD_TYPE}")
   endif()
-  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS ${_configs})
+endif()
+
+# Set defaults for macOS, must be before project().
+if(APPLE)
+  set(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "Minimum macOS version to target")
+  set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
+
+  if(CMAKE_VERSION VERSION_LESS "3.19" AND NOT CMAKE_OSX_SYSROOT)
+    # Older CMake chose SDK based on deployment target, against Apple's recommendations.
+    # However, we need to use the latest to be able to target arm64.
+    if(IS_DIRECTORY "/Library/Developer/CommandLineTools/SDKs/MacOSX11.1.sdk")
+      set(CMAKE_OSX_SYSROOT "/Library/Developer/CommandLineTools/SDKs/MacOSX11.1.sdk" CACHE STRING "")
+    elseif(IS_DIRECTORY "/Library/Developer/CommandLineTools/SDKs/MacOSX11.0.sdk")
+      set(CMAKE_OSX_SYSROOT "/Library/Developer/CommandLineTools/SDKs/MacOSX11.0.sdk" CACHE STRING "")
+    endif()
+  endif()
 endif()
 
 # Figure out the version
@@ -58,6 +67,18 @@ string(REGEX REPLACE "^.*=${_s}" "" _version "${_version}")
 project(Panda3D VERSION ${_version})
 unset(_version)
 unset(_s)
+
+# Determine the possible build types.  Must be *after* calling project().
+set(_configs Standard Release RelWithDebInfo Debug MinSizeRel)
+if(CMAKE_CXX_COMPILER_ID MATCHES "(AppleClang|Clang|GCC)")
+  list(APPEND _configs Coverage)
+endif()
+
+if(IS_MULTICONFIG)
+  set(CMAKE_CONFIGURATION_TYPES "${_configs}" CACHE STRING "" FORCE)
+else()
+  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS ${_configs})
+endif()
 
 enable_testing()
 

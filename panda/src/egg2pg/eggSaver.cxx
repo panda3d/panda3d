@@ -855,6 +855,9 @@ convert_primitive(const GeomVertexData *vertex_data,
         case TextureStage::M_normal_gloss:
           egg_tex->set_env_type(EggTexture::ET_normal_gloss);
           break;
+        case TextureStage::M_emission:
+          egg_tex->set_env_type(EggTexture::ET_emission);
+          break;
         default:
           break;
         }

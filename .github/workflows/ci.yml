@@ -97,11 +97,8 @@ jobs:
         mv panda3d-1.10.8/thirdparty thirdparty
         rmdir panda3d-1.10.8
 
-        mkdir -p build/Frameworks
-        cp -R thirdparty/darwin-libs-a/nvidiacg/Cg.framework build/Frameworks/Cg.framework
-
-        mkdir -p "build/${{ matrix.config }}/Frameworks"
-        cp -R thirdparty/darwin-libs-a/nvidiacg/Cg.framework "build/${{ matrix.config }}/Frameworks/Cg.framework"
+        # Temporary hack so that pzip can run, since we are about to remove Cg anyway.
+        install_name_tool -id "$(pwd)/thirdparty/darwin-libs-a/nvidiacg/lib/libCg.dylib" thirdparty/darwin-libs-a/nvidiacg/lib/libCg.dylib
 
         brew install ccache
 
@@ -127,16 +124,16 @@ jobs:
       uses: actions/cache@v1
       with:
         path: thirdparty
-        key: ci-cmake-${{ runner.OS }}-thirdparty-v1.10.7-r1
+        key: ci-cmake-${{ runner.OS }}-thirdparty-v1.10.8-r3
     - name: Install dependencies (Windows)
       if: runner.os == 'Windows'
       shell: powershell
       run: |
         if (!(Test-Path thirdparty/win-libs-vc14-x64)) {
           $wc = New-Object System.Net.WebClient
-          $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.7/panda3d-1.10.7-tools-win64.zip", "thirdparty-tools.zip")
+          $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.8/panda3d-1.10.8-tools-win64.zip", "thirdparty-tools.zip")
           Expand-Archive -Path thirdparty-tools.zip
-          Move-Item -Path thirdparty-tools/panda3d-1.10.7/thirdparty -Destination .
+          Move-Item -Path thirdparty-tools/panda3d-1.10.8/thirdparty -Destination .
         }
 
     - name: ccache (non-Windows)
@@ -350,9 +347,9 @@ jobs:
       shell: powershell
       run: |
         $wc = New-Object System.Net.WebClient
-        $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.7/panda3d-1.10.7-tools-win64.zip", "thirdparty-tools.zip")
+        $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.8/panda3d-1.10.8-tools-win64.zip", "thirdparty-tools.zip")
         Expand-Archive -Path thirdparty-tools.zip
-        Move-Item -Path thirdparty-tools/panda3d-1.10.7/thirdparty -Destination .
+        Move-Item -Path thirdparty-tools/panda3d-1.10.8/thirdparty -Destination .
     - name: Get thirdparty packages (macOS)
       if: runner.os == 'macOS'
       run: |

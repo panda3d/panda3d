@@ -6,6 +6,7 @@
 # file based on the user's selected configure variables.
 #
 
+include(CheckCXXCompilerFlag)
 include(CheckCXXSourceCompiles)
 include(CheckCSourceRuns)
 include(CheckIncludeFileCXX)
@@ -137,8 +138,18 @@ check_include_file_cxx(stdint.h PHAVE_STDINT_H)
 #set(HAVE_POSIX_THREADS ${CMAKE_USE_PTHREADS_INIT})
 
 # Do we have SSE2 support?
-include(CheckCXXCompilerFlag)
-check_cxx_compiler_flag(-msse2 HAVE_SSE2)
+if(MSVC)
+  check_cxx_source_compiles("
+#if !defined(__SSE2__) && !defined(_M_X64) && !defined(_M_AMD64) && !defined(_M_IX86_FP)
+#error no
+#endif
+int main (int argc, char *argv[]) {
+  return 0;
+}
+" HAVE_SSE2)
+else()
+  check_cxx_compiler_flag(-msse2 HAVE_SSE2)
+endif()
 
 # Set LINK_ALL_STATIC if we're building everything as static libraries.
 # Also set the library type used for "modules" appropriately.
@@ -158,7 +169,9 @@ endif()
 show_packages()
 
 message("")
-if(INTERROGATE_PYTHON_INTERFACE)
+if(HAVE_PYTHON AND NOT PYTHON_FOUND)
+  message(SEND_ERROR "Configured Panda with Python bindings, but no Python library found.  Disable HAVE_PYTHON to continue.")
+elseif(INTERROGATE_PYTHON_INTERFACE)
   message("Compilation will generate Python interfaces for Python ${PYTHON_VERSION_STRING}.")
 else()
   message("Configuring Panda WITHOUT Python interfaces.")

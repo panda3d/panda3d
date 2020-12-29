@@ -227,6 +227,15 @@ public:
 
     STO_stage_i,
     STO_light_i_shadow_map,
+
+    STO_ff_stage_i,
+    STO_stage_modulate_i,
+    STO_stage_add_i,
+    STO_stage_normal_i,
+    STO_stage_height_i,
+    STO_stage_selector_i,
+    STO_stage_gloss_i,
+    STO_stage_emission_i,
   };
 
   enum ShaderArgClass {
