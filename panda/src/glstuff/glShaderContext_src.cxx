@@ -3425,7 +3425,11 @@ attach_shader(const ShaderModule *module) {
                                 (const char *)spv->get_data(),
                                 spv->get_data_size() * sizeof(uint32_t));
       }
-      _glgsg->_glSpecializeShader(handle, "main", 0, nullptr, nullptr);
+
+      const Shader::ModuleSpecConstants &consts = _shader->_module_spec_consts[module];
+      _glgsg->_glSpecializeShader(handle, "main", consts._indices.size(),
+                                  (GLuint *)consts._indices.data(),
+                                  (GLuint *)consts._values.data());
     }
     else
 #endif  // !OPENGLES
