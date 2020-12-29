@@ -6048,22 +6048,6 @@ def ParallelMake(tasklist):
     #task = [CompileAnything, [name, inputs, opts], [name], deps, []]
     # task[2] = [name]
     # task[3] = deps
-    # The python tool package, in particular fltegg seems to throw parallelmake off
-    # A hack for now is to divide the tasklist into two parts, one to be built in parallel
-    # and another subpart to be built sequentially. The most time consuming part of the process
-    # is the c++ code generation anyways.
-
-    tasklist_seq = []
-    i = 0
-    while i < len(tasklist):
-        if tasklist[i][2][0].endswith('.egg') | tasklist[i][2][0].endswith('.egg.pz'):
-            break
-        i += 1
-    if i < len(tasklist):
-        tasklist_seq = tasklist[i:]
-        tasklist = tasklist[:i]
-    iNumStartingTasks = len(tasklist)
-
     pending = {}
     for task in tasklist:
         for target in task[2]:
@@ -6105,7 +6089,6 @@ def ParallelMake(tasklist):
     # Make sure there aren't any unsatisfied tasks
     if len(tasklist) > 0:
         exit("Dependency problems: " + str(len(tasklist)) + " tasks not finished. First task unsatisfied: "+str(tasklist[0][2]))
-    SequentialMake(tasklist_seq)
 
 
 def SequentialMake(tasklist):
