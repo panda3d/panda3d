@@ -12,7 +12,7 @@
 #
 #################################################################
 
-import os, sys, string, Pmw
+import os, sys, Pmw
 from direct.showbase.DirectObject import DirectObject
 from panda3d.core import *
 
@@ -221,7 +221,7 @@ class TreeNode:
             self.children[key] = child
             self.kidKeys.append(key)
         # Remove unused children
-        for key in self.children.keys():
+        for key in list(self.children.keys()):
             if key not in self.kidKeys:
                 del(self.children[key])
         cx = x+20

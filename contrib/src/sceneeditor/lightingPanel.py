@@ -7,7 +7,7 @@ from direct.tkwidgets.AppShell import AppShell
 from seColorEntry import *
 from direct.tkwidgets.VectorWidgets import Vector3Entry
 from direct.tkwidgets.Slider import Slider
-import sys, math, types, Pmw
+import sys, Pmw
 from panda3d.core import *
 
 if sys.version_info >= (3, 0):

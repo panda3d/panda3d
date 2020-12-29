@@ -8,7 +8,6 @@ from panda3d.core import *
 from direct.showbase.ShowBaseGlobal import *
 import os
 import shutil
-import string
 
 ####################################################################################################################################################
 #### These modules are modified versions of Disney's equivalent modules
