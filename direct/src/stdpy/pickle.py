@@ -30,6 +30,7 @@ from copyreg import dispatch_table
 # with the local pickle.py.
 pickle = __import__('pickle')
 
+PicklingError = pickle.PicklingError
 BasePickler = pickle._Pickler
 BaseUnpickler = pickle._Unpickler
 

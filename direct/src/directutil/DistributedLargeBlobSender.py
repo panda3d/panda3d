@@ -56,7 +56,7 @@ class DistributedLargeBlobSender(DistributedObject.DistributedObject):
         except OSError:
             DistributedLargeBlobSender.notify.error(
                 'could not access %s' % bPath)
-        f = file(filename, 'rb')
+        f = open(filename, 'rb')
         self.blob = f.read()
         f.close()
         os.unlink(filename)

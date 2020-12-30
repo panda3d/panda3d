@@ -4,7 +4,6 @@ See the :ref:`distribution` section of the programming manual for information
 on how to use these commands.
 """
 
-import collections
 import os
 import plistlib
 import pkg_resources
@@ -211,8 +210,10 @@ class build_apps(setuptools.Command):
             # manylinux1/linux
             'libdl.so.*', 'libstdc++.so.*', 'libm.so.*', 'libgcc_s.so.*',
             'libpthread.so.*', 'libc.so.*', 'ld-linux-x86-64.so.*',
-            'libgl.so.*', 'libx11.so.*', 'libreadline.so.*', 'libncursesw.so.*',
-            'libbz2.so.*', 'libz.so.*', 'liblzma.so.*', 'librt.so.*', 'libutil.so.*',
+            'libgl.so.*', 'libx11.so.*', 'libncursesw.so.*', 'libz.so.*',
+            'librt.so.*', 'libutil.so.*', 'libnsl.so.1', 'libXext.so.6',
+            'libXrender.so.1', 'libICE.so.6', 'libSM.so.6',
+            'libgobject-2.0.so.0', 'libgthread-2.0.so.0', 'libglib-2.0.so.0',
 
             # macOS
             '/usr/lib/libc++.1.dylib',

@@ -669,6 +669,8 @@ class DirectSession(DirectObject):
         if not taskMgr.hasTaskNamed('resizeObjectHandles'):
             dnp = self.selected.last
             if dnp:
+                direct = base.direct
+
                 if self.manipulationControl.fMultiView:
                     for i in range(3):
                         sf = 30.0 * direct.drList[i].orthoFactor

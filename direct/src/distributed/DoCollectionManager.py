@@ -270,9 +270,7 @@ class DoCollectionManager:
 
     def deleteDistributedObjects(self):
         # Get rid of all the distributed objects
-        for doId in self.doId2do.keys():
-            # Look up the object
-            do = self.doId2do[doId]
+        for doId, do in list(self.doId2do.items()):
             self.deleteDistObject(do)
 
         # Get rid of everything that manages distributed objects

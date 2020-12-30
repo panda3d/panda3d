@@ -97,7 +97,7 @@ class DistributedCartesianGridAI(DistributedNodeAI, CartesianGridBase):
     def updateGridTask(self, task=None):
         # Run through all grid objects and update their parents if needed
         missingObjs = []
-        for avId in self.gridObjects.keys():
+        for avId in list(self.gridObjects.keys()):
             av = self.gridObjects[avId]
             # handle a missing object after it is already gone?
             if (av.isEmpty()):
