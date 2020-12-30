@@ -42,6 +42,7 @@ get_num_non_ambient_lights() const {
  */
 INLINE NodePath LightAttrib::
 get_on_light(size_t n) const {
+  check_sorted();
   nassertr(n < _sorted_on_lights.size(), NodePath::fail());
   return _sorted_on_lights[n];
 }

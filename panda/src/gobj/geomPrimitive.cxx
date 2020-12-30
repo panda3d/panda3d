@@ -1627,6 +1627,8 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
 
       for (; i < cdata->_num_vertices; ++i) {
         reader.set_row_unsafe(cdata->_first_vertex + i);
+        nassertv(!reader.is_at_end());
+
         LPoint3 vertex = mat.xform_point_general(reader.get_data3());
 
         min_point.set(min(min_point[0], vertex[0]),
@@ -1653,6 +1655,8 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
 
       for (; i < cdata->_num_vertices; ++i) {
         reader.set_row_unsafe(cdata->_first_vertex + i);
+        nassertv(!reader.is_at_end());
+
         const LVecBase3 &vertex = reader.get_data3();
 
         min_point.set(min(min_point[0], vertex[0]),
@@ -1696,6 +1700,8 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
           continue;
         }
         reader.set_row_unsafe(ii);
+        nassertv(!reader.is_at_end());
+
         LPoint3 vertex = mat.xform_point_general(reader.get_data3());
 
         min_point.set(min(min_point[0], vertex[0]),
@@ -1728,6 +1734,8 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
           continue;
         }
         reader.set_row_unsafe(ii);
+        nassertv(!reader.is_at_end());
+
         const LVecBase3 &vertex = reader.get_data3();
 
         min_point.set(min(min_point[0], vertex[0]),

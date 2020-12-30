@@ -321,15 +321,20 @@ static int enable_line_buffering(PyObject *file) {
   if (method != NULL) {
     PyObject *result = PyObject_Call(method, args, kwargs);
     Py_DECREF(method);
+    Py_DECREF(kwargs);
+    Py_DECREF(args);
     if (result != NULL) {
       Py_DECREF(result);
     } else {
       PyErr_Clear();
       return 0;
     }
+  } else {
+    Py_DECREF(kwargs);
+    Py_DECREF(args);
+    PyErr_Clear();
+    return 0;
   }
-  Py_DECREF(kwargs);
-  Py_DECREF(args);
 #else
   /* Older versions just don't expose a way to reconfigure(), but it's still
      safe to override the property; we just have to use a hack to do it,

@@ -529,7 +529,7 @@ class SelectionQueue(CollisionHandlerQueue):
             # Well, no way to tell.  Assume we're not backfacing.
             return 0
 
-        if direct:
+        if base.direct:
             cam = base.direct.cam
         else:
             cam = base.cam
@@ -602,7 +602,7 @@ class SelectionRay(SelectionQueue):
         if xy:
             mx = xy[0]
             my = xy[1]
-        elif direct:
+        elif base.direct:
             mx = base.direct.dr.mouseX
             my = base.direct.dr.mouseY
         else:
@@ -613,7 +613,7 @@ class SelectionRay(SelectionQueue):
             mx = base.mouseWatcherNode.getMouseX()
             my = base.mouseWatcherNode.getMouseY()
 
-        if direct:
+        if base.direct:
             self.collider.setFromLens(base.direct.camNode, mx, my)
         else:
             self.collider.setFromLens(base.camNode, mx, my)

@@ -255,10 +255,14 @@ get_cwd() {
  */
 bool ExecutionEnvironment::
 ns_has_environment_variable(const string &var) const {
-#ifdef PREREAD_ENVIRONMENT
-  return _variables.count(var) != 0;
-#else
+  if (_variables.count(var) != 0) {
+    return true;
+  }
+
+#ifndef PREREAD_ENVIRONMENT
   return getenv(var.c_str()) != nullptr;
+#else
+  return false;
 #endif
 }
 

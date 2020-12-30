@@ -364,8 +364,8 @@ protected:
   virtual void draw_mask_changed();
 
   typedef pmap<PandaNode *, PandaNode *> InstanceMap;
-  virtual PT(PandaNode) r_copy_subgraph(InstanceMap &inst_map,
-                                        Thread *current_thread) const;
+  PT(PandaNode) r_copy_subgraph(InstanceMap &inst_map,
+                                Thread *current_thread) const;
   virtual void r_copy_children(const PandaNode *from, InstanceMap &inst_map,
                                Thread *current_thread);
 

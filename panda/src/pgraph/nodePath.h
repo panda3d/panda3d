@@ -952,6 +952,10 @@ PUBLISHED:
   static NodePath decode_from_bam_stream(vector_uchar data, BamReader *reader = nullptr);
 
 private:
+  bool replace_copied_nodes(const NodePath &source, const NodePath &dest,
+                            const PandaNode::InstanceMap &inst_map,
+                            Thread *current_thread);
+
   static NodePathComponent *
   find_common_ancestor(const NodePath &a, const NodePath &b,
                        int &a_count, int &b_count,

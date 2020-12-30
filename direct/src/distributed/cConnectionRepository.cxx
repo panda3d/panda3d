@@ -918,8 +918,8 @@ describe_message(std::ostream &out, const string &prefix,
       PyObject *methodName = PyUnicode_FromString("_getMsgName");
       nassertv(methodName != nullptr);
 
-      PyObject *result = PyObject_CallMethodObjArgs(_python_repository, methodName,
-                                                    msgId, nullptr);
+      PyObject *result =
+        PyObject_CallMethodOneArg(_python_repository, methodName, msgId);
       nassertv(result != nullptr);
 
       msgName += string(PyUnicode_AsUTF8(result));

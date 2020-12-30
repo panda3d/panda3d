@@ -167,6 +167,12 @@ function(package_option name)
 
   set(PANDA_PACKAGE_DEFAULT_${name} "${default}" PARENT_SCOPE)
 
+  if(${found_as}_FOUND OR ${FOUND_AS}_FOUND)
+    set(PANDA_PACKAGE_FOUND_${name} ON PARENT_SCOPE)
+  else()
+    set(PANDA_PACKAGE_FOUND_${name} OFF PARENT_SCOPE)
+  endif()
+
   # Create the INTERFACE library used to depend on this package.
   add_library(PKG::${name} INTERFACE IMPORTED GLOBAL)
 
@@ -279,15 +285,19 @@ function(show_packages)
   foreach(package ${_ALL_CONFIG_PACKAGES})
     set(desc "${PANDA_PACKAGE_DESC_${package}}")
     set(note "${PANDA_PACKAGE_NOTE_${package}}")
-    if(HAVE_${package})
+
+    if(HAVE_${package} AND PANDA_PACKAGE_FOUND_${package})
       if(NOT note STREQUAL "")
         message("+ ${desc} (${note})")
       else()
         message("+ ${desc}")
       endif()
 
+    elseif(HAVE_${package})
+      message("! ${desc} (enabled but not found)")
+
     else()
-      if(NOT ${package}_FOUND)
+      if(NOT PANDA_PACKAGE_FOUND_${package})
         set(reason "not found")
       elseif(NOT PANDA_PACKAGE_DEFAULT_${package})
         set(reason "not requested")

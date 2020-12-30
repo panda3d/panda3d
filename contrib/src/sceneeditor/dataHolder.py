@@ -5,12 +5,7 @@ from direct.showbase.TkGlobal import*
 import Pmw
 from direct.tkwidgets import Dial
 from direct.tkwidgets import Floater
-
-if sys.version_info >= (3, 0):
-    from tkinter.filedialog import askopenfilename
-else:
-    from tkFileDialog import askopenfilename
-
+from tkinter.filedialog import askopenfilename
 
 #############################
 # Scene Editor Python Files #
@@ -27,7 +22,6 @@ from direct.actor import Actor
 # Core Python Modules         #
 ###############################
 import os
-import string
 import sys
 
 import seParticleEffect

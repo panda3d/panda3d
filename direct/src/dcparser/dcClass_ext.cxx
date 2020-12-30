@@ -400,9 +400,7 @@ pack_required_field(DCPacker &packer, PyObject *distobj,
     PyObject_GetAttrString(distobj, (char *)getter_name.c_str());
   nassertr(func != nullptr, false);
 
-  PyObject *empty_args = PyTuple_New(0);
-  PyObject *result = PyObject_CallObject(func, empty_args);
-  Py_DECREF(empty_args);
+  PyObject *result = PyObject_CallNoArgs(func);
   Py_DECREF(func);
   if (result == nullptr) {
     // We don't set this as an exception, since presumably the Python method

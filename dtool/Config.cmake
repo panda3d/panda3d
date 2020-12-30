@@ -29,10 +29,6 @@ if(DEFINED CMAKE_CXX_FLAGS_COVERAGE)
   list(APPEND _configs Coverage)
 endif()
 
-if(IS_MULTICONFIG)
-  set(CMAKE_CONFIGURATION_TYPES ${_configs})
-endif()
-
 # Are we building with static or dynamic linking?
 option(BUILD_SHARED_LIBS
   "Causes subpackages to be built separately -- setup for dynamic linking.

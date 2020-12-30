@@ -5,15 +5,9 @@
 # Import Tkinter, Pmw, and the floater code from this directory tree.
 from direct.tkwidgets.AppShell import *
 from direct.showbase.TkGlobal import *
-import string
-import math
-import types
 from direct.task import Task
 
-if sys.version_info >= (3, 0):
-    from tkinter.simpledialog import askfloat
-else:
-    from tkSimpleDialog import askfloat
+from tkinter.simpledialog import askfloat
 
 FRAMES = 0
 SECONDS = 1
@@ -407,7 +401,7 @@ class AnimPanel(AppShell):
         #################################################################
         if self.animName in self['animList']:
             # Convert scale value to float
-            frame = string.atof(frame)
+            frame = float(frame)
             # Now convert t to seconds for offset calculations
             if self.unitsVar.get() == FRAMES:
                 frame = frame / self.fps

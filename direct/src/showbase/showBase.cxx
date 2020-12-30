@@ -91,44 +91,6 @@ init_app_for_gui() {
   */
 }
 
-// klunky interface since we cant pass array from python->C++ to use
-// verify_window_sizes directly
-static int num_fullscreen_testsizes = 0;
-#define MAX_FULLSCREEN_TESTS 10
-static int fullscreen_testsizes[MAX_FULLSCREEN_TESTS * 2];
-
-void
-add_fullscreen_testsize(int xsize, int ysize) {
-  if ((xsize == 0) && (ysize == 0)) {
-    num_fullscreen_testsizes = 0;
-    return;
-  }
-
-  // silently fail if maxtests exceeded
-  if (num_fullscreen_testsizes < MAX_FULLSCREEN_TESTS) {
-    fullscreen_testsizes[num_fullscreen_testsizes * 2] = xsize;
-    fullscreen_testsizes[num_fullscreen_testsizes * 2 + 1] = ysize;
-    num_fullscreen_testsizes++;
-  }
-}
-
-void
-runtest_fullscreen_sizes(GraphicsWindow *win) {
-  win->verify_window_sizes(num_fullscreen_testsizes, fullscreen_testsizes);
-}
-
-bool
-query_fullscreen_testresult(int xsize, int ysize) {
-  // stupid linear search that works ok as long as total tests are small
-  int i;
-  for (i=0; i < num_fullscreen_testsizes; i++) {
-    if((fullscreen_testsizes[i * 2] == xsize) &&
-       (fullscreen_testsizes[i * 2 + 1] == ysize))
-      return true;
-  }
-  return false;
-}
-
 void
 store_accessibility_shortcut_keys() {
 #ifdef _WIN32
