@@ -5,6 +5,7 @@ from direct.particles import ParticleEffect
 from direct.particles import Particles
 from direct.particles import ForceGroup
 
+
 class ParticleFloorTest(NodePath):
     def __init__(self):
         NodePath.__init__(self, "particleFloorTest")
@@ -36,21 +37,22 @@ class ParticleFloorTest(NodePath):
         self.p0.factory.setTerminalVelocityBase(400.0000)
         self.p0.factory.setTerminalVelocitySpread(0.0000)
         self.f.addParticles(self.p0)
-        if 1:
-            f0 = ForceGroup.ForceGroup('frict')
-            # Force parameters
-            force0 = LinearVectorForce(Vec3(0., 0., -1.))
-            force0.setActive(1)
-            f0.addForce(force0)
-            self.f.addForceGroup(f0)
+
+        f0 = ForceGroup.ForceGroup('frict')
+        # Force parameters
+        force0 = LinearVectorForce(Vec3(0., 0., -1.))
+        force0.setActive(1)
+        f0.addForce(force0)
+        self.f.addForceGroup(f0)
 
     def start(self):
         self.f.enable()
 
+
 if __name__ == "__main__":
     from direct.directbase.TestStart import *
     pt = ParticleFloorTest()
-    pt.reparentTo(render)
+    pt.reparentTo(base.render)
     pt.start()
     base.camera.setY(-10.0)
     base.run()

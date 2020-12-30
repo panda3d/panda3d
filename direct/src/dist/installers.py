@@ -170,4 +170,3 @@ def create_nsis(command, basename, build_dir):
         )
     cmd.append(nsifile.to_os_specific())
     subprocess.check_call(cmd)
-

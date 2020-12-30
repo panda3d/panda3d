@@ -16,7 +16,6 @@ import stat
 import struct
 import imp
 import string
-import time
 import tempfile
 
 import setuptools
@@ -500,11 +499,7 @@ class build_apps(setuptools.Command):
             icon.makeICNS(os.path.join(resdir, 'iconfile.icns'))
 
         with open(os.path.join(contentsdir, 'Info.plist'), 'wb') as f:
-            if hasattr(plistlib, 'dump'):
-                plistlib.dump(plist, f)
-            else:
-                plistlib.writePlist(plist, f)
-
+            plistlib.dump(plist, f)
 
     def build_runtimes(self, platform, use_wheels):
         """ Builds the distributions for the given platform. """

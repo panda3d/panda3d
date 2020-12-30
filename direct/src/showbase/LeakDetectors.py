@@ -4,7 +4,11 @@ ContainerLeakDetector.
 
 from panda3d.core import *
 from direct.showbase.DirectObject import DirectObject
+from direct.showbase.PythonUtil import safeTypeName, typeName, uniqueName, serialNum
 from direct.showbase.Job import Job
+from direct.showbase.JobManagerGlobal import jobMgr
+from direct.showbase.MessengerGlobal import messenger
+from direct.task.TaskManagerGlobal import taskMgr
 import gc
 import builtins
 
@@ -19,6 +23,7 @@ class LeakDetector:
         if __dev__:
             assert self._leakDetectorsKey not in leakDetectors
         leakDetectors[self._leakDetectorsKey] = self
+
     def destroy(self):
         del leakDetectors[self._leakDetectorsKey]
 
@@ -26,6 +31,7 @@ class LeakDetector:
         # this string will be shown to the end user and should ideally contain enough information to
         # point to what is leaking
         return '%s-%s' % (self.__class__.__name__, id(self))
+
 
 class ObjectTypeLeakDetector(LeakDetector):
     def __init__(self, otld, objType, generation):
@@ -45,6 +51,7 @@ class ObjectTypeLeakDetector(LeakDetector):
         num = self._otld._getNumObjsOfType(self._objType, self._generation)
         self._generation = self._otld._getGeneration()
         return num
+
 
 class ObjectTypesLeakDetector(LeakDetector):
     # are we accumulating any particular Python object type?
@@ -85,6 +92,7 @@ class ObjectTypesLeakDetector(LeakDetector):
         self._thisLdGen = self._generation
         return len(self._type2count)
 
+
 class GarbageLeakDetector(LeakDetector):
     # are we accumulating Python garbage?
     def __len__(self):
@@ -97,30 +105,36 @@ class GarbageLeakDetector(LeakDetector):
         gc.set_debug(oldFlags)
         return numGarbage
 
+
 class SceneGraphLeakDetector(LeakDetector):
     # is a scene graph leaking nodes?
     def __init__(self, render):
         LeakDetector.__init__(self)
         self._render = render
-        if config.GetBool('leak-scene-graph', 0):
+        if ConfigVariableBool('leak-scene-graph', False):
             self._leakTaskName = 'leakNodes-%s' % serialNum()
             self._leakNode()
+
     def destroy(self):
         if hasattr(self, '_leakTaskName'):
             taskMgr.remove(self._leakTaskName)
         del self._render
         LeakDetector.destroy(self)
+
     def __len__(self):
         try:
             # this will be available when the build server finishes
             return self._render.countNumDescendants()
         except:
             return self._render.getNumDescendants()
+
     def __repr__(self):
         return 'SceneGraphLeakDetector(%s)' % self._render
+
     def _leakNode(self, task=None):
         self._render.attachNewNode('leakNode-%s' % serialNum())
         taskMgr.doMethodLater(10, self._leakNode, self._leakTaskName)
+
 
 class CppMemoryUsage(LeakDetector):
     def __len__(self):
@@ -134,12 +148,14 @@ class CppMemoryUsage(LeakDetector):
         else:
             return 0
 
+
 class TaskLeakDetectorBase:
     def _getTaskNamePattern(self, taskName):
         # get a generic string pattern from a task name by removing numeric characters
         for i in (0, 1, 2, 3, 4, 5, 6, 7, 8, 9):
             taskName = taskName.replace('%s' % i, '')
         return taskName
+
 
 class _TaskNamePatternLeakDetector(LeakDetector, TaskLeakDetectorBase):
     # tracks the number of each individual task type
@@ -161,6 +177,7 @@ class _TaskNamePatternLeakDetector(LeakDetector, TaskLeakDetectorBase):
 
     def getLeakDetectorKey(self):
         return '%s-%s' % (self._taskNamePattern, self.__class__.__name__)
+
 
 class TaskLeakDetector(LeakDetector, TaskLeakDetectorBase):
     # tracks the number task 'types' and creates leak detectors for each task type
@@ -190,12 +207,14 @@ class TaskLeakDetector(LeakDetector, TaskLeakDetectorBase):
         # are we leaking task types?
         return len(self._taskName2collector)
 
+
 class MessageLeakDetectorBase:
     def _getMessageNamePattern(self, msgName):
         # get a generic string pattern from a message name by removing numeric characters
         for i in (0, 1, 2, 3, 4, 5, 6, 7, 8, 9):
             msgName = msgName.replace('%s' % i, '')
         return msgName
+
 
 class _MessageTypeLeakDetector(LeakDetector, MessageLeakDetectorBase):
     # tracks the number of objects that are listening to each message
@@ -225,6 +244,7 @@ class _MessageTypeLeakDetector(LeakDetector, MessageLeakDetectorBase):
     def getLeakDetectorKey(self):
         return '%s-%s' % (self._msgNamePattern, self.__class__.__name__)
 
+
 class _MessageTypeLeakDetectorCreator(Job):
     def __init__(self, creator):
         Job.__init__(self, uniqueName(typeName(self)))
@@ -246,12 +266,13 @@ class _MessageTypeLeakDetectorCreator(Job):
             self._creator._msgName2detector[namePattern].addMsgName(msgName)
         yield Job.Done
 
+
 class MessageTypesLeakDetector(LeakDetector, MessageLeakDetectorBase):
     def __init__(self):
         LeakDetector.__init__(self)
         self._msgName2detector = {}
         self._createJob = None
-        if config.GetBool('leak-message-types', 0):
+        if ConfigVariableBool('leak-message-types', False):
             self._leakers = []
             self._leakTaskName = uniqueName('leak-message-types')
             taskMgr.add(self._leak, self._leakTaskName)
@@ -285,6 +306,7 @@ class MessageTypesLeakDetector(LeakDetector, MessageLeakDetectorBase):
         # are we leaking message types?
         return len(self._msgName2detector)
 
+
 class _MessageListenerTypeLeakDetector(LeakDetector):
     # tracks the number of each object type that is listening for events
     def __init__(self, typeName):
@@ -300,6 +322,7 @@ class _MessageListenerTypeLeakDetector(LeakDetector):
 
     def getLeakDetectorKey(self):
         return '%s-%s' % (self._typeName, self.__class__.__name__)
+
 
 class _MessageListenerTypeLeakDetectorCreator(Job):
     def __init__(self, creator):
@@ -322,12 +345,13 @@ class _MessageListenerTypeLeakDetectorCreator(Job):
                     _MessageListenerTypeLeakDetector(tName))
         yield Job.Done
 
+
 class MessageListenerTypesLeakDetector(LeakDetector):
     def __init__(self):
         LeakDetector.__init__(self)
         self._typeName2detector = {}
         self._createJob = None
-        if config.GetBool('leak-message-listeners', 0):
+        if ConfigVariableBool('leak-message-listeners', False):
             self._leakers = []
             self._leakTaskName = uniqueName('leak-message-listeners')
             taskMgr.add(self._leak, self._leakTaskName)

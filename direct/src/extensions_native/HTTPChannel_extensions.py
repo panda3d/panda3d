@@ -6,10 +6,6 @@
 from panda3d import core
 from .extension_native_helpers import Dtool_funcToMethod
 
-"""
-HTTPChannel-extensions module: contains methods to extend functionality
-of the HTTPChannel class
-"""
 
 def spawnTask(self, name = None, callback = None, extraArgs = []):
         """Spawns a task to service the download recently requested
@@ -23,6 +19,7 @@ def spawnTask(self, name = None, callback = None, extraArgs = []):
         if not name:
             name = str(self.getUrl())
         from direct.task import Task
+        from direct.task.TaskManagerGlobal import taskMgr
         task = Task.Task(self.doTask)
         task.callback = callback
         task.callbackArgs = extraArgs

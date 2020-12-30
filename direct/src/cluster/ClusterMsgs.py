@@ -59,17 +59,17 @@ class ClusterMsgHandler:
         if qcr.dataAvailable():
             datagram = NetDatagram()
             if qcr.getData(datagram):
-                (dgi, type) = self.readHeader(datagram)
+                (dgi, dtype) = self.readHeader(datagram)
             else:
                 dgi = None
-                type = CLUSTER_NONE
+                dtype = CLUSTER_NONE
                 self.notify.warning("getData returned false")
         else:
             datagram = None
             dgi = None
-            type = CLUSTER_NONE
+            dtype = CLUSTER_NONE
         # Note, return datagram to keep a handle on the data
-        return (datagram, dgi, type)
+        return (datagram, dgi, dtype)
 
     def blockingRead(self, qcr):
         """
@@ -85,19 +85,19 @@ class ClusterMsgHandler:
         # Data is available, create a datagram iterator
         datagram = NetDatagram()
         if qcr.getData(datagram):
-            (dgi, type) = self.readHeader(datagram)
+            (dgi, dtype) = self.readHeader(datagram)
         else:
-            (dgi, type) = (None, CLUSTER_NONE)
+            (dgi, dtype) = (None, CLUSTER_NONE)
             self.notify.warning("getData returned false")
         # Note, return datagram to keep a handle on the data
-        return (datagram, dgi, type)
+        return (datagram, dgi, dtype)
 
     def readHeader(self, datagram):
         dgi = PyDatagramIterator(datagram)
         number = dgi.getUint32()
-        type = dgi.getUint8()
-        self.notify.debug("Packet %d type %d received" % (number, type))
-        return (dgi, type)
+        dtype = dgi.getUint8()
+        self.notify.debug("Packet %d type %d received" % (number, dtype))
+        return (dgi, dtype)
 
     def makeCamOffsetDatagram(self, xyz, hpr):
         datagram = PyDatagram()
@@ -298,12 +298,3 @@ class ClusterMsgHandler:
         dt=dgi.getFloat32()
         self.notify.debug('time data=%f %f' % (frameTime, dt))
         return (frameCount, frameTime, dt)
-
-
-
-
-
-
-
-
-

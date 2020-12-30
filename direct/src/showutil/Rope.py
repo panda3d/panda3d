@@ -107,7 +107,7 @@ class Rope(NodePath):
                 thickness = v.get('thickness', defaultThickness)
 
             if isinstance(point, tuple):
-                if (len(point) >= 4):
+                if len(point) >= 4:
                     self.curve.setVertex(i, VBase4(point[0], point[1], point[2], point[3]))
                 else:
                     self.curve.setVertex(i, VBase3(point[0], point[1], point[2]))
@@ -123,7 +123,7 @@ class Rope(NodePath):
             if useVertexThickness:
                 self.curve.setExtendedVertex(i, vtd, thickness)
 
-        if self.knots != None:
+        if self.knots is not None:
             for i in range(len(self.knots)):
                 self.curve.setKnot(i, self.knots[i])
 

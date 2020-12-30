@@ -9,8 +9,9 @@ __all__ = ['FSMException', 'FSM']
 
 
 from direct.showbase.DirectObject import DirectObject
-from direct.directnotify import DirectNotifyGlobal
+from direct.showbase.MessengerGlobal import messenger
 from direct.showbase import PythonUtil
+from direct.directnotify import DirectNotifyGlobal
 from direct.stdpy.threading import RLock
 
 
@@ -239,7 +240,7 @@ class FSM(DirectObject):
     def isInTransition(self):
         self.fsmLock.acquire()
         try:
-            return self.state == None
+            return self.state is None
         finally:
             self.fsmLock.release()
 
@@ -339,12 +340,10 @@ class FSM(DirectObject):
     def defaultEnter(self, *args):
         """ This is the default function that is called if there is no
         enterState() method for a particular state name. """
-        pass
 
     def defaultExit(self):
         """ This is the default function that is called if there is no
         exitState() method for a particular state name. """
-        pass
 
     def defaultFilter(self, request, args):
         """This is the function that is called if there is no
@@ -485,8 +484,6 @@ class FSM(DirectObject):
             if not self.__callFromToFunc(self.oldState, self.newState, *args):
                 self.__callExitFunc(self.oldState)
                 self.__callEnterFunc(self.newState, *args)
-                pass
-            pass
         except:
             # If we got an exception during the enter or exit methods,
             # go directly to state "InternalError" and raise up the
@@ -513,7 +510,7 @@ class FSM(DirectObject):
     def __callEnterFunc(self, name, *args):
         # Calls the appropriate enter function when transitioning into
         # a new state, if it exists.
-        assert self.state == None and self.newState == name
+        assert self.state is None and self.newState == name
 
         func = getattr(self, "enter" + name, None)
         if not func:
@@ -525,7 +522,7 @@ class FSM(DirectObject):
     def __callFromToFunc(self, oldState, newState, *args):
         # Calls the appropriate fromTo function when transitioning into
         # a new state, if it exists.
-        assert self.state == None and self.oldState == oldState and self.newState == newState
+        assert self.state is None and self.oldState == oldState and self.newState == newState
 
         func = getattr(self, "from%sTo%s" % (oldState,newState), None)
         if func:
@@ -536,7 +533,7 @@ class FSM(DirectObject):
     def __callExitFunc(self, name):
         # Calls the appropriate exit function when leaving a
         # state, if it exists.
-        assert self.state == None and self.oldState == name
+        assert self.state is None and self.oldState == name
 
         func = getattr(self, "exit" + name, None)
         if not func:

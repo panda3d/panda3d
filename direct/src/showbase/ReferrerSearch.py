@@ -1,8 +1,11 @@
 import inspect
 import sys
 import gc
-from direct.showbase.PythonUtil import _getSafeReprNotify
+from direct.showbase.PythonUtil import _getSafeReprNotify, fastRepr
 from direct.showbase.Job import Job
+from direct.showbase.MessengerGlobal import messenger
+from direct.task.TaskManagerGlobal import taskMgr
+
 
 class ReferrerSearch(Job):
     def __init__(self, obj, maxRefs = 100):
@@ -24,10 +27,8 @@ class ReferrerSearch(Job):
             self.step(0, [self.obj])
         finally:
             self.obj = None
-            pass
 
         safeReprNotify.setInfo(info)
-        pass
 
     def run(self):
         safeReprNotify = _getSafeReprNotify()
@@ -39,10 +40,8 @@ class ReferrerSearch(Job):
         self.visited = set()
         for x in self.stepGenerator(0, [self.obj]):
             yield None
-            pass
 
         yield Job.Done
-        pass
 
     def finished(self):
         print('RefPath(%s): Finished ReferrerSearch for %s' %(self._id, fastRepr(self.obj)))
@@ -50,7 +49,6 @@ class ReferrerSearch(Job):
 
         safeReprNotify = _getSafeReprNotify()
         safeReprNotify.setInfo(self.info)
-        pass
 
     def __del__(self):
         print('ReferrerSearch garbage collected')
@@ -63,28 +61,27 @@ class ReferrerSearch(Job):
 
     def printStatsWhenAble(self):
         self.shouldPrintStats = True
-        pass
 
     def myrepr(self, referrer, refersTo):
         pre = ''
-        if (isinstance(referrer, dict)):
+        if isinstance(referrer, dict):
             for k,v in referrer.items():
                 if v is refersTo:
                     pre = self.truncateAtNewLine(fastRepr(k)) + ']-> '
                     break
-        elif (isinstance(referrer, (list, tuple))):
+        elif isinstance(referrer, (list, tuple)):
             for x, ref in enumerate(referrer):
                 if ref is refersTo:
                     pre = '%s]-> ' % (x)
                     break
 
-        if (isinstance(refersTo, dict)):
+        if isinstance(refersTo, dict):
             post = 'dict['
-        elif (isinstance(refersTo, list)):
+        elif isinstance(refersTo, list):
             post = 'list['
-        elif (isinstance(refersTo, tuple)):
+        elif isinstance(refersTo, tuple):
             post = 'tuple['
-        elif (isinstance(refersTo, set)):
+        elif isinstance(refersTo, set):
             post = 'set->'
         else:
             post = self.truncateAtNewLine(fastRepr(refersTo)) + "-> "
@@ -99,11 +96,11 @@ class ReferrerSearch(Job):
         at = path[-1]
 
         if id(at) in self.visited:
-               # don't continue down this path
-               return
+            # don't continue down this path
+            return
 
         # check for success
-        if (self.isAtRoot(at, path)):
+        if self.isAtRoot(at, path):
             self.found += 1
             return
 
@@ -123,17 +120,15 @@ class ReferrerSearch(Job):
         # sort of global, singleton, or manager object
         # and as such no further knowledge would be gained from
         # traversing further up the ref tree.
-        if (self.isManyRef(at, path, referrers)):
+        if self.isManyRef(at, path, referrers):
             return
 
-        while(referrers):
+        while referrers:
             ref = referrers.pop()
-            self.depth+=1
+            self.depth += 1
             for x in self.stepGenerator(depth + 1, path + [ref]):
                 pass
-            self.depth-=1
-            pass
-        pass
+            self.depth -= 1
 
     def stepGenerator(self, depth, path):
         if self.shouldPrintStats:
@@ -144,7 +139,7 @@ class ReferrerSearch(Job):
         at = path[-1]
 
         # check for success
-        if (self.isAtRoot(at, path)):
+        if self.isAtRoot(at, path):
             self.found += 1
             raise StopIteration
 
@@ -174,27 +169,23 @@ class ReferrerSearch(Job):
         # sort of global, singleton, or manager object
         # and as such no further knowledge would be gained from
         # traversing further up the ref tree.
-        if (self.isManyRef(at, path, referrers)):
+        if self.isManyRef(at, path, referrers):
             raise StopIteration
 
-        while(referrers):
+        while referrers:
             ref = referrers.pop()
-            self.depth+=1
+            self.depth += 1
             for x in self.stepGenerator(depth + 1, path + [ref]):
                 yield None
-                pass
-            self.depth-=1
-            pass
+            self.depth -= 1
 
         yield None
-        pass
 
     def printStats(self, path):
         path = list(reversed(path))
         path.insert(0,0)
         print('RefPath(%s) - Stats - visited(%s) | found(%s) | depth(%s) | CurrentPath(%s)' % \
               (self._id, len(self.visited), self.found, self.depth, ''.join(self.myrepr(path[x], path[x+1]) for x in range(len(path) - 1))))
-        pass
 
     def isAtRoot(self, at, path):
         # Now we define our 'roots', or places where we will
@@ -207,11 +198,8 @@ class ReferrerSearch(Job):
             path.insert(0,0)
             for x in range(len(path) - 1):
                 sys.stdout.write(self.myrepr(path[x], path[x+1]))
-                pass
             print("")
             return True
-
-
 
         # __builtins__
         if at is __builtins__:
@@ -220,7 +208,6 @@ class ReferrerSearch(Job):
             path.insert(0,0)
             for x in range(len(path) - 1):
                 sys.stdout.write(self.myrepr(path[x], path[x+1]))
-                pass
             print("")
             return True
 
@@ -230,7 +217,6 @@ class ReferrerSearch(Job):
             path = list(reversed(path))
             for x in range(len(path) - 1):
                 sys.stdout.write(self.myrepr(path[x], path[x+1]))
-                pass
             print("")
             return True
 
@@ -240,7 +226,6 @@ class ReferrerSearch(Job):
             path = list(reversed(path))
             for x in range(len(path) - 1):
                 sys.stdout.write(self.myrepr(path[x], path[x+1]))
-                pass
             print("")
             return True
 
@@ -250,7 +235,6 @@ class ReferrerSearch(Job):
             path = list(reversed(path))
             for x in range(len(path) - 1):
                 sys.stdout.write(self.myrepr(path[x], path[x+1]))
-                pass
             print("")
             return True
 
@@ -260,7 +244,6 @@ class ReferrerSearch(Job):
             path = list(reversed(path))
             for x in range(len(path) - 1):
                 sys.stdout.write(self.myrepr(path[x], path[x+1]))
-                pass
             print("")
             return True
 
@@ -270,7 +253,6 @@ class ReferrerSearch(Job):
             path = list(reversed(path))
             for x in range(len(path) - 1):
                 sys.stdout.write(self.myrepr(path[x], path[x+1]))
-                pass
             print("")
             return True
 
@@ -280,7 +262,6 @@ class ReferrerSearch(Job):
             path = list(reversed(path))
             for x in range(len(path) - 1):
                 sys.stdout.write(self.myrepr(path[x], path[x+1]))
-                pass
             print("")
             return True
 
@@ -290,10 +271,8 @@ class ReferrerSearch(Job):
             path = list(reversed(path))
             for x in range(len(path) - 1):
                 sys.stdout.write(self.myrepr(path[x], path[x+1]))
-                pass
             print("")
             return True
-        pass
 
         return False
 
@@ -306,24 +285,17 @@ class ReferrerSearch(Job):
                 path.insert(0,0)
                 for x in range(len(path) - 1):
                     sys.stdout.write(self.myrepr(path[x], path[x+1]))
-                    pass
                 print("")
                 return True
             else:
                 sys.stdout.write("RefPath(%s): ManyRefsAllowed(%s)[%s]-> " % (self._id, len(referrers), fastRepr(at, maxLen = 1, strFactor = 30)))
                 print("")
-                pass
-            pass
         return False
-    pass
 
 
-
-"""
-from direct.showbase.ReferrerSearch import ReferrerSearch
-door = simbase.air.doFind("DistributedBuildingDoorAI")
-class A: pass
-door = A()
-ReferrerSearch()(door)
-reload(ReferrerSearch); from direct.showbase.PythonUtil import ReferrerSearch
-"""
+#from direct.showbase.ReferrerSearch import ReferrerSearch
+#door = simbase.air.doFind("DistributedBuildingDoorAI")
+#class A: pass
+#door = A()
+#ReferrerSearch()(door)
+#reload(ReferrerSearch); from direct.showbase.PythonUtil import ReferrerSearch

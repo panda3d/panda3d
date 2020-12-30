@@ -6,6 +6,7 @@ __all__ = ['SfxPlayer']
 import math
 from panda3d.core import *
 
+
 class SfxPlayer:
     """
     Play sound effects, potentially localized.
@@ -55,7 +56,7 @@ class SfxPlayer:
                 d = node.getDistance(base.cam)
         if not cutoff:
             cutoff = self.cutoffDistance
-        if d == None or d > cutoff:
+        if d is None or d > cutoff:
             volume = 0
         else:
             if SfxPlayer.UseInverseSquare:

@@ -18,7 +18,7 @@ class NotifyPanel:
         # To get severity levels
         from panda3d.core import NSFatal, NSError, NSWarning, NSInfo, NSDebug, NSSpam
 
-        if tl == None:
+        if tl is None:
             tl = Toplevel()
             tl.title('Notify Controls')
             tl.geometry('300x400')
@@ -115,7 +115,6 @@ class NotifyPanel:
         self.categoryList.select_set(0)
         self.setActivePandaCategory()
 
-
     def _getPandaCategories(self, category):
         categories = [category]
         for i in range(category.getNumChildren()):
@@ -129,9 +128,8 @@ class NotifyPanel:
         return self._getPandaCategories(topCategory)
 
     def _getPandaCategoriesAsList(self, pc, list):
-        import types
         for item in pc:
-            if type(item) == list:
+            if isinstance(item, list):
                 self._getPandaCategoriesAsList(item, list)
             else:
                 list.append(item)
@@ -151,4 +149,3 @@ class NotifyPanel:
     def setActiveSeverity(self):
         if self.activeCategory:
             self.activeCategory.setSeverity(self.severity.get())
-

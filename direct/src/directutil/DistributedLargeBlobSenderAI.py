@@ -50,7 +50,7 @@ class DistributedLargeBlobSenderAI(DistributedObjectAI.DistributedObjectAI):
                                       'setFilename', [filename])
         else:
             chunkSize = LargeBlobSenderConsts.ChunkSize
-            while len(s):
+            while len(s) > 0:
                 self.sendUpdateToAvatarId(self.targetAvId,
                                           'setChunk', [s[:chunkSize]])
                 s = s[chunkSize:]

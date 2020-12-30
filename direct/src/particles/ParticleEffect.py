@@ -2,9 +2,9 @@
 from panda3d.core import *
 
 # Leave these imports in, they may be used by ptf files.
-from panda3d.physics import *
-from . import Particles
-from . import ForceGroup
+from panda3d.physics import * # pylint: disable=unused-import
+from . import Particles # pylint: disable=unused-import
+from . import ForceGroup # pylint: disable=unused-import
 
 from direct.directnotify import DirectNotifyGlobal
 
@@ -99,8 +99,8 @@ class ParticleEffect(NodePath):
         self.forceGroupDict[forceGroup.getName()] = forceGroup
 
         # Associate the force group with all particles
-        for i in range(len(forceGroup)):
-            self.addForce(forceGroup[i])
+        for force in forceGroup:
+            self.addForce(force)
 
     def addForce(self, force):
         for p in list(self.particlesDict.values()):
@@ -108,8 +108,8 @@ class ParticleEffect(NodePath):
 
     def removeForceGroup(self, forceGroup):
         # Remove forces from all particles
-        for i in range(len(forceGroup)):
-            self.removeForce(forceGroup[i])
+        for force in forceGroup:
+            self.removeForce(force)
 
         forceGroup.nodePath.removeNode()
         forceGroup.particleEffect = None
@@ -129,12 +129,12 @@ class ParticleEffect(NodePath):
 
         # Associate all forces in all force groups with the particles
         for fg in list(self.forceGroupDict.values()):
-            for i in range(len(fg)):
-                particles.addForce(fg[i])
+            for force in fg:
+                particles.addForce(force)
 
     def removeParticles(self, particles):
         if particles is None:
-            self.notify.warning('removeParticles() - particles == None!')
+            self.notify.warning('removeParticles() - particles is None!')
             return
         particles.nodePath.detachNode()
         self.particlesDict.pop(particles.getName(), None)
@@ -169,40 +169,40 @@ class ParticleEffect(NodePath):
     def saveConfig(self, filename):
         filename = Filename(filename)
         with open(filename.toOsSpecific(), 'w') as f:
-          # Add a blank line
-          f.write('\n')
+            # Add a blank line
+            f.write('\n')
 
-          # Make sure we start with a clean slate
-          f.write('self.reset()\n')
+            # Make sure we start with a clean slate
+            f.write('self.reset()\n')
 
-          pos = self.getPos()
-          hpr = self.getHpr()
-          scale = self.getScale()
-          f.write('self.setPos(%0.3f, %0.3f, %0.3f)\n' %
-                  (pos[0], pos[1], pos[2]))
-          f.write('self.setHpr(%0.3f, %0.3f, %0.3f)\n' %
-                  (hpr[0], hpr[1], hpr[2]))
-          f.write('self.setScale(%0.3f, %0.3f, %0.3f)\n' %
-                  (scale[0], scale[1], scale[2]))
+            pos = self.getPos()
+            hpr = self.getHpr()
+            scale = self.getScale()
+            f.write('self.setPos(%0.3f, %0.3f, %0.3f)\n' %
+                    (pos[0], pos[1], pos[2]))
+            f.write('self.setHpr(%0.3f, %0.3f, %0.3f)\n' %
+                    (hpr[0], hpr[1], hpr[2]))
+            f.write('self.setScale(%0.3f, %0.3f, %0.3f)\n' %
+                    (scale[0], scale[1], scale[2]))
 
-          # Save all the particles to file
-          num = 0
-          for p in list(self.particlesDict.values()):
-              target = 'p%d' % num
-              num = num + 1
-              f.write(target + ' = Particles.Particles(\'%s\')\n' % p.getName())
-              p.printParams(f, target)
-              f.write('self.addParticles(%s)\n' % target)
+            # Save all the particles to file
+            num = 0
+            for p in list(self.particlesDict.values()):
+                target = 'p%d' % num
+                num = num + 1
+                f.write(target + ' = Particles.Particles(\'%s\')\n' % p.getName())
+                p.printParams(f, target)
+                f.write('self.addParticles(%s)\n' % target)
 
-          # Save all the forces to file
-          num = 0
-          for fg in list(self.forceGroupDict.values()):
-              target = 'f%d' % num
-              num = num + 1
-              f.write(target + ' = ForceGroup.ForceGroup(\'%s\')\n' % \
-                                                  fg.getName())
-              fg.printParams(f, target)
-              f.write('self.addForceGroup(%s)\n' % target)
+            # Save all the forces to file
+            num = 0
+            for fg in list(self.forceGroupDict.values()):
+                target = 'f%d' % num
+                num = num + 1
+                f.write(target + ' = ForceGroup.ForceGroup(\'%s\')\n' % \
+                                                    fg.getName())
+                fg.printParams(f, target)
+                f.write('self.addForceGroup(%s)\n' % target)
 
     def loadConfig(self, filename):
         fn = Filename(filename)

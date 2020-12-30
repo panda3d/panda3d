@@ -4,6 +4,8 @@ __all__ = ['EventGroup']
 
 from direct.showbase import DirectObject
 from direct.showbase.PythonUtil import SerialNumGen, Functor
+from direct.showbase.MessengerGlobal import messenger
+
 
 class EventGroup(DirectObject.DirectObject):
     """This class allows you to group together multiple events and treat

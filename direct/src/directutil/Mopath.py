@@ -1,4 +1,5 @@
 from direct.showbase.DirectObject import DirectObject
+from direct.showbase.MessengerGlobal import messenger
 from direct.directtools.DirectGeometry import *
 
 from panda3d.core import NodePath, LineSegs
@@ -8,7 +9,7 @@ class Mopath(DirectObject):
     nameIndex = 1
 
     def __init__(self, name = None, fluid = 1, objectToLoad = None, upVectorNodePath = None, reverseUpVector = False):
-        if (name == None):
+        if name is None:
             name = 'mopath%d' % self.nameIndex
             self.nameIndex = self.nameIndex + 1
         self.name = name
@@ -35,24 +36,23 @@ class Mopath(DirectObject):
         return self.maxT * self.timeScale
 
     def loadFile(self, filename, fReset = 1):
-        nodePath = loader.loadModel(filename)
+        nodePath = base.loader.loadModel(filename)
         if nodePath:
             self.loadNodePath(nodePath)
             nodePath.removeNode()
         else:
             print('Mopath: no data in file: %s' % filename)
 
-
     def loadNodePath(self, nodePath, fReset = 1):
         if fReset:
             self.reset()
 
         self.__extractCurves(nodePath)
-        if (self.tNurbsCurve != []):
+        if self.tNurbsCurve != []:
             self.maxT = self.tNurbsCurve[-1].getMaxT()
-        elif (self.xyzNurbsCurve != None):
+        elif self.xyzNurbsCurve is not None:
             self.maxT = self.xyzNurbsCurve.getMaxT()
-        elif (self.hprNurbsCurve != None):
+        elif self.hprNurbsCurve is not None:
             self.maxT = self.hprNurbsCurve.getMaxT()
         else:
             print('Mopath: no valid curves in nodePath: %s' % nodePath)
@@ -74,11 +74,11 @@ class Mopath(DirectObject):
             elif node.getCurveType() == PCTHPR:
                 self.hprNurbsCurve = node
             elif node.getCurveType() == PCTNONE:
-                if (self.xyzNurbsCurve == None):
+                if self.xyzNurbsCurve is None:
                     self.xyzNurbsCurve = node
                 else:
                     print('Mopath: got a PCT_NONE curve and an XYZ Curve in nodePath: %s' % nodePath)
-            elif (node.getCurveType() == PCTT):
+            elif node.getCurveType() == PCTT:
                 self.tNurbsCurve.append(node)
         else:
             # Iterate over children if any
@@ -97,29 +97,29 @@ class Mopath(DirectObject):
 
     def getFinalState(self):
         pos = Point3(0)
-        if (self.xyzNurbsCurve != None):
+        if self.xyzNurbsCurve is not None:
             self.xyzNurbsCurve.getPoint(self.maxT, pos)
         hpr = Point3(0)
-        if (self.hprNurbsCurve != None):
+        if self.hprNurbsCurve is not None:
             self.hprNurbsCurve.getPoint(self.maxT, hpr)
         return (pos, hpr)
 
     def goTo(self, node, time):
-        if (self.xyzNurbsCurve == None) and (self.hprNurbsCurve == None):
+        if self.xyzNurbsCurve is None and self.hprNurbsCurve is None:
             print('Mopath: Mopath has no curves')
             return
         time /= self.timeScale
         self.playbackTime = self.calcTime(CLAMP(time, 0.0, self.maxT))
-        if (self.xyzNurbsCurve != None):
+        if self.xyzNurbsCurve is not None:
             self.xyzNurbsCurve.getPoint(self.playbackTime, self.posPoint)
             if self.fluid:
                 node.setFluidPos(self.posPoint)
             else:
                 node.setPos(self.posPoint)
-        if (self.hprNurbsCurve != None):
+        if self.hprNurbsCurve is not None:
             self.hprNurbsCurve.getPoint(self.playbackTime, self.hprPoint)
             node.setHpr(self.hprPoint)
-        elif (self.fFaceForward and (self.xyzNurbsCurve != None)):
+        elif self.fFaceForward and self.xyzNurbsCurve is not None:
             if self.faceForwardDelta:
                 # Look at a point a bit ahead in parametric time.
                 t = min(self.playbackTime + self.faceForwardDelta, self.xyzNurbsCurve.getMaxT())
@@ -133,18 +133,18 @@ class Mopath(DirectObject):
 
             # use the self.upVectorNodePath position if it exists to
             # create an up vector for lookAt
-            if (self.upVectorNodePath is None):
+            if self.upVectorNodePath is None:
                 node.lookAt(lookPoint)
             else:
-                if (self.reverseUpVector == False):
-                     node.lookAt(lookPoint,
-                                 self.upVectorNodePath.getPos() - self.posPoint)
+                if not self.reverseUpVector:
+                    node.lookAt(lookPoint,
+                                self.upVectorNodePath.getPos() - self.posPoint)
                 else:
-                     node.lookAt(lookPoint,
-                                 self.posPoint - self.upVectorNodePath.getPos())
+                    node.lookAt(lookPoint,
+                                self.posPoint - self.upVectorNodePath.getPos())
 
     def play(self, node, time = 0.0, loop = 0):
-        if (self.xyzNurbsCurve == None) and (self.hprNurbsCurve == None):
+        if self.xyzNurbsCurve is None and self.hprNurbsCurve is None:
             print('Mopath: Mopath has no curves')
             return
         self.node = node
@@ -161,11 +161,11 @@ class Mopath(DirectObject):
         time = globalClock.getFrameTime()
         dTime = time - task.lastTime
         task.lastTime = time
-        if (self.loop):
+        if self.loop:
             cTime = (task.currentTime + dTime) % self.getMaxT()
         else:
             cTime = task.currentTime + dTime
-        if ((self.loop == 0) and (cTime > self.getMaxT())):
+        if self.loop == 0 and cTime > self.getMaxT():
             self.stop()
             messenger.send(self.name + '-done')
             self.node = None
@@ -187,4 +187,3 @@ class Mopath(DirectObject):
             ls.drawTo(p)
 
         return NodePath(ls.create())
-

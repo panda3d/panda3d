@@ -8,6 +8,7 @@ from direct.directnotify.DirectNotifyGlobal import *
 from .Interval import Interval
 from direct.showbase import PythonUtil
 
+
 class ProjectileInterval(Interval):
     """ProjectileInterval class: moves a nodepath through the trajectory
     of a projectile under the influence of gravity"""
@@ -67,7 +68,7 @@ class ProjectileInterval(Interval):
                 self.collNode = self.collNode.node()
             assert self.collNode.getNumSolids() == 0
 
-        if name == None:
+        if name is None:
             name = '%s-%s' % (self.__class__.__name__,
                               self.projectileIntervalNum)
             ProjectileInterval.projectileIntervalNum += 1
@@ -121,7 +122,7 @@ class ProjectileInterval(Interval):
         def calcStartVel(startPos, endPos, duration, zAccel):
             # p(t) = p_0 + t*v_0 + .5*a*t^2
             # v_0 = [p(t) - p_0 - .5*a*t^2] / t
-            if (duration == 0):
+            if duration == 0:
                 return Point3(0, 0, 0)
             else:
                 return Point3((endPos[0] - startPos[0]) / duration,
@@ -138,7 +139,7 @@ class ProjectileInterval(Interval):
                                            startVel, accel)
             if not time:
                 return None
-            if type(time) == type([]):
+            if isinstance(time, list):
                 # projectile hits plane once going up, once going down
                 # assume they want the one on the way down
                 assert self.notify.debug('projectile hits plane twice at times: %s' %
@@ -152,7 +153,7 @@ class ProjectileInterval(Interval):
         # now all we need is startVel, duration, and endPos.
 
         # which set of input parameters do we have?
-        if (None not in (endPos, duration)):
+        if None not in (endPos, duration):
             assert not startVel
             assert not endZ
             assert not wayPoint
@@ -161,7 +162,7 @@ class ProjectileInterval(Interval):
             self.endPos = endPos
             self.startVel = calcStartVel(self.startPos, self.endPos,
                                          self.duration, self.zAcc)
-        elif (None not in (startVel, duration)):
+        elif None not in (startVel, duration):
             assert not endPos
             assert not endZ
             assert not wayPoint
@@ -169,7 +170,7 @@ class ProjectileInterval(Interval):
             self.duration = duration
             self.startVel = startVel
             self.endPos = None
-        elif (None not in (startVel, endZ)):
+        elif None not in (startVel, endZ):
             assert not endPos
             assert not duration
             assert not wayPoint
@@ -182,7 +183,7 @@ class ProjectileInterval(Interval):
                     'projectile never reaches plane Z=%s' % endZ)
             self.duration = time
             self.endPos = None
-        elif (None not in (wayPoint, timeToWayPoint, endZ)):
+        elif None not in (wayPoint, timeToWayPoint, endZ):
             assert not endPos
             assert not duration
             assert not startVel
@@ -253,43 +254,3 @@ class ProjectileInterval(Interval):
             csolid = self.collNode.modifySolid(0)
             csolid.setT1(csolid.getT2())
             csolid.setT2(t)
-
-"""
-        ##################################################################
-          TODO: support arbitrary sets of inputs
-        ##################################################################
-        You must provide a few of the parameters, and the others will be
-        computed. The input parameters in question are:
-          duration, endZ, endPos, startVel, gravityMult
-
-        Valid sets of input parameters (AA),
-        (trivially computed/default parameters) (BB),
-        non-trivial computed parameters (CC):
-        AA && BB => CC
-
-        # one parameter
-        duration && (startVel, gravityMult) => endZ, endPos
-        endZ     && (startVel, gravityMult) => duration, endPos
-        endPos   && (endZ, gravityMult    ) => duration, startVel
-
-        # two parameters
-        duration, endZ        && (endPos, gravityMult) => startVel
-        duration, endPos      && (endZ, gravityMult  ) => startVel
-        duration, startVel    && (gravityMult        ) => endZ, endPos
-        duration, gravityMult && (startVel           ) => endZ, endPos
-        endZ, startVel        && (gravityMult        ) => duration, endPos
-        endZ, gravityMult     && (endPos, startVel   ) => duration
-        endPos, gravityMult   && (endZ               ) => duration, startVel
-
-        # three parameters
-        duration, endZ, startVel        && (      ) => endPos, gravityMult
-        duration, endZ, gravityMult     && (endPos) => startVel
-        duration, endPos, gravityMult   && (endZ  ) => startVel
-        duration, startVel, gravityMult && (      ) => endZ, endPos
-        endZ, startVel, gravityMult     && (      ) => duration, endPos
-
-        # four parameters
-        duration, endZ, startVel, gravityMult && () => endPos
-        ##################################################################
-        ##################################################################
-"""
