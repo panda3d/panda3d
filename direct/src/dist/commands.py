@@ -271,7 +271,9 @@ class build_apps(setuptools.Command):
             'libdl.so.*', 'libstdc++.so.*', 'libm.so.*', 'libgcc_s.so.*',
             'libpthread.so.*', 'libc.so.*', 'ld-linux-x86-64.so.*',
             'libgl.so.*', 'libx11.so.*', 'libncursesw.so.*', 'libz.so.*',
-            'librt.so.*', 'libutil.so.*',
+            'librt.so.*', 'libutil.so.*', 'libnsl.so.1', 'libXext.so.6',
+            'libXrender.so.1', 'libICE.so.6', 'libSM.so.6',
+            'libgobject-2.0.so.0', 'libgthread-2.0.so.0', 'libglib-2.0.so.0',
 
             # macOS
             '/usr/lib/libc++.1.dylib',
