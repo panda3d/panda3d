@@ -33,6 +33,8 @@ else:
 # with the local pickle.py.
 pickle = __import__('pickle')
 
+PicklingError = pickle.PicklingError
+
 if sys.version_info >= (3, 0):
     BasePickler = pickle._Pickler
     BaseUnpickler = pickle._Unpickler
