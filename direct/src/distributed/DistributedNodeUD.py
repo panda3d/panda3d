@@ -26,7 +26,7 @@ class DistributedNodeUD(DistributedObjectUD):
 
     def setParentStr(self, parentToken):
         self.notify.debugCall()
-        if len(parentTokenStr) > 0:
+        if len(parentToken) > 0:
             self.do_setParent(parentToken)
 
     def setParent(self, parentToken):
