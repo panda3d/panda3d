@@ -170,9 +170,12 @@ class DirectDialog(DirectFrame):
                 hotKey = self['buttonHotKeyList'][i]
             except IndexError:
                 hotKey = None
-            button = self.createcomponent(
-                name, (), "button",
-                DirectButton, (self,),
+            
+            #this creates a button.
+            #with some button keywords and adds it to
+            #self.__componentinfo
+            componentGroup="button"
+            args,kwargs = self.getComponentArgs(name, (), "button",
                 text = text,
                 geom = geom,
                 image = image,
@@ -180,6 +183,11 @@ class DirectDialog(DirectFrame):
                 frameSize = self['buttonSize'],
                 command = lambda s = self, v = value: s.buttonCommand(v)
                 )
+                
+            button=DirectButton(self,*args,**kwagrs)
+            self.__componentInfo[name] = button
+            button.group=componentGroup
+            
             self.buttonList.append(button)
 
         # Update dialog when everything has been initialised

@@ -53,21 +53,35 @@ class DirectScrolledFrame(DirectFrame):
         # If you want to change the frame width after construction,
         # you must specify their frameSize tuples explicitly.
         w = self['scrollBarWidth']
-
-        self.verticalScroll = self.createcomponent(
-            "verticalScroll", (), None,
-            DirectScrollBar, (self,),
+        
+        
+        #scroll bar... but again nothing else is really happening...
+        name="verticalScroll"
+        componentGroup=None
+        args,kwargs= self.getComponentArgs(
+            name, (), componentGroup
+            , (self,),
             borderWidth = self['borderWidth'],
             frameSize = (-w / 2.0, w / 2.0, -1, 1),
             orientation = DGG.VERTICAL)
-
-        self.horizontalScroll = self.createcomponent(
-            "horizontalScroll", (), None,
-            DirectScrollBar, (self,),
+        self.verticalScroll=DirectScrollBar(args,**kwargs)
+        self.__componentInfo[name]=self.verticalScroll
+        self.verticalScroll.group=componentGroup 
+        
+        name="horizontalScroll"
+        componentGroup=None
+        args,kwargs= self.getComponentArgs(
+            name, (), componentGroup
+            , (self,),
             borderWidth = self['borderWidth'],
             frameSize = (-1, 1, -w / 2.0, w / 2.0),
             orientation = DGG.HORIZONTAL)
+            
+        self.verticalScroll=DirectScrollBar(args,**kwargs)
+        self.__componentInfo[name]=self.verticalScroll
+        self.verticalScroll.group=componentGroup
 
+        
         self.guiItem.setVerticalSlider(self.verticalScroll.guiItem)
         self.guiItem.setHorizontalSlider(self.horizontalScroll.guiItem)
 

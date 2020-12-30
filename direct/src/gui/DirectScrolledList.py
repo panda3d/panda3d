@@ -95,20 +95,38 @@ class DirectScrolledList(DirectFrame):
 
         # Initialize superclasses
         DirectFrame.__init__(self, parent)
-
-        self.incButton = self.createcomponent("incButton", (), None,
-                                              DirectButton, (self,),
-                                              )
+        
+        
+        #Buttons...
+        
+        name="incButton"
+        componentGroup=None
+        args,kwargs = self.getComponentArgs(name, (), componentGroup, (self,))
+        self.incButton = DirectButton(*args,*kwargs)
+        self.__componentInfo[name]=self.incButton
+        self.incButton.group=componentGroup
+           
         self.incButton.bind(DGG.B1PRESS, self.__incButtonDown)
         self.incButton.bind(DGG.B1RELEASE, self.__buttonUp)
-        self.decButton = self.createcomponent("decButton", (), None,
-                                              DirectButton, (self,),
-                                              )
+        
+        name="decButton"
+        componentGroup=None
+        args,kwargs = self.getComponentArgs(name, (), componentGroup, (self,))
+        self.decButton = DirectButton(*args,*kwargs)
+        self.__componentInfo[name]=self.incButton
+        self.incButton.group=componentGroup
+                    
         self.decButton.bind(DGG.B1PRESS, self.__decButtonDown)
         self.decButton.bind(DGG.B1RELEASE, self.__buttonUp)
-        self.itemFrame = self.createcomponent("itemFrame", (), None,
-                                              DirectFrame, (self,),
-                                              )
+        
+        name="itemFrame"
+        componentGroup=None
+        args,kwargs = self.getComponentArgs(name, (), componentGroup, (self,))
+        self.decButton = DirectFrame(*args,*kwargs)
+        self.__componentInfo[name]=self.incButton
+        self.incButton.group=componentGroup
+        
+        
         for item in self["items"]:
             if not isinstance(item, str):
                 item.reparentTo(self.itemFrame)

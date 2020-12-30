@@ -47,16 +47,25 @@ class DirectCheckButton(DirectButton):
         self.defineoptions(kw, optiondefs)
         # Initialize superclasses
         DirectButton.__init__(self, parent)
-        self.indicator = self.createcomponent("indicator", (), None,
-                                              DirectLabel, (self,),
-                                              numStates = 2,
-                                              image = self['boxImage'],
-                                              image_scale = self['boxImageScale'],
-                                              image_color = self['boxImageColor'],
-                                              state = 'disabled',
-                                              text = ('X', 'X'),
-                                              relief = self['boxRelief'],
-                                              )
+        
+        #just do it inline
+        name="indicator"
+        componentGroup=None
+        args,kwargs=self.getComponentArgs(name, (), componentGroup, numStates = 2,
+          image = self['boxImage'],
+          image_scale = self['boxImageScale'],
+          image_color = self['boxImageColor'],
+          state = 'disabled',
+          text = ('X', 'X'),
+          relief = self['boxRelief'],
+          )
+        #if I'm right, nothing actually changes here, 
+        #args should be empty, kwargs should be the above.
+        self.indicator=DirectLabel(self,*args,**kwargs)
+        #this is something createcomponent did, not sure why, 
+        #let's keep it in place for now.
+        self.__componentInfo[name] = self.indicator
+        self.indicator.group=componentGroup
 
         # Call option initialization functions
         self.initialiseoptions(DirectCheckButton)

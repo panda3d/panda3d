@@ -24,6 +24,7 @@ class DirectOptionMenu(DirectButton):
     """
     def __init__(self, parent = None, **kw):
         # Inherits from DirectButton
+        
         optiondefs = (
             # List of items to display on the popup menu
             ('items',       [],             self.setItems),
@@ -52,12 +53,25 @@ class DirectOptionMenu(DirectButton):
         self.initFrameSize = self['frameSize']
         # Create a small rectangular marker to distinguish this button
         # as a popup menu button
-        self.popupMarker = self.createcomponent(
-            'popupMarker', (), None,
+        if True:
+            self.popupMarker = self.createcomponent('popupMarker', (), None,
             DirectFrame, (self,),
             frameSize = (-0.5, 0.5, -0.2, 0.2),
             scale = 0.4,
             relief = DGG.RAISED)
+        else:
+            name='popupMarker'
+            componentGroup=None
+            args,kwargs=self.getComponentArgs(name, (), componentGroup,
+            (self,),
+            frameSize = (-0.5, 0.5, -0.2, 0.2),
+            scale = 0.4,
+            relief = DGG.RAISED)
+            # Create Text Node Component
+            self.popupMarker = DirectFrame(*args,**kwargs)
+            self.__componentInfo[name] = self.popupMarker 
+            self.popupMarker.group=componentGroup
+        
         # Record any user specified popup marker position
         self.initPopupMarkerPos = self['popupMarker_pos']
         # This needs to popup the menu too
@@ -79,12 +93,22 @@ class DirectOptionMenu(DirectButton):
         else:
             self._prevItemTextScale = (1,1)
         # A big screen encompassing frame to catch the cancel clicks
-        self.cancelFrame = self.createcomponent(
-            'cancelframe', (), None,
-            DirectFrame, (self,),
-            frameSize = (-1, 1, -1, 1),
-            relief = None,
-            state = 'normal')
+        name,componentGroup='cancelframe', None,
+        if True:
+            self.cancelFrame = self.createcomponent(name, (),componentGroup,
+                DirectFrame, (self,),
+                frameSize = (-1, 1, -1, 1),
+                relief = None,
+                state = 'normal')
+        else:
+            args,kwargs=self.getComponentArgs(name, (), componentGroup,
+                (self,),
+                frameSize = (-1, 1, -1, 1),
+                relief = None,
+                state = 'normal')
+            self.cancelFrame=DirectFrame(*args,**kwargs)
+            self.__componentInfo[name]=self.cancelFrame
+            
         # Make sure this is on top of all the other widgets
         self.cancelFrame.setBin('gui-popup', 0)
         self.cancelFrame.node().setBounds(OmniBoundingVolume())
@@ -107,11 +131,20 @@ class DirectOptionMenu(DirectButton):
         if self.popupMenu != None:
             self.destroycomponent('popupMenu')
         # Create new component
-        self.popupMenu = self.createcomponent('popupMenu', (), None,
-                                              DirectFrame,
-                                              (self,),
-                                              relief = 'raised',
-                                              )
+        name='popupMenu'
+        componentGroup= None
+        if True:
+            self.popupMenu = self.createcomponent(name, (), componentGroup,
+                                                  DirectFrame,
+                                                  (self,),
+                                                  relief = 'raised',
+                                                  )
+        else:
+            args,kwargs=self.getComponentArgs(name, (), componentGroup,(self,),
+                                                  relief = 'raised')
+            self.popupMenu=DirectFrame(*args,**kwargs)
+            self.__componentInfo[name]=self.popupMenu
+            self.popupMenu.group=componentGroup
         # Make sure it is on top of all the other gui widgets
         self.popupMenu.setBin('gui-popup', 0)
         if not self['items']:
@@ -121,11 +154,22 @@ class DirectOptionMenu(DirectButton):
         itemIndex = 0
         self.minX = self.maxX = self.minZ = self.maxZ = None
         for item in self['items']:
-            c = self.createcomponent(
-                'item%d' % itemIndex, (), 'item',
-                DirectButton, (self.popupMenu,),
-                text = item, text_align = TextNode.ALeft,
-                command = lambda i = itemIndex: self.set(i))
+            name='item%d' % itemIndex
+            componentGroup='item'
+            if True:
+                c = self.createcomponent(
+                    name, (),componentGroup ,
+                    DirectButton, (self.popupMenu,),
+                    text = item, text_align = TextNode.ALeft,
+                    command = lambda i = itemIndex: self.set(i))
+            else:
+                args,kwargs=self.getComponentArgs(name,(),componentGroup,(self.popupMenu,),
+                    text = item, text_align = TextNode.ALeft,
+                    command = lambda i = itemIndex: self.set(i))
+                c= DirectButton(*args,**kwargs)
+                self.__componentInfo[name]=c
+                c.group=componentGroup
+            
             bounds = c.getBounds()
             if self.minX == None:
                 self.minX = bounds[0]

@@ -94,19 +94,35 @@ class DirectEntry(DirectFrame):
         else:
             font = self['entryFont']
 
+        if True:
         # Create Text Node Component
-        self.onscreenText = self.createcomponent(
-            'text', (), None,
-            OnscreenText,
-            (), parent = ShowBaseGlobal.hidden,
-            # Pass in empty text to avoid extra work, since its really
-            # The PGEntry which will use the TextNode to generate geometry
-            text = '',
-            align = TextNode.ALeft,
-            font = font,
-            scale = 1,
-            # Don't get rid of the text node
-            mayChange = 1)
+            self.onscreenText = self.createcomponent(
+                'text', (), None,
+                OnscreenText,
+                (), parent = ShowBaseGlobal.hidden,
+                # Pass in empty text to avoid extra work, since its really
+                # The PGEntry which will use the TextNode to generate geometry
+                text = '',
+                align = TextNode.ALeft,
+                font = font,
+                scale = 1,
+                # Don't get rid of the text node
+                mayChange = 1)
+        else:
+            name="text"
+            componentGroup=None
+            args,kwargs=self.getComponentArgs(name, (), componentGroup,(), parent = ShowBaseGlobal.hidden,
+                # Pass in empty text to avoid extra work, since its really
+                # The PGEntry which will use the TextNode to generate geometry
+                text = '',
+                align = TextNode.ALeft,
+                font = font,
+                scale = 1,
+                mayChange = 1)
+            # Create Text Node Component
+            self.onscreenText = OnscreenText(*args,**kwargs)
+            self.__componentInfo[name] = self.onscreenText
+            self.onscreenText.group=componentGroup
 
         # We can get rid of the node path since we're just using the
         # onscreenText as an easy way to access a text node as a
