@@ -6,7 +6,6 @@ on how to use these commands.
 
 from __future__ import print_function
 
-import collections
 import os
 import plistlib
 import sys
