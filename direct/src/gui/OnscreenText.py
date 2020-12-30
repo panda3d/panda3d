@@ -8,6 +8,7 @@ __all__ = ['OnscreenText', 'Plain', 'ScreenTitle', 'ScreenPrompt', 'NameConfirm'
 
 from panda3d.core import *
 from . import DirectGuiGlobals as DGG
+import warnings
 
 ## These are the styles of text we might commonly see.  They set the
 ## overall appearance of the text according to one of a number of
@@ -300,10 +301,12 @@ class OnscreenText(NodePath):
         self.setTextPos(x, self.__pos[1])
 
     def setX(self, x):
-        """
+         """
         .. deprecated:: 1.11.0
            Use `.setTextX()` method instead.
         """
+        if __debug__:
+            warnings.warn("deprecated:: 1.11.0 Use `.setTextX()` method instead.", DeprecationWarning, stacklevel=2)
         self.setTextPos(x, self.__pos[1])
 
     def setTextY(self, y):
@@ -317,6 +320,8 @@ class OnscreenText(NodePath):
         .. deprecated:: 1.11.0
            Use `.setTextY()` method instead.
         """
+        if __debug__:
+            warnings.warn("deprecated:: 1.11.0 Use `.setTextY()` method instead.", DeprecationWarning, stacklevel=2)
         self.setTextPos(self.__pos[0], y)
 
     def setTextPos(self, x, y=None):
@@ -346,6 +351,8 @@ class OnscreenText(NodePath):
         .. deprecated:: 1.11.0
            Use `.setTextPos()` method or `.text_pos` property instead.
         """
+        if __debug__:
+            warnings.warn("deprecated:: 1.11.0 Use `.setTextPos()` method or `.text_pos` property instead.", DeprecationWarning, stacklevel=2)
         self.__pos = (x, y)
         self.updateTransformMat()
 
@@ -354,6 +361,8 @@ class OnscreenText(NodePath):
         .. deprecated:: 1.11.0
            Use `.getTextPos()` method or `.text_pos` property instead.
         """
+        if __debug__:
+            warnings.warn("deprecated:: 1.11.0 Use `.getTextPos()` method or `.text_pos` property instead.", DeprecationWarning, stacklevel=2)
         return self.__pos
 
     pos = property(getPos)
@@ -379,6 +388,8 @@ class OnscreenText(NodePath):
         .. deprecated:: 1.11.0
            Use ``setTextR(-roll)`` instead (note the negated sign).
         """
+        if __debug__:
+            warnings.warn("deprecated:: 1.11.0 Use ``setTextR(-roll)`` instead (note the negated sign).", DeprecationWarning, stacklevel=2)
         self.__roll = roll
         self.updateTransformMat()
 
@@ -387,6 +398,8 @@ class OnscreenText(NodePath):
         .. deprecated:: 1.11.0
            Use ``-getTextR()`` instead (note the negated sign).
         """
+        if __debug__:
+            warnings.warn("deprecated:: 1.11.0 Use ``-getTextR(-roll)`` instead (note the negated sign).", DeprecationWarning, stacklevel=2)
         return self.__roll
 
     roll = property(getRoll, setRoll)
@@ -424,7 +437,8 @@ class OnscreenText(NodePath):
         .. deprecated:: 1.11.0
            Use `.setTextScale()` method or `.text_scale` property instead.
         """
-
+        if __debug__:
+            warnings.warn("deprecated:: 1.11.0. Use `.setTextScale()` method or `.text_scale` property instead.", DeprecationWarning, stacklevel=2)
         if sy is None:
             if isinstance(sx, tuple):
                 self.__scale = sx
@@ -439,6 +453,8 @@ class OnscreenText(NodePath):
         .. deprecated:: 1.11.0
            Use `.getTextScale()` method or `.text_scale` property instead.
         """
+        if __debug__:
+            warnings.warn("deprecated:: 1.11.0. Use `.getTextScale()` method or `.text_scale` property instead.", DeprecationWarning, stacklevel=2)
         return self.__scale
 
     scale = property(getScale, setScale)

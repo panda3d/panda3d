@@ -7,7 +7,6 @@ from panda3d.core import (ConfigFlags, ConfigVariableBool, ConfigVariableInt,
 import warnings
 
 def GetBool(sym, default=False):
-    #I was not sure about these warnings so I only put in one for now. --Paustian
     if __debug__:
         warnings.warn("This is deprecated. use ConfigVriableBool instead", DeprecationWarning, stacklevel=2)
     return ConfigVariableBool(sym, default, "DConfig", ConfigFlags.F_dconfig).value

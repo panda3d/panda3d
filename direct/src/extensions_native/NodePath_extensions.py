@@ -170,7 +170,9 @@ del reverseLsNames
 #####################################################################
 def getAncestry(self):
         """Deprecated.  Get a list of a node path's ancestors"""
-        print("NodePath.getAncestry() is deprecated.  Use get_ancestors() instead.")
+       
+        if __debug__:
+            warnings.warn("NodePath.getAncestry() is deprecated.  Use get_ancestors() instead.", DeprecationWarning, stacklevel=2)
         ancestors = list(self.getAncestors())
         ancestors.reverse()
         return ancestors
@@ -183,8 +185,9 @@ def pPrintString(self, other = None):
         """
         Deprecated.  pretty print
         """
-        print("NodePath.pPrintString() is deprecated.")
+        print("")
         if __debug__:
+            warnings.warn("NodePath.pPrintString() is deprecated.", DeprecationWarning, stacklevel=2)
             # Normally I would have put the if __debug__ around
             # the entire funciton, the that doesn't seem to work
             # with -extensions.  Maybe someone will look into
@@ -215,7 +218,8 @@ del pPrintString
 
 def printPos(self, other = None, sd = 2):
         """ Deprecated.  Pretty print a node path's pos """
-        print("NodePath.printPos() is deprecated.")
+        if __debug__:
+                warnings.warn("NodePath.printPos() is deprecated.", DeprecationWarning, stacklevel=2)
         formatString = '%0.' + '%d' % sd + 'f'
         if other:
             pos = self.getPos(other)
@@ -234,7 +238,8 @@ del printPos
 
 def printHpr(self, other = None, sd = 2):
         """ Deprecated.  Pretty print a node path's hpr """
-        print("NodePath.printHpr() is deprecated.")
+        if __debug__:
+                warnings.warn("NodePath.printHpr() is deprecated.", DeprecationWarning, stacklevel=2)
         formatString = '%0.' + '%d' % sd + 'f'
         if other:
             hpr = self.getHpr(other)
@@ -253,7 +258,8 @@ del printHpr
 
 def printScale(self, other = None, sd = 2):
         """ Deprecated.  Pretty print a node path's scale """
-        print("NodePath.printScale() is deprecated.")
+        if __debug__:
+                warnings.warn("NodePath.printScale() is deprecated.", DeprecationWarning, stacklevel=2)
         formatString = '%0.' + '%d' % sd + 'f'
         if other:
             scale = self.getScale(other)
@@ -272,7 +278,8 @@ del printScale
 #####################################################################
 def printPosHpr(self, other = None, sd = 2):
         """ Deprecated.  Pretty print a node path's pos and, hpr """
-        print("NodePath.printPosHpr() is deprecated.")
+        if __debug__:
+                warnings.warn("NodePath.printPosHpr() is deprecated.", DeprecationWarning, stacklevel=2)
         formatString = '%0.' + '%d' % sd + 'f'
         if other:
             pos = self.getPos(other)
@@ -296,7 +303,8 @@ del printPosHpr
 #####################################################################
 def printPosHprScale(self, other = None, sd = 2):
         """ Deprecated.  Pretty print a node path's pos, hpr, and scale """
-        print("NodePath.printPosHprScale() is deprecated.")
+        if __debug__:
+                warnings.warn("NodePath.printPosHprScale() is deprecated.", DeprecationWarning, stacklevel=2)
         formatString = '%0.' + '%d' % sd + 'f'
         if other:
             pos = self.getPos(other)
@@ -326,7 +334,8 @@ del printPosHprScale
 
 def printTransform(self, other = None, sd = 2, fRecursive = 0):
     "Deprecated."
-    print("NodePath.printTransform() is deprecated.")
+    if __debug__:
+            warnings.warn("NodePath.printTransform() is deprecated.", DeprecationWarning, stacklevel=2)
     from panda3d.core import Vec3
     fmtStr = '%%0.%df' % sd
     name = self.getName()
@@ -366,7 +375,8 @@ del printTransform
 
 def iPos(self, other = None):
         """ Deprecated.  Set node path's pos to 0, 0, 0 """
-        print("NodePath.iPos() is deprecated.")
+        if __debug__:
+                warnings.warn("NodePath.iPos() is deprecated.", DeprecationWarning, stacklevel=2)
         if other:
             self.setPos(other, 0, 0, 0)
         else:
@@ -377,7 +387,8 @@ del iPos
 
 def iHpr(self, other = None):
         """ Deprecated.  Set node path's hpr to 0, 0, 0 """
-        print("NodePath.iHpr() is deprecated.")
+        if __debug__:
+                warnings.warn("NodePath.iHpr() is deprecated.", DeprecationWarning, stacklevel=2)
         if other:
             self.setHpr(other, 0, 0, 0)
         else:
@@ -388,7 +399,8 @@ del iHpr
 #####################################################################
 def iScale(self, other = None):
         """ Deprecated.  Set node path's scale to 1, 1, 1 """
-        print("NodePath.iScale() is deprecated.")
+        if __debug__:
+                warnings.warn("NodePath.iScale() is deprecated.", DeprecationWarning, stacklevel=2)
         if other:
             self.setScale(other, 1, 1, 1)
         else:
@@ -399,7 +411,8 @@ del iScale
 #####################################################################
 def iPosHpr(self, other = None):
         """ Deprecated.  Set node path's pos and hpr to 0, 0, 0 """
-        print("NodePath.iPosHpr() is deprecated.")
+        if __debug__:
+                warnings.warn("NodePath.iPosHpr() is deprecated.", DeprecationWarning, stacklevel=2)
         if other:
             self.setPosHpr(other, 0, 0, 0, 0, 0, 0)
         else:
@@ -410,7 +423,8 @@ del iPosHpr
 #####################################################################
 def iPosHprScale(self, other = None):
         """ Deprecated.  Set node path's pos and hpr to 0, 0, 0 and scale to 1, 1, 1 """
-        print("NodePath.iPosHprScale() is deprecated.")
+        if __debug__:
+                warnings.warn("NodePath.iPosHprScale() is deprecated.", DeprecationWarning, stacklevel=2)
         if other:
             self.setPosHprScale(other, 0, 0, 0, 0, 0, 0, 1, 1, 1)
         else:
@@ -475,7 +489,9 @@ def showCS(self, mask = None):
         CameraBitmask) that indicates which particular collision
         solids should be made visible; otherwise, all of them will be.
         """
-        print("NodePath.showCS() is deprecated.  Use findAllMatches('**/+CollisionNode').show() instead.")
+        if __debug__:
+                warnings.warn("NodePath.showCS() is deprecated.  Use findAllMatches('**/+CollisionNode').show() instead.", DeprecationWarning, stacklevel=2)
+        print()
         npc = self.findAllMatches('**/+CollisionNode')
         for p in range(0, npc.getNumPaths()):
             np = npc[p]
@@ -493,7 +509,8 @@ def hideCS(self, mask = None):
         CameraBitmask) that indicates which particular collision
         solids should be hidden; otherwise, all of them will be.
         """
-        print("NodePath.hideCS() is deprecated.  Use findAllMatches('**/+CollisionNode').hide() instead.")
+        if __debug__:
+                warnings.warn("NodePath.hideCS() is deprecated.  Use findAllMatches('**/+CollisionNode').hide() instead.", DeprecationWarning, stacklevel=2)
         npc = self.findAllMatches('**/+CollisionNode')
         for p in range(0, npc.getNumPaths()):
             np = npc[p]
