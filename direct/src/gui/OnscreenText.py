@@ -301,9 +301,9 @@ class OnscreenText(NodePath):
         self.setTextPos(x, self.__pos[1])
 
     def setX(self, x):
-         """
+        """
         .. deprecated:: 1.11.0
-           Use `.setTextX()` method instead.
+        Use `.setTextX()` method instead.
         """
         if __debug__:
             warnings.warn("deprecated:: 1.11.0 Use `.setTextX()` method instead.", DeprecationWarning, stacklevel=2)
