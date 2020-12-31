@@ -4363,6 +4363,7 @@ if (not RUNTIME):
   IGATEFILES=GetDirectoryContents('panda/src/collide', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3collide.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3collide.in', opts=['IMOD:panda3d.core', 'ILIB:libp3collide', 'SRCDIR:panda/src/collide'])
+  PyTargetAdd('p3collide_ext_composite.obj', opts=OPTS, input='p3collide_ext_composite.cxx')
 
 #
 # DIRECTORY: panda/src/parametrics/
@@ -4606,6 +4607,7 @@ if (not RUNTIME):
   if PkgSkip("FREETYPE")==0:
     PyTargetAdd('core.pyd', input="libp3pnmtext_igate.obj")
 
+  PyTargetAdd('core.pyd', input='p3collide_ext_composite.obj')
   PyTargetAdd('core.pyd', input='p3pipeline_pythonThread.obj')
   PyTargetAdd('core.pyd', input='p3putil_ext_composite.obj')
   PyTargetAdd('core.pyd', input='p3pnmimage_pfmFile_ext.obj')

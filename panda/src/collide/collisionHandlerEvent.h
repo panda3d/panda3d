@@ -22,6 +22,7 @@
 
 #include "vector_string.h"
 #include "pointerTo.h"
+#include "extension.h"
 
 /**
  * A specialized kind of CollisionHandler that throws an event for each
@@ -66,6 +67,9 @@ PUBLISHED:
 
   void clear();
   void flush();
+
+  EXTENSION(PyObject *__getstate__() const);
+  EXTENSION(void __setstate__(PyObject *state));
 
 protected:
   void throw_event_for(const vector_string &patterns, CollisionEntry *entry);
