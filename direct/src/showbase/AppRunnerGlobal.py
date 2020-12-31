@@ -10,7 +10,7 @@ the AppRunner at startup.
    The p3d packaging system has been replaced with the new setuptools-based
    system.  See the :ref:`distribution` manual section.
 """
-
+import warnings
 if __debug__:
     warnings.warn("AppRunner has been removed and AppRunnerGlobal has been deprecated.", DeprecationWarning, stacklevel=2)
 

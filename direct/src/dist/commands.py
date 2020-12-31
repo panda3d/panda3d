@@ -28,7 +28,6 @@ from . import pefile
 from . import installers
 from .icon import Icon
 import panda3d.core as p3d
-import warnings
 
 
 def _parse_list(input):
