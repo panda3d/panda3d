@@ -71,7 +71,7 @@ if __debug__:
     from direct.showbase import GarbageReport
     from direct.directutil import DeltaProfiler
     from . import OnScreenDebug
-import warnings
+    import warnings
 
 @atexit.register
 def exitfunc():
