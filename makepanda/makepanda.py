@@ -97,6 +97,8 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "PANDAPARTICLESYSTEM",                               # Built in particle system
   "CONTRIB",                                           # Experimental
   "SSE2", "NEON",                                      # Compiler features
+  "NAVIGATION",				       # Detour Toolset
+  "NAVMESHGEN",                    # Recast Toolset
 ])
 
 CheckPandaSourceTree()
@@ -2193,6 +2195,9 @@ def CompileAnything(target, inputs, opts, progress = None):
         if (infile.endswith(".cxx")):
             ProgressOutput(progress, "Building C++ object", target)
             return CompileCxx(target, infile, opts)
+        if (infile.endswith(".cpp")):
+            ProgressOutput(progress, "Building C++ object", target)
+            return CompileCxx(target, infile, opts)
         elif (infile.endswith(".c")):
             ProgressOutput(progress, "Building C object", target)
             return CompileCxx(target, infile, opts)
@@ -2688,6 +2693,10 @@ if not PkgSkip("DIRECT"):
     panda_modules.append('direct')
 if not PkgSkip("VISION"):
     panda_modules.append('vision')
+if not PkgSkip("NAVIGATION"):
+    panda_modules.append('navigation')
+if not PkgSkip("NAVMESHGEN"):
+    panda_modules.append('navmeshgen')
 if not PkgSkip("SKEL"):
     panda_modules.append('skel')
 if not PkgSkip("EGG"):
@@ -3100,6 +3109,12 @@ CopyAllHeaders('panda/src/text')
 CopyAllHeaders('panda/src/grutil')
 if (PkgSkip("VISION")==0):
     CopyAllHeaders('panda/src/vision')
+if (PkgSkip("NAVIGATION")==0):
+    CopyAllHeaders('panda/src/navigation/Detour/Include')
+    CopyAllHeaders('panda/src/navigation')
+if (PkgSkip("NAVMESHGEN")==0):
+    CopyAllHeaders('panda/src/navmeshgen/Recast/Include')
+    CopyAllHeaders('panda/src/navmeshgen')
 if (PkgSkip("FFMPEG")==0):
     CopyAllHeaders('panda/src/ffmpeg')
 CopyAllHeaders('panda/src/tform')
@@ -4177,6 +4192,104 @@ if (PkgSkip("VISION") == 0):
   PyTargetAdd('vision.pyd', input='libp3vision.dll')
   PyTargetAdd('vision.pyd', input='libp3interrogatedb.dll')
   PyTargetAdd('vision.pyd', input=COMMON_PANDA_LIBS)
+
+#
+# DIRECTORY: panda/src/navigation/
+#
+
+if (PkgSkip("NAVIGATION") == 0):
+  OPTS=['DIR:panda/src/navigation', 'BUILDING:NAVIGATION']
+  TargetAdd('p3navigation_composite1.obj', opts=OPTS, input='p3navigation_composite1.cxx')
+  OPTS=['DIR:panda/src/navigation/Detour/Source', 'BUILDING:NAVIGATION']
+  TargetAdd('p3navigation_DetourAlloc.obj', opts=OPTS,  input='DetourAlloc.cpp')
+  TargetAdd('p3navigation_DetourAssert.obj', opts=OPTS,  input='DetourAssert.cpp')
+  TargetAdd('p3navigation_DetourCommon.obj', opts=OPTS,  input='DetourCommon.cpp')
+  TargetAdd('p3navigation_DetourNavMesh.obj', opts=OPTS,  input='DetourNavMesh.cpp')
+  TargetAdd('p3navigation_DetourNavMeshBuilder.obj', opts=OPTS,  input='DetourNavMeshBuilder.cpp')
+  TargetAdd('p3navigation_DetourNavMeshQuery.obj', opts=OPTS,  input='DetourNavMeshQuery.cpp')
+  TargetAdd('p3navigation_DetourNode.obj', opts=OPTS,  input='DetourNode.cpp')
+  
+  TargetAdd('libp3navigation.dll', input='p3navigation_composite1.obj')
+  TargetAdd('libp3navigation.dll', input='p3navigation_DetourAlloc.obj')
+  TargetAdd('libp3navigation.dll', input='p3navigation_DetourAssert.obj')
+  TargetAdd('libp3navigation.dll', input='p3navigation_DetourCommon.obj')
+  TargetAdd('libp3navigation.dll', input='p3navigation_DetourNavMesh.obj')
+  TargetAdd('libp3navigation.dll', input='p3navigation_DetourNavMeshBuilder.obj')
+  TargetAdd('libp3navigation.dll', input='p3navigation_DetourNavMeshQuery.obj')
+  TargetAdd('libp3navigation.dll', input='p3navigation_DetourNode.obj')
+  
+  TargetAdd('libp3navigation.dll', input=COMMON_PANDA_LIBS)
+  OPTS=['DIR:panda/src/navigation', 'BUILDING:NAVIGATION']
+  TargetAdd('libp3navigation.dll', opts=OPTS)
+
+  OPTS=['DIR:panda/src/navigation']
+  IGATEFILES=GetDirectoryContents('panda/src/navigation', ["*.h", "*_composite*.cxx"])
+  TargetAdd('libp3navigation.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libp3navigation.in', opts=['IMOD:panda3d.navigation', 'ILIB:libp3navigation', 'SRCDIR:panda/src/navigation'])
+
+
+  PyTargetAdd('navigation_module.obj', input='libp3navigation.in')
+  PyTargetAdd('navigation_module.obj', opts=OPTS)
+  PyTargetAdd('navigation_module.obj', opts=['IMOD:panda3d.navigation', 'ILIB:navigation', 'IMPORT:panda3d.core'])
+
+  PyTargetAdd('navigation.pyd', input='navigation_module.obj')
+  PyTargetAdd('navigation.pyd', input='libp3navigation_igate.obj')
+  PyTargetAdd('navigation.pyd', input='libp3navigation.dll')
+  PyTargetAdd('navigation.pyd', input='libp3interrogatedb.dll')
+  PyTargetAdd('navigation.pyd', input=COMMON_PANDA_LIBS)
+
+#
+# DIRECTORY: panda/src/navmeshgen/
+#
+
+if (PkgSkip("NAVMESHGEN") == 0):
+  OPTS=['DIR:panda/src/navmeshgen', 'BUILDING:NAVMESHGEN']
+  TargetAdd('p3navmeshgen_composite1.obj', opts=OPTS, input='p3navmeshgen_composite1.cxx')
+  OPTS=['DIR:panda/src/navmeshgen/Recast/Source', 'BUILDING:NAVMESHGEN']
+  TargetAdd('p3navmeshgen_Recast.obj', opts=OPTS,  input='Recast.cpp')
+  TargetAdd('p3navmeshgen_RecastAlloc.obj', opts=OPTS,  input='RecastAlloc.cpp')
+  TargetAdd('p3navmeshgen_RecastArea.obj', opts=OPTS,  input='RecastArea.cpp')
+  TargetAdd('p3navmeshgen_RecastAssert.obj', opts=OPTS,  input='RecastAssert.cpp')
+  TargetAdd('p3navmeshgen_RecastContour.obj', opts=OPTS,  input='RecastContour.cpp')
+  TargetAdd('p3navmeshgen_RecastFilter.obj', opts=OPTS,  input='RecastFilter.cpp')
+  TargetAdd('p3navmeshgen_RecastLayers.obj', opts=OPTS,  input='RecastLayers.cpp')
+  TargetAdd('p3navmeshgen_RecastMesh.obj', opts=OPTS,  input='RecastMesh.cpp')
+  TargetAdd('p3navmeshgen_RecastMeshDetail.obj', opts=OPTS,  input='RecastMeshDetail.cpp')
+  TargetAdd('p3navmeshgen_RecastRasterization.obj', opts=OPTS,  input='RecastRasterization.cpp')
+  TargetAdd('p3navmeshgen_RecastRegion.obj', opts=OPTS,  input='RecastRegion.cpp')
+
+  TargetAdd('libp3navmeshgen.dll', input='p3navmeshgen_composite1.obj')
+  TargetAdd('libp3navmeshgen.dll', input='p3navmeshgen_Recast.obj')
+  TargetAdd('libp3navmeshgen.dll', input='p3navmeshgen_RecastAlloc.obj')
+  TargetAdd('libp3navmeshgen.dll', input='p3navmeshgen_RecastArea.obj')
+  TargetAdd('libp3navmeshgen.dll', input='p3navmeshgen_RecastAssert.obj')
+  TargetAdd('libp3navmeshgen.dll', input='p3navmeshgen_RecastContour.obj')
+  TargetAdd('libp3navmeshgen.dll', input='p3navmeshgen_RecastFilter.obj')
+  TargetAdd('libp3navmeshgen.dll', input='p3navmeshgen_RecastLayers.obj')
+  TargetAdd('libp3navmeshgen.dll', input='p3navmeshgen_RecastMesh.obj')
+  TargetAdd('libp3navmeshgen.dll', input='p3navmeshgen_RecastMeshDetail.obj')
+  TargetAdd('libp3navmeshgen.dll', input='p3navmeshgen_RecastRasterization.obj')
+  TargetAdd('libp3navmeshgen.dll', input='p3navmeshgen_RecastRegion.obj')
+  TargetAdd('libp3navmeshgen.dll', input='libp3navigation.dll')
+  TargetAdd('libp3navmeshgen.dll', input=COMMON_PANDA_LIBS)
+  OPTS=['DIR:panda/src/navmeshgen', 'BUILDING:NAVMESHGEN']
+  TargetAdd('libp3navmeshgen.dll', opts=OPTS)
+
+  OPTS=['DIR:panda/src/navmeshgen']
+  IGATEFILES=GetDirectoryContents('panda/src/navmeshgen', ["*.h", "*_composite*.cxx"])
+  TargetAdd('libp3navmeshgen.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libp3navmeshgen.in', opts=['IMOD:panda3d.navmeshgen', 'ILIB:libp3navmeshgen', 'SRCDIR:panda/src/navmeshgen'])
+
+
+  PyTargetAdd('navmeshgen_module.obj', input='libp3navmeshgen.in')
+  PyTargetAdd('navmeshgen_module.obj', opts=OPTS)
+  PyTargetAdd('navmeshgen_module.obj', opts=['IMOD:panda3d.navmeshgen', 'ILIB:navmeshgen', 'IMPORT:panda3d.core'])
+
+  PyTargetAdd('navmeshgen.pyd', input='navmeshgen_module.obj')
+  PyTargetAdd('navmeshgen.pyd', input='libp3navmeshgen_igate.obj')
+  PyTargetAdd('navmeshgen.pyd', input='libp3navmeshgen.dll')
+  PyTargetAdd('navmeshgen.pyd', input='libp3interrogatedb.dll')
+  PyTargetAdd('navmeshgen.pyd', input=COMMON_PANDA_LIBS)
 
 #
 # DIRECTORY: panda/src/p3skel
