@@ -61,7 +61,7 @@ PUBLISHED:
   MAKE_SEQ(get_out_patterns, get_num_out_patterns, get_out_pattern);
 
   MAKE_SEQ_PROPERTY(in_patterns, get_num_in_patterns, get_in_pattern);
-  MAKE_SEQ_PROPERTY(again_patterns, get_num_again_patterns, get_out_pattern);
+  MAKE_SEQ_PROPERTY(again_patterns, get_num_again_patterns, get_again_pattern);
   MAKE_SEQ_PROPERTY(out_patterns, get_num_out_patterns, get_out_pattern);
 
   void clear();
