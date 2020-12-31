@@ -3625,7 +3625,7 @@ write_function_for_name(ostream &out, Object *obj,
       out << "  }\n"
           << "  " << cClassName << " *local_this = new " << cClassName << ";\n"
           << "  DTool_PyInit_Finalize(self, local_this, "
-          << "((Dtool_PyInstDef *)self)->_My_Type, false, false);\n"
+          << "((Dtool_PyInstDef *)self)->_My_Type, true, false);\n"
           << "  if (local_this == nullptr) {\n"
           << "    PyErr_NoMemory();\n";
     }
