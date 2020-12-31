@@ -22,7 +22,7 @@ Unfortunately, cPickle cannot be supported, because it does not
 support extensions of this nature. """
 
 import sys
-from panda3d.core import BamWriter, BamReader
+from panda3d.core import BamWriter, BamReader, TypedObject
 
 if sys.version_info >= (3, 0):
     from copyreg import dispatch_table
@@ -47,6 +47,7 @@ class _Pickler(BasePickler):
 
     def __init__(self, *args, **kw):
         self.bamWriter = BamWriter()
+        self._canonical = {}
         BasePickler.__init__(self, *args, **kw)
 
     # We have to duplicate most of the save() method, so we can add
@@ -62,6 +63,21 @@ class _Pickler(BasePickler):
             self.save_pers(pid)
             return
 
+        # Check if this is a Panda type that we've already saved; if so, store
+        # a mapping to the canonical copy, so that Python's memoization system
+        # works properly.  This is needed because Python uses id(obj) for
+        # memoization, but there may be multiple Python wrappers for the same
+        # C++ pointer, and we don't want that to result in duplication.
+        t = type(obj)
+        if issubclass(t, TypedObject.__base__):
+            canonical = self._canonical.get(obj.this)
+            if canonical is not None:
+                obj = canonical
+            else:
+                # First time we're seeing this C++ pointer; save it as the
+                # "canonical" version.
+                self._canonical[obj.this] = obj
+
         # Check the memo
         x = self.memo.get(id(obj))
         if x:
@@ -69,7 +85,6 @@ class _Pickler(BasePickler):
             return
 
         # Check the type dispatch table
-        t = type(obj)
         f = self.dispatch.get(t)
         if f:
             f(self, obj) # Call unbound method with explicit self
@@ -157,26 +172,10 @@ class Unpickler(BaseUnpickler):
         BaseUnpickler.dispatch[pickle.REDUCE] = load_reduce
 
 
-if sys.version_info >= (3, 8):
-    # In Python 3.8 and up, we can use the C implementation of Pickler, which
-    # supports a reducer_override method.
-    class Pickler(pickle.Pickler):
-        def __init__(self, *args, **kw):
-            self.bamWriter = BamWriter()
-            pickle.Pickler.__init__(self, *args, **kw)
+Pickler = _Pickler
 
-        def reducer_override(self, obj):
-            reduce = getattr(obj, "__reduce_persist__", None)
-            if reduce:
-                return reduce(self)
-
-            return NotImplemented
-else:
-    # Otherwise, we have to use our custom version that overrides save().
-    Pickler = _Pickler
-
-    if sys.version_info < (3, 0):
-        del _Pickler
+if sys.version_info < (3, 0):
+    del _Pickler
 
 
 # Shorthands
