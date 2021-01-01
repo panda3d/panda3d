@@ -3711,43 +3711,7 @@ do_expand_object_type(EggGroup *egg_group, const pset<string> &expanded,
   if (!egg_object_type.has_value()) {
     // It wasn't defined in a config file.  Maybe it's built in?
 
-    if (cmp_nocase_uh(object_type, "barrier") == 0) {
-      egg_syntax = "<Collide> { Polyset descend }";
-
-    } else if (cmp_nocase_uh(object_type, "solidpoly") == 0) {
-      egg_syntax = "<Collide> { Polyset descend solid }";
-
-    } else if (cmp_nocase_uh(object_type, "turnstile") == 0) {
-      egg_syntax = "<Collide> { Polyset descend turnstile }";
-
-    } else if (cmp_nocase_uh(object_type, "sphere") == 0) {
-      egg_syntax = "<Collide> { Sphere descend }";
-
-    } else if (cmp_nocase_uh(object_type, "tube") == 0) {
-      egg_syntax = "<Collide> { Tube descend }";
-
-    } else if (cmp_nocase_uh(object_type, "trigger") == 0) {
-      egg_syntax = "<Collide> { Polyset descend intangible }";
-
-    } else if (cmp_nocase_uh(object_type, "trigger_sphere") == 0) {
-      egg_syntax = "<Collide> { Sphere descend intangible }";
-
-    } else if (cmp_nocase_uh(object_type, "eye_trigger") == 0) {
-      egg_syntax = "<Collide> { Polyset descend intangible center }";
-
-    } else if (cmp_nocase_uh(object_type, "bubble") == 0) {
-      egg_syntax = "<Collide> { Sphere keep descend }";
-
-    } else if (cmp_nocase_uh(object_type, "ghost") == 0) {
-      egg_syntax = "<Scalar> collide-mask { 0 }";
-
-    } else if (cmp_nocase_uh(object_type, "dcs") == 0) {
-      egg_syntax = "<DCS> { 1 }";
-
-    } else if (cmp_nocase_uh(object_type, "model") == 0) {
-      egg_syntax = "<Model> { 1 }";
-
-    } else if (cmp_nocase_uh(object_type, "none") == 0) {
+    if (cmp_nocase_uh(object_type, "none") == 0) {
       // ObjectType "none" is a special case, meaning nothing in particular.
       return true;
 
