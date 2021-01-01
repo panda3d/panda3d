@@ -1,3 +1,26 @@
+def test_pta_float_compare():
+    from panda3d.core import PTA_float, CPTA_float
+
+    # Two null PTAs
+    assert PTA_float() == PTA_float()
+    assert not (PTA_float() != PTA_float())
+
+    # Two non-null PTAs
+    assert PTA_float([1]) != PTA_float([1])
+    assert not (PTA_float([1]) == PTA_float([1]))
+
+    # A copy of a PTA
+    pta = PTA_float([1])
+    assert pta == PTA_float(pta)
+    assert not (pta != PTA_float(pta))
+
+    # A const copy of a PTA
+    pta = PTA_float([1])
+    cpta = CPTA_float(pta)
+    assert pta == cpta
+    assert not (pta != cpta)
+
+
 def test_pta_float_pickle():
     from panda3d.core import PTA_float
     from direct.stdpy.pickle import dumps, loads, HIGHEST_PROTOCOL
