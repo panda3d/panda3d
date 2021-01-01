@@ -50,6 +50,27 @@ CollisionHandlerPusher::
 }
 
 /**
+ * Serializes this object, to implement pickle support.
+ */
+void CollisionHandlerPusher::
+write_datagram(Datagram &dg) const {
+  CollisionHandlerPhysical::write_datagram(dg);
+
+  dg.add_bool(_horizontal);
+}
+
+/**
+ * Restores the object state from the given datagram, previously obtained using
+ * __getstate__.
+ */
+void CollisionHandlerPusher::
+read_datagram(DatagramIterator &scan) {
+  CollisionHandlerPhysical::read_datagram(scan);
+
+  _horizontal = scan.get_bool();
+}
+
+/**
  * Called by the parent class after all collisions have been detected, this
  * manages the various collisions and moves around the nodes as necessary.
  *

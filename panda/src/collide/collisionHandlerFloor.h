@@ -43,6 +43,9 @@ PUBLISHED:
   MAKE_PROPERTY(reach, get_reach, set_reach);
   MAKE_PROPERTY(max_velocity, get_max_velocity, set_max_velocity);
 
+  void write_datagram(Datagram &destination) const;
+  void read_datagram(DatagramIterator &source);
+
 protected:
   PN_stdfloat set_highest_collision(const NodePath &target_node_path, const NodePath &from_node_path, const Entries &entries);
   virtual bool handle_entries();

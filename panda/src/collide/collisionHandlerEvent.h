@@ -68,8 +68,12 @@ PUBLISHED:
   void clear();
   void flush();
 
-  EXTENSION(PyObject *__getstate__() const);
-  EXTENSION(void __setstate__(PyObject *state));
+  // These help implement Python pickle support.
+  EXTENSION(PyObject *__reduce__(PyObject *self) const);
+  EXTENSION(void __setstate__(PyObject *self, vector_uchar data));
+
+  void write_datagram(Datagram &destination) const;
+  void read_datagram(DatagramIterator &source);
 
 protected:
   void throw_event_for(const vector_string &patterns, CollisionEntry *entry);

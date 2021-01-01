@@ -12,6 +12,9 @@
  */
 
 #include "collisionHandlerEvent_ext.h"
+#include "collisionHandlerFloor.h"
+#include "collisionHandlerGravity.h"
+#include "collisionHandlerPusher.h"
 
 #ifdef HAVE_PYTHON
 
@@ -19,52 +22,35 @@
  * Implements pickling behavior.
  */
 PyObject *Extension<CollisionHandlerEvent>::
-__getstate__() const {
-  PyObject *state = PyTuple_New(3);
-  if (state == nullptr) {
+__reduce__(PyObject *self) const {
+  extern struct Dtool_PyTypedObject Dtool_Datagram;
+
+  // Call the write_datagram method via Python, since it's not a virtual method
+  // on the C++ end.
+#if PY_MAJOR_VERSION >= 3
+  PyObject *method_name = PyUnicode_FromString("write_datagram");
+#else
+  PyObject *method_name = PyString_FromString("write_datagram");
+#endif
+
+  Datagram dg;
+  PyObject *destination = DTool_CreatePyInstance(&dg, Dtool_Datagram, false, false);
+
+  PyObject *retval = PyObject_CallMethodOneArg(self, method_name, destination);
+  Py_DECREF(method_name);
+  Py_DECREF(destination);
+  if (retval == nullptr) {
     return nullptr;
   }
+  Py_DECREF(retval);
 
-  size_t num_patterns;
-  PyObject *patterns;
-
-  num_patterns = _this->get_num_in_patterns();
-  patterns = PyTuple_New(num_patterns);
-  for (size_t i = 0; i < num_patterns; ++i) {
-    std::string pattern = _this->get_in_pattern(i);
+  const char *data = (const char *)dg.get_data();
+  Py_ssize_t size = dg.get_length();
 #if PY_MAJOR_VERSION >= 3
-    PyTuple_SET_ITEM(patterns, i, PyUnicode_FromStringAndSize(pattern.data(), pattern.size()));
+  return Py_BuildValue("O()y#", Py_TYPE(self), data, size);
 #else
-    PyTuple_SET_ITEM(patterns, i, PyString_FromStringAndSize(pattern.data(), pattern.size()));
+  return Py_BuildValue("O()s#", Py_TYPE(self), data, size);
 #endif
-  }
-  PyTuple_SET_ITEM(state, 0, patterns);
-
-  num_patterns = _this->get_num_again_patterns();
-  patterns = PyTuple_New(num_patterns);
-  for (size_t i = 0; i < num_patterns; ++i) {
-    std::string pattern = _this->get_again_pattern(i);
-#if PY_MAJOR_VERSION >= 3
-    PyTuple_SET_ITEM(patterns, i, PyUnicode_FromStringAndSize(pattern.data(), pattern.size()));
-#else
-    PyTuple_SET_ITEM(patterns, i, PyString_FromStringAndSize(pattern.data(), pattern.size()));
-#endif
-  }
-  PyTuple_SET_ITEM(state, 1, patterns);
-
-  num_patterns = _this->get_num_out_patterns();
-  patterns = PyTuple_New(num_patterns);
-  for (size_t i = 0; i < num_patterns; ++i) {
-    std::string pattern = _this->get_out_pattern(i);
-#if PY_MAJOR_VERSION >= 3
-    PyTuple_SET_ITEM(patterns, i, PyUnicode_FromStringAndSize(pattern.data(), pattern.size()));
-#else
-    PyTuple_SET_ITEM(patterns, i, PyString_FromStringAndSize(pattern.data(), pattern.size()));
-#endif
-  }
-  PyTuple_SET_ITEM(state, 2, patterns);
-
-  return state;
 }
 
 /**
@@ -72,52 +58,25 @@ __getstate__() const {
  * this CollisionHandlerEvent object.
  */
 void Extension<CollisionHandlerEvent>::
-__setstate__(PyObject *state) {
-  nassertv(Py_SIZE(state) >= 3);
+__setstate__(PyObject *self, vector_uchar data) {
+  extern struct Dtool_PyTypedObject Dtool_DatagramIterator;
 
-  PyObject *patterns;
-
-  _this->clear_in_patterns();
-  patterns = PyTuple_GET_ITEM(state, 0);
-  for (size_t i = 0; i < Py_SIZE(patterns); ++i) {
-    PyObject *pattern = PyTuple_GET_ITEM(patterns, i);
-    Py_ssize_t len = 0;
+  // Call the read_datagram method via Python, since it's not a virtual method
+  // on the C++ end.
 #if PY_MAJOR_VERSION >= 3
-    const char *data = PyUnicode_AsUTF8AndSize(pattern, &len);
+  PyObject *method_name = PyUnicode_FromString("read_datagram");
 #else
-    char *data;
-    PyString_AsStringAndSize(pattern, &data, &len);
+  PyObject *method_name = PyString_FromString("read_datagram");
 #endif
-    _this->add_in_pattern(std::string(data, len));
-  }
 
-  _this->clear_again_patterns();
-  patterns = PyTuple_GET_ITEM(state, 1);
-  for (size_t i = 0; i < Py_SIZE(patterns); ++i) {
-    PyObject *pattern = PyTuple_GET_ITEM(patterns, i);
-    Py_ssize_t len = 0;
-#if PY_MAJOR_VERSION >= 3
-    const char *data = PyUnicode_AsUTF8AndSize(pattern, &len);
-#else
-    char *data;
-    PyString_AsStringAndSize(pattern, &data, &len);
-#endif
-    _this->add_again_pattern(std::string(data, len));
-  }
+  Datagram dg(std::move(data));
+  DatagramIterator scan(dg);
+  PyObject *source = DTool_CreatePyInstance(&scan, Dtool_DatagramIterator, false, false);
 
-  _this->clear_out_patterns();
-  patterns = PyTuple_GET_ITEM(state, 2);
-  for (size_t i = 0; i < Py_SIZE(patterns); ++i) {
-    PyObject *pattern = PyTuple_GET_ITEM(patterns, i);
-    Py_ssize_t len = 0;
-#if PY_MAJOR_VERSION >= 3
-    const char *data = PyUnicode_AsUTF8AndSize(pattern, &len);
-#else
-    char *data;
-    PyString_AsStringAndSize(pattern, &data, &len);
-#endif
-    _this->add_out_pattern(std::string(data, len));
-  }
+  PyObject *retval = PyObject_CallMethodOneArg(self, method_name, source);
+  Py_DECREF(method_name);
+  Py_DECREF(source);
+  Py_XDECREF(retval);
 }
 
 #endif
