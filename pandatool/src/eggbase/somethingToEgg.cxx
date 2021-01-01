@@ -14,6 +14,7 @@
 #include "somethingToEgg.h"
 #include "somethingToEggConverter.h"
 
+#include "config_egg.h"
 #include "config_putil.h"
 
 /**
@@ -59,6 +60,13 @@ SomethingToEgg(const std::string &format_name,
      "an error and the command aborted; with this option, an egg file will "
      "be generated anyway, referencing pathnames that do not exist.",
      &SomethingToEgg::dispatch_none, &_noexist);
+
+  add_option
+    ("notypes", "", 0,
+     "Don't attempt to rebuild egg object types. Enable this if you "
+     "want your model conversion to be independent of your PRC "
+     "configuration, or if your object types are rebuilt incorrectly.",
+    &SomethingToEgg::dispatch_none, &_no_object_types);
 
   add_option
     ("ignore", "", 0,
@@ -292,6 +300,10 @@ post_command_line() {
     directory = ".";
   }
   model_path.prepend_directory(directory);
+
+  // We want to rebuild object types if "-notypes" is not set.
+  // However, if it is set, do NOT rebuild object types
+  egg_rebuild_object_types = !_no_object_types;
 
   return EggConverter::post_command_line();
 }
