@@ -22,7 +22,7 @@ Unfortunately, cPickle cannot be supported, because it does not
 support extensions of this nature. """
 
 __all__ = ["PickleError", "PicklingError", "UnpicklingError", "Pickler",
-           "Unpickler", "dump", "dumps", "load", "loads"]
+           "Unpickler", "dump", "dumps", "load", "loads", "HIGHEST_PROTOCOL"]
 
 import sys
 from panda3d.core import BamWriter, BamReader, TypedObject
@@ -36,11 +36,16 @@ else:
 # with the local pickle.py.
 pickle = __import__('pickle')
 
+HIGHEST_PROTOCOL = pickle.HIGHEST_PROTOCOL
+
 PickleError = pickle.PickleError
 PicklingError = pickle.PicklingError
 UnpicklingError = pickle.UnpicklingError
 
 if sys.version_info >= (3, 0):
+    DEFAULT_PROTOCOL = pickle.DEFAULT_PROTOCOL
+    __all__.append("DEFAULT_PROTOCOL")
+
     BasePickler = pickle._Pickler
     BaseUnpickler = pickle._Unpickler
 else:
