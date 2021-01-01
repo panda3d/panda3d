@@ -21,6 +21,9 @@ shared context between all objects written by that Pickler.
 Unfortunately, cPickle cannot be supported, because it does not
 support extensions of this nature. """
 
+__all__ = ["PickleError", "PicklingError", "UnpicklingError", "Pickler",
+           "Unpickler", "dump", "dumps", "load", "loads"]
+
 import sys
 from panda3d.core import BamWriter, BamReader, TypedObject
 
@@ -33,7 +36,9 @@ else:
 # with the local pickle.py.
 pickle = __import__('pickle')
 
+PickleError = pickle.PickleError
 PicklingError = pickle.PicklingError
+UnpicklingError = pickle.UnpicklingError
 
 if sys.version_info >= (3, 0):
     BasePickler = pickle._Pickler
@@ -43,12 +48,17 @@ else:
     BaseUnpickler = pickle.Unpickler
 
 
-class _Pickler(BasePickler):
+class Pickler(BasePickler):
 
     def __init__(self, *args, **kw):
         self.bamWriter = BamWriter()
         self._canonical = {}
         BasePickler.__init__(self, *args, **kw)
+
+    def clear_memo(self):
+        BasePickler.clear_memo(self)
+        self._canonical.clear()
+        self.bamWriter = BamWriter()
 
     # We have to duplicate most of the save() method, so we can add
     # support for __reduce_persist__().
@@ -170,12 +180,6 @@ class Unpickler(BaseUnpickler):
         BaseUnpickler.dispatch[pickle.REDUCE[0]] = load_reduce
     else:
         BaseUnpickler.dispatch[pickle.REDUCE] = load_reduce
-
-
-Pickler = _Pickler
-
-if sys.version_info < (3, 0):
-    del _Pickler
 
 
 # Shorthands
