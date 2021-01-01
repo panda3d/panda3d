@@ -34,3 +34,20 @@ def test_bitmask_pickle():
     data = pickle.dumps(mask1, -1)
     mask2 = pickle.loads(data)
     assert mask1 == mask2
+
+    assert pickle.loads(pickle.dumps(DoubleBitMaskNative(0), -1)).is_zero()
+
+    mask1 = DoubleBitMaskNative(0xffff0001)
+    data = pickle.dumps(mask1, -1)
+    mask2 = pickle.loads(data)
+    assert mask1 == mask2
+
+    mask1 = DoubleBitMaskNative(0x7fffffffffffffff)
+    data = pickle.dumps(mask1, -1)
+    mask2 = pickle.loads(data)
+    assert mask1 == mask2
+
+    mask1 = DoubleBitMaskNative(1 << (double_num_bits - 1))
+    data = pickle.dumps(mask1, -1)
+    mask2 = pickle.loads(data)
+    assert mask1 == mask2
