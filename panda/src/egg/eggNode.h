@@ -22,6 +22,7 @@
 #include "lmatrix.h"
 #include "pointerTo.h"
 #include "referenceCount.h"
+#include "extension.h"
 
 class EggGroupNode;
 class EggRenderMode;
@@ -90,6 +91,7 @@ PUBLISHED:
   void test_under_integrity() const { }
 #endif  // _DEBUG
 
+  EXTENSION(PyObject *__reduce__() const);
 
 protected:
   enum UnderFlags {

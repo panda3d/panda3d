@@ -4945,7 +4945,7 @@ if not RUNTIME and not PkgSkip("EGG"):
   if "parser.h" in IGATEFILES: IGATEFILES.remove("parser.h")
   TargetAdd('libp3egg.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3egg.in', opts=['IMOD:panda3d.egg', 'ILIB:libp3egg', 'SRCDIR:panda/src/egg'])
-  PyTargetAdd('p3egg_eggGroupNode_ext.obj', opts=OPTS, input='eggGroupNode_ext.cxx')
+  PyTargetAdd('p3egg_ext_composite.obj', opts=OPTS, input='p3egg_ext_composite.cxx')
 
 #
 # DIRECTORY: panda/src/egg2pg/
@@ -5035,7 +5035,7 @@ if not RUNTIME and not PkgSkip("EGG"):
   PyTargetAdd('egg_module.obj', opts=['IMOD:panda3d.egg', 'ILIB:egg', 'IMPORT:panda3d.core'])
 
   PyTargetAdd('egg.pyd', input='egg_module.obj')
-  PyTargetAdd('egg.pyd', input='p3egg_eggGroupNode_ext.obj')
+  PyTargetAdd('egg.pyd', input='p3egg_ext_composite.obj')
   PyTargetAdd('egg.pyd', input='libp3egg_igate.obj')
   PyTargetAdd('egg.pyd', input='libp3egg2pg_igate.obj')
   PyTargetAdd('egg.pyd', input='libpandaegg.dll')
