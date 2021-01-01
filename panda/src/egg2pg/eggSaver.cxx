@@ -12,6 +12,7 @@
  */
 
 #include "eggSaver.h"
+#include "config_egg.h"
 
 #include "pandaNode.h"
 #include "workingNodePath.h"
@@ -87,6 +88,8 @@ EggSaver(EggData *data) :
   if (_data == nullptr) {
     _data = new EggData;
   }
+
+  build_object_types();
 }
 
 /**
@@ -162,6 +165,7 @@ convert_node(const WorkingNodePath &node_path, EggGroupNode *egg_parent,
     EggGroup *egg_group = new EggGroup(node->get_name());
     egg_parent->add_child(egg_group);
     apply_node_properties(egg_group, node);
+    apply_object_types(egg_group);
 
     recurse_nodes(node_path, egg_group, has_decal, joint_map);
   }
@@ -211,6 +215,8 @@ convert_lod_node(LODNode *node, const WorkingNodePath &node_path,
     next_group->set_lod(dist);
     egg_group->add_child(next_group.p());
   }
+
+  apply_object_types(egg_group);
 }
 
 /**
@@ -242,6 +248,7 @@ convert_sequence_node(SequenceNode *node, const WorkingNodePath &node_path,
     egg_group->add_child(next_group.p());
   }
 
+  apply_object_types(egg_group);
 }
 
 /**
@@ -271,6 +278,8 @@ convert_switch_node(SwitchNode *node, const WorkingNodePath &node_path,
 
     egg_group->add_child(next_group.p());
   }
+
+  apply_object_types(egg_group);
 }
 
 /**
@@ -403,6 +412,8 @@ convert_character_bundle(PartGroup *bundleNode, EggGroupNode *egg_parent,
         }
       }
     }
+
+    apply_object_types(joint);
   }
 
   for (int i = 0; i < num_children ; i++) {
@@ -439,6 +450,8 @@ convert_character_node(Character *node, const WorkingNodePath &node_path,
     PartBundle *bundle = node->get_bundle(i);
     convert_character_bundle(bundle, egg_group, &joint_map);
   }
+
+  apply_object_types(egg_group);
 }
 
 
@@ -522,11 +535,14 @@ convert_collision_node(CollisionNode *node, const WorkingNodePath &node_path,
         PN_stdfloat radius = sphere->get_radius();
 
         EggGroup *egg_sphere;
+        bool new_group = false;
+
         if (num_solids == 1) {
           egg_sphere = egg_group;
         } else {
           egg_sphere = new EggGroup;
           egg_group->add_child(egg_sphere);
+          new_group = true;
         }
 
         if (child->is_of_type(CollisionInvSphere::get_class_type())) {
@@ -550,6 +566,9 @@ convert_collision_node(CollisionNode *node, const WorkingNodePath &node_path,
         egg_poly->add_vertex(cvpool->create_unique_vertex(ev3));
         egg_poly->add_vertex(cvpool->create_unique_vertex(ev4));
 
+        if (new_group) {
+          apply_object_types(egg_sphere);
+        }
       } else if (child->is_of_type(CollisionPlane::get_class_type())) {
         LPlane plane = DCAST(CollisionPlane, child)->get_plane();
         LPoint3 origin = plane.get_point();
@@ -568,11 +587,14 @@ convert_collision_node(CollisionNode *node, const WorkingNodePath &node_path,
         LVector3 vec2 = normal.cross(vec1);
 
         EggGroup *egg_plane;
+        bool new_group = false;
+
         if (num_solids == 1) {
           egg_plane = egg_group;
         } else {
           egg_plane = new EggGroup;
           egg_group->add_child(egg_plane);
+          new_group = true;
         }
         egg_plane->set_cs_type(EggGroup::CST_plane);
         egg_plane->set_collide_flags(flags);
@@ -589,17 +611,23 @@ convert_collision_node(CollisionNode *node, const WorkingNodePath &node_path,
         egg_poly->add_vertex(cvpool->create_unique_vertex(ev1));
         egg_poly->add_vertex(cvpool->create_unique_vertex(ev2));
 
+        if (new_group) {
+          apply_object_types(egg_plane);
+        }
       } else if (child->is_of_type(CollisionBox::get_class_type())) {
         CPT(CollisionBox) box = DCAST(CollisionBox, child);
         LPoint3 min_point = box->get_min();
         LPoint3 max_point = box->get_max();
 
         EggGroup *egg_box;
+        bool new_group = false;
+
         if (num_solids == 1) {
           egg_box = egg_group;
         } else {
           egg_box = new EggGroup;
           egg_group->add_child(egg_box);
+          new_group = true;
         }
         egg_box->set_cs_type(EggGroup::CST_box);
         egg_box->set_collide_flags(flags);
@@ -615,6 +643,9 @@ convert_collision_node(CollisionNode *node, const WorkingNodePath &node_path,
         egg_poly->add_vertex(cvpool->create_unique_vertex(ev0));
         egg_poly->add_vertex(cvpool->create_unique_vertex(ev1));
 
+        if (new_group) {
+          apply_object_types(egg_box);
+        }
       } else if (child->is_of_type(CollisionCapsule::get_class_type())) {
         CPT(CollisionCapsule) capsule = DCAST(CollisionCapsule, child);
         LPoint3 point_a = capsule->get_point_a();
@@ -634,11 +665,14 @@ convert_collision_node(CollisionNode *node, const WorkingNodePath &node_path,
         LVector3 extend = axis.normalized() * capsule->get_radius();
 
         EggGroup *egg_capsule;
+        bool new_group = false;
+
         if (num_solids == 1) {
           egg_capsule = egg_group;
         } else {
           egg_capsule = new EggGroup;
           egg_group->add_child(egg_capsule);
+          new_group = true;
         }
         egg_capsule->set_cs_type(EggGroup::CST_tube);
         egg_capsule->set_collide_flags(flags);
@@ -659,6 +693,9 @@ convert_collision_node(CollisionNode *node, const WorkingNodePath &node_path,
         egg_poly->add_vertex(cvpool->create_unique_vertex(ev2));
         egg_poly->add_vertex(cvpool->create_unique_vertex(ev3));
 
+        if (new_group) {
+          apply_object_types(egg_capsule);
+        }
       } else {
         nout << "Encountered unknown collision solid type " << child->get_type() << "\n";
       }
@@ -667,6 +704,7 @@ convert_collision_node(CollisionNode *node, const WorkingNodePath &node_path,
 
   // recurse over children - hm.  do I need to do this?
   recurse_nodes(node_path, egg_group, has_decal, joint_map);
+  apply_object_types(egg_group);
 }
 
 /**
@@ -729,6 +767,7 @@ convert_geom_node(GeomNode *node, const WorkingNodePath &node_path,
   }
 
   recurse_nodes(node_path, egg_parent, has_decal, joint_map);
+  apply_object_types(egg_group);
 }
 
 /**
@@ -1233,6 +1272,40 @@ apply_tag(EggGroup *egg_group, PandaNode *node, const string &tag) {
 }
 
 /**
+ * Applies all egg object types that satisfy this group. Does not support
+ * recursive egg object types. Returns true if any new object types have been
+ * added to the group.
+ */
+bool EggSaver::
+apply_object_types(EggGroup *egg_group) {
+  if (!egg_rebuild_object_types) {
+    // Object type rebuilding is currently disabled.
+    return false;
+  }
+
+  ObjectTypes::const_iterator ti;
+  bool any_applied = false;
+
+  for (ti = _object_types.begin(); ti != _object_types.end(); ++ti) {
+    PT(EggGroup) object_type = (*ti);
+    const std::string name = object_type->get_name();
+
+    if (egg_group->has_object_type(name)) {
+      // This object type has already been applied to this group.
+      continue;
+    }
+
+    if (egg_group->satisfies_object_type(object_type)) {
+      // This object type is satisfied! Let's add it to the group.
+      egg_group->add_object_type(name);
+      any_applied = true;
+    }
+  }
+
+  return any_applied;
+}
+
+/**
  * Returns an EggMaterial pointer that corresponds to the indicated Material.
  */
 EggMaterial *EggSaver::
@@ -1429,4 +1502,64 @@ get_egg_texture(Texture *tex) {
   }
 
   return nullptr;
+}
+
+/**
+ * Builds the object type cache used to re-assign egg object types,
+ * using the definitions loaded from the PRC config system.
+ *
+ * Most likely, you will never need to explicitly call this.
+ */
+void EggSaver::
+build_object_types() {
+  if (!egg_rebuild_object_types) {
+    // Object type rebuilding is currently disabled.
+    return;
+  }
+
+  if (!_object_types.empty()) {
+    // We've already built our object type cache.
+    return;
+  }
+
+  // We need this information in order to re-assign egg object types to each
+  // group node. This information is normally lost during egg-to-bam conversion.
+  // Because of this, we'll try our best to match our egg attributes with the
+  // object types that are currently defined in our config pages.
+
+  // Our strategy is simple: We find all object type config variables, and
+  // create EggGroups for each one of them. We do this only once per egg saved.
+  // When converting egg groups, we will compare our final groups to the object
+  // types that we've initialized. If the object type completely satisfies the
+  // current group, we'll add the object type to the egg group.
+
+  ConfigVariableManager *cv_mgr = ConfigVariableManager::get_global_ptr();
+  GlobPattern egg_pattern("egg-object-type-*");
+
+  for (size_t i = 0; i < cv_mgr->get_num_variables(); ++i) {
+    ConfigVariableCore *variable = cv_mgr->get_variable(i);
+    const std::string name = variable->get_name();
+
+    if (!egg_pattern.matches(name)) {
+      // This config variable does not represent an egg object type.
+      continue;
+    }
+
+    // Cut "egg-object-type-" off from the object type name
+    std::string type_name = name.substr(16);
+    PT(EggGroup) object_type = new EggGroup(type_name);
+
+    // Use the config declaration as base
+    std::string egg_syntax = variable->get_declaration(0)->get_string_value();
+
+    // Run the egg parser on our object type
+    if (!object_type->parse_egg(egg_syntax)) {
+      egg2pg_cat.error()
+        << "Error while parsing definition for ObjectType "
+        << type_name << "\n";
+      continue;
+    }
+
+    _object_types.push_back(object_type);
+  }
 }
