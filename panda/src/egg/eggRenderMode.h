@@ -36,6 +36,8 @@ PUBLISHED:
 
   void write(std::ostream &out, int indent_level) const;
 
+  bool satisfies_object_type(EggRenderMode *type);
+
   enum AlphaMode {  // Specifies implementation of transparency.
     AM_unspecified,
     AM_off,     // No transparency.
