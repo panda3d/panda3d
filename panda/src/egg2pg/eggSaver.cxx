@@ -13,6 +13,7 @@
 
 #include "eggSaver.h"
 #include "config_egg.h"
+#include "config_egg2pg.h"
 
 #include "pandaNode.h"
 #include "workingNodePath.h"
