@@ -26,6 +26,7 @@ extern "C" int eggyywrap(void);  // declared below.
 
 static int yyinput(void);        // declared by flex.
 
+int eggyylex_destroy(void);
 
 ////////////////////////////////////////////////////////////////////
 // Static variables
@@ -71,6 +72,15 @@ egg_init_lexer(istream &in, const string &filename) {
   error_count = 0;
   warning_count = 0;
   initial_token = START_EGG;
+}
+
+void
+egg_cleanup_lexer() {
+  // Reset the lexer state.
+  yylex_destroy();
+
+  input_p = nullptr;
+  egg_filename.clear();
 }
 
 void

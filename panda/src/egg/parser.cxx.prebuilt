@@ -223,6 +223,8 @@ egg_cleanup_parser() {
   textures.clear();
   materials.clear();
   groups.clear();
+
+  egg_cleanup_lexer();
 }
 
 
