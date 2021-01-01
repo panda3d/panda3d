@@ -117,6 +117,8 @@ PUBLISHED:
   INLINE size_t count(const Element &) const;
 
 #ifdef HAVE_PYTHON
+  EXTENSION(PyObject *__reduce__(PyObject *self) const);
+
   EXTENSION(int __getbuffer__(PyObject *self, Py_buffer *view, int flags));
   EXTENSION(void __releasebuffer__(PyObject *self, Py_buffer *view) const);
 #endif
@@ -273,6 +275,8 @@ PUBLISHED:
   INLINE size_t count(const Element &) const;
 
 #ifdef HAVE_PYTHON
+  EXTENSION(PyObject *__reduce__(PyObject *self) const);
+
   EXTENSION(int __getbuffer__(PyObject *self, Py_buffer *view, int flags) const);
   EXTENSION(void __releasebuffer__(PyObject *self, Py_buffer *view) const);
 #endif
