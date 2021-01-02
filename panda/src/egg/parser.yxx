@@ -4,10 +4,9 @@
  * @date 1999-01-16
  */
 
-%define api.pure full
+%pure-parser
 %locations
-%parse-param {EggParserState &state}
-%parse-param {yyscan_t scanner}
+%parse-param {EggParserState &state} {yyscan_t scanner}
 %lex-param {yyscan_t scanner}
 
 %{
