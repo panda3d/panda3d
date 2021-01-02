@@ -19,6 +19,7 @@
 #ifdef HAVE_PYTHON
 
 #include "extension.h"
+#include "eggData.h"
 #include "eggNode.h"
 #include "py_panda.h"
 
