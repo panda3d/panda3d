@@ -329,7 +329,14 @@ get_subdata(size_t n, size_t count) const {
 template<class Element>
 INLINE PyObject *Extension<ConstPointerToArray<Element> >::
 __reduce__(PyObject *self) const {
-  return Py_BuildValue("O(N)", Py_TYPE(self), get_data());
+  // This preserves the distinction between a null vs. an empty PTA, though I'm
+  // not sure that this distinction matters to anyone.
+  if (!this->_this->is_null() && this->_this->empty()) {
+    return Py_BuildValue("O([])", Py_TYPE(self));
+  }
+  else {
+    return Py_BuildValue("O(N)", Py_TYPE(self), get_data());
+  }
 }
 
 /**
