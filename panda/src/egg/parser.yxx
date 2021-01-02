@@ -6,9 +6,9 @@
 
 %pure-parser
 %locations
-%parse-param {EggParserState &state} {yyscan_t scanner}
+%parse-param {EggParserState &state}
+%parse-param {yyscan_t scanner}
 %lex-param {yyscan_t scanner}
-
 %{
 
 #include "pandabase.h"
