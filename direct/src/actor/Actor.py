@@ -163,8 +163,10 @@ class Actor(DirectObject, NodePath):
             #the actor for a few frames, otherwise it has no effect
             a.fixBounds()
         """
-        if not hasattr(self, 'Actor_initialized'):
-            self.Actor_initialized = 1
+        if hasattr(self, 'Actor_initialized'):
+            return
+
+        self.Actor_initialized = 1
 
         # initialize our NodePath essence
         NodePath.__init__(self)
