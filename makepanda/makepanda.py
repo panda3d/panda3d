@@ -4396,7 +4396,7 @@ if GetTarget() == 'windows' and not PkgSkip("DX9"):
 #
 
 if not PkgSkip("EGG"):
-    OPTS=['DIR:panda/src/egg', 'BUILDING:PANDAEGG', 'ZLIB', 'BISONPREFIX_eggyy', 'FLEXDASHI', 'FLEXVERSION:2.5.9']
+    OPTS=['DIR:panda/src/egg', 'BUILDING:PANDAEGG', 'ZLIB', 'BISONPREFIX_eggyy', 'FLEXDASHI', 'FLEXVERSION:2.5.6']
     CreateFile(GetOutputDir()+"/include/parser.h")
     TargetAdd('p3egg_parser.obj', opts=OPTS, input='parser.yxx')
     TargetAdd('parser.h', input='p3egg_parser.obj', opts=['DEPENDENCYONLY'])

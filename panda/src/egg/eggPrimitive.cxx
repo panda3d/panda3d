@@ -905,8 +905,8 @@ write_body(std::ostream &out, int indent_level) const {
  * return false.
  */
 bool EggPrimitive::
-egg_start_parse_body() {
-  egg_start_primitive_body();
+egg_start_parse_body(EggLexerState &state) {
+  egg_start_primitive_body(state);
   return true;
 }
 
