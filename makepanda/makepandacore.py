@@ -556,7 +556,7 @@ def GetFlex():
 def GetFlexVersion():
     flex = GetFlex()
     if not flex:
-        return None
+        return (0, 0, 0)
 
     try:
         handle = subprocess.Popen(["flex", "--version"], executable=flex, stdout=subprocess.PIPE)

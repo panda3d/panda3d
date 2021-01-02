@@ -1664,7 +1664,7 @@ def CompileFlex(wobj,wsrc,opts):
     dashi = opts.count("FLEXDASHI")
     flex = GetFlex()
     want_version = GetValueOption(opts, "FLEXVERSION:")
-    if want_version:
+    if flex and want_version:
         # Is flex at the required version for this file?
         want_version = tuple(map(int, want_version.split('.')))
         have_version = GetFlexVersion()
