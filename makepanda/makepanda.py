@@ -1663,6 +1663,19 @@ def CompileFlex(wobj,wsrc,opts):
     pre = GetValueOption(opts, "BISONPREFIX_")
     dashi = opts.count("FLEXDASHI")
     flex = GetFlex()
+    want_version = GetValueOption(opts, "FLEXVERSION:")
+    if want_version:
+        # Is flex at the required version for this file?
+        want_version = tuple(map(int, want_version.split('.')))
+        have_version = GetFlexVersion()
+        if want_version > have_version:
+            Warn("Skipping flex %s for file %s, need at least %s" % (
+                '.'.join(map(str, have_version)),
+                ifile,
+                '.'.join(map(str, want_version)),
+            ))
+            flex = None
+
     if flex is None:
         # We don't have flex.  See if there is a prebuilt file.
         base, ext = os.path.splitext(wsrc)
@@ -4932,7 +4945,7 @@ if GetTarget() == 'windows' and PkgSkip("DX9")==0 and not RUNTIME:
 #
 
 if not RUNTIME and not PkgSkip("EGG"):
-  OPTS=['DIR:panda/src/egg', 'BUILDING:PANDAEGG', 'ZLIB', 'BISONPREFIX_eggyy', 'FLEXDASHI']
+  OPTS=['DIR:panda/src/egg', 'BUILDING:PANDAEGG', 'ZLIB', 'BISONPREFIX_eggyy', 'FLEXDASHI', 'FLEXVERSION:2.5.9']
   CreateFile(GetOutputDir()+"/include/parser.h")
   TargetAdd('p3egg_parser.obj', opts=OPTS, input='parser.yxx')
   TargetAdd('parser.h', input='p3egg_parser.obj', opts=['DEPENDENCYONLY'])

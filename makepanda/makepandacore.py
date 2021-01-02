@@ -553,6 +553,16 @@ def GetFlex():
 
     return FLEX
 
+def GetFlexVersion():
+    flex = GetFlex()
+    if not flex:
+        return None
+
+    handle = subprocess.Popen(["flex", "--version"], executable=flex, stdout=subprocess.PIPE)
+    version = handle.communicate()[0].strip().splitlines()[0].split(b' ')[-1]
+    version = tuple(map(int, version.split(b'.')))
+    return version
+
 ########################################################################
 ##
 ## LocateBinary
