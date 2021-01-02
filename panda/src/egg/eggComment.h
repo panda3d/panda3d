@@ -41,6 +41,8 @@ PUBLISHED:
 
   virtual void write(std::ostream &out, int indent_level) const;
 
+  EXTENSION(PyObject *__reduce__() const);
+
 private:
   std::string _comment;
 

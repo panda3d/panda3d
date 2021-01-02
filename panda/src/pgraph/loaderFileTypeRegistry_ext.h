@@ -33,6 +33,8 @@ public:
   void register_deferred_type(PyObject *entry_point);
 
   void unregister_type(PyObject *type);
+
+  PyObject *__reduce__() const;
 };
 
 #endif  // HAVE_PYTHON
