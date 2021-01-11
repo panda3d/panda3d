@@ -1023,7 +1023,8 @@ test_intersection_from_box(const CollisionEntry &entry) const {
 
   // To make things easier, transform the box into the coordinate space of the
   // plane.
-  const LMatrix4 &wrt_mat = entry.get_wrt_mat();
+  CPT(TransformState) wrt_space = entry.get_wrt_space();
+  const LMatrix4 &wrt_mat = wrt_space->get_mat();
   LMatrix4 plane_mat = wrt_mat * _to_2d_mat;
 
   LPoint3 from_center = box->get_center() * plane_mat;
@@ -1037,7 +1038,29 @@ test_intersection_from_box(const CollisionEntry &entry) const {
   // Is there a separating axis between the plane and the box?
   if (cabs(from_center[1]) > cabs(box_x[1]) + cabs(box_y[1]) + cabs(box_z[1])) {
     // There is one.  No collision.
-    return nullptr;
+    if (from_center[1] < 0.0f || !entry.get_respect_prev_transform()) {
+      return nullptr;
+    }
+
+    CPT(TransformState) wrt_prev_space = entry.get_wrt_prev_space();
+    if (wrt_prev_space != wrt_space) {
+      // Did the center travel into the plane of the polygon?
+      LPoint3 prev_center = box->get_center() * (wrt_prev_space->get_mat() * _to_2d_mat);
+      if (prev_center[1] > 0.0f) {
+        // Nope, it did not.
+        return nullptr;
+      }
+
+      // Do the rest of the test with the box placed between the previous and
+      // current positions, such that the box center is exactly at the plane.
+      // Note that this ensures there is no separating axis between the plane
+      // and the box, so we don't need to do that test again.
+      PN_stdfloat t = from_center[1] / (from_center[1] - prev_center[1]);
+      from_center.set(
+        prev_center[0] * t + from_center[0] * (1.0f - t),
+        0.0f,
+        prev_center[2] * t + from_center[2] * (1.0f - t));
+    }
   }
 
   // Now do the same for each of the box' primary axes.
