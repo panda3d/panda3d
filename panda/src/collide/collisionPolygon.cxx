@@ -889,7 +889,8 @@ test_intersection_from_capsule(const CollisionEntry &entry) const {
   const CollisionCapsule *capsule;
   DCAST_INTO_R(capsule, entry.get_from(), nullptr);
 
-  const LMatrix4 &wrt_mat = entry.get_wrt_mat();
+  CPT(TransformState) wrt_space = entry.get_wrt_space();
+  const LMatrix4 &wrt_mat = wrt_space->get_mat();
   LMatrix4 plane_mat = wrt_mat * _to_2d_mat;
 
   LPoint3 from_a = capsule->get_point_a() * plane_mat;
@@ -905,7 +906,57 @@ test_intersection_from_capsule(const CollisionEntry &entry) const {
     // Yes, so calculate the distance of the closest point.
     PN_stdfloat dist = min(cabs(from_a[1]), cabs(from_b[1]));
     if (dist * dist > from_radius_sq) {
-      return nullptr;
+      // Not currently colliding.  Did the capsule travel into the plane?
+      if (from_a[1] < 0 || !entry.get_respect_prev_transform()) {
+        return nullptr;
+      }
+
+      CPT(TransformState) wrt_prev_space = entry.get_wrt_prev_space();
+      if (wrt_prev_space == wrt_space) {
+        return nullptr;
+      }
+
+      // Note that we only check for a sphere at the center, since we don't
+      // know whether the capsule has undergone any rotation.
+      LPoint3 from_center = (from_a + from_b) * 0.5f;
+      LPoint3 prev_center =
+        LPoint3((capsule->get_point_a() + capsule->get_point_b()) * 0.5f) *
+        (wrt_prev_space->get_mat() * _to_2d_mat);
+
+      if (prev_center[1] > 0 || prev_center[1] > 0) {
+        // Nope, it did not.
+        return nullptr;
+      }
+
+      // Determine the intersection of the sphere with the polygon.
+      PN_stdfloat t = from_center[1] / (from_center[1] - prev_center[1]);
+      LPoint2 p(
+        prev_center[0] * t + from_center[0] * (1.0f - t),
+        prev_center[2] * t + from_center[2] * (1.0f - t));
+      LPoint2 edge_p(p);
+      PN_stdfloat edge_dist = dist_to_polygon(p, edge_p, _points);
+      if (edge_dist >= 0 && edge_dist * edge_dist > from_radius_sq) {
+        return nullptr;
+      }
+
+      if (collide_cat.is_debug()) {
+        collide_cat.debug()
+          << "intersection detected from " << entry.get_from_node_path()
+          << " into " << entry.get_into_node_path() << "\n";
+      }
+      PT(CollisionEntry) new_entry = new CollisionEntry(entry);
+      LVector3 normal = (has_effective_normal() && capsule->get_respect_effective_normal()) ? get_effective_normal() : get_normal();
+      new_entry->set_surface_normal(normal);
+
+      LMatrix4 to_3d_mat;
+      rederive_to_3d_mat(to_3d_mat);
+
+      LPoint3 deepest = (from_a[1] < from_b[1] ? capsule->get_point_b() : capsule->get_point_a()) * wrt_mat;
+      PN_stdfloat from_radius = csqrt(from_radius_sq);
+      new_entry->set_surface_point(to_3d(edge_p, to_3d_mat));
+      new_entry->set_interior_point(deepest - get_normal() * from_radius);
+
+      return new_entry;
     }
   }
 
