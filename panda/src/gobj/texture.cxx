@@ -1023,7 +1023,8 @@ set_ram_image_as(CPTA_uchar image, const string &supplied_format) {
   string format = upcase(supplied_format);
 
   // Make sure we can grab something that's uncompressed.
-  int imgsize = cdata->_x_size * cdata->_y_size;
+  size_t imgsize = (size_t)cdata->_x_size * (size_t)cdata->_y_size *
+                   (size_t)cdata->_z_size * (size_t)cdata->_num_views;
   nassertv(image.size() == (size_t)(cdata->_component_width * format.size() * imgsize));
 
   // Check if the format is already what we have internally.
