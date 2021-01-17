@@ -9320,6 +9320,8 @@ get_external_image_format(Texture *tex) const {
       case Texture::F_rgba16:
       case Texture::F_rgba32:
       case Texture::F_rgba8i:
+      case Texture::F_rgba16i:
+      case Texture::F_rgba32i:
       case Texture::F_rgb10_a2:
         return GL_COMPRESSED_RGBA;
 
@@ -9331,7 +9333,9 @@ get_external_image_format(Texture *tex) const {
       case Texture::F_rgb12:
       case Texture::F_rgb332:
       case Texture::F_rgb16:
+      case Texture::F_rgb16i:
       case Texture::F_rgb32:
+      case Texture::F_rgb32i:
         return GL_COMPRESSED_RGB;
 
       case Texture::F_alpha:
@@ -9350,7 +9354,9 @@ get_external_image_format(Texture *tex) const {
       case Texture::F_rg:
       case Texture::F_rg8i:
       case Texture::F_rg16:
+      case Texture::F_rg16i:
       case Texture::F_rg32:
+      case Texture::F_rg32i:
         return GL_COMPRESSED_RG;
 
       case Texture::F_luminance:
@@ -9605,10 +9611,16 @@ get_external_image_format(Texture *tex) const {
   case Texture::F_r32i:
     return GL_RED_INTEGER;
   case Texture::F_rg8i:
+  case Texture::F_rg16i:
+  case Texture::F_rg32i:
     return GL_RG_INTEGER;
   case Texture::F_rgb8i:
+  case Texture::F_rgb16i:
+  case Texture::F_rgb32i:
     return GL_RGB_INTEGER;
   case Texture::F_rgba8i:
+  case Texture::F_rgba16i:
+  case Texture::F_rgba32i:
     return GL_RGBA_INTEGER;
 #endif
 
@@ -9660,7 +9672,13 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
       case Texture::F_rgb8i:
       case Texture::F_rgba8i:
       case Texture::F_r16i:
+      case Texture::F_rg16i:
+      case Texture::F_rgb16i:
+      case Texture::F_rgba16i:
       case Texture::F_r32i:
+      case Texture::F_rg32i:
+      case Texture::F_rgb32i:
+      case Texture::F_rgba32i:
       case Texture::F_r11_g11_b10:
       case Texture::F_rgb9_e5:
         // Unsupported; fall through to below.
@@ -10211,12 +10229,6 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
     } else {
       return GL_R16_SNORM;
     }
-  case Texture::F_r16i:
-    if (Texture::is_unsigned(tex->get_component_type())) {
-      return GL_R16UI;
-    } else {
-      return GL_R16I;
-    }
   case Texture::F_rg16:
     if (tex->get_component_type() == Texture::T_float) {
       return GL_RG16F;
@@ -10224,6 +10236,30 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
       return GL_RG16;
     } else {
       return GL_RG16_SNORM;
+    }
+  case Texture::F_r16i:
+    if (Texture::is_unsigned(tex->get_component_type())) {
+      return GL_R16UI;
+    } else {
+      return GL_R16I;
+    }
+  case Texture::F_rg16i:
+    if (Texture::is_unsigned(tex->get_component_type())) {
+      return GL_RG16UI;
+    } else {
+      return GL_RG16I;
+    }
+  case Texture::F_rgb16i:
+    if (Texture::is_unsigned(tex->get_component_type())) {
+      return GL_RGB16UI;
+    } else {
+      return GL_RGB16I;
+    }
+  case Texture::F_rgba16i:
+    if (Texture::is_unsigned(tex->get_component_type())) {
+      return GL_RGBA16UI;
+    } else {
+      return GL_RGBA16I;
     }
 #endif
 
@@ -10337,9 +10373,31 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
     return _core_profile ? GL_SRGB8_ALPHA8 : GL_SLUMINANCE8_ALPHA8;
 #endif
 
-#ifndef OPENGLES
+#ifndef OPENGLES_1
   case Texture::F_r32i:
-    return GL_R32I;
+    if (Texture::is_unsigned(tex->get_component_type())) {
+      return GL_R32UI;
+    } else {
+      return GL_R32I;
+    }
+  case Texture::F_rg32i:
+    if (Texture::is_unsigned(tex->get_component_type())) {
+      return GL_RG32UI;
+    } else {
+      return GL_RG32I;
+    }
+  case Texture::F_rgb32i:
+    if (Texture::is_unsigned(tex->get_component_type())) {
+      return GL_RGB32UI;
+    } else {
+      return GL_RGB32I;
+    }
+  case Texture::F_rgba32i:
+    if (Texture::is_unsigned(tex->get_component_type())) {
+      return GL_RGBA32UI;
+    } else {
+      return GL_RGBA32I;
+    }
 #endif
 
 #ifndef OPENGLES_1
@@ -13972,7 +14030,9 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
   case GL_R3_G3_B2:
     format = Texture::F_rgb332;
     break;
+#endif
 
+#ifndef OPENGLES_1
   case GL_R8I:
     type = Texture::T_byte;
     format = Texture::F_r8i;
@@ -14011,11 +14071,69 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     type = Texture::T_short;
     format = Texture::F_r16i;
     break;
+  case GL_RG16I:
+    type = Texture::T_short;
+    format = Texture::F_rg16i;
+    break;
+  case GL_RGB16I:
+    type = Texture::T_short;
+    format = Texture::F_rgb16i;
+    break;
+  case GL_RGBA16I:
+    type = Texture::T_short;
+    format = Texture::F_rgba16i;
+    break;
+
   case GL_R16UI:
     type = Texture::T_unsigned_short;
     format = Texture::F_r16i;
     break;
+  case GL_RG16UI:
+    type = Texture::T_unsigned_short;
+    format = Texture::F_rg16i;
+    break;
+  case GL_RGB16UI:
+    type = Texture::T_unsigned_short;
+    format = Texture::F_rgb16i;
+    break;
+  case GL_RGBA16UI:
+    type = Texture::T_unsigned_short;
+    format = Texture::F_rgba16i;
+    break;
 
+  case GL_R32I:
+    type = Texture::T_int;
+    format = Texture::F_r32i;
+    break;
+  case GL_RG32I:
+    type = Texture::T_int;
+    format = Texture::F_rg32i;
+    break;
+  case GL_RGB32I:
+    type = Texture::T_int;
+    format = Texture::F_rgb32i;
+    break;
+  case GL_RGBA32I:
+    type = Texture::T_int;
+    format = Texture::F_rgba32i;
+    break;
+
+  case GL_R32UI:
+    type = Texture::T_unsigned_int;
+    format = Texture::F_r32i;
+    break;
+  case GL_RG32UI:
+    type = Texture::T_unsigned_int;
+    format = Texture::F_rg32i;
+    break;
+  case GL_RGB32UI:
+    type = Texture::T_unsigned_int;
+    format = Texture::F_rgb32i;
+    break;
+  case GL_RGBA32UI:
+    type = Texture::T_unsigned_int;
+    format = Texture::F_rgba32i;
+    break;
 #endif
 
 #ifndef OPENGLES_1
@@ -14102,12 +14220,6 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
   case GL_RED_EXT:
   case GL_R8_EXT:
     format = Texture::F_red;
-    break;
-#endif
-#ifndef OPENGLES
-  case GL_R32I:
-    type = Texture::T_int;
-    format = Texture::F_r32i;
     break;
 #endif
 

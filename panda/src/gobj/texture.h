@@ -161,7 +161,15 @@ PUBLISHED:
     F_rgb10_a2,
 
     F_rg,
-    F_r16i
+
+    F_r16i,
+    F_rg16i,
+    F_rgb16i, // not recommended
+    F_rgba16i,
+
+    F_rg32i,
+    F_rgb32i,
+    F_rgba32i,
   };
 
   // Deprecated.  See SamplerState.FilterType.
