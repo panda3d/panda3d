@@ -105,6 +105,7 @@ def remove(self):
         print("Warning: NodePath.remove() is deprecated.  Use remove_node() instead.")
         # Send message in case anyone needs to do something
         # before node is deleted
+        from direct.showbase.MessengerGlobal import messenger
         messenger.send('preRemoveNodePath', [self])
         # Remove nodePath
         self.removeNode()
@@ -315,7 +316,7 @@ def printTransform(self, other = None, sd = 2, fRecursive = 0):
     from panda3d.core import Vec3
     fmtStr = '%%0.%df' % sd
     name = self.getName()
-    if other == None:
+    if other is None:
         transform = self.getTransform()
     else:
         transform = self.getTransform(other)
@@ -464,7 +465,7 @@ def showCS(self, mask = None):
         npc = self.findAllMatches('**/+CollisionNode')
         for p in range(0, npc.getNumPaths()):
             np = npc[p]
-            if (mask == None or (np.node().getIntoCollideMask() & mask).getWord()):
+            if (mask is None or (np.node().getIntoCollideMask() & mask).getWord()):
                 np.show()
 
 Dtool_funcToMethod(showCS, NodePath)
@@ -482,7 +483,7 @@ def hideCS(self, mask = None):
         npc = self.findAllMatches('**/+CollisionNode')
         for p in range(0, npc.getNumPaths()):
             np = npc[p]
-            if (mask == None or (np.node().getIntoCollideMask() & mask).getWord()):
+            if (mask is None or (np.node().getIntoCollideMask() & mask).getWord()):
                 np.hide()
 
 Dtool_funcToMethod(hideCS, NodePath)
@@ -639,15 +640,15 @@ def flattenMultitex(self, stateFrom = None, target = None,
                         useGeom = 0, allowTexMat = 0, win = None):
         from panda3d.core import MultitexReducer
         mr = MultitexReducer()
-        if target != None:
+        if target is not None:
             mr.setTarget(target)
         mr.setUseGeom(useGeom)
         mr.setAllowTexMat(allowTexMat)
 
-        if win == None:
+        if win is None:
             win = base.win
 
-        if stateFrom == None:
+        if stateFrom is None:
             mr.scan(self)
         else:
             mr.scan(self, stateFrom)
@@ -664,7 +665,7 @@ def removeNonCollisions(self):
         # remove anything that is not collision-related
         print("NodePath.removeNonCollisions() is deprecated")
         stack = [self]
-        while len(stack):
+        while len(stack) > 0:
                 np = stack.pop()
                 # if there are no CollisionNodes under this node, remove it
                 if np.find('**/+CollisionNode').isEmpty():
@@ -706,22 +707,44 @@ def r_subdivideCollisions(self, solids, numSolidsInLeaves):
         if len(solids) <= numSolidsInLeaves:
             return solids
         origins = []
-        avgX = 0; avgY = 0; avgZ = 0
-        minX = None; minY = None; minZ = None
-        maxX = None; maxY = None; maxZ = None
+        avgX = 0
+        avgY = 0
+        avgZ = 0
+        minX = None
+        minY = None
+        minZ = None
+        maxX = None
+        maxY = None
+        maxZ = None
         for solid in solids:
             origin = solid.getCollisionOrigin()
             origins.append(origin)
-            x = origin.getX(); y = origin.getY(); z = origin.getZ()
-            avgX += x; avgY += y; avgZ += z
+            x = origin.getX()
+            y = origin.getY()
+            z = origin.getZ()
+            avgX += x
+            avgY += y
+            avgZ += z
             if minX is None:
-                minX = x; minY = y; minZ = z
-                maxX = x; maxY = y; maxZ = z
+                minX = x
+                minY = y
+                minZ = z
+                maxX = x
+                maxY = y
+                maxZ = z
             else:
-                minX = min(x, minX); minY = min(y, minY); minZ = min(z, minZ)
-                maxX = max(x, maxX); maxY = max(y, maxY); maxZ = max(z, maxZ)
-        avgX /= len(solids); avgY /= len(solids); avgZ /= len(solids)
-        extentX = maxX - minX; extentY = maxY - minY; extentZ = maxZ - minZ
+                minX = min(x, minX)
+                minY = min(y, minY)
+                minZ = min(z, minZ)
+                maxX = max(x, maxX)
+                maxY = max(y, maxY)
+                maxZ = max(z, maxZ)
+        avgX /= len(solids)
+        avgY /= len(solids)
+        avgZ /= len(solids)
+        extentX = maxX - minX
+        extentY = maxY - minY
+        extentZ = maxZ - minZ
         maxExtent = max(max(extentX, extentY), extentZ)
         # sparse octree
         xyzSolids = []
@@ -738,60 +761,62 @@ def r_subdivideCollisions(self, solids, numSolidsInLeaves):
         # throw out axes that are not close to the max axis extent; try and keep
         # the divisions square/spherical
         if extentX < (maxExtent * .75) or extentX > (maxExtent * 1.25):
-                midX += maxExtent
+            midX += maxExtent
         if extentY < (maxExtent * .75) or extentY > (maxExtent * 1.25):
-                midY += maxExtent
+            midY += maxExtent
         if extentZ < (maxExtent * .75) or extentZ > (maxExtent * 1.25):
-                midZ += maxExtent
-        for i in range(len(solids)):
-                origin = origins[i]
-                x = origin.getX(); y = origin.getY(); z = origin.getZ()
-                if x < midX:
-                        if y < midY:
-                                if z < midZ:
-                                        xyzSolids.append(solids[i])
-                                else:
-                                        xyZSolids.append(solids[i])
-                        else:
-                                if z < midZ:
-                                        xYzSolids.append(solids[i])
-                                else:
-                                        xYZSolids.append(solids[i])
+            midZ += maxExtent
+        for i, solid in enumerate(solids):
+            origin = origins[i]
+            x = origin.getX()
+            y = origin.getY()
+            z = origin.getZ()
+            if x < midX:
+                if y < midY:
+                    if z < midZ:
+                        xyzSolids.append(solids[i])
+                    else:
+                        xyZSolids.append(solids[i])
                 else:
-                        if y < midY:
-                                if z < midZ:
-                                        XyzSolids.append(solids[i])
-                                else:
-                                        XyZSolids.append(solids[i])
-                        else:
-                                if z < midZ:
-                                        XYzSolids.append(solids[i])
-                                else:
-                                        XYZSolids.append(solids[i])
+                    if z < midZ:
+                        xYzSolids.append(solids[i])
+                    else:
+                        xYZSolids.append(solids[i])
+            else:
+                if y < midY:
+                    if z < midZ:
+                        XyzSolids.append(solids[i])
+                    else:
+                        XyZSolids.append(solids[i])
+                else:
+                    if z < midZ:
+                        XYzSolids.append(solids[i])
+                    else:
+                        XYZSolids.append(solids[i])
         newSolids = []
-        if len(xyzSolids):
-                newSolids.append(self.r_subdivideCollisions(xyzSolids, numSolidsInLeaves))
-        if len(XyzSolids):
-                newSolids.append(self.r_subdivideCollisions(XyzSolids, numSolidsInLeaves))
-        if len(xYzSolids):
-                newSolids.append(self.r_subdivideCollisions(xYzSolids, numSolidsInLeaves))
-        if len(XYzSolids):
-                newSolids.append(self.r_subdivideCollisions(XYzSolids, numSolidsInLeaves))
-        if len(xyZSolids):
-                newSolids.append(self.r_subdivideCollisions(xyZSolids, numSolidsInLeaves))
-        if len(XyZSolids):
-                newSolids.append(self.r_subdivideCollisions(XyZSolids, numSolidsInLeaves))
-        if len(xYZSolids):
-                newSolids.append(self.r_subdivideCollisions(xYZSolids, numSolidsInLeaves))
-        if len(XYZSolids):
-                newSolids.append(self.r_subdivideCollisions(XYZSolids, numSolidsInLeaves))
+        if len(xyzSolids) > 0:
+            newSolids.append(self.r_subdivideCollisions(xyzSolids, numSolidsInLeaves))
+        if len(XyzSolids) > 0:
+            newSolids.append(self.r_subdivideCollisions(XyzSolids, numSolidsInLeaves))
+        if len(xYzSolids) > 0:
+            newSolids.append(self.r_subdivideCollisions(xYzSolids, numSolidsInLeaves))
+        if len(XYzSolids) > 0:
+            newSolids.append(self.r_subdivideCollisions(XYzSolids, numSolidsInLeaves))
+        if len(xyZSolids) > 0:
+            newSolids.append(self.r_subdivideCollisions(xyZSolids, numSolidsInLeaves))
+        if len(XyZSolids) > 0:
+            newSolids.append(self.r_subdivideCollisions(XyZSolids, numSolidsInLeaves))
+        if len(xYZSolids) > 0:
+            newSolids.append(self.r_subdivideCollisions(xYZSolids, numSolidsInLeaves))
+        if len(XYZSolids) > 0:
+            newSolids.append(self.r_subdivideCollisions(XYZSolids, numSolidsInLeaves))
         #import pdb;pdb.set_trace()
         return newSolids
 
 def r_constructCollisionTree(self, solidTree, parentNode, colName):
         from panda3d.core import CollisionNode
         for item in solidTree:
-            if type(item[0]) == type([]):
+            if isinstance(item[0], list):
                 newNode = parentNode.attachNewNode('%s-branch' % colName)
                 self.r_constructCollisionTree(item, newNode, colName)
             else:

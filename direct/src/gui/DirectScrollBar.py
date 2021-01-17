@@ -11,11 +11,6 @@ from . import DirectGuiGlobals as DGG
 from .DirectFrame import *
 from .DirectButton import *
 
-"""
-import DirectScrollBar
-d = DirectScrollBar(borderWidth=(0, 0))
-
-"""
 
 class DirectScrollBar(DirectFrame):
     """
@@ -72,7 +67,7 @@ class DirectScrollBar(DirectFrame):
             DirectButton, (self,),
             borderWidth = self['borderWidth'])
 
-        if self.decButton['frameSize'] == None and \
+        if self.decButton['frameSize'] is None and \
            self.decButton.bounds == [0.0, 0.0, 0.0, 0.0]:
             f = self['frameSize']
             if self['orientation'] == DGG.HORIZONTAL:
@@ -80,7 +75,7 @@ class DirectScrollBar(DirectFrame):
             else:
                 self.decButton['frameSize'] = (f[0], f[1], f[2]*0.05, f[3]*0.05)
 
-        if self.incButton['frameSize'] == None and \
+        if self.incButton['frameSize'] is None and \
            self.incButton.bounds == [0.0, 0.0, 0.0, 0.0]:
             f = self['frameSize']
             if self['orientation'] == DGG.HORIZONTAL:
@@ -196,4 +191,3 @@ class DirectScrollBar(DirectFrame):
 
         if self['command']:
             self['command'](*self['extraArgs'])
-

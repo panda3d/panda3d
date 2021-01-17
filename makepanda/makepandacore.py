@@ -5,12 +5,22 @@
 ##
 ########################################################################
 
-import sys,os,time,stat,string,re,getopt,fnmatch,threading,signal,shutil,platform,glob,getpass,signal
-import subprocess
-from distutils import sysconfig
-import pickle
-import _thread as thread
 import configparser
+from distutils import sysconfig
+import fnmatch
+import getpass
+import glob
+import os
+import pickle
+import platform
+import re
+import shutil
+import signal
+import subprocess
+import sys
+import threading
+import _thread as thread
+import time
 
 SUFFIX_INC = [".cxx",".cpp",".c",".h",".I",".yxx",".lxx",".mm",".rc",".r"]
 SUFFIX_DLL = [".dll",".dlo",".dle",".dli",".dlm",".mll",".exe",".pyd",".ocx"]
@@ -172,14 +182,15 @@ THREADS = {}
 HAVE_COLORS = False
 SETF = ""
 try:
-  import curses
-  curses.setupterm()
-  SETF = curses.tigetstr("setf")
-  if (SETF == None):
-    SETF = curses.tigetstr("setaf")
-  assert SETF != None
-  HAVE_COLORS = sys.stdout.isatty()
-except: pass
+    import curses
+    curses.setupterm()
+    SETF = curses.tigetstr("setf")
+    if SETF is None:
+        SETF = curses.tigetstr("setaf")
+    assert SETF is not None
+    HAVE_COLORS = sys.stdout.isatty()
+except:
+    pass
 
 def DisableColors():
     global HAVE_COLORS
@@ -188,20 +199,20 @@ def DisableColors():
 def GetColor(color = None):
     if not HAVE_COLORS:
         return ""
-    if color != None:
+    if color is not None:
         color = color.lower()
 
-    if (color == "blue"):
+    if color == "blue":
         token = curses.tparm(SETF, 1)
-    elif (color == "green"):
+    elif color == "green":
         token = curses.tparm(SETF, 2)
-    elif (color == "cyan"):
+    elif color == "cyan":
         token = curses.tparm(SETF, 3)
-    elif (color == "red"):
+    elif color == "red":
         token = curses.tparm(SETF, 4)
-    elif (color == "magenta"):
+    elif color == "magenta":
         token = curses.tparm(SETF, 5)
-    elif (color == "yellow"):
+    elif color == "yellow":
         token = curses.tparm(SETF, 6)
     else:
         token = curses.tparm(curses.tigetstr("sgr0"))
@@ -235,9 +246,9 @@ def ProgressOutput(progress, msg, target = None):
     if thisthread is MAINTHREAD:
         if progress is None:
             prefix = ""
-        elif (progress >= 100.0):
+        elif progress >= 100.0:
             prefix = "%s[%s%d%%%s] " % (GetColor("yellow"), GetColor("cyan"), progress, GetColor("yellow"))
-        elif (progress < 10.0):
+        elif progress < 10.0:
             prefix = "%s[%s  %d%%%s] " % (GetColor("yellow"), GetColor("cyan"), progress, GetColor("yellow"))
         else:
             prefix = "%s[%s %d%%%s] " % (GetColor("yellow"), GetColor("cyan"), progress, GetColor("yellow"))
@@ -245,7 +256,7 @@ def ProgressOutput(progress, msg, target = None):
         global THREADS
 
         ident = thread.get_ident()
-        if (ident not in THREADS):
+        if ident not in THREADS:
             THREADS[ident] = len(THREADS) + 1
         prefix = "%s[%sT%d%s] " % (GetColor("yellow"), GetColor("cyan"), THREADS[ident], GetColor("yellow"))
 
@@ -261,7 +272,7 @@ def ProgressOutput(progress, msg, target = None):
 def exit(msg = ""):
     sys.stdout.flush()
     sys.stderr.flush()
-    if (threading.currentThread() == MAINTHREAD):
+    if threading.currentThread() == MAINTHREAD:
         SaveDependencyCache()
         print("Elapsed Time: " + PrettyTime(time.time() - STARTTIME))
         print(msg)
@@ -355,7 +366,7 @@ def SetTarget(target, arch=None):
 
     if target == 'windows':
         if arch == 'i386':
-             arch = 'x86'
+            arch = 'x86'
         elif arch == 'amd64':
             arch = 'x64'
 
@@ -541,6 +552,23 @@ def GetFlex():
 
     return FLEX
 
+def GetFlexVersion():
+    flex = GetFlex()
+    if not flex:
+        return (0, 0, 0)
+
+    try:
+        handle = subprocess.Popen(["flex", "--version"], executable=flex, stdout=subprocess.PIPE)
+        words = handle.communicate()[0].strip().splitlines()[0].split(b' ')
+        if words[1] != "version":
+            version = words[1]
+        else:
+            version = words[2]
+        return tuple(map(int, version.split(b'.')))
+    except:
+        Warn("Unable to detect flex version")
+        return (0, 0, 0)
+
 ########################################################################
 ##
 ## LocateBinary
@@ -644,7 +672,7 @@ def oscmd(cmd, ignoreError = False, cwd=None):
 ########################################################################
 
 def GetDirectoryContents(dir, filters="*", skip=[]):
-    if (type(filters)==str):
+    if isinstance(filters, str):
         filters = [filters]
     actual = {}
     files = os.listdir(dir)
@@ -665,7 +693,8 @@ def GetDirectorySize(dir):
         for file in files:
             try:
                 size += os.path.getsize(os.path.join(path, file))
-            except: pass
+            except:
+                pass
     return size
 
 ########################################################################
@@ -683,8 +712,10 @@ TIMESTAMPCACHE = {}
 def GetTimestamp(path):
     if path in TIMESTAMPCACHE:
         return TIMESTAMPCACHE[path]
-    try: date = os.path.getmtime(path)
-    except: date = 0
+    try:
+        date = os.path.getmtime(path)
+    except:
+        date = 0
     TIMESTAMPCACHE[path] = date
     return date
 
@@ -773,22 +804,24 @@ def NeedsBuild(files, others):
 
 CXXINCLUDECACHE = {}
 
-global CxxIncludeRegex
 CxxIncludeRegex = re.compile('^[ \t]*[#][ \t]*include[ \t]+"([^"]+)"[ \t\r\n]*$')
 
 def CxxGetIncludes(path):
     date = GetTimestamp(path)
-    if (path in CXXINCLUDECACHE):
+    if path in CXXINCLUDECACHE:
         cached = CXXINCLUDECACHE[path]
-        if (cached[0]==date): return cached[1]
-    try: sfile = open(path, 'r')
+        if cached[0] == date:
+            return cached[1]
+    try:
+        sfile = open(path, 'r')
     except:
         exit("Cannot open source file \""+path+"\" for reading.")
+
     include = []
     try:
         for line in sfile:
             match = CxxIncludeRegex.match(line,0)
-            if (match):
+            if match:
                 incname = match.group(1)
                 include.append(incname)
     except:
@@ -801,7 +834,6 @@ def CxxGetIncludes(path):
 
 JAVAIMPORTCACHE = {}
 
-global JavaImportRegex
 JavaImportRegex = re.compile('[ \t\r\n;]import[ \t]+([a-zA-Z][^;]+)[ \t\r\n]*;')
 
 def JavaGetImports(path):
@@ -842,10 +874,11 @@ def SaveDependencyCache():
     global DCACHE_BACKED_UP
     if not DCACHE_BACKED_UP:
         try:
-            if (os.path.exists(os.path.join(OUTPUTDIR, "tmp", "makepanda-dcache"))):
+            if os.path.exists(os.path.join(OUTPUTDIR, "tmp", "makepanda-dcache")):
                 os.rename(os.path.join(OUTPUTDIR, "tmp", "makepanda-dcache"),
                           os.path.join(OUTPUTDIR, "tmp", "makepanda-dcache-backup"))
-        except: pass
+        except:
+            pass
         DCACHE_BACKED_UP = True
 
     try:
@@ -942,24 +975,24 @@ def JavaFindClasses(impspec, clspath):
 ##
 ########################################################################
 
-global CxxIgnoreHeader
-global CxxDependencyCache
 CxxIgnoreHeader = {}
 CxxDependencyCache = {}
 
 def CxxCalcDependencies(srcfile, ipath, ignore):
-    if (srcfile in CxxDependencyCache):
+    if srcfile in CxxDependencyCache:
         return CxxDependencyCache[srcfile]
-    if (ignore.count(srcfile)): return []
+    if ignore.count(srcfile):
+        return []
     dep = {}
     dep[srcfile] = 1
     includes = CxxGetIncludes(srcfile)
     for include in includes:
         header = CxxFindHeader(srcfile, include, ipath)
-        if (header!=0):
-            if (ignore.count(header)==0):
+        if header != 0:
+            if ignore.count(header) == 0:
                 hdeps = CxxCalcDependencies(header, ipath, [srcfile]+ignore)
-                for x in hdeps: dep[x] = 1
+                for x in hdeps:
+                    dep[x] = 1
     result = list(dep.keys())
     CxxDependencyCache[srcfile] = result
     return result
@@ -999,11 +1032,13 @@ def TryRegistryKey(path):
     try:
         key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, path, 0, winreg.KEY_READ)
         return key
-    except: pass
+    except:
+        pass
     try:
         key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, path, 0, winreg.KEY_READ | 256)
         return key
-    except: pass
+    except:
+        pass
     return 0
 
 def ListRegistryKeys(path):
@@ -1015,7 +1050,8 @@ def ListRegistryKeys(path):
             while (1):
                 result.append(winreg.EnumKey(key, index))
                 index = index + 1
-        except: pass
+        except:
+            pass
         winreg.CloseKey(key)
     return result
 
@@ -1028,7 +1064,8 @@ def ListRegistryValues(path):
             while (1):
                 result.append(winreg.EnumValue(key, index)[0])
                 index = index + 1
-        except: pass
+        except:
+            pass
         winreg.CloseKey(key)
     return result
 
@@ -1040,7 +1077,8 @@ def GetRegistryKey(path, subkey, override64=True):
     if (key != 0):
         try:
             k1, k2 = winreg.QueryValueEx(key, subkey)
-        except: pass
+        except:
+            pass
         winreg.CloseKey(key)
     return k1
 
@@ -1270,7 +1308,7 @@ def GetThirdpartyBase():
     thirdparty directory.  This is useful when wanting to use a single
     system-wide thirdparty directory, for instance on a build machine."""
     global THIRDPARTYBASE
-    if (THIRDPARTYBASE != None):
+    if (THIRDPARTYBASE is not None):
         return THIRDPARTYBASE
 
     THIRDPARTYBASE = "thirdparty"
@@ -1283,7 +1321,7 @@ def GetThirdpartyDir():
     """Returns the thirdparty directory for the target platform,
     ie. thirdparty/win-libs-vc10/.  May return None in the future."""
     global THIRDPARTYDIR
-    if THIRDPARTYDIR != None:
+    if THIRDPARTYDIR is not None:
         return THIRDPARTYDIR
 
     base = GetThirdpartyBase()
@@ -1466,10 +1504,10 @@ def PkgConfigHavePkg(pkgname, tool = "pkg-config"):
     if (tool == "pkg-config"):
         handle = os.popen(LocateBinary("pkg-config") + " --silence-errors --modversion " + pkgname)
     else:
-        return bool(LocateBinary(tool) != None)
+        return bool(LocateBinary(tool) is not None)
     result = handle.read().strip()
     returnval = handle.close()
-    if returnval != None and returnval != 0:
+    if returnval is not None and returnval != 0:
         return False
     return bool(len(result) > 0)
 
@@ -1637,21 +1675,21 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
     global PKG_LIST_ALL
     if (pkg in PkgListGet() and PkgSkip(pkg)):
         return
-    if (target_pkg == "" or target_pkg == None):
+    if (target_pkg == "" or target_pkg is None):
         target_pkg = pkg
     if (pkgconfig == ""):
         pkgconfig = None
     if (framework == ""):
         framework = None
-    if (libs == None or libs == ""):
+    if (libs is None or libs == ""):
         libs = ()
     elif (isinstance(libs, str)):
         libs = (libs, )
-    if (incs == None or incs == ""):
+    if (incs is None or incs == ""):
         incs = ()
     elif (isinstance(incs, str)):
         incs = (incs, )
-    if (defs == None or defs == "" or len(defs) == 0):
+    if (defs is None or defs == "" or len(defs) == 0):
         defs = {}
     elif (isinstance(incs, str)):
         defs = {defs : ""}
@@ -1693,7 +1731,7 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
                 lpath.append(py_lib_dir)
 
         # TODO: check for a .pc file in the lib/pkgconfig/ dir
-        if (tool != None and os.path.isfile(os.path.join(pkg_dir, "bin", tool))):
+        if (tool is not None and os.path.isfile(os.path.join(pkg_dir, "bin", tool))):
             tool = os.path.join(pkg_dir, "bin", tool)
             for i in PkgConfigGetLibs(None, tool):
                 if i.startswith('-l'):
@@ -1739,7 +1777,7 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
             DefSymbol(target_pkg, d, v)
         return
 
-    elif not custom_loc and GetHost() == "darwin" and framework != None:
+    elif not custom_loc and GetHost() == "darwin" and framework is not None:
         prefix = SDK["MACOSX"]
         if (os.path.isdir(prefix + "/Library/Frameworks/%s.framework" % framework) or
             os.path.isdir(prefix + "/System/Library/Frameworks/%s.framework" % framework) or
@@ -1753,7 +1791,7 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
         elif VERBOSE:
             print(ColorText("cyan", "Couldn't find the framework %s" % (framework)))
 
-    elif not custom_loc and LocateBinary(tool) != None and (tool != "pkg-config" or pkgconfig != None):
+    elif not custom_loc and LocateBinary(tool) is not None and (tool != "pkg-config" or pkgconfig is not None):
         if (isinstance(pkgconfig, str) or tool != "pkg-config"):
             if (PkgConfigHavePkg(pkgconfig, tool)):
                 return PkgConfigEnable(target_pkg, pkgconfig, tool)
@@ -2902,7 +2940,7 @@ def SetupBuildEnvironment(compiler):
                     print("Ignoring non-existent library directory %s" % (libdir))
 
         returnval = handle.close()
-        if returnval != None and returnval != 0:
+        if returnval is not None and returnval != 0:
             Warn("%s failed" % (cmd))
             SYS_LIB_DIRS += [SDK.get("SYSROOT", "") + "/usr/lib"]
 
@@ -3149,7 +3187,8 @@ def ParsePandaVersion(fn):
                 f.close()
                 return match.group(1) + "." + match.group(2) + "." + match.group(3)
         f.close()
-    except: pass
+    except:
+        pass
     return "0.0.0"
 
 ##########################################################################################
@@ -3203,7 +3242,7 @@ def GenerateResourceFile(**kwargs):
         kwargs["commaversion"] = kwargs["dotversion"].replace(".", ",")
 
     rcdata = ""
-    if not "noinclude" in kwargs:
+    if "noinclude" not in kwargs:
         rcdata += "#define APSTUDIO_READONLY_SYMBOLS\n"
         rcdata += "#include \"winresrc.h\"\n"
         rcdata += "#undef APSTUDIO_READONLY_SYMBOLS\n"
@@ -3530,19 +3569,23 @@ TARGET_LIST = []
 TARGET_TABLE = {}
 
 def TargetAdd(target, dummy=0, opts=[], input=[], dep=[], ipath=None, winrc=None, pyabi=None):
-    if (dummy != 0):
-        exit("Syntax error in TargetAdd "+target)
-    if ipath is None: ipath = opts
-    if not ipath: ipath = []
-    if (type(input) == str): input = [input]
-    if (type(dep) == str): dep = [dep]
+    if dummy != 0:
+        exit("Syntax error in TargetAdd " + target)
+    if ipath is None:
+        ipath = opts
+    if not ipath:
+        ipath = []
+    if isinstance(input, str):
+        input = [input]
+    if isinstance(dep, str):
+        dep = [dep]
 
     if target.endswith(".pyd") and not pyabi:
         raise RuntimeError("Use PyTargetAdd to build .pyd targets")
 
     full = FindLocation(target, [OUTPUTDIR + "/include"], pyabi=pyabi)
 
-    if (full not in TARGET_TABLE):
+    if full not in TARGET_TABLE:
         t = Target()
         t.name = full
         t.inputs = []
@@ -3563,10 +3606,10 @@ def TargetAdd(target, dummy=0, opts=[], input=[], dep=[], ipath=None, winrc=None
         t.inputs.append(fullinput)
         # Don't re-link a library or binary if just its dependency dlls have been altered.
         # This should work out fine in most cases, and often reduces recompilation time.
-        if (os.path.splitext(x)[-1] not in SUFFIX_DLL):
+        if os.path.splitext(x)[-1] not in SUFFIX_DLL:
             t.deps[fullinput] = 1
             (base,suffix) = os.path.splitext(x)
-            if (SUFFIX_INC.count(suffix)):
+            if SUFFIX_INC.count(suffix):
                 for d in CxxCalcDependencies(fullinput, ipath, []):
                     t.deps[d] = 1
             elif suffix == '.java':

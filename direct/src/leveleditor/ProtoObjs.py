@@ -8,8 +8,8 @@ import imp
 class ProtoObjs:
     def __init__(self, name):
         self.dirname = os.path.dirname(__file__)
-        self.name = name;
-        self.filename = "/%s.py"%(name)
+        self.name = name
+        self.filename = "/%s.py" % (name)
         self.data = {}
 
     def populate(self):
@@ -24,7 +24,7 @@ class ProtoObjs:
 
     def saveProtoData(self, f):
         if not f:
-           return
+            return
 
         for key in self.data.keys():
             f.write("\t'%s':'%s',\n"%(key, self.data[key]))

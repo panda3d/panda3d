@@ -1,22 +1,19 @@
 """
 Generates a wheel (.whl) file from the output of makepanda.
 """
-from __future__ import print_function, unicode_literals
-from distutils.util import get_platform
 import json
-
 import sys
 import os
 from os.path import join
-import shutil
 import zipfile
 import hashlib
 import tempfile
 import subprocess
+from distutils.util import get_platform
 from distutils.sysconfig import get_config_var
 from optparse import OptionParser
-from makepandacore import ColorText, LocateBinary, GetExtensionSuffix, SetVerbose, GetVerbose, GetMetadataValue
 from base64 import urlsafe_b64encode
+from makepandacore import LocateBinary, GetExtensionSuffix, SetVerbose, GetVerbose, GetMetadataValue
 
 
 def get_abi_tag():

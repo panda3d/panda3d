@@ -3,6 +3,7 @@ from panda3d.core import *
 from panda3d.direct import *
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.task import Task
+from direct.task.TaskManagerGlobal import taskMgr
 from .DistributedNodeAI import DistributedNodeAI
 from .CartesianGridBase import CartesianGridBase
 
@@ -56,7 +57,7 @@ class DistributedCartesianGridAI(DistributedNodeAI, CartesianGridBase):
         # Put the avatar on the grid
         self.handleAvatarZoneChange(av, useZoneId)
 
-        if (not self.updateTaskStarted) and startAutoUpdate:
+        if startAutoUpdate and not self.updateTaskStarted:
             self.startUpdateGridTask()
 
     def removeObjectFromGrid(self, av):
@@ -97,27 +98,27 @@ class DistributedCartesianGridAI(DistributedNodeAI, CartesianGridBase):
     def updateGridTask(self, task=None):
         # Run through all grid objects and update their parents if needed
         missingObjs = []
-        for avId in self.gridObjects.keys():
+        for avId in list(self.gridObjects.keys()):
             av = self.gridObjects[avId]
             # handle a missing object after it is already gone?
-            if (av.isEmpty()):
+            if av.isEmpty():
                 task.setDelay(1.0)
                 del self.gridObjects[avId]
                 continue
             pos = av.getPos()
-            if ((pos[0] < 0 or pos[1] < 0) or
-                (pos[0] > self.cellWidth or pos[1] > self.cellWidth)):
+            if (pos[0] < 0 or pos[1] < 0) or \
+               (pos[0] > self.cellWidth or pos[1] > self.cellWidth):
                 # we are out of the bounds of this current cell
                 self.handleAvatarZoneChange(av)
         # Do this every second, not every frame
-        if (task):
+        if task:
             task.setDelay(1.0)
         return Task.again
 
     def handleAvatarZoneChange(self, av, useZoneId=-1):
         # Calculate zone id
         # Get position of av relative to this grid
-        if (useZoneId == -1):
+        if useZoneId == -1:
             pos = av.getPos(self)
             zoneId = self.getZoneFromXYZ(pos)
         else:
@@ -137,9 +138,8 @@ class DistributedCartesianGridAI(DistributedNodeAI, CartesianGridBase):
 
     def handleSetLocation(self, av, parentId, zoneId):
         pass
-        #if (av.parentId != parentId):
+        #if av.parentId != parentId:
             # parent changed, need to look up instance tree
             # to see if avatar's named area location information
             # changed
             #av.requestRegionUpdateTask(regionegionUid)
-

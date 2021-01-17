@@ -19,10 +19,12 @@ from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase import DirectObject
 from direct.controls.ControlManager import CollisionHandlerRayStart
 from direct.showbase.InputStateGlobal import inputState
+from direct.showbase.MessengerGlobal import messenger
 from direct.task.Task import Task
-from panda3d.core import *
+from direct.task.TaskManagerGlobal import taskMgr
 from direct.extensions_native import VBase3_extensions
 from direct.extensions_native import VBase4_extensions
+from panda3d.core import *
 import math
 
 
@@ -142,7 +144,7 @@ class GravityWalker(DirectObject.DirectObject):
         cSphereNode.setIntoCollideMask(BitMask32.allOff())
 
         # set up collision mechanism
-        if config.GetBool('want-fluid-pusher', 0):
+        if ConfigVariableBool('want-fluid-pusher', 0):
             self.pusher = CollisionHandlerFluidPusher()
         else:
             self.pusher = CollisionHandlerPusher()
@@ -284,11 +286,11 @@ class GravityWalker(DirectObject.DirectObject):
             # make sure we have a shadow traverser
             base.initShadowTrav()
             if active:
-                if 1:
-                    # Please let skyler or drose know if this is causing a problem
-                    # This is a bit of a hack fix:
-                    self.avatarNodePath.setP(0.0)
-                    self.avatarNodePath.setR(0.0)
+                # Please let skyler or drose know if this is causing a problem
+                # This is a bit of a hack fix:
+                self.avatarNodePath.setP(0.0)
+                self.avatarNodePath.setR(0.0)
+
                 self.cTrav.addCollider(self.cWallSphereNodePath, self.pusher)
                 if self.wantFloorSphere:
                     self.cTrav.addCollider(self.cFloorSphereNodePath, self.pusherFloor)
@@ -440,7 +442,7 @@ class GravityWalker(DirectObject.DirectObject):
             self.slideSpeed *= GravityWalker.DiagonalFactor
 
         debugRunning = inputState.isSet("debugRunning")
-        if(debugRunning):
+        if debugRunning:
             self.speed*=base.debugRunningMultiplier
             self.slideSpeed*=base.debugRunningMultiplier
             self.rotationSpeed*=1.25

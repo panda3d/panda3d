@@ -6,9 +6,7 @@ from . import GridParent
 class DistributedNodeAI(DistributedObjectAI.DistributedObjectAI, NodePath):
     def __init__(self, air, name=None):
         # Be careful not to create multiple NodePath objects
-        try:
-            self.DistributedNodeAI_initialized
-        except:
+        if not hasattr(self, 'DistributedNodeAI_initialized'):
             self.DistributedNodeAI_initialized = 1
             DistributedObjectAI.DistributedObjectAI.__init__(self, air)
             if name is None:
@@ -47,14 +45,14 @@ class DistributedNodeAI(DistributedObjectAI.DistributedObjectAI, NodePath):
     ### setParent ###
 
     def b_setParent(self, parentToken):
-        if type(parentToken) == str:
+        if isinstance(parentToken, str):
             self.setParentStr(parentToken)
         else:
             self.setParent(parentToken)
         self.d_setParent(parentToken)
 
     def d_setParent(self, parentToken):
-        if type(parentToken) == type(''):
+        if isinstance(parentToken, str):
             self.sendUpdate("setParentStr", [parentToken])
         else:
             self.sendUpdate("setParent", [parentToken])

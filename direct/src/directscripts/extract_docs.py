@@ -10,8 +10,8 @@ from __future__ import print_function
 __all__ = []
 
 import os
-from distutils import sysconfig
-import panda3d, pandac
+import panda3d
+import pandac
 from panda3d.interrogatedb import *
 
 

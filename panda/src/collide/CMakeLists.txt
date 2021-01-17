@@ -66,8 +66,16 @@ set(P3COLLIDE_SOURCES
 )
 
 set(P3COLLIDE_IGATEEXT
+  collisionHandlerEvent_ext.cxx
+  collisionHandlerEvent_ext.h
+  collisionHandlerPhysical_ext.cxx
+  collisionHandlerPhysical_ext.h
+  collisionHandlerQueue_ext.cxx
+  collisionHandlerQueue_ext.h
   collisionPolygon_ext.cxx
   collisionPolygon_ext.h
+  collisionTraverser_ext.cxx
+  collisionTraverser_ext.h
 )
 
 composite_sources(p3collide P3COLLIDE_SOURCES)

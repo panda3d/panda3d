@@ -183,4 +183,3 @@ class MayaConverter(wx.Dialog):
 
         if self.callBack:
             self.callBack(result)
-

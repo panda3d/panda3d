@@ -33,15 +33,15 @@ class IndirectInterval(Interval.Interval):
         self.interval = interval
 
         self.startAtStart = (startT == 0)
-        self.endAtEnd = (endT == None or endT == interval.getDuration())
+        self.endAtEnd = (endT is None or endT == interval.getDuration())
 
-        if endT == None:
+        if endT is None:
             endT = interval.getDuration()
 
-        if duration == None:
+        if duration is None:
             duration = abs(endT - startT) / playRate
 
-        if (name == None):
+        if name is None:
             name = ('IndirectInterval-%d' %
                     IndirectInterval.indirectIntervalNum)
             IndirectInterval.indirectIntervalNum += 1

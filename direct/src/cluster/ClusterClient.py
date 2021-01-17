@@ -6,6 +6,7 @@ from .ClusterConfig import *
 from direct.directnotify import DirectNotifyGlobal
 from direct.showbase import DirectObject
 from direct.task import Task
+from direct.task.TaskManagerGlobal import taskMgr
 import os
 
 
@@ -70,7 +71,7 @@ class ClusterClient(DirectObject.DirectObject):
             server = DisplayConnection(
                 self.qcm, serverConfig.serverName,
                 serverConfig.serverMsgPort, self.msgHandler)
-            if server == None:
+            if server is None:
                 self.notify.error('Could not open %s on %s port %d' %
                                   (serverConfig.serverConfigName,
                                    serverConfig.serverName,
@@ -138,15 +139,14 @@ class ClusterClient(DirectObject.DirectObject):
             object     = pair[1]
             name       = self.controlMappings[object][0]
             serverList = self.controlMappings[object][1]
-            if (object in self.objectMappings):
+            if object in self.objectMappings:
                 self.moveObject(self.objectMappings[object],name,serverList,
                                 self.controlOffsets[object], self.objectHasColor[object])
         self.sendNamedMovementDone()
         return Task.cont
 
     def sendNamedMovementDone(self, serverList = None):
-
-        if (serverList == None):
+        if serverList is None:
             serverList = range(len(self.serverList))
 
         for server in serverList:
@@ -155,7 +155,6 @@ class ClusterClient(DirectObject.DirectObject):
 
 
     def redoSortedPriorities(self):
-
         self.sortedControlMappings = []
         for key in self.controlMappings:
             self.sortedControlMappings.append([self.controlPriorities[key],
@@ -169,7 +168,7 @@ class ClusterClient(DirectObject.DirectObject):
         hpr = nodePath.getHpr(render)
         scale = nodePath.getScale(render)
         hidden = nodePath.isHidden()
-        if (hasColor):
+        if hasColor:
             color = nodePath.getColor()
         else:
             color = [1,1,1,1]
@@ -193,7 +192,7 @@ class ClusterClient(DirectObject.DirectObject):
 
     def moveSelectedTask(self, state):
         # Update cluster if current display is a cluster client
-        if (last is not None):
+        if last is not None:
             self.notify.debug('moving selected node path')
             xyz = Point3(0)
             hpr = VBase3(0)
@@ -204,24 +203,24 @@ class ClusterClient(DirectObject.DirectObject):
         return Task.cont
 
 
-    def addNamedObjectMapping(self,object,name,hasColor = True):
-        if (name not in self.objectMappings):
+    def addNamedObjectMapping(self, object, name, hasColor = True):
+        if name not in self.objectMappings:
             self.objectMappings[name] = object
             self.objectHasColor[name] = hasColor
         else:
             self.notify.debug('attempt to add duplicate named object: '+name)
 
     def removeObjectMapping(self,name):
-        if (name in self.objectMappings):
+        if name in self.objectMappings:
             self.objectMappings.pop(name)
 
 
-    def addControlMapping(self,objectName,controlledName, serverList = None,
+    def addControlMapping(self, objectName, controlledName, serverList = None,
                           offset = None, priority = 0):
-        if (objectName not in self.controlMappings):
-            if (serverList == None):
+        if objectName not in self.controlMappings:
+            if serverList is None:
                 serverList = range(len(self.serverList))
-            if (offset == None):
+            if offset is None:
                 offset = Vec3(0,0,0)
 
             self.controlMappings[objectName] = [controlledName,serverList]
@@ -233,30 +232,29 @@ class ClusterClient(DirectObject.DirectObject):
             for item in oldList:
                 mergedList.append(item)
             for item in serverList:
-                if (item not in mergedList):
+                if item not in mergedList:
                     mergedList.append(item)
 
         self.redoSortedPriorities()
             #self.notify.debug('attempt to add duplicate controlled object: '+name)
 
-    def setControlMappingOffset(self,objectName,offset):
-        if (objectName in self.controlMappings):
+    def setControlMappingOffset(self, objectName, offset):
+        if objectName in self.controlMappings:
             self.controlOffsets[objectName] = offset
 
-    def removeControlMapping(self,name, serverList = None):
-        if (name in self.controlMappings):
-
-            if (serverList == None):
+    def removeControlMapping(self, name, serverList = None):
+        if name in self.controlMappings:
+            if serverList is None:
                 self.controlMappings.pop(name)
                 self.controlPriorities.pop(name)
             else:
-                list = self.controlMappings[key][1]
+                oldList = self.controlMappings[key][1]
                 newList = []
-                for server in list:
-                    if (server not in serverList):
+                for server in oldList:
+                    if server not in serverList:
                         newList.append(server)
                 self.controlMappings[key][1] = newList
-                if (len(newList) == 0):
+                if len(newList) == 0:
                     self.controlMappings.pop(name)
                     self.controlPriorities.pop(name)
         self.redoSortedPriorities()
@@ -303,7 +301,7 @@ class ClusterClient(DirectObject.DirectObject):
             tag = self.taggedObjects[name]
             function = tag["selectFunction"]
             args     = tag["selectArgs"]
-            if (function != None):
+            if function is not None:
                 function(*args)
         else:
             self(self.getNodePathFindCmd(nodePath) + '.select()', 0)
@@ -315,7 +313,7 @@ class ClusterClient(DirectObject.DirectObject):
             tag = self.taggedObjects[name]
             function = tag["deselectFunction"]
             args     = tag["deselectArgs"]
-            if (function != None):
+            if function is not None:
                 function(*args)
             self.startMoveSelectedTask()
         self(self.getNodePathFindCmd(nodePath) + '.deselect()', 0)
@@ -348,24 +346,23 @@ class ClusterClient(DirectObject.DirectObject):
 
 
     def handleDatagram(self,dgi,type,server):
-        if (type == CLUSTER_NONE):
+        if type == CLUSTER_NONE:
             pass
-        elif (type == CLUSTER_NAMED_OBJECT_MOVEMENT):
+        elif type == CLUSTER_NAMED_OBJECT_MOVEMENT:
             self.serverQueues[server].append(self.msgHandler.parseNamedMovementDatagram(dgi))
             #self.handleNamedMovement(dgi)
         # when we recieve a 'named movement done' packet from a server we handle
         # all of its messages
-        elif (type == CLUSTER_NAMED_MOVEMENT_DONE):
+        elif type == CLUSTER_NAMED_MOVEMENT_DONE:
             self.handleMessageQueue(server)
         else:
             self.notify.warning("Received unsupported packet type:" % type)
         return type
 
     def handleMessageQueue(self,server):
-
-        list = self.serverQueues[server]
+        queue = self.serverQueues[server]
         # handle all messages in the queue
-        for data in list:
+        for data in queue:
             #print dgi
             self.handleNamedMovement(data)
 
@@ -378,14 +375,14 @@ class ClusterClient(DirectObject.DirectObject):
 
         (name,x, y, z, h, p, r, sx, sy, sz,red,g,b,a, hidden) = data
         #print "name"
-        #if (name == "camNode"):
+        #if name == "camNode":
         #    print x,y,z,h,p,r, sx, sy, sz,red,g,b,a, hidden
-        if (name in self.objectMappings):
+        if name in self.objectMappings:
             self.objectMappings[name].setPosHpr(render, x, y, z, h, p, r)
             self.objectMappings[name].setScale(render,sx,sy,sz)
-            if (self.objectHasColor[name]):
+            if self.objectHasColor[name]:
                 self.objectMappings[name].setColor(red,g,b,a)
-            if (hidden):
+            if hidden:
                 self.objectMappings[name].hide()
             else:
                 self.objectMappings[name].show()
@@ -451,7 +448,7 @@ class DisplayConnection:
         self.tcpConn = qcm.openTCPClientConnection(
             serverName, port, gameServerTimeoutMs)
         # Test for bad connection
-        if self.tcpConn == None:
+        if self.tcpConn is None:
             return None
         else:
             self.tcpConn.setNoDelay(1)
@@ -680,5 +677,3 @@ class DummyClusterClient(DirectObject.DirectObject):
         if fLocally:
             # Execute locally
             exec(commandString, __builtins__)
-
-

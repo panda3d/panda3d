@@ -14,7 +14,7 @@ class DirectDeviceManager(VrpnClient, DirectObject):
     def __init__(self, server = None):
 
         # Determine which server to use
-        if server != None:
+        if server is not None:
             # One given as constructor argument
             self.server = server
         else:
@@ -77,10 +77,10 @@ class DirectButtons(ButtonNode, DirectObject):
         return self.nodePath
 
     def __repr__(self):
-        str = self.name + ': '
+        string = self.name + ': '
         for val in self:
-            str = str + '%d' % val + ' '
-        return str
+            string = string + '%d' % val + ' '
+        return string
 
 class DirectAnalogs(AnalogNode, DirectObject):
     analogCount = 0
@@ -149,12 +149,12 @@ class DirectAnalogs(AnalogNode, DirectObject):
         aMin = self.analogMin
         center = self.analogCenter
         deadband = self.analogDeadband
-        range = self.analogRange
+
         # Zero out values in deadband
-        if (abs(rawValue-center) <= deadband):
+        if abs(rawValue - center) <= deadband:
             return 0.0
         # Clamp value between aMin and aMax and scale around center
-        if (rawValue >= center):
+        if rawValue >= center:
             # Convert positive values to range 0 to 1
             val = min(rawValue * sf, aMax)
             percentVal = ((val - (center + deadband))/
@@ -165,7 +165,7 @@ class DirectAnalogs(AnalogNode, DirectObject):
             percentVal = -((val - (center - deadband))/
                            float(aMin - (center - deadband)))
         # Normalize values to given minVal and maxVal range
-        return (((maxVal - minVal) * ((percentVal + 1)/2.0)) + minVal)
+        return ((maxVal - minVal) * ((percentVal + 1)/2.0)) + minVal
 
     def normalizeChannel(self, chan, minVal = -1, maxVal = 1, sf = 1.0):
         try:
@@ -180,13 +180,14 @@ class DirectAnalogs(AnalogNode, DirectObject):
         return self.nodePath
 
     def __repr__(self):
-        str = self.name + ': '
+        string = self.name + ': '
         for val in self:
-            str = str + '%.3f' % val + ' '
-        return str
+            string = string + '%.3f' % val + ' '
+        return string
 
 class DirectTracker(TrackerNode, DirectObject):
     trackerCount = 0
+
     def __init__(self, vrpnClient, device):
         # Keep track of number of trackers created
         DirectTracker.trackerCount += 1
@@ -257,10 +258,10 @@ class DirectDials(DialNode, DirectObject):
         return self.nodePath
 
     def __repr__(self):
-        str = self.name + ': '
+        string = self.name + ': '
         for i in range(self.getNumDials()):
-            str = str + '%.3f' % self[i] + ' '
-        return str
+            string = string + '%.3f' % self[i] + ' '
+        return string
 
 class DirectTimecodeReader(AnalogNode, DirectObject):
     timecodeReaderCount = 0
@@ -316,5 +317,5 @@ class DirectTimecodeReader(AnalogNode, DirectObject):
                 self.totalSeconds)
 
     def __repr__(self):
-        str = ('%s: %d:%d:%d:%d' % ((self.name,) + self.getTime()[:-1]))
-        return str
+        string = ('%s: %d:%d:%d:%d' % ((self.name,) + self.getTime()[:-1]))
+        return string

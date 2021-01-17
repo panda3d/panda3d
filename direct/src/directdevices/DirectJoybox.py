@@ -4,12 +4,10 @@ from .DirectDeviceManager import *
 from direct.directtools.DirectUtil import *
 from direct.gui import OnscreenText
 from direct.task import Task
+from direct.task.TaskManagerGlobal import taskMgr
 import math
 
-"""
-TODO:
-Handle interaction between widget, followSelectedTask and updateTask
-"""
+#TODO: Handle interaction between widget, followSelectedTask and updateTask
 
 # BUTTONS
 L_STICK = 0
@@ -39,10 +37,11 @@ class DirectJoybox(DirectObject):
     joyboxCount = 0
     xyzMultiplier = 1.0
     hprMultiplier = 1.0
+
     def __init__(self, device = 'CerealBox', nodePath = base.direct.camera,
                  headingNP = base.direct.camera):
         # See if device manager has been initialized
-        if base.direct.deviceManager == None:
+        if base.direct.deviceManager is None:
             base.direct.deviceManager = DirectDeviceManager()
         # Set name
         DirectJoybox.joyboxCount += 1
@@ -172,12 +171,12 @@ class DirectJoybox(DirectObject):
         for chan in range(len(self.analogs)):
             val = self.analogs.getControlState(chan)
             # Zero out values in deadband
-            if (val < 0):
+            if val < 0:
                 val = min(val + ANALOG_DEADBAND, 0.0)
             else:
                 val = max(val - ANALOG_DEADBAND, 0.0)
             # Scale up rotating knob values
-            if (chan == L_TWIST) or (chan == R_TWIST):
+            if chan == L_TWIST or chan == R_TWIST:
                 val *= 3.0
             # Now clamp value between minVal and maxVal
             val = CLAMP(val, JOYBOX_MIN, JOYBOX_MAX)
@@ -240,7 +239,7 @@ class DirectJoybox(DirectObject):
 
     def joyboxFly(self):
         # Do nothing if no nodePath selected
-        if self.nodePath == None:
+        if self.nodePath is None:
             return
         hprScale = ((self.aList[L_SLIDE] + 1.0) *
                     50.0 * DirectJoybox.hprMultiplier)
@@ -264,14 +263,14 @@ class DirectJoybox(DirectObject):
         # if we are using a heading nodepath, we want
         # to drive in the direction we are facing,
         # however, we don't want the z component to change
-        if (self.useHeadingNP and self.headingNP != None):
+        if self.useHeadingNP and self.headingNP is not None:
             oldZ = pos.getZ()
             pos = self.nodePath.getRelativeVector(self.headingNP,
                                                   pos)
             pos.setZ(oldZ)
             # if we are using a heading NP we might want to rotate
             # in place around that NP
-            if (self.rotateInPlace):
+            if self.rotateInPlace:
                 parent = self.nodePath.getParent()
                 self.floatingNP.reparentTo(parent)
                 self.floatingNP.setPos(self.headingNP,0,0,0)
@@ -389,7 +388,7 @@ class DirectJoybox(DirectObject):
 
     def spaceFly(self):
         # Do nothing if no nodePath selected
-        if self.nodePath == None:
+        if self.nodePath is None:
             return
         hprScale = (self.normalizeChannel(L_SLIDE, 0.1, 100) *
                     DirectJoybox.hprMultiplier)
@@ -408,7 +407,7 @@ class DirectJoybox(DirectObject):
 
     def planetFly(self):
         # Do nothing if no nodePath selected
-        if self.nodePath == None:
+        if self.nodePath is None:
             return
         hprScale = (self.normalizeChannel(L_SLIDE, 0.1, 100) *
                     DirectJoybox.hprMultiplier)
@@ -459,7 +458,7 @@ class DirectJoybox(DirectObject):
 
     def orbitFly(self):
         # Do nothing if no nodePath selected
-        if self.nodePath == None:
+        if self.nodePath is None:
             return
         hprScale = (self.normalizeChannel(L_SLIDE, 0.1, 100) *
                     DirectJoybox.hprMultiplier)
@@ -502,7 +501,7 @@ class DirectJoybox(DirectObject):
     # correct the ranges of the two twist axes of the joybox.
     def normalizeChannel(self, chan, minVal = -1, maxVal = 1):
         try:
-            if (chan == L_TWIST) or (chan == R_TWIST):
+            if chan == L_TWIST or chan == R_TWIST:
                 # These channels have reduced range
                 return self.analogs.normalize(
                     self.analogs.getControlState(chan), minVal, maxVal, 3.0)
@@ -511,5 +510,3 @@ class DirectJoybox(DirectObject):
                     self.analogs.getControlState(chan), minVal, maxVal)
         except IndexError:
             return 0.0
-
-

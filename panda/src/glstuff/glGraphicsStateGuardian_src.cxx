@@ -9531,6 +9531,8 @@ get_external_image_format(Texture *tex) const {
       case Texture::F_rgba16:
       case Texture::F_rgba32:
       case Texture::F_rgba8i:
+      case Texture::F_rgba16i:
+      case Texture::F_rgba32i:
       case Texture::F_rgb10_a2:
         return GL_COMPRESSED_RGBA;
 
@@ -9542,7 +9544,9 @@ get_external_image_format(Texture *tex) const {
       case Texture::F_rgb12:
       case Texture::F_rgb332:
       case Texture::F_rgb16:
+      case Texture::F_rgb16i:
       case Texture::F_rgb32:
+      case Texture::F_rgb32i:
         return GL_COMPRESSED_RGB;
 
       case Texture::F_alpha:
@@ -9561,7 +9565,9 @@ get_external_image_format(Texture *tex) const {
       case Texture::F_rg:
       case Texture::F_rg8i:
       case Texture::F_rg16:
+      case Texture::F_rg16i:
       case Texture::F_rg32:
+      case Texture::F_rg32i:
         return GL_COMPRESSED_RG;
 
       case Texture::F_luminance:
@@ -9816,10 +9822,16 @@ get_external_image_format(Texture *tex) const {
   case Texture::F_r32i:
     return GL_RED_INTEGER;
   case Texture::F_rg8i:
+  case Texture::F_rg16i:
+  case Texture::F_rg32i:
     return GL_RG_INTEGER;
   case Texture::F_rgb8i:
+  case Texture::F_rgb16i:
+  case Texture::F_rgb32i:
     return GL_RGB_INTEGER;
   case Texture::F_rgba8i:
+  case Texture::F_rgba16i:
+  case Texture::F_rgba32i:
     return GL_RGBA_INTEGER;
 #endif
 
@@ -9847,8 +9859,10 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
     // no compression for render targets
     compression = Texture::CM_off;
   }
-  bool is_3d = (tex->get_texture_type() == Texture::TT_3d_texture ||
-                tex->get_texture_type() == Texture::TT_2d_texture_array);
+  Texture::ComponentType component_type = tex->get_component_type();
+  Texture::TextureType texture_type = tex->get_texture_type();
+  bool is_3d = (texture_type == Texture::TT_3d_texture ||
+                texture_type == Texture::TT_2d_texture_array);
 
   if (get_supports_compressed_texture_format(compression)) {
     switch (compression) {
@@ -9871,7 +9885,13 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
       case Texture::F_rgb8i:
       case Texture::F_rgba8i:
       case Texture::F_r16i:
+      case Texture::F_rg16i:
+      case Texture::F_rgb16i:
+      case Texture::F_rgba16i:
       case Texture::F_r32i:
+      case Texture::F_rg32i:
+      case Texture::F_rgb32i:
+      case Texture::F_rgba32i:
       case Texture::F_r11_g11_b10:
       case Texture::F_rgb9_e5:
         // Unsupported; fall through to below.
@@ -9982,7 +10002,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
         }
 #endif
         if (get_supports_compressed_texture_format(Texture::CM_eac) && !is_3d) {
-          if (Texture::is_unsigned(tex->get_component_type())) {
+          if (Texture::is_unsigned(component_type)) {
             return GL_COMPRESSED_R11_EAC;
           } else {
             return GL_COMPRESSED_SIGNED_R11_EAC;
@@ -10008,7 +10028,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
         }
 #endif
         if (get_supports_compressed_texture_format(Texture::CM_eac) && !is_3d) {
-          if (Texture::is_unsigned(tex->get_component_type())) {
+          if (Texture::is_unsigned(component_type)) {
             return GL_COMPRESSED_RG11_EAC;
           } else {
             return GL_COMPRESSED_SIGNED_RG11_EAC;
@@ -10186,7 +10206,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
       break;
 
     case Texture::CM_eac:
-      if (Texture::is_unsigned(tex->get_component_type())) {
+      if (Texture::is_unsigned(component_type)) {
         if (tex->get_num_components() == 1) {
           return GL_COMPRESSED_R11_EAC;
         } else {
@@ -10219,7 +10239,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
   case Texture::F_depth_stencil:
     if (_supports_depth_stencil) {
 #ifndef OPENGLES
-      if (tex->get_component_type() == Texture::T_float) {
+      if (component_type == Texture::T_float) {
         return GL_DEPTH32F_STENCIL8;
       } else
 #endif
@@ -10231,7 +10251,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
 
   case Texture::F_depth_component:
 #ifndef OPENGLES
-    if (tex->get_component_type() == Texture::T_float) {
+    if (component_type == Texture::T_float) {
       return GL_DEPTH_COMPONENT32F;
     } else
 #endif
@@ -10266,7 +10286,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
       return GL_DEPTH_COMPONENT16_OES;
     }
 #else
-    if (tex->get_component_type() == Texture::T_float) {
+    if (component_type == Texture::T_float) {
       return GL_DEPTH_COMPONENT32F;
     } else {
       return GL_DEPTH_COMPONENT32;
@@ -10276,7 +10296,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
   case Texture::F_rgba:
   case Texture::F_rgbm:
 #ifndef OPENGLES_1
-    if (tex->get_component_type() == Texture::T_float) {
+    if (component_type == Texture::T_float) {
       return GL_RGBA16F;
     } else
 #endif
@@ -10286,11 +10306,11 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
       return _supports_bgr ? GL_BGRA : GL_RGBA;
     }
 #else
-    if (tex->get_component_type() == Texture::T_unsigned_short) {
+    if (component_type == Texture::T_unsigned_short) {
       return GL_RGBA16;
-    } else if (tex->get_component_type() == Texture::T_short) {
+    } else if (component_type == Texture::T_short) {
       return GL_RGBA16_SNORM;
-    } else if (tex->get_component_type() == Texture::T_byte) {
+    } else if (component_type == Texture::T_byte) {
       return GL_RGBA8_SNORM;
     } else {
       return force_sized ? GL_RGBA8 : GL_RGBA;
@@ -10307,32 +10327,32 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
     return _supports_bgr ? GL_BGRA : (force_sized ? GL_RGBA8 : GL_RGBA);
 #else
   case Texture::F_rgba8:
-    if (Texture::is_unsigned(tex->get_component_type())) {
+    if (Texture::is_unsigned(component_type)) {
       return GL_RGBA8;
     } else {
       return GL_RGBA8_SNORM;
     }
 
   case Texture::F_r8i:
-    if (Texture::is_unsigned(tex->get_component_type())) {
+    if (Texture::is_unsigned(component_type)) {
       return GL_R8UI;
     } else {
       return GL_R8I;
     }
   case Texture::F_rg8i:
-    if (Texture::is_unsigned(tex->get_component_type())) {
+    if (Texture::is_unsigned(component_type)) {
       return GL_RG8UI;
     } else {
       return GL_RG8I;
     }
   case Texture::F_rgb8i:
-    if (Texture::is_unsigned(tex->get_component_type())) {
+    if (Texture::is_unsigned(component_type)) {
       return GL_RGB8UI;
     } else {
       return GL_RGB8I;
     }
   case Texture::F_rgba8i:
-    if (Texture::is_unsigned(tex->get_component_type())) {
+    if (Texture::is_unsigned(component_type)) {
       return GL_RGBA8UI;
     } else {
       return GL_RGBA8I;
@@ -10342,9 +10362,9 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
 #endif  // OPENGLES
 #ifndef OPENGLES
   case Texture::F_rgba16:
-    if (tex->get_component_type() == Texture::T_float) {
+    if (component_type == Texture::T_float) {
       return GL_RGBA16F;
-    } else if (Texture::is_unsigned(tex->get_component_type())) {
+    } else if (Texture::is_unsigned(component_type)) {
       return GL_RGBA16;
     } else {
       return GL_RGBA16_SNORM;
@@ -10354,7 +10374,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
 #endif  // OPENGLES
 
   case Texture::F_rgb:
-    switch (tex->get_component_type()) {
+    switch (component_type) {
     case Texture::T_float: return GL_RGB16F;
 #ifndef OPENGLES
     case Texture::T_unsigned_short: return GL_RGB16;
@@ -10384,7 +10404,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
     return GL_RGB16F;
 #else
   case Texture::F_rgb8:
-    if (Texture::is_unsigned(tex->get_component_type())) {
+    if (Texture::is_unsigned(component_type)) {
       return GL_RGB8;
     } else {
       return GL_RGB8_SNORM;
@@ -10392,9 +10412,9 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
   case Texture::F_rgb12:
     return GL_RGB12;
   case Texture::F_rgb16:
-    if (tex->get_component_type() == Texture::T_float) {
+    if (component_type == Texture::T_float) {
       return GL_RGB16F;
-    } else if (Texture::is_unsigned(tex->get_component_type())) {
+    } else if (Texture::is_unsigned(component_type)) {
       return GL_RGB16;
     } else {
       return GL_RGB16_SNORM;
@@ -10415,26 +10435,44 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
     return GL_RG16F_EXT;
 #elif !defined(OPENGLES_1)
   case Texture::F_r16:
-    if (tex->get_component_type() == Texture::T_float) {
+    if (component_type == Texture::T_float) {
       return GL_R16F;
-    } else if (Texture::is_unsigned(tex->get_component_type())) {
+    } else if (Texture::is_unsigned(component_type)) {
       return GL_R16;
     } else {
       return GL_R16_SNORM;
     }
+  case Texture::F_rg16:
+    if (component_type == Texture::T_float) {
+      return GL_RG16F;
+    } else if (Texture::is_unsigned(component_type)) {
+      return GL_RG16;
+    } else {
+      return GL_RG16_SNORM;
+    }
   case Texture::F_r16i:
-    if (Texture::is_unsigned(tex->get_component_type())) {
+    if (Texture::is_unsigned(component_type)) {
       return GL_R16UI;
     } else {
       return GL_R16I;
     }
-  case Texture::F_rg16:
-    if (tex->get_component_type() == Texture::T_float) {
-      return GL_RG16F;
-    } else if (Texture::is_unsigned(tex->get_component_type())) {
-      return GL_RG16;
+  case Texture::F_rg16i:
+    if (Texture::is_unsigned(component_type)) {
+      return GL_RG16UI;
     } else {
-      return GL_RG16_SNORM;
+      return GL_RG16I;
+    }
+  case Texture::F_rgb16i:
+    if (Texture::is_unsigned(component_type)) {
+      return GL_RGB16UI;
+    } else {
+      return GL_RGB16I;
+    }
+  case Texture::F_rgba16i:
+    if (Texture::is_unsigned(component_type)) {
+      return GL_RGBA16UI;
+    } else {
+      return GL_RGBA16I;
     }
 #endif
 
@@ -10448,7 +10486,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
   case Texture::F_green:
   case Texture::F_blue:
 #ifndef OPENGLES
-    if (!Texture::is_unsigned(tex->get_component_type())) {
+    if (!Texture::is_unsigned(component_type)) {
       return GL_R8_SNORM;
     } else
 #endif
@@ -10473,7 +10511,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
     return force_sized ? GL_LUMINANCE8 : GL_LUMINANCE;
 #else
     if (_supports_luminance_texture) {
-      switch (tex->get_component_type()) {
+      switch (component_type) {
       case Texture::T_float:
       case Texture::T_half_float:
         return GL_LUMINANCE16F_ARB;
@@ -10485,7 +10523,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
         return force_sized ? GL_LUMINANCE8 : GL_LUMINANCE;
       }
     } else {
-      switch (tex->get_component_type()) {
+      switch (component_type) {
       case Texture::T_float:
       case Texture::T_half_float:
         return GL_R16F;
@@ -10504,7 +10542,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
     return force_sized ? GL_LUMINANCE8_ALPHA8 : GL_LUMINANCE_ALPHA;
 #else
     if (_supports_luminance_texture) {
-      switch (tex->get_component_type()) {
+      switch (component_type) {
       case Texture::T_float:
       case Texture::T_half_float:
         return GL_LUMINANCE_ALPHA16F_ARB;
@@ -10516,7 +10554,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
         return force_sized ? GL_LUMINANCE8_ALPHA8 : GL_LUMINANCE_ALPHA;
       }
     } else {
-      switch (tex->get_component_type()) {
+      switch (component_type) {
       case Texture::T_float:
       case Texture::T_half_float:
         return GL_RG16F;
@@ -10548,9 +10586,31 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
     return _core_profile ? GL_SRGB8_ALPHA8 : GL_SLUMINANCE8_ALPHA8;
 #endif
 
-#ifndef OPENGLES
+#ifndef OPENGLES_1
   case Texture::F_r32i:
-    return GL_R32I;
+    if (Texture::is_unsigned(component_type)) {
+      return GL_R32UI;
+    } else {
+      return GL_R32I;
+    }
+  case Texture::F_rg32i:
+    if (Texture::is_unsigned(component_type)) {
+      return GL_RG32UI;
+    } else {
+      return GL_RG32I;
+    }
+  case Texture::F_rgb32i:
+    if (Texture::is_unsigned(component_type)) {
+      return GL_RGB32UI;
+    } else {
+      return GL_RGB32I;
+    }
+  case Texture::F_rgba32i:
+    if (Texture::is_unsigned(component_type)) {
+      return GL_RGBA32UI;
+    } else {
+      return GL_RGBA32I;
+    }
 #endif
 
 #ifndef OPENGLES_1
@@ -12632,10 +12692,20 @@ specify_texture(CLP(TextureContext) *gtc, const SamplerState &sampler) {
     }
   }
 
-  glTexParameteri(target, GL_TEXTURE_MIN_FILTER,
-                  get_texture_filter_type(minfilter, !uses_mipmaps));
-  glTexParameteri(target, GL_TEXTURE_MAG_FILTER,
-                  get_texture_filter_type(magfilter, true));
+  if (Texture::is_integer(tex->get_format())) {
+    // Integer format textures can't have filtering enabled, and in fact, some
+    // drivers (looking at you, Intel) will always sample (0, 0, 0, 1) if we
+    // don't set this correctly!
+    glTexParameteri(target, GL_TEXTURE_MIN_FILTER,
+                    uses_mipmaps ? GL_NEAREST_MIPMAP_NEAREST
+                                 : GL_NEAREST);
+    glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  } else {
+    glTexParameteri(target, GL_TEXTURE_MIN_FILTER,
+                    get_texture_filter_type(minfilter, !uses_mipmaps));
+    glTexParameteri(target, GL_TEXTURE_MAG_FILTER,
+                    get_texture_filter_type(magfilter, true));
+  }
 
   // Set anisotropic filtering.
   if (_supports_anisotropy) {
@@ -14185,7 +14255,9 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
   case GL_R3_G3_B2:
     format = Texture::F_rgb332;
     break;
+#endif
 
+#ifndef OPENGLES_1
   case GL_R8I:
     type = Texture::T_byte;
     format = Texture::F_r8i;
@@ -14224,11 +14296,69 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     type = Texture::T_short;
     format = Texture::F_r16i;
     break;
+  case GL_RG16I:
+    type = Texture::T_short;
+    format = Texture::F_rg16i;
+    break;
+  case GL_RGB16I:
+    type = Texture::T_short;
+    format = Texture::F_rgb16i;
+    break;
+  case GL_RGBA16I:
+    type = Texture::T_short;
+    format = Texture::F_rgba16i;
+    break;
+
   case GL_R16UI:
     type = Texture::T_unsigned_short;
     format = Texture::F_r16i;
     break;
+  case GL_RG16UI:
+    type = Texture::T_unsigned_short;
+    format = Texture::F_rg16i;
+    break;
+  case GL_RGB16UI:
+    type = Texture::T_unsigned_short;
+    format = Texture::F_rgb16i;
+    break;
+  case GL_RGBA16UI:
+    type = Texture::T_unsigned_short;
+    format = Texture::F_rgba16i;
+    break;
 
+  case GL_R32I:
+    type = Texture::T_int;
+    format = Texture::F_r32i;
+    break;
+  case GL_RG32I:
+    type = Texture::T_int;
+    format = Texture::F_rg32i;
+    break;
+  case GL_RGB32I:
+    type = Texture::T_int;
+    format = Texture::F_rgb32i;
+    break;
+  case GL_RGBA32I:
+    type = Texture::T_int;
+    format = Texture::F_rgba32i;
+    break;
+
+  case GL_R32UI:
+    type = Texture::T_unsigned_int;
+    format = Texture::F_r32i;
+    break;
+  case GL_RG32UI:
+    type = Texture::T_unsigned_int;
+    format = Texture::F_rg32i;
+    break;
+  case GL_RGB32UI:
+    type = Texture::T_unsigned_int;
+    format = Texture::F_rgb32i;
+    break;
+  case GL_RGBA32UI:
+    type = Texture::T_unsigned_int;
+    format = Texture::F_rgba32i;
+    break;
 #endif
 
 #ifndef OPENGLES_1
@@ -14315,12 +14445,6 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
   case GL_RED_EXT:
   case GL_R8_EXT:
     format = Texture::F_red;
-    break;
-#endif
-#ifndef OPENGLES
-  case GL_R32I:
-    type = Texture::T_int;
-    format = Texture::F_r32i;
     break;
 #endif
 

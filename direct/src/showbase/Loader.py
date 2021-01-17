@@ -444,7 +444,7 @@ class Loader(DirectObject):
             nodeList = node
             gotList = True
 
-        assert(len(modelList) == len(nodeList))
+        assert len(modelList) == len(nodeList)
 
         # Make sure we have PandaNodes, not NodePaths.
         for i in range(len(nodeList)):
@@ -627,7 +627,7 @@ class Loader(DirectObject):
         assert Loader.notify.debug("Loading font: %s" % (modelPath))
         if phaseChecker:
             loaderOptions = LoaderOptions()
-            if(okMissing):
+            if okMissing:
                 loaderOptions.setFlags(loaderOptions.getFlags() & ~LoaderOptions.LFReportErrors)
             phaseChecker(modelPath, loaderOptions)
 
@@ -958,7 +958,7 @@ class Loader(DirectObject):
         independently of the other group."""
 
         # showbase-created sfxManager should always be at front of list
-        if(self.base.sfxManagerList):
+        if self.base.sfxManagerList:
             return self.loadSound(self.base.sfxManagerList[0], *args, **kw)
         return None
 
@@ -970,7 +970,7 @@ class Loader(DirectObject):
         to load the sound file, but this distinction allows the sound
         effects and/or the music files to be adjusted as a group,
         independently of the other group."""
-        if(self.base.musicManager):
+        if self.base.musicManager:
             return self.loadSound(self.base.musicManager, *args, **kw)
         else:
             return None
@@ -1025,8 +1025,8 @@ class Loader(DirectObject):
             return cb
 
     def unloadSfx(self, sfx):
-        if (sfx):
-            if(self.base.sfxManagerList):
+        if sfx:
+            if self.base.sfxManagerList:
                 self.base.sfxManagerList[0].uncacheSound (sfx.getName())
 
 ##     def makeNodeNamesUnique(self, nodePath, nodeCount):
@@ -1096,7 +1096,7 @@ class Loader(DirectObject):
         """ The asynchronous flatten operation has completed; quietly
         drop in the new models. """
         self.notify.debug("asyncFlattenDone: %s" % (models,))
-        assert(len(models) == len(origModelList))
+        assert len(models) == len(origModelList)
         for i in range(len(models)):
             origModelList[i].getChildren().detach()
             orig = origModelList[i].node()

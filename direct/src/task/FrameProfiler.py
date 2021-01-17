@@ -1,7 +1,11 @@
+from panda3d.core import ConfigVariableBool
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.fsm.StatePush import FunctionCall
-from direct.showbase.PythonUtil import formatTimeExact, normalDistrib
-from direct.task import Task
+from direct.showbase.PythonUtil import formatTimeExact, normalDistrib, serialNum
+from direct.showbase.PythonUtil import Functor
+from .Task import Task
+from .TaskManagerGlobal import taskMgr
+
 
 class FrameProfiler:
     notify = directNotify.newCategory('FrameProfiler')
@@ -15,8 +19,9 @@ class FrameProfiler:
     def __init__(self):
         Hour = FrameProfiler.Hour
         # how long to wait between frame profiles
+        frequent_profiles = ConfigVariableBool('frequent-frame-profiles', False)
         self._period = 2 * FrameProfiler.Minute
-        if config.GetBool('frequent-frame-profiles', 0):
+        if frequent_profiles:
             self._period = 1 * FrameProfiler.Minute
         # used to prevent profile from being taken exactly every 'period' seconds
         self._jitterMagnitude = self._period * .75
@@ -28,7 +33,7 @@ class FrameProfiler:
                              12 * FrameProfiler.Hour,
                               1 * FrameProfiler.Day,
                               ] # day schedule proceeds as 1, 2, 4, 8 days, etc.
-        if config.GetBool('frequent-frame-profiles', 0):
+        if frequent_profiles:
             self._logSchedule = [ 1  * FrameProfiler.Minute,
                                   4  * FrameProfiler.Minute,
                                   12 * FrameProfiler.Minute,
@@ -79,7 +84,7 @@ class FrameProfiler:
 
     def _scheduleNextProfileDoLater(self, task):
         self._scheduleNextProfile()
-        return task.done
+        return Task.done
 
     def _scheduleNextProfile(self):
         self._profileCounter += 1

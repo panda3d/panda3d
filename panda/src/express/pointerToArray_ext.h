@@ -40,6 +40,8 @@ public:
   INLINE void set_data(PyObject *data);
   INLINE PyObject *get_subdata(size_t n, size_t count) const;
 
+  INLINE PyObject *__reduce__(PyObject *self) const;
+
   INLINE int __getbuffer__(PyObject *self, Py_buffer *view, int flags);
   INLINE void __releasebuffer__(PyObject *self, Py_buffer *view) const;
 };
@@ -74,6 +76,8 @@ public:
 
   INLINE PyObject *get_data() const;
   INLINE PyObject *get_subdata(size_t n, size_t count) const;
+
+  INLINE PyObject *__reduce__(PyObject *self) const;
 
   INLINE int __getbuffer__(PyObject *self, Py_buffer *view, int flags) const;
   INLINE void __releasebuffer__(PyObject *self, Py_buffer *view) const;

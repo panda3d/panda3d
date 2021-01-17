@@ -1,7 +1,9 @@
 from panda3d.core import *
 from direct.showbase.DirectObject import DirectObject
+from direct.task.TaskManagerGlobal import taskMgr
 import math
 import copy
+
 
 class TexMemWatcher(DirectObject):
     """
@@ -479,7 +481,7 @@ class TexMemWatcher(DirectObject):
         tnp = self.isolate.attachNewNode(tn)
         scale = 30.0 / wy
         tnp.setScale(scale * wy / wx, scale, scale)
-        tnp.setPos(render2d, 0, 0, -1 - tn.getBottom() * scale)
+        tnp.setPos(base.render2d, 0, 0, -1 - tn.getBottom() * scale)
 
         labelTop = tn.getHeight() * scale
 

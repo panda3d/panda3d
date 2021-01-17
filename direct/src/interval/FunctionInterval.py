@@ -27,13 +27,13 @@ class FunctionInterval(Interval.Interval):
         FunctionIntervals = weakref.WeakKeyDictionary()
 
         @classmethod
-        def replaceMethod(self, oldFunction, newFunction):
+        def replaceMethod(cls, oldFunction, newFunction):
             import types
             count = 0
-            for ival in self.FunctionIntervals:
+            for ival in cls.FunctionIntervals:
                 # print 'testing: ', ival.function, oldFunction
                 # Note: you can only replace methods currently
-                if type(ival.function) == types.MethodType:
+                if isinstance(ival.function, types.MethodType):
                     if ival.function.__func__ == oldFunction:
                         # print 'found: ', ival.function, oldFunction
                         ival.function = types.MethodType(newFunction,
@@ -113,7 +113,7 @@ class AcceptInterval(FunctionInterval):
         def acceptFunc(dirObj = dirObj, event = event, function = function):
             dirObj.accept(event, function)
         # Determine name
-        if (name == None):
+        if name is None:
             name = 'Accept-' + event
         # Create function interval
         FunctionInterval.__init__(self, acceptFunc, name = name)
@@ -127,7 +127,7 @@ class IgnoreInterval(FunctionInterval):
         def ignoreFunc(dirObj = dirObj, event = event):
             dirObj.ignore(event)
         # Determine name
-        if (name == None):
+        if name is None:
             name = 'Ignore-' + event
         # Create function interval
         FunctionInterval.__init__(self, ignoreFunc, name = name)
@@ -143,7 +143,7 @@ class ParentInterval(FunctionInterval):
         def reparentFunc(nodePath = nodePath, parent = parent):
             nodePath.reparentTo(parent)
         # Determine name
-        if (name == None):
+        if name is None:
             name = 'ParentInterval-%d' % ParentInterval.parentIntervalNum
             ParentInterval.parentIntervalNum += 1
         # Create function interval
@@ -160,7 +160,7 @@ class WrtParentInterval(FunctionInterval):
         def wrtReparentFunc(nodePath = nodePath, parent = parent):
             nodePath.wrtReparentTo(parent)
         # Determine name
-        if (name == None):
+        if name is None:
             name = ('WrtParentInterval-%d' %
                     WrtParentInterval.wrtParentIntervalNum)
             WrtParentInterval.wrtParentIntervalNum += 1
@@ -183,7 +183,7 @@ class PosInterval(FunctionInterval):
             else:
                 np.setPos(pos)
         # Determine name
-        if (name == None):
+        if name is None:
             name = 'PosInterval-%d' % PosInterval.posIntervalNum
             PosInterval.posIntervalNum += 1
         # Create function interval
@@ -204,7 +204,7 @@ class HprInterval(FunctionInterval):
             else:
                 np.setHpr(hpr)
         # Determine name
-        if (name == None):
+        if name is None:
             name = 'HprInterval-%d' % HprInterval.hprIntervalNum
             HprInterval.hprIntervalNum += 1
         # Create function interval
@@ -225,7 +225,7 @@ class ScaleInterval(FunctionInterval):
             else:
                 np.setScale(scale)
         # Determine name
-        if (name == None):
+        if name is None:
             name = 'ScaleInterval-%d' % ScaleInterval.scaleIntervalNum
             ScaleInterval.scaleIntervalNum += 1
         # Create function interval
@@ -246,7 +246,7 @@ class PosHprInterval(FunctionInterval):
             else:
                 np.setPosHpr(pos, hpr)
         # Determine name
-        if (name == None):
+        if name is None:
             name = 'PosHprInterval-%d' % PosHprInterval.posHprIntervalNum
             PosHprInterval.posHprIntervalNum += 1
         # Create function interval
@@ -268,7 +268,7 @@ class HprScaleInterval(FunctionInterval):
             else:
                 np.setHprScale(hpr, scale)
         # Determine name
-        if (name == None):
+        if name is None:
             name = ('HprScale-%d' %
                     HprScaleInterval.hprScaleIntervalNum)
             HprScaleInterval.hprScaleIntervalNum += 1
@@ -291,7 +291,7 @@ class PosHprScaleInterval(FunctionInterval):
             else:
                 np.setPosHprScale(pos, hpr, scale)
         # Determine name
-        if (name == None):
+        if name is None:
             name = ('PosHprScale-%d' %
                     PosHprScaleInterval.posHprScaleIntervalNum)
             PosHprScaleInterval.posHprScaleIntervalNum += 1
@@ -312,133 +312,3 @@ class Func(FunctionInterval):
 class Wait(WaitInterval):
     def __init__(self, duration):
         WaitInterval.__init__(self, duration)
-
-"""
-SAMPLE CODE
-
-from IntervalGlobal import *
-
-i1 = Func(base.transitions.fadeOut)
-i2 = Func(base.transitions.fadeIn)
-
-def caughtIt():
-    print 'Caught here-is-an-event'
-
-class DummyAcceptor(DirectObject):
-    pass
-
-da = DummyAcceptor()
-i3 = Func(da.accept, 'here-is-an-event', caughtIt)
-
-i4 = Func(messenger.send, 'here-is-an-event')
-
-i5 = Func(da.ignore, 'here-is-an-event')
-
-# Using a function
-def printDone():
-    print 'done'
-
-i6 = Func(printDone)
-
-# Create track
-t1 = Sequence([
-    # Fade out
-    (0.0, i1),
-    # Fade in
-    (2.0, i2),
-    # Accept event
-    (4.0, i3),
-    # Throw it,
-    (5.0, i4),
-    # Ignore event
-    (6.0, i5),
-    # Throw event again and see if ignore worked
-    (7.0, i4),
-    # Print done
-    (8.0, i6)], name = 'demo')
-
-# Play track
-t1.play()
-
-### Specifying interval start times during track construction ###
-# Interval start time can be specified relative to three different points:
-# PREVIOUS_END
-# PREVIOUS_START
-# TRACK_START
-
-startTime = 0.0
-def printStart():
-    global startTime
-    startTime = globalClock.getFrameTime()
-    print 'Start'
-
-def printPreviousStart():
-    global startTime
-    currTime = globalClock.getFrameTime()
-    print 'PREVIOUS_END %0.2f' % (currTime - startTime)
-
-def printPreviousEnd():
-    global startTime
-    currTime = globalClock.getFrameTime()
-    print 'PREVIOUS_END %0.2f' % (currTime - startTime)
-
-def printTrackStart():
-    global startTime
-    currTime = globalClock.getFrameTime()
-    print 'TRACK_START %0.2f' % (currTime - startTime)
-
-i1 = Func(printStart)
-# Just to take time
-i2 = LerpPosInterval(camera, 2.0, Point3(0, 10, 5))
-# This will be relative to end of camera move
-i3 = FunctionInterval(printPreviousEnd)
-# Just to take time
-i4 = LerpPosInterval(camera, 2.0, Point3(0, 0, 5))
-# This will be relative to the start of the camera move
-i5 = FunctionInterval(printPreviousStart)
-# This will be relative to track start
-i6 = FunctionInterval(printTrackStart)
-# Create the track, if you don't specify offset type in tuple it defaults to
-# relative to TRACK_START (first entry below)
-t2 = Track([(0.0, i1),                 # i1 start at t = 0, duration = 0.0
-           (1.0, i2, TRACK_START),    # i2 start at t = 1, duration = 2.0
-           (2.0, i3, PREVIOUS_END),   # i3 start at t = 5, duration = 0.0
-           (1.0, i4, PREVIOUS_END),   # i4 start at t = 6, duration = 2.0
-           (3.0, i5, PREVIOUS_START), # i5 start at t = 9, duration = 0.0
-           (10.0, i6, TRACK_START)],  # i6 start at t = 10, duration = 0.0
-          name = 'startTimeDemo')
-
-t2.play()
-
-
-smiley = loader.loadModel('models/misc/smiley')
-
-from direct.actor import Actor
-donald = Actor.Actor()
-donald.loadModel("phase_6/models/char/donald-wheel-1000")
-donald.loadAnims({"steer":"phase_6/models/char/donald-wheel-wheel"})
-donald.reparentTo(render)
-
-
-seq = Sequence(Func(donald.setPos, 0, 0, 0),
-               donald.actorInterval('steer', duration=1.0),
-               donald.posInterval(1, Point3(0, 0, 1)),
-               Parallel(donald.actorInterval('steer', duration=1.0),
-                        donald.posInterval(1, Point3(0, 0, 0)),
-                        ),
-               Wait(1.0),
-               Func(base.toggleWireframe),
-               Wait(1.0),
-               Parallel(donald.actorInterval('steer', duration=1.0),
-                        donald.posInterval(1, Point3(0, 0, -1)),
-                        Sequence(donald.hprInterval(1, Vec3(180, 0, 0)),
-                                 donald.hprInterval(1, Vec3(0, 0, 0)),
-                                 ),
-                        ),
-               Func(base.toggleWireframe),
-               Func(messenger.send, 'hello'),
-               )
-
-
-
-"""

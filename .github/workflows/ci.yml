@@ -124,16 +124,16 @@ jobs:
       uses: actions/cache@v1
       with:
         path: thirdparty
-        key: ci-cmake-${{ runner.OS }}-thirdparty-v1.10.8-r3
+        key: ci-cmake-${{ runner.OS }}-thirdparty-v1.10.9-r1
     - name: Install dependencies (Windows)
       if: runner.os == 'Windows'
       shell: powershell
       run: |
         if (!(Test-Path thirdparty/win-libs-vc14-x64)) {
           $wc = New-Object System.Net.WebClient
-          $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.8/panda3d-1.10.8-tools-win64.zip", "thirdparty-tools.zip")
+          $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.9/panda3d-1.10.9-tools-win64.zip", "thirdparty-tools.zip")
           Expand-Archive -Path thirdparty-tools.zip
-          Move-Item -Path thirdparty-tools/panda3d-1.10.8/thirdparty -Destination .
+          Move-Item -Path thirdparty-tools/panda3d-1.10.9/thirdparty -Destination .
         }
 
     - name: ccache (non-Windows)

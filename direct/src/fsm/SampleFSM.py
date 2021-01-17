@@ -4,6 +4,7 @@ __all__ = ['ClassicStyle', 'NewStyle', 'ToonEyes']
 
 from . import FSM
 from direct.task import Task
+from direct.task.TaskManagerGlobal import taskMgr
 
 
 class ClassicStyle(FSM.FSM):

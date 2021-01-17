@@ -365,7 +365,7 @@ public:
   virtual EggTransform *as_transform();
 
 protected:
-  virtual bool egg_start_parse_body();
+  virtual bool egg_start_parse_body(EggLexerState &state);
 
 private:
   typedef pset<EggTexture *> MultiTextures;

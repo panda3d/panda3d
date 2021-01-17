@@ -1,6 +1,7 @@
 """ This module is now vestigial.  """
 
-import sys, Pmw
+import sys
+import Pmw
 from tkinter import *
 
 
@@ -20,7 +21,7 @@ def bordercolors(root, colorName):
         value40pc = (14 * value) // 10
         if value40pc > int(Pmw.Color._MAX_RGB):
             value40pc = int(Pmw.Color._MAX_RGB)
-        valueHalfWhite = (int(Pmw.Color._MAX_RGB) + value) // 2;
+        valueHalfWhite = (int(Pmw.Color._MAX_RGB) + value) // 2
         lightRGB.append(max(value40pc, valueHalfWhite))
 
         darkValue = (60 * value) // 100
