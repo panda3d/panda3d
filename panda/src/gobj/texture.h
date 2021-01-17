@@ -625,6 +625,7 @@ public:
   static bool has_alpha(Format format);
   static bool has_binary_alpha(Format format);
   static bool is_srgb(Format format);
+  static bool is_integer(Format format);
 
   static bool adjust_size(int &x_size, int &y_size, const std::string &name,
                           bool for_padding, AutoTextureScale auto_texture_scale = ATS_unspecified);

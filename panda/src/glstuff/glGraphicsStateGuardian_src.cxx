@@ -12409,10 +12409,20 @@ specify_texture(CLP(TextureContext) *gtc, const SamplerState &sampler) {
     }
   }
 
-  glTexParameteri(target, GL_TEXTURE_MIN_FILTER,
-                  get_texture_filter_type(minfilter, !uses_mipmaps));
-  glTexParameteri(target, GL_TEXTURE_MAG_FILTER,
-                  get_texture_filter_type(magfilter, true));
+  if (Texture::is_integer(tex->get_format())) {
+    // Integer format textures can't have filtering enabled, and in fact, some
+    // drivers (looking at you, Intel) will always sample (0, 0, 0, 1) if we
+    // don't set this correctly!
+    glTexParameteri(target, GL_TEXTURE_MIN_FILTER,
+                    uses_mipmaps ? GL_NEAREST_MIPMAP_NEAREST
+                                 : GL_NEAREST);
+    glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  } else {
+    glTexParameteri(target, GL_TEXTURE_MIN_FILTER,
+                    get_texture_filter_type(minfilter, !uses_mipmaps));
+    glTexParameteri(target, GL_TEXTURE_MAG_FILTER,
+                    get_texture_filter_type(magfilter, true));
+  }
 
   // Set anisotropic filtering.
   if (_supports_anisotropy) {

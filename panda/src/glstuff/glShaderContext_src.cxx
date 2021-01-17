@@ -2849,6 +2849,11 @@ update_shader_texture_bindings(ShaderContext *prev) {
       }
       continue;
     }
+    else if (Texture::is_integer(tex->get_format())) {
+      // Required to satisfy Intel drivers, which will otherwise sample zero.
+      sampler.set_minfilter(sampler.uses_mipmaps() ? SamplerState::FT_nearest_mipmap_nearest : SamplerState::FT_nearest);
+      sampler.set_magfilter(SamplerState::FT_nearest);
+    }
 
     if (tex->get_texture_type() != spec._desired_type) {
       switch (spec._part) {

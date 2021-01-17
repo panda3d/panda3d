@@ -2629,6 +2629,25 @@ is_srgb(Format format) {
 }
 
 /**
+ * Returns true if the indicated format is an integer format, false otherwise.
+ */
+bool Texture::
+is_integer(Format format) {
+  switch (format) {
+  case F_r32i:
+  case F_r8i:
+  case F_rg8i:
+  case F_rgb8i:
+  case F_rgba8i:
+  case F_r16i:
+    return true;
+
+  default:
+    return false;
+  }
+}
+
+/**
  * Computes the proper size of the texture, based on the original size, the
  * filename, and the resizing whims of the config file.
  *
