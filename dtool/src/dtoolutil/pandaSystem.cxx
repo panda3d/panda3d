@@ -192,6 +192,8 @@ get_compiler() {
 /**
  * Returns a string representing the date and time at which this version of
  * Panda (or at least dtool) was compiled, if available.
+ *
+ * @deprecated
  */
 string PandaSystem::
 get_build_date() {
