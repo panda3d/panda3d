@@ -14,6 +14,58 @@
 #include "texturePeeker.h"
 
 
+static double get_unsigned_byte_i(const unsigned char *&p) {
+  return *p++;
+}
+
+static double get_signed_byte_i(const unsigned char *&p) {
+  return *(signed char *)p++;
+}
+
+static double get_unsigned_short_i(const unsigned char *&p) {
+  union {
+    unsigned short us;
+    unsigned char uc[2];
+  } v;
+  v.uc[0] = (*p++);
+  v.uc[1] = (*p++);
+  return (double)v.us;
+}
+
+static double get_signed_short_i(const unsigned char *&p) {
+  union {
+    signed short ss;
+    unsigned char uc[2];
+  } v;
+  v.uc[0] = (*p++);
+  v.uc[1] = (*p++);
+  return (double)v.ss;
+}
+
+static double get_unsigned_int_i(const unsigned char *&p) {
+  union {
+    unsigned int ui;
+    unsigned char uc[4];
+  } v;
+  v.uc[0] = (*p++);
+  v.uc[1] = (*p++);
+  v.uc[2] = (*p++);
+  v.uc[3] = (*p++);
+  return (double)v.ui;
+}
+
+static double get_signed_int_i(const unsigned char *&p) {
+  union {
+    signed int si;
+    unsigned char uc[4];
+  } v;
+  v.uc[0] = (*p++);
+  v.uc[1] = (*p++);
+  v.uc[2] = (*p++);
+  v.uc[3] = (*p++);
+  return (double)v.si;
+}
+
 /**
  * Use Texture::peek() to construct a TexturePeeker.
  *
@@ -73,35 +125,69 @@ TexturePeeker(Texture *tex, Texture::CData *cdata) {
   }
   _pixel_width = _component_width * _num_components;
 
-  switch (_component_type) {
-  case Texture::T_unsigned_byte:
-    _get_component = Texture::get_unsigned_byte;
-    break;
+  if (Texture::is_integer(_format)) {
+    switch (_component_type) {
+    case Texture::T_unsigned_byte:
+      _get_component = get_unsigned_byte_i;
+      break;
 
-  case Texture::T_unsigned_short:
-    _get_component = Texture::get_unsigned_short;
-    break;
+    case Texture::T_unsigned_short:
+      _get_component = get_unsigned_short_i;
+      break;
 
-  case Texture::T_unsigned_int:
-    _get_component = Texture::get_unsigned_int;
-    break;
+    case Texture::T_unsigned_int:
+      _get_component = get_unsigned_int_i;
+      break;
 
-  case Texture::T_float:
-    _get_component = Texture::get_float;
-    break;
+    case Texture::T_byte:
+      _get_component = get_signed_byte_i;
+      break;
 
-  case Texture::T_half_float:
-    _get_component = Texture::get_half_float;
-    break;
+    case Texture::T_short:
+      _get_component = get_signed_short_i;
+      break;
 
-  case Texture::T_unsigned_int_24_8:
-    _get_component = Texture::get_unsigned_int_24;
-    break;
+    case Texture::T_int:
+      _get_component = get_signed_int_i;
+      break;
 
-  default:
-    // Not supported.
-    _image.clear();
-    return;
+    default:
+      // Not supported.
+      _image.clear();
+      return;
+    }
+  }
+  else {
+    switch (_component_type) {
+    case Texture::T_unsigned_byte:
+      _get_component = Texture::get_unsigned_byte;
+      break;
+
+    case Texture::T_unsigned_short:
+      _get_component = Texture::get_unsigned_short;
+      break;
+
+    case Texture::T_unsigned_int:
+      _get_component = Texture::get_unsigned_int;
+      break;
+
+    case Texture::T_float:
+      _get_component = Texture::get_float;
+      break;
+
+    case Texture::T_half_float:
+      _get_component = Texture::get_half_float;
+      break;
+
+    case Texture::T_unsigned_int_24_8:
+      _get_component = Texture::get_unsigned_int_24;
+      break;
+
+    default:
+      // Not supported.
+      _image.clear();
+      return;
+    }
   }
 
   switch (_format) {
