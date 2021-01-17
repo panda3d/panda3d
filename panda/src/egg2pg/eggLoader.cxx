@@ -998,7 +998,72 @@ load_texture(TextureDef &def, EggTexture *egg_tex) {
   if (tex == nullptr) {
     return false;
   }
-
+  //Load in the options for the texture
+  switch(egg_tex->get_format()){
+    case EggTexture::F_rgba:
+      options.set_texture_format(options.get_texture_format() | LoaderOptions::TFO1_rgba);
+      break;
+    case EggTexture::F_rgbm:
+      options.set_texture_format(options.get_texture_format() | LoaderOptions::TFO1_rgbm);
+      break;
+    case EggTexture::F_rgba12:
+      options.set_texture_format(options.get_texture_format() | LoaderOptions::TFO1_rgba12);
+      break;
+    case EggTexture::F_rgba8:
+      options.set_texture_format(options.get_texture_format() | LoaderOptions::TFO1_rbga8);
+      break;
+    case EggTexture::F_rgba4:
+      options.set_texture_format(options.get_texture_format() | LoaderOptions::TFO1_rgba4);
+      break;
+    case EggTexture::F_rgba5:
+      options.set_texture_format(options.get_texture_format() | LoaderOptions::TFO1_rgba5);
+      break;
+    case EggTexture::F_rgb:
+      options.set_texture_format(options.get_texture_format() | LoaderOptions::TFO1_rgb);
+      break;
+    case EggTexture::F_rgb12:
+      options.set_texture_format(options.get_texture_format() | LoaderOptions::TFO1_rgb12);
+      break;
+    case EggTexture::F_rgb8:
+      options.set_texture_format(options.get_texture_format() | LoaderOptions::TFO1_rgb8);
+      break;
+    case EggTexture::F_rgb5:
+      options.set_texture_format(options.get_texture_format() | LoaderOptions::TFO1_rgb5);
+      break;
+    case EggTexture::F_rgb332:
+      options.set_texture_format(options.get_texture_format() | LoaderOptions::TF01_rgb332);
+      break;
+    case EggTexture::F_red:
+      options.set_texture_format(options.get_texture_format() | LoaderOptions::TF01_red);
+      break;
+    case EggTexture::F_green:
+      options.set_texture_format(options.get_texture_format() | LoaderOptions::TF01_green);
+      break;
+    case EggTexture::F_blue:
+      options.set_texture_format(options.get_texture_format() | LoaderOptions::TF01_blue);
+      break;
+    case EggTexture::F_alpha:
+      options.set_texture_format(options.get_texture_format() | LoaderOptions::TF01_alpha);
+      break;
+    case EggTexture::F_luminance:
+      options.set_texture_format(options.get_texture_format() | LoaderOptions::TF01_luminance);
+      break;
+    case EggTexture::F_luminance_alpha:
+      options.set_texture_format2(options.get_texture_format2() | LoaderOptions::TFO2_luminance_alpha);
+      break;
+    case EggTexture::F_luminance_alphamask:
+      options.set_texture_format2(options.get_texture_format2() | LoaderOptions::TFO2_luminance_alphamask);
+      break;
+    case EggTexture::F_srgb:
+      options.set_texture_format2(options.get_texture_format2() | LoaderOptions::TF02_srgb);
+      break;
+    case EggTexture::F_srgb_alpha:
+      options.set_texture_format2(options.get_texture_format2() | LoaderOptions::TF02_srbg_alpha);
+      break;
+    case EggTexture::F_unspecified:
+    default:
+      options.set_texture_format(options.get_texture_format() | LoaderOptions::TFO1_unspecified);
+  }
   // Record the original filenames in the textures (as loaded from the egg
   // file).  These filenames will be written back to the bam file if the bam
   // file is written out.

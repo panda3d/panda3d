@@ -49,15 +49,45 @@ PUBLISHED:
     TF_no_filters        = 0x0400,  // disallow using texture pool filters
   };
 
+  enum TextureFormat1 {
+    TFO1_unspecified        = 0x0001, //The format of the texture is unspecified
+    TFO1_rgba               = 0x0002, //The rest of these formats correspond to texture formats
+    TFO1_rgbm               = 0x0004, //see https://docs.panda3d.org/1.10/python/tools/model-export/egg-syntax 
+    TFO1_rgba12             = 0x0008,  
+    TFO1_rbga8              = 0x0010,  
+    TFO1_rgba4              = 0x0020,  
+    TFO1_rgba5              = 0x0040,  
+    TFO1_rgb                = 0x0080,  
+    TFO1_rgb12              = 0x0100,  
+    TFO1_rgb8               = 0x0200,  
+    TFO1_rgb5               = 0x0400,
+    TF01_rgb332             = 0x0400,
+    TF01_red                = 0x0800,
+    TF01_green              = 0x1000,
+    TF01_blue               = 0x2000,
+    TF01_alpha              = 0x4000,
+    TF01_luminance          = 0x8000,
+  };
+
+  enum TextureFormat2 {
+    TFO2_luminance_alpha      = 0x0001,
+    TFO2_luminance_alphamask  = 0x0002,
+    TF02_srgb                 = 0x0004,
+    TF02_srbg_alpha           = 0x0008,
+  };
+
   LoaderOptions(int flags = LF_search | LF_report_errors);
   constexpr LoaderOptions(int flags, int texture_flags);
 
   INLINE void set_flags(int flags);
   INLINE int get_flags() const;
   MAKE_PROPERTY(flags, get_flags, set_flags);
-
   INLINE void set_texture_flags(int flags);
   INLINE int get_texture_flags() const;
+  INLINE void set_texture_format(int options);
+  INLINE int get_texture_format() const;
+  INLINE void set_texture_format2(int options);
+  INLINE int get_texture_format2() const;
   INLINE void set_texture_num_views(int num_views);
   INLINE int get_texture_num_views() const;
   MAKE_PROPERTY(texture_flags, get_texture_flags, set_texture_flags);
@@ -78,6 +108,8 @@ private:
                           const std::string &flag_name, int flag) const;
   int _flags;
   int _texture_flags;
+  int _texture_format;
+  int _texture_format2;
   int _texture_num_views;
   AutoTextureScale _auto_texture_scale;
 };

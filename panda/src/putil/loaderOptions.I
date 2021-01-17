@@ -56,6 +56,37 @@ get_texture_flags() const {
 }
 
 /**
+ * Remember all the options for the textures being loaded.
+ * These are used to gurantee that unique textures are not ignored. 
+*/
+
+INLINE void LoaderOptions::
+set_texture_format(int texture_format){
+  _texture_format= texture_format;
+}
+
+/**
+ *  
+ */
+INLINE int LoaderOptions::
+get_texture_format() const {
+  return _texture_format;
+}
+
+INLINE void LoaderOptions::
+set_texture_format2(int texture_format2){
+  _texture_format2 = texture_format2;
+}
+
+/**
+ *  
+ */
+INLINE int LoaderOptions::
+get_texture_format2() const {
+  return _texture_format2;
+}
+
+/**
  * Specifies the expected number of views to load for the texture.  This is
  * ignored unless TF_multiview is included in texture_flags.  This must be
  * specified when loading a 3-d multiview texture or 2-d texture array, in
