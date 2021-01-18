@@ -49,6 +49,11 @@
    out from CVS by the builder). */
 #define PANDA_VERSION_STR "@PANDA_VERSION_STR@"
 
+/* This is the build date expressed as a string.  It can be left undefined
+   to have this set automatically at build time, but it may be desirable to
+   override this to make the build process deterministic. */
+#cmakedefine PANDA_BUILD_DATE_STR "@PANDA_BUILD_DATE_STR@"
+
 /* This is the Git commit we built Panda from, or an empty string if this isn't
    known. */
 #define PANDA_GIT_COMMIT_STR "@PANDA_GIT_COMMIT_STR@"

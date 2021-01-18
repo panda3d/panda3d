@@ -43,6 +43,19 @@ set(PANDA_VERSION_SYMBOL panda_version_${PROJECT_VERSION_MAJOR}_${PROJECT_VERSIO
 # for each component.
 math(EXPR PANDA_NUMERIC_VERSION "${PROJECT_VERSION_MAJOR}*1000000 + ${PROJECT_VERSION_MINOR}*1000 + ${PROJECT_VERSION_PATCH}")
 
+# If SOURCE_DATE_EPOCH is set, it affects PandaSystem::get_build_date()
+if(DEFINED ENV{SOURCE_DATE_EPOCH})
+  if(CMAKE_VERSION VERSION_LESS "3.8")
+    message(FATAL_ERROR "CMake 3.8 is required to support SOURCE_DATE_EPOCH properly.")
+  endif()
+
+  string(TIMESTAMP _build_date "%b %d %Y %H:%M:%S" UTC)
+
+  # CMake doesn't support %e, replace leading zero in day with space
+  string(REGEX REPLACE "^([a-zA-Z]+) 0" "\\1  " PANDA_BUILD_DATE_STR "${_build_date}")
+  unset(_build_date)
+endif()
+
 # The Panda Git SHA1 refspec, for PandaSystem::get_git_commit()
 find_package(Git QUIET)
 if(GIT_EXECUTABLE)
