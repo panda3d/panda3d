@@ -6114,7 +6114,7 @@ def ParallelMake(tasklist):
         taskqueue.put(0)
     # Make sure there aren't any unsatisfied tasks
     if len(tasklist) > 0:
-        exit(f"Dependency problems: {len(tasklist)} tasks not finished. First task unsatisfied: {tasklist[0][2]}")
+        exit("Dependency problems: {0} tasks not finished. First task unsatisfied: {1}".format(len(tasklist), tasklist[0][2]))
 
 
 def SequentialMake(tasklist):
