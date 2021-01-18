@@ -1,13 +1,14 @@
+
 # This file defines the current version number for Panda. It is read
 # by the top CMakeLists.txt, which puts it in the global namespace for
 # all CMake scripts for Panda.
 
 option(PANDA_OFFICIAL_VERSION
-  "This variable will be defined to false in the CVS repository, but
+  "This variable will be defined to false in the Git repository, but
 scripts that generate source tarballs and/or binary releases for
-distribution, by checking out Panda from an official CVS tag,
+distribution, by checking out Panda from an official Git tag,
 should explictly set this to true.  When false, it indicates that
-the current version of Panda was checked out from CVS, so it may
+the current version of Panda was checked out from Git, so it may
 not be a complete representation of the indicated version."
   OFF)
 
