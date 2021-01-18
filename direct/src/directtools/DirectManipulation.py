@@ -1368,7 +1368,7 @@ class ObjectHandles(NodePath, DirectObject):
         self.setScalingFactor(1)
 
     def setScalingFactor(self, scaleFactor):
-        self.ohScalingFactor = self.ohScalingFactor * scaleFactor
+        self.ohScalingFactor = scaleFactor
         self.scalingNode.setScale(self.ohScalingFactor * self.directScalingFactor)
 
     def getScalingFactor(self):
