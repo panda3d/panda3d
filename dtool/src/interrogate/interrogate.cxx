@@ -544,7 +544,15 @@ main(int argc, char **argv) {
   // Make up a file identifier.  This is just some bogus number that should be
   // the same in both the compiled-in code and in the database, so we can
   // check synchronicity at load time.
-  int file_identifier = time(nullptr);
+  // We allow overriding this value by setting SOURCE_DATE_EPOCH to support
+  // reproducible builds.
+  int file_identifier;
+  const char *source_date_epoch = getenv("SOURCE_DATE_EPOCH");
+  if (source_date_epoch != nullptr && source_date_epoch[0] != 0) {
+    file_identifier = atoi(source_date_epoch);
+  } else {
+    file_identifier = time(nullptr);
+  }
   InterrogateModuleDef *def = builder.make_module_def(file_identifier);
 
   pofstream * the_output_include = nullptr;
