@@ -197,7 +197,11 @@ get_compiler() {
  */
 string PandaSystem::
 get_build_date() {
+#ifdef PANDA_BUILD_DATE_STR
+  return PANDA_BUILD_DATE_STR;
+#else
   return __DATE__ " " __TIME__;
+#endif
 }
 
 /**

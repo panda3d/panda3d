@@ -978,6 +978,7 @@ class build_apps(setuptools.Command):
 
         rootdir = os.getcwd()
         for dirname, subdirlist, filelist in os.walk(rootdir):
+            subdirlist.sort()
             dirpath = os.path.relpath(dirname, rootdir)
             if skip_directory(dirpath):
                 self.announce('skipping directory {}'.format(dirpath))

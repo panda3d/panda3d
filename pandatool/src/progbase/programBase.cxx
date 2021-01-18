@@ -201,13 +201,25 @@ write_man_page(std::ostream &out) {
   // Generate a date string for inclusion into the footer.
   char date_str[256];
   date_str[0] = 0;
-  time_t current_time = time(nullptr);
+  time_t current_time;
+  tm *today = nullptr;
 
-  if (current_time != (time_t) -1) {
-    tm *today = localtime(&current_time);
-    if (today == nullptr || 0 == strftime(date_str, 256, "%d %B %Y", today)) {
-      date_str[0] = 0;
+  // This variable overrides the time we write to the footer.
+  const char *source_date_epoch = getenv("SOURCE_DATE_EPOCH");
+  if (source_date_epoch == nullptr || source_date_epoch[0] == 0 ||
+      (current_time = (time_t)strtoll(source_date_epoch, nullptr, 10)) <= 0) {
+    current_time = time(nullptr);
+    if (current_time != (time_t)-1) {
+      today = localtime(&current_time);
     }
+  }
+  else {
+    // Format as UTC to avoid inconsistency being introduced due to timezones.
+    today = gmtime(&current_time);
+  }
+
+  if (today == nullptr || 0 == strftime(date_str, 256, "%d %B %Y", today)) {
+    date_str[0] = 0;
   }
 
   out << " 1 \"" << date_str << "\" \""

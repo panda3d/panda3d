@@ -81,6 +81,25 @@ defaultHiddenImports = {
     'pandas._libs.tslibs.conversion': ['pandas._libs.tslibs.base'],
 }
 
+
+# These are modules that import other modules but shouldn't pick them up as
+# dependencies (usually because they are optional).  This prevents picking up
+# unwanted dependencies.
+ignoreImports = {
+    'direct.showbase.PythonUtil': ['pstats', 'profile'],
+
+    'toml.encoder': ['numpy'],
+}
+
+if sys.version_info >= (3, 8):
+    # importlib.metadata is a "provisional" module introduced in Python 3.8 that
+    # conditionally pulls in dependency-rich packages like "email" and "pep517"
+    # (the latter of which is a thirdparty package!)  But it's only imported in
+    # one obscure corner, so we don't want to pull it in by default.
+    ignoreImports['importlib._bootstrap_external'] = ['importlib.metadata']
+    ignoreImports['importlib.metadata'] = ['pep517']
+
+
 # These are overrides for specific modules.
 overrideModules = {
     # Used by the warnings module, among others, to get line numbers.  Since
@@ -997,7 +1016,7 @@ class Freezer:
 
         # Scan the directory, looking for .py files.
         modules = []
-        for basename in os.listdir(pathname):
+        for basename in sorted(os.listdir(pathname)):
             if basename.endswith('.py') and basename != '__init__.py':
                 modules.append(basename[:-3])
 
@@ -1031,7 +1050,7 @@ class Freezer:
             modulePath = self.getModulePath(topName)
             if modulePath:
                 for dirname in modulePath:
-                    for basename in os.listdir(dirname):
+                    for basename in sorted(os.listdir(dirname)):
                         if os.path.exists(os.path.join(dirname, basename, '__init__.py')):
                             parentName = '%s.%s' % (topName, basename)
                             newParentName = '%s.%s' % (newTopName, basename)
@@ -2499,6 +2518,11 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
         if name in self.badmodules:
             self._add_badmodule(name, caller)
             return
+
+        if level <= 0 and caller and caller.__name__ in ignoreImports:
+            if name in ignoreImports[caller.__name__]:
+                return
+
         try:
             self.import_hook(name, caller, level=level)
         except ImportError as msg:
@@ -2679,7 +2703,7 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
             except OSError:
                 self.msg(2, "can't list directory", dir)
                 continue
-            for name in names:
+            for name in sorted(names):
                 mod = None
                 for suff in self.suffixes:
                     n = len(suff)

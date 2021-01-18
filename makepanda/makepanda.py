@@ -2598,6 +2598,14 @@ def CreatePandaVersionFiles():
     if GIT_COMMIT:
         pandaversion_h += "\n#define PANDA_GIT_COMMIT_STR \"%s\"\n" % (GIT_COMMIT)
 
+    # Allow creating a deterministic build by setting this.
+    source_date = os.environ.get("SOURCE_DATE_EPOCH")
+    if source_date:
+        # This matches the GCC / Clang format for __DATE__ __TIME__
+        source_date = time.gmtime(int(source_date))
+        source_date = time.strftime('%b %e %Y %H:%M:%S', source_date)
+        pandaversion_h += "\n#define PANDA_BUILD_DATE_STR \"%s\"\n" % (source_date)
+
     checkpandaversion_cxx = CHECKPANDAVERSION_CXX.replace("$VERSION1",str(version1))
     checkpandaversion_cxx = checkpandaversion_cxx.replace("$VERSION2",str(version2))
     checkpandaversion_cxx = checkpandaversion_cxx.replace("$VERSION3",str(version3))
