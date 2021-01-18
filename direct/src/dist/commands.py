@@ -1045,6 +1045,7 @@ class build_apps(setuptools.Command):
 
         rootdir = os.getcwd()
         for dirname, subdirlist, filelist in os.walk(rootdir):
+            subdirlist.sort()
             dirpath = os.path.relpath(dirname, rootdir)
             if skip_directory(dirpath):
                 self.announce('skipping directory {}'.format(dirpath))
@@ -1414,7 +1415,8 @@ class bdist_apps(setuptools.Command):
             zf.write(build_dir, base_dir)
 
             for dirpath, dirnames, filenames in os.walk(build_dir):
-                for name in sorted(dirnames):
+                dirnames.sort()
+                for name in dirnames:
                     path = os.path.normpath(os.path.join(dirpath, name))
                     zf.write(path, path.replace(build_dir, base_dir, 1))
                 for name in filenames:
@@ -1429,15 +1431,38 @@ class bdist_apps(setuptools.Command):
         build_cmd = self.get_finalized_command('build_apps')
         binary_names = list(build_cmd.console_apps.keys()) + list(build_cmd.gui_apps.keys())
 
+        source_date = os.environ.get('SOURCE_DATE_EPOCH', '').strip()
+        if source_date:
+            max_mtime = int(source_date)
+        else:
+            max_mtime = None
+
         def tarfilter(tarinfo):
             if tarinfo.isdir() or os.path.basename(tarinfo.name) in binary_names:
                 tarinfo.mode = 0o755
             else:
                 tarinfo.mode = 0o644
+
+            # This isn't interesting information to retain for distribution.
+            tarinfo.uid = 0
+            tarinfo.gid = 0
+            tarinfo.uname = ""
+            tarinfo.gname = ""
+
+            if max_mtime is not None and tarinfo.mtime >= max_mtime:
+                tarinfo.mtime = max_mtime
+
             return tarinfo
 
-        with tarfile.open('{}.tar.{}'.format(basename, tar_compression), 'w|{}'.format(tar_compression)) as tf:
+        filename = '{}.tar.{}'.format(basename, tar_compression)
+        with tarfile.open(filename, 'w|{}'.format(tar_compression)) as tf:
             tf.add(build_dir, base_dir, filter=tarfilter)
+
+        if tar_compression == 'gz' and max_mtime is not None:
+            # Python provides no elegant way to overwrite the gzip timestamp.
+            with open(filename, 'r+b') as fp:
+                fp.seek(4)
+                fp.write(struct.pack("<L", max_mtime))
 
     def create_nsis(self, basename, build_dir, is_64bit):
         # Get a list of build applications
@@ -1500,6 +1525,7 @@ class bdist_apps(setuptools.Command):
         nsi_dir = p3d.Filename.fromOsSpecific(build_cmd.build_base)
         build_root_dir = p3d.Filename.fromOsSpecific(build_dir)
         for root, dirs, files in os.walk(build_dir):
+            dirs.sort()
             for name in files:
                 basefile = p3d.Filename.fromOsSpecific(os.path.join(root, name))
                 file = p3d.Filename(basefile)

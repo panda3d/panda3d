@@ -958,7 +958,7 @@ class Freezer:
 
         # Scan the directory, looking for .py files.
         modules = []
-        for basename in os.listdir(pathname):
+        for basename in sorted(os.listdir(pathname)):
             if basename.endswith('.py') and basename != '__init__.py':
                 modules.append(basename[:-3])
 
@@ -992,7 +992,7 @@ class Freezer:
             modulePath = self.getModulePath(topName)
             if modulePath:
                 for dirname in modulePath:
-                    for basename in os.listdir(dirname):
+                    for basename in sorted(os.listdir(dirname)):
                         if os.path.exists(os.path.join(dirname, basename, '__init__.py')):
                             parentName = '%s.%s' % (topName, basename)
                             newParentName = '%s.%s' % (newTopName, basename)
@@ -2587,7 +2587,7 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
             except OSError:
                 self.msg(2, "can't list directory", dir)
                 continue
-            for name in names:
+            for name in sorted(names):
                 mod = None
                 for suff in self.suffixes:
                     n = len(suff)
