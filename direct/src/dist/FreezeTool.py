@@ -92,6 +92,41 @@ else:
     hiddenImports['matplotlib.backends._backend_tk'] = ['Tkinter']
 
 
+# These are modules that import other modules but shouldn't pick them up as
+# dependencies (usually because they are optional).  This prevents picking up
+# unwanted dependencies.
+ignoreImports = {
+    'direct.showbase.PythonUtil': ['pstats', 'profile'],
+
+    'toml.encoder': ['numpy'],
+}
+
+if sys.version_info >= (3, 8):
+    # importlib.metadata is a "provisional" module introduced in Python 3.8 that
+    # conditionally pulls in dependency-rich packages like "email" and "pep517"
+    # (the latter of which is a thirdparty package!)  But it's only imported in
+    # one obscure corner, so we don't want to pull it in by default.
+    ignoreImports['importlib._bootstrap_external'] = ['importlib.metadata']
+    ignoreImports['importlib.metadata'] = ['pep517']
+
+if sys.version_info < (3, 0):
+    # Include everything that we know conditionally imports the "builtins"
+    # module in Python 3 only, because otherwise it would cause the Python 2.7
+    # package "builtins" to be included as a dependency.
+    ignoreImports.update({
+        'direct.p3d.AppRunner': ['builtins'],
+        'direct.showbase.ContainerLeakDetector': ['builtins'],
+        'direct.showbase.LeakDetectors': ['builtins'],
+        'direct.showbase.MessengerLeakDetector': ['builtins'],
+        'direct.showbase.ObjectReport': ['builtins'],
+        'direct.showbase.ProfileSession': ['builtins'],
+        'direct.showbase.PythonUtil': ['builtins'] + ignoreImports['direct.showbase.PythonUtil'],
+        'direct.showbase.ShowBase': ['builtins'],
+        'direct.showbase.ShowBaseGlobal': ['builtins'],
+        'py._builtin': ['builtins'],
+    })
+
+
 # These are overrides for specific modules.
 overrideModules = {
     # Used by the warnings module, among others, to get line numbers.  Since
@@ -2409,6 +2444,11 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
         if name in self.badmodules:
             self._add_badmodule(name, caller)
             return
+
+        if level <= 0 and caller and caller.__name__ in ignoreImports:
+            if name in ignoreImports[caller.__name__]:
+                return
+
         try:
             self.import_hook(name, caller, level=level)
         except ImportError as msg:
