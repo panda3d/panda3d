@@ -11,10 +11,6 @@ from . import DirectGuiGlobals as DGG
 from .DirectFrame import *
 from .DirectScrollBar import *
 
-"""
-import DirectScrolledFrame
-d = DirectScrolledFrame(borderWidth=(0, 0))
-"""
 
 class DirectScrolledFrame(DirectFrame):
     """
@@ -77,7 +73,8 @@ class DirectScrolledFrame(DirectFrame):
         self.initialiseoptions(DirectScrolledFrame)
 
     def setScrollBarWidth(self):
-        if self.fInit: return
+        if self.fInit:
+            return
 
         w = self['scrollBarWidth']
         self.verticalScroll["frameSize"] = (-w / 2.0, w / 2.0, self.verticalScroll["frameSize"][2], self.verticalScroll["frameSize"][3])

@@ -130,5 +130,3 @@ def createBounce(nodeObj, numBounces, startValues, totalTime, amplitude,
         currTime = bounceTime
 
     return result
-
-

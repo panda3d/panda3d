@@ -676,7 +676,7 @@ estimate_texture_memory() const {
   CDReader cdata(_cycler);
   size_t pixels = cdata->_x_size * cdata->_y_size * cdata->_z_size;
 
-  size_t bpp = 4;
+  size_t bpp = 0;
   switch (cdata->_format) {
   case Texture::F_rgb332:
     bpp = 1;
@@ -739,10 +739,8 @@ estimate_texture_memory() const {
     bpp = 8;
     break;
 
-  case Texture::F_rgba16:
-    bpp = 8;
-    break;
   case Texture::F_rgba32:
+  case Texture::F_rgba32i:
     bpp = 16;
     break;
 
@@ -752,9 +750,13 @@ estimate_texture_memory() const {
     bpp = 2;
     break;
   case Texture::F_rg16:
+  case Texture::F_rg16i:
     bpp = 4;
     break;
   case Texture::F_rgb16:
+  case Texture::F_rgb16i:
+  case Texture::F_rgba16:
+  case Texture::F_rgba16i:
     bpp = 8;
     break;
 
@@ -764,10 +766,12 @@ estimate_texture_memory() const {
     break;
 
   case Texture::F_rg32:
+  case Texture::F_rg32i:
     bpp = 8;
     break;
 
   case Texture::F_rgb32:
+  case Texture::F_rgb32i:
     bpp = 16;
     break;
 
@@ -776,11 +780,12 @@ estimate_texture_memory() const {
   case Texture::F_rgb10_a2:
     bpp = 4;
     break;
+  }
 
-  default:
+  if (bpp == 0) {
+    bpp = 4;
     gobj_cat.warning() << "Unhandled format in estimate_texture_memory(): "
                        << cdata->_format << "\n";
-    break;
   }
 
   size_t bytes = pixels * bpp;
@@ -1023,7 +1028,8 @@ set_ram_image_as(CPTA_uchar image, const string &supplied_format) {
   string format = upcase(supplied_format);
 
   // Make sure we can grab something that's uncompressed.
-  int imgsize = cdata->_x_size * cdata->_y_size;
+  size_t imgsize = (size_t)cdata->_x_size * (size_t)cdata->_y_size *
+                   (size_t)cdata->_z_size * (size_t)cdata->_num_views;
   nassertv(image.size() == (size_t)(cdata->_component_width * format.size() * imgsize));
 
   // Check if the format is already what we have internally.
@@ -1788,10 +1794,6 @@ write(ostream &out, int indent_level) const {
   case F_r16:
     out << "r16";
     break;
-  case F_r16i:
-    out << "r16i";
-    break;
-
   case F_rg16:
     out << "rg16";
     break;
@@ -1850,6 +1852,29 @@ write(ostream &out, int indent_level) const {
 
   case F_rg:
     out << "rg";
+    break;
+
+  case F_r16i:
+    out << "r16i";
+    break;
+  case F_rg16i:
+    out << "rg16i";
+    break;
+  case F_rgb16i:
+    out << "rgb16i";
+    break;
+  case F_rgba16i:
+    out << "rgba16i";
+    break;
+
+  case F_rg32i:
+    out << "rg32i";
+    break;
+  case F_rgb32i:
+    out << "rgb32i";
+    break;
+  case F_rgba32i:
+    out << "rgba32i";
     break;
   }
 
@@ -2216,8 +2241,6 @@ format_format(Format format) {
     return "rgba32";
   case F_r16:
     return "r16";
-  case F_r16i:
-    return "r16i";
   case F_rg16:
     return "rg16";
   case F_rgb16:
@@ -2254,6 +2277,20 @@ format_format(Format format) {
     return "rgb10_a2";
   case F_rg:
     return "rg";
+  case F_r16i:
+    return "r16i";
+  case F_rg16i:
+    return "rg16i";
+  case F_rgb16i:
+    return "rgb16i";
+  case F_rgba16i:
+    return "rgba16i";
+  case F_rg32i:
+    return "rg32i";
+  case F_rgb32i:
+    return "rgb32i";
+  case F_rgba32i:
+    return "rgba32i";
   }
   return "**invalid**";
 }
@@ -2339,6 +2376,14 @@ string_format(const string &str) {
     return F_rg32;
   } else if (cmp_nocase(str, "rgb32") == 0 || cmp_nocase(str, "r32g32b32") == 0) {
     return F_rgb32;
+  } else if (cmp_nocase_uh(str, "r8i") == 0) {
+    return F_r8i;
+  } else if (cmp_nocase_uh(str, "rg8i") == 0 || cmp_nocase_uh(str, "r8g8i") == 0) {
+    return F_rg8i;
+  } else if (cmp_nocase_uh(str, "rgb8i") == 0 || cmp_nocase_uh(str, "r8g8b8i") == 0) {
+    return F_rgb8i;
+  } else if (cmp_nocase_uh(str, "rgba8i") == 0 || cmp_nocase_uh(str, "r8g8b8a8i") == 0) {
+    return F_rgba8i;
   } else if (cmp_nocase(str, "r11g11b10") == 0) {
     return F_r11_g11_b10;
   } else if (cmp_nocase(str, "rgb9_e5") == 0) {
@@ -2347,6 +2392,20 @@ string_format(const string &str) {
     return F_rgb10_a2;
   } else if (cmp_nocase_uh(str, "rg") == 0) {
     return F_rg;
+  } else if (cmp_nocase_uh(str, "r16i") == 0) {
+    return F_r16i;
+  } else if (cmp_nocase_uh(str, "rg16i") == 0 || cmp_nocase_uh(str, "r16g16i") == 0) {
+    return F_rg16i;
+  } else if (cmp_nocase_uh(str, "rgb16i") == 0 || cmp_nocase_uh(str, "r16g16b16i") == 0) {
+    return F_rgb16i;
+  } else if (cmp_nocase_uh(str, "rgba16i") == 0 || cmp_nocase_uh(str, "r16g16b16a16i") == 0) {
+    return F_rgba16i;
+  } else if (cmp_nocase_uh(str, "rg32i") == 0 || cmp_nocase_uh(str, "r32g32i") == 0) {
+    return F_rg32i;
+  } else if (cmp_nocase_uh(str, "rgb32i") == 0 || cmp_nocase_uh(str, "r32g32b32i") == 0) {
+    return F_rgb32i;
+  } else if (cmp_nocase_uh(str, "rgba32i") == 0 || cmp_nocase_uh(str, "r32g32b32a32i") == 0) {
+    return F_rgba32i;
   }
 
   gobj_cat->error()
@@ -2587,6 +2646,8 @@ has_alpha(Format format) {
   case F_sluminance_alpha:
   case F_rgba8i:
   case F_rgb10_a2:
+  case F_rgba16i:
+  case F_rgba32i:
     return true;
 
   default:
@@ -2620,6 +2681,31 @@ is_srgb(Format format) {
   case F_srgb_alpha:
   case F_sluminance:
   case F_sluminance_alpha:
+    return true;
+
+  default:
+    return false;
+  }
+}
+
+/**
+ * Returns true if the indicated format is an integer format, false otherwise.
+ */
+bool Texture::
+is_integer(Format format) {
+  switch (format) {
+  case F_r32i:
+  case F_r8i:
+  case F_rg8i:
+  case F_rgb8i:
+  case F_rgba8i:
+  case F_r16i:
+  case F_rg16i:
+  case F_rgb16i:
+  case F_rgba16i:
+  case F_rg32i:
+  case F_rgb32i:
+  case F_rgba32i:
     return true;
 
   default:
@@ -3673,9 +3759,29 @@ do_read_dds(CData *cdata, istream &in, const string &filename, bool header_only)
       component_type = T_unsigned_short;
       func = read_dds_level_abgr16;
       break;
+    case 12:   // DXGI_FORMAT_R16G16B16A16_UINT
+      format = F_rgba16i;
+      component_type = T_unsigned_short;
+      func = read_dds_level_abgr16;
+      break;
+    case 14:   // DXGI_FORMAT_R16G16B16A16_SINT
+      format = F_rgba16i;
+      component_type = T_short;
+      func = read_dds_level_abgr16;
+      break;
     case 16:   // DXGI_FORMAT_R32G32_FLOAT
       format = F_rg32;
       component_type = T_float;
+      func = read_dds_level_raw;
+      break;
+    case 17:   // DXGI_FORMAT_R32G32_UINT
+      format = F_rg32i;
+      component_type = T_unsigned_int;
+      func = read_dds_level_raw;
+      break;
+    case 18:   // DXGI_FORMAT_R32G32_SINT
+      format = F_rg32i;
+      component_type = T_int;
       func = read_dds_level_raw;
       break;
     case 27:   // DXGI_FORMAT_R8G8B8A8_TYPELESS
@@ -3711,8 +3817,18 @@ do_read_dds(CData *cdata, istream &in, const string &filename, bool header_only)
       component_type = T_unsigned_short;
       func = read_dds_level_raw;
       break;
+    case 36:   // DXGI_FORMAT_R16G16_UINT:
+      format = F_rg16i;
+      component_type = T_unsigned_short;
+      func = read_dds_level_raw;
+      break;
     case 37:   // DXGI_FORMAT_R16G16_SNORM:
       format = F_rg16;
+      component_type = T_short;
+      func = read_dds_level_raw;
+      break;
+    case 38:   // DXGI_FORMAT_R16G16_SINT:
+      format = F_rg16i;
       component_type = T_short;
       func = read_dds_level_raw;
       break;
@@ -4610,8 +4726,12 @@ do_read_ktx(CData *cdata, istream &in, const string &filename, bool header_only)
         break;
       case KTX_RG16I:
       case KTX_RG16UI:
+        format = F_rg16i;
+        break;
       case KTX_RG32I:
       case KTX_RG32UI:
+        format = F_rg32i;
+        break;
       default:
         gobj_cat.error()
           << filename << " has unsupported RG integer format " << internal_format << "\n";
@@ -4675,8 +4795,12 @@ do_read_ktx(CData *cdata, istream &in, const string &filename, bool header_only)
         break;
       case KTX_RGB16I:
       case KTX_RGB16UI:
+        format = F_rgb16i;
+        break;
       case KTX_RGB32I:
       case KTX_RGB32UI:
+        format = F_rgb32i;
+        break;
       default:
         gobj_cat.error()
           << filename << " has unsupported RGB integer format " << internal_format << "\n";
@@ -4738,8 +4862,12 @@ do_read_ktx(CData *cdata, istream &in, const string &filename, bool header_only)
         break;
       case KTX_RGBA16I:
       case KTX_RGBA16UI:
+        format = F_rgba16i;
+        break;
       case KTX_RGBA32I:
       case KTX_RGBA32UI:
+        format = F_rgba32i;
+        break;
       default:
         gobj_cat.error()
           << filename << " has unsupported RGBA integer format " << internal_format << "\n";
@@ -6876,6 +7004,8 @@ do_set_format(CData *cdata, Texture::Format format) {
   case F_rg32:
   case F_rg8i:
   case F_rg:
+  case F_rg16i:
+  case F_rg32i:
     cdata->_num_components = 2;
     break;
 
@@ -6890,6 +7020,8 @@ do_set_format(CData *cdata, Texture::Format format) {
   case F_rgb8i:
   case F_r11_g11_b10:
   case F_rgb9_e5:
+  case F_rgb16i:
+  case F_rgb32i:
     cdata->_num_components = 3;
     break;
 
@@ -6904,6 +7036,8 @@ do_set_format(CData *cdata, Texture::Format format) {
   case F_srgb_alpha:
   case F_rgba8i:
   case F_rgb10_a2:
+  case F_rgba16i:
+  case F_rgba32i:
     cdata->_num_components = 4;
     break;
   }

@@ -13,8 +13,8 @@ adds itself to this module's scope when instantiated."""
 
 __all__ = []
 
-from .ShowBase import ShowBase, WindowControls
-from direct.directnotify.DirectNotifyGlobal import directNotify, giveNotify
+from .ShowBase import ShowBase, WindowControls # pylint: disable=unused-import
+from direct.directnotify.DirectNotifyGlobal import directNotify, giveNotify # pylint: disable=unused-import
 from panda3d.core import VirtualFileSystem, Notify, ClockObject, PandaSystem
 from panda3d.core import ConfigPageManager, ConfigVariableManager
 from panda3d.core import NodePath, PGTop

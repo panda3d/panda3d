@@ -9,6 +9,7 @@ from direct.actor import Actor
 
 from . import ObjectGlobals as OG
 
+
 class ObjectHandler:
     """ ObjectHandler will create and update objects """
 
@@ -17,8 +18,8 @@ class ObjectHandler:
 
     def createDoubleSmiley(self, horizontal=True):
         root = render.attachNewNode('doubleSmiley')
-        a = loader.loadModel('models/smiley.egg')
-        b = loader.loadModel('models/smiley.egg')
+        a = base.loader.loadModel('models/smiley.egg')
+        b = base.loader.loadModel('models/smiley.egg')
         if horizontal:
             a.setName('left')
             b.setName('right')
@@ -51,7 +52,7 @@ class ObjectHandler:
             child.removeNode()
 
         for i in range(val):
-            a = loader.loadModel(obj[OG.OBJ_MODEL])
+            a = base.loader.loadModel(obj[OG.OBJ_MODEL])
             b = a.find("+GeomNode")
             b.setPos(0, i*2, 0)
             b.reparentTo(objNP)
@@ -62,15 +63,13 @@ class ObjectHandler:
         return pandaActor
 
     def createGrass(self):
-        environ = loader.loadModel("models/environment.egg")
+        environ = base.loader.loadModel("models/environment.egg")
         environ.setScale(0.25,0.25,0.25)
         environ.setPos(-8,42,0)
         return environ
+
 
 class PandaActor(Actor.Actor):
     def __init__(self):
         Actor.Actor.__init__(self, "models/panda-model.egg")
         self.setScale(0.005)
-
-
-

@@ -548,7 +548,7 @@ class SelectionRay(SelectionQueue):
         if xy:
             mx = xy[0]
             my = xy[1]
-        elif direct:
+        elif base.direct:
             mx = SEditor.dr.mouseX
             my = SEditor.dr.mouseY
         else:

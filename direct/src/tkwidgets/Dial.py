@@ -8,7 +8,9 @@ __all__ = ['Dial', 'AngleDial', 'DialWidget']
 from direct.showbase.TkGlobal import *
 from .Valuator import Valuator, VALUATOR_MINI, VALUATOR_FULL
 from direct.task import Task
-import math, operator, Pmw
+import math
+import operator
+import Pmw
 
 TWO_PI = 2.0 * math.pi
 ONEPOINTFIVE_PI = 1.5 * math.pi
@@ -256,7 +258,7 @@ class DialWidget(Pmw.MegaWidget):
                 self.rollCount = 0
             value = self['base'] + ((value - self['base']) % self['delta'])
         # Send command if any
-        if fCommand and (self['command'] != None):
+        if fCommand and (self['command'] is not None):
             self['command'](*[value] + self['commandData'])
         # Record value
         self.value = value

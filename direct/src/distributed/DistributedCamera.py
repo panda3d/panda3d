@@ -12,7 +12,7 @@ class Fixture(NodePath, FSM):
         self.lens = PerspectiveLens()
         self.lens.setFov(base.camLens.getFov())
 
-        model = loader.loadModel('models/misc/camera', okMissing = True)
+        model = base.loader.loadModel('models/misc/camera', okMissing = True)
         model.reparentTo(self)
 
         self.reparentTo(parent)
@@ -129,8 +129,8 @@ class Fixture(NodePath, FSM):
 
     def enterUsing(self, args = []):
         localAvatar.b_setGameState('Camera')
-        camera.setPosHpr(0,0,0,0,0,0)
-        camera.reparentTo(self)
+        base.camera.setPosHpr(0,0,0,0,0,0)
+        base.camera.reparentTo(self)
         self.hide()
 
         base.cam.node().setLens(self.lens)

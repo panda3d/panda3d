@@ -14,6 +14,58 @@
 #include "texturePeeker.h"
 
 
+static double get_unsigned_byte_i(const unsigned char *&p) {
+  return *p++;
+}
+
+static double get_signed_byte_i(const unsigned char *&p) {
+  return *(signed char *)p++;
+}
+
+static double get_unsigned_short_i(const unsigned char *&p) {
+  union {
+    unsigned short us;
+    unsigned char uc[2];
+  } v;
+  v.uc[0] = (*p++);
+  v.uc[1] = (*p++);
+  return (double)v.us;
+}
+
+static double get_signed_short_i(const unsigned char *&p) {
+  union {
+    signed short ss;
+    unsigned char uc[2];
+  } v;
+  v.uc[0] = (*p++);
+  v.uc[1] = (*p++);
+  return (double)v.ss;
+}
+
+static double get_unsigned_int_i(const unsigned char *&p) {
+  union {
+    unsigned int ui;
+    unsigned char uc[4];
+  } v;
+  v.uc[0] = (*p++);
+  v.uc[1] = (*p++);
+  v.uc[2] = (*p++);
+  v.uc[3] = (*p++);
+  return (double)v.ui;
+}
+
+static double get_signed_int_i(const unsigned char *&p) {
+  union {
+    signed int si;
+    unsigned char uc[4];
+  } v;
+  v.uc[0] = (*p++);
+  v.uc[1] = (*p++);
+  v.uc[2] = (*p++);
+  v.uc[3] = (*p++);
+  return (double)v.si;
+}
+
 /**
  * Use Texture::peek() to construct a TexturePeeker.
  *
@@ -73,35 +125,69 @@ TexturePeeker(Texture *tex, Texture::CData *cdata) {
   }
   _pixel_width = _component_width * _num_components;
 
-  switch (_component_type) {
-  case Texture::T_unsigned_byte:
-    _get_component = Texture::get_unsigned_byte;
-    break;
+  if (Texture::is_integer(_format)) {
+    switch (_component_type) {
+    case Texture::T_unsigned_byte:
+      _get_component = get_unsigned_byte_i;
+      break;
 
-  case Texture::T_unsigned_short:
-    _get_component = Texture::get_unsigned_short;
-    break;
+    case Texture::T_unsigned_short:
+      _get_component = get_unsigned_short_i;
+      break;
 
-  case Texture::T_unsigned_int:
-    _get_component = Texture::get_unsigned_int;
-    break;
+    case Texture::T_unsigned_int:
+      _get_component = get_unsigned_int_i;
+      break;
 
-  case Texture::T_float:
-    _get_component = Texture::get_float;
-    break;
+    case Texture::T_byte:
+      _get_component = get_signed_byte_i;
+      break;
 
-  case Texture::T_half_float:
-    _get_component = Texture::get_half_float;
-    break;
+    case Texture::T_short:
+      _get_component = get_signed_short_i;
+      break;
 
-  case Texture::T_unsigned_int_24_8:
-    _get_component = Texture::get_unsigned_int_24;
-    break;
+    case Texture::T_int:
+      _get_component = get_signed_int_i;
+      break;
 
-  default:
-    // Not supported.
-    _image.clear();
-    return;
+    default:
+      // Not supported.
+      _image.clear();
+      return;
+    }
+  }
+  else {
+    switch (_component_type) {
+    case Texture::T_unsigned_byte:
+      _get_component = Texture::get_unsigned_byte;
+      break;
+
+    case Texture::T_unsigned_short:
+      _get_component = Texture::get_unsigned_short;
+      break;
+
+    case Texture::T_unsigned_int:
+      _get_component = Texture::get_unsigned_int;
+      break;
+
+    case Texture::T_float:
+      _get_component = Texture::get_float;
+      break;
+
+    case Texture::T_half_float:
+      _get_component = Texture::get_half_float;
+      break;
+
+    case Texture::T_unsigned_int_24_8:
+      _get_component = Texture::get_unsigned_int_24;
+      break;
+
+    default:
+      // Not supported.
+      _image.clear();
+      return;
+    }
   }
 
   switch (_format) {
@@ -114,6 +200,7 @@ TexturePeeker(Texture *tex, Texture::CData *cdata) {
   case Texture::F_r16:
   case Texture::F_r32:
   case Texture::F_r32i:
+  case Texture::F_r16i:
     _get_texel = get_texel_r;
     break;
 
@@ -140,21 +227,27 @@ TexturePeeker(Texture *tex, Texture::CData *cdata) {
     _get_texel = get_texel_la;
     break;
 
-  case Texture::F_rg16:
-  case Texture::F_rg32:
   case Texture::F_rg:
+  case Texture::F_rg8i:
+  case Texture::F_rg16:
+  case Texture::F_rg16i:
+  case Texture::F_rg32:
+  case Texture::F_rg32i:
     _get_texel = get_texel_rg;
     break;
 
   case Texture::F_rgb:
   case Texture::F_rgb5:
   case Texture::F_rgb8:
+  case Texture::F_rgb8i:
   case Texture::F_rgb12:
   case Texture::F_rgb16:
+  case Texture::F_rgb16i:
   case Texture::F_rgb332:
   case Texture::F_r11_g11_b10:
   case Texture::F_rgb9_e5:
   case Texture::F_rgb32:
+  case Texture::F_rgb32i:
     _get_texel = get_texel_rgb;
     break;
 
@@ -163,9 +256,12 @@ TexturePeeker(Texture *tex, Texture::CData *cdata) {
   case Texture::F_rgba4:
   case Texture::F_rgba5:
   case Texture::F_rgba8:
+  case Texture::F_rgba8i:
   case Texture::F_rgba12:
   case Texture::F_rgba16:
+  case Texture::F_rgba16i:
   case Texture::F_rgba32:
+  case Texture::F_rgba32i:
   case Texture::F_rgb10_a2:
     _get_texel = get_texel_rgba;
     break;

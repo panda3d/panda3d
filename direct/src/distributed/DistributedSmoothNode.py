@@ -6,7 +6,9 @@ from .ClockDelta import *
 from . import DistributedNode
 from . import DistributedSmoothNodeBase
 from direct.task.Task import cont
+from direct.task.TaskManagerGlobal import taskMgr
 from direct.showbase import DConfig as config
+from direct.showbase.PythonUtil import report
 
 # This number defines our tolerance for out-of-sync telemetry packets.
 # If a packet appears to have originated from more than MaxFuture
@@ -62,9 +64,7 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
     """
 
     def __init__(self, cr):
-        try:
-            self.DistributedSmoothNode_initialized
-        except:
+        if not hasattr(self, 'DistributedSmoothNode_initialized'):
             self.DistributedSmoothNode_initialized = 1
             DistributedNode.DistributedNode.__init__(self, cr)
             DistributedSmoothNodeBase.DistributedSmoothNodeBase.__init__(self)
@@ -181,22 +181,22 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
         self.smoother.setPhonyTimestamp()
         self.smoother.markPosition()
 
-    def _checkResume(self,timestamp):
+    def _checkResume(self, timestamp):
         """
         Determine if we were previously stopped and now need to
         resume movement by making sure any old stored positions
         reflect the node's current position
         """
-        if (self.stopped):
+        if self.stopped:
             currTime = globalClock.getFrameTime()
             now = currTime - self.smoother.getExpectedBroadcastPeriod()
             last = self.smoother.getMostRecentTimestamp()
-            if (now > last):
+            if now > last:
                 # only set a new timestamp postion if we still have
                 # a position being smoothed to (so we don't interrupt
                 # any current smoothing and only do this if the object
                 # is actually locally stopped)
-                if (timestamp == None):
+                if timestamp is None:
                     # no timestamp, use current time
                     local = 0.0
                 else:
@@ -302,7 +302,7 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
         self.smoother.setR(r)
     @report(types = ['args'], dConfigParam = 'smoothnode')
     def setComponentL(self, l):
-        if (l != self.zoneId):
+        if l != self.zoneId:
             # only perform set location if location is different
             self.setLocation(self.parentId,l)
     @report(types = ['args'], dConfigParam = 'smoothnode')
@@ -360,7 +360,7 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
             howFarFuture = local - now
             if howFarFuture - chug >= MaxFuture:
                 # Too far off; advise the other client of our clock information.
-                if globalClockDelta.getUncertainty() != None and \
+                if globalClockDelta.getUncertainty() is not None and \
                    realTime - self.lastSuggestResync >= MinSuggestResync and \
                    hasattr(self.cr, 'localAvatarDoId'):
                     self.lastSuggestResync = realTime
@@ -457,9 +457,9 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
         result = self.peerToPeerResync(
             avId, timestampA, serverTime, uncertainty)
         if result >= 0 and \
-           globalClockDelta.getUncertainty() != None:
+           globalClockDelta.getUncertainty() is not None:
             other = self.cr.doId2do.get(avId)
-            if (not other):
+            if not other:
                 assert self.notify.info(
                     "Warning: couldn't find the avatar %d" % (avId))
             elif hasattr(other, "d_returnResync") and \
@@ -498,7 +498,7 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
         # If we didn't get anything useful from the other client,
         # maybe our clock is just completely hosed.  Go ask the AI.
         if not gotSync:
-            if self.cr.timeManager != None:
+            if self.cr.timeManager is not None:
                 self.cr.timeManager.synchronize("suggested by %d" % (avId))
 
         return gotSync

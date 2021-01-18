@@ -369,7 +369,7 @@ public:
 
 protected:
   void write_vertex_ref(std::ostream &out, int indent_level) const;
-  virtual bool egg_start_parse_body();
+  virtual bool egg_start_parse_body(EggLexerState &state);
   virtual void adjust_under();
   virtual void r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
                            CoordinateSystem to_cs);

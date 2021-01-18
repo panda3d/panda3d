@@ -1,6 +1,8 @@
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.DirectObject import DirectObject
 from direct.showbase.EventGroup import EventGroup
+from direct.showbase.MessengerGlobal import messenger
+
 
 class InterestWatcher(DirectObject):
     """Object that observes all interests adds/removes over a period of time,
@@ -66,11 +68,9 @@ class InterestWatcher(DirectObject):
     def _handleInterestCloseEvent(self, event, parentId, zoneIdList):
         self._gotEvent = True
         self._eGroup.addEvent(event)
-        """
-        if self._recurse:
-            # this interest is in the process of closing. If an interest
-            # underneath any objects in that interest close, we need to know
-            # about it.
-            self.closingParent2zones.setdefault(parentId, set())
-            self.closingParent2zones[parentId].union(set(zoneIdList))
-            """
+        #if self._recurse:
+        #    # this interest is in the process of closing. If an interest
+        #    # underneath any objects in that interest close, we need to know
+        #    # about it.
+        #    self.closingParent2zones.setdefault(parentId, set())
+        #    self.closingParent2zones[parentId].union(set(zoneIdList))

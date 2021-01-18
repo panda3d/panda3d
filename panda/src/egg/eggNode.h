@@ -22,10 +22,13 @@
 #include "lmatrix.h"
 #include "pointerTo.h"
 #include "referenceCount.h"
+#include "extension.h"
 
 class EggGroupNode;
 class EggRenderMode;
 class EggTextureCollection;
+
+struct EggLexerState;
 
 /**
  * A base class for things that may be directly added into the egg hierarchy.
@@ -90,6 +93,7 @@ PUBLISHED:
   void test_under_integrity() const { }
 #endif  // _DEBUG
 
+  EXTENSION(PyObject *__reduce__() const);
 
 protected:
   enum UnderFlags {
@@ -98,7 +102,7 @@ protected:
     UF_local_coord     = 0x004,
   };
 
-  virtual bool egg_start_parse_body();
+  virtual bool egg_start_parse_body(EggLexerState &state);
 
   virtual void update_under(int depth_offset);
   virtual void adjust_under();

@@ -10,9 +10,6 @@ import Pmw
 from tkinter.simpledialog import *
 from tkinter.colorchooser import askcolor
 
-"""
-Change Min/Max buttons to labels, add highlight binding
-"""
 
 class EntryScale(Pmw.MegaWidget):
     "Scale with linked and validated entry"
@@ -257,11 +254,9 @@ class EntryScale(Pmw.MegaWidget):
 
     def onReturn(self, *args):
         """ User redefinable callback executed on <Return> in entry """
-        pass
 
     def onReturnRelease(self, *args):
         """ User redefinable callback executed on <Return> release in entry """
-        pass
 
     def __onPress(self, event):
         # First execute onpress callback
@@ -272,7 +267,6 @@ class EntryScale(Pmw.MegaWidget):
 
     def onPress(self, *args):
         """ User redefinable callback executed on button press """
-        pass
 
     def __onRelease(self, event):
         # Now disable slider command
@@ -283,7 +277,6 @@ class EntryScale(Pmw.MegaWidget):
 
     def onRelease(self, *args):
         """ User redefinable callback executed on button release """
-        pass
 
 class EntryScaleGroup(Pmw.MegaToplevel):
     def __init__(self, parent = None, **kw):
@@ -429,7 +422,6 @@ class EntryScaleGroup(Pmw.MegaToplevel):
 
     def onReturnRelease(self, *args):
         """ User redefinable callback executed on button press """
-        pass
 
     def __onPress(self, esg):
         # Execute onPress callback
@@ -438,7 +430,6 @@ class EntryScaleGroup(Pmw.MegaToplevel):
 
     def onPress(self, *args):
         """ User redefinable callback executed on button press """
-        pass
 
     def __onRelease(self, esg):
         # Execute onRelease callback
@@ -447,7 +438,7 @@ class EntryScaleGroup(Pmw.MegaToplevel):
 
     def onRelease(self, *args):
         """ User redefinable callback executed on button release """
-        pass
+
 
 def rgbPanel(nodePath, callback = None):
     def setNodePathColor(color, np = nodePath, cb = callback):
@@ -533,6 +524,7 @@ def rgbPanel(nodePath, callback = None):
     esg['postCallback'] = onRelease
     return esg
 
+
 ## SAMPLE CODE
 if __name__ == '__main__':
     # Initialise Tkinter and Pmw.
@@ -547,22 +539,20 @@ if __name__ == '__main__':
     mega1 = EntryScale(root, command = printVal)
     mega1.pack(side = 'left', expand = 1, fill = 'x')
 
-    """
     # These are things you can set/configure
     # Starting value for entryScale
-    mega1['value'] = 123.456
-    mega1['text'] = 'Drive delta X'
-    mega1['min'] = 0.0
-    mega1['max'] = 1000.0
-    mega1['resolution'] = 1.0
+    #mega1['value'] = 123.456
+    #mega1['text'] = 'Drive delta X'
+    #mega1['min'] = 0.0
+    #mega1['max'] = 1000.0
+    #mega1['resolution'] = 1.0
     # To change the color of the label:
-    mega1.label['foreground'] = 'Red'
+    #mega1.label['foreground'] = 'Red'
     # Max change/update, default is 100
     # To have really fine control, for example
     # mega1['maxVelocity'] = 0.1
     # Number of digits to the right of the decimal point, default = 2
     # mega1['numDigits'] = 5
-    """
 
     # To create a entryScale group to set an RGBA value:
     group1 = EntryScaleGroup(root, dim = 4,

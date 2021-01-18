@@ -7,12 +7,14 @@ Panda has been fully downloaded. """
 
 __all__ = ['MiniTask', 'MiniTaskManager']
 
+
 class MiniTask:
     done = 0
     cont = 1
 
     def __init__(self, callback):
         self.__call__ = callback
+
 
 class MiniTaskManager:
 
@@ -36,12 +38,12 @@ class MiniTaskManager:
 
     def step(self):
         i = 0
-        while (i < len(self.taskList)):
+        while i < len(self.taskList):
             task = self.taskList[i]
             ret = task(task)
 
             # See if the task is done
-            if (ret == task.cont):
+            if ret == task.cont:
                 # Leave it for next frame, its not done yet
                 pass
 
@@ -65,4 +67,3 @@ class MiniTaskManager:
     def stop(self):
         # Set a flag so we will stop before beginning next frame
         self.running = 0
-

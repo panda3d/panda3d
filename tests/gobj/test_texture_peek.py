@@ -94,3 +94,67 @@ def test_texture_peek_srgba():
 
     # We allow some imprecision.
     assert col.almost_equal((0.5, 0.5, 0.5, 188 / 255.0), 1 / 255.0)
+
+
+def test_texture_peek_ubyte_i():
+    maxval = 255
+    data = array('B', (2, 1, 0, maxval))
+    peeker = peeker_from_pixel(Texture.T_unsigned_byte, Texture.F_rgba8i, data)
+
+    col = LColor()
+    peeker.fetch_pixel(col, 0, 0)
+    assert col == (0, 1, 2, maxval)
+
+
+def test_texture_peek_byte_i():
+    minval = -128
+    maxval = 127
+    data = array('b', (0, -1, minval, maxval))
+    peeker = peeker_from_pixel(Texture.T_byte, Texture.F_rgba8i, data)
+
+    col = LColor()
+    peeker.fetch_pixel(col, 0, 0)
+    assert col == (minval, -1, 0, maxval)
+
+
+def test_texture_peek_ushort_i():
+    maxval = 65535
+    data = array('H', (2, 1, 0, maxval))
+    peeker = peeker_from_pixel(Texture.T_unsigned_short, Texture.F_rgba16i, data)
+
+    col = LColor()
+    peeker.fetch_pixel(col, 0, 0)
+    assert col == (0, 1, 2, maxval)
+
+
+def test_texture_peek_short_i():
+    minval = -32768
+    maxval = 32767
+    data = array('h', (0, -1, minval, maxval))
+    peeker = peeker_from_pixel(Texture.T_short, Texture.F_rgba16i, data)
+
+    col = LColor()
+    peeker.fetch_pixel(col, 0, 0)
+    assert col == (minval, -1, 0, maxval)
+
+
+def test_texture_peek_uint_i():
+    # Highest integer that fits inside float
+    maxval = 2147483648
+    data = array('I', (2, 1, 0, maxval))
+    peeker = peeker_from_pixel(Texture.T_unsigned_int, Texture.F_rgba32i, data)
+
+    col = LColor()
+    peeker.fetch_pixel(col, 0, 0)
+    assert col == (0, 1, 2, maxval)
+
+
+def test_texture_peek_int_i():
+    minval = -2147483648
+    maxval = 2147483647
+    data = array('i', (0, -1, minval, maxval))
+    peeker = peeker_from_pixel(Texture.T_int, Texture.F_rgba32i, data)
+
+    col = LColor()
+    peeker.fetch_pixel(col, 0, 0)
+    assert col == (minval, -1, 0, maxval)

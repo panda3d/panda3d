@@ -1,6 +1,7 @@
-from direct.showbase.DirectObject import *
 from panda3d.core import *
+from direct.showbase.DirectObject import *
 from direct.task import Task
+from direct.task.TaskManagerGlobal import taskMgr
 from direct.distributed import DistributedObject
 from direct.directnotify import DirectNotifyGlobal
 from direct.distributed.ClockDelta import globalClockDelta
@@ -144,7 +145,6 @@ class TimeManager(DistributedObject.DistributedObject):
 
         return 1
 
-
     def serverTime(self, context, timestamp):
         """serverTime(self, int8 context, int32 timestamp)
 
@@ -184,4 +184,3 @@ class TimeManager(DistributedObject.DistributedObject):
 
         messenger.send("gotTimeSync", taskChain = 'default')
         messenger.send(self.cr.uniqueName("gotTimeSync"), taskChain = 'default')
-

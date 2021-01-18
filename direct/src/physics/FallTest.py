@@ -1,38 +1,39 @@
 from panda3d.core import NodePath
 from panda3d.physics import *
 
+
 class FallTest(NodePath):
     def __init__(self):
         NodePath.__init__(self, "FallTest")
 
     def setup(self):
         # Connect to Physics Manager:
-        self.actorNode=ActorNode("FallTestActorNode")
+        self.actorNode = ActorNode("FallTestActorNode")
         #self.actorNode.getPhysicsObject().setOriented(1)
         #self.actorNode.getPhysical(0).setViscosity(0.1)
 
-        actorNodePath=self.attachNewNode(self.actorNode)
+        actorNodePath = self.attachNewNode(self.actorNode)
         #self.setPos(avatarNodePath, Vec3(0))
         #self.setHpr(avatarNodePath, Vec3(0))
 
-        avatarNodePath=loader.loadModel("models/misc/smiley")
+        avatarNodePath = base.loader.loadModel("models/misc/smiley")
         assert not avatarNodePath.isEmpty()
 
-        camLL=render.find("**/camLL")
+        camLL = base.render.find("**/camLL")
         camLL.reparentTo(avatarNodePath)
         camLL.setPosHpr(0, -10, 0, 0, 0, 0)
         avatarNodePath.reparentTo(actorNodePath)
         #avatarNodePath.setPos(Vec3(0))
         #avatarNodePath.setHpr(Vec3(0))
         #avatarNodePath.assign(physicsActor)
-        #self.phys=PhysicsManager()
-        self.phys=base.physicsMgr
+        #self.phys = PhysicsManager()
+        self.phys = base.physicsMgr
 
         if 1:
             fn=ForceNode("FallTest gravity")
             fnp=NodePath(fn)
             fnp.reparentTo(self)
-            fnp.reparentTo(render)
+            fnp.reparentTo(base.render)
             gravity=LinearVectorForce(0.0, 0.0, -.5)
             fn.addForce(gravity)
             self.phys.addLinearForce(gravity)
@@ -42,7 +43,7 @@ class FallTest(NodePath):
             fn=ForceNode("FallTest viscosity")
             fnp=NodePath(fn)
             fnp.reparentTo(self)
-            fnp.reparentTo(render)
+            fnp.reparentTo(base.render)
             self.avatarViscosity=LinearFrictionForce(0.0, 1.0, 0)
             #self.avatarViscosity.setCoef(0.9)
             fn.addForce(self.avatarViscosity)
@@ -59,7 +60,7 @@ class FallTest(NodePath):
             self.momentumForce=LinearVectorForce(0.0, 0.0, 0.0)
             fn=ForceNode("FallTest momentum")
             fnp=NodePath(fn)
-            fnp.reparentTo(render)
+            fnp.reparentTo(base.render)
             fn.addForce(self.momentumForce)
             self.phys.addLinearForce(self.momentumForce)
 
@@ -67,13 +68,13 @@ class FallTest(NodePath):
             self.acForce=LinearVectorForce(0.0, 0.0, 0.0)
             fn=ForceNode("FallTest avatarControls")
             fnp=NodePath(fn)
-            fnp.reparentTo(render)
+            fnp.reparentTo(base.render)
             fn.addForce(self.acForce)
             self.phys.addLinearForce(self.acForce)
             #self.phys.removeLinearForce(self.acForce)
             #fnp.remove()
 
-        #avatarNodePath.reparentTo(render)
+        #avatarNodePath.reparentTo(base.render)
         self.avatarNodePath = avatarNodePath
         #self.actorNode.getPhysicsObject().resetPosition(self.avatarNodePath.getPos())
         #self.actorNode.updateTransform()

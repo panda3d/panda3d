@@ -2,13 +2,13 @@
 
 __all__ = ['Valuator', 'ValuatorGroup', 'ValuatorGroupPanel']
 
+from panda3d.core import Vec4
 from direct.showbase.DirectObject import *
 from direct.showbase.TkGlobal import *
-from . import WidgetPropertiesDialog
-import Pmw
 from direct.directtools.DirectUtil import getTkColorString
-from panda3d.core import Vec4
+from . import WidgetPropertiesDialog
 from tkinter.colorchooser import askcolor
+import Pmw
 
 VALUATOR_MINI = 'mini'
 VALUATOR_FULL = 'full'
@@ -324,19 +324,15 @@ class Valuator(Pmw.MegaWidget):
     # Virtual functions to be redefined by subclass
     def createValuator(self):
         """ Function used by subclass to create valuator geometry """
-        pass
 
     def packValuator(self):
         """ Function used by subclass to pack widget """
-        pass
 
     def addValuatorMenuEntries(self):
         """ Function used by subclass to add menu entries to popup menu """
-        pass
 
     def addValuatorPropertiesToDialog(self):
         """ Function used by subclass to add properties to property dialog """
-        pass
 
 
 FLOATER = 'floater'
@@ -754,4 +750,3 @@ def lightRGBPanel(light, style = 'mini'):
         pButton['bg'] = getTkColorString(color)
     vgp['command'] = setLightColor
     return vgp
-

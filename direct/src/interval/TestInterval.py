@@ -33,7 +33,7 @@ class TestInterval(Interval):
         # Generate unique name
         id = 'Particle-%d' % TestInterval.particleNum
         TestInterval.particleNum += 1
-        if name == None:
+        if name is None:
             name = id
         # Record instance variables
         self.particleEffect = particleEffect
@@ -45,34 +45,30 @@ class TestInterval(Interval):
     def __del__(self):
         pass
 
-    def __step(self,dt):
+    def __step(self, dt):
         self.particleEffect.accelerate(dt,1,0.05)
 
-    def start(self,*args,**kwargs):
+    def start(self, *args, **kwargs):
         self.particleEffect.clearToInitial()
         self.currT = 0
         Interval.start(self,*args,**kwargs)
 
     def privInitialize(self, t):
-        if self.parent != None:
+        if self.parent is not None:
             self.particleEffect.reparentTo(self.parent)
-        if self.renderParent != None:
+        if self.renderParent is not None:
             self.setRenderParent(self.renderParent.node())
 
         self.state = CInterval.SStarted
         #self.particleEffect.enable()
-        """
-        if (self.particleEffect.renderParent != None):
-            for p in self.particleEffect.particlesDict.values():
-                p.setRenderParent(self.particleEffect.renderParent.node())
-        """
+        #if self.particleEffect.renderParent is not None:
+        #    for p in self.particleEffect.particlesDict.values():
+        #        p.setRenderParent(self.particleEffect.renderParent.node())
         for f in self.particleEffect.forceGroupDict.values():
             f.enable()
-        """
-        for p in self.particleEffect.particlesDict.values():
-            p.enable()
-        self.particleEffect.fEnabled = 1
-        """
+        #for p in self.particleEffect.particlesDict.values():
+        #    p.enable()
+        #self.particleEffect.fEnabled = 1
         self.__step(t-self.currT)
         self.currT = t
 

@@ -2,7 +2,9 @@
 WxAppShell provides a GUI application framework using wxPython.
 This is an wxPython version of AppShell.py
 """
-import wx, sys
+import wx
+import sys
+
 
 class WxAppShell(wx.Frame):
     appversion      = '1.0'

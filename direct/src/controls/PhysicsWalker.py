@@ -20,12 +20,14 @@ from direct.directnotify import DirectNotifyGlobal
 from direct.showbase import DirectObject
 from direct.controls.ControlManager import CollisionHandlerRayStart
 from direct.showbase.InputStateGlobal import inputState
+from direct.showbase.MessengerGlobal import messenger
 from direct.task.Task import Task
-from panda3d.core import *
-from panda3d.physics import *
+from direct.task.TaskManagerGlobal import taskMgr
 from direct.extensions_native import Mat3_extensions
 from direct.extensions_native import VBase3_extensions
 from direct.extensions_native import VBase4_extensions
+from panda3d.core import *
+from panda3d.physics import *
 import math
 
 #import LineStream
@@ -131,11 +133,6 @@ class PhysicsWalker(DirectObject.DirectObject):
             assert onScreenDebug.add("height", height.getZ())
             return height.getZ() - self.floorOffset
         else: # useCollisionHandlerQueue
-            """
-            returns the height of the avatar above the ground.
-            If there is no floor below the avatar, 0.0 is returned.
-            aka get airborne height.
-            """
             height = 0.0
             #*#self.cRayTrav.traverse(render)
             if self.cRayQueue.getNumEntries() != 0:
@@ -239,7 +236,7 @@ class PhysicsWalker(DirectObject.DirectObject):
         self.floorOffset = floorOffset = 7.0
 
         self.avatarNodePath = self.setupPhysics(avatarNodePath)
-        if 0 or self.useHeightRay:
+        if self.useHeightRay:
             #self.setupRay(floorBitmask, avatarRadius)
             self.setupRay(floorBitmask, 0.0)
         self.setupSphere(wallBitmask|floorBitmask, avatarRadius)
@@ -257,14 +254,14 @@ class PhysicsWalker(DirectObject.DirectObject):
         self.cSphereNodePath.show()
         if indicator:
             # Indicator Node:
-            change=render.attachNewNode("change")
+            change = render.attachNewNode("change")
             #change.setPos(Vec3(1.0, 1.0, 1.0))
             #change.setHpr(0.0, 0.0, 0.0)
             change.setScale(0.1)
             #change.setColor(Vec4(1.0, 1.0, 1.0, 1.0))
             indicator.reparentTo(change)
 
-            indicatorNode=render.attachNewNode("physVelocityIndicator")
+            indicatorNode = render.attachNewNode("physVelocityIndicator")
             #indicatorNode.setScale(0.1)
             #indicatorNode.setP(90.0)
             indicatorNode.setPos(self.avatarNodePath, 0.0, 0.0, 6.0)
@@ -273,7 +270,7 @@ class PhysicsWalker(DirectObject.DirectObject):
 
             self.physVelocityIndicator=indicatorNode
             # Contact Node:
-            contactIndicatorNode=render.attachNewNode("physContactIndicator")
+            contactIndicatorNode = render.attachNewNode("physContactIndicator")
             contactIndicatorNode.setScale(0.25)
             contactIndicatorNode.setP(90.0)
             contactIndicatorNode.setPos(self.avatarNodePath, 0.0, 0.0, 5.0)
@@ -472,137 +469,103 @@ class PhysicsWalker(DirectObject.DirectObject):
                 onScreenDebug.add("posDelta1",
                     self.avatarNodePath.getPosDelta(render).pPrintValues())
 
-                if 0:
-                    onScreenDebug.add("posDelta3",
-                        render.getRelativeVector(
-                            self.avatarNodePath,
-                            self.avatarNodePath.getPosDelta(render)).pPrintValues())
+                #onScreenDebug.add("posDelta3",
+                #    render.getRelativeVector(
+                #        self.avatarNodePath,
+                #        self.avatarNodePath.getPosDelta(render)).pPrintValues())
 
-                if 0:
-                    onScreenDebug.add("gravity",
-                        self.gravity.getLocalVector().pPrintValues())
-                    onScreenDebug.add("priorParent",
-                        self.priorParent.getLocalVector().pPrintValues())
-                    onScreenDebug.add("avatarViscosity",
-                        "% 10.4f"%(self.avatarViscosity.getCoef(),))
+                #onScreenDebug.add("gravity",
+                #    self.gravity.getLocalVector().pPrintValues())
+                #onScreenDebug.add("priorParent",
+                #    self.priorParent.getLocalVector().pPrintValues())
+                #onScreenDebug.add("avatarViscosity",
+                #    "% 10.4f"%(self.avatarViscosity.getCoef(),))
+                #
+                #onScreenDebug.add("physObject pos",
+                #    physObject.getPosition().pPrintValues())
+                #onScreenDebug.add("physObject hpr",
+                #    physObject.getOrientation().getHpr().pPrintValues())
+                #onScreenDebug.add("physObject orien",
+                #    physObject.getOrientation().pPrintValues())
 
-                    onScreenDebug.add("physObject pos",
-                        physObject.getPosition().pPrintValues())
-                    onScreenDebug.add("physObject hpr",
-                        physObject.getOrientation().getHpr().pPrintValues())
-                    onScreenDebug.add("physObject orien",
-                        physObject.getOrientation().pPrintValues())
+                onScreenDebug.add("physObject vel",
+                    physObject.getVelocity().pPrintValues())
+                onScreenDebug.add("physObject len",
+                    "% 10.4f"%physObject.getVelocity().length())
 
-                if 1:
-                    onScreenDebug.add("physObject vel",
-                        physObject.getVelocity().pPrintValues())
-                    onScreenDebug.add("physObject len",
-                        "% 10.4f"%physObject.getVelocity().length())
+                #onScreenDebug.add("posDelta4",
+                #    self.priorParentNp.getRelativeVector(
+                #        render,
+                #        self.avatarNodePath.getPosDelta(render)).pPrintValues())
 
-                if 0:
-                    onScreenDebug.add("posDelta4",
-                        self.priorParentNp.getRelativeVector(
-                            render,
-                            self.avatarNodePath.getPosDelta(render)).pPrintValues())
+                onScreenDebug.add("priorParent",
+                    self.priorParent.getLocalVector().pPrintValues())
 
-                if 1:
-                    onScreenDebug.add("priorParent",
-                        self.priorParent.getLocalVector().pPrintValues())
+                #onScreenDebug.add("priorParent po",
+                #    self.priorParent.getVector(physObject).pPrintValues())
 
-                if 0:
-                    onScreenDebug.add("priorParent po",
-                        self.priorParent.getVector(physObject).pPrintValues())
+                #onScreenDebug.add("__posDelta",
+                #    self.__oldPosDelta.pPrintValues())
 
-                if 0:
-                    onScreenDebug.add("__posDelta",
-                        self.__oldPosDelta.pPrintValues())
+                onScreenDebug.add("contact",
+                    contact.pPrintValues())
+                #onScreenDebug.add("airborneHeight", "% 10.4f"%(
+                #    self.getAirborneHeight(),))
 
-                if 1:
-                    onScreenDebug.add("contact",
-                        contact.pPrintValues())
-                    #onScreenDebug.add("airborneHeight", "% 10.4f"%(
-                    #    self.getAirborneHeight(),))
-
-                if 0:
-                    onScreenDebug.add("__oldContact",
-                        contact.pPrintValues())
-                    onScreenDebug.add("__oldAirborneHeight", "% 10.4f"%(
-                        self.getAirborneHeight(),))
-        airborneHeight=self.getAirborneHeight()
+                #onScreenDebug.add("__oldContact",
+                #    contact.pPrintValues())
+                #onScreenDebug.add("__oldAirborneHeight", "% 10.4f"%(
+                #    self.getAirborneHeight(),))
+        airborneHeight = self.getAirborneHeight()
         if airborneHeight > self.highMark:
             self.highMark = airborneHeight
             if __debug__:
                 onScreenDebug.add("highMark", "% 10.4f"%(self.highMark,))
         #if airborneHeight < 0.1: #contact!=Vec3.zero():
-        if 1:
-            if (airborneHeight > self.avatarRadius*0.5
-                    or physObject.getVelocity().getZ() > 0.0
-                    ): # Check stair angles before changing this.
-                # ...the avatar is airborne (maybe a lot or a tiny amount).
-                self.isAirborne = 1
-            else:
-                # ...the avatar is very close to the ground (close enough to be
-                # considered on the ground).
-                if self.isAirborne and physObject.getVelocity().getZ() <= 0.0:
-                    # ...the avatar has landed.
-                    contactLength = contact.length()
-                    if contactLength>self.__hardLandingForce:
-                        #print "jumpHardLand"
-                        messenger.send("jumpHardLand")
-                    else:
-                        #print "jumpLand"
-                        messenger.send("jumpLand")
-                    self.priorParent.setVector(Vec3.zero())
-                    self.isAirborne = 0
-                elif jump:
-                    #print "jump"
-                    #self.__jumpButton=0
-                    messenger.send("jumpStart")
-                    if 0:
-                        # ...jump away from walls and with with the slope normal.
-                        jumpVec=Vec3(contact+Vec3.up())
-                        #jumpVec=Vec3(rotAvatarToPhys.xform(jumpVec))
-                        jumpVec.normalize()
-                    else:
-                        # ...jump straight up, even if next to a wall.
-                        jumpVec=Vec3.up()
-                    jumpVec*=self.avatarControlJumpForce
-                    physObject.addImpulse(Vec3(jumpVec))
-                    self.isAirborne = 1 # Avoid double impulse before fully airborne.
-                else:
-                    self.isAirborne = 0
-            if __debug__:
-                onScreenDebug.add("isAirborne", "%d"%(self.isAirborne,))
+        if (airborneHeight > self.avatarRadius*0.5
+                or physObject.getVelocity().getZ() > 0.0
+                ): # Check stair angles before changing this.
+            # ...the avatar is airborne (maybe a lot or a tiny amount).
+            self.isAirborne = 1
         else:
-            if contact!=Vec3.zero():
-                # ...the avatar has touched something (but might not be on the ground).
+            # ...the avatar is very close to the ground (close enough to be
+            # considered on the ground).
+            if self.isAirborne and physObject.getVelocity().getZ() <= 0.0:
+                # ...the avatar has landed.
                 contactLength = contact.length()
-                contact.normalize()
-                angle=contact.dot(Vec3.up())
-                if angle>self.__standableGround:
-                    # ...avatar is on standable ground.
-                    if self.__oldContact==Vec3.zero():
-                    #if self.__oldAirborneHeight > 0.1: #self.__oldContact==Vec3.zero():
-                        # ...avatar was airborne.
-                        self.jumpCount-=1
-                        if contactLength>self.__hardLandingForce:
-                            messenger.send("jumpHardLand")
-                        else:
-                            messenger.send("jumpLand")
-                    elif jump:
-                        self.jumpCount+=1
-                        #self.__jumpButton=0
-                        messenger.send("jumpStart")
-                        jump=Vec3(contact+Vec3.up())
-                        #jump=Vec3(rotAvatarToPhys.xform(jump))
-                        jump.normalize()
-                        jump*=self.avatarControlJumpForce
-                        physObject.addImpulse(Vec3(jump))
+                if contactLength>self.__hardLandingForce:
+                    #print "jumpHardLand"
+                    messenger.send("jumpHardLand")
+                else:
+                    #print "jumpLand"
+                    messenger.send("jumpLand")
+                self.priorParent.setVector(Vec3.zero())
+                self.isAirborne = 0
+            elif jump:
+                #print "jump"
+                #self.__jumpButton = 0
+                messenger.send("jumpStart")
 
-        if contact!=self.__oldContact:
+                ## ...jump away from walls and with with the slope normal.
+                #jumpVec=Vec3(contact+Vec3.up())
+                ##jumpVec=Vec3(rotAvatarToPhys.xform(jumpVec))
+                #jumpVec.normalize()
+
+                # ...jump straight up, even if next to a wall.
+                jumpVec=Vec3.up()
+
+                jumpVec *= self.avatarControlJumpForce
+                physObject.addImpulse(Vec3(jumpVec))
+                self.isAirborne = 1 # Avoid double impulse before fully airborne.
+            else:
+                self.isAirborne = 0
+        if __debug__:
+            onScreenDebug.add("isAirborne", "%d"%(self.isAirborne,))
+
+        if contact != self.__oldContact:
             # We must copy the vector to preserve it:
-            self.__oldContact=Vec3(contact)
-        self.__oldAirborneHeight=airborneHeight
+            self.__oldContact = Vec3(contact)
+        self.__oldAirborneHeight = airborneHeight
 
         moveToGround = Vec3.zero()
         if not self.useHeightRay or self.isAirborne:
@@ -741,7 +704,7 @@ class PhysicsWalker(DirectObject.DirectObject):
     if __debug__:
         def setupAvatarPhysicsIndicator(self):
             if self.wantDebugIndicator:
-                indicator=loader.loadModel('phase_5/models/props/dagger')
+                indicator = base.loader.loadModel('phase_5/models/props/dagger')
                 #self.walkControls.setAvatarPhysicsIndicator(indicator)
 
         def debugPrint(self, message):

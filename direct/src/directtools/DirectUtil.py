@@ -2,6 +2,7 @@
 from .DirectGlobals import *
 from panda3d.core import VBase4
 from direct.task.Task import Task
+from direct.task.TaskManagerGlobal import taskMgr
 
 # Routines to adjust values
 def ROUND_TO(value, divisor):
@@ -84,4 +85,3 @@ def getFileData(filename, separator = ','):
             data = [s.strip() for s in l.split(separator)]
             fileData.append(data)
     return fileData
-

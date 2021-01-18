@@ -77,14 +77,14 @@ class DirectRadioButton(DirectButton):
         self.initialiseoptions(DirectRadioButton)
         # After initialization with X giving it the correct size, put back space
         if self['boxGeom'] is None:
-            if not 'boxRelief' in kw and self['boxImage'] is None:
+            if 'boxRelief' not in kw and self['boxImage'] is None:
                 self.indicator['relief'] = DGG.SUNKEN
             self.indicator['text'] = (' ', '*')
             self.indicator['text_pos'] = (0, -.25)
         else:
             self.indicator['text'] = (' ', ' ')
 
-        if self['boxGeomColor'] != None and self['boxGeom'] != None:
+        if self['boxGeomColor'] is not None and self['boxGeom'] is not None:
             self.colors = [VBase4(1, 1, 1, 0), self['boxGeomColor']]
             self.component('indicator')['geom_color'] = VBase4(1, 1, 1, 0)
 
@@ -120,7 +120,7 @@ class DirectRadioButton(DirectButton):
             # Clear out frame before computing bounds
             self.getBounds()
             # Restore frame style if necessary
-            if (frameType != PGFrameStyle.TNone):
+            if frameType != PGFrameStyle.TNone:
                 self.frameStyle[0].setType(frameType)
                 self.guiItem.setFrameStyle(0, self.frameStyle[0])
 
@@ -160,8 +160,7 @@ class DirectRadioButton(DirectButton):
                     self.bounds[3] += indicatorHeight + (2*self['boxBorder'])
 
         # Set frame to new dimensions
-        if ((frameType != PGFrameStyle.TNone) and
-            (frameType != PGFrameStyle.TFlat)):
+        if frameType != PGFrameStyle.TNone and frameType != PGFrameStyle.TFlat:
             bw = self['borderWidth']
         else:
             bw = (0, 0)
@@ -219,10 +218,10 @@ class DirectRadioButton(DirectButton):
 
     def uncheck(self):
         self['indicatorValue'] = 0
-        if self.colors != None:
+        if self.colors is not None:
             self.component('indicator')['geom_color'] = self.colors[self['indicatorValue']]
 
     def setIndicatorValue(self):
         self.component('indicator').guiItem.setState(self['indicatorValue'])
-        if self.colors != None:
+        if self.colors is not None:
             self.component('indicator')['geom_color'] = self.colors[self['indicatorValue']]

@@ -123,7 +123,7 @@ class OnscreenText(NodePath):
             bg = bg or (0, 0, 0, 0)
             shadow = shadow or (0, 0, 0, 0)
             frame = frame or (0, 0, 0, 0)
-            if align == None:
+            if align is None:
                 align = TextNode.ACenter
         elif style == ScreenTitle:
             scale = scale or 0.15
@@ -131,7 +131,7 @@ class OnscreenText(NodePath):
             bg = bg or (0, 0, 0, 0)
             shadow = shadow or (0, 0, 0, 1)
             frame = frame or (0, 0, 0, 0)
-            if align == None:
+            if align is None:
                 align = TextNode.ACenter
         elif style == ScreenPrompt:
             scale = scale or 0.1
@@ -139,7 +139,7 @@ class OnscreenText(NodePath):
             bg = bg or (0, 0, 0, 0)
             shadow = shadow or (0, 0, 0, 1)
             frame = frame or (0, 0, 0, 0)
-            if align == None:
+            if align is None:
                 align = TextNode.ACenter
         elif style == NameConfirm:
             scale = scale or 0.1
@@ -147,7 +147,7 @@ class OnscreenText(NodePath):
             bg = bg or (0, 0, 0, 0)
             shadow = shadow or (0, 0, 0, 0)
             frame = frame or (0, 0, 0, 0)
-            if align == None:
+            if align is None:
                 align = TextNode.ACenter
         elif style == BlackOnWhite:
             scale = scale or 0.1
@@ -155,7 +155,7 @@ class OnscreenText(NodePath):
             bg = bg or (1, 1, 1, 1)
             shadow = shadow or (0, 0, 0, 0)
             frame = frame or (0, 0, 0, 0)
-            if align == None:
+            if align is None:
                 align = TextNode.ACenter
         else:
             raise ValueError
@@ -174,7 +174,7 @@ class OnscreenText(NodePath):
         if decal:
             textNode.setCardDecal(1)
 
-        if font == None:
+        if font is None:
             font = DGG.getDefaultFont()
 
         textNode.setFont(font)
@@ -218,7 +218,7 @@ class OnscreenText(NodePath):
         # graph.
         self.updateTransformMat()
 
-        if drawOrder != None:
+        if drawOrder is not None:
             textNode.setBin('fixed')
             textNode.setDrawOrder(drawOrder)
 
@@ -460,7 +460,7 @@ class OnscreenText(NodePath):
     scale = property(getScale, setScale)
 
     def updateTransformMat(self):
-        assert(isinstance(self.textNode, TextNode))
+        assert isinstance(self.textNode, TextNode)
         mat = (
             Mat4.scaleMat(Vec3.rfu(self.__scale[0], 1, self.__scale[1])) *
             Mat4.rotateMat(self.__roll, Vec3.back()) *
@@ -570,4 +570,3 @@ class OnscreenText(NodePath):
 
     # Allow index style refererences
     __getitem__ = cget
-

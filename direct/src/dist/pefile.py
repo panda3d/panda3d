@@ -487,6 +487,8 @@ class ResourceTable(object):
             entry.data = data
             entry.code_page = code_page
 
+        return entry
+
 
 class PEFile(object):
 

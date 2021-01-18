@@ -106,8 +106,10 @@ __all__ = ['FSMInspector', 'StateInspector']
 
 from direct.tkwidgets.AppShell import *
 from direct.showbase.TkGlobal import *
-import Pmw, math, operator
 from tkinter.simpledialog import askstring
+import Pmw
+import math
+import operator
 
 
 DELTA = (5.0 / 360.) * 2.0 * math.pi
