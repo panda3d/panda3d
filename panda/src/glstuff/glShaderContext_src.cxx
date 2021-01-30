@@ -1007,6 +1007,10 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
         else if (noprefix.compare(7, string::npos, "Emission") == 0) {
           bind._part = Shader::STO_stage_emission_i;
         }
+        else {
+          GLCAT.error()
+            << "Unrecognized shader input name: p3d_" << noprefix << "\n";
+        }
 
         for (bind._stage = 0; bind._stage < param_size; ++bind._stage) {
           _glgsg->_glUniform1i(p + bind._stage, _shader->_tex_spec.size());
