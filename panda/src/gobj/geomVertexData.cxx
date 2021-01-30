@@ -1268,7 +1268,9 @@ output(ostream &out) const {
   if (!get_name().empty()) {
     out << get_name() << " ";
   }
-  out << get_num_rows() << " rows: " << *get_format();
+  const GeomVertexFormat *format = get_format();
+  nassertv(format != nullptr);
+  out << get_num_rows() << " rows: " << *format;
 }
 
 /**
@@ -1279,8 +1281,15 @@ write(ostream &out, int indent_level) const {
   if (!get_name().empty()) {
     indent(out, indent_level) << get_name() << "\n";
   }
-  get_format()->write_with_data(out, indent_level + 2, this);
-  CPT(TransformBlendTable) table = get_transform_blend_table();
+  CPT(TransformBlendTable) table;
+  const GeomVertexFormat *format = nullptr;
+  {
+    CDReader cdata(_cycler);
+    format = cdata->_format;
+    table = cdata->_transform_blend_table.get_read_pointer();
+  }
+  nassertv(format != nullptr);
+  format->write_with_data(out, indent_level + 2, this);
   if (table != nullptr) {
     indent(out, indent_level)
       << "Transform blend table:\n";

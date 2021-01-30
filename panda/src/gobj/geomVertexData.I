@@ -582,6 +582,7 @@ CacheEntry(GeomVertexData *source, CacheKey &&key) noexcept :
  */
 INLINE GeomVertexData::CData::
 CData() :
+  _format(nullptr),
   _usage_hint(UH_unspecified)
 {
 }
