@@ -1030,8 +1030,10 @@ reset() {
 #endif
     _supports_tex_storage = true;
 
+#ifndef OPENGLES
     _glTexStorage1D = (PFNGLTEXSTORAGE1DPROC)
       get_extension_func("glTexStorage1D");
+#endif
     _glTexStorage2D = (PFNGLTEXSTORAGE2DPROC)
       get_extension_func("glTexStorage2D");
     _glTexStorage3D = (PFNGLTEXSTORAGE3DPROC)
@@ -1041,8 +1043,6 @@ reset() {
   else if (has_extension("GL_EXT_texture_storage")) {
     _supports_tex_storage = true;
 
-    _glTexStorage1D = (PFNGLTEXSTORAGE1DPROC)
-      get_extension_func("glTexStorage1DEXT");
     _glTexStorage2D = (PFNGLTEXSTORAGE2DPROC)
       get_extension_func("glTexStorage2DEXT");
     _glTexStorage3D = (PFNGLTEXSTORAGE3DPROC)
@@ -1051,7 +1051,11 @@ reset() {
 #endif
 
   if (_supports_tex_storage) {
-    if (_glTexStorage1D == nullptr || _glTexStorage2D == nullptr || _glTexStorage3D == nullptr) {
+    if (
+#ifndef OPENGLES
+        _glTexStorage1D == nullptr ||
+#endif
+        _glTexStorage2D == nullptr || _glTexStorage3D == nullptr) {
       GLCAT.warning()
         << "Immutable texture storage advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
       _supports_tex_storage = false;
@@ -13005,8 +13009,10 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
       case Texture::TT_buffer_texture:
         // Won't get here, but squelch compiler warning
       case Texture::TT_1d_texture:
+#ifndef OPENGLES
         _glTexStorage1D(target, num_levels, internal_format, width);
         break;
+#endif
       case Texture::TT_2d_texture:
       case Texture::TT_cube_map:
       case Texture::TT_1d_texture_array:
