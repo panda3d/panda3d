@@ -303,6 +303,10 @@ open_window() {
     //}
   }
 
+  if (!webgl_gsg->_have_context) {
+    return false;
+  }
+
   if (_properties.has_size() && _properties.get_size() != LVecBase2i(1, 1)) {
     emscripten_set_canvas_element_size(target, _properties.get_x_size(), _properties.get_y_size());
   } else {

@@ -64,12 +64,18 @@ choose_pixel_format(const FrameBufferProperties &properties,
   attribs.alpha = (properties.get_alpha_bits() > 0);
   attribs.depth = (properties.get_depth_bits() > 0);
   attribs.stencil = (properties.get_stencil_bits() > 0);
-  attribs.majorVersion = 1;
+  attribs.majorVersion = 2;
   attribs.minorVersion = 0;
   attribs.enableExtensionsByDefault = false;
 
   EMSCRIPTEN_WEBGL_CONTEXT_HANDLE result;
   result = emscripten_webgl_create_context(target, &attribs);
+
+  if (result <= 0) {
+    // Fall back to WebGL 1.
+    attribs.majorVersion = 1;
+    result = emscripten_webgl_create_context(target, &attribs);
+  }
 
   if (result > 0) {
     _context = result;
