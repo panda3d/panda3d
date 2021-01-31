@@ -1417,7 +1417,8 @@ def CompileCxx(obj,src,opts):
             cmd += " -fno-finite-math-only"
 
         # Make sure this is off to avoid GCC/Eigen bug (see GitHub #228)
-        cmd += " -fno-unsafe-math-optimizations"
+        if GetTarget() != "emscripten":
+            cmd += " -fno-unsafe-math-optimizations"
 
         if (optlevel==1):
             if GetTarget() == "emscripten":
@@ -6057,6 +6058,9 @@ if PkgSkip("PYTHON") == 0:
     if GetTarget() == 'windows':
         PyTargetAdd('deploy-stub.exe', input='frozen_dllmain.obj')
     PyTargetAdd('deploy-stub.exe', opts=['WINSHELL', 'DEPLOYSTUB', 'NOICON'])
+
+    if GetTarget() == 'emscripten':
+        PyTargetAdd('deploy-stub.exe', opts=['ZLIB'])
 
     if GetTarget() == 'windows':
         PyTargetAdd('deploy-stubw.exe', input='deploy-stub.obj')

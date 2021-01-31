@@ -447,6 +447,8 @@ def SetTarget(target, arch=None):
         DEFAULT_AR = "emar"
         DEFAULT_RANLIB = "emranlib"
 
+        arch = "wasm32"
+
     elif target == host:
         if target == 'freebsd':
             DEFAULT_CC = "clang"
@@ -3390,9 +3392,9 @@ def CalcLocation(fn, ipath):
         if (fn.endswith(".plugin")):return OUTPUTDIR+"/plugins/"+fn
         if (fn.endswith(".app")):   return OUTPUTDIR+"/bin/"+fn
     elif (target == 'emscripten'):
-        if (fn.endswith(".obj")):   return OUTPUTDIR+"/tmp/"+fn[:-4]+".bc"
-        if (fn.endswith(".dll")):   return OUTPUTDIR+"/lib/"+fn[:-4]+".bc"
-        if (fn.endswith(".pyd")):   return OUTPUTDIR+"/panda3d/"+fn[:-4]+".bc"
+        if (fn.endswith(".obj")):   return OUTPUTDIR+"/tmp/"+fn[:-4]+".o"
+        if (fn.endswith(".dll")):   return OUTPUTDIR+"/lib/"+fn[:-4]+".o"
+        if (fn.endswith(".pyd")):   return OUTPUTDIR+"/panda3d/"+fn[:-4]+".o"
         if (fn.endswith(".mll")):   return OUTPUTDIR+"/plugins/"+fn
         if (fn.endswith(".plugin")):return OUTPUTDIR+"/plugins/"+fn[:-7]+dllext+".js"
         if (fn.endswith(".exe")):   return OUTPUTDIR+"/bin/"+fn[:-4]+".js"
