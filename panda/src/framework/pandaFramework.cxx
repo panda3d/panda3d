@@ -37,6 +37,8 @@
 #endif
 #endif
 
+extern "C" EXPCL_PANDA_PNMIMAGETYPES void init_libpnmimagetypes();
+
 using std::string;
 
 #ifdef __EMSCRIPTEN__
@@ -129,7 +131,6 @@ open_framework() {
 
   // Let's explicitly make a call to the image type library to ensure it gets
   // pulled in by the dynamic linker.
-  extern EXPCL_PANDA_PNMIMAGETYPES void init_libpnmimagetypes();
   init_libpnmimagetypes();
 
   reset_frame_rate();

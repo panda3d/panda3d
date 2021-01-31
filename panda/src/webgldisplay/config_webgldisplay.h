@@ -22,6 +22,6 @@
 
 NotifyCategoryDecl(webgldisplay,,);
 
-extern void init_libwebgldisplay();
+extern "C" void init_libwebgldisplay();
 
 #endif
