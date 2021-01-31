@@ -2754,7 +2754,7 @@ reset() {
 
 #elif defined(OPENGLES)
   // In OpenGL ES 2.x and above, this is supported in the core.
-  _supports_blend_equation_separate = false;
+  _supports_blend_equation_separate = true;
 
 #else
   if (is_at_least_gl_version(1, 2)) {
