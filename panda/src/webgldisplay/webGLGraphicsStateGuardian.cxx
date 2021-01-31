@@ -37,7 +37,7 @@ WebGLGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe) :
 WebGLGraphicsStateGuardian::
 ~WebGLGraphicsStateGuardian() {
   if (_context != 0) {
-    const char *target = NULL;
+    const char *target = "#canvas";
     emscripten_set_webglcontextlost_callback(target, NULL, false, NULL);
     emscripten_set_webglcontextrestored_callback(target, NULL, false, NULL);
 
