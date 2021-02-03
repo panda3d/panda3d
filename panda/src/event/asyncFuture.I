@@ -167,6 +167,7 @@ set_future_state(FutureState state) {
       (AtomicAdjust::Integer)FS_pending,
       (AtomicAdjust::Integer)state);
 
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
   while (orig_state == FS_locked_pending) {
     Thread::force_yield();
     orig_state = (FutureState)AtomicAdjust::compare_and_exchange(
@@ -174,6 +175,9 @@ set_future_state(FutureState state) {
       (AtomicAdjust::Integer)FS_pending,
       (AtomicAdjust::Integer)state);
   }
+#else
+  nassertr(orig_state != FS_locked_pending, false);
+#endif
 
   return orig_state == FS_pending;
 }
