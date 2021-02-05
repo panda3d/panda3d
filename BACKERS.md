@@ -15,6 +15,7 @@ This is a list of all the people who are contributing financially to Panda3D.  I
 * [Mitchell Stokes](https://opencollective.com/mitchell-stokes)
 * [Daniel Stokes](https://opencollective.com/daniel-stokes)
 * [David Rose](https://opencollective.com/david-rose)
+* [Robert Clarke](https://opencollective.com/robert-clarke)
 
 ## Benefactors
 
