@@ -20,9 +20,35 @@
 #include "virtualFileSystem.h"
 #include "zStream.h"
 
+#ifdef __EMSCRIPTEN__
+#include "subfileInfo.h"
+#include "pnmReaderEmscripten.h"
+
+#include <emscripten.h>
+#endif
+
 using std::istream;
 using std::ostream;
 using std::string;
+
+#ifdef __EMSCRIPTEN__
+/**
+ * Returns true and sets width/height if the given path is in the emscripten
+ * preload image cache.
+ */
+EM_JS(int, query_preload, (const char *path, int *width, int *height), {
+  var cache = Module["preloadedImages"];
+  if (cache) {
+    var canvas = cache[UTF8ToString(path)];
+    if (canvas) {
+      setValue(width, canvas["width"], "i32");
+      setValue(height, canvas["height"], "i32");
+      return 1;
+    }
+  }
+  return 0;
+})
+#endif
 
 /**
  * Opens up the image file and tries to read its header information to
@@ -84,11 +110,11 @@ make_reader(const Filename &filename, PNMFileType *type,
       << "Reading image from " << filename << "\n";
   }
   bool owns_file = false;
-  istream *file = nullptr;
+  istream *in = nullptr;
 
   if (filename == "-") {
     owns_file = false;
-    file = &std::cin;
+    in = &std::cin;
 
     if (pnmimage_cat.is_debug()) {
       pnmimage_cat.debug()
@@ -97,10 +123,35 @@ make_reader(const Filename &filename, PNMFileType *type,
   } else {
     VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
     owns_file = true;
-    file = vfs->open_read_file(filename, true);
+    PT(VirtualFile) file = vfs->get_file(filename, false);
+    if (file != nullptr) {
+#ifdef __EMSCRIPTEN__
+      // Is this a real file, and do we have that in the Emscripten cache?
+      SubfileInfo info;
+      if (file->get_system_info(info) && info.get_start() == 0) {
+        Filename fn = info.get_filename();
+        if (!fn.make_canonical()) {
+          fn.make_absolute();
+        }
+        int width, height;
+        if (query_preload(fn.c_str(), &width, &height)) {
+          if (pnmimage_cat.is_debug()) {
+            pnmimage_cat.debug()
+              << "(found in emscripten cache)\n";
+          }
+          return new PNMReaderEmscripten(type, fn, width, height);
+        }
+      }
+#endif
+      in = vfs->open_read_file(filename, true);
+      if (in != nullptr && in->fail()) {
+        file->close_read_file(in);
+        in = nullptr;
+      }
+    }
   }
 
-  if (file == nullptr) {
+  if (in == nullptr) {
     if (pnmimage_cat.is_debug()) {
       pnmimage_cat.debug()
         << "Unable to open file.\n";
@@ -108,7 +159,7 @@ make_reader(const Filename &filename, PNMFileType *type,
     return nullptr;
   }
 
-  return make_reader(file, owns_file, filename, string(), type,
+  return make_reader(in, owns_file, filename, string(), type,
                      report_unknown_type);
 }
 
