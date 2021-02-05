@@ -481,7 +481,7 @@ do_python_task() {
 
   // Are we waiting for a future to finish?
   if (_future_done != nullptr) {
-    PyObject *is_done = PyObject_CallNoArgs(_future_done);
+    PyObject *is_done = _PyObject_CallNoArg(_future_done);
     if (!PyObject_IsTrue(is_done)) {
       // Nope, ask again next frame.
       Py_DECREF(is_done);
