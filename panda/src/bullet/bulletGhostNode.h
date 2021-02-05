@@ -61,8 +61,10 @@ private:
 
 public:
   static void register_with_read_factory();
+  virtual PandaNode *make_copy() const;
 
 protected:
+  BulletGhostNode(const BulletGhostNode &copy);
   static TypedWritable *make_from_bam(const FactoryParams &params);
 
 public:

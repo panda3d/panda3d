@@ -42,6 +42,39 @@ BulletGhostNode(const char *name) : BulletBodyNode(name) {
 }
 
 /**
+ * Do not call the copy constructor directly; instead, use make_copy() or
+ * copy_subgraph() to make a copy of a node.
+ */
+BulletGhostNode::
+BulletGhostNode(const BulletGhostNode &copy) :
+  BulletBodyNode(copy),
+  _sync(TransformState::make_identity()),
+  _sync_disable(false),
+  _sync_local(false)
+{
+  // Initial transform - the node has no parent yet, so this is the local one
+  btTransform trans = TransformState_to_btTrans(get_transform());
+
+  // Ghost object
+  _ghost = new btPairCachingGhostObject();
+  _ghost->setUserPointer(this);
+  _ghost->setCollisionFlags(btCollisionObject::CF_NO_CONTACT_RESPONSE);
+  _ghost->setWorldTransform(trans);
+  _ghost->setInterpolationWorldTransform(trans);
+  _ghost->setCollisionShape(_shape);
+}
+
+/**
+ * Returns a newly-allocated PandaNode that is a shallow copy of this one.  It
+ * will be a different pointer, but its internal data may or may not be shared
+ * with that of the original PandaNode.  No children will be copied.
+ */
+PandaNode *BulletGhostNode::
+make_copy() const {
+  return new BulletGhostNode(*this);
+}
+
+/**
  *
  */
 btCollisionObject *BulletGhostNode::
