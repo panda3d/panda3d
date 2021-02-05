@@ -171,3 +171,27 @@ do_sync_b2p() {
     _sync_disable = false;
   }
 }
+
+/**
+ * Tells the BamReader how to create objects of type BulletGhostNode.
+ */
+void BulletGhostNode::
+register_with_read_factory() {
+  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
+}
+
+/**
+ * This function is called by the BamReader's factory when a new object of
+ * this type is encountered in the Bam file.  It should create the ghost node.
+ */
+TypedWritable *BulletGhostNode::
+make_from_bam(const FactoryParams &params) {
+  BulletGhostNode *param = new BulletGhostNode;
+  DatagramIterator scan;
+  BamReader *manager;
+
+  parse_params(params, scan, manager);
+  param->fillin(scan, manager);
+
+  return param;
+}
