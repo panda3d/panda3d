@@ -63,6 +63,16 @@ PUBLISHED:
 
   static ConfigPageManager *get_global_ptr();
 
+PUBLISHED:
+  MAKE_PROPERTY(search_path, get_search_path);
+
+  MAKE_SEQ_PROPERTY(prc_patterns, get_num_prc_patterns, get_prc_pattern);
+  MAKE_SEQ_PROPERTY(prc_encrypted_patterns, get_num_prc_encrypted_patterns, get_prc_encrypted_pattern);
+  MAKE_SEQ_PROPERTY(prc_executable_patterns, get_num_prc_executable_patterns, get_prc_executable_pattern);
+
+  MAKE_SEQ_PROPERTY(implicit_pages, get_num_implicit_pages, get_implicit_page);
+  MAKE_SEQ_PROPERTY(explicit_pages, get_num_explicit_pages, get_explicit_page);
+
 public:
   INLINE void mark_unsorted();
 
