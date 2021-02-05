@@ -2489,6 +2489,7 @@ def WriteConfigSettings():
     if (GetTarget() == "emscripten"):
         # There are no threads in JavaScript, so don't bother using them.
         dtool_config["HAVE_THREADS"] = 'UNDEF'
+        dtool_config["DO_PIPELINING"] = 'UNDEF'
         dtool_config["HAVE_POSIX_THREADS"] = 'UNDEF'
         dtool_config["IS_LINUX"] = 'UNDEF'
         dtool_config["HAVE_VIDEO4LINUX"] = 'UNDEF'
