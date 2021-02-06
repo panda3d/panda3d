@@ -4,6 +4,7 @@ from panda3d.core import *
 from panda3d.direct import *
 from direct.distributed.MsgTypesCMU import *
 from direct.task import Task
+from direct.task.TaskManagerGlobal import taskMgr
 from direct.directnotify import DirectNotifyGlobal
 from direct.distributed.PyDatagram import PyDatagram
 
@@ -84,7 +85,7 @@ class ServerRepository:
                  threadedNet = None):
         if threadedNet is None:
             # Default value.
-            threadedNet = config.GetBool('threaded-net', False)
+            threadedNet = ConfigVariableBool('threaded-net', False).value
 
         # Set up networking interfaces.
         numThreads = 0
@@ -217,7 +218,7 @@ class ServerRepository:
         self.hashVal = 0
 
         dcImports = {}
-        if dcFileNames == None:
+        if dcFileNames is None:
             readResult = dcFile.readAll()
             if not readResult:
                 self.notify.error("Could not read dc file.")
@@ -269,11 +270,11 @@ class ServerRepository:
             classDef = dcImports.get(className)
 
             # Also try it without the dcSuffix.
-            if classDef == None:
+            if classDef is None:
                 className = dclass.getName()
                 classDef = dcImports.get(className)
 
-            if classDef == None:
+            if classDef is None:
                 self.notify.debug("No class definition for %s." % (className))
             else:
                 if inspect.ismodule(classDef):
@@ -458,7 +459,7 @@ class ServerRepository:
             return
 
         dcfield = object.dclass.getFieldByIndex(fieldId)
-        if dcfield == None:
+        if dcfield is None:
             self.notify.warning(
                 "Ignoring update for field %s on object %s from client %s; no such field for class %s." % (
                 fieldId, doId, client.doIdBase, object.dclass.getName()))

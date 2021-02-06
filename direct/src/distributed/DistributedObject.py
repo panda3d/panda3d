@@ -2,6 +2,7 @@
 
 from panda3d.core import *
 from panda3d.direct import *
+from direct.showbase.MessengerGlobal import messenger
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.distributed.DistributedObjectBase import DistributedObjectBase
 #from PyDatagram import PyDatagram
@@ -43,9 +44,7 @@ class DistributedObject(DistributedObjectBase):
 
     def __init__(self, cr):
         assert self.notify.debugStateCall(self)
-        try:
-            self.DistributedObject_initialized
-        except:
+        if not hasattr(self, 'DistributedObject_initialized'):
             self.DistributedObject_initialized = 1
             DistributedObjectBase.__init__(self, cr)
 
@@ -96,7 +95,7 @@ class DistributedObject(DistributedObjectBase):
                     flags.append("cacheable")
 
                 flagStr = ""
-                if len(flags):
+                if len(flags) > 0:
                     flagStr = " (%s)" % (" ".join(flags))
 
                 print("%sfrom DistributedObject doId:%s, parent:%s, zone:%s%s" % (
@@ -156,25 +155,25 @@ class DistributedObject(DistributedObjectBase):
             self._cachedData = self.cr.doDataCache.popCachedData(self.doId)
 
     def setCachedData(self, name, data):
-        assert type(name) == type('')
+        assert isinstance(name, str)
         # ownership of the data passes to the repository data cache
         self.cr.doDataCache.setCachedData(self.doId, name, data)
 
     def hasCachedData(self, name):
-        assert type(name) == type('')
+        assert isinstance(name, str)
         if not hasattr(self, '_cachedData'):
             return False
         return name in self._cachedData
 
     def getCachedData(self, name):
-        assert type(name) == type('')
+        assert isinstance(name, str)
         # ownership of the data passes to the caller of this method
         data = self._cachedData[name]
         del self._cachedData[name]
         return data
 
     def flushCachedData(self, name):
-        assert type(name) == type('')
+        assert isinstance(name, str)
         # call this to throw out cached data from a previous instantiation
         self._cachedData[name].flush()
 
@@ -278,14 +277,13 @@ class DistributedObject(DistributedObjectBase):
         Inheritors should redefine this to take appropriate action on disable
         """
         assert self.notify.debug('disable(): %s' % (self.doId))
-        pass
 
     def isDisabled(self):
         """
         Returns true if the object has been disabled and/or deleted,
         or if it is brand new and hasn't yet been generated.
         """
-        return (self.activeState < ESGenerating)
+        return self.activeState < ESGenerating
 
     def isGenerated(self):
         """
@@ -293,17 +291,14 @@ class DistributedObject(DistributedObjectBase):
         and not yet disabled.
         """
         assert self.notify.debugStateCall(self)
-        return (self.activeState == ESGenerated)
+        return self.activeState == ESGenerated
 
     def delete(self):
         """
         Inheritors should redefine this to take appropriate action on delete
         """
         assert self.notify.debug('delete(): %s' % (self.doId))
-        try:
-            self.DistributedObject_deleted
-        except:
-            self.DistributedObject_deleted = 1
+        self.DistributedObject_deleted = 1
 
     def generate(self):
         """
@@ -374,10 +369,10 @@ class DistributedObject(DistributedObjectBase):
         self.cr.sendDeleteMsg(self.doId)
 
     def taskName(self, taskString):
-        return ("%s-%s" % (taskString, self.doId))
+        return "%s-%s" % (taskString, self.doId)
 
     def uniqueName(self, idString):
-        return ("%s-%s" % (idString, self.doId))
+        return "%s-%s" % (idString, self.doId)
 
     def getCallbackContext(self, callback, extraArgs = []):
         # Some objects implement a back-and-forth handshake operation
@@ -429,7 +424,7 @@ class DistributedObject(DistributedObjectBase):
         if tuple:
             callback, extraArgs = tuple
             completeArgs = args + extraArgs
-            if callback != None:
+            if callback is not None:
                 callback(*completeArgs)
             del self.__callbacks[context]
         else:
@@ -470,9 +465,9 @@ class DistributedObject(DistributedObjectBase):
         # doneBarrier() twice, or we have not received a barrier
         # context from the AI.  I think in either case it's ok to
         # silently ignore the error.
-        if self.__barrierContext != None:
+        if self.__barrierContext is not None:
             context, aiName = self.__barrierContext
-            if name == None or name == aiName:
+            if name is None or name == aiName:
                 assert self.notify.debug('doneBarrier(%s, %s)' % (context, aiName))
                 self.sendUpdate("setBarrierReady", [context])
                 self.__barrierContext = None

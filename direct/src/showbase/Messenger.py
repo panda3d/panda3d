@@ -4,12 +4,10 @@
 
 __all__ = ['Messenger']
 
-
-from .PythonUtil import *
-from direct.directnotify import DirectNotifyGlobal
-import types
-
 from direct.stdpy.threading import Lock
+from direct.directnotify import DirectNotifyGlobal
+from .PythonUtil import *
+import types
 
 
 class Messenger:
@@ -116,6 +114,7 @@ class Messenger:
         """ Returns a future that is triggered by the given event name.  This
         will function only once. """
 
+        from .EventManagerGlobal import eventMgr
         return eventMgr.eventHandler.get_future(event)
 
     def accept(self, event, object, method, extraArgs=[], persistent=1):
@@ -195,14 +194,14 @@ class Messenger:
                 del acceptorDict[id]
                 # If this dictionary is now empty, remove the event
                 # entry from the Messenger alltogether
-                if (len(acceptorDict) == 0):
+                if len(acceptorDict) == 0:
                     del self.__callbacks[event]
 
             # This object is no longer listening for this event
             eventDict = self.__objectEvents.get(id)
             if eventDict and event in eventDict:
                 del eventDict[event]
-                if (len(eventDict) == 0):
+                if len(eventDict) == 0:
                     del self.__objectEvents[id]
 
                 self._releaseObject(object)
@@ -232,7 +231,7 @@ class Messenger:
                         del acceptorDict[id]
                         # If this dictionary is now empty, remove the event
                         # entry from the Messenger alltogether
-                        if (len(acceptorDict) == 0):
+                        if len(acceptorDict) == 0:
                             del self.__callbacks[event]
                     self._releaseObject(object)
                 del self.__objectEvents[id]
@@ -282,7 +281,7 @@ class Messenger:
         """ isIgnorning(self, string, DirectObject)
         Is this object ignoring this event?
         """
-        return (not self.isAccepting(event, object))
+        return not self.isAccepting(event, object)
 
     def send(self, event, sentArgs=[], taskChain=None):
         """
@@ -306,12 +305,12 @@ class Messenger:
 
         self.lock.acquire()
         try:
-            foundWatch=0
+            foundWatch = 0
             if __debug__:
                 if self.__isWatching:
-                    for i in self.__watching.keys():
+                    for i in self.__watching:
                         if str(event).find(i) >= 0:
-                            foundWatch=1
+                            foundWatch = 1
                             break
             acceptorDict = self.__callbacks.get(event)
             if not acceptorDict:
@@ -386,15 +385,15 @@ class Messenger:
                     eventDict = self.__objectEvents.get(id)
                     if eventDict and event in eventDict:
                         del eventDict[event]
-                        if (len(eventDict) == 0):
+                        if len(eventDict) == 0:
                             del self.__objectEvents[id]
                         self._releaseObject(self._getObject(id))
 
                     del acceptorDict[id]
                     # If the dictionary at this event is now empty, remove
                     # the event entry from the Messenger altogether
-                    if (event in self.__callbacks \
-                            and (len(self.__callbacks[event]) == 0)):
+                    if event in self.__callbacks \
+                            and (len(self.__callbacks[event]) == 0):
                         del self.__callbacks[event]
 
                 if __debug__:
@@ -424,6 +423,7 @@ class Messenger:
 
                 if hasattr(result, 'cr_await'):
                     # It's a coroutine, so schedule it with the task manager.
+                    from direct.task.TaskManagerGlobal import taskMgr
                     taskMgr.add(result)
 
     def clear(self):
@@ -439,7 +439,7 @@ class Messenger:
             self.lock.release()
 
     def isEmpty(self):
-        return (len(self.__callbacks) == 0)
+        return len(self.__callbacks) == 0
 
     def getEvents(self):
         return list(self.__callbacks.keys())
@@ -455,7 +455,7 @@ class Messenger:
             for objectEntry in list(objectDict.items()):
                 object, params = objectEntry
                 method = params[0]
-                if (type(method) == types.MethodType):
+                if isinstance(method, types.MethodType):
                     function = method.__func__
                 else:
                     function = method
@@ -463,7 +463,7 @@ class Messenger:
                 #       'method: ' + repr(method) + '\n' +
                 #       'oldMethod: ' + repr(oldMethod) + '\n' +
                 #       'newFunction: ' + repr(newFunction) + '\n')
-                if (function == oldMethod):
+                if function == oldMethod:
                     newMethod = types.MethodType(newFunction, method.__self__)
                     params[0] = newMethod
                     # Found it retrun true
@@ -570,7 +570,7 @@ class Messenger:
         """
         return string version of class.method or method.
         """
-        if (type(method) == types.MethodType):
+        if isinstance(method, types.MethodType):
             functionName = method.__self__.__class__.__name__ + '.' + \
                 method.__func__.__name__
         else:
@@ -615,7 +615,6 @@ class Messenger:
         """
         Print out the table in a detailed readable format
         """
-        import types
         str = 'Messenger\n'
         str = str + '='*50 + '\n'
         keys = list(self.__callbacks.keys())
@@ -638,7 +637,7 @@ class Messenger:
                        'Extra Args:   ' + repr(extraArgs) + '\n\t' +
                        'Persistent:   ' + repr(persistent) + '\n')
                 # If this is a class method, get its actual function
-                if (type(function) == types.MethodType):
+                if isinstance(function, types.MethodType):
                     str = (str + '\t' +
                            'Method:       ' + repr(function) + '\n\t' +
                            'Function:     ' + repr(function.__func__) + '\n')

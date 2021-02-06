@@ -3,17 +3,15 @@ object needs to be able to respond to events."""
 
 __all__ = ['DirectObject']
 
-
 from direct.directnotify.DirectNotifyGlobal import directNotify
+from direct.task.TaskManagerGlobal import taskMgr
 from .MessengerGlobal import messenger
+
 
 class DirectObject:
     """
     This is the class that all Direct/SAL classes should inherit from
     """
-    def __init__(self):
-        pass
-
     #def __del__(self):
         # This next line is useful for debugging leaks
         #print "Destructing: ", self.__class__.__name__
@@ -44,21 +42,21 @@ class DirectObject:
 
     #This function must be used if you want a managed task
     def addTask(self, *args, **kwargs):
-        if(not hasattr(self,"_taskList")):
+        if not hasattr(self, "_taskList"):
             self._taskList = {}
         kwargs['owner']=self
         task = taskMgr.add(*args, **kwargs)
         return task
 
     def doMethodLater(self, *args, **kwargs):
-        if(not hasattr(self,"_taskList")):
-            self._taskList ={}
+        if not hasattr(self, "_taskList"):
+            self._taskList = {}
         kwargs['owner']=self
         task = taskMgr.doMethodLater(*args, **kwargs)
         return task
 
     def removeTask(self, taskOrName):
-        if type(taskOrName) == type(''):
+        if isinstance(taskOrName, str):
             # we must use a copy, since task.remove will modify self._taskList
             if hasattr(self, '_taskList'):
                 taskListValues = list(self._taskList.values())
@@ -69,7 +67,7 @@ class DirectObject:
             taskOrName.remove()
 
     def removeAllTasks(self):
-        if hasattr(self,'_taskList'):
+        if hasattr(self, '_taskList'):
             for task in list(self._taskList.values()):
                 task.remove()
 
@@ -93,10 +91,10 @@ class DirectObject:
         tasks = []
         if hasattr(self, '_taskList'):
             tasks = [task.name for task in self._taskList.values()]
-        if len(events) or len(tasks):
-            estr = ('listening to events: %s' % events if len(events) else '')
-            andStr = (' and ' if len(events) and len(tasks) else '')
-            tstr = ('%srunning tasks: %s' % (andStr, tasks) if len(tasks) else '')
+        if len(events) != 0 or len(tasks) != 0:
+            estr = ('listening to events: %s' % events if len(events) != 0 else '')
+            andStr = (' and ' if len(events) != 0 and len(tasks) != 0 else '')
+            tstr = ('%srunning tasks: %s' % (andStr, tasks) if len(tasks) != 0 else '')
             notify = directNotify.newCategory('LeakDetect')
             crash = getattr(getRepository(), '_crashOnProactiveLeakDetect', False)
             func = (self.notify.error if crash else self.notify.warning)

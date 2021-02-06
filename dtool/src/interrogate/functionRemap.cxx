@@ -920,6 +920,9 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
             || fname == "__delattr__") {
       // Just to prevent these from getting keyword arguments.
 
+    } else if (fname == "__setstate__") {
+      _args_type = InterfaceMaker::AT_single_arg;
+
     } else {
       if (_args_type == InterfaceMaker::AT_varargs) {
         // Every other method can take keyword arguments, if they take more

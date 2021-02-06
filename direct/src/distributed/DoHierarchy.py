@@ -13,7 +13,7 @@ class DoHierarchy:
         self._allDoIds = set()
 
     def isEmpty(self):
-        assert ((len(self._table) == 0) == (len(self._allDoIds) == 0))
+        assert (len(self._table) == 0) == (len(self._allDoIds) == 0)
         return len(self._table) == 0 and len(self._allDoIds) == 0
 
     def __len__(self):
@@ -77,7 +77,7 @@ class DoHierarchy:
                 'deleteObjectLocation(%s %s) not in _allDoIds; duplicate delete()? or invalid previous location on a new object?' % (
                 do.__class__.__name__, do.doId))
         # jbutler: temp hack to get by the assert, this will be fixed soon
-        if (doId not in self._allDoIds):
+        if doId not in self._allDoIds:
             return
         parentZoneDict = self._table.get(parentId)
         if parentZoneDict is not None:

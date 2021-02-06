@@ -18,6 +18,7 @@
 #include "pythonLoaderFileType.h"
 
 extern struct Dtool_PyTypedObject Dtool_LoaderFileType;
+extern struct Dtool_PyTypedObject Dtool_LoaderFileTypeRegistry;
 
 /**
  * Registers a loader file type that is implemented in Python.
@@ -104,6 +105,15 @@ unregister_type(PyObject *type) {
 
   Py_XDECREF(load_func);
   Py_XDECREF(save_func);
+}
+
+/**
+ * Implements pickle support.
+ */
+PyObject *Extension<LoaderFileTypeRegistry>::
+__reduce__() const {
+  PyObject *func = PyObject_GetAttrString((PyObject *)&Dtool_LoaderFileTypeRegistry, "get_global_ptr");
+  return Py_BuildValue("N()", func);
 }
 
 #endif

@@ -80,13 +80,13 @@ class OnscreenGeom(DirectObject, NodePath):
         # preserve them across this call.
         if not self.isEmpty():
             parent = self.getParent()
-            if transform == None:
+            if transform is None:
                 # If we're replacing a previous image, we throw away
                 # the new image's transform in favor of the original
                 # image's transform.
                 transform = self.getTransform()
             sort = self.getSort()
-            if color == None and self.hasColor():
+            if color is None and self.hasColor():
                 color = self.getColor()
 
         self.removeNode()
@@ -95,7 +95,7 @@ class OnscreenGeom(DirectObject, NodePath):
         if isinstance(geom, NodePath):
             self.assign(geom.copyTo(parent, sort))
         elif isinstance(geom, str):
-            self.assign(loader.loadModel(geom))
+            self.assign(base.loader.loadModel(geom))
             self.reparentTo(parent, sort)
 
         if not self.isEmpty():

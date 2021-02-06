@@ -2,10 +2,11 @@
 
 from .ClientRepositoryBase import ClientRepositoryBase
 from direct.directnotify import DirectNotifyGlobal
+from direct.showbase.MessengerGlobal import messenger
 from .MsgTypesCMU import *
 from .PyDatagram import PyDatagram
 from .PyDatagramIterator import PyDatagramIterator
-from panda3d.core import UniqueIdAllocator
+from panda3d.core import UniqueIdAllocator, Notify
 
 
 class ClientRepository(ClientRepositoryBase):
@@ -68,7 +69,7 @@ class ClientRepository(ClientRepositoryBase):
         zone = di.getUint32()
         for obj in self.doId2do.values():
             if obj.zoneId == zone:
-                if (self.isLocalId(obj.doId)):
+                if self.isLocalId(obj.doId):
                     self.resendGenerate(obj)
 
     def resendGenerate(self, obj):
@@ -114,12 +115,12 @@ class ClientRepository(ClientRepositoryBase):
             # repeat-generate, synthesized for the benefit of someone
             # else who just entered the zone.  Accept the new updates,
             # but don't make a formal generate.
-            assert(self.notify.debug("performing generate-update for %s %s" % (dclass.getName(), doId)))
+            assert self.notify.debug("performing generate-update for %s %s" % (dclass.getName(), doId))
             dclass.receiveUpdateBroadcastRequired(distObj, di)
             dclass.receiveUpdateOther(distObj, di)
             return
 
-        assert(self.notify.debug("performing generate for %s %s" % (dclass.getName(), doId)))
+        assert self.notify.debug("performing generate for %s %s" % (dclass.getName(), doId))
         dclass.startGenerate()
         # Create a new distributed object, and put it in the dictionary
         distObj = self.generateWithRequiredOtherFields(dclass, doId, di, 0, zoneId)
@@ -200,7 +201,7 @@ class ClientRepository(ClientRepositoryBase):
         if not dclass:
             self.notify.error("Unknown distributed class: %s" % (distObj.__class__))
         classDef = dclass.getClassDef()
-        if classDef == None:
+        if classDef is None:
             self.notify.error("Could not create an undefined %s object." % (
                 dclass.getName()))
 
@@ -289,13 +290,13 @@ class ClientRepository(ClientRepositoryBase):
         """ Returns true if this doId is one that we're the owner of,
         false otherwise. """
 
-        return ((doId >= self.doIdBase) and (doId < self.doIdLast))
+        return doId >= self.doIdBase and doId < self.doIdLast
 
     def haveCreateAuthority(self):
         """ Returns true if this client has been assigned a range of
         doId's it may use to create objects, false otherwise. """
 
-        return (self.doIdLast > self.doIdBase)
+        return self.doIdLast > self.doIdBase
 
     def getAvatarIdFromSender(self):
         """ Returns the doIdBase of the client that originally sent
@@ -306,7 +307,7 @@ class ClientRepository(ClientRepositoryBase):
     def handleDatagram(self, di):
         if self.notify.getDebug():
             print("ClientRepository received datagram:")
-            di.getDatagram().dumpHex(ostream)
+            di.getDatagram().dumpHex(Notify.out())
 
         msgType = self.getMsgType()
         self.currentSenderId = None

@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
-from makepandacore import *
-from installpanda import *
 import sys
 import os
 import shutil
 import glob
 import re
 import subprocess
+from makepandacore import *
+from installpanda import *
 
 
 INSTALLER_DEB_FILE = """
@@ -61,8 +61,8 @@ This package contains the SDK for development with Panda3D.
 /usr/%_lib/panda3d
 /usr/include/panda3d
 """
-INSTALLER_SPEC_FILE_PVIEW = \
-"""/usr/share/applications/pview.desktop
+INSTALLER_SPEC_FILE_PVIEW = """\
+/usr/share/applications/pview.desktop
 /usr/share/mime-info/panda3d.mime
 /usr/share/mime-info/panda3d.keys
 /usr/share/mime/packages/panda3d.xml
@@ -70,7 +70,8 @@ INSTALLER_SPEC_FILE_PVIEW = \
 """
 
 # plist file for Mac OSX
-Info_plist = """<?xml version="1.0" encoding="UTF-8"?>
+Info_plist = """\
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
@@ -114,16 +115,17 @@ deps: {DEPENDS}
 
 # Since we're adding a bunch of install scripts to the macOS intaller, we'll
 # put the platform-checking code in some variables to reduce repetition.
-MACOS_SCRIPT_PREFIX = \
-"""#!/bin/bash
+MACOS_SCRIPT_PREFIX = """\
+#!/bin/bash
 IFS=.
 read -a version_info <<< "`sw_vers -productVersion`"
 if (( ${version_info[0]} == 10 && ${version_info[1]} < 15 )); then
 """
 
-MACOS_SCRIPT_POSTFIX = \
-"""fi
+MACOS_SCRIPT_POSTFIX = """\
+fi
 """
+
 
 def MakeInstallerNSIS(version, file, title, installdir, compressor="lzma", **kwargs):
     outputdir = GetOutputDir()
@@ -138,30 +140,32 @@ def MakeInstallerNSIS(version, file, title, installdir, compressor="lzma", **kwa
     else:
         regview = '32'
 
-    print("Building "+title+" installer at %s" % (file))
+    print("Building " + title + " installer at %s" % (file))
     if compressor != "lzma":
         print("Note: you are using zlib, which is faster, but lzma gives better compression.")
     if os.path.exists("nsis-output.exe"):
         os.remove("nsis-output.exe")
-    WriteFile(outputdir+"/tmp/__init__.py", "")
+    WriteFile(outputdir + "/tmp/__init__.py", "")
 
     nsis_defs = {
         'COMPRESSOR': compressor,
-        'TITLE'     : title,
+        'TITLE': title,
         'INSTALLDIR': installdir,
-        'OUTFILE'   : '..\\' + file,
-        'BUILT'     : '..\\' + outputdir,
-        'SOURCE'    : '..',
-        'REGVIEW'   : regview,
-        'MAJOR_VER' : '.'.join(version.split('.')[:2]),
+        'OUTFILE': '..\\' + file,
+        'BUILT': '..\\' + outputdir,
+        'SOURCE': '..',
+        'REGVIEW': regview,
+        'MAJOR_VER': '.'.join(version.split('.')[:2]),
     }
 
     # Are we shipping a version of Python?
     if os.path.isfile(os.path.join(outputdir, "python", "python.exe")):
-        py_dlls = glob.glob(os.path.join(outputdir, "python", "python[0-9][0-9].dll")) \
-                + glob.glob(os.path.join(outputdir, "python", "python[0-9][0-9]_d.dll")) \
-                + glob.glob(os.path.join(outputdir, "python", "python[0-9][0-9][0-9].dll")) \
-                + glob.glob(os.path.join(outputdir, "python", "python[0-9][0-9][0-9]_d.dll"))
+        py_dlls = (
+            glob.glob(os.path.join(outputdir, "python", "python[0-9][0-9].dll"))
+            + glob.glob(os.path.join(outputdir, "python", "python[0-9][0-9]_d.dll"))
+            + glob.glob(os.path.join(outputdir, "python", "python[0-9][0-9][0-9].dll"))
+            + glob.glob(os.path.join(outputdir, "python", "python[0-9][0-9][0-9]_d.dll"))
+        )
         assert py_dlls
         py_dll = os.path.basename(py_dlls[0])
         py_dllver = py_dll.strip(".DHLNOPTY_dhlnopty")
@@ -189,6 +193,7 @@ def MakeDebugSymbolArchive(zipname, dirname):
     outputdir = GetOutputDir()
 
     import zipfile
+
     zip = zipfile.ZipFile(zipname, 'w', zipfile.ZIP_DEFLATED)
 
     for fn in glob.glob(os.path.join(outputdir, 'bin', '*.pdb')):
@@ -248,24 +253,32 @@ def MakeInstallerLinux(version, debversion=None, rpmrelease=1,
     if dpkg_present:
         # Invoke installpanda.py to install it into a temporary dir
         lib_dir = GetDebLibDir()
-        InstallPanda(destdir="targetroot", prefix="/usr",
-                        outputdir=outputdir, libdir=lib_dir,
-                        python_versions=install_python_versions)
+        InstallPanda(
+            destdir="targetroot",
+            prefix="/usr",
+            outputdir=outputdir,
+            libdir=lib_dir,
+            python_versions=install_python_versions,
+        )
         oscmd("chmod -R 755 targetroot/usr/share/panda3d")
         oscmd("mkdir -m 0755 -p targetroot/usr/share/man/man1")
         oscmd("install -m 0644 doc/man/*.1 targetroot/usr/share/man/man1/")
 
-        oscmd("dpkg --print-architecture > "+outputdir+"/tmp/architecture.txt")
-        pkg_arch = ReadFile(outputdir+"/tmp/architecture.txt").strip()
+        oscmd("dpkg --print-architecture > " + outputdir + "/tmp/architecture.txt")
+        pkg_arch = ReadFile(outputdir + "/tmp/architecture.txt").strip()
         txt = INSTALLER_DEB_FILE[1:]
-        txt = txt.replace("VERSION", debversion).replace("ARCH", pkg_arch).replace("MAJOR", major_version)
+        txt = (
+            txt.replace("VERSION", debversion)
+            .replace("ARCH", pkg_arch)
+            .replace("MAJOR", major_version)
+        )
         txt = txt.replace("INSTSIZE", str(GetDirectorySize("targetroot") // 1024))
 
         oscmd("mkdir -m 0755 -p targetroot/DEBIAN")
         oscmd("cd targetroot && (find usr -type f -exec md5sum {} ;) > DEBIAN/md5sums")
         oscmd("cd targetroot && (find etc -type f -exec md5sum {} ;) >> DEBIAN/md5sums")
-        WriteFile("targetroot/DEBIAN/conffiles","/etc/Config.prc\n")
-        WriteFile("targetroot/DEBIAN/postinst","#!/bin/sh\necho running ldconfig\nldconfig\n")
+        WriteFile("targetroot/DEBIAN/conffiles", "/etc/Config.prc\n")
+        WriteFile("targetroot/DEBIAN/postinst", "#!/bin/sh\necho running ldconfig\nldconfig\n")
         oscmd("cp targetroot/DEBIAN/postinst targetroot/DEBIAN/postrm")
 
         # Determine the package name and the locations that
@@ -289,12 +302,12 @@ def MakeInstallerLinux(version, debversion=None, rpmrelease=1,
         pkg_dir = "debian/panda3d" + major_version
 
         # Generate a symbols file so that other packages can know which symbols we export.
-        oscmd("cd targetroot && dpkg-gensymbols -q -ODEBIAN/symbols -v%(pkg_version)s -p%(pkg_name)s -e%(lib_pattern)s" % locals())
+        oscmd(f"cd targetroot && dpkg-gensymbols -q -ODEBIAN/symbols -v{pkg_version} -p{pkg_name} -e{lib_pattern}")
 
         # Library dependencies are required, binary dependencies are recommended.
         # We explicitly exclude libphysx-extras since we don't want to depend on PhysX.
-        oscmd("cd targetroot && LD_LIBRARY_PATH=usr/%(lib_dir)s/panda3d %(dpkg_shlibdeps)s -Tdebian/substvars_dep --ignore-missing-info -x%(pkg_name)s -xlibphysx-extras %(lib_pattern)s" % locals())
-        oscmd("cd targetroot && LD_LIBRARY_PATH=usr/%(lib_dir)s/panda3d %(dpkg_shlibdeps)s -Tdebian/substvars_rec --ignore-missing-info -x%(pkg_name)s %(bin_pattern)s" % locals())
+        oscmd(f"cd targetroot && LD_LIBRARY_PATH=usr/{lib_dir}/panda3d {dpkg_shlibdeps} -Tdebian/substvars_dep --ignore-missing-info -x{pkg_name} -xlibphysx-extras {lib_pattern}")
+        oscmd(f"cd targetroot && LD_LIBRARY_PATH=usr/{lib_dir}/panda3d {dpkg_shlibdeps} -Tdebian/substvars_rec --ignore-missing-info -x{pkg_name} {bin_pattern}")
 
         # Parse the substvars files generated by dpkg-shlibdeps.
         depends = ReadFile("targetroot/debian/substvars_dep").replace("shlibs:Depends=", "").strip()
@@ -324,13 +337,17 @@ def MakeInstallerLinux(version, debversion=None, rpmrelease=1,
 
     elif rpmbuild_present:
         # Invoke installpanda.py to install it into a temporary dir
-        InstallPanda(destdir="targetroot", prefix="/usr",
-                        outputdir=outputdir, libdir=GetRPMLibDir(),
-                        python_versions=install_python_versions)
+        InstallPanda(
+            destdir="targetroot",
+            prefix="/usr",
+            outputdir=outputdir,
+            libdir=GetRPMLibDir(),
+            python_versions=install_python_versions,
+        )
         oscmd("chmod -R 755 targetroot/usr/share/panda3d")
 
-        oscmd("rpm -E '%_target_cpu' > "+outputdir+"/tmp/architecture.txt")
-        arch = ReadFile(outputdir+"/tmp/architecture.txt").strip()
+        oscmd("rpm -E '%_target_cpu' > " + outputdir + "/tmp/architecture.txt")
+        arch = ReadFile(outputdir + "/tmp/architecture.txt").strip()
         pandasource = os.path.abspath(os.getcwd())
 
         txt = INSTALLER_SPEC_FILE[1:]
@@ -378,9 +395,12 @@ def MakeInstallerOSX(version, python_versions=[], installdir=None, **kwargs):
         dmg_name += "-py" + python_versions[0]["version"]
     dmg_name += ".dmg"
 
-    if (os.path.isfile(dmg_name)): oscmd("rm -f %s" % dmg_name)
-    if (os.path.exists("dstroot")): oscmd("rm -rf dstroot")
-    if (os.path.exists("Panda3D-rw.dmg")): oscmd('rm -f Panda3D-rw.dmg')
+    if os.path.isfile(dmg_name):
+        oscmd("rm -f %s" % dmg_name)
+    if os.path.exists("dstroot"):
+        oscmd("rm -rf dstroot")
+    if os.path.exists("Panda3D-rw.dmg"):
+        oscmd('rm -f Panda3D-rw.dmg')
 
     oscmd("mkdir -p                       dstroot/base/%s/lib" % installdir)
     oscmd("mkdir -p                       dstroot/base/%s/etc" % installdir)
@@ -389,15 +409,15 @@ def MakeInstallerOSX(version, python_versions=[], installdir=None, **kwargs):
     oscmd("cp -R %s/models                dstroot/base/%s/models" % (outputdir, installdir))
     oscmd("cp -R doc/LICENSE              dstroot/base/%s/LICENSE" % installdir)
     oscmd("cp -R doc/ReleaseNotes         dstroot/base/%s/ReleaseNotes" % installdir)
-    if os.path.isdir(outputdir+"/Frameworks") and os.listdir(outputdir+"/Frameworks"):
+    if os.path.isdir(outputdir + "/Frameworks") and os.listdir(outputdir + "/Frameworks"):
         oscmd("cp -R %s/Frameworks            dstroot/base/%s/Frameworks" % (outputdir, installdir))
-    if os.path.isdir(outputdir+"/plugins"):
+    if os.path.isdir(outputdir + "/plugins"):
         oscmd("cp -R %s/plugins           dstroot/base/%s/plugins" % (outputdir, installdir))
 
     # Libraries that shouldn't be in base, but are instead in other modules.
     no_base_libs = ['libp3ffmpeg', 'libp3fmod_audio', 'libfmodex', 'libfmodexL']
 
-    for base in os.listdir(outputdir+"/lib"):
+    for base in os.listdir(outputdir + "/lib"):
         if not base.endswith(".a") and base.split('.')[0] not in no_base_libs:
             libname = ("dstroot/base/%s/lib/" % installdir) + base
             # We really need to specify -R in order not to follow symlinks
@@ -412,7 +432,7 @@ def MakeInstallerOSX(version, python_versions=[], installdir=None, **kwargs):
     oscmd("mkdir -m 0755 -p dstroot/tools/usr/local/share/man/man1")
     oscmd("install -m 0644 doc/man/*.1 dstroot/tools/usr/local/share/man/man1/")
 
-    for base in os.listdir(outputdir+"/bin"):
+    for base in os.listdir(outputdir + "/bin"):
         if not base.startswith("deploy-stub"):
             binname = ("dstroot/tools/%s/bin/" % installdir) + base
             # OSX needs the -R argument to copy symbolic links correctly, it doesn't have -d. How weird.
@@ -436,7 +456,7 @@ def MakeInstallerOSX(version, python_versions=[], installdir=None, **kwargs):
         if os.path.isdir(outputdir + "/panda3d.dist-info"):
             oscmd("cp -R %s/panda3d.dist-info dstroot/pythoncode/%s/panda3d.dist-info" % (outputdir, installdir))
 
-        for base in os.listdir(outputdir+"/panda3d"):
+        for base in os.listdir(outputdir + "/panda3d"):
             if base.endswith('.py'):
                 libname = ("dstroot/pythoncode/%s/panda3d/" % installdir) + base
                 oscmd("cp -R " + outputdir + "/panda3d/" + base + " " + libname)
@@ -519,8 +539,10 @@ def MakeInstallerOSX(version, python_versions=[], installdir=None, **kwargs):
     # if they're running macOS 10.14 or less. We also remove the old
     # installation.
     script_components = set()
+
     def write_script(component, phase, contents):
-        if installdir == "/Developer/Panda3D": return
+        if installdir == "/Developer/Panda3D":
+            return
 
         script_components.add(component)
         oscmd("mkdir -p dstroot/scripts/%s" % component)
@@ -565,9 +587,12 @@ def MakeInstallerOSX(version, python_versions=[], installdir=None, **kwargs):
         pkgs.append("pythoncode")
     for version_info in python_versions:
         pkgs.append("pybindings" + version_info["version"])
-    if not PkgSkip("FFMPEG"):    pkgs.append("ffmpeg")
-    #if not PkgSkip("OPENAL"):    pkgs.append("openal")
-    if not PkgSkip("FMODEX"):    pkgs.append("fmodex")
+    if not PkgSkip("FFMPEG"):
+        pkgs.append("ffmpeg")
+    #if not PkgSkip("OPENAL"):
+    #    pkgs.append("openal")
+    if not PkgSkip("FMODEX"):
+        pkgs.append("fmodex")
 
     for pkg in pkgs:
         identifier = "org.panda3d.panda3d.%s.pkg" % pkg
@@ -584,7 +609,7 @@ def MakeInstallerOSX(version, python_versions=[], installdir=None, **kwargs):
             pkg_scripts = ''
 
         if os.path.exists("/usr/bin/pkgbuild"):
-            cmd = '/usr/bin/pkgbuild --identifier ' + identifier + ' --version ' + version + ' --root dstroot/' + pkg + '/ dstroot/Panda3D/Panda3D.mpkg/Contents/Packages/' + pkg + '.pkg' + pkg_scripts
+            cmd = f'/usr/bin/pkgbuild --identifier {identifier} --version {version} --root dstroot/{pkg}/ dstroot/Panda3D/Panda3D.mpkg/Contents/Packages/{pkg}.pkg {pkg_scripts}'
         else:
             exit("pkgbuild could not be found!")
         oscmd(cmd)
@@ -620,7 +645,7 @@ def MakeInstallerOSX(version, python_versions=[], installdir=None, **kwargs):
     dist.write('        <line choice="base"/>\n')
     if python_versions:
         dist.write('        <line choice="pythoncode">\n')
-        for version_info in sorted(python_versions, key=lambda info:info["version"], reverse=True):
+        for version_info in sorted(python_versions, key=lambda info: info["version"], reverse=True):
             dist.write('            <line choice="pybindings%s"/>\n' % (version_info["version"]))
         dist.write('        </line>\n')
     dist.write('        <line choice="tools"/>\n')
@@ -700,7 +725,12 @@ def MakeInstallerFreeBSD(version, python_versions=[], **kwargs):
     oscmd("mkdir targetroot")
 
     # Invoke installpanda.py to install it into a temporary dir
-    InstallPanda(destdir="targetroot", prefix="/usr/local", outputdir=outputdir, python_versions=python_versions)
+    InstallPanda(
+        destdir="targetroot",
+        prefix="/usr/local",
+        outputdir=outputdir,
+        python_versions=python_versions,
+    )
 
     if not os.path.exists("/usr/sbin/pkg"):
         exit("Cannot create an installer without pkg")
@@ -894,7 +924,10 @@ def MakeInstallerAndroid(version, **kwargs):
 
     # And now make a site-packages directory containing our direct/panda3d/pandac modules.
     for tree in "panda3d", "direct", "pandac":
-        copy_python_tree(os.path.join(outputdir, tree), os.path.join(stdlib_target, "site-packages", tree))
+        copy_python_tree(
+            os.path.join(outputdir, tree),
+            os.path.join(stdlib_target, "site-packages", tree),
+        )
 
     # Copy the models and config files to the virtual assets filesystem.
     oscmd("mkdir apkroot/assets")
@@ -981,13 +1014,57 @@ if __name__ == "__main__":
     version = GetMetadataValue('version')
 
     parser = OptionParser()
-    parser.add_option('', '--version', dest='version', help='Panda3D version number (default: %s)' % (version), default=version)
-    parser.add_option('', '--debversion', dest='debversion', help='Version number for .deb file', default=None)
-    parser.add_option('', '--rpmrelease', dest='rpmrelease', help='Release number for .rpm file', default='1')
-    parser.add_option('', '--outputdir', dest='outputdir', help='Makepanda\'s output directory (default: built)', default='built')
-    parser.add_option('', '--verbose', dest='verbose', help='Enable verbose output', action='store_true', default=False)
-    parser.add_option('', '--lzma', dest='compressor', help='Use LZMA compression', action='store_const', const='lzma', default='zlib')
-    parser.add_option('', '--installdir', dest='installdir', help='Where on the system the installer should put the SDK (Windows, macOS)')
+    parser.add_option(
+        '',
+        '--version',
+        dest='version',
+        help='Panda3D version number (default: %s)' % (version),
+        default=version,
+    )
+    parser.add_option(
+        '',
+        '--debversion',
+        dest='debversion',
+        help='Version number for .deb file',
+        default=None,
+    )
+    parser.add_option(
+        '',
+        '--rpmrelease',
+        dest='rpmrelease',
+        help='Release number for .rpm file',
+        default='1',
+    )
+    parser.add_option(
+        '',
+        '--outputdir',
+        dest='outputdir',
+        help='Makepanda\'s output directory (default: built)',
+        default='built',
+    )
+    parser.add_option(
+        '',
+        '--verbose',
+        dest='verbose',
+        help='Enable verbose output',
+        action='store_true',
+        default=False,
+    )
+    parser.add_option(
+        '',
+        '--lzma',
+        dest='compressor',
+        help='Use LZMA compression',
+        action='store_const',
+        const='lzma',
+        default='zlib',
+    )
+    parser.add_option(
+        '',
+        '--installdir',
+        dest='installdir',
+        help='Where on the system the installer should put the SDK (Windows, macOS)',
+    )
     (options, args) = parser.parse_args()
 
     SetVerbose(options.verbose)
@@ -1014,11 +1091,13 @@ if __name__ == "__main__":
     if not match:
         exit("version requires three digits")
 
-    MakeInstaller(version=match.group(),
-                  outputdir=options.outputdir,
-                  optimize=GetOptimize(),
-                  compressor=options.compressor,
-                  debversion=options.debversion,
-                  rpmrelease=options.rpmrelease,
-                  python_versions=ReadPythonVersionInfoFile(),
-                  installdir=options.installdir)
+    MakeInstaller(
+        version=match.group(),
+        outputdir=options.outputdir,
+        optimize=GetOptimize(),
+        compressor=options.compressor,
+        debversion=options.debversion,
+        rpmrelease=options.rpmrelease,
+        python_versions=ReadPythonVersionInfoFile(),
+        installdir=options.installdir,
+    )

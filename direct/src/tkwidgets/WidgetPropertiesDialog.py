@@ -5,13 +5,6 @@ __all__ = ['WidgetPropertiesDialog']
 from direct.showbase.TkGlobal import *
 import Pmw
 
-"""
-TODO:
-  Checkboxes for None?
-  Floaters to adjust float values
-  OK and Cancel to allow changes to be delayed
-  Something other than Return to accept a new value
-"""
 
 class WidgetPropertiesDialog(Toplevel):
     """Class to open dialogs to adjust widget properties."""
@@ -227,5 +220,3 @@ class WidgetPropertiesDialog(Toplevel):
         This method is called automatically to process the data, *after*
         the dialog is destroyed. By default, it does nothing.
         """
-        pass # override
-

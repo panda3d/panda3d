@@ -1,32 +1,40 @@
+from panda3d.core import ConfigVariableInt, ConfigVariableDouble
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.fsm.StatePush import FunctionCall
 from direct.showbase.PythonUtil import Averager
+from .TaskManagerGlobal import taskMgr
+
 
 class TaskTracker:
     # call it TaskProfiler to avoid confusion for the user
     notify = directNotify.newCategory("TaskProfiler")
     MinSamples = None
     SpikeThreshold = None
+
     def __init__(self, namePrefix):
         self._namePrefix = namePrefix
         self._durationAverager = Averager('%s-durationAverager' % namePrefix)
         self._avgSession = None
         if TaskTracker.MinSamples is None:
             # number of samples required before spikes start getting identified
-            TaskTracker.MinSamples = config.GetInt('profile-task-spike-min-samples', 30)
+            TaskTracker.MinSamples = ConfigVariableInt('profile-task-spike-min-samples', 30).value
             # defines spike as longer than this multiple of avg task duration
             TaskTracker.SpikeThreshold = TaskProfiler.GetDefaultSpikeThreshold()
+
     def destroy(self):
         self.flush()
         del self._namePrefix
         del self._durationAverager
+
     def flush(self):
         self._durationAverager.reset()
         if self._avgSession:
             self._avgSession.release()
         self._avgSession = None
+
     def getNamePrefix(self, namePrefix):
         return self._namePrefix
+
     def _checkSpike(self, session):
         duration = session.getDuration()
         isSpike = False
@@ -45,6 +53,7 @@ class TaskTracker:
                         session.getResults(sorts=sorts)))
                 self.notify.info(s)
         return isSpike
+
     def addProfileSession(self, session):
         duration = session.getDuration()
         if duration == 0.:
@@ -69,11 +78,14 @@ class TaskTracker:
 
     def getAvgDuration(self):
         return self._durationAverager.getAverage()
+
     def getNumDurationSamples(self):
         return self._durationAverager.getCount()
+
     def getAvgSession(self):
         # returns profile session for closest-to-average sample
         return self._avgSession
+
     def log(self):
         if self._avgSession:
             s = 'task CPU profile (%s):\n' % self._namePrefix
@@ -83,6 +95,7 @@ class TaskTracker:
             self.notify.info(s)
         else:
             self.notify.info('task CPU profile (%s): no data collected' % self._namePrefix)
+
 
 class TaskProfiler:
     # this does intermittent profiling of tasks running on the system
@@ -107,7 +120,7 @@ class TaskProfiler:
 
     @staticmethod
     def GetDefaultSpikeThreshold():
-        return config.GetFloat('profile-task-spike-threshold', 5.)
+        return ConfigVariableDouble('profile-task-spike-threshold', 5.).value
 
     @staticmethod
     def SetSpikeThreshold(spikeThreshold):
@@ -120,7 +133,7 @@ class TaskProfiler:
         if name:
             name = name.lower()
         for namePrefix, tracker in self._namePrefix2tracker.items():
-            if (name and (name not in namePrefix.lower())):
+            if name and name not in namePrefix.lower():
                 continue
             tracker.log()
 
@@ -129,7 +142,7 @@ class TaskProfiler:
             name = name.lower()
         # flush stored task profiles
         for namePrefix, tracker in self._namePrefix2tracker.items():
-            if (name and (name not in namePrefix.lower())):
+            if name and name not in namePrefix.lower():
                 continue
             tracker.flush()
 
@@ -146,7 +159,7 @@ class TaskProfiler:
     def _doProfileTasks(self, task=None):
         # gather data from the previous frame
         # set up for the next frame
-        if (self._task is not None) and taskMgr._hasProfiledDesignatedTask():
+        if self._task is not None and taskMgr._hasProfiledDesignatedTask():
             session = taskMgr._getLastTaskProfileSession()
             # if we couldn't profile, throw this result out
             if session.profileSucceeded():

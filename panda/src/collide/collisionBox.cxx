@@ -30,6 +30,7 @@
 #include "cmath.h"
 #include "mathNumbers.h"
 #include "geom.h"
+#include "geomLines.h"
 #include "geomTriangles.h"
 #include "geomVertexWriter.h"
 #include "config_mathutil.h"
@@ -1024,11 +1025,37 @@ fill_viz_geom() {
   tris->add_vertices(3, 7, 0);
   tris->add_vertices(0, 7, 4);
 
-  PT(Geom) geom = new Geom(vdata);
-  geom->add_primitive(tris);
+  PT(GeomLines) lines = new GeomLines(Geom::UH_static);
 
-  _viz_geom->add_geom(geom, get_solid_viz_state());
-  _bounds_viz_geom->add_geom(geom, get_solid_bounds_viz_state());
+  // Bottom
+  lines->add_vertices(0, 1);
+  lines->add_vertices(1, 2);
+  lines->add_vertices(0, 3);
+  lines->add_vertices(2, 3);
+
+  // Top
+  lines->add_vertices(4, 5);
+  lines->add_vertices(5, 6);
+  lines->add_vertices(4, 7);
+  lines->add_vertices(6, 7);
+
+  // Sides
+  lines->add_vertices(0, 4);
+  lines->add_vertices(1, 5);
+  lines->add_vertices(2, 6);
+  lines->add_vertices(3, 7);
+
+  PT(Geom) geom1 = new Geom(vdata);
+  geom1->add_primitive(tris);
+
+  PT(Geom) geom2 = new Geom(vdata);
+  geom2->add_primitive(lines);
+
+  _viz_geom->add_geom(geom1, get_solid_viz_state());
+  _viz_geom->add_geom(geom2, get_wireframe_viz_state());
+
+  _bounds_viz_geom->add_geom(geom1, get_solid_bounds_viz_state());
+  _bounds_viz_geom->add_geom(geom2, get_wireframe_viz_state());
 }
 
 /**

@@ -1,4 +1,5 @@
 from direct.showbase.DirectObject import DirectObject
+from direct.showbase.MessengerGlobal import messenger
 from .DirectGlobals import *
 from .DirectUtil import *
 from .DirectGeometry import *
@@ -95,7 +96,7 @@ class SelectedNodePaths(DirectObject):
             dnp = self.getDeselectedDict(id)
             if dnp:
                 # Remove it from the deselected dictionary
-                del(self.deselectedDict[id])
+                del self.deselectedDict[id]
                 # Show its bounding box
                 dnp.highlight()
             else:
@@ -125,7 +126,7 @@ class SelectedNodePaths(DirectObject):
             # Hide its bounding box
             dnp.dehighlight()
             # Remove it from the selected dictionary
-            del(self.selectedDict[id])
+            del self.selectedDict[id]
             if dnp in self.selectedList: # [gjeon]
                 self.selectedList.remove(dnp)
             # And keep track of it in the deselected dictionary
@@ -308,7 +309,7 @@ class DirectBoundingBox:
         # Create a line segments object for the bbox
         lines = LineNodePath(hidden)
         lines.node().setName('bboxLines')
-        if (bboxColor):
+        if bboxColor:
             lines.setColor(VBase4(*bboxColor))
         else:
             lines.setColor(VBase4(1., 0., 0., 1.))
@@ -352,7 +353,7 @@ class DirectBoundingBox:
         return lines
 
     def setBoxColorScale(self, r, g, b, a):
-        if (self.lines):
+        if self.lines:
             self.lines.reset()
             self.lines = None
         self.lines = self.createBBoxLines((r, g, b, a))
@@ -564,13 +565,13 @@ class SelectionQueue(CollisionHandlerQueue):
             elif (skipFlags & SKIP_BACKFACE) and self.isEntryBackfacing(entry):
                 # Skip, if backfacing poly
                 pass
-            elif ((skipFlags & SKIP_CAMERA) and
-                  (camera in nodePath.getAncestors())):
+            elif (skipFlags & SKIP_CAMERA) and \
+                 (base.camera in nodePath.getAncestors()):
                 # Skip if parented to a camera.
                 pass
             # Can pick unpickable, use the first visible node
-            elif ((skipFlags & SKIP_UNPICKABLE) and
-                  (nodePath.getName() in self.unpickable)):
+            elif (skipFlags & SKIP_UNPICKABLE) and\
+                 (nodePath.getName() in self.unpickable):
                 # Skip if in unpickable list
                 pass
             elif base.direct and\
@@ -793,4 +794,3 @@ class SelectionSphere(SelectionQueue):
             targetNodePath = render
         self.collideWithBitMask(bitMask)
         return self.pick(targetNodePath, skipFlags)
-

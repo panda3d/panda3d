@@ -8,17 +8,18 @@
 #
 ########################################################################
 
-import os, sys, platform
+import os
+import sys
 from distutils.sysconfig import get_python_lib
 from optparse import OptionParser
 from makepandacore import *
 
 
 MIME_INFO = (
-  ("egg", "model/x-egg", "EGG model file", "pview"),
-  ("bam", "model/x-bam", "Panda3D binary model file", "pview"),
-  ("egg.pz", "model/x-compressed-egg", "Compressed EGG model file", "pview"),
-  ("bam.pz", "model/x-compressed-bam", "Compressed Panda3D binary model file", "pview"),
+    ("egg", "model/x-egg", "EGG model file", "pview"),
+    ("bam", "model/x-bam", "Panda3D binary model file", "pview"),
+    ("egg.pz", "model/x-compressed-egg", "Compressed EGG model file", "pview"),
+    ("bam.pz", "model/x-compressed-bam", "Compressed Panda3D binary model file", "pview"),
 )
 
 APP_INFO = (
@@ -46,6 +47,7 @@ def WriteApplicationsFile(fname, appinfo, mimeinfo):
         fhandle.write("\n\n")
     fhandle.close()
 
+
 def WriteMimeXMLFile(fname, info):
     fhandle = open(fname, "w")
     fhandle.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
@@ -58,6 +60,7 @@ def WriteMimeXMLFile(fname, info):
     fhandle.write("</mime-info>\n")
     fhandle.close()
 
+
 def WriteMimeFile(fname, info):
     fhandle = open(fname, "w")
     for ext, mime, desc, app in info:
@@ -67,6 +70,7 @@ def WriteMimeFile(fname, info):
         fhandle.write("\text: %s\n" % (ext))
         fhandle.write("\n")
     fhandle.close()
+
 
 def WriteKeysFile(fname, info):
     fhandle = open(fname, "w")
@@ -79,6 +83,7 @@ def WriteKeysFile(fname, info):
         fhandle.write("\tview=%s %%f\n" % (app))
         fhandle.write("\n")
     fhandle.close()
+
 
 def GetDebLibDir():
     """ Returns the lib dir according to the debian system. """
@@ -94,6 +99,7 @@ def GetDebLibDir():
 
     return "lib"
 
+
 def GetRPMLibDir():
     """ Returns the lib dir according to the rpm system. """
     handle = os.popen("rpm -E '%_lib'")
@@ -105,11 +111,12 @@ def GetRPMLibDir():
     else:
         return "lib"
 
+
 def GetLibDir():
-    """ Returns the directory to install architecture-dependent
+    """Returns the directory to install architecture-dependent
     libraries in, relative to the prefix directory.  This may be
     something like "lib" or "lib64" or in some cases, something
-    similar to "lib/x86_64-linux-gnu". """
+    similar to "lib/x86_64-linux-gnu"."""
 
     if sys.platform in ("darwin", "win32", "cygwin"):
         return "lib"
@@ -142,128 +149,160 @@ def GetLibDir():
     return "lib"
 
 def InstallPanda(destdir="", prefix="/usr", outputdir="built", libdir=GetLibDir(), python_versions=[]):
-    if (not prefix.startswith("/")):
+    if not prefix.startswith("/"):
         prefix = "/" + prefix
     libdir = prefix + "/" + libdir
+
+    dest_prefix = destdir + prefix
+    dest_libdir = destdir + libdir
 
     # Create the directory structure that we will be putting our files in.
     # Don't use os.makedirs or mkdir -p; neither properly set permissions for
     # created intermediate directories.
-    MakeDirectory(destdir+prefix+"/bin", mode=0o755, recursive=True)
-    MakeDirectory(destdir+prefix+"/include", mode=0o755)
-    MakeDirectory(destdir+prefix+"/include/panda3d", mode=0o755)
-    MakeDirectory(destdir+prefix+"/share", mode=0o755)
-    MakeDirectory(destdir+prefix+"/share/panda3d", mode=0o755)
-    MakeDirectory(destdir+prefix+"/share/mime-info", mode=0o755)
-    MakeDirectory(destdir+prefix+"/share/mime", mode=0o755)
-    MakeDirectory(destdir+prefix+"/share/mime/packages", mode=0o755)
-    MakeDirectory(destdir+prefix+"/share/application-registry", mode=0o755)
-    MakeDirectory(destdir+prefix+"/share/applications", mode=0o755)
-    MakeDirectory(destdir+libdir+"/panda3d", mode=0o755, recursive=True)
+    MakeDirectory(dest_prefix + "/bin", mode=0o755, recursive=True)
+    MakeDirectory(dest_prefix + "/include", mode=0o755)
+    MakeDirectory(dest_prefix + "/include/panda3d", mode=0o755)
+    MakeDirectory(dest_prefix + "/share", mode=0o755)
+    MakeDirectory(dest_prefix + "/share/panda3d", mode=0o755)
+    MakeDirectory(dest_prefix + "/share/mime-info", mode=0o755)
+    MakeDirectory(dest_prefix + "/share/mime", mode=0o755)
+    MakeDirectory(dest_prefix + "/share/mime/packages", mode=0o755)
+    MakeDirectory(dest_prefix + "/share/application-registry", mode=0o755)
+    MakeDirectory(dest_prefix + "/share/applications", mode=0o755)
+    MakeDirectory(dest_libdir + "/panda3d", mode=0o755, recursive=True)
 
     for python_version in python_versions:
-        MakeDirectory(destdir+python_version["purelib"], mode=0o755, recursive=True)
-        MakeDirectory(destdir+python_version["platlib"]+"/panda3d", mode=0o755, recursive=True)
+        MakeDirectory(destdir + python_version["purelib"], mode=0o755, recursive=True)
+        MakeDirectory(destdir + python_version["platlib"] + "/panda3d", mode=0o755, recursive=True)
 
-    if (sys.platform.startswith("freebsd")):
-        MakeDirectory(destdir+prefix+"/etc", mode=0o755)
-        MakeDirectory(destdir+"/usr/local/libdata/ldconfig", mode=0o755, recursive=True)
+    if sys.platform.startswith("freebsd"):
+        MakeDirectory(dest_prefix + "/etc", mode=0o755)
+        MakeDirectory(destdir + "/usr/local/libdata/ldconfig", mode=0o755, recursive=True)
     else:
-        MakeDirectory(destdir+"/etc/ld.so.conf.d", mode=0o755, recursive=True)
+        MakeDirectory(destdir + "/etc/ld.so.conf.d", mode=0o755, recursive=True)
 
     # Write the Config.prc file.
-    Configrc = ReadFile(outputdir+"/etc/Config.prc")
-    Configrc = Configrc.replace("model-path    $THIS_PRC_DIR/..", "model-path    "+prefix+"/share/panda3d")
-    if (sys.platform.startswith("freebsd")):
-        WriteFile(destdir+prefix+"/etc/Config.prc", Configrc)
-        oscmd("cp "+outputdir+"/etc/Confauto.prc "+destdir+prefix+"/etc/Confauto.prc")
+    Configrc = ReadFile(outputdir + "/etc/Config.prc")
+    Configrc = Configrc.replace("model-path    $THIS_PRC_DIR/..", "model-path    " + prefix + "/share/panda3d")
+    if sys.platform.startswith("freebsd"):
+        WriteFile(dest_prefix + "/etc/Config.prc", Configrc)
+        oscmd(f"cp {outputdir}/etc/Confauto.prc {dest_prefix}/etc/Confauto.prc")
     else:
         WriteFile(destdir+"/etc/Config.prc", Configrc)
-        oscmd("cp "+outputdir+"/etc/Confauto.prc "+destdir+"/etc/Confauto.prc")
+        oscmd(f"cp {outputdir}/etc/Confauto.prc {destdir}/etc/Confauto.prc")
 
-    oscmd("cp -R "+outputdir+"/include/*        "+destdir+prefix+"/include/panda3d/")
-    oscmd("cp -R "+outputdir+"/pandac           "+destdir+prefix+"/share/panda3d/")
-    oscmd("cp -R "+outputdir+"/models           "+destdir+prefix+"/share/panda3d/")
-    if os.path.isdir("samples"):             oscmd("cp -R samples               "+destdir+prefix+"/share/panda3d/")
-    if os.path.isdir(outputdir+"/direct"):   oscmd("cp -R "+outputdir+"/direct           "+destdir+prefix+"/share/panda3d/")
-    if os.path.isdir(outputdir+"/Pmw"):      oscmd("cp -R "+outputdir+"/Pmw     "+destdir+prefix+"/share/panda3d/")
-    if os.path.isdir(outputdir+"/plugins"):  oscmd("cp -R "+outputdir+"/plugins "+destdir+prefix+"/share/panda3d/")
+    oscmd(f"cp -R {outputdir}/include/* {dest_prefix}/include/panda3d/")
+    oscmd(f"cp -R {outputdir}/pandac {dest_prefix}/share/panda3d/")
+    oscmd(f"cp -R {outputdir}/models {dest_prefix}/share/panda3d/")
+    if os.path.isdir("samples"):
+        oscmd(f"cp -R samples {dest_prefix}/share/panda3d/")
+    if os.path.isdir(outputdir + "/direct"):
+        oscmd(f"cp -R {outputdir}/direct {dest_prefix}/share/panda3d/")
+    if os.path.isdir(outputdir + "/Pmw"):
+        oscmd(f"cp -R {outputdir}/Pmw {dest_prefix}/share/panda3d/")
+    if os.path.isdir(outputdir + "/plugins"):
+        oscmd(f"cp -R {outputdir}/plugins {dest_prefix}/share/panda3d/")
 
     for python_version in python_versions:
         for base in os.listdir(outputdir + "/panda3d"):
             suffix = python_version["ext_suffix"]
             platlib = python_version["platlib"]
             if base.endswith(".py") or (base.endswith(suffix) and '.' not in base[:-len(suffix)]):
-                oscmd("cp "+outputdir+"/panda3d/"+base+" "+destdir+platlib+"/panda3d/"+base)
+                oscmd(f"cp {outputdir}/panda3d/{base} {destdir}{platlib}/panda3d/{base}")
 
-    WriteMimeFile(destdir+prefix+"/share/mime-info/panda3d.mime", MIME_INFO)
-    WriteKeysFile(destdir+prefix+"/share/mime-info/panda3d.keys", MIME_INFO)
-    WriteMimeXMLFile(destdir+prefix+"/share/mime/packages/panda3d.xml", MIME_INFO)
-    WriteApplicationsFile(destdir+prefix+"/share/application-registry/panda3d.applications", APP_INFO, MIME_INFO)
-    if os.path.isfile(outputdir+"/bin/pview"):
-        oscmd("cp makepanda/pview.desktop "+destdir+prefix+"/share/applications/pview.desktop")
+    WriteMimeFile(dest_prefix + "/share/mime-info/panda3d.mime", MIME_INFO)
+    WriteKeysFile(dest_prefix + "/share/mime-info/panda3d.keys", MIME_INFO)
+    WriteMimeXMLFile(dest_prefix + "/share/mime/packages/panda3d.xml", MIME_INFO)
+    WriteApplicationsFile(dest_prefix + "/share/application-registry/panda3d.applications", APP_INFO, MIME_INFO)
+    if os.path.isfile(outputdir + "/bin/pview"):
+        oscmd(f"cp makepanda/pview.desktop {dest_prefix}/share/applications/pview.desktop")
 
-    oscmd("cp doc/ReleaseNotes                  "+destdir+prefix+"/share/panda3d/ReleaseNotes")
+    oscmd(f"cp doc/ReleaseNotes {dest_prefix}/share/panda3d/ReleaseNotes")
 
     for python_version in python_versions:
-        pth_file = python_version["purelib"] + "/panda3d.pth"
-        oscmd("echo '"+prefix+"/share/panda3d' > "+destdir+pth_file)
+        oscmd(f"echo '{prefix}/share/panda3d' > {destdir}{python_version['purelib']}/panda3d.pth")
 
-        if os.path.isdir(outputdir+"/panda3d.dist-info"):
-            oscmd("cp -R "+outputdir+"/panda3d.dist-info "+destdir+python_version["platlib"])
+        if os.path.isdir(outputdir + "/panda3d.dist-info"):
+            oscmd(f"cp -R {outputdir}/panda3d.dist-info {destdir}{python_version['platlib']}")
 
-    if (sys.platform.startswith("freebsd")):
-        oscmd("echo '"+libdir+"/panda3d'>    "+destdir+"/usr/local/libdata/ldconfig/panda3d")
+    if sys.platform.startswith("freebsd"):
+        oscmd(f"echo '{libdir}/panda3d' > {destdir}/usr/local/libdata/ldconfig/panda3d")
     else:
-        oscmd("echo '"+libdir+"/panda3d'>    "+destdir+"/etc/ld.so.conf.d/panda3d.conf")
+        oscmd(f"echo '{libdir}/panda3d' > {destdir}/etc/ld.so.conf.d/panda3d.conf")
 
-    for base in os.listdir(outputdir+"/lib"):
+    for base in os.listdir(outputdir + "/lib"):
         if not base.endswith(".a"):
             # We really need to specify -R in order not to follow symlinks on non-GNU
-            oscmd("cp -R -P "+outputdir+"/lib/"+base+" "+destdir+libdir+"/panda3d/"+base)
+            oscmd(f"cp -R -P {outputdir}/lib/{base} {dest_libdir}/panda3d/{base}")
 
-    for base in os.listdir(outputdir+"/bin"):
+    for base in os.listdir(outputdir + "/bin"):
         if not base.startswith("deploy-stub"):
-            oscmd("cp -R -P "+outputdir+"/bin/"+base+" "+destdir+prefix+"/bin/"+base)
+            oscmd(f"cp -R -P {outputdir}/bin/{base} {dest_prefix}/bin/{base}")
 
-    DeleteVCS(destdir+prefix+"/share/panda3d")
-    DeleteBuildFiles(destdir+prefix+"/share/panda3d")
-    DeleteEmptyDirs(destdir+prefix+"/share/panda3d")
-    DeleteVCS(destdir+prefix+"/include/panda3d")
-    DeleteBuildFiles(destdir+prefix+"/include/panda3d")
-    DeleteEmptyDirs(destdir+prefix+"/include/panda3d")
+    DeleteVCS(dest_prefix + "/share/panda3d")
+    DeleteBuildFiles(dest_prefix + "/share/panda3d")
+    DeleteEmptyDirs(dest_prefix + "/share/panda3d")
+    DeleteVCS(dest_prefix + "/include/panda3d")
+    DeleteBuildFiles(dest_prefix + "/include/panda3d")
+    DeleteEmptyDirs(dest_prefix + "/include/panda3d")
 
     # Change permissions on include directory.
-    os.chmod(destdir + prefix + "/include/panda3d", 0o755)
-    for root, dirs, files in os.walk(destdir + prefix + "/include/panda3d"):
+    os.chmod(dest_prefix + "/include/panda3d", 0o755)
+    for root, dirs, files in os.walk(dest_prefix + "/include/panda3d"):
         for basename in dirs:
             os.chmod(os.path.join(root, basename), 0o755)
         for basename in files:
             os.chmod(os.path.join(root, basename), 0o644)
 
     # rpmlint doesn't like this file, for some reason.
-    if (os.path.isfile(destdir+prefix+"/share/panda3d/direct/leveleditor/copyfiles.pl")):
-        os.remove(destdir+prefix+"/share/panda3d/direct/leveleditor/copyfiles.pl")
+    if os.path.isfile(dest_prefix + "/share/panda3d/direct/leveleditor/copyfiles.pl"):
+        os.remove(dest_prefix + "/share/panda3d/direct/leveleditor/copyfiles.pl")
 
-if (__name__ == "__main__"):
-    if (sys.platform.startswith("win") or sys.platform == "darwin"):
+
+if __name__ == "__main__":
+    if sys.platform.startswith("win") or sys.platform == "darwin":
         exit("This script is not supported on Windows or Mac OS X at the moment!")
 
     destdir = os.environ.get("DESTDIR", "/")
 
     parser = OptionParser()
-    parser.add_option('', '--outputdir', dest = 'outputdir', help = 'Makepanda\'s output directory (default: built)', default = 'built')
-    parser.add_option('', '--destdir', dest = 'destdir', help = 'Destination directory [default=%s]' % destdir, default = destdir)
-    parser.add_option('', '--prefix', dest = 'prefix', help = 'Prefix [default=/usr/local]', default = '/usr/local')
-    parser.add_option('', '--verbose', dest = 'verbose', help = 'Print commands that are executed [default=no]', action = 'store_true', default = False)
+    parser.add_option(
+        '',
+        '--outputdir',
+        dest='outputdir',
+        help='Makepanda\'s output directory (default: built)',
+        default='built',
+    )
+    parser.add_option(
+        '',
+        '--destdir',
+        dest='destdir',
+        help='Destination directory [default=%s]' % destdir,
+        default=destdir,
+    )
+    parser.add_option(
+        '',
+        '--prefix',
+        dest='prefix',
+        help='Prefix [default=/usr/local]',
+        default='/usr/local',
+    )
+    parser.add_option(
+        '',
+        '--verbose',
+        dest='verbose',
+        help='Print commands that are executed [default=no]',
+        action='store_true',
+        default=False,
+    )
     (options, args) = parser.parse_args()
 
     destdir = options.destdir
-    if (destdir.endswith("/")):
+    if destdir.endswith("/"):
         destdir = destdir[:-1]
-    if (destdir == "/"):
+    if destdir == "/":
         destdir = ""
-    if (destdir != "" and not os.path.isdir(destdir)):
+    if destdir != "" and not os.path.isdir(destdir):
         exit("Directory '%s' does not exist!" % destdir)
 
     SetOutputDir(options.outputdir)
@@ -272,10 +311,12 @@ if (__name__ == "__main__"):
         SetVerbose(True)
 
     print("Installing Panda3D SDK into " + destdir + options.prefix)
-    InstallPanda(destdir=destdir,
-                 prefix=options.prefix,
-                 outputdir=options.outputdir,
-                 python_versions=ReadPythonVersionInfoFile())
+    InstallPanda(
+        destdir=destdir,
+        prefix=options.prefix,
+        outputdir=options.outputdir,
+        python_versions=ReadPythonVersionInfoFile(),
+    )
     print("Installation finished!")
 
     if not destdir:

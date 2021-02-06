@@ -1017,6 +1017,10 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
         else if (noprefix.compare(7, string::npos, "Emission") == 0) {
           bind._part = Shader::STO_stage_emission_i;
         }
+        else {
+          GLCAT.error()
+            << "Unrecognized shader input name: p3d_" << noprefix << "\n";
+        }
 
         for (bind._stage = 0; bind._stage < param_size; ++bind._stage) {
           _glgsg->_glUniform1i(p + bind._stage, _shader->_tex_spec.size());
@@ -2807,6 +2811,11 @@ update_shader_texture_bindings(ShaderContext *prev) {
         _glgsg->apply_white_texture(i);
       }
       continue;
+    }
+    else if (Texture::is_integer(tex->get_format())) {
+      // Required to satisfy Intel drivers, which will otherwise sample zero.
+      sampler.set_minfilter(sampler.uses_mipmaps() ? SamplerState::FT_nearest_mipmap_nearest : SamplerState::FT_nearest);
+      sampler.set_magfilter(SamplerState::FT_nearest);
     }
 
     if (tex->get_texture_type() != spec._desired_type) {

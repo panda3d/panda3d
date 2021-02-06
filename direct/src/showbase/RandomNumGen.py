@@ -32,11 +32,10 @@ class RandomNumGen:
 
     def __rand(self, N):
         """returns integer in [0..N)"""
-        """
-        # using modulus biases the numbers a little bit
-        # the bias is worse for larger values of N
-        return self.__rng.getUint31() % N
-        """
+
+        ## using modulus biases the numbers a little bit
+        ## the bias is worse for larger values of N
+        #return self.__rng.getUint31() % N
 
         # this technique produces an even distribution.
         # random.py would solve this problem like so:

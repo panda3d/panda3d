@@ -152,10 +152,22 @@ if(BUILD_MODELS)
     "${CMAKE_CURRENT_SOURCE_DIR}/models/"
     "${PROJECT_BINARY_DIR}/${PANDA_CFG_INTDIR}/models"
     *.egg)
-  run_pzip(dmodels
-    "${CMAKE_CURRENT_SOURCE_DIR}/dmodels/src/"
-    "${PROJECT_BINARY_DIR}/${PANDA_CFG_INTDIR}/models"
-    *.egg)
+
+  add_custom_command(TARGET models
+                     POST_BUILD
+                     COMMAND ${CMAKE_COMMAND}
+                             -DSOURCE="${CMAKE_CURRENT_SOURCE_DIR}/models/audio/"
+                             -DDESTINATION="${PANDA_OUTPUT_DIR}/models/audio"
+                             -P ${PROJECT_SOURCE_DIR}/cmake/scripts/CopyPattern.cmake
+                     COMMENT "Copying models/audio")
+
+  add_custom_command(TARGET models
+                     POST_BUILD
+                     COMMAND ${CMAKE_COMMAND}
+                             -DSOURCE="${CMAKE_CURRENT_SOURCE_DIR}/models/icons/"
+                             -DDESTINATION="${PANDA_OUTPUT_DIR}/models/icons"
+                             -P ${PROJECT_SOURCE_DIR}/cmake/scripts/CopyPattern.cmake
+                     COMMENT "Copying models/icons")
 
   add_custom_command(TARGET models
                      POST_BUILD
@@ -164,14 +176,6 @@ if(BUILD_MODELS)
                              -DDESTINATION="${PANDA_OUTPUT_DIR}/models/maps"
                              -P ${PROJECT_SOURCE_DIR}/cmake/scripts/CopyPattern.cmake
                      COMMENT "Copying models/maps")
-  add_custom_command(TARGET dmodels
-                     POST_BUILD
-                     COMMAND ${CMAKE_COMMAND}
-                             -DSOURCE="${CMAKE_CURRENT_SOURCE_DIR}/dmodels/src/"
-                             -DDESTINATION="${PANDA_OUTPUT_DIR}/models"
-                             -DFILES_MATCHING="PATTERN;*.rgb;PATTERN;*.png;PATTERN;*.jpg;PATTERN;*.wav"
-                             -P ${PROJECT_SOURCE_DIR}/cmake/scripts/CopyPattern.cmake
-                     COMMENT "Copying dmodels' assets")
 
   install(DIRECTORY "${PANDA_OUTPUT_DIR}/models"
     COMPONENT Models DESTINATION ${CMAKE_INSTALL_DATADIR}/panda3d)

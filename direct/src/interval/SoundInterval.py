@@ -56,14 +56,14 @@ class SoundInterval(Interval.Interval):
         self._soundPlaying = False
         self._reverse = False
         # If no duration given use sound's duration as interval's duration
-        if float(duration) == 0.0 and self.sound != None:
+        if float(duration) == 0.0 and self.sound is not None:
             duration = max(self.soundDuration - self.startTime, 0)
-            #if (duration == 0):
+            #if duration == 0:
             #    self.notify.warning('zero length duration!')
 
 
         # Generate unique name if necessary
-        if (name == None):
+        if name is None:
             name = id
         # Initialize superclass
         Interval.Interval.__init__(self, name, duration)
@@ -73,9 +73,9 @@ class SoundInterval(Interval.Interval):
         # start at the beginning
         self._reverse = False
         t1 = t + self.startTime
-        if (t1 < 0.1):
+        if t1 < 0.1:
             t1 = 0.0
-        if (t1 < self.soundDuration) and not (self._seamlessLoop and self._soundPlaying):
+        if t1 < self.soundDuration and not (self._seamlessLoop and self._soundPlaying):
             base.sfxPlayer.playSfx(
                 self.sound, self.fLoop, 1, self.volume, t1, self.node,
                 listenerNode = self.listenerNode, cutoff = self.cutOff)
@@ -114,12 +114,12 @@ class SoundInterval(Interval.Interval):
     def privFinalize(self):
         # if we're just coming to the end of a seamlessloop, leave the sound alone,
         # let the audio subsystem loop it
-        if (self._seamlessLoop and self._soundPlaying and self.getLoop()
-            and not hasattr(self, '_inFinish')):
+        if self._seamlessLoop and self._soundPlaying and self.getLoop() and \
+           not hasattr(self, '_inFinish'):
             base.sfxPlayer.setFinalVolume(self.sound, self.node, self.volume,
                                           self.listenerNode, self.cutOff)
             return
-        elif self.sound != None:
+        elif self.sound is not None:
             self.sound.stop()
             self._soundPlaying = False
         self.currT = self.getDuration()
@@ -136,7 +136,7 @@ class SoundInterval(Interval.Interval):
         self.state = CInterval.SInitial
 
     def privInterrupt(self):
-        if self.sound != None:
+        if self.sound is not None:
             self.sound.stop()
             self._soundPlaying = False
         self.state = CInterval.SPaused

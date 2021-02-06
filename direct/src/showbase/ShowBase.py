@@ -43,7 +43,7 @@ from panda3d.direct import storeAccessibilityShortcutKeys, allowAccessibilitySho
 from . import DConfig
 
 # Register the extension methods for NodePath.
-from direct.extensions_native import NodePath_extensions
+from direct.extensions_native import NodePath_extensions # pylint: disable=unused-import
 
 # This needs to be available early for DirectGUI imports
 import sys
@@ -56,6 +56,7 @@ from .BulletinBoardGlobal import bulletinBoard
 from direct.task.TaskManagerGlobal import taskMgr
 from .JobManagerGlobal import jobMgr
 from .EventManagerGlobal import eventMgr
+from .PythonUtil import Stack
 #from PythonUtil import *
 from direct.interval import IntervalManager
 from direct.showbase.BufferViewer import BufferViewer
@@ -329,7 +330,7 @@ class ShowBase(DirectObject.DirectObject):
         # Open the default rendering window.
         if self.windowType != 'none':
             props = WindowProperties.getDefault()
-            if (self.config.GetBool('read-raw-mice', 0)):
+            if self.config.GetBool('read-raw-mice', 0):
                 props.setRawMice(1)
             self.openDefaultWindow(startDirect = False, props=props)
 
@@ -454,7 +455,6 @@ class ShowBase(DirectObject.DirectObject):
             builtins.pixel2dp = self.pixel2dp
 
         # Now add this instance to the ShowBaseGlobal module scope.
-        from . import ShowBaseGlobal
         builtins.run = ShowBaseGlobal.run
         ShowBaseGlobal.base = self
         ShowBaseGlobal.__dev__ = self.__dev__
@@ -558,12 +558,12 @@ class ShowBase(DirectObject.DirectObject):
         add stuff to this.
         """
         if self.config.GetBool('want-env-debug-info', 0):
-           print("\n\nEnvironment Debug Info {")
-           print("* model path:")
-           print(getModelPath())
-           #print "* dna path:"
-           #print getDnaPath()
-           print("}")
+            print("\n\nEnvironment Debug Info {")
+            print("* model path:")
+            print(getModelPath())
+            #print "* dna path:"
+            #print getDnaPath()
+            print("}")
 
     def destroy(self):
         """ Call this function to destroy the ShowBase and stop all
@@ -1092,10 +1092,10 @@ class ShowBase(DirectObject.DirectObject):
         Sets up a task that calls python 'sleep' every frame.  This is a simple
         way to reduce the CPU usage (and frame rate) of a panda program.
         """
-        if (self.clientSleep == amount):
+        if self.clientSleep == amount:
             return
         self.clientSleep = amount
-        if (amount == 0.0):
+        if amount == 0.0:
             self.taskMgr.remove('clientSleep')
         else:
             # Spawn it after igloop (at the end of each frame)
@@ -1427,7 +1427,7 @@ class ShowBase(DirectObject.DirectObject):
             # Use the existing camera node.
             cam = useCamera
             camNode = useCamera.node()
-            assert(isinstance(camNode, Camera))
+            assert isinstance(camNode, Camera)
             lens = camNode.getLens()
             cam.reparentTo(self.camera)
 
@@ -1450,7 +1450,7 @@ class ShowBase(DirectObject.DirectObject):
             camNode.setScene(scene)
 
         if mask is not None:
-            if (isinstance(mask, int)):
+            if isinstance(mask, int):
                 mask = BitMask32(mask)
             camNode.setCameraMask(mask)
 
@@ -1508,7 +1508,7 @@ class ShowBase(DirectObject.DirectObject):
         left, right, bottom, top = coords
 
         # Now make a new Camera node.
-        if (cameraName):
+        if cameraName:
             cam2dNode = Camera('cam2d_' + cameraName)
         else:
             cam2dNode = Camera('cam2d')
@@ -1554,7 +1554,7 @@ class ShowBase(DirectObject.DirectObject):
         left, right, bottom, top = coords
 
         # Now make a new Camera node.
-        if (cameraName):
+        if cameraName:
             cam2dNode = Camera('cam2dp_' + cameraName)
         else:
             cam2dNode = Camera('cam2dp')
@@ -1706,7 +1706,7 @@ class ShowBase(DirectObject.DirectObject):
             mb.addButton(KeyboardButton.meta())
             mw.node().setModifierButtons(mb)
             bt = mw.attachNewNode(ButtonThrower("buttons%s" % (i)))
-            if (i != 0):
+            if i != 0:
                 bt.node().setPrefix('mousedev%s-' % (i))
             mods = ModifierButtons()
             mods.addButton(KeyboardButton.shift())
@@ -1715,7 +1715,7 @@ class ShowBase(DirectObject.DirectObject):
             mods.addButton(KeyboardButton.meta())
             bt.node().setModifierButtons(mods)
             buttonThrowers.append(bt)
-            if (win.hasPointer(i)):
+            if win.hasPointer(i):
                 pointerWatcherNodes.append(mw.node())
 
         return buttonThrowers, pointerWatcherNodes
@@ -1726,8 +1726,8 @@ class ShowBase(DirectObject.DirectObject):
         the currently-known mouse position.  Useful if the mouse
         pointer is invisible for some reason.
         """
-        mouseViz = render2d.attachNewNode('mouseViz')
-        lilsmiley = loader.loadModel('lilsmiley')
+        mouseViz = self.render2d.attachNewNode('mouseViz')
+        lilsmiley = self.loader.loadModel('lilsmiley')
         lilsmiley.reparentTo(mouseViz)
 
         aspectRatio = self.getAspectRatio()
@@ -1903,9 +1903,9 @@ class ShowBase(DirectObject.DirectObject):
 
     def updateManagers(self, state):
         dt = globalClock.getDt()
-        if (self.particleMgrEnabled == 1):
+        if self.particleMgrEnabled:
             self.particleMgr.doParticles(dt)
-        if (self.physicsMgrEnabled == 1):
+        if self.physicsMgrEnabled:
             self.physicsMgr.doPhysics(dt)
         return Task.cont
 
@@ -1938,7 +1938,7 @@ class ShowBase(DirectObject.DirectObject):
         # keep a list of sfx manager objects to apply settings to,
         # since there may be others in addition to the one we create here
         self.sfxManagerList.append(extraSfxManager)
-        newSfxManagerIsValid = (extraSfxManager!=None) and extraSfxManager.isValid()
+        newSfxManagerIsValid = extraSfxManager is not None and extraSfxManager.isValid()
         self.sfxManagerIsValidList.append(newSfxManagerIsValid)
         if newSfxManagerIsValid:
             extraSfxManager.setActive(self.sfxActive)
@@ -1982,7 +1982,7 @@ class ShowBase(DirectObject.DirectObject):
     def SetAllSfxEnables(self, bEnabled):
         """Calls ``setActive(bEnabled)`` on all valid SFX managers."""
         for i in range(len(self.sfxManagerList)):
-            if (self.sfxManagerIsValidList[i]):
+            if self.sfxManagerIsValidList[i]:
                 self.sfxManagerList[i].setActive(bEnabled)
 
     def enableSoundEffects(self, bEnableSoundEffects):
@@ -1990,9 +1990,9 @@ class ShowBase(DirectObject.DirectObject):
         Enables or disables SFX managers.
         """
         # don't setActive(1) if no audiofocus
-        if self.AppHasAudioFocus or (bEnableSoundEffects==0):
+        if self.AppHasAudioFocus or not bEnableSoundEffects:
             self.SetAllSfxEnables(bEnableSoundEffects)
-        self.sfxActive=bEnableSoundEffects
+        self.sfxActive = bEnableSoundEffects
         if bEnableSoundEffects:
             self.notify.debug("Enabling sound effects")
         else:
@@ -2101,7 +2101,7 @@ class ShowBase(DirectObject.DirectObject):
         # run the collision traversal if we have a
         # CollisionTraverser set.
         if self.shadowTrav:
-           self.shadowTrav.traverse(self.render)
+            self.shadowTrav.traverse(self.render)
         return Task.cont
 
     def __collisionLoop(self, state):
@@ -2112,7 +2112,7 @@ class ShowBase(DirectObject.DirectObject):
         if self.appTrav:
             self.appTrav.traverse(self.render)
         if self.shadowTrav:
-           self.shadowTrav.traverse(self.render)
+            self.shadowTrav.traverse(self.render)
         messenger.send("collisionLoopFinished")
         return Task.cont
 
@@ -2560,11 +2560,11 @@ class ShowBase(DirectObject.DirectObject):
             self.oobe2cam = self.oobeTrackball.attachNewNode(Transform2SG('oobe2cam'))
             self.oobe2cam.node().setNode(self.oobeCameraTrackball.node())
 
-            self.oobeVis = loader.loadModel('models/misc/camera', okMissing = True)
+            self.oobeVis = base.loader.loadModel('models/misc/camera', okMissing = True)
             if not self.oobeVis:
                 # Sometimes we have default-model-extension set to
                 # egg, but the file might be a bam file.
-                self.oobeVis = loader.loadModel('models/misc/camera.bam', okMissing = True)
+                self.oobeVis = base.loader.loadModel('models/misc/camera.bam', okMissing = True)
             if not self.oobeVis:
                 self.oobeVis = NodePath('oobeVis')
             self.oobeVis.node().setFinal(1)
@@ -2600,9 +2600,9 @@ class ShowBase(DirectObject.DirectObject):
             #    self.camNode.setLens(self.camLens)
             self.oobeCamera.reparentTo(self.hidden)
             self.oobeMode = 0
-            bboard.post('oobeEnabled', False)
+            self.bboard.post('oobeEnabled', False)
         else:
-            bboard.post('oobeEnabled', True)
+            self.bboard.post('oobeEnabled', True)
             try:
                 cameraParent = localAvatar
             except:
@@ -3290,7 +3290,7 @@ class ShowBase(DirectObject.DirectObject):
 
         :rtype: panda3d.core.NodePath
         """
-        return loader.loadModel("models/misc/xyzAxis.bam")
+        return self.loader.loadModel("models/misc/xyzAxis.bam")
 
     def __doStartDirect(self):
         if self.__directStarted:
@@ -3306,7 +3306,7 @@ class ShowBase(DirectObject.DirectObject):
         # Set fWantTk to 0 to avoid starting Tk with this call
         self.startDirect(fWantDirect = fDirect, fWantTk = fTk, fWantWx = fWx)
 
-    def run(self):
+    def run(self): # pylint: disable=method-hidden
         """This method runs the :class:`~direct.task.Task.TaskManager`
         when ``self.appRunner is None``, which is to say, when we are
         not running from within a p3d file.  When we *are* within a p3d

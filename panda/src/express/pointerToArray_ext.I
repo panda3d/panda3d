@@ -220,6 +220,25 @@ get_subdata(size_t n, size_t count) const {
 }
 
 /**
+ * Implements pickle support.
+ */
+template<class Element>
+INLINE PyObject *Extension<PointerToArray<Element> >::
+__reduce__(PyObject *self) const {
+  // This preserves the distinction between a null vs. an empty PTA, though I'm
+  // not sure that this distinction matters to anyone.
+  if (this->_this->is_null()) {
+    return Py_BuildValue("O()", Py_TYPE(self));
+  }
+  else if (this->_this->empty()) {
+    return Py_BuildValue("O(())", Py_TYPE(self));
+  }
+  else {
+    return Py_BuildValue("O(N)", Py_TYPE(self), get_data());
+  }
+}
+
+/**
  * Same as get_element(), this returns the nth element of the array.
  */
 template<class Element>
@@ -254,6 +273,22 @@ get_subdata(size_t n, size_t count) const {
   count = std::max(count, n);
   count = std::min(count, this->_this->size() - n);
   return PyBytes_FromStringAndSize((char *)(this->_this->p() + n), sizeof(Element) * count);
+}
+
+/**
+ * Implements pickle support.
+ */
+template<class Element>
+INLINE PyObject *Extension<ConstPointerToArray<Element> >::
+__reduce__(PyObject *self) const {
+  // This preserves the distinction between a null vs. an empty PTA, though I'm
+  // not sure that this distinction matters to anyone.
+  if (!this->_this->is_null() && this->_this->empty()) {
+    return Py_BuildValue("O([])", Py_TYPE(self));
+  }
+  else {
+    return Py_BuildValue("O(N)", Py_TYPE(self), get_data());
+  }
 }
 
 /**

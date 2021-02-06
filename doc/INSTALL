@@ -30,7 +30,6 @@ Make sure you have both pieces.  If you do, then your panda
 directory will contain the following subdirectories:
 
     direct	- piece 1, source code from github
-    dmodels	- piece 1, source code from github
     doc         - piece 1, source code from github
     dtool	- piece 1, source code from github
     makepanda	- piece 1, source code from github

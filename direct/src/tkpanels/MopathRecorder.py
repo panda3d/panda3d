@@ -12,13 +12,14 @@ from direct.directtools.DirectGlobals import *
 from direct.directtools.DirectUtil import *
 from direct.directtools.DirectGeometry import *
 from direct.directtools.DirectSelection import *
-import Pmw, os
 from direct.tkwidgets import Dial
 from direct.tkwidgets import Floater
 from direct.tkwidgets import Slider
 from direct.tkwidgets import EntryScale
 from direct.tkwidgets import VectorWidgets
 from tkinter.filedialog import *
+import Pmw
+import os
 
 
 PRF_UTILITIES = [
@@ -72,7 +73,7 @@ class MopathRecorder(AppShell, DirectObject):
         self.tempCS = self.recorderNodePath.attachNewNode(
             'mopathRecorderTempCS')
         # Marker for use in playback
-        self.playbackMarker = loader.loadModel('models/misc/smiley')
+        self.playbackMarker = base.loader.loadModel('models/misc/smiley')
         self.playbackMarker.setName('Playback Marker')
         self.playbackMarker.reparentTo(self.recorderNodePath)
         self.playbackMarkerIds = self.getChildIds(
@@ -81,7 +82,7 @@ class MopathRecorder(AppShell, DirectObject):
         # Tangent marker
         self.tangentGroup = self.playbackMarker.attachNewNode('Tangent Group')
         self.tangentGroup.hide()
-        self.tangentMarker = loader.loadModel('models/misc/sphere')
+        self.tangentMarker = base.loader.loadModel('models/misc/sphere')
         self.tangentMarker.reparentTo(self.tangentGroup)
         self.tangentMarker.setScale(0.5)
         self.tangentMarker.setColor(1, 0, 1, 1)
@@ -690,12 +691,12 @@ class MopathRecorder(AppShell, DirectObject):
         Hook called upon deselection of a node path used to select playback
         marker if subnode selected
         """
-        if ((nodePath.id() == self.playbackMarker.id()) or
-            (nodePath.id() == self.tangentMarker.id())):
+        if nodePath.id() == self.playbackMarker.id() or \
+           nodePath.id() == self.tangentMarker.id():
             self.tangentGroup.hide()
 
     def curveEditTask(self, state):
-        if self.curveCollection != None:
+        if self.curveCollection is not None:
             # Update curve position
             if self.manipulandumId == self.playbackMarker.id():
                 # Show playback marker
@@ -952,7 +953,7 @@ class MopathRecorder(AppShell, DirectObject):
             # Clear out old trace, get ready to draw new
             self.initTrace()
             # Keyframe mode?
-            if (self.samplingMode == 'Keyframe'):
+            if self.samplingMode == 'Keyframe':
                 # Record first point
                 self.lastPos.assign(Point3(
                     self.nodePath.getPos(self.nodePathParent)))
@@ -962,8 +963,8 @@ class MopathRecorder(AppShell, DirectObject):
                 self.recordPoint(self.recordStart)
             # Everything else
             else:
-                if ((self.recordingType.get() == 'Refine') or
-                    (self.recordingType.get() == 'Extend')):
+                if self.recordingType.get() == 'Refine' or \
+                   self.recordingType.get() == 'Extend':
                     # Turn off looping playback
                     self.loopPlayback = 0
                     # Update widget to reflect new value
@@ -987,8 +988,8 @@ class MopathRecorder(AppShell, DirectObject):
             if self.samplingMode == 'Continuous':
                 # Kill old task
                 taskMgr.remove(self.name + '-recordTask')
-                if ((self.recordingType.get() == 'Refine') or
-                    (self.recordingType.get() == 'Extend')):
+                if self.recordingType.get() == 'Refine' or \
+                   self.recordingType.get() == 'Extend':
                     # Reparent node path back to parent
                     self.nodePath.wrtReparentTo(self.nodePathParent)
                     # Restore playback Node Path
@@ -1000,8 +1001,8 @@ class MopathRecorder(AppShell, DirectObject):
             self.setSamplingMode('Continuous')
             self.enableKeyframeButton()
             # Clean up after refine or extend
-            if ((self.recordingType.get() == 'Refine') or
-                (self.recordingType.get() == 'Extend')):
+            if self.recordingType.get() == 'Refine' or \
+               self.recordingType.get() == 'Extend':
                 # Merge prePoints, pointSet, postPoints
                 self.mergePoints()
                 # Clear out pre and post list
@@ -1021,8 +1022,7 @@ class MopathRecorder(AppShell, DirectObject):
 
     def addKeyframe(self, fToggleRecord = 1):
         # Make sure we're in a recording mode!
-        if (fToggleRecord and
-            (not self.getVariable('Recording', 'Record').get())):
+        if fToggleRecord and not self.getVariable('Recording', 'Record').get():
             # Set sampling mode
             self.setSamplingMode('Keyframe')
             # This will automatically add the first point
@@ -1055,8 +1055,8 @@ class MopathRecorder(AppShell, DirectObject):
 
     def recordPoint(self, time):
         # Call user define callback before recording point
-        if (self.getVariable('Recording', 'PRF Active').get() and
-            (self.preRecordFunc != None)):
+        if self.getVariable('Recording', 'PRF Active').get() and \
+           self.preRecordFunc is not None:
             self.preRecordFunc()
         # Get point
         pos = self.nodePath.getPos(self.nodePathParent)
@@ -1064,10 +1064,10 @@ class MopathRecorder(AppShell, DirectObject):
         qNP = Quat()
         qNP.setHpr(hpr)
         # Blend between recordNodePath and self.nodePath
-        if ((self.recordingType.get() == 'Refine') or
-            (self.recordingType.get() == 'Extend')):
-            if ((time < self.controlStart) and
-                ((self.controlStart - self.recordStart) != 0.0)):
+        if self.recordingType.get() == 'Refine' or \
+           self.recordingType.get() == 'Extend':
+            if time < self.controlStart and \
+               self.controlStart - self.recordStart != 0.0:
                 rPos = self.playbackNodePath.getPos(self.nodePathParent)
                 rHpr = self.playbackNodePath.getHpr(self.nodePathParent)
                 qR = Quat()
@@ -1078,9 +1078,9 @@ class MopathRecorder(AppShell, DirectObject):
                 pos = (rPos * (1 - t)) + (pos * t)
                 q = qSlerp(qR, qNP, t)
                 hpr.assign(q.getHpr())
-            elif ((self.recordingType.get() == 'Refine') and
-                  (time > self.controlStop) and
-                  ((self.recordStop - self.controlStop) != 0.0)):
+            elif self.recordingType.get() == 'Refine' and \
+                 time > self.controlStop and \
+                 self.recordStop - self.controlStop != 0.0:
                 rPos = self.playbackNodePath.getPos(self.nodePathParent)
                 rHpr = self.playbackNodePath.getHpr(self.nodePathParent)
                 qR = Quat()
@@ -1096,7 +1096,7 @@ class MopathRecorder(AppShell, DirectObject):
         # Add it to the curve fitters
         self.curveFitter.addXyzHpr(time, pos, hpr)
         # Update trace now if recording keyframes
-        if (self.samplingMode == 'Keyframe'):
+        if self.samplingMode == 'Keyframe':
             self.trace.reset()
             for t, p, h in self.pointSet:
                 self.trace.drawTo(p[0], p[1], p[2])
@@ -1104,7 +1104,7 @@ class MopathRecorder(AppShell, DirectObject):
 
     def computeCurves(self):
         # Check to make sure curve fitters have points
-        if (self.curveFitter.getNumSamples() == 0):
+        if self.curveFitter.getNumSamples() == 0:
             print('MopathRecorder.computeCurves: Must define curve first')
             return
         # Create curves
@@ -1185,7 +1185,7 @@ class MopathRecorder(AppShell, DirectObject):
             self.addNodePath(nodePath)
         else:
             nodePath = self.nodePathDict.get(name, None)
-            if (nodePath == None):
+            if nodePath is None:
                 # See if this evaluates into a node path
                 try:
                     nodePath = eval(name)
@@ -1208,7 +1208,7 @@ class MopathRecorder(AppShell, DirectObject):
                     self.playbackMarker.show()
                     # Initialize tangent marker position
                     tan = Point3(0)
-                    if self.curveCollection != None:
+                    if self.curveCollection is not None:
                         self.curveCollection.getXyzCurve().getTangent(
                             self.playbackTime, tan)
                     self.tangentMarker.setPos(tan)
@@ -1261,17 +1261,17 @@ class MopathRecorder(AppShell, DirectObject):
         self.loopPlayback = self.getVariable('Playback', 'Loop').get()
 
     def playbackGoTo(self, time):
-        if self.curveCollection == None:
+        if self.curveCollection is None:
             return
         self.playbackTime = CLAMP(time, 0.0, self.maxT)
-        if self.curveCollection != None:
+        if self.curveCollection is not None:
             pos = Point3(0)
             hpr = Point3(0)
             self.curveCollection.evaluate(self.playbackTime, pos, hpr)
             self.playbackNodePath.setPosHpr(self.nodePathParent, pos, hpr)
 
     def startPlayback(self):
-        if self.curveCollection == None:
+        if self.curveCollection is None:
             return
         # Kill any existing tasks
         self.stopPlayback()
@@ -1300,8 +1300,7 @@ class MopathRecorder(AppShell, DirectObject):
             cTime = state.currentTime + dTime
         # Stop task if not looping and at end of curve
         # Or if refining curve and past recordStop
-        if ((self.recordingType.get() == 'Refine') and
-              (cTime > self.recordStop)):
+        if self.recordingType.get() == 'Refine' and cTime > self.recordStop:
             # Go to recordStop
             self.getWidget('Playback', 'Time').set(self.recordStop)
             # Then stop playback
@@ -1309,14 +1308,13 @@ class MopathRecorder(AppShell, DirectObject):
             # Also kill record task
             self.toggleRecordVar()
             return Task.done
-        elif ((self.loopPlayback == 0) and (cTime > self.maxT)):
+        elif self.loopPlayback == 0 and cTime > self.maxT:
             # Go to maxT
             self.getWidget('Playback', 'Time').set(self.maxT)
             # Then stop playback
             self.stopPlayback()
             return Task.done
-        elif ((self.recordingType.get() == 'Extend') and
-              (cTime > self.controlStart)):
+        elif self.recordingType.get() == 'Extend' and cTime > self.controlStart:
             # Go to final point
             self.getWidget('Playback', 'Time').set(self.controlStart)
             # Stop playback
@@ -1337,7 +1335,7 @@ class MopathRecorder(AppShell, DirectObject):
 
     def jumpToEndOfPlayback(self):
         self.stopPlayback()
-        if self.curveCollection != None:
+        if self.curveCollection is not None:
             self.getWidget('Playback', 'Time').set(self.maxT)
 
     def startStopPlayback(self):
@@ -1350,7 +1348,7 @@ class MopathRecorder(AppShell, DirectObject):
         self.desampleFrequency = frequency
 
     def desampleCurve(self):
-        if (self.curveFitter.getNumSamples() == 0):
+        if self.curveFitter.getNumSamples() == 0:
             print('MopathRecorder.desampleCurve: Must define curve first')
             return
         # NOTE: This is destructive, points will be deleted from curve fitter
@@ -1364,7 +1362,7 @@ class MopathRecorder(AppShell, DirectObject):
         self.numSamples = int(numSamples)
 
     def sampleCurve(self, fCompute = 1):
-        if self.curveCollection == None:
+        if self.curveCollection is None:
             print('MopathRecorder.sampleCurve: Must define curve first')
             return
         # Reset curve fitters
@@ -1579,7 +1577,7 @@ class MopathRecorder(AppShell, DirectObject):
         self.fAdjustingValues = 0
 
     def cropCurve(self):
-        if self.pointSet == None:
+        if self.pointSet is None:
             print('Empty Point Set')
             return
         # Keep handle on old points
@@ -1597,8 +1595,7 @@ class MopathRecorder(AppShell, DirectObject):
         # Get points within bounds
         for time, pos, hpr in oldPoints:
             # Is it within the time?
-            if ((time > self.cropFrom) and
-                (time < self.cropTo)):
+            if time > self.cropFrom and time < self.cropTo:
                 # Add it to the curve fitters
                 t = time - self.cropFrom
                 self.curveFitter.addXyzHpr(t, pos, hpr)
@@ -1636,7 +1633,7 @@ class MopathRecorder(AppShell, DirectObject):
             parent = self.parent)
         if mopathFilename and mopathFilename != 'None':
             self.reset()
-            nodePath = loader.loadModel(
+            nodePath = base.loader.loadModel(
                 Filename.fromOsSpecific(mopathFilename))
             self.curveCollection = ParametricCurveCollection()
             # MRM: Add error check

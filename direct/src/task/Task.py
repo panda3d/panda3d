@@ -11,7 +11,6 @@ __all__ = ['Task', 'TaskManager',
            'sequence', 'loop', 'pause']
 
 from direct.directnotify.DirectNotifyGlobal import *
-from direct.showbase import ExceptionVarDump
 from direct.showbase.PythonUtil import *
 from direct.showbase.MessengerGlobal import messenger
 import types
@@ -197,7 +196,7 @@ class TaskManager:
         so in most cases there is no need to check this method
         first. """
 
-        return (self.mgr.findTaskChain(chainName) != None)
+        return self.mgr.findTaskChain(chainName) is not None
 
     def setupTaskChain(self, chainName, numThreads = None, tickClock = None,
                        threadPriority = None, frameBudget = None,
@@ -330,7 +329,7 @@ class TaskManager:
 
     def add(self, funcOrTask, name = None, sort = None, extraArgs = None,
             priority = None, uponDeath = None, appendTask = False,
-            taskChain = None, owner = None):
+            taskChain = None, owner = None, delay = None):
         """
         Add a new task to the taskMgr.  The task will begin executing
         immediately, or next frame if its sort value has already
@@ -383,12 +382,17 @@ class TaskManager:
                 is called when the task terminates.  This is all the
                 ownermeans.
 
+            delay: an optional amount of seconds to wait before starting
+                the task (equivalent to doMethodLater).
+
         Returns:
             The new Task object that has been added, or the original
             Task object that was passed in.
         """
 
         task = self.__setupTask(funcOrTask, name, priority, sort, extraArgs, taskChain, appendTask, owner, uponDeath)
+        if delay is not None:
+            task.setDelay(delay)
         self.mgr.add(task)
         return task
 
@@ -396,8 +400,8 @@ class TaskManager:
         if isinstance(funcOrTask, AsyncTask):
             task = funcOrTask
         elif hasattr(funcOrTask, '__call__') or \
-                hasattr(funcOrTask, 'cr_await') or \
-                type(funcOrTask) == types.GeneratorType:
+             hasattr(funcOrTask, 'cr_await') or \
+             isinstance(funcOrTask, types.GeneratorType):
             # It's a function, coroutine, or something emulating a coroutine.
             task = PythonTask(funcOrTask)
             if name is None:
@@ -512,7 +516,7 @@ class TaskManager:
         self.globalClock.setRealTime(t)
         messenger.send("resetClock", [timeDelta])
 
-        if self.resumeFunc != None:
+        if self.resumeFunc is not None:
             self.resumeFunc()
 
         if self.stepping:
@@ -521,7 +525,7 @@ class TaskManager:
             self.running = True
             while self.running:
                 try:
-                    if len(self._frameProfileQueue):
+                    if len(self._frameProfileQueue) > 0:
                         numFrames, session, callback = self._frameProfileQueue.pop(0)
                         def _profileFunc(numFrames=numFrames):
                             self._doProfiledFrames(numFrames)
@@ -555,8 +559,9 @@ class TaskManager:
                         self.stop()
                         print_exc_plus()
                     else:
-                        if (ExceptionVarDump.wantStackDumpLog and
-                            ExceptionVarDump.dumpOnExceptionInit):
+                        from direct.showbase import ExceptionVarDump
+                        if ExceptionVarDump.wantStackDumpLog and \
+                           ExceptionVarDump.dumpOnExceptionInit:
                             ExceptionVarDump._varDump__print(e)
                         raise
                 except:
@@ -588,11 +593,11 @@ class TaskManager:
             return 0
 
         method = task.getFunction()
-        if (type(method) == types.MethodType):
+        if isinstance(method, types.MethodType):
             function = method.__func__
         else:
             function = method
-        if (function == oldMethod):
+        if function == oldMethod:
             newMethod = types.MethodType(newFunction, method.__self__)
             task.setFunction(newMethod)
             # Found a match
@@ -632,8 +637,7 @@ class TaskManager:
 
     def _doProfiledFrames(self, numFrames):
         for i in range(numFrames):
-            result = self.step()
-        return result
+            self.step()
 
     def getProfileFrames(self):
         return self._profileFrames.get()
@@ -753,18 +757,16 @@ class TaskManager:
     def doYield(self, frameStartTime, nextScheduledTaskTime):
         pass
 
-    """
-    def doYieldExample(self, frameStartTime, nextScheduledTaskTime):
-        minFinTime = frameStartTime + self.MaxEpochSpeed
-        if nextScheduledTaskTime > 0 and nextScheduledTaskTime < minFinTime:
-            print ' Adjusting Time'
-            minFinTime = nextScheduledTaskTime
-        delta = minFinTime - self.globalClock.getRealTime()
-        while(delta > 0.002):
-            print ' sleep %s'% (delta)
-            time.sleep(delta)
-            delta = minFinTime - self.globalClock.getRealTime()
-    """
+    #def doYieldExample(self, frameStartTime, nextScheduledTaskTime):
+    #    minFinTime = frameStartTime + self.MaxEpochSpeed
+    #    if nextScheduledTaskTime > 0 and nextScheduledTaskTime < minFinTime:
+    #        print(' Adjusting Time')
+    #        minFinTime = nextScheduledTaskTime
+    #    delta = minFinTime - self.globalClock.getRealTime()
+    #    while delta > 0.002:
+    #        print ' sleep %s'% (delta)
+    #        time.sleep(delta)
+    #        delta = minFinTime - self.globalClock.getRealTime()
 
     if __debug__:
         # to catch memory leaks during the tests at the bottom of the file
@@ -1228,43 +1230,42 @@ class TaskManager:
             _testTaskObjRemove = None
             tm._checkMemLeaks()
 
-            """
             # this test fails, and it's not clear what the correct behavior should be.
             # sort passed to Task.__init__ is always overridden by taskMgr.add()
             # even if no sort is specified, and calling Task.setSort() has no
             # effect on the taskMgr's behavior.
             # set/get Task sort
-            l = []
-            def _testTaskObjSort(arg, task, l=l):
-                l.append(arg)
-                return task.cont
-            t1 = Task(_testTaskObjSort, sort=1)
-            t2 = Task(_testTaskObjSort, sort=2)
-            tm.add(t1, 'testTaskObjSort1', extraArgs=['a',], appendTask=True)
-            tm.add(t2, 'testTaskObjSort2', extraArgs=['b',], appendTask=True)
-            tm.step()
-            assert len(l) == 2
-            assert l == ['a', 'b']
-            assert t1.getSort() == 1
-            assert t2.getSort() == 2
-            t1.setSort(3)
-            assert t1.getSort() == 3
-            tm.step()
-            assert len(l) == 4
-            assert l == ['a', 'b', 'b', 'a',]
-            t1.remove()
-            t2.remove()
-            tm.step()
-            assert len(l) == 4
-            del t1
-            del t2
-            _testTaskObjSort = None
-            tm._checkMemLeaks()
-            """
+            #l = []
+            #def _testTaskObjSort(arg, task, l=l):
+            #    l.append(arg)
+            #    return task.cont
+            #t1 = Task(_testTaskObjSort, sort=1)
+            #t2 = Task(_testTaskObjSort, sort=2)
+            #tm.add(t1, 'testTaskObjSort1', extraArgs=['a',], appendTask=True)
+            #tm.add(t2, 'testTaskObjSort2', extraArgs=['b',], appendTask=True)
+            #tm.step()
+            #assert len(l) == 2
+            #assert l == ['a', 'b']
+            #assert t1.getSort() == 1
+            #assert t2.getSort() == 2
+            #t1.setSort(3)
+            #assert t1.getSort() == 3
+            #tm.step()
+            #assert len(l) == 4
+            #assert l == ['a', 'b', 'b', 'a',]
+            #t1.remove()
+            #t2.remove()
+            #tm.step()
+            #assert len(l) == 4
+            #del t1
+            #del t2
+            #_testTaskObjSort = None
+            #tm._checkMemLeaks()
 
             del l
             tm.destroy()
             del tm
+
 
 if __debug__:
     def checkLeak():
@@ -1272,6 +1273,7 @@ if __debug__:
         import gc
         gc.enable()
         from direct.showbase.DirectObject import DirectObject
+        from direct.task.TaskManagerGlobal import taskMgr
         class TestClass(DirectObject):
             def doTask(self, task):
                 return task.done
