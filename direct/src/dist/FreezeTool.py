@@ -1735,7 +1735,7 @@ class Freezer:
         return target
 
     def generateRuntimeFromStub(self, target, stub_file, use_console, fields={},
-                                log_append=False):
+                                log_append=False, log_filename_strftime=False):
         self.__replacePaths()
 
         # We must have a __main__ module to make an exe file.
@@ -1906,9 +1906,12 @@ class Freezer:
             # A null entry marks the end of the module table.
             blob += struct.pack(entry_layout, 0, 0, 0)
 
+            # These flags should match the enum in deploy-stub.c
             flags = 0
             if log_append:
                 flags |= 1
+            if log_filename_strftime:
+                flags |= 2
 
             # Compose the header we will be writing to the stub, to tell it
             # where to find the module data blob, as well as other variables.
