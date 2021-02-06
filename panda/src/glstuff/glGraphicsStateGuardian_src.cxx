@@ -179,10 +179,11 @@ static const string default_vshader =
   "varying lowp vec4 color;\n"
 #endif
   "uniform mat4 p3d_ModelViewProjectionMatrix;\n"
+  "uniform mat4 p3d_TextureMatrix;\n"
   "uniform vec4 p3d_ColorScale;\n"
   "void main(void) {\n"
   "  gl_Position = p3d_ModelViewProjectionMatrix * p3d_Vertex;\n"
-  "  texcoord = p3d_MultiTexCoord0;\n"
+  "  texcoord = (p3d_TextureMatrix * vec4(p3d_MultiTexCoord0.x, p3d_MultiTexCoord0.y, 0, 1)).xy;\n"
   "  color = p3d_Color * p3d_ColorScale;\n"
   "}\n";
 
@@ -203,10 +204,11 @@ static const string default_vshader_fp64 =
   "out vec4 color;\n"
   "uniform mat4 p3d_ModelViewMatrix;\n"
   "uniform mat4 p3d_ProjectionMatrix;\n"
+  "uniform mat4 p3d_TextureMatrix;\n"
   "uniform vec4 p3d_ColorScale;\n"
   "void main(void) {\n" // Apply proj & modelview in two steps, more precise
   "  gl_Position = vec4(dmat4(p3d_ProjectionMatrix) * (dmat4(p3d_ModelViewMatrix) * dvec4(p3d_Vertex, 1)));\n"
-  "  texcoord = vec2(p3d_MultiTexCoord0);\n"
+  "  texcoord = (p3d_TextureMatrix * vec4(p3d_MultiTexCoord0.x, p3d_MultiTexCoord0.y, 0, 1)).xy;\n"
   "  color = p3d_Color * p3d_ColorScale;\n"
   "}\n";
 
@@ -220,10 +222,11 @@ static const string default_vshader_fp64_gl41 =
   "out vec4 color;\n"
   "uniform mat4 p3d_ModelViewMatrix;\n"
   "uniform mat4 p3d_ProjectionMatrix;\n"
+  "uniform mat4 p3d_TextureMatrix;\n"
   "uniform vec4 p3d_ColorScale;\n"
   "void main(void) {\n" // Apply proj & modelview in two steps, more precise
   "  gl_Position = vec4(dmat4(p3d_ProjectionMatrix) * (dmat4(p3d_ModelViewMatrix) * dvec4(p3d_Vertex, 1)));\n"
-  "  texcoord = vec2(p3d_MultiTexCoord0);\n"
+  "  texcoord = (p3d_TextureMatrix * vec4(p3d_MultiTexCoord0.x, p3d_MultiTexCoord0.y, 0, 1)).xy;\n"
   "  color = p3d_Color * p3d_ColorScale;\n"
   "}\n";
 #endif
