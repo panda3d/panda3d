@@ -13,6 +13,7 @@ from direct.showbase.ShowBase import ShowBase
 from panda3d.core import CollisionTraverser, CollisionNode
 from panda3d.core import CollisionHandlerQueue, CollisionRay
 from panda3d.core import CollisionHandlerPusher, CollisionSphere
+from panda3d.core import CollisionHandlerFloor
 from panda3d.core import Filename, AmbientLight, DirectionalLight
 from panda3d.core import PandaNode, NodePath, Camera, TextNode
 from panda3d.core import CollideMask
@@ -148,22 +149,21 @@ class RoamingRalphDemo(ShowBase):
         # start above ralph's head, and the other will start above the camera.
         # A ray may hit the terrain, or it may hit a rock or a tree.  If it
         # hits the terrain, we can detect the height.
-        self.ralphGroundRay = CollisionRay()
-        self.ralphGroundRay.setOrigin(0, 0, 9)
-        self.ralphGroundRay.setDirection(0, 0, -1)
         self.ralphGroundCol = CollisionNode('ralphRay')
-        self.ralphGroundCol.addSolid(self.ralphGroundRay)
+        self.ralphGroundCol.addSolid(CollisionRay(origin=(0, 0, 9), direction=(0, 0, -1)))
         self.ralphGroundCol.setFromCollideMask(CollideMask.bit(0))
         self.ralphGroundCol.setIntoCollideMask(CollideMask.allOff())
         self.ralphGroundColNp = self.ralph.attachNewNode(self.ralphGroundCol)
-        self.ralphGroundHandler = CollisionHandlerQueue()
+        self.ralphGroundHandler = CollisionHandlerFloor()
+
+        # Note that we need to add ralph both to the handler and to the
+        # traverser; the handler needs to know which node to push back when a
+        # collision occurs!
+        self.ralphGroundHandler.addCollider(self.ralphGroundColNp, self.ralph)
         self.cTrav.addCollider(self.ralphGroundColNp, self.ralphGroundHandler)
 
-        self.camGroundRay = CollisionRay()
-        self.camGroundRay.setOrigin(0, 0, 9)
-        self.camGroundRay.setDirection(0, 0, -1)
         self.camGroundCol = CollisionNode('camRay')
-        self.camGroundCol.addSolid(self.camGroundRay)
+        self.camGroundCol.addSolid(CollisionRay(origin=(0, 0, 9), direction=(0, 0, -1)))
         self.camGroundCol.setFromCollideMask(CollideMask.bit(0))
         self.camGroundCol.setIntoCollideMask(CollideMask.allOff())
         self.camGroundColNp = self.camera.attachNewNode(self.camGroundCol)
@@ -172,6 +172,7 @@ class RoamingRalphDemo(ShowBase):
 
         # Uncomment this line to see the collision rays
         #self.ralphColNp.show()
+        #self.ralphGroundColNp.show()
         #self.camGroundColNp.show()
 
         # Uncomment this line to show a visual representation of the
@@ -240,7 +241,6 @@ class RoamingRalphDemo(ShowBase):
             if currentAnim is not None:
                 self.ralph.stop()
                 self.ralph.pose("walk", 5)
-                self.isMoving = False
 
         # If the camera is too far from ralph, move it closer.
         # If the camera is too close to ralph, move it farther.
@@ -260,16 +260,6 @@ class RoamingRalphDemo(ShowBase):
         # However, the class ShowBase that we inherit from has a task to do
         # this for us, if we assign a CollisionTraverser to self.cTrav.
         #self.cTrav.traverse(render)
-
-        # Adjust ralph's Z coordinate.  If ralph's ray hit terrain,
-        # update his Z
-
-        entries = list(self.ralphGroundHandler.entries)
-        entries.sort(key=lambda x: x.getSurfacePoint(render).getZ())
-
-        for entry in entries:
-            if entry.getIntoNode().getName() == "terrain":
-                self.ralph.setZ(entry.getSurfacePoint(render).getZ())
 
         # Keep the camera at one unit above the terrain,
         # or two units above ralph, whichever is greater.
