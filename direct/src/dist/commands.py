@@ -186,6 +186,7 @@ class build_apps(setuptools.Command):
         self.extra_prc_data = ''
         self.default_prc_dir = None
         self.log_filename = None
+        self.log_filename_strftime = False
         self.log_append = False
         self.requirements_path = os.path.join(os.getcwd(), 'requirements.txt')
         self.use_optimized_wheels = True
@@ -721,7 +722,7 @@ class build_apps(setuptools.Command):
                 'prc_executable_args_envvar': None,
                 'main_dir': None,
                 'log_filename': self.expand_path(self.log_filename, platform),
-            }, self.log_append)
+            }, self.log_append, self.log_filename_strftime)
             stub_file.close()
 
             if temp_file:
