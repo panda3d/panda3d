@@ -186,7 +186,7 @@ class build_apps(setuptools.Command):
         self.extra_prc_data = ''
         self.default_prc_dir = None
         self.log_filename = None
-        self.log_filename_strftime = False
+        self.log_filename_strftime = True
         self.log_append = False
         self.requirements_path = os.path.join(os.getcwd(), 'requirements.txt')
         self.use_optimized_wheels = True
@@ -710,6 +710,10 @@ class build_apps(setuptools.Command):
             else:
                 temp_file = None
 
+            use_strftime = self.log_filename_strftime
+            if not self.log_filename or '%' not in self.log_filename:
+                use_strftime = False
+
             freezer.generateRuntimeFromStub(target_path, stub_file, use_console, {
                 'prc_data': prcexport if self.embed_prc_data else None,
                 'default_prc_dir': self.default_prc_dir,
@@ -722,7 +726,7 @@ class build_apps(setuptools.Command):
                 'prc_executable_args_envvar': None,
                 'main_dir': None,
                 'log_filename': self.expand_path(self.log_filename, platform),
-            }, self.log_append, self.log_filename_strftime)
+            }, self.log_append, use_strftime)
             stub_file.close()
 
             if temp_file:
