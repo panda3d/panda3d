@@ -49,7 +49,7 @@ read_data(xel *array, xelval *alpha) {
   }
 
   int width, height;
-  char *data = emscripten_get_preloaded_image_data(_fullpath.c_str(), &width, &height);
+  unsigned char *data = (unsigned char *)emscripten_get_preloaded_image_data(_fullpath.c_str(), &width, &height);
   nassertr(data != nullptr, 0);
   nassertr(width == _x_size, 0);
   if (height > _x_size) {
