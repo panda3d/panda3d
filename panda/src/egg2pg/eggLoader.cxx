@@ -963,42 +963,9 @@ load_texture(TextureDef &def, EggTexture *egg_tex) {
     options.set_texture_flags(options.get_texture_flags() | LoaderOptions::TF_allow_compression);
   }
 
-  PT(Texture) tex;
-  switch (egg_tex->get_texture_type()) {
-  case EggTexture::TT_unspecified:
-  case EggTexture::TT_1d_texture:
-    options.set_texture_flags(options.get_texture_flags() | LoaderOptions::TF_allow_1d);
-    // Fall through.
-
-  case EggTexture::TT_2d_texture:
-    if (egg_tex->has_alpha_filename() && wanted_alpha) {
-      tex = TexturePool::load_texture(egg_tex->get_fullpath(),
-                                      egg_tex->get_alpha_fullpath(),
-                                      wanted_channels,
-                                      egg_tex->get_alpha_file_channel(),
-                                      egg_tex->get_read_mipmaps(), options);
-    } else {
-      tex = TexturePool::load_texture(egg_tex->get_fullpath(),
-                                      wanted_channels,
-                                      egg_tex->get_read_mipmaps(), options);
-    }
-    break;
-
-  case EggTexture::TT_3d_texture:
-    tex = TexturePool::load_3d_texture(egg_tex->get_fullpath(),
-                                       egg_tex->get_read_mipmaps(), options);
-    break;
-
-  case EggTexture::TT_cube_map:
-    tex = TexturePool::load_cube_map(egg_tex->get_fullpath(),
-                                     egg_tex->get_read_mipmaps(), options);
-    break;
-  }
-
-  if (tex == nullptr) {
-    return false;
-  }
-  //Load in the options for the texture
+  //The following code sets up all the options for the textures
+  //so that they can be differentiated
+  //Load in the options for the format
   switch(egg_tex->get_format()){
     case EggTexture::F_rgba:
       options.set_texture_format(options.get_texture_format() | LoaderOptions::TFO1_rgba);
@@ -1049,21 +1016,186 @@ load_texture(TextureDef &def, EggTexture *egg_tex) {
       options.set_texture_format(options.get_texture_format() | LoaderOptions::TF01_luminance);
       break;
     case EggTexture::F_luminance_alpha:
-      options.set_texture_format2(options.get_texture_format2() | LoaderOptions::TFO2_luminance_alpha);
+      options.set_texture_format_compress(options.get_texture_format_compress() | LoaderOptions::TFC_luminance_alpha);
       break;
     case EggTexture::F_luminance_alphamask:
-      options.set_texture_format2(options.get_texture_format2() | LoaderOptions::TFO2_luminance_alphamask);
+      options.set_texture_format_compress(options.get_texture_format_compress() | LoaderOptions::TFC_luminance_alphamask);
       break;
     case EggTexture::F_srgb:
-      options.set_texture_format2(options.get_texture_format2() | LoaderOptions::TF02_srgb);
+      options.set_texture_format_compress(options.get_texture_format_compress() | LoaderOptions::TFC_srgb);
       break;
     case EggTexture::F_srgb_alpha:
-      options.set_texture_format2(options.get_texture_format2() | LoaderOptions::TF02_srbg_alpha);
+      options.set_texture_format_compress(options.get_texture_format_compress() | LoaderOptions::TFC_srbg_alpha);
       break;
     case EggTexture::F_unspecified:
     default:
       options.set_texture_format(options.get_texture_format() | LoaderOptions::TFO1_unspecified);
   }
+
+  //load in options for the compression
+  switch(egg_tex->get_compression_mode()){
+    case EggTexture::CM_off:
+      options.set_texture_format_compress(options.get_texture_format_compress() | LoaderOptions::TFC_CM_off);
+      break;
+    case EggTexture::CM_on:
+      options.set_texture_format_compress(options.get_texture_format_compress() | LoaderOptions::TFC_CM_on);
+      break;
+    case EggTexture::CM_fxt1:
+      options.set_texture_format_compress(options.get_texture_format_compress() | LoaderOptions::TFC_CM_fxt1);
+      break;
+    case EggTexture::CM_dxt1:
+      options.set_texture_format_compress(options.get_texture_format_compress() | LoaderOptions::TFC_CM_dxt1);
+      break;
+    case EggTexture::CM_dxt2:
+      options.set_texture_format_compress(options.get_texture_format_compress() | LoaderOptions::TFC_CM_dxt2);
+      break;
+    case EggTexture::CM_dxt3:
+      options.set_texture_format_compress(options.get_texture_format_compress() | LoaderOptions::TFC_CM_dxt3);
+      break;
+    case EggTexture::CM_dxt4:
+      options.set_texture_format_compress(options.get_texture_format_compress() | LoaderOptions::TFC_CM_dxt4);
+      break;
+    case EggTexture::CM_dxt5:
+      options.set_texture_format_compress(options.get_texture_format_compress() | LoaderOptions::TFC_CM_dxt5);
+      break;  
+    case EggTexture::CM_default:
+    default:
+      options.set_texture_format_compress(options.get_texture_format_compress() | LoaderOptions::TFC_CM_default);
+      break;
+  }
+
+  switch(egg_tex->get_wrap_mode()){
+    case EggTexture::WM_unspecified:
+      options.set_wrap_options_ou(options.get_wrap_options_ou() | LoaderOptions::WO_wrap_unspecified);
+      break;
+    case EggTexture::WM_clamp:
+      options.set_wrap_options_ou(options.get_wrap_options_ou() | LoaderOptions::WO_wrap_clamp);
+      break;
+    case EggTexture::WM_repeat:
+      options.set_wrap_options_ou(options.get_wrap_options_ou() | LoaderOptions::WO_wrap_repeat);
+      break;
+    case EggTexture::WM_mirror: 
+      options.set_wrap_options_ou(options.get_wrap_options_ou() | LoaderOptions::WO_wrap_mirror);
+      break;
+    case EggTexture::WM_mirror_once:
+      options.set_wrap_options_ou(options.get_wrap_options_ou() | LoaderOptions::WO_wrap_mirror_once);
+      break;
+    case EggTexture::WM_border_color:
+      options.set_wrap_options_ou(options.get_wrap_options_ou() | LoaderOptions::WO_wrap_border_color);
+      break;
+    default:
+      options.set_wrap_options_ou(options.get_wrap_options_ou() | LoaderOptions::WO_wrap_unspecified);
+      break;
+  }
+
+  switch(egg_tex->get_wrap_u()){
+    case EggTexture::WM_unspecified:
+      options.set_wrap_options_ou(options.get_wrap_options_ou() | LoaderOptions::WU_wrap_unspecified);
+      break;
+    case EggTexture::WM_clamp:
+      options.set_wrap_options_ou(options.get_wrap_options_ou() | LoaderOptions::WU_wrap_clamp);
+      break;
+    case EggTexture::WM_repeat:
+      options.set_wrap_options_ou(options.get_wrap_options_ou() | LoaderOptions::WU_wrap_repeat);
+      break;
+    case EggTexture::WM_mirror: 
+      options.set_wrap_options_ou(options.get_wrap_options_ou() | LoaderOptions::WU_wrap_mirror);
+      break;
+    case EggTexture::WM_mirror_once:
+      options.set_wrap_options_ou(options.get_wrap_options_ou() | LoaderOptions::WU_wrap_mirror_once);
+      break;
+    case EggTexture::WM_border_color:
+      options.set_wrap_options_ou(options.get_wrap_options_ou() | LoaderOptions::WU_wrap_border_color);
+      break;
+    default:
+      options.set_wrap_options_ou(options.get_wrap_options_ou() | LoaderOptions::WU_wrap_unspecified);
+      break;
+  }
+
+  switch(egg_tex->get_wrap_v()){
+    case EggTexture::WM_unspecified:
+      options.set_wrap_options_vw(options.get_wrap_options_vw() | LoaderOptions::WV_wrap_unspecified);
+      break;
+    case EggTexture::WM_clamp:
+      options.set_wrap_options_vw(options.get_wrap_options_vw() | LoaderOptions::WV_wrap_clamp);
+      break;
+    case EggTexture::WM_repeat:
+      options.set_wrap_options_vw(options.get_wrap_options_vw() | LoaderOptions::WV_wrap_repeat);
+      break;
+    case EggTexture::WM_mirror: 
+      options.set_wrap_options_vw(options.get_wrap_options_vw() | LoaderOptions::WV_wrap_mirror);
+      break;
+    case EggTexture::WM_mirror_once:
+      options.set_wrap_options_vw(options.get_wrap_options_vw() | LoaderOptions::WV_wrap_mirror_once);
+      break;
+    case EggTexture::WM_border_color:
+      options.set_wrap_options_vw(options.get_wrap_options_vw() | LoaderOptions::WV_wrap_border_color);
+      break;
+    default:
+      options.set_wrap_options_vw(options.get_wrap_options_vw() | LoaderOptions::WV_wrap_unspecified);
+      break;
+  }
+
+  switch(egg_tex->get_wrap_w()){
+    case EggTexture::WM_unspecified:
+      options.set_wrap_options_vw(options.get_wrap_options_vw() | LoaderOptions::WW_wrap_unspecified);
+      break;
+    case EggTexture::WM_clamp:
+      options.set_wrap_options_vw(options.get_wrap_options_vw() | LoaderOptions::WW_wrap_clamp);
+      break;
+    case EggTexture::WM_repeat:
+      options.set_wrap_options_vw(options.get_wrap_options_vw() | LoaderOptions::WW_wrap_repeat);
+      break;
+    case EggTexture::WM_mirror: 
+      options.set_wrap_options_vw(options.get_wrap_options_vw() | LoaderOptions::WW_wrap_mirror);
+      break;
+    case EggTexture::WM_mirror_once:
+      options.set_wrap_options_vw(options.get_wrap_options_vw() | LoaderOptions::WW_wrap_mirror_once);
+      break;
+    case EggTexture::WM_border_color:
+      options.set_wrap_options_vw(options.get_wrap_options_vw() | LoaderOptions::WW_wrap_border_color);
+      break;
+    default:
+      options.set_wrap_options_vw(options.get_wrap_options_vw() | LoaderOptions::WW_wrap_unspecified);
+      break;
+  }
+  
+  PT(Texture) tex;
+  switch (egg_tex->get_texture_type()) {
+  case EggTexture::TT_unspecified:
+  case EggTexture::TT_1d_texture:
+    options.set_texture_flags(options.get_texture_flags() | LoaderOptions::TF_allow_1d);
+    // Fall through.
+
+  case EggTexture::TT_2d_texture:
+    if (egg_tex->has_alpha_filename() && wanted_alpha) {
+      tex = TexturePool::load_texture(egg_tex->get_fullpath(),
+                                      egg_tex->get_alpha_fullpath(),
+                                      wanted_channels,
+                                      egg_tex->get_alpha_file_channel(),
+                                      egg_tex->get_read_mipmaps(), options);
+    } else {
+      tex = TexturePool::load_texture(egg_tex->get_fullpath(),
+                                      wanted_channels,
+                                      egg_tex->get_read_mipmaps(), options);
+    }
+    break;
+
+  case EggTexture::TT_3d_texture:
+    tex = TexturePool::load_3d_texture(egg_tex->get_fullpath(),
+                                       egg_tex->get_read_mipmaps(), options);
+    break;
+
+  case EggTexture::TT_cube_map:
+    tex = TexturePool::load_cube_map(egg_tex->get_fullpath(),
+                                     egg_tex->get_read_mipmaps(), options);
+    break;
+  }
+
+  if (tex == nullptr) {
+    return false;
+  }
+  
   // Record the original filenames in the textures (as loaded from the egg
   // file).  These filenames will be written back to the bam file if the bam
   // file is written out.

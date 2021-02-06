@@ -281,10 +281,16 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
                 bool read_mipmaps, const LoaderOptions &options) {
   LookupKey key;
   key._primary_file_num_channels = primary_file_num_channels;
+  //New additions. This allows the texture information to remain unique
+  //if texture scalars are different
+  key._texture_format = options.get_texture_format();
+  key._texture_format_compress = options.get_texture_format_compress();
+  key._wrap_options_ou = options.get_wrap_options_ou();
+  key._wrap_options_vw = options.get_wrap_options_vw();
   {
     MutexHolder holder(_lock);
     resolve_filename(key._fullpath, orig_filename, read_mipmaps, options);
-
+  
     Textures::const_iterator ti;
     ti = _textures.find(key);
     if (ti != _textures.end()) {
@@ -449,6 +455,10 @@ ns_load_texture(const Filename &orig_filename,
   LookupKey key;
   key._primary_file_num_channels = primary_file_num_channels;
   key._alpha_file_channel = alpha_file_channel;
+  //New additions. This allows the texture information to remain unique
+  //if texture scalars are different
+  key._texture_format = options.get_texture_format();
+  key._texture_format_compress = options.get_texture_format_compress();
   {
     MutexHolder holder(_lock);
     resolve_filename(key._fullpath, orig_filename, read_mipmaps, options);
@@ -578,6 +588,10 @@ ns_load_3d_texture(const Filename &filename_pattern,
 
   LookupKey key;
   key._texture_type = Texture::TT_3d_texture;
+  //New additions. This allows the texture information to remain unique
+  //if texture scalars are different
+  key._texture_format = options.get_texture_format();
+  key._texture_format_compress = options.get_texture_format_compress();
   {
     MutexHolder holder(_lock);
     resolve_filename(key._fullpath, orig_filename, read_mipmaps, options);
@@ -680,6 +694,10 @@ ns_load_2d_texture_array(const Filename &filename_pattern,
 
   LookupKey key;
   key._texture_type = Texture::TT_2d_texture_array;
+  //New additions. This allows the texture information to remain unique
+  //if texture scalars are different
+  key._texture_format = options.get_texture_format();
+  key._texture_format_compress = options.get_texture_format_compress();
   {
     MutexHolder holder(_lock);
     resolve_filename(key._fullpath, orig_filename, read_mipmaps, options);
@@ -782,6 +800,10 @@ ns_load_cube_map(const Filename &filename_pattern, bool read_mipmaps,
 
   LookupKey key;
   key._texture_type = Texture::TT_cube_map;
+  //New additions. This allows the texture information to remain unique
+  //if texture scalars are different
+  key._texture_format = options.get_texture_format();
+  key._texture_format_compress = options.get_texture_format_compress();
   {
     MutexHolder holder(_lock);
     resolve_filename(key._fullpath, orig_filename, read_mipmaps, options);

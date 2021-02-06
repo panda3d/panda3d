@@ -327,5 +327,22 @@ operator < (const LookupKey &other) const {
   if (_alpha_file_channel != other._alpha_file_channel) {
     return _alpha_file_channel < other._alpha_file_channel;
   }
+
+  if(_texture_format != other._texture_format){
+    return _texture_format < other._texture_format;
+  }
+
+  if(_texture_format_compress != other._texture_format_compress){
+    return _texture_format_compress < other._texture_format_compress;
+  }
+
+  if(_wrap_options_ou != other._wrap_options_ou){
+    return _wrap_options_ou < other._wrap_options_ou;
+  }
+
+  if(_wrap_options_vw != other._wrap_options_vw){
+    return _wrap_options_vw < other._wrap_options_vw;
+  }
+  
   return _texture_type < other._texture_type;
 }

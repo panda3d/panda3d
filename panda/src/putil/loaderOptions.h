@@ -49,7 +49,7 @@ PUBLISHED:
     TF_no_filters        = 0x0400,  // disallow using texture pool filters
   };
 
-  enum TextureFormat1 {
+  enum TextureFormat {
     TFO1_unspecified        = 0x0001, //The format of the texture is unspecified
     TFO1_rgba               = 0x0002, //The rest of these formats correspond to texture formats
     TFO1_rgbm               = 0x0004, //see https://docs.panda3d.org/1.10/python/tools/model-export/egg-syntax 
@@ -69,13 +69,52 @@ PUBLISHED:
     TF01_luminance          = 0x8000,
   };
 
-  enum TextureFormat2 {
-    TFO2_luminance_alpha      = 0x0001,
-    TFO2_luminance_alphamask  = 0x0002,
-    TF02_srgb                 = 0x0004,
-    TF02_srbg_alpha           = 0x0008,
+  enum TextureFormatCompress {
+    TFC_luminance_alpha      = 0x0001,
+    TFC_luminance_alphamask  = 0x0002,
+    TFC_srgb                 = 0x0004,
+    TFC_srbg_alpha           = 0x0008,
+    TFC_CM_default           = 0x0010,
+    TFC_CM_off               = 0x0020,
+    TFC_CM_on                = 0x0040,
+    TFC_CM_fxt1              = 0x0080,
+    TFC_CM_dxt1              = 0x0100,
+    TFC_CM_dxt2              = 0x0200,
+    TFC_CM_dxt3              = 0x0400,
+    TFC_CM_dxt4              = 0x0800,
+    TFC_CM_dxt5              = 0x1000,
+  };
+  
+  enum WrapOptionsOU {
+    WO_wrap_unspecified      = 0x0001,
+    WO_wrap_clamp            = 0x0002,
+    WO_wrap_repeat           = 0x0004,
+    WO_wrap_mirror           = 0x0008,
+    WO_wrap_mirror_once      = 0x0010,
+    WO_wrap_border_color     = 0x0020,
+    WU_wrap_unspecified      = 0x0040,
+    WU_wrap_clamp            = 0x0080,
+    WU_wrap_repeat           = 0x0100,
+    WU_wrap_mirror           = 0x0200,
+    WU_wrap_mirror_once      = 0x0400,
+    WU_wrap_border_color     = 0x0800,
   };
 
+  enum WrapOptionsVW {
+    WV_wrap_unspecified      = 0x0001,
+    WV_wrap_clamp            = 0x0002,
+    WV_wrap_repeat           = 0x0004,
+    WV_wrap_mirror           = 0x0008,
+    WV_wrap_mirror_once      = 0x0010,
+    WV_wrap_border_color     = 0x0020,
+    WW_wrap_unspecified      = 0x0040,
+    WW_wrap_clamp            = 0x0080,
+    WW_wrap_repeat           = 0x0100,
+    WW_wrap_mirror           = 0x0200,
+    WW_wrap_mirror_once      = 0x0400,
+    WW_wrap_border_color     = 0x0800,
+  };
+  
   LoaderOptions(int flags = LF_search | LF_report_errors);
   constexpr LoaderOptions(int flags, int texture_flags);
 
@@ -86,8 +125,13 @@ PUBLISHED:
   INLINE int get_texture_flags() const;
   INLINE void set_texture_format(int options);
   INLINE int get_texture_format() const;
-  INLINE void set_texture_format2(int options);
-  INLINE int get_texture_format2() const;
+  INLINE void set_texture_format_compress(int options);
+  INLINE int get_texture_format_compress() const;
+  INLINE void set_wrap_options_ou(int options);
+  INLINE int get_wrap_options_ou() const;
+  INLINE void set_wrap_options_vw(int options);
+  INLINE int get_wrap_options_vw() const;
+  
   INLINE void set_texture_num_views(int num_views);
   INLINE int get_texture_num_views() const;
   MAKE_PROPERTY(texture_flags, get_texture_flags, set_texture_flags);
@@ -109,7 +153,9 @@ private:
   int _flags;
   int _texture_flags;
   int _texture_format;
-  int _texture_format2;
+  int _texture_format_compress;
+  int _wrap_options_ou;
+  int _wrap_options_vw;
   int _texture_num_views;
   AutoTextureScale _auto_texture_scale;
 };

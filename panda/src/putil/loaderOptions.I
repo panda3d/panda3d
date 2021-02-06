@@ -18,6 +18,10 @@ constexpr LoaderOptions::
 LoaderOptions(int flags, int texture_flags) :
   _flags(flags),
   _texture_flags(texture_flags),
+  _texture_format(0),
+  _texture_format_compress(0),
+  _wrap_options_ou(0),
+  _wrap_options_vw(0),
   _texture_num_views(0),
   _auto_texture_scale(ATS_unspecified)
 {
@@ -74,16 +78,33 @@ get_texture_format() const {
 }
 
 INLINE void LoaderOptions::
-set_texture_format2(int texture_format2){
-  _texture_format2 = texture_format2;
+set_texture_format_compress(int options){
+  _texture_format_compress = options;
 }
 
-/**
- *  
- */
 INLINE int LoaderOptions::
-get_texture_format2() const {
-  return _texture_format2;
+get_texture_format_compress() const {
+  return _texture_format_compress;
+}
+
+INLINE void LoaderOptions::
+set_wrap_options_ou(int options){
+  _wrap_options_ou = options;
+}
+
+INLINE int LoaderOptions::
+get_wrap_options_ou() const {
+  return _wrap_options_ou;
+}
+
+INLINE void LoaderOptions::
+set_wrap_options_vw(int options){
+  _wrap_options_vw = options;
+}
+
+INLINE int LoaderOptions::
+get_wrap_options_vw() const {
+  return _wrap_options_vw;
 }
 
 /**
