@@ -125,6 +125,9 @@ static PyObject *get_done_result(const AsyncFuture *future) {
         exc_type = PyObject_GetAttrString(module, "CancelledError");
         Py_DECREF(module);
       }
+      else {
+        PyErr_Clear();
+      }
       // If we can't get that, we should pretend and make our own.
       if (exc_type == nullptr) {
         exc_type = PyErr_NewExceptionWithDoc((char*)"concurrent.futures._base.CancelledError",
@@ -217,6 +220,9 @@ result(PyObject *timeout) const {
         if (module != nullptr) {
           exc_type = PyObject_GetAttrString(module, "TimeoutError");
           Py_DECREF(module);
+        }
+        else {
+          PyErr_Clear();
         }
         // If we can't get that, we should pretend and make our own.
         if (exc_type == nullptr) {
