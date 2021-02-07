@@ -624,6 +624,11 @@ do_python_task() {
         return DS_done;
       }
 
+    } else if (result == Py_None && PyCoro_CheckExact(_generator)) {
+      // Bare yield from a coroutine means to try again next frame.
+      Py_DECREF(result);
+      return DS_cont;
+
     } else if (DtoolInstance_Check(result)) {
       // We are waiting for an AsyncFuture (eg. other task) to finish.
       AsyncFuture *fut = (AsyncFuture *)DtoolInstance_UPCAST(result, Dtool_AsyncFuture);
