@@ -208,7 +208,6 @@ matches_magic_number(const string &magic_number) const {
  */
 PNMReader *PNMFileTypeStbImage::
 make_reader(istream *file, bool owns_file, const string &magic_number) {
-  init_pnm();
   return new StbImageReader(this, file, owns_file, magic_number);
 }
 

@@ -2598,6 +2598,14 @@ def CreatePandaVersionFiles():
     if GIT_COMMIT:
         pandaversion_h += "\n#define PANDA_GIT_COMMIT_STR \"%s\"\n" % (GIT_COMMIT)
 
+    # Allow creating a deterministic build by setting this.
+    source_date = os.environ.get("SOURCE_DATE_EPOCH")
+    if source_date:
+        # This matches the GCC / Clang format for __DATE__ __TIME__
+        source_date = time.gmtime(int(source_date))
+        source_date = time.strftime('%b %e %Y %H:%M:%S', source_date)
+        pandaversion_h += "\n#define PANDA_BUILD_DATE_STR \"%s\"\n" % (source_date)
+
     checkpandaversion_cxx = CHECKPANDAVERSION_CXX.replace("$VERSION1",str(version1))
     checkpandaversion_cxx = checkpandaversion_cxx.replace("$VERSION2",str(version2))
     checkpandaversion_cxx = checkpandaversion_cxx.replace("$VERSION3",str(version3))
@@ -6114,7 +6122,7 @@ def ParallelMake(tasklist):
         taskqueue.put(0)
     # Make sure there aren't any unsatisfied tasks
     if len(tasklist) > 0:
-        exit(f"Dependency problems: {len(tasklist)} tasks not finished. First task unsatisfied: {tasklist[0][2]}")
+        exit("Dependency problems: {0} tasks not finished. First task unsatisfied: {1}".format(len(tasklist), tasklist[0][2]))
 
 
 def SequentialMake(tasklist):

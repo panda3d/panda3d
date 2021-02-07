@@ -193,12 +193,18 @@ set_result(TypedObject *ptr, ReferenceCount *ref_ptr) {
     compare_and_exchange(_future_state, (AtomicAdjust::Integer)FS_pending,
                                         (AtomicAdjust::Integer)FS_locked_pending);
 
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
   while (orig_state == FS_locked_pending) {
     Thread::force_yield();
     orig_state = (FutureState)AtomicAdjust::
       compare_and_exchange(_future_state, (AtomicAdjust::Integer)FS_pending,
                                           (AtomicAdjust::Integer)FS_locked_pending);
   }
+#else
+  // We can't lose control between now and calling unlock() if we're using a
+  // cooperative threading model.
+  nassertv(orig_state != FS_locked_pending);
+#endif
 
   if (orig_state == FS_pending) {
     _result = ptr;

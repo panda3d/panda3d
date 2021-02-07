@@ -205,6 +205,9 @@ result(PyObject *timeout) const {
           exc_type = PyObject_GetAttrString(module, "TimeoutError");
           Py_DECREF(module);
         }
+        else {
+          PyErr_Clear();
+        }
         // If we can't get that, we should pretend and make our own.
         if (exc_type == nullptr) {
 #if PY_VERSION_HEX >= 0x03080000
@@ -315,6 +318,10 @@ get_cancelled_error_type() {
       exc_type = PyObject_GetAttrString(module, "CancelledError");
       Py_DECREF(module);
     }
+    else {
+      PyErr_Clear();
+    }
+
     // If we can't get that, we should pretend and make our own.
     if (exc_type == nullptr) {
 #if PY_VERSION_HEX >= 0x03080000

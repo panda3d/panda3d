@@ -179,10 +179,11 @@ static const string default_vshader =
   "varying lowp vec4 color;\n"
 #endif
   "uniform mat4 p3d_ModelViewProjectionMatrix;\n"
+  "uniform mat4 p3d_TextureMatrix;\n"
   "uniform vec4 p3d_ColorScale;\n"
   "void main(void) {\n"
   "  gl_Position = p3d_ModelViewProjectionMatrix * p3d_Vertex;\n"
-  "  texcoord = p3d_MultiTexCoord0;\n"
+  "  texcoord = (p3d_TextureMatrix * vec4(p3d_MultiTexCoord0.x, p3d_MultiTexCoord0.y, 0, 1)).xy;\n"
   "  color = p3d_Color * p3d_ColorScale;\n"
   "}\n";
 
@@ -203,10 +204,11 @@ static const string default_vshader_fp64 =
   "out vec4 color;\n"
   "uniform mat4 p3d_ModelViewMatrix;\n"
   "uniform mat4 p3d_ProjectionMatrix;\n"
+  "uniform mat4 p3d_TextureMatrix;\n"
   "uniform vec4 p3d_ColorScale;\n"
   "void main(void) {\n" // Apply proj & modelview in two steps, more precise
   "  gl_Position = vec4(dmat4(p3d_ProjectionMatrix) * (dmat4(p3d_ModelViewMatrix) * dvec4(p3d_Vertex, 1)));\n"
-  "  texcoord = vec2(p3d_MultiTexCoord0);\n"
+  "  texcoord = (p3d_TextureMatrix * vec4(p3d_MultiTexCoord0.x, p3d_MultiTexCoord0.y, 0, 1)).xy;\n"
   "  color = p3d_Color * p3d_ColorScale;\n"
   "}\n";
 
@@ -220,10 +222,11 @@ static const string default_vshader_fp64_gl41 =
   "out vec4 color;\n"
   "uniform mat4 p3d_ModelViewMatrix;\n"
   "uniform mat4 p3d_ProjectionMatrix;\n"
+  "uniform mat4 p3d_TextureMatrix;\n"
   "uniform vec4 p3d_ColorScale;\n"
   "void main(void) {\n" // Apply proj & modelview in two steps, more precise
   "  gl_Position = vec4(dmat4(p3d_ProjectionMatrix) * (dmat4(p3d_ModelViewMatrix) * dvec4(p3d_Vertex, 1)));\n"
-  "  texcoord = vec2(p3d_MultiTexCoord0);\n"
+  "  texcoord = (p3d_TextureMatrix * vec4(p3d_MultiTexCoord0.x, p3d_MultiTexCoord0.y, 0, 1)).xy;\n"
   "  color = p3d_Color * p3d_ColorScale;\n"
   "}\n";
 #endif
@@ -1039,8 +1042,10 @@ reset() {
 #endif
     _supports_tex_storage = true;
 
+#ifndef OPENGLES
     _glTexStorage1D = (PFNGLTEXSTORAGE1DPROC)
       get_extension_func("glTexStorage1D");
+#endif
     _glTexStorage2D = (PFNGLTEXSTORAGE2DPROC)
       get_extension_func("glTexStorage2D");
     _glTexStorage3D = (PFNGLTEXSTORAGE3DPROC)
@@ -1050,8 +1055,6 @@ reset() {
   else if (has_extension("GL_EXT_texture_storage")) {
     _supports_tex_storage = true;
 
-    _glTexStorage1D = (PFNGLTEXSTORAGE1DPROC)
-      get_extension_func("glTexStorage1DEXT");
     _glTexStorage2D = (PFNGLTEXSTORAGE2DPROC)
       get_extension_func("glTexStorage2DEXT");
     _glTexStorage3D = (PFNGLTEXSTORAGE3DPROC)
@@ -1060,7 +1063,11 @@ reset() {
 #endif
 
   if (_supports_tex_storage) {
-    if (_glTexStorage1D == nullptr || _glTexStorage2D == nullptr || _glTexStorage3D == nullptr) {
+    if (
+#ifndef OPENGLES
+        _glTexStorage1D == nullptr ||
+#endif
+        _glTexStorage2D == nullptr || _glTexStorage3D == nullptr) {
       GLCAT.warning()
         << "Immutable texture storage advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
       _supports_tex_storage = false;
@@ -4314,7 +4321,9 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   }
   nassertr(_data_reader != nullptr, false);
 
+#ifndef OPENGLES_1
   _instance_count = _supports_geometry_instancing ? num_instances : 1;
+#endif
 
   _geom_display_list = 0;
 
@@ -13228,8 +13237,10 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
       case Texture::TT_buffer_texture:
         // Won't get here, but squelch compiler warning
       case Texture::TT_1d_texture:
+#ifndef OPENGLES
         _glTexStorage1D(target, num_levels, internal_format, width);
         break;
+#endif
       case Texture::TT_2d_texture:
       case Texture::TT_cube_map:
       case Texture::TT_1d_texture_array:
