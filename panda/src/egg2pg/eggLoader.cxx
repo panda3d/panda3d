@@ -96,6 +96,7 @@
 #include "uvScrollNode.h"
 #include "textureStagePool.h"
 #include "cmath.h"
+#include "loaderOptions.h"
 
 #include <ctype.h>
 #include <algorithm>
@@ -965,7 +966,93 @@ load_texture(TextureDef &def, EggTexture *egg_tex) {
 
   //The following code sets up all the options for the textures
   //so that they can be differentiated
-  //Load in the options for the format
+  set_up_loader_options(egg_tex, options);
+  
+  PT(Texture) tex;
+  switch (egg_tex->get_texture_type()) {
+  case EggTexture::TT_unspecified:
+  case EggTexture::TT_1d_texture:
+    options.set_texture_flags(options.get_texture_flags() | LoaderOptions::TF_allow_1d);
+    // Fall through.
+
+  case EggTexture::TT_2d_texture:
+    if (egg_tex->has_alpha_filename() && wanted_alpha) {
+      tex = TexturePool::load_texture(egg_tex->get_fullpath(),
+                                      egg_tex->get_alpha_fullpath(),
+                                      wanted_channels,
+                                      egg_tex->get_alpha_file_channel(),
+                                      egg_tex->get_read_mipmaps(), options);
+    } else {
+      tex = TexturePool::load_texture(egg_tex->get_fullpath(),
+                                      wanted_channels,
+                                      egg_tex->get_read_mipmaps(), options);
+    }
+    break;
+
+  case EggTexture::TT_3d_texture:
+    tex = TexturePool::load_3d_texture(egg_tex->get_fullpath(),
+                                       egg_tex->get_read_mipmaps(), options);
+    break;
+
+  case EggTexture::TT_cube_map:
+    tex = TexturePool::load_cube_map(egg_tex->get_fullpath(),
+                                     egg_tex->get_read_mipmaps(), options);
+    break;
+  }
+
+  if (tex == nullptr) {
+    return false;
+  }
+  
+  // Record the original filenames in the textures (as loaded from the egg
+  // file).  These filenames will be written back to the bam file if the bam
+  // file is written out.
+  tex->set_filename(egg_tex->get_filename());
+  if (egg_tex->has_alpha_filename() && wanted_alpha) {
+    tex->set_alpha_filename(egg_tex->get_alpha_filename());
+  }
+
+  // See if there is some egg data hanging on the texture.  In particular, the
+  // TxaFileFilter might have left that here for us.
+  TypedReferenceCount *aux = tex->get_aux_data("egg");
+  if (aux != nullptr &&
+      aux->is_of_type(EggTexture::get_class_type())) {
+    EggTexture *aux_egg_tex = DCAST(EggTexture, aux);
+
+    if (aux_egg_tex->get_alpha_mode() != EggTexture::AM_unspecified) {
+      egg_tex->set_alpha_mode(aux_egg_tex->get_alpha_mode());
+    }
+    if (aux_egg_tex->get_format() != EggTexture::F_unspecified) {
+      egg_tex->set_format(aux_egg_tex->get_format());
+    }
+    if (aux_egg_tex->get_minfilter() != EggTexture::FT_unspecified) {
+      egg_tex->set_minfilter(aux_egg_tex->get_minfilter());
+    }
+    if (aux_egg_tex->get_magfilter() != EggTexture::FT_unspecified) {
+      egg_tex->set_magfilter(aux_egg_tex->get_magfilter());
+    }
+    if (aux_egg_tex->has_anisotropic_degree()) {
+      egg_tex->set_anisotropic_degree(aux_egg_tex->get_anisotropic_degree());
+    }
+  }
+
+  apply_texture_attributes(tex, egg_tex);
+
+  // Make a texture stage for the texture.
+  PT(TextureStage) stage = make_texture_stage(egg_tex);
+  def._texture = DCAST(TextureAttrib, TextureAttrib::make())->add_on_stage(stage, tex);
+  def._stage = stage;
+  def._egg_tex = egg_tex;
+
+  return true;
+}
+
+/**
+ * An egg file may have more than one set texture attributes for each image file. We need to walk
+ * through the texture and set up all the options so that they are unique when needed.
+ */
+void EggLoader::
+set_up_loader_options(EggTexture *egg_tex, LoaderOptions &options){
   switch(egg_tex->get_format()){
     case EggTexture::F_rgba:
       options.set_texture_format(options.get_texture_format() | LoaderOptions::TFO1_rgba);
@@ -1160,86 +1247,42 @@ load_texture(TextureDef &def, EggTexture *egg_tex) {
       break;
   }
   
-  PT(Texture) tex;
-  switch (egg_tex->get_texture_type()) {
-  case EggTexture::TT_unspecified:
-  case EggTexture::TT_1d_texture:
-    options.set_texture_flags(options.get_texture_flags() | LoaderOptions::TF_allow_1d);
-    // Fall through.
-
-  case EggTexture::TT_2d_texture:
-    if (egg_tex->has_alpha_filename() && wanted_alpha) {
-      tex = TexturePool::load_texture(egg_tex->get_fullpath(),
-                                      egg_tex->get_alpha_fullpath(),
-                                      wanted_channels,
-                                      egg_tex->get_alpha_file_channel(),
-                                      egg_tex->get_read_mipmaps(), options);
-    } else {
-      tex = TexturePool::load_texture(egg_tex->get_fullpath(),
-                                      wanted_channels,
-                                      egg_tex->get_read_mipmaps(), options);
-    }
-    break;
-
-  case EggTexture::TT_3d_texture:
-    tex = TexturePool::load_3d_texture(egg_tex->get_fullpath(),
-                                       egg_tex->get_read_mipmaps(), options);
-    break;
-
-  case EggTexture::TT_cube_map:
-    tex = TexturePool::load_cube_map(egg_tex->get_fullpath(),
-                                     egg_tex->get_read_mipmaps(), options);
-    break;
+  switch(egg_tex->get_minfilter()){
+    case EggTexture::FT_unspecified:
+      options.set_filter_options(options.get_filter_options() | LoaderOptions::MIN_unspecified);
+      break;
+    case EggTexture::FT_nearest:
+      options.set_filter_options(options.get_filter_options() | LoaderOptions::MIN_nearest);
+      break;
+    case EggTexture::FT_linear:
+      options.set_filter_options(options.get_filter_options() | LoaderOptions::MIN_linear);
+      break;
+    case EggTexture::FT_nearest_mipmap_nearest:
+      options.set_filter_options(options.get_filter_options() | LoaderOptions::MIN_nearest_mipmap_nearest);
+      break;
+    case EggTexture::FT_linear_mipmap_nearest:
+      options.set_filter_options(options.get_filter_options() | LoaderOptions::MIN_linear_mipmap_nearest);
+      break;
+    case EggTexture::FT_nearest_mipmap_linear:
+      options.set_filter_options(options.get_filter_options() | LoaderOptions::MIN_nearest_mipmap_linear);
+      break;
+    case EggTexture::FT_linear_mipmap_linear:
+      options.set_filter_options(options.get_filter_options() | LoaderOptions::MIN_linear_mipmap_linear);
+      break;
   }
 
-  if (tex == nullptr) {
-    return false;
+  switch(egg_tex->get_magfilter()){
+    case EggTexture::FT_unspecified:
+      options.set_filter_options(options.get_filter_options() | LoaderOptions::MAG_unspecified);
+      break;
+    case EggTexture::FT_nearest:
+      options.set_filter_options(options.get_filter_options() | LoaderOptions::MAG_nearest);
+      break;
+    case EggTexture::FT_linear:
+      options.set_filter_options(options.get_filter_options() | LoaderOptions::MAG_linear);
+      break;
   }
-  
-  // Record the original filenames in the textures (as loaded from the egg
-  // file).  These filenames will be written back to the bam file if the bam
-  // file is written out.
-  tex->set_filename(egg_tex->get_filename());
-  if (egg_tex->has_alpha_filename() && wanted_alpha) {
-    tex->set_alpha_filename(egg_tex->get_alpha_filename());
-  }
-
-  // See if there is some egg data hanging on the texture.  In particular, the
-  // TxaFileFilter might have left that here for us.
-  TypedReferenceCount *aux = tex->get_aux_data("egg");
-  if (aux != nullptr &&
-      aux->is_of_type(EggTexture::get_class_type())) {
-    EggTexture *aux_egg_tex = DCAST(EggTexture, aux);
-
-    if (aux_egg_tex->get_alpha_mode() != EggTexture::AM_unspecified) {
-      egg_tex->set_alpha_mode(aux_egg_tex->get_alpha_mode());
-    }
-    if (aux_egg_tex->get_format() != EggTexture::F_unspecified) {
-      egg_tex->set_format(aux_egg_tex->get_format());
-    }
-    if (aux_egg_tex->get_minfilter() != EggTexture::FT_unspecified) {
-      egg_tex->set_minfilter(aux_egg_tex->get_minfilter());
-    }
-    if (aux_egg_tex->get_magfilter() != EggTexture::FT_unspecified) {
-      egg_tex->set_magfilter(aux_egg_tex->get_magfilter());
-    }
-    if (aux_egg_tex->has_anisotropic_degree()) {
-      egg_tex->set_anisotropic_degree(aux_egg_tex->get_anisotropic_degree());
-    }
-  }
-
-  apply_texture_attributes(tex, egg_tex);
-
-  // Make a texture stage for the texture.
-  PT(TextureStage) stage = make_texture_stage(egg_tex);
-  def._texture = DCAST(TextureAttrib, TextureAttrib::make())->add_on_stage(stage, tex);
-  def._stage = stage;
-  def._egg_tex = egg_tex;
-
-  return true;
 }
-
-
 /**
  *
  */

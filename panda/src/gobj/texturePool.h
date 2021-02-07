@@ -179,6 +179,7 @@ private:
     int _texture_format_compress = 0;
     int _wrap_options_ou = 0;
     int _wrap_options_vw = 0;
+    int _filter_options = 0;
     Texture::TextureType _texture_type = Texture::TT_2d_texture;
 
     INLINE bool operator < (const LookupKey &other) const;

@@ -344,5 +344,9 @@ operator < (const LookupKey &other) const {
     return _wrap_options_vw < other._wrap_options_vw;
   }
   
+  if(_filter_options != other._filter_options){
+    return _filter_options < other._filter_options;
+  }
+  
   return _texture_type < other._texture_type;
 }

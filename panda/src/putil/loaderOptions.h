@@ -114,6 +114,20 @@ PUBLISHED:
     WW_wrap_mirror_once      = 0x0400,
     WW_wrap_border_color     = 0x0800,
   };
+
+  enum FilterOptions {
+    MIN_unspecified             = 0x0001,
+    MIN_nearest                 = 0x0002,
+    MIN_linear                  = 0x0004,
+    MIN_nearest_mipmap_nearest  = 0x0008,
+    MIN_linear_mipmap_nearest   = 0x0010,
+    MIN_nearest_mipmap_linear   = 0x0020,
+    MIN_linear_mipmap_linear    = 0x0040,
+    MAG_unspecified             = 0x0080,
+    MAG_nearest                 = 0x0100,
+    MAG_linear                  = 0x0200,
+  };
+
   
   LoaderOptions(int flags = LF_search | LF_report_errors);
   constexpr LoaderOptions(int flags, int texture_flags);
@@ -131,6 +145,8 @@ PUBLISHED:
   INLINE int get_wrap_options_ou() const;
   INLINE void set_wrap_options_vw(int options);
   INLINE int get_wrap_options_vw() const;
+  INLINE void set_filter_options(int options);
+  INLINE int get_filter_options() const;
   
   INLINE void set_texture_num_views(int num_views);
   INLINE int get_texture_num_views() const;
@@ -156,6 +172,7 @@ private:
   int _texture_format_compress;
   int _wrap_options_ou;
   int _wrap_options_vw;
+  int _filter_options;
   int _texture_num_views;
   AutoTextureScale _auto_texture_scale;
 };

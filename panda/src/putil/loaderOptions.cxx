@@ -28,6 +28,7 @@ LoaderOptions(int flags) :
   _texture_format_compress(0),
   _wrap_options_ou(0),
   _wrap_options_vw(0),
+  _filter_options(0),
   _texture_num_views(0),
   _auto_texture_scale(ATS_unspecified)
 {

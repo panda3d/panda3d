@@ -287,6 +287,7 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
   key._texture_format_compress = options.get_texture_format_compress();
   key._wrap_options_ou = options.get_wrap_options_ou();
   key._wrap_options_vw = options.get_wrap_options_vw();
+  key._filter_options = options.get_filter_options();
   {
     MutexHolder holder(_lock);
     resolve_filename(key._fullpath, orig_filename, read_mipmaps, options);

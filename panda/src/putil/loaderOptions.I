@@ -22,6 +22,7 @@ LoaderOptions(int flags, int texture_flags) :
   _texture_format_compress(0),
   _wrap_options_ou(0),
   _wrap_options_vw(0),
+  _filter_options(0),
   _texture_num_views(0),
   _auto_texture_scale(ATS_unspecified)
 {
@@ -107,6 +108,15 @@ get_wrap_options_vw() const {
   return _wrap_options_vw;
 }
 
+INLINE void LoaderOptions::
+set_filter_options(int options){
+  _filter_options = options;
+}
+
+INLINE int LoaderOptions::
+get_filter_options() const {
+  return _filter_options;
+}
 /**
  * Specifies the expected number of views to load for the texture.  This is
  * ignored unless TF_multiview is included in texture_flags.  This must be
