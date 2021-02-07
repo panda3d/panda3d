@@ -624,8 +624,8 @@ do_python_task() {
         return DS_done;
       }
 
-    } else if (result == Py_None && PyCoro_CheckExact(_generator)) {
-      // Bare yield from a coroutine means to try again next frame.
+    } else if (result == Py_None) {
+      // Bare yield means to continue next frame.
       Py_DECREF(result);
       return DS_cont;
 
