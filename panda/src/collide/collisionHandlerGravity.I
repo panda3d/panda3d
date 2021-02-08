@@ -52,8 +52,6 @@ get_reach() const {
  *
  * The object might not necessarily be at rest.  Use is_on_ground() if you
  * want to know whether the object is on the ground and at rest.
- *
- * See Also: is_in_outer_space()
  */
 INLINE PN_stdfloat CollisionHandlerGravity::
 get_airborne_height() const {
@@ -73,7 +71,7 @@ is_on_ground() const {
 
 /**
  * How hard did the object hit the ground.  This value is set on impact with
- * the ground.  You may want to watch (poll) on is_on_groun() and when that is
+ * the ground.  You may want to watch (poll) on is_on_ground() and when that is
  * true, call get_impact_velocity(). Normally I avoid polling, but we are
  * calling is_on_ground() frequently anyway.
  */
