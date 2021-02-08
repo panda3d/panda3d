@@ -51,7 +51,10 @@ __await__(PyObject *self) {
     return nullptr;
   }
 
-  _this->start();
+  // This may be overridden from Python (such as is the case for Sequence), so
+  // we call this via Python.
+  PyObject *result = PyObject_CallMethod(self, "start", nullptr);
+  Py_XDECREF(result);
   return Dtool_NewGenerator(self, &gen_next);
 }
 
