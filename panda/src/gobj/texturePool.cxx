@@ -284,10 +284,9 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
   //New additions. This allows the texture information to remain unique
   //if texture scalars are different
   key._texture_format = options.get_texture_format();
-  key._texture_format_compress = options.get_texture_format_compress();
-  key._wrap_options_ou = options.get_wrap_options_ou();
-  key._wrap_options_vw = options.get_wrap_options_vw();
-  key._filter_options = options.get_filter_options();
+  key._texture_compress = options.get_texture_compress();
+  key._texture_quality = options.get_texture_quality();
+  key._texture_sampler = options.get_sampler();
   {
     MutexHolder holder(_lock);
     resolve_filename(key._fullpath, orig_filename, read_mipmaps, options);
@@ -298,6 +297,8 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
       // This texture was previously loaded.
       Texture *tex = (*ti).second;
       nassertr(!tex->get_fullpath().empty(), tex);
+      //since we previously loaded it, we don't need to remember the sampler and should delete it to get rid of a memory leak
+      delete key._texture_sampler;
       return tex;
     }
   }
@@ -459,7 +460,9 @@ ns_load_texture(const Filename &orig_filename,
   //New additions. This allows the texture information to remain unique
   //if texture scalars are different
   key._texture_format = options.get_texture_format();
-  key._texture_format_compress = options.get_texture_format_compress();
+  key._texture_compress = options.get_texture_compress();
+  key._texture_quality = options.get_texture_quality();
+  key._texture_sampler = options.get_sampler();
   {
     MutexHolder holder(_lock);
     resolve_filename(key._fullpath, orig_filename, read_mipmaps, options);
@@ -592,7 +595,9 @@ ns_load_3d_texture(const Filename &filename_pattern,
   //New additions. This allows the texture information to remain unique
   //if texture scalars are different
   key._texture_format = options.get_texture_format();
-  key._texture_format_compress = options.get_texture_format_compress();
+  key._texture_compress = options.get_texture_compress();
+  key._texture_quality = options.get_texture_quality();
+  key._texture_sampler = options.get_sampler();
   {
     MutexHolder holder(_lock);
     resolve_filename(key._fullpath, orig_filename, read_mipmaps, options);
@@ -698,7 +703,9 @@ ns_load_2d_texture_array(const Filename &filename_pattern,
   //New additions. This allows the texture information to remain unique
   //if texture scalars are different
   key._texture_format = options.get_texture_format();
-  key._texture_format_compress = options.get_texture_format_compress();
+  key._texture_compress = options.get_texture_compress();
+  key._texture_quality = options.get_texture_quality();
+  key._texture_sampler = options.get_sampler();
   {
     MutexHolder holder(_lock);
     resolve_filename(key._fullpath, orig_filename, read_mipmaps, options);
@@ -804,7 +811,9 @@ ns_load_cube_map(const Filename &filename_pattern, bool read_mipmaps,
   //New additions. This allows the texture information to remain unique
   //if texture scalars are different
   key._texture_format = options.get_texture_format();
-  key._texture_format_compress = options.get_texture_format_compress();
+  key._texture_compress = options.get_texture_compress();
+  key._texture_quality = options.get_texture_quality();
+  key._texture_sampler = options.get_sampler();
   {
     MutexHolder holder(_lock);
     resolve_filename(key._fullpath, orig_filename, read_mipmaps, options);
@@ -968,6 +977,8 @@ ns_release_texture(Texture *tex) {
   Textures::iterator ti;
   for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
     if (tex == (*ti).second) {
+      LookupKey key = (*ti).first;
+      delete key._texture_sampler;
       _textures.erase(ti);
       tex->_texture_pool_key = string();
       break;
@@ -987,6 +998,8 @@ ns_release_all_textures() {
 
   Textures::iterator ti;
   for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
+    LookupKey key = (*ti).first;
+    delete key._texture_sampler;
     Texture *tex = (*ti).second;
     tex->_texture_pool_key = string();
   }

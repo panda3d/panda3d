@@ -332,20 +332,16 @@ operator < (const LookupKey &other) const {
     return _texture_format < other._texture_format;
   }
 
-  if(_texture_format_compress != other._texture_format_compress){
-    return _texture_format_compress < other._texture_format_compress;
+  if(_texture_compress != other._texture_compress){
+    return _texture_compress < other._texture_compress;
   }
 
-  if(_wrap_options_ou != other._wrap_options_ou){
-    return _wrap_options_ou < other._wrap_options_ou;
+  if(_texture_quality != other._texture_quality){
+    return _texture_quality < other._texture_quality;
   }
 
-  if(_wrap_options_vw != other._wrap_options_vw){
-    return _wrap_options_vw < other._wrap_options_vw;
-  }
-  
-  if(_filter_options != other._filter_options){
-    return _filter_options < other._filter_options;
+  if(*_texture_sampler != *other._texture_sampler){
+    return *_texture_sampler < *other._texture_sampler;
   }
   
   return _texture_type < other._texture_type;

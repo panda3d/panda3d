@@ -175,11 +175,10 @@ private:
     Filename _alpha_fullpath;
     int _primary_file_num_channels = 0;
     int _alpha_file_channel = 0;
-    int _texture_format = 0;
-    int _texture_format_compress = 0;
-    int _wrap_options_ou = 0;
-    int _wrap_options_vw = 0;
-    int _filter_options = 0;
+    int _texture_format;
+    int _texture_quality;
+    int _texture_compress;
+    SamplerState * _texture_sampler;
     Texture::TextureType _texture_type = Texture::TT_2d_texture;
 
     INLINE bool operator < (const LookupKey &other) const;

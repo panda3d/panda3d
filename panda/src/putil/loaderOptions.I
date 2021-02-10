@@ -18,11 +18,10 @@ constexpr LoaderOptions::
 LoaderOptions(int flags, int texture_flags) :
   _flags(flags),
   _texture_flags(texture_flags),
-  _texture_format(0),
-  _texture_format_compress(0),
-  _wrap_options_ou(0),
-  _wrap_options_vw(0),
-  _filter_options(0),
+  _texture_format(EggTexture::Format::F_unspecified),
+  _texture_compress(EggTexture::CompressionMode::CM_default),
+  _texture_quality(EggTexture::QualityLevel::QL_default),
+  _texture_sampler(nullptr),
   _texture_num_views(0),
   _auto_texture_scale(ATS_unspecified)
 {
@@ -66,57 +65,48 @@ get_texture_flags() const {
 */
 
 INLINE void LoaderOptions::
-set_texture_format(int texture_format){
-  _texture_format= texture_format;
+set_texture_format(EggTexture::Format format){
+  _texture_format= format;
 }
 
 /**
  *  
  */
-INLINE int LoaderOptions::
+INLINE EggTexture::Format LoaderOptions::
 get_texture_format() const {
   return _texture_format;
 }
 
 INLINE void LoaderOptions::
-set_texture_format_compress(int options){
-  _texture_format_compress = options;
+set_texture_compress(EggTexture::CompressionMode compress){
+  _texture_compress = compress;
 }
 
-INLINE int LoaderOptions::
-get_texture_format_compress() const {
-  return _texture_format_compress;
-}
-
-INLINE void LoaderOptions::
-set_wrap_options_ou(int options){
-  _wrap_options_ou = options;
-}
-
-INLINE int LoaderOptions::
-get_wrap_options_ou() const {
-  return _wrap_options_ou;
+INLINE EggTexture::CompressionMode LoaderOptions::
+get_texture_compress() const {
+  return _texture_compress;
 }
 
 INLINE void LoaderOptions::
-set_wrap_options_vw(int options){
-  _wrap_options_vw = options;
+set_texture_quality(EggTexture::QualityLevel quality){
+  _texture_quality = quality;
 }
 
-INLINE int LoaderOptions::
-get_wrap_options_vw() const {
-  return _wrap_options_vw;
+INLINE EggTexture::QualityLevel LoaderOptions::
+get_texture_quality() const {
+  return _texture_quality;
 }
 
 INLINE void LoaderOptions::
-set_filter_options(int options){
-  _filter_options = options;
+set_sampler(SamplerState *sampler){
+  _texture_sampler = sampler;
 }
 
-INLINE int LoaderOptions::
-get_filter_options() const {
-  return _filter_options;
+INLINE SamplerState * LoaderOptions::
+get_sampler() const {
+  return _texture_sampler;
 }
+
 /**
  * Specifies the expected number of views to load for the texture.  This is
  * ignored unless TF_multiview is included in texture_flags.  This must be
