@@ -66,6 +66,14 @@ PUBLISHED:
 
   void output(std::ostream &out) const;
 
+PUBLISHED:
+  MAKE_PROPERTY(name, get_name, set_name);
+  MAKE_PROPERTY(value, get_value, set_value);
+  MAKE_PROPERTY(domain, get_domain, set_domain);
+  MAKE_PROPERTY(path, get_path, set_path);
+  MAKE_PROPERTY2(expires, has_expires, get_expires, set_expires, clear_expires);
+  MAKE_PROPERTY(secure, get_secure, set_secure);
+
 private:
   bool parse_cookie_param(const std::string &param, bool first_param);
 
