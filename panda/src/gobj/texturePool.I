@@ -340,8 +340,8 @@ operator < (const LookupKey &other) const {
     return _texture_quality < other._texture_quality;
   }
 
-  if(*_texture_sampler != *other._texture_sampler){
-    return *_texture_sampler < *other._texture_sampler;
+  if(_texture_sampler != other._texture_sampler){
+    return _texture_sampler < other._texture_sampler;
   }
   
   return _texture_type < other._texture_type;

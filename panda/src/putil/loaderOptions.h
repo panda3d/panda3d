@@ -17,9 +17,7 @@
 #include "pandabase.h"
 #include "autoTextureScale.h"
 #include "eggTexture.h"
-//Useing a forward delcaration to break a circular reference between this and bamReader
-//SamplerState includes bamReader.h which includes loaderOptions.h
-class SamplerState;
+#include "samplerState.h"
 
 /**
  * Specifies parameters that may be passed to the loader.
@@ -54,7 +52,7 @@ PUBLISHED:
   };
   
   LoaderOptions(int flags = LF_search | LF_report_errors);
-  constexpr LoaderOptions(int flags, int texture_flags);
+  LoaderOptions(int flags, int texture_flags);
 
   INLINE void set_flags(int flags);
   INLINE int get_flags() const;
@@ -67,8 +65,8 @@ PUBLISHED:
   INLINE EggTexture::CompressionMode get_texture_compress() const;
   INLINE void set_texture_quality(EggTexture::QualityLevel  quality);
   INLINE EggTexture::QualityLevel get_texture_quality() const;
-  INLINE void set_sampler(SamplerState * sampler);
-  INLINE SamplerState * get_sampler() const;
+  INLINE void set_sampler(SamplerState sampler);
+  INLINE SamplerState get_sampler() const;
   
   
   INLINE void set_texture_num_views(int num_views);
@@ -94,7 +92,7 @@ private:
   EggTexture::Format _texture_format;
   EggTexture::CompressionMode _texture_compress;
   EggTexture::QualityLevel _texture_quality;
-  SamplerState * _texture_sampler;
+  SamplerState _texture_sampler;
   int _texture_num_views;
   AutoTextureScale _auto_texture_scale;
 };

@@ -14,14 +14,13 @@
 /**
  *
  */
-constexpr LoaderOptions::
+INLINE LoaderOptions::
 LoaderOptions(int flags, int texture_flags) :
   _flags(flags),
   _texture_flags(texture_flags),
   _texture_format(EggTexture::Format::F_unspecified),
   _texture_compress(EggTexture::CompressionMode::CM_default),
   _texture_quality(EggTexture::QualityLevel::QL_default),
-  _texture_sampler(nullptr),
   _texture_num_views(0),
   _auto_texture_scale(ATS_unspecified)
 {
@@ -98,11 +97,11 @@ get_texture_quality() const {
 }
 
 INLINE void LoaderOptions::
-set_sampler(SamplerState *sampler){
+set_sampler(SamplerState  sampler){
   _texture_sampler = sampler;
 }
 
-INLINE SamplerState * LoaderOptions::
+INLINE SamplerState LoaderOptions::
 get_sampler() const {
   return _texture_sampler;
 }

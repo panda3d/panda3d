@@ -178,7 +178,7 @@ private:
     int _texture_format;
     int _texture_quality;
     int _texture_compress;
-    SamplerState * _texture_sampler;
+    SamplerState _texture_sampler;
     Texture::TextureType _texture_type = Texture::TT_2d_texture;
 
     INLINE bool operator < (const LookupKey &other) const;

@@ -1037,7 +1037,7 @@ load_texture(TextureDef &def, EggTexture *egg_tex) {
       egg_tex->set_anisotropic_degree(aux_egg_tex->get_anisotropic_degree());
     }
   }
-  SamplerState * sampler = options.get_sampler();
+  SamplerState sampler = options.get_sampler();
   apply_texture_attributes(tex, sampler, egg_tex);
 
   // Make a texture stage for the texture.
@@ -1053,8 +1053,8 @@ void EggLoader::
 set_up_loader_options(EggTexture *egg_tex, LoaderOptions & options){
   options.set_texture_format(egg_tex->get_format());
   options.set_texture_compress(egg_tex->get_compression_mode());
-  SamplerState * sampler = new SamplerState();
-  set_up_sampler(*sampler, egg_tex);
+  SamplerState sampler;
+  set_up_sampler(sampler, egg_tex);
   options.set_sampler(sampler);
 }
 
@@ -1196,12 +1196,12 @@ set_up_sampler(SamplerState &sampler, const EggTexture *egg_tex){
  *
  */
 void EggLoader::
-apply_texture_attributes(Texture *tex, SamplerState *sampler, const EggTexture *egg_tex) {
+apply_texture_attributes(Texture *tex, SamplerState sampler, const EggTexture *egg_tex) {
   if (egg_tex->get_compression_mode() != EggTexture::CM_default) {
     tex->set_compression(convert_compression_mode(egg_tex->get_compression_mode()));
   }
 
-  tex->set_default_sampler(*sampler);
+  tex->set_default_sampler(sampler);
 
   bool force_srgb = false;
   if (egg_force_srgb_textures) {

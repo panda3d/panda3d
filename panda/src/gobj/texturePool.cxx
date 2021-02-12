@@ -297,8 +297,6 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
       // This texture was previously loaded.
       Texture *tex = (*ti).second;
       nassertr(!tex->get_fullpath().empty(), tex);
-      //since we previously loaded it, we don't need to remember the sampler and should delete it to get rid of a memory leak
-      delete key._texture_sampler;
       return tex;
     }
   }
@@ -977,8 +975,6 @@ ns_release_texture(Texture *tex) {
   Textures::iterator ti;
   for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
     if (tex == (*ti).second) {
-      LookupKey key = (*ti).first;
-      delete key._texture_sampler;
       _textures.erase(ti);
       tex->_texture_pool_key = string();
       break;
@@ -998,8 +994,6 @@ ns_release_all_textures() {
 
   Textures::iterator ti;
   for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
-    LookupKey key = (*ti).first;
-    delete key._texture_sampler;
     Texture *tex = (*ti).second;
     tex->_texture_pool_key = string();
   }
