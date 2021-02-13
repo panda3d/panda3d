@@ -18,9 +18,9 @@ INLINE LoaderOptions::
 LoaderOptions(int flags, int texture_flags) :
   _flags(flags),
   _texture_flags(texture_flags),
-  _texture_format(EggTexture::Format::F_unspecified),
-  _texture_compress(EggTexture::CompressionMode::CM_default),
-  _texture_quality(EggTexture::QualityLevel::QL_default),
+  _texture_format(0),
+  _texture_compress(0),
+  _texture_quality(1),
   _texture_num_views(0),
   _auto_texture_scale(ATS_unspecified)
 {
@@ -64,34 +64,34 @@ get_texture_flags() const {
 */
 
 INLINE void LoaderOptions::
-set_texture_format(EggTexture::Format format){
+set_texture_format(int format){
   _texture_format= format;
 }
 
 /**
  *  
  */
-INLINE EggTexture::Format LoaderOptions::
+INLINE int LoaderOptions::
 get_texture_format() const {
   return _texture_format;
 }
 
 INLINE void LoaderOptions::
-set_texture_compress(EggTexture::CompressionMode compress){
+set_texture_compress(int compress){
   _texture_compress = compress;
 }
 
-INLINE EggTexture::CompressionMode LoaderOptions::
+INLINE int LoaderOptions::
 get_texture_compress() const {
   return _texture_compress;
 }
 
 INLINE void LoaderOptions::
-set_texture_quality(EggTexture::QualityLevel quality){
+set_texture_quality(int quality){
   _texture_quality = quality;
 }
 
-INLINE EggTexture::QualityLevel LoaderOptions::
+INLINE int LoaderOptions::
 get_texture_quality() const {
   return _texture_quality;
 }

@@ -16,7 +16,6 @@
 
 #include "pandabase.h"
 #include "autoTextureScale.h"
-#include "eggTexture.h"
 #include "samplerState.h"
 
 /**
@@ -59,12 +58,12 @@ PUBLISHED:
   MAKE_PROPERTY(flags, get_flags, set_flags);
   INLINE void set_texture_flags(int flags);
   INLINE int get_texture_flags() const;
-  INLINE void set_texture_format(EggTexture::Format format);
-  INLINE EggTexture::Format get_texture_format() const;
-  INLINE void set_texture_compress(EggTexture::CompressionMode  compress);
-  INLINE EggTexture::CompressionMode get_texture_compress() const;
-  INLINE void set_texture_quality(EggTexture::QualityLevel  quality);
-  INLINE EggTexture::QualityLevel get_texture_quality() const;
+  INLINE void set_texture_format(int format);
+  INLINE int get_texture_format() const;
+  INLINE void set_texture_compress(int  compress);
+  INLINE int get_texture_compress() const;
+  INLINE void set_texture_quality(int  quality);
+  INLINE int get_texture_quality() const;
   INLINE void set_sampler(SamplerState sampler);
   INLINE SamplerState get_sampler() const;
   
@@ -89,9 +88,9 @@ private:
                           const std::string &flag_name, int flag) const;
   int _flags;
   int _texture_flags;
-  EggTexture::Format _texture_format;
-  EggTexture::CompressionMode _texture_compress;
-  EggTexture::QualityLevel _texture_quality;
+  int _texture_format;
+  int _texture_compress;
+  int _texture_quality;
   SamplerState _texture_sampler;
   int _texture_num_views;
   AutoTextureScale _auto_texture_scale;

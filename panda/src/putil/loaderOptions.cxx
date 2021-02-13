@@ -24,9 +24,9 @@ LoaderOptions::
 LoaderOptions(int flags) :
   _flags(flags),
   _texture_flags(0),
-  _texture_format(EggTexture::Format::F_unspecified),
-  _texture_compress(EggTexture::CompressionMode::CM_default),
-  _texture_quality(EggTexture::QualityLevel::QL_default),
+  _texture_format(0),
+  _texture_compress(0),
+  _texture_quality(1),
   _texture_num_views(0),
   _auto_texture_scale(ATS_unspecified)
 {

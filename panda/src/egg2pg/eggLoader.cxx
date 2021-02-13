@@ -1053,6 +1053,7 @@ void EggLoader::
 set_up_loader_options(EggTexture *egg_tex, LoaderOptions & options){
   options.set_texture_format(egg_tex->get_format());
   options.set_texture_compress(egg_tex->get_compression_mode());
+  options.set_texture_quality(egg_tex->get_quality_level());
   SamplerState sampler;
   set_up_sampler(sampler, egg_tex);
   options.set_sampler(sampler);
