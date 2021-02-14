@@ -16,6 +16,7 @@
 #ifdef HAVE_OPENSSL
 
 #include "httpChannel.h"
+#include "string_utils.h"
 
 #include <ctype.h>
 
@@ -59,6 +60,7 @@ update_from(const HTTPCookie &other) {
   _value = other._value;
   _expires = other._expires;
   _secure = other._secure;
+  _samesite = other._samesite;
 }
 
 /**
@@ -74,6 +76,7 @@ parse_set_cookie(const string &format, const URLSpec &url) {
   _path = url.get_path();
   _expires = HTTPDate();
   _secure = false;
+  _samesite = SS_unspecified;
 
   bool okflag = true;
   bool first_param = true;
@@ -147,11 +150,15 @@ output(std::ostream &out) const {
       << "; path=" << _path << "; domain=" << _domain;
 
   if (has_expires()) {
-    out << "; expires=" << _expires;
+    out << "; expires=" << _expires.get_string();
   }
 
   if (_secure) {
     out << "; secure";
+  }
+
+  if (_samesite != SS_unspecified) {
+    out << "; samesite=" << _samesite;
   }
 }
 
@@ -178,7 +185,7 @@ parse_cookie_param(const string &param, bool first_param) {
     _value = value;
 
   } else {
-    key = HTTPChannel::downcase(key);
+    key = downcase(key);
     if (key == "expires") {
       _expires = HTTPDate(value);
       if (!_expires.is_valid()) {
@@ -189,7 +196,7 @@ parse_cookie_param(const string &param, bool first_param) {
       _path = value;
 
     } else if (key == "domain") {
-      _domain = HTTPChannel::downcase(value);
+      _domain = downcase(value);
 
       // From RFC 2965: If an explicitly specified value does not start with a
       // dot, the user agent supplies a leading dot.
@@ -200,12 +207,41 @@ parse_cookie_param(const string &param, bool first_param) {
     } else if (key == "secure") {
       _secure = true;
 
+    } else if (key == "samesite") {
+      value = downcase(value);
+      if (value == "lax") {
+        _samesite = SS_lax;
+      }
+      else if (value == "strict") {
+        _samesite = SS_strict;
+      }
+      else if (value == "none") {
+        _samesite = SS_none;
+      }
+
     } else {
       return false;
     }
   }
 
   return true;
+}
+
+std::ostream &operator << (std::ostream &out, HTTPCookie::SameSite samesite) {
+  switch (samesite) {
+  case HTTPCookie::SS_unspecified:
+    return out;
+
+  case HTTPCookie::SS_lax:
+    return out << "lax";
+
+  case HTTPCookie::SS_strict:
+    return out << "strict";
+
+  case HTTPCookie::SS_none:
+    return out << "none";
+  }
+  return out;
 }
 
 #endif  // HAVE_OPENSSL
