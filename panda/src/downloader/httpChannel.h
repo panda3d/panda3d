@@ -336,7 +336,6 @@ private:
   DocumentSpec _document_spec;
   DocumentSpec _request;
   HTTPEnum::Method _method;
-  std::string request_path;
   std::string _header;
   std::string _body;
   std::string _content_type;
