@@ -16,7 +16,6 @@
 
 #include "pandabase.h"
 #include "autoTextureScale.h"
-#include "samplerState.h"
 
 /**
  * Specifies parameters that may be passed to the loader.
@@ -51,7 +50,7 @@ PUBLISHED:
   };
   
   LoaderOptions(int flags = LF_search | LF_report_errors);
-  LoaderOptions(int flags, int texture_flags);
+  constexpr LoaderOptions(int flags, int texture_flags);
 
   INLINE void set_flags(int flags);
   INLINE int get_flags() const;
@@ -64,8 +63,6 @@ PUBLISHED:
   INLINE int get_texture_compress() const;
   INLINE void set_texture_quality(int  quality);
   INLINE int get_texture_quality() const;
-  INLINE void set_sampler(SamplerState sampler);
-  INLINE SamplerState get_sampler() const;
   
   
   INLINE void set_texture_num_views(int num_views);
@@ -91,7 +88,6 @@ private:
   int _texture_format;
   int _texture_compress;
   int _texture_quality;
-  SamplerState _texture_sampler;
   int _texture_num_views;
   AutoTextureScale _auto_texture_scale;
 };

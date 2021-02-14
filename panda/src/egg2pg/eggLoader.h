@@ -118,7 +118,7 @@ private:
 
   void load_textures();
   bool load_texture(TextureDef &def, EggTexture *egg_tex);
-  void set_up_loader_options(EggTexture *egg_tex, LoaderOptions &options);
+  void set_up_loader_options(EggTexture *egg_tex, LoaderOptions &options, SamplerState &sampler);
   void set_up_sampler(SamplerState &sampler, const EggTexture *egg_tex);
   void apply_texture_attributes(Texture *tex, SamplerState sampler, const EggTexture *egg_tex);
   Texture::CompressionMode convert_compression_mode(EggTexture::CompressionMode compression_mode) const;

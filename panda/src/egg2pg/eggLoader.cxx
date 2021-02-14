@@ -968,7 +968,8 @@ load_texture(TextureDef &def, EggTexture *egg_tex) {
 
   //The following code sets up all the options for the textures
   //so that they can be differentiated later in texturePool  
-  set_up_loader_options(egg_tex, options);
+  SamplerState sampler;
+  set_up_loader_options(egg_tex, options, sampler);
   
   PT(Texture) tex;
   switch (egg_tex->get_texture_type()) {
@@ -983,22 +984,26 @@ load_texture(TextureDef &def, EggTexture *egg_tex) {
                                       egg_tex->get_alpha_fullpath(),
                                       wanted_channels,
                                       egg_tex->get_alpha_file_channel(),
-                                      egg_tex->get_read_mipmaps(), options);
+                                      egg_tex->get_read_mipmaps(), 
+                                      options, sampler);
     } else {
       tex = TexturePool::load_texture(egg_tex->get_fullpath(),
                                       wanted_channels,
-                                      egg_tex->get_read_mipmaps(), options);
+                                      egg_tex->get_read_mipmaps(), 
+                                      options, sampler);
     }
     break;
 
   case EggTexture::TT_3d_texture:
     tex = TexturePool::load_3d_texture(egg_tex->get_fullpath(),
-                                       egg_tex->get_read_mipmaps(), options);
+                                       egg_tex->get_read_mipmaps(), 
+                                       options, sampler);
     break;
 
   case EggTexture::TT_cube_map:
     tex = TexturePool::load_cube_map(egg_tex->get_fullpath(),
-                                     egg_tex->get_read_mipmaps(), options);
+                                     egg_tex->get_read_mipmaps(), 
+                                     options, sampler);
     break;
   }
 
@@ -1037,7 +1042,6 @@ load_texture(TextureDef &def, EggTexture *egg_tex) {
       egg_tex->set_anisotropic_degree(aux_egg_tex->get_anisotropic_degree());
     }
   }
-  SamplerState sampler = options.get_sampler();
   apply_texture_attributes(tex, sampler, egg_tex);
 
   // Make a texture stage for the texture.
@@ -1050,13 +1054,11 @@ load_texture(TextureDef &def, EggTexture *egg_tex) {
 }
 
 void EggLoader::
-set_up_loader_options(EggTexture *egg_tex, LoaderOptions & options){
+set_up_loader_options(EggTexture *egg_tex, LoaderOptions & options, SamplerState & sampler){
   options.set_texture_format(egg_tex->get_format());
   options.set_texture_compress(egg_tex->get_compression_mode());
   options.set_texture_quality(egg_tex->get_quality_level());
-  SamplerState sampler;
   set_up_sampler(sampler, egg_tex);
-  options.set_sampler(sampler);
 }
 
 void EggLoader::

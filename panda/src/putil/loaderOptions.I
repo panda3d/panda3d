@@ -14,7 +14,7 @@
 /**
  *
  */
-INLINE LoaderOptions::
+constexpr LoaderOptions::
 LoaderOptions(int flags, int texture_flags) :
   _flags(flags),
   _texture_flags(texture_flags),
@@ -94,16 +94,6 @@ set_texture_quality(int quality){
 INLINE int LoaderOptions::
 get_texture_quality() const {
   return _texture_quality;
-}
-
-INLINE void LoaderOptions::
-set_sampler(SamplerState  sampler){
-  _texture_sampler = sampler;
-}
-
-INLINE SamplerState LoaderOptions::
-get_sampler() const {
-  return _texture_sampler;
 }
 
 /**

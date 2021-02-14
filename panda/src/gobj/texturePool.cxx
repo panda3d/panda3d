@@ -278,7 +278,7 @@ ns_has_texture(const Filename &orig_filename) {
  */
 Texture *TexturePool::
 ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
-                bool read_mipmaps, const LoaderOptions &options) {
+                bool read_mipmaps, const LoaderOptions &options, const SamplerState &sampler) {
   LookupKey key;
   key._primary_file_num_channels = primary_file_num_channels;
   //New additions. This allows the texture information to remain unique
@@ -286,7 +286,7 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
   key._texture_format = options.get_texture_format();
   key._texture_compress = options.get_texture_compress();
   key._texture_quality = options.get_texture_quality();
-  key._texture_sampler = options.get_sampler();
+  key._texture_sampler = sampler;
   {
     MutexHolder holder(_lock);
     resolve_filename(key._fullpath, orig_filename, read_mipmaps, options);
@@ -446,10 +446,10 @@ ns_load_texture(const Filename &orig_filename,
                 const Filename &orig_alpha_filename,
                 int primary_file_num_channels,
                 int alpha_file_channel,
-                bool read_mipmaps, const LoaderOptions &options) {
+                bool read_mipmaps, const LoaderOptions &options, const SamplerState &sampler) {
   if (!_fake_texture_image.empty()) {
     return ns_load_texture(_fake_texture_image, primary_file_num_channels,
-                           read_mipmaps, options);
+                           read_mipmaps, options, sampler);
   }
 
   LookupKey key;
@@ -460,7 +460,7 @@ ns_load_texture(const Filename &orig_filename,
   key._texture_format = options.get_texture_format();
   key._texture_compress = options.get_texture_compress();
   key._texture_quality = options.get_texture_quality();
-  key._texture_sampler = options.get_sampler();
+  key._texture_sampler = sampler;
   {
     MutexHolder holder(_lock);
     resolve_filename(key._fullpath, orig_filename, read_mipmaps, options);
@@ -584,7 +584,7 @@ ns_load_texture(const Filename &orig_filename,
  */
 Texture *TexturePool::
 ns_load_3d_texture(const Filename &filename_pattern,
-                   bool read_mipmaps, const LoaderOptions &options) {
+                   bool read_mipmaps, const LoaderOptions &options, const SamplerState &sampler) {
   Filename orig_filename(filename_pattern);
   orig_filename.set_pattern(true);
 
@@ -595,7 +595,7 @@ ns_load_3d_texture(const Filename &filename_pattern,
   key._texture_format = options.get_texture_format();
   key._texture_compress = options.get_texture_compress();
   key._texture_quality = options.get_texture_quality();
-  key._texture_sampler = options.get_sampler();
+  key._texture_sampler = sampler;
   {
     MutexHolder holder(_lock);
     resolve_filename(key._fullpath, orig_filename, read_mipmaps, options);
@@ -692,7 +692,7 @@ ns_load_3d_texture(const Filename &filename_pattern,
  */
 Texture *TexturePool::
 ns_load_2d_texture_array(const Filename &filename_pattern,
-                         bool read_mipmaps, const LoaderOptions &options) {
+                         bool read_mipmaps, const LoaderOptions &options, const SamplerState &sampler) {
   Filename orig_filename(filename_pattern);
   orig_filename.set_pattern(true);
 
@@ -703,7 +703,7 @@ ns_load_2d_texture_array(const Filename &filename_pattern,
   key._texture_format = options.get_texture_format();
   key._texture_compress = options.get_texture_compress();
   key._texture_quality = options.get_texture_quality();
-  key._texture_sampler = options.get_sampler();
+  key._texture_sampler = sampler;
   {
     MutexHolder holder(_lock);
     resolve_filename(key._fullpath, orig_filename, read_mipmaps, options);
@@ -800,7 +800,7 @@ ns_load_2d_texture_array(const Filename &filename_pattern,
  */
 Texture *TexturePool::
 ns_load_cube_map(const Filename &filename_pattern, bool read_mipmaps,
-                 const LoaderOptions &options) {
+                 const LoaderOptions &options, const SamplerState &sampler) {
   Filename orig_filename(filename_pattern);
   orig_filename.set_pattern(true);
 
@@ -811,7 +811,7 @@ ns_load_cube_map(const Filename &filename_pattern, bool read_mipmaps,
   key._texture_format = options.get_texture_format();
   key._texture_compress = options.get_texture_compress();
   key._texture_quality = options.get_texture_quality();
-  key._texture_sampler = options.get_sampler();
+  key._texture_sampler = sampler;
   {
     MutexHolder holder(_lock);
     resolve_filename(key._fullpath, orig_filename, read_mipmaps, options);

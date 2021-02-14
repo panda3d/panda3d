@@ -45,9 +45,9 @@ verify_texture(const Filename &filename) {
  */
 INLINE Texture *TexturePool::
 load_texture(const Filename &filename, int primary_file_num_channels,
-             bool read_mipmaps, const LoaderOptions &options) {
+             bool read_mipmaps, const LoaderOptions &options, const SamplerState &sampler) {
   return get_global_ptr()->ns_load_texture(filename, primary_file_num_channels,
-                                           read_mipmaps, options);
+                                           read_mipmaps, options, sampler);
 }
 
 /**
@@ -63,11 +63,11 @@ load_texture(const Filename &filename, int primary_file_num_channels,
 INLINE Texture *TexturePool::
 load_texture(const Filename &filename, const Filename &alpha_filename,
              int primary_file_num_channels, int alpha_file_channel,
-             bool read_mipmaps, const LoaderOptions &options) {
+             bool read_mipmaps, const LoaderOptions &options, const SamplerState &sampler) {
   return get_global_ptr()->ns_load_texture(filename, alpha_filename,
                                            primary_file_num_channels,
                                            alpha_file_channel,
-                                           read_mipmaps, options);
+                                           read_mipmaps, options, sampler);
 }
 
 /**
@@ -82,9 +82,9 @@ load_texture(const Filename &filename, const Filename &alpha_filename,
  */
 INLINE Texture *TexturePool::
 load_3d_texture(const Filename &filename_pattern, bool read_mipmaps,
-                const LoaderOptions &options) {
+                const LoaderOptions &options, const SamplerState &sampler) {
   return get_global_ptr()->ns_load_3d_texture(filename_pattern, read_mipmaps,
-                                              options);
+                                              options, sampler);
 }
 
 /**
@@ -99,9 +99,9 @@ load_3d_texture(const Filename &filename_pattern, bool read_mipmaps,
  */
 INLINE Texture *TexturePool::
 load_2d_texture_array(const Filename &filename_pattern, bool read_mipmaps,
-                const LoaderOptions &options) {
+                const LoaderOptions &options, const SamplerState &sampler) {
   return get_global_ptr()->ns_load_2d_texture_array(filename_pattern, read_mipmaps,
-                                                    options);
+                                                    options, sampler);
 }
 
 /**
@@ -116,9 +116,9 @@ load_2d_texture_array(const Filename &filename_pattern, bool read_mipmaps,
  */
 INLINE Texture *TexturePool::
 load_cube_map(const Filename &filename_pattern, bool read_mipmaps,
-              const LoaderOptions &options) {
+              const LoaderOptions &options, const SamplerState &sampler) {
   return get_global_ptr()->ns_load_cube_map(filename_pattern, read_mipmaps,
-                                            options);
+                                            options, sampler);
 }
 
 /**
