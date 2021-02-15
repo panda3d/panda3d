@@ -1460,8 +1460,9 @@ def CompileCxx(obj,src,opts):
 
 def CompileBison(wobj, wsrc, opts):
     ifile = os.path.basename(wsrc)
-    wdsth = GetOutputDir()+"/include/" + ifile[:-4] + ".h"
-    wdstc = GetOutputDir()+"/tmp/" + ifile + ".cxx"
+    wdsth = GetOutputDir() + "/include/" + ifile[:-4] + ".h"
+    wdsth2 = GetOutputDir() + "/tmp/" + ifile + ".h"
+    wdstc = GetOutputDir() + "/tmp/" + ifile + ".cxx"
     pre = GetValueOption(opts, "BISONPREFIX_")
     bison = GetBison()
     if bison is None:
@@ -1471,6 +1472,7 @@ def CompileBison(wobj, wsrc, opts):
            os.path.isfile(base + '.cxx.prebuilt'):
             CopyFile(wdstc, base + '.cxx.prebuilt')
             CopyFile(wdsth, base + '.h.prebuilt')
+            CopyFile(wdsth2, base + '.h.prebuilt')
         else:
             exit('Could not find bison!')
     else:
@@ -5087,6 +5089,7 @@ if not PkgSkip("DIRECT"):
     IGATEFILES=GetDirectoryContents('direct/src/interval', ["*.h", "*_composite*.cxx"])
     TargetAdd('libp3interval.in', opts=OPTS, input=IGATEFILES)
     TargetAdd('libp3interval.in', opts=['IMOD:panda3d.direct', 'ILIB:libp3interval', 'SRCDIR:direct/src/interval'])
+    PyTargetAdd('p3interval_cInterval_ext.obj', opts=OPTS, input='cInterval_ext.cxx')
 
 #
 # DIRECTORY: direct/src/showbase/
@@ -5152,6 +5155,7 @@ if not PkgSkip("DIRECT"):
     PyTargetAdd('direct.pyd', input='libp3showbase_igate.obj')
     PyTargetAdd('direct.pyd', input='libp3deadrec_igate.obj')
     PyTargetAdd('direct.pyd', input='libp3interval_igate.obj')
+    PyTargetAdd('direct.pyd', input='p3interval_cInterval_ext.obj')
     if GetTarget() != 'emscripten':
         PyTargetAdd('direct.pyd', input='libp3distributed_igate.obj')
     PyTargetAdd('direct.pyd', input='libp3motiontrail_igate.obj')
