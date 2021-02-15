@@ -117,6 +117,7 @@ HTTPChannel(HTTPClient *client) :
   _cipher_list = _client->get_cipher_list();
   _last_status_code = 0;
   _last_run_time = 0.0f;
+  _download_dest = DD_none;
   _download_to_ramfile = nullptr;
   _download_to_stream = nullptr;
 }
