@@ -63,7 +63,7 @@ static CubeFaceDef cube_faces[6] = {
 
 /**
  * Normally, the GraphicsOutput constructor is not called directly; these are
- * created instead via the GraphicsEngine::make_window() function.
+ * created instead via the GraphicsEngine::make_output() function.
  */
 GraphicsOutput::
 GraphicsOutput(GraphicsEngine *engine, GraphicsPipe *pipe,

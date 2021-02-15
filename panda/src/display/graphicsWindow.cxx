@@ -27,7 +27,7 @@ TypeHandle GraphicsWindow::_type_handle;
 
 /**
  * Normally, the GraphicsWindow constructor is not called directly; these are
- * created instead via the GraphicsEngine::make_window() function.
+ * created instead via the GraphicsEngine::make_output() function.
  */
 GraphicsWindow::
 GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
