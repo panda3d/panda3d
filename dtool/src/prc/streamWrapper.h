@@ -64,7 +64,7 @@ PUBLISHED:
   ~IStreamWrapper();
 
   INLINE std::istream *get_istream() const;
-  MAKE_PROPERTY(std::istream, get_istream);
+  MAKE_PROPERTY(istream, get_istream);
 
 public:
   void read(char *buffer, std::streamsize num_bytes);
@@ -91,7 +91,7 @@ PUBLISHED:
   ~OStreamWrapper();
 
   INLINE std::ostream *get_ostream() const;
-  MAKE_PROPERTY(std::ostream, get_ostream);
+  MAKE_PROPERTY(ostream, get_ostream);
 
 public:
   void write(const char *buffer, std::streamsize num_bytes);
@@ -127,7 +127,7 @@ PUBLISHED:
   ~StreamWrapper();
 
   INLINE std::iostream *get_iostream() const;
-  MAKE_PROPERTY(std::iostream, get_iostream);
+  MAKE_PROPERTY(iostream, get_iostream);
 
 private:
   std::iostream *_iostream;
