@@ -141,6 +141,26 @@ open_read_file(bool auto_unwrap) const {
 }
 
 /**
+ * Fills up the indicated pvector with the contents of the file, if it is a
+ * regular file.  Returns true on success, false otherwise.
+ */
+bool VirtualFileHTTP::
+read_file(vector_uchar &result, bool auto_unwrap) const {
+  if (_status_only) {
+    return false;
+  }
+
+  Ramfile ramfile;
+  if (!_channel->download_to_ram(&ramfile, false)) {
+    return false;
+  }
+
+  const string &data = ramfile.get_data();
+  std::copy(data.begin(), data.end(), std::back_inserter(result));
+  return true;
+}
+
+/**
  * Downloads the entire file from the web server into the indicated iostream.
  * Returns true on success, false on failure.
  *
