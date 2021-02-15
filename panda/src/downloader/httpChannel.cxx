@@ -820,20 +820,6 @@ get_connection() {
 }
 
 /**
- * Returns the input string with all uppercase letters converted to lowercase.
- */
-string HTTPChannel::
-downcase(const string &s) {
-  string result;
-  result.reserve(s.size());
-  string::const_iterator p;
-  for (p = s.begin(); p != s.end(); ++p) {
-    result += tolower(*p);
-  }
-  return result;
-}
-
-/**
  * Called by ISocketStream destructor when _body_stream is destructing.
  */
 void HTTPChannel::

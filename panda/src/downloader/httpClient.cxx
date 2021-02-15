@@ -31,24 +31,6 @@ using std::string;
 
 PT(HTTPClient) HTTPClient::_global_ptr;
 
-/**
- *
- */
-static string
-trim_blanks(const string &str) {
-  size_t start = 0;
-  while (start < str.length() && isspace(str[start])) {
-    start++;
-  }
-
-  size_t end = str.length();
-  while (end > start && isspace(str[end - 1])) {
-    end--;
-  }
-
-  return str.substr(start, end - start);
-}
-
 #ifndef NDEBUG
 /**
  * This method is attached as a callback for SSL messages only when debug
@@ -318,7 +300,7 @@ void HTTPClient::
 set_proxy_spec(const string &proxy_spec) {
   clear_proxy();
 
-  string trim_proxy_spec = trim_blanks(proxy_spec);
+  string trim_proxy_spec = trim(proxy_spec);
 
   // Tokenize the string based on the semicolons.
   if (!trim_proxy_spec.empty()) {
@@ -336,10 +318,10 @@ set_proxy_spec(const string &proxy_spec) {
       size_t equals = spec.find('=');
       if (equals == string::npos) {
         scheme = "";
-        proxy = trim_blanks(spec);
+        proxy = trim(spec);
       } else {
-        scheme = trim_blanks(spec.substr(0, equals));
-        proxy = trim_blanks(spec.substr(equals + 1));
+        scheme = trim(spec.substr(0, equals));
+        proxy = trim(spec.substr(equals + 1));
       }
 
       if (proxy == "DIRECT" || proxy.empty()) {
@@ -403,7 +385,7 @@ set_direct_host_spec(const string &direct_host_spec) {
   for (vector_string::const_iterator hi = hosts.begin();
        hi != hosts.end();
        ++hi) {
-    string spec = trim_blanks(*hi);
+    string spec = trim(*hi);
 
     // We should be careful to avoid adding any empty hostnames to the list.
     // In particular, we will get one empty hostname if the direct_host_spec
