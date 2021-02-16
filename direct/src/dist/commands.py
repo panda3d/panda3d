@@ -112,6 +112,7 @@ PACKAGE_DATA_DIRS = {
         ('cefpython3/Chromium Embedded Framework.framework/Resources', 'Chromium Embedded Framework.framework/Resources', {}),
         ('cefpython3/Chromium Embedded Framework.framework/Chromium Embedded Framework', '', {'PKG_DATA_MAKE_EXECUTABLE'}),
     ],
+    'pytz': [('pytz/zoneinfo/*', 'zoneinfo', ())],
 }
 
 # Some dependencies have extra directories that need to be scanned for DLLs.
