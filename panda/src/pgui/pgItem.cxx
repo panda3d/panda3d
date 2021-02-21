@@ -124,6 +124,13 @@ PGItem(const PGItem &copy) :
     new_sd._frame_style = old_sd._frame_style;
 
     _state_defs.push_back(new_sd);
+
+#ifdef THREADED_PIPELINE
+    if (Pipeline::get_render_pipeline()->get_num_stages() > 1) {
+      ((PGItem &)copy).update_frame((int)i);
+      update_frame((int)i);
+    }
+#endif
   }
 }
 
@@ -199,8 +206,10 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
     if (state >= 0 && (size_t)state < _state_defs.size()) {
       StateDef &state_def = _state_defs[state];
       if (!state_def._root.is_empty()) {
-        if (state_def._frame_stale) {
-          update_frame(state);
+        if (Thread::get_current_pipeline_stage() == 0) {
+          if (state_def._frame_stale) {
+            update_frame(state);
+          }
         }
 
         state_def_root = state_def._root.node();
@@ -374,7 +383,8 @@ xform(const LMatrix4 &mat) {
   _frame.set(ll[0], ur[0], ll[2], ur[2]);
 
   // Transform the individual states and their frame styles.
-  for (StateDef &def : _state_defs) {
+  for (size_t state = 0; state < _state_defs.size(); ++state) {
+    StateDef &def = _state_defs[state];
     NodePath &root = def._root;
     // Apply the matrix to the previous transform.
     root.set_transform(root.get_transform()->compose(TransformState::make_mat(mat)));
@@ -385,7 +395,15 @@ xform(const LMatrix4 &mat) {
 
     // Transform the frame style too.
     if (def._frame_style.xform(mat)) {
-      def._frame_stale = true;
+#ifdef THREADED_PIPELINE
+      if (Pipeline::get_render_pipeline()->get_num_stages() > 1) {
+        update_frame((int)state);
+      }
+      else
+#endif
+      {
+        def._frame_stale = true;
+      }
     }
   }
   mark_internal_bounds_stale();
@@ -942,6 +960,12 @@ clear_state_def(int state) {
   _state_defs[state]._frame_stale = true;
 
   mark_internal_bounds_stale();
+
+#ifdef THREADED_PIPELINE
+  if (Pipeline::get_render_pipeline()->get_num_stages() > 1) {
+    update_frame(state);
+  }
+#endif
 }
 
 /**
@@ -981,15 +1005,24 @@ get_frame_style(int state) {
 void PGItem::
 set_frame_style(int state, const PGFrameStyle &style) {
   LightReMutexHolder holder(_lock);
-  // Get the state def node, mainly to ensure that this state is slotted and
-  // listed as having been defined.
-  NodePath &root = do_get_state_def(state);
-  nassertv(!root.is_empty());
+
+  slot_state_def(state);
+
+  if (_state_defs[state]._root.is_empty()) {
+    // Create a new node.
+    _state_defs[state]._root = NodePath("state_" + format_string(state));
+  }
 
   _state_defs[state]._frame_style = style;
   _state_defs[state]._frame_stale = true;
 
   mark_internal_bounds_stale();
+
+#ifdef THREADED_PIPELINE
+  if (Pipeline::get_render_pipeline()->get_num_stages() > 1) {
+    update_frame(state);
+  }
+#endif
 }
 
 #ifdef HAVE_AUDIO
@@ -1229,10 +1262,22 @@ update_frame(int state) {
  */
 void PGItem::
 mark_frames_stale() {
-  for (StateDef &def : _state_defs) {
-    // Remove the old frame, if any.
-    def._frame.remove_node();
-    def._frame_stale = true;
+#ifdef THREADED_PIPELINE
+  // If we are using the threaded pipeline, we must update the frame geometry
+  // immediately on the App thread, since this class isn't pipeline-cycled.
+  if (Pipeline::get_render_pipeline()->get_num_stages() > 1) {
+    for (int state = 0; state < (int)_state_defs.size(); ++state) {
+      update_frame(state);
+    }
+  }
+  else
+#endif
+  {
+    for (StateDef &def : _state_defs) {
+      // Remove the old frame, if any.
+      def._frame.remove_node();
+      def._frame_stale = true;
+    }
   }
   mark_internal_bounds_stale();
 }
