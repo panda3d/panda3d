@@ -347,9 +347,8 @@ void PGItem::
 r_prepare_scene(GraphicsStateGuardianBase *gsg, const RenderState *node_state,
                 GeomTransformer &transformer, Thread *current_thread) {
   LightReMutexHolder holder(_lock);
-  StateDefs::iterator di;
-  for (di = _state_defs.begin(); di != _state_defs.end(); ++di) {
-    NodePath &root = (*di)._root;
+  for (StateDef &def : _state_defs) {
+    NodePath &root = def._root;
     if (!root.is_empty()) {
       PandaNode *child = root.node();
       CPT(RenderState) child_state = node_state->compose(child->get_state());
@@ -375,9 +374,8 @@ xform(const LMatrix4 &mat) {
   _frame.set(ll[0], ur[0], ll[2], ur[2]);
 
   // Transform the individual states and their frame styles.
-  StateDefs::iterator di;
-  for (di = _state_defs.begin(); di != _state_defs.end(); ++di) {
-    NodePath &root = (*di)._root;
+  for (StateDef &def : _state_defs) {
+    NodePath &root = def._root;
     // Apply the matrix to the previous transform.
     root.set_transform(root.get_transform()->compose(TransformState::make_mat(mat)));
 
@@ -386,8 +384,8 @@ xform(const LMatrix4 &mat) {
     gr.apply_attribs(root.node());
 
     // Transform the frame style too.
-    if ((*di)._frame_style.xform(mat)) {
-      (*di)._frame_stale = true;
+    if (def._frame_style.xform(mat)) {
+      def._frame_stale = true;
     }
   }
   mark_internal_bounds_stale();
@@ -767,9 +765,7 @@ move(const MouseWatcherParameter &param) {
  */
 void PGItem::
 background_press(const MouseWatcherParameter &param) {
-  BackgroundFocus::const_iterator fi;
-  for (fi = _background_focus.begin(); fi != _background_focus.end(); ++fi) {
-    PGItem *item = *fi;
+  for (PGItem *item : _background_focus) {
     if (!item->get_focus()) {
       item->press(param, true);
     }
@@ -781,9 +777,7 @@ background_press(const MouseWatcherParameter &param) {
  */
 void PGItem::
 background_release(const MouseWatcherParameter &param) {
-  BackgroundFocus::const_iterator fi;
-  for (fi = _background_focus.begin(); fi != _background_focus.end(); ++fi) {
-    PGItem *item = *fi;
+  for (PGItem *item : _background_focus) {
     if (!item->get_focus()) {
       item->release(param, true);
     }
@@ -795,9 +789,7 @@ background_release(const MouseWatcherParameter &param) {
  */
 void PGItem::
 background_keystroke(const MouseWatcherParameter &param) {
-  BackgroundFocus::const_iterator fi;
-  for (fi = _background_focus.begin(); fi != _background_focus.end(); ++fi) {
-    PGItem *item = *fi;
+  for (PGItem *item : _background_focus) {
     if (!item->get_focus()) {
       item->keystroke(param, true);
     }
@@ -809,9 +801,7 @@ background_keystroke(const MouseWatcherParameter &param) {
  */
 void PGItem::
 background_candidate(const MouseWatcherParameter &param) {
-  BackgroundFocus::const_iterator fi;
-  for (fi = _background_focus.begin(); fi != _background_focus.end(); ++fi) {
-    PGItem *item = *fi;
+  for (PGItem *item : _background_focus) {
     if (!item->get_focus()) {
       item->candidate(param, true);
     }
@@ -1165,11 +1155,10 @@ mouse_to_local(const LPoint2 &mouse_point) const {
 }
 
 /**
- * Called when the user changes the frame size.
+ * Called when the user changes the frame size.  Assumes the lock is held.
  */
 void PGItem::
 frame_changed() {
-  LightReMutexHolder holder(_lock);
   mark_frames_stale();
   if (_notify != nullptr) {
     _notify->item_frame_changed(this);
@@ -1202,6 +1191,7 @@ do_get_state_def(int state) {
 
 /**
  * Ensures there is a slot in the array for the given state definition.
+ * Assumes the lock is already held.
  */
 void PGItem::
 slot_state_def(int state) {
@@ -1212,6 +1202,7 @@ slot_state_def(int state) {
 
 /**
  * Generates a new instance of the frame geometry for the indicated state.
+ * Assumes the lock is already held.
  */
 void PGItem::
 update_frame(int state) {
@@ -1234,15 +1225,14 @@ update_frame(int state) {
 
 /**
  * Marks all the frames in all states stale, so that they will be regenerated
- * the next time each state is requested.
+ * the next time each state is requested.  Assumes the lock is already held.
  */
 void PGItem::
 mark_frames_stale() {
-  StateDefs::iterator di;
-  for (di = _state_defs.begin(); di != _state_defs.end(); ++di) {
+  for (StateDef &def : _state_defs) {
     // Remove the old frame, if any.
-    (*di)._frame.remove_node();
-    (*di)._frame_stale = true;
+    def._frame.remove_node();
+    def._frame_stale = true;
   }
   mark_internal_bounds_stale();
 }
@@ -1294,9 +1284,8 @@ clip_frame(ClipPoints &source_points, const LPlane &plane) const {
   LPoint2 last_point(source_points.back());
   bool last_is_in = is_right(last_point - from2d, delta2d);
   bool all_in = last_is_in;
-  ClipPoints::const_iterator pi;
-  for (pi = source_points.begin(); pi != source_points.end(); ++pi) {
-    LPoint2 this_point(*pi);
+
+  for (LPoint2 this_point : source_points) {
     bool this_is_in = is_right(this_point - from2d, delta2d);
 
     // There appears to be a compiler bug in gcc 4.0: we need to extract this
