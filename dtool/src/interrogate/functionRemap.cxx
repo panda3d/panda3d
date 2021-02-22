@@ -900,9 +900,9 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
 
     } else if (fname == "operator /") {
       if (_has_this && _parameters.size() == 2 &&
-          TypeManager::is_float(_parameters[1]._remap->get_new_type())) {
-        // This division operator takes a single float argument.
-        _flags |= F_divide_float;
+          TypeManager::is_integer(_parameters[1]._remap->get_new_type())) {
+        // This division operator takes a single integer argument.
+        _flags |= F_divide_integer;
       }
 
     } else if (fname == "get_key" || fname == "get_hash") {
@@ -947,9 +947,9 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
   case T_assignment_method:
     if (fname == "operator /=") {
       if (_has_this && _parameters.size() == 2 &&
-          TypeManager::is_float(_parameters[1]._remap->get_new_type())) {
-        // This division operator takes a single float argument.
-        _flags |= F_divide_float;
+          TypeManager::is_integer(_parameters[1]._remap->get_new_type())) {
+        // This division operator takes a single integer argument.
+        _flags |= F_divide_integer;
       }
     }
     break;

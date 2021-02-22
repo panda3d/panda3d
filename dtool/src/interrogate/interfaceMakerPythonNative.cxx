@@ -1693,10 +1693,12 @@ write_module_class(ostream &out, Object *obj) {
 
         // Python 3 doesn't support nb_divide.  It has nb_true_divide and also
         // nb_floor_divide, but they have different semantics than in C++.
-        // Ugh.  Make special slots to store the nb_divide members that take a
-        // float.  We'll use this to build up nb_true_divide, so that we can
-        // still properly divide float vector types.
-        if (remap->_flags & FunctionRemap::F_divide_float) {
+        // Ugh.  Make special slots to store the nb_divide members that don't
+        // take an int.  We'll use this to build up nb_true_divide, in the
+        // absence of a custom __truediv__, so that we can still properly divide
+        // float vector types.
+        if ((key == "nb_divide" || key == "nb_inplace_divide") &&
+            (remap->_flags & FunctionRemap::F_divide_integer) == 0) {
           string true_key;
           if (key == "nb_inplace_divide") {
             true_key = "nb_inplace_true_divide";
