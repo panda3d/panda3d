@@ -334,6 +334,18 @@ get_slotted_function_def(Object *obj, Function *func, FunctionRemap *remap,
     return true;
   }
 
+  if (method_name == "__truediv__") {
+    def._answer_location = "nb_true_divide";
+    def._wrapper_type = WT_binary_operator;
+    return true;
+  }
+
+  if (method_name == "__floordiv__") {
+    def._answer_location = "nb_floor_divide";
+    def._wrapper_type = WT_binary_operator;
+    return true;
+  }
+
   if (method_name == "operator %") {
     def._answer_location = "nb_remainder";
     def._wrapper_type = WT_binary_operator;
@@ -403,6 +415,18 @@ get_slotted_function_def(Object *obj, Function *func, FunctionRemap *remap,
   if (method_name == "operator /=") {
     def._answer_location = "nb_inplace_divide";
     def._wrapper_type = WT_inplace_binary_operator;
+    return true;
+  }
+
+  if (method_name == "__itruediv__") {
+    def._answer_location = "nb_inplace_true_divide";
+    def._wrapper_type = WT_binary_operator;
+    return true;
+  }
+
+  if (method_name == "__ifloordiv__") {
+    def._answer_location = "nb_inplace_floor_divide";
+    def._wrapper_type = WT_binary_operator;
     return true;
   }
 
