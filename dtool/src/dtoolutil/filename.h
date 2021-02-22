@@ -122,6 +122,7 @@ PUBLISHED:
   INLINE Filename operator + (const std::string &other) const;
 
   INLINE Filename operator / (const Filename &other) const;
+  EXTENSION(Filename __truediv__(const Filename &other) const);
 
   // Or, you can use any of these.
   INLINE std::string get_fullpath() const;

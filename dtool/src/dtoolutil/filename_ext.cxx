@@ -185,6 +185,15 @@ __fspath__() const {
 }
 
 /**
+ * Returns a new Filename that is composed of the other filename added to the
+ * end of this filename, with an intervening slash added if necessary.
+ */
+Filename Extension<Filename>::
+__truediv__(const Filename &other) const {
+  return Filename(*_this, other);
+}
+
+/**
  * This variant on scan_directory returns a Python list of strings on success,
  * or None on failure.
  */
