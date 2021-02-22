@@ -32,6 +32,7 @@ This is a list of all the people who are contributing financially to Panda3D.  I
 * Eric Thomson
 * Kyle Roach
 * Brian Lach
+* C0MPU73R
 
 ## Backers
 
