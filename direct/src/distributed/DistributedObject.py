@@ -125,7 +125,7 @@ class DistributedObject(DistributedObjectBase):
                     if field is not None:
                         p = DCPacker()
                         p.setUnpackData(field.getDefaultValue())
-                        len = p.rawUnpackUint16()/4
+                        len = p.rawUnpackUint16() // 4
                         for i in range(len):
                             zone = int(p.rawUnpackUint32())
                             autoInterests.add(zone)
