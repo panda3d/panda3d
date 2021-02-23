@@ -123,6 +123,7 @@ HTTPChannel(HTTPClient *client) :
   _cipher_list = _client->get_cipher_list();
   _last_status_code = 0;
   _last_run_time = 0.0f;
+  _download_dest = DD_none;
   _download_to_ramfile = nullptr;
   _download_to_stream = nullptr;
 }
@@ -817,20 +818,6 @@ get_connection() {
   reset_to_new();
 
   return stream;
-}
-
-/**
- * Returns the input string with all uppercase letters converted to lowercase.
- */
-string HTTPChannel::
-downcase(const string &s) {
-  string result;
-  result.reserve(s.size());
-  string::const_iterator p;
-  for (p = s.begin(); p != s.end(); ++p) {
-    result += tolower(*p);
-  }
-  return result;
 }
 
 /**

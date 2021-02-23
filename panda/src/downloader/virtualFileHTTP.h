@@ -51,6 +51,8 @@ public:
   virtual std::streamsize get_file_size() const;
   virtual time_t get_timestamp() const;
 
+  virtual bool read_file(vector_uchar &result, bool auto_unwrap) const;
+
 private:
   bool fetch_file(std::ostream *buffer_stream) const;
   std::istream *return_file(std::istream *buffer_stream, bool auto_unwrap) const;

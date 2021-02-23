@@ -27,7 +27,7 @@ TypeHandle GraphicsWindow::_type_handle;
 
 /**
  * Normally, the GraphicsWindow constructor is not called directly; these are
- * created instead via the GraphicsEngine::make_window() function.
+ * created instead via the GraphicsEngine::make_output() function.
  */
 GraphicsWindow::
 GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
@@ -354,9 +354,9 @@ disable_pointer_mode(int device) {
 }*/
 
 /**
- * Returns the MouseData associated with the nth input device's pointer.  This
- * is deprecated; use get_pointer_device().get_pointer() instead, or for raw
- * mice, use the InputDeviceManager interface.
+ * Returns the MouseData associated with the nth input device's pointer.
+ * Using this to access raw mice (with an index other than 0) is deprecated,
+ * see the InputDeviceManager interface instead.
  */
 MouseData GraphicsWindow::
 get_pointer(int device) const {

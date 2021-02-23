@@ -334,6 +334,18 @@ get_slotted_function_def(Object *obj, Function *func, FunctionRemap *remap,
     return true;
   }
 
+  if (method_name == "__truediv__") {
+    def._answer_location = "nb_true_divide";
+    def._wrapper_type = WT_binary_operator;
+    return true;
+  }
+
+  if (method_name == "__floordiv__") {
+    def._answer_location = "nb_floor_divide";
+    def._wrapper_type = WT_binary_operator;
+    return true;
+  }
+
   if (method_name == "operator %") {
     def._answer_location = "nb_remainder";
     def._wrapper_type = WT_binary_operator;
@@ -403,6 +415,18 @@ get_slotted_function_def(Object *obj, Function *func, FunctionRemap *remap,
   if (method_name == "operator /=") {
     def._answer_location = "nb_inplace_divide";
     def._wrapper_type = WT_inplace_binary_operator;
+    return true;
+  }
+
+  if (method_name == "__itruediv__") {
+    def._answer_location = "nb_inplace_true_divide";
+    def._wrapper_type = WT_binary_operator;
+    return true;
+  }
+
+  if (method_name == "__ifloordiv__") {
+    def._answer_location = "nb_inplace_floor_divide";
+    def._wrapper_type = WT_binary_operator;
     return true;
   }
 
@@ -1693,10 +1717,12 @@ write_module_class(ostream &out, Object *obj) {
 
         // Python 3 doesn't support nb_divide.  It has nb_true_divide and also
         // nb_floor_divide, but they have different semantics than in C++.
-        // Ugh.  Make special slots to store the nb_divide members that take a
-        // float.  We'll use this to build up nb_true_divide, so that we can
-        // still properly divide float vector types.
-        if (remap->_flags & FunctionRemap::F_divide_float) {
+        // Ugh.  Make special slots to store the nb_divide members that don't
+        // take an int.  We'll use this to build up nb_true_divide, in the
+        // absence of a custom __truediv__, so that we can still properly divide
+        // float vector types.
+        if ((key == "nb_divide" || key == "nb_inplace_divide") &&
+            (remap->_flags & FunctionRemap::F_divide_integer) == 0) {
           string true_key;
           if (key == "nb_inplace_divide") {
             true_key = "nb_inplace_true_divide";

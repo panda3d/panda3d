@@ -195,7 +195,6 @@ PUBLISHED:
   INLINE bool is_download_complete() const;
 
 public:
-  static std::string downcase(const std::string &s);
   void body_stream_destructs(ISocketStream *stream);
 
 private:
