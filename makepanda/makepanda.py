@@ -934,7 +934,7 @@ if (COMPILER=="GCC"):
         PkgDisable("CARBON")
 
     if GetTarget() == 'darwin':
-        if 'x86_64' not in OSX_ARCHS and 'i386' not in OSX_ARCHS:
+        if OSX_ARCHS and 'x86_64' not in OSX_ARCHS and 'i386' not in OSX_ARCHS:
             # These support only these archs, so don't build them if we're not
             # targeting any of the supported archs.
             PkgDisable("FMODEX")
