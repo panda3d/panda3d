@@ -165,10 +165,9 @@ make_output(const std::string &name,
     // Early failure - if we are sure that this buffer WONT meet specs, we can
     // bail out early.
     if ((flags & BF_fb_props_optional)==0) {
-      if ((fb_prop.get_indexed_color() > 0)||
-          (fb_prop.get_back_buffers() > 0)||
-          (fb_prop.get_accum_bits() > 0)||
-          (fb_prop.get_multisamples() > 0)) {
+      if (fb_prop.get_indexed_color() > 0 ||
+          fb_prop.get_back_buffers() > 0 ||
+          fb_prop.get_accum_bits() > 0) {
         return nullptr;
       }
     }
