@@ -30,6 +30,7 @@
 #include "boundingSphere.h"
 #include "boundingBox.h"
 #include "config_mathutil.h"
+#include "pipeline.h"
 
 #ifdef HAVE_AUDIO
 #include "audioSound.h"
