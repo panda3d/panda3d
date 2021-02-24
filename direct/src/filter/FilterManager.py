@@ -299,7 +299,7 @@ class FilterManager(DirectObject):
 
         return quad
 
-    def createBuffer(self, name, xsize, ysize, texgroup, depthbits=1, fbprops=None):
+    def createBuffer(self, name, xsize, ysize, texgroup, depthbits=True, fbprops=None):
         """ Low-level buffer creation.  Not intended for public use. """
 
         winprops = WindowProperties()
@@ -307,7 +307,12 @@ class FilterManager(DirectObject):
         props = FrameBufferProperties(FrameBufferProperties.getDefault())
         props.setBackBuffers(0)
         props.setRgbColor(1)
-        props.setDepthBits(depthbits)
+        if depthbits is True:
+            # Respect depth-bits from Config.prc
+            if props.getDepthBits() == 0:
+                props.setDepthBits(1)
+        else:
+            props.setDepthBits(depthbits)
         props.setStereo(self.win.isStereo())
         if fbprops is not None:
             props.addProperties(fbprops)
