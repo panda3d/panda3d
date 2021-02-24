@@ -19,6 +19,8 @@
 #include "config_egldisplay.h"
 #include "frameBufferProperties.h"
 
+#include <EGL/eglext.h>
+
 TypeHandle eglGraphicsPipe::_type_handle;
 
 /**
@@ -26,6 +28,27 @@ TypeHandle eglGraphicsPipe::_type_handle;
  */
 eglGraphicsPipe::
 eglGraphicsPipe() {
+  // Check for client extensions.
+  vector_string extensions;
+  const char *ext_ptr = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
+  if (ext_ptr != nullptr) {
+    extract_words(ext_ptr, extensions);
+
+    if (egldisplay_cat.is_debug()) {
+      std::ostream &out = egldisplay_cat.debug()
+        << "Supported EGL client extensions:\n";
+
+      for (const std::string &extension : extensions) {
+        out << "  " << extension << "\n";
+      }
+    }
+  }
+  else if (egldisplay_cat.is_debug()) {
+    eglGetError();
+    egldisplay_cat.debug()
+      << "EGL client extensions not supported.\n";
+  }
+
   //NB. if the X11 display failed to open, _display will be 0, which is a valid
   // input to eglGetDisplay - it means to open the default display.
 #ifdef HAVE_X11
@@ -33,6 +56,38 @@ eglGraphicsPipe() {
 #else
   _egl_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
 #endif
+
+  if (!_egl_display &&
+      std::find(extensions.begin(), extensions.end(), "EGL_EXT_platform_device") != extensions.end() &&
+      std::find(extensions.begin(), extensions.end(), "EGL_EXT_device_enumeration") != extensions.end()) {
+
+    PFNEGLQUERYDEVICESEXTPROC eglQueryDevicesEXT =
+      (PFNEGLQUERYDEVICESEXTPROC)eglGetProcAddress("eglQueryDevicesEXT");
+
+    EGLint num_devices = 0;
+    if (eglQueryDevicesEXT(0, nullptr, &num_devices) && num_devices > 0) {
+      EGLDeviceEXT *devices = (EGLDeviceEXT *)alloca(sizeof(EGLDeviceEXT) * num_devices);
+      eglQueryDevicesEXT(num_devices, devices, &num_devices);
+
+      if (egldisplay_cat.is_debug()) {
+        egldisplay_cat.debug()
+          << "Found " << num_devices << " EGL devices.\n";
+      }
+
+      PFNEGLGETPLATFORMDISPLAYEXTPROC eglGetPlatformDisplayEXT =
+        (PFNEGLGETPLATFORMDISPLAYEXTPROC)eglGetProcAddress("eglGetPlatformDisplayEXT");
+
+      for (EGLint i = 0; i < num_devices && !_egl_display; ++i) {
+        _egl_display = eglGetPlatformDisplayEXT(EGL_PLATFORM_DEVICE_EXT, devices[i], nullptr);
+      }
+    }
+
+    if (!_egl_display) {
+      egldisplay_cat.error()
+        << "Couldn't find a suitable EGL platform device.\n";
+    }
+  }
+
   if (!eglInitialize(_egl_display, nullptr, nullptr)) {
     egldisplay_cat.error()
       << "Couldn't initialize the EGL display: "
