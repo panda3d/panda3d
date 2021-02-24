@@ -3006,7 +3006,12 @@ def CreatePandaVersionFiles():
     if source_date:
         # This matches the GCC / Clang format for __DATE__ __TIME__
         source_date = time.gmtime(int(source_date))
-        source_date = time.strftime('%b %e %Y %H:%M:%S', source_date)
+        try:
+            source_date = time.strftime('%b %e %Y %H:%M:%S', source_date)
+        except ValueError:
+            source_date = time.strftime('%b %d %Y %H:%M:%S', source_date)
+            if source_date[3:5] == ' 0':
+                source_date = source_date[:3] + '  ' + source_date[5:]
         pandaversion_h += "\n#define PANDA_BUILD_DATE_STR \"%s\"\n" % (source_date)
 
     if not RUNTIME:
