@@ -49,6 +49,8 @@ eglGraphicsPipe() {
       << "EGL client extensions not supported.\n";
   }
 
+  EGLint major, minor;
+
   //NB. if the X11 display failed to open, _display will be 0, which is a valid
   // input to eglGetDisplay - it means to open the default display.
 #ifdef HAVE_X11
@@ -56,6 +58,12 @@ eglGraphicsPipe() {
 #else
   _egl_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
 #endif
+  if (_egl_display && !eglInitialize(_egl_display, &major, &minor)) {
+    egldisplay_cat.warning()
+      << "Couldn't initialize the default EGL display: "
+      << get_egl_error_string(eglGetError()) << "\n";
+    _egl_display = EGL_NO_DISPLAY;
+  }
 
   if (!_egl_display &&
       std::find(extensions.begin(), extensions.end(), "EGL_EXT_platform_device") != extensions.end() &&
@@ -65,7 +73,9 @@ eglGraphicsPipe() {
       (PFNEGLQUERYDEVICESEXTPROC)eglGetProcAddress("eglQueryDevicesEXT");
 
     EGLint num_devices = 0;
-    if (eglQueryDevicesEXT(0, nullptr, &num_devices) && num_devices > 0) {
+    if (eglQueryDevicesEXT != nullptr &&
+        eglQueryDevicesEXT(0, nullptr, &num_devices) &&
+        num_devices > 0) {
       EGLDeviceEXT *devices = (EGLDeviceEXT *)alloca(sizeof(EGLDeviceEXT) * num_devices);
       eglQueryDevicesEXT(num_devices, devices, &num_devices);
 
@@ -77,23 +87,31 @@ eglGraphicsPipe() {
       PFNEGLGETPLATFORMDISPLAYEXTPROC eglGetPlatformDisplayEXT =
         (PFNEGLGETPLATFORMDISPLAYEXTPROC)eglGetProcAddress("eglGetPlatformDisplayEXT");
 
-      for (EGLint i = 0; i < num_devices && !_egl_display; ++i) {
-        _egl_display = eglGetPlatformDisplayEXT(EGL_PLATFORM_DEVICE_EXT, devices[i], nullptr);
-      }
-    }
+      if (eglGetPlatformDisplayEXT != nullptr) {
+        for (EGLint i = 0; i < num_devices && !_egl_display; ++i) {
+          _egl_display = eglGetPlatformDisplayEXT(EGL_PLATFORM_DEVICE_EXT, devices[i], nullptr);
 
-    if (!_egl_display) {
-      egldisplay_cat.error()
-        << "Couldn't find a suitable EGL platform device.\n";
+          if (_egl_display && !eglInitialize(_egl_display, &major, &minor)) {
+            egldisplay_cat.warning()
+              << "Couldn't initialize EGL platform display " << i << ": "
+              << get_egl_error_string(eglGetError()) << "\n";
+            _egl_display = EGL_NO_DISPLAY;
+          }
+        }
+      }
     }
   }
 
-  if (!eglInitialize(_egl_display, nullptr, nullptr)) {
+  if (!_egl_display) {
     egldisplay_cat.error()
-      << "Couldn't initialize the EGL display: "
-      << get_egl_error_string(eglGetError()) << "\n";
+      << "Failed to find or initialize a suitable EGL display connection.\n";
     _is_valid = false;
     return;
+  }
+
+  if (egldisplay_cat.is_debug()) {
+    egldisplay_cat.debug()
+      << "Successfully initialized EGL display, got version " << major << "." << minor << "\n";
   }
 
 #if defined(OPENGLES_1) || defined(OPENGLES_2)
