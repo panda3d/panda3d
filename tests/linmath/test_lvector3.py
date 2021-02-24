@@ -110,8 +110,8 @@ def test_vec3_floordiv(type):
     with pytest.raises(ZeroDivisionError):
         type(1, 2, 3) // 0
 
-    for i in range(-100, 100):
-        for j in range(1, 100):
+    for i in range(-11, 11):
+        for j in range(1, 11):
             assert (type(i) // j).x == i // j
             assert (type(i) // -j).x == i // -j
 
