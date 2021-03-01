@@ -331,7 +331,7 @@ update_motion_trail (PN_stdfloat current_time, LMatrix4 *transform) {
 
     frame_iterator = _frame_list.begin ( );
     motion_trail_frame = *frame_iterator;
-    if (*transform == motion_trail_frame._transform) {
+    if (motion_trail_frame._transform == UnalignedLMatrix4(*transform)) {
       // duplicate transform
       return;
     }

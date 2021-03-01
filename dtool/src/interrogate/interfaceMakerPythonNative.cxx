@@ -4306,18 +4306,19 @@ int get_type_sort(CPPType *type) {
              TypeManager::is_struct(type)) {
     answer = 20;
     int deepest = 0;
-    TypeIndex type_index = builder.get_type(TypeManager::unwrap(TypeManager::resolve_type(type)), false);
-    InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
-    const InterrogateType &itype = idb->get_type(type_index);
 
-    if (itype.is_class() || itype.is_struct()) {
-      int num_derivations = itype.number_of_derivations();
-      for (int di = 0; di < num_derivations; di++) {
-        TypeIndex d_type_Index = itype.get_derivation(di);
-        const InterrogateType &d_itype = idb->get_type(d_type_Index);
-        int this_one = get_type_sort(d_itype._cpptype);
-        if (this_one > deepest) {
-          deepest = this_one;
+    // Sort such that more derived classes come first.
+    type = TypeManager::unwrap(TypeManager::resolve_type(type));
+    if (type != nullptr) {
+      CPPStructType *struct_type = type->as_struct_type();
+      if (struct_type != nullptr) {
+        for (const CPPStructType::Base &base : struct_type->_derivation) {
+          if (base._base != nullptr) {
+            int this_one = get_type_sort(base._base);
+            if (this_one > deepest) {
+              deepest = this_one;
+            }
+          }
         }
       }
     }
