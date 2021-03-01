@@ -99,11 +99,11 @@ static PyObject *get_done_result(const AsyncFuture *future) {
           ((void *)value, Dtool_ParamValueBase, false, false, type.get_index());
         if (wrap != nullptr) {
           PyObject *value = PyObject_GetAttrString(wrap, "value");
+          Py_DECREF(wrap);
           if (value != nullptr) {
             return value;
           }
           PyErr_Restore(nullptr, nullptr, nullptr);
-          Py_DECREF(wrap);
         }
       }
 
