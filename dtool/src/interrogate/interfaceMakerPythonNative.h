@@ -118,6 +118,9 @@ private:
 
     // Invert boolean return value.
     RF_invert_bool = 0x8000,
+
+    // Used inside a rich comparison function.
+    RF_richcompare_zero = 0x10000,
   };
 
   class SlottedFunctionDef {

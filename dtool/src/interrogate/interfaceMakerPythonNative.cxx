@@ -70,6 +70,7 @@ RenameSet methodRenameDictionary[] = {
   { "operator >"    , "__gt__",                 0 },
   { "operator <="   , "__le__",                 0 },
   { "operator >="   , "__ge__",                 0 },
+  { "operator <=>"  , "__cmp__",                0 },
   { "operator ="    , "assign",                 0 },
   { "operator ()"   , "__call__",               0 },
   { "operator []"   , "__getitem__",            0 },
@@ -1753,7 +1754,8 @@ write_module_class(ostream &out, Object *obj) {
           fname == "operator ==" ||
           fname == "operator !=" ||
           fname == "operator >" ||
-          fname == "operator >=") {
+          fname == "operator >=" ||
+          fname == "operator <=>") {
         continue;
       }
 
@@ -2620,6 +2622,7 @@ write_module_class(ostream &out, Object *obj) {
     out << "    return nullptr;\n";
     out << "  }\n\n";
 
+    std::set<FunctionRemap *> threeway_remaps;
     bool have_eq = false;
     bool have_ne = false;
     for (Function *func : obj->_methods) {
@@ -2650,6 +2653,9 @@ write_module_class(ostream &out, Object *obj) {
         op_type = "Py_GT";
       } else if (fname == "operator >=") {
         op_type = "Py_GE";
+      } else if (fname == "operator <=>") {
+        threeway_remaps = std::move(remaps);
+        continue;
       } else {
         continue;
       }
@@ -2670,7 +2676,15 @@ write_module_class(ostream &out, Object *obj) {
     }
 
     if (has_local_richcompare) {
-      if (have_eq && !have_ne) {
+      if (!threeway_remaps.empty()) {
+        out << "  default:\n";
+        out << "    {\n";
+        string expected_params;
+        write_function_forset(out, threeway_remaps, 1, 1, expected_params, 6, true, false,
+                              AT_single_arg, RF_richcompare_zero | RF_err_null, false);
+        out << "    }\n";
+      }
+      else if (have_eq && !have_ne) {
         // Generate a not-equal function from the equal function.
         for (Function *func : obj->_methods) {
           std::set<FunctionRemap*> remaps;
@@ -2713,8 +2727,13 @@ write_module_class(ostream &out, Object *obj) {
       out << "    PyErr_Clear();\n";
       out << "  }\n\n";
     }
+    else if (!threeway_remaps.empty()) {
+      string expected_params;
+      write_function_forset(out, threeway_remaps, 1, 1, expected_params, 2, true, false,
+                            AT_single_arg, RF_richcompare_zero | RF_err_null, false);
+    }
 
-    if (slots.count("tp_compare")) {
+    if (slots.count("tp_compare") && threeway_remaps.empty()) {
       // A lot of Panda code depends on comparisons being done via the
       // compare_to function, which is mapped to the tp_compare slot, which
       // Python 3 no longer has.  So, we'll write code to fall back to that if
@@ -3536,7 +3555,8 @@ write_function_for_top(ostream &out, InterfaceMaker::Object *obj, InterfaceMaker
       fname == "operator ==" ||
       fname == "operator !=" ||
       fname == "operator >" ||
-      fname == "operator >=") {
+      fname == "operator >=" ||
+      fname == "operator <=>") {
     return;
   }
 
@@ -6153,7 +6173,8 @@ write_function_instance(ostream &out, FunctionRemap *remap,
     // function call, so it should reduce the amount of code output while not
     // being any slower.
     bool return_null = (return_flags & RF_pyobject) != 0 &&
-                       (return_flags & RF_err_null) != 0;
+                       (return_flags & RF_err_null) != 0 &&
+                       (return_flags & RF_richcompare_zero) == 0;
     if (return_null && return_expr.empty()) {
       indent(out, indent_level)
         << "return Dtool_Return_None();\n";
@@ -6305,6 +6326,10 @@ write_function_instance(ostream &out, FunctionRemap *remap,
   } else if (return_flags & RF_self) {
     indent(out, indent_level) << "Py_INCREF(self);\n";
     indent(out, indent_level) << "return self;\n";
+
+  } else if (return_flags & RF_richcompare_zero) {
+    indent(out, indent_level)
+      << "Py_RETURN_RICHCOMPARE(" << return_expr << ", 0, op);\n";
 
   } else if (return_flags & RF_pyobject) {
     if (return_expr.empty()) {
@@ -7650,7 +7675,11 @@ is_remap_legal(FunctionRemap *remap) {
   if (!is_cpp_type_legal(remap->_return_type->get_orig_type())) {
 // printf("  is_remap_legal Return Is Bad %s\n",remap->_return_type->get_orig_
 // type()->get_fully_scoped_name().c_str());
-    return false;
+    // Except if this is a spaceship operator, since we have special handling
+    // for its return type.
+    if (remap->_cppfunc->get_simple_name() != "operator <=>") {
+      return false;
+    }
   }
 
   // We don't currently support returning pointers, but we accept them as
@@ -8106,6 +8135,17 @@ NeedsARichCompareFunction(const InterrogateType &itype_class) {
     }
     if (ifunc.get_name() == "operator >=") {
       return true;
+    }
+  }
+
+  if (itype_class._cpptype != nullptr) {
+    CPPStructType *struct_type = itype_class._cpptype->as_struct_type();
+    if (struct_type != nullptr) {
+      CPPScope *scope = struct_type->get_scope();
+      CPPScope::Functions::const_iterator it = scope->_functions.find("operator <=>");
+      if (it != scope->_functions.end()) {
+        return true;
+      }
     }
   }
 
