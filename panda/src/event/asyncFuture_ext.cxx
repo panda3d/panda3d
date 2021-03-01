@@ -16,6 +16,8 @@
 #include "eventParameter.h"
 #include "paramValue.h"
 #include "pythonTask.h"
+#include "asyncTaskManager.h"
+#include "config_event.h"
 
 #ifdef HAVE_PYTHON
 
@@ -297,8 +299,19 @@ gather(PyObject *args) {
 #if PY_VERSION_HEX >= 0x03050000
     } else if (PyCoro_CheckExact(item)) {
       // We allow passing in a coroutine instead of a future.  This causes it
-      // to be scheduled as a task.
-      futures.push_back(new PythonTask(item));
+      // to be scheduled as a task on the current task manager.
+      PT(AsyncTask) task = new PythonTask(item);
+      Thread *current_thread = Thread::get_current_thread();
+      AsyncTask *current_task = (AsyncTask *)current_thread->get_current_task();
+      if (current_task != nullptr) {
+        task->set_task_chain(current_task->get_task_chain());
+        current_task->get_manager()->add(task);
+      }
+      else {
+        event_cat.warning()
+          << "gather() with coroutine not called from within a task; not scheduling with task manager.\n";
+      }
+      futures.push_back(task);
       continue;
 #endif
     }
