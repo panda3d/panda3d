@@ -591,7 +591,7 @@ evaluate() const {
     if (_u._variable->_type != nullptr &&
         _u._variable->_initializer != nullptr) {
       // A constexpr variable, which is treated as const.
-      if (_u._variable->_storage_class & CPPInstance::SC_constexpr) {
+      if (_u._variable->_storage_class & (CPPInstance::SC_constexpr | CPPInstance::SC_constinit)) {
         return _u._variable->_initializer->evaluate();
       }
       // A const variable.  Fetch its assigned value.
@@ -814,6 +814,13 @@ evaluate() const {
         return Result(r1.as_real() >= r2.as_real());
       } else {
         return Result(r1.as_integer() >= r2.as_integer());
+      }
+
+    case SPACESHIP:
+      if (r1._type == RT_real || r2._type == RT_real) {
+        return Result((r1.as_real() > r2.as_real()) - (r1.as_real() < r2.as_real()));
+      } else {
+        return Result((r1.as_integer() > r2.as_integer()) - (r1.as_integer() < r2.as_integer()));
       }
 
     case '<':
@@ -1174,6 +1181,9 @@ determine_type() const {
     case '<':
     case '>':
       return bool_type;
+
+    case SPACESHIP:
+      return nullptr;
 
     case '?':
       return t2;
@@ -1566,7 +1576,7 @@ is_tbd() const {
   case T_variable:
     if (_u._variable->_type != nullptr &&
         _u._variable->_initializer != nullptr) {
-      if (_u._variable->_storage_class & CPPInstance::SC_constexpr) {
+      if (_u._variable->_storage_class & (CPPInstance::SC_constexpr | CPPInstance::SC_constinit)) {
         return false;
       }
       CPPConstType *const_type = _u._variable->_type->as_const_type();
@@ -1952,6 +1962,14 @@ output(std::ostream &out, int indent_level, CPPScope *scope, bool) const {
       out << "(";
       _u._op._op1->output(out, indent_level, scope, false);
       out << " >= ";
+      _u._op._op2->output(out, indent_level, scope, false);
+      out << ")";
+      break;
+
+    case SPACESHIP:
+      out << "(";
+      _u._op._op1->output(out, indent_level, scope, false);
+      out << " <=> ";
       _u._op._op2->output(out, indent_level, scope, false);
       out << ")";
       break;

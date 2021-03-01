@@ -1140,6 +1140,10 @@ check_trigraph(int c) {
   case RSHIFT:
     if (next_c == '=') return RSHIFTEQUAL;
     break;
+
+  case LECOMPARE:
+    if (next_c == '>') return SPACESHIP;
+    break;
   }
 
   return 0;
@@ -2089,6 +2093,7 @@ get_literal(int token, YYLTYPE loc, const string &str, const YYSTYPE &value) {
         break;
       } else if (token == CHAR_TOK && (simple == CPPSimpleType::T_char ||
                                        simple == CPPSimpleType::T_wchar_t ||
+                                       simple == CPPSimpleType::T_char8_t ||
                                        simple == CPPSimpleType::T_char16_t ||
                                        simple == CPPSimpleType::T_char32_t)) {
         // We currently don't have the means to check the exact character
@@ -2126,7 +2131,7 @@ get_literal(int token, YYLTYPE loc, const string &str, const YYSTYPE &value) {
         CPPExpression::Type str_type = value.u.expr->_type;
         if ((str_type == CPPExpression::T_string && simple == CPPSimpleType::T_char) ||
             (str_type == CPPExpression::T_wstring && simple == CPPSimpleType::T_wchar_t) ||
-            (str_type == CPPExpression::T_u8string && simple == CPPSimpleType::T_char) ||
+            (str_type == CPPExpression::T_u8string && (simple == CPPSimpleType::T_char || simple == CPPSimpleType::T_char8_t)) ||
             (str_type == CPPExpression::T_u16string && simple == CPPSimpleType::T_char16_t) ||
             (str_type == CPPExpression::T_u32string && simple == CPPSimpleType::T_char32_t)) {
           expr = value.u.expr;
@@ -2608,13 +2613,16 @@ check_keyword(const string &name) {
   if (name == "bool") return KW_BOOL;
   if (name == "catch") return KW_CATCH;
   if (name == "char") return KW_CHAR;
+  if (name == "char8_t") return KW_CHAR8_T;
   if (name == "char16_t") return KW_CHAR16_T;
   if (name == "char32_t") return KW_CHAR32_T;
   if (name == "class") return KW_CLASS;
   if (name == "const") return KW_CONST;
   if (name == "__const") return KW_CONST;
   if (name == "__const__") return KW_CONST;
+  if (name == "consteval") return KW_CONSTEVAL;
   if (name == "constexpr") return KW_CONSTEXPR;
+  if (name == "constinit") return KW_CONSTINIT;
   if (name == "const_cast") return KW_CONST_CAST;
   if (name == "decltype") return KW_DECLTYPE;
   if (name == "default") return KW_DEFAULT;
