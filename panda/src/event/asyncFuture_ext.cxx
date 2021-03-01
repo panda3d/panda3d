@@ -13,7 +13,6 @@
 
 #include "asyncFuture_ext.h"
 #include "asyncTaskSequence.h"
-#include "eventParameter.h"
 #include "paramValue.h"
 #include "paramPyObject.h"
 #include "pythonTask.h"
@@ -24,7 +23,6 @@
 
 #ifndef CPPPARSER
 extern struct Dtool_PyTypedObject Dtool_AsyncFuture;
-extern struct Dtool_PyTypedObject Dtool_EventParameter;
 extern struct Dtool_PyTypedObject Dtool_ParamValueBase;
 extern struct Dtool_PyTypedObject Dtool_TypedObject;
 extern struct Dtool_PyTypedObject Dtool_TypedReferenceCount;
@@ -174,22 +172,22 @@ set_result(PyObject *result) {
     return;
   }
   else if (DtoolInstance_Check(result)) {
-    void *ptr;
-    if ((ptr = DtoolInstance_UPCAST(result, Dtool_EventParameter))) {
-      _this->set_result(*(const EventParameter *)ptr);
-      return;
-    }
-    if ((ptr = DtoolInstance_UPCAST(result, Dtool_TypedWritableReferenceCount))) {
-      _this->set_result((TypedWritableReferenceCount *)ptr);
-      return;
-    }
-    if ((ptr = DtoolInstance_UPCAST(result, Dtool_TypedReferenceCount))) {
-      _this->set_result((TypedReferenceCount *)ptr);
-      return;
-    }
-    if ((ptr = DtoolInstance_UPCAST(result, Dtool_TypedObject))) {
-      _this->set_result((TypedObject *)ptr);
-      return;
+    // If this is a Python subclass of a C++ type, fall through to below, since
+    // we don't want to lose that extra information.
+    if (Py_TYPE(result) == (PyTypeObject *)DtoolInstance_TYPE(result)) {
+      void *ptr;
+      if ((ptr = DtoolInstance_UPCAST(result, Dtool_TypedWritableReferenceCount))) {
+        _this->set_result((TypedWritableReferenceCount *)ptr);
+        return;
+      }
+      if ((ptr = DtoolInstance_UPCAST(result, Dtool_TypedReferenceCount))) {
+        _this->set_result((TypedReferenceCount *)ptr);
+        return;
+      }
+      if ((ptr = DtoolInstance_UPCAST(result, Dtool_TypedObject))) {
+        _this->set_result((TypedObject *)ptr);
+        return;
+      }
     }
   }
   else if (PyUnicode_Check(result)) {

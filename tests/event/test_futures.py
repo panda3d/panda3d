@@ -200,12 +200,12 @@ def test_future_result():
     fut = None
     assert tex.get_ref_count() == rc
 
-    # Store EventParameter (gets unwrapped)
+    # Store EventParameter (no longer gets unwrapped)
     ep = core.EventParameter(0.5)
     fut = core.AsyncFuture()
     fut.set_result(ep)
-    assert fut.result() == 0.5
-    assert fut.result() == 0.5
+    assert fut.result() is ep
+    assert fut.result() is ep
 
     # Store TypedObject
     dg = core.Datagram(b"test")
