@@ -4662,7 +4662,8 @@ write_function_instance(ostream &out, FunctionRemap *remap,
                         bool check_exceptions,
                         const string &first_pexpr) {
   string format_specifiers;
-  string keyword_list;
+  string keyword_list_old;
+  string keyword_list_new;
   string parameter_list;
   string container;
   string type_check;
@@ -4820,13 +4821,19 @@ write_function_instance(ostream &out, FunctionRemap *remap,
     }
 
     string reported_name = remap->_parameters[pn]._name;
-    if (!keyword_list.empty()) {
-      keyword_list += ", \"" + reported_name + "\"";
-    } else {
-      keyword_list = "\"" + reported_name + "\"";
+    if (!keyword_list_old.empty()) {
+      keyword_list_old += ", ";
+      keyword_list_new += ", ";
     }
     if (remap->_parameters[pn]._has_name) {
       has_keywords = true;
+    }
+    keyword_list_old += "\"" + reported_name + "\"";
+    if (has_keywords) {
+      keyword_list_new += "\"" + reported_name + "\"";
+    } else {
+      // Positional-only argument.
+      keyword_list_new += "\"\"";
     }
 
     if (param->new_type_is_atomic_string()) {
@@ -5882,16 +5889,26 @@ write_function_instance(ostream &out, FunctionRemap *remap,
           // case we have implemented ourselves.
           if (min_num_args == 1) {
             indent(out, indent_level)
-              << "if (Dtool_ExtractArg(&" << param_name << ", args, kwds, " << keyword_list << ")) {\n";
+              << "if (Dtool_ExtractArg(&" << param_name << ", args, kwds, " << keyword_list_new << ")) {\n";
           } else {
             indent(out, indent_level)
-              << "if (Dtool_ExtractOptionalArg(&" << param_name << ", args, kwds, " << keyword_list << ")) {\n";
+              << "if (Dtool_ExtractOptionalArg(&" << param_name << ", args, kwds, " << keyword_list_new << ")) {\n";
           }
         } else {
           // We have to use the more expensive PyArg_ParseTupleAndKeywords.
           clear_error = true;
-          indent(out, indent_level)
-            << "static const char *keyword_list[] = {" << keyword_list << ", nullptr};\n";
+          if (keyword_list_new != keyword_list_old) {
+            out << "#if PY_VERSION_HEX >= 0x03060000\n";
+            indent(out, indent_level)
+              << "static const char *keyword_list[] = {" << keyword_list_new << ", nullptr};\n";
+            out << "#else\n";
+            indent(out, indent_level)
+              << "static const char *keyword_list[] = {" << keyword_list_old << ", nullptr};\n";
+            out << "#endif\n";
+          } else {
+            indent(out, indent_level)
+              << "static const char *keyword_list[] = {" << keyword_list_new << ", nullptr};\n";
+          }
           indent(out, indent_level)
             << "if (PyArg_ParseTupleAndKeywords(args, kwds, \""
             << format_specifiers << ":" << method_name
