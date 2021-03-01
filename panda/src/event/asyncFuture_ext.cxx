@@ -15,6 +15,7 @@
 #include "asyncTaskSequence.h"
 #include "eventParameter.h"
 #include "paramValue.h"
+#include "paramPyObject.h"
 #include "pythonTask.h"
 #include "asyncTaskManager.h"
 #include "config_event.h"
@@ -23,8 +24,11 @@
 
 #ifndef CPPPARSER
 extern struct Dtool_PyTypedObject Dtool_AsyncFuture;
+extern struct Dtool_PyTypedObject Dtool_EventParameter;
 extern struct Dtool_PyTypedObject Dtool_ParamValueBase;
 extern struct Dtool_PyTypedObject Dtool_TypedObject;
+extern struct Dtool_PyTypedObject Dtool_TypedReferenceCount;
+extern struct Dtool_PyTypedObject Dtool_TypedWritableReferenceCount;
 #endif
 
 /**
@@ -92,8 +96,12 @@ static PyObject *get_done_result(const AsyncFuture *future) {
         // EventStoreInt and Double are not exposed to Python for some reason.
         if (type == EventStoreInt::get_class_type()) {
           return Dtool_WrapValue(((EventStoreInt *)ptr)->get_value());
-        } else if (type == EventStoreDouble::get_class_type()) {
+        }
+        else if (type == EventStoreDouble::get_class_type()) {
           return Dtool_WrapValue(((EventStoreDouble *)ptr)->get_value());
+        }
+        else if (type == ParamPyObject::get_class_type()) {
+          return ((ParamPyObject *)ptr)->get_value();
         }
 
         ParamValueBase *value = (ParamValueBase *)ptr;
@@ -174,6 +182,76 @@ static PyObject *gen_next(PyObject *self) {
 PyObject *Extension<AsyncFuture>::
 __await__(PyObject *self) {
   return Dtool_NewGenerator(self, &gen_next);
+}
+
+/**
+ * Sets this future's result.  Can only be called if done() returns false.
+ */
+void Extension<AsyncFuture>::
+set_result(PyObject *result) {
+  if (result == Py_None) {
+    _this->set_result(nullptr);
+    return;
+  }
+  else if (DtoolInstance_Check(result)) {
+    void *ptr;
+    if ((ptr = DtoolInstance_UPCAST(result, Dtool_EventParameter))) {
+      _this->set_result(*(const EventParameter *)ptr);
+      return;
+    }
+    if ((ptr = DtoolInstance_UPCAST(result, Dtool_TypedWritableReferenceCount))) {
+      _this->set_result((TypedWritableReferenceCount *)ptr);
+      return;
+    }
+    if ((ptr = DtoolInstance_UPCAST(result, Dtool_TypedReferenceCount))) {
+      _this->set_result((TypedReferenceCount *)ptr);
+      return;
+    }
+    if ((ptr = DtoolInstance_UPCAST(result, Dtool_TypedObject))) {
+      _this->set_result((TypedObject *)ptr);
+      return;
+    }
+  }
+  else if (PyUnicode_Check(result)) {
+#if PY_VERSION_HEX >= 0x03030000
+    Py_ssize_t result_len;
+    wchar_t *result_str = PyUnicode_AsWideCharString(result, &result_len);
+#else
+    Py_ssize_t result_len = PyUnicode_GET_SIZE(result);
+    wchar_t *result_str = (wchar_t *)alloca(sizeof(wchar_t) * (result_len + 1));
+    PyUnicode_AsWideChar((PyUnicodeObject *)result, result_str, result_len);
+#endif
+    _this->set_result(new EventStoreWstring(std::wstring(result_str, result_len)));
+#if PY_VERSION_HEX >= 0x03030000
+    PyMem_Free(result_str);
+#endif
+    return;
+  }
+#if PY_MAJOR_VERSION < 3
+  else if (PyString_Check(result)) {
+    const char *result_str;
+    Py_ssize_t result_len;
+    if (PyString_AsStringAndSize(result, (char **)&result_str, &result_len) != -1) {
+      _this->set_result(new EventStoreString(std::string(result_str, result_len)));
+    }
+    return;
+  }
+#endif
+  else if (PyLongOrInt_Check(result)) {
+    long result_val = PyLongOrInt_AS_LONG(result);
+    if (result_val >= INT_MIN && result_val <= INT_MAX) {
+      _this->set_result(new EventStoreInt((int)result_val));
+      return;
+    }
+  }
+  else if (PyNumber_Check(result)) {
+    _this->set_result(new EventStoreDouble(PyFloat_AsDouble(result)));
+    return;
+  }
+
+  // If we don't recognize the type, store it as a generic PyObject pointer.
+  ParamPyObject::init_type();
+  _this->set_result(new ParamPyObject(result));
 }
 
 /**
