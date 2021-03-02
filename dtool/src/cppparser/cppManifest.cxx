@@ -23,7 +23,7 @@ using std::string;
  */
 CPPManifest::ExpansionNode::
 ExpansionNode(int parm_number, bool stringify, bool paste) :
-  _parm_number(parm_number), _stringify(stringify), _paste(paste)
+  _parm_number(parm_number), _stringify(stringify), _paste(paste), _optional(false)
 {
 }
 
@@ -32,7 +32,16 @@ ExpansionNode(int parm_number, bool stringify, bool paste) :
  */
 CPPManifest::ExpansionNode::
 ExpansionNode(const string &str, bool paste) :
-  _parm_number(-1), _stringify(false), _paste(paste), _str(str)
+  _parm_number(-1), _stringify(false), _paste(paste), _optional(false), _str(str)
+{
+}
+
+/**
+ *
+ */
+CPPManifest::ExpansionNode::
+ExpansionNode(Expansion nested, bool stringify, bool paste, bool optional) :
+  _parm_number(-1), _stringify(stringify), _paste(paste), _optional(optional), _nested(std::move(nested))
 {
 }
 
@@ -76,7 +85,7 @@ CPPManifest(const string &args, const cppyyltype &loc) :
     p++;
   }
 
-  save_expansion(args.substr(p), parameter_names);
+  save_expansion(_expansion, args.substr(p), parameter_names);
 }
 
 /**
@@ -119,7 +128,7 @@ CPPManifest(const string &macro, const string &definition) :
     _num_parameters = 0;
   }
 
-  save_expansion(definition, parameter_names);
+  save_expansion(_expansion, definition, parameter_names);
 }
 
 /**
@@ -186,54 +195,7 @@ stringify(const string &source) {
  */
 string CPPManifest::
 expand(const vector_string &args) const {
-  string result;
-
-  Expansion::const_iterator ei;
-  for (ei = _expansion.begin(); ei != _expansion.end(); ++ei) {
-    if ((*ei)._parm_number >= 0) {
-      int i = (*ei)._parm_number;
-
-      string subst;
-      if (i < (int)args.size()) {
-        subst = args[i];
-
-        if (i == _variadic_param) {
-          for (++i; i < (int)args.size(); ++i) {
-            subst += ", " + args[i];
-          }
-        }
-        if ((*ei)._stringify) {
-          subst = stringify(subst);
-        }
-      } else if (i == _variadic_param && (*ei)._paste) {
-        // Special case GCC behavior: if __VA_ARGS__ is pasted to a comma and
-        // no arguments are passed, the comma is removed.  MSVC does this
-        // automatically.  Not sure if we should allow MSVC behavior as well.
-        if (!result.empty() && *result.rbegin() == ',') {
-          result.resize(result.size() - 1);
-        }
-      }
-
-      if (!subst.empty()) {
-        if (result.empty() || (*ei)._paste) {
-          result += subst;
-        } else {
-          result += ' ';
-          result += subst;
-        }
-      }
-    }
-    if (!(*ei)._str.empty()) {
-      if (result.empty() || (*ei)._paste) {
-        result += (*ei)._str;
-      } else {
-        result += ' ';
-        result += (*ei)._str;
-      }
-    }
-  }
-
-  return result;
+  return r_expand(_expansion, args);
 }
 
 /**
@@ -283,18 +245,24 @@ output(std::ostream &out) const {
       out << " ";
     }
 
+    if ((*ei)._stringify) {
+      out << "#";
+    }
     if ((*ei)._parm_number >= 0) {
-      if ((*ei)._stringify) {
-        out << "#";
-      }
       if ((*ei)._parm_number == _variadic_param) {
         out << "__VA_ARGS__";
       } else {
         out << "$" << (*ei)._parm_number + 1;
       }
     }
+    if ((*ei)._optional) {
+      out << "__VA_OPT__(";
+    }
     if (!(*ei)._str.empty()) {
       out << (*ei)._str;
+    }
+    if ((*ei)._optional) {
+      out << ")";
     }
   }
 }
@@ -350,7 +318,7 @@ parse_parameters(const string &args, size_t &p,
  *
  */
 void CPPManifest::
-save_expansion(const string &exp, const vector_string &parameter_names) {
+save_expansion(Expansion &expansion, const string &exp, const vector_string &parameter_names) {
   // Walk through the expansion string.  For each substring that is an
   // identifier, check it against parameter_names.
   size_t p = 0;
@@ -375,6 +343,40 @@ save_expansion(const string &exp, const vector_string &parameter_names) {
         // C99-style variadics, ie.  #define macro(...) __VA_ARGS__
         pnum = _variadic_param;
 
+      } else if (ident == "__VA_OPT__") {
+        // Optional expansion, only expands if __VA_ARGS__ is non-empty
+        while (p < exp.size() && isspace(exp[p])) {
+          ++p;
+        }
+        if (p < exp.size() && exp[p] == '(') {
+          int start = ++p;
+          int nesting = 1;
+          while (p < exp.size() && nesting > 0) {
+            if (exp[p] == '(') {
+              ++nesting;
+            }
+            else if (exp[p] == ')') {
+              --nesting;
+            }
+            ++p;
+          }
+
+          if (last != q) {
+            expansion.push_back(ExpansionNode(exp.substr(last, q - last), paste));
+            paste = false;
+          }
+
+          // Store this as a nested expansion, because the whole thing may be
+          // stringified as a whole.
+          Expansion nested;
+          save_expansion(nested, exp.substr(start, p - 1 - start), parameter_names);
+          expansion.push_back(ExpansionNode(std::move(nested), stringify, paste, true));
+          stringify = false;
+          paste = false;
+          last = p;
+          continue;
+        }
+
       } else {
         for (int i = 0; pnum == -1 && i < (int)parameter_names.size(); ++i) {
           const string &pname = parameter_names[i];
@@ -387,10 +389,10 @@ save_expansion(const string &exp, const vector_string &parameter_names) {
       if (pnum != -1) {
         // Yep!
         if (last != q) {
-          _expansion.push_back(ExpansionNode(exp.substr(last, q - last), paste));
+          expansion.push_back(ExpansionNode(exp.substr(last, q - last), paste));
           paste = false;
         }
-        _expansion.push_back(ExpansionNode(pnum, stringify, paste));
+        expansion.push_back(ExpansionNode(pnum, stringify, paste));
         stringify = false;
         paste = false;
         last = p;
@@ -398,7 +400,7 @@ save_expansion(const string &exp, const vector_string &parameter_names) {
     } else if (exp[p] == '#') {
       // This may be a stringification operator.
       if (last != p) {
-        _expansion.push_back(ExpansionNode(exp.substr(last, p - last), paste));
+        expansion.push_back(ExpansionNode(exp.substr(last, p - last), paste));
         paste = false;
       }
 
@@ -416,7 +418,7 @@ save_expansion(const string &exp, const vector_string &parameter_names) {
 
     } else if (isspace(exp[p])) {
       if (last != p) {
-        _expansion.push_back(ExpansionNode(exp.substr(last, p - last), paste));
+        expansion.push_back(ExpansionNode(exp.substr(last, p - last), paste));
         paste = false;
       }
 
@@ -429,6 +431,75 @@ save_expansion(const string &exp, const vector_string &parameter_names) {
   }
 
   if (last != p) {
-    _expansion.push_back(ExpansionNode(exp.substr(last, p - last), paste));
+    expansion.push_back(ExpansionNode(exp.substr(last, p - last), paste));
   }
+}
+
+/**
+ *
+ */
+string CPPManifest::
+r_expand(const Expansion &expansion, const vector_string &args) const {
+  std::string result;
+
+  for (const ExpansionNode &node : expansion) {
+    if (node._parm_number >= 0) {
+      int i = node._parm_number;
+
+      string subst;
+      if (i < (int)args.size()) {
+        subst = args[i];
+
+        if (i == _variadic_param) {
+          for (++i; i < (int)args.size(); ++i) {
+            subst += ", " + args[i];
+          }
+        }
+        if (node._stringify) {
+          subst = stringify(subst);
+        }
+      } else if (i == _variadic_param && node._paste) {
+        // Special case GCC behavior: if __VA_ARGS__ is pasted to a comma and
+        // no arguments are passed, the comma is removed.  MSVC does this
+        // automatically.  Not sure if we should allow MSVC behavior as well.
+        if (!result.empty() && *result.rbegin() == ',') {
+          result.resize(result.size() - 1);
+        }
+      }
+
+      if (!subst.empty()) {
+        if (result.empty() || node._paste) {
+          result += subst;
+        } else {
+          result += ' ';
+          result += subst;
+        }
+      }
+    }
+    if (!node._str.empty()) {
+      if (result.empty() || node._paste) {
+        result += node._str;
+      } else {
+        result += ' ';
+        result += node._str;
+      }
+    }
+    if (!node._nested.empty()) {
+      string nested_result;
+      if (node._optional && args.size() >= _num_parameters) {
+        nested_result = r_expand(node._nested, args);
+      }
+      if (node._stringify) {
+        nested_result = stringify(nested_result);
+      }
+      if (result.empty() || node._paste) {
+        result += nested_result;
+      } else {
+        result += ' ';
+        result += nested_result;
+      }
+    }
+  }
+
+  return result;
 }

@@ -2295,7 +2295,7 @@ extract_manifest_args(const string &name, int num_args, int va_arg,
   loc.last_column = first_col;
   loc.file = first_file;
 
-  if ((int)args.size() < num_args) {
+  if ((int)args.size() < num_args - (va_arg >= 0)) {
     warning("Not enough arguments for manifest " + name, loc);
 
   } else if (va_arg < 0 && (int)args.size() > num_args) {
