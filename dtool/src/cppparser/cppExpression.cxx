@@ -860,6 +860,9 @@ evaluate() const {
     case ',':
       return r2;
 
+    case KW_NOEXCEPT:
+      return Result();
+
     default:
       cerr << "**unexpected operator**\n";
       abort();
@@ -1180,6 +1183,7 @@ determine_type() const {
     case GECOMPARE:
     case '<':
     case '>':
+    case KW_NOEXCEPT:
       return bool_type;
 
     case SPACESHIP:
@@ -1906,6 +1910,12 @@ output(std::ostream &out, int indent_level, CPPScope *scope, bool) const {
     case 'f': // Function evaluation, no parameters.
       _u._op._op1->output(out, indent_level, scope, false);
       out << "()";
+      break;
+
+    case KW_NOEXCEPT:
+      out << "noexcept(";
+      _u._op._op1->output(out, indent_level, scope, false);
+      out << ")";
       break;
 
     default:

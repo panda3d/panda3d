@@ -283,6 +283,7 @@ pop_struct() {
 %token KW_EXTENSION
 %token KW_EXTERN
 %token KW_EXPLICIT
+%token KW_EXPLICIT_LPAREN
 %token KW_PUBLISHED
 %token KW_FALSE
 %token KW_FINAL
@@ -320,6 +321,7 @@ pop_struct() {
 %token KW_NAMESPACE
 %token KW_NEW
 %token KW_NOEXCEPT
+%token KW_NOEXCEPT_LPAREN
 %token KW_NULLPTR
 %token KW_OPERATOR
 %token KW_OVERRIDE
@@ -996,6 +998,15 @@ storage_class:
 {
   $$ = $2 | (int)CPPInstance::SC_explicit;
 }
+        | KW_EXPLICIT_LPAREN const_expr ')' storage_class
+{
+  CPPExpression::Result result = $2->evaluate();
+  if (result._type == CPPExpression::RT_error) {
+    yywarning("explicit() requires a constant expression", @2);
+  } else if (result.as_boolean()) {
+    $$ = $4 | (int)CPPInstance::SC_explicit;
+  }
+}
         | KW_REGISTER storage_class
 {
   $$ = $2 | (int)CPPInstance::SC_register;
@@ -1452,15 +1463,15 @@ function_post:
 {
   $$ = $1 | (int)CPPFunctionType::F_noexcept;
 }
-/*        | function_post KW_NOEXCEPT '(' const_expr ')'
+        | function_post KW_NOEXCEPT_LPAREN const_expr ')'
 {
-  CPPExpression::Result result = $4->evaluate();
+  CPPExpression::Result result = $3->evaluate();
   if (result._type == CPPExpression::RT_error) {
-    yywarning("noexcept requires a constant expression", @4);
+    yywarning("noexcept() requires a constant expression", @3);
   } else if (result.as_boolean()) {
     $$ = $1 | (int)CPPFunctionType::F_noexcept;
   }
-}*/
+}
         | function_post KW_FINAL
 {
   $$ = $1 | (int)CPPFunctionType::F_final;
@@ -3072,6 +3083,12 @@ using_declaration:
   current_scope->add_declaration(using_decl, global_scope, current_lexer, @1);
   current_scope->add_using(using_decl, global_scope, current_lexer);
 }
+        | KW_USING KW_ENUM name ';'
+{
+  CPPUsing *using_decl = new CPPUsing($3, false, @1.file);
+  current_scope->add_declaration(using_decl, global_scope, current_lexer, @1);
+  current_scope->add_using(using_decl, global_scope, current_lexer);
+}
         ;
 
 simple_type:
@@ -3219,10 +3236,10 @@ element:
         | KW_CHAR | KW_CHAR8_T | KW_CHAR16_T | KW_CHAR32_T | KW_CLASS
         | KW_CONST | KW_CONSTEVAL | KW_CONSTEXPR | KW_CONSTINIT | KW_CONST_CAST
         | KW_DECLTYPE | KW_DEFAULT | KW_DELETE | KW_DOUBLE | KW_DYNAMIC_CAST
-        | KW_ELSE | KW_ENUM | KW_EXTERN | KW_EXPLICIT
+        | KW_ELSE | KW_ENUM | KW_EXTERN | KW_EXPLICIT | KW_EXPLICIT_LPAREN
         | KW_FALSE | KW_FINAL | KW_FLOAT | KW_FRIEND | KW_FOR
-        | KW_GOTO | KW_IF | KW_INLINE | KW_INT
-        | KW_LONG | KW_MUTABLE | KW_NAMESPACE | KW_NEW | KW_NULLPTR
+        | KW_GOTO | KW_IF | KW_INLINE | KW_INT | KW_LONG | KW_MUTABLE
+        | KW_NAMESPACE | KW_NEW | KW_NOEXCEPT | KW_NOEXCEPT_LPAREN | KW_NULLPTR
         | KW_OPERATOR | KW_OVERRIDE | KW_PRIVATE | KW_PROTECTED
         | KW_PUBLIC | KW_PUBLISHED | KW_REGISTER | KW_REINTERPRET_CAST
         | KW_RETURN | KW_SHORT | KW_SIGNED | KW_SIZEOF | KW_STATIC
@@ -3723,6 +3740,10 @@ const_expr:
         | const_expr '(' ')'
 {
   $$ = new CPPExpression('f', $1);
+}
+        | KW_NOEXCEPT_LPAREN const_expr ')'
+{
+  $$ = new CPPExpression(KW_NOEXCEPT, $2);
 }
         | const_expr '.' name
 {

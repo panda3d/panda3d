@@ -1987,6 +1987,24 @@ get_identifier(int c) {
   }
 
   if (kw != 0) {
+    if (kw == KW_EXPLICIT || kw == KW_NOEXCEPT) {
+      // These can be followed by a left-paren.  Doing this helps to avoid
+      // shift/reduce conflicts in the parser.
+      while (c != EOF && isspace(c)) {
+        get();
+        c = peek();
+      }
+      if (c == '(') {
+        if (kw == KW_EXPLICIT) {
+          kw = KW_EXPLICIT_LPAREN;
+        }
+        else if (kw == KW_NOEXCEPT) {
+          kw = KW_NOEXCEPT_LPAREN;
+        }
+        get();
+      }
+    }
+
     YYSTYPE result;
     result.u.identifier = nullptr;
     return CPPToken(kw, loc, name, result);
