@@ -2430,6 +2430,11 @@ define_atomic_type(InterrogateType &itype, CPPSimpleType *cpptype) {
     itype._atomic_token = AT_int;
     break;
 
+  case CPPSimpleType::T_char8_t:
+    itype._flags |= InterrogateType::F_unsigned;
+    itype._atomic_token = AT_int;
+    break;
+
   case CPPSimpleType::T_char16_t:
     itype._flags |= InterrogateType::F_unsigned;
     itype._atomic_token = AT_int;

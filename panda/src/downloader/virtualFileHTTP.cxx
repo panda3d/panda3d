@@ -13,8 +13,11 @@
 
 #include "virtualFileHTTP.h"
 #include "virtualFileMountHTTP.h"
+#include "ramfile.h"
 #include "stringStream.h"
 #include "zStream.h"
+
+#include <iterator>
 
 #ifdef HAVE_OPENSSL
 
