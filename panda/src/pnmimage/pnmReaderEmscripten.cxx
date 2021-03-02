@@ -15,7 +15,7 @@
 
 #ifdef __EMSCRIPTEN__
 
-#include "config_pnmimagetypes.h"
+#include "config_pnmimage.h"
 
 #include <emscripten.h>
 
