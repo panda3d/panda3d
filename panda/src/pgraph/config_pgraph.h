@@ -74,6 +74,8 @@ extern ConfigVariableString default_model_extension;
 
 extern ConfigVariableBool allow_live_flatten;
 
+extern ConfigVariableBool filled_wireframe_apply_shader;
+
 extern EXPCL_PANDA_PGRAPH void init_libpgraph();
 
 #endif

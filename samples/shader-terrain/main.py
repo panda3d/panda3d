@@ -20,6 +20,7 @@ class ShaderTerrainDemo(ShowBase):
             textures-power-2 none
             gl-coordinate-system default
             window-title Panda3D ShaderTerrainMesh Demo
+            filled-wireframe-apply-shader true
         """)
 
         # Initialize the showbase
