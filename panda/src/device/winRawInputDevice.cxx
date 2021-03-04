@@ -81,6 +81,10 @@ static const struct DeviceMapping {
   {0x054c, 0x0ba0, InputDevice::DeviceClass::gamepad, QB_rstick_from_z,
     {"face_x", "face_a", "face_b", "face_y", "lshoulder", "rshoulder", 0, 0, "back", "start", "lstick", "rstick", "guide", 0}
   },
+  // PS2 controller connected through a USB adapter
+  {0x2563, 0x0523, InputDevice::DeviceClass::gamepad, QB_rstick_from_z | QB_no_analog_triggers,
+    {"face_y", "face_b", "face_a", "face_x", "lshoulder", "rshoulder", "ltrigger", "rtrigger", "back", "start", "lstick", "rstick"}
+  },
   {0},
 };
 
