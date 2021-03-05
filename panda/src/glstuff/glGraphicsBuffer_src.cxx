@@ -283,6 +283,12 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   } else if (mode == FM_refresh) {
     // Just bind the FBO.
     rebuild_bitplanes();
+
+    // Bind the non-multisample FBO, since we won't be rendering anything and
+    // the caller probably wanted to grab a screenshot.
+    if (_fbo_multisample != 0 && !_fbo.empty()) {
+      glgsg->bind_fbo(_fbo[0]);
+    }
   }
 
   // The host window may not have had sRGB enabled, so we need to do this.
@@ -1328,11 +1334,12 @@ end_frame(FrameMode mode, Thread *current_thread) {
   nassertv(_gsg != nullptr);
 
   // Resolve Multisample rendering if using it.
-  if (_requested_multisamples && _fbo_multisample) {
+  if (_requested_multisamples && _fbo_multisample && mode != FM_refresh) {
     resolve_multisamples();
   }
 
   if (mode == FM_render) {
+    // Should happen *after* resolving multisamples, with the non-MS FBO bound.
     copy_to_textures();
   }
 
