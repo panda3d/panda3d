@@ -59,8 +59,7 @@ get_texture_flags() const {
 }
 
 /**
- * Remember all the options for the textures being loaded.
- * These are used to gurantee that unique textures are not ignored. 
+ * Set the texture format
 */
 
 INLINE void LoaderOptions::
@@ -69,28 +68,40 @@ set_texture_format(int format){
 }
 
 /**
- *  
+ *  Get the texture format
  */
 INLINE int LoaderOptions::
 get_texture_format() const {
   return _texture_format;
 }
 
+/**
+ *  Set the texture compression
+ */
 INLINE void LoaderOptions::
-set_texture_compress(int compress){
+set_texture_compression(int compress){
   _texture_compress = compress;
 }
 
+/**
+ *  Get the texture compression
+ */
 INLINE int LoaderOptions::
-get_texture_compress() const {
+get_texture_compression() const {
   return _texture_compress;
 }
 
+/**
+ *  Set the texture quality
+ */
 INLINE void LoaderOptions::
 set_texture_quality(int quality){
   _texture_quality = quality;
 }
 
+/**
+ *  Get the texture quality
+ */
 INLINE int LoaderOptions::
 get_texture_quality() const {
   return _texture_quality;

@@ -59,8 +59,8 @@ PUBLISHED:
   INLINE int get_texture_flags() const;
   INLINE void set_texture_format(int format);
   INLINE int get_texture_format() const;
-  INLINE void set_texture_compress(int  compress);
-  INLINE int get_texture_compress() const;
+  INLINE void set_texture_compression(int  compress);
+  INLINE int get_texture_compression() const;
   INLINE void set_texture_quality(int  quality);
   INLINE int get_texture_quality() const;
   

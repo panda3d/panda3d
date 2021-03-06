@@ -14,7 +14,6 @@
 /**
  * Creates a new SamplerState initialized to the default values.
  */
-
 INLINE SamplerState::
 SamplerState() :
   _border_color(0, 0, 0, 1),

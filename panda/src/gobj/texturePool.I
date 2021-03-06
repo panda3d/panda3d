@@ -328,19 +328,19 @@ operator < (const LookupKey &other) const {
     return _alpha_file_channel < other._alpha_file_channel;
   }
 
-  if(_texture_format != other._texture_format){
+  if (_texture_format != other._texture_format){
     return _texture_format < other._texture_format;
   }
 
-  if(_texture_compress != other._texture_compress){
+  if (_texture_compress != other._texture_compress){
     return _texture_compress < other._texture_compress;
   }
 
-  if(_texture_quality != other._texture_quality){
+  if (_texture_quality != other._texture_quality){
     return _texture_quality < other._texture_quality;
   }
 
-  if(_texture_sampler != other._texture_sampler){
+  if (_texture_sampler != other._texture_sampler){
     return _texture_sampler < other._texture_sampler;
   }
   
