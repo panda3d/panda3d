@@ -94,11 +94,6 @@ set_result(std::nullptr_t) {
 }
 
 INLINE void AsyncFuture::
-set_result(TypedObject *result) {
-  set_result(result, nullptr);
-}
-
-INLINE void AsyncFuture::
 set_result(TypedReferenceCount *result) {
   set_result(result, result);
 }
@@ -110,7 +105,12 @@ set_result(TypedWritableReferenceCount *result) {
 
 INLINE void AsyncFuture::
 set_result(const EventParameter &result) {
-  set_result(result.get_ptr(), result.get_ptr());
+  if (result.is_typed_ref_count()) {
+    set_result(result.get_typed_ref_count_value());
+  }
+  else {
+    set_result(result.get_ptr());
+  }
 }
 
 /**

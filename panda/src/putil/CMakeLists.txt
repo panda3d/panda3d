@@ -133,6 +133,9 @@ set(P3PUTIL_IGATEEXT
   callbackObject_ext.h
   doubleBitMask_ext.h
   doubleBitMask_ext.I
+  paramPyObject.cxx
+  paramPyObject.h
+  paramPyObject.I
   pythonCallbackObject.cxx
   pythonCallbackObject.h
   sparseArray_ext.cxx

@@ -785,7 +785,11 @@ bool Dtool_ExtractArg(PyObject **result, PyObject *args, PyObject *kwds,
       *result = PyTuple_GET_ITEM(args, 0);
       return true;
     }
-  } else if (PyTuple_GET_SIZE(args) == 0) {
+  }
+  else if (!keyword || !keyword[0]) {
+    return false;
+  }
+  else if (PyTuple_GET_SIZE(args) == 0) {
     PyObject *key;
     Py_ssize_t ppos = 0;
     if (kwds != nullptr && PyDict_GET_SIZE(kwds) == 1 &&
@@ -831,7 +835,11 @@ bool Dtool_ExtractOptionalArg(PyObject **result, PyObject *args, PyObject *kwds,
       *result = PyTuple_GET_ITEM(args, 0);
       return true;
     }
-  } else if (PyTuple_GET_SIZE(args) == 0) {
+  }
+  else if (!keyword || !keyword[0]) {
+    return (kwds == nullptr || PyDict_GET_SIZE(kwds) == 0);
+  }
+  else if (PyTuple_GET_SIZE(args) == 0) {
     if (kwds != nullptr && PyDict_GET_SIZE(kwds) == 1) {
       PyObject *key;
       Py_ssize_t ppos = 0;

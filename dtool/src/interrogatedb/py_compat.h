@@ -137,6 +137,11 @@ typedef long Py_hash_t;
 #  endif
 #endif
 
+/* Python 3.4 */
+#if PY_VERSION_HEX < 0x03040000
+#define PyGILState_Check() (PyGILState_GetThisThreadState() == _PyThreadState_Current)
+#endif
+
 /* Python 3.6 */
 
 #if PY_VERSION_HEX < 0x03080000 && !defined(_PyObject_CallNoArg)

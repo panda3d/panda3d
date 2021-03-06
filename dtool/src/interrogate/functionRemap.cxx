@@ -738,6 +738,11 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
       _void_return = true;
     }
 
+  } else if (fname == "operator <=>") {
+    // This returns an opaque object that we must leave unchanged.
+    _return_type = new ParameterRemapUnchanged(rtype);
+    _void_return = false;
+
   } else {
     // The normal case.
     _return_type = interface_maker->remap_parameter(_cpptype, rtype);

@@ -54,21 +54,28 @@ public:
   CPPVisibility _vis;
 
 private:
-  void parse_parameters(const std::string &args, size_t &p,
-                        vector_string &parameter_names);
-  void save_expansion(const std::string &exp,
-                      const vector_string &parameter_names);
-
   class ExpansionNode {
   public:
     ExpansionNode(int parm_number, bool stringify, bool paste);
     ExpansionNode(const std::string &str, bool paste = false);
+    ExpansionNode(std::vector<ExpansionNode> nested, bool stringify = false, bool paste = false, bool optional = false);
     int _parm_number;
     bool _stringify;
     bool _paste;
+    bool _optional;
     std::string _str;
+    std::vector<ExpansionNode> _nested;
   };
   typedef std::vector<ExpansionNode> Expansion;
+
+  void parse_parameters(const std::string &args, size_t &p,
+                        vector_string &parameter_names);
+  void save_expansion(Expansion &expansion, const std::string &exp,
+                      const vector_string &parameter_names);
+
+  std::string r_expand(const Expansion &expansion,
+                       const vector_string &args = vector_string()) const;
+
   Expansion _expansion;
 };
 
