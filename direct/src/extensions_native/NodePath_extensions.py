@@ -218,7 +218,7 @@ del pPrintString
 def printPos(self, other = None, sd = 2):
     """ Deprecated.  Pretty print a node path's pos """
     if __debug__:
-            warnings.warn("NodePath.printPos() is deprecated.", DeprecationWarning, stacklevel=2)
+        warnings.warn("NodePath.printPos() is deprecated.", DeprecationWarning, stacklevel=2)
     formatString = '%0.' + '%d' % sd + 'f'
     if other:
         pos = self.getPos(other)
@@ -238,7 +238,7 @@ del printPos
 def printHpr(self, other = None, sd = 2):
     """ Deprecated.  Pretty print a node path's hpr """
     if __debug__:
-            warnings.warn("NodePath.printHpr() is deprecated.", DeprecationWarning, stacklevel=2)
+        warnings.warn("NodePath.printHpr() is deprecated.", DeprecationWarning, stacklevel=2)
     formatString = '%0.' + '%d' % sd + 'f'
     if other:
         hpr = self.getHpr(other)
@@ -258,7 +258,7 @@ del printHpr
 def printScale(self, other = None, sd = 2):
     """ Deprecated.  Pretty print a node path's scale """
     if __debug__:
-            warnings.warn("NodePath.printScale() is deprecated.", DeprecationWarning, stacklevel=2)
+        warnings.warn("NodePath.printScale() is deprecated.", DeprecationWarning, stacklevel=2)
     formatString = '%0.' + '%d' % sd + 'f'
     if other:
         scale = self.getScale(other)
@@ -278,7 +278,7 @@ del printScale
 def printPosHpr(self, other = None, sd = 2):
     """ Deprecated.  Pretty print a node path's pos and, hpr """
     if __debug__:
-            warnings.warn("NodePath.printPosHpr() is deprecated.", DeprecationWarning, stacklevel=2)
+        warnings.warn("NodePath.printPosHpr() is deprecated.", DeprecationWarning, stacklevel=2)
     formatString = '%0.' + '%d' % sd + 'f'
     if other:
         pos = self.getPos(other)
@@ -303,7 +303,7 @@ del printPosHpr
 def printPosHprScale(self, other = None, sd = 2):
     """ Deprecated.  Pretty print a node path's pos, hpr, and scale """
     if __debug__:
-            warnings.warn("NodePath.printPosHprScale() is deprecated.", DeprecationWarning, stacklevel=2)
+        warnings.warn("NodePath.printPosHprScale() is deprecated.", DeprecationWarning, stacklevel=2)
     formatString = '%0.' + '%d' % sd + 'f'
     if other:
         pos = self.getPos(other)
@@ -334,7 +334,7 @@ del printPosHprScale
 def printTransform(self, other = None, sd = 2, fRecursive = 0):
     "Deprecated."
     if __debug__:
-            warnings.warn("NodePath.printTransform() is deprecated.", DeprecationWarning, stacklevel=2)
+        warnings.warn("NodePath.printTransform() is deprecated.", DeprecationWarning, stacklevel=2)
     from panda3d.core import Vec3
     fmtStr = '%%0.%df' % sd
     name = self.getName()
@@ -375,7 +375,7 @@ del printTransform
 def iPos(self, other = None):
     """ Deprecated.  Set node path's pos to 0, 0, 0 """
     if __debug__:
-            warnings.warn("NodePath.iPos() is deprecated.", DeprecationWarning, stacklevel=2)
+        warnings.warn("NodePath.iPos() is deprecated.", DeprecationWarning, stacklevel=2)
     if other:
         self.setPos(other, 0, 0, 0)
     else:
@@ -388,7 +388,7 @@ del iPos
 def iHpr(self, other = None):
     """ Deprecated.  Set node path's hpr to 0, 0, 0 """
     if __debug__:
-            warnings.warn("NodePath.iHpr() is deprecated.", DeprecationWarning, stacklevel=2)
+        warnings.warn("NodePath.iHpr() is deprecated.", DeprecationWarning, stacklevel=2)
     if other:
         self.setHpr(other, 0, 0, 0)
     else:
@@ -400,7 +400,7 @@ del iHpr
 def iScale(self, other = None):
     """ Deprecated.  Set node path's scale to 1, 1, 1 """
     if __debug__:
-            warnings.warn("NodePath.iScale() is deprecated.", DeprecationWarning, stacklevel=2)
+        warnings.warn("NodePath.iScale() is deprecated.", DeprecationWarning, stacklevel=2)
     if other:
         self.setScale(other, 1, 1, 1)
     else:
@@ -412,7 +412,7 @@ del iScale
 def iPosHpr(self, other = None):
     """ Deprecated.  Set node path's pos and hpr to 0, 0, 0 """
     if __debug__:
-            warnings.warn("NodePath.iPosHpr() is deprecated.", DeprecationWarning, stacklevel=2)
+        warnings.warn("NodePath.iPosHpr() is deprecated.", DeprecationWarning, stacklevel=2)
     if other:
         self.setPosHpr(other, 0, 0, 0, 0, 0, 0)
     else:
@@ -424,7 +424,7 @@ del iPosHpr
 def iPosHprScale(self, other = None):
     """ Deprecated.  Set node path's pos and hpr to 0, 0, 0 and scale to 1, 1, 1 """
     if __debug__:
-            warnings.warn("NodePath.iPosHprScale() is deprecated.", DeprecationWarning, stacklevel=2)
+        warnings.warn("NodePath.iPosHprScale() is deprecated.", DeprecationWarning, stacklevel=2)
     if other:
         self.setPosHprScale(other, 0, 0, 0, 0, 0, 0, 1, 1, 1)
     else:
