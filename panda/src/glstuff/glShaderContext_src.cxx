@@ -1017,6 +1017,10 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
         else if (noprefix.compare(7, string::npos, "Emission") == 0) {
           bind._part = Shader::STO_stage_emission_i;
         }
+        else {
+          GLCAT.error()
+            << "Unrecognized shader input name: p3d_" << noprefix << "\n";
+        }
 
         for (bind._stage = 0; bind._stage < param_size; ++bind._stage) {
           _glgsg->_glUniform1i(p + bind._stage, _shader->_tex_spec.size());
@@ -3050,6 +3054,37 @@ glsl_report_program_errors(GLuint program, bool fatal) {
     if (strcmp(info_log, "Success.\n") != 0 &&
         strcmp(info_log, "No errors.\n") != 0 &&
         strcmp(info_log, "Validation successful.\n") != 0) {
+
+#ifdef __APPLE__
+      // Filter out these unhelpful warnings that Apple always generates.
+      while (true) {
+        if (info_log[0] == '\n') {
+          ++info_log;
+          continue;
+        }
+        if (info_log[0] == '\0') {
+          // We reached the end without finding anything interesting.
+          return;
+        }
+        int linelen = 0;
+        if ((sscanf(info_log, "WARNING: Could not find vertex shader attribute %*s to match BindAttributeLocation request.%*[\n]%n", &linelen) == 0 && linelen > 0) ||
+            (sscanf(info_log, "WARNING: Could not find fragment shader output %*s to match FragDataBinding request.%*[\n]%n", &linelen) == 0 && linelen > 0)) {
+          info_log += linelen;
+          continue;
+        }
+        else {
+          break;
+        }
+
+        info_log = strchr(info_log, '\n');
+        if (info_log == nullptr) {
+          // We reached the end without finding anything interesting.
+          return;
+        }
+        ++info_log;
+      }
+#endif
+
       if (!fatal) {
         GLCAT.warning()
           << "Shader " << _shader->get_filename() << " produced the "

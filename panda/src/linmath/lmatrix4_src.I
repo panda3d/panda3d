@@ -1021,7 +1021,7 @@ operator += (const FLOATNAME(LMatrix4) &other) {
 }
 
 /**
- * Performs a memberwise addition between two matrices.
+ * Performs a memberwise subtraction between two matrices.
  */
 INLINE_LINMATH FLOATNAME(LMatrix4) &FLOATNAME(LMatrix4)::
 operator -= (const FLOATNAME(LMatrix4) &other) {

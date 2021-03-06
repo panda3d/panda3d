@@ -329,7 +329,7 @@ class TaskManager:
 
     def add(self, funcOrTask, name = None, sort = None, extraArgs = None,
             priority = None, uponDeath = None, appendTask = False,
-            taskChain = None, owner = None):
+            taskChain = None, owner = None, delay = None):
         """
         Add a new task to the taskMgr.  The task will begin executing
         immediately, or next frame if its sort value has already
@@ -382,12 +382,17 @@ class TaskManager:
                 is called when the task terminates.  This is all the
                 ownermeans.
 
+            delay: an optional amount of seconds to wait before starting
+                the task (equivalent to doMethodLater).
+
         Returns:
             The new Task object that has been added, or the original
             Task object that was passed in.
         """
 
         task = self.__setupTask(funcOrTask, name, priority, sort, extraArgs, taskChain, appendTask, owner, uponDeath)
+        if delay is not None:
+            task.setDelay(delay)
         self.mgr.add(task)
         return task
 

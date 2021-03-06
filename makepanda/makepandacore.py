@@ -1345,6 +1345,8 @@ def GetThirdpartyDir():
             THIRDPARTYDIR = base + "/linux-libs-arm/"
         elif (target_arch in ("x86_64", "amd64")):
             THIRDPARTYDIR = base + "/linux-libs-x64/"
+        elif target_arch == "aarch64":
+            THIRDPARTYDIR = base + "/linux-libs-aarch64/"
         else:
             THIRDPARTYDIR = base + "/linux-libs-a/"
 
@@ -1353,6 +1355,8 @@ def GetThirdpartyDir():
             THIRDPARTYDIR = base + "/freebsd-libs-arm/"
         elif (target_arch in ("x86_64", "amd64")):
             THIRDPARTYDIR = base + "/freebsd-libs-x64/"
+        elif target_arch == "aarch64":
+            THIRDPARTYDIR = base + "/freebsd-libs-aarch64/"
         else:
             THIRDPARTYDIR = base + "/freebsd-libs-a/"
 

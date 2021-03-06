@@ -1420,8 +1420,9 @@ def CompileCxx(obj,src,opts):
 
 def CompileBison(wobj, wsrc, opts):
     ifile = os.path.basename(wsrc)
-    wdsth = GetOutputDir()+"/include/" + ifile[:-4] + ".h"
-    wdstc = GetOutputDir()+"/tmp/" + ifile + ".cxx"
+    wdsth = GetOutputDir() + "/include/" + ifile[:-4] + ".h"
+    wdsth2 = GetOutputDir() + "/tmp/" + ifile + ".h"
+    wdstc = GetOutputDir() + "/tmp/" + ifile + ".cxx"
     pre = GetValueOption(opts, "BISONPREFIX_")
     bison = GetBison()
     if bison is None:
@@ -1431,6 +1432,7 @@ def CompileBison(wobj, wsrc, opts):
            os.path.isfile(base + '.cxx.prebuilt'):
             CopyFile(wdstc, base + '.cxx.prebuilt')
             CopyFile(wdsth, base + '.h.prebuilt')
+            CopyFile(wdsth2, base + '.h.prebuilt')
         else:
             exit('Could not find bison!')
     else:
@@ -2250,7 +2252,6 @@ DTOOL_CONFIG=[
     ("REPORT_OPENSSL_ERRORS",          '1',                      '1'),
     ("USE_PANDAFILESTREAM",            '1',                      '1'),
     ("USE_DELETED_CHAIN",              '1',                      '1'),
-    ("HAVE_GLX",                       'UNDEF',                  '1'),
     ("HAVE_WGL",                       '1',                      'UNDEF'),
     ("HAVE_DX9",                       'UNDEF',                  'UNDEF'),
     ("HAVE_THREADS",                   '1',                      '1'),
@@ -2413,14 +2414,10 @@ def WriteConfigSettings():
         dtool_config["PHAVE_SYS_MALLOC_H"] = '1'
         dtool_config["HAVE_OPENAL_FRAMEWORK"] = '1'
         dtool_config["HAVE_X11"] = 'UNDEF'  # We might have X11, but we don't need it.
-        dtool_config["HAVE_GLX"] = 'UNDEF'
         dtool_config["IS_LINUX"] = 'UNDEF'
         dtool_config["HAVE_VIDEO4LINUX"] = 'UNDEF'
         dtool_config["PHAVE_LINUX_INPUT_H"] = 'UNDEF'
         dtool_config["IS_OSX"] = '1'
-
-    if PkgSkip("X11"):
-        dtool_config["HAVE_GLX"] = 'UNDEF'
 
     if (GetTarget() == "freebsd"):
         dtool_config["IS_LINUX"] = 'UNDEF'
@@ -2597,6 +2594,19 @@ def CreatePandaVersionFiles():
 
     if GIT_COMMIT:
         pandaversion_h += "\n#define PANDA_GIT_COMMIT_STR \"%s\"\n" % (GIT_COMMIT)
+
+    # Allow creating a deterministic build by setting this.
+    source_date = os.environ.get("SOURCE_DATE_EPOCH")
+    if source_date:
+        # This matches the GCC / Clang format for __DATE__ __TIME__
+        source_date = time.gmtime(int(source_date))
+        try:
+            source_date = time.strftime('%b %e %Y %H:%M:%S', source_date)
+        except ValueError:
+            source_date = time.strftime('%b %d %Y %H:%M:%S', source_date)
+            if source_date[3:5] == ' 0':
+                source_date = source_date[:3] + '  ' + source_date[5:]
+        pandaversion_h += "\n#define PANDA_BUILD_DATE_STR \"%s\"\n" % (source_date)
 
     checkpandaversion_cxx = CHECKPANDAVERSION_CXX.replace("$VERSION1",str(version1))
     checkpandaversion_cxx = checkpandaversion_cxx.replace("$VERSION2",str(version2))
@@ -4519,9 +4529,10 @@ if GetTarget() not in ['windows', 'darwin'] and not PkgSkip("X11"):
 #
 
 if GetTarget() not in ['windows', 'darwin'] and not PkgSkip("GL") and not PkgSkip("X11"):
-    OPTS=['DIR:panda/src/glxdisplay', 'BUILDING:PANDAGL', 'GL', 'NVIDIACG', 'CGGL']
+    DefSymbol('GLX', 'HAVE_GLX', '')
+    OPTS=['DIR:panda/src/glxdisplay', 'BUILDING:PANDAGL', 'GL', 'NVIDIACG', 'CGGL', 'GLX']
     TargetAdd('p3glxdisplay_composite1.obj', opts=OPTS, input='p3glxdisplay_composite1.cxx')
-    OPTS=['DIR:panda/metalibs/pandagl', 'BUILDING:PANDAGL', 'GL', 'NVIDIACG', 'CGGL']
+    OPTS=['DIR:panda/metalibs/pandagl', 'BUILDING:PANDAGL', 'GL', 'NVIDIACG', 'CGGL', 'GLX']
     TargetAdd('pandagl_pandagl.obj', opts=OPTS, input='pandagl.cxx')
     TargetAdd('libpandagl.dll', input='p3x11display_composite1.obj')
     TargetAdd('libpandagl.dll', input='pandagl_pandagl.obj')
@@ -4970,6 +4981,7 @@ if not PkgSkip("DIRECT"):
     IGATEFILES=GetDirectoryContents('direct/src/interval', ["*.h", "*_composite*.cxx"])
     TargetAdd('libp3interval.in', opts=OPTS, input=IGATEFILES)
     TargetAdd('libp3interval.in', opts=['IMOD:panda3d.direct', 'ILIB:libp3interval', 'SRCDIR:direct/src/interval'])
+    PyTargetAdd('p3interval_cInterval_ext.obj', opts=OPTS, input='cInterval_ext.cxx')
 
 #
 # DIRECTORY: direct/src/showbase/
@@ -5033,6 +5045,7 @@ if not PkgSkip("DIRECT"):
     PyTargetAdd('direct.pyd', input='libp3showbase_igate.obj')
     PyTargetAdd('direct.pyd', input='libp3deadrec_igate.obj')
     PyTargetAdd('direct.pyd', input='libp3interval_igate.obj')
+    PyTargetAdd('direct.pyd', input='p3interval_cInterval_ext.obj')
     PyTargetAdd('direct.pyd', input='libp3distributed_igate.obj')
     PyTargetAdd('direct.pyd', input='libp3motiontrail_igate.obj')
 
@@ -6114,7 +6127,7 @@ def ParallelMake(tasklist):
         taskqueue.put(0)
     # Make sure there aren't any unsatisfied tasks
     if len(tasklist) > 0:
-        exit(f"Dependency problems: {len(tasklist)} tasks not finished. First task unsatisfied: {tasklist[0][2]}")
+        exit("Dependency problems: {0} tasks not finished. First task unsatisfied: {1}".format(len(tasklist), tasklist[0][2]))
 
 
 def SequentialMake(tasklist):

@@ -420,6 +420,7 @@ Section "Python ${INCLUDE_PYVER}" SecPython
     IfFileExists "$0\python.exe" AskRegPath RegPath
 
     AskRegPath:
+    IfSilent SkipRegPath
     MessageBox MB_YESNO|MB_ICONQUESTION \
         "You already have a copy of Python ${INCLUDE_PYVER} installed in:$\r$\n$0$\r$\n$\r$\nPanda3D installs its own copy of Python ${INCLUDE_PYVER}, which will install alongside your existing copy.  Would you like to make Panda's copy the default Python for your user account?" \
         IDNO SkipRegPath
@@ -568,6 +569,7 @@ Function ConfirmPythonSelection
     ; No compatible Python version found (that wasn't shipped as part
     ; of a different Panda3D build.)  Ask the user if he's sure about this.
     AskConfirmation:
+    IfSilent SkipCheck
     MessageBox MB_YESNO|MB_ICONQUESTION \
         "You do not appear to have a ${REGVIEW}-bit version of Python ${INCLUDE_PYVER} installed.  Are you sure you don't want Panda to install a compatible copy of Python?$\r$\n$\r$\nIf you choose Yes, you will not be able to do Python development with Panda3D until you install a ${REGVIEW}-bit version of Python and install the bindings for this version." \
         IDYES SkipCheck

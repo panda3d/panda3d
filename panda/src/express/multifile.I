@@ -68,6 +68,17 @@ get_timestamp() const {
 }
 
 /**
+ * Changes the overall mudification timestamp of the multifile.  Note that this
+ * will be reset to the current time every time you modify a subfile.
+ * Only set this if you know what you are doing!
+ */
+INLINE void Multifile::
+set_timestamp(time_t timestamp) {
+  _timestamp = timestamp;
+  _timestamp_dirty = true;
+}
+
+/**
  * Sets the flag indicating whether timestamps should be recorded within the
  * Multifile or not.  The default is true, indicating the Multifile will
  * record timestamps for the overall file and also for each subfile.

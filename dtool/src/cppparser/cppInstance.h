@@ -44,7 +44,9 @@ public:
     SC_pure_virtual = 0x0080,
     SC_volatile     = 0x0100,
     SC_mutable      = 0x0200,
-    SC_constexpr    = 0x0400,
+    SC_consteval    = 0x080000,
+    SC_constexpr    = 0x000400,
+    SC_constinit    = 0x100000,
 
     // This bit is only set by CPPStructType::check_virtual().
     SC_inherited_virtual = 0x0800,

@@ -131,3 +131,12 @@ def test_sphere_shape():
     assert shape.margin == shape2.margin
     assert shape.name == shape2.name
     assert shape.radius == shape2.radius
+
+
+def test_ghost():
+    node = bullet.BulletGhostNode("some ghost node")
+
+    node2 = reconstruct(node)
+
+    assert type(node) is type(node2)
+    assert node.name == node2.name
