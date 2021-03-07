@@ -458,7 +458,7 @@ ns_load_texture(const Filename &orig_filename,
   //New additions. This allows the texture information to remain unique
   //if texture scalars are different
   key._texture_format = options.get_texture_format();
-  key._texture_compress = options.get_texture_compress();
+  key._texture_compress = options.get_texture_compression();
   key._texture_quality = options.get_texture_quality();
   key._texture_sampler = sampler;
   {
