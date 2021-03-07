@@ -139,7 +139,7 @@ private:
                             const LoaderOptions &options,
                             const SamplerState &sampler);
   
-  void apply_texture_attributes(PT(Texture)  *tex, const LoaderOptions, const SamplerState &sampler);
+  void apply_texture_attributes(PT(Texture) tex, const LoaderOptions &options, const SamplerState &sampler);
 
   Texture *ns_get_normalization_cube_map(int size);
   Texture *ns_get_alpha_scale_map();

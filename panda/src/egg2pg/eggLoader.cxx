@@ -1405,11 +1405,11 @@ check_texture_attributes(Texture *tex, SamplerState sampler, const EggTexture *e
     case EggTexture::F_unspecified:
       break;
     case EggTexture::F_rgba12:
-      if(!force_srgb || (tex->get_component_width() < 2){
+      if(!force_srgb || (tex->get_component_width() < 2)){
         egg2pg_cat.warning()
           << "Inappropriate format " << egg_tex->get_format()
           << " for 8-bit texture " << egg_tex->get_name() << "\n";
-      })
+      }
     default:
       egg2pg_cat.error()
         << "Inappropriate format " << egg_tex->get_format()

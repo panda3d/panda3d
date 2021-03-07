@@ -428,7 +428,7 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
   if (use_filters) {
     tex = post_load(tex);
   }
-
+  apply_texture_attributes(tex, options, sampler);
   return tex;
 }
 
@@ -664,6 +664,7 @@ ns_load_3d_texture(const Filename &filename_pattern,
   }
 
   nassertr(!tex->get_fullpath().empty(), tex);
+  apply_texture_attributes(tex, options, sampler);
   return tex;
 }
 
@@ -765,6 +766,7 @@ ns_load_2d_texture_array(const Filename &filename_pattern,
   }
 
   nassertr(!tex->get_fullpath().empty(), tex);
+  apply_texture_attributes(tex, options, sampler);
   return tex;
 }
 
@@ -866,22 +868,23 @@ ns_load_cube_map(const Filename &filename_pattern, bool read_mipmaps,
   }
 
   nassertr(!tex->get_fullpath().empty(), tex);
+  apply_texture_attributes(tex, options, sampler);
   return tex;
 }
 
 TexturePool::LookupKey TexturePool::
 set_up_key(Texture::TextureType texture_type, 
-                                    int primary_file_num_channels,
-                                    int alpha_file_channel,
-                                    const LoaderOptions &options, 
-                                    const SamplerState &sampler) {
+          int primary_file_num_channels,
+          int alpha_file_channel,
+          const LoaderOptions &options, 
+          const SamplerState &sampler) {
   LookupKey key;
   key._primary_file_num_channels = primary_file_num_channels;
   key._alpha_file_channel = alpha_file_channel;
   key._texture_type = texture_type;
-  key._texture_format = options.get_texture_format();
-  key._texture_compress = options.get_texture_compression();
-  key._texture_quality = options.get_texture_quality();
+  key._texture_format = (Texture::Format)options.get_texture_format();
+  key._texture_compress = (Texture::CompressionMode)options.get_texture_compression();
+  key._texture_quality = (Texture::QualityLevel)options.get_texture_quality();
   key._texture_sampler = sampler;
   
   return key;
@@ -908,9 +911,21 @@ ns_get_normalization_cube_map(int size) {
 /**
  * The texture is loaded, apply any atributes that were sent in with the texture
  */
-void
-apply_texture_attributes(tex, options, sampler){
-
+void TexturePool::
+apply_texture_attributes(PT(Texture) tex, const LoaderOptions &options, const SamplerState &sampler){
+  int format = options.get_texture_format();
+  if (format != 0) {
+    tex->set_format((Texture::Format)format);
+  }
+  int compresison = options.get_texture_compression();
+  if(compresison != 0){
+    tex->set_compression((Texture::CompressionMode) compresison);
+  }
+  int quality = options.get_texture_quality();
+  if(quality != 0){
+    tex->set_quality_level((Texture::QualityLevel)quality);
+  }
+  tex->set_default_sampler(sampler);
 }
 /**
  * The nonstatic implementation of get_alpha_scale_map().
