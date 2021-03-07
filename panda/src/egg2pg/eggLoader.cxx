@@ -1042,7 +1042,7 @@ load_texture(TextureDef &def, EggTexture *egg_tex) {
       egg_tex->set_anisotropic_degree(aux_egg_tex->get_anisotropic_degree());
     }
   }
-  apply_texture_attributes(tex, sampler, egg_tex);
+  check_texture_attributes(tex, sampler, egg_tex);
 
   // Make a texture stage for the texture.
   PT(TextureStage) stage = make_texture_stage(egg_tex);
@@ -1060,7 +1060,7 @@ load_texture(TextureDef &def, EggTexture *egg_tex) {
 void EggLoader::
 set_up_loader_options(EggTexture *egg_tex, LoaderOptions & options, SamplerState & sampler){
   //We store these options and Texture enums, so we need to convert them.
-  options.set_texture_format(convert_format(egg_tex->get_format()));
+  options.set_texture_format(convert_format(egg_tex->get_format(), egg_tex->get_env_type()));
   options.set_texture_compression(convert_compression_mode(egg_tex->get_compression_mode()));
   options.set_texture_quality(convert_quality_level(egg_tex->get_quality_level()));
   set_up_sampler(sampler, egg_tex);
@@ -1071,7 +1071,24 @@ set_up_loader_options(EggTexture *egg_tex, LoaderOptions & options, SamplerState
  * so it has to be done in a switch statement.
  */
 Texture::Format EggLoader::
-convert_format(EggTexture::Format format){
+convert_format(EggTexture::Format format, EggTexture::EnvType env){
+  bool force_srgb = false;
+  if (egg_force_srgb_textures) {
+    switch (env) {
+    case EggTexture::ET_unspecified:
+    case EggTexture::ET_modulate:
+    case EggTexture::ET_decal:
+    case EggTexture::ET_blend:
+    case EggTexture::ET_replace:
+    case EggTexture::ET_add:
+    case EggTexture::ET_blend_color_scale:
+    case EggTexture::ET_modulate_glow:
+    case EggTexture::ET_modulate_gloss:
+      force_srgb = true;
+      break;
+    }
+  }
+
   switch (format) {
     case EggTexture::F_red:
       return Texture::F_red;
@@ -1092,42 +1109,49 @@ convert_format(EggTexture::Format format){
       return Texture::F_sluminance;
       break;
     case EggTexture::F_rgba:
-      return Texture::F_rgba;
+      return (force_srgb ? Texture::F_srgb_alpha : Texture::F_rgba);
       break;
     case EggTexture::F_rgbm:
-      return Texture::F_rgbm;
+      return (force_srgb ? Texture::F_srgb_alpha : Texture::F_rgbm);
       break;
     case EggTexture::F_rgba12:
-      return Texture::F_rgba12;
+      return (force_srgb ? Texture::F_srgb_alpha : Texture::F_rgba12);
       break;
     case EggTexture::F_rgba8:
-      return Texture::F_rgba8;
+      return (force_srgb ? Texture::F_srgb_alpha : Texture::F_rgba8);
+      break;
     case EggTexture::F_rgba4:
-      return Texture::F_rgba4;
+      return (force_srgb ? Texture::F_srgb_alpha : Texture::F_rgba4);
       break;
     case EggTexture::F_rgba5:
-      return Texture::F_rgba5;
+      return (force_srgb ? Texture::F_srgb : Texture::F_rgba5);
       break;
     case EggTexture::F_rgb:
-      return Texture::F_rgb;
+      return (force_srgb ? Texture::F_srgb : Texture::F_rgb);
       break;
     case EggTexture::F_rgb12:
-      return Texture::F_rgb12;
+      return (force_srgb ? Texture::F_srgb : Texture::F_rgb12);
       break;
     case EggTexture::F_rgb8:
-      return Texture::F_rgb8;
+      return (force_srgb ? Texture::F_srgb : Texture::F_rgb8);
       break;
     case EggTexture::F_rgb5:
-      return Texture::F_rgb5;
+      return (force_srgb ? Texture::F_srgb : Texture::F_rgb5);
       break;
     case EggTexture::F_rgb332:
-      return Texture::F_rgb332;
+      return (force_srgb ? Texture::F_srgb : Texture::F_rgb332);
       break;
     case EggTexture::F_luminance_alpha:
-      return Texture::F_luminance_alpha;
+      return (force_srgb ? Texture::F_sluminance_alpha : Texture::F_luminance_alpha);
       break;
     case EggTexture::F_luminance_alphamask:
-      return Texture::F_luminance_alphamask;
+      return (force_srgb ? Texture::F_sluminance_alpha : Texture::F_luminance_alphamask);
+      break;
+    case EggTexture::F_srgb:
+      return Texture::F_srgb;
+      break;
+    case EggTexture::F_srgb_alpha:
+      return Texture::F_srgb_alpha;
       break;
   }
   //Is this an acceptible default?
@@ -1290,11 +1314,13 @@ set_up_sampler(SamplerState &sampler, const EggTexture *egg_tex){
   }
 }
 /**
- *
+ * Now that the texture is fully loaded determine whether there are any inconsistancies
+ * in the texture vs the attributes.
  */
 void EggLoader::
-apply_texture_attributes(Texture *tex, SamplerState sampler, const EggTexture *egg_tex) {
+check_texture_attributes(Texture *tex, SamplerState sampler, const EggTexture *egg_tex) {
   //move to texture pool
+  //implement the code in TexturePool then move it
   if (egg_tex->get_compression_mode() != EggTexture::CM_default) {
     tex->set_compression(convert_compression_mode(egg_tex->get_compression_mode()));
   }
@@ -1340,114 +1366,54 @@ apply_texture_attributes(Texture *tex, SamplerState sampler, const EggTexture *e
   } else if (tex->get_num_components() == 2) {
     switch (egg_tex->get_format()) {
     case EggTexture::F_luminance_alpha:
-      tex->set_format(force_srgb ? Texture::F_sluminance_alpha : Texture::F_luminance_alpha);
-      break;
-
     case EggTexture::F_luminance_alphamask:
-      tex->set_format(force_srgb ? Texture::F_sluminance_alpha : Texture::F_luminance_alphamask);
-      break;
-
-    default:
-      egg2pg_cat.warning()
-        << "Ignoring inappropriate format " << egg_tex->get_format()
-        << " for 2-component texture " << egg_tex->get_name() << "\n";
-
     case EggTexture::F_unspecified:
-      if (force_srgb) {
-        tex->set_format(Texture::F_sluminance_alpha);
-      }
       break;
+    default:
+      egg2pg_cat.error()
+        << "Inappropriate format " << egg_tex->get_format()
+        << " for 2-component texture " << egg_tex->get_name() << "\n";
     }
 
   } else if (tex->get_num_components() == 3) {
     switch (egg_tex->get_format()) {
     case EggTexture::F_rgb:
-      tex->set_format(force_srgb ? Texture::F_srgb : Texture::F_rgb);
+    case EggTexture::F_rgb8:
+    case EggTexture::F_rgba8:
+    case EggTexture::F_unspecified:
       break;
     case EggTexture::F_rgb12:
-      if (force_srgb) {
-        tex->set_format(Texture::F_srgb);
-      } else if (tex->get_component_width() >= 2) {
-        // Only do this if the component width supports it.
-        tex->set_format(Texture::F_rgb12);
-      } else {
-        egg2pg_cat.warning()
-          << "Ignoring inappropriate format " << egg_tex->get_format()
+      if (!force_srgb && (tex->get_component_width() < 2)){
+        egg2pg_cat.error()
+          << "Inappropriate format " << egg_tex->get_format()
           << " for 8-bit texture " << egg_tex->get_name() << "\n";
       }
       break;
-    case EggTexture::F_rgb8:
-    case EggTexture::F_rgba8:
-      // We'll quietly accept RGBA8 for a 3-component texture, since flt2egg
-      // generates these for 3-component as well as for 4-component textures.
-      tex->set_format(force_srgb ? Texture::F_srgb : Texture::F_rgb8);
-      break;
-    case EggTexture::F_rgb5:
-      tex->set_format(force_srgb ? Texture::F_srgb : Texture::F_rgb5);
-      break;
-    case EggTexture::F_rgb332:
-      tex->set_format(force_srgb ? Texture::F_srgb : Texture::F_rgb332);
-      break;
-    case EggTexture::F_srgb:
-    case EggTexture::F_srgb_alpha:
-      tex->set_format(Texture::F_srgb);
-      break;
-
     default:
-      egg2pg_cat.warning()
-        << "Ignoring inappropriate format " << egg_tex->get_format()
+      egg2pg_cat.error() 
+        << "Inappropriate format " << egg_tex->get_format()
         << " for 3-component texture " << egg_tex->get_name() << "\n";
-
-    case EggTexture::F_unspecified:
-      if (force_srgb) {
-        tex->set_format(Texture::F_srgb);
-      }
-      break;
     }
-
   } else if (tex->get_num_components() == 4) {
     switch (egg_tex->get_format()) {
     case EggTexture::F_rgba:
-      tex->set_format(force_srgb ? Texture::F_srgb_alpha : Texture::F_rgba);
-      break;
     case EggTexture::F_rgbm:
-      tex->set_format(force_srgb ? Texture::F_srgb_alpha : Texture::F_rgbm);
+    case EggTexture::F_rgba8:
+    case EggTexture::F_rgba4:
+    case EggTexture::F_rgba5:
+    case EggTexture::F_srgb_alpha:
+    case EggTexture::F_unspecified:
       break;
     case EggTexture::F_rgba12:
-      if (force_srgb) {
-        tex->set_format(Texture::F_srgb_alpha);
-      } else if (tex->get_component_width() >= 2) {
-        // Only do this if the component width supports it.
-        tex->set_format(force_srgb ? Texture::F_srgb_alpha : Texture::F_rgba12);
-      } else {
+      if(!force_srgb || (tex->get_component_width() < 2){
         egg2pg_cat.warning()
-          << "Ignoring inappropriate format " << egg_tex->get_format()
+          << "Inappropriate format " << egg_tex->get_format()
           << " for 8-bit texture " << egg_tex->get_name() << "\n";
-      }
-      break;
-    case EggTexture::F_rgba8:
-      tex->set_format(force_srgb ? Texture::F_srgb_alpha : Texture::F_rgba8);
-      break;
-    case EggTexture::F_rgba4:
-      tex->set_format(force_srgb ? Texture::F_srgb_alpha : Texture::F_rgba4);
-      break;
-    case EggTexture::F_rgba5:
-      tex->set_format(force_srgb ? Texture::F_srgb_alpha : Texture::F_rgba5);
-      break;
-    case EggTexture::F_srgb_alpha:
-      tex->set_format(Texture::F_srgb_alpha);
-      break;
-
+      })
     default:
-      egg2pg_cat.warning()
-        << "Ignoring inappropriate format " << egg_tex->get_format()
+      egg2pg_cat.error()
+        << "Inappropriate format " << egg_tex->get_format()
         << " for 4-component texture " << egg_tex->get_name() << "\n";
-
-    case EggTexture::F_unspecified:
-      if (force_srgb) {
-        tex->set_format(Texture::F_srgb_alpha);
-      }
-      break;
     }
   }
 //put in texture pool
@@ -1456,25 +1422,6 @@ apply_texture_attributes(Texture *tex, SamplerState sampler, const EggTexture *e
     egg2pg_cat.warning()
       << "Unable to enable sRGB format on texture " << egg_tex->get_name()
       << " with specified format " << egg_tex->get_format() << "\n";
-  }
-//Move this to set_up_loader_optoins
-  switch (egg_tex->get_quality_level()) {
-  case EggTexture::QL_unspecified:
-  case EggTexture::QL_default:
-    tex->set_quality_level(Texture::QL_default);
-    break;
-
-  case EggTexture::QL_fastest:
-    tex->set_quality_level(Texture::QL_fastest);
-    break;
-
-  case EggTexture::QL_normal:
-    tex->set_quality_level(Texture::QL_normal);
-    break;
-
-  case EggTexture::QL_best:
-    tex->set_quality_level(Texture::QL_best);
-    break;
   }
 }
 

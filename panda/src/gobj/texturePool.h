@@ -138,6 +138,9 @@ private:
                             bool read_mipmaps,
                             const LoaderOptions &options,
                             const SamplerState &sampler);
+  
+  void apply_texture_attributes(PT(Texture)  *tex, const LoaderOptions, const SamplerState &sampler);
+
   Texture *ns_get_normalization_cube_map(int size);
   Texture *ns_get_alpha_scale_map();
 
@@ -185,14 +188,21 @@ private:
     Filename _alpha_fullpath;
     int _primary_file_num_channels = 0;
     int _alpha_file_channel = 0;
-    int _texture_format;
-    int _texture_quality;
-    int _texture_compress;
+    Texture::Format _texture_format;
+    Texture::QualityLevel _texture_quality;
+    Texture::CompressionMode _texture_compress;
     SamplerState _texture_sampler;
     Texture::TextureType _texture_type = Texture::TT_2d_texture;
 
     INLINE bool operator < (const LookupKey &other) const;
   };
+
+  TexturePool::LookupKey set_up_key(Texture::TextureType texture_type, 
+                                    int primary_file_num_channels,
+                                    int alpha_file_channel,
+                                    const LoaderOptions &options, 
+                                    const SamplerState &sampler);
+  
   typedef pmap<LookupKey, PT(Texture)> Textures;
   Textures _textures;
   typedef pmap<Filename, Filename> RelpathLookup;

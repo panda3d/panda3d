@@ -279,14 +279,8 @@ ns_has_texture(const Filename &orig_filename) {
 Texture *TexturePool::
 ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
                 bool read_mipmaps, const LoaderOptions &options, const SamplerState &sampler) {
-  LookupKey key;
-  key._primary_file_num_channels = primary_file_num_channels;
-  //New additions. This allows the texture information to remain unique
-  //if texture scalars are different
-  key._texture_format = options.get_texture_format();
-  key._texture_compress = options.get_texture_compress();
-  key._texture_quality = options.get_texture_quality();
-  key._texture_sampler = sampler;
+  
+  LookupKey key = set_up_key(Texture::TT_2d_texture, primary_file_num_channels, 0, options, sampler);
   {
     MutexHolder holder(_lock);
     resolve_filename(key._fullpath, orig_filename, read_mipmaps, options);
@@ -452,15 +446,7 @@ ns_load_texture(const Filename &orig_filename,
                            read_mipmaps, options, sampler);
   }
 
-  LookupKey key;
-  key._primary_file_num_channels = primary_file_num_channels;
-  key._alpha_file_channel = alpha_file_channel;
-  //New additions. This allows the texture information to remain unique
-  //if texture scalars are different
-  key._texture_format = options.get_texture_format();
-  key._texture_compress = options.get_texture_compression();
-  key._texture_quality = options.get_texture_quality();
-  key._texture_sampler = sampler;
+  LookupKey key = set_up_key(Texture::TT_2d_texture, primary_file_num_channels, alpha_file_channel, options, sampler);
   {
     MutexHolder holder(_lock);
     resolve_filename(key._fullpath, orig_filename, read_mipmaps, options);
@@ -575,9 +561,10 @@ ns_load_texture(const Filename &orig_filename,
   if (use_filters) {
     tex = post_load(tex);
   }
-
+  apply_texture_attributes(tex, options, sampler);
   return tex;
 }
+
 
 /**
  * The nonstatic implementation of load_3d_texture().
@@ -588,14 +575,7 @@ ns_load_3d_texture(const Filename &filename_pattern,
   Filename orig_filename(filename_pattern);
   orig_filename.set_pattern(true);
 
-  LookupKey key;
-  key._texture_type = Texture::TT_3d_texture;
-  //New additions. This allows the texture information to remain unique
-  //if texture scalars are different
-  key._texture_format = options.get_texture_format();
-  key._texture_compress = options.get_texture_compress();
-  key._texture_quality = options.get_texture_quality();
-  key._texture_sampler = sampler;
+  LookupKey key = set_up_key(Texture::TT_3d_texture, 0, 0, options, sampler);
   {
     MutexHolder holder(_lock);
     resolve_filename(key._fullpath, orig_filename, read_mipmaps, options);
@@ -696,14 +676,7 @@ ns_load_2d_texture_array(const Filename &filename_pattern,
   Filename orig_filename(filename_pattern);
   orig_filename.set_pattern(true);
 
-  LookupKey key;
-  key._texture_type = Texture::TT_2d_texture_array;
-  //New additions. This allows the texture information to remain unique
-  //if texture scalars are different
-  key._texture_format = options.get_texture_format();
-  key._texture_compress = options.get_texture_compress();
-  key._texture_quality = options.get_texture_quality();
-  key._texture_sampler = sampler;
+  LookupKey key = set_up_key(Texture::TT_2d_texture_array, 0, 0, options, sampler);
   {
     MutexHolder holder(_lock);
     resolve_filename(key._fullpath, orig_filename, read_mipmaps, options);
@@ -804,14 +777,7 @@ ns_load_cube_map(const Filename &filename_pattern, bool read_mipmaps,
   Filename orig_filename(filename_pattern);
   orig_filename.set_pattern(true);
 
-  LookupKey key;
-  key._texture_type = Texture::TT_cube_map;
-  //New additions. This allows the texture information to remain unique
-  //if texture scalars are different
-  key._texture_format = options.get_texture_format();
-  key._texture_compress = options.get_texture_compress();
-  key._texture_quality = options.get_texture_quality();
-  key._texture_sampler = sampler;
+  LookupKey key = set_up_key(Texture::TT_cube_map, 0, 0, options, sampler);
   {
     MutexHolder holder(_lock);
     resolve_filename(key._fullpath, orig_filename, read_mipmaps, options);
@@ -903,6 +869,24 @@ ns_load_cube_map(const Filename &filename_pattern, bool read_mipmaps,
   return tex;
 }
 
+TexturePool::LookupKey TexturePool::
+set_up_key(Texture::TextureType texture_type, 
+                                    int primary_file_num_channels,
+                                    int alpha_file_channel,
+                                    const LoaderOptions &options, 
+                                    const SamplerState &sampler) {
+  LookupKey key;
+  key._primary_file_num_channels = primary_file_num_channels;
+  key._alpha_file_channel = alpha_file_channel;
+  key._texture_type = texture_type;
+  key._texture_format = options.get_texture_format();
+  key._texture_compress = options.get_texture_compression();
+  key._texture_quality = options.get_texture_quality();
+  key._texture_sampler = sampler;
+  
+  return key;
+}
+
 /**
  * The nonstatic implementation of get_normalization_cube_map().
  */
@@ -921,6 +905,13 @@ ns_get_normalization_cube_map(int size) {
   return _normalization_cube_map;
 }
 
+/**
+ * The texture is loaded, apply any atributes that were sent in with the texture
+ */
+void
+apply_texture_attributes(tex, options, sampler){
+
+}
 /**
  * The nonstatic implementation of get_alpha_scale_map().
  */
