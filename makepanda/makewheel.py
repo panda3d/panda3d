@@ -443,9 +443,14 @@ class WheelFile(object):
                     subprocess.call(["install_name_tool", "-change", dep, new_dep, temp.name])
                     remove_signature = True
 
-                # Remove the codesign signature if we modified the library.
+                # Replace the codesign signature if we modified the library.
                 if remove_signature:
-                    subprocess.call(["codesign", "--remove-signature", temp.name])
+                    if self.platform.endswith("_arm64"):
+                        subprocess.call(["codesign", "-f", "-s", "-", temp.name])
+                    else:
+                        subprocess.call(["codesign", "--remove-signature", temp.name])
+                        if self.platform.endswith("_universal2"):
+                            subprocess.call(["codesign", "-a", "arm64", "-s", "-", temp.name])
             else:
                 # On other unixes, we just add dependencies normally.
                 for dep in deps:
