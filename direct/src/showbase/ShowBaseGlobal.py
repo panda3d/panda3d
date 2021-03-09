@@ -19,6 +19,7 @@ from panda3d.core import VirtualFileSystem, Notify, ClockObject, PandaSystem
 from panda3d.core import ConfigPageManager, ConfigVariableManager
 from panda3d.core import NodePath, PGTop
 from . import DConfig as config
+import warnings
 
 __dev__ = config.GetBool('want-dev', __debug__)
 
@@ -63,7 +64,8 @@ directNotify.setDconfigLevels()
 
 def run():
     """Deprecated alias for :meth:`base.run() <.ShowBase.run>`."""
-    assert ShowBase.notify.warning("run() is deprecated, use base.run() instead")
+    if __debug__:
+        warnings.warn("run() is deprecated, use base.run() instead", DeprecationWarning, stacklevel=2)
     base.run()
 
 
