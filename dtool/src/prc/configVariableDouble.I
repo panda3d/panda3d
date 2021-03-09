@@ -138,3 +138,11 @@ INLINE void ConfigVariableDouble::
 set_word(size_t n, double value) {
   set_double_word(n, value);
 }
+
+/**
+ * Returns true if the variable is not 0.0.
+ */
+INLINE bool ConfigVariableDouble::
+__bool__() const {
+  return get_value() != 0.0;
+}

@@ -46,6 +46,8 @@ PUBLISHED:
   INLINE double get_word(size_t n) const;
   INLINE void set_word(size_t n, double value);
 
+  INLINE bool __bool__() const;
+
 private:
   void set_default_value(double default_value);
 
