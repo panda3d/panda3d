@@ -16,12 +16,12 @@ __all__ = []
 from .ShowBase import ShowBase, WindowControls # pylint: disable=unused-import
 from direct.directnotify.DirectNotifyGlobal import directNotify, giveNotify # pylint: disable=unused-import
 from panda3d.core import VirtualFileSystem, Notify, ClockObject, PandaSystem
-from panda3d.core import ConfigPageManager, ConfigVariableManager
+from panda3d.core import ConfigPageManager, ConfigVariableManager, ConfigVariableBool
 from panda3d.core import NodePath, PGTop
 from . import DConfig as config
 import warnings
 
-__dev__ = config.GetBool('want-dev', __debug__)
+__dev__ = ConfigVariableBool('want-dev', __debug__).value
 
 #: The global instance of the :ref:`virtual-file-system`, as obtained using
 #: :meth:`panda3d.core.VirtualFileSystem.getGlobalPtr()`.

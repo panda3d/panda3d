@@ -7,6 +7,9 @@ from direct.directnotify.DirectNotifyGlobal import directNotify
 import warnings
 
 
+_want_python_motion_trails = ConfigVariableBool('want-python-motion-trails', False)
+
+
 def remove_task():
     if MotionTrail.task_added:
         total_motion_trails = len(MotionTrail.motion_trail_list)
@@ -134,7 +137,7 @@ class MotionTrail(NodePath, DirectObject):
         self.cmotion_trail.setGeomNode(self.geom_node)
 
         self.modified_vertices = True
-        if base.config.GetBool('want-python-motion-trails', 0):
+        if _want_python_motion_trails:
             self.use_python_version = True
         else:
             self.use_python_version = False

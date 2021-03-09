@@ -542,10 +542,18 @@ class OnscreenText(NodePath):
         for option, value in kw.items():
             # Use option string to access setter function
             try:
-                setter = getattr(self, 'set' + option[0].upper() + option[1:])
-                if setter == self.setPos:
-                    setter(value[0], value[1])
+                if option == 'pos':
+                    self.setTextPos(value[0], value[1])
+                elif option == 'roll':
+                    self.setTextR(-value)
+                elif option == 'scale':
+                    self.setTextScale(value)
+                elif option == 'x':
+                    self.setTextX(value)
+                elif option == 'y':
+                    self.setTextY(value)
                 else:
+                    setter = getattr(self, 'set' + option[0].upper() + option[1:])
                     setter(value)
             except AttributeError:
                 print('OnscreenText.configure: invalid option: %s' % option)
@@ -557,6 +565,17 @@ class OnscreenText(NodePath):
     def cget(self, option):
         # Get current configuration setting.
         # This is for compatibility with DirectGui functions
+        if option == 'pos':
+            return self.__pos
+        elif option == 'roll':
+            return self.__roll
+        elif option == 'scale':
+            return self.__scale
+        elif option == 'x':
+            return self.__pos[0]
+        elif option == 'y':
+            return self.__pos[1]
+
         getter = getattr(self, 'get' + option[0].upper() + option[1:])
         return getter()
 
