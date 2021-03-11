@@ -749,7 +749,7 @@ do_reshape_request(int x_origin, int y_origin, bool has_origin,
     GetWindowInfo(_hWnd, &wi);
     AdjustWindowRectEx(&view_rect, wi.dwStyle, FALSE, wi.dwExStyle);
 
-    UINT flags = SWP_NOZORDER | SWP_NOSENDCHANGING;
+    UINT flags = SWP_NOZORDER | SWP_NOSENDCHANGING | SWP_NOACTIVATE;
 
     if (has_origin) {
       x_origin = view_rect.left;
