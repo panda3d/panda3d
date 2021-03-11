@@ -434,7 +434,9 @@ set_properties_now(WindowProperties &properties) {
         break;
 
       case WindowProperties::M_confined:
-        if (confine_cursor()) {
+        // If we are not the foreground window, we defer confining the cursor
+        // until we are.
+        if (GetForegroundWindow() != _hWnd || confine_cursor()) {
           _properties.set_mouse_mode(WindowProperties::M_confined);
         }
         break;
@@ -474,6 +476,11 @@ void WinGraphicsWindow::
 close_window() {
   set_cursor_out_of_window();
   DestroyWindow(_hWnd);
+
+  if (_properties.has_mouse_mode() &&
+      _properties.get_mouse_mode() == WindowProperties::M_confined) {
+    ClipCursor(nullptr);
+  }
 
   if (is_fullscreen()) {
     // revert to default display mode.
@@ -758,12 +765,6 @@ do_reshape_request(int x_origin, int y_origin, bool has_origin,
                  view_rect.bottom - view_rect.top,
                  flags);
 
-    // If we are in confined mode, we must update the clip region.
-    if (_properties.has_mouse_mode() &&
-        _properties.get_mouse_mode() == WindowProperties::M_confined) {
-      confine_cursor();
-    }
-
     handle_reshape();
     return true;
   }
@@ -811,6 +812,28 @@ handle_reshape() {
         << "ClientToScreen() failed in handle_reshape.  Ignoring.\n";
     }
     return;
+  }
+
+  // If we are in confined mode, we must update the clip region.  However,
+  // we ony do that if the cursor in currently inside the window, to properly
+  // handle the case where someone is resizing the window straight after
+  // switching to it (you can do this if you press the start menu key to
+  // deactive the window, and then trying to resize it)
+  if (_properties.has_mouse_mode() &&
+      _properties.get_mouse_mode() == WindowProperties::M_confined &&
+      _hWnd == GetForegroundWindow()) {
+
+    POINT cpos;
+    if (GetCursorPos(&cpos) && PtInRect(&view_rect, cpos)) {
+      windisplay_cat.info()
+        << "ClipCursor() to " << view_rect.left << "," << view_rect.top
+        << " to " << view_rect.right << "," << view_rect.bottom << endl;
+
+      if (!ClipCursor(&view_rect)) {
+        windisplay_cat.warning()
+          << "Failed to re-confine cursor to window.\n";
+      }
+    }
   }
 
   WindowProperties properties;
