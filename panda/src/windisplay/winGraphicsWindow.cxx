@@ -979,12 +979,12 @@ make_style(const WindowProperties &properties) {
 
   if (properties.get_fullscreen()) {
     window_style |= WS_POPUP | WS_SYSMENU;
-  } else {
-    if (_parent_window_handle) {
-      window_style |= WS_CHILD;
-    } else {
-      window_style |= WS_POPUP;
-    }
+  }
+  else if (_parent_window_handle) {
+    window_style |= WS_CHILD;
+  }
+  else {
+    window_style |= WS_POPUP;
 
     if (!properties.get_undecorated()) {
       window_style |= (WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX);
