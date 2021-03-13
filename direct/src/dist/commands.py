@@ -684,6 +684,11 @@ class build_apps(setuptools.Command):
                         self.warn("Missing audio plugin p3fmod_audio referenced in PRC data, replacing with p3openal_audio")
                         value = 'p3openal_audio'
 
+                if var == 'aux-display':
+                    # Silently remove aux-display lines for missing plugins.
+                    if value not in self.plugins:
+                        continue
+
                 for plugin in check_plugins:
                     if plugin in value and plugin not in self.plugins:
                         useline = False
