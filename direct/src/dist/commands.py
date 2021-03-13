@@ -682,6 +682,7 @@ class build_apps(setuptools.Command):
                     # by default.  Switch it up if FMOD is not included.
                     if value not in self.plugins and value == 'p3fmod_audio' and 'p3openal_audio' in self.plugins:
                         self.warn("Missing audio plugin p3fmod_audio referenced in PRC data, replacing with p3openal_audio")
+                        value = 'p3openal_audio'
 
                 for plugin in check_plugins:
                     if plugin in value and plugin not in self.plugins:
