@@ -99,10 +99,13 @@ PACKAGE_DATA_DIRS = {
 
 # Some dependencies have extra directories that need to be scanned for DLLs.
 # This dictionary maps wheel basenames (ie. the part of the .whl basename
-# before the first hyphen) to a list of directories inside the .whl.
+# before the first hyphen) to a list of tuples, the first value being the
+# directory inside the wheel, the second being which wheel to look in (or
+# None to look in its own wheel).
 
 PACKAGE_LIB_DIRS = {
-    'scipy':  ['scipy/extra-dll'],
+    'scipy':  [('scipy/extra-dll', None)],
+    'PyQt5':  [('PyQt5/Qt5/bin', 'PyQt5_Qt5')],
 }
 
 SITE_PY = u"""
@@ -610,6 +613,12 @@ class build_apps(setuptools.Command):
                     # by default.  Switch it up if FMOD is not included.
                     if value not in self.plugins and value == 'p3fmod_audio' and 'p3openal_audio' in self.plugins:
                         self.warn("Missing audio plugin p3fmod_audio referenced in PRC data, replacing with p3openal_audio")
+                        value = 'p3openal_audio'
+
+                if var == 'aux-display':
+                    # Silently remove aux-display lines for missing plugins.
+                    if value not in self.plugins:
+                        continue
 
                 for plugin in check_plugins:
                     if plugin in value and plugin not in self.plugins:
@@ -662,8 +671,13 @@ class build_apps(setuptools.Command):
                     # Also look for more specific per-package cases, defined in
                     # PACKAGE_LIB_DIRS at the top of this file.
                     extra_dirs = PACKAGE_LIB_DIRS.get(whl_name, [])
-                    for extra_dir in extra_dirs:
-                        search_path.append(os.path.join(whl, extra_dir.replace('/', os.path.sep)))
+                    for extra_dir, search_in in extra_dirs:
+                        if not search_in:
+                            search_path.append(os.path.join(whl, extra_dir.replace('/', os.path.sep)))
+                        else:
+                            for whl2 in wheelpaths:
+                                if os.path.basename(whl2).startswith(search_in + '-'):
+                                    search_path.append(os.path.join(whl2, extra_dir.replace('/', os.path.sep)))
 
             return search_path
 

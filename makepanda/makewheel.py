@@ -404,6 +404,7 @@ class WheelFile(object):
 
             # Now add dependencies.  On macOS, fix @loader_path references.
             if sys.platform == "darwin":
+                is_unsigned = subprocess.call(['codesign', '-d', temp.name], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                 if source_path.endswith('deploy-stubw'):
                     deps_path = '@executable_path/../Frameworks'
                 else:
@@ -452,9 +453,15 @@ class WheelFile(object):
                     subprocess.call(["install_name_tool", "-change", dep, new_dep, temp.name])
                     remove_signature = True
 
-                # Remove the codesign signature if we modified the library.
-                if remove_signature:
+                # Replace the codesign signature if we modified the library.
+                if self.platform.endswith("_arm64") and (is_unsigned or remove_signature):
+                    subprocess.call(["codesign", "-f", "-s", "-", temp.name])
+                elif remove_signature and not is_unsigned:
+                    if GetVerbose():
+                        print("Removing code signature from {0}".format(source_path))
                     subprocess.call(["codesign", "--remove-signature", temp.name])
+                    if self.platform.endswith("_universal2"):
+                        subprocess.call(["codesign", "-a", "arm64", "-s", "-", temp.name])
             else:
                 # On other unixes, we just add dependencies normally.
                 for dep in deps:
