@@ -68,7 +68,7 @@ protected:
   virtual bool open_window();
 
 #if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
-  CGDisplayModeRef find_display_mode(int width, int height);
+  CFMutableArrayRef find_display_modes(int width, int height);
   bool do_switch_fullscreen(CGDisplayModeRef mode);
 #else
   CFDictionaryRef find_display_mode(int width, int height);
