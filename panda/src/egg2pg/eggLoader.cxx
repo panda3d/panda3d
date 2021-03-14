@@ -1055,7 +1055,8 @@ load_texture(TextureDef &def, EggTexture *egg_tex) {
 
 /**
  * Populate the loader options for the incoming texture. These are applied to the texuture 
- * and also used to search for the texture.
+ * and also used to search for the texture. Textures are stored in texturePool in _textures
+ * a map object
  */
 void EggLoader::
 set_up_loader_options(EggTexture *egg_tex, LoaderOptions & options, SamplerState & sampler){
@@ -1067,8 +1068,9 @@ set_up_loader_options(EggTexture *egg_tex, LoaderOptions & options, SamplerState
 }
 
 /**
- * Convert between EggTexture::format and Texture::format enums. This is not a one-to-one correspondance
- * so it has to be done in a switch statement.
+ * Returns the Texture::Format enum corresponding to the
+ * EggTexture::Format.  Returns F_rgba if the compression mode is
+ * unspecified.
  */
 Texture::Format EggLoader::
 convert_format(EggTexture::Format format, EggTexture::EnvType env){
@@ -1154,10 +1156,16 @@ convert_format(EggTexture::Format format, EggTexture::EnvType env){
       return Texture::F_srgb_alpha;
       break;
   }
-  //Is this an acceptible default?
-  return Texture::F_sluminance;
+  egg2pg_cat.warning()
+    << "Unexpected format scalar: " << (int)format << "\n";
+  return Texture::F_rgba;
 }
 
+/**
+ * Returns the Texture::QualityLevel enum corresponding to the
+ * EggTexture::QualityLevel.  Returns QL_default if the quality level is
+ * unspecified.
+ */
 Texture::QualityLevel EggLoader::
 convert_quality_level(EggTexture::QualityLevel quality){
   switch (quality) {
@@ -1179,6 +1187,10 @@ convert_quality_level(EggTexture::QualityLevel quality){
   return Texture::QL_default;
 }
 
+/**
+ * Set up the sampler object that will be stored in the texture pool. Samplers store
+ * the wrap mode, the min and mag filters, and ansioisotopic degree
+ */
 void EggLoader::
 set_up_sampler(SamplerState &sampler, const EggTexture *egg_tex){
   EggTexture::WrapMode wrap_u = egg_tex->determine_wrap_u();
@@ -1313,6 +1325,7 @@ set_up_sampler(SamplerState &sampler, const EggTexture *egg_tex){
     sampler.set_lod_bias(egg_tex->get_lod_bias());
   }
 }
+
 /**
  * Now that the texture is fully loaded determine whether there are any inconsistancies
  * in the texture vs the attributes.
