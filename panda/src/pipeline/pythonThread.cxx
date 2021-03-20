@@ -258,7 +258,9 @@ call_python_func(PyObject *function, PyObject *args) {
 
       PyGILState_Release(gstate);
 
-      PyErr_Restore(exc, val, tb);
+      if (PyGILState_Check()) {
+        PyErr_Restore(exc, val, tb);
+      }
     } else {
       // No exception.  Restore the thread state normally.
       PyGILState_Release(gstate);

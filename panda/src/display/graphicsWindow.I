@@ -14,7 +14,7 @@
 /**
  * Returns true if the window has not yet been opened, or has been fully
  * closed, false if it is open.  The window is not opened immediately after
- * GraphicsEngine::make_window() is called; nor is it closed immediately after
+ * GraphicsEngine::make_output() is called; nor is it closed immediately after
  * GraphicsEngine::remove_window() is called.  Either operation may take a
  * frame or two.
  */
@@ -34,7 +34,7 @@ is_fullscreen() const {
 
 /**
  * If this flag is false, the window is redrawn only after it has received a
- * recent "unexpose" or "draw" event from the underlying windowing systme.  If
+ * recent "unexpose" or "draw" event from the underlying windowing system.  If
  * this flag is true, the window is redrawn every frame regardless.  Setting
  * this false may prevent the window from redrawing unnecessarily when it is
  * hidden, and may play nicer with other windows on the desktop, but may

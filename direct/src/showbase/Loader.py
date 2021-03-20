@@ -8,6 +8,7 @@ from panda3d.core import *
 from panda3d.core import Loader as PandaLoader
 from direct.directnotify.DirectNotifyGlobal import *
 from direct.showbase.DirectObject import DirectObject
+import warnings
 
 # You can specify a phaseChecker callback to check
 # a modelPath to see if it is being loaded in the correct
@@ -30,42 +31,6 @@ class Loader(DirectObject):
 
         # This indicates that this class behaves like a Future.
         _asyncio_future_blocking = False
-
-        class _ResultAwaiter(object):
-            """Reinvents generators because of PEP 479, sigh.  See #513."""
-
-            __slots__ = 'requestList', 'index'
-
-            def __init__(self, requestList):
-                self.requestList = requestList
-                self.index = 0
-
-            def __await__(self):
-                return self
-
-            def __anext__(self):
-                if self.index >= len(self.requestList):
-                    raise StopAsyncIteration
-                return self
-
-            def __iter__(self):
-                return self
-
-            def __next__(self):
-                i = self.index
-                request = self.requestList[i]
-                if not request.done():
-                    return request
-
-                self.index = i + 1
-
-                result = request.result()
-                if isinstance(result, PandaNode):
-                    result = NodePath(result)
-
-                exc = StopIteration(result)
-                exc.value = result
-                raise exc
 
         def __init__(self, loader, numObjects, gotList, callback, extraArgs):
             self._loader = loader
@@ -124,13 +89,15 @@ class Loader(DirectObject):
 
             if self.requests:
                 self._asyncio_future_blocking = True
+                while self.requests:
+                    yield self
 
             if self.gotList:
-                return self._ResultAwaiter([self])
+                return self.objects
             else:
-                return self._ResultAwaiter(self.requestList)
+                return self.objects[0]
 
-        def __aiter__(self):
+        async def __aiter__(self):
             """ This allows using `async for` to iterate asynchronously over
             the results of this class.  It does guarantee to return the
             results in order, though, even though they may not be loaded in
@@ -138,7 +105,8 @@ class Loader(DirectObject):
             requestList = self.requestList
             assert requestList is not None, "Request was cancelled."
 
-            return self._ResultAwaiter(requestList)
+            for req in requestList:
+                yield await req
 
     # special methods
     def __init__(self, base):
@@ -328,7 +296,8 @@ class Loader(DirectObject):
         called after cancelRequest() has been performed.
 
         This is now deprecated: call cb.cancel() instead. """
-
+        if __debug__:
+            warnings.warn("This is now deprecated: call cb.cancel() instead.", DeprecationWarning, stacklevel=2)
         cb.cancel()
 
     def isRequestPending(self, cb):
@@ -337,7 +306,8 @@ class Loader(DirectObject):
         been cancelled.
 
         This is now deprecated: call cb.done() instead. """
-
+        if __debug__:
+            warnings.warn("This is now deprecated: call cb.done() instead.", DeprecationWarning, stacklevel=2)
         return bool(cb.requests)
 
     def loadModelOnce(self, modelPath):
@@ -348,7 +318,8 @@ class Loader(DirectObject):
         then attempt to load it from disk. Return a nodepath to
         the model if successful or None otherwise
         """
-        Loader.notify.info("loader.loadModelOnce() is deprecated; use loader.loadModel() instead.")
+        if __debug__:
+            warnings.warn("loader.loadModelOnce() is deprecated; use loader.loadModel() instead.", DeprecationWarning, stacklevel=2)
 
         return self.loadModel(modelPath, noCache = False)
 
@@ -359,7 +330,8 @@ class Loader(DirectObject):
         then attempt to load it from disk. Return a nodepath to
         a copy of the model if successful or None otherwise
         """
-        Loader.notify.info("loader.loadModelCopy() is deprecated; use loader.loadModel() instead.")
+        if __debug__:
+            warnings.warn("loader.loadModelCopy() is deprecated; use loader.loadModel() instead.", DeprecationWarning, stacklevel=2)
 
         return self.loadModel(modelPath, loaderOptions = loaderOptions, noCache = False)
 
@@ -377,7 +349,8 @@ class Loader(DirectObject):
 
         However, if you're loading a font, see loadFont(), below.
         """
-        Loader.notify.info("loader.loadModelNode() is deprecated; use loader.loadModel() instead.")
+        if __debug__:
+            warnings.warn("loader.loadModelNode() is deprecated; use loader.loadModel() instead.", DeprecationWarning, stacklevel=2)
 
         model = self.loadModel(modelPath, noCache = False)
         if model is not None:

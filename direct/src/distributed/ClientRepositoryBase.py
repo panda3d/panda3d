@@ -33,7 +33,7 @@ class ClientRepositoryBase(ConnectionRepository):
         ConnectionRepository.__init__(self, connectMethod, base.config, hasOwnerView = True, threadedNet = threadedNet)
         self.dcSuffix = dcSuffix
         if hasattr(self, 'setVerbose'):
-            if self.config.GetBool('verbose-clientrepository'):
+            if ConfigVariableBool('verbose-clientrepository', False):
                 self.setVerbose(1)
 
         self.context=100000
@@ -42,7 +42,7 @@ class ClientRepositoryBase(ConnectionRepository):
         self.deferredGenerates = []
         self.deferredDoIds = {}
         self.lastGenerate = 0
-        self.setDeferInterval(base.config.GetDouble('deferred-generate-interval', 0.2))
+        self.setDeferInterval(ConfigVariableDouble('deferred-generate-interval', 0.2).value)
         self.noDefer = False  # Set this True to temporarily disable deferring.
 
         self.recorder = base.recorder
@@ -69,7 +69,7 @@ class ClientRepositoryBase(ConnectionRepository):
 
         # Keep track of how recently we last sent a heartbeat message.
         # We want to keep these coming at heartbeatInterval seconds.
-        self.heartbeatInterval = base.config.GetDouble('heartbeat-interval', 10)
+        self.heartbeatInterval = ConfigVariableDouble('heartbeat-interval', 10).value
         self.heartbeatStarted = 0
         self.lastHeartbeat = 0
 
@@ -497,7 +497,7 @@ class ClientRepositoryBase(ConnectionRepository):
 
     def handleServerHeartbeat(self, di):
         # Got a heartbeat message from the server.
-        if base.config.GetBool('server-heartbeat-info', 1):
+        if ConfigVariableBool('server-heartbeat-info', True):
             self.notify.info("Server heartbeat.")
 
     def handleSystemMessage(self, di):
@@ -581,7 +581,7 @@ class ClientRepositoryBase(ConnectionRepository):
         return worldNP
 
     def isLive(self):
-        if base.config.GetBool('force-live', 0):
+        if ConfigVariableBool('force-live', False):
             return True
         return not (__dev__ or launcher.isTestServer())
 

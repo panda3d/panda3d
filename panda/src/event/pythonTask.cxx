@@ -84,7 +84,6 @@ PythonTask(PyObject *func_or_coro, const std::string &name) :
  */
 PythonTask::
 ~PythonTask() {
-#ifndef NDEBUG
   // If the coroutine threw an exception, and there was no opportunity to
   // handle it, let the user know.
   if (_exception != nullptr && !_retrieved_exception) {
@@ -97,7 +96,6 @@ PythonTask::
     _exc_value = nullptr;
     _exc_traceback = nullptr;
   }
-#endif
 
   Py_XDECREF(_function);
   Py_DECREF(_args);
@@ -623,6 +621,11 @@ do_python_task() {
         // exception.
         return DS_done;
       }
+
+    } else if (result == Py_None) {
+      // Bare yield means to continue next frame.
+      Py_DECREF(result);
+      return DS_cont;
 
     } else if (DtoolInstance_Check(result)) {
       // We are waiting for an AsyncFuture (eg. other task) to finish.

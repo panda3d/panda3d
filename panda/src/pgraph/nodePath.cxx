@@ -959,6 +959,11 @@ set_pos(const LVecBase3 &pos) {
   node()->reset_prev_transform();
 }
 
+/**
+ * Sets the X component of the position transform, leaving other components
+ * untouched.
+ * @see set_pos()
+ */
 void NodePath::
 set_x(PN_stdfloat x) {
   nassertv_always(!is_empty());
@@ -967,6 +972,11 @@ set_x(PN_stdfloat x) {
   set_pos(pos);
 }
 
+/**
+ * Sets the Y component of the position transform, leaving other components
+ * untouched.
+ * @see set_pos()
+ */
 void NodePath::
 set_y(PN_stdfloat y) {
   nassertv_always(!is_empty());
@@ -975,6 +985,11 @@ set_y(PN_stdfloat y) {
   set_pos(pos);
 }
 
+/**
+ * Sets the Z component of the position transform, leaving other components
+ * untouched.
+ * @see set_pos()
+ */
 void NodePath::
 set_z(PN_stdfloat z) {
   nassertv_always(!is_empty());
@@ -1127,6 +1142,11 @@ set_scale(const LVecBase3 &scale) {
   set_transform(transform->set_scale(scale));
 }
 
+/**
+ * Sets the x-scale component of the transform, leaving other components
+ * untouched.
+ * @see set_scale()
+ */
 void NodePath::
 set_sx(PN_stdfloat sx) {
   nassertv_always(!is_empty());
@@ -1136,6 +1156,11 @@ set_sx(PN_stdfloat sx) {
   set_transform(transform->set_scale(scale));
 }
 
+/**
+ * Sets the y-scale component of the transform, leaving other components
+ * untouched.
+ * @see set_scale()
+ */
 void NodePath::
 set_sy(PN_stdfloat sy) {
   nassertv_always(!is_empty());
@@ -1145,6 +1170,11 @@ set_sy(PN_stdfloat sy) {
   set_transform(transform->set_scale(scale));
 }
 
+/**
+ * Sets the z-scale component of the transform, leaving other components
+ * untouched.
+ * @see set_scale()
+ */
 void NodePath::
 set_sz(PN_stdfloat sz) {
   nassertv_always(!is_empty());
@@ -4214,6 +4244,8 @@ get_material() const {
 /**
  * Recursively searches the scene graph for references to the given material,
  * and replaces them with the new material.
+ *
+ * @since 1.10.0
  */
 void NodePath::
 replace_material(Material *mat, Material *new_mat) {
@@ -4936,6 +4968,8 @@ get_transparency() const {
  * Specifically sets or disables a logical operation on this particular node.
  * If no other nodes override, this will cause geometry to be rendered without
  * color blending but instead using the given logical operator.
+ *
+ * @since 1.10.0
  */
 void NodePath::
 set_logic_op(LogicOpAttrib::Operation op, int priority) {
@@ -4948,6 +4982,8 @@ set_logic_op(LogicOpAttrib::Operation op, int priority) {
  * Completely removes any logical operation that may have been set on this
  * node via set_logic_op(). The geometry at this level and below will
  * subsequently be rendered using standard color blending.
+ *
+ * @since 1.10.0
  */
 void NodePath::
 clear_logic_op() {
@@ -4960,6 +4996,8 @@ clear_logic_op() {
  * particular node via set_logic_op().  If this returns true, then
  * get_logic_op() may be called to determine whether a logical operation has
  * been explicitly disabled for this node or set to particular operation.
+ *
+ * @since 1.10.0
  */
 bool NodePath::
 has_logic_op() const {
@@ -4974,6 +5012,8 @@ has_logic_op() const {
  * has_logic_op().  This does not necessarily imply that the geometry will
  * or will not be rendered with the given logical operation, as there may be
  * other nodes that override.
+ *
+ * @since 1.10.0
  */
 LogicOpAttrib::Operation NodePath::
 get_logic_op() const {

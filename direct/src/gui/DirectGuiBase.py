@@ -102,6 +102,8 @@ from direct.task.TaskManagerGlobal import taskMgr
 
 guiObjectCollector = PStatCollector("Client::GuiObjects")
 
+_track_gui_items = ConfigVariableBool('track-gui-items', False)
+
 
 class DirectGuiBase(DirectObject.DirectObject):
     """Base class of all DirectGUI widgets."""
@@ -638,7 +640,7 @@ class DirectGuiBase(DirectObject.DirectObject):
         """
         # Need to tack on gui item specific id
         gEvent = event + self.guiId
-        if ShowBaseGlobal.config.GetBool('debug-directgui-msgs', False):
+        if ConfigVariableBool('debug-directgui-msgs', False):
             from direct.showbase.PythonUtil import StackTrace
             print(gEvent)
             print(StackTrace())
@@ -667,7 +669,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
     # Determine the default initial state for inactive (or
     # unclickable) components.  If we are in edit mode, these are
     # actually clickable by default.
-    guiEdit = ShowBaseGlobal.config.GetBool('direct-gui-edit', False)
+    guiEdit = ConfigVariableBool('direct-gui-edit', False)
     if guiEdit:
         inactiveInitState = DGG.NORMAL
     else:
@@ -733,7 +735,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
             guiObjectCollector.addLevel(1)
             guiObjectCollector.flushLevel()
             # track gui items by guiId for tracking down leaks
-            if ShowBaseGlobal.config.GetBool('track-gui-items', False):
+            if _track_gui_items:
                 if not hasattr(ShowBase, 'guiItems'):
                     ShowBase.guiItems = {}
                 if self.guiId in ShowBase.guiItems:

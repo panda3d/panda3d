@@ -68,7 +68,7 @@ protected:
   virtual void close_window();
   virtual bool open_window();
 
-  CGDisplayModeRef find_display_mode(int width, int height);
+  CFMutableArrayRef find_display_modes(int width, int height);
   bool do_switch_fullscreen(CGDisplayModeRef mode);
 
   virtual void mouse_mode_absolute();

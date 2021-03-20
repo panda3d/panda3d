@@ -2135,14 +2135,49 @@ get_keyboard_map() const {
 
     // Compose a label for some keys; I have not yet been able to find an API
     // that does this effectively.
-    if (sym >= XK_a && sym <= XK_z) {
+    if (sym >= XK_exclam && sym <= XK_asciitilde) {
       label = toupper((char)sym);
     }
     else if (sym >= XK_F1 && sym <= XK_F35) {
       label = "F" + format_string(sym - XK_F1 + 1);
     }
-    else if (sym >= XK_exclamdown && sym <= XK_ydiaeresis) {
-      // A latin-1 symbol.  Translate this to the label.
+    else if (sym > 0x1000000 && sym < 0x1110000) {
+      // Unicode code point.  Encode as UTF-8.
+      char32_t ch = sym & 0x0ffffff;
+      if ((ch & ~0x7f) == 0) {
+        label = string(1, (char)ch);
+      }
+      else if ((ch & ~0x7ff) == 0) {
+        label =
+          string(1, (char)((ch >> 6) | 0xc0)) +
+          string(1, (char)((ch & 0x3f) | 0x80));
+      }
+      else if ((ch & ~0xffff) == 0) {
+        label =
+          string(1, (char)((ch >> 12) | 0xe0)) +
+          string(1, (char)(((ch >> 6) & 0x3f) | 0x80)) +
+          string(1, (char)((ch & 0x3f) | 0x80));
+      }
+      else {
+        label =
+          string(1, (char)((ch >> 18) | 0xf0)) +
+          string(1, (char)(((ch >> 12) & 0x3f) | 0x80)) +
+          string(1, (char)(((ch >> 6) & 0x3f) | 0x80)) +
+          string(1, (char)((ch & 0x3f) | 0x80));
+      }
+    }
+    else if ((sym >= XK_exclamdown && sym <= XK_umacron)
+          || (sym >= XK_OE && sym <= XK_Ydiaeresis)
+          || (sym >= XK_Serbian_dje && sym <= XK_Cyrillic_HARDSIGN)
+          || (sym >= XK_kana_fullstop && sym <= XK_semivoicedsound)
+          || (sym >= XK_Arabic_comma && sym <= XK_Arabic_sukun)
+          || (sym >= XK_Greek_ALPHAaccent && sym <= XK_Greek_omega)
+          || (sym >= XK_hebrew_doublelowline && sym <= XK_hebrew_taw)
+          || (sym >= XK_Thai_kokai && sym <= XK_Thai_lekkao)
+          || (sym >= XK_Hangul_Kiyeog && sym <= XK_Hangul_J_YeorinHieuh)
+          || sym == XK_EuroSign
+          || sym == XK_Korean_Won) {
+      // A non-unicode-based keysym.  Translate this to the label.
       char buffer[255];
       int nbytes = XkbTranslateKeySym(_display, &sym, 0, buffer, 255, 0);
       if (nbytes > 0) {

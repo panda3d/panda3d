@@ -12,6 +12,7 @@ import io
 import distutils.sysconfig as sysconf
 import zipfile
 import importlib
+import warnings
 
 from . import pefile
 
@@ -1985,7 +1986,7 @@ class Freezer:
 
         if append_offset:
             # This is for legacy deploy-stub.
-            print("WARNING: Could not find blob header. Is deploy-stub outdated?")
+            warnings.warn("Could not find blob header. Is deploy-stub outdated?")
             blob += struct.pack('<Q', blob_offset)
 
         with open(target, 'wb') as f:
