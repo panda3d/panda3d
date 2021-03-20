@@ -909,7 +909,8 @@ ns_get_normalization_cube_map(int size) {
 }
 
 /**
- * The texture is loaded, apply any atributes that were sent in with the texture
+ * The texture is loaded, apply any atributes that were sent in with the texture through LoaderOptions
+ * and Sampler State
  */
 void TexturePool::
 apply_texture_attributes(PT(Texture) tex, const LoaderOptions &options, const SamplerState &sampler){

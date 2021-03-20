@@ -1094,67 +1094,66 @@ convert_format(EggTexture::Format format, EggTexture::EnvType env){
   switch (format) {
     case EggTexture::F_red:
       return Texture::F_red;
-      break;
+
     case EggTexture::F_green:
       return Texture::F_green;
-      break;
+      
     case EggTexture::F_blue:
       return Texture::F_blue;
-      break;
+      
     case EggTexture::F_alpha:
       return Texture::F_alpha;
-      break;
+      
     case EggTexture::F_luminance:
       return Texture::F_luminance;
-      break;
+      
     case EggTexture::F_unspecified:
       return Texture::F_sluminance;
-      break;
+      
     case EggTexture::F_rgba:
       return (force_srgb ? Texture::F_srgb_alpha : Texture::F_rgba);
-      break;
+      
     case EggTexture::F_rgbm:
       return (force_srgb ? Texture::F_srgb_alpha : Texture::F_rgbm);
-      break;
+      
     case EggTexture::F_rgba12:
       return (force_srgb ? Texture::F_srgb_alpha : Texture::F_rgba12);
-      break;
+      
     case EggTexture::F_rgba8:
       return (force_srgb ? Texture::F_srgb_alpha : Texture::F_rgba8);
-      break;
+      
     case EggTexture::F_rgba4:
       return (force_srgb ? Texture::F_srgb_alpha : Texture::F_rgba4);
-      break;
+      
     case EggTexture::F_rgba5:
       return (force_srgb ? Texture::F_srgb : Texture::F_rgba5);
-      break;
+      
     case EggTexture::F_rgb:
       return (force_srgb ? Texture::F_srgb : Texture::F_rgb);
-      break;
+      
     case EggTexture::F_rgb12:
       return (force_srgb ? Texture::F_srgb : Texture::F_rgb12);
-      break;
+      
     case EggTexture::F_rgb8:
       return (force_srgb ? Texture::F_srgb : Texture::F_rgb8);
-      break;
+      
     case EggTexture::F_rgb5:
       return (force_srgb ? Texture::F_srgb : Texture::F_rgb5);
-      break;
+      
     case EggTexture::F_rgb332:
       return (force_srgb ? Texture::F_srgb : Texture::F_rgb332);
-      break;
+      
     case EggTexture::F_luminance_alpha:
       return (force_srgb ? Texture::F_sluminance_alpha : Texture::F_luminance_alpha);
-      break;
+      
     case EggTexture::F_luminance_alphamask:
       return (force_srgb ? Texture::F_sluminance_alpha : Texture::F_luminance_alphamask);
-      break;
+      
     case EggTexture::F_srgb:
       return Texture::F_srgb;
-      break;
+      
     case EggTexture::F_srgb_alpha:
       return Texture::F_srgb_alpha;
-      break;
   }
   egg2pg_cat.warning()
     << "Unexpected format scalar: " << (int)format << "\n";
@@ -1172,16 +1171,15 @@ convert_quality_level(EggTexture::QualityLevel quality){
     case EggTexture::QL_unspecified:
     case EggTexture::QL_default:
       return Texture::QL_default;
-      break;
+      
     case EggTexture::QL_fastest:
       return Texture::QL_fastest;
-      break;
+      
     case EggTexture::QL_best:
       return Texture::QL_best;
-      break;
+      
     case EggTexture::QL_normal:
       return Texture::QL_normal;
-      break;
   }
   //Is this an acceptible default?
   return Texture::QL_default;
