@@ -1,6 +1,8 @@
 from direct.gui.OnscreenText import OnscreenText
+import pytest
 
 
+@pytest.mark.filterwarnings("ignore::DeprecationWarning")
 def test_onscreentext_text_pos():
     text = OnscreenText(pos=(1, 2))
     assert text['pos'] == (1, 2)
@@ -43,6 +45,7 @@ def test_onscreentext_text_pos():
     assert text.get_pos() == (0, 0, 0)
 
 
+@pytest.mark.filterwarnings("ignore::DeprecationWarning")
 def test_onscreentext_node_pos():
     text = OnscreenText()
 
@@ -55,6 +58,7 @@ def test_onscreentext_node_pos():
     assert text.get_pos() == (1, 2, 3)
 
 
+@pytest.mark.filterwarnings("ignore::DeprecationWarning")
 def test_onscreentext_text_roll():
     text = OnscreenText(roll=1)
     assert text['roll'] == 1
@@ -97,6 +101,7 @@ def test_onscreentext_text_roll():
     assert text.get_r() == 0
 
 
+@pytest.mark.filterwarnings("ignore::DeprecationWarning")
 def test_onscreentext_node_roll():
     text = OnscreenText()
 
@@ -109,6 +114,7 @@ def test_onscreentext_node_roll():
     assert text.get_r() == 45
 
 
+@pytest.mark.filterwarnings("ignore::DeprecationWarning")
 def test_onscreentext_text_scale():
     text = OnscreenText(scale=(1, 2))
     assert text['scale'] == (1, 2)
@@ -159,6 +165,7 @@ def test_onscreentext_text_scale():
     assert text.get_scale() == (1, 1, 1)
 
 
+@pytest.mark.filterwarnings("ignore::DeprecationWarning")
 def test_onscreentext_node_scale():
     text = OnscreenText()
 

@@ -408,7 +408,6 @@ class WheelFile(object):
                     deps_path = '@executable_path/../Frameworks'
                 else:
                     deps_path = '@loader_path'
-                remove_signature = False
                 loader_path = [os.path.dirname(source_path)]
                 for dep in deps:
                     if dep.endswith('/Python'):
@@ -450,11 +449,9 @@ class WheelFile(object):
                         continue
 
                     subprocess.call(["install_name_tool", "-change", dep, new_dep, temp.name])
-                    remove_signature = True
 
-                # Remove the codesign signature if we modified the library.
-                if remove_signature:
-                    subprocess.call(["codesign", "--remove-signature", temp.name])
+                # Make sure it has an ad-hoc code signature.
+                subprocess.call(["codesign", "-f", "-s", "-", temp.name])
             else:
                 # On other unixes, we just add dependencies normally.
                 for dep in deps:
