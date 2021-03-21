@@ -72,13 +72,12 @@ make_copy() const {
  */
 void PhysicalNode::
 add_physicals_from(const PhysicalNode &other) {
-  pvector< PT(Physical) >::iterator last = _physicals.end() - 1;
-
+  size_t num_physicals = _physicals.size();
   _physicals.insert(_physicals.end(),
                     other._physicals.begin(), other._physicals.end());
 
-  for (; last != _physicals.end(); last++) {
-    (*last)->_physical_node = this;
+  for (size_t i = num_physicals; i < _physicals.size(); ++i) {
+    _physicals[i]->_physical_node = this;
   }
 }
 
