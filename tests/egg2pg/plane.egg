@@ -18,7 +18,7 @@
  "../models/maps/panda-model.jpg"
  <Scalar> format { RGB }
  <Scalar> alpha { OFF }
- <Scalar> compression { OFF }
+ <Scalar> compression { DXT5 }
  <Scalar> envtype { MODULATE }
  <Scalar> anisotropic-degree { 0 }
  <Scalar> wrapu { REPEAT }
@@ -28,6 +28,47 @@
  <Scalar> quality-level { FASTEST }
 }
 
+<Texture> Texture3 {
+ "../models/maps/panda-model.jpg"
+ <Scalar> format { RGB }
+ <Scalar> alpha { OFF }
+ <Scalar> compression { OFF }
+ <Scalar> envtype { MODULATE }
+ <Scalar> anisotropic-degree { 0 }
+ <Scalar> wrapu { MIRROR }
+ <Scalar> wrapv { MIRROR }
+ <Scalar> minfilter { LINEAR }
+ <Scalar> magfilter { LINEAR }
+ <Scalar> quality-level { FASTEST }
+}
+
+<Texture> Texture4 {
+ "../models/maps/panda-model.jpg"
+ <Scalar> format { RGB }
+ <Scalar> alpha { OFF }
+ <Scalar> compression { OFF }
+ <Scalar> envtype { MODULATE }
+ <Scalar> anisotropic-degree { 0 }
+ <Scalar> wrapu { MIRROR }
+ <Scalar> wrapv { MIRROR }
+ <Scalar> minfilter { NEAREST }
+ <Scalar> magfilter { LINEAR }
+ <Scalar> quality-level { FASTEST }
+}
+
+<Texture> Texture5 {
+ "../models/maps/panda-model.jpg"
+ <Scalar> format { RGB }
+ <Scalar> alpha { OFF }
+ <Scalar> compression { OFF }
+ <Scalar> envtype { MODULATE }
+ <Scalar> anisotropic-degree { 0 }
+ <Scalar> wrapu { MIRROR }
+ <Scalar> wrapv { MIRROR }
+ <Scalar> minfilter { NEAREST }
+ <Scalar> magfilter { LINEAR }
+ <Scalar> quality-level { FASTEST }
+}
 <Group>  Plane {
  <VertexPool> Plane {
   <Vertex> 0 { -1 -1 0 
@@ -66,5 +107,23 @@
   <TRef> { Texture2 }
   <Normal> { 0 0 1 }
   <VertexRef> { 4 5 6 7 <Ref> { Plane } }
+  }
+
+  <Polygon> 2 { 
+  <TRef> { Texture3 }
+  <Normal> { 0 0 1 }
+  <VertexRef> { 3 2 1 0 <Ref> { Plane } }
+  }
+
+  <Polygon> 3 { 
+  <TRef> { Texture4 }
+  <Normal> { 0 0 1 }
+  <VertexRef> { 3 2 1 0 <Ref> { Plane } }
+  }
+
+  <Polygon> 4 { 
+  <TRef> { Texture5 }
+  <Normal> { 0 0 1 }
+  <VertexRef> { 3 2 1 0 <Ref> { Plane } }
   }
 }
