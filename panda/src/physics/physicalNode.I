@@ -42,10 +42,14 @@ get_num_physicals() const {
 }
 
 /**
-
+ * Adds a Physical to this PhysicalNode.  If it is already added to this node,
+ * does nothing.  It is an error to add a Physical to multiple PhysicalNodes.
  */
 INLINE void PhysicalNode::
 add_physical(Physical *physical) {
-  _physicals.push_back(physical);
-  physical->_physical_node = this;
+  if (physical->_physical_node != this) {
+    nassertv(physical->_physical_node == nullptr);
+    _physicals.push_back(physical);
+    physical->_physical_node = this;
+  }
 }
