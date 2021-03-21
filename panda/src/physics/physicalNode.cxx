@@ -14,7 +14,11 @@
 #include "physicalNode.h"
 #include "physicsManager.h"
 
+#include <atomic>
+
 // static stuff.
+static std::atomic_flag warned_copy_physical_node = ATOMIC_FLAG_INIT;
+
 TypeHandle PhysicalNode::_type_handle;
 
 /**
@@ -55,6 +59,12 @@ PhysicalNode::
  */
 PandaNode *PhysicalNode::
 make_copy() const {
+  if (!_physicals.empty() && !warned_copy_physical_node.test_and_set()) {
+    // This is a problem, because a Physical can only be on one PhysicalNode.
+    //FIXME: Figure out a solution.
+    physics_cat.warning()
+      << "Detected attempt to copy PhysicalNode object with physicals.\n";
+  }
   return new PhysicalNode(*this);
 }
 
