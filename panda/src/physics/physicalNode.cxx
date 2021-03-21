@@ -43,13 +43,12 @@ PhysicalNode(const PhysicalNode &copy) :
  */
 PhysicalNode::
 ~PhysicalNode() {
-  PhysicalsVector::iterator it;
-  for (it = _physicals.begin(); it != _physicals.end(); ++it) {
-    Physical *physical = *it;
-    nassertd(physical->_physical_node == this) continue;
-    physical->_physical_node = nullptr;
-    if (physical->_physics_manager != nullptr) {
-      physical->_physics_manager->remove_physical(physical);
+  for (Physical *physical : _physicals) {
+    if (physical->_physical_node == this) {
+      physical->_physical_node = nullptr;
+      if (physical->_physics_manager != nullptr) {
+        physical->_physics_manager->remove_physical(physical);
+      }
     }
   }
 }
