@@ -3,7 +3,7 @@ import sys,os
 from panda3d.core import Filename
 
 def test_textures_loaded_correctly():
-    base = ShowBase()
+    base = ShowBase(windowType='none')
     # Get the location of the 'py' file I'm running:
     mydir = os.path.abspath(sys.path[0])
     # Convert that to panda's unix-style notation.
