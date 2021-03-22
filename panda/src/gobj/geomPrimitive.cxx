@@ -442,18 +442,50 @@ offset_vertices(int offset) {
 
     consider_elevate_index_type(cdata, cdata->_max_vertex + offset);
 
-    int strip_cut_index = get_strip_cut_index(cdata->_index_type);
+    {
+      GeomVertexArrayDataHandle handle(cdata->_vertices.get_write_pointer(),
+                                       Thread::get_current_thread());
 
-    GeomVertexRewriter index(do_modify_vertices(cdata), 0);
-    while (!index.is_at_end()) {
-      int vertex = index.get_data1i();
+      size_t num_rows = (size_t)handle.get_num_rows();
+      unsigned char *ptr = handle.get_write_pointer();
+      switch (cdata->_index_type) {
+      case GeomEnums::NT_uint8:
+        for (size_t i = 0; i < num_rows; ++i) {
+          uint8_t &v = ((uint8_t *)ptr)[i];
+          if (v != 0xff) {
+            v += offset;
+          }
+        }
+        break;
 
-      if (vertex != strip_cut_index) {
-        index.set_data1i(vertex + offset);
+      case GeomEnums::NT_uint16:
+        for (size_t i = 0; i < num_rows; ++i) {
+          uint16_t &v = ((uint16_t *)ptr)[i];
+          if (v != 0xffff) {
+            v += offset;
+          }
+        }
+        break;
+
+      case GeomEnums::NT_uint32:
+        for (size_t i = 0; i < num_rows; ++i) {
+          uint32_t &v = ((uint32_t *)ptr)[i];
+          if (v != 0xffffffff) {
+            v += offset;
+          }
+        }
+        break;
+
+      default:
+        nassert_raise("unsupported index type");
+        break;
       }
     }
 
-  } else {
+    cdata->_modified = Geom::get_next_modified();
+    cdata->_got_minmax = false;
+  }
+  else {
     CDWriter cdata(_cycler, true);
 
     cdata->_first_vertex += offset;
