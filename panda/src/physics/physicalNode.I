@@ -16,12 +16,11 @@
  */
 INLINE void PhysicalNode::
 clear() {
-  PhysicalsVector::iterator it;
-  for (it = _physicals.begin(); it != _physicals.end(); ++it) {
-    nassertd((*it)->_physical_node == this) continue;
-    (*it)->_physical_node = nullptr;
+  for (Physical *physical : _physicals) {
+    nassertd(physical->_physical_node == this) continue;
+    physical->_physical_node = nullptr;
   }
-  _physicals.erase(_physicals.begin(), _physicals.end());
+  _physicals.clear();
 }
 
 /**
@@ -42,10 +41,14 @@ get_num_physicals() const {
 }
 
 /**
-
+ * Adds a Physical to this PhysicalNode.  If it is already added to this node,
+ * does nothing.  It is an error to add a Physical to multiple PhysicalNodes.
  */
 INLINE void PhysicalNode::
 add_physical(Physical *physical) {
-  _physicals.push_back(physical);
-  physical->_physical_node = this;
+  if (physical->_physical_node != this) {
+    nassertv(physical->_physical_node == nullptr);
+    _physicals.push_back(physical);
+    physical->_physical_node = this;
+  }
 }

@@ -510,6 +510,10 @@ protected:
 
   virtual void free_pointers();
 
+#if defined(HAVE_CG) && !defined(OPENGLES)
+  CGcontext get_cg_context();
+#endif
+
 #ifndef OPENGLES_1
   INLINE void enable_vertex_attrib_array(GLuint index);
   INLINE void disable_vertex_attrib_array(GLuint index);
@@ -693,8 +697,10 @@ protected:
 
   GLfloat _max_line_width;
 
-#ifdef HAVE_CG
+#if defined(HAVE_CG) && !defined(OPENGLES)
   CGcontext _cg_context;
+  static AtomicAdjust::Integer _num_gsgs_with_cg_contexts;
+  static pvector<CGcontext> _destroyed_cg_contexts;
 #endif
 
 #ifdef SUPPORT_IMMEDIATE_MODE

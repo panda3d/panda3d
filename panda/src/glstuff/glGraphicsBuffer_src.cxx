@@ -1935,6 +1935,9 @@ resolve_multisamples() {
 #endif
   report_my_gl_errors();
 
+  // Bind the regular FBO as read buffer for the sake of copy_to_textures.
+  glgsg->_glBindFramebuffer(GL_READ_FRAMEBUFFER_EXT, fbo);
+
 #ifndef OPENGLES
   if (_have_any_color) {
     glDrawBuffer(GL_COLOR_ATTACHMENT0_EXT);

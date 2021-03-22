@@ -114,6 +114,7 @@ class DirectOptionMenu(DirectButton):
                                               )
         # Make sure it is on top of all the other gui widgets
         self.popupMenu.setBin('gui-popup', 0)
+        self.highlightedIndex = None
         if not self['items']:
             return
         # Create a new component for each item

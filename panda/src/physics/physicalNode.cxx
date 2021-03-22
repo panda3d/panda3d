@@ -14,7 +14,11 @@
 #include "physicalNode.h"
 #include "physicsManager.h"
 
+#include <atomic>
+
 // static stuff.
+static std::atomic_flag warned_copy_physical_node = ATOMIC_FLAG_INIT;
+
 TypeHandle PhysicalNode::_type_handle;
 
 /**
@@ -39,13 +43,12 @@ PhysicalNode(const PhysicalNode &copy) :
  */
 PhysicalNode::
 ~PhysicalNode() {
-  PhysicalsVector::iterator it;
-  for (it = _physicals.begin(); it != _physicals.end(); ++it) {
-    Physical *physical = *it;
-    nassertd(physical->_physical_node == this) continue;
-    physical->_physical_node = nullptr;
-    if (physical->_physics_manager != nullptr) {
-      physical->_physics_manager->remove_physical(physical);
+  for (Physical *physical : _physicals) {
+    if (physical->_physical_node == this) {
+      physical->_physical_node = nullptr;
+      if (physical->_physics_manager != nullptr) {
+        physical->_physics_manager->remove_physical(physical);
+      }
     }
   }
 }
@@ -55,6 +58,12 @@ PhysicalNode::
  */
 PandaNode *PhysicalNode::
 make_copy() const {
+  if (!_physicals.empty() && !warned_copy_physical_node.test_and_set()) {
+    // This is a problem, because a Physical can only be on one PhysicalNode.
+    //FIXME: Figure out a solution.
+    physics_cat.warning()
+      << "Detected attempt to copy PhysicalNode object with physicals.\n";
+  }
   return new PhysicalNode(*this);
 }
 
@@ -63,13 +72,12 @@ make_copy() const {
  */
 void PhysicalNode::
 add_physicals_from(const PhysicalNode &other) {
-  pvector< PT(Physical) >::iterator last = _physicals.end() - 1;
-
+  size_t num_physicals = _physicals.size();
   _physicals.insert(_physicals.end(),
                     other._physicals.begin(), other._physicals.end());
 
-  for (; last != _physicals.end(); last++) {
-    (*last)->_physical_node = this;
+  for (size_t i = num_physicals; i < _physicals.size(); ++i) {
+    _physicals[i]->_physical_node = this;
   }
 }
 

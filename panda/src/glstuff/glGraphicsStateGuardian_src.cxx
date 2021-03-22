@@ -93,6 +93,11 @@ PStatCollector CLP(GraphicsStateGuardian)::_fbo_bind_pcollector("Draw:Bind FBO")
 PStatCollector CLP(GraphicsStateGuardian)::_check_error_pcollector("Draw:Check errors");
 PStatCollector CLP(GraphicsStateGuardian)::_check_residency_pcollector("*:PStats:Check residency");
 
+#if defined(HAVE_CG) && !defined(OPENGLES)
+AtomicAdjust::Integer CLP(GraphicsStateGuardian)::_num_gsgs_with_cg_contexts = 0;
+pvector<CGcontext> CLP(GraphicsStateGuardian)::_destroyed_cg_contexts;
+#endif
+
 // The following noop functions are assigned to the corresponding glext
 // function pointers in the class, in case the functions are not defined by
 // the GL, just so it will always be safe to call the extension functions.
@@ -530,7 +535,7 @@ CLP(GraphicsStateGuardian)(GraphicsEngine *engine, GraphicsPipe *pipe) :
   _shader_point_size = false;
 #endif
 
-#ifdef HAVE_CG
+#if defined(HAVE_CG) && !defined(OPENGLES)
   _cg_context = 0;
 #endif
 
@@ -11784,12 +11789,47 @@ set_state_and_transform(const RenderState *target,
 void CLP(GraphicsStateGuardian)::
 free_pointers() {
 #if defined(HAVE_CG) && !defined(OPENGLES)
-  if (_cg_context != 0) {
-    cgDestroyContext(_cg_context);
-    _cg_context = 0;
+  if (_cg_context) {
+    _destroyed_cg_contexts.push_back(_cg_context);
+    _cg_context = nullptr;
+
+    // Don't destroy the Cg context until the last GSG that uses Cg has been
+    // destroyed.  This works around a Cg bug, see #1117.
+    if (!AtomicAdjust::dec(_num_gsgs_with_cg_contexts)) {
+      for (CGcontext context : _destroyed_cg_contexts) {
+        cgDestroyContext(context);
+      }
+      _destroyed_cg_contexts.clear();
+    }
   }
 #endif
 }
+
+/**
+ * Returns a Cg context for this GSG.
+ */
+#if defined(HAVE_CG) && !defined(OPENGLES)
+CGcontext CLP(GraphicsStateGuardian)::
+get_cg_context() {
+  CGcontext context = _cg_context;
+  if (context == nullptr) {
+    context = cgCreateContext();
+
+#if CG_VERSION_NUM >= 3100
+    // This just sounds like a good thing to do.
+    cgGLSetContextGLSLVersion(context, cgGLDetectGLSLVersion());
+    if (_shader_caps._active_vprofile == CG_PROFILE_GLSLV) {
+      cgGLSetContextOptimalOptions(context, CG_PROFILE_GLSLC);
+    }
+#endif
+
+    AtomicAdjust::inc(_num_gsgs_with_cg_contexts);
+    _cg_context = context;
+  }
+
+  return context;
+}
+#endif
 
 /**
  * This is called by set_state_and_transform() when the texture state has
