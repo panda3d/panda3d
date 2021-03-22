@@ -16,6 +16,7 @@
  */
 INLINE void PhysicalNode::
 clear() {
+  LightMutexHolder holder(_lock);
   for (Physical *physical : _physicals) {
     nassertd(physical->_physical_node == this) continue;
     physical->_physical_node = nullptr;
@@ -28,6 +29,7 @@ clear() {
  */
 INLINE Physical *PhysicalNode::
 get_physical(size_t index) const {
+  LightMutexHolder holder(_lock);
   nassertr(index < _physicals.size(), nullptr);
   return _physicals[index];
 }
@@ -37,6 +39,7 @@ get_physical(size_t index) const {
  */
 INLINE size_t PhysicalNode::
 get_num_physicals() const {
+  LightMutexHolder holder(_lock);
   return _physicals.size();
 }
 
@@ -46,6 +49,7 @@ get_num_physicals() const {
  */
 INLINE void PhysicalNode::
 add_physical(Physical *physical) {
+  LightMutexHolder holder(_lock);
   if (physical->_physical_node != this) {
     nassertv(physical->_physical_node == nullptr);
     _physicals.push_back(physical);
