@@ -4,13 +4,13 @@ from panda3d.core import Filename
 
 def test_textures_loaded_correctly():
     base = ShowBase(windowType='none')
-    # Get the location of the 'py' file I'm running:
-    mydir = os.path.abspath(sys.path[0])
+    # Get the directory of the 'py' file I'm running:
+    mydir = os.path.dirname(os.path.abspath(__file__)) 
     # Convert that to panda's unix-style notation.
     mydir = Filename.fromOsSpecific(mydir).getFullpath()
     
     # Now load the model:
-    model = loader.loadModel(mydir + "/egg2pg/plane.egg")
+    model = loader.loadModel(mydir + "/plane.egg")
     #load the model
     #get the plane
     result = model.find('**/Plane')
