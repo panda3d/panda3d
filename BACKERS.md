@@ -10,12 +10,12 @@ This is a list of all the people who are contributing financially to Panda3D.  I
 
 ## Bronze Sponsors
 
-![Bronze Sponsors](https://opencollective.com/panda3d/tiers/bronze-sponsor.svg?avatarHeight=48&width=600)
+[<img src="https://www.panda3d.org/wp-content/uploads/2021/02/changecrab_logo.png" alt="ChangeCrab" height="48">](https://changecrab.com/) ![Bronze Sponsors](https://opencollective.com/panda3d/tiers/bronze-sponsor.svg?avatarHeight=48&width=600)
 
 * [Mitchell Stokes](https://opencollective.com/mitchell-stokes)
 * [Daniel Stokes](https://opencollective.com/daniel-stokes)
 * [David Rose](https://opencollective.com/david-rose)
-* [Carnetsoft](https://cs-driving-simulator.com/)
+* [ChangeCrab](https://changecrab.com)
 
 ## Benefactors
 
@@ -23,14 +23,17 @@ This is a list of all the people who are contributing financially to Panda3D.  I
 
 * Sam Edwards
 * Max Voss
-* Will Nielsen
+* Hawkheart
+* Dan Mlodecki
 
 ## Enthusiasts
 
-![Benefactors](https://opencollective.com/panda3d/tiers/enthusiast.svg?avatarHeight=48&width=600)
+![Enthusiasts](https://opencollective.com/panda3d/tiers/enthusiast.svg?avatarHeight=48&width=600)
 
 * Eric Thomson
 * Kyle Roach
+* Brian Lach
+* C0MPU73R
 
 ## Backers
 

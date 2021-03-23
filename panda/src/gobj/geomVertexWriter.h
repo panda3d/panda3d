@@ -55,14 +55,14 @@
 class EXPCL_PANDA_GOBJ GeomVertexWriter : public GeomEnums {
 PUBLISHED:
   INLINE GeomVertexWriter(Thread *current_thread = Thread::get_current_thread());
-  INLINE GeomVertexWriter(GeomVertexData *vertex_data,
+  INLINE GeomVertexWriter(PT(GeomVertexData) vertex_data,
                           Thread *current_thread = Thread::get_current_thread());
-  INLINE GeomVertexWriter(GeomVertexData *vertex_data,
+  INLINE GeomVertexWriter(PT(GeomVertexData) vertex_data,
                           CPT_InternalName name,
                           Thread *current_thread = Thread::get_current_thread());
-  INLINE GeomVertexWriter(GeomVertexArrayData *array_data,
+  INLINE GeomVertexWriter(PT(GeomVertexArrayData) array_data,
                           Thread *current_thread = Thread::get_current_thread());
-  INLINE GeomVertexWriter(GeomVertexArrayData *array_data,
+  INLINE GeomVertexWriter(PT(GeomVertexArrayData) array_data,
                           int column,
                           Thread *current_thread = Thread::get_current_thread());
 

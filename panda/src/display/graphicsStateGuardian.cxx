@@ -1911,6 +1911,10 @@ fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LMatrix4 &t)
 PT(Texture) GraphicsStateGuardian::
 fetch_specified_texture(Shader::ShaderTexSpec &spec, SamplerState &sampler,
                         int &view) {
+
+  static PT(Texture) default_add_tex;
+  static PT(Texture) default_normal_height_tex;
+
   switch (spec._part) {
   case Shader::STO_named_input:
     // Named texture input.
@@ -2004,6 +2008,199 @@ fetch_specified_texture(Shader::ShaderTexSpec &spec, SamplerState &sampler,
           sampler = tex->get_default_sampler();
         }
         return tex;
+      }
+    }
+    break;
+
+  case Shader::STO_ff_stage_i:
+    {
+      // We get the TextureAttrib directly from the _target_rs, not the
+      // filtered TextureAttrib in _target_texture.
+      const TextureAttrib *texattrib;
+      _target_rs->get_attrib_def(texattrib);
+
+      if (spec._stage < texattrib->get_num_on_ff_stages()) {
+        TextureStage *stage = texattrib->get_on_ff_stage(spec._stage);
+        sampler = texattrib->get_on_sampler(stage);
+        view += stage->get_tex_view_offset();
+        return texattrib->get_on_texture(stage);
+      }
+    }
+    break;
+
+  case Shader::STO_stage_modulate_i:
+    {
+      const TextureAttrib *texattrib;
+      if (_target_rs->get_attrib(texattrib)) {
+        size_t si = 0;
+        for (int i = 0; i < texattrib->get_num_on_stages(); ++i) {
+          TextureStage *stage = texattrib->get_on_stage(i);
+          TextureStage::Mode mode = stage->get_mode();
+
+          if (mode == TextureStage::M_modulate ||
+              mode == TextureStage::M_modulate_glow ||
+              mode == TextureStage::M_modulate_gloss) {
+            if (si++ == spec._stage) {
+              sampler = texattrib->get_on_sampler(stage);
+              view += stage->get_tex_view_offset();
+              return texattrib->get_on_texture(stage);
+            }
+          }
+        }
+      }
+    }
+    break;
+
+  case Shader::STO_stage_add_i:
+    {
+      const TextureAttrib *texattrib;
+      if (_target_rs->get_attrib(texattrib)) {
+        size_t si = 0;
+        for (int i = 0; i < texattrib->get_num_on_stages(); ++i) {
+          TextureStage *stage = texattrib->get_on_stage(i);
+          TextureStage::Mode mode = stage->get_mode();
+
+          if (mode == TextureStage::M_add) {
+            if (si++ == spec._stage) {
+              sampler = texattrib->get_on_sampler(stage);
+              view += stage->get_tex_view_offset();
+              return texattrib->get_on_texture(stage);
+            }
+          }
+        }
+      }
+
+      if (default_add_tex == nullptr) {
+        PT(Texture) tex = new Texture("default-add");
+        tex->setup_2d_texture(1, 1, Texture::T_unsigned_byte, Texture::F_luminance);
+        tex->set_clear_color(LColor(0, 0, 0, 1));
+        default_add_tex = std::move(tex);
+      }
+      return default_add_tex;
+    }
+    break;
+
+  case Shader::STO_stage_normal_i:
+    {
+      const TextureAttrib *texattrib;
+      if (_target_rs->get_attrib(texattrib)) {
+        size_t si = 0;
+        for (int i = 0; i < texattrib->get_num_on_stages(); ++i) {
+          TextureStage *stage = texattrib->get_on_stage(i);
+          TextureStage::Mode mode = stage->get_mode();
+
+          if (mode == TextureStage::M_normal ||
+              mode == TextureStage::M_normal_height) {
+            if (si++ == spec._stage) {
+              sampler = texattrib->get_on_sampler(stage);
+              view += stage->get_tex_view_offset();
+              return texattrib->get_on_texture(stage);
+            }
+          }
+        }
+      }
+
+      if (default_normal_height_tex == nullptr) {
+        PT(Texture) tex = new Texture("default-normal-height");
+        tex->setup_2d_texture(1, 1, Texture::T_unsigned_byte, Texture::F_rgba);
+        tex->set_clear_color(LColor(0.5, 0.5, 1, 0));
+        default_normal_height_tex = std::move(tex);
+      }
+      return default_normal_height_tex;
+    }
+    break;
+
+  case Shader::STO_stage_gloss_i:
+    {
+      const TextureAttrib *texattrib;
+      if (_target_rs->get_attrib(texattrib)) {
+        size_t si = 0;
+        for (int i = 0; i < texattrib->get_num_on_stages(); ++i) {
+          TextureStage *stage = texattrib->get_on_stage(i);
+          TextureStage::Mode mode = stage->get_mode();
+
+          if (mode == TextureStage::M_gloss ||
+              mode == TextureStage::M_modulate_gloss ||
+              mode == TextureStage::M_normal_gloss) {
+            if (si++ == spec._stage) {
+              sampler = texattrib->get_on_sampler(stage);
+              view += stage->get_tex_view_offset();
+              return texattrib->get_on_texture(stage);
+            }
+          }
+        }
+      }
+    }
+    break;
+
+  case Shader::STO_stage_height_i:
+    {
+      const TextureAttrib *texattrib;
+      if (_target_rs->get_attrib(texattrib)) {
+        size_t si = 0;
+        for (int i = 0; i < texattrib->get_num_on_stages(); ++i) {
+          TextureStage *stage = texattrib->get_on_stage(i);
+          TextureStage::Mode mode = stage->get_mode();
+
+          if (mode == TextureStage::M_height ||
+              mode == TextureStage::M_normal_height) {
+            if (si++ == spec._stage) {
+              sampler = texattrib->get_on_sampler(stage);
+              view += stage->get_tex_view_offset();
+              return texattrib->get_on_texture(stage);
+            }
+          }
+        }
+      }
+
+      if (default_normal_height_tex == nullptr) {
+        PT(Texture) tex = new Texture("default-normal-height");
+        tex->setup_2d_texture(1, 1, Texture::T_unsigned_byte, Texture::F_rgba);
+        tex->set_clear_color(LColor(0.5, 0.5, 1, 0));
+        default_normal_height_tex = std::move(tex);
+      }
+      return default_normal_height_tex;
+    }
+    break;
+
+  case Shader::STO_stage_selector_i:
+    {
+      const TextureAttrib *texattrib;
+      if (_target_rs->get_attrib(texattrib)) {
+        size_t si = 0;
+        for (int i = 0; i < texattrib->get_num_on_stages(); ++i) {
+          TextureStage *stage = texattrib->get_on_stage(i);
+          TextureStage::Mode mode = stage->get_mode();
+
+          if (mode == TextureStage::M_selector) {
+            if (si++ == spec._stage) {
+              sampler = texattrib->get_on_sampler(stage);
+              view += stage->get_tex_view_offset();
+              return texattrib->get_on_texture(stage);
+            }
+          }
+        }
+      }
+    }
+    break;
+
+  case Shader::STO_stage_emission_i:
+    {
+      const TextureAttrib *texattrib;
+      if (_target_rs->get_attrib(texattrib)) {
+        size_t si = 0;
+        for (int i = 0; i < texattrib->get_num_on_stages(); ++i) {
+          TextureStage *stage = texattrib->get_on_stage(i);
+          TextureStage::Mode mode = stage->get_mode();
+
+          if (mode == TextureStage::M_emission) {
+            if (si++ == spec._stage) {
+              sampler = texattrib->get_on_sampler(stage);
+              view += stage->get_tex_view_offset();
+              return texattrib->get_on_texture(stage);
+            }
+          }
+        }
       }
     }
     break;
@@ -2498,8 +2695,12 @@ finish_decal() {
 bool GraphicsStateGuardian::
 begin_draw_primitives(const GeomPipelineReader *geom_reader,
                       const GeomVertexDataPipelineReader *data_reader,
-                      bool force) {
+                      size_t num_instances, bool force) {
   _data_reader = data_reader;
+
+  if (num_instances == 0) {
+    return false;
+  }
 
   // Always draw if we have a shader, since the shader might use a different
   // mechanism for fetching vertex data.
@@ -2616,6 +2817,7 @@ reset() {
   _state_rs = RenderState::make_empty();
   _target_rs = nullptr;
   _state_mask.clear();
+  _inv_state_mask = RenderState::SlotMask::all_on();
   _internal_transform = _cs_transform;
   _scene_null = new SceneSetup;
   _scene_setup = _scene_null;

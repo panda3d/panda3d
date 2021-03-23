@@ -78,7 +78,7 @@ class ClockDelta(DirectObject.DirectObject):
         # representing infinite uncertainty, if we have never received
         # a time measurement.
 
-        if self.uncertainty == None:
+        if self.uncertainty is None:
             return None
 
         now = self.globalClock.getRealTime()
@@ -190,7 +190,7 @@ class ClockDelta(DirectObject.DirectObject):
         the new measurement was used, false if it was discarded.
         """
         oldUncertainty = self.getUncertainty()
-        if oldUncertainty != None:
+        if oldUncertainty is not None:
             self.notify.info(
                 'previous delta at %.3f s, +/- %.3f s.' %
                 (self.delta, oldUncertainty))
@@ -241,14 +241,14 @@ class ClockDelta(DirectObject.DirectObject):
         minutes of the current local time given in now, or
         getRealTime() if now is not specified.
         """
-        if now == None:
+        if now is None:
             now = self.globalClock.getRealTime()
 
         # Are we in non-real-time mode (i.e. filming a movie)?  If you
         # set movie-network-time 1, then we'll circumvent this logic
         # and always return now.
         if self.globalClock.getMode() == ClockObject.MNonRealTime and \
-           base.config.GetBool('movie-network-time', False):
+           ConfigVariableBool('movie-network-time', False):
             return now
 
         # First, determine what network time we have for 'now'.

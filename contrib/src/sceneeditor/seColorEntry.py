@@ -12,13 +12,9 @@
 from direct.tkwidgets import Valuator
 from direct.tkwidgets import Floater
 from direct.tkwidgets import Slider
-import sys, Pmw
+import Pmw
 from direct.tkwidgets.VectorWidgets import VectorEntry
-
-if sys.version_info >= (3, 0):
-    from tkinter.colorchooser import askcolor
-else:
-    from tkColorChooser import askcolor
+from tkinter.colorchooser import askcolor
 
 
 class seColorEntry(VectorEntry):

@@ -13,6 +13,7 @@ __all__ = ['ShadowCaster', 'avatarShadow', 'piratesAvatarShadow', 'arbitraryShad
 
 from panda3d.core import *
 from direct.task import Task
+from direct.task.TaskManagerGlobal import taskMgr
 
 sc = None
 
@@ -132,7 +133,7 @@ def avatarShadow():
     taskMgr.add(shadowCameraRotate, 'shadowCamera')
 
     global sc
-    if sc != None:
+    if sc is not None:
         sc.clear()
 
     sc = ShadowCaster(lightPath, objectPath, 4, 6)
@@ -178,7 +179,7 @@ def arbitraryShadow(node):
     taskMgr.add(shadowCameraRotate, 'shadowCamera')
 
     global sc
-    if sc != None:
+    if sc is not None:
         sc.clear()
 
     sc = ShadowCaster(lightPath, objectPath, 100, 100)
@@ -216,6 +217,3 @@ def arbitraryShadow(node):
 ##                LerpPosInterval(bs.lightPath, 10.0, Vec3(200, 0, 50)),
 ##)
 ##ival.loop()
-
-
-

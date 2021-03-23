@@ -83,6 +83,15 @@ make_pos_hpr(const LVecBase3 &pos, const LVecBase3 &hpr) {
  * Makes a new TransformState with the specified components.
  */
 INLINE CPT(TransformState) TransformState::
+make_pos_quat(const LVecBase3 &pos, const LQuaternion &quat) {
+  return make_pos_quat_scale(pos, quat,
+                             LVecBase3(1.0, 1.0f, 1.0f));
+}
+
+/**
+ * Makes a new TransformState with the specified components.
+ */
+INLINE CPT(TransformState) TransformState::
 make_scale(PN_stdfloat scale) {
   // We actually map this 3-d uniform make_scale() to the 2-d version--might
   // as well call it a 2-d scale.

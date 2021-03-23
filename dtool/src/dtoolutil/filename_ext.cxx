@@ -53,9 +53,6 @@ __init__(PyObject *path) {
     return;
   }
 
-  PyObject *path_str;
-
-#if PY_VERSION_HEX >= 0x03060000
   // It must be an os.PathLike object.  Check for an __fspath__ method.
   PyObject *fspath = PyObject_GetAttrString((PyObject *)Py_TYPE(path), "__fspath__");
   if (fspath == nullptr) {
@@ -63,20 +60,8 @@ __init__(PyObject *path) {
     return;
   }
 
-  path_str = PyObject_CallFunctionObjArgs(fspath, path, nullptr);
+  PyObject *path_str = PyObject_CallFunctionObjArgs(fspath, path, nullptr);
   Py_DECREF(fspath);
-#else
-  // There is no standard path protocol before Python 3.6, but let's try and
-  // support taking pathlib paths anyway.  We don't version check this to
-  // allow people to use backports of the pathlib module.
-  if (PyObject_HasAttrString(path, "_format_parsed_parts")) {
-    path_str = PyObject_Str(path);
-  } else {
-    PyErr_Format(PyExc_TypeError, "expected str, bytes, Path or Filename object, not %s", Py_TYPE(path)->tp_name);
-    return;
-  }
-#endif
-
   if (path_str == nullptr) {
     return;
   }

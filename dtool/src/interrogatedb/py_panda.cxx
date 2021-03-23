@@ -10,6 +10,9 @@
 
 #ifdef HAVE_PYTHON
 
+#define _STRINGIFY_VERSION(a, b) (#a "." #b)
+#define STRINGIFY_VERSION(a, b) _STRINGIFY_VERSION(a, b)
+
 using std::string;
 
 /**
@@ -521,6 +524,8 @@ Dtool_TypeMap *Dtool_GetGlobalTypeMap() {
   }
 }
 
+#define PY_MAJOR_VERSION_STR #PY_MAJOR_VERSION "." #PY_MINOR_VERSION
+
 #if PY_MAJOR_VERSION >= 3
 PyObject *Dtool_PyModuleInitHelper(const LibraryDef *defs[], PyModuleDef *module_def) {
 #else
@@ -528,15 +533,18 @@ PyObject *Dtool_PyModuleInitHelper(const LibraryDef *defs[], const char *modulen
 #endif
   // Check the version so we can print a helpful error if it doesn't match.
   string version = Py_GetVersion();
+  size_t version_len = version.find('.', 2);
+  if (version_len != string::npos) {
+    version.resize(version_len);
+  }
 
-  if (version[0] != '0' + PY_MAJOR_VERSION ||
-      version[2] != '0' + PY_MINOR_VERSION) {
+  if (version != STRINGIFY_VERSION(PY_MAJOR_VERSION, PY_MINOR_VERSION)) {
     // Raise a helpful error message.  We can safely do this because the
     // signature and behavior for PyErr_SetString has remained consistent.
     std::ostringstream errs;
     errs << "this module was compiled for Python "
          << PY_MAJOR_VERSION << "." << PY_MINOR_VERSION << ", which is "
-         << "incompatible with Python " << version.substr(0, 3);
+         << "incompatible with Python " << version;
     string error = errs.str();
     PyErr_SetString(PyExc_ImportError, error.c_str());
     return nullptr;
@@ -747,7 +755,7 @@ PyObject *copy_from_make_copy(PyObject *self, PyObject *noargs) {
  */
 PyObject *copy_from_copy_constructor(PyObject *self, PyObject *noargs) {
   PyObject *callable = (PyObject *)Py_TYPE(self);
-  return _PyObject_FastCall(callable, &self, 1);
+  return PyObject_CallOneArg(callable, self);
 }
 
 /**
@@ -777,7 +785,11 @@ bool Dtool_ExtractArg(PyObject **result, PyObject *args, PyObject *kwds,
       *result = PyTuple_GET_ITEM(args, 0);
       return true;
     }
-  } else if (PyTuple_GET_SIZE(args) == 0) {
+  }
+  else if (!keyword || !keyword[0]) {
+    return false;
+  }
+  else if (PyTuple_GET_SIZE(args) == 0) {
     PyObject *key;
     Py_ssize_t ppos = 0;
     if (kwds != nullptr && PyDict_GET_SIZE(kwds) == 1 &&
@@ -823,7 +835,11 @@ bool Dtool_ExtractOptionalArg(PyObject **result, PyObject *args, PyObject *kwds,
       *result = PyTuple_GET_ITEM(args, 0);
       return true;
     }
-  } else if (PyTuple_GET_SIZE(args) == 0) {
+  }
+  else if (!keyword || !keyword[0]) {
+    return (kwds == nullptr || PyDict_GET_SIZE(kwds) == 0);
+  }
+  else if (PyTuple_GET_SIZE(args) == 0) {
     if (kwds != nullptr && PyDict_GET_SIZE(kwds) == 1) {
       PyObject *key;
       Py_ssize_t ppos = 0;

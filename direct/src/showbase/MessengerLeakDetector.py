@@ -1,6 +1,9 @@
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.DirectObject import DirectObject
+from direct.showbase.PythonUtil import itype, fastRepr
 from direct.showbase.Job import Job
+from direct.showbase.JobManagerGlobal import jobMgr
+from direct.showbase.MessengerGlobal import messenger
 import gc
 import builtins
 
@@ -76,7 +79,7 @@ class MessengerLeakDetector(Job):
                 foundBuiltin = False
 
                 # breadth-first search, go until you run out of new objects or you find __builtin__
-                while len(nextObjList):
+                while len(nextObjList) > 0:
                     if foundBuiltin:
                         break
                     # swap the lists, prepare for the next pass

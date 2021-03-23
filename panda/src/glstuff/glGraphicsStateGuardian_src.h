@@ -186,6 +186,7 @@ typedef void (APIENTRYP PFNGLUNIFORMMATRIX4FVPROC) (GLint location, GLsizei coun
 typedef void (APIENTRYP PFNGLVALIDATEPROGRAMPROC) (GLuint program);
 typedef void (APIENTRYP PFNGLVERTEXATTRIB4FVPROC) (GLuint index, const GLfloat *v);
 typedef void (APIENTRYP PFNGLVERTEXATTRIB4DVPROC) (GLuint index, const GLdouble *v);
+typedef void (APIENTRYP PFNGLVERTEXATTRIBI4UIPROC) (GLuint index, GLuint x, GLuint y, GLuint z, GLuint w);
 typedef void (APIENTRYP PFNGLVERTEXATTRIBPOINTERPROC) (GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid *pointer);
 typedef void (APIENTRYP PFNGLVERTEXATTRIBIPOINTERPROC) (GLuint index, GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
 typedef void (APIENTRYP PFNGLVERTEXATTRIBLPOINTERPROC) (GLuint index, GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
@@ -294,7 +295,7 @@ public:
 
   virtual bool begin_draw_primitives(const GeomPipelineReader *geom_reader,
                                      const GeomVertexDataPipelineReader *data_reader,
-                                     bool force);
+                                     size_t num_instances, bool force);
   virtual bool draw_triangles(const GeomPrimitivePipelineReader *reader,
                               bool force);
 #ifndef OPENGLES
@@ -509,6 +510,10 @@ protected:
 
   virtual void free_pointers();
 
+#if defined(HAVE_CG) && !defined(OPENGLES)
+  CGcontext get_cg_context();
+#endif
+
 #ifndef OPENGLES_1
   INLINE void enable_vertex_attrib_array(GLuint index);
   INLINE void disable_vertex_attrib_array(GLuint index);
@@ -692,8 +697,10 @@ protected:
 
   GLfloat _max_line_width;
 
-#ifdef HAVE_CG
+#if defined(HAVE_CG) && !defined(OPENGLES)
   CGcontext _cg_context;
+  static AtomicAdjust::Integer _num_gsgs_with_cg_contexts;
+  static pvector<CGcontext> _destroyed_cg_contexts;
 #endif
 
 #ifdef SUPPORT_IMMEDIATE_MODE
@@ -788,7 +795,9 @@ public:
 #endif
 
   bool _supports_tex_storage;
+#ifndef OPENGLES
   PFNGLTEXSTORAGE1DPROC _glTexStorage1D;
+#endif
   PFNGLTEXSTORAGE2DPROC _glTexStorage2D;
   PFNGLTEXSTORAGE3DPROC _glTexStorage3D;
 
@@ -1015,6 +1024,7 @@ public:
   PFNGLVALIDATEPROGRAMPROC _glValidateProgram;
   PFNGLVERTEXATTRIB4FVPROC _glVertexAttrib4fv;
   PFNGLVERTEXATTRIB4DVPROC _glVertexAttrib4dv;
+  PFNGLVERTEXATTRIBI4UIPROC _glVertexAttribI4ui;
   PFNGLVERTEXATTRIBPOINTERPROC _glVertexAttribPointer;
   PFNGLVERTEXATTRIBIPOINTERPROC _glVertexAttribIPointer;
   PFNGLVERTEXATTRIBLPOINTERPROC _glVertexAttribLPointer;
@@ -1077,6 +1087,7 @@ public:
   bool _supports_texture_max_level;
 
 #ifndef OPENGLES_1
+  GLsizei _sattr_instance_count;
   GLsizei _instance_count;
 #endif
 

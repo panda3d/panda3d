@@ -13,9 +13,11 @@
 
 #include "asyncFuture_ext.h"
 #include "asyncTaskSequence.h"
-#include "eventParameter.h"
 #include "paramValue.h"
+#include "paramPyObject.h"
 #include "pythonTask.h"
+#include "asyncTaskManager.h"
+#include "config_event.h"
 
 #ifdef HAVE_PYTHON
 
@@ -23,6 +25,8 @@
 extern struct Dtool_PyTypedObject Dtool_AsyncFuture;
 extern struct Dtool_PyTypedObject Dtool_ParamValueBase;
 extern struct Dtool_PyTypedObject Dtool_TypedObject;
+extern struct Dtool_PyTypedObject Dtool_TypedReferenceCount;
+extern struct Dtool_PyTypedObject Dtool_TypedWritableReferenceCount;
 #endif
 
 /**
@@ -90,8 +94,12 @@ static PyObject *get_done_result(const AsyncFuture *future) {
         // EventStoreInt and Double are not exposed to Python for some reason.
         if (type == EventStoreInt::get_class_type()) {
           return Dtool_WrapValue(((EventStoreInt *)ptr)->get_value());
-        } else if (type == EventStoreDouble::get_class_type()) {
+        }
+        else if (type == EventStoreDouble::get_class_type()) {
           return Dtool_WrapValue(((EventStoreDouble *)ptr)->get_value());
+        }
+        else if (type == ParamPyObject::get_class_type()) {
+          return ((ParamPyObject *)ptr)->get_value();
         }
 
         ParamValueBase *value = (ParamValueBase *)ptr;
@@ -99,11 +107,11 @@ static PyObject *get_done_result(const AsyncFuture *future) {
           ((void *)value, Dtool_ParamValueBase, false, false, type.get_index());
         if (wrap != nullptr) {
           PyObject *value = PyObject_GetAttrString(wrap, "value");
+          Py_DECREF(wrap);
           if (value != nullptr) {
             return value;
           }
           PyErr_Clear();
-          Py_DECREF(wrap);
         }
       }
 
@@ -152,6 +160,58 @@ static PyObject *gen_next(PyObject *self) {
 PyObject *Extension<AsyncFuture>::
 __await__(PyObject *self) {
   return Dtool_NewGenerator(self, &gen_next);
+}
+
+/**
+ * Sets this future's result.  Can only be called if done() returns false.
+ */
+void Extension<AsyncFuture>::
+set_result(PyObject *result) {
+  if (result == Py_None) {
+    _this->set_result(nullptr);
+    return;
+  }
+  else if (DtoolInstance_Check(result)) {
+    // If this is a Python subclass of a C++ type, fall through to below, since
+    // we don't want to lose that extra information.
+    if (Py_TYPE(result) == (PyTypeObject *)DtoolInstance_TYPE(result)) {
+      void *ptr;
+      if ((ptr = DtoolInstance_UPCAST(result, Dtool_TypedWritableReferenceCount))) {
+        _this->set_result((TypedWritableReferenceCount *)ptr);
+        return;
+      }
+      if ((ptr = DtoolInstance_UPCAST(result, Dtool_TypedReferenceCount))) {
+        _this->set_result((TypedReferenceCount *)ptr);
+        return;
+      }
+      if ((ptr = DtoolInstance_UPCAST(result, Dtool_TypedObject))) {
+        _this->set_result((TypedObject *)ptr);
+        return;
+      }
+    }
+  }
+  else if (PyUnicode_Check(result)) {
+    Py_ssize_t result_len;
+    wchar_t *result_str = PyUnicode_AsWideCharString(result, &result_len);
+    _this->set_result(new EventStoreWstring(std::wstring(result_str, result_len)));
+    PyMem_Free(result_str);
+    return;
+  }
+  else if (PyLongOrInt_Check(result)) {
+    long result_val = PyLongOrInt_AS_LONG(result);
+    if (result_val >= INT_MIN && result_val <= INT_MAX) {
+      _this->set_result(new EventStoreInt((int)result_val));
+      return;
+    }
+  }
+  else if (PyNumber_Check(result)) {
+    _this->set_result(new EventStoreDouble(PyFloat_AsDouble(result)));
+    return;
+  }
+
+  // If we don't recognize the type, store it as a generic PyObject pointer.
+  ParamPyObject::init_type();
+  _this->set_result(new ParamPyObject(result));
 }
 
 /**
@@ -204,6 +264,9 @@ result(PyObject *timeout) const {
         if (module != nullptr) {
           exc_type = PyObject_GetAttrString(module, "TimeoutError");
           Py_DECREF(module);
+        }
+        else {
+          PyErr_Clear();
         }
         // If we can't get that, we should pretend and make our own.
         if (exc_type == nullptr) {
@@ -282,8 +345,19 @@ gather(PyObject *args) {
       }
     } else if (PyCoro_CheckExact(item)) {
       // We allow passing in a coroutine instead of a future.  This causes it
-      // to be scheduled as a task.
-      futures.push_back(new PythonTask(item));
+      // to be scheduled as a task on the current task manager.
+      PT(AsyncTask) task = new PythonTask(item);
+      Thread *current_thread = Thread::get_current_thread();
+      AsyncTask *current_task = (AsyncTask *)current_thread->get_current_task();
+      if (current_task != nullptr) {
+        task->set_task_chain(current_task->get_task_chain());
+        current_task->get_manager()->add(task);
+      }
+      else {
+        event_cat.warning()
+          << "gather() with coroutine not called from within a task; not scheduling with task manager.\n";
+      }
+      futures.push_back(task);
       continue;
     }
     return Dtool_Raise_ArgTypeError(item, i, "gather", "coroutine, task or future");
@@ -315,6 +389,10 @@ get_cancelled_error_type() {
       exc_type = PyObject_GetAttrString(module, "CancelledError");
       Py_DECREF(module);
     }
+    else {
+      PyErr_Clear();
+    }
+
     // If we can't get that, we should pretend and make our own.
     if (exc_type == nullptr) {
 #if PY_VERSION_HEX >= 0x03080000

@@ -47,14 +47,14 @@
 class EXPCL_PANDA_GOBJ GeomVertexReader : public GeomEnums {
 PUBLISHED:
   INLINE GeomVertexReader(Thread *current_thread = Thread::get_current_thread());
-  INLINE GeomVertexReader(const GeomVertexData *vertex_data,
+  INLINE GeomVertexReader(CPT(GeomVertexData) vertex_data,
                           Thread *current_thread = Thread::get_current_thread());
-  INLINE GeomVertexReader(const GeomVertexData *vertex_data,
+  INLINE GeomVertexReader(CPT(GeomVertexData) vertex_data,
                           CPT_InternalName name,
                           Thread *current_thread = Thread::get_current_thread());
-  INLINE GeomVertexReader(const GeomVertexArrayData *array_data,
+  INLINE GeomVertexReader(CPT(GeomVertexArrayData) array_data,
                           Thread *current_thread = Thread::get_current_thread());
-  INLINE GeomVertexReader(const GeomVertexArrayData *array_data,
+  INLINE GeomVertexReader(CPT(GeomVertexArrayData) array_data,
                           int column,
                           Thread *current_thread = Thread::get_current_thread());
 

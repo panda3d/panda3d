@@ -1,3 +1,5 @@
+# pylint: skip-file
+
 """
 >>> from direct.showbase import ObjectReport
 
@@ -12,14 +14,16 @@
 __all__ = ['ExclusiveObjectPool', 'ObjectReport']
 
 from direct.directnotify.DirectNotifyGlobal import directNotify
-from direct.showbase import DirectObject, ObjectPool, GarbageReport
-from direct.showbase.PythonUtil import makeList, Sync
+from direct.showbase.DirectObject import DirectObject
+from direct.showbase.ObjectPool import ObjectPool
+from direct.showbase.GarbageReport import GarbageReport
+from direct.showbase.PythonUtil import makeList, Sync, SerialNumGen
 import gc
 import sys
 import builtins
 
 
-class ExclusiveObjectPool(DirectObject.DirectObject):
+class ExclusiveObjectPool(DirectObject):
     # ObjectPool specialization that excludes particular objects
     # IDs of objects to globally exclude from reporting
     _ExclObjs = []
@@ -35,6 +39,7 @@ class ExclusiveObjectPool(DirectObject.DirectObject):
             cls._ExclObjIds.setdefault(id(obj), 0)
             cls._ExclObjIds[id(obj)] += 1
         cls._SyncMaster.change()
+
     @classmethod
     def removeExclObjs(cls, *objs):
         for obj in makeList(objs):
@@ -82,29 +87,34 @@ class ExclusiveObjectPool(DirectObject.DirectObject):
     def getObjsOfType(self, type):
         self._resync()
         return self._filteredPool.getObjsOfType(type)
+
     def printObjsOfType(self, type):
         self._resync()
         return self._filteredPool.printObjsOfType(type)
+
     def diff(self, other):
         self._resync()
         return self._filteredPool.diff(other._filteredPool)
+
     def typeFreqStr(self):
         self._resync()
         return self._filteredPool.typeFreqStr()
+
     def __len__(self):
         self._resync()
         return len(self._filteredPool)
+
 
 class ObjectReport:
     """report on every Python object in the current process"""
     notify = directNotify.newCategory('ObjectReport')
 
     def __init__(self, name, log=True):
-        gr = GarbageReport.GarbageReport('ObjectReport\'s GarbageReport: %s' % name, log=log)
+        gr = GarbageReport('ObjectReport\'s GarbageReport: %s' % name, log=log)
         gr.destroy()
         del gr
         self._name = name
-        self._pool = ObjectPool.ObjectPool(self._getObjectList())
+        self._pool = ObjectPool(self._getObjectList())
         #ExclusiveObjectPool.addExclObjs(self, self._pool, self._name)
         if log:
             self.notify.info('===== ObjectReport: \'%s\' =====\n%s' % (self._name, self.typeFreqStr()))
@@ -142,7 +152,7 @@ class ObjectReport:
             for obj in objects:
                 found.add(id(obj))
             # repeatedly call get_referents until we can't find any more objects
-            while len(nextObjList):
+            while len(nextObjList) > 0:
                 curObjList = nextObjList
                 nextObjList = []
                 for obj in curObjList:
@@ -153,39 +163,3 @@ class ObjectReport:
                             objects.append(ref)
                             nextObjList.append(ref)
             return objects
-        """
-        if hasattr(sys, 'getobjects'):
-            return sys.getobjects(0)
-        else:
-            objs = []
-            stateStack = Stack()
-            root = builtins
-            objIds = set([id(root)])
-            stateStack.push((root, None, 0))
-            while True:
-                if len(stateStack) == 0:
-                    break
-                obj, adjacents, resumeIndex = stateStack.pop()
-                objs.append(obj)
-                print id(obj)
-                if adjacents is None:
-                    adjacents = gc.get_referents(obj)
-                    adjacents.extend(gc.get_referrers(obj))
-                    # pare the list down to the ones that have not already been visited
-                    # to minimize calls to get_referents/get_referrers
-                    newObjs = []
-                    for adj in adjacents:
-                        adjId = id(adj)
-                        if adjId not in objIds:
-                            objIds.add(adjId)
-                            newObjs.append(adj)
-                    adjacents = newObjs
-                    if len(adjacents) == 0:
-                        print 'DEAD END'
-                for i in range(resumeIndex, len(adjacents)):
-                    adj = adjacents[i]
-                    stateStack.push((obj, adjacents, i+1))
-                    stateStack.push((adj, None, 0))
-                    continue
-                    """
-

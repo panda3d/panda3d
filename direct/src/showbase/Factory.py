@@ -4,6 +4,7 @@ __all__ = ['Factory']
 
 from direct.directnotify.DirectNotifyGlobal import directNotify
 
+
 class Factory:
     """This class manages a list of object types and their corresponding constructors.
     Objects may be created on-demand from their type. Object types may be any hashable
@@ -30,4 +31,3 @@ class Factory:
 
     def nullCtor(self, *args, **kwArgs):
         return None
-

@@ -2,6 +2,7 @@ from panda3d.core import *
 from direct.showbase.PythonUtil import Functor
 from . import ObjectGlobals as OG
 
+
 class ActionMgr:
     def __init__(self):
         self.undoList = []
@@ -36,6 +37,7 @@ class ActionMgr:
             action = self.redoList.pop()
             self.undoList.append(action)
             action.redo()
+
 
 class ActionBase(Functor):
     """ Base class for user actions """
@@ -72,6 +74,7 @@ class ActionBase(Functor):
 
     def undo(self):
         print("undo method is not defined for this action")
+
 
 class ActionAddNewObj(ActionBase):
     """ Action class for adding new object """
@@ -111,6 +114,7 @@ class ActionAddNewObj(ActionBase):
                 self.result = None
             else:
                 print("Can't undo this add")
+
 
 class ActionDeleteObj(ActionBase):
     """ Action class for deleting object """
@@ -266,20 +270,22 @@ class ActionDeleteObjById(ActionBase):
             self.hierarchy = {}
             self.objInfos = {}
 
+
 class ActionChangeHierarchy(ActionBase):
-     """ Action class for changing Scene Graph Hierarchy """
+    """ Action class for changing Scene Graph Hierarchy """
 
-     def __init__(self, editor, oldGrandParentId, oldParentId, newParentId, childName, *args, **kargs):
-         self.editor = editor
-         self.oldGrandParentId = oldGrandParentId
-         self.oldParentId = oldParentId
-         self.newParentId = newParentId
-         self.childName = childName
-         function = self.editor.ui.sceneGraphUI.parent
-         ActionBase.__init__(self, function, self.oldParentId, self.newParentId, self.childName, **kargs)
+    def __init__(self, editor, oldGrandParentId, oldParentId, newParentId, childName, *args, **kargs):
+        self.editor = editor
+        self.oldGrandParentId = oldGrandParentId
+        self.oldParentId = oldParentId
+        self.newParentId = newParentId
+        self.childName = childName
+        function = self.editor.ui.sceneGraphUI.parent
+        ActionBase.__init__(self, function, self.oldParentId, self.newParentId, self.childName, **kargs)
 
-     def undo(self):
-         self.editor.ui.sceneGraphUI.parent(self.oldParentId, self.oldGrandParentId, self.childName)
+    def undo(self):
+        self.editor.ui.sceneGraphUI.parent(self.oldParentId, self.oldGrandParentId, self.childName)
+
 
 class ActionSelectObj(ActionBase):
     """ Action class for adding new object """
@@ -306,6 +312,7 @@ class ActionSelectObj(ActionBase):
             if obj:
                 self.editor.select(obj[OG.OBJ_NP], fMultiSelect=1, fUndo=0)
         self.selectedUIDs = []
+
 
 class ActionTransformObj(ActionBase):
     """ Action class for object transformation """
@@ -343,6 +350,7 @@ class ActionTransformObj(ActionBase):
             del self.origMat
             self.origMat = None
 
+
 class ActionDeselectAll(ActionBase):
     """ Action class for adding new object """
 
@@ -368,6 +376,7 @@ class ActionDeselectAll(ActionBase):
             if obj:
                 self.editor.select(obj[OG.OBJ_NP], fMultiSelect=1, fUndo=0)
         self.selectedUIDs = []
+
 
 class ActionUpdateObjectProp(ActionBase):
     """ Action class for updating object property """

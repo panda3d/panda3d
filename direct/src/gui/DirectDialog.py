@@ -14,7 +14,6 @@ from direct.showbase import ShowBaseGlobal
 from . import DirectGuiGlobals as DGG
 from .DirectFrame import *
 from .DirectButton import *
-import types
 
 
 def findDialog(uniqueName):
@@ -191,8 +190,7 @@ class DirectDialog(DirectFrame):
         bindList = zip(self.buttonList, self['buttonHotKeyList'],
                        self['buttonValueList'])
         for button, hotKey, value in bindList:
-            if ((type(hotKey) == list) or
-                (type(hotKey) == tuple)):
+            if isinstance(hotKey, (list, tuple)):
                 for key in hotKey:
                     button.bind('press-' + key + '-', self.buttonCommand,
                                 extraArgs = [value])
@@ -278,13 +276,10 @@ class DirectDialog(DirectFrame):
             # Must compensate for scale
             scale = self['button_scale']
             # Can either be a Vec3 or a tuple of 3 values
-            if (isinstance(scale, Vec3) or
-                (type(scale) == list) or
-                (type(scale) == tuple)):
+            if isinstance(scale, (VBase3, list, tuple)):
                 sx = scale[0]
                 sz = scale[2]
-            elif ((type(scale) == int) or
-                  (type(scale) == float)):
+            elif isinstance(scale, (int, float)):
                 sx = sz = scale
             else:
                 sx = sz = 1
@@ -426,4 +421,3 @@ class RetryCancelDialog(DirectDialog):
         self.defineoptions(kw, optiondefs)
         DirectDialog.__init__(self, parent)
         self.initialiseoptions(RetryCancelDialog)
-

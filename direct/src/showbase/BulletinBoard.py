@@ -3,6 +3,8 @@
 __all__ = ['BulletinBoard']
 
 from direct.directnotify import DirectNotifyGlobal
+from direct.showbase.MessengerGlobal import messenger
+
 
 class BulletinBoard:
     """This class implements a global location for key/value pairs to be

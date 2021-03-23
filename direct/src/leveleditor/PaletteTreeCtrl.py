@@ -161,4 +161,3 @@ class PaletteTreeCtrl(wx.TreeCtrl):
             tds = wx.DropSource(self)
             tds.SetData(tdo)
             tds.DoDragDrop(True)
-

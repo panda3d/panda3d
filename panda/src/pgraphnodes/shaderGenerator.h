@@ -18,14 +18,14 @@
 
 #include "pandabase.h"
 #include "typedReferenceCount.h"
+#include "graphicsStateGuardianBase.h"
+#include "shaderAttrib.h"
+#include "renderState.h"
 
 #ifdef HAVE_CG
 
-#include "graphicsStateGuardianBase.h"
 #include "graphicsOutputBase.h"
 #include "nodePath.h"
-#include "shaderAttrib.h"
-#include "renderState.h"
 #include "renderAttrib.h"
 
 #include "colorAttrib.h"
@@ -89,7 +89,6 @@ protected:
 
   // RenderState analysis information.  Created by analyze_renderstate:
 
-  CPT(RenderState) _state;
   struct ShaderKey {
     ShaderKey();
     bool operator < (const ShaderKey &other) const;
@@ -107,6 +106,7 @@ protected:
       TF_map_height   = 0x040,
       TF_map_glow     = 0x080,
       TF_map_gloss    = 0x100,
+      TF_map_emission = 0x001000000,
       TF_uses_color   = 0x200,
       TF_uses_primary_color = 0x400,
       TF_uses_last_saved_result = 0x800,
@@ -196,6 +196,16 @@ private:
 
 // If we don't have Cg, let's replace this with a stub.
 class EXPCL_PANDA_PGRAPHNODES ShaderGenerator : public TypedReferenceCount {
+PUBLISHED:
+  ShaderGenerator(const GraphicsStateGuardianBase *gsg);
+  virtual ~ShaderGenerator();
+
+  virtual CPT(ShaderAttrib) synthesize_shader(const RenderState *rs,
+                                              const GeomVertexAnimationSpec &anim);
+
+  void rehash_generated_shaders();
+  void clear_generated_shaders();
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

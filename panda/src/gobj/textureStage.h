@@ -63,6 +63,8 @@ PUBLISHED:
     M_height,       // Rarely used: normal_height  is more efficient.
     M_selector,
     M_normal_gloss,
+
+    M_emission,
   };
 
   enum CombineMode {

@@ -351,6 +351,12 @@ protected:
                                        int &internal_vertices,
                                        int pipeline_stage,
                                        Thread *current_thread) const;
+  virtual void compute_external_bounds(CPT(BoundingVolume) &external_bounds,
+                                       BoundingVolume::BoundsType btype,
+                                       const BoundingVolume **volumes,
+                                       size_t num_volumes,
+                                       int pipeline_stage,
+                                       Thread *current_thread) const;
   virtual void parents_changed();
   virtual void children_changed();
   virtual void transform_changed();
@@ -358,8 +364,8 @@ protected:
   virtual void draw_mask_changed();
 
   typedef pmap<PandaNode *, PandaNode *> InstanceMap;
-  virtual PT(PandaNode) r_copy_subgraph(InstanceMap &inst_map,
-                                        Thread *current_thread) const;
+  PT(PandaNode) r_copy_subgraph(InstanceMap &inst_map,
+                                Thread *current_thread) const;
   virtual void r_copy_children(const PandaNode *from, InstanceMap &inst_map,
                                Thread *current_thread);
 

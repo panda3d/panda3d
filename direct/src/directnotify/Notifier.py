@@ -32,7 +32,7 @@ class Notifier:
         """
         self.__name = name
 
-        if (logger==None):
+        if logger is None:
             self.__logger = defaultLogger
         else:
             self.__logger = logger
@@ -144,17 +144,17 @@ class Notifier:
             self.__print(string)
         return 1 # to allow assert myNotify.warning("blah")
 
-    def setWarning(self, bool):
+    def setWarning(self, enable):
         """
         Enable/Disable the printing of warning messages
         """
-        self.__warning = bool
+        self.__warning = enable
 
     def getWarning(self):
         """
         Return whether the printing of warning messages is on or off
         """
-        return(self.__warning)
+        return self.__warning
 
     # debug funcs
     def debug(self, debugString):
@@ -171,11 +171,11 @@ class Notifier:
             self.__print(string)
         return 1 # to allow assert myNotify.debug("blah")
 
-    def setDebug(self, bool):
+    def setDebug(self, enable):
         """
         Enable/Disable the printing of debug messages
         """
-        self.__debug = bool
+        self.__debug = enable
 
     def getDebug(self):
         """
@@ -204,11 +204,11 @@ class Notifier:
         """
         return self.__info
 
-    def setInfo(self, bool):
+    def setInfo(self, enable):
         """
         Enable/Disable informational message  printing
         """
-        self.__info = bool
+        self.__info = enable
 
     # log funcs
     def __log(self, logEntry):
@@ -222,13 +222,13 @@ class Notifier:
         """
         Return 1 if logging enabled, 0 otherwise
         """
-        return (self.__logging)
+        return self.__logging
 
-    def setLogging(self, bool):
+    def setLogging(self, enable):
         """
         Set the logging flag to int (1=on, 0=off)
         """
-        self.__logging = bool
+        self.__logging = enable
 
     def __print(self, string):
         """
@@ -297,4 +297,3 @@ class Notifier:
             self.__log(string)
             self.__print(string)
         return 1 # to allow assert self.notify.debugCall("blah")
-

@@ -31,7 +31,7 @@
  */
 class EXPCL_PANDA_DOWNLOADER HTTPCookie {
 PUBLISHED:
-  INLINE HTTPCookie();
+  INLINE HTTPCookie() = default;
   INLINE explicit HTTPCookie(const std::string &format, const URLSpec &url);
   INLINE explicit HTTPCookie(const std::string &name, const std::string &path,
                              const std::string &domain);
@@ -57,6 +57,16 @@ PUBLISHED:
   INLINE void set_secure(bool flag);
   INLINE bool get_secure() const;
 
+  enum SameSite {
+    SS_unspecified,
+    SS_lax,
+    SS_strict,
+    SS_none,
+  };
+
+  INLINE void set_samesite(SameSite samesite);
+  INLINE SameSite get_samesite() const;
+
   bool operator < (const HTTPCookie &other) const;
   void update_from(const HTTPCookie &other);
 
@@ -66,6 +76,14 @@ PUBLISHED:
 
   void output(std::ostream &out) const;
 
+PUBLISHED:
+  MAKE_PROPERTY(name, get_name, set_name);
+  MAKE_PROPERTY(value, get_value, set_value);
+  MAKE_PROPERTY(domain, get_domain, set_domain);
+  MAKE_PROPERTY(path, get_path, set_path);
+  MAKE_PROPERTY2(expires, has_expires, get_expires, set_expires, clear_expires);
+  MAKE_PROPERTY(secure, get_secure, set_secure);
+
 private:
   bool parse_cookie_param(const std::string &param, bool first_param);
 
@@ -74,9 +92,11 @@ private:
   std::string _path;
   std::string _domain;
   HTTPDate _expires;
-  bool _secure;
+  bool _secure = false;
+  SameSite _samesite = SS_unspecified;
 };
 
+std::ostream &operator << (std::ostream &out, HTTPCookie::SameSite samesite);
 INLINE std::ostream &operator << (std::ostream &out, const HTTPCookie &cookie);
 
 #include "httpCookie.I"

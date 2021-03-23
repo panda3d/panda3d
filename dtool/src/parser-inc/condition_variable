@@ -1,0 +1,11 @@
+#pragma once
+
+namespace std {
+  class condition_variable;
+  class condition_variable_any;
+
+  enum class cv_status {
+    no_timeout,
+    timeout,
+  };
+}

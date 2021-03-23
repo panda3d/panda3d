@@ -13,6 +13,12 @@
 
 #include "dcast.h"
 
+#ifdef OPENGLES
+#include <atomic>
+
+static std::atomic_flag warned_downgrade_float64 = ATOMIC_FLAG_INIT;
+#endif
+
 TypeHandle CLP(GeomMunger)::_type_handle;
 
 ALLOC_DELETED_CHAIN_DEF(CLP(GeomMunger));
@@ -102,6 +108,7 @@ munge_format_impl(const GeomVertexFormat *orig,
       (InternalName::get_vertex(), 3, NT_int16,
        C_point, vertex_type->get_start(), vertex_type->get_column_alignment());
   }
+#endif  // !OPENGLES
 
   // Convert packed formats that OpenGL may not understand.
   for (size_t i = 0; i < orig->get_num_columns(); ++i) {
@@ -123,8 +130,25 @@ munge_format_impl(const GeomVertexFormat *orig,
                                column->get_contents(), column->get_start(),
                                column->get_column_alignment());
     }
+#ifdef OPENGLES
+    else if (column->get_numeric_type() == NT_float64) {
+      if (!warned_downgrade_float64.test_and_set()) {
+        GLCAT.warning()
+          << "OpenGL ES does not support 64-bit floats; converting vertex data to 32-bit.\n";
+#ifndef NDEBUG
+        if (vertices_float64) {
+          GLCAT.warning()
+            << "You may want to disable vertices-float64 for better performance.\n";
+        }
+#endif
+      }
+      PT(GeomVertexArrayFormat) array_format = new_format->modify_array(array);
+      array_format->add_column(column->get_name(), column->get_num_components(),
+                               NT_float32, column->get_contents(),
+                               column->get_start(), column->get_column_alignment());
+    }
+#endif
   }
-#endif  // !OPENGLES
 
   const GeomVertexColumn *color_type = orig->get_color_column();
   if (color_type != nullptr &&
@@ -288,6 +312,7 @@ premunge_format_impl(const GeomVertexFormat *orig) {
       (InternalName::get_vertex(), 3, NT_int16,
        C_point, vertex_type->get_start(), vertex_type->get_column_alignment());
   }
+#endif  // !OPENGLES
 
   // Convert packed formats that OpenGL may not understand.
   for (size_t i = 0; i < orig->get_num_columns(); ++i) {
@@ -309,8 +334,25 @@ premunge_format_impl(const GeomVertexFormat *orig) {
                                column->get_contents(), column->get_start(),
                                column->get_column_alignment());
     }
+#ifdef OPENGLES
+    else if (column->get_numeric_type() == NT_float64) {
+      if (!warned_downgrade_float64.test_and_set()) {
+        GLCAT.warning()
+          << "OpenGL ES does not support 64-bit floats; converting vertex data to 32-bit.\n";
+#ifndef NDEBUG
+        if (vertices_float64) {
+          GLCAT.warning()
+            << "You may want to disable vertices-float64 for better performance.\n";
+        }
+#endif
+      }
+      PT(GeomVertexArrayFormat) array_format = new_format->modify_array(array);
+      array_format->add_column(column->get_name(), column->get_num_components(),
+                               NT_float32, column->get_contents(),
+                               column->get_start(), column->get_column_alignment());
+    }
+#endif
   }
-#endif  // !OPENGLES
 
   CPT(GeomVertexFormat) format = GeomVertexFormat::register_format(new_format);
 

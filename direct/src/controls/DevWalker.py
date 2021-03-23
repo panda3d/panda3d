@@ -19,7 +19,9 @@ animations based on walker events.
 from direct.showbase.InputStateGlobal import inputState
 from direct.directnotify import DirectNotifyGlobal
 from direct.showbase import DirectObject
+from direct.showbase.MessengerGlobal import messenger
 from direct.task.Task import Task
+from direct.task.TaskManagerGlobal import taskMgr
 from panda3d.core import *
 
 

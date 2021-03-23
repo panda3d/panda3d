@@ -16,6 +16,7 @@ from direct.directtools.DirectUtil import *
 from seGeometry import *
 from direct.directtools.DirectGlobals import *
 from direct.task import Task
+import math
 
 CAM_MOVE_DURATION = 1.2
 COA_MARKER_SF = 0.0075

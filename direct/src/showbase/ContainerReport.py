@@ -2,10 +2,12 @@ from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.PythonUtil import Queue, invertDictLossless
 from direct.showbase.PythonUtil import safeRepr
 from direct.showbase.Job import Job
+from direct.showbase.JobManagerGlobal import jobMgr
 from direct.showbase.ContainerLeakDetector import deadEndTypes
 import types
 import sys
 import io
+
 
 class ContainerReport(Job):
     notify = directNotify.newCategory("ContainerReport")
@@ -25,7 +27,7 @@ class ContainerReport(Job):
         # for breadth-first searching
         self._queue = Queue()
         jobMgr.add(self)
-        if threaded == False:
+        if not threaded:
             jobMgr.finish(self)
 
     def destroy(self):
@@ -87,10 +89,10 @@ class ContainerReport(Job):
             except:
                 pass
 
-            if type(parentObj) in (str, bytes):
+            if isinstance(parentObj, (str, bytes)):
                 continue
 
-            if type(parentObj) is dict:
+            if isinstance(parentObj, dict):
                 key = None
                 attr = None
                 keys = list(parentObj.keys())
@@ -107,7 +109,7 @@ class ContainerReport(Job):
                     if id(attr) not in self._visitedIds:
                         self._visitedIds.add(id(attr))
                         if self._examine(attr):
-                            assert (self._queue.back() is attr)
+                            assert self._queue.back() is attr
                             if parentObj is __builtins__:
                                 self._id2pathStr[id(attr)] = key
                             else:
@@ -155,7 +157,7 @@ class ContainerReport(Job):
                             if id(attr) not in self._visitedIds:
                                 self._visitedIds.add(id(attr))
                                 if self._examine(attr):
-                                    assert (self._queue.back() is attr)
+                                    assert self._queue.back() is attr
                                     self._id2pathStr[id(attr)] = self._id2pathStr[id(parentObj)] + '[%s]' % index
                             index += 1
                         del attr
@@ -179,7 +181,7 @@ class ContainerReport(Job):
                     if id(child) not in self._visitedIds:
                         self._visitedIds.add(id(child))
                         if self._examine(child):
-                            assert (self._queue.back() is child)
+                            assert self._queue.back() is child
                             self._id2pathStr[id(child)] = self._id2pathStr[id(parentObj)] + '.%s' % childName
                 del childName
                 del child

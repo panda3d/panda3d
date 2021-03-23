@@ -123,11 +123,13 @@ def setDefaultClickSound(newSound):
 
 def getDefaultFont():
     global defaultFont
-    if defaultFont == None:
+    if defaultFont is None:
         defaultFont = defaultFontFunc()
     return defaultFont
 
 def setDefaultFont(newFont):
+    """Changes the default font for DirectGUI items.  To change the default
+    font across the board, see :meth:`.TextNode.setDefaultFont`. """
     global defaultFont
     defaultFont = newFont
 
@@ -161,3 +163,17 @@ def getDefaultPanel():
 def setDefaultPanel(newPanel):
     global panel
     panel = newPanel
+
+get_default_rollover_sound = getDefaultRolloverSound
+set_default_rollover_sound = setDefaultRolloverSound
+get_default_click_sound = getDefaultClickSound
+set_default_click_sound = setDefaultClickSound
+get_default_font = getDefaultFont
+set_default_font = setDefaultFont
+get_default_dialog_geom = getDefaultDialogGeom
+get_default_dialog_relief = getDefaultDialogRelief
+set_default_dialog_geom = setDefaultDialogGeom
+get_default_draw_order = getDefaultDrawOrder
+set_default_draw_order = setDefaultDrawOrder
+get_default_panel = getDefaultPanel
+set_default_panel = setDefaultPanel

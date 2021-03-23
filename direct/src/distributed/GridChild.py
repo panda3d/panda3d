@@ -1,5 +1,7 @@
 from direct.distributed.DistributedSmoothNodeBase import DistributedSmoothNodeBase
 from direct.distributed.GridParent import GridParent
+from direct.showbase.PythonUtil import report
+
 
 class GridChild:
     """
@@ -56,7 +58,6 @@ class GridChild:
             for currGridId, interestInfo in self._gridInterests.items():
                 self.cr.removeTaggedInterest(interestInfo[0])
             #self.__clearGridInterest()
-            pass
 
     def isOnAGrid(self):
         return self._gridParent is not None

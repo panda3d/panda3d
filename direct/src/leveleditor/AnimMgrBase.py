@@ -2,12 +2,14 @@
 Defines AnimMgrBase
 """
 
-import os, math
+import os
+import math
 
 from direct.interval.IntervalGlobal import *
 from panda3d.core import VBase3
 from . import ObjectGlobals as OG
 from . import AnimGlobals as AG
+
 
 class AnimMgrBase:
     """ AnimMgr will create, manage, update animations in the scene """
@@ -20,7 +22,7 @@ class AnimMgrBase:
         self.curveAnimation = {}
 
         #normal properties
-        self.lerpFuncs={
+        self.lerpFuncs = {
             'H' : self.lerpFuncH,
             'P' : self.lerpFuncP,
             'R' : self.lerpFuncR,
@@ -31,14 +33,14 @@ class AnimMgrBase:
             'CG' : self.lerpFuncCG,
             'CB' : self.lerpFuncCB,
             'CA' : self.lerpFuncCA
-            }
+        }
 
         #Properties which has animation curves
-        self.curveLerpFuncs={
+        self.curveLerpFuncs = {
             'X' : [ self.lerpFuncX, self.lerpCurveFuncX ],
             'Y' : [ self.lerpFuncY, self.lerpCurveFuncY ],
             'Z' : [ self.lerpFuncZ, self.lerpCurveFuncZ ]
-            }
+        }
 
     def reset(self):
         self.keyFramesInfo = {}
@@ -55,7 +57,7 @@ class AnimMgrBase:
                     if frame == keyFrame:
                         exist = True
                         break
-                if exist == False:
+                if not exist:
                     self.keyFrames.append(frame)
 
     def generateSlope(self, list):
@@ -354,7 +356,7 @@ class AnimMgrBase:
         self.colorUpdate(r,g,b,A,np)
 
     def colorUpdate(self, r, g, b, a, np):
-        if base.direct.selected.last == None:
+        if base.direct.selected.last is None:
             self.editor.objectMgr.updateObjectColor(r, g, b, a, np)
         elif self.editor.objectMgr.findObjectByNodePath(np) == self.editor.objectMgr.findObjectByNodePath(base.direct.selected.last):
             self.editor.ui.objectPropertyUI.propCR.setValue(r)
@@ -364,4 +366,3 @@ class AnimMgrBase:
             self.editor.objectMgr.updateObjectColor(r, g, b, a, np)
         else:
             self.editor.objectMgr.updateObjectColor(r, g, b, a, np)
-

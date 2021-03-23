@@ -445,6 +445,36 @@ remove_on_light(const NodePath &light) const {
 
 /**
  * Returns a new LightAttrib, just like this one, but with the indicated light
+ * replaced with the given other light.
+ */
+CPT(RenderAttrib) LightAttrib::
+replace_on_light(const NodePath &source, const NodePath &dest) const {
+  if (source == dest) {
+    return this;
+  }
+
+  nassertr(!source.is_empty(), this);
+  Light *slobj = source.node()->as_light();
+  nassertr(slobj != nullptr, this);
+
+  nassertr(!dest.is_empty(), this);
+  Light *dlobj = dest.node()->as_light();
+  nassertr(dlobj != nullptr, this);
+
+  LightAttrib *attrib = new LightAttrib(*this);
+
+  auto it = attrib->_on_lights.find(source);
+  if (it != attrib->_on_lights.end()) {
+    dlobj->attrib_ref();
+    slobj->attrib_unref();
+
+    *it = dest;
+  }
+  return return_new(attrib);
+}
+
+/**
+ * Returns a new LightAttrib, just like this one, but with the indicated light
  * added to the list of lights turned off by this attrib.
  */
 CPT(RenderAttrib) LightAttrib::
@@ -472,6 +502,36 @@ remove_off_light(const NodePath &light) const {
   nassertr(!light.is_empty() && light.node()->as_light() != nullptr, this);
   LightAttrib *attrib = new LightAttrib(*this);
   attrib->_off_lights.erase(light);
+  return return_new(attrib);
+}
+
+/**
+ * Returns a new LightAttrib, just like this one, but with the indicated light
+ * replaced with the given other light.
+ */
+CPT(RenderAttrib) LightAttrib::
+replace_off_light(const NodePath &source, const NodePath &dest) const {
+  if (source == dest) {
+    return this;
+  }
+
+  nassertr(!source.is_empty(), this);
+  Light *slobj = source.node()->as_light();
+  nassertr(slobj != nullptr, this);
+
+  nassertr(!dest.is_empty(), this);
+  Light *dlobj = dest.node()->as_light();
+  nassertr(dlobj != nullptr, this);
+
+  LightAttrib *attrib = new LightAttrib(*this);
+
+  auto it = attrib->_off_lights.find(source);
+  if (it != attrib->_off_lights.end()) {
+    dlobj->attrib_ref();
+    slobj->attrib_unref();
+
+    *it = dest;
+  }
   return return_new(attrib);
 }
 

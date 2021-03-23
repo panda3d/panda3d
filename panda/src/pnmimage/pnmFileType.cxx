@@ -20,7 +20,6 @@
 
 using std::string;
 
-bool PNMFileType::_did_init_pnm = false;
 TypeHandle PNMFileType::_type_handle;
 
 /**
@@ -105,21 +104,6 @@ make_reader(std::istream *, bool, const string &) {
 PNMWriter *PNMFileType::
 make_writer(std::ostream *, bool) {
   return nullptr;
-}
-
-/**
- * Initializes the underlying PNM library, if it has not already been
- * initialized.  This should be called by every implementation of
- * make_reader() and make_writer(), to ensure that the library is properly
- * initialized before any I/O is attempted.
- */
-void PNMFileType::
-init_pnm() {
-  if (!_did_init_pnm) {
-    _did_init_pnm = true;
-
-    // No reason to do anything here nowadays.
-  }
 }
 
 /**

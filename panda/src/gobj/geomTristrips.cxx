@@ -482,15 +482,28 @@ requires_unused_vertices() const {
  */
 void GeomTristrips::
 append_unused_vertices(GeomVertexArrayData *vertices, int vertex) {
-  GeomVertexReader from(vertices, 0);
-  from.set_row_unsafe(vertices->get_num_rows() - 1);
-  int prev = from.get_data1i();
+  size_t offset = vertices->get_num_rows();
+  vertices->set_num_rows(offset + 2);
 
-  GeomVertexWriter to(vertices, 0);
-  to.set_row_unsafe(vertices->get_num_rows());
-
-  to.add_data1i(prev);
-  to.add_data1i(vertex);
+  PT(GeomVertexArrayDataHandle) handle = vertices->modify_handle();
+  unsigned char *ptr = handle->get_write_pointer();
+  switch (vertices->get_array_format()->get_stride()) {
+  case 1:
+    ((uint8_t *)ptr)[offset] = ((uint8_t *)ptr)[offset - 1];
+    ((uint8_t *)ptr)[offset + 1] = vertex;
+    break;
+  case 2:
+    ((uint16_t *)ptr)[offset] = ((uint16_t *)ptr)[offset - 1];
+    ((uint16_t *)ptr)[offset + 1] = vertex;
+    break;
+  case 4:
+    ((uint32_t *)ptr)[offset] = ((uint32_t *)ptr)[offset - 1];
+    ((uint32_t *)ptr)[offset + 1] = vertex;
+    break;
+  default:
+    nassert_raise("unsupported index type");
+    break;
+  }
 }
 
 /**

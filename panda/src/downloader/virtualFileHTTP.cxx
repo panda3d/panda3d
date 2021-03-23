@@ -13,8 +13,11 @@
 
 #include "virtualFileHTTP.h"
 #include "virtualFileMountHTTP.h"
+#include "ramfile.h"
 #include "stringStream.h"
 #include "zStream.h"
+
+#include <iterator>
 
 #ifdef HAVE_OPENSSL
 
@@ -138,6 +141,26 @@ open_read_file(bool auto_unwrap) const {
   }
 
   return return_file(strstream, auto_unwrap);
+}
+
+/**
+ * Fills up the indicated pvector with the contents of the file, if it is a
+ * regular file.  Returns true on success, false otherwise.
+ */
+bool VirtualFileHTTP::
+read_file(vector_uchar &result, bool auto_unwrap) const {
+  if (_status_only) {
+    return false;
+  }
+
+  Ramfile ramfile;
+  if (!_channel->download_to_ram(&ramfile, false)) {
+    return false;
+  }
+
+  const string &data = ramfile.get_data();
+  std::copy(data.begin(), data.end(), std::back_inserter(result));
+  return true;
 }
 
 /**

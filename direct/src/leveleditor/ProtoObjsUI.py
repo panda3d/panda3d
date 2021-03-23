@@ -7,38 +7,40 @@ import os
 from panda3d.core import *
 from .ProtoObjs import *
 
+
 class ProtoDropTarget(wx.PyDropTarget):
-   """Implements drop target functionality to receive files, bitmaps and text"""
-   def __init__(self, ui):
-       wx.PyDropTarget.__init__(self)
-       self.ui = ui
-       self.do = wx.DataObjectComposite()  # the dataobject that gets filled with the appropriate data
-       self.filedo = wx.FileDataObject()
-       self.textdo = wx.TextDataObject()
-       self.bmpdo = wx.BitmapDataObject()
-       self.do.Add(self.filedo)
-       self.do.Add(self.bmpdo)
-       self.do.Add(self.textdo)
-       self.SetDataObject(self.do)
+    """Implements drop target functionality to receive files, bitmaps and text"""
+    def __init__(self, ui):
+        wx.PyDropTarget.__init__(self)
+        self.ui = ui
+        self.do = wx.DataObjectComposite()  # the dataobject that gets filled with the appropriate data
+        self.filedo = wx.FileDataObject()
+        self.textdo = wx.TextDataObject()
+        self.bmpdo = wx.BitmapDataObject()
+        self.do.Add(self.filedo)
+        self.do.Add(self.bmpdo)
+        self.do.Add(self.textdo)
+        self.SetDataObject(self.do)
 
-   def OnData(self, x, y, d):
-       """
-       Handles drag/dropping files/text or a bitmap
-       """
-       if self.GetData():
-          df = self.do.GetReceivedFormat().GetType()
-          if df in [wx.DF_UNICODETEXT, wx.DF_TEXT]:
-             text = self.textdo.GetText()
-             # self.editor.ui.protoFontsUI.tree.ChangeHierarchy(text, x, y)
+    def OnData(self, x, y, d):
+        """
+        Handles drag/dropping files/text or a bitmap
+        """
+        if self.GetData():
+            df = self.do.GetReceivedFormat().GetType()
+            if df in [wx.DF_UNICODETEXT, wx.DF_TEXT]:
+                text = self.textdo.GetText()
+                #self.editor.ui.protoFontsUI.tree.ChangeHierarchy(text, x, y)
 
-          elif df == wx.DF_FILENAME:
-               for name in self.filedo.GetFilenames():
-                   self.ui.AquireFile(name)
+            elif df == wx.DF_FILENAME:
+                for name in self.filedo.GetFilenames():
+                    self.ui.AquireFile(name)
 
-          elif df == wx.DF_BITMAP:
-               bmp = self.bmpdo.GetBitmap()
+            elif df == wx.DF_BITMAP:
+                bmp = self.bmpdo.GetBitmap()
 
-       return d  # you must return this
+        return d  # you must return this
+
 
 class ProtoObjsUI(wx.Panel):
     def __init__(self, parent, editor, protoObjs, supportedExts):
@@ -53,11 +55,13 @@ class ProtoObjsUI(wx.Panel):
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.llist, 1, wx.EXPAND, 0)
-        self.SetSizer(sizer); self.Layout()
+        self.SetSizer(sizer)
+        self.Layout()
 
         parentSizer = wx.BoxSizer(wx.VERTICAL)
         parentSizer.Add(self, 1, wx.EXPAND, 0)
-        parent.SetSizer(parentSizer); parent.Layout()
+        parent.SetSizer(parentSizer)
+        parent.Layout()
 
         self.opDelete = "Delete"
         self.menuItems = list()
@@ -83,7 +87,7 @@ class ProtoObjsUI(wx.Panel):
         menuItem = self.popupmenu.FindItemById(event.GetId())
         text = menuItem.GetText()
         if text == self.opDelete:
-           self.remove()
+            self.remove()
 
     def onShowPopup(self, event):
         pos = event.GetPosition()
@@ -95,14 +99,14 @@ class ProtoObjsUI(wx.Panel):
         for index in range(self.llist.GetItemCount()):
             itemtext = self.llist.GetItemText(index)
             if itemtext == text:
-               return True
+                return True
         return found
 
     def removeItem(self, index):
         if index != -1:
-           key = self.llist.GetItemText(index)
-           del(self.protoObjs.data[key])
-           item = self.llist.DeleteItem(index)
+            key = self.llist.GetItemText(index)
+            del self.protoObjs.data[key]
+            item = self.llist.DeleteItem(index)
 
     def remove(self):
         index = self.llist.GetFirstSelected()
@@ -112,13 +116,13 @@ class ProtoObjsUI(wx.Panel):
         name = os.path.basename(filename)
         for ext in self.supportedExts:
             if name.upper().endswith(ext.upper()):
-               try:
-                  index = self.llist.InsertStringItem(self.llist.GetItemCount(), name)
-                  self.protoObjs.data[name]= filename
-                  self.addObj(filename)
-               except:
-                  pass
-               break
+                try:
+                    index = self.llist.InsertStringItem(self.llist.GetItemCount(), name)
+                    self.protoObjs.data[name]= filename
+                    self.addObj(filename)
+                except:
+                    pass
+                break
 
     def addNewItem(self, result):
        ProtoObjsUI.AquireFile(self, result[1])
@@ -126,6 +130,6 @@ class ProtoObjsUI(wx.Panel):
     def AquireFile(self, filename):
         label = self.findLabel(filename)
         if label:
-           self.removeItem(label)
+            self.removeItem(label)
         filenameFull = Filename.fromOsSpecific(filename).getFullpath()
         self.add(filenameFull)

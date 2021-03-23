@@ -9,6 +9,7 @@ __all__ = ['ClassicFSM']
 
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.DirectObject import DirectObject
+from direct.showbase.MessengerGlobal import messenger
 import weakref
 
 if __debug__:
@@ -83,7 +84,7 @@ class ClassicFSM(DirectObject):
         self.__internalStateInFlux = 0
         if __debug__:
             global _debugFsms
-            _debugFsms[name]=weakref.ref(self)
+            _debugFsms[name] = weakref.ref(self)
 
     # I know this isn't how __repr__ is supposed to be used, but it
     # is nice and convenient.
@@ -107,7 +108,7 @@ class ClassicFSM(DirectObject):
         if self.__currentState == self.__initialState:
             return
 
-        assert self.__currentState == None
+        assert self.__currentState is None
         self.__internalStateInFlux = 1
         self.__enter(self.__initialState, argList)
         assert not self.__internalStateInFlux
@@ -115,7 +116,7 @@ class ClassicFSM(DirectObject):
     # setters and getters
 
     def getName(self):
-        return(self.__name)
+        return self.__name
 
     def setName(self, name):
         self.__name = name
@@ -134,13 +135,13 @@ class ClassicFSM(DirectObject):
         self.__states[state.getName()] = state
 
     def getInitialState(self):
-        return(self.__initialState)
+        return self.__initialState
 
     def setInitialState(self, initialStateName):
         self.__initialState = self.getStateNamed(initialStateName)
 
     def getFinalState(self):
-        return(self.__finalState)
+        return self.__finalState
 
     def setFinalState(self, finalStateName):
         self.__finalState = self.getStateNamed(finalStateName)
@@ -149,7 +150,7 @@ class ClassicFSM(DirectObject):
         self.request(self.getFinalState().getName())
 
     def getCurrentState(self):
-        return(self.__currentState)
+        return self.__currentState
 
 
     # lookup funcs
@@ -198,7 +199,7 @@ class ClassicFSM(DirectObject):
         """
         assert self.__internalStateInFlux
         stateName = aState.getName()
-        if (stateName in self.__states):
+        if stateName in self.__states:
             assert ClassicFSM.notify.debug("[%s]: entering %s" % (self.__name, stateName))
             self.__currentState = aState
             # Only send the state change event if we are inspecting it
@@ -257,7 +258,7 @@ class ClassicFSM(DirectObject):
             aState = aStateName
             aStateName = aState.getName()
 
-        if aState == None:
+        if aState is None:
             ClassicFSM.notify.error("[%s]: request: %s, no such state" %
                              (self.__name, aStateName))
 
@@ -282,8 +283,8 @@ class ClassicFSM(DirectObject):
                               exitArgList)
             return 1
         # We can implicitly always transition to our final state.
-        elif (aStateName == self.__finalState.getName()):
-            if (self.__currentState == self.__finalState):
+        elif aStateName == self.__finalState.getName():
+            if self.__currentState == self.__finalState:
                 # Do not do the transition if we are already in the
                 # final state
                 assert ClassicFSM.notify.debug(
@@ -300,7 +301,7 @@ class ClassicFSM(DirectObject):
                                   exitArgList)
                 return 1
         # are we already in this state?
-        elif (aStateName == self.__currentState.getName()):
+        elif aStateName == self.__currentState.getName():
             assert ClassicFSM.notify.debug(
                 "[%s]: already in state %s and no self transition" %
                 (self.__name, aStateName))
@@ -348,7 +349,7 @@ class ClassicFSM(DirectObject):
             aState = aStateName
             aStateName = aState.getName()
 
-        if aState == None:
+        if aState is None:
             ClassicFSM.notify.error("[%s]: request: %s, no such state" %
                                 (self.__name, aStateName))
 
@@ -375,11 +376,3 @@ class ClassicFSM(DirectObject):
 
     def isInternalStateInFlux(self):
         return self.__internalStateInFlux
-
-
-
-
-
-
-
-

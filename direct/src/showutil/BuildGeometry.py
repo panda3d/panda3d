@@ -1,15 +1,19 @@
 from panda3d.core import *
 from math import *
 
+
 GEO_ID = 0
+
 
 def circleX(angle, radius, centerX, centerY):
     x = radius * cos(angle) + centerX
     return x
 
+
 def circleY(angle, radius, centerX, centerY):
     y = radius * sin(angle) + centerY
     return y
+
 
 def getCirclePoints(segCount, centerX, centerY, radius, wideX= 1.0, wideY = 1.0):
     returnShape = []
@@ -18,15 +22,15 @@ def getCirclePoints(segCount, centerX, centerY, radius, wideX= 1.0, wideY = 1.0)
         coordY = wideY * (circleY(((pi * 2.0) * float(float(seg) / float(segCount))), radius, centerX, centerY))
         returnShape.append((coordX, coordY, 1))
 
-    coordX =  wideX * (circleX(((pi * 2.0) * float(0 / segCount)), radius, centerX, centerY))
-    coordY =  wideY * (circleY(((pi * 2.0) * float(0 / segCount)), radius, centerX, centerY))
+    coordX = wideX * (circleX(((pi * 2.0) * float(0 / segCount)), radius, centerX, centerY))
+    coordY = wideY * (circleY(((pi * 2.0) * float(0 / segCount)), radius, centerX, centerY))
     returnShape.append((coordX, coordY, 1))
     return returnShape
 
 
 def addCircle(attachNode, vertexCount, radius, color = Vec4(1.0, 1.0, 1.0, 1.0), centerColor = None, layer = 0):
-    targetGN=GeomNode("target Circle")
-    if centerColor == None:
+    targetGN = GeomNode("target Circle")
+    if centerColor is None:
         centerColor = color
     zFloat = 0.025
     targetCircleShape = getCirclePoints(5 + (vertexCount), 0.0, 0.0, radius)
@@ -42,7 +46,7 @@ def addCircle(attachNode, vertexCount, radius, color = Vec4(1.0, 1.0, 1.0, 1.0),
         targetCircleColorWriter.addData4f(color[0], color[1], color[2], color[3])
         #targetCircleColorWriter.addData4f(1.0, 1.0, 1.0, 1.0)
 
-    targetTris=GeomTrifans(Geom.UHStatic) # triangle object
+    targetTris = GeomTrifans(Geom.UHStatic) # triangle object
 
     sizeTarget = len(targetCircleShape)
     targetTris.addVertex(0)
@@ -51,21 +55,23 @@ def addCircle(attachNode, vertexCount, radius, color = Vec4(1.0, 1.0, 1.0, 1.0),
     targetTris.addVertex(1)
     targetTris.closePrimitive()
 
-    targetGeom=Geom(targetCircleVertexData)
+    targetGeom = Geom(targetCircleVertexData)
     targetGeom.addPrimitive(targetTris)
     attachNode.addGeom(targetGeom)
     return targetGeom
 
+
 def addCircleGeom(rootNode,  vertexCount, radius, color = Vec4(1.0, 1.0, 1.0, 1.0), centerColor = None, layer = 0):
-     global GEO_ID
-     GN=GeomNode("Circle %s" % (GEO_ID))
-     GEO_ID += 1
-     NodePathGeom = rootNode.attachNewNode(GN)
-     geo = addCircle(GN, vertexCount, radius, color, centerColor,layer)
-     return NodePathGeom, GN, geo
+    global GEO_ID
+    GN=GeomNode("Circle %s" % (GEO_ID))
+    GEO_ID += 1
+    NodePathGeom = rootNode.attachNewNode(GN)
+    geo = addCircle(GN, vertexCount, radius, color, centerColor,layer)
+    return NodePathGeom, GN, geo
+
 
 def addSquare(attachNode, sizeX, sizeY, color = Vec4(1.0, 1.0, 1.0, 1.0), layer = 0):
-    targetGN=GeomNode("Square Geom")
+    targetGN = GeomNode("Square Geom")
     sX = sizeX / 2.0
     sY = sizeY / 2.0
 
@@ -102,7 +108,7 @@ def addSquare(attachNode, sizeX, sizeY, color = Vec4(1.0, 1.0, 1.0, 1.0), layer 
     boxColorWriter.addData4f(color[0], color[1], color[2], color[3])
     boxTextureWriter.addData2f(1.0, 1.0)
 
-    boxTris=GeomTristrips(Geom.UHStatic) # trianglestrip obejcet
+    boxTris = GeomTristrips(Geom.UHStatic) # trianglestrip obejcet
 
     boxTris.addVertex(1)
     boxTris.addVertex(2)
@@ -110,23 +116,25 @@ def addSquare(attachNode, sizeX, sizeY, color = Vec4(1.0, 1.0, 1.0, 1.0), layer 
     boxTris.addVertex(3)
     boxTris.closePrimitive()
 
-    boxGeom=Geom(boxVertexData)
+    boxGeom = Geom(boxVertexData)
     boxGeom.addPrimitive(boxTris)
 
 
     attachNode.addGeom(boxGeom)
     return boxGeom
 
+
 def addSquareGeom(rootNode, sizeX, sizeY, color = Vec4(1.0, 1.0, 1.0, 1.0), layer = 0):
-     global GEO_ID
-     GN=GeomNode("Square %s" % (GEO_ID))
-     GEO_ID += 1
-     NodePathGeom = rootNode.attachNewNode(GN)
-     geo = addSquare(GN, sizeX, sizeY, color, layer)
-     return NodePathGeom, GN, geo
+    global GEO_ID
+    GN = GeomNode("Square %s" % (GEO_ID))
+    GEO_ID += 1
+    NodePathGeom = rootNode.attachNewNode(GN)
+    geo = addSquare(GN, sizeX, sizeY, color, layer)
+    return NodePathGeom, GN, geo
+
 
 def addBox(attachNode, sizeX, sizeY, sizeZ, color = Vec4(1.0, 1.0, 1.0, 1.0), darken = 0):
-    targetGN=GeomNode("Box Geom")
+    targetGN = GeomNode("Box Geom")
     sX = sizeX / 2.0
     sY = sizeY / 2.0
     sZ = sizeZ / 2.0
@@ -257,7 +265,7 @@ def addBox(attachNode, sizeX, sizeY, sizeZ, color = Vec4(1.0, 1.0, 1.0, 1.0), da
     boxColorWriter.addData4f(color2[0], color2[1], color2[2], color2[3])
 
 
-    boxTris=GeomTristrips(Geom.UHStatic) # trianglestrip obejcet
+    boxTris = GeomTristrips(Geom.UHStatic) # trianglestrip obejcet
     boxTris.addVertex(0)#(1)
     boxTris.addVertex(1)#(2)
     boxTris.addVertex(3)#(0)
@@ -294,24 +302,25 @@ def addBox(attachNode, sizeX, sizeY, sizeZ, color = Vec4(1.0, 1.0, 1.0, 1.0), da
     boxTris.addVertex(23)
     boxTris.closePrimitive()
 
-    boxGeom=Geom(boxVertexData)
+    boxGeom = Geom(boxVertexData)
     boxGeom.addPrimitive(boxTris)
 
 
     attachNode.addGeom(boxGeom)
     return boxGeom
 
+
 def addBoxGeom(rootNode, sizeX, sizeY, sizeZ, color = Vec4(1.0, 1.0, 1.0, 1.0), darken = 0):
-     global GEO_ID
-     GN=GeomNode("Box %s" % (GEO_ID))
-     GEO_ID += 1
-     nodePathGeom = rootNode.attachNewNode(GN)
-     geo = addBox(GN, sizeX, sizeY, sizeZ, color, darken)
-     return nodePathGeom, GN, geo
+    global GEO_ID
+    GN = GeomNode("Box %s" % (GEO_ID))
+    GEO_ID += 1
+    nodePathGeom = rootNode.attachNewNode(GN)
+    geo = addBox(GN, sizeX, sizeY, sizeZ, color, darken)
+    return nodePathGeom, GN, geo
 
 
 def addArrow(attachNode, sizeX, sizeY, color = Vec4(1.0, 1.0, 1.0, 1.0), layer = 0):
-    targetGN=GeomNode("Arrow Geom")
+    targetGN = GeomNode("Arrow Geom")
     sX = sizeX / 2.0
     sY = sizeY / 2.0
 
@@ -343,7 +352,7 @@ def addArrow(attachNode, sizeX, sizeY, color = Vec4(1.0, 1.0, 1.0, 1.0), layer =
     boxNormalWriter.addData3f(0, 0, 1)
     boxColorWriter.addData4f(color[0], color[1], color[2], color[3])
 
-    boxTris=GeomTristrips(Geom.UHStatic) # trianglestrip obejcet
+    boxTris = GeomTristrips(Geom.UHStatic) # trianglestrip obejcet
 
     boxTris.addVertex(1)
     boxTris.addVertex(2)
@@ -369,17 +378,18 @@ def addArrow(attachNode, sizeX, sizeY, color = Vec4(1.0, 1.0, 1.0, 1.0), layer =
     boxTris.closePrimitive()
 
 
-    boxGeom=Geom(boxVertexData)
+    boxGeom = Geom(boxVertexData)
     boxGeom.addPrimitive(boxTris)
 
 
     attachNode.addGeom(boxGeom)
     return boxGeom
 
+
 def addArrowGeom(rootNode, sizeX, sizeY, color = Vec4(1.0, 1.0, 1.0, 1.0), layer = 0):
-     global GEO_ID
-     GN=GeomNode("Arrow %s" % (GEO_ID))
-     GEO_ID += 1
-     NodePathGeom = rootNode.attachNewNode(GN)
-     geo = addArrow(GN, sizeX, sizeY, color, layer)
-     return NodePathGeom, GN, geo
+    global GEO_ID
+    GN = GeomNode("Arrow %s" % (GEO_ID))
+    GEO_ID += 1
+    NodePathGeom = rootNode.attachNewNode(GN)
+    geo = addArrow(GN, sizeX, sizeY, color, layer)
+    return NodePathGeom, GN, geo

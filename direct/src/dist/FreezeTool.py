@@ -12,6 +12,7 @@ import io
 import distutils.sysconfig as sysconf
 import zipfile
 import importlib
+import warnings
 
 from . import pefile
 
@@ -61,7 +62,7 @@ except ImportError:
     def pytest_imports():
         return []
 
-hiddenImports = {
+defaultHiddenImports = {
     'pytest': pytest_imports(),
     'pkg_resources': [
         'pkg_resources.*.*',
@@ -77,7 +78,28 @@ hiddenImports = {
         'numpy.core._dtype_ctypes',
         'numpy.core._methods',
     ],
+    'pandas.compat': ['lzma', 'cmath'],
+    'pandas._libs.tslibs.conversion': ['pandas._libs.tslibs.base'],
 }
+
+
+# These are modules that import other modules but shouldn't pick them up as
+# dependencies (usually because they are optional).  This prevents picking up
+# unwanted dependencies.
+ignoreImports = {
+    'direct.showbase.PythonUtil': ['pstats', 'profile'],
+
+    'toml.encoder': ['numpy'],
+}
+
+if sys.version_info >= (3, 8):
+    # importlib.metadata is a "provisional" module introduced in Python 3.8 that
+    # conditionally pulls in dependency-rich packages like "email" and "pep517"
+    # (the latter of which is a thirdparty package!)  But it's only imported in
+    # one obscure corner, so we don't want to pull it in by default.
+    ignoreImports['importlib._bootstrap_external'] = ['importlib.metadata']
+    ignoreImports['importlib.metadata'] = ['pep517']
+
 
 # These are overrides for specific modules.
 overrideModules = {
@@ -163,23 +185,23 @@ class CompilationEnvironment:
         if self.platform.startswith('win'):
             self.Python = sysconf.PREFIX
 
-            if ('VCINSTALLDIR' in os.environ):
+            if 'VCINSTALLDIR' in os.environ:
                 self.MSVC = os.environ['VCINSTALLDIR']
-            elif (Filename('/c/Program Files/Microsoft Visual Studio 9.0/VC').exists()):
+            elif Filename('/c/Program Files/Microsoft Visual Studio 9.0/VC').exists():
                 self.MSVC = Filename('/c/Program Files/Microsoft Visual Studio 9.0/VC').toOsSpecific()
-            elif (Filename('/c/Program Files (x86)/Microsoft Visual Studio 9.0/VC').exists()):
+            elif Filename('/c/Program Files (x86)/Microsoft Visual Studio 9.0/VC').exists():
                 self.MSVC = Filename('/c/Program Files (x86)/Microsoft Visual Studio 9.0/VC').toOsSpecific()
-            elif (Filename('/c/Program Files/Microsoft Visual Studio .NET 2003/Vc7').exists()):
+            elif Filename('/c/Program Files/Microsoft Visual Studio .NET 2003/Vc7').exists():
                 self.MSVC = Filename('/c/Program Files/Microsoft Visual Studio .NET 2003/Vc7').toOsSpecific()
             else:
                 print('Could not locate Microsoft Visual C++ Compiler! Try running from the Visual Studio Command Prompt.')
                 sys.exit(1)
 
-            if ('WindowsSdkDir' in os.environ):
+            if 'WindowsSdkDir' in os.environ:
                 self.PSDK = os.environ['WindowsSdkDir']
-            elif (platform.architecture()[0] == '32bit' and Filename('/c/Program Files/Microsoft Platform SDK for Windows Server 2003 R2').exists()):
+            elif platform.architecture()[0] == '32bit' and Filename('/c/Program Files/Microsoft Platform SDK for Windows Server 2003 R2').exists():
                 self.PSDK = Filename('/c/Program Files/Microsoft Platform SDK for Windows Server 2003 R2').toOsSpecific()
-            elif (os.path.exists(os.path.join(self.MSVC, 'PlatformSDK'))):
+            elif os.path.exists(os.path.join(self.MSVC, 'PlatformSDK')):
                 self.PSDK = os.path.join(self.MSVC, 'PlatformSDK')
             else:
                 print('Could not locate the Microsoft Windows Platform SDK! Try running from the Visual Studio Command Prompt.')
@@ -197,7 +219,7 @@ class CompilationEnvironment:
                 self.suffix64 = '\\amd64'
 
             # If it is run by makepanda, it handles the MSVC and PlatformSDK paths itself.
-            if ('MAKEPANDA' in os.environ):
+            if 'MAKEPANDA' in os.environ:
                 self.compileObjExe = 'cl /wd4996 /Fo%(basename)s.obj /nologo /c %(MD)s /Zi /O2 /Ob2 /EHsc /Zm300 /W3 /I"%(pythonIPath)s" %(filename)s'
                 self.compileObjDll = self.compileObjExe
                 self.linkExe = 'link /nologo /MAP:NUL /FIXED:NO /OPT:REF /STACK:4194304 /INCREMENTAL:NO /LIBPATH:"%(python)s\\libs"  /out:%(basename)s.exe %(basename)s.obj'
@@ -211,7 +233,7 @@ class CompilationEnvironment:
                 self.linkDll = 'link /nologo /DLL /MAP:NUL /FIXED:NO /OPT:REF /INCREMENTAL:NO /LIBPATH:"%(PSDK)s\\lib" /LIBPATH:"%(MSVC)s\\lib%(suffix64)s" /LIBPATH:"%(python)s\\libs"  /out:%(basename)s%(dllext)s.pyd %(basename)s.obj'
 
         elif self.platform.startswith('osx_'):
-            # OSX
+            # macOS
             proc = self.platform.split('_', 1)[1]
             if proc == 'i386':
                 self.arch = '-arch i386'
@@ -219,6 +241,8 @@ class CompilationEnvironment:
                 self.arch = '-arch ppc'
             elif proc == 'amd64':
                 self.arch = '-arch x86_64'
+            elif proc in ('arm64', 'aarch64'):
+                self.arch = '-arch arm64'
             self.compileObjExe = "gcc -c %(arch)s -o %(basename)s.o -O2 -I%(pythonIPath)s %(filename)s"
             self.compileObjDll = "gcc -fPIC -c %(arch)s -o %(basename)s.o -O2 -I%(pythonIPath)s %(filename)s"
             self.linkExe = "gcc %(arch)s -o %(basename)s %(basename)s.o -framework Python"
@@ -233,7 +257,7 @@ class CompilationEnvironment:
             self.linkExe = "%(CC)s -o %(basename)s %(basename)s.o -L/usr/local/lib -lpython%(pythonVersion)s"
             self.linkDll = "%(LDSHARED)s -o %(basename)s.so %(basename)s.o -L/usr/local/lib -lpython%(pythonVersion)s"
 
-            if (os.path.isdir("/usr/PCBSD/local/lib")):
+            if os.path.isdir("/usr/PCBSD/local/lib"):
                 self.linkExe += " -L/usr/PCBSD/local/lib"
                 self.linkDll += " -L/usr/PCBSD/local/lib"
 
@@ -636,7 +660,9 @@ okMissing = [
     'EasyDialogs', 'SOCKS', 'ic', 'rourl2path', 'termios', 'vms_lib',
     'OverrideFrom23._Res', 'email', 'email.Utils', 'email.Generator',
     'email.Iterators', '_subprocess', 'gestalt', 'java.lang',
-    'direct.extensions_native.extensions_darwin',
+    'direct.extensions_native.extensions_darwin', '_manylinux',
+    'collections.Iterable', 'collections.Mapping', 'collections.MutableMapping',
+    'collections.Sequence', 'numpy_distutils',
     ]
 
 # Since around macOS 10.15, Apple's codesigning process has become more strict.
@@ -751,7 +777,7 @@ class Freezer:
             return 'ModuleDef(%s)' % (', '.join(args))
 
     def __init__(self, previous = None, debugLevel = 0,
-                 platform = None, path=None):
+                 platform = None, path=None, hiddenImports=None):
         # Normally, we are freezing for our own platform.  Change this
         # if untrue.
         self.platform = platform or PandaSystem.getPlatform()
@@ -824,6 +850,11 @@ class Freezer:
                 path = list(getattr(module, '__path__'))
                 if path:
                     modulefinder.AddPackagePath(moduleName, path[0])
+
+        # Module with non-obvious dependencies
+        self.hiddenImports = defaultHiddenImports.copy()
+        if hiddenImports is not None:
+            self.hiddenImports.update(hiddenImports)
 
         # Suffix/extension for Python C extension modules
         if self.platform == PandaSystem.getPlatform():
@@ -986,7 +1017,7 @@ class Freezer:
 
         # Scan the directory, looking for .py files.
         modules = []
-        for basename in os.listdir(pathname):
+        for basename in sorted(os.listdir(pathname)):
             if basename.endswith('.py') and basename != '__init__.py':
                 modules.append(basename[:-3])
 
@@ -998,8 +1029,8 @@ class Freezer:
         if not newName:
             newName = moduleName
 
-        assert(moduleName.endswith('.*'))
-        assert(newName.endswith('.*'))
+        assert moduleName.endswith('.*')
+        assert newName.endswith('.*')
 
         mdefs = {}
 
@@ -1009,7 +1040,7 @@ class Freezer:
         parentNames = [(parentName, newParentName)]
 
         if parentName.endswith('.*'):
-            assert(newParentName.endswith('.*'))
+            assert newParentName.endswith('.*')
             # Another special case.  The parent name "*" means to
             # return all possible directories within a particular
             # directory.
@@ -1020,7 +1051,7 @@ class Freezer:
             modulePath = self.getModulePath(topName)
             if modulePath:
                 for dirname in modulePath:
-                    for basename in os.listdir(dirname):
+                    for basename in sorted(os.listdir(dirname)):
                         if os.path.exists(os.path.join(dirname, basename, '__init__.py')):
                             parentName = '%s.%s' % (topName, basename)
                             newParentName = '%s.%s' % (newTopName, basename)
@@ -1166,7 +1197,7 @@ class Freezer:
 
         # Check if any new modules we found have "hidden" imports
         for origName in list(self.mf.modules.keys()):
-            hidden = hiddenImports.get(origName, [])
+            hidden = self.hiddenImports.get(origName, [])
             for modname in hidden:
                 if modname.endswith('.*'):
                     mdefs = self._gatherSubmodules(modname, implicit = True)
@@ -1342,7 +1373,7 @@ class Freezer:
         for moduleName, module in list(self.mf.modules.items()):
             if module.__code__:
                 co = self.mf.replace_paths_in_code(module.__code__)
-                module.__code__ = co;
+                module.__code__ = co
 
     def __addPyc(self, multifile, filename, code, compressionLevel):
         if code:
@@ -1721,7 +1752,7 @@ class Freezer:
         return target
 
     def generateRuntimeFromStub(self, target, stub_file, use_console, fields={},
-                                log_append=False):
+                                log_append=False, log_filename_strftime=False):
         self.__replacePaths()
 
         # We must have a __main__ module to make an exe file.
@@ -1904,9 +1935,12 @@ class Freezer:
             # A null entry marks the end of the module table.
             blob += struct.pack(entry_layout, 0, 0, 0)
 
+            # These flags should match the enum in deploy-stub.c
             flags = 0
             if log_append:
                 flags |= 1
+            if log_filename_strftime:
+                flags |= 2
 
             # Compose the header we will be writing to the stub, to tell it
             # where to find the module data blob, as well as other variables.
@@ -1952,7 +1986,7 @@ class Freezer:
 
         if append_offset:
             # This is for legacy deploy-stub.
-            print("WARNING: Could not find blob header. Is deploy-stub outdated?")
+            warnings.warn("Could not find blob header. Is deploy-stub outdated?")
             blob += struct.pack('<Q', blob_offset)
 
         with open(target, 'wb') as f:
@@ -2215,7 +2249,7 @@ class Freezer:
 
                 strings = macho_data[stroff:stroff+strsize]
 
-                for i in range(nsyms):
+                for j in range(nsyms):
                     strx, type, sect, desc, value = struct.unpack_from(nlist_struct, macho_data, symoff)
                     symoff += nlist_size
                     name = strings[strx : strings.find(b'\0', strx)]
@@ -2488,10 +2522,18 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
         if name in self.badmodules:
             self._add_badmodule(name, caller)
             return
+
+        if level <= 0 and caller and caller.__name__ in ignoreImports:
+            if name in ignoreImports[caller.__name__]:
+                return
+
         try:
             self.import_hook(name, caller, level=level)
         except ImportError as msg:
             self.msg(2, "ImportError:", str(msg))
+            self._add_badmodule(name, caller)
+        except SyntaxError as msg:
+            self.msg(2, "SyntaxError:", str(msg))
             self._add_badmodule(name, caller)
         else:
             if fromlist:
@@ -2505,6 +2547,78 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
                     except ImportError as msg:
                         self.msg(2, "ImportError:", str(msg))
                         self._add_badmodule(fullname, caller)
+
+    def scan_code(self, co, m):
+        code = co.co_code
+        # This was renamed to scan_opcodes in Python 3.6
+        if hasattr(self, 'scan_opcodes_25'):
+            scanner = self.scan_opcodes_25
+        else:
+            scanner = self.scan_opcodes
+
+        for what, args in scanner(co):
+            if what == "store":
+                name, = args
+                m.globalnames[name] = 1
+            elif what in ("import", "absolute_import"):
+                fromlist, name = args
+                have_star = 0
+                if fromlist is not None:
+                    if "*" in fromlist:
+                        have_star = 1
+                    fromlist = [f for f in fromlist if f != "*"]
+                if what == "absolute_import":
+                    level = 0
+                else:
+                    level = -1
+                self._safe_import_hook(name, m, fromlist, level=level)
+                if have_star:
+                    # We've encountered an "import *". If it is a Python module,
+                    # the code has already been parsed and we can suck out the
+                    # global names.
+                    mm = None
+                    if m.__path__:
+                        # At this point we don't know whether 'name' is a
+                        # submodule of 'm' or a global module. Let's just try
+                        # the full name first.
+                        mm = self.modules.get(m.__name__ + "." + name)
+                    if mm is None:
+                        mm = self.modules.get(name)
+                    if mm is not None:
+                        m.globalnames.update(mm.globalnames)
+                        m.starimports.update(mm.starimports)
+                        if mm.__code__ is None:
+                            m.starimports[name] = 1
+                    else:
+                        m.starimports[name] = 1
+            elif what == "relative_import":
+                level, fromlist, name = args
+                parent = self.determine_parent(m, level=level)
+                if name:
+                    self._safe_import_hook(name, m, fromlist, level=level)
+                else:
+                    self._safe_import_hook(parent.__name__, None, fromlist, level=0)
+
+                if fromlist and "*" in fromlist:
+                    if name:
+                        mm = self.modules.get(parent.__name__ + "." + name)
+                    else:
+                        mm = self.modules.get(parent.__name__)
+
+                    if mm is not None:
+                        m.globalnames.update(mm.globalnames)
+                        m.starimports.update(mm.starimports)
+                        if mm.__code__ is None:
+                            m.starimports[name] = 1
+                    else:
+                        m.starimports[name] = 1
+            else:
+                # We don't expect anything else from the generator.
+                raise RuntimeError(what)
+
+        for c in co.co_consts:
+            if isinstance(c, type(co)):
+                self.scan_code(c, m)
 
     def find_module(self, name, path=None, parent=None):
         """ Finds a module with the indicated name on the given search path
@@ -2593,7 +2707,7 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
             except OSError:
                 self.msg(2, "can't list directory", dir)
                 continue
-            for name in names:
+            for name in sorted(names):
                 mod = None
                 for suff in self.suffixes:
                     n = len(suff)

@@ -1,6 +1,6 @@
 """Imports all of the :ref:`directgui` classes."""
 
-from . import DirectGuiGlobals as DGG
+from . import DirectGuiGlobals as DGG # pylint: disable=unused-import
 from .OnscreenText import *
 from .OnscreenGeom import *
 from .OnscreenImage import *

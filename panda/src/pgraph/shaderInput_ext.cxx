@@ -274,7 +274,7 @@ __init__(CPT_InternalName name, PyObject *value, int priority) {
       return;
     }
 
-    Py_ssize_t num_items = PySequence_Fast_GET_SIZE(value);
+    Py_ssize_t num_items = PySequence_Fast_GET_SIZE(fast);
     if (num_items <= 0) {
       // We can't determine the type of a list of size 0.
       _this->_type = ShaderInput::M_numeric;

@@ -5,12 +5,22 @@
 ##
 ########################################################################
 
-import sys,os,time,stat,string,re,getopt,fnmatch,threading,signal,shutil,platform,glob,getpass,signal
-import subprocess
-from distutils import sysconfig
-import pickle
-import _thread as thread
 import configparser
+from distutils import sysconfig
+import fnmatch
+import getpass
+import glob
+import os
+import pickle
+import platform
+import re
+import shutil
+import signal
+import subprocess
+import sys
+import threading
+import _thread as thread
+import time
 
 SUFFIX_INC = [".cxx",".cpp",".c",".h",".I",".yxx",".lxx",".mm",".rc",".r"]
 SUFFIX_DLL = [".dll",".dlo",".dle",".dli",".dlm",".mll",".exe",".pyd",".ocx"]
@@ -40,7 +50,7 @@ DEBUG_DEPENDENCIES = False
 # Is the current Python a 32-bit or 64-bit build?  There doesn't
 # appear to be a universal test for this.
 if sys.platform == 'darwin':
-    # On OSX, platform.architecture reports '64bit' even if it is
+    # On macOS, platform.architecture reports '64bit' even if it is
     # currently running in 32-bit mode.  But sys.maxint is a reliable
     # indicator.
     host_64 = (sys.maxsize > 0x100000000)
@@ -172,14 +182,15 @@ THREADS = {}
 HAVE_COLORS = False
 SETF = ""
 try:
-  import curses
-  curses.setupterm()
-  SETF = curses.tigetstr("setf")
-  if (SETF == None):
-    SETF = curses.tigetstr("setaf")
-  assert SETF != None
-  HAVE_COLORS = sys.stdout.isatty()
-except: pass
+    import curses
+    curses.setupterm()
+    SETF = curses.tigetstr("setf")
+    if SETF is None:
+        SETF = curses.tigetstr("setaf")
+    assert SETF is not None
+    HAVE_COLORS = sys.stdout.isatty()
+except:
+    pass
 
 def DisableColors():
     global HAVE_COLORS
@@ -188,20 +199,20 @@ def DisableColors():
 def GetColor(color = None):
     if not HAVE_COLORS:
         return ""
-    if color != None:
+    if color is not None:
         color = color.lower()
 
-    if (color == "blue"):
+    if color == "blue":
         token = curses.tparm(SETF, 1)
-    elif (color == "green"):
+    elif color == "green":
         token = curses.tparm(SETF, 2)
-    elif (color == "cyan"):
+    elif color == "cyan":
         token = curses.tparm(SETF, 3)
-    elif (color == "red"):
+    elif color == "red":
         token = curses.tparm(SETF, 4)
-    elif (color == "magenta"):
+    elif color == "magenta":
         token = curses.tparm(SETF, 5)
-    elif (color == "yellow"):
+    elif color == "yellow":
         token = curses.tparm(SETF, 6)
     else:
         token = curses.tparm(curses.tigetstr("sgr0"))
@@ -235,9 +246,9 @@ def ProgressOutput(progress, msg, target = None):
     if thisthread is MAINTHREAD:
         if progress is None:
             prefix = ""
-        elif (progress >= 100.0):
+        elif progress >= 100.0:
             prefix = "%s[%s%d%%%s] " % (GetColor("yellow"), GetColor("cyan"), progress, GetColor("yellow"))
-        elif (progress < 10.0):
+        elif progress < 10.0:
             prefix = "%s[%s  %d%%%s] " % (GetColor("yellow"), GetColor("cyan"), progress, GetColor("yellow"))
         else:
             prefix = "%s[%s %d%%%s] " % (GetColor("yellow"), GetColor("cyan"), progress, GetColor("yellow"))
@@ -245,7 +256,7 @@ def ProgressOutput(progress, msg, target = None):
         global THREADS
 
         ident = thread.get_ident()
-        if (ident not in THREADS):
+        if ident not in THREADS:
             THREADS[ident] = len(THREADS) + 1
         prefix = "%s[%sT%d%s] " % (GetColor("yellow"), GetColor("cyan"), THREADS[ident], GetColor("yellow"))
 
@@ -261,7 +272,7 @@ def ProgressOutput(progress, msg, target = None):
 def exit(msg = ""):
     sys.stdout.flush()
     sys.stderr.flush()
-    if (threading.currentThread() == MAINTHREAD):
+    if threading.currentThread() == MAINTHREAD:
         SaveDependencyCache()
         print("Elapsed Time: " + PrettyTime(time.time() - STARTTIME))
         print(msg)
@@ -355,7 +366,7 @@ def SetTarget(target, arch=None):
 
     if target == 'windows':
         if arch == 'i386':
-             arch = 'x86'
+            arch = 'x86'
         elif arch == 'amd64':
             arch = 'x64'
 
@@ -365,11 +376,13 @@ def SetTarget(target, arch=None):
     elif target == 'darwin':
         if arch == 'amd64':
             arch = 'x86_64'
+        if arch == 'aarch64':
+            arch = 'arm64'
 
         if arch is not None:
-            choices = ('i386', 'x86_64', 'ppc', 'ppc64')
+            choices = ('i386', 'x86_64', 'ppc', 'ppc64', 'arm64')
             if arch not in choices:
-                exit('Mac OS X architecture must be one of %s' % (', '.join(choices)))
+                exit('macOS architecture must be one of %s' % (', '.join(choices)))
 
     elif target == 'android' or target.startswith('android-'):
         if arch is None:
@@ -378,6 +391,9 @@ def SetTarget(target, arch=None):
                 arch = host_arch
             else:
                 arch = 'armv7a'
+
+        if arch == 'arm64':
+            arch = 'aarch64'
 
         # Did we specify an API level?
         global ANDROID_API
@@ -536,6 +552,23 @@ def GetFlex():
 
     return FLEX
 
+def GetFlexVersion():
+    flex = GetFlex()
+    if not flex:
+        return (0, 0, 0)
+
+    try:
+        handle = subprocess.Popen(["flex", "--version"], executable=flex, stdout=subprocess.PIPE)
+        words = handle.communicate()[0].strip().splitlines()[0].split(b' ')
+        if words[1] != "version":
+            version = words[1]
+        else:
+            version = words[2]
+        return tuple(map(int, version.split(b'.')))
+    except:
+        Warn("Unable to detect flex version")
+        return (0, 0, 0)
+
 ########################################################################
 ##
 ## LocateBinary
@@ -639,7 +672,7 @@ def oscmd(cmd, ignoreError = False, cwd=None):
 ########################################################################
 
 def GetDirectoryContents(dir, filters="*", skip=[]):
-    if (type(filters)==str):
+    if isinstance(filters, str):
         filters = [filters]
     actual = {}
     files = os.listdir(dir)
@@ -660,7 +693,8 @@ def GetDirectorySize(dir):
         for file in files:
             try:
                 size += os.path.getsize(os.path.join(path, file))
-            except: pass
+            except:
+                pass
     return size
 
 ########################################################################
@@ -678,8 +712,10 @@ TIMESTAMPCACHE = {}
 def GetTimestamp(path):
     if path in TIMESTAMPCACHE:
         return TIMESTAMPCACHE[path]
-    try: date = os.path.getmtime(path)
-    except: date = 0
+    try:
+        date = os.path.getmtime(path)
+    except:
+        date = 0
     TIMESTAMPCACHE[path] = date
     return date
 
@@ -768,22 +804,24 @@ def NeedsBuild(files, others):
 
 CXXINCLUDECACHE = {}
 
-global CxxIncludeRegex
 CxxIncludeRegex = re.compile('^[ \t]*[#][ \t]*include[ \t]+"([^"]+)"[ \t\r\n]*$')
 
 def CxxGetIncludes(path):
     date = GetTimestamp(path)
-    if (path in CXXINCLUDECACHE):
+    if path in CXXINCLUDECACHE:
         cached = CXXINCLUDECACHE[path]
-        if (cached[0]==date): return cached[1]
-    try: sfile = open(path, 'r')
+        if cached[0] == date:
+            return cached[1]
+    try:
+        sfile = open(path, 'r')
     except:
         exit("Cannot open source file \""+path+"\" for reading.")
+
     include = []
     try:
         for line in sfile:
             match = CxxIncludeRegex.match(line,0)
-            if (match):
+            if match:
                 incname = match.group(1)
                 include.append(incname)
     except:
@@ -796,7 +834,6 @@ def CxxGetIncludes(path):
 
 JAVAIMPORTCACHE = {}
 
-global JavaImportRegex
 JavaImportRegex = re.compile('[ \t\r\n;]import[ \t]+([a-zA-Z][^;]+)[ \t\r\n]*;')
 
 def JavaGetImports(path):
@@ -837,10 +874,11 @@ def SaveDependencyCache():
     global DCACHE_BACKED_UP
     if not DCACHE_BACKED_UP:
         try:
-            if (os.path.exists(os.path.join(OUTPUTDIR, "tmp", "makepanda-dcache"))):
+            if os.path.exists(os.path.join(OUTPUTDIR, "tmp", "makepanda-dcache")):
                 os.rename(os.path.join(OUTPUTDIR, "tmp", "makepanda-dcache"),
                           os.path.join(OUTPUTDIR, "tmp", "makepanda-dcache-backup"))
-        except: pass
+        except:
+            pass
         DCACHE_BACKED_UP = True
 
     try:
@@ -937,24 +975,24 @@ def JavaFindClasses(impspec, clspath):
 ##
 ########################################################################
 
-global CxxIgnoreHeader
-global CxxDependencyCache
 CxxIgnoreHeader = {}
 CxxDependencyCache = {}
 
 def CxxCalcDependencies(srcfile, ipath, ignore):
-    if (srcfile in CxxDependencyCache):
+    if srcfile in CxxDependencyCache:
         return CxxDependencyCache[srcfile]
-    if (ignore.count(srcfile)): return []
+    if ignore.count(srcfile):
+        return []
     dep = {}
     dep[srcfile] = 1
     includes = CxxGetIncludes(srcfile)
     for include in includes:
         header = CxxFindHeader(srcfile, include, ipath)
-        if (header!=0):
-            if (ignore.count(header)==0):
+        if header != 0:
+            if ignore.count(header) == 0:
                 hdeps = CxxCalcDependencies(header, ipath, [srcfile]+ignore)
-                for x in hdeps: dep[x] = 1
+                for x in hdeps:
+                    dep[x] = 1
     result = list(dep.keys())
     CxxDependencyCache[srcfile] = result
     return result
@@ -994,11 +1032,13 @@ def TryRegistryKey(path):
     try:
         key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, path, 0, winreg.KEY_READ)
         return key
-    except: pass
+    except:
+        pass
     try:
         key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, path, 0, winreg.KEY_READ | 256)
         return key
-    except: pass
+    except:
+        pass
     return 0
 
 def ListRegistryKeys(path):
@@ -1010,7 +1050,8 @@ def ListRegistryKeys(path):
             while (1):
                 result.append(winreg.EnumKey(key, index))
                 index = index + 1
-        except: pass
+        except:
+            pass
         winreg.CloseKey(key)
     return result
 
@@ -1023,7 +1064,8 @@ def ListRegistryValues(path):
             while (1):
                 result.append(winreg.EnumValue(key, index)[0])
                 index = index + 1
-        except: pass
+        except:
+            pass
         winreg.CloseKey(key)
     return result
 
@@ -1035,7 +1077,8 @@ def GetRegistryKey(path, subkey, override64=True):
     if (key != 0):
         try:
             k1, k2 = winreg.QueryValueEx(key, subkey)
-        except: pass
+        except:
+            pass
         winreg.CloseKey(key)
     return k1
 
@@ -1235,10 +1278,7 @@ def MakeBuildTree():
     MakeDirectory(OUTPUTDIR + "/pandac/input")
     MakeDirectory(OUTPUTDIR + "/panda3d")
 
-    if GetTarget() == 'darwin':
-        MakeDirectory(OUTPUTDIR + "/Frameworks")
-
-    elif GetTarget() == 'android':
+    if GetTarget() == 'android':
         MakeDirectory(OUTPUTDIR + "/classes")
 
 ########################################################################
@@ -1268,7 +1308,7 @@ def GetThirdpartyBase():
     thirdparty directory.  This is useful when wanting to use a single
     system-wide thirdparty directory, for instance on a build machine."""
     global THIRDPARTYBASE
-    if (THIRDPARTYBASE != None):
+    if (THIRDPARTYBASE is not None):
         return THIRDPARTYBASE
 
     THIRDPARTYBASE = "thirdparty"
@@ -1281,7 +1321,7 @@ def GetThirdpartyDir():
     """Returns the thirdparty directory for the target platform,
     ie. thirdparty/win-libs-vc10/.  May return None in the future."""
     global THIRDPARTYDIR
-    if THIRDPARTYDIR != None:
+    if THIRDPARTYDIR is not None:
         return THIRDPARTYDIR
 
     base = GetThirdpartyBase()
@@ -1297,11 +1337,13 @@ def GetThirdpartyDir():
             THIRDPARTYDIR = base + "/win-libs-vc" + vc + "/"
 
     elif (target == 'darwin'):
-        # OSX thirdparty binaries are universal, where possible.
+        # macOS thirdparty binaries are universal, where possible.
         THIRDPARTYDIR = base + "/darwin-libs-a/"
 
     elif (target == 'linux'):
-        if (target_arch.startswith("arm")):
+        if target_arch in ("aarch64", "arm64"):
+            THIRDPARTYDIR = base + "/linux-libs-arm64/"
+        elif target_arch.startswith("arm"):
             THIRDPARTYDIR = base + "/linux-libs-arm/"
         elif (target_arch in ("x86_64", "amd64")):
             THIRDPARTYDIR = base + "/linux-libs-x64/"
@@ -1309,7 +1351,9 @@ def GetThirdpartyDir():
             THIRDPARTYDIR = base + "/linux-libs-a/"
 
     elif (target == 'freebsd'):
-        if (target_arch.startswith("arm")):
+        if target_arch in ("aarch64", "arm64"):
+            THIRDPARTYDIR = base + "/freebsd-libs-arm64/"
+        elif target_arch.startswith("arm"):
             THIRDPARTYDIR = base + "/freebsd-libs-arm/"
         elif (target_arch in ("x86_64", "amd64")):
             THIRDPARTYDIR = base + "/freebsd-libs-x64/"
@@ -1464,10 +1508,10 @@ def PkgConfigHavePkg(pkgname, tool = "pkg-config"):
     if (tool == "pkg-config"):
         handle = os.popen(LocateBinary("pkg-config") + " --silence-errors --modversion " + pkgname)
     else:
-        return bool(LocateBinary(tool) != None)
+        return bool(LocateBinary(tool) is not None)
     result = handle.read().strip()
     returnval = handle.close()
-    if returnval != None and returnval != 0:
+    if returnval is not None and returnval != 0:
         return False
     return bool(len(result) > 0)
 
@@ -1635,21 +1679,21 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
     global PKG_LIST_ALL
     if (pkg in PkgListGet() and PkgSkip(pkg)):
         return
-    if (target_pkg == "" or target_pkg == None):
+    if (target_pkg == "" or target_pkg is None):
         target_pkg = pkg
     if (pkgconfig == ""):
         pkgconfig = None
     if (framework == ""):
         framework = None
-    if (libs == None or libs == ""):
+    if (libs is None or libs == ""):
         libs = ()
     elif (isinstance(libs, str)):
         libs = (libs, )
-    if (incs == None or incs == ""):
+    if (incs is None or incs == ""):
         incs = ()
     elif (isinstance(incs, str)):
         incs = (incs, )
-    if (defs == None or defs == "" or len(defs) == 0):
+    if (defs is None or defs == "" or len(defs) == 0):
         defs = {}
     elif (isinstance(incs, str)):
         defs = {defs : ""}
@@ -1691,7 +1735,7 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
                 lpath.append(py_lib_dir)
 
         # TODO: check for a .pc file in the lib/pkgconfig/ dir
-        if (tool != None and os.path.isfile(os.path.join(pkg_dir, "bin", tool))):
+        if (tool is not None and os.path.isfile(os.path.join(pkg_dir, "bin", tool))):
             tool = os.path.join(pkg_dir, "bin", tool)
             for i in PkgConfigGetLibs(None, tool):
                 if i.startswith('-l'):
@@ -1737,7 +1781,7 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
             DefSymbol(target_pkg, d, v)
         return
 
-    elif not custom_loc and GetHost() == "darwin" and framework != None:
+    elif not custom_loc and GetHost() == "darwin" and framework is not None:
         prefix = SDK["MACOSX"]
         if (os.path.isdir(prefix + "/Library/Frameworks/%s.framework" % framework) or
             os.path.isdir(prefix + "/System/Library/Frameworks/%s.framework" % framework) or
@@ -1751,7 +1795,7 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
         elif VERBOSE:
             print(ColorText("cyan", "Couldn't find the framework %s" % (framework)))
 
-    elif not custom_loc and LocateBinary(tool) != None and (tool != "pkg-config" or pkgconfig != None):
+    elif not custom_loc and LocateBinary(tool) is not None and (tool != "pkg-config" or pkgconfig is not None):
         if (isinstance(pkgconfig, str) or tool != "pkg-config"):
             if (PkgConfigHavePkg(pkgconfig, tool)):
                 return PkgConfigEnable(target_pkg, pkgconfig, tool)
@@ -2038,16 +2082,25 @@ def SdkLocatePython(prefer_thirdparty_python=False):
     abiflags = getattr(sys, 'abiflags', '')
 
     if GetTarget() == 'windows':
-        sdkdir = GetThirdpartyBase() + "/win-python"
-        sdkdir += "%d.%d" % sys.version_info[:2]
+        if PkgHasCustomLocation("PYTHON"):
+            # Check our custom location instead (--python-libdir, --python-incdir)
+            sdkdir = FindOptDirectory("PYTHON")
 
-        if GetOptimize() <= 2:
-            sdkdir += "-dbg"
-        if GetTargetArch() == 'x64':
-            sdkdir += "-x64"
+            if sdkdir is None:
+                exit("Could not find a Python installation using these command line options.")
+        else:
+            sdkdir = GetThirdpartyBase() + "/win-python"
+            sdkdir += "%d.%d" % sys.version_info[:2]
 
+            if GetOptimize() <= 2:
+                sdkdir += "-dbg"
+            if GetTargetArch() == 'x64':
+                sdkdir += "-x64"
+
+        sdkdir = sdkdir.replace('\\', '/')
         SDK["PYTHON"] = sdkdir
-        SDK["PYTHONEXEC"] = SDK["PYTHON"].replace('\\', '/') + "/python"
+        SDK["PYTHONEXEC"] = SDK["PYTHON"] + "/python"
+
         if (GetOptimize() <= 2):
             SDK["PYTHONEXEC"] += "_d.exe"
         else:
@@ -2058,9 +2111,11 @@ def SdkLocatePython(prefer_thirdparty_python=False):
 
         # Determine which version it is by checking which dll is in the directory.
         if (GetOptimize() <= 2):
-            py_dlls = glob.glob(SDK["PYTHON"] + "/python[0-9][0-9]_d.dll")
+            py_dlls = glob.glob(SDK["PYTHON"] + "/python[0-9][0-9]_d.dll") + \
+                      glob.glob(SDK["PYTHON"] + "/python[0-9][0-9][0-9]_d.dll")
         else:
-            py_dlls = glob.glob(SDK["PYTHON"] + "/python[0-9][0-9].dll")
+            py_dlls = glob.glob(SDK["PYTHON"] + "/python[0-9][0-9].dll") + \
+                      glob.glob(SDK["PYTHON"] + "/python[0-9][0-9][0-9].dll")
 
         if len(py_dlls) == 0:
             exit("Could not find the Python dll in %s." % (SDK["PYTHON"]))
@@ -2068,24 +2123,29 @@ def SdkLocatePython(prefer_thirdparty_python=False):
             exit("Found multiple Python dlls in %s." % (SDK["PYTHON"]))
 
         py_dll = os.path.basename(py_dlls[0])
-        ver = py_dll[6] + "." + py_dll[7]
+        py_dllver = py_dll.strip(".DHLNOPTY_dhlnopty")
+        ver = py_dllver[0] + '.' + py_dllver[1:]
 
         SDK["PYTHONVERSION"] = "python" + ver
         os.environ["PYTHONHOME"] = SDK["PYTHON"]
 
-        if sys.version[:3] != ver:
-            Warn("running makepanda with Python %s, but building Panda3D with Python %s." % (sys.version[:3], ver))
+        running_ver = '%d.%d' % sys.version_info[:2]
+        if ver != running_ver:
+            Warn("running makepanda with Python %s, but building Panda3D with Python %s." % (running_ver, ver))
 
     elif CrossCompiling() or (prefer_thirdparty_python and os.path.isdir(os.path.join(GetThirdpartyDir(), "python"))):
         tp_python = os.path.join(GetThirdpartyDir(), "python")
 
         if GetTarget() == 'darwin':
-            py_libs = glob.glob(tp_python + "/lib/libpython[0-9].[0-9].dylib")
+            py_libs = glob.glob(tp_python + "/lib/libpython[0-9].[0-9].dylib") + \
+                      glob.glob(tp_python + "/lib/libpython[0-9].[0-9][0-9].dylib")
         else:
-            py_libs = glob.glob(tp_python + "/lib/libpython[0-9].[0-9].so")
+            py_libs = glob.glob(tp_python + "/lib/libpython[0-9].[0-9].so") + \
+                      glob.glob(tp_python + "/lib/libpython[0-9].[0-9][0-9].so")
 
         if len(py_libs) == 0:
-            py_libs = glob.glob(tp_python + "/lib/libpython[0-9].[0-9].a")
+            py_libs = glob.glob(tp_python + "/lib/libpython[0-9].[0-9].a") + \
+                      glob.glob(tp_python + "/lib/libpython[0-9].[0-9][0-9].a")
 
         if len(py_libs) == 0:
             exit("Could not find the Python library in %s." % (tp_python))
@@ -2093,7 +2153,8 @@ def SdkLocatePython(prefer_thirdparty_python=False):
             exit("Found multiple Python libraries in %s." % (tp_python))
 
         py_lib = os.path.basename(py_libs[0])
-        SDK["PYTHONVERSION"] = "python" + py_lib[9] + "." + py_lib[11]
+        py_libver = py_lib.strip('.abdhilnopsty')
+        SDK["PYTHONVERSION"] = "python" + py_libver
         SDK["PYTHONEXEC"] = tp_python + "/bin/" + SDK["PYTHONVERSION"]
         SDK["PYTHON"] = tp_python + "/include/" + SDK["PYTHONVERSION"]
 
@@ -2139,9 +2200,9 @@ def SdkLocatePython(prefer_thirdparty_python=False):
             exit("Host Python version (%s) must be the same as target Python version (%s)!" % (host_version, SDK["PYTHONVERSION"]))
 
     if GetVerbose():
-        print("Using Python %s build located at %s" % (SDK["PYTHONVERSION"][6:9], SDK["PYTHON"]))
+        print("Using Python %s build located at %s" % (SDK["PYTHONVERSION"][6:], SDK["PYTHON"]))
     else:
-        print("Using Python %s" % (SDK["PYTHONVERSION"][6:9]))
+        print("Using Python %s" % (SDK["PYTHONVERSION"][6:]))
 
 def SdkLocateVisualStudio(version=(10,0)):
     if (GetHost() != "windows"): return
@@ -2326,30 +2387,40 @@ def SdkLocateWindows(version=None):
     else:
         print("Using Windows SDK %s" % (version))
 
-def SdkLocateMacOSX(osxtarget = None):
+def SdkLocateMacOSX(archs = []):
     if (GetHost() != "darwin"): return
-    if (osxtarget != None):
-        sdkname = "MacOSX%d.%d" % osxtarget
-        if (os.path.exists("/Library/Developer/CommandLineTools/SDKs/%s.sdk" % sdkname)):
+
+    handle = os.popen("xcode-select -print-path")
+    xcode_dir = handle.read().strip().rstrip('/')
+    handle.close()
+
+    # Make a list of SDK versions that will work for us, then grab the latest.
+    sdk_versions = []
+    if 'arm64' not in archs:
+        # Prefer pre-10.14 for now so that we can keep building FMOD.
+        sdk_versions += ["10.13", "10.12", "10.11", "10.10", "10.9"]
+
+    sdk_versions += ["11.1", "11.0"]
+
+    if 'arm64' not in archs:
+        sdk_versions += ["10.15", "10.14"]
+
+    for version in sdk_versions:
+        sdkname = "MacOSX" + version
+        if os.path.exists("/Library/Developer/CommandLineTools/SDKs/%s.sdk" % sdkname):
             SDK["MACOSX"] = "/Library/Developer/CommandLineTools/SDKs/%s.sdk" % sdkname
-        elif (os.path.exists("/Developer/SDKs/%su.sdk" % sdkname)):
-            SDK["MACOSX"] = "/Developer/SDKs/%su.sdk" % sdkname
-        elif (os.path.exists("/Developer/SDKs/%s.sdk" % sdkname)):
+            return
+        elif os.path.exists("/Developer/SDKs/%s.sdk" % sdkname):
             SDK["MACOSX"] = "/Developer/SDKs/%s.sdk" % sdkname
-        elif (os.path.exists("/Developer/SDKs/%s.0.sdk" % sdkname)):
-            SDK["MACOSX"] = "/Developer/SDKs/%s.0.sdk" % sdkname
-        elif (os.path.exists("/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/%s.sdk" % sdkname)):
+            return
+        elif os.path.exists("/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/%s.sdk" % sdkname):
             SDK["MACOSX"] = "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/%s.sdk" % sdkname
-        else:
-            handle = os.popen("xcode-select -print-path")
-            result = handle.read().strip().rstrip('/')
-            handle.close()
-            if (os.path.exists("%s/Platforms/MacOSX.platform/Developer/SDKs/%s.sdk" % (result, sdkname))):
-                SDK["MACOSX"] = "%s/Platforms/MacOSX.platform/Developer/SDKs/%s.sdk" % (result, sdkname)
-            else:
-                exit("Couldn't find any MacOSX SDK for OSX version %s!" % sdkname)
-    else:
-        SDK["MACOSX"] = ""
+            return
+        elif xcode_dir and os.path.exists("%s/Platforms/MacOSX.platform/Developer/SDKs/%s.sdk" % (xcode_dir, sdkname)):
+            SDK["MACOSX"] = "%s/Platforms/MacOSX.platform/Developer/SDKs/%s.sdk" % (xcode_dir, sdkname)
+            return
+
+    exit("Couldn't find any suitable MacOSX SDK!")
 
 def SdkLocateSpeedTree():
     # Look for all of the SpeedTree SDK directories within the
@@ -2737,6 +2808,40 @@ def LibDirectory(opt, dir):
 def FrameworkDirectory(opt, dir):
     FRAMEWORKDIRECTORIES.append((opt, dir))
 
+def FindIncDirectory(opt):
+    # Find the include directory associated with this module
+    for mod, dir in INCDIRECTORIES:
+        if mod == opt:
+            return os.path.abspath(dir)
+
+def FindLibDirectory(opt):
+    # Find the library directory associated with this module
+    for mod, dir in LIBDIRECTORIES:
+        if mod == opt:
+            return os.path.abspath(dir)
+
+def FindOptDirectory(opt):
+    # Find the common directory associated with this module
+    # using the include and library directories as a guide
+    include_dir = FindIncDirectory(opt)
+    lib_dir = FindLibDirectory(opt)
+
+    if include_dir and lib_dir:
+        # The module's common directory is the common prefix of
+        # its include and library directory
+        common_dir = os.path.commonprefix([include_dir, lib_dir])
+
+        if common_dir:
+            return os.path.abspath(common_dir)
+    elif include_dir:
+        # The module's common directory is the parent of the include
+        # directory
+        return os.path.abspath(os.path.join(include_dir, os.pardir))
+    elif lib_dir:
+        # The module's common directory is the parent of the library
+        # directory
+        return os.path.abspath(os.path.join(lib_dir, os.pardir))
+
 def LibName(opt, name):
     # Check to see if the lib file actually exists for the thirdparty library given
     # Are we a thirdparty library?
@@ -2839,7 +2944,7 @@ def SetupBuildEnvironment(compiler):
                     print("Ignoring non-existent library directory %s" % (libdir))
 
         returnval = handle.close()
-        if returnval != None and returnval != 0:
+        if returnval is not None and returnval != 0:
             Warn("%s failed" % (cmd))
             SYS_LIB_DIRS += [SDK.get("SYSROOT", "") + "/usr/lib"]
 
@@ -2951,7 +3056,7 @@ def SetupBuildEnvironment(compiler):
             dyldpath.insert(0, os.path.join(builtdir, 'lib'))
             os.environ["DYLD_LIBRARY_PATH"] = os.pathsep.join(dyldpath)
 
-            # OS X 10.11 removed DYLD_LIBRARY_PATH, but we still need to pass
+            # macOS 10.11 removed DYLD_LIBRARY_PATH, but we still need to pass
             # on our lib directory to ppackage, so add it to PATH instead.
             os.environ["PATH"] = os.path.join(builtdir, 'lib') + ':' + os.environ.get("PATH", "")
 
@@ -3086,7 +3191,8 @@ def ParsePandaVersion(fn):
                 f.close()
                 return match.group(1) + "." + match.group(2) + "." + match.group(3)
         f.close()
-    except: pass
+    except:
+        pass
     return "0.0.0"
 
 ##########################################################################################
@@ -3140,7 +3246,7 @@ def GenerateResourceFile(**kwargs):
         kwargs["commaversion"] = kwargs["dotversion"].replace(".", ",")
 
     rcdata = ""
-    if not "noinclude" in kwargs:
+    if "noinclude" not in kwargs:
         rcdata += "#define APSTUDIO_READONLY_SYMBOLS\n"
         rcdata += "#include \"winresrc.h\"\n"
         rcdata += "#undef APSTUDIO_READONLY_SYMBOLS\n"
@@ -3352,7 +3458,7 @@ def GetCurrentPythonVersionInfo():
 
     from distutils.sysconfig import get_python_lib
     return {
-        "version": SDK["PYTHONVERSION"][6:9],
+        "version": SDK["PYTHONVERSION"][6:].rstrip('dmu'),
         "soabi": GetPythonABI(),
         "ext_suffix": GetExtensionSuffix(),
         "executable": sys.executable,
@@ -3380,7 +3486,7 @@ def UpdatePythonVersionInfoFile(new_info):
                version_info["soabi"] == new_info["soabi"] or \
                not os.path.isfile(core_pyd) or \
                version_info["version"].split(".", 1)[0] == "2" or \
-               version_info["version"] in ("3.0", "3.1", "3.2", "3.3", "3.4"):
+               version_info["version"] in ("3.0", "3.1", "3.2", "3.3", "3.4", "3.5"):
                 json_data.remove(version_info)
 
     if not PkgSkip("PYTHON"):
@@ -3467,19 +3573,23 @@ TARGET_LIST = []
 TARGET_TABLE = {}
 
 def TargetAdd(target, dummy=0, opts=[], input=[], dep=[], ipath=None, winrc=None, pyabi=None):
-    if (dummy != 0):
-        exit("Syntax error in TargetAdd "+target)
-    if ipath is None: ipath = opts
-    if not ipath: ipath = []
-    if (type(input) == str): input = [input]
-    if (type(dep) == str): dep = [dep]
+    if dummy != 0:
+        exit("Syntax error in TargetAdd " + target)
+    if ipath is None:
+        ipath = opts
+    if not ipath:
+        ipath = []
+    if isinstance(input, str):
+        input = [input]
+    if isinstance(dep, str):
+        dep = [dep]
 
     if target.endswith(".pyd") and not pyabi:
         raise RuntimeError("Use PyTargetAdd to build .pyd targets")
 
     full = FindLocation(target, [OUTPUTDIR + "/include"], pyabi=pyabi)
 
-    if (full not in TARGET_TABLE):
+    if full not in TARGET_TABLE:
         t = Target()
         t.name = full
         t.inputs = []
@@ -3500,10 +3610,10 @@ def TargetAdd(target, dummy=0, opts=[], input=[], dep=[], ipath=None, winrc=None
         t.inputs.append(fullinput)
         # Don't re-link a library or binary if just its dependency dlls have been altered.
         # This should work out fine in most cases, and often reduces recompilation time.
-        if (os.path.splitext(x)[-1] not in SUFFIX_DLL):
+        if os.path.splitext(x)[-1] not in SUFFIX_DLL:
             t.deps[fullinput] = 1
             (base,suffix) = os.path.splitext(x)
-            if (SUFFIX_INC.count(suffix)):
+            if SUFFIX_INC.count(suffix):
                 for d in CxxCalcDependencies(fullinput, ipath, []):
                     t.deps[d] = 1
             elif suffix == '.java':

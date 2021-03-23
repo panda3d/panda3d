@@ -14,6 +14,7 @@ from .FileMgr import *
 from .ActionMgr import *
 from .MayaConverter import *
 
+
 class LevelEditorBase(DirectObject):
     """ Base Class for Panda3D LevelEditor """
     def __init__(self):
@@ -101,8 +102,8 @@ class LevelEditorBase(DirectObject):
     def setTitleWithFilename(self, filename=""):
         title = self.ui.appname
         if filename != "":
-           filenameshort = os.path.basename(filename)
-           title = title + " (%s)"%filenameshort
+            filenameshort = os.path.basename(filename)
+            title = title + " (%s)"%filenameshort
         self.ui.SetLabel(title)
 
     def removeNodePathHook(self, nodePath):
@@ -114,7 +115,7 @@ class LevelEditorBase(DirectObject):
         if base.direct.selected.last is not None and nodePath == base.direct.selected.last:
             # if base.direct.selected.last is refering to this
             # removed obj, clear the reference
-            if (hasattr(__builtins__,'last')):
+            if hasattr(__builtins__, 'last'):
                 __builtins__.last = None
             else:
                 __builtins__['last'] = None
@@ -215,11 +216,11 @@ class LevelEditorBase(DirectObject):
             return
 
         if fMultiSelect == 0 and fLEPane == 0:
-           oldSelectedNPs = base.direct.selected.getSelectedAsList()
-           for oldNP in oldSelectedNPs:
-              obj = self.objectMgr.findObjectByNodePath(oldNP)
-              if obj:
-                 self.ui.sceneGraphUI.deSelect(obj[OG.OBJ_UID])
+            oldSelectedNPs = base.direct.selected.getSelectedAsList()
+            for oldNP in oldSelectedNPs:
+                obj = self.objectMgr.findObjectByNodePath(oldNP)
+                if obj:
+                    self.ui.sceneGraphUI.deSelect(obj[OG.OBJ_UID])
         self.objectMgr.selectObject(nodePath, fLEPane)
         self.ui.buildContextMenu(nodePath)
 
@@ -242,8 +243,7 @@ class LevelEditorBase(DirectObject):
             reply = wx.MessageBox("Do you want to save current scene?", "Save?",
                                wx.YES_NO | wx.ICON_QUESTION)
             if reply == wx.YES:
-                result = self.ui.onSave()
-                if result == False:
+                if not self.ui.onSave():
                     return
 
         base.direct.deselectAll()
@@ -381,10 +381,10 @@ class LevelEditorBase(DirectObject):
             # add new status line, first check to see if it already exists
             alreadyExists = False
             for currLine in self.statusLines:
-                if (status == currLine[1]):
+                if status == currLine[1]:
                     alreadyExists = True
                     break
-            if (alreadyExists == False):
+            if not alreadyExists:
                 time = globalClock.getRealTime() + 15
                 self.statusLines.append([time,status,color])
 
@@ -396,7 +396,7 @@ class LevelEditorBase(DirectObject):
             statusText += currLine[1] + '\n'
             lastColor = currLine[2]
         self.statusReadout.setText(statusText)
-        if (lastColor):
+        if lastColor:
             self.statusReadout.textNode.setCardColor(
                 lastColor[0], lastColor[1], lastColor[2], lastColor[3])
             self.statusReadout.textNode.setCardAsMargin(0.1, 0.1, 0.1, 0.1)
@@ -407,7 +407,7 @@ class LevelEditorBase(DirectObject):
     def updateStatusReadoutTimeouts(self,task=None):
         removalList = []
         for currLine in self.statusLines:
-            if (globalClock.getRealTime() >= currLine[0]):
+            if globalClock.getRealTime() >= currLine[0]:
                 removalList.append(currLine)
         for currRemoval in removalList:
             self.statusLines.remove(currRemoval)
@@ -420,10 +420,10 @@ class LevelEditorBase(DirectObject):
 
     def propMeetsReq(self, typeName, parentNP):
         if self.ui.parentToSelectedMenuItem.IsChecked():
-           if base.direct.selected.last:
-              parent = base.le.objectMgr.findObjectByNodePath(base.direct.selected.last)
-              if parent:
-                 parentNP[0] = parent[OG.OBJ_NP]
+            if base.direct.selected.last:
+                parent = base.le.objectMgr.findObjectByNodePath(base.direct.selected.last)
+                if parent:
+                    parentNP[0] = parent[OG.OBJ_NP]
         else:
-           parentNP[0] = None
+            parentNP[0] = None
         return True

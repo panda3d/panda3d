@@ -1,6 +1,7 @@
 from math import floor, ceil
 
 from panda3d.core import Vec2, Vec3, Vec4, Vec2F, Vec2D
+from panda3d import core
 import pytest
 
 
@@ -117,3 +118,22 @@ def test_vec2_nan():
     assert not Vec2D(inf, 0).is_nan()
     assert not Vec2D(inf, inf).is_nan()
     assert not Vec2D(-inf, 0).is_nan()
+
+
+@pytest.mark.parametrize("type", (core.LVecBase2f, core.LVecBase2d, core.LVecBase2i))
+def test_vec4_floordiv(type):
+    with pytest.raises(ZeroDivisionError):
+        type(1, 2) // 0
+
+    for i in range(-11, 11):
+        for j in range(1, 11):
+            assert (type(i) // j).x == i // j
+            assert (type(i) // -j).x == i // -j
+
+            v = type(i)
+            v //= j
+            assert v.x == i // j
+
+            v = type(i)
+            v //= -j
+            assert v.x == i // -j

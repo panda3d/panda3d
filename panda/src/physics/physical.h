@@ -64,14 +64,18 @@ PUBLISHED:
   INLINE int get_num_linear_forces() const;
   INLINE PT(LinearForce) get_linear_force(int index) const;
   MAKE_SEQ(get_linear_forces, get_num_linear_forces, get_linear_force);
+  MAKE_SEQ_PROPERTY(linear_forces, get_num_linear_forces, get_linear_force);
   INLINE int get_num_angular_forces() const;
   INLINE PT(AngularForce) get_angular_force(int index) const;
   MAKE_SEQ(get_angular_forces, get_num_angular_forces, get_angular_force);
+  MAKE_SEQ_PROPERTY(angular_forces, get_num_angular_forces, get_angular_force);
 
   INLINE void set_viscosity(PN_stdfloat viscosity);
   INLINE PN_stdfloat get_viscosity() const;
+  MAKE_PROPERTY(viscosity, get_viscosity);
 
   const PhysicsObjectCollection get_objects() const;
+  MAKE_PROPERTY(objects, get_objects);
 
   virtual void output(std::ostream &out = std::cout) const;
   virtual void write_physics_objects(

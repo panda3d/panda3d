@@ -4,7 +4,7 @@ import time
 
 class RotatingLog:
     """
-    A file() (or open()) replacement that will automatically open and write
+    An `open()` replacement that will automatically open and write
     to a new file if the prior file is too large or after a time interval.
     """
 

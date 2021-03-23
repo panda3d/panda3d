@@ -112,6 +112,10 @@ xform(const LMatrix4 &mat) {
 
     // Transform the center
     _center = _center * mat;
+
+    if (cinf(_radius)) {
+      set_infinite();
+    }
   }
 }
 

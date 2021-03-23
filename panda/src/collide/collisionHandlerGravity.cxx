@@ -47,6 +47,35 @@ CollisionHandlerGravity::
 }
 
 /**
+ * Serializes this object, to implement pickle support.
+ */
+void CollisionHandlerGravity::
+write_datagram(Datagram &dg) const {
+  CollisionHandlerPhysical::write_datagram(dg);
+
+  dg.add_float64(_offset);
+  dg.add_float64(_reach);
+  dg.add_float64(_max_velocity);
+  dg.add_float64(_gravity);
+  dg.add_bool(_legacy_mode);
+}
+
+/**
+ * Restores the object state from the given datagram, previously obtained using
+ * __getstate__.
+ */
+void CollisionHandlerGravity::
+read_datagram(DatagramIterator &scan) {
+  CollisionHandlerPhysical::read_datagram(scan);
+
+  _offset = scan.get_float64();
+  _reach = scan.get_float64();
+  _max_velocity = scan.get_float64();
+  _gravity = scan.get_float64();
+  _legacy_mode = scan.get_bool();
+}
+
+/**
  *
  */
 #define OLD_COLLISION_HANDLER_GRAVITY 0

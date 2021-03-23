@@ -4,7 +4,6 @@ __all__ = ['getBlend']
 
 from panda3d.direct import *
 
-"""global lerp blend types for lerp function"""
 
 easeIn = EaseInBlendType()
 
@@ -20,13 +19,13 @@ def getBlend(blendType):
     Return the C++ blend class corresponding to blendType string
     """
     # Note, this is temporary until blend functions get exposed
-    if (blendType == "easeIn"):
+    if blendType == "easeIn":
         return easeIn
-    elif (blendType == "easeOut"):
+    elif blendType == "easeOut":
         return easeOut
-    elif (blendType == "easeInOut"):
+    elif blendType == "easeInOut":
         return easeInOut
-    elif (blendType == "noBlend"):
+    elif blendType == "noBlend":
         return noBlend
     else:
         raise Exception(

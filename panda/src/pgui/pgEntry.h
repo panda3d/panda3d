@@ -23,6 +23,7 @@
 #include "pvector.h"
 #include "clockObject.h"
 #include "textAssembler.h"
+#include "pipeline.h"
 
 /**
  * This is a particular kind of PGItem that handles simple one-line or short

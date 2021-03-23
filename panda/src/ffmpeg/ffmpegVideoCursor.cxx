@@ -616,7 +616,7 @@ close_stream() {
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55, 52, 0)
     avcodec_free_context(&_video_ctx);
 #else
-    delete _video_ctx;
+    av_free(_video_ctx);
 #endif
   }
   _video_ctx = nullptr;

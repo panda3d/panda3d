@@ -60,7 +60,10 @@ PUBLISHED:
     F_rgba, F_rgbm, F_rgba12, F_rgba8, F_rgba4, F_rgba5,
     F_rgb, F_rgb12, F_rgb8, F_rgb5, F_rgb332,
     F_red, F_green, F_blue, F_alpha, F_luminance,
-    F_luminance_alpha, F_luminance_alphamask
+    F_luminance_alpha, F_luminance_alphamask,
+
+    // Only for compatibility with .bam, use is discouraged!
+    F_srgb, F_srgb_alpha
   };
   enum CompressionMode {
     CM_default, CM_off, CM_on,
@@ -104,6 +107,7 @@ PUBLISHED:
     ET_height,
     ET_selector,
     ET_normal_gloss,
+    ET_emission,
   };
   enum CombineMode {
     CM_unspecified,
@@ -361,7 +365,7 @@ public:
   virtual EggTransform *as_transform();
 
 protected:
-  virtual bool egg_start_parse_body();
+  virtual bool egg_start_parse_body(EggLexerState &state);
 
 private:
   typedef pset<EggTexture *> MultiTextures;

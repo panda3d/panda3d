@@ -16,11 +16,13 @@ class ObjectPaletteUI(wx.Panel):
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.tree, 1, wx.EXPAND, 0)
-        self.SetSizer(sizer); self.Layout()
+        self.SetSizer(sizer)
+        self.Layout()
 
         parentSizer = wx.BoxSizer(wx.VERTICAL)
         parentSizer.Add(self, 1, wx.EXPAND, 0)
-        parent.SetSizer(parentSizer); parent.Layout()
+        parent.SetSizer(parentSizer)
+        parent.Layout()
 
         self.opSortAlpha = "Sort Alphabetical Order"
         self.opSortOrig  = "Sort Original Order"
@@ -53,19 +55,19 @@ class ObjectPaletteUI(wx.Panel):
         menuItem = self.popupmenu.FindItemById(event.GetId())
         text = menuItem.GetText()
         if text == self.opSortAlpha:
-           self.opSort = self.opSortAlpha
+            self.opSort = self.opSortAlpha
         elif text == self.opSortOrig:
-           self.opSort = self.opSortOrig
+            self.opSort = self.opSortOrig
         self.tree.SortTreeNodes(self.tree.GetRootItem())
 
     def compareItems(self, item1, item2):
         data1 = self.tree.GetItemText(item1)
         data2 = self.tree.GetItemText(item2)
         if self.opSort == self.opSortAlpha:
-           return cmp(data1, data2)
+            return cmp(data1, data2)
         else:
-           index1 = self.palette.dataKeys.index(data1)
-           index2 = self.palette.dataKeys.index(data2)
+            index1 = self.palette.dataKeys.index(data1)
+            index2 = self.palette.dataKeys.index(data2)
         return cmp(index1, index2)
 
     def getSelected(self):
