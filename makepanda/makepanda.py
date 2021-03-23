@@ -1255,6 +1255,14 @@ if not PkgSkip("EIGEN"):
             # will turn them into runtime assertions.
             DefSymbol("ALWAYS", "EIGEN_NO_STATIC_ASSERT")
 
+if not PkgSkip("EGL"):
+    DefSymbol('EGL', 'HAVE_EGL', '')
+    if PkgSkip("X11"):
+        DefSymbol('EGL', 'EGL_NO_X11', '')
+
+if not PkgSkip("X11"):
+    DefSymbol('X11', 'USE_X11', '')
+
 ########################################################################
 ##
 ## Give a Status Report on Command-Line Options
@@ -3243,6 +3251,8 @@ configprc = configprc.replace('\r\n', '\n')
 
 if (GetTarget() == 'windows'):
     configprc = configprc.replace("$XDG_CACHE_HOME/panda3d", "$USER_APPDATA/Panda3D-%s" % MAJOR_VERSION)
+elif not PkgSkip("X11") and not PkgSkip("GL") and not PkgSkip("EGL") and not GetLinkAllStatic():
+    configprc = configprc.replace("#load-display pandadx9", "aux-display p3headlessgl")
 else:
     configprc = configprc.replace("aux-display pandadx9", "")
 
@@ -3591,9 +3601,10 @@ elif GetTarget() == 'darwin':
 elif GetTarget() == 'android':
     CopyAllHeaders('panda/src/android')
     CopyAllHeaders('panda/src/androiddisplay')
-else:
+if not PkgSkip('X11'):
     CopyAllHeaders('panda/src/x11display')
-    CopyAllHeaders('panda/src/glxdisplay')
+    if not PkgSkip('GL'):
+        CopyAllHeaders('panda/src/glxdisplay')
 CopyAllHeaders('panda/src/egldisplay')
 CopyAllHeaders('panda/metalibs/pandagl')
 CopyAllHeaders('panda/metalibs/pandagles')
@@ -5156,7 +5167,6 @@ if (GetTarget() == 'windows' and PkgSkip("GL")==0 and not RUNTIME):
 # If we're not compiling with any windowing system at all, but we do have EGL,
 # we can use that to create a headless libpandagl instead.
 if not PkgSkip("EGL") and not PkgSkip("GL") and PkgSkip("X11") and GetTarget() not in ('windows', 'darwin') and not RUNTIME:
-  DefSymbol('EGL', 'HAVE_EGL', '')
   OPTS=['DIR:panda/src/egldisplay', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGL', 'GL', 'EGL']
   TargetAdd('pandagl_egldisplay_composite1.obj', opts=OPTS, input='p3egldisplay_composite1.cxx')
   OPTS=['DIR:panda/metalibs/pandagl', 'BUILDING:PANDAGL', 'GL', 'EGL']
@@ -5168,13 +5178,28 @@ if not PkgSkip("EGL") and not PkgSkip("GL") and PkgSkip("X11") and GetTarget() n
   TargetAdd('libpandagl.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libpandagl.dll', opts=['MODULE', 'GL', 'EGL', 'CGGL'])
 
+elif not PkgSkip("EGL") and not PkgSkip("GL") and GetTarget() not in ('windows', 'darwin') and not RUNTIME:
+  # As a temporary solution for #1086, build this module, which we can use as a
+  # fallback to OpenGL for headless systems.
+  DefSymbol('EGL', 'HAVE_EGL', '')
+  OPTS=['DIR:panda/src/egldisplay', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGL', 'GL', 'EGL']
+  TargetAdd('p3headlessgl_egldisplay_composite1.obj', opts=OPTS, input='p3egldisplay_composite1.cxx')
+  OPTS=['DIR:panda/metalibs/pandagl', 'BUILDING:PANDAGL', 'GL', 'EGL']
+  TargetAdd('p3headlessgl_pandagl.obj', opts=OPTS, input='pandagl.cxx')
+  TargetAdd('libp3headlessgl.dll', input='p3headlessgl_pandagl.obj')
+  TargetAdd('libp3headlessgl.dll', input='p3glgsg_config_glgsg.obj')
+  TargetAdd('libp3headlessgl.dll', input='p3glgsg_glgsg.obj')
+  TargetAdd('libp3headlessgl.dll', input='p3headlessgl_egldisplay_composite1.obj')
+  TargetAdd('libp3headlessgl.dll', input=COMMON_PANDA_LIBS)
+  TargetAdd('libp3headlessgl.dll', opts=['MODULE', 'GL', 'EGL', 'CGGL'])
+
 #
 # DIRECTORY: panda/src/egldisplay/
 #
 
 if (PkgSkip("EGL")==0 and PkgSkip("GLES")==0 and not RUNTIME):
   DefSymbol('GLES', 'OPENGLES_1', '')
-  OPTS=['DIR:panda/src/egldisplay', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGLES',  'GLES', 'EGL']
+  OPTS=['DIR:panda/src/egldisplay', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGLES', 'GLES', 'EGL', 'X11']
   TargetAdd('pandagles_egldisplay_composite1.obj', opts=OPTS, input='p3egldisplay_composite1.cxx')
   OPTS=['DIR:panda/metalibs/pandagles', 'BUILDING:PANDAGLES', 'GLES', 'EGL']
   TargetAdd('pandagles_pandagles.obj', opts=OPTS, input='pandagles.cxx')
@@ -5193,7 +5218,7 @@ if (PkgSkip("EGL")==0 and PkgSkip("GLES")==0 and not RUNTIME):
 
 if (PkgSkip("EGL")==0 and PkgSkip("GLES2")==0 and not RUNTIME):
   DefSymbol('GLES2', 'OPENGLES_2', '')
-  OPTS=['DIR:panda/src/egldisplay', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGLES2',  'GLES2', 'EGL']
+  OPTS=['DIR:panda/src/egldisplay', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGLES2', 'GLES2', 'EGL', 'X11']
   TargetAdd('pandagles2_egldisplay_composite1.obj', opts=OPTS, input='p3egldisplay_composite1.cxx')
   OPTS=['DIR:panda/metalibs/pandagles2', 'BUILDING:PANDAGLES2', 'GLES2', 'EGL']
   TargetAdd('pandagles2_pandagles2.obj', opts=OPTS, input='pandagles2.cxx')

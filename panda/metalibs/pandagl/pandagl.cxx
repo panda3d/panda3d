@@ -26,7 +26,7 @@
 #include "glxGraphicsPipe.h"
 #endif
 
-#if defined(HAVE_EGL) && !defined(HAVE_X11)
+#ifdef HAVE_EGL
 #include "config_egldisplay.h"
 #include "eglGraphicsPipe.h"
 #endif
@@ -59,7 +59,7 @@ init_libpandagl() {
   init_libglxdisplay();
 #endif
 
-#if defined(HAVE_EGL) && !defined(HAVE_X11)
+#ifdef HAVE_EGL
   init_libegldisplay();
 #endif
 }
@@ -84,9 +84,16 @@ get_pipe_type_pandagl() {
   return glxGraphicsPipe::get_class_type().get_index();
 #endif
 
-#if defined(HAVE_EGL) && !defined(HAVE_X11)
+#ifdef HAVE_EGL
   return eglGraphicsPipe::get_class_type().get_index();
 #endif
 
   return 0;
 }
+
+#if defined(HAVE_EGL) && !defined(USE_X11)
+int
+get_pipe_type_p3headlessgl() {
+  return eglGraphicsPipe::get_class_type().get_index();
+}
+#endif

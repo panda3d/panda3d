@@ -16,12 +16,14 @@
 
 #include "pandabase.h"
 
-#ifdef HAVE_X11
+#ifdef USE_X11
 #include "x11GraphicsPipe.h"
 typedef x11GraphicsPipe BaseGraphicsPipe;
 #else
 #include "graphicsPipe.h"
 typedef GraphicsPipe BaseGraphicsPipe;
+#undef EGL_NO_X11
+#define EGL_NO_X11 1
 #endif
 
 #ifdef OPENGLES_2
