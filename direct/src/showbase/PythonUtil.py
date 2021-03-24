@@ -1221,7 +1221,7 @@ def uniqueName(name):
 
 class EnumIter:
     def __init__(self, enum):
-        self._values = list(enum._stringTable.keys())
+        self._values = tuple(enum._stringTable.keys())
         self._index = 0
     def __iter__(self):
         return self
@@ -1230,7 +1230,6 @@ class EnumIter:
             raise StopIteration
         self._index += 1
         return self._values[self._index-1]
-    next = __next__
 
 class Enum:
     """Pass in list of strings or string of comma-separated strings.

@@ -1341,22 +1341,22 @@ def GetThirdpartyDir():
         THIRDPARTYDIR = base + "/darwin-libs-a/"
 
     elif (target == 'linux'):
-        if (target_arch.startswith("arm")):
+        if target_arch in ("aarch64", "arm64"):
+            THIRDPARTYDIR = base + "/linux-libs-arm64/"
+        elif target_arch.startswith("arm"):
             THIRDPARTYDIR = base + "/linux-libs-arm/"
         elif (target_arch in ("x86_64", "amd64")):
             THIRDPARTYDIR = base + "/linux-libs-x64/"
-        elif target_arch == "aarch64":
-            THIRDPARTYDIR = base + "/linux-libs-aarch64/"
         else:
             THIRDPARTYDIR = base + "/linux-libs-a/"
 
     elif (target == 'freebsd'):
-        if (target_arch.startswith("arm")):
+        if target_arch in ("aarch64", "arm64"):
+            THIRDPARTYDIR = base + "/freebsd-libs-arm64/"
+        elif target_arch.startswith("arm"):
             THIRDPARTYDIR = base + "/freebsd-libs-arm/"
         elif (target_arch in ("x86_64", "amd64")):
             THIRDPARTYDIR = base + "/freebsd-libs-x64/"
-        elif target_arch == "aarch64":
-            THIRDPARTYDIR = base + "/freebsd-libs-aarch64/"
         else:
             THIRDPARTYDIR = base + "/freebsd-libs-a/"
 
