@@ -157,3 +157,25 @@ def test_weighted_choice():
     # When subtracting that number by each weight, it will reach 0
     # by the time it hits 'item6' in the iteration.
     assert item == items[5]
+
+
+def test_serial():
+    gen = PythonUtil.SerialNumGen()
+    assert gen.next() == 0
+    assert next(gen) == 1
+    assert next(gen) == 2
+    assert gen.next() == 3
+
+
+def test_alphabet_counter():
+    counter = PythonUtil.AlphabetCounter()
+    assert next(counter) == 'A'
+    assert counter.next() == 'B'
+    assert counter.next() == 'C'
+    assert next(counter) == 'D'
+
+    for i in range(26 - 4):
+        next(counter)
+
+    assert next(counter) == 'AA'
+    assert next(counter) == 'AB'
