@@ -405,7 +405,12 @@ class WheelFile(object):
 
             # Now add dependencies.  On macOS, fix @loader_path references.
             if sys.platform == "darwin":
-                is_unsigned = subprocess.call(['codesign', '-d', temp.name], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                if sys.version_info >= (3, 3):
+                    devnull = subprocess.DEVNULL
+                else:
+                    devnull = open(os.devnull, 'wb')
+                is_unsigned = subprocess.call(['codesign', '-d', temp.name], stdout=devnull, stderr=devnull)
+
                 if source_path.endswith('deploy-stubw'):
                     deps_path = '@executable_path/../Frameworks'
                 else:
