@@ -301,6 +301,22 @@ ConfigVariableBool vertex_animation_align_16
           "impacts only vertex formats created within Panda subsystems; custom "
           "vertex formats are not affected."));
 
+ConfigVariableBool vertex_colors_prefer_packed
+("vertex-colors-prefer-packed",
+#ifdef _WIN32
+ true,
+#else
+ false,
+#endif
+ PRC_DESC("This specifies whether to optimize vertex colors for OpenGL or for "
+          "DirectX 9.  If set to true (the default on Windows), Panda will "
+          "generate DirectX-style vertex colors, which are also supported in "
+          "newer OpenGL versions (although they may be buggy on some cards, "
+          "such as AMD RDNA).  If false, Panda will always use OpenGL-style "
+          "vertex colors, causing a minor performance penalty in DirectX 9.  "
+          "You probably should set this to false if you know you will not be "
+          "using DirectX 9."));
+
 ConfigVariableEnum<AutoTextureScale> textures_power_2
 ("textures-power-2", ATS_down,
  PRC_DESC("Specify whether textures should automatically be constrained to "

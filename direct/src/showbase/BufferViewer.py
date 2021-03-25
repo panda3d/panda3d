@@ -228,7 +228,7 @@ class BufferViewer(DirectObject):
         be precise so that the frame exactly aligns to pixel
         boundaries, and so that it doesn't overlap the card at all."""
 
-        format = GeomVertexFormat.getV3cp()
+        format = GeomVertexFormat.getV3c()
         vdata = GeomVertexData('card-frame', format, Geom.UHDynamic)
 
         vwriter = GeomVertexWriter(vdata, 'vertex')
