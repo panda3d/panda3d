@@ -81,6 +81,7 @@ extern ConfigVariableBool gl_fixed_vertex_attrib_locations;
 extern ConfigVariableBool gl_support_primitive_restart_index;
 extern ConfigVariableBool gl_support_sampler_objects;
 extern ConfigVariableBool gl_support_shadow_filter;
+extern ConfigVariableBool gl_support_vertex_array_bgra;
 extern ConfigVariableBool gl_force_image_bindings_writeonly;
 extern ConfigVariableEnum<CoordinateSystem> gl_coordinate_system;
 
