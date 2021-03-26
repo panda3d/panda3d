@@ -74,56 +74,42 @@ static double get_signed_int_i(const unsigned char *&p) {
  */
 TexturePeeker::
 TexturePeeker(Texture *tex, Texture::CData *cdata) {
-  if (cdata->_texture_type == Texture::TT_cube_map) {
-    // Cube map texture.  We'll need to map from (u, v, w) to (u, v) within
-    // the appropriate page, where w indicates the page.
+  // Simple ram images are possible if it is a 2-d texture.
+  if (tex->do_has_ram_image(cdata) && cdata->_ram_image_compression == Texture::CM_off) {
+    // Get the regular RAM image if it is available.
+    _image = tex->do_get_ram_image(cdata);
+    _x_size = cdata->_x_size;
+    _y_size = cdata->_y_size;
+    _z_size = cdata->_z_size;
+    _pixel_width = cdata->_component_width * cdata->_num_components;
+    _format = cdata->_format;
+    _component_type = cdata->_component_type;
+  }
+  else if (!cdata->_simple_ram_image._image.empty()) {
+    // Get the simple RAM image if *that* is available.
+    _image = cdata->_simple_ram_image._image;
+    _x_size = cdata->_simple_x_size;
+    _y_size = cdata->_simple_y_size;
+    _z_size = 1;
 
-    // TODO: handle cube maps.
-    return;
-
-  } else {
-    // Regular 1-d, 2-d, or 3-d texture.  The coordinates map directly.
-    // Simple ram images are possible if it is a 2-d texture.
-    if (tex->do_has_ram_image(cdata) && cdata->_ram_image_compression == Texture::CM_off) {
-      // Get the regular RAM image if it is available.
-      _image = tex->do_get_ram_image(cdata);
-      _x_size = cdata->_x_size;
-      _y_size = cdata->_y_size;
-      _z_size = cdata->_z_size;
-      _component_width = cdata->_component_width;
-      _num_components = cdata->_num_components;
-      _format = cdata->_format;
-      _component_type = cdata->_component_type;
-
-    } else if (!cdata->_simple_ram_image._image.empty()) {
-      // Get the simple RAM image if *that* is available.
-      _image = cdata->_simple_ram_image._image;
-      _x_size = cdata->_simple_x_size;
-      _y_size = cdata->_simple_y_size;
-      _z_size = 1;
-
-      _component_width = 1;
-      _num_components = 4;
-      _format = Texture::F_rgba;
-      _component_type = Texture::T_unsigned_byte;
-
-    } else {
-      // Failing that, reload and get the uncompressed RAM image.
-      _image = tex->do_get_uncompressed_ram_image(cdata);
-      _x_size = cdata->_x_size;
-      _y_size = cdata->_y_size;
-      _z_size = cdata->_z_size;
-      _component_width = cdata->_component_width;
-      _num_components = cdata->_num_components;
-      _format = cdata->_format;
-      _component_type = cdata->_component_type;
-    }
+    _pixel_width = 4;
+    _format = Texture::F_rgba;
+    _component_type = Texture::T_unsigned_byte;
+  }
+  else {
+    // Failing that, reload and get the uncompressed RAM image.
+    _image = tex->do_get_uncompressed_ram_image(cdata);
+    _x_size = cdata->_x_size;
+    _y_size = cdata->_y_size;
+    _z_size = cdata->_z_size;
+    _pixel_width = cdata->_component_width * cdata->_num_components;
+    _format = cdata->_format;
+    _component_type = cdata->_component_type;
   }
 
   if (_image.is_null()) {
     return;
   }
-  _pixel_width = _component_width * _num_components;
 
   if (Texture::is_integer(_format)) {
     switch (_component_type) {
@@ -291,8 +277,10 @@ TexturePeeker(Texture *tex, Texture::CData *cdata) {
     _image.clear();
     return;
   }
-}
 
+  _is_cube = (cdata->_texture_type == Texture::TT_cube_map ||
+              cdata->_texture_type == Texture::TT_cube_map_array);
+}
 
 /**
  * Fills "color" with the RGBA color of the texel at point (u, v).
@@ -304,22 +292,95 @@ TexturePeeker(Texture *tex, Texture::CData *cdata) {
  */
 void TexturePeeker::
 lookup(LColor &color, PN_stdfloat u, PN_stdfloat v) const {
-  int x = int((u - cfloor(u)) * (PN_stdfloat)_x_size) % _x_size;
-  int y = int((v - cfloor(v)) * (PN_stdfloat)_y_size) % _y_size;
-  fetch_pixel(color, x, y);
+  if (!_is_cube) {
+    int x = int((u - cfloor(u)) * (PN_stdfloat)_x_size) % _x_size;
+    int y = int((v - cfloor(v)) * (PN_stdfloat)_y_size) % _y_size;
+    fetch_pixel(color, x, y);
+  }
+  else {
+    lookup(color, u, v, 0);
+  }
 }
 
 /**
- *  Works like TexturePeeker::lookup(), but instead uv-coordinates integer
- *  coordinates are used.
+ * Fills "color" with the RGBA color of the texel at point (u, v, w).
+ *
+ * The texel color is determined via nearest-point sampling (no filtering of
+ * adjacent pixels), regardless of the filter type associated with the
+ * texture.  u, v, and w will wrap around regardless of the texture's wrap
+ * mode.
  */
 void TexturePeeker::
-fetch_pixel(LColor& color, int x, int y) const {
+lookup(LColor &color, PN_stdfloat u, PN_stdfloat v, PN_stdfloat w) const {
+  if (!_is_cube) {
+    int x = int((u - cfloor(u)) * (PN_stdfloat)_x_size) % _x_size;
+    int y = int((v - cfloor(v)) * (PN_stdfloat)_y_size) % _y_size;
+    int z = int((w - cfloor(w)) * (PN_stdfloat)_z_size) % _z_size;
+
+    nassertv(x >= 0 && x < _x_size && y >= 0 && y < _y_size &&
+             z >= 0 && z < _z_size);
+    const unsigned char *p = _image.p() + (z * _x_size * _y_size + y * _x_size + x) * _pixel_width;
+
+    (*_get_texel)(color, p, _get_component);
+  }
+  else {
+    PN_stdfloat absu = fabs(u),
+                absv = fabs(v),
+                absw = fabs(w);
+    PN_stdfloat magnitude;
+    PN_stdfloat u2d, v2d;
+    int z;
+
+    // The following was pulled from:
+    // https://www.gamedev.net/forums/topic/687535-implementing-a-cube-map-lookup-function/
+    if (absw >= absu && absw >= absv) {
+      z = 4 + (w < 0.0);
+      magnitude = 0.5 / absw;
+      u2d = w < 0.0 ? -u : u;
+      v2d = -v;
+    }
+    else if (absv >= absu) {
+      z = 2 + (v < 0.0);
+      magnitude = 0.5 / absv;
+      u2d = u;
+      v2d = v < 0.0 ? -w : w;
+    }
+    else {
+      z = 0 + (u < 0.0);
+      magnitude = 0.5 / absu;
+      u2d = u < 0.0 ? w : -w;
+      v2d = -v;
+    }
+    u2d = u2d * magnitude + 0.5;
+    v2d = v2d * magnitude + 0.5;
+
+    int x = int((u2d - cfloor(u2d)) * (PN_stdfloat)_x_size) % _x_size;
+    int y = int((v2d - cfloor(v2d)) * (PN_stdfloat)_y_size) % _y_size;
+    fetch_pixel(color, x, y, z);
+  }
+}
+
+/**
+ * Works like TexturePeeker::lookup(), but instead uv-coordinates integer
+ * coordinates are used.
+ */
+void TexturePeeker::
+fetch_pixel(LColor &color, int x, int y) const {
   nassertv(x >= 0 && x < _x_size && y >= 0 && y < _y_size);
   const unsigned char *p = _image.p() + (y * _x_size + x) * _pixel_width;
   (*_get_texel)(color, p, _get_component);
 }
 
+/**
+ * Works like TexturePeeker::lookup(), but instead uv-coordinates integer
+ * coordinates are used.
+ */
+void TexturePeeker::
+fetch_pixel(LColor &color, int x, int y, int z) const {
+  nassertv(x >= 0 && x < _x_size && y >= 0 && y < _y_size && z >= 0 && z < _z_size);
+  const unsigned char *p = _image.p() + ((z * _y_size + y) * _x_size + x) * _pixel_width;
+  (*_get_texel)(color, p, _get_component);
+}
 
 /**
  * Performs a bilinear lookup to retrieve the color value stored at the uv
@@ -368,27 +429,6 @@ lookup_bilinear(LColor &color, PN_stdfloat u, PN_stdfloat v) const {
 
   color = (p00 * w00 + p01 * w01 + p10 * w10 + p11 * w11) / net_w;
   return true;
-}
-
-/**
- * Fills "color" with the RGBA color of the texel at point (u, v, w).
- *
- * The texel color is determined via nearest-point sampling (no filtering of
- * adjacent pixels), regardless of the filter type associated with the
- * texture.  u, v, and w will wrap around regardless of the texture's wrap
- * mode.
- */
-void TexturePeeker::
-lookup(LColor &color, PN_stdfloat u, PN_stdfloat v, PN_stdfloat w) const {
-  int x = int((u - cfloor(u)) * (PN_stdfloat)_x_size) % _x_size;
-  int y = int((v - cfloor(v)) * (PN_stdfloat)_y_size) % _y_size;
-  int z = int((w - cfloor(w)) * (PN_stdfloat)_z_size) % _z_size;
-
-  nassertv(x >= 0 && x < _x_size && y >= 0 && y < _y_size &&
-           z >= 0 && z < _z_size);
-  const unsigned char *p = _image.p() + (z * _x_size * _y_size + y * _x_size + x) * _pixel_width;
-
-  (*_get_texel)(color, p, _get_component);
 }
 
 /**

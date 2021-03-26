@@ -187,7 +187,7 @@ choose_pixel_format(const FrameBufferProperties &properties,
       best_props = fbprops;
     }
   }
-#ifdef HAVE_X11
+#ifdef USE_X11
   X11_Display *display = egl_pipe->get_display();
   if (display) {
     int screen = egl_pipe->get_screen();
@@ -233,7 +233,7 @@ choose_pixel_format(const FrameBufferProperties &properties,
 
     int err = eglGetError();
     if (_context && err == EGL_SUCCESS) {
-#ifdef HAVE_X11
+#ifdef USE_X11
       if (!display || _visual)
 #endif
       {
@@ -262,7 +262,7 @@ choose_pixel_format(const FrameBufferProperties &properties,
       << get_egl_error_string(err) << "\n";
     _fbconfig = 0;
     _context = 0;
-#ifdef HAVE_X11
+#ifdef USE_X11
     _visual = 0;
 #endif
   }
@@ -306,7 +306,7 @@ egl_is_at_least_version(int major_version, int minor_version) const {
  */
 void eglGraphicsStateGuardian::
 gl_flush() const {
-#ifdef HAVE_X11
+#ifdef USE_X11
   // This call requires synchronization with X.
   LightReMutexHolder holder(eglGraphicsPipe::_x_mutex);
 #endif
@@ -318,7 +318,7 @@ gl_flush() const {
  */
 GLenum eglGraphicsStateGuardian::
 gl_get_error() const {
-#ifdef HAVE_X11
+#ifdef USE_X11
   // This call requires synchronization with X.
   LightReMutexHolder holder(eglGraphicsPipe::_x_mutex);
 #endif

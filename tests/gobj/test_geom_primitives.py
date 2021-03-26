@@ -101,3 +101,65 @@ def test_geom_linestrips_adjacency():
         3, 4, 5, 6,
         4, 5, 6, 6,
     )
+
+
+def test_geom_linestrips_offset_indexed():
+    prim = core.GeomLinestrips(core.GeomEnums.UH_static)
+    prim.add_vertex(0)
+    prim.add_vertex(1)
+    prim.close_primitive()
+    prim.add_vertex(1)
+    prim.add_vertex(2)
+    prim.add_vertex(3)
+    prim.close_primitive()
+    prim.add_vertex(3)
+    prim.add_vertex(4)
+    prim.add_vertex(5)
+    prim.add_vertex(6)
+    prim.close_primitive()
+
+    prim.offset_vertices(100)
+    verts = prim.get_vertex_list()
+    cut = prim.strip_cut_index
+    assert tuple(verts) == (
+        100, 101,
+        cut,
+        101, 102, 103,
+        cut,
+        103, 104, 105, 106,
+    )
+
+    prim.offset_vertices(-100)
+    verts = prim.get_vertex_list()
+    cut = prim.strip_cut_index
+    assert tuple(verts) == (
+        0, 1,
+        cut,
+        1, 2, 3,
+        cut,
+        3, 4, 5, 6,
+    )
+
+    prim.offset_vertices(100, 4, 9)
+    verts = prim.get_vertex_list()
+    cut = prim.strip_cut_index
+    assert tuple(verts) == (
+        0, 1,
+        cut,
+        1, 102, 103,
+        cut,
+        103, 104, 5, 6,
+    )
+
+    # Automatically upgrade to uint32
+    prim.offset_vertices(100000)
+    assert prim.index_type == core.GeomEnums.NT_uint32
+    verts = prim.get_vertex_list()
+    cut = prim.strip_cut_index
+    assert tuple(verts) == (
+        100000, 100001,
+        cut,
+        100001, 100102, 100103,
+        cut,
+        100103, 100104, 100005, 100006,
+    )

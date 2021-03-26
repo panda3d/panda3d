@@ -243,9 +243,16 @@ get_format(bool support_normals) const {
        Geom::C_normal);
   }
   if (get_use_vertex_color()) {
-    array_format->add_column
-      (InternalName::get_color(), 1, Geom::NT_packed_dabc,
-       Geom::C_color);
+    if (vertex_colors_prefer_packed) {
+      array_format->add_column
+        (InternalName::get_color(), 1, Geom::NT_packed_dabc,
+         Geom::C_color);
+    }
+    else {
+      array_format->add_column
+        (InternalName::get_color(), 4, Geom::NT_uint8,
+         Geom::C_color);
+    }
   }
   if (get_uv_mode() != UV_none) {
     array_format->add_column
