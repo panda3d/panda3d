@@ -56,3 +56,11 @@ INLINE bool TexturePeeker::
 has_pixel(int x, int y) const {
   return x >= 0 && y >= 0 && x < _x_size && y < _y_size;
 }
+
+/**
+ * Returns whether a given coordinate is inside of the texture dimensions.
+ */
+INLINE bool TexturePeeker::
+has_pixel(int x, int y, int z) const {
+  return x >= 0 && y >= 0 && z >= 0 && x < _x_size && y < _y_size && z < _z_size;
+}

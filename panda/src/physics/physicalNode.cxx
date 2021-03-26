@@ -14,7 +14,9 @@
 #include "physicalNode.h"
 #include "physicsManager.h"
 
+#ifdef PHAVE_ATOMIC
 #include <atomic>
+#endif
 
 // static stuff.
 static std::atomic_flag warned_copy_physical_node = ATOMIC_FLAG_INIT;

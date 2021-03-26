@@ -1773,7 +1773,7 @@ draw_underscore(TextAssembler::PlacedGlyphs &placed_glyphs,
                 PN_stdfloat underscore_start, PN_stdfloat underscore_end,
                 const TextProperties *underscore_properties) {
 
-  CPT(GeomVertexFormat) format = GeomVertexFormat::get_v3cp();
+  CPT(GeomVertexFormat) format = GeomVertexFormat::get_v3c();
   PT(GeomVertexData) vdata =
     new GeomVertexData("underscore", format, Geom::UH_static);
   vdata->unclean_set_num_rows(2);

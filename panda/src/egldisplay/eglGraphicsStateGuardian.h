@@ -17,7 +17,7 @@
 #include "pandabase.h"
 #include "eglGraphicsPipe.h"
 
-#ifdef HAVE_X11
+#ifdef USE_X11
 #include "get_x11.h"
 #endif
 
@@ -55,7 +55,7 @@ public:
   EGLContext _share_context;
   EGLContext _context;
   EGLDisplay _egl_display;
-#ifdef HAVE_X11
+#ifdef USE_X11
   XVisualInfo *_visual = nullptr;
 #endif
   EGLConfig _fbconfig;

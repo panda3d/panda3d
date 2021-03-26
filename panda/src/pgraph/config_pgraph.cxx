@@ -375,6 +375,13 @@ ConfigVariableBool allow_live_flatten
           "only has an effect when Panda is not compiled for a release "
           "build."));
 
+ConfigVariableBool filled_wireframe_apply_shader
+("filled-wireframe-apply-shader", false,
+ PRC_DESC("Set this true to apply any shader configured on nodes onto the "
+          "filled wireframe overlay.  The wireframe color is multiplied with "
+          "the result of the fragment shader.  This is helpful when the shader "
+          "alters the position of the vertices and makes the overlay wrong."));
+
 /**
  * Initializes the library.  This must be called at least once before any of
  * the functions or classes in this library can be used.  Normally it will be

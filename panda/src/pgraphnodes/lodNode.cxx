@@ -854,7 +854,7 @@ compute_ring_viz() {
   // for the inner edge.
   static const PN_stdfloat edge_ratio = 0.1;  // ratio of edge height to diameter.
 
-  const GeomVertexFormat *format = GeomVertexFormat::get_v3n3cp();
+  const GeomVertexFormat *format = GeomVertexFormat::get_v3n3c();
   PT(GeomVertexData) vdata = new GeomVertexData("LOD_ring", format, Geom::UH_static);
 
   // Fill up the vertex table with all of the vertices.
@@ -978,7 +978,7 @@ compute_spindle_viz() {
   static const int num_slices = 10;
   static const int num_rings = 10;
 
-  const GeomVertexFormat *format = GeomVertexFormat::get_v3n3cp();
+  const GeomVertexFormat *format = GeomVertexFormat::get_v3n3c();
   PT(GeomVertexData) vdata = new GeomVertexData("LOD_spindle", format, Geom::UH_static);
 
   // Fill up the vertex table with all of the vertices.
