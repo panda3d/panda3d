@@ -112,61 +112,8 @@ typedef std::ios::seekdir ios_seekdir;
 #define INLINE inline
 #endif
 
-// Apple has an outdated libstdc++.  Not all is lost, though, as we can fill
-// in some important missing functions.
-#if defined(__GLIBCXX__) && __GLIBCXX__ <= 20070719
-#include <tr1/tuple>
-#include <tr1/cmath>
-
-namespace std {
-  using std::tr1::tuple;
-  using std::tr1::tie;
-  using std::tr1::copysign;
-
-  typedef decltype(nullptr) nullptr_t;
-
-  template<class T> struct remove_reference      {typedef T type;};
-  template<class T> struct remove_reference<T&>  {typedef T type;};
-  template<class T> struct remove_reference<T&& >{typedef T type;};
-
-  template<class T> typename remove_reference<T>::type &&move(T &&t) {
-    return static_cast<typename remove_reference<T>::type&&>(t);
-  }
-
-  template<class T> struct owner_less;
-
-  typedef enum memory_order {
-    memory_order_relaxed,
-    memory_order_consume,
-    memory_order_acquire,
-    memory_order_release,
-    memory_order_acq_rel,
-    memory_order_seq_cst,
-  } memory_order;
-
-  #define ATOMIC_FLAG_INIT { 0 }
-  class atomic_flag {
-    bool _flag;
-
-  public:
-    atomic_flag() noexcept = default;
-    ALWAYS_INLINE constexpr atomic_flag(bool flag) noexcept : _flag(flag) {}
-    atomic_flag(const atomic_flag &) = delete;
-    ~atomic_flag() noexcept = default;
-    atomic_flag &operator = (const atomic_flag&) = delete;
-
-    ALWAYS_INLINE bool test_and_set(memory_order order = memory_order_seq_cst) noexcept {
-      return __atomic_test_and_set(&_flag, order);
-    }
-    ALWAYS_INLINE void clear(memory_order order = memory_order_seq_cst) noexcept {
-      __atomic_clear(&_flag, order);
-    }
-  };
-};
-#else
 // Expect that we have access to the <atomic> header.
 #define PHAVE_ATOMIC 1
-#endif
 
 // Determine the availability of C++11 features.
 #if defined(_MSC_VER) && _MSC_VER < 1900 // Visual Studio 2015
