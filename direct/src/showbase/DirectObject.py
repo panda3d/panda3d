@@ -6,7 +6,7 @@ __all__ = ['DirectObject']
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.task.TaskManagerGlobal import taskMgr
 from .MessengerGlobal import messenger
-
+from core import PythonTask
 
 class DirectObject:
     """
@@ -49,6 +49,7 @@ class DirectObject:
             #just recall the method, but change the parameters
             task = args[0]
             self.addTask(task.getFunction(), task.name, extraArgs=task.getArgs(), appendTask=False)
+            #we return the original task because we do not want to change the appendTask argument
             return task
         kwargs['owner']=self
         task = taskMgr.add(*args, **kwargs)
