@@ -18,4 +18,6 @@ def test_taskArg():
     base.remove_task(task)
     task = base.add_task(task)
     base.taskMgr.step()
+    base.destroy()
+    base = None
     assert ship.y == 4
