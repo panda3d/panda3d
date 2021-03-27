@@ -44,6 +44,12 @@ class DirectObject:
     def addTask(self, *args, **kwargs):
         if not hasattr(self, "_taskList"):
             self._taskList = {}
+        #check to see if our first and only variable is a task, if so grab the args
+        if((len(args) == 1) and isinstance(args[0], PythonTask)):
+            #just recall the method, but change the parameters
+            task = args[0]
+            self.addTask(task.getFunction(), task.name, extraArgs=task.getArgs(), appendTask=False)
+            return task
         kwargs['owner']=self
         task = taskMgr.add(*args, **kwargs)
         return task
