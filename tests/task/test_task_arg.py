@@ -25,3 +25,4 @@ def test_task_arg():
     task = base.taskMgr.add(task)
     base.taskMgr.step()
     assert ship.y == 6
+    
