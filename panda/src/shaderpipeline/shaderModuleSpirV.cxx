@@ -31,13 +31,14 @@ TypeHandle ShaderModuleSpirV::_type_handle;
  * - Strips debugging information from the module.
  */
 ShaderModuleSpirV::
-ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words) :
+ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *record) :
   ShaderModule(stage),
   _instructions(std::move(words))
 {
   if (!_instructions.validate_header()) {
     return;
   }
+  _record = record;
 
   InstructionWriter writer(_instructions);
 

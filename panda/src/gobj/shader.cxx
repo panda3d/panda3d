@@ -2868,7 +2868,7 @@ load_compute(ShaderLanguage lang, const Filename &fn) {
   }
 
   PT(Shader) shader = new Shader(lang);
-  if (!shader->read(sfile)) {
+  if (!shader->read(sfile, record)) {
     return nullptr;
   }
 

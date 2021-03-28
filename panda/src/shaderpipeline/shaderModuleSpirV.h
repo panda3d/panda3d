@@ -26,7 +26,7 @@ class ShaderType;
  */
 class EXPCL_PANDA_SHADERPIPELINE ShaderModuleSpirV final : public ShaderModule {
 public:
-  ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words);
+  ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *record = nullptr);
   virtual ~ShaderModuleSpirV();
 
   virtual PT(CopyOnWriteObject) make_cow_copy() override;

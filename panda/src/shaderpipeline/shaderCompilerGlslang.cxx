@@ -486,7 +486,7 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
     return nullptr;
   }
 
-  return new ShaderModuleSpirV(stage, std::move(optimized));
+  return new ShaderModuleSpirV(stage, std::move(optimized), record);
 }
 
 /**
