@@ -117,7 +117,7 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
       _used_caps |= C_double;
     }
 
-    if (def._dtype == DT_global && !def.is_builtin()) {
+    if (def._dtype == DT_variable && !def.is_builtin()) {
       // Ignore empty structs/arrays.
       if (def._type->get_num_interface_locations() == 0) {
         continue;
@@ -161,7 +161,7 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
         _used_caps |= C_integer;
       }
     }
-    else if (def._dtype == DT_global && def.is_used() &&
+    else if (def._dtype == DT_variable && def.is_used() &&
              def._storage_class == spv::StorageClassInput) {
       // Built-in input variable.
       switch (def._builtin) {
@@ -597,7 +597,7 @@ assign_locations(Stage stage) {
   BitArray uniform_locations;
 
   for (const Definition &def : _defs) {
-    if (def._dtype == DT_global) {
+    if (def._dtype == DT_variable) {
       if (!def.has_location()) {
         if (!def.is_builtin() &&
             (def._storage_class == spv::StorageClassInput ||
@@ -628,7 +628,7 @@ assign_locations(Stage stage) {
   InstructionIterator it = _instructions.begin_annotations();
   for (uint32_t id = 0; id < _defs.size(); ++id) {
     Definition &def = _defs[id];
-    if (def._dtype == DT_global && !def.has_location() && !def.is_builtin()) {
+    if (def._dtype == DT_variable && !def.has_location() && !def.is_builtin()) {
       int location;
       int num_locations;
       const char *sc_str;
@@ -736,7 +736,7 @@ remove_unused_variables() {
   for (uint32_t id = 0; id < _instructions.get_id_bound(); ++id) {
     Definition &def = modify_definition(id);
 
-    if ((def._dtype == DT_global || def._dtype == DT_local) && !def.is_used()) {
+    if (def._dtype == DT_variable && !def.is_used()) {
       delete_ids.insert(id);
       if (shader_cat.is_debug() && !def._name.empty()) {
         shader_cat.debug()
@@ -772,6 +772,7 @@ remove_unused_variables() {
       }
       break;
 
+    case spv::OpImageTexelPointer:
     case spv::OpAccessChain:
     case spv::OpInBoundsAccessChain:
     case spv::OpPtrAccessChain:
@@ -802,11 +803,15 @@ flatten_struct(uint32_t type_id) {
   DCAST_INTO_V(struct_type, _defs[type_id]._type);
 
   pset<uint32_t> deleted_ids;
+
+  // Maps access chains accessing struct members to the created variable IDs for
+  // that struct member.
   pmap<uint32_t, uint32_t> deleted_access_chains;
 
   // Collect type pointers that we have to create.
   pvector<uint32_t> insert_type_pointers;
 
+  // Holds the new variable IDs for each of the struct members.
   pvector<uint32_t> member_ids(struct_type->get_num_members());
 
   InstructionIterator it = _instructions.begin();
@@ -1155,7 +1160,7 @@ make_block(const ShaderType::Struct *block_type, const pvector<int> &member_loca
         type_pointer_map[def._type_id] = id;
       }
     }
-    else if (def._dtype == DT_global && def.has_location() &&
+    else if (def._dtype == DT_variable && def.has_location() &&
              def._storage_class == spv::StorageClassUniformConstant) {
 
       auto lit = std::find(member_locations.begin(), member_locations.end(), def._location);
@@ -1366,7 +1371,7 @@ make_block(const ShaderType::Struct *block_type, const pvector<int> &member_loca
 void ShaderModuleSpirV::InstructionWriter::
 set_variable_type(uint32_t variable_id, const ShaderType *type) {
   Definition &def = modify_definition(variable_id);
-  nassertv(def._dtype == DT_global || def._dtype == DT_local);
+  nassertv(def._dtype == DT_variable);
 
   if (shader_cat.is_debug()) {
     shader_cat.debug()
@@ -1584,7 +1589,7 @@ r_define_variable(InstructionIterator &it, const ShaderType *type, spv::StorageC
   });
   ++it;
 
-  record_global(variable_id, type_pointer_id, storage_class);
+  record_variable(variable_id, type_pointer_id, storage_class);
   return variable_id;
 }
 
@@ -2238,31 +2243,18 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
       // to not yet have been declared.
       func_def._dtype = DT_function;
       func_def._flags |= DF_used;
-
-      // Track the return value, which declares a new variable.
-      record_local(op.args[1], op.args[0], op.args[1], op.args[2]);
+      record_temporary(op.args[1], op.args[0], op.args[2], current_function_id);
     }
     break;
 
   case spv::OpVariable:
-    if (current_function_id != 0) {
-      if (op.args[2] != spv::StorageClassFunction) {
-        shader_cat.error()
-          << "OpVariable within a function must have Function storage class!\n";
-        return;
-      }
-      record_local(op.args[1], op.args[0], op.args[1], current_function_id);
-    } else {
-      if (op.args[2] == spv::StorageClassFunction) {
-        shader_cat.error()
-          << "OpVariable outside a function may not have Function storage class!\n";
-        return;
-      }
-      record_global(op.args[1], op.args[0], (spv::StorageClass)op.args[2]);
-    }
+    record_variable(op.args[1], op.args[0], (spv::StorageClass)op.args[2], current_function_id);
     break;
 
   case spv::OpImageTexelPointer:
+    record_temporary(op.args[1], op.args[0], op.args[2], current_function_id);
+    break;
+
   case spv::OpLoad:
   case spv::OpAtomicLoad:
   case spv::OpAtomicExchange:
@@ -2280,7 +2272,7 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
   case spv::OpAtomicOr:
   case spv::OpAtomicXor:
   case spv::OpAtomicFlagTestAndSet:
-    record_local(op.args[1], op.args[0], op.args[2], current_function_id);
+    record_temporary(op.args[1], op.args[0], op.args[2], current_function_id);
 
     // A load from the pointer is enough for us to consider it "used", for now.
     mark_used(op.args[1]);
@@ -2299,7 +2291,7 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
   case spv::OpCopyObject:
     // Record the access chain or pointer copy, so that as soon as something is
     // loaded through them we can transitively mark everything as "used".
-    record_local(op.args[1], op.args[0], op.args[2], current_function_id);
+    record_temporary(op.args[1], op.args[0], op.args[2], current_function_id);
     break;
 
   case spv::OpCopyMemory:
@@ -2407,7 +2399,7 @@ parse_instruction(const Instruction &op, uint32_t &current_function_id) {
     break;
 
   case spv::OpBitcast:
-    record_local(op.args[1], op.args[0], op.args[2], current_function_id);
+    record_temporary(op.args[1], op.args[0], op.args[2], current_function_id);
 
     // Treat this like a load if it is casting to a non-pointer type.
     if (_defs[op.args[0]]._dtype != DT_type_pointer) {
@@ -2464,7 +2456,7 @@ record_type_pointer(uint32_t id, spv::StorageClass storage_class, uint32_t type_
  * Records that the given variable has been defined.
  */
 void ShaderModuleSpirV::InstructionWriter::
-record_global(uint32_t id, uint32_t type_pointer_id, spv::StorageClass storage_class) {
+record_variable(uint32_t id, uint32_t type_pointer_id, spv::StorageClass storage_class, uint32_t function_id) {
   const Definition &type_pointer_def = get_definition(type_pointer_id);
   if (type_pointer_def._dtype != DT_type_pointer && type_pointer_def._type_id != 0) {
     shader_cat.error()
@@ -2481,11 +2473,12 @@ record_global(uint32_t id, uint32_t type_pointer_id, spv::StorageClass storage_c
   }
 
   Definition &def = modify_definition(id);
-  def._dtype = DT_global;
+  def._dtype = DT_variable;
   def._type = type_def._type;
   def._type_id = type_pointer_id;
   def._storage_class = storage_class;
   def._origin_id = id;
+  def._function_id = function_id;
 
   if (shader_cat.is_debug() && storage_class == spv::StorageClassUniformConstant) {
     shader_cat.debug()
@@ -2566,23 +2559,22 @@ record_function(uint32_t id, uint32_t type_id) {
 }
 
 /**
- * Record a local object.  We mostly use this to record the chain of loads and
- * copies so that e can figure out whether (and how) a given variable is used.
+ * Record a temporary.  We mostly use this to record the chain of loads and
+ * copies so that we can figure out whether (and how) a given variable is used.
  *
  * from_id indicates from what this variable is initialized or generated, for
- * the purpose of transitively tracking usage.  It may be set to the same as id
- * to indicate that this variable stands on its own.
+ * the purpose of transitively tracking usage.
  */
 void ShaderModuleSpirV::InstructionWriter::
-record_local(uint32_t id, uint32_t type_id, uint32_t from_id, uint32_t function_id) {
+record_temporary(uint32_t id, uint32_t type_id, uint32_t from_id, uint32_t function_id) {
   const Definition &type_def = get_definition(type_id);
   const Definition &from_def = get_definition(from_id);
 
   Definition &def = modify_definition(id);
-  def._dtype = DT_local;
+  def._dtype = DT_temporary;
   def._type = type_def._type;
   def._type_id = type_id;
-  def._origin_id = id != from_id ? from_def._origin_id : id;
+  def._origin_id = from_def._origin_id;
   def._function_id = function_id;
 
   nassertv(function_id != 0);

@@ -118,12 +118,12 @@ public:
     DT_none,
     DT_type,
     DT_type_pointer,
-    DT_global,
+    DT_variable,
     DT_constant,
     DT_ext_inst,
     DT_function_parameter,
     DT_function,
-    DT_local,
+    DT_temporary,
     DT_spec_constant,
   };
 
@@ -224,12 +224,12 @@ public:
     void parse_instruction(const Instruction &op, uint32_t &current_function_id);
     void record_type(uint32_t id, const ShaderType *type);
     void record_type_pointer(uint32_t id, spv::StorageClass storage_class, uint32_t type_id);
-    void record_global(uint32_t id, uint32_t type_pointer_id, spv::StorageClass storage_class);
+    void record_variable(uint32_t id, uint32_t type_pointer_id, spv::StorageClass storage_class, uint32_t function_id=0);
     void record_function_parameter(uint32_t id, uint32_t type_id, uint32_t function_id);
     void record_constant(uint32_t id, uint32_t type_id, const uint32_t *words, uint32_t nwords);
     void record_ext_inst_import(uint32_t id, const char *import);
     void record_function(uint32_t id, uint32_t type_id);
-    void record_local(uint32_t id, uint32_t type_id, uint32_t from_id, uint32_t function_id);
+    void record_temporary(uint32_t id, uint32_t type_id, uint32_t from_id, uint32_t function_id);
     void record_spec_constant(uint32_t id, uint32_t type_id);
 
     void mark_used(uint32_t id);
