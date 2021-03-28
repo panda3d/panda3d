@@ -28,6 +28,10 @@ add_component_library(p3glxdisplay SYMBOL BUILDING_PANDA_GLXDISPLAY
   ${P3GLXDISPLAY_HEADERS} ${P3GLXDISPLAY_SOURCES})
 target_link_libraries(p3glxdisplay p3glgsg p3x11display)
 
+if(HAVE_X11)
+  target_compile_definitions(p3glxdisplay PRIVATE USE_X11)
+endif()
+
 if(NOT BUILD_METALIBS)
   install(TARGETS p3glxdisplay EXPORT OpenGL COMPONENT OpenGL DESTINATION ${CMAKE_INSTALL_LIBDIR})
 endif()

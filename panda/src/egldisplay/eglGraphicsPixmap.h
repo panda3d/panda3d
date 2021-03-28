@@ -16,7 +16,7 @@
 
 #include "pandabase.h"
 
-#ifdef HAVE_X11
+#ifdef USE_X11
 
 #include "eglGraphicsPipe.h"
 #include "graphicsBuffer.h"
@@ -69,6 +69,6 @@ private:
   static TypeHandle _type_handle;
 };
 
-#endif  // HAVE_X11
+#endif  // USE_X11
 
 #endif

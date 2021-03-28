@@ -1199,17 +1199,23 @@ class SerialNumGen:
         if start is None:
             start = 0
         self.__counter = start-1
+
     def next(self):
         self.__counter += 1
         return self.__counter
+
+    __next__ = next
 
 class SerialMaskedGen(SerialNumGen):
     def __init__(self, mask, start=None):
         self._mask = mask
         SerialNumGen.__init__(self, start)
+
     def next(self):
         v = SerialNumGen.next(self)
         return v & self._mask
+
+    __next__ = next
 
 _serialGen = SerialNumGen()
 def serialNum():
@@ -2447,6 +2453,7 @@ class AlphabetCounter:
     # object that produces 'A', 'B', 'C', ... 'AA', 'AB', etc.
     def __init__(self):
         self._curCounter = ['A']
+
     def next(self):
         result = ''.join([c for c in self._curCounter])
         index = -1
@@ -2469,6 +2476,8 @@ class AlphabetCounter:
             else:
                 break
         return result
+
+    __next__ = next
 
 if __debug__ and __name__ == '__main__':
     def testAlphabetCounter():

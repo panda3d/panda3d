@@ -34,7 +34,7 @@ def addCircle(attachNode, vertexCount, radius, color = Vec4(1.0, 1.0, 1.0, 1.0),
         centerColor = color
     zFloat = 0.025
     targetCircleShape = getCirclePoints(5 + (vertexCount), 0.0, 0.0, radius)
-    gFormat = GeomVertexFormat.getV3cp()
+    gFormat = GeomVertexFormat.getV3c()
     targetCircleVertexData = GeomVertexData("holds my vertices", gFormat, Geom.UHDynamic)
     targetCircleVertexWriter = GeomVertexWriter(targetCircleVertexData, "vertex")
     targetCircleColorWriter = GeomVertexWriter(targetCircleVertexData, "color")
@@ -79,7 +79,7 @@ def addSquare(attachNode, sizeX, sizeY, color = Vec4(1.0, 1.0, 1.0, 1.0), layer 
     color2 = color
     color3 = color
 
-    gFormat = GeomVertexFormat.getV3n3cpt2()
+    gFormat = GeomVertexFormat.getV3n3ct2()
     boxVertexData = GeomVertexData("vertices", gFormat, Geom.UHDynamic)
 
     boxVertexWriter = GeomVertexWriter(boxVertexData, "vertex")
@@ -147,7 +147,7 @@ def addBox(attachNode, sizeX, sizeY, sizeZ, color = Vec4(1.0, 1.0, 1.0, 1.0), da
         color2 = color * 0.50 #Vec4(0.0, 0.0, 0.0, 1.0)
         color3 = color * 0.25 #Vec4(0.0, 0.0, 0.0, 1.0)
 
-    gFormat = GeomVertexFormat.getV3n3cp()
+    gFormat = GeomVertexFormat.getV3n3c()
     boxVertexData = GeomVertexData("vertices", gFormat, Geom.UHDynamic)
 
     boxVertexWriter = GeomVertexWriter(boxVertexData, "vertex")
@@ -328,7 +328,7 @@ def addArrow(attachNode, sizeX, sizeY, color = Vec4(1.0, 1.0, 1.0, 1.0), layer =
     color2 = color
     color3 = color
 
-    gFormat = GeomVertexFormat.getV3n3cp()
+    gFormat = GeomVertexFormat.getV3n3c()
     boxVertexData = GeomVertexData("vertices", gFormat, Geom.UHDynamic)
 
     boxVertexWriter = GeomVertexWriter(boxVertexData, "vertex")

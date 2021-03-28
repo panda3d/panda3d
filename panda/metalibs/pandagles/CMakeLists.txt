@@ -20,6 +20,12 @@ add_metalib(pandagles ${MODULE_TYPE}
   COMPONENTS p3egldisplay_gles1 p3glesgsg p3glstuff p3x11display)
 unset(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME)
 
+if(HAVE_X11)
+  target_compile_definitions(pandagles PUBLIC USE_X11)
+else()
+  target_compile_definitions(pandagles PRIVATE EGL_NO_X11)
+endif()
+
 install(TARGETS pandagles
   EXPORT OpenGLES1 COMPONENT OpenGLES1
   DESTINATION ${MODULE_DESTINATION}
