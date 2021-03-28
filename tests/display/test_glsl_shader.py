@@ -357,7 +357,7 @@ def test_glsl_uint(gsg):
     run_glsl_test(gsg, code, preamble, inputs)
 
 
-@pytest.mark.xfail(reason="https://github.com/KhronosGroup/SPIRV-Tools/issues/3387")
+#@pytest.mark.xfail(reason="https://github.com/KhronosGroup/SPIRV-Tools/issues/3387")
 def test_glsl_bool(gsg):
     flags = dict(
         flag1=False,

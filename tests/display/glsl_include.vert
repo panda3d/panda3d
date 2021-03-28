@@ -1,4 +1,4 @@
-#version 130
+#version 330
 
 #extension GL_GOOGLE_include_directive : require
 
