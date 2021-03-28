@@ -142,9 +142,9 @@ class TreeNode:
     def popupMenuCommand(self):
         command = self.menuList[self.menuVar.get()]
 
-        if (command == 'Expand All'):
+        if command == 'Expand All':
             self.updateAll(1)
-        elif (command == 'Collapse All'):
+        elif command == 'Collapse All':
             self.updateAll(0)
         else:
             skipUpdate = self.item.MenuCommand(command)
@@ -230,7 +230,7 @@ class TreeNode:
         # Remove unused children
         for key in list(self.children.keys()):
             if key not in self.kidKeys:
-                del(self.children[key])
+                del self.children[key]
 
         for key in self.kidKeys:
             child = self.children[key]
@@ -274,9 +274,9 @@ class TreeNode:
             def compareText(x, y):
                 textX = x.GetText()
                 textY = y.GetText()
-                if (textX > textY):
+                if textX > textY:
                     return 1
-                elif (textX == textY):
+                elif textX == textY:
                     return 0
                 else: # textX < textY
                     return -1
@@ -308,7 +308,7 @@ class TreeNode:
         # Remove unused children
         for key in list(self.children.keys()):
             if key not in self.kidKeys:
-                del(self.children[key])
+                del self.children[key]
         cx = x+20
         cy = y+17
         cylast = 0

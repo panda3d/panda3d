@@ -217,5 +217,3 @@ class TaskManagerWidget(DirectObject):
     def onDestroy(self):
         self.ignore('TaskManager-spawnTask')
         self.ignore('TaskManager-removeTask')
-
-

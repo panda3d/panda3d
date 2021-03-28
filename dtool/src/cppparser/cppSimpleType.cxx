@@ -185,6 +185,10 @@ output(std::ostream &out, int, CPPScope *, bool) const {
     out << "wchar_t";
     break;
 
+  case T_char8_t:
+    out << "char8_t";
+    break;
+
   case T_char16_t:
     out << "char16_t";
     break;

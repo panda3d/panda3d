@@ -1,0 +1,47 @@
+<CoordinateSystem> { Z-Up }
+
+<Comment> {
+  "flt2egg -ps keep dialog_box_gui.flt -o dialog_box_gui.egg"
+}
+<Texture> 0 {
+  "../maps/general_panel.rgba"
+  <Scalar> wrap { repeat }
+  <Scalar> wrapu { repeat }
+  <Scalar> wrapv { repeat }
+  <Scalar> minfilter { nearest }
+  <Scalar> magfilter { nearest }
+  <Scalar> envtype { modulate }
+}
+<VertexPool> vpool {
+  <Vertex> 0 {
+    -0.577176544880644 0 0.554307403338226
+    <UV> { 0 1 }
+    <RGBA> { 1 1 1 1 }
+  }
+  <Vertex> 1 {
+    0.534984304949106 0 0.554307403338226
+    <UV> { 1 1 }
+    <RGBA> { 1 1 1 1 }
+  }
+  <Vertex> 2 {
+    0.534984304949106 0 -0.631771859679054
+    <UV> { 1 0 }
+    <RGBA> { 1 1 1 1 }
+  }
+  <Vertex> 3 {
+    -0.577176544880644 0 -0.631771859679054
+    <UV> { 0 0 }
+    <RGBA> { 1 1 1 1 }
+  }
+}
+<Group> g1 {
+  <Group> g2 {
+    <Group> o1 {
+      <Polygon> {
+        <TRef> { 0 }
+        <BFace> { 1 }
+        <VertexRef> { 0 1 2 3 <Ref> { vpool } }
+      }
+    }
+  }
+}

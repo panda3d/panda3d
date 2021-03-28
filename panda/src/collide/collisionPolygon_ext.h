@@ -35,7 +35,7 @@ public:
   void setup_points(PyObject *points);
 
 private:
-  static pvector<LPoint3> convert_points(PyObject *points);
+  static bool convert_points(pvector<LPoint3> &vec, PyObject *points);
 };
 
 #endif  // HAVE_PYTHON

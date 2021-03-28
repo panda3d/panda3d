@@ -60,7 +60,8 @@ class DirectEntryScroll(DirectFrame):
         detaches and unbinds the entry from the scroll frame and its
         events. You'll be responsible for destroying it.
         """
-        if self.entry is None: return
+        if self.entry is None:
+            return
         self.entry.unbind(DGG.CURSORMOVE)
         self.entry.detachNode()
         self.entry = None
@@ -136,4 +137,3 @@ class DirectEntryScroll(DirectFrame):
 
     def resetCanvas(self):
         self.canvas.setPos(0,0,0)
-

@@ -54,6 +54,7 @@ extern EXPCL_PANDA_GOBJ ConfigVariableBool cache_generated_shaders;
 extern EXPCL_PANDA_GOBJ ConfigVariableBool vertices_float64;
 extern EXPCL_PANDA_GOBJ ConfigVariableInt vertex_column_alignment;
 extern EXPCL_PANDA_GOBJ ConfigVariableBool vertex_animation_align_16;
+extern EXPCL_PANDA_GOBJ ConfigVariableBool vertex_colors_prefer_packed;
 
 extern EXPCL_PANDA_GOBJ ConfigVariableEnum<AutoTextureScale> textures_power_2;
 extern EXPCL_PANDA_GOBJ ConfigVariableEnum<AutoTextureScale> textures_square;

@@ -7,6 +7,7 @@ from direct.directnotify import DirectNotifyGlobal
 from . import ClassicFSM
 from . import State
 from direct.task import Task
+from direct.task.TaskManagerGlobal import taskMgr
 
 
 class FourStateAI:
@@ -268,4 +269,3 @@ class FourStateAI:
             """for debugging"""
             return self.notify.debug("%d (%d) %s"%(
                     id(self), self.stateIndex==4, message))
-

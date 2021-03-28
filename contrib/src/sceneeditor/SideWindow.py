@@ -7,14 +7,9 @@ from direct.tkwidgets.VectorWidgets import ColorEntry
 from direct.showbase.TkGlobal import spawnTkLoop
 import seSceneGraphExplorer
 
-import Pmw, sys
-
-if sys.version_info >= (3, 0):
-    from tkinter import Frame, IntVar, Checkbutton, Toplevel
-    import tkinter
-else:
-    from Tkinter import Frame, IntVar, Checkbutton, Toplevel
-    import Tkinter as tkinter
+import Pmw
+from tkinter import Frame, IntVar, Checkbutton, Toplevel
+import tkinter
 
 
 class sideWindow(AppShell):

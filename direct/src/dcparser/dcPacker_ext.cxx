@@ -309,7 +309,7 @@ unpack_class_object(const DCClass *dclass) {
   if (!dclass->has_constructor()) {
     // If the class uses a default constructor, go ahead and create the Python
     // object for it now.
-    object = PyObject_CallObject(class_def, nullptr);
+    object = PyObject_CallNoArgs(class_def);
     if (object == nullptr) {
       return nullptr;
     }

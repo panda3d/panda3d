@@ -11,6 +11,7 @@ from direct.showbase import ShowBaseGlobal
 from . import DirectGuiGlobals as DGG
 from direct.directnotify import DirectNotifyGlobal
 from direct.task.Task import Task
+from direct.task.TaskManagerGlobal import taskMgr
 from .DirectFrame import *
 from .DirectButton import *
 
@@ -159,9 +160,9 @@ class DirectScrolledList(DirectFrame):
     def selectListItem(self, item):
         assert self.notify.debugStateCall(self)
         if hasattr(self, "currentSelected"):
-            self.currentSelected['state']=DGG.NORMAL
-        item['state']=DGG.DISABLED
-        self.currentSelected=item
+            self.currentSelected['state'] = DGG.NORMAL
+        item['state'] = DGG.DISABLED
+        self.currentSelected = item
 
     def scrollBy(self, delta):
         assert self.notify.debugStateCall(self)
@@ -181,7 +182,7 @@ class DirectScrolledList(DirectFrame):
             return 0
 
         for i in range(len(self["items"])):
-            if(self["items"][i].itemID == itemID):
+            if self["items"][i].itemID == itemID:
                 return i
         self.notify.warning("getItemIndexForItemID: item not found!")
         return 0
@@ -203,27 +204,27 @@ class DirectScrolledList(DirectFrame):
 
         numItemsVisible = self["numItemsVisible"]
         numItemsTotal = len(self["items"])
-        if(centered):
+        if centered:
             self.index = index - (numItemsVisible // 2)
         else:
             self.index = index
 
         # Not enough items to even worry about scrolling,
         # just disable the buttons and do nothing
-        if (len(self["items"]) <= numItemsVisible):
+        if len(self["items"]) <= numItemsVisible:
             self.incButton['state'] = DGG.DISABLED
             self.decButton['state'] = DGG.DISABLED
             # Hmm.. just reset self.index to 0 and bail out
             self.index = 0
             ret = 0
         else:
-            if (self.index <= 0):
+            if self.index <= 0:
                 self.index = 0
                 #print "at list start, ", len(self["items"]),"  ", self["numItemsVisible"]
                 self.decButton['state'] = DGG.DISABLED
                 self.incButton['state'] = DGG.NORMAL
                 ret = 0
-            elif (self.index >= (numItemsTotal - numItemsVisible)):
+            elif self.index >= (numItemsTotal - numItemsVisible):
                 self.index = numItemsTotal - numItemsVisible
                 #print "at list end, ", len(self["items"]),"  ", self["numItemsVisible"]
                 self.incButton['state'] = DGG.DISABLED
@@ -231,7 +232,7 @@ class DirectScrolledList(DirectFrame):
                 ret = 0
             else:
                 # deal with an edge condition - make sure any tasks are removed from the disabled arrows.
-                if (self.incButton['state'] == DGG.DISABLED) or (self.decButton['state'] == DGG.DISABLED):
+                if self.incButton['state'] == DGG.DISABLED or self.decButton['state'] == DGG.DISABLED:
                     #print "leaving list start/end, ", len(self["items"]),"  ", self["numItemsVisible"]
                     self.__buttonUp(0)
                 self.incButton['state'] = DGG.NORMAL
@@ -300,7 +301,7 @@ class DirectScrolledList(DirectFrame):
 
     def __scrollByTask(self, task):
         assert self.notify.debugStateCall(self)
-        if ((task.time - task.prevTime) < task.delayTime):
+        if (task.time - task.prevTime) < task.delayTime:
             return Task.cont
         else:
             ret = self.scrollBy(task.delta)
@@ -388,7 +389,7 @@ class DirectScrolledList(DirectFrame):
         if item in self["items"]:
             if hasattr(self, "currentSelected") and self.currentSelected is item:
                 del self.currentSelected
-            if (hasattr(item, 'destroy') and hasattr(item.destroy, '__call__')):
+            if hasattr(item, 'destroy') and hasattr(item.destroy, '__call__'):
                 item.destroy()
             self["items"].remove(item)
             if not isinstance(item, str):
@@ -407,7 +408,7 @@ class DirectScrolledList(DirectFrame):
         retval = 0
         #print "remove item called", item
         #print "items list", self['items']
-        while len (self["items"]):
+        while len(self["items"]) > 0:
             item = self['items'][0]
             #print "removing item", item
             if hasattr(self, "currentSelected") and self.currentSelected is item:
@@ -419,7 +420,7 @@ class DirectScrolledList(DirectFrame):
                 item.removeNode()
             retval = 1
 
-        if (refresh):
+        if refresh:
             self.refresh()
 
         return retval
@@ -431,11 +432,11 @@ class DirectScrolledList(DirectFrame):
         """
         assert self.notify.debugStateCall(self)
         retval = 0
-        while len (self["items"]):
+        while len(self["items"]) > 0:
             item = self['items'][0]
             if hasattr(self, "currentSelected") and self.currentSelected is item:
                 del self.currentSelected
-            if (hasattr(item, 'destroy') and hasattr(item.destroy, '__call__')):
+            if hasattr(item, 'destroy') and hasattr(item.destroy, '__call__'):
                 item.destroy()
             self["items"].remove(item)
             if not isinstance(item, str):
@@ -443,7 +444,7 @@ class DirectScrolledList(DirectFrame):
                 #item.reparentTo(ShowBaseGlobal.hidden)
                 item.removeNode()
             retval = 1
-        if (refresh):
+        if refresh:
             self.refresh()
         return retval
 
@@ -464,9 +465,9 @@ class DirectScrolledList(DirectFrame):
     def getSelectedText(self):
         assert self.notify.debugStateCall(self)
         if isinstance(self['items'][self.index], str):
-          return self['items'][self.index]
+            return self['items'][self.index]
         else:
-          return self['items'][self.index]['text']
+            return self['items'][self.index]['text']
 
     def setIncButtonCallback(self):
         assert self.notify.debugStateCall(self)
@@ -477,54 +478,52 @@ class DirectScrolledList(DirectFrame):
         self.__decButtonCallback = self["decButtonCallback"]
 
 
-"""
-from DirectGui import *
-
-def makeButton(itemName, itemNum, *extraArgs):
-    def buttonCommand():
-        print itemName, itemNum
-    return DirectButton(text = itemName,
-                        relief = DGG.RAISED,
-                        frameSize = (-3.5, 3.5, -0.2, 0.8),
-                        scale = 0.85,
-                        command = buttonCommand)
-
-s = scrollList = DirectScrolledList(
-    parent = aspect2d,
-    relief = None,
-    # Use the default dialog box image as the background
-    image = DGG.getDefaultDialogGeom(),
-    # Scale it to fit around everyting
-    image_scale = (0.7, 1, .8),
-    # Give it a label
-    text = "Scrolled List Example",
-    text_scale = 0.06,
-    text_align = TextNode.ACenter,
-    text_pos = (0, 0.3),
-    text_fg = (0, 0, 0, 1),
-    # inc and dec are DirectButtons
-    # They can contain a combination of text, geometry and images
-    # Just a simple text one for now
-    incButton_text = 'Increment',
-    incButton_relief = DGG.RAISED,
-    incButton_pos = (0.0, 0.0, -0.36),
-    incButton_scale = 0.1,
-    # Same for the decrement button
-    decButton_text = 'Decrement',
-    decButton_relief = DGG.RAISED,
-    decButton_pos = (0.0, 0.0, 0.175),
-    decButton_scale = 0.1,
-    # each item is a button with text on it
-    numItemsVisible = 4,
-    itemMakeFunction = makeButton,
-    items = ['Able', 'Baker', 'Charlie', 'Delta', 'Echo', 'Foxtrot',
-             'Golf', 'Hotel', 'India', 'Juliet', 'Kilo', 'Lima'],
-    # itemFrame is a DirectFrame
-    # Use it to scale up or down the items and to place it relative
-    # to eveything else
-    itemFrame_pos = (0, 0, 0.06),
-    itemFrame_scale = 0.1,
-    itemFrame_frameSize = (-3.1, 3.1, -3.3, 0.8),
-    itemFrame_relief = DGG.GROOVE,
-    )
-"""
+#from DirectGui import *
+#
+#def makeButton(itemName, itemNum, *extraArgs):
+#    def buttonCommand():
+#        print itemName, itemNum
+#    return DirectButton(text = itemName,
+#                        relief = DGG.RAISED,
+#                        frameSize = (-3.5, 3.5, -0.2, 0.8),
+#                        scale = 0.85,
+#                        command = buttonCommand)
+#
+#s = scrollList = DirectScrolledList(
+#    parent = aspect2d,
+#    relief = None,
+#    # Use the default dialog box image as the background
+#    image = DGG.getDefaultDialogGeom(),
+#    # Scale it to fit around everyting
+#    image_scale = (0.7, 1, .8),
+#    # Give it a label
+#    text = "Scrolled List Example",
+#    text_scale = 0.06,
+#    text_align = TextNode.ACenter,
+#    text_pos = (0, 0.3),
+#    text_fg = (0, 0, 0, 1),
+#    # inc and dec are DirectButtons
+#    # They can contain a combination of text, geometry and images
+#    # Just a simple text one for now
+#    incButton_text = 'Increment',
+#    incButton_relief = DGG.RAISED,
+#    incButton_pos = (0.0, 0.0, -0.36),
+#    incButton_scale = 0.1,
+#    # Same for the decrement button
+#    decButton_text = 'Decrement',
+#    decButton_relief = DGG.RAISED,
+#    decButton_pos = (0.0, 0.0, 0.175),
+#    decButton_scale = 0.1,
+#    # each item is a button with text on it
+#    numItemsVisible = 4,
+#    itemMakeFunction = makeButton,
+#    items = ['Able', 'Baker', 'Charlie', 'Delta', 'Echo', 'Foxtrot',
+#             'Golf', 'Hotel', 'India', 'Juliet', 'Kilo', 'Lima'],
+#    # itemFrame is a DirectFrame
+#    # Use it to scale up or down the items and to place it relative
+#    # to eveything else
+#    itemFrame_pos = (0, 0, 0.06),
+#    itemFrame_scale = 0.1,
+#    itemFrame_frameSize = (-3.1, 3.1, -3.3, 0.8),
+#    itemFrame_relief = DGG.GROOVE,
+#    )

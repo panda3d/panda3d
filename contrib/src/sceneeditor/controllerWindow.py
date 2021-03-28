@@ -4,14 +4,9 @@
 #################################################################
 
 from direct.tkwidgets.AppShell import AppShell
-import sys, Pmw
-
-if sys.version_info >= (3, 0):
-    from tkinter import Frame, Label, Button
-    import tkinter
-else:
-    from Tkinter import Frame, Label, Button
-    import Tkinter as tkinter
+import Pmw
+from tkinter import Frame, Label, Button
+import tkinter
 
 # Define the Category
 KEYBOARD = 'Keyboard-'

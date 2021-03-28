@@ -59,6 +59,7 @@ PUBLISHED:
   INLINE bool needs_repack() const;
 
   INLINE time_t get_timestamp() const;
+  INLINE void set_timestamp(time_t timestamp);
 
   INLINE void set_record_timestamp(bool record_timestamp);
   INLINE bool get_record_timestamp() const;

@@ -49,6 +49,8 @@ PUBLISHED:
   INLINE std::string get_word(size_t n) const;
   INLINE void set_word(size_t n, const std::string &value);
 
+  INLINE bool __bool__() const;
+
 private:
   void reload_cache();
 

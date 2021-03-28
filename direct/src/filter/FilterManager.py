@@ -56,7 +56,7 @@ class FilterManager(DirectObject):
 
         if region is None:
             self.notify.error('Could not find appropriate DisplayRegion to filter')
-            return False
+            return
 
         # Instance Variables.
 
@@ -72,19 +72,19 @@ class FilterManager(DirectObject):
         self.camstate = self.caminit
         self.buffers = []
         self.sizes = []
-        self.nextsort = self.win.getSort() - 1000
+        self.nextsort = self.win.getSort() - 9
         self.basex = 0
         self.basey = 0
         self.accept("window-event", self.windowEvent)
 
 
-    def getClears(self,region):
+    def getClears(self, region):
         clears = []
         for i in range(GraphicsOutput.RTPCOUNT):
             clears.append((region.getClearActive(i), region.getClearValue(i)))
         return clears
 
-    def setClears(self,region,clears):
+    def setClears(self, region, clears):
         for i in range(GraphicsOutput.RTPCOUNT):
             (active, value) = clears[i]
             region.setClearActive(i, active)
@@ -94,7 +94,7 @@ class FilterManager(DirectObject):
         clears = []
         for i in range(GraphicsOutput.RTPCOUNT):
             (active, value) = clears0[i]
-            if (active == 0):
+            if not active:
                 (active, value) = clears1[i]
             region.setClearActive(i, active)
             region.setClearValue(i, value)
@@ -107,13 +107,14 @@ class FilterManager(DirectObject):
                 (self.region.getTop()    == 1.0))
 
     def getScaledSize(self, mul, div, align):
-
         """ Calculate the size of the desired window. Not public. """
 
         winx = self.forcex
         winy = self.forcey
-        if winx == 0: winx = self.win.getXSize()
-        if winy == 0: winy = self.win.getYSize()
+        if winx == 0:
+            winx = self.win.getXSize()
+        if winy == 0:
+            winy = self.win.getYSize()
 
         if div != 1:
             winx = ((winx+align-1) // align) * align
@@ -168,7 +169,7 @@ class FilterManager(DirectObject):
         scene.  It is assumed that the user will replace the shader
         on the quad with a more interesting filter. """
 
-        if (textures):
+        if textures:
             colortex = textures.get("color", None)
             depthtex = textures.get("depth", None)
             auxtex = textures.get("aux", None)
@@ -178,7 +179,7 @@ class FilterManager(DirectObject):
             auxtex0 = auxtex
             auxtex1 = None
 
-        if (colortex == None):
+        if colortex is None:
             colortex = Texture("filter-base-color")
             colortex.setWrapU(Texture.WMClamp)
             colortex.setWrapV(Texture.WMClamp)
@@ -193,7 +194,7 @@ class FilterManager(DirectObject):
         else:
             buffer = self.createBuffer("filter-base", winx, winy, texgroup)
 
-        if (buffer == None):
+        if buffer is None:
             return None
 
         cm = CardMaker("filter-base-quad")
@@ -208,7 +209,7 @@ class FilterManager(DirectObject):
         cs.setState(self.camstate)
         # Do we really need to turn on the Shader Generator?
         #cs.setShaderAuto()
-        if (auxbits):
+        if auxbits:
             cs.setAttrib(AuxBitplaneAttrib.make(auxbits))
         if clamping is False:
             # Disables clamping in the shader generator.
@@ -226,13 +227,13 @@ class FilterManager(DirectObject):
         self.region.setCamera(quadcam)
 
         self.setStackedClears(buffer, self.rclears, self.wclears)
-        if (auxtex0):
+        if auxtex0:
             buffer.setClearActive(GraphicsOutput.RTPAuxRgba0, 1)
             buffer.setClearValue(GraphicsOutput.RTPAuxRgba0, (0.5, 0.5, 1.0, 0.0))
-        if (auxtex1):
+        if auxtex1:
             buffer.setClearActive(GraphicsOutput.RTPAuxRgba1, 1)
         self.region.disableClears()
-        if (self.isFullscreen()):
+        if self.isFullscreen():
             self.win.disableClears()
 
         dr = buffer.makeDisplayRegion()
@@ -257,14 +258,14 @@ class FilterManager(DirectObject):
 
         winx, winy = self.getScaledSize(mul, div, align)
 
-        depthbits = bool(depthtex != None)
+        depthbits = int(depthtex is not None)
 
         if fbprops is not None:
             buffer = self.createBuffer(name, winx, winy, texgroup, depthbits, fbprops=fbprops)
         else:
             buffer = self.createBuffer(name, winx, winy, texgroup, depthbits)
 
-        if (buffer == None):
+        if buffer is None:
             return None
 
         cm = CardMaker("filter-stage-quad")
@@ -299,7 +300,7 @@ class FilterManager(DirectObject):
 
         return quad
 
-    def createBuffer(self, name, xsize, ysize, texgroup, depthbits=1, fbprops=None):
+    def createBuffer(self, name, xsize, ysize, texgroup, depthbits=True, fbprops=None):
         """ Low-level buffer creation.  Not intended for public use. """
 
         winprops = WindowProperties()
@@ -307,29 +308,34 @@ class FilterManager(DirectObject):
         props = FrameBufferProperties(FrameBufferProperties.getDefault())
         props.setBackBuffers(0)
         props.setRgbColor(1)
-        props.setDepthBits(depthbits)
+        if depthbits is True:
+            # Respect depth-bits from Config.prc
+            if props.getDepthBits() == 0:
+                props.setDepthBits(1)
+        else:
+            props.setDepthBits(depthbits)
         props.setStereo(self.win.isStereo())
         if fbprops is not None:
             props.addProperties(fbprops)
 
         depthtex, colortex, auxtex0, auxtex1 = texgroup
-        if (auxtex0 != None):
+        if auxtex0 is not None:
             props.setAuxRgba(1)
-        if (auxtex1 != None):
+        if auxtex1 is not None:
             props.setAuxRgba(2)
         buffer=base.graphicsEngine.makeOutput(
             self.win.getPipe(), name, -1,
             props, winprops, GraphicsPipe.BFRefuseWindow | GraphicsPipe.BFResizeable,
             self.win.getGsg(), self.win)
-        if (buffer == None):
+        if buffer is None:
             return buffer
-        if (depthtex):
+        if depthtex:
             buffer.addRenderTexture(depthtex, GraphicsOutput.RTMBindOrCopy, GraphicsOutput.RTPDepth)
-        if (colortex):
+        if colortex:
             buffer.addRenderTexture(colortex, GraphicsOutput.RTMBindOrCopy, GraphicsOutput.RTPColor)
-        if (auxtex0):
+        if auxtex0:
             buffer.addRenderTexture(auxtex0, GraphicsOutput.RTMBindOrCopy, GraphicsOutput.RTPAuxRgba0)
-        if (auxtex1):
+        if auxtex1:
             buffer.addRenderTexture(auxtex1, GraphicsOutput.RTMBindOrCopy, GraphicsOutput.RTPAuxRgba1)
         buffer.setSort(self.nextsort)
         buffer.disableClears()
@@ -361,7 +367,7 @@ class FilterManager(DirectObject):
         self.camstate = self.caminit
         self.camera.node().setInitialState(self.caminit)
         self.region.setCamera(self.camera)
-        self.nextsort = self.win.getSort() - 1000
+        self.nextsort = self.win.getSort() - 9
         self.basex = 0
         self.basey = 0
 

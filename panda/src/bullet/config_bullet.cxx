@@ -189,6 +189,7 @@ init_libbullet() {
   BulletDebugNode::register_with_read_factory();
   BulletPlaneShape::register_with_read_factory();
   BulletRigidBodyNode::register_with_read_factory();
+  BulletGhostNode::register_with_read_factory();
   BulletSphereShape::register_with_read_factory();
   BulletTriangleMesh::register_with_read_factory();
   BulletTriangleMeshShape::register_with_read_factory();

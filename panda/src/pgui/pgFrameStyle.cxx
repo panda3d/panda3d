@@ -337,9 +337,9 @@ generate_bevel_geom(const LVecBase4 &frame, bool in) {
 
   CPT(GeomVertexFormat) format;
   if (has_texture()) {
-    format = GeomVertexFormat::get_v3cpt2();
+    format = GeomVertexFormat::get_v3ct2();
   } else {
-    format = GeomVertexFormat::get_v3cp();
+    format = GeomVertexFormat::get_v3c();
   }
 
   PT(GeomVertexData) vdata = new GeomVertexData
@@ -528,9 +528,9 @@ generate_groove_geom(const LVecBase4 &frame, bool in) {
 
   CPT(GeomVertexFormat) format;
   if (has_texture()) {
-    format = GeomVertexFormat::get_v3cpt2();
+    format = GeomVertexFormat::get_v3ct2();
   } else {
-    format = GeomVertexFormat::get_v3cp();
+    format = GeomVertexFormat::get_v3c();
   }
   PT(GeomVertexData) vdata = new GeomVertexData
     ("PGFrame", format, Geom::UH_static);

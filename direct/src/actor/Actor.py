@@ -11,7 +11,7 @@ from panda3d.core import Loader as PandaLoader
 from direct.showbase.DirectObject import DirectObject
 from direct.showbase.Loader import Loader
 from direct.directnotify import DirectNotifyGlobal
-
+import warnings
 
 class Actor(DirectObject, NodePath):
     """
@@ -163,11 +163,10 @@ class Actor(DirectObject, NodePath):
             #the actor for a few frames, otherwise it has no effect
             a.fixBounds()
         """
-        try:
-            self.Actor_initialized
+        if hasattr(self, 'Actor_initialized'):
             return
-        except:
-            self.Actor_initialized = 1
+
+        self.Actor_initialized = 1
 
         # initialize our NodePath essence
         NodePath.__init__(self)
@@ -252,9 +251,9 @@ class Actor(DirectObject, NodePath):
             # make sure we have models
             if models:
                 # do we have a dictionary of models?
-                if type(models) == dict:
+                if isinstance(models, dict):
                     # if this is a dictionary of dictionaries
-                    if type(models[next(iter(models))]) == dict:
+                    if isinstance(models[next(iter(models))], dict):
                         # then it must be a multipart actor w/LOD
                         self.setLODNode(node = lodNode)
                         # preserve numerical order for lod's
@@ -271,7 +270,7 @@ class Actor(DirectObject, NodePath):
                                                modelName, lodName, copy = copy,
                                                okMissing = okMissing)
                     # then if there is a dictionary of dictionaries of anims
-                    elif type(anims[next(iter(anims))]) == dict:
+                    elif isinstance(anims[next(iter(anims))], dict):
                         # then this is a multipart actor w/o LOD
                         for partName in models:
                             # pass in each part
@@ -297,10 +296,10 @@ class Actor(DirectObject, NodePath):
             if anims:
                 if len(anims) >= 1:
                     # if so, does it have a dictionary of dictionaries?
-                    if type(anims[next(iter(anims))]) == dict:
+                    if isinstance(anims[next(iter(anims))], dict):
                         # are the models a dict of dicts too?
-                        if type(models) == dict:
-                            if type(models[next(iter(models))]) == dict:
+                        if isinstance(models, dict):
+                            if isinstance(models[next(iter(models))], dict):
                                 # then we have a multi-part w/ LOD
                                 sortedKeys = list(models.keys())
                                 sortedKeys.sort()
@@ -313,7 +312,7 @@ class Actor(DirectObject, NodePath):
                                 # then it must be multi-part w/o LOD
                                 for partName in anims:
                                     self.loadAnims(anims[partName], partName)
-                    elif type(models) == dict:
+                    elif isinstance(models, dict):
                         # then we have single-part w/ LOD
                         sortedKeys = list(models.keys())
                         sortedKeys.sort()
@@ -344,50 +343,46 @@ class Actor(DirectObject, NodePath):
             self.__geomNode.node().setFinal(1)
 
     def delete(self):
-        try:
-            self.Actor_deleted
-            return
-        except:
+        if not hasattr(self, 'Actor_deleted'):
             self.Actor_deleted = 1
             self.cleanup()
 
     def copyActor(self, other, overwrite=False):
-            # act like a copy constructor
-            self.gotName = other.gotName
+        # act like a copy constructor
+        self.gotName = other.gotName
 
-            # copy the scene graph elements of other
-            if overwrite:
-                otherCopy = other.copyTo(NodePath())
-                otherCopy.detachNode()
-                # assign these elements to ourselve (overwrite)
-                self.assign(otherCopy)
-            else:
-                # just copy these to ourselves
-                otherCopy = other.copyTo(self)
-            # masad: check if otherCopy has a geomNode as its first child
-            # if actor is initialized with flattenable, then otherCopy, not
-            # its first child, is the geom node; check __init__, for reference
-            if other.getGeomNode().getName() == other.getName():
-                self.setGeomNode(otherCopy)
-            else:
-                self.setGeomNode(otherCopy.getChild(0))
+        # copy the scene graph elements of other
+        if overwrite:
+            otherCopy = other.copyTo(NodePath())
+            otherCopy.detachNode()
+            # assign these elements to ourselve (overwrite)
+            self.assign(otherCopy)
+        else:
+            # just copy these to ourselves
+            otherCopy = other.copyTo(self)
+        # masad: check if otherCopy has a geomNode as its first child
+        # if actor is initialized with flattenable, then otherCopy, not
+        # its first child, is the geom node; check __init__, for reference
+        if other.getGeomNode().getName() == other.getName():
+            self.setGeomNode(otherCopy)
+        else:
+            self.setGeomNode(otherCopy.getChild(0))
 
-            # copy the switches for lods
-            self.switches = other.switches
-            self.__LODNode = self.find('**/+LODNode')
-            self.__hasLOD = 0
-            if not self.__LODNode.isEmpty():
-                self.__hasLOD = 1
+        # copy the switches for lods
+        self.switches = other.switches
+        self.__LODNode = self.find('**/+LODNode')
+        self.__hasLOD = 0
+        if not self.__LODNode.isEmpty():
+            self.__hasLOD = 1
 
 
-            # copy the part dictionary from other
-            self.__copyPartBundles(other)
-            self.__copySubpartDict(other)
-            self.__subpartsComplete = other.__subpartsComplete
+        # copy the part dictionary from other
+        self.__copyPartBundles(other)
+        self.__copySubpartDict(other)
+        self.__subpartsComplete = other.__subpartsComplete
 
-            # copy the anim dictionary from other
-            self.__copyAnimControls(other)
-
+        # copy the anim dictionary from other
+        self.__copyAnimControls(other)
 
     def __cmp__(self, other):
         # Actor inherits from NodePath, which inherits a definition of
@@ -514,7 +509,7 @@ class Actor(DirectObject, NodePath):
         self.stop(None)
         self.clearPythonData()
         self.flush()
-        if(self.__geomNode):
+        if self.__geomNode:
             self.__geomNode.removeNode()
             self.__geomNode = None
         if not self.isEmpty():
@@ -597,12 +592,10 @@ class Actor(DirectObject, NodePath):
                         'l':1,
                         'f':0}
 
-                """
-                sx = smap.get(x[0], None)
-
-                if sx is None:
-                    self.notify.error('Invalid lodName: %s' % x)
-                """
+                #sx = smap.get(x[0], None)
+                #
+                #if sx is None:
+                #    self.notify.error('Invalid lodName: %s' % x)
                 return smap[x[0]]
             else:
                 return int(x)
@@ -1471,7 +1464,7 @@ class Actor(DirectObject, NodePath):
             #iterate through for a specific part
             for lodData in self.__partBundleDict.values():
                 partData = lodData.get(partName)
-                if(partData):
+                if partData:
                     char = partData.partBundleNP
                     char.node().update()
                     geomNodes = char.findAllMatches("**/+GeomNode")
@@ -1659,6 +1652,8 @@ class Actor(DirectObject, NodePath):
 
         This method is deprecated.  You should use setBlend() instead.
         """
+        if __debug__:
+            warnings.warn("This method is deprecated.  You should use setBlend() instead.", DeprecationWarning, stacklevel=2)
         self.setBlend(animBlend = True, blendType = blendType, partName = partName)
 
     def disableBlend(self, partName = None):
@@ -1668,6 +1663,8 @@ class Actor(DirectObject, NodePath):
 
         This method is deprecated.  You should use setBlend() instead.
         """
+        if __debug__:
+            warnings.warn("This method is deprecated.  You should use setBlend() instead.", DeprecationWarning, stacklevel=2)
         self.setBlend(animBlend = False, partName = partName)
 
     def setControlEffect(self, animName, effect,
@@ -1693,10 +1690,19 @@ class Actor(DirectObject, NodePath):
         else:
             lodName = 'lodRoot'
 
-        try:
-            return self.__animControlDict[lodName][partName][animName].filename
-        except:
+        partDict = self.__animControlDict.get(lodName)
+        if partDict is None:
             return None
+
+        animDict = partDict.get(partName)
+        if animDict is None:
+            return None
+
+        anim = animDict.get(animName)
+        if anim is None:
+            return None
+
+        return anim.filename
 
     def getAnimControl(self, animName, partName=None, lodName=None,
                        allowAsyncBind = True):
@@ -1731,7 +1737,6 @@ class Actor(DirectObject, NodePath):
             if anim is None:
                 # anim was not present
                 assert Actor.notify.debug("couldn't find anim: %s" % (animName))
-                pass
             else:
                 # bind the animation first if we need to
                 if not anim.animControl:
@@ -1852,7 +1857,6 @@ class Actor(DirectObject, NodePath):
                         if anim is None:
                             # anim was not present
                             assert Actor.notify.debug("couldn't find anim: %s" % (animName))
-                            pass
                         else:
                             # bind the animation first if we need to
                             animControl = anim.animControl
@@ -1987,7 +1991,7 @@ class Actor(DirectObject, NodePath):
 
         node = bundleNP.node()
         # A model loaded from disk will always have just one bundle.
-        assert(node.getNumBundles() == 1)
+        assert node.getNumBundles() == 1
         bundleHandle = node.getBundleHandle(0)
 
         if self.mergeLODBundles:
@@ -2003,7 +2007,7 @@ class Actor(DirectObject, NodePath):
         bundleDict[partName] = Actor.PartDef(bundleNP, bundleHandle, partModel)
 
 
-    def makeSubpart(self, partName, includeJoints, excludeJoints = [],
+    def makeSubpart(self, partName, includeJoints, excludeJoints = (),
                     parent="modelRoot", overlapping = False):
 
         """Defines a new "part" of the Actor that corresponds to the
@@ -2128,10 +2132,7 @@ class Actor(DirectObject, NodePath):
             lodNames = ['common']
         elif lodName == 'all':
             reload = False
-            lodNames = list(self.switches.keys())
-            lodNames.sort()
-            for i in range(0, len(lodNames)):
-                lodNames[i] = str(lodNames[i])
+            lodNames = list(map(str, sorted(self.switches.keys())))
         else:
             lodNames = [lodName]
 
@@ -2140,11 +2141,10 @@ class Actor(DirectObject, NodePath):
 
         firstLoad = True
         if not reload:
-            try:
-                self.__animControlDict[lodNames[0]][partName]
+            if lodNames[0] in self.__animControlDict and \
+               partName in self.__animControlDict[lodNames[0]]:
                 firstLoad = False
-            except:
-                pass
+
         for lName in lodNames:
             if firstLoad:
                 self.__animControlDict.setdefault(lName, {})
@@ -2438,7 +2438,7 @@ class Actor(DirectObject, NodePath):
         bundles in our part bundle dict that have matching names, and
         store the resulting anim controls in our own part bundle dict"""
 
-        assert(other.mergeLODBundles == self.mergeLODBundles)
+        assert other.mergeLODBundles == self.mergeLODBundles
 
         for lodName in other.__animControlDict:
             self.__animControlDict[lodName] = {}
@@ -2509,11 +2509,10 @@ class Actor(DirectObject, NodePath):
         for lodName, animList in self.getAnimBlends(animName, partName, lodName):
             print('LOD %s:' % (lodName))
             for animName, blendList in animList:
-
-                list = []
+                strings = []
                 for partName, effect in blendList:
-                    list.append('%s:%.3f' % (partName, effect))
-                print('  %s: %s' % (animName, ', '.join(list)))
+                    strings.append('%s:%.3f' % (partName, effect))
+                print('  %s: %s' % (animName, ', '.join(strings)))
 
     def osdAnimBlends(self, animName=None, partName=None, lodName=None):
         if not onScreenDebug.enabled:

@@ -18,6 +18,7 @@
 #include "cullPlanes.h"
 
 TypeHandle InstancedNode::_type_handle;
+TypeHandle InstancedNode::CData::_type_handle;
 
 /**
  *

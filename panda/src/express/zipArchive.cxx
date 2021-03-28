@@ -1222,11 +1222,14 @@ read_index() {
   // Seek backwards until we have found the the end-of-directory record.
   StreamReader reader(read, false);
   while (comment_length <= 0xffff && fpos >= 20) {
+    //nassertr(fpos == read->tellg(), false);
+
     if (reader.get_uint16() == comment_length) {
       // This field references the distance to the end of the .zip file, so it
       // could be the comment length field at the end of the record.  Skip to the
       // beginning of the record to see if the signature matches.
       read->seekg(-22, std::ios::cur);
+
       if (reader.get_uint32() == 0x06054b50) {
         // Yes, got it.
         eocd_offset = read->tellg() - (std::streamoff)4;
@@ -1242,10 +1245,16 @@ read_index() {
         found = true;
         break;
       }
+
+      // No, skip back to where we were and continue scanning for comments.
+      comment_length += 2;
+      read->seekg(22 - 4 - 4, std::ios::cur);
+      fpos -= 2;
+      continue;
     }
 
     comment_length += 2;
-    read->seekg(-2, std::ios::cur);
+    read->seekg(-4, std::ios::cur);
     fpos -= 2;
   }
 

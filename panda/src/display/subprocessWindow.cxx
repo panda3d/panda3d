@@ -27,7 +27,7 @@ TypeHandle SubprocessWindow::_type_handle;
 
 /**
  * Normally, the SubprocessWindow constructor is not called directly; these
- * are created instead via the GraphicsEngine::make_window() function.
+ * are created instead via the GraphicsEngine::make_output() function.
  */
 SubprocessWindow::
 SubprocessWindow(GraphicsEngine *engine, GraphicsPipe *pipe,

@@ -1316,7 +1316,6 @@ bind_parameter(const Parameter &param) {
 //#endif
 //          cp_add_mat_spec(bind);
 //        }
-        return true;
       }
       else {
         return report_parameter_error(name, type, "unrecognized matrix name");
@@ -1328,23 +1327,67 @@ bind_parameter(const Parameter &param) {
     if (pieces[1].compare(0, 7, "Texture") == 0) {
       ShaderTexSpec bind;
       bind._id = param;
-      bind._part = STO_stage_i;
-      bind._name = 0;
 
-      const ::ShaderType::SampledImage *sampled_image_type = type->as_sampled_image();
+      const ::ShaderType *element_type;
+      uint32_t num_elements;
+      type->unwrap_array(element_type, num_elements);
+
+      const ::ShaderType::SampledImage *sampled_image_type = element_type->as_sampled_image();
       if (sampled_image_type == nullptr) {
         return report_parameter_error(name, type, "expected sampled image");
       }
       bind._desired_type = sampled_image_type->get_texture_type();
 
-      std::string tail;
-      bind._stage = string_to_int(pieces[1].substr(7), tail);
-      if (!tail.empty()) {
-        string msg = "unexpected '" + tail + "'";
-        return report_parameter_error(name, type, msg.c_str());
-      }
+      if (pieces[1].size() > 7 && isdigit(pieces[1][7])) {
+        // p3d_Texture0, p3d_Texture1, etc.
+        bind._part = Shader::STO_stage_i;
 
-      _tex_spec.push_back(bind);
+        string tail;
+        bind._stage = string_to_int(pieces[1].substr(7), tail);
+        if (!tail.empty()) {
+          string msg = "unexpected '" + tail + "'";
+          return report_parameter_error(name, type, msg.c_str());
+        }
+
+        _tex_spec.push_back(bind);
+      }
+      else {
+        // p3d_Texture[] or p3d_TextureModulate[], etc.
+        if (pieces[1].size() == 7) {
+          bind._part = Shader::STO_stage_i;
+        }
+        else if (pieces[1].compare(7, string::npos, "FF") == 0) {
+          bind._part = Shader::STO_ff_stage_i;
+        }
+        else if (pieces[1].compare(7, string::npos, "Modulate") == 0) {
+          bind._part = Shader::STO_stage_modulate_i;
+        }
+        else if (pieces[1].compare(7, string::npos, "Add") == 0) {
+          bind._part = Shader::STO_stage_add_i;
+        }
+        else if (pieces[1].compare(7, string::npos, "Normal") == 0) {
+          bind._part = Shader::STO_stage_normal_i;
+        }
+        else if (pieces[1].compare(7, string::npos, "Height") == 0) {
+          bind._part = Shader::STO_stage_height_i;
+        }
+        else if (pieces[1].compare(7, string::npos, "Selector") == 0) {
+          bind._part = Shader::STO_stage_selector_i;
+        }
+        else if (pieces[1].compare(7, string::npos, "Gloss") == 0) {
+          bind._part = Shader::STO_stage_gloss_i;
+        }
+        else if (pieces[1].compare(7, string::npos, "Emission") == 0) {
+          bind._part = Shader::STO_stage_emission_i;
+        }
+        else {
+          return report_parameter_error(name, type, "unrecognized parameter name");
+        }
+
+        for (bind._stage = 0; bind._stage < num_elements; ++bind._stage) {
+          _tex_spec.push_back(bind);
+        }
+      }
       return true;
     }
     if (pieces[1] == "Material") {

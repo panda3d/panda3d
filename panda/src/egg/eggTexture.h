@@ -107,6 +107,7 @@ PUBLISHED:
     ET_height,
     ET_selector,
     ET_normal_gloss,
+    ET_emission,
   };
   enum CombineMode {
     CM_unspecified,
@@ -364,7 +365,7 @@ public:
   virtual EggTransform *as_transform();
 
 protected:
-  virtual bool egg_start_parse_body();
+  virtual bool egg_start_parse_body(EggLexerState &state);
 
 private:
   typedef pset<EggTexture *> MultiTextures;

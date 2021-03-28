@@ -177,7 +177,7 @@ create(GeomNode *previous, bool dynamic) {
     CPT(RenderState) state = RenderState::make(thick, vtxcolor);
 
     _created_data = new GeomVertexData
-      ("lineSegs", GeomVertexFormat::get_v3cp(),
+      ("lineSegs", GeomVertexFormat::get_v3c(),
        dynamic ? Geom::UH_dynamic : Geom::UH_static);
     GeomVertexWriter vertex(_created_data, InternalName::get_vertex());
     GeomVertexWriter color(_created_data, InternalName::get_color());

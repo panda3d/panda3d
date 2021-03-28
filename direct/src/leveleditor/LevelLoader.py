@@ -29,4 +29,3 @@ class LevelLoader(LevelLoaderBase):
         base.protoPalette = ProtoPalette()
         base.objectHandler = ObjectHandler(None)
         base.objectMgr = ObjectMgr(None)
-

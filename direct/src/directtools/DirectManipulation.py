@@ -1,10 +1,12 @@
 from direct.showbase.DirectObject import DirectObject
+from direct.showbase.MessengerGlobal import messenger
 from .DirectGlobals import *
 from .DirectUtil import *
 from .DirectGeometry import *
 from .DirectSelection import SelectionRay
 from direct.task import Task
 from copy import deepcopy
+
 
 class DirectManipulationControl(DirectObject):
     def __init__(self):
@@ -201,7 +203,7 @@ class DirectManipulationControl(DirectObject):
             ((abs (endY - startY)) < 0.01)):
             return
 
-        self.marquee = LineNodePath(render2d, 'marquee', 0.5, VBase4(.8, .6, .6, 1))
+        self.marquee = LineNodePath(base.render2d, 'marquee', 0.5, VBase4(.8, .6, .6, 1))
         self.marqueeInfo = (startX, startY, endX, endY)
         self.marquee.drawLines([
             [(startX, 0, startY), (startX, 0, endY)],
@@ -252,7 +254,7 @@ class DirectManipulationControl(DirectObject):
                 lens.extrude((endX, endY), nlr, flr)
                 lens.extrude((startX, endY), nll, fll)
 
-                marqueeFrustum = BoundingHexahedron(fll, flr, fur, ful, nll, nlr, nur, nul);
+                marqueeFrustum = BoundingHexahedron(fll, flr, fur, ful, nll, nlr, nur, nul)
                 marqueeFrustum.xform(base.direct.cam.getNetTransform().getMat())
 
                 base.marqueeFrustum = marqueeFrustum
@@ -273,13 +275,13 @@ class DirectManipulationControl(DirectObject):
 ##                     elif (skipFlags & SKIP_BACKFACE) and base.direct.iRay.isEntryBackfacing():
 ##                         # Skip, if backfacing poly
 ##                         pass
-                    elif ((skipFlags & SKIP_CAMERA) and
-                          (camera in geom.getAncestors())):
+                    elif (skipFlags & SKIP_CAMERA) and \
+                         (base.camera in geom.getAncestors()):
                         # Skip if parented to a camera.
                         continue
                     # Can pick unpickable, use the first visible node
-                    elif ((skipFlags & SKIP_UNPICKABLE) and
-                          (geom.getName() in base.direct.iRay.unpickable)):
+                    elif (skipFlags & SKIP_UNPICKABLE) and \
+                         (geom.getName() in base.direct.iRay.unpickable):
                         # Skip if in unpickable list
                         continue
 
@@ -486,7 +488,7 @@ class DirectManipulationControl(DirectObject):
         for tag in self.unmovableTagList:
             for selected in objects:
                 unmovableTag = selected.getTag(tag)
-                if (unmovableTag):
+                if unmovableTag:
                     # check value of unmovableTag to see if it is
                     # completely uneditable or if it allows only certain
                     # types of editing
@@ -498,7 +500,7 @@ class DirectManipulationControl(DirectObject):
         selectedList = base.direct.selected.getSelectedAsList()
         # See if any of the selected are completely uneditable
         editTypes = self.getEditTypes(selectedList)
-        if (editTypes & EDIT_TYPE_UNEDITABLE == EDIT_TYPE_UNEDITABLE):
+        if (editTypes & EDIT_TYPE_UNEDITABLE) == EDIT_TYPE_UNEDITABLE:
             return
         self.currEditTypes = editTypes
         if selectedList:
@@ -633,7 +635,7 @@ class DirectManipulationControl(DirectObject):
                 base.direct.widget.getMat(base.direct.selected.last))
         else:
             # Move the objects with the widget
-                base.direct.selected.moveWrtWidgetAll()
+            base.direct.selected.moveWrtWidgetAll()
         # Continue
         return Task.cont
 
@@ -811,11 +813,11 @@ class DirectManipulationControl(DirectObject):
         widgetAxis.normalize()
         if type == 'top?':
             # Check sign of angle between two vectors
-            return (widgetDir.dot(widgetAxis) < 0.)
+            return widgetDir.dot(widgetAxis) < 0.
         elif type == 'edge?':
             # Checking to see if we are viewing edge-on
             # Check angle between two vectors
-            return(abs(widgetDir.dot(widgetAxis)) < .2)
+            return abs(widgetDir.dot(widgetAxis)) < .2
 
     ### FREE MANIPULATION METHODS ###
     def xlateCamXZ(self, state):
@@ -1043,7 +1045,7 @@ class DirectManipulationControl(DirectObject):
         entry = base.direct.iRay.pickGeom(
             skipFlags = SKIP_HIDDEN | SKIP_BACKFACE | SKIP_CAMERA)
         # MRM: Need to handle moving COA
-        if (entry != None) and (base.direct.selected.last != None):
+        if entry is not None and base.direct.selected.last is not None:
             # Record undo point
             base.direct.pushUndo(base.direct.selected)
             # Record wrt matrix
@@ -1064,9 +1066,9 @@ class ObjectHandles(NodePath, DirectObject):
         NodePath.__init__(self)
 
         # Load up object handles model and assign it to self
-        self.assign(loader.loadModel('models/misc/objectHandles'))
+        self.assign(base.loader.loadModel('models/misc/objectHandles'))
         self.setName(name)
-        self.scalingNode = self.getChild(0)
+        self.scalingNode = NodePath(self)
         self.scalingNode.setName('ohScalingNode')
         self.ohScalingFactor = 1.0
         self.directScalingFactor = 1.0
@@ -1206,7 +1208,7 @@ class ObjectHandles(NodePath, DirectObject):
         self.reparentTo(hidden)
 
     def enableHandles(self, handles):
-        if type(handles) == list:
+        if isinstance(handles, list):
             for handle in handles:
                 self.enableHandle(handle)
         elif handles == 'x':
@@ -1255,7 +1257,7 @@ class ObjectHandles(NodePath, DirectObject):
             self.zScaleGroup.reparentTo(self.zHandles)
 
     def disableHandles(self, handles):
-        if type(handles) == list:
+        if isinstance(handles, list):
             for handle in handles:
                 self.disableHandle(handle)
         elif handles == 'x':
@@ -1368,7 +1370,7 @@ class ObjectHandles(NodePath, DirectObject):
         self.setScalingFactor(1)
 
     def setScalingFactor(self, scaleFactor):
-        self.ohScalingFactor = self.ohScalingFactor * scaleFactor
+        self.ohScalingFactor = scaleFactor
         self.scalingNode.setScale(self.ohScalingFactor * self.directScalingFactor)
 
     def getScalingFactor(self):
@@ -1640,7 +1642,7 @@ class ObjectHandles(NodePath, DirectObject):
         # by comparing lineDir with plane normals.  The plane with the
         # largest dotProduct is most "normal"
         if axis == 'x':
-            if (abs(lineDir.dot(Y_AXIS)) > abs(lineDir.dot(Z_AXIS))):
+            if abs(lineDir.dot(Y_AXIS)) > abs(lineDir.dot(Z_AXIS)):
                 self.hitPt.assign(
                     planeIntersect(lineOrigin, lineDir, ORIGIN, Y_AXIS))
             else:
@@ -1650,7 +1652,7 @@ class ObjectHandles(NodePath, DirectObject):
             self.hitPt.setY(0)
             self.hitPt.setZ(0)
         elif axis == 'y':
-            if (abs(lineDir.dot(X_AXIS)) > abs(lineDir.dot(Z_AXIS))):
+            if abs(lineDir.dot(X_AXIS)) > abs(lineDir.dot(Z_AXIS)):
                 self.hitPt.assign(
                     planeIntersect(lineOrigin, lineDir, ORIGIN, X_AXIS))
             else:
@@ -1660,7 +1662,7 @@ class ObjectHandles(NodePath, DirectObject):
             self.hitPt.setX(0)
             self.hitPt.setZ(0)
         elif axis == 'z':
-            if (abs(lineDir.dot(X_AXIS)) > abs(lineDir.dot(Y_AXIS))):
+            if abs(lineDir.dot(X_AXIS)) > abs(lineDir.dot(Y_AXIS)):
                 self.hitPt.assign(
                     planeIntersect(lineOrigin, lineDir, ORIGIN, X_AXIS))
             else:
@@ -1731,40 +1733,39 @@ class ObjectHandles(NodePath, DirectObject):
         return self.hitPt
 
 def drawBox(lines, center, sideLength):
+    l = sideLength * 0.5
+    lines.moveTo(center[0] + l, center[1] + l, center[2] + l)
+    lines.drawTo(center[0] + l, center[1] + l, center[2] - l)
+    lines.drawTo(center[0] + l, center[1] - l, center[2] - l)
+    lines.drawTo(center[0] + l, center[1] - l, center[2] + l)
+    lines.drawTo(center[0] + l, center[1] + l, center[2] + l)
 
-        l = sideLength * 0.5
-        lines.moveTo(center[0] + l, center[1] + l, center[2] + l)
-        lines.drawTo(center[0] + l, center[1] + l, center[2] - l)
-        lines.drawTo(center[0] + l, center[1] - l, center[2] - l)
-        lines.drawTo(center[0] + l, center[1] - l, center[2] + l)
-        lines.drawTo(center[0] + l, center[1] + l, center[2] + l)
+    lines.moveTo(center[0] - l, center[1] + l, center[2] + l)
+    lines.drawTo(center[0] - l, center[1] + l, center[2] - l)
+    lines.drawTo(center[0] - l, center[1] - l, center[2] - l)
+    lines.drawTo(center[0] - l, center[1] - l, center[2] + l)
+    lines.drawTo(center[0] - l, center[1] + l, center[2] + l)
 
-        lines.moveTo(center[0] - l, center[1] + l, center[2] + l)
-        lines.drawTo(center[0] - l, center[1] + l, center[2] - l)
-        lines.drawTo(center[0] - l, center[1] - l, center[2] - l)
-        lines.drawTo(center[0] - l, center[1] - l, center[2] + l)
-        lines.drawTo(center[0] - l, center[1] + l, center[2] + l)
+    lines.moveTo(center[0] + l, center[1] + l, center[2] + l)
+    lines.drawTo(center[0] + l, center[1] + l, center[2] - l)
+    lines.drawTo(center[0] - l, center[1] + l, center[2] - l)
+    lines.drawTo(center[0] - l, center[1] + l, center[2] + l)
+    lines.drawTo(center[0] + l, center[1] + l, center[2] + l)
 
-        lines.moveTo(center[0] + l, center[1] + l, center[2] + l)
-        lines.drawTo(center[0] + l, center[1] + l, center[2] - l)
-        lines.drawTo(center[0] - l, center[1] + l, center[2] - l)
-        lines.drawTo(center[0] - l, center[1] + l, center[2] + l)
-        lines.drawTo(center[0] + l, center[1] + l, center[2] + l)
+    lines.moveTo(center[0] + l, center[1] - l, center[2] + l)
+    lines.drawTo(center[0] + l, center[1] - l, center[2] - l)
+    lines.drawTo(center[0] - l, center[1] - l, center[2] - l)
+    lines.drawTo(center[0] - l, center[1] - l, center[2] + l)
+    lines.drawTo(center[0] + l, center[1] - l, center[2] + l)
 
-        lines.moveTo(center[0] + l, center[1] - l, center[2] + l)
-        lines.drawTo(center[0] + l, center[1] - l, center[2] - l)
-        lines.drawTo(center[0] - l, center[1] - l, center[2] - l)
-        lines.drawTo(center[0] - l, center[1] - l, center[2] + l)
-        lines.drawTo(center[0] + l, center[1] - l, center[2] + l)
+    lines.moveTo(center[0] + l, center[1] + l, center[2] + l)
+    lines.drawTo(center[0] - l, center[1] + l, center[2] + l)
+    lines.drawTo(center[0] - l, center[1] - l, center[2] + l)
+    lines.drawTo(center[0] + l, center[1] - l, center[2] + l)
+    lines.drawTo(center[0] + l, center[1] + l, center[2] + l)
 
-        lines.moveTo(center[0] + l, center[1] + l, center[2] + l)
-        lines.drawTo(center[0] - l, center[1] + l, center[2] + l)
-        lines.drawTo(center[0] - l, center[1] - l, center[2] + l)
-        lines.drawTo(center[0] + l, center[1] - l, center[2] + l)
-        lines.drawTo(center[0] + l, center[1] + l, center[2] + l)
-
-        lines.moveTo(center[0] + l, center[1] + l, center[2] - l)
-        lines.drawTo(center[0] - l, center[1] + l, center[2] - l)
-        lines.drawTo(center[0] - l, center[1] - l, center[2] - l)
-        lines.drawTo(center[0] + l, center[1] - l, center[2] - l)
-        lines.drawTo(center[0] + l, center[1] + l, center[2] - l)
+    lines.moveTo(center[0] + l, center[1] + l, center[2] - l)
+    lines.drawTo(center[0] - l, center[1] + l, center[2] - l)
+    lines.drawTo(center[0] - l, center[1] - l, center[2] - l)
+    lines.drawTo(center[0] + l, center[1] - l, center[2] - l)
+    lines.drawTo(center[0] + l, center[1] + l, center[2] - l)

@@ -163,6 +163,71 @@ def test_coro_exception():
         task.result()
 
 
+def test_future_result():
+    # Cancelled
+    fut = core.AsyncFuture()
+    assert not fut.done()
+    fut.cancel()
+    with pytest.raises(CancelledError):
+        fut.result()
+
+    # None
+    fut = core.AsyncFuture()
+    fut.set_result(None)
+    assert fut.done()
+    assert fut.result() is None
+
+    # Store int
+    fut = core.AsyncFuture()
+    fut.set_result(123)
+    assert fut.result() == 123
+
+    # Store string
+    fut = core.AsyncFuture()
+    fut.set_result("test\000\u1234")
+    assert fut.result() == "test\000\u1234"
+
+    # Store TypedWritableReferenceCount
+    tex = core.Texture()
+    rc = tex.get_ref_count()
+    fut = core.AsyncFuture()
+    fut.set_result(tex)
+    assert tex.get_ref_count() == rc + 1
+    assert fut.result() == tex
+    assert tex.get_ref_count() == rc + 1
+    assert fut.result() == tex
+    assert tex.get_ref_count() == rc + 1
+    fut = None
+    assert tex.get_ref_count() == rc
+
+    # Store EventParameter (no longer gets unwrapped)
+    ep = core.EventParameter(0.5)
+    fut = core.AsyncFuture()
+    fut.set_result(ep)
+    assert fut.result() is ep
+    assert fut.result() is ep
+
+    # Store TypedObject
+    dg = core.Datagram(b"test")
+    fut = core.AsyncFuture()
+    fut.set_result(dg)
+    assert fut.result() == dg
+    assert fut.result() == dg
+
+    # Store arbitrary Python object
+    obj = object()
+    rc = sys.getrefcount(obj)
+    fut = core.AsyncFuture()
+    fut.set_result(obj)
+    assert sys.getrefcount(obj) == rc + 1
+    assert fut.result() is obj
+    assert sys.getrefcount(obj) == rc + 1
+    assert fut.result() is obj
+    assert sys.getrefcount(obj) == rc + 1
+    fut = None
+    assert sys.getrefcount(obj) == rc
+
+
 def test_future_gather():
     fut1 = core.AsyncFuture()
     fut2 = core.AsyncFuture()

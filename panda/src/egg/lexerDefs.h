@@ -15,25 +15,56 @@
 #define LEXER_H
 
 #include "pandabase.h"
-
+#include "parserDefs.h"
 #include "typedef.h"
 
 #include <string>
 
-void egg_init_lexer(std::istream &in, const std::string &filename);
-void egg_start_group_body();
-void egg_start_texture_body();
-void egg_start_primitive_body();
-int egg_error_count();
-int egg_warning_count();
+typedef void *yyscan_t;
+struct EggLexerState;
+struct EggParserState;
+struct EggTokenType;
+struct EggLocType;
 
-void eggyyerror(const std::string &msg);
-void eggyyerror(std::ostringstream &strm);
+void egg_init_lexer_state(EggLexerState &state, std::istream &in, const std::string &filename);
+void egg_cleanup_lexer_state(EggLexerState &state);
 
-void eggyywarning(const std::string &msg);
-void eggyywarning(std::ostringstream &strm);
+void egg_start_group_body(EggLexerState &state);
+void egg_start_texture_body(EggLexerState &state);
+void egg_start_primitive_body(EggLexerState &state);
 
-int eggyylex();
+// These functions are declared by flex.
+int eggyylex_init_extra(EggLexerState *state, yyscan_t *scanner);
+int eggyylex_destroy(yyscan_t scanner);
+
+void eggyyerror(EggLocType *loc, yyscan_t scanner, const std::string &msg);
+void eggyywarning(EggLocType *loc, yyscan_t scanner, const std::string &msg);
+
+int eggyylex(EggTokenType *yylval_param, EggLocType *yylloc_param, yyscan_t yyscanner);
+
+static const size_t egg_max_error_width = 1024;
+
+struct EggLexerState {
+  // current_line holds as much of the current line as will fit.  Its
+  // only purpose is for printing it out to report an error to the user.
+  char _current_line[egg_max_error_width + 1];
+
+  int _error_count = 0;
+  int _warning_count = 0;
+
+  // This is the pointer to the current input stream.
+  std::istream *_input_p = nullptr;
+
+  // This is the name of the egg file we're parsing.  We keep it so we
+  // can print it out for error messages.
+  std::string _egg_filename;
+
+  // This is the initial token state returned by the lexer.  It allows
+  // the yacc grammar to start from initial points.
+  int _initial_token = 0;
+};
+
+#define YY_EXTRA_TYPE EggLexerState *
 
 // always read from files
 #define YY_NEVER_INTERACTIVE 1

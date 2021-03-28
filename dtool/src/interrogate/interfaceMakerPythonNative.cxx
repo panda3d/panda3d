@@ -70,6 +70,7 @@ RenameSet methodRenameDictionary[] = {
   { "operator >"    , "__gt__",                 0 },
   { "operator <="   , "__le__",                 0 },
   { "operator >="   , "__ge__",                 0 },
+  { "operator <=>"  , "__cmp__",                0 },
   { "operator ="    , "assign",                 0 },
   { "operator ()"   , "__call__",               0 },
   { "operator []"   , "__getitem__",            0 },
@@ -102,7 +103,8 @@ RenameSet methodRenameDictionary[] = {
   { "operator ->"   , "dereference",            0 },
   { "operator <<="  , "__ilshift__",            1 },
   { "operator >>="  , "__irshift__",            1 },
-  { "operator typecast bool", "__nonzero__",    0 },
+  { "operator typecast bool", "__bool__",       0 },
+  { "__bool__"      , "__bool__",               0 },
   { "__nonzero__"   , "__nonzero__",            0 },
   { "__int__"       , "__int__",                0 },
   { "__reduce__"    , "__reduce__",             0 },
@@ -334,6 +336,18 @@ get_slotted_function_def(Object *obj, Function *func, FunctionRemap *remap,
     return true;
   }
 
+  if (method_name == "__truediv__") {
+    def._answer_location = "nb_true_divide";
+    def._wrapper_type = WT_binary_operator;
+    return true;
+  }
+
+  if (method_name == "__floordiv__") {
+    def._answer_location = "nb_floor_divide";
+    def._wrapper_type = WT_binary_operator;
+    return true;
+  }
+
   if (method_name == "operator %") {
     def._answer_location = "nb_remainder";
     def._wrapper_type = WT_binary_operator;
@@ -403,6 +417,18 @@ get_slotted_function_def(Object *obj, Function *func, FunctionRemap *remap,
   if (method_name == "operator /=") {
     def._answer_location = "nb_inplace_divide";
     def._wrapper_type = WT_inplace_binary_operator;
+    return true;
+  }
+
+  if (method_name == "__itruediv__") {
+    def._answer_location = "nb_inplace_true_divide";
+    def._wrapper_type = WT_binary_operator;
+    return true;
+  }
+
+  if (method_name == "__ifloordiv__") {
+    def._answer_location = "nb_inplace_floor_divide";
+    def._wrapper_type = WT_binary_operator;
     return true;
   }
 
@@ -1693,10 +1719,12 @@ write_module_class(ostream &out, Object *obj) {
 
         // Python 3 doesn't support nb_divide.  It has nb_true_divide and also
         // nb_floor_divide, but they have different semantics than in C++.
-        // Ugh.  Make special slots to store the nb_divide members that take a
-        // float.  We'll use this to build up nb_true_divide, so that we can
-        // still properly divide float vector types.
-        if (remap->_flags & FunctionRemap::F_divide_float) {
+        // Ugh.  Make special slots to store the nb_divide members that don't
+        // take an int.  We'll use this to build up nb_true_divide, in the
+        // absence of a custom __truediv__, so that we can still properly divide
+        // float vector types.
+        if ((key == "nb_divide" || key == "nb_inplace_divide") &&
+            (remap->_flags & FunctionRemap::F_divide_integer) == 0) {
           string true_key;
           if (key == "nb_inplace_divide") {
             true_key = "nb_inplace_true_divide";
@@ -1727,7 +1755,8 @@ write_module_class(ostream &out, Object *obj) {
           fname == "operator ==" ||
           fname == "operator !=" ||
           fname == "operator >" ||
-          fname == "operator >=") {
+          fname == "operator >=" ||
+          fname == "operator <=>") {
         continue;
       }
 
@@ -2594,6 +2623,7 @@ write_module_class(ostream &out, Object *obj) {
     out << "    return nullptr;\n";
     out << "  }\n\n";
 
+    std::set<FunctionRemap *> threeway_remaps;
     bool have_eq = false;
     bool have_ne = false;
     for (Function *func : obj->_methods) {
@@ -2624,6 +2654,9 @@ write_module_class(ostream &out, Object *obj) {
         op_type = "Py_GT";
       } else if (fname == "operator >=") {
         op_type = "Py_GE";
+      } else if (fname == "operator <=>") {
+        threeway_remaps = std::move(remaps);
+        continue;
       } else {
         continue;
       }
@@ -2644,7 +2677,15 @@ write_module_class(ostream &out, Object *obj) {
     }
 
     if (has_local_richcompare) {
-      if (have_eq && !have_ne) {
+      if (!threeway_remaps.empty()) {
+        out << "  default:\n";
+        out << "    {\n";
+        string expected_params;
+        write_function_forset(out, threeway_remaps, 1, 1, expected_params, 6, true, false,
+                              AT_single_arg, RF_richcompare_zero | RF_err_null, false);
+        out << "    }\n";
+      }
+      else if (have_eq && !have_ne) {
         // Generate a not-equal function from the equal function.
         for (Function *func : obj->_methods) {
           std::set<FunctionRemap*> remaps;
@@ -2687,8 +2728,13 @@ write_module_class(ostream &out, Object *obj) {
       out << "    PyErr_Clear();\n";
       out << "  }\n\n";
     }
+    else if (!threeway_remaps.empty()) {
+      string expected_params;
+      write_function_forset(out, threeway_remaps, 1, 1, expected_params, 2, true, false,
+                            AT_single_arg, RF_richcompare_zero | RF_err_null, false);
+    }
 
-    if (slots.count("tp_compare")) {
+    if (slots.count("tp_compare") && threeway_remaps.empty()) {
       // A lot of Panda code depends on comparisons being done via the
       // compare_to function, which is mapped to the tp_compare slot, which
       // Python 3 no longer has.  So, we'll write code to fall back to that if
@@ -3510,7 +3556,8 @@ write_function_for_top(ostream &out, InterfaceMaker::Object *obj, InterfaceMaker
       fname == "operator ==" ||
       fname == "operator !=" ||
       fname == "operator >" ||
-      fname == "operator >=") {
+      fname == "operator >=" ||
+      fname == "operator <=>") {
     return;
   }
 
@@ -3637,18 +3684,23 @@ write_function_for_name(ostream &out, Object *obj,
     std::string ClassName = make_safe_name(obj->_itype.get_scoped_name());
     std::string cClassName = obj->_itype.get_true_name();
     // string class_name = remap->_cpptype->get_simple_name();
+    CPPStructType *struct_type = obj->_itype._cpptype->as_struct_type();
 
     // If this is a non-static __setstate__, we run the default constructor.
-    if (remap->_cppfunc->get_local_name() == "__setstate__") {
-      out << "  if (DtoolInstance_VOID_PTR(self) != nullptr) {\n"
-          << "    Dtool_Raise_TypeError(\"C++ object is already constructed.\");\n";
-      error_return(out, 4, return_flags);
-      out << "  }\n"
-          << "  " << cClassName << " *local_this = new " << cClassName << ";\n"
-          << "  DTool_PyInit_Finalize(self, local_this, &Dtool_" << ClassName
-          << ", false, false);\n"
-          << "  if (local_this == nullptr) {\n"
-          << "    PyErr_NoMemory();\n";
+    if (remap->_cppfunc->get_local_name() == "__setstate__" &&
+        !struct_type->is_abstract()) {
+      out << "  " << cClassName << " *local_this = nullptr;\n"
+          << "  if (DtoolInstance_VOID_PTR(self) == nullptr) {\n"
+          << "    local_this = new " << cClassName << ";\n"
+          << "    DTool_PyInit_Finalize(self, local_this, &Dtool_" << ClassName
+          << ", true, false);\n"
+          << "    if (local_this == nullptr) {\n"
+          << "      PyErr_NoMemory();\n";
+      error_return(out, 6, return_flags);
+      out << "    }\n"
+          << "  } else if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_" << ClassName << ", "
+          << "(void **)&local_this, \"" << classNameFromCppName(cClassName, false)
+          << "." << methodNameFromCppName(remap, cClassName, false) << "\")) {\n";
     }
     else if (all_nonconst) {
       // All remaps are non-const.  Also check that this object isn't const.
@@ -3682,6 +3734,14 @@ write_function_for_name(ostream &out, Object *obj,
       methodNameFromCppName(remap, "", false) + "() takes no keyword arguments");
     out << "#endif\n";
     out << "  }\n";
+    args_type = AT_varargs;
+  }
+
+  // If this is a __setstate__ taking multiple arguments, and we're given a
+  // tuple as argument, unpack it.
+  if (args_type == AT_single_arg && max_required_args > 1 &&
+      remap->_cppfunc->get_local_name() == "__setstate__") {
+    out << "  PyObject *args = arg;\n";
     args_type = AT_varargs;
   }
 
@@ -4267,18 +4327,19 @@ int get_type_sort(CPPType *type) {
              TypeManager::is_struct(type)) {
     answer = 20;
     int deepest = 0;
-    TypeIndex type_index = builder.get_type(TypeManager::unwrap(TypeManager::resolve_type(type)), false);
-    InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
-    const InterrogateType &itype = idb->get_type(type_index);
 
-    if (itype.is_class() || itype.is_struct()) {
-      int num_derivations = itype.number_of_derivations();
-      for (int di = 0; di < num_derivations; di++) {
-        TypeIndex d_type_Index = itype.get_derivation(di);
-        const InterrogateType &d_itype = idb->get_type(d_type_Index);
-        int this_one = get_type_sort(d_itype._cpptype);
-        if (this_one > deepest) {
-          deepest = this_one;
+    // Sort such that more derived classes come first.
+    type = TypeManager::unwrap(TypeManager::resolve_type(type));
+    if (type != nullptr) {
+      CPPStructType *struct_type = type->as_struct_type();
+      if (struct_type != nullptr) {
+        for (const CPPStructType::Base &base : struct_type->_derivation) {
+          if (base._base != nullptr) {
+            int this_one = get_type_sort(base._base);
+            if (this_one > deepest) {
+              deepest = this_one;
+            }
+          }
         }
       }
     }
@@ -4602,7 +4663,8 @@ write_function_instance(ostream &out, FunctionRemap *remap,
                         bool check_exceptions,
                         const string &first_pexpr) {
   string format_specifiers;
-  string keyword_list;
+  string keyword_list_old;
+  string keyword_list_new;
   string parameter_list;
   string container;
   string type_check;
@@ -4760,13 +4822,19 @@ write_function_instance(ostream &out, FunctionRemap *remap,
     }
 
     string reported_name = remap->_parameters[pn]._name;
-    if (!keyword_list.empty()) {
-      keyword_list += ", \"" + reported_name + "\"";
-    } else {
-      keyword_list = "\"" + reported_name + "\"";
+    if (!keyword_list_old.empty()) {
+      keyword_list_old += ", ";
+      keyword_list_new += ", ";
     }
     if (remap->_parameters[pn]._has_name) {
       has_keywords = true;
+    }
+    keyword_list_old += "\"" + reported_name + "\"";
+    if (has_keywords) {
+      keyword_list_new += "\"" + reported_name + "\"";
+    } else {
+      // Positional-only argument.
+      keyword_list_new += "\"\"";
     }
 
     if (param->new_type_is_atomic_string()) {
@@ -5822,16 +5890,26 @@ write_function_instance(ostream &out, FunctionRemap *remap,
           // case we have implemented ourselves.
           if (min_num_args == 1) {
             indent(out, indent_level)
-              << "if (Dtool_ExtractArg(&" << param_name << ", args, kwds, " << keyword_list << ")) {\n";
+              << "if (Dtool_ExtractArg(&" << param_name << ", args, kwds, " << keyword_list_new << ")) {\n";
           } else {
             indent(out, indent_level)
-              << "if (Dtool_ExtractOptionalArg(&" << param_name << ", args, kwds, " << keyword_list << ")) {\n";
+              << "if (Dtool_ExtractOptionalArg(&" << param_name << ", args, kwds, " << keyword_list_new << ")) {\n";
           }
         } else {
           // We have to use the more expensive PyArg_ParseTupleAndKeywords.
           clear_error = true;
-          indent(out, indent_level)
-            << "static const char *keyword_list[] = {" << keyword_list << ", nullptr};\n";
+          if (keyword_list_new != keyword_list_old) {
+            out << "#if PY_VERSION_HEX >= 0x03060000\n";
+            indent(out, indent_level)
+              << "static const char *keyword_list[] = {" << keyword_list_new << ", nullptr};\n";
+            out << "#else\n";
+            indent(out, indent_level)
+              << "static const char *keyword_list[] = {" << keyword_list_old << ", nullptr};\n";
+            out << "#endif\n";
+          } else {
+            indent(out, indent_level)
+              << "static const char *keyword_list[] = {" << keyword_list_new << ", nullptr};\n";
+          }
           indent(out, indent_level)
             << "if (PyArg_ParseTupleAndKeywords(args, kwds, \""
             << format_specifiers << ":" << method_name
@@ -6113,7 +6191,8 @@ write_function_instance(ostream &out, FunctionRemap *remap,
     // function call, so it should reduce the amount of code output while not
     // being any slower.
     bool return_null = (return_flags & RF_pyobject) != 0 &&
-                       (return_flags & RF_err_null) != 0;
+                       (return_flags & RF_err_null) != 0 &&
+                       (return_flags & RF_richcompare_zero) == 0;
     if (return_null && return_expr.empty()) {
       indent(out, indent_level)
         << "return Dtool_Return_None();\n";
@@ -6265,6 +6344,10 @@ write_function_instance(ostream &out, FunctionRemap *remap,
   } else if (return_flags & RF_self) {
     indent(out, indent_level) << "Py_INCREF(self);\n";
     indent(out, indent_level) << "return self;\n";
+
+  } else if (return_flags & RF_richcompare_zero) {
+    indent(out, indent_level)
+      << "Py_RETURN_RICHCOMPARE(" << return_expr << ", 0, op);\n";
 
   } else if (return_flags & RF_pyobject) {
     if (return_expr.empty()) {
@@ -7610,7 +7693,11 @@ is_remap_legal(FunctionRemap *remap) {
   if (!is_cpp_type_legal(remap->_return_type->get_orig_type())) {
 // printf("  is_remap_legal Return Is Bad %s\n",remap->_return_type->get_orig_
 // type()->get_fully_scoped_name().c_str());
-    return false;
+    // Except if this is a spaceship operator, since we have special handling
+    // for its return type.
+    if (remap->_cppfunc->get_simple_name() != "operator <=>") {
+      return false;
+    }
   }
 
   // We don't currently support returning pointers, but we accept them as
@@ -8066,6 +8153,17 @@ NeedsARichCompareFunction(const InterrogateType &itype_class) {
     }
     if (ifunc.get_name() == "operator >=") {
       return true;
+    }
+  }
+
+  if (itype_class._cpptype != nullptr) {
+    CPPStructType *struct_type = itype_class._cpptype->as_struct_type();
+    if (struct_type != nullptr) {
+      CPPScope *scope = struct_type->get_scope();
+      CPPScope::Functions::const_iterator it = scope->_functions.find("operator <=>");
+      if (it != scope->_functions.end()) {
+        return true;
+      }
     }
   }
 

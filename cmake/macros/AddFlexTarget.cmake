@@ -74,4 +74,8 @@ function(add_flex_target output_cxx input_lxx)
       ${commands}
       DEPENDS ${depends})
   endif()
+
+  if(MSVC)
+    set_source_files_properties(${outputs} PROPERTIES COMPILE_DEFINITIONS YY_NO_UNISTD_H=1)
+  endif()
 endfunction(add_flex_target)

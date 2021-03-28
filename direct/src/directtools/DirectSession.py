@@ -4,6 +4,7 @@ from panda3d.core import *
 from .DirectUtil import *
 
 from direct.showbase.DirectObject import DirectObject
+from direct.showbase.BulletinBoardGlobal import bulletinBoard as bboard
 from direct.task import Task
 
 from .DirectGlobals import DIRECT_NO_MOD
@@ -96,13 +97,13 @@ class DirectSession(DirectObject):
         self.joybox = None
         self.radamec = None
         self.fastrak = []
-        if base.config.GetBool('want-vrpn', 0):
+        if ConfigVariableBool('want-vrpn', False):
             from direct.directdevices import DirectDeviceManager
             self.deviceManager = DirectDeviceManager.DirectDeviceManager()
             # Automatically create any devices specified in config file
-            joybox = base.config.GetString('vrpn-joybox-device', '')
-            radamec = base.config.GetString('vrpn-radamec-device', '')
-            fastrak = base.config.GetString('vrpn-fastrak-device', '')
+            joybox = ConfigVariableString('vrpn-joybox-device', '').value
+            radamec = ConfigVariableString('vrpn-radamec-device', '').value
+            fastrak = ConfigVariableString('vrpn-fastrak-device', '').value
             if joybox:
                 from direct.directdevices import DirectJoybox
                 self.joybox = DirectJoybox.DirectJoybox(joybox)
@@ -291,16 +292,15 @@ class DirectSession(DirectObject):
         self.passThroughKeys = ['v','b','l','p', 'r', 'shift-r', 's', 't','shift-a', 'w']
 
         if base.wantTk:
-            from direct.showbase import TkGlobal
             from direct.tkpanels import DirectSessionPanel
-            self.panel = DirectSessionPanel.DirectSessionPanel(parent = tkroot)
+            self.panel = DirectSessionPanel.DirectSessionPanel(parent = base.tkRoot)
         try:
             # Has the clusterMode been set externally (i.e. via the
             # bootstrap application?
             self.clusterMode = clusterMode
         except NameError:
             # Has the clusterMode been set via a config variable?
-            self.clusterMode = base.config.GetString("cluster-mode", '')
+            self.clusterMode = ConfigVariableString("cluster-mode", '').value
 
         if self.clusterMode == 'client':
             self.cluster = createClusterClient()
@@ -385,14 +385,12 @@ class DirectSession(DirectObject):
     def oobe(self):
         # If oobeMode was never set, set it to false and create the
         # structures we need to implement OOBE.
-        try:
-            self.oobeMode
-        except:
+        if not hasattr(self, 'oobeMode'):
             self.oobeMode = 0
 
             self.oobeCamera = hidden.attachNewNode('oobeCamera')
 
-            self.oobeVis = loader.loadModel('models/misc/camera')
+            self.oobeVis = base.loader.loadModel('models/misc/camera')
             if self.oobeVis:
                 self.oobeVis.node().setFinal(1)
 
@@ -669,6 +667,8 @@ class DirectSession(DirectObject):
         if not taskMgr.hasTaskNamed('resizeObjectHandles'):
             dnp = self.selected.last
             if dnp:
+                direct = base.direct
+
                 if self.manipulationControl.fMultiView:
                     for i in range(3):
                         sf = 30.0 * direct.drList[i].orthoFactor
@@ -708,7 +708,7 @@ class DirectSession(DirectObject):
             else:
                 self.widget.showWidget()
             editTypes = self.manipulationControl.getEditTypes([dnp])
-            if (editTypes & EDIT_TYPE_UNEDITABLE == EDIT_TYPE_UNEDITABLE):
+            if (editTypes & EDIT_TYPE_UNEDITABLE) == EDIT_TYPE_UNEDITABLE:
                 self.manipulationControl.disableWidgetMove()
             else:
                 self.manipulationControl.enableWidgetMove()
@@ -1069,8 +1069,10 @@ class DirectSession(DirectObject):
         for iRay in self.iRayList:
             iRay.removeUnpickable(item)
 
+
 class DisplayRegionContext(DirectObject):
     regionCount = 0
+
     def __init__(self, cam):
         self.cam = cam
         self.camNode = self.cam.node()
@@ -1091,10 +1093,7 @@ class DisplayRegionContext(DirectObject):
         # one display region per camera, since we are defining a
         # display region on a per-camera basis.  See note in
         # DisplayRegionList.__init__()
-        try:
-            self.dr = self.camNode.getDr(0)
-        except:
-            self.dr = self.camNode.getDisplayRegion(0)
+        self.dr = self.camNode.getDisplayRegion(0)
         left = self.dr.getLeft()
         right = self.dr.getRight()
         bottom = self.dr.getBottom()

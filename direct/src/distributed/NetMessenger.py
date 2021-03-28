@@ -90,5 +90,3 @@ class NetMessenger(Messenger):
         else:
             (message, sentArgs) = loads(pickleData)
         Messenger.send(self, message, sentArgs=sentArgs)
-
-

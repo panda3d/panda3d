@@ -4,8 +4,9 @@ __all__ = ['TaskThreaded', 'TaskThread']
 
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.task import Task
+from direct.task.TaskManagerGlobal import taskMgr
 
-from .PythonUtil import SerialNumGen
+from .PythonUtil import SerialNumGen, Functor
 
 
 class TaskThreaded:
@@ -19,7 +20,7 @@ class TaskThreaded:
     def __init__(self, name, threaded=True, timeslice=None, callback=None):
         # timeslice is how long this thread should take every frame.
         self.__name = name
-        self.__threaded=threaded
+        self.__threaded = threaded
         if timeslice is None:
             timeslice = .01
         self.__timeslice = timeslice

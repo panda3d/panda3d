@@ -33,6 +33,7 @@
 /* Stored in the flags field of the blobinfo structure below. */
 enum Flags {
   F_log_append = 1,
+  F_log_filename_strftime = 2,
 };
 
 /* Define an exposed symbol where we store the offset to the module data. */
@@ -321,15 +322,20 @@ static int enable_line_buffering(PyObject *file) {
   if (method != NULL) {
     PyObject *result = PyObject_Call(method, args, kwargs);
     Py_DECREF(method);
+    Py_DECREF(kwargs);
+    Py_DECREF(args);
     if (result != NULL) {
       Py_DECREF(result);
     } else {
       PyErr_Clear();
       return 0;
     }
+  } else {
+    Py_DECREF(kwargs);
+    Py_DECREF(args);
+    PyErr_Clear();
+    return 0;
   }
-  Py_DECREF(kwargs);
-  Py_DECREF(args);
 #else
   /* Older versions just don't expose a way to reconfigure(), but it's still
      safe to override the property; we just have to use a hack to do it,
@@ -666,6 +672,14 @@ int main(int argc, char *argv[]) {
   }
 
   if (log_filename != NULL) {
+    char log_filename_buf[4096];
+    if (blobinfo.flags & F_log_filename_strftime) {
+      log_filename_buf[0] = 0;
+      time_t now = time(NULL);
+      if (strftime(log_filename_buf, sizeof(log_filename_buf), log_filename, localtime(&now)) > 0) {
+        log_filename = log_filename_buf;
+      }
+    }
     setup_logging(log_filename, (blobinfo.flags & F_log_append) != 0);
   }
 

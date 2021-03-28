@@ -1,22 +1,20 @@
 """
 Generates a wheel (.whl) file from the output of makepanda.
 """
-from __future__ import print_function, unicode_literals
-from distutils.util import get_platform
 import json
-
 import sys
 import os
 from os.path import join
-import shutil
 import zipfile
 import hashlib
 import tempfile
 import subprocess
+import time
+from distutils.util import get_platform
 from distutils.sysconfig import get_config_var
 from optparse import OptionParser
-from makepandacore import ColorText, LocateBinary, GetExtensionSuffix, SetVerbose, GetVerbose, GetMetadataValue
 from base64 import urlsafe_b64encode
+from makepandacore import LocateBinary, GetExtensionSuffix, SetVerbose, GetVerbose, GetMetadataValue
 
 
 def get_abi_tag():
@@ -84,7 +82,7 @@ ABI_TAG = get_abi_tag()
 EXCLUDE_EXT = [".pyc", ".pyo", ".N", ".prebuilt", ".xcf", ".plist", ".vcproj", ".sln"]
 
 # Plug-ins to install.
-PLUGIN_LIBS = ["pandagl", "pandagles", "pandagles2", "pandadx9", "p3tinydisplay", "p3ptloader", "p3assimp", "p3ffmpeg", "p3openal_audio", "p3fmod_audio"]
+PLUGIN_LIBS = ["pandagl", "pandagles", "pandagles2", "pandadx9", "p3tinydisplay", "p3ptloader", "p3assimp", "p3ffmpeg", "p3openal_audio", "p3fmod_audio", "p3headlessgl"]
 
 # Libraries included in manylinux ABI that should be ignored.  See PEP 513/571/599.
 MANYLINUX_LIBS = [
@@ -97,6 +95,7 @@ MANYLINUX_LIBS = [
     # These are not mentioned in manylinux1 spec but should nonetheless always
     # be excluded.
     "linux-vdso.so.1", "linux-gate.so.1", "ld-linux.so.2", "libdrm.so.2",
+    "libEGL.so.1", "libOpenGL.so.0", "libGLX.so.0", "libGLdispatch.so.0",
 ]
 
 # Binaries to never scan for dependencies on non-Windows systems.
@@ -304,6 +303,14 @@ class WheelFile(object):
         self.dep_paths = {}
         self.ignore_deps = set()
 
+        # This can be set if a reproducible (deterministic) build is desired, in
+        # which case we have to clamp all dates to the given SOURCE_DATE_EPOCH.
+        epoch = os.environ.get('SOURCE_DATE_EPOCH')
+        self.max_date_time = time.localtime(int(epoch) if epoch else time.time())[:6]
+        if self.max_date_time < (1980, 1, 1, 0, 0, 0):
+            # Earliest representable time in zip archives.
+            self.max_date_time = (1980, 1, 1, 0, 0, 0)
+
     def consider_add_dependency(self, target_path, dep, search_path=None):
         """Considers adding a dependency library.
         Returns the target_path if it was added, which may be different from
@@ -381,7 +388,8 @@ class WheelFile(object):
             # On macOS, if no fat wheel was requested, extract the right architecture.
             if sys.platform == "darwin" and is_fat_file(source_path) \
                 and not self.platform.endswith("_intel") \
-                and "_fat" not in self.platform:
+                and "_fat" not in self.platform \
+                and "_universal" not in self.platform:
 
                 if self.platform.endswith("_x86_64"):
                     arch = 'x86_64'
@@ -401,7 +409,6 @@ class WheelFile(object):
                     deps_path = '@executable_path/../Frameworks'
                 else:
                     deps_path = '@loader_path'
-                remove_signature = False
                 loader_path = [os.path.dirname(source_path)]
                 for dep in deps:
                     if dep.endswith('/Python'):
@@ -443,11 +450,9 @@ class WheelFile(object):
                         continue
 
                     subprocess.call(["install_name_tool", "-change", dep, new_dep, temp.name])
-                    remove_signature = True
 
-                # Remove the codesign signature if we modified the library.
-                if remove_signature:
-                    subprocess.call(["codesign", "--remove-signature", temp.name])
+                # Make sure it has an ad-hoc code signature.
+                subprocess.call(["codesign", "-f", "-s", "-", temp.name])
             else:
                 # On other unixes, we just add dependencies normally.
                 for dep in deps:
@@ -457,7 +462,7 @@ class WheelFile(object):
                         self.consider_add_dependency(target_dep, dep)
 
                 subprocess.call(["strip", "-s", temp.name])
-                subprocess.call(["patchelf", "--set-rpath", "$ORIGIN", temp.name])
+                subprocess.call(["patchelf", "--force-rpath", "--set-rpath", "$ORIGIN", temp.name])
 
             source_path = temp.name
 
@@ -468,25 +473,28 @@ class WheelFile(object):
                 target_dep = os.path.dirname(target_path) + '/' + dep
                 self.consider_add_dependency(target_dep, dep)
 
-        # Calculate the SHA-256 hash and size.
-        sha = hashlib.sha256()
-        fp = open(source_path, 'rb')
+        if GetVerbose():
+            print("Adding {0} from {1}".format(target_path, orig_source_path))
+
+        zinfo = zipfile.ZipInfo.from_file(source_path, target_path)
+        if zinfo.date_time > self.max_date_time:
+            zinfo.date_time = self.max_date_time
+
+        # Copy the data to the zip file, while also calculating the SHA-256.
         size = 0
-        data = fp.read(1024 * 1024)
-        while data:
-            size += len(data)
-            sha.update(data)
-            data = fp.read(1024 * 1024)
-        fp.close()
+        sha = hashlib.sha256()
+        with open(source_path, 'rb') as source_fp, self.zip_file.open(zinfo, 'w') as target_fp:
+            data = source_fp.read(1024 * 1024)
+            while data:
+                size += len(data)
+                target_fp.write(data)
+                sha.update(data)
+                data = source_fp.read(1024 * 1024)
 
         # Save it in PEP-0376 format for writing out later.
         digest = urlsafe_b64encode(sha.digest()).decode('ascii')
         digest = digest.rstrip('=')
         self.records.append("{0},sha256={1},{2}\n".format(target_path, digest, size))
-
-        if GetVerbose():
-            print("Adding {0} from {1}".format(target_path, orig_source_path))
-        self.zip_file.write(source_path, target_path)
 
         #if temp:
         #    os.unlink(temp.name)
@@ -502,13 +510,19 @@ class WheelFile(object):
 
         if GetVerbose():
             print("Adding %s from data" % target_path)
-        self.zip_file.writestr(target_path, source_data)
+
+        zinfo = zipfile.ZipInfo(filename=target_path,
+                                date_time=self.max_date_time)
+        zinfo.compress_type = self.zip_file.compression
+        zinfo.external_attr = 0o600 << 16
+        self.zip_file.writestr(zinfo, source_data)
 
     def write_directory(self, target_dir, source_dir):
         """Adds the given directory recursively to the .whl file."""
 
         for root, dirs, files in os.walk(source_dir):
-            for file in files:
+            dirs.sort()
+            for file in sorted(files):
                 if os.path.splitext(file)[1] in EXCLUDE_EXT:
                     continue
 
@@ -522,7 +536,11 @@ class WheelFile(object):
         record_file = "{0}-{1}.dist-info/RECORD".format(self.name, self.version)
         self.records.append(record_file + ",,\n")
 
-        self.zip_file.writestr(record_file, "".join(self.records))
+        zinfo = zipfile.ZipInfo(filename=record_file,
+                                date_time=self.max_date_time)
+        zinfo.compress_type = self.zip_file.compression
+        zinfo.external_attr = 0o600 << 16
+        self.zip_file.writestr(zinfo, "".join(self.records))
         self.zip_file.close()
 
 
@@ -652,7 +670,7 @@ if __debug__:
     # Copy the extension modules from the panda3d directory.
     ext_suffix = GetExtensionSuffix()
 
-    for file in os.listdir(panda3d_dir):
+    for file in sorted(os.listdir(panda3d_dir)):
         if file == '__init__.py':
             pass
         elif file.endswith('.py') or (file.endswith(ext_suffix) and '.' not in file[:-len(ext_suffix)]):
@@ -670,7 +688,7 @@ if __debug__:
     # deploy_libs directory, for use by deploy-ng.
     ext_suffix = '.pyd' if sys.platform in ('win32', 'cygwin') else '.so'
 
-    for file in os.listdir(ext_mod_dir):
+    for file in sorted(os.listdir(ext_mod_dir)):
         if file.endswith(ext_suffix):
             source_path = os.path.join(ext_mod_dir, file)
 
@@ -706,14 +724,14 @@ if __debug__:
     whl.write_directory('panda3d/models', models_dir)
 
     # Add the pandac tree for backward compatibility.
-    for file in os.listdir(pandac_dir):
+    for file in sorted(os.listdir(pandac_dir)):
         if file.endswith('.py'):
             whl.write_file('pandac/' + file, os.path.join(pandac_dir, file))
 
     # Let's also add the interrogate databases.
     input_dir = os.path.join(pandac_dir, 'input')
     if os.path.isdir(input_dir):
-        for file in os.listdir(input_dir):
+        for file in sorted(os.listdir(input_dir)):
             if file.endswith('.in'):
                 whl.write_file('pandac/input/' + file, os.path.join(input_dir, file))
 
@@ -722,7 +740,7 @@ if __debug__:
     entry_points += 'eggcacher = direct.directscripts.eggcacher:main\n'
     entry_points += 'pfreeze = direct.dist.pfreeze:main\n'
     tools_init = ''
-    for file in os.listdir(bin_dir):
+    for file in sorted(os.listdir(bin_dir)):
         basename = os.path.splitext(file)[0]
         if basename in ('eggcacher', 'packpanda'):
             continue

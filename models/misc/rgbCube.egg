@@ -1,0 +1,59 @@
+<CoordinateSystem> { Z-Up }
+
+<Comment> {
+  "flt2egg -ps keep rgbCube.flt -o rgbCube.egg"
+}
+<VertexPool> vpool {
+  <Vertex> 0 {
+    -0.5 -0.5 0.5
+  }
+  <Vertex> 1 {
+    0.5 -0.5 0.5
+  }
+  <Vertex> 2 {
+    0.5 0.5 0.5
+  }
+  <Vertex> 3 {
+    -0.5 0.5 0.5
+  }
+  <Vertex> 4 {
+    0.5 -0.5 -0.5
+  }
+  <Vertex> 5 {
+    -0.5 -0.5 -0.5
+  }
+  <Vertex> 6 {
+    0.5 0.5 -0.5
+  }
+  <Vertex> 7 {
+    -0.5 0.5 -0.5
+  }
+}
+<Group> Cube {
+  <Group> cube {
+    <Polygon> {
+      <RGBA> { 0 0 1 1 }
+      <VertexRef> { 0 1 2 3 <Ref> { vpool } }
+    }
+    <Polygon> {
+      <RGBA> { 0 1 0 1 }
+      <VertexRef> { 4 1 0 5 <Ref> { vpool } }
+    }
+    <Polygon> {
+      <RGBA> { 1 0 0 1 }
+      <VertexRef> { 6 2 1 4 <Ref> { vpool } }
+    }
+    <Polygon> {
+      <RGBA> { 0 1 0 1 }
+      <VertexRef> { 7 3 2 6 <Ref> { vpool } }
+    }
+    <Polygon> {
+      <RGBA> { 1 0 0 1 }
+      <VertexRef> { 5 0 3 7 <Ref> { vpool } }
+    }
+    <Polygon> {
+      <RGBA> { 0 0 1 1 }
+      <VertexRef> { 7 6 4 5 <Ref> { vpool } }
+    }
+  }
+}

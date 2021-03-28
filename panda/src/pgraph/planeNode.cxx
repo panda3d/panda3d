@@ -199,7 +199,7 @@ get_viz(CullTraverser *trav, CullTraverserData &data) {
   const LPlane &plane = cdataw->_plane;
 
   PT(GeomVertexData) vdata = new GeomVertexData
-    (get_name(), GeomVertexFormat::get_v3cp(), Geom::UH_static);
+    (get_name(), GeomVertexFormat::get_v3c(), Geom::UH_static);
 
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
   PT(GeomLines) lines = new GeomLines(Geom::UH_static);

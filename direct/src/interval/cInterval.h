@@ -19,6 +19,7 @@
 #include "pvector.h"
 #include "config_interval.h"
 #include "pStatCollector.h"
+#include "extension.h"
 
 class CIntervalManager;
 
@@ -120,6 +121,8 @@ PUBLISHED:
   bool step_play();
 
 PUBLISHED:
+  EXTENSION(PyObject *__await__(PyObject *self));
+
   MAKE_PROPERTY(name, get_name);
   MAKE_PROPERTY(duration, get_duration);
   MAKE_PROPERTY(open_ended, get_open_ended);

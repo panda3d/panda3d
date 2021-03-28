@@ -29,7 +29,11 @@ extern struct Dtool_PyTypedObject Dtool_LPoint3f;
  */
 bool Extension<CollisionPolygon>::
 verify_points(PyObject *points) {
-  const pvector<LPoint3> vec = convert_points(points);
+  pvector<LPoint3> vec;
+  if (!convert_points(vec, points)) {
+    return false;
+  }
+
   const LPoint3 *verts_begin = &vec[0];
   const LPoint3 *verts_end = verts_begin + vec.size();
 
@@ -42,7 +46,16 @@ verify_points(PyObject *points) {
  */
 void Extension<CollisionPolygon>::
 setup_points(PyObject *points) {
-  const pvector<LPoint3> vec = convert_points(points);
+  pvector<LPoint3> vec;
+  if (!convert_points(vec, points)) {
+    return;
+  }
+
+  if (vec.size() < 3) {
+    PyErr_SetString(PyExc_ValueError, "expected at least 3 points");
+    return;
+  }
+
   const LPoint3 *verts_begin = &vec[0];
   const LPoint3 *verts_end = verts_begin + vec.size();
 
@@ -52,13 +65,11 @@ setup_points(PyObject *points) {
 /**
  * Converts a Python sequence to a list of LPoint3 objects.
  */
-pvector<LPoint3> Extension<CollisionPolygon>::
-convert_points(PyObject *points) {
-  pvector<LPoint3> vec;
+bool Extension<CollisionPolygon>::
+convert_points(pvector<LPoint3> &vec, PyObject *points) {
   PyObject *seq = PySequence_Fast(points, "function expects a sequence");
-
   if (!seq) {
-    return vec;
+    return false;
   }
 
   PyObject **items = PySequence_Fast_ITEMS(seq);
@@ -69,18 +80,23 @@ convert_points(PyObject *points) {
 
   for (Py_ssize_t i = 0; i < len; ++i) {
 #ifdef STDFLOAT_DOUBLE
-    if (ptr = DtoolInstance_UPCAST(items[i], Dtool_LPoint3d)) {
+    if (DtoolInstance_Check(items[i]) &&
+        (ptr = DtoolInstance_UPCAST(items[i], Dtool_LPoint3d))) {
 #else
-    if (ptr = DtoolInstance_UPCAST(items[i], Dtool_LPoint3f)) {
+    if (DtoolInstance_Check(items[i]) &&
+        (ptr = DtoolInstance_UPCAST(items[i], Dtool_LPoint3f))) {
 #endif
       vec.push_back(*(LPoint3 *)ptr);
-    } else {
-      collide_cat.warning() << "Argument must be of LPoint3 type.\n";
+    }
+    else {
+      Dtool_Raise_TypeError("Argument must be of LPoint3 type.");
+      Py_DECREF(seq);
+      return false;
     }
   }
 
   Py_DECREF(seq);
-  return vec;
+  return true;
 }
 
 #endif

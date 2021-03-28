@@ -2,7 +2,7 @@ __all__ = ["install"]
 
 from panda3d.core import *
 from direct.directnotify.DirectNotifyGlobal import directNotify
-from direct.showbase.PythonUtil import fastRepr
+from direct.showbase.PythonUtil import fastRepr, Stack
 import sys
 import traceback
 
@@ -125,7 +125,7 @@ def _excepthookDumpVars(eType, eValue, tb):
             name, obj, traversedIds = stateStack.pop()
             #notify.info('%s, %s, %s' % (name, fastRepr(obj), traversedIds))
             r = fastRepr(obj, maxLen=10)
-            if type(r) is str:
+            if isinstance(r, str):
                 r = r.replace('\n', '\\n')
             s += '\n    %s = %s' % (name, r)
             # if we've already traversed through this object, don't traverse through it again
@@ -133,7 +133,7 @@ def _excepthookDumpVars(eType, eValue, tb):
                 attrName2obj = {}
                 for attrName in codeNames:
                     attr = getattr(obj, attrName, _AttrNotFound)
-                    if (attr is not _AttrNotFound):
+                    if attr is not _AttrNotFound:
                         # prevent infinite recursion on method wrappers (__init__.__init__.__init__...)
                         try:
                             className = attr.__class__.__name__
@@ -143,7 +143,7 @@ def _excepthookDumpVars(eType, eValue, tb):
                             if className == 'method-wrapper':
                                 continue
                         attrName2obj[attrName] = attr
-                if len(attrName2obj):
+                if len(attrName2obj) > 0:
                     # show them in alphabetical order
                     attrNames = list(attrName2obj.keys())
                     attrNames.sort()

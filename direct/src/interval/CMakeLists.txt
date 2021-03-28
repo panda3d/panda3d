@@ -37,11 +37,16 @@ set(P3INTERVAL_SOURCES
   waitInterval.cxx
 )
 
+set(P3INTERVAL_IGATEEXT
+  cInterval_ext.cxx
+  cInterval_ext.h
+)
+
 composite_sources(p3interval P3INTERVAL_SOURCES)
 add_component_library(p3interval SYMBOL BUILDING_DIRECT_INTERVAL
   ${P3INTERVAL_HEADERS} ${P3INTERVAL_SOURCES})
 target_link_libraries(p3interval p3directbase panda)
-target_interrogate(p3interval ALL)
+target_interrogate(p3interval ALL EXTENSIONS ${P3INTERVAL_IGATEEXT})
 
 if(NOT BUILD_METALIBS)
   install(TARGETS p3interval

@@ -558,6 +558,7 @@ affects_polygon_alpha() const {
   case ET_gloss:
   case ET_height:
   case ET_normal_gloss:
+  case ET_emission:
     return false;
 
   case ET_selector:
@@ -882,6 +883,9 @@ string_env_type(const string &string) {
   } else if (cmp_nocase_uh(string, "normal_gloss") == 0) {
     return ET_normal_gloss;
 
+  } else if (cmp_nocase_uh(string, "emission") == 0) {
+    return ET_emission;
+
   } else {
     return ET_unspecified;
   }
@@ -1059,8 +1063,8 @@ as_transform() {
  * return false.
  */
 bool EggTexture::
-egg_start_parse_body() {
-  egg_start_texture_body();
+egg_start_parse_body(EggLexerState &state) {
+  egg_start_texture_body(state);
   return true;
 }
 
@@ -1312,6 +1316,9 @@ ostream &operator << (ostream &out, EggTexture::EnvType type) {
 
   case EggTexture::ET_normal_gloss:
     return out << "normal_gloss";
+
+  case EggTexture::ET_emission:
+    return out << "emission";
   }
 
   nassertr(false, out);

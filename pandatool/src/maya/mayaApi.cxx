@@ -31,7 +31,7 @@
 
 using std::string;
 
-MayaApi *MayaApi::_global_api = nullptr;
+PT(MayaApi) MayaApi::_global_api = nullptr;
 
 // We need this bogus object just to force the application to link with
 // OpenMayaAnim.lib; otherwise, Maya will complain (when compiled on Windows)
@@ -215,6 +215,15 @@ open_api(string program_name, bool view_license, bool revertdir) {
   }
 
   return _global_api;
+}
+
+/**
+ * Returns true if the global API has been successfully opened and may be used, or
+ * false if the API has not created yet or if there is some problem.
+ */
+bool MayaApi::
+is_api_valid() {
+  return _global_api != nullptr && _global_api->is_valid();
 }
 
 /**

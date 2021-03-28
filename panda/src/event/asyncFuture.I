@@ -94,11 +94,6 @@ set_result(std::nullptr_t) {
 }
 
 INLINE void AsyncFuture::
-set_result(TypedObject *result) {
-  set_result(result, nullptr);
-}
-
-INLINE void AsyncFuture::
 set_result(TypedReferenceCount *result) {
   set_result(result, result);
 }
@@ -110,7 +105,12 @@ set_result(TypedWritableReferenceCount *result) {
 
 INLINE void AsyncFuture::
 set_result(const EventParameter &result) {
-  set_result(result.get_ptr(), result.get_ptr());
+  if (result.is_typed_ref_count()) {
+    set_result(result.get_typed_ref_count_value());
+  }
+  else {
+    set_result(result.get_ptr());
+  }
 }
 
 /**
@@ -167,6 +167,7 @@ set_future_state(FutureState state) {
       (AtomicAdjust::Integer)FS_pending,
       (AtomicAdjust::Integer)state);
 
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
   while (orig_state == FS_locked_pending) {
     Thread::force_yield();
     orig_state = (FutureState)AtomicAdjust::compare_and_exchange(
@@ -174,6 +175,9 @@ set_future_state(FutureState state) {
       (AtomicAdjust::Integer)FS_pending,
       (AtomicAdjust::Integer)state);
   }
+#else
+  nassertr(orig_state != FS_locked_pending, false);
+#endif
 
   return orig_state == FS_pending;
 }

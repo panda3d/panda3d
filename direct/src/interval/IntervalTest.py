@@ -4,16 +4,15 @@ __all__ = []
 
 
 if __name__ == "__main__":
-    from direct.showbase.ShowBase import ShowBase
     from panda3d.core import *
-    from .IntervalGlobal import *
+    from direct.showbase.ShowBase import ShowBase
     from direct.actor.Actor import *
-
     from direct.directutil import Mopath
+    from .IntervalGlobal import *
 
     base = ShowBase()
 
-    boat = loader.loadModel('models/misc/smiley')
+    boat = base.loader.loadModel('models/misc/smiley')
     boat.reparentTo(render)
 
     donald = Actor()
@@ -21,11 +20,11 @@ if __name__ == "__main__":
     donald.loadAnims({"steer":"phase_6/models/char/donald-wheel-wheel"})
     donald.reparentTo(boat)
 
-    dock = loader.loadModel('models/misc/smiley')
+    dock = base.loader.loadModel('models/misc/smiley')
     dock.reparentTo(render)
 
-    sound = loader.loadSfx('phase_6/audio/sfx/SZ_DD_waterlap.mp3')
-    foghorn = loader.loadSfx('phase_6/audio/sfx/SZ_DD_foghorn.mp3')
+    sound = base.loader.loadSfx('phase_6/audio/sfx/SZ_DD_waterlap.mp3')
+    foghorn = base.loader.loadSfx('phase_6/audio/sfx/SZ_DD_foghorn.mp3')
 
     mp = Mopath.Mopath()
     mp.loadFile(Filename('phase_6/paths/dd-e-w'))
@@ -161,11 +160,11 @@ if __name__ == "__main__":
 
     i1 = FunctionInterval(printStart)
     # Just to take time
-    i2 = LerpPosInterval(camera, 2.0, Point3(0, 10, 5))
+    i2 = LerpPosInterval(base.camera, 2.0, Point3(0, 10, 5))
     # This will be relative to end of camera move
     i3 = FunctionInterval(printPreviousEnd)
     # Just to take time
-    i4 = LerpPosInterval(camera, 2.0, Point3(0, 0, 5))
+    i4 = LerpPosInterval(base.camera, 2.0, Point3(0, 0, 5))
     # This will be relative to the start of the camera move
     i5 = FunctionInterval(printPreviousStart)
     # This will be relative to track start
