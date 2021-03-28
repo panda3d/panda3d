@@ -397,8 +397,10 @@ class TaskManager:
         return task
 
     def __setupTask(self, funcOrTask, name, priority, sort, extraArgs, taskChain, appendTask, owner, uponDeath):
+        wasTask = False
         if isinstance(funcOrTask, AsyncTask):
             task = funcOrTask
+            wasTask = True
         elif hasattr(funcOrTask, '__call__') or \
              hasattr(funcOrTask, 'cr_await') or \
              isinstance(funcOrTask, types.GeneratorType):
@@ -414,8 +416,14 @@ class TaskManager:
         if hasattr(task, 'setArgs'):
             # It will only accept arguments if it's a PythonTask.
             if extraArgs is None:
-                extraArgs = []
-                appendTask = True
+                if wasTask:
+                    extraArgs = task.getArgs()
+                    #do not append the task to an existing task. It was already there
+                    #from the last time it was addeed
+                    appendTask = False
+                else:
+                    extraArgs = []
+                    appendTask = True
             task.setArgs(extraArgs, appendTask)
         elif extraArgs is not None:
             self.notify.error(
