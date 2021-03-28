@@ -584,6 +584,10 @@ preprocess_glsl(vector_uchar &code, int &glsl_version, const Filename &source_fi
           p[-2] = '3';
           p[-1] = '0';
         }
+        else if (glsl_version < 310) {
+          // We're done here, the rest is handled by the GLSL preprocessor.
+          return true;
+        }
       }
       else if (directive_size == 6 && glsl_preprocess &&
                strncmp(directive, "pragma", directive_size) == 0) {
