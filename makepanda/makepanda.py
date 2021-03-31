@@ -173,7 +173,7 @@ def parseopts(args):
     removedopts = [
         "use-touchinput", "no-touchinput", "no-awesomium", "no-directscripts",
         "no-carbon", "no-physx", "no-rocket", "host", "osxtarget=",
-        "no-nvidiacg", "no-cggl",
+        "no-nvidiacg", "no-cggl", "cggl-incdir=", "cggl-libdir=",
         ]
 
     # All recognized options.
@@ -184,7 +184,6 @@ def parseopts(args):
         "static","debversion=","rpmrelease=","p3dsuffix=","rtdist-version=",
         "directx-sdk=", "windows-sdk=", "msvc-version=", "clean", "use-icl",
         "universal", "target=", "arch=", "git-commit=", "no-copy-python",
-        "cggl-incdir=", "cggl-libdir=",
         ] + removedopts
 
     anything = 0
