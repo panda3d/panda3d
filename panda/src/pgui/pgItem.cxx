@@ -1006,13 +1006,10 @@ get_frame_style(int state) {
 void PGItem::
 set_frame_style(int state, const PGFrameStyle &style) {
   LightReMutexHolder holder(_lock);
-
-  slot_state_def(state);
-
-  if (_state_defs[state]._root.is_empty()) {
-    // Create a new node.
-    _state_defs[state]._root = NodePath("state_" + format_string(state));
-  }
+  // Get the state def node, mainly to ensure that this state is slotted and
+  // listed as having been defined.
+  NodePath &root = do_get_state_def(state);
+  nassertv(!root.is_empty());
 
   _state_defs[state]._frame_style = style;
   _state_defs[state]._frame_stale = true;
