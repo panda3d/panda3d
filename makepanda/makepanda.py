@@ -845,8 +845,8 @@ if (COMPILER=="GCC"):
     SmartPkgEnable("PNG",       "libpng",    ("png"), "png.h", tool = "libpng-config")
     SmartPkgEnable("GLSLANG",   "",          ("MachineIndependent", "GenericCodeGen", "SPIRV", "OSDependent", "OGLCompiler", "HLSL"), "glslang/Public/ShaderLang.h")
     SmartPkgEnable("SPIRV-TOOLS", "",        ("SPIRV-Tools", "SPIRV-Tools-opt"), "spirv-tools/optimizer.hpp")
-    SmartPkgEnable("SPIRV-CROSS-GLSL", "",   ("spirv-cross-core", "spirv-cross-glsl"), "spirv_cross/spirv_cross.hpp")
-    SmartPkgEnable("SPIRV-CROSS-HLSL", "",   ("spirv-cross-core", "spirv-cross-hlsl"), "spirv_cross/spirv_cross.hpp")
+    SmartPkgEnable("SPIRV-CROSS-GLSL", "",   ("spirv-cross-core", "spirv-cross-glsl"), "spirv_cross/spirv_cross.hpp", thirdparty_dir="spirv-cross")
+    SmartPkgEnable("SPIRV-CROSS-HLSL", "",   ("spirv-cross-core", "spirv-cross-hlsl"), "spirv_cross/spirv_cross.hpp", thirdparty_dir="spirv-cross")
 
     # Copy freetype libraries to be specified after harfbuzz libraries as well,
     # because there's a circular dependency between the two libraries.
