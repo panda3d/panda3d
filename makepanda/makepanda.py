@@ -184,6 +184,9 @@ def parseopts(args):
         "static","debversion=","rpmrelease=","p3dsuffix=","rtdist-version=",
         "directx-sdk=", "windows-sdk=", "msvc-version=", "clean", "use-icl",
         "universal", "target=", "arch=", "git-commit=", "no-copy-python",
+        "glslang-incdir=", "glslang-libdir=",
+        "spirv-cross-incdir=", "spirv-cross-libdir=",
+        "spirv-tools-incdir=", "spirv-tools-libdir=",
         ] + removedopts
 
     anything = 0
@@ -246,8 +249,18 @@ def parseopts(args):
             elif (option=="--no-copy-python"): COPY_PYTHON = False
             elif (option[2:] in removedopts or option[2:]+'=' in removedopts):
                 Warn("Ignoring removed option %s" % (option))
+            elif option == "--spirv-cross-incdir":
+                PkgSetCustomLocation('SPIRV-CROSS-HLSL')
+                PkgSetCustomLocation('SPIRV-CROSS-GLSL')
+                IncDirectory('SPIRV-CROSS-HLSL', value)
+                IncDirectory('SPIRV-CROSS-GLSL', value)
+            elif option == "--spirv-cross-libdir":
+                PkgSetCustomLocation('SPIRV-CROSS-HLSL')
+                PkgSetCustomLocation('SPIRV-CROSS-GLSL')
+                LibDirectory('SPIRV-CROSS-HLSL', value)
+                LibDirectory('SPIRV-CROSS-GLSL', value)
             else:
-                for pkg in PkgListGet():
+                for pkg in PkgListGet() + ['GLSLANG', 'SPIRV-TOOLS']:
                     if option == "--use-" + pkg.lower():
                         PkgEnable(pkg)
                         break
