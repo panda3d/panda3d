@@ -349,6 +349,11 @@ get_egg_group(MayaNodeDesc *node_desc) {
         attr << "eggObjectTypes" << i;
 
         if (!get_enum_attribute(dag_object, attr.str(), object_type)) {
+          if (i < 3) {
+            // Support out-of-order legacy object types.
+            continue;
+          }
+
           // We have run out of object types to add.
           break;
         }
