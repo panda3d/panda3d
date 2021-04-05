@@ -691,6 +691,7 @@ init_device() {
     _rtrigger_code = -1;
   }
 
+#ifndef __FreeBSD__
   char path[64];
   char buffer[256];
   const char *parent = "";
@@ -728,6 +729,7 @@ init_device() {
     }
     fclose(f);
   }
+#endif
 
   // Special-case fix for Xbox 360 Wireless Receiver: the Linux kernel
   // driver always reports 4 connected gamepads, regardless of the number

@@ -960,6 +960,7 @@ if (COMPILER=="GCC"):
         if (os.path.isdir("/usr/PCBSD")):
             IncDirectory("ALWAYS", "/usr/PCBSD/local/include")
             LibDirectory("ALWAYS", "/usr/PCBSD/local/lib")
+        SmartPkgEnable("INOTIFY", "libinotify", ("inotify"), "sys/inotify.h")
 
     if GetTarget() != "windows":
         PkgDisable("DIRECTCAM")
@@ -2707,7 +2708,6 @@ def WriteConfigSettings():
         dtool_config["IS_FREEBSD"] = '1'
         dtool_config["PHAVE_ALLOCA_H"] = 'UNDEF'
         dtool_config["PHAVE_MALLOC_H"] = 'UNDEF'
-        dtool_config["PHAVE_LINUX_INPUT_H"] = 'UNDEF'
         dtool_config["HAVE_PROC_CURPROC_FILE"] = '1'
         dtool_config["HAVE_PROC_CURPROC_MAP"] = '1'
         dtool_config["HAVE_PROC_CURPROC_CMDLINE"] = '1'
@@ -4478,7 +4478,7 @@ if (not RUNTIME):
   OPTS=['DIR:panda/metalibs/panda', 'BUILDING:PANDA', 'JPEG', 'PNG', 'HARFBUZZ',
       'TIFF', 'OPENEXR', 'ZLIB', 'OPENSSL', 'FREETYPE', 'FFTW', 'ADVAPI', 'WINSOCK2',
       'SQUISH', 'NVIDIACG', 'VORBIS', 'OPUS', 'WINUSER', 'WINMM', 'WINGDI', 'IPHLPAPI',
-      'SETUPAPI']
+      'SETUPAPI', 'INOTIFY']
 
   TargetAdd('panda_panda.obj', opts=OPTS, input='panda.cxx')
 
