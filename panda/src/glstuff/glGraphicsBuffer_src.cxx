@@ -954,10 +954,17 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
             }
           } else if (_fb_properties.get_float_color()) {
             // 16-bit floating-point.
-            if (_fb_properties.get_blue_bits() > 0 ||
+            if (_fb_properties.get_blue_bits() > 10 ||
                 _fb_properties.get_color_bits() == 1 ||
-                _fb_properties.get_color_bits() > 16 * 2) {
+                _fb_properties.get_color_bits() > 32) {
               gl_format = GL_RGB16F;
+            } else if (_fb_properties.get_blue_bits() > 0) {
+              if (_fb_properties.get_red_bits() > 11 ||
+                  _fb_properties.get_green_bits() > 11) {
+                gl_format = GL_RGB16F;
+              } else {
+                gl_format = GL_R11F_G11F_B10F;
+              }
             } else if (_fb_properties.get_green_bits() > 0 ||
                        _fb_properties.get_color_bits() > 16) {
               gl_format = GL_RG16F;
