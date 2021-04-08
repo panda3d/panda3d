@@ -92,10 +92,10 @@ jobs:
     - name: Install dependencies (macOS)
       if: runner.os == 'macOS'
       run: |
-        curl -O https://www.panda3d.org/download/panda3d-1.10.8/panda3d-1.10.8-tools-mac.tar.gz
-        tar -xf panda3d-1.10.8-tools-mac.tar.gz
-        mv panda3d-1.10.8/thirdparty thirdparty
-        rmdir panda3d-1.10.8
+        curl -O https://www.panda3d.org/download/panda3d-1.10.9/panda3d-1.10.9-tools-mac.tar.gz
+        tar -xf panda3d-1.10.9-tools-mac.tar.gz
+        mv panda3d-1.10.9/thirdparty thirdparty
+        rmdir panda3d-1.10.9
 
         # Temporary hack so that pzip can run, since we are about to remove Cg anyway.
         install_name_tool -id "$(pwd)/thirdparty/darwin-libs-a/nvidiacg/lib/libCg.dylib" thirdparty/darwin-libs-a/nvidiacg/lib/libCg.dylib
@@ -347,16 +347,16 @@ jobs:
       shell: powershell
       run: |
         $wc = New-Object System.Net.WebClient
-        $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.8/panda3d-1.10.8-tools-win64.zip", "thirdparty-tools.zip")
+        $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.9/panda3d-1.10.9-tools-win64.zip", "thirdparty-tools.zip")
         Expand-Archive -Path thirdparty-tools.zip
-        Move-Item -Path thirdparty-tools/panda3d-1.10.8/thirdparty -Destination .
+        Move-Item -Path thirdparty-tools/panda3d-1.10.9/thirdparty -Destination .
     - name: Get thirdparty packages (macOS)
       if: runner.os == 'macOS'
       run: |
-        curl -O https://www.panda3d.org/download/panda3d-1.10.8/panda3d-1.10.8-tools-mac.tar.gz
-        tar -xf panda3d-1.10.8-tools-mac.tar.gz
-        mv panda3d-1.10.8/thirdparty thirdparty
-        rmdir panda3d-1.10.8
+        curl -O https://www.panda3d.org/download/panda3d-1.10.9/panda3d-1.10.9-tools-mac.tar.gz
+        tar -xf panda3d-1.10.9-tools-mac.tar.gz
+        mv panda3d-1.10.9/thirdparty thirdparty
+        rmdir panda3d-1.10.9
         (cd thirdparty/darwin-libs-a && rm -rf rocket)
     - name: Set up Python 3.9
       uses: actions/setup-python@v1
