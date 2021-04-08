@@ -7210,21 +7210,66 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
       }
     } else if (_current_properties->get_float_color()) {
       if (_current_properties->get_alpha_bits()) {
-        format = Texture::F_rgba32;
+        if (_current_properties->get_red_bits() == 16 &&
+            _current_properties->get_green_bits() == 16 &&
+            _current_properties->get_blue_bits() == 16 &&
+            _current_properties->get_alpha_bits() == 16) {
+          format = Texture::F_rgba16;
+        } else {
+          format = Texture::F_rgba32;
+        }
       } else if (_current_properties->get_blue_bits()) {
-        format = Texture::F_rgb32;
+        if (_current_properties->get_red_bits() == 11 &&
+            _current_properties->get_green_bits() == 11 &&
+            _current_properties->get_blue_bits() == 10) {
+          format = Texture::F_r11_g11_b10;
+        } else if (_current_properties->get_red_bits() == 16 &&
+                   _current_properties->get_green_bits() == 16 &&
+                   _current_properties->get_blue_bits() == 16) {
+          format = Texture::F_rgb16;
+        } else {
+          format = Texture::F_rgb32;
+        }
       } else if (_current_properties->get_green_bits()) {
-        format = Texture::F_rg32;
+        if (_current_properties->get_red_bits() == 16 &&
+            _current_properties->get_green_bits() == 16) {
+          format = Texture::F_rg16;
+        } else {
+          format = Texture::F_rg32;
+        }
       } else {
-        format = Texture::F_r32;
+        if (_current_properties->get_red_bits() == 16) {
+          format = Texture::F_r16;
+        } else {
+          format = Texture::F_r32;
+        }
+      }
+    } else if (_current_properties->get_alpha_bits()) {
+      if (_current_properties->get_red_bits() == 10 &&
+          _current_properties->get_green_bits() == 10 &&
+          _current_properties->get_blue_bits() == 10 &&
+          _current_properties->get_alpha_bits() == 2) {
+        format = Texture::F_rgb10_a2;
+      } else {
+        format = Texture::F_rgba;
+      }
+    } else if (_current_properties->get_blue_bits()) {
+      format = Texture::F_rgb;
+    } else if (_current_properties->get_green_bits()) {
+      if (_current_properties->get_red_bits() == 16 &&
+          _current_properties->get_green_bits() == 16) {
+        format = Texture::F_rg16;
+      } else {
+        format = Texture::F_rg;
       }
     } else {
-      if (_current_properties->get_alpha_bits()) {
-        format = Texture::F_rgba;
+      if (_current_properties->get_color_bits() == 16) {
+        format = Texture::F_r16;
       } else {
-        format = Texture::F_rgb;
+        format = Texture::F_red;
       }
     }
+
     if (_current_properties->get_float_color()) {
       component_type = Texture::T_float;
     } else if (_current_properties->get_color_bits() <= 24
