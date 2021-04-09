@@ -7174,7 +7174,10 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
   switch (format) {
   case Texture::F_depth_stencil:
     if (_current_properties->get_float_depth()) {
+      //NB. In the future we may need a T_float_32_unsigned_int_24_8 format, but
+      // for now we'll just try to grab the depth component.
       component_type = Texture::T_float;
+      format = Texture::F_depth_component32;
     } else {
       component_type = Texture::T_unsigned_int_24_8;
     }
