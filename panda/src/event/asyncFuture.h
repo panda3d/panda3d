@@ -78,6 +78,7 @@ PUBLISHED:
   EXTENSION(PyObject *add_done_callback(PyObject *self, PyObject *fn));
 
   EXTENSION(static PyObject *gather(PyObject *args));
+  INLINE static PT(AsyncFuture) shield(PT(AsyncFuture) future);
 
   virtual void output(std::ostream &out) const;
 

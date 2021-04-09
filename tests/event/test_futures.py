@@ -289,6 +289,66 @@ def test_future_gather_cancel_outer():
         assert gather.result()
 
 
+def test_future_shield():
+    # An already done future is returned as-is (no cancellation can occur)
+    inner = core.AsyncFuture()
+    inner.set_result(None)
+    outer = core.AsyncFuture.shield(inner)
+    assert inner == outer
+
+    # Normally finishing future
+    inner = core.AsyncFuture()
+    outer = core.AsyncFuture.shield(inner)
+    assert not outer.done()
+    inner.set_result(None)
+    assert outer.done()
+    assert not outer.cancelled()
+    assert inner.result() is None
+
+    # Normally finishing future with result
+    inner = core.AsyncFuture()
+    outer = core.AsyncFuture.shield(inner)
+    assert not outer.done()
+    inner.set_result(123)
+    assert outer.done()
+    assert not outer.cancelled()
+    assert inner.result() == 123
+
+    # Cancelled inner future does propagate cancellation outward
+    inner = core.AsyncFuture()
+    outer = core.AsyncFuture.shield(inner)
+    assert not outer.done()
+    inner.cancel()
+    assert outer.done()
+    assert outer.cancelled()
+
+    # Finished outer future does nothing to inner
+    inner = core.AsyncFuture()
+    outer = core.AsyncFuture.shield(inner)
+    outer.set_result(None)
+    assert not inner.done()
+    inner.cancel()
+    assert not outer.cancelled()
+
+    # Cancelled outer future does nothing to inner
+    inner = core.AsyncFuture()
+    outer = core.AsyncFuture.shield(inner)
+    outer.cancel()
+    assert not inner.done()
+    inner.cancel()
+
+    # Can be shielded multiple times
+    inner = core.AsyncFuture()
+    outer1 = core.AsyncFuture.shield(inner)
+    outer2 = core.AsyncFuture.shield(inner)
+    outer1.cancel()
+    assert not inner.done()
+    assert not outer2.done()
+    inner.cancel()
+    assert outer1.done()
+    assert outer2.done()
+
+
 def test_future_done_callback():
     fut = core.AsyncFuture()
 
