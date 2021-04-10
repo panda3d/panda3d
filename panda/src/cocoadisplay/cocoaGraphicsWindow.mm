@@ -1185,7 +1185,7 @@ find_display_modes(int width, int height) {
   }
 
   current_pixel_encoding = CGDisplayModeCopyPixelEncoding(mode);
-  refresh_rate = CGDisplayModeGetRefreshRate(mode);
+  refresh_rate = (int) CGDisplayModeGetRefreshRate(mode);
 #if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1080
   // Calculate the pixel width and height of the fullscreen mode we want using
   // the currentdisplay mode dimensions and pixel dimensions.
@@ -1204,7 +1204,7 @@ find_display_modes(int width, int height) {
     // the mode width and height but also actual pixel widh and height.
     if (CGDisplayModeGetWidth(mode) == width &&
         CGDisplayModeGetHeight(mode) == height &&
-        CGDisplayModeGetRefreshRate(mode) == refresh_rate &&
+        (int) CGDisplayModeGetRefreshRate(mode) == refresh_rate &&
 #if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1080
         (floor(NSAppKitVersionNumber) <= NSAppKitVersionNumber10_14 ||
         (CGDisplayModeGetPixelWidth(mode) == expected_pixel_width &&
