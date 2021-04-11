@@ -468,6 +468,9 @@ class ClientRepositoryBase(ConnectionRepository):
                         "Asked to update non-existent DistObj " + str(doId) + "and failed to find it")
 
     def __doUpdateOwner(self, doId, di):
+        if not self.hasOwnerView():
+            return False
+
         ovObj = self.doId2ownerView.get(doId)
         if ovObj:
             odg = Datagram(di.getDatagram())
