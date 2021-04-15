@@ -49,6 +49,8 @@ CocoaGraphicsPipe(CGDirectDisplayID display) : _display(display) {
 
   _display_width = CGDisplayPixelsWide(_display);
   _display_height = CGDisplayPixelsHigh(_display);
+  _display_information -> _maximum_window_width = _display_width;
+  _display_information -> _maximum_window_height = _display_height;
   load_display_information();
 
   if (cocoadisplay_cat.is_debug()) {
