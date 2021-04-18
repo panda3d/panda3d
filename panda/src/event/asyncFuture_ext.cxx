@@ -222,14 +222,33 @@ set_result(PyObject *result) {
  * raises TimeoutError.
  */
 PyObject *Extension<AsyncFuture>::
-result(PyObject *timeout) const {
+result(PyObject *self, PyObject *timeout) const {
+  double timeout_val;
+  if (timeout != Py_None) {
+    timeout_val = PyFloat_AsDouble(timeout);
+    if (timeout_val == -1.0 && _PyErr_OCCURRED()) {
+      return nullptr;
+    }
+  }
+
   if (!_this->done()) {
     // Not yet done?  Wait until it is done, or until a timeout occurs.  But
     // first check to make sure we're not trying to deadlock the thread.
     Thread *current_thread = Thread::get_current_thread();
-    if (_this == (const AsyncFuture *)current_thread->get_current_task()) {
+    AsyncTask *current_task = (AsyncTask *)current_thread->get_current_task();
+    if (_this == current_task) {
       PyErr_SetString(PyExc_RuntimeError, "cannot call task.result() from within the task");
       return nullptr;
+    }
+
+    PythonTask *python_task = nullptr;
+    if (current_task != nullptr &&
+        current_task->is_of_type(PythonTask::get_class_type())) {
+      // If we are calling result() inside a coroutine, mark it as awaiting this
+      // future.  That makes it possible to cancel() us from another thread.
+      python_task = (PythonTask *)current_task;
+      nassertr(python_task->_fut_waiter == nullptr, nullptr);
+      python_task->_fut_waiter = self;
     }
 
     // Release the GIL for the duration.
@@ -239,17 +258,17 @@ result(PyObject *timeout) const {
 #endif
     if (timeout == Py_None) {
       _this->wait();
-    } else {
-      PyObject *num = PyNumber_Float(timeout);
-      if (num != nullptr) {
-        _this->wait(PyFloat_AS_DOUBLE(num));
-      } else {
-        return Dtool_Raise_ArgTypeError(timeout, 0, "result", "float");
-      }
+    }
+    else {
+      _this->wait(timeout_val);
     }
 #if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
     Py_BLOCK_THREADS
 #endif
+
+    if (python_task != nullptr) {
+      python_task->_fut_waiter = nullptr;
+    }
 
     if (!_this->done()) {
       // It timed out.  Raise an exception.

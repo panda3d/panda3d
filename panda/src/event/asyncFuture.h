@@ -67,7 +67,7 @@ PUBLISHED:
 
   INLINE bool done() const;
   INLINE bool cancelled() const;
-  EXTENSION(PyObject *result(PyObject *timeout = Py_None) const);
+  EXTENSION(PyObject *result(PyObject *self, PyObject *timeout = Py_None) const);
 
   virtual bool cancel();
 
