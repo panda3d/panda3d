@@ -74,6 +74,7 @@ RenameSet methodRenameDictionary[] = {
   { "operator ="    , "assign",                 0 },
   { "operator ()"   , "__call__",               0 },
   { "operator []"   , "__getitem__",            0 },
+  { "operator [] =" , "__setitem__",            0 },
   { "operator ++unary", "increment",            0 },
   { "operator ++"   , "increment",              0 },
   { "operator --unary", "decrement",            0 },
