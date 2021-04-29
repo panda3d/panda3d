@@ -9797,7 +9797,8 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
   bool is_3d = (texture_type == Texture::TT_3d_texture ||
                 texture_type == Texture::TT_2d_texture_array);
 
-  if (get_supports_compressed_texture_format(compression)) {
+  if (get_supports_compressed_texture_format(compression) &&
+      texture_type != Texture::TT_buffer_texture) {
     switch (compression) {
     case Texture::CM_on:
       // The user asked for just generic compression.  OpenGL supports
@@ -12852,7 +12853,9 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
     image_compression = tex->get_ram_image_compression();
   }
 
-  if (!get_supports_compressed_texture_format(image_compression)) {
+  bool is_buffer_texture = tex->get_texture_type() == Texture::TT_buffer_texture;
+  if (is_buffer_texture ||
+      !get_supports_compressed_texture_format(image_compression)) {
     image = tex->get_uncompressed_ram_image();
     image_compression = Texture::CM_off;
 
@@ -12870,7 +12873,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
   // If we'll use immutable texture storage, we have to pick a sized image
   // format.
   bool force_sized = (gl_immutable_texture_storage && _supports_tex_storage) ||
-                     (tex->get_texture_type() == Texture::TT_buffer_texture);
+                     (is_buffer_texture);
 
   GLint internal_format = get_internal_image_format(tex, force_sized);
   GLint external_format = get_external_image_format(tex);
