@@ -32,7 +32,6 @@ public:
   Filename get_filename_from_index(int index) const;
 
 protected:
-  Shader::ShaderType _shader_type;
   std::string _raw_source;
 
   typedef pvector<Filename> Filenames;
