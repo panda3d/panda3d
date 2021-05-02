@@ -9,6 +9,33 @@ else:
     from concurrent.futures._base import TimeoutError, CancelledError
 
 
+class MockFuture:
+    _asyncio_future_blocking = False
+    _state = 'PENDING'
+    _cancel_return = False
+    _result = None
+
+    def __await__(self):
+        while self._state == 'PENDING':
+            yield self
+        return self.result()
+
+    def done(self):
+        return self._state != 'PENDING'
+
+    def cancelled(self):
+        return self._state == 'CANCELLED'
+
+    def cancel(self):
+        return self._cancel_return
+
+    def result(self):
+        if self._state == 'CANCELLED':
+            raise CancelledError
+
+        return self._result
+
+
 def test_future_cancelled():
     fut = core.AsyncFuture()
 
@@ -123,6 +150,66 @@ def test_task_cancel_during_run():
         task.result()
 
 
+def test_task_cancel_waiting():
+    # Calling result() in a threaded task chain should cancel the future being
+    # waited on if the surrounding task is cancelled.
+    task_mgr = core.AsyncTaskManager.get_global_ptr()
+    task_chain = task_mgr.make_task_chain("test_task_cancel_waiting")
+    task_chain.set_num_threads(1)
+
+    fut = core.AsyncFuture()
+
+    async def task_main(task):
+        # This will block the thread this task is in until the future is done,
+        # or until the task is cancelled (which implicitly cancels the future).
+        fut.result()
+        return task.done
+
+    task = core.PythonTask(task_main, 'task_main')
+    task.set_task_chain(task_chain.name)
+    task_mgr.add(task)
+
+    task_chain.start_threads()
+    try:
+        assert not task.done()
+        fut.cancel()
+        task.wait()
+
+        assert task.cancelled()
+        assert fut.cancelled()
+
+    finally:
+        task_chain.stop_threads()
+
+
+def test_task_cancel_awaiting():
+    task_mgr = core.AsyncTaskManager.get_global_ptr()
+    task_chain = task_mgr.make_task_chain("test_task_cancel_awaiting")
+
+    fut = core.AsyncFuture()
+
+    async def task_main(task):
+        await fut
+        return task.done
+
+    task = core.PythonTask(task_main, 'task_main')
+    task.set_task_chain(task_chain.name)
+    task_mgr.add(task)
+
+    task_chain.poll()
+    assert not task.done()
+
+    task_chain.poll()
+    assert not task.done()
+
+    task.cancel()
+    task_chain.poll()
+    assert task.done()
+    assert task.cancelled()
+    assert fut.done()
+    assert fut.cancelled()
+
+
 def test_task_result():
     task_mgr = core.AsyncTaskManager.get_global_ptr()
     task_chain = task_mgr.make_task_chain("test_task_result")
@@ -142,6 +229,140 @@ def test_task_result():
     assert task.done()
     assert not task.cancelled()
     assert task.result() == 42
+
+
+def test_coro_await_coro():
+    # Await another coro in a coro.
+    fut = core.AsyncFuture()
+    async def coro2():
+        await fut
+
+    async def coro_main():
+        await coro2()
+
+    task = core.PythonTask(coro_main())
+
+    task_mgr = core.AsyncTaskManager.get_global_ptr()
+    task_mgr.add(task)
+    for i in range(5):
+        task_mgr.poll()
+
+    assert not task.done()
+    fut.set_result(None)
+    task_mgr.poll()
+    assert task.done()
+    assert not task.cancelled()
+
+
+def test_coro_await_cancel_resistant_coro():
+    # Await another coro in a coro, but cancel the outer.
+    fut = core.AsyncFuture()
+    cancelled_caught = [0]
+    keep_going = [False]
+
+    async def cancel_resistant_coro():
+        while not fut.done():
+            try:
+                await core.AsyncFuture.shield(fut)
+            except CancelledError as ex:
+                cancelled_caught[0] += 1
+
+    async def coro_main():
+        await cancel_resistant_coro()
+
+    task = core.PythonTask(coro_main(), 'coro_main')
+
+    task_mgr = core.AsyncTaskManager.get_global_ptr()
+    task_mgr.add(task)
+    assert not task.done()
+
+    task_mgr.poll()
+    assert not task.done()
+
+    # No cancelling it once it started...
+    for i in range(3):
+        assert task.cancel()
+        assert not task.done()
+
+        for j in range(3):
+            task_mgr.poll()
+            assert not task.done()
+
+    assert cancelled_caught[0] == 3
+
+    fut.set_result(None)
+    task_mgr.poll()
+    assert task.done()
+    assert not task.cancelled()
+
+
+def test_coro_await_external():
+    # Await an external future in a coro.
+    fut = MockFuture()
+    fut._result = 12345
+    res = []
+
+    async def coro_main():
+        res.append(await fut)
+
+    task = core.PythonTask(coro_main(), 'coro_main')
+
+    task_mgr = core.AsyncTaskManager.get_global_ptr()
+    task_mgr.add(task)
+    for i in range(5):
+        task_mgr.poll()
+
+    assert not task.done()
+    fut._state = 'FINISHED'
+    task_mgr.poll()
+    assert task.done()
+    assert not task.cancelled()
+    assert res == [12345]
+
+
+def test_coro_await_external_cancel_inner():
+    # Cancel external future being awaited by a coro.
+    fut = MockFuture()
+
+    async def coro_main():
+        await fut
+
+    task = core.PythonTask(coro_main(), 'coro_main')
+
+    task_mgr = core.AsyncTaskManager.get_global_ptr()
+    task_mgr.add(task)
+    for i in range(5):
+        task_mgr.poll()
+
+    assert not task.done()
+    fut._state = 'CANCELLED'
+    assert not task.done()
+    task_mgr.poll()
+    assert task.done()
+    assert task.cancelled()
+
+
+def test_coro_await_external_cancel_outer():
+    # Cancel task that is awaiting external future.
+    fut = MockFuture()
+    result = []
+
+    async def coro_main():
+        result.append(await fut)
+
+    task = core.PythonTask(coro_main(), 'coro_main')
+
+    task_mgr = core.AsyncTaskManager.get_global_ptr()
+    task_mgr.add(task)
+    for i in range(5):
+        task_mgr.poll()
+
+    assert not task.done()
+    fut._state = 'CANCELLED'
+    assert not task.done()
+    task_mgr.poll()
+    assert task.done()
+    assert task.cancelled()
 
 
 def test_coro_exception():
@@ -287,6 +508,66 @@ def test_future_gather_cancel_outer():
 
     with pytest.raises(CancelledError):
         assert gather.result()
+
+
+def test_future_shield():
+    # An already done future is returned as-is (no cancellation can occur)
+    inner = core.AsyncFuture()
+    inner.set_result(None)
+    outer = core.AsyncFuture.shield(inner)
+    assert inner == outer
+
+    # Normally finishing future
+    inner = core.AsyncFuture()
+    outer = core.AsyncFuture.shield(inner)
+    assert not outer.done()
+    inner.set_result(None)
+    assert outer.done()
+    assert not outer.cancelled()
+    assert inner.result() is None
+
+    # Normally finishing future with result
+    inner = core.AsyncFuture()
+    outer = core.AsyncFuture.shield(inner)
+    assert not outer.done()
+    inner.set_result(123)
+    assert outer.done()
+    assert not outer.cancelled()
+    assert inner.result() == 123
+
+    # Cancelled inner future does propagate cancellation outward
+    inner = core.AsyncFuture()
+    outer = core.AsyncFuture.shield(inner)
+    assert not outer.done()
+    inner.cancel()
+    assert outer.done()
+    assert outer.cancelled()
+
+    # Finished outer future does nothing to inner
+    inner = core.AsyncFuture()
+    outer = core.AsyncFuture.shield(inner)
+    outer.set_result(None)
+    assert not inner.done()
+    inner.cancel()
+    assert not outer.cancelled()
+
+    # Cancelled outer future does nothing to inner
+    inner = core.AsyncFuture()
+    outer = core.AsyncFuture.shield(inner)
+    outer.cancel()
+    assert not inner.done()
+    inner.cancel()
+
+    # Can be shielded multiple times
+    inner = core.AsyncFuture()
+    outer1 = core.AsyncFuture.shield(inner)
+    outer2 = core.AsyncFuture.shield(inner)
+    outer1.cancel()
+    assert not inner.done()
+    assert not outer2.done()
+    inner.cancel()
+    assert outer1.done()
+    assert outer2.done()
 
 
 def test_future_done_callback():

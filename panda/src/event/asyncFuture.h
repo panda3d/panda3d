@@ -67,7 +67,7 @@ PUBLISHED:
 
   INLINE bool done() const;
   INLINE bool cancelled() const;
-  EXTENSION(PyObject *result(PyObject *timeout = Py_None) const);
+  EXTENSION(PyObject *result(PyObject *self, PyObject *timeout = Py_None) const);
 
   virtual bool cancel();
 
@@ -78,6 +78,7 @@ PUBLISHED:
   EXTENSION(PyObject *add_done_callback(PyObject *self, PyObject *fn));
 
   EXTENSION(static PyObject *gather(PyObject *args));
+  INLINE static PT(AsyncFuture) shield(PT(AsyncFuture) future);
 
   virtual void output(std::ostream &out) const;
 

@@ -649,6 +649,10 @@ find_file(const Filename &filename, const DSearchPath &searchpath,
     return get_file(filename, status_only);
   }
 
+  if (filename.empty()) {
+    return nullptr;
+  }
+
   int num_directories = searchpath.get_num_directories();
   for (int i = 0; i < num_directories; ++i) {
     Filename match(searchpath.get_directory(i), filename);

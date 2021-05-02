@@ -1,6 +1,6 @@
 //
-// This is a sample mel script to flag a Maya node with one, two, or
-// three eggObjectTypes* attributes.  These attributes are used to tag
+// This is a sample mel script to flag a Maya node with at least
+// one eggObjectTypes* attribute.  These attributes are used to tag
 // geometry with special meaning to Panda.  There are a handful of
 // attribute values that are predefined within Panda, but you can also
 // make up your own attribute values, and define an arbitrary egg
@@ -28,42 +28,22 @@
 // direct/src/configfiles/direct.prc.pp for examples of this.
 //
 
-global proc eggObjectFlags()
-{       
-string $sel[] =`ls -sl`;
-for ($i in $sel)
-  {
-  string $attrName = "eggObjectTypes";
+global proc eggObjectFlags() {
+  string $sel[] =`ls -sl`;
 
   // Modify this line as needed to add your own object types.
   string $eggFlags = "none:portal:polylight:seq24:seq12:indexed:model:dcs:barrier:sphere:tube:trigger:trigger-sphere:bubble:ghost:keep-all-uvsets";
-  
-  string $object = ($i + ".eggObjectTypes");
-  
-    if( `objExists ($object + "1")` ) 
-    {
-    
-      if( `objExists ($object + "2")` ) 
-      {
-      
-        if( `objExists ($object + "3")` ) 
-        {
-        warning("No More Egg Object Types Supported");
-        } 
-         else 
-        {
-        addAttr -ln ($attrName + "3") -k 1 -at "enum" -en ($eggFlags)  $i;
-        }
-      
-      } 
-       else 
-      {
-      addAttr -ln ($attrName + "2") -k 1 -at "enum" -en ($eggFlags)  $i;
-      }
-    } 
-     else 
-    {
-    addAttr -ln ($attrName + "1") -k 1 -at "enum" -en ($eggFlags)  $i;
+
+  for ($i in $sel) {
+    string $attrName = "eggObjectTypes";
+    string $object = ($i + "." + $attrName);
+
+    int $num = 1;
+
+    while (`objExists ($object + $num)`) {
+      $num++;
     }
+
+    addAttr -ln ($attrName + $num) -k 1 -at "enum" -en ($eggFlags) $i;
   }
 }

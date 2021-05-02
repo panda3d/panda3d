@@ -7421,7 +7421,10 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
   switch (format) {
   case Texture::F_depth_stencil:
     if (_current_properties->get_float_depth()) {
+      //NB. In the future we may need a T_float_32_unsigned_int_24_8 format, but
+      // for now we'll just try to grab the depth component.
       component_type = Texture::T_float;
+      format = Texture::F_depth_component32;
     } else {
       component_type = Texture::T_unsigned_int_24_8;
     }
@@ -7457,21 +7460,66 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
       }
     } else if (_current_properties->get_float_color()) {
       if (_current_properties->get_alpha_bits()) {
-        format = Texture::F_rgba32;
+        if (_current_properties->get_red_bits() == 16 &&
+            _current_properties->get_green_bits() == 16 &&
+            _current_properties->get_blue_bits() == 16 &&
+            _current_properties->get_alpha_bits() == 16) {
+          format = Texture::F_rgba16;
+        } else {
+          format = Texture::F_rgba32;
+        }
       } else if (_current_properties->get_blue_bits()) {
-        format = Texture::F_rgb32;
+        if (_current_properties->get_red_bits() == 11 &&
+            _current_properties->get_green_bits() == 11 &&
+            _current_properties->get_blue_bits() == 10) {
+          format = Texture::F_r11_g11_b10;
+        } else if (_current_properties->get_red_bits() == 16 &&
+                   _current_properties->get_green_bits() == 16 &&
+                   _current_properties->get_blue_bits() == 16) {
+          format = Texture::F_rgb16;
+        } else {
+          format = Texture::F_rgb32;
+        }
       } else if (_current_properties->get_green_bits()) {
-        format = Texture::F_rg32;
+        if (_current_properties->get_red_bits() == 16 &&
+            _current_properties->get_green_bits() == 16) {
+          format = Texture::F_rg16;
+        } else {
+          format = Texture::F_rg32;
+        }
       } else {
-        format = Texture::F_r32;
+        if (_current_properties->get_red_bits() == 16) {
+          format = Texture::F_r16;
+        } else {
+          format = Texture::F_r32;
+        }
+      }
+    } else if (_current_properties->get_alpha_bits()) {
+      if (_current_properties->get_red_bits() == 10 &&
+          _current_properties->get_green_bits() == 10 &&
+          _current_properties->get_blue_bits() == 10 &&
+          _current_properties->get_alpha_bits() == 2) {
+        format = Texture::F_rgb10_a2;
+      } else {
+        format = Texture::F_rgba;
+      }
+    } else if (_current_properties->get_blue_bits()) {
+      format = Texture::F_rgb;
+    } else if (_current_properties->get_green_bits()) {
+      if (_current_properties->get_red_bits() == 16 &&
+          _current_properties->get_green_bits() == 16) {
+        format = Texture::F_rg16;
+      } else {
+        format = Texture::F_rg;
       }
     } else {
-      if (_current_properties->get_alpha_bits()) {
-        format = Texture::F_rgba;
+      if (_current_properties->get_color_bits() == 16) {
+        format = Texture::F_r16;
       } else {
-        format = Texture::F_rgb;
+        format = Texture::F_red;
       }
     }
+
     if (_current_properties->get_float_color()) {
       component_type = Texture::T_float;
     } else if (_current_properties->get_color_bits() <= 24
@@ -7524,6 +7572,7 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
     external_format = GL_RGBA;
   }
 
+#ifndef NDEBUG
   if (GLCAT.is_spam()) {
     GLCAT.spam()
       << "glReadPixels(" << xo << ", " << yo << ", " << w << ", " << h << ", ";
@@ -7567,9 +7616,71 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
     case GL_FLOAT:
       GLCAT.spam(false) << "GL_FLOAT";
       break;
+    case GL_UNSIGNED_SHORT_4_4_4_4:
+      GLCAT.spam(false) << "GL_UNSIGNED_SHORT_4_4_4_4";
+      break;
+    case GL_UNSIGNED_SHORT_5_5_5_1:
+      GLCAT.spam(false) << "GL_UNSIGNED_SHORT_5_5_5_1";
+      break;
+    case GL_UNSIGNED_SHORT_5_6_5:
+      GLCAT.spam(false) << "GL_UNSIGNED_SHORT_5_6_5";
+      break;
 #ifndef OPENGLES_1
     case GL_INT:
       GLCAT.spam(false) << "GL_INT";
+      break;
+    case GL_BYTE:
+      GLCAT.spam(false) << "GL_BYTE";
+      break;
+    case GL_SHORT:
+      GLCAT.spam(false) << "GL_SHORT";
+      break;
+    case GL_UNSIGNED_INT:
+      GLCAT.spam(false) << "GL_UNSIGNED_INT";
+      break;
+    case GL_HALF_FLOAT:
+      GLCAT.spam(false) << "GL_HALF_FLOAT";
+      break;
+#endif
+#ifndef OPENGLES
+    case GL_UNSIGNED_BYTE_3_3_2:
+      GLCAT.spam(false) << "GL_UNSIGNED_BYTE_3_3_2";
+      break;
+    case GL_UNSIGNED_BYTE_2_3_3_REV:
+      GLCAT.spam(false) << "GL_UNSIGNED_BYTE_2_3_3_REV";
+      break;
+    case GL_UNSIGNED_SHORT_5_6_5_REV:
+      GLCAT.spam(false) << "GL_UNSIGNED_SHORT_5_6_5_REV";
+      break;
+    case GL_UNSIGNED_SHORT_4_4_4_4_REV:
+      GLCAT.spam(false) << "GL_UNSIGNED_SHORT_4_4_4_4_REV";
+      break;
+    case GL_UNSIGNED_SHORT_1_5_5_5_REV:
+      GLCAT.spam(false) << "GL_UNSIGNED_SHORT_1_5_5_5_REV";
+      break;
+    case GL_UNSIGNED_INT_8_8_8_8:
+      GLCAT.spam(false) << "GL_UNSIGNED_INT_8_8_8_8";
+      break;
+    case GL_UNSIGNED_INT_8_8_8_8_REV:
+      GLCAT.spam(false) << "GL_UNSIGNED_INT_8_8_8_8_REV";
+      break;
+    case GL_UNSIGNED_INT_10_10_10_2:
+      GLCAT.spam(false) << "GL_UNSIGNED_INT_10_10_10_2";
+      break;
+    case GL_UNSIGNED_INT_2_10_10_10_REV:
+      GLCAT.spam(false) << "GL_UNSIGNED_INT_2_10_10_10_REV";
+      break;
+    case GL_UNSIGNED_INT_24_8:
+      GLCAT.spam(false) << "GL_UNSIGNED_INT_24_8";
+      break;
+    case GL_UNSIGNED_INT_10F_11F_11F_REV:
+      GLCAT.spam(false) << "GL_UNSIGNED_INT_10F_11F_11F_REV";
+      break;
+    case GL_UNSIGNED_INT_5_9_9_9_REV:
+      GLCAT.spam(false) << "GL_UNSIGNED_INT_5_9_9_9_REV";
+      break;
+    case GL_FLOAT_32_UNSIGNED_INT_24_8_REV:
+      GLCAT.spam(false) << "GL_FLOAT_32_UNSIGNED_INT_24_8_REV";
       break;
 #endif
     default:
@@ -7579,6 +7690,7 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
     GLCAT.spam(false)
       << ")" << endl;
   }
+#endif  // NDEBUG
 
   unsigned char *image_ptr = tex->modify_ram_image();
   size_t image_size = tex->get_ram_image_size();

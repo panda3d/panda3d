@@ -1,7 +1,0 @@
-language: cpp
-branches:
-  only:
-    - release/1.10.x
-    - release/1.9.x
-script:
-    - echo "Build disabled on master branch."

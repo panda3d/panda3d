@@ -134,6 +134,24 @@ gather(Futures futures) {
 }
 
 /**
+ * Creates a new future that shields the given future from cancellation.
+ * Calling `cancel()` on the returned future will not affect the given future.
+ */
+INLINE PT(AsyncFuture) AsyncFuture::
+shield(PT(AsyncFuture) future) {
+  if (future->try_lock_pending()) {
+    PT(AsyncFuture) outer = new AsyncFuture;
+    outer->_manager = future->_manager;
+    future->_waiting.push_back((AsyncFuture *)outer);
+    future->unlock();
+    return outer;
+  }
+  else {
+    return future;
+  }
+}
+
+/**
  * Tries to atomically lock the future, assuming it is pending.  Returns false
  * if it is not in the pending state, implying it's either done or about to be
  * cancelled.

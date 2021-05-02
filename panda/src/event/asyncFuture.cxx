@@ -148,13 +148,13 @@ notify_done(bool clean_exit) {
   // This will only be called by the thread that managed to set the
   // _future_state away from the "pending" state, so this is thread safe.
 
-  Futures::iterator it;
-  for (it = _waiting.begin(); it != _waiting.end(); ++it) {
-    AsyncFuture *fut = *it;
+  // Go through the futures that are waiting for this to finish.
+  for (AsyncFuture *fut : _waiting) {
     if (fut->is_task()) {
       // It's a task.  Make it active again.
       wake_task((AsyncTask *)fut);
-    } else {
+    }
+    else if (fut->get_type() == AsyncGatheringFuture::get_class_type()) {
       // It's a gathering future.  Decrease the pending count on it, and if
       // we're the last one, call notify_done() on it.
       AsyncGatheringFuture *gather = (AsyncGatheringFuture *)fut;
@@ -162,6 +162,23 @@ notify_done(bool clean_exit) {
         if (gather->set_future_state(FS_finished)) {
           gather->notify_done(true);
         }
+      }
+    }
+    else {
+      // It's a shielding future.  The shielding only protects the inner future
+      // when the outer is cancelled, not the other way around, so we have to
+      // propagate any cancellation here as well.
+      if (clean_exit && _result != nullptr) {
+        // Propagate the result, if any.
+        if (fut->try_lock_pending()) {
+          fut->_result = _result;
+          fut->_result_ref = _result_ref;
+          fut->unlock(FS_finished);
+          fut->notify_done(true);
+        }
+      }
+      else if (fut->set_future_state(clean_exit ? FS_finished : FS_cancelled)) {
+        fut->notify_done(clean_exit);
       }
     }
   }
