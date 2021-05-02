@@ -13,7 +13,7 @@
 
 #include "eglGraphicsWindow.h"
 
-#ifdef HAVE_X11
+#ifdef USE_X11
 
 #include "eglGraphicsStateGuardian.h"
 #include "config_egldisplay.h"
@@ -279,4 +279,4 @@ open_window() {
   return true;
 }
 
-#endif  // HAVE_X11
+#endif  // USE_X11

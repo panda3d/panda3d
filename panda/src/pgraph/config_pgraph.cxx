@@ -42,6 +42,8 @@
 #include "geomDrawCallbackData.h"
 #include "geomNode.h"
 #include "geomTransformer.h"
+#include "instanceList.h"
+#include "instancedNode.h"
 #include "lensNode.h"
 #include "light.h"
 #include "lightAttrib.h"
@@ -373,6 +375,13 @@ ConfigVariableBool allow_live_flatten
           "only has an effect when Panda is not compiled for a release "
           "build."));
 
+ConfigVariableBool filled_wireframe_apply_shader
+("filled-wireframe-apply-shader", false,
+ PRC_DESC("Set this true to apply any shader configured on nodes onto the "
+          "filled wireframe overlay.  The wireframe color is multiplied with "
+          "the result of the fragment shader.  This is helpful when the shader "
+          "alters the position of the vertices and makes the overlay wrong."));
+
 /**
  * Initializes the library.  This must be called at least once before any of
  * the functions or classes in this library can be used.  Normally it will be
@@ -416,6 +425,8 @@ init_libpgraph() {
   GeomDrawCallbackData::init_type();
   GeomNode::init_type();
   GeomTransformer::init_type();
+  InstanceList::init_type();
+  InstancedNode::init_type();
   LensNode::init_type();
   Light::init_type();
   LightAttrib::init_type();
@@ -484,6 +495,8 @@ init_libpgraph() {
   Fog::register_with_read_factory();
   FogAttrib::register_with_read_factory();
   GeomNode::register_with_read_factory();
+  InstanceList::register_with_read_factory();
+  InstancedNode::register_with_read_factory();
   LensNode::register_with_read_factory();
   LightAttrib::register_with_read_factory();
   LightRampAttrib::register_with_read_factory();

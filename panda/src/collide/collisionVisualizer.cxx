@@ -159,13 +159,19 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
       CPT(RenderState) empty_state = RenderState::make_empty();
       CPT(RenderState) point_state = RenderState::make(RenderModeAttrib::make(RenderModeAttrib::M_unchanged, 1.0f, false));
 
-      PT(GeomVertexArrayFormat) point_array_format =
-        new GeomVertexArrayFormat(InternalName::get_vertex(), 3,
-                                  Geom::NT_stdfloat, Geom::C_point,
-                                  InternalName::get_color(), 1,
-                                  Geom::NT_packed_dabc, Geom::C_color,
-                                  InternalName::get_size(), 1,
-                                  Geom::NT_stdfloat, Geom::C_other);
+      PT(GeomVertexArrayFormat) point_array_format;
+      if (vertex_colors_prefer_packed) {
+        point_array_format = new GeomVertexArrayFormat(
+          InternalName::get_vertex(), 3, Geom::NT_stdfloat, Geom::C_point,
+          InternalName::get_color(), 1, Geom::NT_packed_dabc, Geom::C_color,
+          InternalName::get_size(), 1, Geom::NT_stdfloat, Geom::C_other);
+      }
+      else {
+        point_array_format = new GeomVertexArrayFormat(
+          InternalName::get_vertex(), 3, Geom::NT_stdfloat, Geom::C_point,
+          InternalName::get_color(), 4, Geom::NT_uint8, Geom::C_color,
+          InternalName::get_size(), 1, Geom::NT_stdfloat, Geom::C_other);
+      }
       CPT(GeomVertexFormat) point_format =
         GeomVertexFormat::register_format(point_array_format);
 
@@ -212,7 +218,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
         // Draw the normal vector at the surface point.
         if (!point._surface_normal.almost_equal(LVector3::zero())) {
           PT(GeomVertexData) line_vdata =
-            new GeomVertexData("viz", GeomVertexFormat::get_v3cp(),
+            new GeomVertexData("viz", GeomVertexFormat::get_v3c(),
                                Geom::UH_stream);
 
           PT(GeomLines) lines = new GeomLines(Geom::UH_stream);

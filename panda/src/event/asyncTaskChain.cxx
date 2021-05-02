@@ -140,8 +140,12 @@ get_num_threads() const {
  */
 int AsyncTaskChain::
 get_num_running_threads() const {
+#ifdef HAVE_THREADS
   MutexHolder holder(_manager->_lock);
   return _threads.size();
+#else
+  return 0;
+#endif
 }
 
 /**
@@ -536,8 +540,9 @@ do_wait_for_tasks() {
       }
       do_poll();
     }
-
-  } else {
+  }
+#ifdef HAVE_THREADS
+  else {
     // Threaded case.
     while (_num_tasks > 0) {
       if (_state == S_shutdown || _state == S_interrupted) {
@@ -548,6 +553,7 @@ do_wait_for_tasks() {
       _cvar.wait();
     }
   }
+#endif
 }
 
 /**
@@ -813,9 +819,11 @@ bool AsyncTaskChain::
 finish_sort_group() {
   nassertr(_num_busy_threads == 0, true);
 
+#ifdef HAVE_THREADS
   if (!_threads.empty()) {
     PStatClient::thread_tick(get_name());
   }
+#endif
 
   if (!_active.empty()) {
     // There are more tasks; just set the next sort value.
@@ -1030,6 +1038,7 @@ do_stop_threads() {
     _cvar.notify_all();
     _manager->_frame_cvar.notify_all();
 
+#ifdef HAVE_THREADS
     Threads wait_threads;
     wait_threads.swap(_threads);
 
@@ -1051,6 +1060,7 @@ do_stop_threads() {
       }
     }
     _manager->_lock.lock();
+#endif
 
     _state = S_initial;
 
@@ -1072,6 +1082,8 @@ do_start_threads() {
 
   if (_state == S_initial) {
     _state = S_started;
+
+#ifdef HAVE_THREADS
     if (Thread::is_threading_supported() && _num_threads > 0) {
       if (task_cat.is_debug()) {
         task_cat.debug()
@@ -1089,6 +1101,7 @@ do_start_threads() {
         }
       }
     }
+#endif
   }
 }
 
@@ -1100,6 +1113,7 @@ AsyncTaskCollection AsyncTaskChain::
 do_get_active_tasks() const {
   AsyncTaskCollection result;
 
+#ifdef HAVE_THREADS
   Threads::const_iterator thi;
   for (thi = _threads.begin(); thi != _threads.end(); ++thi) {
     AsyncTask *task = (*thi)->_servicing;
@@ -1107,6 +1121,7 @@ do_get_active_tasks() const {
       result.add_task(task);
     }
   }
+#endif
   TaskHeap::const_iterator ti;
   for (ti = _active.begin(); ti != _active.end(); ++ti) {
     AsyncTask *task = (*ti);
@@ -1154,9 +1169,11 @@ do_poll() {
 
   do_start_threads();
 
+#ifdef HAVE_THREADS
   if (!_threads.empty()) {
     return;
   }
+#endif
 
   if (_num_busy_threads != 0) {
     // We are recursively nested within another task.  Return, with a warning.
@@ -1196,9 +1213,11 @@ do_poll() {
       _num_busy_threads--;
       _cvar.notify_all();
 
+#ifdef HAVE_THREADS
       if (!_threads.empty()) {
         return;
       }
+#endif
     }
 
     finish_sort_group();
@@ -1249,10 +1268,12 @@ void AsyncTaskChain::
 do_write(ostream &out, int indent_level) const {
   indent(out, indent_level)
     << "Task chain \"" << get_name() << "\"\n";
+#ifdef HAVE_THREADS
   if (_num_threads > 0) {
     indent(out, indent_level + 2)
       << _num_threads << " threads, priority " << _thread_priority << "\n";
   }
+#endif
   if (_frame_budget >= 0.0) {
     indent(out, indent_level + 2)
       << "frame budget " << _frame_budget << " s\n";
@@ -1289,6 +1310,7 @@ do_write(ostream &out, int indent_level) const {
   tasks.insert(tasks.end(), _this_active.begin(), _this_active.end());
   tasks.insert(tasks.end(), _next_active.begin(), _next_active.end());
 
+#ifdef HAVE_THREADS
   Threads::const_iterator thi;
   for (thi = _threads.begin(); thi != _threads.end(); ++thi) {
     AsyncTask *task = (*thi)->_servicing;
@@ -1296,6 +1318,7 @@ do_write(ostream &out, int indent_level) const {
       tasks.push_back(task);
     }
   }
+#endif
 
   double now = _manager->_clock->get_frame_time();
 
@@ -1392,6 +1415,7 @@ AsyncTaskChainThread(const string &name, AsyncTaskChain *chain) :
  */
 void AsyncTaskChain::AsyncTaskChainThread::
 thread_main() {
+#ifdef HAVE_THREADS
   MutexHolder holder(_chain->_manager->_lock);
   while (_chain->_state != S_shutdown && _chain->_state != S_interrupted) {
     thread_consider_yield();
@@ -1458,4 +1482,5 @@ thread_main() {
       }
     }
   }
+#endif  // HAVE_THREADS
 }

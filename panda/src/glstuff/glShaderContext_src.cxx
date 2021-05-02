@@ -69,6 +69,8 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
 
   // Is this a SPIR-V shader?  If so, we've already done the reflection.
   if (!_needs_reflection) {
+    _remap_uniform_locations = true;
+
     if (_needs_query_uniform_locations) {
       for (const Module &module : _modules) {
         query_uniform_locations(module._module);
@@ -81,14 +83,18 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
       glgsg->_glGetProgramInterfaceiv(_glsl_program, GL_UNIFORM, GL_ACTIVE_RESOURCES, &num_active_uniforms);
 
       for (GLint i = 0; i < num_active_uniforms; ++i) {
-        GLenum prop = GL_LOCATION;
-        GLint location;
-        glgsg->_glGetProgramResourceiv(_glsl_program, GL_UNIFORM, i, 1, &prop, 1, nullptr, &location);
+        GLenum props[2] = {GL_LOCATION, GL_ARRAY_SIZE};
+        GLint values[2];
+        glgsg->_glGetProgramResourceiv(_glsl_program, GL_UNIFORM, i, 2, props, 2, nullptr, values);
+        GLint location = values[0];
         if (location >= 0) {
-          set_uniform_location(location, location);
+          GLint array_size = values[1];
+          while (array_size--) {
+            set_uniform_location(location, location);
+            ++location;
+          }
         }
       }
-      _remap_uniform_locations = true;
     }
 
     // Rebind the texture and image inputs.
@@ -208,18 +214,16 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
 
     // Temporary hacks until array inputs are integrated into the rest of
     // the shader input system.
-    //_transform_table_index = _shader->_transform_table_index;
-    //_transform_table_size = _shader->_transform_table_size;
-    //_slider_table_index = _shader->_slider_table_index;
-    //_slider_table_size = _shader->_slider_table_size;
-
-    if (_transform_table_size > 0 && _transform_table_index == -1) {
-      _transform_table_index = _glgsg->_glGetUniformLocation(_glsl_program, "p3d_TransformTable");
+    if (_shader->_transform_table_loc >= 0) {
+      _transform_table_index = get_uniform_location(_shader->_transform_table_loc);
+      _transform_table_size = _shader->_transform_table_size;
     }
-    if (_slider_table_size > 0 && _slider_table_index == -1) {
-      _slider_table_index = _glgsg->_glGetUniformLocation(_glsl_program, "p3d_SliderTable");
+    if (_shader->_slider_table_loc >= 0) {
+      _slider_table_index = get_uniform_location(_shader->_slider_table_loc);
+      _slider_table_size = _shader->_slider_table_size;
     }
   } else {
+    _remap_uniform_locations = false;
     reflect_program();
   }
 
@@ -851,27 +855,69 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       _shader->cp_add_mat_spec(bind);
       return;
     }
-    if (size > 7 && noprefix.substr(0, 7) == "Texture") {
+    if (noprefix.compare(0, 7, "Texture") == 0) {
       Shader::ShaderTexSpec bind;
       bind._id = param;
-      bind._part = Shader::STO_stage_i;
-      bind._name = 0;
 
-      string tail;
-      bind._stage = string_to_int(noprefix.substr(7), tail);
-      if (!tail.empty()) {
+      if (!get_sampler_texture_type(bind._desired_type, param_type)) {
         GLCAT.error()
-          << "Error parsing shader input name: unexpected '"
-          << tail << "' in '" << name_buffer << "'\n";
+          << "Could not bind texture input " << name_buffer << "\n";
         return;
       }
 
-      if (get_sampler_texture_type(bind._desired_type, param_type)) {
+      if (size > 7 && isdigit(noprefix[7])) {
+        // p3d_Texture0, p3d_Texture1, etc.
+        bind._part = Shader::STO_stage_i;
+
+        string tail;
+        bind._stage = string_to_int(noprefix.substr(7), tail);
+        if (!tail.empty()) {
+          GLCAT.error()
+            << "Error parsing shader input name: unexpected '"
+            << tail << "' in '" << name_buffer << "'\n";
+          return;
+        }
         _glgsg->_glUniform1i(p, _shader->_tex_spec.size());
         _shader->_tex_spec.push_back(bind);
-      } else {
-        GLCAT.error()
-          << "Could not bind texture input " << name_buffer << "\n";
+      }
+      else {
+        // p3d_Texture[] or p3d_TextureModulate[], etc.
+        if (size == 7) {
+          bind._part = Shader::STO_stage_i;
+        }
+        else if (noprefix.compare(7, string::npos, "FF") == 0) {
+          bind._part = Shader::STO_ff_stage_i;
+        }
+        else if (noprefix.compare(7, string::npos, "Modulate") == 0) {
+          bind._part = Shader::STO_stage_modulate_i;
+        }
+        else if (noprefix.compare(7, string::npos, "Add") == 0) {
+          bind._part = Shader::STO_stage_add_i;
+        }
+        else if (noprefix.compare(7, string::npos, "Normal") == 0) {
+          bind._part = Shader::STO_stage_normal_i;
+        }
+        else if (noprefix.compare(7, string::npos, "Height") == 0) {
+          bind._part = Shader::STO_stage_height_i;
+        }
+        else if (noprefix.compare(7, string::npos, "Selector") == 0) {
+          bind._part = Shader::STO_stage_selector_i;
+        }
+        else if (noprefix.compare(7, string::npos, "Gloss") == 0) {
+          bind._part = Shader::STO_stage_gloss_i;
+        }
+        else if (noprefix.compare(7, string::npos, "Emission") == 0) {
+          bind._part = Shader::STO_stage_emission_i;
+        }
+        else {
+          GLCAT.error()
+            << "Unrecognized shader input name: p3d_" << noprefix << "\n";
+        }
+
+        for (bind._stage = 0; bind._stage < param_size; ++bind._stage) {
+          _glgsg->_glUniform1i(p + bind._stage, _shader->_tex_spec.size());
+          _shader->_tex_spec.push_back(bind);
+        }
       }
       return;
     }
@@ -2279,11 +2325,61 @@ issue_parameters(int altered) {
         break;
 
       case ShaderType::ST_double:
-        GLCAT.error() << "Passing double-precision shader inputs to shaders is not currently supported\n";
+#ifdef OPENGLES
+          GLCAT.error()
+            << "Passing double-precision shader inputs to shaders is not supported in OpenGL ES.\n";
 
-        // Deactivate it to make sure the user doesn't get flooded with this
-        // error.
-        set_uniform_location(spec._id._location, -1);
+          // Deactivate it to make sure the user doesn't get flooded with this
+          // error.
+          set_uniform_location(spec._id._location, -1);
+#else
+        {
+          double *data = nullptr;
+
+          switch (ptr_data._type) {
+          case ShaderType::ST_int:
+            // Convert int data to double data.
+            data = (double*) alloca(sizeof(double) * array_size * dim);
+            for (int i = 0; i < (array_size * dim); ++i) {
+              data[i] = (double)(((int*)ptr_data._ptr)[i]);
+            }
+            break;
+
+          case ShaderType::ST_uint:
+            // Convert unsigned int data to double data.
+            data = (double*) alloca(sizeof(double) * array_size * dim);
+            for (int i = 0; i < (array_size * dim); ++i) {
+              data[i] = (double)(((unsigned int*)ptr_data._ptr)[i]);
+            }
+            break;
+
+          case ShaderType::ST_double:
+            data = (double*)ptr_data._ptr;
+            break;
+
+          case ShaderType::ST_float:
+            // Upgrade float data to double data.
+            data = (double*) alloca(sizeof(double) * array_size * dim);
+            for (int i = 0; i < (array_size * dim); ++i) {
+              data[i] = (double)(((float*)ptr_data._ptr)[i]);
+            }
+            break;
+
+          default:
+            nassertd(false) continue;
+          }
+
+          switch (dim) {
+          case 1: _glgsg->_glUniform1dv(p, array_size, data); continue;
+          case 2: _glgsg->_glUniform2dv(p, array_size, data); continue;
+          case 3: _glgsg->_glUniform3dv(p, array_size, data); continue;
+          case 4: _glgsg->_glUniform4dv(p, array_size, data); continue;
+          case 9: _glgsg->_glUniformMatrix3dv(p, array_size, GL_FALSE, data); continue;
+          case 16: _glgsg->_glUniformMatrix4dv(p, array_size, GL_FALSE, data); continue;
+          }
+          nassertd(false) continue;
+        }
+#endif
         break;
 
       default:
@@ -2302,64 +2398,160 @@ issue_parameters(int altered) {
 
       const LMatrix4 *val = _glgsg->fetch_specified_value(spec, _mat_part_cache, altered);
       if (!val) continue;
-#ifndef STDFLOAT_DOUBLE
-      // In this case, the data is already single-precision.
-      const PN_float32 *data = val->get_data();
-#else
-      // In this case, we have to convert it.
-      LMatrix4f valf = LCAST(PN_float32, *val);
-      const PN_float32 *data = valf.get_data();
-#endif
 
       GLint p = get_uniform_location(spec._id._location);
       if (p < 0) {
         continue;
       }
 
-      switch (spec._piece) {
-      case Shader::SMP_whole: _glgsg->_glUniformMatrix4fv(p, 1, GL_FALSE, data); continue;
-      case Shader::SMP_transpose: _glgsg->_glUniformMatrix4fv(p, 1, GL_TRUE, data); continue;
-      case Shader::SMP_col0: _glgsg->_glUniform4f(p, data[0], data[4], data[ 8], data[12]); continue;
-      case Shader::SMP_col1: _glgsg->_glUniform4f(p, data[1], data[5], data[ 9], data[13]); continue;
-      case Shader::SMP_col2: _glgsg->_glUniform4f(p, data[2], data[6], data[10], data[14]); continue;
-      case Shader::SMP_col3: _glgsg->_glUniform4f(p, data[3], data[7], data[11], data[15]); continue;
-      case Shader::SMP_row0: _glgsg->_glUniform4fv(p, 1, data+ 0); continue;
-      case Shader::SMP_row1: _glgsg->_glUniform4fv(p, 1, data+ 4); continue;
-      case Shader::SMP_row2: _glgsg->_glUniform4fv(p, 1, data+ 8); continue;
-      case Shader::SMP_row3: _glgsg->_glUniform4fv(p, 1, data+12); continue;
-      case Shader::SMP_row3x1: _glgsg->_glUniform1fv(p, 1, data+12); continue;
-      case Shader::SMP_row3x2: _glgsg->_glUniform2fv(p, 1, data+12); continue;
-      case Shader::SMP_row3x3: _glgsg->_glUniform3fv(p, 1, data+12); continue;
-      case Shader::SMP_upper3x3:
-        {
+      if (spec._scalar_type == ShaderType::ST_float) {
 #ifndef STDFLOAT_DOUBLE
-          LMatrix3f upper3 = val->get_upper_3();
+        // In this case, the data is already single-precision.
+        const PN_float32 *data = val->get_data();
 #else
-          LMatrix3f upper3 = valf.get_upper_3();
+        // In this case, we have to convert it.
+        LMatrix4f valf = LCAST(PN_float32, *val);
+        const PN_float32 *data = valf.get_data();
 #endif
-          _glgsg->_glUniformMatrix3fv(p, 1, false, upper3.get_data());
+
+        switch (spec._piece) {
+        case Shader::SMP_whole: _glgsg->_glUniformMatrix4fv(p, 1, GL_FALSE, data); continue;
+        case Shader::SMP_transpose: _glgsg->_glUniformMatrix4fv(p, 1, GL_TRUE, data); continue;
+        case Shader::SMP_col0: _glgsg->_glUniform4f(p, data[0], data[4], data[ 8], data[12]); continue;
+        case Shader::SMP_col1: _glgsg->_glUniform4f(p, data[1], data[5], data[ 9], data[13]); continue;
+        case Shader::SMP_col2: _glgsg->_glUniform4f(p, data[2], data[6], data[10], data[14]); continue;
+        case Shader::SMP_col3: _glgsg->_glUniform4f(p, data[3], data[7], data[11], data[15]); continue;
+        case Shader::SMP_row0: _glgsg->_glUniform4fv(p, 1, data+ 0); continue;
+        case Shader::SMP_row1: _glgsg->_glUniform4fv(p, 1, data+ 4); continue;
+        case Shader::SMP_row2: _glgsg->_glUniform4fv(p, 1, data+ 8); continue;
+        case Shader::SMP_row3: _glgsg->_glUniform4fv(p, 1, data+12); continue;
+        case Shader::SMP_row3x1: _glgsg->_glUniform1fv(p, 1, data+12); continue;
+        case Shader::SMP_row3x2: _glgsg->_glUniform2fv(p, 1, data+12); continue;
+        case Shader::SMP_row3x3: _glgsg->_glUniform3fv(p, 1, data+12); continue;
+        case Shader::SMP_upper3x3:
+          {
+#ifndef STDFLOAT_DOUBLE
+            LMatrix3f upper3 = val->get_upper_3();
+#else
+            LMatrix3f upper3 = valf.get_upper_3();
+#endif
+            _glgsg->_glUniformMatrix3fv(p, 1, false, upper3.get_data());
+            continue;
+          }
+        case Shader::SMP_transpose3x3:
+          {
+#ifndef STDFLOAT_DOUBLE
+            LMatrix3f upper3 = val->get_upper_3();
+#else
+            LMatrix3f upper3 = valf.get_upper_3();
+#endif
+            _glgsg->_glUniformMatrix3fv(p, 1, true, upper3.get_data());
+            continue;
+          }
+        case Shader::SMP_cell15:
+          _glgsg->_glUniform1fv(p, 1, data+15);
+          continue;
+        case Shader::SMP_cell14:
+          _glgsg->_glUniform1fv(p, 1, data+14);
+          continue;
+        case Shader::SMP_cell13:
+          _glgsg->_glUniform1fv(p, 1, data+13);
+          continue;
+        case Shader::SMP_upper3x4:
+          _glgsg->_glUniformMatrix3x4fv(p, 1, GL_FALSE, data);
+          continue;
+        case Shader::SMP_upper4x3:
+          {
+            GLfloat data2[] = {data[0], data[1], data[2], data[4], data[5], data[6], data[8], data[9], data[10], data[12], data[13], data[14]};
+            _glgsg->_glUniformMatrix4x3fv(p, 1, GL_FALSE, data2);
+            continue;
+          }
+        case Shader::SMP_transpose3x4:
+          {
+            GLfloat data2[] = {data[0], data[4], data[8], data[12], data[1], data[5], data[9], data[13], data[2], data[6], data[10], data[14]};
+            _glgsg->_glUniformMatrix3x4fv(p, 1, GL_FALSE, data2);
+            continue;
+          }
+        case Shader::SMP_transpose4x3:
+          _glgsg->_glUniformMatrix4x3fv(p, 1, GL_TRUE, data);
           continue;
         }
-      case Shader::SMP_transpose3x3:
-        {
-#ifndef STDFLOAT_DOUBLE
-          LMatrix3f upper3 = val->get_upper_3();
-#else
-          LMatrix3f upper3 = valf.get_upper_3();
-#endif
-          _glgsg->_glUniformMatrix3fv(p, 1, true, upper3.get_data());
-          continue;
-        }
-      case Shader::SMP_cell15:
-        _glgsg->_glUniform1fv(p, 1, data+15);
-        continue;
-      case Shader::SMP_cell14:
-        _glgsg->_glUniform1fv(p, 1, data+14);
-        continue;
-      case Shader::SMP_cell13:
-        _glgsg->_glUniform1fv(p, 1, data+13);
-        continue;
       }
+#ifndef OPENGLES
+      else {
+#ifdef STDFLOAT_DOUBLE
+        // In this case, the data is already double-precision.
+        const double *data = val->get_data();
+#else
+        // In this case, we have to convert it.
+        LMatrix4d vald = LCAST(double, *val);
+        const double *data = vald.get_data();
+#endif
+
+        switch (spec._piece) {
+        case Shader::SMP_whole: _glgsg->_glUniformMatrix4dv(p, 1, GL_FALSE, data); continue;
+        case Shader::SMP_transpose: _glgsg->_glUniformMatrix4dv(p, 1, GL_TRUE, data); continue;
+        case Shader::SMP_col0: _glgsg->_glUniform4f(p, data[0], data[4], data[ 8], data[12]); continue;
+        case Shader::SMP_col1: _glgsg->_glUniform4f(p, data[1], data[5], data[ 9], data[13]); continue;
+        case Shader::SMP_col2: _glgsg->_glUniform4f(p, data[2], data[6], data[10], data[14]); continue;
+        case Shader::SMP_col3: _glgsg->_glUniform4f(p, data[3], data[7], data[11], data[15]); continue;
+        case Shader::SMP_row0: _glgsg->_glUniform4dv(p, 1, data+ 0); continue;
+        case Shader::SMP_row1: _glgsg->_glUniform4dv(p, 1, data+ 4); continue;
+        case Shader::SMP_row2: _glgsg->_glUniform4dv(p, 1, data+ 8); continue;
+        case Shader::SMP_row3: _glgsg->_glUniform4dv(p, 1, data+12); continue;
+        case Shader::SMP_row3x1: _glgsg->_glUniform1dv(p, 1, data+12); continue;
+        case Shader::SMP_row3x2: _glgsg->_glUniform2dv(p, 1, data+12); continue;
+        case Shader::SMP_row3x3: _glgsg->_glUniform3dv(p, 1, data+12); continue;
+        case Shader::SMP_upper3x3:
+          {
+#ifdef STDFLOAT_DOUBLE
+            LMatrix3d upper3 = val->get_upper_3();
+#else
+            LMatrix3d upper3 = vald.get_upper_3();
+#endif
+            _glgsg->_glUniformMatrix3dv(p, 1, false, upper3.get_data());
+            continue;
+          }
+        case Shader::SMP_transpose3x3:
+          {
+#ifdef STDFLOAT_DOUBLE
+            LMatrix3d upper3 = val->get_upper_3();
+#else
+            LMatrix3d upper3 = vald.get_upper_3();
+#endif
+            _glgsg->_glUniformMatrix3dv(p, 1, true, upper3.get_data());
+            continue;
+          }
+        case Shader::SMP_cell15:
+          _glgsg->_glUniform1dv(p, 1, data+15);
+          continue;
+        case Shader::SMP_cell14:
+          _glgsg->_glUniform1dv(p, 1, data+14);
+          continue;
+        case Shader::SMP_cell13:
+          _glgsg->_glUniform1dv(p, 1, data+13);
+          continue;
+        case Shader::SMP_upper3x4:
+          _glgsg->_glUniformMatrix3x4dv(p, 1, GL_FALSE, data);
+          continue;
+        case Shader::SMP_upper4x3:
+          {
+            GLdouble data2[] = {data[0], data[1], data[2], data[4], data[5], data[6], data[8], data[9], data[10], data[12], data[13], data[14]};
+            _glgsg->_glUniformMatrix4x3dv(p, 1, GL_FALSE, data2);
+            continue;
+          }
+        case Shader::SMP_transpose3x4:
+          {
+            GLdouble data2[] = {data[0], data[4], data[8], data[12], data[1], data[5], data[9], data[13], data[2], data[6], data[10], data[14]};
+            _glgsg->_glUniformMatrix3x4dv(p, 1, GL_FALSE, data2);
+            continue;
+          }
+        case Shader::SMP_transpose4x3:
+          _glgsg->_glUniformMatrix4x3dv(p, 1, GL_TRUE, data);
+          continue;
+        }
+      }
+#endif  // OPENGLES
     }
   }
 
@@ -2371,27 +2563,60 @@ issue_parameters(int altered) {
  */
 void CLP(ShaderContext)::
 update_transform_table(const TransformTable *table) {
-  LMatrix4f *matrices = (LMatrix4f *)alloca(_transform_table_size * 64);
+  size_t num_matrices = (size_t)_transform_table_size;
 
-  size_t i = 0;
-  if (table != nullptr) {
-    size_t num_transforms = min((size_t)_transform_table_size, table->get_num_transforms());
-    for (; i < num_transforms; ++i) {
+  if (!_shader->_transform_table_reduced) {
+    LMatrix4f *matrices = (LMatrix4f *)alloca(num_matrices * sizeof(LMatrix4f));
+
+    size_t i = 0;
+    if (table != nullptr) {
+      size_t num_transforms = min(num_matrices, table->get_num_transforms());
+      for (; i < num_transforms; ++i) {
 #ifdef STDFLOAT_DOUBLE
-      LMatrix4 matrix;
-      table->get_transform(i)->get_matrix(matrix);
-      matrices[i] = LCAST(float, matrix);
+        LMatrix4 matrix;
+        table->get_transform(i)->get_matrix(matrix);
+        matrices[i] = LCAST(float, matrix);
 #else
-      table->get_transform(i)->get_matrix(matrices[i]);
+        table->get_transform(i)->get_matrix(matrices[i]);
 #endif
+      }
     }
+    for (; i < num_matrices; ++i) {
+      matrices[i] = LMatrix4f::ident_mat();
+    }
+    _glgsg->_glUniformMatrix4fv(_transform_table_index, _transform_table_size,
+                                (_shader->get_language() == Shader::SL_Cg),
+                                (float *)matrices);
   }
-  for (; i < (size_t)_transform_table_size; ++i) {
-    matrices[i] = LMatrix4f::ident_mat();
-  }
+  else {
+    // Reduced 3x4 matrix, used by shader generator
+    LVecBase4f *vectors = (LVecBase4f *)alloca(_transform_table_size * sizeof(LVecBase4f) * 3);
 
-  _glgsg->_glUniformMatrix4fv(_transform_table_index, _transform_table_size,
-                              GL_FALSE, (float *)matrices);
+    size_t i = 0;
+    if (table != nullptr) {
+      size_t num_transforms = std::min(num_matrices, table->get_num_transforms());
+      for (; i < num_transforms; ++i) {
+        LMatrix4f matrix;
+#ifdef STDFLOAT_DOUBLE
+        LMatrix4d matrixd;
+        table->get_transform(i)->get_matrix(matrixd);
+        matrix = LCAST(float, matrixd);
+#else
+        table->get_transform(i)->get_matrix(matrix);
+#endif
+        vectors[i * 3 + 0] = matrix.get_col(0);
+        vectors[i * 3 + 1] = matrix.get_col(1);
+        vectors[i * 3 + 2] = matrix.get_col(2);
+      }
+    }
+    for (; i < num_matrices; ++i) {
+      vectors[i * 3 + 0].set(1, 0, 0, 0);
+      vectors[i * 3 + 1].set(0, 1, 0, 0);
+      vectors[i * 3 + 2].set(0, 0, 1, 0);
+    }
+    _glgsg->_glUniformMatrix3x4fv(_transform_table_index, _transform_table_size,
+                                  GL_FALSE, (float *)vectors);
+  }
 }
 
 /**
@@ -2585,6 +2810,22 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
 #else
           _glgsg->_glVertexAttrib4fv(p, _glgsg->_scene_graph_color.get_data());
 #endif
+        }
+        else if (name == InternalName::get_transform_index() &&
+                 _glgsg->_glVertexAttribI4ui != nullptr) {
+          _glgsg->_glVertexAttribI4ui(p, 0, 1, 2, 3);
+        }
+        else if (name == InternalName::get_instance_matrix()) {
+          const LMatrix4 &ident_mat = LMatrix4::ident_mat();
+
+          for (int i = 0; i < bind._elements; ++i) {
+#ifdef STDFLOAT_DOUBLE
+            _glgsg->_glVertexAttrib4dv(p, ident_mat.get_data() + i * 4);
+#else
+            _glgsg->_glVertexAttrib4fv(p, ident_mat.get_data() + i * 4);
+#endif
+            ++p;
+          }
         }
       }
     }
@@ -2864,6 +3105,11 @@ update_shader_texture_bindings(ShaderContext *prev) {
       }
       continue;
     }
+    else if (Texture::is_integer(tex->get_format())) {
+      // Required to satisfy Intel drivers, which will otherwise sample zero.
+      sampler.set_minfilter(sampler.uses_mipmaps() ? SamplerState::FT_nearest_mipmap_nearest : SamplerState::FT_nearest);
+      sampler.set_magfilter(SamplerState::FT_nearest);
+    }
 
     if (tex->get_texture_type() != spec._desired_type) {
       switch (spec._part) {
@@ -3107,6 +3353,37 @@ report_program_errors(GLuint program, bool fatal) {
     if (strcmp(info_log, "Success.\n") != 0 &&
         strcmp(info_log, "No errors.\n") != 0 &&
         strcmp(info_log, "Validation successful.\n") != 0) {
+
+#ifdef __APPLE__
+      // Filter out these unhelpful warnings that Apple always generates.
+      while (true) {
+        if (info_log[0] == '\n') {
+          ++info_log;
+          continue;
+        }
+        if (info_log[0] == '\0') {
+          // We reached the end without finding anything interesting.
+          return;
+        }
+        int linelen = 0;
+        if ((sscanf(info_log, "WARNING: Could not find vertex shader attribute %*s to match BindAttributeLocation request.%*[\n]%n", &linelen) == 0 && linelen > 0) ||
+            (sscanf(info_log, "WARNING: Could not find fragment shader output %*s to match FragDataBinding request.%*[\n]%n", &linelen) == 0 && linelen > 0)) {
+          info_log += linelen;
+          continue;
+        }
+        else {
+          break;
+        }
+
+        info_log = strchr(info_log, '\n');
+        if (info_log == nullptr) {
+          // We reached the end without finding anything interesting.
+          return;
+        }
+        ++info_log;
+      }
+#endif
+
       if (!fatal) {
         GLCAT.warning()
           << "Shader " << _shader->get_filename() << " produced the "
@@ -3171,10 +3448,10 @@ attach_shader(const ShaderModule *module) {
   }
 
   bool needs_compile = false;
-#ifndef OPENGLES
   if (module->is_of_type(ShaderModuleSpirV::get_class_type())) {
     ShaderModuleSpirV *spv = (ShaderModuleSpirV *)module;
 
+#ifndef OPENGLES
     if (_glgsg->_supports_spir_v) {
       // Load a SPIR-V binary.
       if (GLCAT.is_debug()) {
@@ -3226,9 +3503,15 @@ attach_shader(const ShaderModule *module) {
                                 (const char *)spv->get_data(),
                                 spv->get_data_size() * sizeof(uint32_t));
       }
-      _glgsg->_glSpecializeShader(handle, "main", 0, nullptr, nullptr);
+
+      const Shader::ModuleSpecConstants &consts = _shader->_module_spec_consts[module];
+      _glgsg->_glSpecializeShader(handle, "main", consts._indices.size(),
+                                  (GLuint *)consts._indices.data(),
+                                  (GLuint *)consts._values.data());
     }
-    else {
+    else
+#endif  // !OPENGLES
+    {
       // Compile to GLSL using SPIRV-Cross.
       if (GLCAT.is_debug()) {
         GLCAT.debug()
@@ -3244,6 +3527,7 @@ attach_shader(const ShaderModule *module) {
 #else
       options.es = false;
 #endif
+      options.vertex.support_nonzero_base_instance = false;
       compiler.set_common_options(options);
 
       // At this time, SPIRV-Cross doesn't add this extension automatically.
@@ -3336,9 +3620,8 @@ attach_shader(const ShaderModule *module) {
       _glgsg->_glShaderSource(handle, 1, &text_str, nullptr);
       needs_compile = true;
     }
-  } else
-#endif
-  if (module->is_of_type(ShaderModuleGlsl::get_class_type())) {
+  }
+  else if (module->is_of_type(ShaderModuleGlsl::get_class_type())) {
     // Legacy preprocessed GLSL.
     if (GLCAT.is_debug()) {
       GLCAT.debug()

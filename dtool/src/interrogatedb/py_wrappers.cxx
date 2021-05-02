@@ -30,7 +30,7 @@ static void _register_collection(PyTypeObject *type, const char *abc) {
 #endif
         PyObject *sequence = PyDict_GetItemString(dict, abc);
         if (sequence != nullptr) {
-          if (PyObject_CallMethodObjArgs(sequence, register_str, (PyObject *)type, nullptr) == nullptr) {
+          if (PyObject_CallMethodOneArg(sequence, register_str, (PyObject *)type) == nullptr) {
             PyErr_Print();
           }
         }

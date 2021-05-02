@@ -45,7 +45,6 @@ upcall() {
       _gsg->clear_state_and_transform();
     }
 
-    _obj->_geom->draw(_gsg, _obj->_munged_data, _force,
-                      Thread::get_current_thread());
+    _obj->draw_inline(_gsg, _force, Thread::get_current_thread());
   }
 }

@@ -150,7 +150,7 @@ class Icon:
 
         # ICO files only support resolutions up to 256x256.
         count = 0
-        for size in self.images.keys():
+        for size in self.images:
             if size < 256:
                 count += 1
             if size <= 256:

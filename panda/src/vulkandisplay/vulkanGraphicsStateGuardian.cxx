@@ -2532,8 +2532,8 @@ finish_frame(FrameData &frame_data) {
 bool VulkanGraphicsStateGuardian::
 begin_draw_primitives(const GeomPipelineReader *geom_reader,
                       const GeomVertexDataPipelineReader *data_reader,
-                      bool force) {
-  if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, data_reader, force)) {
+                      size_t num_instances, bool force) {
+  if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, data_reader, num_instances, force)) {
     return false;
   }
 
@@ -2541,6 +2541,8 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   if (_current_shader == nullptr) {
     return false;
   }
+
+  _instance_count = (uint32_t)std::min(num_instances, (size_t)0xffffffff);
 
   // Prepare and bind the vertex buffers.
   size_t num_arrays = data_reader->get_num_arrays();
@@ -2926,10 +2928,10 @@ do_draw_primitive(const GeomPrimitivePipelineReader *reader, bool force,
     }
 
     vkCmdBindIndexBuffer(_frame_data->_cmd, ibc->_buffer, 0, ibc->_index_type);
-    vkCmdDrawIndexed(_frame_data->_cmd, num_vertices, 1, 0, 0, 0);
+    vkCmdDrawIndexed(_frame_data->_cmd, num_vertices, _instance_count, 0, 0, 0);
   } else {
     // A non-indexed primitive.
-    vkCmdDraw(_frame_data->_cmd, num_vertices, 1, reader->get_first_vertex(), 0);
+    vkCmdDraw(_frame_data->_cmd, num_vertices, _instance_count, reader->get_first_vertex(), 0);
   }
   return true;
 }
@@ -3601,9 +3603,9 @@ update_lattr_descriptor_set(VkDescriptorSet ds, const LightAttrib *attr) {
 
     if (i < num_lights) {
       NodePath light = attr->get_on_light(i);
-      nassertr(!light.is_empty(), nullptr);
+      nassertr(!light.is_empty(), false);
       Light *light_obj = light.node()->as_light();
-      nassertr(light_obj != nullptr, nullptr);
+      nassertr(light_obj != nullptr, false);
 
       LightLensNode *lln = DCAST(LightLensNode, light.node());
       if (lln != nullptr && lln->is_shadow_caster()) {

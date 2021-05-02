@@ -1,8 +1,14 @@
 from direct.directnotify.DirectNotifyGlobal import directNotify
+import direct.showbase.DConfig as config
 from direct.showbase.PythonUtil import makeFlywheelGen
 from direct.showbase.PythonUtil import itype, serialNum, safeRepr, fastRepr
 from direct.showbase.Job import Job
-import types, weakref, random, sys
+from direct.showbase.JobManagerGlobal import jobMgr
+from direct.showbase.MessengerGlobal import messenger
+from direct.task.TaskManagerGlobal import taskMgr
+import types
+import weakref
+import random
 import builtins
 
 deadEndTypes = (bool, types.BuiltinFunctionType,
@@ -445,13 +451,11 @@ class FindContainers(Job):
         if objId in self._id2discoveredStartRef:
             existingRef = self._id2discoveredStartRef[objId]
             if type(existingRef) is not int:
-                if (existingRef.getNumIndirections() >=
-                    ref.getNumIndirections()):
+                if existingRef.getNumIndirections() >= ref.getNumIndirections():
                     # the ref that we already have is more concise than the new ref
                     return
         if objId in self._id2ref:
-            if (self._id2ref[objId].getNumIndirections() >=
-                ref.getNumIndirections()):
+            if self._id2ref[objId].getNumIndirections() >= ref.getNumIndirections():
                 # the ref that we already have is more concise than the new ref
                 return
         storedItem = ref
@@ -851,7 +855,7 @@ class FPTObjsOfType(Job):
                         cName = container.__class__.__name__
                     else:
                         cName = container.__name__
-                    if (self._otn.lower() in cName.lower()):
+                    if self._otn.lower() in cName.lower():
                         try:
                             for ptc in self._leakDetector.getContainerNameByIdGen(
                                 id, getInstance=getInstance):

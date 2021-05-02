@@ -7,6 +7,7 @@ from panda3d.core import *
 from direct.gui import OnscreenText
 from direct.directtools import DirectUtil
 
+
 class OnScreenDebug:
 
     enabled = ConfigVariableBool("on-screen-debug-enabled", False)
@@ -33,7 +34,7 @@ class OnScreenDebug:
         fgColor.setW(ConfigVariableDouble("on-screen-debug-fg-alpha", 0.85).value)
         bgColor.setW(ConfigVariableDouble("on-screen-debug-bg-alpha", 0.85).value)
 
-        font = loader.loadFont(fontPath)
+        font = base.loader.loadFont(fontPath)
         if not font.isValid():
             print("failed to load OnScreenDebug font %s" % fontPath)
             font = TextNode.getDefaultFont()
@@ -63,7 +64,7 @@ class OnScreenDebug:
                 #isNew = "was"
                 isNew = "~"
             value = v[1]
-            if type(value) == float:
+            if isinstance(value, float):
                 value = "% 10.4f"%(value,)
             # else: other types will be converted to str by the "%s"
             self.onScreenText.appendText("%20s %s %-44s\n"%(k, isNew, value))

@@ -2430,6 +2430,11 @@ define_atomic_type(InterrogateType &itype, CPPSimpleType *cpptype) {
     itype._atomic_token = AT_int;
     break;
 
+  case CPPSimpleType::T_char8_t:
+    itype._flags |= InterrogateType::F_unsigned;
+    itype._atomic_token = AT_int;
+    break;
+
   case CPPSimpleType::T_char16_t:
     itype._flags |= InterrogateType::F_unsigned;
     itype._atomic_token = AT_int;
@@ -3006,6 +3011,38 @@ define_method(CPPInstance *function, InterrogateType &itype,
       if (find(itype._methods.begin(), itype._methods.end(),
                index) == itype._methods.end()) {
         itype._methods.push_back(index);
+      }
+
+      // For an operator [] returning a non-const reference, we synthesize an
+      // "item-assignment" operator, which does not exist in C++ but does in
+      // scripting languages.  This allows `obj[n] = ...`
+      if (ftype->_return_type != nullptr &&
+          ftype->_return_type->is_reference() &&
+          !ftype->_return_type->remove_reference()->is_const() &&
+          (ftype->_flags & CPPFunctionType::F_const_method) == 0 &&
+          function->get_simple_name() == "operator []") {
+
+        // Make up a CPPFunctionType with extra parameter.
+        CPPType *assign_type = TypeManager::wrap_const_reference(ftype->_return_type->remove_reference());
+        CPPParameterList *params = new CPPParameterList(*(ftype->_parameters));
+        CPPInstance *param1 = new CPPInstance(assign_type, "assign_val");
+        params->_parameters.push_back(param1);
+        CPPType *void_type = TypeManager::get_void_type();
+        CPPFunctionType *ftype = new CPPFunctionType(void_type, params, 0);
+
+        // Now make up an instance for the function.
+        CPPInstance *function = new CPPInstance(ftype, "operator [] =");
+        function->_ident->_native_scope = scope;
+
+        FunctionIndex index = get_function(function, "",
+                                           struct_type, scope,
+                                           InterrogateFunction::F_item_assignment);
+        if (index != 0) {
+          if (find(itype._methods.begin(), itype._methods.end(),
+                   index) == itype._methods.end()) {
+            itype._methods.push_back(index);
+          }
+        }
       }
     }
   }

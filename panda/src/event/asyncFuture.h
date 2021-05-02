@@ -67,7 +67,7 @@ PUBLISHED:
 
   INLINE bool done() const;
   INLINE bool cancelled() const;
-  EXTENSION(PyObject *result(PyObject *timeout = Py_None) const);
+  EXTENSION(PyObject *result(PyObject *self, PyObject *timeout = Py_None) const);
 
   virtual bool cancel();
 
@@ -78,19 +78,21 @@ PUBLISHED:
   EXTENSION(PyObject *add_done_callback(PyObject *self, PyObject *fn));
 
   EXTENSION(static PyObject *gather(PyObject *args));
+  INLINE static PT(AsyncFuture) shield(PT(AsyncFuture) future);
 
   virtual void output(std::ostream &out) const;
 
   BLOCKING void wait();
   BLOCKING void wait(double timeout);
 
+  EXTENSION(void set_result(PyObject *));
+
+public:
   INLINE void set_result(std::nullptr_t);
-  INLINE void set_result(TypedObject *result);
   INLINE void set_result(TypedReferenceCount *result);
   INLINE void set_result(TypedWritableReferenceCount *result);
   INLINE void set_result(const EventParameter &result);
-
-public:
+  void set_result(TypedObject *result);
   void set_result(TypedObject *ptr, ReferenceCount *ref_ptr);
 
   INLINE TypedObject *get_result() const;

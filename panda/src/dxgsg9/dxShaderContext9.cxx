@@ -84,6 +84,7 @@ compile_module(const ShaderModule *module, DWORD *&data) {
   spirv_cross::CompilerHLSL compiler(std::vector<uint32_t>(spv->get_data(), spv->get_data() + spv->get_data_size()));
   spirv_cross::CompilerHLSL::Options options;
   options.shader_model = 30;
+  options.flatten_matrix_vertex_input_semantics = true;
   compiler.set_hlsl_options(options);
 
   // Bind certain known attributes to specific semantics.
@@ -101,7 +102,6 @@ compile_module(const ShaderModule *module, DWORD *&data) {
     }
     else if (spec._name == InternalName::get_normal()) {
       compiler.add_vertex_attribute_remap({idx, "NORMAL"});
-      _uses_vertex_color = true;
     }
     else if (spec._name == InternalName::get_tangent()) {
       compiler.add_vertex_attribute_remap({idx, "TANGENT"});
@@ -114,10 +114,13 @@ compile_module(const ShaderModule *module, DWORD *&data) {
     }
     else {
       // The rest gets mapped to TEXCOORD + location.
-      char buffer[16];
-      sprintf(buffer, "TEXCOORD%d", (int)texcoord_index);
-      compiler.add_vertex_attribute_remap({idx, buffer});
-      ++texcoord_index;
+      for (size_t i = 0; i < spec._elements; ++i) {
+        char buffer[16];
+        sprintf(buffer, "TEXCOORD%d", (int)texcoord_index);
+        compiler.add_vertex_attribute_remap({idx, buffer});
+        ++texcoord_index;
+        ++idx;
+      }
     }
   }
 
@@ -376,7 +379,7 @@ release_resources() {
   }
 
   for (const auto &it : _vertex_declarations) {
-    it.second->Release();
+    it.second.first->Release();
   }
   _vertex_declarations.clear();
 }
@@ -758,8 +761,12 @@ issue_parameters(GSG *gsg, int altered) {
 
       switch (spec._piece) {
       case Shader::SMP_whole:
+      case Shader::SMP_upper3x4:
+      case Shader::SMP_upper4x3:
         break;
       case Shader::SMP_transpose:
+      case Shader::SMP_transpose3x4:
+      case Shader::SMP_transpose4x3:
         scratch[0] = data[0];
         scratch[1] = data[4];
         scratch[2] = data[8];
@@ -889,6 +896,110 @@ issue_parameters(GSG *gsg, int altered) {
 }
 
 /**
+ * Changes the active transform and slider table, used for hardware skinning.
+ */
+void DXShaderContext9::
+update_tables(GSG *gsg, const GeomVertexDataPipelineReader *data_reader) {
+  int loc = _shader->_transform_table_loc;
+  if (loc >= 0) {
+    ConstantRegister &reg = _register_map[(size_t)loc];
+
+    float *data;
+    const TransformTable *table = data_reader->get_transform_table();
+    if (!_shader->_transform_table_reduced) {
+      // reg.count is the number of registers, which is 4 per matrix.  However,
+      // due to optimization, the last row of the last matrix may be cut off.
+      size_t num_matrices = (reg.count + 3) / 4;
+      data = (float *)alloca(num_matrices * sizeof(LMatrix4f));
+      LMatrix4f *matrices = (LMatrix4f *)data;
+
+      size_t i = 0;
+      if (table != nullptr) {
+        bool transpose = (_shader->get_language() == Shader::SL_Cg);
+        size_t num_transforms = std::min(num_matrices, table->get_num_transforms());
+        for (; i < num_transforms; ++i) {
+#ifdef STDFLOAT_DOUBLE
+          LMatrix4 matrix;
+          table->get_transform(i)->get_matrix(matrix);
+          if (transpose) {
+            matrix.transpose_in_place();
+          }
+          matrices[i] = LCAST(float, matrix);
+#else
+          table->get_transform(i)->get_matrix(matrices[i]);
+          if (transpose) {
+            matrices[i].transpose_in_place();
+          }
+#endif
+        }
+      }
+      for (; i < num_matrices; ++i) {
+        matrices[i] = LMatrix4f::ident_mat();
+      }
+    }
+    else {
+      // Reduced 3x4 matrix, used by shader generator
+      size_t num_matrices = (reg.count + 2) / 3;
+      data = (float *)alloca(num_matrices * sizeof(LVecBase4f) * 3);
+      LVecBase4f *vectors = (LVecBase4f *)data;
+
+      size_t i = 0;
+      if (table != nullptr) {
+        size_t num_transforms = std::min(num_matrices, table->get_num_transforms());
+        for (; i < num_transforms; ++i) {
+          LMatrix4f matrix;
+#ifdef STDFLOAT_DOUBLE
+          LMatrix4d matrixd;
+          table->get_transform(i)->get_matrix(matrixd);
+          matrix = LCAST(float, matrixd);
+#else
+          table->get_transform(i)->get_matrix(matrix);
+#endif
+          vectors[i * 3 + 0] = matrix.get_col(0);
+          vectors[i * 3 + 1] = matrix.get_col(1);
+          vectors[i * 3 + 2] = matrix.get_col(2);
+        }
+      }
+      for (; i < num_matrices; ++i) {
+        vectors[i * 3 + 0].set(1, 0, 0, 0);
+        vectors[i * 3 + 1].set(0, 1, 0, 0);
+        vectors[i * 3 + 2].set(0, 0, 1, 0);
+      }
+    }
+
+    if (reg.vreg >= 0) {
+      gsg->_d3d_device->SetVertexShaderConstantF(reg.vreg, data, reg.count);
+    }
+    if (reg.freg >= 0) {
+      gsg->_d3d_device->SetPixelShaderConstantF(reg.freg, data, reg.count);
+    }
+  }
+
+  loc = _shader->_slider_table_loc;
+  if (loc >= 0) {
+    ConstantRegister &reg = _register_map[(size_t)loc];
+
+    LVecBase4f *sliders = (LVecBase4f *)alloca(reg.count * sizeof(LVecBase4f));
+    memset(sliders, 0, reg.count * sizeof(LVecBase4f));
+
+    const SliderTable *table = data_reader->get_slider_table();
+    if (table != nullptr) {
+      size_t num_sliders = std::min((size_t)reg.count, table->get_num_sliders());
+      for (size_t i = 0; i < num_sliders; ++i) {
+        sliders[i] = table->get_slider(i)->get_slider();
+      }
+    }
+
+    if (reg.vreg >= 0) {
+      gsg->_d3d_device->SetVertexShaderConstantF(reg.vreg, (float *)sliders, reg.count);
+    }
+    if (reg.freg >= 0) {
+      gsg->_d3d_device->SetPixelShaderConstantF(reg.freg, (float *)sliders, reg.count);
+    }
+  }
+}
+
+/**
  * Disable all the texture bindings used by this shader.
  */
 void DXShaderContext9::
@@ -988,108 +1099,149 @@ update_shader_texture_bindings(DXShaderContext9 *prev, GSG *gsg) {
  * given GeomVertexFormat.
  */
 LPDIRECT3DVERTEXDECLARATION9 DXShaderContext9::
-get_vertex_declaration(GSG *gsg, const GeomVertexFormat *format) {
+get_vertex_declaration(GSG *gsg, const GeomVertexFormat *format, BitMask32 &used_streams) {
   // Look up the GeomVertexFormat in the cache.
   auto it = _vertex_declarations.find(format);
   if (it != _vertex_declarations.end()) {
     // We've previously rendered geometry with this GeomVertexFormat, so we
     // already have a vertex declaration.
-    return it->second;
+    used_streams = it->second.second;
+    return it->second.first;
   }
 
-  D3DVERTEXELEMENT9 *elements = (D3DVERTEXELEMENT9 *)
-    alloca(sizeof(D3DVERTEXELEMENT9) * (_shader->_var_spec.size() + 1));
-
+  used_streams = 0;
   int texcoord_index = 0;
+  size_t const num_arrays = format->get_num_arrays();
+  std::vector<D3DVERTEXELEMENT9> elements;
 
-  size_t i = 0;
   for (const Shader::ShaderVarSpec &spec : _shader->_var_spec) {
-    elements[i].Method = D3DDECLMETHOD_DEFAULT;
-    elements[i].UsageIndex = 0;
-
+    D3DDECLUSAGE usage;
     if (spec._name == InternalName::get_vertex()) {
-      elements[i].Usage = D3DDECLUSAGE_POSITION;
+      usage = D3DDECLUSAGE_POSITION;
     }
     else if (spec._name == InternalName::get_transform_weight()) {
-      elements[i].Usage = D3DDECLUSAGE_BLENDWEIGHT;
+      usage = D3DDECLUSAGE_BLENDWEIGHT;
     }
     else if (spec._name == InternalName::get_transform_index()) {
-      elements[i].Usage = D3DDECLUSAGE_BLENDINDICES;
+      usage = D3DDECLUSAGE_BLENDINDICES;
     }
     else if (spec._name == InternalName::get_normal()) {
-      elements[i].Usage = D3DDECLUSAGE_NORMAL;
+      usage = D3DDECLUSAGE_NORMAL;
     }
     else if (spec._name == InternalName::get_tangent()) {
-      elements[i].Usage = D3DDECLUSAGE_TANGENT;
+      usage = D3DDECLUSAGE_TANGENT;
     }
     else if (spec._name == InternalName::get_binormal()) {
-      elements[i].Usage = D3DDECLUSAGE_BINORMAL;
+      usage = D3DDECLUSAGE_BINORMAL;
     }
     else if (spec._name == InternalName::get_color()) {
-      elements[i].Usage = D3DDECLUSAGE_COLOR;
+      usage = D3DDECLUSAGE_COLOR;
     }
     else {
-      elements[i].Usage = D3DDECLUSAGE_TEXCOORD;
-      elements[i].UsageIndex = texcoord_index++;
+      usage = D3DDECLUSAGE_TEXCOORD;
     }
 
     int array_index;
     const GeomVertexColumn *column;
     if (!format->get_array_info(spec._name, array_index, column)) {
+      // Certain missing ones need to be gotten from the "constant vbuffer",
+      // rather than receive the default value of (0, 0, 0, 1).
+      if (spec._name == InternalName::get_color()) {
+        elements.push_back({
+          (WORD)num_arrays,
+          (WORD)0,
+          (BYTE)D3DDECLTYPE_D3DCOLOR,
+          (BYTE)D3DDECLMETHOD_DEFAULT,
+          (BYTE)D3DDECLUSAGE_COLOR,
+          (BYTE)0,
+        });
+        used_streams.set_bit(num_arrays);
+      }
+      else if (spec._name == InternalName::get_transform_index()) {
+        elements.push_back({
+          (WORD)num_arrays,
+          (WORD)4,
+          (BYTE)D3DDECLTYPE_UBYTE4,
+          (BYTE)D3DDECLMETHOD_DEFAULT,
+          (BYTE)D3DDECLUSAGE_BLENDINDICES,
+          (BYTE)0,
+        });
+        used_streams.set_bit(num_arrays);
+      }
+      else if (spec._name == InternalName::get_instance_matrix()) {
+        // Binding the last row isn't necessary; the default is (0, 0, 0, 1)
+        for (size_t ei = 0; ei < 3 && ei < spec._elements; ++ei) {
+          elements.push_back({
+            (WORD)num_arrays,
+            (WORD)(8 + 4 * ei),
+            (BYTE)D3DDECLTYPE_UBYTE4N,
+            (BYTE)D3DDECLMETHOD_DEFAULT,
+            (BYTE)D3DDECLUSAGE_TEXCOORD,
+            (BYTE)(texcoord_index + ei),
+          });
+        }
+        used_streams.set_bit(num_arrays);
+        texcoord_index += spec._elements;
+      }
+      else if (usage == D3DDECLUSAGE_TEXCOORD) {
+        texcoord_index += spec._elements;
+      }
       continue;
     }
+    used_streams.set_bit(array_index);
 
-    elements[i].Stream = array_index;
-    elements[i].Offset = column->get_start();
-
+    if (column->get_contents() == GeomEnums::C_clip_point &&
+        column->get_name() == InternalName::get_vertex()) {
+      usage = D3DDECLUSAGE_POSITIONT;
+    }
+    size_t offset = column->get_start();
+    bool normalized = (column->get_contents() == GeomEnums::C_color);
     int num_components = column->get_num_components();
+
+    D3DDECLTYPE type;
     switch (column->get_numeric_type()) {
     case GeomEnums::NT_uint8:
-      elements[i].Type = D3DDECLTYPE_UBYTE4N;
+      type = normalized ? D3DDECLTYPE_UBYTE4N : D3DDECLTYPE_UBYTE4;
       break;
     case GeomEnums::NT_uint16:
-      elements[i].Type = (num_components > 2) ? D3DDECLTYPE_USHORT4N : D3DDECLTYPE_USHORT2N;
+      type = (num_components > 2) ? D3DDECLTYPE_USHORT4N : D3DDECLTYPE_USHORT2N;
       break;
     case GeomEnums::NT_packed_dcba:
-      elements[i].Type = D3DDECLTYPE_D3DCOLOR;
+      type = normalized ? D3DDECLTYPE_UBYTE4N : D3DDECLTYPE_UBYTE4;
       break;
     case GeomEnums::NT_packed_dabc:
-      elements[i].Type = D3DDECLTYPE_D3DCOLOR;
+      type = normalized ? D3DDECLTYPE_D3DCOLOR : D3DDECLTYPE_UBYTE4;
       break;
 #ifndef STDFLOAT_DOUBLE
     case GeomEnums::NT_stdfloat:
 #endif
     case GeomEnums::NT_float32:
-      elements[i].Type = D3DDECLTYPE_FLOAT1 + num_components - 1;
+      type = (D3DDECLTYPE)(D3DDECLTYPE_FLOAT1 + num_components - 1);
       break;
     case GeomEnums::NT_int16:
-      elements[i].Type = (num_components > 2) ? D3DDECLTYPE_SHORT4N : D3DDECLTYPE_SHORT2N;
+      type = (num_components > 2)
+        ? (normalized ? D3DDECLTYPE_SHORT4N : D3DDECLTYPE_SHORT4)
+        : (normalized ? D3DDECLTYPE_SHORT2N : D3DDECLTYPE_SHORT2);
       break;
     default:
+      dxgsg9_cat.error()
+        << "Unsupported numeric type " << column->get_numeric_type()
+        << " for vertex column " << *spec._name << "\n";
       continue;
     }
 
-    if (column->get_contents() == GeomEnums::C_clip_point &&
-        column->get_name() == InternalName::get_vertex()) {
-      elements[i].Usage = D3DDECLUSAGE_POSITIONT;
+    for (size_t ei = 0; ei < spec._elements; ++ei) {
+      elements.push_back({
+        (WORD)array_index,
+        (WORD)offset,
+        (BYTE)type,
+        (BYTE)D3DDECLMETHOD_DEFAULT,
+        (BYTE)usage,
+        (BYTE)((usage == D3DDECLUSAGE_TEXCOORD) ? texcoord_index++ : 0),
+      });
+      offset += column->get_element_stride();
     }
-
-    ++i;
   }
-
-  if (format->get_color_array_index() < 0 && _uses_vertex_color) {
-    // This format lacks a vertex color column, so we make room for an extra
-    // stream that contains the vertex color.
-    elements[i].Stream = format->get_num_arrays();
-    elements[i].Offset = 0;
-    elements[i].Type = D3DDECLTYPE_D3DCOLOR;
-    elements[i].Method = D3DDECLMETHOD_DEFAULT;
-    elements[i].Usage = D3DDECLUSAGE_COLOR;
-    elements[i].UsageIndex = 0;
-    ++i;
-  }
-
-  elements[i] = D3DDECL_END();
 
   // Sort the elements, as D3D seems to require them to be in order.
   struct less_than {
@@ -1100,7 +1252,7 @@ get_vertex_declaration(GSG *gsg, const GeomVertexFormat *format) {
       return a.Offset < b.Offset;
     }
   };
-  std::sort(elements, elements + i, less_than());
+  std::sort(elements.begin(), elements.end(), less_than());
 
   // CreateVertexDeclaration is fickle so it helps to have some good debugging
   // info here.
@@ -1110,23 +1262,26 @@ get_vertex_declaration(GSG *gsg, const GeomVertexFormat *format) {
     dxgsg9_cat.debug()
       << "Creating vertex declaration for format " << *format << ":\n";
 
-    for (D3DVERTEXELEMENT9 *element = elements; element->Stream != 0xFF; ++element) {
+    for (const D3DVERTEXELEMENT9 &element : elements) {
       dxgsg9_cat.debug()
-        << "  {" << element->Stream << ", " << element->Offset << ", "
-        << "D3DDECLTYPE_" << types[element->Type] << ", "
+        << "  {" << element.Stream << ", " << element.Offset << ", "
+        << "D3DDECLTYPE_" << types[element.Type] << ", "
         << "D3DDECLMETHOD_DEFAULT, "
-        << "D3DDECLUSAGE_" << usages[element->Usage] << ", "
-        << (int)element->UsageIndex << "}\n";
+        << "D3DDECLUSAGE_" << usages[element.Usage] << ", "
+        << (int)element.UsageIndex << "}\n";
     }
   }
 
+  elements.push_back(D3DDECL_END());
+
   LPDIRECT3DVERTEXDECLARATION9 decl;
-  HRESULT result = gsg->_d3d_device->CreateVertexDeclaration(elements, &decl);
+  HRESULT result = gsg->_d3d_device->CreateVertexDeclaration(elements.data(), &decl);
   if (FAILED(result)) {
-    dxgsg9_cat.error() << "CreateVertexDeclaration failed" << D3DERRORSTRING(result);
+    dxgsg9_cat.error()
+      << "CreateVertexDeclaration failed" << D3DERRORSTRING(result);
     return nullptr;
   }
 
-  _vertex_declarations[format] = decl;
+  _vertex_declarations[format] = std::make_pair(decl, used_streams);
   return decl;
 }

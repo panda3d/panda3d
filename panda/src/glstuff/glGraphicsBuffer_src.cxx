@@ -283,6 +283,12 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   } else if (mode == FM_refresh) {
     // Just bind the FBO.
     rebuild_bitplanes();
+
+    // Bind the non-multisample FBO, since we won't be rendering anything and
+    // the caller probably wanted to grab a screenshot.
+    if (_fbo_multisample != 0 && !_fbo.empty()) {
+      glgsg->bind_fbo(_fbo[0]);
+    }
   }
 
   // The host window may not have had sRGB enabled, so we need to do this.
@@ -946,18 +952,43 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
             }
           } else if (_fb_properties.get_float_color()) {
             // 16-bit floating-point.
-            if (_fb_properties.get_blue_bits() > 0 ||
+            if (_fb_properties.get_blue_bits() > 10 ||
                 _fb_properties.get_color_bits() == 1 ||
-                _fb_properties.get_color_bits() > 16 * 2) {
+                _fb_properties.get_color_bits() > 32) {
               gl_format = GL_RGB16F;
+            } else if (_fb_properties.get_blue_bits() > 0) {
+              if (_fb_properties.get_red_bits() > 11 ||
+                  _fb_properties.get_green_bits() > 11) {
+                gl_format = GL_RGB16F;
+              } else {
+                gl_format = GL_R11F_G11F_B10F;
+              }
             } else if (_fb_properties.get_green_bits() > 0 ||
                        _fb_properties.get_color_bits() > 16) {
               gl_format = GL_RG16F;
             } else {
               gl_format = GL_R16F;
             }
-          } else if (_fb_properties.get_color_bits() > 8 * 3) {
-            gl_format = GL_RGB16_EXT;
+          } else if (_fb_properties.get_color_bits() > 10 * 3 ||
+                     _fb_properties.get_red_bits() > 10 ||
+                     _fb_properties.get_green_bits() > 10 ||
+                     _fb_properties.get_blue_bits() > 10) {
+            // 16-bit normalized.
+            if (_fb_properties.get_blue_bits() > 0 ||
+                _fb_properties.get_color_bits() == 1 ||
+                _fb_properties.get_color_bits() > 16 * 2) {
+              gl_format = GL_RGBA16;
+            } else if (_fb_properties.get_green_bits() > 0 ||
+                       _fb_properties.get_color_bits() > 16) {
+              gl_format = GL_RG16;
+            } else {
+              gl_format = GL_R16;
+            }
+          } else if (_fb_properties.get_color_bits() > 8 * 3 ||
+                     _fb_properties.get_red_bits() > 8 ||
+                     _fb_properties.get_green_bits() > 8 ||
+                     _fb_properties.get_blue_bits() > 8) {
+            gl_format = GL_RGB10_A2;
           } else {
             gl_format = GL_RGB;
           }
@@ -974,7 +1005,7 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
             if (_fb_properties.get_color_bits() > 16 * 3) {
               gl_format = GL_RGBA32F_ARB;
             } else if (_fb_properties.get_color_bits() > 8 * 3) {
-              gl_format = GL_RGBA16_EXT;
+              gl_format = GL_RGBA16;
             } else {
               gl_format = GL_RGBA;
             }
@@ -1328,11 +1359,12 @@ end_frame(FrameMode mode, Thread *current_thread) {
   nassertv(_gsg != nullptr);
 
   // Resolve Multisample rendering if using it.
-  if (_requested_multisamples && _fbo_multisample) {
+  if (_requested_multisamples && _fbo_multisample && mode != FM_refresh) {
     resolve_multisamples();
   }
 
   if (mode == FM_render) {
+    // Should happen *after* resolving multisamples, with the non-MS FBO bound.
     copy_to_textures();
   }
 
@@ -1927,6 +1959,9 @@ resolve_multisamples() {
   }
 #endif
   report_my_gl_errors();
+
+  // Bind the regular FBO as read buffer for the sake of copy_to_textures.
+  glgsg->_glBindFramebuffer(GL_READ_FRAMEBUFFER_EXT, fbo);
 
 #ifndef OPENGLES
   if (_have_any_color) {

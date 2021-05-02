@@ -58,7 +58,7 @@ PUBLISHED:
     SL_SPIR_V,
   };
 
-  enum ShaderType {
+  enum DeprecatedShaderType {
     ST_none = 0,
     ST_vertex,
     ST_fragment,
@@ -104,9 +104,9 @@ PUBLISHED:
                          std::string tess_evaluation = "");
   static PT(Shader) make_compute(ShaderLanguage lang, std::string body);
 
-  INLINE Filename get_filename(ShaderType type = ST_none) const;
-  INLINE void set_filename(ShaderType type, const Filename &filename);
-  INLINE const std::string &get_text(ShaderType type = ST_none) const;
+  INLINE Filename get_filename(DeprecatedShaderType type = ST_none) const;
+  INLINE void set_filename(DeprecatedShaderType type, const Filename &filename);
+  INLINE const std::string &get_text(DeprecatedShaderType type = ST_none) const;
   INLINE bool get_error_flag() const;
   INLINE ShaderLanguage get_language() const;
   INLINE int get_used_capabilities() const;
@@ -120,6 +120,11 @@ PUBLISHED:
 
   INLINE bool get_cache_compiled_shader() const;
   INLINE void set_cache_compiled_shader(bool flag);
+
+  INLINE bool set_constant(CPT_InternalName name, bool value);
+  INLINE bool set_constant(CPT_InternalName name, int value);
+  INLINE bool set_constant(CPT_InternalName name, float value);
+  bool set_constant(CPT_InternalName name, unsigned int value);
 
   PT(AsyncFuture) prepare(PreparedGraphicsObjects *prepared_objects);
   bool is_prepared(PreparedGraphicsObjects *prepared_objects) const;
@@ -236,6 +241,15 @@ public:
 
     STO_stage_i,
     STO_light_i_shadow_map,
+
+    STO_ff_stage_i,
+    STO_stage_modulate_i,
+    STO_stage_add_i,
+    STO_stage_normal_i,
+    STO_stage_height_i,
+    STO_stage_selector_i,
+    STO_stage_gloss_i,
+    STO_stage_emission_i,
   };
 
   enum ShaderMatPiece {
@@ -257,6 +271,10 @@ public:
     SMP_cell15,
     SMP_cell14,
     SMP_cell13,
+    SMP_upper3x4,
+    SMP_upper4x3,
+    SMP_transpose3x4,
+    SMP_transpose4x3,
   };
 
   enum ShaderStateDep {
@@ -378,6 +396,7 @@ public:
     int               _dep = SSD_NONE;
     int               _index = 0;
     ShaderMatPiece    _piece;
+    ScalarType        _scalar_type = ScalarType::ST_float;
   };
 
   struct ShaderTexSpec {
@@ -434,6 +453,20 @@ public:
     std::string _compute;
   };
 
+  /**
+   * Contains external values given to the specialization constants of a single
+   * ShaderModule.
+   */
+  class ModuleSpecConstants {
+  public:
+    INLINE ModuleSpecConstants() {};
+
+    INLINE bool set_constant(uint32_t id, uint32_t value);
+  public:
+    pvector<uint32_t> _values;
+    pvector<uint32_t> _indices;
+  };
+
 protected:
   bool report_parameter_error(const InternalName *name, const ::ShaderType *type, const char *msg);
   bool expect_num_words(const InternalName *name, const ::ShaderType *type, size_t len);
@@ -467,13 +500,22 @@ public:
   pvector<ShaderMatPart> _mat_parts;
   int _mat_deps = 0;
   int _mat_cache_size = 0;
+
+  // These are here because we don't support passing these via ShaderMatSpec yet
   int _frame_number_loc = -1;
+  int _transform_table_loc = -1;
+  uint32_t _transform_table_size = 0;
+  bool _transform_table_reduced = false;
+  int _slider_table_loc = -1;
+  uint32_t _slider_table_size = 0;
 
   bool _error_flag;
   ShaderFile _text;
 
   typedef pvector<COWPT(ShaderModule)> Modules;
   Modules _modules;
+  typedef pmap<const ShaderModule *, ModuleSpecConstants> ModuleSpecConsts;
+  ModuleSpecConsts _module_spec_consts;
   uint32_t _module_mask = 0;
   int _used_caps = 0;
 

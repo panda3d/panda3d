@@ -49,7 +49,6 @@ class DistributedObjectBase(DirectObject):
         """
         assert self.notify.debugCall()
         # Inheritors should override
-        pass
 
     def handleChildArriveZone(self, childObj, zoneId):
         """
@@ -60,7 +59,6 @@ class DistributedObjectBase(DirectObject):
         """
         assert self.notify.debugCall()
         # Inheritors should override
-        pass
 
     def handleChildLeave(self, childObj, zoneId):
         """
@@ -69,7 +67,6 @@ class DistributedObjectBase(DirectObject):
         """
         assert self.notify.debugCall()
         # Inheritors should override
-        pass
 
     def handleChildLeaveZone(self, childObj, zoneId):
         """
@@ -79,12 +76,10 @@ class DistributedObjectBase(DirectObject):
         """
         assert self.notify.debugCall()
         # Inheritors should override
-        pass
 
     def handleQueryObjectChildrenLocalDone(self, context):
         assert self.notify.debugCall()
         # Inheritors should override
-        pass
 
     def getParentObj(self):
         if self.parentId is None:
@@ -92,12 +87,10 @@ class DistributedObjectBase(DirectObject):
         return self.cr.doId2do.get(self.parentId)
 
     def hasParentingRules(self):
-        return self.dclass.getFieldByName('setParentingRules') != None
+        return self.dclass.getFieldByName('setParentingRules') is not None
 
     def delete(self):
         """
         Override this to handle cleanup right before this object
         gets deleted.
         """
-
-        pass

@@ -491,4 +491,13 @@ getopt_long_only(int argc, char *const argv[], const char *optstring,
   return pgetopt->process(opterr, longindex, optarg, optind, optopt);
 }
 
+/**
+ * Resets the internal PandaGetopt state.
+ * This is a necessary step to reset getopt state in general.
+ */
+void
+pgetopt_reset() {
+  pgetopt = nullptr;
+}
+
 #endif  // defined(HAVE_GETOPT) && defined(HAVE_GETOPT_LONG_ONLY)

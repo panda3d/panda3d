@@ -154,94 +154,60 @@ null_glBlendColor(GLclampf, GLclampf, GLclampf, GLclampf) {
 // default shader just applies a single texture, which is good enough for
 // drawing GUIs and such.
 static const string default_vshader =
-#ifndef OPENGLES
   "#version 330\n"
   "in vec4 p3d_Vertex;\n"
   "in vec4 p3d_Color;\n"
   "in vec2 p3d_MultiTexCoord0;\n"
   "out vec2 texcoord;\n"
   "out vec4 color;\n"
-#else
-  "#version 100\n"
-  "precision mediump float;\n"
-  "attribute vec4 p3d_Vertex;\n"
-  "attribute vec4 p3d_Color;\n"
-  "attribute vec2 p3d_MultiTexCoord0;\n"
-  "varying vec2 texcoord;\n"
-  "varying lowp vec4 color;\n"
-#endif
   "uniform mat4 p3d_ModelViewProjectionMatrix;\n"
+  "uniform mat4 p3d_TextureMatrix;\n"
   "uniform vec4 p3d_ColorScale;\n"
   "void main(void) {\n"
   "  gl_Position = p3d_ModelViewProjectionMatrix * p3d_Vertex;\n"
-  "  texcoord = p3d_MultiTexCoord0;\n"
+  "  texcoord = (p3d_TextureMatrix * vec4(p3d_MultiTexCoord0.x, p3d_MultiTexCoord0.y, 0, 1)).xy;\n"
   "  color = p3d_Color * p3d_ColorScale;\n"
   "}\n";
 
 #ifndef OPENGLES
 // This version of the shader is used if vertices-float64 is enabled.
 static const string default_vshader_fp64 =
-  "#version 330\n"
-  "#extension GL_ARB_vertex_attrib_64bit : require\n"
-  "#extension GL_ARB_gpu_shader_fp64 : require\n"
-  "in dvec3 p3d_Vertex;\n"
-  "in vec4 p3d_Color;\n"
-  "in dvec2 p3d_MultiTexCoord0;\n"
-  "out vec2 texcoord;\n"
-  "out vec4 color;\n"
-  "uniform mat4 p3d_ModelViewMatrix;\n"
-  "uniform mat4 p3d_ProjectionMatrix;\n"
-  "uniform vec4 p3d_ColorScale;\n"
-  "void main(void) {\n" // Apply proj & modelview in two steps, more precise
-  "  gl_Position = vec4(dmat4(p3d_ProjectionMatrix) * (dmat4(p3d_ModelViewMatrix) * dvec4(p3d_Vertex, 1)));\n"
-  "  texcoord = vec2(p3d_MultiTexCoord0);\n"
-  "  color = p3d_Color * p3d_ColorScale;\n"
-  "}\n";
-
-// Same as above, but for OpenGL 4.1.
-static const string default_vshader_fp64_gl41 =
   "#version 410\n"
   "in dvec3 p3d_Vertex;\n"
   "in vec4 p3d_Color;\n"
   "in dvec2 p3d_MultiTexCoord0;\n"
   "out vec2 texcoord;\n"
   "out vec4 color;\n"
-  "uniform mat4 p3d_ModelViewMatrix;\n"
+#ifdef STDFLOAT_DOUBLE
+  "uniform dmat3x4 p3d_ModelViewMatrixTranspose;\n"
+  "uniform dmat4 p3d_ProjectionMatrix;\n"
+#else
+  "uniform mat3x4 p3d_ModelViewMatrixTranspose;\n"
   "uniform mat4 p3d_ProjectionMatrix;\n"
+#endif
   "uniform vec4 p3d_ColorScale;\n"
   "void main(void) {\n" // Apply proj & modelview in two steps, more precise
-  "  gl_Position = vec4(dmat4(p3d_ProjectionMatrix) * (dmat4(p3d_ModelViewMatrix) * dvec4(p3d_Vertex, 1)));\n"
-  "  texcoord = vec2(p3d_MultiTexCoord0);\n"
+#ifdef STDFLOAT_DOUBLE
+  "  gl_Position = vec4(p3d_ProjectionMatrix * dvec4(dvec4(p3d_Vertex, 1) * p3d_ModelViewMatrixTranspose, 1));\n"
+#else
+  "  gl_Position = vec4(dmat4(p3d_ProjectionMatrix) * dvec4(dvec4(p3d_Vertex, 1) * dmat3x4(p3d_ModelViewMatrixTranspose), 1));\n"
+#endif
+  "  texcoord = (p3d_TextureMatrix * vec4(p3d_MultiTexCoord0.x, p3d_MultiTexCoord0.y, 0, 1)).xy;\n"
   "  color = p3d_Color * p3d_ColorScale;\n"
   "}\n";
 #endif
 
 static const string default_fshader =
-#ifndef OPENGLES
   "#version 330\n"
   "in vec2 texcoord;\n"
   "in vec4 color;\n"
   "out vec4 p3d_FragColor;\n"
   "uniform sampler2D p3d_Texture0;\n"
   "uniform vec4 p3d_TexAlphaOnly;\n"
-#else
-  "#version 100\n"
-  "precision mediump float;\n"
-  "varying vec2 texcoord;\n"
-  "varying lowp vec4 color;\n"
-  "uniform lowp sampler2D p3d_Texture0;\n"
-  "uniform lowp vec4 p3d_TexAlphaOnly;\n"
-#endif
   "void main(void) {\n"
-#ifndef OPENGLES
   "  p3d_FragColor = texture(p3d_Texture0, texcoord);\n"
   "  p3d_FragColor += p3d_TexAlphaOnly;\n" // Hack for text rendering
   "  p3d_FragColor *= color;\n"
-#else
-  "  gl_FragColor = texture2D(p3d_Texture0, texcoord);\n"
-  "  gl_FragColor += p3d_TexAlphaOnly;\n" // Hack for text rendering
-  "  gl_FragColor *= color;\n"
-#endif
   "}\n";
 #endif
 
@@ -1010,8 +976,10 @@ reset() {
 #endif
     _supports_tex_storage = true;
 
+#ifndef OPENGLES
     _glTexStorage1D = (PFNGLTEXSTORAGE1DPROC)
       get_extension_func("glTexStorage1D");
+#endif
     _glTexStorage2D = (PFNGLTEXSTORAGE2DPROC)
       get_extension_func("glTexStorage2D");
     _glTexStorage3D = (PFNGLTEXSTORAGE3DPROC)
@@ -1021,8 +989,6 @@ reset() {
   else if (has_extension("GL_EXT_texture_storage")) {
     _supports_tex_storage = true;
 
-    _glTexStorage1D = (PFNGLTEXSTORAGE1DPROC)
-      get_extension_func("glTexStorage1DEXT");
     _glTexStorage2D = (PFNGLTEXSTORAGE2DPROC)
       get_extension_func("glTexStorage2DEXT");
     _glTexStorage3D = (PFNGLTEXSTORAGE3DPROC)
@@ -1031,7 +997,11 @@ reset() {
 #endif
 
   if (_supports_tex_storage) {
-    if (_glTexStorage1D == nullptr || _glTexStorage2D == nullptr || _glTexStorage3D == nullptr) {
+    if (
+#ifndef OPENGLES
+        _glTexStorage1D == nullptr ||
+#endif
+        _glTexStorage2D == nullptr || _glTexStorage3D == nullptr) {
       GLCAT.warning()
         << "Immutable texture storage advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
       _supports_tex_storage = false;
@@ -1314,11 +1284,34 @@ reset() {
   _supports_packed_dabc = false;
   _supports_packed_ufloat = false;
 #else
-  _supports_packed_dabc = is_at_least_gl_version(3, 2) ||
+  _supports_packed_dabc = (is_at_least_gl_version(3, 2) ||
                           has_extension("GL_ARB_vertex_array_bgra") ||
-                          has_extension("GL_EXT_vertex_array_bgra");
+                          has_extension("GL_EXT_vertex_array_bgra")) && gl_support_vertex_array_bgra;
+
   _supports_packed_ufloat = is_at_least_gl_version(4, 4) ||
                             has_extension("GL_ARB_vertex_type_10f_11f_11f_rev");
+
+  if (_supports_packed_dabc) {
+    int number = 0;
+    if (_gl_renderer.compare(0, 14, "AMD Radeon RX ") == 0) {
+      number = atoi(_gl_renderer.c_str() + 14);
+    }
+    else if (_gl_renderer.compare(0, 10, "Radeon RX ") == 0) {
+      number = atoi(_gl_renderer.c_str() + 10);
+    }
+
+    // This is buggy for RDNA cards.  Verified on 5700 XT, reportedly also
+    // occurs on the entire 5*00 and 6*00 line.
+    if (number >= 5000 && number < 8000) {
+      _supports_packed_dabc = false;
+
+      if (GLCAT.is_debug()) {
+        GLCAT.debug()
+          << "Detected AMD Radeon RX " << number
+          << ", disabling use of GL_BGRA vertex attributes\n";
+      }
+    }
+  }
 #endif
 
 #ifdef OPENGLES
@@ -1786,7 +1779,7 @@ reset() {
         // extension also support GLSL 1.30, so it might not be worth adding.
         _supported_shader_caps |=
           //ShaderModule::C_integer |
-          //ShaderModule::C_texture_fetch |
+          ShaderModule::C_texture_fetch |
           //ShaderModule::C_sampler_cube_shadow |
           ShaderModule::C_round_even;
       }
@@ -2007,6 +2000,13 @@ reset() {
     _glVertexAttribPointer = (PFNGLVERTEXATTRIBPOINTERPROC)
        get_extension_func("glVertexAttribPointer");
 
+    if (is_at_least_gl_version(2, 1)) {
+      _glUniformMatrix3x4fv = (PFNGLUNIFORMMATRIX3X4FVPROC)
+         get_extension_func("glUniformMatrix3x4fv");
+      _glUniformMatrix4x3fv = (PFNGLUNIFORMMATRIX4X3FVPROC)
+         get_extension_func("glUniformMatrix4x3fv");
+    }
+
     if (is_at_least_gl_version(3, 0)) {
       _glBindFragDataLocation = (PFNGLBINDFRAGDATALOCATIONPROC)
          get_extension_func("glBindFragDataLocation");
@@ -2020,6 +2020,8 @@ reset() {
          get_extension_func("glUniform3uiv");
       _glUniform4uiv = (PFNGLUNIFORM4UIVPROC)
          get_extension_func("glUniform4uiv");
+      _glVertexAttribI4ui = (PFNGLVERTEXATTRIBI4UIPROC)
+         get_extension_func("glVertexAttribI4ui");
 
     } else if (has_extension("GL_EXT_gpu_shader4")) {
       _glBindFragDataLocation = (PFNGLBINDFRAGDATALOCATIONPROC)
@@ -2034,11 +2036,36 @@ reset() {
          get_extension_func("glUniform3uivEXT");
       _glUniform4uiv = (PFNGLUNIFORM4UIVPROC)
          get_extension_func("glUniform4uivEXT");
+      _glVertexAttribI4ui = (PFNGLVERTEXATTRIBI4UIPROC)
+         get_extension_func("glVertexAttribI4uiEXT");
 
     } else {
       _glBindFragDataLocation = nullptr;
       _glVertexAttribIPointer = nullptr;
+      _glVertexAttribI4ui = nullptr;
     }
+
+    if (is_at_least_gl_version(4, 0)) {
+      _glUniform4d = (PFNGLUNIFORM4DPROC)
+         get_extension_func("glUniform4d");
+      _glUniform1dv = (PFNGLUNIFORM1DVPROC)
+         get_extension_func("glUniform1dv");
+      _glUniform2dv = (PFNGLUNIFORM2DVPROC)
+         get_extension_func("glUniform2dv");
+      _glUniform3dv = (PFNGLUNIFORM3DVPROC)
+         get_extension_func("glUniform3dv");
+      _glUniform4dv = (PFNGLUNIFORM4DVPROC)
+         get_extension_func("glUniform4dv");
+      _glUniformMatrix3dv = (PFNGLUNIFORMMATRIX3DVPROC)
+         get_extension_func("glUniformMatrix3dv");
+      _glUniformMatrix4dv = (PFNGLUNIFORMMATRIX4DVPROC)
+         get_extension_func("glUniformMatrix4dv");
+      _glUniformMatrix3x4dv = (PFNGLUNIFORMMATRIX3X4DVPROC)
+         get_extension_func("glUniformMatrix3x4dv");
+      _glUniformMatrix4x3dv = (PFNGLUNIFORMMATRIX4X3DVPROC)
+         get_extension_func("glUniformMatrix4x3dv");
+    }
+
     if (is_at_least_gl_version(4, 1) ||
         has_extension("GL_ARB_vertex_attrib_64bit")) {
       _glVertexAttribLPointer = (PFNGLVERTEXATTRIBLPOINTERPROC)
@@ -2051,6 +2078,9 @@ reset() {
       _glPatchParameteri = (PFNGLPATCHPARAMETERIPROC)
          get_extension_func("glPatchParameteri");
     }
+  }
+  else {
+    _glVertexAttribI4ui = nullptr;
   }
 #endif
 
@@ -2095,10 +2125,30 @@ reset() {
   _glVertexAttribLPointer = nullptr;
 
   if (is_at_least_gles_version(3, 0)) {
+    _glUniformMatrix3x4fv = (PFNGLUNIFORMMATRIX3X4FVPROC)
+       get_extension_func("glUniformMatrix3x4fv");
+    _glUniformMatrix4x3fv = (PFNGLUNIFORMMATRIX4X3FVPROC)
+       get_extension_func("glUniformMatrix4x3fv");
+  }
+  else if (has_extension("GL_NV_non_square_matrices")) {
+    _glUniformMatrix3x4fv = (PFNGLUNIFORMMATRIX3X4FVPROC)
+       get_extension_func("glUniformMatrix3x4fvNV");
+    _glUniformMatrix4x3fv = (PFNGLUNIFORMMATRIX4X3FVPROC)
+       get_extension_func("glUniformMatrix4x3fvNV");
+  }
+  else {
+    _glUniformMatrix3x4fv = nullptr;
+    _glUniformMatrix4x3fv = nullptr;
+  }
+
+  if (is_at_least_gles_version(3, 0)) {
     _glVertexAttribIPointer = (PFNGLVERTEXATTRIBIPOINTERPROC)
       get_extension_func("glVertexAttribIPointer");
+    _glVertexAttribI4ui = (PFNGLVERTEXATTRIBI4UIPROC)
+      get_extension_func("glVertexAttribI4ui");
   } else {
     _glVertexAttribIPointer = nullptr;
+    _glVertexAttribI4ui = nullptr;
   }
 
   if (has_extension("GL_EXT_blend_func_extended")) {
@@ -2144,10 +2194,7 @@ reset() {
 #ifndef OPENGLES_1
   if (_default_shader == nullptr && !has_fixed_function_pipeline()) {
 #ifndef OPENGLES
-    bool use_float64 = vertices_float64;
-    if (use_float64 && is_at_least_gl_version(4, 1)) {
-      _default_shader = Shader::make(Shader::SL_GLSL, default_vshader_fp64_gl41, default_fshader);
-    } else if (use_float64 && has_extension("GL_ARB_vertex_attrib_64bit")) {
+    if (vertices_float64) {
       _default_shader = Shader::make(Shader::SL_GLSL, default_vshader_fp64, default_fshader);
     } else
 #endif
@@ -3458,6 +3505,32 @@ reset() {
   }
 #endif
 
+  _max_vertex_shader_parameter_vectors = 0;
+#ifndef OPENGLES
+  if (is_at_least_gl_version(2, 0) || has_extension("GL_ARB_vertex_shader")) {
+    GLint max_vertex_uniform_components = 0;
+    glGetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, &max_vertex_uniform_components);
+    _max_vertex_shader_parameter_vectors = max_vertex_uniform_components / 4;
+
+    if (GLCAT.is_debug()) {
+      GLCAT.debug()
+        << "max vertex uniform components = " << max_vertex_uniform_components << "\n";
+    }
+  }
+#endif
+#ifdef OPENGLES_2
+  {
+    GLint max_vertex_uniform_vectors = 0;
+    glGetIntegerv(GL_MAX_VERTEX_UNIFORM_VECTORS, &max_vertex_uniform_vectors);
+    _max_vertex_shader_parameter_vectors = max_vertex_uniform_vectors;
+
+    if (GLCAT.is_debug()) {
+      GLCAT.debug()
+        << "max vertex uniform vectors = " << max_vertex_uniform_vectors << "\n";
+    }
+  }
+#endif
+
   _current_vbuffer_index = 0;
   _current_ibuffer_index = 0;
   _current_vao_index = 0;
@@ -4348,7 +4421,7 @@ end_frame(Thread *current_thread) {
 bool CLP(GraphicsStateGuardian)::
 begin_draw_primitives(const GeomPipelineReader *geom_reader,
                       const GeomVertexDataPipelineReader *data_reader,
-                      bool force) {
+                      size_t num_instances, bool force) {
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
     GLCAT.spam() << "begin_draw_primitives: " << *(data_reader->get_object()) << "\n";
@@ -4365,10 +4438,14 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   }
 #endif
 
-  if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, data_reader, force)) {
+  if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, data_reader, num_instances, force)) {
     return false;
   }
   nassertr(_data_reader != nullptr, false);
+
+#ifndef OPENGLES_1
+  _instance_count = _supports_geometry_instancing ? num_instances : 1;
+#endif
 
   _geom_display_list = 0;
 
@@ -4910,7 +4987,7 @@ draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
       }
 
 #ifndef OPENGLES_1
-      if (_supports_geometry_instancing && _instance_count > 0) {
+      if (_instance_count != 1) {
         _glDrawElementsInstanced(GL_TRIANGLES, num_vertices,
                                  get_numeric_type(reader->get_index_type()),
                                  client_pointer, _instance_count);
@@ -4926,7 +5003,7 @@ draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
       }
     } else {
 #ifndef OPENGLES_1
-      if (_supports_geometry_instancing && _instance_count > 0) {
+      if (_instance_count != 1) {
         _glDrawArraysInstanced(GL_TRIANGLES,
                                reader->get_first_vertex(),
                                num_vertices, _instance_count);
@@ -4976,7 +5053,7 @@ draw_triangles_adj(const GeomPrimitivePipelineReader *reader, bool force) {
         return false;
       }
 
-      if (_supports_geometry_instancing && _instance_count > 0) {
+      if (_instance_count != 1) {
         _glDrawElementsInstanced(GL_TRIANGLES_ADJACENCY, num_vertices,
                                  get_numeric_type(reader->get_index_type()),
                                  client_pointer, _instance_count);
@@ -4989,7 +5066,7 @@ draw_triangles_adj(const GeomPrimitivePipelineReader *reader, bool force) {
                              client_pointer);
       }
     } else {
-      if (_supports_geometry_instancing && _instance_count > 0) {
+      if (_instance_count != 1) {
         _glDrawArraysInstanced(GL_TRIANGLES_ADJACENCY,
                                reader->get_first_vertex(),
                                num_vertices, _instance_count);
@@ -5041,7 +5118,7 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force) {
           return false;
         }
 #ifndef OPENGLES_1
-        if (_supports_geometry_instancing && _instance_count > 0) {
+        if (_instance_count != 1) {
           _glDrawElementsInstanced(GL_TRIANGLE_STRIP, num_vertices,
                                    get_numeric_type(reader->get_index_type()),
                                    client_pointer, _instance_count);
@@ -5057,7 +5134,7 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force) {
         }
       } else {
 #ifndef OPENGLES_1
-        if (_supports_geometry_instancing && _instance_count > 0) {
+        if (_instance_count != 1) {
           _glDrawArraysInstanced(GL_TRIANGLE_STRIP,
                                  reader->get_first_vertex(),
                                  num_vertices, _instance_count);
@@ -5091,7 +5168,7 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force) {
         for (size_t i = 0; i < ends.size(); i++) {
           _vertices_tristrip_pcollector.add_level(ends[i] - start);
 #ifndef OPENGLES_1
-          if (_supports_geometry_instancing && _instance_count > 0) {
+          if (_instance_count != 1) {
             _glDrawElementsInstanced(GL_TRIANGLE_STRIP, ends[i] - start,
                                      get_numeric_type(reader->get_index_type()),
                                      client_pointer + start * index_stride,
@@ -5113,7 +5190,7 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force) {
         for (size_t i = 0; i < ends.size(); i++) {
           _vertices_tristrip_pcollector.add_level(ends[i] - start);
 #ifndef OPENGLES_1
-          if (_supports_geometry_instancing && _instance_count > 0) {
+          if (_instance_count != 1) {
             _glDrawArraysInstanced(GL_TRIANGLE_STRIP, first_vertex + start,
                                    ends[i] - start, _instance_count);
           } else
@@ -5171,7 +5248,7 @@ draw_tristrips_adj(const GeomPrimitivePipelineReader *reader, bool force) {
         if (!setup_primitive(client_pointer, reader, force)) {
           return false;
         }
-        if (_supports_geometry_instancing && _instance_count > 0) {
+        if (_instance_count != 1) {
           _glDrawElementsInstanced(GL_TRIANGLE_STRIP_ADJACENCY, num_vertices,
                                    get_numeric_type(reader->get_index_type()),
                                    client_pointer, _instance_count);
@@ -5184,7 +5261,7 @@ draw_tristrips_adj(const GeomPrimitivePipelineReader *reader, bool force) {
                                client_pointer);
         }
       } else {
-        if (_supports_geometry_instancing && _instance_count > 0) {
+        if (_instance_count != 1) {
           _glDrawArraysInstanced(GL_TRIANGLE_STRIP_ADJACENCY,
                                  reader->get_first_vertex(),
                                  num_vertices, _instance_count);
@@ -5217,7 +5294,7 @@ draw_tristrips_adj(const GeomPrimitivePipelineReader *reader, bool force) {
         unsigned int start = 0;
         for (size_t i = 0; i < ends.size(); i++) {
           _vertices_tristrip_pcollector.add_level(ends[i] - start);
-          if (_supports_geometry_instancing && _instance_count > 0) {
+          if (_instance_count != 1) {
             _glDrawElementsInstanced(GL_TRIANGLE_STRIP_ADJACENCY, ends[i] - start,
                                      get_numeric_type(reader->get_index_type()),
                                      client_pointer + start * index_stride,
@@ -5236,7 +5313,7 @@ draw_tristrips_adj(const GeomPrimitivePipelineReader *reader, bool force) {
         int first_vertex = reader->get_first_vertex();
         for (size_t i = 0; i < ends.size(); i++) {
           _vertices_tristrip_pcollector.add_level(ends[i] - start);
-          if (_supports_geometry_instancing && _instance_count > 0) {
+          if (_instance_count != 1) {
             _glDrawArraysInstanced(GL_TRIANGLE_STRIP_ADJACENCY, first_vertex + start,
                                    ends[i] - start, _instance_count);
           } else {
@@ -5294,7 +5371,7 @@ draw_trifans(const GeomPrimitivePipelineReader *reader, bool force) {
       for (size_t i = 0; i < ends.size(); i++) {
         _vertices_trifan_pcollector.add_level(ends[i] - start);
 #ifndef OPENGLES_1
-        if (_supports_geometry_instancing && _instance_count > 0) {
+        if (_instance_count != 1) {
           _glDrawElementsInstanced(GL_TRIANGLE_FAN, ends[i] - start,
                                    get_numeric_type(reader->get_index_type()),
                                    client_pointer + start * index_stride,
@@ -5315,7 +5392,7 @@ draw_trifans(const GeomPrimitivePipelineReader *reader, bool force) {
       for (size_t i = 0; i < ends.size(); i++) {
         _vertices_trifan_pcollector.add_level(ends[i] - start);
 #ifndef OPENGLES_1
-        if (_supports_geometry_instancing && _instance_count > 0) {
+        if (_instance_count != 1) {
           _glDrawArraysInstanced(GL_TRIANGLE_FAN, first_vertex + start,
                                  ends[i] - start, _instance_count);
         } else
@@ -5373,7 +5450,7 @@ draw_patches(const GeomPrimitivePipelineReader *reader, bool force) {
       }
 
 #ifndef OPENGLES_1
-      if (_supports_geometry_instancing && _instance_count > 0) {
+      if (_instance_count != 1) {
         _glDrawElementsInstanced(GL_PATCHES, num_vertices,
                                  get_numeric_type(reader->get_index_type()),
                                  client_pointer, _instance_count);
@@ -5389,7 +5466,7 @@ draw_patches(const GeomPrimitivePipelineReader *reader, bool force) {
       }
     } else {
 #ifndef OPENGLES_1
-      if (_supports_geometry_instancing && _instance_count > 0) {
+      if (_instance_count != 1) {
         _glDrawArraysInstanced(GL_PATCHES,
                                reader->get_first_vertex(),
                                num_vertices, _instance_count);
@@ -5439,7 +5516,7 @@ draw_lines(const GeomPrimitivePipelineReader *reader, bool force) {
         return false;
       }
 #ifndef OPENGLES_1
-      if (_supports_geometry_instancing && _instance_count > 0) {
+      if (_instance_count != 1) {
         _glDrawElementsInstanced(GL_LINES, num_vertices,
                                  get_numeric_type(reader->get_index_type()),
                                  client_pointer, _instance_count);
@@ -5455,7 +5532,7 @@ draw_lines(const GeomPrimitivePipelineReader *reader, bool force) {
       }
     } else {
 #ifndef OPENGLES_1
-      if (_supports_geometry_instancing && _instance_count > 0) {
+      if (_instance_count != 1) {
         _glDrawArraysInstanced(GL_LINES,
                                reader->get_first_vertex(),
                                num_vertices, _instance_count);
@@ -5503,7 +5580,7 @@ draw_lines_adj(const GeomPrimitivePipelineReader *reader, bool force) {
       if (!setup_primitive(client_pointer, reader, force)) {
         return false;
       }
-      if (_supports_geometry_instancing && _instance_count > 0) {
+      if (_instance_count != 1) {
         _glDrawElementsInstanced(GL_LINES_ADJACENCY, num_vertices,
                                  get_numeric_type(reader->get_index_type()),
                                  client_pointer, _instance_count);
@@ -5516,7 +5593,7 @@ draw_lines_adj(const GeomPrimitivePipelineReader *reader, bool force) {
                              client_pointer);
       }
     } else {
-      if (_supports_geometry_instancing && _instance_count > 0) {
+      if (_instance_count != 1) {
         _glDrawArraysInstanced(GL_LINES_ADJACENCY,
                                reader->get_first_vertex(),
                                num_vertices, _instance_count);
@@ -5575,7 +5652,7 @@ draw_linestrips(const GeomPrimitivePipelineReader *reader, bool force) {
         return false;
       }
 #ifndef OPENGLES_1
-      if (_supports_geometry_instancing && _instance_count > 0) {
+      if (_instance_count != 1) {
         _glDrawElementsInstanced(GL_LINE_STRIP, num_vertices,
                                  get_numeric_type(reader->get_index_type()),
                                  client_pointer, _instance_count);
@@ -5615,7 +5692,7 @@ draw_linestrips(const GeomPrimitivePipelineReader *reader, bool force) {
         for (size_t i = 0; i < ends.size(); i++) {
           _vertices_other_pcollector.add_level(ends[i] - start);
 #ifndef OPENGLES_1
-          if (_supports_geometry_instancing && _instance_count > 0) {
+          if (_instance_count != 1) {
             _glDrawElementsInstanced(GL_LINE_STRIP, ends[i] - start,
                                      get_numeric_type(reader->get_index_type()),
                                      client_pointer + start * index_stride,
@@ -5637,7 +5714,7 @@ draw_linestrips(const GeomPrimitivePipelineReader *reader, bool force) {
         for (size_t i = 0; i < ends.size(); i++) {
           _vertices_other_pcollector.add_level(ends[i] - start);
 #ifndef OPENGLES_1
-          if (_supports_geometry_instancing && _instance_count > 0) {
+          if (_instance_count != 1) {
             _glDrawArraysInstanced(GL_LINE_STRIP, first_vertex + start,
                                    ends[i] - start, _instance_count);
           } else
@@ -5695,7 +5772,7 @@ draw_linestrips_adj(const GeomPrimitivePipelineReader *reader, bool force) {
       if (!setup_primitive(client_pointer, reader, force)) {
         return false;
       }
-      if (_supports_geometry_instancing && _instance_count > 0) {
+      if (_instance_count != 1) {
         _glDrawElementsInstanced(GL_LINE_STRIP_ADJACENCY, num_vertices,
                                  get_numeric_type(reader->get_index_type()),
                                  client_pointer, _instance_count);
@@ -5730,7 +5807,7 @@ draw_linestrips_adj(const GeomPrimitivePipelineReader *reader, bool force) {
         unsigned int start = 0;
         for (size_t i = 0; i < ends.size(); i++) {
           _vertices_other_pcollector.add_level(ends[i] - start);
-          if (_supports_geometry_instancing && _instance_count > 0) {
+          if (_instance_count != 1) {
             _glDrawElementsInstanced(GL_LINE_STRIP_ADJACENCY, ends[i] - start,
                                      get_numeric_type(reader->get_index_type()),
                                      client_pointer + start * index_stride,
@@ -5749,7 +5826,7 @@ draw_linestrips_adj(const GeomPrimitivePipelineReader *reader, bool force) {
         int first_vertex = reader->get_first_vertex();
         for (size_t i = 0; i < ends.size(); i++) {
           _vertices_other_pcollector.add_level(ends[i] - start);
-          if (_supports_geometry_instancing && _instance_count > 0) {
+          if (_instance_count != 1) {
             _glDrawArraysInstanced(GL_LINE_STRIP_ADJACENCY, first_vertex + start,
                                    ends[i] - start, _instance_count);
           } else {
@@ -5796,7 +5873,7 @@ draw_points(const GeomPrimitivePipelineReader *reader, bool force) {
         return false;
       }
 #ifndef OPENGLES_1
-      if (_supports_geometry_instancing && _instance_count > 0) {
+      if (_instance_count != 1) {
         _glDrawElementsInstanced(GL_POINTS, num_vertices,
                                  get_numeric_type(reader->get_index_type()),
                                  client_pointer, _instance_count);
@@ -5812,7 +5889,7 @@ draw_points(const GeomPrimitivePipelineReader *reader, bool force) {
       }
     } else {
 #ifndef OPENGLES_1
-      if (_supports_geometry_instancing && _instance_count > 0) {
+      if (_instance_count != 1) {
         _glDrawArraysInstanced(GL_POINTS,
                                reader->get_first_vertex(),
                                num_vertices, _instance_count);
@@ -7344,7 +7421,10 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
   switch (format) {
   case Texture::F_depth_stencil:
     if (_current_properties->get_float_depth()) {
+      //NB. In the future we may need a T_float_32_unsigned_int_24_8 format, but
+      // for now we'll just try to grab the depth component.
       component_type = Texture::T_float;
+      format = Texture::F_depth_component32;
     } else {
       component_type = Texture::T_unsigned_int_24_8;
     }
@@ -7380,21 +7460,66 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
       }
     } else if (_current_properties->get_float_color()) {
       if (_current_properties->get_alpha_bits()) {
-        format = Texture::F_rgba32;
+        if (_current_properties->get_red_bits() == 16 &&
+            _current_properties->get_green_bits() == 16 &&
+            _current_properties->get_blue_bits() == 16 &&
+            _current_properties->get_alpha_bits() == 16) {
+          format = Texture::F_rgba16;
+        } else {
+          format = Texture::F_rgba32;
+        }
       } else if (_current_properties->get_blue_bits()) {
-        format = Texture::F_rgb32;
+        if (_current_properties->get_red_bits() == 11 &&
+            _current_properties->get_green_bits() == 11 &&
+            _current_properties->get_blue_bits() == 10) {
+          format = Texture::F_r11_g11_b10;
+        } else if (_current_properties->get_red_bits() == 16 &&
+                   _current_properties->get_green_bits() == 16 &&
+                   _current_properties->get_blue_bits() == 16) {
+          format = Texture::F_rgb16;
+        } else {
+          format = Texture::F_rgb32;
+        }
       } else if (_current_properties->get_green_bits()) {
-        format = Texture::F_rg32;
+        if (_current_properties->get_red_bits() == 16 &&
+            _current_properties->get_green_bits() == 16) {
+          format = Texture::F_rg16;
+        } else {
+          format = Texture::F_rg32;
+        }
       } else {
-        format = Texture::F_r32;
+        if (_current_properties->get_red_bits() == 16) {
+          format = Texture::F_r16;
+        } else {
+          format = Texture::F_r32;
+        }
+      }
+    } else if (_current_properties->get_alpha_bits()) {
+      if (_current_properties->get_red_bits() == 10 &&
+          _current_properties->get_green_bits() == 10 &&
+          _current_properties->get_blue_bits() == 10 &&
+          _current_properties->get_alpha_bits() == 2) {
+        format = Texture::F_rgb10_a2;
+      } else {
+        format = Texture::F_rgba;
+      }
+    } else if (_current_properties->get_blue_bits()) {
+      format = Texture::F_rgb;
+    } else if (_current_properties->get_green_bits()) {
+      if (_current_properties->get_red_bits() == 16 &&
+          _current_properties->get_green_bits() == 16) {
+        format = Texture::F_rg16;
+      } else {
+        format = Texture::F_rg;
       }
     } else {
-      if (_current_properties->get_alpha_bits()) {
-        format = Texture::F_rgba;
+      if (_current_properties->get_color_bits() == 16) {
+        format = Texture::F_r16;
       } else {
-        format = Texture::F_rgb;
+        format = Texture::F_red;
       }
     }
+
     if (_current_properties->get_float_color()) {
       component_type = Texture::T_float;
     } else if (_current_properties->get_color_bits() <= 24
@@ -7447,6 +7572,7 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
     external_format = GL_RGBA;
   }
 
+#ifndef NDEBUG
   if (GLCAT.is_spam()) {
     GLCAT.spam()
       << "glReadPixels(" << xo << ", " << yo << ", " << w << ", " << h << ", ";
@@ -7490,9 +7616,71 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
     case GL_FLOAT:
       GLCAT.spam(false) << "GL_FLOAT";
       break;
+    case GL_UNSIGNED_SHORT_4_4_4_4:
+      GLCAT.spam(false) << "GL_UNSIGNED_SHORT_4_4_4_4";
+      break;
+    case GL_UNSIGNED_SHORT_5_5_5_1:
+      GLCAT.spam(false) << "GL_UNSIGNED_SHORT_5_5_5_1";
+      break;
+    case GL_UNSIGNED_SHORT_5_6_5:
+      GLCAT.spam(false) << "GL_UNSIGNED_SHORT_5_6_5";
+      break;
 #ifndef OPENGLES_1
     case GL_INT:
       GLCAT.spam(false) << "GL_INT";
+      break;
+    case GL_BYTE:
+      GLCAT.spam(false) << "GL_BYTE";
+      break;
+    case GL_SHORT:
+      GLCAT.spam(false) << "GL_SHORT";
+      break;
+    case GL_UNSIGNED_INT:
+      GLCAT.spam(false) << "GL_UNSIGNED_INT";
+      break;
+    case GL_HALF_FLOAT:
+      GLCAT.spam(false) << "GL_HALF_FLOAT";
+      break;
+#endif
+#ifndef OPENGLES
+    case GL_UNSIGNED_BYTE_3_3_2:
+      GLCAT.spam(false) << "GL_UNSIGNED_BYTE_3_3_2";
+      break;
+    case GL_UNSIGNED_BYTE_2_3_3_REV:
+      GLCAT.spam(false) << "GL_UNSIGNED_BYTE_2_3_3_REV";
+      break;
+    case GL_UNSIGNED_SHORT_5_6_5_REV:
+      GLCAT.spam(false) << "GL_UNSIGNED_SHORT_5_6_5_REV";
+      break;
+    case GL_UNSIGNED_SHORT_4_4_4_4_REV:
+      GLCAT.spam(false) << "GL_UNSIGNED_SHORT_4_4_4_4_REV";
+      break;
+    case GL_UNSIGNED_SHORT_1_5_5_5_REV:
+      GLCAT.spam(false) << "GL_UNSIGNED_SHORT_1_5_5_5_REV";
+      break;
+    case GL_UNSIGNED_INT_8_8_8_8:
+      GLCAT.spam(false) << "GL_UNSIGNED_INT_8_8_8_8";
+      break;
+    case GL_UNSIGNED_INT_8_8_8_8_REV:
+      GLCAT.spam(false) << "GL_UNSIGNED_INT_8_8_8_8_REV";
+      break;
+    case GL_UNSIGNED_INT_10_10_10_2:
+      GLCAT.spam(false) << "GL_UNSIGNED_INT_10_10_10_2";
+      break;
+    case GL_UNSIGNED_INT_2_10_10_10_REV:
+      GLCAT.spam(false) << "GL_UNSIGNED_INT_2_10_10_10_REV";
+      break;
+    case GL_UNSIGNED_INT_24_8:
+      GLCAT.spam(false) << "GL_UNSIGNED_INT_24_8";
+      break;
+    case GL_UNSIGNED_INT_10F_11F_11F_REV:
+      GLCAT.spam(false) << "GL_UNSIGNED_INT_10F_11F_11F_REV";
+      break;
+    case GL_UNSIGNED_INT_5_9_9_9_REV:
+      GLCAT.spam(false) << "GL_UNSIGNED_INT_5_9_9_9_REV";
+      break;
+    case GL_FLOAT_32_UNSIGNED_INT_24_8_REV:
+      GLCAT.spam(false) << "GL_FLOAT_32_UNSIGNED_INT_24_8_REV";
       break;
 #endif
     default:
@@ -7502,6 +7690,7 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
     GLCAT.spam(false)
       << ")" << endl;
   }
+#endif  // NDEBUG
 
   unsigned char *image_ptr = tex->modify_ram_image();
   size_t image_size = tex->get_ram_image_size();
@@ -9544,6 +9733,8 @@ get_external_image_format(Texture *tex) const {
       case Texture::F_rgba16:
       case Texture::F_rgba32:
       case Texture::F_rgba8i:
+      case Texture::F_rgba16i:
+      case Texture::F_rgba32i:
       case Texture::F_rgb10_a2:
         return GL_COMPRESSED_RGBA;
 
@@ -9555,7 +9746,9 @@ get_external_image_format(Texture *tex) const {
       case Texture::F_rgb12:
       case Texture::F_rgb332:
       case Texture::F_rgb16:
+      case Texture::F_rgb16i:
       case Texture::F_rgb32:
+      case Texture::F_rgb32i:
         return GL_COMPRESSED_RGB;
 
       case Texture::F_alpha:
@@ -9574,7 +9767,9 @@ get_external_image_format(Texture *tex) const {
       case Texture::F_rg:
       case Texture::F_rg8i:
       case Texture::F_rg16:
+      case Texture::F_rg16i:
       case Texture::F_rg32:
+      case Texture::F_rg32i:
         return GL_COMPRESSED_RG;
 
       case Texture::F_luminance:
@@ -9779,15 +9974,22 @@ get_external_image_format(Texture *tex) const {
 
   case Texture::F_rgba:
   case Texture::F_rgbm:
-  case Texture::F_rgba4:
-  case Texture::F_rgba5:
   case Texture::F_rgba8:
   case Texture::F_rgba12:
+    return _supports_bgr ? GL_BGRA : GL_RGBA;
+
+  case Texture::F_rgba4:
+  case Texture::F_rgba5:
   case Texture::F_rgba16:
   case Texture::F_rgba32:
   case Texture::F_srgb_alpha:
   case Texture::F_rgb10_a2:
+#ifdef OPENGLES
+    // OpenGL ES doesn't have sized BGRA formats.
+    return GL_RGBA;
+#else
     return _supports_bgr ? GL_BGRA : GL_RGBA;
+#endif
 
   case Texture::F_luminance:
 #ifdef OPENGLES
@@ -9822,10 +10024,16 @@ get_external_image_format(Texture *tex) const {
   case Texture::F_r32i:
     return GL_RED_INTEGER;
   case Texture::F_rg8i:
+  case Texture::F_rg16i:
+  case Texture::F_rg32i:
     return GL_RG_INTEGER;
   case Texture::F_rgb8i:
+  case Texture::F_rgb16i:
+  case Texture::F_rgb32i:
     return GL_RGB_INTEGER;
   case Texture::F_rgba8i:
+  case Texture::F_rgba16i:
+  case Texture::F_rgba32i:
     return GL_RGBA_INTEGER;
 #endif
 
@@ -9853,8 +10061,10 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
     // no compression for render targets
     compression = Texture::CM_off;
   }
-  bool is_3d = (tex->get_texture_type() == Texture::TT_3d_texture ||
-                tex->get_texture_type() == Texture::TT_2d_texture_array);
+  Texture::ComponentType component_type = tex->get_component_type();
+  Texture::TextureType texture_type = tex->get_texture_type();
+  bool is_3d = (texture_type == Texture::TT_3d_texture ||
+                texture_type == Texture::TT_2d_texture_array);
 
   if (get_supports_compressed_texture_format(compression)) {
     switch (compression) {
@@ -9877,7 +10087,13 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
       case Texture::F_rgb8i:
       case Texture::F_rgba8i:
       case Texture::F_r16i:
+      case Texture::F_rg16i:
+      case Texture::F_rgb16i:
+      case Texture::F_rgba16i:
       case Texture::F_r32i:
+      case Texture::F_rg32i:
+      case Texture::F_rgb32i:
+      case Texture::F_rgba32i:
       case Texture::F_r11_g11_b10:
       case Texture::F_rgb9_e5:
         // Unsupported; fall through to below.
@@ -9988,7 +10204,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
         }
 #endif
         if (get_supports_compressed_texture_format(Texture::CM_eac) && !is_3d) {
-          if (Texture::is_unsigned(tex->get_component_type())) {
+          if (Texture::is_unsigned(component_type)) {
             return GL_COMPRESSED_R11_EAC;
           } else {
             return GL_COMPRESSED_SIGNED_R11_EAC;
@@ -10014,7 +10230,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
         }
 #endif
         if (get_supports_compressed_texture_format(Texture::CM_eac) && !is_3d) {
-          if (Texture::is_unsigned(tex->get_component_type())) {
+          if (Texture::is_unsigned(component_type)) {
             return GL_COMPRESSED_RG11_EAC;
           } else {
             return GL_COMPRESSED_SIGNED_RG11_EAC;
@@ -10192,7 +10408,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
       break;
 
     case Texture::CM_eac:
-      if (Texture::is_unsigned(tex->get_component_type())) {
+      if (Texture::is_unsigned(component_type)) {
         if (tex->get_num_components() == 1) {
           return GL_COMPRESSED_R11_EAC;
         } else {
@@ -10225,7 +10441,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
   case Texture::F_depth_stencil:
     if (_supports_depth_stencil) {
 #ifndef OPENGLES
-      if (tex->get_component_type() == Texture::T_float) {
+      if (component_type == Texture::T_float) {
         return GL_DEPTH32F_STENCIL8;
       } else
 #endif
@@ -10237,7 +10453,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
 
   case Texture::F_depth_component:
 #ifndef OPENGLES
-    if (tex->get_component_type() == Texture::T_float) {
+    if (component_type == Texture::T_float) {
       return GL_DEPTH_COMPONENT32F;
     } else
 #endif
@@ -10272,7 +10488,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
       return GL_DEPTH_COMPONENT16_OES;
     }
 #else
-    if (tex->get_component_type() == Texture::T_float) {
+    if (component_type == Texture::T_float) {
       return GL_DEPTH_COMPONENT32F;
     } else {
       return GL_DEPTH_COMPONENT32;
@@ -10282,7 +10498,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
   case Texture::F_rgba:
   case Texture::F_rgbm:
 #ifndef OPENGLES_1
-    if (tex->get_component_type() == Texture::T_float) {
+    if (component_type == Texture::T_float) {
       return GL_RGBA16F;
     } else
 #endif
@@ -10292,11 +10508,11 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
       return _supports_bgr ? GL_BGRA : GL_RGBA;
     }
 #else
-    if (tex->get_component_type() == Texture::T_unsigned_short) {
+    if (component_type == Texture::T_unsigned_short) {
       return GL_RGBA16;
-    } else if (tex->get_component_type() == Texture::T_short) {
+    } else if (component_type == Texture::T_short) {
       return GL_RGBA16_SNORM;
-    } else if (tex->get_component_type() == Texture::T_byte) {
+    } else if (component_type == Texture::T_byte) {
       return GL_RGBA8_SNORM;
     } else {
       return force_sized ? GL_RGBA8 : GL_RGBA;
@@ -10308,37 +10524,37 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
 
 #ifdef OPENGLES
   case Texture::F_rgba8:
-    return GL_RGBA8_OES;
+    return _supports_bgr ? GL_BGRA : GL_RGBA8_OES;
   case Texture::F_rgba12:
-    return force_sized ? GL_RGBA8 : GL_RGBA;
+    return _supports_bgr ? GL_BGRA : (force_sized ? GL_RGBA8 : GL_RGBA);
 #else
   case Texture::F_rgba8:
-    if (Texture::is_unsigned(tex->get_component_type())) {
+    if (Texture::is_unsigned(component_type)) {
       return GL_RGBA8;
     } else {
       return GL_RGBA8_SNORM;
     }
 
   case Texture::F_r8i:
-    if (Texture::is_unsigned(tex->get_component_type())) {
+    if (Texture::is_unsigned(component_type)) {
       return GL_R8UI;
     } else {
       return GL_R8I;
     }
   case Texture::F_rg8i:
-    if (Texture::is_unsigned(tex->get_component_type())) {
+    if (Texture::is_unsigned(component_type)) {
       return GL_RG8UI;
     } else {
       return GL_RG8I;
     }
   case Texture::F_rgb8i:
-    if (Texture::is_unsigned(tex->get_component_type())) {
+    if (Texture::is_unsigned(component_type)) {
       return GL_RGB8UI;
     } else {
       return GL_RGB8I;
     }
   case Texture::F_rgba8i:
-    if (Texture::is_unsigned(tex->get_component_type())) {
+    if (Texture::is_unsigned(component_type)) {
       return GL_RGBA8UI;
     } else {
       return GL_RGBA8I;
@@ -10348,9 +10564,9 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
 #endif  // OPENGLES
 #ifndef OPENGLES
   case Texture::F_rgba16:
-    if (tex->get_component_type() == Texture::T_float) {
+    if (component_type == Texture::T_float) {
       return GL_RGBA16F;
-    } else if (Texture::is_unsigned(tex->get_component_type())) {
+    } else if (Texture::is_unsigned(component_type)) {
       return GL_RGBA16;
     } else {
       return GL_RGBA16_SNORM;
@@ -10360,7 +10576,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
 #endif  // OPENGLES
 
   case Texture::F_rgb:
-    switch (tex->get_component_type()) {
+    switch (component_type) {
     case Texture::T_float: return GL_RGB16F;
 #ifndef OPENGLES
     case Texture::T_unsigned_short: return GL_RGB16;
@@ -10390,7 +10606,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
     return GL_RGB16F;
 #else
   case Texture::F_rgb8:
-    if (Texture::is_unsigned(tex->get_component_type())) {
+    if (Texture::is_unsigned(component_type)) {
       return GL_RGB8;
     } else {
       return GL_RGB8_SNORM;
@@ -10398,9 +10614,9 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
   case Texture::F_rgb12:
     return GL_RGB12;
   case Texture::F_rgb16:
-    if (tex->get_component_type() == Texture::T_float) {
+    if (component_type == Texture::T_float) {
       return GL_RGB16F;
-    } else if (Texture::is_unsigned(tex->get_component_type())) {
+    } else if (Texture::is_unsigned(component_type)) {
       return GL_RGB16;
     } else {
       return GL_RGB16_SNORM;
@@ -10421,26 +10637,44 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
     return GL_RG16F_EXT;
 #elif !defined(OPENGLES_1)
   case Texture::F_r16:
-    if (tex->get_component_type() == Texture::T_float) {
+    if (component_type == Texture::T_float) {
       return GL_R16F;
-    } else if (Texture::is_unsigned(tex->get_component_type())) {
+    } else if (Texture::is_unsigned(component_type)) {
       return GL_R16;
     } else {
       return GL_R16_SNORM;
     }
+  case Texture::F_rg16:
+    if (component_type == Texture::T_float) {
+      return GL_RG16F;
+    } else if (Texture::is_unsigned(component_type)) {
+      return GL_RG16;
+    } else {
+      return GL_RG16_SNORM;
+    }
   case Texture::F_r16i:
-    if (Texture::is_unsigned(tex->get_component_type())) {
+    if (Texture::is_unsigned(component_type)) {
       return GL_R16UI;
     } else {
       return GL_R16I;
     }
-  case Texture::F_rg16:
-    if (tex->get_component_type() == Texture::T_float) {
-      return GL_RG16F;
-    } else if (Texture::is_unsigned(tex->get_component_type())) {
-      return GL_RG16;
+  case Texture::F_rg16i:
+    if (Texture::is_unsigned(component_type)) {
+      return GL_RG16UI;
     } else {
-      return GL_RG16_SNORM;
+      return GL_RG16I;
+    }
+  case Texture::F_rgb16i:
+    if (Texture::is_unsigned(component_type)) {
+      return GL_RGB16UI;
+    } else {
+      return GL_RGB16I;
+    }
+  case Texture::F_rgba16i:
+    if (Texture::is_unsigned(component_type)) {
+      return GL_RGBA16UI;
+    } else {
+      return GL_RGBA16I;
     }
 #endif
 
@@ -10454,7 +10688,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
   case Texture::F_green:
   case Texture::F_blue:
 #ifndef OPENGLES
-    if (!Texture::is_unsigned(tex->get_component_type())) {
+    if (!Texture::is_unsigned(component_type)) {
       return GL_R8_SNORM;
     } else
 #endif
@@ -10479,7 +10713,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
     return force_sized ? GL_LUMINANCE8 : GL_LUMINANCE;
 #else
     if (_supports_luminance_texture) {
-      switch (tex->get_component_type()) {
+      switch (component_type) {
       case Texture::T_float:
       case Texture::T_half_float:
         return GL_LUMINANCE16F_ARB;
@@ -10491,7 +10725,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
         return force_sized ? GL_LUMINANCE8 : GL_LUMINANCE;
       }
     } else {
-      switch (tex->get_component_type()) {
+      switch (component_type) {
       case Texture::T_float:
       case Texture::T_half_float:
         return GL_R16F;
@@ -10510,7 +10744,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
     return force_sized ? GL_LUMINANCE8_ALPHA8 : GL_LUMINANCE_ALPHA;
 #else
     if (_supports_luminance_texture) {
-      switch (tex->get_component_type()) {
+      switch (component_type) {
       case Texture::T_float:
       case Texture::T_half_float:
         return GL_LUMINANCE_ALPHA16F_ARB;
@@ -10522,7 +10756,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
         return force_sized ? GL_LUMINANCE8_ALPHA8 : GL_LUMINANCE_ALPHA;
       }
     } else {
-      switch (tex->get_component_type()) {
+      switch (component_type) {
       case Texture::T_float:
       case Texture::T_half_float:
         return GL_RG16F;
@@ -10554,9 +10788,31 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
     return _core_profile ? GL_SRGB8_ALPHA8 : GL_SLUMINANCE8_ALPHA8;
 #endif
 
-#ifndef OPENGLES
+#ifndef OPENGLES_1
   case Texture::F_r32i:
-    return GL_R32I;
+    if (Texture::is_unsigned(component_type)) {
+      return GL_R32UI;
+    } else {
+      return GL_R32I;
+    }
+  case Texture::F_rg32i:
+    if (Texture::is_unsigned(component_type)) {
+      return GL_RG32UI;
+    } else {
+      return GL_RG32I;
+    }
+  case Texture::F_rgb32i:
+    if (Texture::is_unsigned(component_type)) {
+      return GL_RGB32UI;
+    } else {
+      return GL_RGB32I;
+    }
+  case Texture::F_rgba32i:
+    if (Texture::is_unsigned(component_type)) {
+      return GL_RGBA32UI;
+    } else {
+      return GL_RGBA32I;
+    }
 #endif
 
 #ifndef OPENGLES_1
@@ -11452,7 +11708,7 @@ set_state_and_transform(const RenderState *target,
 
 #ifndef OPENGLES_1
   determine_target_shader();
-  _instance_count = _target_shader->get_instance_count();
+  _sattr_instance_count = _target_shader->get_instance_count();
 
   if (_target_shader != _state_shader) {
     do_issue_shader();
@@ -12625,10 +12881,20 @@ specify_texture(CLP(TextureContext) *gtc, const SamplerState &sampler) {
     }
   }
 
-  glTexParameteri(target, GL_TEXTURE_MIN_FILTER,
-                  get_texture_filter_type(minfilter, !uses_mipmaps));
-  glTexParameteri(target, GL_TEXTURE_MAG_FILTER,
-                  get_texture_filter_type(magfilter, true));
+  if (Texture::is_integer(tex->get_format())) {
+    // Integer format textures can't have filtering enabled, and in fact, some
+    // drivers (looking at you, Intel) will always sample (0, 0, 0, 1) if we
+    // don't set this correctly!
+    glTexParameteri(target, GL_TEXTURE_MIN_FILTER,
+                    uses_mipmaps ? GL_NEAREST_MIPMAP_NEAREST
+                                 : GL_NEAREST);
+    glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  } else {
+    glTexParameteri(target, GL_TEXTURE_MIN_FILTER,
+                    get_texture_filter_type(minfilter, !uses_mipmaps));
+    glTexParameteri(target, GL_TEXTURE_MAG_FILTER,
+                    get_texture_filter_type(magfilter, true));
+  }
 
   // Set anisotropic filtering.
   if (_supports_anisotropy) {
@@ -13151,8 +13417,10 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
       case Texture::TT_buffer_texture:
         // Won't get here, but squelch compiler warning
       case Texture::TT_1d_texture:
+#ifndef OPENGLES
         _glTexStorage1D(target, num_levels, internal_format, width);
         break;
+#endif
       case Texture::TT_2d_texture:
       case Texture::TT_cube_map:
       case Texture::TT_1d_texture_array:
@@ -13787,7 +14055,11 @@ upload_simple_texture(CLP(TextureContext) *gtc) {
   Texture *tex = gtc->get_texture();
   nassertr(tex != nullptr, false);
 
+#ifdef OPENGLES
+  GLenum internal_format = GL_BGRA;
+#else
   GLenum internal_format = GL_RGBA;
+#endif
   GLenum external_format = GL_BGRA;
 
   const unsigned char *image_ptr = tex->get_simple_ram_image();
@@ -13801,6 +14073,9 @@ upload_simple_texture(CLP(TextureContext) *gtc) {
     // If the GL doesn't claim to support BGR, we may have to reverse the
     // component ordering of the image.
     external_format = GL_RGBA;
+#ifdef OPENGLES
+    internal_format = GL_RGBA;
+#endif
     image_ptr = fix_component_ordering(bgr_image, image_ptr, image_size,
                                        external_format, tex);
   }
@@ -14171,7 +14446,9 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
   case GL_R3_G3_B2:
     format = Texture::F_rgb332;
     break;
+#endif
 
+#ifndef OPENGLES_1
   case GL_R8I:
     type = Texture::T_byte;
     format = Texture::F_r8i;
@@ -14210,11 +14487,69 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     type = Texture::T_short;
     format = Texture::F_r16i;
     break;
+  case GL_RG16I:
+    type = Texture::T_short;
+    format = Texture::F_rg16i;
+    break;
+  case GL_RGB16I:
+    type = Texture::T_short;
+    format = Texture::F_rgb16i;
+    break;
+  case GL_RGBA16I:
+    type = Texture::T_short;
+    format = Texture::F_rgba16i;
+    break;
+
   case GL_R16UI:
     type = Texture::T_unsigned_short;
     format = Texture::F_r16i;
     break;
+  case GL_RG16UI:
+    type = Texture::T_unsigned_short;
+    format = Texture::F_rg16i;
+    break;
+  case GL_RGB16UI:
+    type = Texture::T_unsigned_short;
+    format = Texture::F_rgb16i;
+    break;
+  case GL_RGBA16UI:
+    type = Texture::T_unsigned_short;
+    format = Texture::F_rgba16i;
+    break;
 
+  case GL_R32I:
+    type = Texture::T_int;
+    format = Texture::F_r32i;
+    break;
+  case GL_RG32I:
+    type = Texture::T_int;
+    format = Texture::F_rg32i;
+    break;
+  case GL_RGB32I:
+    type = Texture::T_int;
+    format = Texture::F_rgb32i;
+    break;
+  case GL_RGBA32I:
+    type = Texture::T_int;
+    format = Texture::F_rgba32i;
+    break;
+
+  case GL_R32UI:
+    type = Texture::T_unsigned_int;
+    format = Texture::F_r32i;
+    break;
+  case GL_RG32UI:
+    type = Texture::T_unsigned_int;
+    format = Texture::F_rg32i;
+    break;
+  case GL_RGB32UI:
+    type = Texture::T_unsigned_int;
+    format = Texture::F_rgb32i;
+    break;
+  case GL_RGBA32UI:
+    type = Texture::T_unsigned_int;
+    format = Texture::F_rgba32i;
+    break;
 #endif
 
 #ifndef OPENGLES_1
@@ -14301,12 +14636,6 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
   case GL_RED_EXT:
   case GL_R8_EXT:
     format = Texture::F_red;
-    break;
-#endif
-#ifndef OPENGLES
-  case GL_R32I:
-    type = Texture::T_int;
-    format = Texture::F_r32i;
     break;
 #endif
 

@@ -77,6 +77,15 @@ apply_transform_and_state(CullTraverser *trav) {
 void CullTraverserData::
 apply_transform(const TransformState *node_transform) {
   if (!node_transform->is_identity()) {
+    if (_instances != nullptr) {
+      InstanceList *instances = new InstanceList(*_instances);
+      for (InstanceList::Instance &instance : *instances) {
+        instance.set_transform(instance.get_transform()->compose(node_transform));
+      }
+      _instances = std::move(instances);
+      return;
+    }
+
     _net_transform = _net_transform->compose(node_transform);
 
     if ((_view_frustum != nullptr) ||

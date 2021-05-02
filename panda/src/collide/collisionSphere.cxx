@@ -31,7 +31,9 @@
 #include "mathNumbers.h"
 #include "geom.h"
 #include "geomTristrips.h"
+#include "geomLinestrips.h"
 #include "geomVertexWriter.h"
+#include "billboardEffect.h"
 
 using std::max;
 using std::min;
@@ -551,34 +553,67 @@ fill_viz_geom() {
   }
 
   static const int num_slices = 16;
-  static const int num_stacks = 8;
+  static const int num_stacks = 24;
+
+  Thread *current_thread = Thread::get_current_thread();
 
   PT(GeomVertexData) vdata = new GeomVertexData
-    ("collision", GeomVertexFormat::get_v3(),
-     Geom::UH_static);
+    ("collision", GeomVertexFormat::get_v3(), Geom::UH_static);
+  vdata->unclean_set_num_rows(num_slices * num_stacks * 2);
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
 
   PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_static);
   for (int sl = 0; sl < num_slices; ++sl) {
     PN_stdfloat longitude0 = (PN_stdfloat)sl / (PN_stdfloat)num_slices;
     PN_stdfloat longitude1 = (PN_stdfloat)(sl + 1) / (PN_stdfloat)num_slices;
-    vertex.add_data3(compute_point(0.0, longitude0));
+    vertex.set_data3(compute_point(0.0, longitude0));
     for (int st = 1; st < num_stacks; ++st) {
       PN_stdfloat latitude = (PN_stdfloat)st / (PN_stdfloat)num_stacks;
-      vertex.add_data3(compute_point(latitude, longitude0));
-      vertex.add_data3(compute_point(latitude, longitude1));
+      vertex.set_data3(compute_point(latitude, longitude0));
+      vertex.set_data3(compute_point(latitude, longitude1));
     }
-    vertex.add_data3(compute_point(1.0, longitude0));
+    vertex.set_data3(compute_point(1.0, longitude0));
 
     strip->add_next_vertices(num_stacks * 2);
     strip->close_primitive();
   }
 
+  // Also create a ring around the outer edge.
+  PT(GeomLinestrips) ring = new GeomLinestrips(Geom::UH_static);
+  ring->set_index_type(GeomEnums::NT_uint16);
+  {
+    PT(GeomVertexArrayDataHandle) handle = ring->modify_vertices_handle(current_thread);
+    handle->unclean_set_num_rows(num_stacks * 2 + 1);
+    uint16_t *ptr = (uint16_t *)handle->get_write_pointer();
+    *ptr++ = 0;
+    for (int i = 0; i < num_stacks; ++i) {
+      *ptr++ = i * 2 + 1;
+    }
+    int offset = num_slices * num_stacks;
+    for (int i = num_stacks - 1; i > 0; --i) {
+      *ptr++ = offset + i * 2 - 1;
+    }
+    *ptr++ = offset;
+  }
+  ring->close_primitive();
+
   PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(strip);
 
+  PT(Geom) ring_geom = new Geom(vdata);
+  ring_geom->add_primitive(ring);
+
+  CPT(TransformState) transform = TransformState::make_pos(get_center());
+
   _viz_geom->add_geom(geom, get_solid_viz_state());
+  _viz_geom->add_geom(ring_geom, get_wireframe_viz_state());
+  _viz_geom->set_transform(transform);
+  _viz_geom->set_effect(BillboardEffect::make_point_eye());
+
   _bounds_viz_geom->add_geom(geom, get_solid_bounds_viz_state());
+  _bounds_viz_geom->add_geom(ring_geom, get_wireframe_bounds_viz_state());
+  _bounds_viz_geom->set_transform(transform);
+  _bounds_viz_geom->set_effect(BillboardEffect::make_point_eye());
 }
 
 /**
@@ -728,7 +763,7 @@ compute_point(PN_stdfloat latitude, PN_stdfloat longitude) const {
   csincos(longitude * 2.0f * MathNumbers::pi, &s2, &c2);
 
   LVertex p(s1 * c2, s1 * s2, c1);
-  return p * get_radius() + get_center();
+  return p * get_radius();
 }
 
 /**

@@ -5,7 +5,6 @@
 from direct.showbase.DirectObject import *
 from direct.directtools import DirectUtil
 from panda3d.core import *
-import string
 
 
 class seLight(NodePath):

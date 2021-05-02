@@ -12,15 +12,6 @@
  */
 
 /**
- * Constructs an empty cookie.
- */
-INLINE HTTPCookie::
-HTTPCookie() :
-  _secure(false)
-{
-}
-
-/**
  * Constructs a cookie according to the indicated string, presumably the tag
  * of a Set-Cookie header.  There is no way to detect a formatting error in
  * the string with this constructor.
@@ -40,7 +31,8 @@ HTTPCookie(const std::string &name, const std::string &path, const std::string &
   _name(name),
   _path(path),
   _domain(domain),
-  _secure(false)
+  _secure(false),
+  _samesite(SS_unspecified)
 {
 }
 
@@ -166,6 +158,22 @@ set_secure(bool secure) {
 INLINE bool HTTPCookie::
 get_secure() const {
   return _secure;
+}
+
+/**
+ *
+ */
+INLINE void HTTPCookie::
+set_samesite(SameSite samesite) {
+  _samesite = samesite;
+}
+
+/**
+ *
+ */
+INLINE HTTPCookie::SameSite HTTPCookie::
+get_samesite() const {
+  return _samesite;
 }
 
 /**

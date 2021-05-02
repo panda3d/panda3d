@@ -227,6 +227,22 @@ WinGraphicsPipe() {
           windisplay_cat.debug() << "Calling SetProcessDpiAwareness().\n";
         }
         pfnSetProcessDpiAwareness(Process_Per_Monitor_DPI_Aware);
+
+        HDC dc = GetDC(nullptr);
+        if (dc) {
+          int dpi = GetDeviceCaps(dc, LOGPIXELSX);
+          if (dpi > 0) {
+            PN_stdfloat zoom = (double)dpi / 96.0;
+            set_detected_display_zoom(zoom);
+
+            if (windisplay_cat.is_debug()) {
+              windisplay_cat.debug()
+                << "Determined display zoom to be " << zoom
+                << " based on LOGPIXELSX " << dpi << "\n";
+            }
+          }
+          ReleaseDC(nullptr, dc);
+        }
       }
     }
   }

@@ -43,6 +43,7 @@
 #include "config_mayaegg.h"
 #include "config_maya.h"  // for maya_cat
 #include "globPattern.h"
+#include "mayaConversionServer.h"
 
 /**
  *
@@ -124,6 +125,12 @@ MayaToEgg() :
      "Legacy option.  Same as -pc.",
      &MayaToEgg::dispatch_filename, &_legacy_copytex, &_legacy_copytex_dir);
 
+  add_option("server", "", 0,
+    "Runs the Maya model conversion server. This server can be used in tandem "
+    "with the egg2maya_client and maya2egg_client utilities to batch convert "
+    "both Maya and Panda3D model files.",
+    &MayaToEgg::dispatch_none, &_run_server);
+
   add_option
     ("trans", "type", 0,
      "Specifies which transforms in the Maya file should be converted to "
@@ -203,7 +210,34 @@ MayaToEgg() :
 /**
  *
  */
-void MayaToEgg::
+MayaToEgg::
+~MayaToEgg() {
+}
+
+/**
+ * Attempts to create the global Maya API.
+ * Exits the program if unsuccessful.
+ */
+PT(MayaApi) MayaToEgg::
+open_api() {
+  if (!MayaApi::is_api_valid()) {
+    nout << "Initializing Maya...\n";
+  }
+
+  PT(MayaApi) api = MayaApi::open_api(_program_name, true, true);
+
+  if (!api || !api->is_valid()) {
+    nout << "Unable to initialize Maya.\n";
+    exit(1);
+  }
+
+  return api;
+}
+
+/**
+ * Returns true if the model has been successfully converted.
+ */
+bool MayaToEgg::
 run() {
   // Set the verbose level by using Notify.
   if (_verbose >= 3) {
@@ -229,14 +263,8 @@ run() {
     _path_replace->_path_directory.make_absolute();
   }
 
-  nout << "Initializing Maya.\n";
+  open_api();
   MayaToEggConverter converter(_program_name);
-  // reverting directories is really not needed for maya2egg.  It's more
-  // needed for mayaeggloader and such
-  if (!converter.open_api(false)) {
-    nout << "Unable to initialize Maya.\n";
-    exit(1);
-  }
 
   // Copy in the command-line parameters.
   converter._polygon_output = _polygon_output;
@@ -299,7 +327,7 @@ run() {
 
   if (!converter.convert_file(_input_filename)) {
     nout << "Errors in conversion.\n";
-    exit(1);
+    return false;
   }
 
   // Use the standard Maya units, if the user didn't specify otherwise.  This
@@ -310,8 +338,10 @@ run() {
     _input_units = converter.get_input_units();
   }
 
+  // Write output file
   write_egg_file();
-  nout << "\n";
+  close_output();
+  return true;
 }
 
 /**
@@ -332,9 +362,22 @@ dispatch_transform_type(const std::string &opt, const std::string &arg, void *va
   return true;
 }
 
-int main(int argc, char *argv[]) {
-  MayaToEgg prog;
-  prog.parse_command_line(argc, argv);
-  prog.run();
-  return 0;
+/**
+ * Processes the arguments parsed by the program.
+ *
+ * If the server flag is specified, the Maya conversion server is started
+ * up rather than the usual conversion utility functionality.
+ */
+bool MayaToEgg::
+handle_args(ProgramBase::Args &args) {
+  if (_run_server) {
+    open_api();
+
+    MayaConversionServer server;
+    server.listen();
+    exit(0);
+    return true;
+  }
+
+  return SomethingToEgg::handle_args(args);
 }

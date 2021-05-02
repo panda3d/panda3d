@@ -143,10 +143,11 @@ expect_float_matrix(const InternalName *name, const ::ShaderType *type, int lo, 
     num_columns = matrix->get_num_columns();
     scalar_type = matrix->get_scalar_type();
   }
-  if (scalar_type != ScalarType::ST_float || num_rows != num_columns ||
-      (int)num_rows < lo || (int)num_rows > hi) {
+  if ((scalar_type != ScalarType::ST_float && scalar_type != ScalarType::ST_double) ||
+      (int)num_rows < lo || (int)num_rows > hi ||
+      (int)num_columns < lo || (int)num_columns > hi) {
 
-    std::string msg = "expected square floating-point matrix of ";
+    std::string msg = "expected floating-point matrix of ";
     if (lo < hi) {
       msg += "at least ";
     }
@@ -394,6 +395,9 @@ cp_dependency(ShaderMatInput inp) {
  */
 void Shader::
 cp_add_mat_spec(ShaderMatSpec &spec) {
+  // We currently expect each ShaderMatSpec to map to one location.
+  nassertv(spec._id._type->get_num_parameter_locations() == 1);
+
   // If we're composing with identity, simplify.
 
   if (spec._func == SMF_first) {
@@ -458,6 +462,10 @@ cp_add_mat_spec(ShaderMatSpec &spec) {
     case SMP_transpose: spec._piece = SMP_whole; break;
     case SMP_upper3x3: spec._piece = SMP_transpose3x3; break;
     case SMP_transpose3x3: spec._piece = SMP_upper3x3; break;
+    case SMP_upper3x4: spec._piece = SMP_transpose3x4; break;
+    case SMP_transpose3x4: spec._piece = SMP_upper3x4; break;
+    case SMP_upper4x3: spec._piece = SMP_transpose4x3; break;
+    case SMP_transpose4x3: spec._piece = SMP_upper4x3; break;
     default: break;
     }
   }
@@ -882,6 +890,7 @@ do_read_source(ShaderModule::Stage stage, std::istream &in,
   }
 
   int used_caps = module->get_used_capabilities();
+  _module_spec_consts.insert({module, ModuleSpecConstants()});
   _modules.push_back(std::move(module));
   _module_mask |= (1u << (uint32_t)stage);
   _used_caps |= used_caps;
@@ -911,6 +920,8 @@ link() {
   pmap<CPT_InternalName, Parameter> parameters_by_name;
   pvector<Parameter *> parameters;
   BitArray used_locations;
+
+  pmap<CPT_InternalName, const ::ShaderType *> spec_const_types;
 
   for (COWPT(ShaderModule) &cow_module : _modules) {
     const ShaderModule *module = cow_module.get_read_pointer();
@@ -955,14 +966,8 @@ link() {
         int num_locations = var.type->get_num_parameter_locations();
         if (used_locations.has_any_of(var.get_location(), num_locations)) {
           // This location is already used.  Find another free location.
-          int location = used_locations.get_lowest_off_bit();
-          while (num_locations > 1 && used_locations.has_any_of(location, num_locations)) {
-            // This free space isn't big enough to fit all the needed locations.
-            int next_bit = used_locations.get_next_higher_different_bit(location);
-            nassertr(next_bit > location, false);
-            location = used_locations.get_next_higher_different_bit(next_bit);
-            nassertr(location > next_bit, false);
-          }
+          int location = used_locations.find_off_range(num_locations);
+          nassertr(location >= 0, false);
           used_locations.set_range(location, num_locations);
           remap[var.get_location()] = location;
           it->second._location = location;
@@ -988,6 +993,23 @@ link() {
         out << "\n";
       }
       module->remap_parameter_locations(remap);
+    }
+
+    for (const ShaderModule::SpecializationConstant &spec_const : module->_spec_constants) {
+      auto result = spec_const_types.insert({spec_const.name, spec_const.type});
+      auto &it = result.first;
+
+      if (!result.second) {
+        // Another module has already defined a spec constant with this name.
+        // Make sure they have the same type.
+        const ::ShaderType *other_type = it->second;
+        if (spec_const.type != other_type) {
+          shader_cat.error()
+            << "Specialization constant " << *spec_const.name << " in module "
+            << *module << " is declared in another stage with a mismatching type!\n";
+          return false;
+        }
+      }
     }
   }
 
@@ -1016,9 +1038,12 @@ bind_vertex_input(const InternalName *name, const ::ShaderType *type, int locati
   bind._name = nullptr;
   bind._append_uv = -1;
 
-  //FIXME: other types, matrices
-  bind._elements = 1;
-  bind._scalar_type = ScalarType::ST_float;
+  uint32_t dim[3];
+  if (!type->as_scalar_type(bind._scalar_type, dim[0], dim[1], dim[2])) {
+    shader_cat.error()
+      << "Unrecognized type " << *type << " for vertex input " << *name << "\n";
+  }
+  bind._elements = dim[0] * dim[1];
 
   if (shader_cat.is_debug()) {
     shader_cat.debug()
@@ -1053,6 +1078,13 @@ bind_vertex_input(const InternalName *name, const ::ShaderType *type, int locati
     else if (name_str.compare(4, 13, "MultiTexCoord") == 0 && name_str.size() > 17) {
       bind._name = InternalName::get_texcoord();
       bind._append_uv = atoi(name_str.substr(17).c_str());
+    }
+    else if (name_str == "p3d_InstanceMatrix") {
+      bind._name = InternalName::get_instance_matrix();
+
+      if (dim[1] != 4 || dim[2] != 3) {
+        return report_parameter_error(name, type, "expected mat4x3");
+      }
     }
     else {
       shader_cat.error()
@@ -1184,11 +1216,19 @@ bind_parameter(const Parameter &param) {
         return false;
       }
 
-      if (type->as_matrix()->get_num_rows() >= 4) {
-        bind._piece = transpose ? SMP_transpose : SMP_whole;
+      const ::ShaderType::Matrix *matrix = type->as_matrix();
+      if (matrix->get_num_rows() >= 4) {
+        if (matrix->get_num_columns() >= 4) {
+          bind._piece = transpose ? SMP_transpose : SMP_whole;
+        } else {
+          bind._piece = transpose ? SMP_transpose4x3 : SMP_upper4x3;
+        }
+      } else if (matrix->get_num_columns() >= 4) {
+        bind._piece = transpose ? SMP_transpose3x4 : SMP_upper3x4;
       } else {
         bind._piece = transpose ? SMP_upper3x3 : SMP_transpose3x3;
       }
+      bind._scalar_type = matrix->get_scalar_type();
 
       if (matrix_name == "ModelViewProjectionMatrix") {
         if (inverse) {
@@ -1276,7 +1316,6 @@ bind_parameter(const Parameter &param) {
 //#endif
 //          cp_add_mat_spec(bind);
 //        }
-        return true;
       }
       else {
         return report_parameter_error(name, type, "unrecognized matrix name");
@@ -1288,10 +1327,12 @@ bind_parameter(const Parameter &param) {
     if (pieces[1].compare(0, 7, "Texture") == 0) {
       ShaderTexSpec bind;
       bind._id = param;
-      bind._part = STO_stage_i;
-      bind._name = 0;
 
-      const ::ShaderType::SampledImage *sampled_image_type = type->as_sampled_image();
+      const ::ShaderType *element_type;
+      uint32_t num_elements;
+      type->unwrap_array(element_type, num_elements);
+
+      const ::ShaderType::SampledImage *sampled_image_type = element_type->as_sampled_image();
       if (sampled_image_type == nullptr) {
         return report_parameter_error(name, type, "expected sampled image");
       }
@@ -1300,17 +1341,59 @@ bind_parameter(const Parameter &param) {
       // Because of Vulkan limitations, we require buffer textures to be set as
       // shader inputs
       if (bind._desired_type == Texture::TT_buffer_texture) {
-        return report_parameter_error(name, type, "numbered stages may not use samplerBuffer");
+        return report_parameter_error(name, type, "samplerBuffer must be set via shader inputs");
       }
 
-      std::string tail;
-      bind._stage = string_to_int(pieces[1].substr(7), tail);
-      if (!tail.empty()) {
-        string msg = "unexpected '" + tail + "'";
-        return report_parameter_error(name, type, msg.c_str());
-      }
+      if (pieces[1].size() > 7 && isdigit(pieces[1][7])) {
+        // p3d_Texture0, p3d_Texture1, etc.
+        bind._part = Shader::STO_stage_i;
 
-      _tex_spec.push_back(bind);
+        string tail;
+        bind._stage = string_to_int(pieces[1].substr(7), tail);
+        if (!tail.empty()) {
+          string msg = "unexpected '" + tail + "'";
+          return report_parameter_error(name, type, msg.c_str());
+        }
+
+        _tex_spec.push_back(bind);
+      }
+      else {
+        // p3d_Texture[] or p3d_TextureModulate[], etc.
+        if (pieces[1].size() == 7) {
+          bind._part = Shader::STO_stage_i;
+        }
+        else if (pieces[1].compare(7, string::npos, "FF") == 0) {
+          bind._part = Shader::STO_ff_stage_i;
+        }
+        else if (pieces[1].compare(7, string::npos, "Modulate") == 0) {
+          bind._part = Shader::STO_stage_modulate_i;
+        }
+        else if (pieces[1].compare(7, string::npos, "Add") == 0) {
+          bind._part = Shader::STO_stage_add_i;
+        }
+        else if (pieces[1].compare(7, string::npos, "Normal") == 0) {
+          bind._part = Shader::STO_stage_normal_i;
+        }
+        else if (pieces[1].compare(7, string::npos, "Height") == 0) {
+          bind._part = Shader::STO_stage_height_i;
+        }
+        else if (pieces[1].compare(7, string::npos, "Selector") == 0) {
+          bind._part = Shader::STO_stage_selector_i;
+        }
+        else if (pieces[1].compare(7, string::npos, "Gloss") == 0) {
+          bind._part = Shader::STO_stage_gloss_i;
+        }
+        else if (pieces[1].compare(7, string::npos, "Emission") == 0) {
+          bind._part = Shader::STO_stage_emission_i;
+        }
+        else {
+          return report_parameter_error(name, type, "unrecognized parameter name");
+        }
+
+        for (bind._stage = 0; bind._stage < num_elements; ++bind._stage) {
+          _tex_spec.push_back(bind);
+        }
+      }
       return true;
     }
     if (pieces[1] == "Material") {
@@ -1459,6 +1542,7 @@ bind_parameter(const Parameter &param) {
       }
       Shader::ShaderMatSpec bind;
       bind._id = param;
+      bind._id._type = element_type;
       bind._piece = Shader::SMP_row3;
       bind._func = Shader::SMF_first;
       bind._part[0] = Shader::SMO_apiview_clipplane_i;
@@ -1574,6 +1658,8 @@ bind_parameter(const Parameter &param) {
 
         ShaderMatSpec bind;
         bind._id = param;
+        bind._id._name = fqname;
+        bind._id._type = member.type;
         bind._func = SMF_first;
         bind._part[0] = SMO_light_ambient;
         bind._arg[0] = nullptr;
@@ -1616,6 +1702,7 @@ bind_parameter(const Parameter &param) {
           ShaderTexSpec bind;
           bind._id = param;
           bind._id._name = fqname;
+          bind._id._type = member.type;
           bind._id._location = location++;
           bind._part = STO_light_i_shadow_map;
           bind._desired_type = Texture::TT_2d_texture;
@@ -1627,6 +1714,7 @@ bind_parameter(const Parameter &param) {
           ShaderMatSpec bind;
           bind._id = param;
           bind._id._name = fqname;
+          bind._id._type = member.type;
           bind._id._location = location++;
           bind._func = SMF_first;
           bind._part[0] = SMO_light_source_i_attrib;
@@ -1638,6 +1726,7 @@ bind_parameter(const Parameter &param) {
               return false;
             }
             bind._piece = SMP_whole;
+            bind._scalar_type = member.type->as_matrix()->get_scalar_type();
           }
           else if (member.name == "shadowMatrix") {
             // Only supported for backward compatibility: includes the model
@@ -1652,6 +1741,7 @@ bind_parameter(const Parameter &param) {
             bind._arg[0] = nullptr;
             bind._part[1] = SMO_light_source_i_attrib;
             bind._arg[1] = InternalName::make("shadowViewMatrix");
+            bind._scalar_type = member.type->as_matrix()->get_scalar_type();
 
             static bool warned = false;
             if (!warned) {
@@ -1683,6 +1773,7 @@ bind_parameter(const Parameter &param) {
             bind._arg[0] = InternalName::make(member.name);
             bind._part[1] = SMO_identity;
             bind._arg[1] = nullptr;
+            bind._scalar_type = ScalarType::ST_float;
           }
           for (bind._index = 0; bind._index < (int)array->get_num_elements(); ++bind._index) {
             cp_add_mat_spec(bind);
@@ -1691,6 +1782,37 @@ bind_parameter(const Parameter &param) {
         }
       }
 
+      return true;
+    }
+    if (pieces[1] == "TransformTable") {
+      const ::ShaderType *element_type;
+      uint32_t num_elements;
+      type->unwrap_array(element_type, num_elements);
+
+      const ::ShaderType::Matrix *matrix = element_type->as_matrix();
+      if (matrix == nullptr ||
+          matrix->get_num_rows() != 4 ||
+          matrix->get_num_columns() != 4 ||
+          matrix->get_scalar_type() != ScalarType::ST_float) {
+        return report_parameter_error(name, type, "expected mat4[]");
+      }
+
+      _transform_table_loc = param._location;
+      _transform_table_size = num_elements;
+      _transform_table_reduced = false;
+      return true;
+    }
+    if (pieces[1] == "SliderTable") {
+      const ::ShaderType *element_type;
+      uint32_t num_elements;
+      type->unwrap_array(element_type, num_elements);
+
+      if (element_type != ::ShaderType::float_type) {
+        return report_parameter_error(name, type, "expected float");
+      }
+
+      _slider_table_loc = param._location;
+      _slider_table_size = num_elements;
       return true;
     }
 
@@ -1805,6 +1927,7 @@ bind_parameter(const Parameter &param) {
       bind._part[0] = SMO_view_to_apiview;
       bind._arg[0] = nullptr;
       bind._index = atoi(pieces[2].c_str());
+      bind._scalar_type = type->as_matrix()->get_scalar_type();
 
       cp_add_mat_spec(bind);
       return true;
@@ -1844,17 +1967,41 @@ bind_parameter(const Parameter &param) {
     bind._id = param;
     bind._func = SMF_compose;
 
-    if (pieces[0] == "trans" || pieces[0] == "tpose") {
+    if (pieces[0] == "trans") {
       if (!expect_float_matrix(name, type, 3, 4)) {
         return false;
       }
       const ::ShaderType::Matrix *matrix = type->as_matrix();
-      if (matrix->get_num_rows() == 4) {
-        bind._piece = (pieces[0][1] == 'p') ? SMP_transpose : SMP_whole;
+      if (matrix->get_num_rows() >= 4) {
+        if (matrix->get_num_columns() >= 4) {
+          bind._piece = SMP_whole;
+        } else {
+          bind._piece = SMP_upper4x3;
+        }
+      } else if (matrix->get_num_columns() >= 4) {
+        bind._piece = SMP_upper3x4;
+      } else {
+        bind._piece = SMP_upper3x3;
       }
-      else {
-        bind._piece = (pieces[0][1] == 'p') ? SMP_transpose3x3 : SMP_upper3x3;
+      bind._scalar_type = matrix->get_scalar_type();
+    }
+    else if (pieces[0] == "tpose") {
+      if (!expect_float_matrix(name, type, 3, 4)) {
+        return false;
       }
+      const ::ShaderType::Matrix *matrix = type->as_matrix();
+      if (matrix->get_num_rows() >= 4) {
+        if (matrix->get_num_columns() >= 4) {
+          bind._piece = SMP_transpose;
+        } else {
+          bind._piece = SMP_transpose4x3;
+        }
+      } else if (matrix->get_num_columns() >= 4) {
+        bind._piece = SMP_transpose3x4;
+      } else {
+        bind._piece = SMP_transpose3x3;
+      }
+      bind._scalar_type = matrix->get_scalar_type();
     }
     else if (pieces[0] == "row3") {
       // We can exceptionally support row3 to have any number of components.
@@ -1874,6 +2021,7 @@ bind_parameter(const Parameter &param) {
       else {
         bind._piece = SMP_row3;
       }
+      bind._scalar_type = ScalarType::ST_float;
     }
     else {
       if (!expect_float_vector(name, type, 4, 4)) {
@@ -1888,6 +2036,7 @@ bind_parameter(const Parameter &param) {
       else {
         nassertr(false, false);
       }
+      bind._scalar_type = type->as_vector()->get_scalar_type();
     }
 
     int next = 1;
@@ -1947,6 +2096,7 @@ bind_parameter(const Parameter &param) {
         bind._arg[0] = nullptr;
         bind._part[1] = SMO_identity;
         bind._arg[1] = nullptr;
+        bind._scalar_type = type->as_matrix()->get_scalar_type();
       }
       else if (pieces[1] == "color") {
         if (!expect_float_vector(name, type, 3, 4)) {
@@ -2014,6 +2164,7 @@ bind_parameter(const Parameter &param) {
         bind._part[1] = SMO_identity;
         bind._arg[1] = nullptr;
         bind._index = atoi(pieces[1].c_str() + 5);
+        bind._scalar_type = type->as_matrix()->get_scalar_type();
       }
       else if (pieces[1].compare(0, 5, "lspec") == 0) {
         if (!expect_float_vector(name, type, 3, 4)) {
@@ -2097,6 +2248,7 @@ bind_parameter(const Parameter &param) {
         bind._part[0] = SMO_slight_x;
       }
       bind._arg[0] = InternalName::make(pieces[next]);
+      bind._scalar_type = type->as_matrix()->get_scalar_type();
       next += 1;
       if (pieces[next] != "to" && pieces[next] != "rel") {
         return report_parameter_error(name, type, "expected 'to' or 'rel'");
@@ -2126,6 +2278,7 @@ bind_parameter(const Parameter &param) {
       bind._part[1] = SMO_identity;
       bind._arg[1] = nullptr;
       bind._index = atoi(pieces[1].c_str());
+      bind._scalar_type = type->as_matrix()->get_scalar_type();
 
       cp_add_mat_spec(bind);
       return true;
@@ -2336,7 +2489,33 @@ bind_parameter(const Parameter &param) {
     }
 
     if (pieces[0] == "tbl") {
-      // Handled elsewhere.
+      const ::ShaderType *element_type;
+      uint32_t num_elements;
+      if (!expect_num_words(name, type, 2) ||
+          !type->unwrap_array(element_type, num_elements)) {
+        return report_parameter_error(name, type, "expected array");
+      }
+
+      if (pieces[1] == "transforms") {
+        const ::ShaderType::Matrix *matrix = element_type->as_matrix();
+        if (matrix == nullptr ||
+            matrix->get_num_rows() < 3 ||
+            matrix->get_num_columns() != 4 ||
+            matrix->get_scalar_type() != ScalarType::ST_float) {
+          return report_parameter_error(name, type, "expected float3x4[] or float4x4[]");
+        }
+
+        _transform_table_loc = param._location;
+        _transform_table_size = num_elements;
+        _transform_table_reduced = (matrix->get_num_rows() == 3);
+      }
+      else if (pieces[1] == "sliders") {
+        _slider_table_loc = param._location;
+        _slider_table_size = num_elements;
+      }
+      else {
+        return report_parameter_error(name, type, "unrecognized parameter name");
+      }
       return true;
     }
 
@@ -2380,6 +2559,7 @@ bind_parameter(const Parameter &param) {
       bind._arg[0] = name;
       bind._part[1] = SMO_identity;
       bind._arg[1] = nullptr;
+      bind._scalar_type = matrix->get_scalar_type();
       cp_add_mat_spec(bind);
       return true;
     }
@@ -2392,6 +2572,7 @@ bind_parameter(const Parameter &param) {
       bind._arg[0] = name;
       bind._part[1] = SMO_identity;
       bind._arg[1] = nullptr;
+      bind._scalar_type = matrix->get_scalar_type();
       cp_add_mat_spec(bind);
       return true;
     }
@@ -2412,14 +2593,17 @@ bind_parameter(const Parameter &param) {
       uint32_t dim[3];
       if (_language == SL_GLSL &&
           member.type->as_scalar_type(scalar_type, dim[0], dim[1], dim[2]) &&
-          scalar_type == ScalarType::ST_float &&
+          (scalar_type == ScalarType::ST_float || scalar_type == ScalarType::ST_double) &&
           dim[0] == 1) {
         // It might be something like an attribute of a shader input, like a
         // light parameter.  It might also just be a custom struct parameter.
         // We can't know yet, so we always have to handle it specially.
         ShaderMatSpec bind;
         bind._id = param;
+        bind._id._name = fqname;
+        bind._id._type = member.type;
         bind._id._location = location;
+        bind._scalar_type = scalar_type;
         if (member.name == "shadowMatrix" && dim[1] == 4 && dim[2] == 4) {
           // Special exception for shadowMatrix, which is deprecated because it
           // includes the model transformation.  It is far more efficient to do
@@ -2696,7 +2880,7 @@ load_compute(ShaderLanguage lang, const Filename &fn) {
   }
 
   PT(Shader) shader = new Shader(lang);
-  if (!shader->read(sfile)) {
+  if (!shader->read(sfile, record)) {
     return nullptr;
   }
 
@@ -2862,6 +3046,49 @@ make_compute(ShaderLanguage lang, string body) {
   }*/
 
   return shader;
+}
+
+/**
+ * Sets an unsigned integer value for the specialization constant with the
+ * indicated name.  All modules containing a specialization constant with
+ * this name will be given this value.
+ *
+ * Returns true if there was a specialization constant with this name on any of
+ * the modules, false otherwise.
+ */
+bool Shader::
+set_constant(CPT_InternalName name, unsigned int value) {
+  bool any_changed = false;
+  bool any_found = false;
+
+  // Set the value on all modules containing a spec constant with this name.
+  for (COWPT(ShaderModule) &cow_module : _modules) {
+    const ShaderModule *module = cow_module.get_read_pointer();
+
+    for (const ShaderModule::SpecializationConstant &spec_const : module->_spec_constants) {
+      if (spec_const.name == name) {
+        // Found one.
+        ModuleSpecConstants &constants = _module_spec_consts[module];
+        if (constants.set_constant(spec_const.id, value)) {
+          any_changed = true;
+        }
+        any_found = true;
+        break;
+      }
+    }
+  }
+
+  if (any_changed) {
+    if (shader_cat.is_debug()) {
+      shader_cat.debug()
+        << "Specialization constant value changed, forcing shader to "
+        << "re-prepare.\n";
+    }
+    // Force the shader to be re-prepared so the value change is picked up.
+    release_all();
+  }
+
+  return any_found;
 }
 
 /**

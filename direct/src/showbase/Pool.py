@@ -82,19 +82,19 @@ class Pool:
         """
         Returns true if there is at least one free item.
         """
-        return (len(self.__free) != 0)
+        return len(self.__free) != 0
 
     def isFree(self, item):
         """
         Returns true if this item is free for check out.
         """
-        return (item in self.__free)
+        return item in self.__free
 
     def isUsed(self, item):
         """
         Returns true if this item has already been checked out.
         """
-        return (item in self.__used)
+        return item in self.__used
 
     def getNumItems(self):
         """

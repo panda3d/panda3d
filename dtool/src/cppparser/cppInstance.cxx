@@ -575,8 +575,14 @@ output(std::ostream &out, int indent_level, CPPScope *scope, bool complete,
   if (_storage_class & SC_mutable) {
     out << "mutable ";
   }
+  if (_storage_class & SC_consteval) {
+    out << "consteval ";
+  }
   if (_storage_class & SC_constexpr) {
     out << "constexpr ";
+  }
+  if (_storage_class & SC_constinit) {
+    out << "constinit ";
   }
   if (_storage_class & SC_thread_local) {
     out << "thread_local ";

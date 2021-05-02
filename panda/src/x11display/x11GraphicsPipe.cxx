@@ -16,6 +16,7 @@
 #include "config_x11display.h"
 #include "frameBufferProperties.h"
 #include "displayInformation.h"
+#include "pstrtod.h"
 
 #include <dlfcn.h>
 
@@ -348,6 +349,29 @@ x11GraphicsPipe(const std::string &display) :
   // Restore the previous locale.
   if (!saved_locale.empty()) {
     setlocale(LC_ALL, saved_locale.c_str());
+  }
+
+  const char *dpi = XGetDefault(_display, "Xft", "dpi");
+  if (dpi != nullptr) {
+    char *endptr = nullptr;
+    double result = pstrtod(dpi, &endptr);
+    if (result != 0 && !cnan(result) && endptr[0] == '\0') {
+      result /= 96;
+      set_detected_display_zoom(result);
+
+      if (x11display_cat.is_debug()) {
+        x11display_cat.debug()
+          << "Determined display zoom to be " << result
+          << " based on specified Xft.dpi " << dpi << "\n";
+      }
+    } else {
+      x11display_cat.warning()
+        << "Unable to determine display zoom because Xft.dpi is invalid: "
+        << dpi << "\n";
+    }
+  } else if (x11display_cat.is_debug()) {
+    x11display_cat.debug()
+      << "Unable to determine display zoom because Xft.dpi was not set.\n";
   }
 
   // Get some X atom numbers.

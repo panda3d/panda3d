@@ -169,11 +169,16 @@ typedef void (APIENTRYP PFNGLSHADERSOURCEPROC_P) (GLuint shader, GLsizei count, 
 typedef void (APIENTRYP PFNGLSPECIALIZESHADERARBPROC) (GLuint shader, const GLchar *, GLuint, const GLuint *, const GLuint *);
 typedef void (APIENTRYP PFNGLUSEPROGRAMPROC) (GLuint program);
 typedef void (APIENTRYP PFNGLUNIFORM4FPROC) (GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3);
+typedef void (APIENTRYP PFNGLUNIFORM4DPROC) (GLint location, GLdouble v0, GLdouble v1, GLdouble v2, GLdouble v3);
 typedef void (APIENTRYP PFNGLUNIFORM1IPROC) (GLint location, GLint v0);
 typedef void (APIENTRYP PFNGLUNIFORM1FVPROC) (GLint location, GLsizei count, const GLfloat *value);
 typedef void (APIENTRYP PFNGLUNIFORM2FVPROC) (GLint location, GLsizei count, const GLfloat *value);
 typedef void (APIENTRYP PFNGLUNIFORM3FVPROC) (GLint location, GLsizei count, const GLfloat *value);
 typedef void (APIENTRYP PFNGLUNIFORM4FVPROC) (GLint location, GLsizei count, const GLfloat *value);
+typedef void (APIENTRYP PFNGLUNIFORM1DVPROC) (GLint location, GLsizei count, const GLdouble *value);
+typedef void (APIENTRYP PFNGLUNIFORM2DVPROC) (GLint location, GLsizei count, const GLdouble *value);
+typedef void (APIENTRYP PFNGLUNIFORM3DVPROC) (GLint location, GLsizei count, const GLdouble *value);
+typedef void (APIENTRYP PFNGLUNIFORM4DVPROC) (GLint location, GLsizei count, const GLdouble *value);
 typedef void (APIENTRYP PFNGLUNIFORM1IVPROC) (GLint location, GLsizei count, const GLint *value);
 typedef void (APIENTRYP PFNGLUNIFORM2IVPROC) (GLint location, GLsizei count, const GLint *value);
 typedef void (APIENTRYP PFNGLUNIFORM3IVPROC) (GLint location, GLsizei count, const GLint *value);
@@ -184,9 +189,16 @@ typedef void (APIENTRYP PFNGLUNIFORM3UIVPROC) (GLint location, GLsizei count, co
 typedef void (APIENTRYP PFNGLUNIFORM4UIVPROC) (GLint location, GLsizei count, const GLuint *value);
 typedef void (APIENTRYP PFNGLUNIFORMMATRIX3FVPROC) (GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);
 typedef void (APIENTRYP PFNGLUNIFORMMATRIX4FVPROC) (GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);
+typedef void (APIENTRYP PFNGLUNIFORMMATRIX3X4FVPROC) (GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);
+typedef void (APIENTRYP PFNGLUNIFORMMATRIX4X3FVPROC) (GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);
+typedef void (APIENTRYP PFNGLUNIFORMMATRIX3DVPROC) (GLint location, GLsizei count, GLboolean transpose, const GLdouble *value);
+typedef void (APIENTRYP PFNGLUNIFORMMATRIX4DVPROC) (GLint location, GLsizei count, GLboolean transpose, const GLdouble *value);
+typedef void (APIENTRYP PFNGLUNIFORMMATRIX3X4DVPROC) (GLint location, GLsizei count, GLboolean transpose, const GLdouble *value);
+typedef void (APIENTRYP PFNGLUNIFORMMATRIX4X3DVPROC) (GLint location, GLsizei count, GLboolean transpose, const GLdouble *value);
 typedef void (APIENTRYP PFNGLVALIDATEPROGRAMPROC) (GLuint program);
 typedef void (APIENTRYP PFNGLVERTEXATTRIB4FVPROC) (GLuint index, const GLfloat *v);
 typedef void (APIENTRYP PFNGLVERTEXATTRIB4DVPROC) (GLuint index, const GLdouble *v);
+typedef void (APIENTRYP PFNGLVERTEXATTRIBI4UIPROC) (GLuint index, GLuint x, GLuint y, GLuint z, GLuint w);
 typedef void (APIENTRYP PFNGLVERTEXATTRIBPOINTERPROC) (GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid *pointer);
 typedef void (APIENTRYP PFNGLVERTEXATTRIBIPOINTERPROC) (GLuint index, GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
 typedef void (APIENTRYP PFNGLVERTEXATTRIBLPOINTERPROC) (GLuint index, GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
@@ -301,7 +313,7 @@ public:
 
   virtual bool begin_draw_primitives(const GeomPipelineReader *geom_reader,
                                      const GeomVertexDataPipelineReader *data_reader,
-                                     bool force);
+                                     size_t num_instances, bool force);
   virtual bool draw_triangles(const GeomPrimitivePipelineReader *reader,
                               bool force);
 #ifndef OPENGLES
@@ -787,7 +799,9 @@ public:
 #endif
 
   bool _supports_tex_storage;
+#ifndef OPENGLES
   PFNGLTEXSTORAGE1DPROC _glTexStorage1D;
+#endif
   PFNGLTEXSTORAGE2DPROC _glTexStorage2D;
   PFNGLTEXSTORAGE3DPROC _glTexStorage3D;
 
@@ -1013,9 +1027,12 @@ public:
   PFNGLUNIFORM4UIVPROC _glUniform4uiv;
   PFNGLUNIFORMMATRIX3FVPROC _glUniformMatrix3fv;
   PFNGLUNIFORMMATRIX4FVPROC _glUniformMatrix4fv;
+  PFNGLUNIFORMMATRIX3X4FVPROC _glUniformMatrix3x4fv;
+  PFNGLUNIFORMMATRIX4X3FVPROC _glUniformMatrix4x3fv;
   PFNGLVALIDATEPROGRAMPROC _glValidateProgram;
   PFNGLVERTEXATTRIB4FVPROC _glVertexAttrib4fv;
   PFNGLVERTEXATTRIB4DVPROC _glVertexAttrib4dv;
+  PFNGLVERTEXATTRIBI4UIPROC _glVertexAttribI4ui;
   PFNGLVERTEXATTRIBPOINTERPROC _glVertexAttribPointer;
   PFNGLVERTEXATTRIBIPOINTERPROC _glVertexAttribIPointer;
   PFNGLVERTEXATTRIBLPOINTERPROC _glVertexAttribLPointer;
@@ -1047,6 +1064,15 @@ public:
   PFNGLBINDIMAGETEXTUREPROC _glBindImageTexture;
 #endif  // !OPENGLES_1
 #ifndef OPENGLES
+  PFNGLUNIFORM4DPROC _glUniform4d;
+  PFNGLUNIFORM1DVPROC _glUniform1dv;
+  PFNGLUNIFORM2DVPROC _glUniform2dv;
+  PFNGLUNIFORM3DVPROC _glUniform3dv;
+  PFNGLUNIFORM4DVPROC _glUniform4dv;
+  PFNGLUNIFORMMATRIX3DVPROC _glUniformMatrix3dv;
+  PFNGLUNIFORMMATRIX4DVPROC _glUniformMatrix4dv;
+  PFNGLUNIFORMMATRIX3X4DVPROC _glUniformMatrix3x4dv;
+  PFNGLUNIFORMMATRIX4X3DVPROC _glUniformMatrix4x3dv;
   PFNGLBINDVERTEXBUFFERSPROC _glBindVertexBuffers;
   PFNGLPATCHPARAMETERIPROC _glPatchParameteri;
   PFNGLBINDTEXTURESPROC _glBindTextures;
@@ -1083,6 +1109,7 @@ public:
   bool _supports_texture_max_level;
 
 #ifndef OPENGLES_1
+  GLsizei _sattr_instance_count;
   GLsizei _instance_count;
 #endif
 

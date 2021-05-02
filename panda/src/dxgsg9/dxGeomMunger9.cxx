@@ -149,7 +149,7 @@ munge_format_impl(const GeomVertexFormat *orig,
       // If we want hardware animation, we need to reserve space for the blend
       // weights.
       new_array_format->add_column
-        (InternalName::get_transform_weight(), animation.get_num_transforms() - 1,
+        (InternalName::get_transform_weight(), animation.get_num_transforms(),
          NT_float32, C_other);
     }
 

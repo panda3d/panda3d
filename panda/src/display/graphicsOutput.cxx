@@ -63,7 +63,7 @@ static CubeFaceDef cube_faces[6] = {
 
 /**
  * Normally, the GraphicsOutput constructor is not called directly; these are
- * created instead via the GraphicsEngine::make_window() function.
+ * created instead via the GraphicsEngine::make_output() function.
  */
 GraphicsOutput::
 GraphicsOutput(GraphicsEngine *engine, GraphicsPipe *pipe,
@@ -358,6 +358,12 @@ add_render_texture(Texture *tex, RenderTextureMode mode,
   if (mode == RTM_bind_or_copy || mode == RTM_bind_layered) {
     // If we're still planning on binding, indicate it in texture properly.
     tex->set_render_to_texture(true);
+  }
+  else if ((plane == RTP_depth || plane == RTP_depth_stencil) && _fb_properties.get_depth_bits() == 0) {
+    // If we're not providing the depth buffer, we need something to copy from.
+    display_cat.error()
+      << "add_render_texture: can't copy depth from framebuffer without depth bits!\n";
+    return;
   }
 
   CDWriter cdata(_cycler, true);

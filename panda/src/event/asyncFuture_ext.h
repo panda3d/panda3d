@@ -29,7 +29,8 @@ public:
   static PyObject *__await__(PyObject *self);
   static PyObject *__iter__(PyObject *self) { return __await__(self); }
 
-  PyObject *result(PyObject *timeout = Py_None) const;
+  void set_result(PyObject *result);
+  PyObject *result(PyObject *self, PyObject *timeout = Py_None) const;
 
   PyObject *add_done_callback(PyObject *self, PyObject *fn);
 

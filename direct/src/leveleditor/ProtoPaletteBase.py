@@ -42,13 +42,13 @@ class ProtoPaletteBase(ObjectPaletteBase):
 
     def saveProtoData(self, f):
         if not f:
-           return
+            return
 
         for key in list(self.data.keys()):
             if isinstance(self.data[key], ObjectBase):
-               f.write("\t'%s':ObjectBase(name='%s', model='%s', anims=%s, actor=%s),\n"%(key, self.data[key].name, self.data[key].model, self.data[key].anims, self.data[key].actor))
+                f.write("\t'%s':ObjectBase(name='%s', model='%s', anims=%s, actor=%s),\n"%(key, self.data[key].name, self.data[key].model, self.data[key].anims, self.data[key].actor))
             else:
-               f.write("\t'%s':ObjectGen(name='%s'),\n"%(key, self.data[key].name))
+                f.write("\t'%s':ObjectGen(name='%s'),\n"%(key, self.data[key].name))
 
     def saveToFile(self):
         try:

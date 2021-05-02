@@ -26,7 +26,7 @@ class ShaderType;
  */
 class EXPCL_PANDA_SHADERPIPELINE ShaderModuleSpirV final : public ShaderModule {
 public:
-  ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words);
+  ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *record = nullptr);
   virtual ~ShaderModuleSpirV();
 
   virtual PT(CopyOnWriteObject) make_cow_copy() override;
@@ -118,12 +118,13 @@ public:
     DT_none,
     DT_type,
     DT_type_pointer,
-    DT_global,
+    DT_variable,
     DT_constant,
     DT_ext_inst,
     DT_function_parameter,
     DT_function,
-    DT_local,
+    DT_temporary,
+    DT_spec_constant,
   };
 
   enum DefinitionFlags {
@@ -165,6 +166,7 @@ public:
     uint32_t _array_stride = 0;
     uint32_t _origin_id = 0; // set for loads, tracks original variable ID
     uint32_t _function_id = 0;
+    uint32_t _spec_id = 0;
     MemberDefinitions _members;
     int _flags = 0;
 
@@ -198,6 +200,7 @@ public:
 
     void assign_locations(Stage stage);
     void bind_descriptor_set(uint32_t set, const vector_int &locations);
+    void remove_unused_variables();
 
     void flatten_struct(uint32_t type_id);
     uint32_t make_block(const ShaderType::Struct *block_type, const pvector<int> &locations,
@@ -205,6 +208,7 @@ public:
 
     void set_variable_type(uint32_t id, const ShaderType *type);
 
+    uint32_t find_type_pointer(const ShaderType *type, spv::StorageClass storage_class);
     uint32_t define_variable(const ShaderType *type, spv::StorageClass storage_class);
     uint32_t define_type_pointer(const ShaderType *type, spv::StorageClass storage_class);
     uint32_t define_type(const ShaderType *type);
@@ -220,12 +224,13 @@ public:
     void parse_instruction(const Instruction &op, uint32_t &current_function_id);
     void record_type(uint32_t id, const ShaderType *type);
     void record_type_pointer(uint32_t id, spv::StorageClass storage_class, uint32_t type_id);
-    void record_global(uint32_t id, uint32_t type_pointer_id, spv::StorageClass storage_class);
+    void record_variable(uint32_t id, uint32_t type_pointer_id, spv::StorageClass storage_class, uint32_t function_id=0);
     void record_function_parameter(uint32_t id, uint32_t type_id, uint32_t function_id);
     void record_constant(uint32_t id, uint32_t type_id, const uint32_t *words, uint32_t nwords);
     void record_ext_inst_import(uint32_t id, const char *import);
     void record_function(uint32_t id, uint32_t type_id);
-    void record_local(uint32_t id, uint32_t type_id, uint32_t from_id, uint32_t function_id);
+    void record_temporary(uint32_t id, uint32_t type_id, uint32_t from_id, uint32_t function_id);
+    void record_spec_constant(uint32_t id, uint32_t type_id);
 
     void mark_used(uint32_t id);
 

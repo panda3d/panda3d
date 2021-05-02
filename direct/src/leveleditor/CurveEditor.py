@@ -30,9 +30,9 @@ class CurveEditor(DirectObject):
             x = base.direct.dr.mouseX
             y = base.direct.dr.mouseY
 
-            if self.editor.fMoveCamera == False and self.view != None:
+            if not self.editor.fMoveCamera and self.view is not None:
                 self.createControler(x,y)
-                if self.currentRope != None:
+                if self.currentRope is not None:
                     self.currentRope.detachNode()
                 self.ropeUpdate(self.curve)
                 self.accept("DIRECT-enter", self.onBaseMode)
@@ -41,10 +41,10 @@ class CurveEditor(DirectObject):
 
     def editCurve(self, task):
         if self.editor.mode == self.editor.EDIT_CURVE_MODE:
-            if self.editor.fMoveCamera == False:
+            if not self.editor.fMoveCamera:
                 self.selected = None
                 self.selected = base.direct.selected.last
-                if self.selected != None:
+                if self.selected is not None:
                     for item in self.curveControl:
                         if item[1] == self.selected:
                             self.point = item  #temporarily save the controler information for further use
@@ -102,9 +102,9 @@ class CurveEditor(DirectObject):
         base.direct.selected.last = None
 
     def createControler(self, x, y):
-        if self.view != None:
-            self.controler = render.attachNewNode("controler")
-            self.controler = loader.loadModel('models/misc/smiley')
+        if self.view is not None:
+            self.controler = base.render.attachNewNode("controler")
+            self.controler = base.loader.loadModel('models/misc/smiley')
             controlerPathname = 'controler%d' % self.i
             self.controler.setName(controlerPathname)
             self.controler.setColor(0, 0, 0, 1)
@@ -143,4 +143,3 @@ class CurveEditor(DirectObject):
 
             self.curve.append((None, self.controler.getPos()))
             self.curveControl.append((self.i-1, self.controler))
-

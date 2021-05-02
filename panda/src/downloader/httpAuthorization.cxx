@@ -14,6 +14,7 @@
 #include "httpAuthorization.h"
 #include "httpChannel.h"
 #include "urlSpec.h"
+#include "string_utils.h"
 
 #ifdef HAVE_OPENSSL
 
@@ -126,7 +127,7 @@ parse_authentication_schemes(HTTPAuthorization::AuthenticationSchemes &schemes,
       ++q;
     }
     // Here's our first scheme.
-    string scheme = HTTPChannel::downcase(field_value.substr(p, q - p));
+    string scheme = downcase(field_value.substr(p, q - p));
     Tokens *tokens = &(schemes[scheme]);
 
     // Now pull off the tokens, one at a time.
@@ -139,7 +140,7 @@ parse_authentication_schemes(HTTPAuthorization::AuthenticationSchemes &schemes,
       }
       if (field_value[q] == '=') {
         // This is a token.
-        string token = HTTPChannel::downcase(field_value.substr(p, q - p));
+        string token = downcase(field_value.substr(p, q - p));
         string value;
         p = scan_quoted_or_unquoted_string(value, field_value, q + 1);
         (*tokens)[token] = value;
@@ -152,7 +153,7 @@ parse_authentication_schemes(HTTPAuthorization::AuthenticationSchemes &schemes,
 
       } else {
         // This is not a token; it must be the start of a new scheme.
-        scheme = HTTPChannel::downcase(field_value.substr(p, q - p));
+        scheme = downcase(field_value.substr(p, q - p));
         tokens = &(schemes[scheme]);
         p = q + 1;
       }

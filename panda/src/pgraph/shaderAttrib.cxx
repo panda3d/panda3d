@@ -249,6 +249,8 @@ set_shader_inputs(const pvector<ShaderInput> &inputs) const {
  * Sets the geometry instance count.  Do not confuse this with instanceTo,
  * which is used for animation instancing, and has nothing to do with this.  A
  * value of 0 means not to use instancing at all.
+ *
+ * This value should not be set if F_hardware_instancing is also set.
  */
 CPT(RenderAttrib) ShaderAttrib::
 set_instance_count(int instance_count) const {

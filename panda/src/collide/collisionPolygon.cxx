@@ -889,7 +889,8 @@ test_intersection_from_capsule(const CollisionEntry &entry) const {
   const CollisionCapsule *capsule;
   DCAST_INTO_R(capsule, entry.get_from(), nullptr);
 
-  const LMatrix4 &wrt_mat = entry.get_wrt_mat();
+  CPT(TransformState) wrt_space = entry.get_wrt_space();
+  const LMatrix4 &wrt_mat = wrt_space->get_mat();
   LMatrix4 plane_mat = wrt_mat * _to_2d_mat;
 
   LPoint3 from_a = capsule->get_point_a() * plane_mat;
@@ -905,7 +906,57 @@ test_intersection_from_capsule(const CollisionEntry &entry) const {
     // Yes, so calculate the distance of the closest point.
     PN_stdfloat dist = min(cabs(from_a[1]), cabs(from_b[1]));
     if (dist * dist > from_radius_sq) {
-      return nullptr;
+      // Not currently colliding.  Did the capsule travel into the plane?
+      if (from_a[1] < 0 || !entry.get_respect_prev_transform()) {
+        return nullptr;
+      }
+
+      CPT(TransformState) wrt_prev_space = entry.get_wrt_prev_space();
+      if (wrt_prev_space == wrt_space) {
+        return nullptr;
+      }
+
+      // Note that we only check for a sphere at the center, since we don't
+      // know whether the capsule has undergone any rotation.
+      LPoint3 from_center = (from_a + from_b) * 0.5f;
+      LPoint3 prev_center =
+        LPoint3((capsule->get_point_a() + capsule->get_point_b()) * 0.5f) *
+        (wrt_prev_space->get_mat() * _to_2d_mat);
+
+      if (prev_center[1] > 0 || prev_center[1] > 0) {
+        // Nope, it did not.
+        return nullptr;
+      }
+
+      // Determine the intersection of the sphere with the polygon.
+      PN_stdfloat t = from_center[1] / (from_center[1] - prev_center[1]);
+      LPoint2 p(
+        prev_center[0] * t + from_center[0] * (1.0f - t),
+        prev_center[2] * t + from_center[2] * (1.0f - t));
+      LPoint2 edge_p(p);
+      PN_stdfloat edge_dist = dist_to_polygon(p, edge_p, _points);
+      if (edge_dist >= 0 && edge_dist * edge_dist > from_radius_sq) {
+        return nullptr;
+      }
+
+      if (collide_cat.is_debug()) {
+        collide_cat.debug()
+          << "intersection detected from " << entry.get_from_node_path()
+          << " into " << entry.get_into_node_path() << "\n";
+      }
+      PT(CollisionEntry) new_entry = new CollisionEntry(entry);
+      LVector3 normal = (has_effective_normal() && capsule->get_respect_effective_normal()) ? get_effective_normal() : get_normal();
+      new_entry->set_surface_normal(normal);
+
+      LMatrix4 to_3d_mat;
+      rederive_to_3d_mat(to_3d_mat);
+
+      LPoint3 deepest = (from_a[1] < from_b[1] ? capsule->get_point_b() : capsule->get_point_a()) * wrt_mat;
+      PN_stdfloat from_radius = csqrt(from_radius_sq);
+      new_entry->set_surface_point(to_3d(edge_p, to_3d_mat));
+      new_entry->set_interior_point(deepest - get_normal() * from_radius);
+
+      return new_entry;
     }
   }
 
@@ -1023,7 +1074,8 @@ test_intersection_from_box(const CollisionEntry &entry) const {
 
   // To make things easier, transform the box into the coordinate space of the
   // plane.
-  const LMatrix4 &wrt_mat = entry.get_wrt_mat();
+  CPT(TransformState) wrt_space = entry.get_wrt_space();
+  const LMatrix4 &wrt_mat = wrt_space->get_mat();
   LMatrix4 plane_mat = wrt_mat * _to_2d_mat;
 
   LPoint3 from_center = box->get_center() * plane_mat;
@@ -1034,66 +1086,108 @@ test_intersection_from_box(const CollisionEntry &entry) const {
   LVecBase3 box_y = plane_mat.get_row3(1) * from_extents[1];
   LVecBase3 box_z = plane_mat.get_row3(2) * from_extents[2];
 
+  PT(CollisionEntry) new_entry;
+
   // Is there a separating axis between the plane and the box?
-  if (cabs(from_center[1]) > cabs(box_x[1]) + cabs(box_y[1]) + cabs(box_z[1])) {
-    // There is one.  No collision.
-    return nullptr;
-  }
+  if (cabs(from_center[1]) <= cabs(box_x[1]) + cabs(box_y[1]) + cabs(box_z[1])) {
+    // No, there isn't.  Now do the same test for each of the box' primary axes.
+    PN_stdfloat r1, center, r2;
 
-  // Now do the same for each of the box' primary axes.
-  PN_stdfloat r1, center, r2;
-
-  r1 = cabs(box_x.dot(box_x)) + cabs(box_y.dot(box_x)) + cabs(box_z.dot(box_x));
-  project(box_x, center, r2);
-  if (cabs(from_center.dot(box_x) - center) > r1 + r2) {
-    return nullptr;
-  }
-
-  r1 = cabs(box_x.dot(box_y)) + cabs(box_y.dot(box_y)) + cabs(box_z.dot(box_y));
-  project(box_y, center, r2);
-  if (cabs(from_center.dot(box_y) - center) > r1 + r2) {
-    return nullptr;
-  }
-
-  r1 = cabs(box_x.dot(box_z)) + cabs(box_y.dot(box_z)) + cabs(box_z.dot(box_z));
-  project(box_z, center, r2);
-  if (cabs(from_center.dot(box_z) - center) > r1 + r2) {
-    return nullptr;
-  }
-
-  // Now do the same check for the cross products between the box axes and the
-  // polygon edges.
-  Points::const_iterator pi;
-  for (pi = _points.begin(); pi != _points.end(); ++pi) {
-    const PointDef &pd = *pi;
-    LVector3 axis;
-
-    axis.set(-box_x[1] * pd._v[1],
-              box_x[0] * pd._v[1] - box_x[2] * pd._v[0],
-              box_x[1] * pd._v[0]);
-    r1 = cabs(box_x.dot(axis)) + cabs(box_y.dot(axis)) + cabs(box_z.dot(axis));
-    project(axis, center, r2);
-    if (cabs(from_center.dot(axis) - center) > r1 + r2) {
+    r1 = cabs(box_x.dot(box_x)) + cabs(box_y.dot(box_x)) + cabs(box_z.dot(box_x));
+    project(box_x, center, r2);
+    if (cabs(from_center.dot(box_x) - center) > r1 + r2) {
       return nullptr;
     }
 
-    axis.set(-box_y[1] * pd._v[1],
-              box_y[0] * pd._v[1] - box_y[2] * pd._v[0],
-              box_y[1] * pd._v[0]);
-    r1 = cabs(box_x.dot(axis)) + cabs(box_y.dot(axis)) + cabs(box_z.dot(axis));
-    project(axis, center, r2);
-    if (cabs(from_center.dot(axis) - center) > r1 + r2) {
+    r1 = cabs(box_x.dot(box_y)) + cabs(box_y.dot(box_y)) + cabs(box_z.dot(box_y));
+    project(box_y, center, r2);
+    if (cabs(from_center.dot(box_y) - center) > r1 + r2) {
       return nullptr;
     }
 
-    axis.set(-box_z[1] * pd._v[1],
-              box_z[0] * pd._v[1] - box_z[2] * pd._v[0],
-              box_z[1] * pd._v[0]);
-    r1 = cabs(box_x.dot(axis)) + cabs(box_y.dot(axis)) + cabs(box_z.dot(axis));
-    project(axis, center, r2);
-    if (cabs(from_center.dot(axis) - center) > r1 + r2) {
+    r1 = cabs(box_x.dot(box_z)) + cabs(box_y.dot(box_z)) + cabs(box_z.dot(box_z));
+    project(box_z, center, r2);
+    if (cabs(from_center.dot(box_z) - center) > r1 + r2) {
       return nullptr;
     }
+
+    // Now do the same check for the cross products between the box axes and the
+    // polygon edges.
+    Points::const_iterator pi;
+    for (pi = _points.begin(); pi != _points.end(); ++pi) {
+      const PointDef &pd = *pi;
+      LVector3 axis;
+
+      axis.set(-box_x[1] * pd._v[1],
+                box_x[0] * pd._v[1] - box_x[2] * pd._v[0],
+                box_x[1] * pd._v[0]);
+      r1 = cabs(box_x.dot(axis)) + cabs(box_y.dot(axis)) + cabs(box_z.dot(axis));
+      project(axis, center, r2);
+      if (cabs(from_center.dot(axis) - center) > r1 + r2) {
+        return nullptr;
+      }
+
+      axis.set(-box_y[1] * pd._v[1],
+                box_y[0] * pd._v[1] - box_y[2] * pd._v[0],
+                box_y[1] * pd._v[0]);
+      r1 = cabs(box_x.dot(axis)) + cabs(box_y.dot(axis)) + cabs(box_z.dot(axis));
+      project(axis, center, r2);
+      if (cabs(from_center.dot(axis) - center) > r1 + r2) {
+        return nullptr;
+      }
+
+      axis.set(-box_z[1] * pd._v[1],
+                box_z[0] * pd._v[1] - box_z[2] * pd._v[0],
+                box_z[1] * pd._v[0]);
+      r1 = cabs(box_x.dot(axis)) + cabs(box_y.dot(axis)) + cabs(box_z.dot(axis));
+      project(axis, center, r2);
+      if (cabs(from_center.dot(axis) - center) > r1 + r2) {
+        return nullptr;
+      }
+    }
+
+    new_entry = new CollisionEntry(entry);
+  }
+  else {
+    // There is a separating axis.  No collision, but the box may have moved
+    // through the polygon since the last frame.
+    if (from_center[1] < 0.0f || !entry.get_respect_prev_transform()) {
+      return nullptr;
+    }
+
+    CPT(TransformState) wrt_prev_space = entry.get_wrt_prev_space();
+    if (wrt_prev_space == wrt_space) {
+      return nullptr;
+    }
+
+    // Did the center travel into the plane of the polygon?
+    LPoint3 prev_center = box->get_center() * (wrt_prev_space->get_mat() * _to_2d_mat);
+    if (prev_center[1] > 0.0f) {
+      // Nope, it did not.
+      return nullptr;
+    }
+
+    // We don't know how much the box has been rotated in the meantime, so we
+    // test a circle that we know fits inside the box, positioned at the box
+    // center as it was going through the plane.
+    PN_stdfloat t = from_center[1] / (from_center[1] - prev_center[1]);
+    LPoint2 p(
+      prev_center[0] * t + from_center[0] * (1.0f - t),
+      prev_center[2] * t + from_center[2] * (1.0f - t));
+    LPoint2 edge_p(p);
+    PN_stdfloat edge_dist = dist_to_polygon(p, edge_p, _points);
+    if (edge_dist > from_extents[0] ||
+        edge_dist > from_extents[1] ||
+        edge_dist > from_extents[2]) {
+      return nullptr;
+    }
+
+    new_entry = new CollisionEntry(entry);
+
+    // This is not quite correct but close enough.
+    LMatrix4 to_3d_mat;
+    rederive_to_3d_mat(to_3d_mat);
+    new_entry->set_surface_point(to_3d(edge_p, to_3d_mat));
   }
 
   if (collide_cat.is_debug()) {
@@ -1101,7 +1195,6 @@ test_intersection_from_box(const CollisionEntry &entry) const {
       << "intersection detected from " << entry.get_from_node_path()
       << " into " << entry.get_into_node_path() << "\n";
   }
-  PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
   LVector3 normal = (has_effective_normal() && box->get_respect_effective_normal()) ? get_effective_normal() : get_normal();
   new_entry->set_surface_normal(normal);
@@ -1109,14 +1202,18 @@ test_intersection_from_box(const CollisionEntry &entry) const {
   // Determine which point on the cube will be the interior point.  This is
   // the calculation that is also used for the plane, which is not perfectly
   // applicable, but I suppose it's better than nothing.
+  const PN_stdfloat nearly_zero = get_nearly_zero_value((PN_stdfloat)0);
   LPoint3 interior_point = box->get_center() * wrt_mat +
-    wrt_mat.get_row3(0) * from_extents[0] * ((box_x[1] > 0) - (box_x[1] < 0)) +
-    wrt_mat.get_row3(1) * from_extents[1] * ((box_y[1] > 0) - (box_y[1] < 0)) +
-    wrt_mat.get_row3(2) * from_extents[2] * ((box_z[1] > 0) - (box_z[1] < 0));
+    wrt_mat.get_row3(0) * from_extents[0] * ((box_x[1] > nearly_zero) - (box_x[1] < -nearly_zero)) +
+    wrt_mat.get_row3(1) * from_extents[1] * ((box_y[1] > nearly_zero) - (box_y[1] < -nearly_zero)) +
+    wrt_mat.get_row3(2) * from_extents[2] * ((box_z[1] > nearly_zero) - (box_z[1] < -nearly_zero));
+
+  new_entry->set_interior_point(interior_point);
 
   // The surface point is the interior point projected onto the plane.
-  new_entry->set_surface_point(get_plane().project(interior_point));
-  new_entry->set_interior_point(interior_point);
+  if (!new_entry->has_surface_point()) {
+    new_entry->set_surface_point(get_plane().project(interior_point));
+  }
 
   return new_entry;
 }

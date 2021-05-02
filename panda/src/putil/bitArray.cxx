@@ -444,6 +444,42 @@ get_next_higher_different_bit(int low_bit) const {
 }
 
 /**
+ * Returns the index of the first off bit of a range of off bits of the given
+ * size.  This is useful to find a free range of off bits in the array.
+ *
+ * If low_bit is not 0, it indicates which bit to start looking at.
+ */
+int BitArray::
+find_off_range(int size, int low_bit) {
+  if (_array.empty()) {
+    return _highest_bits ? -1 : low_bit;
+  }
+  if (size >= 0) {
+    low_bit = std::max(low_bit, _array[0].get_lowest_off_bit());
+    if (get_bit(low_bit)) {
+      // Make sure we're positioned at an off bit.
+      low_bit = get_next_higher_different_bit(low_bit);
+    }
+
+    size_t num_bits = get_num_bits();
+
+    while (size > 1 && low_bit >= 0 && has_any_of(low_bit, size)) {
+      // Not enough bits free, try the next open range.
+      int next_bit = get_next_higher_different_bit(low_bit);
+      if (next_bit <= low_bit || (_highest_bits && (size_t)next_bit >= num_bits)) {
+        return -1;
+      }
+      low_bit = get_next_higher_different_bit(next_bit);
+
+      if ((size_t)low_bit >= num_bits) {
+        return _highest_bits ? -1 : low_bit;
+      }
+    }
+  }
+  return low_bit;
+}
+
+/**
  * Inverts all the bits in the BitArray.  This is equivalent to array =
  * ~array.
  */

@@ -76,6 +76,8 @@ PUBLISHED:
   INLINE static CPT(TransformState) make_quat(const LQuaternion &quat);
   INLINE static CPT(TransformState) make_pos_hpr(const LVecBase3 &pos,
                                                  const LVecBase3 &hpr);
+  INLINE static CPT(TransformState) make_pos_quat(const LVecBase3 &pos,
+                                                  const LQuaternion &quat);
   INLINE static CPT(TransformState) make_scale(PN_stdfloat scale);
   INLINE static CPT(TransformState) make_scale(const LVecBase3 &scale);
   INLINE static CPT(TransformState) make_shear(const LVecBase3 &shear);

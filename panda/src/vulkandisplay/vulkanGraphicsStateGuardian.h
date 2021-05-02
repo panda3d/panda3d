@@ -94,7 +94,7 @@ public:
 
   virtual bool begin_draw_primitives(const GeomPipelineReader *geom_reader,
                                      const GeomVertexDataPipelineReader *data_reader,
-                                     bool force);
+                                     size_t num_instances, bool force);
   virtual bool draw_triangles(const GeomPrimitivePipelineReader *reader,
                               bool force);
   virtual bool draw_triangles_adj(const GeomPrimitivePipelineReader *reader,
@@ -199,6 +199,7 @@ private:
   VulkanShaderContext *_current_shader;
   const ShaderType::Struct *_push_constant_block_type = nullptr;
   CPT(GeomVertexFormat) _format;
+  uint32_t _instance_count = 0;
 
   // Single large uniform buffer used for everything in a frame.
   VkBuffer _uniform_buffer;

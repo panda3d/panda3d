@@ -1,7 +1,10 @@
+from panda3d.core import ConfigVariableBool, ConfigVariableDouble
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.task.TaskManagerGlobal import taskMgr
 from direct.showbase.Job import Job
-from direct.showbase.PythonUtil import getBase
+from direct.showbase.PythonUtil import flywheel
+from direct.showbase.MessengerGlobal import messenger
+
 
 class JobManager:
     """
@@ -127,7 +130,8 @@ class JobManager:
     def getDefaultTimeslice():
         # run for 1/2 millisecond per frame by default
         # config is in milliseconds, this func returns value in seconds
-        return getBase().config.GetFloat('job-manager-timeslice-ms', .5) / 1000.
+        return ConfigVariableDouble('job-manager-timeslice-ms', .5).value / 1000.
+
     def getTimeslice(self):
         if self._timeslice:
             return self._timeslice
@@ -143,8 +147,9 @@ class JobManager:
 
     def _process(self, task=None):
         if self._useOverflowTime is None:
-            self._useOverflowTime = config.GetBool('job-use-overflow-time', 1)
-        if len(self._pri2jobId2job):
+            self._useOverflowTime = ConfigVariableBool('job-use-overflow-time', 1).value
+
+        if len(self._pri2jobId2job) > 0:
             #assert self.notify.debugCall()
             # figure out how long we can run
             endT = globalClock.getRealTime() + (self.getTimeslice() * .9)

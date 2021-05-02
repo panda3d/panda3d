@@ -1,6 +1,7 @@
 from panda3d.direct import CInterval
 from .extension_native_helpers import Dtool_funcToMethod
 from direct.directnotify.DirectNotifyGlobal import directNotify
+import warnings
 
 CInterval.DtoolClassDict["notify"] = directNotify.newCategory("Interval")
 
@@ -18,7 +19,8 @@ del setT
 #####################################################################
 
 def play(self, t0 = 0.0, duration = None, scale = 1.0):
-    self.notify.error("CInterval.play() is deprecated, use start() instead")
+    if __debug__:
+        warnings.warn("CInterval.play() is deprecated, use start() instead", DeprecationWarning, stacklevel=2)
     if duration:  # None or 0 implies full length
         self.start(t0, t0 + duration, scale)
     else:
@@ -29,7 +31,8 @@ del play
 #####################################################################
 
 def stop(self):
-    self.notify.error("CInterval.stop() is deprecated, use finish() instead")
+    if __debug__:
+        warnings.warn("CInterval.stop() is deprecated, use finish() instead", DeprecationWarning, stacklevel=2)
     self.finish()
 
 Dtool_funcToMethod(stop, CInterval)
@@ -37,7 +40,8 @@ del stop
 #####################################################################
 
 def setFinalT(self):
-    self.notify.error("CInterval.setFinalT() is deprecated, use finish() instead")
+    if __debug__:
+        warnings.warn("CInterval.setFinalT() is deprecated, use finish() instead", DeprecationWarning, stacklevel=2)
     self.finish()
 
 Dtool_funcToMethod(setFinalT, CInterval)
@@ -67,7 +71,7 @@ def popupControls(self, tl = None):
         EntryScale = importlib.import_module('direct.tkwidgets.EntryScale')
         tkinter = importlib.import_module('tkinter')
 
-        if tl == None:
+        if tl is None:
             tl = tkinter.Toplevel()
             tl.title('Interval Controls')
         outerFrame = tkinter.Frame(tl)

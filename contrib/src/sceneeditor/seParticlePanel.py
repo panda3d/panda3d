@@ -2,7 +2,7 @@
 
 # Import Tkinter, Pmw, and the floater code from this directory tree.
 from direct.tkwidgets.AppShell import AppShell
-import os, Pmw, sys
+import os, Pmw
 from direct.tkwidgets.Dial import AngleDial
 from direct.tkwidgets.Floater import Floater
 from direct.tkwidgets.Slider import Slider
@@ -13,13 +13,8 @@ import seForceGroup
 import seParticles
 import seParticleEffect
 
-
-if sys.version_info >= (3, 0):
-    from tkinter.filedialog import *
-    from tkinter.simpledialog import askstring
-else:
-    from tkFileDialog import *
-    from tkSimpleDialog import askstring
+from tkinter.filedialog import *
+from tkinter.simpledialog import askstring
 
 
 class ParticlePanel(AppShell):

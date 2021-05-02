@@ -45,7 +45,7 @@ PythonTask(PyObject *func_or_coro, const std::string &name) :
   _exc_value(nullptr),
   _exc_traceback(nullptr),
   _generator(nullptr),
-  _future_done(nullptr),
+  _fut_waiter(nullptr),
   _ignore_return(false),
   _retrieved_exception(false) {
 
@@ -71,11 +71,11 @@ PythonTask(PyObject *func_or_coro, const std::string &name) :
 
   __dict__ = PyDict_New();
 
-#ifndef SIMPLE_THREADS
+#if !defined(SIMPLE_THREADS) && defined(WITH_THREAD) && PY_VERSION_HEX < 0x03090000
   // Ensure that the Python threading system is initialized and ready to go.
-#ifdef WITH_THREAD  // This symbol defined within Python.h
+  // WITH_THREAD symbol defined within Python.h
+  // PyEval_InitThreads is now a deprecated no-op in Python 3.9+
   PyEval_InitThreads();
-#endif
 #endif
 }
 
@@ -84,7 +84,6 @@ PythonTask(PyObject *func_or_coro, const std::string &name) :
  */
 PythonTask::
 ~PythonTask() {
-#ifndef NDEBUG
   // If the coroutine threw an exception, and there was no opportunity to
   // handle it, let the user know.
   if (_exception != nullptr && !_retrieved_exception) {
@@ -97,7 +96,6 @@ PythonTask::
     _exc_value = nullptr;
     _exc_traceback = nullptr;
   }
-#endif
 
   Py_XDECREF(_function);
   Py_DECREF(_args);
@@ -266,11 +264,11 @@ exception() const {
     Py_INCREF(Py_None);
     return Py_None;
   } else if (_exc_value == nullptr || _exc_value == Py_None) {
-    return _PyObject_CallNoArg(_exception);
+    return PyObject_CallNoArgs(_exception);
   } else if (PyTuple_Check(_exc_value)) {
     return PyObject_Call(_exception, _exc_value, nullptr);
   } else {
-    return PyObject_CallFunctionObjArgs(_exception, _exc_value, nullptr);
+    return PyObject_CallOneArg(_exception, _exc_value);
   }
 }*/
 
@@ -406,20 +404,58 @@ cancel() {
         << "Cancelling " << *this << "\n";
     }
 
+    bool must_cancel = true;
+    if (_fut_waiter != nullptr) {
+      // Cancel the future that this task is waiting on.  Note that we do this
+      // before grabbing the lock, since this operation may also grab it.  This
+      // means that _fut_waiter is only protected by the GIL.
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+      // Use PyGILState to protect this asynchronous call.
+      PyGILState_STATE gstate;
+      gstate = PyGILState_Ensure();
+#endif
+
+      // Shortcut for unextended AsyncFuture.
+      if (Py_TYPE(_fut_waiter) == (PyTypeObject *)&Dtool_AsyncFuture) {
+        AsyncFuture *fut = (AsyncFuture *)DtoolInstance_VOID_PTR(_fut_waiter);
+        if (!fut->done()) {
+          fut->cancel();
+        }
+        if (fut->done()) {
+          // We don't need this anymore.
+          Py_DECREF(_fut_waiter);
+          _fut_waiter = nullptr;
+        }
+      }
+      else {
+        PyObject *result = PyObject_CallMethod(_fut_waiter, "cancel", nullptr);
+        Py_XDECREF(result);
+      }
+
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+      PyGILState_Release(gstate);
+#endif
+      // Keep _fut_waiter in any case, because we may need to cancel it again
+      // later if it ignores the cancellation.
+    }
+
     MutexHolder holder(manager->_lock);
     if (_state == S_awaiting) {
       // Reactivate it so that it can receive a CancelledException.
-      _must_cancel = true;
+      if (must_cancel) {
+        _must_cancel = true;
+      }
       _state = AsyncTask::S_active;
       _chain->_active.push_back(this);
       --_chain->_num_awaiting_tasks;
       return true;
     }
-    else if (_future_done != nullptr) {
-      // We are polling, waiting for a non-Panda future to be done.
-      Py_DECREF(_future_done);
-      _future_done = nullptr;
-      _must_cancel = true;
+    else if (must_cancel || _fut_waiter != nullptr) {
+      // We may be polling an external future, so we still need to throw a
+      // CancelledException and allow it to be caught.
+      if (must_cancel) {
+        _must_cancel = true;
+      }
       return true;
     }
     else if (_chain->do_remove(this, true)) {
@@ -479,17 +515,24 @@ AsyncTask::DoneStatus PythonTask::
 do_python_task() {
   PyObject *result = nullptr;
 
-  // Are we waiting for a future to finish?
-  if (_future_done != nullptr) {
-    PyObject *is_done = PyObject_CallObject(_future_done, nullptr);
-    if (!PyObject_IsTrue(is_done)) {
-      // Nope, ask again next frame.
+  // Are we waiting for a future to finish?  Short-circuit all the logic below
+  // by simply calling done().
+  {
+    PyObject *fut_waiter = _fut_waiter;
+    if (fut_waiter != nullptr) {
+      PyObject *is_done = PyObject_CallMethod(fut_waiter, "done", nullptr);
+      if (is_done == nullptr) {
+        return DS_interrupt;
+      }
+      if (!PyObject_IsTrue(is_done)) {
+        // Nope, ask again next frame.
+        Py_DECREF(is_done);
+        return DS_cont;
+      }
       Py_DECREF(is_done);
-      return DS_cont;
+      Py_DECREF(fut_waiter);
+      _fut_waiter = nullptr;
     }
-    Py_DECREF(is_done);
-    Py_DECREF(_future_done);
-    _future_done = nullptr;
   }
 
   if (_generator == nullptr) {
@@ -543,12 +586,12 @@ do_python_task() {
       // we need to be able to read the value from a StopIteration exception.
       PyObject *func = PyObject_GetAttrString(_generator, "send");
       nassertr(func != nullptr, DS_interrupt);
-      result = PyObject_CallFunctionObjArgs(func, Py_None, nullptr);
+      result = PyObject_CallOneArg(func, Py_None);
       Py_DECREF(func);
     } else {
       // Throw a CancelledError into the generator.
       _must_cancel = false;
-      PyObject *exc = _PyObject_CallNoArg(Extension<AsyncFuture>::get_cancelled_error_type());
+      PyObject *exc = PyObject_CallNoArgs(Extension<AsyncFuture>::get_cancelled_error_type());
       PyObject *func = PyObject_GetAttrString(_generator, "throw");
       result = PyObject_CallFunctionObjArgs(func, exc, nullptr);
       Py_DECREF(func);
@@ -624,6 +667,11 @@ do_python_task() {
         return DS_done;
       }
 
+    } else if (result == Py_None) {
+      // Bare yield means to continue next frame.
+      Py_DECREF(result);
+      return DS_cont;
+
     } else if (DtoolInstance_Check(result)) {
       // We are waiting for an AsyncFuture (eg. other task) to finish.
       AsyncFuture *fut = (AsyncFuture *)DtoolInstance_UPCAST(result, Dtool_AsyncFuture);
@@ -661,7 +709,9 @@ do_python_task() {
           task_cat.error()
             << *this << " cannot await itself\n";
         }
-        Py_DECREF(result);
+        // Store the Python object in case we need to cancel it (it may be a
+        // subclass of AsyncFuture that overrides cancel() from Python)
+        _fut_waiter = result;
         return DS_await;
       }
     } else {
@@ -671,8 +721,9 @@ do_python_task() {
       if (check != nullptr && check != Py_None) {
         Py_DECREF(check);
         // Next frame, check whether this future is done.
-        _future_done = PyObject_GetAttrString(result, "done");
-        if (_future_done == nullptr || !PyCallable_Check(_future_done)) {
+        PyObject *fut_done = PyObject_GetAttrString(result, "done");
+        if (fut_done == nullptr || !PyCallable_Check(fut_done)) {
+          Py_XDECREF(fut_done);
           task_cat.error()
             << "future.done is not callable\n";
           return DS_interrupt;
@@ -683,7 +734,7 @@ do_python_task() {
             << *this << " is now polling " << PyUnicode_AsUTF8(str) << ".done()\n";
           Py_DECREF(str);
         }
-        Py_DECREF(result);
+        _fut_waiter = result;
         return DS_cont;
       }
       PyErr_Clear();
@@ -799,9 +850,10 @@ upon_death(AsyncTaskManager *manager, bool clean_exit) {
   AsyncTask::upon_death(manager, clean_exit);
 
   // If we were polling something when we were removed, get rid of it.
-  if (_future_done != nullptr) {
-    Py_DECREF(_future_done);
-    _future_done = nullptr;
+  //TODO: should we call cancel() on it?
+  if (_fut_waiter != nullptr) {
+    Py_DECREF(_fut_waiter);
+    _fut_waiter = nullptr;
   }
 
   if (_upon_death != Py_None) {
@@ -892,7 +944,7 @@ call_function(PyObject *function) {
   if (function != Py_None) {
     this->ref();
     PyObject *self = DTool_CreatePyInstance(this, Dtool_PythonTask, true, false);
-    PyObject *result = PyObject_CallFunctionObjArgs(function, self, nullptr);
+    PyObject *result = PyObject_CallOneArg(function, self);
     Py_XDECREF(result);
     Py_DECREF(self);
   }

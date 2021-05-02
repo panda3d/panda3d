@@ -107,7 +107,7 @@ public:
 
   virtual bool begin_draw_primitives(const GeomPipelineReader *geom_reader,
                                      const GeomVertexDataPipelineReader *data_reader,
-                                     bool force);
+                                     size_t num_instances, bool force);
   virtual bool draw_triangles(const GeomPrimitivePipelineReader *reader,
                               bool force);
   virtual bool draw_tristrips(const GeomPrimitivePipelineReader *reader,
@@ -165,7 +165,7 @@ public:
   void restore_gamma();
   static void atexit_function(void);
 
-  LPDIRECT3DVERTEXBUFFER9 get_white_vbuffer();
+  LPDIRECT3DVERTEXBUFFER9 get_constant_vbuffer(const LColor &color);
 
 protected:
   void do_issue_transform();
@@ -309,7 +309,9 @@ protected:
 
   DWORD _last_fvf;
   int _num_bound_streams;
-  LPDIRECT3DVERTEXBUFFER9 _white_vbuffer;
+  bool _instancing_enabled;
+  LPDIRECT3DVERTEXBUFFER9 _constant_vbuffer;
+  D3DCOLOR _constant_vbuffer_color;
 
   // Cache the data necessary to bind each particular light each frame, so if
   // we bind a given light multiple times, we only have to compute its data
@@ -351,8 +353,6 @@ protected:
 
   char *_vertex_shader_profile;
   char *_pixel_shader_profile;
-
-  int _vertex_shader_maximum_constants;
 
   bool _supports_stream_offset;
 

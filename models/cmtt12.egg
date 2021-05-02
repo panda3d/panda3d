@@ -1815,6 +1815,14 @@
       0.518605 0 0
     }
     <Vertex> 476 {
+      0.0609865 0.4672 0
+      <UV> { 0.305895 0.43927125 }
+    }
+    <Vertex> 477 {
+      0.457619 0.4672 0
+      <UV> { 0.37422 0.43927125 }
+    }
+    <Vertex> 478 {
       0 1 0
     }
   }
@@ -2678,9 +2686,18 @@
       <VertexRef> { 465 <Ref> { vpool } }
     }
   }
+  <Group> 305 {
+    <Polygon> {
+      <TRef> { chars }
+      <VertexRef> { 221 222 476 477 <Ref> { vpool } }
+    }
+    <PointLight> {
+      <VertexRef> { 225 <Ref> { vpool } }
+    }
+  }
   <Group> ds {
     <PointLight> {
-      <VertexRef> { 476 <Ref> { vpool } }
+      <VertexRef> { 478 <Ref> { vpool } }
     }
   }
 }

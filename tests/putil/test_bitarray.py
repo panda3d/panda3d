@@ -140,3 +140,42 @@ def test_bitarray_has_any_of():
     assert ba.has_any_of(0, 1)
     assert ba.has_any_of(53, 45)
     assert ba.has_any_of(0, 100)
+
+
+def test_bitarray_find_off_range():
+    ba = BitArray()
+    assert ba.find_off_range(1, 0) == 0
+    assert ba.find_off_range(100, 0) == 0
+    assert ba.find_off_range(1, 150) == 150
+    assert ba.find_off_range(100, 150) == 150
+
+    ba = BitArray(0b1)
+    assert ba.find_off_range(1, 0) == 1
+    assert ba.find_off_range(1, 1) == 1
+    assert ba.find_off_range(2, 0) == 1
+    assert ba.find_off_range(2, 1) == 1
+    assert ba.find_off_range(2, 2) == 2
+
+    ba = BitArray(0b1000100)
+    assert ba.find_off_range(2) == 0
+    assert ba.find_off_range(3, 0) == 3
+    assert ba.find_off_range(3, 1) == 3
+    assert ba.find_off_range(3, 2) == 3
+    assert ba.find_off_range(3, 3) == 3
+    assert ba.find_off_range(3, 4) == 7
+    assert ba.find_off_range(4) == 7
+
+    ba = BitArray(3)
+    ba.invert_in_place()
+    assert ba.find_off_range(2) == 0
+    assert ba.find_off_range(3) == -1
+
+    ba = BitArray()
+    ba.set_range(0, 64)
+    assert ba.find_off_range(2) == 64
+
+    ba = BitArray()
+    ba.set_range(1, 63)
+    ba.invert_in_place()
+    assert ba.find_off_range(63) == 1
+    assert ba.find_off_range(64) == -1

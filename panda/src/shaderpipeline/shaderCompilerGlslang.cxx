@@ -309,7 +309,7 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
     }
   }
 
-  if (!is_cg && glsl_version < 330 && glsl_version != 150) {
+  if (!is_cg && glsl_version < 310 && glsl_version != 150) {
     if (glsl_version != 100 && glsl_version != 110 && glsl_version != 120 &&
         glsl_version != 130 && glsl_version != 140 && glsl_version != 300) {
       shader_cat.error()
@@ -319,7 +319,7 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
 
     shader_cat.warning()
       << filename << " uses deprecated GLSL version " << glsl_version
-      << ".  Some features may not work.  Minimum supported version is 330.\n";
+      << ".  Some features may not work.  Minimum supported version is 330 or 310 es.\n";
 
     // Fall back to GlslPreProc handler.  Cleaner way to do this?
     static ShaderCompilerGlslPreProc preprocessor;
@@ -486,7 +486,7 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
     return nullptr;
   }
 
-  return new ShaderModuleSpirV(stage, std::move(optimized));
+  return new ShaderModuleSpirV(stage, std::move(optimized), record);
 }
 
 /**
@@ -583,6 +583,10 @@ preprocess_glsl(vector_uchar &code, int &glsl_version, const Filename &source_fi
           p[-3] = '3';
           p[-2] = '3';
           p[-1] = '0';
+        }
+        else if (glsl_version < 310) {
+          // We're done here, the rest is handled by the GLSL preprocessor.
+          return true;
         }
       }
       else if (directive_size == 6 && glsl_preprocess &&

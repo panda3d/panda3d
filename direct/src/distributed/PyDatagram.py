@@ -50,7 +50,7 @@ class PyDatagram(Datagram):
         self.addUint16(code)
 
     def putArg(self, arg, subatomicType, divisor=1):
-        if (divisor == 1):
+        if divisor == 1:
             funcSpecs = self.FuncDict.get(subatomicType)
             if funcSpecs:
                 addFunc, argFunc = funcSpecs

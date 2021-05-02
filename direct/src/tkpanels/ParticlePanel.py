@@ -3,6 +3,9 @@
 __all__ = ['ParticlePanel']
 
 # Import Tkinter, Pmw, and the floater code from this directory tree.
+from panda3d.core import *
+from panda3d.physics import *
+from panda3d.direct import getParticlePath
 from direct.tkwidgets.AppShell import *
 from direct.showbase.TkGlobal import *
 from direct.tkwidgets import Dial
@@ -13,12 +16,10 @@ from direct.tkpanels import Placer
 from direct.particles import ForceGroup
 from direct.particles import Particles
 from direct.particles import ParticleEffect
-import Pmw, os
 from tkinter.filedialog import *
 from tkinter.simpledialog import askstring
-from panda3d.core import *
-from panda3d.physics import *
-from panda3d.direct import getParticlePath
+import Pmw
+import os
 
 
 class ParticlePanel(AppShell):
@@ -38,7 +39,7 @@ class ParticlePanel(AppShell):
         self.defineoptions(kw, optiondefs)
 
         # Record particle effect
-        if particleEffect != None:
+        if particleEffect is not None:
             self.particleEffect = particleEffect
         else:
             # Make sure particles are enabled
@@ -297,7 +298,7 @@ class ParticlePanel(AppShell):
             zSpinPage, 'Z Spin Factory', 'Enable Angular Velocity',
             ("On: angular velocity is used; " +
              "Off: final angle is used"),
-            self.toggleAngularVelocity, 0, side = TOP),
+            self.toggleAngularVelocity, 0, side = TOP)
 
         self.createFloater(
             zSpinPage, 'Z Spin Factory', 'Angular Velocity',
@@ -1103,7 +1104,7 @@ class ParticlePanel(AppShell):
     def updateLabels(self):
         self.effectsLabel['text'] = self.particleEffect.getName()
         self.particlesLabel['text'] = self.particles.getName()
-        if self.forceGroup != None:
+        if self.forceGroup is not None:
             self.forceGroupLabel['text'] = self.forceGroup.getName()
         else:
             self.forceGroupLabel['text'] = 'Force Group'
@@ -1188,7 +1189,7 @@ class ParticlePanel(AppShell):
 
     def selectEffectNamed(self, name):
         effect = self.effectsDict.get(name, None)
-        if effect != None:
+        if effect is not None:
             self.particleEffect = effect
             # Default to first particle in particlesDict
             self.particles = self.particleEffect.getParticlesList()[0]
@@ -1211,7 +1212,7 @@ class ParticlePanel(AppShell):
 
     def selectParticlesNamed(self, name):
         particles = self.particleEffect.getParticlesNamed(name)
-        if particles != None:
+        if particles is not None:
             self.particles = particles
             self.updateInfo()
 
@@ -1223,7 +1224,7 @@ class ParticlePanel(AppShell):
 
     def selectForceGroupNamed(self, name):
         forceGroup = self.particleEffect.getForceGroupNamed(name)
-        if forceGroup != None:
+        if forceGroup is not None:
             self.forceGroup = forceGroup
             self.updateInfo('Force')
 
@@ -1681,7 +1682,7 @@ class ParticlePanel(AppShell):
             finalZScale = renderer.getFinalZScale()
             self.getWidget('Geom Renderer', 'Final Z Scale').set(
                 finalZScale)
-            if(self.getVariable('Geom Renderer','Color Blend').get() in ['MAdd','MSubtract','MInvSubtract']):
+            if self.getVariable('Geom Renderer','Color Blend').get() in ['MAdd','MSubtract','MInvSubtract']:
                 self.getWidget('Geom Renderer','Incoming Op.').pack(fill = X)
                 self.getWidget('Geom Renderer','Fbuffer Op.').pack(fill = X)
             else:
@@ -1704,20 +1705,20 @@ class ParticlePanel(AppShell):
             self.getWidget('Point Renderer', 'End Color').set(
                 [endColor[0], endColor[1], endColor[2], endColor[3]])
             blendType = renderer.getBlendType()
-            if (blendType == PointParticleRenderer.PPONECOLOR):
+            if blendType == PointParticleRenderer.PPONECOLOR:
                 bType = "PP_ONE_COLOR"
-            elif (blendType == PointParticleRenderer.PPBLENDLIFE):
+            elif blendType == PointParticleRenderer.PPBLENDLIFE:
                 bType = "PP_BLEND_LIFE"
-            elif (blendType == PointParticleRenderer.PPBLENDVEL):
+            elif blendType == PointParticleRenderer.PPBLENDVEL:
                 bType = "PP_BLEND_VEL"
             self.getVariable('Point Renderer', 'Blend Type').set(bType)
             blendMethod = renderer.getBlendMethod()
             bMethod = "PP_NO_BLEND"
-            if (blendMethod == BaseParticleRenderer.PPNOBLEND):
+            if blendMethod == BaseParticleRenderer.PPNOBLEND:
                 bMethod = "PP_NO_BLEND"
-            elif (blendMethod == BaseParticleRenderer.PPBLENDLINEAR):
+            elif blendMethod == BaseParticleRenderer.PPBLENDLINEAR:
                 bMethod = "PP_BLEND_LINEAR"
-            elif (blendMethod == BaseParticleRenderer.PPBLENDCUBIC):
+            elif blendMethod == BaseParticleRenderer.PPBLENDCUBIC:
                 bMethod = "PP_BLEND_CUBIC"
             self.getVariable('Point Renderer', 'Blend Method').set(bMethod)
 
@@ -1735,7 +1736,7 @@ class ParticlePanel(AppShell):
             self.getWidget('Sparkle Renderer', 'Death Radius').set(deathRadius)
             lifeScale = renderer.getLifeScale()
             lScale = "SP_NO_SCALE"
-            if (lifeScale == SparkleParticleRenderer.SPSCALE):
+            if lifeScale == SparkleParticleRenderer.SPSCALE:
                 lScale = "SP_SCALE"
             self.getVariable('Sparkle Renderer', 'Life Scale').set(lScale)
 
@@ -1767,15 +1768,15 @@ class ParticlePanel(AppShell):
                 nonanimatedTheta)
             blendMethod = renderer.getAlphaBlendMethod()
             bMethod = "PP_NO_BLEND"
-            if (blendMethod == BaseParticleRenderer.PPNOBLEND):
+            if blendMethod == BaseParticleRenderer.PPNOBLEND:
                 bMethod = "PP_NO_BLEND"
-            elif (blendMethod == BaseParticleRenderer.PPBLENDLINEAR):
+            elif blendMethod == BaseParticleRenderer.PPBLENDLINEAR:
                 bMethod = "PP_BLEND_LINEAR"
-            elif (blendMethod == BaseParticleRenderer.PPBLENDCUBIC):
+            elif blendMethod == BaseParticleRenderer.PPBLENDCUBIC:
                 bMethod = "PP_BLEND_CUBIC"
             self.getVariable('Sprite Renderer', 'Alpha Disable').set(
                 renderer.getAlphaDisable())
-            if(self.getVariable('Sprite Renderer','Color Blend').get() in ['MAdd','MSubtract','MInvSubtract']):
+            if self.getVariable('Sprite Renderer','Color Blend').get() in ['MAdd','MSubtract','MInvSubtract']:
                 self.getWidget('Sprite Renderer','Incoming Op.').pack(fill = X)
                 self.getWidget('Sprite Renderer','Fbuffer Op.').pack(fill = X)
             else:
@@ -1790,8 +1791,8 @@ class ParticlePanel(AppShell):
 
     def selectRendererPage(self):
         type = self.particles.renderer.__class__.__name__
-        if(type == 'SpriteParticleRendererExt'):
-           type = 'SpriteParticleRenderer'
+        if type == 'SpriteParticleRendererExt':
+            type = 'SpriteParticleRenderer'
         self.rendererNotebook.selectpage(type)
         self.getVariable('Renderer', 'Renderer Type').set(type)
 
@@ -1826,10 +1827,10 @@ class ParticlePanel(AppShell):
     # Geom #
     def setRendererGeomNode(self, event):
         node = None
-        nodePath = loader.loadModel(self.rendererGeomNode.get())
-        if nodePath != None:
+        nodePath = base.loader.loadModel(self.rendererGeomNode.get())
+        if nodePath is not None:
             node = nodePath.node()
-        if (node != None):
+        if node is not None:
             self.particles.geomReference = self.rendererGeomNode.get()
             self.particles.renderer.setGeomNode(node)
     # Point #
@@ -1984,7 +1985,7 @@ class ParticlePanel(AppShell):
                                                        getattr(ColorBlendAttrib, incomingOperandStr),
                                                        getattr(ColorBlendAttrib, fbufferOperandStr))
 
-        if(blendMethodStr in ['MAdd','MSubtract','MInvSubtract']):
+        if blendMethodStr in ['MAdd','MSubtract','MInvSubtract']:
             self.getWidget(rendererName,'Incoming Op.').pack(fill = X)
             self.getWidget(rendererName,'Fbuffer Op.').pack(fill = X)
         else:
@@ -2064,12 +2065,12 @@ class ParticlePanel(AppShell):
         else:
             seg = cim.getSegment(id)
 
-        if(ren.__class__.__name__ == 'SpriteParticleRendererExt'):
+        if ren.__class__.__name__ == 'SpriteParticleRendererExt':
             parent = self.rendererSpriteSegmentFrame
             segName = repr(len(self.rendererSegmentWidgetList))+':Constant'
             self.rendererSegmentWidgetList.append(
                 self.createConstantInterpolationSegmentWidget(parent, segName, seg))
-        elif(ren.__class__.__name__ == 'GeomParticleRenderer'):
+        elif ren.__class__.__name__ == 'GeomParticleRenderer':
             parent = self.rendererGeomSegmentFrame
             segName = repr(len(self.rendererSegmentWidgetList))+':Constant'
             self.rendererSegmentWidgetList.append(
@@ -2084,12 +2085,12 @@ class ParticlePanel(AppShell):
         else:
             seg = cim.getSegment(id)
 
-        if(ren.__class__.__name__ == 'SpriteParticleRendererExt'):
+        if ren.__class__.__name__ == 'SpriteParticleRendererExt':
             parent = self.rendererSpriteSegmentFrame
             segName = repr(len(self.rendererSegmentWidgetList))+':Linear'
             self.rendererSegmentWidgetList.append(
                 self.createLinearInterpolationSegmentWidget(parent, segName, seg))
-        elif(ren.__class__.__name__ == 'GeomParticleRenderer'):
+        elif ren.__class__.__name__ == 'GeomParticleRenderer':
             parent = self.rendererGeomSegmentFrame
             segName = repr(len(self.rendererSegmentWidgetList))+':Linear'
             self.rendererSegmentWidgetList.append(
@@ -2104,12 +2105,12 @@ class ParticlePanel(AppShell):
         else:
             seg = cim.getSegment(id)
 
-        if(ren.__class__.__name__ == 'SpriteParticleRendererExt'):
+        if ren.__class__.__name__ == 'SpriteParticleRendererExt':
             parent = self.rendererSpriteSegmentFrame
             segName = repr(len(self.rendererSegmentWidgetList))+':Stepwave'
             self.rendererSegmentWidgetList.append(
                 self.createStepwaveInterpolationSegmentWidget(parent, segName, seg))
-        elif(ren.__class__.__name__ == 'GeomParticleRenderer'):
+        elif ren.__class__.__name__ == 'GeomParticleRenderer':
             parent = self.rendererGeomSegmentFrame
             segName = repr(len(self.rendererSegmentWidgetList))+':Stepwave'
             self.rendererSegmentWidgetList.append(
@@ -2124,12 +2125,12 @@ class ParticlePanel(AppShell):
         else:
             seg = cim.getSegment(id)
 
-        if(ren.__class__.__name__ == 'SpriteParticleRendererExt'):
+        if ren.__class__.__name__ == 'SpriteParticleRendererExt':
             parent = self.rendererSpriteSegmentFrame
             segName = repr(len(self.rendererSegmentWidgetList))+':Sinusoid'
             self.rendererSegmentWidgetList.append(
                 self.createSinusoidInterpolationSegmentWidget(parent, segName, seg))
-        elif(ren.__class__.__name__ == 'GeomParticleRenderer'):
+        elif ren.__class__.__name__ == 'GeomParticleRenderer':
             parent = self.rendererGeomSegmentFrame
             segName = repr(len(self.rendererSegmentWidgetList))+':Sinusoid'
             self.rendererSegmentWidgetList.append(
@@ -2349,18 +2350,17 @@ class ParticlePanel(AppShell):
         Button(lFrame, text = 'X', foreground = 'Red', font = ('MSSansSerif', 8, 'bold'),
                command = delete).pack(side = RIGHT, expand = 0)
 
-        if(anim == SpriteAnim.STTexture or
-           anim == SpriteAnim.STFromNode):
+        if anim == SpriteAnim.STTexture or anim == SpriteAnim.STFromNode:
             frame.valid = False
             frame.animSourceType = anim
-            if(anim == SpriteAnim.STTexture):
+            if anim == SpriteAnim.STTexture:
                 type = 'Texture'
             else:
                 type = 'From Node'
         else:
             frame.valid = True
 
-            if(anim.getSourceType()==SpriteAnim.STTexture):
+            if anim.getSourceType() == SpriteAnim.STTexture:
                 frame.animSourceType = SpriteAnim.STTexture
                 type = 'Texture'
             else:
@@ -2389,7 +2389,7 @@ class ParticlePanel(AppShell):
             strVar.set('Base model path: ' + repr(getModelPath().getValue()))
 
         def checkForTexture(strVar = strVar):
-            tex = loader.loadTexture(strVar.get())
+            tex = base.loader.loadTexture(strVar.get())
             if tex:
                 frame.valid = True
             else:
@@ -2439,7 +2439,7 @@ class ParticlePanel(AppShell):
         self.widgetDict['Sprite Renderer-'+animName+' Anim Node'] = entry
 
         def checkForNode(modelStrVar=mStrVar, nodeStrVar=nStrVar):
-            mod = loader.loadModel(modelStrVar.get())
+            mod = base.loader.loadModel(modelStrVar.get())
             if mod:
                 node = mod.find(nodeStrVar.get())
                 if node:
@@ -2463,14 +2463,14 @@ class ParticlePanel(AppShell):
         ren = self.particles.getRenderer()
 
         for widget in self.rendererSpriteAnimationWidgetList:
-            if(widget):
+            if widget:
                 widget.pack_forget()
                 widget.destroy()
 
         self.rendererSpriteAnimationWidgetList = []
 
         for anim in [ren.getAnim(x) for x in range(ren.getNumAnims())]:
-            if(anim.getSourceType() == SpriteAnim.STTexture):
+            if anim.getSourceType() == SpriteAnim.STTexture:
                 w = self.createSpriteAnimationTextureWidget(self.rendererSpriteAnimationFrame, anim, repr(len(self.rendererSpriteAnimationWidgetList)))
             else:
                 w = self.createSpriteAnimationNodeWidget(self.rendererSpriteAnimationFrame, anim, repr(len(self.rendererSpriteAnimationWidgetList)))
@@ -2485,8 +2485,8 @@ class ParticlePanel(AppShell):
 
         for x in range(len(self.rendererSpriteAnimationWidgetList)):
             widget = self.rendererSpriteAnimationWidgetList[x]
-            if(widget and widget.valid):
-                if(widget.animSourceType == SpriteAnim.STTexture):
+            if widget and widget.valid:
+                if widget.animSourceType == SpriteAnim.STTexture:
                     texSource = self.getVariable('Sprite Renderer', repr(x) + ' Anim Texture').get()
                     ren.addTextureFromFile(texSource)
                 else:
@@ -2497,14 +2497,14 @@ class ParticlePanel(AppShell):
     ## FORCEGROUP COMMANDS ##
     def updateForceWidgets(self):
         # Select appropriate notebook page
-        if self.forceGroup != None:
+        if self.forceGroup is not None:
             self.forceGroupNotebook.pack(fill = X)
             self.forcePageName = (self.particleEffect.getName() + '-' +
                                   self.forceGroup.getName())
             self.forcePage = self.forcePagesDict.get(
                 self.forcePageName, None)
             # Page doesn't exist, add it
-            if self.forcePage == None:
+            if self.forcePage is None:
                 self.addForceGroupNotebookPage(
                     self.particleEffect, self.forceGroup)
             self.forceGroupNotebook.selectpage(self.forcePageName)
@@ -2529,7 +2529,7 @@ class ParticlePanel(AppShell):
         self.addForce(LinearUserDefinedForce())
 
     def addForce(self, f):
-        if self.forceGroup == None:
+        if self.forceGroup is None:
             self.createNewForceGroup()
         self.forceGroup.addForce(f)
         self.addForceWidget(self.forceGroup, f)

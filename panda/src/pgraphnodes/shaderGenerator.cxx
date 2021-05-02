@@ -77,18 +77,24 @@ static PStatCollector synthesize_collector("*:Munge:ShaderGen:Synthesize");
  */
 ShaderGenerator::
 ShaderGenerator(const GraphicsStateGuardianBase *gsg) {
-  // The ATTR# input semantics seem to map to generic vertex attributes in
-  // both arbvp1 and glslv, which behave more consistently.  However, they
-  // don't exist in Direct3D 9.  Use this silly little check for now.
-#ifdef _WIN32
-  _use_generic_attr = !gsg->get_supports_hlsl();
-#else
-  _use_generic_attr = true;
-#endif
-
   // Do we want to use the ARB_shadow extension?  This also allows us to use
   // hardware shadows PCF.
   _use_shadow_filter = gsg->get_supports_shadow_filter();
+
+  // How many joints can we pass to the shader?  On older hardware (and DX9)
+  // we are limited to 256 vectors, giving us only 85 3x4 matrices.
+  if (gsg->_max_vertex_shader_parameter_vectors >= 500) {
+    _num_indexed_transforms = 120;
+  }
+  else if (gsg->_max_vertex_shader_parameter_vectors >= 250) {
+    _num_indexed_transforms = 80;
+  }
+  else if (gsg->_max_vertex_shader_parameter_vectors >= 128) {
+    _num_indexed_transforms = 36;
+  }
+  else {
+    _num_indexed_transforms = 4;
+  }
 }
 
 /**
@@ -104,67 +110,7 @@ ShaderGenerator::
  */
 void ShaderGenerator::
 reset_register_allocator() {
-  _vtregs_used = 0;
-  _vcregs_used = 0;
   _ftregs_used = 0;
-  _fcregs_used = 0;
-}
-
-/**
- * Allocate a vreg.
- */
-const char *ShaderGenerator::
-alloc_vreg() {
-  if (_use_generic_attr) {
-    // OpenGL case.
-    switch (_vtregs_used) {
-    case  0: _vtregs_used += 1; return "ATTR8";
-    case  1: _vtregs_used += 1; return "ATTR9";
-    case  2: _vtregs_used += 1; return "ATTR10";
-    case  3: _vtregs_used += 1; return "ATTR11";
-    case  4: _vtregs_used += 1; return "ATTR12";
-    case  5: _vtregs_used += 1; return "ATTR13";
-    case  6: _vtregs_used += 1; return "ATTR14";
-    case  7: _vtregs_used += 1; return "ATTR15";
-    }
-    switch (_vcregs_used) {
-    case  0: _vcregs_used += 1; return "ATTR3";
-    case  1: _vcregs_used += 1; return "ATTR4";
-    case  2: _vcregs_used += 1; return "ATTR5";
-    case  3: _vcregs_used += 1; return "ATTR6";
-    case  4: _vcregs_used += 1; return "ATTR7";
-    case  5: _vcregs_used += 1; return "ATTR1";
-    }
-  } else {
-    // DirectX 9 case.
-    switch (_vtregs_used) {
-    case  0: _vtregs_used += 1; return "TEXCOORD0";
-    case  1: _vtregs_used += 1; return "TEXCOORD1";
-    case  2: _vtregs_used += 1; return "TEXCOORD2";
-    case  3: _vtregs_used += 1; return "TEXCOORD3";
-    case  4: _vtregs_used += 1; return "TEXCOORD4";
-    case  5: _vtregs_used += 1; return "TEXCOORD5";
-    case  6: _vtregs_used += 1; return "TEXCOORD6";
-    case  7: _vtregs_used += 1; return "TEXCOORD7";
-    }
-    switch (_vcregs_used) {
-    case  0: _vcregs_used += 1; return "COLOR0";
-    case  1: _vcregs_used += 1; return "COLOR1";
-    }
-  }
-  // These don't exist in arbvp1, though they're reportedly supported by other
-  // profiles.
-  switch (_vtregs_used) {
-  case  8: _vtregs_used += 1; return "TEXCOORD8";
-  case  9: _vtregs_used += 1; return "TEXCOORD9";
-  case 10: _vtregs_used += 1; return "TEXCOORD10";
-  case 11: _vtregs_used += 1; return "TEXCOORD11";
-  case 12: _vtregs_used += 1; return "TEXCOORD12";
-  case 13: _vtregs_used += 1; return "TEXCOORD13";
-  case 14: _vtregs_used += 1; return "TEXCOORD14";
-  case 15: _vtregs_used += 1; return "TEXCOORD15";
-  }
-  return "UNKNOWN";
 }
 
 /**
@@ -465,6 +411,9 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
         skip = true;
       }
       break;
+    case TextureStage::M_emission:
+      info._flags = ShaderKey::TF_map_emission;
+      break;
     default:
       break;
     }
@@ -706,29 +655,6 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   const char *eye_normal_freg = nullptr;
   const char *hpos_freg = nullptr;
 
-  const char *position_vreg;
-  const char *transform_weight_vreg = nullptr;
-  const char *normal_vreg;
-  const char *color_vreg = nullptr;
-  const char *transform_index_vreg = nullptr;
-
-  if (_use_generic_attr) {
-    position_vreg = "ATTR0";
-    transform_weight_vreg = "ATTR1";
-    normal_vreg = "ATTR2";
-    transform_index_vreg = "ATTR7";
-  } else {
-    position_vreg = "POSITION";
-    normal_vreg = "NORMAL";
-  }
-
-  if (key._color_type == ColorAttrib::T_vertex) {
-    // Reserve COLOR0
-    color_vreg = _use_generic_attr ? "ATTR3" : "COLOR0";
-    _vcregs_used = 1;
-    _fcregs_used = 1;
-  }
-
   // Generate the shader's text.
 
   std::ostringstream text;
@@ -741,6 +667,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
 
   int map_index_glow = -1;
   int map_index_gloss = -1;
+  int map_index_emission = -1;
 
   // Figure out whether we need to calculate any of these variables.
   bool need_world_position = (key._num_clip_planes > 0);
@@ -802,7 +729,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
         texcoord_fregs[tex._texcoord_name] = freg;
 
         string tcname = tex._texcoord_name->join("_");
-        text << "\t in float4 vtx_" << tcname << " : " << alloc_vreg() << ",\n";
+        text << "\t in float4 vtx_" << tcname << ",\n";
         text << "\t out float4 l_" << tcname << " : " << freg << ",\n";
       }
     }
@@ -821,8 +748,8 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       tangent_input = tangent_name->join("_");
       binormal_input = binormal_name->join("_");
 
-      text << "\t in float4 vtx_" << tangent_input << " : " << alloc_vreg() << ",\n";
-      text << "\t in float4 vtx_" << binormal_input << " : " << alloc_vreg() << ",\n";
+      text << "\t in float4 vtx_" << tangent_input << " : TANGENT,\n";
+      text << "\t in float4 vtx_" << binormal_input << " : BINORMAL,\n";
     }
 
     if (tex._flags & ShaderKey::TF_map_glow) {
@@ -830,6 +757,9 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     }
     if (tex._flags & ShaderKey::TF_map_gloss) {
       map_index_gloss = i;
+    }
+    if (tex._flags & ShaderKey::TF_map_emission) {
+      map_index_emission = i;
     }
   }
   if (need_tangents) {
@@ -839,11 +769,11 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     text << "\t out float4 l_binormal : " << binormal_freg << ",\n";
   }
   if (need_color && key._color_type == ColorAttrib::T_vertex) {
-    text << "\t in float4 vtx_color : " << color_vreg << ",\n";
+    text << "\t in float4 vtx_color : COLOR,\n";
     text << "\t out float4 l_color : COLOR0,\n";
   }
   if (need_world_position || need_world_normal) {
-    text << "\t uniform float4x4 trans_model_to_world,\n";
+    text << "\t uniform float3x4 trans_model_to_world,\n";
   }
   if (need_world_position) {
     world_position_freg = alloc_freg();
@@ -854,21 +784,21 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     text << "\t out float4 l_world_normal : " << world_normal_freg << ",\n";
   }
   if (need_eye_position) {
-    text << "\t uniform float4x4 trans_model_to_view,\n";
+    text << "\t uniform float3x4 trans_model_to_view,\n";
     eye_position_freg = alloc_freg();
     text << "\t out float4 l_eye_position : " << eye_position_freg << ",\n";
   } else if (need_tangents) {
-    text << "\t uniform float4x4 trans_model_to_view,\n";
+    text << "\t uniform float3x4 trans_model_to_view,\n";
   }
   if (need_eye_normal) {
-    text << "\t uniform float4x4 tpose_view_to_model,\n";
+    text << "\t uniform float3x3 tpose_view_to_model,\n";
     if (!pack_eye_normal)  {
       eye_normal_freg = alloc_freg();
       text << "\t out float3 l_eye_normal : " << eye_normal_freg << ",\n";
     }
   }
   if ((key._texture_flags & ShaderKey::TF_map_height) != 0 || need_world_normal || need_eye_normal) {
-    text << "\t in float3 vtx_normal : " << normal_vreg << ",\n";
+    text << "\t in float3 vtx_normal : NORMAL,\n";
   }
   if (key._texture_flags & ShaderKey::TF_map_height) {
     text << "\t uniform float4 mspos_view,\n";
@@ -898,23 +828,17 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       key._anim_spec.get_num_transforms() > 0) {
     int num_transforms;
     if (key._anim_spec.get_indexed_transforms()) {
-      num_transforms = 120;
+      num_transforms = _num_indexed_transforms;
     } else {
       num_transforms = key._anim_spec.get_num_transforms();
     }
-    if (transform_weight_vreg == nullptr) {
-      transform_weight_vreg = alloc_vreg();
-    }
-    if (transform_index_vreg == nullptr) {
-      transform_index_vreg = alloc_vreg();
-    }
-    text << "\t uniform float4x4 tbl_transforms[" << num_transforms << "],\n";
-    text << "\t in float4 vtx_transform_weight : " << transform_weight_vreg << ",\n";
+    text << "\t uniform float3x4 tbl_transforms[" << num_transforms << "],\n";
+    text << "\t in float4 vtx_transform_weight : BLENDWEIGHT,\n";
     if (key._anim_spec.get_indexed_transforms()) {
-      text << "\t in uint4 vtx_transform_index : " << transform_index_vreg << ",\n";
+      text << "\t in uint4 vtx_transform_index : BLENDINDICES,\n";
     }
   }
-  text << "\t in float4 vtx_position : " << position_vreg << ",\n";
+  text << "\t in float4 vtx_position : POSITION,\n";
   text << "\t out float4 l_position : POSITION,\n";
   text << "\t uniform float4x4 mat_modelproj\n";
   text << ") {\n";
@@ -926,7 +850,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       text << "\t const uint4 vtx_transform_index = uint4(0, 1, 2, 3);\n";
     }
 
-    text << "\t float4x4 matrix = tbl_transforms[vtx_transform_index.x] * vtx_transform_weight.x";
+    text << "\t float3x4 vtxmat = tbl_transforms[vtx_transform_index.x] * vtx_transform_weight.x";
     if (key._anim_spec.get_num_transforms() > 1) {
       text << "\n\t                 + tbl_transforms[vtx_transform_index.y] * vtx_transform_weight.y";
     }
@@ -937,10 +861,9 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       text << "\n\t                 + tbl_transforms[vtx_transform_index.w] * vtx_transform_weight.w";
     }
     text << ";\n";
-
-    text << "\t vtx_position = mul(matrix, vtx_position);\n";
+    text << "\t vtx_position = float4(mul(vtxmat, vtx_position), 1);\n";
     if (need_world_normal || need_eye_normal) {
-      text << "\t vtx_normal = mul((float3x3)matrix, vtx_normal);\n";
+      text << "\t vtx_normal = mul((float3x3)vtxmat, vtx_normal);\n";
     }
   }
 
@@ -949,13 +872,13 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     text << "\t l_hpos = l_position;\n";
   }
   if (need_world_position) {
-    text << "\t l_world_position = mul(trans_model_to_world, vtx_position);\n";
+    text << "\t l_world_position = float4(mul(trans_model_to_world, vtx_position), 1);\n";
   }
   if (need_world_normal) {
-    text << "\t l_world_normal = mul(trans_model_to_world, float4(vtx_normal, 0));\n";
+    text << "\t l_world_normal = float4(mul(trans_model_to_world, float4(vtx_normal, 0)), 0);\n";
   }
   if (need_eye_position) {
-    text << "\t l_eye_position = mul(trans_model_to_view, vtx_position);\n";
+    text << "\t l_eye_position = float4(mul(trans_model_to_view, vtx_position), 1);\n";
   }
   pmap<const InternalName *, const char *>::const_iterator it;
   for (it = texcoord_fregs.begin(); it != texcoord_fregs.end(); ++it) {
@@ -989,12 +912,12 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   if (need_eye_normal) {
     if (pack_eye_normal) {
       // We can pack the normal into the w channels of these unused varyings.
-      text << "\t float3 eye_normal = normalize(mul((float3x3)tpose_view_to_model, vtx_normal));\n";
+      text << "\t float3 eye_normal = normalize(mul(tpose_view_to_model, vtx_normal));\n";
       text << "\t l_tangent.w = eye_normal.x;\n";
       text << "\t l_binormal.w = eye_normal.y;\n";
       text << "\t l_eye_position.w = eye_normal.z;\n";
     } else {
-      text << "\t l_eye_normal = normalize(mul((float3x3)tpose_view_to_model, vtx_normal));\n";
+      text << "\t l_eye_normal = normalize(mul(tpose_view_to_model, vtx_normal));\n";
     }
   }
   text << "}\n\n";
@@ -1098,7 +1021,9 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     text << "\t uniform float4 clipplane_" << i << ",\n";
   }
 
-  text << "\t uniform float4 attr_ambient,\n";
+  if (key._lighting) {
+    text << "\t uniform float4 attr_ambient,\n";
+  }
   text << "\t uniform float4 attr_colorscale\n";
   text << ") {\n";
 
@@ -1452,17 +1377,17 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     }
     text << "\t // Begin view-space light summation\n";
     if (key._material_flags & Material::F_emission) {
-      if (key._texture_flags & ShaderKey::TF_map_glow) {
-        text << "\t result = attr_material[2] * saturate(2 * (tex" << map_index_glow << ".a - 0.5));\n";
-      } else {
-        text << "\t result = attr_material[2];\n";
-      }
+      text << "\t result = attr_material[2];\n";
+    } else if (key._texture_flags & (ShaderKey::TF_map_glow | ShaderKey::TF_map_emission)) {
+      text << "\t result = float4(1,1,1,0);\n";
     } else {
-      if (key._texture_flags & ShaderKey::TF_map_glow) {
-        text << "\t result = saturate(2 * (tex" << map_index_glow << ".a - 0.5));\n";
-      } else {
-        text << "\t result = float4(0,0,0,0);\n";
-      }
+      text << "\t result = float4(0,0,0,0);\n";
+    }
+    if (key._texture_flags & ShaderKey::TF_map_emission) {
+      text << "\t result.rgb *= tex" << map_index_emission << ".rgb;\n";
+    }
+    if (key._texture_flags & ShaderKey::TF_map_glow) {
+      text << "\t result *= saturate(2 * (tex" << map_index_glow << ".a - 0.5));\n";
     }
     if (key._have_separate_ambient) {
       if (key._material_flags & Material::F_ambient) {
@@ -1715,11 +1640,15 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   nassertr(shader != nullptr, nullptr);
 
   CPT(RenderAttrib) shattr = ShaderAttrib::make(shader);
+  int flags = 0;
   if (key._alpha_test_mode != RenderAttrib::M_none) {
-    shattr = DCAST(ShaderAttrib, shattr)->set_flag(ShaderAttrib::F_subsume_alpha_test, true);
+    flags |= ShaderAttrib::F_subsume_alpha_test;
   }
   if (key._disable_alpha_write) {
-    shattr = DCAST(ShaderAttrib, shattr)->set_flag(ShaderAttrib::F_disable_alpha_write, true);
+    flags |= ShaderAttrib::F_disable_alpha_write;
+  }
+  if (flags != 0) {
+    shattr = DCAST(ShaderAttrib, shattr)->set_flag(flags, true);
   }
 
   reset_register_allocator();

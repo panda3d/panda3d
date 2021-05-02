@@ -185,6 +185,19 @@ as_scalar_type(ScalarType &type, uint32_t &num_elements,
 }
 
 /**
+ * Returns the number of in/out locations taken up by in/out variables having
+ * this type.
+ */
+int ShaderType::Vector::
+get_num_interface_locations() const {
+  if (_scalar_type == ST_double && _num_components > 2) {
+    return 2;
+  } else {
+    return 1;
+  }
+}
+
+/**
  *
  */
 void ShaderType::Vector::

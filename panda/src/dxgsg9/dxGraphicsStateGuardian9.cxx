@@ -133,7 +133,8 @@ DXGraphicsStateGuardian9(GraphicsEngine *engine, GraphicsPipe *pipe) :
 
   _last_fvf = 0;
   _num_bound_streams = 0;
-  _white_vbuffer = nullptr;
+  _instancing_enabled = false;
+  _constant_vbuffer = nullptr;
 
   _vertex_shader_version_major = 0;
   _vertex_shader_version_minor = 0;
@@ -142,8 +143,6 @@ DXGraphicsStateGuardian9(GraphicsEngine *engine, GraphicsPipe *pipe) :
 
   _vertex_shader_profile = 0;
   _pixel_shader_profile = 0;
-
-  _vertex_shader_maximum_constants = 0;
 
   _supports_stream_offset = false;
 
@@ -395,7 +394,7 @@ extract_texture_data(Texture *tex) {
  */
 ShaderContext *DXGraphicsStateGuardian9::
 prepare_shader(Shader *se) {
-  nassertr(supports_basic_shaders(), nullptr);
+  nassertr(get_supports_basic_shaders(), nullptr);
 
   PStatTimer timer(_prepare_shader_pcollector);
   return new DXShaderContext9(se, this);
@@ -1053,8 +1052,12 @@ end_scene() {
   _d3d_device->SetVertexDeclaration(nullptr);
   for (int array_index = 0; array_index < _num_bound_streams; ++array_index) {
     _d3d_device->SetStreamSource(array_index, nullptr, 0, 0);
+    if (_instancing_enabled) {
+      _d3d_device->SetStreamSourceFreq(array_index, 1);
+    }
   }
   _num_bound_streams = 0;
+  _instancing_enabled = false;
 
   if (_texture_binding_shader_context != 0) {
     _texture_binding_shader_context->disable_shader_texture_bindings(this);
@@ -1143,8 +1146,8 @@ end_frame(Thread *current_thread) {
 bool DXGraphicsStateGuardian9::
 begin_draw_primitives(const GeomPipelineReader *geom_reader,
                       const GeomVertexDataPipelineReader *data_reader,
-                      bool force) {
-  if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, data_reader, force)) {
+                      size_t num_instances, bool force) {
+  if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, data_reader, num_instances, force)) {
     return false;
   }
   nassertr(_data_reader != nullptr, false);
@@ -1154,7 +1157,8 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
 
   const GeomVertexAnimationSpec &animation =
     data_reader->get_format()->get_animation();
-  if (animation.get_animation_type() == Geom::AT_hardware) {
+  if (animation.get_animation_type() == Geom::AT_hardware &&
+      _current_shader_context == nullptr) {
     // Set up vertex blending.
     switch (animation.get_num_transforms()) {
     case 1:
@@ -1240,8 +1244,9 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     }
   } else {
     // Set the vertex declaration for the shader.
+    BitMask32 used_streams;
     LPDIRECT3DVERTEXDECLARATION9 decl =
-      _current_shader_context->get_vertex_declaration(this, format);
+      _current_shader_context->get_vertex_declaration(this, format, used_streams);
     if (decl == nullptr) {
       return false;
     }
@@ -1253,35 +1258,68 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
       return false;
     }
 
+    if (num_instances == 1 && _instancing_enabled) {
+      // Reset the divisors.
+      for (size_t i = 0; i < _num_bound_streams; ++i) {
+        _d3d_device->SetStreamSourceFreq(i, 1);
+      }
+    }
+
     // Prepare and bind the vertex buffers.
     size_t num_arrays = _data_reader->get_num_arrays();
     size_t i;
     for (i = 0; i < num_arrays; ++i) {
       const GeomVertexArrayDataHandle *array_reader = _data_reader->get_array_reader(i);
-
-      // Get the vertex buffer for this array.
-      DXVertexBufferContext9 *dvbc;
-      if (!setup_array_data(dvbc, array_reader, force)) {
-        dxgsg9_cat.error() << "Unable to setup vertex buffer for array " << i << "\n";
+      if (!used_streams.get_bit(i)) {
         _d3d_device->SetStreamSource(i, nullptr, 0, 0);
         continue;
       }
 
-      // Bind this array as the data source for the corresponding stream.
+      // Get the vertex buffer for this array.
+      DXVertexBufferContext9 *dvbc;
+      if (!setup_array_data(dvbc, array_reader, force)) {
+        dxgsg9_cat.error()
+          << "Unable to setup vertex buffer for array " << i << "\n";
+        _d3d_device->SetStreamSource(i, nullptr, 0, 0);
+        continue;
+      }
+
+      // Determine stride and divisor.
       const GeomVertexArrayFormat *array_format = array_reader->get_array_format();
-      hr = device->SetStreamSource(i, dvbc->_vbuffer, 0, array_format->get_stride());
+      int stride = array_format->get_stride();
+      int divisor = array_format->get_divisor();
+      if (num_instances == 1) {
+        if (divisor != 0) {
+          // With only one instance, this is equivalent.
+          stride = 0;
+        }
+      }
+      else if (divisor == 0) {
+        _d3d_device->SetStreamSourceFreq(i, D3DSTREAMSOURCE_INDEXEDDATA | num_instances);
+      }
+      else {
+        _d3d_device->SetStreamSourceFreq(i, D3DSTREAMSOURCE_INSTANCEDATA | divisor);
+      }
+
+      // Bind this array as the data source for the corresponding stream.
+      hr = device->SetStreamSource(i, dvbc->_vbuffer, 0, stride);
       if (FAILED(hr)) {
         dxgsg9_cat.error() << "SetStreamSource failed" << D3DERRORSTRING(hr);
       }
     }
 
-    if (format->get_color_array_index() < 0 && _current_shader_context->uses_vertex_color()) {
-      // Has no vertex colors, so bind a vertex buffer containing a single
-      // white color.
-      LPDIRECT3DVERTEXBUFFER9 vbuffer = get_white_vbuffer();
+    // The bit after the last array is set if the shader context wants us to
+    // bind the vertex buffer containing constants.
+    if (used_streams.get_bit(i)) {
+      // Has no vertex colors, so bind a vertex buffer with stride 0 and write
+      // our desired color value to it.
+      LPDIRECT3DVERTEXBUFFER9 vbuffer = get_constant_vbuffer(_scene_graph_color);
       hr = device->SetStreamSource(i, vbuffer, 0, 0);
       if (FAILED(hr)) {
         dxgsg9_cat.error() << "SetStreamSource failed" << D3DERRORSTRING(hr);
+      }
+      if (num_instances != 1) {
+        _d3d_device->SetStreamSourceFreq(i, (D3DSTREAMSOURCE_INSTANCEDATA | 1));
       }
       ++i;
     }
@@ -1291,7 +1329,11 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
       _d3d_device->SetStreamSource(i, nullptr, 0, 0);
     }
 
-    _num_bound_streams = num_arrays;
+    _num_bound_streams = used_streams.get_highest_on_bit() + 1;
+    _instancing_enabled = (num_instances != 1);
+
+    // Update transform/slider tables.
+    _current_shader_context->update_tables(this, _data_reader);
   }
 
   return true;
@@ -2286,14 +2328,17 @@ reset() {
     _supported_shader_caps = ShaderModule::C_basic_shader
                            | ShaderModule::C_vertex_texture
                            | ShaderModule::C_sampler_shadow
+                           | ShaderModule::C_matrix_non_square
                            | ShaderModule::C_integer
                            | ShaderModule::C_texture_lod;
+
+    _supports_geometry_instancing = true;
   }
 
   _vertex_shader_profile = (char *) D3DXGetVertexShaderProfile (_d3d_device);
   _pixel_shader_profile = (char *) D3DXGetPixelShaderProfile (_d3d_device);
 
-  _vertex_shader_maximum_constants = d3d_caps.MaxVertexShaderConst;
+  _max_vertex_shader_parameter_vectors = d3d_caps.MaxVertexShaderConst;
 
   switch (_pixel_shader_version_major)
   {
@@ -2397,7 +2442,7 @@ reset() {
       << "\nD3DPRASTERCAPS_SLOPESCALEDEPTHBIAS = " << ((d3d_caps.RasterCaps & D3DPRASTERCAPS_SLOPESCALEDEPTHBIAS) != 0)
       << "\nVertexShaderVersion = " << _vertex_shader_version_major << "." << _vertex_shader_version_minor
       << "\nPixelShaderVersion = " << _pixel_shader_version_major << "." << _pixel_shader_version_minor
-      << "\nMaxVertexShaderConst = " << _vertex_shader_maximum_constants
+      << "\nMaxVertexShaderConst = " << _max_vertex_shader_parameter_vectors
       << "\nsupports_stream_offset = " << _supports_stream_offset
       << "\nsupports_dynamic_textures = " << _screen->_supports_dynamic_textures
       << "\nsupports_automatic_mipmap_generation = " << _screen->_supports_automatic_mipmap_generation
@@ -4533,9 +4578,9 @@ reset_d3d_device(D3DPRESENT_PARAMETERS *presentation_params,
     release_all_vertex_buffers();
     release_all_index_buffers();
 
-    if (_white_vbuffer != nullptr) {
-      _white_vbuffer->Release();
-      _white_vbuffer = nullptr;
+    if (_constant_vbuffer != nullptr) {
+      _constant_vbuffer->Release();
+      _constant_vbuffer = nullptr;
     }
 
     // must be called before reset
@@ -5376,36 +5421,53 @@ atexit_function(void) {
 }
 
 /**
- * Returns a vertex buffer containing only a full-white color.
+ * Returns a vertex buffer containing certain constant values.
  */
 LPDIRECT3DVERTEXBUFFER9 DXGraphicsStateGuardian9::
-get_white_vbuffer() {
-  if (_white_vbuffer != nullptr) {
-    return _white_vbuffer;
-  }
+get_constant_vbuffer(const LColor &color) {
+  LPDIRECT3DVERTEXBUFFER9 vbuffer = _constant_vbuffer;
 
-  LPDIRECT3DVERTEXBUFFER9 vbuffer;
+  // The buffer consists of the following:
+  // 4 bytes of current vertex color
+  // 4 bytes of 0 1 2 3 (used for transform_index)
+  // 12 bytes of the identity matrix (used for instance_matrix)
+  // Last row of identity matrix is (0, 0, 0, 1), so doesn't need to be stored
+  static const size_t size = 4 + 4 + 4 * 3;
+
+  D3DCOLOR cval = LColor_to_D3DCOLOR(color);
+
   HRESULT hr;
-  hr = _screen->_d3d_device->CreateVertexBuffer(sizeof(D3DCOLOR), D3DUSAGE_WRITEONLY, D3DFVF_DIFFUSE, D3DPOOL_DEFAULT, &vbuffer, nullptr);
+  if (vbuffer == nullptr) {
+    hr = _screen->_d3d_device->CreateVertexBuffer(size, D3DUSAGE_WRITEONLY, D3DFVF_DIFFUSE, D3DPOOL_DEFAULT, &vbuffer, nullptr);
 
-  if (FAILED(hr)) {
-    dxgsg9_cat.error()
-      << "CreateVertexBuffer failed" << D3DERRORSTRING(hr);
-    return nullptr;
+    if (FAILED(hr)) {
+      dxgsg9_cat.error()
+        << "CreateVertexBuffer failed" << D3DERRORSTRING(hr);
+      return nullptr;
+    }
+
+    _constant_vbuffer = vbuffer;
+    _constant_vbuffer_color = ~cval;
   }
 
-  D3DCOLOR *local_pointer;
-  hr = vbuffer->Lock(0, sizeof(D3DCOLOR), (void **) &local_pointer, D3DLOCK_DISCARD);
-  if (FAILED(hr)) {
-    dxgsg9_cat.error()
-      << "VertexBuffer::Lock failed" << D3DERRORSTRING(hr);
-    return false;
+  if (cval != _constant_vbuffer_color) {
+    uint32_t *local_pointer;
+    hr = vbuffer->Lock(0, size, (void **)&local_pointer, D3DLOCK_DISCARD);
+    if (FAILED(hr)) {
+      dxgsg9_cat.error()
+        << "VertexBuffer::Lock failed" << D3DERRORSTRING(hr);
+      return false;
+    }
+
+    local_pointer[0] = cval;
+    local_pointer[1] = 0x03020100;
+    local_pointer[2] = 0x000000ff;
+    local_pointer[3] = 0x0000ff00;
+    local_pointer[4] = 0x00ff0000;
+    vbuffer->Unlock();
+
+    _constant_vbuffer_color = cval;
   }
-
-  *local_pointer = D3DCOLOR_ARGB(255, 255, 255, 255);
-
-  vbuffer->Unlock();
-  _white_vbuffer = vbuffer;
   return vbuffer;
 }
 

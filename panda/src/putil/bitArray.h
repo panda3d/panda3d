@@ -86,6 +86,8 @@ PUBLISHED:
   int get_highest_off_bit() const;
   int get_next_higher_different_bit(int low_bit) const;
 
+  int find_off_range(int size, int low_bit = 0);
+
   INLINE size_t get_num_words() const;
   INLINE MaskType get_word(size_t n) const;
   INLINE void set_word(size_t n, WordType value);

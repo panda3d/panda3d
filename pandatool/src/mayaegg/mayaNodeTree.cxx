@@ -32,6 +32,8 @@
 #include <maya/MGlobal.h>
 #include "post_maya_include.h"
 
+#include <sstream>
+
 using std::string;
 
 /**
@@ -341,13 +343,21 @@ get_egg_group(MayaNodeDesc *node_desc) {
       MObject dag_object = node_desc->get_dag_path().node();
       string object_type;
       LVector3d value;
-      if (get_enum_attribute(dag_object, "eggObjectTypes1", object_type)) {
-        egg_group->add_object_type(object_type);
-      }
-      if (get_enum_attribute(dag_object, "eggObjectTypes2", object_type)) {
-        egg_group->add_object_type(object_type);
-      }
-      if (get_enum_attribute(dag_object, "eggObjectTypes3", object_type)) {
+
+      for (unsigned int i = 1; ; i++) {
+        std::ostringstream attr;
+        attr << "eggObjectTypes" << i;
+
+        if (!get_enum_attribute(dag_object, attr.str(), object_type)) {
+          if (i < 3) {
+            // Support out-of-order legacy object types.
+            continue;
+          }
+
+          // We have run out of object types to add.
+          break;
+        }
+
         egg_group->add_object_type(object_type);
       }
 

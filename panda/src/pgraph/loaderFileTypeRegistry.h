@@ -53,6 +53,8 @@ PUBLISHED:
 
   static LoaderFileTypeRegistry *get_global_ptr();
 
+  EXTENSION(PyObject *__reduce__() const);
+
 private:
   void record_extension(const std::string &extension, LoaderFileType *type);
 

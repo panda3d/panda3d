@@ -59,8 +59,10 @@ ALLOC_DELETED_CHAIN_DEF(GeomVertexArrayDataHandle);
  * file.
  */
 GeomVertexArrayData::
-GeomVertexArrayData() : SimpleLruPage(0) {
-  _contexts = nullptr;
+GeomVertexArrayData() :
+  SimpleLruPage(0),
+  _array_format(nullptr),
+  _contexts(nullptr) {
 
   // Can't put it in the LRU until it has been read in and made valid.
 }
@@ -180,7 +182,8 @@ set_usage_hint(GeomVertexArrayData::UsageHint usage_hint) {
  */
 void GeomVertexArrayData::
 output(std::ostream &out) const {
-  out << get_num_rows() << " rows: " << *get_array_format();
+  nassertv(_array_format != nullptr);
+  out << get_num_rows() << " rows: " << *_array_format;
 }
 
 /**
@@ -188,6 +191,7 @@ output(std::ostream &out) const {
  */
 void GeomVertexArrayData::
 write(std::ostream &out, int indent_level) const {
+  nassertv(_array_format != nullptr);
   _array_format->write_with_data(out, indent_level, this);
 }
 

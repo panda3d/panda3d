@@ -182,7 +182,7 @@ PUBLISHED:
   bool run();
   INLINE void begin_connect_to(const DocumentSpec &url);
 
-  ISocketStream *open_read_body();
+  std::istream *open_read_body();
   void close_read_body(std::istream *stream) const;
 
   BLOCKING bool download_to_file(const Filename &filename, bool subdocument_resumes = true);
@@ -195,7 +195,6 @@ PUBLISHED:
   INLINE bool is_download_complete() const;
 
 public:
-  static std::string downcase(const std::string &s);
   void body_stream_destructs(ISocketStream *stream);
 
 private:
@@ -336,7 +335,6 @@ private:
   DocumentSpec _document_spec;
   DocumentSpec _request;
   HTTPEnum::Method _method;
-  std::string request_path;
   std::string _header;
   std::string _body;
   std::string _content_type;
@@ -417,7 +415,8 @@ private:
   size_t _sent_so_far;
   std::string _current_field_name;
   std::string _current_field_value;
-  ISocketStream *_body_stream;
+  ISocketStream *_body_socket_stream;
+  std::istream *_body_stream;
   bool _owns_body_stream;
   BIO *_sbio;
   std::string _cipher_list;

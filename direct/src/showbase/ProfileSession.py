@@ -2,7 +2,7 @@ from panda3d.core import TrueClock
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.PythonUtil import (
     StdoutCapture, _installProfileCustomFuncs,_removeProfileCustomFuncs,
-    _getProfileResultFileInfo, _setProfileResultsFileInfo)
+    _getProfileResultFileInfo, _setProfileResultsFileInfo, Default)
 import profile
 import pstats
 import builtins
@@ -24,7 +24,8 @@ class PercentStats(pstats.Stats):
     def print_stats(self, *amount):
         for filename in self.files:
             print(filename)
-        if self.files: print()
+        if self.files:
+            print()
         indent = ' ' * 8
         for func in self.top_level:
             print(indent, func_get_function_name(func))
@@ -367,4 +368,3 @@ class ProfileSession:
                 self._resultCache[k] = output
 
         return output
-

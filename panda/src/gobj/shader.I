@@ -15,9 +15,11 @@
 
 /**
  * Return the Shader's filename for the given shader type.
+ *
+ * @deprecated Access the filename of the individual modules instead.
  */
 INLINE Filename Shader::
-get_filename(ShaderType type) const {
+get_filename(DeprecatedShaderType type) const {
   if (_filename._separate && type != ST_none) {
     switch (type) {
       case ST_vertex:
@@ -53,9 +55,11 @@ get_filename(ShaderType type) const {
 /**
  * Sets the Shader's filename for the given shader type.  Useful for
  * associating a shader created with Shader.make with a name for diagnostics.
+ *
+ * @deprecated Access the filename of the individual modules instead.
  */
 INLINE void Shader::
-set_filename(ShaderType type, const Filename &filename) {
+set_filename(DeprecatedShaderType type, const Filename &filename) {
   _filename._separate = true;
   switch (type) {
   case ST_vertex:
@@ -88,7 +92,7 @@ set_filename(ShaderType type, const Filename &filename) {
  * @deprecated
  */
 INLINE const std::string &Shader::
-get_text(ShaderType type) const {
+get_text(DeprecatedShaderType type) const {
   if (_text._separate) {
     nassertr(type != ST_none || !_text._shared.empty(), _text._shared);
     switch (type) {
@@ -219,6 +223,49 @@ get_cache_compiled_shader() const {
 INLINE void Shader::
 set_cache_compiled_shader(bool flag) {
   _cache_compiled_shader = flag;
+}
+
+/**
+ * Sets a boolean value for the specialization constant with the indicated
+ * name.  All modules containing a specialization constant with this name
+ * will be given this value.
+ *
+ * Returns true if there was a specialization constant with this name on any of
+ * the modules, false otherwise.
+ */
+INLINE bool Shader::
+set_constant(CPT_InternalName name, bool value) {
+  return set_constant(name, (uint32_t)value);
+}
+
+/**
+ * Sets an integer value for the specialization constant with the indicated
+ * name.  All modules containing a specialization constant with this name
+ * will be given this value.
+ *
+ * Returns true if there was a specialization constant with this name on any of
+ * the modules, false otherwise.
+ */
+INLINE bool Shader::
+set_constant(CPT_InternalName name, int value) {
+  uint32_t val;
+  *((int *)&val) = value;
+  return set_constant(name, val);
+}
+
+/**
+ * Sets a float value for the specialization constant with the indicated
+ * name.  All modules containing a specialization constant with this name
+ * will be given this value.
+ *
+ * Returns true if there was a specialization constant with this name on any of
+ * the modules, false otherwise.
+ */
+INLINE bool Shader::
+set_constant(CPT_InternalName name, float value) {
+  uint32_t val;
+  *((float *)&val) = value;
+  return set_constant(name, val);
 }
 
 /**
@@ -810,6 +857,30 @@ operator < (const Shader::ShaderFile &other) const {
     return (_compute < other._compute);
   }
   return false;
+}
+
+/**
+ * Sets an external value for the specialization constant with the given ID.
+ *
+ * Returns true if the value is different from what was already in there, false
+ * otherwise.
+ */
+INLINE bool Shader::ModuleSpecConstants::
+set_constant(uint32_t id, uint32_t value) {
+  auto it = std::find(_indices.begin(), _indices.end(), id);
+  if (it == _indices.end()) {
+    _indices.push_back(id);
+    _values.push_back(value);
+    return true;
+
+  } else {
+    size_t loc = it - _indices.begin();
+    if (_values[loc] != value) {
+      _values[loc] = value;
+      return true;
+    }
+    return false;
+  }
 }
 
 /**

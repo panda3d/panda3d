@@ -250,7 +250,7 @@ render_sheet(CullTraverser *trav, CullTraverserData &data,
 
   CPT(GeomVertexFormat) format;
   if (use_vertex_color) {
-    format = GeomVertexFormat::get_v3n3cpt2();
+    format = GeomVertexFormat::get_v3n3ct2();
   } else {
     format = GeomVertexFormat::get_v3n3t2();
   }

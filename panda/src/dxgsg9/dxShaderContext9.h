@@ -44,11 +44,11 @@ public:
   bool bind(GSG *gsg);
   void unbind(GSG *gsg);
   void issue_parameters(GSG *gsg, int altered);
-  void issue_transform(GSG *gsg);
+  void update_tables(GSG *gsg, const GeomVertexDataPipelineReader *data_reader);
   void disable_shader_texture_bindings(GSG *gsg);
   void update_shader_texture_bindings(DXShaderContext9 *prev, GSG *gsg);
 
-  LPDIRECT3DVERTEXDECLARATION9 get_vertex_declaration(GSG *gsg, const GeomVertexFormat *format);
+  LPDIRECT3DVERTEXDECLARATION9 get_vertex_declaration(GSG *gsg, const GeomVertexFormat *format, BitMask32 &used_streams);
 
 private:
   bool r_query_constants(Shader::Stage stage, BYTE *offset,
@@ -65,11 +65,10 @@ private:
     UINT count = 0;
   };
 
-  bool _uses_vertex_color = false;
   int _half_pixel_register = -1;
   pvector<ConstantRegister> _register_map;
 
-  pmap<CPT(GeomVertexFormat), LPDIRECT3DVERTEXDECLARATION9> _vertex_declarations;
+  pmap<CPT(GeomVertexFormat), std::pair<LPDIRECT3DVERTEXDECLARATION9, BitMask32> > _vertex_declarations;
 
   int _frame_number = -1;
   LMatrix4 *_mat_part_cache = nullptr;
