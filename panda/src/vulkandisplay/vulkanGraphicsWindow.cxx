@@ -512,14 +512,18 @@ open_window() {
 
   // Query the preferred image formats for this surface.
   uint32_t num_formats;
+  VkSurfaceFormatKHR *formats;
   err = vkGetPhysicalDeviceSurfaceFormatsKHR(vkpipe->_gpu, _surface,
                                              &num_formats, nullptr);
-  nassertr(!err, false);
-  VkSurfaceFormatKHR *formats =
-      (VkSurfaceFormatKHR *)alloca(sizeof(VkSurfaceFormatKHR) * num_formats);
-  err = vkGetPhysicalDeviceSurfaceFormatsKHR(vkpipe->_gpu, _surface,
-                                             &num_formats, formats);
-  nassertr(!err, false);
+  if (!err) {
+    formats = (VkSurfaceFormatKHR *)alloca(sizeof(VkSurfaceFormatKHR) * num_formats);
+    err = vkGetPhysicalDeviceSurfaceFormatsKHR(vkpipe->_gpu, _surface,
+                                               &num_formats, formats);
+  }
+  if (err) {
+    vulkan_error(err, "Failed to get physical device surface formats");
+    return false;
+  }
 
   // If the format list includes just one entry of VK_FORMAT_UNDEFINED, the
   // surface has no preferred format.  Otherwise, at least one supported
