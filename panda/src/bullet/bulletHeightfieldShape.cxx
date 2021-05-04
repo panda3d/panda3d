@@ -21,7 +21,7 @@ TypeHandle BulletHeightfieldShape::_type_handle;
 
 /**
  * @brief Creates a collision shape suited for terrains from a rectangular image.
- * @details Stores the image's brightness values in a vector Bullet can use, 
+ * @details Stores the image's brightness values in a vector Bullet can use,
  *   while rotating it 90 degrees to the right.
  */
 BulletHeightfieldShape::
@@ -42,9 +42,9 @@ BulletHeightfieldShape(const PNMImage &image, PN_stdfloat max_height, BulletUpAx
     }
   }
 
-  _shape = new btHeightfieldTerrainShape(_num_rows,
-                                         _num_cols,
-                                         _data,
+  _shape = new btHeightfieldTerrainShape((int)_num_rows,
+                                         (int)_num_cols,
+                                         (const void*)_data,
                                          max_height,
                                          up,
                                          true, false);
@@ -73,7 +73,7 @@ set_use_diamond_subdivision(bool flag) {
 /**
  * @brief Creates a collision shape suited for terrains from a rectangular texture.
  * @details Alternative constructor intended for use with ShaderTerrainMesh. This will
- *   do bilinear sampling at the corners of all texels. Also works with textures 
+ *   do bilinear sampling at the corners of all texels. Also works with textures
  *   that are non-power-of-two and/or rectangular.
  */
 BulletHeightfieldShape::
@@ -100,9 +100,9 @@ BulletHeightfieldShape(Texture *tex, PN_stdfloat max_height, BulletUpAxis up) :
     }
   }
 
-  _shape = new btHeightfieldTerrainShape(_num_rows,
-                                         _num_cols,
-                                         _data,
+  _shape = new btHeightfieldTerrainShape((int)_num_rows,
+                                         (int)_num_cols,
+                                         (const void*)_data,
                                          max_height,
                                          up,
                                          true, false);
@@ -125,9 +125,9 @@ BulletHeightfieldShape(const BulletHeightfieldShape &copy) {
   _data = new btScalar[size];
   memcpy(_data, copy._data, size * sizeof(btScalar));
 
-  _shape = new btHeightfieldTerrainShape(_num_rows,
-                                         _num_cols,
-                                         _data,
+  _shape = new btHeightfieldTerrainShape((int)_num_rows,
+                                         (int)_num_cols,
+                                          (const void*)_data,
                                          _max_height,
                                          _up,
                                          true, false);
@@ -206,9 +206,9 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     _data[i]  = scan.get_stdfloat();
   }
 
-  _shape = new btHeightfieldTerrainShape(_num_rows,
-                                         _num_cols,
-                                         _data,
+  _shape = new btHeightfieldTerrainShape((int)_num_rows,
+                                         (int)_num_cols,
+                                         (const void*)_data,
                                          _max_height,
                                          _up,
                                          true, false);
