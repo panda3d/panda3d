@@ -315,6 +315,11 @@ wake_task(AsyncTask *task) {
     task->_state = AsyncTask::S_servicing;
     return;
 
+  case AsyncTask::S_active:
+    // It could have already been activated, such as by a cancel() which then
+    // indirectly caused the awaiting future to be cancelled.  Do nothing.
+    return;
+
   case AsyncTask::S_inactive:
     // Schedule it immediately.
     nassertv(task->_manager == nullptr);
