@@ -403,28 +403,30 @@ AsyncGatheringFuture(AsyncFuture::Futures futures) :
 bool AsyncGatheringFuture::
 cancel() {
   if (!done()) {
+    if (task_cat.is_debug()) {
+      task_cat.debug()
+        << "Cancelling AsyncGatheringFuture (" << _futures.size() << " futures)\n";
+    }
+
     // Temporarily increase the pending count so that the notify_done()
     // callbacks won't end up causing it to be set to "finished".
     AtomicAdjust::inc(_num_pending);
 
     bool any_cancelled = false;
-    AsyncFuture::Futures::const_iterator it;
-    for (it = _futures.begin(); it != _futures.end(); ++it) {
-      AsyncFuture *fut = *it;
+    for (AsyncFuture *fut : _futures) {
       if (fut->cancel()) {
         any_cancelled = true;
       }
     }
 
-    // Now change state to "cancelled" and call the notify_done() callbacks.
-    // Don't call notify_done() if another thread has beaten us to it.
-    if (set_future_state(FS_cancelled)) {
-      notify_done(false);
+    // If all the futures were cancelled, change state of this future to
+    // "cancelled" and call the notify_done() callbacks.
+    if (!AtomicAdjust::dec(_num_pending)) {
+      if (set_future_state(FS_cancelled)) {
+        notify_done(false);
+      }
     }
 
-    // Decreasing the pending count is kind of pointless now, so we do it only
-    // in a debug build.
-    nassertr(!AtomicAdjust::dec(_num_pending), any_cancelled);
     return any_cancelled;
   } else {
     return false;
