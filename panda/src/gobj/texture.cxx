@@ -5866,7 +5866,12 @@ do_consider_auto_process_ram_image(CData *cdata, bool generate_mipmaps,
   if (allow_compression && !driver_compress_textures) {
     CompressionMode compression = cdata->_compression;
     if (compression == CM_default && compressed_textures) {
-      compression = CM_on;
+      if (cdata->_texture_type == Texture::TT_buffer_texture) {
+        compression = CM_off;
+      }
+      else {
+        compression = CM_on;
+      }
     }
     if (compression != CM_off && cdata->_ram_image_compression == CM_off) {
       GraphicsStateGuardianBase *gsg = GraphicsStateGuardianBase::get_default_gsg();
@@ -7249,7 +7254,11 @@ do_set_quality_level(CData *cdata, Texture::QualityLevel quality_level) {
 bool Texture::
 do_has_compression(const CData *cdata) const {
   if (cdata->_compression == CM_default) {
-    return compressed_textures;
+    if (cdata->_texture_type != Texture::TT_buffer_texture) {
+      return compressed_textures;
+    } else {
+      return false;
+    }
   } else {
     return (cdata->_compression != CM_off);
   }
