@@ -2,6 +2,7 @@ from math import floor, ceil
 import sys
 
 from panda3d.core import Vec2, Vec3, Vec4, Vec2F, Vec2D
+from panda3d import core
 import pytest
 
 
@@ -121,3 +122,22 @@ def test_vec2_ceil():
     rounded_vector = ceil(original_vector)
     assert rounded_vector.x == 3
     assert rounded_vector.y == -2
+
+
+@pytest.mark.parametrize("type", (core.LVecBase2f, core.LVecBase2d, core.LVecBase2i))
+def test_vec2_floordiv(type):
+    with pytest.raises(ZeroDivisionError):
+        type(1, 2) // 0
+
+    for i in range(-100, 100):
+        for j in range(1, 100):
+            assert (type(i) // j).x == i // j
+            assert (type(i) // -j).x == i // -j
+
+            v = type(i)
+            v //= j
+            assert v.x == i // j
+
+            v = type(i)
+            v //= -j
+            assert v.x == i // -j
