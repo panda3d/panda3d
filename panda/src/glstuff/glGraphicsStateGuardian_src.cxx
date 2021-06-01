@@ -13074,22 +13074,22 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
     image = tex->get_uncompressed_ram_image();
   }
 
+  Texture::TextureType texture_type = tex->get_texture_type();
   Texture::CompressionMode image_compression;
   if (image.is_null()) {
     image_compression = Texture::CM_off;
   } else {
     image_compression = tex->get_ram_image_compression();
-  }
 
-  bool is_buffer_texture = tex->get_texture_type() == Texture::TT_buffer_texture;
-  if (is_buffer_texture ||
-      !get_supports_compressed_texture_format(image_compression)) {
-    image = tex->get_uncompressed_ram_image();
-    image_compression = Texture::CM_off;
+    if (texture_type == Texture::TT_buffer_texture ||
+        !get_supports_compressed_texture_format(image_compression)) {
+      image = tex->get_uncompressed_ram_image();
+      image_compression = Texture::CM_off;
 
-    // If this triggers, Panda cannot decompress the texture.  Compile with
-    // libsquish support or precompress the texture.
-    nassertr(!image.is_null(), false);
+      // If this triggers, Panda cannot decompress the texture.  Compile with
+      // libsquish support or precompress the texture.
+      nassertr(!image.is_null(), false);
+    }
   }
 
   int mipmap_bias = 0;
@@ -13101,7 +13101,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
   // If we'll use immutable texture storage, we have to pick a sized image
   // format.
   bool force_sized = (gl_immutable_texture_storage && _supports_tex_storage) ||
-                     (is_buffer_texture);
+                     (texture_type == Texture::TT_buffer_texture);
 
   GLint internal_format = get_internal_image_format(tex, force_sized);
   GLint external_format = get_external_image_format(tex);
@@ -13130,7 +13130,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
   int max_dimension_y;
   int max_dimension_z;
 
-  switch (tex->get_texture_type()) {
+  switch (texture_type) {
   case Texture::TT_3d_texture:
     max_dimension_x = _max_3d_texture_dimension;
     max_dimension_y = _max_3d_texture_dimension;
@@ -13235,7 +13235,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
 
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-  GLenum target = get_texture_target(tex->get_texture_type());
+  GLenum target = get_texture_target(texture_type);
   uses_mipmaps = (uses_mipmaps && !gl_ignore_mipmaps) || gl_force_mipmaps;
 #ifndef OPENGLES
   if (target == GL_TEXTURE_BUFFER) {
@@ -13411,7 +13411,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
           << ", uses_mipmaps = " << uses_mipmaps << "\n";
       }
 
-      switch (tex->get_texture_type()) {
+      switch (texture_type) {
       case Texture::TT_buffer_texture:
         // Won't get here, but squelch compiler warning
       case Texture::TT_1d_texture:
@@ -13459,7 +13459,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
   }
 
   bool success = true;
-  if (tex->get_texture_type() == Texture::TT_cube_map) {
+  if (texture_type == Texture::TT_cube_map) {
     // A cube map must load six different 2-d images (which are stored as the
     // six pages of the system ram image).
     if (!_supports_cube_map) {
