@@ -12846,22 +12846,23 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
     image = tex->get_uncompressed_ram_image();
   }
 
+  bool is_buffer_texture = tex->get_texture_type() == Texture::TT_buffer_texture;
+
   Texture::CompressionMode image_compression;
   if (image.is_null()) {
     image_compression = Texture::CM_off;
   } else {
     image_compression = tex->get_ram_image_compression();
-  }
 
-  bool is_buffer_texture = tex->get_texture_type() == Texture::TT_buffer_texture;
-  if (is_buffer_texture ||
-      !get_supports_compressed_texture_format(image_compression)) {
-    image = tex->get_uncompressed_ram_image();
-    image_compression = Texture::CM_off;
+    if (is_buffer_texture ||
+        !get_supports_compressed_texture_format(image_compression)) {
+      image = tex->get_uncompressed_ram_image();
+      image_compression = Texture::CM_off;
 
-    // If this triggers, Panda cannot decompress the texture.  Compile with
-    // libsquish support or precompress the texture.
-    nassertr(!image.is_null(), false);
+      // If this triggers, Panda cannot decompress the texture.  Compile with
+      // libsquish support or precompress the texture.
+      nassertr(!image.is_null(), false);
+    }
   }
 
   int mipmap_bias = 0;
