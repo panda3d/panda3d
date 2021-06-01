@@ -1,4 +1,8 @@
+from math import floor, ceil
+import sys
+
 from panda3d.core import Vec2, Vec3, Vec4, Vec2F, Vec2D
+import pytest
 
 
 def test_vec2_creation():
@@ -90,3 +94,30 @@ def test_vec2_nan():
     assert not Vec2D(inf, 0).is_nan()
     assert not Vec2D(inf, inf).is_nan()
     assert not Vec2D(-inf, 0).is_nan()
+
+
+@pytest.mark.skipif(sys.version_info < (3, 0), reason="requires Python 3")
+def test_vec2_round():
+    original_vector = Vec2(2.3, -2.6)
+
+    rounded_vector = round(original_vector)
+    assert rounded_vector.x == 2
+    assert rounded_vector.y == -3
+
+
+@pytest.mark.skipif(sys.version_info < (3, 0), reason="requires Python 3")
+def test_vec2_floor():
+    original_vector = Vec2(2.3, -2.6)
+
+    rounded_vector = floor(original_vector)
+    assert rounded_vector.x == 2
+    assert rounded_vector.y == -3
+
+
+@pytest.mark.skipif(sys.version_info < (3, 0), reason="requires Python 3")
+def test_vec2_ceil():
+    original_vector = Vec2(2.3, -2.6)
+
+    rounded_vector = ceil(original_vector)
+    assert rounded_vector.x == 3
+    assert rounded_vector.y == -2
