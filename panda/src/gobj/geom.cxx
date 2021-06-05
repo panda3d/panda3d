@@ -805,6 +805,11 @@ make_lines_in_place() {
 #endif
   }
 
+  if (cdata->_primitive_type == PT_polygons ||
+      cdata->_primitive_type == PT_patches) {
+    cdata->_primitive_type = PT_lines;
+  }
+
   cdata->_modified = Geom::get_next_modified();
   reset_geom_rendering(cdata);
   clear_cache_stage(current_thread);
@@ -842,6 +847,10 @@ make_points_in_place() {
 #endif
   }
 
+  if (cdata->_primitive_type != PT_none) {
+    cdata->_primitive_type = PT_points;
+  }
+
   cdata->_modified = Geom::get_next_modified();
   reset_geom_rendering(cdata);
   clear_cache_stage(current_thread);
@@ -877,6 +886,10 @@ make_patches_in_place() {
       all_is_valid = false;
     }
 #endif
+  }
+
+  if (cdata->_primitive_type != PT_none) {
+    cdata->_primitive_type = PT_patches;
   }
 
   cdata->_modified = Geom::get_next_modified();

@@ -56,6 +56,13 @@ upcall() {
     }
   }
 
-  // Now traverse below.
-  _trav->traverse_below(_data);
+  // Now visit all the node's children.
+  PandaNodePipelineReader *node_reader = _data.node_reader();
+  PandaNode::Children children = node_reader->get_children();
+  node_reader->release();
+  int num_children = children.get_num_children();
+  for (int i = 0; i < num_children; ++i) {
+    CullTraverserData next_data(_data, children.get_child(i));
+    _trav->traverse(next_data);
+  }
 }
