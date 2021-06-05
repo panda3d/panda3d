@@ -115,7 +115,7 @@ private:
   PyObject *_exc_traceback;
 
   PyObject *_generator;
-  PyObject *_future_done;
+  PyObject *_fut_waiter;
 
   bool _append_task;
   bool _ignore_return;

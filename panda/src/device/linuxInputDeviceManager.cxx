@@ -134,6 +134,7 @@ consider_add_evdev_device(size_t ev_index) {
   // having read permissions set, but doesn't export all of the features
   // (notably, force feedback).
 
+#ifndef __FreeBSD__
   // We do this by checking for a js# directory inside the sysfs directory.
   sprintf(path, "/sys/class/input/event%zd/device", ev_index);
 
@@ -168,6 +169,8 @@ consider_add_evdev_device(size_t ev_index) {
   }
 
   closedir(dir);
+#endif
+
   return nullptr;
 }
 

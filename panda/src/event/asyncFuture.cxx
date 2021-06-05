@@ -148,13 +148,13 @@ notify_done(bool clean_exit) {
   // This will only be called by the thread that managed to set the
   // _future_state away from the "pending" state, so this is thread safe.
 
-  Futures::iterator it;
-  for (it = _waiting.begin(); it != _waiting.end(); ++it) {
-    AsyncFuture *fut = *it;
+  // Go through the futures that are waiting for this to finish.
+  for (AsyncFuture *fut : _waiting) {
     if (fut->is_task()) {
       // It's a task.  Make it active again.
       wake_task((AsyncTask *)fut);
-    } else {
+    }
+    else if (fut->get_type() == AsyncGatheringFuture::get_class_type()) {
       // It's a gathering future.  Decrease the pending count on it, and if
       // we're the last one, call notify_done() on it.
       AsyncGatheringFuture *gather = (AsyncGatheringFuture *)fut;
@@ -162,6 +162,23 @@ notify_done(bool clean_exit) {
         if (gather->set_future_state(FS_finished)) {
           gather->notify_done(true);
         }
+      }
+    }
+    else {
+      // It's a shielding future.  The shielding only protects the inner future
+      // when the outer is cancelled, not the other way around, so we have to
+      // propagate any cancellation here as well.
+      if (clean_exit && _result != nullptr) {
+        // Propagate the result, if any.
+        if (fut->try_lock_pending()) {
+          fut->_result = _result;
+          fut->_result_ref = _result_ref;
+          fut->unlock(FS_finished);
+          fut->notify_done(true);
+        }
+      }
+      else if (fut->set_future_state(clean_exit ? FS_finished : FS_cancelled)) {
+        fut->notify_done(clean_exit);
       }
     }
   }
@@ -298,6 +315,11 @@ wake_task(AsyncTask *task) {
     task->_state = AsyncTask::S_servicing;
     return;
 
+  case AsyncTask::S_active:
+    // It could have already been activated, such as by a cancel() which then
+    // indirectly caused the awaiting future to be cancelled.  Do nothing.
+    return;
+
   case AsyncTask::S_inactive:
     // Schedule it immediately.
     nassertv(task->_manager == nullptr);
@@ -381,28 +403,30 @@ AsyncGatheringFuture(AsyncFuture::Futures futures) :
 bool AsyncGatheringFuture::
 cancel() {
   if (!done()) {
+    if (task_cat.is_debug()) {
+      task_cat.debug()
+        << "Cancelling AsyncGatheringFuture (" << _futures.size() << " futures)\n";
+    }
+
     // Temporarily increase the pending count so that the notify_done()
     // callbacks won't end up causing it to be set to "finished".
     AtomicAdjust::inc(_num_pending);
 
     bool any_cancelled = false;
-    AsyncFuture::Futures::const_iterator it;
-    for (it = _futures.begin(); it != _futures.end(); ++it) {
-      AsyncFuture *fut = *it;
+    for (AsyncFuture *fut : _futures) {
       if (fut->cancel()) {
         any_cancelled = true;
       }
     }
 
-    // Now change state to "cancelled" and call the notify_done() callbacks.
-    // Don't call notify_done() if another thread has beaten us to it.
-    if (set_future_state(FS_cancelled)) {
-      notify_done(false);
+    // If all the futures were cancelled, change state of this future to
+    // "cancelled" and call the notify_done() callbacks.
+    if (!AtomicAdjust::dec(_num_pending)) {
+      if (set_future_state(FS_cancelled)) {
+        notify_done(false);
+      }
     }
 
-    // Decreasing the pending count is kind of pointless now, so we do it only
-    // in a debug build.
-    nassertr(!AtomicAdjust::dec(_num_pending), any_cancelled);
     return any_cancelled;
   } else {
     return false;

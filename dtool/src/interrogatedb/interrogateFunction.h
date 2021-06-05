@@ -70,6 +70,7 @@ private:
     F_setter          = 0x0020,
     F_unary_op        = 0x0040,
     F_operator_typecast = 0x0080,
+    F_item_assignment = 0x0100,
   };
 
   int _flags;

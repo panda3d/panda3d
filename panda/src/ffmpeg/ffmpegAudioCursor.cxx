@@ -101,7 +101,7 @@ FfmpegAudioCursor(FfmpegAudio *src) :
   _audio_rate = codecpar->sample_rate;
   _audio_channels = codecpar->channels;
 
-  AVCodec *pAudioCodec = avcodec_find_decoder(codecpar->codec_id);
+  const AVCodec *pAudioCodec = avcodec_find_decoder(codecpar->codec_id);
   if (pAudioCodec == nullptr) {
     cleanup();
     return;

@@ -328,7 +328,22 @@ init_device() {
   uint8_t axes[(ABS_MAX + 8) >> 3] = {0};
   if (test_bit(EV_ABS, evtypes)) {
     // Check which axes are on the device.
-    num_bits = ioctl(_fd, EVIOCGBIT(EV_ABS, sizeof(axes)), axes) << 3;
+    int result = ioctl(_fd, EVIOCGBIT(EV_ABS, sizeof(axes)), axes);
+#ifdef __FreeBSD__
+    // Older kernels had a bug where this would always return 0, see D28218
+    if (result == 0) {
+      for (int i = ABS_MAX; i >= 0; --i) {
+        if (test_bit(i, axes)) {
+          num_bits = i + 1;
+          break;
+        }
+      }
+    }
+    else
+#endif
+    if (result > 0) {
+      num_bits = result << 3;
+    }
     has_axes = true;
   }
 
@@ -691,6 +706,7 @@ init_device() {
     _rtrigger_code = -1;
   }
 
+#ifndef __FreeBSD__
   char path[64];
   char buffer[256];
   const char *parent = "";
@@ -728,6 +744,7 @@ init_device() {
     }
     fclose(f);
   }
+#endif
 
   // Special-case fix for Xbox 360 Wireless Receiver: the Linux kernel
   // driver always reports 4 connected gamepads, regardless of the number

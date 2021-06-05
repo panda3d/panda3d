@@ -1170,7 +1170,7 @@ find_display_modes(int width, int height) {
 
   // Get the current refresh rate and pixel encoding.
   CFStringRef current_pixel_encoding;
-  int refresh_rate;
+  double refresh_rate;
   mode = CGDisplayCopyDisplayMode(_display);
 
   // First check if the current mode is adequate.
@@ -1204,7 +1204,7 @@ find_display_modes(int width, int height) {
     // the mode width and height but also actual pixel widh and height.
     if (CGDisplayModeGetWidth(mode) == width &&
         CGDisplayModeGetHeight(mode) == height &&
-        CGDisplayModeGetRefreshRate(mode) == refresh_rate &&
+        (int)(CGDisplayModeGetRefreshRate(mode) + 0.5) == (int)(refresh_rate + 0.5) &&
 #if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1080
         (floor(NSAppKitVersionNumber) <= NSAppKitVersionNumber10_14 ||
         (CGDisplayModeGetPixelWidth(mode) == expected_pixel_width &&
@@ -1212,7 +1212,12 @@ find_display_modes(int width, int height) {
 #endif
         CFStringCompare(pixel_encoding, current_pixel_encoding, 0) == kCFCompareEqualTo) {
 
-      CFArrayAppendValue(valid_modes, mode);
+      if (CGDisplayModeGetRefreshRate(mode) == refresh_rate) {
+        // Exact match for refresh rate, prioritize this.
+        CFArrayInsertValueAtIndex(valid_modes, 0, mode);
+      } else {
+        CFArrayAppendValue(valid_modes, mode);
+      }
     }
     CFRelease(pixel_encoding);
   }
