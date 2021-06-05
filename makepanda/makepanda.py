@@ -646,6 +646,7 @@ if (COMPILER == "MSVC"):
         else:
             LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/Half" + suffix + ".lib")
         IncDirectory("OPENEXR", GetThirdpartyDir() + "openexr/include/OpenEXR")
+        IncDirectory("OPENEXR", GetThirdpartyDir() + "openexr/include/Imath")
     if (PkgSkip("JPEG")==0):     LibName("JPEG",     GetThirdpartyDir() + "jpeg/lib/jpeg-static.lib")
     if (PkgSkip("ZLIB")==0):     LibName("ZLIB",     GetThirdpartyDir() + "zlib/lib/zlibstatic.lib")
     if (PkgSkip("VRPN")==0):     LibName("VRPN",     GetThirdpartyDir() + "vrpn/lib/vrpn.lib")
@@ -789,6 +790,7 @@ if (COMPILER=="GCC"):
         if (os.path.isdir("/usr/PCBSD")):
             IncDirectory("ALWAYS", "/usr/PCBSD/local/include")
             LibDirectory("ALWAYS", "/usr/PCBSD/local/lib")
+        SmartPkgEnable("INOTIFY", "libinotify", ("inotify"), "sys/inotify.h")
 
     if GetTarget() != "windows":
         PkgDisable("DIRECTCAM")
@@ -819,7 +821,7 @@ if (COMPILER=="GCC"):
     SmartPkgEnable("OPENAL",    "openal",    ("openal"), "AL/al.h", framework = "OpenAL")
     SmartPkgEnable("SQUISH",    "",          ("squish"), "squish.h")
     SmartPkgEnable("TIFF",      "libtiff-4", ("tiff"), "tiff.h")
-    SmartPkgEnable("OPENEXR",   "OpenEXR",   ("IlmImf", "Imath", "Half", "Iex", "IexMath", "IlmThread"), ("OpenEXR", "OpenEXR/ImfOutputFile.h"))
+    SmartPkgEnable("OPENEXR",   "OpenEXR",   ("IlmImf", "Imath", "Half", "Iex", "IexMath", "IlmThread"), ("OpenEXR", "Imath", "OpenEXR/ImfOutputFile.h"))
     SmartPkgEnable("VRPN",      "",          ("vrpn", "quat"), ("vrpn", "quat.h", "vrpn/vrpn_Types.h"))
     SmartPkgEnable("BULLET", "bullet", ("BulletSoftBody", "BulletDynamics", "BulletCollision", "LinearMath"), ("bullet", "bullet/btBulletDynamicsCommon.h"))
     SmartPkgEnable("VORBIS",    "vorbisfile",("vorbisfile", "vorbis", "ogg"), ("ogg/ogg.h", "vorbis/vorbisfile.h"))
@@ -2434,7 +2436,6 @@ def WriteConfigSettings():
         dtool_config["IS_FREEBSD"] = '1'
         dtool_config["PHAVE_ALLOCA_H"] = 'UNDEF'
         dtool_config["PHAVE_MALLOC_H"] = 'UNDEF'
-        dtool_config["PHAVE_LINUX_INPUT_H"] = 'UNDEF'
         dtool_config["HAVE_PROC_CURPROC_FILE"] = '1'
         dtool_config["HAVE_PROC_CURPROC_MAP"] = '1'
         dtool_config["HAVE_PROC_CURPROC_CMDLINE"] = '1'
@@ -3995,7 +3996,7 @@ TargetAdd('libp3dxml.in', opts=['IMOD:panda3d.core', 'ILIB:libp3dxml', 'SRCDIR:p
 OPTS=['DIR:panda/metalibs/panda', 'BUILDING:PANDA', 'JPEG', 'PNG', 'HARFBUZZ',
     'TIFF', 'OPENEXR', 'ZLIB', 'FREETYPE', 'FFTW', 'ADVAPI', 'WINSOCK2',
     'SQUISH', 'NVIDIACG', 'VORBIS', 'OPUS', 'WINUSER', 'WINMM', 'WINGDI', 'IPHLPAPI',
-    'SETUPAPI', 'IOKIT']
+    'SETUPAPI', 'INOTIFY', 'IOKIT']
 
 TargetAdd('panda_panda.obj', opts=OPTS, input='panda.cxx')
 

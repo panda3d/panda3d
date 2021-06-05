@@ -1018,12 +1018,7 @@ set_frame_style(int state, const PGFrameStyle &style) {
   _state_defs[state]._frame_stale = true;
 
   mark_internal_bounds_stale();
-
-#ifdef THREADED_PIPELINE
-  if (Pipeline::get_render_pipeline()->get_num_stages() > 1) {
-    update_frame(state);
-  }
-#endif
+  update_frame(state);
 }
 
 #ifdef HAVE_AUDIO

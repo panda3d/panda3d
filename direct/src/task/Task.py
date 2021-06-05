@@ -91,6 +91,7 @@ pause = AsyncTaskPause
 Task.DtoolClassDict['pause'] = staticmethod(pause)
 
 gather = Task.gather
+shield = Task.shield
 
 def sequence(*taskList):
     seq = AsyncTaskSequence('sequence')

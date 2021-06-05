@@ -5,30 +5,6 @@ from panda3d import core
 import pytest
 
 
-def test_round():
-    original_vector = Vec2(2.3, -2.6)
-
-    rounded_vector = round(original_vector)
-    assert rounded_vector.x == 2
-    assert rounded_vector.y == -3
-
-
-def test_floor():
-    original_vector = Vec2(2.3, -2.6)
-
-    rounded_vector = floor(original_vector)
-    assert rounded_vector.x == 2
-    assert rounded_vector.y == -3
-
-
-def test_ceil():
-    original_vector = Vec2(2.3, -2.6)
-
-    rounded_vector = ceil(original_vector)
-    assert rounded_vector.x == 3
-    assert rounded_vector.y == -2
-
-
 def test_vec2_creation():
     assert Vec2(x=1, y=2) == Vec2(1, 2) == Vec2((1, 2))
 
@@ -120,8 +96,32 @@ def test_vec2_nan():
     assert not Vec2D(-inf, 0).is_nan()
 
 
+def test_vec2_round():
+    original_vector = Vec2(2.3, -2.6)
+
+    rounded_vector = round(original_vector)
+    assert rounded_vector.x == 2
+    assert rounded_vector.y == -3
+
+
+def test_vec2_floor():
+    original_vector = Vec2(2.3, -2.6)
+
+    rounded_vector = floor(original_vector)
+    assert rounded_vector.x == 2
+    assert rounded_vector.y == -3
+
+
+def test_vec2_ceil():
+    original_vector = Vec2(2.3, -2.6)
+
+    rounded_vector = ceil(original_vector)
+    assert rounded_vector.x == 3
+    assert rounded_vector.y == -2
+
+
 @pytest.mark.parametrize("type", (core.LVecBase2f, core.LVecBase2d, core.LVecBase2i))
-def test_vec4_floordiv(type):
+def test_vec2_floordiv(type):
     with pytest.raises(ZeroDivisionError):
         type(1, 2) // 0
 

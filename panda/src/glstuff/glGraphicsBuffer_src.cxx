@@ -952,18 +952,43 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
             }
           } else if (_fb_properties.get_float_color()) {
             // 16-bit floating-point.
-            if (_fb_properties.get_blue_bits() > 0 ||
+            if (_fb_properties.get_blue_bits() > 10 ||
                 _fb_properties.get_color_bits() == 1 ||
-                _fb_properties.get_color_bits() > 16 * 2) {
+                _fb_properties.get_color_bits() > 32) {
               gl_format = GL_RGB16F;
+            } else if (_fb_properties.get_blue_bits() > 0) {
+              if (_fb_properties.get_red_bits() > 11 ||
+                  _fb_properties.get_green_bits() > 11) {
+                gl_format = GL_RGB16F;
+              } else {
+                gl_format = GL_R11F_G11F_B10F;
+              }
             } else if (_fb_properties.get_green_bits() > 0 ||
                        _fb_properties.get_color_bits() > 16) {
               gl_format = GL_RG16F;
             } else {
               gl_format = GL_R16F;
             }
-          } else if (_fb_properties.get_color_bits() > 8 * 3) {
-            gl_format = GL_RGB16_EXT;
+          } else if (_fb_properties.get_color_bits() > 10 * 3 ||
+                     _fb_properties.get_red_bits() > 10 ||
+                     _fb_properties.get_green_bits() > 10 ||
+                     _fb_properties.get_blue_bits() > 10) {
+            // 16-bit normalized.
+            if (_fb_properties.get_blue_bits() > 0 ||
+                _fb_properties.get_color_bits() == 1 ||
+                _fb_properties.get_color_bits() > 16 * 2) {
+              gl_format = GL_RGBA16;
+            } else if (_fb_properties.get_green_bits() > 0 ||
+                       _fb_properties.get_color_bits() > 16) {
+              gl_format = GL_RG16;
+            } else {
+              gl_format = GL_R16;
+            }
+          } else if (_fb_properties.get_color_bits() > 8 * 3 ||
+                     _fb_properties.get_red_bits() > 8 ||
+                     _fb_properties.get_green_bits() > 8 ||
+                     _fb_properties.get_blue_bits() > 8) {
+            gl_format = GL_RGB10_A2;
           } else {
             gl_format = GL_RGB;
           }
@@ -980,7 +1005,7 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
             if (_fb_properties.get_color_bits() > 16 * 3) {
               gl_format = GL_RGBA32F_ARB;
             } else if (_fb_properties.get_color_bits() > 8 * 3) {
-              gl_format = GL_RGBA16_EXT;
+              gl_format = GL_RGBA16;
             } else {
               gl_format = GL_RGBA;
             }

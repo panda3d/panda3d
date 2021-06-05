@@ -108,12 +108,14 @@ load_font(const Filename &font_filename, int face_index) {
   vfs->resolve_filename(path, get_model_path());
   exists = vfs->read_file(path, _face->_font_data, true);
   if (exists) {
-    FT_Face face;
+    FT_Face face = 0;
     error = FT_New_Memory_Face(_face->_ft_library,
                                (const FT_Byte *)_face->_font_data.data(),
                                _face->_font_data.length(),
                                face_index, &face);
-    _face->set_face(face);
+    if (face) {
+      _face->set_face(face);
+    }
   }
 
   bool okflag = false;

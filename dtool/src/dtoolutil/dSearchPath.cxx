@@ -242,6 +242,10 @@ get_directory(size_t n) const {
  */
 Filename DSearchPath::
 find_file(const Filename &filename) const {
+  if (filename.empty()) {
+    return string();
+  }
+
   if (filename.is_local()) {
     if (_directories.empty()) {
       // Let's say an empty search path is the same as a search path
