@@ -1050,22 +1050,6 @@ set_properties_now(WindowProperties &properties) {
 }
 
 /**
- * Overridden from GraphicsWindow.
- */
-void x11GraphicsWindow::
-mouse_mode_absolute() {
-  // unused: remove in 1.10!
-}
-
-/**
- * Overridden from GraphicsWindow.
- */
-void x11GraphicsWindow::
-mouse_mode_relative() {
-  // unused: remove in 1.10!
-}
-
-/**
  * Closes the window right now.  Called from the window thread.
  */
 void x11GraphicsWindow::

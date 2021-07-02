@@ -697,23 +697,6 @@ add_input_device(InputDevice *device) {
 }
 
 /**
- * detaches mouse.  Only mouse delta from now on.
- *
- */
-void GraphicsWindow::
-mouse_mode_relative() {
-}
-
-/**
- * reattaches mouse to location
- *
- */
-void GraphicsWindow::
-mouse_mode_absolute() {
-
-}
-
-/**
  * Returns whether the specified event msg is a touch message.
  *
  */

@@ -50,9 +50,6 @@ protected:
   virtual void close_window();
   virtual bool open_window();
 
-  virtual void mouse_mode_absolute();
-  virtual void mouse_mode_relative();
-
   void set_wm_properties(const WindowProperties &properties,
                          bool already_mapped);
 
