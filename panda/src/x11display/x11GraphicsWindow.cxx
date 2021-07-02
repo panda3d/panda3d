@@ -860,12 +860,15 @@ set_properties_now(WindowProperties &properties) {
   int value_mask = 0;
 
   if (_properties.get_fullscreen()) {
-    changes.x = 0;
-    changes.y = 0;
-    value_mask |= CWX | CWY;
-    properties.clear_origin();
-
-  } else if (properties.has_origin()) {
+    if (_properties.get_x_origin() != 0 ||
+        _properties.get_y_origin() != 0) {
+      changes.x = 0;
+      changes.y = 0;
+      value_mask |= CWX | CWY;
+      properties.clear_origin();
+    }
+  }
+  else if (properties.has_origin()) {
     changes.x = properties.get_x_origin();
     changes.y = properties.get_y_origin();
     if (changes.x != -1) value_mask |= CWX;

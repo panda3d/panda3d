@@ -145,6 +145,7 @@ PUBLISHED:
   static void list_states(std::ostream &out);
   static bool validate_states();
   EXTENSION(static PyObject *get_states());
+  EXTENSION(static PyObject *get_unused_states());
 
 PUBLISHED:
   // These methods are intended for use by low-level code, but they're also
