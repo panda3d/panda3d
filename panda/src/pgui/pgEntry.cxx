@@ -41,7 +41,8 @@ PGEntry::
 PGEntry(const string &name) :
   PGItem(name),
   _text(get_text_node()),
-  _obscure_text(get_text_node())
+  _obscure_text(get_text_node()),
+  _candidate_text(get_text_node())
 {
   set_cull_callback();
 
@@ -103,6 +104,7 @@ PGEntry(const PGEntry &copy) :
   PGItem(copy),
   _text(copy._text),
   _obscure_text(copy._obscure_text),
+  _candidate_text(copy._candidate_text),
   _cursor_position(copy._cursor_position),
   _cursor_visible(copy._cursor_visible),
   _candidate_highlight_start(copy._candidate_highlight_start),
@@ -813,9 +815,9 @@ update_text() {
       cseq += wstring(1, (wchar_t)text_pop_properties_key);
 
       // Create a special TextAssembler to insert the candidate string.
-      TextAssembler ctext(_text);
-      ctext.set_wsubstr(cseq, _cursor_position, 0);
-      assembled = ctext.assemble_text();
+      _candidate_text = _text;
+      _candidate_text.set_wsubstr(cseq, _cursor_position, 0);
+      assembled = _candidate_text.assemble_text();
     }
 
     if (!_current_text.is_empty()) {
@@ -897,7 +899,8 @@ update_cursor() {
       _obscure_text.calc_r_c(row, column, _cursor_position);
       xpos = _obscure_text.get_xpos(row, column);
       ypos = _obscure_text.get_ypos(row, column);
-    } else {
+    }
+    else if (_candidate_wtext.empty()) {
       _text.calc_r_c(row, column, _cursor_position);
       if (_cursor_position > 0 && _text.get_character(_cursor_position - 1) == '\n') {
         row += 1;
@@ -905,6 +908,11 @@ update_cursor() {
       }
       xpos = _text.get_xpos(row, column);
       ypos = _text.get_ypos(row, column);
+    }
+    else {
+      _candidate_text.calc_r_c(row, column, _cursor_position + (int)_candidate_cursor_pos);
+      xpos = _candidate_text.get_xpos(row, column);
+      ypos = _candidate_text.get_ypos(row, column);
     }
 
     _cursor_def.set_pos(xpos - _current_padding, 0.0f, ypos);
@@ -914,7 +922,7 @@ update_cursor() {
   }
 
   // Should the cursor be visible?
-  if (!get_focus() || !_candidate_wtext.empty()) {
+  if (!get_focus()) {
     show_hide_cursor(false);
   } else {
     double elapsed_time =
