@@ -54,6 +54,10 @@ protected:
                          bool already_mapped);
 
   virtual void setup_colormap(XVisualInfo *visual);
+  int handle_preedit_start();
+  void handle_preedit_draw(XIMPreeditDrawCallbackStruct &data);
+  void handle_preedit_caret(XIMPreeditCaretCallbackStruct &data);
+  void handle_preedit_done();
   void handle_keystroke(XKeyEvent &event);
   void handle_keypress(XKeyEvent &event);
   void handle_keyrelease(XKeyEvent &event);
@@ -72,6 +76,11 @@ private:
   X11_Cursor get_cursor(const Filename &filename);
   X11_Cursor read_ico(std::istream &ico);
 
+  static int xim_preedit_start(XIC ic, XPointer client_data, XPointer call_data);
+  static void xim_preedit_draw(XIC ic, XPointer client_data, XIMPreeditDrawCallbackStruct *call_data);
+  static void xim_preedit_caret(XIC ic, XPointer client_data, XIMPreeditCaretCallbackStruct *call_data);
+  static void xim_preedit_done(XIC ic, XPointer client_data, XPointer call_data);
+
 protected:
   X11_Display *_display;
   int _screen;
@@ -85,6 +94,13 @@ protected:
   LVecBase2i _fixed_size;
 
   GraphicsWindowInputDevice *_input;
+  struct PreeditState {
+    wchar_t _buffer[1024];
+    size_t _length = 0;
+    int _highlight_start = 0;
+    int _highlight_end = 0;
+  };
+  PreeditState *_preedit_state = nullptr;
 
   long _event_mask;
   bool _awaiting_configure;

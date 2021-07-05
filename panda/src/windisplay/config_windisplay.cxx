@@ -49,12 +49,6 @@ ConfigVariableBool auto_cpu_data
           "require an explicit call to pipe->lookup_cpu_data().  Setting this "
           "true may slow down startup time by 1-2 seconds."));
 
-ConfigVariableBool ime_aware
-("ime-aware", false,
- PRC_DESC("Set this true to show ime texts on the chat panel and hide the "
-          "IME default windows. This is a mechanism to work around DX8/9 "
-          "interface."));
-
 ConfigVariableBool ime_hide
 ("ime-hide", false,
  PRC_DESC("Set this true to hide ime windows."));
