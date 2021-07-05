@@ -216,11 +216,6 @@ press(const MouseWatcherParameter &param, bool background) {
       } else if ((!background && get_focus()) ||
                  (background && get_background_focus())) {
         // Keyboard button.
-        if (!_candidate_wtext.empty()) {
-          _candidate_wtext = wstring();
-          _text_geom_stale = true;
-        }
-
         _cursor_position = min(_cursor_position, _text.get_num_characters());
         _blink_start = ClockObject::get_global_clock()->get_frame_time();
         if (button == KeyboardButton::enter()) {
