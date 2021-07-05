@@ -23,6 +23,8 @@ public:
   INLINE_LINMATH int __setattr__(PyObject *self, const std::string &attr_name, PyObject *assign);
   INLINE_LINMATH std::string __repr__() const;
 
+  INLINE_LINMATH PyObject *__rmul__(PyObject *self, FLOATTYPE scalar) const;
+
   INLINE_LINMATH PyObject *__floordiv__(PyObject *self, FLOATTYPE scalar) const;
   INLINE_LINMATH PyObject *__ifloordiv__(PyObject *self, FLOATTYPE scalar);
 

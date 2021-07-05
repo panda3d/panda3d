@@ -121,6 +121,10 @@ def test_vec4_ceil():
     assert rounded_vector.w == 1
 
 
+def test_vec4_rmul():
+    assert 2 * Vec4(0, 3, -4, 0.5) == Vec4(0, 6, -8, 1)
+
+
 @pytest.mark.parametrize("type", (core.LVecBase4f, core.LVecBase4d, core.LVecBase4i))
 def test_vec4_floordiv(type):
     with pytest.raises(ZeroDivisionError):
