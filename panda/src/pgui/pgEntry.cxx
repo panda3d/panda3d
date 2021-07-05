@@ -794,8 +794,15 @@ update_text() {
 
     } else {
       TextPropertiesManager *tp_mgr = TextPropertiesManager::get_global_ptr();
+      bool has_inactive = tp_mgr->has_properties(_candidate_inactive);
       TextProperties inactive = tp_mgr->get_properties(_candidate_inactive);
       TextProperties active = tp_mgr->get_properties(_candidate_active);
+
+      if (!has_inactive) {
+        // Just underscoring the candidate is a sensible default.
+        inactive.set_underscore(true);
+        tp_mgr->set_properties(_candidate_inactive, inactive);
+      }
 
       // Insert the complex sequence of characters required to show the
       // candidate string in a different color.  This gets inserted at the
