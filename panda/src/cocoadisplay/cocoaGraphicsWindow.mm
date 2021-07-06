@@ -693,7 +693,7 @@ open_window() {
   // Enable relative mouse mode, if this was requested.
   if (_properties.has_mouse_mode() &&
       _properties.get_mouse_mode() == WindowProperties::M_relative) {
-    mouse_mode_relative();
+    CGAssociateMouseAndMouseCursorPosition(NO);
   }
 
   _vsync_enabled = sync_video && cocoagsg->setup_vsync();
@@ -745,22 +745,6 @@ close_window() {
   _vsync_enabled = false;
 
   GraphicsWindow::close_window();
-}
-
-/**
- * Overridden from GraphicsWindow.
- */
-void CocoaGraphicsWindow::
-mouse_mode_absolute() {
-  CGAssociateMouseAndMouseCursorPosition(YES);
-}
-
-/**
- * Overridden from GraphicsWindow.
- */
-void CocoaGraphicsWindow::
-mouse_mode_relative() {
-  CGAssociateMouseAndMouseCursorPosition(NO);
 }
 
 /**

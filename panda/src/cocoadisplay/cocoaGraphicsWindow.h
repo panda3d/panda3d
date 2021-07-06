@@ -71,9 +71,6 @@ protected:
   CFMutableArrayRef find_display_modes(int width, int height);
   bool do_switch_fullscreen(CGDisplayModeRef mode);
 
-  virtual void mouse_mode_absolute();
-  virtual void mouse_mode_relative();
-
 private:
   NSData *load_image_data(const Filename &filename);
   NSImage *load_image(const Filename &filename);

@@ -357,8 +357,6 @@ INLINE bool Texture::
 load(const PNMImage &pnmimage, const LoaderOptions &options) {
   CDWriter cdata(_cycler, true);
   do_clear(cdata);
-  cdata->inc_properties_modified();
-  cdata->inc_image_modified();
   if (do_load_one(cdata, pnmimage, get_name(), 0, 0, options)) {
     bool generate_mipmaps = ((options.get_texture_flags() & LoaderOptions::TF_generate_mipmaps) != 0);
     consider_auto_process_ram_image(generate_mipmaps || uses_mipmaps(), true);
@@ -374,7 +372,7 @@ INLINE bool Texture::
 load(const PNMImage &pnmimage, int z, int n, const LoaderOptions &options) {
   CDWriter cdata(_cycler, true);
   cdata->inc_properties_modified();
-  cdata->inc_image_modified();
+  cdata->inc_image_page_modified(z);
   if (do_load_one(cdata, pnmimage, get_name(), z, n, options)) {
     return true;
   }
@@ -388,8 +386,6 @@ INLINE bool Texture::
 load(const PfmFile &pfm, const LoaderOptions &options) {
   CDWriter cdata(_cycler, true);
   do_clear(cdata);
-  cdata->inc_properties_modified();
-  cdata->inc_image_modified();
   if (do_load_one(cdata, pfm, get_name(), 0, 0, options)) {
     bool generate_mipmaps = ((options.get_texture_flags() & LoaderOptions::TF_generate_mipmaps) != 0);
     consider_auto_process_ram_image(generate_mipmaps || uses_mipmaps(), true);
@@ -405,7 +401,7 @@ INLINE bool Texture::
 load(const PfmFile &pfm, int z, int n, const LoaderOptions &options) {
   CDWriter cdata(_cycler, true);
   cdata->inc_properties_modified();
-  cdata->inc_image_modified();
+  cdata->inc_image_page_modified(z);
   if (do_load_one(cdata, pfm, get_name(), z, n, options)) {
     return true;
   }
@@ -2460,11 +2456,14 @@ inc_properties_modified() {
 }
 
 /**
- *
+ * Marks the whole image as modified.
  */
 INLINE void Texture::CData::
 inc_image_modified() {
   ++_image_modified;
+  _modified_pages.resize(1);
+  _modified_pages[0]._z_end = (size_t)-1;
+  _modified_pages[0]._modified = _image_modified;
 }
 
 /**

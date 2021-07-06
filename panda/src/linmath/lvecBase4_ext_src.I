@@ -199,6 +199,28 @@ __setattr__(PyObject *self, const std::string &attr_name, PyObject *assign) {
   return 0;
 }
 
+
+/**
+ *
+ */
+INLINE_LINMATH PyObject *Extension<FLOATNAME(LVecBase4)>::
+__rmul__(PyObject *self, FLOATTYPE scalar) const {
+#ifndef CPPPARSER
+  extern struct Dtool_PyTypedObject FLOATNAME(Dtool_LVecBase4);
+#endif
+  PyObject *py_vec = PyObject_CallNoArgs((PyObject *)DtoolInstance_TYPE(self));
+  if (py_vec != nullptr) {
+    FLOATNAME(LVecBase4) *vec = (FLOATNAME(LVecBase4) *)DtoolInstance_UPCAST(py_vec, FLOATNAME(Dtool_LVecBase4));
+    nassertr(vec != nullptr, nullptr);
+
+    vec->_v(0) = _this->_v(0) * scalar;
+    vec->_v(1) = _this->_v(1) * scalar;
+    vec->_v(2) = _this->_v(2) * scalar;
+    vec->_v(3) = _this->_v(3) * scalar;
+  }
+  return py_vec;
+}
+
 /**
  *
  */

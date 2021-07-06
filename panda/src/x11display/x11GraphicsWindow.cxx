@@ -493,7 +493,8 @@ process_events() {
       break;
 
     case ClientMessage:
-      if ((Atom)(event.xclient.data.l[0]) == _wm_delete_window) {
+      if ((Atom)(event.xclient.data.l[0]) == _wm_delete_window &&
+          event.xany.window == _xwindow) {
         // This is a message from the window manager indicating that the user
         // has requested to close the window.
         string close_request_event = get_close_request_event();
@@ -860,12 +861,15 @@ set_properties_now(WindowProperties &properties) {
   int value_mask = 0;
 
   if (_properties.get_fullscreen()) {
-    changes.x = 0;
-    changes.y = 0;
-    value_mask |= CWX | CWY;
-    properties.clear_origin();
-
-  } else if (properties.has_origin()) {
+    if (_properties.get_x_origin() != 0 ||
+        _properties.get_y_origin() != 0) {
+      changes.x = 0;
+      changes.y = 0;
+      value_mask |= CWX | CWY;
+      properties.clear_origin();
+    }
+  }
+  else if (properties.has_origin()) {
     changes.x = properties.get_x_origin();
     changes.y = properties.get_y_origin();
     if (changes.x != -1) value_mask |= CWX;
@@ -1050,22 +1054,6 @@ set_properties_now(WindowProperties &properties) {
 }
 
 /**
- * Overridden from GraphicsWindow.
- */
-void x11GraphicsWindow::
-mouse_mode_absolute() {
-  // unused: remove in 1.10!
-}
-
-/**
- * Overridden from GraphicsWindow.
- */
-void x11GraphicsWindow::
-mouse_mode_relative() {
-  // unused: remove in 1.10!
-}
-
-/**
  * Closes the window right now.  Called from the window thread.
  */
 void x11GraphicsWindow::
@@ -1195,15 +1183,41 @@ open_window() {
 
   set_wm_properties(_properties, false);
 
-  // We don't specify any fancy properties of the XIC.  It would be nicer if
-  // we could support fancy IM's that want preedit callbacks, etc., but that
-  // can wait until we have an X server that actually supports these to test
-  // it on.
+  // Initialize the input context, which (if enabled) will enable us to capture
+  // candidate strings and display them inside Panda3D rather than via an
+  // external popup window.
   XIM im = x11_pipe->get_im();
   _ic = nullptr;
   if (im) {
-    _ic = XCreateIC(im, XNInputStyle, XIMPreeditNothing | XIMStatusNothing,
-                    XNClientWindow, _xwindow, nullptr);
+    if (ime_aware) {
+      XIMCallback start_callback;
+      start_callback.client_data = (XPointer)this;
+      start_callback.callback = (XIMProc)xim_preedit_start;
+      XIMCallback draw_callback;
+      draw_callback.client_data = (XPointer)this;
+      draw_callback.callback = (XIMProc)xim_preedit_draw;
+      XIMCallback caret_callback;
+      caret_callback.client_data = (XPointer)this;
+      caret_callback.callback = (XIMProc)xim_preedit_caret;
+      XIMCallback done_callback;
+      done_callback.client_data = (XPointer)this;
+      done_callback.callback = (XIMProc)xim_preedit_done;
+      XVaNestedList preedit_attributes = XVaCreateNestedList(
+          0,
+          XNPreeditStartCallback, &start_callback,
+          XNPreeditDrawCallback, &draw_callback,
+          XNPreeditCaretCallback, &caret_callback,
+          XNPreeditDoneCallback, &done_callback,
+          nullptr);
+      _ic = XCreateIC(im,
+                      XNInputStyle, XIMPreeditCallbacks | XIMStatusNothing,
+                      XNClientWindow, _xwindow,
+                      XNPreeditAttributes, preedit_attributes,
+                      nullptr);
+    } else {
+      _ic = XCreateIC(im, XNInputStyle, XIMPreeditNothing | XIMStatusNothing,
+                      XNClientWindow, _xwindow, nullptr);
+    }
     if (_ic == (XIC)nullptr) {
       x11display_cat.warning()
         << "Couldn't create input context.\n";
@@ -1560,6 +1574,123 @@ open_raw_mice() {
   x11display_cat.error() <<
     "Opening raw mice: panda not compiled with raw mouse support.\n";
 #endif
+}
+
+/**
+ *
+ */
+int x11GraphicsWindow::
+handle_preedit_start() {
+  _preedit_state = new PreeditState;
+
+  if (x11display_cat.is_spam()) {
+    x11display_cat.spam()
+      << "Preedit started\n";
+  }
+
+  return sizeof(_preedit_state->_buffer) / sizeof(wchar_t);
+}
+
+/**
+ *
+ */
+void x11GraphicsWindow::
+handle_preedit_draw(XIMPreeditDrawCallbackStruct &data) {
+  nassertv_always(_preedit_state != nullptr);
+  PreeditState &state = *_preedit_state;
+
+  if (data.text != nullptr) {
+    // Replace characters in the preedit buffer.
+    int added_chars = data.text->length - data.chg_length;
+    memmove(state._buffer + data.chg_first,
+            state._buffer + data.chg_first + data.chg_length,
+            state._length - (size_t)(data.chg_first + data.chg_length) + data.text->length);
+    state._length += added_chars;
+
+    if (added_chars != 0) {
+      if (state._highlight_start > data.chg_first) {
+        state._highlight_start = std::max(data.chg_first, state._highlight_start + added_chars);
+      }
+      if (state._highlight_end > data.chg_first) {
+        state._highlight_end = std::max(data.chg_first, state._highlight_end + added_chars);
+      }
+    }
+
+    if (data.text->encoding_is_wchar) {
+      memcpy(state._buffer + data.chg_first, data.text->string.wide_char, data.text->length * sizeof(wchar_t));
+    } else {
+      mbstowcs(state._buffer + data.chg_first, data.text->string.multi_byte, data.text->length);
+    }
+
+    if (data.text->feedback != nullptr) {
+      // Update the highlighted region.
+      for (int i = 0; i < data.text->length; ++i) {
+        if (data.text->feedback[i] & XIMReverse) {
+          if (state._highlight_end > state._highlight_start) {
+            state._highlight_start = std::min(state._highlight_start, data.chg_first + i);
+            state._highlight_end = std::max(state._highlight_end, data.chg_first + i + 1);
+          } else {
+            state._highlight_start = data.chg_first + i;
+            state._highlight_end = data.chg_first + i + 1;
+          }
+        }
+        else if (state._highlight_end > state._highlight_start) {
+          if (state._highlight_start == data.chg_first + i) {
+            ++state._highlight_start;
+          }
+          if (state._highlight_end == data.chg_first + i + 1) {
+            --state._highlight_end;
+          }
+          if (state._highlight_end <= state._highlight_start) {
+            state._highlight_start = 0;
+            state._highlight_end = 0;
+          }
+        }
+      }
+    }
+  } else {
+    // Delete characters from the preedit buffer.
+    memmove(state._buffer + data.chg_first,
+            state._buffer + data.chg_first + data.chg_length,
+            state._length - (size_t)(data.chg_first + data.chg_length));
+    state._length -= data.chg_length;
+
+    if (state._highlight_start > data.chg_first) {
+      state._highlight_start = std::max(data.chg_first, state._highlight_start - data.chg_length);
+    }
+    if (state._highlight_end > data.chg_first) {
+      state._highlight_end = std::max(data.chg_first, state._highlight_end - data.chg_length);
+    }
+  }
+  _input->candidate(std::wstring(state._buffer, state._length),
+                    state._highlight_start, state._highlight_end, data.caret);
+}
+
+/**
+ *
+ */
+void x11GraphicsWindow::
+handle_preedit_caret(XIMPreeditCaretCallbackStruct &data) {
+  nassertv_always(_preedit_state != nullptr);
+  PreeditState &state = *_preedit_state;
+
+  if (data.direction == XIMAbsolutePosition) {
+    _input->candidate(std::wstring(state._buffer, state._length),
+                      state._highlight_start, state._highlight_end, data.position);
+  }
+}
+
+/**
+ *
+ */
+void x11GraphicsWindow::
+handle_preedit_done() {
+  if (x11display_cat.is_spam()) {
+    x11display_cat.spam()
+      << "Preedit done\n";
+  }
+  delete _preedit_state;
+  _preedit_state = nullptr;
 }
 
 /**
@@ -2207,7 +2338,8 @@ check_event(X11_Display *display, XEvent *event, char *arg) {
   // We accept any event that is sent to our window.  However, we have to let
   // raw mouse events through, since they're not associated with any window.
   return (event->xany.window == self->_xwindow ||
-    (event->type == GenericEvent && self->_raw_mouse_enabled));
+    (event->type == GenericEvent && self->_raw_mouse_enabled)) ||
+    (event->type == ClientMessage);
 }
 
 /**
@@ -2522,4 +2654,44 @@ cleanup:
   delete[] andBmp;
 
   return ret;
+}
+
+/**
+ *
+ */
+int x11GraphicsWindow::
+xim_preedit_start(XIC ic, XPointer client_data, XPointer call_data) {
+  x11GraphicsWindow *window = (x11GraphicsWindow *)client_data;
+  return window->handle_preedit_start();
+}
+
+/**
+ *
+ */
+void x11GraphicsWindow::
+xim_preedit_draw(XIC ic, XPointer client_data,
+                 XIMPreeditDrawCallbackStruct *call_data) {
+  x11GraphicsWindow *window = (x11GraphicsWindow *)client_data;
+  nassertv_always(call_data != nullptr);
+  window->handle_preedit_draw(*call_data);
+}
+
+/**
+ *
+ */
+void x11GraphicsWindow::
+xim_preedit_caret(XIC ic, XPointer client_data,
+                  XIMPreeditCaretCallbackStruct *call_data) {
+  x11GraphicsWindow *window = (x11GraphicsWindow *)client_data;
+  nassertv_always(call_data != nullptr);
+  window->handle_preedit_caret(*call_data);
+}
+
+/**
+ *
+ */
+void x11GraphicsWindow::
+xim_preedit_done(XIC ic, XPointer client_data, XPointer call_data) {
+  x11GraphicsWindow *window = (x11GraphicsWindow *)client_data;
+  window->handle_preedit_done();
 }
