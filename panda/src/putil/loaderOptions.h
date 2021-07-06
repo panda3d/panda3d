@@ -48,16 +48,23 @@ PUBLISHED:
     TF_allow_compression = 0x0200,  // Consider compressing RAM image
     TF_no_filters        = 0x0400,  // disallow using texture pool filters
   };
-
+  
   LoaderOptions(int flags = LF_search | LF_report_errors);
   constexpr LoaderOptions(int flags, int texture_flags);
 
   INLINE void set_flags(int flags);
   INLINE int get_flags() const;
   MAKE_PROPERTY(flags, get_flags, set_flags);
-
   INLINE void set_texture_flags(int flags);
   INLINE int get_texture_flags() const;
+  INLINE void set_texture_format(int format);
+  INLINE int get_texture_format() const;
+  INLINE void set_texture_compression(int  compress);
+  INLINE int get_texture_compression() const;
+  INLINE void set_texture_quality(int  quality);
+  INLINE int get_texture_quality() const;
+  
+  
   INLINE void set_texture_num_views(int num_views);
   INLINE int get_texture_num_views() const;
   MAKE_PROPERTY(texture_flags, get_texture_flags, set_texture_flags);
@@ -78,6 +85,9 @@ private:
                           const std::string &flag_name, int flag) const;
   int _flags;
   int _texture_flags;
+  int _texture_format;
+  int _texture_compress;
+  int _texture_quality;
   int _texture_num_views;
   AutoTextureScale _auto_texture_scale;
 };

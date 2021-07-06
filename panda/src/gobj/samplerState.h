@@ -20,9 +20,8 @@
 #include "namable.h"
 #include "luse.h"
 #include "numeric_types.h"
-#include "bamReader.h"
 #include "config_gobj.h"
-
+class BamReader;
 class FactoryParams;
 class GraphicsStateGuardianBase;
 class PreparedGraphicsObjects;
