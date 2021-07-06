@@ -20,6 +20,9 @@ class Extension<FLOATNAME(LPoint3)> : public ExtensionBase<FLOATNAME(LPoint3)> {
 public:
   INLINE_LINMATH PyObject *__getattr__(PyObject *self, const std::string &attr_name) const;
   INLINE_LINMATH int __setattr__(PyObject *self, const std::string &attr_name, PyObject *assign);
+
+  INLINE_LINMATH FLOATNAME(LPoint3) __rmul__(FLOATTYPE scalar) const;
+
   INLINE_LINMATH std::string __repr__() const;
 };
 

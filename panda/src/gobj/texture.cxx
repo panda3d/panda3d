@@ -551,8 +551,6 @@ bool Texture::
 read(const Filename &fullpath, const LoaderOptions &options) {
   CDWriter cdata(_cycler, true);
   do_clear(cdata);
-  cdata->inc_properties_modified();
-  cdata->inc_image_modified();
   return do_read(cdata, fullpath, Filename(), 0, 0, 0, 0, false, false,
                  options, nullptr);
 }
@@ -570,8 +568,6 @@ read(const Filename &fullpath, const Filename &alpha_fullpath,
      const LoaderOptions &options) {
   CDWriter cdata(_cycler, true);
   do_clear(cdata);
-  cdata->inc_properties_modified();
-  cdata->inc_image_modified();
   return do_read(cdata, fullpath, alpha_fullpath, primary_file_num_channels,
                  alpha_file_channel, 0, 0, false, false,
                  options, nullptr);
@@ -585,12 +581,15 @@ read(const Filename &fullpath, const Filename &alpha_fullpath,
  * the various parameters.
  */
 bool Texture::
-read(const Filename &fullpath, int z, int n,
-     bool read_pages, bool read_mipmaps,
+read(const Filename &fullpath, int z, int n, bool read_pages, bool read_mipmaps,
      const LoaderOptions &options) {
   CDWriter cdata(_cycler, true);
   cdata->inc_properties_modified();
-  cdata->inc_image_modified();
+  if (read_pages) {
+    cdata->inc_image_modified();
+  } else {
+    cdata->inc_image_page_modified(z);
+  }
   return do_read(cdata, fullpath, Filename(), 0, 0, z, n, read_pages, read_mipmaps,
                  options, nullptr);
 }
@@ -655,7 +654,11 @@ read(const Filename &fullpath, const Filename &alpha_fullpath,
      const LoaderOptions &options) {
   CDWriter cdata(_cycler, true);
   cdata->inc_properties_modified();
-  cdata->inc_image_modified();
+  if (read_pages) {
+    cdata->inc_image_modified();
+  } else {
+    cdata->inc_image_page_modified(z);
+  }
   return do_read(cdata, fullpath, alpha_fullpath, primary_file_num_channels,
                  alpha_file_channel, z, n, read_pages, read_mipmaps,
                  options, record);
@@ -1420,6 +1423,39 @@ peek() {
   }
 
   return nullptr;
+}
+
+/**
+ * Returns a SparseArray containing all the image pages that have been modified
+ * since the given UpdateSeq value.
+ */
+SparseArray Texture::
+get_image_modified_pages(UpdateSeq since, int n) const {
+  CDReader cdata(_cycler);
+
+  SparseArray result;
+  if (since == cdata->_image_modified) {
+    // Early-out since no range is more recent than _image_modified.
+    return result;
+  }
+
+  if (n > 0 && cdata->_texture_type == Texture::TT_3d_texture) {
+    // Don't bother handling this special case, just consider all mipmap pages
+    // modified.
+    result.set_range(0, do_get_expected_mipmap_z_size(cdata, n));
+    return result;
+  }
+
+  for (const ModifiedPageRange &range : cdata->_modified_pages) {
+    if (range._z_begin >= cdata->_z_size) {
+      break;
+    }
+    if (since < range._modified) {
+      result.set_range(range._z_begin, std::min(range._z_end, (size_t)cdata->_z_size) - range._z_begin);
+    }
+  }
+
+  return result;
 }
 
 /**
@@ -3541,7 +3577,7 @@ do_load_sub_image(CData *cdata, const PNMImage &image, int x, int y, int z, int 
   // Flip y
   y = cdata->_y_size - (image.get_y_size() + y);
 
-  cdata->inc_image_modified();
+  cdata->inc_image_page_modified(z);
   do_modify_ram_mipmap_image(cdata, n);
   convert_from_pnmimage(cdata->_ram_images[n]._image,
                         do_get_expected_ram_mipmap_page_size(cdata, n),
@@ -10619,6 +10655,10 @@ CData() {
   _simple_ram_image._page_size = 0;
 
   _has_clear_color = false;
+
+  _modified_pages.resize(1);
+  _modified_pages[0]._z_end = (size_t)-1;
+  _modified_pages[0]._modified = _image_modified;
 }
 
 /**
@@ -10633,6 +10673,7 @@ CData(const Texture::CData &copy) {
   _properties_modified = copy._properties_modified;
   _image_modified = copy._image_modified;
   _simple_image_modified = copy._simple_image_modified;
+  _modified_pages = copy._modified_pages;
 }
 
 /**
@@ -10688,6 +10729,46 @@ do_assign(const Texture::CData *copy) {
   _simple_x_size = copy->_simple_x_size;
   _simple_y_size = copy->_simple_y_size;
   _simple_ram_image = copy->_simple_ram_image;
+}
+
+/**
+ * Marks a single page of the image as modified.
+ */
+void Texture::CData::
+inc_image_page_modified(int z) {
+  ++_image_modified;
+
+  ModifiedPageRanges::iterator it = _modified_pages.begin();
+  while (it != _modified_pages.end() && (*it)._z_end <= z) {
+    ++it;
+    continue;
+  }
+  nassertv(it != _modified_pages.end());
+
+  size_t orig_z_end = (*it)._z_end;
+  UpdateSeq orig_modified = (*it)._modified;
+
+  if (z > (*it)._z_begin) {
+    // Split prefix.
+    ModifiedPageRange copy(*it);
+    copy._z_end = z;
+    it = _modified_pages.insert(it, copy);
+    ++it;
+  }
+
+  (*it)._z_begin = z;
+  (*it)._z_end = z + 1;
+  (*it)._modified = _image_modified;
+
+  if (z + 1 < orig_z_end) {
+    // Split suffix.
+    ModifiedPageRange copy(*it);
+    copy._z_begin = z + 1;
+    copy._z_end = orig_z_end;
+    copy._modified = orig_modified;
+    ++it;
+    _modified_pages.insert(it, copy);
+  }
 }
 
 /**

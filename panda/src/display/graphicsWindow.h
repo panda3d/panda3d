@@ -130,9 +130,6 @@ protected:
   virtual bool do_reshape_request(int x_origin, int y_origin, bool has_origin,
                                   int x_size, int y_size);
 
-  virtual void mouse_mode_absolute();
-  virtual void mouse_mode_relative();
-
   // It is an error to call any of the following methods from any thread other
   // than the window thread.
   void system_changed_properties(const WindowProperties &properties);

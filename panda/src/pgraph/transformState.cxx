@@ -1017,6 +1017,14 @@ get_num_unused_states() {
   for (size_t si = 0; si < size; ++si) {
     const TransformState *state = _states.get_key(si);
 
+    std::pair<StateCount::iterator, bool> ir =
+      state_count.insert(StateCount::value_type(state, 1));
+    if (!ir.second) {
+      // If the above insert operation fails, then it's already in the
+      // cache; increment its value.
+      (*(ir.first)).second++;
+    }
+
     size_t i;
     size_t cache_size = state->_composition_cache.get_num_entries();
     for (i = 0; i < cache_size; ++i) {

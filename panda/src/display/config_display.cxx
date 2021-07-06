@@ -383,6 +383,11 @@ ConfigVariableFilename subprocess_window
           "and is not used or needed in other environments.  See "
           "WindowProperties::set_subprocess_window()."));
 
+ConfigVariableBool ime_aware
+("ime-aware", false,
+ PRC_DESC("Set this true to show candidate strings in Panda3D rather than via "
+          "an OS-provided external popup window."));
+
 ConfigVariableString framebuffer_mode
 ("framebuffer-mode", "",
  PRC_DESC("No longer has any effect.  Do not use."));

@@ -196,6 +196,25 @@ __setattr__(PyObject *self, const std::string &attr_name, PyObject *assign) {
  *
  */
 INLINE_LINMATH PyObject *Extension<FLOATNAME(LVecBase2)>::
+__rmul__(PyObject *self, FLOATTYPE scalar) const {
+#ifndef CPPPARSER
+  extern struct Dtool_PyTypedObject FLOATNAME(Dtool_LVecBase2);
+#endif
+  PyObject *py_vec = PyObject_CallNoArgs((PyObject *)DtoolInstance_TYPE(self));
+  if (py_vec != nullptr) {
+    FLOATNAME(LVecBase2) *vec = (FLOATNAME(LVecBase2) *)DtoolInstance_UPCAST(py_vec, FLOATNAME(Dtool_LVecBase2));
+    nassertr(vec != nullptr, nullptr);
+
+    vec->_v(0) = _this->_v(0) * scalar;
+    vec->_v(1) = _this->_v(1) * scalar;
+  }
+  return py_vec;
+}
+
+/**
+ *
+ */
+INLINE_LINMATH PyObject *Extension<FLOATNAME(LVecBase2)>::
 __floordiv__(PyObject *self, FLOATTYPE scalar) const {
   if (scalar == (FLOATTYPE)0) {
     return PyErr_Format(PyExc_ZeroDivisionError, "floor division by zero");
