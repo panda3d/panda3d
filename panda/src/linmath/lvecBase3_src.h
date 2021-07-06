@@ -152,6 +152,8 @@ PUBLISHED:
 
   INLINE_LINMATH void componentwise_mult(const FLOATNAME(LVecBase3) &other);
 
+  EXTENSION(INLINE_LINMATH PyObject *__rmul__(PyObject *self, FLOATTYPE scalar) const);
+
   EXTENSION(INLINE_LINMATH PyObject *__floordiv__(PyObject *self, FLOATTYPE scalar) const);
   EXTENSION(INLINE_LINMATH PyObject *__ifloordiv__(PyObject *self, FLOATTYPE scalar));
 

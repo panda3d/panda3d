@@ -616,10 +616,9 @@ protected:
   bool upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps);
   bool upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
                             bool uses_mipmaps, int mipmap_bias,
-                            GLenum texture_target, GLenum page_target,
+                            GLenum texture_target,
                             GLint internal_format, GLint external_format,
                             GLenum component_type,
-                            bool one_page_only, int z,
                             Texture::CompressionMode image_compression);
   void generate_mipmaps(CLP(TextureContext) *gtc);
   bool upload_simple_texture(CLP(TextureContext) *gtc);
@@ -808,6 +807,7 @@ public:
   bool _supports_clear_texture;
 #ifndef OPENGLES
   PFNGLCLEARTEXIMAGEPROC _glClearTexImage;
+  PFNGLCLEARTEXSUBIMAGEPROC _glClearTexSubImage;
 #endif
 
   bool _supports_clear_buffer;

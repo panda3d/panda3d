@@ -120,6 +120,10 @@ def test_vec2_ceil():
     assert rounded_vector.y == -2
 
 
+def test_vec2_rmul():
+    assert 2 * Vec2(3, -4) == Vec2(6, -8)
+
+
 @pytest.mark.parametrize("type", (core.LVecBase2f, core.LVecBase2d, core.LVecBase2i))
 def test_vec2_floordiv(type):
     with pytest.raises(ZeroDivisionError):

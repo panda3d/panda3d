@@ -525,6 +525,8 @@ PUBLISHED:
   MAKE_PROPERTY(image_modified, get_image_modified);
   MAKE_PROPERTY(simple_image_modified, get_simple_image_modified);
 
+  SparseArray get_image_modified_pages(UpdateSeq since, int n = 0) const;
+
   INLINE bool has_auto_texture_scale() const;
   INLINE AutoTextureScale get_auto_texture_scale() const;
   INLINE void set_auto_texture_scale(AutoTextureScale scale);
@@ -932,6 +934,13 @@ private:
 protected:
   typedef pvector<RamImage> RamImages;
 
+  struct ModifiedPageRange {
+    size_t _z_begin = 0;
+    size_t _z_end;
+    UpdateSeq _modified;
+  };
+  typedef pvector<ModifiedPageRange> ModifiedPageRanges;
+
   // This is the data that must be cycled between pipeline stages.
   class EXPCL_PANDA_GOBJ CData : public CycleData {
   public:
@@ -949,6 +958,7 @@ protected:
     void do_assign(const CData *copy);
     INLINE void inc_properties_modified();
     INLINE void inc_image_modified();
+    void inc_image_page_modified(int z);
     INLINE void inc_simple_image_modified();
 
     Filename _filename;
@@ -1019,6 +1029,8 @@ protected:
     UpdateSeq _properties_modified;
     UpdateSeq _image_modified;
     UpdateSeq _simple_image_modified;
+
+    ModifiedPageRanges _modified_pages;
 
   public:
     static TypeHandle get_class_type() {

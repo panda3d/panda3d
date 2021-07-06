@@ -619,7 +619,7 @@ load_mesh(size_t index) {
   PT(GeomVertexArrayFormat) aformat = new GeomVertexArrayFormat;
   aformat->add_column(InternalName::get_vertex(), 3, Geom::NT_stdfloat, Geom::C_point);
   if (mesh.HasNormals()) {
-    aformat->add_column(InternalName::get_normal(), 3, Geom::NT_stdfloat, Geom::C_vector);
+    aformat->add_column(InternalName::get_normal(), 3, Geom::NT_stdfloat, Geom::C_normal);
   }
   if (mesh.HasVertexColors(0)) {
     aformat->add_column(InternalName::get_color(), 4, Geom::NT_stdfloat, Geom::C_color);
