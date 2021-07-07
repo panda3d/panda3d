@@ -31,6 +31,9 @@ PUBLISHED:
   EggTransform();
   EggTransform(const EggTransform &copy);
   EggTransform &operator = (const EggTransform &copy);
+  INLINE bool operator == (const EggTransform &other) const;
+  INLINE bool operator != (const EggTransform &other) const;
+
   virtual ~EggTransform();
 
   INLINE void clear_transform();
