@@ -122,3 +122,33 @@ operator >> (istream &in, BamEnums::BamTextureMode &btm) {
 
   return in;
 }
+
+ostream &
+operator << (ostream &out, BamEnums::BamTextureCompressionFormat btc) {
+  switch (btc) {
+  case BamEnums::BTC_off:
+    return out << "off";
+
+  case BamEnums::BTC_zlib:
+    return out << "zlib";
+  }
+
+  return out << "**invalid BamEnums::BamTextureCompressionFormat (" << (int)btc << ")**";
+}
+
+istream &
+operator >> (istream &in, BamEnums::BamTextureCompressionFormat &btc) {
+  string word;
+  in >> word;
+
+  if (cmp_nocase(word, "off") == 0) {
+    btc = BamEnums::BTC_off;
+  } else if (cmp_nocase(word, "zlib") == 0) {
+    btc = BamEnums::BTC_zlib;
+  } else {
+    util_cat->error() << "Invalid BamEnums::BamTextureCompressionFormat value: " << word << "\n";
+    btc = BamEnums::BTC_off;
+  }
+
+  return in;
+}

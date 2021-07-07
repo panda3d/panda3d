@@ -100,6 +100,10 @@ BamWriter(DatagramSink *target) :
   _file_endian = bam_endian;
   _file_stdfloat_double = bam_stdfloat_double;
   _file_texture_mode = bam_texture_mode;
+
+  if (_file_minor >= 46) {
+    _texture_compression_format = bam_texture_compression_format;
+  } else _texture_compression_format = BamEnums::BTC_off;
 }
 
 /**
@@ -174,6 +178,9 @@ init() {
   } else {
     _file_stdfloat_double = false;
   }
+
+  // Write out whether texture rawdata will be compressed in .bam
+  header.add_uint8(_texture_compression_format);
 
   if (!_target->put_datagram(header)) {
     util_cat.error()

@@ -96,6 +96,14 @@ get_file_endian() const {
 }
 
 /**
+ * Returns the format of compression for textures in the .bam.
+ */
+INLINE BamEnums::BamTextureCompressionFormat BamReader::
+get_texture_compression_format() const {
+  return _texture_compression_format;
+}
+
+/**
  * Returns true if the file stores all "standard" floats as 64-bit doubles, or
  * false if they are 32-bit floats.  This is determined by the compilation
  * flags of the version of Panda that generated this file.

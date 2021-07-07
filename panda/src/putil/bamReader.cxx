@@ -133,6 +133,21 @@ init() {
     _file_stdfloat_double = scan.get_bool();
   }
 
+  if(_file_minor >= 46) {
+    _texture_compression_format = (BamTextureCompressionFormat)scan.get_uint8();
+  }
+  else {
+    _texture_compression_format = BamEnums::BTC_off;
+  }
+
+#ifndef HAVE_ZLIB
+  if (_texture_compression_format == BTC_zlib) {
+    bam_cat.error()
+      << "This program can not decompress using zlib"
+      << std::endl;
+  }
+#endif
+
   if (scan.get_current_index() > header.get_length()) {
     bam_cat.error()
       << "Bam header is too short.\n";
