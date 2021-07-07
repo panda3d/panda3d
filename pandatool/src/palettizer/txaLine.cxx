@@ -179,6 +179,9 @@ parse(const string &line) {
       } else if (word == "cont") {
         _keywords.push_back(KW_cont);
 
+      } else if (word == "srgb") {
+        _keywords.push_back(KW_srgb);
+
       } else if (word == "margin") {
         ++wi;
         if (wi == words.end()) {
@@ -502,6 +505,9 @@ match_texture(TextureImage *texture) const {
     case KW_cont:
       got_cont = true;
       break;
+
+    case KW_srgb:
+      request._srgb = true;
     }
   }
 
@@ -585,6 +591,10 @@ output(std::ostream &out) const {
 
     case KW_anisotropic:
       out << " aniso " << _aniso_degree;
+      break;
+
+    case KW_srgb:
+      out << " srgb";
       break;
     }
   }

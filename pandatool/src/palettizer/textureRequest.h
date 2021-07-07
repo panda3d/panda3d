@@ -41,6 +41,7 @@ public:
   bool _force_format;
   bool _generic_format;
   bool _keep_format;
+  bool _srgb;
   EggTexture::FilterType _minfilter;
   EggTexture::FilterType _magfilter;
   int _anisotropic_degree;

@@ -504,6 +504,7 @@ has_alpha_channel(int num_components) const {
   case F_green:
   case F_blue:
   case F_luminance:
+  case F_sluminance:
   case F_rgb:
   case F_rgb12:
   case F_rgb8:
@@ -520,6 +521,7 @@ has_alpha_channel(int num_components) const {
 
   case F_luminance_alpha:
   case F_luminance_alphamask:
+  case F_sluminance_alpha:
   case F_rgba:
   case F_rgbm:
   case F_rgba12:
@@ -732,6 +734,10 @@ string_format(const string &string) {
     return F_luminance_alpha;
   } else if (cmp_nocase_uh(string, "luminance_alphamask") == 0) {
     return F_luminance_alphamask;
+  } else if (cmp_nocase_uh(string, "sluminance") == 0) {
+    return F_sluminance;
+  } else if (cmp_nocase_uh(string, "sluminance_alpha") == 0) {
+    return F_sluminance_alpha;
   } else {
     return F_unspecified;
   }
@@ -1179,6 +1185,10 @@ ostream &operator << (ostream &out, EggTexture::Format format) {
     return out << "luminance_alpha";
   case EggTexture::F_luminance_alphamask:
     return out << "luminance_alphamask";
+  case EggTexture::F_sluminance:
+    return out << "sluminance";
+  case EggTexture::F_sluminance_alpha:
+    return out << "sluminance_alpha";
   }
 
   nassertr(false, out);

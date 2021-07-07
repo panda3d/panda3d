@@ -62,6 +62,7 @@ public:
   int _anisotropic_degree;
   PNMFileType *_color_type;
   PNMFileType *_alpha_type;
+  bool _srgb;
 
 private:
   static std::string get_format_string(EggTexture::Format format);

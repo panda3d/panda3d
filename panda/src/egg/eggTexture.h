@@ -63,7 +63,8 @@ PUBLISHED:
     F_luminance_alpha, F_luminance_alphamask,
 
     // Only for compatibility with .bam, use is discouraged!
-    F_srgb, F_srgb_alpha
+    F_srgb, F_srgb_alpha,
+    F_sluminance, F_sluminance_alpha
   };
   enum CompressionMode {
     CM_default, CM_off, CM_on,

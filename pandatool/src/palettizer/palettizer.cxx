@@ -39,7 +39,7 @@ Palettizer *pal = nullptr;
 // update egg-palettize to write out additional information to its pi file,
 // without having it increment the bam version number for all bam and boo
 // files anywhere in the world.
-int Palettizer::_pi_version = 20;
+int Palettizer::_pi_version = 21;
 /*
  * Updated to version 8 on 32003 to remove extensions from texture key names.
  * Updated to version 9 on 41303 to add a few properties in various places.
@@ -54,6 +54,7 @@ int Palettizer::_pi_version = 20;
  * TextureProperties::_quality_level.  Updated to version 19 on 71609 to add
  * PaletteGroup::_override_margin Updated to version 20 on 72709 to add
  * TexturePlacement::_swapTextures
+ * Updated to version 21 on 110120 to add sRGB support.
  */
 
 int Palettizer::_min_pi_version = 8;
