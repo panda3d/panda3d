@@ -108,11 +108,18 @@ get_osx_temp_directory() {
  */
 string
 get_osx_user_appdata_directory() {
-  string result = call_NSSearchPathForDirectories(NSDocumentDirectory, NSUserDomainMask);
-  if (!result.empty()) {
-    return result;
+  string lib_result = call_NSSearchPathForDirectories(NSLibraryDirectory, NSUserDomainMask);
+  if (lib_result.empty()) {
+    return get_osx_home_directory();
   }
-  return get_osx_home_directory();
+
+  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+  NSString *lib_directory = [NSString stringWithCString:lib_result.c_str() encoding:[NSString defaultCStringEncoding]];
+  NSString *app_folder = @"Panda3d";
+  NSString *app_directory = [lib_directory stringByAppendingPathComponent:app_folder];
+  [pool release];
+
+  return NSString_to_cpp_string(app_directory);
 }
 
 /**
