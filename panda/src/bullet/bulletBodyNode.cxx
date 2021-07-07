@@ -799,10 +799,21 @@ set_ccd_motion_threshold(PN_stdfloat threshold) {
 }
 
 /**
- *
+ * Add shapes from the specified collision node to this body.
  */
 void BulletBodyNode::
 add_shapes_from_collision_solids(CollisionNode *cnode) {
+  add_shapes_from_collision_solids(cnode, TransformState::make_identity());
+}
+
+/**
+ * Add shapes from the specified collision node to this body. Also apply the
+ * given transform state to all solids. This is useful for example when the
+ * collision node is rotated, is not centered to origin, or has several parent
+ * transforms applied on it.
+ */
+void BulletBodyNode::
+add_shapes_from_collision_solids(CollisionNode *cnode, const TransformState *relative_transform) {
   LightMutexHolder holder(BulletWorld::get_global_lock());
 
   PT(BulletTriangleMesh) mesh = nullptr;
@@ -816,7 +827,7 @@ add_shapes_from_collision_solids(CollisionNode *cnode) {
       CPT(CollisionSphere) sphere = DCAST(CollisionSphere, solid);
       CPT(TransformState) ts = TransformState::make_pos(sphere->get_center());
 
-      do_add_shape(BulletSphereShape::make_from_solid(sphere), ts);
+      do_add_shape(BulletSphereShape::make_from_solid(sphere), relative_transform->compose(ts));
     }
 
     // CollisionBox
@@ -824,7 +835,7 @@ add_shapes_from_collision_solids(CollisionNode *cnode) {
       CPT(CollisionBox) box = DCAST(CollisionBox, solid);
       CPT(TransformState) ts = TransformState::make_pos(box->get_center());
 
-      do_add_shape(BulletBoxShape::make_from_solid(box), ts);
+      do_add_shape(BulletBoxShape::make_from_solid(box), relative_transform->compose(ts));
     }
 
     // CollisionCapsule
@@ -832,14 +843,14 @@ add_shapes_from_collision_solids(CollisionNode *cnode) {
       CPT(CollisionCapsule) capsule = DCAST(CollisionCapsule, solid);
       CPT(TransformState) ts = TransformState::make_pos((capsule->get_point_b() + capsule->get_point_a()) / 2.0);
 
-      do_add_shape(BulletCapsuleShape::make_from_solid(capsule), ts);
+      do_add_shape(BulletCapsuleShape::make_from_solid(capsule), relative_transform->compose(ts));
     }
 
     // CollisionPlane
     else if (CollisionPlane::get_class_type() == type) {
       CPT(CollisionPlane) plane = DCAST(CollisionPlane, solid);
 
-      do_add_shape(BulletPlaneShape::make_from_solid(plane));
+      do_add_shape(BulletPlaneShape::make_from_solid(plane), relative_transform);
     }
 
     // CollisionGeom
@@ -861,7 +872,7 @@ add_shapes_from_collision_solids(CollisionNode *cnode) {
   }
 
   if (mesh && mesh->do_get_num_triangles() > 0) {
-    do_add_shape(new BulletTriangleMeshShape(mesh, true));
+    do_add_shape(new BulletTriangleMeshShape(mesh, true), relative_transform);
   }
 }
 
