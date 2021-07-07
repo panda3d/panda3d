@@ -1,0 +1,3 @@
+import DModel
+
+dclass DModel: DistributedNode { }

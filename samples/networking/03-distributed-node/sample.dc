@@ -1,0 +1,17 @@
+import DGameObject
+import AIDGameObject/AI
+
+struct gameDataModel {
+    string value_a;
+    uint8 value_b;
+    int8 value_c/100;
+}
+
+dclass DGameObject: DistributedObject {
+    sendGameData(gameDataModel data) broadcast;
+};
+
+dclass AIDGameObject: DistributedObject {
+    messageRoundtripToAI(gameDataModel data) p2p;
+    messageRoundtripToClient(gameDataModel data) p2p;
+}
