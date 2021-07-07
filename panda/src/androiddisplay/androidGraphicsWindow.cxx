@@ -298,7 +298,7 @@ open_window() {
 
   // Set some other properties.
   _properties.set_origin(0, 0);
-  _properties.set_cursor_hidden(true);
+  _properties.set_cursor_type(WindowProperties::CT_hidden);
   _properties.set_undecorated(true);
 
   if (!androidgsg->get_fb_properties().verify_hardware_software
