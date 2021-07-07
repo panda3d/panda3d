@@ -240,3 +240,19 @@ def test_nodepath_replace_texture():
     path1.replace_texture(tex1, tex2)
     assert not path1.has_texture()
     assert path2.get_texture() == tex2
+
+def test_nodepath_user_data():
+    from panda3d.core import NodePath, BoundingBox
+
+    # Randomly chose this for testing.
+    data = BoundingBox()
+
+    path = NodePath("node")
+    assert not path.has_user_data()
+
+    path.set_user_data(data)
+    assert path.has_user_data()
+    assert path.get_user_data() == data
+
+    path.clear_user_data()
+    assert not path.has_user_data()

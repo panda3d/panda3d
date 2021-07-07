@@ -407,6 +407,31 @@ has_tags() const {
 }
 
 /**
+ * Clears the user data pointer stored on the node.
+ */
+INLINE void PandaNode::
+clear_user_data() {
+  set_user_data(nullptr);
+}
+
+/**
+ * Returns true if the node has a user data pointer, false if it does not.
+ */
+INLINE bool PandaNode::
+has_user_data() const {
+  return get_user_data() != nullptr;
+}
+
+/**
+ * Returns the user data pointer that was stored on the node.
+ */
+INLINE TypedReferenceCount *PandaNode::
+get_user_data() const {
+  CDReader cdata(_cycler);
+  return cdata->_user_data;
+}
+
+/**
  * Lists all the nodes at and below the current path hierarchically.
  */
 INLINE void PandaNode::
