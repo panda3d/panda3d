@@ -2,7 +2,7 @@ from panda3d.core import CollisionNode, NodePath
 from panda3d.core import CollisionTraverser, CollisionHandlerQueue
 from panda3d.core import CollisionSphere, CollisionInvSphere, CollisionBox, CollisionPolygon, CollisionCapsule
 from panda3d.core import CollisionLine, CollisionRay, CollisionSegment, CollisionParabola
-from panda3d.core import CollisionPlane
+from panda3d.core import CollisionPlane, CollisionHeightfield
 from panda3d.core import Point3, Vec3, Plane, LParabola
 
 

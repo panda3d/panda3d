@@ -13,3 +13,4 @@
 #include "collisionHandlerFluidPusher.cxx"
 #include "collisionHandlerQueue.cxx"
 #include "collisionInvSphere.cxx"
+#include "collisionHeightfield.cxx"
