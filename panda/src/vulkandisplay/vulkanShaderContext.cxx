@@ -551,6 +551,51 @@ update_dynamic_uniforms(VulkanGraphicsStateGuardian *gsg, int altered) {
       case Shader::SMP_cell13:
         memcpy(dest, data + 13, 4);
         break;
+      case Shader::SMP_upper3x4:
+        memcpy(dest, data, 48);
+        break;
+      case Shader::SMP_upper4x3:
+        dest[0] = data[0];
+        dest[1] = data[1];
+        dest[2] = data[2];
+        dest[3] = data[4];
+        dest[4] = data[5];
+        dest[5] = data[6];
+        dest[6] = data[8];
+        dest[7] = data[9];
+        dest[8] = data[10];
+        dest[9] = data[12];
+        dest[10] = data[13];
+        dest[11] = data[14];
+        break;
+      case Shader::SMP_transpose3x4:
+        dest[0] = data[0];
+        dest[1] = data[4];
+        dest[2] = data[8];
+        dest[3] = data[12];
+        dest[4] = data[1];
+        dest[5] = data[5];
+        dest[6] = data[9];
+        dest[7] = data[13];
+        dest[8] = data[2];
+        dest[9] = data[6];
+        dest[10] = data[10];
+        dest[11] = data[14];
+        break;
+      case Shader::SMP_transpose4x3:
+        dest[0] = data[0];
+        dest[1] = data[4];
+        dest[2] = data[8];
+        dest[3] = data[1];
+        dest[4] = data[5];
+        dest[5] = data[9];
+        dest[6] = data[2];
+        dest[7] = data[6];
+        dest[8] = data[10];
+        dest[9] = data[3];
+        dest[10] = data[7];
+        dest[11] = data[11];
+        continue;
       }
     }
 
