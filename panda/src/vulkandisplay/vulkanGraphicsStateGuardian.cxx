@@ -1015,7 +1015,7 @@ prepare_texture(Texture *texture, int view) {
   }
   else {
     // Buffer texture.
-    if (extent.width > _max_buffer_texture_size) {
+    if (extent.width > (uint32_t)_max_buffer_texture_size) {
       vulkandisplay_cat.error()
         << "Buffer texture size " << extent.width << " is too large, maximum size is "
         << _max_buffer_texture_size << " texels\n";
@@ -2097,10 +2097,12 @@ clear(DrawableRegion *clearable) {
        _current_properties->get_stencil_bits() > 0)) {
     VkClearAttachment &attachment = attachments[ai++];
     attachment.aspectMask = 0;
-    if (clearable->get_clear_depth_active()) {
+    if (clearable->get_clear_depth_active() &&
+        _current_properties->get_depth_bits() > 0) {
       attachment.aspectMask |= VK_IMAGE_ASPECT_DEPTH_BIT;
     }
-    if (clearable->get_clear_stencil_active()) {
+    if (clearable->get_clear_stencil_active() &&
+        _current_properties->get_stencil_bits() > 0) {
       attachment.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
     }
     attachment.colorAttachment = 0; // unused
@@ -3684,7 +3686,7 @@ update_tattr_descriptor_set(VkDescriptorSet ds, const TextureAttrib *attr) {
     int view = 0;
 
     Texture *texture;
-    if (i < attr->get_num_on_stages()) {
+    if (i < (size_t)attr->get_num_on_stages()) {
       TextureStage *stage = attr->get_on_stage(i);
       sampler = attr->get_on_sampler(stage);
       view += stage->get_tex_view_offset();
