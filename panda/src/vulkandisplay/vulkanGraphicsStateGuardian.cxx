@@ -4233,6 +4233,18 @@ get_image_format(const Texture *texture) const {
     return (VkFormat)(VK_FORMAT_R8G8_UNORM + is_signed);
   case Texture::F_r16i:
     return (VkFormat)(VK_FORMAT_R16_UINT + is_signed);
+  case Texture::F_rg16i:
+    return (VkFormat)(VK_FORMAT_R16G16_UINT + is_signed);
+  case Texture::F_rgb16i:
+    return (VkFormat)(VK_FORMAT_R16G16B16_UINT + is_signed);
+  case Texture::F_rgba16i:
+    return (VkFormat)(VK_FORMAT_R16G16B16A16_UINT + is_signed);
+  case Texture::F_rg32i:
+    return (VkFormat)(VK_FORMAT_R32G32_UINT + is_signed);
+  case Texture::F_rgb32i:
+    return (VkFormat)(VK_FORMAT_R32G32B32_UINT + is_signed);
+  case Texture::F_rgba32i:
+    return (VkFormat)(VK_FORMAT_R32G32B32A32_UINT + is_signed);
   }
 
   return VK_FORMAT_UNDEFINED;
