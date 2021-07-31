@@ -4767,6 +4767,9 @@ release_swap_chain(DXScreenData *new_context) {
       wdxdisplay9_cat.debug() << "Swapchain release failed:" << D3DERRORSTRING(hr) << "\n";
       return false;
     }
+    if (new_context->_swap_chain == _swap_chain) {
+      _swap_chain = nullptr;
+    }
   }
   return true;
 }
