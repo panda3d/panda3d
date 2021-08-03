@@ -515,6 +515,15 @@ get_screenshot() {
 }
 
 /**
+ *
+ */
+void DisplayRegion::
+clear_cull_result() {
+  CDCullWriter cdata_cull(_cycler_cull, true);
+  cdata_cull->_cull_result = nullptr;
+}
+
+/**
  * Returns a special scene graph constructed to represent the results of the
  * last frame's cull operation.
  *

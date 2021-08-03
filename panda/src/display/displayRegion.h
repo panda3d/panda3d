@@ -160,6 +160,7 @@ PUBLISHED:
   bool get_screenshot(PNMImage &image);
   PT(Texture) get_screenshot();
 
+  void clear_cull_result();
   virtual PT(PandaNode) make_cull_result_graph();
 
 public:

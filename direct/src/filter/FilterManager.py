@@ -366,6 +366,8 @@ class FilterManager(DirectObject):
         self.camstate = self.caminit
         self.camera.node().setInitialState(self.caminit)
         self.region.setCamera(self.camera)
+        if hasattr(self.region, 'clearCullResult'):
+            self.region.clearCullResult()
         self.nextsort = self.win.getSort() - 1000
         self.basex = 0
         self.basey = 0
