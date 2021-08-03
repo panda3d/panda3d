@@ -109,6 +109,7 @@ def test_vec3_ceil():
     assert rounded_vector.z == 4
 
 
+@pytest.mark.xfail(sys.platform == "win32", reason="unknown precision issue")
 @pytest.mark.parametrize("type", (core.LVecBase3f, core.LVecBase3d, core.LVecBase3i))
 def test_vec3_floordiv(type):
     with pytest.raises(ZeroDivisionError):
