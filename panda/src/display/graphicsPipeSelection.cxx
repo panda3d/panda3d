@@ -399,7 +399,7 @@ load_named_module(const string &name) {
   if (handle == nullptr) {
     std::string error = load_dso_error();
     display_cat.warning()
-      << "Unable to load " << dlname.get_basename() << ": " << error << std::endl;
+      << "Unable to load " << dlname.to_os_specific() << ": " << error << std::endl;
     return TypeHandle::none();
   }
 
@@ -417,7 +417,7 @@ load_named_module(const string &name) {
   if (dso_symbol == nullptr) {
     // Couldn't find the module function.
     display_cat.warning()
-      << "Unable to find " << symbol_name << " in " << dlname.get_basename()
+      << "Unable to find " << symbol_name << " in " << dlname.to_os_specific()
       << "\n";
 
   } else {
@@ -447,7 +447,7 @@ load_named_module(const string &name) {
     // though, because it may have assigned itself into the
     // GraphicsPipeSelection table.  So we carry on.
     display_cat.warning()
-      << "No default pipe type available for " << dlname.get_basename()
+      << "No default pipe type available for " << dlname.to_os_specific()
       << "\n";
   }
 
