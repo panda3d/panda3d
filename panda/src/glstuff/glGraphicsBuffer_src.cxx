@@ -1695,6 +1695,11 @@ close_buffer() {
     _fbo.clear();
   }
 
+  if (_fbo_multisample != 0) {
+    glgsg->_glDeleteFramebuffers(1, &_fbo_multisample);
+    _fbo_multisample = 0;
+  }
+
   report_my_gl_errors();
 
   // Release the Gsg

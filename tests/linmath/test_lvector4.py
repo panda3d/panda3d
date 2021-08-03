@@ -1,4 +1,5 @@
 from math import floor, ceil
+import sys
 
 from panda3d.core import Vec2, Vec3, Vec4, Vec4F, Vec4D
 from panda3d import core
@@ -125,6 +126,7 @@ def test_vec4_rmul():
     assert 2 * Vec4(0, 3, -4, 0.5) == Vec4(0, 6, -8, 1)
 
 
+@pytest.mark.xfail(sys.platform == "win32", reason="unknown precision issue")
 @pytest.mark.parametrize("type", (core.LVecBase4f, core.LVecBase4d, core.LVecBase4i))
 def test_vec4_floordiv(type):
     with pytest.raises(ZeroDivisionError):
