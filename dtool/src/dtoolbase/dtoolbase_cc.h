@@ -172,6 +172,36 @@ namespace std {
   ALWAYS_INLINE long double round(long double arg) {
     return ::roundl(arg);
   }
+  ALWAYS_INLINE double round(signed char arg) {
+    return (double)arg;
+  }
+  ALWAYS_INLINE double round(unsigned char arg) {
+    return (double)arg;
+  }
+  ALWAYS_INLINE double round(short arg) {
+    return (double)arg;
+  }
+  ALWAYS_INLINE double round(unsigned short arg) {
+    return (double)arg;
+  }
+  ALWAYS_INLINE double round(int arg) {
+    return (double)arg;
+  }
+  ALWAYS_INLINE double round(unsigned int arg) {
+    return (double)arg;
+  }
+  ALWAYS_INLINE double round(long arg) {
+    return (double)arg;
+  }
+  ALWAYS_INLINE double round(unsigned long arg) {
+    return (double)arg;
+  }
+  ALWAYS_INLINE double round(long long arg) {
+    return (double)arg;
+  }
+  ALWAYS_INLINE double round(unsigned long long arg) {
+    return (double)arg;
+  }
   using ::roundf;
   using ::roundl;
 };
