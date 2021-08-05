@@ -2134,6 +2134,8 @@ reset() {
        get_extension_func("glGetProgramResourceName");
     _glGetProgramResourceiv = (PFNGLGETPROGRAMRESOURCEIVPROC)
        get_extension_func("glGetProgramResourceiv");
+    _glShaderStorageBlockBinding = (PFNGLSHADERSTORAGEBLOCKBINDINGPROC)
+       get_extension_func("glShaderStorageBlockBinding");
   } else
 #endif
   {
