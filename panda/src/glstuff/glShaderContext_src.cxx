@@ -339,6 +339,8 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
     block_maxlength = max(64, block_maxlength);
     char *block_name_cstr = (char *)alloca(block_maxlength);
 
+    BitArray bindings;
+
     for (int i = 0; i < block_count; ++i) {
       block_name_cstr[0] = 0;
       _glgsg->_glGetProgramResourceName(_glsl_program, GL_SHADER_STORAGE_BLOCK, i, block_maxlength, nullptr, block_name_cstr);
@@ -346,6 +348,20 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
       const GLenum props[] = {GL_BUFFER_BINDING, GL_BUFFER_DATA_SIZE};
       GLint values[2];
       _glgsg->_glGetProgramResourceiv(_glsl_program, GL_SHADER_STORAGE_BLOCK, i, 2, props, 2, nullptr, values);
+
+      if (bindings.get_bit(values[0])) {
+        // Binding index already in use, assign a different one.
+        values[0] = bindings.get_lowest_off_bit();
+        _glgsg->_glShaderStorageBlockBinding(_glsl_program, i, values[0]);
+      }
+      bindings.set_bit(values[0]);
+
+      if (GLCAT.is_debug()) {
+        GLCAT.debug()
+          << "Active shader storage block " << block_name_cstr
+          << " with size " << values[1] << " is bound to binding "
+          << values[0] << "\n";
+      }
 
       StorageBlock block;
       block._name = InternalName::make(block_name_cstr);
