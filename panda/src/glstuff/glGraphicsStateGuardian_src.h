@@ -675,6 +675,9 @@ protected:
   bool _scissor_enabled;
   bool _scissor_attrib_active;
   epvector<LVecBase4i> _scissor_array;
+  PN_stdfloat _depth_range_near;
+  PN_stdfloat _depth_range_far;
+  bool _has_attrib_depth_range;
 
 #ifndef OPENGLES_1
   BitMask32 _enabled_vertex_attrib_arrays;

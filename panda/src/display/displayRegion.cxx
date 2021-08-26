@@ -738,7 +738,8 @@ CData() :
   _stereo_channel(Lens::SC_mono),
   _tex_view_offset(0),
   _target_tex_page(-1),
-  _scissor_enabled(true)
+  _scissor_enabled(true),
+  _depth_range(0, 1)
 {
   _regions.push_back(Region());
 }
@@ -757,7 +758,8 @@ CData(const DisplayRegion::CData &copy) :
   _stereo_channel(copy._stereo_channel),
   _tex_view_offset(copy._tex_view_offset),
   _target_tex_page(copy._target_tex_page),
-  _scissor_enabled(copy._scissor_enabled)
+  _scissor_enabled(copy._scissor_enabled),
+  _depth_range(copy._depth_range)
 {
 }
 
