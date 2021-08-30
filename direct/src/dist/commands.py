@@ -242,6 +242,9 @@ class build_apps(setuptools.Command):
             'macosx_10_6_x86_64',
             'win_amd64',
         ]
+        if sys.version_info >= (3, 10):
+            # manylinux1 is not offered for Python 3.10 anymore
+            self.platforms[0] = 'manylinux2010_x86_64'
         if sys.version_info >= (3, 8):
             # This version of Python is only available for 10.9+.
             self.platforms[1] = 'macosx_10_9_x86_64'
@@ -1393,6 +1396,8 @@ class bdist_apps(setuptools.Command):
     DEFAULT_INSTALLERS = {
         'manylinux1_x86_64': ['gztar'],
         'manylinux1_i686': ['gztar'],
+        'manylinux2010_x86_64': ['gztar'],
+        'manylinux2010_i686': ['gztar'],
         # Everything else defaults to ['zip']
     }
 
