@@ -1080,6 +1080,18 @@ reset() {
       _supports_clear_texture = true;
     }
   }
+#elif !defined(OPENGLES_1)
+  if (has_extension("GL_EXT_clear_texture")) {
+    _glClearTexImage = (PFNGLCLEARTEXIMAGEEXTPROC)
+      get_extension_func("glClearTexImageEXT");
+
+    if (_glClearTexImage == nullptr) {
+      GLCAT.warning()
+        << "GL_EXT_clear_texture advertised as supported by OpenGL runtime, but could not get pointers to extension function.\n";
+    } else {
+      _supports_clear_texture = true;
+    }
+  }
 #endif
 
   _supports_clear_buffer = false;
