@@ -1108,10 +1108,12 @@ reset() {
   if (has_extension("GL_EXT_clear_texture")) {
     _glClearTexImage = (PFNGLCLEARTEXIMAGEEXTPROC)
       get_extension_func("glClearTexImageEXT");
+    _glClearTexSubImage = (PFNGLCLEARTEXSUBIMAGEEXTPROC)
+      get_extension_func("glClearTexSubImageEXT");
 
-    if (_glClearTexImage == nullptr) {
+    if (_glClearTexImage == nullptr || _glClearTexSubImage == nullptr) {
       GLCAT.warning()
-        << "GL_EXT_clear_texture advertised as supported by OpenGL runtime, but could not get pointers to extension function.\n";
+        << "GL_EXT_clear_texture advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
     } else {
       _supports_clear_texture = true;
     }
