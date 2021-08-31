@@ -162,20 +162,20 @@ set_dimensions(const LVecBase4 &dimensions) {
  * larger than the far value.
  */
 INLINE void DisplayRegion::
-set_depth_range(PN_stdfloat near, PN_stdfloat far) {
+set_depth_range(PN_stdfloat near_depth, PN_stdfloat far_depth) {
   CDWriter cdata(_cycler, true);
-  cdata->_depth_range.set(near, far);
+  cdata->_depth_range.set(near_depth, far_depth);
 }
 
 /**
  *
  */
 INLINE void DisplayRegion::
-get_depth_range(PN_stdfloat &near, PN_stdfloat &far) const {
+get_depth_range(PN_stdfloat &near_depth, PN_stdfloat &far_depth) const {
   CDReader cdata(_cycler);
   const LVecBase2 &range = cdata->_depth_range;
-  near = range[0];
-  far = range[1];
+  near_depth = range[0];
+  far_depth = range[1];
 }
 
 /**
@@ -719,10 +719,10 @@ get_top(int i) const {
  *
  */
 INLINE void DisplayRegionPipelineReader::
-get_depth_range(PN_stdfloat &near, PN_stdfloat &far) const {
+get_depth_range(PN_stdfloat &near_depth, PN_stdfloat &far_depth) const {
   const LVecBase2 &range = _cdata->_depth_range;
-  near = range[0];
-  far = range[1];
+  near_depth = range[0];
+  far_depth = range[1];
 }
 
 /**

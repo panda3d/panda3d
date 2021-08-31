@@ -3963,32 +3963,32 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
     }
   }
 
-  PN_stdfloat near;
-  PN_stdfloat far;
-  dr->get_depth_range(near, far);
+  PN_stdfloat nearv;
+  PN_stdfloat farv;
+  dr->get_depth_range(nearv, farv);
 #ifdef GSG_VERBOSE
   if (GLCAT.is_spam()) {
     GLCAT.spam()
-      << "glDepthRange(" << near << ", " << far << ")" << endl;
+      << "glDepthRange(" << nearv << ", " << farv << ")" << endl;
   }
 #endif
 
 #ifdef OPENGLES
   // OpenGL ES uses a single-precision call.
-  glDepthRangef((GLclampf)near, (GLclampf)far);
+  glDepthRangef((GLclampf)nearv, (GLclampf)farv);
 #else
   // Mainline OpenGL uses a double-precision call.
   if (!_use_remapped_depth_range) {
-    glDepthRange((GLclampd)near, (GLclampd)far);
+    glDepthRange((GLclampd)nearv, (GLclampd)farv);
   } else {
     // If we have a remapped depth range, we should adjust the values to range
     // from -1 to 1.  We need to use an NV extension to pass unclamped values.
-    _glDepthRangedNV(near * 2.0 - 1.0, far * 2.0 - 1.0);
+    _glDepthRangedNV(nearv * 2.0 - 1.0, farv * 2.0 - 1.0);
   }
 #endif  // OPENGLES
   _has_attrib_depth_range = false;
-  _depth_range_near = near;
-  _depth_range_far = far;
+  _depth_range_near = nearv;
+  _depth_range_far = farv;
 
   report_my_gl_errors();
 }
