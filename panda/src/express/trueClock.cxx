@@ -231,10 +231,12 @@ correct_time(double time) {
     // backward in the high-precision clock, since this does appear to happen
     // in a threaded environment.
 
-    clock_cat.debug()
-      << "Clock error detected; elapsed time " << time_delta
-      << "s on high-resolution counter, and " << tod_delta
-      << "s on time-of-day clock.\n";
+    if (clock_cat.is_debug()) {
+      clock_cat.debug()
+        << "Clock error detected; elapsed time " << time_delta
+        << "s on high-resolution counter, and " << tod_delta
+        << "s on time-of-day clock.\n";
+    }
     ++_error_count;
 
     // If both are negative, we call it 0.  If one is negative, we trust the

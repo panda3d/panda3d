@@ -24,7 +24,7 @@ Installing Panda3D
 ==================
 
 The latest Panda3D SDK can be downloaded from
-[this page](https://www.panda3d.org/download/sdk-1-10-9/).
+[this page](https://www.panda3d.org/download/sdk-1-10-10/).
 If you are familiar with installing Python packages, you can use
 the following command:
 
@@ -64,8 +64,8 @@ depending on whether you are on a 32-bit or 64-bit system, or you can
 [click here](https://github.com/rdb/panda3d-thirdparty) for instructions on
 building them from source.
 
-- https://www.panda3d.org/download/panda3d-1.10.9/panda3d-1.10.9-tools-win64.zip
-- https://www.panda3d.org/download/panda3d-1.10.9/panda3d-1.10.9-tools-win32.zip
+- https://www.panda3d.org/download/panda3d-1.10.10/panda3d-1.10.10-tools-win64.zip
+- https://www.panda3d.org/download/panda3d-1.10.10/panda3d-1.10.10-tools-win32.zip
 
 After acquiring these dependencies, you can build Panda3D from the command
 prompt using the following command.  Change the `--msvc-version` option based
@@ -136,7 +136,7 @@ macOS
 -----
 
 On macOS, you will need to download a set of precompiled thirdparty packages in order to
-compile Panda3D, which can be acquired from [here](https://www.panda3d.org/download/panda3d-1.10.9/panda3d-1.10.9-tools-mac.tar.gz).
+compile Panda3D, which can be acquired from [here](https://www.panda3d.org/download/panda3d-1.10.10/panda3d-1.10.10-tools-mac.tar.gz).
 
 After placing the thirdparty directory inside the panda3d source directory,
 you may build Panda3D using a command like the following:

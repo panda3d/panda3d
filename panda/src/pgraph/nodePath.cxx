@@ -310,6 +310,8 @@ get_sort(Thread *current_thread) const {
  * Searches for a node below the referenced node that matches the indicated
  * string.  Returns the shortest match found, if any, or an empty NodePath if
  * no match can be found.
+ *
+ * The referenced node itself is not considered in the search.
  */
 NodePath NodePath::
 find(const string &path) const {
@@ -350,6 +352,8 @@ find_path_to(PandaNode *node) const {
 /**
  * Returns the complete set of all NodePaths that begin with this NodePath and
  * can be extended by path.  The shortest paths will be listed first.
+ *
+ * The referenced node itself is not considered in the search.
  */
 NodePathCollection NodePath::
 find_all_matches(const string &path) const {

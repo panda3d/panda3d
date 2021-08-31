@@ -1104,6 +1104,18 @@ reset() {
       _supports_clear_texture = true;
     }
   }
+#elif !defined(OPENGLES_1)
+  if (has_extension("GL_EXT_clear_texture")) {
+    _glClearTexImage = (PFNGLCLEARTEXIMAGEEXTPROC)
+      get_extension_func("glClearTexImageEXT");
+
+    if (_glClearTexImage == nullptr) {
+      GLCAT.warning()
+        << "GL_EXT_clear_texture advertised as supported by OpenGL runtime, but could not get pointers to extension function.\n";
+    } else {
+      _supports_clear_texture = true;
+    }
+  }
 #endif
 
   _supports_clear_buffer = false;
@@ -3319,23 +3331,30 @@ reset() {
 #endif
 
   // Set depth range from zero to one if requested.
-#ifndef OPENGLES
+#ifndef OPENGLES_1
   _use_depth_zero_to_one = false;
   _use_remapped_depth_range = false;
 
   if (gl_depth_zero_to_one) {
+#ifndef OPENGLES
+    PFNGLCLIPCONTROLPROC pglClipControl = nullptr;
     if (is_at_least_gl_version(4, 5) || has_extension("GL_ARB_clip_control")) {
-      PFNGLCLIPCONTROLPROC pglClipControl =
-        (PFNGLCLIPCONTROLPROC)get_extension_func("glClipControl");
+      pglClipControl = (PFNGLCLIPCONTROLPROC)get_extension_func("glClipControl");
+    }
+#else
+    PFNGLCLIPCONTROLEXTPROC pglClipControl = nullptr;
+    if (has_extension("GL_EXT_clip_control")) {
+      pglClipControl = (PFNGLCLIPCONTROLEXTPROC)get_extension_func("glClipControlEXT");
+    }
+#endif
 
-      if (pglClipControl != nullptr) {
-        pglClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
-        _use_depth_zero_to_one = true;
+    if (pglClipControl != nullptr) {
+      pglClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
+      _use_depth_zero_to_one = true;
 
-        if (GLCAT.is_debug()) {
-          GLCAT.debug()
-            << "Set zero-to-one depth using glClipControl\n";
-        }
+      if (GLCAT.is_debug()) {
+        GLCAT.debug()
+          << "Set zero-to-one depth using glClipControl\n";
       }
     }/* else if (has_extension("GL_NV_depth_buffer_float")) {
       // Alternatively, all GeForce 8+ and even some AMD drivers support this

@@ -229,10 +229,10 @@ typedef void (APIENTRYP PFNGLPROGRAMBINARYPROC) (GLuint program, GLenum binaryFo
 typedef void (APIENTRYP PFNGLGETINTERNALFORMATIVPROC) (GLenum target, GLenum internalformat, GLenum pname, GLsizei bufSize, GLint *params);
 typedef void (APIENTRYP PFNGLBUFFERSTORAGEPROC) (GLenum target, GLsizeiptr size, const void *data, GLbitfield flags);
 typedef void (APIENTRYP PFNGLBINDIMAGETEXTUREPROC) (GLuint unit, GLuint texture, GLint level, GLboolean layered, GLint layer, GLenum access, GLenum format);
-#endif  // OPENGLES_1
-#ifndef OPENGLES
 typedef void (APIENTRYP PFNGLCLEARTEXIMAGEPROC) (GLuint texture, GLint level, GLenum format, GLenum type, const void *data);
 typedef void (APIENTRYP PFNGLCLEARTEXSUBIMAGEPROC) (GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, const void *data);
+#endif  // OPENGLES_1
+#ifndef OPENGLES
 typedef void (APIENTRYP PFNGLBINDTEXTURESPROC) (GLuint first, GLsizei count, const GLuint *textures);
 typedef void (APIENTRYP PFNGLBINDSAMPLERSPROC) (GLuint first, GLsizei count, const GLuint *samplers);
 typedef void (APIENTRYP PFNGLBINDIMAGETEXTURESPROC) (GLuint first, GLsizei count, const GLuint *textures);
@@ -767,9 +767,11 @@ protected:
 #endif
 
 public:
-#ifndef OPENGLES
+#ifndef OPENGLES_1
   bool _use_depth_zero_to_one;
   bool _use_remapped_depth_range;
+#endif
+#ifndef OPENGLES
   PFNGLDEPTHRANGEDNVPROC _glDepthRangedNV;
 #endif
 #ifndef OPENGLES_1
@@ -811,7 +813,7 @@ public:
 #endif
 
   bool _supports_clear_texture;
-#ifndef OPENGLES
+#ifndef OPENGLES_1
   PFNGLCLEARTEXIMAGEPROC _glClearTexImage;
   PFNGLCLEARTEXSUBIMAGEPROC _glClearTexSubImage;
 #endif
