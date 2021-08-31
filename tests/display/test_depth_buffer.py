@@ -159,23 +159,23 @@ def test_inverted_depth_clipping(depth_region):
 def test_depth_range(depth_region):
     try:
         depth_region.set_depth_range(0.25, 0.75)
-        z = render_depth_pixel(depth_region, 1.00001, near=1, far=10)
+        z = render_depth_pixel(depth_region, 1.00001, near=1, far=10, clear=0.0)
         assert z == pytest.approx(0.25, rel=0.01)
 
-        z = render_depth_pixel(depth_region, 10, near=1, far=10)
+        z = render_depth_pixel(depth_region, 9.99999, near=1, far=10, clear=0.0)
         assert z == pytest.approx(0.75, rel=0.01)
 
         # Combines with DepthOffsetAttrib range.
         state = core.RenderState.make(core.DepthOffsetAttrib.make(0, 0.25, 0.75))
-        z = render_depth_pixel(depth_region, 1.00001, near=1, far=10, state=state)
+        z = render_depth_pixel(depth_region, 1.00001, near=1, far=10, clear=0.0, state=state)
         assert z == pytest.approx(0.375, rel=0.01)
 
         # Reverse the depth range.
         depth_region.set_depth_range(0.75, 0.25)
-        z = render_depth_pixel(depth_region, 1.00001, near=1, far=10)
+        z = render_depth_pixel(depth_region, 1.00001, near=1, far=10, clear=0.0)
         assert z == pytest.approx(0.75, rel=0.01)
 
-        z = render_depth_pixel(depth_region, 10, near=1, far=10)
+        z = render_depth_pixel(depth_region, 9.99999, near=1, far=10, clear=0.0)
         assert z == pytest.approx(0.25, rel=0.01)
     finally:
         depth_region.set_depth_range(0, 1)
