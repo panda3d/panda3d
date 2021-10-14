@@ -7,7 +7,7 @@
 // place to put this.
 
 // Use spaces to separate the major, minor, and sequence numbers here.
-#define PANDA_VERSION 1 10 10
+#define PANDA_VERSION 1 10 11
 
 // This variable will be defined to false in the CVS repository, but
 // scripts that generate source tarballs and/or binary releases for
@@ -30,7 +30,7 @@
 // any distributable Panda3D packages.  If you are making a Panda3D
 // build which you will be using to produce a distributable Panda3D
 // package, you should set this string appropriately.
-#define PANDA_PACKAGE_VERSION 
+#define PANDA_PACKAGE_VERSION
 
 // We also define a version for the Panda3D plugin/runtime,
 // i.e. nppanda3d.dll, p3dactivex.ocx, and panda3d.exe.  This is an
