@@ -125,6 +125,21 @@ if sys.version_info < (3, 0):
         'direct.showbase.ShowBaseGlobal': ['builtins'],
         'py._builtin': ['builtins'],
     })
+else:
+    # And ignore attempts to conditionally import __builtin__ in Python 3,
+    # suppressing a warning message.
+    ignoreImports.update({
+        'direct.p3d.AppRunner': ['__builtin__'],
+        'direct.showbase.ContainerLeakDetector': ['__builtin__'],
+        'direct.showbase.LeakDetectors': ['__builtin__'],
+        'direct.showbase.MessengerLeakDetector': ['__builtin__'],
+        'direct.showbase.ObjectReport': ['__builtin__'],
+        'direct.showbase.ProfileSession': ['__builtin__'],
+        'direct.showbase.PythonUtil': ['__builtin__'] + ignoreImports['direct.showbase.PythonUtil'],
+        'direct.showbase.ShowBase': ['__builtin__'],
+        'direct.showbase.ShowBaseGlobal': ['__builtin__'],
+        'py._builtin': ['__builtin__'],
+    })
 
 
 # These are overrides for specific modules.
@@ -688,7 +703,7 @@ okMissing = [
     'email.Iterators', '_subprocess', 'gestalt', 'java.lang',
     'direct.extensions_native.extensions_darwin', '_manylinux',
     'collections.Iterable', 'collections.Mapping', 'collections.MutableMapping',
-    'collections.Sequence', 'numpy_distutils',
+    'collections.Sequence', 'numpy_distutils', '_winapi',
     ]
 
 class Freezer:
