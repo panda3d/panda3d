@@ -249,10 +249,3 @@ to everyone who has donated!
 <a href="https://opencollective.com/panda3d" target="_blank">
   <img src="https://opencollective.com/panda3d/contribute/button@2x.png?color=blue" width=300 />
 </a>
-
-### Gold Sponsors
-[![](https://opencollective.com/panda3d/tiers/gold-sponsor/0/avatar.svg?avatarHeight=128)](https://opencollective.com/panda3d/tiers/gold-sponsor/0/website)
-[![](https://opencollective.com/panda3d/tiers/gold-sponsor/1/avatar.svg?avatarHeight=128)](https://opencollective.com/panda3d/tiers/gold-sponsor/1/website)
-[![](https://opencollective.com/panda3d/tiers/gold-sponsor/2/avatar.svg?avatarHeight=128)](https://opencollective.com/panda3d/tiers/gold-sponsor/2/website)
-[![](https://opencollective.com/panda3d/tiers/gold-sponsor/3/avatar.svg?avatarHeight=128)](https://opencollective.com/panda3d/tiers/gold-sponsor/3/website)
-[![](https://opencollective.com/panda3d/tiers/gold-sponsor/4/avatar.svg?avatarHeight=128)](https://opencollective.com/panda3d/tiers/gold-sponsor/4/website)

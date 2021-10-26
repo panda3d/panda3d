@@ -834,6 +834,9 @@ get_active_display_region(int n) const {
  * which will be a texture suitable for applying to geometry within the scene
  * rendered into this window.
  *
+ * If you pass zero as the buffer size, the buffer will have the same size as
+ * the host window, and will automatically be resized when the host window is.
+ *
  * If tex is not NULL, it is the texture that will be set up for rendering
  * into; otherwise, a new Texture object will be created.  In either case, the
  * target texture can be retrieved from the return value with

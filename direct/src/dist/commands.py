@@ -95,6 +95,7 @@ PACKAGE_DATA_DIRS = {
         ('cefpython3/Chromium Embedded Framework.framework/Chromium Embedded Framework', '', {'PKG_DATA_MAKE_EXECUTABLE'}),
     ],
     'pytz': [('pytz/zoneinfo/*', 'zoneinfo', ())],
+    'certifi': [('certifi/cacert.pem', '', {})],
 }
 
 # Some dependencies have extra directories that need to be scanned for DLLs.
