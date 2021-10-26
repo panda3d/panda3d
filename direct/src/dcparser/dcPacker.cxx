@@ -889,6 +889,10 @@ unpack_object() {
       unpack_string(str);
 #if PY_MAJOR_VERSION >= 3
       object = PyUnicode_FromStringAndSize(str.data(), str.size());
+      if (object == nullptr) {
+        nassert_raise("Unable to decode UTF-8 string; use blob type for binary data");
+        return nullptr;
+      }
 #else
       object = PyString_FromStringAndSize(str.data(), str.size());
 #endif
