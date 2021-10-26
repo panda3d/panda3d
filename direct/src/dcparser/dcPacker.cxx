@@ -637,71 +637,67 @@ pack_object(PyObject *object) {
   // had to add this for basic 64 and unsigned data to get packed right .. Not
   // sure if we can just do the rest this way..
 
- switch(pack_type)
-  {
+  switch (pack_type) {
   case PT_int64:
-      if(PyLong_Check(object))
-      {
-            pack_int64(PyLong_AsLongLong(object));
-            return;
-      }
+    if (PyLong_Check(object)) {
+      pack_int64(PyLong_AsLongLong(object));
+      return;
+    }
 #if PY_MAJOR_VERSION < 3
-      else if (PyInt_Check(object))
-      {
-            pack_int64(PyInt_AsLong(object));
-            return;
-      }
+    else if (PyInt_Check(object)) {
+      pack_int64(PyInt_AsLong(object));
+      return;
+    }
 #endif
-      break;
+    break;
+
   case PT_uint64:
-      if(PyLong_Check(object))
-      {
-            pack_uint64(PyLong_AsUnsignedLongLong(object));
-            return;
-      }
+    if (PyLong_Check(object)) {
+      pack_uint64(PyLong_AsUnsignedLongLong(object));
+      return;
+    }
 #if PY_MAJOR_VERSION < 3
-      else if(PyInt_Check(object))
-      {
-            PyObject  *obj1 = PyNumber_Long(object);
-            pack_int(PyLong_AsUnsignedLongLong(obj1));
-            Py_DECREF(obj1);
-            return;
-      }
+    else if (PyInt_Check(object)) {
+      PyObject  *obj1 = PyNumber_Long(object);
+      pack_int(PyLong_AsUnsignedLongLong(obj1));
+      Py_DECREF(obj1);
+      return;
+    }
 #endif
-      break;
+    break;
+
   case PT_int:
-      if(PyLong_Check(object))
-      {
-            pack_int(PyLong_AsLong(object));
-            return;
-      }
+    if (PyLong_Check(object)) {
+      pack_int(PyLong_AsLong(object));
+      return;
+    }
 #if PY_MAJOR_VERSION < 3
-      else if (PyInt_Check(object))
-      {
-            pack_int(PyInt_AsLong(object));
-            return;
-      }
+    else if (PyInt_Check(object)) {
+      pack_int(PyInt_AsLong(object));
+      return;
+    }
 #endif
-      break;
+    break;
+
   case PT_uint:
-      if(PyLong_Check(object))
-      {
-            pack_uint(PyLong_AsUnsignedLong(object));
-            return;
-      }
+    if (PyLong_Check(object)) {
+      pack_uint(PyLong_AsUnsignedLong(object));
+      return;
+    }
 #if PY_MAJOR_VERSION < 3
-      else if (PyInt_Check(object))
-      {
-            PyObject *obj1 = PyNumber_Long(object);
-            pack_uint(PyLong_AsUnsignedLong(obj1));
-            Py_DECREF(obj1);
-            return;
-      }
+    else if (PyInt_Check(object)) {
+      PyObject *obj1 = PyNumber_Long(object);
+      pack_uint(PyLong_AsUnsignedLong(obj1));
+      Py_DECREF(obj1);
+      return;
+    }
 #endif
-      break;
+    break;
+
   default:
-      break;
+    break;
   }
+
   if (PyLong_Check(object)) {
     pack_int(PyLong_AsLong(object));
 #if PY_MAJOR_VERSION < 3
