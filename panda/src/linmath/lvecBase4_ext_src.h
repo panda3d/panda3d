@@ -34,6 +34,8 @@ public:
   INLINE_LINMATH PyObject *__round__(PyObject *self) const;
   INLINE_LINMATH PyObject *__floor__(PyObject *self) const;
   INLINE_LINMATH PyObject *__ceil__(PyObject *self) const;
+
+  INLINE_LINMATH int __getbuffer__(PyObject *self, Py_buffer *view, int flags) const;
 };
 
 #include "lvecBase4_ext_src.I"

@@ -143,3 +143,11 @@ def test_vec2_floordiv(type):
             v = type(i)
             v //= -j
             assert v.x == i // -j
+
+
+def test_vec2_buffer():
+    v = Vec2(1.5, -10.0)
+    m = memoryview(v)
+    assert len(m) == 2
+    assert m[0] == 1.5
+    assert m[1] == -10.0

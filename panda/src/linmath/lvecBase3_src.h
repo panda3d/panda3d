@@ -181,6 +181,8 @@ PUBLISHED:
   INLINE_LINMATH void write_datagram(Datagram &destination) const;
   INLINE_LINMATH void read_datagram(DatagramIterator &source);
 
+  EXTENSION(INLINE_LINMATH int __getbuffer__(PyObject *self, Py_buffer *view, int flags) const);
+
 public:
   // The underlying implementation is via the Eigen library, if available.
 
