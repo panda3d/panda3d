@@ -475,6 +475,8 @@ class MetaInterval(CMetaInterval):
         else:
             CMetaInterval.setPlayRate(self, playRate)
 
+    play_rate = property(CMetaInterval.getPlayRate, setPlayRate)
+
     def __doPythonCallbacks(self):
         # This function invokes any Python-level Intervals that need
         # to be invoked at this point in time.  It must be called
