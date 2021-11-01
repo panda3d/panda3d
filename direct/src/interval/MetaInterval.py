@@ -348,9 +348,13 @@ class MetaInterval(CMetaInterval):
     def getManager(self):
         return self.__manager
 
+    manager = property(getManager, setManager)
+
     def setT(self, t):
         self.__updateIvals()
         CMetaInterval.setT(self, t)
+
+    t = property(CMetaInterval.getT, setT)
 
     def start(self, startT = 0.0, endT = -1.0, playRate = 1.0):
         self.__updateIvals()
@@ -550,6 +554,8 @@ class MetaInterval(CMetaInterval):
 
         self.__updateIvals()
         return CMetaInterval.getDuration(self)
+
+    duration = property(getDuration)
 
     def __repr__(self, *args, **kw):
         # This function overrides from the parent level to force it to
