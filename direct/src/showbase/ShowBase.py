@@ -725,7 +725,7 @@ class ShowBase(DirectObject.DirectObject):
                               of :meth:`~panda3d.core.GraphicsWindow.setUnexposedDraw()`.
 
         :param callbackWindowDict: If not None, a
-                                   :class:`~panda3d.core.CallbackGraphicWindow`
+                                   :class:`~panda3d.core.CallbackGraphicsWindow`
                                    is created instead, which allows the caller
                                    to create the actual window with its own
                                    OpenGL context, and direct Panda's rendering

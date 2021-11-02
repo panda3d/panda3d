@@ -1077,6 +1077,19 @@ get_manifold(int idx) const {
 /**
  *
  */
+BulletPersistentManifold BulletWorld::
+__get_manifold(int idx) const {
+  LightMutexHolder holder(get_global_lock());
+
+  nassertr(idx < _dispatcher->getNumManifolds(), BulletPersistentManifold(nullptr));
+
+  btPersistentManifold *ptr = _dispatcher->getManifoldByIndexInternal(idx);
+  return BulletPersistentManifold(ptr);
+}
+
+/**
+ *
+ */
 btCollisionObject *BulletWorld::
 get_collision_object(PandaNode *node) {
 
