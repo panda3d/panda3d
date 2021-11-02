@@ -34,9 +34,8 @@ PUBLISHED:
   PandaNode *get_node1();
 
   int get_num_manifold_points() const;
-  BulletManifoldPoint *get_manifold_point(int idx) const;
-  BulletManifoldPoint __get_manifold_point(int idx) const;
-  MAKE_SEQ(get_manifold_points, get_num_manifold_points, __get_manifold_point);
+  BulletManifoldPoint get_manifold_point(int idx) const;
+  MAKE_SEQ(get_manifold_points, get_num_manifold_points, get_manifold_point);
 
   PN_stdfloat get_contact_breaking_threshold() const;
   PN_stdfloat get_contact_processing_threshold() const;
@@ -45,7 +44,7 @@ PUBLISHED:
 
   MAKE_PROPERTY(node0, get_node0);
   MAKE_PROPERTY(node1, get_node1);
-  MAKE_SEQ_PROPERTY(manifold_points, get_num_manifold_points, __get_manifold_point);
+  MAKE_SEQ_PROPERTY(manifold_points, get_num_manifold_points, get_manifold_point);
   MAKE_PROPERTY(contact_breaking_threshold, get_contact_breaking_threshold);
   MAKE_PROPERTY(contact_processing_threshold, get_contact_processing_threshold);
 

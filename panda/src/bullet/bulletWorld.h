@@ -127,9 +127,8 @@ PUBLISHED:
 
   // Manifolds
   int get_num_manifolds() const;
-  BulletPersistentManifold *get_manifold(int idx) const;
-  BulletPersistentManifold __get_manifold(int idx) const;
-  MAKE_SEQ(get_manifolds, get_num_manifolds, __get_manifold);
+  BulletPersistentManifold get_manifold(int idx) const;
+  MAKE_SEQ(get_manifolds, get_num_manifolds, get_manifold);
 
   // Collision filtering
   void set_group_collision_flag(unsigned int group1, unsigned int group2, bool enable);
@@ -169,7 +168,7 @@ PUBLISHED:
   MAKE_SEQ_PROPERTY(characters, get_num_characters, get_character);
   MAKE_SEQ_PROPERTY(vehicles, get_num_vehicles, get_vehicle);
   MAKE_SEQ_PROPERTY(constraints, get_num_constraints, get_constraint);
-  MAKE_SEQ_PROPERTY(manifolds, get_num_manifolds, __get_manifold);
+  MAKE_SEQ_PROPERTY(manifolds, get_num_manifolds, get_manifold);
   MAKE_PROPERTY(force_update_all_aabbs, get_force_update_all_aabbs,
                                         set_force_update_all_aabbs);
 
