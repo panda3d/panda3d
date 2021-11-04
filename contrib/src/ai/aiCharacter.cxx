@@ -13,6 +13,8 @@
 
 #include "aiCharacter.h"
 
+using std::string;
+
 AICharacter::AICharacter(std::string model_name, NodePath model_np, double mass, double movt_force, double max_force) {
   _name = model_name;
   _ai_char_np = model_np;
@@ -107,6 +109,10 @@ void AICharacter::set_node_path(NodePath np) {
 
 AIBehaviors * AICharacter::get_ai_behaviors() {
   return _steering;
+}
+
+string AICharacter::get_name() {
+  return _name;
 }
 
 void AICharacter::set_char_render(NodePath render) {

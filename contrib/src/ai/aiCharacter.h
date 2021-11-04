@@ -60,6 +60,8 @@ PUBLISHED:
 
     AIBehaviors * get_ai_behaviors();
 
+    std::string get_name();
+
     // This function is used to enable or disable the guides for path finding.
     void set_pf_guide(bool pf_guide);
 
