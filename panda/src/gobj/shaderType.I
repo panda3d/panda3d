@@ -31,6 +31,14 @@ register_type(Type &&type) {
 }
 
 /**
+ * Returns true if this type has been registered.
+ */
+INLINE bool ShaderType::
+is_registered() const {
+  return _registered_types != nullptr && _registered_types->count(this) > 0;
+}
+
+/**
  * Provides an arbitrary ordering among all unique shader types, so we can
  * store the essentially different ones in a big set and throw away the rest.
  */

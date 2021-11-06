@@ -83,6 +83,7 @@ void ShaderModule::
 write_datagram(BamWriter *manager, Datagram &dg) {
   dg.add_uint8((int)_stage);
   dg.add_string(_source_filename);
+  dg.add_uint64(_used_caps);
 }
 
 /**
@@ -93,6 +94,7 @@ void ShaderModule::
 fillin(DatagramIterator &scan, BamReader *manager) {
   _stage = (Stage)scan.get_uint8();
   _source_filename = scan.get_string();
+  _used_caps = (int)scan.get_uint64();
 }
 
 /**

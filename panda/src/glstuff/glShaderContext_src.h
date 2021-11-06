@@ -138,7 +138,7 @@ private:
 
   void report_shader_errors(const Module &module, bool fatal);
   void report_program_errors(GLuint program, bool fatal);
-  bool attach_shader(const ShaderModule *module);
+  bool attach_shader(const ShaderModule *module, Shader::ModuleSpecConstants &spec_consts);
   bool compile_and_link();
   void release_resources();
 

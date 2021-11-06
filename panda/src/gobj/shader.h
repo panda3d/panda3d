@@ -117,6 +117,7 @@ PUBLISHED:
   INLINE bool has_stage(Stage stage) const;
   INLINE CPT(ShaderModule) get_module(Stage stage) const;
   INLINE PT(ShaderModule) modify_module(Stage stage);
+  bool add_module(PT(ShaderModule) module);
 
   INLINE bool get_cache_compiled_shader() const;
   INLINE void set_cache_compiled_shader(bool flag);
@@ -481,8 +482,6 @@ public:
   void cp_add_mat_spec(ShaderMatSpec &spec);
   size_t cp_get_mat_cache_size() const;
 
-  bool compile_parameter(Parameter &p);
-
   void clear_parameters();
 
   void set_compiled(unsigned int format, const char *data, size_t length);
@@ -512,18 +511,21 @@ public:
   bool _error_flag;
   ShaderFile _text;
 
-  typedef pvector<COWPT(ShaderModule)> Modules;
+  struct LinkedModule {
+    LinkedModule(COWPT(ShaderModule) module) : _module(std::move(module)) {}
+
+    COWPT(ShaderModule) _module;
+    ModuleSpecConstants _consts;
+  };
+
+  typedef pvector<LinkedModule> Modules;
   Modules _modules;
-  typedef pmap<const ShaderModule *, ModuleSpecConstants> ModuleSpecConsts;
-  ModuleSpecConsts _module_spec_consts;
   uint32_t _module_mask = 0;
   int _used_caps = 0;
 
 protected:
   ShaderFile _filename;
   Filename _fullpath;
-  int _parse;
-  bool _loaded;
   ShaderLanguage _language;
 
   typedef pvector<Filename> Filenames;
@@ -570,7 +572,11 @@ public:
 
 public:
   static void register_with_read_factory();
-  virtual void write_datagram(BamWriter *manager, Datagram &dg);
+  virtual void write_datagram(BamWriter *manager, Datagram &dg) override;
+  virtual int complete_pointers(TypedWritable **plist, BamReader *manager) override;
+  virtual bool require_fully_complete() const override;
+
+  virtual void finalize(BamReader *manager) override;
 
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);

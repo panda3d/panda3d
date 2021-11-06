@@ -12,6 +12,14 @@
  */
 
 /**
+ */
+INLINE ShaderModuleSpirV::
+ShaderModuleSpirV(Stage stage) :
+  ShaderModule(stage)
+{
+}
+
+/**
  * Returns a pointer to the raw words.
  */
 INLINE const uint32_t *ShaderModuleSpirV::

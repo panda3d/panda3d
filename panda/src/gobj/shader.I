@@ -181,7 +181,7 @@ INLINE CPT(ShaderModule) Shader::
 get_module(Stage stage) const {
   if (has_stage(stage)) {
     size_t index = ::count_bits_in_word(((1u << (uint32_t)stage) - 1) & _module_mask);
-    CPT(ShaderModule) module = _modules[index].get_read_pointer();
+    CPT(ShaderModule) module = _modules[index]._module.get_read_pointer();
     nassertr(module->get_stage() == stage, nullptr);
     return module;
   }
@@ -195,7 +195,7 @@ INLINE PT(ShaderModule) Shader::
 modify_module(Stage stage) {
   if (has_stage(stage)) {
     size_t index = ::count_bits_in_word(((1u << (uint32_t)stage) - 1) & _module_mask);
-    PT(ShaderModule) module = _modules[index].get_write_pointer();
+    PT(ShaderModule) module = _modules[index]._module.get_write_pointer();
     nassertr(module->get_stage() == stage, nullptr);
     return module;
   }

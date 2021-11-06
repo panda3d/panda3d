@@ -48,6 +48,8 @@ init_libshaderpipeline() {
   ShaderModuleSpirV::init_type();
   ShaderModuleGlsl::init_type();
 
+  ShaderModuleSpirV::register_with_read_factory();
+
   ShaderCompilerRegistry *reg = ShaderCompilerRegistry::get_global_ptr();
   reg->register_compiler(new ShaderCompilerGlslang());
   reg->register_compiler(new ShaderCompilerGlslPreProc());

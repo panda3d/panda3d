@@ -3399,7 +3399,7 @@ report_program_errors(GLuint program, bool fatal) {
  * Compiles the given ShaderModuleGlsl and attaches it to the program.
  */
 bool CLP(ShaderContext)::
-attach_shader(const ShaderModule *module) {
+attach_shader(const ShaderModule *module, Shader::ModuleSpecConstants &consts) {
   ShaderModule::Stage stage = module->get_stage();
 
   GLuint handle = 0;
@@ -3504,7 +3504,6 @@ attach_shader(const ShaderModule *module) {
                                 spv->get_data_size() * sizeof(uint32_t));
       }
 
-      const Shader::ModuleSpecConstants &consts = _shader->_module_spec_consts[module];
       _glgsg->_glSpecializeShader(handle, "main", consts._indices.size(),
                                   (GLuint *)consts._indices.data(),
                                   (GLuint *)consts._values.data());
@@ -3694,8 +3693,8 @@ compile_and_link() {
 
   bool valid = true;
 
-  for (COWPT(ShaderModule) const &cow_module : _shader->_modules) {
-    valid &= attach_shader(cow_module.get_read_pointer());
+  for (Shader::LinkedModule &linked_module : _shader->_modules) {
+    valid &= attach_shader(linked_module._module.get_read_pointer(), linked_module._consts);
   }
 
   if (!valid) {

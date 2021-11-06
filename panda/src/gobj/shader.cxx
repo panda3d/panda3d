@@ -52,8 +52,6 @@ static bool has_cg_header(const std::string &shader_text) {
 Shader::
 Shader(ShaderLanguage lang) :
   _error_flag(false),
-  _parse(0),
-  _loaded(false),
   _language(lang),
   _mat_deps(0),
   _cache_compiled_shader(false)
@@ -603,6 +601,9 @@ bool Shader::
 read(const ShaderFile &sfile, BamCacheRecord *record) {
   _text._separate = sfile._separate;
 
+  PT(BamCacheRecord) record2;
+  BamCache *cache;
+
   if (sfile._separate) {
     if (_language == SL_none) {
       shader_cat.error()
@@ -636,8 +637,8 @@ read(const ShaderFile &sfile, BamCacheRecord *record) {
       return false;
     }
     _filename = sfile;
-
-  } else if (_language == SL_Cg || _language == SL_none) {
+  }
+  else if (_language == SL_Cg || _language == SL_none) {
     // For historical reasons, we have to open up this file early to determine
     // some things about it.
     Filename fn = sfile._shared;
@@ -649,15 +650,34 @@ read(const ShaderFile &sfile, BamCacheRecord *record) {
       return false;
     }
 
-    ShaderFile sbody;
-    sbody._separate = false;
-    if (!vf->read_file(sbody._shared, true)) {
+    // Single-file shaders are cached in their linked form in one big file.
+    Filename fullpath = vf->get_filename();
+    cache = BamCache::get_global_ptr();
+    if (cache->get_cache_compiled_shaders()) {
+      record2 = cache->lookup(fullpath, "sho");
+      if (record2 != nullptr && record2->has_data()) {
+        PT(Shader) shader = DCAST(Shader, record2->get_data());
+
+        if (!shader->_modules.empty()) {
+          shader_cat.info()
+            << "Shader " << fn << " found in disk cache.\n";
+
+          *this = *shader;
+          _debug_name = fullpath.get_basename();
+          _prepare_shader_pcollector = PStatCollector(std::string("Draw:Prepare:Shader:") + _debug_name);
+          return true;
+        }
+      }
+    }
+
+    std::string source;
+    if (!vf->read_file(source, true)) {
       shader_cat.error()
         << "Could not read shader file: " << fn << "\n";
       return false;
     }
 
-    if (_language == SL_none && !has_cg_header(sbody._shared)) {
+    if (_language == SL_none && !has_cg_header(source)) {
       shader_cat.error()
         << "Unable to determine shader language of " << fn << "\n";
       return false;
@@ -665,23 +685,37 @@ read(const ShaderFile &sfile, BamCacheRecord *record) {
     _language = SL_Cg;
     _filename = sfile;
 
-    if (!do_read_source(Stage::vertex, sfile._shared, record)) {
+    shader_cat.info()
+      << "Compiling Cg shader: " << fn << "\n";
+
+    ShaderCompiler *compiler = get_compiler(SL_Cg);
+    nassertr(compiler != nullptr, false);
+
+    std::istringstream in(source);
+
+    PT(ShaderModule) module;
+    module = compiler->compile_now(Stage::vertex, in, fullpath, record);
+    if (module == nullptr || !add_module(std::move(module))) {
       return false;
     }
-    if (!do_read_source(Stage::fragment, sfile._shared, record)) {
-      return false;
+    if (source.find("gshader") != string::npos) {
+      in.clear();
+      in.seekg(0);
+      module = compiler->compile_now(Stage::geometry, in, fullpath, record);
+      if (module == nullptr || !add_module(std::move(module))) {
+        return false;
+      }
     }
-    if (sbody._shared.find("gshader") != string::npos &&
-        !do_read_source(Stage::geometry, sfile._shared, record)) {
+    in.clear();
+    in.seekg(0);
+    module = compiler->compile_now(Stage::fragment, in, fullpath, record);
+    if (module == nullptr || !add_module(std::move(module))) {
       return false;
     }
 
-    //FIXME
-    //for (ShaderModule *module : _modules) {
-    //  module->set_source_filename(fn);
-    //}
-
-  } else {
+    _debug_name = fullpath.get_basename();
+  }
+  else {
     shader_cat.error()
       << "GLSL shaders must have separate shader bodies!\n";
     return false;
@@ -693,7 +727,14 @@ read(const ShaderFile &sfile, BamCacheRecord *record) {
 
   _prepare_shader_pcollector = PStatCollector(std::string("Draw:Prepare:Shader:") + _debug_name);
 
-  _loaded = true;
+  if (record2 != nullptr) {
+    // Note that we will call link() again after loading from the cache, but
+    // putting this here will make sure that we checked that it links correctly
+    // before we write it to the cache.
+    record2->set_data(this, this);
+    cache->store(record2);
+  }
+
   return true;
 }
 
@@ -772,8 +813,6 @@ load(const ShaderFile &sbody, BamCacheRecord *record) {
 
   _debug_name = "created-shader";
   _prepare_shader_pcollector = PStatCollector("Draw:Prepare:Shader:created-shader");
-
-  _loaded = true;
   return true;
 }
 
@@ -785,49 +824,23 @@ load(const ShaderFile &sbody, BamCacheRecord *record) {
  */
 bool Shader::
 do_read_source(Stage stage, const Filename &fn, BamCacheRecord *record) {
-  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  PT(VirtualFile) vf = vfs->find_file(fn, get_model_path());
-  if (vf == nullptr) {
-    shader_cat.error()
-      << "Could not find shader file: " << fn << "\n";
+  ShaderCompiler *compiler = get_compiler(_language);
+  nassertr(compiler != nullptr, false);
+
+  PT(ShaderModule) module = compiler->compile_now(stage, fn, record);
+  if (!module) {
     return false;
   }
+  nassertr(stage == module->get_stage(), false);
 
-  std::istream *in = vf->open_read_file(true);
-  if (in == nullptr) {
-    shader_cat.error()
-      << "Could not open shader file for reading: " << fn << "\n";
+  if (!add_module(module)) {
     return false;
   }
-
-  Filename fullpath = vf->get_filename();
-
-  PT(BamCacheRecord) record_pt;
-  if (record == nullptr) {
-    BamCache *cache = BamCache::get_global_ptr();
-    record_pt = cache->lookup(fullpath, "smo");
-    record = record_pt.p();
-  }
-
-  if (record != nullptr) {
-    record->add_dependent_file(vf);
-  }
-
-  shader_cat.info() << "Reading shader file: " << fn << "\n";
-  if (!do_read_source(stage, *in, fullpath, record)) {
-    vf->close_read_file(in);
-    return false;
-  }
-
-  //_last_modified = std::max(_last_modified, vf->get_timestamp());
-  //_source_files.push_back(fullpath);
-
-  vf->close_read_file(in);
 
   if (!_debug_name.empty()) {
     _debug_name += '/';
   }
-  _debug_name += fullpath.get_basename();
+  _debug_name += fn.get_basename();
 
   return true;
 }
@@ -849,53 +862,9 @@ do_read_source(ShaderModule::Stage stage, std::istream &in,
   if (!module) {
     return false;
   }
+  nassertr(stage == module->get_stage(), false);
 
-  if (!fullpath.empty()) {
-    module->set_source_filename(fullpath);
-  }
-
-  if (has_stage(stage)) {
-    shader_cat.error()
-      << "Shader already has a module with stage " << stage << ".\n";
-    return false;
-  }
-
-  if (_module_mask > (1u << (uint32_t)stage)) {
-    shader_cat.error()
-      << "Shader modules must be loaded in increasing stage order.\n";
-    return false;
-  }
-
-  // Link its inputs up with the previous stage.
-  if (!_modules.empty()) {
-    if (!module->link_inputs(_modules.back().get_read_pointer())) {
-      shader_cat.error()
-        << "Unable to match shader module interfaces.\n";
-      return false;
-    }
-  }
-  else if (stage == Stage::vertex) {
-    // Bind vertex inputs right away.
-    bool success = true;
-    for (const ShaderModule::Variable &var : module->_inputs) {
-      if (!bind_vertex_input(var.name, var.type, var.get_location())) {
-        success = false;
-      }
-    }
-    if (!success) {
-      shader_cat.error()
-        << "Failed to bind vertex inputs.\n";
-      return false;
-    }
-  }
-
-  int used_caps = module->get_used_capabilities();
-  _module_spec_consts.insert({module, ModuleSpecConstants()});
-  _modules.push_back(std::move(module));
-  _module_mask |= (1u << (uint32_t)stage);
-  _used_caps |= used_caps;
-
-  return true;
+  return add_module(module);
 }
 
 /**
@@ -916,6 +885,8 @@ do_load_source(ShaderModule::Stage stage, const std::string &source, BamCacheRec
  */
 bool Shader::
 link() {
+  nassertr(!_modules.empty(), false);
+
   // Go through all the modules to fetch the parameters.
   pmap<CPT_InternalName, Parameter> parameters_by_name;
   pvector<Parameter *> parameters;
@@ -923,8 +894,8 @@ link() {
 
   pmap<CPT_InternalName, const ::ShaderType *> spec_const_types;
 
-  for (COWPT(ShaderModule) &cow_module : _modules) {
-    const ShaderModule *module = cow_module.get_read_pointer();
+  for (LinkedModule &linked_module : _modules) {
+    const ShaderModule *module = linked_module._module.get_read_pointer();
     pmap<int, int> remap;
 
     for (const ShaderModule::Variable &var : module->_parameters) {
@@ -981,7 +952,7 @@ link() {
     if (!remap.empty()) {
       // We need to remap some locations.  Grab a writable pointer.  This will
       // make a unique copy of the module if it's also used by other shaders.
-      PT(ShaderModule) module = cow_module.get_write_pointer();
+      PT(ShaderModule) module = linked_module._module.get_write_pointer();
       if (shader_cat.is_debug()) {
         std::ostream &out = shader_cat.debug()
           << "Remapping locations for module " << *module << ":";
@@ -2719,8 +2690,8 @@ bind_parameter(const Parameter &param) {
  */
 bool Shader::
 check_modified() const {
-  for (COWPT(ShaderModule) const &cow_module : _modules) {
-    const ShaderModule *module = cow_module.get_read_pointer();
+  for (const LinkedModule &linked_module : _modules) {
+    const ShaderModule *module = linked_module._module.get_read_pointer();
 
     if (module->_record != nullptr && !module->_record->dependents_unchanged()) {
       return true;
@@ -3037,6 +3008,67 @@ make_compute(ShaderLanguage lang, string body) {
 }
 
 /**
+ * Adds a module to a shader. Returns true if it was added successfully, false
+ * if there was a problem. Modules must be added in increasing stage order and
+ * only one module of a given stage type may be added.
+ *
+ * If the ShaderModule is already used in a different Shader object, this will
+ * create a unique copy of it so that it may be modified to make it compatible
+ * with the other modules in this shader.
+ */
+bool Shader::
+add_module(PT(ShaderModule) module) {
+  nassertr(module != nullptr, false);
+
+  Stage stage = module->get_stage();
+  if (has_stage(stage)) {
+    shader_cat.error()
+      << "Shader already has a module with stage " << stage << ".\n";
+    return false;
+  }
+
+  if (_module_mask > (1u << (uint32_t)stage)) {
+    shader_cat.error()
+      << "Shader modules must be loaded in increasing stage order.\n";
+    return false;
+  }
+
+  // Make sure we have a unique copy.
+  COWPT(ShaderModule) cow_module = std::move(module);
+  module = cow_module.get_write_pointer();
+
+  // Link its inputs up with the previous stage.
+  if (!_modules.empty()) {
+    if (!module->link_inputs(_modules.back()._module.get_read_pointer())) {
+      shader_cat.error()
+        << "Unable to match shader module interfaces.\n";
+      return false;
+    }
+  }
+  else if (stage == Stage::vertex) {
+    // Bind vertex inputs right away.
+    bool success = true;
+    for (const ShaderModule::Variable &var : module->_inputs) {
+      if (!bind_vertex_input(var.name, var.type, var.get_location())) {
+        success = false;
+      }
+    }
+    if (!success) {
+      shader_cat.error()
+        << "Failed to bind vertex inputs.\n";
+      return false;
+    }
+  }
+
+  int used_caps = module->get_used_capabilities();
+  module = nullptr;
+  _modules.push_back(std::move(cow_module));
+  _module_mask |= (1u << (uint32_t)stage);
+  _used_caps |= used_caps;
+  return true;
+}
+
+/**
  * Sets an unsigned integer value for the specialization constant with the
  * indicated name.  All modules containing a specialization constant with
  * this name will be given this value.
@@ -3050,14 +3082,13 @@ set_constant(CPT_InternalName name, unsigned int value) {
   bool any_found = false;
 
   // Set the value on all modules containing a spec constant with this name.
-  for (COWPT(ShaderModule) &cow_module : _modules) {
-    const ShaderModule *module = cow_module.get_read_pointer();
+  for (LinkedModule &linked_module : _modules) {
+    const ShaderModule *module = linked_module._module.get_read_pointer();
 
     for (const ShaderModule::SpecializationConstant &spec_const : module->_spec_constants) {
       if (spec_const.name == name) {
         // Found one.
-        ModuleSpecConstants &constants = _module_spec_consts[module];
-        if (constants.set_constant(spec_const.id, value)) {
+        if (linked_module._consts.set_constant(spec_const.id, value)) {
           any_changed = true;
         }
         any_found = true;
@@ -3238,12 +3269,23 @@ register_with_read_factory() {
 void Shader::
 write_datagram(BamWriter *manager, Datagram &dg) {
   dg.add_uint8(_language);
-  dg.add_bool(_loaded);
-  _filename.write_datagram(dg);
-  _text.write_datagram(dg);
 
   dg.add_uint32(_compiled_format);
   dg.add_string(_compiled_binary);
+
+  dg.add_uint32(_module_mask);
+
+  for (const LinkedModule &linked_module : _modules) {
+    CPT(ShaderModule) module = linked_module._module.get_read_pointer();
+
+    Filename fn = module->get_source_filename();
+    dg.add_string(fn);
+
+    if (fn.empty()) {
+      // This module was not read from a file, so write the module itself too.
+      manager->write_pointer(dg, module);
+    }
+  }
 }
 
 /**
@@ -3253,13 +3295,62 @@ write_datagram(BamWriter *manager, Datagram &dg) {
  */
 TypedWritable *Shader::
 make_from_bam(const FactoryParams &params) {
-  Shader *attrib = new Shader(SL_none);
+  Shader *shader = new Shader(SL_none);
   DatagramIterator scan;
   BamReader *manager;
 
   parse_params(params, scan, manager);
-  attrib->fillin(scan, manager);
-  return attrib;
+  shader->fillin(scan, manager);
+
+  manager->register_finalize(shader);
+
+  return shader;
+}
+
+/**
+ * Receives an array of pointers, one for each time manager->read_pointer()
+ * was called in fillin(). Returns the number of pointers processed.
+ */
+int Shader::
+complete_pointers(TypedWritable **p_list, BamReader *manager) {
+  int pi = TypedWritableReferenceCount::complete_pointers(p_list, manager);
+
+  if (_modules.empty()) {
+    int num_modules = count_bits_in_word(_module_mask);
+    _module_mask = 0u;
+
+    for (int i = 0; i < num_modules; ++i) {
+      add_module(DCAST(ShaderModule, p_list[pi++]));
+    }
+  }
+
+  return pi;
+}
+
+/**
+ * Some objects require all of their nested pointers to have been completed
+ * before the objects themselves can be completed.  If this is the case,
+ * override this method to return true, and be careful with circular
+ * references (which would make the object unreadable from a bam file).
+ */
+bool Shader::
+require_fully_complete() const {
+  return true;
+}
+
+/**
+ * Called by the BamReader to perform any final actions needed for setting up
+ * the object after all objects have been read and all pointers have been
+ * completed.
+ */
+void Shader::
+finalize(BamReader *manager) {
+  // Since the shader modules may have changed since last time, we have to
+  // re-link the shader (which also binds all of the parameters).
+  if (!link()) {
+    _modules.clear();
+    _module_mask = 0u;
+  }
 }
 
 /**
@@ -3268,11 +3359,30 @@ make_from_bam(const FactoryParams &params) {
  */
 void Shader::
 fillin(DatagramIterator &scan, BamReader *manager) {
-  _language = (ShaderLanguage) scan.get_uint8();
-  _loaded = scan.get_bool();
-  _filename.read_datagram(scan);
-  _text.read_datagram(scan);
+  _language = (ShaderLanguage)scan.get_uint8();
+  _debug_name = std::string();
+  _module_mask = 0u;
+  _modules.clear();
 
   _compiled_format = scan.get_uint32();
   _compiled_binary = scan.get_string();
+
+  uint32_t mask = scan.get_uint32();
+  _module_mask = mask;
+  int num_modules = count_bits_in_word(mask);
+
+  for (int i = 0; i < num_modules; ++i) {
+    Stage stage = (Stage)get_lowest_on_bit(mask);
+    mask &= ~(1u << (uint32_t)stage);
+
+    Filename fn = scan.get_string();
+    if (!fn.empty()) {
+      // Compile this module from a source file.
+      do_read_source(stage, fn, nullptr);
+    }
+    else {
+      // This module was embedded.
+      manager->read_pointer(scan);
+    }
+  }
 }
