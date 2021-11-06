@@ -95,6 +95,7 @@ PACKAGE_DATA_DIRS = {
         ('cefpython3/Chromium Embedded Framework.framework/Chromium Embedded Framework', '', {'PKG_DATA_MAKE_EXECUTABLE'}),
     ],
     'pytz': [('pytz/zoneinfo/*', 'zoneinfo', ())],
+    'certifi': [('certifi/cacert.pem', '', {})],
 }
 
 # Some dependencies have extra directories that need to be scanned for DLLs.
@@ -180,7 +181,7 @@ class build_apps(setuptools.Command):
         self.exclude_modules = {}
         self.icons = {}
         self.platforms = [
-            'manylinux1_x86_64',
+            'manylinux2010_x86_64',
             'macosx_10_9_x86_64',
             'win_amd64',
         ]
@@ -1330,6 +1331,8 @@ class bdist_apps(setuptools.Command):
     DEFAULT_INSTALLERS = {
         'manylinux1_x86_64': ['gztar'],
         'manylinux1_i686': ['gztar'],
+        'manylinux2010_x86_64': ['gztar'],
+        'manylinux2010_i686': ['gztar'],
         # Everything else defaults to ['zip']
     }
 

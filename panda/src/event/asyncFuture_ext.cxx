@@ -398,6 +398,10 @@ PyObject *Extension<AsyncFuture>::
 get_cancelled_error_type() {
   static PyObject *exc_type = nullptr;
   if (exc_type == nullptr) {
+    // This method should not affect the current exception, so stash it.
+    PyObject *curexc_type, *curexc_value, *curexc_traceback;
+    PyErr_Fetch(&curexc_type, &curexc_value, &curexc_traceback);
+
     // Get the CancelledError that asyncio uses, too.
 #if PY_VERSION_HEX >= 0x03080000
     PyObject *module = PyImport_ImportModule("asyncio.exceptions");
@@ -407,9 +411,6 @@ get_cancelled_error_type() {
     if (module != nullptr) {
       exc_type = PyObject_GetAttrString(module, "CancelledError");
       Py_DECREF(module);
-    }
-    else {
-      PyErr_Clear();
     }
 
     // If we can't get that, we should pretend and make our own.
@@ -424,6 +425,8 @@ get_cancelled_error_type() {
                                             nullptr, nullptr);
 #endif
     }
+
+    PyErr_Restore(curexc_type, curexc_value, curexc_traceback);
   }
   return exc_type;
 }

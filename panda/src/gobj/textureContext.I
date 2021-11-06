@@ -77,6 +77,15 @@ was_simple_image_modified() const {
 }
 
 /**
+ * Returns true if the given page of the texture image has been modified since
+ * the last time mark_loaded() was called.
+ */
+INLINE bool TextureContext::
+was_image_page_modified(int z, int n) const {
+  return get_texture()->get_image_modified_pages(_image_modified, n).get_bit(z);
+}
+
+/**
  * Returns a sequence number which is guaranteed to change at least every time
  * the texture properties (unrelated to the image) are modified.
  */
@@ -101,6 +110,15 @@ get_image_modified() const {
 INLINE UpdateSeq TextureContext::
 get_simple_image_modified() const {
   return _simple_image_modified;
+}
+
+/**
+ * Returns a SparseArray indicating which pages of the texture have been
+ * modified since the last call to mark_loaded().
+ */
+INLINE SparseArray TextureContext::
+get_image_modified_pages(int n) const {
+  return get_texture()->get_image_modified_pages(_image_modified, n);
 }
 
 /**

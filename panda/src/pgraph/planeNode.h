@@ -65,6 +65,11 @@ PUBLISHED:
   INLINE void set_clip_effect(int clip_effect);
   INLINE int get_clip_effect() const;
 
+  MAKE_PROPERTY(plane, get_plane, set_plane);
+  MAKE_PROPERTY(viz_scale, get_viz_scale, set_viz_scale);
+  MAKE_PROPERTY(priority, get_priority, set_priority);
+  MAKE_PROPERTY(clip_effect, get_clip_effect, set_clip_effect);
+
 public:
   INLINE static UpdateSeq get_sort_seq();
 

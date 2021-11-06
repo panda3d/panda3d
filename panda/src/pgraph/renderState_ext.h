@@ -32,6 +32,7 @@ public:
   PyObject *get_composition_cache() const;
   PyObject *get_invert_composition_cache() const;
   static PyObject *get_states();
+  static PyObject *get_unused_states();
 };
 
 #endif  // HAVE_PYTHON

@@ -11,7 +11,7 @@ jobs:
 
       matrix:
         profile:
-        - ubuntu-xenial-standard-unity-makefile
+        - ubuntu-bionic-standard-unity-makefile
         - ubuntu-bionic-coverage-ninja
         - macos-eigen-coverage-unity-xcode
         - macos-nometa-standard-makefile
@@ -19,8 +19,8 @@ jobs:
         - windows-nopython-nometa-standard-msvc
 
         include:
-        - profile: ubuntu-xenial-standard-unity-makefile
-          os: ubuntu-16.04
+        - profile: ubuntu-bionic-standard-unity-makefile
+          os: ubuntu-18.04
           config: Standard
           unity: YES
           generator: Unix Makefiles
@@ -333,12 +333,12 @@ jobs:
     if: "!contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.head_commit.message, '[ci skip]')"
     strategy:
       matrix:
-        os: [ubuntu-16.04, windows-2016, macOS-latest]
+        os: [ubuntu-18.04, windows-2016, macOS-latest]
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v1
     - name: Install dependencies (Ubuntu)
-      if: matrix.os == 'ubuntu-16.04'
+      if: matrix.os == 'ubuntu-18.04'
       run: |
         sudo apt-get update
         sudo apt-get install build-essential bison flex libfreetype6-dev libgl1-mesa-dev libjpeg-dev libode-dev libopenal-dev libpng-dev libssl-dev libvorbis-dev libx11-dev libxcursor-dev libxrandr-dev nvidia-cg-toolkit zlib1g-dev

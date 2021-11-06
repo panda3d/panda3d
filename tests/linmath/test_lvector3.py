@@ -1,35 +1,9 @@
 from math import floor, ceil
+import sys
 
 from panda3d.core import Vec2, Vec3, Vec3F, Vec3D
 from panda3d import core
 import pytest
-
-
-def test_round():
-    original_vector = Vec3(2.3, -2.6, 3.5)
-
-    rounded_vector = round(original_vector)
-    assert rounded_vector.x == 2
-    assert rounded_vector.y == -3
-    assert rounded_vector.z == 4
-
-
-def test_floor():
-    original_vector = Vec3(2.3, -2.6, 3.5)
-
-    rounded_vector = floor(original_vector)
-    assert rounded_vector.x == 2
-    assert rounded_vector.y == -3
-    assert rounded_vector.z == 3
-
-
-def test_ceil():
-    original_vector = Vec3(2.3, -2.6, 3.5)
-
-    rounded_vector = ceil(original_vector)
-    assert rounded_vector.x == 3
-    assert rounded_vector.y == -2
-    assert rounded_vector.z == 4
 
 
 def test_vec3_creation():
@@ -105,6 +79,38 @@ def test_vec3_compare():
     assert Vec3(0, 0, 1).compare_to(Vec3(0, 0, 1)) == 0
 
 
+def test_vec3_round():
+    original_vector = Vec3(2.3, -2.6, 3.5)
+
+    rounded_vector = round(original_vector)
+    assert rounded_vector.x == 2
+    assert rounded_vector.y == -3
+    assert rounded_vector.z == 4
+
+
+def test_vec3_floor():
+    original_vector = Vec3(2.3, -2.6, 3.5)
+
+    rounded_vector = floor(original_vector)
+    assert rounded_vector.x == 2
+    assert rounded_vector.y == -3
+    assert rounded_vector.z == 3
+
+
+def test_vec3_ceil():
+    original_vector = Vec3(2.3, -2.6, 3.5)
+
+    rounded_vector = ceil(original_vector)
+    assert rounded_vector.x == 3
+    assert rounded_vector.y == -2
+    assert rounded_vector.z == 4
+
+
+def test_vec3_rmul():
+    assert 2 * Vec3(0, 3, -4) == Vec3(0, 6, -8)
+
+
+@pytest.mark.xfail(sys.platform == "win32", reason="unknown precision issue")
 @pytest.mark.parametrize("type", (core.LVecBase3f, core.LVecBase3d, core.LVecBase3i))
 def test_vec3_floordiv(type):
     with pytest.raises(ZeroDivisionError):
@@ -122,3 +128,12 @@ def test_vec3_floordiv(type):
             v = type(i)
             v //= -j
             assert v.x == i // -j
+
+
+def test_vec3_buffer():
+    v = Vec3(0.5, 2.0, -10.0)
+    m = memoryview(v)
+    assert len(m) == 3
+    assert m[0] == 0.5
+    assert m[1] == 2.0
+    assert m[2] == -10.0

@@ -74,6 +74,7 @@ get_start_sort() const {
  */
 INLINE void PGTop::
 add_region(MouseWatcherRegion *region) {
-  nassertv(_watcher_group != nullptr);
-  _watcher_group->add_region(region);
+  if (_watcher_group != nullptr) {
+    _watcher_group->add_region(region);
+  }
 }

@@ -4776,6 +4776,9 @@ release_swap_chain(DXScreenData *new_context) {
       }
       return false;
     }
+    if (new_context->_swap_chain == _swap_chain) {
+      _swap_chain = nullptr;
+    }
   }
   return true;
 }

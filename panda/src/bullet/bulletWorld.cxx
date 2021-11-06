@@ -1064,14 +1064,14 @@ contact_test_pair(PandaNode *node0, PandaNode *node1) const {
 /**
  *
  */
-BulletPersistentManifold *BulletWorld::
+BulletPersistentManifold BulletWorld::
 get_manifold(int idx) const {
   LightMutexHolder holder(get_global_lock());
 
-  nassertr(idx < _dispatcher->getNumManifolds(), nullptr);
+  nassertr(idx < _dispatcher->getNumManifolds(), BulletPersistentManifold(nullptr));
 
   btPersistentManifold *ptr = _dispatcher->getManifoldByIndexInternal(idx);
-  return (ptr) ? new BulletPersistentManifold(ptr) : nullptr;
+  return BulletPersistentManifold(ptr);
 }
 
 /**

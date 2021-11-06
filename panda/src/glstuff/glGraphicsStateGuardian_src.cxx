@@ -52,6 +52,7 @@
 #include "alphaTestAttrib.h"
 #include "clipPlaneAttrib.h"
 #include "cullFaceAttrib.h"
+#include "depthBiasAttrib.h"
 #include "depthOffsetAttrib.h"
 #include "depthWriteAttrib.h"
 #include "fogAttrib.h"
@@ -144,6 +145,13 @@ null_glBlendFuncSeparate(GLenum src, GLenum dest, GLenum, GLenum) {
 
 static void APIENTRY
 null_glBlendColor(GLclampf, GLclampf, GLclampf, GLclampf) {
+}
+#endif
+
+#ifndef OPENGLES_1
+static void APIENTRY
+null_glPolygonOffsetClamp(GLfloat factor, GLfloat units, GLfloat clamp) {
+  glPolygonOffset(factor, units);
 }
 #endif
 
@@ -467,6 +475,7 @@ CLP(GraphicsStateGuardian)(GraphicsEngine *engine, GraphicsPipe *pipe) :
 
   _scissor_enabled = false;
   _scissor_attrib_active = false;
+  _has_attrib_depth_range = false;
 
   _white_texture = 0;
 
@@ -560,6 +569,7 @@ reset() {
   _inv_state_mask.clear_bit(ColorAttrib::get_class_slot());
   _inv_state_mask.clear_bit(ColorScaleAttrib::get_class_slot());
   _inv_state_mask.clear_bit(CullFaceAttrib::get_class_slot());
+  _inv_state_mask.clear_bit(DepthBiasAttrib::get_class_slot());
   _inv_state_mask.clear_bit(DepthOffsetAttrib::get_class_slot());
   _inv_state_mask.clear_bit(DepthTestAttrib::get_class_slot());
   _inv_state_mask.clear_bit(DepthWriteAttrib::get_class_slot());
@@ -1013,10 +1023,26 @@ reset() {
   if (is_at_least_gl_version(4, 4) || has_extension("GL_ARB_clear_texture")) {
     _glClearTexImage = (PFNGLCLEARTEXIMAGEPROC)
       get_extension_func("glClearTexImage");
+    _glClearTexSubImage = (PFNGLCLEARTEXSUBIMAGEPROC)
+      get_extension_func("glClearTexSubImage");
 
-    if (_glClearTexImage == nullptr) {
+    if (_glClearTexImage == nullptr || _glClearTexSubImage == nullptr) {
       GLCAT.warning()
-        << "GL_ARB_clear_texture advertised as supported by OpenGL runtime, but could not get pointers to extension function.\n";
+        << "GL_ARB_clear_texture advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
+    } else {
+      _supports_clear_texture = true;
+    }
+  }
+#elif !defined(OPENGLES_1)
+  if (has_extension("GL_EXT_clear_texture")) {
+    _glClearTexImage = (PFNGLCLEARTEXIMAGEEXTPROC)
+      get_extension_func("glClearTexImageEXT");
+    _glClearTexSubImage = (PFNGLCLEARTEXSUBIMAGEEXTPROC)
+      get_extension_func("glClearTexSubImageEXT");
+
+    if (_glClearTexImage == nullptr || _glClearTexSubImage == nullptr) {
+      GLCAT.warning()
+        << "GL_EXT_clear_texture advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
     } else {
       _supports_clear_texture = true;
     }
@@ -2226,6 +2252,9 @@ reset() {
   // Check for SSBOs.
   if (is_at_least_gl_version(4, 3) || has_extension("ARB_shader_storage_buffer_object")) {
     _supports_shader_buffers = _supports_program_interface_query;
+
+    _glShaderStorageBlockBinding = (PFNGLSHADERSTORAGEBLOCKBINDINGPROC)
+       get_extension_func("glShaderStorageBlockBinding");
   } else
 #endif
   {
@@ -3383,23 +3412,30 @@ reset() {
 #endif
 
   // Set depth range from zero to one if requested.
-#ifndef OPENGLES
+#ifndef OPENGLES_1
   _use_depth_zero_to_one = false;
   _use_remapped_depth_range = false;
 
   if (gl_depth_zero_to_one) {
+#ifndef OPENGLES
+    PFNGLCLIPCONTROLPROC pglClipControl = nullptr;
     if (is_at_least_gl_version(4, 5) || has_extension("GL_ARB_clip_control")) {
-      PFNGLCLIPCONTROLPROC pglClipControl =
-        (PFNGLCLIPCONTROLPROC)get_extension_func("glClipControl");
+      pglClipControl = (PFNGLCLIPCONTROLPROC)get_extension_func("glClipControl");
+    }
+#else
+    PFNGLCLIPCONTROLEXTPROC pglClipControl = nullptr;
+    if (has_extension("GL_EXT_clip_control")) {
+      pglClipControl = (PFNGLCLIPCONTROLEXTPROC)get_extension_func("glClipControlEXT");
+    }
+#endif
 
-      if (pglClipControl != nullptr) {
-        pglClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
-        _use_depth_zero_to_one = true;
+    if (pglClipControl != nullptr) {
+      pglClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
+      _use_depth_zero_to_one = true;
 
-        if (GLCAT.is_debug()) {
-          GLCAT.debug()
-            << "Set zero-to-one depth using glClipControl\n";
-        }
+      if (GLCAT.is_debug()) {
+        GLCAT.debug()
+          << "Set zero-to-one depth using glClipControl\n";
       }
     }/* else if (has_extension("GL_NV_depth_buffer_float")) {
       // Alternatively, all GeForce 8+ and even some AMD drivers support this
@@ -3411,6 +3447,7 @@ reset() {
         _glDepthRangedNV(-1.0, 1.0);
         _use_depth_zero_to_one = true;
         _use_remapped_depth_range = true;
+        _has_attrib_depth_range = false;
 
         if (GLCAT.is_debug()) {
           GLCAT.debug()
@@ -3423,6 +3460,32 @@ reset() {
       GLCAT.warning()
         << "Zero-to-one depth was requested, but driver does not support it.\n";
     }
+  }
+#endif
+
+  if (_has_attrib_depth_range) {
+#ifdef OPENGLES
+    glDepthRangef(0.0f, 1.0f);
+#else
+    glDepthRange(0.0, 1.0);
+#endif
+    _depth_range_near = 0;
+    _depth_range_far = 1;
+    _has_attrib_depth_range = false;
+  }
+
+#ifndef OPENGLES_1
+#ifndef OPENGLES
+  if (is_at_least_gl_version(4, 6) || has_extension("GL_ARB_polygon_offset_clamp")) {
+    _glPolygonOffsetClamp = (PFNGLPOLYGONOFFSETCLAMPEXTPROC)get_extension_func("glPolygonOffsetClamp");
+  }
+  else
+#endif
+  if (has_extension("GL_EXT_polygon_offset_clamp")) {
+    _glPolygonOffsetClamp = (PFNGLPOLYGONOFFSETCLAMPEXTPROC)get_extension_func("glPolygonOffsetClampEXT");
+  }
+  else {
+    _glPolygonOffsetClamp = null_glPolygonOffsetClamp;
   }
 #endif
 
@@ -4015,6 +4078,33 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
       }
     }
   }
+
+  PN_stdfloat nearv;
+  PN_stdfloat farv;
+  dr->get_depth_range(nearv, farv);
+#ifdef GSG_VERBOSE
+  if (GLCAT.is_spam()) {
+    GLCAT.spam()
+      << "glDepthRange(" << nearv << ", " << farv << ")" << endl;
+  }
+#endif
+
+#ifdef OPENGLES
+  // OpenGL ES uses a single-precision call.
+  glDepthRangef((GLclampf)nearv, (GLclampf)farv);
+#else
+  // Mainline OpenGL uses a double-precision call.
+  if (!_use_remapped_depth_range) {
+    glDepthRange((GLclampd)nearv, (GLclampd)farv);
+  } else {
+    // If we have a remapped depth range, we should adjust the values to range
+    // from -1 to 1.  We need to use an NV extension to pass unclamped values.
+    _glDepthRangedNV(nearv * 2.0 - 1.0, farv * 2.0 - 1.0);
+  }
+#endif  // OPENGLES
+  _has_attrib_depth_range = false;
+  _depth_range_near = nearv;
+  _depth_range_far = farv;
 
   report_my_gl_errors();
 }
@@ -8172,41 +8262,67 @@ do_issue_fog() {
  *
  */
 void CLP(GraphicsStateGuardian)::
-do_issue_depth_offset() {
-  const DepthOffsetAttrib *target_depth_offset = (const DepthOffsetAttrib *)
-     _target_rs->get_attrib_def(DepthOffsetAttrib::get_class_slot());
-
+do_issue_depth_bias() {
+  const DepthOffsetAttrib *target_depth_offset;
+  _target_rs->get_attrib_def(target_depth_offset);
   int offset = target_depth_offset->get_offset();
 
-  if (offset != 0) {
+  const DepthBiasAttrib *target_depth_bias;
+  if (_target_rs->get_attrib(target_depth_bias)) {
+    GLfloat slope_factor = target_depth_bias->get_slope_factor();
+    GLfloat constant_factor = target_depth_bias->get_constant_factor();
+
+    slope_factor -= offset;
+    constant_factor -= offset;
+
+#ifndef OPENGLES_1
+    GLfloat clamp = target_depth_bias->get_clamp();
+    _glPolygonOffsetClamp(slope_factor, constant_factor, clamp);
+#else
+    glPolygonOffset(slope_factor, constant_factor);
+#endif
+    enable_polygon_offset(true);
+  }
+  else if (offset != 0) {
     // The relationship between these two parameters is a little unclear and
     // poorly explained in the GL man pages.
     glPolygonOffset((GLfloat) -offset, (GLfloat) -offset);
     enable_polygon_offset(true);
-
-  } else {
+  }
+  else {
     enable_polygon_offset(false);
   }
 
   PN_stdfloat min_value = target_depth_offset->get_min_value();
   PN_stdfloat max_value = target_depth_offset->get_max_value();
+  if (min_value != (PN_stdfloat)0.0 ||
+      max_value != (PN_stdfloat)1.0 ||
+      _has_attrib_depth_range) {
+    min_value = _depth_range_far * min_value + _depth_range_near * (1 - min_value);
+    max_value = _depth_range_far * max_value + _depth_range_near * (1 - max_value);
+
 #ifdef GSG_VERBOSE
-    GLCAT.spam()
-      << "glDepthRange(" << min_value << ", " << max_value << ")" << endl;
+    if (GLCAT.is_spam()) {
+      GLCAT.spam()
+        << "glDepthRange(" << min_value << ", " << max_value << ")" << endl;
+    }
 #endif
 #ifdef OPENGLES
-  // OpenGL ES uses a single-precision call.
-  glDepthRangef((GLclampf)min_value, (GLclampf)max_value);
+    // OpenGL ES uses a single-precision call.
+    glDepthRangef((GLclampf)min_value, (GLclampf)max_value);
 #else
-  // Mainline OpenGL uses a double-precision call.
-  if (!_use_remapped_depth_range) {
-    glDepthRange((GLclampd)min_value, (GLclampd)max_value);
-  } else {
-    // If we have a remapped depth range, we should adjust the values to range
-    // from -1 to 1.  We need to use an NV extension to pass unclamped values.
-    _glDepthRangedNV(min_value * 2.0 - 1.0, max_value * 2.0 - 1.0);
-  }
+    // Mainline OpenGL uses a double-precision call.
+    if (!_use_remapped_depth_range) {
+      glDepthRange((GLclampd)min_value, (GLclampd)max_value);
+    } else {
+      // If we have a remapped depth range, we should adjust the values to range
+      // from -1 to 1.  We need to use an NV extension to pass unclamped values.
+      _glDepthRangedNV(min_value * 2.0 - 1.0, max_value * 2.0 - 1.0);
+    }
 #endif  // OPENGLES
+
+    _has_attrib_depth_range = true;
+  }
 
   report_my_gl_errors();
 }
@@ -10066,7 +10182,8 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
   bool is_3d = (texture_type == Texture::TT_3d_texture ||
                 texture_type == Texture::TT_2d_texture_array);
 
-  if (get_supports_compressed_texture_format(compression)) {
+  if (get_supports_compressed_texture_format(compression) &&
+      texture_type != Texture::TT_buffer_texture) {
     switch (compression) {
     case Texture::CM_on:
       // The user asked for just generic compression.  OpenGL supports
@@ -11782,11 +11899,15 @@ set_state_and_transform(const RenderState *target,
     _state_mask.set_bit(cull_face_slot);
   }
 
+  int depth_bias_slot = DepthBiasAttrib::get_class_slot();
   int depth_offset_slot = DepthOffsetAttrib::get_class_slot();
-  if (_target_rs->get_attrib(depth_offset_slot) != _state_rs->get_attrib(depth_offset_slot) ||
+  if (_target_rs->get_attrib(depth_bias_slot) != _state_rs->get_attrib(depth_bias_slot) ||
+      _target_rs->get_attrib(depth_offset_slot) != _state_rs->get_attrib(depth_offset_slot) ||
+      !_state_mask.get_bit(depth_bias_slot) ||
       !_state_mask.get_bit(depth_offset_slot)) {
     // PStatGPUTimer timer(this, _draw_set_state_depth_offset_pcollector);
-    do_issue_depth_offset();
+    do_issue_depth_bias();
+    _state_mask.set_bit(depth_bias_slot);
     _state_mask.set_bit(depth_offset_slot);
   }
 
@@ -13078,20 +13199,22 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
     image = tex->get_uncompressed_ram_image();
   }
 
+  Texture::TextureType texture_type = tex->get_texture_type();
   Texture::CompressionMode image_compression;
   if (image.is_null()) {
     image_compression = Texture::CM_off;
   } else {
     image_compression = tex->get_ram_image_compression();
-  }
 
-  if (!get_supports_compressed_texture_format(image_compression)) {
-    image = tex->get_uncompressed_ram_image();
-    image_compression = Texture::CM_off;
+    if (texture_type == Texture::TT_buffer_texture ||
+        !get_supports_compressed_texture_format(image_compression)) {
+      image = tex->get_uncompressed_ram_image();
+      image_compression = Texture::CM_off;
 
-    // If this triggers, Panda cannot decompress the texture.  Compile with
-    // libsquish support or precompress the texture.
-    nassertr(!image.is_null(), false);
+      // If this triggers, Panda cannot decompress the texture.  Compile with
+      // libsquish support or precompress the texture.
+      nassertr(!image.is_null(), false);
+    }
   }
 
   int mipmap_bias = 0;
@@ -13103,7 +13226,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
   // If we'll use immutable texture storage, we have to pick a sized image
   // format.
   bool force_sized = (gl_immutable_texture_storage && _supports_tex_storage) ||
-                     (tex->get_texture_type() == Texture::TT_buffer_texture);
+                     (texture_type == Texture::TT_buffer_texture);
 
   GLint internal_format = get_internal_image_format(tex, force_sized);
   GLint external_format = get_external_image_format(tex);
@@ -13132,7 +13255,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
   int max_dimension_y;
   int max_dimension_z;
 
-  switch (tex->get_texture_type()) {
+  switch (texture_type) {
   case Texture::TT_3d_texture:
     max_dimension_x = _max_3d_texture_dimension;
     max_dimension_y = _max_3d_texture_dimension;
@@ -13237,7 +13360,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
 
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-  GLenum target = get_texture_target(tex->get_texture_type());
+  GLenum target = get_texture_target(texture_type);
   uses_mipmaps = (uses_mipmaps && !gl_ignore_mipmaps) || gl_force_mipmaps;
 #ifndef OPENGLES
   if (target == GL_TEXTURE_BUFFER) {
@@ -13413,7 +13536,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
           << ", uses_mipmaps = " << uses_mipmaps << "\n";
       }
 
-      switch (tex->get_texture_type()) {
+      switch (texture_type) {
       case Texture::TT_buffer_texture:
         // Won't get here, but squelch compiler warning
       case Texture::TT_1d_texture:
@@ -13460,59 +13583,9 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
     }
   }
 
-  bool success = true;
-  if (tex->get_texture_type() == Texture::TT_cube_map) {
-    // A cube map must load six different 2-d images (which are stored as the
-    // six pages of the system ram image).
-    if (!_supports_cube_map) {
-      report_my_gl_errors();
-      return false;
-    }
-    nassertr(target == GL_TEXTURE_CUBE_MAP, false);
-
-    success = success && upload_texture_image
-      (gtc, needs_reload, uses_mipmaps, mipmap_bias,
-       GL_TEXTURE_CUBE_MAP, GL_TEXTURE_CUBE_MAP_POSITIVE_X,
-       internal_format, external_format, component_type,
-       true, 0, image_compression);
-
-    success = success && upload_texture_image
-      (gtc, needs_reload, uses_mipmaps, mipmap_bias,
-       GL_TEXTURE_CUBE_MAP, GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
-       internal_format, external_format, component_type,
-       true, 1, image_compression);
-
-    success = success && upload_texture_image
-      (gtc, needs_reload, uses_mipmaps, mipmap_bias,
-       GL_TEXTURE_CUBE_MAP, GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
-       internal_format, external_format, component_type,
-       true, 2, image_compression);
-
-    success = success && upload_texture_image
-      (gtc, needs_reload, uses_mipmaps, mipmap_bias,
-       GL_TEXTURE_CUBE_MAP, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
-       internal_format, external_format, component_type,
-       true, 3, image_compression);
-
-    success = success && upload_texture_image
-      (gtc, needs_reload, uses_mipmaps, mipmap_bias,
-       GL_TEXTURE_CUBE_MAP, GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
-       internal_format, external_format, component_type,
-       true, 4, image_compression);
-
-    success = success && upload_texture_image
-      (gtc, needs_reload, uses_mipmaps, mipmap_bias,
-       GL_TEXTURE_CUBE_MAP, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
-       internal_format, external_format, component_type,
-       true, 5, image_compression);
-
-  } else {
-    // Any other kind of texture can be loaded all at once.
-    success = upload_texture_image
-      (gtc, needs_reload, uses_mipmaps, mipmap_bias, target,
-       target, internal_format, external_format,
-       component_type, false, 0, image_compression);
-  }
+  bool success = upload_texture_image
+    (gtc, needs_reload, uses_mipmaps, mipmap_bias, target,
+     internal_format, external_format, component_type, image_compression);
 
   if (gtc->_generate_mipmaps && _glGenerateMipmap != nullptr &&
       !image.is_null()) {
@@ -13573,21 +13646,13 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
 /**
  * Loads a texture image, or one page of a cube map image, from system RAM to
  * texture memory.
- *
- * texture_target is normally the same thing as page_target; both represent
- * the GL target onto which the texture image is loaded, e.g.  GL_TEXTURE_1D,
- * GL_TEXTURE_2D, etc.  The only time they may differ is in the case of cube
- * mapping, in which case texture_target will be target for the overall
- * texture, e.g.  GL_TEXTURE_CUBE_MAP, and page_target will be the target for
- * this particular page, e.g.  GL_TEXTURE_CUBE_MAP_POSITIVE_X.
  */
 bool CLP(GraphicsStateGuardian)::
 upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
                      bool uses_mipmaps, int mipmap_bias,
-                     GLenum texture_target, GLenum page_target,
+                     GLenum texture_target,
                      GLint internal_format,
                      GLint external_format, GLenum component_type,
-                     bool one_page_only, int z,
                      Texture::CompressionMode image_compression) {
   // Make sure the error stack is cleared out before we begin.
   clear_my_gl_errors();
@@ -13637,29 +13702,32 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
     // saving on texture memory fragmentation.
 
     if (GLCAT.is_debug()) {
+      SparseArray pages = gtc->get_image_modified_pages(0);
       if (num_ram_mipmap_levels == 0) {
         if (tex->has_clear_color()) {
           GLCAT.debug()
             << "clearing texture " << tex->get_name() << ", "
-            << width << " x " << height << " x " << depth << ", z = " << z
+            << width << " x " << height << " x " << depth << ", pages " << pages
             << ", uses_mipmaps = " << uses_mipmaps << ", clear_color = "
             << tex->get_clear_color() << "\n";
         } else {
           GLCAT.debug()
             << "not loading NULL image for texture " << tex->get_name()
             << ", " << width << " x " << height << " x " << depth
-            << ", z = " << z << ", uses_mipmaps = " << uses_mipmaps << "\n";
+            << ", pages " << pages << ", uses_mipmaps = " << uses_mipmaps << "\n";
         }
       } else {
         GLCAT.debug()
           << "updating image data of texture " << tex->get_name()
           << ", " << width << " x " << height << " x " << depth
-          << ", z = " << z << ", mipmaps " << num_ram_mipmap_levels
+          << ", pages " << pages << ", mipmaps " << num_ram_mipmap_levels
           << ", uses_mipmaps = " << uses_mipmaps << "\n";
       }
     }
 
     for (int n = mipmap_bias; n < num_levels; ++n) {
+      SparseArray pages = gtc->get_image_modified_pages(n);
+
       // we grab the mipmap pointer first, if it is NULL we grab the normal
       // mipmap image pointer which is a PTA_uchar
       const unsigned char *image_ptr = (unsigned char*)tex->get_ram_mipmap_pointer(n);
@@ -13686,8 +13754,17 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
                 // function.
                 vector_uchar clear_data = tex->get_clear_data();
 
-                _glClearTexImage(gtc->_index, n - mipmap_bias, external_format,
-                                 component_type, (void *)&clear_data[0]);
+                if (pages.has_all_of(0, depth)) {
+                  _glClearTexImage(gtc->_index, n - mipmap_bias, external_format,
+                                   component_type, (void *)&clear_data[0]);
+                }
+                else for (size_t sri = 0; sri < pages.get_num_subranges(); ++sri) {
+                  int begin = pages.get_subrange_begin(sri);
+                  int num_pages = pages.get_subrange_end(sri) - begin;
+                  _glClearTexSubImage(gtc->_index, n - mipmap_bias, 0, 0, begin,
+                                      width, height, num_pages, external_format,
+                                      component_type, (void *)&clear_data[0]);
+                }
                 continue;
               }
             } else {
@@ -13716,14 +13793,11 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
       }
 
       PTA_uchar bgr_image;
-      size_t view_size = tex->get_ram_mipmap_view_size(n);
+      size_t page_size = tex->get_ram_mipmap_page_size(n);
       if (image_ptr != nullptr) {
         const unsigned char *orig_image_ptr = image_ptr;
+        size_t view_size = tex->get_ram_mipmap_view_size(n);
         image_ptr += view_size * gtc->get_view();
-        if (one_page_only) {
-          view_size = tex->get_ram_mipmap_page_size(n);
-          image_ptr += view_size * z;
-        }
         nassertr(image_ptr >= orig_image_ptr && image_ptr + view_size <= orig_image_ptr + tex->get_ram_mipmap_image_size(n), false);
 
         if (image_compression == Texture::CM_off) {
@@ -13736,23 +13810,29 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
 
       int width = tex->get_expected_mipmap_x_size(n);
       int height = tex->get_expected_mipmap_y_size(n);
-#ifndef OPENGLES_1
-      int depth = tex->get_expected_mipmap_z_size(n);
-#endif
 
 #ifdef DO_PSTATS
-      _data_transferred_pcollector.add_level(view_size);
+      _data_transferred_pcollector.add_level(page_size * pages.get_num_on_bits());
 #endif
       switch (texture_target) {
 #ifndef OPENGLES_1
       case GL_TEXTURE_3D:
         if (_supports_3d_texture) {
-          if (image_compression == Texture::CM_off) {
-            _glTexSubImage3D(page_target, n - mipmap_bias, 0, 0, 0, width, height, depth,
-                             external_format, component_type, image_ptr);
-          } else {
-            _glCompressedTexSubImage3D(page_target, n - mipmap_bias, 0, 0, 0, width, height, depth,
-                                       external_format, view_size, image_ptr);
+          for (size_t sri = 0; sri < pages.get_num_subranges(); ++sri) {
+            int begin = pages.get_subrange_begin(sri);
+            int num_pages = pages.get_subrange_end(sri) - begin;
+            const unsigned char *page_ptr = image_ptr + page_size * begin;
+
+            if (image_compression == Texture::CM_off) {
+              _glTexSubImage3D(texture_target, n - mipmap_bias,
+                               0, 0, begin, width, height, num_pages,
+                               external_format, component_type, page_ptr);
+            } else {
+              _glCompressedTexSubImage3D(texture_target, n - mipmap_bias,
+                                         0, 0, begin, width, height, num_pages,
+                                         external_format,
+                                         page_size * num_pages, page_ptr);
+            }
           }
         } else {
           report_my_gl_errors();
@@ -13764,11 +13844,11 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
 #ifndef OPENGLES
       case GL_TEXTURE_1D:
         if (image_compression == Texture::CM_off) {
-          glTexSubImage1D(page_target, n - mipmap_bias, 0, width,
+          glTexSubImage1D(texture_target, n - mipmap_bias, 0, width,
                           external_format, component_type, image_ptr);
         } else {
-          _glCompressedTexSubImage1D(page_target, n - mipmap_bias, 0, width,
-                                     external_format, view_size, image_ptr);
+          _glCompressedTexSubImage1D(texture_target, n - mipmap_bias, 0, width,
+                                     external_format, page_size, image_ptr);
         }
         break;
 #endif  // OPENGLES
@@ -13777,12 +13857,21 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
       case GL_TEXTURE_2D_ARRAY:
       case GL_TEXTURE_CUBE_MAP_ARRAY:
         if (_supports_2d_texture_array) {
-          if (image_compression == Texture::CM_off) {
-            _glTexSubImage3D(page_target, n - mipmap_bias, 0, 0, 0, width, height, depth,
-                             external_format, component_type, image_ptr);
-          } else {
-            _glCompressedTexSubImage3D(page_target, n - mipmap_bias, 0, 0, 0, width, height, depth,
-                                       external_format, view_size, image_ptr);
+          for (size_t sri = 0; sri < pages.get_num_subranges(); ++sri) {
+            int begin = pages.get_subrange_begin(sri);
+            int num_pages = pages.get_subrange_end(sri) - begin;
+            const unsigned char *page_ptr = image_ptr + page_size * begin;
+
+            if (image_compression == Texture::CM_off) {
+              _glTexSubImage3D(texture_target, n - mipmap_bias,
+                               0, 0, begin, width, height, num_pages,
+                               external_format, component_type, page_ptr);
+            } else {
+              _glCompressedTexSubImage3D(texture_target, n - mipmap_bias,
+                                         0, 0, begin, width, height, num_pages,
+                                         external_format,
+                                         page_size * num_pages, page_ptr);
+            }
           }
         } else {
           report_my_gl_errors();
@@ -13794,7 +13883,7 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
 #ifndef OPENGLES
       case GL_TEXTURE_BUFFER:
         if (_supports_buffer_texture) {
-          _glBufferSubData(GL_TEXTURE_BUFFER, 0, view_size, image_ptr);
+          _glBufferSubData(GL_TEXTURE_BUFFER, 0, page_size, image_ptr);
         } else {
           report_my_gl_errors();
           return false;
@@ -13802,18 +13891,46 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
         break;
 #endif  // OPENGLES
 
+      case GL_TEXTURE_CUBE_MAP:
+        if (_supports_cube_map) {
+          // This is the only texture type that must be specified using separate
+          // per-page calls.
+          if (n == 0) {
+            height = tex->get_y_size() - tex->get_pad_y_size();
+          }
+          for (int z = 0; z < 6; ++z) {
+            if (pages.get_bit(z)) {
+              GLenum page_target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + z;
+              const unsigned char *page_ptr = image_ptr + page_size * z;
+
+              if (image_compression == Texture::CM_off) {
+                glTexSubImage2D(page_target, n - mipmap_bias, 0, 0, width, height,
+                                external_format, component_type, page_ptr);
+              } else {
+                _glCompressedTexSubImage2D(page_target, n - mipmap_bias,
+                                           0, 0, width, height,
+                                           external_format, page_size, page_ptr);
+              }
+            }
+          }
+        } else {
+          report_my_gl_errors();
+          return false;
+        }
+        break;
+
       default:
         if (image_compression == Texture::CM_off) {
-          if (n==0) {
+          if (n == 0) {
             // It's unfortunate that we can't adjust the width, too, but
             // TexSubImage2D doesn't accept a row-stride parameter.
             height = tex->get_y_size() - tex->get_pad_y_size();
           }
-          glTexSubImage2D(page_target, n - mipmap_bias, 0, 0, width, height,
+          glTexSubImage2D(texture_target, n - mipmap_bias, 0, 0, width, height,
                           external_format, component_type, image_ptr);
         } else {
-          _glCompressedTexSubImage2D(page_target, n - mipmap_bias, 0, 0, width, height,
-                                     external_format, view_size, image_ptr);
+          _glCompressedTexSubImage2D(texture_target, n - mipmap_bias, 0, 0, width, height,
+                                     external_format, page_size, image_ptr);
         }
         break;
       }
@@ -13837,7 +13954,7 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
     if (GLCAT.is_debug()) {
       GLCAT.debug()
         << "loading new texture object for " << tex->get_name() << ", " << width
-        << " x " << height << " x " << depth << ", z = " << z << ", mipmaps "
+        << " x " << height << " x " << depth << ", mipmaps "
         << num_ram_mipmap_levels << ", uses_mipmaps = " << uses_mipmaps << "\n";
     }
 
@@ -13902,10 +14019,6 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
       if (image_ptr != nullptr) {
         const unsigned char *orig_image_ptr = image_ptr;
         image_ptr += view_size * gtc->get_view();
-        if (one_page_only) {
-          view_size = tex->get_ram_mipmap_page_size(n);
-          image_ptr += view_size * z;
-        }
         nassertr(image_ptr >= orig_image_ptr && image_ptr + view_size <= orig_image_ptr + tex->get_ram_mipmap_image_size(n), false);
 
         if (image_compression == Texture::CM_off) {
@@ -13929,12 +14042,11 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
 #ifndef OPENGLES  // 1-d textures not supported by OpenGL ES.  Fall through.
       case GL_TEXTURE_1D:
         if (image_compression == Texture::CM_off) {
-          glTexImage1D(page_target, n - mipmap_bias, internal_format,
-                       width, 0,
-                       external_format, component_type, image_ptr);
+          glTexImage1D(texture_target, n - mipmap_bias, internal_format,
+                       width, 0, external_format, component_type, image_ptr);
         } else {
-          _glCompressedTexImage1D(page_target, n - mipmap_bias, external_format, width,
-                                  0, view_size, image_ptr);
+          _glCompressedTexImage1D(texture_target, n - mipmap_bias, external_format,
+                                  width, 0, view_size, image_ptr);
         }
         break;
 #endif  // OPENGLES  // OpenGL ES will fall through.
@@ -13943,13 +14055,12 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
       case GL_TEXTURE_3D:
         if (_supports_3d_texture) {
           if (image_compression == Texture::CM_off) {
-            _glTexImage3D(page_target, n - mipmap_bias, internal_format,
+            _glTexImage3D(texture_target, n - mipmap_bias, internal_format,
                           width, height, depth, 0,
                           external_format, component_type, image_ptr);
           } else {
-            _glCompressedTexImage3D(page_target, n - mipmap_bias, external_format, width,
-                                    height, depth,
-                                    0, view_size, image_ptr);
+            _glCompressedTexImage3D(texture_target, n - mipmap_bias, external_format,
+                                    width, height, depth, 0, view_size, image_ptr);
           }
         } else {
           report_my_gl_errors();
@@ -13963,13 +14074,12 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
       case GL_TEXTURE_CUBE_MAP_ARRAY:
         if (_supports_2d_texture_array) {
           if (image_compression == Texture::CM_off) {
-            _glTexImage3D(page_target, n - mipmap_bias, internal_format,
+            _glTexImage3D(texture_target, n - mipmap_bias, internal_format,
                           width, height, depth, 0,
                           external_format, component_type, image_ptr);
           } else {
-            _glCompressedTexImage3D(page_target, n - mipmap_bias, external_format, width,
-                                    height, depth,
-                                    0, view_size, image_ptr);
+            _glCompressedTexImage3D(texture_target, n - mipmap_bias, external_format,
+                                    width, height, depth, 0, view_size, image_ptr);
           }
         } else {
           report_my_gl_errors();
@@ -13990,13 +14100,37 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
         break;
 #endif  // OPENGLES
 
+      case GL_TEXTURE_CUBE_MAP:
+        if (_supports_cube_map) {
+          // This is the only texture type that must be specified using separate
+          // per-page calls.
+          size_t page_size = tex->get_ram_mipmap_page_size(n);
+          for (int z = 0; z < 6; ++z) {
+            GLenum page_target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + z;
+            const unsigned char *page_ptr = image_ptr + page_size * z;
+
+            if (image_compression == Texture::CM_off) {
+              glTexImage2D(page_target, n - mipmap_bias, internal_format,
+                           width, height, 0,
+                           external_format, component_type, page_ptr);
+            } else {
+              _glCompressedTexImage2D(page_target, n - mipmap_bias, external_format,
+                                      width, height, 0, page_size, page_ptr);
+            }
+          }
+        } else {
+          report_my_gl_errors();
+          return false;
+        }
+        break;
+
       default:
         if (image_compression == Texture::CM_off) {
-          glTexImage2D(page_target, n - mipmap_bias, internal_format,
+          glTexImage2D(texture_target, n - mipmap_bias, internal_format,
                        width, height, 0,
                        external_format, component_type, image_ptr);
         } else {
-          _glCompressedTexImage2D(page_target, n - mipmap_bias, external_format,
+          _glCompressedTexImage2D(texture_target, n - mipmap_bias, external_format,
                                   width, height, 0, view_size, image_ptr);
         }
       }

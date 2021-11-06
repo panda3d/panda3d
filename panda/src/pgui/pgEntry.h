@@ -149,6 +149,7 @@ private:
 
   TextAssembler _text;
   TextAssembler _obscure_text;
+  TextAssembler _candidate_text;
   int _cursor_position;
   bool _cursor_stale;
   bool _cursor_visible;
