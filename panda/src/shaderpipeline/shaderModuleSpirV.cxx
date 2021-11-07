@@ -356,7 +356,7 @@ link_inputs(const ShaderModule *previous) {
 
   ShaderModuleSpirV *spv_prev = (ShaderModuleSpirV *)previous;
 
-  for (const Variable &input : _inputs) {
+  for (Variable &input : _inputs) {
     int i = spv_prev->find_output(input.name);
     if (i < 0) {
       shader_cat.error()
@@ -375,6 +375,7 @@ link_inputs(const ShaderModule *previous) {
 
     if (!input.has_location() || output.get_location() != input.get_location()) {
       location_remap[input.get_location()] = output.get_location();
+      input._location = output.get_location();
     }
   }
 
