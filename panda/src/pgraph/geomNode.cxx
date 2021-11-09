@@ -396,6 +396,24 @@ r_prepare_scene(GraphicsStateGuardianBase *gsg, const RenderState *node_state,
       geom_state = state_munger->munge_state(geom_state);
     }
 
+    // As well as the shaders.
+    const ShaderAttrib *sa;
+    if (geom_state->get_attrib(sa)) {
+      Shader *shader = (Shader *)sa->get_shader();
+      if (shader != nullptr) {
+        prepared_objects->enqueue_shader(shader);
+      }
+      else if (sa->auto_shader()) {
+        gsg->ensure_generated_shader(geom_state);
+      }
+      else if (munger->is_of_type(StateMunger::get_class_type())) {
+        // Premunge the state for the fixed-function pipeline.
+        StateMunger *state_munger = (StateMunger *)munger.p();
+        geom_state = state_munger->munge_state(geom_state);
+      }
+      // TODO: prepare the shader inputs.
+    }
+
     // And now prepare each of the textures.
     const TextureAttrib *ta;
     if (geom_state->get_attrib(ta)) {
@@ -407,16 +425,6 @@ r_prepare_scene(GraphicsStateGuardianBase *gsg, const RenderState *node_state,
           prepared_objects->enqueue_texture(texture);
         }
       }
-    }
-
-    // As well as the shaders.
-    const ShaderAttrib *sa;
-    if (geom_state->get_attrib(sa)) {
-      Shader *shader = (Shader *)sa->get_shader();
-      if (shader != nullptr) {
-        prepared_objects->enqueue_shader(shader);
-      }
-      // TODO: prepare the shader inputs.
     }
   }
 
