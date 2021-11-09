@@ -59,6 +59,10 @@ PUBLISHED:
     // May appear at any level and indicates the following datagram contains
     // auxiliary file data that may be referenced by a later object.
     BOC_file_data,
+
+    // Indicates that this datagram should be skipped in its entirety, likely
+    // used for an extension to the bam format.
+    BOC_ignore,
   };
 
   // This enum is used to control how textures are written to a bam stream.

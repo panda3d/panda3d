@@ -309,6 +309,29 @@ read_object(TypedWritable *&ptr, ReferenceCount *&ref_ptr) {
 }
 
 /**
+ * Like read_object(), but does not return the object.
+ */
+bool BamReader::
+skip_object() {
+  nassertr(_num_extra_objects == 0, false);
+
+  int start_level = _nesting_level;
+
+  int object_id = p_read_object();
+
+  while (_num_extra_objects > 0) {
+    p_read_object();
+    _num_extra_objects--;
+  }
+
+  while (_nesting_level > start_level) {
+    p_read_object();
+  }
+
+  return object_id != 0;
+}
+
+/**
  * This may be called at any time during processing of the Bam file to resolve
  * all the known pointers so far.  It is usually called at the end of the
  * processing, after all objects have been read, which is generally the best
@@ -1109,6 +1132,10 @@ p_read_object() {
       _file_data_records.push_back(info);
     }
 
+    return p_read_object();
+
+  case BOC_ignore:
+    // Ignore this datagram.
     return p_read_object();
 
   default:

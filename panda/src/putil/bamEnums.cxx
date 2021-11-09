@@ -72,6 +72,9 @@ operator << (ostream &out, BamEnums::BamObjectCode boc) {
 
   case BamEnums::BOC_file_data:
     return out << "file_data";
+
+  case BamEnums::BOC_ignore:
+    return out << "ignore";
   }
 
   return out << "**invalid BamEnums::BamObjectCode value: (" << (int)boc << ")**";
