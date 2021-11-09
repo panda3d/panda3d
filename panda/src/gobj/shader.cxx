@@ -955,7 +955,7 @@ link() {
       PT(ShaderModule) module = linked_module._module.get_write_pointer();
       if (shader_cat.is_debug()) {
         std::ostream &out = shader_cat.debug()
-          << "Remapping locations for module " << *module << ":";
+          << "Remapping parameter locations for module " << *module << ":";
 
         pmap<int, int>::const_iterator it;
         for (it = remap.begin(); it != remap.end(); ++it) {
@@ -3012,7 +3012,7 @@ make_compute(ShaderLanguage lang, string body) {
  * if there was a problem. Modules must be added in increasing stage order and
  * only one module of a given stage type may be added.
  *
- * If the ShaderModule is already used in a different Shader object, this will
+ * If the ShaderModule is already used in a different Shader object, this may
  * create a unique copy of it so that it may be modified to make it compatible
  * with the other modules in this shader.
  */
@@ -3033,12 +3033,16 @@ add_module(PT(ShaderModule) module) {
     return false;
   }
 
+  int used_caps = module->get_used_capabilities();
+
   // Make sure we have a unique copy.
   COWPT(ShaderModule) cow_module = std::move(module);
-  module = cow_module.get_write_pointer();
 
   // Link its inputs up with the previous stage.
   if (!_modules.empty()) {
+    //TODO: Check whether it's already linked properly to possibly avoid cloning
+    // the module.
+    PT(ShaderModule) module = cow_module.get_write_pointer();
     if (!module->link_inputs(_modules.back()._module.get_read_pointer())) {
       shader_cat.error()
         << "Unable to match shader module interfaces.\n";
@@ -3047,6 +3051,7 @@ add_module(PT(ShaderModule) module) {
   }
   else if (stage == Stage::vertex) {
     // Bind vertex inputs right away.
+    CPT(ShaderModule) module = cow_module.get_read_pointer();
     bool success = true;
     for (const ShaderModule::Variable &var : module->_inputs) {
       if (!bind_vertex_input(var.name, var.type, var.get_location())) {
@@ -3060,8 +3065,6 @@ add_module(PT(ShaderModule) module) {
     }
   }
 
-  int used_caps = module->get_used_capabilities();
-  module = nullptr;
   _modules.push_back(std::move(cow_module));
   _module_mask |= (1u << (uint32_t)stage);
   _used_caps |= used_caps;
@@ -3385,4 +3388,6 @@ fillin(DatagramIterator &scan, BamReader *manager) {
       manager->read_pointer(scan);
     }
   }
+
+  _prepare_shader_pcollector = PStatCollector(std::string("Draw:Prepare:Shader:") + _debug_name);
 }
