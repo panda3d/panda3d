@@ -46,6 +46,34 @@
 #include "lvector4.h"
 #include "config_pgraphnodes.h"
 #include "pStatTimer.h"
+#include "bamCache.h"
+#include "bamReader.h"
+#include "bamWriter.h"
+#include "datagramInputFile.h"
+#include "datagramOutputFile.h"
+#include "lightMutexHolder.h"
+#include "virtualFileSystem.h"
+
+static ConfigVariableFilename shader_generator_cache_filename
+("shader-generator-cache-filename", "",
+ PRC_DESC("Sets the location of the cache file in which generated shaders are "
+          "stored.  Leave empty to write it to the default location, in the "
+          "model-cache.  To disable it, set shader-generator-cache-limit to 0."));
+
+static ConfigVariableInt shader_generator_cache_limit
+("shader-generator-cache-limit", 2048,
+ PRC_DESC("Sets an upper limit on the number of shaders that are stored in the "
+          "shader generator cache.  When the limit is reached, shaders that "
+          "have not been used for a while are pruned.  This limit prevents the "
+          "cache file from growing so large that it takes too long to load and "
+          "write each run.  Set to 0 to disable the shader cache (it will be "
+          "deleted upon the next run) or -1 not to have any limit at all."));
+
+static ConfigVariableInt shader_generator_cache_max_age
+("shader-generator-cache-max-age", 26 * 7 * 24 * 60 * 60,
+ PRC_DESC("Sets a maximum, in seconds, on how long unused shaders remain in "
+          "the generated shader cache.  The default is about 6 months.  Set to "
+          "-1 to disable pruning the shader generator cache based on age."));
 
 using std::string;
 
@@ -66,6 +94,8 @@ pack_combine(TextureStage::CombineSource src0, TextureStage::CombineOperand op0,
          ((uint16_t)src1 << 5u) | ((((uint16_t)op1 - 1u) & 3u) << 8u) |
          ((uint16_t)src2 << 10u) | ((((uint16_t)op2 - 1u) & 3u) << 13u);
 }
+
+static std::string sgc_header("sgc\0\n\r", 6);
 
 static PStatCollector lookup_collector("*:Munge:ShaderGen:Lookup");
 static PStatCollector synthesize_collector("*:Munge:ShaderGen:Synthesize");
@@ -95,6 +125,22 @@ ShaderGenerator(const GraphicsStateGuardianBase *gsg) {
   else {
     _num_indexed_transforms = 4;
   }
+
+  Filename fn = shader_generator_cache_filename;
+  fn.set_binary();
+  if (fn.empty()) {
+    BamCache *cache = BamCache::get_global_ptr();
+    if (cache != nullptr && cache->get_active()) {
+      fn = Filename(cache->get_root(), "genshader.boo");
+      fn.set_binary();
+      _cache_filename = fn;
+      reload_cache();
+    }
+  }
+  else {
+    _cache_filename = fn;
+    reload_cache();
+  }
 }
 
 /**
@@ -102,6 +148,218 @@ ShaderGenerator(const GraphicsStateGuardianBase *gsg) {
  */
 ShaderGenerator::
 ~ShaderGenerator() {
+  flush_cache();
+}
+
+/**
+ * Reloads the generated shader cache from disk.  The results will be combined
+ * with the current generated shader map, you can call clear_generated_shaders
+ * first to just get the disk cache.
+ *
+ * @since 1.11.0
+ */
+bool ShaderGenerator::
+reload_cache() {
+  LightMutexHolder holder(_lock);
+
+  TrueClock *clock = TrueClock::get_global_ptr();
+  double begin_time = clock->get_short_raw_time();
+
+  DatagramInputFile din;
+  if (!din.open(_cache_filename)) {
+    if (pgraphnodes_cat.is_debug()) {
+      pgraphnodes_cat.debug()
+        << "Could not read shader generator cache file: "
+        << _cache_filename << "\n";
+    }
+    return false;
+  }
+
+  string head;
+  if (!din.read_header(head, sgc_header.size())) {
+    if (pgraphnodes_cat.is_debug()) {
+      pgraphnodes_cat.debug()
+        << _cache_filename << " is not a shader generator cache file.\n";
+    }
+    return false;
+  }
+
+  if (head != sgc_header) {
+    if (pgraphnodes_cat.is_debug()) {
+      pgraphnodes_cat.debug()
+        << _cache_filename << " is not a shader generator cache file.\n";
+    }
+    return false;
+  }
+
+  BamReader reader(&din);
+  if (!reader.init()) {
+    return false;
+  }
+
+  unsigned int count = 0;
+
+  // The cache furthermore just consists of pairs of a raw ShaderKey followed
+  // by the generated ShaderAttrib.
+  Datagram dg;
+  while (din.get_datagram(dg)) {
+    DatagramIterator scan(dg);
+
+    BamEnums::BamObjectCode boc = (BamEnums::BamObjectCode)scan.get_uint8();
+    if (boc != BamEnums::BOC_ignore) {
+      pgraphnodes_cat.warning()
+        << _cache_filename << " is corrupted: unexpected BOC 0x"
+        << std::hex << (int)boc << std::dec << "\n";
+      return false;
+    }
+
+    time_t age = (time_t)scan.get_uint32();
+
+    ShaderKey key;
+    key.read_datagram(scan);
+
+    GeneratedShader &gen_shader = _generated_shaders[std::move(key)];
+    gen_shader._last_use = std::max(age, gen_shader._last_use);
+
+    if (gen_shader._shader != nullptr) {
+      // Optimization: don't read shaders that are already in memory.
+      reader.skip_object();
+      continue;
+    }
+
+    TypedWritable *shader = reader.read_object();
+    if (!shader->is_of_type(Shader::get_class_type())) {
+      pgraphnodes_cat.warning()
+        << _cache_filename << " is corrupted: expected Shader instead of "
+        << shader->get_type() << "\n";
+      return false;
+    }
+
+    gen_shader._shader = DCAST(Shader, shader);
+    ++count;
+  }
+
+  if (!reader.resolve()) {
+    pgraphnodes_cat.error()
+      << "Unable to fully resolve shader generator cache file.\n";
+    return false;
+  }
+
+  double end_time = clock->get_short_raw_time();
+  double time_delta = end_time - begin_time;
+
+  pgraphnodes_cat.info()
+    << "Read " << count << " generated shaders from "
+    << _cache_filename << " in " << (time_delta * 1000) << " ms\n";
+
+  return true;
+}
+
+/**
+ * Writes all generated shaders to the cache.
+ *
+ * @since 1.11.0
+ */
+bool ShaderGenerator::
+flush_cache() {
+  Filename cache_filename;
+  TrueClock *clock;
+  double begin_time;
+  VirtualFileSystem *vfs;
+  int limit;
+  std::vector<std::pair<ShaderKey, GeneratedShader> > gen_shaders;
+  {
+    LightMutexHolder holder(_lock);
+    if (_generated_shaders.empty()) {
+      return true;
+    }
+    if (_cache_filename.empty()) {
+      return true;
+    }
+    cache_filename = _cache_filename;
+
+    vfs = VirtualFileSystem::get_global_ptr();
+
+    limit = shader_generator_cache_limit;
+    if (limit == 0) {
+      vfs->delete_file(cache_filename);
+      return true;
+    }
+
+    clock = TrueClock::get_global_ptr();
+    begin_time = clock->get_short_raw_time();
+
+    time_t min_last_use = 0;
+    int max_age = shader_generator_cache_max_age;
+    if (max_age >= 0) {
+      min_last_use = time(nullptr) - max_age;
+    }
+
+    gen_shaders.reserve(_generated_shaders.size());
+    GeneratedShaders::const_iterator it;
+    for (const GeneratedShaders::value_type &entry : _generated_shaders) {
+      if (entry.second._last_use >= min_last_use) {
+        gen_shaders.push_back(std::move(entry));
+      }
+    }
+  }
+
+  unsigned int count = 0;
+  {
+    DatagramOutputFile dout;
+    if (!dout.open(cache_filename)) {
+      pgraphnodes_cat.error()
+        << "Unable to open " << cache_filename << "\n";
+      vfs->delete_file(cache_filename);
+      return false;
+    }
+
+    if (!dout.write_header(sgc_header)) {
+      pgraphnodes_cat.error()
+        << "Unable to write to " << cache_filename << "\n";
+      vfs->delete_file(cache_filename);
+      return false;
+    }
+
+    BamWriter writer(&dout);
+    if (!writer.init()) {
+      vfs->delete_file(cache_filename);
+      return false;
+    }
+
+    if (limit > 0 && gen_shaders.size() > (size_t)limit) {
+      // We need to prune down the generated shader list.  Sort by time of last
+      // use, in reverse order, so we can easily eliminate the oldest shaders.
+      std::sort(gen_shaders.begin(), gen_shaders.end(),
+        [=](std::pair<ShaderKey, GeneratedShader> &a, std::pair<ShaderKey, GeneratedShader> &b) {
+          return a.second._last_use > b.second._last_use;
+        });
+
+      gen_shaders.resize((size_t)limit);
+    }
+
+    for (std::pair<ShaderKey, GeneratedShader> &entry : gen_shaders) {
+      Datagram dg;
+      dg.add_uint8(BamEnums::BOC_ignore);
+      dg.add_uint32(entry.second._last_use);
+      entry.first.write_datagram(dg);
+      dout.put_datagram(dg);
+
+      if (!writer.write_object(entry.second._shader)) {
+        break;
+      }
+      ++count;
+    }
+  }
+
+  double end_time = clock->get_short_raw_time();
+  double time_delta = end_time - begin_time;
+
+  pgraphnodes_cat.info()
+    << "Wrote " << count << " generated shaders to "
+    << cache_filename << " in " << (time_delta * 1000) << " ms\n";
+
+  return true;
 }
 
 /**
@@ -153,11 +411,6 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
   rs->get_attrib_def(shader_attrib);
   nassertv(shader_attrib->auto_shader());
 
-  // verify_enforce_attrib_lock();
-  const AuxBitplaneAttrib *aux_bitplane;
-  rs->get_attrib_def(aux_bitplane);
-  key._outputs = aux_bitplane->get_outputs();
-
   // Decide whether or not we need alpha testing or alpha blending.
   bool have_alpha_test = false;
   bool have_alpha_blend = false;
@@ -180,26 +433,45 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
     have_alpha_blend = true;
   }
 
+  if (have_alpha_blend || have_alpha_test) {
+    key._flags |= ShaderKey::F_calc_primary_alpha;
+  }
+
   // Decide what to send to the framebuffer alpha, if anything.
-  if (key._outputs & AuxBitplaneAttrib::ABO_glow) {
+  const AuxBitplaneAttrib *aux_bitplane;
+  rs->get_attrib_def(aux_bitplane);
+  int outputs = aux_bitplane->get_outputs();
+
+  if (outputs & AuxBitplaneAttrib::ABO_glow) {
     if (have_alpha_blend) {
-      key._outputs &= ~AuxBitplaneAttrib::ABO_glow;
-      key._disable_alpha_write = true;
-    } else if (have_alpha_test) {
-      // Subsume the alpha test in our shader.
-      key._alpha_test_mode = alpha_test->get_mode();
-      key._alpha_test_ref = alpha_test->get_reference_alpha();
+      key._flags |= ShaderKey::F_disable_alpha_write;
+    }
+    else {
+      key._flags |= ShaderKey::F_out_alpha_glow;
+      if (have_alpha_test) {
+        // Subsume the alpha test in our shader.
+        key._flags |= (alpha_test->get_mode() & 0x7) << ShaderKey::F_ALPHA_TEST_SHIFT;
+        key._alpha_test_ref = alpha_test->get_reference_alpha();
+      }
     }
   }
 
-  if (have_alpha_blend || have_alpha_test) {
-    key._calc_primary_alpha = true;
+  if (outputs & AuxBitplaneAttrib::ABO_aux_normal) {
+    key._flags |= ShaderKey::F_out_aux_normal;
+  }
+  if (outputs & AuxBitplaneAttrib::ABO_aux_glow) {
+    key._flags |= ShaderKey::F_out_aux_glow;
   }
 
   // Determine whether or not vertex colors or flat colors are present.
   const ColorAttrib *color;
   rs->get_attrib_def(color);
-  key._color_type = color->get_color_type();
+  if (color->get_color_type() == ColorAttrib::T_flat) {
+    key._flags |= ShaderKey::F_flat_color;
+  }
+  else if (color->get_color_type() == ColorAttrib::T_vertex) {
+    key._flags |= ShaderKey::F_vertex_color;
+  }
 
   // Store the material flags (not the material values itself).
   const MaterialAttrib *material;
@@ -209,11 +481,11 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
     // The next time the Material flags change, the Material should cause the
     // states to be rehashed.
     mat->mark_used_by_auto_shader();
-    key._material_flags = mat->get_flags();
+    key._flags |= (mat->get_flags() & ShaderKey::F_MATERIAL_FLAGS_MASK);
 
-    if ((key._material_flags & Material::F_base_color) != 0) {
-      key._material_flags |= (Material::F_diffuse | Material::F_specular | Material::F_ambient);
-      key._material_flags &= ~Material::F_base_color;
+    if ((key._flags & Material::F_base_color) != 0) {
+      key._flags |= (Material::F_diffuse | Material::F_specular | Material::F_ambient);
+      key._flags &= ~Material::F_base_color;
     }
   }
 
@@ -228,33 +500,52 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
     PandaNode *node = np.node();
     nassertv(node != nullptr);
 
+    key._flags |= ShaderKey::F_lighting;
+
     if (node->is_ambient_light()) {
       have_ambient = true;
-      key._lighting = true;
-    } else {
-      ShaderKey::LightInfo info;
-      info._type = node->get_type();
-      info._flags = 0;
+      continue;
+    }
 
-      if (node->is_of_type(LightLensNode::get_class_type())) {
-        const LightLensNode *llnode = (const LightLensNode *)node;
-        if (shader_attrib->auto_shadow_on()) {
-          if (llnode->is_shadow_caster()) {
-            info._flags |= ShaderKey::LF_has_shadows;
-          }
+    int light_flags = 0;
 
-          // Make sure that the next time the shadows are toggled on this
-          // light, it triggers a state rehash.
-          llnode->mark_used_by_auto_shader();
+    if (node->is_of_type(LightLensNode::get_class_type())) {
+      const LightLensNode *llnode = (const LightLensNode *)node;
+
+      if (llnode->is_of_type(DirectionalLight::get_class_type())) {
+        light_flags |= ShaderKey::LF_type_directional;
+      }
+      else if (llnode->is_of_type(Spotlight::get_class_type())) {
+        light_flags |= ShaderKey::LF_type_spot;
+      }
+      else if (llnode->is_of_type(PointLight::get_class_type())) {
+        if (llnode->is_of_type(SphereLight::get_class_type())) {
+          light_flags |= ShaderKey::LF_type_sphere;
         }
-        if (llnode->has_specular_color()) {
-          info._flags |= ShaderKey::LF_has_specular_color;
+        else {
+          light_flags |= ShaderKey::LF_type_point;
         }
       }
 
-      key._lights.push_back(info);
-      key._lighting = true;
+      if (shader_attrib->auto_shadow_on()) {
+        if (llnode->is_shadow_caster()) {
+          light_flags |= ShaderKey::LF_has_shadows;
+
+          if (_use_shadow_filter) {
+            key._flags |= ShaderKey::F_use_shadow_filter;
+          }
+        }
+
+        // Make sure that the next time the shadows are toggled on this
+        // light, it triggers a state rehash.
+        llnode->mark_used_by_auto_shader();
+      }
+      if (llnode->has_specular_color()) {
+        light_flags |= ShaderKey::LF_has_specular_color;
+      }
     }
+
+    key._lights.push_back(light_flags);
   }
 
   // See if there is a normal map, height map, gloss map, or glow map.  Also
@@ -322,7 +613,7 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
       if (parallax_mapping_samples == 0) {
         info._mode = TextureStage::M_normal;
       } else if (!shader_attrib->auto_normal_on() ||
-                 (key._lights.empty() && (key._outputs & AuxBitplaneAttrib::ABO_aux_normal) == 0)) {
+                 (key._lights.empty() && (outputs & AuxBitplaneAttrib::ABO_aux_normal) == 0)) {
         info._mode = TextureStage::M_height;
         info._flags = ShaderKey::TF_has_alpha;
       } else {
@@ -384,7 +675,7 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
     switch (info._mode) {
     case TextureStage::M_normal:
       if (!shader_attrib->auto_normal_on() ||
-          (key._lights.empty() && (key._outputs & AuxBitplaneAttrib::ABO_aux_normal) == 0)) {
+          (key._lights.empty() && (outputs & AuxBitplaneAttrib::ABO_aux_normal) == 0)) {
         skip = true;
       } else {
         info._flags = ShaderKey::TF_map_normal;
@@ -480,13 +771,11 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
 
   // Decide whether to separate ambient and diffuse calculations.
   if (have_ambient) {
-    if (key._material_flags & Material::F_ambient) {
-      key._have_separate_ambient = true;
+    if (key._flags & Material::F_ambient) {
+      key._flags |= ShaderKey::F_have_separate_ambient;
     } else {
-      if (key._material_flags & Material::F_diffuse) {
-        key._have_separate_ambient = true;
-      } else {
-        key._have_separate_ambient = false;
+      if (key._flags & Material::F_diffuse) {
+        key._flags |= ShaderKey::F_have_separate_ambient;
       }
     }
   }
@@ -494,9 +783,13 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
   if (shader_attrib->auto_ramp_on()) {
     const LightRampAttrib *light_ramp;
     if (rs->get_attrib(light_ramp)) {
-      key._light_ramp = light_ramp;
-      if (key._lighting) {
-        key._have_separate_ambient = true;
+      key._light_ramp_mode = light_ramp->get_mode();
+      key._light_ramp_level[0] = light_ramp->get_level(0);
+      key._light_ramp_level[1] = light_ramp->get_level(1);
+      key._light_ramp_threshold[0] = light_ramp->get_threshold(0);
+      key._light_ramp_threshold[1] = light_ramp->get_threshold(1);
+      if (key._flags & ShaderKey::F_lighting) {
+        key._flags |= ShaderKey::F_have_separate_ambient;
       }
     }
   }
@@ -509,7 +802,27 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
   // Check for fog.
   const FogAttrib *fog;
   if (rs->get_attrib(fog) && !fog->is_off()) {
-    key._fog_mode = (int)fog->get_fog()->get_mode() + 1;
+    key._flags |= ((int)fog->get_fog()->get_mode() + 1) << ShaderKey::F_FOG_MODE_SHIFT;
+  }
+}
+
+/**
+ * Analyzes the RenderState prior to shader generation.  The results of the
+ * analysis are stored in instance variables of the Shader Generator.
+ */
+void ShaderGenerator::
+analyze_renderstate(ShaderKey &key, const RenderState *rs,
+                    const GeomVertexAnimationSpec &anim) {
+
+  analyze_renderstate(key, rs);
+
+  if (anim.get_animation_type() == GeomVertexAnimationSpec::AT_hardware) {
+    if (anim.get_indexed_transforms()) {
+      key._flags |= ShaderKey::F_indexed_transforms;
+      key._num_anim_transforms = _num_indexed_transforms;
+    } else {
+      key._num_anim_transforms = std::min(4, anim.get_num_transforms());
+    }
   }
 }
 
@@ -525,6 +838,7 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
  */
 void ShaderGenerator::
 rehash_generated_shaders() {
+  LightMutexHolder holder2(_lock);
   LightReMutexHolder holder(*RenderState::_states_lock);
 
   // With uniquify-states turned on, we can actually go through all the states
@@ -540,8 +854,8 @@ rehash_generated_shaders() {
       GeneratedShaders::const_iterator si;
       si = _generated_shaders.find(key);
       if (si != _generated_shaders.end()) {
-        if (si->second != state->_generated_shader) {
-          state->_generated_shader = si->second;
+        if (si->second._attrib != state->_generated_shader) {
+          state->_generated_shader = si->second._attrib;
           state->_munged_states.clear();
         }
       } else {
@@ -568,6 +882,7 @@ rehash_generated_shaders() {
  */
 void ShaderGenerator::
 clear_generated_shaders() {
+  LightMutexHolder holder2(_lock);
   LightReMutexHolder holder(*RenderState::_states_lock);
 
   size_t size = RenderState::_states.get_num_entries();
@@ -620,14 +935,21 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   // First look up the state key in the table of already generated shaders.
   {
     PStatTimer timer(lookup_collector);
-    key._anim_spec = anim;
-    analyze_renderstate(key, rs);
+    analyze_renderstate(key, rs, anim);
 
-    GeneratedShaders::const_iterator si;
+    LightMutexHolder holder(_lock);
+    GeneratedShaders::iterator si;
     si = _generated_shaders.find(key);
     if (si != _generated_shaders.end()) {
       // We've already generated a shader for this state.
-      return si->second;
+      GeneratedShader &gen_shader = si->second;
+      if (gen_shader._attrib == nullptr) {
+        // We have a shader, but haven't created a ShaderAttrib for it yet.
+        CPT(ShaderAttrib) attrib = make_attrib(key, gen_shader._shader);
+        gen_shader._attrib = std::move(attrib);
+      }
+      gen_shader._last_use = time(nullptr);
+      return gen_shader._attrib;
     }
   }
 
@@ -672,8 +994,8 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   // Figure out whether we need to calculate any of these variables.
   bool need_world_position = (key._num_clip_planes > 0);
   bool need_world_normal = false;
-  bool need_eye_position = key._lighting;
-  bool need_eye_normal = !key._lights.empty() || ((key._outputs & AuxBitplaneAttrib::ABO_aux_normal) != 0);
+  bool need_eye_position = key._flags & ShaderKey::F_lighting;
+  bool need_eye_normal = !key._lights.empty() || ((key._flags & ShaderKey::F_out_aux_normal) != 0);
   bool need_tangents = ((key._texture_flags & ShaderKey::TF_map_normal) != 0);
 
   // If we have binormal/tangent and eye position, we can pack eye normal in
@@ -681,8 +1003,8 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   bool pack_eye_normal = need_eye_normal && need_tangents && need_eye_position;
 
   bool have_specular = false;
-  if (key._lighting) {
-    if (key._material_flags & Material::F_specular) {
+  if (key._flags & ShaderKey::F_lighting) {
+    if (key._flags & Material::F_specular) {
       have_specular = true;
     } else if ((key._texture_flags & ShaderKey::TF_map_gloss) != 0) {
       have_specular = true;
@@ -690,11 +1012,11 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   }
 
   bool need_color = false;
-  if (key._color_type != ColorAttrib::T_off) {
-    if (key._lighting) {
-      if (((key._material_flags & Material::F_ambient) == 0 && key._have_separate_ambient) ||
-          (key._material_flags & Material::F_diffuse) == 0 ||
-          key._calc_primary_alpha) {
+  if ((key._flags & (ShaderKey::F_flat_color | ShaderKey::F_vertex_color)) != 0) {
+    if (key._flags & ShaderKey::F_lighting) {
+      if (((key._flags & Material::F_ambient) == 0 && (key._flags & ShaderKey::F_have_separate_ambient) != 0) ||
+          (key._flags & Material::F_diffuse) == 0 ||
+          (key._flags & ShaderKey::F_calc_primary_alpha) != 0) {
         need_color = true;
       }
     } else {
@@ -768,7 +1090,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     text << "\t out float4 l_tangent : " << tangent_freg << ",\n";
     text << "\t out float4 l_binormal : " << binormal_freg << ",\n";
   }
-  if (need_color && key._color_type == ColorAttrib::T_vertex) {
+  if (need_color && key._flags & ShaderKey::F_vertex_color) {
     text << "\t in float4 vtx_color : COLOR,\n";
     text << "\t out float4 l_color : COLOR0,\n";
   }
@@ -804,13 +1126,13 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     text << "\t uniform float4 mspos_view,\n";
     text << "\t out float3 l_eyevec,\n";
   }
-  if (key._fog_mode != 0) {
+  if ((key._flags & ShaderKey::F_FOG_MODE_MASK) != 0) {
     hpos_freg = alloc_freg();
     text << "\t out float4 l_hpos : " << hpos_freg << ",\n";
   }
   for (size_t i = 0; i < key._lights.size(); ++i) {
-    const ShaderKey::LightInfo &light = key._lights[i];
-    if (light._flags & ShaderKey::LF_has_shadows) {
+    int light_flags = key._lights[i];
+    if (light_flags & ShaderKey::LF_has_shadows) {
       if (_ftregs_used >= 8) {
         // We ran out of TEXCOORD registers.  That means we have to do this
         // calculation in the fragment shader, which is slower.
@@ -824,17 +1146,11 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       lightcoord_fregs.push_back(nullptr);
     }
   }
-  if (key._anim_spec.get_animation_type() == GeomEnums::AT_hardware &&
-      key._anim_spec.get_num_transforms() > 0) {
-    int num_transforms;
-    if (key._anim_spec.get_indexed_transforms()) {
-      num_transforms = _num_indexed_transforms;
-    } else {
-      num_transforms = key._anim_spec.get_num_transforms();
-    }
+  if (key._flags & ShaderKey::F_hardware_animation) {
+    int num_transforms = key._num_anim_transforms;
     text << "\t uniform float3x4 tbl_transforms[" << num_transforms << "],\n";
     text << "\t in float4 vtx_transform_weight : BLENDWEIGHT,\n";
-    if (key._anim_spec.get_indexed_transforms()) {
+    if (key._flags & ShaderKey::F_indexed_transforms) {
       text << "\t in uint4 vtx_transform_index : BLENDINDICES,\n";
     }
   }
@@ -843,23 +1159,15 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   text << "\t uniform float4x4 mat_modelproj\n";
   text << ") {\n";
 
-  if (key._anim_spec.get_animation_type() == GeomEnums::AT_hardware &&
-      key._anim_spec.get_num_transforms() > 0) {
-
-    if (!key._anim_spec.get_indexed_transforms()) {
+  if (key._flags & ShaderKey::F_hardware_animation) {
+    if ((key._flags & ShaderKey::F_indexed_transforms) == 0) {
       text << "\t const uint4 vtx_transform_index = uint4(0, 1, 2, 3);\n";
     }
 
     text << "\t float3x4 vtxmat = tbl_transforms[vtx_transform_index.x] * vtx_transform_weight.x";
-    if (key._anim_spec.get_num_transforms() > 1) {
-      text << "\n\t                 + tbl_transforms[vtx_transform_index.y] * vtx_transform_weight.y";
-    }
-    if (key._anim_spec.get_num_transforms() > 2) {
-      text << "\n\t                 + tbl_transforms[vtx_transform_index.z] * vtx_transform_weight.z";
-    }
-    if (key._anim_spec.get_num_transforms() > 3) {
-      text << "\n\t                 + tbl_transforms[vtx_transform_index.w] * vtx_transform_weight.w";
-    }
+    text << "\n\t                 + tbl_transforms[vtx_transform_index.y] * vtx_transform_weight.y";
+    text << "\n\t                 + tbl_transforms[vtx_transform_index.z] * vtx_transform_weight.z";
+    text << "\n\t                 + tbl_transforms[vtx_transform_index.w] * vtx_transform_weight.w";
     text << ";\n";
     text << "\t vtx_position = float4(mul(vtxmat, vtx_position), 1);\n";
     if (need_world_normal || need_eye_normal) {
@@ -868,7 +1176,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   }
 
   text << "\t l_position = mul(mat_modelproj, vtx_position);\n";
-  if (key._fog_mode != 0) {
+  if ((key._flags & ShaderKey::F_FOG_MODE_MASK) != 0) {
     text << "\t l_hpos = l_position;\n";
   }
   if (need_world_position) {
@@ -886,7 +1194,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     string tcname = it->first->join("_");
     text << "\t l_" << tcname << " = vtx_" << tcname << ";\n";
   }
-  if (need_color && key._color_type == ColorAttrib::T_vertex) {
+  if (need_color && key._flags & ShaderKey::F_vertex_color) {
     text << "\t l_color = vtx_color;\n";
   }
   if (need_tangents) {
@@ -896,7 +1204,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     text << "\t l_binormal.w = 0;\n";
   }
   for (size_t i = 0; i < key._lights.size(); ++i) {
-    if (key._lights[i]._flags & ShaderKey::LF_has_shadows) {
+    if (key._lights[i] & ShaderKey::LF_has_shadows) {
       if (lightcoord_fregs[i] != nullptr) {
         text << "\t l_lightcoord" << i << " = mul(mat_shadow_" << i << ", l_eye_position);\n";
       }
@@ -925,7 +1233,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   // Fragment shader
 
   text << "void fshader(\n";
-  if (key._fog_mode != 0) {
+  if ((key._flags & ShaderKey::F_FOG_MODE_MASK) != 0) {
     text << "\t in float4 l_hpos : " << hpos_freg << ",\n";
     text << "\t in uniform float4 attr_fog,\n";
     text << "\t in uniform float4 attr_fogcolor,\n";
@@ -971,16 +1279,17 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   for (size_t i = 0; i < key._lights.size(); ++i) {
     text << "\t uniform float4x4 attr_light" << i << ",\n";
 
-    const ShaderKey::LightInfo &light = key._lights[i];
-    if (light._flags & ShaderKey::LF_has_shadows) {
-      if (light._type.is_derived_from(PointLight::get_class_type())) {
-        if (_use_shadow_filter) {
+    int light_flags = key._lights[i];
+    if (light_flags & ShaderKey::LF_has_shadows) {
+      ShaderKey::LightFlags light_type = (ShaderKey::LightFlags)(light_flags & ShaderKey::LF_TYPE_MASK);
+      if (light_type == ShaderKey::LF_type_point) {
+        if (key._flags & ShaderKey::F_use_shadow_filter) {
           text << "\t uniform samplerCubeShadow shadow_" << i << ",\n";
         } else {
           text << "\t uniform samplerCUBE shadow_" << i << ",\n";
         }
       } else {
-        if (_use_shadow_filter) {
+        if (key._flags & ShaderKey::F_use_shadow_filter) {
           text << "\t uniform sampler2DShadow shadow_" << i << ",\n";
         } else {
           text << "\t uniform sampler2D shadow_" << i << ",\n";
@@ -992,27 +1301,27 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
         text << "\t uniform float4x4 mat_shadow_" << i << ",\n";
       }
     }
-    if (light._flags & ShaderKey::LF_has_specular_color) {
+    if (light_flags & ShaderKey::LF_has_specular_color) {
       text << "\t uniform float4 attr_lspec" << i << ",\n";
     }
   }
 
   // Does the shader need material properties as input?
-  if (key._material_flags & (Material::F_ambient | Material::F_diffuse | Material::F_emission | Material::F_specular)) {
+  if (key._flags & (Material::F_ambient | Material::F_diffuse | Material::F_emission | Material::F_specular)) {
     text << "\t uniform float4x4 attr_material,\n";
   }
   if (key._texture_flags & ShaderKey::TF_map_height) {
     text << "\t float3 l_eyevec,\n";
   }
-  if (key._outputs & (AuxBitplaneAttrib::ABO_aux_normal | AuxBitplaneAttrib::ABO_aux_glow)) {
+  if (key._flags & (ShaderKey::F_out_aux_normal | ShaderKey::F_out_aux_glow)) {
     text << "\t out float4 o_aux : COLOR1,\n";
   }
   text << "\t out float4 o_color : COLOR0,\n";
 
   if (need_color) {
-    if (key._color_type == ColorAttrib::T_vertex) {
+    if (key._flags & ShaderKey::F_vertex_color) {
       text << "\t in float4 l_color : COLOR0,\n";
-    } else if (key._color_type == ColorAttrib::T_flat) {
+    } else if (key._flags & ShaderKey::F_flat_color) {
       text << "\t uniform float4 attr_color,\n";
     }
   }
@@ -1021,7 +1330,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     text << "\t uniform float4 clipplane_" << i << ",\n";
   }
 
-  if (key._lighting) {
+  if (key._flags & ShaderKey::F_lighting) {
     text << "\t uniform float4 attr_ambient,\n";
   }
   text << "\t uniform float4 attr_colorscale\n";
@@ -1041,7 +1350,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   }
 
   text << "\t float4 result;\n";
-  if (key._outputs & (AuxBitplaneAttrib::ABO_aux_normal | AuxBitplaneAttrib::ABO_aux_glow)) {
+  if (key._flags & (ShaderKey::F_out_aux_normal | ShaderKey::F_out_aux_glow)) {
     text << "\t o_aux = float4(0, 0, 0, 0);\n";
   }
   // Now generate any texture coordinates according to TexGenAttrib.  If it
@@ -1195,37 +1504,38 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     text << "\t l_eye_normal += normalize(l_binormal.xyz) * tsnormal.y;\n";
     text << "\t l_eye_normal = normalize(l_eye_normal);\n";
   }
-  if (key._outputs & AuxBitplaneAttrib::ABO_aux_normal) {
+  if (key._flags & ShaderKey::F_out_aux_normal) {
     text << "\t // Output the camera-space surface normal\n";
     text << "\t o_aux.rgb = (l_eye_normal*0.5) + float3(0.5,0.5,0.5);\n";
   }
-  if (key._lighting) {
+  if (key._flags & ShaderKey::F_lighting) {
     text << "\t // Begin view-space light calculations\n";
     text << "\t float ldist,lattenv,langle,lshad;\n";
     text << "\t float4 lcolor,lspec,lpoint,latten,ldir,leye;\n";
     text << "\t float3 lvec,lhalf;\n";
-    if (key._have_separate_ambient) {
+    if (key._flags & ShaderKey::F_have_separate_ambient) {
       text << "\t float4 tot_ambient = float4(0,0,0,0);\n";
     }
     text << "\t float4 tot_diffuse = float4(0,0,0,0);\n";
     if (have_specular) {
       text << "\t float4 tot_specular = float4(0,0,0,0);\n";
-      if (key._material_flags & Material::F_specular) {
+      if (key._flags & Material::F_specular) {
         text << "\t float shininess = attr_material[3].w;\n";
       } else {
         text << "\t float shininess = 50; // no shininess specified, using default\n";
       }
     }
-    if (key._have_separate_ambient) {
+    if (key._flags & ShaderKey::F_have_separate_ambient) {
       text << "\t tot_ambient += attr_ambient;\n";
     } else {
       text << "\t tot_diffuse += attr_ambient;\n";
     }
   }
   for (size_t i = 0; i < key._lights.size(); ++i) {
-    const ShaderKey::LightInfo &light = key._lights[i];
+    int light_flags = key._lights[i];
+    ShaderKey::LightFlags light_type = (ShaderKey::LightFlags)(light_flags & ShaderKey::LF_TYPE_MASK);
 
-    if (light._flags & ShaderKey::LF_has_shadows) {
+    if (light_flags & ShaderKey::LF_has_shadows) {
       if (lightcoord_fregs[i] == nullptr) {
         // We have to do this one in the fragment shader if we ran out of
         // varyings.
@@ -1233,18 +1543,18 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       }
     }
 
-    if (light._type.is_derived_from(DirectionalLight::get_class_type())) {
+    if (light_type == ShaderKey::LF_type_directional) {
       text << "\t // Directional Light " << i << "\n";
       text << "\t lcolor = attr_light" << i << "[0];\n";
-      if (light._flags & ShaderKey::LF_has_specular_color) {
+      if (light_flags & ShaderKey::LF_has_specular_color) {
         text << "\t lspec  = attr_lspec" << i << ";\n";
       } else {
         text << "\t lspec  = lcolor;\n";
       }
       text << "\t lvec   = attr_light" << i << "[3].xyz;\n";
       text << "\t lcolor *= saturate(dot(l_eye_normal, lvec.xyz));\n";
-      if (light._flags & ShaderKey::LF_has_shadows) {
-        if (_use_shadow_filter) {
+      if (light_flags & ShaderKey::LF_has_shadows) {
+        if (key._flags & ShaderKey::F_use_shadow_filter) {
           text << "\t lshad = shadow2DProj(shadow_" << i << ", l_lightcoord" << i << ").r;\n";
         } else {
           text << "\t lshad = tex2Dproj(shadow_" << i << ", l_lightcoord" << i << ").r > l_lightcoord" << i << ".z / l_lightcoord" << i << ".w;\n";
@@ -1254,7 +1564,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       }
       text << "\t tot_diffuse += lcolor;\n";
       if (have_specular) {
-        if (key._material_flags & Material::F_local) {
+        if (key._flags & Material::F_local) {
           text << "\t lhalf = normalize(lvec - normalize(l_eye_position.xyz));\n";
         } else {
           text << "\t lhalf = normalize(lvec - float3(0, 1, 0));\n";
@@ -1262,10 +1572,11 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
         text << "\t lspec *= pow(saturate(dot(l_eye_normal, lhalf)), shininess);\n";
         text << "\t tot_specular += lspec;\n";
       }
-    } else if (light._type.is_derived_from(PointLight::get_class_type())) {
+    }
+    else if (light_type == ShaderKey::LF_type_point || light_type == ShaderKey::LF_type_sphere) {
       text << "\t // Point Light " << i << "\n";
       text << "\t lcolor = attr_light" << i << "[0];\n";
-      if (light._flags & ShaderKey::LF_has_specular_color) {
+      if (light_flags & ShaderKey::LF_has_specular_color) {
         text << "\t lspec  = attr_lspec" << i << ";\n";
       } else {
         text << "\t lspec  = lcolor;\n";
@@ -1275,15 +1586,15 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       text << "\t lvec   = lpoint.xyz - l_eye_position.xyz;\n";
       text << "\t ldist = length(lvec);\n";
       text << "\t lvec /= ldist;\n";
-      if (light._type.is_derived_from(SphereLight::get_class_type())) {
+      if (light_type == ShaderKey::LF_type_sphere) {
         text << "\t ldist = max(ldist, attr_light" << i << "[2].w);\n";
       }
       text << "\t lattenv = 1/(latten.x + latten.y*ldist + latten.z*ldist*ldist);\n";
       text << "\t lcolor *= lattenv * saturate(dot(l_eye_normal, lvec));\n";
-      if (light._flags & ShaderKey::LF_has_shadows) {
+      if (light_flags & ShaderKey::LF_has_shadows) {
         text << "\t ldist = max(abs(l_lightcoord" << i << ".x), max(abs(l_lightcoord" << i << ".y), abs(l_lightcoord" << i << ".z)));\n";
         text << "\t ldist = ((latten.w+lpoint.w)/(latten.w-lpoint.w))+((-2*latten.w*lpoint.w)/(ldist * (latten.w-lpoint.w)));\n";
-        if (_use_shadow_filter) {
+        if (key._flags & ShaderKey::F_use_shadow_filter) {
           text << "\t lshad = shadowCube(shadow_" << i << ", float4(l_lightcoord" << i << ".xyz, ldist * 0.5 + 0.5)).r;\n";
         } else {
           text << "\t lshad = texCUBE(shadow_" << i << ", l_lightcoord" << i << ".xyz).r >= ldist * 0.5 + 0.5;\n";
@@ -1293,7 +1604,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       }
       text << "\t tot_diffuse += lcolor;\n";
       if (have_specular) {
-        if (key._material_flags & Material::F_local) {
+        if (key._flags & Material::F_local) {
           text << "\t lhalf = normalize(lvec - normalize(l_eye_position.xyz));\n";
         } else {
           text << "\t lhalf = normalize(lvec - float3(0, 1, 0));\n";
@@ -1302,10 +1613,11 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
         text << "\t lspec *= pow(saturate(dot(l_eye_normal, lhalf)), shininess);\n";
         text << "\t tot_specular += lspec;\n";
       }
-    } else if (light._type.is_derived_from(Spotlight::get_class_type())) {
+    }
+    else if (light_type == ShaderKey::LF_type_spot) {
       text << "\t // Spot Light " << i << "\n";
       text << "\t lcolor = attr_light" << i << "[0];\n";
-      if (light._flags & ShaderKey::LF_has_specular_color) {
+      if (light_flags & ShaderKey::LF_has_specular_color) {
         text << "\t lspec  = attr_lspec" << i << ";\n";
       } else {
         text << "\t lspec  = lcolor;\n";
@@ -1321,8 +1633,8 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       text << "\t lattenv *= pow(langle, latten.w);\n";
       text << "\t if (langle < ldir.w) lattenv = 0;\n";
       text << "\t lcolor *= lattenv * saturate(dot(l_eye_normal, lvec));\n";
-      if (light._flags & ShaderKey::LF_has_shadows) {
-        if (_use_shadow_filter) {
+      if (light_flags & ShaderKey::LF_has_shadows) {
+        if (key._flags & ShaderKey::F_use_shadow_filter) {
           text << "\t lshad = shadow2DProj(shadow_" << i << ", l_lightcoord" << i << ").r;\n";
         } else {
           text << "\t lshad = tex2Dproj(shadow_" << i << ", l_lightcoord" << i << ").r > l_lightcoord" << i << ".z / l_lightcoord" << i << ".w;\n";
@@ -1333,7 +1645,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
 
       text << "\t tot_diffuse += lcolor;\n";
       if (have_specular) {
-        if (key._material_flags & Material::F_local) {
+        if (key._flags & Material::F_local) {
           text << "\t lhalf = normalize(lvec - normalize(l_eye_position.xyz));\n";
         } else {
           text << "\t lhalf = normalize(lvec - float3(0,1,0));\n";
@@ -1344,39 +1656,38 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       }
     }
   }
-  if (key._lighting) {
-    if (key._light_ramp != nullptr) {
-      switch (key._light_ramp->get_mode()) {
-      case LightRampAttrib::LRT_single_threshold:
-        {
-          PN_stdfloat t = key._light_ramp->get_threshold(0);
-          PN_stdfloat l0 = key._light_ramp->get_level(0);
-          text << "\t // Single-threshold light ramp\n";
-          text << "\t float lr_in = dot(tot_diffuse.rgb, float3(0.33,0.34,0.33));\n";
-          text << "\t float lr_scale = (lr_in < " << t << ") ? 0.0 : (" << l0 << "/lr_in);\n";
-          text << "\t tot_diffuse = tot_diffuse * lr_scale;\n";
-          break;
-        }
-      case LightRampAttrib::LRT_double_threshold:
-        {
-          PN_stdfloat t0 = key._light_ramp->get_threshold(0);
-          PN_stdfloat t1 = key._light_ramp->get_threshold(1);
-          PN_stdfloat l0 = key._light_ramp->get_level(0);
-          PN_stdfloat l1 = key._light_ramp->get_level(1);
-          text << "\t // Double-threshold light ramp\n";
-          text << "\t float lr_in = dot(tot_diffuse.rgb, float3(0.33,0.34,0.33));\n";
-          text << "\t float lr_out = 0.0;\n";
-          text << "\t if (lr_in > " << t0 << ") lr_out=" << l0 << ";\n";
-          text << "\t if (lr_in > " << t1 << ") lr_out=" << l1 << ";\n";
-          text << "\t tot_diffuse = tot_diffuse * (lr_out / lr_in);\n";
-          break;
-        }
-      default:
+  if (key._flags & ShaderKey::F_lighting) {
+    switch (key._light_ramp_mode) {
+    case LightRampAttrib::LRT_single_threshold:
+      {
+        PN_stdfloat t = key._light_ramp_threshold[0];
+        PN_stdfloat l0 = key._light_ramp_level[0];
+        text << "\t // Single-threshold light ramp\n";
+        text << "\t float lr_in = dot(tot_diffuse.rgb, float3(0.33,0.34,0.33));\n";
+        text << "\t float lr_scale = (lr_in < " << t << ") ? 0.0 : (" << l0 << "/lr_in);\n";
+        text << "\t tot_diffuse = tot_diffuse * lr_scale;\n";
         break;
       }
+    case LightRampAttrib::LRT_double_threshold:
+      {
+        PN_stdfloat t0 = key._light_ramp_threshold[0];
+        PN_stdfloat t1 = key._light_ramp_threshold[1];
+        PN_stdfloat l0 = key._light_ramp_level[0];
+        PN_stdfloat l1 = key._light_ramp_level[1];
+        text << "\t // Double-threshold light ramp\n";
+        text << "\t float lr_in = dot(tot_diffuse.rgb, float3(0.33,0.34,0.33));\n";
+        text << "\t float lr_out = 0.0;\n";
+        text << "\t if (lr_in > " << t0 << ") lr_out=" << l0 << ";\n";
+        text << "\t if (lr_in > " << t1 << ") lr_out=" << l1 << ";\n";
+        text << "\t tot_diffuse = tot_diffuse * (lr_out / lr_in);\n";
+        break;
+      }
+    default:
+      break;
     }
+
     text << "\t // Begin view-space light summation\n";
-    if (key._material_flags & Material::F_emission) {
+    if (key._flags & Material::F_emission) {
       text << "\t result = attr_material[2];\n";
     } else if (key._texture_flags & (ShaderKey::TF_map_glow | ShaderKey::TF_map_emission)) {
       text << "\t result = float4(1,1,1,0);\n";
@@ -1389,49 +1700,48 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     if (key._texture_flags & ShaderKey::TF_map_glow) {
       text << "\t result *= saturate(2 * (tex" << map_index_glow << ".a - 0.5));\n";
     }
-    if (key._have_separate_ambient) {
-      if (key._material_flags & Material::F_ambient) {
+    if (key._flags & ShaderKey::F_have_separate_ambient) {
+      if (key._flags & Material::F_ambient) {
         text << "\t result += tot_ambient * attr_material[0];\n";
-      } else if (key._color_type == ColorAttrib::T_vertex) {
+      } else if (key._flags & ShaderKey::F_vertex_color) {
         text << "\t result += tot_ambient * l_color;\n";
-      } else if (key._color_type == ColorAttrib::T_flat) {
+      } else if (key._flags & ShaderKey::F_flat_color) {
         text << "\t result += tot_ambient * attr_color;\n";
       } else {
         text << "\t result += tot_ambient;\n";
       }
     }
-    if (key._material_flags & Material::F_diffuse) {
+    if (key._flags & Material::F_diffuse) {
       text << "\t result += tot_diffuse * attr_material[1];\n";
-    } else if (key._color_type == ColorAttrib::T_vertex) {
+    } else if (key._flags & ShaderKey::F_vertex_color) {
       text << "\t result += tot_diffuse * l_color;\n";
-    } else if (key._color_type == ColorAttrib::T_flat) {
+    } else if (key._flags & ShaderKey::F_flat_color) {
       text << "\t result += tot_diffuse * attr_color;\n";
     } else {
       text << "\t result += tot_diffuse;\n";
     }
-    if (key._light_ramp == nullptr ||
-        key._light_ramp->get_mode() == LightRampAttrib::LRT_default) {
+    if (key._light_ramp_mode == LightRampAttrib::LRT_default) {
       text << "\t result = saturate(result);\n";
     }
     text << "\t // End view-space light calculations\n";
 
     // Combine in alpha, which bypasses lighting calculations.  Use of lerp
     // here is a workaround for a radeon driver bug.
-    if (key._calc_primary_alpha) {
-      if (key._material_flags & Material::F_diffuse) {
+    if (key._flags & ShaderKey::F_calc_primary_alpha) {
+      if (key._flags & Material::F_diffuse) {
         text << "\t result.a = attr_material[1].w;\n";
-      } else if (key._color_type == ColorAttrib::T_vertex) {
+      } else if (key._flags & ShaderKey::F_vertex_color) {
         text << "\t result.a = l_color.a;\n";
-      } else if (key._color_type == ColorAttrib::T_flat) {
+      } else if (key._flags & ShaderKey::F_flat_color) {
         text << "\t result.a = attr_color.a;\n";
       } else {
         text << "\t result.a = 1;\n";
       }
     }
   } else {
-    if (key._color_type == ColorAttrib::T_vertex) {
+    if (key._flags & ShaderKey::F_vertex_color) {
       text << "\t result = l_color;\n";
-    } else if (key._color_type == ColorAttrib::T_flat) {
+    } else if (key._flags & ShaderKey::F_flat_color) {
       text << "\t result = attr_color;\n";
     } else {
       text << "\t result = float4(1, 1, 1, 1);\n";
@@ -1479,7 +1789,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       break;
     case TextureStage::M_blend:
       text << "\t result.rgb = lerp(result.rgb, texcolor_" << i << ".rgb, tex" << i << ".rgb);\n";
-      if (key._calc_primary_alpha) {
+      if (key._flags & ShaderKey::F_calc_primary_alpha) {
         text << "\t result.a *= tex" << i << ".a;\n";
       }
       break;
@@ -1488,7 +1798,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       break;
     case TextureStage::M_add:
       text << "\t result.rgb += tex" << i << ".rgb;\n";
-      if (key._calc_primary_alpha) {
+      if (key._flags & ShaderKey::F_calc_primary_alpha) {
         text << "\t result.a   *= tex" << i << ".a;\n";
       }
       break;
@@ -1521,7 +1831,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       break;
     case TextureStage::M_blend_color_scale:
       text << "\t result.rgb = lerp(result.rgb, texcolor_" << i << ".rgb * attr_colorscale.rgb, tex" << i << ".rgb);\n";
-      if (key._calc_primary_alpha) {
+      if (key._flags & ShaderKey::F_calc_primary_alpha) {
         text << "\t result.a *= texcolor_" << i << ".a * attr_colorscale.a;\n";
       }
       break;
@@ -1533,10 +1843,10 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     }
   }
 
-  if (key._alpha_test_mode != RenderAttrib::M_none) {
+  if ((key._flags & ShaderKey::F_ALPHA_TEST_MASK) != 0) {
     text << "\t // Shader includes alpha test:\n";
     double ref = key._alpha_test_ref;
-    switch (key._alpha_test_mode) {
+    switch (key.get_alpha_test_mode()) {
     case RenderAttrib::M_never:
       text << "\t discard;\n";
       break;
@@ -1564,14 +1874,14 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     }
   }
 
-  if (key._outputs & AuxBitplaneAttrib::ABO_glow) {
+  if (key._flags & ShaderKey::F_out_alpha_glow) {
     if (key._texture_flags & ShaderKey::TF_map_glow) {
       text << "\t result.a = tex" << map_index_glow << ".a;\n";
     } else {
       text << "\t result.a = 0.5;\n";
     }
   }
-  if (key._outputs & AuxBitplaneAttrib::ABO_aux_glow) {
+  if (key._flags & ShaderKey::F_out_aux_glow) {
     if (key._texture_flags & ShaderKey::TF_map_glow) {
       text << "\t o_aux.a = tex" << map_index_glow << ".a;\n";
     } else {
@@ -1580,7 +1890,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   }
 
   if (have_specular) {
-    if (key._material_flags & Material::F_specular) {
+    if (key._flags & Material::F_specular) {
       text << "\t tot_specular *= attr_material[3];\n";
     }
     if (key._texture_flags & ShaderKey::TF_map_gloss) {
@@ -1588,24 +1898,24 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     }
     text << "\t result.rgb = result.rgb + tot_specular.rgb;\n";
   }
-  if (key._light_ramp != nullptr) {
-    switch (key._light_ramp->get_mode()) {
-    case LightRampAttrib::LRT_hdr0:
-      text << "\t result.rgb = (result*result*result + result*result + result) / (result*result*result + result*result + result + 1);\n";
-      break;
-    case LightRampAttrib::LRT_hdr1:
-      text << "\t result.rgb = (result*result + result) / (result*result + result + 1);\n";
-      break;
-    case LightRampAttrib::LRT_hdr2:
-      text << "\t result.rgb = result / (result + 1);\n";
-      break;
-    default: break;
-    }
+
+  switch (key._light_ramp_mode) {
+  case LightRampAttrib::LRT_hdr0:
+    text << "\t result.rgb = (result*result*result + result*result + result) / (result*result*result + result*result + result + 1);\n";
+    break;
+  case LightRampAttrib::LRT_hdr1:
+    text << "\t result.rgb = (result*result + result) / (result*result + result + 1);\n";
+    break;
+  case LightRampAttrib::LRT_hdr2:
+    text << "\t result.rgb = result / (result + 1);\n";
+    break;
+  default:
+    break;
   }
 
   // Apply fog.
-  if (key._fog_mode != 0) {
-    Fog::Mode fog_mode = (Fog::Mode)(key._fog_mode - 1);
+  if ((key._flags & ShaderKey::F_FOG_MODE_MASK) != 0) {
+    Fog::Mode fog_mode = (Fog::Mode)(((key._flags & ShaderKey::F_FOG_MODE_MASK) >> ShaderKey::F_FOG_MODE_SHIFT) - 1);
     switch (fog_mode) {
     case Fog::M_linear:
       text << "\t result.rgb = lerp(attr_fogcolor.rgb, result.rgb, saturate((attr_fog.z - l_hpos.z) * attr_fog.w));\n";
@@ -1622,10 +1932,10 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   // The multiply is a workaround for a radeon driver bug.  It's annoying as
   // heck, since it produces an extra instruction.
   text << "\t o_color = result * 1.000001;\n";
-  if (key._alpha_test_mode != RenderAttrib::M_none) {
+  if ((key._flags & ShaderKey::F_ALPHA_TEST_MASK) != 0) {
     text << "\t // Shader subsumes normal alpha test.\n";
   }
-  if (key._disable_alpha_write) {
+  if (key._flags & ShaderKey::F_disable_alpha_write) {
     text << "\t // Shader disables alpha write.\n";
   }
   text << "}\n";
@@ -1639,23 +1949,35 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   PT(Shader) shader = Shader::make(text.str(), Shader::SL_Cg);
   nassertr(shader != nullptr, nullptr);
 
+  reset_register_allocator();
+
+  CPT(ShaderAttrib) attr = make_attrib(key, shader);
+
+  LightMutexHolder holder(_lock);
+  GeneratedShader &gen_shader = _generated_shaders[key];
+  gen_shader._shader = std::move(shader);
+  gen_shader._attrib = attr;
+  gen_shader._last_use = time(nullptr);
+  return attr;
+}
+
+/**
+ * Constructs a ShaderAttrib around the given generated Shader object.
+ */
+CPT(ShaderAttrib) ShaderGenerator::
+make_attrib(const ShaderKey &key, Shader *shader) {
   CPT(RenderAttrib) shattr = ShaderAttrib::make(shader);
   int flags = 0;
-  if (key._alpha_test_mode != RenderAttrib::M_none) {
+  if ((key._flags & ShaderKey::F_ALPHA_TEST_MASK) != 0) {
     flags |= ShaderAttrib::F_subsume_alpha_test;
   }
-  if (key._disable_alpha_write) {
+  if (key._flags & ShaderKey::F_disable_alpha_write) {
     flags |= ShaderAttrib::F_disable_alpha_write;
   }
   if (flags != 0) {
     shattr = DCAST(ShaderAttrib, shattr)->set_flag(flags, true);
   }
-
-  reset_register_allocator();
-
-  CPT(ShaderAttrib) attr = DCAST(ShaderAttrib, shattr);
-  _generated_shaders[key] = attr;
-  return attr;
+  return DCAST(ShaderAttrib, shattr);
 }
 
 /**
@@ -1803,19 +2125,14 @@ texture_type_as_string(Texture::TextureType ttype) {
  */
 ShaderGenerator::ShaderKey::
 ShaderKey() :
-  _color_type(ColorAttrib::T_vertex),
-  _material_flags(0),
+  _flags(0),
   _texture_flags(0),
-  _lighting(false),
-  _have_separate_ambient(false),
-  _fog_mode(0),
-  _outputs(0),
-  _calc_primary_alpha(false),
-  _disable_alpha_write(false),
-  _alpha_test_mode(RenderAttrib::M_none),
   _alpha_test_ref(0.0),
   _num_clip_planes(0),
-  _light_ramp(nullptr) {
+  _light_ramp_mode(LightRampAttrib::LRT_default),
+  _light_ramp_level{0, 0},
+  _light_ramp_threshold{0, 0},
+  _num_anim_transforms(0) {
 }
 
 /**
@@ -1824,20 +2141,14 @@ ShaderKey() :
  */
 bool ShaderGenerator::ShaderKey::
 operator < (const ShaderKey &other) const {
-  if (_anim_spec != other._anim_spec) {
-    return _anim_spec < other._anim_spec;
-  }
-  if (_color_type != other._color_type) {
-    return _color_type < other._color_type;
-  }
-  if (_material_flags != other._material_flags) {
-    return _material_flags < other._material_flags;
-  }
   if (_texture_flags != other._texture_flags) {
     return _texture_flags < other._texture_flags;
   }
   if (_textures.size() != other._textures.size()) {
     return _textures.size() < other._textures.size();
+  }
+  if (_lights.size() != other._lights.size()) {
+    return _lights.size() < other._lights.size();
   }
   for (size_t i = 0; i < _textures.size(); ++i) {
     const ShaderKey::TextureInfo &tex = _textures[i];
@@ -1864,39 +2175,12 @@ operator < (const ShaderKey &other) const {
       return tex._combine_alpha < other_tex._combine_alpha;
     }
   }
-  if (_lights.size() != other._lights.size()) {
-    return _lights.size() < other._lights.size();
-  }
   for (size_t i = 0; i < _lights.size(); ++i) {
-    const ShaderKey::LightInfo &light = _lights[i];
-    const ShaderKey::LightInfo &other_light = other._lights[i];
-    if (light._type != other_light._type) {
-      return light._type < other_light._type;
+    int light_flags = _lights[i];
+    int other_light_flags = other._lights[i];
+    if (light_flags != other_light_flags) {
+      return light_flags < other_light_flags;
     }
-    if (light._flags != other_light._flags) {
-      return light._flags < other_light._flags;
-    }
-  }
-  if (_lighting != other._lighting) {
-    return _lighting < other._lighting;
-  }
-  if (_have_separate_ambient != other._have_separate_ambient) {
-    return _have_separate_ambient < other._have_separate_ambient;
-  }
-  if (_fog_mode != other._fog_mode) {
-    return _fog_mode < other._fog_mode;
-  }
-  if (_outputs != other._outputs) {
-    return _outputs < other._outputs;
-  }
-  if (_calc_primary_alpha != other._calc_primary_alpha) {
-    return _calc_primary_alpha < other._calc_primary_alpha;
-  }
-  if (_disable_alpha_write != other._disable_alpha_write) {
-    return _disable_alpha_write < other._disable_alpha_write;
-  }
-  if (_alpha_test_mode != other._alpha_test_mode) {
-    return _alpha_test_mode < other._alpha_test_mode;
   }
   if (_alpha_test_ref != other._alpha_test_ref) {
     return _alpha_test_ref < other._alpha_test_ref;
@@ -1904,7 +2188,25 @@ operator < (const ShaderKey &other) const {
   if (_num_clip_planes != other._num_clip_planes) {
     return _num_clip_planes < other._num_clip_planes;
   }
-  return _light_ramp < other._light_ramp;
+  if (_light_ramp_mode != other._light_ramp_mode) {
+    return _light_ramp_mode < other._light_ramp_mode;
+  }
+  if (_light_ramp_mode != LightRampAttrib::LRT_default &&
+      _light_ramp_mode != LightRampAttrib::LRT_identity) {
+    if (_light_ramp_level[0] != other._light_ramp_level[0]) {
+      return _light_ramp_level[0] < other._light_ramp_level[0];
+    }
+    if (_light_ramp_level[1] != other._light_ramp_level[1]) {
+      return _light_ramp_level[1] < other._light_ramp_level[1];
+    }
+    if (_light_ramp_threshold[0] != other._light_ramp_threshold[0]) {
+      return _light_ramp_threshold[0] < other._light_ramp_threshold[0];
+    }
+    if (_light_ramp_threshold[1] != other._light_ramp_threshold[1]) {
+      return _light_ramp_threshold[1] < other._light_ramp_threshold[1];
+    }
+  }
+  return _num_anim_transforms < other._num_anim_transforms;
 }
 
 /**
@@ -1912,19 +2214,16 @@ operator < (const ShaderKey &other) const {
  */
 bool ShaderGenerator::ShaderKey::
 operator == (const ShaderKey &other) const {
-  if (_anim_spec != other._anim_spec) {
-    return false;
-  }
-  if (_color_type != other._color_type) {
-    return false;
-  }
-  if (_material_flags != other._material_flags) {
+  if (_flags != other._flags) {
     return false;
   }
   if (_texture_flags != other._texture_flags) {
     return false;
   }
   if (_textures.size() != other._textures.size()) {
+    return false;
+  }
+  if (_lights.size() != other._lights.size()) {
     return false;
   }
   for (size_t i = 0; i < _textures.size(); ++i) {
@@ -1940,25 +2239,109 @@ operator == (const ShaderKey &other) const {
       return false;
     }
   }
-  if (_lights.size() != other._lights.size()) {
-    return false;
-  }
   for (size_t i = 0; i < _lights.size(); ++i) {
-    const ShaderKey::LightInfo &light = _lights[i];
-    const ShaderKey::LightInfo &other_light = other._lights[i];
-    if (light._type != other_light._type ||
-        light._flags != other_light._flags) {
+    int light_flags = _lights[i];
+    int other_light_flags = other._lights[i];
+    if (light_flags != other_light_flags) {
       return false;
     }
   }
-  return _lighting == other._lighting
-      && _have_separate_ambient == other._have_separate_ambient
-      && _fog_mode == other._fog_mode
-      && _outputs == other._outputs
-      && _calc_primary_alpha == other._calc_primary_alpha
-      && _disable_alpha_write == other._disable_alpha_write
-      && _alpha_test_mode == other._alpha_test_mode
-      && _alpha_test_ref == other._alpha_test_ref
+  return _alpha_test_ref == other._alpha_test_ref
       && _num_clip_planes == other._num_clip_planes
-      && _light_ramp == other._light_ramp;
+      && _light_ramp_mode == other._light_ramp_mode
+      && _light_ramp_level[0] == other._light_ramp_level[0]
+      && _light_ramp_level[1] == other._light_ramp_level[1]
+      && _light_ramp_threshold[0] == other._light_ramp_threshold[0]
+      && _light_ramp_threshold[1] == other._light_ramp_threshold[1]
+      && _num_anim_transforms == other._num_anim_transforms;
+}
+
+/**
+ * Deserializes this shader key.
+ */
+void ShaderGenerator::ShaderKey::
+read_datagram(DatagramIterator &scan) {
+  _flags = scan.get_uint32();
+
+  _texture_flags = 0;
+
+  _textures.resize(scan.get_uint16());
+  for (ShaderKey::TextureInfo &tex : _textures) {
+    tex._texcoord_name = scan.get_string();
+    tex._type = (Texture::TextureType)scan.get_uint8();
+    tex._mode = (TextureStage::Mode)scan.get_uint8();
+    tex._gen_mode = (TexGenAttrib::Mode)scan.get_uint8();
+    tex._flags = scan.get_uint32();
+    if (tex._mode == TextureStage::M_combine) {
+      tex._combine_rgb = scan.get_uint16();
+      tex._combine_alpha = scan.get_uint16();
+    } else {
+      tex._combine_rgb = 0u;
+      tex._combine_alpha = 0u;
+    }
+    _texture_flags |= tex._flags;
+  }
+
+  _lights.resize(scan.get_uint16());
+  for (int &light_flags : _lights) {
+    light_flags = (int)scan.get_uint8();
+  }
+
+  if ((_flags & ShaderKey::F_ALPHA_TEST_MASK) != 0) {
+    _alpha_test_ref = scan.get_float32();
+  } else {
+    _alpha_test_ref = 0;
+  }
+
+  _num_clip_planes = scan.get_uint16();
+  _light_ramp_mode = (LightRampAttrib::LightRampMode)scan.get_uint8();
+  if (_light_ramp_mode != LightRampAttrib::LRT_default &&
+      _light_ramp_mode != LightRampAttrib::LRT_identity) {
+    _light_ramp_level[0] = scan.get_float32();
+    _light_ramp_level[1] = scan.get_float32();
+    _light_ramp_threshold[0] = scan.get_float32();
+    _light_ramp_threshold[1] = scan.get_float32();
+  }
+  _num_anim_transforms = scan.get_int32();
+}
+
+/**
+ * Serializes this shader key.
+ */
+void ShaderGenerator::ShaderKey::
+write_datagram(Datagram &dg) const {
+  dg.add_uint32(_flags);
+
+  dg.add_uint16(_textures.size());
+  for (const ShaderKey::TextureInfo &tex : _textures) {
+    dg.add_string(tex._texcoord_name->get_name());
+    dg.add_uint8(tex._type);
+    dg.add_uint8(tex._mode);
+    dg.add_uint8(tex._gen_mode);
+    dg.add_uint32(tex._flags);
+    if (tex._mode == TextureStage::M_combine) {
+      dg.add_uint16(tex._combine_rgb);
+      dg.add_uint16(tex._combine_alpha);
+    }
+  }
+
+  dg.add_uint16(_lights.size());
+  for (int light_flags : _lights) {
+    dg.add_uint8(light_flags);
+  }
+
+  if ((_flags & ShaderKey::F_ALPHA_TEST_MASK) != 0) {
+    dg.add_float32(_alpha_test_ref);
+  }
+
+  dg.add_uint16(_num_clip_planes);
+  dg.add_uint8(_light_ramp_mode);
+  if (_light_ramp_mode != LightRampAttrib::LRT_default &&
+      _light_ramp_mode != LightRampAttrib::LRT_identity) {
+    dg.add_float32(_light_ramp_level[0]);
+    dg.add_float32(_light_ramp_level[1]);
+    dg.add_float32(_light_ramp_threshold[0]);
+    dg.add_float32(_light_ramp_threshold[1]);
+  }
+  dg.add_int32(_num_anim_transforms);
 }

@@ -24,6 +24,7 @@
 #include "graphicsOutputBase.h"
 #include "nodePath.h"
 #include "renderAttrib.h"
+#include "lightMutex.h"
 
 #include "colorAttrib.h"
 #include "lightRampAttrib.h"
@@ -64,6 +65,10 @@ class EXPCL_PANDA_PGRAPHNODES ShaderGenerator : public TypedReferenceCount {
 PUBLISHED:
   ShaderGenerator(const GraphicsStateGuardianBase *gsg);
   virtual ~ShaderGenerator();
+
+  bool reload_cache();
+  bool flush_cache();
+
   virtual CPT(ShaderAttrib) synthesize_shader(const RenderState *rs,
                                               const GeomVertexAnimationSpec &anim);
 
@@ -76,6 +81,7 @@ protected:
   void reset_register_allocator();
   const char *alloc_freg();
 
+  Filename _cache_filename;
   bool _use_shadow_filter;
   int _num_indexed_transforms;
 
@@ -87,7 +93,36 @@ protected:
     bool operator == (const ShaderKey &other) const;
     bool operator != (const ShaderKey &other) const { return !operator ==(other); }
 
-    GeomVertexAnimationSpec _anim_spec;
+    void read_datagram(DatagramIterator &source);
+    void write_datagram(Datagram &dg) const;
+
+    INLINE RenderAttrib::PandaCompareFunc get_alpha_test_mode() const;
+
+    enum Flags {
+      F_MATERIAL_FLAGS_SHIFT  = 0,
+      F_MATERIAL_FLAGS_MASK   = 0x0007ff,
+
+      F_FOG_MODE_SHIFT        = 11,
+      F_FOG_MODE_MASK         = 0x001800,
+
+      F_lighting              = 0x002000,
+      F_have_separate_ambient = 0x004000,
+      F_flat_color            = 0x008000,
+      F_vertex_color          = 0x010000,
+      F_calc_primary_alpha    = 0x020000,
+      F_disable_alpha_write   = 0x040000,
+      F_out_alpha_glow        = 0x080000,
+      F_out_aux_normal        = 0x100000,
+      F_out_aux_glow          = 0x200000,
+      F_hardware_animation    = 0x400000,
+      F_indexed_transforms    = 0x800000,
+
+      F_ALPHA_TEST_SHIFT      = 24,
+      F_ALPHA_TEST_MASK       = 0x07000000,
+
+      F_use_shadow_filter     = 0x08000000,
+    };
+
     enum TextureFlags {
       TF_has_rgb      = 0x001,
       TF_has_alpha    = 0x002,
@@ -114,8 +149,7 @@ protected:
       TF_COMBINE_ALPHA_MODE_MASK = 0x000f00000,
     };
 
-    ColorAttrib::Type _color_type;
-    int _material_flags;
+    int _flags;
     int _texture_flags;
 
     struct TextureInfo {
@@ -130,35 +164,45 @@ protected:
     pvector<TextureInfo> _textures;
 
     enum LightFlags {
-      LF_has_shadows = 1,
-      LF_has_specular_color = 2,
+      LF_type_directional,
+      LF_type_spot,
+      LF_type_point,
+      LF_type_sphere,
+
+      LF_TYPE_MASK = 3,
+
+      LF_has_shadows = 4,
+      LF_has_specular_color = 8,
     };
 
-    struct LightInfo {
-      TypeHandle _type;
-      int _flags;
-    };
-    pvector<LightInfo> _lights;
-    bool _lighting;
-    bool _have_separate_ambient;
+    pvector<int> _lights;
 
-    int _fog_mode;
-
-    int _outputs;
-    bool _calc_primary_alpha;
-    bool _disable_alpha_write;
-    RenderAttrib::PandaCompareFunc _alpha_test_mode;
     PN_stdfloat _alpha_test_ref;
 
     int _num_clip_planes;
 
-    CPT(LightRampAttrib) _light_ramp;
+    LightRampAttrib::LightRampMode _light_ramp_mode;
+    PN_stdfloat _light_ramp_level[2];
+    PN_stdfloat _light_ramp_threshold[2];
+
+    int _num_anim_transforms;
   };
 
-  typedef phash_map<ShaderKey, CPT(ShaderAttrib)> GeneratedShaders;
+  struct GeneratedShader {
+    PT(Shader) _shader;
+    CPT(ShaderAttrib) _attrib;
+    time_t _last_use = 0;
+  };
+
+  LightMutex _lock;
+  typedef phash_map<ShaderKey, GeneratedShader> GeneratedShaders;
   GeneratedShaders _generated_shaders;
 
   void analyze_renderstate(ShaderKey &key, const RenderState *rs);
+  void analyze_renderstate(ShaderKey &key, const RenderState *rs,
+                           const GeomVertexAnimationSpec &anim);
+
+  static CPT(ShaderAttrib) make_attrib(const ShaderKey &key, Shader *shader);
 
   static std::string combine_mode_as_string(const ShaderKey::TextureInfo &info,
                       TextureStage::CombineMode c_mode, bool alpha, short texindex);

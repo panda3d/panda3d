@@ -10,3 +10,12 @@
  * @author jyelon
  * @date 2007-12-15
  */
+
+/**
+ * Returns the alpha test mode subsumed by this shader.
+ */
+INLINE RenderAttrib::PandaCompareFunc ShaderGenerator::ShaderKey::
+get_alpha_test_mode() const {
+  return (RenderAttrib::PandaCompareFunc)
+    ((_flags & ShaderKey::F_ALPHA_TEST_MASK) >> ShaderKey::F_ALPHA_TEST_SHIFT);
+}
