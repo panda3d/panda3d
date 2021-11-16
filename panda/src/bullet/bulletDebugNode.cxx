@@ -48,6 +48,7 @@ BulletDebugNode(const char *name) : PandaNode(name) {
   set_bounds(bounds);
   set_final(true);
   set_overall_hidden(true);
+  set_renderable();
 }
 
 /**
@@ -149,17 +150,6 @@ draw_mask_changed() {
 
     _drawer.setDebugMode(mode);
   }
-}
-
-/**
- * Returns true if there is some value to visiting this particular node during
- * the cull traversal for any camera, false otherwise.  This will be used to
- * optimize the result of get_net_draw_show_mask(), so that any subtrees that
- * contain only nodes for which is_renderable() is false need not be visited.
- */
-bool BulletDebugNode::
-is_renderable() const {
-  return true;
 }
 
 /**

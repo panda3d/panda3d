@@ -473,6 +473,20 @@ get_mat() const {
 }
 
 /**
+ * Returns the inverse of the matrix, or nullptr if it's singular.
+ */
+INLINE const LMatrix4 *TransformState::
+get_inverse_mat() const {
+  if (!is_singular()) {
+    nassertr(_inv_mat != nullptr, nullptr);
+    return _inv_mat;
+  }
+  else {
+    return nullptr;
+  }
+}
+
+/**
  * Returns the pos component of the 2-d transform.  It is an error to call
  * this if has_pos() or is_2d() returned false.
  */

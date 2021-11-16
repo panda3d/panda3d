@@ -286,7 +286,6 @@ public:
                       Thread *current_thread) const;
 
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
-  virtual bool is_renderable() const;
 
   virtual void compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
                                        int &internal_vertices,

@@ -17,6 +17,7 @@
 #include "transformState.h"
 #include "renderState.h"
 #include "colorAttrib.h"
+#include "textureAttrib.h"
 #include "renderModeAttrib.h"
 #include "cullFaceAttrib.h"
 #include "depthOffsetAttrib.h"
@@ -48,14 +49,15 @@ TypeHandle CullTraverser::_type_handle;
 CullTraverser::
 CullTraverser() :
   _gsg(nullptr),
-  _current_thread(Thread::get_current_thread())
+  _current_thread(Thread::get_current_thread()),
+  _camera_mask(DrawMask::all_on()),
+  _fake_view_frustum_cull(false),
+  _has_tag_state_key(false),
+  _initial_state(RenderState::make_empty()),
+  _cull_handler(nullptr),
+  _portal_clipper(nullptr),
+  _effective_incomplete_render(false)
 {
-  _camera_mask = DrawMask::all_on();
-  _has_tag_state_key = false;
-  _initial_state = RenderState::make_empty();
-  _cull_handler = nullptr;
-  _portal_clipper = nullptr;
-  _effective_incomplete_render = true;
 }
 
 /**
@@ -67,6 +69,7 @@ CullTraverser(const CullTraverser &copy) :
   _current_thread(copy._current_thread),
   _scene_setup(copy._scene_setup),
   _camera_mask(copy._camera_mask),
+  _fake_view_frustum_cull(copy._fake_view_frustum_cull),
   _has_tag_state_key(copy._has_tag_state_key),
   _tag_state_key(copy._tag_state_key),
   _initial_state(copy._initial_state),
@@ -99,6 +102,10 @@ set_scene(SceneSetup *scene_setup, GraphicsStateGuardianBase *gsg,
   _effective_incomplete_render = _gsg->get_incomplete_render() && dr_incomplete_render;
 
   _view_frustum = scene_setup->get_view_frustum();
+
+#ifndef NDEBUG
+  _fake_view_frustum_cull = fake_view_frustum_cull;
+#endif
 }
 
 /**
@@ -132,7 +139,9 @@ traverse(const NodePath &root) {
                            _initial_state, _view_frustum,
                            _current_thread);
 
-    traverse(data);
+    if (data.is_in_view(_camera_mask)) {
+      do_traverse(data);
+    }
 
     // Finally add the lines to be drawn
     if (debug_portal_cull) {
@@ -143,45 +152,68 @@ traverse(const NodePath &root) {
     NodePath cull_center = _scene_setup->get_cull_center();
     CPT(TransformState) transform = cull_center.get_transform(root);
 
-    CullTraverserData my_data(data, portal_viewer._previous);
-    my_data._net_transform = my_data._net_transform->compose(transform);
-    traverse(my_data);
+    CullTraverserData my_data(data, portal_viewer._previous,
+                              data._net_transform->compose(transform),
+                              data._state, data._view_frustum);
+    if (my_data.is_in_view(_camera_mask)) {
+      do_traverse(my_data);
+    }
 
   } else {
     CullTraverserData data(root, TransformState::make_identity(),
                            _initial_state, _view_frustum,
                            _current_thread);
 
-    do_traverse(data);
+    if (data.is_in_view(_camera_mask)) {
+      do_traverse(data);
+    }
   }
 }
 
 /**
- * Traverses from the next node with the given data, which has been
- * constructed with the node but has not yet been converted into the node's
- * space.
+ * Internal method called by traverse() and traverse_down().  Traverses the
+ * given node, assuming it has already been checked with is_in_view().
  */
 void CullTraverser::
-traverse(CullTraverserData &data) {
-  do_traverse(data);
-}
+do_traverse(CullTraverserData &data) {
+#ifndef NDEBUG
+  if (UNLIKELY(pgraph_cat.is_spam())) {
+    pgraph_cat.spam()
+      << "\n" << data.get_node_path()
+      << " " << data._draw_mask << "\n";
+  }
+#endif
 
-/**
- * Traverses all the children of the indicated node, with the given data,
- * which has been converted into the node's space.
- */
-void CullTraverser::
-traverse_below(CullTraverserData &data) {
-  _nodes_pcollector.add_level(1);
-  PandaNodePipelineReader *node_reader = data.node_reader();
   PandaNode *node = data.node();
+  PandaNodePipelineReader *node_reader = data.node_reader();
+  int fancy_bits = node_reader->get_fancy_bits();
 
-  if (!data.is_this_node_hidden(_camera_mask)) {
+  if ((fancy_bits & ~PandaNode::FB_renderable) == 0 && data._cull_planes == nullptr) {
+    // Nothing interesting in this node; just move on.
+  }
+  else {
+    // Something in this node is worth taking a closer look.
+    if (fancy_bits & PandaNode::FB_show_bounds) {
+      // If we should show the bounding volume for this node, make it up
+      // now.
+      show_bounds(data, (fancy_bits & PandaNode::FB_show_tight_bounds) != 0);
+    }
+
+    data.apply_transform_and_state(this);
+
+    if (fancy_bits & PandaNode::FB_cull_callback) {
+      if (!node->cull_callback(this, data)) {
+        return;
+      }
+    }
+  }
+
+  if ((fancy_bits & PandaNode::FB_renderable) != 0 &&
+      !data.is_this_node_hidden(_camera_mask)) {
     node->add_for_draw(this, data);
 
     // Check for a decal effect.
-    const RenderEffects *node_effects = node_reader->get_effects();
-    if (node_effects->has_decal()) {
+    if (fancy_bits & PandaNode::FB_decal) {
       // If we *are* implementing decals with DepthOffsetAttribs, apply it
       // now, so that each child of this node gets offset by a tiny amount.
       data._state = data._state->compose(get_depth_offset_state());
@@ -195,22 +227,15 @@ traverse_below(CullTraverserData &data) {
     }
   }
 
+  _nodes_pcollector.add_level(1);
+
   // Now visit all the node's children.
   PandaNode::Children children = node_reader->get_children();
   node_reader->release();
   int num_children = children.get_num_children();
-  if (!node->has_selective_visibility()) {
-    for (int i = 0; i < num_children; ++i) {
-      CullTraverserData next_data(data, children.get_child(i));
-      do_traverse(next_data);
-    }
-  } else {
-    int i = node->get_first_visible_child();
-    while (i < num_children) {
-      CullTraverserData next_data(data, children.get_child(i));
-      do_traverse(next_data);
-      i = node->get_next_visible_child(i);
-    }
+  for (int i = 0; i < num_children; ++i) {
+    const PandaNode::DownConnection &child = children.get_child_connection(i);
+    traverse_down(data, child, data._state);
   }
 }
 
@@ -246,13 +271,28 @@ draw_bounding_volume(const BoundingVolume *vol,
 }
 
 /**
- * Returns true if the current node is fully or partially within the viewing
- * area and should be drawn, or false if it (and all of its children) should
- * be pruned.
+ * Implements fake-view-frustum-cull.
  */
-bool CullTraverser::
-is_in_view(CullTraverserData &data) {
-  return data.is_in_view(_camera_mask);
+void CullTraverser::
+do_fake_cull(const CullTraverserData &data, PandaNode *child,
+             const TransformState *net_transform, const RenderState *state) {
+#ifndef NDEBUG
+  // Once someone asks for this pointer, we hold its reference count and never
+  // free it.
+  static CPT(RenderState) fake_view_frustum_cull_state;
+  if (fake_view_frustum_cull_state == nullptr) {
+    fake_view_frustum_cull_state = RenderState::make
+      (ColorAttrib::make_flat(LColor(1.0f, 0.0f, 0.0f, 1.0f)),
+       TextureAttrib::make_all_off(),
+       RenderModeAttrib::make(RenderModeAttrib::M_wireframe),
+       RenderState::get_max_priority());
+  }
+
+  CullTraverserData next_data(data, child, net_transform,
+                              state->compose(fake_view_frustum_cull_state),
+                              nullptr);
+  do_traverse(next_data);
+#endif
 }
 
 /**
@@ -503,7 +543,7 @@ compute_point(const BoundingSphere *sphere,
  * Returns a RenderState for rendering the outside surfaces of the bounding
  * volume visualizations.
  */
-CPT(RenderState) CullTraverser::
+const RenderState *CullTraverser::
 get_bounds_outer_viz_state() {
   // Once someone asks for this pointer, we hold its reference count and never
   // free it.
@@ -521,7 +561,7 @@ get_bounds_outer_viz_state() {
  * Returns a RenderState for rendering the inside surfaces of the bounding
  * volume visualizations.
  */
-CPT(RenderState) CullTraverser::
+const RenderState *CullTraverser::
 get_bounds_inner_viz_state() {
   // Once someone asks for this pointer, we hold its reference count and never
   // free it.
@@ -538,7 +578,7 @@ get_bounds_inner_viz_state() {
 /**
  * Returns a RenderState for increasing the DepthOffset by one.
  */
-CPT(RenderState) CullTraverser::
+const RenderState *CullTraverser::
 get_depth_offset_state() {
   // Once someone asks for this pointer, we hold its reference count and never
   // free it.

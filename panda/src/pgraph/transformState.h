@@ -142,6 +142,7 @@ PUBLISHED:
   INLINE PN_stdfloat get_uniform_scale() const;
   INLINE const LVecBase3 &get_shear() const;
   INLINE const LMatrix4 &get_mat() const;
+  INLINE const LMatrix4 *get_inverse_mat() const;
 
   INLINE LVecBase2 get_pos2d() const;
   INLINE PN_stdfloat get_rotate2d() const;

@@ -44,7 +44,6 @@ public:
   virtual bool safe_to_combine() const;
 
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
-  virtual bool is_renderable() const;
   virtual void add_for_draw(CullTraverser *trav, CullTraverserData &data);
 
   virtual void output(std::ostream &out) const;
