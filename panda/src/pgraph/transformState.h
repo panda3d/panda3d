@@ -326,8 +326,7 @@ private:
   INLINE void check_quat() const;
   INLINE void check_norm_quat() const;
   INLINE void check_mat() const;
-  INLINE void calc_hash();
-  void do_calc_hash();
+  void calc_hash() const;
   void calc_singular();
   INLINE void calc_components();
   void do_calc_components();
@@ -365,7 +364,6 @@ private:
     F_has_nonzero_shear  = 0x00004000,
     F_is_destructing     = 0x00008000,
     F_is_2d              = 0x00010000,
-    F_hash_known         = 0x00020000,
     F_norm_quat_known    = 0x00040000,
   };
   LPoint3 _pos;
@@ -373,7 +371,13 @@ private:
   LQuaternion _quat, _norm_quat;
   LMatrix4 _mat;
   LMatrix4 *_inv_mat = nullptr;
-  size_t _hash;
+
+  enum HashValue : AtomicAdjust::Integer {
+    H_unknown = 0,
+    H_identity = 1,
+    H_invalid = 2,
+  };
+  mutable AtomicAdjust::Integer _hash = H_unknown;
 
   unsigned int _flags;
 

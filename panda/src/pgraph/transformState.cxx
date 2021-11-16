@@ -1406,10 +1406,10 @@ init_states() {
                     0.0f, 0.0f, 1.0f, 0.0f,
                     0.0f, 0.0f, 0.0f, 1.0f);
     state->_inv_mat = new LMatrix4(state->_mat);
-    state->_hash = int_hash::add_hash(0, F_is_invalid | F_is_identity | F_is_2d);
+    state->_hash = H_identity;
     state->_flags = F_is_identity | F_singular_known | F_components_known
                   | F_has_components | F_mat_known | F_quat_known | F_hpr_known
-                  | F_uniform_scale | F_identity_scale | F_is_2d | F_hash_known
+                  | F_uniform_scale | F_identity_scale | F_is_2d
                   | F_norm_quat_known;
     state->cache_ref();
     state->_saved_entry = _states.store(state, nullptr);
@@ -1417,9 +1417,9 @@ init_states() {
   }
   {
     TransformState *state = new TransformState;
-    state->_hash = int_hash::add_hash(0, F_is_invalid);
-    state->_flags = F_is_singular | F_singular_known  | F_components_known
-                  | F_mat_known | F_is_invalid | F_hash_known;
+    state->_hash = H_invalid;
+    state->_flags = F_is_singular | F_singular_known | F_components_known
+                  | F_mat_known | F_is_invalid;
     state->cache_ref();
     state->_saved_entry = _states.store(state, nullptr);
     _invalid_state = state;
@@ -2002,15 +2002,18 @@ remove_cache_pointers() {
  * Computes a suitable hash value for phash_map.
  */
 void TransformState::
-do_calc_hash() {
+calc_hash() const {
+  // It's OK not to grab the lock here, because (1) this does not depend on
+  // cached values (only given components are considered), and (2) the hash
+  // itself is set atomically.
   PStatTimer timer(_transform_hash_pcollector);
-  _hash = 0;
+  AtomicAdjust::Integer hash = 0;
 
   static const int significant_flags =
     (F_is_invalid | F_is_identity | F_components_given | F_hpr_given | F_is_2d);
 
   int flags = (_flags & significant_flags);
-  _hash = int_hash::add_hash(_hash, flags);
+  hash = int_hash::add_hash(hash, flags);
 
   nassertv((flags & (F_is_invalid | F_is_identity)) == 0);
 
@@ -2019,37 +2022,41 @@ do_calc_hash() {
 
   if ((_flags & F_components_given) != 0) {
     // If the transform was specified componentwise, hash it componentwise.
-    _hash = _pos.add_hash(_hash);
+    hash = _pos.add_hash(hash);
     if ((_flags & F_hpr_given) != 0) {
-      _hash = _hpr.add_hash(_hash);
-
-    } else if ((_flags & F_quat_given) != 0) {
-      _hash = _quat.add_hash(_hash);
+      hash = _hpr.add_hash(hash);
+    }
+    else if ((_flags & F_quat_given) != 0) {
+      hash = _quat.add_hash(hash);
     }
 
-    _hash = _scale.add_hash(_hash);
-    _hash = _shear.add_hash(_hash);
-
-  } else {
+    hash = _scale.add_hash(hash);
+    hash = _shear.add_hash(hash);
+  }
+  else {
     // Otherwise, hash the matrix . . .
     if (_uniquify_matrix) {
       // . . . but only if the user thinks that's worthwhile.
-      if ((_flags & F_mat_known) == 0) {
-        // Calculate the matrix without doubly-locking.
-        do_calc_mat();
-      }
-      _hash = _mat.add_hash(_hash);
-
-    } else {
+      check_mat();
+      hash = _mat.add_hash(hash);
+    }
+    else {
       // Otherwise, hash the pointer only--any two different matrix-based
       // TransformStates are considered to be different, even if their
       // matrices have the same values.
 
-      _hash = pointer_hash::add_hash(_hash, this);
+      hash = pointer_hash::add_hash(hash, this);
     }
   }
 
-  _flags |= F_hash_known;
+  if (hash == H_unknown || hash == H_identity || hash == H_invalid) {
+    // Arbitrarily offset the hash not to conflict with these special values.
+    hash += 0x10000;
+  }
+
+  // We don't care if some other thread set this in the meantime, since every
+  // thread should have computed the same hash.
+  AtomicAdjust::set(_hash, hash);
 }
 
 /**

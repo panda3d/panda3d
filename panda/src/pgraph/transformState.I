@@ -856,8 +856,8 @@ INLINE void TransformState::
 check_hash() const {
   // This pretends to be a const function, even though it's not, because it
   // only updates a transparent cache value.
-  if ((_flags & F_hash_known) == 0) {
-    ((TransformState *)this)->calc_hash();
+  if (_hash == H_unknown) {
+    calc_hash();
   }
 }
 
@@ -935,15 +935,6 @@ check_mat() const {
   if ((_flags & F_mat_known) == 0) {
     ((TransformState *)this)->calc_mat();
   }
-}
-
-/**
- * Computes the hash value.
- */
-INLINE void TransformState::
-calc_hash() {
-  LightMutexHolder holder(_lock);
-  do_calc_hash();
 }
 
 /**
