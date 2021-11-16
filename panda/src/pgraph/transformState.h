@@ -52,7 +52,7 @@ class FactoryParams;
  * And instead of modifying a TransformState object, create a new one.
  */
 class EXPCL_PANDA_PGRAPH TransformState final : public NodeCachedReferenceCount {
-protected:
+private:
   TransformState();
 
 public:
@@ -69,8 +69,8 @@ PUBLISHED:
   bool operator == (const TransformState &other) const;
   INLINE size_t get_hash() const;
 
-  static CPT(TransformState) make_identity();
-  static CPT(TransformState) make_invalid();
+  INLINE static CPT(TransformState) make_identity();
+  INLINE static CPT(TransformState) make_invalid();
   INLINE static CPT(TransformState) make_pos(const LVecBase3 &pos);
   INLINE static CPT(TransformState) make_hpr(const LVecBase3 &hpr);
   INLINE static CPT(TransformState) make_quat(const LQuaternion &quat);
@@ -268,7 +268,7 @@ private:
   // This iterator records the entry corresponding to this TransformState
   // object in the above global set.  We keep the index around so we can
   // remove it when the TransformState destructs.
-  int _saved_entry;
+  int _saved_entry = -1;
 
   // This data structure manages the job of caching the composition of two
   // TransformStates.  It's complicated because we have to be sure to remove
@@ -372,7 +372,7 @@ private:
   LVecBase3 _hpr, _scale, _shear;
   LQuaternion _quat, _norm_quat;
   LMatrix4 _mat;
-  LMatrix4 *_inv_mat;
+  LMatrix4 *_inv_mat = nullptr;
   size_t _hash;
 
   unsigned int _flags;

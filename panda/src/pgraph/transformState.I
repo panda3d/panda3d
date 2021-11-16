@@ -41,6 +41,31 @@ get_hash() const {
 }
 
 /**
+ * Constructs an identity transform.
+ */
+INLINE CPT(TransformState) TransformState::
+make_identity() {
+  if (UNLIKELY(_states_lock == nullptr)) {
+    init_states();
+  }
+
+  return _identity_state;
+}
+
+/**
+ * Constructs an invalid transform; for instance, the result of inverting a
+ * singular matrix.
+ */
+INLINE CPT(TransformState) TransformState::
+make_invalid() {
+  if (UNLIKELY(_states_lock == nullptr)) {
+    init_states();
+  }
+
+  return _invalid_state;
+}
+
+/**
  * Makes a new TransformState with the specified components.
  */
 INLINE CPT(TransformState) TransformState::
@@ -204,7 +229,7 @@ make_pos_rotate_scale2d(const LVecBase2 &pos, PN_stdfloat rotate,
  */
 INLINE bool TransformState::
 is_identity() const {
-  return ((_flags & F_is_identity) != 0);
+  return this == _identity_state;
 }
 
 /**
@@ -214,7 +239,7 @@ is_identity() const {
  */
 INLINE bool TransformState::
 is_invalid() const {
-  return ((_flags & F_is_invalid) != 0);
+  return this == _invalid_state;
 }
 
 /**
