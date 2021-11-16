@@ -125,7 +125,7 @@ BulletWorld() {
   // Some prefered settings
   _world->getDispatchInfo().m_enableSPU = true;      // default: true
   _world->getDispatchInfo().m_useContinuous = true;  // default: true
-  _world->getSolverInfo().m_splitImpulse = false;    // default: false
+  _world->getSolverInfo().m_splitImpulse = bullet_split_impulse;
   _world->getSolverInfo().m_numIterations = bullet_solver_iterations;
 }
 
