@@ -30,6 +30,7 @@
 #include "pnmImage.h"
 #include "pnmReader.h"
 #include "pfmFile.h"
+#include "pnmFileTypeRegistry.h"
 #include "virtualFileSystem.h"
 #include "datagramInputFile.h"
 #include "datagramOutputFile.h"
@@ -5212,11 +5213,19 @@ do_write_one(CData *cdata, const Filename &fullpath, int z, int n) {
     success = pfm.write(fullpath);
   } else {
     // Writing a normal, integer texture.
+    PNMFileType *type =
+      PNMFileTypeRegistry::get_global_ptr()->get_type_from_extension(fullpath);
+    if (type == nullptr) {
+      gobj_cat.error()
+        << "Texture::write() - couldn't determine type from extension: " << fullpath << endl;
+      return false;
+    }
+
     PNMImage pnmimage;
     if (!do_store_one(cdata, pnmimage, z, n)) {
       return false;
     }
-    success = pnmimage.write(fullpath);
+    success = pnmimage.write(fullpath, type);
   }
 
   if (!success) {
