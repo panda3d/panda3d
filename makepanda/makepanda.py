@@ -1387,8 +1387,6 @@ def CompileCxx(obj,src,opts):
                 cmd += ' -mfpu=neon'
 
         elif GetTarget() == 'emscripten':
-            cmd += " -s WARN_ON_UNDEFINED_SYMBOLS=1 -s NO_FILESYSTEM=1"
-
             if GetOptimize() <= 1:
                 cmd += " -s ASSERTIONS=2"
             elif GetOptimize() <= 2:
