@@ -20,7 +20,7 @@
 #include "httpChannel.h"
 #include "urlSpec.h"
 
-#ifdef HAVE_OPENSSL
+#if defined(HAVE_OPENSSL) || defined(__EMSCRIPTEN__)
 
 class VirtualFileMountHTTP;
 
@@ -51,6 +51,7 @@ public:
   virtual std::streamsize get_file_size() const;
   virtual time_t get_timestamp() const;
 
+  virtual bool read_file(std::string &result, bool auto_unwrap) const;
   virtual bool read_file(vector_uchar &result, bool auto_unwrap) const;
 
 private:

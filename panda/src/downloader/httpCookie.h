@@ -20,7 +20,7 @@
 // this to establish https connections; this is because it uses the OpenSSL
 // library to portably handle all of the socket communications.
 
-#ifdef HAVE_OPENSSL
+#if defined(HAVE_OPENSSL) || defined(__EMSCRIPTEN__)
 
 #include "httpDate.h"
 #include "urlSpec.h"

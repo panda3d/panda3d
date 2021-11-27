@@ -20,7 +20,7 @@
 // this to establish https connections; this is because it uses the OpenSSL
 // library to portably handle all of the socket communications.
 
-#ifdef HAVE_OPENSSL
+#if defined(HAVE_OPENSSL) || defined(__EMSCRIPTEN__)
 
 /**
  * This class is just used as a namespace wrapper for some of the enumerated
@@ -28,12 +28,14 @@
  */
 class EXPCL_PANDA_DOWNLOADER HTTPEnum {
 PUBLISHED:
+#ifdef HAVE_OPENSSL
   enum HTTPVersion {
     HV_09,  // HTTP 0.9 or older
     HV_10,  // HTTP 1.0
     HV_11,  // HTTP 1.1
     HV_other,
   };
+#endif
 
   enum Method {
     M_options,
