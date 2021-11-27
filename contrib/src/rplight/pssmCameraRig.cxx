@@ -369,8 +369,16 @@ void PSSMCameraRig::update(NodePath cam_node, const LVecBase3 &light_vector) {
   LMatrix4 transform = cam_node.get_transform()->get_mat();
 
   // Get Camera and Lens pointers
-  Camera* cam = DCAST(Camera, cam_node.get_child(0).node());
-  nassertv(cam != nullptr);
+  Camera *cam;
+  PandaNode *node = cam_node.node();
+  if (node->is_of_type(Camera::get_class_type())) {
+    cam = (Camera *)node;
+  }
+  else {
+    // Perhaps we passed in something like base.camera ?
+    cam = DCAST(Camera, cam_node.get_child(0).node());
+    nassertv(cam != nullptr);
+  }
   Lens* lens = cam->get_lens();
 
   // Extract near and far points:

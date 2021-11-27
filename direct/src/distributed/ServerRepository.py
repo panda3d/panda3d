@@ -11,6 +11,9 @@ from direct.distributed.PyDatagram import PyDatagram
 import inspect
 
 
+_server_doid_range = ConfigVariableInt('server-doid-range', 1000000)
+
+
 class ServerRepository:
 
     """ This maintains the server-side connection with a Panda server.
@@ -134,7 +137,7 @@ class ServerRepository:
 
         # The number of doId's to assign to each client.  Must remain
         # constant during server lifetime.
-        self.doIdRange = base.config.GetInt('server-doid-range', 1000000)
+        self.doIdRange = _server_doid_range.value
 
         # An allocator object that assigns the next doIdBase to each
         # client.

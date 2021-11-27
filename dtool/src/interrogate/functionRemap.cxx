@@ -419,6 +419,17 @@ get_call_str(const string &container, const vector_string &pexprs) const {
       call << ')';
     }
 
+  } else if (_type == T_item_assignment_operator) {
+    call << "(";
+    _parameters[0]._remap->pass_parameter(call, container);
+    call << ")[";
+
+    size_t pn = _first_true_parameter;
+    _parameters[pn]._remap->pass_parameter(call, get_parameter_expr(pn, pexprs));
+    call << "] = ";
+    ++pn;
+    _parameters[pn]._remap->pass_parameter(call, get_parameter_expr(pn, pexprs));
+
   } else {
     const char *separator = "";
 
@@ -468,11 +479,6 @@ get_call_str(const string &container, const vector_string &pexprs) const {
     size_t pn = _first_true_parameter;
     size_t num_parameters = pexprs.size();
 
-    if (_type == T_item_assignment_operator) {
-      // The last parameter is the value to set.
-      --num_parameters;
-    }
-
     for (pn = _first_true_parameter;
          pn < num_parameters; ++pn) {
       nassertd(pn < _parameters.size()) break;
@@ -481,11 +487,6 @@ get_call_str(const string &container, const vector_string &pexprs) const {
       separator = ", ";
     }
     call << ")";
-
-    if (_type == T_item_assignment_operator) {
-      call << " = ";
-      _parameters[pn]._remap->pass_parameter(call, get_parameter_expr(pn, pexprs));
-    }
   }
 
   return call.str();
@@ -568,6 +569,9 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
 
   } else if ((ifunc._flags & InterrogateFunction::F_setter) != 0) {
     _type = T_setter;
+
+  } else if ((ifunc._flags & InterrogateFunction::F_item_assignment) != 0) {
+    _type = T_item_assignment_operator;
   }
 
   if ((_cppfunc->_storage_class & CPPInstance::SC_blocking) != 0) {
@@ -623,14 +627,6 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
         fname == "operator <<=" ||
         fname == "operator >>=") {
       _type = T_assignment_method;
-
-    } else if (fname == "operator []" && !_const_method && rtype != nullptr) {
-       // Check if this is an item-assignment operator.
-      CPPReferenceType *reftype = rtype->as_reference_type();
-      if (reftype != nullptr && reftype->_pointing_at->as_const_type() == nullptr) {
-        // It returns a mutable reference.
-        _type = T_item_assignment_operator;
-      }
     }
   }
 
@@ -705,37 +701,6 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
       if (_return_type != nullptr) {
         _void_return = false;
       }
-    }
-
-  } else if (_type == T_item_assignment_operator) {
-    // An item-assignment method isn't really a thing in C++, but it is in
-    // scripting languages, so we use this to denote item-access operators
-    // that return a non-const reference.
-
-    if (_cpptype == nullptr) {
-      nout << "Method " << *_cppfunc << " has no struct type\n";
-      return false;
-    } else {
-      // Synthesize a const reference parameter for the assignment.
-      CPPType *bare_type = TypeManager::unwrap_reference(rtype);
-      CPPType *const_type = CPPType::new_type(new CPPConstType(bare_type));
-      CPPType *ref_type = CPPType::new_type(new CPPReferenceType(const_type));
-
-      Parameter param;
-      param._has_name = true;
-      param._name = "assign_val";
-      param._remap = interface_maker->remap_parameter(_cpptype, ref_type);
-
-      if (param._remap == nullptr || !param._remap->is_valid()) {
-        nout << "Invalid remap for assignment type of method " << *_cppfunc << "\n";
-        return false;
-      }
-      _parameters.push_back(param);
-
-      // Pretend we don't return anything at all.
-      CPPType *void_type = TypeManager::get_void_type();
-      _return_type = interface_maker->remap_parameter(_cpptype, void_type);
-      _void_return = true;
     }
 
   } else if (fname == "operator <=>") {

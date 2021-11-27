@@ -602,7 +602,7 @@ make_transform(const EggTransform *egg_transform) {
 void EggLoader::
 show_normals(EggVertexPool *vertex_pool, GeomNode *geom_node) {
   PT(GeomPrimitive) primitive = new GeomLines(Geom::UH_static);
-  CPT(GeomVertexFormat) format = GeomVertexFormat::get_v3cp();
+  CPT(GeomVertexFormat) format = GeomVertexFormat::get_v3c();
   PT(GeomVertexData) vertex_data =
     new GeomVertexData(vertex_pool->get_name(), format, Geom::UH_static);
 
@@ -2243,13 +2243,14 @@ make_vertex_data(const EggRenderState *render_state,
   if (!ignore_color) {
     // Let's not use Direct3D-style colors on platforms where we only have
     // OpenGL anyway.
-#ifdef _WIN32
-    array_format->add_column(InternalName::get_color(), 1,
-                             Geom::NT_packed_dabc, Geom::C_color);
-#else
-    array_format->add_column(InternalName::get_color(), 4,
-                             Geom::NT_uint8, Geom::C_color);
-#endif
+    if (vertex_colors_prefer_packed) {
+      array_format->add_column(InternalName::get_color(), 1,
+                               Geom::NT_packed_dabc, Geom::C_color);
+    }
+    else {
+      array_format->add_column(InternalName::get_color(), 4,
+                               Geom::NT_uint8, Geom::C_color);
+    }
   }
 
   vector_string uv_names, uvw_names, tbn_names;

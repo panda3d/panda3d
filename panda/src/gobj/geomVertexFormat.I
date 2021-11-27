@@ -354,6 +354,47 @@ get_v3n3c4t2() {
 }
 
 /**
+ * Returns a standard vertex format with a 4-component color and a 3-component
+ * vertex position.
+ */
+INLINE const GeomVertexFormat *GeomVertexFormat::
+get_v3c() {
+  Registry *registry = get_registry();
+  return vertex_colors_prefer_packed ? registry->_v3cp : registry->_v3c4;
+}
+
+/**
+ * Returns a standard vertex format with a 4-component color, a 3-component
+ * normal, and a 3-component vertex position.
+ */
+INLINE const GeomVertexFormat *GeomVertexFormat::
+get_v3n3c() {
+  Registry *registry = get_registry();
+  return vertex_colors_prefer_packed ? registry->_v3n3cp : registry->_v3n3c4;
+}
+
+/**
+ * Returns a standard vertex format with a 2-component texture coordinate
+ * pair, a 4-component color, and a 3-component vertex position.
+ */
+INLINE const GeomVertexFormat *GeomVertexFormat::
+get_v3ct2() {
+  Registry *registry = get_registry();
+  return vertex_colors_prefer_packed ? registry->_v3cpt2 : registry->_v3c4t2;
+}
+
+/**
+ * Returns a standard vertex format with a 2-component texture coordinate
+ * pair, a 4-component color, a 3-component normal, and a 3-component vertex
+ * position.
+ */
+INLINE const GeomVertexFormat *GeomVertexFormat::
+get_v3n3ct2() {
+  Registry *registry = get_registry();
+  return vertex_colors_prefer_packed ? registry->_v3n3cpt2 : registry->_v3n3c4t2;
+}
+
+/**
  * Returns the array index of the array including the "vertex" column, or -1
  * if there is no such array.
  *

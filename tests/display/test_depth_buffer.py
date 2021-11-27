@@ -56,7 +56,7 @@ def depth_region(request, graphics_pipe):
         engine.remove_window(buffer)
 
 
-def render_depth_pixel(region, distance, near, far, clear=None, write=True):
+def render_depth_pixel(region, distance, near, far, clear=None, write=True, state=None):
     """Renders a fragment at the specified distance using the specified render
     settings, and returns the resulting depth value."""
 
@@ -64,6 +64,9 @@ def render_depth_pixel(region, distance, near, far, clear=None, write=True):
     scene = core.NodePath("root")
     scene.set_attrib(core.DepthTestAttrib.make(core.RenderAttrib.M_always))
     scene.set_depth_write(write)
+
+    if state:
+        scene.set_state(scene.get_state().compose(state))
 
     camera = scene.attach_new_node(core.Camera("camera"))
     camera.node().get_lens(0).set_near_far(near, far)
@@ -151,3 +154,68 @@ def test_inverted_depth_clipping(depth_region):
 
     # Just far enough; read a value close to 0.0.
     assert 0.01 > render_depth_pixel(depth_region, 9.999, near=10, far=1, clear=0.5)
+
+
+def test_depth_range(depth_region):
+    try:
+        depth_region.set_depth_range(0.25, 0.75)
+        z = render_depth_pixel(depth_region, 1.00001, near=1, far=10, clear=0.0)
+        assert z == pytest.approx(0.25, rel=0.01)
+
+        z = render_depth_pixel(depth_region, 9.99999, near=1, far=10, clear=0.0)
+        assert z == pytest.approx(0.75, rel=0.01)
+
+        # Combines with DepthOffsetAttrib range.
+        state = core.RenderState.make(core.DepthOffsetAttrib.make(0, 0.25, 0.75))
+        z = render_depth_pixel(depth_region, 1.00001, near=1, far=10, clear=0.0, state=state)
+        assert z == pytest.approx(0.375, rel=0.01)
+
+        # Reverse the depth range.
+        depth_region.set_depth_range(0.75, 0.25)
+        z = render_depth_pixel(depth_region, 1.00001, near=1, far=10, clear=0.0)
+        assert z == pytest.approx(0.75, rel=0.01)
+
+        z = render_depth_pixel(depth_region, 9.99999, near=1, far=10, clear=0.0)
+        assert z == pytest.approx(0.25, rel=0.01)
+    finally:
+        depth_region.set_depth_range(0, 1)
+
+
+def test_depth_bias(depth_region):
+    # Without depth bias
+    z_ref = render_depth_pixel(depth_region, 5, near=1, far=10)
+
+    # With constant positive depth bias
+    state = core.RenderState.make(core.DepthBiasAttrib.make(0, 1))
+    z = render_depth_pixel(depth_region, 5, near=1, far=10, state=state)
+    assert z > z_ref
+
+    # With constant negative depth bias
+    state = core.RenderState.make(core.DepthBiasAttrib.make(0, -1))
+    z = render_depth_pixel(depth_region, 5, near=1, far=10, state=state)
+    assert z < z_ref
+
+    # With slope-scaled depth bias (our quad has no slope)
+    state = core.RenderState.make(core.DepthBiasAttrib.make(10, 0))
+    z = render_depth_pixel(depth_region, 5, near=1, far=10, state=state)
+    assert z == z_ref
+
+    # Same, but negative
+    state = core.RenderState.make(core.DepthBiasAttrib.make(-10, 0))
+    z = render_depth_pixel(depth_region, 5, near=1, far=10, state=state)
+    assert z == z_ref
+
+
+def test_depth_offset(depth_region):
+    # Without depth offset
+    z_ref = render_depth_pixel(depth_region, 5, near=1, far=10)
+
+    # With constant positive depth offset
+    state = core.RenderState.make(core.DepthOffsetAttrib.make(1))
+    z = render_depth_pixel(depth_region, 5, near=1, far=10, state=state)
+    assert z < z_ref
+
+    # With constant negative depth offset
+    state = core.RenderState.make(core.DepthOffsetAttrib.make(-1))
+    z = render_depth_pixel(depth_region, 5, near=1, far=10, state=state)
+    assert z > z_ref

@@ -160,3 +160,11 @@ INLINE void ConfigVariableString::
 set_word(size_t n, const std::string &value) {
   set_string_word(n, value);
 }
+
+/**
+ * Returns true if the variable is not empty.
+ */
+INLINE bool ConfigVariableString::
+__bool__() const {
+  return !get_value().empty();
+}

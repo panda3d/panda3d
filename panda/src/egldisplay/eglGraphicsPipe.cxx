@@ -53,7 +53,7 @@ eglGraphicsPipe() {
 
   //NB. if the X11 display failed to open, _display will be 0, which is a valid
   // input to eglGetDisplay - it means to open the default display.
-#ifdef HAVE_X11
+#ifdef USE_X11
   _egl_display = eglGetDisplay((NativeDisplayType) _display);
 #else
   _egl_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
@@ -207,7 +207,7 @@ make_output(const std::string &name,
   // First thing to try: an eglGraphicsWindow
 
   if (retry == 0) {
-#ifdef HAVE_X11
+#ifdef USE_X11
     if (!_display) {
       return nullptr;
     }
@@ -290,7 +290,7 @@ make_output(const std::string &name,
 
   // Fourth thing to try: an eglGraphicsPixmap.
   if (retry == 3) {
-#ifdef HAVE_X11
+#ifdef USE_X11
     if (!_display) {
       return nullptr;
     }

@@ -127,7 +127,7 @@ PUBLISHED:
 
   // Manifolds
   int get_num_manifolds() const;
-  BulletPersistentManifold *get_manifold(int idx) const;
+  BulletPersistentManifold get_manifold(int idx) const;
   MAKE_SEQ(get_manifolds, get_num_manifolds, get_manifold);
 
   // Collision filtering

@@ -1,7 +1,7 @@
 # ClockDelta provides the ability to use clock synchronization for
 # distributed objects
 
-from panda3d.core import ClockObject
+from panda3d.core import ClockObject, ConfigVariableBool
 from direct.directnotify import DirectNotifyGlobal
 from direct.showbase import DirectObject
 import math
@@ -248,7 +248,7 @@ class ClockDelta(DirectObject.DirectObject):
         # set movie-network-time 1, then we'll circumvent this logic
         # and always return now.
         if self.globalClock.getMode() == ClockObject.MNonRealTime and \
-           base.config.GetBool('movie-network-time', False):
+           ConfigVariableBool('movie-network-time', False):
             return now
 
         # First, determine what network time we have for 'now'.

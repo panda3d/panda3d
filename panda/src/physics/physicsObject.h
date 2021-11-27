@@ -99,6 +99,18 @@ PUBLISHED:
   virtual void output(std::ostream &out) const;
   virtual void write(std::ostream &out, int indent=0) const;
 
+PUBLISHED:
+  MAKE_PROPERTY(active, get_active, set_active);
+  MAKE_PROPERTY(mass, get_mass, set_mass);
+  MAKE_PROPERTY(position, get_position, set_position);
+  MAKE_PROPERTY(last_position, get_last_position, set_last_position);
+  MAKE_PROPERTY(velocity, get_velocity, set_velocity);
+  MAKE_PROPERTY(implicit_velocity, get_implicit_velocity);
+  MAKE_PROPERTY(terminal_velocity, get_terminal_velocity, set_terminal_velocity);
+  MAKE_PROPERTY(oriented, get_oriented, set_oriented);
+  MAKE_PROPERTY(orientation, get_orientation, set_orientation);
+  MAKE_PROPERTY(rotation, get_rotation, set_rotation);
+
 private:
   // physical
   LPoint3 _position; // aka _center_of_mass

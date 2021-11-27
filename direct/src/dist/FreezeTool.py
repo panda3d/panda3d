@@ -12,6 +12,7 @@ import io
 import distutils.sysconfig as sysconf
 import zipfile
 import importlib
+import warnings
 
 from . import pefile
 
@@ -89,6 +90,7 @@ ignoreImports = {
     'direct.showbase.PythonUtil': ['pstats', 'profile'],
 
     'toml.encoder': ['numpy'],
+    'py._builtin': ['__builtin__'],
 }
 
 if sys.version_info >= (3, 8):
@@ -105,7 +107,7 @@ overrideModules = {
     # Used by the warnings module, among others, to get line numbers.  Since
     # we set __file__, this would cause it to try and extract Python code
     # lines from the main executable, which we don't want.
-    'linecache': """__all__ = ["getline", "clearcache", "checkcache"]
+    'linecache': """__all__ = ["getline", "clearcache", "checkcache", "lazycache"]
 
 cache = {}
 
@@ -661,7 +663,7 @@ okMissing = [
     'email.Iterators', '_subprocess', 'gestalt', 'java.lang',
     'direct.extensions_native.extensions_darwin', '_manylinux',
     'collections.Iterable', 'collections.Mapping', 'collections.MutableMapping',
-    'collections.Sequence', 'numpy_distutils',
+    'collections.Sequence', 'numpy_distutils', '_winapi',
     ]
 
 # Since around macOS 10.15, Apple's codesigning process has become more strict.
@@ -1985,7 +1987,7 @@ class Freezer:
 
         if append_offset:
             # This is for legacy deploy-stub.
-            print("WARNING: Could not find blob header. Is deploy-stub outdated?")
+            warnings.warn("Could not find blob header. Is deploy-stub outdated?")
             blob += struct.pack('<Q', blob_offset)
 
         with open(target, 'wb') as f:
@@ -2624,9 +2626,9 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
         (or self.path if None).  Returns a tuple like (fp, path, stuff), where
         stuff is a tuple like (suffix, mode, type). """
 
-        if imp.is_frozen(name):
-            # Don't pick up modules that are frozen into p3dpython.
-            raise ImportError("'%s' is a frozen module" % (name))
+        #if imp.is_frozen(name):
+        #    # Don't pick up modules that are frozen into p3dpython.
+        #    raise ImportError("'%s' is a frozen module" % (name))
 
         if parent is not None:
             fullname = parent.__name__+'.'+name

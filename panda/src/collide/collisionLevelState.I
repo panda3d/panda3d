@@ -30,9 +30,9 @@ CollisionLevelState(const NodePath &node_path) :
  */
 template<class MaskType>
 INLINE CollisionLevelState<MaskType>::
-CollisionLevelState(const CollisionLevelState<MaskType> &parent, PandaNode *child) :
+CollisionLevelState(const CollisionLevelState<MaskType> &parent, const PandaNode::DownConnection &child, MaskType mask) :
   CollisionLevelStateBase(parent, child),
-  _current(parent._current)
+  _current(mask)
 {
 }
 #endif  // CPPPARSER
@@ -101,21 +101,21 @@ prepare_collider(const ColliderDef &def, const NodePath &root) {
 template<class MaskType>
 bool CollisionLevelState<MaskType>::
 any_in_bounds() {
-#ifndef NDEBUG
+#ifdef NDEBUG
+  const bool is_spam = false;
+#else
+  const bool is_spam = collide_cat.is_spam();
+#endif
   int indent_level = 0;
-  if (collide_cat.is_spam()) {
+  if (is_spam) {
     indent_level = _node_path.get_num_nodes() * 2;
     collide_cat.spam();
     indent(collide_cat.spam(false), indent_level)
       << "Considering " << _node_path.get_node_path() << "\n";
   }
-#endif  // NDEBUG
 
-  PandaNode *pnode = node();
-
-  CPT(BoundingVolume) node_bv = pnode->get_bounds();
-  if (node_bv->is_of_type(GeometricBoundingVolume::get_class_type())) {
-    const GeometricBoundingVolume *node_gbv = (const GeometricBoundingVolume *)node_bv.p();
+  if (_node_gbv != nullptr) {
+    PandaNode *pnode = node();
     CollideMask this_mask = pnode->get_net_collide_mask();
 
     int num_colliders = get_num_colliders();
@@ -131,13 +131,11 @@ any_in_bounds() {
           // Also don't test a node with itself, or with any of its
           // descendants.
           if (pnode == cnode) {
-#ifndef NDEBUG
-            if (collide_cat.is_spam()) {
+            if (is_spam) {
               indent(collide_cat.spam(false), indent_level)
                 << "Not comparing " << c << " to " << _node_path
                 << " (same node)\n";
             }
-#endif  // NDEBUG
 
           } else {
             // There are bits in common, and it's not the same instance, so go
@@ -148,16 +146,14 @@ any_in_bounds() {
             is_in = true;  // If there's no bounding volume, we're implicitly in.
 
             if (col_gbv != nullptr) {
-              is_in = (node_gbv->contains(col_gbv) != 0);
+              is_in = (_node_gbv->contains(col_gbv) != 0);
               _node_volume_pcollector.add_level(1);
 
-#ifndef NDEBUG
-              if (collide_cat.is_spam()) {
+              if (is_spam) {
                 indent(collide_cat.spam(false), indent_level)
                   << "Comparing " << c << ": " << *col_gbv
-                  << " to " << *node_gbv << ", is_in = " << is_in << "\n";
+                  << " to " << *_node_gbv << ", is_in = " << is_in << "\n";
               }
-#endif  // NDEBUG
             }
           }
         }
@@ -171,8 +167,7 @@ any_in_bounds() {
     }
   }
 
-#ifndef NDEBUG
-  if (collide_cat.is_spam()) {
+  if (is_spam) {
     int num_active_colliders = 0;
     int num_colliders = get_num_colliders();
     for (int c = 0; c < num_colliders; c++) {
@@ -201,8 +196,118 @@ any_in_bounds() {
     collide_cat.spam(false)
       << "\n";
   }
-#endif  // NDEBUG
   return has_any_collider();
+}
+#endif  // CPPPARSER
+
+#ifndef CPPPARSER
+/**
+ * Checks the bounding volume of the given child of the current node against
+ * each of our colliders.  Returns a mask indicating which colliders are inside
+ * of the bounding volume.
+ */
+template<class MaskType>
+MaskType CollisionLevelState<MaskType>::
+get_child_mask(const PandaNode::DownConnection &child) const {
+  PandaNode *pnode = child.get_child();
+#ifdef NDEBUG
+  const bool is_spam = false;
+#else
+  const bool is_spam = collide_cat.is_spam();
+#endif
+  int indent_level = 0;
+  if (is_spam) {
+    indent_level = (_node_path.get_num_nodes() + 1) * 2;
+    collide_cat.spam();
+    indent(collide_cat.spam(false), indent_level)
+      << "Considering " << _node_path << "/" << pnode->get_name() << "\n";
+  }
+
+  MaskType mask = _current;
+
+  const GeometricBoundingVolume *node_gbv = child.get_bounds();
+  if (node_gbv != nullptr) {
+    CollideMask node_mask = child.get_net_collide_mask();
+
+    int num_colliders = get_num_colliders();
+    for (int c = 0; c < num_colliders; c++) {
+      if (mask.get_bit(c)) {
+        CollisionNode *cnode = get_collider_node(c);
+        bool is_in = false;
+
+        // Don't even bother testing the bounding volume if there are no
+        // collide bits in common between our collider and this node.
+        CollideMask from_mask = cnode->get_from_collide_mask() & _include_mask;
+        if (!(from_mask & node_mask).is_zero()) {
+          // Also don't test a node with itself, or with any of its
+          // descendants.
+          if (pnode == cnode) {
+            if (is_spam) {
+              indent(collide_cat.spam(false), indent_level)
+                << "Not comparing " << c << " to " << _node_path << "/"
+                << pnode->get_name() << " (same node)\n";
+            }
+
+          } else {
+            // There are bits in common, and it's not the same instance, so go
+            // ahead and try the bounding volume.
+            const GeometricBoundingVolume *col_gbv =
+              get_local_bound(c);
+
+            is_in = true;  // If there's no bounding volume, we're implicitly in.
+
+            if (col_gbv != nullptr) {
+              is_in = (node_gbv->contains(col_gbv) != 0);
+              _node_volume_pcollector.add_level(1);
+
+              if (is_spam) {
+                indent(collide_cat.spam(false), indent_level)
+                  << "Comparing " << c << ": " << *col_gbv
+                  << " to " << *node_gbv << ", is_in = " << is_in << "\n";
+              }
+            }
+          }
+        }
+
+        if (!is_in) {
+          // This collider cannot intersect with any geometry at this node or
+          // below.
+          mask.clear_bit(c);
+        }
+      }
+    }
+  }
+
+  if (is_spam) {
+    int num_active_colliders = 0;
+    int num_colliders = get_num_colliders();
+    for (int c = 0; c < num_colliders; c++) {
+      if (mask.get_bit(c)) {
+        num_active_colliders++;
+      }
+    }
+
+    collide_cat.spam();
+    indent(collide_cat.spam(false), indent_level)
+      << _node_path.get_node_path() << "/" << pnode->get_name() << " has "
+      << num_active_colliders << " interested colliders";
+    if (num_colliders != 0) {
+      collide_cat.spam(false)
+        << " (";
+      for (int c = 0; c < num_colliders; c++) {
+        if (mask.get_bit(c)) {
+          CollisionNode *cnode = get_collider_node(c);
+          collide_cat.spam(false)
+            << " " << c << ". " << cnode->get_name();
+        }
+      }
+      collide_cat.spam(false)
+        << " )";
+    }
+    collide_cat.spam(false)
+      << "\n";
+  }
+  return mask;
 }
 #endif  // CPPPARSER
 

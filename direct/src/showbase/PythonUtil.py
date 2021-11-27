@@ -641,9 +641,7 @@ if __debug__:
             def _profiled(*args, **kArgs):
                 name = '(%s) %s from %s' % (category, f.__name__, f.__module__)
 
-                # showbase might not be loaded yet, so don't use
-                # base.config.  Instead, query the ConfigVariableBool.
-                if (category is None) or ConfigVariableBool('want-profile-%s' % category, 0).getValue():
+                if category is None or ConfigVariableBool('want-profile-%s' % category, False).value:
                     return profileFunc(Functor(f, *args, **kArgs), name, terse)
                 else:
                     return f(*args, **kArgs)
@@ -1129,8 +1127,6 @@ def normalDistrib(a, b, gauss=random.gauss):
     uniformly onto the curve inside [a, b]
 
     ------------------------------------------------------------------------
-    https://statweb.stanford.edu/~naras/jsm/NormalDensity/NormalDensity.html
-
     The 68-95-99.7% Rule
     ====================
     All normal density curves satisfy the following property which is often
@@ -1201,17 +1197,23 @@ class SerialNumGen:
         if start is None:
             start = 0
         self.__counter = start-1
+
     def next(self):
         self.__counter += 1
         return self.__counter
+
+    __next__ = next
 
 class SerialMaskedGen(SerialNumGen):
     def __init__(self, mask, start=None):
         self._mask = mask
         SerialNumGen.__init__(self, start)
+
     def next(self):
         v = SerialNumGen.next(self)
         return v & self._mask
+
+    __next__ = next
 
 _serialGen = SerialNumGen()
 def serialNum():
@@ -1223,7 +1225,7 @@ def uniqueName(name):
 
 class EnumIter:
     def __init__(self, enum):
-        self._values = list(enum._stringTable.keys())
+        self._values = tuple(enum._stringTable.keys())
         self._index = 0
     def __iter__(self):
         return self
@@ -1232,7 +1234,6 @@ class EnumIter:
             raise StopIteration
         self._index += 1
         return self._values[self._index-1]
-    next = __next__
 
 class Enum:
     """Pass in list of strings or string of comma-separated strings.
@@ -1990,7 +1991,7 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
         return f
 
     try:
-        if not (__dev__ or config.GetBool('force-reports', 0)):
+        if not __dev__ and not ConfigVariableBool('force-reports', False):
             return decorator
 
         # determine whether we should use the decorator
@@ -2006,7 +2007,7 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
                 dConfigParams = dConfigParam
 
             dConfigParamList = [param for param in dConfigParams \
-                                if config.GetBool('want-%s-report' % (param,), 0)]
+                                if ConfigVariableBool('want-%s-report' % (param,), False)]
 
             doPrint = bool(dConfigParamList)
 
@@ -2256,12 +2257,12 @@ if __debug__:
     def quickProfile(name="unnamed"):
         import pstats
         def profileDecorator(f):
-            if not config.GetBool("use-profiler", False):
+            if not ConfigVariableBool("use-profiler", False):
                 return f
             def _profiled(*args, **kArgs):
                 # must do this in here because we don't have base/simbase
                 # at the time that PythonUtil is loaded
-                if not config.GetBool("profile-debug", False):
+                if not ConfigVariableBool("profile-debug", False):
                     #dumb timings
                     st=globalClock.getRealTime()
                     f(*args,**kArgs)
@@ -2450,6 +2451,7 @@ class AlphabetCounter:
     # object that produces 'A', 'B', 'C', ... 'AA', 'AB', etc.
     def __init__(self):
         self._curCounter = ['A']
+
     def next(self):
         result = ''.join([c for c in self._curCounter])
         index = -1
@@ -2472,6 +2474,8 @@ class AlphabetCounter:
             else:
                 break
         return result
+
+    __next__ = next
 
 if __debug__ and __name__ == '__main__':
     def testAlphabetCounter():

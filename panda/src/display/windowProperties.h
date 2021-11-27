@@ -68,7 +68,11 @@ PUBLISHED:
 
   INLINE void set_origin(const LPoint2i &origin);
   INLINE void set_origin(int x_origin, int y_origin);
+#ifdef CPPPARSER
+  INLINE LPoint2i get_origin() const;
+#else
   INLINE const LPoint2i &get_origin() const;
+#endif
   INLINE int get_x_origin() const;
   INLINE int get_y_origin() const;
   INLINE bool has_origin() const;
@@ -77,7 +81,11 @@ PUBLISHED:
 
   INLINE void set_size(const LVector2i &size);
   INLINE void set_size(int x_size, int y_size);
+#ifdef CPPPARSER
+  INLINE LVector2i get_size() const;
+#else
   INLINE const LVector2i &get_size() const;
+#endif
   INLINE int get_x_size() const;
   INLINE int get_y_size() const;
   INLINE bool has_size() const;
@@ -92,7 +100,11 @@ PUBLISHED:
                              set_mouse_mode, clear_mouse_mode);
 
   INLINE void set_title(const std::string &title);
+#ifdef CPPPARSER
+  INLINE std::string get_title() const;
+#else
   INLINE const std::string &get_title() const;
+#endif
   INLINE bool has_title() const;
   INLINE void clear_title();
   MAKE_PROPERTY2(title, has_title, get_title, set_title, clear_title);
@@ -158,14 +170,22 @@ PUBLISHED:
                                 set_cursor_hidden, clear_cursor_hidden);
 
   INLINE void set_icon_filename(const Filename &icon_filename);
+#ifdef CPPPARSER
+  INLINE Filename get_icon_filename() const;
+#else
   INLINE const Filename &get_icon_filename() const;
+#endif
   INLINE bool has_icon_filename() const;
   INLINE void clear_icon_filename();
   MAKE_PROPERTY2(icon_filename, has_icon_filename, get_icon_filename,
                                 set_icon_filename, clear_icon_filename);
 
   INLINE void set_cursor_filename(const Filename &cursor_filename);
+#ifdef CPPPARSER
+  INLINE Filename get_cursor_filename() const;
+#else
   INLINE const Filename &get_cursor_filename() const;
+#endif
   INLINE bool has_cursor_filename() const;
   INLINE void clear_cursor_filename();
   MAKE_PROPERTY2(cursor_filename, has_cursor_filename, get_cursor_filename,

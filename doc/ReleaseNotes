@@ -1,3 +1,131 @@
+-----------------------  RELEASE 1.10.10  -----------------------
+
+This release fixes assorted, mostly very minor bugs.
+
+* Round refresh rates when choosing display mode on macOS (#1144)
+* Vectors now support floor division
+* It is now possible to use round(), ceil() and floor() with vector types
+* Add RenderState::get_unused_states()
+* Fix assertion error in RenderState::get_num_unused_states()
+* Fix Assimp loader not importing normal vectors correctly (#1163)
+* Fix error when trying to render DirectGUI in offscreen mode (#1174)
+* Fix crash when resizing window in multi-window DirectX 9 application (#1167)
+* Fixes to enable compilation with recent OpenEXR and FFMpeg versions
+* Fix draw callback being called twice if cull callback calls upcall()
+* Improve error message when display module fails to load
+* Fix writing/reading BitArray to/from bam files on 64-bit systems (#1181)
+* evdev input devices (such as gamepads) are now supported in FreeBSD as well
+* Panda no longer tries to compress buffer textures when compression is enabled
+* Fix Geom::make_lines_in_place() (& points, patches) leaving invalid state
+* Fix memory leak when cleaning up FilterManager (#1166)
+* Fix memory leak deleting multisample OpenGL FBOs (#1166)
+* Fix auto-binding of SSBOs sometimes causing overlapping bindings (#1176)
+* PSSMCameraRig::update() now accepts a camera node directly
+* Support copying depth buffer for 32-bit depth with 8-bit stencil (#1142)
+* Prevent trying to copy depth from non-depth buffer in OpenGL renderer (#1142)
+* Fixes to format selection for OpenGL renderbuffers (#1137, #1141)
+* gl-depth-zero-to-one is now supported in OpenGL ES 2+ (if driver supports)
+* Maya models can contain more than three eggObjectTypes (#1134)
+* Fix black screen on Linux when switching fullscreen without a WM active
+* Fix Linux crash when trying to load a directory instead of a file (#1140)
+* Fix crash when loading an invalid font
+* Fix a very obscure unintended DirectGUI behavior change in 1.10.9
+
+------------------------  RELEASE 1.10.9  -----------------------
+
+This is a bugfix release which addresses some severe issues on macOS, as well as
+a broad range of issues on other platforms, and adds some minor features.
+
+Shaders
+* Some macOS builds were erroneously not built with Cg shader support (#1119)
+* Show error for unrecognized p3d_TextureXYZ GLSL shader inputs
+* Fix Cg shader bug when using multiple GraphicsStateGuardian objects (#1117)
+* New filled wireframe mode that respects vertex shaders (#1124)
+* Fix undefined behavior when using non-nearest filtering on isampler/usampler
+* Harmless shader linking warnings on macOS are now suppressed
+
+Windowing
+* Fix mouse confinement activating on Windows for non-foreground window (#1115)
+* Fix occasional failure with switching to fullscreen on macOS (#1039)
+* Fix parented window being offset if undecorated flag isn't set on Windows
+
+Rendering
+* Better support for headless OpenGL on Linux via EGL-based fallback (#1086)
+* EGL implementation can now fall back to alternative EGL devices
+* Fix ability to create multisample FBO when using EGL (#1089)
+* Fix copy-RAM and copy-texture modes for multisample-enabled buffers (#1129)
+* FilterManager now respects depth-bits specified in Config.prc
+* Auto-convert vertex data down from 64-bit float to 32-bit in OpenGL ES
+
+Texturing
+* Add missing 16-bpc and 32-bpc integer texture formats
+* Support `Texture::set_ram_image_as()` for 3D and multiview textures (#1095)
+* TexturePeeker now supports cube maps (#1098)
+* TexturePeeker now supports integer texture formats
+
+GUI / Text
+* Workarounds for disappearing text and GUI items in multithreaded pipeline
+* Fix generated accent marks for some fonts appearing flipped
+* Included static fonts now include dotless i glyph
+* Fix DirectOptionMenu issues when changing items from item callback (#1125)
+
+Python API
+* Fix some Python 3 compatibility issues
+* Improvements to `direct.stdpy.pickle` pickle, esp. for Python 3
+* Fix `direct.stdpy.pickle` sometimes duplicating Panda objects
+* Add pickle support to various Panda classes
+* AsyncFuture can now store an arbitrary Python object as result
+* AsyncFuture.gather() now schedules coroutines on current task chain
+* Coroutine exceptions are no longer suppressed in optimized builds
+* Add ability to `await` all interval objects inside a coroutine (#909)
+* Fix garbled data when doing `base.win.properties.size` et al.
+* Fix Filename division operator in Python 3
+* Add Pythonic property syntax to various Panda classes
+* Add optional `delay=` argument to `taskMgr.add()`
+* Fix CollisionHandler's again_patterns property
+
+Physics / Collisions
+* Fix missing import in nodePath.subdivideCollisions() (#1084)
+* Support pickling of CollisionTraverser and CollisionHandler objects (#1090)
+* Improve CollisionBox debug visualization
+* Fix broken GlobalForceGroup module
+* Fix writing representation of AngularVectorForce
+* Better handling for some edge cases in PhysicalNode
+* Support bam serialization of BulletGhostNode objects (#1099)
+
+Deployment
+* Fix app immediately exiting on Windows if log_filename is not set
+* Allow generating log files with date/time in filename (#1103)
+* Automatically removes aux-display Config.prc lines for excluded plug-ins
+* No longer defaults to FMOD audio on macOS unless FMOD is explicitly bundled
+* Fix every app pulling in pep517 and numpy when building on some Linux distros
+* Fix building with pytz and pandas requirements
+* Some deterministic build support with PYTHONHASHSEED=0 and SOURCE_DATE_EPOCH
+* Fix harmless warnings about missing dependencies
+* Fix libbz2, libreadline and liblzma libraries being erroneously excluded
+
+Build / C++
+* Some macOS builds were erroneously not built with Cg shader support (#1119)
+* Fix code signatures being missing from arm64 wheels on macOS (#1123)
+* Windows builds now include missing DirectX 9 DLL (#1034)
+* Windows installer no longer pops up message box in silent mode (#1088)
+* Fix compatibility of Panda headers with C++17 and C++20 compilers
+* Support reproducible builds when SOURCE_DATE_EPOCH is set
+* Interrogate supports `__truediv__` and `__floordiv__` special methods
+* makepanda now looks for linux-libs-arm64 thirdparty directory in aarch64 build
+
+Miscellaneous
+* Assorted memory leaks fixed
+* Disable `vorbis-seek-lap`, which caused popping in ogg sounds (#1108)
+* Fix crash when playing video using older FFMpeg versions (#1085)
+* Fix flattening/egg loader bug messing up line strip geometry (#1122)
+* Fix egg lexer state not being cleaned up after error
+* multify respects SOURCE_DATE_EPOCH (but -T0 should be preferred)
+* Fix egg loader hanging when encountering unterminated quote or C-style comment
+* VirtualFileSystem::read_file() is now implemented for HTTP mounts
+* Fix regression causing crash in DIRECT tools
+* Fix repeatedly clicking object in DIRECT tools cause explosion of scaling node
+
 ------------------------  RELEASE 1.10.8  -----------------------
 
 Recommended maintenance release.

@@ -1,3 +1,4 @@
+from panda3d.core import ConfigVariableString
 from panda3d.physics import SpriteParticleRenderer
 
 
@@ -18,8 +19,8 @@ class SpriteParticleRendererExt(SpriteParticleRenderer):
 
     def getSourceTextureName(self):
         if self.sourceTextureName is None:
-            SpriteParticleRendererExt.sourceTextureName = base.config.GetString(
-                'particle-sprite-texture', 'maps/lightbulb.rgb')
+            SpriteParticleRendererExt.sourceTextureName = ConfigVariableString(
+                'particle-sprite-texture', 'maps/lightbulb.rgb').value
         # Return instance copy of class variable
         return self.sourceTextureName
 
@@ -57,8 +58,8 @@ class SpriteParticleRendererExt(SpriteParticleRenderer):
 
     def getSourceFileName(self):
         if self.sourceFileName is None:
-            SpriteParticleRendererExt.sourceFileName = base.config.GetString(
-                'particle-sprite-model', 'models/misc/smiley')
+            SpriteParticleRendererExt.sourceFileName = ConfigVariableString(
+                'particle-sprite-model', 'models/misc/smiley').value
         # Return instance copy of class variable
         return self.sourceFileName
 
@@ -68,8 +69,8 @@ class SpriteParticleRendererExt(SpriteParticleRenderer):
 
     def getSourceNodeName(self):
         if self.sourceNodeName is None:
-            SpriteParticleRendererExt.sourceNodeName = base.config.GetString(
-                'particle-sprite-node', '**/*')
+            SpriteParticleRendererExt.sourceNodeName = ConfigVariableString(
+                'particle-sprite-node', '**/*').value
         # Return instance copy of class variable
         return self.sourceNodeName
 
