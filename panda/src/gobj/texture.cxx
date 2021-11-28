@@ -10351,10 +10351,12 @@ make_this_from_bam(const FactoryParams &params) {
     // object to read all of the attributes from the bam stream.
     Texture *dummy = this;
     AutoTextureScale auto_texture_scale = ATS_unspecified;
+    bool has_simple_ram_image = false;
     {
       CDWriter cdata_dummy(dummy->_cycler, true);
       dummy->do_fillin_body(cdata_dummy, scan, manager);
       auto_texture_scale = cdata_dummy->_auto_texture_scale;
+      has_simple_ram_image = !cdata_dummy->_simple_ram_image._image.empty();
     }
 
     if (filename.empty()) {
@@ -10387,6 +10389,61 @@ make_this_from_bam(const FactoryParams &params) {
       case TT_1d_texture:
       case TT_2d_texture:
       case TT_1d_texture_array:
+        // If we don't want to preload textures, and we already have a simple
+        // RAM image (or don't need one), we don't need to load it from disk.
+        // We do check for it in the texture pool first, though, in case it has
+        // already been loaded.
+        if ((options.get_texture_flags() & LoaderOptions::TF_preload) == 0 &&
+            (has_simple_ram_image || (options.get_texture_flags() & LoaderOptions::TF_preload_simple) == 0)) {
+          if (alpha_filename.empty()) {
+            me = TexturePool::get_texture(filename, primary_file_num_channels,
+                                          has_read_mipmaps);
+          } else {
+            me = TexturePool::get_texture(filename, alpha_filename,
+                                          primary_file_num_channels,
+                                          alpha_file_channel,
+                                          has_read_mipmaps);
+          }
+          if (me != nullptr && me->get_texture_type() == texture_type) {
+            // We can use this.
+            break;
+          }
+
+          // We don't have a texture, but we didn't need to preload it, so we
+          // can just use this one.  We just need to know where we can find it
+          // when we do need to reload it.
+          Filename fullpath = filename;
+          Filename alpha_fullpath = alpha_filename;
+          const DSearchPath &model_path = get_model_path();
+          if (vfs->resolve_filename(fullpath, model_path) &&
+              (alpha_fullpath.empty() || vfs->resolve_filename(alpha_fullpath, model_path))) {
+            me = dummy;
+            me->set_name(name);
+
+            {
+              CDWriter cdata_me(me->_cycler, true);
+              cdata_me->_filename = filename;
+              cdata_me->_alpha_filename = alpha_filename;
+              cdata_me->_fullpath = fullpath;
+              cdata_me->_alpha_fullpath = alpha_fullpath;
+              cdata_me->_primary_file_num_channels = primary_file_num_channels;
+              cdata_me->_alpha_file_channel = alpha_file_channel;
+              cdata_me->_texture_type = texture_type;
+              cdata_me->_loaded_from_image = true;
+              cdata_me->_has_read_mipmaps = has_read_mipmaps;
+            }
+
+            // To manage the reference count, explicitly ref it now, then unref
+            // it in the finalize callback.
+            me->ref();
+            manager->register_finalize(me);
+
+            // Do add it to the cache now, so that future uses of this same
+            // texture are unified.
+            TexturePool::add_texture(me);
+            return me;
+          }
+        }
         if (alpha_filename.empty()) {
           me = TexturePool::load_texture(filename, primary_file_num_channels,
                                          has_read_mipmaps, options);

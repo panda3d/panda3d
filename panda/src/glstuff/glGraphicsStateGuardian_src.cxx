@@ -14190,7 +14190,8 @@ upload_simple_texture(CLP(TextureContext) *gtc) {
 #endif
   GLenum external_format = GL_BGRA;
 
-  const unsigned char *image_ptr = tex->get_simple_ram_image();
+  CPTA_uchar image = tex->get_simple_ram_image();
+  const unsigned char *image_ptr = image.p();
   if (image_ptr == nullptr) {
     return false;
   }

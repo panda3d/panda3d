@@ -36,10 +36,6 @@
 
 using std::string;
 
-
-
-
-
 /**
  *
  */
@@ -589,16 +585,15 @@ determine_bin_home(EggBin *egg_bin) {
     // ahead and make an implicit node for the joint.
 
     if (egg_group->get_dcs_type() == EggGroup::DC_none) {
-/*
- * Unless the user specifically forbade exposing the joint by putting an
- * explicit "<DCS> { none }" entry in the joint.  In this case, we return NULL
- * to treat the geometry as dynamic (and animate it by animating its
- * vertices), but display lists and vertex buffers will perform better if more
- * geometry is rigid.  There's a tradeoff, though, since the cull traverser
- * will have to do more work with additional transforms in the scene graph,
- * and this may also break up the geometry into more individual pieces, which
- * is the biggest limiting factor on modern PC graphics cards.
- */
+      // Unless the user specifically forbade exposing the joint by putting an
+      // explicit "<DCS> { none }" entry in the joint.  In this case, we return
+      // nullptr to treat the geometry as dynamic (and animate it by animating
+      // its vertices), but display lists and vertex buffers will perform better
+      // if more geometry is rigid.  There's a tradeoff, though, since the cull
+      // traverser will have to do more work with additional transforms in the
+      // scene graph, and this may also break up the geometry into more
+      // individual pieces, which is the biggest limiting factor on modern PC
+      // graphics cards.
       return nullptr;
     }
 
