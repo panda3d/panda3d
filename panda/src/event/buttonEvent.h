@@ -44,7 +44,7 @@ class DatagramIterator;
  * character set.
  */
 class EXPCL_PANDA_EVENT ButtonEvent {
-public:
+PUBLISHED:
   enum Type {
     // T_down is sent when a button was just pressed.
     T_down,
@@ -85,6 +85,7 @@ public:
     T_raw_up,
   };
 
+public:
   INLINE ButtonEvent();
   INLINE ButtonEvent(ButtonHandle button, Type type, double time = ClockObject::get_global_clock()->get_frame_time());
   INLINE ButtonEvent(int keycode, double time = ClockObject::get_global_clock()->get_frame_time());
@@ -93,16 +94,29 @@ public:
   INLINE ButtonEvent(const ButtonEvent &copy);
   INLINE void operator = (const ButtonEvent &copy);
 
+PUBLISHED:
   INLINE bool operator == (const ButtonEvent &other) const;
   INLINE bool operator != (const ButtonEvent &other) const;
   INLINE bool operator < (const ButtonEvent &other) const;
 
+public:
   INLINE bool update_mods(ModifierButtons &mods) const;
+
+  INLINE ButtonHandle get_button() const;
+  INLINE int get_keycode() const;
+  INLINE Type get_type() const;
+  INLINE double get_time() const;
 
   void output(std::ostream &out) const;
 
   void write_datagram(Datagram &dg) const;
   void read_datagram(DatagramIterator &scan);
+
+PUBLISHED:
+  MAKE_PROPERTY(button, get_button);
+  MAKE_PROPERTY(keycode, get_keycode);
+  MAKE_PROPERTY(type, get_type);
+  MAKE_PROPERTY(time, get_time);
 
 public:
   // _button will be filled in if type is T_down, T_resume_down, or T_up.
