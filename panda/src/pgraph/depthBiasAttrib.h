@@ -37,6 +37,8 @@ class FactoryParams;
  * with a value of 1 beneath another DepthBiasAttrib with a value of 2
  * presents a net offset of 3.  (A DepthBiasAttrib will not, however,
  * combine with any other DepthBiasAttribs with a lower override parameter.)
+ *
+ * @since 1.11.0
  */
 class EXPCL_PANDA_PGRAPH DepthBiasAttrib : public RenderAttrib {
 private:
