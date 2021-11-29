@@ -3104,12 +3104,15 @@ def CopyAllHeaders(dir, skip=[]):
             WriteBinaryFile(dstfile, ReadBinaryFile(srcfile))
             JustBuilt([dstfile], [srcfile])
 
-def CopyTree(dstdir, srcdir, omitVCS=True):
+def CopyTree(dstdir, srcdir, omitVCS=True, exclude=()):
     if os.path.isdir(dstdir):
         source_entries = os.listdir(srcdir)
         for entry in source_entries:
             srcpth = os.path.join(srcdir, entry)
             dstpth = os.path.join(dstdir, entry)
+
+            if entry in exclude:
+                continue
 
             if os.path.islink(srcpth) or os.path.isfile(srcpth):
                 if not omitVCS or entry not in VCS_FILES:
@@ -3120,7 +3123,7 @@ def CopyTree(dstdir, srcdir, omitVCS=True):
 
         # Delete files in dstdir that are not in srcdir.
         for entry in os.listdir(dstdir):
-            if entry not in source_entries:
+            if entry not in source_entries or entry in exclude:
                 path = os.path.join(dstdir, entry)
                 if os.path.islink(path) or os.path.isfile(path):
                     os.remove(path)
@@ -3135,6 +3138,13 @@ def CopyTree(dstdir, srcdir, omitVCS=True):
         else:
             if subprocess.call(['cp', '-R', '-f', srcdir, dstdir]) != 0:
                 exit("Copy failed.")
+
+        for entry in exclude:
+            path = os.path.join(dstdir, entry)
+            if os.path.islink(path) or os.path.isfile(path):
+                os.remove(path)
+            elif os.path.isdir(path):
+                shutil.rmtree(path)
 
         if omitVCS:
             DeleteVCS(dstdir)

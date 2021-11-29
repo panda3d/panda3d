@@ -3071,8 +3071,10 @@ else:
 if not PkgSkip("PANDATOOL"):
     CopyAllFiles(GetOutputDir()+"/plugins/",  "pandatool/src/scripts/", ".mel")
     CopyAllFiles(GetOutputDir()+"/plugins/",  "pandatool/src/scripts/", ".ms")
-if not PkgSkip("PYTHON") and os.path.isdir(GetThirdpartyBase()+"/Pmw"):
-    CopyTree(GetOutputDir()+'/Pmw',         GetThirdpartyBase()+'/Pmw')
+
+if not PkgSkip("PYTHON") and os.path.isdir(GetThirdpartyBase() + "/Pmw"):
+    CopyTree(GetOutputDir() + "/Pmw", GetThirdpartyBase() + "/Pmw", exclude=["Pmw_1_3", "Pmw_1_3_3"])
+
 ConditionalWriteFile(GetOutputDir()+'/include/ctl3d.h', '/* dummy file to make MAX happy */')
 
 # Since Eigen is included by all sorts of core headers, as a convenience
