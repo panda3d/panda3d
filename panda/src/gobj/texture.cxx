@@ -43,6 +43,7 @@
 #include "streamReader.h"
 #include "texturePeeker.h"
 #include "convert_srgb.h"
+#include "asyncTaskManager.h"
 
 #ifdef HAVE_SQUISH
 #include <squish.h>
@@ -1017,6 +1018,69 @@ load_related(const InternalName *suffix) const {
   // cache.
   ((Texture *)this)->_related_textures.insert(RelatedTextures::value_type(suffix, res));
   return res;
+}
+
+/**
+ * Schedules a background task that reloads the the Texture from its disk file
+ * if there is not currently a RAM image (or uncompressed RAM image, if
+ * allow_compression is false).
+ *
+ * A higher priority value indicates that this texture should be reloaded sooner
+ * than textures with a lower priority value.  If the reload hasn't taken place
+ * yet, you can call this again to update the priority value.
+ *
+ * If someone else reloads the texture using an explicit call to reload() while
+ * an async reload request is pending, the async reload request is cancelled.
+ */
+PT(AsyncFuture) Texture::
+async_ensure_ram_image(bool allow_compression, int priority) {
+  CDLockedReader cdata(_cycler);
+  if (allow_compression ? do_has_ram_image(cdata) : do_has_uncompressed_ram_image(cdata)) {
+    // We already have a RAM image.
+    PT(AsyncFuture) fut = new AsyncFuture;
+    fut->set_result(nullptr);
+    return fut;
+  }
+  if (!do_can_reload(cdata)) {
+    // We don't have a filename to load from.  This is an error.
+    return nullptr;
+  }
+
+  AsyncTask *task = cdata->_reload_task;
+  if (task != nullptr) {
+    // This texture is already queued to be reloaded.  Don't queue it again,
+    // just make sure the priority is updated, and return.
+    task->set_priority(std::max(task->get_priority(), priority));
+    return (AsyncFuture *)task;
+  }
+
+  CDWriter cdataw(_cycler, cdata, true);
+
+  string task_name = string("reload:") + get_name();
+  AsyncTaskManager *task_mgr = AsyncTaskManager::get_global_ptr();
+  static PT(AsyncTaskChain) chain = task_mgr->make_task_chain("texture_reload");
+  chain->set_num_threads(texture_reload_num_threads);
+  chain->set_thread_priority(texture_reload_thread_priority);
+
+  double delay = async_load_delay;
+
+  // This texture has not yet been queued to be reloaded.  Queue it up now.
+  task = new FunctionAsyncTask(task_name, [=](AsyncTask *task) {
+    if (delay != 0.0) {
+      Thread::sleep(delay);
+    }
+    if (allow_compression) {
+      get_ram_image();
+    } else {
+      get_uncompressed_ram_image();
+    }
+    return AsyncTask::DS_done;
+  });
+  task->set_task_chain("texture_reload");
+  task->set_priority(priority);
+  task_mgr->add(task);
+  cdataw->_reload_task = task;
+  return (AsyncFuture *)task;
 }
 
 /**
@@ -5610,6 +5674,12 @@ do_reload_ram_image(CData *cdata, bool allow_compression) {
       record->set_data(this, this);
       cache->store(record);
     }
+  }
+
+  // Remove any pending asynchronous reload operation.
+  if (cdata->_reload_task != nullptr) {
+    cdata->_reload_task->remove();
+    cdata->_reload_task = nullptr;
   }
 }
 

@@ -24,6 +24,7 @@
 #include "configVariableString.h"
 #include "configVariableList.h"
 #include "autoTextureScale.h"
+#include "threadPriority.h"
 
 NotifyCategoryDecl(gobj, EXPCL_PANDA_GOBJ, EXPTP_PANDA_GOBJ);
 NotifyCategoryDecl(shader, EXPCL_PANDA_GOBJ, EXPTP_PANDA_GOBJ);
@@ -62,6 +63,8 @@ extern EXPCL_PANDA_GOBJ ConfigVariableBool textures_auto_power_2;
 extern EXPCL_PANDA_GOBJ ConfigVariableBool textures_header_only;
 extern EXPCL_PANDA_GOBJ ConfigVariableInt simple_image_size;
 extern EXPCL_PANDA_GOBJ ConfigVariableDouble simple_image_threshold;
+extern EXPCL_PANDA_GOBJ ConfigVariableInt texture_reload_num_threads;
+extern EXPCL_PANDA_GOBJ ConfigVariableEnum<ThreadPriority> texture_reload_thread_priority;
 
 extern EXPCL_PANDA_GOBJ ConfigVariableInt geom_cache_size;
 extern EXPCL_PANDA_GOBJ ConfigVariableInt geom_cache_min_frames;
