@@ -1378,7 +1378,12 @@ new_simple_ram_image(int x_size, int y_size) {
   cdata->_simple_ram_image._image = PTA_uchar::empty_array(expected_page_size);
   cdata->_simple_ram_image._page_size = expected_page_size;
   cdata->_simple_image_date_generated = (int32_t)time(nullptr);
-  cdata->inc_simple_image_modified();
+
+  // If we don't have a RAM image currently, we need to update this, to let the
+  // GSG know that it needs to update the simple image it is currently using.
+  if (!do_has_ram_image(cdata)) {
+    cdata->inc_image_modified();
+  }
 
   return cdata->_simple_ram_image._image;
 }
@@ -5525,7 +5530,6 @@ unlocked_ensure_ram_image(bool allow_compression) {
     cdataw->_component_type = cdata_tex->_component_type;
 
     cdataw->inc_properties_modified();
-    cdataw->inc_image_modified();
   }
 
   cdataw->_keep_ram_image = cdata_tex->_keep_ram_image;
@@ -5535,9 +5539,7 @@ unlocked_ensure_ram_image(bool allow_compression) {
   nassertr(_reloading, nullptr);
   _reloading = false;
 
-  // We don't generally increment the cdata->_image_modified semaphore,
-  // because this is just a reload, and presumably the image hasn't changed
-  // (unless we hit the if condition above).
+  cdataw->inc_image_modified();
 
   _cvar.notify_all();
 
@@ -7007,7 +7009,6 @@ do_clear(CData *cdata) {
 
   cdata->inc_properties_modified();
   cdata->inc_image_modified();
-  cdata->inc_simple_image_modified();
 }
 
 /**
@@ -7696,7 +7697,6 @@ do_set_simple_ram_image(CData *cdata, CPTA_uchar image, int x_size, int y_size) 
   cdata->_simple_ram_image._image = image.cast_non_const();
   cdata->_simple_ram_image._page_size = image.size();
   cdata->_simple_image_date_generated = (int32_t)time(nullptr);
-  cdata->inc_simple_image_modified();
 }
 
 /**
@@ -7791,11 +7791,6 @@ do_clear_simple_ram_image(CData *cdata) {
   cdata->_simple_ram_image._image.clear();
   cdata->_simple_ram_image._page_size = 0;
   cdata->_simple_image_date_generated = 0;
-
-  // We allow this exception: we update the _simple_image_modified here, since
-  // no one really cares much about that anyway, and it's convenient to do it
-  // here.
-  cdata->inc_simple_image_modified();
 }
 
 /**
@@ -10610,7 +10605,6 @@ do_fillin_body(CData *cdata, DatagramIterator &scan, BamReader *manager) {
 
     cdata->_simple_ram_image._image = image;
     cdata->_simple_ram_image._page_size = u_size;
-    cdata->inc_simple_image_modified();
   }
 
   if (manager->get_file_minor_ver() >= 45) {
@@ -10808,7 +10802,6 @@ CData(const Texture::CData &copy) {
 
   _properties_modified = copy._properties_modified;
   _image_modified = copy._image_modified;
-  _simple_image_modified = copy._simple_image_modified;
   _modified_pages = copy._modified_pages;
 }
 

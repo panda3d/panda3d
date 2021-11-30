@@ -357,10 +357,7 @@ upload_texture(DXTextureContext9 *dtc, bool force) {
       async_reload_texture(dtc);
       has_image = _supports_compressed_texture ? tex->has_ram_image() : tex->has_uncompressed_ram_image();
       if (!has_image) {
-        if (dtc->was_simple_image_modified()) {
-          return dtc->create_simple_texture(*_screen);
-        }
-        return true;
+        return dtc->create_simple_texture(*_screen);
       }
     }
   }

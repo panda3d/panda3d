@@ -28,7 +28,6 @@ make_copy() const {
   CDWriter cdata_tex(tex->_cycler, true);
   cdata_tex->inc_properties_modified();
   cdata_tex->inc_image_modified();
-  cdata_tex->inc_simple_image_modified();
   return tex;
 }
 
@@ -232,7 +231,6 @@ clear_image() {
   do_clear_ram_image(cdata);
   do_clear_simple_ram_image(cdata);
   cdata->inc_image_modified();
-  cdata->inc_simple_image_modified();
 }
 
 /**
@@ -1766,6 +1764,12 @@ INLINE void Texture::
 set_simple_ram_image(CPTA_uchar image, int x_size, int y_size) {
   CDWriter cdata(_cycler, true);
   do_set_simple_ram_image(cdata, image, x_size, y_size);
+
+  // If we don't have a RAM image currently, we need to update this, to let the
+  // GSG know that it needs to update the simple image it is currently using.
+  if (!do_has_ram_image(cdata)) {
+    cdata->inc_image_modified();
+  }
 }
 
 /**
@@ -1795,16 +1799,6 @@ INLINE UpdateSeq Texture::
 get_image_modified() const {
   CDReader cdata(_cycler);
   return cdata->_image_modified;
-}
-
-/**
- * Returns a sequence number which is guaranteed to change at least every time
- * the texture's "simple" image data is modified.
- */
-INLINE UpdateSeq Texture::
-get_simple_image_modified() const {
-  CDReader cdata(_cycler);
-  return cdata->_simple_image_modified;
 }
 
 /**
@@ -2464,14 +2458,6 @@ inc_image_modified() {
   _modified_pages.resize(1);
   _modified_pages[0]._z_end = (size_t)-1;
   _modified_pages[0]._modified = _image_modified;
-}
-
-/**
- *
- */
-INLINE void Texture::CData::
-inc_simple_image_modified() {
-  ++_simple_image_modified;
 }
 
 /**

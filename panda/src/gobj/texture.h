@@ -521,10 +521,8 @@ PUBLISHED:
 
   INLINE UpdateSeq get_properties_modified() const;
   INLINE UpdateSeq get_image_modified() const;
-  INLINE UpdateSeq get_simple_image_modified() const;
   MAKE_PROPERTY(properties_modified, get_properties_modified);
   MAKE_PROPERTY(image_modified, get_image_modified);
-  MAKE_PROPERTY(simple_image_modified, get_simple_image_modified);
 
   SparseArray get_image_modified_pages(UpdateSeq since, int n = 0) const;
 
@@ -961,7 +959,6 @@ protected:
     INLINE void inc_properties_modified();
     INLINE void inc_image_modified();
     void inc_image_page_modified(int z);
-    INLINE void inc_simple_image_modified();
 
     Filename _filename;
     Filename _alpha_filename;
@@ -1030,7 +1027,6 @@ protected:
 
     UpdateSeq _properties_modified;
     UpdateSeq _image_modified;
-    UpdateSeq _simple_image_modified;
 
     ModifiedPageRanges _modified_pages;
 

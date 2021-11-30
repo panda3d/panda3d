@@ -7420,6 +7420,7 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
   }
 
   gtc->_has_storage = true;
+  gtc->_simple_loaded = false;
   gtc->_uses_mipmaps = uses_mipmaps;
   gtc->_internal_format = internal_format;
   gtc->_width = width;
@@ -13135,7 +13136,7 @@ apply_sampler(GLuint unit, const SamplerState &sampler, CLP(TextureContext) *gtc
     }
   }
 
-  if (sampler.uses_mipmaps() && !gtc->_uses_mipmaps && !gl_ignore_mipmaps) {
+  if (sampler.uses_mipmaps() && !gtc->_uses_mipmaps && !gtc->_simple_loaded && !gl_ignore_mipmaps) {
     // The texture wasn't created with mipmaps, but we are trying to sample it
     // with mipmaps.  We will need to reload it.
     GLCAT.info()
@@ -13178,10 +13179,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
       async_reload_texture(gtc);
       has_image = _supports_compressed_texture ? tex->has_ram_image() : tex->has_uncompressed_ram_image();
       if (!has_image) {
-        if (gtc->was_simple_image_modified()) {
-          return upload_simple_texture(gtc);
-        }
-        return true;
+        return upload_simple_texture(gtc);
       }
     }
   }
@@ -13551,6 +13549,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
       }
 
       gtc->_has_storage = true;
+      gtc->_simple_loaded = false;
       gtc->_immutable = true;
       gtc->_uses_mipmaps = uses_mipmaps;
       gtc->_internal_format = internal_format;
@@ -13598,6 +13597,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
   if (success) {
     if (needs_reload) {
       gtc->_has_storage = true;
+      gtc->_simple_loaded = false;
       gtc->_uses_mipmaps = uses_mipmaps;
       gtc->_internal_format = internal_format;
       gtc->_width = width;
@@ -14234,7 +14234,17 @@ upload_simple_texture(CLP(TextureContext) *gtc) {
                width, height, 0,
                external_format, component_type, image_ptr);
 
-  gtc->mark_simple_loaded();
+  gtc->_has_storage = true;
+  gtc->_simple_loaded = true;
+  gtc->_immutable = false;
+  gtc->_uses_mipmaps = false;
+  gtc->_internal_format = internal_format;
+  gtc->_width = width;
+  gtc->_height = height;
+  gtc->_depth = 1;
+  gtc->update_data_size_bytes(width * height * 4);
+
+  gtc->mark_loaded();
 
   report_my_gl_errors();
   return true;

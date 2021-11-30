@@ -1157,7 +1157,7 @@ create_simple_texture(DXScreenData &scrn) {
     goto error_exit;
   }
 
-  mark_simple_loaded();
+  mark_loaded();
   return true;
 
  error_exit:
