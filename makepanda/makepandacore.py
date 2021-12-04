@@ -1599,8 +1599,8 @@ def PkgConfigGetIncDirs(pkgname, tool = "pkg-config"):
     else:
         handle = os.popen(LocateBinary(tool) + " --cflags")
     result = handle.read().strip()
-    if len(result) == 0: return []
     handle.close()
+    if len(result) == 0: return []
     dirs = []
     for opt in result.split(" "):
         if (opt.startswith("-I")):
@@ -3637,7 +3637,8 @@ def UpdatePythonVersionInfoFile(new_info):
     json_data = []
     if os.path.isfile(json_file) and not PkgSkip("PYTHON"):
         try:
-            json_data = json.load(open(json_file, 'r'))
+            with open(json_file, 'r') as fh:
+                json_data = json.load(fh)
         except:
             json_data = []
 
@@ -3655,7 +3656,9 @@ def UpdatePythonVersionInfoFile(new_info):
 
     if VERBOSE:
         print("Writing %s" % (json_file))
-    json.dump(json_data, open(json_file, 'w'), indent=4)
+
+    with open(json_file, 'w') as fh:
+        json.dump(json_data, fh, indent=4)
 
 
 def ReadPythonVersionInfoFile():
