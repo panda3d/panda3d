@@ -3276,6 +3276,22 @@ def WriteResourceFile(basename, **kwargs):
     return basename
 
 
+def GenerateEmbeddedStringFile(string_name, data):
+    yield 'extern const char %s[] = {\n' % (string_name)
+    i = 0
+    for byte in data:
+        if i == 0:
+            yield ' '
+
+        yield ' 0x%02x,' % (byte)
+        i += 1
+        if i >= 12:
+            yield '\n'
+            i = 0
+
+    yield '\n};\n'
+
+
 def WriteEmbeddedStringFile(basename, inputs, string_name=None):
     if os.path.splitext(basename)[1] not in SUFFIX_INC:
         basename += '.cxx'
@@ -3300,20 +3316,7 @@ def WriteEmbeddedStringFile(basename, inputs, string_name=None):
 
     data.append(0)
 
-    output = 'extern const char %s[] = {\n' % (string_name)
-
-    i = 0
-    for byte in data:
-        if i == 0:
-            output += ' '
-
-        output += ' 0x%02x,' % (byte)
-        i += 1
-        if i >= 12:
-            output += '\n'
-            i = 0
-
-    output += '\n};\n'
+    output = ''.join(GenerateEmbeddedStringFile(string_name, data))
     ConditionalWriteFile(target, output)
     return target
 
