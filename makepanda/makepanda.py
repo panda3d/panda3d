@@ -7093,7 +7093,7 @@ def ParallelMake(tasklist):
     # Create the workers
     for slave in range(THREADCOUNT):
         th = threading.Thread(target=BuildWorker, args=[taskqueue, donequeue])
-        th.setDaemon(1)
+        th.daemon = True
         th.start()
     # Feed tasks to the workers.
     tasksqueued = 0

@@ -24,7 +24,7 @@ SUFFIX_LIB = [".lib",".ilb"]
 VCS_DIRS = set(["CVS", "CVSROOT", ".git", ".hg", "__pycache__"])
 VCS_FILES = set([".cvsignore", ".gitignore", ".gitmodules", ".hgignore"])
 STARTTIME = time.time()
-MAINTHREAD = threading.currentThread()
+MAINTHREAD = threading.current_thread()
 OUTPUTDIR = "built"
 CUSTOM_OUTPUTDIR = False
 THIRDPARTYBASE = None
@@ -243,7 +243,7 @@ def ProgressOutput(progress, msg, target = None):
     sys.stdout.flush()
     sys.stderr.flush()
     prefix = ""
-    thisthread = threading.currentThread()
+    thisthread = threading.current_thread()
     if thisthread is MAINTHREAD:
         if progress is None:
             prefix = ""
@@ -273,7 +273,7 @@ def ProgressOutput(progress, msg, target = None):
 def exit(msg = ""):
     sys.stdout.flush()
     sys.stderr.flush()
-    if (threading.currentThread() == MAINTHREAD):
+    if threading.current_thread() == MAINTHREAD:
         SaveDependencyCache()
         print("Elapsed Time: " + PrettyTime(time.time() - STARTTIME))
         print(msg)
