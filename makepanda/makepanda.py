@@ -1308,10 +1308,6 @@ def CompileCxx(obj,src,opts):
         if "SYSROOT" in SDK:
             if GetTarget() != "android":
                 cmd += ' --sysroot=%s' % (SDK["SYSROOT"])
-            else:
-                ndk_dir = SDK["ANDROID_NDK"].replace('\\', '/')
-                cmd += ' -isystem %s/sysroot/usr/include' % (ndk_dir)
-                cmd += ' -isystem %s/sysroot/usr/include/%s' % (ndk_dir, SDK["ANDROID_TRIPLE"])
             cmd += ' -no-canonical-prefixes'
 
         # Android-specific flags.
@@ -1320,33 +1316,24 @@ def CompileCxx(obj,src,opts):
         if GetTarget() == "android":
             # Most of the specific optimization flags here were
             # just copied from the default Android Makefiles.
-            if "ANDROID_API" in SDK:
-                cmd += ' -D__ANDROID_API__=' + str(SDK["ANDROID_API"])
             if "ANDROID_GCC_TOOLCHAIN" in SDK:
                 cmd += ' -gcc-toolchain ' + SDK["ANDROID_GCC_TOOLCHAIN"].replace('\\', '/')
             cmd += ' -ffunction-sections -funwind-tables'
+            cmd += ' -target ' + SDK["ANDROID_TRIPLE"]
             if arch == 'armv7a':
-                cmd += ' -target armv7-none-linux-androideabi'
                 cmd += ' -march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16'
                 cmd += ' -fno-integrated-as'
             elif arch == 'arm':
-                cmd += ' -target armv5te-none-linux-androideabi'
                 cmd += ' -march=armv5te -mtune=xscale -msoft-float'
                 cmd += ' -fno-integrated-as'
-            elif arch == 'aarch64':
-                cmd += ' -target aarch64-none-linux-android'
             elif arch == 'mips':
-                cmd += ' -target mipsel-none-linux-android'
                 cmd += ' -mips32'
             elif arch == 'mips64':
-                cmd += ' -target mips64el-none-linux-android'
                 cmd += ' -fintegrated-as'
             elif arch == 'x86':
-                cmd += ' -target i686-none-linux-android'
                 cmd += ' -march=i686 -mtune=intel -mssse3 -mfpmath=sse -m32'
                 cmd += ' -mstackrealign'
             elif arch == 'x86_64':
-                cmd += ' -target x86_64-none-linux-android'
                 cmd += ' -march=x86-64 -msse4.2 -mpopcnt -m64 -mtune=intel'
 
             cmd += " -Wa,--noexecstack"
@@ -1848,28 +1835,16 @@ def CompileLink(dll, obj, opts):
             if "ANDROID_GCC_TOOLCHAIN" in SDK:
                 cmd += ' -gcc-toolchain ' + SDK["ANDROID_GCC_TOOLCHAIN"].replace('\\', '/')
             cmd += " -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now"
+            cmd += ' -target ' + SDK["ANDROID_TRIPLE"]
             if arch == 'armv7a':
-                cmd += ' -target armv7-none-linux-androideabi'
                 cmd += " -march=armv7-a -Wl,--fix-cortex-a8"
-            elif arch == 'arm':
-                cmd += ' -target armv5te-none-linux-androideabi'
-            elif arch == 'aarch64':
-                cmd += ' -target aarch64-none-linux-android'
             elif arch == 'mips':
-                cmd += ' -target mipsel-none-linux-android'
                 cmd += ' -mips32'
-            elif arch == 'mips64':
-                cmd += ' -target mips64el-none-linux-android'
-            elif arch == 'x86':
-                cmd += ' -target i686-none-linux-android'
-            elif arch == 'x86_64':
-                cmd += ' -target x86_64-none-linux-android'
             cmd += ' -lc -lm'
         else:
             cmd += " -pthread"
-
-        if "SYSROOT" in SDK:
-            cmd += " --sysroot=%s -no-canonical-prefixes" % (SDK["SYSROOT"])
+            if "SYSROOT" in SDK:
+                cmd += " --sysroot=%s -no-canonical-prefixes" % (SDK["SYSROOT"])
 
         if LDFLAGS != "":
             cmd += " " + LDFLAGS
@@ -2446,6 +2421,7 @@ def WriteConfigSettings():
         dtool_config["PHAVE_GLOB_H"] = 'UNDEF'
         dtool_config["PHAVE_LOCKF"] = 'UNDEF'
         dtool_config["HAVE_VIDEO4LINUX"] = 'UNDEF'
+        dtool_config["HAVE_X11"] = 'UNDEF'
 
     if (GetOptimize() <= 2 and GetTarget() == "windows"):
         dtool_config["USE_DEBUG_PYTHON"] = '1'

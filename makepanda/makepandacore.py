@@ -404,8 +404,8 @@ def SetTarget(target, arch=None):
             # 64-bit platforms were introduced in Android 21.
             ANDROID_API = 21
         else:
-            # Default to the lowest API level supported by NDK r16.
-            ANDROID_API = 14
+            # Default to the lowest API level still supported by Google.
+            ANDROID_API = 19
 
         # Determine the prefix for our gcc tools, eg. arm-linux-androideabi-gcc
         global ANDROID_ABI, ANDROID_TRIPLE
@@ -433,6 +433,7 @@ def SetTarget(target, arch=None):
         else:
             exit('Android architecture must be arm, armv7a, aarch64, mips, mips64, x86 or x86_64')
 
+        ANDROID_TRIPLE += str(ANDROID_API)
         TOOLCHAIN_PREFIX = ANDROID_TRIPLE + '-'
 
     elif target == 'linux':
@@ -2540,15 +2541,6 @@ def SdkLocateAndroid():
     SDK["SYSROOT"] = os.path.join(ndk_root, 'platforms', 'android-%s' % (api), arch_dir).replace('\\', '/')
     #IncDirectory("ALWAYS", os.path.join(SDK["SYSROOT"], 'usr', 'include'))
 
-    # Starting with NDK r16, libc++ is the recommended STL to use.
-    stdlibc = os.path.join(ndk_root, 'sources', 'cxx-stl', 'llvm-libc++')
-    IncDirectory("ALWAYS", os.path.join(stdlibc, 'include').replace('\\', '/'))
-    LibDirectory("ALWAYS", os.path.join(stdlibc, 'libs', abi).replace('\\', '/'))
-
-    stl_lib = os.path.join(stdlibc, 'libs', abi, 'libc++_shared.so')
-    LibName("ALWAYS", stl_lib.replace('\\', '/'))
-    CopyFile(os.path.join(GetOutputDir(), 'lib', 'libc++_shared.so'), stl_lib)
-
     # The Android support library polyfills C++ features not available in the
     # STL that ships with Android.
     support = os.path.join(ndk_root, 'sources', 'android', 'support', 'include')
@@ -2957,12 +2949,7 @@ def SetupBuildEnvironment(compiler):
 
         # Now extract the preprocessor's include directories.
         cmd = GetCXX() + " -x c++ -v -E " + os.devnull
-        if "ANDROID_NDK" in SDK:
-            ndk_dir = SDK["ANDROID_NDK"].replace('\\', '/')
-            cmd += ' -isystem %s/sysroot/usr/include' % (ndk_dir)
-            cmd += ' -isystem %s/sysroot/usr/include/%s' % (ndk_dir, SDK["ANDROID_TRIPLE"])
-        else:
-            cmd += sysroot_flag
+        cmd += sysroot_flag
 
         null = open(os.devnull, 'w')
         handle = subprocess.Popen(cmd, stdout=null, stderr=subprocess.PIPE, shell=True)
