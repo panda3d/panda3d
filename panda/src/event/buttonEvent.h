@@ -42,6 +42,9 @@ class DatagramIterator;
  * keyboard (and other buttons for which there is a corresponding ButtonHandle
  * object), while keystroke events are defined across the entire Unicode
  * character set.
+ *
+ * This API should not be considered stable and may change in a future version
+ * of Panda3D.
  */
 class EXPCL_PANDA_EVENT ButtonEvent {
 PUBLISHED:

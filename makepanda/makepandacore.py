@@ -28,7 +28,7 @@ SUFFIX_LIB = [".lib",".ilb"]
 VCS_DIRS = set(["CVS", "CVSROOT", ".git", ".hg", "__pycache__"])
 VCS_FILES = set([".cvsignore", ".gitignore", ".gitmodules", ".hgignore"])
 STARTTIME = time.time()
-MAINTHREAD = threading.currentThread()
+MAINTHREAD = threading.current_thread()
 OUTPUTDIR = "built"
 CUSTOM_OUTPUTDIR = False
 THIRDPARTYBASE = None
@@ -242,7 +242,7 @@ def ProgressOutput(progress, msg, target = None):
     sys.stdout.flush()
     sys.stderr.flush()
     prefix = ""
-    thisthread = threading.currentThread()
+    thisthread = threading.current_thread()
     if thisthread is MAINTHREAD:
         if progress is None:
             prefix = ""
@@ -272,7 +272,7 @@ def ProgressOutput(progress, msg, target = None):
 def exit(msg = ""):
     sys.stdout.flush()
     sys.stderr.flush()
-    if threading.currentThread() == MAINTHREAD:
+    if threading.current_thread() == MAINTHREAD:
         SaveDependencyCache()
         print("Elapsed Time: " + PrettyTime(time.time() - STARTTIME))
         print(msg)
@@ -1556,8 +1556,8 @@ def PkgConfigGetIncDirs(pkgname, tool = "pkg-config"):
     else:
         handle = os.popen(LocateBinary(tool) + " --cflags")
     result = handle.read().strip()
-    if len(result) == 0: return []
     handle.close()
+    if len(result) == 0: return []
     dirs = []
     for opt in result.split(" "):
         if (opt.startswith("-I")):
@@ -3484,7 +3484,8 @@ def UpdatePythonVersionInfoFile(new_info):
     json_data = []
     if os.path.isfile(json_file) and not PkgSkip("PYTHON"):
         try:
-            json_data = json.load(open(json_file, 'r'))
+            with open(json_file, 'r') as fh:
+                json_data = json.load(fh)
         except:
             json_data = []
 
@@ -3504,7 +3505,9 @@ def UpdatePythonVersionInfoFile(new_info):
 
     if VERBOSE:
         print("Writing %s" % (json_file))
-    json.dump(json_data, open(json_file, 'w'), indent=4)
+
+    with open(json_file, 'w') as fh:
+        json.dump(json_data, fh, indent=4)
 
 
 def ReadPythonVersionInfoFile():

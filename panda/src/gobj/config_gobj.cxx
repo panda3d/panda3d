@@ -520,7 +520,7 @@ PRC_DESC("If this is nonzero, it represents an artificial delay, "
          "in seconds, that is imposed on every asynchronous load attempt "
          "(within the thread).  Its purpose is to help debug errors that "
          "may occur when an asynchronous load is delayed.  The "
-         "delay is per-model, and all aync loads will be queued "
+         "delay is per-model, and all async loads will be queued "
          "up behind the delay--it is as if the time it takes to read a "
          "file is increased by this amount per read."));
 
