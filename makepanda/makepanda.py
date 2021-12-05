@@ -949,6 +949,8 @@ if (COMPILER=="GCC"):
             SmartPkgEnable("CGGL", "", ("CgGL"), "Cg/cgGL.h", thirdparty_dir = "nvidiacg")
         if GetTarget() != "android":
             SmartPkgEnable("X11", "x11", "X11", ("X11", "X11/Xlib.h", "X11/XKBlib.h"))
+        else:
+            PkgDisable("X11")
 
     if GetHost() != "darwin":
         # Workaround for an issue where pkg-config does not include this path
@@ -1339,14 +1341,14 @@ def CompileCxx(obj,src,opts):
             cmd += " -Wa,--noexecstack"
 
             # Do we want thumb or arm instructions?
-            if arch.startswith('arm'):
+            if arch != 'arm64' and arch.startswith('arm'):
                 if optlevel >= 3:
                     cmd += ' -mthumb'
                 else:
                     cmd += ' -marm'
 
             # Enable SIMD instructions if requested
-            if arch.startswith('arm') and PkgSkip("NEON") == 0:
+            if arch != 'arm64' and arch.startswith('arm') and PkgSkip("NEON") == 0:
                 cmd += ' -mfpu=neon'
 
         else:
@@ -2421,7 +2423,6 @@ def WriteConfigSettings():
         dtool_config["PHAVE_GLOB_H"] = 'UNDEF'
         dtool_config["PHAVE_LOCKF"] = 'UNDEF'
         dtool_config["HAVE_VIDEO4LINUX"] = 'UNDEF'
-        dtool_config["HAVE_X11"] = 'UNDEF'
 
     if (GetOptimize() <= 2 and GetTarget() == "windows"):
         dtool_config["USE_DEBUG_PYTHON"] = '1'
@@ -4606,7 +4607,7 @@ elif not PkgSkip("EGL") and not PkgSkip("GL") and GetTarget() not in ('windows',
 # DIRECTORY: panda/src/egldisplay/
 #
 
-if not PkgSkip("EGL") and not PkgSkip("GLES"):
+if GetTarget() != 'android' and not PkgSkip("EGL") and not PkgSkip("GLES"):
     DefSymbol('GLES', 'OPENGLES_1', '')
     OPTS=['DIR:panda/src/egldisplay', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGLES', 'GLES', 'EGL', 'X11']
     TargetAdd('pandagles_egldisplay_composite1.obj', opts=OPTS, input='p3egldisplay_composite1.cxx')
@@ -4831,7 +4832,7 @@ if not PkgSkip("PVIEW"):
 #
 
 if GetTarget() == 'android':
-    OPTS=['DIR:panda/src/android']
+    OPTS=['DIR:panda/src/android', 'PNG']
     TargetAdd('org/panda3d/android/NativeIStream.class', opts=OPTS, input='NativeIStream.java')
     TargetAdd('org/panda3d/android/NativeOStream.class', opts=OPTS, input='NativeOStream.java')
     TargetAdd('org/panda3d/android/PandaActivity.class', opts=OPTS, input='PandaActivity.java')

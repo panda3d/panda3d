@@ -392,15 +392,15 @@ def SetTarget(target, arch=None):
             else:
                 arch = 'armv7a'
 
-        if arch == 'arm64':
-            arch = 'aarch64'
+        if arch == 'aarch64':
+            arch = 'arm64'
 
         # Did we specify an API level?
         global ANDROID_API
         target, _, api = target.partition('-')
         if api:
             ANDROID_API = int(api)
-        elif arch in ('mips64', 'aarch64', 'x86_64'):
+        elif arch in ('mips64', 'arm64', 'x86_64'):
             # 64-bit platforms were introduced in Android 21.
             ANDROID_API = 21
         else:
@@ -415,7 +415,7 @@ def SetTarget(target, arch=None):
         elif arch == 'arm':
             ANDROID_ABI = 'armeabi'
             ANDROID_TRIPLE = 'arm-linux-androideabi'
-        elif arch == 'aarch64':
+        elif arch == 'arm64':
             ANDROID_ABI = 'arm64-v8a'
             ANDROID_TRIPLE = 'aarch64-linux-android'
         elif arch == 'mips':
@@ -431,7 +431,7 @@ def SetTarget(target, arch=None):
             ANDROID_ABI = 'x86_64'
             ANDROID_TRIPLE = 'x86_64-linux-android'
         else:
-            exit('Android architecture must be arm, armv7a, aarch64, mips, mips64, x86 or x86_64')
+            exit('Android architecture must be arm, armv7a, arm64, mips, mips64, x86 or x86_64')
 
         ANDROID_TRIPLE += str(ANDROID_API)
         TOOLCHAIN_PREFIX = ANDROID_TRIPLE + '-'
@@ -637,6 +637,7 @@ def oscmd(cmd, ignoreError = False, cwd=None):
             os.chdir(pwd)
     else:
         cmd = cmd.replace(';', '\\;')
+        cmd = cmd.replace('$', '\\$')
         res = subprocess.call(cmd, cwd=cwd, shell=True)
         sig = res & 0x7F
         if (GetVerbose() and res != 0):
@@ -1362,7 +1363,7 @@ def GetThirdpartyDir():
             THIRDPARTYDIR = base + "/freebsd-libs-a/"
 
     elif (target == 'android'):
-        THIRDPARTYDIR = GetThirdpartyBase()+"/android-libs-%s/" % (GetTargetArch())
+        THIRDPARTYDIR = base + "/android-libs-%s/" % (target_arch)
 
     else:
         Warn("Unsupported platform:", target)
@@ -2912,8 +2913,10 @@ def SetupBuildEnvironment(compiler):
         if SDK.get("MACOSX"):
             # The default compiler in Leopard does not respect --sysroot correctly.
             sysroot_flag = " -isysroot " + SDK["MACOSX"]
-        if SDK.get("SYSROOT"):
-            sysroot_flag = ' --sysroot=%s -no-canonical-prefixes' % (SDK["SYSROOT"])
+        #if SDK.get("SYSROOT"):
+        #    sysroot_flag = ' --sysroot=%s -no-canonical-prefixes' % (SDK["SYSROOT"])
+        if GetTarget() == "android":
+            sysroot_flag = " -target " + ANDROID_TRIPLE
 
         # Extract the dirs from the line that starts with 'libraries: ='.
         cmd = GetCXX() + " -print-search-dirs" + sysroot_flag
