@@ -80,6 +80,7 @@ MSVCVERSIONINFO = {
     (14,0): {"vsversion":(14,0), "vsname":"Visual Studio 2015"},
     (14,1): {"vsversion":(15,0), "vsname":"Visual Studio 2017"},
     (14,2): {"vsversion":(16,0), "vsname":"Visual Studio 2019"},
+    (14,3): {"vsversion":(17,0), "vsname":"Visual Studio 2022"},
 }
 
 ########################################################################
