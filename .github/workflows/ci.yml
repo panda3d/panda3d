@@ -32,7 +32,7 @@ jobs:
         rmdir panda3d-1.10.9
         (cd thirdparty/darwin-libs-a && rm -rf rocket)
     - name: Set up Python 3.9
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v2
       with:
         python-version: 3.9
     - name: Build Python 3.9
@@ -45,7 +45,7 @@ jobs:
         python -m pip install pytest
         PYTHONPATH=built LD_LIBRARY_PATH=built/lib DYLD_LIBRARY_PATH=built/lib python -m pytest
     - name: Set up Python 3.8
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v2
       with:
         python-version: 3.8
     - name: Build Python 3.8
@@ -58,7 +58,7 @@ jobs:
         python -m pip install pytest
         PYTHONPATH=built LD_LIBRARY_PATH=built/lib DYLD_LIBRARY_PATH=built/lib python -m pytest
     - name: Set up Python 3.7
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v2
       with:
         python-version: 3.7
     - name: Build Python 3.7
