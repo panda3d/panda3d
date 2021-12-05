@@ -15,7 +15,7 @@ jobs:
         - ubuntu-bionic-coverage-ninja
         - macos-eigen-coverage-unity-xcode
         - macos-nometa-standard-makefile
-#       - windows-standard-unity-msvc # FIXME when GH Actions runners upgrade CMake to >=3.16.1
+        - windows-standard-unity-msvc
         - windows-nopython-nometa-standard-msvc
 
         include:
@@ -60,20 +60,20 @@ jobs:
           eigen: NO
 
         - profile: windows-standard-unity-msvc
-          os: windows-2019
+          os: windows-2022
           config: Standard
           unity: YES
-          generator: Visual Studio 16 2019
+          generator: Visual Studio 17 2022
           compiler: Default
           metalibs: YES
           python: YES
           eigen: NO
 
         - profile: windows-nopython-nometa-standard-msvc
-          os: windows-2019
+          os: windows-2022
           config: Standard
           unity: NO
-          generator: Visual Studio 16 2019
+          generator: Visual Studio 17 2022
           compiler: Default
           metalibs: NO
           python: NO
@@ -153,7 +153,7 @@ jobs:
         cd build
 
         if ${{ matrix.compiler == 'Clang' }}; then
-          if [[ "$CMAKE_GENERATOR" == *Studio*2019* ]]; then
+          if [[ "$CMAKE_GENERATOR" =~ Studio.+20(19|22) ]]; then
             export CMAKE_GENERATOR_TOOLSET=ClangCL
           elif [[ "$CMAKE_GENERATOR" == *Studio* ]]; then
             export CMAKE_GENERATOR_TOOLSET=LLVM
