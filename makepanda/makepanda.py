@@ -1014,6 +1014,7 @@ if (COMPILER=="GCC"):
         LibName("ALWAYS", '-llog')
         LibName("ANDROID", '-landroid')
         LibName("JNIGRAPHICS", '-ljnigraphics')
+        LibName("OPENSLES", '-lOpenSLES')
 
     for pkg in MAYAVERSIONS:
         if (PkgSkip(pkg)==0 and (pkg in SDK)):
@@ -4327,7 +4328,7 @@ if PkgSkip("OPENAL") == 0:
     TargetAdd('openal_audio_openal_audio_composite1.obj', opts=OPTS, input='openal_audio_composite1.cxx')
     TargetAdd('libp3openal_audio.dll', input='openal_audio_openal_audio_composite1.obj')
     TargetAdd('libp3openal_audio.dll', input=COMMON_PANDA_LIBS)
-    TargetAdd('libp3openal_audio.dll', opts=['MODULE', 'ADVAPI', 'WINUSER', 'WINMM', 'WINSHELL', 'WINOLE', 'OPENAL'])
+    TargetAdd('libp3openal_audio.dll', opts=['MODULE', 'ADVAPI', 'WINUSER', 'WINMM', 'WINSHELL', 'WINOLE', 'OPENAL', 'OPENSLES'])
 
 #
 # DIRECTORY: panda/src/downloadertools/
