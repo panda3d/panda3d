@@ -3327,13 +3327,17 @@ def SetOrigExt(x, v):
     ORIG_EXT[x] = v
 
 def GetExtensionSuffix():
-    import _imp
-    return _imp.extension_suffixes()[0]
+    if CrossCompiling():
+        return '.{0}.so'.format(GetPythonABI())
+    else:
+        import _imp
+        return _imp.extension_suffixes()[0]
 
 def GetPythonABI():
-    soabi = sysconfig.get_config_var('SOABI')
-    if soabi:
-        return soabi
+    if not CrossCompiling():
+        soabi = sysconfig.get_config_var('SOABI')
+        if soabi:
+            return soabi
 
     soabi = 'cpython-%d%d' % (sys.version_info[:2])
 
