@@ -2830,7 +2830,12 @@ if PkgSkip("GL") or GetLinkAllStatic():
     configprc = configprc.replace("\nload-display pandagl", "\n#load-display pandagl")
 
 if PkgSkip("GLES") or GetLinkAllStatic():
-    configprc = configprc.replace("\n#load-display pandagles", "")
+    configprc = configprc.replace("\n#load-display pandagles\n", "\n")
+
+if PkgSkip("GL") and not PkgSkip("GLES2") and not GetLinkAllStatic():
+    configprc = configprc.replace("\n#load-display pandagles2", "\nload-display pandagles2")
+elif PkgSkip("GLES2") or GetLinkAllStatic():
+    configprc = configprc.replace("\n#load-display pandagles2", "")
 
 if PkgSkip("DX9") or GetLinkAllStatic():
     configprc = configprc.replace("\n#load-display pandadx9", "")
