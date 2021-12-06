@@ -4631,7 +4631,7 @@ if GetTarget() != 'android' and not PkgSkip("EGL") and not PkgSkip("GLES"):
 # DIRECTORY: panda/src/egldisplay/
 #
 
-if not PkgSkip("EGL") and not PkgSkip("GLES2"):
+if GetTarget() != 'android' and not PkgSkip("EGL") and not PkgSkip("GLES2"):
     DefSymbol('GLES2', 'OPENGLES_2', '')
     OPTS=['DIR:panda/src/egldisplay', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGLES2', 'GLES2', 'EGL', 'X11']
     TargetAdd('pandagles2_egldisplay_composite1.obj', opts=OPTS, input='p3egldisplay_composite1.cxx')
@@ -4891,6 +4891,20 @@ if GetTarget() == 'android' and not PkgSkip("EGL") and not PkgSkip("GLES"):
     TargetAdd('libpandagles.dll', input='libp3android.dll')
     TargetAdd('libpandagles.dll', input=COMMON_PANDA_LIBS)
     TargetAdd('libpandagles.dll', opts=['MODULE', 'GLES', 'EGL'])
+
+if GetTarget() == 'android' and not PkgSkip("EGL") and not PkgSkip("GLES2"):
+    DefSymbol('GLES2', 'OPENGLES_2', '')
+    OPTS=['DIR:panda/src/androiddisplay', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGLES2', 'GLES2', 'EGL']
+    TargetAdd('pandagles2_androiddisplay_composite1.obj', opts=OPTS, input='p3androiddisplay_composite1.cxx')
+    OPTS=['DIR:panda/metalibs/pandagles2', 'BUILDING:PANDAGLES2', 'GLES2', 'EGL']
+    TargetAdd('pandagles2_pandagles2.obj', opts=OPTS, input='pandagles2.cxx')
+    TargetAdd('libpandagles2.dll', input='pandagles2_pandagles2.obj')
+    TargetAdd('libpandagles2.dll', input='p3gles2gsg_config_gles2gsg.obj')
+    TargetAdd('libpandagles2.dll', input='p3gles2gsg_gles2gsg.obj')
+    TargetAdd('libpandagles2.dll', input='pandagles2_androiddisplay_composite1.obj')
+    TargetAdd('libpandagles2.dll', input='libp3android.dll')
+    TargetAdd('libpandagles2.dll', input=COMMON_PANDA_LIBS)
+    TargetAdd('libpandagles2.dll', opts=['MODULE', 'GLES2', 'EGL'])
 
 #
 # DIRECTORY: panda/src/tinydisplay/
