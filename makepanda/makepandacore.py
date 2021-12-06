@@ -498,7 +498,7 @@ def GetCXX():
 def GetStrip():
     # Hack
     if TARGET == 'android':
-        return TOOLCHAIN_PREFIX + 'strip'
+        return 'llvm-strip'
     else:
         return 'strip'
 
