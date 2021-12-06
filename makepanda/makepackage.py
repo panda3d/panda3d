@@ -794,19 +794,8 @@ def MakeInstallerAndroid(version, **kwargs):
     if os.path.exists(apk_unsigned):
         os.unlink(apk_unsigned)
 
-    # Compile the Java classes into a Dalvik executable.
-    dx_cmd = "d8 --output apkroot "
-    if GetOptimize() <= 2:
-        dx_cmd += "--debug "
-    else:
-        dx_cmd += "--release "
-    if "ANDROID_API" in SDK:
-        dx_cmd += "--min-api %d " % (SDK["ANDROID_API"])
-    if "ANDROID_JAR" in SDK:
-        dx_cmd += "--lib %s " % (SDK["ANDROID_JAR"])
-
-    dx_cmd += " ".join(glob.glob(os.path.join(outputdir, "classes", "org", "panda3d", "android", "*.class")))
-    oscmd(dx_cmd)
+    # Copy the compiled Java classes.
+    oscmd("cp %s apkroot/classes.dex" % (os.path.join(outputdir, "classes.dex")))
 
     # Copy the libraries one by one.  In case of library dependencies, strip
     # off any suffix (eg. libfile.so.1.0), as Android does not support them.

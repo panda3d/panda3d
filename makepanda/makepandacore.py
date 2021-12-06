@@ -3361,6 +3361,7 @@ def CalcLocation(fn, ipath):
     if (GetOptimize() <= 2 and target == 'windows'): dllext = "_d"
 
     if (fn == "AndroidManifest.xml"): return OUTPUTDIR+"/"+fn
+    if (fn == "classes.dex"): return OUTPUTDIR+"/"+fn
     if (fn.endswith(".cxx")): return CxxFindSource(fn, ipath)
     if (fn.endswith(".I")):   return CxxFindSource(fn, ipath)
     if (fn.endswith(".h")):   return CxxFindSource(fn, ipath)

@@ -2113,6 +2113,31 @@ def CompileMIDL(target, src, opts):
 
 ##########################################################################################
 #
+# CompileDalvik
+#
+##########################################################################################
+
+def CompileDalvik(target, inputs, opts):
+    cmd = "d8 --output " + os.path.dirname(target)
+
+    if GetOptimize() <= 2:
+        cmd += " --debug"
+    else:
+        cmd += " --release"
+
+    if "ANDROID_API" in SDK:
+        cmd += " --min-api %d" % (SDK["ANDROID_API"])
+
+    if "ANDROID_JAR" in SDK:
+        cmd += " --lib %s" % (SDK["ANDROID_JAR"])
+
+    for i in inputs:
+        cmd += " " + BracketNameWithQuotes(i)
+
+    oscmd(cmd)
+
+##########################################################################################
+#
 # CompileAnything
 #
 ##########################################################################################
@@ -2222,6 +2247,9 @@ def CompileAnything(target, inputs, opts, progress = None):
         elif infile.endswith(".r"):
             ProgressOutput(progress, "Building resource object", target)
             return CompileRsrc(target, infile, opts)
+    elif origsuffix == ".dex":
+        ProgressOutput(progress, "Building Dalvik object", target)
+        return CompileDalvik(target, inputs, opts)
     exit("Don't know how to compile: %s from %s" % (target, inputs))
 
 ##########################################################################################
@@ -4843,6 +4871,11 @@ if GetTarget() == 'android':
     TargetAdd('org/panda3d/android/NativeOStream.class', opts=OPTS, input='NativeOStream.java')
     TargetAdd('org/panda3d/android/PandaActivity.class', opts=OPTS, input='PandaActivity.java')
     TargetAdd('org/panda3d/android/PythonActivity.class', opts=OPTS, input='PythonActivity.java')
+
+    TargetAdd('classes.dex', input='org/panda3d/android/NativeIStream.class')
+    TargetAdd('classes.dex', input='org/panda3d/android/NativeOStream.class')
+    TargetAdd('classes.dex', input='org/panda3d/android/PandaActivity.class')
+    TargetAdd('classes.dex', input='org/panda3d/android/PythonActivity.class')
 
     TargetAdd('p3android_composite1.obj', opts=OPTS, input='p3android_composite1.cxx')
     TargetAdd('libp3android.dll', input='p3android_composite1.obj')
