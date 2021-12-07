@@ -359,8 +359,7 @@ class Icon:
                 Icon.notify.warning("Generating %dx%d icon by scaling down %dx%d image" % (required_size, required_size, from_size, from_size))
 
                 image = PNMImage(required_size, required_size)
-                if self.images[from_size].hasAlpha():
-                    image.addAlpha()
+                image.setColorType(self.images[from_size].getColorType())
                 image.quickFilterFrom(self.images[from_size])
                 self.images[required_size] = image
             else:
