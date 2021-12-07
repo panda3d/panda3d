@@ -12,13 +12,13 @@ AbiAlias = Abi.AbiAlias
 
 
 def str_resource(id):
-    def compile(attrib):
+    def compile(attrib, manifest):
         attrib.resource_id = id
     return compile
 
 
 def int_resource(id):
-    def compile(attrib):
+    def compile(attrib, manifest):
         attrib.resource_id = id
         if attrib.value.startswith('0x') or attrib.value.startswith('0X'):
             attrib.compiled_item.prim.int_hexadecimal_value = int(attrib.value, 16)
@@ -28,7 +28,7 @@ def int_resource(id):
 
 
 def bool_resource(id):
-    def compile(attrib):
+    def compile(attrib, manifest):
         attrib.resource_id = id
         attrib.compiled_item.prim.boolean_value = {
             'true': True, '1': True, 'false': False, '0': False
@@ -37,14 +37,14 @@ def bool_resource(id):
 
 
 def enum_resource(id, /, *values):
-    def compile(attrib):
+    def compile(attrib, manifest):
         attrib.resource_id = id
         attrib.compiled_item.prim.int_decimal_value = values.index(attrib.value)
     return compile
 
 
 def flag_resource(id, /, **values):
-    def compile(attrib):
+    def compile(attrib, manifest):
         attrib.resource_id = id
         bitmask = 0
         flags = attrib.value.split('|')
@@ -54,14 +54,17 @@ def flag_resource(id, /, **values):
     return compile
 
 
-def ref_resource(id, type):
-    def compile(attrib):
+def ref_resource(id):
+    def compile(attrib, manifest):
         assert attrib.value[0] == '@'
         ref_type, ref_name = attrib.value[1:].split('/')
         attrib.resource_id = id
+        attrib.compiled_item.ref.name = ref_type + '/' + ref_name
+
         if ref_type == 'android:style':
             attrib.compiled_item.ref.id = ANDROID_STYLES[ref_name]
-            attrib.compiled_item.ref.name = ref_type + '/' + ref_name
+        elif ':' not in ref_type:
+            attrib.compiled_item.ref.id = manifest.register_resource(ref_type, ref_name)
         else:
             print(f'Warning: unhandled AndroidManifest.xml reference "{attrib.value}"')
     return compile
@@ -175,6 +178,7 @@ ANDROID_ATTRIBUTES = {
     'glEsVersion': int_resource(0x1010281),
     'hasCode': bool_resource(0x101000c),
     'host': str_resource(0x1010028),
+    'icon': ref_resource(0x1010002),
     'immersive': bool_resource(0x10102c0),
     'installLocation': enum_resource(0x10102b7, "auto", "internalOnly", "preferExternal"),
     'isGame': bool_resource(0x010103f4),
@@ -189,10 +193,11 @@ ANDROID_ATTRIBUTES = {
     'required': bool_resource(0x101028e),
     'scheme': str_resource(0x1010027),
     'stateNotNeeded': bool_resource(0x1010016),
+    'supportsRtl': bool_resource(0x010103af),
     'supportsUploading': bool_resource(0x101029b),
     'targetSandboxVersion': int_resource(0x101054c),
     'targetSdkVersion': int_resource(0x1010270),
-    'theme': ref_resource(0x01010000, 'android:style'),
+    'theme': ref_resource(0x01010000),
     'value': str_resource(0x1010024),
     'versionCode': int_resource(0x101021b),
     'versionName': str_resource(0x101021c),
@@ -204,6 +209,8 @@ class AndroidManifest:
         super().__init__()
         self._stack = []
         self.root = XmlNode()
+        self.resource_types = []
+        self.resources = {}
 
     def parse_xml(self, data):
         parser = ET.XMLParser(target=self)
@@ -241,10 +248,28 @@ class AndroidManifest:
             attrib.name = key
 
             if res_compile:
-                res_compile(attrib)
+                res_compile(attrib, self)
 
     def end(self, tag):
         self._stack.pop()
+
+    def register_resource(self, type, name):
+        if type not in self.resource_types:
+            self.resource_types.append(type)
+            type_id = len(self.resource_types)
+            self.resources[type] = []
+        else:
+            type_id = self.resource_types.index(type) + 1
+
+        resources = self.resources[type]
+        if name in resources:
+            entry_id = resources.index(name)
+        else:
+            entry_id = len(resources)
+            resources.append(name)
+
+        id = (0x7f << 24) | (type_id << 16) | (entry_id)
+        return id
 
     def dumps(self):
         return self.root.SerializeToString()

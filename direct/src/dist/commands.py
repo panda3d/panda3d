@@ -608,6 +608,10 @@ class build_apps(setuptools.Command):
         application.set('android:debuggable', ('false', 'true')[self.android_debuggable])
         application.set('android:extractNativeLibs', 'true')
 
+        app_icon = self.icon_objects.get('*', self.icon_objects.get(self.macos_main_app))
+        if app_icon:
+            application.set('android:icon', '@mipmap/ic_launcher')
+
         for appname in self.gui_apps:
             activity = ET.SubElement(application, 'activity')
             activity.set('android:name', 'org.panda3d.android.PandaActivity')
@@ -615,6 +619,10 @@ class build_apps(setuptools.Command):
             activity.set('android:theme', '@android:style/Theme.NoTitleBar')
             activity.set('android:configChanges', 'orientation|keyboardHidden')
             activity.set('android:launchMode', 'singleInstance')
+
+            act_icon = self.icon_objects.get(appname)
+            if act_icon and act_icon is not app_icon:
+                activity.set('android:icon', '@mipmap/ic_' + appname)
 
             meta_data = ET.SubElement(activity, 'meta-data')
             meta_data.set('android:name', 'android.app.lib_name')
@@ -1186,6 +1194,23 @@ class build_apps(setuptools.Command):
         if 'android' in platform:
             # Generate an AndroidManifest.xml
             self.generate_android_manifest(os.path.join(builddir, 'AndroidManifest.xml'))
+
+            # Write out the icons to the res directory.
+            for appname, icon in self.icon_objects.items():
+                if appname == '*' or (appname == self.macos_main_app and '*' not in self.icon_objects):
+                    # Conventional name for icon on Android.
+                    basename = 'ic_launcher.png'
+                else:
+                    basename = f'ic_{appname}.png'
+
+                res_dir = os.path.join(builddir, 'res')
+                icon.writeSize(48, os.path.join(res_dir, 'mipmap-mdpi-v4', basename))
+                icon.writeSize(72, os.path.join(res_dir, 'mipmap-hdpi-v4', basename))
+                icon.writeSize(96, os.path.join(res_dir, 'mipmap-xhdpi-v4', basename))
+                icon.writeSize(144, os.path.join(res_dir, 'mipmap-xxhdpi-v4', basename))
+
+                if icon.getLargestSize() >= 192:
+                    icon.writeSize(192, os.path.join(res_dir, 'mipmap-xxxhdpi-v4', basename))
 
         # Bundle into an .app on macOS
         if self.macos_main_app and 'macosx' in platform:

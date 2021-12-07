@@ -212,6 +212,11 @@ def create_aab(command, basename, build_dir):
     bundle_fn = p3d.Filename.from_os_specific(command.dist_dir) / (basename + '.aab')
     build_dir_fn = p3d.Filename.from_os_specific(build_dir)
 
+    # Convert the AndroidManifest.xml file to a protobuf-encoded version of it.
+    axml = AndroidManifest()
+    with open(os.path.join(build_dir, 'AndroidManifest.xml'), 'rb') as fh:
+        axml.parse_xml(fh.read())
+
     # We use our own zip implementation, which can create the correct
     # alignment needed by Android automatically.
     bundle = p3d.ZipArchive()
@@ -227,6 +232,31 @@ def create_aab(command, basename, build_dir):
     bundle.add_subfile('BundleConfig.pb', p3d.StringStream(config.SerializeToString()), 9)
 
     resources = ResourceTable()
+    package = resources.package.add()
+    package.package_id.id = 0x7f
+    for attrib in axml.root.element.attribute:
+        if attrib.name == 'package':
+            package.package_name = attrib.value
+
+    # Were there any icons referenced in the AndroidManifest.xml?
+    for type_i, type_name in enumerate(axml.resource_types):
+        res_type = package.type.add()
+        res_type.name = type_name
+        res_type.type_id.id = type_i + 1
+
+        for entry_id, res_name in enumerate(axml.resources[type_name]):
+            entry = res_type.entry.add()
+            entry.entry_id.id = entry_id
+            entry.name = res_name
+
+            for density, tag in (160, 'mdpi'), (240, 'hdpi'), (320, 'xhdpi'), (480, 'xxhdpi'), (640, 'xxxhdpi'):
+                path = f'res/mipmap-{tag}-v4/{res_name}.png'
+                if (build_dir_fn / path).exists():
+                    bundle.add_subfile('base/' + path, build_dir_fn / path, 0)
+                    config_value = entry.config_value.add()
+                    config_value.config.density = density
+                    config_value.value.item.file.path = path
+
     bundle.add_subfile('base/resources.pb', p3d.StringStream(resources.SerializeToString()), 9)
 
     native = NativeLibraries()
@@ -236,10 +266,6 @@ def create_aab(command, basename, build_dir):
         native_dir.targeting.abi.alias = getattr(AbiAlias, abi.upper().replace('-', '_'))
     bundle.add_subfile('base/native.pb', p3d.StringStream(native.SerializeToString()), 9)
 
-    # Convert the AndroidManifest.xml file to a protobuf-encoded version of it.
-    axml = AndroidManifest()
-    with open(os.path.join(build_dir, 'AndroidManifest.xml'), 'rb') as fh:
-        axml.parse_xml(fh.read())
     bundle.add_subfile('base/manifest/AndroidManifest.xml', p3d.StringStream(axml.dumps()), 9)
 
     # Add the classes.dex.
