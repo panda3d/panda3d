@@ -320,7 +320,7 @@ class build_apps(setuptools.Command):
             # Android
             'libc.so', 'libm.so', 'liblog.so', 'libdl.so', 'libandroid.so',
             'libGLESv1_CM.so', 'libGLESv2.so', 'libjnigraphics.so', 'libEGL.so',
-            'libOpenSLES.so', 'libandroid.so', 'libOpenMAXAL.so',
+            'libOpenSLES.so', 'libandroid.so', 'libOpenMAXAL.so', 'libz.so',
         ]
 
         self.package_data_dirs = {}
