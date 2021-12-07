@@ -2542,6 +2542,11 @@ def SdkLocateAndroid():
     SDK["SYSROOT"] = os.path.join(ndk_root, 'platforms', 'android-%s' % (api), arch_dir).replace('\\', '/')
     #IncDirectory("ALWAYS", os.path.join(SDK["SYSROOT"], 'usr', 'include'))
 
+    # We need to redistribute the C++ standard library.
+    stdlibc = os.path.join(ndk_root, 'sources', 'cxx-stl', 'llvm-libc++')
+    stl_lib = os.path.join(stdlibc, 'libs', abi, 'libc++_shared.so')
+    CopyFile(os.path.join(GetOutputDir(), 'lib', 'libc++_shared.so'), stl_lib)
+
     # The Android support library polyfills C++ features not available in the
     # STL that ships with Android.
     support = os.path.join(ndk_root, 'sources', 'android', 'support', 'include')
