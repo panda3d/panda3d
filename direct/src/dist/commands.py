@@ -157,6 +157,50 @@ if os.path.isdir(tcl_dir):
 del os
 """
 
+SITE_PY_ANDROID = """
+import sys, os
+from _frozen_importlib import _imp, FrozenImporter
+from importlib import _bootstrap_external
+from importlib.abc import Loader, MetaPathFinder
+from importlib.machinery import ModuleSpec
+
+
+sys.frozen = True
+sys.platform = "android"
+
+
+# Alter FrozenImporter to give a __file__ property to frozen modules.
+_find_spec = FrozenImporter.find_spec
+
+def find_spec(fullname, path=None, target=None):
+    spec = _find_spec(fullname, path=path, target=target)
+    if spec:
+        spec.has_location = True
+        spec.origin = sys.executable
+    return spec
+
+def get_data(path):
+    with open(path, 'rb') as fp:
+        return fp.read()
+
+FrozenImporter.find_spec = find_spec
+FrozenImporter.get_data = get_data
+
+
+class AndroidExtensionFinder(MetaPathFinder):
+    @classmethod
+    def find_spec(cls, fullname, path=None, target=None):
+        soname = 'libpy.' + fullname + '.so'
+        path = os.path.join(sys._native_library_dir, soname)
+
+        if os.path.exists(path):
+            loader = _bootstrap_external.ExtensionFileLoader(fullname, path)
+            return ModuleSpec(fullname, loader, origin=path)
+
+
+sys.meta_path.append(AndroidExtensionFinder)
+"""
+
 
 class build_apps(setuptools.Command):
     description = 'build Panda3D applications'
@@ -171,6 +215,12 @@ class build_apps(setuptools.Command):
 
     def initialize_options(self):
         self.build_base = os.path.join(os.getcwd(), 'build')
+        self.application_id = None
+        self.android_debuggable = False
+        self.android_version_code = 1
+        self.android_min_sdk_version = 21
+        self.android_max_sdk_version = None
+        self.android_target_sdk_version = 30
         self.gui_apps = {}
         self.console_apps = {}
         self.macos_main_app = None
@@ -266,6 +316,11 @@ class build_apps(setuptools.Command):
             '/usr/lib/libxar.1.dylib',
             '/usr/lib/libmenu.5.4.dylib',
             '/System/Library/**',
+
+            # Android
+            'libc.so', 'libm.so', 'liblog.so', 'libdl.so', 'libandroid.so',
+            'libGLESv1_CM.so', 'libGLESv2.so', 'libjnigraphics.so', 'libEGL.so',
+            'libOpenSLES.so', 'libandroid.so', 'libOpenMAXAL.so',
         ]
 
         self.package_data_dirs = {}
@@ -508,6 +563,72 @@ class build_apps(setuptools.Command):
         with open(os.path.join(contentsdir, 'Info.plist'), 'wb') as f:
             plistlib.dump(plist, f)
 
+    def generate_android_manifest(self, path):
+        import xml.etree.ElementTree as ET
+
+        name = self.distribution.get_name()
+        version = self.distribution.get_version()
+        classifiers = self.distribution.get_classifiers()
+
+        is_game = False
+        for classifier in classifiers:
+            if classifier == 'Topic :: Games/Entertainment' or classifier.startswith('Topic :: Games/Entertainment ::'):
+                is_game = True
+
+        manifest = ET.Element('manifest')
+        manifest.set('xmlns:android', 'http://schemas.android.com/apk/res/android')
+        manifest.set('package', self.application_id)
+        manifest.set('android:versionCode', str(int(self.android_version_code)))
+        manifest.set('android:versionName', version)
+        manifest.set('android:installLocation', 'auto')
+
+        uses_sdk = ET.SubElement(manifest, 'uses-sdk')
+        uses_sdk.set('android:minSdkVersion', str(int(self.android_min_sdk_version)))
+        uses_sdk.set('android:targetSdkVersion', str(int(self.android_target_sdk_version)))
+        if self.android_max_sdk_version:
+            uses_sdk.set('android:maxSdkVersion', str(int(self.android_max_sdk_version)))
+
+        if 'pandagles2' in self.plugins:
+            uses_feature = ET.SubElement(manifest, 'uses-feature')
+            uses_feature.set('android:glEsVersion', '0x00020000')
+            uses_feature.set('android:required', 'false' if 'pandagles' in self.plugins else 'true')
+
+        if 'p3openal_audio' in self.plugins:
+            uses_feature = ET.SubElement(manifest, 'uses-feature')
+            uses_feature.set('android:name', 'android.hardware.audio.output')
+            uses_feature.set('android:required', 'false')
+
+        uses_feature = ET.SubElement(manifest, 'uses-feature')
+        uses_feature.set('android:name', 'android.hardware.gamepad')
+        uses_feature.set('android:required', 'false')
+
+        application = ET.SubElement(manifest, 'application')
+        application.set('android:label', name)
+        application.set('android:isGame', ('false', 'true')[is_game])
+        application.set('android:debuggable', ('false', 'true')[self.android_debuggable])
+        application.set('android:extractNativeLibs', 'true')
+
+        for appname in self.gui_apps:
+            activity = ET.SubElement(application, 'activity')
+            activity.set('android:name', 'org.panda3d.android.PandaActivity')
+            activity.set('android:label', appname)
+            activity.set('android:theme', '@android:style/Theme.NoTitleBar')
+            activity.set('android:configChanges', 'orientation|keyboardHidden')
+            activity.set('android:launchMode', 'singleInstance')
+
+            meta_data = ET.SubElement(activity, 'meta-data')
+            meta_data.set('android:name', 'android.app.lib_name')
+            meta_data.set('android:value', appname)
+
+            intent_filter = ET.SubElement(activity, 'intent-filter')
+            ET.SubElement(intent_filter, 'action').set('android:name', 'android.intent.action.MAIN')
+            ET.SubElement(intent_filter, 'category').set('android:name', 'android.intent.category.LAUNCHER')
+            ET.SubElement(intent_filter, 'category').set('android:name', 'android.intent.category.LEANBACK_LAUNCHER')
+
+        tree = ET.ElementTree(manifest)
+        with open(path, 'wb') as fh:
+            tree.write(fh, encoding='utf-8', xml_declaration=True)
+
     def build_runtimes(self, platform, use_wheels):
         """ Builds the distributions for the given platform. """
 
@@ -607,6 +728,9 @@ class build_apps(setuptools.Command):
                     value = value[:c].rstrip()
 
                 if var == 'model-cache-dir' and value:
+                    if platform.startswith('android'):
+                        # Ignore on Android, where the cache dir is fixed.
+                        continue
                     value = value.replace('/panda3d', '/{}'.format(self.distribution.get_name()))
 
                 if var == 'audio-library-name':
@@ -683,33 +807,42 @@ class build_apps(setuptools.Command):
 
             return search_path
 
-        def create_runtime(appname, mainscript, use_console):
+        def create_runtime(appname, mainscript, target_dir, use_console):
             freezer = FreezeTool.Freezer(
                 platform=platform,
                 path=path,
                 hiddenImports=self.hidden_imports
             )
             freezer.addModule('__main__', filename=mainscript)
-            freezer.addModule('site', filename='site.py', text=SITE_PY)
+            if platform.startswith('android'):
+                freezer.addModule('site', filename='site.py', text=SITE_PY_ANDROID)
+            else:
+                freezer.addModule('site', filename='site.py', text=SITE_PY)
             for incmod in self.include_modules.get(appname, []) + self.include_modules.get('*', []):
                 freezer.addModule(incmod)
             for exmod in self.exclude_modules.get(appname, []) + self.exclude_modules.get('*', []):
                 freezer.excludeModule(exmod)
             freezer.done(addStartupModules=True)
 
-            target_path = os.path.join(builddir, appname)
-
             stub_name = 'deploy-stub'
+            target_name = appname
             if platform.startswith('win') or 'macosx' in platform:
                 if not use_console:
                     stub_name = 'deploy-stubw'
+            elif platform.startswith('android'):
+                if not use_console:
+                    stub_name = 'libdeploy-stubw.so'
+                    target_name = 'lib' + target_name + '.so'
 
             if platform.startswith('win'):
                 stub_name += '.exe'
-                target_path += '.exe'
+                target_name += '.exe'
 
             if use_wheels:
-                stub_file = p3dwhl.open('panda3d_tools/{0}'.format(stub_name))
+                if stub_name.endswith('.so'):
+                    stub_file = p3dwhl.open('deploy_libs/{0}'.format(stub_name))
+                else:
+                    stub_file = p3dwhl.open('panda3d_tools/{0}'.format(stub_name))
             else:
                 dtool_path = p3d.Filename(p3d.ExecutionEnvironment.get_dtool_name()).to_os_specific()
                 stub_path = os.path.join(os.path.dirname(dtool_path), '..', 'bin', stub_name)
@@ -731,6 +864,7 @@ class build_apps(setuptools.Command):
             if not self.log_filename or '%' not in self.log_filename:
                 use_strftime = False
 
+            target_path = os.path.join(target_dir, target_name)
             freezer.generateRuntimeFromStub(target_path, stub_file, use_console, {
                 'prc_data': prcexport if self.embed_prc_data else None,
                 'default_prc_dir': self.default_prc_dir,
@@ -750,10 +884,11 @@ class build_apps(setuptools.Command):
                 os.unlink(temp_file.name)
 
             # Copy the dependencies.
-            search_path = [builddir]
+            search_path = [target_dir]
             if use_wheels:
+                search_path.append(os.path.join(p3dwhlfn, 'panda3d'))
                 search_path.append(os.path.join(p3dwhlfn, 'deploy_libs'))
-            self.copy_dependencies(target_path, builddir, search_path, stub_name)
+            self.copy_dependencies(target_path, target_dir, search_path, stub_name)
 
             freezer_extras.update(freezer.extras)
             freezer_modules.update(freezer.getAllModuleNames())
@@ -765,11 +900,37 @@ class build_apps(setuptools.Command):
                 if suffix[2] == imp.C_EXTENSION:
                     ext_suffixes.add(suffix[0])
 
+        # Where should we copy the various file types to?
+        lib_dir = builddir
+        data_dir = builddir
+
+        if platform.startswith('android'):
+            data_dir = os.path.join(data_dir, 'assets')
+            if platform == 'android_arm64':
+                lib_dir = os.path.join(lib_dir, 'lib', 'arm64-v8a')
+            elif platform == 'android_armv7a':
+                lib_dir = os.path.join(lib_dir, 'lib', 'armeabi-v7a')
+            elif platform == 'android_arm':
+                lib_dir = os.path.join(lib_dir, 'lib', 'armeabi')
+            elif platform == 'androidmips':
+                lib_dir = os.path.join(lib_dir, 'lib', 'mips')
+            elif platform == 'android_mips64':
+                lib_dir = os.path.join(lib_dir, 'lib', 'mips64')
+            elif platform == 'android_x86':
+                lib_dir = os.path.join(lib_dir, 'lib', 'x86')
+            elif platform == 'android_x86_64':
+                lib_dir = os.path.join(lib_dir, 'lib', 'x86_64')
+            else:
+                self.announce('Unrecognized Android architecture {}'.format(platform.split('_', 1)[-1]), distutils.log.ERROR)
+
+            os.makedirs(data_dir, exist_ok=True)
+            os.makedirs(lib_dir, exist_ok=True)
+
         for appname, scriptname in self.gui_apps.items():
-            create_runtime(appname, scriptname, False)
+            create_runtime(appname, scriptname, lib_dir, False)
 
         for appname, scriptname in self.console_apps.items():
-            create_runtime(appname, scriptname, True)
+            create_runtime(appname, scriptname, lib_dir, True)
 
         # Copy extension modules
         whl_modules = []
@@ -805,7 +966,7 @@ class build_apps(setuptools.Command):
             plugname = lib.split('.', 1)[0]
             if plugname in plugin_list:
                 source_path = os.path.join(p3dwhlfn, lib)
-                target_path = os.path.join(builddir, os.path.basename(lib))
+                target_path = os.path.join(lib_dir, os.path.basename(lib))
                 search_path = [os.path.dirname(source_path)]
                 self.copy_with_dependencies(source_path, target_path, search_path)
 
@@ -846,8 +1007,13 @@ class build_apps(setuptools.Command):
                 else:
                     continue
 
+            if platform.startswith('android'):
+                # Python modules on Android need a special prefix to be loadable
+                # as a library.
+                basename = 'libpy.' + basename
+
             # If this is a dynamic library, search for dependencies.
-            target_path = os.path.join(builddir, basename)
+            target_path = os.path.join(lib_dir, basename)
             search_path = get_search_path_for(source_path)
             self.copy_with_dependencies(source_path, target_path, search_path)
 
@@ -858,14 +1024,19 @@ class build_apps(setuptools.Command):
 
             if os.path.isdir(tcl_dir) and 'tkinter' in freezer_modules:
                 self.announce('Copying Tcl files', distutils.log.INFO)
-                os.makedirs(os.path.join(builddir, 'tcl'))
+                os.makedirs(os.path.join(data_dir, 'tcl'))
 
                 for dir in os.listdir(tcl_dir):
                     sub_dir = os.path.join(tcl_dir, dir)
                     if os.path.isdir(sub_dir):
-                        target_dir = os.path.join(builddir, 'tcl', dir)
+                        target_dir = os.path.join(data_dir, 'tcl', dir)
                         self.announce('copying {0} -> {1}'.format(sub_dir, target_dir))
                         shutil.copytree(sub_dir, target_dir)
+
+        # Copy classes.dex on Android
+        if use_wheels and platform.startswith('android'):
+            self.copy(os.path.join(p3dwhlfn, 'deploy_libs', 'classes.dex'),
+                      os.path.join(builddir, 'classes.dex'))
 
         # Extract any other data files from dependency packages.
         for module, datadesc in self.package_data_dirs.items():
@@ -883,7 +1054,7 @@ class build_apps(setuptools.Command):
                     source_dir = os.path.dirname(source_pattern)
                     # Relocate the target dir to the build directory.
                     target_dir = target_dir.replace('/', os.sep)
-                    target_dir = os.path.join(builddir, target_dir)
+                    target_dir = os.path.join(data_dir, target_dir)
 
                     for wf in filenames:
                         if wf.lower().startswith(source_dir.lower() + '/'):
@@ -1008,9 +1179,13 @@ class build_apps(setuptools.Command):
 
             for fname in filelist:
                 src = os.path.join(dirpath, fname)
-                dst = os.path.join(builddir, update_path(src))
+                dst = os.path.join(data_dir, update_path(src))
 
                 copy_file(src, dst)
+
+        if 'android' in platform:
+            # Generate an AndroidManifest.xml
+            self.generate_android_manifest(os.path.join(builddir, 'AndroidManifest.xml'))
 
         # Bundle into an .app on macOS
         if self.macos_main_app and 'macosx' in platform:
@@ -1333,6 +1508,13 @@ class bdist_apps(setuptools.Command):
         'manylinux1_i686': ['gztar'],
         'manylinux2010_x86_64': ['gztar'],
         'manylinux2010_i686': ['gztar'],
+        'android_arm64': ['aab'],
+        'android_armv7a': ['aab'],
+        'android_arm': ['aab'],
+        'android_mips': ['aab'],
+        'android_mips64': ['aab'],
+        'android_x86': ['aab'],
+        'android_x86_64': ['aab'],
         # Everything else defaults to ['zip']
     }
 
@@ -1342,6 +1524,7 @@ class bdist_apps(setuptools.Command):
         'bztar': installers.create_bztar,
         'xztar': installers.create_xztar,
         'nsis': installers.create_nsis,
+        'aab': installers.create_aab,
     }
 
     description = 'bundle built Panda3D applications into distributable forms'

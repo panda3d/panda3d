@@ -6036,10 +6036,11 @@ if PkgSkip("PYTHON") == 0:
         LibName('DEPLOYSTUB', "-Wl,-rpath,\\$ORIGIN")
         LibName('DEPLOYSTUB', "-Wl,-z,origin")
         LibName('DEPLOYSTUB', "-rdynamic")
+
     PyTargetAdd('deploy-stub.exe', input='deploy-stub.obj')
     if GetTarget() == 'windows':
         PyTargetAdd('deploy-stub.exe', input='frozen_dllmain.obj')
-    PyTargetAdd('deploy-stub.exe', opts=['WINSHELL', 'DEPLOYSTUB', 'NOICON'])
+    PyTargetAdd('deploy-stub.exe', opts=['WINSHELL', 'DEPLOYSTUB', 'NOICON', 'ANDROID'])
 
     if GetTarget() == 'windows':
         PyTargetAdd('deploy-stubw.exe', input='deploy-stub.obj')
@@ -6051,6 +6052,13 @@ if PkgSkip("PYTHON") == 0:
         PyTargetAdd('deploy-stubw.obj', opts=OPTS, input='deploy-stub.c')
         PyTargetAdd('deploy-stubw.exe', input='deploy-stubw.obj')
         PyTargetAdd('deploy-stubw.exe', opts=['MACOS_APP_BUNDLE', 'DEPLOYSTUB', 'NOICON'])
+    elif GetTarget() == 'android':
+        PyTargetAdd('deploy-stubw_android_main.obj', opts=OPTS, input='android_main.cxx')
+        PyTargetAdd('libdeploy-stubw.dll', input='android_native_app_glue.obj')
+        PyTargetAdd('libdeploy-stubw.dll', input='deploy-stubw_android_main.obj')
+        PyTargetAdd('libdeploy-stubw.dll', input=COMMON_PANDA_LIBS)
+        PyTargetAdd('libdeploy-stubw.dll', input='libp3android.dll')
+        PyTargetAdd('libdeploy-stubw.dll', opts=['DEPLOYSTUB', 'ANDROID'])
 
 #
 # Generate the models directory and samples directory

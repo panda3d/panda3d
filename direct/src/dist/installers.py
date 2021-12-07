@@ -196,3 +196,71 @@ def create_nsis(command, basename, build_dir):
         )
     cmd.append(nsifile.to_os_specific())
     subprocess.check_call(cmd)
+
+
+def create_aab(command, basename, build_dir):
+    """Create an Android App Bundle.  This is a newer format that replaces
+    Android's .apk format for uploads to the Play Store.  Unlike .apk files, it
+    does not rely on a proprietary signing scheme or an undocumented binary XML
+    format (protobuf is used instead), so it is easier to create without
+    requiring external tools.  If desired, it is possible to install bundletool
+    and use it to convert an .aab into an .apk.
+    """
+
+    from ._android import AndroidManifest, AbiAlias, BundleConfig, NativeLibraries, ResourceTable
+
+    bundle_fn = p3d.Filename.from_os_specific(command.dist_dir) / (basename + '.aab')
+    build_dir_fn = p3d.Filename.from_os_specific(build_dir)
+
+    # We use our own zip implementation, which can create the correct
+    # alignment needed by Android automatically.
+    bundle = p3d.ZipArchive()
+    if not bundle.open_write(bundle_fn):
+        command.announce.error(
+            f'\tUnable to open {bundle_fn} for writing', distutils.log.ERROR)
+        return
+
+    config = BundleConfig()
+    config.bundletool.version = '1.1.0'
+    config.optimizations.splits_config.Clear()
+    config.optimizations.uncompress_native_libraries.enabled = False
+    bundle.add_subfile('BundleConfig.pb', p3d.StringStream(config.SerializeToString()), 9)
+
+    resources = ResourceTable()
+    bundle.add_subfile('base/resources.pb', p3d.StringStream(resources.SerializeToString()), 9)
+
+    native = NativeLibraries()
+    for abi in os.listdir(os.path.join(build_dir, 'lib')):
+        native_dir = native.directory.add()
+        native_dir.path = 'lib/' + abi
+        native_dir.targeting.abi.alias = getattr(AbiAlias, abi.upper().replace('-', '_'))
+    bundle.add_subfile('base/native.pb', p3d.StringStream(native.SerializeToString()), 9)
+
+    # Convert the AndroidManifest.xml file to a protobuf-encoded version of it.
+    axml = AndroidManifest()
+    with open(os.path.join(build_dir, 'AndroidManifest.xml'), 'rb') as fh:
+        axml.parse_xml(fh.read())
+    bundle.add_subfile('base/manifest/AndroidManifest.xml', p3d.StringStream(axml.dumps()), 9)
+
+    # Add the classes.dex.
+    bundle.add_subfile(f'base/dex/classes.dex', build_dir_fn / 'classes.dex', 9)
+
+    # Add libraries, compressed.
+    for abi in os.listdir(os.path.join(build_dir, 'lib')):
+        abi_dir = os.path.join(build_dir, 'lib', abi)
+
+        for lib in os.listdir(abi_dir):
+            if lib.startswith('lib') and lib.endswith('.so'):
+                bundle.add_subfile(f'base/lib/{abi}/{lib}', build_dir_fn / 'lib' / abi / lib, 9)
+
+    # Add assets, compressed.
+    assets_dir = os.path.join(build_dir, 'assets')
+    for dirpath, dirnames, filenames in os.walk(assets_dir):
+        rel_dirpath = os.path.relpath(dirpath, build_dir).replace('\\', '/')
+        dirnames.sort()
+        filenames.sort()
+
+        for name in filenames:
+            fn = p3d.Filename.from_os_specific(dirpath) / name
+            if fn.is_regular_file():
+                bundle.add_subfile(f'base/{rel_dirpath}/{name}', fn, 9)
