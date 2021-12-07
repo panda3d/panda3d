@@ -52,10 +52,12 @@ class Icon:
             if from_size > required_size:
                 Icon.notify.warning("Generating %dx%d icon by scaling down %dx%d image" % (required_size, required_size, from_size, from_size))
 
+                from_image = self.images[from_size]
                 image = PNMImage(required_size, required_size)
-                if self.images[from_size].hasAlpha():
+                image.setColorType(from_image.getColorType())
+                if from_image.hasAlpha():
                     image.addAlpha()
-                image.quickFilterFrom(self.images[from_size])
+                image.quickFilterFrom(from_image)
                 self.images[required_size] = image
             else:
                 Icon.notify.warning("Cannot generate %dx%d icon; no higher resolution image available" % (required_size, required_size))
