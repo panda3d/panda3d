@@ -1325,10 +1325,8 @@ def CompileCxx(obj,src,opts):
             cmd += ' -target ' + SDK["ANDROID_TRIPLE"]
             if arch == 'armv7a':
                 cmd += ' -march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16'
-                cmd += ' -fno-integrated-as'
             elif arch == 'arm':
                 cmd += ' -march=armv5te -mtune=xscale -msoft-float'
-                cmd += ' -fno-integrated-as'
             elif arch == 'mips':
                 cmd += ' -mips32'
             elif arch == 'mips64':

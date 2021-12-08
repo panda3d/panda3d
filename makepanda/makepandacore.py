@@ -411,7 +411,7 @@ def SetTarget(target, arch=None):
         global ANDROID_ABI, ANDROID_TRIPLE
         if arch == 'armv7a':
             ANDROID_ABI = 'armeabi-v7a'
-            ANDROID_TRIPLE = 'arm-linux-androideabi'
+            ANDROID_TRIPLE = 'armv7a-linux-androideabi'
         elif arch == 'arm':
             ANDROID_ABI = 'armeabi'
             ANDROID_TRIPLE = 'arm-linux-androideabi'
@@ -2549,8 +2549,8 @@ def SdkLocateAndroid():
 
     # The Android support library polyfills C++ features not available in the
     # STL that ships with Android.
-    support = os.path.join(ndk_root, 'sources', 'android', 'support', 'include')
-    IncDirectory("ALWAYS", support.replace('\\', '/'))
+    #support = os.path.join(ndk_root, 'sources', 'android', 'support', 'include')
+    #IncDirectory("ALWAYS", support.replace('\\', '/'))
     if api < 21:
         LibName("ALWAYS", "-landroid_support")
 
