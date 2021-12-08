@@ -2109,7 +2109,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             if (lptstr != nullptr)  {
               char *pChar;
               for (pChar = lptstr; *pChar; pChar++) {
-                _input->keystroke((uchar)*pChar);
+                _input->keystroke((unsigned char)*pChar);
               }
               GlobalUnlock(hglb);
             }

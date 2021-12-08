@@ -245,7 +245,7 @@ apply_texture(int i, TextureContext *tc, const SamplerState &sampler) {
 
   set_sampler_state(i, D3DSAMP_BORDERCOLOR, border_color);
 
-  uint aniso_degree = sampler.get_effective_anisotropic_degree();
+  unsigned int aniso_degree = sampler.get_effective_anisotropic_degree();
   SamplerState::FilterType ft = sampler.get_effective_magfilter();
 
   if (aniso_degree >= 1) {

@@ -2251,7 +2251,7 @@ do_get_auto_texture_scale(const CData *cdata) const {
  */
 INLINE void Texture::
 store_unscaled_byte(unsigned char *&p, int value) {
-  (*p++) = (uchar)value;
+  (*p++) = (unsigned char)value;
 }
 
 /**
@@ -2262,10 +2262,10 @@ store_unscaled_byte(unsigned char *&p, int value) {
 INLINE void Texture::
 store_unscaled_short(unsigned char *&p, int value) {
   union {
-    ushort us;
-    uchar uc[2];
+    unsigned short us;
+    unsigned char uc[2];
   } v;
-  v.us = (ushort)value;
+  v.us = (unsigned short)value;
   (*p++) = v.uc[0];
   (*p++) = v.uc[1];
 }
@@ -2310,8 +2310,8 @@ get_unsigned_byte(const unsigned char *&p) {
 INLINE double Texture::
 get_unsigned_short(const unsigned char *&p) {
   union {
-    ushort us;
-    uchar uc[2];
+    unsigned short us;
+    unsigned char uc[2];
   } v;
   v.uc[0] = (*p++);
   v.uc[1] = (*p++);
@@ -2327,7 +2327,7 @@ INLINE double Texture::
 get_unsigned_int(const unsigned char *&p) {
   union {
     unsigned int ui;
-    uchar uc[4];
+    unsigned char uc[4];
   } v;
   v.uc[0] = (*p++);
   v.uc[1] = (*p++);

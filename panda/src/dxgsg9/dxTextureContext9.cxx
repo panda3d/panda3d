@@ -831,7 +831,7 @@ create_texture(DXScreenData &scrn) {
 
   tex->set_minfilter(ft);
 
-  uint aniso_degree;
+  unsigned int aniso_degree;
 
   aniso_degree = 1;
   if (scrn._d3dcaps.RasterCaps & D3DPRASTERCAPS_ANISOTROPY) {

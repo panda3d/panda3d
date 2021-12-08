@@ -1466,8 +1466,8 @@ void MayaEggLoader::TraverseEggNode(EggNode *node, EggGroup *context, string del
     surface->_vNumCvs = eggNurbsSurface->get_num_v_cvs();
 
     // [gjeon] building cvArray
-    for (uint ui = 0; ui < surface->_uNumCvs; ui++) {
-      for (uint vi = 0; vi < surface->_vNumCvs; vi++) {
+    for (unsigned int ui = 0; ui < surface->_uNumCvs; ui++) {
+      for (unsigned int vi = 0; vi < surface->_vNumCvs; vi++) {
         EggVertex *vtx = eggNurbsSurface->get_vertex(eggNurbsSurface->get_vertex_index(ui, vi));
         surface->_cvArray.append(MakeMPoint(vtx->get_pos3()));
       }
