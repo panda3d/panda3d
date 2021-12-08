@@ -218,10 +218,12 @@ def create_aab(command, basename, build_dir):
         axml.parse_xml(fh.read())
 
     # We use our own zip implementation, which can create the correct
-    # alignment needed by Android automatically.
+    # alignment and signature needed by Android automatically.
+    bundle_fn.unlink()
+
     bundle = p3d.ZipArchive()
-    if not bundle.open_write(bundle_fn):
-        command.announce.error(
+    if not bundle.open_read_write(bundle_fn):
+        command.announce(
             f'\tUnable to open {bundle_fn} for writing', distutils.log.ERROR)
         return
 
@@ -290,3 +292,23 @@ def create_aab(command, basename, build_dir):
             fn = p3d.Filename.from_os_specific(dirpath) / name
             if fn.is_regular_file():
                 bundle.add_subfile(f'base/{rel_dirpath}/{name}', fn, 9)
+
+    # Finally, generate the manifest file / signature, if a signing certificate
+    # has been specified.
+    if command.signing_certificate:
+        password = command.signing_passphrase or ''
+
+        if not password and 'ENCRYPTED' in open(command.signing_private_key).read():
+            # It appears to be encrypted, and we don't have a passphrase, so we
+            # must request it on the command-line.
+            from getpass import getpass
+            password = getpass(f'Enter pass phrase for private key: ')
+
+        if not bundle.add_jar_signature(
+                p3d.Filename.from_os_specific(command.signing_certificate),
+                p3d.Filename.from_os_specific(command.signing_private_key),
+                password):
+            command.announce(
+                f'\tFailed to sign {bundle_fn}.', distutils.log.ERROR)
+
+    bundle.close()

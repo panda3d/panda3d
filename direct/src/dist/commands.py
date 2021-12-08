@@ -1565,6 +1565,9 @@ class bdist_apps(setuptools.Command):
         self.installers = {}
         self.dist_dir = os.path.join(os.getcwd(), 'dist')
         self.skip_build = False
+        self.signing_certificate = None
+        self.signing_private_key = None
+        self.signing_passphrase = None
         self.installer_functions = {}
         self._current_platform = None
         for opt in self._build_apps_options():
@@ -1577,6 +1580,11 @@ class bdist_apps(setuptools.Command):
             key: _parse_list(value)
             for key, value in _parse_dict(self.installers).items()
         }
+
+        if self.signing_certificate:
+            assert self.signing_private_key, 'Missing signing_private_key'
+            self.signing_certificate = os.path.abspath(self.signing_certificate)
+            self.signing_private_key = os.path.abspath(self.signing_private_key)
 
         tmp = self.DEFAULT_INSTALLER_FUNCS.copy()
         tmp.update(self.installer_functions)
