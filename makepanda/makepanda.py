@@ -1332,10 +1332,10 @@ def CompileCxx(obj,src,opts):
             elif arch == 'mips64':
                 cmd += ' -fintegrated-as'
             elif arch == 'x86':
-                cmd += ' -march=i686 -mtune=intel -mssse3 -mfpmath=sse -m32'
+                cmd += ' -march=i686 -mssse3 -mfpmath=sse -m32'
                 cmd += ' -mstackrealign'
             elif arch == 'x86_64':
-                cmd += ' -march=x86-64 -msse4.2 -mpopcnt -m64 -mtune=intel'
+                cmd += ' -march=x86-64 -msse4.2 -mpopcnt -m64'
 
             cmd += " -Wa,--noexecstack"
 
