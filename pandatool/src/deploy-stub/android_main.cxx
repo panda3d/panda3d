@@ -50,6 +50,9 @@ extern "C" {
   } blobinfo = {(uint64_t)-1};
 }
 
+// Defined in android_log.c
+extern "C" PyObject *PyInit_android_log();
+
 /**
  * Maps the binary blob at the given memory address to memory, and returns the
  * pointer to the beginning of it.
@@ -95,36 +98,6 @@ void android_main(struct android_app *app) {
     android_cat.error() << "Failed to attach thread to JVM!\n";
     return;
   }
-
-  // Pipe stdout/stderr to the Android log stream, for convenience.
-  int pfd[2];
-  setvbuf(stdout, 0, _IOLBF, 0);
-  setvbuf(stderr, 0, _IOLBF, 0);
-
-  pipe(pfd);
-  dup2(pfd[1], 1);
-  dup2(pfd[1], 2);
-
-  std::thread t([=] {
-    ssize_t size;
-    char buf[4096] = {0};
-    char *bufstart = buf;
-    char *const bufend = buf + sizeof(buf) - 1;
-
-    while ((size = read(pfd[0], bufstart, bufend - bufstart)) > 0) {
-      bufstart[size] = 0;
-      bufstart += size;
-
-      while (char *nl = (char *)memchr(buf, '\n', strnlen(buf, bufend - buf))) {
-        *nl = 0;
-        __android_log_write(ANDROID_LOG_VERBOSE, "Python", buf);
-
-        // Move everything after the newline to the beginning of the buffer.
-        memmove(buf, nl + 1, bufend - (nl + 1));
-        bufstart -= (nl + 1) - buf;
-      }
-    }
-  });
 
   jclass activity_class = env->GetObjectClass(activity->clazz);
 
@@ -179,6 +152,19 @@ void android_main(struct android_app *app) {
     env->ReleaseStringUTFChars(jcache_dir, cache_dir);
   }
 
+  // Fetch the path to the library directory.
+  jfieldID libdir_field = env->GetFieldID(appinfo_class, "nativeLibraryDir", "Ljava/lang/String;");
+  jstring libdir_jstr = (jstring) env->GetObjectField(appinfo, libdir_field);
+  const char *libdir = env->GetStringUTFChars(libdir_jstr, nullptr);
+
+  if (libdir != nullptr) {
+    std::string dtool_name = std::string(libdir) + "/libp3dtool.so";
+    ExecutionEnvironment::set_dtool_name(dtool_name);
+    android_cat.info() << "Path to dtool: " << dtool_name << "\n";
+
+    env->ReleaseStringUTFChars(libdir_jstr, libdir);
+  }
+
   // Get the path to the APK.
   methodID = env->GetMethodID(activity_class, "getPackageCodePath", "()Ljava/lang/String;");
   jstring code_path = (jstring) env->CallObjectMethod(activity->clazz, methodID);
@@ -198,7 +184,6 @@ void android_main(struct android_app *app) {
 
   // Map the blob to memory
   void *blob = map_blob(lib_path, (off_t)blobinfo.blob_offset, (size_t)blobinfo.blob_size);
-  env->ReleaseStringUTFChars(lib_path_jstr, lib_path);
   assert(blob != NULL);
 
   assert(blobinfo.num_pointers <= MAX_NUM_POINTERS);
@@ -261,38 +246,27 @@ void android_main(struct android_app *app) {
       return;
   }
 
+  // Register the android_log module.
+  if (PyImport_AppendInittab("android_log", &PyInit_android_log) < 0) {
+    android_cat.error()
+      << "Failed to register android_log module.\n";
+    return;
+  }
+
   PyConfig config;
   PyConfig_InitIsolatedConfig(&config);
   config.pathconfig_warnings = 0;   /* Suppress errors from getpath.c */
   config.buffered_stdio = 0;
   config.configure_c_stdio = 0;
   config.write_bytecode = 0;
+  PyConfig_SetBytesString(&config, &config.executable, lib_path);
+  env->ReleaseStringUTFChars(lib_path_jstr, lib_path);
 
   status = Py_InitializeFromConfig(&config);
   PyConfig_Clear(&config);
   if (PyStatus_Exception(status)) {
       Py_ExitStatusException(status);
       return;
-  }
-
-  // Fetch the path to the library directory.
-  jfieldID libdir_field = env->GetFieldID(appinfo_class, "nativeLibraryDir", "Ljava/lang/String;");
-  jstring libdir_jstr = (jstring) env->GetObjectField(appinfo, libdir_field);
-  const char *libdir = env->GetStringUTFChars(libdir_jstr, nullptr);
-
-  if (libdir != nullptr) {
-    // This is used by the import hook to locate the module libraries.
-    PyObject *py_native_dir = PyUnicode_FromString(libdir);
-    PySys_SetObject("_native_library_dir", py_native_dir);
-    Py_DECREF(py_native_dir);
-
-    if (ExecutionEnvironment::get_dtool_name().empty()) {
-      std::string dtool_name = std::string(libdir) + "/libp3dtool.so";
-      ExecutionEnvironment::set_dtool_name(dtool_name);
-      android_cat.info() << "Path to dtool: " << dtool_name << "\n";
-    }
-
-    env->ReleaseStringUTFChars(libdir_jstr, libdir);
   }
 
   while (!app->destroyRequested) {
@@ -305,12 +279,12 @@ void android_main(struct android_app *app) {
       break;
     }
     if (n < 0) {
-      PyErr_Print();
+      if (_PyErr_OCCURRED() != PyExc_SystemExit) {
+        PyErr_Print();
+      } else {
+        PyErr_Clear();
+      }
     }
-
-    fsync(1);
-    fsync(2);
-    sched_yield();
 
     if (app->destroyRequested) {
       // The app closed responding to a destroy request.
