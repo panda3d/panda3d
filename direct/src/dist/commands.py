@@ -421,9 +421,12 @@ class build_apps(setuptools.Command):
 
         # Default to all supported ABIs (for the given Android version).
         if self.android_max_sdk_version and self.android_max_sdk_version < 21:
+            assert self.android_max_sdk_version >= 19, \
+                'Panda3D requires at least Android API level 19!'
+
             if self.android_abis:
                 for abi in self.android_abis:
-                    assert abi in ('mips64', 'x86_64', 'arm64-v8a'), \
+                    assert abi not in ('mips64', 'x86_64', 'arm64-v8a'), \
                         f'{abi} was not a valid Android ABI before Android 21!'
             else:
                 self.android_abis = ['armeabi-v7a', 'x86']
