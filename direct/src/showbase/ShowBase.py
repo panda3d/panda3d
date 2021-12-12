@@ -32,6 +32,9 @@ built-in scope.
 
 __all__ = ['ShowBase', 'WindowControls']
 
+# Type annotations
+from typing import Callable, List, Optional
+
 # This module redefines the builtin import function with one
 # that prints out every import it does in a hierarchical form
 # Annoying and very noisy, but sometimes useful
@@ -88,7 +91,7 @@ class ShowBase(DirectObject.DirectObject):
     config = DConfig
     notify = directNotify.newCategory("ShowBase")
 
-    def __init__(self, fStartDirect=True, windowType=None):
+    def __init__(self, fStartDirect: bool = True, windowType: Optional[str] = None) -> None:
         """Opens a window, sets up a 3-D and several 2-D scene graphs, and
         everything else needed to render the scene graph to the window.
 
@@ -145,16 +148,16 @@ class ShowBase(DirectObject.DirectObject):
         self.__deadInputs = 0
 
         # Store dconfig variables
-        self.sfxActive = ConfigVariableBool('audio-sfx-active', True).value
-        self.musicActive = ConfigVariableBool('audio-music-active', True).value
-        self.wantFog = ConfigVariableBool('want-fog', True).value
-        self.wantRender2dp = ConfigVariableBool('want-render2dp', True).value
+        self.sfxActive: bool = ConfigVariableBool('audio-sfx-active', True).value
+        self.musicActive: bool = ConfigVariableBool('audio-music-active', True).value
+        self.wantFog: bool = ConfigVariableBool('want-fog', True).value
+        self.wantRender2dp: bool = ConfigVariableBool('want-render2dp', True).value
 
-        self.screenshotExtension = ConfigVariableString('screenshot-extension', 'jpg').value
-        self.musicManager = None
-        self.musicManagerIsValid = None
-        self.sfxManagerList = []
-        self.sfxManagerIsValidList = []
+        self.screenshotExtension: str = ConfigVariableString('screenshot-extension', 'jpg').value
+        self.musicManager: Optional[AudioManager] = None
+        self.musicManagerIsValid: Optional[bool] = None
+        self.sfxManagerList: List[AudioManager] = []
+        self.sfxManagerIsValidList: List[bool] = []
 
         self.wantStats = ConfigVariableBool('want-pstats', False).value
         self.wantTk = False
@@ -163,12 +166,12 @@ class ShowBase(DirectObject.DirectObject):
 
         #: Fill this in with a function to invoke when the user "exits"
         #: the program by closing the main window.
-        self.exitFunc = None
+        self.exitFunc: Callable[[], None] = None
 
         #: Add final-exit callbacks to this list.  These will be called
         #: when sys.exit() is called, after Panda has unloaded, and
         #: just before Python is about to shut down.
-        self.finalExitCallbacks = []
+        self.finalExitCallbacks: List[Callable[[], None]] = []
 
         # Set up the TaskManager to reset the PStats clock back
         # whenever we resume from a pause.  This callback function is
@@ -186,7 +189,7 @@ class ShowBase(DirectObject.DirectObject):
         self.__configAspectRatio = ConfigVariableDouble('aspect-ratio', 0).value
         # This variable is used to see if the aspect ratio has changed when
         # we get a window-event.
-        self.__oldAspectRatio = None
+        self.__oldAspectRatio: Optional[float] = None
 
         #: This is set to the value of the window-type config variable, but may
         #: optionally be overridden in the Showbase constructor.  Should either
@@ -197,69 +200,69 @@ class ShowBase(DirectObject.DirectObject):
         self.requireWindow = ConfigVariableBool('require-window', True).value
 
         #: This is the main, or only window; see `winList` for a list of *all* windows.
-        self.win = None
-        self.frameRateMeter = None
-        self.sceneGraphAnalyzerMeter = None
+        self.win: Optional[GraphicsWindow] = None
+        self.frameRateMeter: Optional[FrameRateMeter] = None
+        self.sceneGraphAnalyzerMeter: Optional[SceneGraphAnalyzerMeter] = None
         #: A list of all windows opened via `openWindow()`.
-        self.winList = []
-        self.winControls = []
+        self.winList: List[GraphicsWindow] = []
+        self.winControls: List[WindowControls] = []
         self.mainWinMinimized = 0
         self.mainWinForeground = 0
         #: Contains the :class:`~panda3d.core.GraphicsPipe` object created by
         #: `makeDefaultPipe()`.
-        self.pipe = None
+        self.pipe: Optional[GraphicsPipe] = None
         #: The full list of :class:`~panda3d.core.GraphicsPipe` objects,
         #: including any auxiliary pipes.  Filled by `makeAllPipes()`.
-        self.pipeList = []
-        self.mouse2cam = None
-        self.buttonThrowers = None
-        self.mouseWatcher = None
+        self.pipeList: List[Optional[GraphicsPipe]] = []
+        self.mouse2cam: Optional[NodePath] = None
+        self.buttonThrowers: Optional[List[NodePath]] = None
+        self.mouseWatcher: Optional[NodePath] = None
         #: The :class:`~panda3d.core.MouseWatcher` object, created by
         #: `setupMouse()`.
-        self.mouseWatcherNode = None
-        self.pointerWatcherNodes = None
-        self.mouseInterface = None
-        self.drive = None
-        self.trackball = None
+        self.mouseWatcherNode: Optional[MouseWatcher] = None
+        self.pointerWatcherNodes: Optional[List[MouseWatcher]] = None
+        self.mouseInterface: Optional[NodePath] = None
+        self.drive: Optional[NodePath] = None
+        self.trackball: Optional[NodePath] = None
         self.texmem = None
-        self.showVertices = None
-        self.deviceButtonThrowers = []
+        self.showVertices: Optional[NodePath] = None
+        self.deviceButtonThrowers: List[NodePath] = []
 
         #: This is a :class:`~panda3d.core.NodePath` pointing to the
         #: :class:`~panda3d.core.Camera` object set up for the 3D scene.
         #: Usually a child of `camera`.
-        self.cam = None
+        self.cam: Optional[NodePath] = None
         #: Same as `cam`, but for the 2D scene graph.
-        self.cam2d = None
+        self.cam2d: Optional[NodePath] = None
         #: Same as `cam2d`, but for the 2D overlay scene graph.
-        self.cam2dp = None
+        self.cam2dp: Optional[NodePath] = None
 
         #: This is the :class:`~panda3d.core.NodePath` that should be used to
         #: manipulate the camera.  It points at the node to which the default
         #: camera (`cam`, `camNode`) is attached.
-        self.camera = None
+        self.camera: Optional[NodePath] = None
         #: Same as `camera`, but for the 2D scene graph.  Parent of `cam2d`.
-        self.camera2d = None
+        self.camera2d: Optional[NodePath] = None
         #: Same as `camera2d`, but for the 2D overlay scene graph.  Parent of
         #: `cam2dp`.
-        self.camera2dp = None
+        self.camera2dp: Optional[NodePath] = None
 
         #: A list of all cameras created with `makeCamera()`, including `cam`.
-        self.camList = []
+        self.camList: List[NodePath] = []
         #: Convenience accessor for base.cam.node(), containing a
         #: :class:`~panda3d.core.Camera` object.
-        self.camNode = None
+        self.camNode: Optional[Camera] = None
         #: Convenience accessor for base.camNode.get_lens(), containing a
         #: :class:`~panda3d.core.Lens` object.
-        self.camLens = None
-        self.camFrustumVis = None
+        self.camLens: Optional[Lens] = None
+        self.camFrustumVis: Optional[NodePath] = None
         self.direct = None
         #: This is used to store the wx.Application object used when want-wx is
         #: set or `startWx()` is called.
         self.wxApp = None
-        self.wxAppCreated = False
+        self.wxAppCreated: bool = False
         self.tkRoot = None
-        self.tkRootCreated = False
+        self.tkRootCreated: bool = False
 
         # This is used for syncing multiple PCs in a distributed cluster
         try:
@@ -275,7 +278,7 @@ class ShowBase(DirectObject.DirectObject):
 
         #: The global :class:`~panda3d.core.GraphicsEngine`, as returned by
         #: GraphicsEngine.getGlobalPtr()
-        self.graphicsEngine = GraphicsEngine.getGlobalPtr()
+        self.graphicsEngine: GraphicsEngine = GraphicsEngine.getGlobalPtr()
         self.graphics_engine = self.graphicsEngine
         self.setupRender()
         self.setupRender2d()
@@ -289,11 +292,11 @@ class ShowBase(DirectObject.DirectObject):
         #: traverse it automatically in the collisionLoop task, so you won't
         #: need to call :meth:`~panda3d.core.CollisionTraverser.traverse()`
         #: yourself every frame.
-        self.cTrav = 0
-        self.shadowTrav = 0
+        self.cTrav: Optional[CollisionTraverser] = None
+        self.shadowTrav: Optional[CollisionTraverser] = None
         self.cTravStack = Stack()
         # Ditto for an AppTraverser.
-        self.appTrav = 0
+        self.appTrav: Optional[CollisionTraverser] = None
 
         # This is the DataGraph traverser, which we might as well
         # create now.
