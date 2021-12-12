@@ -80,6 +80,7 @@ MSVCVERSIONINFO = {
     (14,0): {"vsversion":(14,0), "vsname":"Visual Studio 2015"},
     (14,1): {"vsversion":(15,0), "vsname":"Visual Studio 2017"},
     (14,2): {"vsversion":(16,0), "vsname":"Visual Studio 2019"},
+    (14,3): {"vsversion":(17,0), "vsname":"Visual Studio 2022"},
 }
 
 ########################################################################
@@ -108,6 +109,7 @@ MAYAVERSIONINFO = [("MAYA6",   "6.0"),
                    ("MAYA2018","2018"),
                    ("MAYA2019","2019"),
                    ("MAYA2020","2020"),
+                   ("MAYA2022","2022"),
 ]
 
 MAXVERSIONINFO = [("MAX6", "SOFTWARE\\Autodesk\\3DSMAX\\6.0", "installdir", "maxsdk\\cssdk\\include"),
@@ -2402,7 +2404,7 @@ def SdkLocateMacOSX(archs = []):
         # Prefer pre-10.14 for now so that we can keep building FMOD.
         sdk_versions += ["10.13", "10.12", "10.11", "10.10", "10.9"]
 
-    sdk_versions += ["11.1", "11.0"]
+    sdk_versions += ["11.3", "11.1", "11.0"]
 
     if 'arm64' not in archs:
         sdk_versions += ["10.15", "10.14"]
