@@ -16,6 +16,7 @@
 from direct.showbase.ShowBase import ShowBase
 from panda3d.core import TextNode, TransparencyAttrib
 from panda3d.core import LPoint3, LVector3
+from panda3d.core import SamplerState
 from direct.gui.OnscreenText import OnscreenText
 from direct.task.Task import Task
 from math import sin, cos, pi
@@ -72,6 +73,8 @@ def loadObject(tex=None, pos=LPoint3(0, 0), depth=SPRITE_POS, scale=1,
     if tex:
         # Load and set the requested texture.
         tex = loader.loadTexture("textures/" + tex)
+        tex.setWrapU(SamplerState.WM_clamp)
+        tex.setWrapV(SamplerState.WM_clamp)
         obj.setTexture(tex, 1)
 
     return obj
