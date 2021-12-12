@@ -545,12 +545,13 @@ read_handle(DatagramIterator &scan) {
   string name = scan.get_string();
   bool new_type = false;
 
-  TypeHandle type = TypeRegistry::ptr()->find_type(name);
+  TypeRegistry *type_registry = TypeRegistry::ptr();
+  TypeHandle type = type_registry->find_type(name);
   if (type == TypeHandle::none()) {
     // We've never heard of this type before!  This is really an error
     // condition, but we'll do the best we can and declare it on-the-fly.
 
-    type = TypeRegistry::ptr()->register_dynamic_type(name);
+    type = type_registry->register_dynamic_type(name);
     bam_cat.warning()
       << "Bam file '" << get_filename() << "' contains objects of unknown type: "
       << type << "\n";
@@ -563,7 +564,7 @@ read_handle(DatagramIterator &scan) {
   for (int i = 0; i < num_parent_classes; i++) {
     TypeHandle parent_type = read_handle(scan);
     if (new_type) {
-      TypeRegistry::ptr()->record_derivation(type, parent_type);
+      type_registry->record_derivation(type, parent_type);
     } else {
       if (type.get_parent_towards(parent_type) != parent_type) {
         if (bam_cat.is_debug()) {
