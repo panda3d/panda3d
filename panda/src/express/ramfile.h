@@ -36,6 +36,9 @@ PUBLISHED:
   INLINE size_t get_data_size() const;
   INLINE void clear();
 
+  EXTENSION(PyObject *__getstate__() const);
+  EXTENSION(void __setstate__(PyObject *state));
+
 public:
   std::string read(size_t length);
   std::string readline();

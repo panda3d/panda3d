@@ -50,27 +50,63 @@ __init__(PyObject *self, PyObject *args, PyObject *kwds) {
   // Now iterate over the keyword arguments, which define the default values
   // for the different properties.
   if (kwds != nullptr) {
-    PyTypeObject *type = Py_TYPE(self);
-    PyObject *key, *value;
-    Py_ssize_t pos = 0;
+    __setstate__(self, kwds);
+  }
+}
 
-    while (PyDict_Next(kwds, &pos, &key, &value)) {
-      // Look for a writable property on the type by this name.
-      PyObject *descr = _PyType_Lookup(type, key);
+/**
+ * Returns the properties as a dictionary.
+ */
+PyObject *Extension<WindowProperties>::
+__getstate__(PyObject *self) const {
+  static const char *props[] = {"origin", "size", "title", "undecorated", "fixed_size", "fullscreen", "foreground", "minimized", "maximized", "raw_mice", "open", "cursor_hidden", "icon_filename", "cursor_filename", "z_order", "mouse_mode", "parent_window", nullptr};
 
-      if (descr != nullptr && Py_TYPE(descr)->tp_descr_set != nullptr) {
-        if (Py_TYPE(descr)->tp_descr_set(descr, self, value) < 0) {
-          return;
-        }
-      } else {
-        PyObject *key_repr = PyObject_Repr(key);
-        PyErr_Format(PyExc_TypeError,
-                     "%.100s is an invalid keyword argument for WindowProperties()",
-                     PyUnicode_AsUTF8(key_repr)
-                    );
-        Py_DECREF(key_repr);
+  PyTypeObject *type = Py_TYPE(self);
+  PyObject *state = PyDict_New();
+
+  for (size_t i = 0; props[i] != nullptr; ++i) {
+    PyObject *key = PyUnicode_FromString(props[i]);
+    PyObject *descr = _PyType_Lookup(type, key);
+
+    if (descr != nullptr && Py_TYPE(descr)->tp_descr_get != nullptr) {
+      PyObject *value = Py_TYPE(descr)->tp_descr_get(descr, self, (PyObject *)type);
+      nassertr(value != nullptr, nullptr);
+      if (value != Py_None) {
+        PyDict_SetItem(state, key, value);
+      }
+      Py_DECREF(value);
+    }
+    Py_DECREF(key);
+  }
+
+  return state;
+}
+
+/**
+ *
+ */
+void Extension<WindowProperties>::
+__setstate__(PyObject *self, PyObject *props) {
+  PyTypeObject *type = Py_TYPE(self);
+  PyObject *key, *value;
+  Py_ssize_t pos = 0;
+
+  while (PyDict_Next(props, &pos, &key, &value)) {
+    // Look for a writable property on the type by this name.
+    PyObject *descr = _PyType_Lookup(type, key);
+
+    if (descr != nullptr && Py_TYPE(descr)->tp_descr_set != nullptr) {
+      if (Py_TYPE(descr)->tp_descr_set(descr, self, value) < 0) {
         return;
       }
+    } else {
+      PyObject *key_repr = PyObject_Repr(key);
+      PyErr_Format(PyExc_TypeError,
+                   "%.100s is an invalid keyword argument for WindowProperties()",
+                   PyUnicode_AsUTF8(key_repr)
+                  );
+      Py_DECREF(key_repr);
+      return;
     }
   }
 }

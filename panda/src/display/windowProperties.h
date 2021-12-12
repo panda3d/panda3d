@@ -205,6 +205,9 @@ PUBLISHED:
   MAKE_PROPERTY2(parent_window, has_parent_window, get_parent_window,
                                 set_parent_window, clear_parent_window);
 
+  EXTENSION(PyObject *__getstate__(PyObject *self) const);
+  EXTENSION(void __setstate__(PyObject *self, PyObject *state));
+
   void add_properties(const WindowProperties &other);
 
   void output(std::ostream &out) const;

@@ -6,39 +6,32 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * @file ramfile_ext.h
+ * @file graphicsPipeSelection_ext.h
  * @author rdb
- * @date 2013-12-10
+ * @date 2021-12-10
  */
 
-#ifndef RAMFILE_EXT_H
-#define RAMFILE_EXT_H
+#ifndef GRAPHICSPIPESELECTION_EXT_H
+#define GRAPHICSPIPESELECTION_EXT_H
 
-#include "dtoolbase.h"
+#include "pandabase.h"
 
 #ifdef HAVE_PYTHON
 
 #include "extension.h"
-#include "ramfile.h"
+#include "graphicsPipeSelection.h"
 #include "py_panda.h"
 
 /**
- * This class defines the extension methods for Ramfile, which are called
+ * This class defines the extension methods for GraphicsPipeSelection, which are called
  * instead of any C++ methods with the same prototype.
  */
 template<>
-class Extension<Ramfile> : public ExtensionBase<Ramfile> {
+class Extension<GraphicsPipeSelection> : public ExtensionBase<GraphicsPipeSelection> {
 public:
-  PyObject *read(size_t length);
-  PyObject *readline();
-  PyObject *readlines();
-
-  PyObject *get_data() const;
-
-  PyObject *__getstate__() const;
-  void __setstate__(PyObject *);
+  PyObject *__reduce__() const;
 };
 
 #endif  // HAVE_PYTHON
 
-#endif  // RAMFILE_EXT_H
+#endif  // GRAPHICSPIPESELECTION_EXT_H

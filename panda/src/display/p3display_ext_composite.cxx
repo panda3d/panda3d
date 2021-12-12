@@ -1,3 +1,4 @@
+#include "graphicsPipeSelection_ext.cxx"
 #include "graphicsStateGuardian_ext.cxx"
 #include "graphicsWindow_ext.cxx"
 #include "pythonGraphicsWindowProc.cxx"
