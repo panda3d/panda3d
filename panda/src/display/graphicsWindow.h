@@ -55,7 +55,9 @@ PUBLISHED:
   const WindowProperties get_requested_properties() const;
   void clear_rejected_properties();
   WindowProperties get_rejected_properties() const;
-  void request_properties(const WindowProperties &requested_properties);
+
+  EXTENSION(void request_properties(PyObject *args, PyObject *kwds));
+
   INLINE bool is_closed() const;
   virtual bool is_active() const;
   INLINE bool is_fullscreen() const;
@@ -100,6 +102,8 @@ PUBLISHED:
   virtual void close_ime();
 
 public:
+  void request_properties(const WindowProperties &requested_properties);
+
   virtual void add_window_proc( const GraphicsWindowProc* wnd_proc_object ){};
   virtual void remove_window_proc( const GraphicsWindowProc* wnd_proc_object ){};
   virtual void clear_window_procs(){};
