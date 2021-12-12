@@ -663,7 +663,15 @@ process_report(PCHAR ptr, size_t size) {
   if (status == HIDP_STATUS_SUCCESS) {
     for (ULONG di = 0; di < count; ++di) {
       if (data[di].DataIndex != _hat_data_index) {
-        nassertd(data[di].DataIndex < _indices.size()) continue;
+        if (data[di].DataIndex >= _indices.size()) {
+          if (device_cat.is_debug()) {
+            device_cat.debug()
+              << "Ignoring out of range DataIndex " << data[di].DataIndex
+              << "from raw device " << _path << "\n";
+          }
+          continue;
+        }
+
         const Index &idx = _indices[data[di].DataIndex];
         if (idx._axis >= 0) {
           if (idx._signed) {
