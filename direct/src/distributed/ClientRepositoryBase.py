@@ -14,6 +14,11 @@ from . import RelatedObjectMgr
 from .ClockDelta import *
 import time
 
+# Typing annotations
+from typing import Optional, TYPE_CHECKING
+if TYPE_CHECKING:
+    from direct.distributed.TimeManager import TimeManager
+
 
 class ClientRepositoryBase(ConnectionRepository):
     """
@@ -53,8 +58,8 @@ class ClientRepositoryBase(ConnectionRepository):
         self.cacheOwner=CRCache.CRCache()
         self.serverDelta = 0
 
-        self.bootedIndex = None
-        self.bootedText = None
+        self.bootedIndex: Optional[int] = None
+        self.bootedText: Optional[str] = None
 
         # create a parentMgr to handle distributed reparents
         # this used to be 'token2nodePath'
@@ -65,7 +70,7 @@ class ClientRepositoryBase(ConnectionRepository):
         self.relatedObjectMgr = RelatedObjectMgr.RelatedObjectMgr(self)
 
         # This will be filled in when a TimeManager is created.
-        self.timeManager = None
+        self.timeManager: Optional["TimeManager"] = None
 
         # Keep track of how recently we last sent a heartbeat message.
         # We want to keep these coming at heartbeatInterval seconds.
