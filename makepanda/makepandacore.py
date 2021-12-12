@@ -2490,6 +2490,8 @@ def SdkLocateMacOSX(osxtarget = None, archs = []):
                 SDK["MACOSX"] = "%s/Platforms/MacOSX.platform/Developer/SDKs/%s.sdk" % (result, sdkname)
             elif sdkname == "MacOSX11.0" and os.path.exists("/Library/Developer/CommandLineTools/SDKs/MacOSX11.1.sdk"):
                 SDK["MACOSX"] = "/Library/Developer/CommandLineTools/SDKs/MacOSX11.1.sdk"
+            elif sdkname == "MacOSX11.0" and os.path.exists("/Library/Developer/CommandLineTools/SDKs/MacOSX11.3.sdk"):
+                SDK["MACOSX"] = "/Library/Developer/CommandLineTools/SDKs/MacOSX11.3.sdk"
             else:
                 exit("Couldn't find any MacOSX SDK for macOS version %s!" % sdkname)
         SDK["OSXTARGET"] = osxtarget
