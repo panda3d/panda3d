@@ -23,7 +23,7 @@
 
 /**
  * This is a specialization on CallbackObject to allow a callback to directly
- * call an arbitarary Python function.  Powerful!  But use with caution.
+ * call an arbitrary Python function.  Powerful!  But use with caution.
  */
 class PythonCallbackObject : public CallbackObject {
 PUBLISHED:

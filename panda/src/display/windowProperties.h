@@ -224,7 +224,7 @@ private:
     S_raw_mice             = 0x08000,
   };
 
-  // This bitmask represents the truefalse settings for various boolean flags
+  // This bitmask represents the true/false settings for various boolean flags
   // (assuming the corresponding S_* bit has been set, above).
   enum Flags {
     F_undecorated    = S_undecorated,
