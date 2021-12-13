@@ -36,14 +36,14 @@ def bool_resource(id):
     return compile
 
 
-def enum_resource(id, /, *values):
+def enum_resource(id, *values):
     def compile(attrib, manifest):
         attrib.resource_id = id
         attrib.compiled_item.prim.int_decimal_value = values.index(attrib.value)
     return compile
 
 
-def flag_resource(id, /, **values):
+def flag_resource(id, **values):
     def compile(attrib, manifest):
         attrib.resource_id = id
         bitmask = 0
