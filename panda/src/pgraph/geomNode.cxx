@@ -394,11 +394,6 @@ r_prepare_scene(GraphicsStateGuardianBase *gsg, const RenderState *node_state,
       prepared_objects->enqueue_index_buffer((GeomPrimitive *)prim.p());
     }
 
-    if (munger->is_of_type(StateMunger::get_class_type())) {
-      StateMunger *state_munger = (StateMunger *)munger.p();
-      geom_state = state_munger->munge_state(geom_state);
-    }
-
     // As well as the shaders.
     const ShaderAttrib *sa;
     if (geom_state->get_attrib(sa)) {
@@ -412,7 +407,9 @@ r_prepare_scene(GraphicsStateGuardianBase *gsg, const RenderState *node_state,
       else if (munger->is_of_type(StateMunger::get_class_type())) {
         // Premunge the state for the fixed-function pipeline.
         StateMunger *state_munger = (StateMunger *)munger.p();
-        geom_state = state_munger->munge_state(geom_state);
+        if (state_munger->should_munge_state()) {
+          geom_state = state_munger->munge_state(geom_state);
+        }
       }
       // TODO: prepare the shader inputs.
     }
