@@ -276,7 +276,7 @@ def MakeDebugSymbolArchive(zipname, dirname):
     zip.close()
 
 
-def MakeInstallerLinux(version, debversion=None, rpmrelease=1, runtime=False,
+def MakeInstallerLinux(version, debversion=None, rpmversion=None, rpmrelease=1, runtime=False,
                        python_versions=[], **kwargs):
     outputdir = GetOutputDir()
 
@@ -302,6 +302,8 @@ def MakeInstallerLinux(version, debversion=None, rpmrelease=1, runtime=False,
     major_version = '.'.join(version.split('.')[:2])
     if not debversion:
         debversion = version
+    if not rpmversion:
+        rpmversion = version
 
     # Clean and set up a directory to install Panda3D into
     oscmd("rm -rf targetroot data.tar.gz control.tar.gz panda3d.spec")
@@ -461,16 +463,16 @@ def MakeInstallerLinux(version, debversion=None, rpmrelease=1, runtime=False,
                     txt += "/usr/bin/%s\n" % (base)
 
         # Write out the spec file.
-        txt = txt.replace("VERSION", version)
+        txt = txt.replace("VERSION", rpmversion)
         txt = txt.replace("RPMRELEASE", str(rpmrelease))
         txt = txt.replace("PANDASOURCE", pandasource)
         WriteFile("panda3d.spec", txt)
 
         oscmd("fakeroot rpmbuild --define '_rpmdir "+pandasource+"' --buildroot '"+os.path.abspath("targetroot")+"' -bb panda3d.spec")
         if runtime:
-            oscmd("mv "+arch+"/panda3d-runtime-"+version+"-"+rpmrelease+"."+arch+".rpm .")
+            oscmd("mv "+arch+"/panda3d-runtime-"+rpmversion+"-"+rpmrelease+"."+arch+".rpm .")
         else:
-            oscmd("mv "+arch+"/panda3d-"+version+"-"+rpmrelease+"."+arch+".rpm .")
+            oscmd("mv "+arch+"/panda3d-"+rpmversion+"-"+rpmrelease+"."+arch+".rpm .")
         oscmd("rm -rf "+arch, True)
 
     else:
@@ -1130,6 +1132,7 @@ if __name__ == "__main__":
     parser = OptionParser()
     parser.add_option('', '--version', dest='version', help='Panda3D version number (default: %s)' % (version), default=version)
     parser.add_option('', '--debversion', dest='debversion', help='Version number for .deb file', default=None)
+    parser.add_option('', '--rpmversion', dest='rpmversion', help='Version number for .rpm file', default=None)
     parser.add_option('', '--rpmrelease', dest='rpmrelease', help='Release number for .rpm file', default='1')
     parser.add_option('', '--outputdir', dest='outputdir', help='Makepanda\'s output directory (default: built)', default='built')
     parser.add_option('', '--verbose', dest='verbose', help='Enable verbose output', action='store_true', default=False)
@@ -1167,6 +1170,7 @@ if __name__ == "__main__":
                   optimize=GetOptimize(),
                   compressor=options.compressor,
                   debversion=options.debversion,
+                  rpmversion=options.rpmversion,
                   rpmrelease=options.rpmrelease,
                   runtime=options.runtime,
                   python_versions=ReadPythonVersionInfoFile(),
