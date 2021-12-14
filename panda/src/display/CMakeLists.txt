@@ -67,6 +67,8 @@ set(P3DISPLAY_SOURCES
 )
 
 set(P3DISPLAY_IGATEEXT
+  frameBufferProperties_ext.cxx
+  frameBufferProperties_ext.h
   graphicsPipeSelection_ext.cxx
   graphicsPipeSelection_ext.h
   graphicsStateGuardian_ext.cxx
