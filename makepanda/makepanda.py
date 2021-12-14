@@ -56,6 +56,7 @@ DISTRIBUTOR=""
 VERSION=None
 DEBVERSION=None
 WHLVERSION=None
+RPMVERSION=None
 RPMRELEASE="1"
 GIT_COMMIT=None
 P3DSUFFIX=None
@@ -171,7 +172,7 @@ def usage(problem):
 def parseopts(args):
     global INSTALLER,WHEEL,RUNTESTS,RTDIST,RUNTIME,GENMAN,DISTRIBUTOR,VERSION
     global COMPRESSOR,THREADCOUNT,OSXTARGET,OSX_ARCHS,HOST_URL
-    global DEBVERSION,WHLVERSION,RPMRELEASE,GIT_COMMIT,P3DSUFFIX,RTDIST_VERSION
+    global DEBVERSION,WHLVERSION,RPMVERSION,RPMRELEASE,GIT_COMMIT,P3DSUFFIX,RTDIST_VERSION
     global STRDXSDKVERSION, WINDOWS_SDK, MSVC_VERSION, BOOUSEINTELCOMPILER
     global COPY_PYTHON
 
@@ -185,7 +186,7 @@ def parseopts(args):
         "help","distributor=","verbose","runtime","osxtarget=","tests",
         "optimize=","everything","nothing","installer","wheel","rtdist","nocolor",
         "version=","lzma","no-python","threads=","outputdir=","override=",
-        "static","host=","debversion=","rpmrelease=","p3dsuffix=","rtdist-version=",
+        "static","host=","debversion=","rpmversion=","rpmrelease=","p3dsuffix=","rtdist-version=",
         "directx-sdk=", "windows-sdk=", "msvc-version=", "clean", "use-icl",
         "universal", "target=", "arch=", "git-commit=", "no-copy-python",
         "cggl-incdir=", "cggl-libdir=",
@@ -236,6 +237,7 @@ def parseopts(args):
             elif (option=="--static"): SetLinkAllStatic(True)
             elif (option=="--host"): HOST_URL=value
             elif (option=="--debversion"): DEBVERSION=value
+            elif (option=="--rpmversion"): RPMVERSION=value
             elif (option=="--rpmrelease"): RPMRELEASE=value
             elif (option=="--git-commit"): GIT_COMMIT=value
             elif (option=="--p3dsuffix"): P3DSUFFIX=value
@@ -425,6 +427,9 @@ if RUNTIME or RTDIST:
 
 if DEBVERSION is None:
     DEBVERSION = VERSION
+
+if RPMVERSION is None:
+    RPMVERSION = VERSION
 
 MAJOR_VERSION = '.'.join(VERSION.split('.')[:2])
 
@@ -7186,7 +7191,7 @@ if INSTALLER:
 
     MakeInstaller(version=VERSION, outputdir=GetOutputDir(),
                   optimize=GetOptimize(), compressor=COMPRESSOR,
-                  debversion=DEBVERSION, rpmrelease=RPMRELEASE,
+                  debversion=DEBVERSION, rpmversion=RPMVERSION, rpmrelease=RPMRELEASE,
                   runtime=RUNTIME, python_versions=python_versions)
 
 if WHEEL:
