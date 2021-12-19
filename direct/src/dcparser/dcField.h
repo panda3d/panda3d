@@ -17,10 +17,11 @@
 #include "dcbase.h"
 #include "dcPackerInterface.h"
 #include "dcKeywordList.h"
-#include "dcPython.h"
 
 #ifdef WITHIN_PANDA
 #include "pStatCollector.h"
+#include "extension.h"
+#include "datagram.h"
 #endif
 
 class DCPacker;
@@ -53,13 +54,13 @@ PUBLISHED:
   virtual DCParameter *as_parameter();
   virtual const DCParameter *as_parameter() const;
 
-  std::string format_data(const std::string &packed_data, bool show_field_names = true);
-  std::string parse_string(const std::string &formatted_string);
+  std::string format_data(const vector_uchar &packed_data, bool show_field_names = true);
+  vector_uchar parse_string(const std::string &formatted_string);
 
-  bool validate_ranges(const std::string &packed_data) const;
+  bool validate_ranges(const vector_uchar &packed_data) const;
 
   INLINE bool has_default_value() const;
-  INLINE const std::string &get_default_value() const;
+  INLINE const vector_uchar &get_default_value() const;
 
   INLINE bool is_bogus_field() const;
 
@@ -76,18 +77,17 @@ PUBLISHED:
   INLINE void output(std::ostream &out) const;
   INLINE void write(std::ostream &out, int indent_level) const;
 
-#ifdef HAVE_PYTHON
-  bool pack_args(DCPacker &packer, PyObject *sequence) const;
-  PyObject *unpack_args(DCPacker &packer) const;
+  EXTENSION(bool pack_args(DCPacker &packer, PyObject *sequence) const);
+  EXTENSION(PyObject *unpack_args(DCPacker &packer) const);
 
-  void receive_update(DCPacker &packer, PyObject *distobj) const;
+  EXTENSION(void receive_update(DCPacker &packer, PyObject *distobj) const);
 
-  Datagram client_format_update(DOID_TYPE do_id, PyObject *args) const;
-  Datagram ai_format_update(DOID_TYPE do_id, CHANNEL_TYPE to_id, CHANNEL_TYPE from_id,
-                            PyObject *args) const;
-  Datagram ai_format_update_msg_type(DOID_TYPE do_id, CHANNEL_TYPE to_id, CHANNEL_TYPE from_id,
-                            int msg_type, PyObject *args) const;
-#endif
+  EXTENSION(Datagram client_format_update(DOID_TYPE do_id, PyObject *args) const);
+  EXTENSION(Datagram ai_format_update(DOID_TYPE do_id, CHANNEL_TYPE to_id,
+                                      CHANNEL_TYPE from_id, PyObject *args) const);
+  EXTENSION(Datagram ai_format_update_msg_type(DOID_TYPE do_id, CHANNEL_TYPE to_id,
+                                               CHANNEL_TYPE from_id, int msg_type,
+                                               PyObject *args) const);
 
 public:
   virtual void output(std::ostream &out, bool brief) const=0;
@@ -98,11 +98,7 @@ public:
 
   INLINE void set_number(int number);
   INLINE void set_class(DCClass *dclass);
-  INLINE void set_default_value(const std::string &default_value);
-
-#ifdef HAVE_PYTHON
-  static std::string get_pystr(PyObject *value);
-#endif
+  INLINE void set_default_value(vector_uchar default_value);
 
 protected:
   void refresh_default_value();
@@ -115,10 +111,12 @@ protected:
   bool _bogus_field;
 
 private:
-  std::string _default_value;
+  vector_uchar _default_value;
 
 #ifdef WITHIN_PANDA
   PStatCollector _field_update_pcollector;
+
+  friend class Extension<DCField>;
 #endif
 };
 

@@ -14,6 +14,7 @@
 from direct.showbase.DirectObject import *
 from direct.directtools.DirectUtil import *
 from seGeometry import *
+import math
 
 class DirectGrid(NodePath,DirectObject):
     def __init__(self):

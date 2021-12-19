@@ -89,7 +89,7 @@ add_hash(size_t hash) const {
  * Warning: no error checking is done.  This *will* crash if get_value_type()
  * is not M_nodepath.
  */
-const NodePath &ShaderInput::
+NodePath ShaderInput::
 get_nodepath() const {
   return DCAST(ParamNodePath, _value)->get_value();
 }

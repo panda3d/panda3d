@@ -351,7 +351,7 @@ clear_custom_film_mat() {
  * nearly perpendicular to the center of the frustum as possible.  Without
  * this bit, the orientation camera plane is defined by position of the four
  * points (which should all be coplanar).  With this bit, the camera plane is
- * arbitarary, and may be chosen so that the four points do not themselves lie
+ * arbitrary, and may be chosen so that the four points do not themselves lie
  * in the camera plane (but the points will still be within the frustum).
  *
  * FC_off_axis - This allows the resulting frustum to be off-axis to get the
@@ -1221,8 +1221,8 @@ do_project(const CData *cdata, const LPoint3 &point3d, LPoint3 &point2d) const {
   point2d.set(full[0] * recip_full3, full[1] * recip_full3, full[2] * recip_full3);
   return
     (full[3] > 0.0f) &&
-    (point2d[0] >= -1.0f) && (point2d[0] <= 1.0f) &&
-    (point2d[1] >= -1.0f) && (point2d[1] <= 1.0f);
+    (point2d[0] >= -1.0f - NEARLY_ZERO(PN_stdfloat)) && (point2d[0] <= 1.0f + NEARLY_ZERO(PN_stdfloat)) &&
+    (point2d[1] >= -1.0f - NEARLY_ZERO(PN_stdfloat)) && (point2d[1] <= 1.0f + NEARLY_ZERO(PN_stdfloat));
 }
 
 /**

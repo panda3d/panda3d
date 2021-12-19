@@ -194,6 +194,13 @@ ConfigVariableBool egg_implicit_alpha_binary
           "will automatically be downgraded to alpha type \"binary\" instead of "
           "whatever appears in the egg file."));
 
+ConfigVariableBool egg_force_srgb_textures
+("egg-force-srgb-textures", false,
+ PRC_DESC("If this is true, Panda3D will automatically assign the F_srgb or "
+          "F_srgb_alpha format to all textures loaded from egg files, unless "
+          "their envtype is set to a non-color map.  Keep in mind that the "
+          "model-cache must be cleared after changing this setting."));
+
 ConfigureFn(config_egg2pg) {
   init_libegg2pg();
 }

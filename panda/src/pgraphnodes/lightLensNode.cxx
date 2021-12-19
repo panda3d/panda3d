@@ -19,6 +19,7 @@
 #include "renderState.h"
 #include "cullFaceAttrib.h"
 #include "colorWriteAttrib.h"
+#include "graphicsStateGuardianBase.h"
 
 TypeHandle LightLensNode::_type_handle;
 
@@ -29,7 +30,8 @@ LightLensNode::
 LightLensNode(const std::string &name, Lens *lens) :
   Camera(name, lens),
   _has_specular_color(false),
-  _attrib_count(0)
+  _attrib_count(0),
+  _used_by_auto_shader(false)
 {
   set_active(false);
   _shadow_caster = false;
@@ -65,9 +67,63 @@ LightLensNode(const LightLensNode &copy) :
   _sb_size(copy._sb_size),
   _sb_sort(-10),
   _has_specular_color(copy._has_specular_color),
-  _attrib_count(0)
+  _attrib_count(0),
+  _used_by_auto_shader(false)
 {
   if (_shadow_caster) {
+    setup_shadow_map();
+  }
+}
+
+/**
+ * Sets the flag indicating whether this light should cast shadows or not.
+ * This is the variant without buffer size, meaning that the current buffer
+ * size will be kept (512x512 is the default). Note that enabling shadows will
+ * require the shader generator to be enabled on the scene.
+ */
+void LightLensNode::
+set_shadow_caster(bool caster) {
+  if (_shadow_caster && !caster) {
+    clear_shadow_buffers();
+  }
+  if (_shadow_caster != caster && _used_by_auto_shader) {
+    // Make sure any shaders using this light are regenerated.
+    GraphicsStateGuardianBase::mark_rehash_generated_shaders();
+  }
+  _shadow_caster = caster;
+  set_active(caster);
+  if (caster) {
+    setup_shadow_map();
+  }
+}
+
+/**
+ * Sets the flag indicating whether this light should cast shadows or not.
+ * The xsize and ysize parameters specify the size of the shadow buffer that
+ * will be set up, the sort parameter specifies the sort.  Note that enabling
+ * shadows will require the shader generator to be enabled on the scene.
+ */
+void LightLensNode::
+set_shadow_caster(bool caster, int buffer_xsize, int buffer_ysize, int buffer_sort) {
+  if ((_shadow_caster && !caster) || buffer_xsize != _sb_size[0] || buffer_ysize != _sb_size[1]) {
+    clear_shadow_buffers();
+  }
+  if (_shadow_caster != caster && _used_by_auto_shader) {
+    // Make sure any shaders using this light are regenerated.
+    GraphicsStateGuardianBase::mark_rehash_generated_shaders();
+  }
+  _shadow_caster = caster;
+  _sb_size.set(buffer_xsize, buffer_ysize);
+
+  if (buffer_sort != _sb_sort) {
+    ShadowBuffers::iterator it;
+    for(it = _sbuffers.begin(); it != _sbuffers.end(); ++it) {
+      (*it).second->set_sort(buffer_sort);
+    }
+    _sb_sort = buffer_sort;
+  }
+  set_active(caster);
+  if (caster) {
     setup_shadow_map();
   }
 }

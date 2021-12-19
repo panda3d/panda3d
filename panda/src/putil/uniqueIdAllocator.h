@@ -16,6 +16,7 @@
 
 #include "pandabase.h"
 #include "numeric_types.h"
+#include "lightMutex.h"
 
 /**
  * Manage a set of ID values from min to max inclusive.  The ID numbers that
@@ -43,7 +44,9 @@ PUBLISHED:
   uint32_t allocate();
   void initial_reserve_id(uint32_t id);
 
-  void free(uint32_t index);
+  bool is_allocated(uint32_t index);
+
+  bool free(uint32_t index);
   PN_stdfloat fraction_used() const;
 
   void output(std::ostream &out) const;
@@ -84,6 +87,10 @@ protected:
 
   // The number of free elements in _table.
   uint32_t _free;
+
+private:
+  // A light mutex lock to make usage safe in multi-threaded scenarios.
+  LightMutex _lock;
 };
 
 #endif //]

@@ -2,12 +2,7 @@
 from direct.directnotify import DirectNotifyGlobal
 from direct.distributed.PyDatagram import PyDatagram
 from direct.showbase.Messenger import Messenger
-
-import sys
-if sys.version_info >= (3, 0):
-    from pickle import dumps, loads
-else:
-    from cPickle import dumps, loads
+from pickle import dumps, loads
 
 
 # Messages do not need to be in the MESSAGE_TYPES list.
@@ -95,5 +90,3 @@ class NetMessenger(Messenger):
         else:
             (message, sentArgs) = loads(pickleData)
         Messenger.send(self, message, sentArgs=sentArgs)
-
-

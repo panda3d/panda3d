@@ -22,7 +22,6 @@
 #include "lightMutex.h"
 #include "vector_string.h"
 
-class HardwareChannel;
 class GraphicsWindow;
 
 /**
@@ -52,6 +51,8 @@ PUBLISHED:
   void load_aux_modules();
 
   INLINE static GraphicsPipeSelection *get_global_ptr();
+
+  EXTENSION(PyObject *__reduce__() const);
 
 public:
   typedef PT(GraphicsPipe) PipeConstructorFunc();

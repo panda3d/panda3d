@@ -32,15 +32,17 @@ PUBLISHED:
                           const LVecBase3 &c);
   INLINE CollisionPolygon(const LVecBase3 &a, const LVecBase3 &b,
                           const LVecBase3 &c, const LVecBase3 &d);
-  INLINE CollisionPolygon(const LPoint3 *begin, const LPoint3 *end);
 
 private:
   INLINE CollisionPolygon();
 
 public:
+  INLINE CollisionPolygon(const LPoint3 *begin, const LPoint3 *end);
   CollisionPolygon(const CollisionPolygon &copy);
 
   virtual CollisionSolid *make_copy();
+
+  static bool verify_points(const LPoint3 *begin, const LPoint3 *end);
 
 PUBLISHED:
   virtual LPoint3 get_collision_origin() const;
@@ -51,13 +53,14 @@ PUBLISHED:
 
 
   INLINE static bool verify_points(const LPoint3 &a, const LPoint3 &b,
-                                   const LPoint3 &c);
-  INLINE static bool verify_points(const LPoint3 &a, const LPoint3 &b,
                                    const LPoint3 &c, const LPoint3 &d);
-  static bool verify_points(const LPoint3 *begin, const LPoint3 *end);
+  static bool verify_points(const LPoint3 &a, const LPoint3 &b, const LPoint3 &c);
 
   bool is_valid() const;
   bool is_concave() const;
+
+  EXTENSION(static bool verify_points(PyObject *points));
+  EXTENSION(void setup_points(PyObject *points));
 
 PUBLISHED:
   MAKE_SEQ_PROPERTY(points, get_num_points, get_point);
@@ -70,6 +73,8 @@ public:
   virtual PT(PandaNode) get_viz(const CullTraverser *trav,
                                 const CullTraverserData &data,
                                 bool bounds_only) const;
+
+  void setup_points(const LPoint3 *begin, const LPoint3 *end);
 
   virtual PStatCollector &get_volume_pcollector();
   virtual PStatCollector &get_test_pcollector();
@@ -92,6 +97,8 @@ protected:
   test_intersection_from_segment(const CollisionEntry &entry) const;
   virtual PT(CollisionEntry)
   test_intersection_from_parabola(const CollisionEntry &entry) const;
+  virtual PT(CollisionEntry)
+  test_intersection_from_capsule(const CollisionEntry &entry) const;
   virtual PT(CollisionEntry)
   test_intersection_from_box(const CollisionEntry &entry) const;
 
@@ -123,15 +130,13 @@ private:
                     const Points &points) const;
 
   bool point_is_inside(const LPoint2 &p, const Points &points) const;
-  PN_stdfloat dist_to_polygon(const LPoint2 &p, const Points &points) const;
+  PN_stdfloat dist_to_polygon(const LPoint2 &p, LPoint2 &edge_p, const Points &points) const;
   void project(const LVector3 &axis, PN_stdfloat &center, PN_stdfloat &extent) const;
 
-  void setup_points(const LPoint3 *begin, const LPoint3 *end);
   INLINE LPoint2 to_2d(const LVecBase3 &point3d) const;
   INLINE void calc_to_3d_mat(LMatrix4 &to_3d_mat) const;
   INLINE void rederive_to_3d_mat(LMatrix4 &to_3d_mat) const;
   INLINE static LPoint3 to_3d(const LVecBase2 &point2d, const LMatrix4 &to_3d_mat);
-  LPoint3 legacy_to_3d(const LVecBase2 &point2d, int axis) const;
 
   bool clip_polygon(Points &new_points, const Points &source_points,
                     const LPlane &plane) const;

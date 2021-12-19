@@ -16,9 +16,6 @@
 #if defined(HAVE_COCOA)
 #include "config_cocoadisplay.h"
 #include "cocoaGraphicsPipe.h"
-#elif defined(HAVE_CARBON)
-#include "config_osxdisplay.h"
-#include "osxGraphicsPipe.h"
 #endif
 
 #ifdef HAVE_GLX
@@ -26,8 +23,13 @@
 #include "glxGraphicsPipe.h"
 #endif
 
-#if !defined(HAVE_WGL) && !defined(HAVE_COCOA) && !defined(HAVE_CARBON) && !defined(HAVE_GLX)
-#error One of HAVE_WGL, HAVE_COCOA, HAVE_CARBON or HAVE_GLX must be defined when compiling pandagl!
+#ifdef HAVE_EGL
+#include "config_egldisplay.h"
+#include "eglGraphicsPipe.h"
+#endif
+
+#if !defined(HAVE_WGL) && !defined(HAVE_COCOA) && !defined(HAVE_GLX) && !defined(HAVE_EGL)
+#error One of HAVE_WGL, HAVE_COCOA, HAVE_GLX or HAVE_EGL must be defined when compiling pandagl!
 #endif
 
 /**
@@ -46,12 +48,14 @@ init_libpandagl() {
 
 #if defined(HAVE_COCOA)
   init_libcocoadisplay();
-#elif defined(HAVE_CARBON)
-  init_libosxdisplay();
 #endif
 
-#ifdef IS_LINUX
+#ifdef HAVE_GLX
   init_libglxdisplay();
+#endif
+
+#ifdef HAVE_EGL
+  init_libegldisplay();
 #endif
 }
 
@@ -67,13 +71,22 @@ get_pipe_type_pandagl() {
 
 #if defined(HAVE_COCOA)
   return CocoaGraphicsPipe::get_class_type().get_index();
-#elif defined(HAVE_CARBON)
-  return osxGraphicsPipe::get_class_type().get_index();
 #endif
 
 #ifdef HAVE_GLX
   return glxGraphicsPipe::get_class_type().get_index();
 #endif
 
+#ifdef HAVE_EGL
+  return eglGraphicsPipe::get_class_type().get_index();
+#endif
+
   return 0;
 }
+
+#if defined(HAVE_EGL) && !defined(USE_X11)
+int
+get_pipe_type_p3headlessgl() {
+  return eglGraphicsPipe::get_class_type().get_index();
+}
+#endif

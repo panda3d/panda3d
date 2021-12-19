@@ -22,7 +22,7 @@
 #include "configVariableString.h"
 #include "configVariableFilename.h"
 
-#if defined(WIN32_VC) || defined(WIN64_VC)
+#ifdef _MVC_VER
 #pragma warning (disable : 4231)
 #endif
 
@@ -58,6 +58,7 @@ EXPCL_PANDA_AUDIO std::istream &operator >> (std::istream &in, FmodSpeakerMode &
 extern EXPCL_PANDA_AUDIO ConfigVariableInt fmod_number_of_sound_channels;
 extern EXPCL_PANDA_AUDIO ConfigVariableBool fmod_use_surround_sound;
 extern EXPCL_PANDA_AUDIO ConfigVariableEnum<FmodSpeakerMode> fmod_speaker_mode;
+extern EXPCL_PANDA_AUDIO ConfigVariableFilename audio_dls_file;
 
 // Config vars for OpenAL:
 
@@ -66,19 +67,6 @@ extern EXPCL_PANDA_AUDIO ConfigVariableDouble audio_distance_factor;
 extern EXPCL_PANDA_AUDIO ConfigVariableDouble audio_drop_off_factor;
 extern EXPCL_PANDA_AUDIO ConfigVariableDouble audio_buffering_seconds;
 extern EXPCL_PANDA_AUDIO ConfigVariableInt    audio_preload_threshold;
-
-// Config vars for Miles:
-
-extern EXPCL_PANDA_AUDIO ConfigVariableBool audio_software_midi;
-extern EXPCL_PANDA_AUDIO ConfigVariableFilename audio_dls_file;
-extern EXPCL_PANDA_AUDIO ConfigVariableBool audio_play_midi;
-extern EXPCL_PANDA_AUDIO ConfigVariableBool audio_play_wave;
-extern EXPCL_PANDA_AUDIO ConfigVariableBool audio_play_mp3;
-extern EXPCL_PANDA_AUDIO ConfigVariableInt audio_output_rate;
-extern EXPCL_PANDA_AUDIO ConfigVariableInt audio_output_bits;
-extern EXPCL_PANDA_AUDIO ConfigVariableInt audio_output_channels;
-
-
 
 #ifdef NOTIFY_DEBUG //[
   // Non-release build:

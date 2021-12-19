@@ -82,7 +82,7 @@ get_shader_priority() const {
 
 /**
  * Returns the number of geometry instances.  A value of 0 means not to use
- * instancing at all.
+ * instancing at all.  This value is ignored if F_hardware_instancing is set.
  */
 INLINE int ShaderAttrib::
 get_instance_count() const {
@@ -93,8 +93,8 @@ get_instance_count() const {
  *
  */
 INLINE bool ShaderAttrib::
-get_flag(int index) const {
-  return (_flags & (1<<index)) ? true:false;
+get_flag(int flag) const {
+  return (_flags & flag) != 0;
 }
 
 /**

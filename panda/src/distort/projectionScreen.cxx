@@ -495,8 +495,14 @@ recompute_geom(Geom *geom, const LMatrix4 &rel_mat) {
   }
   if (_vignette_on && !vdata->has_column(InternalName::get_color())) {
     // We need to add a column for color.
-    vdata = vdata->replace_column
-      (InternalName::get_color(), 1, Geom::NT_packed_dabc, Geom::C_color);
+    if (vertex_colors_prefer_packed) {
+      vdata = vdata->replace_column
+        (InternalName::get_color(), 1, Geom::NT_packed_dabc, Geom::C_color);
+    }
+    else {
+      vdata = vdata->replace_column
+        (InternalName::get_color(), 4, Geom::NT_uint8, Geom::C_color);
+    }
     geom->set_vertex_data(vdata);
   }
 

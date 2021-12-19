@@ -19,7 +19,8 @@ TypeHandle BufferContext::_type_handle;
  *
  */
 BufferContext::
-BufferContext(BufferResidencyTracker *residency) :
+BufferContext(BufferResidencyTracker *residency, TypedWritableReferenceCount *object) :
+  _object(object),
   _residency(residency),
   _residency_state(0),
   _data_size_bytes(0),

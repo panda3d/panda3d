@@ -21,7 +21,7 @@
  * This is a light wrapper around GLGraphicsBuffer (ie. FBOs) to interface
  * with Cocoa contexts, so that it can be used without a host window.
  */
-class CocoaGraphicsBuffer : public GLGraphicsBuffer {
+class EXPCL_PANDA_COCOADISPLAY CocoaGraphicsBuffer : public GLGraphicsBuffer {
 public:
   CocoaGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe,
                       const std::string &name,

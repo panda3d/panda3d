@@ -442,18 +442,50 @@ offset_vertices(int offset) {
 
     consider_elevate_index_type(cdata, cdata->_max_vertex + offset);
 
-    int strip_cut_index = get_strip_cut_index(cdata->_index_type);
+    {
+      GeomVertexArrayDataHandle handle(cdata->_vertices.get_write_pointer(),
+                                       Thread::get_current_thread());
 
-    GeomVertexRewriter index(do_modify_vertices(cdata), 0);
-    while (!index.is_at_end()) {
-      int vertex = index.get_data1i();
+      size_t num_rows = (size_t)handle.get_num_rows();
+      unsigned char *ptr = handle.get_write_pointer();
+      switch (cdata->_index_type) {
+      case GeomEnums::NT_uint8:
+        for (size_t i = 0; i < num_rows; ++i) {
+          uint8_t &v = ((uint8_t *)ptr)[i];
+          if (v != 0xff) {
+            v += offset;
+          }
+        }
+        break;
 
-      if (vertex != strip_cut_index) {
-        index.set_data1i(vertex + offset);
+      case GeomEnums::NT_uint16:
+        for (size_t i = 0; i < num_rows; ++i) {
+          uint16_t &v = ((uint16_t *)ptr)[i];
+          if (v != 0xffff) {
+            v += offset;
+          }
+        }
+        break;
+
+      case GeomEnums::NT_uint32:
+        for (size_t i = 0; i < num_rows; ++i) {
+          uint32_t &v = ((uint32_t *)ptr)[i];
+          if (v != 0xffffffff) {
+            v += offset;
+          }
+        }
+        break;
+
+      default:
+        nassert_raise("unsupported index type");
+        break;
       }
     }
 
-  } else {
+    cdata->_modified = Geom::get_next_modified();
+    cdata->_got_minmax = false;
+  }
+  else {
     CDWriter cdata(_cycler, true);
 
     cdata->_first_vertex += offset;
@@ -469,6 +501,9 @@ offset_vertices(int offset) {
  * Adds the indicated offset to the indicated segment of vertices used by the
  * primitive.  Unlike the other version of offset_vertices, this makes the
  * geometry indexed if it isn't already.
+ *
+ * Note that end_row indicates one past the last row that should be offset.
+ * In other words, the number of vertices touched is (end_row - begin_row).
  *
  * Don't call this in a downstream thread unless you don't mind it blowing
  * away other changes you might have recently made in an upstream thread.
@@ -507,16 +542,49 @@ offset_vertices(int offset, int begin_row, int end_row) {
 
     consider_elevate_index_type(cdata, max_vertex + offset);
 
-    GeomVertexRewriter index(do_modify_vertices(cdata), 0);
-    index.set_row_unsafe(begin_row);
-    for (int j = begin_row; j < end_row; ++j) {
-      int vertex = index.get_data1i();
-      if (vertex != strip_cut_index) {
-        index.set_data1i(vertex + offset);
+    {
+      GeomVertexArrayDataHandle handle(cdata->_vertices.get_write_pointer(),
+                                       Thread::get_current_thread());
+
+      unsigned char *ptr = handle.get_write_pointer();
+      switch (cdata->_index_type) {
+      case GeomEnums::NT_uint8:
+        for (int i = begin_row; i < end_row; ++i) {
+          uint8_t &v = ((uint8_t *)ptr)[i];
+          if (v != 0xff) {
+            v += offset;
+          }
+        }
+        break;
+
+      case GeomEnums::NT_uint16:
+        for (int i = begin_row; i < end_row; ++i) {
+          uint16_t &v = ((uint16_t *)ptr)[i];
+          if (v != 0xffff) {
+            v += offset;
+          }
+        }
+        break;
+
+      case GeomEnums::NT_uint32:
+        for (int i = begin_row; i < end_row; ++i) {
+          uint32_t &v = ((uint32_t *)ptr)[i];
+          if (v != 0xffffffff) {
+            v += offset;
+          }
+        }
+        break;
+
+      default:
+        nassert_raise("unsupported index type");
+        break;
       }
     }
 
-  } else {
+    cdata->_modified = Geom::get_next_modified();
+    cdata->_got_minmax = false;
+  }
+  else {
     // The supplied values cover all vertices, so we don't need to make it
     // indexed.
     CDWriter cdata(_cycler, true);
@@ -538,15 +606,26 @@ offset_vertices(int offset, int begin_row, int end_row) {
 void GeomPrimitive::
 make_nonindexed(GeomVertexData *dest, const GeomVertexData *source) {
   Thread *current_thread = Thread::get_current_thread();
-  int num_vertices = get_num_vertices();
-  int dest_start = dest->get_num_rows();
-  int strip_cut_index = get_strip_cut_index();
 
-  dest->set_num_rows(dest_start + num_vertices);
-  for (int i = 0; i < num_vertices; ++i) {
-    int v = get_vertex(i);
-    nassertd(v != strip_cut_index) continue;
-    dest->copy_row_from(dest_start + i, source, v, current_thread);
+  int num_vertices, dest_start;
+  {
+    GeomPrimitivePipelineReader reader(this, current_thread);
+    num_vertices = reader.get_num_vertices();
+    int strip_cut_index = reader.get_strip_cut_index();
+
+    GeomVertexDataPipelineWriter data_writer(dest, false, current_thread);
+    data_writer.check_array_writers();
+    dest_start = data_writer.get_num_rows();
+    data_writer.set_num_rows(dest_start + num_vertices);
+
+    GeomVertexDataPipelineReader data_reader(source, current_thread);
+    data_reader.check_array_readers();
+
+    for (int i = 0; i < num_vertices; ++i) {
+      int v = reader.get_vertex(i);
+      nassertd(v != strip_cut_index) continue;
+      data_writer.copy_row_from(dest_start + i, data_reader, v);
+    }
   }
 
   set_nonindexed_vertices(dest_start, num_vertices);
@@ -1027,6 +1106,8 @@ make_patches() const {
 /**
  * Adds adjacency information to this primitive.  May return null if this type
  * of geometry does not support adjacency information.
+ *
+ * @since 1.10.0
  */
 CPT(GeomPrimitive) GeomPrimitive::
 make_adjacency() const {
@@ -1596,19 +1677,24 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
     }
 
     if (got_mat) {
-      if (!found_any) {
-        reader.set_row_unsafe(cdata->_first_vertex);
-        LPoint3 first_vertex = mat.xform_point(reader.get_data3());
-        min_point = first_vertex;
-        max_point = first_vertex;
-        sq_center_dist = first_vertex.length_squared();
-        found_any = true;
+      // Find the first non-NaN vertex.
+      while (!found_any && i < cdata->_num_vertices) {
+        reader.set_row(cdata->_first_vertex + i);
+        LPoint3 first_vertex = mat.xform_point_general(reader.get_data3());
+        if (!first_vertex.is_nan()) {
+          min_point = first_vertex;
+          max_point = first_vertex;
+          sq_center_dist = first_vertex.length_squared();
+          found_any = true;
+        }
         ++i;
       }
 
       for (; i < cdata->_num_vertices; ++i) {
         reader.set_row_unsafe(cdata->_first_vertex + i);
-        LPoint3 vertex = mat.xform_point(reader.get_data3());
+        nassertv(!reader.is_at_end());
+
+        LPoint3 vertex = mat.xform_point_general(reader.get_data3());
 
         min_point.set(min(min_point[0], vertex[0]),
                       min(min_point[1], vertex[1]),
@@ -1619,18 +1705,23 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
         sq_center_dist = max(sq_center_dist, vertex.length_squared());
       }
     } else {
-      if (!found_any) {
-        reader.set_row_unsafe(cdata->_first_vertex);
-        const LVecBase3 &first_vertex = reader.get_data3();
-        min_point = first_vertex;
-        max_point = first_vertex;
-        sq_center_dist = first_vertex.length_squared();
-        found_any = true;
+      // Find the first non-NaN vertex.
+      while (!found_any && i < cdata->_num_vertices) {
+        reader.set_row(cdata->_first_vertex + i);
+        LPoint3 first_vertex = reader.get_data3();
+        if (!first_vertex.is_nan()) {
+          min_point = first_vertex;
+          max_point = first_vertex;
+          sq_center_dist = first_vertex.length_squared();
+          found_any = true;
+        }
         ++i;
       }
 
       for (; i < cdata->_num_vertices; ++i) {
         reader.set_row_unsafe(cdata->_first_vertex + i);
+        nassertv(!reader.is_at_end());
+
         const LVecBase3 &vertex = reader.get_data3();
 
         min_point.set(min(min_point[0], vertex[0]),
@@ -1653,15 +1744,19 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
     int strip_cut_index = get_strip_cut_index(cdata->_index_type);
 
     if (got_mat) {
-      if (!found_any) {
-        int first_index = index.get_data1i();
-        nassertv(first_index != strip_cut_index);
-        reader.set_row_unsafe(first_index);
-        LPoint3 first_vertex = mat.xform_point(reader.get_data3());
-        min_point = first_vertex;
-        max_point = first_vertex;
-        sq_center_dist = first_vertex.length_squared();
-        found_any = true;
+      // Find the first non-NaN vertex.
+      while (!found_any && !index.is_at_end()) {
+        int ii = index.get_data1i();
+        if (ii != strip_cut_index) {
+          reader.set_row(ii);
+          LPoint3 first_vertex = mat.xform_point_general(reader.get_data3());
+          if (!first_vertex.is_nan()) {
+            min_point = first_vertex;
+            max_point = first_vertex;
+            sq_center_dist = first_vertex.length_squared();
+            found_any = true;
+          }
+        }
       }
 
       while (!index.is_at_end()) {
@@ -1670,7 +1765,9 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
           continue;
         }
         reader.set_row_unsafe(ii);
-        LPoint3 vertex = mat.xform_point(reader.get_data3());
+        nassertv(!reader.is_at_end());
+
+        LPoint3 vertex = mat.xform_point_general(reader.get_data3());
 
         min_point.set(min(min_point[0], vertex[0]),
                       min(min_point[1], vertex[1]),
@@ -1681,15 +1778,19 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
         sq_center_dist = max(sq_center_dist, vertex.length_squared());
       }
     } else {
-      if (!found_any) {
-        int first_index = index.get_data1i();
-        nassertv(first_index != strip_cut_index);
-        reader.set_row_unsafe(first_index);
-        const LVecBase3 &first_vertex = reader.get_data3();
-        min_point = first_vertex;
-        max_point = first_vertex;
-        sq_center_dist = first_vertex.length_squared();
-        found_any = true;
+      // Find the first non-NaN vertex.
+      while (!found_any && !index.is_at_end()) {
+        int ii = index.get_data1i();
+        if (ii != strip_cut_index) {
+          reader.set_row(ii);
+          LVecBase3 first_vertex = reader.get_data3();
+          if (!first_vertex.is_nan()) {
+            min_point = first_vertex;
+            max_point = first_vertex;
+            sq_center_dist = first_vertex.length_squared();
+            found_any = true;
+          }
+        }
       }
 
       while (!index.is_at_end()) {
@@ -1698,6 +1799,8 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
           continue;
         }
         reader.set_row_unsafe(ii);
+        nassertv(!reader.is_at_end());
+
         const LVecBase3 &vertex = reader.get_data3();
 
         min_point.set(min(min_point[0], vertex[0]),

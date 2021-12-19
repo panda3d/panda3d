@@ -26,6 +26,7 @@
 
 #ifdef HAVE_PYTHON
 #include "py_panda.h"
+#include "dcClass_ext.h"
 #endif
 
 using std::endl;
@@ -410,19 +411,12 @@ send_datagram(const Datagram &dg) {
     if (!result && _bdc.IsConnected()) {
 #ifdef HAVE_PYTHON
       std::ostringstream s;
-
-#if PY_VERSION_HEX >= 0x03030000
-      PyObject *exc_type = PyExc_ConnectionError;
-#else
-      PyObject *exc_type = PyExc_OSError;
-#endif
-
       s << endl << "Error sending message: " << endl;
       dg.dump_hex(s);
       s << "Message data: " << dg.get_data() << endl;
 
       string message = s.str();
-      PyErr_SetString(exc_type, message.c_str());
+      PyErr_SetString(PyExc_ConnectionError, message.c_str());
 #endif
     }
     return result;
@@ -736,7 +730,7 @@ handle_update_field() {
       // get into trouble if it tried to delete the object from the doId2do
       // map.
       Py_INCREF(distobj);
-      dclass->receive_update(distobj, _di);
+      invoke_extension(dclass).receive_update(distobj, _di);
       Py_DECREF(distobj);
 
       if (PyErr_Occurred()) {
@@ -820,7 +814,7 @@ handle_update_field_owner() {
         // make a copy of the datagram iterator so that we can use the main
         // iterator for the non-owner update
         DatagramIterator _odi(_di);
-        dclass->receive_update(distobjOV, _odi);
+        invoke_extension(dclass).receive_update(distobjOV, _odi);
         Py_DECREF(distobjOV);
 
         if (PyErr_Occurred()) {
@@ -861,7 +855,7 @@ handle_update_field_owner() {
         // get into trouble if it tried to delete the object from the doId2do
         // map.
         Py_INCREF(distobj);
-        dclass->receive_update(distobj, _di);
+        invoke_extension(dclass).receive_update(distobj, _di);
         Py_DECREF(distobj);
 
         if (PyErr_Occurred()) {
@@ -891,7 +885,7 @@ describe_message(std::ostream &out, const string &prefix,
                  const Datagram &dg) const {
   DCPacker packer;
 
-  packer.set_unpack_data(dg.get_message());
+  packer.set_unpack_data((const char *)dg.get_data(), dg.get_length(), false);
   CHANNEL_TYPE do_id;
   int msg_type;
   bool is_update = false;
@@ -921,22 +915,14 @@ describe_message(std::ostream &out, const string &prefix,
     if (_python_repository != nullptr) {
       PyObject *msgId = PyLong_FromLong(msg_type);
       nassertv(msgId != nullptr);
-#if PY_MAJOR_VERSION >= 3
       PyObject *methodName = PyUnicode_FromString("_getMsgName");
-#else
-      PyObject *methodName = PyString_FromString("_getMsgName");
-#endif
       nassertv(methodName != nullptr);
 
-      PyObject *result = PyObject_CallMethodObjArgs(_python_repository, methodName,
-                                                    msgId, nullptr);
+      PyObject *result =
+        PyObject_CallMethodOneArg(_python_repository, methodName, msgId);
       nassertv(result != nullptr);
 
-#if PY_MAJOR_VERSION >= 3
       msgName += string(PyUnicode_AsUTF8(result));
-#else
-      msgName += string(PyString_AsString(result));
-#endif
 
       Py_DECREF(methodName);
       Py_DECREF(msgId);

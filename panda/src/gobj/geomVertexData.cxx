@@ -659,7 +659,7 @@ copy_from(const GeomVertexData *source, bool keep_data_objects,
             for (size_t i = 0; i < blend.get_num_transforms(); i++) {
               int index = add_transform(transform_table, blend.get_transform(i),
                                         already_added);
-              nassertv(index <= 4);
+              nassertv(index < 4);
               weights[index] = blend.get_weight(i);
             }
             if (weight.has_column()) {
@@ -686,32 +686,13 @@ copy_from(const GeomVertexData *source, bool keep_data_objects,
 void GeomVertexData::
 copy_row_from(int dest_row, const GeomVertexData *source,
               int source_row, Thread *current_thread) {
-  const GeomVertexFormat *source_format = source->get_format();
-  const GeomVertexFormat *dest_format = get_format();
-  nassertv(source_format == dest_format);
-  nassertv(source_row >= 0 && source_row < source->get_num_rows());
 
-  if (dest_row >= get_num_rows()) {
-    // Implicitly add enough rows to get to the indicated row.
-    set_num_rows(dest_row + 1);
-  }
+  GeomVertexDataPipelineReader reader(source, current_thread);
+  reader.check_array_readers();
 
-  int num_arrays = source_format->get_num_arrays();
-
-  for (int i = 0; i < num_arrays; ++i) {
-    PT(GeomVertexArrayDataHandle) dest_handle = modify_array_handle(i);
-    unsigned char *dest_array_data = dest_handle->get_write_pointer();
-
-    CPT(GeomVertexArrayDataHandle) source_array_handle = source->get_array_handle(i);
-    const unsigned char *source_array_data = source_array_handle->get_read_pointer(true);
-
-    const GeomVertexArrayFormat *array_format = source_format->get_array(i);
-    int stride = array_format->get_stride();
-
-    memcpy(dest_array_data + stride * dest_row,
-           source_array_data + stride * source_row,
-           stride);
-  }
+  GeomVertexDataPipelineWriter writer(this, true, current_thread);
+  writer.check_array_writers();
+  writer.copy_row_from(dest_row, reader, source_row);
 }
 
 /**
@@ -1287,7 +1268,9 @@ output(ostream &out) const {
   if (!get_name().empty()) {
     out << get_name() << " ";
   }
-  out << get_num_rows() << " rows: " << *get_format();
+  const GeomVertexFormat *format = get_format();
+  nassertv(format != nullptr);
+  out << get_num_rows() << " rows: " << *format;
 }
 
 /**
@@ -1298,8 +1281,15 @@ write(ostream &out, int indent_level) const {
   if (!get_name().empty()) {
     indent(out, indent_level) << get_name() << "\n";
   }
-  get_format()->write_with_data(out, indent_level + 2, this);
-  CPT(TransformBlendTable) table = get_transform_blend_table();
+  CPT(TransformBlendTable) table;
+  const GeomVertexFormat *format = nullptr;
+  {
+    CDReader cdata(_cycler);
+    format = cdata->_format;
+    table = cdata->_transform_blend_table.get_read_pointer();
+  }
+  nassertv(format != nullptr);
+  format->write_with_data(out, indent_level + 2, this);
   if (table != nullptr) {
     indent(out, indent_level)
       << "Transform blend table:\n";
@@ -2598,6 +2588,91 @@ set_array(size_t i, const GeomVertexArrayData *array) {
 
   if (_got_array_writers) {
     _array_writers[i] = new GeomVertexArrayDataHandle(_cdata->_arrays[i].get_write_pointer(), _current_thread);
+  }
+}
+
+/**
+ *
+ */
+void GeomVertexDataPipelineWriter::
+remove_array(size_t i) {
+  nassertv(i < _cdata->_arrays.size());
+
+  GeomVertexFormat *new_format = new GeomVertexFormat(*_cdata->_format);
+  new_format->remove_array(i);
+  _cdata->_format = GeomVertexFormat::register_format(new_format);
+  _cdata->_arrays.erase(_cdata->_arrays.begin() + i);
+
+  _object->clear_cache_stage();
+  _cdata->_modified = Geom::get_next_modified();
+  _cdata->_animated_vertices.clear();
+
+  if (_got_array_writers) {
+    _array_writers.erase(_array_writers.begin() + i);
+  }
+}
+
+/**
+ *
+ */
+void GeomVertexDataPipelineWriter::
+insert_array(size_t i, const GeomVertexArrayData *array) {
+  const GeomVertexArrayFormat *array_format = array->get_array_format();
+
+  if (i > _cdata->_arrays.size()) {
+    i = _cdata->_arrays.size();
+  }
+
+  GeomVertexFormat *new_format = new GeomVertexFormat(*_cdata->_format);
+  new_format->insert_array(i, array_format);
+  _cdata->_format = GeomVertexFormat::register_format(new_format);
+  _cdata->_arrays.insert(_cdata->_arrays.begin() + i, (GeomVertexArrayData *)array);
+
+  _object->clear_cache_stage();
+  _cdata->_modified = Geom::get_next_modified();
+  _cdata->_animated_vertices.clear();
+
+  if (_got_array_writers) {
+    _array_writers.insert(_array_writers.begin() + i, new GeomVertexArrayDataHandle(_cdata->_arrays[i].get_write_pointer(), _current_thread));
+  }
+}
+
+/**
+ * Copies a single row of the data from the other array into the indicated row
+ * of this array.  In this case, the source format must exactly match the
+ * destination format.
+ *
+ * Don't call this in a downstream thread unless you don't mind it blowing
+ * away other changes you might have recently made in an upstream thread.
+ */
+void GeomVertexDataPipelineWriter::
+copy_row_from(int dest_row, const GeomVertexDataPipelineReader &source,
+              int source_row) {
+  const GeomVertexFormat *source_format = source.get_format();
+  const GeomVertexFormat *dest_format = get_format();
+  nassertv(source_format == dest_format);
+  nassertv(source_row >= 0 && source_row < source.get_num_rows());
+  nassertv(_got_array_writers);
+
+  if (dest_row >= get_num_rows()) {
+    // Implicitly add enough rows to get to the indicated row.
+    set_num_rows(dest_row + 1);
+  }
+
+  size_t num_arrays = source_format->get_num_arrays();
+  for (size_t i = 0; i < num_arrays; ++i) {
+    GeomVertexArrayDataHandle *dest_handle = get_array_writer(i);
+    unsigned char *dest_array_data = dest_handle->get_write_pointer();
+
+    const GeomVertexArrayDataHandle *source_array_handle = source.get_array_reader(i);
+    const unsigned char *source_array_data = source_array_handle->get_read_pointer(true);
+
+    const GeomVertexArrayFormat *array_format = source_format->get_array(i);
+    int stride = array_format->get_stride();
+
+    memcpy(dest_array_data + stride * dest_row,
+           source_array_data + stride * source_row,
+           stride);
   }
 }
 

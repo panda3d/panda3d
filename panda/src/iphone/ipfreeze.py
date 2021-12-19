@@ -14,7 +14,7 @@ Usage:
 import getopt
 import sys
 import os
-from direct.showutil import FreezeTool
+from direct.dist import FreezeTool
 
 def usage(code, msg = ''):
     print >> sys.stderr, __doc__

@@ -30,6 +30,8 @@ PUBLISHED:
   static ButtonHandle rshoulder();
   static ButtonHandle ltrigger();
   static ButtonHandle rtrigger();
+  static ButtonHandle lgrip();
+  static ButtonHandle rgrip();
 
   static ButtonHandle dpad_left();
   static ButtonHandle dpad_right();

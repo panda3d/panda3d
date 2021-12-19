@@ -90,7 +90,7 @@ class GraphEditorWindow(wx.Window):
         self._mainDialog = wx.GetTopLevelParent(self)
         self.w,self.h = self.GetClientSize()
 
-        self.zoom = float(2)
+        self.zoom = 2.0
         self._mouseIn = False
         self._selectRec = False
         self._selectHandler = False
@@ -100,10 +100,10 @@ class GraphEditorWindow(wx.Window):
         self.curFrame = curFrame
         self.property = property
 
-        self.zeroPos = (float(0), self.h/float(2))
+        self.zeroPos = (0.0, self.h / 2.0)
         self.zero = 0
-        self.unitWidth = self.w/float(xRange)
-        self.unitHeight = self.h/float(yRange)
+        self.unitWidth = self.w / float(xRange)
+        self.unitHeight = self.h / float(yRange)
 
         self.generateInfo()
         self.InitBuffer()
@@ -158,31 +158,31 @@ class GraphEditorWindow(wx.Window):
         t2x = item[AG.OUTSLOPE][0]*self.unitWidth
         t2y = item[AG.OUTSLOPE][1]*self.unitHeight
 
-        tanA = t1y/t1x
-        temp1 = float(1)/(tanA**2+1)
-        if t1x <0 :
+        tanA = t1y / t1x
+        temp1 = 1.0 / (tanA ** 2 + 1)
+        if t1x < 0:
             cosA = -math.sqrt(abs(temp1))
-        if t1x >=0:
+        if t1x >= 0:
             cosA = math.sqrt(abs(temp1))
-        temp2 = (tanA**2)*temp1
-        if t1y <0 :
+        temp2 = (tanA ** 2) * temp1
+        if t1y < 0:
             sinA = -math.sqrt(abs(temp2))
-        if t1y >=0:
+        if t1y >= 0:
             sinA = math.sqrt(abs(temp2))
 
         x2 = x1-float(self.unitWidth*self.zoom)*cosA
         y2 = y1+float(self.unitWidth*self.zoom)*sinA
 
-        tanA = t2y/t2x
-        temp1 = float(1)/(tanA**2+1)
-        if t2x <0 :
+        tanA = t2y / t2x
+        temp1 = 1.0 / (tanA ** 2 + 1)
+        if t2x < 0:
             cosA = -math.sqrt(abs(temp1))
-        if t2x >=0:
+        if t2x >= 0:
             cosA = math.sqrt(abs(temp1))
-        temp2 = (tanA**2)*temp1
-        if t2y <0 :
+        temp2 = (tanA ** 2) * temp1
+        if t2y < 0:
             sinA = -math.sqrt(abs(temp2))
-        if t2y >=0:
+        if t2y >= 0:
             sinA = math.sqrt(abs(temp2))
 
         x3 = x1+float(self.unitWidth*self.zoom)*cosA
@@ -216,7 +216,7 @@ class GraphEditorWindow(wx.Window):
         dc.SetBrush(wx.BLACK_BRUSH)
         dc.SetFont(wx.Font(8, wx.SWISS, wx.NORMAL, wx.NORMAL))
 
-        dc.DrawLine(self.zeroPos[0], float(0), self.zeroPos[0], self.h)
+        dc.DrawLine(self.zeroPos[0], 0.0, self.zeroPos[0], self.h)
         st = str(self.zero)
         self.tw,self.th = dc.GetTextExtent(st)
         dc.DrawText(st, self.zeroPos[0]+1.0, self.h-self.th-0.5)
@@ -228,7 +228,7 @@ class GraphEditorWindow(wx.Window):
             posPos = self.zeroPos[0]+self.unitWidth
             posNum = self.zero + 1
             while posPos <= self.w:
-                dc.DrawLine(posPos, float(0), posPos, self.h)
+                dc.DrawLine(posPos, 0.0, posPos, self.h)
                 st = str(posNum)
                 self.drawXNumber(dc, st, posPos)
                 posPos += self.unitWidth
@@ -236,37 +236,37 @@ class GraphEditorWindow(wx.Window):
 
             negPos = self.zeroPos[0]-self.unitWidth
             negNum = self.zero - 1
-            while negPos >= float(0):
-                dc.DrawLine(negPos, float(0), negPos, self.h)
+            while negPos >= 0.0:
+                dc.DrawLine(negPos, 0.0, negPos, self.h)
                 st = str(negNum)
                 self.drawXNumber(dc, st, negPos)
                 negPos -= self.unitWidth
                 posNum -= 1
 
         elif self.unitWidth >= 10 and self.unitWidth <= 25:
-            posPos = self.zeroPos[0]+self.unitWidth*float(2)
+            posPos = self.zeroPos[0]+self.unitWidth*2.0
             posNum = self.zero + 2
             while posPos <= self.w:
-                dc.DrawLine(posPos, float(0), posPos, self.h)
+                dc.DrawLine(posPos, 0.0, posPos, self.h)
                 st = str(posNum)
                 self.drawXNumber(dc, st, posPos)
-                posPos += self.unitWidth*float(2)
+                posPos += self.unitWidth*2.0
                 posNum += 2
 
-            negPos = self.zeroPos[0]-self.unitWidth*float(2)
+            negPos = self.zeroPos[0]-self.unitWidth*2.0
             negNum = self.zero - 2
-            while negPos >= float(0):
-                dc.DrawLine(negPos, float(0), negPos, self.h)
+            while negPos >= 0.0:
+                dc.DrawLine(negPos, 0.0, negPos, self.h)
                 st = str(negNum)
                 self.drawXNumber(dc, st, negPos)
-                negPos -= self.unitWidth*float(2)
+                negPos -= self.unitWidth*2.0
                 posNum -= 2
 
         elif self.unitWidth >= 2 and self.unitWidth <= 10:
             posPos = self.zeroPos[0]+self.unitWidth*float(5)
             posNum = self.zero + 5
             while posPos <= self.w:
-                dc.DrawLine(posPos, float(0), posPos, self.h)
+                dc.DrawLine(posPos, 0.0, posPos, self.h)
                 st = str(posNum)
                 self.drawXNumber(dc, st, posPos)
                 posPos += self.unitWidth*float(5)
@@ -274,8 +274,8 @@ class GraphEditorWindow(wx.Window):
 
             negPos = self.zeroPos[0]-self.unitWidth*float(5)
             negNum = self.zero - 5
-            while negPos >= float(0):
-                dc.DrawLine(negPos, float(0), negPos, self.h)
+            while negPos >= 0.0:
+                dc.DrawLine(negPos, 0.0, negPos, self.h)
                 st = str(negNum)
                 self.drawXNumber(dc, st, negPos)
                 negPos -= self.unitWidth*float(5)
@@ -286,7 +286,7 @@ class GraphEditorWindow(wx.Window):
         dc.SetBrush(wx.BLACK_BRUSH)
         dc.SetFont(wx.Font(8, wx.SWISS, wx.NORMAL, wx.NORMAL))
 
-        dc.DrawLine(float(0), self.zeroPos[1], self.w, self.zeroPos[1])
+        dc.DrawLine(0.0, self.zeroPos[1], self.w, self.zeroPos[1])
         st = str(self.zero)
         dc.DrawText(st, 5.0, self.zeroPos[1]-1.0)
 
@@ -296,8 +296,8 @@ class GraphEditorWindow(wx.Window):
 
         posPos = self.zeroPos[1]-self.unitHeight*float(5)
         posNum = self.zero + 5
-        while posPos >= float(0):
-            dc.DrawLine(float(0), posPos, self.w, posPos)
+        while posPos >= 0.0:
+            dc.DrawLine(0.0, posPos, self.w, posPos)
             st = str(posNum)
             self.drawYNumber(dc, st, posPos)
             posPos -= self.unitHeight*float(5)
@@ -306,7 +306,7 @@ class GraphEditorWindow(wx.Window):
         negPos = self.zeroPos[1]+self.unitHeight*float(5)
         negNum = self.zero - 5
         while negPos <= self.h:
-            dc.DrawLine(float(0), negPos, self.w, negPos)
+            dc.DrawLine(0.0, negPos, self.w, negPos)
             st = str(negNum)
             self.drawYNumber(dc, st, negPos)
             negPos += self.unitHeight*float(5)
@@ -339,7 +339,7 @@ class GraphEditorWindow(wx.Window):
             curFramePos = self.zeroPos[0]+self.curFrame*self.unitWidth
             dc.SetPen(wx.Pen("red"))
             dc.SetBrush(wx.Brush("red"))
-            dc.DrawLine(curFramePos, float(0), curFramePos, self.h)
+            dc.DrawLine(curFramePos, 0.0, curFramePos, self.h)
         else:
             pass
 
@@ -403,32 +403,32 @@ class GraphEditorWindow(wx.Window):
                 t2x = list[i+1][AG.IN_SLOPE][0]
                 t2y = list[i+1][AG.IN_SLOPE][1]
 
-                x2 = x1 + (x4 - x1) / float(3);
-                scale1 = (x2 - x1) / t1x;
-                y2 = y1 - t1y * scale1;
+                x2 = x1 + (x4 - x1) / 3.0
+                scale1 = (x2 - x1) / t1x
+                y2 = y1 - t1y * scale1
 
 
-                x3 = x4 - (x4 - x1) / float(3);
-                scale2 = (x4 - x3) / t2x;
-                y3 = y4 + t2y * scale2;
+                x3 = x4 - (x4 - x1) / 3.0
+                scale2 = (x4 - x3) / t2x
+                y3 = y4 + t2y * scale2
 
-                ax = - float(1) * x1 + float(3) * x2 - float(3) * x3 + float(1) * x4;
-                bx =   float(3) * x1 - float(6) * x2 + float(3) * x3 + float(0) * x4;
-                cx = - float(3) * x1 + float(3) * x2 + float(0) * x3 + float(0) * x4;
-                dx =   float(1) * x1 + float(0) * x2 - float(0) * x3 + float(0) * x4;
+                ax = - 1.0 * x1 + 3.0 * x2 - 3.0 * x3 + 1.0 * x4
+                bx =   3.0 * x1 - 6.0 * x2 + 3.0 * x3 + 0.0 * x4
+                cx = - 3.0 * x1 + 3.0 * x2 + 0.0 * x3 + 0.0 * x4
+                dx =   1.0 * x1 + 0.0 * x2 - 0.0 * x3 + 0.0 * x4
 
-                ay = - float(1) * y1 + float(3) * y2 - float(3) * y3 + float(1) * y4;
-                by =   float(3) * y1 - float(6) * y2 + float(3) * y3 + float(0) * y4;
-                cy = - float(3) * y1 + float(3) * y2 + float(0) * y3 + float(0) * y4;
-                dy =   float(1) * y1 + float(0) * y2 - float(0) * y3 + float(0) * y4;
+                ay = - 1.0 * y1 + 3.0 * y2 - 3.0 * y3 + 1.0 * y4
+                by =   3.0 * y1 - 6.0 * y2 + 3.0 * y3 + 0.0 * y4
+                cy = - 3.0 * y1 + 3.0 * y2 + 0.0 * y3 + 0.0 * y4
+                dy =   1.0 * y1 + 0.0 * y2 - 0.0 * y3 + 0.0 * y4
 
                 preX = x1
                 preY = y1
                 t = 0.001
 
-                while t<=float(1):
-                    x = ax * t*t*t + bx * t*t + cx * t + dx;
-                    y = ay * t*t*t + by * t*t + cy * t + dy;
+                while t <= 1.0:
+                    x = ax * t*t*t + bx * t*t + cx * t + dx
+                    y = ay * t*t*t + by * t*t + cy * t + dy
 
                     curX = x
                     curY = y
@@ -537,8 +537,8 @@ class GraphEditorWindow(wx.Window):
     def OnLeftDown(self,evt):
         point = (evt.GetX(), evt.GetY())
 
-        if point[1]>= float(0) and point[1]<= float(self.h):
-            if point[0]>= float(0) and point[0]<= float(self.w):
+        if point[1]>= 0.0 and point[1]<= float(self.h):
+            if point[0]>= 0.0 and point[0]<= float(self.w):
                 self._mouseIn = True
 
         if self._mouseIn:
@@ -556,8 +556,8 @@ class GraphEditorWindow(wx.Window):
     def OnMiddleDown(self,evt):
         point = (evt.GetX(), evt.GetY())
 
-        if point[1]>= float(0) and point[1]<= float(self.h):
-            if point[0]>= float(0) and point[0]<= float(self.w):
+        if point[1]>= 0.0 and point[1]<= float(self.h):
+            if point[0]>= 0.0 and point[0]<= float(self.w):
                 self._mouseIn = True
 
         if self._mouseIn:
@@ -572,8 +572,8 @@ class GraphEditorWindow(wx.Window):
         self._mouseIn = False
         if evt.Dragging() and evt.LeftIsDown():
             self.newPos = (evt.GetX(), evt.GetY())
-            if self.newPos[1]>= float(0) and self.newPos[1]<= float(self.h):
-                if self.newPos[0]>= float(0) and self.newPos[0]<= float(self.w):
+            if self.newPos[1]>= 0.0 and self.newPos[1]<= float(self.h):
+                if self.newPos[0]>= 0.0 and self.newPos[0]<= float(self.w):
                     self._mouseIn = True
 
             if self._mouseIn:
@@ -586,8 +586,8 @@ class GraphEditorWindow(wx.Window):
 
         if evt.Dragging() and evt.MiddleIsDown():
             self.newMidPos = (evt.GetX(), evt.GetY())
-            if self.newMidPos[1]>= float(0) and self.newMidPos[1]<= float(self.h):
-                if self.newMidPos[0]>= float(0) and self.newMidPos[0]<= float(self.w):
+            if self.newMidPos[1]>= 0.0 and self.newMidPos[1]<= float(self.h):
+                if self.newMidPos[0]>= 0.0 and self.newMidPos[0]<= float(self.w):
                     self._mouseIn = True
 
             if self._mouseIn:
@@ -907,11 +907,3 @@ class GraphEditorUI(wx.Dialog):
         self.editor.ui.graphEditorMenuItem.Check(False)
         self.object = None
         self.editor.GRAPH_EDITOR = False
-
-
-
-
-
-
-
-

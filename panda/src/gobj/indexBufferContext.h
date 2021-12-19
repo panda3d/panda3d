@@ -50,9 +50,6 @@ public:
   virtual void write(std::ostream &out, int indent_level) const;
 
 private:
-  // This cannot be a PT(GeomPrimitive), because the data and the GSG both own
-  // their IndexBufferContexts!  That would create a circular reference count.
-  GeomPrimitive *_data;
   GeomEnums::UsageHint _usage_hint;
 
 public:

@@ -77,6 +77,12 @@ protected:
 
 PUBLISHED:
   INLINE ~PointerToArrayBase();
+
+#ifdef CPPPARSER
+  // These are implemented in PointerToVoid, but expose them here.
+  INLINE bool operator == (const PointerToArrayBase<Element> &other) const;
+  INLINE bool operator != (const PointerToArrayBase<Element> &other) const;
+#endif
 };
 
 #include "pointerToArrayBase.I"

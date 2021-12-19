@@ -14,156 +14,84 @@
 #include "winRawInputDevice.h"
 #include "gamepadButton.h"
 #include "mouseButton.h"
+#include "buttonRegistry.h"
+#include "winInputDeviceManager.h"
 
 #if defined(_WIN32) && !defined(CPPPARSER)
 
-#include <CfgMgr32.h>
+#include <cfgmgr32.h>
 #include <devpkey.h>
+#include "phidsdi.h"
 
-// Copy definitions from hidusage.h, until we can drop support for the 7.1 SDK
-typedef USHORT USAGE, *PUSAGE;
+enum QuirkBits : int {
+  // Has no trigger axes.
+  QB_no_analog_triggers = 1,
 
-#define HID_USAGE_PAGE_UNDEFINED       ((USAGE) 0x00)
-#define HID_USAGE_PAGE_GENERIC         ((USAGE) 0x01)
-#define HID_USAGE_PAGE_SIMULATION      ((USAGE) 0x02)
-#define HID_USAGE_PAGE_VR              ((USAGE) 0x03)
-#define HID_USAGE_PAGE_SPORT           ((USAGE) 0x04)
-#define HID_USAGE_PAGE_GAME            ((USAGE) 0x05)
-#define HID_USAGE_PAGE_KEYBOARD        ((USAGE) 0x07)
-#define HID_USAGE_PAGE_LED             ((USAGE) 0x08)
-#define HID_USAGE_PAGE_BUTTON          ((USAGE) 0x09)
+  // Throttle goes from -1 to 1 rather than from 0 to 1.
+  QB_centered_throttle = 2,
 
-#define HID_USAGE_GENERIC_POINTER      ((USAGE) 0x01)
-#define HID_USAGE_GENERIC_MOUSE        ((USAGE) 0x02)
-#define HID_USAGE_GENERIC_JOYSTICK     ((USAGE) 0x04)
-#define HID_USAGE_GENERIC_GAMEPAD      ((USAGE) 0x05)
-#define HID_USAGE_GENERIC_KEYBOARD     ((USAGE) 0x06)
-#define HID_USAGE_GENERIC_KEYPAD       ((USAGE) 0x07)
-#define HID_USAGE_GENERIC_SYSTEM_CTL   ((USAGE) 0x80)
+  // Throttle is reversed.
+  QB_reversed_throttle = 4,
 
-#define HID_USAGE_GENERIC_X            ((USAGE) 0x30)
-#define HID_USAGE_GENERIC_Y            ((USAGE) 0x31)
-#define HID_USAGE_GENERIC_Z            ((USAGE) 0x32)
-#define HID_USAGE_GENERIC_RX           ((USAGE) 0x33)
-#define HID_USAGE_GENERIC_RY           ((USAGE) 0x34)
-#define HID_USAGE_GENERIC_RZ           ((USAGE) 0x35)
-#define HID_USAGE_GENERIC_SLIDER       ((USAGE) 0x36)
-#define HID_USAGE_GENERIC_DIAL         ((USAGE) 0x37)
-#define HID_USAGE_GENERIC_WHEEL        ((USAGE) 0x38)
-#define HID_USAGE_GENERIC_HATSWITCH    ((USAGE) 0x39)
+  // Right stick uses Z and Rz inputs.
+  QB_rstick_from_z = 8,
 
-// Copy definitions from hidpi.h, until we can drop support for the 7.1 SDK
-#define HIDP_STATUS_SUCCESS ((NTSTATUS)(0x11 << 16))
+  // Axes on the right stick are swapped, using x for y and vice versa.
+  QB_right_axes_swapped = 64,
+};
 
-typedef enum _HIDP_REPORT_TYPE {
-  HidP_Input,
-  HidP_Output,
-  HidP_Feature
-} HIDP_REPORT_TYPE;
+// Some nonstandard gamepads have different button mappings.
+static const struct DeviceMapping {
+  unsigned short vendor;
+  unsigned short product;
+  InputDevice::DeviceClass device_class;
+  int quirks;
+  const char *buttons[16];
+} mapping_presets[] = {
+  // SNES-style USB gamepad, or cheap unbranded USB gamepad with no sticks
+  // ABXY are mapped based on their position, not based on their label.
+  {0x0810, 0xe501, InputDevice::DeviceClass::gamepad, QB_no_analog_triggers,
+    {"face_y", "face_b", "face_a", "face_x", "lshoulder", "rshoulder", "ltrigger", "rtrigger", "back", "start"}
+  },
+  // Unbranded generic cheap USB gamepad
+  {0x0810, 0x0001, InputDevice::DeviceClass::gamepad, QB_rstick_from_z | QB_no_analog_triggers | QB_right_axes_swapped,
+    {"face_y", "face_b", "face_a", "face_x", "lshoulder", "rshoulder", "ltrigger", "rtrigger", "back", "start", "lstick", "rstick"}
+  },
+  // Trust GXT 24 / SPEED Link SL-6535-SBK-01
+  {0x0079, 0x0006, InputDevice::DeviceClass::gamepad, QB_rstick_from_z | QB_no_analog_triggers,
+    {"face_y", "face_b", "face_a", "face_x", "lshoulder", "rshoulder", "ltrigger", "rtrigger", "back", "start", "lstick", "rstick"}
+  },
+  // T.Flight Hotas X
+  {0x044f, 0xb108, InputDevice::DeviceClass::flight_stick, QB_centered_throttle | QB_reversed_throttle,
+    {0}
+  },
+  // NVIDIA Shield Controller
+  {0x0955, 0x7214, InputDevice::DeviceClass::gamepad, 0,
+    {"face_a", "face_b", 0, "face_x", "face_y", "rshoulder", "lshoulder", "rshoulder", 0, 0, 0, "start", 0, "lstick", "rstick", 0}
+  },
+  // Dualshock (PS4)
+  {0x054c, 0x05c4, InputDevice::DeviceClass::gamepad, QB_rstick_from_z,
+    {"face_x", "face_a", "face_b", "face_y", "lshoulder", "rshoulder", 0, 0, "back", "start", "lstick", "rstick", "guide", 0}
+  },
+  // Dualshock 2nd Gen (PS4 Slim)
+  {0x054c, 0x09cc, InputDevice::DeviceClass::gamepad, QB_rstick_from_z,
+    {"face_x", "face_a", "face_b", "face_y", "lshoulder", "rshoulder", 0, 0, "back", "start", "lstick", "rstick", "guide", 0}
+  },
+  // Dualshock 2nd Gen (PS4 wireless adapter)
+  {0x054c, 0x0ba0, InputDevice::DeviceClass::gamepad, QB_rstick_from_z,
+    {"face_x", "face_a", "face_b", "face_y", "lshoulder", "rshoulder", 0, 0, "back", "start", "lstick", "rstick", "guide", 0}
+  },
+  // PS2 controller connected through a USB adapter
+  {0x2563, 0x0523, InputDevice::DeviceClass::gamepad, QB_rstick_from_z | QB_no_analog_triggers,
+    {"face_y", "face_b", "face_a", "face_x", "lshoulder", "rshoulder", "ltrigger", "rtrigger", "back", "start", "lstick", "rstick"}
+  },
+  {0},
+};
 
-typedef struct _HIDP_BUTTON_CAPS {
-  USAGE UsagePage;
-  UCHAR ReportID;
-  BOOLEAN IsAlias;
-  USHORT BitField;
-  USHORT LinkCollection;
-  USAGE LinkUsage;
-  USAGE LinkUsagePage;
-  BOOLEAN IsRange;
-  BOOLEAN IsStringRange;
-  BOOLEAN IsDesignatorRange;
-  BOOLEAN IsAbsolute;
-  ULONG Reserved[10];
-  union {
-    struct {
-      USAGE UsageMin, UsageMax;
-      USHORT StringMin, StringMax;
-      USHORT DesignatorMin, DesignatorMax;
-      USHORT DataIndexMin, DataIndexMax;
-    } Range;
-    struct  {
-      USAGE Usage, Reserved1;
-      USHORT StringIndex, Reserved2;
-      USHORT DesignatorIndex, Reserved3;
-      USHORT DataIndex, Reserved4;
-    } NotRange;
-  };
-} HIDP_BUTTON_CAPS, *PHIDP_BUTTON_CAPS;
-
-typedef struct _HIDP_VALUE_CAPS {
-  USAGE UsagePage;
-  UCHAR ReportID;
-  BOOLEAN IsAlias;
-  USHORT BitField;
-  USHORT LinkCollection;
-  USAGE LinkUsage;
-  USAGE LinkUsagePage;
-  BOOLEAN IsRange;
-  BOOLEAN IsStringRange;
-  BOOLEAN IsDesignatorRange;
-  BOOLEAN IsAbsolute;
-  BOOLEAN HasNull;
-  UCHAR Reserved;
-  USHORT BitSize;
-  USHORT ReportCount;
-  USHORT Reserved2[5];
-  ULONG UnitsExp;
-  ULONG Units;
-  LONG LogicalMin, LogicalMax;
-  LONG PhysicalMin, PhysicalMax;
-  union {
-    struct {
-      USAGE UsageMin, UsageMax;
-      USHORT StringMin, StringMax;
-      USHORT DesignatorMin, DesignatorMax;
-      USHORT DataIndexMin, DataIndexMax;
-    } Range;
-    struct {
-      USAGE Usage, Reserved1;
-      USHORT StringIndex, Reserved2;
-      USHORT DesignatorIndex, Reserved3;
-      USHORT DataIndex, Reserved4;
-    } NotRange;
-  };
-} HIDP_VALUE_CAPS, *PHIDP_VALUE_CAPS;
-
-typedef PUCHAR PHIDP_REPORT_DESCRIPTOR;
-typedef struct _HIDP_PREPARSED_DATA *PHIDP_PREPARSED_DATA;
-
-typedef struct _HIDP_CAPS {
-  USAGE Usage;
-  USAGE UsagePage;
-  USHORT InputReportByteLength;
-  USHORT OutputReportByteLength;
-  USHORT FeatureReportByteLength;
-  USHORT Reserved[17];
-  USHORT NumberLinkCollectionNodes;
-  USHORT NumberInputButtonCaps;
-  USHORT NumberInputValueCaps;
-  USHORT NumberInputDataIndices;
-  USHORT NumberOutputButtonCaps;
-  USHORT NumberOutputValueCaps;
-  USHORT NumberOutputDataIndices;
-  USHORT NumberFeatureButtonCaps;
-  USHORT NumberFeatureValueCaps;
-  USHORT NumberFeatureDataIndices;
-} HIDP_CAPS, *PHIDP_CAPS;
-
-typedef struct _HIDP_DATA {
-  USHORT DataIndex;
-  USHORT Reserved;
-  union {
-    ULONG RawValue;
-    BOOLEAN On;
-  };
-} HIDP_DATA, *PHIDP_DATA;
-
-typedef LONG NTSTATUS;
-typedef NTSTATUS (*pHidP_GetCaps)(PHIDP_PREPARSED_DATA, PHIDP_CAPS);
-typedef NTSTATUS (*pHidP_GetButtonCaps)(HIDP_REPORT_TYPE, PHIDP_BUTTON_CAPS, PUSHORT, PHIDP_PREPARSED_DATA);
-typedef NTSTATUS (*pHidP_GetValueCaps)(HIDP_REPORT_TYPE, PHIDP_VALUE_CAPS, PUSHORT, PHIDP_PREPARSED_DATA);
-typedef NTSTATUS (*pHidP_GetData)(HIDP_REPORT_TYPE, PHIDP_DATA, PULONG, PHIDP_PREPARSED_DATA, PCHAR, ULONG);
-typedef ULONG (*pHidP_MaxDataListLength)(HIDP_REPORT_TYPE, PHIDP_PREPARSED_DATA);
+// This is our fallback button mapping, used with Xbox 360 and other devices.
+static const char *default_gamepad_mapping[16] = {
+  "face_a", "face_b", "face_x", "face_y", "lshoulder", "rshoulder", "back", "start", "lstick", "rstick"
+};
 
 static pHidP_GetCaps _HidP_GetCaps = nullptr;
 static pHidP_GetButtonCaps _HidP_GetButtonCaps = nullptr;
@@ -246,6 +174,9 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
 
   _name = std::move(name);
 
+  int quirks = 0;
+  const char *const *gamepad_buttons = default_gamepad_mapping;
+
   switch (info.dwType) {
   case RIM_TYPEMOUSE:
     _device_class = DeviceClass::mouse;
@@ -264,7 +195,7 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
         info.hid.usUsage == HID_USAGE_GENERIC_GAMEPAD) {
       _device_class = DeviceClass::gamepad;
 
-    // Flight sticks
+    // Various game controllers, incl. flight sticks and some gamepads
     } else if (info.hid.usUsagePage == HID_USAGE_PAGE_GENERIC &&
                info.hid.usUsage == HID_USAGE_GENERIC_JOYSTICK) {
       _device_class = DeviceClass::flight_stick;
@@ -284,6 +215,11 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
                info.hid.usUsage == HID_USAGE_GENERIC_KEYBOARD) {
       _device_class = DeviceClass::keyboard;
 
+    // Digitizers
+    } else if (info.hid.usUsagePage == HID_USAGE_PAGE_DIGITIZER &&
+               info.hid.usUsage == 1) {
+      _device_class = DeviceClass::digitizer;
+
     // 3Dconnexion SpaceNavigator and friends.
     } else if (_vendor_id == 0x046d &&
         (_product_id == 0xc623 ||
@@ -299,6 +235,28 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
 
   default:
     return false;
+  }
+
+  if (_device_class == DeviceClass::gamepad ||
+      _device_class == DeviceClass::flight_stick) {
+    // Do we have a built-in mapping?
+    const DeviceMapping *mapping = mapping_presets;
+    while (mapping->vendor != 0) {
+      if (info.hid.dwVendorId == mapping->vendor &&
+          info.hid.dwProductId == mapping->product) {
+        _device_class = mapping->device_class;
+        gamepad_buttons = mapping->buttons;
+        quirks = mapping->quirks;
+        if (device_cat.is_debug()) {
+          device_cat.debug()
+            << "Using preset mapping for " << mapping->device_class
+            << " with VID=" << std::hex << mapping->vendor
+            << " PID=" << mapping->product << std::dec << "\n";
+        }
+        break;
+      }
+      ++mapping;
+    }
   }
 
   // Initialize hid.dll, which provides the HID parser functions.
@@ -329,38 +287,15 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
     return false;
   }
 
-  // Do we have a button mapping?
-  static const ButtonHandle gamepad_buttons_common[] = {
-    ButtonHandle::none(),
-    GamepadButton::face_a(),
-    GamepadButton::face_b(),
-    GamepadButton::face_x(),
-    GamepadButton::face_y(),
-    GamepadButton::lshoulder(),
-    GamepadButton::rshoulder(),
-    GamepadButton::start(),
-    GamepadButton::back(),
-    GamepadButton::lstick(),
-    GamepadButton::rstick(),
-  };
-  const ButtonHandle *gamepad_buttons = gamepad_buttons_common;
-  if (_vendor_id == 0x0810 && _product_id == 0xe501) {
-    // SNES-style USB gamepad
-    static const ButtonHandle gamepad_buttons_snes[] = {
-      ButtonHandle::none(),
-      GamepadButton::face_x(),
-      GamepadButton::face_a(),
-      GamepadButton::face_b(),
-      GamepadButton::face_y(),
-      GamepadButton::lshoulder(),
-      GamepadButton::rshoulder(),
-      ButtonHandle::none(),
-      ButtonHandle::none(),
-      GamepadButton::back(),
-      GamepadButton::start(),
-    };
-    gamepad_buttons = gamepad_buttons_snes;
+  if (device_cat.is_debug()) {
+    device_cat.debug()
+      << "Found " << _device_class << " device \"" << _name << "\" with "
+      << caps.NumberInputDataIndices << " data indices, "
+      << caps.NumberInputButtonCaps << " button caps, "
+      << caps.NumberInputValueCaps << " value caps\n";
   }
+
+  ButtonRegistry *registry = ButtonRegistry::ptr();
 
   // Prepare a mapping of data indices to button/axis indices.
   _indices.resize(caps.NumberInputDataIndices);
@@ -369,8 +304,11 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
   _axes.clear();
 
   USHORT num_button_caps = caps.NumberInputButtonCaps;
-  PHIDP_BUTTON_CAPS button_caps = (PHIDP_BUTTON_CAPS)alloca(num_button_caps * sizeof(HIDP_BUTTON_CAPS));
-  _HidP_GetButtonCaps(HidP_Input, button_caps, &num_button_caps, buffer);
+  PHIDP_BUTTON_CAPS button_caps;
+  if (num_button_caps > 0u) {
+    button_caps = (PHIDP_BUTTON_CAPS)alloca(num_button_caps * sizeof(HIDP_BUTTON_CAPS));
+    _HidP_GetButtonCaps(HidP_Input, button_caps, &num_button_caps, buffer);
+  }
 
   for (USHORT i = 0; i < num_button_caps; ++i) {
     HIDP_BUTTON_CAPS &cap = button_caps[i];
@@ -391,12 +329,14 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
       if (device_cat.is_debug()) {
         device_cat.debug()
           << "Found button: DataIndex=" << dec << cap.NotRange.DataIndex
-          << ", ReportID=" << dec << (int)cap.ReportID
-          << ", UsagePage=0x" << cap.UsagePage
+          << ", ReportID=" << (int)cap.ReportID
+          << ", UsagePage=0x" << hex << cap.UsagePage
           << ", Usage=0x" << cap.NotRange.Usage
           << dec << "\n";
       }
     }
+
+    nassertd(cap.Range.DataIndexMin + upper < (int)_indices.size()) continue;
 
     // Windows will only tell us which buttons in a report are "on", so we
     // need to keep track of which buttons exist in which report so that we
@@ -411,8 +351,10 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
       switch (cap.UsagePage) {
       case HID_USAGE_PAGE_BUTTON:
         if (_device_class == DeviceClass::gamepad) {
-          if (usage < sizeof(gamepad_buttons_common) / sizeof(ButtonHandle)) {
-            handle = gamepad_buttons[usage];
+          if (usage > 0 && usage - 1 < _countof(default_gamepad_mapping)) {
+            if (gamepad_buttons[usage - 1] != nullptr) {
+              handle = registry->find_button(gamepad_buttons[usage - 1]);
+            }
           }
         } else if (_device_class == DeviceClass::flight_stick) {
           if (usage > 0) {
@@ -424,6 +366,9 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
           handle = MouseButton::button(button);
         }
         break;
+
+      default:
+        continue;
       }
 
       int button_index = _buttons.size();
@@ -434,8 +379,11 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
   }
 
   USHORT num_value_caps = caps.NumberInputValueCaps;
-  PHIDP_VALUE_CAPS value_caps = (PHIDP_VALUE_CAPS)alloca(num_value_caps * sizeof(HIDP_VALUE_CAPS));
-  _HidP_GetValueCaps(HidP_Input, value_caps, &num_value_caps, buffer);
+  PHIDP_VALUE_CAPS value_caps;
+  if (num_value_caps > 0u) {
+    value_caps = (PHIDP_VALUE_CAPS)alloca(num_value_caps * sizeof(HIDP_VALUE_CAPS));
+    _HidP_GetValueCaps(HidP_Input, value_caps, &num_value_caps, buffer);
+  }
 
   _hat_data_index = -1;
 
@@ -459,13 +407,15 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
       if (device_cat.is_debug()) {
         device_cat.debug()
           << "Found value: DataIndex=" << dec << cap.NotRange.DataIndex
-          << ", ReportID=" << dec << (int)cap.ReportID
+          << ", ReportID=" << (int)cap.ReportID
           << ", UsagePage=0x" << hex << cap.UsagePage
           << ", Usage=0x" << cap.NotRange.Usage
           << dec << ", LogicalMin=" << cap.LogicalMin
           << ", LogicalMax=" << cap.LogicalMax << "\n";
       }
     }
+
+    nassertd(cap.Range.DataIndexMin + upper < (int)_indices.size()) continue;
 
     for (int j = 0; j <= upper; ++j) {
       USAGE usage = j + cap.Range.UsageMin;
@@ -504,9 +454,24 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
           break;
         case HID_USAGE_GENERIC_Z:
           if (_device_class == DeviceClass::gamepad) {
-            axis = Axis::left_trigger;
+            if (quirks & QB_rstick_from_z) {
+              if (quirks & QB_right_axes_swapped) {
+                axis = InputDevice::Axis::right_y;
+                swap(cap.LogicalMin, cap.LogicalMax);
+              } else {
+                axis = InputDevice::Axis::right_x;
+              }
+            } else if ((quirks & QB_no_analog_triggers) == 0) {
+              axis = Axis::left_trigger;
+            }
           } else if (_device_class == DeviceClass::flight_stick) {
             axis = Axis::throttle;
+            if ((quirks & QB_reversed_throttle) != 0) {
+              std::swap(cap.LogicalMin, cap.LogicalMax);
+            }
+            if ((quirks & QB_centered_throttle) != 0) {
+              is_signed = false;
+            }
           } else {
             axis = Axis::z;
             swap(cap.LogicalMin, cap.LogicalMax);
@@ -514,22 +479,44 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
           break;
         case HID_USAGE_GENERIC_RX:
           if (_device_class == DeviceClass::gamepad) {
-            axis = Axis::right_x;
+            if (quirks & QB_rstick_from_z) {
+              if ((quirks & QB_no_analog_triggers) == 0) {
+                axis = Axis::left_trigger;
+              }
+            } else {
+              axis = Axis::right_x;
+            }
           } else {
             axis = Axis::pitch;
           }
           break;
         case HID_USAGE_GENERIC_RY:
           if (_device_class == DeviceClass::gamepad) {
-            axis = Axis::right_y;
+            if (quirks & QB_rstick_from_z) {
+              if ((quirks & QB_no_analog_triggers) == 0) {
+                axis = Axis::right_trigger;
+              }
+            } else {
+              axis = Axis::right_y;
+              swap(cap.LogicalMin, cap.LogicalMax);
+            }
           } else {
             axis = Axis::roll;
+            swap(cap.LogicalMin, cap.LogicalMax);
           }
-          swap(cap.LogicalMin, cap.LogicalMax);
           break;
         case HID_USAGE_GENERIC_RZ:
           if (_device_class == DeviceClass::gamepad) {
-            axis = Axis::right_trigger;
+            if (quirks & QB_rstick_from_z) {
+              if (quirks & QB_right_axes_swapped) {
+                axis = InputDevice::Axis::right_x;
+              } else {
+                axis = InputDevice::Axis::right_y;
+                swap(cap.LogicalMin, cap.LogicalMax);
+              }
+            } else if ((quirks & QB_no_analog_triggers) == 0) {
+              axis = Axis::right_trigger;
+            }
           } else {
             // Flip to match Panda's convention for heading.
             axis = Axis::yaw;
@@ -551,13 +538,28 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
           continue;
         }
         break;
+
+      case HID_USAGE_PAGE_DIGITIZER:
+        switch (usage) {
+        case 0x30:
+          axis = Axis::pressure;
+          break;
+        }
+        break;
+      }
+
+      // If this axis already exists, don't double-map it, but take the first
+      // one.  This is important for the Trust GXT 24 / SL-6535-SBK-01 which
+      // have a weird extra Z axis with DataIndex 2 that should be ignored.
+      for (size_t i = 0; i < _axes.size(); ++i) {
+        if (_axes[i].axis == axis) {
+          axis = Axis::none;
+          break;
+        }
       }
 
       int axis_index;
-      if (_vendor_id == 0x044f && _product_id == 0xb108 && axis == Axis::throttle) {
-        // T.Flight Hotas X throttle is reversed and can go backwards.
-        axis_index = add_axis(axis, cap.LogicalMax, cap.LogicalMin, true);
-      } else if (!is_signed) {
+      if (!is_signed) {
         // All axes on the weird XInput-style mappings go from -1 to 1
         axis_index = add_axis(axis, cap.LogicalMin, cap.LogicalMax, true);
       } else {
@@ -585,6 +587,8 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
 
   _max_data_count = _HidP_MaxDataListLength(HidP_Input, buffer);
 
+  nassertr_always(_max_data_count >= 0, false);
+
   _handle = handle;
   _is_connected = true;
   return true;
@@ -599,76 +603,107 @@ on_removal() {
   _is_connected = false;
   _handle = nullptr;
   if (_preparsed != nullptr) {
-    delete _preparsed;
+    free(_preparsed);
     _preparsed = nullptr;
   }
   _indices.clear();
   _report_buttons.clear();
 }
 
+/**
+ * Called by InputDeviceManager when raw input is received for this device.
+ */
 void WinRawInputDevice::
 on_input(PRAWINPUT input) {
   nassertv(input != nullptr);
   nassertv(_preparsed != nullptr);
+
+  if (_max_data_count == 0) {
+    return;
+  }
 
   BYTE *ptr = input->data.hid.bRawData;
   if (input->data.hid.dwSizeHid == 0) {
     return;
   }
 
-  PHIDP_DATA data = (PHIDP_DATA)alloca(sizeof(HIDP_DATA) * _max_data_count);
-  nassertv(data != nullptr);
-  ULONG count;
-
   LightMutexHolder holder(_lock);
 
+  if (device_cat.is_spam()) {
+    device_cat.spam()
+      << _name << " received " << input->data.hid.dwCount << " reports of size "
+      << input->data.hid.dwSizeHid << "\n";
+  }
+
   for (DWORD i = 0; i < input->data.hid.dwCount; ++i) {
-    // The first byte is the report identifier.  We need it to figure out
-    // which buttons are off, since each report only contains the buttons that
-    // are "on".
-    UCHAR report_id = ptr[0];
-    BitArray unset_buttons = _report_buttons[report_id];
+    process_report((PCHAR)ptr, input->data.hid.dwSizeHid);
+    ptr += input->data.hid.dwSizeHid;
+  }
+}
 
-    count = _max_data_count;
-    NTSTATUS status = _HidP_GetData(HidP_Input, data, &count, (PHIDP_PREPARSED_DATA)_preparsed, (PCHAR)ptr, input->data.hid.dwSizeHid);
-    if (status == HIDP_STATUS_SUCCESS) {
-      for (ULONG di = 0; di < count; ++di) {
-        if (data[di].DataIndex != _hat_data_index) {
-          const Index &idx = _indices[data[di].DataIndex];
-          if (idx._axis >= 0) {
-            if (idx._signed) {
-              axis_changed(idx._axis, (SHORT)data[di].RawValue);
-            } else {
-              axis_changed(idx._axis, data[di].RawValue);
-            }
+/**
+ * Processes a single HID report.  Assumes the lock is held.
+ */
+void WinRawInputDevice::
+process_report(PCHAR ptr, size_t size) {
+  // The first byte is the report identifier.  We need it to figure out which
+  // buttons are off, since each report only contains the "on" buttons.
+  UCHAR report_id = ptr[0];
+  BitArray unset_buttons;
+
+  if (report_id < _report_buttons.size()) {
+    unset_buttons = _report_buttons[report_id];
+  }
+
+  PHIDP_DATA data = (PHIDP_DATA)alloca(sizeof(HIDP_DATA) * _max_data_count);
+  nassertv(data != nullptr);
+
+  ULONG count = _max_data_count;
+  NTSTATUS status = _HidP_GetData(HidP_Input, data, &count, (PHIDP_PREPARSED_DATA)_preparsed, ptr, size);
+  if (status == HIDP_STATUS_SUCCESS) {
+    for (ULONG di = 0; di < count; ++di) {
+      if (data[di].DataIndex != _hat_data_index) {
+        if (data[di].DataIndex >= _indices.size()) {
+          if (device_cat.is_debug()) {
+            device_cat.debug()
+              << "Ignoring out of range DataIndex " << data[di].DataIndex
+              << "from raw device " << _path << "\n";
           }
-          if (idx._button >= 0) {
-            unset_buttons.clear_bit(idx._button);
-            button_changed(idx._button, (data[di].On != FALSE));
-          }
-        } else {
-          int value = (int)data[di].RawValue - _hat_data_minimum;
-          button_changed(_hat_left_button + 0, value >= 5 && value <= 7); // left
-          button_changed(_hat_left_button + 1, value >= 1 && value <= 3); // right
-          button_changed(_hat_left_button + 2, value >= 3 && value <= 5); // down
-          button_changed(_hat_left_button + 3, value == 7 || value == 0 || value == 1); // up
+          continue;
         }
-      }
 
-      // Now unset the buttons in this report that aren't pressed.
-      int button_index = unset_buttons.get_lowest_on_bit();
-      while (button_index >= 0) {
-        button_changed(button_index, false);
-        unset_buttons.clear_bit(button_index);
-        button_index = unset_buttons.get_lowest_on_bit();
+        const Index &idx = _indices[data[di].DataIndex];
+        if (idx._axis >= 0) {
+          if (idx._signed) {
+            axis_changed(idx._axis, (SHORT)data[di].RawValue);
+          } else {
+            axis_changed(idx._axis, data[di].RawValue);
+          }
+        }
+        if (idx._button >= 0) {
+          unset_buttons.clear_bit(idx._button);
+          button_changed(idx._button, (data[di].On != FALSE));
+        }
+      } else {
+        int value = (int)data[di].RawValue - _hat_data_minimum;
+        button_changed(_hat_left_button + 0, value >= 5 && value <= 7); // left
+        button_changed(_hat_left_button + 1, value >= 1 && value <= 3); // right
+        button_changed(_hat_left_button + 2, value >= 3 && value <= 5); // down
+        button_changed(_hat_left_button + 3, value == 7 || value == 0 || value == 1); // up
       }
-    } else if (device_cat.is_spam()) {
-      device_cat.spam()
-        << "Failed to get data from raw device " << _path
-        << " (error 0x" << std::hex << (status & 0xffffffffu) << std::dec << ")\n";
     }
 
-    ptr += input->data.hid.dwSizeHid;
+    // Now unset the buttons in this report that aren't pressed.
+    int button_index = unset_buttons.get_lowest_on_bit();
+    while (button_index >= 0) {
+      button_changed(button_index, false);
+      unset_buttons.clear_bit(button_index);
+      button_index = unset_buttons.get_lowest_on_bit();
+    }
+  } else if (device_cat.is_spam()) {
+    device_cat.spam()
+      << "Failed to get data from raw device " << _path
+      << " (error 0x" << std::hex << (status & 0xffffffffu) << std::dec << ")\n";
   }
 }
 

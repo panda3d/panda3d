@@ -5,12 +5,7 @@ __all__ = ['VectorEntry', 'Vector2Entry', 'Vector3Entry', 'Vector4Entry', 'Color
 from direct.showbase.TkGlobal import *
 from . import Valuator
 import Pmw
-import sys
-
-if sys.version_info >= (3, 0):
-    from tkinter.colorchooser import askcolor
-else:
-    from tkColorChooser import askcolor
+from tkinter.colorchooser import askcolor
 
 
 class VectorEntry(Pmw.MegaWidget):
@@ -224,7 +219,7 @@ class VectorEntry(Pmw.MegaWidget):
 
     def action(self, fCommand = 1):
         self._refreshFloaters()
-        if fCommand and (self['command'] != None):
+        if fCommand and (self['command'] is not None):
             self['command'](self._value)
 
     def reset(self):

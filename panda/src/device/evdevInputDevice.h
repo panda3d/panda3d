@@ -24,11 +24,15 @@ class LinuxInputDeviceManager;
  * This is a type of device that uses the Linux /dev/input/event# API to read
  * data from a raw mouse or other input device.  Unlike the joystick API, the
  * evdev API supports sending force feedback (ie. rumble) events.
+ *
+ * @since 1.10.0
  */
 class EXPCL_PANDA_DEVICE EvdevInputDevice : public InputDevice {
 public:
   EvdevInputDevice(LinuxInputDeviceManager *manager, size_t index);
   virtual ~EvdevInputDevice();
+
+  bool reactivate_steam_controller();
 
 private:
   virtual void do_set_vibration(double strong, double weak);
@@ -41,6 +45,7 @@ private:
   LinuxInputDeviceManager *_manager;
 
   int _fd;
+  int _quirks;
   size_t _index;
 
   bool _can_write;
@@ -64,7 +69,9 @@ private:
   int _rtrigger_code;
 
 public:
-  static ButtonHandle map_button(int code, DeviceClass device_class = DeviceClass::unknown);
+  static ButtonHandle map_button(int code,
+                                 DeviceClass device_class = DeviceClass::unknown,
+                                 int quirks = 0);
 
 public:
   static TypeHandle get_class_type() {
@@ -75,6 +82,10 @@ public:
     register_type(_type_handle, "EvdevInputDevice",
                   InputDevice::get_class_type());
   }
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
 
 private:
   static TypeHandle _type_handle;

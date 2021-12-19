@@ -76,6 +76,7 @@ private:
   CPT(TransformState) _camera_transform;
   CPT(TransformState) _projection_transform;
   CPT(ColorAttrib) _color_attrib;
+  WCPT(ShaderAttrib) _shader_attrib;
 
 /*
  * struct ParamContext { CPT(InternalName) _name; GLint _location; GLsizei
@@ -112,6 +113,8 @@ private:
     bool _writable;
   };
   pvector<ImageInput> _glsl_img_inputs;
+
+  LMatrix4 *_mat_part_cache = nullptr;
 
   CLP(GraphicsStateGuardian) *_glgsg;
 

@@ -23,7 +23,7 @@
 
 /**
  * This is a specialization on CallbackObject to allow a callback to directly
- * call an arbitarary Python function.  Powerful!  But use with caution.
+ * call an arbitrary Python function.  Powerful!  But use with caution.
  */
 class PythonCallbackObject : public CallbackObject {
 PUBLISHED:
@@ -33,6 +33,8 @@ PUBLISHED:
 
   void set_function(PyObject *function);
   PyObject *get_function();
+
+  PyObject *__reduce__() const;
 
   MAKE_PROPERTY(function, get_function, set_function);
 

@@ -106,7 +106,6 @@ set_hpr(const FLOATNAME(LVecBase3) &hpr, CoordinateSystem cs) {
   v = FLOATNAME(LVector3)::right(cs);
   a = deg_2_rad(hpr[1] * 0.5f);
   csincos(a, &s, &c);
-  s = csin(a);
   quat_p.set(c, v[0] * s, v[1] * s, v[2] * s);
   v = FLOATNAME(LVector3)::forward(cs);
   a = deg_2_rad(hpr[2] * 0.5f);

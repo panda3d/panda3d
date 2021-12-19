@@ -80,3 +80,11 @@ __setattr__(PyObject *self, const std::string &attr_name, PyObject *assign) {
   // Upcall to LVecBase3.
   return invoke_extension<FLOATNAME(LVecBase3)>(_this).__setattr__(self, attr_name, assign);
 }
+
+/**
+ *
+ */
+INLINE_LINMATH FLOATNAME(LVector3) Extension<FLOATNAME(LVector3)>::
+__rmul__(FLOATTYPE scalar) const {
+  return *_this * scalar;
+}

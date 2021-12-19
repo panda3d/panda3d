@@ -41,7 +41,8 @@ PGEntry::
 PGEntry(const string &name) :
   PGItem(name),
   _text(get_text_node()),
-  _obscure_text(get_text_node())
+  _obscure_text(get_text_node()),
+  _candidate_text(get_text_node())
 {
   set_cull_callback();
 
@@ -103,6 +104,7 @@ PGEntry(const PGEntry &copy) :
   PGItem(copy),
   _text(copy._text),
   _obscure_text(copy._obscure_text),
+  _candidate_text(copy._candidate_text),
   _cursor_position(copy._cursor_position),
   _cursor_visible(copy._cursor_visible),
   _candidate_highlight_start(copy._candidate_highlight_start),
@@ -176,12 +178,13 @@ bool PGEntry::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
   LightReMutexHolder holder(_lock);
   PGItem::cull_callback(trav, data);
-  update_text();
-  update_cursor();
+  if (Thread::get_current_pipeline_stage() == 0) {
+    update_text();
+    update_cursor();
+  }
 
   // Now render the text.
-  CullTraverserData next_data(data, _text_render_root.node());
-  trav->traverse(next_data);
+  trav->traverse_down(data, _text_render_root.node());
 
   // Now continue to render everything else below this node.
   return true;
@@ -214,11 +217,6 @@ press(const MouseWatcherParameter &param, bool background) {
       } else if ((!background && get_focus()) ||
                  (background && get_background_focus())) {
         // Keyboard button.
-        if (!_candidate_wtext.empty()) {
-          _candidate_wtext = wstring();
-          _text_geom_stale = true;
-        }
-
         _cursor_position = min(_cursor_position, _text.get_num_characters());
         _blink_start = ClockObject::get_global_clock()->get_frame_time();
         if (button == KeyboardButton::enter()) {
@@ -260,7 +258,7 @@ press(const MouseWatcherParameter &param, bool background) {
             }
             _cursor_stale = true;
             if (overflow_mode){
-                _text_geom_stale = true;
+              _text_geom_stale = true;
             }
           }
 
@@ -276,7 +274,7 @@ press(const MouseWatcherParameter &param, bool background) {
             }
             _cursor_stale = true;
             if (overflow_mode){
-                _text_geom_stale = true;
+              _text_geom_stale = true;
             }
           }
 
@@ -286,7 +284,7 @@ press(const MouseWatcherParameter &param, bool background) {
             _cursor_position = 0;
             _cursor_stale = true;
             if (overflow_mode){
-                _text_geom_stale = true;
+              _text_geom_stale = true;
             }
             type(param);
           }
@@ -297,7 +295,7 @@ press(const MouseWatcherParameter &param, bool background) {
             _cursor_position = _text.get_num_characters();
             _cursor_stale = true;
             if (overflow_mode){
-                _text_geom_stale = true;
+              _text_geom_stale = true;
             }
             type(param);
           }
@@ -306,6 +304,17 @@ press(const MouseWatcherParameter &param, bool background) {
     }
   }
   PGItem::press(param, background);
+
+#ifdef THREADED_PIPELINE
+  if (Pipeline::get_render_pipeline()->get_num_stages() > 1) {
+    if (_text_geom_stale) {
+      update_text();
+    }
+    if (_cursor_stale) {
+      update_cursor();
+    }
+  }
+#endif
 }
 
 /**
@@ -321,7 +330,7 @@ keystroke(const MouseWatcherParameter &param, bool background) {
 
       int keycode = param.get_keycode();
 
-      if (!isascii(keycode) || isprint(keycode)) {
+      if ((!isascii(keycode) || isprint(keycode)) && keycode != '\t') {
         // A normal visible character.  Add a new character to the text entry,
         // if there's room.
         if (!_candidate_wtext.empty()) {
@@ -411,6 +420,17 @@ keystroke(const MouseWatcherParameter &param, bool background) {
     }
   }
   PGItem::keystroke(param, background);
+
+#ifdef THREADED_PIPELINE
+  if (Pipeline::get_render_pipeline()->get_num_stages() > 1) {
+    if (_text_geom_stale) {
+      update_text();
+    }
+    if (_cursor_stale) {
+      update_cursor();
+    }
+  }
+#endif
 }
 
 /**
@@ -434,6 +454,17 @@ candidate(const MouseWatcherParameter &param, bool background) {
     }
   }
   PGItem::candidate(param, background);
+
+#ifdef THREADED_PIPELINE
+  if (Pipeline::get_render_pipeline()->get_num_stages() > 1) {
+    if (_text_geom_stale) {
+      update_text();
+    }
+    if (_cursor_stale) {
+      update_cursor();
+    }
+  }
+#endif
 }
 
 /**
@@ -762,8 +793,15 @@ update_text() {
 
     } else {
       TextPropertiesManager *tp_mgr = TextPropertiesManager::get_global_ptr();
+      bool has_inactive = tp_mgr->has_properties(_candidate_inactive);
       TextProperties inactive = tp_mgr->get_properties(_candidate_inactive);
       TextProperties active = tp_mgr->get_properties(_candidate_active);
+
+      if (!has_inactive) {
+        // Just underscoring the candidate is a sensible default.
+        inactive.set_underscore(true);
+        tp_mgr->set_properties(_candidate_inactive, inactive);
+      }
 
       // Insert the complex sequence of characters required to show the
       // candidate string in a different color.  This gets inserted at the
@@ -783,9 +821,9 @@ update_text() {
       cseq += wstring(1, (wchar_t)text_pop_properties_key);
 
       // Create a special TextAssembler to insert the candidate string.
-      TextAssembler ctext(_text);
-      ctext.set_wsubstr(cseq, _cursor_position, 0);
-      assembled = ctext.assemble_text();
+      _candidate_text = _text;
+      _candidate_text.set_wsubstr(cseq, _cursor_position, 0);
+      assembled = _candidate_text.assemble_text();
     }
 
     if (!_current_text.is_empty()) {
@@ -867,7 +905,8 @@ update_cursor() {
       _obscure_text.calc_r_c(row, column, _cursor_position);
       xpos = _obscure_text.get_xpos(row, column);
       ypos = _obscure_text.get_ypos(row, column);
-    } else {
+    }
+    else if (_candidate_wtext.empty()) {
       _text.calc_r_c(row, column, _cursor_position);
       if (_cursor_position > 0 && _text.get_character(_cursor_position - 1) == '\n') {
         row += 1;
@@ -875,6 +914,11 @@ update_cursor() {
       }
       xpos = _text.get_xpos(row, column);
       ypos = _text.get_ypos(row, column);
+    }
+    else {
+      _candidate_text.calc_r_c(row, column, _cursor_position + (int)_candidate_cursor_pos);
+      xpos = _candidate_text.get_xpos(row, column);
+      ypos = _candidate_text.get_ypos(row, column);
     }
 
     _cursor_def.set_pos(xpos - _current_padding, 0.0f, ypos);
@@ -884,7 +928,7 @@ update_cursor() {
   }
 
   // Should the cursor be visible?
-  if (!get_focus() || !_candidate_wtext.empty()) {
+  if (!get_focus()) {
     show_hide_cursor(false);
   } else {
     double elapsed_time =
@@ -924,4 +968,10 @@ update_state() {
   } else {
     set_state(S_inactive);
   }
+#ifdef THREADED_PIPELINE
+  if (Pipeline::get_render_pipeline()->get_num_stages() > 1) {
+    update_text();
+    update_cursor();
+  }
+#endif
 }

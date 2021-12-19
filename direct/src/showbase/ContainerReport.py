@@ -2,7 +2,9 @@ from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.PythonUtil import Queue, invertDictLossless
 from direct.showbase.PythonUtil import safeRepr
 from direct.showbase.Job import Job
+from direct.showbase.JobManagerGlobal import jobMgr
 import types
+
 
 class ContainerReport(Job):
     notify = directNotify.newCategory("ContainerReport")
@@ -22,7 +24,7 @@ class ContainerReport(Job):
         # for breadth-first searching
         self._queue = Queue()
         jobMgr.add(self)
-        if threaded == False:
+        if not threaded:
             jobMgr.finish(self)
 
     def destroy(self):
@@ -84,18 +86,18 @@ class ContainerReport(Job):
             except:
                 pass
 
-            if type(parentObj) in (types.StringType, types.UnicodeType):
+            if isinstance(parentObj, (str, bytes)):
                 continue
 
             if type(parentObj) in (types.ModuleType, types.InstanceType):
                 child = parentObj.__dict__
                 if self._examine(child):
-                    assert (self._queue.back() is child)
+                    assert self._queue.back() is child
                     self._instanceDictIds.add(id(child))
                     self._id2pathStr[id(child)] = str(self._id2pathStr[id(parentObj)])
                 continue
 
-            if type(parentObj) is dict:
+            if isinstance(parentObj, dict):
                 key = None
                 attr = None
                 keys = list(parentObj.keys())
@@ -112,7 +114,7 @@ class ContainerReport(Job):
                     if id(attr) not in self._visitedIds:
                         self._visitedIds.add(id(attr))
                         if self._examine(attr):
-                            assert (self._queue.back() is attr)
+                            assert self._queue.back() is attr
                             if parentObj is __builtins__:
                                 self._id2pathStr[id(attr)] = key
                             else:
@@ -142,7 +144,7 @@ class ContainerReport(Job):
                             if id(attr) not in self._visitedIds:
                                 self._visitedIds.add(id(attr))
                                 if self._examine(attr):
-                                    assert (self._queue.back() is attr)
+                                    assert self._queue.back() is attr
                                     self._id2pathStr[id(attr)] = self._id2pathStr[id(parentObj)] + '[%s]' % index
                             index += 1
                         del attr
@@ -163,7 +165,7 @@ class ContainerReport(Job):
                     if id(child) not in self._visitedIds:
                         self._visitedIds.add(id(child))
                         if self._examine(child):
-                            assert (self._queue.back() is child)
+                            assert self._queue.back() is child
                             self._id2pathStr[id(child)] = self._id2pathStr[id(parentObj)] + '.%s' % childName
                 del childName
                 del child
@@ -196,11 +198,9 @@ class ContainerReport(Job):
             self._type2id2len[type(obj)][objId] = length
     def _examine(self, obj):
         # return False if it's an object that can't contain or lead to other objects
-        if type(obj) in (types.BooleanType, types.BuiltinFunctionType,
-                         types.BuiltinMethodType, types.ComplexType,
-                         types.FloatType, types.IntType, types.LongType,
-                         types.NoneType, types.NotImplementedType,
-                         types.TypeType, types.CodeType, types.FunctionType):
+        if type(obj) in (bool, types.BuiltinFunctionType, types.BuiltinMethodType,
+                         complex, float, int, type(None), type(NotImplemented),
+                         type, types.CodeType, types.FunctionType):
             return False
         # if it's an internal object, ignore it
         if id(obj) in ContainerReport.PrivateIds:

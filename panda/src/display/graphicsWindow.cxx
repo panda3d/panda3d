@@ -27,7 +27,7 @@ TypeHandle GraphicsWindow::_type_handle;
 
 /**
  * Normally, the GraphicsWindow constructor is not called directly; these are
- * created instead via the GraphicsEngine::make_window() function.
+ * created instead via the GraphicsEngine::make_output() function.
  */
 GraphicsWindow::
 GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
@@ -54,6 +54,7 @@ GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   _properties.set_undecorated(false);
   _properties.set_fullscreen(false);
   _properties.set_minimized(false);
+  _properties.set_maximized(false);
   _properties.set_cursor_hidden(false);
 
   request_properties(WindowProperties::get_default());
@@ -353,9 +354,9 @@ disable_pointer_mode(int device) {
 }*/
 
 /**
- * Returns the MouseData associated with the nth input device's pointer.  This
- * is deprecated; use get_pointer_device().get_pointer() instead, or for raw
- * mice, use the InputDeviceManager interface.
+ * Returns the MouseData associated with the nth input device's pointer.
+ * Using this to access raw mice (with an index other than 0) is deprecated,
+ * see the InputDeviceManager interface instead.
  */
 MouseData GraphicsWindow::
 get_pointer(int device) const {
@@ -693,23 +694,6 @@ add_input_device(InputDevice *device) {
   int index = (int)_input_devices.size();
   _input_devices.push_back(device);
   return index;
-}
-
-/**
- * detaches mouse.  Only mouse delta from now on.
- *
- */
-void GraphicsWindow::
-mouse_mode_relative() {
-}
-
-/**
- * reattaches mouse to location
- *
- */
-void GraphicsWindow::
-mouse_mode_absolute() {
-
 }
 
 /**

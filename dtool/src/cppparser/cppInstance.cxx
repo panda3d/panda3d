@@ -74,7 +74,17 @@ CPPInstance(CPPType *type, CPPInstanceIdentifier *ii, int storage_class,
   ii->_ident = nullptr;
   _storage_class = storage_class;
   _initializer = nullptr;
-  _bit_width = ii->_bit_width;
+
+  if (ii->_bit_width != nullptr) {
+    CPPExpression::Result result = ii->_bit_width->evaluate();
+    if (result._type != CPPExpression::RT_error) {
+      _bit_width = ii->_bit_width->evaluate().as_integer();
+    } else {
+      _bit_width = -1;
+    }
+  } else {
+    _bit_width = -1;
+  }
 
   CPPParameterList *params = ii->get_initializer();
   if (params != nullptr) {
@@ -565,8 +575,14 @@ output(std::ostream &out, int indent_level, CPPScope *scope, bool complete,
   if (_storage_class & SC_mutable) {
     out << "mutable ";
   }
+  if (_storage_class & SC_consteval) {
+    out << "consteval ";
+  }
   if (_storage_class & SC_constexpr) {
     out << "constexpr ";
+  }
+  if (_storage_class & SC_constinit) {
+    out << "constinit ";
   }
   if (_storage_class & SC_thread_local) {
     out << "thread_local ";

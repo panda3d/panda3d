@@ -74,7 +74,7 @@
 #include "collisionNode.h"
 #include "collisionSphere.h"
 #include "collisionInvSphere.h"
-#include "collisionTube.h"
+#include "collisionCapsule.h"
 #include "collisionPlane.h"
 #include "collisionPolygon.h"
 #include "collisionFloorMesh.h"
@@ -602,7 +602,7 @@ make_transform(const EggTransform *egg_transform) {
 void EggLoader::
 show_normals(EggVertexPool *vertex_pool, GeomNode *geom_node) {
   PT(GeomPrimitive) primitive = new GeomLines(Geom::UH_static);
-  CPT(GeomVertexFormat) format = GeomVertexFormat::get_v3cp();
+  CPT(GeomVertexFormat) format = GeomVertexFormat::get_v3c();
   PT(GeomVertexData) vertex_data =
     new GeomVertexData(vertex_pool->get_name(), format, Geom::UH_static);
 
@@ -726,6 +726,8 @@ make_nurbs_curve(EggNurbsCurve *egg_curve, PandaNode *parent,
  * This deprecated interface creates a NurbsCurve object for the EggNurbsCurve
  * entry.  It will eventually be removed in favor of the above, which creates
  * a RopeNode.
+ *
+ * @deprecated See make_nurbs_curve.
  */
 void EggLoader::
 make_old_nurbs_curve(EggNurbsCurve *egg_curve, PandaNode *parent,
@@ -898,6 +900,7 @@ load_texture(TextureDef &def, EggTexture *egg_tex) {
   case EggTexture::F_rgb8:
   case EggTexture::F_rgb5:
   case EggTexture::F_rgb332:
+  case EggTexture::F_srgb:
     wanted_channels = 3;
     wanted_alpha = false;
     break;
@@ -908,6 +911,7 @@ load_texture(TextureDef &def, EggTexture *egg_tex) {
   case EggTexture::F_rgba8:
   case EggTexture::F_rgba4:
   case EggTexture::F_rgba5:
+  case EggTexture::F_srgb_alpha:
     wanted_channels = 4;
     wanted_alpha = true;
     break;
@@ -1184,6 +1188,30 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
 
   tex->set_default_sampler(sampler);
 
+  bool force_srgb = false;
+  if (egg_force_srgb_textures) {
+    switch (egg_tex->get_env_type()) {
+    case EggTexture::ET_unspecified:
+    case EggTexture::ET_modulate:
+    case EggTexture::ET_decal:
+    case EggTexture::ET_blend:
+    case EggTexture::ET_replace:
+    case EggTexture::ET_add:
+    case EggTexture::ET_blend_color_scale:
+    case EggTexture::ET_modulate_glow:
+    case EggTexture::ET_modulate_gloss:
+      force_srgb = true;
+      if (egg2pg_cat.is_debug()) {
+        egg2pg_cat.debug()
+          << "Enabling sRGB format on texture " << egg_tex->get_name() << "\n";
+      }
+      break;
+
+    default:
+      break;
+    }
+  }
+
   if (tex->get_num_components() == 1) {
     switch (egg_tex->get_format()) {
     case EggTexture::F_red:
@@ -1199,44 +1227,52 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
       tex->set_format(Texture::F_alpha);
       break;
     case EggTexture::F_luminance:
-      tex->set_format(Texture::F_luminance);
-      break;
-
-    case EggTexture::F_unspecified:
+      tex->set_format(force_srgb ? Texture::F_sluminance : Texture::F_luminance);
       break;
 
     default:
       egg2pg_cat.warning()
         << "Ignoring inappropriate format " << egg_tex->get_format()
         << " for 1-component texture " << egg_tex->get_name() << "\n";
+
+    case EggTexture::F_unspecified:
+      if (force_srgb) {
+        tex->set_format(Texture::F_sluminance);
+      }
+      break;
     }
 
   } else if (tex->get_num_components() == 2) {
     switch (egg_tex->get_format()) {
     case EggTexture::F_luminance_alpha:
-      tex->set_format(Texture::F_luminance_alpha);
+      tex->set_format(force_srgb ? Texture::F_sluminance_alpha : Texture::F_luminance_alpha);
       break;
 
     case EggTexture::F_luminance_alphamask:
-      tex->set_format(Texture::F_luminance_alphamask);
-      break;
-
-    case EggTexture::F_unspecified:
+      tex->set_format(force_srgb ? Texture::F_sluminance_alpha : Texture::F_luminance_alphamask);
       break;
 
     default:
       egg2pg_cat.warning()
         << "Ignoring inappropriate format " << egg_tex->get_format()
         << " for 2-component texture " << egg_tex->get_name() << "\n";
+
+    case EggTexture::F_unspecified:
+      if (force_srgb) {
+        tex->set_format(Texture::F_sluminance_alpha);
+      }
+      break;
     }
 
   } else if (tex->get_num_components() == 3) {
     switch (egg_tex->get_format()) {
     case EggTexture::F_rgb:
-      tex->set_format(Texture::F_rgb);
+      tex->set_format(force_srgb ? Texture::F_srgb : Texture::F_rgb);
       break;
     case EggTexture::F_rgb12:
-      if (tex->get_component_width() >= 2) {
+      if (force_srgb) {
+        tex->set_format(Texture::F_srgb);
+      } else if (tex->get_component_width() >= 2) {
         // Only do this if the component width supports it.
         tex->set_format(Texture::F_rgb12);
       } else {
@@ -1249,36 +1285,45 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
     case EggTexture::F_rgba8:
       // We'll quietly accept RGBA8 for a 3-component texture, since flt2egg
       // generates these for 3-component as well as for 4-component textures.
-      tex->set_format(Texture::F_rgb8);
+      tex->set_format(force_srgb ? Texture::F_srgb : Texture::F_rgb8);
       break;
     case EggTexture::F_rgb5:
-      tex->set_format(Texture::F_rgb5);
+      tex->set_format(force_srgb ? Texture::F_srgb : Texture::F_rgb5);
       break;
     case EggTexture::F_rgb332:
-      tex->set_format(Texture::F_rgb332);
+      tex->set_format(force_srgb ? Texture::F_srgb : Texture::F_rgb332);
       break;
-
-    case EggTexture::F_unspecified:
+    case EggTexture::F_srgb:
+    case EggTexture::F_srgb_alpha:
+      tex->set_format(Texture::F_srgb);
       break;
 
     default:
       egg2pg_cat.warning()
         << "Ignoring inappropriate format " << egg_tex->get_format()
         << " for 3-component texture " << egg_tex->get_name() << "\n";
+
+    case EggTexture::F_unspecified:
+      if (force_srgb) {
+        tex->set_format(Texture::F_srgb);
+      }
+      break;
     }
 
   } else if (tex->get_num_components() == 4) {
     switch (egg_tex->get_format()) {
     case EggTexture::F_rgba:
-      tex->set_format(Texture::F_rgba);
+      tex->set_format(force_srgb ? Texture::F_srgb_alpha : Texture::F_rgba);
       break;
     case EggTexture::F_rgbm:
-      tex->set_format(Texture::F_rgbm);
+      tex->set_format(force_srgb ? Texture::F_srgb_alpha : Texture::F_rgbm);
       break;
     case EggTexture::F_rgba12:
-      if (tex->get_component_width() >= 2) {
+      if (force_srgb) {
+        tex->set_format(Texture::F_srgb_alpha);
+      } else if (tex->get_component_width() >= 2) {
         // Only do this if the component width supports it.
-        tex->set_format(Texture::F_rgba12);
+        tex->set_format(force_srgb ? Texture::F_srgb_alpha : Texture::F_rgba12);
       } else {
         egg2pg_cat.warning()
           << "Ignoring inappropriate format " << egg_tex->get_format()
@@ -1286,23 +1331,36 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
       }
       break;
     case EggTexture::F_rgba8:
-      tex->set_format(Texture::F_rgba8);
+      tex->set_format(force_srgb ? Texture::F_srgb_alpha : Texture::F_rgba8);
       break;
     case EggTexture::F_rgba4:
-      tex->set_format(Texture::F_rgba4);
+      tex->set_format(force_srgb ? Texture::F_srgb_alpha : Texture::F_rgba4);
       break;
     case EggTexture::F_rgba5:
-      tex->set_format(Texture::F_rgba5);
+      tex->set_format(force_srgb ? Texture::F_srgb_alpha : Texture::F_rgba5);
       break;
-
-    case EggTexture::F_unspecified:
+    case EggTexture::F_srgb_alpha:
+      tex->set_format(Texture::F_srgb_alpha);
       break;
 
     default:
       egg2pg_cat.warning()
         << "Ignoring inappropriate format " << egg_tex->get_format()
         << " for 4-component texture " << egg_tex->get_name() << "\n";
+
+    case EggTexture::F_unspecified:
+      if (force_srgb) {
+        tex->set_format(Texture::F_srgb_alpha);
+      }
+      break;
     }
+  }
+
+  if (force_srgb && tex->get_format() != Texture::F_alpha &&
+      !Texture::is_srgb(tex->get_format())) {
+    egg2pg_cat.warning()
+      << "Unable to enable sRGB format on texture " << egg_tex->get_name()
+      << " with specified format " << egg_tex->get_format() << "\n";
   }
 
   switch (egg_tex->get_quality_level()) {
@@ -1480,6 +1538,10 @@ make_texture_stage(const EggTexture *egg_tex) {
 
   case EggTexture::ET_normal_gloss:
     stage->set_mode(TextureStage::M_normal_gloss);
+    break;
+
+  case EggTexture::ET_emission:
+    stage->set_mode(TextureStage::M_emission);
     break;
 
   case EggTexture::ET_unspecified:
@@ -1814,10 +1876,11 @@ make_node(EggGroup *egg_group, PandaNode *parent) {
     // A collision group: create collision geometry.
     node = new CollisionNode(egg_group->get_name());
 
+    // Piggy-back the desired transform to apply onto the node, since we can't
+    // break the ABI in 1.10.
+    node->set_transform(TransformState::make_mat(LCAST(PN_stdfloat, egg_group->get_vertex_to_node())));
     make_collision_solids(egg_group, egg_group, (CollisionNode *)node.p());
-
-    // Transform all of the collision solids into local space.
-    node->xform(LCAST(PN_stdfloat, egg_group->get_vertex_to_node()));
+    node->clear_transform();
 
     if ((egg_group->get_collide_flags() & EggGroup::CF_keep) != 0) {
       // If we also specified to keep the geometry, continue the traversal.
@@ -2180,13 +2243,14 @@ make_vertex_data(const EggRenderState *render_state,
   if (!ignore_color) {
     // Let's not use Direct3D-style colors on platforms where we only have
     // OpenGL anyway.
-#ifdef _WIN32
-    array_format->add_column(InternalName::get_color(), 1,
-                             Geom::NT_packed_dabc, Geom::C_color);
-#else
-    array_format->add_column(InternalName::get_color(), 4,
-                             Geom::NT_uint8, Geom::C_color);
-#endif
+    if (vertex_colors_prefer_packed) {
+      array_format->add_column(InternalName::get_color(), 1,
+                               Geom::NT_packed_dabc, Geom::C_color);
+    }
+    else {
+      array_format->add_column(InternalName::get_color(), 4,
+                               Geom::NT_uint8, Geom::C_color);
+    }
   }
 
   vector_string uv_names, uvw_names, tbn_names;
@@ -2773,7 +2837,7 @@ make_sphere(EggGroup *egg_group, EggGroup::CollideFlags flags,
  */
 bool EggLoader::
 make_box(EggGroup *egg_group, EggGroup::CollideFlags flags,
-         LPoint3 &min_p, LPoint3 &max_p, LColor &color) {
+         const LMatrix4 &xform, LPoint3 &min_p, LPoint3 &max_p) {
   EggGroup *geom_group = find_collision_geometry(egg_group, flags);
   if (geom_group != nullptr) {
     // Collect all of the vertices.
@@ -2802,13 +2866,12 @@ make_box(EggGroup *egg_group, EggGroup::CollideFlags flags,
     }
 
     EggVertex *vertex = (*vi);
-    LVertexd min_pd = vertex->get_pos3();
-    LVertexd max_pd = min_pd;
-    color = vertex->get_color();
+    LPoint3 min_pd = LCAST(PN_stdfloat, vertex->get_pos3()) * xform;
+    LPoint3 max_pd = min_pd;
 
     for (++vi; vi != vertices.end(); ++vi) {
       vertex = (*vi);
-      const LVertexd &pos = vertex->get_pos3();
+      LPoint3 pos = LCAST(PN_stdfloat, vertex->get_pos3()) * xform;
       min_pd.set(min(min_pd[0], pos[0]),
                  min(min_pd[1], pos[1]),
                  min(min_pd[2], pos[2]));
@@ -2817,11 +2880,23 @@ make_box(EggGroup *egg_group, EggGroup::CollideFlags flags,
                  max(max_pd[2], pos[2]));
     }
 
-    min_p = LCAST(PN_stdfloat, min_pd);
-    max_p = LCAST(PN_stdfloat, max_pd);
+    min_p = min_pd;
+    max_p = max_pd;
     return (min_pd != max_pd);
   }
   return false;
+}
+
+/**
+ * Creates a single generic Box corresponding to the polygons associated with
+ * this group.  This box is used by make_collision_box.
+ */
+bool EggLoader::
+make_box(EggGroup *egg_group, EggGroup::CollideFlags flags,
+         LPoint3 &min_p, LPoint3 &max_p, LColor &color) {
+
+  color.set(1.0, 1.0, 1.0, 1.0);
+  return make_box(egg_group, flags, LMatrix4::ident_mat(), min_p, max_p);
 }
 
 /**
@@ -2865,7 +2940,7 @@ make_collision_solids(EggGroup *start_group, EggGroup *egg_group,
     break;
 
   case EggGroup::CST_tube:
-    make_collision_tube(egg_group, cnode, start_group->get_collide_flags());
+    make_collision_capsule(egg_group, cnode, start_group->get_collide_flags());
     break;
 
   case EggGroup::CST_floor_mesh:
@@ -2904,6 +2979,7 @@ make_collision_plane(EggGroup *egg_group, CollisionNode *cnode,
           create_collision_plane(DCAST(EggPolygon, *ci), egg_group);
         if (csplane != nullptr) {
           apply_collision_flags(csplane, flags);
+          csplane->xform(cnode->get_transform()->get_mat());
           cnode->add_solid(csplane);
           return;
         }
@@ -3004,6 +3080,7 @@ make_collision_sphere(EggGroup *egg_group, CollisionNode *cnode,
     CollisionSphere *cssphere =
       new CollisionSphere(center, radius);
     apply_collision_flags(cssphere, flags);
+    cssphere->xform(cnode->get_transform()->get_mat());
     cnode->add_solid(cssphere);
   }
 }
@@ -3017,8 +3094,8 @@ make_collision_box(EggGroup *egg_group, CollisionNode *cnode,
                    EggGroup::CollideFlags flags) {
   LPoint3 min_p;
   LPoint3 max_p;
-  LColor dummycolor;
-  if (make_box(egg_group, flags, min_p, max_p, dummycolor)) {
+  CPT(TransformState) transform = cnode->get_transform();
+  if (make_box(egg_group, flags, transform->get_mat(), min_p, max_p)) {
     CollisionBox *csbox =
       new CollisionBox(min_p, max_p);
     apply_collision_flags(csbox, flags);
@@ -3040,17 +3117,18 @@ make_collision_inv_sphere(EggGroup *egg_group, CollisionNode *cnode,
     CollisionInvSphere *cssphere =
       new CollisionInvSphere(center, radius);
     apply_collision_flags(cssphere, flags);
+    cssphere->xform(cnode->get_transform()->get_mat());
     cnode->add_solid(cssphere);
   }
 }
 
 /**
- * Creates a single CollisionTube corresponding to the polygons associated
+ * Creates a single CollisionCapsule corresponding to the polygons associated
  * with this group.
  */
 void EggLoader::
-make_collision_tube(EggGroup *egg_group, CollisionNode *cnode,
-                    EggGroup::CollideFlags flags) {
+make_collision_capsule(EggGroup *egg_group, CollisionNode *cnode,
+                       EggGroup::CollideFlags flags) {
   EggGroup *geom_group = find_collision_geometry(egg_group, flags);
   if (geom_group != nullptr) {
     // Collect all of the vertices.
@@ -3175,7 +3253,7 @@ make_collision_tube(EggGroup *egg_group, CollisionNode *cnode,
 
         // Transform all of the points so that the major axis is along the Y
         // axis, and the origin is the center.  This is very similar to the
-        // CollisionTube's idea of its canonical orientation (although not
+        // CollisionCapsule's idea of its canonical orientation (although not
         // exactly the same, since it is centered on the origin instead of
         // having point_a on the origin).  It makes it easier to determine the
         // length and radius of the cylinder.
@@ -3230,11 +3308,12 @@ make_collision_tube(EggGroup *egg_group, CollisionNode *cnode,
         LPoint3d point_a = center - half;
         LPoint3d point_b = center + half;
 
-        CollisionTube *cstube =
-          new CollisionTube(LCAST(PN_stdfloat, point_a), LCAST(PN_stdfloat, point_b),
+        CollisionCapsule *cscapsule =
+          new CollisionCapsule(LCAST(PN_stdfloat, point_a), LCAST(PN_stdfloat, point_b),
                             radius);
-        apply_collision_flags(cstube, flags);
-        cnode->add_solid(cstube);
+        apply_collision_flags(cscapsule, flags);
+        cscapsule->xform(cnode->get_transform()->get_mat());
+        cnode->add_solid(cscapsule);
       }
     }
   }
@@ -3395,6 +3474,7 @@ create_collision_polygons(CollisionNode *cnode, EggPolygon *egg_poly,
         new CollisionPolygon(vertices_begin, vertices_end);
       if (cspoly->is_valid()) {
         apply_collision_flags(cspoly, flags);
+        cspoly->xform(cnode->get_transform()->get_mat());
         cnode->add_solid(cspoly);
       }
     }
@@ -3485,6 +3565,7 @@ create_collision_floor_mesh(CollisionNode *cnode,
     CollisionFloorMesh::TriangleIndices triangle = *ti;
     csfloor->add_triangle(triangle.p1, triangle.p2, triangle.p3);
   }
+  csfloor->xform(cnode->get_transform()->get_mat());
   cnode->add_solid(csfloor);
 }
 

@@ -71,6 +71,15 @@ unmark(VrpnDialDevice *device) {
 }
 
 /**
+ * Polls the connected device.  Normally you should not call this directly;
+ * this will be called by the VrpnClient.
+ */
+void VrpnDial::
+poll() {
+  _dial->mainloop();
+}
+
+/**
  *
  */
 void VrpnDial::

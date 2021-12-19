@@ -1,36 +1,35 @@
 """Contains miscellaneous utility functions and classes."""
 
-__all__ = ['indent',
-'doc', 'adjust', 'difference', 'intersection', 'union',
-'sameElements', 'makeList', 'makeTuple', 'list2dict', 'invertDict',
-'invertDictLossless', 'uniqueElements', 'disjoint', 'contains',
-'replace', 'reduceAngle', 'fitSrcAngle2Dest', 'fitDestAngle2Src',
-'closestDestAngle2', 'closestDestAngle', 'getSetterName',
-'getSetter', 'Functor', 'Stack', 'Queue',
-'bound', 'clamp', 'lerp', 'average', 'addListsByValue',
-'boolEqual', 'lineupPos', 'formatElapsedSeconds', 'solveQuadratic',
-'findPythonModule', 'mostDerivedLast',
-'clampScalar', 'weightedChoice', 'randFloat', 'normalDistrib',
-'weightedRand', 'randUint31', 'randInt32',
-'SerialNumGen', 'serialNum', 'uniqueName', 'Enum', 'Singleton',
-'SingletonError', 'printListEnum', 'safeRepr',
-'fastRepr', 'isDefaultValue',
-'ScratchPad', 'Sync', 'itype', 'getNumberedTypedString',
-'getNumberedTypedSortedString',
-'printNumberedTyped', 'DelayedCall', 'DelayedFunctor',
-'FrameDelayedCall', 'SubframeCall', 'getBase', 'GoldenRatio',
-'GoldenRectangle', 'rad90', 'rad180', 'rad270', 'rad360',
-'nullGen', 'loopGen', 'makeFlywheelGen', 'flywheel',
-'listToIndex2item', 'listToItem2index',
-'formatTimeCompact','deeptype','StdoutCapture','StdoutPassthrough',
-'Averager', 'getRepository', 'formatTimeExact', 'startSuperLog', 'endSuperLog',
-'typeName', 'safeTypeName', 'histogramDict', 'unescapeHtmlString']
+__all__ = [
+
+    'indent', 'doc', 'adjust', 'difference', 'intersection', 'union',
+    'sameElements', 'makeList', 'makeTuple', 'list2dict', 'invertDict',
+    'invertDictLossless', 'uniqueElements', 'disjoint', 'contains', 'replace',
+    'reduceAngle', 'fitSrcAngle2Dest', 'fitDestAngle2Src', 'closestDestAngle2',
+    'closestDestAngle', 'getSetterName', 'getSetter', 'Functor', 'Stack',
+    'Queue', 'bound', 'clamp', 'lerp', 'average', 'addListsByValue',
+    'boolEqual', 'lineupPos', 'formatElapsedSeconds', 'solveQuadratic',
+    'findPythonModule', 'mostDerivedLast', 'clampScalar', 'weightedChoice',
+    'randFloat', 'normalDistrib', 'weightedRand', 'randUint31', 'randInt32',
+    'SerialNumGen', 'serialNum', 'uniqueName', 'Enum', 'Singleton',
+    'SingletonError', 'printListEnum', 'safeRepr', 'fastRepr',
+    'isDefaultValue', 'ScratchPad', 'Sync', 'itype', 'getNumberedTypedString',
+    'getNumberedTypedSortedString', 'printNumberedTyped', 'DelayedCall',
+    'DelayedFunctor', 'FrameDelayedCall', 'SubframeCall', 'getBase',
+    'GoldenRatio', 'GoldenRectangle', 'rad90', 'rad180', 'rad270', 'rad360',
+    'nullGen', 'loopGen', 'makeFlywheelGen', 'flywheel', 'listToIndex2item',
+    'listToItem2index', 'formatTimeCompact', 'deeptype', 'StdoutCapture',
+    'StdoutPassthrough', 'Averager', 'getRepository', 'formatTimeExact',
+    'startSuperLog', 'endSuperLog', 'typeName', 'safeTypeName',
+    'histogramDict', 'unescapeHtmlString',
+]
 
 if __debug__:
-    __all__ += ['StackTrace', 'traceFunctionCall', 'traceParentCall', 'printThisCall',
-                'stackEntryInfo', 'lineInfo', 'callerInfo', 'lineTag',
-                'profileFunc', 'profiled', 'startProfile', 'printProfile',
-                'getProfileResultString', 'printStack', 'printReverseStack']
+    __all__ += ['StackTrace', 'traceFunctionCall', 'traceParentCall',
+                'printThisCall', 'stackEntryInfo', 'lineInfo', 'callerInfo',
+                'lineTag', 'profileFunc', 'profiled', 'startProfile',
+                'printProfile', 'getProfileResultString', 'printStack',
+                'printReverseStack']
 
 import types
 import math
@@ -38,63 +37,22 @@ import os
 import sys
 import random
 import time
+import builtins
+import importlib
+import functools
 
 __report_indent = 3
 
 from panda3d.core import ConfigVariableBool
 
-if sys.version_info >= (3, 0):
-    import builtins
-    xrange = range
-else:
-    import __builtin__ as builtins
 
-
-"""
-# with one integer positional arg, this uses about 4/5 of the memory of the Functor class below
-def Functor(function, *args, **kArgs):
-    argsCopy = args[:]
-    def functor(*cArgs, **ckArgs):
-        kArgs.update(ckArgs)
-        return function(*(argsCopy + cArgs), **kArgs)
-    return functor
-"""
-
-try:
-    import importlib
-except ImportError:
-    # Backward compatibility for Python 2.6.
-    def _resolve_name(name, package, level):
-        if not hasattr(package, 'rindex'):
-            raise ValueError("'package' not set to a string")
-        dot = len(package)
-        for x in xrange(level, 1, -1):
-            try:
-                dot = package.rindex('.', 0, dot)
-            except ValueError:
-                raise ValueError("attempted relative import beyond top-level "
-                                  "package")
-        return "%s.%s" % (package[:dot], name)
-
-    def import_module(name, package=None):
-        if name.startswith('.'):
-            if not package:
-                raise TypeError("relative imports require the 'package' argument")
-            level = 0
-            for character in name:
-                if character != '.':
-                    break
-                level += 1
-            name = _resolve_name(name[level:], package, level)
-        __import__(name)
-        return sys.modules[name]
-
-    imp = import_module('imp')
-    importlib = imp.new_module("importlib")
-    importlib._resolve_name = _resolve_name
-    importlib.import_module = import_module
-    sys.modules['importlib'] = importlib
-
+## with one integer positional arg, this uses about 4/5 of the memory of the Functor class below
+#def Functor(function, *args, **kArgs):
+#    argsCopy = args[:]
+#    def functor(*cArgs, **ckArgs):
+#        kArgs.update(ckArgs)
+#        return function(*(argsCopy + cArgs), **kArgs)
+#    return functor
 
 class Functor:
     def __init__(self, function, *args, **kargs):
@@ -217,7 +175,7 @@ if __debug__:
             comma = ','
             for filename, lineNum, funcName, text in self.trace:
                 r += '%s.%s:%s%s' % (filename[:filename.rfind('.py')][filename.rfind('\\')+1:], funcName, lineNum, comma)
-            if len(r):
+            if len(r) > 0:
                 r = r[:-len(comma)]
             return r
 
@@ -226,7 +184,7 @@ if __debug__:
             comma = ','
             for filename, lineNum, funcName, text in self.trace:
                 r = '%s.%s:%s%s%s' % (filename[:filename.rfind('.py')][filename.rfind('\\')+1:], funcName, lineNum, comma, r)
-            if len(r):
+            if len(r) > 0:
                 r = r[:-len(comma)]
             return r
 
@@ -260,16 +218,18 @@ if __debug__:
         co = f.f_code
         dict = f.f_locals
         n = co.co_argcount
-        if co.co_flags & 4: n = n+1
-        if co.co_flags & 8: n = n+1
-        r=''
+        if co.co_flags & 4:
+            n = n + 1
+        if co.co_flags & 8:
+            n = n + 1
+        r = ''
         if 'self' in dict:
-            r = '%s.'%(dict['self'].__class__.__name__,)
-        r+="%s("%(f.f_code.co_name,)
+            r = '%s.' % (dict['self'].__class__.__name__,)
+        r += "%s(" % (f.f_code.co_name,)
         comma=0 # formatting, whether we should type a comma.
         for i in range(n):
             name = co.co_varnames[i]
-            if name=='self':
+            if name == 'self':
                 continue
             if comma:
                 r+=', '
@@ -362,8 +322,8 @@ def intersection(a, b):
     """
     intersection(list, list):
     """
-    if not a: return []
-    if not b: return []
+    if not a or not b:
+        return []
     d = []
     for i in a:
         if (i in b) and (i not in d):
@@ -380,7 +340,7 @@ def union(a, b):
     # Copy a
     c = a[:]
     for i in b:
-        if (i not in c):
+        if i not in c:
             c.append(i)
     return c
 
@@ -397,18 +357,18 @@ def sameElements(a, b):
 
 def makeList(x):
     """returns x, converted to a list"""
-    if type(x) is list:
+    if isinstance(x, list):
         return x
-    elif type(x) is tuple:
+    elif isinstance(x, tuple):
         return list(x)
     else:
         return [x,]
 
 def makeTuple(x):
     """returns x, converted to a tuple"""
-    if type(x) is list:
+    if isinstance(x, list):
         return tuple(x)
-    elif type(x) is tuple:
+    elif isinstance(x, tuple):
         return x
     else:
         return (x,)
@@ -482,7 +442,7 @@ def contains(whole, sub):
     """
     Return 1 if whole contains sub, 0 otherwise
     """
-    if (whole == sub):
+    if whole == sub:
         return 1
     for elem in sub:
         # The first item you find not in whole, return 0
@@ -507,7 +467,7 @@ def replace(list, old, new, all=0):
         return 1
     else:
         numReplaced = 0
-        for i in xrange(len(list)):
+        for i in range(len(list)):
             if list[i] == old:
                 numReplaced += 1
                 list[i] = new
@@ -522,7 +482,7 @@ def reduceAngle(deg):
     """
     Reduces an angle (in degrees) to a value in [-180..180)
     """
-    return (((deg + 180.) % 360.) - 180.)
+    return ((deg + 180.) % 360.) - 180.
 
 def fitSrcAngle2Dest(src, dest):
     """
@@ -652,38 +612,36 @@ if __debug__:
         """ decorator for profiling functions
         turn categories on and off via "want-profile-categoryName 1"
 
-        e.g.
+        e.g.::
 
-        @profiled('particles')
-        def loadParticles():
-            ...
+            @profiled('particles')
+            def loadParticles():
+                ...
 
-        want-profile-particles 1
+        ::
+
+            want-profile-particles 1
         """
         assert type(category) in (str, type(None)), "must provide a category name for @profiled"
 
         # allow profiling in published versions
-        """
-        try:
-            null = not __dev__
-        except:
-            null = not __debug__
-        if null:
-            # if we're not in __dev__, just return the function itself. This
-            # results in zero runtime overhead, since decorators are evaluated
-            # at module-load.
-            def nullDecorator(f):
-                return f
-            return nullDecorator
-        """
+        #try:
+        #    null = not __dev__
+        #except:
+        #    null = not __debug__
+        #if null:
+        #    # if we're not in __dev__, just return the function itself. This
+        #    # results in zero runtime overhead, since decorators are evaluated
+        #    # at module-load.
+        #    def nullDecorator(f):
+        #        return f
+        #    return nullDecorator
 
         def profileDecorator(f):
             def _profiled(*args, **kArgs):
                 name = '(%s) %s from %s' % (category, f.__name__, f.__module__)
 
-                # showbase might not be loaded yet, so don't use
-                # base.config.  Instead, query the ConfigVariableBool.
-                if (category is None) or ConfigVariableBool('want-profile-%s' % category, 0).getValue():
+                if category is None or ConfigVariableBool('want-profile-%s' % category, False).value:
                     return profileFunc(Functor(f, *args, **kArgs), name, terse)
                 else:
                     return f(*args, **kArgs)
@@ -796,7 +754,6 @@ if __debug__:
         Profile = profile.Profile
         statement = cmd
         sort = -1
-        retVal = None
         #### COPIED FROM profile.run ####
         prof = Profile()
         try:
@@ -807,11 +764,10 @@ if __debug__:
             prof.dump_stats(filename)
         else:
             #return prof.print_stats(sort)  #DCR
-            retVal = prof.print_stats(sort) #DCR
+            prof.print_stats(sort) #DCR
         #################################
         # eliminate the garbage leak
         del prof.dispatcher
-        return retVal
 
     def startProfile(filename=PyUtilProfileDefaultFilename,
                      lines=PyUtilProfileDefaultLines,
@@ -1130,6 +1086,10 @@ def weightedChoice(choiceList, rng=random.random, sum=None):
     """given a list of (weight, item) pairs, chooses an item based on the
     weights. rng must return 0..1. if you happen to have the sum of the
     weights, pass it in 'sum'."""
+    # Throw an IndexError if we got an empty list.
+    if not choiceList:
+        raise IndexError('Cannot choose from an empty sequence')
+
     # TODO: add support for dicts
     if sum is None:
         sum = 0.
@@ -1138,6 +1098,7 @@ def weightedChoice(choiceList, rng=random.random, sum=None):
 
     rand = rng()
     accum = rand * sum
+    item = None
     for weight, item in choiceList:
         accum -= weight
         if accum <= 0.:
@@ -1166,8 +1127,6 @@ def normalDistrib(a, b, gauss=random.gauss):
     uniformly onto the curve inside [a, b]
 
     ------------------------------------------------------------------------
-    http://www-stat.stanford.edu/~naras/jsm/NormalDensity/NormalDensity.html
-
     The 68-95-99.7% Rule
     ====================
     All normal density curves satisfy the following property which is often
@@ -1190,13 +1149,14 @@ def normalDistrib(a, b, gauss=random.gauss):
 
 def weightedRand(valDict, rng=random.random):
     """
-    pass in a dictionary with a selection -> weight mapping.  Eg.
-    {"Choice 1": 10,
-     "Choice 2": 30,
-     "bear":     100}
+    pass in a dictionary with a selection -> weight mapping.  E.g.::
 
-    -Weights need not add up to any particular value.
-    -The actual selection will be returned.
+        {"Choice 1": 10,
+         "Choice 2": 30,
+         "bear":     100}
+
+    - Weights need not add up to any particular value.
+    - The actual selection will be returned.
     """
     selections = list(valDict.keys())
     weights = list(valDict.values())
@@ -1237,17 +1197,23 @@ class SerialNumGen:
         if start is None:
             start = 0
         self.__counter = start-1
+
     def next(self):
         self.__counter += 1
         return self.__counter
+
+    __next__ = next
 
 class SerialMaskedGen(SerialNumGen):
     def __init__(self, mask, start=None):
         self._mask = mask
         SerialNumGen.__init__(self, start)
+
     def next(self):
         v = SerialNumGen.next(self)
         return v & self._mask
+
+    __next__ = next
 
 _serialGen = SerialNumGen()
 def serialNum():
@@ -1259,7 +1225,7 @@ def uniqueName(name):
 
 class EnumIter:
     def __init__(self, enum):
-        self._values = list(enum._stringTable.keys())
+        self._values = tuple(enum._stringTable.keys())
         self._index = 0
     def __iter__(self):
         return self
@@ -1268,7 +1234,6 @@ class EnumIter:
             raise StopIteration
         self._index += 1
         return self._values[self._index-1]
-    next = __next__
 
 class Enum:
     """Pass in list of strings or string of comma-separated strings.
@@ -1555,9 +1520,8 @@ def convertTree(objTree, idList):
 
 def r_convertTree(oldTree, newTree, idList):
     for key in list(oldTree.keys()):
-
         obj = idList.get(key)
-        if(not obj):
+        if not obj:
             continue
         obj = str(obj)[:100]
 
@@ -1572,10 +1536,10 @@ def pretty_print(tree):
 
 
 def r_pretty_print(tree, num):
-    num+=1
+    num += 1
     for name in tree.keys():
-        print("  "*num,name)
-        r_pretty_print(tree[name],num)
+        print("  " * num, name)
+        r_pretty_print(tree[name], num)
 
 
 def isDefaultValue(x):
@@ -1592,7 +1556,7 @@ def appendStr(obj, st):
             return s
         oldStr = Functor(stringer, str(obj))
         stringer = None
-    obj.__str__ = types.MethodType(Functor(appendedStr, oldStr, st), obj, obj.__class__)
+    obj.__str__ = types.MethodType(Functor(appendedStr, oldStr, st), obj)
     appendedStr = None
     return obj
 
@@ -1652,18 +1616,13 @@ def itype(obj):
     # version of type that gives more complete information about instance types
     global dtoolSuperBase
     t = type(obj)
-    if t is types.InstanceType:
-        return '%s of <class %s>>' % (repr(types.InstanceType)[:-1],
-                                      str(obj.__class__))
-    else:
-        # C++ object instances appear to be types via type()
-        # check if this is a C++ object
-        if dtoolSuperBase is None:
-            _getDtoolSuperBase()
-        if isinstance(obj, dtoolSuperBase):
-            return '%s of %s>' % (repr(types.InstanceType)[:-1],
-                                  str(obj.__class__))
-        return t
+    # C++ object instances appear to be types via type()
+    # check if this is a C++ object
+    if dtoolSuperBase is None:
+        _getDtoolSuperBase()
+    if isinstance(obj, dtoolSuperBase):
+        return "<type 'instance' of %s>" % (obj.__class__)
+    return t
 
 def deeptype(obj, maxLen=100, _visitedIds=None):
     if _visitedIds is None:
@@ -1718,12 +1677,11 @@ def getNumberedTypedString(items, maxLen=5000, numPrefix=''):
     while n > 0:
         digits += 1
         n //= 10
-    digits = digits
     format = numPrefix + '%0' + '%s' % digits + 'i:%s \t%s'
     first = True
     s = ''
     snip = '<SNIP>'
-    for i in xrange(len(items)):
+    for i in range(len(items)):
         if not first:
             s += '\n'
         first = False
@@ -1742,7 +1700,6 @@ def getNumberedTypedSortedString(items, maxLen=5000, numPrefix=''):
     while n > 0:
         digits += 1
         n //= 10
-    digits = digits
     format = numPrefix + '%0' + '%s' % digits + 'i:%s \t%s'
     snip = '<SNIP>'
     strs = []
@@ -1754,7 +1711,7 @@ def getNumberedTypedSortedString(items, maxLen=5000, numPrefix=''):
     first = True
     s = ''
     strs.sort()
-    for i in xrange(len(strs)):
+    for i in range(len(strs)):
         if not first:
             s += '\n'
         first = False
@@ -1770,9 +1727,8 @@ def printNumberedTyped(items, maxLen=5000):
     while n > 0:
         digits += 1
         n //= 10
-    digits = digits
     format = '%0' + '%s' % digits + 'i:%s \t%s'
-    for i in xrange(len(items)):
+    for i in range(len(items)):
         objStr = fastRepr(items[i])
         if len(objStr) > maxLen:
             snip = '<SNIP>'
@@ -1785,9 +1741,8 @@ def printNumberedTypesGen(items, maxLen=5000):
     while n > 0:
         digits += 1
         n //= 10
-    digits = digits
     format = '%0' + '%s' % digits + 'i:%s'
-    for i in xrange(len(items)):
+    for i in range(len(items)):
         print(format % (i, itype(items[i])))
         yield None
 
@@ -1905,7 +1860,7 @@ class SubframeCall:
         self._taskName = None
         return task.done
     def cleanup(self):
-        if (self._taskName):
+        if self._taskName:
             taskMgr.remove(self._taskName)
             self._taskName = None
 
@@ -1939,7 +1894,6 @@ class PStatScope:
     def start(self, push = None):
         if push:
             self.push(push)
-            pass
         self.getCollector().start()
 
     def stop(self, pop = False):
@@ -1952,7 +1906,6 @@ class PStatScope:
         if label not in self.collectors:
             from panda3d.core import PStatCollector
             self.collectors[label] = PStatCollector(label)
-            pass
         # print '  ',self.collectors[label]
         return self.collectors[label]
 
@@ -1961,7 +1914,6 @@ def pstatcollect(scope, level = None):
         return f
 
     try:
-
         if not (__dev__ or ConfigVariableBool('force-pstatcollect', False)) or \
            not scope:
             return decorator
@@ -1973,8 +1925,6 @@ def pstatcollect(scope, level = None):
                 scope.stop(pop = True)
                 return val
             return wrap
-
-        pass
     except:
         pass
 
@@ -1994,42 +1944,42 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
     has no effect and no wrapping/transform occurs.  So in production,
     it's as if the report has been asserted out.
 
-    Parameters::
-    types : A subset list of ['timeStamp', 'frameCount', 'avLocation']
-            This allows you to specify certain useful bits of info.
+    Parameters:
+        types: A subset list of ['timeStamp', 'frameCount', 'avLocation']
+            This allows you to specify certain useful bits of info:
 
-            module:     Prints the module that this report statement
-                        can be found in.
-            args:       Prints the arguments as they were passed to
-                        this function.
-            timeStamp:  Adds the current frame time to the output.
-            deltaStamp: Adds the current AI synched frame time to
-                        the output
-            frameCount: Adds the current frame count to the output.
-                        Usually cleaner than the timeStamp output.
-            avLocation: Adds the localAvatar's network location
-                        to the output.  Useful for interest debugging.
-            interests:  Prints the current interest state after the
-                        report.
-            stackTrace: Prints a stack trace after the report.
+              - *module*: Prints the module that this report statement
+                can be found in.
+              - *args*: Prints the arguments as they were passed to this
+                function.
+              - *timeStamp*: Adds the current frame time to the output.
+              - *deltaStamp*: Adds the current AI synched frame time to
+                the output
+              - *frameCount*: Adds the current frame count to the output.
+                Usually cleaner than the timeStamp output.
+              - *avLocation*: Adds the localAvatar's network location to
+                the output.  Useful for interest debugging.
+              - *interests*: Prints the current interest state after the
+                report.
+              - *stackTrace*: Prints a stack trace after the report.
 
-    prefix: Optional string to prepend to output, just before the function.
-            Allows for easy grepping and is useful when merging AI/Client
-            reports into a single file.
+        prefix: Optional string to prepend to output, just before the
+            function.  Allows for easy grepping and is useful when
+            merging AI/Client reports into a single file.
 
-    xform:  Optional callback that accepts a single parameter: argument 0 to
-            the decorated function. (assumed to be 'self')
-            It should return a value to be inserted into the report output string.
+        xform:  Optional callback that accepts a single parameter:
+            argument 0 to the decorated function. (assumed to be 'self')
+            It should return a value to be inserted into the report
+            output string.
 
-    notifyFunc: A notify function such as info, debug, warning, etc.
-                By default the report will be printed to stdout. This
-                will allow you send the report to a designated 'notify'
-                output.
+        notifyFunc: A notify function such as info, debug, warning, etc.
+            By default the report will be printed to stdout. This will
+            allow you send the report to a designated 'notify' output.
 
-    dConfigParam: A list of Config.prc string variables.
-                  By default the report will always print.  If you
-                  specify this param, it will only print if one of the
-                  specified config strings resolve to True.
+        dConfigParam: A list of Config.prc string variables.
+            By default the report will always print.  If you specify
+            this param, it will only print if one of the specified
+            config strings resolve to True.
     """
 
 
@@ -2041,7 +1991,7 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
         return f
 
     try:
-        if not (__dev__ or config.GetBool('force-reports', 0)):
+        if not __dev__ and not ConfigVariableBool('force-reports', False):
             return decorator
 
         # determine whether we should use the decorator
@@ -2051,17 +2001,15 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
         if not dConfigParam:
             doPrint = True
         else:
-
             if not isinstance(dConfigParam, (list,tuple)):
                 dConfigParams = (dConfigParam,)
             else:
                 dConfigParams = dConfigParam
 
             dConfigParamList = [param for param in dConfigParams \
-                                if config.GetBool('want-%s-report' % (param,), 0)]
+                                if ConfigVariableBool('want-%s-report' % (param,), False)]
 
             doPrint = bool(dConfigParamList)
-            pass
 
         if not doPrint:
             return decorator
@@ -2071,14 +2019,11 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
             prefixes = set([prefix])
         else:
             prefixes = set()
-            pass
 
         for param in dConfigParamList:
             prefix = config.GetString('prefix-%s-report' % (param,), '')
             if prefix:
                 prefixes.add(prefix)
-                pass
-            pass
 
     except NameError as e:
         return decorator
@@ -2099,7 +2044,7 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
             if not rArgs:
                 rArgs = '()'
             else:
-                rArgs = '(' + reduce(str.__add__,rArgs)[:-2] + ')'
+                rArgs = '(' + functools.reduce(str.__add__,rArgs)[:-2] + ')'
 
 
             outStr = '%s%s' % (f.__name__, rArgs)
@@ -2155,8 +2100,6 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
                 __report_indent -= 1
                 if rVal is not None:
                     print(indent(' -> '+repr(rVal)))
-                    pass
-                pass
             return rVal
 
         wrap.__name__ = f.__name__
@@ -2216,7 +2159,7 @@ if __debug__:
                             s += '%s, ' % arg
                         for key, value in list(kArgs.items()):
                             s += '%s=%s, ' % (key, value)
-                        if len(args) or len(kArgs):
+                        if len(args) > 0 or len(kArgs) > 0:
                             s = s[:-2]
                         s += ')'
                         if append:
@@ -2266,7 +2209,7 @@ def makeFlywheelGen(objects, countList=None, countFunc=None, scale=None):
     # if scale is provided, all counts are scaled by the scale value and then int()'ed.
     def flywheel(index2objectAndCount):
         # generator to produce a sequence whose elements appear a specific number of times
-        while len(index2objectAndCount):
+        while len(index2objectAndCount) > 0:
             keyList = list(index2objectAndCount.keys())
             for key in keyList:
                 if index2objectAndCount[key][1] > 0:
@@ -2282,14 +2225,14 @@ def makeFlywheelGen(objects, countList=None, countFunc=None, scale=None):
             countList.append(countFunc(object))
     if scale is not None:
         # scale the counts if we've got a scale factor
-        for i in xrange(len(countList)):
+        for i in range(len(countList)):
             yield None
             if countList[i] > 0:
                 countList[i] = max(1, int(countList[i] * scale))
     # create a dict for the flywheel to use during its iteration to efficiently select
     # the objects for the sequence
     index2objectAndCount = {}
-    for i in xrange(len(countList)):
+    for i in range(len(countList)):
         yield None
         index2objectAndCount[i] = [objects[i], countList[i]]
     # create the flywheel generator
@@ -2314,12 +2257,12 @@ if __debug__:
     def quickProfile(name="unnamed"):
         import pstats
         def profileDecorator(f):
-            if(not config.GetBool("use-profiler",0)):
+            if not ConfigVariableBool("use-profiler", False):
                 return f
             def _profiled(*args, **kArgs):
                 # must do this in here because we don't have base/simbase
                 # at the time that PythonUtil is loaded
-                if(not config.GetBool("profile-debug",0)):
+                if not ConfigVariableBool("profile-debug", False):
                     #dumb timings
                     st=globalClock.getRealTime()
                     f(*args,**kArgs)
@@ -2329,10 +2272,10 @@ if __debug__:
                     import profile as prof, pstats
 
                     #detailed profile, stored in base.stats under (
-                    if(not hasattr(base,"stats")):
-                        base.stats={}
-                    if(not base.stats.get(name)):
-                        base.stats[name]=[]
+                    if not hasattr(base, "stats"):
+                        base.stats = {}
+                    if not base.stats.get(name):
+                        base.stats[name] = []
 
                     prof.runctx('f(*args, **kArgs)', {'f':f,'args':args,'kArgs':kArgs},None,"t.prof")
                     s=pstats.Stats("t.prof")
@@ -2358,10 +2301,10 @@ def getAnnounceGenerateTime(stat):
     val=0
     stats=stat.stats
     for i in list(stats.keys()):
-        if(i[2]=="announceGenerate"):
-            newVal=stats[i][3]
-            if(newVal>val):
-                val=newVal
+        if i[2] == "announceGenerate":
+            newVal = stats[i][3]
+            if newVal > val:
+                val = newVal
     return val
 
 
@@ -2382,7 +2325,7 @@ class MiniLog:
         if not rArgs:
             rArgs = '()'
         else:
-            rArgs = '(' + reduce(str.__add__,rArgs)[:-2] + ')'
+            rArgs = '(' + functools.reduce(str.__add__,rArgs)[:-2] + ')'
 
         line = '%s%s' % (funcName, rArgs)
         self.appendFunctionCall(line)
@@ -2508,12 +2451,13 @@ class AlphabetCounter:
     # object that produces 'A', 'B', 'C', ... 'AA', 'AB', etc.
     def __init__(self):
         self._curCounter = ['A']
+
     def next(self):
         result = ''.join([c for c in self._curCounter])
         index = -1
         while True:
             curChar = self._curCounter[index]
-            if curChar is 'Z':
+            if curChar == 'Z':
                 nextChar = 'A'
                 carry = True
             else:
@@ -2531,11 +2475,13 @@ class AlphabetCounter:
                 break
         return result
 
+    __next__ = next
+
 if __debug__ and __name__ == '__main__':
     def testAlphabetCounter():
         tempList = []
         ac = AlphabetCounter()
-        for i in xrange(26*3):
+        for i in range(26*3):
             tempList.append(ac.next())
         assert tempList == [ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
                             'AA','AB','AC','AD','AE','AF','AG','AH','AI','AJ','AK','AL','AM','AN','AO','AP','AQ','AR','AS','AT','AU','AV','AW','AX','AY','AZ',
@@ -2546,7 +2492,7 @@ if __debug__ and __name__ == '__main__':
         num += 26 # AAZ
         num += 1 # ABA
         num += 2 # ABC
-        for i in xrange(num):
+        for i in range(num):
             x = ac.next()
         assert x == 'ABC'
     testAlphabetCounter()
@@ -2562,10 +2508,10 @@ superLogFile = None
 def startSuperLog(customFunction = None):
     global superLogFile
 
-    if(not superLogFile):
+    if not superLogFile:
         superLogFile = open("c:\\temp\\superLog.txt", "w")
         def trace_dispatch(a,b,c):
-            if(b=='call' and a.f_code.co_name != '?' and a.f_code.co_name.find("safeRepr")<0):
+            if b == 'call' and a.f_code.co_name != '?' and a.f_code.co_name.find("safeRepr") < 0:
                 vars = dict(a.f_locals)
                 if 'self' in vars:
                     del vars['self']
@@ -2589,7 +2535,7 @@ def startSuperLog(customFunction = None):
 
 def endSuperLog():
     global superLogFile
-    if(superLogFile):
+    if superLogFile:
         sys.settrace(None)
         superLogFile.close()
         superLogFile = None

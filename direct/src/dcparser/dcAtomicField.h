@@ -40,7 +40,7 @@ PUBLISHED:
   DCParameter *get_element(int n) const;
 
   // These five methods are deprecated and will be removed soon.
-  std::string get_element_default(int n) const;
+  vector_uchar get_element_default(int n) const;
   bool has_element_default(int n) const;
   std::string get_element_name(int n) const;
   DCSubatomicType get_element_type(int n) const;

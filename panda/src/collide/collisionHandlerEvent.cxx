@@ -154,6 +154,52 @@ flush() {
 }
 
 /**
+ * Serializes this object, to implement pickle support.
+ */
+void CollisionHandlerEvent::
+write_datagram(Datagram &dg) const {
+  dg.add_uint32(_in_patterns.size());
+  for (const std::string &pattern : _in_patterns) {
+    dg.add_string(pattern);
+  }
+
+  dg.add_uint32(_again_patterns.size());
+  for (const std::string &pattern : _again_patterns) {
+    dg.add_string(pattern);
+  }
+
+  dg.add_uint32(_out_patterns.size());
+  for (const std::string &pattern : _out_patterns) {
+    dg.add_string(pattern);
+  }
+}
+
+/**
+ * Restores the object state from the given datagram, previously obtained using
+ * __getstate__.
+ */
+void CollisionHandlerEvent::
+read_datagram(DatagramIterator &scan) {
+  _in_patterns.clear();
+  size_t num_in_patterns = scan.get_uint32();
+  for (size_t i = 0; i < num_in_patterns; ++i) {
+    add_in_pattern(scan.get_string());
+  }
+
+  _again_patterns.clear();
+  size_t num_again_patterns = scan.get_uint32();
+  for (size_t i = 0; i < num_again_patterns; ++i) {
+    add_again_pattern(scan.get_string());
+  }
+
+  _out_patterns.clear();
+  size_t num_out_patterns = scan.get_uint32();
+  for (size_t i = 0; i < num_out_patterns; ++i) {
+    add_out_pattern(scan.get_string());
+  }
+}
+
+/**
  * Throws whatever events are suggested by the list of patterns.
  */
 void CollisionHandlerEvent::

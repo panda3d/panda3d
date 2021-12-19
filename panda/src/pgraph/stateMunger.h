@@ -17,7 +17,6 @@
 #include "pandabase.h"
 #include "geomMunger.h"
 #include "renderState.h"
-#include "weakKeyHashMap.h"
 
 /**
  * This is just a simple derivative of GeomMunger that adds the ability to

@@ -89,8 +89,7 @@ LightAttrib::
  * Constructs a new LightAttrib object that turns on (or off, according to op)
  * the indicated light(s).
  *
- * This method is now deprecated.  Use add_on_light() or add_off_light()
- * instead.
+ * @deprecated Use add_on_light() or add_off_light() instead.
  */
 CPT(RenderAttrib) LightAttrib::
 make(LightAttrib::Operation op, Light *light) {
@@ -124,8 +123,7 @@ make(LightAttrib::Operation op, Light *light) {
  * Constructs a new LightAttrib object that turns on (or off, according to op)
  * the indicate light(s).
  *
- * This method is now deprecated.  Use add_on_light() or add_off_light()
- * instead.
+ * @deprecated Use add_on_light() or add_off_light() instead.
  */
 CPT(RenderAttrib) LightAttrib::
 make(LightAttrib::Operation op, Light *light1, Light *light2) {
@@ -162,8 +160,7 @@ make(LightAttrib::Operation op, Light *light1, Light *light2) {
  * Constructs a new LightAttrib object that turns on (or off, according to op)
  * the indicate light(s).
  *
- * This method is now deprecated.  Use add_on_light() or add_off_light()
- * instead.
+ * @deprecated Use add_on_light() or add_off_light() instead.
  */
 CPT(RenderAttrib) LightAttrib::
 make(LightAttrib::Operation op, Light *light1, Light *light2,
@@ -204,8 +201,7 @@ make(LightAttrib::Operation op, Light *light1, Light *light2,
  * Constructs a new LightAttrib object that turns on (or off, according to op)
  * the indicate light(s).
  *
- * This method is now deprecated.  Use add_on_light() or add_off_light()
- * instead.
+ * @deprecated Use add_on_light() or add_off_light() instead.
  */
 CPT(RenderAttrib) LightAttrib::
 make(LightAttrib::Operation op, Light *light1, Light *light2,
@@ -261,9 +257,9 @@ make_default() {
  * already on, and if O_remove, the lights here are removed from the set of
  * lights that were on.
  *
- * This method is now deprecated.  LightAttribs nowadays have a separate list
- * of on_lights and off_lights, so this method doesn't make sense.  Query the
- * lists independently.
+ * @deprecated LightAttribs nowadays have a separate list of on_lights and
+ * off_lights, so this method no longer makes sense.  Query the lists
+ * independently.
  */
 LightAttrib::Operation LightAttrib::
 get_operation() const {
@@ -284,9 +280,9 @@ get_operation() const {
 /**
  * Returns the number of lights listed in the attribute.
  *
- * This method is now deprecated.  LightAttribs nowadays have a separate list
- * of on_lights and off_lights, so this method doesn't make sense.  Query the
- * lists independently.
+ * @deprecated LightAttribs nowadays have a separate list of on_lights and
+ * off_lights, so this method no longer makes sense.  Query the lists
+ * independently.
  */
 int LightAttrib::
 get_num_lights() const {
@@ -303,9 +299,9 @@ get_num_lights() const {
 /**
  * Returns the nth light listed in the attribute.
  *
- * This method is now deprecated.  LightAttribs nowadays have a separate list
- * of on_lights and off_lights, so this method doesn't make sense.  Query the
- * lists independently.
+ * @deprecated LightAttribs nowadays have a separate list of on_lights and
+ * off_lights, so this method no longer makes sense.  Query the lists
+ * independently.
  */
 Light *LightAttrib::
 get_light(int n) const {
@@ -323,9 +319,9 @@ get_light(int n) const {
  * Returns true if the indicated light is listed in the attrib, false
  * otherwise.
  *
- * This method is now deprecated.  LightAttribs nowadays have a separate list
- * of on_lights and off_lights, so this method doesn't make sense.  Query the
- * lists independently.
+ * @deprecated LightAttribs nowadays have a separate list of on_lights and
+ * off_lights, so this method no longer makes sense.  Query the lists
+ * independently.
  */
 bool LightAttrib::
 has_light(Light *light) const {
@@ -343,8 +339,7 @@ has_light(Light *light) const {
  * Returns a new LightAttrib, just like this one, but with the indicated light
  * added to the list of lights.
  *
- * This method is now deprecated.  Use add_on_light() or add_off_light()
- * instead.
+ * @deprecated Use add_on_light() or add_off_light() instead.
  */
 CPT(RenderAttrib) LightAttrib::
 add_light(Light *light) const {
@@ -362,8 +357,7 @@ add_light(Light *light) const {
  * Returns a new LightAttrib, just like this one, but with the indicated light
  * removed from the list of lights.
  *
- * This method is now deprecated.  Use remove_on_light() or remove_off_light()
- * instead.
+ * @deprecated Use remove_on_light() or remove_off_light() instead.
  */
 CPT(RenderAttrib) LightAttrib::
 remove_light(Light *light) const {
@@ -451,6 +445,36 @@ remove_on_light(const NodePath &light) const {
 
 /**
  * Returns a new LightAttrib, just like this one, but with the indicated light
+ * replaced with the given other light.
+ */
+CPT(RenderAttrib) LightAttrib::
+replace_on_light(const NodePath &source, const NodePath &dest) const {
+  if (source == dest) {
+    return this;
+  }
+
+  nassertr(!source.is_empty(), this);
+  Light *slobj = source.node()->as_light();
+  nassertr(slobj != nullptr, this);
+
+  nassertr(!dest.is_empty(), this);
+  Light *dlobj = dest.node()->as_light();
+  nassertr(dlobj != nullptr, this);
+
+  LightAttrib *attrib = new LightAttrib(*this);
+
+  auto it = attrib->_on_lights.find(source);
+  if (it != attrib->_on_lights.end()) {
+    dlobj->attrib_ref();
+    slobj->attrib_unref();
+
+    *it = dest;
+  }
+  return return_new(attrib);
+}
+
+/**
+ * Returns a new LightAttrib, just like this one, but with the indicated light
  * added to the list of lights turned off by this attrib.
  */
 CPT(RenderAttrib) LightAttrib::
@@ -478,6 +502,36 @@ remove_off_light(const NodePath &light) const {
   nassertr(!light.is_empty() && light.node()->as_light() != nullptr, this);
   LightAttrib *attrib = new LightAttrib(*this);
   attrib->_off_lights.erase(light);
+  return return_new(attrib);
+}
+
+/**
+ * Returns a new LightAttrib, just like this one, but with the indicated light
+ * replaced with the given other light.
+ */
+CPT(RenderAttrib) LightAttrib::
+replace_off_light(const NodePath &source, const NodePath &dest) const {
+  if (source == dest) {
+    return this;
+  }
+
+  nassertr(!source.is_empty(), this);
+  Light *slobj = source.node()->as_light();
+  nassertr(slobj != nullptr, this);
+
+  nassertr(!dest.is_empty(), this);
+  Light *dlobj = dest.node()->as_light();
+  nassertr(dlobj != nullptr, this);
+
+  LightAttrib *attrib = new LightAttrib(*this);
+
+  auto it = attrib->_off_lights.find(source);
+  if (it != attrib->_off_lights.end()) {
+    dlobj->attrib_ref();
+    slobj->attrib_unref();
+
+    *it = dest;
+  }
   return return_new(attrib);
 }
 

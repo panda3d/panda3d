@@ -17,6 +17,7 @@
 #include "pandabase.h"
 
 #include "bitMask.h"
+#include "extension.h"
 
 /**
  * This is a special BitMask type that is implemented as a pair of lesser
@@ -38,6 +39,7 @@ PUBLISHED:
   };
 
   constexpr DoubleBitMask() = default;
+  EXTENSION(DoubleBitMask(PyObject *init_value));
 
   INLINE static DoubleBitMask<BMType> all_on();
   INLINE static DoubleBitMask<BMType> all_off();
@@ -110,11 +112,17 @@ PUBLISHED:
   INLINE void operator <<= (int shift);
   INLINE void operator >>= (int shift);
 
+  EXTENSION(bool __bool__() const);
+  EXTENSION(PyObject *__int__() const);
+  EXTENSION(PyObject *__reduce__(PyObject *self) const);
+
 public:
   INLINE void generate_hash(ChecksumHashGenerator &hashgen) const;
 
 private:
   BitMaskType _lo, _hi;
+
+  friend class Extension<DoubleBitMask>;
 
 public:
   static TypeHandle get_class_type() {

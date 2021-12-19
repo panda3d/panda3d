@@ -21,18 +21,6 @@ typedef struct {
 }
 DISPLAY_FORMAT;
 
-typedef union
-{
-  struct
-  {
-    unsigned int day : 8;
-    unsigned int month : 8;
-    unsigned int year : 16;
-  };
-  DWORD whql;
-}
-WHQL;
-
 static DISPLAY_FORMAT display_format_array [ ] = {
   D3DFMT_X8R8G8B8,    32, FALSE,
   D3DFMT_R5G6B5,      16, FALSE,
@@ -43,8 +31,6 @@ static DISPLAY_FORMAT display_format_array [ ] = {
   // terminator
   D3DFMT_UNKNOWN,      0, FALSE,
 };
-
-typedef BOOL (WINAPI *GlobalMemoryStatusExType) (LPMEMORYSTATUSEX lpBuffer);
 
 static int d3d_format_to_bits_per_pixel (D3DFORMAT d3d_format) {
   int format_index;
@@ -320,14 +306,6 @@ static int get_display_information (DisplaySearchParameters &display_search_para
 
           if (debug) {
             printf ("DRIVER VERSION: %d.%d.%d.%d \n", product, version, sub_version, build);
-          }
-
-          WHQL whql;
-
-          whql.whql= d3d_adapter_identifier.WHQLLevel;
-
-          if (debug) {
-            printf ("WHQL: %d %d %d \n", whql.day, whql.day, whql.year);
           }
         }
 
@@ -632,32 +610,17 @@ static int get_display_information (DisplaySearchParameters &display_search_para
   }
 
   // memory
-  bool memory_state;
-  HMODULE kernel32_dll;
+  MEMORYSTATUSEX memory_status;
+  memory_status.dwLength = sizeof(MEMORYSTATUSEX);
 
-  memory_state = false;
-  kernel32_dll = LoadLibrary ("kernel32.dll");
-  if (kernel32_dll) {
-    GlobalMemoryStatusExType GlobalMemoryStatusExFunction;
-
-    GlobalMemoryStatusExFunction = (GlobalMemoryStatusExType) GetProcAddress (kernel32_dll, "GlobalMemoryStatusEx");
-    if (GlobalMemoryStatusExFunction) {
-      MEMORYSTATUSEX memory_status;
-
-      memory_status.dwLength = sizeof (MEMORYSTATUSEX);
-      if (GlobalMemoryStatusExFunction (&memory_status)) {
-        physical_memory = memory_status.ullTotalPhys;
-        available_physical_memory = memory_status.ullAvailPhys;
-        memory_state = true;
-      }
-    }
-    FreeLibrary (kernel32_dll);
-  }
-  if (memory_state == false) {
+  if (GlobalMemoryStatusEx(&memory_status)) {
+    physical_memory = memory_status.ullTotalPhys;
+    available_physical_memory = memory_status.ullAvailPhys;
+  } else  {
     MEMORYSTATUS memory_status;
+    memory_status.dwLength = sizeof(MEMORYSTATUS);
 
-    memory_status.dwLength = sizeof (MEMORYSTATUS);
-    GlobalMemoryStatus (&memory_status);
+    GlobalMemoryStatus(&memory_status);
 
     physical_memory = memory_status.dwTotalPhys;
     available_physical_memory = memory_status.dwAvailPhys;

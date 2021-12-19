@@ -15,6 +15,16 @@
 
 #ifdef HAVE_PYTHON
 
+static PyMemberDef standard_type_members[] = {
+  {(char *)"this", (sizeof(void*) == sizeof(int)) ? T_UINT : T_ULONGLONG, offsetof(Dtool_PyInstDef, _ptr_to_object), READONLY, (char *)"C++ 'this' pointer, if any"},
+  {(char *)"this_ownership", T_BOOL, offsetof(Dtool_PyInstDef, _memory_rules), READONLY, (char *)"C++ 'this' ownership rules"},
+  {(char *)"this_const", T_BOOL, offsetof(Dtool_PyInstDef, _is_const), READONLY, (char *)"C++ 'this' const flag"},
+// {(char *)"this_signature", T_INT, offsetof(Dtool_PyInstDef, _signature),
+// READONLY, (char *)"A type check signature"},
+  {(char *)"this_metatype", T_OBJECT, offsetof(Dtool_PyInstDef, _My_Type), READONLY, (char *)"The dtool meta object"},
+  {nullptr}  /* Sentinel */
+};
+
 static PyObject *GetSuperBase(PyObject *self) {
   Dtool_PyTypedObject *super_base = Dtool_GetSuperBase();
   Py_XINCREF((PyTypeObject *)super_base); // order is important .. this is used for static functions
@@ -70,7 +80,7 @@ Dtool_PyTypedObject *Dtool_GetSuperBase() {
       sizeof(Dtool_PyInstDef),
       0, // tp_itemsize
       &Dtool_FreeInstance_DTOOL_SUPER_BASE,
-      nullptr, // tp_print
+      0, // tp_vectorcall_offset
       nullptr, // tp_getattr
       nullptr, // tp_setattr
 #if PY_MAJOR_VERSION >= 3
@@ -119,6 +129,13 @@ Dtool_PyTypedObject *Dtool_GetSuperBase() {
       nullptr, // tp_subclasses
       nullptr, // tp_weaklist
       nullptr, // tp_del
+      0, // tp_version_tag,
+#if PY_VERSION_HEX >= 0x03040000
+      nullptr, // tp_finalize
+#endif
+#if PY_VERSION_HEX >= 0x03080000
+      nullptr, // tp_vectorcall
+#endif
     },
     TypeHandle::none(),
     Dtool_PyModuleClassInit_DTOOL_SUPER_BASE,

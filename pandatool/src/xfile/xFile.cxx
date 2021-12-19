@@ -34,7 +34,7 @@ PT(XFile) XFile::_standard_templates;
  *
  */
 XFile::
-XFile(bool keep_names) : XFileNode(this, "") {
+XFile(bool keep_names) : XFileNode(this) {
   _major_version = 3;
   _minor_version = 2;
   _format_type = FT_text;

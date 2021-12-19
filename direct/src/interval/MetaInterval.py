@@ -91,7 +91,7 @@ class MetaInterval(CMetaInterval):
 
         self.__ivalsDirty = 1
 
-        if name == None:
+        if name is None:
             name = self.__class__.__name__ + '-%d'
 
         if '%' in name:
@@ -155,7 +155,7 @@ class MetaInterval(CMetaInterval):
         if isinstance(self.ivals, tuple):
             self.ivals = list(self.ivals)
         self.__ivalsDirty = 1
-        if index == None:
+        if index is None:
             return self.ivals.pop()
         else:
             return self.ivals.pop(index)
@@ -179,7 +179,7 @@ class MetaInterval(CMetaInterval):
         if isinstance(self.ivals, tuple):
             self.ivals = list(self.ivals)
         self.__ivalsDirty = 1
-        if cmpfunc == None:
+        if cmpfunc is None:
             self.ivals.sort()
         else:
             self.ivals.sort(cmpfunc)
@@ -348,9 +348,13 @@ class MetaInterval(CMetaInterval):
     def getManager(self):
         return self.__manager
 
+    manager = property(getManager, setManager)
+
     def setT(self, t):
         self.__updateIvals()
         CMetaInterval.setT(self, t)
+
+    t = property(CMetaInterval.getT, setT)
 
     def start(self, startT = 0.0, endT = -1.0, playRate = 1.0):
         self.__updateIvals()
@@ -371,7 +375,7 @@ class MetaInterval(CMetaInterval):
 
     def resume(self, startT = None):
         self.__updateIvals()
-        if startT != None:
+        if startT is not None:
             self.setT(startT)
         self.setupResume()
         self.__manager.addInterval(self)
@@ -475,6 +479,8 @@ class MetaInterval(CMetaInterval):
         else:
             CMetaInterval.setPlayRate(self, playRate)
 
+    play_rate = property(CMetaInterval.getPlayRate, setPlayRate)
+
     def __doPythonCallbacks(self):
         # This function invokes any Python-level Intervals that need
         # to be invoked at this point in time.  It must be called
@@ -486,7 +492,7 @@ class MetaInterval(CMetaInterval):
 
         ival = None
         try:
-            while (self.isEventReady()):
+            while self.isEventReady():
                 index = self.getEventIndex()
                 t = self.getEventT()
                 eventType = self.getEventType()
@@ -497,7 +503,7 @@ class MetaInterval(CMetaInterval):
                 ival.privPostEvent()
                 ival = None
         except:
-            if ival != None:
+            if ival is not None:
                 print("Exception occurred while processing %s of %s:" % (ival.getName(), self.getName()))
             else:
                 print("Exception occurred while processing %s:" % (self.getName()))
@@ -549,6 +555,8 @@ class MetaInterval(CMetaInterval):
         self.__updateIvals()
         return CMetaInterval.getDuration(self)
 
+    duration = property(getDuration)
+
     def __repr__(self, *args, **kw):
         # This function overrides from the parent level to force it to
         # update the interval list first, if necessary.
@@ -569,7 +577,7 @@ class MetaInterval(CMetaInterval):
         # update the interval list first, if necessary.
 
         self.__updateIvals()
-        if out == None:
+        if out is None:
             out = ostream
         CMetaInterval.timeline(self, out)
 

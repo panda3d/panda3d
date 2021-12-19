@@ -17,8 +17,9 @@ drawOrder = 100
 panel = None
 
 # USEFUL GUI CONSTANTS
-# Constant used to indicate that an option can only be set by a call
-# to the constructor.
+
+#: Constant used to indicate that an option can only be set by a call
+#: to the constructor.
 INITOPT = ['initopt']
 
 # Mouse buttons
@@ -73,6 +74,8 @@ B1RELEASE = PGButton.getReleasePrefix() + MouseButton.one().getName() + '-'
 B2RELEASE = PGButton.getReleasePrefix() + MouseButton.two().getName() + '-'
 B3RELEASE = PGButton.getReleasePrefix() + MouseButton.three().getName() + '-'
 TOUCHRELEASE = PGButton.getPressPrefix() + MouseButton.touch().getName() + '-'
+WHEELUP = PGButton.getReleasePrefix() + MouseButton.wheelUp().getName() + '-'
+WHEELDOWN = PGButton.getReleasePrefix() + MouseButton.wheelDown().getName() + '-'
 # For DirectEntry widgets
 OVERFLOW = PGEntry.getOverflowPrefix()
 ACCEPT = PGEntry.getAcceptPrefix() + KeyboardButton.enter().getName() + '-'
@@ -124,11 +127,13 @@ def setDefaultClickSound(newSound):
 
 def getDefaultFont():
     global defaultFont
-    if defaultFont == None:
+    if defaultFont is None:
         defaultFont = defaultFontFunc()
     return defaultFont
 
 def setDefaultFont(newFont):
+    """Changes the default font for DirectGUI items.  To change the default
+    font across the board, see :meth:`.TextNode.setDefaultFont`. """
     global defaultFont
     defaultFont = newFont
 
@@ -163,6 +168,16 @@ def setDefaultPanel(newPanel):
     global panel
     panel = newPanel
 
-#from OnscreenText import *
-#from OnscreenGeom import *
-#from OnscreenImage import *
+get_default_rollover_sound = getDefaultRolloverSound
+set_default_rollover_sound = setDefaultRolloverSound
+get_default_click_sound = getDefaultClickSound
+set_default_click_sound = setDefaultClickSound
+get_default_font = getDefaultFont
+set_default_font = setDefaultFont
+get_default_dialog_geom = getDefaultDialogGeom
+get_default_dialog_relief = getDefaultDialogRelief
+set_default_dialog_geom = setDefaultDialogGeom
+get_default_draw_order = getDefaultDrawOrder
+set_default_draw_order = setDefaultDrawOrder
+get_default_panel = getDefaultPanel
+set_default_panel = setDefaultPanel

@@ -23,13 +23,14 @@
 #include "thread.h"
 #include "pmutex.h"
 #include "mutexHolder.h"
-#include "conditionVarFull.h"
+#include "conditionVar.h"
 #include "pvector.h"
 #include "pdeque.h"
 #include "pStatCollector.h"
 #include "clockObject.h"
 #include "ordered_vector.h"
 #include "indirectCompareNames.h"
+#include "functionAsyncTask.h"
 
 /**
  * A class to manage a loose queue of isolated tasks, which can be performed
@@ -64,6 +65,9 @@ PUBLISHED:
   BLOCKING bool remove_task_chain(const std::string &name);
 
   void add(AsyncTask *task);
+#ifndef CPPPARSER
+  INLINE AsyncTask *add(const std::string &name, FunctionAsyncTask::TaskFunction function);
+#endif
   bool has_task(AsyncTask *task) const;
 
   AsyncTask *find_task(const std::string &name) const;
@@ -130,7 +134,7 @@ protected:
   TasksByName _tasks_by_name;
   PT(ClockObject) _clock;
 
-  ConditionVarFull _frame_cvar;  // Signalled when the clock ticks.
+  ConditionVar _frame_cvar;  // Signalled when the clock ticks.
 
   static AsyncTaskManager* _global_ptr;
 

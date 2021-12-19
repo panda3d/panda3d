@@ -22,21 +22,18 @@
 typedef long time_t;
 typedef long clock_t;
 
-typedef unsigned int uint;
-typedef unsigned long ulong;
-typedef unsigned short ushort;
-typedef unsigned char uchar;
+#ifdef _WIN64
+#define __SIZE_TYPE__ unsigned long long
+#define __PTRDIFF_TYPE__ long long
+#else
+#define __SIZE_TYPE__ unsigned long
+#define __PTRDIFF_TYPE__ long
+#endif
 
 inline namespace std {
-#ifdef _WIN64
-  typedef unsigned long long size_t;
-  typedef long long ssize_t;
-  typedef long long ptrdiff_t;
-#else
-  typedef unsigned long size_t;
-  typedef long ssize_t;
-  typedef long ptrdiff_t;
-#endif
+  typedef __SIZE_TYPE__ size_t;
+  typedef __PTRDIFF_TYPE__ ssize_t;
+  typedef __PTRDIFF_TYPE__ ptrdiff_t;
 }
 
 struct timeval;

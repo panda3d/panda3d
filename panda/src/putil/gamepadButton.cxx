@@ -24,6 +24,8 @@ DEFINE_GAMEPAD_BUTTON_HANDLE(lshoulder)
 DEFINE_GAMEPAD_BUTTON_HANDLE(rshoulder)
 DEFINE_GAMEPAD_BUTTON_HANDLE(ltrigger)
 DEFINE_GAMEPAD_BUTTON_HANDLE(rtrigger)
+DEFINE_GAMEPAD_BUTTON_HANDLE(lgrip)
+DEFINE_GAMEPAD_BUTTON_HANDLE(rgrip)
 
 DEFINE_GAMEPAD_BUTTON_HANDLE(dpad_left)
 DEFINE_GAMEPAD_BUTTON_HANDLE(dpad_right)
@@ -87,6 +89,8 @@ init_gamepad_buttons() {
   ButtonRegistry::ptr()->register_button(_rshoulder, "rshoulder");
   ButtonRegistry::ptr()->register_button(_ltrigger, "ltrigger");
   ButtonRegistry::ptr()->register_button(_rtrigger, "rtrigger");
+  ButtonRegistry::ptr()->register_button(_lgrip, "lgrip");
+  ButtonRegistry::ptr()->register_button(_rgrip, "rgrip");
 
   ButtonRegistry::ptr()->register_button(_dpad_left, "dpad_left");
   ButtonRegistry::ptr()->register_button(_dpad_right, "dpad_right");

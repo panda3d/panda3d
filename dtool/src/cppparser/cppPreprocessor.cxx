@@ -1140,6 +1140,10 @@ check_trigraph(int c) {
   case RSHIFT:
     if (next_c == '=') return RSHIFTEQUAL;
     break;
+
+  case LECOMPARE:
+    if (next_c == '>') return SPACESHIP;
+    break;
   }
 
   return 0;
@@ -1942,7 +1946,22 @@ get_identifier(int c) {
   // Is it a manifest?
   Manifests::const_iterator mi = _manifests.find(name);
   if (mi != _manifests.end() && !should_ignore_manifest((*mi).second)) {
-    return expand_manifest((*mi).second);
+    // If the manifest is expecting arguments, we don't expand it unless the
+    // the next token is an open-parenthesis.
+    CPPManifest *manifest = (*mi).second;
+    if (manifest->_has_parameters) {
+      while (c != EOF && isspace(c)) {
+        get();
+        c = peek();
+      }
+      if (c == '(') {
+        // It is followed by a parenthesis, so we can expand this.
+        return expand_manifest(manifest);
+      }
+    } else {
+      // Non-function-like macros are always expanded.
+      return expand_manifest(manifest);
+    }
   }
   if (name == "__FILE__") {
     return get_literal(SIMPLE_STRING, loc, loc.file._filename_as_referenced);
@@ -1968,6 +1987,24 @@ get_identifier(int c) {
   }
 
   if (kw != 0) {
+    if (kw == KW_EXPLICIT || kw == KW_NOEXCEPT) {
+      // These can be followed by a left-paren.  Doing this helps to avoid
+      // shift/reduce conflicts in the parser.
+      while (c != EOF && isspace(c)) {
+        get();
+        c = peek();
+      }
+      if (c == '(') {
+        if (kw == KW_EXPLICIT) {
+          kw = KW_EXPLICIT_LPAREN;
+        }
+        else if (kw == KW_NOEXCEPT) {
+          kw = KW_NOEXCEPT_LPAREN;
+        }
+        get();
+      }
+    }
+
     YYSTYPE result;
     result.u.identifier = nullptr;
     return CPPToken(kw, loc, name, result);
@@ -2074,6 +2111,7 @@ get_literal(int token, YYLTYPE loc, const string &str, const YYSTYPE &value) {
         break;
       } else if (token == CHAR_TOK && (simple == CPPSimpleType::T_char ||
                                        simple == CPPSimpleType::T_wchar_t ||
+                                       simple == CPPSimpleType::T_char8_t ||
                                        simple == CPPSimpleType::T_char16_t ||
                                        simple == CPPSimpleType::T_char32_t)) {
         // We currently don't have the means to check the exact character
@@ -2111,7 +2149,7 @@ get_literal(int token, YYLTYPE loc, const string &str, const YYSTYPE &value) {
         CPPExpression::Type str_type = value.u.expr->_type;
         if ((str_type == CPPExpression::T_string && simple == CPPSimpleType::T_char) ||
             (str_type == CPPExpression::T_wstring && simple == CPPSimpleType::T_wchar_t) ||
-            (str_type == CPPExpression::T_u8string && simple == CPPSimpleType::T_char) ||
+            (str_type == CPPExpression::T_u8string && (simple == CPPSimpleType::T_char || simple == CPPSimpleType::T_char8_t)) ||
             (str_type == CPPExpression::T_u16string && simple == CPPSimpleType::T_char16_t) ||
             (str_type == CPPExpression::T_u32string && simple == CPPSimpleType::T_char32_t)) {
           expr = value.u.expr;
@@ -2275,7 +2313,7 @@ extract_manifest_args(const string &name, int num_args, int va_arg,
   loc.last_column = first_col;
   loc.file = first_file;
 
-  if ((int)args.size() < num_args) {
+  if ((int)args.size() < num_args - (va_arg >= 0)) {
     warning("Not enough arguments for manifest " + name, loc);
 
   } else if (va_arg < 0 && (int)args.size() > num_args) {
@@ -2593,13 +2631,16 @@ check_keyword(const string &name) {
   if (name == "bool") return KW_BOOL;
   if (name == "catch") return KW_CATCH;
   if (name == "char") return KW_CHAR;
+  if (name == "char8_t") return KW_CHAR8_T;
   if (name == "char16_t") return KW_CHAR16_T;
   if (name == "char32_t") return KW_CHAR32_T;
   if (name == "class") return KW_CLASS;
   if (name == "const") return KW_CONST;
   if (name == "__const") return KW_CONST;
   if (name == "__const__") return KW_CONST;
+  if (name == "consteval") return KW_CONSTEVAL;
   if (name == "constexpr") return KW_CONSTEXPR;
+  if (name == "constinit") return KW_CONSTINIT;
   if (name == "const_cast") return KW_CONST_CAST;
   if (name == "decltype") return KW_DECLTYPE;
   if (name == "default") return KW_DEFAULT;

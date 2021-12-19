@@ -19,8 +19,8 @@
 #include "inputDeviceManager.h"
 #include "string_utils.h"
 
-#include <XInput.h>
-#include <CfgMgr32.h>
+#include <xinput.h>
+#include <cfgmgr32.h>
 
 #ifndef XUSER_MAX_COUNT
 #define XUSER_MAX_COUNT 4
@@ -68,10 +68,14 @@
 #define BATTERY_LEVEL_FULL 0x03
 #endif
 
+// With MingW32 this raises the error:
+// Redefinition of '_XINPUT_BATTERY_INFORMATION'
+#ifdef _MSC_VER
 typedef struct _XINPUT_BATTERY_INFORMATION {
   BYTE BatteryType;
   BYTE BatteryLevel;
 } XINPUT_BATTERY_INFORMATION;
+#endif
 
 // Undocumented, I figured out how this looks by trial and error.
 typedef struct _XINPUT_BUSINFO {
@@ -99,12 +103,12 @@ typedef struct _XINPUT_CAPABILITIES_EX {
   WORD Unknown2;
 } XINPUT_CAPABILITIES_EX;
 
-typedef DWORD (*pXInputGetState)(DWORD, XINPUT_STATE *);
-typedef DWORD (*pXInputSetState)(DWORD, XINPUT_VIBRATION *);
-typedef DWORD (*pXInputGetCapabilities)(DWORD, DWORD, XINPUT_CAPABILITIES *);
-typedef DWORD (*pXInputGetCapabilitiesEx)(DWORD, DWORD, DWORD, XINPUT_CAPABILITIES_EX *);
-typedef DWORD (*pXInputGetBatteryInformation)(DWORD, BYTE, XINPUT_BATTERY_INFORMATION *);
-typedef DWORD (*pXInputGetBaseBusInformation)(DWORD, XINPUT_BUSINFO *);
+typedef DWORD (WINAPI *pXInputGetState)(DWORD, XINPUT_STATE *);
+typedef DWORD (WINAPI *pXInputSetState)(DWORD, XINPUT_VIBRATION *);
+typedef DWORD (WINAPI *pXInputGetCapabilities)(DWORD, DWORD, XINPUT_CAPABILITIES *);
+typedef DWORD (WINAPI *pXInputGetCapabilitiesEx)(DWORD, DWORD, DWORD, XINPUT_CAPABILITIES_EX *);
+typedef DWORD (WINAPI *pXInputGetBatteryInformation)(DWORD, BYTE, XINPUT_BATTERY_INFORMATION *);
+typedef DWORD (WINAPI *pXInputGetBaseBusInformation)(DWORD, XINPUT_BUSINFO *);
 
 static pXInputGetState get_state = nullptr;
 static pXInputSetState set_state = nullptr;
@@ -161,6 +165,10 @@ check_arrival(const RID_DEVICE_INFO &info, DEVINST inst,
     return false;
   }
 
+  if (get_state(_index, &state) != ERROR_SUCCESS) {
+    return false;
+  }
+
   // Extra check for VID/PID if we have it, just to be sure.
   if ((caps.VendorID != 0 && caps.VendorID != info.hid.dwVendorId) ||
       (caps.ProductID != 0 && caps.ProductID != info.hid.dwProductId)) {
@@ -205,6 +213,10 @@ check_arrival(const RID_DEVICE_INFO &info, DEVINST inst,
  */
 void XInputDevice::
 detect(InputDeviceManager *mgr) {
+  if (!_initialized) {
+    nassertv_always(init_xinput());
+  }
+
   bool connected = false;
 
   XINPUT_CAPABILITIES_EX caps = {0};
@@ -225,6 +237,10 @@ detect(InputDeviceManager *mgr) {
   _is_connected = connected;
 
   if (connected) {
+    _name = "XInput Device #";
+    _name += format_string(_index + 1);
+    _vendor_id = caps.VendorID;
+    _product_id = caps.ProductID;
     init_device(caps, state);
     mgr->add_device(this);
   } else {
@@ -237,6 +253,10 @@ detect(InputDeviceManager *mgr) {
  */
 bool XInputDevice::
 init_xinput() {
+  if (_initialized) {
+    return true;
+  }
+
   if (device_cat.is_debug()) {
     device_cat.debug() << "Initializing XInput library.\n";
   }

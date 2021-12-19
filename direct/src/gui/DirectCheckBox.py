@@ -56,4 +56,3 @@ class DirectCheckBox(DirectButton):
         if self['command']:
             # Pass any extra args to command
             self['command'](*[self['isChecked']] + self['extraArgs'])
-

@@ -134,7 +134,9 @@ LColor PolylightNode::flicker() const {
     b = color[2];
   }
   */
-  pgraph_cat.debug() << "Color R:" << r << "; G:" << g << "; B:" << b << std::endl;
+  if (pgraph_cat.is_debug()) {
+    pgraph_cat.debug() << "Color R:" << r << "; G:" << g << "; B:" << b << std::endl;
+  }
   return LColor(r,g,b,1.0);
 }
 

@@ -61,6 +61,7 @@ public:
     const DCKeyword *keyword;
   } u;
   std::string str;
+  vector_uchar bytes;
 };
 
 // The yacc-generated code expects to use the symbol 'YYSTYPE' to refer to the

@@ -2,9 +2,10 @@
 
 __all__ = ['Audio3DManager']
 
-from panda3d.core import Vec3, VBase3, WeakNodePath
+from panda3d.core import Vec3, VBase3, WeakNodePath, ClockObject
 from direct.task.TaskManagerGlobal import Task, taskMgr
-#
+
+
 class Audio3DManager:
 
     def __init__(self, audio_manager, listener_target = None, root = None,
@@ -12,8 +13,8 @@ class Audio3DManager:
         self.audio_manager = audio_manager
         self.listener_target = listener_target
 
-        if (root==None):
-            self.root = render
+        if root is None:
+            self.root = base.render
         else:
             self.root = root
 
@@ -28,14 +29,14 @@ class Audio3DManager:
         Use Audio3DManager.loadSfx to load a sound with 3D positioning enabled
         """
         sound = None
-        if (name):
-            sound=self.audio_manager.getSound(name, 1)
+        if name:
+            sound = self.audio_manager.getSound(name, 1)
         return sound
 
     def setDistanceFactor(self, factor):
         """
         Control the scale that sets the distance units for 3D spacialized audio.
-        Default is 1.0 which is adjust in panda to be feet.
+        Default is 1.0 which is adjust in panda to be meters.
         When you change this, don't forget that this effects the scale of setSoundMinDistance
         """
         self.audio_manager.audio3dSetDistanceFactor(factor)
@@ -43,7 +44,7 @@ class Audio3DManager:
     def getDistanceFactor(self):
         """
         Control the scale that sets the distance units for 3D spacialized audio.
-        Default is 1.0 which is adjust in panda to be feet.
+        Default is 1.0 which is adjust in panda to be meters.
         """
         return self.audio_manager.audio3dGetDistanceFactor()
 
@@ -122,9 +123,11 @@ class Audio3DManager:
         This is relative to the sound root (probably render).
         Default: VBase3(0, 0, 0)
         """
+        if isinstance(velocity, tuple) and len(velocity) == 3:
+            velocity = VBase3(*velocity)
         if not isinstance(velocity, VBase3):
             raise TypeError("Invalid argument 1, expected <VBase3>")
-        self.vel_dict[sound]=velocity
+        self.vel_dict[sound] = velocity
 
     def setSoundVelocityAuto(self, sound):
         """
@@ -139,14 +142,22 @@ class Audio3DManager:
         """
         Get the velocity of the sound.
         """
-        if (sound in self.vel_dict):
+        if sound in self.vel_dict:
             vel = self.vel_dict[sound]
-            if (vel!=None):
+            if vel is not None:
                 return vel
-            else:
-                for known_object in list(self.sound_dict.keys()):
-                    if self.sound_dict[known_object].count(sound):
-                        return known_object.getPosDelta(self.root)/globalClock.getDt()
+
+            for known_object in list(self.sound_dict.keys()):
+                if self.sound_dict[known_object].count(sound):
+                    node_path = known_object.getNodePath()
+                    if not node_path:
+                        # The node has been deleted.
+                        del self.sound_dict[known_object]
+                        continue
+
+                    clock = ClockObject.getGlobalClock()
+                    return node_path.getPosDelta(self.root) / clock.getDt()
+
         return VBase3(0, 0, 0)
 
     def setListenerVelocity(self, velocity):
@@ -155,9 +166,11 @@ class Audio3DManager:
         This is relative to the sound root (probably render).
         Default: VBase3(0, 0, 0)
         """
+        if isinstance(velocity, tuple) and len(velocity) == 3:
+            velocity = VBase3(*velocity)
         if not isinstance(velocity, VBase3):
             raise TypeError("Invalid argument 0, expected <VBase3>")
-        self.listener_vel=velocity
+        self.listener_vel = velocity
 
     def setListenerVelocityAuto(self):
         """
@@ -172,10 +185,11 @@ class Audio3DManager:
         """
         Get the velocity of the listener.
         """
-        if (self.listener_vel!=None):
+        if self.listener_vel is not None:
             return self.listener_vel
-        elif (self.listener_target!=None):
-            return self.listener_target.getPosDelta(self.root)/globalClock.getDt()
+        elif self.listener_target is not None:
+            clock = ClockObject.getGlobalClock()
+            return self.listener_target.getPosDelta(self.root) / clock.getDt()
         else:
             return VBase3(0, 0, 0)
 
@@ -317,4 +331,3 @@ class Audio3DManager:
     detach_listener = detachListener
     set_drop_off_factor = setDropOffFactor
     detach_sound = detachSound
-

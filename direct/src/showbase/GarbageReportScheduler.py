@@ -1,7 +1,9 @@
 from direct.showbase.GarbageReport import GarbageReport
 
+
 class GarbageReportScheduler:
-    # runs a garbage report every once in a while and logs the results
+    """Runs a garbage report every once in a while and logs the results."""
+
     def __init__(self, waitBetween=None, waitScale=None):
         # waitBetween is in seconds
         # waitScale is a multiplier for the waitBetween every time around
@@ -30,6 +32,7 @@ class GarbageReportScheduler:
                               self._taskName)
         # and increase the delay every time around
         self._waitBetween = self._waitBetween * self._waitScale
+
     def _runGarbageReport(self, task):
         # run a garbage report and schedule the next one after this one finishes
         # give this job 3 times as many timeslices as normal-priority jobs

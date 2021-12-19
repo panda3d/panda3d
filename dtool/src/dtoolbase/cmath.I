@@ -64,10 +64,14 @@ csincos(float v, float *sin_result, float *cos_result) {
       fstp DWORD ptr [edx]
       fstp DWORD ptr [eax]
       }
-#else //!_X86_
+#elif defined(__APPLE__)
+  __sincosf(v, sin_result, cos_result);
+#elif defined(_GNU_SOURCE)
+  sincosf(v, sin_result, cos_result);
+#else
   *sin_result = sinf(v);
   *cos_result = cosf(v);
-#endif //!_X86_
+#endif
 }
 
 /**
@@ -231,6 +235,10 @@ csincos(double v, double *sin_result, double *cos_result) {
       fstp QWORD ptr [edx]
       fstp QWORD ptr [eax]
       }
+#elif defined(__APPLE__)
+  __sincos(v, sin_result, cos_result);
+#elif defined(_GNU_SOURCE)
+  sincos(v, sin_result, cos_result);
 #else //!_X86_
   *sin_result = sin(v);
   *cos_result = cos(v);
@@ -351,7 +359,7 @@ cnan(double v) {
 #if __FINITE_MATH_ONLY__
   // GCC's isnan breaks when using -ffast-math.
   union { double d; uint64_t x; } u = { v };
-  return ((u.x << 1) > 0xff70000000000000ull);
+  return ((u.x << 1) > 0xffe0000000000000ull);
 #elif !defined(_WIN32)
   return std::isnan(v);
 #else
@@ -383,7 +391,7 @@ cinf(double v) {
 #if __FINITE_MATH_ONLY__
   // GCC's isinf breaks when using -ffast-math.
   union { double d; uint64_t x; } u = { v };
-  return ((u.x << 1) == 0xff70000000000000ull);
+  return ((u.x << 1) == 0xffe0000000000000ull);
 #elif !defined(_WIN32)
   return std::isinf(v);
 #else

@@ -145,6 +145,7 @@ PUBLISHED:
   static void list_states(std::ostream &out);
   static bool validate_states();
   EXTENSION(static PyObject *get_states());
+  EXTENSION(static PyObject *get_unused_states());
 
 PUBLISHED:
   // These methods are intended for use by low-level code, but they're also
@@ -168,6 +169,11 @@ public:
   template<class AttribType>
   INLINE void get_attrib_def(CPT(AttribType) &attrib) const;
 #endif  // CPPPARSER
+
+  INLINE void cache_ref_only() const;
+
+protected:
+  INLINE void cache_unref_only() const;
 
 private:
   INLINE void check_hash() const;
@@ -232,7 +238,7 @@ private:
   // _invert_composition_cache.
   static LightReMutex *_states_lock;
   typedef SimpleHashMap<const RenderState *, std::nullptr_t, indirect_compare_to_hash<const RenderState *> > States;
-  static States *_states;
+  static States _states;
   static const RenderState *_empty_state;
 
   // This iterator records the entry corresponding to this RenderState object

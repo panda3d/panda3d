@@ -87,8 +87,10 @@ find_shader_for_node(MObject node, bool legacy_shader) {
   }
 
   // Well, we didn't find a ShadingEngine after all.  Huh.
-  maya_cat.debug()
-    << node_fn.name().asChar() << " : no shading engine found.\n";
+  if (maya_cat.is_debug()) {
+    maya_cat.debug()
+      << node_fn.name().asChar() << " : no shading engine found.\n";
+  }
   return nullptr;
 }
 

@@ -19,7 +19,10 @@
 #include "dcSubatomicType.h"
 #include "dcPackData.h"
 #include "dcPackerCatalog.h"
-#include "dcPython.h"
+
+#ifdef WITHIN_PANDA
+#include "extension.h"
+#endif
 
 class DCClass;
 class DCSwitchParameter;
@@ -41,7 +44,7 @@ PUBLISHED:
   void begin_pack(const DCPackerInterface *root);
   bool end_pack();
 
-  void set_unpack_data(const std::string &data);
+  void set_unpack_data(const vector_uchar &data);
 public:
   void set_unpack_data(const char *unpack_data, size_t unpack_length,
                        bool owns_unpack_data);
@@ -75,7 +78,8 @@ PUBLISHED:
   INLINE void pack_int64(int64_t value);
   INLINE void pack_uint64(uint64_t value);
   INLINE void pack_string(const std::string &value);
-  INLINE void pack_literal_value(const std::string &value);
+  INLINE void pack_blob(const vector_uchar &value);
+  INLINE void pack_literal_value(const vector_uchar &value);
   void pack_default_value();
 
   INLINE double unpack_double();
@@ -84,7 +88,8 @@ PUBLISHED:
   INLINE int64_t unpack_int64();
   INLINE uint64_t unpack_uint64();
   INLINE std::string unpack_string();
-  INLINE std::string unpack_literal_value();
+  INLINE vector_uchar unpack_blob();
+  INLINE vector_uchar unpack_literal_value();
   void unpack_validate();
   void unpack_skip();
 
@@ -97,14 +102,13 @@ public:
   INLINE void unpack_int64(int64_t &value);
   INLINE void unpack_uint64(uint64_t &value);
   INLINE void unpack_string(std::string &value);
-  INLINE void unpack_literal_value(std::string &value);
+  INLINE void unpack_blob(vector_uchar &value);
+  INLINE void unpack_literal_value(vector_uchar &value);
 
 PUBLISHED:
 
-#ifdef HAVE_PYTHON
-  void pack_object(PyObject *object);
-  PyObject *unpack_object();
-#endif
+  EXTENSION(void pack_object(PyObject *object));
+  EXTENSION(PyObject *unpack_object());
 
   bool parse_and_pack(const std::string &formatted_object);
   bool parse_and_pack(std::istream &in);
@@ -119,6 +123,7 @@ PUBLISHED:
 
   INLINE size_t get_length() const;
   INLINE std::string get_string() const;
+  INLINE vector_uchar get_bytes() const;
   INLINE size_t get_unpack_length() const;
   INLINE std::string get_unpack_string() const;
 public:
@@ -126,7 +131,7 @@ public:
   INLINE const char *get_data() const;
   INLINE char *take_data();
 
-  INLINE void append_data(const char *buffer, size_t size);
+  INLINE void append_data(const unsigned char *buffer, size_t size);
   INLINE char *get_write_pointer(size_t size);
 
   INLINE const char *get_unpack_data() const;
@@ -148,6 +153,7 @@ PUBLISHED:
   INLINE void raw_pack_uint64(uint64_t value);
   INLINE void raw_pack_float64(double value);
   INLINE void raw_pack_string(const std::string &value);
+  INLINE void raw_pack_blob(const vector_uchar &value);
 
 // this is a hack to allw me to get in and out of 32bit Mode Faster need to
 // agree with channel_type in dcbase.h
@@ -165,6 +171,7 @@ PUBLISHED:
   INLINE uint64_t raw_unpack_uint64();
   INLINE double raw_unpack_float64();
   INLINE std::string raw_unpack_string();
+  INLINE vector_uchar raw_unpack_blob();
 
 public:
   INLINE void raw_unpack_int8(int &value);
@@ -177,10 +184,11 @@ public:
   INLINE void raw_unpack_uint64(uint64_t &value);
   INLINE void raw_unpack_float64(double &value);
   INLINE void raw_unpack_string(std::string &value);
+  INLINE void raw_unpack_blob(vector_uchar &value);
 
 public:
   static void enquote_string(std::ostream &out, char quote_mark, const std::string &str);
-  static void output_hex_string(std::ostream &out, const std::string &str);
+  static void output_hex_string(std::ostream &out, const vector_uchar &str);
 
 private:
   INLINE void advance();
@@ -188,14 +196,12 @@ private:
   void clear();
   void clear_stack();
 
-#ifdef HAVE_PYTHON
-  void pack_class_object(const DCClass *dclass, PyObject *object);
-  PyObject *unpack_class_object(const DCClass *dclass);
-  void set_class_element(PyObject *class_def, PyObject *&object,
-                         const DCField *field);
-  void get_class_element(const DCClass *dclass, PyObject *object,
-                         const DCField *field);
-#endif
+  EXTENSION(void pack_class_object(const DCClass *dclass, PyObject *object));
+  EXTENSION(PyObject *unpack_class_object(const DCClass *dclass));
+  EXTENSION(void set_class_element(PyObject *class_def, PyObject *&object,
+                                   const DCField *field));
+  EXTENSION(void get_class_element(const DCClass *dclass, PyObject *object,
+                                   const DCField *field));
 
 private:
   enum Mode {
@@ -216,7 +222,7 @@ private:
   const DCPackerCatalog *_catalog;
   const DCPackerCatalog::LiveCatalog *_live_catalog;
 
-  class StackElement {
+  class EXPCL_DIRECT_DCPARSER StackElement {
   public:
     // As an optimization, we implement operator new and delete here to
     // minimize allocation overhead during push() and pop().
@@ -251,6 +257,10 @@ private:
   bool _parse_error;
   bool _pack_error;
   bool _range_error;
+
+#ifdef WITHIN_PANDA
+  friend class Extension<DCPacker>;
+#endif
 };
 
 #include "dcPacker.I"

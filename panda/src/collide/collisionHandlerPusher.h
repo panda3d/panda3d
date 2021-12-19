@@ -34,6 +34,9 @@ PUBLISHED:
 PUBLISHED:
   MAKE_PROPERTY(horizontal, get_horizontal, set_horizontal);
 
+  void write_datagram(Datagram &destination) const;
+  void read_datagram(DatagramIterator &source);
+
 protected:
   virtual bool handle_entries();
   virtual void apply_net_shove(

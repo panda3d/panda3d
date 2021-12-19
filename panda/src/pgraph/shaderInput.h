@@ -119,7 +119,7 @@ PUBLISHED:
   INLINE const LVecBase4 &get_vector() const;
   INLINE const Shader::ShaderPtrData &get_ptr() const;
 
-  const NodePath &get_nodepath() const;
+  NodePath get_nodepath() const;
   Texture *get_texture() const;
   const SamplerState &get_sampler() const;
 

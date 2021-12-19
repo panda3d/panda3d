@@ -12,6 +12,14 @@
  */
 
 /**
+ * Returns the associated object.
+ */
+INLINE TypedWritableReferenceCount *BufferContext::
+get_object() const {
+  return _object;
+}
+
+/**
  * Returns the number of bytes previously reported for the data object.  This
  * is used to track changes in the data object's allocated size; if it changes
  * from this, we need to create a new buffer.  This is also used to track

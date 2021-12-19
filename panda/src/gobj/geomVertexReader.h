@@ -47,14 +47,14 @@
 class EXPCL_PANDA_GOBJ GeomVertexReader : public GeomEnums {
 PUBLISHED:
   INLINE GeomVertexReader(Thread *current_thread = Thread::get_current_thread());
-  INLINE GeomVertexReader(const GeomVertexData *vertex_data,
+  INLINE GeomVertexReader(CPT(GeomVertexData) vertex_data,
                           Thread *current_thread = Thread::get_current_thread());
-  INLINE GeomVertexReader(const GeomVertexData *vertex_data,
+  INLINE GeomVertexReader(CPT(GeomVertexData) vertex_data,
                           CPT_InternalName name,
                           Thread *current_thread = Thread::get_current_thread());
-  INLINE GeomVertexReader(const GeomVertexArrayData *array_data,
+  INLINE GeomVertexReader(CPT(GeomVertexArrayData) array_data,
                           Thread *current_thread = Thread::get_current_thread());
-  INLINE GeomVertexReader(const GeomVertexArrayData *array_data,
+  INLINE GeomVertexReader(CPT(GeomVertexArrayData) array_data,
                           int column,
                           Thread *current_thread = Thread::get_current_thread());
 
@@ -155,7 +155,7 @@ private:
   int _start_row;
   bool _force;
 
-#ifndef NDEBUG
+#ifdef _DEBUG
   // This is defined just for the benefit of having something non-NULL to
   // return from a nassertr() call.
   static const unsigned char empty_buffer[100];

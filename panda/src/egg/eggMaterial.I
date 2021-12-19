@@ -12,7 +12,7 @@
  */
 
 /**
- *
+ * @since 1.10.0
  */
 INLINE void EggMaterial::
 set_base(const LColor &base) {
@@ -21,7 +21,7 @@ set_base(const LColor &base) {
 }
 
 /**
- *
+ * @since 1.10.0
  */
 INLINE void EggMaterial::
 clear_base() {
@@ -29,7 +29,7 @@ clear_base() {
 }
 
 /**
- *
+ * @since 1.10.0
  */
 INLINE bool EggMaterial::
 has_base() const {
@@ -39,6 +39,8 @@ has_base() const {
 /**
  * It is legal to call this even if has_base() returns false.  If so, it
  * simply returns the default base color.
+ *
+ * @since 1.10.0
  */
 INLINE LColor EggMaterial::
 get_base() const {
@@ -239,7 +241,7 @@ get_shininess() const {
 }
 
 /**
- *
+ * @since 1.10.0
  */
 INLINE void EggMaterial::
 set_roughness(double roughness) {
@@ -248,7 +250,7 @@ set_roughness(double roughness) {
 }
 
 /**
- *
+ * @since 1.10.0
  */
 INLINE void EggMaterial::
 clear_roughness() {
@@ -256,7 +258,7 @@ clear_roughness() {
 }
 
 /**
- *
+ * @since 1.10.0
  */
 INLINE bool EggMaterial::
 has_roughness() const {
@@ -264,7 +266,7 @@ has_roughness() const {
 }
 
 /**
- *
+ * @since 1.10.0
  */
 INLINE double EggMaterial::
 get_roughness() const {
@@ -276,7 +278,7 @@ get_roughness() const {
 }
 
 /**
- *
+ * @since 1.10.0
  */
 INLINE void EggMaterial::
 set_metallic(double metallic) {
@@ -285,7 +287,7 @@ set_metallic(double metallic) {
 }
 
 /**
- *
+ * @since 1.10.0
  */
 INLINE void EggMaterial::
 clear_metallic() {
@@ -293,7 +295,7 @@ clear_metallic() {
 }
 
 /**
- *
+ * @since 1.10.0
  */
 INLINE bool EggMaterial::
 has_metallic() const {
@@ -301,7 +303,7 @@ has_metallic() const {
 }
 
 /**
- *
+ * @since 1.10.0
  */
 INLINE double EggMaterial::
 get_metallic() const {
@@ -313,7 +315,7 @@ get_metallic() const {
 }
 
 /**
- *
+ * @since 1.10.0
  */
 INLINE void EggMaterial::
 set_ior(double ior) {
@@ -322,7 +324,7 @@ set_ior(double ior) {
 }
 
 /**
- *
+ * @since 1.10.0
  */
 INLINE void EggMaterial::
 clear_ior() {
@@ -330,7 +332,7 @@ clear_ior() {
 }
 
 /**
- *
+ * @since 1.10.0
  */
 INLINE bool EggMaterial::
 has_ior() const {
@@ -338,7 +340,7 @@ has_ior() const {
 }
 
 /**
- *
+ * @since 1.10.0
  */
 INLINE double EggMaterial::
 get_ior() const {

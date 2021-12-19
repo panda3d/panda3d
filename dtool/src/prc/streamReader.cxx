@@ -27,10 +27,19 @@ get_string() {
   // First, get the length of the string
   size_t size = get_uint16();
 
-  char *buffer = (char *)alloca(size);
-  _in->read(buffer, size);
+  std::string result(size, 0);
+  if (size == 0) {
+    return result;
+  }
+
+  _in->read(&result[0], size);
   size_t read_bytes = _in->gcount();
-  return string(buffer, read_bytes);
+
+  if (read_bytes == size) {
+    return result;
+  } else {
+    return result.substr(0, read_bytes);
+  }
 }
 
 /**
@@ -42,6 +51,9 @@ get_string32() {
 
   // First, get the length of the string
   size_t size = get_uint32();
+  if (size == 0) {
+    return string();
+  }
 
   char *buffer = (char *)PANDA_MALLOC_ARRAY(size);
   _in->read(buffer, size);
@@ -60,7 +72,7 @@ get_z_string() {
 
   string result;
   int ch = _in->get();
-  while (!_in->eof() && !_in->fail() && ch != '\0') {
+  while (!_in->fail() && ch != EOF && ch != '\0') {
     result += (char)ch;
     ch = _in->get();
   }
@@ -76,13 +88,17 @@ string StreamReader::
 get_fixed_string(size_t size) {
   nassertr(!_in->eof() && !_in->fail(), string());
 
-  char *buffer = (char *)alloca(size);
-  _in->read(buffer, size);
+  std::string result(size, 0);
+  if (size == 0) {
+    return result;
+  }
+
+  _in->read(&result[0], size);
   size_t read_bytes = _in->gcount();
-  string result(buffer, read_bytes);
+  result.resize(read_bytes);
 
   size_t zero_byte = result.find('\0');
-  return result.substr(0, zero_byte);
+  return result.substr(0, std::min(zero_byte, read_bytes));
 }
 
 /**
@@ -90,8 +106,9 @@ get_fixed_string(size_t size) {
  */
 void StreamReader::
 skip_bytes(size_t size) {
-  nassertv(!_in->eof() && !_in->fail());
+  nassertv(!_in->fail());
   nassertv((int)size >= 0);
+  nassertv(size == 0 || !_in->eof());
 
   while (size > 0) {
     _in->get();
@@ -145,9 +162,9 @@ string StreamReader::
 readline() {
   string line;
   int ch = _in->get();
-  while (!_in->eof() && !_in->fail()) {
+  while (ch != EOF && !_in->fail()) {
     line += (char)ch;
-    if (ch == '\n') {
+    if (ch == '\n' || _in->eof()) {
       // Here's the newline character.
       return line;
     }

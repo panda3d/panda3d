@@ -17,6 +17,11 @@ ConfigVariableInt gl_version
   ("gl-version", "",
    PRC_DESC("Set this to get an OpenGL context with a specific version."));
 
+ConfigVariableBool gl_forward_compatible
+  ("gl-forward-compatible", false,
+   PRC_DESC("Setting this to true will request a forward-compatible OpenGL "
+            "context, which will not support the fixed-function pipeline."));
+
 ConfigVariableBool gl_support_fbo
   ("gl-support-fbo", true,
    PRC_DESC("Configure this false if your GL's implementation of "
@@ -298,6 +303,12 @@ ConfigVariableBool gl_support_shadow_filter
             "implementation of ARB_shadow.  Particularly, older ATI "
             "cards suffered from a broken implementation of the "
             "shadow map filtering features."));
+
+ConfigVariableBool gl_support_vertex_array_bgra
+  ("gl-support-vertex-array-bgra", true,
+   PRC_DESC("Disable this if you suspect a bug in the driver implementation "
+            "of GL_BGRA vertex arrays.  The Radeon RX 5700 XT is an example "
+            "of a card known to suffer from bugs with this feature."));
 
 ConfigVariableBool gl_force_image_bindings_writeonly
   ("gl-force-image-bindings-writeonly", false,

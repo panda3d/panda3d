@@ -85,7 +85,7 @@ PUBLISHED:
   void offset_vertices(const GeomVertexData *data, int offset);
   int make_nonindexed(bool composite_only);
 
-  CPT(GeomVertexData) get_animated_vertex_data(bool force, Thread *current_thread) const;
+  CPT(GeomVertexData) get_animated_vertex_data(bool force, Thread *current_thread = Thread::get_current_thread()) const;
 
   INLINE bool is_empty() const;
 
@@ -157,8 +157,10 @@ PUBLISHED:
                            GraphicsStateGuardianBase *gsg);
 
 public:
+  bool is_in_view(const BoundingVolume *view_frustum, Thread *current_thread) const;
+
   bool draw(GraphicsStateGuardianBase *gsg,
-            const GeomVertexData *vertex_data,
+            const GeomVertexData *vertex_data, size_t num_instances,
             bool force, Thread *current_thread) const;
 
   INLINE void calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
@@ -295,7 +297,7 @@ public:
     }
 
   private:
-    static TypeHandle _type_handle;
+    static EXPCL_PANDA_GOBJ TypeHandle _type_handle;
   };
   typedef pmap<const CacheKey *, PT(CacheEntry), IndirectLess<CacheKey> > Cache;
 
@@ -433,7 +435,7 @@ public:
 
   bool draw(GraphicsStateGuardianBase *gsg,
             const GeomVertexDataPipelineReader *data_reader,
-            bool force) const;
+            size_t num_instances, bool force) const;
 
 private:
   const Geom *_object;

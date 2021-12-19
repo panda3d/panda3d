@@ -23,7 +23,7 @@
 #include "configVariableInt.h"
 #include "simpleAllocator.h"
 #include "vertexDataBuffer.h"
-#include "texture.h"
+#include "pbitops.h"
 
 using std::max;
 using std::min;
@@ -59,8 +59,10 @@ ALLOC_DELETED_CHAIN_DEF(GeomVertexArrayDataHandle);
  * file.
  */
 GeomVertexArrayData::
-GeomVertexArrayData() : SimpleLruPage(0) {
-  _contexts = nullptr;
+GeomVertexArrayData() :
+  SimpleLruPage(0),
+  _array_format(nullptr),
+  _contexts(nullptr) {
 
   // Can't put it in the LRU until it has been read in and made valid.
 }
@@ -180,7 +182,8 @@ set_usage_hint(GeomVertexArrayData::UsageHint usage_hint) {
  */
 void GeomVertexArrayData::
 output(std::ostream &out) const {
-  out << get_num_rows() << " rows: " << *get_array_format();
+  nassertv(_array_format != nullptr);
+  out << get_num_rows() << " rows: " << *_array_format;
 }
 
 /**
@@ -188,6 +191,7 @@ output(std::ostream &out) const {
  */
 void GeomVertexArrayData::
 write(std::ostream &out, int indent_level) const {
+  nassertv(_array_format != nullptr);
   _array_format->write_with_data(out, indent_level, this);
 }
 
@@ -631,7 +635,7 @@ set_num_rows(int n) {
     if (new_size > orig_reserved_size) {
       // Add more rows.  Go up to the next power of two bytes, mainly to
       // reduce the number of allocs needed.
-      size_t new_reserved_size = (size_t)Texture::up_to_power_2((int)new_size);
+      size_t new_reserved_size = (size_t)1 << get_next_higher_bit(new_size - 1);
       nassertr(new_reserved_size >= new_size, false);
 
       _cdata->_buffer.clean_realloc(new_reserved_size);
@@ -818,7 +822,7 @@ copy_subdata_from(size_t to_start, size_t to_size,
     size_t needed_size = to_buffer_orig_size + from_size - to_size;
     size_t to_buffer_orig_reserved_size = to_buffer.get_reserved_size();
     if (needed_size > to_buffer_orig_reserved_size) {
-      size_t new_reserved_size = (size_t)Texture::up_to_power_2((int)needed_size);
+      size_t new_reserved_size = (size_t)1 << get_next_higher_bit(needed_size - 1);
       to_buffer.clean_realloc(new_reserved_size);
     }
     to_buffer.set_size(needed_size);
@@ -891,7 +895,7 @@ set_subdata(size_t start, size_t size, const vector_uchar &data) {
     size_t needed_size = to_buffer_orig_size + from_size - size;
     size_t to_buffer_orig_reserved_size = to_buffer.get_reserved_size();
     if (needed_size > to_buffer_orig_reserved_size) {
-      size_t new_reserved_size = (size_t)Texture::up_to_power_2((int)needed_size);
+      size_t new_reserved_size = (size_t)1 << get_next_higher_bit(needed_size - 1);
       to_buffer.clean_realloc(new_reserved_size);
     }
     to_buffer.set_size(needed_size);

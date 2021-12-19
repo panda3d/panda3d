@@ -33,12 +33,8 @@ pm_message(const char *format, ...) {
 
   static const size_t buffer_size = 1024;
   char buffer[buffer_size];
-#if defined(WIN32_VC) || defined(WIN64_VC)
-  // Windows doesn't define vsnprintf().  Hope we don't overflow.
-  vsprintf(buffer, format, ap);
-#else
+
   vsnprintf(buffer, buffer_size, format, ap);
-#endif
   nassertv(strlen(buffer) < buffer_size);
 
   pnmimage_cat.info() << buffer << "\n";
@@ -57,12 +53,8 @@ pm_error(const char *format, ...) {
 
   static const size_t buffer_size = 1024;
   char buffer[buffer_size];
-#if defined(WIN32_VC) || defined(WIN64_VC)
-  // Windows doesn't define vsnprintf().  Hope we don't overflow.
-  vsprintf(buffer, format, ap);
-#else
+
   vsnprintf(buffer, buffer_size, format, ap);
-#endif
   nassertv(strlen(buffer) < buffer_size);
 
   pnmimage_cat.error() << buffer << "\n";
@@ -120,7 +112,7 @@ int
 pm_readbigshort(istream *in, short *sP) {
   StreamReader reader(in, false);
   *sP = reader.get_be_int16();
-  return (!in->eof() && !in->fail()) ? 0 : -1;
+  return (!in->fail()) ? 0 : -1;
 }
 
 int
@@ -134,7 +126,7 @@ int
 pm_readbiglong(istream *in, long *lP) {
   StreamReader reader(in, false);
   *lP = reader.get_be_int32();
-  return (!in->eof() && !in->fail()) ? 0 : -1;
+  return (!in->fail()) ? 0 : -1;
 }
 
 int
@@ -148,7 +140,7 @@ int
 pm_readlittleshort(istream *in, short *sP) {
   StreamReader reader(in, false);
   *sP = reader.get_int16();
-  return (!in->eof() && !in->fail()) ? 0 : -1;
+  return (!in->fail()) ? 0 : -1;
 }
 
 int
@@ -162,7 +154,7 @@ int
 pm_readlittlelong(istream *in, long *lP) {
   StreamReader reader(in, false);
   *lP = reader.get_int32();
-  return (!in->eof() && !in->fail()) ? 0 : -1;
+  return (!in->fail()) ? 0 : -1;
 }
 
 int

@@ -70,6 +70,8 @@ is_ambient_light() const {
  *
  * The default value is 6500 K, corresponding to a perfectly white light
  * assuming a D65 white point.
+ *
+ * @since 1.10.0
  */
 void Light::
 set_color_temperature(PN_stdfloat temperature) {

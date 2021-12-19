@@ -17,11 +17,11 @@
 INLINE MouseWatcherRegion::
 MouseWatcherRegion(const std::string &name, PN_stdfloat left, PN_stdfloat right,
                    PN_stdfloat bottom, PN_stdfloat top) :
-  Namable(name),
-  _frame(left, right, bottom, top)
+  Namable(name)
 {
   _sort = 0;
   _flags = F_active;
+  set_frame(left, right, bottom, top);
 }
 
 /**

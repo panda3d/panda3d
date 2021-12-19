@@ -20,13 +20,15 @@
 #include "inputDeviceSet.h"
 
 #ifdef _WIN32
-#include "xinputDevice.h"
+#include "xInputDevice.h"
 class WinRawInputDevice;
 #endif
 
 /**
  * This class keeps track of all the devices on a system, and sends out events
  * when a device has been hot-plugged.
+ *
+ * @since 1.10.0
  */
 class EXPCL_PANDA_DEVICE InputDeviceManager {
 protected:

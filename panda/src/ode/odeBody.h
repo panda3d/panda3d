@@ -133,6 +133,7 @@ PUBLISHED:
   OdeJoint get_joint(int index) const;
   MAKE_SEQ(get_joints, get_num_joints, get_joint);
   EXTENSION(INLINE PyObject *get_converted_joint(int i) const);
+  MAKE_SEQ_PROPERTY(joints, get_num_joints, get_converted_joint);
 
   INLINE void enable();
   INLINE void disable();

@@ -33,7 +33,7 @@
  * achieve this.
  */
 class EXPCL_PANDA_COLLIDE CollisionVisualizer : public PandaNode, public CollisionRecorder {
-PUBLISHED:
+public:
   explicit CollisionVisualizer(const std::string &name);
   CollisionVisualizer(const CollisionVisualizer &copy);
   virtual ~CollisionVisualizer();
@@ -46,15 +46,10 @@ PUBLISHED:
 
   void clear();
 
-PUBLISHED:
-  MAKE_PROPERTY(point_scale, get_point_scale, set_point_scale);
-  MAKE_PROPERTY(normal_scale, get_normal_scale, set_normal_scale);
-
 public:
   // from parent class PandaNode.
   virtual PandaNode *make_copy() const;
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
-  virtual bool is_renderable() const;
   virtual void output(std::ostream &out) const;
 
   // from parent class CollisionRecorder.

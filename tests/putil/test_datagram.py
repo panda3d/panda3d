@@ -1,6 +1,5 @@
 import pytest
 from panda3d import core
-import sys
 import tempfile
 
 # Fixtures for generating interesting datagrams (and verification functions) on
@@ -84,7 +83,7 @@ def datagram_large():
 
     return dg, readback_function
 
-@pytest.mark.skipif(sys.version_info < (3, 0), reason="Requires Python 3")
+
 def test_datagram_bytes():
     """Tests that we can put and get a bytes object on Datagram."""
     dg = core.Datagram(b'abc\x00')
@@ -99,6 +98,27 @@ def test_datagram_get_message():
     dg = core.Datagram(b'abc\x00')
     dg.append_data(b'\xff123')
     assert dg.get_message() == b'abc\x00\xff123'
+
+
+def test_datagram_pickle():
+    import pickle
+
+    dg = core.Datagram()
+    assert pickle.loads(pickle.dumps(dg, -1)) == dg
+
+    dg = core.Datagram(b'abc\x00')
+    assert pickle.loads(pickle.dumps(dg, -1)) == dg
+
+
+def test_datagram_cow():
+    dg1 = core.Datagram()
+    dg1.append_data(b'1234')
+
+    dg2 = core.Datagram(dg1)
+    dg2.append_data(b'5678')
+
+    assert dg1.get_message() == b'1234'
+    assert dg2.get_message() == b'12345678'
 
 
 def test_iterator(datagram_small):

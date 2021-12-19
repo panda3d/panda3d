@@ -50,7 +50,7 @@ BamInfo() {
 
   add_option
     ("g", "", 0,
-     "Output verbose information about the each Geom in the Bam file.",
+     "Output verbose information about each Geom in the Bam file.",
      &BamInfo::dispatch_none, &_verbose_geoms);
 
   _num_scene_graphs = 0;

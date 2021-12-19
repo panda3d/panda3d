@@ -3,7 +3,6 @@ from panda3d.physics import *
 from direct.particles.ParticleManagerGlobal import *
 from direct.showbase.PhysicsManagerGlobal import *
 #import OrientedParticleFactory
-import string
 import os
 from direct.directnotify import DirectNotifyGlobal
 import sys

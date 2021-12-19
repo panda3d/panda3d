@@ -280,13 +280,10 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Camera::complete_pointers
-//       Access: Public, Virtual
-//  Description: Receives an array of pointers, one for each time
-//               manager->read_pointer() was called in fillin().
-//               Returns the number of pointers processed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Receives an array of pointers, one for each time manager->read_pointer()
+ * was called in fillin(). Returns the number of pointers processed.
+ */
 int Camera::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = LensNode::complete_pointers(p_list, manager);

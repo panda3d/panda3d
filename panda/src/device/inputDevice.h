@@ -47,6 +47,8 @@
  * There is the DeviceType enumeration, however, which will (if known) contain
  * identification of the general category of devices this fits in, such as
  * keyboard, mouse, gamepad, or flight stick.
+ *
+ * @since 1.10.0
  */
 class EXPCL_PANDA_DEVICE InputDevice : public TypedReferenceCount {
 PUBLISHED:
@@ -78,6 +80,9 @@ PUBLISHED:
 
     // 3D mouse, such as produced by 3Dconnexion.
     spatial_mouse,
+
+    // A graphics tablet with stylus/pen.
+    digitizer,
   };
 
   enum class Feature {
@@ -126,6 +131,9 @@ PUBLISHED:
     wheel,
     accelerator,
     brake,
+
+    // Pen pressure
+    pressure,
   };
 
   enum State {

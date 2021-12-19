@@ -2,26 +2,26 @@
 /**
  * This will get a pointer to the fist undelivered data in buffer
  */
-inline char  *  RingBuffer::GetMessageHead(void)
-{
-  return _Buffer+_StartPos;
+inline char *RingBuffer::
+GetMessageHead(void) {
+  return _Buffer + _StartPos;
 }
+
 /**
  * This will get the first writabe section of the buffer space
  */
-inline char  *  RingBuffer::GetBufferOpen(void)
-{
-  return _Buffer+_EndPos;
+inline char *RingBuffer::
+GetBufferOpen(void) {
+  return _Buffer + _EndPos;
 }
 /**
  * Will force a compression of data // shift left to start position
  */
-inline void RingBuffer::ForceWindowSlide(void)
-{
+inline void RingBuffer::
+ForceWindowSlide(void) {
   size_t len = AmountBuffered();
-  if(len > 0 && _StartPos != 0)  // basic flush left..
-  {
-    memmove(_Buffer,GetMessageHead(),len);
+  if(len > 0 && _StartPos != 0) { // basic flush left..
+    memmove(_Buffer, GetMessageHead(), len);
     _StartPos = 0;
     _EndPos = len;
   }
@@ -29,120 +29,95 @@ inline void RingBuffer::ForceWindowSlide(void)
 /**
  * Will report the number of unread chars in buffer
  */
-inline size_t    RingBuffer::AmountBuffered(void)
-{
+inline size_t RingBuffer::
+AmountBuffered(void) {
   return _EndPos - _StartPos;
 }
 
-
 /**
- * Will report amount of data that is contiguas that can be writen at the
+ * Will report amount of data that is contiguous that can be written at the
  * location returned by GetBufferOpen
  */
-inline size_t      RingBuffer::BufferAvailabe(void)
-{
+inline size_t RingBuffer::
+BufferAvailable(void) {
   return GetBufferSize() - _EndPos;
 }
-
 
 /**
  * Throw away all inread information
  */
-void RingBuffer::ResetContent(void)
-{
+void RingBuffer::
+ResetContent(void) {
   _StartPos = 0;
   _EndPos = 0;
 }
+
 /**
  *
  */
-inline RingBuffer::RingBuffer(size_t in_size) : MemBuffer(in_size)
-{
+inline RingBuffer::
+RingBuffer(size_t in_size) : MemBuffer(in_size) {
   _EndPos = 0;
   _StartPos = 0;
 }
+
 /**
  * Force a compress of the data
  */
-inline void RingBuffer::FullCompress(void)
-{
-  if(_StartPos == _EndPos)
-  {
+inline void RingBuffer::
+FullCompress(void) {
+  if (_StartPos == _EndPos) {
     _StartPos = 0;
     _EndPos = 0;
   }
-  else
-  {
+  else {
     ForceWindowSlide();
   }
 }
 /**
- * Try and do a intelegent compress of the data space the algorithem is really
+ * Try and do a intelligent compress of the data space the algorithm is really
  * stupid right know.. just say if i have read past 1/2 my space do a
  * compress...Im open for sugestions
- *
-
- *
  */
-inline void RingBuffer::Compress(void)
-{
-  if(_StartPos == _EndPos)
-  {
+inline void RingBuffer::
+Compress(void) {
+  if (_StartPos == _EndPos) {
     _StartPos = 0;
     _EndPos = 0;
   }
-  else if(_StartPos >= GetBufferSize() / 2)
-  {
+  else if (_StartPos >= GetBufferSize() / 2) {
     ForceWindowSlide();
   }
 }
-/**
- * Adds Data to a ring Buffer Will do a compress if needed so pointers suplied
- * by Get Call are no longer valide
- *
- */
-inline bool RingBuffer::Put(const char * data, size_t len)
-{
-  bool answer = false;
 
-  if(len > BufferAvailabe() )
+/**
+ * Adds data to a ring buffer.  Will do a compress if needed, so pointers
+ * supplied by get call are no longer valid.
+ */
+inline bool RingBuffer::
+Put(const char *data, size_t len) {
+  if (len > BufferAvailable()) {
     Compress();
-
-  if(len <= BufferAvailabe() )
-  {
-    memcpy(GetBufferOpen(),data,len);
-    _EndPos += len;
-    answer = true;
   }
-  return answer;
-}
-/**
- *
 
- *
- */
-inline bool RingBuffer::PutFast(const char * data, size_t len)
-{
-  // no checking be carefull
-  memcpy(GetBufferOpen(),data,len); // should i be using memcopy..
-  _EndPos += len;
-  return true;
+  if (len <= BufferAvailable()) {
+    memcpy(GetBufferOpen(), data, len);
+    _EndPos += len;
+    return true;
+  }
+  return false;
 }
 
 /**
  * will copy the data .. false indicates not enogh data to read .. sorry...
- *
  */
-inline bool RingBuffer::Get(char * data, size_t len)
-{
-  bool answer = false;
-
-  if(len <= AmountBuffered() )
-  {
-    memcpy(data,GetMessageHead(),len);
+inline bool RingBuffer::
+Get(char *data, size_t len) {
+  if (len <= AmountBuffered()) {
+    memcpy(data, GetMessageHead(), len);
     _StartPos += len;
     Compress();
-    answer = true;
+    return true;
   }
-  return answer;
+  return false;
 }

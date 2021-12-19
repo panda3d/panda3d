@@ -111,6 +111,10 @@ public:
   bool register_pta(Datagram &packet, const void *ptr);
   void write_handle(Datagram &packet, TypeHandle type);
 
+  static std::string get_obsolete_type_name(TypeHandle type, int major, int minor);
+  static void record_obsolete_type_name(TypeHandle type, std::string name,
+                                        int before_major, int before_minor);
+
 private:
   void object_destructs(TypedWritable *object);
 

@@ -388,9 +388,6 @@ write_code(ostream &out_code,ostream * out_include, InterrogateModuleDef *def) {
   declaration_bodies << "#include <sstream>\n";
 
   if (build_python_native) {
-    if (library_name.size() > 1) {
-      declaration_bodies << "#define PANDA_LIBRARY_NAME_" << library_name << "\n";
-    }
     declaration_bodies << "#include \"py_panda.h\"\n";
     declaration_bodies << "#include \"extension.h\"\n";
     declaration_bodies << "#include \"dcast.h\"\n";
@@ -656,13 +653,13 @@ get_preferred_name(CPPType *type) {
  */
 string InterrogateBuilder::
 hash_string(const string &name, int shift_offset) {
-  int hash = 0;
+  unsigned int hash = 0;
 
-  int shift = 0;
+  unsigned int shift = 0;
   string::const_iterator ni;
   for (ni = name.begin(); ni != name.end(); ++ni) {
-    int c = (int)(unsigned char)(*ni);
-    int shifted_c = (c << shift) & 0xffffff;
+    unsigned int c = (unsigned char)*ni;
+    unsigned int shifted_c = (c << shift) & 0xffffff;
     if (shift > 16) {
       // We actually want a circular shift, not an arithmetic shift.
       shifted_c |= ((c >> (24 - shift)) & 0xff) ;
@@ -675,10 +672,9 @@ hash_string(const string &name, int shift_offset) {
   // bits back at the bottom, to scramble up the bits a bit.  This helps
   // reduce hash conflicts from names that are similar to each other, by
   // separating adjacent hash codes.
-  int prime = 4999;
-  int low_order = (hash * prime) & 0xffffff;
-  int high_order = (int)((double)hash * (double)prime / (double)(1 << 24));
-  hash = low_order ^ high_order;
+  const unsigned int prime = 4999;
+  unsigned long long product = (unsigned long long)hash * prime;
+  hash = (product ^ (product >> 24)) & 0xffffff;
 
   // Also add in the additional_number, times some prime factor.  hash = (hash
   // + additional_number * 1657) & 0xffffff;
@@ -690,10 +686,9 @@ hash_string(const string &name, int shift_offset) {
   // deal, since we have to resolve hash conflicts anyway.
 
   string result;
-  int extract_h = hash;
   for (int i = 0; i < 4; i++) {
-    int value = (extract_h & 0x3f);
-    extract_h >>= 6;
+    unsigned int value = (hash & 0x3f);
+    hash >>= 6;
     if (value < 26) {
       result += (char)('A' + value);
 
@@ -2024,6 +2019,7 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CP
     if (iproperty._type != 0 && iproperty._type != return_index) {
       cerr << "Property " << property_name << " has inconsistent element type!\n";
     }
+    iproperty._type = return_index;
   } else {
     iproperty._type = 0;
   }
@@ -2039,33 +2035,11 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CP
     iproperty._length_function = length_function;
   }
 
-  if (make_property->_type == CPPMakeProperty::T_normal) {
-    if (getter != nullptr) {
-      iproperty._flags |= InterrogateElement::F_has_getter;
-      iproperty._getter = get_function(getter, "", struct_type,
-                                      struct_type->get_scope(), 0);
-      nassertr(iproperty._getter, 0);
-    }
-  } else {
-    // We could have a mixed sequence/mapping property, so synthesize a
-    // getitem function.  We don't really care what's in here; we just use
-    // this to store the remaps.
-    if (!iproperty.has_getter()) {
-      iproperty._flags |= InterrogateElement::F_has_getter;
-      iproperty._getter = InterrogateDatabase::get_ptr()->get_next_index();
-      InterrogateFunction *ifunction = new InterrogateFunction;
-      ifunction->_instances = new InterrogateFunction::Instances;
-      InterrogateDatabase::get_ptr()->add_function(iproperty._getter, ifunction);
-    }
-
-    // Add our getter to the generated getitem function.
-    string signature = TypeManager::get_function_signature(getter);
-    InterrogateFunction &ifunction =
-      InterrogateDatabase::get_ptr()->update_function(iproperty._getter);
-    if (ifunction._instances == nullptr) {
-      ifunction._instances = new InterrogateFunction::Instances;
-    }
-    ifunction._instances->insert(InterrogateFunction::Instances::value_type(signature, getter));
+  if (getter != nullptr) {
+    iproperty._flags |= InterrogateElement::F_has_getter;
+    iproperty._getter = get_function(getter, "", struct_type,
+                                    struct_type->get_scope(), 0);
+    nassertr(iproperty._getter, 0);
   }
 
   if (hasser != nullptr) {
@@ -2453,6 +2427,11 @@ define_atomic_type(InterrogateType &itype, CPPSimpleType *cpptype) {
     break;
 
   case CPPSimpleType::T_wchar_t:
+    itype._atomic_token = AT_int;
+    break;
+
+  case CPPSimpleType::T_char8_t:
+    itype._flags |= InterrogateType::F_unsigned;
     itype._atomic_token = AT_int;
     break;
 
@@ -3032,6 +3011,38 @@ define_method(CPPInstance *function, InterrogateType &itype,
       if (find(itype._methods.begin(), itype._methods.end(),
                index) == itype._methods.end()) {
         itype._methods.push_back(index);
+      }
+
+      // For an operator [] returning a non-const reference, we synthesize an
+      // "item-assignment" operator, which does not exist in C++ but does in
+      // scripting languages.  This allows `obj[n] = ...`
+      if (ftype->_return_type != nullptr &&
+          ftype->_return_type->is_reference() &&
+          !ftype->_return_type->remove_reference()->is_const() &&
+          (ftype->_flags & CPPFunctionType::F_const_method) == 0 &&
+          function->get_simple_name() == "operator []") {
+
+        // Make up a CPPFunctionType with extra parameter.
+        CPPType *assign_type = TypeManager::wrap_const_reference(ftype->_return_type->remove_reference());
+        CPPParameterList *params = new CPPParameterList(*(ftype->_parameters));
+        CPPInstance *param1 = new CPPInstance(assign_type, "assign_val");
+        params->_parameters.push_back(param1);
+        CPPType *void_type = TypeManager::get_void_type();
+        CPPFunctionType *ftype = new CPPFunctionType(void_type, params, 0);
+
+        // Now make up an instance for the function.
+        CPPInstance *function = new CPPInstance(ftype, "operator [] =");
+        function->_ident->_native_scope = scope;
+
+        FunctionIndex index = get_function(function, "",
+                                           struct_type, scope,
+                                           InterrogateFunction::F_item_assignment);
+        if (index != 0) {
+          if (find(itype._methods.begin(), itype._methods.end(),
+                   index) == itype._methods.end()) {
+            itype._methods.push_back(index);
+          }
+        }
       }
     }
   }

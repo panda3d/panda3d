@@ -11,8 +11,8 @@
  * @date 2010-02-09
  */
 
-#ifndef __BULLET_TRIANGLE_MESH_SHAPE_H__
-#define __BULLET_TRIANGLE_MESH_SHAPE_H__
+#ifndef BULLET_TRIANGLE_MESH_SHAPE_H
+#define BULLET_TRIANGLE_MESH_SHAPE_H
 
 #include "pandabase.h"
 
@@ -93,4 +93,4 @@ private:
 
 #include "bulletTriangleMeshShape.I"
 
-#endif // __BULLET_TRIANGLE_MESH_SHAPE_H__
+#endif // BULLET_TRIANGLE_MESH_SHAPE_H

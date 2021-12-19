@@ -897,7 +897,8 @@ string_cs_type(const string &strval) {
   } else if (cmp_nocase_uh(strval, "inv-sphere") == 0 ||
              cmp_nocase_uh(strval, "invsphere") == 0) {
     return CST_inv_sphere;
-  } else if (cmp_nocase_uh(strval, "tube") == 0) {
+  } else if (cmp_nocase_uh(strval, "tube") == 0 ||
+             cmp_nocase_uh(strval, "capsule") == 0) {
     return CST_tube;
   } else if (cmp_nocase_uh(strval, "floor-mesh") == 0 ||
              cmp_nocase_uh(strval, "floormesh") == 0) {
@@ -1093,8 +1094,8 @@ write_vertex_ref(ostream &out, int indent_level) const {
  * return false.
  */
 bool EggGroup::
-egg_start_parse_body() {
-  egg_start_group_body();
+egg_start_parse_body(EggLexerState &state) {
+  egg_start_group_body(state);
   return true;
 }
 

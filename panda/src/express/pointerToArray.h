@@ -61,7 +61,7 @@
 
 #include "pointerToArrayBase.h"
 
-#if (defined(WIN32_VC) || defined(WIN64_VC)) && !defined(__INTEL_COMPILER)
+#if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
 // disable mysterious MSVC warning for static inline PTA::empty_array method
 // need to chk if vc 7.0 still has this problem, would like to keep it enabled
 #pragma warning (disable : 4506)
@@ -117,6 +117,8 @@ PUBLISHED:
   INLINE size_t count(const Element &) const;
 
 #ifdef HAVE_PYTHON
+  EXTENSION(PyObject *__reduce__(PyObject *self) const);
+
   EXTENSION(int __getbuffer__(PyObject *self, Py_buffer *view, int flags));
   EXTENSION(void __releasebuffer__(PyObject *self, Py_buffer *view) const);
 #endif
@@ -179,7 +181,7 @@ public:
   INLINE void erase(iterator position);
   INLINE void erase(iterator first, iterator last);
 
-#if !defined(WIN32_VC) && !defined (WIN64_VC)
+#ifndef _WIN32
   INLINE reference operator [](size_type n) const;
   INLINE reference operator [](int n) const;
 #endif
@@ -273,6 +275,8 @@ PUBLISHED:
   INLINE size_t count(const Element &) const;
 
 #ifdef HAVE_PYTHON
+  EXTENSION(PyObject *__reduce__(PyObject *self) const);
+
   EXTENSION(int __getbuffer__(PyObject *self, Py_buffer *view, int flags) const);
   EXTENSION(void __releasebuffer__(PyObject *self, Py_buffer *view) const);
 #endif
@@ -285,7 +289,7 @@ PUBLISHED:
   typedef typename pvector<Element>::const_reference const_reference;
   typedef typename pvector<Element>::const_iterator iterator;
   typedef typename pvector<Element>::const_iterator const_iterator;
-#if defined(WIN32_VC) || defined(WIN64_VC)
+#ifdef _MSC_VER
   // VC++ seems to break the const_reverse_iterator definition somehow.
   typedef typename pvector<Element>::reverse_iterator reverse_iterator;
 #else
@@ -323,7 +327,7 @@ PUBLISHED:
   INLINE reference front() const;
   INLINE reference back() const;
 
-#if !defined(WIN32_VC) && !defined(WIN64_VC)
+#ifndef _WIN32
   INLINE reference operator [](size_type n) const;
   INLINE reference operator [](int n) const;
 #endif

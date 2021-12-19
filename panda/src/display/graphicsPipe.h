@@ -91,8 +91,10 @@ PUBLISHED:
 
   INLINE int get_display_width() const;
   INLINE int get_display_height() const;
+  PN_stdfloat get_display_zoom() const;
   MAKE_PROPERTY(display_width, get_display_width);
   MAKE_PROPERTY(display_height, get_display_height);
+  MAKE_PROPERTY(display_zoom, get_display_zoom);
 
   DisplayInformation *get_display_information();
   MAKE_PROPERTY(display_information, get_display_information);
@@ -115,6 +117,8 @@ public:
   virtual PT(GraphicsStateGuardian) make_callback_gsg(GraphicsEngine *engine);
 
 protected:
+  INLINE void set_detected_display_zoom(PN_stdfloat zoom);
+
   virtual void close_gsg(GraphicsStateGuardian *gsg);
 
   virtual PT(GraphicsOutput) make_output(const std::string &name,
@@ -133,6 +137,7 @@ protected:
   int _supported_types;
   int _display_width;
   int _display_height;
+  PN_stdfloat _detected_display_zoom;
   PT(GraphicsDevice) _device;
 
   DisplayInformation *_display_information;

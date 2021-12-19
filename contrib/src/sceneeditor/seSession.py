@@ -20,9 +20,9 @@ from seGeometry import *
 from direct.tkpanels import Placer
 from direct.tkwidgets import Slider
 from direct.gui import OnscreenText
-import types
-import string
+from direct.task import Task
 from direct.showbase import Loader
+import math
 
 class SeSession(DirectObject):  ### Customized DirectSession
 

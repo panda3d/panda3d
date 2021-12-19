@@ -24,6 +24,8 @@ class FactoryParams;
  * If enabled, specifies that a custom logical operation be performed instead
  * of any color blending.  Setting it to a value other than M_none will cause
  * color blending to be disabled and the given logic operation to be performed.
+ *
+ * @since 1.10.0
  */
 class EXPCL_PANDA_PGRAPH LogicOpAttrib : public RenderAttrib {
 PUBLISHED:

@@ -1111,6 +1111,7 @@ is_integer(CPPType *type) {
           (simple_type->_type == CPPSimpleType::T_bool ||
            simple_type->_type == CPPSimpleType::T_char ||
            simple_type->_type == CPPSimpleType::T_wchar_t ||
+           simple_type->_type == CPPSimpleType::T_char8_t ||
            simple_type->_type == CPPSimpleType::T_char16_t ||
            simple_type->_type == CPPSimpleType::T_char32_t ||
            simple_type->_type == CPPSimpleType::T_int);
@@ -1148,7 +1149,8 @@ is_unsigned_integer(CPPType *type) {
             simple_type->_type == CPPSimpleType::T_wchar_t ||
             simple_type->_type == CPPSimpleType::T_int) &&
            (simple_type->_flags & CPPSimpleType::F_unsigned) != 0) ||
-           (simple_type->_type == CPPSimpleType::T_char16_t ||
+           (simple_type->_type == CPPSimpleType::T_char8_t ||
+            simple_type->_type == CPPSimpleType::T_char16_t ||
             simple_type->_type == CPPSimpleType::T_char32_t);
       }
     }
@@ -1442,7 +1444,7 @@ is_void(CPPType *type) {
 
 /**
  * Returns true if the indicated type is some class that derives from
- * ReferenceCount, or false otherwise.
+ * ReferenceCount, or defines ref and unref(), or false otherwise.
  */
 bool TypeManager::
 is_reference_count(CPPType *type) {
@@ -1459,6 +1461,14 @@ is_reference_count(CPPType *type) {
   case CPPDeclaration::ST_struct:
     {
       CPPStructType *stype = type->as_struct_type();
+
+      // If we have methods named ref() and unref(), this is good enough.
+      if (stype->_scope->_functions.count("ref") &&
+          stype->_scope->_functions.count("unref") &&
+          stype->_scope->_functions.count("get_ref_count")) {
+        return true;
+      }
+
       CPPStructType::Derivation::const_iterator di;
       for (di = stype->_derivation.begin();
            di != stype->_derivation.end();

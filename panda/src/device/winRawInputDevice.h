@@ -25,6 +25,8 @@ class WinInputDeviceManager;
 /**
  * This implementation of InputDevice uses the Win32 raw input API and the HID
  * parser library to support a wide range of devices.
+ *
+ * @since 1.10.0
  */
 class EXPCL_PANDA_DEVICE WinRawInputDevice final : public InputDevice {
 public:
@@ -34,6 +36,7 @@ public:
   bool on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name);
   void on_removal();
   void on_input(PRAWINPUT input);
+  void process_report(PCHAR ptr, size_t size);
 
 private:
   virtual void do_poll();
@@ -41,10 +44,8 @@ private:
 private:
   const std::string _path;
   HANDLE _handle;
-  DWORD _size;
   void *_preparsed;
   ULONG _max_data_count;
-  ULONG _max_usage_count;
 
   // Indexed by report ID
   pvector<BitArray> _report_buttons;

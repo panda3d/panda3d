@@ -30,14 +30,12 @@ ConfigureFn(config_dxml) {
   init_libdxml();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_libdxml
-//  Description: Initializes the library.  This must be called at
-//               least once before any of the functions or classes in
-//               this library can be used.  Normally it will be
-//               called by the static initializers and need not be
-//               called explicitly, but special cases exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the library.  This must be called at least once before any of
+ * the functions or classes in this library can be used.  Normally it will be
+ * called by the static initializers and need not be called explicitly, but
+ * special cases exist.
+ */
 void
 init_libdxml() {
   static bool initialized = false;
@@ -48,11 +46,10 @@ init_libdxml() {
 }
 
 BEGIN_PUBLISH
-////////////////////////////////////////////////////////////////////
-//     Function: read_xml_stream
-//  Description: Reads an XML document from the indicated stream.
-//               Returns the document, or NULL on error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads an XML document from the indicated stream.
+ * @returns the document, or NULL on error.
+ */
 TiXmlDocument *
 read_xml_stream(std::istream &in) {
   TiXmlDocument *doc = new TiXmlDocument;
@@ -67,10 +64,9 @@ read_xml_stream(std::istream &in) {
 END_PUBLISH
 
 BEGIN_PUBLISH
-////////////////////////////////////////////////////////////////////
-//     Function: write_xml_stream
-//  Description: Writes an XML document to the indicated stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes an XML document to the indicated stream.
+ */
 void
 write_xml_stream(std::ostream &out, TiXmlDocument *doc) {
   out << *doc;
@@ -78,10 +74,9 @@ write_xml_stream(std::ostream &out, TiXmlDocument *doc) {
 END_PUBLISH
 
 BEGIN_PUBLISH
-////////////////////////////////////////////////////////////////////
-//     Function: print_xml
-//  Description: Writes an XML object to stdout, with formatting.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes an XML object to stdout, with formatting.
+ */
 void
 print_xml(TiXmlNode *xnode) {
   xnode->Print(stdout, 0);
@@ -89,12 +84,10 @@ print_xml(TiXmlNode *xnode) {
 END_PUBLISH
 
 BEGIN_PUBLISH
-////////////////////////////////////////////////////////////////////
-//     Function: print_xml_to_file
-//  Description: Writes an XML object to the indicated file, with
-//               formatting.  Unfortunately the VFS cannot be
-//               supported; the file must be a real filename on disk.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes an XML object to the indicated file, with formatting.  Unfortunately
+ * the VFS cannot be supported; the file must be a real filename on disk.
+ */
 void
 print_xml_to_file(const Filename &filename, TiXmlNode *xnode) {
   std::string os_name = filename.to_os_specific();

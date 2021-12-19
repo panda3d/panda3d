@@ -71,6 +71,8 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LVector3) operator * (FLOATTYPE scalar) const;
   INLINE_LINMATH FLOATNAME(LVector3) operator / (FLOATTYPE scalar) const;
 
+  EXTENSION(INLINE_LINMATH FLOATNAME(LVector3) __rmul__(FLOATTYPE scalar) const);
+
   // Some special named constructors for LVector3.
 
   INLINE_LINMATH static FLOATNAME(LVector3) up(CoordinateSystem cs = CS_default);

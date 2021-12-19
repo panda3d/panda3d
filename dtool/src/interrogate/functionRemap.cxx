@@ -397,19 +397,38 @@ get_call_str(const string &container, const vector_string &pexprs) const {
     }
 
     // It's not possible to assign arrays in C++, we have to copy them.
-    CPPArrayType *array_type = _parameters[_first_true_parameter]._remap->get_orig_type()->as_array_type();
+    bool paren_close = false;
+    CPPType *param_type = _parameters[_first_true_parameter]._remap->get_orig_type();
+    CPPArrayType *array_type = param_type->as_array_type();
     if (array_type != nullptr) {
       call << "std::copy(" << expr << ", " << expr << " + " << *array_type->_bounds << ", ";
-    } else {
+      paren_close = true;
+    }
+    else if (TypeManager::is_pointer_to_PyObject(param_type)) {
+      call << "Dtool_Assign_PyObject(" << expr << ", ";
+      paren_close = true;
+    }
+    else {
       call << expr << " = ";
     }
 
     _parameters[_first_true_parameter]._remap->pass_parameter(call,
                     get_parameter_expr(_first_true_parameter, pexprs));
 
-    if (array_type != nullptr) {
+    if (paren_close) {
       call << ')';
     }
+
+  } else if (_type == T_item_assignment_operator) {
+    call << "(";
+    _parameters[0]._remap->pass_parameter(call, container);
+    call << ")[";
+
+    size_t pn = _first_true_parameter;
+    _parameters[pn]._remap->pass_parameter(call, get_parameter_expr(pn, pexprs));
+    call << "] = ";
+    ++pn;
+    _parameters[pn]._remap->pass_parameter(call, get_parameter_expr(pn, pexprs));
 
   } else {
     const char *separator = "";
@@ -437,15 +456,16 @@ get_call_str(const string &container, const vector_string &pexprs) const {
       } else if (_has_this && !container.empty()) {
         // If we have a "this" parameter, the calling convention is also a bit
         // different.
-        call << "(";
+        call << "((";
         _parameters[0]._remap->pass_parameter(call, container);
-        call << ")." << _cppfunc->get_local_name();
+        call << ")." << _cppfunc->get_local_name() << ")";
 
       } else {
+        call << "(";
         if (_cpptype != nullptr) {
           call << _cpptype->get_local_name(&parser);
         }
-        call << "::" << _cppfunc->get_local_name();
+        call << "::" << _cppfunc->get_local_name() << ")";
       }
     }
     call << "(";
@@ -459,11 +479,6 @@ get_call_str(const string &container, const vector_string &pexprs) const {
     size_t pn = _first_true_parameter;
     size_t num_parameters = pexprs.size();
 
-    if (_type == T_item_assignment_operator) {
-      // The last parameter is the value to set.
-      --num_parameters;
-    }
-
     for (pn = _first_true_parameter;
          pn < num_parameters; ++pn) {
       nassertd(pn < _parameters.size()) break;
@@ -472,11 +487,6 @@ get_call_str(const string &container, const vector_string &pexprs) const {
       separator = ", ";
     }
     call << ")";
-
-    if (_type == T_item_assignment_operator) {
-      call << " = ";
-      _parameters[pn]._remap->pass_parameter(call, get_parameter_expr(pn, pexprs));
-    }
   }
 
   return call.str();
@@ -559,6 +569,9 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
 
   } else if ((ifunc._flags & InterrogateFunction::F_setter) != 0) {
     _type = T_setter;
+
+  } else if ((ifunc._flags & InterrogateFunction::F_item_assignment) != 0) {
+    _type = T_item_assignment_operator;
   }
 
   if ((_cppfunc->_storage_class & CPPInstance::SC_blocking) != 0) {
@@ -614,14 +627,6 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
         fname == "operator <<=" ||
         fname == "operator >>=") {
       _type = T_assignment_method;
-
-    } else if (fname == "operator []" && !_const_method && rtype != nullptr) {
-       // Check if this is an item-assignment operator.
-      CPPReferenceType *reftype = rtype->as_reference_type();
-      if (reftype != nullptr && reftype->_pointing_at->as_const_type() == nullptr) {
-        // It returns a mutable reference.
-        _type = T_item_assignment_operator;
-      }
     }
   }
 
@@ -698,36 +703,10 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
       }
     }
 
-  } else if (_type == T_item_assignment_operator) {
-    // An item-assignment method isn't really a thing in C++, but it is in
-    // scripting languages, so we use this to denote item-access operators
-    // that return a non-const reference.
-
-    if (_cpptype == nullptr) {
-      nout << "Method " << *_cppfunc << " has no struct type\n";
-      return false;
-    } else {
-      // Synthesize a const reference parameter for the assignment.
-      CPPType *bare_type = TypeManager::unwrap_reference(rtype);
-      CPPType *const_type = CPPType::new_type(new CPPConstType(bare_type));
-      CPPType *ref_type = CPPType::new_type(new CPPReferenceType(const_type));
-
-      Parameter param;
-      param._has_name = true;
-      param._name = "assign_val";
-      param._remap = interface_maker->remap_parameter(_cpptype, ref_type);
-
-      if (param._remap == nullptr || !param._remap->is_valid()) {
-        nout << "Invalid remap for assignment type of method " << *_cppfunc << "\n";
-        return false;
-      }
-      _parameters.push_back(param);
-
-      // Pretend we don't return anything at all.
-      CPPType *void_type = TypeManager::get_void_type();
-      _return_type = interface_maker->remap_parameter(_cpptype, void_type);
-      _void_return = true;
-    }
+  } else if (fname == "operator <=>") {
+    // This returns an opaque object that we must leave unchanged.
+    _return_type = new ParameterRemapUnchanged(rtype);
+    _void_return = false;
 
   } else {
     // The normal case.
@@ -770,6 +749,11 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
     // fully defined here, particularly if the class is defined in some other
     // library.
     _return_value_destructor = builder.get_destructor_for(return_meat_type);
+  }
+
+  if (_type == T_getter && TypeManager::is_pointer_to_PyObject(return_type)) {
+    _manage_reference_count = true;
+    _return_value_needs_management = true;
   }
 
   // Check for a special meaning by name and signature.
@@ -886,9 +870,9 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
 
     } else if (fname == "operator /") {
       if (_has_this && _parameters.size() == 2 &&
-          TypeManager::is_float(_parameters[1]._remap->get_new_type())) {
-        // This division operator takes a single float argument.
-        _flags |= F_divide_float;
+          TypeManager::is_integer(_parameters[1]._remap->get_new_type())) {
+        // This division operator takes a single integer argument.
+        _flags |= F_divide_integer;
       }
 
     } else if (fname == "get_key" || fname == "get_hash") {
@@ -905,6 +889,9 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
             || fname == "__getattr__"
             || fname == "__delattr__") {
       // Just to prevent these from getting keyword arguments.
+
+    } else if (fname == "__setstate__") {
+      _args_type = InterfaceMaker::AT_single_arg;
 
     } else {
       if (_args_type == InterfaceMaker::AT_varargs) {
@@ -930,9 +917,9 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
   case T_assignment_method:
     if (fname == "operator /=") {
       if (_has_this && _parameters.size() == 2 &&
-          TypeManager::is_float(_parameters[1]._remap->get_new_type())) {
-        // This division operator takes a single float argument.
-        _flags |= F_divide_float;
+          TypeManager::is_integer(_parameters[1]._remap->get_new_type())) {
+        // This division operator takes a single integer argument.
+        _flags |= F_divide_integer;
       }
     }
     break;

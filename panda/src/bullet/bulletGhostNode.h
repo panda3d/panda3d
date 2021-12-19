@@ -11,8 +11,8 @@
  * @date 2010-11-19
  */
 
-#ifndef __BULLET_GHOST_NODE_H__
-#define __BULLET_GHOST_NODE_H__
+#ifndef BULLETGHOSTNODE_H
+#define BULLETGHOSTNODE_H
 
 #include "pandabase.h"
 
@@ -37,7 +37,7 @@ PUBLISHED:
   int get_num_overlapping_nodes() const;
   PandaNode *get_overlapping_node(int idx) const;
   MAKE_SEQ(get_overlapping_nodes, get_num_overlapping_nodes, get_overlapping_node);
-  
+
   MAKE_SEQ_PROPERTY(overlapping_nodes, get_num_overlapping_nodes, get_overlapping_node);
 
 public:
@@ -58,6 +58,14 @@ private:
   btPairCachingGhostObject *_ghost;
 
   void do_transform_changed();
+
+public:
+  static void register_with_read_factory();
+  virtual PandaNode *make_copy() const;
+
+protected:
+  BulletGhostNode(const BulletGhostNode &copy);
+  static TypedWritable *make_from_bam(const FactoryParams &params);
 
 public:
   static TypeHandle get_class_type() {
@@ -82,4 +90,4 @@ private:
 
 #include "bulletGhostNode.I"
 
-#endif // __BULLET_GHOST_NODE_H__
+#endif // BULLETGHOSTNODE_H

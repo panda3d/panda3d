@@ -11,8 +11,8 @@
  * @date 2010-03-07
  */
 
-#ifndef __BULLET_PERSISTENT_MANIFOLD_H__
-#define __BULLET_PERSISTENT_MANIFOLD_H__
+#ifndef BULLETPERSISTENTMANIFOLD_H
+#define BULLETPERSISTENTMANIFOLD_H
 
 #include "pandabase.h"
 
@@ -34,7 +34,7 @@ PUBLISHED:
   PandaNode *get_node1();
 
   int get_num_manifold_points() const;
-  BulletManifoldPoint *get_manifold_point(int idx) const;
+  BulletManifoldPoint get_manifold_point(int idx) const;
   MAKE_SEQ(get_manifold_points, get_num_manifold_points, get_manifold_point);
 
   PN_stdfloat get_contact_breaking_threshold() const;
@@ -57,4 +57,4 @@ private:
 
 #include "bulletPersistentManifold.I"
 
-#endif // __BULLET_PERSISTENT_MANIFOLD_H__
+#endif // BULLETPERSISTENTMANIFOLD_H

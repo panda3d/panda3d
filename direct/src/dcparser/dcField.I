@@ -42,7 +42,7 @@ has_default_value() const {
  * explicitly set (e.g.  has_default_value() returns true), returns that
  * value; otherwise, returns an implicit default for the field.
  */
-INLINE const std::string &DCField::
+INLINE const vector_uchar &DCField::
 get_default_value() const {
   if (_default_value_stale) {
     ((DCField *)this)->refresh_default_value();
@@ -172,8 +172,8 @@ set_class(DCClass *dclass) {
  * Establishes a default value for this field.
  */
 INLINE void DCField::
-set_default_value(const std::string &default_value) {
-  _default_value = default_value;
+set_default_value(vector_uchar default_value) {
+  _default_value = std::move(default_value);
   _has_default_value = true;
   _default_value_stale = false;
 }

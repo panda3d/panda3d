@@ -85,12 +85,21 @@ PUBLISHED:
 public:
 
   // Methods derived from PandaNode
-  virtual bool is_renderable() const;
   virtual bool safe_to_flatten() const;
   virtual bool safe_to_combine() const;
   virtual void add_for_draw(CullTraverser *trav, CullTraverserData &data);
 
 private:
+  virtual CPT(TransformState)
+    calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
+                      bool &found_any,
+                      const TransformState *transform,
+                      Thread *current_thread = Thread::get_current_thread()) const;
+
+  virtual void compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
+                                       int &internal_vertices,
+                                       int pipeline_stage,
+                                       Thread *current_thread) const;
 
   // Chunk data
   struct Chunk {

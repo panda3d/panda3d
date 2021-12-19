@@ -15,7 +15,6 @@
 #include "temporaryFile.h"
 #include "numeric_types.h"
 #include "datagramIterator.h"
-#include "profileTimer.h"
 #include "config_putil.h"
 #include "config_express.h"
 #include "virtualFileSystem.h"
@@ -109,7 +108,7 @@ read_header(std::string &header, size_t num_bytes) {
   nassertr(buffer != nullptr, false);
 
   _in->read(buffer, num_bytes);
-  if (_in->fail() || _in->eof()) {
+  if (_in->fail()) {
     return false;
   }
 
@@ -130,7 +129,7 @@ get_datagram(Datagram &data) {
   // First, get the size of the upcoming datagram.
   StreamReader reader(_in, false);
   uint32_t num_bytes_32 = reader.get_uint32();
-  if (_in->fail() || _in->eof()) {
+  if (_in->fail()) {
     return false;
   }
 
@@ -141,13 +140,26 @@ get_datagram(Datagram &data) {
     return true;
   }
 
+  if (_in->eof()) {
+    return false;
+  }
+
   size_t num_bytes = (size_t)num_bytes_32;
   if (num_bytes_32 == (uint32_t)-1) {
     // Another special case for a value larger than 32 bits.
     uint64_t num_bytes_64 = reader.get_uint64();
 
-    if (_in->fail() || _in->eof()) {
+    if (_in->fail()) {
       _error = true;
+      return false;
+    }
+
+    if (num_bytes_64 == 0) {
+      data.clear();
+      return false;
+    }
+
+    if (_in->eof()) {
       return false;
     }
 
@@ -169,6 +181,11 @@ get_datagram(Datagram &data) {
   while (bytes_read < num_bytes) {
     size_t bytes_left = num_bytes - bytes_read;
 
+    if (_in->eof()) {
+      _error = true;
+      return false;
+    }
+
     // Hold up a second - datagrams >4MB are pretty large by bam/network
     // standards. Let's take it 4MB at a time just in case the length is
     // corrupt, so we don't allocate potentially a few GBs of RAM only to
@@ -180,7 +197,7 @@ get_datagram(Datagram &data) {
     unsigned char *ptr = &buffer.p()[bytes_read];
 
     _in->read((char *)ptr, (streamsize)bytes_left);
-    if (_in->fail() || _in->eof()) {
+    if (_in->fail()) {
       _error = true;
       return false;
     }
@@ -210,7 +227,7 @@ save_datagram(SubfileInfo &info) {
   // First, get the size of the upcoming datagram.
   StreamReader reader(_in, false);
   size_t num_bytes_32 = reader.get_uint32();
-  if (_in->fail() || _in->eof()) {
+  if (_in->fail() || (_in->eof() && num_bytes_32 > 0)) {
     return false;
   }
 

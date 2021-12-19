@@ -56,7 +56,7 @@ do_receive_datagram(Datagram &dg) {
     // Read the first two bytes: the datagram length.
     while ((int)_data_so_far.size() < _tcp_header_size) {
       int ch = _istream->get();
-      if (_istream->eof() || _istream->fail()) {
+      if (ch == EOF || _istream->fail()) {
         _istream->clear();
         return false;
       }

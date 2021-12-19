@@ -30,6 +30,9 @@ private:
   InputDevice *consider_add_evdev_device(size_t index);
   InputDevice *consider_add_js_device(size_t index);
 
+public:
+  bool has_virtual_device(unsigned short vendor_id, unsigned short product_id) const;
+
   virtual void update();
 
 protected:

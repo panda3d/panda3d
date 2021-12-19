@@ -41,6 +41,8 @@
 #include "pta_LVecBase2.h"
 #include "stl_compares.h"
 #include "shaderInput.h"
+#include "internalNameCollection.h"
+#include "materialCollection.h"
 #include "textureCollection.h"
 #include "textureStageCollection.h"
 
@@ -49,13 +51,9 @@ class FindApproxPath;
 class FindApproxLevelEntry;
 class Light;
 class PolylightNode;
-class InternalNameCollection;
 class Texture;
 class TextureStage;
-class TextureCollection;
-class TextureStageCollection;
 class Material;
-class MaterialCollection;
 class Fog;
 class GlobPattern;
 class PreparedGraphicsObjects;
@@ -620,6 +618,7 @@ PUBLISHED:
   bool has_texture_off(TextureStage *stage) const;
   Texture *get_texture() const;
   Texture *get_texture(TextureStage *stage) const;
+  void replace_texture(Texture *tex, Texture *new_tex);
   const SamplerState &get_texture_sampler() const;
   const SamplerState &get_texture_sampler(TextureStage *stage) const;
 
@@ -771,6 +770,7 @@ PUBLISHED:
   void clear_material();
   bool has_material() const;
   PT(Material) get_material() const;
+  void replace_material(Material *mat, Material *new_mat);
 
   void set_fog(Fog *fog, int priority = 0);
   void set_fog_off(int priority = 0);
@@ -811,14 +811,19 @@ PUBLISHED:
   bool has_depth_offset() const;
   int get_depth_offset() const;
 
+  void set_depth_bias(PN_stdfloat slope_factor, PN_stdfloat constant_factor,
+                      PN_stdfloat clamp = 0.0, int priority = 0);
+  void clear_depth_bias();
+  bool has_depth_bias() const;
+
   void do_billboard_axis(const NodePath &camera, PN_stdfloat offset);
   void do_billboard_point_eye(const NodePath &camera, PN_stdfloat offset);
   void do_billboard_point_world(const NodePath &camera, PN_stdfloat offset);
   INLINE void set_billboard_axis(PN_stdfloat offset = 0.0);
-  INLINE void set_billboard_point_eye(PN_stdfloat offset = 0.0);
+  INLINE void set_billboard_point_eye(PN_stdfloat offset = 0.0, bool fixed_depth = false);
   INLINE void set_billboard_point_world(PN_stdfloat offset = 0.0);
   void set_billboard_axis(const NodePath &camera, PN_stdfloat offset);
-  void set_billboard_point_eye(const NodePath &camera, PN_stdfloat offset);
+  void set_billboard_point_eye(const NodePath &camera, PN_stdfloat offset, bool fixed_depth = false);
   void set_billboard_point_world(const NodePath &camera, PN_stdfloat offset);
   void clear_billboard();
   bool has_billboard() const;
@@ -952,6 +957,10 @@ PUBLISHED:
   static NodePath decode_from_bam_stream(vector_uchar data, BamReader *reader = nullptr);
 
 private:
+  bool replace_copied_nodes(const NodePath &source, const NodePath &dest,
+                            const PandaNode::InstanceMap &inst_map,
+                            Thread *current_thread);
+
   static NodePathComponent *
   find_common_ancestor(const NodePath &a, const NodePath &b,
                        int &a_count, int &b_count,
@@ -1002,6 +1011,7 @@ private:
   Texture *r_find_texture(PandaNode *node, TextureStage *stage) const;
   void r_find_all_textures(PandaNode *node, TextureStage *stage,
                            Textures &textures) const;
+  static void r_replace_texture(PandaNode *node, Texture *tex, Texture *new_tex);
 
   typedef phash_set<TextureStage *, pointer_hash> TextureStages;
   TextureStage *r_find_texture_stage(PandaNode *node, const RenderState *state,
@@ -1016,6 +1026,8 @@ private:
                           const GlobPattern &glob) const;
   void r_find_all_materials(PandaNode *node, const RenderState *state,
                            Materials &materials) const;
+  static void r_replace_material(PandaNode *node, Material *mat,
+                                 const MaterialAttrib *new_attrib);
 
   PT(NodePathComponent) _head;
   int _backup_key;
@@ -1048,6 +1060,8 @@ private:
 };
 
 INLINE std::ostream &operator << (std::ostream &out, const NodePath &node_path);
+
+#include "nodePathCollection.h"
 
 #include "nodePath.I"
 

@@ -294,8 +294,14 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
 
       if (node->is_of_type(LightLensNode::get_class_type())) {
         const LightLensNode *llnode = (const LightLensNode *)node;
-        if (shader_attrib->auto_shadow_on() && llnode->is_shadow_caster()) {
-          info._flags |= ShaderKey::LF_has_shadows;
+        if (shader_attrib->auto_shadow_on()) {
+          if (llnode->is_shadow_caster()) {
+            info._flags |= ShaderKey::LF_has_shadows;
+          }
+
+          // Make sure that the next time the shadows are toggled on this
+          // light, it triggers a state rehash.
+          llnode->mark_used_by_auto_shader();
         }
         if (llnode->has_specular_color()) {
           info._flags |= ShaderKey::LF_has_specular_color;
@@ -461,6 +467,9 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
         skip = true;
       }
       break;
+    case TextureStage::M_emission:
+      info._flags = ShaderKey::TF_map_emission;
+      break;
     default:
       break;
     }
@@ -567,6 +576,8 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
  * Call this if certain state has changed in such a way as to require a rerun
  * of the shader generator.  This should be rare because in most cases, the
  * shader generator will automatically regenerate shaders as necessary.
+ *
+ * @since 1.10.0
  */
 void ShaderGenerator::
 rehash_generated_shaders() {
@@ -574,9 +585,9 @@ rehash_generated_shaders() {
 
   // With uniquify-states turned on, we can actually go through all the states
   // and check whether their generated shader is still OK.
-  size_t size = RenderState::_states->get_num_entries();
+  size_t size = RenderState::_states.get_num_entries();
   for (size_t si = 0; si < size; ++si) {
-    const RenderState *state = RenderState::_states->get_key(si);
+    const RenderState *state = RenderState::_states.get_key(si);
 
     if (state->_generated_shader != nullptr) {
       ShaderKey key;
@@ -608,14 +619,16 @@ rehash_generated_shaders() {
 /**
  * Removes all previously generated shaders, requiring all shaders to be
  * regenerated.  Does not clear cache of compiled shaders.
+ *
+ * @since 1.10.0
  */
 void ShaderGenerator::
 clear_generated_shaders() {
   LightReMutexHolder holder(*RenderState::_states_lock);
 
-  size_t size = RenderState::_states->get_num_entries();
+  size_t size = RenderState::_states.get_num_entries();
   for (size_t si = 0; si < size; ++si) {
-    const RenderState *state = RenderState::_states->get_key(si);
+    const RenderState *state = RenderState::_states.get_key(si);
     state->_generated_shader.clear();
   }
 
@@ -733,12 +746,18 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
 
   int map_index_glow = -1;
   int map_index_gloss = -1;
+  int map_index_emission = -1;
 
   // Figure out whether we need to calculate any of these variables.
   bool need_world_position = (key._num_clip_planes > 0);
   bool need_world_normal = false;
   bool need_eye_position = key._lighting;
   bool need_eye_normal = !key._lights.empty() || ((key._outputs & AuxBitplaneAttrib::ABO_aux_normal) != 0);
+  bool need_tangents = ((key._texture_flags & ShaderKey::TF_map_normal) != 0);
+
+  // If we have binormal/tangent and eye position, we can pack eye normal in
+  // the w channels of the others.
+  bool pack_eye_normal = need_eye_normal && need_tangents && need_eye_position;
 
   bool have_specular = false;
   if (key._lighting) {
@@ -818,8 +837,11 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     if (tex._flags & ShaderKey::TF_map_gloss) {
       map_index_gloss = i;
     }
+    if (tex._flags & ShaderKey::TF_map_emission) {
+      map_index_emission = i;
+    }
   }
-  if (key._texture_flags & ShaderKey::TF_map_normal) {
+  if (need_tangents) {
     tangent_freg = alloc_freg();
     binormal_freg = alloc_freg();
     text << "\t out float4 l_tangent : " << tangent_freg << ",\n";
@@ -844,13 +866,15 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     text << "\t uniform float4x4 trans_model_to_view,\n";
     eye_position_freg = alloc_freg();
     text << "\t out float4 l_eye_position : " << eye_position_freg << ",\n";
-  } else if (key._texture_flags & ShaderKey::TF_map_normal) {
+  } else if (need_tangents) {
     text << "\t uniform float4x4 trans_model_to_view,\n";
   }
   if (need_eye_normal) {
-    eye_normal_freg = alloc_freg();
     text << "\t uniform float4x4 tpose_view_to_model,\n";
-    text << "\t out float3 l_eye_normal : " << eye_normal_freg << ",\n";
+    if (!pack_eye_normal)  {
+      eye_normal_freg = alloc_freg();
+      text << "\t out float3 l_eye_normal : " << eye_normal_freg << ",\n";
+    }
   }
   if ((key._texture_flags & ShaderKey::TF_map_height) != 0 || need_world_normal || need_eye_normal) {
     text << "\t in float3 vtx_normal : " << normal_vreg << ",\n";
@@ -859,19 +883,25 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     text << "\t uniform float4 mspos_view,\n";
     text << "\t out float3 l_eyevec,\n";
   }
-  for (size_t i = 0; i < key._lights.size(); ++i) {
-    const ShaderKey::LightInfo &light = key._lights[i];
-    if (light._flags & ShaderKey::LF_has_shadows) {
-      lightcoord_fregs.push_back(alloc_freg());
-      text << "\t uniform float4x4 mat_shadow_" << i << ",\n";
-      text << "\t out float4 l_lightcoord" << i << " : " << lightcoord_fregs[i] << ",\n";
-    } else {
-      lightcoord_fregs.push_back(nullptr);
-    }
-  }
   if (key._fog_mode != 0) {
     hpos_freg = alloc_freg();
     text << "\t out float4 l_hpos : " << hpos_freg << ",\n";
+  }
+  for (size_t i = 0; i < key._lights.size(); ++i) {
+    const ShaderKey::LightInfo &light = key._lights[i];
+    if (light._flags & ShaderKey::LF_has_shadows) {
+      if (_ftregs_used >= 8) {
+        // We ran out of TEXCOORD registers.  That means we have to do this
+        // calculation in the fragment shader, which is slower.
+        lightcoord_fregs.push_back(nullptr);
+      } else {
+        lightcoord_fregs.push_back(alloc_freg());
+        text << "\t uniform float4x4 mat_shadow_" << i << ",\n";
+        text << "\t out float4 l_lightcoord" << i << " : " << lightcoord_fregs[i] << ",\n";
+      }
+    } else {
+      lightcoord_fregs.push_back(nullptr);
+    }
   }
   if (key._anim_spec.get_animation_type() == GeomEnums::AT_hardware &&
       key._anim_spec.get_num_transforms() > 0) {
@@ -936,9 +966,6 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   if (need_eye_position) {
     text << "\t l_eye_position = mul(trans_model_to_view, vtx_position);\n";
   }
-  if (need_eye_normal) {
-    text << "\t l_eye_normal = normalize(mul((float3x3)tpose_view_to_model, vtx_normal));\n";
-  }
   pmap<const InternalName *, const char *>::const_iterator it;
   for (it = texcoord_fregs.begin(); it != texcoord_fregs.end(); ++it) {
     // Pass through all texcoord inputs as-is.
@@ -948,7 +975,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   if (need_color && key._color_type == ColorAttrib::T_vertex) {
     text << "\t l_color = vtx_color;\n";
   }
-  if (key._texture_flags & ShaderKey::TF_map_normal) {
+  if (need_tangents) {
     text << "\t l_tangent.xyz = normalize(mul((float3x3)trans_model_to_view, vtx_" << tangent_input << ".xyz));\n";
     text << "\t l_tangent.w = 0;\n";
     text << "\t l_binormal.xyz = normalize(mul((float3x3)trans_model_to_view, -vtx_" << binormal_input << ".xyz));\n";
@@ -956,7 +983,9 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   }
   for (size_t i = 0; i < key._lights.size(); ++i) {
     if (key._lights[i]._flags & ShaderKey::LF_has_shadows) {
-      text << "\t l_lightcoord" << i << " = mul(mat_shadow_" << i << ", l_eye_position);\n";
+      if (lightcoord_fregs[i] != nullptr) {
+        text << "\t l_lightcoord" << i << " = mul(mat_shadow_" << i << ", l_eye_position);\n";
+      }
     }
   }
   if (key._texture_flags & ShaderKey::TF_map_height) {
@@ -965,6 +994,17 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     text << "\t l_eyevec.y = dot(vtx_" << binormal_input << ".xyz, eyedir);\n";
     text << "\t l_eyevec.z = dot(vtx_normal, eyedir);\n";
     text << "\t l_eyevec = normalize(l_eyevec);\n";
+  }
+  if (need_eye_normal) {
+    if (pack_eye_normal) {
+      // We can pack the normal into the w channels of these unused varyings.
+      text << "\t float3 eye_normal = normalize(mul((float3x3)tpose_view_to_model, vtx_normal));\n";
+      text << "\t l_tangent.w = eye_normal.x;\n";
+      text << "\t l_binormal.w = eye_normal.y;\n";
+      text << "\t l_eye_position.w = eye_normal.z;\n";
+    } else {
+      text << "\t l_eye_normal = normalize(mul((float3x3)tpose_view_to_model, vtx_normal));\n";
+    }
   }
   text << "}\n\n";
 
@@ -985,7 +1025,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   if (need_eye_position) {
     text << "\t in float4 l_eye_position : " << eye_position_freg << ",\n";
   }
-  if (need_eye_normal) {
+  if (need_eye_normal && !pack_eye_normal) {
     text << "\t in float3 l_eye_normal : " << eye_normal_freg << ",\n";
   }
   for (it = texcoord_fregs.begin(); it != texcoord_fregs.end(); ++it) {
@@ -1010,9 +1050,9 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       text << "\t uniform float4 texcolor_" << i << ",\n";
     }
   }
-  if (key._texture_flags & ShaderKey::TF_map_normal) {
-    text << "\t in float3 l_tangent : " << tangent_freg << ",\n";
-    text << "\t in float3 l_binormal : " << binormal_freg << ",\n";
+  if (need_tangents) {
+    text << "\t in float4 l_tangent : " << tangent_freg << ",\n";
+    text << "\t in float4 l_binormal : " << binormal_freg << ",\n";
   }
   for (size_t i = 0; i < key._lights.size(); ++i) {
     text << "\t uniform float4x4 attr_light" << i << ",\n";
@@ -1026,7 +1066,11 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       } else {
         text << "\t uniform sampler2D shadow_" << i << ",\n";
       }
-      text << "\t in float4 l_lightcoord" << i << " : " << lightcoord_fregs[i] << ",\n";
+      if (lightcoord_fregs[i] != nullptr) {
+        text << "\t in float4 l_lightcoord" << i << " : " << lightcoord_fregs[i] << ",\n";
+      } else {
+        text << "\t uniform float4x4 mat_shadow_" << i << ",\n";
+      }
     }
     if (light._flags & ShaderKey::LF_has_specular_color) {
       text << "\t uniform float4 attr_lspec" << i << ",\n";
@@ -1057,7 +1101,9 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     text << "\t uniform float4 clipplane_" << i << ",\n";
   }
 
-  text << "\t uniform float4 attr_ambient,\n";
+  if (key._lighting) {
+    text << "\t uniform float4 attr_ambient,\n";
+  }
   text << "\t uniform float4 attr_colorscale\n";
   text << ") {\n";
 
@@ -1068,6 +1114,12 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     text << "\t discard;\n";
     text << "\t }\n";
   }
+
+  // Reconstruct a packed normal vector.
+  if (need_eye_normal && pack_eye_normal) {
+    text << "\t float3 l_eye_normal = float3(l_tangent.w, l_binormal.w, l_eye_position.w);\n";
+  }
+
   text << "\t float4 result;\n";
   if (key._outputs & (AuxBitplaneAttrib::ABO_aux_normal | AuxBitplaneAttrib::ABO_aux_glow)) {
     text << "\t o_aux = float4(0, 0, 0, 0);\n";
@@ -1092,7 +1144,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       text << "\t float4 texcoord" << i << " = l_world_normal;\n";
       break;
     case TexGenAttrib::M_eye_position:
-      text << "\t float4 texcoord" << i << " = l_eye_position;\n";
+      text << "\t float4 texcoord" << i << " = float4(l_eye_position.xyz, 1.0f);\n";
       break;
     case TexGenAttrib::M_eye_normal:
       text << "\t float4 texcoord" << i << " = float4(l_eye_normal, 1.0f);\n";
@@ -1189,7 +1241,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     text << "\t // Correct the surface normal for interpolation effects\n";
     text << "\t l_eye_normal = normalize(l_eye_normal);\n";
   }
-  if (key._texture_flags & ShaderKey::TF_map_normal) {
+  if (need_tangents) {
     text << "\t // Translate tangent-space normal in map to view-space.\n";
 
     // Use Reoriented Normal Mapping to blend additional normal maps.
@@ -1198,18 +1250,29 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       const ShaderKey::TextureInfo &tex = key._textures[i];
       if (tex._flags & ShaderKey::TF_map_normal) {
         if (is_first) {
-          text << "\t float3 tsnormal = normalize((tex" << i << ".xyz * 2) - 1);\n";
+          if (tex._flags & ShaderKey::TF_has_texscale) {
+            text << "\t float3 tsnormal = normalize(((tex" << i << ".xyz * 2) - 1) * texscale_" << i << ");\n";
+          } else if (tex._flags & ShaderKey::TF_has_texmat) {
+            text << "\t float3 tsnormal = normalize(mul(texmat_" << i << ", float4((tex" << i << ".xyz * 2) - 1, 0)).xyz);\n";
+          } else {
+            text << "\t float3 tsnormal = normalize((tex" << i << ".xyz * 2) - 1);\n";
+          }
           is_first = false;
           continue;
         }
         text << "\t tsnormal.z += 1;\n";
         text << "\t float3 tmp" << i << " = tex" << i << ".xyz * float3(-2, -2, 2) + float3(1, 1, -1);\n";
+        if (tex._flags & ShaderKey::TF_has_texscale) {
+          text << "\t tmp" << i << " *= texscale_" << i << ";\n";
+        } else if (tex._flags & ShaderKey::TF_has_texmat) {
+          text << "\t tmp" << i << " = mul(texmat_" << i << ", float4(tmp" << i << ", 0)).xyz;\n";
+        }
         text << "\t tsnormal = normalize(tsnormal * dot(tsnormal, tmp" << i << ") - tmp" << i << " * tsnormal.z);\n";
       }
     }
     text << "\t l_eye_normal *= tsnormal.z;\n";
-    text << "\t l_eye_normal += normalize(l_tangent) * tsnormal.x;\n";
-    text << "\t l_eye_normal += normalize(l_binormal) * tsnormal.y;\n";
+    text << "\t l_eye_normal += normalize(l_tangent.xyz) * tsnormal.x;\n";
+    text << "\t l_eye_normal += normalize(l_binormal.xyz) * tsnormal.y;\n";
     text << "\t l_eye_normal = normalize(l_eye_normal);\n";
   }
   if (key._outputs & AuxBitplaneAttrib::ABO_aux_normal) {
@@ -1241,6 +1304,15 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   }
   for (size_t i = 0; i < key._lights.size(); ++i) {
     const ShaderKey::LightInfo &light = key._lights[i];
+
+    if (light._flags & ShaderKey::LF_has_shadows) {
+      if (lightcoord_fregs[i] == nullptr) {
+        // We have to do this one in the fragment shader if we ran out of
+        // varyings.
+        text << "\t float4 l_lightcoord" << i << " = mul(mat_shadow_" << i << ", float4(l_eye_position.xyz, 1.0f));\n";
+      }
+    }
+
     if (light._type.is_derived_from(DirectionalLight::get_class_type())) {
       text << "\t // Directional Light " << i << "\n";
       text << "\t lcolor = attr_light" << i << "[0];\n";
@@ -1381,17 +1453,17 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     }
     text << "\t // Begin view-space light summation\n";
     if (key._material_flags & Material::F_emission) {
-      if (key._texture_flags & ShaderKey::TF_map_glow) {
-        text << "\t result = attr_material[2] * saturate(2 * (tex" << map_index_glow << ".a - 0.5));\n";
-      } else {
-        text << "\t result = attr_material[2];\n";
-      }
+      text << "\t result = attr_material[2];\n";
+    } else if (key._texture_flags & (ShaderKey::TF_map_glow | ShaderKey::TF_map_emission)) {
+      text << "\t result = float4(1,1,1,0);\n";
     } else {
-      if (key._texture_flags & ShaderKey::TF_map_glow) {
-        text << "\t result = saturate(2 * (tex" << map_index_glow << ".a - 0.5));\n";
-      } else {
-        text << "\t result = float4(0,0,0,0);\n";
-      }
+      text << "\t result = float4(0,0,0,0);\n";
+    }
+    if (key._texture_flags & ShaderKey::TF_map_emission) {
+      text << "\t result.rgb *= tex" << map_index_emission << ".rgb;\n";
+    }
+    if (key._texture_flags & ShaderKey::TF_map_glow) {
+      text << "\t result *= saturate(2 * (tex" << map_index_glow << ".a - 0.5));\n";
     }
     if (key._have_separate_ambient) {
       if (key._material_flags & Material::F_ambient) {
@@ -1422,7 +1494,9 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     // Combine in alpha, which bypasses lighting calculations.  Use of lerp
     // here is a workaround for a radeon driver bug.
     if (key._calc_primary_alpha) {
-      if (key._color_type == ColorAttrib::T_vertex) {
+      if (key._material_flags & Material::F_diffuse) {
+        text << "\t result.a = attr_material[1].w;\n";
+      } else if (key._color_type == ColorAttrib::T_vertex) {
         text << "\t result.a = l_color.a;\n";
       } else if (key._color_type == ColorAttrib::T_flat) {
         text << "\t result.a = attr_color.a;\n";
@@ -1632,16 +1706,25 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   }
   text << "}\n";
 
+  if (pgraphnodes_cat.is_spam()) {
+    pgraphnodes_cat.spam() << "Generated shader:\n"
+      << text.str() << "\n";
+  }
+
   // Insert the shader into the shader attrib.
   PT(Shader) shader = Shader::make(text.str(), Shader::SL_Cg);
   nassertr(shader != nullptr, nullptr);
 
   CPT(RenderAttrib) shattr = ShaderAttrib::make(shader);
+  int flags = 0;
   if (key._alpha_test_mode != RenderAttrib::M_none) {
-    shattr = DCAST(ShaderAttrib, shattr)->set_flag(ShaderAttrib::F_subsume_alpha_test, true);
+    flags |= ShaderAttrib::F_subsume_alpha_test;
   }
   if (key._disable_alpha_write) {
-    shattr = DCAST(ShaderAttrib, shattr)->set_flag(ShaderAttrib::F_disable_alpha_write, true);
+    flags |= ShaderAttrib::F_disable_alpha_write;
+  }
+  if (flags != 0) {
+    shattr = DCAST(ShaderAttrib, shattr)->set_flag(flags, true);
   }
 
   reset_register_allocator();
@@ -1954,6 +2037,30 @@ operator == (const ShaderKey &other) const {
       && _alpha_test_ref == other._alpha_test_ref
       && _num_clip_planes == other._num_clip_planes
       && _light_ramp == other._light_ramp;
+}
+
+#else
+
+// Stubs for when building without Cg support.
+ShaderGenerator::
+ShaderGenerator(const GraphicsStateGuardianBase *gsg) {
+}
+
+ShaderGenerator::
+~ShaderGenerator() {
+}
+
+void ShaderGenerator::
+rehash_generated_shaders() {
+}
+
+void ShaderGenerator::
+clear_generated_shaders() {
+}
+
+CPT(ShaderAttrib) ShaderGenerator::
+synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
+  return nullptr;
 }
 
 #endif  // HAVE_CG

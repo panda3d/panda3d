@@ -57,6 +57,20 @@ enum QuirkBits {
 
   // ABS_THROTTLE maps to rudder
   QB_rudder_from_throttle = 16,
+
+  // Special handling for Steam Controller, which has many peculiarities.
+  // We only connect it if it is reporting any events, because when Steam is
+  // running, the Steam controller is muted in favour of a dummy Xbox device.
+  QB_steam_controller = 32,
+
+  // Axes on the right stick are swapped, using x for y and vice versa.
+  QB_right_axes_swapped = 64,
+
+  // Has no trigger axes.
+  QB_no_analog_triggers = 128,
+
+  // Alternate button mapping.
+  QB_alt_button_mapping = 256,
 };
 
 static const struct DeviceMapping {
@@ -71,8 +85,20 @@ static const struct DeviceMapping {
   {0x044f, 0xb108, InputDevice::DeviceClass::flight_stick, QB_centered_throttle | QB_reversed_throttle | QB_rudder_from_throttle},
   // Xbox 360 Wireless Controller
   {0x045e, 0x0719, InputDevice::DeviceClass::gamepad, QB_connect_if_nonzero},
+  // Steam Controller (wired)
+  {0x28de, 0x1102, InputDevice::DeviceClass::unknown, QB_steam_controller},
+  // Steam Controller (wireless)
+  {0x28de, 0x1142, InputDevice::DeviceClass::unknown, QB_steam_controller},
   // Jess Tech Colour Rumble Pad
-  {0x0f30, 0x0111, InputDevice::DeviceClass::gamepad, 0},
+  {0x0f30, 0x0111, InputDevice::DeviceClass::gamepad, QB_rstick_from_z | QB_right_axes_swapped},
+  // Trust GXT 24
+  {0x0079, 0x0006, InputDevice::DeviceClass::gamepad, QB_no_analog_triggers | QB_alt_button_mapping},
+  // 8bitdo N30 Pro Controller
+  {0x2dc8, 0x9001, InputDevice::DeviceClass::gamepad, QB_rstick_from_z},
+  // Generic gamepad
+  {0x0810, 0x0001, InputDevice::DeviceClass::gamepad, QB_no_analog_triggers | QB_alt_button_mapping | QB_rstick_from_z | QB_right_axes_swapped},
+  // Generic gamepad without sticks
+  {0x0810, 0xe501, InputDevice::DeviceClass::gamepad, QB_no_analog_triggers | QB_alt_button_mapping},
   // 3Dconnexion Space Traveller 3D Mouse
   {0x046d, 0xc623, InputDevice::DeviceClass::spatial_mouse, 0},
   // 3Dconnexion Space Pilot 3D Mouse
@@ -110,7 +136,8 @@ EvdevInputDevice(LinuxInputDeviceManager *manager, size_t index) :
   _dpad_left_button(-1),
   _dpad_up_button(-1),
   _ltrigger_code(-1),
-  _rtrigger_code(-1) {
+  _rtrigger_code(-1),
+  _quirks(0) {
 
   char path[64];
   sprintf(path, "/dev/input/event%zd", index);
@@ -209,6 +236,26 @@ do_set_vibration(double strong, double weak) {
 }
 
 /**
+ * Special case for Steam controllers; called if a Steam virtual device has
+ * just been disconnected, and this is currently an inactive Steam Controller
+ * previously blocked by Steam, waiting to be reactivated.
+ * Returns true if the device has just been reconnected.
+ */
+bool EvdevInputDevice::
+reactivate_steam_controller() {
+  LightMutexHolder holder(_lock);
+  if (!_is_connected && (_quirks & QB_steam_controller) != 0) {
+    // Just check to make sure the device is still readable.
+    process_events();
+    if (_fd != -1) {
+      _is_connected = true;
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
  * Polls the input device for new activity, to ensure it contains the latest
  * events.  This will only have any effect for some types of input devices;
  * others may be updated automatically, and this method will be a no-op.
@@ -219,7 +266,7 @@ do_poll() {
     while (process_events()) {}
 
     // If we got events, we are obviously connected.  Mark us so.
-    if (!_is_connected) {
+    if (!_is_connected && _fd != -1) {
       _is_connected = true;
       if (_manager != nullptr) {
         _manager->add_device(this);
@@ -281,7 +328,22 @@ init_device() {
   uint8_t axes[(ABS_MAX + 8) >> 3] = {0};
   if (test_bit(EV_ABS, evtypes)) {
     // Check which axes are on the device.
-    num_bits = ioctl(_fd, EVIOCGBIT(EV_ABS, sizeof(axes)), axes) << 3;
+    int result = ioctl(_fd, EVIOCGBIT(EV_ABS, sizeof(axes)), axes);
+#ifdef __FreeBSD__
+    // Older kernels had a bug where this would always return 0, see D28218
+    if (result == 0) {
+      for (int i = ABS_MAX; i >= 0; --i) {
+        if (test_bit(i, axes)) {
+          num_bits = i + 1;
+          break;
+        }
+      }
+    }
+    else
+#endif
+    if (result > 0) {
+      num_bits = result << 3;
+    }
     has_axes = true;
   }
 
@@ -297,9 +359,27 @@ init_device() {
     ++mapping;
   }
 
+  // The Steam Controller reports as multiple devices, one of which a gamepad.
+  if (quirks & QB_steam_controller) {
+    if (test_bit(BTN_GAMEPAD, keys)) {
+      _device_class = DeviceClass::gamepad;
+
+      // If we have a virtual gamepad on the system, then careful: if Steam is
+      // running, it may disable its own gamepad in favour of the virtual
+      // device it registers.  If the virtual device is present, we will only
+      // register this gamepad as connected when it registers input.
+      if (_manager->has_virtual_device(0x28de, 0x11ff)) {
+        device_cat.debug()
+          << "Detected Steam virtual gamepad, disabling Steam Controller\n";
+        quirks |= QB_connect_if_nonzero;
+      }
+    }
+  }
+  _quirks = quirks;
+
   // Try to detect which type of device we have here
   if (_device_class == DeviceClass::unknown) {
-    int device_scores[(size_t)DeviceClass::spatial_mouse] = {0};
+    int device_scores[(size_t)DeviceClass::digitizer + 1] = {0};
 
     // Test for specific keys
     if (test_bit(BTN_GAMEPAD, keys) && test_bit(ABS_X, axes) && test_bit(ABS_RX, axes)) {
@@ -319,6 +399,9 @@ init_device() {
     }
     if (test_bit(BTN_MOUSE, keys) && test_bit(EV_REL, evtypes)) {
       device_scores[(size_t)DeviceClass::mouse] += 20;
+    }
+    if (test_bit(BTN_DIGI, keys) && test_bit(EV_ABS, evtypes)) {
+      device_scores[(size_t)DeviceClass::digitizer] += 20;
     }
     uint8_t unknown_keys[] = {KEY_POWER};
     for (int i = 0; i < 1; i++) {
@@ -359,7 +442,7 @@ init_device() {
 
     // Check which device type got the most points
     int highest_score = 0;
-    for (size_t i = 0; i < (size_t)DeviceClass::spatial_mouse; i++) {
+    for (size_t i = 0; i <= (size_t)DeviceClass::digitizer; i++) {
       if (device_scores[i] > highest_score) {
         highest_score = device_scores[i];
         _device_class = (DeviceClass)i;
@@ -376,7 +459,7 @@ init_device() {
     for (int i = 0; i <= KEY_MAX; ++i) {
       if (test_bit(i, keys)) {
         ButtonState button;
-        button.handle = map_button(i, _device_class);
+        button.handle = map_button(i, _device_class, quirks);
 
         int button_index = (int)_buttons.size();
         if (button.handle == ButtonHandle::none()) {
@@ -436,10 +519,16 @@ init_device() {
           break;
         case ABS_Z:
           if (quirks & QB_rstick_from_z) {
-            axis = InputDevice::Axis::right_x;
+            if (quirks & QB_right_axes_swapped) {
+              axis = InputDevice::Axis::right_y;
+            } else {
+              axis = InputDevice::Axis::right_x;
+            }
           } else if (_device_class == DeviceClass::gamepad) {
-            axis = InputDevice::Axis::left_trigger;
-            have_analog_triggers = true;
+            if ((quirks & QB_no_analog_triggers) == 0) {
+              axis = InputDevice::Axis::left_trigger;
+              have_analog_triggers = true;
+            }
           } else if (_device_class == DeviceClass::spatial_mouse) {
             axis = InputDevice::Axis::z;
           } else {
@@ -462,10 +551,19 @@ init_device() {
           break;
         case ABS_RZ:
           if (quirks & QB_rstick_from_z) {
-            axis = InputDevice::Axis::right_y;
+            if (quirks & QB_right_axes_swapped) {
+              axis = InputDevice::Axis::right_x;
+            } else {
+              axis = InputDevice::Axis::right_y;
+            }
           } else if (_device_class == DeviceClass::gamepad) {
-            axis = InputDevice::Axis::right_trigger;
-            have_analog_triggers = true;
+            if ((quirks & QB_no_analog_triggers) == 0) {
+              axis = InputDevice::Axis::right_trigger;
+              have_analog_triggers = true;
+            } else {
+              // Special weird case for Trust GXT 24
+              axis = InputDevice::Axis::right_y;
+            }
           } else {
             axis = InputDevice::Axis::yaw;
           }
@@ -485,8 +583,10 @@ init_device() {
           break;
         case ABS_GAS:
           if (_device_class == DeviceClass::gamepad) {
-            axis = InputDevice::Axis::right_trigger;
-            have_analog_triggers = true;
+            if ((quirks & QB_no_analog_triggers) == 0) {
+              axis = InputDevice::Axis::right_trigger;
+              have_analog_triggers = true;
+            }
           } else {
             axis = InputDevice::Axis::accelerator;
           }
@@ -510,6 +610,8 @@ init_device() {
               _buttons.push_back(ButtonState(GamepadButton::hat_left()));
               _buttons.push_back(ButtonState(GamepadButton::hat_right()));
             }
+            _buttons[_dpad_left_button]._state = S_up;
+            _buttons[_dpad_left_button+1]._state = S_up;
           }
           break;
         case ABS_HAT0Y:
@@ -523,7 +625,24 @@ init_device() {
               _buttons.push_back(ButtonState(GamepadButton::hat_up()));
               _buttons.push_back(ButtonState(GamepadButton::hat_down()));
             }
+            _buttons[_dpad_up_button]._state = S_up;
+            _buttons[_dpad_up_button+1]._state = S_up;
           }
+          break;
+        case ABS_HAT2X:
+          if (quirks & QB_steam_controller) {
+            axis = InputDevice::Axis::right_trigger;
+            have_analog_triggers = true;
+          }
+          break;
+        case ABS_HAT2Y:
+          if (quirks & QB_steam_controller) {
+            axis = InputDevice::Axis::left_trigger;
+            have_analog_triggers = true;
+          }
+          break;
+        case ABS_PRESSURE:
+          axis = InputDevice::Axis::pressure;
           break;
         }
 
@@ -536,7 +655,8 @@ init_device() {
           // Also T.Flight Hotas X throttle is reversed and can go backwards.
           if (axis == Axis::yaw || axis == Axis::rudder || axis == Axis::left_y || axis == Axis::right_y ||
               (axis == Axis::throttle && (quirks & QB_reversed_throttle) != 0) ||
-              (_device_class == DeviceClass::spatial_mouse && (axis == Axis::y || axis == Axis::z || axis == Axis::roll))) {
+              (_device_class == DeviceClass::spatial_mouse && (axis == Axis::y || axis == Axis::z || axis == Axis::roll)) ||
+              (_device_class == DeviceClass::digitizer && axis == Axis::y)) {
             std::swap(absinfo.maximum, absinfo.minimum);
           }
           if (axis == Axis::throttle && (quirks & QB_centered_throttle) != 0) {
@@ -586,6 +706,7 @@ init_device() {
     _rtrigger_code = -1;
   }
 
+#ifndef __FreeBSD__
   char path[64];
   char buffer[256];
   const char *parent = "";
@@ -623,6 +744,7 @@ init_device() {
     }
     fclose(f);
   }
+#endif
 
   // Special-case fix for Xbox 360 Wireless Receiver: the Linux kernel
   // driver always reports 4 connected gamepads, regardless of the number
@@ -701,23 +823,33 @@ process_events() {
         button_changed(_dpad_up_button, events[i].value < 0);
         button_changed(_dpad_up_button+1, events[i].value > 0);
       }
-      nassertd(code >= 0 && (size_t)code < _axis_indices.size()) break;
-      index = _axis_indices[code];
-      if (index >= 0) {
-        axis_changed(index, events[i].value);
+      if (code >= 0 && (size_t)code < _axis_indices.size()) {
+        index = _axis_indices[code];
+        if (index >= 0) {
+          axis_changed(index, events[i].value);
+        }
+      }
+      else if (device_cat.is_debug()) {
+        device_cat.debug()
+          << "Ignoring EV_ABS event with unknown code " << code << "\n";
       }
       break;
 
     case EV_KEY:
-      nassertd(code >= 0 && (size_t)code < _button_indices.size()) break;
-      index = _button_indices[code];
-      if (index >= 0) {
-        button_changed(index, events[i].value != 0);
+      if (code >= 0 && (size_t)code < _button_indices.size()) {
+        index = _button_indices[code];
+        if (index >= 0) {
+          button_changed(index, events[i].value != 0);
+        }
+        if (code == _ltrigger_code) {
+          axis_changed(_ltrigger_axis, events[i].value);
+        } else if (code == _rtrigger_code) {
+          axis_changed(_ltrigger_axis + 1, events[i].value);
+        }
       }
-      if (code == _ltrigger_code) {
-        axis_changed(_ltrigger_axis, events[i].value);
-      } else if (code == _rtrigger_code) {
-        axis_changed(_ltrigger_axis + 1, events[i].value);
+      else if (device_cat.is_debug()) {
+        device_cat.debug()
+          << "Ignoring EV_KEY event with unknown code " << code << "\n";
       }
       break;
 
@@ -738,7 +870,7 @@ process_events() {
  * Static function to map an evdev code to a ButtonHandle.
  */
 ButtonHandle EvdevInputDevice::
-map_button(int code, DeviceClass device_class) {
+map_button(int code, DeviceClass device_class, int quirks) {
   if (code >= 0 && code < 0x80) {
     // See linux/input.h for the source of this mapping.
     static const ButtonHandle keyboard_map[] = {
@@ -895,7 +1027,31 @@ map_button(int code, DeviceClass device_class) {
     }
 
   } else if ((code & 0xfff0) == BTN_JOYSTICK) {
-    if (device_class == DeviceClass::gamepad) {
+    if (quirks & QB_steam_controller) {
+      // BTN_THUMB and BTN_THUMB2 detect touching the touchpads.
+      return ButtonHandle::none();
+
+    } else if (device_class == DeviceClass::gamepad &&
+               (quirks & QB_alt_button_mapping) != 0) {
+      static const ButtonHandle mapping[] = {
+        GamepadButton::face_y(),
+        GamepadButton::face_b(),
+        GamepadButton::face_a(),
+        GamepadButton::face_x(),
+        GamepadButton::lshoulder(),
+        GamepadButton::rshoulder(),
+        GamepadButton::ltrigger(),
+        GamepadButton::rtrigger(),
+        GamepadButton::back(),
+        GamepadButton::start(),
+        GamepadButton::lstick(),
+        GamepadButton::rstick(),
+      };
+      if ((code & 0xf) < 12) {
+        return mapping[code & 0xf];
+      }
+
+    } else if (device_class == DeviceClass::gamepad) {
       // Based on "Jess Tech Colour Rumble Pad"
       static const ButtonHandle mapping[] = {
         GamepadButton::face_x(),
@@ -988,6 +1144,13 @@ map_button(int code, DeviceClass device_class) {
   case BTN_DPAD_DOWN:
   case BTN_TRIGGER_HAPPY4:
     return GamepadButton::dpad_down();
+
+  // The next two are for the Steam Controller's grip buttons.
+  case BTN_GEAR_DOWN:
+    return GamepadButton::lgrip();
+
+  case BTN_GEAR_UP:
+    return GamepadButton::rgrip();
 
   default:
     return ButtonHandle::none();

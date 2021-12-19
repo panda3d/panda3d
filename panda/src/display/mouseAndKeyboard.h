@@ -38,7 +38,7 @@
  * the system, you must attach an EventThrower to the MouseAndKeyboard object;
  * otherwise, the events will be discarded.
  */
-class EXPCL_PANDA_DEVICE MouseAndKeyboard : public DataNode {
+class EXPCL_PANDA_DISPLAY MouseAndKeyboard : public DataNode {
 PUBLISHED:
   explicit MouseAndKeyboard(GraphicsWindow *window, int device, const std::string &name);
   void set_source(GraphicsWindow *window, int device);

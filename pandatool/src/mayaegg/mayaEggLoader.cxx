@@ -975,7 +975,9 @@ MayaEggMesh *MayaEggLoader::GetMesh(EggVertexPool *pool, EggGroup *parent)
   MayaEggMesh *result = _mesh_tab[parent];
   if (result == 0) {
     result = new MayaEggMesh;
-    result->_name = parent->get_name();
+    if (parent != nullptr) {
+      result->_name = parent->get_name();
+    }
     result->_pool = pool;
     result->_parent = parent;
     result->_vert_count = 0;
@@ -1464,8 +1466,8 @@ void MayaEggLoader::TraverseEggNode(EggNode *node, EggGroup *context, string del
     surface->_vNumCvs = eggNurbsSurface->get_num_v_cvs();
 
     // [gjeon] building cvArray
-    for (uint ui = 0; ui < surface->_uNumCvs; ui++) {
-      for (uint vi = 0; vi < surface->_vNumCvs; vi++) {
+    for (unsigned int ui = 0; ui < surface->_uNumCvs; ui++) {
+      for (unsigned int vi = 0; vi < surface->_vNumCvs; vi++) {
         EggVertex *vtx = eggNurbsSurface->get_vertex(eggNurbsSurface->get_vertex_index(ui, vi));
         surface->_cvArray.append(MakeMPoint(vtx->get_pos3()));
       }
@@ -1570,7 +1572,8 @@ void MayaEggLoader::TraverseEggNode(EggNode *node, EggGroup *context, string del
         mayaloader_cat.debug() << delim+delstring << "found an EggTable: " << node->get_name() << endl;
       }
     } else if (node->is_of_type(EggXfmSAnim::get_class_type())) {
-      //MayaAnim *anim = GetAnim(DCAST(EggXfmSAnim, node));
+      // Create a MayaAnim equivalent of the EggXfmSAnim
+      GetAnim(DCAST(EggXfmSAnim, node));
       //anim->PrintData();
       if (mayaloader_cat.is_debug()) {
         mayaloader_cat.debug() << delim+delstring << "found an EggXfmSAnim: " << node->get_name() << endl;

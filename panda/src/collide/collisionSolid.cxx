@@ -17,7 +17,7 @@
 #include "collisionLine.h"
 #include "collisionRay.h"
 #include "collisionSegment.h"
-#include "collisionTube.h"
+#include "collisionCapsule.h"
 #include "collisionParabola.h"
 #include "collisionBox.h"
 #include "collisionEntry.h"
@@ -139,7 +139,11 @@ get_viz(const CullTraverser *, const CullTraverserData &, bool bounds_only) cons
       ((CollisionSolid *)this)->_bounds_viz_geom = new GeomNode("bounds_viz");
     } else {
       _viz_geom->remove_all_geoms();
+      _viz_geom->clear_effects();
+      _viz_geom->clear_transform();
       _bounds_viz_geom->remove_all_geoms();
+      _bounds_viz_geom->clear_effects();
+      _bounds_viz_geom->clear_transform();
     }
     ((CollisionSolid *)this)->fill_viz_geom();
     ((CollisionSolid *)this)->_flags &= ~F_viz_geom_stale;
@@ -240,11 +244,11 @@ test_intersection_from_segment(const CollisionEntry &) const {
 
 /**
  * This is part of the double-dispatch implementation of test_intersection().
- * It is called when the "from" object is a tube.
+ * It is called when the "from" object is a capsule.
  */
 PT(CollisionEntry) CollisionSolid::
-test_intersection_from_tube(const CollisionEntry &) const {
-  report_undefined_intersection_test(CollisionTube::get_class_type(),
+test_intersection_from_capsule(const CollisionEntry &) const {
+  report_undefined_intersection_test(CollisionCapsule::get_class_type(),
                                      get_type());
   return nullptr;
 }
@@ -447,7 +451,7 @@ get_wireframe_viz_state() {
     static CPT(RenderState) intangible_state = nullptr;
     if (intangible_state == nullptr) {
       intangible_state = base_state->add_attrib
-        (ColorAttrib::make_flat(LColor(1.0f, 1.0f, 0.0f, 1.0f)));
+        (ColorAttrib::make_flat(LColor(0, 0, 0.0f, 1.0f)));
     }
     return intangible_state;
 

@@ -40,18 +40,18 @@ PUBLISHED:
   DCField *get_key_parameter() const;
 
   int get_num_cases() const;
-  int get_case_by_value(const std::string &case_value) const;
+  int get_case_by_value(const vector_uchar &case_value) const;
   DCPackerInterface *get_case(int n) const;
   DCPackerInterface *get_default_case() const;
 
-  std::string get_value(int case_index) const;
+  vector_uchar get_value(int case_index) const;
   int get_num_fields(int case_index) const;
   DCField *get_field(int case_index, int n) const;
   DCField *get_field_by_name(int case_index, const std::string &name) const;
 
 public:
   bool is_field_valid() const;
-  int add_case(const std::string &value);
+  int add_case(const vector_uchar &value);
   void add_invalid_case();
   bool add_default();
   bool add_field(DCField *field);
@@ -98,13 +98,13 @@ public:
 
   class SwitchCase {
   public:
-    SwitchCase(const std::string &value, SwitchFields *fields);
+    SwitchCase(const vector_uchar &value, SwitchFields *fields);
     ~SwitchCase();
 
     bool do_check_match_switch_case(const SwitchCase *other) const;
 
   public:
-    std::string _value;
+    vector_uchar _value;
     SwitchFields *_fields;
   };
 
@@ -137,7 +137,7 @@ private:
   bool _fields_added;
 
   // This map indexes into the _cases vector, above.
-  typedef pmap<std::string, int> CasesByValue;
+  typedef pmap<vector_uchar, int> CasesByValue;
   CasesByValue _cases_by_value;
 };
 

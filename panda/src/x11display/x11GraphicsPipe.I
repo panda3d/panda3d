@@ -58,18 +58,18 @@ get_hidden_cursor() {
 }
 
 /**
- * Returns true if relative mouse mode is supported on this display.
+ * Returns true if a form of relative mouse mode is supported on this display.
  */
 INLINE bool x11GraphicsPipe::
 supports_relative_mouse() const {
-  return (_XF86DGADirectVideo != nullptr);
+  return (_XF86DGADirectVideo != nullptr) || (_XISelectEvents != nullptr);
 }
 
 /**
  * Enables relative mouse mode for this display.  Returns false if unsupported.
  */
 INLINE bool x11GraphicsPipe::
-enable_relative_mouse() {
+enable_dga_mouse() {
   if (_XF86DGADirectVideo != nullptr) {
     x11display_cat.info() << "Enabling relative mouse using XF86DGA extension\n";
     _XF86DGADirectVideo(_display, _screen, XF86DGADirectMouse);
@@ -82,7 +82,7 @@ enable_relative_mouse() {
  * Disables relative mouse mode for this display.
  */
 INLINE void x11GraphicsPipe::
-disable_relative_mouse() {
+disable_dga_mouse() {
   if (_XF86DGADirectVideo != nullptr) {
     x11display_cat.info() << "Disabling relative mouse using XF86DGA extension\n";
     _XF86DGADirectVideo(_display, _screen, 0);

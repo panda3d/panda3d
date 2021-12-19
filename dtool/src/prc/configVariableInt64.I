@@ -138,3 +138,11 @@ INLINE void ConfigVariableInt64::
 set_word(size_t n, int64_t value) {
   set_int64_word(n, value);
 }
+
+/**
+ * Returns true if the variable is not empty.
+ */
+INLINE bool ConfigVariableInt64::
+__bool__() const {
+  return get_value() != 0;
+}

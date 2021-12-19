@@ -18,7 +18,9 @@
 #include "geomPrimitive.h"
 
 /**
- * Defines a series of triangle strips.
+ * Defines a series of triangle strips with adjacency information.
+ *
+ * @since 1.10.0
  */
 class EXPCL_PANDA_GOBJ GeomTristripsAdjacency : public GeomPrimitive {
 PUBLISHED:

@@ -16,7 +16,8 @@
 #include "collisionRay.h"
 #include "collisionSphere.h"
 #include "collisionSegment.h"
-#include "collisionTube.h"
+#include "collisionParabola.h"
+#include "collisionCapsule.h"
 #include "collisionHandler.h"
 #include "collisionEntry.h"
 #include "config_collide.h"
@@ -29,6 +30,7 @@
 #include "cmath.h"
 #include "mathNumbers.h"
 #include "geom.h"
+#include "geomLines.h"
 #include "geomTriangles.h"
 #include "geomVertexWriter.h"
 #include "config_mathutil.h"
@@ -186,6 +188,7 @@ get_test_pcollector() {
  */
 void CollisionBox::
 output(std::ostream &out) const {
+  out << "box, (" << get_min() << ") to (" << get_max() << ")";
 }
 
 /**
@@ -492,6 +495,82 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
   return new_entry;
 }
 
+PT(CollisionEntry) CollisionBox::
+test_intersection_from_parabola(const CollisionEntry &entry) const {
+  const CollisionParabola *parabola;
+  DCAST_INTO_R(parabola, entry.get_from(), nullptr);
+
+  const LMatrix4 &wrt_mat = entry.get_wrt_mat();
+
+  // Convert the parabola into local coordinate space.
+  LParabola local_p(parabola->get_parabola());
+  local_p.xform(wrt_mat);
+
+  PN_stdfloat t = INT_MAX;
+  PN_stdfloat t1, t2;
+  int intersecting_face = -1;
+  for (int i = 0; i < get_num_planes(); i++) {
+    LPlane face = get_plane(i);
+    if (!face.intersects_parabola(t1, t2, local_p)) {
+      // the parabola does not intersect this face, skip to the next one
+      continue;
+    }
+    PN_stdfloat ts[2] = {t1, t2};
+    // iterate through the t values to see if each of them are within our
+    // parabola and the intersection point is behind all other faces
+    for (int j = 0; j < 2; j++) {
+      PN_stdfloat cur_t = ts[j];
+      if (cur_t > t) {
+        // we are looking for the earliest t value
+        // if this t value is greater, don't bother checking it
+        continue;
+      }
+      if (cur_t >= parabola->get_t1() && cur_t <= parabola->get_t2()) {
+        // the parabola does intersect this plane, now we check
+        // if the intersection point is behind all other planes
+        bool behind = true;
+        for (int k = 0; k < get_num_planes(); k++) {
+          if (k == i) {
+            // no need to check the intersecting face
+            continue;
+          }
+          if (get_plane(k).dist_to_plane(local_p.calc_point(cur_t)) > 0.0f) {
+            // our point is in front of this face, turns out the parabola
+            // does not collide with the box at this point
+            behind = false;
+            break;
+          }
+        }
+        if (behind) {
+          // the parabola does indeed collide with the box at this point
+          t = cur_t;
+          intersecting_face = i;
+        }
+      }
+    }
+  }
+
+  if (intersecting_face != -1) {
+    if (collide_cat.is_debug()) {
+      collide_cat.debug()
+        << "intersection detected from " << entry.get_from_node_path()
+        << " into " << entry.get_into_node_path() << "\n";
+    }
+    PT(CollisionEntry) new_entry = new CollisionEntry(entry);
+
+    LPlane face = get_plane(intersecting_face);
+
+    LPoint3 into_intersection_point = local_p.calc_point(t);
+    LVector3 normal = (has_effective_normal() && parabola->get_respect_effective_normal()) ? get_effective_normal() : face.get_normal();
+
+    new_entry->set_surface_point(into_intersection_point);
+    new_entry->set_surface_normal(normal);
+    return new_entry;
+  } else {
+    return nullptr;
+  }
+}
+
 /**
  * Double dispatch point for segment as a FROM object
  */
@@ -547,19 +626,19 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
 }
 
 /**
- * Double dispatch point for tube as a FROM object
+ * Double dispatch point for capsule as a FROM object
  */
 PT(CollisionEntry) CollisionBox::
-test_intersection_from_tube(const CollisionEntry &entry) const {
-  const CollisionTube *tube;
-  DCAST_INTO_R(tube, entry.get_from(), nullptr);
+test_intersection_from_capsule(const CollisionEntry &entry) const {
+  const CollisionCapsule *capsule;
+  DCAST_INTO_R(capsule, entry.get_from(), nullptr);
 
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
-  LPoint3 from_a = tube->get_point_a() * wrt_mat;
-  LPoint3 from_b = tube->get_point_b() * wrt_mat;
+  LPoint3 from_a = capsule->get_point_a() * wrt_mat;
+  LPoint3 from_b = capsule->get_point_b() * wrt_mat;
   LVector3 from_direction = from_b - from_a;
-  PN_stdfloat radius_sq = wrt_mat.xform_vec(LVector3(0, 0, tube->get_radius())).length_squared();
+  PN_stdfloat radius_sq = wrt_mat.xform_vec(LVector3(0, 0, capsule->get_radius())).length_squared();
   PN_stdfloat radius = csqrt(radius_sq);
 
   LPoint3 box_min = get_min();
@@ -620,7 +699,7 @@ test_intersection_from_tube(const CollisionEntry &entry) const {
       LVector3 delta(0);
       delta[edges[i].axis] = dimensions[edges[i].axis];
       double u1, u2;
-      CollisionTube::calc_closest_segment_points(u1, u2, from_a, from_direction, vertex, delta);
+      CollisionCapsule::calc_closest_segment_points(u1, u2, from_a, from_direction, vertex, delta);
       PN_stdfloat dist_sq = ((from_a + from_direction * u1) - (vertex + delta * u2)).length_squared();
       if (dist_sq < best_dist_sq) {
         best_dist_sq = dist_sq;
@@ -682,7 +761,7 @@ test_intersection_from_tube(const CollisionEntry &entry) const {
   new_entry->set_interior_point(point - interior_vec * radius);
   new_entry->set_surface_point(surface_point);
 
-  if (has_effective_normal() && tube->get_respect_effective_normal()) {
+  if (has_effective_normal() && capsule->get_respect_effective_normal()) {
     new_entry->set_surface_normal(get_effective_normal());
   } else {
     new_entry->set_surface_normal(normal);
@@ -946,11 +1025,37 @@ fill_viz_geom() {
   tris->add_vertices(3, 7, 0);
   tris->add_vertices(0, 7, 4);
 
-  PT(Geom) geom = new Geom(vdata);
-  geom->add_primitive(tris);
+  PT(GeomLines) lines = new GeomLines(Geom::UH_static);
 
-  _viz_geom->add_geom(geom, get_solid_viz_state());
-  _bounds_viz_geom->add_geom(geom, get_solid_bounds_viz_state());
+  // Bottom
+  lines->add_vertices(0, 1);
+  lines->add_vertices(1, 2);
+  lines->add_vertices(0, 3);
+  lines->add_vertices(2, 3);
+
+  // Top
+  lines->add_vertices(4, 5);
+  lines->add_vertices(5, 6);
+  lines->add_vertices(4, 7);
+  lines->add_vertices(6, 7);
+
+  // Sides
+  lines->add_vertices(0, 4);
+  lines->add_vertices(1, 5);
+  lines->add_vertices(2, 6);
+  lines->add_vertices(3, 7);
+
+  PT(Geom) geom1 = new Geom(vdata);
+  geom1->add_primitive(tris);
+
+  PT(Geom) geom2 = new Geom(vdata);
+  geom2->add_primitive(lines);
+
+  _viz_geom->add_geom(geom1, get_solid_viz_state());
+  _viz_geom->add_geom(geom2, get_wireframe_viz_state());
+
+  _bounds_viz_geom->add_geom(geom1, get_solid_bounds_viz_state());
+  _bounds_viz_geom->add_geom(geom2, get_wireframe_viz_state());
 }
 
 /**

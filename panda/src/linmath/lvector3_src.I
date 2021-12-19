@@ -230,7 +230,7 @@ signed_angle_deg(const FLOATNAME(LVector3) &other,
 }
 
 /**
- * This method is deprecated.  Do not use.
+ * @deprecated Do not use.
  */
 INLINE_LINMATH FLOATTYPE FLOATNAME(LVector3)::
 relative_angle_rad(const FLOATNAME(LVector3) &other) const {
@@ -238,7 +238,7 @@ relative_angle_rad(const FLOATNAME(LVector3) &other) const {
 }
 
 /**
- * This method is deprecated.  Do not use.
+ * @deprecated Do not use.
  */
 INLINE_LINMATH FLOATTYPE FLOATNAME(LVector3)::
 relative_angle_deg(const FLOATNAME(LVector3) &other) const {

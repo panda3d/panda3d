@@ -32,6 +32,22 @@
 #include "pta_ushort.h"
 #include "geomVertexReader.h"
 
+static std::string smart_mem_string(size_t bytes) {
+  std::ostringstream out;
+  float fbytes = static_cast<float>(bytes);
+  if (bytes > 4294967296) { // 4 GiB
+    out << std::setprecision(3) << fbytes / 1024.0 / 1024.0 / 1024.0 << " GiB";
+  }
+  else if (bytes > 10485760) { // 10 MiB
+    out << std::setprecision(3) << fbytes / 1024.0 / 1024.0 << " MiB";
+  }
+  else {
+    out << std::setprecision(3) << fbytes / 1024.0 << " KiB";
+  }
+
+  return out.str();
+}
+
 /**
  *
  */
@@ -153,12 +169,12 @@ write(std::ostream &out, int indent_level) const {
   }
 
   indent(out, indent_level)
-    << "GeomVertexData arrays occupy " << (_vertex_data_size + 1023) / 1024
-    << "K memory.\n";
+    << "GeomVertexData arrays occupy " << smart_mem_string(_vertex_data_size)
+    << " memory.\n";
 
   indent(out, indent_level)
-    << "GeomPrimitive arrays occupy " << (_prim_data_size + 1023) / 1024
-    << "K memory.\n";
+    << "GeomPrimitive arrays occupy " << smart_mem_string(_prim_data_size)
+    << " memory.\n";
 
   int unreferenced_vertices = 0;
   VDatas::const_iterator vdi;
@@ -257,7 +273,7 @@ write(std::ostream &out, int indent_level) const {
 
   indent(out, indent_level)
     << _textures.size() << " textures, estimated minimum "
-    << (_texture_bytes + 1023) / 1024 << "K texture memory required.\n";
+    << smart_mem_string(_texture_bytes) << " texture memory required.\n";
 }
 
 /**
@@ -425,8 +441,12 @@ collect_statistics(const Geom *geom) {
     CPT(GeomPrimitive) prim = geom->get_primitive(i);
 
     int num_vertices = prim->get_num_vertices();
+    int strip_cut_index = prim->get_strip_cut_index();
     for (int vi = 0; vi < num_vertices; ++vi) {
-      tracker._referenced_vertices.set_bit(prim->get_vertex(vi));
+      int index = prim->get_vertex(vi);
+      if (index != strip_cut_index) {
+        tracker._referenced_vertices.set_bit(index);
+      }
     }
 
     if (prim->is_indexed()) {

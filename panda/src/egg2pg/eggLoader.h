@@ -164,6 +164,8 @@ private:
                    LPoint3 &center, PN_stdfloat &radius, LColor &color);
 
   bool make_box(EggGroup *start_group, EggGroup::CollideFlags flags,
+                const LMatrix4 &xform, LPoint3 &min_p, LPoint3 &max_p);
+  bool make_box(EggGroup *start_group, EggGroup::CollideFlags flags,
                 LPoint3 &min_p, LPoint3 &max_p, LColor &color);
 
   void make_collision_solids(EggGroup *start_group, EggGroup *egg_group,
@@ -180,8 +182,8 @@ private:
                           EggGroup::CollideFlags flags);
   void make_collision_inv_sphere(EggGroup *egg_group, CollisionNode *cnode,
                                  EggGroup::CollideFlags flags);
-  void make_collision_tube(EggGroup *egg_group, CollisionNode *cnode,
-                           EggGroup::CollideFlags flags);
+  void make_collision_capsule(EggGroup *egg_group, CollisionNode *cnode,
+                              EggGroup::CollideFlags flags);
   void make_collision_floor_mesh(EggGroup *egg_group, CollisionNode *cnode,
                            EggGroup::CollideFlags flags);
   void apply_collision_flags(CollisionSolid *solid,

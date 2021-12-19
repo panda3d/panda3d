@@ -32,11 +32,99 @@ typedef struct _XcursorImages XcursorImages;
 
 typedef unsigned short Rotation;
 typedef unsigned short SizeID;
+typedef unsigned long XRRModeFlags;
+typedef XID RROutput;
+typedef XID RRCrtc;
+typedef XID RRMode;
+
 typedef struct _XRRScreenConfiguration XRRScreenConfiguration;
 typedef struct {
   int width, height;
   int mwidth, mheight;
 } XRRScreenSize;
+
+typedef struct _XRRModeInfo {
+  RRMode id;
+  unsigned int width;
+  unsigned int height;
+  unsigned long dotClock;
+  unsigned int hSyncStart;
+  unsigned int hSyncEnd;
+  unsigned int hTotal;
+  unsigned int hSkew;
+  unsigned int vSyncStart;
+  unsigned int vSyncEnd;
+  unsigned int vTotal;
+  char *name;
+  unsigned int nameLength;
+  XRRModeFlags modeFlags;
+} XRRModeInfo;
+
+typedef struct _XRRScreenResources {
+  Time timestamp;
+  Time configTimestamp;
+  int ncrtc;
+  RRCrtc *crtcs;
+  int noutput;
+  RROutput *outputs;
+  int nmode;
+  XRRModeInfo *modes;
+} XRRScreenResources;
+
+typedef struct _XRRCrtcInfo {
+  Time timestamp;
+  int x, y;
+  unsigned int width, height;
+  RRMode mode;
+  Rotation rotation;
+  int noutput;
+  RROutput *outputs;
+  Rotation rotations;
+  int npossible;
+  RROutput *possible;
+} XRRCrtcInfo;
+
+typedef void (*pfn_XRRFreeScreenResources)(XRRScreenResources *resources);
+typedef void (*pfn_XRRFreeCrtcInfo)(XRRCrtcInfo *crtcInfo);
+
+typedef struct {
+  int deviceid;
+  int mask_len;
+  unsigned char *mask;
+} XIEventMask;
+
+typedef struct {
+  int mask_len;
+  unsigned char *mask;
+  double *values;
+} XIValuatorState;
+
+typedef struct {
+  int type;
+  unsigned long serial;
+  Bool send_event;
+  X11_Display *display;
+  int extension;
+  int evtype;
+  Time time;
+  int deviceid;
+  int sourceid;
+  int detail;
+  int flags;
+  XIValuatorState valuators;
+  double *raw_values;
+} XIRawEvent;
+
+#define XI_RawMotion 17
+#define XI_RawMotionMask (1 << XI_RawMotion)
+
+#define XISetMask(ptr, event) (((unsigned char*)(ptr))[(event)>>3] |=  (1 << ((event) & 7)))
+#define XIClearMask(ptr, event) (((unsigned char*)(ptr))[(event)>>3] &= ~(1 << ((event) & 7)))
+#define XIMaskIsSet(ptr, event) (((unsigned char*)(ptr))[(event)>>3] &   (1 << ((event) & 7)))
+#define XIMaskLen(event) (((event) >> 3) + 1)
+
+#define XIAllDevices 0
+#define XIAllMasterDevices 1
 
 class FrameBufferProperties;
 
@@ -57,12 +145,20 @@ public:
   INLINE X11_Cursor get_hidden_cursor();
 
   INLINE bool supports_relative_mouse() const;
-  INLINE bool enable_relative_mouse();
-  INLINE void disable_relative_mouse();
+  INLINE bool enable_dga_mouse();
+  INLINE void disable_dga_mouse();
+  bool enable_raw_mouse();
+  void disable_raw_mouse();
 
   static INLINE int disable_x_error_messages();
   static INLINE int enable_x_error_messages();
   static INLINE int get_x_error_count();
+
+  std::unique_ptr<XRRScreenResources, pfn_XRRFreeScreenResources> get_screen_resources() const;
+  std::unique_ptr<XRRCrtcInfo, pfn_XRRFreeCrtcInfo> get_crtc_info(XRRScreenResources *res, RRCrtc crtc) const;
+
+  RRCrtc find_fullscreen_crtc(const LPoint2i &point,
+                              int &x, int &y, int &width, int &height);
 
 public:
   virtual PreferredWindowThread get_preferred_window_thread() const;
@@ -80,6 +176,9 @@ public:
   Atom _net_wm_state_below;
   Atom _net_wm_state_add;
   Atom _net_wm_state_remove;
+  Atom _net_wm_bypass_compositor;
+  Atom _net_wm_state_maximized_vert;
+  Atom _net_wm_state_maximized_horz;
 
   // Extension functions.
   typedef int (*pfn_XcursorGetDefaultSize)(X11_Display *);
@@ -99,6 +198,7 @@ public:
   pfn_XcursorImageDestroy _XcursorImageDestroy;
 
   typedef Bool (*pfn_XRRQueryExtension)(X11_Display *, int*, int*);
+  typedef Status (*pfn_XRRQueryVersion)(X11_Display *, int*, int*);
   typedef XRRScreenSize *(*pfn_XRRSizes)(X11_Display*, int, int*);
   typedef short *(*pfn_XRRRates)(X11_Display*, int, int, int*);
   typedef XRRScreenConfiguration *(*pfn_XRRGetScreenInfo)(X11_Display*, X11_Window);
@@ -113,6 +213,8 @@ public:
   pfn_XRRConfigCurrentConfiguration _XRRConfigCurrentConfiguration;
   pfn_XRRSetScreenConfig _XRRSetScreenConfig;
 
+  int _xi_opcode;
+
 protected:
   X11_Display *_display;
   int _screen;
@@ -124,6 +226,19 @@ protected:
   typedef Bool (*pfn_XF86DGAQueryVersion)(X11_Display *, int*, int*);
   typedef Status (*pfn_XF86DGADirectVideo)(X11_Display *, int, int);
   pfn_XF86DGADirectVideo _XF86DGADirectVideo;
+
+  typedef XRRScreenResources *(*pfn_XRRGetScreenResources)(X11_Display*, X11_Window);
+  typedef XRRCrtcInfo *(*pfn_XRRGetCrtcInfo)(X11_Display *dpy, XRRScreenResources *resources, RRCrtc crtc);
+
+  pfn_XRRGetScreenResources _XRRGetScreenResourcesCurrent;
+  pfn_XRRFreeScreenResources _XRRFreeScreenResources;
+  pfn_XRRGetCrtcInfo _XRRGetCrtcInfo;
+  pfn_XRRFreeCrtcInfo _XRRFreeCrtcInfo;
+
+  typedef Status (*pfn_XIQueryVersion)(X11_Display *, int*, int*);
+  typedef Status (*pfn_XISelectEvents)(X11_Display *, X11_Window, XIEventMask *, int);
+  pfn_XISelectEvents _XISelectEvents = nullptr;
+  int _num_raw_mouse_windows = 0;
 
 private:
   void make_hidden_cursor();

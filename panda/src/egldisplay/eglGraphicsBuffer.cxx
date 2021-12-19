@@ -127,7 +127,7 @@ close_buffer() {
   if (_gsg != nullptr) {
     eglGraphicsStateGuardian *eglgsg;
     DCAST_INTO_V(eglgsg, _gsg);
-    if (!eglMakeCurrent(eglgsg->_egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT)) {
+    if (!eglMakeCurrent(_egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT)) {
       egldisplay_cat.error() << "Failed to call eglMakeCurrent: "
         << get_egl_error_string(eglGetError()) << "\n";
     }
@@ -159,7 +159,7 @@ open_buffer() {
   if (_gsg == 0) {
     // There is no old gsg.  Create a new one.
     eglgsg = new eglGraphicsStateGuardian(_engine, _pipe, nullptr);
-    eglgsg->choose_pixel_format(_fb_properties, egl_pipe->get_display(), egl_pipe->get_screen(), true, false);
+    eglgsg->choose_pixel_format(_fb_properties, egl_pipe, false, true, false);
     _gsg = eglgsg;
   } else {
     // If the old gsg has the wrong pixel format, create a new one that shares
@@ -167,16 +167,18 @@ open_buffer() {
     DCAST_INTO_R(eglgsg, _gsg, false);
     if (!eglgsg->get_fb_properties().subsumes(_fb_properties)) {
       eglgsg = new eglGraphicsStateGuardian(_engine, _pipe, eglgsg);
-      eglgsg->choose_pixel_format(_fb_properties, egl_pipe->get_display(), egl_pipe->get_screen(), true, false);
+      eglgsg->choose_pixel_format(_fb_properties, egl_pipe, false, true, false);
       _gsg = eglgsg;
     }
   }
 
-  if (eglgsg->_fbconfig == None) {
+  if (eglgsg->_fbconfig == nullptr) {
     // If we didn't use an fbconfig to create the GSG, we can't create a
     // PBuffer.
     return false;
   }
+
+  _egl_display = eglgsg->_egl_display;
 
   int attrib_list[] = {
     EGL_WIDTH, _size.get_x(),

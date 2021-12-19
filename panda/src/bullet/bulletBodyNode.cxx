@@ -28,7 +28,7 @@
 #include "collisionPlane.h"
 #include "collisionSphere.h"
 #include "collisionPolygon.h"
-#include "collisionTube.h"
+#include "collisionCapsule.h"
 
 TypeHandle BulletBodyNode::_type_handle;
 
@@ -353,9 +353,17 @@ do_add_shape(BulletShape *bullet_shape, const TransformState *ts) {
 
   // Reset the shape scaling before we add a shape, and remember the current
   // Scale so we can restore it later...
-  NodePath np = NodePath::any_path((PandaNode *)this);
-  LVector3 scale = np.get_scale();
-  np.set_scale(1.0);
+  CPT(TransformState) prev_transform = get_transform();
+  bool scale_changed = false;
+  if (!prev_transform->is_identity() && prev_transform->get_scale() != LVecBase3(1.0, 1.0, 1.0)) {
+    // As a hack, temporarily release the lock, since transform_changed will
+    // otherwise deadlock trying to grab it again.  See GitHub issue #689.
+    LightMutex &lock = BulletWorld::get_global_lock();
+    lock.release();
+    set_transform(prev_transform->set_scale(LVecBase3(1.0, 1.0, 1.0)));
+    lock.acquire();
+    scale_changed = true;
+  }
 
   // Root shape
   btCollisionShape *previous = get_object()->getCollisionShape();
@@ -417,7 +425,13 @@ do_add_shape(BulletShape *bullet_shape, const TransformState *ts) {
   _shapes.push_back(bullet_shape);
 
   // Restore the local scaling again
-  np.set_scale(scale);
+  if (scale_changed) {
+    CPT(TransformState) transform = get_transform()->set_scale(prev_transform->get_scale());
+    LightMutex &lock = BulletWorld::get_global_lock();
+    lock.release();
+    set_transform(std::move(transform));
+    lock.acquire();
+  }
 
   do_shape_changed();
 }
@@ -813,12 +827,12 @@ add_shapes_from_collision_solids(CollisionNode *cnode) {
       do_add_shape(BulletBoxShape::make_from_solid(box), ts);
     }
 
-    // CollisionTube
-    else if (CollisionTube::get_class_type() == type) {
-      CPT(CollisionTube) tube = DCAST(CollisionTube, solid);
-      CPT(TransformState) ts = TransformState::make_pos((tube->get_point_b() + tube->get_point_a()) / 2.0);
+    // CollisionCapsule
+    else if (CollisionCapsule::get_class_type() == type) {
+      CPT(CollisionCapsule) capsule = DCAST(CollisionCapsule, solid);
+      CPT(TransformState) ts = TransformState::make_pos((capsule->get_point_b() + capsule->get_point_a()) / 2.0);
 
-      do_add_shape(BulletCapsuleShape::make_from_solid(tube), ts);
+      do_add_shape(BulletCapsuleShape::make_from_solid(capsule), ts);
     }
 
     // CollisionPlane

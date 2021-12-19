@@ -26,6 +26,7 @@ public:
 
   void add_int(int num);
   void add_string(const std::string &str);
+  void add_blob(const vector_uchar &bytes);
 
   unsigned long get_hash() const;
 

@@ -140,7 +140,7 @@ PUBLISHED:
   // through the limited add_vertexremove_vertex or inserterase interface.
   // The following implements this.
 public:
-#if defined(WIN32_VC) || defined(WIN64_VC)
+#ifdef _WIN32
   typedef PT_EggVertex *pointer;
   typedef PT_EggVertex *const_pointer;
 #else
@@ -211,7 +211,7 @@ protected:
 protected:
   void write_body(std::ostream &out, int indent_level) const;
 
-  virtual bool egg_start_parse_body();
+  virtual bool egg_start_parse_body(EggLexerState &state);
   virtual void r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
                            CoordinateSystem to_cs);
   virtual void r_flatten_transforms();

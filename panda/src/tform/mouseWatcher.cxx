@@ -732,6 +732,9 @@ clear_current_regions() {
       MouseWatcherRegion *old_region = (*old_ri);
       old_region->exit_region(param);
       throw_event_pattern(_leave_pattern, old_region, ButtonHandle::none());
+      if (_preferred_region == old_region) {
+        _preferred_region = nullptr;
+      }
       ++old_ri;
     }
 
@@ -745,7 +748,6 @@ clear_current_regions() {
   }
 }
 
-#ifndef NDEBUG
 /**
  * The protected implementation of show_regions().  This assumes the lock is
  * already held.
@@ -753,6 +755,7 @@ clear_current_regions() {
 void MouseWatcher::
 do_show_regions(const NodePath &render2d, const string &bin_name,
                 int draw_order) {
+#ifndef NDEBUG
   MouseWatcherBase::do_show_regions(render2d, bin_name, draw_order);
   _show_regions_render2d = render2d;
   _show_regions_bin_name = bin_name;
@@ -761,16 +764,16 @@ do_show_regions(const NodePath &render2d, const string &bin_name,
   for (MouseWatcherGroup *group : _groups) {
     group->show_regions(render2d, bin_name, draw_order);
   }
-}
 #endif  // NDEBUG
+}
 
-#ifndef NDEBUG
 /**
  * The protected implementation of hide_regions().  This assumes the lock is
  * already held.
  */
 void MouseWatcher::
 do_hide_regions() {
+#ifndef NDEBUG
   MouseWatcherBase::do_hide_regions();
   _show_regions_render2d = NodePath();
   _show_regions_bin_name = string();
@@ -779,8 +782,8 @@ do_hide_regions() {
   for (MouseWatcherGroup *group : _groups) {
     group->hide_regions();
   }
-}
 #endif  // NDEBUG
+}
 
 /**
  * Computes the list of regions that are in both regions_a and regions_b, as
@@ -1080,9 +1083,6 @@ release(ButtonHandle button) {
     // Button up.  Send the up event associated with the region(s) we were
     // over when the button went down.
 
-    // There is some danger of losing button-up events here.  If more than one
-    // button goes down together, we won't detect both of the button-up events
-    // properly.
     if (_preferred_button_down_region != nullptr) {
       param.set_outside(_preferred_button_down_region != _preferred_region);
       _preferred_button_down_region->release(param);
@@ -1090,8 +1090,22 @@ release(ButtonHandle button) {
                           _preferred_button_down_region, button);
     }
 
-    _button_down = false;
-    _preferred_button_down_region = nullptr;
+    // Do not stop capturing until the last mouse button has gone up.  This is
+    // needed to prevent stopping the capture until the capturing region has
+    // finished processing all the releases.
+    bool has_button = false;
+    for (size_t i = 0; i < MouseButton::num_mouse_buttons; ++i) {
+      if (MouseButton::_buttons[i] != button &&
+          _current_buttons_down.get_bit(MouseButton::_buttons[i].get_index())) {
+        has_button = true;
+      }
+    }
+
+    if (!has_button) {
+      // The last mouse button went up.
+      _button_down = false;
+      _preferred_button_down_region = nullptr;
+    }
 
   } else {
     // It's a keyboard button; therefore, send the event to every region that

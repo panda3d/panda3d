@@ -225,6 +225,3 @@ if __debug__ and __name__ == '__main__':
         print('Cursor will be freed on function exit')
 
     demoFunc()
-
-
-

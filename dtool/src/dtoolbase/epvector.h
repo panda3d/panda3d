@@ -20,6 +20,8 @@
 
 #include <Eigen/StdVector>
 
+#include <initializer_list>
+
 /**
  * Unfortunately, on Windows, std::vector can't be used for classes with
  * explicitly alignment requirements, due to a minor mistake in the template
@@ -46,6 +48,7 @@ public:
   epvector(size_type n, TypeHandle type_handle = pvector_type_handle) : base_class(n, Type(), allocator()) { }
   epvector(size_type n, const Type &value, TypeHandle type_handle = pvector_type_handle) : base_class(n, value, allocator()) { }
   epvector(const Type *begin, const Type *end, TypeHandle type_handle = pvector_type_handle) : base_class(begin, end, allocator()) { }
+  epvector(std::initializer_list<Type> init, TypeHandle type_handle = pvector_type_handle) : base_class(std::move(init), allocator()) { }
 };
 
 #else  // HAVE_EIGEN

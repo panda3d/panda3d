@@ -62,6 +62,8 @@ getopt_long(int argc, char *const argv[], const char *optstring,
 extern EXPCL_DTOOL_DTOOLUTIL int
 getopt_long_only(int argc, char *const argv[], const char *optstring,
                  const struct option *longopts, int *longindex);
+extern EXPCL_DTOOL_DTOOLUTIL void
+pgetopt_reset();
 
 #ifdef  __cplusplus
 }

@@ -290,7 +290,7 @@ update_type(To *ptr) {
  * A thread-safe way to access the underlying pointer; will only write to the
  * given pointer if the underlying pointer has not yet been deleted and is not
  * null.  Note that it may leave the pointer unassigned even if was_deleted()
- * still returns true, which can occur if the object has reached reference
+ * still returns false, which can occur if the object has reached reference
  * count 0 and is about to be destroyed.
  */
 template<class T>

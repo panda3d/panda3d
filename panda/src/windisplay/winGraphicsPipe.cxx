@@ -155,23 +155,11 @@ count_number_of_cpus(DisplayInformation *display_information) {
   int num_cpu_cores = 0;
   int num_logical_cpus = 0;
 
-  // Get a pointer to the GetLogicalProcessorInformation function.
-  typedef BOOL (WINAPI *LPFN_GLPI)(PSYSTEM_LOGICAL_PROCESSOR_INFORMATION,
-                                   PDWORD);
-  LPFN_GLPI glpi;
-  glpi = (LPFN_GLPI)GetProcAddress(GetModuleHandle(TEXT("kernel32")),
-                                    "GetLogicalProcessorInformation");
-  if (glpi == nullptr) {
-    windisplay_cat.info()
-      << "GetLogicalProcessorInformation is not supported.\n";
-    return;
-  }
-
   // Allocate a buffer to hold the result of the
   // GetLogicalProcessorInformation call.
   PSYSTEM_LOGICAL_PROCESSOR_INFORMATION buffer = nullptr;
   DWORD buffer_length = 0;
-  DWORD rc = glpi(buffer, &buffer_length);
+  DWORD rc = GetLogicalProcessorInformation(buffer, &buffer_length);
   while (!rc) {
     if (GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
       if (buffer != nullptr) {
@@ -186,7 +174,7 @@ count_number_of_cpus(DisplayInformation *display_information) {
         << "\n";
       return;
     }
-    rc = glpi(buffer, &buffer_length);
+    rc = GetLogicalProcessorInformation(buffer, &buffer_length);
   }
 
   // Now get the results.
@@ -239,6 +227,22 @@ WinGraphicsPipe() {
           windisplay_cat.debug() << "Calling SetProcessDpiAwareness().\n";
         }
         pfnSetProcessDpiAwareness(Process_Per_Monitor_DPI_Aware);
+
+        HDC dc = GetDC(nullptr);
+        if (dc) {
+          int dpi = GetDeviceCaps(dc, LOGPIXELSX);
+          if (dpi > 0) {
+            PN_stdfloat zoom = (double)dpi / 96.0;
+            set_detected_display_zoom(zoom);
+
+            if (windisplay_cat.is_debug()) {
+              windisplay_cat.debug()
+                << "Determined display zoom to be " << zoom
+                << " based on LOGPIXELSX " << dpi << "\n";
+            }
+          }
+          ReleaseDC(nullptr, dc);
+        }
       }
     }
   }

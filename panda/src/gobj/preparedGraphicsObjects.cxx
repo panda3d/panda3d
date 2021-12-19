@@ -66,71 +66,43 @@ PreparedGraphicsObjects::
   ReMutexHolder holder(_lock);
 
   release_all_textures();
-  Textures::iterator tci;
-  for (tci = _released_textures.begin();
-       tci != _released_textures.end();
-       ++tci) {
-    TextureContext *tc = (*tci);
+  for (TextureContext *tc : _released_textures) {
     delete tc;
   }
   _released_textures.clear();
 
   release_all_samplers();
-  ReleasedSamplers::iterator ssci;
-  for (ssci = _released_samplers.begin();
-       ssci != _released_samplers.end();
-       ++ssci) {
-    SamplerContext *sc = (*ssci);
+  for (SamplerContext *sc : _released_samplers) {
     delete sc;
   }
   _released_samplers.clear();
 
   release_all_geoms();
-  Geoms::iterator gci;
-  for (gci = _released_geoms.begin();
-       gci != _released_geoms.end();
-       ++gci) {
-    GeomContext *gc = (*gci);
+  for (GeomContext *gc : _released_geoms) {
     delete gc;
   }
   _released_geoms.clear();
 
   release_all_shaders();
-  Shaders::iterator sci;
-  for (sci = _released_shaders.begin();
-       sci != _released_shaders.end();
-       ++sci) {
-    ShaderContext *sc = (*sci);
+  for (ShaderContext *sc : _released_shaders) {
     delete sc;
   }
   _released_shaders.clear();
 
   release_all_vertex_buffers();
-  Buffers::iterator vbci;
-  for (vbci = _released_vertex_buffers.begin();
-       vbci != _released_vertex_buffers.end();
-       ++vbci) {
-    VertexBufferContext *vbc = (VertexBufferContext *)(*vbci);
-    delete vbc;
+  for (BufferContext *bc : _released_vertex_buffers) {
+    delete bc;
   }
   _released_vertex_buffers.clear();
 
   release_all_index_buffers();
-  Buffers::iterator ibci;
-  for (ibci = _released_index_buffers.begin();
-       ibci != _released_index_buffers.end();
-       ++ibci) {
-    IndexBufferContext *ibc = (IndexBufferContext *)(*ibci);
-    delete ibc;
+  for (BufferContext *bc : _released_index_buffers) {
+    delete bc;
   }
   _released_index_buffers.clear();
 
   release_all_shader_buffers();
-  Buffers::iterator bci;
-  for (bci = _released_shader_buffers.begin();
-       bci != _released_shader_buffers.end();
-       ++bci) {
-    BufferContext *bc = (BufferContext *)(*bci);
+  for (BufferContext *bc : _released_shader_buffers) {
     delete bc;
   }
   _released_shader_buffers.clear();
@@ -270,16 +242,16 @@ void PreparedGraphicsObjects::
 release_texture(TextureContext *tc) {
   ReMutexHolder holder(_lock);
 
-  tc->_texture->clear_prepared(tc->get_view(), this);
+  tc->get_texture()->clear_prepared(tc->get_view(), this);
 
   // We have to set the Texture pointer to NULL at this point, since the
   // Texture itself might destruct at any time after it has been released.
-  tc->_texture = nullptr;
+  tc->_object = nullptr;
 
   bool removed = (_prepared_textures.erase(tc) != 0);
   nassertv(removed);
 
-  _released_textures.insert(tc);
+  _released_textures.push_back(tc);
 }
 
 /**
@@ -302,15 +274,11 @@ release_all_textures() {
 
   int num_textures = (int)_prepared_textures.size() + (int)_enqueued_textures.size();
 
-  Textures::iterator tci;
-  for (tci = _prepared_textures.begin();
-       tci != _prepared_textures.end();
-       ++tci) {
-    TextureContext *tc = (*tci);
-    tc->_texture->clear_prepared(tc->get_view(), this);
-    tc->_texture = nullptr;
+  for (TextureContext *tc : _prepared_textures) {
+    tc->get_texture()->clear_prepared(tc->get_view(), this);
+    tc->_object = nullptr;
 
-    _released_textures.insert(tc);
+    _released_textures.push_back(tc);
   }
 
   _prepared_textures.clear();
@@ -627,11 +595,7 @@ release_all_geoms() {
 
   int num_geoms = (int)_prepared_geoms.size() + (int)_enqueued_geoms.size();
 
-  Geoms::iterator gci;
-  for (gci = _prepared_geoms.begin();
-       gci != _prepared_geoms.end();
-       ++gci) {
-    GeomContext *gc = (*gci);
+  for (GeomContext *gc : _prepared_geoms) {
     gc->_geom->clear_prepared(this);
     gc->_geom = nullptr;
 
@@ -802,11 +766,7 @@ release_all_shaders() {
 
   int num_shaders = (int)_prepared_shaders.size() + (int)_enqueued_shaders.size();
 
-  Shaders::iterator sci;
-  for (sci = _prepared_shaders.begin();
-       sci != _prepared_shaders.end();
-       ++sci) {
-    ShaderContext *sc = (*sci);
+  for (ShaderContext *sc : _prepared_shaders) {
     sc->_shader->clear_prepared(this);
     sc->_shader = nullptr;
 
@@ -946,14 +906,14 @@ void PreparedGraphicsObjects::
 release_vertex_buffer(VertexBufferContext *vbc) {
   ReMutexHolder holder(_lock);
 
-  vbc->_data->clear_prepared(this);
+  vbc->get_data()->clear_prepared(this);
 
-  size_t data_size_bytes = vbc->_data->get_data_size_bytes();
-  GeomEnums::UsageHint usage_hint = vbc->_data->get_usage_hint();
+  size_t data_size_bytes = vbc->get_data()->get_data_size_bytes();
+  GeomEnums::UsageHint usage_hint = vbc->get_data()->get_usage_hint();
 
   // We have to set the Data pointer to NULL at this point, since the Data
   // itself might destruct at any time after it has been released.
-  vbc->_data = nullptr;
+  vbc->_object = nullptr;
 
   bool removed = (_prepared_vertex_buffers.erase(vbc) != 0);
   nassertv(removed);
@@ -965,7 +925,7 @@ release_vertex_buffer(VertexBufferContext *vbc) {
                             released_vbuffer_cache_size,
                             _released_vertex_buffers);
   } else {
-    _released_vertex_buffers.insert(vbc);
+    _released_vertex_buffers.push_back(vbc);
   }
 }
 
@@ -980,15 +940,12 @@ release_all_vertex_buffers() {
 
   int num_vertex_buffers = (int)_prepared_vertex_buffers.size() + (int)_enqueued_vertex_buffers.size();
 
-  Buffers::iterator vbci;
-  for (vbci = _prepared_vertex_buffers.begin();
-       vbci != _prepared_vertex_buffers.end();
-       ++vbci) {
-    VertexBufferContext *vbc = (VertexBufferContext *)(*vbci);
-    vbc->_data->clear_prepared(this);
-    vbc->_data = nullptr;
+  for (BufferContext *bc : _prepared_vertex_buffers) {
+    VertexBufferContext *vbc = (VertexBufferContext *)bc;
+    vbc->get_data()->clear_prepared(this);
+    vbc->_object = nullptr;
 
-    _released_vertex_buffers.insert(vbc);
+    _released_vertex_buffers.push_back(vbc);
   }
 
   _prepared_vertex_buffers.clear();
@@ -1001,10 +958,9 @@ release_all_vertex_buffers() {
        ++bci) {
     BufferList &buffer_list = (*bci).second;
     nassertr(!buffer_list.empty(), num_vertex_buffers);
-    BufferList::iterator li;
-    for (li = buffer_list.begin(); li != buffer_list.end(); ++li) {
-      VertexBufferContext *vbc = (VertexBufferContext *)(*li);
-      _released_vertex_buffers.insert(vbc);
+    for (BufferContext *bc : buffer_list) {
+      VertexBufferContext *vbc = (VertexBufferContext *)bc;
+      _released_vertex_buffers.push_back(vbc);
     }
   }
   _vertex_buffer_cache.clear();
@@ -1061,7 +1017,7 @@ prepare_vertex_buffer_now(GeomVertexArrayData *data, GraphicsStateGuardianBase *
                       _vertex_buffer_cache, _vertex_buffer_cache_lru,
                       _vertex_buffer_cache_size);
   if (vbc != nullptr) {
-    vbc->_data = data;
+    vbc->_object = data;
 
   } else {
     // Ask the GSG to create a brand new VertexBufferContext.  There might be
@@ -1144,14 +1100,14 @@ void PreparedGraphicsObjects::
 release_index_buffer(IndexBufferContext *ibc) {
   ReMutexHolder holder(_lock);
 
-  ibc->_data->clear_prepared(this);
+  ibc->get_data()->clear_prepared(this);
 
-  size_t data_size_bytes = ibc->_data->get_data_size_bytes();
-  GeomEnums::UsageHint usage_hint = ibc->_data->get_usage_hint();
+  size_t data_size_bytes = ibc->get_data()->get_data_size_bytes();
+  GeomEnums::UsageHint usage_hint = ibc->get_data()->get_usage_hint();
 
   // We have to set the Data pointer to NULL at this point, since the Data
   // itself might destruct at any time after it has been released.
-  ibc->_data = nullptr;
+  ibc->_object = nullptr;
 
   bool removed = (_prepared_index_buffers.erase(ibc) != 0);
   nassertv(removed);
@@ -1163,7 +1119,7 @@ release_index_buffer(IndexBufferContext *ibc) {
                             released_ibuffer_cache_size,
                             _released_index_buffers);
   } else {
-    _released_index_buffers.insert(ibc);
+    _released_index_buffers.push_back(ibc);
   }
 }
 
@@ -1178,15 +1134,12 @@ release_all_index_buffers() {
 
   int num_index_buffers = (int)_prepared_index_buffers.size() + (int)_enqueued_index_buffers.size();
 
-  Buffers::iterator ibci;
-  for (ibci = _prepared_index_buffers.begin();
-       ibci != _prepared_index_buffers.end();
-       ++ibci) {
-    IndexBufferContext *ibc = (IndexBufferContext *)(*ibci);
-    ibc->_data->clear_prepared(this);
-    ibc->_data = nullptr;
+  for (BufferContext *bc : _prepared_index_buffers) {
+    IndexBufferContext *ibc = (IndexBufferContext *)bc;
+    ibc->get_data()->clear_prepared(this);
+    ibc->_object = nullptr;
 
-    _released_index_buffers.insert(ibc);
+    _released_index_buffers.push_back(ibc);
   }
 
   _prepared_index_buffers.clear();
@@ -1199,10 +1152,9 @@ release_all_index_buffers() {
        ++bci) {
     BufferList &buffer_list = (*bci).second;
     nassertr(!buffer_list.empty(), num_index_buffers);
-    BufferList::iterator li;
-    for (li = buffer_list.begin(); li != buffer_list.end(); ++li) {
-      IndexBufferContext *vbc = (IndexBufferContext *)(*li);
-      _released_index_buffers.insert(vbc);
+    for (BufferContext *bc : buffer_list) {
+      IndexBufferContext *ibc = (IndexBufferContext *)bc;
+      _released_index_buffers.push_back(ibc);
     }
   }
   _index_buffer_cache.clear();
@@ -1258,7 +1210,7 @@ prepare_index_buffer_now(GeomPrimitive *data, GraphicsStateGuardianBase *gsg) {
                       _index_buffer_cache, _index_buffer_cache_lru,
                       _index_buffer_cache_size);
   if (ibc != nullptr) {
-    ibc->_data = data;
+    ibc->_object = data;
 
   } else {
     // Ask the GSG to create a brand new IndexBufferContext.  There might be
@@ -1341,10 +1293,17 @@ void PreparedGraphicsObjects::
 release_shader_buffer(BufferContext *bc) {
   ReMutexHolder holder(_lock);
 
+  ShaderBuffer *buffer = (ShaderBuffer *)bc->_object;
+  buffer->clear_prepared(this);
+
+  // We have to set the ShaderBuffer pointer to NULL at this point, since the
+  // buffer itself might destruct at any time after it has been released.
+  bc->_object = nullptr;
+
   bool removed = (_prepared_shader_buffers.erase(bc) != 0);
   nassertv(removed);
 
-  _released_shader_buffers.insert(bc);
+  _released_shader_buffers.push_back(bc);
 }
 
 /**
@@ -1358,13 +1317,10 @@ release_all_shader_buffers() {
 
   int num_shader_buffers = (int)_prepared_shader_buffers.size() + (int)_enqueued_shader_buffers.size();
 
-  Buffers::iterator bci;
-  for (bci = _prepared_shader_buffers.begin();
-       bci != _prepared_shader_buffers.end();
-       ++bci) {
-
-    BufferContext *bc = (BufferContext *)(*bci);
-    _released_shader_buffers.insert(bc);
+  for (BufferContext *bc : _prepared_shader_buffers) {
+    ((ShaderBuffer *)bc->_object)->clear_prepared(this);
+    bc->_object = nullptr;
+    _released_shader_buffers.push_back(bc);
   }
 
   _prepared_shader_buffers.clear();
@@ -1505,68 +1461,45 @@ begin_frame(GraphicsStateGuardianBase *gsg, Thread *current_thread) {
 
   // First, release all the textures, geoms, and buffers awaiting release.
   if (!_released_textures.empty()) {
-    Textures::iterator tci;
-    for (tci = _released_textures.begin();
-         tci != _released_textures.end();
-         ++tci) {
-      TextureContext *tc = (*tci);
-      gsg->release_texture(tc);
-    }
-
+    gsg->release_textures(_released_textures);
     _released_textures.clear();
   }
 
   if (!_released_samplers.empty()) {
-    ReleasedSamplers::iterator sci;
-    for (sci = _released_samplers.begin();
-         sci != _released_samplers.end();
-         ++sci) {
-      SamplerContext *sc = (*sci);
+    for (SamplerContext *sc : _released_samplers) {
       gsg->release_sampler(sc);
     }
-
     _released_samplers.clear();
   }
 
-  Geoms::iterator gci;
-  for (gci = _released_geoms.begin();
-       gci != _released_geoms.end();
-       ++gci) {
-    GeomContext *gc = (*gci);
-    gsg->release_geom(gc);
+  if (!_released_geoms.empty()) {
+    for (GeomContext *gc : _released_geoms) {
+      gsg->release_geom(gc);
+    }
+    _released_geoms.clear();
   }
 
-  _released_geoms.clear();
-
-  Shaders::iterator sci;
-  for (sci = _released_shaders.begin();
-       sci != _released_shaders.end();
-       ++sci) {
-    ShaderContext *sc = (*sci);
-    gsg->release_shader(sc);
+  if (!_released_shaders.empty()) {
+    for (ShaderContext *sc : _released_shaders) {
+      gsg->release_shader(sc);
+    }
+    _released_shaders.clear();
   }
 
-  _released_shaders.clear();
-
-  Buffers::iterator vbci;
-  for (vbci = _released_vertex_buffers.begin();
-       vbci != _released_vertex_buffers.end();
-       ++vbci) {
-    VertexBufferContext *vbc = (VertexBufferContext *)(*vbci);
-    gsg->release_vertex_buffer(vbc);
+  if (!_released_vertex_buffers.empty()) {
+    gsg->release_vertex_buffers(_released_vertex_buffers);
+    _released_vertex_buffers.clear();
   }
 
-  _released_vertex_buffers.clear();
-
-  Buffers::iterator ibci;
-  for (ibci = _released_index_buffers.begin();
-       ibci != _released_index_buffers.end();
-       ++ibci) {
-    IndexBufferContext *ibc = (IndexBufferContext *)(*ibci);
-    gsg->release_index_buffer(ibc);
+  if (!_released_index_buffers.empty()) {
+    gsg->release_index_buffers(_released_index_buffers);
+    _released_index_buffers.clear();
   }
 
-  _released_index_buffers.clear();
+  if (!_released_shader_buffers.empty()) {
+    gsg->release_shader_buffers(_released_shader_buffers);
+    _released_shader_buffers.clear();
+  }
 
   // Reset the residency trackers.
   _texture_residency.begin_frame(current_thread);
@@ -1690,7 +1623,7 @@ cache_unprepared_buffer(BufferContext *buffer, size_t data_size_bytes,
                         PreparedGraphicsObjects::BufferCacheLRU &buffer_cache_lru,
                         size_t &buffer_cache_size,
                         int released_buffer_cache_size,
-                        PreparedGraphicsObjects::Buffers &released_buffers) {
+                        pvector<BufferContext *> &released_buffers) {
   BufferCacheKey key;
   key._data_size_bytes = data_size_bytes;
   key._usage_hint = usage_hint;
@@ -1716,7 +1649,7 @@ cache_unprepared_buffer(BufferContext *buffer, size_t data_size_bytes,
            (int)buffer_cache_size > released_buffer_cache_size) {
       BufferContext *released_buffer = buffer_list.back();
       buffer_list.pop_back();
-      released_buffers.insert(released_buffer);
+      released_buffers.push_back(released_buffer);
       buffer_cache_size -= release_key._data_size_bytes;
     }
 

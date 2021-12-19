@@ -39,7 +39,7 @@
 #include "collisionSphere.h"
 #include "collisionBox.h"
 #include "collisionInvSphere.h"
-#include "collisionTube.h"
+#include "collisionCapsule.h"
 #include "textureStage.h"
 #include "geomNode.h"
 #include "geom.h"
@@ -52,7 +52,6 @@
 #include "modelNode.h"
 #include "animBundleNode.h"
 #include "animChannelMatrixXfmTable.h"
-#include "characterJointEffect.h"
 #include "characterJoint.h"
 #include "character.h"
 #include "string_utils.h"
@@ -159,16 +158,6 @@ convert_node(const WorkingNodePath &node_path, EggGroupNode *egg_parent,
     convert_character_node(DCAST(Character, node), node_path, egg_parent, has_decal);
 
   } else {
-    // Is this a ModelNode that represents an exposed joint?  If so, skip it,
-    // as we'll take care of it when building the joint hierarchy.
-    if (node->get_type() == ModelNode::get_class_type()) {
-      ModelNode *model_node = (ModelNode *)node;
-      if (model_node->get_preserve_transform() == ModelNode::PT_net &&
-          model_node->has_effect(CharacterJointEffect::get_class_type())) {
-        return;
-      }
-    }
-
     // Just a generic node.
     EggGroup *egg_group = new EggGroup(node->get_name());
     egg_parent->add_child(egg_group);
@@ -355,28 +344,51 @@ convert_anim_node(AnimBundleNode *node, const WorkingNodePath &node_path,
  * structure.
  */
 void EggSaver::
-convert_character_bundle(PartGroup *bundleNode, EggGroupNode *egg_parent, CharacterJointMap *joint_map) {
+convert_character_bundle(PartGroup *bundleNode, EggGroupNode *egg_parent,
+                         CharacterJointMap *joint_map, const CharacterJoint *parent_joint) {
   int num_children = bundleNode->get_num_children();
+
+  const CharacterJoint *character_joint = nullptr;
 
   EggGroupNode *joint_group = egg_parent;
   if (bundleNode->is_of_type(CharacterJoint::get_class_type())) {
-    CharacterJoint *character_joint = DCAST(CharacterJoint, bundleNode);
+    character_joint = DCAST(CharacterJoint, bundleNode);
 
-    LMatrix4 transformf;
-    character_joint->get_transform(transformf);
-    LMatrix4d transformd(LCAST(double, transformf));
     EggGroup *joint = new EggGroup(bundleNode->get_name());
-    joint->add_matrix4(transformd);
     joint->set_group_type(EggGroup::GT_joint);
 
-    // Is this joint exposed?
-    NodePathCollection coll = character_joint->get_net_transforms();
-    for (size_t i = 0; i < coll.size(); ++i) {
-      const NodePath &np = coll[i];
-      if (np.get_name() == bundleNode->get_name() && np.node()->is_of_type(ModelNode::get_class_type())) {
-        joint->set_dcs_type(EggGroup::DC_net);
-        break;
+    // The default_value originally passed to the CharacterJoint is what is used
+    // for skinning.  However, the _default_value can be changed after joint
+    // construction (such as via a <DefaultPose>), so we can't just pull the
+    // current _default_value.
+    //
+    // We have to instead work back from the _initial_net_transform_inverse,
+    // which is computed at construction time from the original default_value:
+    //
+    //   _net_transform = default_value * parent_joint->_net_transform;
+    //   _initial_net_transform_inverse = invert(_net_transform);
+    //
+    // So we should be able to reconstruct the original default_value like so:
+    //
+    //   default_value = invert(_initial_net_transform_inverse)
+    //                 * parent_joint->_initial_net_transform_inverse;
+    //
+    LMatrix4d net_transform = invert(LCAST(double, character_joint->_initial_net_transform_inverse));
+    if (parent_joint != nullptr) {
+      if (parent_joint->_initial_net_transform_inverse != character_joint->_initial_net_transform_inverse) {
+        LMatrix4d parent_inverse = LCAST(double, parent_joint->_initial_net_transform_inverse);
+        joint->add_matrix4(net_transform * parent_inverse);
       }
+    } else if (!net_transform.is_identity()) {
+      joint->add_matrix4(net_transform);
+    }
+
+    // The joint's _default_value, if different, goes into a <DefaultPose>.
+    LMatrix4d default_pose = LCAST(double, character_joint->_default_value);
+    if (default_pose != joint->get_transform3d()) {
+      EggTransform transform;
+      transform.add_matrix4(LCAST(double, default_pose));
+      joint->set_default_pose(transform);
     }
 
     joint_group = joint;
@@ -395,7 +407,7 @@ convert_character_bundle(PartGroup *bundleNode, EggGroupNode *egg_parent, Charac
 
   for (int i = 0; i < num_children ; i++) {
     PartGroup *partGroup= bundleNode->get_child(i);
-    convert_character_bundle(partGroup, joint_group, joint_map);
+    convert_character_bundle(partGroup, joint_group, joint_map, character_joint);
   }
 
 }
@@ -409,33 +421,16 @@ convert_character_node(Character *node, const WorkingNodePath &node_path,
 
   // A sequence node gets converted to an ordinary EggGroup, we only apply the
   // appropriate switch attributes to turn it into a sequence.
+  // We have to use DT_structured since it is the only mode that preserves the
+  // node hierarchy, including LODNodes and CollisionNodes that may be under
+  // this Character node.
   EggGroup *egg_group = new EggGroup(node->get_name());
+  egg_group->set_dart_type(EggGroup::DT_structured);
   egg_parent->add_child(egg_group);
   apply_node_properties(egg_group, node);
 
   CharacterJointMap joint_map;
-  bool is_structured = false;
-
-  int num_children = node->get_num_children();
-  for (int i = 0; i < num_children; i++) {
-    PandaNode *child = node->get_child(i);
-    convert_node(WorkingNodePath(node_path, child), egg_parent, has_decal, &joint_map);
-
-    TypeHandle type = child->get_type();
-    if (child->get_num_children() > 0 ||
-        (type != GeomNode::get_class_type() && type != ModelNode::get_class_type())) {
-      is_structured = true;
-    }
-  }
-
-  // We have to use DT_structured if it is necessary to preserve any node
-  // hierarchy, such as LODNodes and CollisionNodes that may be under this
-  // Character node.
-  if (is_structured) {
-    egg_group->set_dart_type(EggGroup::DT_structured);
-  } else {
-    egg_group->set_dart_type(EggGroup::DT_default);
-  }
+  recurse_nodes(node_path, egg_group, has_decal, &joint_map);
 
   // turn it into a switch.. egg_group->set_switch_flag(true);
 
@@ -620,13 +615,13 @@ convert_collision_node(CollisionNode *node, const WorkingNodePath &node_path,
         egg_poly->add_vertex(cvpool->create_unique_vertex(ev0));
         egg_poly->add_vertex(cvpool->create_unique_vertex(ev1));
 
-      } else if (child->is_of_type(CollisionTube::get_class_type())) {
-        CPT(CollisionTube) tube = DCAST(CollisionTube, child);
-        LPoint3 point_a = tube->get_point_a();
-        LPoint3 point_b = tube->get_point_b();
+      } else if (child->is_of_type(CollisionCapsule::get_class_type())) {
+        CPT(CollisionCapsule) capsule = DCAST(CollisionCapsule, child);
+        LPoint3 point_a = capsule->get_point_a();
+        LPoint3 point_b = capsule->get_point_b();
         LPoint3 centroid = (point_a + point_b) * 0.5f;
 
-        // Also get an arbitrary vector perpendicular to the tube.
+        // Also get an arbitrary vector perpendicular to the capsule.
         LVector3 axis = point_b - point_a;
         LVector3 sideways;
         if (std::fabs(axis[2]) > std::fabs(axis[1])) {
@@ -635,18 +630,18 @@ convert_collision_node(CollisionNode *node, const WorkingNodePath &node_path,
           sideways = axis.cross(LVector3(0, 0, 1));
         }
         sideways.normalize();
-        sideways *= tube->get_radius();
-        LVector3 extend = axis.normalized() * tube->get_radius();
+        sideways *= capsule->get_radius();
+        LVector3 extend = axis.normalized() * capsule->get_radius();
 
-        EggGroup *egg_tube;
+        EggGroup *egg_capsule;
         if (num_solids == 1) {
-          egg_tube = egg_group;
+          egg_capsule = egg_group;
         } else {
-          egg_tube = new EggGroup;
-          egg_group->add_child(egg_tube);
+          egg_capsule = new EggGroup;
+          egg_group->add_child(egg_capsule);
         }
-        egg_tube->set_cs_type(EggGroup::CST_tube);
-        egg_tube->set_collide_flags(flags);
+        egg_capsule->set_cs_type(EggGroup::CST_tube);
+        egg_capsule->set_collide_flags(flags);
 
         // Add two points for the endcaps, and then two points around the
         // centroid to indicate the radius.
@@ -657,7 +652,7 @@ convert_collision_node(CollisionNode *node, const WorkingNodePath &node_path,
         ev3.set_pos(LCAST(double, (centroid - sideways) * net_mat));
 
         EggPolygon *egg_poly = new EggPolygon;
-        egg_tube->add_child(egg_poly);
+        egg_capsule->add_child(egg_poly);
 
         egg_poly->add_vertex(cvpool->create_unique_vertex(ev0));
         egg_poly->add_vertex(cvpool->create_unique_vertex(ev1));
@@ -746,6 +741,7 @@ convert_primitive(const GeomVertexData *vertex_data,
                   const LMatrix4 &net_mat, EggGroupNode *egg_parent,
                   CharacterJointMap *joint_map) {
   GeomVertexReader reader(vertex_data);
+  const GeomVertexFormat *format = vertex_data->get_format();
 
   // Make a zygote that will be duplicated for each primitive.
   PT(EggPrimitive) egg_prim;
@@ -804,14 +800,14 @@ convert_primitive(const GeomVertexData *vertex_data,
   // Check for a texture.
   const TextureAttrib *ta;
   if (net_state->get_attrib(ta)) {
-    EggTexture *egg_tex = get_egg_texture(ta->get_texture());
+    for (size_t i = 0; i < ta->get_num_on_stages(); ++i) {
+      TextureStage *tex_stage = ta->get_on_stage(i);
 
-    if (egg_tex != nullptr) {
-      TextureStage *tex_stage = ta->get_on_stage(0);
-      if (tex_stage != nullptr) {
+      EggTexture *egg_tex = get_egg_texture(ta->get_on_texture(tex_stage));
+      if (egg_tex != nullptr) {
         switch (tex_stage->get_mode()) {
         case TextureStage::M_modulate:
-          if (has_color_off == true) {
+          if (has_color_off == true && i == 0) {
             egg_tex->set_env_type(EggTexture::ET_replace);
           } else {
             egg_tex->set_env_type(EggTexture::ET_modulate);
@@ -832,12 +828,47 @@ convert_primitive(const GeomVertexData *vertex_data,
         case TextureStage::M_blend_color_scale:
           egg_tex->set_env_type(EggTexture::ET_blend_color_scale);
           break;
+        case TextureStage::M_modulate_glow:
+          egg_tex->set_env_type(EggTexture::ET_modulate_glow);
+          break;
+        case TextureStage::M_modulate_gloss:
+          egg_tex->set_env_type(EggTexture::ET_modulate_gloss);
+          break;
+        case TextureStage::M_normal:
+          egg_tex->set_env_type(EggTexture::ET_normal);
+          break;
+        case TextureStage::M_normal_height:
+          egg_tex->set_env_type(EggTexture::ET_normal_height);
+          break;
+        case TextureStage::M_glow:
+          egg_tex->set_env_type(EggTexture::ET_glow);
+          break;
+        case TextureStage::M_gloss:
+          egg_tex->set_env_type(EggTexture::ET_gloss);
+          break;
+        case TextureStage::M_height:
+          egg_tex->set_env_type(EggTexture::ET_height);
+          break;
+        case TextureStage::M_selector:
+          egg_tex->set_env_type(EggTexture::ET_selector);
+          break;
+        case TextureStage::M_normal_gloss:
+          egg_tex->set_env_type(EggTexture::ET_normal_gloss);
+          break;
+        case TextureStage::M_emission:
+          egg_tex->set_env_type(EggTexture::ET_emission);
+          break;
         default:
           break;
         }
-      }
 
-      egg_prim->set_texture(egg_tex);
+        const InternalName *name = tex_stage->get_texcoord_name();
+        if (name != nullptr && name != InternalName::get_texcoord()) {
+          egg_tex->set_uv_name(name->get_basename());
+        }
+
+        egg_prim->add_texture(egg_tex);
+      }
     }
   }
 
@@ -902,10 +933,15 @@ convert_primitive(const GeomVertexData *vertex_data,
                                   color[3] * color_scale[3]));
       }
 
-      if (vertex_data->has_column(InternalName::get_texcoord())) {
-        reader.set_column(InternalName::get_texcoord());
+      for (size_t ti = 0; ti < format->get_num_texcoords(); ++ti) {
+        const InternalName *texcoord_name = format->get_texcoord(ti);
+        reader.set_column(texcoord_name);
         LTexCoord uv = reader.get_data2();
-        egg_vert.set_uv(LCAST(double, uv));
+        if (texcoord_name == InternalName::get_texcoord()) {
+          egg_vert.set_uv(LCAST(double, uv));
+        } else {
+          egg_vert.set_uv(texcoord_name->get_basename(), LCAST(double, uv));
+        }
       }
 
       EggVertex *new_egg_vert = _vpool->create_unique_vertex(egg_vert);
@@ -1377,6 +1413,12 @@ get_egg_texture(Texture *tex) {
         break;
       case Texture::F_luminance_alphamask:
         temp.set_format(EggTexture::F_luminance_alphamask);
+        break;
+      case Texture::F_srgb:
+        temp.set_format(EggTexture::F_srgb);
+        break;
+      case Texture::F_srgb_alpha:
+        temp.set_format(EggTexture::F_srgb_alpha);
         break;
       default:
         break;

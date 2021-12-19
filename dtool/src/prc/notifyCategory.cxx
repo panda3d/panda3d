@@ -181,10 +181,16 @@ update_severity_cache() {
     } else {
       // Unless, of course, we're the root.
       _severity_cache = NS_info;
+
+      // Take this opportunity to have Notify check whether the notify-output
+      // variable changed.
+      Notify::config_initialized();
     }
   } else {
     _severity_cache = _severity;
+    Notify::config_initialized();
   }
+
   mark_cache_valid(_local_modified);
 }
 

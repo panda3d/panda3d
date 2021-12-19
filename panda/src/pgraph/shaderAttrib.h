@@ -47,10 +47,11 @@ PUBLISHED:
   static CPT(RenderAttrib) make_default();
 
   enum {
-    F_disable_alpha_write = 0,  // Suppress writes to color buffer alpha channel.
-    F_subsume_alpha_test  = 1,  // Shader promises to subsume the alpha test using TEXKILL
-    F_hardware_skinning   = 2,  // Shader needs pre-animated vertices
-    F_shader_point_size   = 3,  // Shader provides point size, not RenderModeAttrib
+    F_disable_alpha_write = 1 << 0,  // Suppress writes to color buffer alpha channel.
+    F_subsume_alpha_test  = 1 << 1,  // Shader promises to subsume the alpha test using TEXKILL
+    F_hardware_skinning   = 1 << 2,  // Shader needs pre-animated vertices
+    F_shader_point_size   = 1 << 3,  // Shader provides point size, not RenderModeAttrib
+    F_hardware_instancing = 1 << 4,  // Shader needs instance list
   };
 
   INLINE bool               has_shader() const;
@@ -91,6 +92,8 @@ public:
   INLINE CPT(RenderAttrib) set_shader_input(CPT_InternalName id, const LMatrix3 &v, int priority=0) const;
   INLINE CPT(RenderAttrib) set_shader_input(CPT_InternalName id, double n1=0, double n2=0, double n3=0, double n4=1,
                                             int priority=0) const;
+                                            
+  CPT(RenderAttrib) set_shader_inputs(const pvector<ShaderInput> &inputs) const;
 
 PUBLISHED:
   EXTENSION(CPT(RenderAttrib) set_shader_input(CPT_InternalName, PyObject *, int priority=0) const);
@@ -113,10 +116,11 @@ PUBLISHED:
   const ShaderInput &get_shader_input(const InternalName *id) const;
   const ShaderInput &get_shader_input(const std::string &id) const;
 
-  const NodePath &get_shader_input_nodepath(const InternalName *id) const;
+  NodePath get_shader_input_nodepath(const InternalName *id) const;
   LVecBase4 get_shader_input_vector(InternalName *id) const;
   Texture *get_shader_input_texture(const InternalName *id, SamplerState *sampler=nullptr) const;
   const Shader::ShaderPtrData *get_shader_input_ptr(const InternalName *id) const;
+  bool get_shader_input_ptr(const InternalName *id, Shader::ShaderPtrData &data) const;
   const LMatrix4 &get_shader_input_matrix(const InternalName *id, LMatrix4 &matrix) const;
   ShaderBuffer *get_shader_input_buffer(const InternalName *id) const;
 

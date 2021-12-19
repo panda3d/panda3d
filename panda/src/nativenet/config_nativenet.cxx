@@ -16,7 +16,6 @@
 #include "socket_ip.h"
 #include "socket_tcp.h"
 #include "socket_tcp_listen.h"
-#include "socket_tcp_ssl.h"
 #include "socket_udp_incoming.h"
 #include "socket_udp_outgoing.h"
 #include "socket_udp.h"
@@ -55,9 +54,6 @@ init_libnativenet() {
   Socket_IP::init_type();
   Socket_TCP::init_type();
   Socket_TCP_Listen::init_type();
-#ifdef HAVE_OPENSSL
-  Socket_TCP_SSL::init_type();
-#endif
   Socket_UDP_Incoming::init_type();
   Socket_UDP_Outgoing::init_type();
   Socket_UDP::init_type();

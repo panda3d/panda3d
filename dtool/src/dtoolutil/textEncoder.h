@@ -36,6 +36,7 @@ PUBLISHED:
     E_iso8859,
     E_utf8,
     E_utf16be,
+    E_cp437,
 
     // Deprecated alias for E_utf16be
     E_unicode = E_utf16be,
@@ -151,8 +152,7 @@ operator >> (std::istream &in, TextEncoder::Encoding &encoding);
 
 // This function is declared inline to minimize the risk of link conflicts
 // should another third-party module also define the same output operator.
-INLINE EXPCL_DTOOL_DTOOLUTIL std::ostream &
-operator << (std::ostream &out, const std::wstring &str);
+INLINE std::ostream & operator << (std::ostream &out, const std::wstring &str);
 
 #include "textEncoder.I"
 

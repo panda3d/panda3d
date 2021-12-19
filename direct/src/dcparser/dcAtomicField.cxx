@@ -88,11 +88,11 @@ get_element(int n) const {
  * If the element is an array-type element, the returned value will include
  * the two-byte length preceding the array data.
  *
- * This is deprecated; use get_element() instead.
+ * @deprecated use get_element() instead.
  */
-string DCAtomicField::
+vector_uchar DCAtomicField::
 get_element_default(int n) const {
-  nassertr(n >= 0 && n < (int)_elements.size(), string());
+  nassertr(n >= 0 && n < (int)_elements.size(), vector_uchar());
   return _elements[n]->get_default_value();
 }
 
@@ -100,7 +100,7 @@ get_element_default(int n) const {
  * Returns true if the nth element of the field has a default value specified,
  * false otherwise.
  *
- * This is deprecated; use get_element() instead.
+ * @deprecated use get_element() instead.
  */
 bool DCAtomicField::
 has_element_default(int n) const {
@@ -113,7 +113,7 @@ has_element_default(int n) const {
  * for documentary purposes; it does not generally affect operation.  If a
  * name is not specified, this will be the empty string.
  *
- * This method is deprecated; use get_element()->get_name() instead.
+ * @deprecated use get_element()->get_name() instead.
  */
 string DCAtomicField::
 get_element_name(int n) const {

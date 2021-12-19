@@ -152,8 +152,17 @@ PUBLISHED:
 
   INLINE_LINMATH void componentwise_mult(const FLOATNAME(LVecBase3) &other);
 
-  EXTENSION(INLINE_LINMATH FLOATNAME(LVecBase3) __pow__(FLOATTYPE exponent) const);
+  EXTENSION(INLINE_LINMATH PyObject *__rmul__(PyObject *self, FLOATTYPE scalar) const);
+
+  EXTENSION(INLINE_LINMATH PyObject *__floordiv__(PyObject *self, FLOATTYPE scalar) const);
+  EXTENSION(INLINE_LINMATH PyObject *__ifloordiv__(PyObject *self, FLOATTYPE scalar));
+
+  EXTENSION(INLINE_LINMATH PyObject *__pow__(PyObject *self, FLOATTYPE exponent) const);
   EXTENSION(INLINE_LINMATH PyObject *__ipow__(PyObject *self, FLOATTYPE exponent));
+
+  EXTENSION(INLINE_LINMATH PyObject *__round__(PyObject *self));
+  EXTENSION(INLINE_LINMATH PyObject *__floor__(PyObject *self));
+  EXTENSION(INLINE_LINMATH PyObject *__ceil__(PyObject *self));
 
   INLINE_LINMATH FLOATNAME(LVecBase3) fmax(const FLOATNAME(LVecBase3) &other) const;
   INLINE_LINMATH FLOATNAME(LVecBase3) fmin(const FLOATNAME(LVecBase3) &other) const;
@@ -171,6 +180,8 @@ PUBLISHED:
   INLINE_LINMATH void read_datagram_fixed(DatagramIterator &source);
   INLINE_LINMATH void write_datagram(Datagram &destination) const;
   INLINE_LINMATH void read_datagram(DatagramIterator &source);
+
+  EXTENSION(INLINE_LINMATH int __getbuffer__(PyObject *self, Py_buffer *view, int flags) const);
 
 public:
   // The underlying implementation is via the Eigen library, if available.

@@ -31,7 +31,7 @@
  * GeoMipMapping algorithm, or Geometrical MipMapping, based on the LOD (Level
  * of Detail) algorithm.  For more information about the GeoMipMapping
  * algoritm, see this paper, written by Willem H. de Boer:
- * http://flipcode.com/articles/article_geomipmaps.pdf
+ * https://flipcode.com/articles/article_geomipmaps.pdf
  */
 class EXPCL_PANDA_GRUTIL GeoMipTerrain : public TypedObject {
 PUBLISHED:

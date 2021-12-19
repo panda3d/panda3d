@@ -23,6 +23,8 @@ class LinuxInputDeviceManager;
 /**
  * This is a type of device that uses the Linux /dev/input/js# API to read
  * data from a game controller.
+ *
+ * @since 1.10.0
  */
 class EXPCL_PANDA_DEVICE LinuxJoystickDevice : public InputDevice {
 PUBLISHED:
@@ -50,7 +52,7 @@ private:
   int _dpad_up_button;
 
   // This is used for axis emulation.
-  int _ltrigger_control;
+  int _ltrigger_axis;
   int _ltrigger_button;
   int _rtrigger_button;
 

@@ -214,7 +214,7 @@ do_update(Thread *current_thread) {
 
   static const size_t buffer_size = 1024;
   char buffer[buffer_size];
-#if defined(WIN32_VC) || defined(WIN64_VC)
+#ifdef _WIN32
   // Windows doesn't define snprintf().  Hope we don't overflow.
   sprintf(buffer, _text_pattern.c_str(), value, deviation);
 #else

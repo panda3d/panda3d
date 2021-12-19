@@ -174,14 +174,14 @@ priv_step(double t) {
           setup_slerp();
 
         } else if ((_flags & F_bake_in_start) != 0) {
-          set_start_quat(transform->get_quat());
+          set_start_quat(transform->get_norm_quat());
           setup_slerp();
 
         } else {
           if (_prev_d == 1.0) {
             _start_quat = _end_quat;
           } else {
-            LQuaternion prev_value = transform->get_quat();
+            LQuaternion prev_value = transform->get_norm_quat();
             _start_quat = (prev_value - _prev_d * _end_quat) / (1.0 - _prev_d);
           }
           setup_slerp();

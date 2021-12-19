@@ -31,6 +31,14 @@
 
 #include <Python.h>
 
+#ifndef LINK_ALL_STATIC
+#  define EXPCL_PYPANDA
+#elif defined(__GNUC__)
+#  define EXPCL_PYPANDA __attribute__((weak))
+#else
+#  define EXPCL_PYPANDA extern inline
+#endif
+
 /* Python 2.4 */
 
 // 2.4 macros which aren't available in 2.3
@@ -99,7 +107,7 @@ typedef int Py_ssize_t;
 // PyInt_FromSize_t automatically picks the right type.
 #  define PyLongOrInt_AS_LONG PyInt_AsLong
 
-size_t PyLongOrInt_AsSize_t(PyObject *);
+EXPCL_PYPANDA size_t PyLongOrInt_AsSize_t(PyObject *);
 #endif
 
 // Which character to use in PyArg_ParseTuple et al for a byte string.
@@ -129,20 +137,18 @@ typedef long Py_hash_t;
 #  endif
 #endif
 
+/* Python 3.4 */
+#if PY_VERSION_HEX < 0x03040000
+#define PyGILState_Check() (PyGILState_GetThisThreadState() == _PyThreadState_Current)
+#endif
+
 /* Python 3.6 */
 
-#ifndef _PyObject_CallNoArg
-INLINE PyObject *_PyObject_CallNoArg(PyObject *func) {
-  static PyTupleObject empty_tuple = {PyVarObject_HEAD_INIT(nullptr, 0)};
-#ifdef Py_TRACE_REFS
-  _Py_AddToAllObjects((PyObject *)&empty_tuple, 0);
-#endif
-  return PyObject_Call(func, (PyObject *)&empty_tuple, nullptr);
-}
-#  define _PyObject_CallNoArg _PyObject_CallNoArg
+#if PY_VERSION_HEX < 0x03080000 && !defined(_PyObject_CallNoArg)
+#  define _PyObject_CallNoArg PyObject_CallNoArgs
 #endif
 
-#ifndef _PyObject_FastCall
+#if PY_VERSION_HEX < 0x03080000 && !defined(_PyObject_FastCall)
 INLINE PyObject *_PyObject_FastCall(PyObject *func, PyObject **args, Py_ssize_t nargs) {
   PyObject *tuple = PyTuple_New(nargs);
   for (Py_ssize_t i = 0; i < nargs; ++i) {
@@ -185,6 +191,54 @@ INLINE PyObject *_PyObject_FastCall(PyObject *func, PyObject **args, Py_ssize_t 
     case Py_GE: if ((val1) >= (val2)) Py_RETURN_TRUE; Py_RETURN_FALSE;  \
     }                                                                   \
   } while (0)
+#endif
+
+/* Python 3.8 */
+#if PY_VERSION_HEX < 0x03080000
+INLINE PyObject *_PyLong_Rshift(PyObject *a, size_t shiftby) {
+  PyObject *b = PyLong_FromLong(shiftby);
+  PyObject *result = PyNumber_Rshift(a, b);
+  Py_DECREF(b);
+  return result;
+}
+INLINE PyObject *_PyLong_Lshift(PyObject *a, size_t shiftby) {
+  PyObject *b = PyLong_FromLong(shiftby);
+  PyObject *result = PyNumber_Lshift(a, b);
+  Py_DECREF(b);
+  return result;
+}
+#endif
+
+/* Python 3.9 */
+
+#if PY_VERSION_HEX < 0x03090000
+INLINE PyObject *PyObject_CallNoArgs(PyObject *func) {
+#if PY_VERSION_HEX >= 0x03080000
+  return _PyObject_Vectorcall(func, nullptr, 0, nullptr);
+#elif PY_VERSION_HEX >= 0x03070000
+  return _PyObject_FastCallDict(func, nullptr, 0, nullptr);
+#elif PY_VERSION_HEX >= 0x03060000
+  return _PyObject_FastCall(func, nullptr, 0);
+#else
+  return PyObject_CallObject(func, nullptr);
+#endif
+}
+
+INLINE PyObject *PyObject_CallOneArg(PyObject *callable, PyObject *arg) {
+#if PY_VERSION_HEX >= 0x03060000
+  return _PyObject_FastCall(callable, &arg, 1);
+#else
+  return PyObject_CallFunctionObjArgs(callable, arg, nullptr);
+#endif
+}
+
+INLINE PyObject *PyObject_CallMethodNoArgs(PyObject *obj, PyObject *name) {
+  return PyObject_CallMethodObjArgs(obj, name, nullptr);
+}
+
+INLINE PyObject *PyObject_CallMethodOneArg(PyObject *obj, PyObject *name, PyObject *arg) {
+  return PyObject_CallMethodObjArgs(obj, name, arg, nullptr);
+}
 #endif
 
 /* Other Python implementations */

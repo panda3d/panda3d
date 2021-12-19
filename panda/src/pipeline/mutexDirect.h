@@ -57,7 +57,6 @@ private:
   mutable MutexTrueImpl _impl;
 
   friend class ConditionVarDirect;
-  friend class ConditionVarFullDirect;
 };
 
 INLINE std::ostream &

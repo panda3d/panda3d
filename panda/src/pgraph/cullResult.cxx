@@ -28,6 +28,7 @@
 #include "config_pgraph.h"
 #include "depthOffsetAttrib.h"
 #include "colorBlendAttrib.h"
+#include "shaderAttrib.h"
 
 TypeHandle CullResult::_type_handle;
 
@@ -133,7 +134,9 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
   if (object->_state->get_attrib(rmode)) {
     if (rmode->get_mode() == RenderModeAttrib::M_filled_wireframe) {
       CullableObject *wireframe_part = new CullableObject(*object);
-      wireframe_part->_state = get_wireframe_overlay_state(rmode);
+      const ShaderAttrib *shader = nullptr;
+      object->_state->get_attrib(shader);
+      wireframe_part->_state = get_wireframe_overlay_state(rmode, shader);
 
       if (wireframe_part->munge_geom
           (_gsg, _gsg->get_geom_munger(wireframe_part->_state, current_thread),
@@ -521,13 +524,36 @@ get_wireframe_filled_state() {
  */
 CPT(RenderState) CullResult::
 get_wireframe_overlay_state(const RenderModeAttrib *rmode) {
-  return RenderState::make(
+  return get_wireframe_overlay_state(rmode, nullptr);
+}
+
+/**
+ * Returns a RenderState that renders only the wireframe part of an
+ * M_filled_wireframe model.
+ * If a shader attrib is provided, a constant color is used in ColorBlendAttrib
+ * to emulate the flat color.
+ */
+CPT(RenderState) CullResult::
+get_wireframe_overlay_state(const RenderModeAttrib *rmode, const ShaderAttrib *shader) {
+  CPT(RenderState) state = RenderState::make(
     DepthOffsetAttrib::make(1, 0, 0.99999f),
-    ColorAttrib::make_flat(rmode->get_wireframe_color()),
-    ColorBlendAttrib::make(ColorBlendAttrib::M_add,
-                           ColorBlendAttrib::O_incoming_alpha,
-                           ColorBlendAttrib::O_one_minus_incoming_alpha),
     RenderModeAttrib::make(RenderModeAttrib::M_wireframe,
                            rmode->get_thickness(),
                            rmode->get_perspective()));
+  if (filled_wireframe_apply_shader) {
+    state = state->add_attrib(ColorBlendAttrib::make(ColorBlendAttrib::M_add,
+                                                     ColorBlendAttrib::O_zero,
+                                                     ColorBlendAttrib::O_constant_color,
+                                                     ColorBlendAttrib::M_add,
+                                                     ColorBlendAttrib::O_one,
+                                                     ColorBlendAttrib::O_one_minus_incoming_alpha,
+                                                     rmode->get_wireframe_color()));
+    state = state->add_attrib(shader);
+  } else {
+    state = state->add_attrib(ColorBlendAttrib::make(ColorBlendAttrib::M_add,
+                                                     ColorBlendAttrib::O_incoming_alpha,
+                                                     ColorBlendAttrib::O_one_minus_incoming_alpha));
+    state = state->add_attrib(ColorAttrib::make_flat(rmode->get_wireframe_color()));
+  }
+  return state;
 }

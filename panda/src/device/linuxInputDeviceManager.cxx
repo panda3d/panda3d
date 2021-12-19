@@ -11,7 +11,7 @@
  * @date 2018-01-25
  */
 
-#include "inputDeviceManager.h"
+#include "linuxInputDeviceManager.h"
 #include "throw_event.h"
 
 #ifdef PHAVE_LINUX_INPUT_H
@@ -61,6 +61,9 @@ LinuxInputDeviceManager() {
 
     // We'll want to sort the devices by index, since the order may be
     // meaningful (eg. for the Xbox wireless receiver).
+    if (indices.empty()) {
+      return;
+    }
     std::sort(indices.begin(), indices.end());
     _evdev_devices.resize(indices.back() + 1, nullptr);
 
@@ -131,6 +134,7 @@ consider_add_evdev_device(size_t ev_index) {
   // having read permissions set, but doesn't export all of the features
   // (notably, force feedback).
 
+#ifndef __FreeBSD__
   // We do this by checking for a js# directory inside the sysfs directory.
   sprintf(path, "/sys/class/input/event%zd/device", ev_index);
 
@@ -165,6 +169,8 @@ consider_add_evdev_device(size_t ev_index) {
   }
 
   closedir(dir);
+#endif
+
   return nullptr;
 }
 
@@ -198,6 +204,55 @@ consider_add_js_device(size_t js_index) {
   }
 
   return nullptr;
+}
+
+/**
+ * Scans the "virtual" input devices on the system to check whether one with
+ * the given vendor and product ID exists.
+ */
+bool LinuxInputDeviceManager::
+has_virtual_device(unsigned short vendor_id, unsigned short product_id) const {
+  char path[294];
+  sprintf(path, "/sys/devices/virtual/input");
+
+  DIR *dir = opendir(path);
+  if (dir != nullptr) {
+    dirent *entry = readdir(dir);
+    while (entry != nullptr) {
+      if (entry->d_name[0] != 'i') {
+        entry = readdir(dir);
+        continue;
+      }
+      FILE *f;
+
+      char vendor[5] = {0};
+      sprintf(path, "/sys/devices/virtual/input/%s/id/vendor", entry->d_name);
+      f = fopen(path, "r");
+      if (f) {
+        fgets(vendor, sizeof(vendor), f);
+        fclose(f);
+      }
+
+      char product[5] = {0};
+      sprintf(path, "/sys/devices/virtual/input/%s/id/product", entry->d_name);
+      f = fopen(path, "r");
+      if (f) {
+        fgets(product, sizeof(product), f);
+        fclose(f);
+      }
+
+      if (vendor[0] && std::stoi(std::string(vendor), nullptr, 16) == (int)vendor_id &&
+          product[0] && std::stoi(std::string(product), nullptr, 16) == (int)product_id) {
+        closedir(dir);
+        return true;
+      }
+
+      entry = readdir(dir);
+    }
+    closedir(dir);
+  }
+
+  return false;
 }
 
 /**
@@ -243,6 +298,7 @@ update() {
   LightMutexHolder holder(_lock);
 
   // Iterate over the events in the buffer.
+  bool removed_steam_virtual_device = false;
   char *ptr = buffer;
   char *end = buffer + avail;
   while (ptr < end) {
@@ -270,6 +326,12 @@ update() {
               device_cat.debug()
                 << "Removed input device " << *device << "\n";
             }
+
+            // Check for Steam virtual device; see comment below.
+            if (device->get_vendor_id() == 0x28de &&
+                device->get_product_id() == 0x11ff) {
+              removed_steam_virtual_device = true;
+            }
           }
         }
       }
@@ -289,6 +351,25 @@ update() {
     }
 
     ptr += sizeof(inotify_event) + event->len;
+  }
+
+  // If the Steam virtual device was just disconnected, the user may have just
+  // shut down Steam, and we need to reactivate the real Steam Controller
+  // device that was previously suppressed by Steam.
+  if (removed_steam_virtual_device) {
+    inactive_devices = _inactive_devices;
+
+    for (size_t i = 0; i < inactive_devices.size(); ++i) {
+      InputDevice *device = inactive_devices[i];
+      if (device != nullptr && device->is_of_type(EvdevInputDevice::get_class_type())) {
+        PT(EvdevInputDevice) evdev_device = (EvdevInputDevice *)device;
+        if (evdev_device->reactivate_steam_controller()) {
+          _inactive_devices.remove_device(device);
+          _connected_devices.add_device(device);
+          throw_event("connect-device", device);
+        }
+      }
+    }
   }
 }
 

@@ -11,8 +11,8 @@
  * @date 2010-11-19
  */
 
-#ifndef __BULLET_RIGID_BODY_NODE_H__
-#define __BULLET_RIGID_BODY_NODE_H__
+#ifndef BULLETRIGIDBODYNODE_H
+#define BULLETRIGIDBODYNODE_H
 
 #include "pandabase.h"
 
@@ -112,6 +112,7 @@ public:
   void do_sync_b2p();
 
 protected:
+  virtual void parents_changed();
   virtual void transform_changed();
 
 private:
@@ -181,4 +182,4 @@ private:
 
 #include "bulletRigidBodyNode.I"
 
-#endif // __BULLET_RIGID_BODY_NODE_H__
+#endif // BULLETRIGIDBODYNODE_H

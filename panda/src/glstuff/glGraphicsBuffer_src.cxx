@@ -84,7 +84,7 @@ CLP(GraphicsBuffer)::
   }
 }
 
-#ifndef OPENGLES
+#ifndef OPENGLES_1
 /**
  * Clears the entire framebuffer before rendering, according to the settings
  * of get_color_clear_active() and get_depth_clear_active() (inherited from
@@ -283,6 +283,12 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   } else if (mode == FM_refresh) {
     // Just bind the FBO.
     rebuild_bitplanes();
+
+    // Bind the non-multisample FBO, since we won't be rendering anything and
+    // the caller probably wanted to grab a screenshot.
+    if (_fbo_multisample != 0 && !_fbo.empty()) {
+      glgsg->bind_fbo(_fbo[0]);
+    }
   }
 
   // The host window may not have had sRGB enabled, so we need to do this.
@@ -587,7 +593,6 @@ rebuild_bitplanes() {
       _have_any_color = true;
     }
 
-#ifndef OPENGLES_1
     for (int i=0; i<_fb_properties.get_aux_rgba(); i++) {
       bind_slot(layer, rb_resize, attach, (RenderTexturePlane)(RTP_aux_rgba_0+i), next++);
       _have_any_color = true;
@@ -600,7 +605,6 @@ rebuild_bitplanes() {
       bind_slot(layer, rb_resize, attach, (RenderTexturePlane)(RTP_aux_float_0+i), next++);
       _have_any_color = true;
     }
-#endif  // OPENGLES
 
     if (_have_any_color || have_any_depth) {
       // Clear if the fbo was just created, regardless of the clear settings per
@@ -659,6 +663,10 @@ rebuild_bitplanes() {
       glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     }
+
+    // Mark the GSG as supporting multisampling, so that it will respect an
+    // AntialiasAttrib with mode M_multisample.
+    glgsg->_supports_multisample = true;
   } else {
     glDisable(GL_MULTISAMPLE);
   }
@@ -774,7 +782,9 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
     }
 
     if (attachpoint == GL_DEPTH_ATTACHMENT_EXT) {
-      GLCAT.debug() << "Binding texture " << *tex << " to depth attachment.\n";
+      if (GLCAT.is_debug()) {
+        GLCAT.debug() << "Binding texture " << *tex << " to depth attachment.\n";
+      }
 
       attach_tex(layer, 0, tex, GL_DEPTH_ATTACHMENT_EXT);
 
@@ -785,7 +795,9 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
 #endif
 
       if (slot == RTP_depth_stencil) {
-        GLCAT.debug() << "Binding texture " << *tex << " to stencil attachment.\n";
+        if (GLCAT.is_debug()) {
+          GLCAT.debug() << "Binding texture " << *tex << " to stencil attachment.\n";
+        }
 
         attach_tex(layer, 0, tex, GL_STENCIL_ATTACHMENT_EXT);
 
@@ -797,7 +809,9 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
       }
 
     } else {
-      GLCAT.debug() << "Binding texture " << *tex << " to color attachment.\n";
+      if (GLCAT.is_debug()) {
+        GLCAT.debug() << "Binding texture " << *tex << " to color attachment.\n";
+      }
 
       attach_tex(layer, 0, tex, attachpoint);
 
@@ -921,20 +935,62 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
         if (_fb_properties.get_alpha_bits() == 0) {
           if (_fb_properties.get_srgb_color()) {
             gl_format = GL_SRGB8;
+          } else if (_fb_properties.get_color_bits() > 16 * 3 ||
+                     _fb_properties.get_red_bits() > 16 ||
+                     _fb_properties.get_green_bits() > 16 ||
+                     _fb_properties.get_blue_bits() > 16) {
+            // 32-bit, which is always floating-point.
+            if (_fb_properties.get_blue_bits() > 0 ||
+                _fb_properties.get_color_bits() == 1 ||
+                _fb_properties.get_color_bits() > 32 * 2) {
+              gl_format = GL_RGB32F;
+            } else if (_fb_properties.get_green_bits() > 0 ||
+                       _fb_properties.get_color_bits() > 32) {
+              gl_format = GL_RG32F;
+            } else {
+              gl_format = GL_R32F;
+            }
           } else if (_fb_properties.get_float_color()) {
-            if (_fb_properties.get_color_bits() > 16 * 3) {
-              gl_format = GL_RGB32F_ARB;
+            // 16-bit floating-point.
+            if (_fb_properties.get_blue_bits() > 10 ||
+                _fb_properties.get_color_bits() == 1 ||
+                _fb_properties.get_color_bits() > 32) {
+              gl_format = GL_RGB16F;
+            } else if (_fb_properties.get_blue_bits() > 0) {
+              if (_fb_properties.get_red_bits() > 11 ||
+                  _fb_properties.get_green_bits() > 11) {
+                gl_format = GL_RGB16F;
+              } else {
+                gl_format = GL_R11F_G11F_B10F;
+              }
+            } else if (_fb_properties.get_green_bits() > 0 ||
+                       _fb_properties.get_color_bits() > 16) {
+              gl_format = GL_RG16F;
             } else {
-              gl_format = GL_RGB16F_ARB;
+              gl_format = GL_R16F;
             }
+          } else if (_fb_properties.get_color_bits() > 10 * 3 ||
+                     _fb_properties.get_red_bits() > 10 ||
+                     _fb_properties.get_green_bits() > 10 ||
+                     _fb_properties.get_blue_bits() > 10) {
+            // 16-bit normalized.
+            if (_fb_properties.get_blue_bits() > 0 ||
+                _fb_properties.get_color_bits() == 1 ||
+                _fb_properties.get_color_bits() > 16 * 2) {
+              gl_format = GL_RGBA16;
+            } else if (_fb_properties.get_green_bits() > 0 ||
+                       _fb_properties.get_color_bits() > 16) {
+              gl_format = GL_RG16;
+            } else {
+              gl_format = GL_R16;
+            }
+          } else if (_fb_properties.get_color_bits() > 8 * 3 ||
+                     _fb_properties.get_red_bits() > 8 ||
+                     _fb_properties.get_green_bits() > 8 ||
+                     _fb_properties.get_blue_bits() > 8) {
+            gl_format = GL_RGB10_A2;
           } else {
-            if (_fb_properties.get_color_bits() > 16 * 3) {
-              gl_format = GL_RGB32F_ARB;
-            } else if (_fb_properties.get_color_bits() > 8 * 3) {
-              gl_format = GL_RGB16_EXT;
-            } else {
-              gl_format = GL_RGB;
-            }
+            gl_format = GL_RGB;
           }
         } else {
           if (_fb_properties.get_srgb_color()) {
@@ -949,7 +1005,7 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
             if (_fb_properties.get_color_bits() > 16 * 3) {
               gl_format = GL_RGBA32F_ARB;
             } else if (_fb_properties.get_color_bits() > 8 * 3) {
-              gl_format = GL_RGBA16_EXT;
+              gl_format = GL_RGBA16;
             } else {
               gl_format = GL_RGBA;
             }
@@ -967,7 +1023,9 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
     glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, _rb[slot]);
 
     if (slot == RTP_depth_stencil) {
-      GLCAT.debug() << "Creating depth stencil renderbuffer.\n";
+      if (GLCAT.is_debug()) {
+        GLCAT.debug() << "Creating depth stencil renderbuffer.\n";
+      }
       // Allocate renderbuffer storage for depth stencil.
       GLint depth_size = 0, stencil_size = 0;
       glgsg->_glRenderbufferStorage(GL_RENDERBUFFER_EXT, gl_format, _rb_size_x, _rb_size_y);
@@ -993,7 +1051,9 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
       report_my_gl_errors();
 
     } else if (slot == RTP_depth) {
-      GLCAT.debug() << "Creating depth renderbuffer.\n";
+      if (GLCAT.is_debug()) {
+        GLCAT.debug() << "Creating depth renderbuffer.\n";
+      }
       // Allocate renderbuffer storage for regular depth.
       GLint depth_size = 0;
       glgsg->_glRenderbufferStorage(GL_RENDERBUFFER_EXT, gl_format, _rb_size_x, _rb_size_y);
@@ -1031,7 +1091,9 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
       report_my_gl_errors();
 
     } else {
-      GLCAT.debug() << "Creating color renderbuffer.\n";
+      if (GLCAT.is_debug()) {
+        GLCAT.debug() << "Creating color renderbuffer.\n";
+      }
       glgsg->_glRenderbufferStorage(GL_RENDERBUFFER_EXT, gl_format, _rb_size_x, _rb_size_y);
 
       GLint red_size = 0, green_size = 0, blue_size = 0, alpha_size = 0;
@@ -1145,12 +1207,6 @@ bind_slot_multisample(bool rb_resize, Texture **attach, RenderTexturePlane slot,
     GLuint gl_format = GL_RGBA;
 #ifndef OPENGLES
     switch (slot) {
-      case RTP_aux_rgba_0:
-      case RTP_aux_rgba_1:
-      case RTP_aux_rgba_2:
-      case RTP_aux_rgba_3:
-        gl_format = GL_RGBA;
-        break;
       case RTP_aux_hrgba_0:
       case RTP_aux_hrgba_1:
       case RTP_aux_hrgba_2:
@@ -1163,8 +1219,22 @@ bind_slot_multisample(bool rb_resize, Texture **attach, RenderTexturePlane slot,
       case RTP_aux_float_3:
         gl_format = GL_RGBA32F_ARB;
         break;
+      case RTP_aux_rgba_0:
+      case RTP_aux_rgba_1:
+      case RTP_aux_rgba_2:
+      case RTP_aux_rgba_3:
       default:
-        gl_format = GL_RGBA;
+        if (_fb_properties.get_srgb_color()) {
+          gl_format = GL_SRGB8_ALPHA8;
+        } else if (_fb_properties.get_float_color()) {
+          if (_fb_properties.get_color_bits() > 16 * 3) {
+            gl_format = GL_RGBA32F_ARB;
+          } else {
+            gl_format = GL_RGBA16F_ARB;
+          }
+        } else {
+          gl_format = GL_RGBA;
+        }
         break;
     }
 #endif
@@ -1289,11 +1359,12 @@ end_frame(FrameMode mode, Thread *current_thread) {
   nassertv(_gsg != nullptr);
 
   // Resolve Multisample rendering if using it.
-  if (_requested_multisamples && _fbo_multisample) {
+  if (_requested_multisamples && _fbo_multisample && mode != FM_refresh) {
     resolve_multisamples();
   }
 
   if (mode == FM_render) {
+    // Should happen *after* resolving multisamples, with the non-MS FBO bound.
     copy_to_textures();
   }
 
@@ -1396,7 +1467,7 @@ open_buffer() {
   }
 
   if (_rb_context == nullptr) {
-    _rb_context = new BufferContext(&(glgsg->_renderbuffer_residency));
+    _rb_context = new BufferContext(&(glgsg->_renderbuffer_residency), nullptr);
   }
 
 /*
@@ -1622,6 +1693,11 @@ close_buffer() {
   if (!_fbo.empty()) {
     glgsg->_glDeleteFramebuffers(_fbo.size(), _fbo.data());
     _fbo.clear();
+  }
+
+  if (_fbo_multisample != 0) {
+    glgsg->_glDeleteFramebuffers(1, &_fbo_multisample);
+    _fbo_multisample = 0;
   }
 
   report_my_gl_errors();
@@ -1888,6 +1964,9 @@ resolve_multisamples() {
   }
 #endif
   report_my_gl_errors();
+
+  // Bind the regular FBO as read buffer for the sake of copy_to_textures.
+  glgsg->_glBindFramebuffer(GL_READ_FRAMEBUFFER_EXT, fbo);
 
 #ifndef OPENGLES
   if (_have_any_color) {

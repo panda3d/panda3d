@@ -6,7 +6,7 @@ camera-collide: for things that the camera should avoid
 trigger: for things (usually not barriers or floors) that should trigger an
          event when avatars intersect with them
 sphere: for things that should have a collision sphere around them
-tube: for things that should have a collision tube (cylinder) around them
+tube: for things that should have a collision capsule around them
 
 NOTES
 

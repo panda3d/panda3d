@@ -404,19 +404,19 @@ output(std::ostream &out) const {
         << (_axes.size() != 1 ? 'e' : 'i') << 's';
   }
 
-  if (_features & (unsigned int)Feature::pointer) {
+  if (_features & (1 << (unsigned int)Feature::pointer)) {
     out << ", pointer";
   }
-  if (_features & (unsigned int)Feature::keyboard) {
+  if (_features & (1 << (unsigned int)Feature::keyboard)) {
     out << ", keyboard";
   }
-  if (_features & (unsigned int)Feature::tracker) {
+  if (_features & (1 << (unsigned int)Feature::tracker)) {
     out << ", tracker";
   }
-  if (_features & (unsigned int)Feature::vibration) {
+  if (_features & (1 << (unsigned int)Feature::vibration)) {
     out << ", vibration";
   }
-  if (_features & (unsigned int)Feature::battery) {
+  if (_features & (1 << (unsigned int)Feature::battery)) {
     out << ", battery";
 
     if (_battery_data.level > 0 && _battery_data.max_level > 0) {
@@ -578,6 +578,9 @@ format_device_class(DeviceClass dc) {
 
   case InputDevice::DeviceClass::spatial_mouse:
     return "spatial_mouse";
+
+  case InputDevice::DeviceClass::digitizer:
+    return "digitizer";
   }
   return "**invalid**";
 }
@@ -644,6 +647,9 @@ format_axis(Axis axis) {
 
   case InputDevice::Axis::brake:
     return "brake";
+
+  case InputDevice::Axis::pressure:
+    return "pressure";
   }
   return "**invalid**";
 }

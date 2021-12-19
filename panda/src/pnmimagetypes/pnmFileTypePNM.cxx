@@ -193,7 +193,7 @@ pm_getuint(istream * const ifP) {
     'unsigned int'), issue an error message to stderr and abort the
     program.
     -----------------------------------------------------------------------------*/
-  char ch;
+  int ch;
   unsigned int i;
 
   // skip whitespace
@@ -1027,7 +1027,6 @@ matches_magic_number(const string &magic_number) const {
  */
 PNMReader *PNMFileTypePNM::
 make_reader(istream *file, bool owns_file, const string &magic_number) {
-  init_pnm();
   return new Reader(this, file, owns_file, magic_number);
 }
 
@@ -1038,7 +1037,6 @@ make_reader(istream *file, bool owns_file, const string &magic_number) {
  */
 PNMWriter *PNMFileTypePNM::
 make_writer(ostream *file, bool owns_file) {
-  init_pnm();
   return new Writer(this, file, owns_file);
 }
 

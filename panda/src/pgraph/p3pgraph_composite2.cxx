@@ -9,6 +9,7 @@
 #include "cullTraverserData.cxx"
 #include "cullableObject.cxx"
 #include "decalEffect.cxx"
+#include "depthBiasAttrib.cxx"
 #include "depthOffsetAttrib.cxx"
 #include "depthTestAttrib.cxx"
 #include "depthWriteAttrib.cxx"
@@ -20,3 +21,5 @@
 #include "geomDrawCallbackData.cxx"
 #include "geomNode.cxx"
 #include "geomTransformer.cxx"
+#include "instanceList.cxx"
+#include "instancedNode.cxx"

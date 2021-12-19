@@ -8,7 +8,8 @@ __all__ = ['Floater', 'FloaterWidget', 'FloaterGroup']
 from direct.showbase.TkGlobal import *
 from .Valuator import Valuator, VALUATOR_MINI, VALUATOR_FULL
 from direct.task import Task
-import math, Pmw
+import math
+import Pmw
 
 FLOATER_WIDTH = 22
 FLOATER_HEIGHT = 18
@@ -121,7 +122,7 @@ class FloaterWidget(Pmw.MegaWidget):
         Set floater to new value, execute command if fCommand == 1
         """
         # Send command if any
-        if fCommand and (self['command'] != None):
+        if fCommand and (self['command'] is not None):
             self['command'](*[value] + self['commandData'])
         # Record value
         self.value = value

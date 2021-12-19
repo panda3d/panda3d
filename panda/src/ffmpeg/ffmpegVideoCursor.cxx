@@ -79,8 +79,6 @@ init_from(FfmpegVideo *source) {
     return;
   }
 
-  ReMutexHolder av_holder(_av_lock);
-
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55, 45, 101)
   _frame = av_frame_alloc();
   _frame_out = av_frame_alloc();
@@ -108,6 +106,8 @@ init_from(FfmpegVideo *source) {
   _current_frame = -1;
   _eof_known = false;
   _eof_frame = 0;
+
+  ReMutexHolder av_holder(_av_lock);
 
   // Check if we got an alpha format.  Please note that some video codecs
   // (eg. libvpx) change the pix_fmt after decoding the first frame, which is
@@ -138,6 +138,15 @@ init_from(FfmpegVideo *source) {
   _convert_ctx = sws_getContext(_size_x, _size_y, _video_ctx->pix_fmt,
                                 _size_x, _size_y, (AVPixelFormat)_pixel_format,
                                 SWS_BILINEAR | SWS_PRINT_INFO, nullptr, nullptr, nullptr);
+#else
+  if (_video_ctx->pix_fmt != _pixel_format) {
+    const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(_video_ctx->pix_fmt);
+    ffmpeg_cat.error()
+      << "Video with pixel format " << (desc ? desc->name : "?")
+      << " needs conversion, but libswscale support is not enabled.\n";
+    cleanup();
+    return;
+  }
 #endif  // HAVE_SWSCALE
 
 #ifdef HAVE_THREADS
@@ -265,7 +274,9 @@ start_thread() {
 
     // Create and start the thread object.
     _thread_status = TS_wait;
-    _thread = new GenericThread(_filename.get_basename(), _sync_name, st_thread_main, this);
+    _thread = new GenericThread(_filename.get_basename(), _sync_name, [this]{
+      thread_main();
+    });
     if (!_thread->start(_thread_priority, true)) {
       // Couldn't start the thread.
       _thread = nullptr;
@@ -534,7 +545,7 @@ open_stream() {
   _video_timebase = av_q2d(stream->time_base);
   _min_fseek = (int)(3.0 / _video_timebase);
 
-  AVCodec *pVideoCodec = nullptr;
+  const AVCodec *pVideoCodec = nullptr;
   if (ffmpeg_prefer_libvpx) {
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55, 0, 0)
     if (codecpar->codec_id == AV_CODEC_ID_VP9) {
@@ -607,7 +618,7 @@ close_stream() {
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55, 52, 0)
     avcodec_free_context(&_video_ctx);
 #else
-    delete _video_ctx;
+    av_free(_video_ctx);
 #endif
   }
   _video_ctx = nullptr;
@@ -657,14 +668,6 @@ cleanup() {
     _packet = nullptr;
 #endif
   }
-}
-
-/**
- * The thread main function, static version (for passing to GenericThread).
- */
-void FfmpegVideoCursor::
-st_thread_main(void *self) {
-  ((FfmpegVideoCursor *)self)->thread_main();
 }
 
 /**
@@ -755,7 +758,9 @@ do_poll() {
       PT(FfmpegBuffer) frame = do_alloc_frame();
       nassertr(frame != nullptr, false);
       _lock.release();
-      advance_to_frame(seek_frame);
+      if (seek_frame != _begin_frame) {
+        advance_to_frame(seek_frame);
+      }
       if (_frame_ready) {
         export_frame(frame);
         _lock.acquire();
@@ -1162,24 +1167,29 @@ export_frame(FfmpegBuffer *buffer) {
   buffer->_begin_frame = _begin_frame;
   buffer->_end_frame = _end_frame;
 
+#ifdef HAVE_SWSCALE
+  nassertv(_convert_ctx != nullptr && _frame != nullptr);
   if (ffmpeg_global_lock) {
     ReMutexHolder av_holder(_av_lock);
-#ifdef HAVE_SWSCALE
-    nassertv(_convert_ctx != nullptr && _frame != nullptr && _frame_out != nullptr);
     sws_scale(_convert_ctx, _frame->data, _frame->linesize, 0, _size_y, _frame_out->data, _frame_out->linesize);
-#else
-    img_convert((AVPicture *)_frame_out, (AVPixelFormat)_pixel_format,
-                (AVPicture *)_frame, _video_ctx->pix_fmt, _size_x, _size_y);
-#endif
   } else {
-#ifdef HAVE_SWSCALE
-    nassertv(_convert_ctx != nullptr && _frame != nullptr && _frame_out != nullptr);
     sws_scale(_convert_ctx, _frame->data, _frame->linesize, 0, _size_y, _frame_out->data, _frame_out->linesize);
-#else
-    img_convert((AVPicture *)_frame_out, (AVPixelFormat)_pixel_format,
-                (AVPicture *)_frame, _video_ctx->pix_fmt, _size_x, _size_y);
-#endif
   }
+#else
+  nassertv(_frame != nullptr);
+  uint8_t const *src = _frame->data[0];
+  uint8_t *dst = _frame_out->data[0];
+  int src_stride = _frame->linesize[0];
+  int dst_stride = _frame_out->linesize[0];
+  size_t copy_size = _size_x * _num_components;
+  nassertv(copy_size <= (size_t)std::abs(src_stride));
+
+  for (int y = 0; y < _size_y; ++y) {
+    memcpy(dst, src, copy_size);
+    src += src_stride;
+    dst += dst_stride;
+  }
+#endif
 }
 
 /**

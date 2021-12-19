@@ -53,6 +53,9 @@ PUBLISHED:
   MAKE_PROPERTY(key_length, get_key_length);
   MAKE_PROPERTY(iteration_count, get_iteration_count);
 
+public:
+  bool read_magic(const char *magic, size_t size);
+
 private:
   EncryptStreamBuf _buf;
 };

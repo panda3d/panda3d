@@ -16,7 +16,6 @@
 
 #include "pandabase.h"
 
-#include "typedef.h"
 #include "typedObject.h"
 #include "typedWritableReferenceCount.h"
 #include "pointerTo.h"

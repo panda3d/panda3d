@@ -101,7 +101,7 @@ FfmpegAudioCursor(FfmpegAudio *src) :
   _audio_rate = codecpar->sample_rate;
   _audio_channels = codecpar->channels;
 
-  AVCodec *pAudioCodec = avcodec_find_decoder(codecpar->codec_id);
+  const AVCodec *pAudioCodec = avcodec_find_decoder(codecpar->codec_id);
   if (pAudioCodec == nullptr) {
     cleanup();
     return;
@@ -132,8 +132,10 @@ FfmpegAudioCursor(FfmpegAudio *src) :
   // Set up the resample context if necessary.
   if (_audio_ctx->sample_fmt != AV_SAMPLE_FMT_S16) {
 #ifdef HAVE_SWRESAMPLE
-    ffmpeg_cat.debug()
-      << "Codec does not use signed 16-bit sample format.  Setting up swresample context.\n";
+    if (ffmpeg_cat.is_debug()) {
+      ffmpeg_cat.debug()
+        << "Codec does not use signed 16-bit sample format.  Setting up swresample context.\n";
+    }
 
     _resample_ctx = swr_alloc();
     av_opt_set_int(_resample_ctx, "in_channel_count", _audio_channels, 0);
@@ -222,7 +224,7 @@ cleanup() {
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55, 52, 0)
     avcodec_free_context(&_audio_ctx);
 #else
-    delete _audio_ctx;
+    av_free(_audio_ctx);
 #endif
   }
   _audio_ctx = nullptr;
@@ -462,7 +464,7 @@ seek(double t) {
  * read.  Your buffer must be equal in size to N * channels.  Multiple-channel
  * audio will be interleaved.
  */
-void FfmpegAudioCursor::
+int FfmpegAudioCursor::
 read_samples(int n, int16_t *data) {
   int desired = n * _audio_channels;
 
@@ -486,4 +488,5 @@ read_samples(int n, int16_t *data) {
 
   }
   _samples_read += n;
+  return n;
 }

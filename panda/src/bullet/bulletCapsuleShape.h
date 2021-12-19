@@ -11,8 +11,8 @@
  * @date 2010-01-27
  */
 
-#ifndef __BULLET_CAPSULE_SHAPE_H__
-#define __BULLET_CAPSULE_SHAPE_H__
+#ifndef BULLETCAPSULESHAPE_H
+#define BULLETCAPSULESHAPE_H
 
 #include "pandabase.h"
 
@@ -20,7 +20,7 @@
 #include "bullet_utils.h"
 #include "bulletShape.h"
 
-#include "collisionTube.h"
+#include "collisionCapsule.h"
 
 /**
  *
@@ -35,7 +35,7 @@ PUBLISHED:
   BulletCapsuleShape(const BulletCapsuleShape &copy);
   INLINE ~BulletCapsuleShape();
 
-  static BulletCapsuleShape *make_from_solid(const CollisionTube *solid);
+  static BulletCapsuleShape *make_from_solid(const CollisionCapsule *solid);
 
   INLINE PN_stdfloat get_radius() const;
   INLINE PN_stdfloat get_half_height() const;
@@ -86,4 +86,4 @@ private:
 
 #include "bulletCapsuleShape.I"
 
-#endif // __BULLET_CAPSULE_SHAPE_H__
+#endif // BULLETCAPSULESHAPE_H

@@ -18,7 +18,8 @@ INLINE CollisionLevelStateBase::
 CollisionLevelStateBase(const NodePath &node_path) :
   _node_path(node_path),
   _colliders(get_class_type()),
-  _include_mask(CollideMask::all_on())
+  _include_mask(CollideMask::all_on()),
+  _node_gbv(node_path.node()->get_bounds()->as_geometric_bounding_volume())
 {
 }
 
@@ -30,7 +31,21 @@ CollisionLevelStateBase(const CollisionLevelStateBase &parent, PandaNode *child)
   _node_path(parent._node_path, child),
   _colliders(parent._colliders),
   _include_mask(parent._include_mask),
-  _local_bounds(parent._local_bounds)
+  _local_bounds(parent._local_bounds),
+  _node_gbv(child->get_bounds()->as_geometric_bounding_volume())
+{
+}
+
+/**
+ * This constructor goes to the next child node in the traversal.
+ */
+INLINE CollisionLevelStateBase::
+CollisionLevelStateBase(const CollisionLevelStateBase &parent, const PandaNode::DownConnection &child) :
+  _node_path(parent._node_path, child.get_child()),
+  _colliders(parent._colliders),
+  _include_mask(parent._include_mask),
+  _local_bounds(parent._local_bounds),
+  _node_gbv(child.get_bounds())
 {
 }
 
@@ -43,7 +58,8 @@ CollisionLevelStateBase(const CollisionLevelStateBase &copy) :
   _colliders(copy._colliders),
   _include_mask(copy._include_mask),
   _local_bounds(copy._local_bounds),
-  _parent_bounds(copy._parent_bounds)
+  _parent_bounds(copy._parent_bounds),
+  _node_gbv(copy._node_gbv)
 {
 }
 
@@ -57,6 +73,7 @@ operator = (const CollisionLevelStateBase &copy) {
   _include_mask = copy._include_mask;
   _local_bounds = copy._local_bounds;
   _parent_bounds = copy._parent_bounds;
+  _node_gbv = copy._node_gbv;
 }
 
 /**
@@ -111,6 +128,14 @@ get_collider_node_path(int n) const {
   nassertr(n >= 0 && n < (int)_colliders.size(), NodePath::fail());
 
   return _colliders[n]._node_path;
+}
+
+/**
+ * Returns the bounding volume of the current node.
+ */
+INLINE const GeometricBoundingVolume *CollisionLevelStateBase::
+get_node_bound() const {
+  return _node_gbv;
 }
 
 /**

@@ -4,7 +4,7 @@
 
 void vshader(float4 vtx_position : POSITION,
              float2 vtx_texcoord0 : TEXCOORD0,
-             float4 vtx_normal : NORMAL,
+             float3 vtx_normal : NORMAL,
              float4 vtx_color : COLOR,
              out float4 l_position : POSITION,
              out float2 l_texcoord0 : TEXCOORD0,
@@ -16,7 +16,7 @@ void vshader(float4 vtx_position : POSITION,
   l_position=mul(mat_modelproj, vtx_position);
   l_texcoord0 = vtx_texcoord0;
   l_color = vtx_color;
-  l_normal = (float3)mul(itp_modelview, vtx_normal);
+  l_normal = (float3)mul(itp_modelview, float4(vtx_normal, 0));
 }
 
 void fshader(float2 l_texcoord0: TEXCOORD0,

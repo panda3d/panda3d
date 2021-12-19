@@ -30,6 +30,8 @@
 template<>
 class Extension<GraphicsWindow> : public ExtensionBase<GraphicsWindow> {
 public:
+  void request_properties(PyObject *args, PyObject *kwds);
+
   void add_python_event_handler(PyObject* handler, PyObject* name);
   void remove_python_event_handler(PyObject* name);
 };

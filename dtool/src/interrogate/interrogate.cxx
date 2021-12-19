@@ -312,7 +312,10 @@ main(int argc, char **argv) {
   string command_line;
   int i;
   for (i = 0; i < argc; i++) {
-    command_line += string(argv[i]) + " ";
+    if (i > 0) {
+      command_line += ' ';
+    }
+    command_line += string(argv[i]);
   }
 
   Filename fn;
@@ -541,7 +544,15 @@ main(int argc, char **argv) {
   // Make up a file identifier.  This is just some bogus number that should be
   // the same in both the compiled-in code and in the database, so we can
   // check synchronicity at load time.
-  int file_identifier = time(nullptr);
+  // We allow overriding this value by setting SOURCE_DATE_EPOCH to support
+  // reproducible builds.
+  int file_identifier;
+  const char *source_date_epoch = getenv("SOURCE_DATE_EPOCH");
+  if (source_date_epoch != nullptr && source_date_epoch[0] != 0) {
+    file_identifier = atoi(source_date_epoch);
+  } else {
+    file_identifier = time(nullptr);
+  }
   InterrogateModuleDef *def = builder.make_module_def(file_identifier);
 
   pofstream * the_output_include = nullptr;
@@ -571,6 +582,8 @@ main(int argc, char **argv) {
     the_output_include = &output_include;
   }
 
+  int status = 0;
+
   // Now output all of the wrapper functions.
   if (!output_code_filename.empty())
   {
@@ -592,6 +605,7 @@ main(int argc, char **argv) {
 
     if (output_code.fail()) {
       nout << "Unable to write to " << output_code_filename << "\n";
+      status = -1;
     } else {
       builder.write_code(output_code,the_output_include, def);
     }
@@ -606,13 +620,13 @@ main(int argc, char **argv) {
     pofstream output_data;
     output_data_filename.open_write(output_data);
 
-    if (output_data.fail())
-    {
+    if (output_data.fail()) {
       nout << "Unable to write to " << output_data_filename << "\n";
+      status = -1;
     } else {
       InterrogateDatabase::get_ptr()->write(output_data, def);
     }
   }
 
-  return (0);
+  return status;
 }

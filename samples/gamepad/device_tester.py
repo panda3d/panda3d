@@ -113,6 +113,8 @@ class DeviceConnectivityMonitor(DirectObject):
         self.devices[self.current_panel].show()
 
     def connect_device(self, device):
+        if device in self.devices:
+            return
         self.devices[device] = DeviceMonitor(device)
         self.switch_to_panel(device)
         self.create_menu_button(device)
