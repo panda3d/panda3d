@@ -24,6 +24,9 @@ class DirectScrolledFrame(DirectFrame):
     0 and explicitly position and hide or show the scroll bars
     yourself.
     """
+
+    inactiveInitState = DGG.NORMAL
+
     def __init__(self, parent = None, **kw):
         optiondefs = (
             # Define type of DirectGuiWidget

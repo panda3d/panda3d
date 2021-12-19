@@ -12,6 +12,8 @@
  */
 
 #include "pgScrollFrame.h"
+#include "mouseButton.h"
+#include "mouseWatcherParameter.h"
 
 TypeHandle PGScrollFrame::_type_handle;
 
@@ -26,10 +28,12 @@ PGScrollFrame(const std::string &name) :
   _has_virtual_frame(false),
   _virtual_frame(0.0f, 0.0f, 0.0f, 0.0f),
   _manage_pieces(false),
-  _auto_hide(false)
+  _auto_hide(false),
+  _dragging(false)
 {
   _canvas_computed.test_and_set();
 
+  set_active(true);
   set_cull_callback();
 }
 
@@ -51,7 +55,8 @@ PGScrollFrame(const PGScrollFrame &copy) :
   _has_virtual_frame(copy._has_virtual_frame),
   _virtual_frame(copy._virtual_frame),
   _manage_pieces(copy._manage_pieces),
-  _auto_hide(copy._auto_hide)
+  _auto_hide(copy._auto_hide),
+  _dragging(false)
 {
   _needs_remanage = false;
   _needs_recompute_clip = true;
@@ -113,6 +118,82 @@ xform(const LMatrix4 &mat) {
 
   _needs_remanage = true;
   _needs_recompute_clip = true;
+}
+
+/**
+ * This is a callback hook function, called whenever a mouse or keyboard
+ * button is depressed while the mouse is within the region.
+ */
+void PGScrollFrame::
+press(const MouseWatcherParameter &param, bool background) {
+  LightReMutexHolder holder(_lock);
+  if (param.has_mouse()) {
+    _mouse_pos = mouse_to_local(param.get_mouse());
+
+    if (get_active() && param.get_button() == MouseButton::touch()) {
+      _dragging = true;
+    }
+  }
+  PGItem::press(param, background);
+}
+
+/**
+ * This is a callback hook function, called whenever a mouse or keyboard
+ * button previously depressed with press() is released.
+ */
+void PGScrollFrame::
+release(const MouseWatcherParameter &param, bool background) {
+  LightReMutexHolder holder(_lock);
+  if (_dragging) {
+    _dragging = false;
+  }
+  PGItem::release(param, background);
+}
+
+/**
+ * This is a callback hook function, called whenever a mouse is moved while
+ * within the region.
+ */
+void PGScrollFrame::
+move(const MouseWatcherParameter &param) {
+  LightReMutexHolder holder(_lock);
+  if (_dragging) {
+    const LVecBase4 &clip = _has_clip_frame ? _clip_frame : get_frame();
+    const LVecBase4 &virtual_frame = get_virtual_frame();
+
+    LPoint3 mouse_pos = mouse_to_local(param.get_mouse());
+    LPoint3 delta = mouse_pos - _mouse_pos;
+
+    if (_horizontal_slider != nullptr) {
+      if (virtual_frame[1] - virtual_frame[0] > clip[1] - clip[0]) {
+        PN_stdfloat h_min = clip[0] - virtual_frame[0];
+        PN_stdfloat h_max = clip[1] - virtual_frame[1];
+        PN_stdfloat h_ratio = (delta[0] - h_min) / (h_max - h_min);
+        if (h_ratio != 0.0) {
+          PN_stdfloat cur_h_ratio = _horizontal_slider->get_ratio();
+          if ((h_ratio > 0.0 && cur_h_ratio < 1.0) || (h_ratio < 0.0 && cur_h_ratio > 0.0)) {
+            _horizontal_slider->set_ratio(cur_h_ratio + h_ratio);
+          }
+        }
+      }
+    }
+
+    if (_vertical_slider != nullptr) {
+      if (virtual_frame[3] - virtual_frame[2] > clip[3] - clip[2]) {
+        PN_stdfloat v_min = clip[3] - virtual_frame[3];
+        PN_stdfloat v_max = clip[2] - virtual_frame[2];
+        PN_stdfloat v_ratio = (delta[2] - v_min) / (v_max - v_min);
+        if (v_ratio != 0.0) {
+          PN_stdfloat cur_v_ratio = _vertical_slider->get_ratio();
+          if ((v_ratio > 0.0 && cur_v_ratio < 1.0) || (v_ratio < 0.0 && cur_v_ratio > 0.0)) {
+            _vertical_slider->set_ratio(cur_v_ratio + v_ratio);
+          }
+        }
+      }
+    }
+
+    _mouse_pos = mouse_pos;
+  }
 }
 
 /**

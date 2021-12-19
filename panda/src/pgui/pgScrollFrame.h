@@ -49,6 +49,10 @@ public:
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
   virtual void xform(const LMatrix4 &mat);
 
+  virtual void press(const MouseWatcherParameter &param, bool background);
+  virtual void release(const MouseWatcherParameter &param, bool background);
+  virtual void move(const MouseWatcherParameter &param);
+
 PUBLISHED:
   void setup(PN_stdfloat width, PN_stdfloat height,
              PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_stdfloat top,
@@ -106,6 +110,9 @@ private:
 
   PT(PGSliderBar) _horizontal_slider;
   PT(PGSliderBar) _vertical_slider;
+
+  LPoint3 _mouse_pos;
+  bool _dragging;
 
 public:
   static TypeHandle get_class_type() {
