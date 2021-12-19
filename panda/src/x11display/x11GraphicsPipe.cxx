@@ -230,7 +230,7 @@ x11GraphicsPipe(const std::string &display) :
       pfn_XIQueryVersion _XIQueryVersion = (pfn_XIQueryVersion)dlsym(xi, "XIQueryVersion");
       _XISelectEvents = (pfn_XISelectEvents)dlsym(xi, "XISelectEvents");
 
-      int major_ver = 2, minor_ver = 0;
+      int major_ver = 2, minor_ver = 2;
       if (_XIQueryVersion == nullptr || _XISelectEvents == nullptr) {
         x11display_cat.warning()
           << "libXi.so.6 does not provide required functions; relative mouse mode will not work.\n";

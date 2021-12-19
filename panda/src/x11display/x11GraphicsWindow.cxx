@@ -360,6 +360,8 @@ process_events() {
     }
 
     ButtonHandle button;
+    XGenericEventCookie *cookie;
+    x11GraphicsPipe *x11_pipe;
 
     switch (event.type) {
     case ReparentNotify:
@@ -367,7 +369,6 @@ process_events() {
 
     case PropertyNotify:
       //std::cout << "PropertyNotify event: atom = " << event.xproperty.atom << std::endl;
-      x11GraphicsPipe *x11_pipe;
       DCAST_INTO_V(x11_pipe, _pipe);
       if (event.xproperty.atom == x11_pipe->_net_wm_state) {
         // currently we're only interested in the net_wm_state type of
@@ -387,23 +388,27 @@ process_events() {
 
     case ButtonPress:
       // This refers to the mouse buttons.
-      button = get_mouse_button(event.xbutton);
-      if (_properties.get_mouse_mode() != WindowProperties::M_relative) {
-        _input->set_pointer_in_window(event.xbutton.x, event.xbutton.y);
+      if (!_use_xinput2) {
+        button = get_mouse_button(event.xbutton);
+        if (_properties.get_mouse_mode() != WindowProperties::M_relative) {
+          _input->set_pointer_in_window(event.xbutton.x, event.xbutton.y);
+        }
+        _input->button_down(button);
       }
-      _input->button_down(button);
       break;
 
     case ButtonRelease:
-      button = get_mouse_button(event.xbutton);
-      if (_properties.get_mouse_mode() != WindowProperties::M_relative) {
-        _input->set_pointer_in_window(event.xbutton.x, event.xbutton.y);
+      if (!_use_xinput2) {
+        button = get_mouse_button(event.xbutton);
+        if (_properties.get_mouse_mode() != WindowProperties::M_relative) {
+          _input->set_pointer_in_window(event.xbutton.x, event.xbutton.y);
+        }
+        _input->button_up(button);
       }
-      _input->button_up(button);
       break;
 
     case MotionNotify:
-      if (!_raw_mouse_enabled) {
+      if (!_raw_mouse_enabled && !_use_xinput2) {
         if (_dga_mouse_enabled) {
           PointerData md = _input->get_pointer();
           _input->set_pointer_in_window(md.get_x() + event.xmotion.x_root, md.get_y() + event.xmotion.y_root);
@@ -414,28 +419,71 @@ process_events() {
       break;
 
     case GenericEvent:
-      if (_raw_mouse_enabled) {
-        XGenericEventCookie *cookie = &event.xcookie;
-        XGetEventData(_display, cookie);
+      cookie = &event.xcookie;
+      XGetEventData(_display, cookie);
 
-        x11GraphicsPipe *x11_pipe;
-        DCAST_INTO_V(x11_pipe, _pipe);
+      DCAST_INTO_V(x11_pipe, _pipe);
 
-        if (cookie->evtype == XI_RawMotion &&
-            cookie->extension == x11_pipe->_xi_opcode) {
-          const XIRawEvent *raw_event = (const XIRawEvent *)cookie->data;
-          const double *values = raw_event->raw_values;
+      if (cookie->extension == x11_pipe->_xi_opcode) {
+        const XIRawEvent *raw_event = (const XIRawEvent *)cookie->data;
+        const XIDeviceEvent *device_event = (const XIDeviceEvent *)cookie->data;
 
-          double x = 0, y = 0;
-          if (XIMaskIsSet(raw_event->valuators.mask, 0)) {
-            x = values[0];
+        switch (cookie->evtype) {
+        case XI_ButtonPress:
+          button = get_mouse_button(device_event->detail);
+          if (_properties.get_mouse_mode() != WindowProperties::M_relative) {
+            _input->set_pointer_in_window(device_event->event_x, device_event->event_y);
           }
-          if (XIMaskIsSet(raw_event->valuators.mask, 1)) {
-            y = values[1];
-          }
+          _input->button_down(button);
+          break;
 
-          PointerData md = _input->get_pointer();
-          _input->set_pointer_in_window(md.get_x() + x, md.get_y() + y);
+        case XI_ButtonRelease:
+          button = get_mouse_button(device_event->detail);
+          if (_properties.get_mouse_mode() != WindowProperties::M_relative) {
+            _input->set_pointer_in_window(device_event->event_x, device_event->event_y);
+          }
+          _input->button_up(button);
+          break;
+
+        case XI_MotionNotify:
+          if (!_raw_mouse_enabled) {
+            _input->set_pointer_in_window(device_event->event_x, device_event->event_y);
+          }
+          break;
+
+        case XI_RawMotion:
+          if (_raw_mouse_enabled) {
+            const double *values = raw_event->raw_values;
+
+            double x = 0, y = 0;
+            if (XIMaskIsSet(raw_event->valuators.mask, 0)) {
+              x = values[0];
+            }
+            if (XIMaskIsSet(raw_event->valuators.mask, 1)) {
+              y = values[1];
+            }
+
+            PointerData md = _input->get_pointer();
+            _input->set_pointer_in_window(md.get_x() + x, md.get_y() + y);
+          }
+          break;
+
+        case XI_TouchBegin:
+        case XI_TouchUpdate:
+          {
+            PointerData data;
+            data._id = device_event->detail;
+            data._type = PointerType::finger;
+            data._xpos = device_event->event_x;
+            data._ypos = device_event->event_y;
+            data._pressure = 1.0;
+            _input->update_pointer(data);
+          }
+          break;
+
+        case XI_TouchEnd:
+          _input->remove_pointer(((const XIDeviceEvent *)cookie->data)->detail);
+          break;
         }
 
         XFreeEventData(_display, cookie);
@@ -1241,6 +1289,32 @@ open_window() {
     if (x11display_cat.is_debug()) {
       x11display_cat.debug()
         << "Raw mice not requested.\n";
+    }
+  }
+
+  // Enable XInput2 for event handling, if supported.
+  _use_xinput2 = false;
+  if (x11_pipe->_XISelectEvents != nullptr) {
+    XIEventMask event_mask;
+    unsigned char mask[XIMaskLen(XI_TouchEnd)] = {0};
+
+    event_mask.deviceid = XIAllMasterDevices;
+    event_mask.mask_len = sizeof(mask);
+    event_mask.mask = mask;
+    XISetMask(mask, XI_ButtonPress);
+    XISetMask(mask, XI_ButtonRelease);
+    XISetMask(mask, XI_MotionNotify);
+    XISetMask(mask, XI_TouchBegin);
+    XISetMask(mask, XI_TouchUpdate);
+    XISetMask(mask, XI_TouchEnd);
+
+    if (x11_pipe->_XISelectEvents(_display, _xwindow, &event_mask, 1) == Success) {
+      _use_xinput2 = true;
+
+      if (x11display_cat.is_debug()) {
+        x11display_cat.debug()
+          << "Using XInput2 to handle window pointer events.\n";
+      }
     }
   }
 
@@ -2221,7 +2295,15 @@ map_raw_button(KeyCode key) const {
  */
 ButtonHandle x11GraphicsWindow::
 get_mouse_button(XButtonEvent &button_event) {
-  int index = button_event.button;
+  return get_mouse_button(button_event.button);
+}
+
+/**
+ * Returns the Panda ButtonHandle corresponding to the mouse button indicated
+ * by the given button event.
+ */
+ButtonHandle x11GraphicsWindow::
+get_mouse_button(int index) {
   if (index == x_wheel_up_button) {
     return MouseButton::wheel_up();
   } else if (index == x_wheel_down_button) {
@@ -2336,10 +2418,9 @@ check_event(X11_Display *display, XEvent *event, char *arg) {
   const x11GraphicsWindow *self = (x11GraphicsWindow *)arg;
 
   // We accept any event that is sent to our window.  However, we have to let
-  // raw mouse events through, since they're not associated with any window.
-  return (event->xany.window == self->_xwindow ||
-    (event->type == GenericEvent && self->_raw_mouse_enabled)) ||
-    (event->type == ClientMessage);
+  // XInput2 events through, since they're not associated with any window.
+  return event->xany.window == self->_xwindow
+    || event->type == GenericEvent || event->type == ClientMessage;
 }
 
 /**

@@ -115,8 +115,60 @@ typedef struct {
   double *raw_values;
 } XIRawEvent;
 
+typedef struct {
+  int mask_len;
+  unsigned char *mask;
+} XIButtonState;
+
+typedef struct {
+  int base;
+  int latched;
+  int locked;
+  int effective;
+} XIModifierState;
+
+typedef XIModifierState XIGroupState;
+
+typedef struct {
+  int type;
+  unsigned long serial;
+  Bool send_event;
+  X11_Display *display;
+  int extension;
+  int evtype;
+  Time time;
+  int deviceid;
+  int sourceid;
+  int detail;
+  X11_Window root;
+  X11_Window event;
+  X11_Window child;
+  double root_x;
+  double root_y;
+  double event_x;
+  double event_y;
+  int flags;
+  XIButtonState buttons;
+  XIValuatorState valuators;
+  XIModifierState mods;
+  XIGroupState group;
+} XIDeviceEvent;
+
+#define XI_ButtonPress 4
+#define XI_ButtonRelease 5
+#define XI_MotionNotify 6
 #define XI_RawMotion 17
+#define XI_TouchBegin 18
+#define XI_TouchUpdate 19
+#define XI_TouchEnd 20
+
+#define XI_ButtonPressMask (1 << XI_ButtonPress)
+#define XI_ButtonReleaseMask (1 << XI_ButtonRelease)
+#define XI_MotionNotifyMask (1 << XI_MotionNotify)
 #define XI_RawMotionMask (1 << XI_RawMotion)
+#define XI_TouchBeginMask (1 << XI_TouchBegin)
+#define XI_TouchUpdateMask (1 << XI_TouchUpdate)
+#define XI_TouchEndMask (1 << XI_TouchEnd)
 
 #define XISetMask(ptr, event) (((unsigned char*)(ptr))[(event)>>3] |=  (1 << ((event) & 7)))
 #define XIClearMask(ptr, event) (((unsigned char*)(ptr))[(event)>>3] &= ~(1 << ((event) & 7)))
@@ -125,6 +177,8 @@ typedef struct {
 
 #define XIAllDevices 0
 #define XIAllMasterDevices 1
+
+#define XIPointerEmulated (1 << 16)
 
 class FrameBufferProperties;
 
@@ -213,6 +267,9 @@ public:
   pfn_XRRConfigCurrentConfiguration _XRRConfigCurrentConfiguration;
   pfn_XRRSetScreenConfig _XRRSetScreenConfig;
 
+  typedef Status (*pfn_XIQueryVersion)(X11_Display *, int*, int*);
+  typedef Status (*pfn_XISelectEvents)(X11_Display *, X11_Window, XIEventMask *, int);
+  pfn_XISelectEvents _XISelectEvents = nullptr;
   int _xi_opcode;
 
 protected:
@@ -235,9 +292,6 @@ protected:
   pfn_XRRGetCrtcInfo _XRRGetCrtcInfo;
   pfn_XRRFreeCrtcInfo _XRRFreeCrtcInfo;
 
-  typedef Status (*pfn_XIQueryVersion)(X11_Display *, int*, int*);
-  typedef Status (*pfn_XISelectEvents)(X11_Display *, X11_Window, XIEventMask *, int);
-  pfn_XISelectEvents _XISelectEvents = nullptr;
   int _num_raw_mouse_windows = 0;
 
 private:

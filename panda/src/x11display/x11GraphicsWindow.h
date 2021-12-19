@@ -66,6 +66,7 @@ protected:
   ButtonHandle map_button(KeySym key) const;
   ButtonHandle map_raw_button(KeyCode key) const;
   ButtonHandle get_mouse_button(XButtonEvent &button_event);
+  ButtonHandle get_mouse_button(int index);
   virtual ButtonMap *get_keyboard_map() const;
 
   static Bool check_event(X11_Display *display, XEvent *event, char *arg);
@@ -108,6 +109,7 @@ protected:
   bool _raw_mouse_enabled;
   Bool _override_redirect;
   Atom _wm_delete_window;
+  bool _use_xinput2;
 
   x11GraphicsPipe::pfn_XRRGetScreenInfo _XRRGetScreenInfo;
   x11GraphicsPipe::pfn_XRRSetScreenConfig _XRRSetScreenConfig;
