@@ -675,7 +675,7 @@ load_default_model(const NodePath &parent) {
   GeomNode *geomnode = new GeomNode("tri");
 
   PT(GeomVertexData) vdata = new GeomVertexData
-    ("tri", vertex_colors_prefer_packed ? GeomVertexFormat::get_v3n3ct2() : GeomVertexFormat::get_v3n3ct2(),
+    ("tri", GeomVertexFormat::get_v3n3t2(),
      Geom::UH_static);
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
   GeomVertexWriter normal(vdata, InternalName::get_normal());
@@ -1429,8 +1429,11 @@ create_anim_controls() {
   setup_shuttle_button("4", 2, st_play_button);
   setup_shuttle_button(":", 3, st_forward_button);
 
-  _update_anim_controls_task = new GenericAsyncTask("controls", st_update_anim_controls, (void *)this);
-  _panda_framework->get_task_mgr().add(_update_anim_controls_task);
+  AsyncTaskManager &task_mgr = _panda_framework->get_task_mgr();
+  _update_anim_controls_task = task_mgr.add("controls", [this](AsyncTask *task) {
+    update_anim_controls();
+    return AsyncTask::DS_cont;
+  });
 }
 
 /**
@@ -1443,7 +1446,7 @@ destroy_anim_controls() {
 
     _panda_framework->get_event_handler().remove_hooks_with((void *)this);
     if (_update_anim_controls_task != nullptr) {
-      _panda_framework->get_task_mgr().remove(_update_anim_controls_task);
+      _update_anim_controls_task->remove();
       _update_anim_controls_task.clear();
     }
   }
@@ -1558,18 +1561,6 @@ forward_button() {
   nassertv(control != nullptr);
   control->pose(control->get_frame() + 1);
 }
-
-
-/**
- * The static task function.
- */
-AsyncTask::DoneStatus WindowFramework::
-st_update_anim_controls(GenericAsyncTask *, void *data) {
-  WindowFramework *self = (WindowFramework *)data;
-  self->update_anim_controls();
-  return AsyncTask::DS_cont;
-}
-
 
 /**
  * The static event handler function.

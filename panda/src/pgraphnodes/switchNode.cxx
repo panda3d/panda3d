@@ -103,21 +103,10 @@ make_copy() const {
  * should be culled.
  */
 bool SwitchNode::
-cull_callback(CullTraverser *, CullTraverserData &) {
-  select_child(get_visible_child());
-  return true;
-}
-
-/**
- * Returns the index number of the first visible child of this node, or a
- * number >= get_num_children() if there are no visible children of this node.
- * This is called during the cull traversal, but only if
- * has_selective_visibility() has already returned true.  See
- * has_selective_visibility().
- */
-int SwitchNode::
-get_first_visible_child() const {
-  return get_visible_child();
+cull_callback(CullTraverser *trav, CullTraverserData &data) {
+  const PandaNode::DownConnection &child = data.node_reader()->get_child_connection(get_visible_child());
+  trav->traverse_down(data, child);
+  return false;
 }
 
 /**

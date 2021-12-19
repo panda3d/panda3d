@@ -38,6 +38,14 @@ class EXPCL_PANDA_GOBJ TexturePool {
 PUBLISHED:
   INLINE static bool has_texture(const Filename &filename);
   INLINE static bool verify_texture(const Filename &filename);
+  INLINE static Texture *get_texture(const Filename &filename,
+                                     int primary_file_num_channels = 0,
+                                     bool read_mipmaps = false);
+  INLINE static Texture *get_texture(const Filename &filename,
+                                     const Filename &alpha_filename,
+                                     int primary_file_num_channels = 0,
+                                     int alpha_file_channel = 0,
+                                     bool read_mipmaps = false);
   BLOCKING INLINE static Texture *load_texture(const Filename &filename,
                                                int primary_file_num_channels = 0,
                                                bool read_mipmaps = false,
@@ -109,6 +117,14 @@ private:
   TexturePool();
 
   bool ns_has_texture(const Filename &orig_filename);
+  Texture *ns_get_texture(const Filename &filename,
+                          int primary_file_num_channels = 0,
+                          bool read_mipmaps = false);
+  Texture *ns_get_texture(const Filename &filename,
+                          const Filename &alpha_filename,
+                          int primary_file_num_channels = 0,
+                          int alpha_file_channel = 0,
+                          bool read_mipmaps = false);
   Texture *ns_load_texture(const Filename &orig_filename,
                            int primary_file_num_channels,
                            bool read_mipmaps,

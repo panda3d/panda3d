@@ -29,6 +29,7 @@ ConfigureFn(config_pythonCallbackObject) {
 
 #ifndef CPPPARSER
 extern struct Dtool_PyTypedObject Dtool_TypedObject;
+extern struct Dtool_PyTypedObject Dtool_PythonCallbackObject;
 #endif
 
 /**
@@ -82,6 +83,14 @@ PyObject *PythonCallbackObject::
 get_function() {
   Py_INCREF(_function);
   return _function;
+}
+
+/**
+ * Implements pickle support.
+ */
+PyObject *PythonCallbackObject::
+__reduce__() const {
+  return Py_BuildValue("O(O)", (PyObject *)&Dtool_PythonCallbackObject, _function);
 }
 
 /**

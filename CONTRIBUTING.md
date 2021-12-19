@@ -18,7 +18,7 @@ It is important for acceptance that the change is implemented in a way that fits
 the general design principles of the Panda3D API, and fits well with the general
 priorities of the team.  Therefore, prior discussion with other developers is
 critical.  Issues can be used to facilitate this, but we also invite you to
-visit the #development channel on Discord (or #panda3d-devel on FreeNode IRC).
+visit the #development channel on Discord (or #panda3d-devel on Libera Chat).
 
 We also recommend that you familiarize yourself with the established coding
 style and design patterns of Panda3D, to reduce the amount of changes that have

@@ -15,10 +15,13 @@ package org.panda3d.android;
 
 import android.app.NativeActivity;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.widget.Toast;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import dalvik.system.BaseDexClassLoader;
 import org.panda3d.android.NativeIStream;
 import org.panda3d.android.NativeOStream;
 
@@ -74,6 +77,26 @@ public class PandaActivity extends NativeActivity {
         return Thread.currentThread().getName();
     }
 
+    /**
+     * Returns the path to the main native library.
+     */
+    public String getNativeLibraryPath() {
+        String libname = "main";
+        try {
+            ActivityInfo ai = getPackageManager().getActivityInfo(
+                    getIntent().getComponent(), PackageManager.GET_META_DATA);
+            if (ai.metaData != null) {
+                String ln = ai.metaData.getString(META_DATA_LIB_NAME);
+                if (ln != null) libname = ln;
+            }
+        } catch (PackageManager.NameNotFoundException e) {
+            throw new RuntimeException("Error getting activity info", e);
+        }
+
+        BaseDexClassLoader classLoader = (BaseDexClassLoader) getClassLoader();
+        return classLoader.findLibrary(libname);
+    }
+
     public String getIntentDataPath() {
         Intent intent = getIntent();
         Uri data = intent.getData();
@@ -96,6 +119,9 @@ public class PandaActivity extends NativeActivity {
         return getCacheDir().toString();
     }
 
+    /**
+     * Shows a pop-up notification.
+     */
     public void showToast(final String text, final int duration) {
         final PandaActivity activity = this;
         runOnUiThread(new Runnable() {
@@ -107,14 +133,10 @@ public class PandaActivity extends NativeActivity {
     }
 
     static {
-        //System.loadLibrary("gnustl_shared");
-        //System.loadLibrary("p3dtool");
-        //System.loadLibrary("p3dtoolconfig");
-        //System.loadLibrary("pandaexpress");
-        //System.loadLibrary("panda");
-        //System.loadLibrary("p3android");
-        //System.loadLibrary("p3framework");
-        System.loadLibrary("pandaegg");
-        System.loadLibrary("pandagles");
+        // Load this explicitly to initialize the JVM with the thread system.
+        System.loadLibrary("panda");
+
+        // Contains our JNI calls.
+        System.loadLibrary("p3android");
     }
 }

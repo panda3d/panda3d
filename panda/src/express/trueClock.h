@@ -15,7 +15,6 @@
 #define TRUECLOCK_H
 
 #include "pandabase.h"
-#include "typedef.h"
 #include "pdeque.h"
 #include "mutexImpl.h"
 #include "config_express.h"

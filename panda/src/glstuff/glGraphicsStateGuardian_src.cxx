@@ -52,6 +52,7 @@
 #include "alphaTestAttrib.h"
 #include "clipPlaneAttrib.h"
 #include "cullFaceAttrib.h"
+#include "depthBiasAttrib.h"
 #include "depthOffsetAttrib.h"
 #include "depthWriteAttrib.h"
 #include "fogAttrib.h"
@@ -153,6 +154,13 @@ null_glBlendFuncSeparate(GLenum src, GLenum dest, GLenum, GLenum) {
 
 static void APIENTRY
 null_glBlendColor(GLclampf, GLclampf, GLclampf, GLclampf) {
+}
+#endif
+
+#ifndef OPENGLES_1
+static void APIENTRY
+null_glPolygonOffsetClamp(GLfloat factor, GLfloat units, GLfloat clamp) {
+  glPolygonOffset(factor, units);
 }
 #endif
 
@@ -528,6 +536,7 @@ CLP(GraphicsStateGuardian)(GraphicsEngine *engine, GraphicsPipe *pipe) :
 
   _scissor_enabled = false;
   _scissor_attrib_active = false;
+  _has_attrib_depth_range = false;
 
   _white_texture = 0;
 
@@ -625,6 +634,7 @@ reset() {
   _inv_state_mask.clear_bit(ColorAttrib::get_class_slot());
   _inv_state_mask.clear_bit(ColorScaleAttrib::get_class_slot());
   _inv_state_mask.clear_bit(CullFaceAttrib::get_class_slot());
+  _inv_state_mask.clear_bit(DepthBiasAttrib::get_class_slot());
   _inv_state_mask.clear_bit(DepthOffsetAttrib::get_class_slot());
   _inv_state_mask.clear_bit(DepthTestAttrib::get_class_slot());
   _inv_state_mask.clear_bit(DepthWriteAttrib::get_class_slot());
@@ -1090,6 +1100,20 @@ reset() {
     if (_glClearTexImage == nullptr || _glClearTexSubImage == nullptr) {
       GLCAT.warning()
         << "GL_ARB_clear_texture advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
+    } else {
+      _supports_clear_texture = true;
+    }
+  }
+#elif !defined(OPENGLES_1)
+  if (has_extension("GL_EXT_clear_texture")) {
+    _glClearTexImage = (PFNGLCLEARTEXIMAGEEXTPROC)
+      get_extension_func("glClearTexImageEXT");
+    _glClearTexSubImage = (PFNGLCLEARTEXSUBIMAGEEXTPROC)
+      get_extension_func("glClearTexSubImageEXT");
+
+    if (_glClearTexImage == nullptr || _glClearTexSubImage == nullptr) {
+      GLCAT.warning()
+        << "GL_EXT_clear_texture advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
     } else {
       _supports_clear_texture = true;
     }
@@ -2150,6 +2174,8 @@ reset() {
        get_extension_func("glGetProgramResourceName");
     _glGetProgramResourceiv = (PFNGLGETPROGRAMRESOURCEIVPROC)
        get_extension_func("glGetProgramResourceiv");
+    _glShaderStorageBlockBinding = (PFNGLSHADERSTORAGEBLOCKBINDINGPROC)
+       get_extension_func("glShaderStorageBlockBinding");
   } else
 #endif
   {
@@ -3307,23 +3333,30 @@ reset() {
 #endif
 
   // Set depth range from zero to one if requested.
-#ifndef OPENGLES
+#ifndef OPENGLES_1
   _use_depth_zero_to_one = false;
   _use_remapped_depth_range = false;
 
   if (gl_depth_zero_to_one) {
+#ifndef OPENGLES
+    PFNGLCLIPCONTROLPROC pglClipControl = nullptr;
     if (is_at_least_gl_version(4, 5) || has_extension("GL_ARB_clip_control")) {
-      PFNGLCLIPCONTROLPROC pglClipControl =
-        (PFNGLCLIPCONTROLPROC)get_extension_func("glClipControl");
+      pglClipControl = (PFNGLCLIPCONTROLPROC)get_extension_func("glClipControl");
+    }
+#else
+    PFNGLCLIPCONTROLEXTPROC pglClipControl = nullptr;
+    if (has_extension("GL_EXT_clip_control")) {
+      pglClipControl = (PFNGLCLIPCONTROLEXTPROC)get_extension_func("glClipControlEXT");
+    }
+#endif
 
-      if (pglClipControl != nullptr) {
-        pglClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
-        _use_depth_zero_to_one = true;
+    if (pglClipControl != nullptr) {
+      pglClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
+      _use_depth_zero_to_one = true;
 
-        if (GLCAT.is_debug()) {
-          GLCAT.debug()
-            << "Set zero-to-one depth using glClipControl\n";
-        }
+      if (GLCAT.is_debug()) {
+        GLCAT.debug()
+          << "Set zero-to-one depth using glClipControl\n";
       }
     }/* else if (has_extension("GL_NV_depth_buffer_float")) {
       // Alternatively, all GeForce 8+ and even some AMD drivers support this
@@ -3335,6 +3368,7 @@ reset() {
         _glDepthRangedNV(-1.0, 1.0);
         _use_depth_zero_to_one = true;
         _use_remapped_depth_range = true;
+        _has_attrib_depth_range = false;
 
         if (GLCAT.is_debug()) {
           GLCAT.debug()
@@ -3347,6 +3381,32 @@ reset() {
       GLCAT.warning()
         << "Zero-to-one depth was requested, but driver does not support it.\n";
     }
+  }
+#endif
+
+  if (_has_attrib_depth_range) {
+#ifdef OPENGLES
+    glDepthRangef(0.0f, 1.0f);
+#else
+    glDepthRange(0.0, 1.0);
+#endif
+    _depth_range_near = 0;
+    _depth_range_far = 1;
+    _has_attrib_depth_range = false;
+  }
+
+#ifndef OPENGLES_1
+#ifndef OPENGLES
+  if (is_at_least_gl_version(4, 6) || has_extension("GL_ARB_polygon_offset_clamp")) {
+    _glPolygonOffsetClamp = (PFNGLPOLYGONOFFSETCLAMPEXTPROC)get_extension_func("glPolygonOffsetClamp");
+  }
+  else
+#endif
+  if (has_extension("GL_EXT_polygon_offset_clamp")) {
+    _glPolygonOffsetClamp = (PFNGLPOLYGONOFFSETCLAMPEXTPROC)get_extension_func("glPolygonOffsetClampEXT");
+  }
+  else {
+    _glPolygonOffsetClamp = null_glPolygonOffsetClamp;
   }
 #endif
 
@@ -3923,6 +3983,33 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
       }
     }
   }
+
+  PN_stdfloat nearv;
+  PN_stdfloat farv;
+  dr->get_depth_range(nearv, farv);
+#ifdef GSG_VERBOSE
+  if (GLCAT.is_spam()) {
+    GLCAT.spam()
+      << "glDepthRange(" << nearv << ", " << farv << ")" << endl;
+  }
+#endif
+
+#ifdef OPENGLES
+  // OpenGL ES uses a single-precision call.
+  glDepthRangef((GLclampf)nearv, (GLclampf)farv);
+#else
+  // Mainline OpenGL uses a double-precision call.
+  if (!_use_remapped_depth_range) {
+    glDepthRange((GLclampd)nearv, (GLclampd)farv);
+  } else {
+    // If we have a remapped depth range, we should adjust the values to range
+    // from -1 to 1.  We need to use an NV extension to pass unclamped values.
+    _glDepthRangedNV(nearv * 2.0 - 1.0, farv * 2.0 - 1.0);
+  }
+#endif  // OPENGLES
+  _has_attrib_depth_range = false;
+  _depth_range_near = nearv;
+  _depth_range_far = farv;
 
   report_my_gl_errors();
 }
@@ -7333,6 +7420,7 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
   }
 
   gtc->_has_storage = true;
+  gtc->_simple_loaded = false;
   gtc->_uses_mipmaps = uses_mipmaps;
   gtc->_internal_format = internal_format;
   gtc->_width = width;
@@ -8131,41 +8219,67 @@ do_issue_fog() {
  *
  */
 void CLP(GraphicsStateGuardian)::
-do_issue_depth_offset() {
-  const DepthOffsetAttrib *target_depth_offset = (const DepthOffsetAttrib *)
-     _target_rs->get_attrib_def(DepthOffsetAttrib::get_class_slot());
-
+do_issue_depth_bias() {
+  const DepthOffsetAttrib *target_depth_offset;
+  _target_rs->get_attrib_def(target_depth_offset);
   int offset = target_depth_offset->get_offset();
 
-  if (offset != 0) {
+  const DepthBiasAttrib *target_depth_bias;
+  if (_target_rs->get_attrib(target_depth_bias)) {
+    GLfloat slope_factor = target_depth_bias->get_slope_factor();
+    GLfloat constant_factor = target_depth_bias->get_constant_factor();
+
+    slope_factor -= offset;
+    constant_factor -= offset;
+
+#ifndef OPENGLES_1
+    GLfloat clamp = target_depth_bias->get_clamp();
+    _glPolygonOffsetClamp(slope_factor, constant_factor, clamp);
+#else
+    glPolygonOffset(slope_factor, constant_factor);
+#endif
+    enable_polygon_offset(true);
+  }
+  else if (offset != 0) {
     // The relationship between these two parameters is a little unclear and
     // poorly explained in the GL man pages.
     glPolygonOffset((GLfloat) -offset, (GLfloat) -offset);
     enable_polygon_offset(true);
-
-  } else {
+  }
+  else {
     enable_polygon_offset(false);
   }
 
   PN_stdfloat min_value = target_depth_offset->get_min_value();
   PN_stdfloat max_value = target_depth_offset->get_max_value();
+  if (min_value != (PN_stdfloat)0.0 ||
+      max_value != (PN_stdfloat)1.0 ||
+      _has_attrib_depth_range) {
+    min_value = _depth_range_far * min_value + _depth_range_near * (1 - min_value);
+    max_value = _depth_range_far * max_value + _depth_range_near * (1 - max_value);
+
 #ifdef GSG_VERBOSE
-    GLCAT.spam()
-      << "glDepthRange(" << min_value << ", " << max_value << ")" << endl;
+    if (GLCAT.is_spam()) {
+      GLCAT.spam()
+        << "glDepthRange(" << min_value << ", " << max_value << ")" << endl;
+    }
 #endif
 #ifdef OPENGLES
-  // OpenGL ES uses a single-precision call.
-  glDepthRangef((GLclampf)min_value, (GLclampf)max_value);
+    // OpenGL ES uses a single-precision call.
+    glDepthRangef((GLclampf)min_value, (GLclampf)max_value);
 #else
-  // Mainline OpenGL uses a double-precision call.
-  if (!_use_remapped_depth_range) {
-    glDepthRange((GLclampd)min_value, (GLclampd)max_value);
-  } else {
-    // If we have a remapped depth range, we should adjust the values to range
-    // from -1 to 1.  We need to use an NV extension to pass unclamped values.
-    _glDepthRangedNV(min_value * 2.0 - 1.0, max_value * 2.0 - 1.0);
-  }
+    // Mainline OpenGL uses a double-precision call.
+    if (!_use_remapped_depth_range) {
+      glDepthRange((GLclampd)min_value, (GLclampd)max_value);
+    } else {
+      // If we have a remapped depth range, we should adjust the values to range
+      // from -1 to 1.  We need to use an NV extension to pass unclamped values.
+      _glDepthRangedNV(min_value * 2.0 - 1.0, max_value * 2.0 - 1.0);
+    }
 #endif  // OPENGLES
+
+    _has_attrib_depth_range = true;
+  }
 
   report_my_gl_errors();
 }
@@ -11732,11 +11846,15 @@ set_state_and_transform(const RenderState *target,
     _state_mask.set_bit(cull_face_slot);
   }
 
+  int depth_bias_slot = DepthBiasAttrib::get_class_slot();
   int depth_offset_slot = DepthOffsetAttrib::get_class_slot();
-  if (_target_rs->get_attrib(depth_offset_slot) != _state_rs->get_attrib(depth_offset_slot) ||
+  if (_target_rs->get_attrib(depth_bias_slot) != _state_rs->get_attrib(depth_bias_slot) ||
+      _target_rs->get_attrib(depth_offset_slot) != _state_rs->get_attrib(depth_offset_slot) ||
+      !_state_mask.get_bit(depth_bias_slot) ||
       !_state_mask.get_bit(depth_offset_slot)) {
     // PStatGPUTimer timer(this, _draw_set_state_depth_offset_pcollector);
-    do_issue_depth_offset();
+    do_issue_depth_bias();
+    _state_mask.set_bit(depth_bias_slot);
     _state_mask.set_bit(depth_offset_slot);
   }
 
@@ -13018,7 +13136,7 @@ apply_sampler(GLuint unit, const SamplerState &sampler, CLP(TextureContext) *gtc
     }
   }
 
-  if (sampler.uses_mipmaps() && !gtc->_uses_mipmaps && !gl_ignore_mipmaps) {
+  if (sampler.uses_mipmaps() && !gtc->_uses_mipmaps && !gtc->_simple_loaded && !gl_ignore_mipmaps) {
     // The texture wasn't created with mipmaps, but we are trying to sample it
     // with mipmaps.  We will need to reload it.
     GLCAT.info()
@@ -13061,10 +13179,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
       async_reload_texture(gtc);
       has_image = _supports_compressed_texture ? tex->has_ram_image() : tex->has_uncompressed_ram_image();
       if (!has_image) {
-        if (gtc->was_simple_image_modified()) {
-          return upload_simple_texture(gtc);
-        }
-        return true;
+        return upload_simple_texture(gtc);
       }
     }
   }
@@ -13434,6 +13549,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
       }
 
       gtc->_has_storage = true;
+      gtc->_simple_loaded = false;
       gtc->_immutable = true;
       gtc->_uses_mipmaps = uses_mipmaps;
       gtc->_internal_format = internal_format;
@@ -13481,6 +13597,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
   if (success) {
     if (needs_reload) {
       gtc->_has_storage = true;
+      gtc->_simple_loaded = false;
       gtc->_uses_mipmaps = uses_mipmaps;
       gtc->_internal_format = internal_format;
       gtc->_width = width;
@@ -14073,7 +14190,8 @@ upload_simple_texture(CLP(TextureContext) *gtc) {
 #endif
   GLenum external_format = GL_BGRA;
 
-  const unsigned char *image_ptr = tex->get_simple_ram_image();
+  CPTA_uchar image = tex->get_simple_ram_image();
+  const unsigned char *image_ptr = image.p();
   if (image_ptr == nullptr) {
     return false;
   }
@@ -14116,7 +14234,17 @@ upload_simple_texture(CLP(TextureContext) *gtc) {
                width, height, 0,
                external_format, component_type, image_ptr);
 
-  gtc->mark_simple_loaded();
+  gtc->_has_storage = true;
+  gtc->_simple_loaded = true;
+  gtc->_immutable = false;
+  gtc->_uses_mipmaps = false;
+  gtc->_internal_format = internal_format;
+  gtc->_width = width;
+  gtc->_height = height;
+  gtc->_depth = 1;
+  gtc->update_data_size_bytes(width * height * 4);
+
+  gtc->mark_loaded();
 
   report_my_gl_errors();
   return true;

@@ -74,4 +74,28 @@ get_data() const {
   return PyBytes_FromStringAndSize(_this->_data.data(), _this->_data.size());
 }
 
+/**
+ *
+ */
+PyObject *Extension<Ramfile>::
+__getstate__() const {
+  PyObject *state = PyTuple_New(2);
+  PyTuple_SET_ITEM(state, 0, get_data());
+  PyTuple_SET_ITEM(state, 1, PyLong_FromSize_t(_this->tell()));
+  return state;
+}
+
+/**
+ *
+ */
+void Extension<Ramfile>::
+__setstate__(PyObject *state) {
+  char *str;
+  Py_ssize_t len;
+  if (PyBytes_AsStringAndSize(PyTuple_GET_ITEM(state, 0), &str, &len) >= 0) {
+    _this->_data = std::string(str, len);
+  }
+  _this->seek(PyLong_AsSize_t(PyTuple_GET_ITEM(state, 1)));
+}
+
 #endif

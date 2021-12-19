@@ -1,3 +1,36 @@
+-----------------------  RELEASE 1.10.10  -----------------------
+
+This release fixes assorted, mostly very minor bugs.
+
+* Round refresh rates when choosing display mode on macOS (#1144)
+* Vectors now support floor division
+* It is now possible to use round(), ceil() and floor() with vector types
+* Add RenderState::get_unused_states()
+* Fix assertion error in RenderState::get_num_unused_states()
+* Fix Assimp loader not importing normal vectors correctly (#1163)
+* Fix error when trying to render DirectGUI in offscreen mode (#1174)
+* Fix crash when resizing window in multi-window DirectX 9 application (#1167)
+* Fixes to enable compilation with recent OpenEXR and FFMpeg versions
+* Fix draw callback being called twice if cull callback calls upcall()
+* Improve error message when display module fails to load
+* Fix writing/reading BitArray to/from bam files on 64-bit systems (#1181)
+* evdev input devices (such as gamepads) are now supported in FreeBSD as well
+* Panda no longer tries to compress buffer textures when compression is enabled
+* Fix Geom::make_lines_in_place() (& points, patches) leaving invalid state
+* Fix memory leak when cleaning up FilterManager (#1166)
+* Fix memory leak deleting multisample OpenGL FBOs (#1166)
+* Fix auto-binding of SSBOs sometimes causing overlapping bindings (#1176)
+* PSSMCameraRig::update() now accepts a camera node directly
+* Support copying depth buffer for 32-bit depth with 8-bit stencil (#1142)
+* Prevent trying to copy depth from non-depth buffer in OpenGL renderer (#1142)
+* Fixes to format selection for OpenGL renderbuffers (#1137, #1141)
+* gl-depth-zero-to-one is now supported in OpenGL ES 2+ (if driver supports)
+* Maya models can contain more than three eggObjectTypes (#1134)
+* Fix black screen on Linux when switching fullscreen without a WM active
+* Fix Linux crash when trying to load a directory instead of a file (#1140)
+* Fix crash when loading an invalid font
+* Fix a very obscure unintended DirectGUI behavior change in 1.10.9
+
 ------------------------  RELEASE 1.10.9  -----------------------
 
 This is a bugfix release which addresses some severe issues on macOS, as well as

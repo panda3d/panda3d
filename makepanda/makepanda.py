@@ -153,7 +153,7 @@ def usage(problem):
     print("  --everything      (enable every third-party lib)")
     print("  --directx-sdk=X   (specify version of DirectX SDK to use: jun2010, aug2009)")
     print("  --windows-sdk=X   (specify Windows SDK version, eg. 7.1, 8.1 or 10.  Default is 8.1)")
-    print("  --msvc-version=X  (specify Visual C++ version, eg. 10, 11, 12, 14, 14.1, 14.2.  Default is 14)")
+    print("  --msvc-version=X  (specify Visual C++ version, eg. 10, 11, 12, 14, 14.1, 14.2, 14.3.  Default is 14)")
     print("  --use-icl         (experimental setting to use an intel compiler instead of MSVC on Windows)")
     print("")
     print("The simplest way to compile panda is to just type:")
@@ -949,6 +949,8 @@ if (COMPILER=="GCC"):
             SmartPkgEnable("CGGL", "", ("CgGL"), "Cg/cgGL.h", thirdparty_dir = "nvidiacg")
         if GetTarget() != "android":
             SmartPkgEnable("X11", "x11", "X11", ("X11", "X11/Xlib.h", "X11/XKBlib.h"))
+        else:
+            PkgDisable("X11")
 
     if GetHost() != "darwin":
         # Workaround for an issue where pkg-config does not include this path
@@ -1012,6 +1014,7 @@ if (COMPILER=="GCC"):
         LibName("ALWAYS", '-llog')
         LibName("ANDROID", '-landroid')
         LibName("JNIGRAPHICS", '-ljnigraphics')
+        LibName("OPENSLES", '-lOpenSLES')
 
     for pkg in MAYAVERSIONS:
         if (PkgSkip(pkg)==0 and (pkg in SDK)):
@@ -1040,7 +1043,7 @@ if (COMPILER=="GCC"):
             LibName(pkg, "-lDependEngine")
             LibName(pkg, "-lCommandEngine")
             LibName(pkg, "-lFoundation")
-            if pkg != "MAYA2020":
+            if pkg not in ("MAYA2020", "MAYA2022"):
                 LibName(pkg, "-lIMFbase")
             if GetTarget() != 'darwin':
                 LibName(pkg, "-lOpenMayalib")
@@ -1308,10 +1311,6 @@ def CompileCxx(obj,src,opts):
         if "SYSROOT" in SDK:
             if GetTarget() != "android":
                 cmd += ' --sysroot=%s' % (SDK["SYSROOT"])
-            else:
-                ndk_dir = SDK["ANDROID_NDK"].replace('\\', '/')
-                cmd += ' -isystem %s/sysroot/usr/include' % (ndk_dir)
-                cmd += ' -isystem %s/sysroot/usr/include/%s' % (ndk_dir, SDK["ANDROID_TRIPLE"])
             cmd += ' -no-canonical-prefixes'
 
         # Android-specific flags.
@@ -1320,46 +1319,35 @@ def CompileCxx(obj,src,opts):
         if GetTarget() == "android":
             # Most of the specific optimization flags here were
             # just copied from the default Android Makefiles.
-            if "ANDROID_API" in SDK:
-                cmd += ' -D__ANDROID_API__=' + str(SDK["ANDROID_API"])
             if "ANDROID_GCC_TOOLCHAIN" in SDK:
                 cmd += ' -gcc-toolchain ' + SDK["ANDROID_GCC_TOOLCHAIN"].replace('\\', '/')
             cmd += ' -ffunction-sections -funwind-tables'
+            cmd += ' -target ' + SDK["ANDROID_TRIPLE"]
             if arch == 'armv7a':
-                cmd += ' -target armv7-none-linux-androideabi'
                 cmd += ' -march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16'
-                cmd += ' -fno-integrated-as'
             elif arch == 'arm':
-                cmd += ' -target armv5te-none-linux-androideabi'
                 cmd += ' -march=armv5te -mtune=xscale -msoft-float'
-                cmd += ' -fno-integrated-as'
-            elif arch == 'aarch64':
-                cmd += ' -target aarch64-none-linux-android'
             elif arch == 'mips':
-                cmd += ' -target mipsel-none-linux-android'
                 cmd += ' -mips32'
             elif arch == 'mips64':
-                cmd += ' -target mips64el-none-linux-android'
                 cmd += ' -fintegrated-as'
             elif arch == 'x86':
-                cmd += ' -target i686-none-linux-android'
-                cmd += ' -march=i686 -mtune=intel -mssse3 -mfpmath=sse -m32'
+                cmd += ' -march=i686 -mssse3 -mfpmath=sse -m32'
                 cmd += ' -mstackrealign'
             elif arch == 'x86_64':
-                cmd += ' -target x86_64-none-linux-android'
-                cmd += ' -march=x86-64 -msse4.2 -mpopcnt -m64 -mtune=intel'
+                cmd += ' -march=x86-64 -msse4.2 -mpopcnt -m64'
 
             cmd += " -Wa,--noexecstack"
 
             # Do we want thumb or arm instructions?
-            if arch.startswith('arm'):
+            if arch != 'arm64' and arch.startswith('arm'):
                 if optlevel >= 3:
                     cmd += ' -mthumb'
                 else:
                     cmd += ' -marm'
 
             # Enable SIMD instructions if requested
-            if arch.startswith('arm') and PkgSkip("NEON") == 0:
+            if arch != 'arm64' and arch.startswith('arm') and PkgSkip("NEON") == 0:
                 cmd += ' -mfpu=neon'
 
         else:
@@ -1848,28 +1836,16 @@ def CompileLink(dll, obj, opts):
             if "ANDROID_GCC_TOOLCHAIN" in SDK:
                 cmd += ' -gcc-toolchain ' + SDK["ANDROID_GCC_TOOLCHAIN"].replace('\\', '/')
             cmd += " -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now"
+            cmd += ' -target ' + SDK["ANDROID_TRIPLE"]
             if arch == 'armv7a':
-                cmd += ' -target armv7-none-linux-androideabi'
                 cmd += " -march=armv7-a -Wl,--fix-cortex-a8"
-            elif arch == 'arm':
-                cmd += ' -target armv5te-none-linux-androideabi'
-            elif arch == 'aarch64':
-                cmd += ' -target aarch64-none-linux-android'
             elif arch == 'mips':
-                cmd += ' -target mipsel-none-linux-android'
                 cmd += ' -mips32'
-            elif arch == 'mips64':
-                cmd += ' -target mips64el-none-linux-android'
-            elif arch == 'x86':
-                cmd += ' -target i686-none-linux-android'
-            elif arch == 'x86_64':
-                cmd += ' -target x86_64-none-linux-android'
             cmd += ' -lc -lm'
         else:
             cmd += " -pthread"
-
-        if "SYSROOT" in SDK:
-            cmd += " --sysroot=%s -no-canonical-prefixes" % (SDK["SYSROOT"])
+            if "SYSROOT" in SDK:
+                cmd += " --sysroot=%s -no-canonical-prefixes" % (SDK["SYSROOT"])
 
         if LDFLAGS != "":
             cmd += " " + LDFLAGS
@@ -2135,6 +2111,31 @@ def CompileMIDL(target, src, opts):
 
 ##########################################################################################
 #
+# CompileDalvik
+#
+##########################################################################################
+
+def CompileDalvik(target, inputs, opts):
+    cmd = "d8 --output " + os.path.dirname(target)
+
+    if GetOptimize() <= 2:
+        cmd += " --debug"
+    else:
+        cmd += " --release"
+
+    if "ANDROID_API" in SDK:
+        cmd += " --min-api %d" % (SDK["ANDROID_API"])
+
+    if "ANDROID_JAR" in SDK:
+        cmd += " --lib %s" % (SDK["ANDROID_JAR"])
+
+    for i in inputs:
+        cmd += " " + BracketNameWithQuotes(i)
+
+    oscmd(cmd)
+
+##########################################################################################
+#
 # CompileAnything
 #
 ##########################################################################################
@@ -2244,6 +2245,9 @@ def CompileAnything(target, inputs, opts, progress = None):
         elif infile.endswith(".r"):
             ProgressOutput(progress, "Building resource object", target)
             return CompileRsrc(target, infile, opts)
+    elif origsuffix == ".dex":
+        ProgressOutput(progress, "Building Dalvik object", target)
+        return CompileDalvik(target, inputs, opts)
     exit("Don't know how to compile: %s from %s" % (target, inputs))
 
 ##########################################################################################
@@ -2853,7 +2857,12 @@ if PkgSkip("GL") or GetLinkAllStatic():
     configprc = configprc.replace("\nload-display pandagl", "\n#load-display pandagl")
 
 if PkgSkip("GLES") or GetLinkAllStatic():
-    configprc = configprc.replace("\n#load-display pandagles", "")
+    configprc = configprc.replace("\n#load-display pandagles\n", "\n")
+
+if PkgSkip("GL") and not PkgSkip("GLES2") and not GetLinkAllStatic():
+    configprc = configprc.replace("\n#load-display pandagles2", "\nload-display pandagles2")
+elif PkgSkip("GLES2") or GetLinkAllStatic():
+    configprc = configprc.replace("\n#load-display pandagles2", "")
 
 if PkgSkip("DX9") or GetLinkAllStatic():
     configprc = configprc.replace("\n#load-display pandadx9", "")
@@ -3071,8 +3080,10 @@ else:
 if not PkgSkip("PANDATOOL"):
     CopyAllFiles(GetOutputDir()+"/plugins/",  "pandatool/src/scripts/", ".mel")
     CopyAllFiles(GetOutputDir()+"/plugins/",  "pandatool/src/scripts/", ".ms")
-if not PkgSkip("PYTHON") and os.path.isdir(GetThirdpartyBase()+"/Pmw"):
-    CopyTree(GetOutputDir()+'/Pmw',         GetThirdpartyBase()+'/Pmw')
+
+if not PkgSkip("PYTHON") and os.path.isdir(GetThirdpartyBase() + "/Pmw"):
+    CopyTree(GetOutputDir() + "/Pmw", GetThirdpartyBase() + "/Pmw", exclude=["Pmw_1_3", "Pmw_1_3_3"])
+
 ConditionalWriteFile(GetOutputDir()+'/include/ctl3d.h', '/* dummy file to make MAX happy */')
 
 # Since Eigen is included by all sorts of core headers, as a convenience
@@ -4343,7 +4354,7 @@ if PkgSkip("OPENAL") == 0:
     TargetAdd('openal_audio_openal_audio_composite1.obj', opts=OPTS, input='openal_audio_composite1.cxx')
     TargetAdd('libp3openal_audio.dll', input='openal_audio_openal_audio_composite1.obj')
     TargetAdd('libp3openal_audio.dll', input=COMMON_PANDA_LIBS)
-    TargetAdd('libp3openal_audio.dll', opts=['MODULE', 'ADVAPI', 'WINUSER', 'WINMM', 'WINSHELL', 'WINOLE', 'OPENAL'])
+    TargetAdd('libp3openal_audio.dll', opts=['MODULE', 'ADVAPI', 'WINUSER', 'WINMM', 'WINSHELL', 'WINOLE', 'OPENAL', 'OPENSLES'])
 
 #
 # DIRECTORY: panda/src/downloadertools/
@@ -4628,7 +4639,7 @@ elif not PkgSkip("EGL") and not PkgSkip("GL") and GetTarget() not in ('windows',
 # DIRECTORY: panda/src/egldisplay/
 #
 
-if not PkgSkip("EGL") and not PkgSkip("GLES"):
+if GetTarget() != 'android' and not PkgSkip("EGL") and not PkgSkip("GLES"):
     DefSymbol('GLES', 'OPENGLES_1', '')
     OPTS=['DIR:panda/src/egldisplay', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGLES', 'GLES', 'EGL', 'X11']
     TargetAdd('pandagles_egldisplay_composite1.obj', opts=OPTS, input='p3egldisplay_composite1.cxx')
@@ -4647,7 +4658,7 @@ if not PkgSkip("EGL") and not PkgSkip("GLES"):
 # DIRECTORY: panda/src/egldisplay/
 #
 
-if not PkgSkip("EGL") and not PkgSkip("GLES2"):
+if GetTarget() != 'android' and not PkgSkip("EGL") and not PkgSkip("GLES2"):
     DefSymbol('GLES2', 'OPENGLES_2', '')
     OPTS=['DIR:panda/src/egldisplay', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGLES2', 'GLES2', 'EGL', 'X11']
     TargetAdd('pandagles2_egldisplay_composite1.obj', opts=OPTS, input='p3egldisplay_composite1.cxx')
@@ -4853,11 +4864,16 @@ if not PkgSkip("PVIEW"):
 #
 
 if GetTarget() == 'android':
-    OPTS=['DIR:panda/src/android']
+    OPTS=['DIR:panda/src/android', 'PNG']
     TargetAdd('org/panda3d/android/NativeIStream.class', opts=OPTS, input='NativeIStream.java')
     TargetAdd('org/panda3d/android/NativeOStream.class', opts=OPTS, input='NativeOStream.java')
     TargetAdd('org/panda3d/android/PandaActivity.class', opts=OPTS, input='PandaActivity.java')
     TargetAdd('org/panda3d/android/PythonActivity.class', opts=OPTS, input='PythonActivity.java')
+
+    TargetAdd('classes.dex', input='org/panda3d/android/NativeIStream.class')
+    TargetAdd('classes.dex', input='org/panda3d/android/NativeOStream.class')
+    TargetAdd('classes.dex', input='org/panda3d/android/PandaActivity.class')
+    TargetAdd('classes.dex', input='org/panda3d/android/PythonActivity.class')
 
     TargetAdd('p3android_composite1.obj', opts=OPTS, input='p3android_composite1.cxx')
     TargetAdd('libp3android.dll', input='p3android_composite1.obj')
@@ -4907,6 +4923,20 @@ if GetTarget() == 'android' and not PkgSkip("EGL") and not PkgSkip("GLES"):
     TargetAdd('libpandagles.dll', input='libp3android.dll')
     TargetAdd('libpandagles.dll', input=COMMON_PANDA_LIBS)
     TargetAdd('libpandagles.dll', opts=['MODULE', 'GLES', 'EGL'])
+
+if GetTarget() == 'android' and not PkgSkip("EGL") and not PkgSkip("GLES2"):
+    DefSymbol('GLES2', 'OPENGLES_2', '')
+    OPTS=['DIR:panda/src/androiddisplay', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGLES2', 'GLES2', 'EGL']
+    TargetAdd('pandagles2_androiddisplay_composite1.obj', opts=OPTS, input='p3androiddisplay_composite1.cxx')
+    OPTS=['DIR:panda/metalibs/pandagles2', 'BUILDING:PANDAGLES2', 'GLES2', 'EGL']
+    TargetAdd('pandagles2_pandagles2.obj', opts=OPTS, input='pandagles2.cxx')
+    TargetAdd('libpandagles2.dll', input='pandagles2_pandagles2.obj')
+    TargetAdd('libpandagles2.dll', input='p3gles2gsg_config_gles2gsg.obj')
+    TargetAdd('libpandagles2.dll', input='p3gles2gsg_gles2gsg.obj')
+    TargetAdd('libpandagles2.dll', input='pandagles2_androiddisplay_composite1.obj')
+    TargetAdd('libpandagles2.dll', input='libp3android.dll')
+    TargetAdd('libpandagles2.dll', input=COMMON_PANDA_LIBS)
+    TargetAdd('libpandagles2.dll', opts=['MODULE', 'GLES2', 'EGL'])
 
 #
 # DIRECTORY: panda/src/tinydisplay/
@@ -6004,10 +6034,11 @@ if PkgSkip("PYTHON") == 0:
         LibName('DEPLOYSTUB', "-Wl,-rpath,\\$ORIGIN")
         LibName('DEPLOYSTUB', "-Wl,-z,origin")
         LibName('DEPLOYSTUB', "-rdynamic")
+
     PyTargetAdd('deploy-stub.exe', input='deploy-stub.obj')
     if GetTarget() == 'windows':
         PyTargetAdd('deploy-stub.exe', input='frozen_dllmain.obj')
-    PyTargetAdd('deploy-stub.exe', opts=['WINSHELL', 'DEPLOYSTUB', 'NOICON'])
+    PyTargetAdd('deploy-stub.exe', opts=['WINSHELL', 'DEPLOYSTUB', 'NOICON', 'ANDROID'])
 
     if GetTarget() == 'windows':
         PyTargetAdd('deploy-stubw.exe', input='deploy-stub.obj')
@@ -6019,6 +6050,15 @@ if PkgSkip("PYTHON") == 0:
         PyTargetAdd('deploy-stubw.obj', opts=OPTS, input='deploy-stub.c')
         PyTargetAdd('deploy-stubw.exe', input='deploy-stubw.obj')
         PyTargetAdd('deploy-stubw.exe', opts=['MACOS_APP_BUNDLE', 'DEPLOYSTUB', 'NOICON'])
+    elif GetTarget() == 'android':
+        PyTargetAdd('deploy-stubw_android_main.obj', opts=OPTS, input='android_main.cxx')
+        PyTargetAdd('deploy-stubw_android_log.obj', opts=OPTS, input='android_log.c')
+        PyTargetAdd('libdeploy-stubw.dll', input='android_native_app_glue.obj')
+        PyTargetAdd('libdeploy-stubw.dll', input='deploy-stubw_android_main.obj')
+        PyTargetAdd('libdeploy-stubw.dll', input='deploy-stubw_android_log.obj')
+        PyTargetAdd('libdeploy-stubw.dll', input=COMMON_PANDA_LIBS)
+        PyTargetAdd('libdeploy-stubw.dll', input='libp3android.dll')
+        PyTargetAdd('libdeploy-stubw.dll', opts=['DEPLOYSTUB', 'ANDROID'])
 
 #
 # Generate the models directory and samples directory
@@ -6119,7 +6159,7 @@ def ParallelMake(tasklist):
     # Create the workers
     for slave in range(THREADCOUNT):
         th = threading.Thread(target=BuildWorker, args=[taskqueue, donequeue])
-        th.setDaemon(1)
+        th.daemon = True
         th.start()
     # Feed tasks to the workers.
     tasksqueued = 0

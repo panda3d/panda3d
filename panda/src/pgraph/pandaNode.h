@@ -46,6 +46,7 @@
 #include "lightReMutex.h"
 #include "extension.h"
 #include "simpleHashMap.h"
+#include "geometricBoundingVolume.h"
 
 class NodePathComponent;
 class CullTraverser;
@@ -97,12 +98,9 @@ public:
                       Thread *current_thread = Thread::get_current_thread()) const;
 
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
-  virtual bool has_selective_visibility() const;
-  virtual int get_first_visible_child() const;
-  virtual int get_next_visible_child(int n) const;
   virtual bool has_single_child_visibility() const;
   virtual int get_visible_child() const;
-  virtual bool is_renderable() const;
+  virtual bool is_renderable() const final; //CHANGED: see set_renderable()
   virtual void add_for_draw(CullTraverser *trav, CullTraverserData &data);
 
 PUBLISHED:
@@ -326,6 +324,10 @@ PUBLISHED:
     FB_tag                  = 0x0010,
     FB_draw_mask            = 0x0020,
     FB_cull_callback        = 0x0040,
+    FB_renderable           = 0x0080,
+    FB_decal                = 0x0100,
+    FB_show_bounds          = 0x0200,
+    FB_show_tight_bounds    = 0x0400,
   };
   INLINE int get_fancy_bits(Thread *current_thread = Thread::get_current_thread()) const;
 
@@ -371,6 +373,8 @@ protected:
 
   void set_cull_callback();
   void disable_cull_callback();
+  void set_renderable();
+
 public:
   virtual void r_prepare_scene(GraphicsStateGuardianBase *gsg,
                                const RenderState *node_state,
@@ -459,11 +463,26 @@ public:
     INLINE void set_child(PandaNode *child);
     INLINE int get_sort() const;
 
+    INLINE CollideMask get_net_collide_mask() const;
+    INLINE const GeometricBoundingVolume *get_bounds() const;
+
+    INLINE bool compare_draw_mask(DrawMask running_draw_mask,
+                                  DrawMask camera_mask) const;
+
   private:
     // Child pointers are reference counted.  That way, holding a pointer to
     // the root of a subgraph keeps the entire subgraph around.
     PT(PandaNode) _child;
     int _sort;
+
+    // These values are cached here so that a traverser can efficiently check
+    // whether a node is in view before recursing.
+    CollideMask _net_collide_mask;
+    CPT(GeometricBoundingVolume) _external_bounds;
+    DrawMask _net_draw_control_mask;
+    DrawMask _net_draw_show_mask;
+
+    friend class PandaNode;
   };
 
 private:
@@ -718,6 +737,10 @@ PUBLISHED:
     INLINE PandaNode *get_child(size_t n) const;
     INLINE int get_child_sort(size_t n) const;
 
+    INLINE const DownConnection &get_child_connection(size_t n) const {
+      return (*_down)[n];
+    }
+
   PUBLISHED:
     INLINE PandaNode *operator [](size_t n) const { return get_child(n); }
     INLINE size_t size() const { return get_num_children(); }
@@ -865,6 +888,7 @@ public:
 
   INLINE int get_num_children() const;
   INLINE PandaNode *get_child(int n) const;
+  INLINE const PandaNode::DownConnection &get_child_connection(int n) const;
   INLINE int get_child_sort(int n) const;
   INLINE int find_child(PandaNode *node) const;
 

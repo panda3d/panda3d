@@ -37,7 +37,8 @@ public:
 #ifndef CPPPARSER
   INLINE CollisionLevelState(const NodePath &node_path);
   INLINE CollisionLevelState(const CollisionLevelState<MaskType> &parent,
-                             PandaNode *child);
+                             const PandaNode::DownConnection &child,
+                             MaskType mask);
   INLINE CollisionLevelState(const CollisionLevelState<MaskType> &copy);
   INLINE void operator = (const CollisionLevelState<MaskType> &copy);
 
@@ -45,6 +46,7 @@ public:
   INLINE void prepare_collider(const ColliderDef &def, const NodePath &root);
 
   bool any_in_bounds();
+  MaskType get_child_mask(const PandaNode::DownConnection &child) const;
   bool apply_transform();
 
   INLINE static bool has_max_colliders();

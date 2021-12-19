@@ -794,16 +794,8 @@ def MakeInstallerAndroid(version, **kwargs):
     if os.path.exists(apk_unsigned):
         os.unlink(apk_unsigned)
 
-    # Compile the Java classes into a Dalvik executable.
-    dx_cmd = "dx --dex --output=apkroot/classes.dex "
-    if GetOptimize() <= 2:
-        dx_cmd += "--debug "
-    if GetVerbose():
-        dx_cmd += "--verbose "
-    if "ANDROID_API" in SDK:
-        dx_cmd += "--min-sdk-version=%d " % (SDK["ANDROID_API"])
-    dx_cmd += os.path.join(outputdir, "classes")
-    oscmd(dx_cmd)
+    # Copy the compiled Java classes.
+    oscmd("cp %s apkroot/classes.dex" % (os.path.join(outputdir, "classes.dex")))
 
     # Copy the libraries one by one.  In case of library dependencies, strip
     # off any suffix (eg. libfile.so.1.0), as Android does not support them.
@@ -887,8 +879,12 @@ def MakeInstallerAndroid(version, **kwargs):
                 copy_library(source, "libpy.panda3d.{}.so".format(modname))
 
         # Same for standard Python modules.
-        import _ctypes
-        source_dir = os.path.dirname(_ctypes.__file__)
+        if CrossCompiling():
+            source_dir = os.path.join(GetThirdpartyDir(), "python", "lib", SDK["PYTHONVERSION"], "lib-dynload")
+        else:
+            import _ctypes
+            source_dir = os.path.dirname(_ctypes.__file__)
+
         for base in os.listdir(source_dir):
             if not base.endswith('.so'):
                 continue

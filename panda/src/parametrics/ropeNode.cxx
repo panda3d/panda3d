@@ -71,6 +71,7 @@ RopeNode(const std::string &name) :
   PandaNode(name)
 {
   set_cull_callback();
+  set_renderable();
 }
 
 /**
@@ -159,17 +160,6 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
     }
   }
 
-  return true;
-}
-
-/**
- * Returns true if there is some value to visiting this particular node during
- * the cull traversal for any camera, false otherwise.  This will be used to
- * optimize the result of get_net_draw_show_mask(), so that any subtrees that
- * contain only nodes for which is_renderable() is false need not be visited.
- */
-bool RopeNode::
-is_renderable() const {
   return true;
 }
 

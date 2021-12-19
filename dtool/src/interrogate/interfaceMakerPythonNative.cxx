@@ -109,6 +109,7 @@ RenameSet methodRenameDictionary[] = {
   { "__nonzero__"   , "__nonzero__",            0 },
   { "__int__"       , "__int__",                0 },
   { "__reduce__"    , "__reduce__",             0 },
+  { "__reduce_ex__" , "__reduce_ex__",          0 },
   { "__reduce_persist__", "__reduce_persist__", 0 },
   { "__copy__"      , "__copy__",               0 },
   { "__deepcopy__"  , "__deepcopy__",           0 },

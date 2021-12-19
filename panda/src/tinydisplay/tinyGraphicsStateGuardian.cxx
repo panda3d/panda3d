@@ -2387,10 +2387,7 @@ upload_texture(TinyTextureContext *gtc, bool force, bool uses_mipmaps) {
       // meantime load a temporary simple image in its place.
       async_reload_texture(gtc);
       if (!tex->has_ram_image()) {
-        if (gtc->was_simple_image_modified()) {
-          return upload_simple_texture(gtc);
-        }
-        return true;
+        return upload_simple_texture(gtc);
       }
     }
   }
@@ -2558,7 +2555,7 @@ upload_simple_texture(TinyTextureContext *gtc) {
   ZTextureLevel *dest = &gltex->levels[0];
   memcpy(dest->pixmap, image_ptr, image_size);
 
-  gtc->mark_simple_loaded();
+  gtc->mark_loaded();
 
   return true;
 }

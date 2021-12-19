@@ -43,22 +43,4 @@ size_t PyLongOrInt_AsSize_t(PyObject *vv) {
 }
 #endif
 
-#if PY_VERSION_HEX < 0x03090000
-/**
- * Most efficient way to call a function without any arguments.
- */
-PyObject *PyObject_CallNoArgs(PyObject *func) {
-#if PY_VERSION_HEX >= 0x03080000
-  return _PyObject_Vectorcall(func, nullptr, 0, nullptr);
-#elif PY_VERSION_HEX >= 0x03070000
-  return _PyObject_FastCallDict(func, nullptr, 0, nullptr);
-#elif PY_VERSION_HEX >= 0x03060000
-  return _PyObject_FastCall(func, nullptr, 0);
-#else
-  static PyObject *empty_tuple = PyTuple_New(0);
-  return PyObject_Call(func, empty_tuple, nullptr);
-#endif
-}
-#endif
-
 #endif  // HAVE_PYTHON

@@ -33,6 +33,7 @@ extern ConfigVariableEnum<BulletWorld::BroadphaseAlgorithm> bullet_broadphase_al
 extern ConfigVariableEnum<BulletWorld::FilterAlgorithm> bullet_filter_algorithm;
 extern ConfigVariableDouble bullet_sap_extents;
 extern ConfigVariableBool bullet_enable_contact_events;
+extern ConfigVariableBool bullet_split_impulse;
 extern ConfigVariableInt bullet_solver_iterations;
 extern ConfigVariableBool bullet_additional_damping;
 extern ConfigVariableDouble bullet_additional_damping_linear_factor;
