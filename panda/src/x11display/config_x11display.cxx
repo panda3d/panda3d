@@ -84,6 +84,10 @@ ConfigVariableString x_wm_class
  PRC_DESC("Specify the value to use for the res_class field of the window's "
           "WM_CLASS property."));
 
+ConfigVariableBool x_support_xi2
+("x-support-xi2", true,
+ PRC_DESC("Set this to true to enable the use of XInput2 for input handling."));
+
 /**
  * Initializes the library.  This must be called at least once before any of
  * the functions or classes in this library can be used.  Normally it will be

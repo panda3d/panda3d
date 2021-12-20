@@ -224,7 +224,8 @@ x11GraphicsPipe(const std::string &display) :
 
   // Dynamically load the XInput2 extension.
   int ev, err;
-  if (XQueryExtension(_display, "XInputExtension", &_xi_opcode, &ev, &err)) {
+  if (x_support_xi2 &&
+      XQueryExtension(_display, "XInputExtension", &_xi_opcode, &ev, &err)) {
     void *xi = dlopen("libXi.so.6", RTLD_NOW | RTLD_LOCAL);
     if (xi != nullptr) {
       pfn_XIQueryVersion _XIQueryVersion = (pfn_XIQueryVersion)dlsym(xi, "XIQueryVersion");

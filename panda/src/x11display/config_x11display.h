@@ -37,4 +37,6 @@ extern ConfigVariableInt x_cursor_size;
 extern ConfigVariableString x_wm_class_name;
 extern ConfigVariableString x_wm_class;
 
+extern ConfigVariableBool x_support_xi2;
+
 #endif
