@@ -1040,7 +1040,7 @@ set_properties_now(WindowProperties &properties) {
               GrabModeAsync, _xwindow, cursor, CurrentTime) != GrabSuccess) {
             x11display_cat.error() << "Failed to grab pointer!\n";
           } else {
-            if (x11_pipe->enable_dga_mouse()) {
+            if (!_use_xinput2 && x11_pipe->enable_dga_mouse()) {
               _dga_mouse_enabled = true;
             } else {
               _raw_mouse_enabled = _raw_mouse_enabled || x11_pipe->enable_raw_mouse();
