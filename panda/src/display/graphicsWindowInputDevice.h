@@ -56,13 +56,14 @@ PUBLISHED:
   INLINE PointerData get_pointer() const;
   void set_pointer_in_window(double x, double y, double time = ClockObject::get_global_clock()->get_frame_time());
   void set_pointer_out_of_window(double time = ClockObject::get_global_clock()->get_frame_time());
-  INLINE void update_pointer(PointerData data, double time = ClockObject::get_global_clock()->get_frame_time());
+  void update_pointer(PointerData data, double time = ClockObject::get_global_clock()->get_frame_time());
   INLINE void pointer_moved(double x, double y, double time = ClockObject::get_global_clock()->get_frame_time());
-  INLINE void remove_pointer(int id);
+  void remove_pointer(int id, double time = ClockObject::get_global_clock()->get_frame_time());
 
 private:
   typedef pset<ButtonHandle> ButtonsHeld;
   ButtonsHeld _buttons_held;
+  pset<int> _touches;
 
 public:
   static TypeHandle get_class_type() {

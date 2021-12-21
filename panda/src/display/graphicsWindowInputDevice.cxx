@@ -199,3 +199,40 @@ set_pointer_out_of_window(double time) {
                                seq, time);
   }
 }
+
+/**
+ * To be called by a particular kind of GraphicsWindow to indicate that the
+ * pointer data has changed.
+ */
+void GraphicsWindowInputDevice::
+update_pointer(PointerData data, double time) {
+  LightMutexHolder holder(_lock);
+  if (data._type == PointerType::touch) {
+    if (data._pressure > 0.0) {
+      if (_touches.empty()) {
+        _button_events->add_event(ButtonEvent(MouseButton::touch(), ButtonEvent::T_down, time));
+        _buttons_held.insert(MouseButton::touch());
+      }
+      _touches.insert(data._id);
+    }
+    else if (_touches.erase(data._id) && _touches.empty()) {
+      _button_events->add_event(ButtonEvent(MouseButton::touch(), ButtonEvent::T_up, time));
+      _buttons_held.erase(MouseButton::touch());
+    }
+  }
+  InputDevice::update_pointer(std::move(data), time);
+}
+
+/**
+ * To be called by a particular kind of GraphicsWindow to indicate that the
+ * pointer no longer exists.
+ */
+void GraphicsWindowInputDevice::
+remove_pointer(int id, double time) {
+  LightMutexHolder holder(_lock);
+  if (_touches.erase(id) && _touches.empty()) {
+    _button_events->add_event(ButtonEvent(MouseButton::touch(), ButtonEvent::T_up, time));
+    _buttons_held.erase(MouseButton::touch());
+  }
+  InputDevice::remove_pointer(id);
+}

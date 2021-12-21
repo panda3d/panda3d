@@ -2328,7 +2328,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       for (UINT i = 0; i < _num_touches; ++i) {
         PointerData data;
         data._id = (int)_touches[i].dwID;
-        data._type = PointerType::finger;
+        data._type = PointerType::touch;
         data._xpos = _touches[i].x * 0.01 + offset.x;
         data._ypos = _touches[i].y * 0.01 + offset.y;
 

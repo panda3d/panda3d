@@ -473,7 +473,7 @@ process_events() {
           {
             PointerData data;
             data._id = device_event->detail;
-            data._type = PointerType::finger;
+            data._type = PointerType::touch;
             data._xpos = device_event->event_x;
             data._ypos = device_event->event_y;
             data._pressure = 1.0;

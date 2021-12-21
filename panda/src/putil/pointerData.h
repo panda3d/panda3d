@@ -25,7 +25,7 @@ BEGIN_PUBLISH
 enum class PointerType {
   unknown,
   mouse,
-  finger,
+  touch,
   stylus,
   eraser,
 };

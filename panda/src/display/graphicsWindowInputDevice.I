@@ -27,30 +27,10 @@ get_pointer() const {
 
 /**
  * To be called by a particular kind of GraphicsWindow to indicate that the
- * pointer data has changed.
- */
-INLINE void GraphicsWindowInputDevice::
-update_pointer(PointerData data, double time) {
-  LightMutexHolder holder(_lock);
-  InputDevice::update_pointer(std::move(data), time);
-}
-
-/**
- * To be called by a particular kind of GraphicsWindow to indicate that the
  * pointer has moved by the given relative amount.
  */
 INLINE void GraphicsWindowInputDevice::
 pointer_moved(double x, double y, double time) {
   LightMutexHolder holder(_lock);
   InputDevice::pointer_moved(0, x, y, time);
-}
-
-/**
- * To be called by a particular kind of GraphicsWindow to indicate that the
- * pointer no longer exists.
- */
-INLINE void GraphicsWindowInputDevice::
-remove_pointer(int id) {
-  LightMutexHolder holder(_lock);
-  InputDevice::remove_pointer(id);
 }
