@@ -6,6 +6,7 @@ import shutil
 import glob
 import re
 import subprocess
+import sysconfig
 from makepandacore import *
 from installpanda import *
 
@@ -910,8 +911,7 @@ def MakeInstallerAndroid(version, **kwargs):
                     shutil.copy(os.path.join(source_dir, base), target)
 
     # Copy the Python standard library to the .apk as well.
-    from distutils.sysconfig import get_python_lib
-    stdlib_source = get_python_lib(False, True)
+    stdlib_source = sysconfig.get_path("stdlib")
     stdlib_target = os.path.join("apkroot", "lib", "python{0}.{1}".format(*sys.version_info))
     copy_python_tree(stdlib_source, stdlib_target)
 

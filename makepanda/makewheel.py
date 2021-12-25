@@ -11,8 +11,7 @@ import tempfile
 import subprocess
 import time
 import struct
-from distutils.util import get_platform
-from distutils.sysconfig import get_config_var
+from sysconfig import get_platform, get_config_var
 from optparse import OptionParser
 from base64 import urlsafe_b64encode
 from makepandacore import LocateBinary, GetExtensionSuffix, SetVerbose, GetVerbose, GetMetadataValue, CrossCompiling, GetThirdpartyDir, SDK, GetStrip
