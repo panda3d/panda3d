@@ -9,6 +9,7 @@ set(P3TFORM_HEADERS
   mouseWatcherGroup.h
   mouseWatcherParameter.I mouseWatcherParameter.h
   mouseWatcherRegion.I mouseWatcherRegion.h
+  pointerThrower.I pointerThrower.h
   trackball.h
   transform2sg.h
 )
@@ -24,6 +25,7 @@ set(P3TFORM_SOURCES
   mouseWatcherGroup.cxx
   mouseWatcherParameter.cxx
   mouseWatcherRegion.cxx
+  pointerThrower.cxx
   trackball.cxx
   transform2sg.cxx
 )

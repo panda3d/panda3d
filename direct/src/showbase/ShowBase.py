@@ -1686,6 +1686,7 @@ class ShowBase(DirectObject.DirectObject):
         for i in range(win.getNumInputDevices()):
             name = win.getInputDeviceName(i)
             mk = self.dataRoot.attachNewNode(MouseAndKeyboard(win, i, name))
+            pt = mk.attachNewNode(PointerThrower("pointers%s" % (i)))
             mw = mk.attachNewNode(MouseWatcher("watcher%s" % (i)))
 
             if win.getSideBySideStereo():

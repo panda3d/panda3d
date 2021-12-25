@@ -20,6 +20,7 @@
 #include "mouseWatcherBase.h"
 #include "mouseWatcherGroup.h"
 #include "mouseWatcherRegion.h"
+#include "pointerThrower.h"
 #include "trackball.h"
 #include "transform2sg.h"
 
@@ -74,6 +75,7 @@ ConfigureFn(config_tform) {
   MouseWatcherBase::init_type();
   MouseWatcherGroup::init_type();
   MouseWatcherRegion::init_type();
+  PointerThrower::init_type();
   Trackball::init_type();
   Transform2SG::init_type();
 }

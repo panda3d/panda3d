@@ -145,6 +145,8 @@ get_candidate_event() const {
 /**
  * Specifies the event that is generated (if any) each time the mouse is moved
  * within the window.
+ *
+ * @deprecated Create a PointerThrower object instead.
  */
 INLINE void ButtonThrower::
 set_move_event(const std::string &move_event) {
@@ -154,6 +156,8 @@ set_move_event(const std::string &move_event) {
 /**
  * Returns the move_event that has been set on this ButtonThrower.  See
  * set_move_event().
+ *
+ * @deprecated Create a PointerThrower object instead.
  */
 INLINE const std::string &ButtonThrower::
 get_move_event() const {
