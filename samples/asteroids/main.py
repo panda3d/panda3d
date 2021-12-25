@@ -202,7 +202,7 @@ class AsteroidsDemo(ShowBase):
     def gameLoop(self, task):
         # Get the time elapsed since the next frame.  We need this for our
         # distance and velocity calculations.
-        dt = globalClock.getDt()
+        dt = self.clock.dt
 
         # If the ship is not alive, do nothing.  Tasks return Task.cont to
         # signify that the task should continue running. If Task.done were

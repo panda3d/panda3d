@@ -266,7 +266,7 @@ class BallInMazeDemo(ShowBase):
     def rollTask(self, task):
         # Standard technique for finding the amount of time since the last
         # frame
-        dt = globalClock.getDt()
+        dt = base.clock.dt
 
         # If dt is large, then there has been a # hiccup that could cause the ball
         # to leave the field if this functions runs, so ignore the frame
