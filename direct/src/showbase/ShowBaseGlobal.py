@@ -33,6 +33,7 @@ ostream = Notify.out()
 
 #: The clock object used by default for rendering and animation, obtained using
 #: :meth:`panda3d.core.ClockObject.getGlobalClock()`.
+#: @deprecated Use `base.clock` instead.
 globalClock = ClockObject.getGlobalClock()
 
 #: See :meth:`panda3d.core.ConfigPageManager.getGlobalPtr()`.

@@ -122,9 +122,10 @@ class ClusterClient(DirectObject.DirectObject):
         taskMgr.add(self.synchronizeTimeTask, "synchronizeTimeTask", -40)
 
     def synchronizeTimeTask(self, task):
-        frameCount = globalClock.getFrameCount()
-        frameTime = globalClock.getFrameTime()
-        dt = globalClock.getDt()
+        clock = ClockObject.getGlobalClock()
+        frameCount = clock.getFrameCount()
+        frameTime = clock.getFrameTime()
+        dt = clock.dt
         for server in self.serverList:
             server.sendTimeData(frameCount, frameTime, dt)
         return Task.cont
