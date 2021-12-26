@@ -663,6 +663,13 @@ process_report(PCHAR ptr, size_t size) {
   if (status == HIDP_STATUS_SUCCESS) {
     for (ULONG di = 0; di < count; ++di) {
       if (data[di].DataIndex != _hat_data_index) {
+        if (device_cat.is_spam()) {
+          device_cat.spam()
+            << "Read RawValue " << data[di].RawValue
+            << " for DataIndex " << data[di].DataIndex
+            << " from raw device " << _path << "\n";
+        }
+
         if (data[di].DataIndex >= _indices.size()) {
           if (device_cat.is_debug()) {
             device_cat.debug()
