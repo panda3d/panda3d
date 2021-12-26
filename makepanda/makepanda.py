@@ -1602,14 +1602,17 @@ def CompileCxx(obj,src,opts):
         # Needed by both Python, Panda, Eigen, all of which break aliasing rules.
         cmd += " -fno-strict-aliasing"
 
-        if optlevel >= 3:
-            cmd += " -ffast-math -fno-stack-protector"
-        if optlevel == 3:
-            # Fast math is nice, but we'd like to see NaN in dev builds.
-            cmd += " -fno-finite-math-only"
+        # Certain clang versions crash when passing these math flags while
+        # compiling Objective-C++ code
+        if not src.endswith(".m") and not src.endswith(".mm"):
+            if optlevel >= 3:
+                cmd += " -ffast-math -fno-stack-protector"
+            if optlevel == 3:
+                # Fast math is nice, but we'd like to see NaN in dev builds.
+                cmd += " -fno-finite-math-only"
 
-        # Make sure this is off to avoid GCC/Eigen bug (see GitHub #228)
-        cmd += " -fno-unsafe-math-optimizations"
+            # Make sure this is off to avoid GCC/Eigen bug (see GitHub #228)
+            cmd += " -fno-unsafe-math-optimizations"
 
         if (optlevel==1): cmd += " -ggdb -D_DEBUG"
         if (optlevel==2): cmd += " -O1 -D_DEBUG"
