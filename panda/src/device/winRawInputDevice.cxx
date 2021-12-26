@@ -38,6 +38,9 @@ enum QuirkBits : int {
 
   // Axes on the right stick are swapped, using x for y and vice versa.
   QB_right_axes_swapped = 64,
+
+  // Using an RC (drone) controller as a gamepad instead of a flight stick
+  QB_rc_controller = 128,
 };
 
 // Some nonstandard gamepads have different button mappings.
@@ -84,6 +87,10 @@ static const struct DeviceMapping {
   // PS2 controller connected through a USB adapter
   {0x2563, 0x0523, InputDevice::DeviceClass::gamepad, QB_rstick_from_z | QB_no_analog_triggers,
     {"face_y", "face_b", "face_a", "face_x", "lshoulder", "rshoulder", "ltrigger", "rtrigger", "back", "start", "lstick", "rstick"}
+  },
+  // FrSky Simulator
+  {0x0483, 0x5720, InputDevice::DeviceClass::gamepad, QB_rc_controller,
+    {0}
   },
   {0},
 };
@@ -434,7 +441,11 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
         switch (usage) {
           case HID_USAGE_GENERIC_X:
           if (_device_class == DeviceClass::gamepad) {
-            axis = Axis::left_x;
+            if (quirks & QB_rc_controller) {
+              axis = Axis::right_x;
+            } else {
+              axis = Axis::left_x;
+            }
           } else if (_device_class == DeviceClass::flight_stick) {
             axis = Axis::roll;
           } else {
@@ -443,8 +454,12 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
           break;
         case HID_USAGE_GENERIC_Y:
           if (_device_class == DeviceClass::gamepad) {
-            axis = Axis::left_y;
-            swap(cap.LogicalMin, cap.LogicalMax);
+            if (quirks & QB_rc_controller) {
+              axis = Axis::right_y;
+            } else {
+              axis = Axis::left_y;
+              swap(cap.LogicalMin, cap.LogicalMax);
+            }
           } else if (_device_class == DeviceClass::flight_stick) {
             axis = Axis::pitch;
           } else {
@@ -461,6 +476,8 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
               } else {
                 axis = InputDevice::Axis::right_x;
               }
+            } else if (quirks & QB_rc_controller) {
+              axis = InputDevice::Axis::left_y;
             } else if ((quirks & QB_no_analog_triggers) == 0) {
               axis = Axis::left_trigger;
             }
@@ -483,6 +500,8 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
               if ((quirks & QB_no_analog_triggers) == 0) {
                 axis = Axis::left_trigger;
               }
+            } else if (quirks & QB_rc_controller) {
+              axis = Axis::left_x;
             } else {
               axis = Axis::right_x;
             }
