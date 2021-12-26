@@ -383,18 +383,21 @@ class ShowBase(DirectObject.DirectObject):
 
         # Get a pointer to Panda's global ClockObject, used for
         # synchronizing events between Python and C.
-        globalClock = ClockObject.getGlobalClock()
+        clock = ClockObject.getGlobalClock()
+
+        #: This is the global :class:`~panda3d.core.ClockObject`.
+        self.clock = clock
 
         # Since we have already started up a TaskManager, and probably
         # a number of tasks; and since the TaskManager had to use the
         # TrueClock to tell time until this moment, make sure the
         # globalClock object is exactly in sync with the TrueClock.
         trueClock = TrueClock.getGlobalPtr()
-        globalClock.setRealTime(trueClock.getShortTime())
-        globalClock.tick()
+        clock.setRealTime(trueClock.getShortTime())
+        clock.tick()
 
-        # Now we can make the TaskManager start using the new globalClock.
-        taskMgr.globalClock = globalClock
+        # Now we can make the TaskManager start using the new clock.
+        taskMgr.globalClock = clock
 
         # client CPU affinity is determined by, in order:
         # - client-cpu-affinity-mask config
@@ -443,7 +446,7 @@ class ShowBase(DirectObject.DirectObject):
         builtins.ostream = Notify.out()
         builtins.directNotify = directNotify
         builtins.giveNotify = giveNotify
-        builtins.globalClock = globalClock
+        builtins.globalClock = clock
         builtins.vfs = vfs
         builtins.cpMgr = ConfigPageManager.getGlobalPtr()
         builtins.cvMgr = ConfigVariableManager.getGlobalPtr()
