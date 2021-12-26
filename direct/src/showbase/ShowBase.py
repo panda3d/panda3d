@@ -385,6 +385,8 @@ class ShowBase(DirectObject.DirectObject):
         # Get a pointer to Panda's global ClockObject, used for
         # synchronizing events between Python and C.
         clock = ClockObject.getGlobalClock()
+
+        #: This is the global :class:`~panda3d.core.ClockObject`.
         self.clock = clock
 
         # Since we have already started up a TaskManager, and probably
