@@ -40,7 +40,7 @@ jobs:
           eigen: NO
 
         - profile: macos-eigen-coverage-unity-xcode
-          os: macOS-10.15
+          os: macOS-11
           config: Coverage
           unity: YES
           generator: Xcode
@@ -50,7 +50,7 @@ jobs:
           eigen: YES
 
         - profile: macos-nometa-standard-makefile
-          os: macOS-10.15
+          os: macOS-11
           config: Standard
           unity: NO
           generator: Unix Makefiles
@@ -333,7 +333,7 @@ jobs:
     if: "!contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.head_commit.message, '[ci skip]')"
     strategy:
       matrix:
-        os: [ubuntu-18.04, windows-2016, macOS-10.15]
+        os: [ubuntu-18.04, windows-2016, macOS-11]
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v1
