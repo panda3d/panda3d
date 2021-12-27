@@ -68,15 +68,6 @@ was_image_modified() const {
 }
 
 /**
- * Returns true if the texture's "simple" image has been modified since the
- * last time mark_simple_loaded() was called.
- */
-INLINE bool TextureContext::
-was_simple_image_modified() const {
-  return _simple_image_modified != get_texture()->get_simple_image_modified();
-}
-
-/**
  * Returns true if the given page of the texture image has been modified since
  * the last time mark_loaded() was called.
  */
@@ -101,15 +92,6 @@ get_properties_modified() const {
 INLINE UpdateSeq TextureContext::
 get_image_modified() const {
   return _image_modified;
-}
-
-/**
- * Returns a sequence number which is guaranteed to change at least every time
- * the texture's "simple" image data is modified.
- */
-INLINE UpdateSeq TextureContext::
-get_simple_image_modified() const {
-  return _simple_image_modified;
 }
 
 /**
@@ -147,27 +129,12 @@ mark_loaded() {
 }
 
 /**
- * Should be called after the texture's "simple" image has been loaded into
- * graphics memory.
- */
-INLINE void TextureContext::
-mark_simple_loaded() {
-  _properties_modified = get_texture()->get_properties_modified();
-  _simple_image_modified = get_texture()->get_simple_image_modified();
-  update_modified(std::max(_properties_modified, _simple_image_modified));
-
-  // The texture's not exactly resident now, but some part of it is.
-  set_resident(true);
-}
-
-/**
  * Should be called after the texture has been forced out of texture memory.
  */
 INLINE void TextureContext::
 mark_unloaded() {
   _properties_modified = UpdateSeq::old();
   _image_modified = UpdateSeq::old();
-  _simple_image_modified = UpdateSeq::old();
   update_modified(UpdateSeq::old());
 
   set_resident(false);

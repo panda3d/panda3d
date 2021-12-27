@@ -79,6 +79,8 @@ if(HAVE_OPENSSL)
 endif()
 
 set(P3PRC_IGATEEXT
+  configVariable_ext.cxx
+  configVariable_ext.h
   streamReader_ext.cxx
   streamReader_ext.h
   streamWriter_ext.cxx

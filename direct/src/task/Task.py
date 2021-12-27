@@ -274,33 +274,27 @@ class TaskManager:
     def getTasksNamed(self, taskName):
         """Returns a list of all tasks, active or sleeping, with the
         indicated name. """
-        return self.__makeTaskList(self.mgr.findTasks(taskName))
+        return list(self.mgr.findTasks(taskName))
 
     def getTasksMatching(self, taskPattern):
         """Returns a list of all tasks, active or sleeping, with a
         name that matches the pattern, which can include standard
         shell globbing characters like \\*, ?, and []. """
 
-        return self.__makeTaskList(self.mgr.findTasksMatching(GlobPattern(taskPattern)))
+        return list(self.mgr.findTasksMatching(GlobPattern(taskPattern)))
 
     def getAllTasks(self):
         """Returns list of all tasks, active and sleeping, in
         arbitrary order. """
-        return self.__makeTaskList(self.mgr.getTasks())
+        return list(self.mgr.getTasks())
 
     def getTasks(self):
         """Returns list of all active tasks in arbitrary order. """
-        return self.__makeTaskList(self.mgr.getActiveTasks())
+        return list(self.mgr.getActiveTasks())
 
     def getDoLaters(self):
         """Returns list of all sleeping tasks in arbitrary order. """
-        return self.__makeTaskList(self.mgr.getSleepingTasks())
-
-    def __makeTaskList(self, taskCollection):
-        l = []
-        for i in range(taskCollection.getNumTasks()):
-            l.append(taskCollection.getTask(i))
-        return l
+        return list(self.mgr.getSleepingTasks())
 
     def doMethodLater(self, delayTime, funcOrTask, name, extraArgs = None,
                       sort = None, priority = None, taskChain = None,

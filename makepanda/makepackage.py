@@ -6,6 +6,7 @@ import shutil
 import glob
 import re
 import subprocess
+import sysconfig
 from makepandacore import *
 from installpanda import *
 
@@ -214,7 +215,7 @@ def MakeDebugSymbolArchive(zipname, dirname):
     zip.close()
 
 
-def MakeInstallerLinux(version, debversion=None, rpmrelease=1,
+def MakeInstallerLinux(version, debversion=None, rpmversion=None, rpmrelease=1,
                        python_versions=[], **kwargs):
     outputdir = GetOutputDir()
 
@@ -235,6 +236,8 @@ def MakeInstallerLinux(version, debversion=None, rpmrelease=1,
     major_version = '.'.join(version.split('.')[:2])
     if not debversion:
         debversion = version
+    if not rpmversion:
+        rpmversion = version
 
     # Clean and set up a directory to install Panda3D into
     oscmd("rm -rf targetroot data.tar.gz control.tar.gz panda3d.spec")
@@ -371,13 +374,13 @@ def MakeInstallerLinux(version, debversion=None, rpmrelease=1,
                 txt += "/usr/bin/%s\n" % (base)
 
         # Write out the spec file.
-        txt = txt.replace("VERSION", version)
+        txt = txt.replace("VERSION", rpmversion)
         txt = txt.replace("RPMRELEASE", str(rpmrelease))
         txt = txt.replace("PANDASOURCE", pandasource)
         WriteFile("panda3d.spec", txt)
 
         oscmd("fakeroot rpmbuild --define '_rpmdir "+pandasource+"' --buildroot '"+os.path.abspath("targetroot")+"' -bb panda3d.spec")
-        oscmd("mv "+arch+"/panda3d-"+version+"-"+rpmrelease+"."+arch+".rpm .")
+        oscmd("mv "+arch+"/panda3d-"+rpmversion+"-"+rpmrelease+"."+arch+".rpm .")
         oscmd("rm -rf "+arch, True)
 
     else:
@@ -794,16 +797,8 @@ def MakeInstallerAndroid(version, **kwargs):
     if os.path.exists(apk_unsigned):
         os.unlink(apk_unsigned)
 
-    # Compile the Java classes into a Dalvik executable.
-    dx_cmd = "dx --dex --output=apkroot/classes.dex "
-    if GetOptimize() <= 2:
-        dx_cmd += "--debug "
-    if GetVerbose():
-        dx_cmd += "--verbose "
-    if "ANDROID_API" in SDK:
-        dx_cmd += "--min-sdk-version=%d " % (SDK["ANDROID_API"])
-    dx_cmd += os.path.join(outputdir, "classes")
-    oscmd(dx_cmd)
+    # Copy the compiled Java classes.
+    oscmd("cp %s apkroot/classes.dex" % (os.path.join(outputdir, "classes.dex")))
 
     # Copy the libraries one by one.  In case of library dependencies, strip
     # off any suffix (eg. libfile.so.1.0), as Android does not support them.
@@ -887,8 +882,12 @@ def MakeInstallerAndroid(version, **kwargs):
                 copy_library(source, "libpy.panda3d.{}.so".format(modname))
 
         # Same for standard Python modules.
-        import _ctypes
-        source_dir = os.path.dirname(_ctypes.__file__)
+        if CrossCompiling():
+            source_dir = os.path.join(GetThirdpartyDir(), "python", "lib", SDK["PYTHONVERSION"], "lib-dynload")
+        else:
+            import _ctypes
+            source_dir = os.path.dirname(_ctypes.__file__)
+
         for base in os.listdir(source_dir):
             if not base.endswith('.so'):
                 continue
@@ -914,8 +913,7 @@ def MakeInstallerAndroid(version, **kwargs):
                     shutil.copy(os.path.join(source_dir, base), target)
 
     # Copy the Python standard library to the .apk as well.
-    from distutils.sysconfig import get_python_lib
-    stdlib_source = get_python_lib(False, True)
+    stdlib_source = sysconfig.get_path("stdlib")
     stdlib_target = os.path.join("apkroot", "lib", "python{0}.{1}".format(*sys.version_info))
     copy_python_tree(stdlib_source, stdlib_target)
 
@@ -1030,6 +1028,13 @@ if __name__ == "__main__":
     )
     parser.add_option(
         '',
+        '--rpmversion',
+        dest='rpmversion',
+        help='Version number for .rpm file',
+        default=None,
+    )
+    parser.add_option(
+        '',
         '--rpmrelease',
         dest='rpmrelease',
         help='Release number for .rpm file',
@@ -1097,6 +1102,7 @@ if __name__ == "__main__":
         optimize=GetOptimize(),
         compressor=options.compressor,
         debversion=options.debversion,
+        rpmversion=options.rpmversion,
         rpmrelease=options.rpmrelease,
         python_versions=ReadPythonVersionInfoFile(),
         installdir=options.installdir,

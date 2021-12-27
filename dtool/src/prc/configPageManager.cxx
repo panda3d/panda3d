@@ -97,6 +97,7 @@ reload_implicit_pages() {
   }
   _implicit_pages.clear();
 
+#ifndef ANDROID
   // If we are running inside a deployed application, see if it exposes
   // information about how the PRC data should be initialized.
   struct BlobInfo {
@@ -481,6 +482,7 @@ reload_implicit_pages() {
       }
     }
   }
+#endif  // ANDROID
 
   if (!_loaded_implicit) {
     config_initialized();
@@ -520,7 +522,6 @@ reload_implicit_pages() {
     SetErrorMode(SEM_FAILCRITICALERRORS);
   }
 #endif
-
 }
 
 /**

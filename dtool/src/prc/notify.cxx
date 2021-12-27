@@ -544,6 +544,12 @@ config_initialized() {
         }
 #endif  // BUILD_IPHONE
       }
+#ifdef ANDROID
+    } else {
+      // By default, we always redirect the notify stream to the Android log.
+      Notify *ptr = Notify::ptr();
+      ptr->set_ostream_ptr(new AndroidLogStream(ANDROID_LOG_INFO), true);
+#endif
     }
   }
 #endif

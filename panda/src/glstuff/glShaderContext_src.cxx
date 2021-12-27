@@ -2911,10 +2911,13 @@ update_shader_texture_bindings(ShaderContext *prev) {
 
     // Bindless texturing wasn't supported or didn't work, so let's just bind
     // the texture normally.
+    // Note that simple RAM images are always 2-D for now, so to avoid errors,
+    // we must load the real texture if this is not for a sampler2D.
+    bool force = (spec._desired_type != Texture::TT_2d_texture);
 #ifndef OPENGLES
     if (multi_bind) {
       // Multi-bind case.
-      if (!_glgsg->update_texture(gtc, false)) {
+      if (!_glgsg->update_texture(gtc, force)) {
         textures[i] = 0;
       } else {
         gtc->set_active(true);
@@ -2934,7 +2937,7 @@ update_shader_texture_bindings(ShaderContext *prev) {
     {
       // Non-multibind case.
       _glgsg->set_active_texture_stage(i);
-      if (!_glgsg->update_texture(gtc, false)) {
+      if (!_glgsg->update_texture(gtc, force)) {
         continue;
       }
       _glgsg->apply_texture(gtc);

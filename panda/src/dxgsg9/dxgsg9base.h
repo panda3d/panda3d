@@ -192,8 +192,8 @@ struct DXScreenData {
   HWND _window;
   HMONITOR _monitor;
   DWORD _max_available_video_memory;
-  ushort _card_id;  // adapter ID
-  ushort _depth_buffer_bitdepth;  //GetSurfaceDesc is not reliable so must store this explicitly
+  unsigned short _card_id;  // adapter ID
+  unsigned short _depth_buffer_bitdepth;  //GetSurfaceDesc is not reliable so must store this explicitly
   bool _can_direct_disable_color_writes;  // if true, don't need blending for this
   bool _is_low_memory_card;
   bool _is_tnl_device;

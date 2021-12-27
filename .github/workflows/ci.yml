@@ -15,7 +15,7 @@ jobs:
         - ubuntu-bionic-coverage-ninja
         - macos-eigen-coverage-unity-xcode
         - macos-nometa-standard-makefile
-#       - windows-standard-unity-msvc # FIXME when GH Actions runners upgrade CMake to >=3.16.1
+        - windows-standard-unity-msvc
         - windows-nopython-nometa-standard-msvc
 
         include:
@@ -40,7 +40,7 @@ jobs:
           eigen: NO
 
         - profile: macos-eigen-coverage-unity-xcode
-          os: macOS-latest
+          os: macOS-10.15
           config: Coverage
           unity: YES
           generator: Xcode
@@ -50,7 +50,7 @@ jobs:
           eigen: YES
 
         - profile: macos-nometa-standard-makefile
-          os: macOS-latest
+          os: macOS-10.15
           config: Standard
           unity: NO
           generator: Unix Makefiles
@@ -60,20 +60,20 @@ jobs:
           eigen: NO
 
         - profile: windows-standard-unity-msvc
-          os: windows-2019
+          os: windows-2022
           config: Standard
           unity: YES
-          generator: Visual Studio 16 2019
+          generator: Visual Studio 17 2022
           compiler: Default
           metalibs: YES
           python: YES
           eigen: NO
 
         - profile: windows-nopython-nometa-standard-msvc
-          os: windows-2019
+          os: windows-2022
           config: Standard
           unity: NO
-          generator: Visual Studio 16 2019
+          generator: Visual Studio 17 2022
           compiler: Default
           metalibs: NO
           python: NO
@@ -92,10 +92,10 @@ jobs:
     - name: Install dependencies (macOS)
       if: runner.os == 'macOS'
       run: |
-        curl -O https://www.panda3d.org/download/panda3d-1.10.9/panda3d-1.10.9-tools-mac.tar.gz
-        tar -xf panda3d-1.10.9-tools-mac.tar.gz
-        mv panda3d-1.10.9/thirdparty thirdparty
-        rmdir panda3d-1.10.9
+        curl -O https://www.panda3d.org/download/panda3d-1.10.10/panda3d-1.10.10-tools-mac.tar.gz
+        tar -xf panda3d-1.10.10-tools-mac.tar.gz
+        mv panda3d-1.10.10/thirdparty thirdparty
+        rmdir panda3d-1.10.10
 
         # Temporary hack so that pzip can run, since we are about to remove Cg anyway.
         install_name_tool -id "$(pwd)/thirdparty/darwin-libs-a/nvidiacg/lib/libCg.dylib" thirdparty/darwin-libs-a/nvidiacg/lib/libCg.dylib
@@ -124,16 +124,16 @@ jobs:
       uses: actions/cache@v1
       with:
         path: thirdparty
-        key: ci-cmake-${{ runner.OS }}-thirdparty-v1.10.9-r1
+        key: ci-cmake-${{ runner.OS }}-thirdparty-v1.10.10-r1
     - name: Install dependencies (Windows)
       if: runner.os == 'Windows'
       shell: powershell
       run: |
         if (!(Test-Path thirdparty/win-libs-vc14-x64)) {
           $wc = New-Object System.Net.WebClient
-          $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.9/panda3d-1.10.9-tools-win64.zip", "thirdparty-tools.zip")
+          $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.10/panda3d-1.10.10-tools-win64.zip", "thirdparty-tools.zip")
           Expand-Archive -Path thirdparty-tools.zip
-          Move-Item -Path thirdparty-tools/panda3d-1.10.9/thirdparty -Destination .
+          Move-Item -Path thirdparty-tools/panda3d-1.10.10/thirdparty -Destination .
         }
 
     - name: ccache (non-Windows)
@@ -153,7 +153,7 @@ jobs:
         cd build
 
         if ${{ matrix.compiler == 'Clang' }}; then
-          if [[ "$CMAKE_GENERATOR" == *Studio*2019* ]]; then
+          if [[ "$CMAKE_GENERATOR" =~ Studio.+20(19|22) ]]; then
             export CMAKE_GENERATOR_TOOLSET=ClangCL
           elif [[ "$CMAKE_GENERATOR" == *Studio* ]]; then
             export CMAKE_GENERATOR_TOOLSET=LLVM
@@ -186,7 +186,7 @@ jobs:
 
     - name: Setup Python (Python 3.6)
       if: contains(matrix.python, 'YES')
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v2
       with:
         python-version: 3.6
     - name: Configure (Python 3.6)
@@ -218,7 +218,7 @@ jobs:
 
     - name: Setup Python (Python 3.7)
       if: contains(matrix.python, 'YES')
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v2
       with:
         python-version: 3.7
     - name: Configure (Python 3.7)
@@ -250,7 +250,7 @@ jobs:
 
     - name: Setup Python (Python 3.8)
       if: contains(matrix.python, 'YES')
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v2
       with:
         python-version: 3.8
     - name: Configure (Python 3.8)
@@ -282,7 +282,7 @@ jobs:
 
     - name: Setup Python (Python 3.9)
       if: contains(matrix.python, 'YES')
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v2
       with:
         python-version: 3.9
     - name: Configure (Python 3.9)
@@ -333,7 +333,7 @@ jobs:
     if: "!contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.head_commit.message, '[ci skip]')"
     strategy:
       matrix:
-        os: [ubuntu-18.04, windows-2016, macOS-latest]
+        os: [ubuntu-18.04, windows-2016, macOS-11]
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v1
@@ -347,19 +347,19 @@ jobs:
       shell: powershell
       run: |
         $wc = New-Object System.Net.WebClient
-        $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.9/panda3d-1.10.9-tools-win64.zip", "thirdparty-tools.zip")
+        $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.10/panda3d-1.10.10-tools-win64.zip", "thirdparty-tools.zip")
         Expand-Archive -Path thirdparty-tools.zip
-        Move-Item -Path thirdparty-tools/panda3d-1.10.9/thirdparty -Destination .
+        Move-Item -Path thirdparty-tools/panda3d-1.10.10/thirdparty -Destination .
     - name: Get thirdparty packages (macOS)
       if: runner.os == 'macOS'
       run: |
-        curl -O https://www.panda3d.org/download/panda3d-1.10.9/panda3d-1.10.9-tools-mac.tar.gz
-        tar -xf panda3d-1.10.9-tools-mac.tar.gz
-        mv panda3d-1.10.9/thirdparty thirdparty
-        rmdir panda3d-1.10.9
+        curl -O https://www.panda3d.org/download/panda3d-1.10.10/panda3d-1.10.10-tools-mac.tar.gz
+        tar -xf panda3d-1.10.10-tools-mac.tar.gz
+        mv panda3d-1.10.10/thirdparty thirdparty
+        rmdir panda3d-1.10.10
         (cd thirdparty/darwin-libs-a && rm -rf rocket)
     - name: Set up Python 3.9
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v2
       with:
         python-version: 3.9
     - name: Build Python 3.9
@@ -372,7 +372,7 @@ jobs:
         python -m pip install pytest
         PYTHONPATH=built LD_LIBRARY_PATH=built/lib DYLD_LIBRARY_PATH=built/lib python -m pytest
     - name: Set up Python 3.8
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v2
       with:
         python-version: 3.8
     - name: Build Python 3.8
@@ -385,7 +385,7 @@ jobs:
         python -m pip install pytest
         PYTHONPATH=built LD_LIBRARY_PATH=built/lib DYLD_LIBRARY_PATH=built/lib python -m pytest
     - name: Set up Python 3.7
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v2
       with:
         python-version: 3.7
     - name: Build Python 3.7

@@ -8,6 +8,7 @@ __all__ = ['Floater', 'FloaterWidget', 'FloaterGroup']
 from direct.showbase.TkGlobal import *
 from .Valuator import Valuator, VALUATOR_MINI, VALUATOR_FULL
 from direct.task import Task
+from panda3d.core import ClockObject
 import math
 import Pmw
 
@@ -149,14 +150,14 @@ class FloaterWidget(Pmw.MegaWidget):
         self.velocitySF = 0.0
         self.updateTask = taskMgr.add(self.updateFloaterTask,
                                         'updateFloater')
-        self.updateTask.lastTime = globalClock.getFrameTime()
+        self.updateTask.lastTime = ClockObject.getGlobalClock().getFrameTime()
 
     def updateFloaterTask(self, state):
         """
         Update floaterWidget value based on current scaleFactor
         Adjust for time to compensate for fluctuating frame rates
         """
-        currT = globalClock.getFrameTime()
+        currT = ClockObject.getGlobalClock().getFrameTime()
         dt = currT - state.lastTime
         self.set(self.value + self.velocitySF * dt)
         state.lastTime = currT

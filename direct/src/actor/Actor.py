@@ -1,7 +1,7 @@
 """Actor module: contains the Actor class.
 
-See the :ref:`models-and-actors` page in the Programming Guide to learn
-more about loading models and animated actors.
+See the :ref:`loading-actors-and-animations` page in the Programming Guide
+to learn more about loading animated models.
 """
 
 __all__ = ['Actor']

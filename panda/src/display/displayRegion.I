@@ -160,6 +160,8 @@ set_dimensions(const LVecBase4 &dimensions) {
  * Changes the range of the depth buffer this DisplayRegion writes to.
  * The parameters range from 0 to 1.  It is legal for the near value to be
  * larger than the far value.
+ *
+ * @since 1.11.0
  */
 INLINE void DisplayRegion::
 set_depth_range(PN_stdfloat near_depth, PN_stdfloat far_depth) {

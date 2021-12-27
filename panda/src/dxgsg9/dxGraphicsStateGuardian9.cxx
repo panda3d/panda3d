@@ -245,7 +245,7 @@ apply_texture(int i, TextureContext *tc, const SamplerState &sampler) {
 
   set_sampler_state(i, D3DSAMP_BORDERCOLOR, border_color);
 
-  uint aniso_degree = sampler.get_effective_anisotropic_degree();
+  unsigned int aniso_degree = sampler.get_effective_anisotropic_degree();
   SamplerState::FilterType ft = sampler.get_effective_magfilter();
 
   if (aniso_degree >= 1) {
@@ -357,10 +357,7 @@ upload_texture(DXTextureContext9 *dtc, bool force) {
       async_reload_texture(dtc);
       has_image = _supports_compressed_texture ? tex->has_ram_image() : tex->has_uncompressed_ram_image();
       if (!has_image) {
-        if (dtc->was_simple_image_modified()) {
-          return dtc->create_simple_texture(*_screen);
-        }
-        return true;
+        return dtc->create_simple_texture(*_screen);
       }
     }
   }

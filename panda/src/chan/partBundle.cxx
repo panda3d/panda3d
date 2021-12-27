@@ -599,6 +599,10 @@ do_bind_anim(AnimControl *control, AnimBundle *anim,
     return false;
   }
 
+  // Grabbing the lock early prevents any other thread in stage 0 from also
+  // trying to modify the channel list at the same time.
+  CDLockedReader cdata(_cycler);
+
   plist<int> holes;
   int channel_index = 0;
   pick_channel_index(holes, channel_index);
@@ -616,7 +620,6 @@ do_bind_anim(AnimControl *control, AnimBundle *anim,
                  subset.is_include_empty(), bound_joints, subset);
   control->setup_anim(this, anim, channel_index, bound_joints);
 
-  CDReader cdata(_cycler);
   determine_effective_channels(cdata);
 
   return true;

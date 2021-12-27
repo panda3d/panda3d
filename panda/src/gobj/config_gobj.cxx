@@ -366,6 +366,23 @@ ConfigVariableDouble simple_image_threshold
           "simple images.  Generally the value should be considerably "
           "less than 1."));
 
+ConfigVariableInt texture_reload_num_threads
+ ("texture-reload-num-threads", 1,
+  PRC_DESC("The number of threads that will be started by the Texture class "
+           "to reload textures asynchronously.  These threads will only be "
+           "started if the asynchronous interface is used, and if threading "
+           "support is compiled into Panda.  The default is one thread, "
+           "which allows textures to be loaded one at a time in a single "
+           "asychronous thread.  You can set this higher, particularly if "
+           "you have many CPU's available, to allow loading multiple models "
+           "simultaneously."));
+
+ConfigVariableEnum<ThreadPriority> texture_reload_thread_priority
+ ("texture-reload-thread-priority", TP_normal,
+  PRC_DESC("The default thread priority to assign to the threads created for "
+           "asynchronous texture loading.  The default is 'normal'; you may "
+           "also specify 'low', 'high', or 'urgent'."));
+
 ConfigVariableInt geom_cache_size
 ("geom-cache-size", 5000,
  PRC_DESC("Specifies the maximum number of entries in the cache "
@@ -503,7 +520,7 @@ PRC_DESC("If this is nonzero, it represents an artificial delay, "
          "in seconds, that is imposed on every asynchronous load attempt "
          "(within the thread).  Its purpose is to help debug errors that "
          "may occur when an asynchronous load is delayed.  The "
-         "delay is per-model, and all aync loads will be queued "
+         "delay is per-model, and all async loads will be queued "
          "up behind the delay--it is as if the time it takes to read a "
          "file is increased by this amount per read."));
 

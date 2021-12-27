@@ -32,6 +32,9 @@ class Icon:
 
         return True
 
+    def getLargestSize(self):
+        return max(self.images.keys())
+
     def generateMissingImages(self):
         """ Generates image sizes that should be present but aren't by scaling
         from the next higher size. """
@@ -52,10 +55,12 @@ class Icon:
             if from_size > required_size:
                 Icon.notify.warning("Generating %dx%d icon by scaling down %dx%d image" % (required_size, required_size, from_size, from_size))
 
+                from_image = self.images[from_size]
                 image = PNMImage(required_size, required_size)
-                if self.images[from_size].hasAlpha():
+                image.setColorType(from_image.getColorType())
+                if from_image.hasAlpha():
                     image.addAlpha()
-                image.quickFilterFrom(self.images[from_size])
+                image.quickFilterFrom(from_image)
                 self.images[required_size] = image
             else:
                 Icon.notify.warning("Cannot generate %dx%d icon; no higher resolution image available" % (required_size, required_size))
@@ -267,3 +272,35 @@ class Icon:
         icns.close()
 
         return True
+
+    def writeSize(self, required_size, fn):
+        if not isinstance(fn, Filename):
+            fn = Filename.fromOsSpecific(fn)
+        fn.setBinary()
+        fn.makeDir()
+
+        if required_size in self.images:
+            image = self.images[required_size]
+        else:
+            # Find the next size up.
+            sizes = sorted(self.images.keys())
+            if required_size * 2 in sizes:
+                from_size = required_size * 2
+            else:
+                from_size = 0
+                for from_size in sizes:
+                    if from_size > required_size:
+                        break
+
+            if from_size > required_size:
+                Icon.notify.warning("Generating %dx%d icon by scaling down %dx%d image" % (required_size, required_size, from_size, from_size))
+            else:
+                Icon.notify.warning("Generating %dx%d icon by scaling up %dx%d image" % (required_size, required_size, from_size, from_size))
+
+            from_image = self.images[from_size]
+            image = PNMImage(required_size, required_size)
+            image.setColorType(from_image.getColorType())
+            image.quickFilterFrom(from_image)
+
+        if not image.write(fn):
+            Icon.notify.error("Failed to write %dx%d to %s" % (required_size, required_size, fn))

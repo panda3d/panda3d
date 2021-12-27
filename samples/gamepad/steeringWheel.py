@@ -128,7 +128,7 @@ class App(ShowBase):
         self.wheelCenter = self.wheel.findAxis(InputDevice.Axis.wheel).value
 
     def moveTask(self, task):
-        dt = globalClock.getDt()
+        dt = base.clock.dt
         movementVec = Vec3()
 
         if not self.wheel:

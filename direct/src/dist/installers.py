@@ -196,3 +196,119 @@ def create_nsis(command, basename, build_dir):
         )
     cmd.append(nsifile.to_os_specific())
     subprocess.check_call(cmd)
+
+
+def create_aab(command, basename, build_dir):
+    """Create an Android App Bundle.  This is a newer format that replaces
+    Android's .apk format for uploads to the Play Store.  Unlike .apk files, it
+    does not rely on a proprietary signing scheme or an undocumented binary XML
+    format (protobuf is used instead), so it is easier to create without
+    requiring external tools.  If desired, it is possible to install bundletool
+    and use it to convert an .aab into an .apk.
+    """
+
+    from ._android import AndroidManifest, AbiAlias, BundleConfig, NativeLibraries, ResourceTable
+
+    bundle_fn = p3d.Filename.from_os_specific(command.dist_dir) / (basename + '.aab')
+    build_dir_fn = p3d.Filename.from_os_specific(build_dir)
+
+    # Convert the AndroidManifest.xml file to a protobuf-encoded version of it.
+    axml = AndroidManifest()
+    with open(os.path.join(build_dir, 'AndroidManifest.xml'), 'rb') as fh:
+        axml.parse_xml(fh.read())
+
+    # We use our own zip implementation, which can create the correct
+    # alignment and signature needed by Android automatically.
+    bundle_fn.unlink()
+
+    bundle = p3d.ZipArchive()
+    if not bundle.open_read_write(bundle_fn):
+        command.announce(
+            f'\tUnable to open {bundle_fn} for writing', distutils.log.ERROR)
+        return
+
+    config = BundleConfig()
+    config.bundletool.version = '1.1.0'
+    config.optimizations.splits_config.Clear()
+    config.optimizations.uncompress_native_libraries.enabled = False
+    bundle.add_subfile('BundleConfig.pb', p3d.StringStream(config.SerializeToString()), 9)
+
+    resources = ResourceTable()
+    package = resources.package.add()
+    package.package_id.id = 0x7f
+    for attrib in axml.root.element.attribute:
+        if attrib.name == 'package':
+            package.package_name = attrib.value
+
+    # Were there any icons referenced in the AndroidManifest.xml?
+    for type_i, type_name in enumerate(axml.resource_types):
+        res_type = package.type.add()
+        res_type.name = type_name
+        res_type.type_id.id = type_i + 1
+
+        for entry_id, res_name in enumerate(axml.resources[type_name]):
+            entry = res_type.entry.add()
+            entry.entry_id.id = entry_id
+            entry.name = res_name
+
+            for density, tag in (160, 'mdpi'), (240, 'hdpi'), (320, 'xhdpi'), (480, 'xxhdpi'), (640, 'xxxhdpi'):
+                path = f'res/mipmap-{tag}-v4/{res_name}.png'
+                if (build_dir_fn / path).exists():
+                    bundle.add_subfile('base/' + path, build_dir_fn / path, 0)
+                    config_value = entry.config_value.add()
+                    config_value.config.density = density
+                    config_value.value.item.file.path = path
+
+    bundle.add_subfile('base/resources.pb', p3d.StringStream(resources.SerializeToString()), 9)
+
+    native = NativeLibraries()
+    for abi in os.listdir(os.path.join(build_dir, 'lib')):
+        native_dir = native.directory.add()
+        native_dir.path = 'lib/' + abi
+        native_dir.targeting.abi.alias = getattr(AbiAlias, abi.upper().replace('-', '_'))
+    bundle.add_subfile('base/native.pb', p3d.StringStream(native.SerializeToString()), 9)
+
+    bundle.add_subfile('base/manifest/AndroidManifest.xml', p3d.StringStream(axml.dumps()), 9)
+
+    # Add the classes.dex.
+    bundle.add_subfile(f'base/dex/classes.dex', build_dir_fn / 'classes.dex', 9)
+
+    # Add libraries, compressed.
+    for abi in os.listdir(os.path.join(build_dir, 'lib')):
+        abi_dir = os.path.join(build_dir, 'lib', abi)
+
+        for lib in os.listdir(abi_dir):
+            if lib.startswith('lib') and lib.endswith('.so'):
+                bundle.add_subfile(f'base/lib/{abi}/{lib}', build_dir_fn / 'lib' / abi / lib, 9)
+
+    # Add assets, compressed.
+    assets_dir = os.path.join(build_dir, 'assets')
+    for dirpath, dirnames, filenames in os.walk(assets_dir):
+        rel_dirpath = os.path.relpath(dirpath, build_dir).replace('\\', '/')
+        dirnames.sort()
+        filenames.sort()
+
+        for name in filenames:
+            fn = p3d.Filename.from_os_specific(dirpath) / name
+            if fn.is_regular_file():
+                bundle.add_subfile(f'base/{rel_dirpath}/{name}', fn, 9)
+
+    # Finally, generate the manifest file / signature, if a signing certificate
+    # has been specified.
+    if command.signing_certificate:
+        password = command.signing_passphrase or ''
+
+        if not password and 'ENCRYPTED' in open(command.signing_private_key).read():
+            # It appears to be encrypted, and we don't have a passphrase, so we
+            # must request it on the command-line.
+            from getpass import getpass
+            password = getpass(f'Enter pass phrase for private key: ')
+
+        if not bundle.add_jar_signature(
+                p3d.Filename.from_os_specific(command.signing_certificate),
+                p3d.Filename.from_os_specific(command.signing_private_key),
+                password):
+            command.announce(
+                f'\tFailed to sign {bundle_fn}.', distutils.log.ERROR)
+
+    bundle.close()
