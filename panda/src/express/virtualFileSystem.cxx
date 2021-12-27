@@ -884,6 +884,11 @@ get_global_ptr() {
         }
       }, cwd);
 
+      if (cwd[0] == 0) {
+        cwd[0] = '/';
+        cwd[1] = 0;
+      }
+
       _global_ptr->_cwd = cwd;
 
       // If we built with the Emscripten VFS enabled, mount it on top of the
