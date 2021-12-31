@@ -54,7 +54,7 @@ Windows
 
 You can build Panda3D with the Microsoft Visual C++ 2015, 2017, 2019 or 2022
 compiler, which can be downloaded for free from the [Visual Studio site](https://visualstudio.microsoft.com/downloads/).
-You will also need to install the [Windows 10 SDK](https://developer.microsoft.com/en-us/windows/downloads/windows-10-sdk),
+You will also need to install the [Windows SDK](https://developer.microsoft.com/en-us/windows/downloads/windows-sdk),
 and if you intend to target Windows XP, you will also need the Windows 7.1A
 SDK (which can be installed from the Visual Studio Installer).
 
