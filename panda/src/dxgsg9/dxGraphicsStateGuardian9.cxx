@@ -2070,6 +2070,35 @@ do_framebuffer_copy_to_ram(Texture *tex, int view, int z,
 
     backbuffer -> GetDesc (&surface_description);
 
+    // We can't directly call GetRenderTargetData on a multisampled buffer.
+    // Instead, blit it into a temporary target.
+    if (surface_description.MultiSampleType != D3DMULTISAMPLE_NONE) {
+      IDirect3DSurface9 *resolved;
+      hr = _d3d_device->CreateRenderTarget(surface_description.Width,
+                                           surface_description.Height,
+                                           surface_description.Format,
+                                           D3DMULTISAMPLE_NONE, 0, FALSE,
+                                           &resolved, nullptr);
+      if (FAILED(hr)) {
+        dxgsg9_cat.error()
+          << "CreateRenderTarget failed" << D3DERRORSTRING(hr) << "\n";
+        backbuffer->Release();
+        return false;
+      }
+
+      _d3d_device->StretchRect(backbuffer, nullptr, resolved, nullptr, D3DTEXF_NONE);
+      if (FAILED(hr)) {
+        dxgsg9_cat.error()
+          << "StretchRect failed" << D3DERRORSTRING(hr) << "\n";
+        backbuffer->Release();
+        resolved->Release();
+        return false;
+      }
+
+      backbuffer->Release();
+      backbuffer = resolved;
+    }
+
     pool = D3DPOOL_SYSTEMMEM;
     hr = _d3d_device->CreateOffscreenPlainSurface(
                                                   surface_description.Width,
