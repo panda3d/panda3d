@@ -47,7 +47,6 @@ public:
   virtual PandaNode *make_copy() const;
   virtual bool safe_to_combine() const;
 
-  virtual bool is_renderable() const;
   virtual void add_for_draw(CullTraverser *trav, CullTraverserData &data);
 
   virtual void output(std::ostream &out) const;

@@ -156,7 +156,7 @@ mount(const Filename &physical_filename, const Filename &mount_point,
   // read-write on multifiles and .zip files.
   flags |= MF_read_only;
 
-  char ch = stream->get();
+  int ch = stream->get();
   if (ch == '#' || ch == 'p') {
     // It *might* be a multifile.
     while (ch == '#') {

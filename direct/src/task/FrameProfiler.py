@@ -1,4 +1,4 @@
-from panda3d.core import ConfigVariableBool
+from panda3d.core import ConfigVariableBool, ClockObject
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.fsm.StatePush import FunctionCall
 from direct.showbase.PythonUtil import formatTimeExact, normalDistrib, serialNum
@@ -59,7 +59,7 @@ class FrameProfiler:
     def _setEnabled(self, enabled):
         if enabled:
             self.notify.info('frame profiler started')
-            self._startTime = globalClock.getFrameTime()
+            self._startTime = ClockObject.getGlobalClock().getFrameTime()
             self._profileCounter = 0
             self._jitter = None
             self._period2aggregateProfile = {}
@@ -110,7 +110,7 @@ class FrameProfiler:
             self._analyzeResults, sessionId))
 
         # schedule the next profile
-        delay = max(time - globalClock.getFrameTime(), 0.)
+        delay = max(time - ClockObject.getGlobalClock().getFrameTime(), 0.)
         self._task = taskMgr.doMethodLater(delay, self._scheduleNextProfileDoLater,
                                            'FrameProfiler-%s' % serialNum())
 

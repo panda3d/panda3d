@@ -8,6 +8,7 @@ Refer LevelEditor.py for example.
 from direct.showbase.DirectObject import *
 from direct.directtools.DirectUtil import *
 from direct.gui.DirectGui import *
+from panda3d.core import ClockObject
 
 from .CurveEditor import *
 from .FileMgr import *
@@ -385,7 +386,7 @@ class LevelEditorBase(DirectObject):
                     alreadyExists = True
                     break
             if not alreadyExists:
-                time = globalClock.getRealTime() + 15
+                time = ClockObject.getGlobalClock().getRealTime() + 15
                 self.statusLines.append([time,status,color])
 
         # update display of new status lines
@@ -407,7 +408,7 @@ class LevelEditorBase(DirectObject):
     def updateStatusReadoutTimeouts(self,task=None):
         removalList = []
         for currLine in self.statusLines:
-            if globalClock.getRealTime() >= currLine[0]:
+            if ClockObject.getGlobalClock().getRealTime() >= currLine[0]:
                 removalList.append(currLine)
         for currRemoval in removalList:
             self.statusLines.remove(currRemoval)

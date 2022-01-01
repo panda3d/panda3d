@@ -26,6 +26,11 @@
 #include "pvector.h"
 #include "vector_uchar.h"
 
+#ifdef HAVE_OPENSSL
+typedef struct x509_st X509;
+typedef struct evp_pkey_st EVP_PKEY;
+#endif
+
 // Defined by Cocoa, conflicts with the definition below.
 #undef verify
 
@@ -67,6 +72,12 @@ PUBLISHED:
   std::string update_subfile(const std::string &subfile_name, const Filename &filename,
                              int compression_level);
 
+#ifdef HAVE_OPENSSL
+  bool add_jar_signature(const Filename &certificate, const Filename &pkey,
+                         const std::string &password = "",
+                         const std::string &alias = "cert");
+#endif
+
   BLOCKING bool flush();
   BLOCKING bool repack();
 
@@ -101,6 +112,10 @@ PUBLISHED:
   INLINE const std::string &get_comment() const;
 
 public:
+#ifdef HAVE_OPENSSL
+  bool add_jar_signature(X509 *cert, EVP_PKEY *pkey, const std::string &alias);
+#endif  // HAVE_OPENSSL
+
   bool read_subfile(int index, std::string &result);
   bool read_subfile(int index, vector_uchar &result);
 

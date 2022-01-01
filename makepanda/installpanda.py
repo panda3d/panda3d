@@ -10,7 +10,7 @@
 
 import os
 import sys
-from distutils.sysconfig import get_python_lib
+import sysconfig
 from optparse import OptionParser
 from makepandacore import *
 
@@ -141,7 +141,7 @@ def GetLibDir():
 
     # If Python is installed into /usr/lib64, it's probably safe
     # to assume that we should install there as well.
-    python_lib = get_python_lib(1)
+    python_lib = sysconfig.get_path("platlib")
     if python_lib.startswith('/usr/lib64/') or \
        python_lib.startswith('/usr/local/lib64/'):
         return "lib64"

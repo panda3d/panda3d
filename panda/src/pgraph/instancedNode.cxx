@@ -218,32 +218,29 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
     instances = new_list;
   }
 
-  if (data._view_frustum != nullptr || !data._cull_planes->is_empty()) {
-    // Culling is on, so we need to figure out which instances are visible.
-    Children children = data.node_reader()->get_children();
-    data.node_reader()->release();
-
-    // Keep track of which instances should be culled away.
+  if (data._view_frustum != nullptr || data._cull_planes != nullptr) {
+    // Culling is on, so we need to figure out which instances should be culled.
     BitArray culled_instances;
     culled_instances.set_range(0, instances->size());
 
     for (size_t ii = 0; ii < instances->size(); ++ii) {
-      CullTraverserData instance_data(data);
-      instance_data.apply_transform((*instances)[ii].get_transform());
+      if (data.is_instance_in_view((*instances)[ii].get_transform(), trav->get_camera_mask())) {
+        culled_instances.clear_bit(ii);
+      }
+    }
 
-      for (size_t ci = 0; ci < children.size(); ++ci) {
-        CullTraverserData child_data(instance_data, children.get_child(ci));
-        if (child_data.is_in_view(trav->get_camera_mask())) {
-          // Yep, the instance is in view.
-          culled_instances.clear_bit(ii);
-          break;
-        }
+    if (!culled_instances.is_zero() && trav->get_fake_view_frustum_cull()) {
+      // The culled instances are drawn with the fake-view-frustum-cull effect.
+      data._instances = instances->without(culled_instances ^ BitArray::range(0, instances->size()));
+
+      Children children = data.node_reader()->get_children();
+      int num_children = children.get_num_children();
+      for (int i = 0; i < num_children; ++i) {
+        trav->do_fake_cull(data, children.get_child(i), data._net_transform, data._state);
       }
     }
 
     instances = instances->without(culled_instances);
-  } else {
-    data.node_reader()->release();
   }
 
   if (instances->empty()) {
@@ -259,15 +256,6 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   data._cull_planes = CullPlanes::make_empty();
 
   return true;
-
-  /*
-  for (const InstanceList::Instance &instance : *instances) {
-    CullTraverserData instance_data(data);
-    instance_data.apply_transform(instance.get_transform());
-    trav->traverse_below(instance_data);
-  }
-  return false;
-  */
 }
 
 /**

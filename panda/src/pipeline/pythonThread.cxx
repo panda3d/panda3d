@@ -245,16 +245,22 @@ call_python_func(PyObject *function, PyObject *args) {
       PyObject *exc, *val, *tb;
       PyErr_Fetch(&exc, &val, &tb);
 
-      thread_cat.error()
-        << "Exception occurred within " << *current_thread << "\n";
-
       // Temporarily restore the exception state so we can print a callback
-      // on-the-spot.
-      Py_XINCREF(exc);
-      Py_XINCREF(val);
-      Py_XINCREF(tb);
-      PyErr_Restore(exc, val, tb);
-      PyErr_Print();
+      // on-the-spot, except if it's a SystemExit, which would cause PyErr_Print
+      // to exit the process immediately.
+      if (exc != PyExc_SystemExit) {
+        thread_cat.error()
+          << "Exception occurred within " << *current_thread << "\n";
+
+        Py_XINCREF(exc);
+        Py_XINCREF(val);
+        Py_XINCREF(tb);
+        PyErr_Restore(exc, val, tb);
+        PyErr_Print();
+      } else {
+        thread_cat.info()
+          << "SystemExit occurred within " << *current_thread << "\n";
+      }
 
       PyGILState_Release(gstate);
 

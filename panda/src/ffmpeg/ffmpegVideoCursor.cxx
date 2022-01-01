@@ -274,7 +274,9 @@ start_thread() {
 
     // Create and start the thread object.
     _thread_status = TS_wait;
-    _thread = new GenericThread(_filename.get_basename(), _sync_name, st_thread_main, this);
+    _thread = new GenericThread(_filename.get_basename(), _sync_name, [this]{
+      thread_main();
+    });
     if (!_thread->start(_thread_priority, true)) {
       // Couldn't start the thread.
       _thread = nullptr;
@@ -666,14 +668,6 @@ cleanup() {
     _packet = nullptr;
 #endif
   }
-}
-
-/**
- * The thread main function, static version (for passing to GenericThread).
- */
-void FfmpegVideoCursor::
-st_thread_main(void *self) {
-  ((FfmpegVideoCursor *)self)->thread_main();
 }
 
 /**

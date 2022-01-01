@@ -113,6 +113,8 @@ static const struct DeviceMapping {
   {0x046d, 0xc629, InputDevice::DeviceClass::spatial_mouse, 0},
   // 3Dconnexion Space Mouse Pro
   {0x046d, 0xc62b, InputDevice::DeviceClass::spatial_mouse, 0},
+  // FrSky Simulator
+  {0x0483, 0x5720, InputDevice::DeviceClass::flight_stick, 0},
   {0},
 };
 

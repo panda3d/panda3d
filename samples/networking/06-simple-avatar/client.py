@@ -45,7 +45,7 @@ class Avatar:
         # Get the time that elapsed since last frame.  We multiply this with
         # the desired speed in order to find out with which distance to move
         # in order to achieve that desired speed.
-        dt = globalClock.getDt()
+        dt = base.clock.dt
 
         # If the camera-left key is pressed, move camera left.
         # If the camera-right key is pressed, move camera right.
