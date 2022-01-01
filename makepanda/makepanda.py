@@ -590,7 +590,10 @@ if (COMPILER == "MSVC"):
                 IncDirectory(pkg, SDK[pkg]      + "/include")
             elif pkg == "VULKAN":
                 IncDirectory(pkg, SDK[pkg] + "/Include")
-                LibName(pkg, SDK[pkg] + "/Source/lib/vulkan-1.lib")
+                if os.path.isfile(SDK[pkg] + "/Source/lib/vulkan-1.lib") and not os.path.isfile(SDK[pkg] + "/Lib/vulkan-1.lib"):
+                    LibName(pkg, SDK[pkg] + "/Source/lib/vulkan-1.lib")
+                else:
+                    LibName(pkg, SDK[pkg] + "/Lib/vulkan-1.lib")
             elif GetThirdpartyDir() is not None:
                 IncDirectory(pkg, GetThirdpartyDir() + pkg.lower() + "/include")
     for pkg in DXVERSIONS:
