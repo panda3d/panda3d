@@ -157,7 +157,7 @@ def usage(problem):
     print("  --nothing         (disable every third-party lib)")
     print("  --everything      (enable every third-party lib)")
     print("  --directx-sdk=X   (specify version of DirectX SDK to use: jun2010, aug2009)")
-    print("  --windows-sdk=X   (specify Windows SDK version, eg. 7.1, 8.1 or 10.  Default is 8.1)")
+    print("  --windows-sdk=X   (specify Windows SDK version, eg. 7.1, 8.1, 10 or 11.  Default is 8.1)")
     print("  --msvc-version=X  (specify Visual C++ version, eg. 10, 11, 12, 14, 14.1, 14.2, 14.3.  Default is 14)")
     print("  --use-icl         (experimental setting to use an intel compiler instead of MSVC on Windows)")
     print("")
@@ -432,6 +432,13 @@ elif target == 'linux' and (os.path.isfile("/lib/libc-2.17.so") or os.path.isfil
         PLATFORM = 'manylinux2014-x86_64'
     else:
         PLATFORM = 'manylinux2014-i686'
+
+elif target == 'linux' and (os.path.isfile("/lib/i386-linux-gnu/libc-2.24.so") or os.path.isfile("/lib/x86_64/libc-2.24.so")) and os.path.isdir("/opt/python"):
+    # Same sloppy check for manylinux_2_24.
+    if GetTargetArch() in ('x86_64', 'amd64'):
+        PLATFORM = 'manylinux_2_24-x86_64'
+    else:
+        PLATFORM = 'manylinux_2_24-i686'
 
 elif not CrossCompiling():
     if HasTargetArch():

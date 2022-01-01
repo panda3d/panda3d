@@ -38,9 +38,6 @@ enum QuirkBits : int {
 
   // Axes on the right stick are swapped, using x for y and vice versa.
   QB_right_axes_swapped = 64,
-
-  // Using an RC (drone) controller as a gamepad instead of a flight stick
-  QB_rc_controller = 128,
 };
 
 // Some nonstandard gamepads have different button mappings.
@@ -89,7 +86,7 @@ static const struct DeviceMapping {
     {"face_y", "face_b", "face_a", "face_x", "lshoulder", "rshoulder", "ltrigger", "rtrigger", "back", "start", "lstick", "rstick"}
   },
   // FrSky Simulator
-  {0x0483, 0x5720, InputDevice::DeviceClass::gamepad, QB_rc_controller,
+  {0x0483, 0x5720, InputDevice::DeviceClass::flight_stick, 0,
     {0}
   },
   {0},
@@ -408,7 +405,8 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
           << ", UsagePage=0x" << hex << cap.UsagePage
           << ", Usage=0x" << cap.Range.UsageMin << "..0x" << cap.Range.UsageMax
           << dec << ", LogicalMin=" << cap.LogicalMin
-          << ", LogicalMax=" << cap.LogicalMax << "\n";
+          << ", LogicalMax=" << cap.LogicalMax
+          << ", BitSize=" << cap.BitSize << "\n";
       }
     } else {
       if (device_cat.is_debug()) {
@@ -418,7 +416,8 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
           << ", UsagePage=0x" << hex << cap.UsagePage
           << ", Usage=0x" << cap.NotRange.Usage
           << dec << ", LogicalMin=" << cap.LogicalMin
-          << ", LogicalMax=" << cap.LogicalMax << "\n";
+          << ", LogicalMax=" << cap.LogicalMax
+          << ", BitSize=" << cap.BitSize << "\n";
       }
     }
 
@@ -431,7 +430,7 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
 
       // My gamepads give this odd invalid range.
       if (cap.LogicalMin == 0 && cap.LogicalMax == -1) {
-        cap.LogicalMax = 65535;
+        cap.LogicalMax = (1 << cap.BitSize) - 1;
         is_signed = false;
       }
 
@@ -441,11 +440,7 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
         switch (usage) {
           case HID_USAGE_GENERIC_X:
           if (_device_class == DeviceClass::gamepad) {
-            if (quirks & QB_rc_controller) {
-              axis = Axis::right_x;
-            } else {
-              axis = Axis::left_x;
-            }
+            axis = Axis::left_x;
           } else if (_device_class == DeviceClass::flight_stick) {
             axis = Axis::roll;
           } else {
@@ -454,12 +449,8 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
           break;
         case HID_USAGE_GENERIC_Y:
           if (_device_class == DeviceClass::gamepad) {
-            if (quirks & QB_rc_controller) {
-              axis = Axis::right_y;
-            } else {
-              axis = Axis::left_y;
-              swap(cap.LogicalMin, cap.LogicalMax);
-            }
+            axis = Axis::left_y;
+            swap(cap.LogicalMin, cap.LogicalMax);
           } else if (_device_class == DeviceClass::flight_stick) {
             axis = Axis::pitch;
           } else {
@@ -476,8 +467,6 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
               } else {
                 axis = InputDevice::Axis::right_x;
               }
-            } else if (quirks & QB_rc_controller) {
-              axis = InputDevice::Axis::left_y;
             } else if ((quirks & QB_no_analog_triggers) == 0) {
               axis = Axis::left_trigger;
             }
@@ -500,8 +489,6 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
               if ((quirks & QB_no_analog_triggers) == 0) {
                 axis = Axis::left_trigger;
               }
-            } else if (quirks & QB_rc_controller) {
-              axis = Axis::left_x;
             } else {
               axis = Axis::right_x;
             }
@@ -577,6 +564,17 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
         }
       }
 
+      int sign_bit = 0;
+      if (cap.BitSize < 32) {
+        if (cap.LogicalMin < 0) {
+          sign_bit = 1 << (cap.BitSize - 1);
+        }
+        else if (is_signed) {
+          //XXX is this still necessary?
+          sign_bit = (1 << 15);
+        }
+      }
+
       int axis_index;
       if (!is_signed) {
         // All axes on the weird XInput-style mappings go from -1 to 1
@@ -584,7 +582,7 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
       } else {
         axis_index = add_axis(axis, cap.LogicalMin, cap.LogicalMax);
       }
-      _indices[data_index] = Index::axis(axis_index, is_signed);
+      _indices[data_index] = Index::axis(axis_index, sign_bit);
     }
   }
 
@@ -700,8 +698,13 @@ process_report(PCHAR ptr, size_t size) {
 
         const Index &idx = _indices[data[di].DataIndex];
         if (idx._axis >= 0) {
-          if (idx._signed) {
-            axis_changed(idx._axis, (SHORT)data[di].RawValue);
+          if (idx._sign_bit != 0) {
+            // Sign extend.
+            int value = data[di].RawValue;
+            if (value & idx._sign_bit) {
+              value -= (idx._sign_bit << 1);
+            }
+            axis_changed(idx._axis, value);
           } else {
             axis_changed(idx._axis, data[di].RawValue);
           }

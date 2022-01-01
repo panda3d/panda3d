@@ -2538,6 +2538,11 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
                  _glgsg->_glVertexAttribI4ui != nullptr) {
           _glgsg->_glVertexAttribI4ui(p, 0, 1, 2, 3);
         }
+        else if (name == InternalName::get_transform_weight()) {
+          // NVIDIA doesn't seem to use to use these defaults by itself
+          static const GLfloat weights[4] = {0, 0, 0, 1};
+          _glgsg->_glVertexAttrib4fv(p, weights);
+        }
         else if (name == InternalName::get_instance_matrix()) {
           const LMatrix4 &ident_mat = LMatrix4::ident_mat();
 
