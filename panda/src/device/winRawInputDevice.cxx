@@ -702,7 +702,7 @@ process_report(PCHAR ptr, size_t size) {
             // Sign extend.
             int value = data[di].RawValue;
             if (value & idx._sign_bit) {
-              value = -(value & ~idx._sign_bit);
+              value -= (idx._sign_bit << 1);
             }
             axis_changed(idx._axis, value);
           } else {
