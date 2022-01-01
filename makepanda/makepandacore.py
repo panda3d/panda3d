@@ -1640,7 +1640,10 @@ def LocateLibrary(lib, lpath=[], prefer_static=False):
                 return os.path.join(dir, 'lib%s.a' % lib)
 
     for dir in lpath:
-        if target == 'darwin' and os.path.isfile(os.path.join(dir, 'lib%s.dylib' % lib)):
+        if target == 'windows':
+            if os.path.isfile(os.path.join(dir, lib + '.lib')):
+                return os.path.join(dir, lib + '.lib')
+        elif target == 'darwin' and os.path.isfile(os.path.join(dir, 'lib%s.dylib' % lib)):
             return os.path.join(dir, 'lib%s.dylib' % lib)
         elif target != 'darwin' and os.path.isfile(os.path.join(dir, 'lib%s.so' % lib)):
             return os.path.join(dir, 'lib%s.so' % lib)
