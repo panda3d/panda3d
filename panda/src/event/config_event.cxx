@@ -22,6 +22,7 @@
 #include "event.h"
 #include "eventHandler.h"
 #include "eventParameter.h"
+#include "functionAsyncTask.h"
 #include "genericAsyncTask.h"
 #include "pointerEventList.h"
 
@@ -49,6 +50,7 @@ ConfigureFn(config_event) {
   EventHandler::init_type();
   EventStoreInt::init_type("EventStoreInt");
   EventStoreDouble::init_type("EventStoreDouble");
+  FunctionAsyncTask::init_type();
   GenericAsyncTask::init_type();
 
   ButtonEventList::register_with_read_factory();

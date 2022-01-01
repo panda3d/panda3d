@@ -134,6 +134,7 @@ PUBLISHED:
 
   BLOCKING TypedWritable *read_object();
   BLOCKING bool read_object(TypedWritable *&ptr, ReferenceCount *&ref_ptr);
+  BLOCKING bool skip_object();
 
   INLINE bool is_eof() const;
   bool resolve();

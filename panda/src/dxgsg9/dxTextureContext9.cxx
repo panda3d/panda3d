@@ -427,10 +427,26 @@ create_texture(DXScreenData &scrn) {
   }
 
   if (compress_texture) {
-    if (num_color_channels == 1) {
-      CHECK_FOR_FMT(ATI1);
-    } else if (num_alpha_bits == 0 && num_color_channels == 2) {
-      CHECK_FOR_FMT(ATI2);
+    // The ATI1 and ATI2 formats can't be compressed by the driver.
+    // Only choose them if we can compress them on the CPU.
+    // Also, don't choose ATI for a luminance texture, since it gets read as
+    // a texture with just a red channel.
+    if (num_alpha_bits == 0 && !needs_luminance) {
+      if (num_color_channels == 1) {
+        if (scrn._supported_tex_formats_mask & ATI1_FLAG) {
+          if (tex->compress_ram_image(Texture::CM_rgtc)) {
+            target_pixel_format = D3DFMT_ATI1;
+            goto found_matching_format;
+          }
+        }
+      } else if (num_color_channels == 2) {
+        if (scrn._supported_tex_formats_mask & ATI2_FLAG) {
+          if (tex->compress_ram_image(Texture::CM_rgtc)) {
+            target_pixel_format = D3DFMT_ATI2;
+            goto found_matching_format;
+          }
+        }
+      }
     }
     if (num_alpha_bits <= 1) {
       CHECK_FOR_FMT(DXT1);
@@ -831,7 +847,7 @@ create_texture(DXScreenData &scrn) {
 
   tex->set_minfilter(ft);
 
-  uint aniso_degree;
+  unsigned int aniso_degree;
 
   aniso_degree = 1;
   if (scrn._d3dcaps.RasterCaps & D3DPRASTERCAPS_ANISOTROPY) {
@@ -1157,7 +1173,7 @@ create_simple_texture(DXScreenData &scrn) {
     goto error_exit;
   }
 
-  mark_simple_loaded();
+  mark_loaded();
   return true;
 
  error_exit:

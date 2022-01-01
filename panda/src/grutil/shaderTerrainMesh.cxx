@@ -107,6 +107,7 @@ ShaderTerrainMesh::ShaderTerrainMesh() :
   _update_enabled(true),
   _heightfield_tex(nullptr)
 {
+  set_renderable();
 }
 
 /**
@@ -440,14 +441,7 @@ void ShaderTerrainMesh::do_create_chunk_geom() {
 }
 
 /**
- * @copydoc PandaNode::is_renderable()
- */
-bool ShaderTerrainMesh::is_renderable() const {
-  return true;
-}
-
-/**
- * @copydoc PandaNode::is_renderable()
+ * @copydoc PandaNode::safe_to_flatten()
  */
 bool ShaderTerrainMesh::safe_to_flatten() const {
   return false;

@@ -305,6 +305,8 @@ reflect_program() {
     block_maxlength = max(64, block_maxlength);
     char *block_name_cstr = (char *)alloca(block_maxlength);
 
+    BitArray bindings;
+
     for (int i = 0; i < block_count; ++i) {
       block_name_cstr[0] = 0;
       _glgsg->_glGetProgramResourceName(_glsl_program, GL_SHADER_STORAGE_BLOCK, i, block_maxlength, nullptr, block_name_cstr);
@@ -312,6 +314,20 @@ reflect_program() {
       const GLenum props[] = {GL_BUFFER_BINDING, GL_BUFFER_DATA_SIZE};
       GLint values[2];
       _glgsg->_glGetProgramResourceiv(_glsl_program, GL_SHADER_STORAGE_BLOCK, i, 2, props, 2, nullptr, values);
+
+      if (bindings.get_bit(values[0])) {
+        // Binding index already in use, assign a different one.
+        values[0] = bindings.get_lowest_off_bit();
+        _glgsg->_glShaderStorageBlockBinding(_glsl_program, i, values[0]);
+      }
+      bindings.set_bit(values[0]);
+
+      if (GLCAT.is_debug()) {
+        GLCAT.debug()
+          << "Active shader storage block " << block_name_cstr
+          << " with size " << values[1] << " is bound to binding "
+          << values[0] << "\n";
+      }
 
       StorageBlock block;
       block._name = InternalName::make(block_name_cstr);
@@ -2815,6 +2831,11 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
                  _glgsg->_glVertexAttribI4ui != nullptr) {
           _glgsg->_glVertexAttribI4ui(p, 0, 1, 2, 3);
         }
+        else if (name == InternalName::get_transform_weight()) {
+          // NVIDIA doesn't seem to use to use these defaults by itself
+          static const GLfloat weights[4] = {0, 0, 0, 1};
+          _glgsg->_glVertexAttrib4fv(p, weights);
+        }
         else if (name == InternalName::get_instance_matrix()) {
           const LMatrix4 &ident_mat = LMatrix4::ident_mat();
 
@@ -3188,10 +3209,13 @@ update_shader_texture_bindings(ShaderContext *prev) {
 
     // Bindless texturing wasn't supported or didn't work, so let's just bind
     // the texture normally.
+    // Note that simple RAM images are always 2-D for now, so to avoid errors,
+    // we must load the real texture if this is not for a sampler2D.
+    bool force = (spec._desired_type != Texture::TT_2d_texture);
 #ifndef OPENGLES
     if (multi_bind) {
       // Multi-bind case.
-      if (!_glgsg->update_texture(gtc, false)) {
+      if (!_glgsg->update_texture(gtc, force)) {
         textures[i] = 0;
       } else {
         gtc->set_active(true);
@@ -3211,7 +3235,7 @@ update_shader_texture_bindings(ShaderContext *prev) {
     {
       // Non-multibind case.
       _glgsg->set_active_texture_stage(i);
-      if (!_glgsg->update_texture(gtc, false)) {
+      if (!_glgsg->update_texture(gtc, force)) {
         continue;
       }
       _glgsg->apply_texture(gtc);
@@ -3399,7 +3423,7 @@ report_program_errors(GLuint program, bool fatal) {
  * Compiles the given ShaderModuleGlsl and attaches it to the program.
  */
 bool CLP(ShaderContext)::
-attach_shader(const ShaderModule *module) {
+attach_shader(const ShaderModule *module, Shader::ModuleSpecConstants &consts) {
   ShaderModule::Stage stage = module->get_stage();
 
   GLuint handle = 0;
@@ -3504,7 +3528,6 @@ attach_shader(const ShaderModule *module) {
                                 spv->get_data_size() * sizeof(uint32_t));
       }
 
-      const Shader::ModuleSpecConstants &consts = _shader->_module_spec_consts[module];
       _glgsg->_glSpecializeShader(handle, "main", consts._indices.size(),
                                   (GLuint *)consts._indices.data(),
                                   (GLuint *)consts._values.data());
@@ -3694,8 +3717,8 @@ compile_and_link() {
 
   bool valid = true;
 
-  for (COWPT(ShaderModule) const &cow_module : _shader->_modules) {
-    valid &= attach_shader(cow_module.get_read_pointer());
+  for (Shader::LinkedModule &linked_module : _shader->_modules) {
+    valid &= attach_shader(linked_module._module.get_read_pointer(), linked_module._consts);
   }
 
   if (!valid) {

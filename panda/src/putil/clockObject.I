@@ -242,7 +242,7 @@ TimeVal() {
 /**
  *
  */
-INLINE ulong TimeVal::
+INLINE unsigned long TimeVal::
 get_sec() const {
   return tv[0];
 }
@@ -250,7 +250,7 @@ get_sec() const {
 /**
  *
  */
-INLINE ulong TimeVal::
+INLINE unsigned long TimeVal::
 get_usec() const {
   return tv[1];
 }

@@ -33,6 +33,7 @@
 #include "cullTraverser.h"
 #include "cullableObject.h"
 #include "decalEffect.h"
+#include "depthBiasAttrib.h"
 #include "depthOffsetAttrib.h"
 #include "depthTestAttrib.h"
 #include "depthWriteAttrib.h"
@@ -416,6 +417,7 @@ init_libpgraph() {
   CullTraverser::init_type();
   CullableObject::init_type();
   DecalEffect::init_type();
+  DepthBiasAttrib::init_type();
   DepthOffsetAttrib::init_type();
   DepthTestAttrib::init_type();
   DepthWriteAttrib::init_type();
@@ -489,6 +491,7 @@ init_libpgraph() {
   CullBinAttrib::register_with_read_factory();
   CullFaceAttrib::register_with_read_factory();
   DecalEffect::register_with_read_factory();
+  DepthBiasAttrib::register_with_read_factory();
   DepthOffsetAttrib::register_with_read_factory();
   DepthTestAttrib::register_with_read_factory();
   DepthWriteAttrib::register_with_read_factory();

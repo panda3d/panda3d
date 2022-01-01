@@ -356,7 +356,7 @@ link_inputs(const ShaderModule *previous) {
 
   ShaderModuleSpirV *spv_prev = (ShaderModuleSpirV *)previous;
 
-  for (const Variable &input : _inputs) {
+  for (Variable &input : _inputs) {
     int i = spv_prev->find_output(input.name);
     if (i < 0) {
       shader_cat.error()
@@ -375,6 +375,7 @@ link_inputs(const ShaderModule *previous) {
 
     if (!input.has_location() || output.get_location() != input.get_location()) {
       location_remap[input.get_location()] = output.get_location();
+      input._location = output.get_location();
     }
   }
 
@@ -473,6 +474,157 @@ strip() {
   }
 
   _instructions = copy;
+}
+
+/**
+ * Tells the BamReader how to create objects of type ShaderModuleSpirV.
+ */
+void ShaderModuleSpirV::
+register_with_read_factory() {
+  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
+}
+
+/**
+ * Writes the contents of this object to the datagram for shipping out to a
+ * Bam file.
+ */
+void ShaderModuleSpirV::
+write_datagram(BamWriter *manager, Datagram &dg) {
+  ShaderModule::write_datagram(manager, dg);
+
+  dg.add_uint32(_inputs.size());
+  for (const Variable &input : _inputs) {
+    manager->write_pointer(dg, input.type);
+    manager->write_pointer(dg, input.name);
+    dg.add_int32(input._location);
+  }
+
+  dg.add_uint32(_outputs.size());
+  for (const Variable &output : _outputs) {
+    manager->write_pointer(dg, output.type);
+    manager->write_pointer(dg, output.name);
+    dg.add_int32(output._location);
+  }
+
+  dg.add_uint32(_parameters.size());
+  for (const Variable &parameter : _parameters) {
+    manager->write_pointer(dg, parameter.type);
+    manager->write_pointer(dg, parameter.name);
+    dg.add_int32(parameter._location);
+  }
+
+  dg.add_uint32(_spec_constants.size());
+  for (const SpecializationConstant &spec_constant : _spec_constants) {
+    manager->write_pointer(dg, spec_constant.type);
+    manager->write_pointer(dg, spec_constant.name);
+    dg.add_uint32(spec_constant.id);
+  }
+
+  size_t num_words = _instructions.get_data_size();
+  const uint32_t *words = _instructions.get_data();
+
+  nassertv(num_words < UINT32_MAX);
+  dg.add_uint32(num_words);
+  for (size_t i = 0; i < num_words; ++i) {
+    dg.add_uint32(words[i]);
+  }
+}
+
+/**
+ * This function is called by the BamReader's factory when a new object of
+ * type ShaderModule is encountered in the Bam file.  It should create the
+ * ShaderModule and extract its information from the file.
+ */
+TypedWritable *ShaderModuleSpirV::
+make_from_bam(const FactoryParams &params) {
+  DatagramIterator scan;
+  BamReader *manager;
+
+  parse_params(params, scan, manager);
+
+  Stage stage = (Stage)scan.get_uint8();
+  ShaderModuleSpirV *module = new ShaderModuleSpirV(stage);
+  module->fillin(scan, manager);
+
+  return module;
+}
+
+/**
+ * Receives an array of pointers, one for each time manager->read_pointer()
+ * was called in fillin(). Returns the number of pointers processed.
+ */
+int ShaderModuleSpirV::
+complete_pointers(TypedWritable **p_list, BamReader *manager) {
+  int pi = ShaderModule::complete_pointers(p_list, manager);
+
+  for (Variable &input : _inputs) {
+    input.type = DCAST(ShaderType, p_list[pi++]);
+    input.name = DCAST(InternalName, p_list[pi++]);
+  }
+  for (Variable &output : _outputs) {
+    output.type = DCAST(ShaderType, p_list[pi++]);
+    output.name = DCAST(InternalName, p_list[pi++]);
+  }
+  for (Variable &parameter : _parameters) {
+    parameter.type = DCAST(ShaderType, p_list[pi++]);
+    parameter.name = DCAST(InternalName, p_list[pi++]);
+  }
+  for (SpecializationConstant &spec_constant : _spec_constants) {
+    spec_constant.type = DCAST(ShaderType, p_list[pi++]);
+    spec_constant.name = DCAST(InternalName, p_list[pi++]);
+  }
+
+  return pi;
+}
+
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new ShaderModuleSpirV.
+ */
+void ShaderModuleSpirV::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  _source_filename = scan.get_string();
+  _used_caps = (int)scan.get_uint64();
+
+  uint32_t num_inputs = scan.get_uint32();
+  _inputs.resize(num_inputs);
+  for (uint32_t i = 0; i < num_inputs; ++i) {
+    manager->read_pointer(scan); // type
+    manager->read_pointer(scan); // name
+    _inputs[i]._location = scan.get_int32();
+  }
+
+  uint32_t num_outputs = scan.get_uint32();
+  _outputs.resize(num_outputs);
+  for (uint32_t i = 0; i < num_outputs; ++i) {
+    manager->read_pointer(scan); // type
+    manager->read_pointer(scan); // name
+    _outputs[i]._location = scan.get_int32();
+  }
+
+  uint32_t num_parameters = scan.get_uint32();
+  _parameters.resize(num_parameters);
+  for (uint32_t i = 0; i < num_parameters; ++i) {
+    manager->read_pointer(scan); // type
+    manager->read_pointer(scan); // name
+    _parameters[i]._location = scan.get_int32();
+  }
+
+  uint32_t num_spec_constants = scan.get_uint32();
+  _spec_constants.resize(num_spec_constants);
+  for (uint32_t i = 0; i < num_spec_constants; ++i) {
+    manager->read_pointer(scan); // type
+    manager->read_pointer(scan); // name
+    _spec_constants[i].id = scan.get_uint32();
+  }
+
+  uint32_t num_words = scan.get_uint32();
+  std::vector<uint32_t> words(num_words);
+  for (uint32_t i = 0; i < num_words; ++i) {
+    words[i] = scan.get_uint32();
+  }
+  _instructions = std::move(words);
+  nassertv(_instructions.validate_header());
 }
 
 /**

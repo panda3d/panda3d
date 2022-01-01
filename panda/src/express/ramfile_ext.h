@@ -34,6 +34,9 @@ public:
   PyObject *readlines();
 
   PyObject *get_data() const;
+
+  PyObject *__getstate__() const;
+  void __setstate__(PyObject *);
 };
 
 #endif  // HAVE_PYTHON

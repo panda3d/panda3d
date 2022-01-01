@@ -231,7 +231,7 @@ apply_texture(int i, TextureContext *tc, const SamplerState &sampler) {
 
   set_sampler_state(i, D3DSAMP_BORDERCOLOR, border_color);
 
-  uint aniso_degree = sampler.get_effective_anisotropic_degree();
+  unsigned int aniso_degree = sampler.get_effective_anisotropic_degree();
   SamplerState::FilterType ft = sampler.get_effective_magfilter();
 
   if (aniso_degree >= 1) {
@@ -343,10 +343,7 @@ upload_texture(DXTextureContext9 *dtc, bool force) {
       async_reload_texture(dtc);
       has_image = _supports_compressed_texture ? tex->has_ram_image() : tex->has_uncompressed_ram_image();
       if (!has_image) {
-        if (dtc->was_simple_image_modified()) {
-          return dtc->create_simple_texture(*_screen);
-        }
-        return true;
+        return dtc->create_simple_texture(*_screen);
       }
     }
   }
@@ -2120,6 +2117,35 @@ do_framebuffer_copy_to_ram(Texture *tex, int view, int z,
     D3DSURFACE_DESC surface_description;
 
     backbuffer -> GetDesc (&surface_description);
+
+    // We can't directly call GetRenderTargetData on a multisampled buffer.
+    // Instead, blit it into a temporary target.
+    if (surface_description.MultiSampleType != D3DMULTISAMPLE_NONE) {
+      IDirect3DSurface9 *resolved;
+      hr = _d3d_device->CreateRenderTarget(surface_description.Width,
+                                           surface_description.Height,
+                                           surface_description.Format,
+                                           D3DMULTISAMPLE_NONE, 0, FALSE,
+                                           &resolved, nullptr);
+      if (FAILED(hr)) {
+        dxgsg9_cat.error()
+          << "CreateRenderTarget failed" << D3DERRORSTRING(hr) << "\n";
+        backbuffer->Release();
+        return false;
+      }
+
+      _d3d_device->StretchRect(backbuffer, nullptr, resolved, nullptr, D3DTEXF_NONE);
+      if (FAILED(hr)) {
+        dxgsg9_cat.error()
+          << "StretchRect failed" << D3DERRORSTRING(hr) << "\n";
+        backbuffer->Release();
+        resolved->Release();
+        return false;
+      }
+
+      backbuffer->Release();
+      backbuffer = resolved;
+    }
 
     pool = D3DPOOL_SYSTEMMEM;
     hr = _d3d_device->CreateOffscreenPlainSurface(
@@ -4775,6 +4801,9 @@ release_swap_chain(DXScreenData *new_context) {
           << "Swapchain release failed:" << D3DERRORSTRING(hr) << "\n";
       }
       return false;
+    }
+    if (new_context->_swap_chain == _swap_chain) {
+      _swap_chain = nullptr;
     }
   }
   return true;

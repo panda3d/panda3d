@@ -412,7 +412,7 @@ r_preprocess_source(ShaderModuleGlsl *module,
 
   if (fileno == 0) {
     if (!had_code) {
-      shader_cat.warning()
+      shader_cat.error()
         << "GLSL shader " << fn << " does not contain any code!\n";
       return false;
     }

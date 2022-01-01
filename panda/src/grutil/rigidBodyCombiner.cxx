@@ -145,8 +145,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   }
 
   // Render the internal scene only--this is the optimized scene.
-  CullTraverserData next_data(data, _internal_root);
-  trav->traverse(next_data);
+  trav->traverse_down(data, _internal_root);
 
   // Do not directly render the nodes beneath this node.
   return false;

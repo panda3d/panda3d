@@ -193,6 +193,8 @@ get_unique_id() const {
  */
 bool ThreadPosixImpl::
 attach_java_vm() {
+  assert(java_vm != nullptr);
+
   JNIEnv *env;
   std::string thread_name = _parent_obj->get_name();
   JavaVMAttachArgs args;
@@ -218,6 +220,8 @@ void ThreadPosixImpl::
 bind_java_thread() {
   Thread *thread = Thread::get_current_thread();
   nassertv(thread != nullptr);
+
+  assert(java_vm != nullptr);
 
   // Get the JNIEnv for this Java thread, and store it on the corresponding
   // Panda thread object.

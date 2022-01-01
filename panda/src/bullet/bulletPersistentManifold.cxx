@@ -49,6 +49,8 @@ get_contact_processing_threshold() const {
  */
 void BulletPersistentManifold::
 clear_manifold() {
+  nassertv_always(_manifold != nullptr);
+
   LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _manifold->clearManifold();
@@ -59,6 +61,8 @@ clear_manifold() {
  */
 PandaNode *BulletPersistentManifold::
 get_node0() {
+  nassertr_always(_manifold != nullptr, nullptr);
+
   LightMutexHolder holder(BulletWorld::get_global_lock());
 
 #if BT_BULLET_VERSION >= 281
@@ -75,6 +79,8 @@ get_node0() {
  */
 PandaNode *BulletPersistentManifold::
 get_node1() {
+  nassertr_always(_manifold != nullptr, nullptr);
+
   LightMutexHolder holder(BulletWorld::get_global_lock());
 
 #if BT_BULLET_VERSION >= 281
@@ -91,6 +97,8 @@ get_node1() {
  */
 int BulletPersistentManifold::
 get_num_manifold_points() const {
+  nassertr_always(_manifold != nullptr, 0);
+
   LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return _manifold->getNumContacts();
@@ -99,11 +107,8 @@ get_num_manifold_points() const {
 /**
  *
  */
-BulletManifoldPoint *BulletPersistentManifold::
+BulletManifoldPoint BulletPersistentManifold::
 get_manifold_point(int idx) const {
   LightMutexHolder holder(BulletWorld::get_global_lock());
-
-  nassertr(idx < _manifold->getNumContacts(), nullptr)
-
-  return new BulletManifoldPoint(_manifold->getContactPoint(idx));
+  return BulletManifoldPoint(_manifold->getContactPoint(idx));
 }

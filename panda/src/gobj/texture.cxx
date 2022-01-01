@@ -30,6 +30,7 @@
 #include "pnmImage.h"
 #include "pnmReader.h"
 #include "pfmFile.h"
+#include "pnmFileTypeRegistry.h"
 #include "virtualFileSystem.h"
 #include "datagramInputFile.h"
 #include "datagramOutputFile.h"
@@ -42,6 +43,7 @@
 #include "streamReader.h"
 #include "texturePeeker.h"
 #include "convert_srgb.h"
+#include "asyncTaskManager.h"
 
 #ifdef HAVE_SQUISH
 #include <squish.h>
@@ -551,8 +553,6 @@ bool Texture::
 read(const Filename &fullpath, const LoaderOptions &options) {
   CDWriter cdata(_cycler, true);
   do_clear(cdata);
-  cdata->inc_properties_modified();
-  cdata->inc_image_modified();
   return do_read(cdata, fullpath, Filename(), 0, 0, 0, 0, false, false,
                  options, nullptr);
 }
@@ -570,8 +570,6 @@ read(const Filename &fullpath, const Filename &alpha_fullpath,
      const LoaderOptions &options) {
   CDWriter cdata(_cycler, true);
   do_clear(cdata);
-  cdata->inc_properties_modified();
-  cdata->inc_image_modified();
   return do_read(cdata, fullpath, alpha_fullpath, primary_file_num_channels,
                  alpha_file_channel, 0, 0, false, false,
                  options, nullptr);
@@ -585,12 +583,15 @@ read(const Filename &fullpath, const Filename &alpha_fullpath,
  * the various parameters.
  */
 bool Texture::
-read(const Filename &fullpath, int z, int n,
-     bool read_pages, bool read_mipmaps,
+read(const Filename &fullpath, int z, int n, bool read_pages, bool read_mipmaps,
      const LoaderOptions &options) {
   CDWriter cdata(_cycler, true);
   cdata->inc_properties_modified();
-  cdata->inc_image_modified();
+  if (read_pages) {
+    cdata->inc_image_modified();
+  } else {
+    cdata->inc_image_page_modified(z);
+  }
   return do_read(cdata, fullpath, Filename(), 0, 0, z, n, read_pages, read_mipmaps,
                  options, nullptr);
 }
@@ -655,7 +656,11 @@ read(const Filename &fullpath, const Filename &alpha_fullpath,
      const LoaderOptions &options) {
   CDWriter cdata(_cycler, true);
   cdata->inc_properties_modified();
-  cdata->inc_image_modified();
+  if (read_pages) {
+    cdata->inc_image_modified();
+  } else {
+    cdata->inc_image_page_modified(z);
+  }
   return do_read(cdata, fullpath, alpha_fullpath, primary_file_num_channels,
                  alpha_file_channel, z, n, read_pages, read_mipmaps,
                  options, record);
@@ -1016,6 +1021,69 @@ load_related(const InternalName *suffix) const {
 }
 
 /**
+ * Schedules a background task that reloads the the Texture from its disk file
+ * if there is not currently a RAM image (or uncompressed RAM image, if
+ * allow_compression is false).
+ *
+ * A higher priority value indicates that this texture should be reloaded sooner
+ * than textures with a lower priority value.  If the reload hasn't taken place
+ * yet, you can call this again to update the priority value.
+ *
+ * If someone else reloads the texture using an explicit call to reload() while
+ * an async reload request is pending, the async reload request is cancelled.
+ */
+PT(AsyncFuture) Texture::
+async_ensure_ram_image(bool allow_compression, int priority) {
+  CDLockedReader cdata(_cycler);
+  if (allow_compression ? do_has_ram_image(cdata) : do_has_uncompressed_ram_image(cdata)) {
+    // We already have a RAM image.
+    PT(AsyncFuture) fut = new AsyncFuture;
+    fut->set_result(nullptr);
+    return fut;
+  }
+  if (!do_can_reload(cdata)) {
+    // We don't have a filename to load from.  This is an error.
+    return nullptr;
+  }
+
+  AsyncTask *task = cdata->_reload_task;
+  if (task != nullptr) {
+    // This texture is already queued to be reloaded.  Don't queue it again,
+    // just make sure the priority is updated, and return.
+    task->set_priority(std::max(task->get_priority(), priority));
+    return (AsyncFuture *)task;
+  }
+
+  CDWriter cdataw(_cycler, cdata, true);
+
+  string task_name = string("reload:") + get_name();
+  AsyncTaskManager *task_mgr = AsyncTaskManager::get_global_ptr();
+  static PT(AsyncTaskChain) chain = task_mgr->make_task_chain("texture_reload");
+  chain->set_num_threads(texture_reload_num_threads);
+  chain->set_thread_priority(texture_reload_thread_priority);
+
+  double delay = async_load_delay;
+
+  // This texture has not yet been queued to be reloaded.  Queue it up now.
+  task = new FunctionAsyncTask(task_name, [=](AsyncTask *task) {
+    if (delay != 0.0) {
+      Thread::sleep(delay);
+    }
+    if (allow_compression) {
+      get_ram_image();
+    } else {
+      get_uncompressed_ram_image();
+    }
+    return AsyncTask::DS_done;
+  });
+  task->set_task_chain("texture_reload");
+  task->set_priority(priority);
+  task_mgr->add(task);
+  cdataw->_reload_task = task;
+  return (AsyncFuture *)task;
+}
+
+/**
  * Replaces the current system-RAM image with the new data, converting it
  * first if necessary from the indicated component-order format.  See
  * get_ram_image_as() for specifications about the format.  This method cannot
@@ -1078,7 +1146,7 @@ set_ram_image_as(CPTA_uchar image, const string &supplied_format) {
       return;
     }
     for (int p = 0; p < imgsize; ++p) {
-      for (uchar s = 0; s < format.size(); ++s) {
+      for (unsigned char s = 0; s < format.size(); ++s) {
         signed char component = -1;
         if (format.at(s) == 'B' || (cdata->_num_components <= 2 && format.at(s) != 'A')) {
           component = 0;
@@ -1110,7 +1178,7 @@ set_ram_image_as(CPTA_uchar image, const string &supplied_format) {
     return;
   }
   for (int p = 0; p < imgsize; ++p) {
-    for (uchar s = 0; s < format.size(); ++s) {
+    for (unsigned char s = 0; s < format.size(); ++s) {
       signed char component = -1;
       if (format.at(s) == 'B' || (cdata->_num_components <= 2 && format.at(s) != 'A')) {
         component = 0;
@@ -1310,7 +1378,12 @@ new_simple_ram_image(int x_size, int y_size) {
   cdata->_simple_ram_image._image = PTA_uchar::empty_array(expected_page_size);
   cdata->_simple_ram_image._page_size = expected_page_size;
   cdata->_simple_image_date_generated = (int32_t)time(nullptr);
-  cdata->inc_simple_image_modified();
+
+  // If we don't have a RAM image currently, we need to update this, to let the
+  // GSG know that it needs to update the simple image it is currently using.
+  if (!do_has_ram_image(cdata)) {
+    cdata->inc_image_modified();
+  }
 
   return cdata->_simple_ram_image._image;
 }
@@ -1420,6 +1493,39 @@ peek() {
   }
 
   return nullptr;
+}
+
+/**
+ * Returns a SparseArray containing all the image pages that have been modified
+ * since the given UpdateSeq value.
+ */
+SparseArray Texture::
+get_image_modified_pages(UpdateSeq since, int n) const {
+  CDReader cdata(_cycler);
+
+  SparseArray result;
+  if (since == cdata->_image_modified) {
+    // Early-out since no range is more recent than _image_modified.
+    return result;
+  }
+
+  if (n > 0 && cdata->_texture_type == Texture::TT_3d_texture) {
+    // Don't bother handling this special case, just consider all mipmap pages
+    // modified.
+    result.set_range(0, do_get_expected_mipmap_z_size(cdata, n));
+    return result;
+  }
+
+  for (const ModifiedPageRange &range : cdata->_modified_pages) {
+    if (range._z_begin >= cdata->_z_size) {
+      break;
+    }
+    if (since < range._modified) {
+      result.set_range(range._z_begin, std::min(range._z_end, (size_t)cdata->_z_size) - range._z_begin);
+    }
+  }
+
+  return result;
 }
 
 /**
@@ -3541,7 +3647,7 @@ do_load_sub_image(CData *cdata, const PNMImage &image, int x, int y, int z, int 
   // Flip y
   y = cdata->_y_size - (image.get_y_size() + y);
 
-  cdata->inc_image_modified();
+  cdata->inc_image_page_modified(z);
   do_modify_ram_mipmap_image(cdata, n);
   convert_from_pnmimage(cdata->_ram_images[n]._image,
                         do_get_expected_ram_mipmap_page_size(cdata, n),
@@ -5176,11 +5282,19 @@ do_write_one(CData *cdata, const Filename &fullpath, int z, int n) {
     success = pfm.write(fullpath);
   } else {
     // Writing a normal, integer texture.
+    PNMFileType *type =
+      PNMFileTypeRegistry::get_global_ptr()->get_type_from_extension(fullpath);
+    if (type == nullptr) {
+      gobj_cat.error()
+        << "Texture::write() - couldn't determine type from extension: " << fullpath << endl;
+      return false;
+    }
+
     PNMImage pnmimage;
     if (!do_store_one(cdata, pnmimage, z, n)) {
       return false;
     }
-    success = pnmimage.write(fullpath);
+    success = pnmimage.write(fullpath, type);
   }
 
   if (!success) {
@@ -5416,7 +5530,6 @@ unlocked_ensure_ram_image(bool allow_compression) {
     cdataw->_component_type = cdata_tex->_component_type;
 
     cdataw->inc_properties_modified();
-    cdataw->inc_image_modified();
   }
 
   cdataw->_keep_ram_image = cdata_tex->_keep_ram_image;
@@ -5426,9 +5539,7 @@ unlocked_ensure_ram_image(bool allow_compression) {
   nassertr(_reloading, nullptr);
   _reloading = false;
 
-  // We don't generally increment the cdata->_image_modified semaphore,
-  // because this is just a reload, and presumably the image hasn't changed
-  // (unless we hit the if condition above).
+  cdataw->inc_image_modified();
 
   _cvar.notify_all();
 
@@ -5565,6 +5676,12 @@ do_reload_ram_image(CData *cdata, bool allow_compression) {
       record->set_data(this, this);
       cache->store(record);
     }
+  }
+
+  // Remove any pending asynchronous reload operation.
+  if (cdata->_reload_task != nullptr) {
+    cdata->_reload_task->remove();
+    cdata->_reload_task = nullptr;
   }
 }
 
@@ -5866,7 +5983,12 @@ do_consider_auto_process_ram_image(CData *cdata, bool generate_mipmaps,
   if (allow_compression && !driver_compress_textures) {
     CompressionMode compression = cdata->_compression;
     if (compression == CM_default && compressed_textures) {
-      compression = CM_on;
+      if (cdata->_texture_type == Texture::TT_buffer_texture) {
+        compression = CM_off;
+      }
+      else {
+        compression = CM_on;
+      }
     }
     if (compression != CM_off && cdata->_ram_image_compression == CM_off) {
       GraphicsStateGuardianBase *gsg = GraphicsStateGuardianBase::get_default_gsg();
@@ -6887,7 +7009,6 @@ do_clear(CData *cdata) {
 
   cdata->inc_properties_modified();
   cdata->inc_image_modified();
-  cdata->inc_simple_image_modified();
 }
 
 /**
@@ -7249,7 +7370,11 @@ do_set_quality_level(CData *cdata, Texture::QualityLevel quality_level) {
 bool Texture::
 do_has_compression(const CData *cdata) const {
   if (cdata->_compression == CM_default) {
-    return compressed_textures;
+    if (cdata->_texture_type != Texture::TT_buffer_texture) {
+      return compressed_textures;
+    } else {
+      return false;
+    }
   } else {
     return (cdata->_compression != CM_off);
   }
@@ -7572,7 +7697,6 @@ do_set_simple_ram_image(CData *cdata, CPTA_uchar image, int x_size, int y_size) 
   cdata->_simple_ram_image._image = image.cast_non_const();
   cdata->_simple_ram_image._page_size = image.size();
   cdata->_simple_image_date_generated = (int32_t)time(nullptr);
-  cdata->inc_simple_image_modified();
 }
 
 /**
@@ -7667,11 +7791,6 @@ do_clear_simple_ram_image(CData *cdata) {
   cdata->_simple_ram_image._image.clear();
   cdata->_simple_ram_image._page_size = 0;
   cdata->_simple_image_date_generated = 0;
-
-  // We allow this exception: we update the _simple_image_modified here, since
-  // no one really cares much about that anyway, and it's convenient to do it
-  // here.
-  cdata->inc_simple_image_modified();
 }
 
 /**
@@ -7904,7 +8023,7 @@ convert_from_pnmimage(PTA_uchar &image, size_t page_size,
       for (int j = y_size-1; j >= 0; j--) {
         const xel *row = array + j * x_size;
         for (int i = 0; i < x_size; i++) {
-          *p++ = (uchar)PPM_GETB(row[i]);
+          *p++ = (unsigned char)PPM_GETB(row[i]);
         }
         p += row_skip;
       }
@@ -7917,8 +8036,8 @@ convert_from_pnmimage(PTA_uchar &image, size_t page_size,
           const xel *row = array + j * x_size;
           const xelval *alpha_row = alpha + j * x_size;
           for (int i = 0; i < x_size; i++) {
-            *p++ = (uchar)PPM_GETB(row[i]);
-            *p++ = (uchar)alpha_row[i];
+            *p++ = (unsigned char)PPM_GETB(row[i]);
+            *p++ = (unsigned char)alpha_row[i];
           }
           p += row_skip;
         }
@@ -7926,8 +8045,8 @@ convert_from_pnmimage(PTA_uchar &image, size_t page_size,
         for (int j = y_size-1; j >= 0; j--) {
           const xel *row = array + j * x_size;
           for (int i = 0; i < x_size; i++) {
-            *p++ = (uchar)PPM_GETB(row[i]);
-            *p++ = (uchar)255;
+            *p++ = (unsigned char)PPM_GETB(row[i]);
+            *p++ = (unsigned char)255;
           }
           p += row_skip;
         }
@@ -7938,9 +8057,9 @@ convert_from_pnmimage(PTA_uchar &image, size_t page_size,
       for (int j = y_size-1; j >= 0; j--) {
         const xel *row = array + j * x_size;
         for (int i = 0; i < x_size; i++) {
-          *p++ = (uchar)PPM_GETB(row[i]);
-          *p++ = (uchar)PPM_GETG(row[i]);
-          *p++ = (uchar)PPM_GETR(row[i]);
+          *p++ = (unsigned char)PPM_GETB(row[i]);
+          *p++ = (unsigned char)PPM_GETG(row[i]);
+          *p++ = (unsigned char)PPM_GETR(row[i]);
         }
         p += row_skip;
       }
@@ -7953,10 +8072,10 @@ convert_from_pnmimage(PTA_uchar &image, size_t page_size,
           const xel *row = array + j * x_size;
           const xelval *alpha_row = alpha + j * x_size;
           for (int i = 0; i < x_size; i++) {
-            *p++ = (uchar)PPM_GETB(row[i]);
-            *p++ = (uchar)PPM_GETG(row[i]);
-            *p++ = (uchar)PPM_GETR(row[i]);
-            *p++ = (uchar)alpha_row[i];
+            *p++ = (unsigned char)PPM_GETB(row[i]);
+            *p++ = (unsigned char)PPM_GETG(row[i]);
+            *p++ = (unsigned char)PPM_GETR(row[i]);
+            *p++ = (unsigned char)alpha_row[i];
           }
           p += row_skip;
         }
@@ -7964,10 +8083,10 @@ convert_from_pnmimage(PTA_uchar &image, size_t page_size,
         for (int j = y_size-1; j >= 0; j--) {
           const xel *row = array + j * x_size;
           for (int i = 0; i < x_size; i++) {
-            *p++ = (uchar)PPM_GETB(row[i]);
-            *p++ = (uchar)PPM_GETG(row[i]);
-            *p++ = (uchar)PPM_GETR(row[i]);
-            *p++ = (uchar)255;
+            *p++ = (unsigned char)PPM_GETB(row[i]);
+            *p++ = (unsigned char)PPM_GETG(row[i]);
+            *p++ = (unsigned char)PPM_GETR(row[i]);
+            *p++ = (unsigned char)255;
           }
           p += row_skip;
         }
@@ -10297,10 +10416,12 @@ make_this_from_bam(const FactoryParams &params) {
     // object to read all of the attributes from the bam stream.
     Texture *dummy = this;
     AutoTextureScale auto_texture_scale = ATS_unspecified;
+    bool has_simple_ram_image = false;
     {
       CDWriter cdata_dummy(dummy->_cycler, true);
       dummy->do_fillin_body(cdata_dummy, scan, manager);
       auto_texture_scale = cdata_dummy->_auto_texture_scale;
+      has_simple_ram_image = !cdata_dummy->_simple_ram_image._image.empty();
     }
 
     if (filename.empty()) {
@@ -10333,6 +10454,61 @@ make_this_from_bam(const FactoryParams &params) {
       case TT_1d_texture:
       case TT_2d_texture:
       case TT_1d_texture_array:
+        // If we don't want to preload textures, and we already have a simple
+        // RAM image (or don't need one), we don't need to load it from disk.
+        // We do check for it in the texture pool first, though, in case it has
+        // already been loaded.
+        if ((options.get_texture_flags() & LoaderOptions::TF_preload) == 0 &&
+            (has_simple_ram_image || (options.get_texture_flags() & LoaderOptions::TF_preload_simple) == 0)) {
+          if (alpha_filename.empty()) {
+            me = TexturePool::get_texture(filename, primary_file_num_channels,
+                                          has_read_mipmaps);
+          } else {
+            me = TexturePool::get_texture(filename, alpha_filename,
+                                          primary_file_num_channels,
+                                          alpha_file_channel,
+                                          has_read_mipmaps);
+          }
+          if (me != nullptr && me->get_texture_type() == texture_type) {
+            // We can use this.
+            break;
+          }
+
+          // We don't have a texture, but we didn't need to preload it, so we
+          // can just use this one.  We just need to know where we can find it
+          // when we do need to reload it.
+          Filename fullpath = filename;
+          Filename alpha_fullpath = alpha_filename;
+          const DSearchPath &model_path = get_model_path();
+          if (vfs->resolve_filename(fullpath, model_path) &&
+              (alpha_fullpath.empty() || vfs->resolve_filename(alpha_fullpath, model_path))) {
+            me = dummy;
+            me->set_name(name);
+
+            {
+              CDWriter cdata_me(me->_cycler, true);
+              cdata_me->_filename = filename;
+              cdata_me->_alpha_filename = alpha_filename;
+              cdata_me->_fullpath = fullpath;
+              cdata_me->_alpha_fullpath = alpha_fullpath;
+              cdata_me->_primary_file_num_channels = primary_file_num_channels;
+              cdata_me->_alpha_file_channel = alpha_file_channel;
+              cdata_me->_texture_type = texture_type;
+              cdata_me->_loaded_from_image = true;
+              cdata_me->_has_read_mipmaps = has_read_mipmaps;
+            }
+
+            // To manage the reference count, explicitly ref it now, then unref
+            // it in the finalize callback.
+            me->ref();
+            manager->register_finalize(me);
+
+            // Do add it to the cache now, so that future uses of this same
+            // texture are unified.
+            TexturePool::add_texture(me);
+            return me;
+          }
+        }
         if (alpha_filename.empty()) {
           me = TexturePool::load_texture(filename, primary_file_num_channels,
                                          has_read_mipmaps, options);
@@ -10429,7 +10605,6 @@ do_fillin_body(CData *cdata, DatagramIterator &scan, BamReader *manager) {
 
     cdata->_simple_ram_image._image = image;
     cdata->_simple_ram_image._page_size = u_size;
-    cdata->inc_simple_image_modified();
   }
 
   if (manager->get_file_minor_ver() >= 45) {
@@ -10610,6 +10785,10 @@ CData() {
   _simple_ram_image._page_size = 0;
 
   _has_clear_color = false;
+
+  _modified_pages.resize(1);
+  _modified_pages[0]._z_end = (size_t)-1;
+  _modified_pages[0]._modified = _image_modified;
 }
 
 /**
@@ -10623,7 +10802,7 @@ CData(const Texture::CData &copy) {
 
   _properties_modified = copy._properties_modified;
   _image_modified = copy._image_modified;
-  _simple_image_modified = copy._simple_image_modified;
+  _modified_pages = copy._modified_pages;
 }
 
 /**
@@ -10679,6 +10858,46 @@ do_assign(const Texture::CData *copy) {
   _simple_x_size = copy->_simple_x_size;
   _simple_y_size = copy->_simple_y_size;
   _simple_ram_image = copy->_simple_ram_image;
+}
+
+/**
+ * Marks a single page of the image as modified.
+ */
+void Texture::CData::
+inc_image_page_modified(int z) {
+  ++_image_modified;
+
+  ModifiedPageRanges::iterator it = _modified_pages.begin();
+  while (it != _modified_pages.end() && (*it)._z_end <= z) {
+    ++it;
+    continue;
+  }
+  nassertv(it != _modified_pages.end());
+
+  size_t orig_z_end = (*it)._z_end;
+  UpdateSeq orig_modified = (*it)._modified;
+
+  if (z > (*it)._z_begin) {
+    // Split prefix.
+    ModifiedPageRange copy(*it);
+    copy._z_end = z;
+    it = _modified_pages.insert(it, copy);
+    ++it;
+  }
+
+  (*it)._z_begin = z;
+  (*it)._z_end = z + 1;
+  (*it)._modified = _image_modified;
+
+  if (z + 1 < orig_z_end) {
+    // Split suffix.
+    ModifiedPageRange copy(*it);
+    copy._z_begin = z + 1;
+    copy._z_end = orig_z_end;
+    copy._modified = orig_modified;
+    ++it;
+    _modified_pages.insert(it, copy);
+  }
 }
 
 /**

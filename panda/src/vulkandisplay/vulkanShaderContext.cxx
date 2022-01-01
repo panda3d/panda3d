@@ -113,8 +113,8 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
     }
   }
 
-  for (COWPT(ShaderModule) &cow_module : _shader->_modules) {
-    CPT(ShaderModule) module = cow_module.get_read_pointer();
+  for (Shader::LinkedModule &linked_module : _shader->_modules) {
+    CPT(ShaderModule) module = linked_module._module.get_read_pointer();
 
     const ShaderModuleSpirV *spv_module = DCAST(ShaderModuleSpirV, module.p());
     nassertd(spv_module != nullptr) continue;

@@ -25,6 +25,9 @@ class ShaderType;
  * link the module to a previous stage, and strip debug information as needed.
  */
 class EXPCL_PANDA_SHADERPIPELINE ShaderModuleSpirV final : public ShaderModule {
+private:
+  ShaderModuleSpirV(Stage stage);
+
 public:
   ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *record = nullptr);
   virtual ~ShaderModuleSpirV();
@@ -190,7 +193,7 @@ public:
    * exist at any given time, and the stream may not be modified by other means
    * in the meantime.
    */
-  class InstructionWriter {
+  class EXPCL_PANDA_SHADERPIPELINE InstructionWriter {
   public:
     InstructionWriter(InstructionStream &stream);
 
@@ -245,6 +248,15 @@ public:
 private:
   void remap_locations(spv::StorageClass storage_class, const pmap<int, int> &locations);
   void strip();
+
+public:
+  static void register_with_read_factory();
+  virtual void write_datagram(BamWriter *manager, Datagram &dg) override;
+  virtual int complete_pointers(TypedWritable **plist, BamReader *manager) override;
+
+protected:
+  static TypedWritable *make_from_bam(const FactoryParams &params);
+  void fillin(DatagramIterator &scan, BamReader *manager) override;
 
 public:
   static TypeHandle get_class_type() {

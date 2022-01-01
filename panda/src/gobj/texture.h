@@ -45,7 +45,7 @@
 #include "bamCacheRecord.h"
 #include "pnmImage.h"
 #include "pfmFile.h"
-#include "asyncFuture.h"
+#include "asyncTask.h"
 
 class TextureContext;
 class FactoryParams;
@@ -448,6 +448,7 @@ PUBLISHED:
   MAKE_PROPERTY(expected_ram_image_size, get_expected_ram_image_size);
   MAKE_PROPERTY(expected_ram_page_size, get_expected_ram_page_size);
 
+  PT(AsyncFuture) async_ensure_ram_image(bool allow_compression = true, int priority = 0);
   INLINE CPTA_uchar get_ram_image();
   INLINE CompressionMode get_ram_image_compression() const;
   INLINE CPTA_uchar get_uncompressed_ram_image();
@@ -520,10 +521,10 @@ PUBLISHED:
 
   INLINE UpdateSeq get_properties_modified() const;
   INLINE UpdateSeq get_image_modified() const;
-  INLINE UpdateSeq get_simple_image_modified() const;
   MAKE_PROPERTY(properties_modified, get_properties_modified);
   MAKE_PROPERTY(image_modified, get_image_modified);
-  MAKE_PROPERTY(simple_image_modified, get_simple_image_modified);
+
+  SparseArray get_image_modified_pages(UpdateSeq since, int n = 0) const;
 
   INLINE bool has_auto_texture_scale() const;
   INLINE AutoTextureScale get_auto_texture_scale() const;
@@ -782,6 +783,7 @@ protected:
   void do_set_pad_size(CData *cdata, int x, int y, int z);
   virtual bool do_can_reload(const CData *cdata) const;
   bool do_reload(CData *cdata);
+  AsyncFuture *do_async_ensure_ram_image(const CData *cdata, bool allow_compression, int priority);
 
   INLINE AutoTextureScale do_get_auto_texture_scale(const CData *cdata) const;
 
@@ -932,6 +934,13 @@ private:
 protected:
   typedef pvector<RamImage> RamImages;
 
+  struct ModifiedPageRange {
+    size_t _z_begin = 0;
+    size_t _z_end;
+    UpdateSeq _modified;
+  };
+  typedef pvector<ModifiedPageRange> ModifiedPageRanges;
+
   // This is the data that must be cycled between pipeline stages.
   class EXPCL_PANDA_GOBJ CData : public CycleData {
   public:
@@ -949,7 +958,7 @@ protected:
     void do_assign(const CData *copy);
     INLINE void inc_properties_modified();
     INLINE void inc_image_modified();
-    INLINE void inc_simple_image_modified();
+    void inc_image_page_modified(int z);
 
     Filename _filename;
     Filename _alpha_filename;
@@ -1018,7 +1027,10 @@ protected:
 
     UpdateSeq _properties_modified;
     UpdateSeq _image_modified;
-    UpdateSeq _simple_image_modified;
+
+    ModifiedPageRanges _modified_pages;
+
+    PT(AsyncTask) _reload_task;
 
   public:
     static TypeHandle get_class_type() {

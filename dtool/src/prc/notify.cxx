@@ -31,6 +31,8 @@
 
 #ifdef ANDROID
 #include <android/log.h>
+
+#include "androidLogStream.h"
 #endif
 
 using std::cerr;
@@ -345,8 +347,9 @@ assert_failure(const char *expression, int line,
 
 #ifdef ANDROID
   __android_log_assert("assert", "Panda3D", "Assertion failed: %s", message.c_str());
-#endif
+#else
   nout << "Assertion failed: " << message << "\n";
+#endif
 
   // This is redefined here, shadowing the defining in config_prc.h, so we can
   // guarantee it has already been constructed.
@@ -477,6 +480,12 @@ config_initialized() {
         }
 #endif  // BUILD_IPHONE
       }
+#ifdef ANDROID
+    } else {
+      // By default, we always redirect the notify stream to the Android log.
+      Notify *ptr = Notify::ptr();
+      ptr->set_ostream_ptr(new AndroidLogStream(ANDROID_LOG_INFO), true);
+#endif
     }
   }
 }

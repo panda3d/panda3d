@@ -278,6 +278,8 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
 
   vector_uchar code;
   if (!VirtualFile::simple_read_file(&in, code)) {
+    shader_cat.error()
+      << "Failed to read " << stage << " shader from stream.\n";
     return nullptr;
   }
 

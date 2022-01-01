@@ -31,9 +31,9 @@
 class EXPCL_PANDA_PUTIL TimeVal {
 PUBLISHED:
   INLINE TimeVal();
-  INLINE ulong get_sec() const;
-  INLINE ulong get_usec() const;
-  ulong tv[2];
+  INLINE unsigned long get_sec() const;
+  INLINE unsigned long get_usec() const;
+  unsigned long tv[2];
 };
 
 /**

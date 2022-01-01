@@ -157,7 +157,6 @@ public:
                                          GeomTransformer &transformer);
 
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
-  virtual bool is_renderable() const;
   virtual void add_for_draw(CullTraverser *trav, CullTraverserData &data);
 
   void prepare_scene(GraphicsStateGuardianBase *gsgbase, const RenderState *net_state);

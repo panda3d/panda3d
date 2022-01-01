@@ -274,7 +274,9 @@ start_thread() {
 
     // Create and start the thread object.
     _thread_status = TS_wait;
-    _thread = new GenericThread(_filename.get_basename(), _sync_name, st_thread_main, this);
+    _thread = new GenericThread(_filename.get_basename(), _sync_name, [this]{
+      thread_main();
+    });
     if (!_thread->start(_thread_priority, true)) {
       // Couldn't start the thread.
       _thread = nullptr;
@@ -543,7 +545,7 @@ open_stream() {
   _video_timebase = av_q2d(stream->time_base);
   _min_fseek = (int)(3.0 / _video_timebase);
 
-  AVCodec *pVideoCodec = nullptr;
+  const AVCodec *pVideoCodec = nullptr;
   if (ffmpeg_prefer_libvpx) {
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55, 0, 0)
     if (codecpar->codec_id == AV_CODEC_ID_VP9) {
@@ -666,14 +668,6 @@ cleanup() {
     _packet = nullptr;
 #endif
   }
-}
-
-/**
- * The thread main function, static version (for passing to GenericThread).
- */
-void FfmpegVideoCursor::
-st_thread_main(void *self) {
-  ((FfmpegVideoCursor *)self)->thread_main();
 }
 
 /**

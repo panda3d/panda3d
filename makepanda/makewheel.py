@@ -10,11 +10,11 @@ import hashlib
 import tempfile
 import subprocess
 import time
-from distutils.util import get_platform
-from distutils.sysconfig import get_config_var
+import struct
+from sysconfig import get_platform, get_config_var
 from optparse import OptionParser
 from base64 import urlsafe_b64encode
-from makepandacore import LocateBinary, GetExtensionSuffix, SetVerbose, GetVerbose, GetMetadataValue
+from makepandacore import LocateBinary, GetExtensionSuffix, SetVerbose, GetVerbose, GetMetadataValue, CrossCompiling, GetThirdpartyDir, SDK, GetStrip
 
 
 def get_abi_tag():
@@ -65,8 +65,11 @@ def is_fat_file(path):
 
 
 def get_python_ext_module_dir():
-    import _ctypes
-    return os.path.dirname(_ctypes.__file__)
+    if CrossCompiling():
+        return os.path.join(GetThirdpartyDir(), "python", "lib", SDK["PYTHONVERSION"], "lib-dynload")
+    else:
+        import _ctypes
+        return os.path.dirname(_ctypes.__file__)
 
 
 if sys.platform in ('win32', 'cygwin'):
@@ -251,16 +254,72 @@ def parse_dependencies_unix(data):
     return filenames
 
 
+def _scan_dependencies_elf(elf):
+    deps = []
+    ident = elf.read(12)
+
+    # Make sure we read in the correct endianness and integer size
+    byte_order = "<>"[ord(ident[1:2]) - 1]
+    elf_class = ord(ident[0:1]) - 1 # 0 = 32-bits, 1 = 64-bits
+    header_struct = byte_order + ("HHIIIIIHHHHHH", "HHIQQQIHHHHHH")[elf_class]
+    section_struct = byte_order + ("4xI8xIII8xI", "4xI16xQQI12xQ")[elf_class]
+    dynamic_struct = byte_order + ("iI", "qQ")[elf_class]
+
+    type, machine, version, entry, phoff, shoff, flags, ehsize, phentsize, phnum, shentsize, shnum, shstrndx \
+      = struct.unpack(header_struct, elf.read(struct.calcsize(header_struct)))
+    dynamic_sections = []
+    string_tables = {}
+
+    # Seek to the section header table and find the .dynamic section.
+    elf.seek(shoff)
+    for i in range(shnum):
+        type, offset, size, link, entsize = struct.unpack_from(section_struct, elf.read(shentsize))
+        if type == 6 and link != 0: # DYNAMIC type, links to string table
+            dynamic_sections.append((offset, size, link, entsize))
+            string_tables[link] = None
+
+    # Read the relevant string tables.
+    for idx in string_tables.keys():
+        elf.seek(shoff + idx * shentsize)
+        type, offset, size, link, entsize = struct.unpack_from(section_struct, elf.read(shentsize))
+        if type != 3: continue
+        elf.seek(offset)
+        string_tables[idx] = elf.read(size)
+
+    # Loop through the dynamic sections to get the NEEDED entries.
+    needed = []
+    for offset, size, link, entsize in dynamic_sections:
+        elf.seek(offset)
+        data = elf.read(entsize)
+        tag, val = struct.unpack_from(dynamic_struct, data)
+
+        # Read tags until we find a NULL tag.
+        while tag != 0:
+            if tag == 1: # A NEEDED entry.  Read it from the string table.
+                string = string_tables[link][val : string_tables[link].find(b'\0', val)]
+                needed.append(string.decode('utf-8'))
+
+            data = elf.read(entsize)
+            tag, val = struct.unpack_from(dynamic_struct, data)
+
+    elf.close()
+    return needed
+
+
 def scan_dependencies(pathname):
     """ Checks the named file for DLL dependencies, and adds any appropriate
     dependencies found into pluginDependencies and dependentFiles. """
+
+    with open(pathname, 'rb') as fh:
+        if fh.read(4) == b'\x7FELF':
+            return _scan_dependencies_elf(fh)
 
     if sys.platform == "darwin":
         command = ['otool', '-XL', pathname]
     elif sys.platform in ("win32", "cygwin"):
         command = ['dumpbin', '/dependents', pathname]
     else:
-        command = ['ldd', pathname]
+        sys.exit("Don't know how to determine dependencies from %s" % (pathname))
 
     process = subprocess.Popen(command, stdout=subprocess.PIPE, universal_newlines=True)
     output, unused_err = process.communicate()
@@ -322,18 +381,24 @@ class WheelFile(object):
 
         self.dep_paths[dep] = None
 
-        if dep in self.ignore_deps or dep.lower().startswith("python") or os.path.basename(dep).startswith("libpython"):
-            # Don't include the Python library, or any other explicit ignore.
+        if dep in self.ignore_deps:
             if GetVerbose():
                 print("Ignoring {0} (explicitly ignored)".format(dep))
             return
 
-        if sys.platform == "darwin" and dep.endswith(".so"):
-            # Temporary hack for 1.9, which had link deps on modules.
-            return
+        if not self.platform.startswith("android"):
+            if dep.lower().startswith("python") or os.path.basename(dep).startswith("libpython"):
+                if GetVerbose():
+                    print("Ignoring {0} (explicitly ignored)".format(dep))
+                return
 
-        if sys.platform == "darwin" and dep.startswith("/System/"):
-            return
+        if self.platform.startswith("macosx"):
+            if dep.endswith(".so"):
+                # Temporary hack for 1.9, which had link deps on modules.
+                return
+
+            if dep.startswith("/System/"):
+                return
 
         if dep.startswith('/'):
             source_path = dep
@@ -386,7 +451,7 @@ class WheelFile(object):
             temp = tempfile.NamedTemporaryFile(suffix=suffix, prefix='whl', delete=False)
 
             # On macOS, if no fat wheel was requested, extract the right architecture.
-            if sys.platform == "darwin" and is_fat_file(source_path) \
+            if self.platform.startswith("macosx") and is_fat_file(source_path) \
                 and not self.platform.endswith("_intel") \
                 and "_fat" not in self.platform \
                 and "_universal" not in self.platform:
@@ -404,7 +469,7 @@ class WheelFile(object):
             os.chmod(temp.name, os.stat(temp.name).st_mode | 0o711)
 
             # Now add dependencies.  On macOS, fix @loader_path references.
-            if sys.platform == "darwin":
+            if self.platform.startswith("macosx"):
                 if source_path.endswith('deploy-stubw'):
                     deps_path = '@executable_path/../Frameworks'
                 else:
@@ -457,12 +522,32 @@ class WheelFile(object):
                 # On other unixes, we just add dependencies normally.
                 for dep in deps:
                     # Only include dependencies with relative path, for now.
-                    if '/' not in dep:
-                        target_dep = os.path.dirname(target_path) + '/' + dep
-                        self.consider_add_dependency(target_dep, dep)
+                    if '/' in dep:
+                        continue
 
-                subprocess.call(["strip", "-s", temp.name])
-                subprocess.call(["patchelf", "--force-rpath", "--set-rpath", "$ORIGIN", temp.name])
+                    if self.platform.startswith('android') and '.so.' in dep:
+                        # Change .so.1.2 suffix to .so, to allow loading in .apk
+                        new_dep = dep.rpartition('.so.')[0] + '.so'
+                        subprocess.call(["patchelf", "--replace-needed", dep, new_dep, temp.name])
+                        target_dep = os.path.dirname(target_path) + '/' + new_dep
+                    else:
+                        target_dep = os.path.dirname(target_path) + '/' + dep
+
+                    self.consider_add_dependency(target_dep, dep)
+
+                subprocess.call([GetStrip(), "-s", temp.name])
+
+                if self.platform.startswith('android'):
+                    # We must link explicitly with Python, because the usual
+                    # -rdynamic trick doesn't work from a shared library loaded
+                    # through ANativeActivity.
+                    if suffix == '.so' and not os.path.basename(source_path).startswith('lib'):
+                        pylib_name = "libpython" + get_config_var('LDVERSION') + ".so"
+                        subprocess.call(["patchelf", "--add-needed", pylib_name, temp.name])
+                else:
+                    # On other systems, we use the rpath to force it to locate
+                    # dependencies in the same directory.
+                    subprocess.call(["patchelf", "--force-rpath", "--set-rpath", "$ORIGIN", temp.name])
 
             source_path = temp.name
 
@@ -550,7 +635,7 @@ def makewheel(version, output_dir, platform=None):
             raise Exception("patchelf is required when building a Linux wheel.")
 
     if sys.version_info < (3, 6):
-        raise Exception("Python 3.6 is required to produce a wheel.")
+        raise Exception("Python 3.6 or higher is required to produce a wheel.")
 
     if platform is None:
         # Determine the platform from the build.
@@ -568,8 +653,15 @@ def makewheel(version, output_dir, platform=None):
                     platform = platform.replace("linux", "manylinux2010")
                 elif os.path.isfile("/lib/libc-2.17.so") or os.path.isfile("/lib64/libc-2.17.so"):
                     platform = platform.replace("linux", "manylinux2014")
+                elif os.path.isfile("/lib/i386-linux-gnu/libc-2.24.so") or os.path.isfile("/lib/x86_64/libc-2.24.so"):
+                    platform = platform.replace("linux", "manylinux_2_24")
 
     platform = platform.replace('-', '_').replace('.', '_')
+
+    is_windows = platform == 'win32' \
+        or platform.startswith('win_') \
+        or platform.startswith('cygwin_')
+    is_macosx = platform.startswith('macosx_')
 
     # Global filepaths
     panda3d_dir = join(output_dir, "panda3d")
@@ -578,7 +670,7 @@ def makewheel(version, output_dir, platform=None):
     models_dir = join(output_dir, "models")
     etc_dir = join(output_dir, "etc")
     bin_dir = join(output_dir, "bin")
-    if sys.platform == "win32":
+    if is_windows:
         libs_dir = join(output_dir, "bin")
     else:
         libs_dir = join(output_dir, "lib")
@@ -613,7 +705,7 @@ def makewheel(version, output_dir, platform=None):
     whl = WheelFile('panda3d', version, platform)
     whl.lib_path = [libs_dir]
 
-    if sys.platform == "win32":
+    if is_windows:
         whl.lib_path.append(ext_mod_dir)
 
     if platform.startswith("manylinux"):
@@ -629,10 +721,10 @@ def makewheel(version, output_dir, platform=None):
         whl.ignore_deps.update(MANYLINUX_LIBS)
 
     # Add libpython for deployment.
-    if sys.platform in ('win32', 'cygwin'):
+    if is_windows:
         pylib_name = 'python{0}{1}.dll'.format(*sys.version_info)
         pylib_path = os.path.join(get_config_var('BINDIR'), pylib_name)
-    elif sys.platform == 'darwin':
+    elif is_macosx:
         pylib_name = 'libpython{0}.{1}.dylib'.format(*sys.version_info)
         pylib_path = os.path.join(get_config_var('LIBDIR'), pylib_name)
     else:
@@ -679,6 +771,9 @@ if __debug__:
             if file.endswith('.pyd') and platform.startswith('cygwin'):
                 # Rename it to .dll for cygwin Python to be able to load it.
                 target_path = 'panda3d/' + os.path.splitext(file)[0] + '.dll'
+            elif file.endswith(ext_suffix) and platform.startswith('android'):
+                # Strip the extension suffix on Android.
+                target_path = 'panda3d/' + file[:-len(ext_suffix)] + '.so'
             else:
                 target_path = 'panda3d/' + file
 
@@ -686,7 +781,7 @@ if __debug__:
 
     # And copy the extension modules from the Python installation into the
     # deploy_libs directory, for use by deploy-ng.
-    ext_suffix = '.pyd' if sys.platform in ('win32', 'cygwin') else '.so'
+    ext_suffix = '.pyd' if is_windows else '.so'
 
     for file in sorted(os.listdir(ext_mod_dir)):
         if file.endswith(ext_suffix):
@@ -703,15 +798,24 @@ if __debug__:
     # Add plug-ins.
     for lib in PLUGIN_LIBS:
         plugin_name = 'lib' + lib
-        if sys.platform in ('win32', 'cygwin'):
+        if is_windows:
             plugin_name += '.dll'
-        elif sys.platform == 'darwin':
+        elif is_macosx:
             plugin_name += '.dylib'
         else:
             plugin_name += '.so'
         plugin_path = os.path.join(libs_dir, plugin_name)
         if os.path.isfile(plugin_path):
             whl.write_file('panda3d/' + plugin_name, plugin_path)
+
+    if platform.startswith('android'):
+        deploy_stub_path = os.path.join(libs_dir, 'libdeploy-stubw.so')
+        if os.path.isfile(deploy_stub_path):
+            whl.write_file('deploy_libs/libdeploy-stubw.so', deploy_stub_path)
+
+        classes_dex_path = os.path.join(output_dir, 'classes.dex')
+        if os.path.isfile(classes_dex_path):
+            whl.write_file('deploy_libs/classes.dex', classes_dex_path)
 
     # Add the .data directory, containing additional files.
     data_dir = 'panda3d-{0}.data'.format(version)

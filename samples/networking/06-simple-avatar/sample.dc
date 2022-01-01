@@ -1,0 +1,6 @@
+import DistributedSmoothActor
+
+dclass DistributedSmoothActor: DistributedSmoothNode {
+    loop(string animName) broadcast;
+    pose(string animName, int16 frame) broadcast;
+}

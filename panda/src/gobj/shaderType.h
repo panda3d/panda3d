@@ -28,6 +28,7 @@ class EXPCL_PANDA_GOBJ ShaderType : public TypedWritable {
 public:
   template<class Type>
   static const Type *register_type(Type &&type);
+  INLINE bool is_registered() const;
 
   INLINE int compare_to(const ShaderType &other) const;
   virtual int compare_to_impl(const ShaderType &other) const=0;
@@ -88,6 +89,10 @@ public:
   virtual const Sampler *as_sampler() const { return nullptr; }
   virtual const SampledImage *as_sampled_image() const { return nullptr; }
 
+  static void register_with_read_factory();
+  virtual bool require_fully_complete() const;
+  static TypedWritable *change_this(TypedWritable *old_ptr, BamReader *manager);
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -135,6 +140,10 @@ private:
 
   const ScalarType _scalar_type;
 
+protected:
+  virtual void write_datagram(BamWriter *manager, Datagram &dg) override;
+  static TypedWritable *make_from_bam(const FactoryParams &params);
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -177,6 +186,10 @@ private:
 
   const ScalarType _scalar_type;
   const uint32_t _num_components;
+
+protected:
+  virtual void write_datagram(BamWriter *manager, Datagram &dg) override;
+  static TypedWritable *make_from_bam(const FactoryParams &params);
 
 public:
   static TypeHandle get_class_type() {
@@ -221,6 +234,10 @@ private:
   const ScalarType _scalar_type;
   const uint32_t _num_rows;
   const uint32_t _num_columns;
+
+protected:
+  virtual void write_datagram(BamWriter *manager, Datagram &dg) override;
+  static TypedWritable *make_from_bam(const FactoryParams &params);
 
 public:
   static TypeHandle get_class_type() {
@@ -272,6 +289,11 @@ PUBLISHED:
 private:
   pvector<Member> _members;
 
+protected:
+  virtual void write_datagram(BamWriter *manager, Datagram &dg) override;
+  virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
+  static TypedWritable *make_from_bam(const FactoryParams &params);
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -321,6 +343,11 @@ PUBLISHED:
 private:
   const ShaderType *_element_type;
   uint32_t _num_elements;
+
+protected:
+  virtual void write_datagram(BamWriter *manager, Datagram &dg) override;
+  virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
+  static TypedWritable *make_from_bam(const FactoryParams &params);
 
 public:
   static TypeHandle get_class_type() {
@@ -372,6 +399,10 @@ private:
   ScalarType _sampled_type;
   Access _access;
 
+protected:
+  virtual void write_datagram(BamWriter *manager, Datagram &dg) override;
+  static TypedWritable *make_from_bam(const FactoryParams &params);
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -398,6 +429,9 @@ public:
   virtual int compare_to_impl(const ShaderType &other) const override;
 
   const Sampler *as_sampler() const override { return this; }
+
+protected:
+  static TypedWritable *make_from_bam(const FactoryParams &params);
 
 public:
   static TypeHandle get_class_type() {
@@ -434,6 +468,10 @@ private:
   Texture::TextureType _texture_type;
   ScalarType _sampled_type;
   bool _shadow = false;
+
+protected:
+  virtual void write_datagram(BamWriter *manager, Datagram &dg) override;
+  static TypedWritable *make_from_bam(const FactoryParams &params);
 
 public:
   static TypeHandle get_class_type() {

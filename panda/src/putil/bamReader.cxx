@@ -309,6 +309,29 @@ read_object(TypedWritable *&ptr, ReferenceCount *&ref_ptr) {
 }
 
 /**
+ * Like read_object(), but does not return the object.
+ */
+bool BamReader::
+skip_object() {
+  nassertr(_num_extra_objects == 0, false);
+
+  int start_level = _nesting_level;
+
+  int object_id = p_read_object();
+
+  while (_num_extra_objects > 0) {
+    p_read_object();
+    _num_extra_objects--;
+  }
+
+  while (_nesting_level > start_level) {
+    p_read_object();
+  }
+
+  return object_id != 0;
+}
+
+/**
  * This may be called at any time during processing of the Bam file to resolve
  * all the known pointers so far.  It is usually called at the end of the
  * processing, after all objects have been read, which is generally the best
@@ -545,12 +568,13 @@ read_handle(DatagramIterator &scan) {
   string name = scan.get_string();
   bool new_type = false;
 
-  TypeHandle type = TypeRegistry::ptr()->find_type(name);
+  TypeRegistry *type_registry = TypeRegistry::ptr();
+  TypeHandle type = type_registry->find_type(name);
   if (type == TypeHandle::none()) {
     // We've never heard of this type before!  This is really an error
     // condition, but we'll do the best we can and declare it on-the-fly.
 
-    type = TypeRegistry::ptr()->register_dynamic_type(name);
+    type = type_registry->register_dynamic_type(name);
     bam_cat.warning()
       << "Bam file '" << get_filename() << "' contains objects of unknown type: "
       << type << "\n";
@@ -563,7 +587,7 @@ read_handle(DatagramIterator &scan) {
   for (int i = 0; i < num_parent_classes; i++) {
     TypeHandle parent_type = read_handle(scan);
     if (new_type) {
-      TypeRegistry::ptr()->record_derivation(type, parent_type);
+      type_registry->record_derivation(type, parent_type);
     } else {
       if (type.get_parent_towards(parent_type) != parent_type) {
         if (bam_cat.is_debug()) {
@@ -1109,6 +1133,10 @@ p_read_object() {
       _file_data_records.push_back(info);
     }
 
+    return p_read_object();
+
+  case BOC_ignore:
+    // Ignore this datagram.
     return p_read_object();
 
   default:

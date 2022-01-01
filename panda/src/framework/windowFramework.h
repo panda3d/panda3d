@@ -154,8 +154,6 @@ private:
   void play_button();
   void forward_button();
 
-  static AsyncTask::DoneStatus st_update_anim_controls(GenericAsyncTask *task, void *data);
-
   static void st_back_button(const Event *, void *data);
   static void st_pause_button(const Event *, void *data);
   static void st_play_button(const Event *, void *data);
@@ -183,7 +181,7 @@ private:
   PT(PGSliderBar) _anim_slider;
   PT(PGSliderBar) _play_rate_slider;
   PT(TextNode) _frame_number;
-  PT(GenericAsyncTask) _update_anim_controls_task;
+  PT(AsyncTask) _update_anim_controls_task;
 
   NodePath _mouse;
   NodePath _button_thrower;

@@ -32,6 +32,21 @@ get_clock() {
   return _clock;
 }
 
+#ifndef CPPPARSER
+/**
+ * Adds a new task which calls the indicated function to the task manager.
+ * Returns the newly created FunctionAsyncTask object.
+ *
+ * @since 1.11.0
+ */
+INLINE AsyncTask *AsyncTaskManager::
+add(const std::string &name, FunctionAsyncTask::TaskFunction function) {
+  AsyncTask *task = new FunctionAsyncTask(name, std::move(function));
+  add(task);
+  return task;
+}
+#endif
+
 /**
  * Returns the number of tasks that are currently active or sleeping within
  * the task manager.

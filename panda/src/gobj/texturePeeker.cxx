@@ -361,7 +361,7 @@ lookup(LColor &color, PN_stdfloat u, PN_stdfloat v, PN_stdfloat w) const {
 }
 
 /**
- * Works like TexturePeeker::lookup(), but instead uv-coordinates integer
+ * Works like TexturePeeker::lookup(), but instead of uv-coordinates, integer
  * coordinates are used.
  */
 void TexturePeeker::
@@ -372,7 +372,7 @@ fetch_pixel(LColor &color, int x, int y) const {
 }
 
 /**
- * Works like TexturePeeker::lookup(), but instead uv-coordinates integer
+ * Works like TexturePeeker::lookup(), but instead of uv-coordinates, integer
  * coordinates are used.
  */
 void TexturePeeker::

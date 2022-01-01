@@ -79,7 +79,7 @@ static TypedWritable *factory_callback(const FactoryParams &params){
       // If the Python pointer is the last reference to it, make sure that the
       // object isn't destroyed.  We do this by calling unref(), which
       // decreases the reference count without destroying the object.
-      if (result->ob_refcnt <= 1) {
+      if (Py_REFCNT(result) <= 1) {
         ref_count->unref();
 
         // Tell the Python wrapper object that it shouldn't try to delete the

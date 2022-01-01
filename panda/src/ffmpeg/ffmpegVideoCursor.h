@@ -134,7 +134,6 @@ private:
 
 private:
   // The following functions will be called in the sub-thread.
-  static void st_thread_main(void *self);
   void thread_main();
   bool do_poll();
 
