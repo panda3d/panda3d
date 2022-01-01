@@ -340,6 +340,13 @@ get_pixel_2d() {
     _pixel_2d = get_render_2d().attach_new_node(top);
     _pixel_2d.set_pos(-1, 0, 1);
 
+    // Tell the PGTop about our MouseWatcher object, so the PGui system can
+    // operate.
+    PandaNode *mouse_node = get_mouse().node();
+    if (mouse_node->is_of_type(MouseWatcher::get_class_type())) {
+      top->set_mouse_watcher(DCAST(MouseWatcher, mouse_node));
+    }
+
     if (_window->has_size()) {
       int x_size = _window->get_sbs_left_x_size();
       int y_size = _window->get_sbs_left_y_size();
