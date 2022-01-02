@@ -881,17 +881,36 @@ do_premunge(GraphicsStateGuardianBase *gsg,
             GeomTransformer &transformer) {
   Thread *current_thread = Thread::get_current_thread();
 
+  // Cache munged vertex data, so that we don't duplicate vertex data
+  // unnecessarily.
+  std::map<CPT(GeomVertexData), CPT(GeomVertexData)> munged_vdata;
+
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
     CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
 
-    GeomList::iterator gi;
     PT(GeomList) geoms = cdata->modify_geoms();
-    for (gi = geoms->begin(); gi != geoms->end(); ++gi) {
-      GeomEntry &entry = (*gi);
+    for (GeomEntry &entry : *geoms) {
       CPT(RenderState) geom_state = node_state->compose(entry._state);
       CPT(Geom) geom = entry._geom.get_read_pointer();
       PT(GeomMunger) munger = gsg->get_geom_munger(geom_state, current_thread);
-      entry._geom = transformer.premunge_geom(geom, munger);
+
+      CPT(GeomVertexData) vdata = geom->get_vertex_data();
+
+      auto it = munged_vdata.find(vdata);
+      if (it != munged_vdata.end()) {
+        vdata = it->second;
+      } else {
+        CPT(GeomVertexData) old_vdata = std::move(vdata);
+        vdata = munger->premunge_data(old_vdata);
+        munged_vdata[std::move(old_vdata)] = vdata;
+      }
+
+      CPT(Geom) pgeom = geom;
+      munger->premunge_geom(pgeom, vdata);
+
+      PT(Geom) geom_copy = pgeom->make_copy();
+      geom_copy->set_vertex_data(vdata);
+      entry._geom = std::move(geom_copy);
     }
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
