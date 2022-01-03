@@ -298,6 +298,8 @@ def MakeInstallerLinux(version, debversion=None, rpmversion=None, rpmrelease=1, 
             elif version_info["version"] == sys_python3_ver:
                 python3_ver = sys_python3_ver
                 install_python_versions.append(version_info)
+            elif os.path.isdir("/usr/lib/python" + version_info["version"]):
+                install_python_versions.append(version_info)
 
     major_version = '.'.join(version.split('.')[:2])
     if not debversion:
@@ -394,17 +396,21 @@ def MakeInstallerLinux(version, debversion=None, rpmversion=None, rpmrelease=1, 
             recommends = ReadFile("targetroot/debian/substvars_rec").replace("shlibs:Depends=", "").strip()
             provides = "panda3d"
 
-            if python2_ver:
-                depends += ", python%s" % (python2_ver)
+            # Require at least one of the Python versions we built for.
+            depends += ", " + " | ".join("python" + version_info["version"] for version_info in install_python_versions)
+
+            # But recommend the system version of Python 3.
+            if python3_ver:
+                recommends += ", python3 (>= %s)" % (python3_ver)
+                recommends += ", python3-tk (>= %s)" % (python3_ver)
+                provides += ", python3-panda3d"
+            elif python2_ver:
                 recommends += ", python-wxversion"
                 recommends += ", python-pmw"
                 recommends += ", python-tk (>= %s)" % (python2_ver)
-                provides += ", python2-panda3d"
 
-            if python3_ver:
-                depends += ", python%s" % (python3_ver)
-                recommends += ", python3-tk (>= %s)" % (python3_ver)
-                provides += ", python3-panda3d"
+            if python2_ver:
+                provides += ", python2-panda3d"
 
             if not PkgSkip("NVIDIACG"):
                 depends += ", nvidia-cg-toolkit"
