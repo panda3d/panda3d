@@ -394,12 +394,10 @@ def MakeInstallerLinux(version, debversion=None, rpmversion=None, rpmrelease=1, 
             recommends = ReadFile("targetroot/debian/substvars_rec").replace("shlibs:Depends=", "").strip()
             provides = "panda3d"
 
-            if python2_ver or python3_ver:
-                recommends += ", python-pmw"
-
             if python2_ver:
                 depends += ", python%s" % (python2_ver)
                 recommends += ", python-wxversion"
+                recommends += ", python-pmw"
                 recommends += ", python-tk (>= %s)" % (python2_ver)
                 provides += ", python2-panda3d"
 
