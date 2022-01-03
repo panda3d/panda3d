@@ -427,7 +427,7 @@ def MakeInstallerLinux(version, debversion=None, rpmversion=None, rpmrelease=1, 
         oscmd("chmod 644 targetroot/DEBIAN/control targetroot/DEBIAN/md5sums")
         if not runtime:
             oscmd("chmod 644 targetroot/DEBIAN/conffiles targetroot/DEBIAN/symbols")
-        oscmd("fakeroot dpkg-deb -b targetroot %s_%s_%s.deb" % (pkg_name, pkg_version, pkg_arch))
+        oscmd("fakeroot dpkg-deb -Zxz -b targetroot %s_%s_%s.deb" % (pkg_name, pkg_version, pkg_arch))
 
     elif rpmbuild_present:
         # Invoke installpanda.py to install it into a temporary dir
