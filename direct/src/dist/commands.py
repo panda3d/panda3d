@@ -476,9 +476,17 @@ class build_apps(setuptools.Command):
             '-d', whldir,
             '-r', self.requirements_path,
             '--only-binary', ':all:',
-            '--platform', platform,
             '--abi', abi_tag,
+            '--platform', platform,
         ]
+
+        if platform.startswith('linux_'):
+            # Also accept manylinux.
+            arch = platform[6:]
+            if sys.version_info >= (3, 10):
+                pip_args += ['--platform', 'manylinux2010_' + arch]
+            else:
+                pip_args += ['--platform', 'manylinux1_' + arch]
 
         if self.use_optimized_wheels:
             pip_args += [
