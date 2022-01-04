@@ -2575,6 +2575,10 @@ lookup_key(WPARAM wparam) const {
   case VK_LMENU: return KeyboardButton::lalt();
   case VK_RMENU: return KeyboardButton::ralt();
 
+  case VK_LWIN: return KeyboardButton::lmeta();
+  case VK_RWIN: return KeyboardButton::rmeta();
+  case VK_APPS: return KeyboardButton::menu();
+
   default:
     int key = MapVirtualKey(wparam, 2);
     if (isascii(key) && key != 0) {
@@ -2742,7 +2746,7 @@ get_keyboard_map() const {
   unsigned short ex_vsc[] = {0x57, 0x58,
     0x011c, 0x011d, 0x0135, 0x0137, 0x0138, 0x0145, 0x0147, 0x0148, 0x0149, 0x014b, 0x014d, 0x014f, 0x0150, 0x0151, 0x0152, 0x0153, 0x015b, 0x015c, 0x015d};
 
-  for (int k = 1; k < 84 + 17; ++k) {
+  for (int k = 1; k < 84 + sizeof(ex_vsc) / sizeof(short); ++k) {
     if (k >= 84) {
       vsc = ex_vsc[k - 84];
     } else {
