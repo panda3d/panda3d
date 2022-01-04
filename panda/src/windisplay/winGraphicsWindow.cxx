@@ -33,6 +33,10 @@
 #define WM_TOUCH 0x0240
 #endif
 
+#ifndef WM_MOUSEHWHEEL
+#define WM_MOUSEHWHEEL 0x020E
+#endif
+
 #if WINVER < 0x0601
 // Not used on Windows XP, but we still need to define it.
 #define TOUCH_COORD_TO_PIXEL(l) ((l) / 100)
@@ -1725,6 +1729,31 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     }
     break;
 
+  case WM_MOUSEHWHEEL:
+    {
+      int delta = GET_WHEEL_DELTA_WPARAM(wparam);
+
+      POINT point;
+      GetCursorPos(&point);
+      ScreenToClient(hwnd, &point);
+      double time = get_message_time();
+
+      if (delta >= 0) {
+        while (delta > 0) {
+          handle_keypress(MouseButton::wheel_right(), point.x, point.y, time);
+          handle_keyrelease(MouseButton::wheel_right(), time);
+          delta -= WHEEL_DELTA;
+        }
+      } else {
+        while (delta < 0) {
+          handle_keypress(MouseButton::wheel_left(), point.x, point.y, time);
+          handle_keyrelease(MouseButton::wheel_left(), time);
+          delta += WHEEL_DELTA;
+        }
+      }
+      return 0;
+    }
+    break;
 
   case WM_IME_SETCONTEXT:
     if (!ime_hide)
