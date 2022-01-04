@@ -123,12 +123,16 @@ if sys.version_info < (3, 0):
         'direct.showbase.PythonUtil': ['builtins'] + ignoreImports['direct.showbase.PythonUtil'],
         'direct.showbase.ShowBase': ['builtins'],
         'direct.showbase.ShowBaseGlobal': ['builtins'],
+        'direct.showbase.TkGlobal': ['tkinter'],
+        'direct.tkpanels.TaskManagerPanel': ['tkinter'],
+        'direct.tkwidgets.WidgetPropertiesDialog': ['tkinter'],
         'py._builtin': ['builtins'],
     })
 else:
     # And ignore attempts to conditionally import __builtin__ in Python 3,
     # suppressing a warning message.
     ignoreImports.update({
+        'direct.directtools.DirectSession': ['tkSimpleDialog'],
         'direct.p3d.AppRunner': ['__builtin__'],
         'direct.showbase.ContainerLeakDetector': ['__builtin__'],
         'direct.showbase.LeakDetectors': ['__builtin__'],
@@ -138,6 +142,17 @@ else:
         'direct.showbase.PythonUtil': ['__builtin__'] + ignoreImports['direct.showbase.PythonUtil'],
         'direct.showbase.ShowBase': ['__builtin__'],
         'direct.showbase.ShowBaseGlobal': ['__builtin__'],
+        'direct.showbase.TkGlobal': ['Tkinter'],
+        'direct.tkpanels.AnimPanel': ['tkFileDialog', 'tkSimpleDialog'],
+        'direct.tkpanels.FSMInspector': ['tkSimpleDialog'],
+        'direct.tkpanels.MopathRecorder': ['tkFileDialog'],
+        'direct.tkpanels.ParticlePanel': ['tkFileDialog', 'tkSimpleDialog'],
+        'direct.tkpanels.TaskManagerPanel': ['Tkinter'],
+        'direct.tkwidgets.AppShell': ['tkFileDialog'],
+        'direct.tkwidgets.EntryScale': ['tkColorChooser', 'tkSimpleDialog'],
+        'direct.tkwidgets.Valuator': ['tkColorChooser'],
+        'direct.tkwidgets.VectorWidgets': ['tkColorChooser'],
+        'direct.tkwidgets.WidgetPropertiesDialog': ['Tkinter'],
         'py._builtin': ['__builtin__'],
     })
 
