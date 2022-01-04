@@ -2158,6 +2158,7 @@ map_raw_key(unsigned short keycode) const {
   case 0x07: return KeyboardButton::ascii_key('x');
   case 0x08: return KeyboardButton::ascii_key('c');
   case 0x09: return KeyboardButton::ascii_key('v');
+  case 0x0A: return KeyboardButton::ascii_key('<');
   case 0x0B: return KeyboardButton::ascii_key('b');
   case 0x0C: return KeyboardButton::ascii_key('q');
   case 0x0D: return KeyboardButton::ascii_key('w');

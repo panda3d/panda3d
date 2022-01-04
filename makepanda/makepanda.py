@@ -433,7 +433,7 @@ elif target == 'linux' and (os.path.isfile("/lib/libc-2.17.so") or os.path.isfil
     else:
         PLATFORM = 'manylinux2014-i686'
 
-elif target == 'linux' and (os.path.isfile("/lib/i386-linux-gnu/libc-2.24.so") or os.path.isfile("/lib/x86_64/libc-2.24.so")) and os.path.isdir("/opt/python"):
+elif target == 'linux' and (os.path.isfile("/lib/i386-linux-gnu/libc-2.24.so") or os.path.isfile("/lib/x86_64-linux-gnu/libc-2.24.so")) and os.path.isdir("/opt/python"):
     # Same sloppy check for manylinux_2_24.
     if GetTargetArch() in ('x86_64', 'amd64'):
         PLATFORM = 'manylinux_2_24-x86_64'

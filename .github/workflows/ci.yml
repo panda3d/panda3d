@@ -347,16 +347,16 @@ jobs:
       shell: powershell
       run: |
         $wc = New-Object System.Net.WebClient
-        $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.10/panda3d-1.10.10-tools-win64.zip", "thirdparty-tools.zip")
+        $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.11/panda3d-1.10.11-tools-win64.zip", "thirdparty-tools.zip")
         Expand-Archive -Path thirdparty-tools.zip
-        Move-Item -Path thirdparty-tools/panda3d-1.10.10/thirdparty -Destination .
+        Move-Item -Path thirdparty-tools/panda3d-1.10.11/thirdparty -Destination .
     - name: Get thirdparty packages (macOS)
       if: runner.os == 'macOS'
       run: |
-        curl -O https://www.panda3d.org/download/panda3d-1.10.10/panda3d-1.10.10-tools-mac.tar.gz
-        tar -xf panda3d-1.10.10-tools-mac.tar.gz
-        mv panda3d-1.10.10/thirdparty thirdparty
-        rmdir panda3d-1.10.10
+        curl -O https://www.panda3d.org/download/panda3d-1.10.11/panda3d-1.10.11-tools-mac.tar.gz
+        tar -xf panda3d-1.10.11-tools-mac.tar.gz
+        mv panda3d-1.10.11/thirdparty thirdparty
+        rmdir panda3d-1.10.11
         (cd thirdparty/darwin-libs-a && rm -rf rocket)
     - name: Set up Python 3.9
       uses: actions/setup-python@v2

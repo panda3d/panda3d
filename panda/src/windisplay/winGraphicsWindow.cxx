@@ -33,6 +33,10 @@
 #define WM_TOUCH 0x0240
 #endif
 
+#ifndef WM_MOUSEHWHEEL
+#define WM_MOUSEHWHEEL 0x020E
+#endif
+
 #if WINVER < 0x0601
 // Not used on Windows XP, but we still need to define it.
 #define TOUCH_COORD_TO_PIXEL(l) ((l) / 100)
@@ -1808,6 +1812,31 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     }
     break;
 
+  case WM_MOUSEHWHEEL:
+    {
+      int delta = GET_WHEEL_DELTA_WPARAM(wparam);
+
+      POINT point;
+      GetCursorPos(&point);
+      ScreenToClient(hwnd, &point);
+      double time = get_message_time();
+
+      if (delta >= 0) {
+        while (delta > 0) {
+          handle_keypress(MouseButton::wheel_right(), point.x, point.y, time);
+          handle_keyrelease(MouseButton::wheel_right(), time);
+          delta -= WHEEL_DELTA;
+        }
+      } else {
+        while (delta < 0) {
+          handle_keypress(MouseButton::wheel_left(), point.x, point.y, time);
+          handle_keyrelease(MouseButton::wheel_left(), time);
+          delta += WHEEL_DELTA;
+        }
+      }
+      return 0;
+    }
+    break;
 
   case WM_IME_SETCONTEXT:
     if (!ime_hide)
@@ -2651,6 +2680,10 @@ lookup_key(WPARAM wparam) const {
   case VK_LMENU: return KeyboardButton::lalt();
   case VK_RMENU: return KeyboardButton::ralt();
 
+  case VK_LWIN: return KeyboardButton::lmeta();
+  case VK_RWIN: return KeyboardButton::rmeta();
+  case VK_APPS: return KeyboardButton::menu();
+
   default:
     int key = MapVirtualKey(wparam, 2);
     if (isascii(key) && key != 0) {
@@ -2796,6 +2829,7 @@ lookup_raw_key(LPARAM lparam) const {
 
   // A few additional keys don't fit well in the above table.
   switch (vsc) {
+  case 86: return KeyboardButton::ascii_key('<'); // Between lshift and z
   case 87: return KeyboardButton::f11();
   case 88: return KeyboardButton::f12();
   default: return ButtonHandle::none();
@@ -2815,10 +2849,10 @@ get_keyboard_map() const {
 
   wchar_t text[256];
   UINT vsc = 0;
-  unsigned short ex_vsc[] = {0x57, 0x58,
+  unsigned short ex_vsc[] = {0x56, 0x57, 0x58,
     0x011c, 0x011d, 0x0135, 0x0137, 0x0138, 0x0145, 0x0147, 0x0148, 0x0149, 0x014b, 0x014d, 0x014f, 0x0150, 0x0151, 0x0152, 0x0153, 0x015b, 0x015c, 0x015d};
 
-  for (int k = 1; k < 84 + 17; ++k) {
+  for (int k = 1; k < 84 + sizeof(ex_vsc) / sizeof(short); ++k) {
     if (k >= 84) {
       vsc = ex_vsc[k - 84];
     } else {

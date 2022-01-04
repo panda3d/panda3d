@@ -653,7 +653,7 @@ def makewheel(version, output_dir, platform=None):
                     platform = platform.replace("linux", "manylinux2010")
                 elif os.path.isfile("/lib/libc-2.17.so") or os.path.isfile("/lib64/libc-2.17.so"):
                     platform = platform.replace("linux", "manylinux2014")
-                elif os.path.isfile("/lib/i386-linux-gnu/libc-2.24.so") or os.path.isfile("/lib/x86_64/libc-2.24.so"):
+                elif os.path.isfile("/lib/i386-linux-gnu/libc-2.24.so") or os.path.isfile("/lib/x86_64-linux-gnu/libc-2.24.so"):
                     platform = platform.replace("linux", "manylinux_2_24")
 
     platform = platform.replace('-', '_').replace('.', '_')
@@ -785,6 +785,10 @@ if __debug__:
 
     for file in sorted(os.listdir(ext_mod_dir)):
         if file.endswith(ext_suffix):
+            if file.startswith('_tkinter.'):
+                # Tkinter is supplied in a separate wheel.
+                continue
+
             source_path = os.path.join(ext_mod_dir, file)
 
             if file.endswith('.pyd') and platform.startswith('cygwin'):
