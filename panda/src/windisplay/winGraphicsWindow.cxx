@@ -2724,6 +2724,7 @@ lookup_raw_key(LPARAM lparam) const {
 
   // A few additional keys don't fit well in the above table.
   switch (vsc) {
+  case 86: return KeyboardButton::ascii_key('<'); // Between lshift and z
   case 87: return KeyboardButton::f11();
   case 88: return KeyboardButton::f12();
   default: return ButtonHandle::none();
@@ -2743,7 +2744,7 @@ get_keyboard_map() const {
 
   wchar_t text[256];
   UINT vsc = 0;
-  unsigned short ex_vsc[] = {0x57, 0x58,
+  unsigned short ex_vsc[] = {0x56, 0x57, 0x58,
     0x011c, 0x011d, 0x0135, 0x0137, 0x0138, 0x0145, 0x0147, 0x0148, 0x0149, 0x014b, 0x014d, 0x014f, 0x0150, 0x0151, 0x0152, 0x0153, 0x015b, 0x015c, 0x015d};
 
   for (int k = 1; k < 84 + sizeof(ex_vsc) / sizeof(short); ++k) {

@@ -962,7 +962,7 @@ map_button(int code, DeviceClass device_class, int quirks) {
       KeyboardButton::ascii_key('.'),
       ButtonHandle::none(),
       ButtonHandle::none(),
-      ButtonHandle::none(),
+      KeyboardButton::ascii_key('<'),
       KeyboardButton::f11(),
       KeyboardButton::f12(),
       ButtonHandle::none(),
