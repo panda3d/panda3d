@@ -114,6 +114,7 @@ PACKAGE_DATA_DIRS = {
     ],
     'pytz': [('pytz/zoneinfo/*', 'zoneinfo', ())],
     'certifi': [('certifi/cacert.pem', '', {})],
+    '_tkinter_ext': [('_tkinter_ext/tcl/**', 'tcl', {})],
 }
 
 # Some dependencies have extra directories that need to be scanned for DLLs.
@@ -147,21 +148,6 @@ import __builtin__
 __builtin__.__import__ = __import__
 __builtin__.__file__ = sys.executable
 del __builtin__
-
-# Set the TCL_LIBRARY directory to the location of the Tcl/Tk/Tix files.
-import os
-tcl_dir = os.path.join(os.path.dirname(sys.executable), 'tcl')
-if os.path.isdir(tcl_dir):
-    for dir in os.listdir(tcl_dir):
-        sub_dir = os.path.join(tcl_dir, dir)
-        if os.path.isdir(sub_dir):
-            if dir.startswith('tcl'):
-                os.environ['TCL_LIBRARY'] = sub_dir
-            if dir.startswith('tk'):
-                os.environ['TK_LIBRARY'] = sub_dir
-            if dir.startswith('tix'):
-                os.environ['TIX_LIBRARY'] = sub_dir
-del os
 """
 
 # site.py for Python 3.
@@ -196,7 +182,11 @@ def get_data(path):
 
 FrozenImporter.find_spec = find_spec
 FrozenImporter.get_data = get_data
+"""
 
+# This addendum is only needed for legacy tkinter handling, since the new
+# tkinter package already contains this logic.
+SITE_PY_TKINTER_ADDENDUM = """
 # Set the TCL_LIBRARY directory to the location of the Tcl/Tk/Tix files.
 import os
 tcl_dir = os.path.join(os.path.dirname(sys.executable), 'tcl')
@@ -204,7 +194,7 @@ if os.path.isdir(tcl_dir):
     for dir in os.listdir(tcl_dir):
         sub_dir = os.path.join(tcl_dir, dir)
         if os.path.isdir(sub_dir):
-            if dir.startswith('tcl'):
+            if dir.startswith('tcl') and os.path.isfile(os.path.join(sub_dir, 'init.tcl')):
                 os.environ['TCL_LIBRARY'] = sub_dir
             if dir.startswith('tk'):
                 os.environ['TK_LIBRARY'] = sub_dir
@@ -592,6 +582,7 @@ class build_apps(setuptools.Command):
         path = sys.path[:]
         p3dwhl = None
         wheelpaths = []
+        has_tkinter_wheel = False
 
         if use_wheels:
             wheelpaths = self.download_wheels(platform)
@@ -601,6 +592,8 @@ class build_apps(setuptools.Command):
                     p3dwhlfn = whl
                     p3dwhl = self._get_zip_file(p3dwhlfn)
                     break
+                elif os.path.basename(whl).startswith('tkinter-'):
+                    has_tkinter_wheel = True
             else:
                 raise RuntimeError("Missing panda3d wheel for platform: {}".format(platform))
 
@@ -612,6 +605,11 @@ class build_apps(setuptools.Command):
                         'Could not find an optimized wheel (using index {}) for platform: {}'.format(self.optimized_wheel_index, platform),
                         distutils.log.WARN
                     )
+
+            for whl in wheelpaths:
+                if os.path.basename(whl).startswith('tkinter-'):
+                    has_tkinter_wheel = True
+                    break
 
             #whlfiles = {whl: self._get_zip_file(whl) for whl in wheelpaths}
 
@@ -756,9 +754,14 @@ class build_apps(setuptools.Command):
             return search_path
 
         def create_runtime(appname, mainscript, use_console):
+            site_py = SITE_PY
+            if not has_tkinter_wheel:
+                # Legacy handling for Tcl data files
+                site_py += SITE_PY_TKINTER_ADDENDUM
+
             freezer = FreezeTool.Freezer(platform=platform, path=path)
             freezer.addModule('__main__', filename=mainscript)
-            freezer.addModule('site', filename='site.py', text=SITE_PY)
+            freezer.addModule('site', filename='site.py', text=site_py)
             for incmod in self.include_modules.get(appname, []) + self.include_modules.get('*', []):
                 freezer.addModule(incmod)
             for exmod in self.exclude_modules.get(appname, []) + self.exclude_modules.get('*', []):
@@ -835,6 +838,12 @@ class build_apps(setuptools.Command):
         for appname, scriptname in self.console_apps.items():
             create_runtime(appname, scriptname, True)
 
+        # Warn if tkinter is used but hasn't been added to requirements.txt
+        if not has_tkinter_wheel and '_tkinter' in freezer_modules:
+            # The on-windows-for-windows case is handled as legacy below
+            if sys.platform != "win32" or not platform.startswith('win'):
+                self.warn("Detected use of tkinter, but tkinter is not specified in requirements.txt!")
+
         # Copy extension modules
         whl_modules = []
         whl_modules_ext = ''
@@ -847,6 +856,11 @@ class build_apps(setuptools.Command):
                     continue
 
                 if not any(i.endswith(suffix) for suffix in ext_suffixes):
+                    continue
+
+                if has_tkinter_wheel and i.startswith('deploy_libs/_tkinter.'):
+                    # Ignore this one, we have a separate tkinter package
+                    # nowadays that contains all the dependencies.
                     continue
 
                 base = os.path.basename(i)
@@ -917,8 +931,8 @@ class build_apps(setuptools.Command):
             self.copy_with_dependencies(source_path, target_path, search_path)
 
         # Copy over the tcl directory.
-        #TODO: get this to work on non-Windows platforms.
-        if sys.platform == "win32" and platform.startswith('win'):
+        # This is legacy, we nowadays recommend the separate tkinter wheel.
+        if sys.platform == "win32" and platform.startswith('win') and not has_tkinter_wheel:
             tcl_dir = os.path.join(sys.prefix, 'tcl')
             tkinter_name = 'tkinter' if sys.version_info >= (3, 0) else 'Tkinter'
 
@@ -952,9 +966,14 @@ class build_apps(setuptools.Command):
                     target_dir = os.path.join(builddir, target_dir)
 
                     for wf in filenames:
+                        if wf.endswith('/'):
+                            # Skip directories.
+                            continue
+
                         if wf.lower().startswith(source_dir.lower() + '/'):
                             if not srcglob.matches(wf.lower()):
                                 continue
+
                             wf = wf.replace('/', os.sep)
                             relpath = wf[len(source_dir) + 1:]
                             source_path = os.path.join(whl, wf)
