@@ -673,6 +673,10 @@ __version__ = '{0}'
 
     for file in os.listdir(ext_mod_dir):
         if file.endswith(ext_suffix):
+            if file.startswith('_tkinter.') and sys.platform not in ('win32', 'cygwin'):
+                # Tkinter is supplied in a separate wheel.
+                continue
+
             source_path = os.path.join(ext_mod_dir, file)
 
             if file.endswith('.pyd') and platform.startswith('cygwin'):
