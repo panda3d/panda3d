@@ -49,7 +49,12 @@ def test_wheel(wheel, verbose=False):
             open(pep425tags, "w").write(data)
 
     # Install pytest into the environment, as well as our wheel.
-    packages = ["pytest", wheel]
+    packages = [wheel]
+    if sys.version_info >= (3, 10):
+        packages += ["pytest>=6.2.4"]
+    else:
+        packages += ["pytest"]
+
     if sys.version_info[0:2] == (3, 4):
         if sys.platform == "win32":
             packages += ["colorama==0.4.1"]
