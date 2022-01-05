@@ -21,7 +21,6 @@ try:
     import threading
     import signal
     import shutil
-    import sysconfig
     import plistlib
     import queue
 except KeyboardInterrupt:

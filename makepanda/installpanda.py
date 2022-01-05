@@ -10,9 +10,11 @@
 
 import os
 import sys
-import sysconfig
 from optparse import OptionParser
 from makepandacore import *
+
+# DO NOT CHANGE TO sysconfig - see GitHub issue #1230
+from distutils.sysconfig import get_python_lib
 
 
 MIME_INFO = (
@@ -141,7 +143,7 @@ def GetLibDir():
 
     # If Python is installed into /usr/lib64, it's probably safe
     # to assume that we should install there as well.
-    python_lib = sysconfig.get_path("platlib")
+    python_lib = get_python_lib(1)
     if python_lib.startswith('/usr/lib64/') or \
        python_lib.startswith('/usr/local/lib64/'):
         return "lib64"

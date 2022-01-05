@@ -6,6 +6,7 @@
 ########################################################################
 
 import configparser
+from distutils import sysconfig # DO NOT CHANGE to sysconfig - see #1230
 import fnmatch
 import getpass
 import glob
@@ -17,7 +18,6 @@ import shutil
 import signal
 import subprocess
 import sys
-import sysconfig
 import threading
 import _thread as thread
 import time
@@ -2190,12 +2190,12 @@ def SdkLocatePython(prefer_thirdparty_python=False):
         LibDirectory("PYTHON", py_fwx + "/lib")
 
     #elif GetTarget() == 'windows':
-    #    SDK["PYTHON"] = os.path.dirname(sysconfig.get_path("include"))
+    #    SDK["PYTHON"] = os.path.dirname(sysconfig.get_python_inc())
     #    SDK["PYTHONVERSION"] = "python" + sysconfig.get_python_version()
     #    SDK["PYTHONEXEC"] = sys.executable
 
     else:
-        SDK["PYTHON"] = sysconfig.get_path("include")
+        SDK["PYTHON"] = sysconfig.get_python_inc()
         SDK["PYTHONVERSION"] = "python" + sysconfig.get_python_version() + abiflags
         SDK["PYTHONEXEC"] = os.path.realpath(sys.executable)
 
@@ -3485,8 +3485,8 @@ def GetCurrentPythonVersionInfo():
         "soabi": GetPythonABI(),
         "ext_suffix": GetExtensionSuffix(),
         "executable": sys.executable,
-        "purelib": sysconfig.get_path("purelib"),
-        "platlib": sysconfig.get_path("platlib"),
+        "purelib": sysconfig.get_python_lib(False),
+        "platlib": sysconfig.get_python_lib(True),
     }
 
 
