@@ -48,6 +48,7 @@ Miscellaneous
 * FilterManager mul parameter now accepts floating-point values (#1231)
 * Assorted minor API documentation improvements
 * Fix memory leak getting Bullet persistent manifolds from Python (#1193)
+* Fix assertion in PythonLoaderFileType with debug Python build
 * Add missing property interface to PlaneNode
 * Fix prepare_scene() not properly invoking the Shader Generator
 * Add name property to AICharacter class (#1205)
