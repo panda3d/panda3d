@@ -397,7 +397,8 @@ def MakeInstallerLinux(version, debversion=None, rpmversion=None, rpmrelease=1, 
             provides = "panda3d"
 
             # Require at least one of the Python versions we built for.
-            depends += ", " + " | ".join("python" + version_info["version"] for version_info in install_python_versions)
+            if install_python_versions:
+                depends += ", " + " | ".join("python" + version_info["version"] for version_info in install_python_versions)
 
             # But recommend the system version of Python 3.
             if python3_ver:
