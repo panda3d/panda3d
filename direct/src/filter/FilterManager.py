@@ -15,6 +15,7 @@ Still need to implement:
 * Do something about window-size roundoff problems.
 
 """
+import math
 
 from panda3d.core import NodePath
 from panda3d.core import Texture
@@ -123,8 +124,8 @@ class FilterManager(DirectObject):
             winy = winy // div
 
         if mul != 1:
-            winx = winx * mul
-            winy = winy * mul
+            winx = math.floor(winx * mul)
+            winy = math.floor(winy * mul)
 
         return winx,winy
 
