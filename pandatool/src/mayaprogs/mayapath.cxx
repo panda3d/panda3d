@@ -58,15 +58,6 @@ using std::string;
 #define QUOTESTR(x) #x
 #define TOSTRING(x) QUOTESTR(x)
 
-#if defined(_WIN32)
-// Note: Filename::dso_filename changes .so to .dll automatically.
-static const Filename openmaya_filename = "bin/OpenMaya.so";
-#elif defined(IS_OSX)
-static const Filename openmaya_filename = "MacOS/libOpenMaya.dylib";
-#else
-static const Filename openmaya_filename = "lib/libOpenMaya.so";
-#endif  // _WIN32
-
 // Searches for python26.zip or whatever version it is.
 static Filename
 find_pyzip(const Filename &maya_location) {
@@ -120,6 +111,25 @@ get_version_number(const char *ver) {
     }
   }
   return 0;
+}
+
+static Filename
+get_openmaya_filename(const Filename &maya_location) {
+#ifdef _WIN32
+  // Note: Filename::dso_filename changes .so to .dll automatically.
+  // Maya 2022 has two versions of OpenMaya.dll, one for Python 3 and
+  // one for Python 2, in bin3 and bin2 folders.
+  Filename bin3 = Filename(maya_location, "bin3");
+  Filename bin3_openmaya = Filename::dso_filename(maya_location / "bin3/OpenMaya.so");
+  if (bin3_openmaya.is_regular_file()) {
+    return bin3_openmaya;
+  }
+  return Filename::dso_filename(maya_location / "bin/OpenMaya.so");
+#elif defined(IS_OSX)
+  return Filename::dso_filename(maya_location / "MacOS/libOpenMaya.dylib");
+#else
+  return Filename::dso_filename(maya_location / "lib/libOpenMaya.so");
+#endif  // _WIN32
 }
 
 #if defined(_WIN32)
@@ -265,8 +275,8 @@ main(int argc, char *argv[]) {
     } else if (maya_location != standard_maya_location) {
       // If it *is* set, we verify that OpenMaya.dll matches the standard
       // version.
-      Filename openmaya_given = Filename::dso_filename(Filename(maya_location, openmaya_filename));
-      Filename openmaya_standard = Filename::dso_filename(Filename(standard_maya_location, openmaya_filename));
+      Filename openmaya_given = get_openmaya_filename(maya_location);
+      Filename openmaya_standard = get_openmaya_filename(standard_maya_location);
 
       if (openmaya_given != openmaya_standard) {
 #ifdef HAVE_OPENSSL
@@ -335,9 +345,9 @@ main(int argc, char *argv[]) {
   }
 
   // Look for OpenMaya.dll as a sanity check.
-  Filename openmaya = Filename::dso_filename(Filename(maya_location, openmaya_filename));
+  Filename openmaya = get_openmaya_filename(maya_location);
   if (!openmaya.is_regular_file()) {
-    cerr << "Could not find $MAYA_LOCATION/" << Filename::dso_filename(openmaya_filename).to_os_specific() << "!\n";
+    cerr << "Could not find OpenMaya library in $MAYA_LOCATION!\n";
     exit(1);
   }
 
@@ -395,7 +405,18 @@ main(int argc, char *argv[]) {
     if (path == nullptr) {
       path = "";
     }
-    string putenv_str = "PATH=" + bin.to_os_specific() + sep + path;
+    string putenv_str = "PATH=";
+
+    // On Windows, there may also be a bin3 or bin2 directory, we should
+    // add either one to the PATH.
+#ifdef _WIN32
+    Filename bin3 = Filename(maya_location, "bin3");
+    if (bin3.is_directory()) {
+      putenv_str += bin3.to_os_specific() + sep;
+    }
+#endif
+    putenv_str += bin.to_os_specific() + sep + path;
+
     char *putenv_cstr = strdup(putenv_str.c_str());
     putenv(putenv_cstr);
   }
