@@ -3575,6 +3575,12 @@ do_read_txo_file(CData *cdata, const Filename &fullpath) {
   }
 
   istream *in = file->open_read_file(true);
+  if (in == nullptr) {
+    gobj_cat.error()
+      << "Failed to open " << filename << " for reading.\n";
+    return false;
+  }
+
   bool success = do_read_txo(cdata, *in, fullpath);
   vfs->close_read_file(in);
 
@@ -3630,6 +3636,12 @@ do_read_dds_file(CData *cdata, const Filename &fullpath, bool header_only) {
   }
 
   istream *in = file->open_read_file(true);
+  if (in == nullptr) {
+    gobj_cat.error()
+      << "Failed to open " << filename << " for reading.\n";
+    return false;
+  }
+
   bool success = do_read_dds(cdata, *in, fullpath, header_only);
   vfs->close_read_file(in);
 
@@ -4310,6 +4322,12 @@ do_read_ktx_file(CData *cdata, const Filename &fullpath, bool header_only) {
   }
 
   istream *in = file->open_read_file(true);
+  if (in == nullptr) {
+    gobj_cat.error()
+      << "Failed to open " << filename << " for reading.\n";
+    return false;
+  }
+
   bool success = do_read_ktx(cdata, *in, fullpath, header_only);
   vfs->close_read_file(in);
 
