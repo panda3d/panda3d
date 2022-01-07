@@ -45,6 +45,7 @@ Miscellaneous
 * Fix nodes with same tag key but different value getting flattened together
 * taskMgr.step() now restores previous SIGINT handler afterwards (#1180)
 * Add base.clock as alias for globalClock
+* FilterManager mul parameter now accepts floating-point values (#1231)
 * Assorted minor API documentation improvements
 * Fix memory leak getting Bullet persistent manifolds from Python (#1193)
 * Add missing property interface to PlaneNode
