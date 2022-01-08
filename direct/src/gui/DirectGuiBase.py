@@ -654,6 +654,10 @@ class DirectGuiBase(DirectObject.DirectObject):
         gEvent = event + self.guiId
         self.ignore(gEvent)
 
+    # Snake-case aliases, for people who prefer these. We're in the process
+    # of migrating everyone to use the snake-case alternatives.
+    post_initialise_func = postInitialiseFunc
+
 def toggleGuiGridSnap():
     DirectGuiWidget.snapToGrid = 1 - DirectGuiWidget.snapToGrid
 
@@ -1092,3 +1096,33 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         where must input a function and extraArgs, not an assignment.
         """
         self[propString] = value
+
+    # Snake-case aliases, for people who prefer these. We're in the process
+    # of migrating everyone to use the snake-case alternatives.
+    frame_initialise_func = frameInitialiseFunc
+    enable_edit = enableEdit
+    disable_edit = disableEdit
+    edit_start = editStart
+    gui_scale_task = guiScaleTask
+    gui_drag_task = guiDragTask
+    edit_stop = editStop
+    set_state = setState
+    reset_frame_size = resetFrameSize
+    set_frame_size = setFrameSize
+    get_bounds = getBounds
+    get_width = getWidth
+    get_height = getHeight
+    get_center = getCenter
+    get_frame_type = getFrameType
+    update_frame_style = updateFrameStyle
+    set_relief = setRelief
+    set_frame_color = setFrameColor
+    set_frame_texture = setFrameTexture
+    set_frame_visible_scale = setFrameVisibleScale
+    set_border_width = setBorderWidth
+    set_border_uv_width = setBorderUvWidth
+    print_config = printConfig
+    copy_options = copyOptions
+    task_name = taskName
+    unique_name = uniqueName
+    set_prop = setProp
