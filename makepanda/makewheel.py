@@ -562,6 +562,7 @@ class WheelFile(object):
             print("Adding {0} from {1}".format(target_path, orig_source_path))
 
         zinfo = zipfile.ZipInfo.from_file(source_path, target_path)
+        zinfo.compress_type = self.zip_file.compression
         if zinfo.date_time > self.max_date_time:
             zinfo.date_time = self.max_date_time
 
