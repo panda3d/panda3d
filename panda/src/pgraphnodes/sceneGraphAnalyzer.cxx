@@ -381,6 +381,7 @@ collect_statistics(GeomNode *geom_node) {
  */
 void SceneGraphAnalyzer::
 collect_statistics(const Geom *geom) {
+  Thread *current_thread = Thread::get_current_thread();
   CPT(GeomVertexData) vdata = geom->get_vertex_data();
   std::pair<VDatas::iterator, bool> result = _vdatas.insert(VDatas::value_type(vdata, VDataTracker()));
   if (result.second) {
@@ -408,7 +409,7 @@ collect_statistics(const Geom *geom) {
     }
     if (format->has_column(InternalName::get_normal())) {
       _num_normals += num_rows;
-      GeomVertexReader rnormal(vdata, InternalName::get_normal());
+      GeomVertexReader rnormal(vdata, InternalName::get_normal(), current_thread);
       while (!rnormal.is_at_end()) {
         LVector3f normal = rnormal.get_data3f();
         float length = normal.length();
@@ -439,52 +440,46 @@ collect_statistics(const Geom *geom) {
   int num_primitives = geom->get_num_primitives();
   for (int i = 0; i < num_primitives; ++i) {
     CPT(GeomPrimitive) prim = geom->get_primitive(i);
+    GeomPrimitivePipelineReader reader(prim, current_thread);
+    reader.get_referenced_vertices(tracker._referenced_vertices);
 
-    int num_vertices = prim->get_num_vertices();
-    int strip_cut_index = prim->get_strip_cut_index();
-    for (int vi = 0; vi < num_vertices; ++vi) {
-      int index = prim->get_vertex(vi);
-      if (index != strip_cut_index) {
-        tracker._referenced_vertices.set_bit(index);
-      }
-    }
-
-    if (prim->is_indexed()) {
-      collect_prim_statistics(prim->get_vertices());
+    if (reader.is_indexed()) {
+      collect_prim_statistics(reader.get_vertices());
       if (prim->is_composite()) {
-        collect_statistics(prim->get_mins());
-        collect_statistics(prim->get_maxs());
+        reader.check_minmax();
+        collect_statistics(reader.get_mins());
+        collect_statistics(reader.get_maxs());
       }
     }
 
     if (prim->is_of_type(GeomPoints::get_class_type())) {
-      _num_points += prim->get_num_primitives();
-
-    } else if (prim->is_of_type(GeomLines::get_class_type())) {
-      _num_lines += prim->get_num_primitives();
-
-    } else if (prim->is_of_type(GeomLinestrips::get_class_type())) {
-      _num_lines += prim->get_num_faces();
-
-    } else if (prim->is_of_type(GeomTriangles::get_class_type())) {
-      _num_tris += prim->get_num_primitives();
-      _num_individual_tris += prim->get_num_primitives();
-
-    } else if (prim->is_of_type(GeomTristrips::get_class_type())) {
-      _num_tris += prim->get_num_faces();
-      _num_tristrips += prim->get_num_primitives();
-      _num_triangles_in_strips += prim->get_num_faces();
-
-    } else if (prim->is_of_type(GeomTrifans::get_class_type())) {
-      _num_tris += prim->get_num_faces();
-      _num_trifans += prim->get_num_primitives();
-      _num_triangles_in_fans += prim->get_num_faces();
-
-    } else if (prim->is_of_type(GeomPatches::get_class_type())) {
-      _num_patches += prim->get_num_primitives();
-      _num_vertices_in_patches += prim->get_num_vertices();
-
-    } else {
+      _num_points += reader.get_num_primitives();
+    }
+    else if (prim->is_of_type(GeomLines::get_class_type())) {
+      _num_lines += reader.get_num_primitives();
+    }
+    else if (prim->is_of_type(GeomLinestrips::get_class_type())) {
+      _num_lines += reader.get_num_faces();
+    }
+    else if (prim->is_of_type(GeomTriangles::get_class_type())) {
+      _num_tris += reader.get_num_primitives();
+      _num_individual_tris += reader.get_num_primitives();
+    }
+    else if (prim->is_of_type(GeomTristrips::get_class_type())) {
+      _num_tris += reader.get_num_faces();
+      _num_tristrips += reader.get_num_primitives();
+      _num_triangles_in_strips += reader.get_num_faces();
+    }
+    else if (prim->is_of_type(GeomTrifans::get_class_type())) {
+      _num_tris += reader.get_num_faces();
+      _num_trifans += reader.get_num_primitives();
+      _num_triangles_in_fans += reader.get_num_faces();
+    }
+    else if (prim->is_of_type(GeomPatches::get_class_type())) {
+      _num_patches += reader.get_num_primitives();
+      _num_vertices_in_patches += reader.get_num_vertices();
+    }
+    else {
       pgraph_cat.warning()
         << "Unknown GeomPrimitive type in SceneGraphAnalyzer: "
         << prim->get_type() << "\n";
