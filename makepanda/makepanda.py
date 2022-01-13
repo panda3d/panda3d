@@ -480,6 +480,8 @@ elif target == 'linux' and (os.path.isfile("/lib/libc-2.5.so") or os.path.isfile
     # This is manylinux1.  A bit of a sloppy check, though.
     if GetTargetArch() in ('x86_64', 'amd64'):
         PLATFORM = 'manylinux1-x86_64'
+    elif GetTargetArch() in ('arm64', 'aarch64'):
+        PLATFORM = 'manylinux1-aarch64'
     else:
         PLATFORM = 'manylinux1-i686'
 
@@ -487,6 +489,8 @@ elif target == 'linux' and (os.path.isfile("/lib/libc-2.12.so") or os.path.isfil
     # Same sloppy check for manylinux2010.
     if GetTargetArch() in ('x86_64', 'amd64'):
         PLATFORM = 'manylinux2010-x86_64'
+    elif GetTargetArch() in ('arm64', 'aarch64'):
+        PLATFORM = 'manylinux2010-aarch64'
     else:
         PLATFORM = 'manylinux2010-i686'
 
@@ -494,6 +498,8 @@ elif target == 'linux' and (os.path.isfile("/lib/libc-2.17.so") or os.path.isfil
     # Same sloppy check for manylinux2014.
     if GetTargetArch() in ('x86_64', 'amd64'):
         PLATFORM = 'manylinux2014-x86_64'
+    elif GetTargetArch() in ('arm64', 'aarch64'):
+        PLATFORM = 'manylinux2014-aarch64'
     else:
         PLATFORM = 'manylinux2014-i686'
 
@@ -501,6 +507,8 @@ elif target == 'linux' and (os.path.isfile("/lib/i386-linux-gnu/libc-2.24.so") o
     # Same sloppy check for manylinux_2_24.
     if GetTargetArch() in ('x86_64', 'amd64'):
         PLATFORM = 'manylinux_2_24-x86_64'
+    elif GetTargetArch() in ('arm64', 'aarch64'):
+        PLATFORM = 'manylinux_2_24-aarch64'
     else:
         PLATFORM = 'manylinux_2_24-i686'
 
