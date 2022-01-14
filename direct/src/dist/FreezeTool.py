@@ -91,6 +91,8 @@ ignoreImports = {
 
     'toml.encoder': ['numpy'],
     'py._builtin': ['__builtin__'],
+
+    'site': ['android_log'],
 }
 
 if sys.version_info >= (3, 8):
