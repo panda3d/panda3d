@@ -1426,6 +1426,20 @@ class bdist_apps(setuptools.Command):
         'manylinux1_i686': ['gztar'],
         'manylinux2010_x86_64': ['gztar'],
         'manylinux2010_i686': ['gztar'],
+        'manylinux2014_x86_64': ['gztar'],
+        'manylinux2014_i686': ['gztar'],
+        'manylinux2014_aarch64': ['gztar'],
+        'manylinux2014_armv7l': ['gztar'],
+        'manylinux2014_ppc64': ['gztar'],
+        'manylinux2014_ppc64le': ['gztar'],
+        'manylinux2014_s390x': ['gztar'],
+        'manylinux_2_24_x86_64': ['gztar'],
+        'manylinux_2_24_i686': ['gztar'],
+        'manylinux_2_24_aarch64': ['gztar'],
+        'manylinux_2_24_armv7l': ['gztar'],
+        'manylinux_2_24_ppc64': ['gztar'],
+        'manylinux_2_24_ppc64le': ['gztar'],
+        'manylinux_2_24_s390x': ['gztar'],
         # Everything else defaults to ['zip']
     }
 
