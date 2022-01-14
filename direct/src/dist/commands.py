@@ -263,7 +263,7 @@ class build_apps(setuptools.Command):
         self.exclude_modules = {}
         self.icons = {}
         self.platforms = [
-            'manylinux2010_x86_64',
+            'manylinux2014_x86_64',
             'macosx_10_9_x86_64',
             'win_amd64',
         ]
@@ -588,7 +588,7 @@ class build_apps(setuptools.Command):
         if platform.startswith('linux_'):
             # Also accept manylinux.
             arch = platform[6:]
-            pip_args += ['--platform', 'manylinux2010_' + arch]
+            pip_args += ['--platform', 'manylinux2014_' + arch]
 
         if self.use_optimized_wheels:
             pip_args += [
