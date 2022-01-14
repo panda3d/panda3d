@@ -137,6 +137,9 @@ def GetLibDir():
 
     if os.path.isfile('/etc/debian_version'):
         return GetDebLibDir()
+    elif os.path.isfile('/etc/arch-release'):
+        # ArchLinux has lib64, but it is a symlink to lib.
+        return "lib"
     else:
         # Okay, maybe we're on an RPM-based system?
         return GetRPMLibDir()

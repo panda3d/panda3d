@@ -849,12 +849,6 @@ reset() {
     Geom::GR_line_strip |
     Geom::GR_flat_last_vertex;
 
-#ifndef OPENGLES
-  if (_supports_geometry_shaders) {
-    _supported_geom_rendering |= Geom::GR_adjacency;
-  }
-#endif
-
   _supports_point_parameters = false;
 
 #ifdef OPENGLES_1
@@ -1796,6 +1790,10 @@ reset() {
   } else {
     _supports_geometry_shaders = false;
     _glFramebufferTexture = nullptr;
+  }
+
+  if (_supports_geometry_shaders) {
+    _supported_geom_rendering |= Geom::GR_adjacency;
   }
 #endif
   _shader_caps._supports_glsl = _supports_glsl;

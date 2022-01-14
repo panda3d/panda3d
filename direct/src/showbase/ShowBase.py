@@ -19,7 +19,9 @@ Built-in global variables
 Some key variables used in all Panda3D scripts are actually attributes of the
 ShowBase instance.  When creating an instance of this class, it will write many
 of these variables to the built-in scope of the Python interpreter, so that
-they are accessible to any Python module, without the need fors extra imports.
+they are accessible to any Python module, without the need for extra imports.
+For example, the ShowBase instance itself is accessible anywhere through the
+:data:`~builtins.base` variable.
 
 While these are handy for prototyping, we do not recommend using them in bigger
 projects, as it can make the code confusing to read to other Python developers,
