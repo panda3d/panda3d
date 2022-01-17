@@ -1781,12 +1781,11 @@ prepare_vertex_buffer(GeomVertexArrayData *array_data) {
   CPT(GeomVertexArrayDataHandle) handle = array_data->get_handle();
   VkDeviceSize data_size = handle->get_data_size_bytes();
 
-  //TODO: don't use host-visible memory, but copy from a staging buffer.
   VkBuffer buffer;
   VulkanMemoryBlock block;
   if (!create_buffer(data_size, buffer, block,
-                     VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)) {
+                     VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+                     VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)) {
     vulkandisplay_cat.error()
       << "Failed to create vertex buffer.\n";
     return nullptr;
@@ -1819,15 +1818,22 @@ update_vertex_buffer(VulkanVertexBufferContext *vbc,
         return false;
       }
 
-      if (auto data = vbc->_block.map()) {
-        memcpy(data, client_pointer, num_bytes);
-
-        _data_transferred_pcollector.add_level(num_bytes);
-      } else {
+      VkBuffer buffer;
+      uint32_t buffer_offset;
+      void *data = alloc_staging_buffer(num_bytes, buffer, buffer_offset);
+      if (!data) {
         vulkandisplay_cat.error()
-          << "Failed to map vertex buffer memory.\n";
+          << "Failed to allocate staging buffer for updating vertex buffer.\n";
         return false;
       }
+      memcpy(data, client_pointer,  num_bytes);
+      _data_transferred_pcollector.add_level(num_bytes);
+
+      VkBufferCopy region;
+      region.srcOffset = buffer_offset;
+      region.dstOffset = 0;
+      region.size = num_bytes;
+      vkCmdCopyBuffer(_frame_data->_transfer_cmd, buffer, vbc->_buffer, 1, &region);
     }
 
     vbc->mark_loaded(reader);
@@ -1878,12 +1884,11 @@ prepare_index_buffer(GeomPrimitive *primitive) {
     return nullptr;
   }
 
-  //TODO: don't use host-visible memory, but copy from a staging buffer.
   VkBuffer buffer;
   VulkanMemoryBlock block;
   if (!create_buffer(data_size, buffer, block,
-                     VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
-                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)) {
+                     VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+                     VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)) {
     vulkandisplay_cat.error()
       << "Failed to create index buffer.\n";
     return nullptr;
@@ -1928,18 +1933,20 @@ update_index_buffer(VulkanIndexBufferContext *ibc,
       if (index_type == GeomEnums::NT_uint8) {
         // We widen 8-bits indices to 16-bits.
         num_bytes *= 2;
-
-      } else if (index_type != GeomEnums::NT_uint16 &&
-                 index_type != GeomEnums::NT_uint32) {
+      }
+      else if (index_type != GeomEnums::NT_uint16
+            && index_type != GeomEnums::NT_uint32) {
         vulkandisplay_cat.error()
           << "Unsupported index type: " << index_type;
         return false;
       }
 
-      auto data = ibc->_block.map();
+      VkBuffer buffer;
+      uint32_t buffer_offset;
+      void *data = alloc_staging_buffer(num_bytes, buffer, buffer_offset);
       if (!data) {
         vulkandisplay_cat.error()
-          << "Failed to map index buffer memory.\n";
+          << "Failed to allocate staging buffer for updating index buffer.\n";
         return false;
       }
 
@@ -1952,8 +1959,13 @@ update_index_buffer(VulkanIndexBufferContext *ibc,
       } else {
         memcpy(data, client_pointer, num_bytes);
       }
-
       _data_transferred_pcollector.add_level(num_bytes);
+
+      VkBufferCopy region;
+      region.srcOffset = buffer_offset;
+      region.dstOffset = 0;
+      region.size = num_bytes;
+      vkCmdCopyBuffer(_frame_data->_transfer_cmd, buffer, ibc->_buffer, 1, &region);
     }
 
     ibc->mark_loaded(reader);
