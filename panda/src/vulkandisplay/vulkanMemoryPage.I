@@ -88,7 +88,7 @@ meets_requirements(const VkMemoryRequirements &reqs, VkFlags required_flags,
  * Maps this memory page persistently.
  */
 INLINE void *VulkanMemoryPage::
-ensure_persistently_mapped() {
+map_persistent() {
   if (_persistent_ptr == nullptr) {
     VkResult err = vkMapMemory(_device, _memory, 0, VK_WHOLE_SIZE, 0, &_persistent_ptr);
     if (err) {
@@ -96,7 +96,19 @@ ensure_persistently_mapped() {
       _persistent_ptr = nullptr;
     }
   }
+  ++_persistent_ptr_count;
   return _persistent_ptr;
+}
+
+/**
+ * Decreases the number of blocks that use a persistent mapping.  If it
+ * reaches zero, unmaps the page.
+ */
+INLINE void VulkanMemoryPage::
+unmap_persistent() {
+  if (--_persistent_ptr_count == 0) {
+    vkUnmapMemory(_device, _memory);
+  }
 }
 
 /**
@@ -169,9 +181,18 @@ map() {
 INLINE void *VulkanMemoryBlock::
 map_persistent() {
   VulkanMemoryPage *page = (VulkanMemoryPage *)get_allocator();
-  void *ptr = page->ensure_persistently_mapped();
+  void *ptr = page->map_persistent();
   nassertr(ptr != nullptr, nullptr);
   return (char *)ptr + get_start();
+}
+
+/**
+ * Opposite of map_persistent().
+ */
+INLINE void VulkanMemoryBlock::
+unmap_persistent() {
+  VulkanMemoryPage *page = (VulkanMemoryPage *)get_allocator();
+  page->unmap_persistent();
 }
 
 /**

@@ -36,7 +36,8 @@ public:
                                  bool linear_tiling = false);
 
 private:
-  INLINE void *ensure_persistently_mapped();
+  INLINE void *map_persistent();
+  INLINE void unmap_persistent();
 
 private:
   VkDevice _device;
@@ -45,6 +46,7 @@ private:
   VkFlags _flags;
   bool _linear_tiling;
   void *_persistent_ptr;
+  unsigned int _persistent_ptr_count = 0;
 
   friend class VulkanGraphicsStateGuardian;
   friend class VulkanMemoryBlock;
@@ -69,6 +71,7 @@ public:
 
   INLINE VulkanMemoryMapping map();
   INLINE void *map_persistent();
+  INLINE void unmap_persistent();
 
   friend class VulkanMemoryPage;
 };

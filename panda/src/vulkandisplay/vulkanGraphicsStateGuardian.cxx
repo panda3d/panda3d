@@ -4186,6 +4186,8 @@ alloc_staging_buffer(VkDeviceSize size, VkBuffer &buffer, uint32_t &offset) {
     return nullptr;
   }
 
+  _staging_buffer_memory.unmap_persistent();
+
   _frame_data->_pending_free.push_back(std::move(_staging_buffer_memory));
   _frame_data->_pending_destroy_buffers.push_back(_staging_buffer);
 
