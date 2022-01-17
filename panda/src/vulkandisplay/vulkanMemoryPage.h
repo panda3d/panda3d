@@ -36,11 +36,15 @@ public:
                                  bool linear_tiling = false);
 
 private:
+  INLINE void *ensure_persistently_mapped();
+
+private:
   VkDevice _device;
   VkDeviceMemory _memory;
   uint32_t _type_index;
   VkFlags _flags;
   bool _linear_tiling;
+  void *_persistent_ptr;
 
   friend class VulkanGraphicsStateGuardian;
   friend class VulkanMemoryBlock;
@@ -62,7 +66,9 @@ public:
 
   INLINE bool bind_image(VkImage image);
   INLINE bool bind_buffer(VkBuffer buffer);
+
   INLINE VulkanMemoryMapping map();
+  INLINE void *map_persistent();
 
   friend class VulkanMemoryPage;
 };
@@ -73,27 +79,14 @@ public:
  */
 class VulkanMemoryMapping {
 public:
-  VulkanMemoryMapping(VulkanMemoryPage *page) :
-    _holder(page->_lock),
-    _device(page->_device),
-    _memory(page->_memory) {
-  }
-
+  INLINE VulkanMemoryMapping(VulkanMemoryPage *page);
   VulkanMemoryMapping(const VulkanMemoryMapping &copy) = delete;
   INLINE VulkanMemoryMapping(VulkanMemoryMapping &&from) noexcept;
+  INLINE ~VulkanMemoryMapping();
 
-  ~VulkanMemoryMapping() {
-    if (_data != nullptr) {
-      unmap();
-    }
-  }
+  INLINE VulkanMemoryMapping &operator =(VulkanMemoryMapping &&from) noexcept;
 
-  void unmap() {
-    nassertv_always(_data != nullptr);
-    vkUnmapMemory(_device, _memory);
-    _data = nullptr;
-    _holder.unlock();
-  }
+  INLINE void unmap();
 
   explicit operator bool() {
     return _data != nullptr;
@@ -116,8 +109,8 @@ public:
   }
 
   std::unique_lock<Mutex> _holder;
-  VkDevice _device;
-  VkDeviceMemory _memory;
+  VkDevice _device = VK_NULL_HANDLE;
+  VkDeviceMemory _memory = VK_NULL_HANDLE;
   void *_data = nullptr;
 };
 

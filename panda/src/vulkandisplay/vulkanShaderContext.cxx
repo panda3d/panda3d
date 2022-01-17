@@ -312,7 +312,8 @@ update_sattr_uniforms(VulkanGraphicsStateGuardian *gsg) {
     return 0;
   }
 
-  void *ptr = alloca(_ptr_block_size);
+  uint32_t ubo_offset;
+  void *ptr = gsg->alloc_dynamic_uniform_buffer(_ptr_block_size, ubo_offset);
 
   size_t i = 0;
   for (Shader::ShaderPtrSpec &spec : _shader->_ptr_spec) {
@@ -420,7 +421,7 @@ update_sattr_uniforms(VulkanGraphicsStateGuardian *gsg) {
     }
   }
 
-  return gsg->update_dynamic_uniform_buffer(ptr, _ptr_block_size);
+  return ubo_offset;
 }
 
 /**
@@ -435,7 +436,7 @@ update_dynamic_uniforms(VulkanGraphicsStateGuardian *gsg, int altered) {
   if (altered & _mat_deps) {
     gsg->update_shader_matrix_cache(_shader, _mat_part_cache, altered);
 
-    void *ptr = alloca(_mat_block_size);
+    void *ptr = gsg->alloc_dynamic_uniform_buffer(_mat_block_size, _dynamic_uniform_offset);
 
     size_t i = 0;
     for (Shader::ShaderMatSpec &spec : _mat_spec) {
@@ -598,10 +599,6 @@ update_dynamic_uniforms(VulkanGraphicsStateGuardian *gsg, int altered) {
         continue;
       }
     }
-
-    uint32_t offset = gsg->update_dynamic_uniform_buffer(ptr, _mat_block_size);
-    _dynamic_uniform_offset = offset;
-    return offset;
   }
 
   return _dynamic_uniform_offset;

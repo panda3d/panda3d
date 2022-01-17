@@ -152,7 +152,7 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   }
 
   // Create two command buffers per frame.
-  const uint32_t num_command_buffers = 2 * sizeof(_frame_data_pool) / sizeof(FrameData);
+  const uint32_t num_command_buffers = 2 * _frame_data_capacity;
   VkCommandBufferAllocateInfo alloc_info;
   alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
   alloc_info.pNext = nullptr;
@@ -329,16 +329,28 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   }
 
   // Create a uniform buffer that we'll use for everything.
+  // Some cards set aside 256 MiB of device-local host-visible memory for data
+  // like this, so we use that.
   VkDeviceSize uniform_buffer_size = vulkan_global_uniform_buffer_size;
   if (!create_buffer(uniform_buffer_size, _uniform_buffer, _uniform_buffer_memory,
-                     VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-                     VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)) {
-    vulkandisplay_cat.error()
-      << "Failed to create uniform buffer buffer.\n";
+                     VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                     (VkMemoryPropertyFlagBits)(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT))) {
+    // No?  Put it in GPU-accessible CPU memory, then.
+    if (!create_buffer(uniform_buffer_size, _uniform_buffer, _uniform_buffer_memory,
+                       VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                       (VkMemoryPropertyFlagBits)(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT))) {
+      vulkandisplay_cat.error()
+        << "Failed to create global uniform buffer.\n";
+    }
     return;
   }
-  _uniform_buffer_size = uniform_buffer_size;
-  _uniform_buffer_offset_alignment = limits.minUniformBufferOffsetAlignment;
+  _uniform_buffer_ptr = _uniform_buffer_memory.map_persistent();
+  if (_uniform_buffer_ptr == nullptr) {
+    vulkandisplay_cat.error()
+      << "Failed to map global uniform buffer.\n";
+    return;
+  }
+  _uniform_buffer_allocator = CircularAllocator(uniform_buffer_size, limits.minUniformBufferOffsetAlignment);
 
   // Fill in the features supported by this physical device.
   _is_hardware = (pipe->_gpu_properties.deviceType != VK_PHYSICAL_DEVICE_TYPE_CPU);
@@ -541,18 +553,18 @@ close_gsg() {
 
   // Call finish_frame() on all frames.  We don't need to wait on the fences due
   // to the above call.
-  const size_t num_frames = (sizeof(_frame_data_pool) / sizeof(FrameData));
+  if (_frame_data_head != _frame_data_capacity) {
+    do {
+      FrameData &frame_data = _frame_data_pool[_frame_data_tail];
+      finish_frame(frame_data);
 
-  while (_frame_data_tail != _frame_data_head) {
-    FrameData &frame_data = _frame_data_pool[_frame_data_tail];
+      _frame_data_tail = (_frame_data_tail + 1) % _frame_data_capacity;
+    }
+    while (_frame_data_tail != _frame_data_head);
 
-    ++_last_finished_frame;
-    _frame_data_tail = (_frame_data_tail + 1) % num_frames;
-
-    finish_frame(frame_data);
+    _frame_data_head = _frame_data_capacity;
+    _frame_data_tail = 0;
   }
-
-  nassertv(_frame_data_tail == _frame_data_head);
 
   // We need to release all prepared resources, since the upcall to close_gsg
   // will cause the PreparedGraphicsObjects to be cleared out.
@@ -561,6 +573,7 @@ close_gsg() {
     if (pgo != nullptr) {
       // Create a temporary FrameData to hold all objects we need to destroy.
       FrameData frame_data;
+      frame_data._frame_index = ++_frame_counter;
       _frame_data = &frame_data;
       pgo->release_all_now(this);
       _frame_data = nullptr;
@@ -2220,46 +2233,52 @@ begin_frame(Thread *current_thread) {
   nassertr_always(!_closing_gsg, false);
   nassertr_always(_frame_data == nullptr, false);
 
-  const size_t num_frames = (sizeof(_frame_data_pool) / sizeof(FrameData));
-  size_t current_head = _frame_data_head;
-  _frame_data = &_frame_data_pool[current_head];
-  _frame_data_head = (current_head + 1) % num_frames;
-
-  // Increase the frame counter, which we use to determine whether we've
-  // updated any resources in this frame.
-  _frame_data->_frame_index = ++_frame_counter;
-
-  VkFence reset_fences[num_frames];
+  // First, finish old, finished frames.
+  VkFence reset_fences[_frame_data_capacity];
   size_t num_reset_fences = 0;
 
-  while (_frame_data_tail != current_head) {
-    FrameData &frame_data = _frame_data_pool[_frame_data_tail];
-
-    if (_frame_data_tail == _frame_data_head) {
-      // We have reached the limit of queued frames, so we must wait.
-      VkResult err;
-      err = vkWaitForFences(_device, 1, &frame_data._fence, VK_TRUE, 1000000000ULL);
-      if (err == VK_TIMEOUT) {
-        vulkandisplay_cat.error()
-          << "Timed out waiting for previous frame to complete rendering.\n";
-        _frame_data = nullptr;
-        return false;
-      } else if (err) {
-        vulkan_error(err, "Failure waiting for command buffer fence");
-        return false;
+  if (_frame_data_head != _frame_data_capacity) {
+    while (true) {
+      FrameData &frame_data = _frame_data_pool[_frame_data_tail];
+      if (vkGetFenceStatus(_device, frame_data._fence) == VK_NOT_READY) {
+        // This frame is not yet ready, so abort the loop here, since there's no
+        // use checking frames that come after this one.
+        break;
       }
-    } else if (vkGetFenceStatus(_device, frame_data._fence) == VK_NOT_READY) {
-      // This frame is not yet ready, so abort the loop here, since there's no
-      // use checking frames that come after this one.
-      break;
+
+      // This frame has completed execution.
+      reset_fences[num_reset_fences++] = frame_data._fence;
+      finish_frame(frame_data);
+
+      _frame_data_tail = (_frame_data_tail + 1) % _frame_data_capacity;
+      if (_frame_data_tail == _frame_data_head) {
+        // This was the last one, it's now empty.
+        _frame_data_head = _frame_data_capacity;
+        _frame_data_tail = 0;
+        break;
+      }
+    }
+  }
+
+  // If the frame queue is full, we must wait until a frame is done.
+  if (_frame_data_tail == _frame_data_head) {
+    FrameData &frame_data = _frame_data_pool[_frame_data_tail];
+    VkResult err;
+    err = vkWaitForFences(_device, 1, &frame_data._fence, VK_TRUE, 1000000000ULL);
+    if (err == VK_TIMEOUT) {
+      vulkandisplay_cat.error()
+        << "Timed out waiting for previous frame to complete rendering.\n";
+      return false;
+    }
+    else if (err) {
+      vulkan_error(err, "Failure waiting for command buffer fence");
+      return false;
     }
 
     // This frame has completed execution.
     reset_fences[num_reset_fences++] = frame_data._fence;
-    ++_last_finished_frame;
-    _frame_data_tail = (_frame_data_tail + 1) % num_frames;
-
     finish_frame(frame_data);
+    _frame_data_tail = (_frame_data_tail + 1) % _frame_data_capacity;
   }
 
   // Reset the used fences to unsignaled status.
@@ -2268,19 +2287,7 @@ begin_frame(Thread *current_thread) {
     nassertr(!err, false);
   }
 
-  // Recycle the global uniform buffer.  It's probably not worth it to expect
-  // values to stick around between frames, because the vast majority of global
-  // uniforms will change more frequently than that anyway.
-  if (vulkandisplay_cat.is_debug()) {
-    static VkDeviceSize max_used = 0;
-    if (_uniform_buffer_offset > max_used) {
-      max_used = _uniform_buffer_offset;
-      vulkandisplay_cat.debug()
-        << "Used at most " << max_used << " of " << _uniform_buffer_size
-        << " bytes of global uniform buffer.\n";
-    }
-  }
-  _uniform_buffer_offset = 0;
+  _frame_data = &_frame_data_pool[_frame_data_head % _frame_data_capacity];
 
   // Begin the transfer command buffer, for preparing resources.
   VkCommandBufferBeginInfo begin_info;
@@ -2292,9 +2299,15 @@ begin_frame(Thread *current_thread) {
   VkResult err;
   err = vkBeginCommandBuffer(_frame_data->_transfer_cmd, &begin_info);
   if (err) {
-    vulkan_error(err, "Can't begin command buffer");
+    vulkan_error(err, "Can't begin transfer command buffer");
+    _frame_data = nullptr;
     return false;
   }
+
+  // Increase the frame counter, which we use to determine whether we've
+  // updated any resources in this frame.
+  _frame_data->_frame_index = ++_frame_counter;
+  _frame_data_head = (_frame_data_head + 1) % _frame_data_capacity;
 
   // Make sure we have a white texture.
   if (_white_texture.is_null()) {
@@ -2310,38 +2323,38 @@ begin_frame(Thread *current_thread) {
 
   // Call the GSG's begin_frame, which will cause any queued-up release() and
   // prepare() methods to be called.  Note that some of them may add to the
-  // command buffer, which is why we've begun it already.
-  if (!GraphicsStateGuardian::begin_frame(current_thread)) {
-    return false;
+  // transfer command buffer, which is why we've begun it already.
+  if (GraphicsStateGuardian::begin_frame(current_thread)) {
+    // Now begin the main (ie. graphics) command buffer.
+    err = vkBeginCommandBuffer(_frame_data->_cmd, &begin_info);
+    if (!err) {
+      return true;
+    }
+    vulkan_error(err, "Can't begin command buffer");
   }
 
-  // Let's submit our preparation calls, so the GPU has something to munch on.
-  //vkEndCommandBuffer(_frame_data->_transfer_cmd);
+  // We've already started putting stuff in the transfer command buffer, so now
+  // we are obliged to submit it, even if we won't actually end up rendering
+  // anything in this frame.
+  vkEndCommandBuffer(_frame_data->_transfer_cmd);
 
-  /*VkSubmitInfo submit_info;
+  VkSubmitInfo submit_info;
   submit_info.pNext = nullptr;
   submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
   submit_info.waitSemaphoreCount = 0;
   submit_info.pWaitSemaphores = nullptr;
   submit_info.pWaitDstStageMask = nullptr;
   submit_info.commandBufferCount = 1;
-  submit_info.pCommandBuffers = &_transfer_cmd;
+  submit_info.pCommandBuffers = &_frame_data->_transfer_cmd;
   submit_info.signalSemaphoreCount = 0;
   submit_info.pSignalSemaphores = nullptr;
-  err = vkQueueSubmit(_queue, 1, &submit_info, VK_NULL_HANDLE);
-  if (err) {
-    vulkan_error(err, "Failed to submit preparation command buffer");
-    return false;
-  }*/
 
-  // Now begin the main (ie. graphics) command buffer.
-  err = vkBeginCommandBuffer(_frame_data->_cmd, &begin_info);
+  err = vkQueueSubmit(_queue, 1, &submit_info, _frame_data->_fence);
   if (err) {
-    vulkan_error(err, "Can't begin command buffer");
-    return false;
+    vulkan_error(err, "Error submitting queue");
   }
-
-  return true;
+  _frame_data = nullptr;
+  return false;
 }
 
 /**
@@ -2381,6 +2394,22 @@ end_frame(Thread *current_thread) {
 
   nassertv(_frame_data->_transfer_cmd != VK_NULL_HANDLE);
   vkEndCommandBuffer(_frame_data->_transfer_cmd);
+
+  // Note down the current watermark of the uniform buffer.
+  _frame_data->_uniform_buffer_head = _uniform_buffer_allocator.get_head();
+
+  // Report how much UBO memory was used.
+  size_t used = _uniform_buffer_allocator.get_size();
+  if (used > _uniform_buffer_max_used) {
+    _uniform_buffer_max_used = used;
+
+    if (vulkandisplay_cat.is_debug()) {
+      vulkandisplay_cat.debug()
+        << "Used at most " << _uniform_buffer_max_used << " of "
+        << _uniform_buffer_allocator.get_capacity()
+        << " bytes of global uniform buffer.\n";
+    }
+  }
 
   // Issue commands to transition the staging buffers of the texture downloads
   // to make sure that the previous copy operations are visible to host reads.
@@ -2483,9 +2512,14 @@ end_frame(Thread *current_thread) {
 
 /**
  * Called after the frame has finished executing to clean up any resources.
+ * All frames *must* be finished in order!  It is illegal to call this for a
+ * frame when a preceding frame has not finished yet!
  */
 void VulkanGraphicsStateGuardian::
 finish_frame(FrameData &frame_data) {
+  ++_last_finished_frame;
+  nassertv(frame_data._frame_index == _last_finished_frame);
+
   for (VkBufferView buffer_view : frame_data._pending_destroy_buffer_views) {
     vkDestroyBufferView(_device, buffer_view, nullptr);
   }
@@ -2524,6 +2558,9 @@ finish_frame(FrameData &frame_data) {
     }
     frame_data._pending_free_descriptor_sets.clear();
   }
+
+  // Make the used uniform buffer space available.
+  _uniform_buffer_allocator.set_tail(frame_data._uniform_buffer_head);
 }
 
 /**
@@ -3995,32 +4032,79 @@ update_sattr_descriptor_set(VkDescriptorSet ds, const ShaderAttrib *attr) {
 }
 
 /**
- * Reserves space in the global uniform buffer.
+ * Returns a writable pointer to the dynamic uniform buffer.
  */
-VkDeviceSize VulkanGraphicsStateGuardian::
-update_dynamic_uniform_buffer(void *data, VkDeviceSize size) {
+void *VulkanGraphicsStateGuardian::
+alloc_dynamic_uniform_buffer(VkDeviceSize size, uint32_t &offset) {
   if (size == 0) {
-    return 0;
+    offset = 0;
+    return nullptr;
   }
 
-  VkDeviceSize offset = _uniform_buffer_offset;
-  VkDeviceSize align = _uniform_buffer_offset_alignment;
-  offset = offset - 1 - (offset - 1) % align + align;
+  ssize_t result = _uniform_buffer_allocator.alloc(size);
+  if (result >= 0) {
+    offset = (uint32_t)result;
+    return (char *)_uniform_buffer_ptr + result;
+  }
+
+  TrueClock *clock = TrueClock::get_global_ptr();
+  double start_time = clock->get_short_raw_time();
+
+  VkFence reset_fences[_frame_data_capacity - 1];
+  size_t num_reset_fences = 0;
+
+  // Wait for the last frame to be done, that should free up some space.
+  while (result < 0 && &_frame_data_pool[_frame_data_tail] != _frame_data) {
+    FrameData &frame_data = _frame_data_pool[_frame_data_tail];
+    VkResult err;
+    err = vkWaitForFences(_device, 1, &frame_data._fence, VK_TRUE, 1000000000ULL);
+    if (err == VK_TIMEOUT) {
+      vulkandisplay_cat.error()
+        << "Timed out waiting for previous frame to complete rendering.\n";
+      break;
+    }
+    else if (err) {
+      vulkan_error(err, "Failure waiting for command buffer fence");
+      break;
+    }
+
+    // This frame has completed execution.
+    reset_fences[num_reset_fences++] = frame_data._fence;
+    finish_frame(frame_data);
+    _frame_data_tail = (_frame_data_tail + 1) % _frame_data_capacity;
+
+    // Try the allocation again.
+    result = _uniform_buffer_allocator.alloc(size);
+  }
+
+  // Reset the used fences to unsignaled status.
+  if (num_reset_fences > 0) {
+    VkResult err = vkResetFences(_device, num_reset_fences, reset_fences);
+    nassertr(!err, nullptr);
+  }
+
+  if (result >= 0) {
+    double end_time = clock->get_short_raw_time();
+    double stall_time = (end_time - start_time);
+    vulkandisplay_cat.warning()
+      << "Stalled for " << (stall_time * 1000) << " ms due to running out of "
+         "global uniform buffer space trying to allocate " << size << " bytes."
+         "  Increase vulkan-global-uniform-buffer-size for best performance"
+      << " (current is " << _uniform_buffer_allocator.get_capacity() << ").\n";
+
+    offset = (uint32_t)result;
+    return (char *)_uniform_buffer_ptr + result;
+  }
 
   //TODO: fail more gracefully.  Create a new buffer on the fly and manage
   // multiple buffers?  Or submit work and insert a fence, then replace the
   // buffer with a new one?
-  if (offset + size > _uniform_buffer_size) {
-    vulkandisplay_cat.error()
-      << "Ran out of space in the global uniform buffer.  Increase "
-         "vulkan-global-uniform-buffer-size in Config.prc.\n";
-    abort();
-    return offset;
-  }
-
-  vkCmdUpdateBuffer(_frame_data->_transfer_cmd, _uniform_buffer, offset, size, data);
-  _uniform_buffer_offset = offset + size;
-  return offset;
+  vulkandisplay_cat.error()
+    << "Used up entire global uniform buffer in a single frame, cannot "
+       "recover.  Increase vulkan-global-uniform-buffer-size substantially"
+    << " (current is " << _uniform_buffer_allocator.get_capacity() << ").\n";
+  abort();
+  return nullptr;
 }
 
 /**

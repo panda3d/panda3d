@@ -390,6 +390,33 @@ VulkanGraphicsPipe() : _max_allocation_size(0) {
         vulkandisplay_cat.debug(false) << ", multi-instance";
       }
       vulkandisplay_cat.debug(false) << "\n";
+
+      for (size_t ti = 0; ti < _memory_properties.memoryTypeCount; ++ti) {
+        const VkMemoryType &type = _memory_properties.memoryTypes[ti];
+        if (type.heapIndex == i) {
+          std::ostream &out = vulkandisplay_cat.debug();
+          out << "    Type " << ti << ":";
+          if (type.propertyFlags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) {
+            out << " DEVICE_LOCAL";
+          }
+          if (type.propertyFlags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) {
+            out << " HOST_VISIBLE";
+          }
+          if (type.propertyFlags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) {
+            out << " HOST_COHERENT";
+          }
+          if (type.propertyFlags & VK_MEMORY_PROPERTY_HOST_CACHED_BIT) {
+            out << " HOST_CACHED";
+          }
+          if (type.propertyFlags & VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT) {
+            out << " LAZILY_ALLOCATED";
+          }
+          if (type.propertyFlags & VK_MEMORY_PROPERTY_PROTECTED_BIT) {
+            out << " PROTECTED";
+          }
+          out << "\n";
+        }
+      }
     }
 
     // Enumerate supported extensions.

@@ -16,6 +16,7 @@
 
 #include "config_vulkandisplay.h"
 #include "vulkanMemoryPage.h"
+#include "circularAllocator.h"
 
 class VulkanIndexBufferContext;
 class VulkanSamplerContext;
@@ -175,7 +176,7 @@ public:
   bool update_lattr_descriptor_set(VkDescriptorSet ds, const LightAttrib *attr);
   bool update_tattr_descriptor_set(VkDescriptorSet ds, const TextureAttrib *attr);
   bool update_sattr_descriptor_set(VkDescriptorSet ds, const ShaderAttrib *attr);
-  VkDeviceSize update_dynamic_uniform_buffer(void *data, VkDeviceSize size);
+  void *alloc_dynamic_uniform_buffer(VkDeviceSize size, uint32_t &offset);
 
   uint32_t get_color_palette_offset(const LColor &color);
 
@@ -204,10 +205,10 @@ private:
   // Single large uniform buffer used for everything in a frame.
   VkBuffer _uniform_buffer;
   VulkanMemoryBlock _uniform_buffer_memory;
-  VkDeviceSize _uniform_buffer_size = 0;
-  VkDeviceSize _uniform_buffer_offset = 0;
-  VkDeviceSize _uniform_buffer_offset_alignment;
+  CircularAllocator _uniform_buffer_allocator;
+  void *_uniform_buffer_ptr = nullptr;
   VkDescriptorSet _uniform_descriptor_set;
+  VkDeviceSize _uniform_buffer_max_used = 0;
 
   // Stores current framebuffer info.
   VkRenderPass _render_pass;
@@ -249,7 +250,7 @@ private:
 
   // Keep track of all the individual allocations.
   Mutex _allocator_lock;
-  pvector<VulkanMemoryPage> _memory_pages;
+  pdeque<VulkanMemoryPage> _memory_pages;
   VkDeviceSize _total_allocated;
 
   struct FrameData {
@@ -266,12 +267,14 @@ private:
     pvector<VkImageView> _pending_destroy_image_views;
     pvector<VkSampler> _pending_destroy_samplers;
     pvector<VkDescriptorSet> _pending_free_descriptor_sets;
+
+    VkDeviceSize _uniform_buffer_head = 0;
   };
-  FrameData _frame_data_pool[5];
+  static const size_t _frame_data_capacity = 5;
+  FrameData _frame_data_pool[_frame_data_capacity];
+  size_t _frame_data_head = _frame_data_capacity;
   size_t _frame_data_tail = 0;
-  size_t _frame_data_head = 0;
   FrameData *_frame_data = nullptr;
-  FrameData *_last_frame_data = nullptr;
 
   uint64_t _frame_counter = 0;
   uint64_t _last_finished_frame = 0;

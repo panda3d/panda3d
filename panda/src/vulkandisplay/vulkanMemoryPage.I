@@ -22,7 +22,8 @@ VulkanMemoryPage(Mutex &lock) :
   _memory(VK_NULL_HANDLE),
   _type_index(0),
   _flags(0),
-  _linear_tiling(false) {
+  _linear_tiling(false),
+  _persistent_ptr(nullptr) {
 }
 
 /**
@@ -36,7 +37,8 @@ VulkanMemoryPage(VkDevice device, VkDeviceMemory memory, VkDeviceSize size,
   _memory(memory),
   _type_index(type_index),
   _flags(flags),
-  _linear_tiling(false) {
+  _linear_tiling(false),
+  _persistent_ptr(nullptr) {
 
   nassertv(_next == this && _prev == this);
 }
@@ -51,7 +53,8 @@ VulkanMemoryPage(VulkanMemoryPage &&from) :
   _memory(from._memory),
   _type_index(from._type_index),
   _flags(from._flags),
-  _linear_tiling(from._linear_tiling) {
+  _linear_tiling(from._linear_tiling),
+  _persistent_ptr(from._persistent_ptr) {
 
   // Prevent double free.
   from._memory = VK_NULL_HANDLE;
@@ -65,6 +68,7 @@ INLINE VulkanMemoryPage::
   if (_memory != VK_NULL_HANDLE) {
     vkFreeMemory(_device, _memory, nullptr);
     _memory = VK_NULL_HANDLE;
+    _persistent_ptr = nullptr;
   }
 }
 
@@ -78,6 +82,21 @@ meets_requirements(const VkMemoryRequirements &reqs, VkFlags required_flags,
           (required_flags & _flags) == required_flags &&
           _linear_tiling == linear_tiling &&
           reqs.size <= (VkDeviceSize)get_max_size());
+}
+
+/**
+ * Maps this memory page persistently.
+ */
+INLINE void *VulkanMemoryPage::
+ensure_persistently_mapped() {
+  if (_persistent_ptr == nullptr) {
+    VkResult err = vkMapMemory(_device, _memory, 0, VK_WHOLE_SIZE, 0, &_persistent_ptr);
+    if (err) {
+      vulkan_error(err, "Failed to map memory");
+      _persistent_ptr = nullptr;
+    }
+  }
+  return _persistent_ptr;
 }
 
 /**
@@ -122,19 +141,45 @@ bind_buffer(VkBuffer buffer) {
 
 /**
  * Maps this block and returns the mapped memory address in a RAII wrapper.
- * Only one block in the page can be mapped at any given time.
+ * Only one block in the page can be mapped at any given time, except if the
+ * entire memory page is enabled for persistent mapping.
  */
 INLINE VulkanMemoryMapping VulkanMemoryBlock::
 map() {
   VulkanMemoryPage *page = (VulkanMemoryPage *)get_allocator();
   VulkanMemoryMapping ptr(page);
-  assert(!ptr);
+  if (page->_persistent_ptr != nullptr) {
+    ptr._data = (char *)page->_persistent_ptr + get_start();
+    return ptr;
+  }
+  ptr._device = page->_device;
+  ptr._memory = page->_memory;
   VkResult err = vkMapMemory(page->_device, page->_memory, get_start(), get_size(), 0, &ptr._data);
   if (err) {
     vulkan_error(err, "Failed to map memory");
     ptr._data = nullptr;
   }
   return ptr;
+}
+
+/**
+ * Maps the entire page this block is in persistently and return a pointer to
+ * this block within the mapping.  Many blocks can be mapped at the same time.
+ */
+INLINE void *VulkanMemoryBlock::
+map_persistent() {
+  VulkanMemoryPage *page = (VulkanMemoryPage *)get_allocator();
+  void *ptr = page->ensure_persistently_mapped();
+  nassertr(ptr != nullptr, nullptr);
+  return (char *)ptr + get_start();
+}
+
+/**
+ * Just grabs the page lock.
+ */
+INLINE VulkanMemoryMapping::
+VulkanMemoryMapping(VulkanMemoryPage *page) :
+  _holder(page->_lock) {
 }
 
 /**
@@ -149,4 +194,46 @@ VulkanMemoryMapping(VulkanMemoryMapping &&from) noexcept :
 
   // Prevent double unmap
   from._data = nullptr;
+  from._memory = VK_NULL_HANDLE;
+}
+
+/**
+ * Destructor, auto-unmaps if necessary.
+ */
+INLINE VulkanMemoryMapping::
+~VulkanMemoryMapping() {
+  if (_data != nullptr) {
+    unmap();
+  }
+}
+
+/**
+ * Move assignment operator.
+ */
+INLINE VulkanMemoryMapping &VulkanMemoryMapping::
+operator =(VulkanMemoryMapping &&from) noexcept {
+  if (_data != nullptr) {
+    unmap();
+  }
+  _holder = std::move(from._holder);
+  _device = from._device;
+  _memory = from._memory;
+  _data = from._data;
+  from._data = nullptr;
+  from._memory = VK_NULL_HANDLE;
+  return *this;
+}
+
+/**
+ * Unmaps the memory.  Does nothing if the page is persistently mapped.
+ */
+INLINE void VulkanMemoryMapping::
+unmap() {
+  nassertv_always(_data != nullptr);
+  if (_memory != VK_NULL_HANDLE) {
+    vkUnmapMemory(_device, _memory);
+    _memory = VK_NULL_HANDLE;
+  }
+  _data = nullptr;
+  _holder.unlock();
 }
