@@ -178,6 +178,8 @@ public:
   bool update_sattr_descriptor_set(VkDescriptorSet ds, const ShaderAttrib *attr);
   void *alloc_dynamic_uniform_buffer(VkDeviceSize size, uint32_t &offset);
 
+  void *alloc_staging_buffer(VkDeviceSize size, VkBuffer &buffer, uint32_t &offset);
+
   uint32_t get_color_palette_offset(const LColor &color);
 
   VkFormat get_image_format(const Texture *texture) const;
@@ -209,6 +211,12 @@ private:
   void *_uniform_buffer_ptr = nullptr;
   VkDescriptorSet _uniform_descriptor_set;
   VkDeviceSize _uniform_buffer_max_used = 0;
+
+  // Staging buffer for CPU-to-GPU uploads.
+  VkBuffer _staging_buffer = VK_NULL_HANDLE;
+  VulkanMemoryBlock _staging_buffer_memory;
+  CircularAllocator _staging_buffer_allocator;
+  void *_staging_buffer_ptr = nullptr;
 
   // Stores current framebuffer info.
   VkRenderPass _render_pass;
@@ -269,6 +277,7 @@ private:
     pvector<VkDescriptorSet> _pending_free_descriptor_sets;
 
     VkDeviceSize _uniform_buffer_head = 0;
+    VkDeviceSize _staging_buffer_head = 0;
   };
   static const size_t _frame_data_capacity = 5;
   FrameData _frame_data_pool[_frame_data_capacity];

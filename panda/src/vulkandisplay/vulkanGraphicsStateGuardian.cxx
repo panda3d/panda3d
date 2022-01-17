@@ -352,6 +352,19 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   }
   _uniform_buffer_allocator = CircularAllocator(uniform_buffer_size, limits.minUniformBufferOffsetAlignment);
 
+  // Create a staging buffer for CPU-to-GPU uploads.
+  VkDeviceSize staging_buffer_size = vulkan_staging_buffer_size;
+  if (staging_buffer_size > 0) {
+    if (create_buffer(staging_buffer_size, _staging_buffer, _staging_buffer_memory,
+                      VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                      (VkMemoryPropertyFlagBits)(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT))) {
+      _staging_buffer_ptr = _staging_buffer_memory.map_persistent();
+      if (_staging_buffer_ptr != nullptr) {
+        _staging_buffer_allocator = CircularAllocator(staging_buffer_size, limits.optimalBufferCopyOffsetAlignment);
+      }
+    }
+  }
+
   // Fill in the features supported by this physical device.
   _is_hardware = (pipe->_gpu_properties.deviceType != VK_PHYSICAL_DEVICE_TYPE_CPU);
 
@@ -527,6 +540,10 @@ VulkanGraphicsStateGuardian::
   vkDestroySampler(_device, _shadow_sampler, nullptr);
   vkDestroyPipelineCache(_device, _pipeline_cache, nullptr);
   vkDestroyCommandPool(_device, _cmd_pool, nullptr);
+
+  if (_staging_buffer != VK_NULL_HANDLE) {
+    vkDestroyBuffer(_device, _staging_buffer, nullptr);
+  }
 
   for (FrameData &frame_data : _frame_data_pool) {
     vkDestroyFence(_device, frame_data._fence, nullptr);
@@ -1183,19 +1200,12 @@ upload_texture(VulkanTextureContext *tc) {
   nassertr(buffer_size > 0, false);
 
   VkBuffer buffer;
-  VulkanMemoryBlock block;
-  if (!create_buffer(buffer_size, buffer, block,
-                     VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)) {
-    vulkandisplay_cat.error()
-      << "Failed to create staging buffer for texture "
-      << texture->get_name() << std::endl;
-    return false;
-  }
-
-  // Now fill in the data into the staging buffer.
-  auto data = block.map();
+  uint32_t buffer_offset;
+  void *data = alloc_staging_buffer(buffer_size, buffer, buffer_offset);
   if (!data) {
+    vulkandisplay_cat.error()
+      << "Failed to allocate staging buffer for texture "
+      << texture->get_name() << std::endl;
     return false;
   }
 
@@ -1208,6 +1218,7 @@ upload_texture(VulkanTextureContext *tc) {
 
     // Schedule a copy from our staging buffer to the image.
     VkBufferImageCopy region = {};
+    region.bufferOffset = buffer_offset;
     region.imageSubresource.aspectMask = tc->_aspect_mask;
     region.imageSubresource.mipLevel = 0;
     region.imageSubresource.layerCount = tc->_array_layers;
@@ -1290,9 +1301,8 @@ upload_texture(VulkanTextureContext *tc) {
         if (remain > 0) {
           region.bufferOffset += optimal_align - remain;
         }
-        nassertr(region.bufferOffset + src_size <= block.get_size(), false);
 
-        uint8_t *dest = (uint8_t *)data + region.bufferOffset;
+        uint8_t *dest = (uint8_t *)data + (region.bufferOffset - buffer_offset);
 
         if (tc->_pack_bgr8) {
           // Pack RGB data into RGBA, since most cards don't support RGB8.
@@ -1325,8 +1335,6 @@ upload_texture(VulkanTextureContext *tc) {
       region.imageExtent.depth = std::max(1U, region.imageExtent.depth >> 1);
       ++region.imageSubresource.mipLevel;
     }
-
-    data.unmap();
 
     // Now, ensure that all the mipmap levels are in the same layout.
     if (!levels_in_dst_optimal_layout.has_all_of(0, tc->_mip_levels)) {
@@ -1369,20 +1377,15 @@ upload_texture(VulkanTextureContext *tc) {
     } else {
       memcpy(data, src, src_size);
     }
-    data.unmap();
 
     VkBufferCopy region;
-    region.srcOffset = 0;
+    region.srcOffset = buffer_offset;
     region.dstOffset = 0;
     region.size = src_size;
     vkCmdCopyBuffer(_frame_data->_transfer_cmd, buffer, tc->_buffer, 1, &region);
   }
 
   tc->mark_loaded();
-
-  // Make sure that the staging memory is not deleted until the next fence.
-  _frame_data->_pending_free.push_back(std::move(block));
-  _frame_data->_pending_destroy_buffers.push_back(buffer);
 
   // Tell the GraphicsEngine that we uploaded the texture.  This may cause
   // it to unload the data from RAM at the end of this frame.
@@ -2410,8 +2413,9 @@ end_frame(Thread *current_thread) {
   nassertv(_frame_data->_transfer_cmd != VK_NULL_HANDLE);
   vkEndCommandBuffer(_frame_data->_transfer_cmd);
 
-  // Note down the current watermark of the uniform buffer.
+  // Note down the current watermark of the ring buffers.
   _frame_data->_uniform_buffer_head = _uniform_buffer_allocator.get_head();
+  _frame_data->_staging_buffer_head = _staging_buffer_allocator.get_head();
 
   // Report how much UBO memory was used.
   size_t used = _uniform_buffer_allocator.get_size();
@@ -2574,8 +2578,9 @@ finish_frame(FrameData &frame_data) {
     frame_data._pending_free_descriptor_sets.clear();
   }
 
-  // Make the used uniform buffer space available.
+  // Make the used uniform / staging buffer space available.
   _uniform_buffer_allocator.set_tail(frame_data._uniform_buffer_head);
+  _staging_buffer_allocator.set_tail(frame_data._staging_buffer_head);
 }
 
 /**
@@ -4120,6 +4125,86 @@ alloc_dynamic_uniform_buffer(VkDeviceSize size, uint32_t &offset) {
     << " (current is " << _uniform_buffer_allocator.get_capacity() << ").\n";
   abort();
   return nullptr;
+}
+
+/**
+ * Allocates memory in the staging buffer.  Note that the staging buffer may
+ * only be used in this frame, since it will be cleaned up automatically when
+ * the frame is done.
+ */
+void *VulkanGraphicsStateGuardian::
+alloc_staging_buffer(VkDeviceSize size, VkBuffer &buffer, uint32_t &offset) {
+  nassertr(size > 0, nullptr);
+
+  // It won't fit (easily).  Create a fresh staging buffer just for this
+  // resource, to be destroyed at the end of the frame.
+  if (size * 2 > _staging_buffer_allocator.get_capacity()) {
+    if (vulkandisplay_cat.is_debug()) {
+      vulkandisplay_cat.debug()
+        << "Creating dedicated staging buffer for size " << size << "\n";
+    }
+    VulkanMemoryBlock block;
+    if (create_buffer(size, buffer, block,
+                      VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                      (VkMemoryPropertyFlagBits)(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT))) {
+      void *ptr = block.map_persistent();
+      offset = 0;
+      _frame_data->_pending_free.push_back(std::move(block));
+      _frame_data->_pending_destroy_buffers.push_back(buffer);
+      return ptr;
+    } else {
+      return nullptr;
+    }
+  }
+
+  ssize_t result = _staging_buffer_allocator.alloc(size);
+  if (result >= 0) {
+    buffer = _staging_buffer;
+    offset = (uint32_t)result;
+    return (char *)_staging_buffer_ptr + result;
+  }
+
+  if (vulkandisplay_cat.is_debug()) {
+    vulkandisplay_cat.debug()
+      << "Changing staging buffer, ran out of space allocating "
+      << size << " bytes\n";
+  }
+
+  // It's full?  Just toss it at the end of this frame and create a fresh one.
+  VulkanMemoryBlock block;
+  if (!create_buffer(_staging_buffer_allocator.get_capacity(),
+                     buffer, block,
+                     VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                     (VkMemoryPropertyFlagBits)(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT))) {
+    return nullptr;
+  }
+
+  void *ptr = block.map_persistent();
+  if (ptr == nullptr) {
+    vulkandisplay_cat.error()
+      << "Failed to map staging buffer.\n";
+    return nullptr;
+  }
+
+  _frame_data->_pending_free.push_back(std::move(_staging_buffer_memory));
+  _frame_data->_pending_destroy_buffers.push_back(_staging_buffer);
+
+  _staging_buffer = buffer;
+  _staging_buffer_memory = std::move(block);
+  _staging_buffer_ptr = ptr;
+
+  _staging_buffer_allocator.reset();
+
+  // We have a new buffer now, so any frames that used the old buffer should
+  // not try to free from the new buffer.
+  for (FrameData &frame_data : _frame_data_pool) {
+    frame_data._staging_buffer_head = 0;
+  }
+
+  result = _staging_buffer_allocator.alloc(size);
+  nassertr(result == 0, nullptr);
+  offset = 0;
+  return (char *)_staging_buffer_ptr;
 }
 
 /**

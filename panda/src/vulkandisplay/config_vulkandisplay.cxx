@@ -58,6 +58,15 @@ ConfigVariableInt64 vulkan_global_uniform_buffer_size
           "in the message \"Used at most # bytes of global uniform buffer.\" "
           "in the most complex scene, then add a generous safety margin."));
 
+ConfigVariableInt64 vulkan_staging_buffer_size
+("vulkan-staging-buffer-size", 16 * 1024 * 1024,
+ PRC_DESC("This value indicates how large the staging buffer should be that is "
+          "allocated to upload all of the textures and vertex buffers to the "
+          "GPU.  This allows one staging buffer to be used for many uploads.  "
+          "Any uploads approaching this size will receive a dedicated staging "
+          "buffer instead.  Set this to 0 to create separate staging buffers "
+          "for all uploads."));
+
 #define VK_ERROR_INVALID_SHADER_NV -1000012000
 
 /**
