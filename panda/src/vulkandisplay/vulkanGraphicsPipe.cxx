@@ -886,12 +886,7 @@ make_output(const std::string &name,
   if (retry == 1) {
     if ((flags & BF_require_parasite) != 0 ||
         (flags & BF_require_window) != 0 ||
-        (flags & BF_resizeable) != 0 ||
-        (flags & BF_size_track_host) != 0 ||
-        (flags & BF_rtt_cumulative) != 0 ||
-        (flags & BF_can_bind_color) != 0 ||
-        (flags & BF_can_bind_every) != 0 ||
-        (flags & BF_can_bind_layered) != 0) {
+        (flags & BF_rtt_cumulative) != 0) {
       return nullptr;
     }
     return new VulkanGraphicsBuffer(engine, this, name, fb_prop, win_prop,
