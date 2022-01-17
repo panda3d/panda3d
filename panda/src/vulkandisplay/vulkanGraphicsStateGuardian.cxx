@@ -1537,31 +1537,40 @@ SamplerContext *VulkanGraphicsStateGuardian::
 prepare_sampler(const SamplerState &sampler) {
   PStatTimer timer(_prepare_sampler_pcollector);
 
+  SamplerState::FilterType magfilter = sampler.get_effective_magfilter();
+  SamplerState::FilterType minfilter = sampler.get_effective_minfilter();
+
   VkSamplerAddressMode wrap_map[] = {VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
                                      VK_SAMPLER_ADDRESS_MODE_REPEAT,
                                      VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT,
                                      VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE,
                                      VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER,
                                      VK_SAMPLER_ADDRESS_MODE_REPEAT};
-
-  //TODO: support shadow filter and border color.
+  //TODO: support border color.
   VkSamplerCreateInfo sampler_info;
   sampler_info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
   sampler_info.pNext = nullptr;
   sampler_info.flags = 0;
-  sampler_info.magFilter = (VkFilter)(sampler.get_effective_magfilter() & 1);
-  sampler_info.minFilter = (VkFilter)(sampler.get_effective_minfilter() & 1);
+  if (minfilter == SamplerState::FT_shadow || magfilter == SamplerState::FT_shadow) {
+    sampler_info.compareEnable = VK_TRUE;
+    sampler_info.compareOp = VK_COMPARE_OP_LESS;
+    sampler_info.magFilter = VK_FILTER_LINEAR;
+    sampler_info.minFilter = VK_FILTER_LINEAR;
+  } else {
+    sampler_info.compareEnable = VK_FALSE;
+    sampler_info.compareOp = VK_COMPARE_OP_NEVER;
+    sampler_info.magFilter = (VkFilter)(magfilter & 1);
+    sampler_info.minFilter = (VkFilter)(minfilter & 1);
+  }
   sampler_info.mipmapMode = (VkSamplerMipmapMode)
-    (sampler.get_effective_minfilter() == SamplerState::FT_nearest_mipmap_linear ||
-     sampler.get_effective_minfilter() == SamplerState::FT_linear_mipmap_linear);
+    (minfilter == SamplerState::FT_nearest_mipmap_linear ||
+     minfilter == SamplerState::FT_linear_mipmap_linear);
   sampler_info.addressModeU = wrap_map[sampler.get_wrap_u()];
   sampler_info.addressModeV = wrap_map[sampler.get_wrap_v()];
   sampler_info.addressModeW = wrap_map[sampler.get_wrap_w()];
   sampler_info.mipLodBias = sampler.get_lod_bias();
   sampler_info.anisotropyEnable = (sampler.get_effective_anisotropic_degree() > 1);
   sampler_info.maxAnisotropy = sampler.get_effective_anisotropic_degree();
-  sampler_info.compareEnable = VK_FALSE;
-  sampler_info.compareOp = VK_COMPARE_OP_NEVER;
   sampler_info.minLod = sampler.get_min_lod();
   sampler_info.maxLod = sampler.get_max_lod();
   sampler_info.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
