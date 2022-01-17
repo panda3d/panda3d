@@ -3,6 +3,7 @@
 #include "bufferContext.cxx"
 #include "bufferContextChain.cxx"
 #include "bufferResidencyTracker.cxx"
+#include "circularAllocator.cxx"
 #include "config_gobj.cxx"
 #include "geom.cxx"
 #include "geomCacheEntry.cxx"

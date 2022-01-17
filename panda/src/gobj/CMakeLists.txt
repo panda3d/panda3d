@@ -4,6 +4,7 @@ set(P3GOBJ_HEADERS
   bufferContext.I bufferContext.h
   bufferContextChain.I bufferContextChain.h
   bufferResidencyTracker.I bufferResidencyTracker.h
+  circularAllocator.I circularAllocator.h
   config_gobj.h
   geom.h geom.I
   geomContext.I geomContext.h
@@ -87,6 +88,7 @@ set(P3GOBJ_SOURCES
   bufferContextChain.cxx
   bufferResidencyTracker.cxx
   config_gobj.cxx
+  circularAllocator.cxx
   geomContext.cxx
   geom.cxx
   geomEnums.cxx
