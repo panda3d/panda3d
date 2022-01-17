@@ -777,8 +777,14 @@ prepare_texture(Texture *texture, int view) {
     break;
 
   case Texture::TT_buffer_texture:
+    type = VK_IMAGE_TYPE_1D; // Just to shut up compiler warning
     is_buffer = true;
     break;
+
+  default:
+    vulkandisplay_cat.error()
+      << "Unsupported texture type " << texture->get_texture_type() << "!\n";
+    return nullptr;
   }
   const VkExtent3D orig_extent = extent;
 
