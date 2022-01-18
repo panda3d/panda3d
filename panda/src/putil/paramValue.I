@@ -121,6 +121,15 @@ output(std::ostream &out) const {
 }
 
 /**
+ *
+ */
+template<>
+INLINE void ParamValue<vector_uchar>::
+output(std::ostream &out) const {
+  out << "uchar[" << _value.size() << "]";
+}
+
+/**
  * Tells the BamReader how to create objects of type ParamValue.
  */
 template<class Type>

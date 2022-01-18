@@ -15,6 +15,7 @@
 #define VECTOR_UCHAR_H
 
 #include "dtoolbase.h"
+#include "register_type.h"
 
 /**
  * A vector of uchars.  This class is defined once here, and exported to
@@ -29,5 +30,10 @@
 #define NAME vector_uchar
 
 #include "vector_src.h"
+
+template<>
+INLINE TypeHandle _get_type_handle(const vector_uchar *) {
+  return vector_uchar_type_handle;
+}
 
 #endif

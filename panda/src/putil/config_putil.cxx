@@ -212,6 +212,7 @@ init_libputil() {
   FactoryParam::init_type();
   Namable::init_type();
   NodeCachedReferenceCount::init_type();
+  ParamBytes::init_type("ParamBytes");
   ParamMatrix3d::init_type("ParamMatrix3d");
   ParamMatrix3f::init_type("ParamMatrix3f");
   ParamMatrix4d::init_type("ParamMatrix4d");
@@ -245,6 +246,7 @@ init_libputil() {
 
   BamCacheIndex::register_with_read_factory();
   BamCacheRecord::register_with_read_factory();
+  ParamBytes::register_with_read_factory();
   ParamMatrix3d::register_with_read_factory();
   ParamMatrix3f::register_with_read_factory();
   ParamMatrix4d::register_with_read_factory();

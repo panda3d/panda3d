@@ -88,6 +88,7 @@ extern TypeHandle EXPCL_DTOOL_DTOOLBASE double_type_handle;
 extern TypeHandle EXPCL_DTOOL_DTOOLBASE float_type_handle;
 extern TypeHandle EXPCL_DTOOL_DTOOLBASE string_type_handle;
 extern TypeHandle EXPCL_DTOOL_DTOOLBASE wstring_type_handle;
+extern TypeHandle EXPCL_DTOOL_DTOOLBASE vector_uchar_type_handle;
 
 extern TypeHandle long_p_type_handle;
 extern TypeHandle int_p_type_handle;

@@ -41,6 +41,7 @@ PUBLISHED:
   INLINE EventParameter(double value);
   INLINE EventParameter(const std::string &value);
   INLINE EventParameter(const std::wstring &value);
+  INLINE EventParameter(const vector_uchar &value);
 
   INLINE EventParameter(const EventParameter &copy);
   INLINE EventParameter &operator = (const EventParameter &copy);

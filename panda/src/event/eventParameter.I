@@ -63,6 +63,11 @@ EventParameter(const std::string &value) : _ptr(new EventStoreString(value)) { }
 INLINE EventParameter::
 EventParameter(const std::wstring &value) : _ptr(new EventStoreWstring(value)) { }
 
+/**
+ * Defines an EventParameter that stores a binary value.
+ */
+INLINE EventParameter::
+EventParameter(const vector_uchar &value) : _ptr(new ParamBytes(value)) { }
 
 /**
  *

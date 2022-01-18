@@ -26,6 +26,7 @@ TypeHandle double_type_handle;
 TypeHandle float_type_handle;
 TypeHandle string_type_handle;
 TypeHandle wstring_type_handle;
+TypeHandle vector_uchar_type_handle;
 
 TypeHandle long_p_type_handle;
 TypeHandle int_p_type_handle;
@@ -59,6 +60,7 @@ void init_system_type_handles() {
     register_type(float_type_handle, "float");
     register_type(string_type_handle, "string");
     register_type(wstring_type_handle, "wstring");
+    register_type(vector_uchar_type_handle, "vector_uchar");
 
     register_type(int_p_type_handle, "int*");
     register_type(short_p_type_handle, "short*");
