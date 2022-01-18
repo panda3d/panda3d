@@ -4,6 +4,7 @@ endif()
 
 set(P3WINDISPLAY_HEADERS
   config_windisplay.h
+  winClipboard.h
   winGraphicsPipe.I winGraphicsPipe.h
   winGraphicsWindow.I winGraphicsWindow.h
   winDetectDx.h
@@ -11,6 +12,7 @@ set(P3WINDISPLAY_HEADERS
 
 set(P3WINDISPLAY_SOURCES
   config_windisplay.cxx winGraphicsPipe.cxx
+  winClipboard.cxx
   winGraphicsWindow.cxx
   winDetectDx9.cxx
 )

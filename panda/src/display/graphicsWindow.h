@@ -33,6 +33,8 @@
 #include "windowHandle.h"
 #include "touchInfo.h"
 
+class Clipboard;
+
 /**
  * A window, fullscreen or on a desktop, into which a graphics device sends
  * its output for interactive display.
@@ -114,6 +116,11 @@ public:
   virtual bool is_touch_event(GraphicsWindowProcCallbackData* callbackData);
   virtual int get_num_touches();
   virtual TouchInfo get_touch_info(int index);
+
+  virtual Clipboard *get_clipboard() const;
+
+PUBLISHED:
+  MAKE_PROPERTY(clipboard, get_clipboard);
 
 public:
   virtual void request_open();

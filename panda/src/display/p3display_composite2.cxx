@@ -4,6 +4,7 @@
 #include "graphicsWindowProc.cxx"
 #include "graphicsWindowProcCallbackData.cxx"
 #include "graphicsWindowInputDevice.cxx"
+#include "internalClipboard.cxx"
 #include "mouseAndKeyboard.cxx"
 #include "nativeWindowHandle.cxx"
 #include "parasiteBuffer.cxx"

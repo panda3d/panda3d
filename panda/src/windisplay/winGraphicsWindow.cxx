@@ -14,6 +14,7 @@
 #include "winGraphicsWindow.h"
 #include "config_windisplay.h"
 #include "winGraphicsPipe.h"
+#include "winClipboard.h"
 
 #include "graphicsPipe.h"
 #include "keyboardButton.h"
@@ -1214,6 +1215,11 @@ open_graphic_window() {
     _parent_window_handle = window_handle;
   } else {
     _parent_window_handle = nullptr;
+  }
+
+  if (_clipboard != nullptr) {
+    delete _clipboard;
+    _clipboard = nullptr;
   }
 
   if (!_hparent) { // This can be a regular window or a fullscreen window
@@ -3324,4 +3330,15 @@ get_touch_info(int index) {
   ret.set_id(ti.dwID);
   ret.set_flags(ti.dwFlags);
   return ret;
+}
+
+/**
+ * Returns an instance of a Clipboard object.
+ */
+Clipboard *WinGraphicsWindow::
+get_clipboard() const {
+  if (_clipboard == nullptr && _hWnd != 0) {
+    _clipboard = new WinClipboard(_hWnd);
+  }
+  return _clipboard;
 }

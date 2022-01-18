@@ -52,6 +52,8 @@ typedef struct tagTOUCHINPUT {
 } TOUCHINPUT, *PTOUCHINPUT;
 #endif
 
+class WinClipboard;
+
 /**
  * An abstract base class for glGraphicsWindow and dxGraphicsWindow (and, in
  * general, graphics windows that interface with the Microsoft Windows API).
@@ -97,6 +99,8 @@ public:
   virtual bool is_touch_event(GraphicsWindowProcCallbackData* callbackData);
   virtual int get_num_touches();
   virtual TouchInfo get_touch_info(int index);
+
+  virtual Clipboard *get_clipboard() const;
 
 protected:
   void trigger_flip();
@@ -199,6 +203,8 @@ private:
 
   UINT _num_touches;
   TOUCHINPUT _touches[MAX_TOUCHES];
+
+  mutable WinClipboard *_clipboard = nullptr;
 
 private:
   // We need this map to support per-window calls to window_proc().

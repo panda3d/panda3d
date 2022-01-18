@@ -1,5 +1,6 @@
 set(P3DISPLAY_HEADERS
   standardMunger.I standardMunger.h
+  clipboard.h
   config_display.h
   callbackGraphicsWindow.I callbackGraphicsWindow.h
   drawableRegion.I drawableRegion.h
@@ -7,6 +8,7 @@ set(P3DISPLAY_HEADERS
   displayRegionCullCallbackData.I displayRegionCullCallbackData.h
   displayRegionDrawCallbackData.I displayRegionDrawCallbackData.h
   frameBufferProperties.I frameBufferProperties.h
+  internalClipboard.h
   get_x11.h pre_x11_include.h post_x11_include.h
   graphicsEngine.I graphicsEngine.h
   graphicsOutput.I graphicsOutput.h
@@ -56,6 +58,7 @@ set(P3DISPLAY_SOURCES
   graphicsWindowProc.cxx
   graphicsWindowProcCallbackData.cxx
   graphicsDevice.cxx
+  internalClipboard.cxx
   mouseAndKeyboard.cxx
   nativeWindowHandle.cxx
   parasiteBuffer.cxx

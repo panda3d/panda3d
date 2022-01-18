@@ -14,6 +14,7 @@
 #include "graphicsWindow.h"
 #include "graphicsPipe.h"
 #include "config_display.h"
+#include "internalClipboard.h"
 #include "mouseButton.h"
 #include "keyboardButton.h"
 #include "lightMutexHolder.h"
@@ -721,6 +722,16 @@ get_num_touches(){
 TouchInfo GraphicsWindow::
 get_touch_info(int index){
   return TouchInfo();
+}
+
+/**
+ * Returns an instance of a Clipboard object.
+ */
+Clipboard *GraphicsWindow::
+get_clipboard() const {
+  // In absence of any specific implementation, we use a process-local
+  // clipboard.
+  return InternalClipboard::get_global_ptr();
 }
 
 /**
