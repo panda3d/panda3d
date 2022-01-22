@@ -287,6 +287,17 @@ process_events() {
  */
 void WinGraphicsWindow::
 set_properties_now(WindowProperties &properties) {
+  if (properties.has_fullscreen() && !properties.get_fullscreen() &&
+      is_fullscreen()) {
+    if (do_windowed_switch()) {
+      _properties.set_fullscreen(false);
+      properties.clear_fullscreen();
+    } else {
+      windisplay_cat.warning()
+        << "Switching to windowed mode failed!\n";
+    }
+  }
+
   GraphicsWindow::set_properties_now(properties);
   if (!properties.is_any_specified()) {
     // The base class has already handled this case.
@@ -440,14 +451,6 @@ set_properties_now(WindowProperties &properties) {
       } else {
         windisplay_cat.warning()
           << "Switching to fullscreen mode failed!\n";
-      }
-    } else if (!properties.get_fullscreen() && is_fullscreen()){
-      if (do_windowed_switch()){
-        _properties.set_fullscreen(false);
-        properties.clear_fullscreen();
-      } else {
-        windisplay_cat.warning()
-          << "Switching to windowed mode failed!\n";
       }
     }
   }
