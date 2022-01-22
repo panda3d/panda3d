@@ -2021,8 +2021,10 @@ handle_mouse_moved_event(bool in_window, double x, double y, bool absolute) {
  */
 void CocoaGraphicsWindow::
 handle_wheel_event(double x, double y) {
-  cocoadisplay_cat.spam()
-    << "Wheel delta " << x << ", " << y << "\n";
+  if (cocoadisplay_cat.is_spam()) {
+    cocoadisplay_cat.spam()
+      << "Wheel delta " << x << ", " << y << "\n";
+  }
 
   if (y > 0.0) {
     _input->button_down(MouseButton::wheel_up());
@@ -2032,11 +2034,14 @@ handle_wheel_event(double x, double y) {
     _input->button_up(MouseButton::wheel_down());
   }
 
-  // TODO: check if this is correct, I don't own a MacBook
-  if (x > 0.0) {
+  if (x != 0 && cocoa_invert_wheel_x) {
+    x = -x;
+  }
+
+  if (x < 0.0) {
     _input->button_down(MouseButton::wheel_right());
     _input->button_up(MouseButton::wheel_right());
-  } else if (x < 0.0) {
+  } else if (x > 0.0) {
     _input->button_down(MouseButton::wheel_left());
     _input->button_up(MouseButton::wheel_left());
   }
