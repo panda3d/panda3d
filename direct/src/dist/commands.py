@@ -96,6 +96,7 @@ PACKAGE_DATA_DIRS = {
     ],
     'pytz': [('pytz/zoneinfo/*', 'zoneinfo', ())],
     'certifi': [('certifi/cacert.pem', '', {})],
+    '_tkinter_ext': [('_tkinter_ext/tcl/**', 'tcl', {})],
 }
 
 # Some dependencies have extra directories that need to be scanned for DLLs.
@@ -140,21 +141,6 @@ def get_data(path):
 
 FrozenImporter.find_spec = find_spec
 FrozenImporter.get_data = get_data
-
-# Set the TCL_LIBRARY directory to the location of the Tcl/Tk/Tix files.
-import os
-tcl_dir = os.path.join(os.path.dirname(sys.executable), 'tcl')
-if os.path.isdir(tcl_dir):
-    for dir in os.listdir(tcl_dir):
-        sub_dir = os.path.join(tcl_dir, dir)
-        if os.path.isdir(sub_dir):
-            if dir.startswith('tcl'):
-                os.environ['TCL_LIBRARY'] = sub_dir
-            if dir.startswith('tk'):
-                os.environ['TK_LIBRARY'] = sub_dir
-            if dir.startswith('tix'):
-                os.environ['TIX_LIBRARY'] = sub_dir
-del os
 """
 
 SITE_PY_ANDROID = """
@@ -277,7 +263,7 @@ class build_apps(setuptools.Command):
         self.exclude_modules = {}
         self.icons = {}
         self.platforms = [
-            'manylinux2010_x86_64',
+            'manylinux2014_x86_64',
             'macosx_10_9_x86_64',
             'win_amd64',
         ]
@@ -595,9 +581,14 @@ class build_apps(setuptools.Command):
             '-d', whldir,
             '-r', self.requirements_path,
             '--only-binary', ':all:',
-            '--platform', platform,
             '--abi', abi_tag,
+            '--platform', platform,
         ]
+
+        if platform.startswith('linux_'):
+            # Also accept manylinux.
+            arch = platform[6:]
+            pip_args += ['--platform', 'manylinux2014_' + arch]
 
         if self.use_optimized_wheels:
             pip_args += [
@@ -766,6 +757,7 @@ class build_apps(setuptools.Command):
         path = sys.path[:]
         p3dwhl = None
         wheelpaths = []
+        has_tkinter_wheel = False
 
         if use_wheels:
             wheelpaths = self.download_wheels(platform)
@@ -775,6 +767,8 @@ class build_apps(setuptools.Command):
                     p3dwhlfn = whl
                     p3dwhl = self._get_zip_file(p3dwhlfn)
                     break
+                elif os.path.basename(whl).startswith('tkinter-'):
+                    has_tkinter_wheel = True
             else:
                 raise RuntimeError("Missing panda3d wheel for platform: {}".format(platform))
 
@@ -786,6 +780,11 @@ class build_apps(setuptools.Command):
                         'Could not find an optimized wheel (using index {}) for platform: {}'.format(self.optimized_wheel_index, platform),
                         distutils.log.WARN
                     )
+
+            for whl in wheelpaths:
+                if os.path.basename(whl).startswith('tkinter-'):
+                    has_tkinter_wheel = True
+                    break
 
             #whlfiles = {whl: self._get_zip_file(whl) for whl in wheelpaths}
 
@@ -1026,6 +1025,10 @@ class build_apps(setuptools.Command):
         for appname, scriptname in self.console_apps.items():
             create_runtime(platform, appname, scriptname, True)
 
+        # Warn if tkinter is used but hasn't been added to requirements.txt
+        if not has_tkinter_wheel and '_tkinter' in freezer_modules:
+            self.warn("Detected use of tkinter, but tkinter is not specified in requirements.txt!")
+
         # Copy extension modules
         whl_modules = []
         whl_modules_ext = ''
@@ -1038,6 +1041,11 @@ class build_apps(setuptools.Command):
                     continue
 
                 if not any(i.endswith(suffix) for suffix in ext_suffixes):
+                    continue
+
+                if has_tkinter_wheel and i.startswith('deploy_libs/_tkinter.'):
+                    # Ignore this one, we have a separate tkinter package
+                    # nowadays that contains all the dependencies.
                     continue
 
                 base = os.path.basename(i)
@@ -1111,22 +1119,6 @@ class build_apps(setuptools.Command):
             search_path = get_search_path_for(source_path)
             self.copy_with_dependencies(source_path, target_path, search_path)
 
-        # Copy over the tcl directory.
-        #TODO: get this to work on non-Windows platforms.
-        if sys.platform == "win32" and platform.startswith('win'):
-            tcl_dir = os.path.join(sys.prefix, 'tcl')
-
-            if os.path.isdir(tcl_dir) and 'tkinter' in freezer_modules:
-                self.announce('Copying Tcl files', distutils.log.INFO)
-                os.makedirs(os.path.join(binary_dir, 'tcl'))
-
-                for dir in os.listdir(tcl_dir):
-                    sub_dir = os.path.join(tcl_dir, dir)
-                    if os.path.isdir(sub_dir):
-                        target_dir = os.path.join(binary_dir, 'tcl', dir)
-                        self.announce('copying {0} -> {1}'.format(sub_dir, target_dir))
-                        shutil.copytree(sub_dir, target_dir)
-
         # Copy classes.dex on Android
         if use_wheels and platform.startswith('android'):
             self.copy(os.path.join(p3dwhlfn, 'deploy_libs', 'classes.dex'),
@@ -1151,9 +1143,14 @@ class build_apps(setuptools.Command):
                     target_dir = os.path.join(data_dir, target_dir)
 
                     for wf in filenames:
+                        if wf.endswith('/'):
+                            # Skip directories.
+                            continue
+
                         if wf.lower().startswith(source_dir.lower() + '/'):
                             if not srcglob.matches(wf.lower()):
                                 continue
+
                             wf = wf.replace('/', os.sep)
                             relpath = wf[len(source_dir) + 1:]
                             source_path = os.path.join(whl, wf)
@@ -1597,6 +1594,20 @@ class bdist_apps(setuptools.Command):
         'manylinux1_i686': ['gztar'],
         'manylinux2010_x86_64': ['gztar'],
         'manylinux2010_i686': ['gztar'],
+        'manylinux2014_x86_64': ['gztar'],
+        'manylinux2014_i686': ['gztar'],
+        'manylinux2014_aarch64': ['gztar'],
+        'manylinux2014_armv7l': ['gztar'],
+        'manylinux2014_ppc64': ['gztar'],
+        'manylinux2014_ppc64le': ['gztar'],
+        'manylinux2014_s390x': ['gztar'],
+        'manylinux_2_24_x86_64': ['gztar'],
+        'manylinux_2_24_i686': ['gztar'],
+        'manylinux_2_24_aarch64': ['gztar'],
+        'manylinux_2_24_armv7l': ['gztar'],
+        'manylinux_2_24_ppc64': ['gztar'],
+        'manylinux_2_24_ppc64le': ['gztar'],
+        'manylinux_2_24_s390x': ['gztar'],
         'android': ['aab'],
         # Everything else defaults to ['zip']
     }

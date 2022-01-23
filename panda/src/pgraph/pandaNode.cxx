@@ -1306,7 +1306,7 @@ compare_tags(const PandaNode *other) const {
       return cmp;
     }
 
-    cmp = strcmp(a_data.get_key(ai).c_str(), b_data.get_key(bi).c_str());
+    cmp = strcmp(a_data.get_data(ai).c_str(), b_data.get_data(bi).c_str());
     if (cmp != 0) {
       return cmp;
     }

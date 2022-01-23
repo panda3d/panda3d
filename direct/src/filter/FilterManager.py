@@ -123,8 +123,8 @@ class FilterManager(DirectObject):
             winy = winy // div
 
         if mul != 1:
-            winx = winx * mul
-            winy = winy * mul
+            winx = int(round(winx * mul))
+            winy = int(round(winy * mul))
 
         return winx,winy
 
