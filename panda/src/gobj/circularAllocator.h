@@ -36,7 +36,7 @@ public:
 
   CircularAllocator &operator = (CircularAllocator &&from) noexcept = default;
 
-  ssize_t alloc(size_t size, size_t alignment=0);
+  ptrdiff_t alloc(size_t size, size_t alignment=0);
 
   INLINE void reset();
 

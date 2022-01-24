@@ -4073,7 +4073,7 @@ alloc_dynamic_uniform_buffer(VkDeviceSize size, uint32_t &offset) {
     return nullptr;
   }
 
-  ssize_t result = _uniform_buffer_allocator.alloc(size);
+  ptrdiff_t result = _uniform_buffer_allocator.alloc(size);
   if (result >= 0) {
     offset = (uint32_t)result;
     return (char *)_uniform_buffer_ptr + result;
@@ -4169,7 +4169,7 @@ alloc_staging_buffer(VkDeviceSize size, VkBuffer &buffer, uint32_t &offset) {
     }
   }
 
-  ssize_t result = _staging_buffer_allocator.alloc(size);
+  ptrdiff_t result = _staging_buffer_allocator.alloc(size);
   if (result >= 0) {
     buffer = _staging_buffer;
     offset = (uint32_t)result;

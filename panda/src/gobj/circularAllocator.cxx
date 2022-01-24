@@ -17,7 +17,7 @@
  * Advances the head.  Returns the new offset, or -1 if there was no space for
  * a contiguous allocation of this size and alignment.
  */
-ssize_t CircularAllocator::
+ptrdiff_t CircularAllocator::
 alloc(size_t size, size_t alignment) {
   if (size > _capacity) {
     return -1;
@@ -84,5 +84,5 @@ alloc(size_t size, size_t alignment) {
   }
   while ((size_t)AtomicAdjust::compare_and_exchange(_head, prev_head, next_head) != prev_head);
 
-  return (ssize_t)this_head;
+  return (ptrdiff_t)this_head;
 }
