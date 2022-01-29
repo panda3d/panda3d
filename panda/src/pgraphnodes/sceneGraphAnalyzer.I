@@ -229,7 +229,6 @@ get_texture_bytes() const {
   return _texture_bytes;
 }
 
-
 /**
  *
  */

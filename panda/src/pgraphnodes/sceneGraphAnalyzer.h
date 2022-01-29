@@ -106,7 +106,7 @@ private:
   typedef pset<CPT(GeomVertexArrayData) > VADatas;
   typedef pmap<const GeomVertexData *, int, IndirectCompareTo<GeomVertexData> > UniqueVDatas;
   typedef pmap<const GeomVertexArrayData *, int, IndirectCompareTo<GeomVertexArrayData> > UniqueVADatas;
-  typedef pmap<Texture *, int> Textures;
+  
 
   LodMode _lod_mode;
 
@@ -118,7 +118,11 @@ private:
   UniqueVDatas _unique_vdatas;
   UniqueVADatas _unique_vadatas;
   UniqueVADatas _unique_prim_vadatas;
+
+public:
+  typedef pmap<Texture *, int> Textures;
   Textures _textures;
+  INLINE Textures get_textures() const {return _textures;}
 
 private:
   int _num_nodes;

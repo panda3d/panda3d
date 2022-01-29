@@ -24,6 +24,8 @@
 #include "pvector.h"
 #include "bamCacheRecord.h"
 #include "bamCacheIndex.h"
+#include "filename.h"
+#include "sceneGraphAnalyzer.h"
 
 /**
  *
@@ -36,7 +38,7 @@ BamInfo() {
      "and Models native binary format--and describes their contents.");
 
   clear_runlines();
-  add_runline("[opts] input.bam [input.bam ... ]");
+  add_runline("[-ls -t -g -ltp] input.bam [input.bam ... ]");
 
   add_option
     ("ls", "", 0,
@@ -52,6 +54,11 @@ BamInfo() {
     ("g", "", 0,
      "Output verbose information about each Geom in the Bam file.",
      &BamInfo::dispatch_none, &_verbose_geoms);
+
+  add_option
+    ("ltp", "", 0,
+    "Output the full paths to textures if they exist",
+    &BamInfo::dispatch_none, &_write_paths);
 
   _num_scene_graphs = 0;
 }
@@ -207,6 +214,15 @@ describe_scene_graph(PandaNode *node) {
   if (_ls || _verbose_geoms || _verbose_transitions) {
     list_hierarchy(node, 0);
   }
+  if(_write_paths){
+    //if we want to know the texture paths, then check the scene graph to see if some are attached
+    const SceneGraphAnalyzer::Textures graph_textures = _analyzer.get_textures();
+  
+    for(SceneGraphAnalyzer::Textures::const_iterator it = graph_textures.begin(); it != graph_textures.end(); ++it){
+      write_texture(it->first);
+    }
+  }
+
 }
 
 /**
@@ -215,6 +231,30 @@ describe_scene_graph(PandaNode *node) {
 void BamInfo::
 describe_texture(Texture *tex) {
   tex->write(nout, 2);
+  if(_write_paths){
+    write_texture(tex);
+  }
+}
+
+/**
+ * Write out the file paths if they are present in the texture
+ * 
+ */
+void BamInfo::
+write_texture(Texture* tex){
+  if(tex->has_fullpath()){
+    //write out the path to the texture
+    const Filename file_name = tex->get_fullpath();
+    nout << "Texture " << tex->get_name()  << " Full Path: " << file_name.get_fullpath() << "\n";
+  } else {
+    //just get the name
+    nout << tex->get_name() << "\n";
+  }
+
+  if(tex->has_alpha_fullpath()){
+    const Filename a_file_name = tex->get_alpha_fullpath();
+    nout << "Texture " << tex->get_name()  << " Alpha Full Path: " << a_file_name.get_fullpath() << "\n";
+  }
 }
 
 /**
