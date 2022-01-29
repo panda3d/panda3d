@@ -51,6 +51,11 @@ TextStats() {
      &TextStats::dispatch_none, &_show_raw_data, nullptr);
 
   add_option
+    ("j", "", 0,
+     "Output data in JSON format.",
+     &TextStats::dispatch_none, &_json, nullptr);
+
+  add_option
     ("o", "filename", 0,
      "Filename where to print. If not given then stderr is being used.",
      &TextStats::dispatch_string, &_got_outputFileName, &_outputFileName);
@@ -66,7 +71,7 @@ TextStats() {
 PStatMonitor *TextStats::
 make_monitor() {
 
-  return new TextMonitor(this, _outFile, _show_raw_data);
+  return new TextMonitor(this, _outFile, _show_raw_data, _json);
 }
 
 
@@ -87,13 +92,23 @@ run() {
   nout << "Listening for connections.\n";
 
   if (_got_outputFileName) {
-    _outFile = new std::ofstream(_outputFileName.c_str(), std::ios::out);
+    _outFile = new std::ofstream(_outputFileName.c_str(), std::ios::out | std::ios::trunc);
   } else {
     _outFile = &(nout);
   }
 
+  if (_json) {
+    (*_outFile) << "[\n";
+  }
+
   main_loop(&user_interrupted);
   nout << "Exiting.\n";
+
+  if (_json) {
+    // Remove the last comma.
+    _outFile->seekp(-3, std::ios::cur);
+    (*_outFile) << "\n]\n";
+  }
 }
 
 
