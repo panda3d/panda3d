@@ -39,6 +39,7 @@ AsyncFuture::
   if (result_ref != nullptr) {
     _result_ref.cheat() = nullptr;
     if (!result_ref->unref()) {
+      patomic_thread_fence(std::memory_order_acquire);
       delete _result;
     }
     _result = nullptr;

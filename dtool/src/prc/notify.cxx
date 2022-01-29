@@ -18,12 +18,9 @@
 #include "configVariableBool.h"
 #include "filename.h"
 #include "config_prc.h"
+#include "patomic.h"
 
 #include <ctype.h>
-
-#ifdef PHAVE_ATOMIC
-#include <atomic>
-#endif
 
 #ifdef BUILD_IPHONE
 #include <fcntl.h>
@@ -439,7 +436,7 @@ config_initialized() {
        "The filename to which to write all the output of notify");
 
     // We use this to ensure that only one thread can initialize the output.
-    static std::atomic_flag initialized = ATOMIC_FLAG_INIT;
+    static patomic_flag initialized = ATOMIC_FLAG_INIT;
 
     std::string value = notify_output.get_value();
     if (!value.empty() && !initialized.test_and_set()) {
