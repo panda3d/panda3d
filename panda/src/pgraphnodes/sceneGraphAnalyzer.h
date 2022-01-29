@@ -121,7 +121,11 @@ private:
 
 public:
   typedef pmap<Texture *, int> Textures;
+
+private:
   Textures _textures;
+  
+public:
   INLINE Textures get_textures() const {return _textures;}
 
 private:
