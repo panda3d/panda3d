@@ -69,3 +69,11 @@ INLINE std::string PStatMonitor::
 get_client_progname() const {
   return _client_progname;
 }
+
+/**
+ * Returns the process id of the client, or -1 if it is not known.
+ */
+INLINE int PStatMonitor::
+get_client_pid() const {
+  return _client_pid;
+}

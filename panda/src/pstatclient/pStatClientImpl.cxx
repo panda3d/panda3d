@@ -396,6 +396,11 @@ send_hello() {
   message._type = PStatClientControlMessage::T_hello;
   message._client_hostname = get_hostname();
   message._client_progname = _client_name;
+#ifdef _WIN32
+  message._client_pid = GetCurrentProcessId();
+#else
+  message._client_pid = getpid();
+#endif
   message._major_version = get_current_pstat_major_version();
   message._minor_version = get_current_pstat_minor_version();
 
