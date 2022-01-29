@@ -214,27 +214,21 @@ def MakeDebugSymbolArchive(zipname, dirname):
     zip.close()
 
 
-def MakeInstallerLinux(version, debversion=None, rpmrelease=1,
+def MakeInstallerLinux(version, debversion=None, rpmversion=None, rpmrelease=1,
                        python_versions=[], **kwargs):
     outputdir = GetOutputDir()
 
-    # We pack the default Python 3 version that ships with Ubuntu.
-    python3_ver = None
+    # Only pack the versions of Python included with this Ubuntu version.
     install_python_versions = []
-
-    # What's the system version of Python 3?
-    oscmd('python3 -V > "%s/tmp/python3_version.txt"' % (outputdir))
-    sys_python3_ver = '.'.join(ReadFile(outputdir + "/tmp/python3_version.txt").strip().split(' ')[1].split('.')[:2])
-
-    # Check that we built with support for it.
     for version_info in python_versions:
-        if version_info["version"] == sys_python3_ver:
-            python3_ver = sys_python3_ver
+        if os.path.isdir("/usr/lib/python" + version_info["version"]):
             install_python_versions.append(version_info)
 
     major_version = '.'.join(version.split('.')[:2])
     if not debversion:
         debversion = version
+    if not rpmversion:
+        rpmversion = version
 
     # Clean and set up a directory to install Panda3D into
     oscmd("rm -rf targetroot data.tar.gz control.tar.gz panda3d.spec")
@@ -314,9 +308,13 @@ def MakeInstallerLinux(version, debversion=None, rpmrelease=1,
         recommends = ReadFile("targetroot/debian/substvars_rec").replace("shlibs:Depends=", "").strip()
         provides = "panda3d"
 
-        if python3_ver:
-            depends += ", python%s" % (python3_ver)
-            recommends += ", python-pmw, python3-tk (>= %s)" % (python3_ver)
+        # Require at least one of the Python versions we built for.
+        if install_python_versions:
+            depends += ", " + " | ".join("python" + version_info["version"] for version_info in install_python_versions)
+
+            # But recommend the system version of Python 3.
+            recommends += ", python3"
+            recommends += ", python3-tk"
             provides += ", python3-panda3d"
 
         if not PkgSkip("NVIDIACG"):
@@ -333,7 +331,7 @@ def MakeInstallerLinux(version, debversion=None, rpmrelease=1,
         oscmd("chmod -R 755 targetroot/DEBIAN")
         oscmd("chmod 644 targetroot/DEBIAN/control targetroot/DEBIAN/md5sums")
         oscmd("chmod 644 targetroot/DEBIAN/conffiles targetroot/DEBIAN/symbols")
-        oscmd("fakeroot dpkg-deb -b targetroot %s_%s_%s.deb" % (pkg_name, pkg_version, pkg_arch))
+        oscmd("fakeroot dpkg-deb -Zxz -b targetroot %s_%s_%s.deb" % (pkg_name, pkg_version, pkg_arch))
 
     elif rpmbuild_present:
         # Invoke installpanda.py to install it into a temporary dir
@@ -371,13 +369,13 @@ def MakeInstallerLinux(version, debversion=None, rpmrelease=1,
                 txt += "/usr/bin/%s\n" % (base)
 
         # Write out the spec file.
-        txt = txt.replace("VERSION", version)
+        txt = txt.replace("VERSION", rpmversion)
         txt = txt.replace("RPMRELEASE", str(rpmrelease))
         txt = txt.replace("PANDASOURCE", pandasource)
         WriteFile("panda3d.spec", txt)
 
         oscmd("fakeroot rpmbuild --define '_rpmdir "+pandasource+"' --buildroot '"+os.path.abspath("targetroot")+"' -bb panda3d.spec")
-        oscmd("mv "+arch+"/panda3d-"+version+"-"+rpmrelease+"."+arch+".rpm .")
+        oscmd("mv "+arch+"/panda3d-"+rpmversion+"-"+rpmrelease+"."+arch+".rpm .")
         oscmd("rm -rf "+arch, True)
 
     else:
@@ -910,6 +908,7 @@ def MakeInstallerAndroid(version, **kwargs):
                     shutil.copy(os.path.join(source_dir, base), target)
 
     # Copy the Python standard library to the .apk as well.
+    # DO NOT CHANGE TO sysconfig - see #1230
     from distutils.sysconfig import get_python_lib
     stdlib_source = get_python_lib(False, True)
     stdlib_target = os.path.join("apkroot", "lib", "python{0}.{1}".format(*sys.version_info))
@@ -1026,6 +1025,13 @@ if __name__ == "__main__":
     )
     parser.add_option(
         '',
+        '--rpmversion',
+        dest='rpmversion',
+        help='Version number for .rpm file',
+        default=None,
+    )
+    parser.add_option(
+        '',
         '--rpmrelease',
         dest='rpmrelease',
         help='Release number for .rpm file',
@@ -1093,6 +1099,7 @@ if __name__ == "__main__":
         optimize=GetOptimize(),
         compressor=options.compressor,
         debversion=options.debversion,
+        rpmversion=options.rpmversion,
         rpmrelease=options.rpmrelease,
         python_versions=ReadPythonVersionInfoFile(),
         installdir=options.installdir,

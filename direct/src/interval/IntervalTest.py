@@ -137,22 +137,22 @@ if __name__ == "__main__":
     startTime = 0.0
     def printStart():
         global startTime
-        startTime = globalClock.getFrameTime()
+        startTime = base.clock.getFrameTime()
         print('Start')
 
     def printPreviousStart():
         global startTime
-        currTime = globalClock.getFrameTime()
+        currTime = base.clock.getFrameTime()
         print('PREVIOUS_END %0.2f' % (currTime - startTime))
 
     def printPreviousEnd():
         global startTime
-        currTime = globalClock.getFrameTime()
+        currTime = base.clock.getFrameTime()
         print('PREVIOUS_END %0.2f' % (currTime - startTime))
 
     def printTrackStart():
         global startTime
-        currTime = globalClock.getFrameTime()
+        currTime = base.clock.getFrameTime()
         print('TRACK_START %0.2f' % (currTime - startTime))
 
     def printArguments(a, b, c):

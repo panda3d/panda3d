@@ -6,7 +6,7 @@ from direct.showbase.MessengerGlobal import messenger
 from .MsgTypesCMU import *
 from .PyDatagram import PyDatagram
 from .PyDatagramIterator import PyDatagramIterator
-from panda3d.core import UniqueIdAllocator, Notify
+from panda3d.core import UniqueIdAllocator, Notify, ClockObject
 
 
 class ClientRepository(ClientRepositoryBase):
@@ -281,7 +281,7 @@ class ClientRepository(ClientRepositoryBase):
         datagram.addUint16(CLIENT_HEARTBEAT_CMU)
         # Send it!
         self.send(datagram)
-        self.lastHeartbeat = globalClock.getRealTime()
+        self.lastHeartbeat = ClockObject.getGlobalClock().getRealTime()
         # This is important enough to consider flushing immediately
         # (particularly if we haven't run readerPollTask recently).
         self.considerFlush()

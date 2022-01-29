@@ -5,6 +5,7 @@ __all__ = ['TaskThreaded', 'TaskThread']
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.task import Task
 from direct.task.TaskManagerGlobal import taskMgr
+from panda3d.core import ClockObject
 
 from .PythonUtil import SerialNumGen, Functor
 
@@ -89,14 +90,14 @@ class TaskThreaded:
     def _doCallback(self, callback, taskName, task):
         assert self.notify.debugCall()
         self.__taskNames.remove(taskName)
-        self._taskStartTime = globalClock.getRealTime()
+        self._taskStartTime = ClockObject.getGlobalClock().getRealTime()
         callback()
         self._taskStartTime = None
         return Task.done
 
     def _doThreadCallback(self, thread, taskName, task):
         assert self.notify.debugCall()
-        self._taskStartTime = globalClock.getRealTime()
+        self._taskStartTime = ClockObject.getGlobalClock().getRealTime()
         thread.run()
         self._taskStartTime = None
         if thread.isFinished():
@@ -114,7 +115,7 @@ class TaskThreaded:
             # we must not be in a task callback, we must be running in non-threaded
             # mode
             return True
-        return (globalClock.getRealTime() - self._taskStartTime) < self.__timeslice
+        return (ClockObject.getGlobalClock().getRealTime() - self._taskStartTime) < self.__timeslice
 
 class TaskThread:
     # derive and override these four funcs

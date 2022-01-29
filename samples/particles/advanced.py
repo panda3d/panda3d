@@ -207,7 +207,7 @@ class Particle:
             start_vel=self.__texStartVel,
             velocities=self.__texCurrVel,
             accel=(0, 0, self.__gravity),
-            start_time=globalClock.getFrameTime(),
+            start_time=base.clock.getFrameTime(),
             emission_times=self.__texTimes,
             part_duration=self.__partDuration,
             image=loader.loadTexture(self.__texture))

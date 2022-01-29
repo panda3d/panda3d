@@ -11,8 +11,7 @@ import tempfile
 import subprocess
 import time
 import struct
-from distutils.util import get_platform
-from distutils.sysconfig import get_config_var
+from sysconfig import get_platform, get_config_var
 from optparse import OptionParser
 from base64 import urlsafe_b64encode
 from makepandacore import LocateBinary, GetExtensionSuffix, SetVerbose, GetVerbose, GetMetadataValue, CrossCompiling, GetThirdpartyDir, SDK, GetStrip
@@ -563,6 +562,7 @@ class WheelFile(object):
             print("Adding {0} from {1}".format(target_path, orig_source_path))
 
         zinfo = zipfile.ZipInfo.from_file(source_path, target_path)
+        zinfo.compress_type = self.zip_file.compression
         if zinfo.date_time > self.max_date_time:
             zinfo.date_time = self.max_date_time
 
@@ -654,6 +654,8 @@ def makewheel(version, output_dir, platform=None):
                     platform = platform.replace("linux", "manylinux2010")
                 elif os.path.isfile("/lib/libc-2.17.so") or os.path.isfile("/lib64/libc-2.17.so"):
                     platform = platform.replace("linux", "manylinux2014")
+                elif os.path.isfile("/lib/i386-linux-gnu/libc-2.24.so") or os.path.isfile("/lib/x86_64-linux-gnu/libc-2.24.so"):
+                    platform = platform.replace("linux", "manylinux_2_24")
 
     platform = platform.replace('-', '_').replace('.', '_')
 
@@ -784,6 +786,10 @@ if __debug__:
 
     for file in sorted(os.listdir(ext_mod_dir)):
         if file.endswith(ext_suffix):
+            if file.startswith('_tkinter.'):
+                # Tkinter is supplied in a separate wheel.
+                continue
+
             source_path = os.path.join(ext_mod_dir, file)
 
             if file.endswith('.pyd') and platform.startswith('cygwin'):

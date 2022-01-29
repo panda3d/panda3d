@@ -19,7 +19,9 @@ Built-in global variables
 Some key variables used in all Panda3D scripts are actually attributes of the
 ShowBase instance.  When creating an instance of this class, it will write many
 of these variables to the built-in scope of the Python interpreter, so that
-they are accessible to any Python module, without the need fors extra imports.
+they are accessible to any Python module, without the need for extra imports.
+For example, the ShowBase instance itself is accessible anywhere through the
+:data:`~builtins.base` variable.
 
 While these are handy for prototyping, we do not recommend using them in bigger
 projects, as it can make the code confusing to read to other Python developers,
@@ -384,18 +386,21 @@ class ShowBase(DirectObject.DirectObject):
 
         # Get a pointer to Panda's global ClockObject, used for
         # synchronizing events between Python and C.
-        globalClock = ClockObject.getGlobalClock()
+        clock = ClockObject.getGlobalClock()
+
+        #: This is the global :class:`~panda3d.core.ClockObject`.
+        self.clock = clock
 
         # Since we have already started up a TaskManager, and probably
         # a number of tasks; and since the TaskManager had to use the
         # TrueClock to tell time until this moment, make sure the
         # globalClock object is exactly in sync with the TrueClock.
         trueClock = TrueClock.getGlobalPtr()
-        globalClock.setRealTime(trueClock.getShortTime())
-        globalClock.tick()
+        clock.setRealTime(trueClock.getShortTime())
+        clock.tick()
 
-        # Now we can make the TaskManager start using the new globalClock.
-        taskMgr.globalClock = globalClock
+        # Now we can make the TaskManager start using the new clock.
+        taskMgr.globalClock = clock
 
         # client CPU affinity is determined by, in order:
         # - client-cpu-affinity-mask config
@@ -444,7 +449,7 @@ class ShowBase(DirectObject.DirectObject):
         builtins.ostream = Notify.out()
         builtins.directNotify = directNotify
         builtins.giveNotify = giveNotify
-        builtins.globalClock = globalClock
+        builtins.globalClock = clock
         builtins.vfs = vfs
         builtins.cpMgr = ConfigPageManager.getGlobalPtr()
         builtins.cvMgr = ConfigVariableManager.getGlobalPtr()
@@ -1899,7 +1904,7 @@ class ShowBase(DirectObject.DirectObject):
         return self.physicsMgrEnabled
 
     def updateManagers(self, state):
-        dt = globalClock.getDt()
+        dt = self.clock.dt
         if self.particleMgrEnabled:
             self.particleMgr.doParticles(dt)
         if self.physicsMgrEnabled:
@@ -2927,14 +2932,15 @@ class ShowBase(DirectObject.DirectObject):
         Returns:
             A `~direct.task.Task` that can be awaited.
         """
-        globalClock.setMode(ClockObject.MNonRealTime)
-        globalClock.setDt(1.0/float(fps))
+        clock = self.clock
+        clock.mode = ClockObject.MNonRealTime
+        clock.dt = 1.0 / fps
         t = self.taskMgr.add(self._movieTask, namePrefix + '_task')
         t.frameIndex = 0  # Frame 0 is not captured.
         t.numFrames = int(duration * fps)
         t.source = source
         t.outputString = namePrefix + '_%0' + repr(sd) + 'd.' + format
-        t.setUponDeath(lambda state: globalClock.setMode(ClockObject.MNormal))
+        t.setUponDeath(lambda state: clock.setMode(ClockObject.MNormal))
         return t
 
     def _movieTask(self, state):

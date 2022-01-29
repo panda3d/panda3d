@@ -425,7 +425,7 @@ enable_raw_mouse() {
     XISetMask(mask, XI_RawMotion);
 
     if (_XISelectEvents(_display, _root, &event_mask, 1) == Success) {
-      if (x11display_cat.info()) {
+      if (x11display_cat.is_info()) {
         x11display_cat.info()
           << "Enabled raw mouse events using XInput2 extension\n";
       }

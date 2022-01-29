@@ -91,6 +91,8 @@ ignoreImports = {
 
     'toml.encoder': ['numpy'],
     'py._builtin': ['__builtin__'],
+
+    'site': ['android_log'],
 }
 
 if sys.version_info >= (3, 8):
@@ -2406,7 +2408,13 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
                     return None
 
                 try:
-                    fp = zip.open(fn.replace(os.path.sep, '/'), 'r')
+                    zip_fn = fn.replace(os.path.sep, '/')
+                    if zip_fn.startswith('deploy_libs/_tkinter.'):
+                        # If we have a tkinter wheel on the path, ignore the
+                        # _tkinter extension in deploy-libs.
+                        if any(entry.endswith(".whl") and os.path.basename(entry).startswith("tkinter-") for entry in self.path):
+                            return None
+                    fp = zip.open(zip_fn, 'r')
                 except KeyError:
                     return None
 
