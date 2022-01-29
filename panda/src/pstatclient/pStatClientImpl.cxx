@@ -158,6 +158,8 @@ client_disconnect() {
  */
 void PStatClientImpl::
 new_frame(int thread_index) {
+  double frame_start = get_real_time();
+
   nassertv(thread_index >= 0 && thread_index < _client->_num_threads);
 
   PStatClient::InternalThread *pthread = _client->get_thread_ptr(thread_index);
@@ -178,7 +180,6 @@ new_frame(int thread_index) {
     return;
   }
 
-  double frame_start = get_real_time();
   int frame_number = -1;
   PStatFrameData frame_data;
 
