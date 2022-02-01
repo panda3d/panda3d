@@ -160,7 +160,6 @@ new_data(int thread_index, int frame_number) {
   }
 }
 
-
 /**
  * Called whenever the connection to the client has been lost.  This is a
  * permanent state change.  The monitor should update its display to represent
@@ -373,7 +372,7 @@ create_window() {
   }
 
   // Pack the menu into the window.
-  GtkWidget *main_vbox = gtk_vbox_new(FALSE, 1);
+  GtkWidget *main_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 1);
   gtk_container_add(GTK_CONTAINER(_window), main_vbox);
   gtk_box_pack_start(GTK_BOX(main_vbox), _menu_bar, FALSE, TRUE, 0);
 

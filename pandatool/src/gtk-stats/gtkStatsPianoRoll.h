@@ -60,11 +60,10 @@ private:
   int get_collector_under_pixel(int xpoint, int ypoint);
   void update_labels();
   void draw_guide_bar(cairo_t *cr, const PStatGraph::GuideBar &bar);
-  void draw_guide_labels();
-  void draw_guide_label(const PStatGraph::GuideBar &bar);
+  void draw_guide_labels(cairo_t *cr);
+  void draw_guide_label(cairo_t *cr, const PStatGraph::GuideBar &bar);
 
-  static gboolean expose_event_callback(GtkWidget *widget,
-          GdkEventExpose *event, gpointer data);
+  static gboolean draw_callback(GtkWidget *widget, cairo_t *cr, gpointer data);
 };
 
 #endif

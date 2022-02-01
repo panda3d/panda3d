@@ -1,4 +1,4 @@
-if(NOT HAVE_GTK2 OR NOT HAVE_NET)
+if(NOT HAVE_GTK3 OR NOT HAVE_NET)
   return()
 endif()
 
@@ -28,7 +28,7 @@ set(GTKSTATS_SOURCES
 
 composite_sources(gtk-stats GTKSTATS_SOURCES)
 add_executable(gtk-stats ${GTKSTATS_HEADERS} ${GTKSTATS_SOURCES})
-target_link_libraries(gtk-stats p3progbase p3pstatserver PKG::GTK2)
+target_link_libraries(gtk-stats p3progbase p3pstatserver PKG::GTK3)
 
 # This program is NOT actually called gtk-stats. It's pstats-gtk on Win32 and
 # pstats everywhere else (as the Win32 GUI is not built).

@@ -20,7 +20,7 @@
  */
 GtkStatsLabelStack::
 GtkStatsLabelStack() {
-  _widget = gtk_vbox_new(FALSE, 0);
+  _widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   _highlight_label = -1;
 }
 

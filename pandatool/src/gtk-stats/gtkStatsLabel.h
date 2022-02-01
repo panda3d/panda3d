@@ -17,6 +17,7 @@
 #include "pandatoolbase.h"
 
 #include <gtk/gtk.h>
+#include <cairo.h>
 
 class GtkStatsMonitor;
 class GtkStatsGraph;
@@ -43,8 +44,8 @@ public:
 
 private:
   void set_mouse_within(bool mouse_within);
-  static gboolean expose_event_callback(GtkWidget *widget,
-          GdkEventExpose *event, gpointer data);
+  static gboolean draw_callback(GtkWidget *widget,
+                cairo_t *cr, gpointer data);
   static gboolean enter_notify_event_callback(GtkWidget *widget,
                 GdkEventCrossing *event,
                 gpointer data);

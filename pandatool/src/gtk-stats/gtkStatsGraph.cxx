@@ -73,8 +73,8 @@ GtkStatsGraph(GtkStatsMonitor *monitor) :
   gtk_widget_add_events(_graph_window,
       GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK |
       GDK_POINTER_MOTION_MASK);
-  g_signal_connect(G_OBJECT(_graph_window), "expose_event",
-       G_CALLBACK(graph_expose_callback), this);
+  g_signal_connect(G_OBJECT(_graph_window), "draw",
+       G_CALLBACK(graph_draw_callback), this);
   g_signal_connect(G_OBJECT(_graph_window), "configure_event",
        G_CALLBACK(configure_graph_callback), this);
   g_signal_connect(G_OBJECT(_graph_window), "button_press_event",
@@ -91,18 +91,18 @@ GtkStatsGraph(GtkStatsMonitor *monitor) :
 
   // A VBox to hold the graph's frame, and any numbers (scale legend?  total?)
   // above it.
-  _graph_vbox = gtk_vbox_new(FALSE, 0);
+  _graph_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_box_pack_end(GTK_BOX(_graph_vbox), graph_frame,
        TRUE, TRUE, 0);
 
   // An HBox to hold the graph's frame, and the scale legend to the right of
   // it.
-  _graph_hbox = gtk_hbox_new(FALSE, 0);
+  _graph_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(_graph_hbox), _graph_vbox,
          TRUE, TRUE, 0);
 
   // An HPaned to hold the label stack and the graph hbox.
-  _hpaned = gtk_hpaned_new();
+  _hpaned = gtk_paned_new(GTK_ORIENTATION_HORIZONTAL);
   gtk_container_add(GTK_CONTAINER(_window), _hpaned);
   gtk_container_set_border_width(GTK_CONTAINER(_window), 8);
 
@@ -373,11 +373,8 @@ window_destroy(GtkWidget *widget, gpointer data) {
  * Fills in the graph window.
  */
 gboolean GtkStatsGraph::
-graph_expose_callback(GtkWidget *widget, GdkEventExpose *event, gpointer data) {
+graph_draw_callback(GtkWidget *widget, cairo_t *cr, gpointer data) {
   GtkStatsGraph *self = (GtkStatsGraph *)data;
-
-  GdkWindow *window = gtk_widget_get_window(self->_graph_window);
-  cairo_t *cr = gdk_cairo_create(window);
 
   if (self->_cr_surface != nullptr) {
     cairo_set_source_surface(cr, self->_cr_surface, 0, 0);
@@ -385,8 +382,6 @@ graph_expose_callback(GtkWidget *widget, GdkEventExpose *event, gpointer data) {
   }
 
   self->additional_graph_window_paint(cr);
-
-  cairo_destroy(cr);
 
   return TRUE;
 }

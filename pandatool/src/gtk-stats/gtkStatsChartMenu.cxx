@@ -104,9 +104,9 @@ do_update() {
       // We put a separator between the above frame collector and the first
       // level collector.
       if (needs_separator) {
-  GtkWidget *sep = gtk_separator_menu_item_new();
-  gtk_widget_show(sep);
-  gtk_menu_shell_append(GTK_MENU_SHELL(_menu), sep);
+        GtkWidget *sep = gtk_separator_menu_item_new();
+        gtk_widget_show(sep);
+        gtk_menu_shell_append(GTK_MENU_SHELL(_menu), sep);
 
         needs_separator = false;
       }
@@ -138,7 +138,7 @@ do_update() {
  */
 void GtkStatsChartMenu::
 add_view(GtkWidget *parent_menu, const PStatViewLevel *view_level,
-   bool show_level) {
+         bool show_level) {
   int collector = view_level->get_collector();
 
   const PStatClientData *client_data = _monitor->get_client_data();

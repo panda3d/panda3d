@@ -118,10 +118,10 @@ private:
   static gboolean window_delete_event(GtkWidget *widget, GdkEvent *event,
               gpointer data);
   static void window_destroy(GtkWidget *widget, gpointer data);
-  static gboolean graph_expose_callback(GtkWidget *widget,
-          GdkEventExpose *event, gpointer data);
+  static gboolean graph_draw_callback(GtkWidget *widget,
+              cairo_t *cr, gpointer data);
   static gboolean configure_graph_callback(GtkWidget *widget,
-             GdkEventConfigure *event, gpointer data);
+              GdkEventConfigure *event, gpointer data);
 
 protected:
   static gboolean button_press_event_callback(GtkWidget *widget,

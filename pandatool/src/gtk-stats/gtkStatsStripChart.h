@@ -66,12 +66,11 @@ protected:
 private:
   void draw_guide_bar(cairo_t *cr, int from_x, int to_x,
                       const PStatGraph::GuideBar &bar);
-  void draw_guide_labels();
-  int draw_guide_label(const PStatGraph::GuideBar &bar, int last_y);
+  void draw_guide_labels(cairo_t *cr);
+  int draw_guide_label(cairo_t *cr, const PStatGraph::GuideBar &bar, int last_y);
 
   static void toggled_callback(GtkToggleButton *button, gpointer data);
-  static gboolean expose_event_callback(GtkWidget *widget,
-          GdkEventExpose *event, gpointer data);
+  static gboolean draw_callback(GtkWidget *widget, cairo_t *cr, gpointer data);
 
 private:
   std::string _net_value_text;

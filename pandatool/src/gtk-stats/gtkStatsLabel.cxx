@@ -15,8 +15,6 @@
 #include "gtkStatsMonitor.h"
 #include "gtkStatsGraph.h"
 
-#include <cairo.h>
-
 int GtkStatsLabel::_left_margin = 2;
 int GtkStatsLabel::_right_margin = 2;
 int GtkStatsLabel::_top_margin = 2;
@@ -44,8 +42,8 @@ GtkStatsLabel(GtkStatsMonitor *monitor, GtkStatsGraph *graph,
   gtk_widget_add_events(_widget,
       GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK |
       GDK_BUTTON_PRESS_MASK);
-  g_signal_connect(G_OBJECT(_widget), "expose_event",
-       G_CALLBACK(expose_event_callback), this);
+  g_signal_connect(G_OBJECT(_widget), "draw",
+       G_CALLBACK(draw_callback), this);
   g_signal_connect(G_OBJECT(_widget), "enter_notify_event",
        G_CALLBACK(enter_notify_event_callback), this);
   g_signal_connect(G_OBJECT(_widget), "leave_notify_event",
@@ -154,11 +152,9 @@ set_mouse_within(bool mouse_within) {
  * Draws the background color of the label.
  */
 gboolean GtkStatsLabel::
-expose_event_callback(GtkWidget *widget, GdkEventExpose *event, gpointer data) {
+draw_callback(GtkWidget *widget, cairo_t *cr, gpointer data) {
   GtkStatsLabel *self = (GtkStatsLabel *)data;
 
-  GdkWindow *window = gtk_widget_get_window(widget);
-  cairo_t *cr = gdk_cairo_create(window);
   cairo_set_source_rgb(cr, self->_bg_color[0], self->_bg_color[1], self->_bg_color[2]);
 
   GtkAllocation allocation;
@@ -181,7 +177,6 @@ expose_event_callback(GtkWidget *widget, GdkEventExpose *event, gpointer data) {
     cairo_stroke(cr);
   }
 
-  cairo_destroy(cr);
   return TRUE;
 }
 

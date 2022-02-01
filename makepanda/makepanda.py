@@ -93,7 +93,7 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "VRPN", "OPENSSL",                                   # Transport
   "FFTW",                                              # Algorithm helpers
   "ARTOOLKIT", "OPENCV", "DIRECTCAM", "VISION",        # Augmented Reality
-  "GTK2",                                              # GTK2 is used for PStats on Unix
+  "GTK3",                                              # GTK3 is used for PStats on Unix
   "MFC", "WX", "FLTK",                                 # Used for web plug-in only
   "COCOA",                                             # macOS toolkits
   "X11",                                               # Unix platform support
@@ -960,7 +960,7 @@ if (COMPILER=="GCC"):
 
     SmartPkgEnable("OPENSSL",   "openssl",   ("ssl", "crypto"), ("openssl/ssl.h", "openssl/crypto.h"))
     SmartPkgEnable("ZLIB",      "zlib",      ("z"), "zlib.h")
-    SmartPkgEnable("GTK2",      "gtk+-2.0")
+    SmartPkgEnable("GTK3",      "gtk+-3.0")
 
     if not PkgSkip("OPENSSL") and GetTarget() != "darwin":
         LibName("OPENSSL", "-Wl,--exclude-libs,libssl.a")
@@ -978,11 +978,6 @@ if (COMPILER=="GCC"):
     if GetHost() != "darwin":
         # Workaround for an issue where pkg-config does not include this path
         if GetTargetArch() in ("x86_64", "amd64"):
-            if (os.path.isdir("/usr/lib64/glib-2.0/include")):
-                IncDirectory("GTK2", "/usr/lib64/glib-2.0/include")
-            if (os.path.isdir("/usr/lib64/gtk-2.0/include")):
-                IncDirectory("GTK2", "/usr/lib64/gtk-2.0/include")
-
             if not PkgSkip("X11"):
                 if (os.path.isdir("/usr/X11R6/lib64")):
                     LibDirectory("ALWAYS", "/usr/X11R6/lib64")
@@ -5841,19 +5836,19 @@ if not PkgSkip("PANDATOOL"):
 # DIRECTORY: pandatool/src/gtk-stats/
 #
 
-if not PkgSkip("PANDATOOL") and (GetTarget() == 'windows' or not PkgSkip("GTK2")):
+if not PkgSkip("PANDATOOL") and (GetTarget() == 'windows' or not PkgSkip("GTK3")):
     if GetTarget() == 'windows':
         OPTS=['DIR:pandatool/src/win-stats']
         TargetAdd('pstats_composite1.obj', opts=OPTS, input='winstats_composite1.cxx')
     else:
-        OPTS=['DIR:pandatool/src/gtk-stats', 'GTK2']
+        OPTS=['DIR:pandatool/src/gtk-stats', 'GTK3']
         TargetAdd('pstats_composite1.obj', opts=OPTS, input='gtkstats_composite1.cxx')
     TargetAdd('pstats.exe', input='pstats_composite1.obj')
     TargetAdd('pstats.exe', input='libp3pstatserver.lib')
     TargetAdd('pstats.exe', input='libp3progbase.lib')
     TargetAdd('pstats.exe', input='libp3pandatoolbase.lib')
     TargetAdd('pstats.exe', input=COMMON_PANDA_LIBS)
-    TargetAdd('pstats.exe', opts=['SUBSYSTEM:WINDOWS', 'WINSOCK', 'WINIMM', 'WINGDI', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM', 'GTK2'])
+    TargetAdd('pstats.exe', opts=['SUBSYSTEM:WINDOWS', 'WINSOCK', 'WINIMM', 'WINGDI', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM', 'GTK3'])
 
 #
 # DIRECTORY: pandatool/src/xfileprogs/

@@ -47,7 +47,7 @@ GtkStatsStripChart(GtkStatsMonitor *monitor, int thread_index,
   }
 
   // Put some stuff on top of the graph.
-  _top_hbox = gtk_hbox_new(FALSE, 0);
+  _top_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(_graph_vbox), _top_hbox,
          FALSE, FALSE, 0);
 
@@ -64,8 +64,8 @@ GtkStatsStripChart(GtkStatsMonitor *monitor, int thread_index,
   // Add a DrawingArea widget to the right of the graph, to display all of the
   // scale units.
   _scale_area = gtk_drawing_area_new();
-  g_signal_connect(G_OBJECT(_scale_area), "expose_event",
-       G_CALLBACK(expose_event_callback), this);
+  g_signal_connect(G_OBJECT(_scale_area), "draw",
+       G_CALLBACK(draw_callback), this);
   gtk_box_pack_start(GTK_BOX(_graph_hbox), _scale_area,
          FALSE, FALSE, 0);
   gtk_widget_set_size_request(_scale_area, 40, 0);
@@ -549,23 +549,23 @@ draw_guide_bar(cairo_t *cr, int from_x, int to_x,
  * This is called during the servicing of expose_event.
  */
 void GtkStatsStripChart::
-draw_guide_labels() {
+draw_guide_labels(cairo_t *cr) {
   // Draw in the labels for the guide bars.
   int last_y = -100;
 
   int i;
   int num_guide_bars = get_num_guide_bars();
   for (i = 0; i < num_guide_bars; i++) {
-    last_y = draw_guide_label(get_guide_bar(i), last_y);
+    last_y = draw_guide_label(cr, get_guide_bar(i), last_y);
   }
 
   GuideBar top_value = make_guide_bar(get_vertical_scale());
-  draw_guide_label(top_value, last_y);
+  draw_guide_label(cr, top_value, last_y);
 
   last_y = -100;
   int num_user_guide_bars = get_num_user_guide_bars();
   for (i = 0; i < num_user_guide_bars; i++) {
-    last_y = draw_guide_label(get_user_guide_bar(i), last_y);
+    last_y = draw_guide_label(cr, get_user_guide_bar(i), last_y);
   }
 }
 
@@ -575,10 +575,7 @@ draw_guide_labels() {
  * value is given.  Returns the top pixel value of the new label.
  */
 int GtkStatsStripChart::
-draw_guide_label(const PStatGraph::GuideBar &bar, int last_y) {
-  GdkWindow *window = gtk_widget_get_window(_scale_area);
-  cairo_t *cr = gdk_cairo_create(window);
-
+draw_guide_label(cairo_t *cr, const PStatGraph::GuideBar &bar, int last_y) {
   switch (bar._style) {
   case GBS_target:
     cairo_set_source_rgb(cr, rgb_light_gray[0], rgb_light_gray[1], rgb_light_gray[2]);
@@ -606,7 +603,6 @@ draw_guide_label(const PStatGraph::GuideBar &bar, int last_y) {
     if (find_user_guide_bar(from_height, to_height) >= 0) {
       // Omit the label: there's a user-defined guide bar in the same space.
       g_object_unref(layout);
-      cairo_destroy(cr);
       return last_y;
     }
   }
@@ -629,7 +625,6 @@ draw_guide_label(const PStatGraph::GuideBar &bar, int last_y) {
   }
 
   g_object_unref(layout);
-  cairo_destroy(cr);
   return last_y;
 }
 
@@ -648,9 +643,9 @@ toggled_callback(GtkToggleButton *button, gpointer data) {
  * Draws in the scale labels.
  */
 gboolean GtkStatsStripChart::
-expose_event_callback(GtkWidget *widget, GdkEventExpose *event, gpointer data) {
+draw_callback(GtkWidget *widget, cairo_t *cr, gpointer data) {
   GtkStatsStripChart *self = (GtkStatsStripChart *)data;
-  self->draw_guide_labels();
+  self->draw_guide_labels(cr);
 
   return TRUE;
 }
