@@ -204,9 +204,11 @@ idle() {
  */
 void GtkStatsPianoRoll::
 additional_graph_window_paint() {
+  GdkWindow *window = gtk_widget_get_window(_graph_window);
+
   int num_user_guide_bars = get_num_user_guide_bars();
   for (int i = 0; i < num_user_guide_bars; i++) {
-    draw_guide_bar(_graph_window->window, get_user_guide_bar(i));
+    draw_guide_bar(window, get_user_guide_bar(i));
   }
 }
 
@@ -424,7 +426,8 @@ draw_guide_labels() {
  */
 void GtkStatsPianoRoll::
 draw_guide_label(const PStatGraph::GuideBar &bar) {
-  GdkGC *gc = gdk_gc_new(_scale_area->window);
+  GdkWindow *window = gtk_widget_get_window(_scale_area);
+  GdkGC *gc = gdk_gc_new(window);
 
   switch (bar._style) {
   case GBS_target:
@@ -467,9 +470,11 @@ draw_guide_label(const PStatGraph::GuideBar &bar) {
              x, 0,
              &x, &junk_y);
 
+    GtkAllocation allocation;
+    gtk_widget_get_allocation(_scale_area, &allocation);
+
     int this_x = x - width / 2;
-    gdk_draw_layout(_scale_area->window, gc, this_x,
-        _scale_area->allocation.height - height, layout);
+    gdk_draw_layout(window, gc, this_x, allocation.height - height, layout);
   }
 
   g_object_unref(layout);

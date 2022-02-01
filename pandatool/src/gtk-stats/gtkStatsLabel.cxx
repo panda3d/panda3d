@@ -162,25 +162,28 @@ gboolean GtkStatsLabel::
 expose_event_callback(GtkWidget *widget, GdkEventExpose *event, gpointer data) {
   GtkStatsLabel *self = (GtkStatsLabel *)data;
 
-  GdkGC *gc = gdk_gc_new(widget->window);
+  GdkWindow *window = gtk_widget_get_window(widget);
+  GdkGC *gc = gdk_gc_new(window);
   gdk_gc_set_rgb_fg_color(gc, &self->_bg_color);
 
-  gdk_draw_rectangle(widget->window, gc, TRUE, 0, 0,
-         widget->allocation.width, widget->allocation.height);
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+
+  gdk_draw_rectangle(window, gc, TRUE, 0, 0, allocation.width, allocation.height);
 
   // Center the text within the rectangle.
   int width, height;
   pango_layout_get_pixel_size(self->_layout, &width, &height);
 
   gdk_gc_set_rgb_fg_color(gc, &self->_fg_color);
-  gdk_draw_layout(widget->window, gc,
-      (widget->allocation.width - width) / 2, 0,
+  gdk_draw_layout(window, gc,
+      (allocation.width - width) / 2, 0,
       self->_layout);
 
   // Now draw the highlight rectangle, if any.
   if (self->_highlight || self->_mouse_within) {
-    gdk_draw_rectangle(widget->window, gc, FALSE, 0, 0,
-           widget->allocation.width - 1, widget->allocation.height - 1);
+    gdk_draw_rectangle(window, gc, FALSE, 0, 0,
+           allocation.width - 1, allocation.height - 1);
   }
 
   g_object_unref(gc);

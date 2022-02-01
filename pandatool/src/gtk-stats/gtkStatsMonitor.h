@@ -82,9 +82,9 @@ private:
   static gboolean window_delete_event(GtkWidget *widget, GdkEvent *event,
               gpointer data);
   static void window_destroy(GtkWidget *widget, gpointer data);
+  void setup_options_menu();
+  void setup_speed_menu();
   void setup_frame_rate_label();
-
-  static void handle_menu_command(gpointer callback_data, guint menu_id, GtkWidget *widget);
 
   typedef pset<GtkStatsGraph *> Graphs;
   Graphs _graphs;
@@ -96,7 +96,9 @@ private:
   Menus _menus;
 
   GtkWidget *_window;
-  GtkItemFactory *_item_factory;
+  GtkWidget *_menu_bar;
+  GtkWidget *_options_menu;
+  GtkWidget *_speed_menu;
   int _next_chart_index;
   GtkWidget *_frame_rate_menu_item;
   GtkWidget *_frame_rate_label;
@@ -104,9 +106,6 @@ private:
   int _time_units;
   double _scroll_speed;
   bool _pause;
-
-  static GtkItemFactoryEntry menu_entries[];
-  static int num_menu_entries;
 
   friend class GtkStatsGraph;
 };

@@ -22,32 +22,12 @@
 #include "pStatCollectorDef.h"
 #include "indent.h"
 
-typedef void vc();
-
-GtkItemFactoryEntry GtkStatsMonitor::menu_entries[] = {
-  { (gchar *)"/Options", nullptr, nullptr, 0, (gchar *)"<Branch>" },
-  { (gchar *)"/Options/Units", nullptr, nullptr, 0, (gchar *)"<Branch>" },
-  { (gchar *)"/Options/Units/ms", nullptr, (vc *)&handle_menu_command, MI_time_ms, (gchar *)"<RadioItem>" },
-  { (gchar *)"/Options/Units/Hz", nullptr, (vc *)&handle_menu_command, MI_time_hz, (gchar *)"/Options/Units/ms" },
-  { (gchar *)"/Speed", nullptr, nullptr, 0, (gchar *)"<Branch>" },
-  { (gchar *)"/Speed/1", nullptr, (vc *)&handle_menu_command, MI_speed_1, (gchar *)"<RadioItem>" },
-  { (gchar *)"/Speed/2", nullptr, (vc *)&handle_menu_command, MI_speed_2, (gchar *)"/Speed/1" },
-  { (gchar *)"/Speed/3", nullptr, (vc *)&handle_menu_command, MI_speed_3, (gchar *)"/Speed/1" },
-  { (gchar *)"/Speed/6", nullptr, (vc *)&handle_menu_command, MI_speed_6, (gchar *)"/Speed/1" },
-  { (gchar *)"/Speed/12", nullptr, (vc *)&handle_menu_command, MI_speed_12, (gchar *)"/Speed/1" },
-  { (gchar *)"/Speed/sep", nullptr, nullptr, 0, (gchar *)"<Separator>" },
-  { (gchar *)"/Speed/pause", nullptr, (vc *)&handle_menu_command, MI_pause, (gchar *)"<CheckItem>" },
-};
-
-int GtkStatsMonitor::num_menu_entries = sizeof(menu_entries) / sizeof(GtkItemFactoryEntry);
-
 /**
  *
  */
 GtkStatsMonitor::
 GtkStatsMonitor(GtkStatsServer *server) : PStatMonitor(server) {
   _window = nullptr;
-  _item_factory = nullptr;
 
   // These will be filled in later when the menu is created.
   _time_units = 0;
@@ -160,8 +140,7 @@ new_collector(int collector_index) {
 void GtkStatsMonitor::
 new_thread(int thread_index) {
   GtkStatsChartMenu *chart_menu = new GtkStatsChartMenu(this, thread_index);
-  GtkWidget *menu_bar = gtk_item_factory_get_widget(_item_factory, "<PStats>");
-  chart_menu->add_to_menu_bar(menu_bar, _next_chart_index);
+  chart_menu->add_to_menu_bar(_menu_bar, _next_chart_index);
   ++_next_chart_index;
   _chart_menus.push_back(chart_menu);
 }
@@ -379,40 +358,27 @@ create_window() {
   gtk_window_set_default_size(GTK_WINDOW(_window), 500, 360);
 
   // Set up the menu.
-  GtkAccelGroup *accel_group = gtk_accel_group_new();
-  _item_factory =
-    gtk_item_factory_new(GTK_TYPE_MENU_BAR, "<PStats>", accel_group);
-  gtk_item_factory_create_items(_item_factory, num_menu_entries, menu_entries,
-        this);
+   GtkAccelGroup *accel_group = gtk_accel_group_new();
   gtk_window_add_accel_group(GTK_WINDOW(_window), accel_group);
-  GtkWidget *menu_bar = gtk_item_factory_get_widget(_item_factory, "<PStats>");
+  _menu_bar = gtk_menu_bar_new();
   _next_chart_index = 2;
 
+  setup_options_menu();
+  setup_speed_menu();
   setup_frame_rate_label();
 
-  ChartMenus::iterator mi;
-  for (mi = _chart_menus.begin(); mi != _chart_menus.end(); ++mi) {
-    (*mi)->add_to_menu_bar(menu_bar, _next_chart_index);
+  for (GtkStatsChartMenu *chart_menu : _chart_menus) {
+    chart_menu->add_to_menu_bar(_menu_bar, _next_chart_index);
     ++_next_chart_index;
   }
 
   // Pack the menu into the window.
   GtkWidget *main_vbox = gtk_vbox_new(FALSE, 1);
   gtk_container_add(GTK_CONTAINER(_window), main_vbox);
-  gtk_box_pack_start(GTK_BOX(main_vbox), menu_bar, FALSE, TRUE, 0);
-
-  gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(gtk_item_factory_get_item(_item_factory, "/Speed/3")),
-         TRUE);
-  set_scroll_speed(3);
-
-  gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(gtk_item_factory_get_item(_item_factory, "/Options/Units/ms")),
-         TRUE);
-  set_time_units(PStatGraph::GBU_ms);
+  gtk_box_pack_start(GTK_BOX(main_vbox), _menu_bar, FALSE, TRUE, 0);
 
   gtk_widget_show_all(_window);
   gtk_widget_show(_window);
-
-  set_pause(false);
 }
 
 /**
@@ -462,6 +428,126 @@ window_destroy(GtkWidget *widget, gpointer data) {
   self->close();
 }
 
+
+/**
+ * Creates the "Options" pulldown menu.
+ */
+void GtkStatsMonitor::
+setup_options_menu() {
+  _options_menu = gtk_menu_new();
+
+  GtkWidget *item = gtk_menu_item_new_with_label("Options");
+  gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), _options_menu);
+  gtk_menu_shell_append(GTK_MENU_SHELL(_menu_bar), item);
+
+  GtkWidget *units_menu = gtk_menu_new();
+  item = gtk_menu_item_new_with_label("Units");
+  gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), units_menu);
+  gtk_menu_shell_append(GTK_MENU_SHELL(_options_menu), item);
+
+  item = gtk_radio_menu_item_new_with_label(nullptr, "ms");
+  gtk_menu_shell_append(GTK_MENU_SHELL(units_menu), item);
+  g_signal_connect(G_OBJECT(item), "activate",
+    G_CALLBACK(+[](GtkMenuItem *item, gpointer data) {
+      GtkStatsMonitor *self = (GtkStatsMonitor *)data;
+      self->set_time_units(PStatGraph::GBU_ms);
+    }), this);
+
+  item = gtk_radio_menu_item_new_with_label(
+    gtk_radio_menu_item_get_group(GTK_RADIO_MENU_ITEM(item)), "Hz");
+  gtk_menu_shell_append(GTK_MENU_SHELL(units_menu), item);
+  g_signal_connect(G_OBJECT(item), "activate",
+    G_CALLBACK(+[](GtkMenuItem *item, gpointer data) {
+      GtkStatsMonitor *self = (GtkStatsMonitor *)data;
+      self->set_time_units(PStatGraph::GBU_hz);
+    }), this);
+
+  set_time_units(PStatGraph::GBU_ms);
+}
+
+/**
+ * Creates the "Speed" pulldown menu.
+ */
+void GtkStatsMonitor::
+setup_speed_menu() {
+  _speed_menu = gtk_menu_new();
+
+  GtkWidget *item = gtk_menu_item_new_with_label("Speed");
+  gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), _speed_menu);
+  gtk_menu_shell_append(GTK_MENU_SHELL(_menu_bar), item);
+
+  GSList *group = nullptr;
+  item = gtk_radio_menu_item_new_with_label(group, "1");
+  gtk_menu_shell_append(GTK_MENU_SHELL(_speed_menu), item);
+  g_signal_connect(G_OBJECT(item), "toggled",
+    G_CALLBACK(+[](GtkMenuItem *item, gpointer data) {
+      if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(item))) {
+        GtkStatsMonitor *self = (GtkStatsMonitor *)data;
+        self->set_scroll_speed(1);
+      }
+    }), this);
+  group = gtk_radio_menu_item_get_group(GTK_RADIO_MENU_ITEM(item));
+
+  item = gtk_radio_menu_item_new_with_label(group, "2");
+  gtk_menu_shell_append(GTK_MENU_SHELL(_speed_menu), item);
+  g_signal_connect(G_OBJECT(item), "toggled",
+    G_CALLBACK(+[](GtkMenuItem *item, gpointer data) {
+      if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(item))) {
+        GtkStatsMonitor *self = (GtkStatsMonitor *)data;
+        self->set_scroll_speed(2);
+      }
+    }), this);
+  group = gtk_radio_menu_item_get_group(GTK_RADIO_MENU_ITEM(item));
+
+  item = gtk_radio_menu_item_new_with_label(group, "3");
+  gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(item), TRUE);
+  gtk_menu_shell_append(GTK_MENU_SHELL(_speed_menu), item);
+  g_signal_connect(G_OBJECT(item), "toggled",
+    G_CALLBACK(+[](GtkMenuItem *item, gpointer data) {
+      if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(item))) {
+        GtkStatsMonitor *self = (GtkStatsMonitor *)data;
+        self->set_scroll_speed(3);
+      }
+    }), this);
+  group = gtk_radio_menu_item_get_group(GTK_RADIO_MENU_ITEM(item));
+
+  item = gtk_radio_menu_item_new_with_label(group, "6");
+  gtk_menu_shell_append(GTK_MENU_SHELL(_speed_menu), item);
+  g_signal_connect(G_OBJECT(item), "toggled",
+    G_CALLBACK(+[](GtkMenuItem *item, gpointer data) {
+      if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(item))) {
+        GtkStatsMonitor *self = (GtkStatsMonitor *)data;
+        self->set_scroll_speed(6);
+      }
+    }), this);
+  group = gtk_radio_menu_item_get_group(GTK_RADIO_MENU_ITEM(item));
+
+  item = gtk_radio_menu_item_new_with_label(group, "12");
+  gtk_menu_shell_append(GTK_MENU_SHELL(_speed_menu), item);
+  g_signal_connect(G_OBJECT(item), "toggled",
+    G_CALLBACK(+[](GtkMenuItem *item, gpointer data) {
+      if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(item))) {
+        GtkStatsMonitor *self = (GtkStatsMonitor *)data;
+        self->set_scroll_speed(12);
+      }
+    }), this);
+  group = gtk_radio_menu_item_get_group(GTK_RADIO_MENU_ITEM(item));
+
+  item = gtk_separator_menu_item_new();
+  gtk_menu_shell_append(GTK_MENU_SHELL(_speed_menu), item);
+
+  item = gtk_check_menu_item_new_with_label("pause");
+  gtk_menu_shell_append(GTK_MENU_SHELL(_speed_menu), item);
+  g_signal_connect(G_OBJECT(item), "toggled",
+    G_CALLBACK(+[](GtkMenuItem *item, gpointer data) {
+      GtkStatsMonitor *self = (GtkStatsMonitor *)data;
+      self->set_pause(gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(item)));
+    }), this);
+
+  set_scroll_speed(3);
+  set_pause(false);
+}
+
 /**
  * Creates the frame rate label on the right end of the menu bar.  This is
  * used as a text label to display the main thread's frame rate to the user,
@@ -470,59 +556,13 @@ window_destroy(GtkWidget *widget, gpointer data) {
  */
 void GtkStatsMonitor::
 setup_frame_rate_label() {
-  GtkWidget *menu_bar = gtk_item_factory_get_widget(_item_factory, "<PStats>");
-
   _frame_rate_menu_item = gtk_menu_item_new();
   _frame_rate_label = gtk_label_new("");
   gtk_container_add(GTK_CONTAINER(_frame_rate_menu_item), _frame_rate_label);
 
   gtk_widget_show(_frame_rate_menu_item);
   gtk_widget_show(_frame_rate_label);
-  gtk_menu_item_right_justify(GTK_MENU_ITEM(_frame_rate_menu_item));
+  gtk_menu_item_set_right_justified(GTK_MENU_ITEM(_frame_rate_menu_item), TRUE);
 
-  gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), _frame_rate_menu_item);
-}
-
-/**
- *
- */
-void GtkStatsMonitor::
-handle_menu_command(gpointer callback_data, guint menu_id, GtkWidget *widget) {
-  GtkStatsMonitor *self = (GtkStatsMonitor *)callback_data;
-  switch (menu_id) {
-  case MI_none:
-    break;
-
-  case MI_time_ms:
-    self->set_time_units(PStatGraph::GBU_ms);
-    break;
-
-  case MI_time_hz:
-    self->set_time_units(PStatGraph::GBU_hz);
-    break;
-
-  case MI_speed_1:
-    self->set_scroll_speed(1);
-    break;
-
-  case MI_speed_2:
-    self->set_scroll_speed(2);
-    break;
-
-  case MI_speed_3:
-    self->set_scroll_speed(3);
-    break;
-
-  case MI_speed_6:
-    self->set_scroll_speed(6);
-    break;
-
-  case MI_speed_12:
-    self->set_scroll_speed(12);
-    break;
-
-  case MI_pause:
-    self->set_pause(gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget)));
-    break;
-  }
+  gtk_menu_shell_append(GTK_MENU_SHELL(_menu_bar), _frame_rate_menu_item);
 }

@@ -45,7 +45,7 @@ GtkStatsGraph(GtkStatsMonitor *monitor) :
 
   GtkWidget *parent_window = monitor->get_window();
 
-  GdkDisplay *display = gdk_drawable_get_display(parent_window->window);
+  GdkDisplay *display = gdk_window_get_display(gtk_widget_get_window(parent_window));
   _hand_cursor = gdk_cursor_new_for_display(display, GDK_HAND2);
 
   _pixmap = nullptr;
@@ -323,12 +323,14 @@ gboolean GtkStatsGraph::
 handle_motion(GtkWidget *widget, int graph_x, int graph_y) {
   _potential_drag_mode = consider_drag_start(graph_x, graph_y);
 
+  GdkWindow *window = gtk_widget_get_window(_window);
+
   if (_potential_drag_mode == DM_guide_bar ||
       _drag_mode == DM_guide_bar) {
-    gdk_window_set_cursor(_window->window, _hand_cursor);
+    gdk_window_set_cursor(window, _hand_cursor);
 
   } else {
-    gdk_window_set_cursor(_window->window, nullptr);
+    gdk_window_set_cursor(window, nullptr);
   }
 
   return TRUE;
@@ -344,7 +346,8 @@ setup_pixmap(int xsize, int ysize) {
   _pixmap_xsize = std::max(xsize, 0);
   _pixmap_ysize = std::max(ysize, 0);
 
-  _pixmap = gdk_pixmap_new(_graph_window->window, _pixmap_xsize, _pixmap_ysize, -1);
+  GdkWindow *window = gtk_widget_get_window(_graph_window);
+  _pixmap = gdk_pixmap_new(window, _pixmap_xsize, _pixmap_ysize, -1);
   // g_object_ref(_pixmap);   Should this be ref_sink?
   _pixmap_gc = gdk_gc_new(_pixmap);
   // g_object_ref(_pixmap_gc);    Should this be ref_sink?
@@ -392,8 +395,10 @@ graph_expose_callback(GtkWidget *widget, GdkEventExpose *event, gpointer data) {
   GtkStatsGraph *self = (GtkStatsGraph *)data;
 
   if (self->_pixmap != nullptr) {
-    gdk_draw_drawable(self->_graph_window->window,
-          self->_graph_window->style->fg_gc[0],
+    GdkWindow *window = gtk_widget_get_window(self->_graph_window);
+    GtkStyle *style = gtk_widget_get_style(self->_graph_window);
+    gdk_draw_drawable(window,
+          style->fg_gc[0],
           self->_pixmap, 0, 0, 0, 0,
           self->_pixmap_xsize, self->_pixmap_ysize);
   }

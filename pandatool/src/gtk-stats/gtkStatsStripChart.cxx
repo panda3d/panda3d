@@ -255,10 +255,11 @@ copy_region(int start_x, int end_x, int dest_x) {
   _brush_origin += (dest_x - start_x);
   // SetBrushOrgEx(_bitmap_dc, _brush_origin, 0, NULL);
 
+  GdkWindow *window = gtk_widget_get_window(_graph_window);
   GdkRectangle rect = {
     dest_x, 0, end_x - start_x, get_ysize()
   };
-  gdk_window_invalidate_rect(_graph_window->window, &rect, FALSE);
+  gdk_window_invalidate_rect(window, &rect, FALSE);
 }
 
 /**
@@ -327,10 +328,11 @@ end_draw(int from_x, int to_x) {
     draw_guide_bar(_pixmap, from_x, to_x, get_guide_bar(i));
   }
 
+  GdkWindow *window = gtk_widget_get_window(_graph_window);
   GdkRectangle rect = {
     from_x, 0, to_x - from_x + 1, get_ysize()
   };
-  gdk_window_invalidate_rect(_graph_window->window, &rect, FALSE);
+  gdk_window_invalidate_rect(window, &rect, FALSE);
 }
 
 /**
@@ -339,9 +341,11 @@ end_draw(int from_x, int to_x) {
  */
 void GtkStatsStripChart::
 additional_graph_window_paint() {
+  GdkWindow *window = gtk_widget_get_window(_graph_window);
+
   int num_user_guide_bars = get_num_user_guide_bars();
   for (int i = 0; i < num_user_guide_bars; i++) {
-    draw_guide_bar(_graph_window->window, 0, get_xsize(), get_user_guide_bar(i));
+    draw_guide_bar(window, 0, get_xsize(), get_user_guide_bar(i));
   }
 }
 
@@ -558,7 +562,8 @@ draw_guide_labels() {
  */
 int GtkStatsStripChart::
 draw_guide_label(const PStatGraph::GuideBar &bar, int last_y) {
-  GdkGC *gc = gdk_gc_new(_scale_area->window);
+  GdkWindow *window = gtk_widget_get_window(_scale_area);
+  GdkGC *gc = gdk_gc_new(window);
 
   switch (bar._style) {
   case GBS_target:
@@ -603,7 +608,7 @@ draw_guide_label(const PStatGraph::GuideBar &bar, int last_y) {
 
     int this_y = y - height / 2;
     if (last_y < this_y || last_y > this_y + height) {
-      gdk_draw_layout(_scale_area->window, gc, 0, this_y, layout);
+      gdk_draw_layout(window, gc, 0, this_y, layout);
       last_y = this_y;
     }
   }
