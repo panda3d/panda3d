@@ -406,20 +406,23 @@ set_drag_mode(GtkStatsGraph::DragMode drag_mode) {
 gboolean GtkStatsStripChart::
 handle_button_press(GtkWidget *widget, int graph_x, int graph_y,
         bool double_click) {
-  if (double_click) {
-    // Double-clicking on a color bar in the graph is the same as double-
-    // clicking on the corresponding label.
-    clicked_label(get_collector_under_pixel(graph_x, graph_y));
-    return TRUE;
+  if (graph_x >= 0 && graph_y >= 0 && graph_x < get_xsize() && graph_y < get_ysize()) {
+    if (double_click) {
+      // Double-clicking on a color bar in the graph is the same as double-
+      // clicking on the corresponding label.
+      clicked_label(get_collector_under_pixel(graph_x, graph_y));
+      return TRUE;
+    }
+
+    if (_potential_drag_mode == DM_none) {
+      set_drag_mode(DM_scale);
+      _drag_scale_start = pixel_to_height(graph_y);
+      // SetCapture(_graph_window);
+      return TRUE;
+    }
   }
 
-  if (_potential_drag_mode == DM_none) {
-    set_drag_mode(DM_scale);
-    _drag_scale_start = pixel_to_height(graph_y);
-    // SetCapture(_graph_window);
-    return TRUE;
-
-  } else if (_potential_drag_mode == DM_guide_bar && _drag_guide_bar >= 0) {
+  if (_potential_drag_mode == DM_guide_bar && _drag_guide_bar >= 0) {
     set_drag_mode(DM_guide_bar);
     _drag_start_y = graph_y;
     // SetCapture(_graph_window);
@@ -459,7 +462,8 @@ handle_button_release(GtkWidget *widget, int graph_x, int graph_y) {
  */
 gboolean GtkStatsStripChart::
 handle_motion(GtkWidget *widget, int graph_x, int graph_y) {
-  if (_drag_mode == DM_none && _potential_drag_mode == DM_none) {
+  if (_drag_mode == DM_none && _potential_drag_mode == DM_none &&
+      graph_x >= 0 && graph_y >= 0 && graph_x < get_xsize() && graph_y < get_ysize()) {
     // When the mouse is over a color bar, highlight it.
     _label_stack.highlight_label(get_collector_under_pixel(graph_x, graph_y));
 
