@@ -2530,7 +2530,6 @@ class PriorityCallbacks:
 builtins.Functor = Functor
 builtins.Stack = Stack
 builtins.Queue = Queue
-builtins.Enum = Enum
 builtins.SerialNumGen = SerialNumGen
 builtins.SerialMaskedGen = SerialMaskedGen
 builtins.ScratchPad = ScratchPad
