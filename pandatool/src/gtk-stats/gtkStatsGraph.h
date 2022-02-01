@@ -19,6 +19,7 @@
 #include "pmap.h"
 
 #include <gtk/gtk.h>
+#include <cairo.h>
 
 class GtkStatsMonitor;
 
@@ -55,9 +56,9 @@ public:
 
 protected:
   void close();
-  GdkGC *get_collector_gc(int collector_index);
+  cairo_pattern_t *get_collector_pattern(int collector_index);
 
-  virtual void additional_graph_window_paint();
+  virtual void additional_graph_window_paint(cairo_t *cr);
   virtual DragMode consider_drag_start(int graph_x, int graph_y);
   virtual void set_drag_mode(DragMode drag_mode);
 
@@ -67,8 +68,8 @@ protected:
   virtual gboolean handle_motion(GtkWidget *widget, int graph_x, int graph_y);
 
 protected:
-  // Table of GC's for our various collectors.
-  typedef pmap<int, GdkGC *> Brushes;
+  // Table of patterns for our various collectors.
+  typedef pmap<int, cairo_pattern_t *> Brushes;
   Brushes _brushes;
 
   GtkStatsMonitor *_monitor;
@@ -83,9 +84,9 @@ protected:
 
   GdkCursor *_hand_cursor;
 
-  GdkPixmap *_pixmap;
-  GdkGC *_pixmap_gc;
-  int _pixmap_xsize, _pixmap_ysize;
+  cairo_surface_t *_cr_surface;
+  cairo_t *_cr;
+  int _surface_xsize, _surface_ysize;
 
   /*
   COLORREF _dark_color;
@@ -104,15 +105,15 @@ protected:
 
   bool _pause;
 
-  static const GdkColor rgb_white;
-  static const GdkColor rgb_light_gray;
-  static const GdkColor rgb_dark_gray;
-  static const GdkColor rgb_black;
-  static const GdkColor rgb_user_guide_bar;
+  static const double rgb_white[3];
+  static const double rgb_light_gray[3];
+  static const double rgb_dark_gray[3];
+  static const double rgb_black[3];
+  static const double rgb_user_guide_bar[3];
 
 private:
-  void setup_pixmap(int xsize, int ysize);
-  void release_pixmap();
+  void setup_surface(int xsize, int ysize);
+  void release_surface();
 
   static gboolean window_delete_event(GtkWidget *widget, GdkEvent *event,
               gpointer data);

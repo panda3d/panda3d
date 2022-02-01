@@ -15,6 +15,8 @@
 #include "gtkStatsMonitor.h"
 #include "gtkStatsGraph.h"
 
+#include <cairo.h>
+
 int GtkStatsLabel::_left_margin = 2;
 int GtkStatsLabel::_right_margin = 2;
 int GtkStatsLabel::_top_margin = 2;
@@ -57,21 +59,14 @@ GtkStatsLabel(GtkStatsMonitor *monitor, GtkStatsGraph *graph,
   _layout = gtk_widget_create_pango_layout(_widget, _text.c_str());
 
   // Set the fg and bg colors on the label.
-  LRGBColor rgb = _monitor->get_collector_color(_collector_index);
-  _bg_color.red = (int)(rgb[0] * 65535.0f);
-  _bg_color.green = (int)(rgb[1] * 65535.0f);
-  _bg_color.blue = (int)(rgb[2] * 65535.0f);
+  _bg_color = _monitor->get_collector_color(_collector_index);
 
   // Should our foreground be black or white?
-  double bright =
-    rgb[0] * 0.299 +
-    rgb[1] * 0.587 +
-    rgb[2] * 0.114;
-
+  PN_stdfloat bright = _bg_color.dot(LRGBColor(0.299, 0.587, 0.114));
   if (bright >= 0.5) {
-    _fg_color.red = _fg_color.green = _fg_color.blue = 0;
+    _fg_color = LRGBColor(0);
   } else {
-    _fg_color.red = _fg_color.green = _fg_color.blue = 0xffff;
+    _fg_color = LRGBColor(1);
   }
 
   // What are the extents of the text?  This determines the minimum size of
@@ -163,30 +158,30 @@ expose_event_callback(GtkWidget *widget, GdkEventExpose *event, gpointer data) {
   GtkStatsLabel *self = (GtkStatsLabel *)data;
 
   GdkWindow *window = gtk_widget_get_window(widget);
-  GdkGC *gc = gdk_gc_new(window);
-  gdk_gc_set_rgb_fg_color(gc, &self->_bg_color);
+  cairo_t *cr = gdk_cairo_create(window);
+  cairo_set_source_rgb(cr, self->_bg_color[0], self->_bg_color[1], self->_bg_color[2]);
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
 
-  gdk_draw_rectangle(window, gc, TRUE, 0, 0, allocation.width, allocation.height);
+  cairo_rectangle(cr, 0, 0, allocation.width, allocation.height);
+  cairo_fill(cr);
 
   // Center the text within the rectangle.
   int width, height;
   pango_layout_get_pixel_size(self->_layout, &width, &height);
 
-  gdk_gc_set_rgb_fg_color(gc, &self->_fg_color);
-  gdk_draw_layout(window, gc,
-      (allocation.width - width) / 2, 0,
-      self->_layout);
+  cairo_set_source_rgb(cr, self->_fg_color[0], self->_fg_color[1], self->_fg_color[2]);
+  cairo_move_to(cr, (allocation.width - width) / 2, 0);
+  pango_cairo_show_layout(cr, self->_layout);
 
   // Now draw the highlight rectangle, if any.
   if (self->_highlight || self->_mouse_within) {
-    gdk_draw_rectangle(window, gc, FALSE, 0, 0,
-           allocation.width - 1, allocation.height - 1);
+    cairo_rectangle(cr, 0, 0, allocation.width, allocation.height);
+    cairo_stroke(cr);
   }
 
-  g_object_unref(gc);
+  cairo_destroy(cr);
   return TRUE;
 }
 

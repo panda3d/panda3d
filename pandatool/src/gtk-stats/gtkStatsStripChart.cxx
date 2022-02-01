@@ -33,8 +33,6 @@ GtkStatsStripChart(GtkStatsMonitor *monitor, int thread_index,
                   default_strip_chart_height),
   GtkStatsGraph(monitor)
 {
-  _brush_origin = 0;
-
   if (show_level) {
     // If it's a level-type graph, show the appropriate units.
     if (_unit_name.empty()) {
@@ -236,9 +234,8 @@ update_labels() {
  */
 void GtkStatsStripChart::
 clear_region() {
-  gdk_gc_set_rgb_fg_color(_pixmap_gc, &rgb_white);
-  gdk_draw_rectangle(_pixmap, _pixmap_gc, TRUE, 0, 0,
-         get_xsize(), get_ysize());
+  cairo_set_source_rgb(_cr, 1.0, 1.0, 1.0);
+  cairo_paint(_cr);
 }
 
 /**
@@ -247,13 +244,23 @@ clear_region() {
  */
 void GtkStatsStripChart::
 copy_region(int start_x, int end_x, int dest_x) {
-  gdk_draw_drawable(_pixmap, _pixmap_gc, _pixmap,
-        start_x, 0, dest_x, 0,
-        end_x - start_x, get_ysize());
+  // We are not allowed to copy a surface onto itself, so we have to create a
+  // temporary surface to copy to.
+  end_x = std::min(end_x, get_xsize());
+  cairo_surface_t *temp_surface =
+    cairo_image_surface_create(CAIRO_FORMAT_RGB24, end_x - start_x, get_ysize());
+  {
+    cairo_t *temp_cr = cairo_create(temp_surface);
+    cairo_set_source_surface(temp_cr, _cr_surface, -start_x, 0);
+    cairo_paint(temp_cr);
+    cairo_destroy(temp_cr);
+  }
 
-  // Also shift the brush origin over, so we still get proper dithering.
-  _brush_origin += (dest_x - start_x);
-  // SetBrushOrgEx(_bitmap_dc, _brush_origin, 0, NULL);
+  cairo_set_source_surface(_cr, temp_surface, 0, 0);
+  cairo_rectangle(_cr, dest_x, 0, end_x - start_x, get_ysize());
+  cairo_fill(_cr);
+
+  cairo_surface_destroy(temp_surface);
 
   GdkWindow *window = gtk_widget_get_window(_graph_window);
   GdkRectangle rect = {
@@ -269,9 +276,9 @@ copy_region(int start_x, int end_x, int dest_x) {
 void GtkStatsStripChart::
 draw_slice(int x, int w, const PStatStripChart::FrameData &fdata) {
   // Start by clearing the band first.
-  gdk_gc_set_rgb_fg_color(_pixmap_gc, &rgb_white);
-  gdk_draw_rectangle(_pixmap, _pixmap_gc, TRUE, x, 0,
-         w + 1, get_ysize());
+  cairo_set_source_rgb(_cr, 1.0, 1.0, 1.0);
+  cairo_rectangle(_cr, x, 0, w, get_ysize());
+  cairo_fill(_cr);
 
   double overall_time = 0.0;
   int y = get_ysize();
@@ -280,18 +287,20 @@ draw_slice(int x, int w, const PStatStripChart::FrameData &fdata) {
   for (fi = fdata.begin(); fi != fdata.end(); ++fi) {
     const ColorData &cd = (*fi);
     overall_time += cd._net_value;
-    GdkGC *gc = get_collector_gc(cd._collector_index);
+    cairo_set_source(_cr, get_collector_pattern(cd._collector_index));
 
     if (overall_time > get_vertical_scale()) {
       // Off the top.  Go ahead and clamp it by hand, in case it's so far off
       // the top we'd overflow the 16-bit pixel value.
-      gdk_draw_rectangle(_pixmap, gc, TRUE, x, 0, w, y);
+      cairo_rectangle(_cr, x, 0, w, y);
+      cairo_fill(_cr);
       // And we can consider ourselves done now.
       return;
     }
 
     int top_y = height_to_pixel(overall_time);
-    gdk_draw_rectangle(_pixmap, gc, TRUE, x, top_y, w, y - top_y);
+    cairo_rectangle(_cr, x, top_y, w, y - top_y);
+    cairo_fill(_cr);
     y = top_y;
   }
 }
@@ -301,9 +310,8 @@ draw_slice(int x, int w, const PStatStripChart::FrameData &fdata) {
  */
 void GtkStatsStripChart::
 draw_empty(int x, int w) {
-  gdk_gc_set_rgb_fg_color(_pixmap_gc, &rgb_white);
-  gdk_draw_rectangle(_pixmap, _pixmap_gc, TRUE, x, 0,
-         w + 1, get_ysize());
+  cairo_set_source_rgb(_cr, 1.0, 1.0, 1.0);
+  cairo_rectangle(_cr, x, 0, w, get_ysize());
 }
 
 /**
@@ -311,8 +319,10 @@ draw_empty(int x, int w) {
  */
 void GtkStatsStripChart::
 draw_cursor(int x) {
-  gdk_gc_set_rgb_fg_color(_pixmap_gc, &rgb_black);
-  gdk_draw_line(_pixmap, _pixmap_gc, x, 0, x, get_ysize());
+  cairo_set_source_rgb(_cr, 0.0, 0.0, 0.0);
+  cairo_move_to(_cr, x, 0);
+  cairo_line_to(_cr, x, get_ysize());
+  cairo_stroke(_cr);
 }
 
 /**
@@ -325,12 +335,12 @@ end_draw(int from_x, int to_x) {
   // Draw in the guide bars.
   int num_guide_bars = get_num_guide_bars();
   for (int i = 0; i < num_guide_bars; i++) {
-    draw_guide_bar(_pixmap, from_x, to_x, get_guide_bar(i));
+    draw_guide_bar(_cr, from_x, to_x, get_guide_bar(i));
   }
 
   GdkWindow *window = gtk_widget_get_window(_graph_window);
   GdkRectangle rect = {
-    from_x, 0, to_x - from_x + 1, get_ysize()
+    from_x, 0, to_x - from_x, get_ysize()
   };
   gdk_window_invalidate_rect(window, &rect, FALSE);
 }
@@ -340,12 +350,10 @@ end_draw(int from_x, int to_x) {
  * class opportunity to do some further painting into the graph window.
  */
 void GtkStatsStripChart::
-additional_graph_window_paint() {
-  GdkWindow *window = gtk_widget_get_window(_graph_window);
-
+additional_graph_window_paint(cairo_t *cr) {
   int num_user_guide_bars = get_num_user_guide_bars();
   for (int i = 0; i < num_user_guide_bars; i++) {
-    draw_guide_bar(window, 0, get_xsize(), get_user_guide_bar(i));
+    draw_guide_bar(cr, 0, get_xsize(), get_user_guide_bar(i));
   }
 }
 
@@ -512,7 +520,7 @@ handle_motion(GtkWidget *widget, int graph_x, int graph_y) {
  * Draws the line for the indicated guide bar on the graph.
  */
 void GtkStatsStripChart::
-draw_guide_bar(GdkDrawable *surface, int from_x, int to_x,
+draw_guide_bar(cairo_t *cr, int from_x, int to_x,
                const PStatGraph::GuideBar &bar) {
   int y = height_to_pixel(bar._height);
 
@@ -520,18 +528,20 @@ draw_guide_bar(GdkDrawable *surface, int from_x, int to_x,
     // Only draw it if it's not too close to the top.
     switch (bar._style) {
     case GBS_target:
-      gdk_gc_set_rgb_fg_color(_pixmap_gc, &rgb_light_gray);
+      cairo_set_source_rgb(cr, rgb_light_gray[0], rgb_light_gray[1], rgb_light_gray[2]);
       break;
 
     case GBS_user:
-      gdk_gc_set_rgb_fg_color(_pixmap_gc, &rgb_user_guide_bar);
+      cairo_set_source_rgb(cr, rgb_user_guide_bar[0], rgb_user_guide_bar[1], rgb_user_guide_bar[2]);
       break;
 
     case GBS_normal:
-      gdk_gc_set_rgb_fg_color(_pixmap_gc, &rgb_dark_gray);
+      cairo_set_source_rgb(cr, rgb_dark_gray[0], rgb_dark_gray[1], rgb_dark_gray[2]);
       break;
     }
-    gdk_draw_line(surface, _pixmap_gc, from_x, y, to_x, y);
+    cairo_move_to(cr, from_x, y);
+    cairo_line_to(cr, to_x, y);
+    cairo_stroke(cr);
   }
 }
 
@@ -567,19 +577,19 @@ draw_guide_labels() {
 int GtkStatsStripChart::
 draw_guide_label(const PStatGraph::GuideBar &bar, int last_y) {
   GdkWindow *window = gtk_widget_get_window(_scale_area);
-  GdkGC *gc = gdk_gc_new(window);
+  cairo_t *cr = gdk_cairo_create(window);
 
   switch (bar._style) {
   case GBS_target:
-    gdk_gc_set_rgb_fg_color(gc, &rgb_light_gray);
+    cairo_set_source_rgb(cr, rgb_light_gray[0], rgb_light_gray[1], rgb_light_gray[2]);
     break;
 
   case GBS_user:
-    gdk_gc_set_rgb_fg_color(gc, &rgb_user_guide_bar);
+    cairo_set_source_rgb(cr, rgb_user_guide_bar[0], rgb_user_guide_bar[1], rgb_user_guide_bar[2]);
     break;
 
   case GBS_normal:
-    gdk_gc_set_rgb_fg_color(gc, &rgb_dark_gray);
+    cairo_set_source_rgb(cr, rgb_dark_gray[0], rgb_dark_gray[1], rgb_dark_gray[2]);
     break;
   }
 
@@ -596,7 +606,7 @@ draw_guide_label(const PStatGraph::GuideBar &bar, int last_y) {
     if (find_user_guide_bar(from_height, to_height) >= 0) {
       // Omit the label: there's a user-defined guide bar in the same space.
       g_object_unref(layout);
-      g_object_unref(gc);
+      cairo_destroy(cr);
       return last_y;
     }
   }
@@ -612,13 +622,14 @@ draw_guide_label(const PStatGraph::GuideBar &bar, int last_y) {
 
     int this_y = y - height / 2;
     if (last_y < this_y || last_y > this_y + height) {
-      gdk_draw_layout(window, gc, 0, this_y, layout);
+      cairo_move_to(cr, 0, this_y);
+      pango_cairo_show_layout(cr, layout);
       last_y = this_y;
     }
   }
 
   g_object_unref(layout);
-  g_object_unref(gc);
+  cairo_destroy(cr);
   return last_y;
 }
 

@@ -142,9 +142,8 @@ set_horizontal_scale(double time_width) {
  */
 void GtkStatsPianoRoll::
 clear_region() {
-  gdk_gc_set_rgb_fg_color(_pixmap_gc, &rgb_white);
-  gdk_draw_rectangle(_pixmap, _pixmap_gc, TRUE, 0, 0,
-         get_xsize(), get_ysize());
+  cairo_set_source_rgb(_cr, 1.0, 1.0, 1.0);
+  cairo_paint(_cr);
 }
 
 /**
@@ -157,7 +156,7 @@ begin_draw() {
   // Draw in the guide bars.
   int num_guide_bars = get_num_guide_bars();
   for (int i = 0; i < num_guide_bars; i++) {
-    draw_guide_bar(_pixmap, get_guide_bar(i));
+    draw_guide_bar(_cr, get_guide_bar(i));
   }
 }
 
@@ -171,11 +170,9 @@ draw_bar(int row, int from_x, int to_x) {
     int height = _label_stack.get_label_height(row);
 
     int collector_index = get_label_collector(row);
-    GdkGC *gc = get_collector_gc(collector_index);
-
-    gdk_draw_rectangle(_pixmap, gc, TRUE,
-           from_x, y - height + 2,
-           to_x - from_x, height - 4);
+    cairo_set_source(_cr, get_collector_pattern(collector_index));
+    cairo_rectangle(_cr, from_x, y - height + 2, to_x - from_x, height - 4);
+    cairo_fill(_cr);
   }
 }
 
@@ -203,12 +200,10 @@ idle() {
  * class opportunity to do some further painting into the graph window.
  */
 void GtkStatsPianoRoll::
-additional_graph_window_paint() {
-  GdkWindow *window = gtk_widget_get_window(_graph_window);
-
+additional_graph_window_paint(cairo_t *cr) {
   int num_user_guide_bars = get_num_user_guide_bars();
   for (int i = 0; i < num_user_guide_bars; i++) {
-    draw_guide_bar(window, get_user_guide_bar(i));
+    draw_guide_bar(cr, get_user_guide_bar(i));
   }
 }
 
@@ -382,25 +377,27 @@ update_labels() {
  * Draws the line for the indicated guide bar on the graph.
  */
 void GtkStatsPianoRoll::
-draw_guide_bar(GdkDrawable *surface, const PStatGraph::GuideBar &bar) {
+draw_guide_bar(cairo_t *cr, const PStatGraph::GuideBar &bar) {
   int x = height_to_pixel(bar._height);
 
   if (x > 0 && x < get_xsize() - 1) {
     // Only draw it if it's not too close to the top.
     switch (bar._style) {
     case GBS_target:
-      gdk_gc_set_rgb_fg_color(_pixmap_gc, &rgb_light_gray);
+      cairo_set_source_rgb(cr, rgb_light_gray[0], rgb_light_gray[1], rgb_light_gray[2]);
       break;
 
     case GBS_user:
-      gdk_gc_set_rgb_fg_color(_pixmap_gc, &rgb_user_guide_bar);
+      cairo_set_source_rgb(cr, rgb_user_guide_bar[0], rgb_user_guide_bar[1], rgb_user_guide_bar[2]);
       break;
 
     case GBS_normal:
-      gdk_gc_set_rgb_fg_color(_pixmap_gc, &rgb_dark_gray);
+      cairo_set_source_rgb(cr, rgb_dark_gray[0], rgb_dark_gray[1], rgb_dark_gray[2]);
       break;
     }
-    gdk_draw_line(surface, _pixmap_gc, x, 0, x, get_ysize());
+    cairo_move_to(cr, x, 0);
+    cairo_line_to(cr, x, get_ysize());
+    cairo_stroke(cr);
   }
 }
 
@@ -427,19 +424,19 @@ draw_guide_labels() {
 void GtkStatsPianoRoll::
 draw_guide_label(const PStatGraph::GuideBar &bar) {
   GdkWindow *window = gtk_widget_get_window(_scale_area);
-  GdkGC *gc = gdk_gc_new(window);
+  cairo_t *cr = gdk_cairo_create(window);
 
   switch (bar._style) {
   case GBS_target:
-    gdk_gc_set_rgb_fg_color(gc, &rgb_light_gray);
+    cairo_set_source_rgb(cr, rgb_light_gray[0], rgb_light_gray[1], rgb_light_gray[2]);
     break;
 
   case GBS_user:
-    gdk_gc_set_rgb_fg_color(gc, &rgb_user_guide_bar);
+    cairo_set_source_rgb(cr, rgb_user_guide_bar[0], rgb_user_guide_bar[1], rgb_user_guide_bar[2]);
     break;
 
   case GBS_normal:
-    gdk_gc_set_rgb_fg_color(gc, &rgb_dark_gray);
+    cairo_set_source_rgb(cr, rgb_dark_gray[0], rgb_dark_gray[1], rgb_dark_gray[2]);
     break;
   }
 
@@ -456,7 +453,7 @@ draw_guide_label(const PStatGraph::GuideBar &bar) {
     if (find_user_guide_bar(from_height, to_height) >= 0) {
       // Omit the label: there's a user-defined guide bar in the same space.
       g_object_unref(layout);
-      g_object_unref(gc);
+      cairo_destroy(cr);
       return;
     }
   }
@@ -474,11 +471,12 @@ draw_guide_label(const PStatGraph::GuideBar &bar) {
     gtk_widget_get_allocation(_scale_area, &allocation);
 
     int this_x = x - width / 2;
-    gdk_draw_layout(window, gc, this_x, allocation.height - height, layout);
+    cairo_move_to(cr, this_x, allocation.height - height);
+    pango_cairo_show_layout(cr, layout);
   }
 
   g_object_unref(layout);
-  g_object_unref(gc);
+  cairo_destroy(cr);
 }
 
 /**

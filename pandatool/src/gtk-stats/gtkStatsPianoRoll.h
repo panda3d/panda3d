@@ -48,7 +48,7 @@ protected:
   virtual void end_draw();
   virtual void idle();
 
-  virtual void additional_graph_window_paint();
+  virtual void additional_graph_window_paint(cairo_t *cr);
   virtual DragMode consider_drag_start(int graph_x, int graph_y);
 
   virtual gboolean handle_button_press(GtkWidget *widget, int graph_x, int graph_y,
@@ -59,7 +59,7 @@ protected:
 private:
   int get_collector_under_pixel(int xpoint, int ypoint);
   void update_labels();
-  void draw_guide_bar(GdkDrawable *surface, const PStatGraph::GuideBar &bar);
+  void draw_guide_bar(cairo_t *cr, const PStatGraph::GuideBar &bar);
   void draw_guide_labels();
   void draw_guide_label(const PStatGraph::GuideBar &bar);
 

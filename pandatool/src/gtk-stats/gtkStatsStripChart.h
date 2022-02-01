@@ -54,7 +54,7 @@ protected:
   virtual void draw_cursor(int x);
   virtual void end_draw(int from_x, int to_x);
 
-  virtual void additional_graph_window_paint();
+  virtual void additional_graph_window_paint(cairo_t *cr);
   virtual DragMode consider_drag_start(int graph_x, int graph_y);
   virtual void set_drag_mode(DragMode drag_mode);
 
@@ -64,8 +64,8 @@ protected:
   virtual gboolean handle_motion(GtkWidget *widget, int graph_x, int graph_y);
 
 private:
-  void draw_guide_bar(GdkDrawable *surface, int from_x, int to_x,
-          const PStatGraph::GuideBar &bar);
+  void draw_guide_bar(cairo_t *cr, int from_x, int to_x,
+                      const PStatGraph::GuideBar &bar);
   void draw_guide_labels();
   int draw_guide_label(const PStatGraph::GuideBar &bar, int last_y);
 
@@ -74,7 +74,6 @@ private:
           GdkEventExpose *event, gpointer data);
 
 private:
-  int _brush_origin;
   std::string _net_value_text;
 
   GtkWidget *_top_hbox;

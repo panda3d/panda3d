@@ -61,8 +61,8 @@ private:
   int _collector_index;
   std::string _text;
   GtkWidget *_widget;
-  GdkColor _fg_color;
-  GdkColor _bg_color;
+  LRGBColor _fg_color;
+  LRGBColor _bg_color;
   PangoLayout *_layout;
 
   /*
