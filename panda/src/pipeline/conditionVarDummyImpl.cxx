@@ -13,3 +13,20 @@
 
 #include "selectThreadImpl.h"
 #include "conditionVarDummyImpl.h"
+#include "thread.h"
+
+/**
+ *
+ */
+void ConditionVarDummyImpl::
+wait() {
+  Thread::force_yield();
+}
+
+/**
+ *
+ */
+void ConditionVarDummyImpl::
+wait(double) {
+  Thread::force_yield();
+}

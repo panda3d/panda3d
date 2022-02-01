@@ -158,6 +158,8 @@ client_disconnect() {
  */
 void PStatClientImpl::
 new_frame(int thread_index) {
+  double frame_start = get_real_time();
+
   nassertv(thread_index >= 0 && thread_index < _client->_num_threads);
 
   PStatClient::InternalThread *pthread = _client->get_thread_ptr(thread_index);
@@ -178,7 +180,6 @@ new_frame(int thread_index) {
     return;
   }
 
-  double frame_start = get_real_time();
   int frame_number = -1;
   PStatFrameData frame_data;
 
@@ -396,6 +397,11 @@ send_hello() {
   message._type = PStatClientControlMessage::T_hello;
   message._client_hostname = get_hostname();
   message._client_progname = _client_name;
+#ifdef _WIN32
+  message._client_pid = GetCurrentProcessId();
+#else
+  message._client_pid = getpid();
+#endif
   message._major_version = get_current_pstat_major_version();
   message._minor_version = get_current_pstat_minor_version();
 
