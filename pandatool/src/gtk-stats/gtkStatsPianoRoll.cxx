@@ -39,8 +39,15 @@ GtkStatsPianoRoll(GtkStatsMonitor *monitor, int thread_index) :
        G_CALLBACK(draw_callback), this);
   gtk_box_pack_start(GTK_BOX(_graph_vbox), _scale_area,
          FALSE, FALSE, 0);
-  gtk_widget_set_size_request(_scale_area, 0, 20);
 
+  // It should be large enough to display the labels.
+  {
+    PangoLayout *layout = gtk_widget_create_pango_layout(_window, "0123456789 ms");
+    int width, height;
+    pango_layout_get_pixel_size(layout, &width, &height);
+    gtk_widget_set_size_request(_scale_area, 0, height + 1);
+    g_object_unref(layout);
+  }
 
   gtk_widget_set_size_request(_graph_window, default_piano_roll_width,
             default_piano_roll_height);
