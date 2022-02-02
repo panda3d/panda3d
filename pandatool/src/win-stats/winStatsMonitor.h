@@ -66,8 +66,12 @@ public:
   virtual void user_guide_bars_changed();
 
   HWND get_window() const;
+  HFONT get_font() const;
+  int get_pixel_scale() const;
+
   void open_strip_chart(int thread_index, int collector_index, bool show_level);
   void open_piano_roll(int thread_index);
+  void open_flame_graph(int thread_index);
 
   const MenuDef &lookup_menu(int menu_id) const;
   int get_menu_id(const MenuDef &menu_def);
@@ -109,6 +113,9 @@ private:
   int _time_units;
   double _scroll_speed;
   bool _pause;
+  int _pixel_scale;
+
+  HFONT _font;
 
   static bool _window_class_registered;
   static const char * const _window_class_name;

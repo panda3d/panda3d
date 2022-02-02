@@ -15,6 +15,7 @@
 #include "winStatsServer.h"
 #include "winStatsStripChart.h"
 #include "winStatsPianoRoll.h"
+#include "winStatsFlameGraph.h"
 #include "winStatsChartMenu.h"
 #include "winStatsMenuId.h"
 #include "pStatGraph.h"
@@ -37,6 +38,25 @@ WinStatsMonitor(WinStatsServer *server) : PStatMonitor(server) {
   _time_units = 0;
   _scroll_speed = 0.0;
   _pause = false;
+
+  // Create the fonts used for rendering the UI.
+  NONCLIENTMETRICS metrics = {0};
+  metrics.cbSize = sizeof(NONCLIENTMETRICS);
+  if (SystemParametersInfo(SPI_GETNONCLIENTMETRICS, 0, &metrics, 0)) {
+    _font = CreateFontIndirect(&metrics.lfMenuFont);
+  } else {
+    _font = (HFONT)GetStockObject(ANSI_VAR_FONT);
+  }
+
+  HDC dc = GetDC(nullptr);
+  _pixel_scale = 0;
+  if (dc) {
+    _pixel_scale = GetDeviceCaps(dc, LOGPIXELSX) / (96 / 4);
+  }
+  if (_pixel_scale <= 0) {
+    _pixel_scale = 4;
+  }
+  ReleaseDC(nullptr, dc);
 }
 
 /**
@@ -253,6 +273,22 @@ get_window() const {
 }
 
 /**
+ * Returns the font that should be used for rendering text.
+ */
+HFONT WinStatsMonitor::
+get_font() const {
+  return _font;
+}
+
+/**
+ * Returns the system DPI scaling as a fraction where 4 = no scaling.
+ */
+int WinStatsMonitor::
+get_pixel_scale() const {
+  return _pixel_scale;
+}
+
+/**
  * Opens a new strip chart showing the indicated data.
  */
 void WinStatsMonitor::
@@ -272,6 +308,19 @@ open_strip_chart(int thread_index, int collector_index, bool show_level) {
 void WinStatsMonitor::
 open_piano_roll(int thread_index) {
   WinStatsPianoRoll *graph = new WinStatsPianoRoll(this, thread_index);
+  add_graph(graph);
+
+  graph->set_time_units(_time_units);
+  graph->set_scroll_speed(_scroll_speed);
+  graph->set_pause(_pause);
+}
+
+/**
+ * Opens a new flame graph showing the indicated data.
+ */
+void WinStatsMonitor::
+open_flame_graph(int thread_index) {
+  WinStatsFlameGraph *graph = new WinStatsFlameGraph(this, thread_index);
   add_graph(graph);
 
   graph->set_time_units(_time_units);
@@ -604,7 +653,7 @@ register_window_class(HINSTANCE application) {
   wc.lpfnWndProc = (WNDPROC)static_window_proc;
   wc.hInstance = application;
   wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
-  wc.hbrBackground = (HBRUSH)COLOR_BACKGROUND;
+  wc.hbrBackground = (HBRUSH)COLOR_WINDOW;
   wc.lpszMenuName = nullptr;
   wc.lpszClassName = _window_class_name;
 
@@ -701,9 +750,13 @@ handle_menu_command(int menu_id) {
   default:
     if (menu_id >= MI_new_chart) {
       const MenuDef &menu_def = lookup_menu(menu_id);
-      if (menu_def._collector_index < 0) {
+      if (menu_def._collector_index == -2) {
+        open_flame_graph(menu_def._thread_index);
+      }
+      else if (menu_def._collector_index < 0) {
         open_piano_roll(menu_def._thread_index);
-      } else {
+      }
+      else {
         open_strip_chart(menu_def._thread_index, menu_def._collector_index,
                          menu_def._show_level);
       }

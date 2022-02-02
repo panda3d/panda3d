@@ -6,57 +6,61 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * @file gtkStatsPianoRoll.cxx
- * @author drose
- * @date 2006-01-16
+ * @file gtkStatsFlameGraph.cxx
+ * @author rdb
+ * @date 2022-02-02
  */
 
-#include "gtkStatsPianoRoll.h"
+#include "gtkStatsFlameGraph.h"
+#include "gtkStatsLabel.h"
 #include "gtkStatsMonitor.h"
-#include "numeric_types.h"
-#include "gtkStatsLabelStack.h"
+#include "pStatCollectorDef.h"
 
-static const int default_piano_roll_width = 600;
-static const int default_piano_roll_height = 200;
+static const int default_flame_graph_width = 800;
+static const int default_flame_graph_height = 150;
 
 /**
  *
  */
-GtkStatsPianoRoll::
-GtkStatsPianoRoll(GtkStatsMonitor *monitor, int thread_index) :
-  PStatPianoRoll(monitor, thread_index,
-                 default_piano_roll_width,
-                 default_piano_roll_height),
+GtkStatsFlameGraph::
+GtkStatsFlameGraph(GtkStatsMonitor *monitor, int thread_index,
+                   int collector_index) :
+  PStatFlameGraph(monitor, monitor->get_view(thread_index),
+                  thread_index, collector_index,
+                  default_flame_graph_width,
+                  default_flame_graph_height),
   GtkStatsGraph(monitor)
 {
   // Let's show the units on the guide bar labels.  There's room.
   set_guide_bar_units(get_guide_bar_units() | GBU_show_units);
 
+  // Put some stuff on top of the graph.
+  _top_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_box_pack_start(GTK_BOX(_graph_vbox), _top_hbox,
+         FALSE, FALSE, 0);
+
+  _average_check_box = gtk_check_button_new_with_label("Average");
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(_average_check_box), TRUE);
+  g_signal_connect(G_OBJECT(_average_check_box), "toggled",
+       G_CALLBACK(toggled_callback), this);
+
   // Add a DrawingArea widget on top of the graph, to display all of the scale
   // units.
   _scale_area = gtk_drawing_area_new();
-  g_signal_connect(G_OBJECT(_scale_area), "draw",
-       G_CALLBACK(draw_callback), this);
-  gtk_box_pack_start(GTK_BOX(_graph_vbox), _scale_area,
-         FALSE, FALSE, 0);
+  g_signal_connect(G_OBJECT(_scale_area), "draw", G_CALLBACK(draw_callback), this);
 
-  // It should be large enough to display the labels.
-  {
-    PangoLayout *layout = gtk_widget_create_pango_layout(_window, "0123456789 ms");
-    int width, height;
-    pango_layout_get_pixel_size(layout, &width, &height);
-    gtk_widget_set_size_request(_scale_area, 0, height + 1);
-    g_object_unref(layout);
-  }
+  _total_label = gtk_label_new("");
+  gtk_box_pack_start(GTK_BOX(_top_hbox), _average_check_box, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(_top_hbox), _scale_area, TRUE, TRUE, 0);
+  gtk_box_pack_end(GTK_BOX(_top_hbox), _total_label, FALSE, FALSE, 0);
 
-  gtk_widget_set_size_request(_graph_window, default_piano_roll_width,
-            default_piano_roll_height);
+  gtk_widget_set_size_request(_graph_window, default_flame_graph_width,
+                              default_flame_graph_height);
 
-  const PStatClientData *client_data =
-    GtkStatsGraph::_monitor->get_client_data();
-  std::string thread_name = client_data->get_thread_name(_thread_index);
-  std::string window_title = thread_name + " thread piano roll";
-  gtk_window_set_title(GTK_WINDOW(_window), window_title.c_str());
+  // Add a fixed container to the overlay to allow arbitrary positioning
+  // of labels therein.
+  _fixed = gtk_fixed_new();
+  gtk_overlay_add_overlay(GTK_OVERLAY(_graph_overlay), _fixed);
 
   gtk_widget_show_all(_window);
   gtk_widget_show(_window);
@@ -72,37 +76,58 @@ GtkStatsPianoRoll(GtkStatsMonitor *monitor, int thread_index) :
 /**
  *
  */
-GtkStatsPianoRoll::
-~GtkStatsPianoRoll() {
+GtkStatsFlameGraph::
+~GtkStatsFlameGraph() {
 }
 
 /**
- * Called as each frame's data is made available.  There is no gurantee the
+ * Called whenever a new Collector definition is received from the client.
+ */
+void GtkStatsFlameGraph::
+new_collector(int collector_index) {
+  GtkStatsGraph::new_collector(collector_index);
+}
+
+/**
+ * Called as each frame's data is made available.  There is no guarantee the
  * frames will arrive in order, or that all of them will arrive at all.  The
  * monitor should be prepared to accept frames received out-of-order or
  * missing.
  */
-void GtkStatsPianoRoll::
+void GtkStatsFlameGraph::
 new_data(int thread_index, int frame_number) {
+  if (is_title_unknown()) {
+    std::string window_title = get_title_text();
+    if (!is_title_unknown()) {
+      gtk_window_set_title(GTK_WINDOW(_window), window_title.c_str());
+    }
+  }
+
   if (!_pause) {
     update();
+
+    std::string text = format_number(get_horizontal_scale(), get_guide_bar_units(), get_guide_bar_unit_name());
+    if (_net_value_text != text) {
+      _net_value_text = text;
+      gtk_label_set_text(GTK_LABEL(_total_label), _net_value_text.c_str());
+    }
   }
 }
 
 /**
  * Called when it is necessary to redraw the entire graph.
  */
-void GtkStatsPianoRoll::
+void GtkStatsFlameGraph::
 force_redraw() {
-  PStatPianoRoll::force_redraw();
+  PStatFlameGraph::force_redraw();
 }
 
 /**
  * Called when the user has resized the window, forcing a resize of the graph.
  */
-void GtkStatsPianoRoll::
+void GtkStatsFlameGraph::
 changed_graph_size(int graph_xsize, int graph_ysize) {
-  PStatPianoRoll::changed_size(graph_xsize, graph_ysize);
+  PStatFlameGraph::changed_size(graph_xsize, graph_ysize);
 }
 
 /**
@@ -110,7 +135,7 @@ changed_graph_size(int graph_xsize, int graph_ysize) {
  * menu, this should adjust the units for the graph to the indicated mask if
  * it is a time-based graph.
  */
-void GtkStatsPianoRoll::
+void GtkStatsFlameGraph::
 set_time_units(int unit_mask) {
   int old_unit_mask = get_guide_bar_units();
   if ((old_unit_mask & (GBU_hz | GBU_ms)) != 0) {
@@ -125,29 +150,129 @@ set_time_units(int unit_mask) {
 /**
  * Called when the user single-clicks on a label.
  */
-void GtkStatsPianoRoll::
+void GtkStatsFlameGraph::
 on_click_label(int collector_index) {
-  if (collector_index >= 0) {
-    GtkStatsGraph::_monitor->open_strip_chart(_thread_index, collector_index, false);
+  int prev_collector_index = get_collector_index();
+  if (collector_index == prev_collector_index && collector_index != 0) {
+    // Clicking on the top label means to go up to the parent level.
+    const PStatClientData *client_data =
+      GtkStatsGraph::_monitor->get_client_data();
+    if (client_data->has_collector(collector_index)) {
+      const PStatCollectorDef &def =
+        client_data->get_collector_def(collector_index);
+      collector_index = def._parent_index;
+      set_collector_index(collector_index);
+    }
+  }
+  else {
+    // Clicking on any other label means to focus on that.
+    set_collector_index(collector_index);
+  }
+
+  // Change the root collector to show the full name.
+  if (prev_collector_index != collector_index) {
+    auto it = _labels.find(prev_collector_index);
+    if (it != _labels.end()) {
+      it->second->update_text(false);
+    }
+    it = _labels.find(collector_index);
+    if (it != _labels.end()) {
+      it->second->update_text(true);
+    }
   }
 }
 
 /**
- * Changes the amount of time the width of the horizontal axis represents.
- * This may force a redraw.
+ * Called when the user hovers the mouse over a label.
  */
-void GtkStatsPianoRoll::
-set_horizontal_scale(double time_width) {
-  PStatPianoRoll::set_horizontal_scale(time_width);
+void GtkStatsFlameGraph::
+on_enter_label(int collector_index) {
+  if (collector_index != _highlighted_index) {
+    _highlighted_index = collector_index;
+  }
+}
 
-  gtk_widget_queue_draw(_graph_window);
-  gtk_widget_queue_draw(_scale_area);
+/**
+ * Called when the user's mouse cursor leaves a label.
+ */
+void GtkStatsFlameGraph::
+on_leave_label(int collector_index) {
+  if (collector_index == _highlighted_index && collector_index != -1) {
+    _highlighted_index = -1;
+  }
+}
+
+/**
+ * Called when the mouse hovers over a label, and should return the text that
+ * should appear on the tooltip.
+ */
+std::string GtkStatsFlameGraph::
+get_label_tooltip(int collector_index) const {
+  return PStatFlameGraph::get_label_tooltip(collector_index);
+}
+
+/**
+ * Repositions the labels.
+ */
+void GtkStatsFlameGraph::
+update_labels() {
+  PStatFlameGraph::update_labels();
+}
+
+/**
+ * Repositions a label.  If width is 0, the label should be deleted.
+ */
+void GtkStatsFlameGraph::
+update_label(int collector_index, int row, int x, int width) {
+  GtkStatsLabel *label;
+
+  auto it = _labels.find(collector_index);
+  if (it != _labels.end()) {
+    label = it->second;
+    if (width == 0) {
+      gtk_container_remove(GTK_CONTAINER(_fixed), label->get_widget());
+      delete label;
+      _labels.erase(it);
+      return;
+    }
+    gtk_fixed_move(GTK_FIXED(_fixed), label->get_widget(), x, _ysize - (row + 1) * label->get_height());
+  }
+  else {
+    if (width == 0) {
+      return;
+    }
+    label = new GtkStatsLabel(GtkStatsGraph::_monitor, this, _thread_index, collector_index, false, false);
+    _labels[collector_index] = label;
+    gtk_fixed_put(GTK_FIXED(_fixed), label->get_widget(), x, _ysize - (row + 1) * label->get_height());
+  }
+
+  gtk_widget_set_size_request(label->get_widget(), std::min(width, _xsize), label->get_height());
+}
+
+/**
+ * Calls update_guide_bars with parameters suitable to this kind of graph.
+ */
+void GtkStatsFlameGraph::
+normal_guide_bars() {
+  // We want vaguely 100 pixels between guide bars.
+  double res = gdk_screen_get_resolution(gdk_screen_get_default());
+  int num_bars = (int)(get_xsize() / (100.0 * (res > 0 ? res / 96.0 : 1.0)));
+
+  _guide_bars.clear();
+
+  double dist = get_horizontal_scale() / num_bars;
+
+  for (int i = 1; i < num_bars; ++i) {
+    _guide_bars.push_back(make_guide_bar(i * dist));
+  }
+
+  _guide_bars_changed = true;
 }
 
 /**
  * Erases the chart area.
  */
-void GtkStatsPianoRoll::
+void GtkStatsFlameGraph::
 clear_region() {
   cairo_set_source_rgb(_cr, 1.0, 1.0, 1.0);
   cairo_paint(_cr);
@@ -156,7 +281,7 @@ clear_region() {
 /**
  * Erases the chart area in preparation for drawing a bunch of bars.
  */
-void GtkStatsPianoRoll::
+void GtkStatsFlameGraph::
 begin_draw() {
   clear_region();
 
@@ -168,36 +293,10 @@ begin_draw() {
 }
 
 /**
- * Should be overridden by the user class.  This hook will be called before
- * drawing any one row of bars.  These bars correspond to the collector whose
- * index is get_row_collector(row), and in the color get_row_color(row).
- */
-void GtkStatsPianoRoll::
-begin_row(int row) {
-  int collector_index = get_label_collector(row);
-  cairo_set_source(_cr, get_collector_pattern(collector_index,
-    _highlighted_index == collector_index));
-}
-
-/**
- * Draws a single bar on the chart.
- */
-void GtkStatsPianoRoll::
-draw_bar(int row, int from_x, int to_x) {
-  if (row >= 0 && row < _label_stack.get_num_labels()) {
-    int y = _label_stack.get_label_y(row, _graph_window);
-    int height = _label_stack.get_label_height(row);
-
-    cairo_rectangle(_cr, from_x, y - height + 2, to_x - from_x, height - 4);
-    cairo_fill(_cr);
-  }
-}
-
-/**
  * Called after all the bars have been drawn, this triggers a refresh event to
  * draw it to the window.
  */
-void GtkStatsPianoRoll::
+void GtkStatsFlameGraph::
 end_draw() {
   gtk_widget_queue_draw(_graph_window);
 }
@@ -205,18 +304,15 @@ end_draw() {
 /**
  * Called at the end of the draw cycle.
  */
-void GtkStatsPianoRoll::
+void GtkStatsFlameGraph::
 idle() {
-  if (_labels_changed) {
-    update_labels();
-  }
 }
 
 /**
  * This is called during the servicing of the draw event; it gives a derived
  * class opportunity to do some further painting into the graph window.
  */
-void GtkStatsPianoRoll::
+void GtkStatsFlameGraph::
 additional_graph_window_paint(cairo_t *cr) {
   int num_user_guide_bars = get_num_user_guide_bars();
   for (int i = 0; i < num_user_guide_bars; i++) {
@@ -225,11 +321,11 @@ additional_graph_window_paint(cairo_t *cr) {
 }
 
 /**
- * Based on the mouse position within the graph window, look for draggable
- * things the mouse might be hovering over and return the appropriate DragMode
- * enum or DM_none if nothing is indicated.
+ * Based on the mouse position within the window's client area, look for
+ * draggable things the mouse might be hovering over and return the
+ * apprioprate DragMode enum or DM_none if nothing is indicated.
  */
-GtkStatsGraph::DragMode GtkStatsPianoRoll::
+GtkStatsGraph::DragMode GtkStatsFlameGraph::
 consider_drag_start(int graph_x, int graph_y) {
   if (graph_y >= 0 && graph_y < get_ysize()) {
     if (graph_x >= 0 && graph_x < get_xsize()) {
@@ -249,20 +345,21 @@ consider_drag_start(int graph_x, int graph_y) {
     }
   }
 
-  return GtkStatsGraph::consider_drag_start(graph_x, graph_y);
+  return DM_none;
 }
 
 /**
  * Called when the mouse button is depressed within the graph window.
  */
-gboolean GtkStatsPianoRoll::
+gboolean GtkStatsFlameGraph::
 handle_button_press(GtkWidget *widget, int graph_x, int graph_y,
         bool double_click) {
-  if (double_click) {
-    // Double-clicking on a color bar in the graph is the same as double-
-    // clicking on the corresponding label.
-    on_click_label(get_collector_under_pixel(graph_x, graph_y));
-    return TRUE;
+  if (graph_x >= 0 && graph_y >= 0 && graph_x < get_xsize() && graph_y < get_ysize()) {
+    if (double_click) {
+      // Clicking on whitespace in the graph goes to the parent.
+      on_click_label(get_collector_index());
+      return TRUE;
+    }
   }
 
   if (_potential_drag_mode == DM_none) {
@@ -285,7 +382,7 @@ handle_button_press(GtkWidget *widget, int graph_x, int graph_y,
 /**
  * Called when the mouse button is released within the graph window.
  */
-gboolean GtkStatsPianoRoll::
+gboolean GtkStatsFlameGraph::
 handle_button_release(GtkWidget *widget, int graph_x, int graph_y) {
   if (_drag_mode == DM_scale) {
     set_drag_mode(DM_none);
@@ -309,40 +406,9 @@ handle_button_release(GtkWidget *widget, int graph_x, int graph_y) {
 /**
  * Called when the mouse is moved within the graph window.
  */
-gboolean GtkStatsPianoRoll::
+gboolean GtkStatsFlameGraph::
 handle_motion(GtkWidget *widget, int graph_x, int graph_y) {
-  if (_drag_mode == DM_none && _potential_drag_mode == DM_none) {
-    // When the mouse is over a color bar, highlight it.
-    int collector_index = get_collector_under_pixel(graph_x, graph_y);
-    _label_stack.highlight_label(collector_index);
-    on_enter_label(collector_index);
-
-    /*
-    // Now we want to get a WM_MOUSELEAVE when the mouse leaves the graph
-    // window.
-    TRACKMOUSEEVENT tme = {
-      sizeof(TRACKMOUSEEVENT),
-      TME_LEAVE,
-      _graph_window,
-      0
-    };
-    TrackMouseEvent(&tme);
-    */
-
-  } else {
-    // If the mouse is in some drag mode, stop highlighting.
-    _label_stack.highlight_label(-1);
-    on_leave_label(_highlighted_index);
-  }
-
-  if (_drag_mode == DM_scale) {
-    double ratio = (double)graph_x / (double)get_xsize();
-    if (ratio > 0.0f) {
-      set_horizontal_scale(_drag_scale_start / ratio);
-    }
-    return TRUE;
-
-  } else if (_drag_mode == DM_new_guide_bar) {
+  if (_drag_mode == DM_new_guide_bar) {
     // We haven't created the new guide bar yet; we won't until the mouse
     // comes within the graph's region.
     if (graph_x >= 0 && graph_x < get_xsize()) {
@@ -350,8 +416,8 @@ handle_motion(GtkWidget *widget, int graph_x, int graph_y) {
       _drag_guide_bar = add_user_guide_bar(pixel_to_height(graph_x));
       return TRUE;
     }
-
-  } else if (_drag_mode == DM_guide_bar) {
+  }
+  else if (_drag_mode == DM_guide_bar) {
     move_user_guide_bar(_drag_guide_bar, pixel_to_height(graph_x));
     return TRUE;
   }
@@ -360,43 +426,9 @@ handle_motion(GtkWidget *widget, int graph_x, int graph_y) {
 }
 
 /**
- * Returns the collector index associated with the indicated vertical row, or
- * -1.
- */
-int GtkStatsPianoRoll::
-get_collector_under_pixel(int xpoint, int ypoint) {
-  if (_label_stack.get_num_labels() == 0) {
-    return -1;
-  }
-
-  // Assume all of the labels are the same height.
-  int height = _label_stack.get_label_height(0);
-  int row = (get_ysize() - ypoint) / height;
-  if (row >= 0 && row < _label_stack.get_num_labels()) {
-    return _label_stack.get_label_collector_index(row);
-  } else  {
-    return -1;
-  }
-}
-
-/**
- * Resets the list of labels.
- */
-void GtkStatsPianoRoll::
-update_labels() {
-  _label_stack.clear_labels();
-  for (int i = 0; i < get_num_labels(); i++) {
-    _label_stack.add_label(GtkStatsGraph::_monitor, this,
-         _thread_index,
-         get_label_collector(i), true);
-  }
-  _labels_changed = false;
-}
-
-/**
  * Draws the line for the indicated guide bar on the graph.
  */
-void GtkStatsPianoRoll::
+void GtkStatsFlameGraph::
 draw_guide_bar(cairo_t *cr, const PStatGraph::GuideBar &bar) {
   int x = height_to_pixel(bar._height);
 
@@ -424,7 +456,7 @@ draw_guide_bar(cairo_t *cr, const PStatGraph::GuideBar &bar) {
 /**
  * This is called during the servicing of the draw event.
  */
-void GtkStatsPianoRoll::
+void GtkStatsFlameGraph::
 draw_guide_labels(cairo_t *cr) {
   int i;
   int num_guide_bars = get_num_guide_bars();
@@ -441,7 +473,7 @@ draw_guide_labels(cairo_t *cr) {
 /**
  * Draws the text for the indicated guide bar label at the top of the graph.
  */
-void GtkStatsPianoRoll::
+void GtkStatsFlameGraph::
 draw_guide_label(cairo_t *cr, const PStatGraph::GuideBar &bar) {
   switch (bar._style) {
   case GBS_target:
@@ -487,19 +519,32 @@ draw_guide_label(cairo_t *cr, const PStatGraph::GuideBar &bar) {
     gtk_widget_get_allocation(_scale_area, &allocation);
 
     int this_x = x - width / 2;
-    cairo_move_to(cr, this_x, allocation.height - height);
-    pango_cairo_show_layout(cr, layout);
+    if (this_x >= 0 && this_x + width < allocation.width) {
+      cairo_move_to(cr, this_x, allocation.height - height);
+      pango_cairo_show_layout(cr, layout);
+    }
   }
 
   g_object_unref(layout);
 }
 
 /**
+ * Called when the average check box is toggled.
+ */
+void GtkStatsFlameGraph::
+toggled_callback(GtkToggleButton *button, gpointer data) {
+  GtkStatsFlameGraph *self = (GtkStatsFlameGraph *)data;
+
+  bool active = gtk_toggle_button_get_active(button);
+  self->set_average_mode(active);
+}
+
+/**
  * Draws in the scale labels.
  */
-gboolean GtkStatsPianoRoll::
+gboolean GtkStatsFlameGraph::
 draw_callback(GtkWidget *widget, cairo_t *cr, gpointer data) {
-  GtkStatsPianoRoll *self = (GtkStatsPianoRoll *)data;
+  GtkStatsFlameGraph *self = (GtkStatsFlameGraph *)data;
   self->draw_guide_labels(cr);
 
   return TRUE;

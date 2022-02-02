@@ -44,7 +44,7 @@ public:
 
   virtual void new_collector(int collector_index);
   virtual void new_data(int thread_index, int frame_number);
-  virtual void force_redraw();
+  virtual void force_redraw()=0;
   virtual void changed_graph_size(int graph_xsize, int graph_ysize);
 
   virtual void set_time_units(int unit_mask);
@@ -52,11 +52,14 @@ public:
   void set_pause(bool pause);
 
   void user_guide_bars_changed();
-  virtual void clicked_label(int collector_index);
+  virtual void on_click_label(int collector_index);
+  virtual void on_enter_label(int collector_index);
+  virtual void on_leave_label(int collector_index);
+  virtual std::string get_label_tooltip(int collector_index) const;
 
 protected:
   void close();
-  cairo_pattern_t *get_collector_pattern(int collector_index);
+  cairo_pattern_t *get_collector_pattern(int collector_index, bool highlight = false);
 
   virtual void additional_graph_window_paint(cairo_t *cr);
   virtual DragMode consider_drag_start(int graph_x, int graph_y);
@@ -69,12 +72,14 @@ protected:
 
 protected:
   // Table of patterns for our various collectors.
-  typedef pmap<int, cairo_pattern_t *> Brushes;
+  typedef pmap<int, std::pair<cairo_pattern_t *, cairo_pattern_t *> > Brushes;
   Brushes _brushes;
 
   GtkStatsMonitor *_monitor;
   GtkWidget *_parent_window;
   GtkWidget *_window;
+  GtkWidget *_graph_frame;
+  GtkWidget *_graph_overlay;
   GtkWidget *_graph_window;
   GtkWidget *_graph_hbox;
   GtkWidget *_graph_vbox;
@@ -88,20 +93,13 @@ protected:
   cairo_t *_cr;
   int _surface_xsize, _surface_ysize;
 
-  /*
-  COLORREF _dark_color;
-  COLORREF _light_color;
-  COLORREF _user_guide_bar_color;
-  HPEN _dark_pen;
-  HPEN _light_pen;
-  HPEN _user_guide_bar_pen;
-  */
-
   DragMode _drag_mode;
   DragMode _potential_drag_mode;
   int _drag_start_x, _drag_start_y;
   double _drag_scale_start;
   int _drag_guide_bar;
+
+  int _highlighted_index = -1;
 
   bool _pause;
 

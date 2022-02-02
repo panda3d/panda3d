@@ -4,6 +4,7 @@ endif()
 
 set(GTKSTATS_HEADERS
   gtkStatsChartMenu.h
+  gtkStatsFlameGraph.h
   gtkStatsGraph.h
   gtkStatsLabel.h
   gtkStatsLabelStack.h
@@ -17,6 +18,7 @@ set(GTKSTATS_HEADERS
 set(GTKSTATS_SOURCES
   gtkStats.cxx
   gtkStatsChartMenu.cxx
+  gtkStatsFlameGraph.cxx
   gtkStatsGraph.cxx
   gtkStatsLabel.cxx
   gtkStatsLabelStack.cxx

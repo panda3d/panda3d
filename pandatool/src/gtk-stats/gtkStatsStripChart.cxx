@@ -68,8 +68,15 @@ GtkStatsStripChart(GtkStatsMonitor *monitor, int thread_index,
        G_CALLBACK(draw_callback), this);
   gtk_box_pack_start(GTK_BOX(_graph_hbox), _scale_area,
          FALSE, FALSE, 0);
-  gtk_widget_set_size_request(_scale_area, 40, 0);
 
+  // Make it wide enough to display a typical label.
+  {
+    PangoLayout *layout = gtk_widget_create_pango_layout(_window, "99 ms");
+    int width, height;
+    pango_layout_get_pixel_size(layout, &width, &height);
+    gtk_widget_set_size_request(_scale_area, width, 0);
+    g_object_unref(layout);
+  }
 
   gtk_widget_set_size_request(_graph_window, default_strip_chart_width,
             default_strip_chart_height);
@@ -175,7 +182,7 @@ set_scroll_speed(double scroll_speed) {
  * Called when the user single-clicks on a label.
  */
 void GtkStatsStripChart::
-clicked_label(int collector_index) {
+on_click_label(int collector_index) {
   if (collector_index < 0) {
     // Clicking on whitespace in the graph is the same as clicking on the top
     // label.
@@ -200,6 +207,15 @@ clicked_label(int collector_index) {
     // Clicking on any other label means to focus on that.
     set_collector_index(collector_index);
   }
+}
+
+/**
+ * Called when the mouse hovers over a label, and should return the text that
+ * should appear on the tooltip.
+ */
+std::string GtkStatsStripChart::
+get_label_tooltip(int collector_index) const {
+  return PStatStripChart::get_label_tooltip(collector_index);
 }
 
 /**
@@ -287,7 +303,8 @@ draw_slice(int x, int w, const PStatStripChart::FrameData &fdata) {
   for (fi = fdata.begin(); fi != fdata.end(); ++fi) {
     const ColorData &cd = (*fi);
     overall_time += cd._net_value;
-    cairo_set_source(_cr, get_collector_pattern(cd._collector_index));
+    cairo_set_source(_cr, get_collector_pattern(cd._collector_index,
+      _highlighted_index == cd._collector_index));
 
     if (overall_time > get_vertical_scale()) {
       // Off the top.  Go ahead and clamp it by hand, in case it's so far off
@@ -346,7 +363,7 @@ end_draw(int from_x, int to_x) {
 }
 
 /**
- * This is called during the servicing of expose_event; it gives a derived
+ * This is called during the servicing of the draw event; it gives a derived
  * class opportunity to do some further painting into the graph window.
  */
 void GtkStatsStripChart::
@@ -418,7 +435,7 @@ handle_button_press(GtkWidget *widget, int graph_x, int graph_y,
     if (double_click) {
       // Double-clicking on a color bar in the graph is the same as double-
       // clicking on the corresponding label.
-      clicked_label(get_collector_under_pixel(graph_x, graph_y));
+      on_click_label(get_collector_under_pixel(graph_x, graph_y));
       return TRUE;
     }
 
@@ -473,23 +490,14 @@ handle_motion(GtkWidget *widget, int graph_x, int graph_y) {
   if (_drag_mode == DM_none && _potential_drag_mode == DM_none &&
       graph_x >= 0 && graph_y >= 0 && graph_x < get_xsize() && graph_y < get_ysize()) {
     // When the mouse is over a color bar, highlight it.
-    _label_stack.highlight_label(get_collector_under_pixel(graph_x, graph_y));
-
-    /*
-    // Now we want to get a WM_MOUSELEAVE when the mouse leaves the graph
-    // window.
-    TRACKMOUSEEVENT tme = {
-      sizeof(TRACKMOUSEEVENT),
-      TME_LEAVE,
-      _graph_window,
-      0
-    };
-    TrackMouseEvent(&tme);
-    */
-
-  } else {
+    int collector_index = get_collector_under_pixel(graph_x, graph_y);
+    _label_stack.highlight_label(collector_index);
+    on_enter_label(collector_index);
+  }
+  else {
     // If the mouse is in some drag mode, stop highlighting.
     _label_stack.highlight_label(-1);
+    on_leave_label(_highlighted_index);
   }
 
   if (_drag_mode == DM_scale) {
@@ -546,7 +554,7 @@ draw_guide_bar(cairo_t *cr, int from_x, int to_x,
 }
 
 /**
- * This is called during the servicing of expose_event.
+ * This is called during the servicing of the draw event.
  */
 void GtkStatsStripChart::
 draw_guide_labels(cairo_t *cr) {

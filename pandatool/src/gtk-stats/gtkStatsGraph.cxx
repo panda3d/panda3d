@@ -14,6 +14,7 @@
 #include "gtkStatsGraph.h"
 #include "gtkStatsMonitor.h"
 #include "gtkStatsLabelStack.h"
+#include "convert_srgb.h"
 
 const double GtkStatsGraph::rgb_light_gray[3] = {
   0x9a / (double)0xff, 0x9a / (double)0xff, 0x9a / (double)0xff,
@@ -84,15 +85,20 @@ GtkStatsGraph(GtkStatsMonitor *monitor) :
   g_signal_connect(G_OBJECT(_graph_window), "motion_notify_event",
        G_CALLBACK(motion_notify_event_callback), this);
 
+  // An overlay inside the frame, for charts that want to display widgets on
+  // top of the graph.
+  _graph_overlay = gtk_overlay_new();
+  gtk_container_add(GTK_CONTAINER(_graph_overlay), _graph_window);
+
   // A Frame to hold the graph.
-  GtkWidget *graph_frame = gtk_frame_new(nullptr);
-  gtk_frame_set_shadow_type(GTK_FRAME(graph_frame), GTK_SHADOW_IN);
-  gtk_container_add(GTK_CONTAINER(graph_frame), _graph_window);
+  _graph_frame = gtk_frame_new(nullptr);
+  gtk_frame_set_shadow_type(GTK_FRAME(_graph_frame), GTK_SHADOW_IN);
+  gtk_container_add(GTK_CONTAINER(_graph_frame), _graph_overlay);
 
   // A VBox to hold the graph's frame, and any numbers (scale legend?  total?)
   // above it.
   _graph_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_box_pack_end(GTK_BOX(_graph_vbox), graph_frame,
+  gtk_box_pack_end(GTK_BOX(_graph_vbox), _graph_frame,
        TRUE, TRUE, 0);
 
   // An HBox to hold the graph's frame, and the scale legend to the right of
@@ -103,10 +109,11 @@ GtkStatsGraph(GtkStatsMonitor *monitor) :
 
   // An HPaned to hold the label stack and the graph hbox.
   _hpaned = gtk_paned_new(GTK_ORIENTATION_HORIZONTAL);
+  gtk_paned_set_wide_handle(GTK_PANED(_hpaned), TRUE);
   gtk_container_add(GTK_CONTAINER(_window), _hpaned);
   gtk_container_set_border_width(GTK_CONTAINER(_window), 8);
 
-  gtk_paned_pack1(GTK_PANED(_hpaned), _label_stack.get_widget(), TRUE, TRUE);
+  gtk_paned_pack1(GTK_PANED(_hpaned), _label_stack.get_widget(), FALSE, FALSE);
   gtk_paned_pack2(GTK_PANED(_hpaned), _graph_hbox, TRUE, TRUE);
 
   _drag_mode = DM_none;
@@ -124,10 +131,11 @@ GtkStatsGraph::
   _monitor = nullptr;
   release_surface();
 
-  Brushes::iterator bi;
-  for (bi = _brushes.begin(); bi != _brushes.end(); ++bi) {
-    cairo_pattern_destroy((*bi).second);
+  for (auto &item : _brushes) {
+    cairo_pattern_destroy(item.second.first);
+    cairo_pattern_destroy(item.second.second);
   }
+  _brushes.clear();
 
   _label_stack.clear_labels();
 
@@ -150,13 +158,6 @@ new_collector(int new_collector) {
  */
 void GtkStatsGraph::
 new_data(int thread_index, int frame_number) {
-}
-
-/**
- * Called when it is necessary to redraw the entire graph.
- */
-void GtkStatsGraph::
-force_redraw() {
 }
 
 /**
@@ -207,7 +208,38 @@ user_guide_bars_changed() {
  * Called when the user single-clicks on a label.
  */
 void GtkStatsGraph::
-clicked_label(int collector_index) {
+on_click_label(int collector_index) {
+}
+
+/**
+ * Called when the user hovers the mouse over a label.
+ */
+void GtkStatsGraph::
+on_enter_label(int collector_index) {
+  if (collector_index != _highlighted_index) {
+    _highlighted_index = collector_index;
+    force_redraw();
+  }
+}
+
+/**
+ * Called when the user's mouse cursor leaves a label.
+ */
+void GtkStatsGraph::
+on_leave_label(int collector_index) {
+  if (collector_index == _highlighted_index && collector_index != -1) {
+    _highlighted_index = -1;
+    force_redraw();
+  }
+}
+
+/**
+ * Called when the mouse hovers over a label, and should return the text that
+ * should appear on the tooltip.
+ */
+std::string GtkStatsGraph::
+get_label_tooltip(int collector_index) const {
+  return std::string();
 }
 
 /**
@@ -232,23 +264,30 @@ close() {
  * Returns a pattern suitable for drawing in the indicated collector's color.
  */
 cairo_pattern_t *GtkStatsGraph::
-get_collector_pattern(int collector_index) {
+get_collector_pattern(int collector_index, bool highlight) {
   Brushes::iterator bi;
   bi = _brushes.find(collector_index);
   if (bi != _brushes.end()) {
-    return (*bi).second;
+    return highlight ? (*bi).second.second : (*bi).second.first;
   }
 
   // Ask the monitor what color this guy should be.
   LRGBColor rgb = _monitor->get_collector_color(collector_index);
-  cairo_pattern_t *pattern = cairo_pattern_create_rgb(rgb[0], rgb[1], rgb[2]);
+  cairo_pattern_t *pattern = cairo_pattern_create_rgb(
+    encode_sRGB_float(rgb[0]),
+    encode_sRGB_float(rgb[1]),
+    encode_sRGB_float(rgb[2]));
+  cairo_pattern_t *hpattern = cairo_pattern_create_rgb(
+    encode_sRGB_float(rgb[0] * 0.75f),
+    encode_sRGB_float(rgb[1] * 0.75f),
+    encode_sRGB_float(rgb[2] * 0.75f));
 
-  _brushes[collector_index] = pattern;
-  return pattern;
+  _brushes[collector_index] = std::make_pair(pattern, hpattern);
+  return highlight ? hpattern : pattern;
 }
 
 /**
- * This is called during the servicing of expose_event; it gives a derived
+ * This is called during the servicing of the draw event; it gives a derived
  * class opportunity to do some further painting into the graph window.
  */
 void GtkStatsGraph::

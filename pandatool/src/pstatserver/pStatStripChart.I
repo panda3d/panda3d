@@ -157,6 +157,15 @@ pixel_to_height(int x) const {
 }
 
 /**
+ * Returns true if get_title_text() has never yet returned an answer, false if
+ * it has.
+ */
+INLINE bool PStatStripChart::
+is_title_unknown() const {
+  return _title_unknown;
+}
+
+/**
  * Returns true if the indicated collector appears anywhere on the chart at
  * the current time, false otherwise.
  */

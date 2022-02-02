@@ -66,6 +66,7 @@ public:
   GtkWidget *get_window() const;
   void open_strip_chart(int thread_index, int collector_index, bool show_level);
   void open_piano_roll(int thread_index);
+  void open_flame_graph(int thread_index);
 
   const MenuDef *add_menu(const MenuDef &menu_def);
 

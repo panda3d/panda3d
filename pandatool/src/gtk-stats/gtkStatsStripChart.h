@@ -40,7 +40,8 @@ public:
 
   virtual void set_time_units(int unit_mask);
   virtual void set_scroll_speed(double scroll_speed);
-  virtual void clicked_label(int collector_index);
+  virtual void on_click_label(int collector_index);
+  virtual std::string get_label_tooltip(int collector_index) const;
   void set_vertical_scale(double value_height);
 
 protected:
