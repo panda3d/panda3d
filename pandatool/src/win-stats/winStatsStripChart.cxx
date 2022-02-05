@@ -16,16 +16,12 @@
 #include "pStatCollectorDef.h"
 #include "numeric_types.h"
 
+#include <commctrl.h>
+
 using std::string;
 
 static const int default_strip_chart_width = 400;
 static const int default_strip_chart_height = 100;
-
-// Surely we aren't expected to hardcode the size of a normal checkbox.  But
-// Windows seems to require this data to be passed to CreateWindow(), so what
-// else can I do?
-size_t WinStatsStripChart::_check_box_height = 13;
-size_t WinStatsStripChart::_check_box_width = 13;
 
 bool WinStatsStripChart::_window_class_registered = false;
 const char * const WinStatsStripChart::_window_class_name = "strip";
@@ -40,16 +36,16 @@ WinStatsStripChart(WinStatsMonitor *monitor, int thread_index,
                   show_level ? monitor->get_level_view(collector_index, thread_index) : monitor->get_view(thread_index),
                   thread_index,
                   collector_index,
-                  default_strip_chart_width,
-                  default_strip_chart_height),
+                  monitor->get_pixel_scale() * default_strip_chart_width / 4,
+                  monitor->get_pixel_scale() * default_strip_chart_height / 4),
   WinStatsGraph(monitor)
 {
   _brush_origin = 0;
 
-  _left_margin = 96;
-  _right_margin = 32;
-  _top_margin = 16;
-  _bottom_margin = 8;
+  _left_margin = _pixel_scale * 24;
+  _right_margin = _pixel_scale * 12;
+  _top_margin = _pixel_scale * 6;
+  _bottom_margin = _pixel_scale * 2;
 
   if (show_level) {
     // If it's a level-type graph, show the appropriate units.
@@ -170,7 +166,7 @@ set_scroll_speed(double scroll_speed) {
  * Called when the user single-clicks on a label.
  */
 void WinStatsStripChart::
-clicked_label(int collector_index) {
+on_click_label(int collector_index) {
   if (collector_index < 0) {
     // Clicking on whitespace in the graph is the same as clicking on the top
     // label.
@@ -198,6 +194,15 @@ clicked_label(int collector_index) {
 }
 
 /**
+ * Called when the mouse hovers over a label, and should return the text that
+ * should appear on the tooltip.
+ */
+std::string WinStatsStripChart::
+get_label_tooltip(int collector_index) const {
+  return PStatStripChart::get_label_tooltip(collector_index);
+}
+
+/**
  * Changes the value the height of the vertical axis represents.  This may
  * force a redraw.
  */
@@ -218,11 +223,8 @@ void WinStatsStripChart::
 update_labels() {
   PStatStripChart::update_labels();
 
-  _label_stack.clear_labels();
-  for (int i = 0; i < get_num_labels(); i++) {
-    _label_stack.add_label(WinStatsGraph::_monitor, this, _thread_index,
-                           get_label_collector(i), false);
-  }
+  _label_stack.replace_labels(WinStatsGraph::_monitor, this,
+                              _thread_index, _labels, false);
   _labels_changed = false;
 }
 
@@ -273,7 +275,7 @@ draw_slice(int x, int w, const PStatStripChart::FrameData &fdata) {
   for (fi = fdata.begin(); fi != fdata.end(); ++fi) {
     const ColorData &cd = (*fi);
     overall_time += cd._net_value;
-    HBRUSH brush = get_collector_brush(cd._collector_index);
+    HBRUSH brush = get_collector_brush(cd._collector_index, cd._collector_index == _highlighted_index);
 
     if (overall_time > get_vertical_scale()) {
       // Off the top.  Go ahead and clamp it by hand, in case it's so far off
@@ -391,7 +393,10 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       // When the mouse is over a color bar, highlight it.
       int16_t x = LOWORD(lparam);
       int16_t y = HIWORD(lparam);
-      _label_stack.highlight_label(get_collector_under_pixel(x, y));
+
+      int collector_index = get_collector_under_pixel(x, y);
+      _label_stack.highlight_label(collector_index);
+      on_enter_label(collector_index);
 
       // Now we want to get a WM_MOUSELEAVE when the mouse leaves the graph
       // window.
@@ -402,10 +407,11 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         0
       };
       TrackMouseEvent(&tme);
-
-    } else {
+    }
+    else {
       // If the mouse is in some drag mode, stop highlighting.
       _label_stack.highlight_label(-1);
+      on_leave_label(_highlighted_index);
     }
 
     if (_drag_mode == DM_scale) {
@@ -436,6 +442,7 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   case WM_MOUSELEAVE:
     // When the mouse leaves the graph, stop highlighting.
     _label_stack.highlight_label(-1);
+    on_leave_label(_highlighted_index);
     break;
 
   case WM_LBUTTONUP:
@@ -463,7 +470,7 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       // clicking on the corresponding label.
       int16_t x = LOWORD(lparam);
       int16_t y = HIWORD(lparam);
-      clicked_label(get_collector_under_pixel(x, y));
+      on_click_label(get_collector_under_pixel(x, y));
       return 0;
     }
     break;
@@ -483,14 +490,13 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 void WinStatsStripChart::
 additional_window_paint(HDC hdc) {
   // Draw in the labels for the guide bars.
-  HFONT hfnt = (HFONT)GetStockObject(ANSI_VAR_FONT);
-  SelectObject(hdc, hfnt);
+  SelectObject(hdc, WinStatsGraph::_monitor->get_font());
   SetTextAlign(hdc, TA_LEFT | TA_TOP);
   SetBkMode(hdc, TRANSPARENT);
 
   RECT rect;
   GetClientRect(_window, &rect);
-  int x = rect.right - _right_margin + 2;
+  int x = rect.right - _right_margin + _pixel_scale;
   int last_y = -100;
 
   int i;
@@ -511,15 +517,8 @@ additional_window_paint(HDC hdc) {
   // Now draw the "net value" label at the top.
   SetTextAlign(hdc, TA_RIGHT | TA_BOTTOM);
   SetTextColor(hdc, RGB(0, 0, 0));
-  TextOut(hdc, rect.right - _right_margin, _top_margin,
+  TextOut(hdc, rect.right - _right_margin - _pixel_scale, _top_margin - _pixel_scale / 2,
           _net_value_text.data(), _net_value_text.length());
-
-  // Also draw the "Smooth" label on the check box.  This isn't part of the
-  // check box itself, because doing that doesn't use the right font!  Surely
-  // this isn't the correct Windows(tm) way to do this sort of thing, but I
-  // don't know any better for now.
-  SetTextAlign(hdc, TA_LEFT | TA_BOTTOM);
-  TextOut(hdc, _left_margin + _check_box_width + 2, _top_margin, "Smooth", 6);
 }
 
 /**
@@ -594,10 +593,13 @@ void WinStatsStripChart::
 move_graph_window(int graph_left, int graph_top, int graph_xsize, int graph_ysize) {
   WinStatsGraph::move_graph_window(graph_left, graph_top, graph_xsize, graph_ysize);
   if (_smooth_check_box != 0) {
+    SIZE size;
+    SendMessage(_smooth_check_box, BCM_GETIDEALSIZE, 0, (LPARAM)&size);
+
     SetWindowPos(_smooth_check_box, 0,
-                 _left_margin, _top_margin - _check_box_height - 1,
-                 0, 0,
-                 SWP_NOZORDER | SWP_NOSIZE | SWP_SHOWWINDOW);
+                 _left_margin, _top_margin - size.cy - _pixel_scale / 2,
+                 size.cx, size.cy,
+                 SWP_NOZORDER | SWP_SHOWWINDOW);
     InvalidateRect(_smooth_check_box, nullptr, TRUE);
   }
 }
@@ -715,10 +717,15 @@ create_window() {
   setup_label_stack();
 
   _smooth_check_box =
-    CreateWindow("BUTTON", "",
-                 WS_CHILD | BS_AUTOCHECKBOX,
-                 0, 0, _check_box_width, _check_box_height,
+    CreateWindow(WC_BUTTON, "Smooth", WS_CHILD | BS_AUTOCHECKBOX,
+                 0, 0, 0, 0,
                  _window, nullptr, application, 0);
+  SendMessage(_smooth_check_box, WM_SETFONT,
+              (WPARAM)WinStatsGraph::_monitor->get_font(), TRUE);
+
+  if (get_average_mode()) {
+    SendMessage(_smooth_check_box, BM_SETCHECK, BST_CHECKED, 0);
+  }
 
   // Ensure that the window is on top of the stack.
   SetWindowPos(_window, HWND_TOP, 0, 0, 0, 0,
@@ -742,7 +749,7 @@ register_window_class(HINSTANCE application) {
   wc.lpfnWndProc = (WNDPROC)static_window_proc;
   wc.hInstance = application;
   wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
-  wc.hbrBackground = (HBRUSH)COLOR_BACKGROUND;
+  wc.hbrBackground = (HBRUSH)COLOR_WINDOW;
   wc.lpszMenuName = nullptr;
   wc.lpszClassName = _window_class_name;
 

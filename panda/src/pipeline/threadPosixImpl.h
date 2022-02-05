@@ -49,7 +49,7 @@ public:
   INLINE static void prepare_for_exit();
 
   INLINE static Thread *get_current_thread();
-  INLINE static void bind_thread(Thread *thread);
+  static void bind_thread(Thread *thread);
   INLINE static bool is_threading_supported();
   INLINE static bool is_true_threads();
   INLINE static bool is_simple_threads();
@@ -65,7 +65,7 @@ public:
 
 private:
   static void *root_func(void *data);
-  static void init_pt_ptr_index();
+  static Thread *init_current_thread();
 
   // There appears to be a name collision with the word "Status".
   enum PStatus {
@@ -86,8 +86,7 @@ private:
   JNIEnv *_jni_env;
 #endif
 
-  static pthread_key_t _pt_ptr_index;
-  static bool _got_pt_ptr_index;
+  static __thread Thread *_current_thread;
 };
 
 #include "threadPosixImpl.I"

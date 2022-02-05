@@ -16,6 +16,7 @@
 
 #include "pandatoolbase.h"
 #include "pvector.h"
+#include "vector_int.h"
 
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN 1
@@ -51,6 +52,9 @@ public:
   void clear_labels();
   int add_label(WinStatsMonitor *monitor, WinStatsGraph *graph,
                 int thread_index, int collector_index, bool use_fullname);
+  void replace_labels(WinStatsMonitor *monitor, WinStatsGraph *graph,
+                      int thread_index, const vector_int &collector_indices,
+                      bool use_fullname);
   int get_num_labels() const;
 
   void highlight_label(int collector_index);

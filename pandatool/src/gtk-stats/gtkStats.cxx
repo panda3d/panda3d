@@ -44,7 +44,7 @@ timer(gpointer data) {
     // are getting starved and falling behind, so that the user still gets a
     // chance to see *something* happen onscreen, even if it's just
     // increasingly old data.
-    gdk_window_process_all_updates();
+    //gdk_window_process_all_updates();
   }
 
   return TRUE;

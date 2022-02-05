@@ -1,5 +1,6 @@
 #include "winStats.cxx"
 #include "winStatsChartMenu.cxx"
+#include "winStatsFlameGraph.cxx"
 #include "winStatsGraph.cxx"
 #include "winStatsLabel.cxx"
 #include "winStatsLabelStack.cxx"

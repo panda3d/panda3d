@@ -19,6 +19,7 @@
 #include "pmap.h"
 
 #include <gtk/gtk.h>
+#include <cairo.h>
 
 class GtkStatsMonitor;
 
@@ -43,7 +44,7 @@ public:
 
   virtual void new_collector(int collector_index);
   virtual void new_data(int thread_index, int frame_number);
-  virtual void force_redraw();
+  virtual void force_redraw()=0;
   virtual void changed_graph_size(int graph_xsize, int graph_ysize);
 
   virtual void set_time_units(int unit_mask);
@@ -51,13 +52,16 @@ public:
   void set_pause(bool pause);
 
   void user_guide_bars_changed();
-  virtual void clicked_label(int collector_index);
+  virtual void on_click_label(int collector_index);
+  virtual void on_enter_label(int collector_index);
+  virtual void on_leave_label(int collector_index);
+  virtual std::string get_label_tooltip(int collector_index) const;
 
 protected:
   void close();
-  GdkGC *get_collector_gc(int collector_index);
+  cairo_pattern_t *get_collector_pattern(int collector_index, bool highlight = false);
 
-  virtual void additional_graph_window_paint();
+  virtual void additional_graph_window_paint(cairo_t *cr);
   virtual DragMode consider_drag_start(int graph_x, int graph_y);
   virtual void set_drag_mode(DragMode drag_mode);
 
@@ -67,13 +71,15 @@ protected:
   virtual gboolean handle_motion(GtkWidget *widget, int graph_x, int graph_y);
 
 protected:
-  // Table of GC's for our various collectors.
-  typedef pmap<int, GdkGC *> Brushes;
+  // Table of patterns for our various collectors.
+  typedef pmap<int, std::pair<cairo_pattern_t *, cairo_pattern_t *> > Brushes;
   Brushes _brushes;
 
   GtkStatsMonitor *_monitor;
   GtkWidget *_parent_window;
   GtkWidget *_window;
+  GtkWidget *_graph_frame;
+  GtkWidget *_graph_overlay;
   GtkWidget *_graph_window;
   GtkWidget *_graph_hbox;
   GtkWidget *_graph_vbox;
@@ -83,18 +89,9 @@ protected:
 
   GdkCursor *_hand_cursor;
 
-  GdkPixmap *_pixmap;
-  GdkGC *_pixmap_gc;
-  int _pixmap_xsize, _pixmap_ysize;
-
-  /*
-  COLORREF _dark_color;
-  COLORREF _light_color;
-  COLORREF _user_guide_bar_color;
-  HPEN _dark_pen;
-  HPEN _light_pen;
-  HPEN _user_guide_bar_pen;
-  */
+  cairo_surface_t *_cr_surface;
+  cairo_t *_cr;
+  int _surface_xsize, _surface_ysize;
 
   DragMode _drag_mode;
   DragMode _potential_drag_mode;
@@ -102,25 +99,27 @@ protected:
   double _drag_scale_start;
   int _drag_guide_bar;
 
+  int _highlighted_index = -1;
+
   bool _pause;
 
-  static const GdkColor rgb_white;
-  static const GdkColor rgb_light_gray;
-  static const GdkColor rgb_dark_gray;
-  static const GdkColor rgb_black;
-  static const GdkColor rgb_user_guide_bar;
+  static const double rgb_white[3];
+  static const double rgb_light_gray[3];
+  static const double rgb_dark_gray[3];
+  static const double rgb_black[3];
+  static const double rgb_user_guide_bar[3];
 
 private:
-  void setup_pixmap(int xsize, int ysize);
-  void release_pixmap();
+  void setup_surface(int xsize, int ysize);
+  void release_surface();
 
   static gboolean window_delete_event(GtkWidget *widget, GdkEvent *event,
               gpointer data);
   static void window_destroy(GtkWidget *widget, gpointer data);
-  static gboolean graph_expose_callback(GtkWidget *widget,
-          GdkEventExpose *event, gpointer data);
+  static gboolean graph_draw_callback(GtkWidget *widget,
+              cairo_t *cr, gpointer data);
   static gboolean configure_graph_callback(GtkWidget *widget,
-             GdkEventConfigure *event, gpointer data);
+              GdkEventConfigure *event, gpointer data);
 
 protected:
   static gboolean button_press_event_callback(GtkWidget *widget,
