@@ -6,6 +6,7 @@
 ########################################################################
 
 import configparser
+from distutils import sysconfig # DO NOT CHANGE to sysconfig - see #1230
 import fnmatch
 import getpass
 import glob
@@ -17,7 +18,6 @@ import shutil
 import signal
 import subprocess
 import sys
-import sysconfig
 import threading
 import _thread as thread
 import time
@@ -717,7 +717,7 @@ def GetTimestamp(path):
     if path in TIMESTAMPCACHE:
         return TIMESTAMPCACHE[path]
     try:
-        date = os.path.getmtime(path)
+        date = int(os.path.getmtime(path))
     except:
         date = 0
     TIMESTAMPCACHE[path] = date
@@ -871,7 +871,7 @@ def JavaGetImports(path):
 ##
 ########################################################################
 
-DCACHE_VERSION = 2
+DCACHE_VERSION = 3
 DCACHE_BACKED_UP = False
 
 def SaveDependencyCache():
@@ -1640,7 +1640,10 @@ def LocateLibrary(lib, lpath=[], prefer_static=False):
                 return os.path.join(dir, 'lib%s.a' % lib)
 
     for dir in lpath:
-        if target == 'darwin' and os.path.isfile(os.path.join(dir, 'lib%s.dylib' % lib)):
+        if target == 'windows':
+            if os.path.isfile(os.path.join(dir, lib + '.lib')):
+                return os.path.join(dir, lib + '.lib')
+        elif target == 'darwin' and os.path.isfile(os.path.join(dir, 'lib%s.dylib' % lib)):
             return os.path.join(dir, 'lib%s.dylib' % lib)
         elif target != 'darwin' and os.path.isfile(os.path.join(dir, 'lib%s.so' % lib)):
             return os.path.join(dir, 'lib%s.so' % lib)
@@ -2178,12 +2181,12 @@ def SdkLocatePython(prefer_thirdparty_python=False):
         LibDirectory("PYTHON", py_fwx + "/lib")
 
     #elif GetTarget() == 'windows':
-    #    SDK["PYTHON"] = os.path.dirname(sysconfig.get_path("include"))
+    #    SDK["PYTHON"] = os.path.dirname(sysconfig.get_python_inc())
     #    SDK["PYTHONVERSION"] = "python" + sysconfig.get_python_version()
     #    SDK["PYTHONEXEC"] = sys.executable
 
     else:
-        SDK["PYTHON"] = sysconfig.get_path("include")
+        SDK["PYTHON"] = sysconfig.get_python_inc()
         SDK["PYTHONVERSION"] = "python" + sysconfig.get_python_version() + abiflags
         SDK["PYTHONEXEC"] = os.path.realpath(sys.executable)
 
@@ -3439,8 +3442,8 @@ def GetCurrentPythonVersionInfo():
         "soabi": GetPythonABI(),
         "ext_suffix": GetExtensionSuffix(),
         "executable": sys.executable,
-        "purelib": sysconfig.get_path("purelib"),
-        "platlib": sysconfig.get_path("platlib"),
+        "purelib": sysconfig.get_python_lib(False),
+        "platlib": sysconfig.get_python_lib(True),
     }
 
 

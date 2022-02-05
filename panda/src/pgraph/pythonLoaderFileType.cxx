@@ -158,8 +158,12 @@ init(PyObject *loader) {
     }
     Py_DECREF(supports_compressed);
   }
+  else {
+    PyErr_Clear();
+  }
 
   _load_func = PyObject_GetAttrString(loader, "load_file");
+  PyErr_Clear();
   _save_func = PyObject_GetAttrString(loader, "save_file");
   PyErr_Clear();
 

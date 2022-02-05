@@ -1,3 +1,63 @@
+-----------------------  RELEASE 1.10.11  -----------------------
+
+Maintenance release containing assorted bug fixes and minor improvements.
+
+Rendering
+* Fix erratic shadow bug with multiple lights from gltf/blend2bam (#1153)
+* Fix erratic behavior of HW skinning shaders on non-animated models (#1207)
+* Fix errors with compressed luminance textures in DirectX 9 (#1198)
+* Implement screenshotting multisample backbuffer in DirectX 9 (#1225)
+
+Texture Loading
+* Don't load texture from disk when loading .bam if preloading is off (#1208)
+* Fix TextureReloadRequest not working properly when mipmapping is disabled
+* Add TexturePool.get_texture() method for querying textures in pool
+* Fix crash when opening a .txo, .dds or .ktx file fails
+* Improve error message when calling tex.write() with unknown extension
+
+Input
+* Generate horizontal scroll wheel events on Windows
+* Generate events for mouse buttons 4 and 5 on X11
+* Generate events for lmeta, rmeta and menu keys on Windows
+* Add raw event (raw-<) for key between shift and Z on ISO keyboards
+* Gracefully handle invalid raw input device data on Windows
+* Correctly handle negative axis input from Windows raw input devices (#1218)
+* FrSky RC controller is now registered as flight stick (#1218)
+
+Deployment
+* Support building with tkinter on all supported platforms (#780)
+* Fix issue with zipimport module not being packaged
+* Fix grayscale icons becoming blue when scaled automatically
+* Automatically include cacert.pem when depending on certifi
+* Suppress assorted spurious missing module warnings
+* Targeting linux_x86_64 / linux_i686 also allows use of manylinux wheels
+
+Build
+* Add support for Maya 2022 (#1213)
+* Support building with Visual Studio 2022
+* Support building with macOS 11.3 SDK (and work around clang crash)
+* Support building with Windows 11 SDK
+* Build Ubuntu .deb files with bindings for multiple Python 3 versions
+* Support compilation with Assimp 5.x (#1212)
+* Support building on manylinux_2_24
+
+Miscellaneous
+* Fix nodes with same tag key but different value getting flattened together
+* taskMgr.step() now restores previous SIGINT handler afterwards (#1180)
+* Add base.clock as alias for globalClock
+* FilterManager mul parameter now accepts floating-point values (#1231)
+* Assorted minor API documentation improvements
+* Fix memory leak getting Bullet persistent manifolds from Python (#1193)
+* Fix assertion in PythonLoaderFileType with debug Python build
+* Add missing property interface to PlaneNode
+* Fix prepare_scene() not properly invoking the Shader Generator
+* Add name property to AICharacter class (#1205)
+* Add bullet-split-impulse configuration variable (#1201)
+* Fix slider thumb entering dragging state on keyboard button press (#1188)
+* Allow OnscreenImage to be created before ShowBase is created (#1209)
+* Fix manager, t, play_rate, duration properties of Sequence/Parallel (#1202)
+* Expose ButtonEvent API to Python (UNSTABLE API, will be changed soon)
+
 -----------------------  RELEASE 1.10.10  -----------------------
 
 This release fixes assorted, mostly very minor bugs.

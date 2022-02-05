@@ -4,6 +4,7 @@ endif()
 
 set(P3PSTATSERVER_HEADERS
   pStatClientData.h
+  pStatFlameGraph.h pStatFlameGraph.I
   pStatGraph.h pStatGraph.I
   pStatListener.h
   pStatMonitor.h pStatMonitor.I
@@ -17,7 +18,9 @@ set(P3PSTATSERVER_HEADERS
 )
 
 set(P3PSTATSERVER_SOURCES
-  pStatClientData.cxx pStatGraph.cxx
+  pStatClientData.cxx
+  pStatFlameGraph.cxx
+  pStatGraph.cxx
   pStatListener.cxx
   pStatMonitor.cxx pStatPianoRoll.cxx
   pStatReader.cxx pStatServer.cxx

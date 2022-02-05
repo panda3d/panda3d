@@ -21,7 +21,6 @@ try:
     import threading
     import signal
     import shutil
-    import sysconfig
     import plistlib
     import queue
 except KeyboardInterrupt:
@@ -94,7 +93,7 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "VRPN", "OPENSSL",                                   # Transport
   "FFTW",                                              # Algorithm helpers
   "ARTOOLKIT", "OPENCV", "DIRECTCAM", "VISION",        # Augmented Reality
-  "GTK2",                                              # GTK2 is used for PStats on Unix
+  "GTK3",                                              # GTK3 is used for PStats on Unix
   "MFC", "WX", "FLTK",                                 # Used for web plug-in only
   "COCOA",                                             # macOS toolkits
   "X11",                                               # Unix platform support
@@ -104,6 +103,7 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "PANDAPARTICLESYSTEM",                               # Built in particle system
   "CONTRIB",                                           # Experimental
   "SSE2", "NEON",                                      # Compiler features
+  "MIMALLOC",                                          # Memory allocators
 ])
 
 CheckPandaSourceTree()
@@ -429,6 +429,8 @@ elif target == 'linux' and (os.path.isfile("/lib/libc-2.5.so") or os.path.isfile
     # This is manylinux1.  A bit of a sloppy check, though.
     if GetTargetArch() in ('x86_64', 'amd64'):
         PLATFORM = 'manylinux1-x86_64'
+    elif GetTargetArch() in ('arm64', 'aarch64'):
+        PLATFORM = 'manylinux1-aarch64'
     else:
         PLATFORM = 'manylinux1-i686'
 
@@ -436,6 +438,8 @@ elif target == 'linux' and (os.path.isfile("/lib/libc-2.12.so") or os.path.isfil
     # Same sloppy check for manylinux2010.
     if GetTargetArch() in ('x86_64', 'amd64'):
         PLATFORM = 'manylinux2010-x86_64'
+    elif GetTargetArch() in ('arm64', 'aarch64'):
+        PLATFORM = 'manylinux2010-aarch64'
     else:
         PLATFORM = 'manylinux2010-i686'
 
@@ -443,13 +447,17 @@ elif target == 'linux' and (os.path.isfile("/lib/libc-2.17.so") or os.path.isfil
     # Same sloppy check for manylinux2014.
     if GetTargetArch() in ('x86_64', 'amd64'):
         PLATFORM = 'manylinux2014-x86_64'
+    elif GetTargetArch() in ('arm64', 'aarch64'):
+        PLATFORM = 'manylinux2014-aarch64'
     else:
         PLATFORM = 'manylinux2014-i686'
 
-elif target == 'linux' and (os.path.isfile("/lib/i386-linux-gnu/libc-2.24.so") or os.path.isfile("/lib/x86_64/libc-2.24.so")) and os.path.isdir("/opt/python"):
+elif target == 'linux' and (os.path.isfile("/lib/i386-linux-gnu/libc-2.24.so") or os.path.isfile("/lib/x86_64-linux-gnu/libc-2.24.so")) and os.path.isdir("/opt/python"):
     # Same sloppy check for manylinux_2_24.
     if GetTargetArch() in ('x86_64', 'amd64'):
         PLATFORM = 'manylinux_2_24-x86_64'
+    elif GetTargetArch() in ('arm64', 'aarch64'):
+        PLATFORM = 'manylinux_2_24-aarch64'
     else:
         PLATFORM = 'manylinux_2_24-i686'
 
@@ -639,6 +647,7 @@ if (COMPILER == "MSVC"):
     if (PkgSkip("DIRECTCAM")==0): LibName("DIRECTCAM", "quartz.lib")
     if (PkgSkip("DIRECTCAM")==0): LibName("DIRECTCAM", "odbc32.lib")
     if (PkgSkip("DIRECTCAM")==0): LibName("DIRECTCAM", "odbccp32.lib")
+    if (PkgSkip("MIMALLOC")==0): LibName("MIMALLOC", GetThirdpartyDir() + "mimalloc/lib/mimalloc-static.lib")
     if (PkgSkip("OPENSSL")==0):
         if os.path.isfile(GetThirdpartyDir() + "openssl/lib/libpandassl.lib"):
             LibName("OPENSSL", GetThirdpartyDir() + "openssl/lib/libpandassl.lib")
@@ -878,6 +887,7 @@ if (COMPILER=="GCC"):
     SmartPkgEnable("SPIRV-TOOLS", "",        ("SPIRV-Tools", "SPIRV-Tools-opt"), "spirv-tools/optimizer.hpp")
     SmartPkgEnable("SPIRV-CROSS-GLSL", "",   ("spirv-cross-core", "spirv-cross-glsl"), "spirv_cross/spirv_cross.hpp", thirdparty_dir="spirv-cross")
     SmartPkgEnable("SPIRV-CROSS-HLSL", "",   ("spirv-cross-core", "spirv-cross-hlsl"), "spirv_cross/spirv_cross.hpp", thirdparty_dir="spirv-cross")
+    SmartPkgEnable("MIMALLOC",  "",          ("mimalloc"), "mimalloc.h")
 
     # Copy freetype libraries to be specified after harfbuzz libraries as well,
     # because there's a circular dependency between the two libraries.
@@ -947,6 +957,9 @@ if (COMPILER=="GCC"):
             LibName("ARTOOLKIT", "-Wl,--exclude-libs,libAR.a")
             LibName("ARTOOLKIT", "-Wl,--exclude-libs,libARMulti.a")
 
+        if not PkgSkip("MIMALLOC"):
+            LibName("MIMALLOC", "-Wl,--exclude-libs,libmimalloc.a")
+
         LibName("GLSLANG", "-Wl,--exclude-libs,libglslang.a")
         LibName("GLSLANG", "-Wl,--exclude-libs,libSPIRV.a")
         LibName("GLSLANG", "-Wl,--exclude-libs,libOSDependent.a")
@@ -1001,7 +1014,7 @@ if (COMPILER=="GCC"):
 
     SmartPkgEnable("OPENSSL",   "openssl",   ("ssl", "crypto"), ("openssl/ssl.h", "openssl/crypto.h"))
     SmartPkgEnable("ZLIB",      "zlib",      ("z"), "zlib.h")
-    SmartPkgEnable("GTK2",      "gtk+-2.0")
+    SmartPkgEnable("GTK3",      "gtk+-3.0")
 
     if not PkgSkip("OPENSSL") and GetTarget() != "darwin":
         LibName("OPENSSL", "-Wl,--exclude-libs,libssl.a")
@@ -1016,11 +1029,6 @@ if (COMPILER=="GCC"):
     if GetHost() != "darwin":
         # Workaround for an issue where pkg-config does not include this path
         if GetTargetArch() in ("x86_64", "amd64"):
-            if (os.path.isdir("/usr/lib64/glib-2.0/include")):
-                IncDirectory("GTK2", "/usr/lib64/glib-2.0/include")
-            if (os.path.isdir("/usr/lib64/gtk-2.0/include")):
-                IncDirectory("GTK2", "/usr/lib64/gtk-2.0/include")
-
             if not PkgSkip("X11"):
                 if (os.path.isdir("/usr/X11R6/lib64")):
                     LibDirectory("ALWAYS", "/usr/X11R6/lib64")
@@ -2331,6 +2339,7 @@ DTOOL_CONFIG=[
     ("REPORT_OPENSSL_ERRORS",          '1',                      '1'),
     ("USE_PANDAFILESTREAM",            '1',                      '1'),
     ("USE_DELETED_CHAIN",              '1',                      '1'),
+    ("HAVE_MIMALLOC",                  'UNDEF',                  'UNDEF'),
     ("HAVE_WGL",                       '1',                      'UNDEF'),
     ("HAVE_DX9",                       'UNDEF',                  'UNDEF'),
     ("HAVE_THREADS",                   '1',                      '1'),
@@ -2472,6 +2481,20 @@ def WriteConfigSettings():
                 dtool_config["HAVE_"+x] = 'UNDEF'
 
     dtool_config["HAVE_NET"] = '1'
+
+    if GetTarget() == 'windows':
+        if not PkgSkip("MIMALLOC"):
+            # This is faster than both DeletedBufferChain and malloc,
+            # especially in the multi-threaded case.
+            dtool_config["USE_MEMORY_MIMALLOC"] = '1'
+            dtool_config["USE_DELETED_CHAIN"] = 'UNDEF'
+        else:
+            # If we don't have mimalloc, use DeletedBufferChain as fallback,
+            # which is still more efficient than malloc.
+            dtool_config["USE_DELETED_CHAIN"] = '1'
+    else:
+        # On other systems, the default malloc seems to be fine.
+        dtool_config["USE_DELETED_CHAIN"] = 'UNDEF'
 
     if GetTarget() not in ("linux", "android"):
         dtool_config["HAVE_PROC_SELF_EXE"] = 'UNDEF'
@@ -3369,7 +3392,7 @@ if GetTarget() == 'windows':
 # DIRECTORY: dtool/src/dtoolbase/
 #
 
-OPTS=['DIR:dtool/src/dtoolbase', 'BUILDING:DTOOL']
+OPTS=['DIR:dtool/src/dtoolbase', 'BUILDING:DTOOL', 'MIMALLOC']
 TargetAdd('p3dtoolbase_composite1.obj', opts=OPTS, input='p3dtoolbase_composite1.cxx')
 TargetAdd('p3dtoolbase_composite2.obj', opts=OPTS, input='p3dtoolbase_composite2.cxx')
 TargetAdd('p3dtoolbase_lookup3.obj',    opts=OPTS, input='lookup3.c')
@@ -3400,7 +3423,7 @@ TargetAdd('libp3dtool.dll', input='p3dtoolbase_composite1.obj')
 TargetAdd('libp3dtool.dll', input='p3dtoolbase_composite2.obj')
 TargetAdd('libp3dtool.dll', input='p3dtoolbase_indent.obj')
 TargetAdd('libp3dtool.dll', input='p3dtoolbase_lookup3.obj')
-TargetAdd('libp3dtool.dll', opts=['ADVAPI','WINSHELL','WINKERNEL'])
+TargetAdd('libp3dtool.dll', opts=['ADVAPI','WINSHELL','WINKERNEL','MIMALLOC'])
 
 #
 # DIRECTORY: dtool/src/cppparser/
@@ -5886,19 +5909,19 @@ if not PkgSkip("PANDATOOL"):
 # DIRECTORY: pandatool/src/gtk-stats/
 #
 
-if not PkgSkip("PANDATOOL") and (GetTarget() == 'windows' or not PkgSkip("GTK2")):
+if not PkgSkip("PANDATOOL") and (GetTarget() == 'windows' or not PkgSkip("GTK3")):
     if GetTarget() == 'windows':
         OPTS=['DIR:pandatool/src/win-stats']
         TargetAdd('pstats_composite1.obj', opts=OPTS, input='winstats_composite1.cxx')
     else:
-        OPTS=['DIR:pandatool/src/gtk-stats', 'GTK2']
+        OPTS=['DIR:pandatool/src/gtk-stats', 'GTK3']
         TargetAdd('pstats_composite1.obj', opts=OPTS, input='gtkstats_composite1.cxx')
     TargetAdd('pstats.exe', input='pstats_composite1.obj')
     TargetAdd('pstats.exe', input='libp3pstatserver.lib')
     TargetAdd('pstats.exe', input='libp3progbase.lib')
     TargetAdd('pstats.exe', input='libp3pandatoolbase.lib')
     TargetAdd('pstats.exe', input=COMMON_PANDA_LIBS)
-    TargetAdd('pstats.exe', opts=['SUBSYSTEM:WINDOWS', 'WINSOCK', 'WINIMM', 'WINGDI', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM', 'GTK2'])
+    TargetAdd('pstats.exe', opts=['SUBSYSTEM:WINDOWS', 'WINCOMCTL', 'WINSOCK', 'WINIMM', 'WINGDI', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM', 'GTK3'])
 
 #
 # DIRECTORY: pandatool/src/xfileprogs/

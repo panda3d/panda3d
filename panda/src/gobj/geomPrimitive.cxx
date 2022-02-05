@@ -2363,6 +2363,25 @@ get_num_primitives() const {
 }
 
 /**
+ *
+ */
+int GeomPrimitivePipelineReader::
+get_num_faces() const {
+  int num_vertices_per_primitive = _object->get_num_vertices_per_primitive();
+
+  if (num_vertices_per_primitive == 0) {
+    int num_primitives = _cdata->_ends.size();
+    int num_vertices = get_num_vertices();
+    int min_num_vertices_per_primitive = _object->get_min_num_vertices_per_primitive();
+    int num_unused_vertices_per_primitive = _object->get_num_unused_vertices_per_primitive();
+    return num_vertices - (num_primitives * (min_num_vertices_per_primitive - 1)) - ((num_primitives - 1) * num_unused_vertices_per_primitive);
+  } else {
+    // Same as the number of primitives.
+    return (get_num_vertices() / num_vertices_per_primitive);
+  }
+}
+
+/**
  * Turns on all the bits corresponding to the vertices that are referenced
  * by this GeomPrimitive.
  */

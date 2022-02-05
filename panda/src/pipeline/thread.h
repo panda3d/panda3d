@@ -42,7 +42,8 @@ class AsyncTask;
  * object will automatically be destructed if no other pointers are
  * referencing it.
  */
-class EXPCL_PANDA_PIPELINE Thread : public TypedReferenceCount, public Namable {
+// Due to a GCC bug, we can't use alignas() together with an attribute.
+class ALIGN_64BYTE EXPCL_PANDA_PIPELINE Thread : public TypedReferenceCount, public Namable {
 protected:
   Thread(const std::string &name, const std::string &sync_name);
   Thread(const Thread &copy) = delete;

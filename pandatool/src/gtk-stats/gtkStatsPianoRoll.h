@@ -38,17 +38,18 @@ public:
   virtual void changed_graph_size(int graph_xsize, int graph_ysize);
 
   virtual void set_time_units(int unit_mask);
-  virtual void clicked_label(int collector_index);
+  virtual void on_click_label(int collector_index);
   void set_horizontal_scale(double time_width);
 
 protected:
   void clear_region();
   virtual void begin_draw();
+  virtual void begin_row(int row);
   virtual void draw_bar(int row, int from_x, int to_x);
   virtual void end_draw();
   virtual void idle();
 
-  virtual void additional_graph_window_paint();
+  virtual void additional_graph_window_paint(cairo_t *cr);
   virtual DragMode consider_drag_start(int graph_x, int graph_y);
 
   virtual gboolean handle_button_press(GtkWidget *widget, int graph_x, int graph_y,
@@ -59,12 +60,11 @@ protected:
 private:
   int get_collector_under_pixel(int xpoint, int ypoint);
   void update_labels();
-  void draw_guide_bar(GdkDrawable *surface, const PStatGraph::GuideBar &bar);
-  void draw_guide_labels();
-  void draw_guide_label(const PStatGraph::GuideBar &bar);
+  void draw_guide_bar(cairo_t *cr, const PStatGraph::GuideBar &bar);
+  void draw_guide_labels(cairo_t *cr);
+  void draw_guide_label(cairo_t *cr, const PStatGraph::GuideBar &bar);
 
-  static gboolean expose_event_callback(GtkWidget *widget,
-          GdkEventExpose *event, gpointer data);
+  static gboolean draw_callback(GtkWidget *widget, cairo_t *cr, gpointer data);
 };
 
 #endif

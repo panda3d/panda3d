@@ -41,30 +41,6 @@ prepare_for_exit() {
 /**
  *
  */
-INLINE Thread *ThreadWin32Impl::
-get_current_thread() {
-  if (!_got_pt_ptr_index) {
-    init_pt_ptr_index();
-  }
-  return (Thread *)TlsGetValue(_pt_ptr_index);
-}
-
-/**
- * Associates the indicated Thread object with the currently-executing thread.
- * You should not call this directly; use Thread::bind_thread() instead.
- */
-INLINE void ThreadWin32Impl::
-bind_thread(Thread *thread) {
-  if (!_got_pt_ptr_index) {
-    init_pt_ptr_index();
-  }
-  BOOL result = TlsSetValue(_pt_ptr_index, thread);
-  nassertv(result);
-}
-
-/**
- *
- */
 INLINE bool ThreadWin32Impl::
 is_threading_supported() {
   return true;

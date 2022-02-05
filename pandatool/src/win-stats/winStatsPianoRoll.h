@@ -41,12 +41,14 @@ public:
   virtual void changed_graph_size(int graph_xsize, int graph_ysize);
 
   virtual void set_time_units(int unit_mask);
-  virtual void clicked_label(int collector_index);
+  virtual void on_click_label(int collector_index);
   void set_horizontal_scale(double time_width);
 
 protected:
+  virtual void normal_guide_bars();
   void clear_region();
   virtual void begin_draw();
+  virtual void begin_row(int row);
   virtual void draw_bar(int row, int from_x, int to_x);
   virtual void end_draw();
   virtual void idle();
