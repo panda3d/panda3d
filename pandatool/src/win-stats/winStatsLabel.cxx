@@ -44,15 +44,15 @@ WinStatsLabel(WinStatsMonitor *monitor, WinStatsGraph *graph,
   update_text(use_fullname);
 
   LRGBColor rgb = _monitor->get_collector_color(_collector_index);
-  int r = (int)encode_sRGB_uchar(rgb[0]);
-  int g = (int)encode_sRGB_uchar(rgb[1]);
-  int b = (int)encode_sRGB_uchar(rgb[2]);
+  int r = (int)encode_sRGB_uchar((float)rgb[0]);
+  int g = (int)encode_sRGB_uchar((float)rgb[1]);
+  int b = (int)encode_sRGB_uchar((float)rgb[2]);
   _bg_brush = CreateSolidBrush(RGB(r, g, b));
 
   // Calculate the color when it is highlighted.
-  int hr = (int)encode_sRGB_uchar(rgb[0] * 0.75f);
-  int hg = (int)encode_sRGB_uchar(rgb[1] * 0.75f);
-  int hb = (int)encode_sRGB_uchar(rgb[2] * 0.75f);
+  int hr = (int)encode_sRGB_uchar((float)rgb[0] * 0.75f);
+  int hg = (int)encode_sRGB_uchar((float)rgb[1] * 0.75f);
+  int hb = (int)encode_sRGB_uchar((float)rgb[2] * 0.75f);
   _highlight_bg_brush = CreateSolidBrush(RGB(hr, hg, hb));
 
   // Should our foreground be black or white?

@@ -242,14 +242,14 @@ get_collector_brush(int collector_index, bool highlight) {
 
   // Ask the monitor what color this guy should be.
   LRGBColor rgb = _monitor->get_collector_color(collector_index);
-  int r = (int)encode_sRGB_uchar(rgb[0]);
-  int g = (int)encode_sRGB_uchar(rgb[1]);
-  int b = (int)encode_sRGB_uchar(rgb[2]);
+  int r = (int)encode_sRGB_uchar((float)rgb[0]);
+  int g = (int)encode_sRGB_uchar((float)rgb[1]);
+  int b = (int)encode_sRGB_uchar((float)rgb[2]);
   HBRUSH brush = CreateSolidBrush(RGB(r, g, b));
 
-  int hr = (int)encode_sRGB_uchar(rgb[0] * 0.75f);
-  int hg = (int)encode_sRGB_uchar(rgb[1] * 0.75f);
-  int hb = (int)encode_sRGB_uchar(rgb[2] * 0.75f);
+  int hr = (int)encode_sRGB_uchar((float)rgb[0] * 0.75f);
+  int hg = (int)encode_sRGB_uchar((float)rgb[1] * 0.75f);
+  int hb = (int)encode_sRGB_uchar((float)rgb[2] * 0.75f);
   HBRUSH hbrush = CreateSolidBrush(RGB(hr, hg, hb));
 
   _brushes[collector_index] = std::make_pair(brush, hbrush);
