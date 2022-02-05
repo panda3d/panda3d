@@ -117,8 +117,6 @@ RenderState::
   nassertv(!is_destructing());
   set_destructing();
 
-  LightReMutexHolder holder(*_states_lock);
-
   // unref() should have cleared these.
   nassertv(_saved_entry == -1);
   nassertv(_composition_cache.is_empty() && _invert_composition_cache.is_empty());
