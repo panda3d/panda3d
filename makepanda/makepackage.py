@@ -189,29 +189,63 @@ def MakeInstallerNSIS(version, file, title, installdir, compressor="lzma", **kwa
     oscmd(cmd)
 
 
-def MakeDebugSymbolArchive(zipname, dirname):
-    outputdir = GetOutputDir()
-
+def MakeDebugSymbolZipArchive(zipname):
     import zipfile
 
-    zip = zipfile.ZipFile(zipname, 'w', zipfile.ZIP_DEFLATED)
+    outputdir = GetOutputDir()
+    zip = zipfile.ZipFile(zipname + '.zip', 'w', zipfile.ZIP_DEFLATED)
 
     for fn in glob.glob(os.path.join(outputdir, 'bin', '*.pdb')):
-        zip.write(fn, dirname + '/bin/' + os.path.basename(fn))
+        zip.write(fn, 'bin/' + os.path.basename(fn))
 
     for fn in glob.glob(os.path.join(outputdir, 'panda3d', '*.pdb')):
-        zip.write(fn, dirname + '/panda3d/' + os.path.basename(fn))
+        zip.write(fn, 'panda3d/' + os.path.basename(fn))
 
     for fn in glob.glob(os.path.join(outputdir, 'plugins', '*.pdb')):
-        zip.write(fn, dirname + '/plugins/' + os.path.basename(fn))
+        zip.write(fn, 'plugins/' + os.path.basename(fn))
 
     for fn in glob.glob(os.path.join(outputdir, 'python', '*.pdb')):
-        zip.write(fn, dirname + '/python/' + os.path.basename(fn))
+        zip.write(fn, 'python/' + os.path.basename(fn))
 
     for fn in glob.glob(os.path.join(outputdir, 'python', 'DLLs', '*.pdb')):
-        zip.write(fn, dirname + '/python/DLLs/' + os.path.basename(fn))
+        zip.write(fn, 'python/DLLs/' + os.path.basename(fn))
 
     zip.close()
+
+
+def MakeDebugSymbolSevenZipArchive(zipname, compressor):
+    zipname += '.7z'
+    flags = ['-t7z', '-y']
+
+    if compressor == 'zlib':
+        # This will still build an LZMA2 archive by default,
+        # but will complete significantly faster.
+        flags.extend(['-mx=3'])
+
+    # Remove the old archive before proceeding.
+    if os.path.exists(zipname):
+        os.remove(zipname)
+
+    outputdir = GetOutputDir()
+
+    # We'll be creating the archive inside the output
+    # directory, so we need the relative path to the archive
+    zipname = os.path.relpath(zipname, outputdir)
+
+    # Create a 7-zip archive, including all *.pdb files
+    # that are not in the tmp folder
+    cmd = [GetSevenZip(), 'a']
+    cmd.extend(flags)
+    cmd.extend(['-ir!*.pdb', '-x!' + os.path.join('tmp', '*'), zipname])
+
+    subprocess.call(cmd, stdout=subprocess.DEVNULL, cwd=outputdir)
+
+
+def MakeDebugSymbolArchive(zipname, compressor):
+    if HasSevenZip():
+        MakeDebugSymbolSevenZipArchive(zipname, compressor)
+    else:
+        MakeDebugSymbolZipArchive(zipname)
 
 
 def MakeInstallerLinux(version, debversion=None, rpmversion=None, rpmrelease=1,
@@ -969,6 +1003,7 @@ def MakeInstallerAndroid(version, **kwargs):
 
 def MakeInstaller(version, **kwargs):
     target = GetTarget()
+
     if target == 'windows':
         dir = kwargs.pop('installdir', None)
         if dir is None:
@@ -991,8 +1026,10 @@ def MakeInstaller(version, **kwargs):
         if GetTargetArch() == 'x64':
             fn += '-x64'
 
+        compressor = kwargs.get('compressor')
+
         MakeInstallerNSIS(version, fn + '.exe', title, dir, **kwargs)
-        MakeDebugSymbolArchive(fn + '-pdb.zip', dir)
+        MakeDebugSymbolArchive(fn + '-pdb', compressor)
     elif target == 'linux':
         MakeInstallerLinux(version, **kwargs)
     elif target == 'darwin':
