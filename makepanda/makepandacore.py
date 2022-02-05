@@ -717,7 +717,7 @@ def GetTimestamp(path):
     if path in TIMESTAMPCACHE:
         return TIMESTAMPCACHE[path]
     try:
-        date = os.path.getmtime(path)
+        date = int(os.path.getmtime(path))
     except:
         date = 0
     TIMESTAMPCACHE[path] = date
@@ -871,7 +871,7 @@ def JavaGetImports(path):
 ##
 ########################################################################
 
-DCACHE_VERSION = 2
+DCACHE_VERSION = 3
 DCACHE_BACKED_UP = False
 
 def SaveDependencyCache():

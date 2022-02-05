@@ -780,8 +780,6 @@ if (COMPILER == "MSVC"):
         LibName("BULLET", GetThirdpartyDir() + "bullet/lib/BulletSoftBody" + suffix)
 
 if (COMPILER=="GCC"):
-    PkgDisable("MIMALLOC") # no discernable benefit over glibc
-
     if GetTarget() != "darwin":
         PkgDisable("COCOA")
 
@@ -855,6 +853,7 @@ if (COMPILER=="GCC"):
     SmartPkgEnable("OPUS",      "opusfile",  ("opusfile", "opus", "ogg"), ("ogg/ogg.h", "opus/opusfile.h", "opus"))
     SmartPkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
     SmartPkgEnable("PNG",       "libpng",    ("png"), "png.h", tool = "libpng-config")
+    SmartPkgEnable("MIMALLOC",  "",          ("mimalloc"), "mimalloc.h")
 
     # Copy freetype libraries to be specified after harfbuzz libraries as well,
     # because there's a circular dependency between the two libraries.
@@ -923,6 +922,9 @@ if (COMPILER=="GCC"):
         if not PkgSkip("ARTOOLKIT"):
             LibName("ARTOOLKIT", "-Wl,--exclude-libs,libAR.a")
             LibName("ARTOOLKIT", "-Wl,--exclude-libs,libARMulti.a")
+
+        if not PkgSkip("MIMALLOC"):
+            LibName("MIMALLOC", "-Wl,--exclude-libs,libmimalloc.a")
 
     if PkgSkip("FFMPEG") or GetTarget() == "darwin":
         cv_lib = ChooseLib(("opencv_core", "cv"), "OPENCV")

@@ -274,13 +274,13 @@ get_collector_pattern(int collector_index, bool highlight) {
   // Ask the monitor what color this guy should be.
   LRGBColor rgb = _monitor->get_collector_color(collector_index);
   cairo_pattern_t *pattern = cairo_pattern_create_rgb(
-    encode_sRGB_float(rgb[0]),
-    encode_sRGB_float(rgb[1]),
-    encode_sRGB_float(rgb[2]));
+    encode_sRGB_float((float)rgb[0]),
+    encode_sRGB_float((float)rgb[1]),
+    encode_sRGB_float((float)rgb[2]));
   cairo_pattern_t *hpattern = cairo_pattern_create_rgb(
-    encode_sRGB_float(rgb[0] * 0.75f),
-    encode_sRGB_float(rgb[1] * 0.75f),
-    encode_sRGB_float(rgb[2] * 0.75f));
+    encode_sRGB_float((float)rgb[0] * 0.75f),
+    encode_sRGB_float((float)rgb[1] * 0.75f),
+    encode_sRGB_float((float)rgb[2] * 0.75f));
 
   _brushes[collector_index] = std::make_pair(pattern, hpattern);
   return highlight ? hpattern : pattern;

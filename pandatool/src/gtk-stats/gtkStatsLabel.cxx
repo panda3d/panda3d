@@ -55,14 +55,14 @@ GtkStatsLabel(GtkStatsMonitor *monitor, GtkStatsGraph *graph,
   // Set the fg and bg colors on the label.
   LRGBColor rgb = _monitor->get_collector_color(_collector_index);
   _bg_color = LRGBColor(
-    encode_sRGB_float(rgb[0]),
-    encode_sRGB_float(rgb[1]),
-    encode_sRGB_float(rgb[2]));
+    encode_sRGB_float((float)rgb[0]),
+    encode_sRGB_float((float)rgb[1]),
+    encode_sRGB_float((float)rgb[2]));
 
   _highlight_bg_color = LRGBColor(
-    encode_sRGB_float(rgb[0] * 0.75f),
-    encode_sRGB_float(rgb[1] * 0.75f),
-    encode_sRGB_float(rgb[2] * 0.75f));
+    encode_sRGB_float((float)rgb[0] * 0.75f),
+    encode_sRGB_float((float)rgb[1] * 0.75f),
+    encode_sRGB_float((float)rgb[2] * 0.75f));
 
   // Should our foreground be black or white?
   PN_stdfloat bright = _bg_color.dot(LRGBColor(0.2126, 0.7152, 0.0722));
