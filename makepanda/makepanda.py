@@ -771,9 +771,14 @@ if (COMPILER == "MSVC"):
         if os.path.isfile(GetThirdpartyDir() + "openssl/lib/libpandassl.lib"):
             LibName("OPENSSL", GetThirdpartyDir() + "openssl/lib/libpandassl.lib")
             LibName("OPENSSL", GetThirdpartyDir() + "openssl/lib/libpandaeay.lib")
-        else:
+        elif os.path.isfile(GetThirdpartyDir() + "openssl/lib/ssleay32.lib"):
             LibName("OPENSSL", GetThirdpartyDir() + "openssl/lib/libeay32.lib")
             LibName("OPENSSL", GetThirdpartyDir() + "openssl/lib/ssleay32.lib")
+        else:
+            LibName("OPENSSL", GetThirdpartyDir() + "openssl/lib/libssl.lib")
+            LibName("OPENSSL", GetThirdpartyDir() + "openssl/lib/libcrypto.lib")
+            LibName("OPENSSL", "crypt32.lib")
+            LibName("OPENSSL", "ws2_32.lib")
     if (PkgSkip("PNG")==0):
         if os.path.isfile(GetThirdpartyDir() + "png/lib/libpng16_static.lib"):
             LibName("PNG", GetThirdpartyDir() + "png/lib/libpng16_static.lib")
