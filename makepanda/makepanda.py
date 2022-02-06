@@ -103,6 +103,7 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "PANDAPARTICLESYSTEM",                               # Built in particle system
   "CONTRIB",                                           # Experimental
   "SSE2", "NEON",                                      # Compiler features
+  "MIMALLOC",                                          # Memory allocators
 ])
 
 CheckPandaSourceTree()
@@ -767,6 +768,7 @@ if (COMPILER == "MSVC"):
     if (PkgSkip("DIRECTCAM")==0): LibName("DIRECTCAM", "quartz.lib")
     if (PkgSkip("DIRECTCAM")==0): LibName("DIRECTCAM", "odbc32.lib")
     if (PkgSkip("DIRECTCAM")==0): LibName("DIRECTCAM", "odbccp32.lib")
+    if (PkgSkip("MIMALLOC")==0): LibName("MIMALLOC", GetThirdpartyDir() + "mimalloc/lib/mimalloc-static.lib")
     if (PkgSkip("OPENSSL")==0):
         if os.path.isfile(GetThirdpartyDir() + "openssl/lib/libpandassl.lib"):
             LibName("OPENSSL", GetThirdpartyDir() + "openssl/lib/libpandassl.lib")
@@ -949,6 +951,8 @@ if (COMPILER == "MSVC"):
         LibName("BULLET", GetThirdpartyDir() + "bullet/lib/BulletSoftBody" + suffix)
 
 if (COMPILER=="GCC"):
+    PkgDisable("MIMALLOC") # no discernable benefit over glibc
+
     if GetTarget() != "darwin":
         PkgDisable("CARBON")
         PkgDisable("COCOA")
@@ -3766,7 +3770,7 @@ if GetTarget() == 'windows':
 # DIRECTORY: dtool/src/dtoolbase/
 #
 
-OPTS=['DIR:dtool/src/dtoolbase', 'BUILDING:DTOOL']
+OPTS=['DIR:dtool/src/dtoolbase', 'BUILDING:DTOOL', 'MIMALLOC']
 TargetAdd('p3dtoolbase_composite1.obj', opts=OPTS, input='p3dtoolbase_composite1.cxx')
 TargetAdd('p3dtoolbase_composite2.obj', opts=OPTS, input='p3dtoolbase_composite2.cxx')
 TargetAdd('p3dtoolbase_lookup3.obj',    opts=OPTS, input='lookup3.c')
@@ -3797,7 +3801,7 @@ TargetAdd('libp3dtool.dll', input='p3dtoolbase_composite1.obj')
 TargetAdd('libp3dtool.dll', input='p3dtoolbase_composite2.obj')
 TargetAdd('libp3dtool.dll', input='p3dtoolbase_indent.obj')
 TargetAdd('libp3dtool.dll', input='p3dtoolbase_lookup3.obj')
-TargetAdd('libp3dtool.dll', opts=['ADVAPI','WINSHELL','WINKERNEL'])
+TargetAdd('libp3dtool.dll', opts=['ADVAPI','WINSHELL','WINKERNEL','MIMALLOC'])
 
 #
 # DIRECTORY: dtool/src/cppparser/

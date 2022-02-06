@@ -387,6 +387,10 @@ typedef struct _object PyObject;
 // This specialized malloc implementation can perform the required alignment.
 #undef MEMORY_HOOK_DO_ALIGN
 
+#elif defined(USE_MEMORY_MIMALLOC)
+// This one does, too.
+#undef MEMORY_HOOK_DO_ALIGN
+
 #elif defined(USE_MEMORY_PTMALLOC2)
 // But not this one.  For some reason it crashes when we try to build it with
 // alignment 16.  So if we're using ptmalloc2, we need to enforce alignment
@@ -438,7 +442,7 @@ typedef struct _object PyObject;
 #endif
 
 /* Determine our memory-allocation requirements. */
-#if defined(USE_MEMORY_PTMALLOC2) || defined(USE_MEMORY_DLMALLOC) || defined(DO_MEMORY_USAGE) || defined(MEMORY_HOOK_DO_ALIGN)
+#if defined(USE_MEMORY_MIMALLOC) || defined(USE_MEMORY_PTMALLOC2) || defined(USE_MEMORY_DLMALLOC) || defined(DO_MEMORY_USAGE) || defined(MEMORY_HOOK_DO_ALIGN)
 /* In this case we have some custom memory management requirements. */
 #else
 /* Otherwise, if we have no custom memory management needs at all, we
