@@ -216,7 +216,6 @@ private:
     double _next_packet;
 
     bool _thread_active;
-    BitArray _active_collectors;  // no longer used.
 
     // This mutex is used to protect writes to _frame_data for this particular
     // thread, as well as writes to the _per_thread data for this particular
