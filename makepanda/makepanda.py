@@ -93,7 +93,7 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "VRPN", "OPENSSL",                                   # Transport
   "FFTW",                                              # Algorithm helpers
   "ARTOOLKIT", "OPENCV", "DIRECTCAM", "VISION",        # Augmented Reality
-  "GTK2",                                              # GTK2 is used for PStats on Unix
+  "GTK3",                                              # GTK3 is used for PStats on Unix
   "MFC", "WX", "FLTK",                                 # Used for web plug-in only
   "COCOA",                                             # macOS toolkits
   "X11",                                               # Unix platform support
@@ -103,6 +103,7 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "PANDAPARTICLESYSTEM",                               # Built in particle system
   "CONTRIB",                                           # Experimental
   "SSE2", "NEON",                                      # Compiler features
+  "MIMALLOC",                                          # Memory allocators
 ])
 
 CheckPandaSourceTree()
@@ -633,13 +634,19 @@ if (COMPILER == "MSVC"):
     if (PkgSkip("DIRECTCAM")==0): LibName("DIRECTCAM", "quartz.lib")
     if (PkgSkip("DIRECTCAM")==0): LibName("DIRECTCAM", "odbc32.lib")
     if (PkgSkip("DIRECTCAM")==0): LibName("DIRECTCAM", "odbccp32.lib")
+    if (PkgSkip("MIMALLOC")==0): LibName("MIMALLOC", GetThirdpartyDir() + "mimalloc/lib/mimalloc-static.lib")
     if (PkgSkip("OPENSSL")==0):
         if os.path.isfile(GetThirdpartyDir() + "openssl/lib/libpandassl.lib"):
             LibName("OPENSSL", GetThirdpartyDir() + "openssl/lib/libpandassl.lib")
             LibName("OPENSSL", GetThirdpartyDir() + "openssl/lib/libpandaeay.lib")
-        else:
+        elif os.path.isfile(GetThirdpartyDir() + "openssl/lib/ssleay32.lib"):
             LibName("OPENSSL", GetThirdpartyDir() + "openssl/lib/libeay32.lib")
             LibName("OPENSSL", GetThirdpartyDir() + "openssl/lib/ssleay32.lib")
+        else:
+            LibName("OPENSSL", GetThirdpartyDir() + "openssl/lib/libssl.lib")
+            LibName("OPENSSL", GetThirdpartyDir() + "openssl/lib/libcrypto.lib")
+            LibName("OPENSSL", "crypt32.lib")
+            LibName("OPENSSL", "ws2_32.lib")
     if (PkgSkip("PNG")==0):
         if os.path.isfile(GetThirdpartyDir() + "png/lib/libpng16_static.lib"):
             LibName("PNG", GetThirdpartyDir() + "png/lib/libpng16_static.lib")
@@ -651,23 +658,39 @@ if (COMPILER == "MSVC"):
         else:
             LibName("TIFF", GetThirdpartyDir() + "tiff/lib/tiff.lib")
     if (PkgSkip("OPENEXR")==0):
-        suffix = ""
-        if os.path.isfile(GetThirdpartyDir() + "openexr/lib/IlmImf-2_2.lib"):
-            suffix = "-2_2"
-        elif os.path.isfile(GetThirdpartyDir() + "openexr/lib/IlmImf-2_3.lib"):
-            suffix = "-2_3"
-        elif os.path.isfile(GetThirdpartyDir() + "openexr/lib/IlmImf-2_4.lib"):
-            suffix = "-2_4"
-            LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/Imath" + suffix + ".lib")
-        if os.path.isfile(GetThirdpartyDir() + "openexr/lib/IlmImf" + suffix + "_s.lib"):
-            suffix += "_s"  # _s suffix observed for OpenEXR 2.3 only so far
-        LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/IlmImf" + suffix + ".lib")
-        LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/IlmThread" + suffix + ".lib")
-        LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/Iex" + suffix + ".lib")
-        if suffix == "-2_2":
-            LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/Half.lib")
+        if os.path.isfile(GetThirdpartyDir() + "openexr/lib/OpenEXRCore-3_1.lib"):
+            LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/OpenEXR-3_1.lib")
+            LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/IlmThread-3_1.lib")
+            LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/Imath-3_1.lib")
+            LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/Iex-3_1.lib")
+        elif os.path.isfile(GetThirdpartyDir() + "openexr/lib/OpenEXR-3_0.lib"):
+            LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/OpenEXR-3_0.lib")
+            LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/IlmThread-3_0.lib")
+            LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/Imath-3_0.lib")
+            LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/Iex-3_0.lib")
+        elif os.path.isfile(GetThirdpartyDir() + "openexr/lib/OpenEXR.lib"):
+            LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/OpenEXR.lib")
+            LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/IlmThread.lib")
+            LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/Imath.lib")
+            LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/Iex.lib")
         else:
-            LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/Half" + suffix + ".lib")
+            suffix = ""
+            if os.path.isfile(GetThirdpartyDir() + "openexr/lib/IlmImf-2_2.lib"):
+                suffix = "-2_2"
+            elif os.path.isfile(GetThirdpartyDir() + "openexr/lib/IlmImf-2_3.lib"):
+                suffix = "-2_3"
+            elif os.path.isfile(GetThirdpartyDir() + "openexr/lib/IlmImf-2_4.lib"):
+                suffix = "-2_4"
+                LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/Imath" + suffix + ".lib")
+            if os.path.isfile(GetThirdpartyDir() + "openexr/lib/IlmImf" + suffix + "_s.lib"):
+                suffix += "_s"  # _s suffix observed for OpenEXR 2.3 only so far
+            LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/IlmImf" + suffix + ".lib")
+            LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/IlmThread" + suffix + ".lib")
+            LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/Iex" + suffix + ".lib")
+            if suffix == "-2_2":
+                LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/Half.lib")
+            else:
+                LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/Half" + suffix + ".lib")
         IncDirectory("OPENEXR", GetThirdpartyDir() + "openexr/include/OpenEXR")
         IncDirectory("OPENEXR", GetThirdpartyDir() + "openexr/include/Imath")
     if (PkgSkip("JPEG")==0):     LibName("JPEG",     GetThirdpartyDir() + "jpeg/lib/jpeg-static.lib")
@@ -841,6 +864,7 @@ if (COMPILER=="GCC"):
     SmartPkgEnable("VRPN",      "",          ("vrpn", "quat"), ("vrpn", "quat.h", "vrpn/vrpn_Types.h"))
     SmartPkgEnable("OPUS",      "opusfile",  ("opusfile", "opus", "ogg"), ("ogg/ogg.h", "opus/opusfile.h", "opus"))
     SmartPkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
+    SmartPkgEnable("MIMALLOC",  "",          ("mimalloc"), "mimalloc.h")
 
     if GetTarget() != 'emscripten':
         # Most of these are provided by emscripten or via emscripten-ports.
@@ -941,6 +965,9 @@ if (COMPILER=="GCC"):
             LibName("ARTOOLKIT", "-Wl,--exclude-libs,libAR.a")
             LibName("ARTOOLKIT", "-Wl,--exclude-libs,libARMulti.a")
 
+        if not PkgSkip("MIMALLOC"):
+            LibName("MIMALLOC", "-Wl,--exclude-libs,libmimalloc.a")
+
     if PkgSkip("FFMPEG") or GetTarget() == "darwin":
         cv_lib = ChooseLib(("opencv_core", "cv"), "OPENCV")
         if cv_lib == "opencv_core":
@@ -980,7 +1007,7 @@ if (COMPILER=="GCC"):
             LibName("PYTHON", "-lrt")
 
     SmartPkgEnable("OPENSSL",   "openssl",   ("ssl", "crypto"), ("openssl/ssl.h", "openssl/crypto.h"))
-    SmartPkgEnable("GTK2",      "gtk+-2.0")
+    SmartPkgEnable("GTK3",      "gtk+-3.0")
     if GetTarget() != 'emscripten':
        SmartPkgEnable("ZLIB",      "zlib",      ("z"), "zlib.h")
 
@@ -1000,11 +1027,6 @@ if (COMPILER=="GCC"):
     if GetHost() != "darwin":
         # Workaround for an issue where pkg-config does not include this path
         if GetTargetArch() in ("x86_64", "amd64"):
-            if (os.path.isdir("/usr/lib64/glib-2.0/include")):
-                IncDirectory("GTK2", "/usr/lib64/glib-2.0/include")
-            if (os.path.isdir("/usr/lib64/gtk-2.0/include")):
-                IncDirectory("GTK2", "/usr/lib64/gtk-2.0/include")
-
             if not PkgSkip("X11"):
                 if (os.path.isdir("/usr/X11R6/lib64")):
                     LibDirectory("ALWAYS", "/usr/X11R6/lib64")
@@ -2354,6 +2376,7 @@ DTOOL_CONFIG=[
     ("REPORT_OPENSSL_ERRORS",          '1',                      '1'),
     ("USE_PANDAFILESTREAM",            '1',                      '1'),
     ("USE_DELETED_CHAIN",              '1',                      '1'),
+    ("HAVE_MIMALLOC",                  'UNDEF',                  'UNDEF'),
     ("HAVE_WGL",                       '1',                      'UNDEF'),
     ("HAVE_DX9",                       'UNDEF',                  'UNDEF'),
     ("HAVE_THREADS",                   '1',                      '1'),
@@ -2498,6 +2521,20 @@ def WriteConfigSettings():
                 dtool_config["HAVE_"+x] = 'UNDEF'
 
     dtool_config["HAVE_NET"] = '1'
+
+    if GetTarget() == 'windows':
+        if not PkgSkip("MIMALLOC"):
+            # This is faster than both DeletedBufferChain and malloc,
+            # especially in the multi-threaded case.
+            dtool_config["USE_MEMORY_MIMALLOC"] = '1'
+            dtool_config["USE_DELETED_CHAIN"] = 'UNDEF'
+        else:
+            # If we don't have mimalloc, use DeletedBufferChain as fallback,
+            # which is still more efficient than malloc.
+            dtool_config["USE_DELETED_CHAIN"] = '1'
+    else:
+        # On other systems, the default malloc seems to be fine.
+        dtool_config["USE_DELETED_CHAIN"] = 'UNDEF'
 
     if (PkgSkip("NVIDIACG")==0):
         dtool_config["HAVE_CG"] = '1'
@@ -3426,7 +3463,7 @@ if GetTarget() == 'windows':
 # DIRECTORY: dtool/src/dtoolbase/
 #
 
-OPTS=['DIR:dtool/src/dtoolbase', 'BUILDING:DTOOL']
+OPTS=['DIR:dtool/src/dtoolbase', 'BUILDING:DTOOL', 'MIMALLOC']
 TargetAdd('p3dtoolbase_composite1.obj', opts=OPTS, input='p3dtoolbase_composite1.cxx')
 TargetAdd('p3dtoolbase_composite2.obj', opts=OPTS, input='p3dtoolbase_composite2.cxx')
 TargetAdd('p3dtoolbase_lookup3.obj',    opts=OPTS, input='lookup3.c')
@@ -3457,7 +3494,7 @@ TargetAdd('libp3dtool.dll', input='p3dtoolbase_composite1.obj')
 TargetAdd('libp3dtool.dll', input='p3dtoolbase_composite2.obj')
 TargetAdd('libp3dtool.dll', input='p3dtoolbase_indent.obj')
 TargetAdd('libp3dtool.dll', input='p3dtoolbase_lookup3.obj')
-TargetAdd('libp3dtool.dll', opts=['ADVAPI','WINSHELL','WINKERNEL'])
+TargetAdd('libp3dtool.dll', opts=['ADVAPI','WINSHELL','WINKERNEL','MIMALLOC'])
 
 #
 # DIRECTORY: dtool/src/cppparser/
@@ -5952,19 +5989,19 @@ if not PkgSkip("PANDATOOL"):
 # DIRECTORY: pandatool/src/gtk-stats/
 #
 
-if not PkgSkip("PANDATOOL") and (GetTarget() == 'windows' or not PkgSkip("GTK2")):
+if not PkgSkip("PANDATOOL") and (GetTarget() == 'windows' or not PkgSkip("GTK3")):
     if GetTarget() == 'windows':
         OPTS=['DIR:pandatool/src/win-stats']
         TargetAdd('pstats_composite1.obj', opts=OPTS, input='winstats_composite1.cxx')
     else:
-        OPTS=['DIR:pandatool/src/gtk-stats', 'GTK2']
+        OPTS=['DIR:pandatool/src/gtk-stats', 'GTK3']
         TargetAdd('pstats_composite1.obj', opts=OPTS, input='gtkstats_composite1.cxx')
     TargetAdd('pstats.exe', input='pstats_composite1.obj')
     TargetAdd('pstats.exe', input='libp3pstatserver.lib')
     TargetAdd('pstats.exe', input='libp3progbase.lib')
     TargetAdd('pstats.exe', input='libp3pandatoolbase.lib')
     TargetAdd('pstats.exe', input=COMMON_PANDA_LIBS)
-    TargetAdd('pstats.exe', opts=['SUBSYSTEM:WINDOWS', 'WINSOCK', 'WINIMM', 'WINGDI', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM', 'GTK2'])
+    TargetAdd('pstats.exe', opts=['SUBSYSTEM:WINDOWS', 'WINCOMCTL', 'WINSOCK', 'WINIMM', 'WINGDI', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM', 'GTK3'])
 
 #
 # DIRECTORY: pandatool/src/xfileprogs/

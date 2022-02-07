@@ -17,6 +17,7 @@
 #include "pandabase.h"
 #include "pmap.h"
 #include "mutexImpl.h"
+#include "patomic.h"
 
 class WeakPointerCallback;
 
@@ -53,8 +54,8 @@ private:
   // This has a very large number added to it if the object is still alive.
   // It could be 1, but having it be a large number makes it easy to check
   // whether the object has been deleted or not.
-  static const AtomicAdjust::Integer _alive_offset = (1 << 30);
-  mutable AtomicAdjust::Integer _count;
+  static const int _alive_offset = (1 << 30);
+  mutable patomic<int> _count;
 
   friend class ReferenceCount;
 };

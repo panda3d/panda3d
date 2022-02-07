@@ -37,6 +37,7 @@ public:
 private:
   int _port;
   bool _show_raw_data;
+  bool _json = false;
 
   // [PECI]
   bool _got_outputFileName;

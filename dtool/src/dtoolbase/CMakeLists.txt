@@ -92,7 +92,7 @@ add_component_library(p3dtoolbase NOINIT SYMBOL BUILDING_DTOOL_DTOOLBASE
 target_include_directories(p3dtoolbase PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
   $<BUILD_INTERFACE:${PANDA_OUTPUT_DIR}/include>)
-target_link_libraries(p3dtoolbase PKG::EIGEN PKG::THREADS)
+target_link_libraries(p3dtoolbase PKG::EIGEN PKG::THREADS PKG::MIMALLOC)
 target_interrogate(p3dtoolbase ${P3DTOOLBASE_SOURCES} EXTENSIONS ${P3DTOOLBASE_IGATEEXT})
 
 if(NOT BUILD_METALIBS)

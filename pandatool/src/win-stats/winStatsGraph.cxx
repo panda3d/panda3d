@@ -14,9 +14,11 @@
 #include "winStatsGraph.h"
 #include "winStatsMonitor.h"
 #include "winStatsLabelStack.h"
+#include "convert_srgb.h"
 
-bool WinStatsGraph::_graph_window_class_registered = false;
-const char * const WinStatsGraph::_graph_window_class_name = "graph";
+#include <commctrl.h>
+
+#define IDC_GRAPH 100
 
 DWORD WinStatsGraph::graph_window_style =
 WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_OVERLAPPEDWINDOW | WS_VISIBLE;
@@ -39,6 +41,8 @@ WinStatsGraph(WinStatsMonitor *monitor) :
   _graph_top = 0;
   _bitmap_xsize = 0;
   _bitmap_ysize = 0;
+
+  _pixel_scale = monitor->get_pixel_scale();
 
   _dark_color = RGB(51, 51, 51);
   _light_color = RGB(154, 154, 154);
@@ -66,11 +70,11 @@ WinStatsGraph::
   DeleteObject(_light_pen);
   DeleteObject(_user_guide_bar_pen);
 
-  Brushes::iterator bi;
-  for (bi = _brushes.begin(); bi != _brushes.end(); ++bi) {
-    HBRUSH brush = (*bi).second;
-    DeleteObject(brush);
+  for (auto &item : _brushes) {
+    DeleteObject(item.second.first);
+    DeleteObject(item.second.second);
   }
+  _brushes.clear();
 
   if (_graph_window) {
     DestroyWindow(_graph_window);
@@ -95,13 +99,6 @@ new_collector(int new_collector) {
  */
 void WinStatsGraph::
 new_data(int thread_index, int frame_number) {
-}
-
-/**
- * Called when it is necessary to redraw the entire graph.
- */
-void WinStatsGraph::
-force_redraw() {
 }
 
 /**
@@ -150,7 +147,46 @@ user_guide_bars_changed() {
  * Called when the user single-clicks on a label.
  */
 void WinStatsGraph::
-clicked_label(int collector_index) {
+on_click_label(int collector_index) {
+}
+
+/**
+ * Called when the user hovers the mouse over a label.
+ */
+void WinStatsGraph::
+on_enter_label(int collector_index) {
+  if (collector_index != _highlighted_index) {
+    _highlighted_index = collector_index;
+    force_redraw();
+  }
+}
+
+/**
+ * Called when the user's mouse cursor leaves a label.
+ */
+void WinStatsGraph::
+on_leave_label(int collector_index) {
+  if (collector_index == _highlighted_index && collector_index != -1) {
+    _highlighted_index = -1;
+    force_redraw();
+  }
+}
+
+/**
+ * Called when the mouse hovers over a label, and should return the text that
+ * should appear on the tooltip.
+ */
+std::string WinStatsGraph::
+get_label_tooltip(int collector_index) const {
+  return std::string();
+}
+
+/**
+ * Returns the window handle of the surrounding window.
+ */
+HWND WinStatsGraph::
+get_window() {
+  return _window;
 }
 
 /**
@@ -184,8 +220,8 @@ move_label_stack() {
     RECT rect;
     GetClientRect(_window, &rect);
 
-    rect.left += 8;
-    rect.right = _left_margin - 8;
+    rect.left += _pixel_scale * 2;
+    rect.right = _left_margin - _pixel_scale * 2;
     rect.bottom -= _bottom_margin;
 
     _label_stack.set_pos(rect.left, rect.top,
@@ -197,22 +233,27 @@ move_label_stack() {
  * Returns a brush suitable for drawing in the indicated collector's color.
  */
 HBRUSH WinStatsGraph::
-get_collector_brush(int collector_index) {
+get_collector_brush(int collector_index, bool highlight) {
   Brushes::iterator bi;
   bi = _brushes.find(collector_index);
   if (bi != _brushes.end()) {
-    return (*bi).second;
+    return highlight ? (*bi).second.second : (*bi).second.first;
   }
 
   // Ask the monitor what color this guy should be.
   LRGBColor rgb = _monitor->get_collector_color(collector_index);
-  int r = (int)(rgb[0] * 255.0f);
-  int g = (int)(rgb[1] * 255.0f);
-  int b = (int)(rgb[2] * 255.0f);
+  int r = (int)encode_sRGB_uchar((float)rgb[0]);
+  int g = (int)encode_sRGB_uchar((float)rgb[1]);
+  int b = (int)encode_sRGB_uchar((float)rgb[2]);
   HBRUSH brush = CreateSolidBrush(RGB(r, g, b));
 
-  _brushes[collector_index] = brush;
-  return brush;
+  int hr = (int)encode_sRGB_uchar((float)rgb[0] * 0.75f);
+  int hg = (int)encode_sRGB_uchar((float)rgb[1] * 0.75f);
+  int hb = (int)encode_sRGB_uchar((float)rgb[2] * 0.75f);
+  HBRUSH hbrush = CreateSolidBrush(RGB(hr, hg, hb));
+
+  _brushes[collector_index] = std::make_pair(brush, hbrush);
+  return highlight ? hbrush : brush;
 }
 
 /**
@@ -225,6 +266,20 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   case WM_DESTROY:
     close();
     break;
+
+  case WM_GETMINMAXINFO:
+    {
+      WINDOWINFO winfo;
+      GetWindowInfo(hwnd, &winfo);
+      MINMAXINFO &minmax = *(MINMAXINFO *)lparam;
+      minmax.ptMinTrackSize.x = (winfo.rcClient.left - winfo.rcWindow.left)
+                              + (winfo.rcWindow.right - winfo.rcClient.right)
+                              + (_right_margin + _left_margin);
+      minmax.ptMinTrackSize.y = (winfo.rcClient.top - winfo.rcWindow.top)
+                              + (winfo.rcWindow.bottom - winfo.rcClient.bottom)
+                              + (_bottom_margin + _top_margin);
+      return 0;
+    }
 
   case WM_SIZE:
     move_label_stack();
@@ -319,8 +374,6 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       rect.bottom -= _bottom_margin;
 
       if (rect.right > rect.left && rect.bottom > rect.top) {
-        DrawEdge(hdc, &rect, EDGE_SUNKEN, BF_RECT | BF_ADJUST);
-
         int graph_xsize = rect.right - rect.left;
         int graph_ysize = rect.bottom - rect.top;
         if (_bitmap_dc == 0 ||
@@ -338,6 +391,21 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       EndPaint(hwnd, &ps);
       return 0;
     }
+
+  case WM_DRAWITEM:
+    if (wparam == IDC_GRAPH) {
+      const DRAWITEMSTRUCT &dis = *(DRAWITEMSTRUCT *)lparam;
+
+      // Repaint the graph by copying the backing pixmap in.
+      BitBlt(dis.hDC, 0, 0,
+             _bitmap_xsize, _bitmap_ysize,
+             _bitmap_dc, 0, 0,
+             SRCCOPY);
+
+      additional_graph_window_paint(dis.hDC);
+      return 0;
+    }
+    break;
 
   default:
     break;
@@ -357,6 +425,10 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     force_redraw();
     break;
 
+  case WM_NCHITTEST:
+    // Necessary for mouse events to work; default returns HTTRANSPARENT
+    return HTCLIENT;
+
   case WM_LBUTTONDOWN:
     // Vector any uncaught WM_LBUTTONDOWN into the main window, so we can drag
     // margins, etc.
@@ -372,28 +444,11 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     ReleaseCapture();
     break;
 
-  case WM_PAINT:
-    {
-      // Repaint the graph by copying the backing pixmap in.
-      PAINTSTRUCT ps;
-      HDC hdc = BeginPaint(hwnd, &ps);
-
-      BitBlt(hdc, 0, 0,
-             _bitmap_xsize, _bitmap_ysize,
-             _bitmap_dc, 0, 0,
-             SRCCOPY);
-
-      additional_graph_window_paint(hdc);
-
-      EndPaint(hwnd, &ps);
-      return 0;
-    }
-
   default:
     break;
   }
 
-  return DefWindowProc(hwnd, msg, wparam, lparam);
+  return DefSubclassProc(hwnd, msg, wparam, lparam);
 }
 
 /**
@@ -506,61 +561,29 @@ create_graph_window() {
   }
 
   HINSTANCE application = GetModuleHandle(nullptr);
-  register_graph_window_class(application);
 
-  std::string window_title = "graph";
-  DWORD window_style = WS_CHILD | WS_CLIPSIBLINGS;
+  DWORD window_style = WS_CHILD | WS_CLIPSIBLINGS |
+                       SS_SUNKEN | SS_OWNERDRAW;
 
   _graph_window =
-    CreateWindow(_graph_window_class_name, window_title.c_str(), window_style,
-                 0, 0, 0, 0,
-                 _window, nullptr, application, 0);
+    CreateWindow(WC_STATIC, "", window_style, 0, 0, 0, 0,
+                 _window, (HMENU)IDC_GRAPH, application, 0);
   if (!_graph_window) {
     nout << "Could not create graph window!\n";
     exit(1);
   }
 
-  SetWindowLongPtr(_graph_window, 0, (LONG_PTR)this);
-}
+  EnableWindow(_graph_window, TRUE);
 
-/**
- * Registers the window class for the stripChart window, if it has not already
- * been registered.
- */
-void WinStatsGraph::
-register_graph_window_class(HINSTANCE application) {
-  if (_graph_window_class_registered) {
-    return;
-  }
-
-  WNDCLASS wc;
-
-  ZeroMemory(&wc, sizeof(WNDCLASS));
-  wc.style = CS_DBLCLKS;
-  wc.lpfnWndProc = (WNDPROC)static_graph_window_proc;
-  wc.hInstance = application;
-  wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
-  wc.hbrBackground = nullptr;
-  wc.lpszMenuName = nullptr;
-  wc.lpszClassName = _graph_window_class_name;
-
-  // Reserve space to associate the this pointer with the window.
-  wc.cbWndExtra = sizeof(WinStatsGraph *);
-
-  if (!RegisterClass(&wc)) {
-    nout << "Could not register graph window class!\n";
-    exit(1);
-  }
-
-  _graph_window_class_registered = true;
+  SetWindowSubclass(_graph_window, &static_graph_subclass_proc, 1234, (DWORD_PTR)this);
 }
 
 /**
  *
  */
-LONG WINAPI WinStatsGraph::
-static_graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
-  WinStatsGraph *self = (WinStatsGraph *)GetWindowLongPtr(hwnd, 0);
+LRESULT WINAPI WinStatsGraph::
+static_graph_subclass_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam, UINT_PTR subclass, DWORD_PTR ref_data) {
+  WinStatsGraph *self = (WinStatsGraph *)ref_data;
   if (self != nullptr && self->_graph_window == hwnd) {
     return self->graph_window_proc(hwnd, msg, wparam, lparam);
   } else {

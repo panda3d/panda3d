@@ -117,6 +117,7 @@ INLINE WeakPointerToBase<T>::
 ~WeakPointerToBase() {
   WeakReferenceList *old_ref = (WeakReferenceList *)_weak_ref;
   if (old_ref != nullptr && !old_ref->unref()) {
+    patomic_thread_fence(std::memory_order_acquire);
     delete old_ref;
   }
 }
@@ -143,6 +144,7 @@ reassign(To *ptr) {
 
     // Now remove the old reference.
     if (old_ref != nullptr && !old_ref->unref()) {
+      patomic_thread_fence(std::memory_order_acquire);
       delete old_ref;
     }
   }
@@ -183,6 +185,7 @@ reassign(const WeakPointerToBase<To> &copy) {
 
     // Now remove the old reference.
     if (old_ref != nullptr && !old_ref->unref()) {
+      patomic_thread_fence(std::memory_order_acquire);
       delete old_ref;
     }
   }
@@ -205,6 +208,7 @@ reassign(WeakPointerToBase<To> &&from) noexcept {
 
     // Now delete the old pointer.
     if (old_ref != nullptr && !old_ref->unref()) {
+      patomic_thread_fence(std::memory_order_acquire);
       delete old_ref;
     }
   }
@@ -233,6 +237,7 @@ reassign(const WeakPointerToBase<Y> &copy) {
 
     // Now remove the old reference.
     if (old_ref != nullptr && !old_ref->unref()) {
+      patomic_thread_fence(std::memory_order_acquire);
       delete old_ref;
     }
   }
@@ -260,6 +265,7 @@ reassign(WeakPointerToBase<Y> &&from) noexcept {
 
     // Now delete the old pointer.
     if (old_ref != nullptr && !old_ref->unref()) {
+      patomic_thread_fence(std::memory_order_acquire);
       delete old_ref;
     }
   }
@@ -627,6 +633,7 @@ clear() {
 
   // Now remove the old reference.
   if (old_ref != nullptr && !old_ref->unref()) {
+    patomic_thread_fence(std::memory_order_acquire);
     delete old_ref;
   }
 }

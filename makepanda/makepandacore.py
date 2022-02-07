@@ -651,6 +651,9 @@ def oscmd(cmd, ignoreError = False, cwd=None):
 
         res = os.spawnl(os.P_WAIT, exe_path, cmd)
 
+        if res == -1073741510: # 0xc000013a
+            exit("keyboard interrupt")
+
         if cwd is not None:
             os.chdir(pwd)
     else:
@@ -733,7 +736,7 @@ def GetTimestamp(path):
     if path in TIMESTAMPCACHE:
         return TIMESTAMPCACHE[path]
     try:
-        date = os.path.getmtime(path)
+        date = int(os.path.getmtime(path))
     except:
         date = 0
     TIMESTAMPCACHE[path] = date
@@ -887,7 +890,7 @@ def JavaGetImports(path):
 ##
 ########################################################################
 
-DCACHE_VERSION = 2
+DCACHE_VERSION = 3
 DCACHE_BACKED_UP = False
 
 def SaveDependencyCache():
