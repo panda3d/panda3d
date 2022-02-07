@@ -635,6 +635,9 @@ def oscmd(cmd, ignoreError = False, cwd=None):
 
         res = os.spawnl(os.P_WAIT, exe_path, cmd)
 
+        if res == -1073741510: # 0xc000013a
+            exit("keyboard interrupt")
+
         if cwd is not None:
             os.chdir(pwd)
     else:
