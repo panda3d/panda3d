@@ -792,23 +792,39 @@ if (COMPILER == "MSVC"):
         else:
             LibName("TIFF", GetThirdpartyDir() + "tiff/lib/tiff.lib")
     if (PkgSkip("OPENEXR")==0):
-        suffix = ""
-        if os.path.isfile(GetThirdpartyDir() + "openexr/lib/IlmImf-2_2.lib"):
-            suffix = "-2_2"
-        elif os.path.isfile(GetThirdpartyDir() + "openexr/lib/IlmImf-2_3.lib"):
-            suffix = "-2_3"
-        elif os.path.isfile(GetThirdpartyDir() + "openexr/lib/IlmImf-2_4.lib"):
-            suffix = "-2_4"
-            LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/Imath" + suffix + ".lib")
-        if os.path.isfile(GetThirdpartyDir() + "openexr/lib/IlmImf" + suffix + "_s.lib"):
-            suffix += "_s"  # _s suffix observed for OpenEXR 2.3 only so far
-        LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/IlmImf" + suffix + ".lib")
-        LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/IlmThread" + suffix + ".lib")
-        LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/Iex" + suffix + ".lib")
-        if suffix == "-2_2":
-            LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/Half.lib")
+        if os.path.isfile(GetThirdpartyDir() + "openexr/lib/OpenEXRCore-3_1.lib"):
+            LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/OpenEXR-3_1.lib")
+            LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/IlmThread-3_1.lib")
+            LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/Imath-3_1.lib")
+            LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/Iex-3_1.lib")
+        elif os.path.isfile(GetThirdpartyDir() + "openexr/lib/OpenEXR-3_0.lib"):
+            LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/OpenEXR-3_0.lib")
+            LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/IlmThread-3_0.lib")
+            LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/Imath-3_0.lib")
+            LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/Iex-3_0.lib")
+        elif os.path.isfile(GetThirdpartyDir() + "openexr/lib/OpenEXR.lib"):
+            LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/OpenEXR.lib")
+            LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/IlmThread.lib")
+            LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/Imath.lib")
+            LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/Iex.lib")
         else:
-            LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/Half" + suffix + ".lib")
+            suffix = ""
+            if os.path.isfile(GetThirdpartyDir() + "openexr/lib/IlmImf-2_2.lib"):
+                suffix = "-2_2"
+            elif os.path.isfile(GetThirdpartyDir() + "openexr/lib/IlmImf-2_3.lib"):
+                suffix = "-2_3"
+            elif os.path.isfile(GetThirdpartyDir() + "openexr/lib/IlmImf-2_4.lib"):
+                suffix = "-2_4"
+                LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/Imath" + suffix + ".lib")
+            if os.path.isfile(GetThirdpartyDir() + "openexr/lib/IlmImf" + suffix + "_s.lib"):
+                suffix += "_s"  # _s suffix observed for OpenEXR 2.3 only so far
+            LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/IlmImf" + suffix + ".lib")
+            LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/IlmThread" + suffix + ".lib")
+            LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/Iex" + suffix + ".lib")
+            if suffix == "-2_2":
+                LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/Half.lib")
+            else:
+                LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/Half" + suffix + ".lib")
         IncDirectory("OPENEXR", GetThirdpartyDir() + "openexr/include/OpenEXR")
         IncDirectory("OPENEXR", GetThirdpartyDir() + "openexr/include/Imath")
     if (PkgSkip("JPEG")==0):     LibName("JPEG",     GetThirdpartyDir() + "jpeg/lib/jpeg-static.lib")
